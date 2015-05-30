@@ -2197,9 +2197,16 @@ struct ArbPM_Context {
     AW_selection_list *probes_id;
     GBDATA            *gb_main;  // @@@ use ntw->gb_main
     AWT_canvas        *ntw;
+
+    ArbPM_Context()
+        : aww(NULL),
+          probes_id(NULL),
+          gb_main(NULL),
+          ntw(NULL)
+    {}
 };
 
-static ArbPM_Context  PM_Context = {0};
+static ArbPM_Context PM_Context;
 
 static void       probe_match_update_probe_list(ArbPM_Context *pContext);
 static AW_window *popup_probe_collection_window_cb(AW_root *pRoot, ArbPM_Context *pContext);
@@ -2208,6 +2215,12 @@ struct ArbWriteFile_Context {
     FILE         *pFile;
     arb_progress *pProgress;
     int           nLastPercent;
+
+    ArbWriteFile_Context()
+        : pFile(NULL),
+          pProgress(NULL),
+          nLastPercent(0)
+    {}
 };
 
 // ----------------------------------------------------------------------------
@@ -2236,7 +2249,7 @@ static bool probe_match_with_specificity_enum_callback(void *pVoidContext, const
 
 // ----------------------------------------------------------------------------
 
-static void probe_match_with_specificity_edit_event(AW_window *aww, GBDATA *gb_main) {
+static void probe_match_with_specificity_edit_event() {
     AW_edit(g_results_manager.resultsFileName(), 0, 0, 0);
 }
 
@@ -2279,7 +2292,6 @@ static void probe_match_with_specificity_event(AW_window *aww, AWT_canvas *ntw) 
 
                 if (pProbe != 0) {
                     int                nMatches;
-                    bool               bFirst;
                     ArbMatchResultSet *pResultSet = g_results_manager.addResultSet(pProbe);
 
                     if (progress.aborted()) {
@@ -2392,8 +2404,8 @@ static void probe_match_with_specificity_event(AW_window *aww, AWT_canvas *ntw) 
         GB_pop_transaction(ntw->gb_main);
 
         if (!bAborted) {
-            ArbWriteFile_Context  Context  = {0};
-            arb_progress          progress(GBS_global_string("Writing results to file %s", g_results_manager.resultsFileName()), 100);
+            ArbWriteFile_Context Context;
+            arb_progress         progress(GBS_global_string("Writing results to file %s", g_results_manager.resultsFileName()), 100);
 
             Context.pFile         = fopen(g_results_manager.resultsFileName(), "w");
             Context.pProgress     = &progress;
@@ -2489,7 +2501,7 @@ AW_window *create_probe_match_with_specificity_window(AW_root *root, AWT_canvas 
         PM_Context.ntw       = ntw;
         PM_Context.gb_main   = ntw->gb_main;
 
-        aws->callback(makeWindowCallback(probe_match_with_specificity_edit_event, ntw->gb_main));
+        aws->callback(makeWindowCallback(probe_match_with_specificity_edit_event));
         aws->at("results");
         aws->create_button("RESULTS", "RESULTS", "R");
 
@@ -2524,9 +2536,16 @@ struct ArbPC_Context {
     AW_selection_list *selection_id;
     GBDATA            *gb_main;
     ArbPM_Context     *PM_Context;
+
+    ArbPC_Context()
+        : aww(NULL),
+          selection_id(NULL),
+          gb_main(NULL),
+          PM_Context(NULL)
+    {}
 };
 
-static ArbPC_Context  PC_Context = {0};
+static ArbPC_Context PC_Context;
 
 // ----------------------------------------------------------------------------
 
@@ -2677,7 +2696,7 @@ static void probe_collection_save_file_selection_event(Widget dialog, XtPointer 
 
 // ----------------------------------------------------------------------------
 
-static void probe_collection_cancel_file_selection_event(Widget dialog, XtPointer client_data, XtPointer call_data) {
+static void probe_collection_cancel_file_selection_event(Widget dialog, XtPointer, XtPointer) {
     XtUnmanageChild(dialog);
     XtDestroyWidget(XtParent(dialog));
 }
@@ -2733,12 +2752,15 @@ static void remove_probe_from_collection_event(AW_window *aww, ArbPC_Context *pC
 
 // ----------------------------------------------------------------------------
 
+// hack to silence 'const char *' passed to motif
+#define CTM(ccp) ((char*)(ccp))
+
 static void open_probe_collection_event(AW_window *aww, ArbPC_Context *pContext) {
     Widget parent = AW_get_AreaWidget(aww, AW_INFO_AREA);
-    Widget dialog = XmCreateFileSelectionDialog(parent, "open probe collection", 0, 0);
+    Widget dialog = XmCreateFileSelectionDialog(parent, CTM("open probe collection"), 0, 0);
 
-    XmString  LastDirectory = XmStringCreateLocalized("~");
-    XmString  LastMask      = XmStringCreateLocalized("*.xpc");
+    XmString  LastDirectory = XmStringCreateLocalized(CTM("~"));
+    XmString  LastMask      = XmStringCreateLocalized(CTM("*.xpc"));
 
     XtAddCallback(dialog, XmNcancelCallback, probe_collection_cancel_file_selection_event, NULL);
     XtAddCallback(dialog, XmNokCallback, probe_collection_open_file_selection_event, (XtPointer)pContext);
@@ -2755,10 +2777,10 @@ static void open_probe_collection_event(AW_window *aww, ArbPC_Context *pContext)
 
 static void save_probe_collection_event(AW_window *aww, ArbPC_Context *pContext) {
     Widget parent = AW_get_AreaWidget(aww, AW_INFO_AREA);
-    Widget dialog = XmCreateFileSelectionDialog(parent, "save probe collection", 0, 0);
+    Widget dialog = XmCreateFileSelectionDialog(parent, CTM("save probe collection"), 0, 0);
 
-    XmString  LastDirectory = XmStringCreateLocalized("~");
-    XmString  LastMask      = XmStringCreateLocalized("*.xpc");
+    XmString  LastDirectory = XmStringCreateLocalized(CTM("~"));
+    XmString  LastMask      = XmStringCreateLocalized(CTM("*.xpc"));
 
     XtAddCallback(dialog, XmNcancelCallback, probe_collection_cancel_file_selection_event, NULL);
     XtAddCallback(dialog, XmNokCallback, probe_collection_save_file_selection_event, (XtPointer)pContext);
@@ -2773,7 +2795,7 @@ static void save_probe_collection_event(AW_window *aww, ArbPC_Context *pContext)
 
 // ----------------------------------------------------------------------------
 
-static void clear_probe_collection_event(AW_window *aww, ArbPC_Context *pContext) {
+static void clear_probe_collection_event(AW_window *, ArbPC_Context *pContext) {
     if (g_probe_collection.clear()) {
         pContext->selection_id->clear();
         pContext->selection_id->insert_default("", "");
@@ -2935,13 +2957,28 @@ struct ArbProbeMatchControlContext {
     Widget TextFieldPartiallyMarkedThresholdValue;
     Widget ToggleUpdateOnDrag;
     bool   UpdateOnDrag;
+
+    ArbProbeMatchControlContext()
+        : root(NULL),
+          aww(NULL),
+          gb_main(NULL),
+          ntw(NULL),
+          InUpdate(0),
+          ScaleMismatchThreshold(0),
+          ScaleMarkedThreshold(0),
+          ScalePartiallyMarkedThreshold(0),
+          TextFieldMismatchThresholdValue(0),
+          TextFieldMarkedThresholdValue(0),
+          TextFieldPartiallyMarkedThresholdValue(0),
+          ToggleUpdateOnDrag(0),
+          UpdateOnDrag(false)
+    {}
 };
 
 // ----------------------------------------------------------------------------
 
 static void textfield_set_value(Widget pWidget, double dValue, int nPrecision) {
     char  sText[32] = {0};
-    Arg   Args[5]   = {0};
 
     ::sprintf(sText, "%.*f", nPrecision, dValue);
 
@@ -2950,7 +2987,7 @@ static void textfield_set_value(Widget pWidget, double dValue, int nPrecision) {
 
 // ----------------------------------------------------------------------------
 
-static void toggle_update_on_drag_changed(Widget widget, XtPointer client_data, XtPointer call_data) {
+static void toggle_update_on_drag_changed(Widget , XtPointer client_data, XtPointer call_data) {
     ArbProbeMatchControlContext  *pContext = (ArbProbeMatchControlContext*)client_data;
     XmToggleButtonCallbackStruct *cbs      = (XmToggleButtonCallbackStruct*)call_data;
 
@@ -3020,7 +3057,7 @@ static void update_species_matched_string(AW_root *root, AWT_canvas *ntw) {
 
 // ----------------------------------------------------------------------------
 
-static void scale_mismatch_threshold_changed(Widget scale, XtPointer client_data, XtPointer call_data) {
+static void scale_mismatch_threshold_changed(Widget, XtPointer client_data, XtPointer call_data) {
     ArbProbeMatchControlContext *pContext = (ArbProbeMatchControlContext*)client_data;
     AW_root                     *root     = pContext->root;
     XmScaleCallbackStruct       *cbs      = (XmScaleCallbackStruct*)call_data;
@@ -3043,7 +3080,7 @@ static void scale_mismatch_threshold_changed(Widget scale, XtPointer client_data
 
 // ----------------------------------------------------------------------------
 
-static void scale_marked_threshold_changed(Widget scale, XtPointer client_data, XtPointer call_data) {
+static void scale_marked_threshold_changed(Widget, XtPointer client_data, XtPointer call_data) {
     ArbProbeMatchControlContext *pContext = (ArbProbeMatchControlContext*)client_data;
     AW_root                     *root     = pContext->root;
     XmScaleCallbackStruct       *cbs      = (XmScaleCallbackStruct*)call_data;
@@ -3067,7 +3104,7 @@ static void scale_marked_threshold_changed(Widget scale, XtPointer client_data, 
 
 // ----------------------------------------------------------------------------
 
-static void scale_partially_marked_threshold_changed(Widget scale, XtPointer client_data, XtPointer call_data) {
+static void scale_partially_marked_threshold_changed(Widget, XtPointer client_data, XtPointer call_data) {
     ArbProbeMatchControlContext *pContext = (ArbProbeMatchControlContext*)client_data;
     AW_root                     *root     = pContext->root;
     XmScaleCallbackStruct       *cbs      = (XmScaleCallbackStruct*)call_data;
@@ -3126,9 +3163,8 @@ static bool text_widget_value_changed(Widget                       text,
 
 // ----------------------------------------------------------------------------
 
-static void text_mismatch_threshold_changed(Widget text, XtPointer client_data, XtPointer call_data) {
+static void text_mismatch_threshold_changed(Widget text, XtPointer client_data, XtPointer) {
     ArbProbeMatchControlContext *pContext = (ArbProbeMatchControlContext*)client_data;
-    XmAnyCallbackStruct         *cbs      = (XmAnyCallbackStruct*)call_data;
     double                       dValue   = 0.0;
 
     if (text_widget_value_changed(text,
@@ -3148,9 +3184,8 @@ static void text_mismatch_threshold_changed(Widget text, XtPointer client_data, 
 
 // ----------------------------------------------------------------------------
 
-static void text_marked_threshold_changed(Widget text, XtPointer client_data, XtPointer call_data) {
+static void text_marked_threshold_changed(Widget text, XtPointer client_data, XtPointer) {
     ArbProbeMatchControlContext *pContext = (ArbProbeMatchControlContext*)client_data;
-    XmAnyCallbackStruct         *cbs      = (XmAnyCallbackStruct*)call_data;
     double                       dValue   = 0.0;
 
     if (text_widget_value_changed(text,
@@ -3172,9 +3207,8 @@ static void text_marked_threshold_changed(Widget text, XtPointer client_data, Xt
 
 // ----------------------------------------------------------------------------
 
-static void text_partially_marked_threshold_changed(Widget text, XtPointer client_data, XtPointer call_data) {
+static void text_partially_marked_threshold_changed(Widget text, XtPointer client_data, XtPointer) {
     ArbProbeMatchControlContext *pContext = (ArbProbeMatchControlContext*)client_data;
-    XmAnyCallbackStruct         *cbs      = (XmAnyCallbackStruct*)call_data;
     double                       dValue   = 0.0;
 
     if (text_widget_value_changed(text,
@@ -3201,7 +3235,7 @@ AW_window *create_probe_match_specificity_control_window(AW_root *root, AWT_canv
     Widget  Shell;
     Widget  RowColumn;
 
-    static ArbProbeMatchControlContext Context = {0};
+    static ArbProbeMatchControlContext Context;
     static AW_window_simple *aws = 0;
 
     if (aws) {
@@ -3234,7 +3268,7 @@ AW_window *create_probe_match_specificity_control_window(AW_root *root, AWT_canv
     XtSetArg(Args[2], XmNpacking,     XmPACK_COLUMN);
     XtSetArg(Args[3], XmNspacing,     7);
 
-    RowColumn = XmCreateRowColumn(Shell, "rowcolumn", Args, 4);
+    RowColumn = XmCreateRowColumn(Shell, CTM("rowcolumn"), Args, 4);
 
     XmString sTitle;
 
@@ -3245,10 +3279,10 @@ AW_window *create_probe_match_specificity_control_window(AW_root *root, AWT_canv
     XtSetArg(Args[4], XmNminimum,     0);
     XtSetArg(Args[5], XmNvalue, (int)(g_results_manager.mismatchThreshold() * 1000.0));
 
-    sTitle = XmStringCreateLocalized("Mismatch threshold");
+    sTitle = XmStringCreateLocalized(CTM("Mismatch threshold"));
     XtSetArg(Args[6], XmNtitleString, sTitle);
 
-    Context.ScaleMismatchThreshold = XmCreateScale(RowColumn, "MismatchThreshold", Args, 7);
+    Context.ScaleMismatchThreshold = XmCreateScale(RowColumn, CTM("MismatchThreshold"), Args, 7);
     XtAddCallback(Context.ScaleMismatchThreshold, XmNvalueChangedCallback, scale_mismatch_threshold_changed, (XtPointer)&Context);
     XtAddCallback(Context.ScaleMismatchThreshold, XmNdragCallback, scale_mismatch_threshold_changed, (XtPointer)&Context);
     XtManageChild(Context.ScaleMismatchThreshold);
@@ -3257,10 +3291,10 @@ AW_window *create_probe_match_specificity_control_window(AW_root *root, AWT_canv
 
     XtSetArg(Args[5], XmNvalue, (int)(g_results_manager.cladeMarkedThreshold() * 1000.0));
 
-    sTitle = XmStringCreateLocalized("Clade marked threshold");
+    sTitle = XmStringCreateLocalized(CTM("Clade marked threshold"));
     XtSetArg(Args[6], XmNtitleString, sTitle);
 
-    Context.ScaleMarkedThreshold = XmCreateScale(RowColumn, "MarkedThreshold", Args, 7);
+    Context.ScaleMarkedThreshold = XmCreateScale(RowColumn, CTM("MarkedThreshold"), Args, 7);
     XtAddCallback(Context.ScaleMarkedThreshold, XmNvalueChangedCallback, scale_marked_threshold_changed, (XtPointer)&Context);
     XtAddCallback(Context.ScaleMarkedThreshold, XmNdragCallback, scale_marked_threshold_changed, (XtPointer)&Context);
     XtManageChild(Context.ScaleMarkedThreshold);
@@ -3269,10 +3303,10 @@ AW_window *create_probe_match_specificity_control_window(AW_root *root, AWT_canv
 
     XtSetArg(Args[5], XmNvalue, (int)(g_results_manager.cladePartiallyMarkedThreshold() * 1000.0));
 
-    sTitle = XmStringCreateLocalized("Clade partially marked threshold");
+    sTitle = XmStringCreateLocalized(CTM("Clade partially marked threshold"));
     XtSetArg(Args[6], XmNtitleString, sTitle);
 
-    Context.ScalePartiallyMarkedThreshold = XmCreateScale(RowColumn, "PartiallyMarkedThreshold", Args, 7);
+    Context.ScalePartiallyMarkedThreshold = XmCreateScale(RowColumn, CTM("PartiallyMarkedThreshold"), Args, 7);
     XtAddCallback(Context.ScalePartiallyMarkedThreshold, XmNvalueChangedCallback, scale_partially_marked_threshold_changed, (XtPointer)&Context);
     XtAddCallback(Context.ScalePartiallyMarkedThreshold, XmNdragCallback, scale_partially_marked_threshold_changed, (XtPointer)&Context);
     XtManageChild(Context.ScalePartiallyMarkedThreshold);
@@ -3283,7 +3317,7 @@ AW_window *create_probe_match_specificity_control_window(AW_root *root, AWT_canv
     XtSetArg(Args[1], XmNindicatorOn,           XmINDICATOR_CHECK_BOX);
     XtSetArg(Args[2], XmNset,                   XmSET);
 
-    Context.ToggleUpdateOnDrag = XmCreateToggleButton(RowColumn, "Update on drag", Args, 3);
+    Context.ToggleUpdateOnDrag = XmCreateToggleButton(RowColumn, CTM("Update on drag"), Args, 3);
     XtAddCallback(Context.ToggleUpdateOnDrag, XmNvalueChangedCallback, toggle_update_on_drag_changed, (XtPointer)&Context);
     XtManageChild(Context.ToggleUpdateOnDrag);
 
@@ -3292,15 +3326,15 @@ AW_window *create_probe_match_specificity_control_window(AW_root *root, AWT_canv
     XtSetArg(Args[0], XmNlabelType,   XmSTRING);
     XtSetArg(Args[1], XmNalignment,   XmALIGNMENT_BEGINNING);
 
-    Context.TextFieldMismatchThresholdValue = XmCreateTextField(RowColumn, "TextFieldMismatchThresholdValue", Args, 2);
+    Context.TextFieldMismatchThresholdValue = XmCreateTextField(RowColumn, CTM("TextFieldMismatchThresholdValue"), Args, 2);
     XtAddCallback(Context.TextFieldMismatchThresholdValue, XmNvalueChangedCallback, text_mismatch_threshold_changed, (XtPointer)&Context);
     XtManageChild(Context.TextFieldMismatchThresholdValue);
 
-    Context.TextFieldMarkedThresholdValue = XmCreateTextField(RowColumn, "TextFieldMarkedThresholdValue", Args, 2);
+    Context.TextFieldMarkedThresholdValue = XmCreateTextField(RowColumn, CTM("TextFieldMarkedThresholdValue"), Args, 2);
     XtAddCallback(Context.TextFieldMarkedThresholdValue, XmNvalueChangedCallback, text_marked_threshold_changed, (XtPointer)&Context);
     XtManageChild(Context.TextFieldMarkedThresholdValue);
 
-    Context.TextFieldPartiallyMarkedThresholdValue = XmCreateTextField(RowColumn, "TextFieldPartiallyMarkedThresholdValue", Args, 2);
+    Context.TextFieldPartiallyMarkedThresholdValue = XmCreateTextField(RowColumn, CTM("TextFieldPartiallyMarkedThresholdValue"), Args, 2);
     XtAddCallback(Context.TextFieldPartiallyMarkedThresholdValue, XmNvalueChangedCallback, text_partially_marked_threshold_changed, (XtPointer)&Context);
     XtManageChild(Context.TextFieldPartiallyMarkedThresholdValue);
 

@@ -29,7 +29,9 @@ depend.init:
 probe_collection.o: probe_collection.hxx
 probe_collection.o: $(ARBHOME)/INCLUDE/arb_assert.h
 probe_collection.o: $(ARBHOME)/INCLUDE/arb_core.h
+probe_collection.o: $(ARBHOME)/INCLUDE/arbtools.h
 probe_collection.o: $(ARBHOME)/INCLUDE/attributes.h
+probe_collection.o: $(ARBHOME)/INCLUDE/cxxforward.h
 probe_collection.o: $(ARBHOME)/INCLUDE/dupstr.h
 probe_collection.o: $(ARBHOME)/INCLUDE/gccver.h
 probe_collection.o: $(ARBHOME)/INCLUDE/test_global.h

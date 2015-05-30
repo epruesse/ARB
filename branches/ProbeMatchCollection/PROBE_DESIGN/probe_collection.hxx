@@ -4,24 +4,42 @@
 // Declarations of classes used to create and manage probe collections in Arb.
 // ----------------------------------------------------------------------------
 
-
-#ifndef __PROBE_COLLECTION_HXX__
-
+#ifndef PROBE_COLLECTION_HXX
+#define PROBE_COLLECTION_HXX
 
 #ifndef ARB_ASSERT_H
 #include "arb_assert.h"
 #endif
-
+#ifndef ARBTOOLS_H
+#include <arbtools.h>
+#endif
+#ifndef _GLIBCXX_STRING
 #include <string>
+#endif
+#ifndef _GLIBCXX_ITERATOR
 #include <iterator>
+#endif
+#ifndef _GLIBCXX_LIST
 #include <list>
+#endif
+#ifndef _GLIBCXX_MAP
 #include <map>
-#include <errno.h>
-#include <stdlib.h>
-#include <stdio.h>
+#endif
+#ifndef _GLIBCXX_CERRNO
+#include <cerrno>
+#endif
+#ifndef _GLIBCXX_CSTDLIB
+#include <cstdlib>
+#endif
+#ifndef _GLIBCXX_CSTDIO
+#include <cstdio>
+#endif
+#ifndef _UNISTD_H
 #include <unistd.h>
+#endif
+#ifndef _SYS_STAT_H
 #include <sys/stat.h>
-
+#endif
 
 //  ----------------------------------------------------------------------------
 //  Map of Int by Int
@@ -79,8 +97,7 @@ inline int ArbCachedString::len() const {
 // memory in the ArProbeResult class we can reduce our memory consumption
 // considerably.
 // ----------------------------------------------------------------------------
-class ArbStringCache {
-private:
+class ArbStringCache : virtual Noncopyable {
     std::string   FileName;
     FILE         *WriteCacheFile;
     mutable FILE *ReadCacheFile;
@@ -112,7 +129,6 @@ extern ArbStringCache     g_string_cache;
 // class ArbRefCount
 // ----------------------------------------------------------------------------
 class ArbRefCount {
-private:
     mutable int RefCount;
 
 public:
@@ -474,7 +490,6 @@ typedef std::list<std::string>::const_reverse_iterator  ArbStringListConstRIter;
 // class ArbMatchResultSet
 // ----------------------------------------------------------------------------
 class ArbMatchResultSet : public ArbRefCount {
-private:
     const ArbProbe                    *Probe;
     std::string                        Headline;
     ArbMatchResultPtrByStringMultiMap  ResultMap;
@@ -491,6 +506,7 @@ public:
     ArbMatchResultSet(const ArbProbe *pProbe);
 
     ArbMatchResultSet(const ArbMatchResultSet& rCopy);
+    DECLARE_ASSIGNMENT_OPERATOR(ArbMatchResultSet);
     virtual ~ArbMatchResultSet();
 
     void initialise(const ArbProbe *pProbe, int nIndex);
@@ -730,6 +746,6 @@ inline bool ArbMatchResultsManager::hasResults() const {
 extern ArbProbeCollection      g_probe_collection;
 extern ArbMatchResultsManager  g_results_manager;
 
-
-#endif //__PROBE_COLLECTION_HXX__
-
+#else
+#error probe_collection.hxx included twice
+#endif // PROBE_COLLECTION_HXX

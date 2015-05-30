@@ -23,7 +23,7 @@
 using namespace xercesc;
 
 
-const int ArbMIN_PROBE_LENGTH = 6;
+const size_t ArbMIN_PROBE_LENGTH = 6;
 
 
 // ----------------------------------------------------------------------------
@@ -279,6 +279,7 @@ ArbProbeMatchWeighting::~ArbProbeMatchWeighting() {
 
 ArbProbeMatchWeighting& ArbProbeMatchWeighting::operator = (const ArbProbeMatchWeighting& rCopy) {
     copy(rCopy);
+    return *this;
 }
 
 // ----------------------------------------------------------------------------
@@ -600,8 +601,8 @@ void ArbProbe::nameAndSequence(const char *pName, const char *pSequence) {
 // ----------------------------------------------------------------------------
 
 int ArbProbe::allowedMismatches() const {
-    int nProbe_Length     = Sequence.length();
-    int nAllowedMistaches = (nProbe_Length - ArbMIN_PROBE_LENGTH) / 2;
+    size_t nProbe_Length     = Sequence.length();
+    size_t nAllowedMistaches = (nProbe_Length - ArbMIN_PROBE_LENGTH) / 2;
 
     // Arb probe server doesn't seem to like having more that 20 mis-matches.
     if (nAllowedMistaches > 20) {
