@@ -2201,8 +2201,8 @@ struct ArbPM_Context {
 
 static ArbPM_Context  PM_Context = {0};
 
-void       probe_match_update_probe_list(ArbPM_Context *pContext);
-AW_window *popup_probe_collection_window_cb(AW_root *pRoot, ArbPM_Context *pContext);
+static void       probe_match_update_probe_list(ArbPM_Context *pContext);
+static AW_window *popup_probe_collection_window_cb(AW_root *pRoot, ArbPM_Context *pContext);
 
 struct ArbWriteFile_Context {
     FILE         *pFile;
@@ -2212,7 +2212,7 @@ struct ArbWriteFile_Context {
 
 // ----------------------------------------------------------------------------
 
-bool probe_match_with_specificity_enum_callback(void *pVoidContext, const char *pResult, bool bIsComment, int nItem, int nItems) {
+static bool probe_match_with_specificity_enum_callback(void *pVoidContext, const char *pResult, bool bIsComment, int nItem, int nItems) {
     ArbWriteFile_Context *pContext = (ArbWriteFile_Context*)pVoidContext;
     int                   nPercent = (int)(100.0 * nItem / nItems);
     bool                  bAborted = false;
@@ -2236,7 +2236,7 @@ bool probe_match_with_specificity_enum_callback(void *pVoidContext, const char *
 
 // ----------------------------------------------------------------------------
 
-void probe_match_with_specificity_edit_event(AW_window *aww, GBDATA *gb_main) {
+static void probe_match_with_specificity_edit_event(AW_window *aww, GBDATA *gb_main) {
     AW_edit(g_results_manager.resultsFileName(), 0, 0, 0);
 }
 
@@ -2436,7 +2436,7 @@ inline void set_probeCollectionDisplay_inCanvas(AWT_canvas *ntw, bool display) {
     agt->set_probeCollectionDisplay(display);
 }
 
-void probe_match_clear_event(AW_window *aww, ArbPM_Context *pContext) {
+static void probe_match_clear_event(AW_window *aww, ArbPM_Context *pContext) {
     int action = aw_question("probe_match_with_specificity_clear",
                              "Do you want to clear the probe match results?",
                              "Yes,No");
@@ -2530,7 +2530,7 @@ static ArbPC_Context  PC_Context = {0};
 
 // ----------------------------------------------------------------------------
 
-void probe_collection_open_file_selection_event(Widget dialog, XtPointer client_data, XtPointer call_data) {
+static void probe_collection_open_file_selection_event(Widget dialog, XtPointer client_data, XtPointer call_data) {
     char                             *pFileName;
     ArbProbeCollection                ProbeCollection;
     std::string                       sErrorMessage;
@@ -2605,7 +2605,7 @@ void probe_collection_open_file_selection_event(Widget dialog, XtPointer client_
 
 // ----------------------------------------------------------------------------
 
-void probe_collection_update_parameters(AW_window *aww) {
+static void probe_collection_update_parameters(AW_window *aww) {
     int     cn;
     char    buffer[256] = {0};
     double  weights[16] = {0.0};
@@ -2642,7 +2642,7 @@ void probe_collection_update_parameters(AW_window *aww) {
 
 // ----------------------------------------------------------------------------
 
-void probe_collection_save_file_selection_event(Widget dialog, XtPointer client_data, XtPointer call_data) {
+static void probe_collection_save_file_selection_event(Widget dialog, XtPointer client_data, XtPointer call_data) {
     char                             *pFileName;
     XmFileSelectionBoxCallbackStruct *cbs     = (XmFileSelectionBoxCallbackStruct*)call_data;
     ArbPC_Context                    *Context = (ArbPC_Context*)client_data;
@@ -2677,14 +2677,14 @@ void probe_collection_save_file_selection_event(Widget dialog, XtPointer client_
 
 // ----------------------------------------------------------------------------
 
-void probe_collection_cancel_file_selection_event(Widget dialog, XtPointer client_data, XtPointer call_data) {
+static void probe_collection_cancel_file_selection_event(Widget dialog, XtPointer client_data, XtPointer call_data) {
     XtUnmanageChild(dialog);
     XtDestroyWidget(XtParent(dialog));
 }
 
 // ----------------------------------------------------------------------------
 
-void add_probe_to_collection_event(AW_window *aww, ArbPC_Context *pContext) {
+static void add_probe_to_collection_event(AW_window *aww, ArbPC_Context *pContext) {
     AW_selection_list *selection_id = pContext->selection_id;
     const char        *pSequence    = aww->get_root()->awar(AWAR_PC_TARGET_STRING)->read_string();
     const char        *pName        = aww->get_root()->awar(AWAR_PC_TARGET_NAME)->read_string();
@@ -2707,7 +2707,7 @@ void add_probe_to_collection_event(AW_window *aww, ArbPC_Context *pContext) {
 
 // ----------------------------------------------------------------------------
 
-void remove_probe_from_collection_event(AW_window *aww, ArbPC_Context *pContext) {
+static void remove_probe_from_collection_event(AW_window *aww, ArbPC_Context *pContext) {
     AW_selection_list *selection_id = pContext->selection_id;
     const char        *pSequence    = aww->get_root()->awar(AWAR_PC_SELECTED_PROBE)->read_string();
 
@@ -2733,7 +2733,7 @@ void remove_probe_from_collection_event(AW_window *aww, ArbPC_Context *pContext)
 
 // ----------------------------------------------------------------------------
 
-void open_probe_collection_event(AW_window *aww, ArbPC_Context *pContext) {
+static void open_probe_collection_event(AW_window *aww, ArbPC_Context *pContext) {
     Widget parent = AW_get_AreaWidget(aww, AW_INFO_AREA);
     Widget dialog = XmCreateFileSelectionDialog(parent, "open probe collection", 0, 0);
 
@@ -2753,7 +2753,7 @@ void open_probe_collection_event(AW_window *aww, ArbPC_Context *pContext) {
 
 // ----------------------------------------------------------------------------
 
-void save_probe_collection_event(AW_window *aww, ArbPC_Context *pContext) {
+static void save_probe_collection_event(AW_window *aww, ArbPC_Context *pContext) {
     Widget parent = AW_get_AreaWidget(aww, AW_INFO_AREA);
     Widget dialog = XmCreateFileSelectionDialog(parent, "save probe collection", 0, 0);
 
@@ -2773,7 +2773,7 @@ void save_probe_collection_event(AW_window *aww, ArbPC_Context *pContext) {
 
 // ----------------------------------------------------------------------------
 
-void clear_probe_collection_event(AW_window *aww, ArbPC_Context *pContext) {
+static void clear_probe_collection_event(AW_window *aww, ArbPC_Context *pContext) {
     if (g_probe_collection.clear()) {
         pContext->selection_id->clear();
         pContext->selection_id->insert_default("", "");
@@ -2785,7 +2785,7 @@ void clear_probe_collection_event(AW_window *aww, ArbPC_Context *pContext) {
 
 // ----------------------------------------------------------------------------
 
-void probe_match_update_probe_list(ArbPM_Context *pContext) {
+static void probe_match_update_probe_list(ArbPM_Context *pContext) {
     if ((pContext != 0) && (pContext->aww != 0)) {
         const ArbProbePtrList&   rProbeList = g_probe_collection.probeList();
         ArbProbePtrListConstIter ProbeIter;
@@ -2807,14 +2807,14 @@ void probe_match_update_probe_list(ArbPM_Context *pContext) {
 
 // ----------------------------------------------------------------------------
 
-void probe_collection_close(AW_window *aww) {
+static void probe_collection_close(AW_window *aww) {
     probe_collection_update_parameters(aww);
     aww->hide();
 }
 
 // ----------------------------------------------------------------------------
 
-AW_window *create_probe_collection_window_ext(AW_root *root, GBDATA *gb_main, ArbPM_Context *pContext) {
+static AW_window *create_probe_collection_window_ext(AW_root *root, GBDATA *gb_main, ArbPM_Context *pContext) {
     static AW_window_simple *aws = 0;     // the one and only probe match window
     char                     buffer[256];
 
@@ -2898,7 +2898,7 @@ AW_window *create_probe_collection_window_ext(AW_root *root, GBDATA *gb_main, Ar
 
 // ----------------------------------------------------------------------------
 
-AW_window *popup_probe_collection_window_cb(AW_root *pRoot, ArbPM_Context *pContext) {
+static AW_window *popup_probe_collection_window_cb(AW_root *pRoot, ArbPM_Context *pContext) {
     AW_window *pWindow = create_probe_collection_window_ext(pRoot, 0, pContext);
 
     pWindow->activate();
@@ -2939,7 +2939,7 @@ struct ArbProbeMatchControlContext {
 
 // ----------------------------------------------------------------------------
 
-void textfield_set_value(Widget pWidget, double dValue, int nPrecision) {
+static void textfield_set_value(Widget pWidget, double dValue, int nPrecision) {
     char  sText[32] = {0};
     Arg   Args[5]   = {0};
 
@@ -2950,7 +2950,7 @@ void textfield_set_value(Widget pWidget, double dValue, int nPrecision) {
 
 // ----------------------------------------------------------------------------
 
-void toggle_update_on_drag_changed(Widget widget, XtPointer client_data, XtPointer call_data) {
+static void toggle_update_on_drag_changed(Widget widget, XtPointer client_data, XtPointer call_data) {
     ArbProbeMatchControlContext  *pContext = (ArbProbeMatchControlContext*)client_data;
     XmToggleButtonCallbackStruct *cbs      = (XmToggleButtonCallbackStruct*)call_data;
 
@@ -3020,7 +3020,7 @@ static void update_species_matched_string(AW_root *root, AWT_canvas *ntw) {
 
 // ----------------------------------------------------------------------------
 
-void scale_mismatch_threshold_changed(Widget scale, XtPointer client_data, XtPointer call_data) {
+static void scale_mismatch_threshold_changed(Widget scale, XtPointer client_data, XtPointer call_data) {
     ArbProbeMatchControlContext *pContext = (ArbProbeMatchControlContext*)client_data;
     AW_root                     *root     = pContext->root;
     XmScaleCallbackStruct       *cbs      = (XmScaleCallbackStruct*)call_data;
@@ -3043,7 +3043,7 @@ void scale_mismatch_threshold_changed(Widget scale, XtPointer client_data, XtPoi
 
 // ----------------------------------------------------------------------------
 
-void scale_marked_threshold_changed(Widget scale, XtPointer client_data, XtPointer call_data) {
+static void scale_marked_threshold_changed(Widget scale, XtPointer client_data, XtPointer call_data) {
     ArbProbeMatchControlContext *pContext = (ArbProbeMatchControlContext*)client_data;
     AW_root                     *root     = pContext->root;
     XmScaleCallbackStruct       *cbs      = (XmScaleCallbackStruct*)call_data;
@@ -3067,7 +3067,7 @@ void scale_marked_threshold_changed(Widget scale, XtPointer client_data, XtPoint
 
 // ----------------------------------------------------------------------------
 
-void scale_partially_marked_threshold_changed(Widget scale, XtPointer client_data, XtPointer call_data) {
+static void scale_partially_marked_threshold_changed(Widget scale, XtPointer client_data, XtPointer call_data) {
     ArbProbeMatchControlContext *pContext = (ArbProbeMatchControlContext*)client_data;
     AW_root                     *root     = pContext->root;
     XmScaleCallbackStruct       *cbs      = (XmScaleCallbackStruct*)call_data;
@@ -3091,12 +3091,12 @@ void scale_partially_marked_threshold_changed(Widget scale, XtPointer client_dat
 
 // ----------------------------------------------------------------------------
 
-bool text_widget_value_changed(Widget                       text,
-                               Widget                       scale,
-                               ArbProbeMatchControlContext *pContext,
-                               double                       dMinimum,
-                               double                       dMaximum,
-                               double&                      dValue)
+static bool text_widget_value_changed(Widget                       text,
+                                      Widget                       scale,
+                                      ArbProbeMatchControlContext *pContext,
+                                      double                       dMinimum,
+                                      double                       dMaximum,
+                                      double&                      dValue)
 {
     bool bChanged = false;
 
@@ -3126,7 +3126,7 @@ bool text_widget_value_changed(Widget                       text,
 
 // ----------------------------------------------------------------------------
 
-void text_mismatch_threshold_changed(Widget text, XtPointer client_data, XtPointer call_data) {
+static void text_mismatch_threshold_changed(Widget text, XtPointer client_data, XtPointer call_data) {
     ArbProbeMatchControlContext *pContext = (ArbProbeMatchControlContext*)client_data;
     XmAnyCallbackStruct         *cbs      = (XmAnyCallbackStruct*)call_data;
     double                       dValue   = 0.0;
@@ -3148,7 +3148,7 @@ void text_mismatch_threshold_changed(Widget text, XtPointer client_data, XtPoint
 
 // ----------------------------------------------------------------------------
 
-void text_marked_threshold_changed(Widget text, XtPointer client_data, XtPointer call_data) {
+static void text_marked_threshold_changed(Widget text, XtPointer client_data, XtPointer call_data) {
     ArbProbeMatchControlContext *pContext = (ArbProbeMatchControlContext*)client_data;
     XmAnyCallbackStruct         *cbs      = (XmAnyCallbackStruct*)call_data;
     double                       dValue   = 0.0;
@@ -3172,7 +3172,7 @@ void text_marked_threshold_changed(Widget text, XtPointer client_data, XtPointer
 
 // ----------------------------------------------------------------------------
 
-void text_partially_marked_threshold_changed(Widget text, XtPointer client_data, XtPointer call_data) {
+static void text_partially_marked_threshold_changed(Widget text, XtPointer client_data, XtPointer call_data) {
     ArbProbeMatchControlContext *pContext = (ArbProbeMatchControlContext*)client_data;
     XmAnyCallbackStruct         *cbs      = (XmAnyCallbackStruct*)call_data;
     double                       dValue   = 0.0;

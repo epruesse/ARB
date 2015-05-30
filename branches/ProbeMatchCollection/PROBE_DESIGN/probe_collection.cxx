@@ -706,7 +706,7 @@ ArbProbeCollection& ArbProbeCollection::operator = (const ArbProbeCollection& rC
 
 // ----------------------------------------------------------------------------
 
-bool elementHasName(DOMElement *pElement, const char *pName) {
+static bool elementHasName(DOMElement *pElement, const char *pName) {
     bool bHasName = false;
 
     if (pName != 0) {
@@ -722,7 +722,7 @@ bool elementHasName(DOMElement *pElement, const char *pName) {
 
 // ----------------------------------------------------------------------------
 
-bool isElement(DOMNode *pNode, DOMElement*& pElement, const char *pName) {
+static bool isElement(DOMNode *pNode, DOMElement*& pElement, const char *pName) {
     bool  bIsElement = false;
 
     if (pNode != 0) {
