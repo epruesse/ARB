@@ -327,7 +327,7 @@ public:
     void  increment_at_commands(int width, int height);
 
 
-    AW_color_idx alloc_named_data_color(int colnum, char *colorname);
+    AW_color_idx alloc_named_data_color(int colnum, const char *colorname);
 
     // special for EDIT4
     void _get_area_size(AW_area area, AW_screen_area *square);
