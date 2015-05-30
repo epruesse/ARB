@@ -43,24 +43,25 @@
 #define DEFAULT_RULER_LINEWIDTH tree_defaults::LINEWIDTH
 #define DEFAULT_RULER_LENGTH    tree_defaults::LENGTH
 
-AW_color_idx  MatchProbeColourIndex[16] = {AW_WINDOW_BG};
-char*         MatchProbeColours[16]     = {"#77211F",
-        "#75771F",
-        "#1F7726",
-        "#2D9495",
-        "#526ACD",
-        "#8F4DE7",
-        "#AC60AB",
-        "#A91759",
-        "#996417",
-        "#58832C",
-        "#27934A",
-        "#276293",
-        "#404DD7",
-        "#9840D7",
-        "#CA69AD",
-        "#AD4A4D"
-                                          };
+static AW_color_idx  MatchProbeColourIndex[16] = {AW_WINDOW_BG};
+static const char *MatchProbeColours[16] = {
+    "#77211F",
+    "#75771F",
+    "#1F7726",
+    "#2D9495",
+    "#526ACD",
+    "#8F4DE7",
+    "#AC60AB",
+    "#A91759",
+    "#996417",
+    "#58832C",
+    "#27934A",
+    "#276293",
+    "#404DD7",
+    "#9840D7",
+    "#CA69AD",
+    "#AD4A4D"
+};
 
 const int MATCH_COL_WIDTH = 3;
 
@@ -1847,7 +1848,7 @@ void AWT_graphic_tree::enumerateClade(AP_tree *at, int* pMatchCounts, int& nClad
         if (at->name && (disp_device->get_filter() & leaf_text_filter)) {
             const char* pDB_MatchString = GBT_read_char_pntr(at->gb_node, "matched_string");
 
-            if ((pDB_MatchString != 0) && (strlen(pDB_MatchString) == nNumProbes)) {
+            if ((pDB_MatchString != 0) && (int(strlen(pDB_MatchString)) == nNumProbes)) {
                 for (int cn = 0 ; cn < nNumProbes ; cn++) {
                     switch (pDB_MatchString[cn]) {
                         case '1': {
@@ -1896,15 +1897,16 @@ void AWT_graphic_tree::drawMatchFlag(AP_tree *at, bool bPartial, int nProbe, int
     }
 }
 
-void AWT_graphic_tree::drawMatchFlag(AP_tree *at, const char* pName, double y1, double y2) {
+void AWT_graphic_tree::drawMatchFlag(AP_tree *at, double y1, double y2) {
     td_assert(display_probe_collection);
-    AW_color_idx  LastColor;
-    bool          bChanged      = false;
-    int           nNumProbes    = aw_root->awar("probe_collection/number_of_probes")->read_int();
-    int           nCladeSize    = 0;
-    int           nProbeOffset  = nNumProbes + 1;
-    int*          pMatchCounts  = new int[nNumProbes];
-    int           nProbe;
+
+    AW_color_idx LastColor;
+    bool         bChanged     = false;
+    int          nNumProbes   = aw_root->awar("probe_collection/number_of_probes")->read_int();
+    int          nCladeSize   = 0;
+    int          nProbeOffset = nNumProbes + 1;
+    int*         pMatchCounts = new int[nNumProbes];
+    int          nProbe;
 
     LastColor = disp_device->get_foreground_color(at->gr.gc);
 
@@ -2048,7 +2050,7 @@ void AWT_graphic_tree::drawMatchFlagNames(AP_tree *at, Position& Pen) {
 void AWT_graphic_tree::clickNotifyWhichProbe(AW_device* device, const AW::Position& pos) {
     if (display_probe_collection) {
         AW_pos  click_x       = pos.xpos();
-        AW_pos  click_y       = pos.ypos();
+        AW_pos  click_y       = pos.ypos(); // @@@ use ypos to check if probe present? it is possible to get names reported when clicking into empty space
         int     nNumProbes    = aw_root->awar("probe_collection/number_of_probes")->read_int();
         double  dHalfWidth    = 0.5 * MATCH_COL_WIDTH / device->get_scale();
         double  dWidth        = dHalfWidth * 2;
@@ -2194,7 +2196,7 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
             Position textPos  = Pen + 0.5*Vector((charLimits.width+NT_BOX_WIDTH)*unscale, scaled_font.ascent);
 
             if (display_probe_collection) {
-                drawMatchFlag(at, data, Pen.ypos() - scaled_branch_distance * 0.495, Pen.ypos() + scaled_branch_distance * 0.495);
+                drawMatchFlag(at, Pen.ypos() - scaled_branch_distance * 0.495, Pen.ypos() + scaled_branch_distance * 0.495);
             }
             disp_device->text(at->gr.gc, data, textPos, 0.0, leaf_text_filter, data_len);
 
@@ -2229,7 +2231,7 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
         set_line_attributes_for(at);
 
         if (display_probe_collection) {
-            drawMatchFlag(at, 0, s0.ypos(), s1.ypos());
+            drawMatchFlag(at, s0.ypos(), s1.ypos());
         }
 
         disp_device->set_grey_level(at->gr.gc, grey_level);

@@ -192,7 +192,7 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
 
     void enumerateClade(AP_tree *at, int* pMatchCounts, int& nCladeSize, int nNumProbes);
     void drawMatchFlag(AP_tree *at, bool bPartial, int nProbe, int nProbeOffset, double y1, double y2);
-    void drawMatchFlag(AP_tree *at, const char* pName, double y1, double y2);
+    void drawMatchFlag(AP_tree *at, double y1, double y2);
     void drawMatchFlagNames(AP_tree *at, AW::Position& Pen);
     void clickNotifyWhichProbe(AW_device* device, const AW::Position& pos);
 
