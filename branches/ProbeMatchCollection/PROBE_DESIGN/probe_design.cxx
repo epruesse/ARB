@@ -155,8 +155,10 @@ struct AutoMatchSettings {
 
 static AutoMatchSettings auto_match_cb_settings;
 
-static void probe_match_event(AW_window *aww, ProbeMatchEventParam *event_param); // prototype
-static void update_species_matched_string(AW_root *root, AWT_canvas *ntw);        // prototype
+// prototypes:
+static void       probe_match_event(AW_window *aww, ProbeMatchEventParam *event_param);
+static void       update_species_matched_string(AW_root *root, AWT_canvas *ntw);
+static AW_window *create_probe_match_specificity_control_window(AW_root *root, AWT_canvas *ntw);
 
 static void auto_match_cb(AW_root *root) {
     if (!auto_match_cb_settings.disable) {
@@ -2209,7 +2211,7 @@ struct ArbPM_Context {
 static ArbPM_Context PM_Context;
 
 static void       probe_match_update_probe_list(ArbPM_Context *pContext);
-static AW_window *popup_probe_collection_window_cb(AW_root *pRoot, ArbPM_Context *pContext);
+static AW_window *create_probe_collection_window(AW_root *root, ArbPM_Context *pContext);
 
 struct ArbWriteFile_Context {
     FILE         *pFile;
@@ -2433,7 +2435,7 @@ static void probe_match_with_specificity_event(AW_window *aww, AWT_canvas *ntw) 
         else {
             // Open the Probe Match Specificity dialog to interactively show how the
             // matches target the phylongeny
-            create_probe_match_specificity_control_window(root, ntw);
+            create_probe_match_specificity_control_window(root, ntw)->show();
         }
 
         g_results_manager.updateResults();
@@ -2515,13 +2517,17 @@ AW_window *create_probe_match_with_specificity_window(AW_root *root, AWT_canvas 
         aws->at("match");
         aws->create_button("MATCH", "MATCH", "D");
 
-        aws->callback(makeCreateWindowCallback(popup_probe_collection_window_cb, &PM_Context));
+        aws->callback(makeCreateWindowCallback(create_probe_collection_window, &PM_Context));
         aws->at("edit");
         aws->create_button("EDIT", "EDIT", "E");
 
         aws->callback(makeWindowCallback(probe_match_clear_event, &PM_Context));
         aws->at("clear");
         aws->create_button("CLEAR", "CLEAR", "L");
+
+        aws->callback(makeCreateWindowCallback(create_probe_match_specificity_control_window, ntw));
+        aws->at("control");
+        aws->create_autosize_button("CONTROL", "Display control", "D");
 
         probe_match_update_probe_list(&PM_Context);
     }
@@ -2534,7 +2540,7 @@ AW_window *create_probe_match_with_specificity_window(AW_root *root, AWT_canvas 
 struct ArbPC_Context {
     AW_window         *aww;
     AW_selection_list *selection_id;
-    GBDATA            *gb_main;
+    GBDATA            *gb_main; // @@@ use PM_Context->gb_main
     ArbPM_Context     *PM_Context;
 
     ArbPC_Context()
@@ -2781,102 +2787,78 @@ static void probe_collection_close(AW_window *aww) {
 
 // ----------------------------------------------------------------------------
 
-static AW_window *create_probe_collection_window_ext(AW_root *root, GBDATA *gb_main, ArbPM_Context *pContext) {
+static AW_window *create_probe_collection_window(AW_root *root, ArbPM_Context *pContext) {
     static AW_window_simple *aws = 0;     // the one and only probe match window
     char                     buffer[256];
 
-    if (pContext != 0) {
-        PC_Context.PM_Context = pContext;
+    pd_assert(pContext);
+    PC_Context.PM_Context = pContext;
 
-        if (gb_main == 0) {
-            gb_main = pContext->gb_main;
+    if (!aws) {
+        aws = new AW_window_simple;
+
+        aws->init(root, "PROBE_COLLECTION", "PROBE COLLECTION");
+
+        aws->load_xfig("pd_match_probe_collection.fig");
+
+        aws->callback((AW_CB0)probe_collection_close);
+        aws->at("close");
+        aws->create_button("CLOSE", "CLOSE", "C");
+
+        aws->callback(makeHelpCallback("probespec.hlp"));
+        aws->at("help");
+        aws->create_button("HELP", "HELP", "H");
+
+        AW_selection_list *selection_id;
+
+        aws->at("probes");
+        selection_id = aws->create_selection_list(AWAR_PC_SELECTED_PROBE, 110, 10, false);
+        selection_id->insert_default("", "");
+
+        PC_Context.aww           = aws;
+        PC_Context.selection_id  = selection_id;
+        PC_Context.gb_main       = pContext->gb_main;
+
+        aws->at("string");
+        aws->create_input_field(AWAR_PC_TARGET_STRING, 32);
+
+        aws->at("name");
+        aws->create_input_field(AWAR_PC_TARGET_NAME, 32);
+
+        aws->callback(makeWindowCallback(add_probe_to_collection_event, &PC_Context));
+        aws->at("add");
+        aws->create_button("ADD", "ADD", "A");
+
+        aws->callback(makeWindowCallback(remove_probe_from_collection_event, &PC_Context));
+        aws->at("remove");
+        aws->create_button("REMOVE", "REMOVE", "R");
+
+        aws->callback(makeCreateWindowCallback(probe_collection_load_prompt, &PC_Context));
+        aws->at("open");
+        aws->create_button("LOAD", "LOAD", "L");
+
+        aws->callback(makeCreateWindowCallback(probe_collection_save_prompt, &PC_Context));
+        aws->at("save");
+        aws->create_button("SAVE", "SAVE", "S");
+
+        aws->callback(makeWindowCallback(clear_probe_collection_event, &PC_Context));
+        aws->at("clear");
+        aws->create_button("CLEAR", "CLEAR", "L");
+
+        for (int i = 0 ; i < 16 ; i++) {
+            sprintf(buffer, "%i", i);
+            aws->at(buffer);
+            sprintf(buffer, AWAR_PC_MATCH_WEIGHTS"%i", i);
+            aws->create_input_field(buffer, 4);
         }
+
+        aws->at("width");
+        aws->create_input_field(AWAR_PC_MATCH_WIDTH, 5);
+
+        aws->at("bias");
+        aws->create_input_field(AWAR_PC_MATCH_BIAS, 5);
     }
-
-    if (aws) {
-        return aws;
-    }
-
-    aws = new AW_window_simple;
-
-    aws->init(root, "PROBE_COLLECTION", "PROBE COLLECTION");
-
-    aws->load_xfig("pd_match_probe_collection.fig");
-
-    aws->callback((AW_CB0)probe_collection_close);
-    aws->at("close");
-    aws->create_button("CLOSE", "CLOSE", "C");
-
-    aws->callback(makeHelpCallback("probespec.hlp"));
-    aws->at("help");
-    aws->create_button("HELP", "HELP", "H");
-
-    AW_selection_list *selection_id;
-
-    aws->at("probes");
-    selection_id = aws->create_selection_list(AWAR_PC_SELECTED_PROBE, 110, 10, false);
-    selection_id->insert_default("", "");
-
-    PC_Context.aww           = aws;
-    PC_Context.selection_id  = selection_id;
-    PC_Context.gb_main       = gb_main;
-
-    aws->at("string");
-    aws->create_input_field(AWAR_PC_TARGET_STRING, 32);
-
-    aws->at("name");
-    aws->create_input_field(AWAR_PC_TARGET_NAME, 32);
-
-    aws->callback(makeWindowCallback(add_probe_to_collection_event, &PC_Context));
-    aws->at("add");
-    aws->create_button("ADD", "ADD", "A");
-
-    aws->callback(makeWindowCallback(remove_probe_from_collection_event, &PC_Context));
-    aws->at("remove");
-    aws->create_button("REMOVE", "REMOVE", "R");
-
-    aws->callback(makeCreateWindowCallback(probe_collection_load_prompt, &PC_Context));
-    aws->at("open");
-    aws->create_button("LOAD", "LOAD", "L");
-
-    aws->callback(makeCreateWindowCallback(probe_collection_save_prompt, &PC_Context));
-    aws->at("save");
-    aws->create_button("SAVE", "SAVE", "S");
-
-    aws->callback(makeWindowCallback(clear_probe_collection_event, &PC_Context));
-    aws->at("clear");
-    aws->create_button("CLEAR", "CLEAR", "L");
-
-    for (int i = 0 ; i < 16 ; i++) {
-        sprintf(buffer, "%i", i);
-        aws->at(buffer);
-        sprintf(buffer, AWAR_PC_MATCH_WEIGHTS"%i", i);
-        aws->create_input_field(buffer, 4);
-    }
-
-    aws->at("width");
-    aws->create_input_field(AWAR_PC_MATCH_WIDTH, 5);
-
-    aws->at("bias");
-    aws->create_input_field(AWAR_PC_MATCH_BIAS, 5);
-
     return aws;
-}
-
-// ----------------------------------------------------------------------------
-
-static AW_window *popup_probe_collection_window_cb(AW_root *pRoot, ArbPM_Context *pContext) {
-    AW_window *pWindow = create_probe_collection_window_ext(pRoot, 0, pContext);
-
-    pWindow->activate();
-
-    return (pWindow);
-}
-
-// ----------------------------------------------------------------------------
-
-AW_window *create_probe_collection_window(AW_root *root, GBDATA *gb_main) {
-    return (create_probe_collection_window_ext(root, gb_main, &PM_Context));
 }
 
 // ----------------------------------------------------------------------------
@@ -3175,7 +3157,7 @@ static void text_partially_marked_threshold_changed(Widget text, XtPointer clien
 
 // ----------------------------------------------------------------------------
 
-AW_window *create_probe_match_specificity_control_window(AW_root *root, AWT_canvas *ntw) {
+static AW_window *create_probe_match_specificity_control_window(AW_root *root, AWT_canvas *ntw) {
     Arg     Args[10];
     Widget  Shell;
     Widget  RowColumn;
@@ -3313,3 +3295,4 @@ AW_window *create_probe_match_specificity_control_window(AW_root *root, AWT_canv
 
     return aws;
 }
+

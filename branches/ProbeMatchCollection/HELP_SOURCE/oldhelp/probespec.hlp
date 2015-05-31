@@ -10,7 +10,7 @@ UP      pt_server.hlp
 #************* Title of helpfile !! and start of real helpfile strunk ********
 TITLE		Probe Collection Matching
 
-OCCURRENCE	ARB_NT/PROBES/Probe Collection Matching
+OCCURRENCE	ARB_NT/Probes/Match Probes with Specificity
 
 
 DESCRIPTION
@@ -34,7 +34,7 @@ DESCRIPTION
 		from the collection and start a fresh.
 
 		To save the probe collection to file press the 'SAVE' button and
-		to load a previously created collection press the 'OPEN' button.
+		to load a previously created collection press the 'LOAD' button.
 		Probe collections are stored in a simple XML format so they can
 		be easily created with an external text editor. The file format
 		is detailed below.
@@ -107,11 +107,11 @@ DESCRIPTION
 		indicated with a stippled bar whereas for a full match the bar is
 		solid.
 
-		Choose the 'Probe Collection' item from the 'ARB_NT/PROBES' menu to
+		Choose the 'Probe Collection' item from the 'ARB_NT/Probes' menu to
 		display the PROBE COLLECTION window, the 'Match Probes with Specificity'
-		item from the 'ARB_NT/PROBES' menu to display the MATCH PROBES WITH
+		item from the 'ARB_NT/Probes' menu to display the MATCH PROBES WITH
 		SPECIFICITY window and the 'Match Display Control' item from the
-		'ARB_NT/PROBES' menu to display the MATCH DISPLAY CONTROL window.
+		'ARB_NT/Probes' menu to display the MATCH DISPLAY CONTROL window.
 
 SECTION PROBE COLLECTION XML
 
@@ -140,7 +140,7 @@ NOTES
 		'$ARBHOME/lib/pts' is used for probe target searching not the
 		current database.
 
-		The 'PT_SERVER' database has to be updated ('ARB_NT/PROBES/Probe
+		The 'PT_SERVER' database has to be updated ('ARB_NT/Probes/Probe
 		Admin')	if species entries should be considered for probe target
 		searching which have been added or modified (sequence symbols)
 		later than the date of the most recent 'PT_SERVER' database
