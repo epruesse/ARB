@@ -2195,15 +2195,11 @@ AW_window *create_probe_group_result_window(AW_root *awr, AWT_canvas *ntw) {
 // ----------------------------------------------------------------------------
 
 struct ArbPM_Context {
-    AW_window         *aww;
     AW_selection_list *probes_id;
-    GBDATA            *gb_main;  // @@@ use ntw->gb_main
     AWT_canvas        *ntw;
 
     ArbPM_Context()
-        : aww(NULL),
-          probes_id(NULL),
-          gb_main(NULL),
+        : probes_id(NULL),
           ntw(NULL)
     {}
 };
@@ -2498,10 +2494,8 @@ AW_window *create_probe_match_with_specificity_window(AW_root *root, AWT_canvas 
         probes_id = aws->create_selection_list(AWAR_PMC_SELECTED_PROBE, 110, 10, false);
         probes_id->insert_default("", "");
 
-        PM_Context.aww       = aws;
         PM_Context.probes_id = probes_id;
         PM_Context.ntw       = ntw;
-        PM_Context.gb_main   = ntw->gb_main;
 
         aws->callback(makeWindowCallback(probe_match_with_specificity_edit_event));
         aws->at("results");
@@ -2538,15 +2532,11 @@ AW_window *create_probe_match_with_specificity_window(AW_root *root, AWT_canvas 
 // ----------------------------------------------------------------------------
 
 struct ArbPC_Context {
-    AW_window         *aww;
     AW_selection_list *selection_id;
-    GBDATA            *gb_main; // @@@ use PM_Context->gb_main
     ArbPM_Context     *PM_Context;
 
     ArbPC_Context()
-        : aww(NULL),
-          selection_id(NULL),
-          gb_main(NULL),
+        : selection_id(NULL),
           PM_Context(NULL)
     {}
 };
@@ -2572,13 +2562,14 @@ static void load_probe_collection(AW_window *aww, ArbPC_Context *Context, const 
 
         g_probe_collection.getParameters(weights, dWidth, dBias);
 
-        Context->aww->get_root()->awar(AWAR_PC_MATCH_WIDTH)->write_float(dWidth);
-        Context->aww->get_root()->awar(AWAR_PC_MATCH_BIAS)->write_float(dBias);
+        AW_root *root = AW_root::SINGLETON;
+        root->awar(AWAR_PC_MATCH_WIDTH)->write_float(dWidth);
+        root->awar(AWAR_PC_MATCH_BIAS)->write_float(dBias);
 
         for (cn = 0; cn < 16 ; cn++) {
             sprintf(buffer, AWAR_PC_MATCH_WEIGHTS"%i", cn);
 
-            Context->aww->get_root()->awar(buffer)->write_float(weights[cn]);
+            root->awar(buffer)->write_float(weights[cn]);
         }
 
         const ArbProbePtrList&    rProbeList = g_probe_collection.probeList();
@@ -2587,17 +2578,17 @@ static void load_probe_collection(AW_window *aww, ArbPC_Context *Context, const 
         Context->selection_id->clear();
         Context->selection_id->insert_default("", "");
 
-        Context->aww->get_root()->awar_int(AWAR_PC_NUM_PROBES, 0, AW_ROOT_DEFAULT)->write_int(rProbeList.size());
+        root->awar_int(AWAR_PC_NUM_PROBES, 0, AW_ROOT_DEFAULT)->write_int(rProbeList.size());
 
         for (cn = 0, ProbeIter = rProbeList.begin() ; ProbeIter != rProbeList.end() ; ++ProbeIter) {
             const ArbProbe *pProbe = *ProbeIter;
 
             if (pProbe != 0) {
                 sprintf(buffer, AWAR_PC_PROBE_NAME, cn);
-                Context->aww->get_root()->awar_string(buffer, "", AW_ROOT_DEFAULT)->write_string(pProbe->name().c_str());
+                root->awar_string(buffer, "", AW_ROOT_DEFAULT)->write_string(pProbe->name().c_str());
 
                 sprintf(buffer, AWAR_PC_PROBE_SEQUENCE, cn);
-                Context->aww->get_root()->awar_string(buffer, "", AW_ROOT_DEFAULT)->write_string(pProbe->sequence().c_str());
+                root->awar_string(buffer, "", AW_ROOT_DEFAULT)->write_string(pProbe->sequence().c_str());
 
                 Context->selection_id->insert(pProbe->displayName().c_str(), pProbe->sequence().c_str());
                 Context->selection_id->update();
@@ -2619,17 +2610,18 @@ static void load_probe_collection(AW_window *aww, ArbPC_Context *Context, const 
 
 // ----------------------------------------------------------------------------
 
-static void probe_collection_update_parameters(AW_window *aww) {
+static void probe_collection_update_parameters() {
     int     cn;
     char    buffer[256] = {0};
     double  weights[16] = {0.0};
-    double  dWidth      = aww->get_root()->awar(AWAR_PC_MATCH_WIDTH)->read_float();
-    double  dBias       = aww->get_root()->awar(AWAR_PC_MATCH_BIAS)->read_float();
+    AW_root *root   = AW_root::SINGLETON;
+    double   dWidth = root->awar(AWAR_PC_MATCH_WIDTH)->read_float();
+    double   dBias  = root->awar(AWAR_PC_MATCH_BIAS)->read_float();
 
     for (cn = 0; cn < 16 ; cn++) {
         sprintf(buffer, AWAR_PC_MATCH_WEIGHTS"%i", cn);
 
-        weights[cn] = aww->get_root()->awar(buffer)->read_float();
+        weights[cn] = root->awar(buffer)->read_float();
     }
 
     g_probe_collection.setParameters(weights, dWidth, dBias);
@@ -2637,17 +2629,17 @@ static void probe_collection_update_parameters(AW_window *aww) {
     const ArbProbePtrList&    rProbeList = g_probe_collection.probeList();
     ArbProbePtrListConstIter  ProbeIter;
 
-    aww->get_root()->awar_int(AWAR_PC_NUM_PROBES, 0, AW_ROOT_DEFAULT)->write_int(rProbeList.size());
+    root->awar_int(AWAR_PC_NUM_PROBES, 0, AW_ROOT_DEFAULT)->write_int(rProbeList.size());
 
     for (cn = 0, ProbeIter = rProbeList.begin() ; ProbeIter != rProbeList.end() ; ++ProbeIter) {
         const ArbProbe *pProbe = *ProbeIter;
 
         if (pProbe != 0) {
             sprintf(buffer, AWAR_PC_PROBE_NAME, cn);
-            aww->get_root()->awar_string(buffer, "", AW_ROOT_DEFAULT)->write_string(pProbe->name().c_str());
+            root->awar_string(buffer, "", AW_ROOT_DEFAULT)->write_string(pProbe->name().c_str());
 
             sprintf(buffer, AWAR_PC_PROBE_SEQUENCE, cn);
-            aww->get_root()->awar_string(buffer, "", AW_ROOT_DEFAULT)->write_string(pProbe->sequence().c_str());
+            root->awar_string(buffer, "", AW_ROOT_DEFAULT)->write_string(pProbe->sequence().c_str());
         }
 
         cn++;
@@ -2656,7 +2648,7 @@ static void probe_collection_update_parameters(AW_window *aww) {
 
 // ----------------------------------------------------------------------------
 
-static void save_probe_collection(AW_window *aww, ArbPC_Context *Context, const char * const *awar_filename) {
+static void save_probe_collection(AW_window *aww, const char * const *awar_filename) {
     char *pFileName = aww->get_root()->awar(*awar_filename)->read_string();
 
     struct stat   FileStatus;
@@ -2668,7 +2660,7 @@ static void save_probe_collection(AW_window *aww, ArbPC_Context *Context, const 
     }
 
     if (bWrite) {
-        probe_collection_update_parameters(Context->aww);
+        probe_collection_update_parameters();
         g_probe_collection.saveXML(pFileName);
 
         aww->hide();
@@ -2695,7 +2687,7 @@ static void add_probe_to_collection_event(AW_window *aww, ArbPC_Context *pContex
             selection_id->insert(pProbe->displayName().c_str(), pSequence);
             selection_id->update();
             probe_match_update_probe_list(pContext->PM_Context);
-            probe_collection_update_parameters(aww);
+            probe_collection_update_parameters();
         }
     }
 }
@@ -2721,7 +2713,7 @@ static void remove_probe_from_collection_event(AW_window *aww, ArbPC_Context *pC
             selection_id->update();
             g_probe_collection.remove(pSequence);
             probe_match_update_probe_list(pContext->PM_Context);
-            probe_collection_update_parameters(aww);
+            probe_collection_update_parameters();
         }
     }
 }
@@ -2737,11 +2729,11 @@ static AW_window *probe_collection_load_prompt(AW_root *root, ArbPC_Context *pCo
                                ".", "xpc", &awar_name,
                                makeWindowCallback(load_probe_collection, pContext, (const char*const*)&awar_name));
 }
-static AW_window *probe_collection_save_prompt(AW_root *root, ArbPC_Context *pContext) {
+static AW_window *probe_collection_save_prompt(AW_root *root) {
     static char *awar_name = NULL; // do not free, bound to callback
     return awt_create_load_box(root, "Save", "probe collection",
                                ".", "xpc", &awar_name,
-                               makeWindowCallback(save_probe_collection, pContext, (const char*const*)&awar_name));
+                               makeWindowCallback(save_probe_collection, (const char*const*)&awar_name));
 }
 
 // ----------------------------------------------------------------------------
@@ -2759,29 +2751,32 @@ static void clear_probe_collection_event(AW_window *, ArbPC_Context *pContext) {
 // ----------------------------------------------------------------------------
 
 static void probe_match_update_probe_list(ArbPM_Context *pContext) {
-    if ((pContext != 0) && (pContext->aww != 0)) {
-        const ArbProbePtrList&   rProbeList = g_probe_collection.probeList();
-        ArbProbePtrListConstIter ProbeIter;
+    if (pContext) {
+        AW_selection_list *sellist = pContext->probes_id;
+        if (sellist) {
+            const ArbProbePtrList&   rProbeList = g_probe_collection.probeList();
+            ArbProbePtrListConstIter ProbeIter;
 
-        pContext->probes_id->clear();
-        pContext->probes_id->insert_default("", "");
+            sellist->clear();
+            sellist->insert_default("", "");
 
-        for (ProbeIter = rProbeList.begin() ; ProbeIter != rProbeList.end() ; ++ProbeIter) {
-            const ArbProbe *pProbe = *ProbeIter;
+            for (ProbeIter = rProbeList.begin() ; ProbeIter != rProbeList.end() ; ++ProbeIter) {
+                const ArbProbe *pProbe = *ProbeIter;
 
-            if (pProbe != 0) {
-                pContext->probes_id->insert(pProbe->displayName().c_str(), pProbe->sequence().c_str());
+                if (pProbe != 0) {
+                    sellist->insert(pProbe->displayName().c_str(), pProbe->sequence().c_str());
+                }
             }
-        }
 
-        pContext->probes_id->update();
+            sellist->update();
+        }
     }
 }
 
 // ----------------------------------------------------------------------------
 
 static void probe_collection_close(AW_window *aww) {
-    probe_collection_update_parameters(aww);
+    probe_collection_update_parameters();
     aww->hide();
 }
 
@@ -2815,9 +2810,7 @@ static AW_window *create_probe_collection_window(AW_root *root, ArbPM_Context *p
         selection_id = aws->create_selection_list(AWAR_PC_SELECTED_PROBE, 110, 10, false);
         selection_id->insert_default("", "");
 
-        PC_Context.aww           = aws;
-        PC_Context.selection_id  = selection_id;
-        PC_Context.gb_main       = pContext->gb_main;
+        PC_Context.selection_id = selection_id;
 
         aws->at("string");
         aws->create_input_field(AWAR_PC_TARGET_STRING, 32);
@@ -2837,7 +2830,7 @@ static AW_window *create_probe_collection_window(AW_root *root, ArbPM_Context *p
         aws->at("open");
         aws->create_button("LOAD", "LOAD", "L");
 
-        aws->callback(makeCreateWindowCallback(probe_collection_save_prompt, &PC_Context));
+        aws->callback(makeCreateWindowCallback(probe_collection_save_prompt));
         aws->at("save");
         aws->create_button("SAVE", "SAVE", "S");
 
