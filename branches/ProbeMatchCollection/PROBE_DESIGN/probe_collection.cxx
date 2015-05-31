@@ -751,7 +751,7 @@ bool ArbProbeCollection::openXML(const char *pFileAndPath, std::string& rErrorMe
 
     rErrorMessage = "";
 
-    if (pFileAndPath != 0) {
+    if (pFileAndPath != 0 && pFileAndPath[0]) {
         struct stat   FileStatus;
         int           nResult = ::stat(pFileAndPath, &FileStatus);
 
@@ -919,7 +919,7 @@ bool ArbProbeCollection::openXML(const char *pFileAndPath, std::string& rErrorMe
         }
     }
     else {
-        rErrorMessage = "Invalid argument";
+        rErrorMessage = "Please select a file to load";
     }
 
     return (bOpened);
