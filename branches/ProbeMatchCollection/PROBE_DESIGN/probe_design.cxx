@@ -2549,20 +2549,11 @@ static ArbPC_Context PC_Context;
 
 // ----------------------------------------------------------------------------
 
-static void probe_collection_open_file_selection_event(Widget dialog, XtPointer client_data, XtPointer call_data) {
-    char                             *pFileName;
-    ArbProbeCollection                ProbeCollection;
-    std::string                       sErrorMessage;
-    XmFileSelectionBoxCallbackStruct *cbs     = (XmFileSelectionBoxCallbackStruct*)call_data;
-    ArbPC_Context                    *Context = (ArbPC_Context*)client_data;
+static void load_probe_collection(AW_window *aww, ArbPC_Context *Context, const char * const *awar_filename) {
+    char *pFileName = aww->get_root()->awar(*awar_filename)->read_string();
 
-    pFileName = (char*)XmStringUnparse(cbs->value,
-                                       XmFONTLIST_DEFAULT_TAG,
-                                       XmCHARSET_TEXT,
-                                       XmCHARSET_TEXT,
-                                       NULL,
-                                       0,
-                                       XmOUTPUT_ALL);
+    ArbProbeCollection ProbeCollection;
+    std::string        sErrorMessage;
 
     if (ProbeCollection.openXML(pFileName, sErrorMessage)) {
         int     cn;
@@ -2572,9 +2563,6 @@ static void probe_collection_open_file_selection_event(Widget dialog, XtPointer 
         double  dBias       = 0.0;
 
         g_probe_collection = ProbeCollection;
-
-        XtUnmanageChild(dialog);
-        XtDestroyWidget(XtParent(dialog));
 
         g_probe_collection.getParameters(weights, dWidth, dBias);
 
@@ -2613,13 +2601,14 @@ static void probe_collection_open_file_selection_event(Widget dialog, XtPointer 
         }
 
         probe_match_update_probe_list(Context->PM_Context);
+        aww->hide();
     }
     else {
         // Print error message
         aw_message(sErrorMessage.c_str());
     }
 
-    XtFree(pFileName);
+    free(pFileName);
 }
 
 // ----------------------------------------------------------------------------
@@ -2661,25 +2650,14 @@ static void probe_collection_update_parameters(AW_window *aww) {
 
 // ----------------------------------------------------------------------------
 
-static void probe_collection_save_file_selection_event(Widget dialog, XtPointer client_data, XtPointer call_data) {
-    char                             *pFileName;
-    XmFileSelectionBoxCallbackStruct *cbs     = (XmFileSelectionBoxCallbackStruct*)call_data;
-    ArbPC_Context                    *Context = (ArbPC_Context*)client_data;
-
-    pFileName = (char*)XmStringUnparse(cbs->value,
-                                       XmFONTLIST_DEFAULT_TAG,
-                                       XmCHARSET_TEXT,
-                                       XmCHARSET_TEXT,
-                                       NULL,
-                                       0,
-                                       XmOUTPUT_ALL);
+static void save_probe_collection(AW_window *aww, ArbPC_Context *Context, const char * const *awar_filename) {
+    char *pFileName = aww->get_root()->awar(*awar_filename)->read_string();
 
     struct stat   FileStatus;
     int           nResult = ::stat(pFileName, &FileStatus);
     bool          bWrite  = true;
 
     if (nResult == 0) {
-        // File already exists. Overwrite?
         bWrite = (aw_question("probe_collection_save", "File already exists. Overwrite?", "YES,NO") == 0);
     }
 
@@ -2687,18 +2665,10 @@ static void probe_collection_save_file_selection_event(Widget dialog, XtPointer 
         probe_collection_update_parameters(Context->aww);
         g_probe_collection.saveXML(pFileName);
 
-        XtUnmanageChild(dialog);
-        XtDestroyWidget(XtParent(dialog));
+        aww->hide();
     }
 
-    XtFree(pFileName);
-}
-
-// ----------------------------------------------------------------------------
-
-static void probe_collection_cancel_file_selection_event(Widget dialog, XtPointer, XtPointer) {
-    XtUnmanageChild(dialog);
-    XtDestroyWidget(XtParent(dialog));
+    free(pFileName);
 }
 
 // ----------------------------------------------------------------------------
@@ -2755,42 +2725,17 @@ static void remove_probe_from_collection_event(AW_window *aww, ArbPC_Context *pC
 // hack to silence 'const char *' passed to motif
 #define CTM(ccp) ((char*)(ccp))
 
-static void open_probe_collection_event(AW_window *aww, ArbPC_Context *pContext) {
-    Widget parent = AW_get_AreaWidget(aww, AW_INFO_AREA);
-    Widget dialog = XmCreateFileSelectionDialog(parent, CTM("open probe collection"), 0, 0);
-
-    XmString  LastDirectory = XmStringCreateLocalized(CTM("~"));
-    XmString  LastMask      = XmStringCreateLocalized(CTM("*.xpc"));
-
-    XtAddCallback(dialog, XmNcancelCallback, probe_collection_cancel_file_selection_event, NULL);
-    XtAddCallback(dialog, XmNokCallback, probe_collection_open_file_selection_event, (XtPointer)pContext);
-    XtVaSetValues(dialog, XmNdirectory, LastDirectory, NULL);
-    XtVaSetValues(dialog, XmNdirMask, LastMask, NULL);
-    XtVaSetValues(dialog, XmNdialogStyle, XmDIALOG_APPLICATION_MODAL, NULL);
-    XtManageChild(dialog);
-
-    XmStringFree(LastDirectory);
-    XmStringFree(LastMask);
+static AW_window *probe_collection_load_prompt(AW_root *root, ArbPC_Context *pContext) {
+    static char *awar_name = NULL; // do not free, bound to callback
+    return awt_create_load_box(root, "Load", "probe collection",
+                               ".", "xpc", &awar_name,
+                               makeWindowCallback(load_probe_collection, pContext, (const char*const*)&awar_name));
 }
-
-// ----------------------------------------------------------------------------
-
-static void save_probe_collection_event(AW_window *aww, ArbPC_Context *pContext) {
-    Widget parent = AW_get_AreaWidget(aww, AW_INFO_AREA);
-    Widget dialog = XmCreateFileSelectionDialog(parent, CTM("save probe collection"), 0, 0);
-
-    XmString  LastDirectory = XmStringCreateLocalized(CTM("~"));
-    XmString  LastMask      = XmStringCreateLocalized(CTM("*.xpc"));
-
-    XtAddCallback(dialog, XmNcancelCallback, probe_collection_cancel_file_selection_event, NULL);
-    XtAddCallback(dialog, XmNokCallback, probe_collection_save_file_selection_event, (XtPointer)pContext);
-    XtVaSetValues(dialog, XmNdirectory, LastDirectory, NULL);
-    XtVaSetValues(dialog, XmNdirMask, LastMask, NULL);
-    XtVaSetValues(dialog, XmNdialogStyle, XmDIALOG_APPLICATION_MODAL, NULL);
-    XtManageChild(dialog);
-
-    XmStringFree(LastDirectory);
-    XmStringFree(LastMask);
+static AW_window *probe_collection_save_prompt(AW_root *root, ArbPC_Context *pContext) {
+    static char *awar_name = NULL; // do not free, bound to callback
+    return awt_create_load_box(root, "Save", "probe collection",
+                               ".", "xpc", &awar_name,
+                               makeWindowCallback(save_probe_collection, pContext, (const char*const*)&awar_name));
 }
 
 // ----------------------------------------------------------------------------
@@ -2890,11 +2835,11 @@ static AW_window *create_probe_collection_window_ext(AW_root *root, GBDATA *gb_m
     aws->at("remove");
     aws->create_button("REMOVE", "REMOVE", "R");
 
-    aws->callback(makeWindowCallback(open_probe_collection_event, &PC_Context));
+    aws->callback(makeCreateWindowCallback(probe_collection_load_prompt, &PC_Context));
     aws->at("open");
-    aws->create_button("OPEN", "OPEN", "O");
+    aws->create_button("LOAD", "LOAD", "L");
 
-    aws->callback(makeWindowCallback(save_probe_collection_event, &PC_Context));
+    aws->callback(makeCreateWindowCallback(probe_collection_save_prompt, &PC_Context));
     aws->at("save");
     aws->create_button("SAVE", "SAVE", "S");
 
