@@ -276,6 +276,8 @@ AW_awar::AW_awar(AW_VARIABLE_TYPE var_type, const char *var_name,
     : callback_list(NULL),
       target_list(NULL),
       refresh_list(NULL),
+      callback_time_sum(0.0),
+      callback_time_count(0),
 #if defined(DEBUG)
       is_global(false),
 #endif
@@ -577,7 +579,25 @@ AW_awar *AW_awar::unmap() {
 }
 
 void AW_awar::run_callbacks() {
-    if (allowed_to_run_callbacks) AW_root_cblist::call(callback_list, root);
+    if (allowed_to_run_callbacks) {
+        clock_t start = clock();
+
+        AW_root_cblist::call(callback_list, root);
+
+        clock_t end = clock();
+
+        if (start<end) { // ignore overflown
+            double cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+
+            if (callback_time_count>19 && (callback_time_count%2) == 0) {
+                callback_time_count = callback_time_count/2;
+                callback_time_sum   = callback_time_sum/2.0;
+            }
+
+            callback_time_sum += cpu_time_used;
+            callback_time_count++;
+        }
+    }
 }
 
 
