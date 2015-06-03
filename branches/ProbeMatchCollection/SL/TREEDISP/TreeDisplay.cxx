@@ -1902,7 +1902,7 @@ void AWT_graphic_tree::drawMatchFlag(AP_tree *at, double y1, double y2) {
 
     AW_color_idx LastColor;
     bool         bChanged     = false;
-    int          nNumProbes   = aw_root->awar("probe_collection/number_of_probes")->read_int();
+    int          nNumProbes   = aw_root->awar(AWAR_PC_NUM_PROBES)->read_int();
     int          nCladeSize   = 0;
     int          nProbeOffset = nNumProbes + 1;
     int*         pMatchCounts = new int[nNumProbes];
@@ -1916,8 +1916,8 @@ void AWT_graphic_tree::drawMatchFlag(AP_tree *at, double y1, double y2) {
         enumerateClade(at, pMatchCounts, nCladeSize, nNumProbes);
 
         if (!at->is_leaf) {
-            double    dCladeMarkedThreshold           = aw_root->awar("probe_collection/clade_marked_threshold")->read_float();
-            double    dCladePartiallyMarkedThreshold  = aw_root->awar("probe_collection/clade_partially_marked_threshold")->read_float();
+            double    dCladeMarkedThreshold           = aw_root->awar(AWAR_PC_CLADE_MARKED_THRESHOLD)->read_float();
+            double    dCladePartiallyMarkedThreshold  = aw_root->awar(AWAR_PC_CLADE_PARTIALLY_MARKED_THRESHOLD)->read_float();
 
             if (nCladeSize > 0) {
                 int             nMatchedSize          = (int)(nCladeSize * dCladeMarkedThreshold + 0.5);
@@ -1967,7 +1967,7 @@ void AWT_graphic_tree::drawMatchFlagNames(AP_tree *at, Position& Pen) {
     double        dWidth        = dHalfWidth * 2;
     double        y_root        = Pen.ypos();
     AW_color_idx  LastColor     = disp_device->get_foreground_color(at->gr.gc);
-    int           nNumProbes    = aw_root->awar("probe_collection/number_of_probes")->read_int();
+    int           nNumProbes    = aw_root->awar(AWAR_PC_NUM_PROBES)->read_int();
     int           nProbeOffset  = nNumProbes + 1;
     int           nProbe;
     int           nColour;
@@ -1984,7 +1984,7 @@ void AWT_graphic_tree::drawMatchFlagNames(AP_tree *at, Position& Pen) {
 
         char  sAWAR[32] = {0};
 
-        sprintf(sAWAR, "probe_collection/probe%d/Name", nProbe);
+        sprintf(sAWAR, AWAR_PC_PROBE_NAME, nProbe);
 
         char* pProbeName = aw_root->awar(sAWAR)->read_string();
 
@@ -2051,7 +2051,7 @@ void AWT_graphic_tree::clickNotifyWhichProbe(AW_device* device, const AW::Positi
     if (display_probe_collection) {
         AW_pos  click_x       = pos.xpos();
         AW_pos  click_y       = pos.ypos(); // @@@ use ypos to check if probe present? it is possible to get names reported when clicking into empty space
-        int     nNumProbes    = aw_root->awar("probe_collection/number_of_probes")->read_int();
+        int     nNumProbes    = aw_root->awar(AWAR_PC_NUM_PROBES)->read_int();
         double  dHalfWidth    = 0.5 * MATCH_COL_WIDTH / device->get_scale();
         double  dWidth        = dHalfWidth * 2;
         int     nProbeOffset  = nNumProbes + 1;

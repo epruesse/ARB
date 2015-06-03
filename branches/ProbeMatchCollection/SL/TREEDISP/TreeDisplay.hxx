@@ -38,6 +38,18 @@
 #define AWAR_DTREE_DENDRO_ZOOM_TEXT "awt/dtree/dendro/zoomtext"
 #define AWAR_DTREE_DENDRO_XPAD      "awt/dtree/dendro/xpadding"
 
+// ----------------------------------------------------
+// probe collection awars used by TreeDisplay
+// see also ../../PROBE_DESIGN/probe_design.cxx@AWAR_PC_
+
+#define AWAR_PC_NUM_PROBES                       "probe_collection/number_of_probes"
+#define AWAR_PC_CLADE_MARKED_THRESHOLD           "probe_collection/clade_marked_threshold"
+#define AWAR_PC_CLADE_PARTIALLY_MARKED_THRESHOLD "probe_collection/clade_partially_marked_threshold"
+
+#define AWAR_PC_PROBE      "probe_collection/probe%d/"
+#define AWAR_PC_PROBE_NAME AWAR_PC_PROBE "Name"
+
+
 #define NT_BOX_WIDTH      7 // pixel
 #define NT_ROOT_WIDTH     9
 #define NT_SELECTED_WIDTH 11

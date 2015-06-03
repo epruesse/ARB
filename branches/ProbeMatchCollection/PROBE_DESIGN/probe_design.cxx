@@ -93,19 +93,19 @@
 #define AWAR_PD_MATCH_LIM_NMATCH "probe_match/lim_nmatch"
 #define AWAR_PD_MATCH_MAX_RES    "probe_match/maxres"
 
+// --------------------------------
+// probe collection awars
+// see also ../SL/TREEDISP/TreeDisplay.hxx@AWAR_PC_
+
 // probe collection window
 #define AWAR_PC_TARGET_STRING     "probe_collection/target_string"
 #define AWAR_PC_TARGET_NAME       "probe_collection/target_name"
 #define AWAR_PC_MATCH_WEIGHTS     "probe_collection/match_weights/pos"
 #define AWAR_PC_MATCH_WIDTH       "probe_collection/match_weights/width"
 #define AWAR_PC_MATCH_BIAS        "probe_collection/match_weights/bias"
-#define AWAR_PC_NUM_PROBES        "probe_collection/number_of_probes"
-#define AWAR_PC_PROBE             "probe_collection/probe%d"
 
 // probes in the collection
-#define AWAR_PC_PROBE_NAME        "probe_collection/probe%d/Name"
-#define AWAR_PC_PROBE_SEQUENCE    "probe_collection/probe%d/Sequence"
-
+#define AWAR_PC_PROBE_SEQUENCE    AWAR_PC_PROBE "Sequence"
 #define AWAR_PC_SELECTED_PROBE    "tmp/probe_collection/probe"
 
 // probe match collection window
@@ -114,8 +114,6 @@
 
 // probe collection matching control parameters
 #define AWAR_PC_MISMATCH_THRESHOLD               "probe_collection/mismatch_threshold"
-#define AWAR_PC_CLADE_MARKED_THRESHOLD           "probe_collection/clade_marked_threshold"
-#define AWAR_PC_CLADE_PARTIALLY_MARKED_THRESHOLD "probe_collection/clade_partially_marked_threshold"
 
 // ----------------------------------------
 
@@ -2441,11 +2439,6 @@ static void probe_match_with_specificity_event(AW_window *aww, AWT_canvas *ntw) 
 
 // ----------------------------------------------------------------------------
 
-inline void set_probeCollectionDisplay_inCanvas(AWT_canvas *ntw, bool display) {
-    AWT_graphic_tree *agt = DOWNCAST(AWT_graphic_tree*, ntw->gfx);
-    agt->set_probeCollectionDisplay(display);
-}
-
 static void probe_match_clear_event(AW_window *aww, ArbPM_Context *pContext) {
     int action = aw_question("probe_match_with_specificity_clear",
                              "Do you want to clear the probe match results?",
@@ -2971,7 +2964,10 @@ static void update_species_matched_string(AW_root *root, AWT_canvas *ntw) {
     }
 
     LocallyModify<bool> flag(allow_probe_match_event, false);
-    set_probeCollectionDisplay_inCanvas(ntw, display);
+
+    AWT_graphic_tree *agt = DOWNCAST(AWT_graphic_tree*, ntw->gfx);
+    agt->set_probeCollectionDisplay(display);
+
     root->awar(AWAR_TREE_REFRESH)->touch();
 }
 
