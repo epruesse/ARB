@@ -1501,11 +1501,7 @@ ArbMatchResultsManager::ArbMatchResultsManager()
       ResultSetMap(),
       ResultsFileName()
 {
-    MaximumWeight                 = 0.0;
-    MismatchThreshold             = 0.0;
-    CladeMarkedThreshold          = 1.0;
-    CladePartiallyMarkedThreshold = 1.0;
-
+    MaximumWeight = 0.0;
     initFileName();
 }
 
@@ -1516,11 +1512,7 @@ ArbMatchResultsManager::ArbMatchResultsManager(const ArbMatchResultsManager& rCo
       ResultSetMap(rCopy.ResultSetMap),
       ResultsFileName()
 {
-    MaximumWeight                 = rCopy.MaximumWeight;
-    MismatchThreshold             = rCopy.MismatchThreshold;
-    CladeMarkedThreshold          = rCopy.CladeMarkedThreshold;
-    CladePartiallyMarkedThreshold = rCopy.CladePartiallyMarkedThreshold;
-
+    MaximumWeight = rCopy.MaximumWeight;
     updateResults();
     initFileName();
 }

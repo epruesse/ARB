@@ -39,9 +39,7 @@
 #include <arb_strbuf.h>
 #include <arb_strarray.h>
 #include <arb_file.h>
-#include <aw_window_Xm_interface.hxx>
 #include <aw_edit.hxx>
-#include <Xm/FileSB.h>
 
 #include "probe_collection.hxx"
 
@@ -104,7 +102,7 @@
 #define AWAR_PC_MATCH_WIDTH       "probe_collection/match_weights/width"
 #define AWAR_PC_MATCH_BIAS        "probe_collection/match_weights/bias"
 
-// probes in the collection
+// probes in the collection // @@@ should not be stored in awars!
 #define AWAR_PC_PROBE_SEQUENCE    AWAR_PC_PROBE "Sequence"
 #define AWAR_PC_SELECTED_PROBE    "tmp/probe_collection/probe"
 
@@ -154,9 +152,8 @@ struct AutoMatchSettings {
 static AutoMatchSettings auto_match_cb_settings;
 
 // prototypes:
-static void       probe_match_event(AW_window *aww, ProbeMatchEventParam *event_param);
-static void       update_species_matched_string(AW_root *root, AWT_canvas *ntw);
-static AW_window *create_probe_match_specificity_control_window(AW_root *root, AWT_canvas *ntw);
+static void probe_match_event(AW_window *aww, ProbeMatchEventParam *event_param);
+static void update_species_matched_string(AW_root *root, AWT_canvas *ntw);
 
 static void auto_match_cb(AW_root *root) {
     if (!auto_match_cb_settings.disable) {
@@ -1157,7 +1154,6 @@ void create_probe_design_variables(AW_root *root, AW_default props, AW_default d
     root->awar_float (AWAR_PD_DESIGN_EXP_DTEDGE, .5, props);
     root->awar_float (AWAR_PD_DESIGN_EXP_DT,     .5, props);
 
-    int i;
     double default_bonds[16] = {
         0.0, 0.0, 0.5, 1.1,
         0.0, 0.0, 1.5, 0.0,
@@ -1165,7 +1161,7 @@ void create_probe_design_variables(AW_root *root, AW_default props, AW_default d
         1.1, 0.0, 0.9, 0.0
     };
 
-    for (i=0; i<16; i++) {
+    for (int i=0; i<16; i++) {
         root->awar_float(bond_awar_name(i), default_bonds[i], props)->set_minmax(0, 3.0);
     }
     root->awar_float(AWAR_PD_COMMON_EXP_SPLIT,  .5, props);
@@ -1228,9 +1224,9 @@ void create_probe_design_variables(AW_root *root, AW_default props, AW_default d
     root->awar_float(AWAR_PC_MATCH_WIDTH, 1.0, db)->set_minmax(0.01, 100.0);
     root->awar_float(AWAR_PC_MATCH_BIAS,  0.0, db)->set_minmax(-1.0, 1.0);
 
-    root->awar_float(AWAR_PC_MISMATCH_THRESHOLD,               0.0, db);
-    root->awar_float(AWAR_PC_CLADE_MARKED_THRESHOLD,           0.0, db);
-    root->awar_float(AWAR_PC_CLADE_PARTIALLY_MARKED_THRESHOLD, 0.0, db);
+    root->awar_float(AWAR_PC_MISMATCH_THRESHOLD,                 0.0, db)->set_minmax(0, 100); // Note: limits will be modified by probe_match_with_specificity_event
+    root->awar_float(AWAR_PC_CLADE_MARKED_THRESHOLD,           100.0, db)->set_minmax(0, 100);
+    root->awar_float(AWAR_PC_CLADE_PARTIALLY_MARKED_THRESHOLD,   0.0, db)->set_minmax(0, 100);
 
     double default_weights[16] = {0.0};
     double default_width = 1.0;
@@ -1241,18 +1237,19 @@ void create_probe_design_variables(AW_root *root, AW_default props, AW_default d
 
     char buffer[256] = {0};
 
-    for (i = 0; i < 16 ; i++) {
+    for (int i = 0; i < 16 ; i++) {
         sprintf(buffer, AWAR_PC_MATCH_WEIGHTS"%i", i);
+        AW_awar *awar = root->awar_float(buffer, 0.0, db);
 
-        default_weights[i] = root->awar_float(buffer, default_weights[i], db)->read_float();
-        root->awar(buffer)->set_minmax(0,10);
+        awar->set_minmax(0, 10);
+        default_weights[i] = awar->read_float();
     }
 
     g_probe_collection.setParameters(default_weights, default_width, default_bias);
 
     int nitems = root->awar_int(AWAR_PC_NUM_PROBES, 0, db)->read_int();
 
-    for (i = 0; i < nitems ; i++) {
+    for (int i = 0; i < nitems ; i++) {
         char *pProbeName;
         char *pProbeSequence;
 
@@ -2192,6 +2189,39 @@ AW_window *create_probe_group_result_window(AW_root *awr, AWT_canvas *ntw) {
 
 // ----------------------------------------------------------------------------
 
+static AW_window *create_probe_match_specificity_control_window(AW_root *root) {
+    static AW_window_simple *aws = NULL;
+
+    if (!aws) {
+        aws = new AW_window_simple;
+
+        aws->init(root, "MATCH_DISPLAYCONTROL", "MATCH DISPLAY CONTROL");
+
+        aws->auto_space(10, 10);
+        aws->label_length(35);
+
+        const int FIELDSIZE  = 5;
+        const int SCALERSIZE = 500;
+
+        aws->label("Mismatch threshold");
+        aws->create_input_field_with_scaler(AWAR_PC_MISMATCH_THRESHOLD, FIELDSIZE, SCALERSIZE);
+
+        aws->at_newline();
+
+        aws->label("Clade marked threshold");
+        aws->create_input_field_with_scaler(AWAR_PC_CLADE_MARKED_THRESHOLD, FIELDSIZE, SCALERSIZE);
+
+        aws->at_newline();
+
+        aws->label("Clade partially marked threshold");
+        aws->create_input_field_with_scaler(AWAR_PC_CLADE_PARTIALLY_MARKED_THRESHOLD, FIELDSIZE, SCALERSIZE);
+    }
+
+    return aws;
+}
+
+// ----------------------------------------------------------------------------
+
 struct ArbPM_Context {
     AW_selection_list *probes_id;
     AWT_canvas        *ntw;
@@ -2429,10 +2459,18 @@ static void probe_match_with_specificity_event(AW_window *aww, AWT_canvas *ntw) 
         else {
             // Open the Probe Match Specificity dialog to interactively show how the
             // matches target the phylongeny
-            create_probe_match_specificity_control_window(root, ntw)->show();
+            create_probe_match_specificity_control_window(root)->show();
         }
 
+        double oldMaxWeight = g_results_manager.maximumWeight();
         g_results_manager.updateResults();
+        double newMaxWeight = g_results_manager.maximumWeight();
+
+        if (newMaxWeight != oldMaxWeight) {
+            // set new limits for scaler and force current value into limits
+            root->awar(AWAR_PC_MISMATCH_THRESHOLD)->set_minmax(0.0, newMaxWeight)->touch();
+        }
+
         update_species_matched_string(root, ntw); // forces a refresh of the phylogenic tree
     }
 }
@@ -2463,10 +2501,24 @@ static void probe_match_clear_event(AW_window *aww, ArbPM_Context *pContext) {
 
 // ----------------------------------------------------------------------------
 
+static void refresh_tree_cb(AW_root *root) {
+    root->awar(AWAR_TREE_REFRESH)->touch();
+}
+
+static void add_threshold_callbacks(AW_root *root, AWT_canvas *ntw) {
+    RootCallback refreshTreeCallback = makeRootCallback(refresh_tree_cb);
+
+    root->awar(AWAR_PC_MISMATCH_THRESHOLD)->add_callback(makeRootCallback(update_species_matched_string, ntw));
+    root->awar(AWAR_PC_CLADE_MARKED_THRESHOLD)->add_callback(refreshTreeCallback);
+    root->awar(AWAR_PC_CLADE_PARTIALLY_MARKED_THRESHOLD)->add_callback(refreshTreeCallback);
+}
+
 AW_window *create_probe_match_with_specificity_window(AW_root *root, AWT_canvas *ntw) {
     static AW_window_simple *aws = 0; // the one and only probe match window
 
     if (!aws) {
+        add_threshold_callbacks(root, ntw);
+
         aws = new AW_window_simple;
 
         aws->init(root, "PROBE_MATCH_WITH_SPECIFICITY", "PROBE MATCH WITH SPECIFICITY");
@@ -2512,7 +2564,7 @@ AW_window *create_probe_match_with_specificity_window(AW_root *root, AWT_canvas 
         aws->at("clear");
         aws->create_button("CLEAR", "CLEAR", "L");
 
-        aws->callback(makeCreateWindowCallback(create_probe_match_specificity_control_window, ntw));
+        aws->callback(makeCreateWindowCallback(create_probe_match_specificity_control_window));
         aws->at("control");
         aws->create_autosize_button("CONTROL", "Display control", "D");
 
@@ -2849,66 +2901,6 @@ static AW_window *create_probe_collection_window(AW_root *root, ArbPM_Context *p
 
 // ----------------------------------------------------------------------------
 
-#include <Xm/RowColumn.h>
-#include <Xm/Scale.h>
-#include <Xm/Label.h>
-#include <Xm/ToggleB.h>
-#include <Xm/TextF.h>
-
-struct ArbProbeMatchControlContext {
-    AW_root    *root;    // @@@ use aww->get_root()
-    AW_window  *aww;     // probe_match_specificity_control_window
-    GBDATA     *gb_main; // @@@ use ntw->gb_main
-    AWT_canvas *ntw;     // tree canvas
-
-    int    InUpdate;
-    Widget ScaleMismatchThreshold;
-    Widget ScaleMarkedThreshold;
-    Widget ScalePartiallyMarkedThreshold;
-    Widget TextFieldMismatchThresholdValue;
-    Widget TextFieldMarkedThresholdValue;
-    Widget TextFieldPartiallyMarkedThresholdValue;
-    Widget ToggleUpdateOnDrag;
-    bool   UpdateOnDrag;
-
-    ArbProbeMatchControlContext()
-        : root(NULL),
-          aww(NULL),
-          gb_main(NULL),
-          ntw(NULL),
-          InUpdate(0),
-          ScaleMismatchThreshold(0),
-          ScaleMarkedThreshold(0),
-          ScalePartiallyMarkedThreshold(0),
-          TextFieldMismatchThresholdValue(0),
-          TextFieldMarkedThresholdValue(0),
-          TextFieldPartiallyMarkedThresholdValue(0),
-          ToggleUpdateOnDrag(0),
-          UpdateOnDrag(false)
-    {}
-};
-
-// ----------------------------------------------------------------------------
-
-static void textfield_set_value(Widget pWidget, double dValue, int nPrecision) {
-    char  sText[32] = {0};
-
-    ::sprintf(sText, "%.*f", nPrecision, dValue);
-
-    XmTextFieldSetString(pWidget, sText);
-}
-
-// ----------------------------------------------------------------------------
-
-static void toggle_update_on_drag_changed(Widget , XtPointer client_data, XtPointer call_data) {
-    ArbProbeMatchControlContext  *pContext = (ArbProbeMatchControlContext*)client_data;
-    XmToggleButtonCallbackStruct *cbs      = (XmToggleButtonCallbackStruct*)call_data;
-
-    pContext->UpdateOnDrag = (cbs->set == XmSET);
-}
-
-// ----------------------------------------------------------------------------
-
 static void update_species_matched_string(AW_root *root, AWT_canvas *ntw) {
     bool display = false;
     if (g_results_manager.hasResults()) {
@@ -2919,7 +2911,7 @@ static void update_species_matched_string(AW_root *root, AWT_canvas *ntw) {
             GB_push_transaction(ntw->gb_main);
 
             // Write match results to database
-            double  dMismatchThreshold = g_results_manager.scaledMismatchThreshold();
+            double  dMismatchThreshold = root->awar(AWAR_PC_MISMATCH_THRESHOLD)->read_float();
 
             for (GBDATA *gb_species = GBT_first_species(ntw->gb_main) ;
                  gb_species ;
@@ -2969,319 +2961,5 @@ static void update_species_matched_string(AW_root *root, AWT_canvas *ntw) {
     agt->set_probeCollectionDisplay(display);
 
     root->awar(AWAR_TREE_REFRESH)->touch();
-}
-
-// ----------------------------------------------------------------------------
-
-static void scale_mismatch_threshold_changed(Widget, XtPointer client_data, XtPointer call_data) {
-    ArbProbeMatchControlContext *pContext = (ArbProbeMatchControlContext*)client_data;
-    AW_root                     *root     = pContext->root;
-    XmScaleCallbackStruct       *cbs      = (XmScaleCallbackStruct*)call_data;
-
-    if (pContext->InUpdate == 0) {
-        g_results_manager.mismatchThreshold(cbs->value * 0.001);
-
-        pContext->InUpdate++;
-
-        textfield_set_value(pContext->TextFieldMismatchThresholdValue, g_results_manager.scaledMismatchThreshold(), 3);
-        root->awar(AWAR_PC_MISMATCH_THRESHOLD)->write_float(g_results_manager.scaledMismatchThreshold());
-
-        pContext->InUpdate--;
-
-        if ((cbs->reason != XmCR_DRAG) || pContext->UpdateOnDrag) {
-            update_species_matched_string(root, pContext->ntw); // forces a refresh of the phylogenic tree
-        }
-    }
-}
-
-// ----------------------------------------------------------------------------
-
-static void scale_marked_threshold_changed(Widget, XtPointer client_data, XtPointer call_data) {
-    ArbProbeMatchControlContext *pContext = (ArbProbeMatchControlContext*)client_data;
-    AW_root                     *root     = pContext->root;
-    XmScaleCallbackStruct       *cbs      = (XmScaleCallbackStruct*)call_data;
-
-    if (pContext->InUpdate == 0) {
-        g_results_manager.cladeMarkedThreshold(cbs->value * 0.001);
-
-        pContext->InUpdate++;
-
-        textfield_set_value(pContext->TextFieldMarkedThresholdValue, g_results_manager.cladeMarkedThreshold() * 100.0, 1);
-        root->awar(AWAR_PC_CLADE_MARKED_THRESHOLD)->write_float(g_results_manager.cladeMarkedThreshold());
-
-        pContext->InUpdate--;
-
-        // Force a refresh of the phylogenic tree
-        if ((cbs->reason != XmCR_DRAG) || pContext->UpdateOnDrag) {
-            root->awar(AWAR_TREE_REFRESH)->touch();
-        }
-    }
-}
-
-// ----------------------------------------------------------------------------
-
-static void scale_partially_marked_threshold_changed(Widget, XtPointer client_data, XtPointer call_data) {
-    ArbProbeMatchControlContext *pContext = (ArbProbeMatchControlContext*)client_data;
-    AW_root                     *root     = pContext->root;
-    XmScaleCallbackStruct       *cbs      = (XmScaleCallbackStruct*)call_data;
-
-    if (pContext->InUpdate == 0) {
-        g_results_manager.cladePartiallyMarkedThreshold(cbs->value * 0.001);
-
-        pContext->InUpdate++;
-
-        textfield_set_value(pContext->TextFieldPartiallyMarkedThresholdValue, g_results_manager.cladePartiallyMarkedThreshold() * 100.0, 1);
-        root->awar(AWAR_PC_CLADE_PARTIALLY_MARKED_THRESHOLD)->write_float(g_results_manager.cladePartiallyMarkedThreshold());
-
-        pContext->InUpdate--;
-
-        // Force a refresh of the phylogenic tree
-        if ((cbs->reason != XmCR_DRAG) || pContext->UpdateOnDrag) {
-            root->awar(AWAR_TREE_REFRESH)->touch();
-        }
-    }
-}
-
-// ----------------------------------------------------------------------------
-
-static bool text_widget_value_changed(Widget                       text,
-                                      Widget                       scale,
-                                      ArbProbeMatchControlContext *pContext,
-                                      double                       dMinimum,
-                                      double                       dMaximum,
-                                      double&                      dValue)
-{
-    bool bChanged = false;
-
-    dValue = 0.0;
-
-    if (pContext->InUpdate == 0) {
-        const char *pText = XmTextFieldGetString(text);
-
-        if (sscanf(pText, "%lg", &dValue)) {
-            bChanged = (dValue >= dMinimum) && (dValue <= dMaximum);
-
-            if (bChanged) {
-                Arg args[1];
-
-                pContext->InUpdate++;
-
-                XtSetArg(args[0], XmNvalue, (int)(1000 *(dValue / (dMaximum - dMinimum))));
-                XtSetValues(scale, args, 1);
-
-                pContext->InUpdate--;
-            }
-        }
-    }
-
-    return (bChanged);
-}
-
-// ----------------------------------------------------------------------------
-
-static void text_mismatch_threshold_changed(Widget text, XtPointer client_data, XtPointer) {
-    ArbProbeMatchControlContext *pContext = (ArbProbeMatchControlContext*)client_data;
-    double                       dValue   = 0.0;
-
-    if (text_widget_value_changed(text,
-                                  pContext->ScaleMismatchThreshold,
-                                  pContext,
-                                  0.0,
-                                  g_results_manager.maximumWeight(),
-                                  dValue))
-    {
-        AW_root *root = pContext->root;
-
-        g_results_manager.mismatchThreshold(dValue / g_results_manager.maximumWeight());
-        root->awar(AWAR_PC_MISMATCH_THRESHOLD)->write_float(g_results_manager.scaledMismatchThreshold());
-        update_species_matched_string(root, pContext->ntw); // forces a refresh of the phylogenic tree
-    }
-}
-
-// ----------------------------------------------------------------------------
-
-static void text_marked_threshold_changed(Widget text, XtPointer client_data, XtPointer) {
-    ArbProbeMatchControlContext *pContext = (ArbProbeMatchControlContext*)client_data;
-    double                       dValue   = 0.0;
-
-    if (text_widget_value_changed(text,
-                                  pContext->ScaleMarkedThreshold,
-                                  pContext,
-                                  0.0,
-                                  100.0,
-                                  dValue))
-    {
-        AW_root *root = pContext->root;
-
-        g_results_manager.cladeMarkedThreshold(dValue / 100.0);
-        root->awar(AWAR_PC_CLADE_MARKED_THRESHOLD)->write_float(g_results_manager.cladeMarkedThreshold());
-
-        // Force a refresh of the phylogenic tree
-        root->awar(AWAR_TREE_REFRESH)->touch();
-    }
-}
-
-// ----------------------------------------------------------------------------
-
-static void text_partially_marked_threshold_changed(Widget text, XtPointer client_data, XtPointer) {
-    ArbProbeMatchControlContext *pContext = (ArbProbeMatchControlContext*)client_data;
-    double                       dValue   = 0.0;
-
-    if (text_widget_value_changed(text,
-                                  pContext->ScalePartiallyMarkedThreshold,
-                                  pContext,
-                                  0.0,
-                                  100.0,
-                                  dValue))
-    {
-        AW_root *root = pContext->root;
-
-        g_results_manager.cladePartiallyMarkedThreshold(dValue / 100.0);
-        root->awar(AWAR_PC_CLADE_PARTIALLY_MARKED_THRESHOLD)->write_float(g_results_manager.cladePartiallyMarkedThreshold());
-
-        // Force a refresh of the phylogenic tree
-        root->awar(AWAR_TREE_REFRESH)->touch();
-    }
-}
-
-// ----------------------------------------------------------------------------
-
-static AW_window *create_probe_match_specificity_control_window(AW_root *root, AWT_canvas *ntw) {
-    Arg     Args[10];
-    Widget  Shell;
-    Widget  RowColumn;
-
-    static ArbProbeMatchControlContext Context;
-    static AW_window_simple *aws = 0;
-
-    if (aws) {
-        Context.InUpdate++;
-
-        textfield_set_value(Context.TextFieldMismatchThresholdValue, g_results_manager.scaledMismatchThreshold(), 3);
-        textfield_set_value(Context.TextFieldMarkedThresholdValue, g_results_manager.cladeMarkedThreshold() * 100.0, 1);
-        textfield_set_value(Context.TextFieldPartiallyMarkedThresholdValue, g_results_manager.cladePartiallyMarkedThreshold() * 100.0, 1);
-
-        update_species_matched_string(root, ntw);
-
-        Context.InUpdate--;
-
-        return aws;
-    }
-
-    aws = new AW_window_simple;
-
-    Context.aww     = aws;
-    Context.root    = root;
-    Context.ntw     = ntw;
-    Context.gb_main = ntw->gb_main;
-
-    aws->init(root, "MATCH_DISPLAY_CONTROL", "MATCH DISPLAY CONTROL");
-
-    Shell = AW_get_AreaWidget(aws, AW_INFO_AREA);
-
-    XtSetArg(Args[0], XmNnumColumns,  2);
-    XtSetArg(Args[1], XmNorientation, XmVERTICAL);
-    XtSetArg(Args[2], XmNpacking,     XmPACK_COLUMN);
-    XtSetArg(Args[3], XmNspacing,     7);
-
-    RowColumn = XmCreateRowColumn(Shell, CTM("rowcolumn"), Args, 4);
-
-    XmString sTitle;
-
-    XtSetArg(Args[0], XmNorientation, XmHORIZONTAL);
-    XtSetArg(Args[1], XmNscaleWidth,  400);
-    XtSetArg(Args[2], XmNshowValue,   False);
-    XtSetArg(Args[3], XmNmaximum,     1000);
-    XtSetArg(Args[4], XmNminimum,     0);
-    XtSetArg(Args[5], XmNvalue, (int)(g_results_manager.mismatchThreshold() * 1000.0));
-
-    sTitle = XmStringCreateLocalized(CTM("Mismatch threshold"));
-    XtSetArg(Args[6], XmNtitleString, sTitle);
-
-    Context.ScaleMismatchThreshold = XmCreateScale(RowColumn, CTM("MismatchThreshold"), Args, 7);
-    XtAddCallback(Context.ScaleMismatchThreshold, XmNvalueChangedCallback, scale_mismatch_threshold_changed, (XtPointer)&Context);
-    XtAddCallback(Context.ScaleMismatchThreshold, XmNdragCallback, scale_mismatch_threshold_changed, (XtPointer)&Context);
-    XtManageChild(Context.ScaleMismatchThreshold);
-
-    XmStringFree(sTitle);
-
-    XtSetArg(Args[5], XmNvalue, (int)(g_results_manager.cladeMarkedThreshold() * 1000.0));
-
-    sTitle = XmStringCreateLocalized(CTM("Clade marked threshold"));
-    XtSetArg(Args[6], XmNtitleString, sTitle);
-
-    Context.ScaleMarkedThreshold = XmCreateScale(RowColumn, CTM("MarkedThreshold"), Args, 7);
-    XtAddCallback(Context.ScaleMarkedThreshold, XmNvalueChangedCallback, scale_marked_threshold_changed, (XtPointer)&Context);
-    XtAddCallback(Context.ScaleMarkedThreshold, XmNdragCallback, scale_marked_threshold_changed, (XtPointer)&Context);
-    XtManageChild(Context.ScaleMarkedThreshold);
-
-    XmStringFree(sTitle);
-
-    XtSetArg(Args[5], XmNvalue, (int)(g_results_manager.cladePartiallyMarkedThreshold() * 1000.0));
-
-    sTitle = XmStringCreateLocalized(CTM("Clade partially marked threshold"));
-    XtSetArg(Args[6], XmNtitleString, sTitle);
-
-    Context.ScalePartiallyMarkedThreshold = XmCreateScale(RowColumn, CTM("PartiallyMarkedThreshold"), Args, 7);
-    XtAddCallback(Context.ScalePartiallyMarkedThreshold, XmNvalueChangedCallback, scale_partially_marked_threshold_changed, (XtPointer)&Context);
-    XtAddCallback(Context.ScalePartiallyMarkedThreshold, XmNdragCallback, scale_partially_marked_threshold_changed, (XtPointer)&Context);
-    XtManageChild(Context.ScalePartiallyMarkedThreshold);
-
-    XmStringFree(sTitle);
-
-    XtSetArg(Args[0], XmNindicatorType,         XmN_OF_MANY);
-    XtSetArg(Args[1], XmNindicatorOn,           XmINDICATOR_CHECK_BOX);
-    XtSetArg(Args[2], XmNset,                   XmSET);
-
-    Context.ToggleUpdateOnDrag = XmCreateToggleButton(RowColumn, CTM("Update on drag"), Args, 3);
-    XtAddCallback(Context.ToggleUpdateOnDrag, XmNvalueChangedCallback, toggle_update_on_drag_changed, (XtPointer)&Context);
-    XtManageChild(Context.ToggleUpdateOnDrag);
-
-    Context.UpdateOnDrag = true;
-
-    XtSetArg(Args[0], XmNlabelType,   XmSTRING);
-    XtSetArg(Args[1], XmNalignment,   XmALIGNMENT_BEGINNING);
-
-    Context.TextFieldMismatchThresholdValue = XmCreateTextField(RowColumn, CTM("TextFieldMismatchThresholdValue"), Args, 2);
-    XtAddCallback(Context.TextFieldMismatchThresholdValue, XmNvalueChangedCallback, text_mismatch_threshold_changed, (XtPointer)&Context);
-    XtManageChild(Context.TextFieldMismatchThresholdValue);
-
-    Context.TextFieldMarkedThresholdValue = XmCreateTextField(RowColumn, CTM("TextFieldMarkedThresholdValue"), Args, 2);
-    XtAddCallback(Context.TextFieldMarkedThresholdValue, XmNvalueChangedCallback, text_marked_threshold_changed, (XtPointer)&Context);
-    XtManageChild(Context.TextFieldMarkedThresholdValue);
-
-    Context.TextFieldPartiallyMarkedThresholdValue = XmCreateTextField(RowColumn, CTM("TextFieldPartiallyMarkedThresholdValue"), Args, 2);
-    XtAddCallback(Context.TextFieldPartiallyMarkedThresholdValue, XmNvalueChangedCallback, text_partially_marked_threshold_changed, (XtPointer)&Context);
-    XtManageChild(Context.TextFieldPartiallyMarkedThresholdValue);
-
-    XtManageChild(RowColumn);
-
-    aws->show();
-
-    Dimension nWidth  = 0;
-    Dimension nHeight = 0;
-
-    XtSetArg(Args[0], XmNwidth,  &nWidth);
-    XtSetArg(Args[1], XmNheight, &nHeight);
-
-    XtGetValues(RowColumn, Args, 2);
-
-    aws->set_window_size(nWidth, nHeight);
-
-    Context.InUpdate++;
-
-    textfield_set_value(Context.TextFieldMismatchThresholdValue, g_results_manager.scaledMismatchThreshold(), 3);
-    textfield_set_value(Context.TextFieldMarkedThresholdValue, g_results_manager.cladeMarkedThreshold() * 100.0, 1);
-    textfield_set_value(Context.TextFieldPartiallyMarkedThresholdValue, g_results_manager.cladePartiallyMarkedThreshold() * 100.0, 1);
-
-    root->awar(AWAR_PC_MISMATCH_THRESHOLD)->write_float(g_results_manager.scaledMismatchThreshold());
-    root->awar(AWAR_PC_CLADE_MARKED_THRESHOLD)->write_float(g_results_manager.cladeMarkedThreshold());
-    root->awar(AWAR_PC_CLADE_PARTIALLY_MARKED_THRESHOLD)->write_float(g_results_manager.cladePartiallyMarkedThreshold());
-
-    update_species_matched_string(root, ntw);
-
-    Context.InUpdate--;
-
-    return aws;
 }
 

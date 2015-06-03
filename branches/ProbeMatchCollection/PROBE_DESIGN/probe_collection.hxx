@@ -630,13 +630,10 @@ typedef bool (*ArbMatchResultsEnumCallback)(void *pContext, const char *pResult,
 // ----------------------------------------------------------------------------
 class ArbMatchResultsManager {
 private:
-    ArbMatchResultPtrByStringMultiMap         ResultsMap;
-    ArbMatchResultSetByStringMap              ResultSetMap;
-    double                                    MaximumWeight;
-    double                                    MismatchThreshold;
-    double                                    CladeMarkedThreshold;
-    double                                    CladePartiallyMarkedThreshold;
-    std::string                               ResultsFileName;
+    ArbMatchResultPtrByStringMultiMap ResultsMap;
+    ArbMatchResultSetByStringMap      ResultSetMap;
+    double                            MaximumWeight;
+    std::string                       ResultsFileName;
 
 protected:
     void flush();
@@ -657,15 +654,6 @@ public:
     const ArbMatchResultSetByStringMap&      resultSetMap() const;
 
     double maximumWeight() const;
-
-    double mismatchThreshold() const;
-    double scaledMismatchThreshold() const;
-    double cladeMarkedThreshold() const;
-    double cladePartiallyMarkedThreshold() const;
-
-    void mismatchThreshold(double dThreshold);
-    void cladeMarkedThreshold(double dThreshold);
-    void cladePartiallyMarkedThreshold(double dThreshold);
 
     int enumerateResults(ArbMatchResultsEnumCallback pCallback, void *pContext, bool& bAborted);
 
@@ -691,48 +679,6 @@ inline const ArbMatchResultSetByStringMap& ArbMatchResultsManager::resultSetMap(
 
 inline double ArbMatchResultsManager::maximumWeight() const {
     return (MaximumWeight);
-}
-
-// ----------------------------------------------------------------------------
-
-inline double ArbMatchResultsManager::mismatchThreshold() const {
-    return (MismatchThreshold);
-}
-
-// ----------------------------------------------------------------------------
-
-inline double ArbMatchResultsManager::scaledMismatchThreshold() const {
-    return (MismatchThreshold * MaximumWeight);
-}
-
-// ----------------------------------------------------------------------------
-
-inline double ArbMatchResultsManager::cladeMarkedThreshold() const {
-    return (CladeMarkedThreshold);
-}
-
-// ----------------------------------------------------------------------------
-
-inline double ArbMatchResultsManager::cladePartiallyMarkedThreshold() const {
-    return (CladePartiallyMarkedThreshold);
-}
-
-// ----------------------------------------------------------------------------
-
-inline void ArbMatchResultsManager::mismatchThreshold(double dThreshold) {
-    MismatchThreshold = dThreshold;
-}
-
-// ----------------------------------------------------------------------------
-
-inline void ArbMatchResultsManager::cladeMarkedThreshold(double dThreshold) {
-    CladeMarkedThreshold = dThreshold;
-}
-
-// ----------------------------------------------------------------------------
-
-inline void ArbMatchResultsManager::cladePartiallyMarkedThreshold(double dThreshold) {
-    CladePartiallyMarkedThreshold = dThreshold;
 }
 
 // ----------------------------------------------------------------------------
