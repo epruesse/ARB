@@ -8,10 +8,6 @@
 //                                                                 //
 // =============================================================== //
 
-// Hack to get around not having access to get_window_size(). I presume this
-// will be fixed when sliders are natively supported by the arb window layer
-#define IN_ARB_WINDOW
-
 #include "SaiProbeVisualization.hxx"
 #include "probe_match_parser.hxx"
 
@@ -2764,9 +2760,6 @@ static void remove_probe_from_collection_event(AW_window *aww, ArbPC_Context *pC
 }
 
 // ----------------------------------------------------------------------------
-
-// hack to silence 'const char *' passed to motif
-#define CTM(ccp) ((char*)(ccp))
 
 static AW_window *probe_collection_load_prompt(AW_root *root, ArbPC_Context *pContext) {
     static char *awar_name = NULL; // do not free, bound to callback
