@@ -84,6 +84,10 @@ static void aw_cp_awar_2_widget_cb(AW_root *root, AW_widget_refresh_cb *widgetli
                 break;
             case AW_WIDGET_SELECTION_LIST:
                 ((AW_selection_list *)widgetlist->cd)->refresh();
+                break;
+            case AW_WIDGET_SCALER:
+                widgetlist->aw->update_scaler(widgetlist->widget, widgetlist->awar, (AW_ScalerType)widgetlist->cd);
+                break;
             default:
                 break;
         }
