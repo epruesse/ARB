@@ -1916,8 +1916,8 @@ void AWT_graphic_tree::drawMatchFlag(AP_tree *at, double y1, double y2) {
         enumerateClade(at, pMatchCounts, nCladeSize, nNumProbes);
 
         if (!at->is_leaf) {
-            double    dCladeMarkedThreshold           = aw_root->awar(AWAR_PC_CLADE_MARKED_THRESHOLD)->read_float();
-            double    dCladePartiallyMarkedThreshold  = aw_root->awar(AWAR_PC_CLADE_PARTIALLY_MARKED_THRESHOLD)->read_float();
+            double    dCladeMarkedThreshold           = aw_root->awar(AWAR_PC_CLADE_MARKED_THRESHOLD)->read_float() * 0.01;
+            double    dCladePartiallyMarkedThreshold  = aw_root->awar(AWAR_PC_CLADE_PARTIALLY_MARKED_THRESHOLD)->read_float() * 0.01;
 
             if (nCladeSize > 0) {
                 int             nMatchedSize          = (int)(nCladeSize * dCladeMarkedThreshold + 0.5);
@@ -1961,7 +1961,7 @@ void AWT_graphic_tree::drawMatchFlag(AP_tree *at, double y1, double y2) {
 
 void AWT_graphic_tree::drawMatchFlagNames(AP_tree *at, Position& Pen) {
     td_assert(display_probe_collection);
-    
+
     double        x;
     double        dHalfWidth    = 0.5 * MATCH_COL_WIDTH / disp_device->get_scale();
     double        dWidth        = dHalfWidth * 2;
