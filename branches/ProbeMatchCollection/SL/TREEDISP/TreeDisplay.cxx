@@ -1347,7 +1347,9 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
     if (event.type() == AW_Keyboard_Press) return handle_key(device, event);
 
     // @@@ move code below into separate member function handle_mouse()
-    if (event.button() == AW_BUTTON_NONE) return;
+    if (event.button() == AW_BUTTON_NONE ||
+        event.button() == AW_WHEEL_UP ||
+        event.button() == AW_WHEEL_DOWN) return;
     td_assert(event.button() == AW_BUTTON_LEFT || event.button() == AW_BUTTON_RIGHT); // nothing else should come here
 
     ClickedTarget clicked(this, event.best_click(preferredForCommand(event.cmd())));
