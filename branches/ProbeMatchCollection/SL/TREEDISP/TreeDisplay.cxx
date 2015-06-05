@@ -1332,17 +1332,6 @@ static AWT_graphic_event::ClickPreference preferredForCommand(AWT_COMMAND_MODE m
     }
 }
 
-static void clickNotifyWhichProbe(int nProbe) {
-    char  sAWAR[32] = {0};
-    sprintf(sAWAR, "probe_collection/probe%d/Name", nProbe);
-    char* pProbeName = AW_root::SINGLETON->awar(sAWAR)->read_string(); // @@@ elim
-
-    if (pProbeName != 0) {
-        aw_message(pProbeName);
-        free(pProbeName);
-    }
-}
-
 void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& event) {
     td_assert(event.button()!=AW_BUTTON_MIDDLE); // shall be handled by caller
 
@@ -1445,8 +1434,8 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
             return;
         }
         else if (clicked.is_matchflag()) {
-            if (clicked.element()->distance<=3) { // accept 3 pixel distance
-                clickNotifyWhichProbe(clicked.get_probeindex());
+            if (clicked.element()->distance <= 3) { // accept 3 pixel distance
+                aw_message_if(pcoll.get_name(clicked.get_probeindex()));
             }
             return;
         }
@@ -2028,10 +2017,7 @@ void AWT_graphic_tree::drawMatchFlagNames(AP_tree *at, Position& Pen) {
         // Loop through probes in reverse probe collection order so the match columns
         // match the probe list
         for (int nProbe = pcoll.numProbes - 1 ; nProbe >= 0 ; nProbe--) {
-            char  sAWAR[32] = {0};
-            sprintf(sAWAR, AWAR_PC_PROBE_NAME, nProbe);
-            char* pProbeName = aw_root->awar(sAWAR)->read_string(); // @@@ elim
-
+            const char *pProbeName = pcoll.get_name(nProbe);
             if (pProbeName != 0) {
                 int nColour = nProbe % 16;
                 clickflag.set_cd1(nProbe);
@@ -2040,8 +2026,6 @@ void AWT_graphic_tree::drawMatchFlagNames(AP_tree *at, Position& Pen) {
                 disp_device->line(at->gr.gc, pl1, pl2, match_flag_filter);
                 disp_device->box(at->gr.gc, true, mbox, match_flag_filter);
                 disp_device->text(at->gr.gc, pProbeName, mbox.upper_left_corner()+b2t, 0, match_flag_filter, strlen(pProbeName));
-
-                free(pProbeName);
             }
 
             pl1.movex(toNext.x());

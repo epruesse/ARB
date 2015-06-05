@@ -99,8 +99,11 @@
 #define AWAR_PC_MATCH_BIAS        "probe_collection/match_weights/bias"
 
 // probes in the collection // @@@ should not be stored in awars!
-#define AWAR_PC_PROBE_SEQUENCE    AWAR_PC_PROBE "Sequence"
-#define AWAR_PC_SELECTED_PROBE    "tmp/probe_collection/probe"
+#define AWAR_PC_PROBE      "probe_collection/probe%d/"
+#define AWAR_PC_PROBE_NAME     AWAR_PC_PROBE "Name"
+#define AWAR_PC_PROBE_SEQUENCE AWAR_PC_PROBE "Sequence"
+
+#define AWAR_PC_SELECTED_PROBE "tmp/probe_collection/probe"
 
 // probe match collection window
 #define AWAR_PMC_SELECTED_PROBE   "tmp/probe_match_collection/probe"
@@ -2894,6 +2897,12 @@ static AW_window *create_probe_collection_window(AW_root *root, ArbPM_Context *p
 
 // ----------------------------------------------------------------------------
 
+static const char *getProbeName(int nProbe) {
+    char  sAWAR[32] = {0};
+    sprintf(sAWAR, AWAR_PC_PROBE_NAME, nProbe);
+    return AW_root::SINGLETON->awar(sAWAR)->read_char_pntr();
+}
+
 static void update_species_matched_string(AW_root *root, AWT_canvas *ntw) {
     bool display = false;
     if (g_results_manager.hasResults()) {
@@ -2951,7 +2960,7 @@ static void update_species_matched_string(AW_root *root, AWT_canvas *ntw) {
     LocallyModify<bool> flag(allow_probe_match_event, false);
 
     AWT_graphic_tree *agt = DOWNCAST(AWT_graphic_tree*, ntw->gfx);
-    agt->set_probeCollectionDisplay(display);
+    agt->set_probeCollectionDisplay(display, getProbeName);
 
     root->awar(AWAR_TREE_REFRESH)->touch();
 }
