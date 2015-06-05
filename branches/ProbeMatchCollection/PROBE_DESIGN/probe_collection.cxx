@@ -70,8 +70,7 @@ void ArbStringCache::close() {
     }
 
     if (ReadBuffer != 0) {
-        delete ReadBuffer;
-
+        delete [] ReadBuffer;
         ReadBuffer = 0;
     }
 
@@ -84,7 +83,7 @@ void ArbStringCache::close() {
 bool ArbStringCache::allocReadBuffer(int nLength) const {
     if (nLength + 1 > ReadBufferLength) {
         if (ReadBuffer != 0) {
-            delete ReadBuffer;
+            delete [] ReadBuffer;
         }
 
         ReadBufferLength  = nLength + 1;
