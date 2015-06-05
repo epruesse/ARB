@@ -1679,6 +1679,7 @@ AWT_graphic_tree::AWT_graphic_tree(AW_root *aw_root_, GBDATA *gb_main_, AD_map_v
       other_text_filter   (AW_SCREEN|AW_PRINTER|AW_SIZE_UNSCALED),
       ruler_filter        (AW_SCREEN|AW_CLICK|AW_PRINTER),          // appropriate size-filter added manually in code
       root_filter         (AW_SCREEN|AW_PRINTER_EXT),
+      match_flag_filter   (AW_SCREEN|AW_CLICK|AW_PRINTER_EXT|AW_SIZE_UNSCALED),
       display_probe_collection(false)
 {
     td_assert(gb_main_);
@@ -1921,7 +1922,7 @@ void AWT_graphic_tree::drawMatchFlag(AP_tree *at, const class MatchFlagPosition&
         disp_device->set_fill_stipple(at->gr.gc);
     }
 
-    disp_device->box(at->gr.gc, true, flag.pos(nProbe), flag.size(), mark_filter);
+    disp_device->box(at->gr.gc, true, flag.pos(nProbe), flag.size(), match_flag_filter);
 
     if (bPartial) {
         disp_device->set_fill_solid(at->gr.gc);
@@ -1995,13 +1996,12 @@ void AWT_graphic_tree::detectAndDrawMatchFlags(AP_tree *at, const double y1, con
 void AWT_graphic_tree::drawMatchFlagNames(AP_tree *at, Position& Pen) {
     td_assert(display_probe_collection);
 
-    int nNumProbes   = aw_root->awar(AWAR_PC_NUM_PROBES)->read_int();
-    int nProbeOffset = nNumProbes + 1;
+    int nNumProbes = aw_root->awar(AWAR_PC_NUM_PROBES)->read_int();
+
+    MatchFlagXPos flag(disp_device->get_scale(), nNumProbes);
 
     if (disp_device->type() != AW_DEVICE_SIZE) {
         const AW_color_idx LastColor = disp_device->get_foreground_color(at->gr.gc);
-
-        MatchFlagXPos flag(disp_device->get_scale(), nNumProbes);
 
         Position pl1(flag.centerx(nNumProbes-1), Pen.ypos()); // upper point of thin line
         Pen.movey(scaled_branch_distance);
@@ -2024,9 +2024,9 @@ void AWT_graphic_tree::drawMatchFlagNames(AP_tree *at, Position& Pen) {
                 int nColour = nProbe % 16;
 
                 disp_device->set_foreground_color(at->gr.gc, MatchProbeColourIndex[nColour]);
-                disp_device->line(at->gr.gc, pl1, pl2, mark_filter);
-                disp_device->box(at->gr.gc, true, mbox, mark_filter);
-                disp_device->text(at->gr.gc, pProbeName, mbox.upper_left_corner()+b2t, 0, leaf_text_filter, strlen(pProbeName));
+                disp_device->line(at->gr.gc, pl1, pl2, match_flag_filter);
+                disp_device->box(at->gr.gc, true, mbox, match_flag_filter);
+                disp_device->text(at->gr.gc, pProbeName, mbox.upper_left_corner()+b2t, 0, match_flag_filter, strlen(pProbeName));
 
                 free(pProbeName);
             }
@@ -2040,39 +2040,10 @@ void AWT_graphic_tree::drawMatchFlagNames(AP_tree *at, Position& Pen) {
 
         disp_device->set_foreground_color(at->gr.gc, LastColor);
     }
-    else {
-        // This hack is needed to ensure that the screen size is scaled correctly
-        // to fit the match results which are draw with negative x values.
-
+    else { // just reserve space on size device
         Pen.movey(scaled_branch_distance * (nNumProbes+3));
-
-        AW_device_size* SizeDevice   = (AW_device_size*)disp_device;
-
-        AW::Rectangle  world = SizeDevice->get_size_information();
-        AW_screen_area rect  = SizeDevice->get_area_size();
-
-        AW_pos net_window_width = rect.r - rect.l - exports.get_x_padding();
-        double dK               = -MATCH_COL_WIDTH * (nProbeOffset + 1);
-
-        if (net_window_width < AWT_MIN_WIDTH) {
-            net_window_width = AWT_MIN_WIDTH;
-        }
-
-        double dOffsetX;
-        if (-dK / net_window_width < 0.9) {
-            dOffsetX  = (dK * world.right()) / (dK + net_window_width);
-        }
-        else {
-            dK        = -0.9 * net_window_width;
-            dOffsetX  = (dK * world.right()) / (dK + net_window_width);
-        }
-
-        dOffsetX /= disp_device->get_scale();
-
-        Position pl1(dOffsetX, Pen.ypos());
-        Position pl2(dOffsetX, Pen.ypos());
-
-        disp_device->line(at->gr.gc, pl1, pl2, line_filter);
+        Position leftmost(flag.leftx(0), Pen.ypos());
+        disp_device->line(at->gr.gc, Pen, leftmost, match_flag_filter);
     }
 }
 

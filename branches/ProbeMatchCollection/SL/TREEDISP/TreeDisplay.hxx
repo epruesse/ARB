@@ -175,7 +175,7 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
 
     const AW_bitset line_filter, vert_line_filter, mark_filter, group_bracket_filter, bs_circle_filter;
     const AW_bitset leaf_text_filter, group_text_filter, remark_text_filter, other_text_filter;
-    const AW_bitset ruler_filter, root_filter;
+    const AW_bitset ruler_filter, root_filter, match_flag_filter;
 
     bool nds_show_all;
     bool display_probe_collection;
