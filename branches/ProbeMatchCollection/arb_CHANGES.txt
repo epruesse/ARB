@@ -32,6 +32,7 @@ Major changes for next release:
      - accepts 3 or more consecutive IUPAC codes in DNA
    * added option to cut-off DNA sequence (was done at end of sequence by old version. fixed)
    * fixed several minor bugs
+ - ARB probeSpec: probe matching with specificity (thanks to Paavo Jumppanen)
  - expand zombies in tree (unfold groups)
  - compare taxonomy (and mark differences)
  - external (command line) aligners:
