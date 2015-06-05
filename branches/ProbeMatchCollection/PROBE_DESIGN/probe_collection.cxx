@@ -39,7 +39,8 @@ ArbMatchResultsManager  g_results_manager;
 // ArbStringCache method implementations
 // ----------------------------------------------------------------------------
 void ArbStringCache::open() {
-    char *pTmpFileName = GB_create_tempfile("probeColl");
+    char *uniqueName   = GB_unique_filename("ArbString", "cache");
+    char *pTmpFileName = GB_create_tempfile(uniqueName);
 
     if (pTmpFileName != 0) {
         WriteCacheFile  = fopen(pTmpFileName, "wb");
@@ -47,6 +48,9 @@ void ArbStringCache::open() {
         IsOpen          = ((WriteCacheFile != 0) && (ReadCacheFile != 0));
         FileName        = pTmpFileName;
     }
+
+    free(pTmpFileName);
+    free(uniqueName);
 }
 
 // ----------------------------------------------------------------------------
@@ -1487,12 +1491,15 @@ void ArbMatchResultsManager::flush() {
 // ----------------------------------------------------------------------------
 
 void ArbMatchResultsManager::initFileName() {
-    char *pTmpFileName = tmpnam(0);
+    char *uniqueName   = GB_unique_filename("ArbMatchResults", "txt");
+    char *pTmpFileName = GB_create_tempfile(uniqueName);
 
     if (pTmpFileName != 0) {
-        ResultsFileName  = pTmpFileName;
-        ResultsFileName += ".txt";
+        ResultsFileName = pTmpFileName;
     }
+
+    free(pTmpFileName);
+    free(uniqueName);
 }
 
 // ----------------------------------------------------------------------------
