@@ -137,6 +137,7 @@ ProbeMatchParser::ProbeMatchParser(const char *probe_target, const char *headlin
 
 ProbeMatchParser::~ProbeMatchParser() {
     free(init_error);
+    delete pimpl;
 }
 
 bool ProbeMatchParser::getColumnRange(const char *columnName, int *startCol, int *endCol) const {

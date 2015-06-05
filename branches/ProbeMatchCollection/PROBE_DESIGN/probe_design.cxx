@@ -1669,9 +1669,9 @@ AW_window *create_probe_match_window(AW_root *root, GBDATA *gb_main) {
         selection_id = aws->create_selection_list(AWAR_PD_SELECTED_MATCH, 110, 15, true);
         selection_id->insert_default("****** No results yet *******", "");  // if list is empty -> crashed if new species was selected in ARB_EDIT4
 
-        TypedSelectionList *typed_selection = new TypedSelectionList("match", selection_id, "probe match", "probe_match");
+        static SmartPtr<TypedSelectionList> typed_selection = new TypedSelectionList("match", selection_id, "probe match", "probe_match");
         aws->at("print");
-        aws->callback(makeWindowCallback(create_print_box_for_selection_lists, typed_selection));
+        aws->callback(makeWindowCallback(create_print_box_for_selection_lists, &*typed_selection));
         aws->create_button("PRINT", "PRINT", "P");
 
         aws->at("matchSai");
@@ -2288,7 +2288,7 @@ static void probe_match_with_specificity_event(AW_window *aww, AWT_canvas *ntw) 
         int          last_write_2_tmp    = (int)root->awar(AWAR_PD_MATCH_WRITE2TMP)->read_int();
         int          last_max_mismatches = (int)root->awar(AWAR_MAX_MISMATCHES)->read_int();
         bool         bAborted            = false;
-        std::string  last_target_string(root->awar(AWAR_TARGET_STRING)->read_string());
+        std::string  last_target_string(root->awar(AWAR_TARGET_STRING)->read_char_pntr());
 
         root->awar(AWAR_PD_MATCH_MARKHITS)->write_int(0);
         root->awar(AWAR_PD_MATCH_WRITE2TMP)->write_int(0);
