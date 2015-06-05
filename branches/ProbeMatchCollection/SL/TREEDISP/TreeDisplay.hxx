@@ -178,7 +178,17 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
     const AW_bitset ruler_filter, root_filter, match_flag_filter;
 
     bool nds_show_all;
-    bool display_probe_collection;
+
+    struct pcoll_display_settings {
+        bool display;
+        int  numProbes;
+        struct {
+            double marked;
+            double partiallyMarked;
+        } cladeThreshold;
+
+        pcoll_display_settings() : display(false) {}
+    } pcoll;
 
     AD_map_viewer_cb  map_viewer_cb;
     AWT_command_data  *cmd_data;
@@ -301,7 +311,9 @@ public:
     void show_ruler(AW_device *device, int gc);
     void get_zombies_and_duplicates(int& zomb, int& dups) const { zomb = zombies; dups = duplicates; }
 
-    void set_probeCollectionDisplay(bool show_collection) { display_probe_collection = show_collection; }
+    void set_probeCollectionDisplay(bool show_collection) {
+        pcoll.display = show_collection;
+    }
 
 #if defined(UNIT_TESTS) // UT_DIFF
     friend class fake_AWT_graphic_tree;

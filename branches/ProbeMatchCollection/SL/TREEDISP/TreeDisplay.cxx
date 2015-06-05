@@ -1335,7 +1335,7 @@ static AWT_graphic_event::ClickPreference preferredForCommand(AWT_COMMAND_MODE m
 static void clickNotifyWhichProbe(int nProbe) {
     char  sAWAR[32] = {0};
     sprintf(sAWAR, "probe_collection/probe%d/Name", nProbe);
-    char* pProbeName = AW_root::SINGLETON->awar(sAWAR)->read_string();
+    char* pProbeName = AW_root::SINGLETON->awar(sAWAR)->read_string(); // @@@ elim
 
     if (pProbeName != 0) {
         aw_message(pProbeName);
@@ -1694,8 +1694,7 @@ AWT_graphic_tree::AWT_graphic_tree(AW_root *aw_root_, GBDATA *gb_main_, AD_map_v
       other_text_filter   (AW_SCREEN|AW_PRINTER|AW_SIZE_UNSCALED),
       ruler_filter        (AW_SCREEN|AW_CLICK|AW_PRINTER),          // appropriate size-filter added manually in code
       root_filter         (AW_SCREEN|AW_PRINTER_EXT),
-      match_flag_filter   (AW_SCREEN|AW_CLICK|AW_PRINTER_EXT|AW_SIZE_UNSCALED),
-      display_probe_collection(false)
+      match_flag_filter   (AW_SCREEN|AW_CLICK|AW_PRINTER_EXT|AW_SIZE_UNSCALED)
 {
     td_assert(gb_main_);
 
@@ -1862,7 +1861,7 @@ void AWT_graphic_tree::update(GBDATA *) {
 }
 
 void AWT_graphic_tree::enumerateClade(AP_tree *at, int* pMatchCounts, int& nCladeSize, int nNumProbes) {
-    td_assert(display_probe_collection);
+    td_assert(pcoll.display);
     if (at->is_leaf) {
         if (at->name && (disp_device->get_filter() & leaf_text_filter)) {
             const char* pDB_MatchString = GBT_read_char_pntr(at->gb_node, "matched_string");
@@ -1926,7 +1925,7 @@ public:
 
 
 void AWT_graphic_tree::drawMatchFlag(AP_tree *at, const class MatchFlagPosition& flag, const bool bPartial, const int nProbe) {
-    td_assert(display_probe_collection);
+    td_assert(pcoll.display);
 
     const int nColour = nProbe % 16;
 
@@ -1945,35 +1944,31 @@ void AWT_graphic_tree::drawMatchFlag(AP_tree *at, const class MatchFlagPosition&
 }
 
 void AWT_graphic_tree::detectAndDrawMatchFlags(AP_tree *at, const double y1, const double y2) {
-    td_assert(display_probe_collection);
+    td_assert(pcoll.display);
 
     if (disp_device->type() != AW_DEVICE_SIZE) {
         // Note: extra device scaling needed to show flags is done by drawMatchFlagNames
         const AW_color_idx LastColor  = disp_device->get_foreground_color(at->gr.gc);
         bool               bChanged   = false;
-        const int          nNumProbes = aw_root->awar(AWAR_PC_NUM_PROBES)->read_int();
 
-        MatchFlagPosition flag(disp_device->get_scale(), nNumProbes, y1, y2);
+        MatchFlagPosition flag(disp_device->get_scale(), pcoll.numProbes, y1, y2);
 
-        int *pMatchCounts = new int[nNumProbes];
+        int *pMatchCounts = new int[pcoll.numProbes];
 
         if (pMatchCounts != 0) {
-            memset(pMatchCounts, 0, nNumProbes * sizeof(*pMatchCounts));
+            memset(pMatchCounts, 0, pcoll.numProbes * sizeof(*pMatchCounts));
 
             int nCladeSize = 0;
-            enumerateClade(at, pMatchCounts, nCladeSize, nNumProbes);
+            enumerateClade(at, pMatchCounts, nCladeSize, pcoll.numProbes);
 
             AW_click_cd clickflag(disp_device, (AW_CL)0, (AW_CL)"flag");
 
             if (!at->is_leaf) {
-                const double dCladeMarkedThreshold          = aw_root->awar(AWAR_PC_CLADE_MARKED_THRESHOLD)->read_float() * 0.01;
-                const double dCladePartiallyMarkedThreshold = aw_root->awar(AWAR_PC_CLADE_PARTIALLY_MARKED_THRESHOLD)->read_float() * 0.01;
-
                 if (nCladeSize > 0) {
-                    const int nMatchedSize          = (int)(nCladeSize * dCladeMarkedThreshold + 0.5);
-                    const int nPartiallyMatchedSize = (int)(nCladeSize * dCladePartiallyMarkedThreshold + 0.5);
+                    const int nMatchedSize          = (int)(nCladeSize * pcoll.cladeThreshold.marked + 0.5);
+                    const int nPartiallyMatchedSize = (int)(nCladeSize * pcoll.cladeThreshold.partiallyMarked + 0.5);
 
-                    for (int nProbe = 0 ; nProbe < nNumProbes ; nProbe++) {
+                    for (int nProbe = 0 ; nProbe < pcoll.numProbes ; nProbe++) {
                         bool bMatched      = (pMatchCounts[nProbe] >= nMatchedSize);
                         bool bPartialMatch = false;
 
@@ -1993,7 +1988,7 @@ void AWT_graphic_tree::detectAndDrawMatchFlags(AP_tree *at, const double y1, con
                 }
             }
             else {
-                for (int nProbe = 0 ; nProbe < nNumProbes ; nProbe++) {
+                for (int nProbe = 0 ; nProbe < pcoll.numProbes ; nProbe++) {
                     if (pMatchCounts[nProbe] > 0) {
                         clickflag.set_cd1(nProbe);
                         drawMatchFlag(at, flag, false, nProbe);
@@ -2011,16 +2006,14 @@ void AWT_graphic_tree::detectAndDrawMatchFlags(AP_tree *at, const double y1, con
 }
 
 void AWT_graphic_tree::drawMatchFlagNames(AP_tree *at, Position& Pen) {
-    td_assert(display_probe_collection);
+    td_assert(pcoll.display);
 
-    int nNumProbes = aw_root->awar(AWAR_PC_NUM_PROBES)->read_int();
-
-    MatchFlagXPos flag(disp_device->get_scale(), nNumProbes);
+    MatchFlagXPos flag(disp_device->get_scale(), pcoll.numProbes);
 
     if (disp_device->type() != AW_DEVICE_SIZE) {
         const AW_color_idx LastColor = disp_device->get_foreground_color(at->gr.gc);
 
-        Position pl1(flag.centerx(nNumProbes-1), Pen.ypos()); // upper point of thin line
+        Position pl1(flag.centerx(pcoll.numProbes-1), Pen.ypos()); // upper point of thin line
         Pen.movey(scaled_branch_distance);
         Position pl2(pl1.xpos(), Pen.ypos()); // lower point of thin line
 
@@ -2028,16 +2021,16 @@ void AWT_graphic_tree::drawMatchFlagNames(AP_tree *at, Position& Pen) {
         Vector b2t(2*flag.offset(), scaled_branch_distance); // offset box->text
         Vector toNext(-flag.offset(), scaled_branch_distance); // offset to next box
 
-        Rectangle mbox(Position(flag.leftx(nNumProbes-1), pl2.ypos()), sizeb); // the match box
+        Rectangle mbox(Position(flag.leftx(pcoll.numProbes-1), pl2.ypos()), sizeb); // the match box
 
         AW_click_cd clickflag(disp_device, (AW_CL)0, (AW_CL)"flag");
 
         // Loop through probes in reverse probe collection order so the match columns
         // match the probe list
-        for (int nProbe = nNumProbes - 1 ; nProbe >= 0 ; nProbe--) {
+        for (int nProbe = pcoll.numProbes - 1 ; nProbe >= 0 ; nProbe--) {
             char  sAWAR[32] = {0};
             sprintf(sAWAR, AWAR_PC_PROBE_NAME, nProbe);
-            char* pProbeName = aw_root->awar(sAWAR)->read_string();
+            char* pProbeName = aw_root->awar(sAWAR)->read_string(); // @@@ elim
 
             if (pProbeName != 0) {
                 int nColour = nProbe % 16;
@@ -2056,12 +2049,12 @@ void AWT_graphic_tree::drawMatchFlagNames(AP_tree *at, Position& Pen) {
             mbox.move(toNext);
         }
 
-        Pen.movey(scaled_branch_distance * (nNumProbes+2));
+        Pen.movey(scaled_branch_distance * (pcoll.numProbes+2));
 
         disp_device->set_foreground_color(at->gr.gc, LastColor);
     }
     else { // just reserve space on size device
-        Pen.movey(scaled_branch_distance * (nNumProbes+3));
+        Pen.movey(scaled_branch_distance * (pcoll.numProbes+3));
         Position leftmost(flag.leftx(0), Pen.ypos());
         disp_device->line(at->gr.gc, Pen, leftmost, match_flag_filter);
     }
@@ -2181,7 +2174,7 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
             size_t   data_len = strlen(data);
             Position textPos  = Pen + 0.5*Vector((charLimits.width+NT_BOX_WIDTH)*unscale, scaled_font.ascent);
 
-            if (display_probe_collection) {
+            if (pcoll.display) {
                 detectAndDrawMatchFlags(at, Pen.ypos() - scaled_branch_distance * 0.495, Pen.ypos() + scaled_branch_distance * 0.495);
             }
             disp_device->text(at->gr.gc, data, textPos, 0.0, leaf_text_filter, data_len);
@@ -2216,7 +2209,7 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
 
         set_line_attributes_for(at);
 
-        if (display_probe_collection) {
+        if (pcoll.display) {
             detectAndDrawMatchFlags(at, s0.ypos(), s1.ypos());
         }
 
@@ -2811,6 +2804,12 @@ void AWT_graphic_tree::read_tree_settings() {
     bootstrap_min          = aw_root->awar(AWAR_DTREE_BOOTSTRAP_MIN)->read_int();
 
     freeset(species_name, aw_root->awar(AWAR_SPECIES_NAME)->read_string());
+
+    if (pcoll.display) {
+        pcoll.numProbes                      = aw_root->awar(AWAR_PC_NUM_PROBES)->read_int();
+        pcoll.cladeThreshold.marked          = aw_root->awar(AWAR_PC_CLADE_MARKED_THRESHOLD)->read_float() * 0.01;
+        pcoll.cladeThreshold.partiallyMarked = aw_root->awar(AWAR_PC_CLADE_PARTIALLY_MARKED_THRESHOLD)->read_float() * 0.01;
+    }
 }
 
 void AWT_graphic_tree::apply_zoom_settings_for_treetype(AWT_canvas *ntw) {
@@ -2890,7 +2889,7 @@ void AWT_graphic_tree::show(AW_device *device) {
                 show_dendrogram(displayed_root, pen, limits);
 
                 int rulerOffset = 2;
-                if (display_probe_collection) {
+                if (pcoll.display) {
                     drawMatchFlagNames(displayed_root, pen);
                     ++rulerOffset;
                 }
