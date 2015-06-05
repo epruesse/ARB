@@ -18,6 +18,7 @@
 #include <xercesc/parsers/XercesDOMParser.hpp>
 #include <xercesc/util/XMLUni.hpp>
 #include <math.h>
+#include <arbdbt.h>
 
 
 using namespace xercesc;
@@ -38,7 +39,7 @@ ArbMatchResultsManager  g_results_manager;
 // ArbStringCache method implementations
 // ----------------------------------------------------------------------------
 void ArbStringCache::open() {
-    char *pTmpFileName = tmpnam(0);
+    char *pTmpFileName = GB_create_tempfile("probeColl");
 
     if (pTmpFileName != 0) {
         WriteCacheFile  = fopen(pTmpFileName, "wb");
