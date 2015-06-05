@@ -120,10 +120,6 @@ public:
     void flush();
 };
 
-// ----------------------------------------------------------------------------
-
-extern ArbStringCache     g_string_cache;
-
 
 // ----------------------------------------------------------------------------
 // class ArbRefCount
@@ -689,8 +685,8 @@ inline bool ArbMatchResultsManager::hasResults() const {
 
 // ----------------------------------------------------------------------------
 
-extern ArbProbeCollection      g_probe_collection;
-extern ArbMatchResultsManager  g_results_manager;
+ArbProbeCollection&     get_probe_collection();
+ArbMatchResultsManager& get_results_manager();
 
 #else
 #error probe_collection.hxx included twice

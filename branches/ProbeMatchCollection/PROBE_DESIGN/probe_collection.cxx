@@ -28,12 +28,22 @@ const size_t ArbMIN_PROBE_LENGTH = 6;
 
 
 // ----------------------------------------------------------------------------
-// Instance global objects
+// Provide access to global objects
 // ----------------------------------------------------------------------------
-ArbStringCache          g_string_cache;
-ArbProbeCollection      g_probe_collection;
-ArbMatchResultsManager  g_results_manager;
 
+ArbProbeCollection& get_probe_collection() {
+    static ArbProbeCollection g_probe_collection;
+    return g_probe_collection;
+}
+ArbMatchResultsManager& get_results_manager() {
+    static ArbMatchResultsManager g_results_manager;
+    return g_results_manager;
+}
+
+static ArbStringCache& get_string_cache() {
+    static ArbStringCache g_string_cache;
+    return g_string_cache;
+}
 
 // ----------------------------------------------------------------------------
 // ArbStringCache method implementations
@@ -162,9 +172,11 @@ bool ArbStringCache::loadString(std::string& rString,
 // ----------------------------------------------------------------------------
 
 void ArbStringCache::flush() {
-    // Close and re-open to delete old cache file and create a new one
-    close();
-    open();
+    if (IsOpen) {
+        // Close and re-open to delete old cache file and create a new one
+        close();
+        open();
+    }
 }
 
 
@@ -1105,6 +1117,7 @@ ArbMatchResult::ArbMatchResult(const ArbProbe *pProbe, const char *pResult, int 
       CachedResultA(),
       CachedResultB()
 {
+    ArbStringCache& g_string_cache = get_string_cache();
     g_string_cache.saveString(pResult, nSplitPoint, CachedResultA);
     g_string_cache.saveString(pResult + nSplitPoint, CachedResultB);
 
@@ -1184,6 +1197,7 @@ void ArbMatchResult::result(std::string& sResult) const {
     std::string sResultA;
     std::string sResultB;
 
+    ArbStringCache& g_string_cache = get_string_cache();
     g_string_cache.loadString(sResultA, CachedResultA);
     g_string_cache.loadString(sResultB, CachedResultB);
 
@@ -1537,7 +1551,7 @@ ArbMatchResultsManager::~ArbMatchResultsManager() {
     // This assumes that there is only ever on instance of ArbMatchResultsManager
     // which is true at the moment. Slightly dodgey but it will stop the cache
     // file from ballooning out too much.
-    g_string_cache.flush();
+    get_string_cache().flush();
 }
 
 // ----------------------------------------------------------------------------
@@ -1553,7 +1567,7 @@ void ArbMatchResultsManager::reset() {
     // This assumes that there is only ever on instance of ArbMatchResultsManager
     // which is true at the moment. Slightly dodgey but it will stop the cache
     // file from ballooning out too much.
-    g_string_cache.flush();
+    get_string_cache().flush();
 }
 
 // ----------------------------------------------------------------------------

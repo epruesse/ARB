@@ -1231,6 +1231,7 @@ void create_probe_design_variables(AW_root *root, AW_default props, AW_default d
     double default_width = 1.0;
     double default_bias  = 0.0;
 
+    ArbProbeCollection& g_probe_collection = get_probe_collection();
     g_probe_collection.getParameters(default_weights, default_width, default_bias);
     g_probe_collection.clear();
 
@@ -2275,7 +2276,7 @@ static bool probe_match_with_specificity_enum_callback(void *pVoidContext, const
 // ----------------------------------------------------------------------------
 
 static void probe_match_with_specificity_edit_event() {
-    AW_edit(g_results_manager.resultsFileName(), 0, 0, 0);
+    AW_edit(get_results_manager().resultsFileName(), 0, 0, 0);
 }
 
 // ----------------------------------------------------------------------------
@@ -2292,13 +2293,14 @@ static void probe_match_with_specificity_event(AW_window *aww, AWT_canvas *ntw) 
         root->awar(AWAR_PD_MATCH_MARKHITS)->write_int(0);
         root->awar(AWAR_PD_MATCH_WRITE2TMP)->write_int(0);
 
+        ArbMatchResultsManager& g_results_manager = get_results_manager();
         g_results_manager.reset();
 
         // Using g_probe_collection instance of ArbProbeCollection, need to loop
         // through all the probes in the collect and then call probe_match_event,
         // collating the results as we go. The results can be obtained from the
         // g_spd->probeSeq list.
-        const ArbProbePtrList&   rProbeList  = g_probe_collection.probeList();
+        const ArbProbePtrList&   rProbeList  = get_probe_collection().probeList();
         int                      nItems      = rProbeList.size();
         int                      nItem       = 1;
         int                      nHits       = 0;
@@ -2311,6 +2313,8 @@ static void probe_match_with_specificity_event(AW_window *aww, AWT_canvas *ntw) 
         // prior to the next one being used to show progress on write results to file
         {
             arb_progress progress("Matching probe collection", nItems);
+
+            ArbProbeCollection& g_probe_collection = get_probe_collection();
 
             for (ProbeIter = rProbeList.begin() ; ProbeIter != rProbeList.end() ; ++ProbeIter) {
                 const ArbProbe *pProbe = *ProbeIter;
@@ -2485,7 +2489,7 @@ static void probe_match_clear_event(AW_window *aww, ArbPM_Context *pContext) {
         case 0: {
             AW_root *root = aww->get_root();
 
-            g_results_manager.reset();
+            get_results_manager().reset();
             root->awar(AWAR_PMC_MATCH_NHITS)->write_int(0);
             update_species_matched_string(root, pContext->ntw); // forces a refresh of the phylogenic tree
             break;
@@ -2602,6 +2606,7 @@ static void load_probe_collection(AW_window *aww, ArbPC_Context *Context, const 
         double  dWidth      = 1.0;
         double  dBias       = 0.0;
 
+        ArbProbeCollection& g_probe_collection = get_probe_collection();
         g_probe_collection = ProbeCollection;
 
         g_probe_collection.getParameters(weights, dWidth, dBias);
@@ -2668,6 +2673,7 @@ static void probe_collection_update_parameters() {
         weights[cn] = root->awar(buffer)->read_float();
     }
 
+    ArbProbeCollection& g_probe_collection = get_probe_collection();
     g_probe_collection.setParameters(weights, dWidth, dBias);
 
     const ArbProbePtrList&    rProbeList = g_probe_collection.probeList();
@@ -2705,7 +2711,7 @@ static void save_probe_collection(AW_window *aww, const char * const *awar_filen
 
     if (bWrite) {
         probe_collection_update_parameters();
-        g_probe_collection.saveXML(pFileName);
+        get_probe_collection().saveXML(pFileName);
 
         aww->hide();
     }
@@ -2727,7 +2733,7 @@ static void add_probe_to_collection_event(AW_window *aww, ArbPC_Context *pContex
     {
         const ArbProbe *pProbe = 0;
 
-        if (g_probe_collection.add(pName, pSequence, &pProbe) && (pProbe != 0)) {
+        if (get_probe_collection().add(pName, pSequence, &pProbe) && (pProbe != 0)) {
             selection_id->insert(pProbe->displayName().c_str(), pSequence);
             selection_id->update();
             probe_match_update_probe_list(pContext->PM_Context);
@@ -2745,6 +2751,7 @@ static void remove_probe_from_collection_event(AW_window *aww, ArbPC_Context *pC
     if ((selection_id != 0) &&
         (pSequence    != 0))
     {
+        ArbProbeCollection& g_probe_collection = get_probe_collection();
         const ArbProbe *pProbe = g_probe_collection.find(pSequence);
 
         if (pProbe != 0) {
@@ -2780,7 +2787,7 @@ static AW_window *probe_collection_save_prompt(AW_root *root) {
 // ----------------------------------------------------------------------------
 
 static void clear_probe_collection_event(AW_window *, ArbPC_Context *pContext) {
-    if (g_probe_collection.clear()) {
+    if (get_probe_collection().clear()) {
         pContext->selection_id->clear();
         pContext->selection_id->insert_default("", "");
         pContext->selection_id->update();
@@ -2795,7 +2802,7 @@ static void probe_match_update_probe_list(ArbPM_Context *pContext) {
     if (pContext) {
         AW_selection_list *sellist = pContext->probes_id;
         if (sellist) {
-            const ArbProbePtrList&   rProbeList = g_probe_collection.probeList();
+            const ArbProbePtrList&   rProbeList = get_probe_collection().probeList();
             ArbProbePtrListConstIter ProbeIter;
 
             sellist->clear();
@@ -2905,8 +2912,9 @@ static const char *getProbeName(int nProbe) {
 
 static void update_species_matched_string(AW_root *root, AWT_canvas *ntw) {
     bool display = false;
+    ArbMatchResultsManager& g_results_manager = get_results_manager();
     if (g_results_manager.hasResults()) {
-        int   nProbes        = g_probe_collection.probeList().size();
+        int   nProbes        = get_probe_collection().probeList().size();
         char *pMatchedString = new char[nProbes + 1];
 
         if (pMatchedString != 0) {
