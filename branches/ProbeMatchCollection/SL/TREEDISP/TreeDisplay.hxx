@@ -206,7 +206,6 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
     void drawMatchFlag(AP_tree *at, const class MatchFlagPosition& flag, const bool bPartial, const int nProbe);
     void detectAndDrawMatchFlags(AP_tree *at, double y1, double y2);
     void drawMatchFlagNames(AP_tree *at, AW::Position& Pen);
-    void clickNotifyWhichProbe(AW_device* device, const AW::Position& pos);
 
     void box(int gc, const AW::Position& pos, int pixel_width, bool filled);
     void filled_box(int gc, const AW::Position& pos, int pixel_width) { box(gc, pos, pixel_width, true); }
@@ -323,8 +322,10 @@ class ClickedTarget {
 
     AP_tree *tree_node;
     GBDATA  *gb_species;
-    bool     ruler;
-    bool     branch;
+
+    bool ruler;
+    bool branch;
+    int  matchflag; // = probe number + 1
 
     const AW_clicked_element *elem;
 
@@ -333,6 +334,7 @@ class ClickedTarget {
         gb_species = NULL;
         ruler      = false;
         branch     = false;
+        matchflag  = 0;
     }
 
     void identify(AWT_graphic_tree *agt) {
@@ -348,6 +350,9 @@ class ClickedTarget {
                 else if (strcmp(what, "ruler") == 0) {
                     ruler = !elem->cd1();
                 }
+                else if (strcmp(what, "flag") == 0) {
+                    matchflag = elem->cd1()+1;
+                }
                 else if (strcmp(what, "branch") == 0) {
                     branch = true; // indicates that a line really IS the branch (opposed to other branch-related lines like e.g. group-brackets)
                 }
@@ -356,7 +361,7 @@ class ClickedTarget {
                 }
             }
 
-            if (!(gb_species || ruler)) {
+            if (!(gb_species || ruler || matchflag)) {
                 tree_node = (AP_tree*)elem->cd1();
                 td_assert(branch || !what);
             }
@@ -382,11 +387,13 @@ public:
     const AW_clicked_element *element() const { return elem; }
     AP_tree *node() const { return tree_node; }
     GBDATA *species() const { return gb_species; }
+    int get_probeindex() const { return matchflag-1; }
 
     bool is_text() const { return elem && elem->is_text(); }
     bool is_line() const { return elem && elem->is_line(); }
     bool is_branch() const { return branch; }
     bool is_ruler() const { return ruler; }
+    bool is_matchflag() const { return matchflag; }
 
     double get_rel_attach() const {
         // return [0..1] according to exact position where element is dropped

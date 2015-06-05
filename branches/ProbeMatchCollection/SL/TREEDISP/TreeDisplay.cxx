@@ -1332,17 +1332,21 @@ static AWT_graphic_event::ClickPreference preferredForCommand(AWT_COMMAND_MODE m
     }
 }
 
+static void clickNotifyWhichProbe(int nProbe) {
+    char  sAWAR[32] = {0};
+    sprintf(sAWAR, "probe_collection/probe%d/Name", nProbe);
+    char* pProbeName = AW_root::SINGLETON->awar(sAWAR)->read_string();
+
+    if (pProbeName != 0) {
+        aw_message(pProbeName);
+        free(pProbeName);
+    }
+}
+
 void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& event) {
     td_assert(event.button()!=AW_BUTTON_MIDDLE); // shall be handled by caller
 
     if (!tree_static) return;                      // no tree -> no commands
-
-    if (display_probe_collection           &&
-        (event.type()   == AW_Mouse_Press) &&
-        (event.button() == AW_BUTTON_LEFT))
-    {
-        clickNotifyWhichProbe(device, event.position());
-    }
 
     if (event.type() == AW_Keyboard_Release) return;
     if (event.type() == AW_Keyboard_Press) return handle_key(device, event);
@@ -1399,48 +1403,59 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
         }
     }
 
-    if (event.type() == AW_Mouse_Press && clicked.is_ruler()) {
-        DB_scalable xdata;
-        DB_scalable ydata;
-        double      unscale = device->get_unscale();
+    if (event.type() == AW_Mouse_Press) {
+        if (clicked.is_ruler()) {
+            DB_scalable xdata;
+            DB_scalable ydata;
+            double      unscale = device->get_unscale();
 
-        switch (event.cmd()) {
-            case AWT_MODE_LENGTH:
-            case AWT_MODE_MULTIFURC: { // scale ruler
-                xdata = GB_searchOrCreate_float(gb_tree, RULER_SIZE, DEFAULT_RULER_LENGTH);
+            switch (event.cmd()) {
+                case AWT_MODE_LENGTH:
+                case AWT_MODE_MULTIFURC: { // scale ruler
+                    xdata = GB_searchOrCreate_float(gb_tree, RULER_SIZE, DEFAULT_RULER_LENGTH);
 
-                double rel  = clicked.get_rel_attach();
-                if (tree_sort == AP_TREE_IRS) {
-                    unscale /= (rel-1)*irs_tree_ruler_scale_factor; // ruler has opposite orientation in IRS mode
+                    double rel  = clicked.get_rel_attach();
+                    if (tree_sort == AP_TREE_IRS) {
+                        unscale /= (rel-1)*irs_tree_ruler_scale_factor; // ruler has opposite orientation in IRS mode
+                    }
+                    else {
+                        unscale /= rel;
+                    }
+
+                    if (event.button() == AW_BUTTON_RIGHT) xdata.set_discretion_factor(10);
+                    xdata.set_min(0.01);
+                    break;
                 }
-                else {
-                    unscale /= rel;
+                case AWT_MODE_LINE: // scale ruler linewidth
+                    ydata = GB_searchOrCreate_int(gb_tree, RULER_LINEWIDTH, DEFAULT_RULER_LINEWIDTH);
+                    ydata.set_min(0);
+                    ydata.inverse();
+                    break;
+
+                default: { // move ruler or ruler text
+                    bool isText = clicked.is_text();
+                    xdata = GB_searchOrCreate_float(gb_tree, ruler_awar(isText ? "text_x" : "ruler_x"), 0.0);
+                    ydata = GB_searchOrCreate_float(gb_tree, ruler_awar(isText ? "text_y" : "ruler_y"), 0.0);
+                    break;
                 }
-
-                if (event.button() == AW_BUTTON_RIGHT) xdata.set_discretion_factor(10);
-                xdata.set_min(0.01);
-                break;
             }
-            case AWT_MODE_LINE: // scale ruler linewidth
-                ydata = GB_searchOrCreate_int(gb_tree, RULER_LINEWIDTH, DEFAULT_RULER_LINEWIDTH);
-                ydata.set_min(0);
-                ydata.inverse();
-                break;
-
-            default: { // move ruler or ruler text
-                bool isText = clicked.is_text();
-                xdata = GB_searchOrCreate_float(gb_tree, ruler_awar(isText ? "text_x" : "ruler_x"), 0.0);
-                ydata = GB_searchOrCreate_float(gb_tree, ruler_awar(isText ? "text_y" : "ruler_y"), 0.0);
-                break;
+            if (!is_nan_or_inf(unscale)) {
+                store_command_data(new RulerScaler(mousepos, unscale, xdata, ydata, exports));
             }
+            return;
         }
-        if (!is_nan_or_inf(unscale)) {
-            store_command_data(new RulerScaler(mousepos, unscale, xdata, ydata, exports));
+        else if (clicked.is_matchflag()) {
+            if (clicked.element()->distance<=3) { // accept 3 pixel distance
+                clickNotifyWhichProbe(clicked.get_probeindex());
+            }
+            return;
         }
-        return;
+
+        if (warn_inappropriate_mode(event.cmd())) {
+            return;
+        }
     }
 
-    if (event.type() == AW_Mouse_Press && warn_inappropriate_mode(event.cmd())) return;
 
     switch (event.cmd()) {
             // -----------------------------
@@ -1948,6 +1963,8 @@ void AWT_graphic_tree::detectAndDrawMatchFlags(AP_tree *at, const double y1, con
             int nCladeSize = 0;
             enumerateClade(at, pMatchCounts, nCladeSize, nNumProbes);
 
+            AW_click_cd clickflag(disp_device, (AW_CL)0, (AW_CL)"flag");
+
             if (!at->is_leaf) {
                 const double dCladeMarkedThreshold          = aw_root->awar(AWAR_PC_CLADE_MARKED_THRESHOLD)->read_float() * 0.01;
                 const double dCladePartiallyMarkedThreshold = aw_root->awar(AWAR_PC_CLADE_PARTIALLY_MARKED_THRESHOLD)->read_float() * 0.01;
@@ -1968,8 +1985,8 @@ void AWT_graphic_tree::detectAndDrawMatchFlags(AP_tree *at, const double y1, con
                         }
 
                         if (bMatched) {
+                            clickflag.set_cd1(nProbe);
                             drawMatchFlag(at, flag, bPartialMatch, nProbe);
-
                             bChanged = true;
                         }
                     }
@@ -1978,8 +1995,8 @@ void AWT_graphic_tree::detectAndDrawMatchFlags(AP_tree *at, const double y1, con
             else {
                 for (int nProbe = 0 ; nProbe < nNumProbes ; nProbe++) {
                     if (pMatchCounts[nProbe] > 0) {
+                        clickflag.set_cd1(nProbe);
                         drawMatchFlag(at, flag, false, nProbe);
-
                         bChanged = true;
                     }
                 }
@@ -2013,6 +2030,8 @@ void AWT_graphic_tree::drawMatchFlagNames(AP_tree *at, Position& Pen) {
 
         Rectangle mbox(Position(flag.leftx(nNumProbes-1), pl2.ypos()), sizeb); // the match box
 
+        AW_click_cd clickflag(disp_device, (AW_CL)0, (AW_CL)"flag");
+
         // Loop through probes in reverse probe collection order so the match columns
         // match the probe list
         for (int nProbe = nNumProbes - 1 ; nProbe >= 0 ; nProbe--) {
@@ -2022,6 +2041,7 @@ void AWT_graphic_tree::drawMatchFlagNames(AP_tree *at, Position& Pen) {
 
             if (pProbeName != 0) {
                 int nColour = nProbe % 16;
+                clickflag.set_cd1(nProbe);
 
                 disp_device->set_foreground_color(at->gr.gc, MatchProbeColourIndex[nColour]);
                 disp_device->line(at->gr.gc, pl1, pl2, match_flag_filter);
@@ -2044,41 +2064,6 @@ void AWT_graphic_tree::drawMatchFlagNames(AP_tree *at, Position& Pen) {
         Pen.movey(scaled_branch_distance * (nNumProbes+3));
         Position leftmost(flag.leftx(0), Pen.ypos());
         disp_device->line(at->gr.gc, Pen, leftmost, match_flag_filter);
-    }
-}
-
-void AWT_graphic_tree::clickNotifyWhichProbe(AW_device* device, const AW::Position& pos) {
-    td_assert(display_probe_collection);
-
-    // @@@ use click device instead
-
-    AW_pos click_x      = pos.xpos();
-    AW_pos click_y      = pos.ypos();   // @@@ use ypos to check if probe present? it is possible to get names reported when clicking into empty space
-    int    nNumProbes   = aw_root->awar(AWAR_PC_NUM_PROBES)->read_int();
-    double dHalfWidth   = 0.5 * MATCH_COL_WIDTH / device->get_scale();
-    double dWidth       = dHalfWidth * 2;
-    int    nProbeOffset = nNumProbes + 1;
-
-    for (int nProbe = nNumProbes - 1 ; nProbe >= 0 ; nProbe--) {
-        double        x = dWidth + (nProbe - nProbeOffset - 0.5) * dWidth;
-        AW::Position  probe_posH(device->transform(AW::Position(x + dHalfWidth, 0)));
-        AW::Position  probe_posL(device->transform(AW::Position(x - dHalfWidth, 0)));
-
-        if ((click_x >= probe_posL.xpos())  &&
-            (click_x <  probe_posH.xpos()))
-        {
-            char  sAWAR[32] = {0};
-
-            sprintf(sAWAR, "probe_collection/probe%d/Name", nProbe);
-
-            char* pProbeName = aw_root->awar(sAWAR)->read_string();
-
-            if (pProbeName != 0) {
-                aw_message(pProbeName);
-                free(pProbeName);
-            }
-            break;
-        }
     }
 }
 
