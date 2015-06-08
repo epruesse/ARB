@@ -33,6 +33,7 @@ Major changes for next release:
    * added option to cut-off DNA sequence (was done at end of sequence by old version. fixed)
    * fixed several minor bugs
  - expand zombies in tree (unfold groups)
+ - compare taxonomy (and mark differences)
  - external (command line) aligners:
    * fixed incorrect handling of 'T' vs 'U': now all aligned sequences will contain the correct base depending on alignment type
    * preserve gap-type ('-' vs '.') and upper-/lower-case of original alignment

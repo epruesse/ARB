@@ -350,6 +350,7 @@ endif
 ASAN_OPTIONS:=handle_segv=0:color=0
 ASAN_OPTIONS+=:detect_leaks=1 # comment-out to disable leak-detection
 ASAN_OPTIONS+=:check_initialization_order=1
+# ASAN_OPTIONS+=:abort_on_error=1
 
 # suppressions: SOURCE_TOOLS/arb.leaksan.supp
 LSAN_OPTIONS:=max_leaks=3:suppressions=$(ARBHOME)/SOURCE_TOOLS/arb.leaksan.supp
@@ -527,6 +528,8 @@ endif
 # activate UndefinedBehaviorSanitizer?
 ifeq ($(SANITIZE_UNDEFINED),1)
  cflags += $(COMMON_SANITIZE_FLAGS) -fsanitize=undefined
+# uncomment next line to abort on runtime errors (needs 'rebuild')
+#cflags += -fno-sanitize-recover
 # Note: alignment-sanitizer is deactivated for ARBDB and PROBE!
  ifeq ('$(DEBUG)','1')
   ifeq ($(USE_GCC_MAJOR),4)

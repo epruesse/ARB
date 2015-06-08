@@ -61,10 +61,14 @@ case $OSNAME in
     echo "DARWIN := 1" >> $CFG
     echo "MACH := DARWIN" >> $CFG
     UNIT_TESTS=0
+    # OSX make causes random failures if called with '-j 2'
+    # (e.g. target 'binlink' gets triggered multiple times, causing build failure when it's executed concurrently)
+    JMAKE=make
     ;;
   Linux)
     echo "LINUX := 1" >> $CFG
     echo "MACH := LINUX" >> $CFG
+    JMAKE="/usr/bin/time --verbose make -j `util/usecores.pl`"
     ;;
   *)
     echo "Error: unhandled OSNAME '$OSNAME'"
@@ -100,6 +104,7 @@ fi
 
 # build, tar and test
 if [ $BUILD == 1 ]; then
+    # JMAKE="make"
     if [ "$ARG" == "fake_build" ]; then
         echo "Faking build"
         echo "Faked arb.tgz"     > arb.tgz
@@ -107,10 +112,10 @@ if [ $BUILD == 1 ]; then
     else
         if [ "$ARG" == "from_tarball" ]; then
             echo "Test clean before make (tarball build)"
-            make clean
+            ${JMAKE} clean
         fi
-        make build
-        make tarfile_quick
+        ${JMAKE} build
+        ${JMAKE} tarfile_quick
     fi
 
     # jenkins archieves all files matching "**/arb*.tgz"
@@ -139,7 +144,7 @@ if [ $BUILD == 1 ]; then
                 if [ "$ARG" == "from_tarball" ]; then
                     echo "Note: build from tarball - do not attempt to create a tarball"
                 else
-                    make save
+                    ${JMAKE} save
                     # archived and published on ftp:
                     cp --dereference arbsrc.tgz ${VERSION_ID}-source.tgz
                     rm arbsrc*.tgz
@@ -161,7 +166,7 @@ if [ $BUILD == 1 ]; then
     # only archived (needed by SINA):
     mv arb-dev.tgz ${VERSION_ID_TARGET}-dev.tgz
 
-    make ut
+    ${JMAKE} ut
 
     echo "-------------------- compiled-in version info:"
     (bin/arb_ntree --help || true)
