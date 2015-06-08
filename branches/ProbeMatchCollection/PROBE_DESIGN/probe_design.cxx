@@ -98,12 +98,8 @@
 #define AWAR_PC_MATCH_WIDTH       "probe_collection/match_weights/width"
 #define AWAR_PC_MATCH_BIAS        "probe_collection/match_weights/bias"
 
-// probes in the collection // @@@ should not be stored in awars!
-#define AWAR_PC_PROBE      "probe_collection/probe%d/"
-#define AWAR_PC_PROBE_NAME     AWAR_PC_PROBE "Name"
-#define AWAR_PC_PROBE_SEQUENCE AWAR_PC_PROBE "Sequence"
-
-#define AWAR_PC_SELECTED_PROBE "tmp/probe_collection/probe"
+#define AWAR_PC_CURRENT_COLLECTION "probe_collection/current"
+#define AWAR_PC_SELECTED_PROBE     "tmp/probe_collection/probe"
 
 // probe match collection window
 #define AWAR_PMC_SELECTED_PROBE   "tmp/probe_match_collection/probe"
@@ -111,6 +107,8 @@
 
 // probe collection matching control parameters
 #define AWAR_PC_MISMATCH_THRESHOLD               "probe_collection/mismatch_threshold"
+
+#define REPLACE_TARGET_CONTROL_CHARS ":#=_:\\:=_"
 
 // ----------------------------------------
 
@@ -1216,8 +1214,8 @@ void create_probe_design_variables(AW_root *root, AW_default props, AW_default d
     root->awar_int   (AWAR_PMC_MATCH_NHITS,    0,  db);
     root->awar_string(AWAR_PMC_SELECTED_PROBE, "", db);
 
-    root->awar_string(AWAR_PC_TARGET_STRING,  "", db);
-    root->awar_string(AWAR_PC_TARGET_NAME,    "", db);
+    root->awar_string(AWAR_PC_TARGET_STRING,  "", db)->set_srt(REPLACE_TARGET_CONTROL_CHARS);
+    root->awar_string(AWAR_PC_TARGET_NAME,    "", db)->set_srt(REPLACE_TARGET_CONTROL_CHARS);
     root->awar_string(AWAR_PC_SELECTED_PROBE, "", db);
 
     root->awar_float(AWAR_PC_MATCH_WIDTH, 1.0, db)->set_minmax(0.01, 100.0);
@@ -1247,25 +1245,34 @@ void create_probe_design_variables(AW_root *root, AW_default props, AW_default d
 
     g_probe_collection.setParameters(default_weights, default_width, default_bias);
 
-    int nitems = root->awar_int(AWAR_PC_NUM_PROBES, 0, db)->read_int();
+    // read probes from DB and add them to collection
+    {
+        AW_awar *awar_current   = root->awar_string(AWAR_PC_CURRENT_COLLECTION, "", db);
+        AW_awar *awar_numProbes = root->awar_int(AWAR_PC_NUM_PROBES, 0, db);
 
-    for (int i = 0; i < nitems ; i++) {
-        char *pProbeName;
-        char *pProbeSequence;
+        char *current = awar_current->read_string();
 
-        sprintf(buffer, AWAR_PC_PROBE_NAME, i);
+        if (current && current[0]) {
+            // Note: target sequences/names do not contain '#'/':' (see REPLACE_TARGET_CONTROL_CHARS)
+            ConstStrArray probes;
+            GBT_splitNdestroy_string(probes, current, "#", true);
 
-        pProbeName = root->awar_string(buffer, "", db)->read_string();
+            for (size_t i = 0; i<probes.size(); ++i) {
+                const char *probe = probes[i];
+                const char *colon = strchr(probe, ':');
 
-
-        sprintf(buffer, AWAR_PC_PROBE_SEQUENCE, i);
-
-        pProbeSequence = root->awar_string(buffer, "", db)->read_string();
-
-        g_probe_collection.add(pProbeName, pProbeSequence);
-
-        free(pProbeName);
-        free(pProbeSequence);
+                if (colon) {
+                    char       *name = GB_strpartdup(probe, colon-1);
+                    const char *seq  = colon+1;
+                    g_probe_collection.add(name, seq);
+                    free(name);
+                }
+                else {
+                    aw_message(GBS_global_string("Saved probe ignored: has wrong format ('%s', expected 'name:seq')", probe));
+                }
+            }
+            awar_numProbes->write_int(g_probe_collection.probeList().size());
+        }
     }
     root->awar_string(AWAR_SPV_SELECTED_PROBE, "",     db); // For highlighting the selected PROBE
 }
@@ -2485,20 +2492,12 @@ static void probe_match_clear_event(AW_window *aww, ArbPM_Context *pContext) {
                              "Do you want to clear the probe match results?",
                              "Yes,No");
 
-    switch (action) {
-        case 0: {
-            AW_root *root = aww->get_root();
+    if (action == 0) {
+        AW_root *root = aww->get_root();
 
-            get_results_manager().reset();
-            root->awar(AWAR_PMC_MATCH_NHITS)->write_int(0);
-            update_species_matched_string(root, pContext->ntw); // forces a refresh of the phylogenic tree
-            break;
-        }
-
-        case 1:
-        default: {
-            break;
-        }
+        get_results_manager().reset();
+        root->awar(AWAR_PMC_MATCH_NHITS)->write_int(0);
+        update_species_matched_string(root, pContext->ntw); // forces a refresh of the phylogenic tree
     }
 }
 
@@ -2593,6 +2592,32 @@ static ArbPC_Context PC_Context;
 
 // ----------------------------------------------------------------------------
 
+static void save_probe_list_to_DB(const ArbProbePtrList& rProbeList, AW_root *root) {
+    std::string saved;
+    for (ArbProbePtrListConstIter ProbeIter = rProbeList.begin() ; ProbeIter != rProbeList.end() ; ++ProbeIter) {
+        const ArbProbe *pProbe = *ProbeIter;
+        if (pProbe) {
+            // Note: target sequences/names do not contain '#'/':' (see REPLACE_TARGET_CONTROL_CHARS)
+            saved = saved + '#'+pProbe->name()+':'+pProbe->sequence();
+        }
+    }
+
+    root->awar(AWAR_PC_CURRENT_COLLECTION)->write_string(saved.empty() ? "" : saved.c_str()+1);
+    root->awar(AWAR_PC_NUM_PROBES)->write_int(rProbeList.size());
+}
+
+static void show_probes_in_sellist(const ArbProbePtrList& rProbeList, AW_selection_list *sellist) {
+    sellist->clear();
+    sellist->insert_default("", "");
+    for (ArbProbePtrListConstIter ProbeIter = rProbeList.begin() ; ProbeIter != rProbeList.end() ; ++ProbeIter) {
+        const ArbProbe *pProbe = *ProbeIter;
+        if (pProbe) {
+            sellist->insert(pProbe->displayName().c_str(), pProbe->sequence().c_str());
+        }
+    }
+    sellist->update();
+}
+
 static void load_probe_collection(AW_window *aww, ArbPC_Context *Context, const char * const *awar_filename) {
     char *pFileName = aww->get_root()->awar(*awar_filename)->read_string();
 
@@ -2621,30 +2646,10 @@ static void load_probe_collection(AW_window *aww, ArbPC_Context *Context, const 
             root->awar(buffer)->write_float(weights[cn]);
         }
 
-        const ArbProbePtrList&    rProbeList = g_probe_collection.probeList();
-        ArbProbePtrListConstIter  ProbeIter;
+        const ArbProbePtrList& rProbeList = g_probe_collection.probeList();
 
-        Context->selection_id->clear();
-        Context->selection_id->insert_default("", "");
-
-        root->awar_int(AWAR_PC_NUM_PROBES, 0, AW_ROOT_DEFAULT)->write_int(rProbeList.size());
-
-        for (cn = 0, ProbeIter = rProbeList.begin() ; ProbeIter != rProbeList.end() ; ++ProbeIter) {
-            const ArbProbe *pProbe = *ProbeIter;
-
-            if (pProbe != 0) {
-                sprintf(buffer, AWAR_PC_PROBE_NAME, cn);
-                root->awar_string(buffer, "", AW_ROOT_DEFAULT)->write_string(pProbe->name().c_str());
-
-                sprintf(buffer, AWAR_PC_PROBE_SEQUENCE, cn);
-                root->awar_string(buffer, "", AW_ROOT_DEFAULT)->write_string(pProbe->sequence().c_str());
-
-                Context->selection_id->insert(pProbe->displayName().c_str(), pProbe->sequence().c_str());
-                Context->selection_id->update();
-            }
-
-            cn++;
-        }
+        save_probe_list_to_DB(rProbeList, root);
+        show_probes_in_sellist(rProbeList, Context->selection_id);
 
         probe_match_update_probe_list(Context->PM_Context);
         aww->hide();
@@ -2676,24 +2681,7 @@ static void probe_collection_update_parameters() {
     ArbProbeCollection& g_probe_collection = get_probe_collection();
     g_probe_collection.setParameters(weights, dWidth, dBias);
 
-    const ArbProbePtrList&    rProbeList = g_probe_collection.probeList();
-    ArbProbePtrListConstIter  ProbeIter;
-
-    root->awar_int(AWAR_PC_NUM_PROBES, 0, AW_ROOT_DEFAULT)->write_int(rProbeList.size());
-
-    for (cn = 0, ProbeIter = rProbeList.begin() ; ProbeIter != rProbeList.end() ; ++ProbeIter) {
-        const ArbProbe *pProbe = *ProbeIter;
-
-        if (pProbe != 0) {
-            sprintf(buffer, AWAR_PC_PROBE_NAME, cn);
-            root->awar_string(buffer, "", AW_ROOT_DEFAULT)->write_string(pProbe->name().c_str());
-
-            sprintf(buffer, AWAR_PC_PROBE_SEQUENCE, cn);
-            root->awar_string(buffer, "", AW_ROOT_DEFAULT)->write_string(pProbe->sequence().c_str());
-        }
-
-        cn++;
-    }
+    save_probe_list_to_DB(g_probe_collection.probeList(), root);
 }
 
 // ----------------------------------------------------------------------------
@@ -2786,38 +2774,15 @@ static AW_window *probe_collection_save_prompt(AW_root *root) {
 
 // ----------------------------------------------------------------------------
 
-static void clear_probe_collection_event(AW_window *, ArbPC_Context *pContext) {
-    if (get_probe_collection().clear()) {
-        pContext->selection_id->clear();
-        pContext->selection_id->insert_default("", "");
-        pContext->selection_id->update();
-
-        probe_match_update_probe_list(pContext->PM_Context);
-    }
-}
-
-// ----------------------------------------------------------------------------
-
 static void probe_match_update_probe_list(ArbPM_Context *pContext) {
     if (pContext) {
         AW_selection_list *sellist = pContext->probes_id;
-        if (sellist) {
-            const ArbProbePtrList&   rProbeList = get_probe_collection().probeList();
-            ArbProbePtrListConstIter ProbeIter;
-
-            sellist->clear();
-            sellist->insert_default("", "");
-
-            for (ProbeIter = rProbeList.begin() ; ProbeIter != rProbeList.end() ; ++ProbeIter) {
-                const ArbProbe *pProbe = *ProbeIter;
-
-                if (pProbe != 0) {
-                    sellist->insert(pProbe->displayName().c_str(), pProbe->sequence().c_str());
-                }
-            }
-
-            sellist->update();
-        }
+        if (sellist) show_probes_in_sellist(get_probe_collection().probeList(), sellist);
+    }
+}
+static void clear_probe_collection_event(AW_window *, ArbPC_Context *pContext) {
+    if (get_probe_collection().clear()) {
+        probe_match_update_probe_list(pContext->PM_Context);
     }
 }
 
@@ -2898,6 +2863,8 @@ static AW_window *create_probe_collection_window(AW_root *root, ArbPM_Context *p
 
         aws->at("bias");
         aws->create_input_field(AWAR_PC_MATCH_BIAS, 5);
+
+        show_probes_in_sellist(get_probe_collection().probeList(), selection_id);
     }
     return aws;
 }
@@ -2905,9 +2872,14 @@ static AW_window *create_probe_collection_window(AW_root *root, ArbPM_Context *p
 // ----------------------------------------------------------------------------
 
 static const char *getProbeName(int nProbe) {
-    char  sAWAR[32] = {0};
-    sprintf(sAWAR, AWAR_PC_PROBE_NAME, nProbe);
-    return AW_root::SINGLETON->awar(sAWAR)->read_char_pntr();
+    const ArbProbePtrList&   rProbeList = get_probe_collection().probeList();
+    ArbProbePtrListConstIter wanted     = rProbeList.begin();
+
+    if (nProbe>=0 && nProbe<int(rProbeList.size())) advance(wanted, nProbe);
+    else wanted = rProbeList.end();
+
+    if (wanted == rProbeList.end()) return GBS_global_string("<invalid probeindex %i>", nProbe);
+    return (*wanted)->name().c_str();
 }
 
 static void update_species_matched_string(AW_root *root, AWT_canvas *ntw) {
