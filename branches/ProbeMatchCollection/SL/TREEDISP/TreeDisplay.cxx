@@ -90,10 +90,13 @@ AW_gc_manager AWT_graphic_tree::init_devices(AW_window *aww, AW_device *device, 
                      "Not marked$#622300",
                      "Zombies etc.$#977a0e",
 
-                     "+-No probe$black",    "-Probes 1+2$yellow",
-                     "+-Probe 1$red",       "-Probes 1+3$magenta",
-                     "+-Probe 2$green",     "-Probes 2+3$cyan",
-                     "+-Probe 3$blue",      "-All probes$white",
+                     "+-None (black)$#000000", "-All (white)$#ffffff",
+
+                     "+-P1(red)$#ff0000",        "+-P2(green)$#00ff00",    "-P3(blue)$#0000ff",
+                     "+-P4(orange)$#ffd060",     "+-P5(aqua)$#40ffc0",     "-P6(purple)$#c040ff",
+                     "+-P7(1&2,yellow)$#ffff00", "+-P8(2&3,cyan)$#00ffff", "-P9(3&1,magenta)$#ff00ff",
+                     "+-P10(lawn)$#c0ff40",      "+-P11(skyblue)$#40c0ff", "-P12(pink)$#f030b0",
+
                      NULL);
 
     // Add colours for identifying probes in multi-probe matching
@@ -3111,14 +3114,26 @@ static AW_rgb colors_def[] = {
     0xbb8833, // AWT_GC_UNDIFF
     0x622300, // AWT_GC_NSELECTED
     0x977a0e, // AWT_GC_ZOMBIES
+
     0x000000, // AWT_GC_BLACK
-    0xffff00, // AWT_GC_YELLOW
-    0xff0000, // AWT_GC_RED
-    0xff00ff, // AWT_GC_MAGENTA
-    0x00ff00, // AWT_GC_GREEN
-    0x00ffff, // AWT_GC_CYAN
-    0x0000ff, // AWT_GC_BLUE
     0x808080, // AWT_GC_WHITE
+
+    0xff0000, // AWT_GC_RED
+    0x00ff00, // AWT_GC_GREEN
+    0x0000ff, // AWT_GC_BLUE
+
+    0xc0ff40, // AWT_GC_ORANGE
+    0x40c0ff, // AWT_GC_AQUAMARIN
+    0xf030b0, // AWT_GC_PURPLE
+
+    0xffff00, // AWT_GC_YELLOW
+    0x00ffff, // AWT_GC_CYAN
+    0xff00ff, // AWT_GC_MAGENTA
+
+    0xc0ff40, // AWT_GC_LAWNGREEN
+    0x40c0ff, // AWT_GC_SKYBLUE
+    0xf030b0, // AWT_GC_PINK
+
     0xd50000, // AWT_GC_FIRST_COLOR_GROUP
     0x00c0a0,
     0x00ff77,

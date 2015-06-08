@@ -41,12 +41,28 @@ enum {
     AWT_GC_NSELECTED,       // no hit
     AWT_GC_ZOMBIES,
 
-    // for multiprobecoloring
+    // for probe coloring
 
-    AWT_GC_BLACK,   AWT_GC_YELLOW,
-    AWT_GC_RED,     AWT_GC_MAGENTA,
-    AWT_GC_GREEN,   AWT_GC_CYAN,
-    AWT_GC_BLUE,    AWT_GC_WHITE,
+    AWT_GC_BLACK,
+    AWT_GC_WHITE,
+
+    AWT_GC_RED,
+    AWT_GC_GREEN,
+    AWT_GC_BLUE,
+
+    AWT_GC_ORANGE,     // red+yellow // #FFD206
+    AWT_GC_AQUAMARIN,  // green+cyan
+    AWT_GC_PURPLE,     // blue+magenta
+
+    AWT_GC_YELLOW,     // red+green
+    AWT_GC_CYAN,       // green+blue
+    AWT_GC_MAGENTA,    // blue+red
+
+    AWT_GC_LAWNGREEN, // green+yellow
+    AWT_GC_SKYBLUE,    // blue+cyan
+    AWT_GC_PINK,       // red+magenta
+
+    // end probe coloring
 
     AWT_GC_FIRST_COLOR_GROUP,
     AWT_GC_MAX = AWT_GC_FIRST_COLOR_GROUP+AW_COLOR_GROUPS
