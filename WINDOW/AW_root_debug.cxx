@@ -165,6 +165,7 @@ static void build_dontCallHash() {
     GBS_write_hash(dontCallHash, "PARS_PROPS/GO",                  4); // has already been executed (designed to run only once)
     GBS_write_hash(dontCallHash, "ARB_PARSIMONY/POP",              4); // pop does not work correctly in all cases (see #528)
     GBS_write_hash(dontCallHash, "new_win",                        4); // 2nd editor window (blocked by #429)
+    GBS_write_hash(dontCallHash, "ARB_NT/UNDO",                    4); // doesn't crash, but caused following commands to crash
 #endif
 
     // do not open 2nd ARB_NT window (to buggy)
@@ -347,15 +348,22 @@ size_t AW_root::pimpl::callallcallbacks(int mode) {
             CallbackIter cb   = callbacks.begin();
 
             for (; cb != end; ++cb) {
-                const char *remote_command = cb->c_str();
-                bool        this_pass      = remote_command[0] == '-' ? (pass == 2) : (pass == 1);
+                const char *remote_command      = cb->c_str();
+                const char *remote_command_name = remote_command;
+                {
+                    const char *slash = strrchr(remote_command, '/');
+                    if (slash) remote_command_name = slash+1;
+                }
+
+                char firstNameChar = remote_command_name[0];
+                bool this_pass     = firstNameChar == '-' ? (pass == 2) : (pass == 1);
 
                 if (this_pass) {
                     GBS_write_hash(alreadyCalledHash, remote_command, 1); // don't call twice
 
                     if (mode != -2) { // -2 means "only mark as called"
                         AW_action *cbs    = action_hash[remote_command];
-                        bool       skipcb = remote_command[0] == '!' || GBS_read_hash(dontCallHash, remote_command);
+                        bool       skipcb = firstNameChar == '!' || GBS_read_hash(dontCallHash, remote_command);
 
 
                         if (skipcb) {
