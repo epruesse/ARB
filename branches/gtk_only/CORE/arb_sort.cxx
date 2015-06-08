@@ -10,6 +10,7 @@
 
 #include "arb_sort.h"
 #include <cstring>
+#include "arb_assert.h"
 
 
 struct comparator {
@@ -28,6 +29,11 @@ void GB_sort(void **array, size_t first, size_t behind_last, gb_compare_function
      * (specified by following element 'behind_last')
      * 'compare' is a compare function, with a strcmp-like result value
      */
+
+    if (!array) {
+        arb_assert(first == behind_last); // accept empty NULL-array
+        return;
+    }
 
     Compare.compare     = compare;
     Compare.client_data = client_data;
