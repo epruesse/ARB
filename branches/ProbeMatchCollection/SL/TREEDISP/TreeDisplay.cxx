@@ -43,8 +43,9 @@
 #define DEFAULT_RULER_LINEWIDTH tree_defaults::LINEWIDTH
 #define DEFAULT_RULER_LENGTH    tree_defaults::LENGTH
 
-static AW_color_idx  MatchProbeColourIndex[16] = {AW_WINDOW_BG};
-static const char *MatchProbeColours[16] = {
+const int MATCH_FLAG_COLORS = 16;
+static AW_color_idx  MatchProbeColourIndex[MATCH_FLAG_COLORS] = {AW_WINDOW_BG};
+static const char *MatchProbeColours[MATCH_FLAG_COLORS] = {
     "#77211F",
     "#75771F",
     "#1F7726",
@@ -102,7 +103,7 @@ AW_gc_manager AWT_graphic_tree::init_devices(AW_window *aww, AW_device *device, 
     // Add colours for identifying probes in multi-probe matching
     unsigned long colour_index = aww->color_table_size - AW_STD_COLOR_IDX_MAX;
 
-    for (int cn = 0 ; cn < 16 ; cn++) {
+    for (int cn = 0 ; cn < MATCH_FLAG_COLORS ; cn++) {
         MatchProbeColourIndex[cn] = aww->alloc_named_data_color(colour_index, MatchProbeColours[cn]);
 
         colour_index++;
@@ -1919,7 +1920,7 @@ public:
 void AWT_graphic_tree::drawMatchFlag(AP_tree *at, const class MatchFlagPosition& flag, const bool bPartial, const int nProbe) {
     td_assert(pcoll.display);
 
-    const int nColour = nProbe % 16;
+    const int nColour = nProbe % MATCH_FLAG_COLORS;
 
     disp_device->set_foreground_color(at->gr.gc, MatchProbeColourIndex[nColour]);
     disp_device->set_grey_level(at->gr.gc, this->grey_level);
@@ -2022,7 +2023,7 @@ void AWT_graphic_tree::drawMatchFlagNames(AP_tree *at, Position& Pen) {
         for (int nProbe = pcoll.numProbes - 1 ; nProbe >= 0 ; nProbe--) {
             const char *pProbeName = pcoll.get_name(nProbe);
             if (pProbeName != 0) {
-                int nColour = nProbe % 16;
+                int nColour = nProbe % MATCH_FLAG_COLORS;
                 clickflag.set_cd1(nProbe);
 
                 disp_device->set_foreground_color(at->gr.gc, MatchProbeColourIndex[nColour]);
