@@ -79,6 +79,9 @@ class AW_awar : virtual Noncopyable {
 
     static bool allowed_to_run_callbacks;
 
+    double callback_time_sum;   // in seconds
+    int    callback_time_count; // number of callbacks traced in callback_time_sum
+
 #if defined(DEBUG)
     bool is_global;
 #endif // DEBUG
@@ -107,8 +110,15 @@ public:
     void unlink();                                  // unconditionally unlink from DB
 
     bool unlink_from_DB(GBDATA *gb_main);
-    
+
     void run_callbacks();
+    double mean_callback_time() const {
+        if (callback_time_sum>0) {
+            return callback_time_sum / callback_time_count;
+        }
+        return 0.0;
+    }
+
     void update_target(AW_var_target*pntr);
     void update_targets();
 
