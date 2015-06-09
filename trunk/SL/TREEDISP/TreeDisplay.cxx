@@ -2687,9 +2687,9 @@ void TREE_create_awars(AW_root *aw_root, AW_default db) {
     aw_root->awar_int  (AWAR_DTREE_BOOTSTRAP_MIN, 0)->set_minmax(0,100);
     
     aw_root->awar_int(AWAR_DTREE_RADIAL_ZOOM_TEXT, 0);
-    aw_root->awar_int(AWAR_DTREE_RADIAL_XPAD,      150);
+    aw_root->awar_int(AWAR_DTREE_RADIAL_XPAD,      150)->set_minmax(-100, 2000);
     aw_root->awar_int(AWAR_DTREE_DENDRO_ZOOM_TEXT, 0);
-    aw_root->awar_int(AWAR_DTREE_DENDRO_XPAD,      300);
+    aw_root->awar_int(AWAR_DTREE_DENDRO_XPAD,      300)->set_minmax(-100, 2000);
 
     aw_root->awar_int(AWAR_TREE_REFRESH, 0, db);
 }
@@ -2781,12 +2781,14 @@ AW_window *TREE_create_settings_window(AW_root *aw_root) {
         aws->auto_space(10, 10);
         aws->label_length(30);
 
+        const int SCALER_WIDTH = 250;
+
         aws->label("Base line width");
-        aws->create_input_field(AWAR_DTREE_BASELINEWIDTH, 4);
+        aws->create_input_field_with_scaler(AWAR_DTREE_BASELINEWIDTH, 4, SCALER_WIDTH);
         aws->at_newline();
 
         aws->label("Relative vertical distance");
-        aws->create_input_field(AWAR_DTREE_VERICAL_DIST, 4);
+        aws->create_input_field_with_scaler(AWAR_DTREE_VERICAL_DIST, 4, SCALER_WIDTH, AW_SCALER_EXP_LOWER);
         aws->at_newline();
 
         TREE_insert_jump_option_menu(aws, "On species change", AWAR_DTREE_AUTO_JUMP);
@@ -2801,7 +2803,7 @@ AW_window *TREE_create_settings_window(AW_root *aw_root) {
         aws->at_newline();
 
         aws->label("Hide bootstrap value below");
-        aws->create_input_field(AWAR_DTREE_BOOTSTRAP_MIN, 4);
+        aws->create_input_field_with_scaler(AWAR_DTREE_BOOTSTRAP_MIN, 4, SCALER_WIDTH);
         aws->at_newline();
 
         aws->label("Use ellipses");
@@ -2809,25 +2811,27 @@ AW_window *TREE_create_settings_window(AW_root *aw_root) {
         aws->at_newline();
 
         aws->label("Bootstrap circle zoom factor");
-        aws->create_input_field(AWAR_DTREE_CIRCLE_ZOOM, 4);
+        aws->create_input_field_with_scaler(AWAR_DTREE_CIRCLE_ZOOM, 4, SCALER_WIDTH);
         aws->at_newline();
 
         aws->label("Boostrap radius limit");
-        aws->create_input_field(AWAR_DTREE_CIRCLE_MAX_SIZE, 4);
+        aws->create_input_field_with_scaler(AWAR_DTREE_CIRCLE_MAX_SIZE, 4, SCALER_WIDTH);
         aws->at_newline();
 
         aws->label("Grey Level of Groups%");
-        aws->create_input_field(AWAR_DTREE_GREY_LEVEL, 4);
+        aws->create_input_field_with_scaler(AWAR_DTREE_GREY_LEVEL, 4, SCALER_WIDTH);
         aws->at_newline();
+
+        const int PAD_SCALER_WIDTH = SCALER_WIDTH-39;
 
         aws->label("Text zoom/pad (dendro)");
         aws->create_toggle(AWAR_DTREE_DENDRO_ZOOM_TEXT);
-        aws->create_input_field(AWAR_DTREE_DENDRO_XPAD, 4);
+        aws->create_input_field_with_scaler(AWAR_DTREE_DENDRO_XPAD, 4, PAD_SCALER_WIDTH);
         aws->at_newline();
 
         aws->label("Text zoom/pad (radial)");
         aws->create_toggle(AWAR_DTREE_RADIAL_ZOOM_TEXT);
-        aws->create_input_field(AWAR_DTREE_RADIAL_XPAD, 4);
+        aws->create_input_field_with_scaler(AWAR_DTREE_RADIAL_XPAD, 4, PAD_SCALER_WIDTH);
         aws->at_newline();
 
         aws->at("config");
