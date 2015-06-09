@@ -28,7 +28,6 @@ public:
     // AW_device interface:
     AW_DEVICE_TYPE type() OVERRIDE;
 
-    int find_color_idx(AW_rgb color);
     void set_color_mode(bool mode);
 
 };
