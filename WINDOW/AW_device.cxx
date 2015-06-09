@@ -445,6 +445,10 @@ void AW_stylable::set_grey_level(int gc, AW_grey_level grey_level) {
     // <0 = don't fill, 0.0 = white, 1.0 = black
     get_common()->map_mod_gc(gc)->set_grey_level(grey_level);
 }
+AW_grey_level AW_stylable::get_grey_level(int gc) {
+    return get_common()->map_gc(gc)->get_grey_level();
+}
+
 void AW_stylable::set_font(int gc, AW_font font_nr, int size, int *found_size) {
     // if found_size != 0 -> return value for used font size
     get_common()->map_mod_gc(gc)->set_font(font_nr, size, found_size);

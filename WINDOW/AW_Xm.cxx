@@ -60,6 +60,74 @@ bool AW_device_Xm::text_impl(int gc, const char *str, const Position& pos, AW_po
     return text_overlay(gc, str, opt_strlen, pos, alignment, filteri, (AW_CL)this, 0.0, 0.0, AW_draw_string_on_screen);
 }
 
+const int STIPPLE_TYPES = 3;
+const int PIXMAP_SIZE   = 8; // 8x8 stipple mask
+
+static Pixmap getStipplePixmap(AW_common_Xm *common, int stippleType) {
+    // stippleType         fill percentage
+    //       0                  25%
+    //       1                  50%
+    //       2                  75%
+
+    aw_assert(stippleType>=0 && stippleType<STIPPLE_TYPES);
+
+    static Pixmap pixmap[STIPPLE_TYPES];
+    static bool   initialized = false;
+
+    if (!initialized) {
+        for (int t = 0; t<STIPPLE_TYPES; ++t) {
+            static char stippleBits[STIPPLE_TYPES][PIXMAP_SIZE] = {
+                { 0x88, 0x22, 0x88, 0x22, 0x88, 0x22, 0x88, 0x22 },
+                { 0x55, 0xaa, 0x55, 0xaa, 0x55, 0xaa, 0x55, 0xaa },
+                { 0xbb, 0xee, 0xbb, 0xee, 0xbb, 0xee, 0xbb, 0xee }
+            };
+            pixmap[t] = XCreateBitmapFromData(common->get_display(), common->get_window_id(), stippleBits[t], PIXMAP_SIZE, PIXMAP_SIZE);
+        }
+        initialized = true;
+    }
+
+    return pixmap[stippleType];
+}
+
+AW_device_Xm::FillStyle AW_device_Xm::setFillstyleForGreylevel(int gc) {
+    // sets fillstyle and stipple for current greylevel of 'gc'
+
+    AW_grey_level greylevel = get_grey_level(gc);
+
+    if (greylevel<0.125) {
+        return FS_EMPTY;
+    }
+    if (greylevel<0.875) { // otherwise draw solid
+        int stippleType = -1;
+        if (greylevel<0.375) {
+            stippleType = 0; // 25%
+        }
+        else if (greylevel<0.625) {
+            stippleType = 1; // 50%
+        }
+        else {
+            stippleType = 2; // 75%
+        }
+
+        AW_common_Xm *Common  = get_common();
+        Pixmap        stipple = getStipplePixmap(Common, stippleType);
+
+        Display *Disp = Common->get_display();
+        GC       xgc  = Common->get_GC(gc);
+
+        XSetStipple(Disp, xgc, stipple);
+        XSetFillStyle(Disp, xgc, FillStippled);
+
+        return FS_GREY;
+    }
+    return FS_SOLID;
+}
+void AW_device_Xm::resetFillstyleForGreylevel(int gc) {
+    // should be called after using setFillstyleForGreylevel (to undo XSetFillStyle)
+    // (Note: may be skipped if setFillstyleForGreylevel did not return FS_GREY)
+    XSetFillStyle(get_common()->get_display(), get_common()->get_GC(gc), FillSolid);
+}
+
 bool AW_device_Xm::box_impl(int gc, bool filled, const Rectangle& rect, AW_bitset filteri) {
     bool drawflag = false;
     if (filteri & filter) {
@@ -68,12 +136,27 @@ bool AW_device_Xm::box_impl(int gc, bool filled, const Rectangle& rect, AW_bitse
             Rectangle clippedRect;
             drawflag = box_clip(transRect, clippedRect);
             if (drawflag) {
-                XFillRectangle(XDRAW_PARAM3(get_common(), gc),
-                               AW_INT(clippedRect.left()),
-                               AW_INT(clippedRect.top()),
-                               AW_INT(clippedRect.width())+1, // see aw_device.hxx@WORLD_vs_PIXEL
-                               AW_INT(clippedRect.height())+1);
-                AUTO_FLUSH(this);
+                FillStyle fillStyle = setFillstyleForGreylevel(gc);
+
+#define RECTANGLE_PARAMS XDRAW_PARAM3(get_common(), gc),        \
+                    AW_INT(clippedRect.left()),                 \
+                    AW_INT(clippedRect.top()),                  \
+                    AW_INT(clippedRect.width())+1,              \
+                    AW_INT(clippedRect.height())+1
+                // for "+1" see aw_device.hxx@WORLD_vs_PIXEL
+
+                if (fillStyle != FS_EMPTY) {
+                    XFillRectangle(RECTANGLE_PARAMS);
+                    if (fillStyle == FS_GREY) resetFillstyleForGreylevel(gc);
+                }
+                if (fillStyle != FS_SOLID) {
+                    // draw solid box-border (for empty and grey box)
+                    // (Note: using XDrawRectangle here is wrong!)
+                    generic_box(gc, false, rect, filteri);
+                }
+                else {
+                    AUTO_FLUSH(this);
+                }
             }
         }
         else {
@@ -160,3 +243,4 @@ void AW_device_Xm::move_region(AW_pos src_x, AW_pos src_y, AW_pos width, AW_pos 
               AW_INT(dest_x), AW_INT(dest_y));
     AUTO_FLUSH(this);
 }
+
