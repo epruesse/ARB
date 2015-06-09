@@ -138,20 +138,18 @@ bool AW_device_Xm::box_impl(int gc, bool filled, const Rectangle& rect, AW_bitse
             if (drawflag) {
                 FillStyle fillStyle = setFillstyleForGreylevel(gc);
 
-#define RECTANGLE_PARAMS XDRAW_PARAM3(get_common(), gc),        \
-                    AW_INT(clippedRect.left()),                 \
-                    AW_INT(clippedRect.top()),                  \
-                    AW_INT(clippedRect.width())+1,              \
-                    AW_INT(clippedRect.height())+1
-                // for "+1" see aw_device.hxx@WORLD_vs_PIXEL
-
                 if (fillStyle != FS_EMPTY) {
-                    XFillRectangle(RECTANGLE_PARAMS);
+                    XFillRectangle(XDRAW_PARAM3(get_common(), gc),
+                                   AW_INT(clippedRect.left()),
+                                   AW_INT(clippedRect.top()),
+                                   AW_INT(clippedRect.width())+1, // see aw_device.hxx@WORLD_vs_PIXEL
+                                   AW_INT(clippedRect.height())+1);
+
                     if (fillStyle == FS_GREY) resetFillstyleForGreylevel(gc);
                 }
                 if (fillStyle != FS_SOLID) {
                     // draw solid box-border (for empty and grey box)
-                    // (Note: using XDrawRectangle here is wrong!)
+                    // (Note: using XDrawRectangle here is wrong)
                     generic_box(gc, false, rect, filteri);
                 }
                 else {

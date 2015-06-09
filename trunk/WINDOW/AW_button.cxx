@@ -32,6 +32,7 @@
 #include <Xm/Text.h>
 #include <Xm/TextF.h>
 #include <Xm/ScrolledW.h>
+#include <Xm/Scale.h>
 
 #include <iostream>
 
@@ -40,33 +41,52 @@
 #endif // DEBUG
 
 class VarUpdateInfo : virtual Noncopyable { // used to refresh single items on change
-    AW_window         *aw_parent;
-    Widget             widget;
-    AW_widget_type     widget_type;
-    AW_awar           *awar;
-    AW_scalar          value;
-    AW_cb             *cbs;
-    AW_selection_list *sellist;
+    AW_window      *aw_parent;
+    Widget          widget;
+    AW_widget_type  widget_type;
+    AW_awar        *awar;
+    AW_scalar       value;
+    AW_cb          *cbs;
+
+    union TS { // AW_widget_type-specific
+        AW_selection_list *sellist;    // only used for AW_WIDGET_SELECTION_LIST
+        AW_ScalerType      scalerType; // only used for AW_WIDGET_SCALER
+        TS() : sellist(NULL) {}
+    } ts;
 
 public:
     VarUpdateInfo(AW_window *aw, Widget w, AW_widget_type wtype, AW_awar *a, AW_cb *cbs_)
-        : aw_parent(aw), widget(w), widget_type(wtype), awar(a),
+        : aw_parent(aw),
+          widget(w),
+          widget_type(wtype),
+          awar(a),
           value(a),
-          cbs(cbs_), sellist(NULL)
-    {
-    }
+          cbs(cbs_)
+    {}
     template<typename T>
     VarUpdateInfo(AW_window *aw, Widget w, AW_widget_type wtype, AW_awar *a, T t, AW_cb *cbs_)
-        : aw_parent(aw), widget(w), widget_type(wtype), awar(a),
+        : aw_parent(aw),
+          widget(w),
+          widget_type(wtype),
+          awar(a),
           value(t),
-          cbs(cbs_), sellist(NULL)
-    {
-    }
+          cbs(cbs_)
+    {}
 
     void change_from_widget(XtPointer call_data);
 
     void set_widget(Widget w) { widget = w; }
-    void set_sellist(AW_selection_list *asl) { sellist = asl; }
+
+    void set_sellist(AW_selection_list *asl) {
+        aw_assert(widget_type == AW_WIDGET_SELECTION_LIST);
+        ts.sellist = asl;
+    }
+    void set_scalerType(AW_ScalerType scalerType_) {
+        aw_assert(widget_type == AW_WIDGET_SCALER);
+        ts.scalerType = scalerType_;
+    }
+
+    AW_awar *get_awar() { return awar; }
 };
 
 static void AW_variable_update_callback(Widget /*wgt*/, XtPointer variable_update_struct, XtPointer call_data) {
@@ -87,6 +107,97 @@ static void track_awar_change_cb(GBDATA *IF_ASSERTION_USED(gbd), TrackedAwarChan
     aw_assert(cb_type == GB_CB_CHANGED);
     aw_assert(tac->awar->gb_var == gbd);
     tac->changed = true;
+}
+
+#define SCALER_MIN_VALUE 0
+#define SCALER_MAX_VALUE 1000
+
+static float apply_ScalerType(float val, AW_ScalerType scalerType, bool inverse) {
+    float res;
+
+    aw_assert(val>=0.0 && val<=1.0);
+
+    switch (scalerType) {
+        case AW_SCALER_LINEAR:
+            res = val;
+            break;
+
+        case AW_SCALER_EXP_LOWER:
+            if (inverse) res = pow(val, 1/3.0);
+            else         res = pow(val, 3.0);
+            break;
+
+        case AW_SCALER_EXP_UPPER:
+            res = 1.0-apply_ScalerType(1.0-val, AW_SCALER_EXP_LOWER, inverse);
+            break;
+
+        case AW_SCALER_EXP_BORDER:
+            inverse = !inverse;
+            // fall-through
+        case AW_SCALER_EXP_CENTER: {
+            AW_ScalerType subType = inverse ? AW_SCALER_EXP_UPPER : AW_SCALER_EXP_LOWER;
+            if      (val>0.5) res = (1+apply_ScalerType(2*val-1, subType, false))/2;
+            else if (val<0.5) res = (1-apply_ScalerType(1-2*val, subType, false))/2;
+            else              res = val;
+            break;
+        }
+    }
+
+    aw_assert(res>=0.0 && res<=1.0);
+
+    return res;
+}
+
+static int calculate_scaler_value(AW_awar *awar, AW_ScalerType scalerType) {
+    float amin = awar->get_min();
+    float amax = awar->get_max();
+
+    float awarRel = 0.0;
+    switch (awar->variable_type) {
+        case AW_FLOAT:
+            awarRel = (awar->read_float()-amin) / (amax-amin);
+            break;
+
+        case AW_INT:
+            awarRel = (awar->read_int()-amin) / (amax-amin);
+            break;
+
+        default:
+            GBK_terminatef("Unsupported awar type %i in calculate_scaler_value", int(awar->variable_type));
+            break;
+    }
+
+    aw_assert(awarRel>=0.0 && awarRel<=1.0);
+
+    float modAwarRel  = apply_ScalerType(awarRel, scalerType, true);
+    int   scalerValue = SCALER_MIN_VALUE + modAwarRel * (SCALER_MAX_VALUE-SCALER_MIN_VALUE);
+
+    return scalerValue;
+}
+
+static void write_scalervalue_to_awar(int scalerVal, AW_awar *awar, AW_ScalerType scalerType) {
+    float amin     = awar->get_min();
+    float amax     = awar->get_max();
+    float scaleRel = scalerVal/double(SCALER_MAX_VALUE-SCALER_MIN_VALUE);
+
+    aw_assert(scaleRel>=0.0 && scaleRel<=1.0);
+
+    float modScaleRel = apply_ScalerType(scaleRel, scalerType, false);
+    float aval        = amin + modScaleRel*(amax-amin);
+
+    switch (awar->variable_type) {
+        case AW_FLOAT:
+            awar->write_float(aval);
+            break;
+
+        case AW_INT:
+            awar->write_int(aval);
+            break;
+
+        default:
+            GBK_terminatef("Unsupported awar type %i in write_scalervalue_to_awar", int(awar->variable_type));
+            break;
+    }
 }
 
 void VarUpdateInfo::change_from_widget(XtPointer call_data) {
@@ -138,13 +249,13 @@ void VarUpdateInfo::change_from_widget(XtPointer call_data) {
                 XmStringGetLtoR(xml->item, XmSTRING_DEFAULT_CHARSET, &selected);
             }
 
-            AW_selection_list_entry *entry = sellist->list_table;
+            AW_selection_list_entry *entry = ts.sellist->list_table;
             while (entry && strcmp(entry->get_displayed(), selected) != 0) {
                 entry = entry->next;
             }
 
             if (!entry) {   
-                entry = sellist->default_select; // use default selection
+                entry = ts.sellist->default_select; // use default selection
                 if (!entry) GBK_terminate("no default specified for selection list"); // or die
             }
             entry->value.write_to(awar);
@@ -155,6 +266,11 @@ void VarUpdateInfo::change_from_widget(XtPointer call_data) {
         case AW_WIDGET_LABEL_FIELD:
             break;
 
+        case AW_WIDGET_SCALER: {
+            XmScaleCallbackStruct *xms = (XmScaleCallbackStruct*)call_data;
+            write_scalervalue_to_awar(xms->value, awar, ts.scalerType);
+            break;
+        }
         default:
             GBK_terminatef("Unknown widget type %i in AW_variable_update_callback", widget_type);
             break;
@@ -1125,6 +1241,76 @@ void AW_window::create_text_field(const char *var_name, int columns, int rows) {
 
 void AW_window::update_text_field(Widget widget, const char *var_value) {
     XtVaSetValues(widget, XmNvalue, var_value, NULL);
+}
+
+static void scalerChanged_cb(Widget scale, XtPointer variable_update_struct, XtPointer call_data) {
+    XmScaleCallbackStruct *cbs = (XmScaleCallbackStruct*)call_data;
+    VarUpdateInfo         *vui = (VarUpdateInfo*)variable_update_struct;
+
+    bool do_update = true;
+    if (cbs->reason == XmCR_DRAG) { // still dragging?
+        double mean_callback_time = vui->get_awar()->mean_callback_time();
+
+        const double MAX_DRAGGED_CALLBACK_TIME = 1.0;
+        if (mean_callback_time>MAX_DRAGGED_CALLBACK_TIME) {
+            do_update = false; // do not update while dragging, if update callback needs more than 1 second
+                               // Note that a longer update will happen once!
+        }
+    }
+
+    if (do_update) {
+        AW_root::SINGLETON->value_changed = true;
+        AW_variable_update_callback(scale, variable_update_struct, call_data);
+    }
+}
+
+void AW_window::create_input_field_with_scaler(const char *awar_name, int textcolumns, int scaler_length, AW_ScalerType scalerType) {
+    create_input_field(awar_name, textcolumns);
+
+    Widget parentWidget = _at->attach_any ? INFO_FORM : INFO_WIDGET;
+
+    AW_awar *vs = root->awar(awar_name);
+    // Note: scaler also "works" if no min/max is defined for awar, but scaling is a bit weird
+    int scalerValue = calculate_scaler_value(vs, scalerType);
+
+    Widget scale = XtVaCreateManagedWidget("scale",
+                                           xmScaleWidgetClass,
+                                           parentWidget,
+                                           XmNx, _at->x_for_next_button,
+                                           XmNy, _at->y_for_next_button + 4,
+                                           XmNorientation, XmHORIZONTAL,
+                                           XmNscaleWidth, scaler_length,
+                                           XmNshowValue, False,
+                                           XmNminimum, SCALER_MIN_VALUE,
+                                           XmNmaximum, SCALER_MAX_VALUE,
+                                           XmNvalue, scalerValue,
+                                           NULL);
+
+    short width_of_last_widget  = 0;
+    short height_of_last_widget = 0;
+
+    XtVaGetValues(scale,
+                  XmNheight, &height_of_last_widget,
+                  XmNwidth, &width_of_last_widget,
+                  NULL);
+
+    AW_cb         *cbs = _callback;
+    VarUpdateInfo *vui = new VarUpdateInfo(this, scale, AW_WIDGET_SCALER, vs, cbs);
+    vui->set_scalerType(scalerType);
+
+    XtAddCallback(scale, XmNvalueChangedCallback, scalerChanged_cb, (XtPointer)vui);
+    XtAddCallback(scale, XmNdragCallback,         scalerChanged_cb, (XtPointer)vui);
+
+    vs->tie_widget((AW_CL)scalerType, scale, AW_WIDGET_SCALER, this);
+    root->make_sensitive(scale, _at->widget_mask);
+
+    this->unset_at_commands();
+    this->increment_at_commands(width_of_last_widget, height_of_last_widget);
+}
+
+void AW_window::update_scaler(Widget widget, AW_awar *awar, AW_ScalerType scalerType) {
+    int scalerVal = calculate_scaler_value(awar, scalerType);
+    XtVaSetValues(widget, XmNvalue, scalerVal, NULL);
 }
 
 // -----------------------
