@@ -213,9 +213,9 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
     void show_irs_tree(AP_tree *at, double height);
 
     void enumerateClade(AP_tree *at, int* pMatchCounts, int& nCladeSize, int nNumProbes);
-    void drawMatchFlag(AP_tree *at, const class MatchFlagPosition& flag, const bool bPartial, const int nProbe);
+    void drawMatchFlag(const class MatchFlagPosition& flag, const bool bPartial, const int nProbe);
     void detectAndDrawMatchFlags(AP_tree *at, double y1, double y2);
-    void drawMatchFlagNames(AP_tree *at, AW::Position& Pen);
+    void drawMatchFlagNames(AW::Position& Pen);
 
     void box(int gc, const AW::Position& pos, int pixel_width, bool filled);
     void filled_box(int gc, const AW::Position& pos, int pixel_width) { box(gc, pos, pixel_width, true); }

@@ -43,25 +43,57 @@
 #define DEFAULT_RULER_LINEWIDTH tree_defaults::LINEWIDTH
 #define DEFAULT_RULER_LENGTH    tree_defaults::LENGTH
 
-const int MATCH_FLAG_COLORS = 16;
-static AW_color_idx  MatchProbeColourIndex[MATCH_FLAG_COLORS] = {AW_WINDOW_BG};
-static const char *MatchProbeColours[MATCH_FLAG_COLORS] = {
-    "#77211F",
-    "#75771F",
-    "#1F7726",
-    "#2D9495",
-    "#526ACD",
-    "#8F4DE7",
-    "#AC60AB",
-    "#A91759",
-    "#996417",
-    "#58832C",
-    "#27934A",
-    "#276293",
-    "#404DD7",
-    "#9840D7",
-    "#CA69AD",
-    "#AD4A4D"
+const int MATCH_FLAG_COLORS = 12;
+static int MatchProbeGC[MATCH_FLAG_COLORS] = {
+#if 0
+    // ordered rainbow
+    AWT_GC_RED,
+    AWT_GC_ORANGE,
+    AWT_GC_YELLOW,
+    AWT_GC_LAWNGREEN,
+    AWT_GC_GREEN,
+    AWT_GC_AQUAMARIN,
+    AWT_GC_CYAN,
+    AWT_GC_SKYBLUE,
+    AWT_GC_BLUE,
+    AWT_GC_PURPLE,
+    AWT_GC_MAGENTA,
+    AWT_GC_PINK,
+#else
+#if 0
+    // interleaved rainbow
+    AWT_GC_RED,
+    AWT_GC_GREEN,
+    AWT_GC_BLUE,
+
+    AWT_GC_ORANGE,
+    AWT_GC_AQUAMARIN,
+    AWT_GC_PURPLE,
+
+    AWT_GC_YELLOW,
+    AWT_GC_CYAN,
+    AWT_GC_MAGENTA,
+
+    AWT_GC_LAWNGREEN,
+    AWT_GC_SKYBLUE,
+    AWT_GC_PINK,
+#else
+    // double rainbow
+    AWT_GC_RED,
+    AWT_GC_YELLOW,
+    AWT_GC_GREEN,
+    AWT_GC_CYAN,
+    AWT_GC_BLUE,
+    AWT_GC_MAGENTA,
+
+    AWT_GC_ORANGE,
+    AWT_GC_LAWNGREEN,
+    AWT_GC_AQUAMARIN,
+    AWT_GC_SKYBLUE,
+    AWT_GC_PURPLE,
+    AWT_GC_PINK,
+#endif
+#endif
 };
 
 const int MATCH_COL_WIDTH = 3;
@@ -99,15 +131,6 @@ AW_gc_manager AWT_graphic_tree::init_devices(AW_window *aww, AW_device *device, 
                      "+-P10(lawn)$#c0ff40",      "+-P11(skyblue)$#40c0ff", "-P12(pink)$#f030b0",
 
                      NULL);
-
-    // Add colours for identifying probes in multi-probe matching
-    unsigned long colour_index = aww->color_table_size - AW_STD_COLOR_IDX_MAX;
-
-    for (int cn = 0 ; cn < MATCH_FLAG_COLORS ; cn++) {
-        MatchProbeColourIndex[cn] = aww->alloc_named_data_color(colour_index, MatchProbeColours[cn]);
-
-        colour_index++;
-    }
 
     return gc_manager;
 }
@@ -1917,23 +1940,14 @@ public:
 };
 
 
-void AWT_graphic_tree::drawMatchFlag(AP_tree *at, const class MatchFlagPosition& flag, const bool bPartial, const int nProbe) {
+void AWT_graphic_tree::drawMatchFlag(const class MatchFlagPosition& flag, const bool bPartial, const int nProbe) {
     td_assert(pcoll.display);
 
-    const int nColour = nProbe % MATCH_FLAG_COLORS;
+    const int gc = MatchProbeGC[nProbe % MATCH_FLAG_COLORS];
 
-    disp_device->set_foreground_color(at->gr.gc, MatchProbeColourIndex[nColour]);
-    disp_device->set_grey_level(at->gr.gc, this->grey_level);
-
-    if (bPartial) {
-        disp_device->set_fill_stipple(at->gr.gc);
-    }
-
-    disp_device->box(at->gr.gc, true, flag.pos(nProbe), flag.size(), match_flag_filter);
-
-    if (bPartial) {
-        disp_device->set_fill_solid(at->gr.gc);
-    }
+    if (bPartial) disp_device->set_fill_stipple(gc);
+    disp_device->box(gc, true, flag.pos(nProbe), flag.size(), match_flag_filter);
+    if (bPartial) disp_device->set_fill_solid(gc);
 }
 
 void AWT_graphic_tree::detectAndDrawMatchFlags(AP_tree *at, const double y1, const double y2) {
@@ -1941,8 +1955,6 @@ void AWT_graphic_tree::detectAndDrawMatchFlags(AP_tree *at, const double y1, con
 
     if (disp_device->type() != AW_DEVICE_SIZE) {
         // Note: extra device scaling needed to show flags is done by drawMatchFlagNames
-        const AW_color_idx LastColor  = disp_device->get_foreground_color(at->gr.gc);
-        bool               bChanged   = false;
 
         MatchFlagPosition flag(disp_device->get_scale(), pcoll.numProbes, y1, y2);
 
@@ -1974,8 +1986,7 @@ void AWT_graphic_tree::detectAndDrawMatchFlags(AP_tree *at, const double y1, con
 
                         if (bMatched) {
                             clickflag.set_cd1(nProbe);
-                            drawMatchFlag(at, flag, bPartialMatch, nProbe);
-                            bChanged = true;
+                            drawMatchFlag(flag, bPartialMatch, nProbe);
                         }
                     }
                 }
@@ -1984,28 +1995,20 @@ void AWT_graphic_tree::detectAndDrawMatchFlags(AP_tree *at, const double y1, con
                 for (int nProbe = 0 ; nProbe < pcoll.numProbes ; nProbe++) {
                     if (pMatchCounts[nProbe] > 0) {
                         clickflag.set_cd1(nProbe);
-                        drawMatchFlag(at, flag, false, nProbe);
-                        bChanged = true;
+                        drawMatchFlag(flag, false, nProbe);
                     }
                 }
             }
         }
-
-
-        if (bChanged) {
-            disp_device->set_foreground_color(at->gr.gc, LastColor);
-        }
     }
 }
 
-void AWT_graphic_tree::drawMatchFlagNames(AP_tree *at, Position& Pen) {
+void AWT_graphic_tree::drawMatchFlagNames(Position& Pen) {
     td_assert(pcoll.display);
 
     MatchFlagXPos flag(disp_device->get_scale(), pcoll.numProbes);
 
     if (disp_device->type() != AW_DEVICE_SIZE) {
-        const AW_color_idx LastColor = disp_device->get_foreground_color(at->gr.gc);
-
         Position pl1(flag.centerx(pcoll.numProbes-1), Pen.ypos()); // upper point of thin line
         Pen.movey(scaled_branch_distance);
         Position pl2(pl1.xpos(), Pen.ypos()); // lower point of thin line
@@ -2023,13 +2026,13 @@ void AWT_graphic_tree::drawMatchFlagNames(AP_tree *at, Position& Pen) {
         for (int nProbe = pcoll.numProbes - 1 ; nProbe >= 0 ; nProbe--) {
             const char *pProbeName = pcoll.get_name(nProbe);
             if (pProbeName != 0) {
-                int nColour = nProbe % MATCH_FLAG_COLORS;
+                int gc = MatchProbeGC[nProbe % MATCH_FLAG_COLORS];
+
                 clickflag.set_cd1(nProbe);
 
-                disp_device->set_foreground_color(at->gr.gc, MatchProbeColourIndex[nColour]);
-                disp_device->line(at->gr.gc, pl1, pl2, match_flag_filter);
-                disp_device->box(at->gr.gc, true, mbox, match_flag_filter);
-                disp_device->text(at->gr.gc, pProbeName, mbox.upper_left_corner()+b2t, 0, match_flag_filter, strlen(pProbeName));
+                disp_device->line(gc, pl1, pl2, match_flag_filter);
+                disp_device->box(gc, true, mbox, match_flag_filter);
+                disp_device->text(gc, pProbeName, mbox.upper_left_corner()+b2t, 0, match_flag_filter, strlen(pProbeName));
             }
 
             pl1.movex(toNext.x());
@@ -2038,13 +2041,11 @@ void AWT_graphic_tree::drawMatchFlagNames(AP_tree *at, Position& Pen) {
         }
 
         Pen.movey(scaled_branch_distance * (pcoll.numProbes+2));
-
-        disp_device->set_foreground_color(at->gr.gc, LastColor);
     }
     else { // just reserve space on size device
         Pen.movey(scaled_branch_distance * (pcoll.numProbes+3));
         Position leftmost(flag.leftx(0), Pen.ypos());
-        disp_device->line(at->gr.gc, Pen, leftmost, match_flag_filter);
+        disp_device->line(AWT_GC_CURSOR, Pen, leftmost, match_flag_filter);
     }
 }
 
@@ -2878,7 +2879,7 @@ void AWT_graphic_tree::show(AW_device *device) {
 
                 int rulerOffset = 2;
                 if (pcoll.display) {
-                    drawMatchFlagNames(displayed_root, pen);
+                    drawMatchFlagNames(pen);
                     ++rulerOffset;
                 }
                 list_tree_ruler_y = pen.ypos() + double(rulerOffset) * scaled_branch_distance;
