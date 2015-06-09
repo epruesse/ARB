@@ -339,7 +339,6 @@ public:
     void set_function(int gc, AW_function function);
     void establish_default(int gc);
     void set_foreground_color(int gc, AW_color_idx color); // lines ....
-    AW_color_idx get_foreground_color(int gc);
     int  get_string_size(int gc, const  char *string, long textlen) const; // get the size of the string
 
     const AW_font_limits& get_font_limits(int gc, char c) const; // for one characters (c == 0 -> for all characters)

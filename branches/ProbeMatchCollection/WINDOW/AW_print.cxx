@@ -157,37 +157,6 @@ int AW_common::find_data_color_idx(AW_rgb color) const {
     return -1;
 }
 
-int AW_common::find_color_idx(AW_rgb color) const {
-    int   cn;
-    bool  bFound      = false;
-    int   color_index = -1;
-
-    for (cn = 0 ; cn < AW_STD_COLOR_IDX_MAX ; cn++)
-    {
-        if (frame_colors[cn] == color)
-        {
-            color_index = cn;
-            bFound      = true;
-            break;
-        }
-    }
-
-    if (!bFound)
-    {
-        for (cn = 0 ; cn < data_colors_size ; cn++)
-        {
-            if (data_colors[cn] == color)
-            {
-                color_index = cn;
-                bFound      = true;
-                break;
-            }
-        }
-    }
-
-    return (color_index);
-}
-
 int AW_device_print::find_color_idx(AW_rgb color) {
     int idx = -1;
     if (color_mode) {

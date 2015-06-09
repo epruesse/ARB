@@ -489,9 +489,6 @@ void AW_stylable::set_function(int gc, AW_function function) {
 void AW_stylable::set_foreground_color(int gc, AW_color_idx color) {
     get_common()->map_mod_gc(gc)->set_fg_color(get_common()->get_color(color));
 }
-AW_color_idx AW_stylable::get_foreground_color(int gc) {
-    return ((AW_color_idx)get_common()->find_color_idx(get_common()->map_mod_gc(gc)->get_last_fg_color()));
-}
 void AW_stylable::establish_default(int gc) {
     get_common()->map_mod_gc(gc)->establish_default();
 }

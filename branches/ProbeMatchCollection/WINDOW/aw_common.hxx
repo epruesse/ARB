@@ -262,7 +262,6 @@ public:
     }
     AW_rgb get_data_color(int i) const { return data_colors[i]; }
     int find_data_color_idx(AW_rgb color) const;
-    int find_color_idx(AW_rgb color) const;
     int get_data_color_size() const { return data_colors_size; }
 
     AW_rgb get_XOR_color() const {
