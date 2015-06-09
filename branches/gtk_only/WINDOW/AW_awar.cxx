@@ -157,7 +157,25 @@ AW_choice* AW_awar_impl::add_choice(AW_action&, double, bool) {
 // callback handling
 
 void AW_awar_impl::run_callbacks() {
-    if (allowed_to_run_callbacks) changed.emit();
+    if (allowed_to_run_callbacks) {
+        clock_t start = clock();
+
+        changed.emit();
+
+        clock_t end = clock();
+
+        if (start<end) { // ignore overflown
+            double cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+
+            if (callback_time_count>19 && (callback_time_count%2) == 0) {
+                callback_time_count = callback_time_count/2;
+                callback_time_sum   = callback_time_sum/2.0;
+            }
+
+            callback_time_sum += cpu_time_used;
+            callback_time_count++;
+        }
+    }
 }
 
 AW_awar *AW_awar_impl::add_callback(const RootCallback& rcb) {
@@ -630,11 +648,13 @@ GB_ERROR AW_awar_pointer::reset_to_default() {
 
 // --------------------------------------------------------------------------------
 
-AW_awar_impl::AW_awar_impl(const char *var_name) 
-  : in_tmp_branch(var_name && strncmp(var_name, "tmp/", 4) == 0),
-    choices(this),
-    gb_origin(NULL),
-    gb_var(NULL)
+AW_awar_impl::AW_awar_impl(const char *var_name)
+    : in_tmp_branch(var_name && strncmp(var_name, "tmp/", 4) == 0),
+      callback_time_sum(0.0),
+      callback_time_count(0),
+      choices(this),
+      gb_origin(NULL),
+      gb_var(NULL)
 {
     awar_name = strdup(var_name);
 }
