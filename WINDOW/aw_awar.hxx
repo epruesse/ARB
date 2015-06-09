@@ -114,6 +114,8 @@ public:
     virtual AW_awar *add_target_var(float *pfloat) = 0;
     virtual void     update() = 0;       // awar has changed
 
+    virtual double mean_callback_time() const = 0;
+
     // limits
     virtual AW_awar *set_minmax(float min, float max) = 0;
     virtual float    get_min() const = 0;

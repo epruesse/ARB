@@ -41,6 +41,9 @@ class AW_awar_impl : public AW_awar, virtual Noncopyable {
 
     static bool allowed_to_run_callbacks;
 
+    double callback_time_sum;   // in seconds
+    int    callback_time_count; // number of callbacks traced in callback_time_sum
+
     static void gbdata_changed(GBDATA*, int*, GB_CB_TYPE);
     static void gbdata_deleted(GBDATA*, int*, GB_CB_TYPE);
 
@@ -73,10 +76,17 @@ public:
     void update() OVERRIDE;
     void update_choices() OVERRIDE { choices.update(); }
 
+    double mean_callback_time() const OVERRIDE {
+        if (callback_time_sum>0) {
+            return callback_time_sum / callback_time_count;
+        }
+        return 0.0;
+    }
+
     virtual AW_choice *add_choice(AW_action&, int,         bool) OVERRIDE;
     virtual AW_choice *add_choice(AW_action&, double,      bool) OVERRIDE;
     virtual AW_choice *add_choice(AW_action&, const char*, bool) OVERRIDE;
-    
+
     AW_awar *add_callback(const RootCallback& cb) OVERRIDE;
     AW_awar *remove_callback(const RootCallback& cb) OVERRIDE;
 
