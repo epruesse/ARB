@@ -1933,7 +1933,7 @@ void AW_area_management::create_devices(AW_window *aww, AW_area ar) {
     common = new AW_common_Xm(XtDisplay(area), XtWindow(area), p_global->color_table, aww->color_table, aww->color_table_size, aww, ar);
 }
 
-AW_color_idx AW_window::alloc_named_data_color(int colnum, char *colorname) {
+AW_color_idx AW_window::alloc_named_data_color(int colnum, const char *colorname) {
     if (!color_table_size) {
         color_table_size = AW_STD_COLOR_IDX_MAX + colnum;
         color_table      = (AW_rgb*)malloc(sizeof(AW_rgb) *color_table_size);
