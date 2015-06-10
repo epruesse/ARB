@@ -557,8 +557,28 @@ static gboolean noop_signal_handler(GtkWidget* /*wgt*/, gpointer /*user_data*/) 
     return true; // stop signal
 }
 
+static void aw_update_adjustment_cb(UNFIXED, AW_awar *awar, GtkAdjustment *adj) {
+    float minVal = awar->get_min();
+    float maxVal = awar->get_max();
+
+    if (adj->lower != minVal || adj->upper != maxVal) {
+#if DEBUG
+        fprintf(stderr,
+                "aw_update_adjustment_cb updates GtkAdjustment for awar '%s'\n"
+                "  min: %f -> %f\n"
+                "  max: %f -> %f\n",
+                awar->get_name(),
+                adj->lower, minVal,
+                adj->upper, maxVal);
+#endif
+
+        adj->lower = minVal;
+        adj->upper = maxVal;
+    }
+}
+
 /**
- * Creates a data entry field. 
+ * Creates a data entry field.
  * If the AWAR is numeric, creates a spinner, if text creates a 
  * single line text field.
  */
@@ -591,7 +611,7 @@ void AW_window::create_input_field(const char *var_name,   int columns) {
         }
 
         adj = GTK_ADJUSTMENT(gtk_adjustment_new(awar->read_as_float(), 
-                                                awar->get_min(), awar->get_max(), 
+                                                awar->get_min(), awar->get_max(),
                                                 step, 50 *step, 0));
         entry = gtk_spin_button_new(adj, climb_rate, precision);
         if(awar->get_type() == GB_INT)
@@ -602,7 +622,9 @@ void AW_window::create_input_field(const char *var_name,   int columns) {
         {
             awar->bind_value(G_OBJECT(entry), "value");
         }
-     
+
+        awar->add_callback(makeRootCallback(aw_update_adjustment_cb, awar, adj));
+
         width--; // make room for the spinner
     }
 
