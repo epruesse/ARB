@@ -244,6 +244,15 @@ enum AW_ScalerType {
     AW_SCALER_EXP_BORDER, // fine-tuned at borders, big steps at center
 };
 
+class AW_ScalerTransformer {
+    AW_ScalerType type;
+public:
+    AW_ScalerTransformer(AW_ScalerType type_) : type(type_) {}
+
+    float scaler2awar(float scaler, AW_awar *awar); // [0..1] -> awar-range
+    float awar2scaler(AW_awar *awar); // returns [0..1]
+};
+
 class AW_window : virtual Noncopyable {
     AW_SizeRecalc recalc_size_at_show;
     AW_PosRecalc  recalc_pos_at_show;

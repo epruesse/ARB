@@ -158,6 +158,79 @@ void AW_window::d_callback(const WindowCallback& wcb) {
     _d_callback = new AW_cb(this, wcb);
 }
 
+// -------------------------------------------------------------
+//      code used by scalers (common between motif and gtk)
+
+static float apply_ScalerType(float val, AW_ScalerType scalerType, bool inverse) {
+    float res;
+
+    aw_assert(val>=0.0 && val<=1.0);
+
+    switch (scalerType) {
+        case AW_SCALER_LINEAR:
+            res = val;
+            break;
+
+        case AW_SCALER_EXP_LOWER:
+            if (inverse) res = pow(val, 1/3.0);
+            else         res = pow(val, 3.0);
+            break;
+
+        case AW_SCALER_EXP_UPPER:
+            res = 1.0-apply_ScalerType(1.0-val, AW_SCALER_EXP_LOWER, inverse);
+            break;
+
+        case AW_SCALER_EXP_BORDER:
+            inverse = !inverse;
+            // fall-through
+        case AW_SCALER_EXP_CENTER: {
+            AW_ScalerType subType = inverse ? AW_SCALER_EXP_UPPER : AW_SCALER_EXP_LOWER;
+            if      (val>0.5) res = (1+apply_ScalerType(2*val-1, subType, false))/2;
+            else if (val<0.5) res = (1-apply_ScalerType(1-2*val, subType, false))/2;
+            else              res = val;
+            break;
+        }
+    }
+
+    aw_assert(res>=0.0 && res<=1.0);
+
+    return res;
+}
+
+float AW_ScalerTransformer::scaler2awar(float scaler, AW_awar *awar) {
+    float amin        = awar->get_min();
+    float amax        = awar->get_max();
+    float modScaleRel = apply_ScalerType(scaler, type, false);
+    float aval        = amin + modScaleRel*(amax-amin);
+
+    return aval;
+}
+
+float AW_ScalerTransformer::awar2scaler(AW_awar *awar) {
+    float amin = awar->get_min();
+    float amax = awar->get_max();
+
+    float awarRel = 0.0;
+    switch (awar->variable_type) {
+        case AW_FLOAT:
+            awarRel = (awar->read_float()-amin) / (amax-amin);
+            break;
+
+        case AW_INT:
+            awarRel = (awar->read_int()-amin) / (amax-amin);
+            break;
+
+        default:
+            GBK_terminatef("Unsupported awar type %i in calculate_scaler_value", int(awar->variable_type));
+            break;
+    }
+
+    aw_assert(awarRel>=0.0 && awarRel<=1.0);
+
+    return apply_ScalerType(awarRel, type, true);
+}
+
+
 // ----------------------------------------------------------------------
 // force-diff-sync 7284637824 (remove after merging back to trunk)
 // ----------------------------------------------------------------------
@@ -3224,3 +3297,4 @@ AW_window_Motif::AW_window_Motif()
         areas[i] = NULL;
     }
 }
+
