@@ -76,12 +76,12 @@ static Pixmap getStipplePixmap(AW_common_Xm *common, int stippleType) {
 
     if (!initialized) {
         for (int t = 0; t<STIPPLE_TYPES; ++t) {
-            static char stippleBits[STIPPLE_TYPES][PIXMAP_SIZE] = {
+            static unsigned char stippleBits[STIPPLE_TYPES][PIXMAP_SIZE] = {
                 { 0x88, 0x22, 0x88, 0x22, 0x88, 0x22, 0x88, 0x22 },
                 { 0x55, 0xaa, 0x55, 0xaa, 0x55, 0xaa, 0x55, 0xaa },
                 { 0xbb, 0xee, 0xbb, 0xee, 0xbb, 0xee, 0xbb, 0xee }
             };
-            pixmap[t] = XCreateBitmapFromData(common->get_display(), common->get_window_id(), stippleBits[t], PIXMAP_SIZE, PIXMAP_SIZE);
+            pixmap[t] = XCreateBitmapFromData(common->get_display(), common->get_window_id(), reinterpret_cast<const char *>(stippleBits[t]), PIXMAP_SIZE, PIXMAP_SIZE);
         }
         initialized = true;
     }
