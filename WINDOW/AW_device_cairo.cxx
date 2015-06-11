@@ -168,10 +168,7 @@ bool AW_device_cairo::box_impl(int gc, bool filled, const Rectangle& rect, AW_bi
     return true;
 }
 
-bool AW_device_cairo::filled_area_impl(int gc, int npos, 
-                                       const AW::Position *pos, 
-                                       AW_bitset filteri) 
-{
+bool AW_device_cairo::polygon_impl(int gc, bool filled, int npos, const AW::Position *pos, AW_bitset filteri) {
     if (! (filteri & filter)) return false;
     
     cairo_t *cr = get_cr(gc);
@@ -191,15 +188,17 @@ bool AW_device_cairo::filled_area_impl(int gc, int npos,
                       AW_INT(transPos.ypos())+0.5);
     }
     cairo_close_path(cr); // draw line to first point
-    get_common()->update_cr(cr, gc, true);
-    cairo_fill_preserve(cr);
-    get_common()->update_cr(cr, gc, false);
+    if (filled) {
+        get_common()->update_cr(cr, gc, true);
+        cairo_fill_preserve(cr);
+        get_common()->update_cr(cr, gc, false);
+    }
     cairo_stroke(cr);
-    
+
     return true;
 }
 
-bool AW_device_cairo::circle_impl(int gc, bool filled, const AW::Position& center, 
+bool AW_device_cairo::circle_impl(int gc, bool filled, const AW::Position& center,
                                 const AW::Vector& radius, AW_bitset filteri) 
 {
     aw_assert(radius.x()>0 && radius.y()>0);
