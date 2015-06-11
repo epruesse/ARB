@@ -180,7 +180,7 @@ bool AW_device_print::text_impl(int gc, const char *str, const Position& pos, AW
     return text_overlay(gc, str, opt_strlen, pos, alignment, filteri, (AW_CL)this, 0.0, 0.0, AW_draw_string_on_printer);
 }
 
-bool AW_device_print::box_impl(int gc, bool filled, const Rectangle& rect, AW_bitset filteri) {
+bool AW_device_print::box_impl(int gc, AW::FillStyle filled, const Rectangle& rect, AW_bitset filteri) {
     bool drawflag = false;
     if (filter & filteri) {
         if (filled) {
@@ -199,7 +199,7 @@ bool AW_device_print::box_impl(int gc, bool filled, const Rectangle& rect, AW_bi
     return drawflag;
 }
 
-bool AW_device_print::circle_impl(int gc, bool filled, const Position& center, const AW::Vector& radius, AW_bitset filteri) {
+bool AW_device_print::circle_impl(int gc, AW::FillStyle filled, const Position& center, const AW::Vector& radius, AW_bitset filteri) {
     bool drawflag = false;
     if (filteri & filter) {
         aw_assert(radius.x()>0 && radius.y()>0);
@@ -257,7 +257,7 @@ bool AW_device_print::circle_impl(int gc, bool filled, const Position& center, c
     return drawflag;
 }
 
-bool AW_device_print::arc_impl(int gc, bool filled, const AW::Position& center, const AW::Vector& radius, int start_degrees, int arc_degrees, AW_bitset filteri) {
+bool AW_device_print::arc_impl(int gc, AW::FillStyle filled, const AW::Position& center, const AW::Vector& radius, int start_degrees, int arc_degrees, AW_bitset filteri) {
     bool drawflag = false;
     if (filteri && filter) {
         aw_assert(radius.x()>0 && radius.y()>0);
@@ -372,7 +372,7 @@ bool AW_device_print::arc_impl(int gc, bool filled, const AW::Position& center, 
     return drawflag;
 }
 
-bool AW_device_print::polygon_impl(int gc, bool filled, int npos, const Position *pos, AW_bitset filteri) {
+bool AW_device_print::polygon_impl(int gc, AW::FillStyle filled, int npos, const Position *pos, AW_bitset filteri) {
     bool drawflag = false;
     if (filter & filteri) {
         drawflag = generic_polygon(gc, npos, pos, filteri);
