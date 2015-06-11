@@ -190,10 +190,10 @@ bool AW_device_print::box_impl(int gc, bool filled, const Rectangle& rect, AW_bi
             q[2] = rect.lower_right_corner();
             q[3] = rect.lower_left_corner();
 
-            drawflag = filled_area(gc, 4, q, filteri);
+            drawflag = polygon(gc, true, 4, q, filteri);
         }
         else {
-            drawflag = generic_box(gc, false, rect, filteri);
+            drawflag = generic_box(gc, rect, filteri);
         }
     }
     return drawflag;
@@ -372,10 +372,10 @@ bool AW_device_print::arc_impl(int gc, bool filled, const AW::Position& center, 
     return drawflag;
 }
 
-bool AW_device_print::filled_area_impl(int gc, int npos, const Position *pos, AW_bitset filteri) {
+bool AW_device_print::polygon_impl(int gc, bool filled, int npos, const Position *pos, AW_bitset filteri) {
     bool drawflag = false;
     if (filter & filteri) {
-        drawflag = generic_filled_area(gc, npos, pos, filteri);
+        drawflag = generic_polygon(gc, npos, pos, filteri);
         if (drawflag) { // line visible -> area fill needed
             const AW_GC *gcm = get_common()->map_gc(gc);
 
@@ -388,7 +388,7 @@ bool AW_device_print::filled_area_impl(int gc, int npos, const Position *pos, AW
                     line_width, find_color_idx(gcm->get_last_fg_color()), greylevel, npos+1);
 
             // @@@ method used here for clipping leads to wrong results,
-            // since group border (drawn by generic_filled_area() above) is clipped correctly,
+            // since group border (drawn by generic_polygon() above) is clipped correctly,
             // but filled content is clipped different.
             //
             // fix: clip the whole polygon before drawing border
