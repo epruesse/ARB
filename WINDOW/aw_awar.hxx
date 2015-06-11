@@ -117,7 +117,7 @@ public:
     virtual double mean_callback_time() const = 0;
 
     // limits
-    virtual AW_awar *set_minmax(float min, float max) = 0;
+    virtual AW_awar *set_minmax(float min, float max) = 0;  // min<max !!!
     virtual float    get_min() const = 0;
     virtual float    get_max() const = 0;
     virtual AW_awar *set_srt(const char *srt) = 0;
