@@ -128,7 +128,7 @@ void AW_device_Xm::resetFillstyleForGreylevel(int gc) {
     XSetFillStyle(get_common()->get_display(), get_common()->get_GC(gc), FillSolid);
 }
 
-bool AW_device_Xm::box_impl(int gc, bool filled, const Rectangle& rect, AW_bitset filteri) {
+bool AW_device_Xm::box_impl(int gc, AW::FillStyle filled, const Rectangle& rect, AW_bitset filteri) {
     bool drawflag = false;
     if (filteri & filter) {
         if (filled) {
@@ -164,12 +164,12 @@ bool AW_device_Xm::box_impl(int gc, bool filled, const Rectangle& rect, AW_bitse
     return drawflag;
 }
 
-bool AW_device_Xm::circle_impl(int gc, bool filled, const AW::Position& center, const AW::Vector& radius, AW_bitset filteri) {
+bool AW_device_Xm::circle_impl(int gc, AW::FillStyle filled, const AW::Position& center, const AW::Vector& radius, AW_bitset filteri) {
     aw_assert(radius.x()>0 && radius.y()>0);
     return arc_impl(gc, filled, center, radius, 0, 360, filteri);
 }
 
-bool AW_device_Xm::arc_impl(int gc, bool filled, const AW::Position& center, const AW::Vector& radius, int start_degrees, int arc_degrees, AW_bitset filteri) {
+bool AW_device_Xm::arc_impl(int gc, AW::FillStyle filled, const AW::Position& center, const AW::Vector& radius, int start_degrees, int arc_degrees, AW_bitset filteri) {
     // degrees start at east side of unit circle,
     // but orientation is clockwise (because ARBs y-coordinate grows downwards)
 

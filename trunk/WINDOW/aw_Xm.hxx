@@ -8,10 +8,10 @@
 class AW_device_Xm : public AW_device {
     bool line_impl(int gc, const AW::LineVector& Line, AW_bitset filteri) OVERRIDE;
     bool text_impl(int gc, const char *str, const AW::Position& pos, AW_pos alignment, AW_bitset filteri, long opt_strlen) OVERRIDE;
-    bool box_impl(int gc, bool filled, const AW::Rectangle& rect, AW_bitset filteri) OVERRIDE;
-    bool circle_impl(int gc, bool filled, const AW::Position& center, const AW::Vector& radius, AW_bitset filteri) OVERRIDE;
-    bool arc_impl(int gc, bool filled, const AW::Position& center, const AW::Vector& radius, int start_degrees, int arc_degrees, AW_bitset filter) OVERRIDE;
-    bool polygon_impl(int gc, bool /*filled*/, int npos, const AW::Position *pos, AW_bitset filteri) OVERRIDE { // @@@ implement!
+    bool box_impl(int gc, AW::FillStyle filled, const AW::Rectangle& rect, AW_bitset filteri) OVERRIDE;
+    bool circle_impl(int gc, AW::FillStyle filled, const AW::Position& center, const AW::Vector& radius, AW_bitset filteri) OVERRIDE;
+    bool arc_impl(int gc, AW::FillStyle filled, const AW::Position& center, const AW::Vector& radius, int start_degrees, int arc_degrees, AW_bitset filter) OVERRIDE;
+    bool polygon_impl(int gc, AW::FillStyle /*filled*/, int npos, const AW::Position *pos, AW_bitset filteri) OVERRIDE { // @@@ implement!
         return generic_polygon(gc, npos, pos, filteri);
     }
     bool invisible_impl(const AW::Position& pos, AW_bitset filteri) OVERRIDE { return generic_invisible(pos, filteri); }
