@@ -203,7 +203,7 @@ int AW_clicked_line::indicate_selected(AW_device *d, int gc) const {
     return d->line(gc, x0, y0, x1, y1);
 }
 int AW_clicked_text::indicate_selected(AW_device *d, int gc) const {
-    return d->box(gc, true, textArea);
+    return d->box(gc, AW::FillStyle::FILLED, textArea);
 }
 
 /**

@@ -359,7 +359,7 @@ static void show_bootstrap_circle(AW_device *device, const char *bootstrap, doub
         radiusy = radiusx;
     }
 
-    device->circle(gc, false, center, Vector(radiusx, radiusy), filter);
+    device->circle(gc, AW::FillStyle::EMPTY, center, Vector(radiusx, radiusy), filter);
     // device->arc(gc, false, center, Vector(radiusx, radiusy), 45, -90, filter); // @@@ use to test AW_device_print::arc_impl
 }
 
@@ -1284,7 +1284,7 @@ public:
 
         device->line(drag_gc, clicked_branch);
         device->line(drag_gc, LineVector(hinge, mousepos_world));
-        device->circle(drag_gc, false, hinge, device->rtransform(Vector(5, 5)));
+        device->circle(drag_gc, AW::FillStyle::EMPTY, hinge, device->rtransform(Vector(5, 5)));
     }
 };
 
@@ -1810,7 +1810,7 @@ void AWT_graphic_tree::update(GBDATA *) {
     }
 }
 
-void AWT_graphic_tree::box(int gc, const AW::Position& pos, int pixel_width, bool filled) {
+void AWT_graphic_tree::pixel_box(int gc, const AW::Position& pos, int pixel_width, AW::FillStyle filled) {
     double diameter = disp_device->rtransform_pixelsize(pixel_width);
     Vector diagonal(diameter, diameter);
 
@@ -1955,7 +1955,7 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
 
         set_line_attributes_for(at);
         disp_device->set_grey_level(at->gr.gc, grey_level);
-        disp_device->polygon(at->gr.gc, true, 4, group, line_filter);
+        disp_device->polygon(at->gr.gc, AW::FillStyle::FILLED, 4, group, line_filter);
 
         const AW_font_limits& charLimits  = disp_device->get_font_limits(at->gr.gc, 'A');
         double                text_ascent = charLimits.ascent * disp_device->get_unscale();
@@ -2143,7 +2143,7 @@ void AWT_graphic_tree::show_radial_tree(AP_tree * at, double x_center,
         q[5] = y_center+l_max*sin(w);
 
         disp_device->set_grey_level(at->gr.gc, grey_level);
-        disp_device->polygon(at->gr.gc, true, 3, &q[0], line_filter);
+        disp_device->polygon(at->gr.gc, AW::FillStyle::FILLED, 3, &q[0], line_filter);
 
         if (at->gb_node && (disp_device->get_filter() & group_text_filter)) {
             w = tree_orientation + at->gr.right_angle;
@@ -2949,8 +2949,8 @@ public:
         TEST_EXPECT_NO_ERROR(print_device->open(file));
 
         test_show_tree(print_device);
-        print_device->box(AWT_GC_CURSOR, false, drawn_world);
-        print_device->box(AWT_GC_GROUPS, false, drawn_text_world);
+        print_device->box(AWT_GC_CURSOR, AW::FillStyle::EMPTY, drawn_world);
+        print_device->box(AWT_GC_GROUPS, AW::FillStyle::EMPTY, drawn_text_world);
 
         print_device->close();
     }
