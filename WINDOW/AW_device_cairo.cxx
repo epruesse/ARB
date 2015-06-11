@@ -139,7 +139,7 @@ bool AW_device_cairo::text_impl(int gc, const char *str, const AW::Position& pos
                         (AW_CL)this, 0.0, 0.0, draw_string_on_screen);
 }
 
-bool AW_device_cairo::box_impl(int gc, bool filled, const Rectangle& rect, AW_bitset filteri) 
+bool AW_device_cairo::box_impl(int gc, AW::FillStyle filled, const Rectangle& rect, AW_bitset filteri) 
 {
     if (! (filteri & filter)) return false;
     Rectangle transRect = transform(rect);
@@ -168,7 +168,7 @@ bool AW_device_cairo::box_impl(int gc, bool filled, const Rectangle& rect, AW_bi
     return true;
 }
 
-bool AW_device_cairo::polygon_impl(int gc, bool filled, int npos, const AW::Position *pos, AW_bitset filteri) {
+bool AW_device_cairo::polygon_impl(int gc, AW::FillStyle filled, int npos, const AW::Position *pos, AW_bitset filteri) {
     if (! (filteri & filter)) return false;
     
     cairo_t *cr = get_cr(gc);
@@ -198,14 +198,14 @@ bool AW_device_cairo::polygon_impl(int gc, bool filled, int npos, const AW::Posi
     return true;
 }
 
-bool AW_device_cairo::circle_impl(int gc, bool filled, const AW::Position& center,
+bool AW_device_cairo::circle_impl(int gc, AW::FillStyle filled, const AW::Position& center,
                                 const AW::Vector& radius, AW_bitset filteri) 
 {
     aw_assert(radius.x()>0 && radius.y()>0);
     return arc_impl(gc, filled, center, radius, 0, 360, filteri);
 }
 
-bool AW_device_cairo::arc_impl(int gc, bool filled, const AW::Position& center, 
+bool AW_device_cairo::arc_impl(int gc, AW::FillStyle filled, const AW::Position& center, 
                              const AW::Vector& radius, int start_degrees, 
                              int arc_degrees, AW_bitset filteri) 
 {

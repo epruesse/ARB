@@ -47,6 +47,13 @@ inline const double& NONAN(const double& d) {
 
 namespace AW {
 
+    struct FillStyle {
+        enum { EMPTY, FILLED } style;
+
+        FillStyle(bool filled) : style(filled ? FILLED : EMPTY) {} // non-explicit!
+        operator bool() const { return style == FILLED; }
+    };
+
     const double EPSILON = 0.001; // how equal is nearly equal
 
     inline bool nearlyEqual(const double& val1, const double& val2) { return std::abs(val1-val2) < EPSILON; }
