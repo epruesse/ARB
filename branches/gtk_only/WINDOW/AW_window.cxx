@@ -1168,8 +1168,7 @@ void AW_window::create_toggle_field(const char *var_name, const char *labeli, co
 }
 
 template <class T>
-void AW_window::insert_toggle_internal(const char *toggle_label, const char *mnemonic, 
-                                       T var_value, bool default_toggle) {
+void AW_window::insert_toggle_internal(const char *toggle_label, const char *mnemonic, T var_value) {
     AW_awar* awar = get_root()->awar_no_error(prvt->toggle_field_awar_name);
     aw_return_if_fail(awar != NULL);
 
@@ -1183,23 +1182,18 @@ void AW_window::insert_toggle_internal(const char *toggle_label, const char *mne
 
     prvt->action_template.set_label(toggle_label); // fixme mnemonic
 
-    AW_choice *choice = awar->add_choice(prvt->action_template, var_value, default_toggle);
+    AW_choice *choice = awar->add_choice(prvt->action_template, var_value);
     choice->bind(GTK_WIDGET(prvt->radio_last), "clicked");
     choice->set_label(toggle_label);
 }
 
-void AW_window::insert_toggle        (const char *toggle_label, const char *mnemonic, const char *var_value)
-{ insert_toggle_internal(toggle_label, mnemonic, var_value, false); }
-void AW_window::insert_default_toggle(const char *toggle_label, const char *mnemonic, const char *var_value)
-{ insert_toggle_internal(toggle_label, mnemonic, var_value, true); }
-void AW_window::insert_toggle        (const char *toggle_label, const char *mnemonic, int var_value)           
-{ insert_toggle_internal(toggle_label, mnemonic, var_value, false); }
-void AW_window::insert_default_toggle(const char *toggle_label, const char *mnemonic, int var_value)           
-{ insert_toggle_internal(toggle_label, mnemonic, var_value, true); }
-void AW_window::insert_toggle        (const char *toggle_label, const char *mnemonic, float var_value)         
-{ insert_toggle_internal(toggle_label, mnemonic, var_value, false); }
-void AW_window::insert_default_toggle(const char *toggle_label, const char *mnemonic, float var_value)        
-{ insert_toggle_internal(toggle_label, mnemonic, var_value, true); }
+void AW_window::insert_toggle        (const char *toggle_label, const char *mnemonic, const char *var_value) { insert_toggle_internal(toggle_label, mnemonic, var_value); }
+void AW_window::insert_toggle        (const char *toggle_label, const char *mnemonic, int var_value)         { insert_toggle_internal(toggle_label, mnemonic, var_value); }
+void AW_window::insert_toggle        (const char *toggle_label, const char *mnemonic, float var_value)       { insert_toggle_internal(toggle_label, mnemonic, var_value); }
+
+void AW_window::insert_default_toggle(const char *toggle_label, const char *mnemonic, const char *var_value) { insert_toggle_internal(toggle_label, mnemonic, var_value); }
+void AW_window::insert_default_toggle(const char *toggle_label, const char *mnemonic, int var_value)         { insert_toggle_internal(toggle_label, mnemonic, var_value); }
+void AW_window::insert_default_toggle(const char *toggle_label, const char *mnemonic, float var_value)       { insert_toggle_internal(toggle_label, mnemonic, var_value); }
 
 
 void AW_window::update_toggle_field() { 
