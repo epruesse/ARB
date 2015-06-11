@@ -1955,7 +1955,7 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
 
         set_line_attributes_for(at);
         disp_device->set_grey_level(at->gr.gc, grey_level);
-        disp_device->filled_area(at->gr.gc, 4, group, line_filter);
+        disp_device->polygon(at->gr.gc, true, 4, group, line_filter);
 
         const AW_font_limits& charLimits  = disp_device->get_font_limits(at->gr.gc, 'A');
         double                text_ascent = charLimits.ascent * disp_device->get_unscale();
@@ -2143,7 +2143,7 @@ void AWT_graphic_tree::show_radial_tree(AP_tree * at, double x_center,
         q[5] = y_center+l_max*sin(w);
 
         disp_device->set_grey_level(at->gr.gc, grey_level);
-        disp_device->filled_area(at->gr.gc, 3, &q[0], line_filter);
+        disp_device->polygon(at->gr.gc, true, 3, &q[0], line_filter);
 
         if (at->gb_node && (disp_device->get_filter() & group_text_filter)) {
             w = tree_orientation + at->gr.right_angle;
