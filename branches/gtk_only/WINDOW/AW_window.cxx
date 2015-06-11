@@ -1068,17 +1068,6 @@ void AW_window::insert_toggle_internal(const char *toggle_label, const char *mne
     AW_choice *choice = awar->add_choice(prvt->action_template, var_value, default_toggle);
     choice->bind(GTK_WIDGET(prvt->radio_last), "clicked");
     choice->set_label(toggle_label);
-    /*
-    AW_varUpdateInfo *vui = new AW_varUpdateInfo(this, NULL, AW_WIDGET_TOGGLE_FIELD,
-                                                 awar, var_value, prvt->callback);
-    g_signal_connect((gpointer)prvt->radio_last, "clicked", 
-                     G_CALLBACK(AW_varUpdateInfo::AW_variable_update_callback),
-                     (gpointer)vui);
-    
-    if(default_toggle){
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(prvt->radio_last), true);
-    }
-    */
 }
 
 void AW_window::insert_toggle        (const char *toggle_label, const char *mnemonic, const char *var_value)

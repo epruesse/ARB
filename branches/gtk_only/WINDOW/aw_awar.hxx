@@ -47,17 +47,6 @@ typedef Awar_CB Awar_CB2;
 typedef         void (*Awar_CB1)(AW_root *, AW_CL);
 typedef         void (*Awar_CB0)(AW_root *);
 
-enum AW_widget_type {
-    AW_WIDGET_INPUT_FIELD,
-    AW_WIDGET_TEXT_FIELD,
-    AW_WIDGET_LABEL_FIELD,
-    AW_WIDGET_CHOICE_MENU,
-    AW_WIDGET_TOGGLE_FIELD,
-    AW_WIDGET_SELECTION_LIST,
-    AW_WIDGET_TOGGLE,
-    AW_WIDGET_PROGRESS_BAR
-};
-
 class AW_awar;
 class AW_choice;
 
