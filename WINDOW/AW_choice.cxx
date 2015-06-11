@@ -75,21 +75,17 @@ void AW_choice_list::update() {
     }
 }
 
-AW_choice*
-AW_choice_list::add_choice(AW_action& act, int32_t val, bool def) {
-    choices.push_back(AW_choice(this, act, val));
-
-    return &choices.back();
-}
-
-AW_choice*
-AW_choice_list::add_choice(AW_action& act, double val, bool def) {
+AW_choice* AW_choice_list::add_choice(AW_action& act, int32_t val) {
     choices.push_back(AW_choice(this, act, val));
     return &choices.back();
 }
 
-AW_choice*
-AW_choice_list::add_choice(AW_action& act, const char* val, bool def) {
+AW_choice* AW_choice_list::add_choice(AW_action& act, double val) {
+    choices.push_back(AW_choice(this, act, val));
+    return &choices.back();
+}
+
+AW_choice* AW_choice_list::add_choice(AW_action& act, const char* val) {
     choices.push_back(AW_choice(this, act, val));
     return &choices.back();
 }

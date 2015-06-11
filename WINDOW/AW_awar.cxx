@@ -140,15 +140,15 @@ AW_awar *AW_awar_impl::set_srt(const char *) {
     GBK_terminatef("AWAR choice definition. Called %s on awar of type %s", \
                    __PRETTY_FUNCTION__, get_type_name())
 
-AW_choice* AW_awar_impl::add_choice(AW_action&, const char*, bool) {
+AW_choice* AW_awar_impl::add_choice(AW_action&, const char*) {
     AWAR_CHOICE_FAILURE;
     return NULL;
 }
-AW_choice* AW_awar_impl::add_choice(AW_action&, int, bool) {
+AW_choice* AW_awar_impl::add_choice(AW_action&, int) {
     AWAR_CHOICE_FAILURE;
     return NULL;
 }
-AW_choice* AW_awar_impl::add_choice(AW_action&, double, bool) {
+AW_choice* AW_awar_impl::add_choice(AW_action&, double) {
     AWAR_CHOICE_FAILURE;
     return NULL;
 }
@@ -267,8 +267,8 @@ void AW_awar_int::do_update() {
     }
 }
 
-AW_choice* AW_awar_int::add_choice(AW_action& act, int val, bool def) {
-    return choices.add_choice(act, (int32_t)val, def); // @@@ dangerous cast (check input 'val' for overflow here)
+AW_choice* AW_awar_int::add_choice(AW_action& act, int val) {
+    return choices.add_choice(act, (int32_t)val); // @@@ dangerous cast (check input 'val' for overflow here)
 }
 
 AW_awar* AW_awar_int::set_minmax(float min, float max) {
@@ -400,8 +400,8 @@ void AW_awar_float::do_update() {
     }
 }
 
-AW_choice* AW_awar_float::add_choice(AW_action& act, double val, bool def) {
-    return choices.add_choice(act, val, def);
+AW_choice* AW_awar_float::add_choice(AW_action& act, double val) {
+    return choices.add_choice(act, val);
 }
 
 AW_awar *AW_awar_float::set_minmax(float min, float max) {
@@ -534,8 +534,8 @@ void AW_awar_string::do_update() {
     free(str);
 }
 
-AW_choice* AW_awar_string::add_choice(AW_action& act, const char* val, bool def) {
-    return choices.add_choice(act, val, def);
+AW_choice* AW_awar_string::add_choice(AW_action& act, const char* val) {
+    return choices.add_choice(act, val);
 }
 
 AW_awar *AW_awar_string::set_srt(const char *srt) {

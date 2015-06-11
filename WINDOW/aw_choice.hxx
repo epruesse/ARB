@@ -42,7 +42,7 @@ public:
     ~AW_choice_list();
 
     void update();
-    AW_choice* add_choice(AW_action&, int32_t, bool);
-    AW_choice* add_choice(AW_action&, double, bool);
-    AW_choice* add_choice(AW_action&, const char*, bool);
+    AW_choice* add_choice(AW_action&, int32_t);
+    AW_choice* add_choice(AW_action&, double);
+    AW_choice* add_choice(AW_action&, const char*);
 };

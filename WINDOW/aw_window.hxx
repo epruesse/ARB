@@ -495,7 +495,7 @@ private:
     void insert_option_internal(const char *choice_label, const char *mnemonic, T var_value, bool default_option);
 
     template <class T>
-    void insert_toggle_internal(const char *toggle_label, const char *mnemonic, T var_value, bool default_toggle);
+    void insert_toggle_internal(const char *toggle_label, const char *mnemonic, T var_value);
 
     /**Is called if the window is closed*/
     static bool close_window_handler(GtkWidget*, GdkEvent*, gpointer data);

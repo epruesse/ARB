@@ -83,9 +83,9 @@ public:
         return 0.0;
     }
 
-    virtual AW_choice *add_choice(AW_action&, int,         bool) OVERRIDE;
-    virtual AW_choice *add_choice(AW_action&, double,      bool) OVERRIDE;
-    virtual AW_choice *add_choice(AW_action&, const char*, bool) OVERRIDE;
+    virtual AW_choice *add_choice(AW_action&, int) OVERRIDE;
+    virtual AW_choice *add_choice(AW_action&, double) OVERRIDE;
+    virtual AW_choice *add_choice(AW_action&, const char*) OVERRIDE;
 
     AW_awar *add_callback(const RootCallback& cb) OVERRIDE;
     AW_awar *remove_callback(const RootCallback& cb) OVERRIDE;
@@ -141,7 +141,7 @@ public:
     AW_awar*   set_minmax(float min, float max) OVERRIDE;
     float      get_min() const OVERRIDE;
     float      get_max() const OVERRIDE;
-    AW_choice *add_choice(AW_action&, int, bool) OVERRIDE;
+    AW_choice *add_choice(AW_action&, int) OVERRIDE;
     
     GB_ERROR  write_as_string(const char* para, bool touch=false) OVERRIDE;
     GB_ERROR  write_int(long para, bool touch=false) OVERRIDE;
@@ -175,7 +175,7 @@ public:
     AW_awar*    set_minmax(float min, float max) OVERRIDE;
     float       get_min() const OVERRIDE;
     float       get_max() const OVERRIDE;
-    AW_choice  *add_choice(AW_action&, double, bool) OVERRIDE;
+    AW_choice  *add_choice(AW_action&, double) OVERRIDE;
 
     GB_ERROR    write_as_string(const char* para, bool touch=false) OVERRIDE;
     GB_ERROR    write_float(double para, bool touch=false) OVERRIDE;
@@ -203,7 +203,7 @@ public:
     const char* get_type_name() const { return "AW_awar_string"; }
     void        do_update() OVERRIDE;
     AW_awar*    set_srt(const char *srt) OVERRIDE;
-    AW_choice  *add_choice(AW_action&, const char*, bool) OVERRIDE;
+    AW_choice  *add_choice(AW_action&, const char*) OVERRIDE;
     GB_ERROR    write_as_string(const char* para, bool touch=false) OVERRIDE;
     GB_ERROR    write_string(const char* para, bool touch=false) OVERRIDE;
     GB_ERROR    write_as_bool(bool b, bool touch=false) OVERRIDE;

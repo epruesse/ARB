@@ -77,9 +77,9 @@ public:
     virtual void bind_value(GObject* obj, const char* propname, AW_awar_gvalue_mapper* mapper=NULL) = 0;
     virtual void unbind(GObject* obj) = 0;
 
-    virtual AW_choice* add_choice(AW_action&, int,        bool)  = 0;
-    virtual AW_choice* add_choice(AW_action&, double,      bool) = 0;
-    virtual AW_choice* add_choice(AW_action&, const char*, bool) = 0;
+    virtual AW_choice* add_choice(AW_action&, int)         = 0;
+    virtual AW_choice* add_choice(AW_action&, double)      = 0;
+    virtual AW_choice* add_choice(AW_action&, const char*) = 0;
 
     virtual void update_choices() = 0;
 
