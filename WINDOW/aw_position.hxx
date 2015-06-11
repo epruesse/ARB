@@ -49,9 +49,9 @@ inline const double& NONAN(const double& d) {
 namespace AW {
 
     struct FillStyle {
-        enum { EMPTY, FILLED } style;
+        enum Style { EMPTY, FILLED } style;
 
-        FillStyle(bool filled) : style(filled ? FILLED : EMPTY) {} // non-explicit!
+        FillStyle(Style filled) : style(filled) {} // non-explicit!
         operator bool() const { return style == FILLED; }
     };
 

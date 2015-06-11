@@ -151,7 +151,7 @@ AW_pos AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, AW_pos x_offset) {
             Vector    frame2box(IRS.gap, IRS.gap);
             Rectangle gbox(frame.upper_left_corner()+frame2box, Vector(frame.width()*.5, frame.height()-2*IRS.gap));
 
-            disp_device->box(gc, true, gbox);
+            disp_device->box(gc, AW::FillStyle::FILLED, gbox);
 
             Position box_rcenter = gbox.right_edge().centroid();
 

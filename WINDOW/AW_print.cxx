@@ -190,7 +190,7 @@ bool AW_device_print::box_impl(int gc, AW::FillStyle filled, const Rectangle& re
             q[2] = rect.lower_right_corner();
             q[3] = rect.lower_left_corner();
 
-            drawflag = polygon(gc, true, 4, q, filteri);
+            drawflag = polygon(gc, filled, 4, q, filteri);
         }
         else {
             drawflag = generic_box(gc, rect, filteri);
