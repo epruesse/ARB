@@ -138,6 +138,23 @@ enum AW_PosRecalc {
     AW_REPOS_TO_MOUSE_ONCE = 3,                     // like AW_REPOS_TO_MOUSE, but only done once!
 };
 
+enum AW_ScalerType {
+    AW_SCALER_LINEAR,
+    AW_SCALER_EXP_LOWER,  // fine-tuned at lower border, big steps at upper border
+    AW_SCALER_EXP_UPPER,  // fine-tuned at upper border, big steps at lower border
+    AW_SCALER_EXP_CENTER, // fine-tuned at center, big steps at borders
+    AW_SCALER_EXP_BORDER, // fine-tuned at borders, big steps at center
+};
+
+class AW_ScalerTransformer {
+    AW_ScalerType type;
+public:
+    AW_ScalerTransformer(AW_ScalerType type_) : type(type_) {}
+
+    float scaler2awar(float scaler, AW_awar *awar); // [0..1] -> awar-range
+    float awar2scaler(AW_awar *awar); // returns [0..1]
+};
+
 class AW_window : virtual Noncopyable {
     AW_SizeRecalc recalc_size_at_show;
     AW_PosRecalc  recalc_pos_at_show;
@@ -448,9 +465,9 @@ public:
     void create_checkbox_inverse(const char* var_name);
     void create_toggle(const char *var_name, const char *no, const char *yes, int width = 0);  
 
-    void create_input_field(const char *awar_name, int columns = 0);   // One line textfield
-    void create_text_field(const char *awar_name, int columns = 20, int rows = 4);   // Multi line textfield
-    // with scrollbars
+    void create_input_field(const char *awar_name, int columns = 0); // One line textfield
+    void create_text_field(const char *awar_name, int columns = 20, int rows = 4);   // Multi line textfield with scrollbars
+    void create_input_field_with_scaler(const char *awar_name, int textcolumns = 4, int scaler_length = 250, AW_ScalerType scalerType = AW_SCALER_LINEAR);
 
 
     // ***** option_menu is a menu where only one selection is visible at a time

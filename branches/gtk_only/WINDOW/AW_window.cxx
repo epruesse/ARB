@@ -168,6 +168,65 @@ void AW_window::d_callback(const WindowCallback& wcb) {
     prvt->action_template.dclicked.connect(wcb, this);
 }
 
+// -------------------------------------------------------------
+//      code used by scalers (common between motif and gtk)
+
+static float apply_ScalerType(float val, AW_ScalerType scalerType, bool inverse) {
+    float res;
+
+    aw_assert(val>=0.0 && val<=1.0);
+
+    switch (scalerType) {
+        case AW_SCALER_LINEAR:
+            res = val;
+            break;
+
+        case AW_SCALER_EXP_LOWER:
+            if (inverse) res = pow(val, 1/3.0);
+            else         res = pow(val, 3.0);
+            break;
+
+        case AW_SCALER_EXP_UPPER:
+            res = 1.0-apply_ScalerType(1.0-val, AW_SCALER_EXP_LOWER, inverse);
+            break;
+
+        case AW_SCALER_EXP_BORDER:
+            inverse = !inverse;
+            // fall-through
+        case AW_SCALER_EXP_CENTER: {
+            AW_ScalerType subType = inverse ? AW_SCALER_EXP_UPPER : AW_SCALER_EXP_LOWER;
+            if      (val>0.5) res = (1+apply_ScalerType(2*val-1, subType, false))/2;
+            else if (val<0.5) res = (1-apply_ScalerType(1-2*val, subType, false))/2;
+            else              res = val;
+            break;
+        }
+    }
+
+    aw_assert(res>=0.0 && res<=1.0);
+
+    return res;
+}
+
+float AW_ScalerTransformer::scaler2awar(float scaler, AW_awar *awar) {
+    float amin        = awar->get_min();
+    float amax        = awar->get_max();
+    float modScaleRel = apply_ScalerType(scaler, type, false);
+    float aval        = amin + modScaleRel*(amax-amin);
+
+    return aval;
+}
+
+float AW_ScalerTransformer::awar2scaler(AW_awar *awar) {
+    float amin = awar->get_min();
+    float amax = awar->get_max();
+
+    float awarRel = (awar->read_as_float()-amin) / (amax-amin);
+    aw_assert(awarRel>=0.0 && awarRel<=1.0);
+
+    return apply_ScalerType(awarRel, type, true);
+}
+
+
 // ----------------------------------------------------------------------
 // force-diff-sync 7284637824 (remove after merging back to trunk)
 // ----------------------------------------------------------------------
@@ -470,6 +529,53 @@ struct _awar_float_to_int_mapper : public AW_awar_gvalue_mapper {
     }
 };
 
+
+
+class _awar_scale_mapper : public AW_awar_gvalue_mapper {
+    AW_ScalerTransformer rescale;
+public:
+    _awar_scale_mapper(AW_ScalerType stype) : rescale(stype) {}
+
+    bool operator()(GValue* gval, AW_awar* awar) OVERRIDE {
+        float value = -1;
+
+        if(G_VALUE_HOLDS_FLOAT(gval)){
+            value = g_value_get_float(gval);
+        }
+        else if(G_VALUE_HOLDS_DOUBLE(gval)) {
+            value = g_value_get_double(gval);
+        }
+        else {
+            aw_return_val_if_reached(false);
+        }
+
+        switch (awar->get_type()) {
+            case GB_INT:
+                awar->write_int(rescale.scaler2awar(value, awar), true);
+                break;
+            case GB_FLOAT:
+                awar->write_float(rescale.scaler2awar(value, awar), true);
+                break;
+            default:
+                aw_return_val_if_reached(false);
+        }
+        return true;
+    }
+    bool operator()(AW_awar* awar, GValue* gval) OVERRIDE {
+        if(G_VALUE_HOLDS_FLOAT(gval)) {
+            g_value_set_float(gval, rescale.awar2scaler(awar));
+        }
+        else if(G_VALUE_HOLDS_DOUBLE(gval)) {
+            g_value_set_double(gval, rescale.awar2scaler(awar));
+        }
+        else {
+            aw_return_val_if_reached(false);
+        }
+        return true;
+    }
+};
+
+
 struct toggle_button_data {
     AW_awar* awar;
     GtkWidget *yes, *no, *toggle;
@@ -632,6 +738,25 @@ void AW_window::create_input_field(const char *var_name, int columns) {
     put_with_label(entry);
 }
 
+void AW_window::create_input_field_with_scaler(const char *awar_name, int textcolumns, int scaler_length, AW_ScalerType scalerType) {
+    create_input_field(awar_name, textcolumns);
+
+    AW_awar* awar = get_root()->awar_no_error(awar_name);
+    aw_return_if_fail(awar != NULL);
+
+    GtkWidget *entry = gtk_hscale_new_with_range(0.0, 1.0, 0.001);
+    gtk_scale_set_draw_value(GTK_SCALE(entry), false);
+
+    GtkAdjustment *adj = gtk_range_get_adjustment(GTK_RANGE(entry));
+    awar->bind_value(G_OBJECT(adj), "value", new _awar_scale_mapper(scalerType));
+
+    // @@@ TODO: scaler should adapt to time spent in callback:
+    // if "slow" -> only update when scaler is released (not during drag)
+    // pointer to related motif code: http://bugs.arb-home.de/browser/trunk/WINDOW/AW_button.cxx?rev=13886#L1246
+
+    gtk_widget_set_size_request(entry, scaler_length, -1);
+    put_with_label(entry);
+}
 
 void AW_window::create_text_field(const char *var_name, int columns /* = 20 */, int rows /*= 4*/){
     AW_awar* awar = get_root()->awar_no_error(var_name);

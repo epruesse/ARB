@@ -74,8 +74,7 @@ public:
     virtual const char* get_name() const { return awar_name; }
 
 
-    virtual void bind_value(GObject* obj, const char* propname,
-                            AW_awar_gvalue_mapper* mapper=NULL) = 0;
+    virtual void bind_value(GObject* obj, const char* propname, AW_awar_gvalue_mapper* mapper=NULL) = 0;
     virtual void unbind(GObject* obj) = 0;
 
     virtual AW_choice* add_choice(AW_action&, int,        bool)  = 0;
