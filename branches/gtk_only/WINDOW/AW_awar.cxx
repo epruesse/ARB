@@ -272,7 +272,13 @@ AW_choice* AW_awar_int::add_choice(AW_action& act, int val, bool def) {
 }
 
 AW_awar* AW_awar_int::set_minmax(float min, float max) {
-    if (min>max) GBK_terminatef("illegal values in set_minmax for AWAR '%s'", get_name());
+    long lmin = min;
+    long lmax = max;
+    if (lmin>=lmax) {
+        // 'min>max'  would set impossible limits
+        // 'min==max' would remove limits, which is not allowed!
+        GBK_terminatef("illegal values in set_minmax for AWAR '%s'", get_name());
+    }
     min_value = min;
     max_value = max;
     update();
@@ -399,7 +405,11 @@ AW_choice* AW_awar_float::add_choice(AW_action& act, double val, bool def) {
 }
 
 AW_awar *AW_awar_float::set_minmax(float min, float max) {
-    if (min>max) GBK_terminatef("illegal values in set_minmax for AWAR '%s'", get_name());
+    if (min>=max) {
+        // 'min>max'  would set impossible limits
+        // 'min==max' would remove limits, which is not allowed!
+        GBK_terminatef("illegal values in set_minmax for AWAR '%s'", get_name());
+    }
     min_value = min;
     max_value = max;
     update();
