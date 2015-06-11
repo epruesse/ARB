@@ -68,10 +68,13 @@ AW_gc_manager AWT_graphic_tree::init_devices(AW_window *aww, AW_device *device, 
                      "Not marked$#622300",
                      "Zombies etc.$#977a0e",
 
-                     "+-No probe$black",    "-Probes 1+2$yellow",
-                     "+-Probe 1$red",       "-Probes 1+3$magenta",
-                     "+-Probe 2$green",     "-Probes 2+3$cyan",
-                     "+-Probe 3$blue",      "-All probes$white",
+                     "+-None (black)$#000000", "-All (white)$#ffffff",
+
+                     "+-P1(red)$#ff0000",        "+-P2(green)$#00ff00",    "-P3(blue)$#0000ff",
+                     "+-P4(orange)$#ffd060",     "+-P5(aqua)$#40ffc0",     "-P6(purple)$#c040ff",
+                     "+-P7(1&2,yellow)$#ffff00", "+-P8(2&3,cyan)$#00ffff", "-P9(3&1,magenta)$#ff00ff",
+                     "+-P10(lawn)$#c0ff40",      "+-P11(skyblue)$#40c0ff", "-P12(pink)$#f030b0",
+
                      NULL);
 
     return gc_manager;
