@@ -150,7 +150,7 @@ bool AW_device_Xm::box_impl(int gc, bool filled, const Rectangle& rect, AW_bitse
                 if (fillStyle != FS_SOLID) {
                     // draw solid box-border (for empty and grey box)
                     // (Note: using XDrawRectangle here is wrong)
-                    generic_box(gc, false, rect, filteri);
+                    generic_box(gc, rect, filteri);
                 }
                 else {
                     AUTO_FLUSH(this);
@@ -158,7 +158,7 @@ bool AW_device_Xm::box_impl(int gc, bool filled, const Rectangle& rect, AW_bitse
             }
         }
         else {
-            drawflag = generic_box(gc, false, rect, filteri);
+            drawflag = generic_box(gc, rect, filteri);
         }
     }
     return drawflag;
