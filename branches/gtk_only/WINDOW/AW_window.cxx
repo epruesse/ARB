@@ -582,7 +582,7 @@ static void aw_update_adjustment_cb(UNFIXED, AW_awar *awar, GtkAdjustment *adj) 
  * If the AWAR is numeric, creates a spinner, if text creates a 
  * single line text field.
  */
-void AW_window::create_input_field(const char *var_name,   int columns) {
+void AW_window::create_input_field(const char *var_name, int columns) {
     AW_awar* awar = get_root()->awar_no_error(var_name);
     aw_return_if_fail(awar != NULL);
     
@@ -595,45 +595,38 @@ void AW_window::create_input_field(const char *var_name,   int columns) {
         awar->bind_value(G_OBJECT(entry), "text");
     }
     else {
-        GtkAdjustment *adj;
+        const int CLIMB_RATE = 1;
+        int       precision;
+        double    step;
 
-        int climb_rate = 1;
-        int precision;
-        double step;
-        if        (awar->get_type() == GB_FLOAT) {
-            precision = 2;
-            step      = 0.1;
-        } else if (awar->get_type() == GB_INT) {
-            precision = 0;
-            step      = 1;
-        } else {
-            aw_return_if_reached();
+        AW_awar_gvalue_mapper *mapper = NULL;
+
+        switch (awar->get_type()) {
+            case GB_FLOAT: precision = 2; step = 0.1; break;
+            case GB_INT:   precision = 0; step = 1;
+                // spin button value is always float, if we want to connect it to an int we need to use a wrapper
+                mapper = new _awar_float_to_int_mapper();
+                break;
+            default: aw_return_if_reached();
         }
 
-        adj = GTK_ADJUSTMENT(gtk_adjustment_new(awar->read_as_float(), 
-                                                awar->get_min(), awar->get_max(),
-                                                step, 50 *step, 0));
-        entry = gtk_spin_button_new(adj, climb_rate, precision);
-        if(awar->get_type() == GB_INT)
-        {//spin button value is always float, if we want to connect it to an int we need to use a wrapper
-            awar->bind_value(G_OBJECT(entry), "value", new _awar_float_to_int_mapper());
-        }
-        else
-        {
-            awar->bind_value(G_OBJECT(entry), "value");
-        }
+        GtkAdjustment *adj = GTK_ADJUSTMENT(gtk_adjustment_new(awar->read_as_float(),
+                                                               awar->get_min(), awar->get_max(),
+                                                               step, 50 *step, 0));
 
+        entry = gtk_spin_button_new(adj, CLIMB_RATE, precision);
+        awar->bind_value(G_OBJECT(entry), "value", mapper);
         awar->add_callback(makeRootCallback(aw_update_adjustment_cb, awar, adj));
 
         width--; // make room for the spinner
+                 // Note: done for layout compatibility with motif version;
+                 //       fix after @@@MERGE: width specified in client code should mean "visible digits"
     }
 
     awar->changed_by_user += prvt->action_template.clicked;
     prvt->action_template = AW_action();
 
-    if (width > 0) {
-        gtk_entry_set_width_chars(GTK_ENTRY(entry), width);
-    }
+    if (width > 0) gtk_entry_set_width_chars(GTK_ENTRY(entry), width);
 
     gtk_entry_set_activates_default(GTK_ENTRY(entry), true);
     put_with_label(entry);
