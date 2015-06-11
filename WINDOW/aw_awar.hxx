@@ -144,7 +144,7 @@ public:
     AW_awar *add_target_var(float *pfloat);
     void    update();       // awar has changed
 
-    AW_awar *set_minmax(float min, float max);
+    AW_awar *set_minmax(float min, float max); // min<max !!!
     float    get_min() const;
     float    get_max() const;
     AW_awar *set_min(float min) { return set_minmax(min, get_max()); }

@@ -1128,10 +1128,12 @@ static void gc_minmax_changed_cb(AW_root *root, bool maxChanged) {
         AW_awar *awar_maxGC = root->awar(AWAR_PD_DESIGN_MAX_GC);
 
         if (maxChanged) {
-            awar_minGC->set_minmax(0.0, awar_maxGC->read_float());
+            float currMax = awar_maxGC->read_float();
+            if (currMax>0) awar_minGC->set_minmax(0.0, currMax);
         }
         else {
-            awar_maxGC->set_minmax(awar_minGC->read_float(), 100.0);
+            float currMin = awar_minGC->read_float();
+            if (currMin<100.0) awar_maxGC->set_minmax(currMin, 100.0);
         }
     }
 }
