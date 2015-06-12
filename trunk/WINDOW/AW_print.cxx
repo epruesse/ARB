@@ -183,7 +183,7 @@ bool AW_device_print::text_impl(int gc, const char *str, const Position& pos, AW
 bool AW_device_print::box_impl(int gc, AW::FillStyle filled, const Rectangle& rect, AW_bitset filteri) {
     bool drawflag = false;
     if (filter & filteri) {
-        if (filled) {
+        if (filled.somehow()) {
             Position q[4];
             q[0] = rect.upper_left_corner();
             q[1] = rect.upper_right_corner();
@@ -233,7 +233,7 @@ bool AW_device_print::circle_impl(int gc, AW::FillStyle filled, const Position& 
             {
                 int colorIdx = find_color_idx(gcm->get_last_fg_color());
                 int fill_color, area_fill;
-                if (filled) {
+                if (filled.somehow()) {
                     fill_color = colorIdx;
                     area_fill  = AW_INT(20+20*gcm->get_grey_level());    // 20 = full saturation; 40 = white;
                 }
@@ -291,7 +291,7 @@ bool AW_device_print::arc_impl(int gc, AW::FillStyle filled, const AW::Position&
                 int colorIdx = find_color_idx(gcm->get_last_fg_color());
                 int fill_color, area_fill;
 
-                if (filled) {
+                if (filled.somehow()) {
                     fill_color = colorIdx;
                     area_fill  = AW_INT(20+20*gcm->get_grey_level());    // 20 = full saturation; 40 = white;
                 }

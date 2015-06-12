@@ -89,8 +89,17 @@ static Pixmap getStipplePixmap(AW_common_Xm *common, int stippleType) {
     return pixmap[stippleType];
 }
 
-AW_device_Xm::FillStyle AW_device_Xm::setFillstyleForGreylevel(int gc) {
+AW_device_Xm::FillStyle AW_device_Xm::setFillstyleForGreylevel(int gc, AW::FillStyle filled) {
     // sets fillstyle and stipple for current greylevel of 'gc'
+
+    switch (filled.get_style()) {
+        case AW::FillStyle::FILLED: return FS_SOLID;
+        case AW::FillStyle::EMPTY:  return FS_EMPTY;
+
+        case AW::FillStyle::SHADED:
+        case AW::FillStyle::SHADED_WITH_BORDER:
+            break; // detect using greylevel
+    }
 
     AW_grey_level greylevel = get_grey_level(gc);
 
@@ -115,6 +124,7 @@ AW_device_Xm::FillStyle AW_device_Xm::setFillstyleForGreylevel(int gc) {
         Display *Disp = Common->get_display();
         GC       xgc  = Common->get_GC(gc);
 
+        XSetFillRule(Disp, xgc,  WindingRule);
         XSetStipple(Disp, xgc, stipple);
         XSetFillStyle(Disp, xgc, FillStippled);
 
@@ -131,12 +141,15 @@ void AW_device_Xm::resetFillstyleForGreylevel(int gc) {
 bool AW_device_Xm::box_impl(int gc, AW::FillStyle filled, const Rectangle& rect, AW_bitset filteri) {
     bool drawflag = false;
     if (filteri & filter) {
-        if (filled) {
+        if (filled.is_empty()) {
+            drawflag = generic_box(gc, rect, filteri);
+        }
+        else {
             Rectangle transRect = transform(rect);
             Rectangle clippedRect;
             drawflag = box_clip(transRect, clippedRect);
             if (drawflag) {
-                FillStyle fillStyle = setFillstyleForGreylevel(gc);
+                FillStyle fillStyle = setFillstyleForGreylevel(gc, filled);
 
                 if (fillStyle != FS_EMPTY) {
                     XFillRectangle(XDRAW_PARAM3(get_common(), gc),
@@ -147,7 +160,7 @@ bool AW_device_Xm::box_impl(int gc, AW::FillStyle filled, const Rectangle& rect,
 
                     if (fillStyle == FS_GREY) resetFillstyleForGreylevel(gc);
                 }
-                if (fillStyle != FS_SOLID) {
+                if (fillStyle != FS_SOLID && filled.get_style() != AW::FillStyle::SHADED) {
                     // draw solid box-border (for empty and grey box)
                     // (Note: using XDrawRectangle here is wrong)
                     generic_box(gc, rect, filteri);
@@ -157,8 +170,59 @@ bool AW_device_Xm::box_impl(int gc, AW::FillStyle filled, const Rectangle& rect,
                 }
             }
         }
+    }
+    return drawflag;
+}
+
+bool AW_device_Xm::polygon_impl(int gc, AW::FillStyle filled, int npos, const AW::Position *pos, AW_bitset filteri) {
+    bool drawflag = false;
+    if (filteri & filter) {
+        if (filled.is_empty()) {
+            drawflag = generic_polygon(gc, npos, pos, filteri);
+        }
         else {
-            drawflag = generic_box(gc, rect, filteri);
+            Position transPos[npos];
+            for (int p = 0; p<npos; ++p) {
+                transPos[p] = transform(pos[p]);
+            }
+
+            int           nclippedPos;
+            AW::Position *clippedPos = NULL;
+
+            drawflag = box_clip(npos, transPos, nclippedPos, clippedPos);
+            if (drawflag) {
+                FillStyle fillStyle = setFillstyleForGreylevel(gc, filled);
+
+                if (fillStyle != FS_EMPTY) {
+                    XPoint *xpos = new XPoint[nclippedPos];
+
+                    for (int p = 0; p<nclippedPos; ++p) {
+                        xpos[p].x = AW_INT(clippedPos[p].xpos());
+                        xpos[p].y = AW_INT(clippedPos[p].ypos());
+                    }
+
+                    XFillPolygon(XDRAW_PARAM3(get_common(), gc),
+                                 xpos,
+                                 nclippedPos,
+                                 // Complex,
+                                 // Nonconvex,
+                                 Convex,
+                                 CoordModeOrigin);
+
+                    if (fillStyle == FS_GREY) resetFillstyleForGreylevel(gc);
+                    delete [] xpos;
+                }
+                if (fillStyle != FS_SOLID && filled.get_style() != AW::FillStyle::SHADED) {
+                    // draw solid polygon-border (for empty and grey polygon)
+                    // (Note: using XDrawRectangle here is wrong)
+                    generic_polygon(gc, npos, pos, filteri);
+                }
+                else {
+                    AUTO_FLUSH(this);
+                }
+            }
+
+            delete [] clippedPos;
         }
     }
     return drawflag;
@@ -194,10 +258,11 @@ bool AW_device_Xm::arc_impl(int gc, AW::FillStyle filled, const AW::Position& ce
 
             while (start_degrees<0) start_degrees += 360;
 
-            if (!filled) {
+            if (filled.is_empty()) {
                 XDrawArc(XDRAW_PARAM3(get_common(), gc), xl, yl, width, height, 64*start_degrees, 64*arc_degrees);
             }
             else {
+                aw_assert(!filled.is_shaded()); // @@@ shading not implemented for arcs (yet)
                 XFillArc(XDRAW_PARAM3(get_common(), gc), xl, yl, width, height, 64*start_degrees, 64*arc_degrees);
             }
             AUTO_FLUSH(this);

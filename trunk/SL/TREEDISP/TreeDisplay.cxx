@@ -1814,9 +1814,9 @@ void AWT_graphic_tree::pixel_box(int gc, const AW::Position& pos, int pixel_widt
     double diameter = disp_device->rtransform_pixelsize(pixel_width);
     Vector diagonal(diameter, diameter);
 
-    if (filled) disp_device->set_grey_level(gc, grey_level);
-    else        disp_device->set_line_attributes(gc, 1, AW_SOLID);
-
+    td_assert(!filled.is_shaded()); // the pixel box is either filled or empty! (by design)
+    if (filled.somehow()) disp_device->set_grey_level(gc, grey_level); // @@@ should not be needed here, but changes test-results (xfig-shading need fixes anyway)
+    else                  disp_device->set_line_attributes(gc, 1, AW_SOLID);
     disp_device->box(gc, filled, pos-0.5*diagonal, diagonal, mark_filter);
 }
 
@@ -3103,7 +3103,7 @@ void TEST_treeDisplay() {
 
 #if !defined(TEST_AUTO_UPDATE)
                     // if (strcmp(spool_expected, "display/irs_CH.fig") == 0) {
-                        TEST_EXPECT_TEXTFILES_EQUAL(spool_expected, spool_file);
+                    TEST_EXPECT_TEXTFILES_EQUAL(spool_expected, spool_file);
                     // }
                     TEST_EXPECT_ZERO_OR_SHOW_ERRNO(unlink(spool_file));
 #endif
