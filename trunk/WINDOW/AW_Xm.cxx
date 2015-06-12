@@ -93,8 +93,8 @@ AW_device_Xm::FillStyle AW_device_Xm::setFillstyleForGreylevel(int gc, AW::FillS
     // sets fillstyle and stipple for current greylevel of 'gc'
 
     switch (filled.get_style()) {
-        case AW::FillStyle::FILLED: return FS_SOLID;
-        case AW::FillStyle::EMPTY:  return FS_EMPTY;
+        case AW::FillStyle::SOLID: return FS_SOLID;
+        case AW::FillStyle::EMPTY: return FS_EMPTY;
 
         case AW::FillStyle::SHADED:
         case AW::FillStyle::SHADED_WITH_BORDER:

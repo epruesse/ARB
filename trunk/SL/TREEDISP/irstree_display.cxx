@@ -16,7 +16,7 @@ using namespace AW;
 
 // *********************** paint sub tree ************************
 
-const int tipBoxSize = 3;
+const int TIP_BOX_SIZE = 3;
 
 struct IRS_data {
     bool   draw_separator;
@@ -145,7 +145,7 @@ AW_pos AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, AW_pos x_offset) {
 
             gc = node->gr.gc;
             set_line_attributes_for(node);
-            filled_box(gc, frame.upper_left_corner(), tipBoxSize);
+            filled_box(gc, frame.upper_left_corner(), TIP_BOX_SIZE);
 
             Vector    frame2box(IRS.gap, IRS.gap);
             Rectangle gbox(frame.upper_left_corner()+frame2box, Vector(frame.width()*.5, frame.height()-2*IRS.gap));
@@ -252,7 +252,7 @@ AW_pos AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, AW_pos x_offset) {
         
         gc = node->gr.gc;
         set_line_attributes_for(node);
-        filled_box(gc, Position(x_offset-IRS.onePixel, group_y1), tipBoxSize);
+        filled_box(gc, Position(x_offset-IRS.onePixel, group_y1), TIP_BOX_SIZE);
     }
     return y_center;
 }
