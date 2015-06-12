@@ -32,6 +32,7 @@ Major changes for next release:
      - accepts 3 or more consecutive IUPAC codes in DNA
    * added option to cut-off DNA sequence (was done at end of sequence by old version. fixed)
    * fixed several minor bugs
+ - ARB probeSpec: visualisation of probe set specificity (thanks to Paavo Jumppanen, CSIRO)
  - expand zombies in tree (unfold groups)
  - compare taxonomy (and mark differences)
  - external (command line) aligners:
@@ -204,7 +205,7 @@ Fixes for arb_5.3 (10 Nov 2011):
 Fixes for arb_5.2 (5 Sep 2010):
 
  - bugfixes
-   - quicksave did silently do nothing (especially not save anything) if an error occurred 
+   - quicksave did silently do nothing (especially not save anything) if an error occurred
    - ARB_EDIT4: crashed when using config with MANY unknown species
    - ARB_SECEDIT: crashed when trying to paint strand w/o any base
    - ARB_NTREE/ARB_PARS: crashed when clicking on inner tree node w/o groupinfo
@@ -213,7 +214,7 @@ Fixes for arb_5.2 (5 Sep 2010):
  - internal fixes
    - karmic koala (gcc 4.4.1)
    - installation script
-   - arb build process uses xsltproc instead of sablotron 
+   - arb build process uses xsltproc instead of sablotron
 
 
 Fixes for arb_5.1 (1 Oct 2009):
@@ -326,7 +327,7 @@ Major changes in ARB 07.12.07org (7 Dec 2007):
  - arb_repair for databases of any size (script for database repair)
  - fixed bug in data compression
  - increased internal cache size (alignments up to 400.000bp possible w/o performance collapse)
- - ARBparsimony: increase hardcoded species limit (50.000 -> 250.000) 
+ - ARBparsimony: increase hardcoded species limit (50.000 -> 250.000)
  - GDE menus cleanup
  - translation/re-alignment tweaked
  - unalign right (EDIT4)

@@ -38,7 +38,7 @@ struct column {
 //      ProbeMatch_impl
 
 struct ltstr {
-    bool operator()(const char* s1, const char* s2) const {
+    bool operator()(const char *s1, const char *s2) const {
         return strcmp(s1, s2) < 0;
     }
 };
@@ -137,6 +137,7 @@ ProbeMatchParser::ProbeMatchParser(const char *probe_target, const char *headlin
 
 ProbeMatchParser::~ProbeMatchParser() {
     free(init_error);
+    delete pimpl;
 }
 
 bool ProbeMatchParser::getColumnRange(const char *columnName, int *startCol, int *endCol) const {
