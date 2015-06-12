@@ -1944,7 +1944,7 @@ void AWT_graphic_tree::detectAndDrawMatchFlags(AP_tree *at, const double y1, con
                         // Only check for partial match if we don't have a match. If a partial
                         // match is found then isMatched() should return true.
                         if (!bMatched) {
-                            bPartialMatch = (pMatchCounts[nProbe] >= nPartiallyMatchedSize);
+                            bPartialMatch = (pMatchCounts[nProbe] > nPartiallyMatchedSize);
                             bMatched      = bPartialMatch;
                         }
 
