@@ -144,14 +144,14 @@ AW_pos AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, AW_pos x_offset) {
             disp_device->line(gc, frame.lower_edge());
 
             gc = node->gr.gc;
-            disp_device->set_grey_level(gc, grey_level);
             set_line_attributes_for(node);
             filled_box(gc, frame.upper_left_corner(), tipBoxSize);
 
             Vector    frame2box(IRS.gap, IRS.gap);
             Rectangle gbox(frame.upper_left_corner()+frame2box, Vector(frame.width()*.5, frame.height()-2*IRS.gap));
 
-            disp_device->box(gc, AW::FillStyle::FILLED, gbox);
+            disp_device->set_grey_level(gc, grey_level);
+            disp_device->box(gc, AW::FillStyle::SHADED_WITH_BORDER, gbox);
 
             Position box_rcenter = gbox.right_edge().centroid();
 
@@ -251,7 +251,6 @@ AW_pos AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, AW_pos x_offset) {
         disp_device->line(gc, x_offset-IRS.onePixel, group_y1, x_offset-IRS.onePixel,  IRS.y); // opened-group-frame
         
         gc = node->gr.gc;
-        disp_device->set_grey_level(gc, grey_level);
         set_line_attributes_for(node);
         filled_box(gc, Position(x_offset-IRS.onePixel, group_y1), tipBoxSize);
     }
