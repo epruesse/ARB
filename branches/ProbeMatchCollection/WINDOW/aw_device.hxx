@@ -341,8 +341,6 @@ public:
 
     void set_font(int gc, AW_font fontnr, int size, int *found_size);
     void set_line_attributes(int gc, short width, AW_linestyle style);
-    void set_fill_solid(int gc);
-    void set_fill_stipple(int gc);
     void set_function(int gc, AW_function function);
     void establish_default(int gc);
     void set_foreground_color(int gc, AW_color_idx color);                 // lines ....

@@ -30,8 +30,6 @@ class AW_GC_Xm : public AW_GC { // derived from Noncopyable
     GC          gc;
     XFontStruct curfont;
 
-    virtual void wm_set_fill_solid();
-    virtual void wm_set_fill_stipple();
     virtual void wm_set_foreground_color(AW_rgb col);
     virtual void wm_set_function(AW_function mode);
     virtual void wm_set_lineattributes(short lwidth, AW_linestyle lstyle);
