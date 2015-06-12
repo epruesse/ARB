@@ -46,7 +46,7 @@ static const char *clipstatestr(AW_device *device) {
             "offset={x=%f y=%f}" ,
             clip_rect.t, clip_rect.b, clip_rect.l, clip_rect.r,
             fo.top, fo.bottom, fo.left, fo.right,
-            device->get_scale(), device->get_unscale(), 
+            device->get_scale(), device->get_unscale(),
             offset.x(), offset.y());
 
     return buffer;
@@ -262,7 +262,7 @@ bool AW_device::generic_polygon(int gc, int npos, const AW::Position *pos, AW_bi
     return drawflag;
 }
 
-void AW_device::move_region(AW_pos /* src_x */, AW_pos /* src_y */, AW_pos /* width */, AW_pos /* height */, 
+void AW_device::move_region(AW_pos /* src_x */, AW_pos /* src_y */, AW_pos /* width */, AW_pos /* height */,
                             AW_pos /* dest_x */, AW_pos /* dest_y */) {
     // empty default
 }
