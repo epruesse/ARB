@@ -119,7 +119,7 @@ public:
     AW_linestyle  get_line_style() const { return conf.style; }
     void          set_fg_color(AW_rgb col);
     AW_rgb        get_fg_color() const { return conf.color; }
-    
+
     void          set_font(const char* fontname, bool force_monospace=false);
 
     AW_common    *get_common() const;
