@@ -45,39 +45,6 @@
 
 const int MATCH_FLAG_COLORS = 12;
 static int MatchProbeGC[MATCH_FLAG_COLORS] = {
-#if 0
-    // ordered rainbow
-    AWT_GC_RED,
-    AWT_GC_ORANGE,
-    AWT_GC_YELLOW,
-    AWT_GC_LAWNGREEN,
-    AWT_GC_GREEN,
-    AWT_GC_AQUAMARIN,
-    AWT_GC_CYAN,
-    AWT_GC_SKYBLUE,
-    AWT_GC_BLUE,
-    AWT_GC_PURPLE,
-    AWT_GC_MAGENTA,
-    AWT_GC_PINK,
-#else
-#if 0
-    // interleaved rainbow
-    AWT_GC_RED,
-    AWT_GC_GREEN,
-    AWT_GC_BLUE,
-
-    AWT_GC_ORANGE,
-    AWT_GC_AQUAMARIN,
-    AWT_GC_PURPLE,
-
-    AWT_GC_YELLOW,
-    AWT_GC_CYAN,
-    AWT_GC_MAGENTA,
-
-    AWT_GC_LAWNGREEN,
-    AWT_GC_SKYBLUE,
-    AWT_GC_PINK,
-#else
     // double rainbow
     AWT_GC_RED,
     AWT_GC_YELLOW,
@@ -92,8 +59,6 @@ static int MatchProbeGC[MATCH_FLAG_COLORS] = {
     AWT_GC_SKYBLUE,
     AWT_GC_PURPLE,
     AWT_GC_PINK,
-#endif
-#endif
 };
 
 const int MATCH_COL_WIDTH = 3;
