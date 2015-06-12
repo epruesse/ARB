@@ -3123,8 +3123,6 @@ static AW_rgb *dcolors       = colors_def;
 static long    dcolors_count = ARRAY_ELEMS(colors_def);
 
 class fake_AW_GC : public AW_GC {
-    virtual void wm_set_fill_solid() OVERRIDE {  }
-    virtual void wm_set_fill_stipple() OVERRIDE {  }
     virtual void wm_set_foreground_color(AW_rgb /*col*/) OVERRIDE {  }
     virtual void wm_set_function(AW_function /*mode*/) OVERRIDE { td_assert(0); }
     virtual void wm_set_lineattributes(short /*lwidth*/, AW_linestyle /*lstyle*/) OVERRIDE {}
