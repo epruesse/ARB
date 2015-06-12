@@ -1955,7 +1955,7 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
 
         set_line_attributes_for(at);
         disp_device->set_grey_level(at->gr.gc, grey_level);
-        disp_device->polygon(at->gr.gc, AW::FillStyle::FILLED, 4, group, line_filter);
+        disp_device->polygon(at->gr.gc, AW::FillStyle::SHADED_WITH_BORDER, 4, group, line_filter);
 
         const AW_font_limits& charLimits  = disp_device->get_font_limits(at->gr.gc, 'A');
         double                text_ascent = charLimits.ascent * disp_device->get_unscale();
@@ -2143,7 +2143,7 @@ void AWT_graphic_tree::show_radial_tree(AP_tree * at, double x_center,
         q[5] = y_center+l_max*sin(w);
 
         disp_device->set_grey_level(at->gr.gc, grey_level);
-        disp_device->polygon(at->gr.gc, AW::FillStyle::FILLED, 3, &q[0], line_filter);
+        disp_device->polygon(at->gr.gc, AW::FillStyle::SHADED_WITH_BORDER, 3, &q[0], line_filter);
 
         if (at->gb_node && (disp_device->get_filter() & group_text_filter)) {
             w = tree_orientation + at->gr.right_angle;
@@ -3005,7 +3005,7 @@ void NOTEST_treeDisplay() {
             GB_transaction ta(gb_main);
             agt.set_var_mode(mode);
             
-            //#define TEST_AUTO_UPDATE // dont test, instead update expected results
+//#define TEST_AUTO_UPDATE // dont test, instead update expected results
 #if defined(TEST_AUTO_UPDATE)
 #warning TEST_AUTO_UPDATE is active (non-default)
             agt.test_print_tree(&print_dev, spool_expected, type, mode%2);
