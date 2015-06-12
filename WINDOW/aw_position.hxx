@@ -52,7 +52,7 @@ namespace AW {
             EMPTY,
             SHADED,             // uses greylevel of gc
             SHADED_WITH_BORDER, // like SHADED, but with solid border
-            FILLED,             // @@@ rename -> SOLID
+            SOLID,
         };
 
     private:
