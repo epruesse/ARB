@@ -2529,16 +2529,33 @@ static void probe_match_clear_event(AW_window *aww, ArbPM_Context *pContext) {
 
 // ----------------------------------------------------------------------------
 
-static void refresh_tree_cb(AW_root *root) {
-    root->awar(AWAR_TREE_REFRESH)->touch();
+static void markedThresholdChanged_cb(AW_root *root, bool partChanged) {
+    static bool avoid_recursion = false;
+    if (!avoid_recursion) {
+        LocallyModify<bool> flag(avoid_recursion, true);
+
+        AW_awar *awar_marked     = root->awar(AWAR_PC_CLADE_MARKED_THRESHOLD);
+        AW_awar *awar_partMarked = root->awar(AWAR_PC_CLADE_PARTIALLY_MARKED_THRESHOLD);
+
+        double marked     = awar_marked->read_float();
+        double partMarked = awar_partMarked->read_float();
+
+        if (partMarked>marked) { // unwanted state
+            if (partChanged) {
+                awar_marked->write_float(partMarked);
+            }
+            else {
+                awar_partMarked->write_float(marked);
+            }
+        }
+        root->awar(AWAR_TREE_REFRESH)->touch();
+    }
 }
 
 static void add_threshold_callbacks(AW_root *root, AWT_canvas *ntw) {
-    RootCallback refreshTreeCallback = makeRootCallback(refresh_tree_cb);
-
-    root->awar(AWAR_PC_MISMATCH_THRESHOLD)->add_callback(makeRootCallback(update_species_matched_string, ntw));
-    root->awar(AWAR_PC_CLADE_MARKED_THRESHOLD)->add_callback(refreshTreeCallback);
-    root->awar(AWAR_PC_CLADE_PARTIALLY_MARKED_THRESHOLD)->add_callback(refreshTreeCallback);
+    root->awar(AWAR_PC_MISMATCH_THRESHOLD)              ->add_callback(makeRootCallback(update_species_matched_string, ntw));
+    root->awar(AWAR_PC_CLADE_MARKED_THRESHOLD)          ->add_callback(makeRootCallback(markedThresholdChanged_cb,     false));
+    root->awar(AWAR_PC_CLADE_PARTIALLY_MARKED_THRESHOLD)->add_callback(makeRootCallback(markedThresholdChanged_cb,     true));
 }
 
 AW_window *create_probe_match_with_specificity_window(AW_root *root, AWT_canvas *ntw) {
