@@ -354,14 +354,10 @@ static char *readable_pt_servername(int index, int maxlength) {
     return fullname;
 }
 
-static void update_ptserver_button(AW_root *aw_root, const char *varname) {
-    char *awar_buttontext_name = GBS_global_string_copy("/tmp/%s_BUTTON", varname);
-    char *readable_name        = readable_pt_servername(aw_root->awar(varname)->read_int(), PT_SERVERNAME_LENGTH);
-
-    aw_root->awar(awar_buttontext_name)->write_string(readable_name);
-
+static void update_ptserver_button(AW_root *, AW_awar *awar_ptserver, AW_awar *awar_buttontext_name) {
+    char *readable_name = readable_pt_servername(awar_ptserver->read_int(), PT_SERVERNAME_LENGTH);
+    awar_buttontext_name->write_string(readable_name);
     free(readable_name);
-    free(awar_buttontext_name);
 }
 
 static AW_window *create_PTSERVER_selection_window(AW_root *aw_root, const char *varname) {
@@ -399,25 +395,25 @@ void awt_create_PTSERVER_selection_button(AW_window *aws, const char *varname) {
 
     AW_root *aw_root              = aws->get_root();
     char    *awar_buttontext_name = GBS_global_string_copy("/tmp/%s_BUTTON", varname);
-    int      ptserver_index       = aw_root->awar(varname)->read_int();
+    AW_awar *awar_ptserver        = aw_root->awar(varname);
+    int      ptserver_index       = awar_ptserver->read_int();
 
     if (ptserver_index<0) { // fix invalid pt_server indices
         ptserver_index = 0;
-        aw_root->awar(varname)->write_int(ptserver_index);
+        awar_ptserver->write_int(ptserver_index);
     }
 
-    char        *readable_name = readable_pt_servername(ptserver_index, PT_SERVERNAME_LENGTH);
-    char *const  varnameDup    = strdup(varname);
+    char *readable_name = readable_pt_servername(ptserver_index, PT_SERVERNAME_LENGTH);
 
     awt_assert(!GB_have_error());
 
-    aw_root->awar_string(awar_buttontext_name, readable_name, AW_ROOT_DEFAULT);
-    aw_root->awar(varname)->add_callback(makeRootCallback(update_ptserver_button, varnameDup));
+    AW_awar *awar_buttontext = aw_root->awar_string(awar_buttontext_name, readable_name, AW_ROOT_DEFAULT);
+    awar_ptserver->add_callback(makeRootCallback(update_ptserver_button, awar_ptserver, awar_buttontext));
 
     int old_button_length = aws->get_button_length();
 
     aws->button_length(PT_SERVERNAME_LENGTH+1);
-    aws->callback(makeCreateWindowCallback(create_PTSERVER_selection_window, varnameDup));
+    aws->callback(makeCreateWindowCallback(create_PTSERVER_selection_window, awar_ptserver->awar_name));
     aws->create_button("CURR_PT_SERVER", awar_buttontext_name);
 
     aws->button_length(old_button_length);

@@ -38,6 +38,15 @@
 #define AWAR_DTREE_DENDRO_ZOOM_TEXT "awt/dtree/dendro/zoomtext"
 #define AWAR_DTREE_DENDRO_XPAD      "awt/dtree/dendro/xpadding"
 
+// ----------------------------------------------------
+// probe collection awars used by TreeDisplay
+// see also ../../PROBE_DESIGN/probe_design.cxx@AWAR_PC_
+
+#define AWAR_PC_NUM_PROBES                       "probe_collection/number_of_probes"
+#define AWAR_PC_CLADE_MARKED_THRESHOLD           "probe_collection/clade_marked_threshold"
+#define AWAR_PC_CLADE_PARTIALLY_MARKED_THRESHOLD "probe_collection/clade_partially_marked_threshold"
+
+
 #define NT_BOX_WIDTH      7 // pixel
 #define NT_ROOT_WIDTH     9
 #define NT_SELECTED_WIDTH 11
@@ -127,6 +136,8 @@ enum CollapseMode {
     EXPAND_ZOMBIES    = 16, // do not collapse groups containing zombies
 };
 
+typedef const char *(*get_probe_name)(int nProbe);
+
 class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
     char         *species_name;
     AW::Position  cursor;
@@ -163,9 +174,21 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
 
     const AW_bitset line_filter, vert_line_filter, mark_filter, group_bracket_filter, bs_circle_filter;
     const AW_bitset leaf_text_filter, group_text_filter, remark_text_filter, other_text_filter;
-    const AW_bitset ruler_filter, root_filter;
+    const AW_bitset ruler_filter, root_filter, match_flag_filter;
 
     bool nds_show_all;
+
+    struct pcoll_display_settings {
+        bool display;
+        int  numProbes;
+        struct {
+            double marked;
+            double partiallyMarked;
+        } cladeThreshold;
+        get_probe_name get_name;
+
+        pcoll_display_settings() : display(false) {}
+    } pcoll;
 
     AD_map_viewer_cb  map_viewer_cb;
     AWT_command_data  *cmd_data;
@@ -188,6 +211,11 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
 
     void show_nds_list(GBDATA * gb_main, bool use_nds);
     void show_irs_tree(AP_tree *at, double height);
+
+    void enumerateClade(AP_tree *at, int* pMatchCounts, int& nCladeSize, int nNumProbes);
+    void drawMatchFlag(const class MatchFlagPosition& flag, const bool bPartial, const int nProbe);
+    void detectAndDrawMatchFlags(AP_tree *at, double y1, double y2);
+    void drawMatchFlagNames(AW::Position& Pen);
 
 private:
     void pixel_box(int gc, const AW::Position& pos, int pixel_width, AW::FillStyle filled);
@@ -285,6 +313,11 @@ public:
     void show_ruler(AW_device *device, int gc);
     void get_zombies_and_duplicates(int& zomb, int& dups) const { zomb = zombies; dups = duplicates; }
 
+    void set_probeCollectionDisplay(bool show_collection, get_probe_name get_name) {
+        pcoll.display  = show_collection;
+        pcoll.get_name = get_name;
+    }
+
 #if defined(UNIT_TESTS) // UT_DIFF
     friend class fake_AWT_graphic_tree;
 #endif
@@ -304,8 +337,10 @@ class ClickedTarget {
 
     AP_tree *tree_node;
     GBDATA  *gb_species;
-    bool     ruler;
-    bool     branch;
+
+    bool ruler;
+    bool branch;
+    int  matchflag; // = probe number + 1
 
     const AW_clicked_element *elem;
 
@@ -314,6 +349,7 @@ class ClickedTarget {
         gb_species = NULL;
         ruler      = false;
         branch     = false;
+        matchflag  = 0;
     }
 
     void identify(AWT_graphic_tree *agt) {
@@ -329,6 +365,9 @@ class ClickedTarget {
                 else if (strcmp(what, "ruler") == 0) {
                     ruler = !elem->cd1();
                 }
+                else if (strcmp(what, "flag") == 0) {
+                    matchflag = elem->cd1()+1;
+                }
                 else if (strcmp(what, "branch") == 0) {
                     branch = true; // indicates that a line really IS the branch (opposed to other branch-related lines like e.g. group-brackets)
                 }
@@ -337,7 +376,7 @@ class ClickedTarget {
                 }
             }
 
-            if (!(gb_species || ruler)) {
+            if (!(gb_species || ruler || matchflag)) {
                 tree_node = (AP_tree*)elem->cd1();
                 td_assert(branch || !what);
             }
@@ -363,11 +402,13 @@ public:
     const AW_clicked_element *element() const { return elem; }
     AP_tree *node() const { return tree_node; }
     GBDATA *species() const { return gb_species; }
+    int get_probeindex() const { return matchflag-1; }
 
     bool is_text() const { return elem && elem->is_text(); }
     bool is_line() const { return elem && elem->is_line(); }
     bool is_branch() const { return branch; }
     bool is_ruler() const { return ruler; }
+    bool is_matchflag() const { return matchflag; }
 
     double get_rel_attach() const {
         // return [0..1] according to exact position where element is dropped
