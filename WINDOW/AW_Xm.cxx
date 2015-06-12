@@ -181,7 +181,7 @@ bool AW_device_Xm::polygon_impl(int gc, AW::FillStyle filled, int npos, const AW
             drawflag = generic_polygon(gc, npos, pos, filteri);
         }
         else {
-            Position transPos[npos];
+            Position *transPos = new Position[npos];
             for (int p = 0; p<npos; ++p) {
                 transPos[p] = transform(pos[p]);
             }
@@ -223,6 +223,7 @@ bool AW_device_Xm::polygon_impl(int gc, AW::FillStyle filled, int npos, const AW
             }
 
             delete [] clippedPos;
+            delete [] transPos;
         }
     }
     return drawflag;
