@@ -192,7 +192,7 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
 private:
     void pixel_box(int gc, const AW::Position& pos, int pixel_width, AW::FillStyle filled);
 public:
-    void filled_box(int gc, const AW::Position& pos, int pixel_width) { pixel_box(gc, pos, pixel_width, AW::FillStyle::FILLED); }
+    void filled_box(int gc, const AW::Position& pos, int pixel_width) { pixel_box(gc, pos, pixel_width, AW::FillStyle::SOLID); }
     void empty_box(int gc, const AW::Position& pos, int pixel_width) { pixel_box(gc, pos, pixel_width, AW::FillStyle::EMPTY); }
     void diamond(int gc, const AW::Position& pos, int pixel_width);
 

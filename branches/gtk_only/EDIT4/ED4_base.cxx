@@ -1080,7 +1080,7 @@ ED4_returncode ED4_base::clear_background(int color) {
             }
             else {
                 // fill range with color for debugging
-                current_device()->box(color, AW::FillStyle::FILLED, x, y, extension.size[WIDTH], extension.size[HEIGHT]);
+                current_device()->box(color, AW::FillStyle::SOLID, x, y, extension.size[WIDTH], extension.size[HEIGHT]);
             }
         }
         current_device()->pop_clip_scale();

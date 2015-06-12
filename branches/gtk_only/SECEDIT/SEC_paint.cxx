@@ -47,7 +47,7 @@ inline bool valid_cb_params(AW_device *device) {
 
 static void paintDebugInfo(AW_device *device, int color, const Position& pos, const char *txt) {
     sec_assert(valid_cb_params(device));
-    device->circle(color, AW::FillStyle::FILLED, pos.xpos(), pos.ypos(), 0.06, 0.06);
+    device->circle(color, AW::FillStyle::SOLID, pos.xpos(), pos.ypos(), 0.06, 0.06);
     device->text(SEC_GC_DEFAULT, txt, pos.xpos(), pos.ypos(), 0, AW_SCREEN, 0);
 }
 static void paintStrandDebugInfo(AW_device *device, int color, SEC_helix_strand *strand) {
@@ -432,11 +432,11 @@ void SEC_root::paintBackgroundColor(AW_device *device, SEC_bgpaint_mode mode, co
         }
 
         if (mode & BG_PAINT_FIRST && color1 >= 0) { // paint first circle ?
-            device->circle(color1, AW::FillStyle::FILLED, p1, Vector(radius1, radius1));
+            device->circle(color1, AW::FillStyle::SOLID, p1, Vector(radius1, radius1));
         }
 
         if (mode & BG_PAINT_SECOND && color2 >= 0) { // paint second circle ?
-            device->circle(color2, AW::FillStyle::FILLED, p2, Vector(radius1, radius1));
+            device->circle(color2, AW::FillStyle::SOLID, p2, Vector(radius1, radius1));
         }
 
         if (color1 == color2 && color1 >= 0) { // colors are equal -> paint background between points
