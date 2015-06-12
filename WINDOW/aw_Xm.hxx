@@ -11,16 +11,14 @@ class AW_device_Xm : public AW_device {
     bool box_impl(int gc, AW::FillStyle filled, const AW::Rectangle& rect, AW_bitset filteri) OVERRIDE;
     bool circle_impl(int gc, AW::FillStyle filled, const AW::Position& center, const AW::Vector& radius, AW_bitset filteri) OVERRIDE;
     bool arc_impl(int gc, AW::FillStyle filled, const AW::Position& center, const AW::Vector& radius, int start_degrees, int arc_degrees, AW_bitset filter) OVERRIDE;
-    bool polygon_impl(int gc, AW::FillStyle /*filled*/, int npos, const AW::Position *pos, AW_bitset filteri) OVERRIDE { // @@@ implement!
-        return generic_polygon(gc, npos, pos, filteri);
-    }
+    bool polygon_impl(int gc, AW::FillStyle filled, int npos, const AW::Position *pos, AW_bitset filteri) OVERRIDE;
     bool invisible_impl(const AW::Position& pos, AW_bitset filteri) OVERRIDE { return generic_invisible(pos, filteri); }
 
     void specific_reset() {}
 
     enum FillStyle { FS_EMPTY, FS_GREY, FS_SOLID };
     
-    AW_device_Xm::FillStyle setFillstyleForGreylevel(int gc);
+    AW_device_Xm::FillStyle setFillstyleForGreylevel(int gc, AW::FillStyle filled);
     void resetFillstyleForGreylevel(int gc);
 
 public:

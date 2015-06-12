@@ -179,6 +179,9 @@ class AW_clipable {
     AW_font_overlap font_overlap;
 
     void set_cliprect_oversize(const AW_screen_area& rect, bool allow_oversize);
+
+    bool need_extra_clip_position(const AW::Position& p1, const AW::Position& p2, AW::Position& extra);
+
 protected:
     int compoutcode(AW_pos xx, AW_pos yy) const {
         // calculate outcode for clipping the current line
@@ -222,6 +225,7 @@ public:
 
     bool box_clip(AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_pos& x0out, AW_pos& y0out, AW_pos& x1out, AW_pos& y1out);
     bool box_clip(const AW::Rectangle& rect, AW::Rectangle& clippedRect);
+    bool box_clip(int npos, const AW::Position *pos, int& nclippedPos, AW::Position*& clippedPos);
     bool force_into_clipbox(const AW::Position& pos, AW::Position& forcedPos);
 
     void set_top_clip_border(int top, bool allow_oversize = false);
