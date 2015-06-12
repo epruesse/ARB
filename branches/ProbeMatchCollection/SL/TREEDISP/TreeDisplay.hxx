@@ -217,9 +217,11 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
     void detectAndDrawMatchFlags(AP_tree *at, double y1, double y2);
     void drawMatchFlagNames(AW::Position& Pen);
 
-    void box(int gc, const AW::Position& pos, int pixel_width, bool filled);
-    void filled_box(int gc, const AW::Position& pos, int pixel_width) { box(gc, pos, pixel_width, true); }
-    void empty_box(int gc, const AW::Position& pos, int pixel_width) { box(gc, pos, pixel_width, false); }
+private:
+    void pixel_box(int gc, const AW::Position& pos, int pixel_width, AW::FillStyle filled);
+public:
+    void filled_box(int gc, const AW::Position& pos, int pixel_width) { pixel_box(gc, pos, pixel_width, AW::FillStyle::SOLID); }
+    void empty_box(int gc, const AW::Position& pos, int pixel_width) { pixel_box(gc, pos, pixel_width, AW::FillStyle::EMPTY); }
     void diamond(int gc, const AW::Position& pos, int pixel_width);
 
     const char *ruler_awar(const char *name);

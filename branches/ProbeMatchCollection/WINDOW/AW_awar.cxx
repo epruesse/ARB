@@ -518,7 +518,11 @@ AW_awar *AW_awar::remove_callback(const RootCallback& rcb) {
 
 AW_awar *AW_awar::set_minmax(float min, float max) {
     if (variable_type == AW_STRING) GBK_terminatef("set_minmax does not apply to string AWAR '%s'", awar_name);
-    if (min>max) GBK_terminatef("illegal values in set_minmax for AWAR '%s'", awar_name);
+    if (min>=max) {
+        // 'min>max'  would set impossible limits
+        // 'min==max' would remove limits, which is not allowed!
+        GBK_terminatef("illegal values in set_minmax for AWAR '%s'", awar_name);
+    }
 
     pp.f.min = min;
     pp.f.max = max;

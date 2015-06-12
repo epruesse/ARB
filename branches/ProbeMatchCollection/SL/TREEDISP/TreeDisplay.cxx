@@ -414,7 +414,7 @@ static void show_bootstrap_circle(AW_device *device, const char *bootstrap, doub
         radiusy = radiusx;
     }
 
-    device->circle(gc, false, center, Vector(radiusx, radiusy), filter);
+    device->circle(gc, AW::FillStyle::EMPTY, center, Vector(radiusx, radiusy), filter);
     // device->arc(gc, false, center, Vector(radiusx, radiusy), 45, -90, filter); // @@@ use to test AW_device_print::arc_impl
 }
 
@@ -1337,7 +1337,7 @@ public:
 
         device->line(drag_gc, clicked_branch);
         device->line(drag_gc, LineVector(hinge, mousepos_world));
-        device->circle(drag_gc, false, hinge, device->rtransform(Vector(5, 5)));
+        device->circle(drag_gc, AW::FillStyle::EMPTY, hinge, device->rtransform(Vector(5, 5)));
     }
 };
 
@@ -1945,9 +1945,8 @@ void AWT_graphic_tree::drawMatchFlag(const class MatchFlagPosition& flag, const 
 
     const int gc = MatchProbeGC[nProbe % MATCH_FLAG_COLORS];
 
-    if (bPartial) disp_device->set_fill_stipple(gc);
-    disp_device->box(gc, true, flag.pos(nProbe), flag.size(), match_flag_filter);
-    if (bPartial) disp_device->set_fill_solid(gc);
+    if (bPartial) disp_device->set_grey_level(gc, 0.5);
+    disp_device->box(gc, bPartial ? AW::FillStyle::SHADED : AW::FillStyle::SOLID, flag.pos(nProbe), flag.size(), match_flag_filter);
 }
 
 void AWT_graphic_tree::detectAndDrawMatchFlags(AP_tree *at, const double y1, const double y2) {
@@ -2031,7 +2030,7 @@ void AWT_graphic_tree::drawMatchFlagNames(Position& Pen) {
                 clickflag.set_cd1(nProbe);
 
                 disp_device->line(gc, pl1, pl2, match_flag_filter);
-                disp_device->box(gc, true, mbox, match_flag_filter);
+                disp_device->box(gc, AW::FillStyle::SOLID, mbox, match_flag_filter);
                 disp_device->text(gc, pProbeName, mbox.upper_left_corner()+b2t, 0, match_flag_filter, strlen(pProbeName));
             }
 
@@ -2049,13 +2048,13 @@ void AWT_graphic_tree::drawMatchFlagNames(Position& Pen) {
     }
 }
 
-void AWT_graphic_tree::box(int gc, const AW::Position& pos, int pixel_width, bool filled) {
+void AWT_graphic_tree::pixel_box(int gc, const AW::Position& pos, int pixel_width, AW::FillStyle filled) {
     double diameter = disp_device->rtransform_pixelsize(pixel_width);
     Vector diagonal(diameter, diameter);
 
-    if (filled) disp_device->set_grey_level(gc, grey_level);
-    else        disp_device->set_line_attributes(gc, 1, AW_SOLID);
-
+    td_assert(!filled.is_shaded()); // the pixel box is either filled or empty! (by design)
+    if (filled.somehow()) disp_device->set_grey_level(gc, grey_level); // @@@ should not be needed here, but changes test-results (xfig-shading need fixes anyway)
+    else                  disp_device->set_line_attributes(gc, 1, AW_SOLID);
     disp_device->box(gc, filled, pos-0.5*diagonal, diagonal, mark_filter);
 }
 
@@ -2203,7 +2202,7 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
         }
 
         disp_device->set_grey_level(at->gr.gc, grey_level);
-        disp_device->filled_area(at->gr.gc, 4, group, line_filter);
+        disp_device->polygon(at->gr.gc, AW::FillStyle::SHADED_WITH_BORDER, 4, group, line_filter);
 
         const AW_font_limits& charLimits  = disp_device->get_font_limits(at->gr.gc, 'A');
         double                text_ascent = charLimits.ascent * disp_device->get_unscale();
@@ -2391,7 +2390,7 @@ void AWT_graphic_tree::show_radial_tree(AP_tree * at, double x_center,
         q[5] = y_center+l_max*sin(w);
 
         disp_device->set_grey_level(at->gr.gc, grey_level);
-        disp_device->filled_area(at->gr.gc, 3, &q[0], line_filter);
+        disp_device->polygon(at->gr.gc, AW::FillStyle::SHADED_WITH_BORDER, 3, &q[0], line_filter);
 
         if (at->gb_node && (disp_device->get_filter() & group_text_filter)) {
             w = tree_orientation + at->gr.right_angle;
@@ -2947,9 +2946,9 @@ void TREE_create_awars(AW_root *aw_root, AW_default db) {
     aw_root->awar_int(AWAR_DTREE_BOOTSTRAP_MIN, 0)->set_minmax(0,100);
 
     aw_root->awar_int(AWAR_DTREE_RADIAL_ZOOM_TEXT, 0);
-    aw_root->awar_int(AWAR_DTREE_RADIAL_XPAD,      150);
+    aw_root->awar_int(AWAR_DTREE_RADIAL_XPAD,      150)->set_minmax(-100, 2000);
     aw_root->awar_int(AWAR_DTREE_DENDRO_ZOOM_TEXT, 0);
-    aw_root->awar_int(AWAR_DTREE_DENDRO_XPAD,      300);
+    aw_root->awar_int(AWAR_DTREE_DENDRO_XPAD,      300)->set_minmax(-100, 2000);
 
     aw_root->awar_int(AWAR_TREE_REFRESH, 0, db);
 }
@@ -3041,12 +3040,14 @@ AW_window *TREE_create_settings_window(AW_root *aw_root) {
         aws->auto_space(10, 10);
         aws->label_length(30);
 
+        const int SCALER_WIDTH = 250;
+
         aws->label("Base line width");
-        aws->create_input_field(AWAR_DTREE_BASELINEWIDTH, 4);
+        aws->create_input_field_with_scaler(AWAR_DTREE_BASELINEWIDTH, 4, SCALER_WIDTH);
         aws->at_newline();
 
         aws->label("Relative vertical distance");
-        aws->create_input_field(AWAR_DTREE_VERICAL_DIST, 4);
+        aws->create_input_field_with_scaler(AWAR_DTREE_VERICAL_DIST, 4, SCALER_WIDTH, AW_SCALER_EXP_LOWER);
         aws->at_newline();
 
         TREE_insert_jump_option_menu(aws, "On species change", AWAR_DTREE_AUTO_JUMP);
@@ -3061,7 +3062,7 @@ AW_window *TREE_create_settings_window(AW_root *aw_root) {
         aws->at_newline();
 
         aws->label("Hide bootstrap value below");
-        aws->create_input_field(AWAR_DTREE_BOOTSTRAP_MIN, 4);
+        aws->create_input_field_with_scaler(AWAR_DTREE_BOOTSTRAP_MIN, 4, SCALER_WIDTH);
         aws->at_newline();
 
         aws->label("Use ellipses");
@@ -3069,25 +3070,27 @@ AW_window *TREE_create_settings_window(AW_root *aw_root) {
         aws->at_newline();
 
         aws->label("Bootstrap circle zoom factor");
-        aws->create_input_field(AWAR_DTREE_CIRCLE_ZOOM, 4);
+        aws->create_input_field_with_scaler(AWAR_DTREE_CIRCLE_ZOOM, 4, SCALER_WIDTH);
         aws->at_newline();
 
         aws->label("Boostrap radius limit");
-        aws->create_input_field(AWAR_DTREE_CIRCLE_MAX_SIZE, 4);
+        aws->create_input_field_with_scaler(AWAR_DTREE_CIRCLE_MAX_SIZE, 4, SCALER_WIDTH);
         aws->at_newline();
 
         aws->label("Grey Level of Groups%");
-        aws->create_input_field(AWAR_DTREE_GREY_LEVEL, 4);
+        aws->create_input_field_with_scaler(AWAR_DTREE_GREY_LEVEL, 4, SCALER_WIDTH);
         aws->at_newline();
+
+        const int PAD_SCALER_WIDTH = SCALER_WIDTH-39;
 
         aws->label("Text zoom/pad (dendro)");
         aws->create_toggle(AWAR_DTREE_DENDRO_ZOOM_TEXT);
-        aws->create_input_field(AWAR_DTREE_DENDRO_XPAD, 4);
+        aws->create_input_field_with_scaler(AWAR_DTREE_DENDRO_XPAD, 4, PAD_SCALER_WIDTH);
         aws->at_newline();
 
         aws->label("Text zoom/pad (radial)");
         aws->create_toggle(AWAR_DTREE_RADIAL_ZOOM_TEXT);
-        aws->create_input_field(AWAR_DTREE_RADIAL_XPAD, 4);
+        aws->create_input_field_with_scaler(AWAR_DTREE_RADIAL_XPAD, 4, PAD_SCALER_WIDTH);
         aws->at_newline();
 
         aws->at("config");
@@ -3293,8 +3296,8 @@ public:
         print_device->set_offset(offset/(zoom*zoom)); // dont really understand this, but it does the right shift
 
         test_show_tree(print_device);
-        print_device->box(AWT_GC_CURSOR, false, drawn_world);
-        print_device->box(AWT_GC_GROUPS, false, drawn_text_world);
+        print_device->box(AWT_GC_CURSOR, AW::FillStyle::EMPTY, drawn_world);
+        print_device->box(AWT_GC_GROUPS, AW::FillStyle::EMPTY, drawn_text_world);
     }
 };
 

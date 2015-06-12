@@ -1143,6 +1143,25 @@ static void probelength_changed_cb(AW_root *root, bool min_changed) {
     }
 }
 
+static void gc_minmax_changed_cb(AW_root *root, bool maxChanged) {
+    static bool avoid_recursion = false;
+    if (!avoid_recursion) {
+        LocallyModify<bool> flag(avoid_recursion, true);
+
+        AW_awar *awar_minGC = root->awar(AWAR_PD_DESIGN_MIN_GC);
+        AW_awar *awar_maxGC = root->awar(AWAR_PD_DESIGN_MAX_GC);
+
+        if (maxChanged) {
+            float currMax = awar_maxGC->read_float();
+            if (currMax>0) awar_minGC->set_minmax(0.0, currMax);
+        }
+        else {
+            float currMin = awar_minGC->read_float();
+            if (currMin<100.0) awar_maxGC->set_minmax(currMin, 100.0);
+        }
+    }
+}
+
 void create_probe_design_variables(AW_root *root, AW_default props, AW_default db) {
     PD.win = 0;        // design result window not created
 
@@ -1176,8 +1195,15 @@ void create_probe_design_variables(AW_root *root, AW_default props, AW_default d
 
     root->awar_float(AWAR_PD_DESIGN_MIN_TEMP,     30.0,   props)->set_minmax(0, 1000);
     root->awar_float(AWAR_PD_DESIGN_MAX_TEMP,     100.0,  props)->set_minmax(0, 1000);
-    root->awar_float(AWAR_PD_DESIGN_MIN_GC,       50.0,   props)->set_minmax(0, 100);
-    root->awar_float(AWAR_PD_DESIGN_MAX_GC,       100.0,  props)->set_minmax(0, 100);
+
+    AW_awar *awar_minGC = root->awar_float(AWAR_PD_DESIGN_MIN_GC, 50.0,  props);
+    AW_awar *awar_maxGC = root->awar_float(AWAR_PD_DESIGN_MAX_GC, 100.0, props);
+
+    awar_minGC->add_callback(makeRootCallback(gc_minmax_changed_cb, false)); // @@@ weird test (undo or better replace by auto-adjustment of opposite value when gtk-bug is fixed)
+    awar_maxGC->add_callback(makeRootCallback(gc_minmax_changed_cb, true));
+
+    gc_minmax_changed_cb(root, false);
+    gc_minmax_changed_cb(root, true);
 
     root->awar_string(AWAR_PD_DESIGN_MIN_ECOLIPOS, "", props);
     root->awar_string(AWAR_PD_DESIGN_MAX_ECOLIPOS, "", props);

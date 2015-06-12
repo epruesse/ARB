@@ -112,78 +112,18 @@ static void track_awar_change_cb(GBDATA *IF_ASSERTION_USED(gbd), TrackedAwarChan
 #define SCALER_MIN_VALUE 0
 #define SCALER_MAX_VALUE 1000
 
-static float apply_ScalerType(float val, AW_ScalerType scalerType, bool inverse) {
-    float res;
-
-    aw_assert(val>=0.0 && val<=1.0);
-
-    switch (scalerType) {
-        case AW_SCALER_LINEAR:
-            res = val;
-            break;
-
-        case AW_SCALER_EXP_LOWER:
-            if (inverse) res = pow(val, 1/3.0);
-            else         res = pow(val, 3.0);
-            break;
-
-        case AW_SCALER_EXP_UPPER:
-            res = 1.0-apply_ScalerType(1.0-val, AW_SCALER_EXP_LOWER, inverse);
-            break;
-
-        case AW_SCALER_EXP_BORDER:
-            inverse = !inverse;
-            // fall-through
-        case AW_SCALER_EXP_CENTER: {
-            AW_ScalerType subType = inverse ? AW_SCALER_EXP_UPPER : AW_SCALER_EXP_LOWER;
-            if      (val>0.5) res = (1+apply_ScalerType(2*val-1, subType, false))/2;
-            else if (val<0.5) res = (1-apply_ScalerType(1-2*val, subType, false))/2;
-            else              res = val;
-            break;
-        }
-    }
-
-    aw_assert(res>=0.0 && res<=1.0);
-
-    return res;
-}
-
 static int calculate_scaler_value(AW_awar *awar, AW_ScalerType scalerType) {
-    float amin = awar->get_min();
-    float amax = awar->get_max();
-
-    float awarRel = 0.0;
-    switch (awar->variable_type) {
-        case AW_FLOAT:
-            awarRel = (awar->read_float()-amin) / (amax-amin);
-            break;
-
-        case AW_INT:
-            awarRel = (awar->read_int()-amin) / (amax-amin);
-            break;
-
-        default:
-            GBK_terminatef("Unsupported awar type %i in calculate_scaler_value", int(awar->variable_type));
-            break;
-    }
-
-    aw_assert(awarRel>=0.0 && awarRel<=1.0);
-
-    float modAwarRel  = apply_ScalerType(awarRel, scalerType, true);
+    float modAwarRel  = AW_ScalerTransformer(scalerType).awar2scaler(awar);
     int   scalerValue = SCALER_MIN_VALUE + modAwarRel * (SCALER_MAX_VALUE-SCALER_MIN_VALUE);
 
     return scalerValue;
 }
 
 static void write_scalervalue_to_awar(int scalerVal, AW_awar *awar, AW_ScalerType scalerType) {
-    float amin     = awar->get_min();
-    float amax     = awar->get_max();
     float scaleRel = scalerVal/double(SCALER_MAX_VALUE-SCALER_MIN_VALUE);
-
     aw_assert(scaleRel>=0.0 && scaleRel<=1.0);
 
-    float modScaleRel = apply_ScalerType(scaleRel, scalerType, false);
-    float aval        = amin + modScaleRel*(amax-amin);
+    double aval = AW_ScalerTransformer(scalerType).scaler2awar(scaleRel, awar);
 
     switch (awar->variable_type) {
         case AW_FLOAT:
