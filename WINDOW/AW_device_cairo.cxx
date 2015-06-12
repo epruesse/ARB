@@ -154,14 +154,21 @@ bool AW_device_cairo::box_impl(int gc, AW::FillStyle filled, const Rectangle& re
     AW_pos width  = AW_INT(clippedRect.width()) + 1.0; //see aw_device.hxx@WORLD_vs_PIXEL
     AW_pos height = AW_INT(clippedRect.height())+ 1.0;
 
-    cairo_rectangle(cr, x, y, width, height);
 
-    if (filled) {
-        get_common()->update_cr(cr, gc, true);
+    cairo_rectangle(cr, x, y, width, height);
+    if (filled.somehow()) {
+        if (filled.is_shaded()) {
+            get_common()->update_cr(cr, gc, true);
+        }
         cairo_fill_preserve(cr);
-        get_common()->update_cr(cr, gc, false);
+        if (filled.get_style() == AW::FillStyle::SHADED_WITH_BORDER) {
+            get_common()->update_cr(cr, gc, false);
+        }
     }
     cairo_stroke(cr);
+    if (filled.get_style() == AW::FillStyle::SHADED) {
+        get_common()->update_cr(cr, gc, false);
+    }
 
     TRACE("%i %i %i %i %s", (int)x, (int)y, (int)width, (int)height, filled?"filled":"");
 
@@ -188,12 +195,19 @@ bool AW_device_cairo::polygon_impl(int gc, AW::FillStyle filled, int npos, const
                       AW_INT(transPos.ypos())+0.5);
     }
     cairo_close_path(cr); // draw line to first point
-    if (filled) {
-        get_common()->update_cr(cr, gc, true);
+    if (filled.somehow()) {
+        if (filled.is_shaded()) {
+            get_common()->update_cr(cr, gc, true);
+        }
         cairo_fill_preserve(cr);
-        get_common()->update_cr(cr, gc, false);
+        if (filled.get_style() == AW::FillStyle::SHADED_WITH_BORDER) {
+            get_common()->update_cr(cr, gc, false);
+        }
     }
     cairo_stroke(cr);
+    if (filled.get_style() == AW::FillStyle::SHADED) {
+        get_common()->update_cr(cr, gc, false);
+    }
 
     return true;
 }
@@ -242,12 +256,19 @@ bool AW_device_cairo::arc_impl(int gc, AW::FillStyle filled, const AW::Position&
         cairo_arc(cr, 0., 0., 1., angle2, angle1);
     }
 
-    if (filled) {
-        get_common()->update_cr(cr, gc, true);
+    if (filled.somehow()) {
+        if (filled.is_shaded()) {
+            get_common()->update_cr(cr, gc, true);
+        }
         cairo_fill_preserve(cr);
-        get_common()->update_cr(cr, gc, false);
+        if (filled.get_style() == AW::FillStyle::SHADED_WITH_BORDER) {
+            get_common()->update_cr(cr, gc, false);
+        }
     }
     cairo_stroke(cr);
+    if (filled.get_style() == AW::FillStyle::SHADED) {
+        get_common()->update_cr(cr, gc, false);
+    }
     cairo_restore(cr);
 
     return true;
