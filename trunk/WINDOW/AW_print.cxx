@@ -51,7 +51,7 @@ bool AW_device_print::line_impl(int gc, const LineVector& Line, AW_bitset filter
                     line_mode,
                     AW_INT(line_width),
                     find_color_idx(gcm->get_last_fg_color()),
-                    gap_ratio, 
+                    gap_ratio,
                     print_pos(clippedLine.xpos()),
                     print_pos(clippedLine.ypos()),
                     print_pos(clippedLine.head().xpos()),
@@ -250,8 +250,8 @@ bool AW_device_print::circle_impl(int gc, AW::FillStyle filled, const Position& 
 
             fprintf(out, "%d %d ", cx, cy); // center
             fprintf(out, "%d %d ", rx, ry); // radius
-            fprintf(out, "%d %d ", cx, cy); // start 
-            fprintf(out, "%d %d\n", print_pos(Center.xpos()+screen_radius.x()), cy); // end 
+            fprintf(out, "%d %d ", cx, cy); // start
+            fprintf(out, "%d %d\n", print_pos(Center.xpos()+screen_radius.x()), cy); // end
         }
     }
     return drawflag;
@@ -398,7 +398,7 @@ bool AW_device_print::polygon_impl(int gc, AW::FillStyle filled, int npos, const
 
                 Position transPos = transform(pos[j]);
                 Position clippedPos;
-                ASSERT_RESULT(bool, true, force_into_clipbox(transPos, clippedPos)); 
+                ASSERT_RESULT(bool, true, force_into_clipbox(transPos, clippedPos));
                 fprintf(out, "   %d %d\n", print_pos(clippedPos.xpos()), print_pos(clippedPos.ypos()));
             }
         }
