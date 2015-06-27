@@ -2381,33 +2381,27 @@ static void probe_match_with_specificity_edit_event() {
 
 static void probe_match_with_specificity_event(AW_window *aww, AWT_canvas *ntw) {
     if (allow_probe_match_event) {
-        AW_root     *root                = aww->get_root();
-        int          last_mark           = (int)root->awar(AWAR_PD_MATCH_MARKHITS)->read_int();
-        int          last_write_2_tmp    = (int)root->awar(AWAR_PD_MATCH_WRITE2TMP)->read_int();
-        int          last_max_mismatches = (int)root->awar(AWAR_MAX_MISMATCHES)->read_int();
-        bool         bAborted            = false;
-        std::string  last_target_string(root->awar(AWAR_TARGET_STRING)->read_char_pntr());
+        AW_root *root     = aww->get_root();
+        bool     bAborted = false;
 
-        LocallyModify<bool> noAutoMatch(auto_match_cb_settings.disable, true);
-
-        root->awar(AWAR_PD_MATCH_MARKHITS)->write_int(0);
-        root->awar(AWAR_PD_MATCH_WRITE2TMP)->write_int(0);
+        ProbeMatchSettings matchSettings(root);
+        matchSettings.markHits  = 0;
+        matchSettings.write2tmp = 0;
 
         ArbMatchResultsManager& g_results_manager = get_results_manager();
         g_results_manager.reset();
 
         // Using g_probe_collection instance of ArbProbeCollection, need to loop
-        // through all the probes in the collect and then call probe_match_event_using_awars,
+        // through all the probes in the collect and then call probe_match_event,
         // collating the results as we go. The results can be obtained from the
         // g_spd->probeSeq list.
-        const ArbProbePtrList&   rProbeList  = get_probe_collection().probeList();
-        int                      nItems      = rProbeList.size();
-        int                      nItem       = 1;
-        int                      nHits       = 0;
-        int                      nProbeIndex = 0;
-        int                      cn;
-        bool                     gene_flag   = false;
-        ArbProbePtrListConstIter ProbeIter;
+        const ArbProbePtrList& rProbeList = get_probe_collection().probeList();
+
+        const int nItems      = rProbeList.size();
+        int       nItem       = 1;
+        int       nHits       = 0;
+        int       nProbeIndex = 0;
+        bool      gene_flag   = false;
 
         // This extra scope needed to ensure the arb_progress object is released
         // prior to the next one being used to show progress on write results to file
@@ -2416,7 +2410,7 @@ static void probe_match_with_specificity_event(AW_window *aww, AWT_canvas *ntw) 
 
             ArbProbeCollection& g_probe_collection = get_probe_collection();
 
-            for (ProbeIter = rProbeList.begin() ; ProbeIter != rProbeList.end() ; ++ProbeIter) {
+            for (ArbProbePtrListConstIter ProbeIter = rProbeList.begin() ; ProbeIter != rProbeList.end() ; ++ProbeIter) {
                 const ArbProbe *pProbe = *ProbeIter;
 
                 if (pProbe != 0) {
@@ -2433,13 +2427,13 @@ static void probe_match_with_specificity_event(AW_window *aww, AWT_canvas *ntw) 
                     progress.inc();
 
                     // Perform match on pProbe
-                    root->awar(AWAR_TARGET_STRING)->write_string(pProbe->sequence().c_str());
-                    root->awar(AWAR_MAX_MISMATCHES)->write_int(pProbe->allowedMismatches());
+                    matchSettings.targetString  = pProbe->sequence();
+                    matchSettings.maxMismatches = pProbe->allowedMismatches();
 
                     int                   counter = -1;
                     ProbeMatchEventParam  match_event(ntw->gb_main, &counter);
 
-                    probe_match_event_using_awars(root, &match_event); // @@@ use plain probe_match_event
+                    probe_match_event(matchSettings, &match_event);
                     pResultSet->initialise(pProbe, nProbeIndex);
                     nProbeIndex++;
 
@@ -2462,7 +2456,7 @@ static void probe_match_with_specificity_event(AW_window *aww, AWT_canvas *ntw) 
                             // Collate match results
                             nMatches = g_spd->probeSeq.size();
 
-                            for (cn = 0 ; cn < nMatches ; cn++) {
+                            for (int cn = 0 ; cn < nMatches ; cn++) {
                                 const std::string& sResult = g_spd->probeSeq[cn];
 
                                 ParsedProbeMatch  parsed(sResult.c_str(), parser);
@@ -2549,12 +2543,6 @@ static void probe_match_with_specificity_event(AW_window *aww, AWT_canvas *ntw) 
 
         root->awar(AWAR_PMC_MATCH_NHITS)->write_int(nHits);
 
-        // Restore previous settings
-        root->awar(AWAR_MAX_MISMATCHES)    ->write_int(last_max_mismatches);
-        root->awar(AWAR_PD_MATCH_MARKHITS) ->write_int(last_mark);
-        root->awar(AWAR_PD_MATCH_WRITE2TMP)->write_int(last_write_2_tmp);
-        root->awar(AWAR_TARGET_STRING)     ->write_string(last_target_string.c_str());
-
         if (bAborted) {
             // Clear the results set
             g_results_manager.reset();
@@ -2574,7 +2562,7 @@ static void probe_match_with_specificity_event(AW_window *aww, AWT_canvas *ntw) 
             root->awar(AWAR_PC_MISMATCH_THRESHOLD)->set_minmax(0.0, newMaxWeight)->touch();
         }
 
-        update_species_matched_string(root, ntw); // forces a refresh of the phylogenic tree
+        update_species_matched_string(root, ntw); // also forces a refresh of the phylogenic tree
     }
 }
 
