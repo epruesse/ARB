@@ -73,6 +73,10 @@ public:
     virtual const char* get_type_name() const { return "AW_awar"; }
     virtual const char* get_name() const { return awar_name; }
 
+#if defined(ASSERTION_USED)
+    static bool deny_read;  // true -> make awar reads fail
+    static bool deny_write; // true -> make awar writes fail
+#endif
 
     virtual void bind_value(GObject* obj, const char* propname, AW_awar_gvalue_mapper* mapper=NULL) = 0;
     virtual void unbind(GObject* obj) = 0;
