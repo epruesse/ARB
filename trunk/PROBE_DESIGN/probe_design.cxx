@@ -1058,12 +1058,10 @@ static void probe_match_event(AW_window *aww, ProbeMatchEventParam *event_param)
         LocallyModify<bool> flag(allow_probe_match_event, false);
         root->awar(AWAR_TREE_REFRESH)->touch();
     }
-
-    return;
 }
 
 static void probe_match_all_event(AW_window *aww, AW_selection_list *iselection_id, GBDATA *gb_main) {
-    auto_match_cb_settings.disable = true;
+    LocallyModify<bool> noAutoMatch(auto_match_cb_settings.disable, true);
 
     AW_root *root          = aww->get_root();
     char    *target_string = root->awar(AWAR_TARGET_STRING)->read_string();
@@ -1099,8 +1097,6 @@ static void probe_match_all_event(AW_window *aww, AW_selection_list *iselection_
         iselection_id->update();
         root->awar(AWAR_TARGET_STRING)->write_string(target_string);
     }
-
-    auto_match_cb_settings.disable = false;
 }
 
 static void resolved_probe_chosen(AW_root *root) {
@@ -2323,6 +2319,8 @@ static void probe_match_with_specificity_event(AW_window *aww, AWT_canvas *ntw) 
         int          last_max_mismatches = (int)root->awar(AWAR_MAX_MISMATCHES)->read_int();
         bool         bAborted            = false;
         std::string  last_target_string(root->awar(AWAR_TARGET_STRING)->read_char_pntr());
+
+        LocallyModify<bool> noAutoMatch(auto_match_cb_settings.disable, true);
 
         root->awar(AWAR_PD_MATCH_MARKHITS)->write_int(0);
         root->awar(AWAR_PD_MATCH_WRITE2TMP)->write_int(0);
