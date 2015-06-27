@@ -36,6 +36,11 @@
 
 bool AW_awar_impl::allowed_to_run_callbacks = true;
 
+#if defined(ASSERTION_USED)
+bool AW_awar::deny_read = false;
+bool AW_awar::deny_write = false;
+#endif
+
 static GB_ERROR AW_MSG_UNMAPPED_AWAR = "Error (unmapped AWAR):\n"
     "You cannot write to this field because it is either deleted or\n"
     "unmapped. Try to select a different item, reselect this and retry.";
@@ -300,6 +305,7 @@ float AW_awar_int::get_max() const {
 }
 
 GB_ERROR AW_awar_int::write_int(long para, bool do_touch) {
+    aw_assert(!deny_write);
     if (!gb_var) return AW_MSG_UNMAPPED_AWAR;
     GB_transaction ta(gb_var);
     GB_ERROR error = GB_write_int(gb_var, para);
@@ -321,12 +327,14 @@ bool AW_awar_int::has_default_value() const {
 }
 
 long AW_awar_int::read_int() const {
+    aw_assert(!deny_read);
     if (!gb_var) return 0;
     GB_transaction ta(gb_var);
     return (long)GB_read_int(gb_var);
 }
 
 char *AW_awar_int::read_as_string() const {
+    aw_assert(!deny_read);
     if (!gb_var) return strdup("");
     GB_transaction ta(gb_var);
     return GB_read_as_string(gb_var);
@@ -431,6 +439,7 @@ float AW_awar_float::get_max() const {
 }
 
 GB_ERROR AW_awar_float::write_float(double para, bool do_touch) {
+    aw_assert(!deny_write);
     if (!gb_var) return AW_MSG_UNMAPPED_AWAR;
     GB_transaction ta(gb_var);
     GB_ERROR error = GB_write_float(gb_var, para);
@@ -448,12 +457,14 @@ bool AW_awar_float::has_default_value() const {
 }
 
 double AW_awar_float::read_float() const {
+    aw_assert(!deny_read);
     if (!gb_var) return 0.0;
     GB_transaction ta(gb_var);
     return GB_read_float(gb_var);
 }
 
 char *AW_awar_float::read_as_string() const {
+    aw_assert(!deny_read);
     if (!gb_var) return strdup("");
     GB_transaction ta(gb_var);
     return GB_read_as_string(gb_var);
@@ -548,6 +559,7 @@ GB_ERROR AW_awar_string::write_as_string(const char *para, bool do_touch) {
 }
 
 GB_ERROR AW_awar_string::write_string(const char *para, bool do_touch) {
+    aw_assert(!deny_write);
     if (!gb_var) return AW_MSG_UNMAPPED_AWAR;
     GB_transaction ta(gb_var);
     GB_ERROR error = GB_write_as_string(gb_var, para);
@@ -561,18 +573,21 @@ bool AW_awar_string::has_default_value() const {
 }
 
 char *AW_awar_string::read_string() const {
+    aw_assert(!deny_read);
     if (!gb_var) return strdup("");
     GB_transaction ta(gb_var);
     return GB_read_string(gb_var);
 }
 
 const char *AW_awar_string::read_char_pntr() const {
+    aw_assert(!deny_read);
     if (!gb_var) return "";
     GB_transaction ta(gb_var);
     return GB_read_char_pntr(gb_var);
 }
 
 char *AW_awar_string::read_as_string() const {
+    aw_assert(!deny_read);
     if (!gb_var) return strdup("");
     GB_transaction ta(gb_var);
     return GB_read_string(gb_var);
@@ -634,6 +649,7 @@ void AW_awar_pointer::do_update() {
 void AW_awar_pointer::remove_all_target_vars() {}
 
 GB_ERROR AW_awar_pointer::write_pointer(GBDATA *para, bool do_touch) {
+    aw_assert(!deny_write);
     if (!gb_var) return AW_MSG_UNMAPPED_AWAR;
     GB_transaction ta(gb_var);
     GB_ERROR error = GB_write_pointer(gb_var, para);
@@ -647,12 +663,14 @@ bool AW_awar_pointer::has_default_value() const {
 }
 
 GBDATA *AW_awar_pointer::read_pointer() const {
+    aw_assert(!deny_read);
     if (!gb_var) return NULL;
     GB_transaction ta(gb_var);
     return GB_read_pointer(gb_var);
 }
 
 GB_ERROR AW_awar_pointer::reset_to_default() {
+    aw_assert(!deny_write);
     return has_default_value() ? NULL : write_pointer(default_value, true);
 }
 
@@ -674,6 +692,7 @@ AW_awar_impl::~AW_awar_impl() {
 }
 
 char *AW_awar_impl::read_as_string() const {
+    aw_assert(!deny_read);
     if (!gb_var) return strdup("");
     GB_transaction ta(gb_var);
     return GB_read_as_string(gb_var);
@@ -690,6 +709,7 @@ void AW_awar_impl::update() {
 }
 
 void AW_awar_impl::touch() {
+    aw_assert(!deny_write);
     if (gb_var) {
         GB_transaction ta(gb_var);
         GB_touch(gb_var);
