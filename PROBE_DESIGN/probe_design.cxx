@@ -753,6 +753,19 @@ static bool allow_probe_match_event = true;
 
 static void probe_match_event(const ProbeMatchSettings& matchSettings, ProbeMatchEventParam *event_param) {
     if (allow_probe_match_event) {
+#if defined(ASSERTION_USED)
+        // runtime check against awar usage when NOT called from probe match window!
+        typedef SmartPtr< LocallyModify<bool> > Maybe;
+
+        Maybe dontReadAwars;
+        Maybe dontWriteAwars;
+
+        if (!event_param->selection_id) {
+            dontReadAwars = new LocallyModify<bool>(AW_awar::deny_read, true);
+            dontWriteAwars = new LocallyModify<bool>(AW_awar::deny_write, true);
+        }
+#endif
+
         AW_selection_list *selection_id = event_param ? event_param->selection_id : NULL;
         int               *counter      = event_param ? event_param->counter : NULL;
         GBDATA            *gb_main      = event_param ? event_param->gb_main : NULL;
@@ -1106,24 +1119,7 @@ static void probe_match_event(const ProbeMatchSettings& matchSettings, ProbeMatc
 
 static void probe_match_event_using_awars(AW_root *root, ProbeMatchEventParam *event_param) {
     if (allow_probe_match_event) {
-        ProbeMatchSettings matchSettings(root);
-
-
-        {
-#if defined(ASSERTION_USED)
-            // runtime check against awar usage when NOT called from probe match window!
-            typedef SmartPtr< LocallyModify<bool> > Maybe;
-
-            Maybe dontReadAwars;
-            Maybe dontWriteAwars;
-
-            if (!event_param->selection_id) {
-                dontReadAwars = new LocallyModify<bool>(AW_awar::deny_read, true);
-                dontWriteAwars = new LocallyModify<bool>(AW_awar::deny_write, true);
-            }
-#endif
-            probe_match_event(matchSettings, event_param);
-        }
+        probe_match_event(ProbeMatchSettings(root), event_param);
 
         LocallyModify<bool> flag(allow_probe_match_event, false);
 
