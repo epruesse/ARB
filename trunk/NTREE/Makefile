@@ -671,7 +671,7 @@ NT_extern.o: $(ARBHOME)/INCLUDE/macros.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/multi_probe.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/nds.h
 NT_extern.o: $(ARBHOME)/INCLUDE/primer_design.hxx
-NT_extern.o: $(ARBHOME)/INCLUDE/probe_design.hxx
+NT_extern.o: $(ARBHOME)/INCLUDE/probe_gui.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/refentries.h
 NT_extern.o: $(ARBHOME)/INCLUDE/rootAsWin.h
 NT_extern.o: $(ARBHOME)/INCLUDE/seq_quality.h

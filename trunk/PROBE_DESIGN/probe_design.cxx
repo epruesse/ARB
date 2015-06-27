@@ -15,7 +15,8 @@
 #include <PT_server.h> // needed for DOMAIN_MIN_LENGTH
 #include <client.h>
 #include <servercntrl.h>
-#include <probe_design.hxx>
+#include <probe_gui.hxx>
+#include <probe_local.hxx>
 
 #include <GEN.hxx>
 #include <TreeCallbacks.hxx>
