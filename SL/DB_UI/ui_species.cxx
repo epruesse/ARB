@@ -13,7 +13,7 @@
 #include <awt_sel_boxes.hxx>
 #include <arb_strbuf.h>
 #include <cmath>
-#include <probe_design.hxx>
+#include <probe_gui.hxx>
 #include <arb_defs.h>
 #include <awtc_next_neighbours.hxx>
 #include <db_scanner.hxx>
