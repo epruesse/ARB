@@ -1138,23 +1138,20 @@ static void probe_match_event_using_awars(AW_root *root, ProbeMatchEventParam *e
 }
 
 static void probe_match_all_event(AW_window *aww, AW_selection_list *iselection_id, GBDATA *gb_main) {
-    LocallyModify<bool> noAutoMatch(auto_match_cb_settings.disable, true);
-
-    AW_root *root          = aww->get_root();
-    char    *target_string = root->awar(AWAR_TARGET_STRING)->read_string();
-
     AW_selection_list_iterator selentry(iselection_id);
+    arb_progress               progress("Matching all resolved strings", iselection_id->size());
+    ProbeMatchSettings         matchSettings(aww->get_root());
+    bool                       got_result = false;
 
-    arb_progress progress("Matching all resolved strings", iselection_id->size());
-
-    bool got_result = false;
     while (selentry) {
-        const char *entry = selentry.get_value();
-        root->awar(AWAR_TARGET_STRING)->write_string(entry); // probe match
-        int counter = -1;
+        const char *entry          = selentry.get_value();
+        matchSettings.targetString = entry;
+
+        int                  counter = -1;
         ProbeMatchEventParam match_event(gb_main, &counter);
-        probe_match_event_using_awars(root, &match_event); // @@@ use plain probe_match_event
-        if (counter==-1) break;
+        probe_match_event(matchSettings, &match_event);
+
+        if (counter == -1) break; // failure -> stop
 
         {
             char *buffer = new char[strlen(entry)+10]; // write # of matched to list entries
@@ -1166,13 +1163,11 @@ static void probe_match_all_event(AW_window *aww, AW_selection_list *iselection_
 
         ++selentry;
         progress.inc();
-
     }
 
     if (got_result) {
         iselection_id->sort(true, true);
         iselection_id->update();
-        root->awar(AWAR_TARGET_STRING)->write_string(target_string);
     }
 }
 
