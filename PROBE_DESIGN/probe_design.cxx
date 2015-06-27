@@ -39,6 +39,7 @@
 #include <aw_edit.hxx>
 
 #include "probe_collection.hxx"
+#include <rootAsWin.h>
 
 // general awars
 
@@ -133,31 +134,30 @@ struct ProbeMatchEventParam {
 };
 
 struct AutoMatchSettings {
-    AW_window            *aww;
     ProbeMatchEventParam *event_param; // not owned!
     bool                  disable;
 
-    AutoMatchSettings(AW_window *aww_, ProbeMatchEventParam *event_param_, bool disable_)
-        : aww(aww_) , event_param(event_param_) , disable(disable_)
+    AutoMatchSettings(ProbeMatchEventParam *event_param_, bool disable_)
+        : event_param(event_param_), disable(disable_)
     {}
     AutoMatchSettings()
-        : aww(NULL), event_param(NULL) , disable(true)
+        : event_param(NULL) , disable(true)
     {}
 
-    bool initialized() const { return aww != NULL; }
+    bool initialized() const { return event_param != NULL; }
 };
 
 static AutoMatchSettings auto_match_cb_settings;
 
 // prototypes:
-static void probe_match_event(AW_window *aww, ProbeMatchEventParam *event_param);
+static void probe_match_event(AW_root *root, ProbeMatchEventParam *event_param);
 static void update_species_matched_string(AW_root *root, AWT_canvas *ntw);
 
 static void auto_match_cb(AW_root *root) {
     if (!auto_match_cb_settings.disable) {
         char *ts = root->awar(AWAR_TARGET_STRING)->read_string();
         if (strlen(ts) > 0) {
-            probe_match_event(auto_match_cb_settings.aww, auto_match_cb_settings.event_param);
+            probe_match_event(root, auto_match_cb_settings.event_param);
         }
         free(ts);
     }
@@ -193,14 +193,14 @@ static void auto_match_changed(AW_root *root) {
     callback_active = bool(autoMatch);
 }
 
-static void enable_auto_match_cb(AW_root *root, AW_window *aww, ProbeMatchEventParam *event_param) {
+static void enable_auto_match_cb(AW_root *root, ProbeMatchEventParam *event_param) {
     if (event_param == NULL && auto_match_cb_settings.initialized()) {
         // "partially" enable (w/o ProbeMatchEventParam) is only done
         // if not already "fully enabled"
         return;
     }
 
-    auto_match_cb_settings = AutoMatchSettings(aww, event_param, false);
+    auto_match_cb_settings = AutoMatchSettings(event_param, false);
     auto_match_changed(root);
 }
 
@@ -258,7 +258,7 @@ static void popup_probe_design_result_window(AW_window *aww, GBDATA *gb_main) {
         PD.win->label("Auto match");
         PD.win->create_toggle(AWAR_PD_MATCH_AUTOMATCH);
 
-        enable_auto_match_cb(root, PD.win, 0);
+        enable_auto_match_cb(root, NULL);
     }
     PD.win->activate();
 }
@@ -701,12 +701,11 @@ static void probe_design_event(AW_window *aww, GBDATA *gb_main) {
 
 static bool allow_probe_match_event = true;
 
-static void probe_match_event(AW_window *aww, ProbeMatchEventParam *event_param) {
+static void probe_match_event(AW_root *root, ProbeMatchEventParam *event_param) {
     if (allow_probe_match_event) {
         AW_selection_list *selection_id = event_param ? event_param->selection_id : NULL;
         int               *counter      = event_param ? event_param->counter : NULL;
         GBDATA            *gb_main      = event_param ? event_param->gb_main : NULL;
-        AW_root           *root         = aww->get_root();
         int                show_status  = 0;
         int                extras       = 1;        // mark species and write to temp fields
         GB_ERROR           error        = 0;
@@ -1076,7 +1075,7 @@ static void probe_match_all_event(AW_window *aww, AW_selection_list *iselection_
         root->awar(AWAR_TARGET_STRING)->write_string(entry); // probe match
         int counter = -1;
         ProbeMatchEventParam match_event(gb_main, &counter);
-        probe_match_event(aww, &match_event);
+        probe_match_event(root, &match_event);
         if (counter==-1) break;
 
         {
@@ -1736,14 +1735,14 @@ AW_window *create_probe_match_window(AW_root *root, GBDATA *gb_main) {
         aws->button_length(9);
 
         ProbeMatchEventParam *event_param = new ProbeMatchEventParam(gb_main, selection_id);
-        aws->callback(makeWindowCallback(probe_match_event, event_param));
+        aws->callback(RootAsWindowCallback::simple(probe_match_event, event_param));
         aws->at("match");
         aws->create_button("MATCH", "MATCH", "D");
 
         aws->at("auto");
         aws->label("Auto");
         aws->create_toggle(AWAR_PD_MATCH_AUTOMATCH);
-        enable_auto_match_cb(root, aws, event_param);
+        enable_auto_match_cb(root, event_param);
 
         aws->callback(makeWindowCallback(modify_target_string, gb_main, TS_MOD_CLEAR));
         aws->at("clear");
@@ -2371,7 +2370,7 @@ static void probe_match_with_specificity_event(AW_window *aww, AWT_canvas *ntw) 
                     int                   counter = -1;
                     ProbeMatchEventParam  match_event(ntw->gb_main, &counter);
 
-                    probe_match_event(aww, &match_event);
+                    probe_match_event(root, &match_event);
                     pResultSet->initialise(pProbe, nProbeIndex);
                     nProbeIndex++;
 
