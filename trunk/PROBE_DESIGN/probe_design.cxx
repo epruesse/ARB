@@ -124,13 +124,21 @@ static struct {
     AW_selection_list *resultList; // @@@ replace by TypedSelectionList?
 } PD;
 
-struct ProbeMatchEventParam {
+struct ProbeMatchEventParam : virtual Noncopyable {
     GBDATA            *gb_main;
     AW_selection_list *selection_id;                // may be NULL
     int               *counter;                     // may be NULL
 
-    ProbeMatchEventParam(GBDATA *gb_main_, int *counter_)         : gb_main(gb_main_), selection_id(NULL), counter(counter_) {}
-    ProbeMatchEventParam(GBDATA *gb_main_, AW_selection_list *id) : gb_main(gb_main_), selection_id(id),   counter(NULL)     {}
+    // results set by probe_match_event:
+    std::string hits_summary; // shown in probe match window
+    bool        refresh_sai_display;
+
+    void init_results() {
+        refresh_sai_display = false;
+    }
+
+    ProbeMatchEventParam(GBDATA *gb_main_, int *counter_)         : gb_main(gb_main_), selection_id(NULL), counter(counter_) { init_results(); }
+    ProbeMatchEventParam(GBDATA *gb_main_, AW_selection_list *id) : gb_main(gb_main_), selection_id(id),   counter(NULL)     { init_results(); }
 };
 
 struct AutoMatchSettings {
@@ -150,14 +158,14 @@ struct AutoMatchSettings {
 static AutoMatchSettings auto_match_cb_settings;
 
 // prototypes:
-static void probe_match_event(AW_root *root, ProbeMatchEventParam *event_param);
+static void probe_match_event_using_awars(AW_root *root, ProbeMatchEventParam *event_param);
 static void update_species_matched_string(AW_root *root, AWT_canvas *ntw);
 
 static void auto_match_cb(AW_root *root) {
     if (!auto_match_cb_settings.disable) {
         char *ts = root->awar(AWAR_TARGET_STRING)->read_string();
         if (strlen(ts) > 0) {
-            probe_match_event(root, auto_match_cb_settings.event_param);
+            probe_match_event_using_awars(root, auto_match_cb_settings.event_param);
         }
         free(ts);
     }
@@ -275,7 +283,7 @@ static int init_local_com_struct() {
     return 0;
 }
 
-static const char *PD_probe_pt_look_for_server(AW_root *root, GB_ERROR& error) {
+static const char *PD_probe_pt_look_for_server(int serverNumber, GB_ERROR& error) {
     // return PT server info string (see GBS_read_arb_tcp for details)
     // or NULL (in this case 'error' is set)
 
@@ -283,7 +291,7 @@ static const char *PD_probe_pt_look_for_server(AW_root *root, GB_ERROR& error) {
     // DRY vs  ../MULTI_PROBE/MP_noclass.cxx@MP_probe_pt_look_for_server
 
     const char *result     = 0;
-    const char *server_tag = GBS_ptserver_tag(root->awar(AWAR_PT_SERVER)->read_int());
+    const char *server_tag = GBS_ptserver_tag(serverNumber);
 
     error = arb_look_and_start_server(AISC_MAGIC_NUMBER, server_tag);
     if (!error) {
@@ -409,17 +417,30 @@ inline const char *bond_awar_name(int i) {
     return GBS_global_string(AWAR_PD_COMMON_EXP_BONDS_FORMAT, i);
 }
 
-static int probe_common_send_data(AW_root *root) {
+struct ProbeCommonSettings {
+    double split;
+    double bonds[16];
+
+    explicit ProbeCommonSettings(AW_root *root)
+        : split(root->awar(AWAR_PD_COMMON_EXP_SPLIT)->read_float())
+    {
+        for (int i=0; i<16; i++) {
+            bonds[i] = root->awar(bond_awar_name(i))->read_float();
+        }
+    }
+};
+
+static int probe_common_send_data(const ProbeCommonSettings& commonSettings) {
     // send data common to probe-design AND -match
     if (aisc_put(PD.link, PT_LOCS, PD.locs,
-                 LOCS_SPLIT, (double)root->awar(AWAR_PD_COMMON_EXP_SPLIT)->read_float(),
+                 LOCS_SPLIT, commonSettings.split,
                  NULL))
         return 1;
 
     for (int i=0; i<16; i++) {
         if (aisc_put(PD.link, PT_LOCS, PD.locs,
                      PT_INDEX,  i,
-                     LOCS_BONDVAL, (double)root->awar(bond_awar_name(i))->read_float(),
+                     LOCS_BONDVAL, commonSettings.bonds[i],
                      NULL))
             return 1;
     }
@@ -433,17 +454,46 @@ static int probe_design_send_data(AW_root *root, const T_PT_PDC& pdc) {
                  NULL))
         return 1;
 
-    return probe_common_send_data(root);
+    return probe_common_send_data(ProbeCommonSettings(root));
 }
-static int probe_match_send_data(AW_root *root) {
+
+struct ProbeMatchSettings : public ProbeCommonSettings {
+    int serverNumber;
+    int nmatches;
+    int nlimit;
+    int maxhits;
+    int complement;
+    int sortBy;
+    int maxMismatches;
+    int markHits;
+    int write2tmp;
+
+    std::string targetString;
+
+    explicit ProbeMatchSettings(AW_root *root)
+        : ProbeCommonSettings(root),
+          serverNumber(root->awar(AWAR_PT_SERVER)->read_int()),
+          nmatches(root->awar(AWAR_PD_MATCH_NMATCHES)->read_int()),
+          nlimit(root->awar(AWAR_PD_MATCH_LIM_NMATCH)->read_int()),
+          maxhits(root->awar(AWAR_PD_MATCH_MAX_RES)->read_int()),
+          complement(root->awar(AWAR_PD_MATCH_COMPLEMENT)->read_int()),
+          sortBy(root->awar(AWAR_PD_MATCH_SORTBY)->read_int()),
+          maxMismatches(root->awar(AWAR_MAX_MISMATCHES)->read_int()),
+          markHits(root->awar(AWAR_PD_MATCH_MARKHITS)->read_int()),
+          write2tmp(root->awar(AWAR_PD_MATCH_WRITE2TMP)->read_int()),
+          targetString(root->awar(AWAR_TARGET_STRING)->read_char_pntr())
+    {}
+};
+
+static int probe_match_send_data(const ProbeMatchSettings& matchSettings) {
     if (aisc_put(PD.link, PT_LOCS, PD.locs,
-                 LOCS_MATCH_N_ACCEPT, root->awar(AWAR_PD_MATCH_NMATCHES)->read_int(),
-                 LOCS_MATCH_N_LIMIT,  root->awar(AWAR_PD_MATCH_LIM_NMATCH)->read_int(),
-                 LOCS_MATCH_MAX_HITS, root->awar(AWAR_PD_MATCH_MAX_RES)->read_int(),
+                 LOCS_MATCH_N_ACCEPT, matchSettings.nmatches,
+                 LOCS_MATCH_N_LIMIT,  matchSettings.nlimit,
+                 LOCS_MATCH_MAX_HITS, matchSettings.maxhits,
                  NULL))
         return 1;
 
-    return probe_common_send_data(root);
+    return probe_common_send_data(matchSettings);
 }
 
 static int ecolipos2int(const char *awar_val) {
@@ -478,7 +528,7 @@ static void probe_design_event(AW_window *aww, GBDATA *gb_main) {
     progress.subtitle("Connecting PT-server");
 
     {
-        const char *servername = PD_probe_pt_look_for_server(root, error);
+        const char *servername = PD_probe_pt_look_for_server(root->awar(AWAR_PT_SERVER)->read_int(), error);
         if (servername) {
             PD.link = aisc_open(servername, PD.com, AISC_MAGIC_NUMBER, &error);
             if (!PD.link) error = "can't contact PT server";
@@ -701,7 +751,7 @@ static void probe_design_event(AW_window *aww, GBDATA *gb_main) {
 
 static bool allow_probe_match_event = true;
 
-static void probe_match_event(AW_root *root, ProbeMatchEventParam *event_param) {
+static void probe_match_event(const ProbeMatchSettings& matchSettings, ProbeMatchEventParam *event_param) {
     if (allow_probe_match_event) {
         AW_selection_list *selection_id = event_param ? event_param->selection_id : NULL;
         int               *counter      = event_param ? event_param->counter : NULL;
@@ -715,7 +765,7 @@ static void probe_match_event(AW_root *root, ProbeMatchEventParam *event_param) 
         SmartPtr<arb_progress> progress;
 
         if (!error) {
-            const char *servername = PD_probe_pt_look_for_server(root, error);
+            const char *servername = PD_probe_pt_look_for_server(matchSettings.serverNumber, error);
 
             if (!error) {
                 if (selection_id) {
@@ -738,19 +788,18 @@ static void probe_match_event(AW_root *root, ProbeMatchEventParam *event_param) 
             }
         }
 
-        if (!error && init_local_com_struct())     error = "Cannot contact PT-server (2)";
-        if (!error && probe_match_send_data(root)) error = "Connection to PT_SERVER lost (2)";
+        if (!error && init_local_com_struct())              error = "Cannot contact PT-server (2)";
+        if (!error && probe_match_send_data(matchSettings)) error = "Connection to PT_SERVER lost (2)";
 
-        char *probe = root->awar(AWAR_TARGET_STRING)->read_string();
-
+        const char *probe = matchSettings.targetString.c_str();
         if (!error) {
             if (show_status) progress->subtitle("Probe match running");
 
             if (aisc_nput(PD.link, PT_LOCS, PD.locs,
-                          LOCS_MATCH_REVERSED,       root->awar(AWAR_PD_MATCH_COMPLEMENT)->read_int(),
-                          LOCS_MATCH_SORT_BY,        root->awar(AWAR_PD_MATCH_SORTBY)->read_int(),
+                          LOCS_MATCH_REVERSED,       matchSettings.complement,
+                          LOCS_MATCH_SORT_BY,        matchSettings.sortBy,
                           LOCS_MATCH_COMPLEMENT,     0,
-                          LOCS_MATCH_MAX_MISMATCHES, root->awar(AWAR_MAX_MISMATCHES)->read_int(),
+                          LOCS_MATCH_MAX_MISMATCHES, matchSettings.maxMismatches,
                           LOCS_SEARCHMATCH,          probe,
                           NULL))
             {
@@ -796,7 +845,7 @@ static void probe_match_event(AW_root *root, ProbeMatchEventParam *event_param) 
                 }
             }
 
-            root->awar(AWAR_PD_MATCH_NHITS)->write_string(GBS_global_string(matches_truncated ? "[more than %li]" : "%li", match_list_cnt));
+            event_param->hits_summary = GBS_global_string(matches_truncated ? "[more than %li]" : "%li", match_list_cnt);
             if (matches_truncated) {
                 aw_message("Too many matches, displaying a random digest.\n"
                            "Increase the limit in the expert window.");
@@ -836,8 +885,8 @@ static void probe_match_event(AW_root *root, ProbeMatchEventParam *event_param) 
 
             // clear all marks and delete all 'tmp' entries
 
-            int mark        = extras && (int)root->awar(AWAR_PD_MATCH_MARKHITS)->read_int();
-            int write_2_tmp = extras && (int)root->awar(AWAR_PD_MATCH_WRITE2TMP)->read_int();
+            int mark        = extras && matchSettings.markHits;
+            int write_2_tmp = extras && matchSettings.write2tmp;
 
             GB_push_transaction(gb_main);
 
@@ -1019,7 +1068,7 @@ static void probe_match_event(AW_root *root, ProbeMatchEventParam *event_param) 
         }
 
         if (error) {
-            root->awar(AWAR_PD_MATCH_NHITS)->write_string("[none]"); // clear hits
+            event_param->hits_summary = "[none]"; // clear hits
             aw_message(error);
         }
         else {
@@ -1032,7 +1081,7 @@ static void probe_match_event(AW_root *root, ProbeMatchEventParam *event_param) 
 
             if (selection_id) {     // if !selection_id then probe match window is not opened
                 pd_assert(g_spd);
-                root->awar(AWAR_SPV_DB_FIELD_NAME)->touch(); // force refresh of SAI/Probe window
+                event_param->refresh_sai_display = true; // want refresh of SAI/Probe window
             }
         }
 
@@ -1052,10 +1101,39 @@ static void probe_match_event(AW_root *root, ProbeMatchEventParam *event_param) 
         }
 
         free(bs.data);
-        free(probe);
+    }
+}
+
+static void probe_match_event_using_awars(AW_root *root, ProbeMatchEventParam *event_param) {
+    if (allow_probe_match_event) {
+        ProbeMatchSettings matchSettings(root);
+
+
+        {
+#if defined(ASSERTION_USED)
+            // runtime check against awar usage when NOT called from probe match window!
+            typedef SmartPtr< LocallyModify<bool> > Maybe;
+
+            Maybe dontReadAwars;
+            Maybe dontWriteAwars;
+
+            if (!event_param->selection_id) {
+                dontReadAwars = new LocallyModify<bool>(AW_awar::deny_read, true);
+                dontWriteAwars = new LocallyModify<bool>(AW_awar::deny_write, true);
+            }
+#endif
+            probe_match_event(matchSettings, event_param);
+        }
 
         LocallyModify<bool> flag(allow_probe_match_event, false);
-        root->awar(AWAR_TREE_REFRESH)->touch();
+
+        if (event_param->refresh_sai_display) {
+            root->awar(AWAR_SPV_DB_FIELD_NAME)->touch(); // force refresh of SAI/Probe window
+        }
+        if (event_param->selection_id) {
+            root->awar(AWAR_PD_MATCH_NHITS)->write_string(event_param->hits_summary.c_str()); // update hits in probe match window
+        }
+        root->awar(AWAR_TREE_REFRESH)->touch(); // refresh tree
     }
 }
 
@@ -1075,7 +1153,7 @@ static void probe_match_all_event(AW_window *aww, AW_selection_list *iselection_
         root->awar(AWAR_TARGET_STRING)->write_string(entry); // probe match
         int counter = -1;
         ProbeMatchEventParam match_event(gb_main, &counter);
-        probe_match_event(root, &match_event);
+        probe_match_event_using_awars(root, &match_event); // @@@ use plain probe_match_event
         if (counter==-1) break;
 
         {
@@ -1735,7 +1813,7 @@ AW_window *create_probe_match_window(AW_root *root, GBDATA *gb_main) {
         aws->button_length(9);
 
         ProbeMatchEventParam *event_param = new ProbeMatchEventParam(gb_main, selection_id);
-        aws->callback(RootAsWindowCallback::simple(probe_match_event, event_param));
+        aws->callback(RootAsWindowCallback::simple(probe_match_event_using_awars, event_param));
         aws->at("match");
         aws->create_button("MATCH", "MATCH", "D");
 
@@ -2328,7 +2406,7 @@ static void probe_match_with_specificity_event(AW_window *aww, AWT_canvas *ntw) 
         g_results_manager.reset();
 
         // Using g_probe_collection instance of ArbProbeCollection, need to loop
-        // through all the probes in the collect and then call probe_match_event,
+        // through all the probes in the collect and then call probe_match_event_using_awars,
         // collating the results as we go. The results can be obtained from the
         // g_spd->probeSeq list.
         const ArbProbePtrList&   rProbeList  = get_probe_collection().probeList();
@@ -2370,7 +2448,7 @@ static void probe_match_with_specificity_event(AW_window *aww, AWT_canvas *ntw) 
                     int                   counter = -1;
                     ProbeMatchEventParam  match_event(ntw->gb_main, &counter);
 
-                    probe_match_event(root, &match_event);
+                    probe_match_event_using_awars(root, &match_event); // @@@ use plain probe_match_event
                     pResultSet->initialise(pProbe, nProbeIndex);
                     nProbeIndex++;
 

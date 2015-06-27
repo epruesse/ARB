@@ -45,7 +45,7 @@ enum {
 
 // global data for interaction with probe match result list:
 
-class saiProbeData : virtual Noncopyable {
+class saiProbeData : virtual Noncopyable { // Note: also used for ProbeCollection!
     std::string probeTarget;
     std::string headline;           // needed for ProbeMatchParser
 
