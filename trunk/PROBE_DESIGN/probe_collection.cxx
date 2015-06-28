@@ -1631,10 +1631,10 @@ void ArbMatchResultsManager::updateResults() {
 
 // ----------------------------------------------------------------------------
 
-int ArbMatchResultsManager::enumerateResults(ArbMatchResultsEnumCallback pCallback, void *pContext, bool& bAborted) {
+int ArbMatchResultsManager::enumerate_results(ArbMatchResultsEnumCallback pCallback, void *pContext) {
     int nResults = 0;
 
-    bAborted = false;
+    bool bAborted = false;
 
     if (pCallback != 0) {
         ArbMatchResultPtrByDoubleMultiMap rResultsMap;
