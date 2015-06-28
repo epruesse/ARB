@@ -2846,14 +2846,10 @@ static void modify_probe_event(AW_window *aww, ArbPC_Context *pContext) {
 
 static void remove_probe_from_collection_event(AW_window *aww, ArbPC_Context *pContext) {
     AW_selection_list *selection_id = pContext->selection_id;
-
     if (selection_id) {
         char *pSequence = aww->get_root()->awar(AWAR_PC_SELECTED_PROBE)->read_string();
-
         if (pSequence) {
-            ArbProbeCollection& g_probe_collection = get_probe_collection();
-            const ArbProbe *pProbe = g_probe_collection.find(pSequence);
-
+            const ArbProbe *pProbe = get_probe_collection().find(pSequence);
             if (pProbe) {
                 int idx = selection_id->get_index_of_selected();
                 selection_id->delete_element_at(idx);
@@ -2864,7 +2860,7 @@ static void remove_probe_from_collection_event(AW_window *aww, ArbPC_Context *pC
                 selection_id->update();
                 selection_id->select_element_at(idx); // select next probe for deletion
 
-                g_probe_collection.remove(pSequence);
+                get_probe_collection().remove(pSequence);
                 probe_match_update_probe_list(pContext->PM_Context);
                 probe_collection_update_parameters();
             }
@@ -2873,20 +2869,42 @@ static void remove_probe_from_collection_event(AW_window *aww, ArbPC_Context *pC
     }
 }
 
-static void selected_probe_changed_cb(AW_root *root, ArbPC_Context *pContext) {
-    AW_selection_list *selection_id = pContext->selection_id;
-    if (selection_id) {
-        char *pSequence = root->awar(AWAR_PC_SELECTED_PROBE)->read_string();
-        if (pSequence) {
-            ArbProbeCollection&  g_probe_collection = get_probe_collection();
-            const ArbProbe      *pProbe             = g_probe_collection.find(pSequence);
+static void selected_probe_changed_cb(AW_root *root) {
+    char *pSequence = root->awar(AWAR_PC_SELECTED_PROBE)->read_string();
+    if (pSequence) {
+        const ArbProbe *pProbe = get_probe_collection().find(pSequence);
+        if (pProbe) {
+            const char *seq = pProbe->sequence().c_str();
+            root->awar(AWAR_PC_TARGET_STRING)->write_string(seq);
+            root->awar(AWAR_PC_TARGET_NAME)  ->write_string(pProbe->name().c_str());
 
-            if (pProbe) {
-                root->awar(AWAR_PC_TARGET_STRING)->write_string(pProbe->sequence().c_str());
-                root->awar(AWAR_PC_TARGET_NAME)  ->write_string(pProbe->name().c_str());
-            }
+            root->awar(AWAR_TARGET_STRING)->write_string(seq); // copy to probe match & match in edit4
         }
     }
+    free(pSequence);
+}
+
+static void target_string_changed_cb(AW_root *root) {
+    char *pSequence = root->awar(AWAR_PC_TARGET_STRING)->read_string();
+    if (pSequence && pSequence[0]) {
+        const ArbProbe *pProbe = get_probe_collection().find(pSequence);
+        if (pProbe) root->awar(AWAR_PC_SELECTED_PROBE)->write_string(pSequence);
+    }
+    free(pSequence);
+}
+
+static void match_changed_cb(AW_root *root) {
+    // automatically adapt to last probe matched
+    // (also adapts to last selected designed probe)
+    char *pSequence = root->awar(AWAR_TARGET_STRING)->read_string();
+    if (pSequence && pSequence[0]) {
+        AW_awar *awar_target = root->awar(AWAR_PC_TARGET_STRING);
+        if (strcmp(awar_target->read_char_pntr(), pSequence) != 0) {
+            root->awar(AWAR_PC_TARGET_NAME)->write_string(""); // clear name
+        }
+        awar_target->write_string(pSequence);
+    }
+    free(pSequence);
 }
 
 // ----------------------------------------------------------------------------
@@ -2955,7 +2973,9 @@ static AW_window *create_probe_collection_window(AW_root *root, ArbPM_Context *p
         selection_id = aws->create_selection_list(AWAR_PC_SELECTED_PROBE, 110, 10, false);
         selection_id->insert_default("", "");
 
-        root->awar(AWAR_PC_SELECTED_PROBE)->add_callback(makeRootCallback(selected_probe_changed_cb, &PC_Context));
+        root->awar(AWAR_PC_SELECTED_PROBE)->add_callback(makeRootCallback(selected_probe_changed_cb));
+        root->awar(AWAR_PC_TARGET_STRING)->add_callback(makeRootCallback(target_string_changed_cb));
+        root->awar(AWAR_TARGET_STRING)->add_callback(makeRootCallback(match_changed_cb));
 
         PC_Context.selection_id = selection_id;
 
