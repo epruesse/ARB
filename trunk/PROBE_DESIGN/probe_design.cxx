@@ -94,13 +94,14 @@
 // see also ../SL/TREEDISP/TreeDisplay.hxx@AWAR_PC_
 
 // probe collection window
-#define AWAR_PC_TARGET_STRING     "probe_collection/target_string"
-#define AWAR_PC_TARGET_NAME       "probe_collection/target_name"
-#define AWAR_PC_MATCH_WEIGHTS     "probe_collection/match_weights/pos"
-#define AWAR_PC_MATCH_WIDTH       "probe_collection/match_weights/width"
-#define AWAR_PC_MATCH_BIAS        "probe_collection/match_weights/bias"
-
+#define AWAR_PC_TARGET_STRING      "probe_collection/target_string"
+#define AWAR_PC_TARGET_NAME        "probe_collection/target_name"
+#define AWAR_PC_MATCH_WEIGHTS      "probe_collection/match_weights/pos"
+#define AWAR_PC_MATCH_WIDTH        "probe_collection/match_weights/width"
+#define AWAR_PC_MATCH_BIAS         "probe_collection/match_weights/bias"
+#define AWAR_PC_AUTO_MATCH         "probe_collection/auto"
 #define AWAR_PC_CURRENT_COLLECTION "probe_collection/current"
+
 #define AWAR_PC_SELECTED_PROBE     "tmp/probe_collection/probe"
 #define AWAR_PC_MATCH_NHITS        "tmp/probe_collection/nhits"
 
@@ -1300,6 +1301,7 @@ void create_probe_design_variables(AW_root *root, AW_default props, AW_default d
     root->awar_string(AWAR_SPV_ACI_COMMAND,    "",     db); // User defined or pre-defined ACI command to display
 
     root->awar_int(AWAR_PC_MATCH_NHITS, 0, db);
+    root->awar_int(AWAR_PC_AUTO_MATCH, 0, db);
 
     root->awar_string(AWAR_PC_TARGET_STRING,  "", db)->set_srt(REPLACE_TARGET_CONTROL_CHARS);
     root->awar_string(AWAR_PC_TARGET_NAME,    "", db)->set_srt(REPLACE_TARGET_CONTROL_CHARS);
@@ -2372,10 +2374,9 @@ static void probe_match_with_specificity_edit_event() {
 
 // ----------------------------------------------------------------------------
 
-static void probe_match_with_specificity_event(AW_window *aww, AWT_canvas *ntw) {
+static void probe_match_with_specificity_event(AW_root *root, AWT_canvas *ntw) {
     if (allow_probe_match_event) {
-        AW_root  *root  = aww->get_root();
-        GB_ERROR  error = NULL;
+        GB_ERROR error = NULL;
 
         ProbeMatchSettings matchSettings(root);
         matchSettings.markHits  = 0;
@@ -2517,6 +2518,15 @@ static void probe_match_with_specificity_event(AW_window *aww, AWT_canvas *ntw) 
     }
 }
 
+static void auto_match_cb(AW_root *root, AWT_canvas *ntw) {
+    if (root->awar(AWAR_PC_AUTO_MATCH)->read_int()) {
+        probe_match_with_specificity_event(root, ntw);
+    }
+}
+static void trigger_auto_match(AW_root *root) {
+    root->awar(AWAR_PC_AUTO_MATCH)->touch();
+}
+
 // ----------------------------------------------------------------------------
 
 static void probe_forget_matches_event(AW_window *aww, ArbPM_Context *pContext) {
@@ -2601,13 +2611,18 @@ AW_window *create_probe_match_with_specificity_window(AW_root *root, AWT_canvas 
         aws->at("edit");
         aws->create_button("EDIT", "EDIT", "E");
 
-        aws->callback(makeWindowCallback(probe_match_with_specificity_event, ntw));
+        aws->callback(RootAsWindowCallback::simple(probe_match_with_specificity_event, ntw));
         aws->at("match");
         aws->create_button("MATCH", "MATCH", "M");
 
         aws->callback(makeWindowCallback(probe_forget_matches_event, &PM_Context));
         aws->at("forget");
         aws->create_button("FORGET", "FORGET", "F");
+
+        aws->at("auto");
+        aws->label("Auto match");
+        aws->create_toggle(AWAR_PC_AUTO_MATCH);
+        root->awar(AWAR_PC_AUTO_MATCH)->add_callback(makeRootCallback(auto_match_cb, ntw));
 
         aws->callback(makeCreateWindowCallback(create_probe_match_specificity_control_window));
         aws->at("control");
@@ -2696,6 +2711,7 @@ static void load_probe_collection(AW_window *aww, ArbPC_Context *Context, const 
 
         probe_match_update_probe_list(Context->PM_Context);
         aww->hide();
+        trigger_auto_match(root);
     }
     else {
         // Print error message
@@ -2777,6 +2793,7 @@ static void add_probe_to_collection_event(AW_window *aww, ArbPC_Context *pContex
                 probe_collection_update_parameters();
 
                 root->awar(AWAR_PC_SELECTED_PROBE)->write_string(pSequence);
+                trigger_auto_match(root);
             }
             else {
                 error = "failed to add probe";
@@ -2793,11 +2810,12 @@ static void add_probe_to_collection_event(AW_window *aww, ArbPC_Context *pContex
 static void modify_probe_event(AW_window *aww, ArbPC_Context *pContext) {
     AW_selection_list *selection_id = pContext->selection_id;
     if (selection_id) {
-        AW_root *root          = aww->get_root();
-        AW_awar *awar_selected = root->awar(AWAR_PC_SELECTED_PROBE);
-        char    *oldSequence   = awar_selected->read_string();
-        char    *pSequence     = root->awar(AWAR_PC_TARGET_STRING)->read_string();
-        char    *pName         = root->awar(AWAR_PC_TARGET_NAME)->read_string();
+        AW_root *root            = aww->get_root();
+        AW_awar *awar_selected   = root->awar(AWAR_PC_SELECTED_PROBE);
+        char    *oldSequence     = awar_selected->read_string();
+        char    *pSequence       = root->awar(AWAR_PC_TARGET_STRING)->read_string();
+        char    *pName           = root->awar(AWAR_PC_TARGET_NAME)->read_string();
+        bool     sequenceChanged = false;
 
         GB_ERROR error = NULL;
         if (!pSequence || !pSequence[0]) {
@@ -2806,9 +2824,12 @@ static void modify_probe_event(AW_window *aww, ArbPC_Context *pContext) {
         else if (!oldSequence || !oldSequence[0]) {
             error = "Please select probe to modify";
         }
-        else if (strcmp(oldSequence, pSequence) != 0) { // sequence changed -> test vs duplicate
-            if (get_probe_collection().find(pSequence)) {
-                error = "Target string already in collection";
+        else {
+            sequenceChanged = strcmp(oldSequence, pSequence) != 0;
+            if (sequenceChanged) { // sequence changed -> test vs duplicate
+                if (get_probe_collection().find(pSequence)) {
+                    error = "Target string already in collection";
+                }
             }
         }
 
@@ -2825,6 +2846,7 @@ static void modify_probe_event(AW_window *aww, ArbPC_Context *pContext) {
                 probe_collection_update_parameters();
 
                 awar_selected->write_string(pSequence);
+                if (sequenceChanged) trigger_auto_match(root);
             }
             else {
                 error = "failed to replace probe";
@@ -2842,7 +2864,8 @@ static void modify_probe_event(AW_window *aww, ArbPC_Context *pContext) {
 static void remove_probe_from_collection_event(AW_window *aww, ArbPC_Context *pContext) {
     AW_selection_list *selection_id = pContext->selection_id;
     if (selection_id) {
-        char *pSequence = aww->get_root()->awar(AWAR_PC_SELECTED_PROBE)->read_string();
+        AW_root *root      = aww->get_root();
+        char    *pSequence = root->awar(AWAR_PC_SELECTED_PROBE)->read_string();
         if (pSequence) {
             const ArbProbe *pProbe = get_probe_collection().find(pSequence);
             if (pProbe) {
@@ -2858,6 +2881,8 @@ static void remove_probe_from_collection_event(AW_window *aww, ArbPC_Context *pC
                 get_probe_collection().remove(pSequence);
                 probe_match_update_probe_list(pContext->PM_Context);
                 probe_collection_update_parameters();
+
+                trigger_auto_match(root);
             }
             free(pSequence);
         }
@@ -2925,10 +2950,11 @@ static void probe_match_update_probe_list(ArbPM_Context *pContext) {
         if (sellist) show_probes_in_sellist(get_probe_collection().probeList(), sellist);
     }
 }
-static void clear_probe_collection_event(AW_window *, ArbPC_Context *pContext) {
+static void clear_probe_collection_event(AW_window *aww, ArbPC_Context *pContext) {
     if (get_probe_collection().clear()) {
         probe_match_update_probe_list(pContext->PM_Context);
         show_probes_in_sellist(get_probe_collection().probeList(), pContext->selection_id);
+        trigger_auto_match(aww->get_root());
     }
 }
 
@@ -3010,13 +3036,16 @@ static AW_window *create_probe_collection_window(AW_root *root, ArbPM_Context *p
             aws->at(buffer);
             sprintf(buffer, AWAR_PC_MATCH_WEIGHTS"%i", i);
             aws->create_input_field(buffer, 4);
+            root->awar(buffer)->add_callback(trigger_auto_match);
         }
 
         aws->at("width");
         aws->create_input_field(AWAR_PC_MATCH_WIDTH, 5);
+        root->awar(AWAR_PC_MATCH_WIDTH)->add_callback(trigger_auto_match);
 
         aws->at("bias");
         aws->create_input_field(AWAR_PC_MATCH_BIAS, 5);
+        root->awar(AWAR_PC_MATCH_BIAS)->add_callback(trigger_auto_match);
 
         show_probes_in_sellist(get_probe_collection().probeList(), selection_id);
     }
