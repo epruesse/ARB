@@ -61,8 +61,6 @@ static int MatchProbeGC[MATCH_FLAG_COLORS] = {
     AWT_GC_PINK,
 };
 
-const int MATCH_COL_WIDTH = 3;
-
 using namespace AW;
 
 AW_gc_manager AWT_graphic_tree::init_devices(AW_window *aww, AW_device *device, AWT_canvas* ntw) {
@@ -1878,9 +1876,11 @@ class MatchFlagXPos {
     int numProbes;
 public:
 
+    static int match_col_width;
+
     MatchFlagXPos(AW_pos scale, int numProbes_)
-        : Width((MATCH_COL_WIDTH-1) / scale),
-          Offset(MATCH_COL_WIDTH / scale),
+        : Width((match_col_width-1) / scale),
+          Offset(match_col_width / scale),
           numProbes(numProbes_)
     {}
 
@@ -1890,6 +1890,8 @@ public:
     double leftx  (int nProbe) const { return (nProbe - numProbes - 1.0) * offset(); }
     double centerx(int nProbe) const { return leftx(nProbe) + width()/2; }
 };
+
+int MatchFlagXPos::match_col_width = 3;
 
 class MatchFlagPosition : public MatchFlagXPos {
     double y1, y2;
@@ -2885,6 +2887,13 @@ void AWT_graphic_tree::show(AW_device *device) {
 
 void AWT_graphic_tree::info(AW_device */*device*/, AW_pos /*x*/, AW_pos /*y*/, AW_clicked_line */*cl*/, AW_clicked_text */*ct*/) {
     aw_message("INFO MESSAGE");
+}
+
+void AWT_graphic_tree::set_probeCollectionDisplay(bool show_collection, get_probe_name get_name, int match_col_width) {
+    pcoll.display  = show_collection;
+    pcoll.get_name = get_name;
+
+    MatchFlagXPos::match_col_width = match_col_width;
 }
 
 AWT_graphic_tree *NT_generate_tree(AW_root *root, GBDATA *gb_main, AD_map_viewer_cb map_viewer_cb) {

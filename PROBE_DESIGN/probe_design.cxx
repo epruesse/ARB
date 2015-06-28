@@ -106,7 +106,8 @@
 #define AWAR_PC_MATCH_NHITS        "tmp/probe_collection/nhits"
 
 // probe collection matching control parameters
-#define AWAR_PC_MISMATCH_THRESHOLD               "probe_collection/mismatch_threshold"
+#define AWAR_PC_MISMATCH_THRESHOLD "probe_collection/mismatch_threshold"
+#define AWAR_PC_MATCH_COL_WIDTH    "probe_collection/match_col_width"
 
 #define REPLACE_TARGET_CONTROL_CHARS ":#=_:\\:=_"
 
@@ -1300,8 +1301,9 @@ void create_probe_design_variables(AW_root *root, AW_default props, AW_default d
     root->awar_int   (AWAR_SPV_DB_FIELD_WIDTH, 10,     db); // width of displayed species field
     root->awar_string(AWAR_SPV_ACI_COMMAND,    "",     db); // User defined or pre-defined ACI command to display
 
-    root->awar_int(AWAR_PC_MATCH_NHITS, 0, db);
-    root->awar_int(AWAR_PC_AUTO_MATCH, 0, db);
+    root->awar_int(AWAR_PC_MATCH_NHITS,     0, db);
+    root->awar_int(AWAR_PC_AUTO_MATCH,      0, props);
+    root->awar_int(AWAR_PC_MATCH_COL_WIDTH, 3, props)->set_minmax(1, 20);
 
     root->awar_string(AWAR_PC_TARGET_STRING,  "", db)->set_srt(REPLACE_TARGET_CONTROL_CHARS);
     root->awar_string(AWAR_PC_TARGET_NAME,    "", db)->set_srt(REPLACE_TARGET_CONTROL_CHARS);
@@ -2311,6 +2313,11 @@ static AW_window *create_probe_match_specificity_control_window(AW_root *root) {
 
         aws->label("Clade partially marked threshold");
         aws->create_input_field_with_scaler(AWAR_PC_CLADE_PARTIALLY_MARKED_THRESHOLD, FIELDSIZE, SCALERSIZE);
+
+        aws->at_newline();
+
+        aws->label("Marker width");
+        aws->create_input_field_with_scaler(AWAR_PC_MATCH_COL_WIDTH, FIELDSIZE, SCALERSIZE);
     }
 
     return aws;
@@ -2563,6 +2570,7 @@ static void markedThresholdChanged_cb(AW_root *root, bool partChanged) {
 }
 
 static void add_threshold_callbacks(AW_root *root, AWT_canvas *ntw) {
+    root->awar(AWAR_PC_MATCH_COL_WIDTH)                 ->add_callback(makeRootCallback(update_species_matched_string, ntw));
     root->awar(AWAR_PC_MISMATCH_THRESHOLD)              ->add_callback(makeRootCallback(update_species_matched_string, ntw));
     root->awar(AWAR_PC_CLADE_MARKED_THRESHOLD)          ->add_callback(makeRootCallback(markedThresholdChanged_cb,     false));
     root->awar(AWAR_PC_CLADE_PARTIALLY_MARKED_THRESHOLD)->add_callback(makeRootCallback(markedThresholdChanged_cb,     true));
@@ -3123,7 +3131,7 @@ static void update_species_matched_string(AW_root *root, AWT_canvas *ntw) {
     LocallyModify<bool> flag(allow_probe_match_event, false);
 
     AWT_graphic_tree *agt = DOWNCAST(AWT_graphic_tree*, ntw->gfx);
-    agt->set_probeCollectionDisplay(display, getProbeName);
+    agt->set_probeCollectionDisplay(display, getProbeName, root->awar(AWAR_PC_MATCH_COL_WIDTH)->read_int());
 
     root->awar(AWAR_TREE_REFRESH)->touch();
 }
