@@ -313,10 +313,7 @@ public:
     void show_ruler(AW_device *device, int gc);
     void get_zombies_and_duplicates(int& zomb, int& dups) const { zomb = zombies; dups = duplicates; }
 
-    void set_probeCollectionDisplay(bool show_collection, get_probe_name get_name) {
-        pcoll.display  = show_collection;
-        pcoll.get_name = get_name;
-    }
+    void set_probeCollectionDisplay(bool show_collection, get_probe_name get_name, int match_col_width);
 
 #if defined(UNIT_TESTS) // UT_DIFF
     friend class fake_AWT_graphic_tree;
