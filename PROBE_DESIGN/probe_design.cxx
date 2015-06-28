@@ -2759,22 +2759,22 @@ static void save_probe_collection(AW_window *aww, const char * const *awar_filen
 
 static void add_probe_to_collection_event(AW_window *aww, ArbPC_Context *pContext) {
     AW_selection_list *selection_id = pContext->selection_id;
-    const char        *pSequence    = aww->get_root()->awar(AWAR_PC_TARGET_STRING)->read_string();
-    const char        *pName        = aww->get_root()->awar(AWAR_PC_TARGET_NAME)->read_string();
+    if (selection_id) {
+        char *pSequence = aww->get_root()->awar(AWAR_PC_TARGET_STRING)->read_string();
+        char *pName     = aww->get_root()->awar(AWAR_PC_TARGET_NAME)->read_string();
 
-    if ((selection_id != 0) &&
-        (pSequence    != 0) &&
-        (pName        != 0) &&
-        (strlen(pSequence) > 0))
-    {
-        const ArbProbe *pProbe = 0;
+        if (pSequence && pName && pSequence[0]) {
+            const ArbProbe *pProbe = 0;
 
-        if (get_probe_collection().add(pName, pSequence, &pProbe) && (pProbe != 0)) {
-            selection_id->insert(pProbe->displayName().c_str(), pSequence);
-            selection_id->update();
-            probe_match_update_probe_list(pContext->PM_Context);
-            probe_collection_update_parameters();
+            if (get_probe_collection().add(pName, pSequence, &pProbe) && (pProbe != 0)) {
+                selection_id->insert(pProbe->displayName().c_str(), pSequence);
+                selection_id->update();
+                probe_match_update_probe_list(pContext->PM_Context);
+                probe_collection_update_parameters();
+            }
         }
+        free(pName);
+        free(pSequence);
     }
 }
 
@@ -2782,25 +2782,29 @@ static void add_probe_to_collection_event(AW_window *aww, ArbPC_Context *pContex
 
 static void remove_probe_from_collection_event(AW_window *aww, ArbPC_Context *pContext) {
     AW_selection_list *selection_id = pContext->selection_id;
-    const char        *pSequence    = aww->get_root()->awar(AWAR_PC_SELECTED_PROBE)->read_string();
 
-    if ((selection_id != 0) &&
-        (pSequence    != 0))
-    {
-        ArbProbeCollection& g_probe_collection = get_probe_collection();
-        const ArbProbe *pProbe = g_probe_collection.find(pSequence);
+    if (selection_id) {
+        char *pSequence = aww->get_root()->awar(AWAR_PC_SELECTED_PROBE)->read_string();
 
-        if (pProbe != 0) {
-            selection_id->delete_element_at(selection_id->get_index_of_selected());
+        if (pSequence) {
+            ArbProbeCollection& g_probe_collection = get_probe_collection();
+            const ArbProbe *pProbe = g_probe_collection.find(pSequence);
 
-            if (selection_id->size() < 1) {
-                selection_id->insert_default("", "");
+            if (pProbe) {
+                int idx = selection_id->get_index_of_selected();
+                selection_id->delete_element_at(idx);
+
+                if (selection_id->size() < 1) {
+                    selection_id->insert_default("", "");
+                }
+                selection_id->update();
+                selection_id->select_element_at(idx); // select next probe for deletion
+
+                g_probe_collection.remove(pSequence);
+                probe_match_update_probe_list(pContext->PM_Context);
+                probe_collection_update_parameters();
             }
-
-            selection_id->update();
-            g_probe_collection.remove(pSequence);
-            probe_match_update_probe_list(pContext->PM_Context);
-            probe_collection_update_parameters();
+            free(pSequence);
         }
     }
 }
