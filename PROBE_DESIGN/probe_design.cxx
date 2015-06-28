@@ -2519,18 +2519,12 @@ static void probe_match_with_specificity_event(AW_window *aww, AWT_canvas *ntw) 
 
 // ----------------------------------------------------------------------------
 
-static void probe_match_clear_event(AW_window *aww, ArbPM_Context *pContext) {
-    int action = aw_question("probe_match_with_specificity_clear",
-                             "Do you want to clear the probe match results?",
-                             "Yes,No");
+static void probe_forget_matches_event(AW_window *aww, ArbPM_Context *pContext) {
+    AW_root *root = aww->get_root();
 
-    if (action == 0) {
-        AW_root *root = aww->get_root();
-
-        get_results_manager().reset();
-        root->awar(AWAR_PC_MATCH_NHITS)->write_int(0);
-        update_species_matched_string(root, pContext->ntw); // forces a refresh of the phylogenic tree
-    }
+    get_results_manager().reset();
+    root->awar(AWAR_PC_MATCH_NHITS)->write_int(0);
+    update_species_matched_string(root, pContext->ntw); // forces a refresh of the phylogenic tree
 }
 
 // ----------------------------------------------------------------------------
@@ -2603,17 +2597,17 @@ AW_window *create_probe_match_with_specificity_window(AW_root *root, AWT_canvas 
         aws->at("nhits");
         aws->create_button(0, AWAR_PC_MATCH_NHITS);
 
-        aws->callback(makeWindowCallback(probe_match_with_specificity_event, ntw));
-        aws->at("match");
-        aws->create_button("MATCH", "MATCH", "D");
-
         aws->callback(makeCreateWindowCallback(create_probe_collection_window, &PM_Context));
         aws->at("edit");
         aws->create_button("EDIT", "EDIT", "E");
 
-        aws->callback(makeWindowCallback(probe_match_clear_event, &PM_Context));
-        aws->at("clear");
-        aws->create_button("CLEAR", "CLEAR", "L");
+        aws->callback(makeWindowCallback(probe_match_with_specificity_event, ntw));
+        aws->at("match");
+        aws->create_button("MATCH", "MATCH", "M");
+
+        aws->callback(makeWindowCallback(probe_forget_matches_event, &PM_Context));
+        aws->at("forget");
+        aws->create_button("FORGET", "FORGET", "F");
 
         aws->callback(makeCreateWindowCallback(create_probe_match_specificity_control_window));
         aws->at("control");
