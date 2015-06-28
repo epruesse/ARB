@@ -2501,15 +2501,16 @@ static void probe_match_with_specificity_event(AW_window *aww, AWT_canvas *ntw) 
             // Open the Probe Match Specificity dialog to interactively show how the
             // matches target the phylongeny
             create_probe_match_specificity_control_window(root)->show();
-        }
 
-        double oldMaxWeight = g_results_manager.maximumWeight();
-        g_results_manager.updateResults();
-        double newMaxWeight = g_results_manager.maximumWeight();
+            double oldMaxWeight = g_results_manager.maximumWeight();
+            g_results_manager.updateResults();
+            double newMaxWeight = g_results_manager.maximumWeight();
 
-        if (newMaxWeight != oldMaxWeight) {
-            // set new limits for scaler and force current value into limits
-            root->awar(AWAR_PC_MISMATCH_THRESHOLD)->set_minmax(0.0, newMaxWeight)->touch();
+            if (newMaxWeight != oldMaxWeight) {
+                // set new limits for scaler and force current value into limits
+                newMaxWeight = std::max(newMaxWeight, 0.000001); // avoid invalid limits
+                root->awar(AWAR_PC_MISMATCH_THRESHOLD)->set_minmax(0.0, newMaxWeight)->touch();
+            }
         }
 
         update_species_matched_string(root, ntw); // also forces a refresh of the phylogenic tree
