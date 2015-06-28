@@ -651,7 +651,7 @@ public:
 
     double maximumWeight() const;
 
-    int enumerateResults(ArbMatchResultsEnumCallback pCallback, void *pContext, bool& bAborted);
+    int enumerate_results(ArbMatchResultsEnumCallback pCallback, void *pContext);
 
     const char *resultsFileName() const;
     void openResultsFile() const;

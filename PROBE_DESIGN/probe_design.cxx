@@ -2352,7 +2352,6 @@ struct ArbWriteFile_Context {
 static bool probe_match_with_specificity_enum_callback(void *pVoidContext, const char *pResult, bool bIsComment, int nItem, int nItems) {
     ArbWriteFile_Context *pContext = (ArbWriteFile_Context*)pVoidContext;
     int                   nPercent = (int)(100.0 * nItem / nItems);
-    bool                  bAborted = false;
 
     if (!bIsComment) {
         if (pContext->nLastPercent != nPercent) {
@@ -2361,14 +2360,12 @@ static bool probe_match_with_specificity_enum_callback(void *pVoidContext, const
         }
     }
 
-    bAborted = pContext->pProgress->aborted();
-
     if (pContext->pFile != 0) {
         // Update status - put after matching cause matching writes its own status messages
         fprintf(pContext->pFile, "%s\n", pResult);
     }
 
-    return (bAborted);
+    return pContext->pProgress->aborted();
 }
 
 // ----------------------------------------------------------------------------
@@ -2381,8 +2378,8 @@ static void probe_match_with_specificity_edit_event() {
 
 static void probe_match_with_specificity_event(AW_window *aww, AWT_canvas *ntw) {
     if (allow_probe_match_event) {
-        AW_root *root     = aww->get_root();
-        bool     bAborted = false;
+        AW_root  *root  = aww->get_root();
+        GB_ERROR  error = NULL;
 
         ProbeMatchSettings matchSettings(root);
         matchSettings.markHits  = 0;
@@ -2410,21 +2407,15 @@ static void probe_match_with_specificity_event(AW_window *aww, AWT_canvas *ntw) 
 
             ArbProbeCollection& g_probe_collection = get_probe_collection();
 
-            for (ArbProbePtrListConstIter ProbeIter = rProbeList.begin() ; ProbeIter != rProbeList.end() ; ++ProbeIter) {
+            for (ArbProbePtrListConstIter ProbeIter = rProbeList.begin() ; ProbeIter != rProbeList.end() && !error; ++ProbeIter) {
                 const ArbProbe *pProbe = *ProbeIter;
 
                 if (pProbe != 0) {
                     int                nMatches;
                     ArbMatchResultSet *pResultSet = g_results_manager.addResultSet(pProbe);
 
-                    if (progress.aborted()) {
-                        bAborted = true;
-                        break;
-                    }
-
                     // Update status - put after matching cause matching writes its own status messages
                     progress.subtitle(GBS_global_string("Matching probe %i of %i", nItem, nItems));
-                    progress.inc();
 
                     // Perform match on pProbe
                     matchSettings.targetString  = pProbe->sequence();
@@ -2441,7 +2432,7 @@ static void probe_match_with_specificity_event(AW_window *aww, AWT_canvas *ntw) 
                         ProbeMatchParser parser(pProbe->sequence().c_str(), g_spd->getHeadline());
 
                         if (parser.get_error()) {
-                            progress.subtitle(GBS_global_string("ProbeMatchParser error: %s", parser.get_error()));
+                            error = GBS_global_string("ProbeMatchParser error: %s", parser.get_error());
                         }
                         else {
                             int nStartFullName  = 0;
@@ -2456,30 +2447,26 @@ static void probe_match_with_specificity_event(AW_window *aww, AWT_canvas *ntw) 
                             // Collate match results
                             nMatches = g_spd->probeSeq.size();
 
-                            for (int cn = 0 ; cn < nMatches ; cn++) {
+                            for (int cn = 0 ; cn < nMatches && !error ; cn++) {
                                 const std::string& sResult = g_spd->probeSeq[cn];
 
-                                ParsedProbeMatch  parsed(sResult.c_str(), parser);
+                                ParsedProbeMatch parsed(sResult.c_str(), parser);
 
                                 if (parsed.get_error()) {
-                                    progress.subtitle(GBS_global_string("ParsedProbeMatch error: %s", parsed.get_error()));
+                                    error = GBS_global_string("ParsedProbeMatch error: %s", parsed.get_error());
                                 }
+                                else {
+                                    char       *pName      = parsed.get_column_content("name", true);
+                                    char       *pFullName  = parsed.get_column_content("fullname", true);
+                                    const char *pMatchPart = parsed.get_probe_region();
 
-                                char       *pName      = parsed.get_column_content("name", true);
-                                char       *pFullName  = parsed.get_column_content("fullname", true);
-                                const char *pMatchPart = parsed.get_probe_region();
+                                    pResultSet->add(pName,
+                                                    pFullName,
+                                                    pMatchPart,
+                                                    sResult.c_str(),
+                                                    g_probe_collection.matchWeighting());
 
-                                pResultSet->add(pName,
-                                                pFullName,
-                                                pMatchPart,
-                                                sResult.c_str(),
-                                                g_probe_collection.matchWeighting());
-
-                                if (pName != 0) {
                                     free(pName);
-                                }
-
-                                if (pFullName != 0) {
                                     free(pFullName);
                                 }
                             }
@@ -2488,9 +2475,8 @@ static void probe_match_with_specificity_event(AW_window *aww, AWT_canvas *ntw) 
 
                     nItem++;
                 }
+                progress.inc_and_check_user_abort(error);
             }
-
-            progress.done();
         }
 
         // Clear any previously marked species
@@ -2526,26 +2512,30 @@ static void probe_match_with_specificity_event(AW_window *aww, AWT_canvas *ntw) 
 
         GB_pop_transaction(ntw->gb_main);
 
-        if (!bAborted) {
+        if (!error) {
             ArbWriteFile_Context Context;
-            arb_progress         progress(GBS_global_string("Writing results to file %s", g_results_manager.resultsFileName()), 100);
+
+            arb_progress progress("Writing results to file", 100);
+            progress.subtitle(g_results_manager.resultsFileName());
 
             Context.pFile         = fopen(g_results_manager.resultsFileName(), "w");
             Context.pProgress     = &progress;
             Context.nLastPercent  = 0;
 
-            nHits = g_results_manager.enumerateResults(probe_match_with_specificity_enum_callback, (void*)&Context, bAborted);
+            nHits = g_results_manager.enumerate_results(probe_match_with_specificity_enum_callback, (void*)&Context);
 
             fclose(Context.pFile);
 
+            if (!error) error = progress.error_if_aborted();
             progress.done();
         }
 
         root->awar(AWAR_PMC_MATCH_NHITS)->write_int(nHits);
 
-        if (bAborted) {
+        if (error) {
             // Clear the results set
             g_results_manager.reset();
+            aw_message(error);
         }
         else {
             // Open the Probe Match Specificity dialog to interactively show how the
