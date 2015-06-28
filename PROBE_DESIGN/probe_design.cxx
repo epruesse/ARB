@@ -2760,10 +2760,19 @@ static void save_probe_collection(AW_window *aww, const char * const *awar_filen
 static void add_probe_to_collection_event(AW_window *aww, ArbPC_Context *pContext) {
     AW_selection_list *selection_id = pContext->selection_id;
     if (selection_id) {
-        char *pSequence = aww->get_root()->awar(AWAR_PC_TARGET_STRING)->read_string();
-        char *pName     = aww->get_root()->awar(AWAR_PC_TARGET_NAME)->read_string();
+        AW_root *root      = aww->get_root();
+        char    *pSequence = root->awar(AWAR_PC_TARGET_STRING)->read_string();
+        char    *pName     = root->awar(AWAR_PC_TARGET_NAME)->read_string();
 
-        if (pSequence && pName && pSequence[0]) {
+        GB_ERROR error = NULL;
+        if (!pSequence || !pSequence[0]) {
+            error = "Please enter a target string";
+        }
+        else if (get_probe_collection().find(pSequence)) {
+            error = "Target string already in collection";
+        }
+
+        if (!error) {
             const ArbProbe *pProbe = 0;
 
             if (get_probe_collection().add(pName, pSequence, &pProbe) && (pProbe != 0)) {
@@ -2771,14 +2780,69 @@ static void add_probe_to_collection_event(AW_window *aww, ArbPC_Context *pContex
                 selection_id->update();
                 probe_match_update_probe_list(pContext->PM_Context);
                 probe_collection_update_parameters();
+
+                root->awar(AWAR_PC_SELECTED_PROBE)->write_string(pSequence);
+            }
+            else {
+                error = "failed to add probe";
             }
         }
+
+        aw_message_if(error);
+
         free(pName);
         free(pSequence);
     }
 }
 
-// ----------------------------------------------------------------------------
+static void modify_probe_event(AW_window *aww, ArbPC_Context *pContext) {
+    AW_selection_list *selection_id = pContext->selection_id;
+    if (selection_id) {
+        AW_root *root          = aww->get_root();
+        AW_awar *awar_selected = root->awar(AWAR_PC_SELECTED_PROBE);
+        char    *oldSequence   = awar_selected->read_string();
+        char    *pSequence     = root->awar(AWAR_PC_TARGET_STRING)->read_string();
+        char    *pName         = root->awar(AWAR_PC_TARGET_NAME)->read_string();
+
+        GB_ERROR error = NULL;
+        if (!pSequence || !pSequence[0]) {
+            error = "Please enter a target string";
+        }
+        else if (!oldSequence || !oldSequence[0]) {
+            error = "Please select probe to modify";
+        }
+        else if (strcmp(oldSequence, pSequence) != 0) { // sequence changed -> test vs duplicate
+            if (get_probe_collection().find(pSequence)) {
+                error = "Target string already in collection";
+            }
+        }
+
+        if (!error) {
+            const ArbProbe *pProbe = 0;
+
+            if (get_probe_collection().replace(oldSequence, pName, pSequence, &pProbe) && (pProbe != 0)) {
+                AW_selection_list_iterator entry(selection_id, selection_id->get_index_of_selected());
+                entry.set_displayed(pProbe->displayName().c_str());
+                entry.set_value(pSequence);
+                selection_id->update();
+
+                probe_match_update_probe_list(pContext->PM_Context);
+                probe_collection_update_parameters();
+
+                awar_selected->write_string(pSequence);
+            }
+            else {
+                error = "failed to replace probe";
+            }
+        }
+
+        aw_message_if(error);
+
+        free(pName);
+        free(pSequence);
+        free(oldSequence);
+    }
+}
 
 static void remove_probe_from_collection_event(AW_window *aww, ArbPC_Context *pContext) {
     AW_selection_list *selection_id = pContext->selection_id;
@@ -2805,6 +2869,22 @@ static void remove_probe_from_collection_event(AW_window *aww, ArbPC_Context *pC
                 probe_collection_update_parameters();
             }
             free(pSequence);
+        }
+    }
+}
+
+static void selected_probe_changed_cb(AW_root *root, ArbPC_Context *pContext) {
+    AW_selection_list *selection_id = pContext->selection_id;
+    if (selection_id) {
+        char *pSequence = root->awar(AWAR_PC_SELECTED_PROBE)->read_string();
+        if (pSequence) {
+            ArbProbeCollection&  g_probe_collection = get_probe_collection();
+            const ArbProbe      *pProbe             = g_probe_collection.find(pSequence);
+
+            if (pProbe) {
+                root->awar(AWAR_PC_TARGET_STRING)->write_string(pProbe->sequence().c_str());
+                root->awar(AWAR_PC_TARGET_NAME)  ->write_string(pProbe->name().c_str());
+            }
         }
     }
 }
@@ -2875,6 +2955,8 @@ static AW_window *create_probe_collection_window(AW_root *root, ArbPM_Context *p
         selection_id = aws->create_selection_list(AWAR_PC_SELECTED_PROBE, 110, 10, false);
         selection_id->insert_default("", "");
 
+        root->awar(AWAR_PC_SELECTED_PROBE)->add_callback(makeRootCallback(selected_probe_changed_cb, &PC_Context));
+
         PC_Context.selection_id = selection_id;
 
         aws->at("string");
@@ -2886,6 +2968,10 @@ static AW_window *create_probe_collection_window(AW_root *root, ArbPM_Context *p
         aws->callback(makeWindowCallback(add_probe_to_collection_event, &PC_Context));
         aws->at("add");
         aws->create_button("ADD", "ADD", "A");
+
+        aws->callback(makeWindowCallback(modify_probe_event, &PC_Context));
+        aws->at("modify");
+        aws->create_button("MODIFY", "MODIFY", "M");
 
         aws->callback(makeWindowCallback(remove_probe_from_collection_event, &PC_Context));
         aws->at("remove");
