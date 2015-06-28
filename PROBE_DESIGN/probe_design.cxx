@@ -102,10 +102,7 @@
 
 #define AWAR_PC_CURRENT_COLLECTION "probe_collection/current"
 #define AWAR_PC_SELECTED_PROBE     "tmp/probe_collection/probe"
-
-// probe match collection window
-#define AWAR_PMC_SELECTED_PROBE   "tmp/probe_match_collection/probe"
-#define AWAR_PMC_MATCH_NHITS      "tmp/probe_match_collection/nhits"
+#define AWAR_PC_MATCH_NHITS        "tmp/probe_collection/nhits"
 
 // probe collection matching control parameters
 #define AWAR_PC_MISMATCH_THRESHOLD               "probe_collection/mismatch_threshold"
@@ -1302,8 +1299,7 @@ void create_probe_design_variables(AW_root *root, AW_default props, AW_default d
     root->awar_int   (AWAR_SPV_DB_FIELD_WIDTH, 10,     db); // width of displayed species field
     root->awar_string(AWAR_SPV_ACI_COMMAND,    "",     db); // User defined or pre-defined ACI command to display
 
-    root->awar_int   (AWAR_PMC_MATCH_NHITS,    0,  db);
-    root->awar_string(AWAR_PMC_SELECTED_PROBE, "", db);
+    root->awar_int(AWAR_PC_MATCH_NHITS, 0, db);
 
     root->awar_string(AWAR_PC_TARGET_STRING,  "", db)->set_srt(REPLACE_TARGET_CONTROL_CHARS);
     root->awar_string(AWAR_PC_TARGET_NAME,    "", db)->set_srt(REPLACE_TARGET_CONTROL_CHARS);
@@ -2494,7 +2490,7 @@ static void probe_match_with_specificity_event(AW_window *aww, AWT_canvas *ntw) 
             progress.done();
         }
 
-        root->awar(AWAR_PMC_MATCH_NHITS)->write_int(nHits);
+        root->awar(AWAR_PC_MATCH_NHITS)->write_int(nHits);
 
         if (error) {
             // Clear the results set
@@ -2531,7 +2527,7 @@ static void probe_match_clear_event(AW_window *aww, ArbPM_Context *pContext) {
         AW_root *root = aww->get_root();
 
         get_results_manager().reset();
-        root->awar(AWAR_PMC_MATCH_NHITS)->write_int(0);
+        root->awar(AWAR_PC_MATCH_NHITS)->write_int(0);
         update_species_matched_string(root, pContext->ntw); // forces a refresh of the phylogenic tree
     }
 }
@@ -2590,7 +2586,7 @@ AW_window *create_probe_match_with_specificity_window(AW_root *root, AWT_canvas 
         AW_selection_list *probes_id;
 
         aws->at("probes");
-        probes_id = aws->create_selection_list(AWAR_PMC_SELECTED_PROBE, 110, 10, false);
+        probes_id = aws->create_selection_list(AWAR_PC_SELECTED_PROBE, 110, 10, false);
         probes_id->insert_default("", "");
 
         PM_Context.probes_id = probes_id;
@@ -2604,7 +2600,7 @@ AW_window *create_probe_match_with_specificity_window(AW_root *root, AWT_canvas 
         awt_create_PTSERVER_selection_button(aws, AWAR_PT_SERVER);
 
         aws->at("nhits");
-        aws->create_button(0, AWAR_PMC_MATCH_NHITS);
+        aws->create_button(0, AWAR_PC_MATCH_NHITS);
 
         aws->callback(makeWindowCallback(probe_match_with_specificity_event, ntw));
         aws->at("match");
