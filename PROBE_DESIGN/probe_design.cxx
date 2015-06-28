@@ -2928,6 +2928,7 @@ static void probe_match_update_probe_list(ArbPM_Context *pContext) {
 static void clear_probe_collection_event(AW_window *, ArbPC_Context *pContext) {
     if (get_probe_collection().clear()) {
         probe_match_update_probe_list(pContext->PM_Context);
+        show_probes_in_sellist(get_probe_collection().probeList(), pContext->selection_id);
     }
 }
 
