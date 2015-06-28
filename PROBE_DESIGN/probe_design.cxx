@@ -2398,7 +2398,6 @@ static void probe_match_with_specificity_event(AW_window *aww, AWT_canvas *ntw) 
         int       nItem       = 1;
         int       nHits       = 0;
         int       nProbeIndex = 0;
-        bool      gene_flag   = false;
 
         // This extra scope needed to ensure the arb_progress object is released
         // prior to the next one being used to show progress on write results to file
@@ -2442,8 +2441,6 @@ static void probe_match_with_specificity_event(AW_window *aww, AWT_canvas *ntw) 
 
                             pResultSet->headline(g_spd->getHeadline(), nEndFullName);
 
-                            gene_flag = parser.is_gene_result();
-
                             // Collate match results
                             nMatches = g_spd->probeSeq.size();
 
@@ -2478,39 +2475,6 @@ static void probe_match_with_specificity_event(AW_window *aww, AWT_canvas *ntw) 
                 progress.inc_and_check_user_abort(error);
             }
         }
-
-        // Clear any previously marked species
-        GB_push_transaction(ntw->gb_main);
-
-        GBDATA *gb_species_data = GB_search(ntw->gb_main, "species_data", GB_CREATE_CONTAINER);
-
-        for (GBDATA *gb_species = GBT_first_marked_species_rel_species_data(gb_species_data) ;
-             gb_species ;
-             gb_species = GBT_next_marked_species(gb_species))
-        {
-            GB_write_flag(gb_species, 0);
-        }
-
-        if (gene_flag) {
-            // unmark genes of ALL species
-            for (GBDATA *gb_species = GBT_first_species_rel_species_data(gb_species_data) ;
-                 gb_species ;
-                 gb_species = GBT_next_species(gb_species))
-            {
-                GBDATA *genData = GEN_find_gene_data(gb_species);
-
-                if (genData) {
-                    for (GBDATA *gb_gene = GEN_first_marked_gene(gb_species) ;
-                         gb_gene ;
-                         gb_gene = GEN_next_marked_gene(gb_gene))
-                    {
-                        GB_write_flag(gb_gene, 0);
-                    }
-                }
-            }
-        }
-
-        GB_pop_transaction(ntw->gb_main);
 
         if (!error) {
             ArbWriteFile_Context Context;
