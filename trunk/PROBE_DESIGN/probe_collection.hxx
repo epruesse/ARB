@@ -309,8 +309,8 @@ private:
     mutable bool                    HasChanged;
 
 protected:
-    void                            flush();
-    void                            copy(const ArbProbePtrList& rList);
+    void flush();
+    void copy(const ArbProbePtrList& rList);
 
 public:
     ArbProbeCollection();
@@ -332,6 +332,7 @@ public:
     const ArbProbe *find(const char *pSequence) const;
 
     bool add(const char *pName, const char *pSequence, const ArbProbe **ppProbe = 0);
+    bool replace(const char *oldSequence, const char *pName, const char *pSequence, const ArbProbe **ppProbe = 0);
     bool remove(const char *pSequence);
     bool clear();
 
