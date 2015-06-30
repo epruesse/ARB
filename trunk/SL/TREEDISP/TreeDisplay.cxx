@@ -1966,6 +1966,8 @@ void AWT_graphic_tree::detectAndDrawMatchFlags(AP_tree *at, const double y1, con
                 }
             }
         }
+
+        delete [] pMatchCounts;
     }
 }
 

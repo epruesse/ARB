@@ -1364,6 +1364,7 @@ void create_probe_design_variables(AW_root *root, AW_default props, AW_default d
             }
             awar_numProbes->write_int(g_probe_collection.probeList().size());
         }
+        free(current);
     }
     root->awar_string(AWAR_SPV_SELECTED_PROBE, "",     db); // For highlighting the selected PROBE
 }
