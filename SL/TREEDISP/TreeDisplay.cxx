@@ -1925,48 +1925,35 @@ void AWT_graphic_tree::detectAndDrawMatchFlags(AP_tree *at, const double y1, con
         MatchFlagPosition flag(disp_device->get_scale(), pcoll.numProbes, y1, y2);
 
         int *pMatchCounts = new int[pcoll.numProbes];
-
         if (pMatchCounts != 0) {
             memset(pMatchCounts, 0, pcoll.numProbes * sizeof(*pMatchCounts));
 
             int nCladeSize = 0;
             enumerateClade(at, pMatchCounts, nCladeSize, pcoll.numProbes);
 
-            AW_click_cd clickflag(disp_device, (AW_CL)0, (AW_CL)"flag");
-
-            if (!at->is_leaf) {
-                if (nCladeSize > 0) {
-                    const int nMatchedSize          = (int)(nCladeSize * pcoll.cladeThreshold.marked + 0.5);
-                    const int nPartiallyMatchedSize = (int)(nCladeSize * pcoll.cladeThreshold.partiallyMarked + 0.5);
-
-                    for (int nProbe = 0 ; nProbe < pcoll.numProbes ; nProbe++) {
-                        bool bMatched      = (pMatchCounts[nProbe] >= nMatchedSize);
-                        bool bPartialMatch = false;
-
-                        // Only check for partial match if we don't have a match. If a partial
-                        // match is found then isMatched() should return true.
-                        if (!bMatched) {
-                            bPartialMatch = (pMatchCounts[nProbe] > nPartiallyMatchedSize);
-                            bMatched      = bPartialMatch;
-                        }
-
-                        if (bMatched) {
-                            clickflag.set_cd1(nProbe);
-                            drawMatchFlag(flag, bPartialMatch, nProbe);
-                        }
-                    }
-                }
-            }
-            else {
+            if (nCladeSize>0) {
+                AW_click_cd clickflag(disp_device, (AW_CL)0, (AW_CL)"flag");
                 for (int nProbe = 0 ; nProbe < pcoll.numProbes ; nProbe++) {
                     if (pMatchCounts[nProbe] > 0) {
-                        clickflag.set_cd1(nProbe);
-                        drawMatchFlag(flag, false, nProbe);
+                        bool draw    = at->is_leaf;
+                        bool partial = false;
+
+                        if (!draw) { // group
+                            double matchRate = pMatchCounts[nProbe] / double(nCladeSize);
+                            if (matchRate>pcoll.cladeThreshold.partiallyMarked) {
+                                draw    = true;
+                                partial = matchRate<pcoll.cladeThreshold.marked;
+                            }
+                        }
+
+                        if (draw) {
+                            clickflag.set_cd1(nProbe);
+                            drawMatchFlag(flag, partial, nProbe);
+                        }
                     }
                 }
             }
         }
-
         delete [] pMatchCounts;
     }
 }
