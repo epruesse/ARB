@@ -158,7 +158,6 @@ static AutoMatchSettings auto_match_cb_settings;
 
 // prototypes:
 static void probe_match_event_using_awars(AW_root *root, ProbeMatchEventParam *event_param);
-static void update_species_matched_string(AW_root *root, AWT_canvas *ntw);
 
 static void auto_match_cb(AW_root *root) {
     if (!auto_match_cb_settings.disable) {
@@ -2382,6 +2381,85 @@ static void probe_match_with_specificity_edit_event() {
 
 // ----------------------------------------------------------------------------
 
+static const char *getProbeName(int nProbe) {
+    const ArbProbePtrList&   rProbeList = get_probe_collection().probeList();
+    ArbProbePtrListConstIter wanted     = rProbeList.begin();
+
+    if (nProbe>=0 && nProbe<int(rProbeList.size())) advance(wanted, nProbe);
+    else wanted = rProbeList.end();
+
+    if (wanted == rProbeList.end()) return GBS_global_string("<invalid probeindex %i>", nProbe);
+    return (*wanted)->name().c_str();
+}
+
+static void refresh_matched_display_cb(AW_root *root, AWT_canvas *ntw, bool clearDisplayCache) {
+    // trigger tree refresh w/o updating 'matched_string'
+    LocallyModify<bool> flag(allow_probe_match_event, false);
+
+    AWT_graphic_tree *agt     = DOWNCAST(AWT_graphic_tree*, ntw->gfx);
+    bool              display = get_results_manager().hasResults();
+    agt->set_probeCollectionDisplay(display, getProbeName, root->awar(AWAR_PC_MATCH_COL_WIDTH)->read_int(), clearDisplayCache);
+
+    root->awar(AWAR_TREE_REFRESH)->touch();
+}
+
+static void update_species_matched_string(AW_root *root, AWT_canvas *ntw) {
+    ArbMatchResultsManager& g_results_manager = get_results_manager();
+    if (g_results_manager.hasResults()) {
+        int   nProbes        = get_probe_collection().probeList().size();
+        char *pMatchedString = new char[nProbes + 1];
+
+        if (pMatchedString != 0) {
+            GB_push_transaction(ntw->gb_main);
+
+            // Write match results to database
+            double  dMismatchThreshold = root->awar(AWAR_PC_MISMATCH_THRESHOLD)->read_float();
+
+            for (GBDATA *gb_species = GBT_first_species(ntw->gb_main) ;
+                 gb_species ;
+                 gb_species = GBT_next_species(gb_species))
+            {
+                const char *pSpeciesName      = GBT_read_char_pntr(gb_species, "name");
+                GBDATA     *gb_matched_string = GB_search(gb_species, "matched_string", GB_STRING);
+
+                if (pSpeciesName != 0) {
+                    ArbMatchResultPtrByStringMultiMapConstIter  Iter;
+                    ArbMatchResultPtrByStringMultiMapConstIter  Upper;
+                    std::string                                 rKey(pSpeciesName);
+
+                    ::memset(pMatchedString, '0', nProbes);
+
+                    pMatchedString[nProbes] = 0;
+
+                    // Loop through all probes being matched
+                    Iter  = g_results_manager.resultsMap().lower_bound(rKey);
+                    Upper = g_results_manager.resultsMap().upper_bound(rKey);
+
+                    for (; Iter != Upper ; ++Iter) {
+                        const ArbMatchResult *pMatchResult = (*Iter).second;
+
+                        if (pMatchResult->weight() <= dMismatchThreshold) {
+                            int nProbe = pMatchResult->index();
+
+                            pMatchedString[nProbe] = '1';
+                        }
+                    }
+                }
+
+                GB_write_string(gb_matched_string, pMatchedString);
+            }
+
+            GB_pop_transaction(ntw->gb_main);
+
+            delete[] pMatchedString;
+        }
+    }
+
+    refresh_matched_display_cb(root, ntw, true);
+}
+
+// ----------------------------------------------------------------------------
+
 static void probe_match_with_specificity_event(AW_root *root, AWT_canvas *ntw) {
     if (allow_probe_match_event) {
         GB_ERROR error = NULL;
@@ -2568,28 +2646,6 @@ static void markedThresholdChanged_cb(AW_root *root, bool partChanged) {
         }
         root->awar(AWAR_TREE_REFRESH)->touch();
     }
-}
-
-static const char *getProbeName(int nProbe) {
-    const ArbProbePtrList&   rProbeList = get_probe_collection().probeList();
-    ArbProbePtrListConstIter wanted     = rProbeList.begin();
-
-    if (nProbe>=0 && nProbe<int(rProbeList.size())) advance(wanted, nProbe);
-    else wanted = rProbeList.end();
-
-    if (wanted == rProbeList.end()) return GBS_global_string("<invalid probeindex %i>", nProbe);
-    return (*wanted)->name().c_str();
-}
-
-static void refresh_matched_display_cb(AW_root *root, AWT_canvas *ntw, bool clearDisplayCache) {
-    // trigger tree refresh w/o updating 'matched_string'
-    LocallyModify<bool> flag(allow_probe_match_event, false);
-
-    AWT_graphic_tree *agt     = DOWNCAST(AWT_graphic_tree*, ntw->gfx);
-    bool              display = get_results_manager().hasResults();
-    agt->set_probeCollectionDisplay(display, getProbeName, root->awar(AWAR_PC_MATCH_COL_WIDTH)->read_int(), clearDisplayCache);
-
-    root->awar(AWAR_TREE_REFRESH)->touch();
 }
 
 static void add_threshold_callbacks(AW_root *root, AWT_canvas *ntw) {
@@ -3082,61 +3138,3 @@ static AW_window *create_probe_collection_window(AW_root *root, ArbPM_Context *p
     }
     return aws;
 }
-
-// ----------------------------------------------------------------------------
-
-static void update_species_matched_string(AW_root *root, AWT_canvas *ntw) {
-    ArbMatchResultsManager& g_results_manager = get_results_manager();
-    if (g_results_manager.hasResults()) {
-        int   nProbes        = get_probe_collection().probeList().size();
-        char *pMatchedString = new char[nProbes + 1];
-
-        if (pMatchedString != 0) {
-            GB_push_transaction(ntw->gb_main);
-
-            // Write match results to database
-            double  dMismatchThreshold = root->awar(AWAR_PC_MISMATCH_THRESHOLD)->read_float();
-
-            for (GBDATA *gb_species = GBT_first_species(ntw->gb_main) ;
-                 gb_species ;
-                 gb_species = GBT_next_species(gb_species))
-            {
-                const char *pSpeciesName      = GBT_read_char_pntr(gb_species, "name");
-                GBDATA     *gb_matched_string = GB_search(gb_species, "matched_string", GB_STRING);
-
-                if (pSpeciesName != 0) {
-                    ArbMatchResultPtrByStringMultiMapConstIter  Iter;
-                    ArbMatchResultPtrByStringMultiMapConstIter  Upper;
-                    std::string                                 rKey(pSpeciesName);
-
-                    ::memset(pMatchedString, '0', nProbes);
-
-                    pMatchedString[nProbes] = 0;
-
-                    // Loop through all probes being matched
-                    Iter  = g_results_manager.resultsMap().lower_bound(rKey);
-                    Upper = g_results_manager.resultsMap().upper_bound(rKey);
-
-                    for (; Iter != Upper ; ++Iter) {
-                        const ArbMatchResult *pMatchResult = (*Iter).second;
-
-                        if (pMatchResult->weight() <= dMismatchThreshold) {
-                            int nProbe = pMatchResult->index();
-
-                            pMatchedString[nProbe] = '1';
-                        }
-                    }
-                }
-
-                GB_write_string(gb_matched_string, pMatchedString);
-            }
-
-            GB_pop_transaction(ntw->gb_main);
-
-            delete[] pMatchedString;
-        }
-    }
-
-    refresh_matched_display_cb(root, ntw, true);
-}
-
