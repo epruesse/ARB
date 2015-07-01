@@ -1839,34 +1839,54 @@ void AWT_graphic_tree::update(GBDATA *) {
     }
 }
 
-void AWT_graphic_tree::enumerateClade(AP_tree *at, int* pMatchCounts, int& nCladeSize, int nNumProbes) {
+
+
+void AWT_graphic_tree::enumerateClade(AP_tree *at, CladeMatches& matches) {
+    /*! summarizes matches of each probe for subtree 'at' in result param 'matches'
+     * uses pcoll.cache to avoid repeated calculations
+     */
     td_assert(pcoll.display);
+    td_assert(matches.getCladeSize() == 0);
     if (at->is_leaf) {
-        if (at->name && (disp_device->get_filter() & leaf_text_filter)) {
+        if (at->name) {
             const char* pDB_MatchString = GBT_read_char_pntr(at->gb_node, "matched_string");
-
-            if ((pDB_MatchString != 0) && (int(strlen(pDB_MatchString)) == nNumProbes)) {
-                for (int cn = 0 ; cn < nNumProbes ; cn++) {
-                    switch (pDB_MatchString[cn]) {
-                        case '1': {
-                            pMatchCounts[cn] += 1;
+            if (pDB_MatchString) {
+                for (int probe = 0 ; probe < pcoll.numProbes ; ++probe) {
+                    switch (pDB_MatchString[probe]) {
+                        case '1':
+                            matches.incHit(probe);
                             break;
-                        }
 
-                        default:
-                        case '0': {
+                        case '0':
                             break;
-                        }
+
+                        default: // invalid char or matched_string too short -> ignore whole branch
+                            matches = CladeMatches(pcoll.numProbes);
+                            return;
                     }
                 }
 
-                nCladeSize++;
+                matches.incCladeSize();
             }
         }
     }
     else {
-        enumerateClade(at->get_leftson(), pMatchCounts, nCladeSize, nNumProbes);
-        enumerateClade(at->get_rightson(), pMatchCounts, nCladeSize, nNumProbes);
+        if (at->is_named_group()) {
+            CladeCache::const_iterator found = pcoll.cache.find(at);
+            if (found != pcoll.cache.end()) {
+                matches = found->second; // use cached matches
+                return;
+            }
+        }
+
+        enumerateClade(at->get_leftson(), matches);
+        CladeMatches rightMatches(pcoll.numProbes);
+        enumerateClade(at->get_rightson(), rightMatches);
+        matches.add(rightMatches);
+
+        if (at->is_named_group()) {
+            pcoll.cache[at] = matches;
+        }
     }
 }
 
@@ -1920,41 +1940,36 @@ void AWT_graphic_tree::detectAndDrawMatchFlags(AP_tree *at, const double y1, con
     td_assert(pcoll.display);
 
     if (disp_device->type() != AW_DEVICE_SIZE) {
-        // Note: extra device scaling needed to show flags is done by drawMatchFlagNames
+        // Note: extra device scaling (needed to show flags) is done by drawMatchFlagNames
 
         MatchFlagPosition flag(disp_device->get_scale(), pcoll.numProbes, y1, y2);
+        CladeMatches      matches(pcoll.numProbes);
 
-        int *pMatchCounts = new int[pcoll.numProbes];
-        if (pMatchCounts != 0) {
-            memset(pMatchCounts, 0, pcoll.numProbes * sizeof(*pMatchCounts));
+        enumerateClade(at, matches);
 
-            int nCladeSize = 0;
-            enumerateClade(at, pMatchCounts, nCladeSize, pcoll.numProbes);
+        if (matches.getCladeSize()>0) {
+            AW_click_cd clickflag(disp_device, (AW_CL)0, (AW_CL)"flag");
+            for (int nProbe = 0 ; nProbe < pcoll.numProbes ; nProbe++) {
+                if (matches.getHits(nProbe) > 0) {
+                    bool draw    = at->is_leaf;
+                    bool partial = false;
 
-            if (nCladeSize>0) {
-                AW_click_cd clickflag(disp_device, (AW_CL)0, (AW_CL)"flag");
-                for (int nProbe = 0 ; nProbe < pcoll.numProbes ; nProbe++) {
-                    if (pMatchCounts[nProbe] > 0) {
-                        bool draw    = at->is_leaf;
-                        bool partial = false;
-
-                        if (!draw) { // group
-                            double matchRate = pMatchCounts[nProbe] / double(nCladeSize);
-                            if (matchRate>pcoll.cladeThreshold.partiallyMarked) {
-                                draw    = true;
-                                partial = matchRate<pcoll.cladeThreshold.marked;
-                            }
+                    if (!draw) { // group
+                        td_assert(at->is_named_group());
+                        double matchRate = matches.getHits(nProbe) / double(matches.getCladeSize());
+                        if (matchRate>pcoll.cladeThreshold.partiallyMarked) {
+                            draw    = true;
+                            partial = matchRate<pcoll.cladeThreshold.marked;
                         }
+                    }
 
-                        if (draw) {
-                            clickflag.set_cd1(nProbe);
-                            drawMatchFlag(flag, partial, nProbe);
-                        }
+                    if (draw) {
+                        clickflag.set_cd1(nProbe);
+                        drawMatchFlag(flag, partial, nProbe);
                     }
                 }
             }
         }
-        delete [] pMatchCounts;
     }
 }
 
@@ -2878,9 +2893,13 @@ void AWT_graphic_tree::info(AW_device */*device*/, AW_pos /*x*/, AW_pos /*y*/, A
     aw_message("INFO MESSAGE");
 }
 
-void AWT_graphic_tree::set_probeCollectionDisplay(bool show_collection, get_probe_name get_name, int match_col_width) {
+void AWT_graphic_tree::set_probeCollectionDisplay(bool show_collection, get_probe_name get_name, int match_col_width, bool invalidateCache) {
     pcoll.display  = show_collection;
     pcoll.get_name = get_name;
+
+    if (invalidateCache) {
+        pcoll.cache.erase(pcoll.cache.begin(), pcoll.cache.end());
+    }
 
     MatchFlagXPos::match_col_width = match_col_width;
 }
