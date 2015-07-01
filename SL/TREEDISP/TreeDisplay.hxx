@@ -17,6 +17,13 @@
 #ifndef AWT_CANVAS_HXX
 #include <awt_canvas.hxx>
 #endif
+#ifndef _GLIBCXX_VECTOR
+#include <vector>
+#endif
+#ifndef _GLIBCXX_MAP
+#include <map>
+#endif
+
 
 #define td_assert(cond) arb_assert(cond)
 
@@ -138,6 +145,39 @@ enum CollapseMode {
 
 typedef const char *(*get_probe_name)(int nProbe);
 
+class CladeMatches {
+    int              cladeSize; // number of species in clade
+    std::vector<int> probe; // how often each probe does match in clade
+public:
+    CladeMatches() {} // default for map
+    explicit CladeMatches(int numProbes)
+        : cladeSize(0),
+          probe(numProbes, 0)
+    {}
+
+    void incHit(size_t probeNum) {
+        td_assert(probeNum<probe.size());
+        probe[probeNum]++;
+    }
+    int getHits(size_t probeNum) {
+        td_assert(probeNum<probe.size());
+        return probe[probeNum];
+    }
+
+    void incCladeSize() { cladeSize++; }
+    int getCladeSize() const { return cladeSize; }
+
+    void add(const CladeMatches& other) {
+        size_t size = probe.size();
+        td_assert(size == other.probe.size());
+        for (size_t i = 0; i<size; ++i) {
+            probe[i] += other.probe[i];
+        }
+        cladeSize += other.cladeSize;
+    }
+};
+typedef std::map<AP_tree*,CladeMatches> CladeCache;
+
 class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
     char         *species_name;
     AW::Position  cursor;
@@ -186,6 +226,7 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
             double partiallyMarked;
         } cladeThreshold;
         get_probe_name get_name;
+        CladeCache     cache;
 
         pcoll_display_settings() : display(false) {}
     } pcoll;
@@ -212,13 +253,13 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
     void show_nds_list(GBDATA * gb_main, bool use_nds);
     void show_irs_tree(AP_tree *at, double height);
 
-    void enumerateClade(AP_tree *at, int* pMatchCounts, int& nCladeSize, int nNumProbes);
+    void enumerateClade(AP_tree *at, CladeMatches& matches);
     void drawMatchFlag(const class MatchFlagPosition& flag, const bool bPartial, const int nProbe);
     void detectAndDrawMatchFlags(AP_tree *at, double y1, double y2);
     void drawMatchFlagNames(AW::Position& Pen);
 
-private:
     void pixel_box(int gc, const AW::Position& pos, int pixel_width, AW::FillStyle filled);
+
 public:
     void filled_box(int gc, const AW::Position& pos, int pixel_width) { pixel_box(gc, pos, pixel_width, AW::FillStyle::SOLID); }
     void empty_box(int gc, const AW::Position& pos, int pixel_width) { pixel_box(gc, pos, pixel_width, AW::FillStyle::EMPTY); }
@@ -313,7 +354,7 @@ public:
     void show_ruler(AW_device *device, int gc);
     void get_zombies_and_duplicates(int& zomb, int& dups) const { zomb = zombies; dups = duplicates; }
 
-    void set_probeCollectionDisplay(bool show_collection, get_probe_name get_name, int match_col_width);
+    void set_probeCollectionDisplay(bool show_collection, get_probe_name get_name, int match_col_width, bool invalidateCache);
 
 #if defined(UNIT_TESTS) // UT_DIFF
     friend class fake_AWT_graphic_tree;

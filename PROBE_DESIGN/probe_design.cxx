@@ -2570,8 +2570,30 @@ static void markedThresholdChanged_cb(AW_root *root, bool partChanged) {
     }
 }
 
+static const char *getProbeName(int nProbe) {
+    const ArbProbePtrList&   rProbeList = get_probe_collection().probeList();
+    ArbProbePtrListConstIter wanted     = rProbeList.begin();
+
+    if (nProbe>=0 && nProbe<int(rProbeList.size())) advance(wanted, nProbe);
+    else wanted = rProbeList.end();
+
+    if (wanted == rProbeList.end()) return GBS_global_string("<invalid probeindex %i>", nProbe);
+    return (*wanted)->name().c_str();
+}
+
+static void refresh_matched_display_cb(AW_root *root, AWT_canvas *ntw, bool clearDisplayCache) {
+    // trigger tree refresh w/o updating 'matched_string'
+    LocallyModify<bool> flag(allow_probe_match_event, false);
+
+    AWT_graphic_tree *agt     = DOWNCAST(AWT_graphic_tree*, ntw->gfx);
+    bool              display = get_results_manager().hasResults();
+    agt->set_probeCollectionDisplay(display, getProbeName, root->awar(AWAR_PC_MATCH_COL_WIDTH)->read_int(), clearDisplayCache);
+
+    root->awar(AWAR_TREE_REFRESH)->touch();
+}
+
 static void add_threshold_callbacks(AW_root *root, AWT_canvas *ntw) {
-    root->awar(AWAR_PC_MATCH_COL_WIDTH)                 ->add_callback(makeRootCallback(update_species_matched_string, ntw));
+    root->awar(AWAR_PC_MATCH_COL_WIDTH)                 ->add_callback(makeRootCallback(refresh_matched_display_cb, ntw, false));
     root->awar(AWAR_PC_MISMATCH_THRESHOLD)              ->add_callback(makeRootCallback(update_species_matched_string, ntw));
     root->awar(AWAR_PC_CLADE_MARKED_THRESHOLD)          ->add_callback(makeRootCallback(markedThresholdChanged_cb,     false));
     root->awar(AWAR_PC_CLADE_PARTIALLY_MARKED_THRESHOLD)->add_callback(makeRootCallback(markedThresholdChanged_cb,     true));
@@ -3063,19 +3085,7 @@ static AW_window *create_probe_collection_window(AW_root *root, ArbPM_Context *p
 
 // ----------------------------------------------------------------------------
 
-static const char *getProbeName(int nProbe) {
-    const ArbProbePtrList&   rProbeList = get_probe_collection().probeList();
-    ArbProbePtrListConstIter wanted     = rProbeList.begin();
-
-    if (nProbe>=0 && nProbe<int(rProbeList.size())) advance(wanted, nProbe);
-    else wanted = rProbeList.end();
-
-    if (wanted == rProbeList.end()) return GBS_global_string("<invalid probeindex %i>", nProbe);
-    return (*wanted)->name().c_str();
-}
-
 static void update_species_matched_string(AW_root *root, AWT_canvas *ntw) {
-    bool display = false;
     ArbMatchResultsManager& g_results_manager = get_results_manager();
     if (g_results_manager.hasResults()) {
         int   nProbes        = get_probe_collection().probeList().size();
@@ -3125,15 +3135,8 @@ static void update_species_matched_string(AW_root *root, AWT_canvas *ntw) {
 
             delete[] pMatchedString;
         }
-
-        display = true;
     }
 
-    LocallyModify<bool> flag(allow_probe_match_event, false);
-
-    AWT_graphic_tree *agt = DOWNCAST(AWT_graphic_tree*, ntw->gfx);
-    agt->set_probeCollectionDisplay(display, getProbeName, root->awar(AWAR_PC_MATCH_COL_WIDTH)->read_int());
-
-    root->awar(AWAR_TREE_REFRESH)->touch();
+    refresh_matched_display_cb(root, ntw, true);
 }
 
