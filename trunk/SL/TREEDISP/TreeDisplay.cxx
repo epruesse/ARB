@@ -1849,25 +1849,7 @@ void AWT_graphic_tree::enumerateClade(AP_tree *at, CladeMatches& matches) {
     td_assert(matches.getCladeSize() == 0);
     if (at->is_leaf) {
         if (at->name) {
-            const char* pDB_MatchString = GBT_read_char_pntr(at->gb_node, "matched_string");
-            if (pDB_MatchString) {
-                for (int probe = 0 ; probe < pcoll.numProbes ; ++probe) {
-                    switch (pDB_MatchString[probe]) {
-                        case '1':
-                            matches.incHit(probe);
-                            break;
-
-                        case '0':
-                            break;
-
-                        default: // invalid char or matched_string too short -> ignore whole branch
-                            matches = CladeMatches(pcoll.numProbes);
-                            return;
-                    }
-                }
-
-                matches.incCladeSize();
-            }
+            pcoll.get_matches(at->name, matches);
         }
     }
     else {
@@ -2768,6 +2750,8 @@ void AWT_graphic_tree::read_tree_settings() {
         pcoll.numProbes                      = aw_root->awar(AWAR_PC_NUM_PROBES)->read_int();
         pcoll.cladeThreshold.marked          = aw_root->awar(AWAR_PC_CLADE_MARKED_THRESHOLD)->read_float() * 0.01;
         pcoll.cladeThreshold.partiallyMarked = aw_root->awar(AWAR_PC_CLADE_PARTIALLY_MARKED_THRESHOLD)->read_float() * 0.01;
+
+        if (!pcoll.numProbes) pcoll.display = false; // avoid problems while exiting arb
     }
 }
 
@@ -2893,9 +2877,10 @@ void AWT_graphic_tree::info(AW_device */*device*/, AW_pos /*x*/, AW_pos /*y*/, A
     aw_message("INFO MESSAGE");
 }
 
-void AWT_graphic_tree::set_probeCollectionDisplay(bool show_collection, get_probe_name get_name, int match_col_width, bool invalidateCache) {
-    pcoll.display  = show_collection;
-    pcoll.get_name = get_name;
+void AWT_graphic_tree::set_probeCollectionDisplay(bool show_collection, get_probe_name get_name, get_probe_matches get_matches, int match_col_width, bool invalidateCache) {
+    pcoll.display     = show_collection;
+    pcoll.get_name    = get_name;
+    pcoll.get_matches = get_matches;
 
     if (invalidateCache) {
         pcoll.cache.erase(pcoll.cache.begin(), pcoll.cache.end());
