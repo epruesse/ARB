@@ -2392,70 +2392,54 @@ static const char *getProbeName(int nProbe) {
     return (*wanted)->name().c_str();
 }
 
-static void refresh_matched_display_cb(AW_root *root, AWT_canvas *ntw, bool clearDisplayCache) {
-    // trigger tree refresh w/o updating 'matched_string'
+class GetMatchesContext {
+    double mismatchThreshold;
+    int    nProbes;
+
+    typedef ArbMatchResultPtrByStringMultiMap          MatchMap;
+    typedef ArbMatchResultPtrByStringMultiMapConstIter MatchMapIter;
+
+    const MatchMap& results;
+public:
+    GetMatchesContext(double misThres, int numProbes)
+        : mismatchThreshold(misThres),
+          nProbes(numProbes),
+          results(get_results_manager().resultsMap())
+    {}
+
+    void detect(std::string speciesName, CladeMatches& matches) const {
+        std::pair<MatchMapIter,MatchMapIter> iter = results.equal_range(speciesName);
+
+        for (; iter.first != iter.second ; ++iter.first) {
+            const ArbMatchResult *pMatchResult = iter.first->second;
+            if (pMatchResult->weight() <= mismatchThreshold) {
+                int nProbe = pMatchResult->index();
+                matches.incHit(nProbe);
+            }
+        }
+        matches.incCladeSize();
+    }
+};
+
+static SmartPtr<GetMatchesContext> getMatchesContext;
+static void getProbeMatches(const char *speciesName, CladeMatches& matches) {
+    getMatchesContext->detect(speciesName, matches);
+}
+
+static void refresh_matchedProbesDisplay_cb(AW_root *root, AWT_canvas *ntw, bool clearDisplayCache) {
+    // setup parameters for display of probe collection matches and trigger tree refresh
     LocallyModify<bool> flag(allow_probe_match_event, false);
 
     AWT_graphic_tree *agt     = DOWNCAST(AWT_graphic_tree*, ntw->gfx);
     bool              display = get_results_manager().hasResults();
-    agt->set_probeCollectionDisplay(display, getProbeName, root->awar(AWAR_PC_MATCH_COL_WIDTH)->read_int(), clearDisplayCache);
+
+    if (display) {
+        getMatchesContext = new GetMatchesContext(root->awar(AWAR_PC_MISMATCH_THRESHOLD)->read_float(),
+                                                  get_probe_collection().probeList().size());
+    }
+    agt->set_probeCollectionDisplay(display, getProbeName, getProbeMatches, root->awar(AWAR_PC_MATCH_COL_WIDTH)->read_int(), clearDisplayCache);
 
     root->awar(AWAR_TREE_REFRESH)->touch();
-}
-
-static void update_species_matched_string(AW_root *root, AWT_canvas *ntw) {
-    ArbMatchResultsManager& g_results_manager = get_results_manager();
-    if (g_results_manager.hasResults()) {
-        int   nProbes        = get_probe_collection().probeList().size();
-        char *pMatchedString = new char[nProbes + 1];
-
-        if (pMatchedString != 0) {
-            GB_push_transaction(ntw->gb_main);
-
-            // Write match results to database
-            double  dMismatchThreshold = root->awar(AWAR_PC_MISMATCH_THRESHOLD)->read_float();
-
-            for (GBDATA *gb_species = GBT_first_species(ntw->gb_main) ;
-                 gb_species ;
-                 gb_species = GBT_next_species(gb_species))
-            {
-                const char *pSpeciesName      = GBT_read_char_pntr(gb_species, "name");
-                GBDATA     *gb_matched_string = GB_search(gb_species, "matched_string", GB_STRING);
-
-                if (pSpeciesName != 0) {
-                    ArbMatchResultPtrByStringMultiMapConstIter  Iter;
-                    ArbMatchResultPtrByStringMultiMapConstIter  Upper;
-                    std::string                                 rKey(pSpeciesName);
-
-                    ::memset(pMatchedString, '0', nProbes);
-
-                    pMatchedString[nProbes] = 0;
-
-                    // Loop through all probes being matched
-                    Iter  = g_results_manager.resultsMap().lower_bound(rKey);
-                    Upper = g_results_manager.resultsMap().upper_bound(rKey);
-
-                    for (; Iter != Upper ; ++Iter) {
-                        const ArbMatchResult *pMatchResult = (*Iter).second;
-
-                        if (pMatchResult->weight() <= dMismatchThreshold) {
-                            int nProbe = pMatchResult->index();
-
-                            pMatchedString[nProbe] = '1';
-                        }
-                    }
-                }
-
-                GB_write_string(gb_matched_string, pMatchedString);
-            }
-
-            GB_pop_transaction(ntw->gb_main);
-
-            delete[] pMatchedString;
-        }
-    }
-
-    refresh_matched_display_cb(root, ntw, true);
 }
 
 // ----------------------------------------------------------------------------
@@ -2600,7 +2584,7 @@ static void probe_match_with_specificity_event(AW_root *root, AWT_canvas *ntw) {
             }
         }
 
-        update_species_matched_string(root, ntw); // also forces a refresh of the phylogenic tree
+        refresh_matchedProbesDisplay_cb(root, ntw, true);
     }
 }
 
@@ -2620,7 +2604,7 @@ static void probe_forget_matches_event(AW_window *aww, ArbPM_Context *pContext) 
 
     get_results_manager().reset();
     root->awar(AWAR_PC_MATCH_NHITS)->write_int(0);
-    update_species_matched_string(root, pContext->ntw); // forces a refresh of the phylogenic tree
+    refresh_matchedProbesDisplay_cb(root, pContext->ntw, true);
 }
 
 // ----------------------------------------------------------------------------
@@ -2649,10 +2633,10 @@ static void markedThresholdChanged_cb(AW_root *root, bool partChanged) {
 }
 
 static void add_threshold_callbacks(AW_root *root, AWT_canvas *ntw) {
-    root->awar(AWAR_PC_MATCH_COL_WIDTH)                 ->add_callback(makeRootCallback(refresh_matched_display_cb, ntw, false));
-    root->awar(AWAR_PC_MISMATCH_THRESHOLD)              ->add_callback(makeRootCallback(update_species_matched_string, ntw));
-    root->awar(AWAR_PC_CLADE_MARKED_THRESHOLD)          ->add_callback(makeRootCallback(markedThresholdChanged_cb,     false));
-    root->awar(AWAR_PC_CLADE_PARTIALLY_MARKED_THRESHOLD)->add_callback(makeRootCallback(markedThresholdChanged_cb,     true));
+    root->awar(AWAR_PC_MATCH_COL_WIDTH)                 ->add_callback(makeRootCallback(refresh_matchedProbesDisplay_cb, ntw, false));
+    root->awar(AWAR_PC_MISMATCH_THRESHOLD)              ->add_callback(makeRootCallback(refresh_matchedProbesDisplay_cb, ntw, true));
+    root->awar(AWAR_PC_CLADE_MARKED_THRESHOLD)          ->add_callback(makeRootCallback(markedThresholdChanged_cb,  false));
+    root->awar(AWAR_PC_CLADE_PARTIALLY_MARKED_THRESHOLD)->add_callback(makeRootCallback(markedThresholdChanged_cb,  true));
 }
 
 AW_window *create_probe_match_with_specificity_window(AW_root *root, AWT_canvas *ntw) {

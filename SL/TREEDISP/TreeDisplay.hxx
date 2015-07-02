@@ -143,8 +143,6 @@ enum CollapseMode {
     EXPAND_ZOMBIES    = 16, // do not collapse groups containing zombies
 };
 
-typedef const char *(*get_probe_name)(int nProbe);
-
 class CladeMatches {
     int              cladeSize; // number of species in clade
     std::vector<int> probe; // how often each probe does match in clade
@@ -177,6 +175,9 @@ public:
     }
 };
 typedef std::map<AP_tree*,CladeMatches> CladeCache;
+
+typedef const char *(*get_probe_name)(int nProbe);
+typedef void (*get_probe_matches)(const char *speciesName, CladeMatches& matches);
 
 class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
     char         *species_name;
@@ -225,8 +226,9 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
             double marked;
             double partiallyMarked;
         } cladeThreshold;
-        get_probe_name get_name;
-        CladeCache     cache;
+        get_probe_name    get_name;
+        get_probe_matches get_matches;
+        CladeCache        cache;
 
         pcoll_display_settings() : display(false) {}
     } pcoll;
@@ -354,7 +356,7 @@ public:
     void show_ruler(AW_device *device, int gc);
     void get_zombies_and_duplicates(int& zomb, int& dups) const { zomb = zombies; dups = duplicates; }
 
-    void set_probeCollectionDisplay(bool show_collection, get_probe_name get_name, int match_col_width, bool invalidateCache);
+    void set_probeCollectionDisplay(bool show_collection, get_probe_name get_name, get_probe_matches get_matches, int match_col_width, bool invalidateCache);
 
 #if defined(UNIT_TESTS) // UT_DIFF
     friend class fake_AWT_graphic_tree;
