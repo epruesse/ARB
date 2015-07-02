@@ -2380,17 +2380,6 @@ static void probe_match_with_specificity_edit_event() {
 
 // ----------------------------------------------------------------------------
 
-static const char *getProbeName(int nProbe) { // @@@ inline
-    const ArbProbePtrList&   rProbeList = get_probe_collection().probeList();
-    ArbProbePtrListConstIter wanted     = rProbeList.begin();
-
-    if (nProbe>=0 && nProbe<int(rProbeList.size())) advance(wanted, nProbe);
-    else wanted = rProbeList.end();
-
-    if (wanted == rProbeList.end()) return GBS_global_string("<invalid probeindex %i>", nProbe);
-    return (*wanted)->name().c_str();
-}
-
 class GetMatchesContext { // @@@ merge with ProbeCollDisplay?
     double mismatchThreshold;
     int    nProbes;
@@ -2421,9 +2410,6 @@ public:
 };
 
 static SmartPtr<GetMatchesContext> getMatchesContext;
-static void getProbeMatches(const char *speciesName, NodeMarkers& matches) { // @@@ inline
-    getMatchesContext->detect(speciesName, matches);
-}
 
 class ProbeCollDisplay : public MarkerDisplay {
 public:
@@ -2433,10 +2419,17 @@ public:
 
     // MarkerDisplay interface
     const char *get_marker_name(int markerIdx) const OVERRIDE {
-        return getProbeName(markerIdx);
+        const ArbProbePtrList&   rProbeList = get_probe_collection().probeList();
+        ArbProbePtrListConstIter wanted     = rProbeList.begin();
+
+        if (markerIdx>=0 && markerIdx<int(rProbeList.size())) advance(wanted, markerIdx);
+        else wanted = rProbeList.end();
+
+        if (wanted == rProbeList.end()) return GBS_global_string("<invalid probeindex %i>", markerIdx);
+        return (*wanted)->name().c_str();
     }
     void retrieve_marker_state(const char *speciesName, NodeMarkers& matches) OVERRIDE {
-        getProbeMatches(speciesName, matches);
+        getMatchesContext->detect(speciesName, matches);
     }
 };
 

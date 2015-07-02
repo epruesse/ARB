@@ -210,9 +210,6 @@ public:
     int size() const { return numMarkers; }
 };
 
-typedef const char *(*get_probe_name)(int nProbe); // @@@ mv into MarkerDisplay
-typedef void (*get_probe_matches)(const char *speciesName, NodeMarkers& matches); // @@@ mv into MarkerDisplay
-
 class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
     char         *species_name;
     AW::Position  cursor;
