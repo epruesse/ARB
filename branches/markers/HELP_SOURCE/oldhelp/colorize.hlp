@@ -1,0 +1,32 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+SUB	mark.hlp
+SUB	color.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Colorizing marked items / Marking colored items
+
+OCCURRENCE	Species/Colors
+                Genes/Colors
+                Organisms/Colors
+                Experiments/Colors
+
+DESCRIPTION     Allows to toggle between colored and marked items.
+
+                First select which color group should be targeted on the right side.
+
+                Then select an action by clicking onto one of the action buttons on
+                the left side.
+
+NOTES		You can define the color names in properties.
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known

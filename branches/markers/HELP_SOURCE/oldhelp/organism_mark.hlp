@@ -1,0 +1,32 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+SUB	mark.hlp
+SUB	organisms.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Marking Organisms
+
+OCCURRENCE	ARB_NT/Organisms/Gene-Species/...
+                ARB_GENE_MAP/Organisms/...
+
+DESCRIPTION     Marking organisms works similar to marking species.
+
+		You can select to
+
+			- mark all organisms
+			- mark all organisms and unmark all other species
+			- unmark all organisms or
+			- invert marks of all organisms.
+
+NOTES		None
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known
