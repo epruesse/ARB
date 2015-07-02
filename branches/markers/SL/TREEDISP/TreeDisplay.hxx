@@ -50,8 +50,10 @@
 // see also ../../PROBE_DESIGN/probe_design.cxx@AWAR_PC_
 
 #define AWAR_PC_NUM_PROBES                       "probe_collection/number_of_probes"                 // @@@ dont use awar: pass via MarkerDisplay
+
 #define AWAR_PC_CLADE_MARKED_THRESHOLD           "probe_collection/clade_marked_threshold"           // @@@ change store-location + name
 #define AWAR_PC_CLADE_PARTIALLY_MARKED_THRESHOLD "probe_collection/clade_partially_marked_threshold" // @@@ change store-location + name
+#define AWAR_PC_MATCH_COL_WIDTH                  "probe_collection/match_col_width"                  // @@@ change store-location + name
 
 
 #define NT_BOX_WIDTH      7 // pixel
@@ -178,9 +180,35 @@ public:
         nodeSize += other.nodeSize;
     }
 };
-typedef std::map<AP_tree*,NodeMarkers> GroupMarkerCache;
 
- // @@@ define base class MarkerDisplay
+class MarkerDisplay {
+    // defines which markers shall be displayed
+
+    typedef std::map<const AP_tree*,NodeMarkers> GroupMarkerCache;
+
+    GroupMarkerCache cache;
+    int              numMarkers;
+
+public:
+    MarkerDisplay(int numMarkers_)
+        : numMarkers(numMarkers_)
+    {
+        td_assert(numMarkers>0);
+    }
+    virtual ~MarkerDisplay() {}
+
+    virtual const char *get_marker_name(int markerIdx) const                          = 0;
+    virtual void retrieve_marker_state(const char *speciesName, NodeMarkers& matches) = 0;
+
+    const NodeMarkers *read_cache(const AP_tree *at) const {
+        GroupMarkerCache::const_iterator found = cache.find(at);
+        return found == cache.end() ? NULL : &found->second;
+    }
+    void write_cache(const AP_tree *at, const NodeMarkers& markers) { cache[at] = markers; }
+    void flush_cache() { cache.erase(cache.begin(), cache.end()); }
+
+    int size() const { return numMarkers; }
+};
 
 typedef const char *(*get_probe_name)(int nProbe); // @@@ mv into MarkerDisplay
 typedef void (*get_probe_matches)(const char *speciesName, NodeMarkers& matches); // @@@ mv into MarkerDisplay
@@ -225,22 +253,14 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
 
     bool nds_show_all;
 
-    struct pcoll_display_settings { // @@@ replace by ptr to MarkerDisplay
-        bool display;
-        int  numProbes;
-        struct {
-            double marked;
-            double partiallyMarked;
-        } cladeThreshold;
-        get_probe_name    get_name;
-        get_probe_matches get_matches;
-        GroupMarkerCache  cache;
-
-        pcoll_display_settings() : display(false) {}
-    } pcoll;
+    MarkerDisplay *display_markers;
+    struct {
+        double marked;
+        double partiallyMarked;
+    } groupThreshold;
 
     AD_map_viewer_cb  map_viewer_cb;
-    AWT_command_data  *cmd_data;
+    AWT_command_data *cmd_data;
 
     AP_tree_root *tree_static;
 
@@ -362,8 +382,15 @@ public:
     void show_ruler(AW_device *device, int gc);
     void get_zombies_and_duplicates(int& zomb, int& dups) const { zomb = zombies; dups = duplicates; }
 
-    void set_probeCollectionDisplay(bool show_collection, get_probe_name get_name, get_probe_matches get_matches, int match_col_width, bool invalidateCache); // @@@ pass instance of MarkerDisplay; rename -> defineMarkerDisplay
-    // @@@ add getMarkerDisplay
+    void hide_marker_display() {
+        delete display_markers;
+        display_markers = NULL;
+    }
+    void set_marker_display(MarkerDisplay *display) { // takes ownership of 'display'
+        hide_marker_display();
+        display_markers = display;
+    }
+    MarkerDisplay *get_marker_display() { return display_markers; }
 
 #if defined(UNIT_TESTS) // UT_DIFF
     friend class fake_AWT_graphic_tree;
@@ -387,7 +414,7 @@ class ClickedTarget {
 
     bool ruler;
     bool branch;
-    int  matchflag; // = probe number + 1
+    int  matchflag; // = probe number + 1 // @@@ rename -> markerflag
 
     const AW_clicked_element *elem;
 
@@ -449,13 +476,13 @@ public:
     const AW_clicked_element *element() const { return elem; }
     AP_tree *node() const { return tree_node; }
     GBDATA *species() const { return gb_species; }
-    int get_probeindex() const { return matchflag-1; }
+    int get_probeindex() const { return matchflag-1; } // @@@ rename -> get_markerindex
 
     bool is_text() const { return elem && elem->is_text(); }
     bool is_line() const { return elem && elem->is_line(); }
     bool is_branch() const { return branch; }
     bool is_ruler() const { return ruler; }
-    bool is_matchflag() const { return matchflag; }
+    bool is_matchflag() const { return matchflag; } // @@@ rename -> is_marker
 
     double get_rel_attach() const {
         // return [0..1] according to exact position where element is dropped

@@ -107,7 +107,6 @@
 
 // probe collection matching control parameters
 #define AWAR_PC_MISMATCH_THRESHOLD "probe_collection/mismatch_threshold"
-#define AWAR_PC_MATCH_COL_WIDTH    "probe_collection/match_col_width"
 
 #define REPLACE_TARGET_CONTROL_CHARS ":#=_:\\:=_"
 
@@ -2381,7 +2380,7 @@ static void probe_match_with_specificity_edit_event() {
 
 // ----------------------------------------------------------------------------
 
-static const char *getProbeName(int nProbe) {
+static const char *getProbeName(int nProbe) { // @@@ inline
     const ArbProbePtrList&   rProbeList = get_probe_collection().probeList();
     ArbProbePtrListConstIter wanted     = rProbeList.begin();
 
@@ -2392,7 +2391,7 @@ static const char *getProbeName(int nProbe) {
     return (*wanted)->name().c_str();
 }
 
-class GetMatchesContext {
+class GetMatchesContext { // @@@ merge with ProbeCollDisplay?
     double mismatchThreshold;
     int    nProbes;
 
@@ -2422,9 +2421,24 @@ public:
 };
 
 static SmartPtr<GetMatchesContext> getMatchesContext;
-static void getProbeMatches(const char *speciesName, NodeMarkers& matches) {
+static void getProbeMatches(const char *speciesName, NodeMarkers& matches) { // @@@ inline
     getMatchesContext->detect(speciesName, matches);
 }
+
+class ProbeCollDisplay : public MarkerDisplay {
+public:
+    ProbeCollDisplay(int numProbes)
+        : MarkerDisplay(numProbes)
+    {}
+
+    // MarkerDisplay interface
+    const char *get_marker_name(int markerIdx) const OVERRIDE {
+        return getProbeName(markerIdx);
+    }
+    void retrieve_marker_state(const char *speciesName, NodeMarkers& matches) OVERRIDE {
+        getProbeMatches(speciesName, matches);
+    }
+};
 
 static void refresh_matchedProbesDisplay_cb(AW_root *root, AWT_canvas *ntw, bool clearDisplayCache) {
     // setup parameters for display of probe collection matches and trigger tree refresh
@@ -2436,8 +2450,18 @@ static void refresh_matchedProbesDisplay_cb(AW_root *root, AWT_canvas *ntw, bool
     if (display) {
         getMatchesContext = new GetMatchesContext(root->awar(AWAR_PC_MISMATCH_THRESHOLD)->read_float(),
                                                   get_probe_collection().probeList().size());
+
+        MarkerDisplay *markerDisplay = agt->get_marker_display();
+        if (markerDisplay) {
+            if (clearDisplayCache) markerDisplay->flush_cache();
+        }
+        else {
+            agt->set_marker_display(new ProbeCollDisplay(get_probe_collection().probeList().size()));
+        }
     }
-    agt->set_probeCollectionDisplay(display, getProbeName, getProbeMatches, root->awar(AWAR_PC_MATCH_COL_WIDTH)->read_int(), clearDisplayCache);
+    else {
+        agt->hide_marker_display();
+    }
 
     root->awar(AWAR_TREE_REFRESH)->touch();
 }
