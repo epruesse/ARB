@@ -2407,22 +2407,22 @@ public:
           results(get_results_manager().resultsMap())
     {}
 
-    void detect(std::string speciesName, CladeMatches& matches) const {
+    void detect(std::string speciesName, NodeMarkers& matches) const {
         std::pair<MatchMapIter,MatchMapIter> iter = results.equal_range(speciesName);
 
         for (; iter.first != iter.second ; ++iter.first) {
             const ArbMatchResult *pMatchResult = iter.first->second;
             if (pMatchResult->weight() <= mismatchThreshold) {
                 int nProbe = pMatchResult->index();
-                matches.incHit(nProbe);
+                matches.incMarker(nProbe);
             }
         }
-        matches.incCladeSize();
+        matches.incNodeSize();
     }
 };
 
 static SmartPtr<GetMatchesContext> getMatchesContext;
-static void getProbeMatches(const char *speciesName, CladeMatches& matches) {
+static void getProbeMatches(const char *speciesName, NodeMarkers& matches) {
     getMatchesContext->detect(speciesName, matches);
 }
 
