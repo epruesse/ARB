@@ -383,13 +383,13 @@ int probe_match(PT_local *locs, aisc_string probestring) {
     }
 #endif // DEBUG
 
-    int probe_len = strlen(probestring);
+    int  probe_len = strlen(probestring);
+    bool failed    = false;
     if (probe_len<MIN_PROBE_LENGTH) {
         pt_export_error(locs, GBS_global_string("Min. probe length is %i", MIN_PROBE_LENGTH));
-        return 0;
+        failed = true;
     }
-
-    {
+    else {
         int max_poss_mismatches = probe_len/2;
         pt_assert(max_poss_mismatches>0);
         if (locs->pm_max > max_poss_mismatches) {
@@ -397,38 +397,40 @@ int probe_match(PT_local *locs, aisc_string probestring) {
                                                     max_poss_mismatches,
                                                     max_poss_mismatches == 1 ? "" : "es",
                                                     probe_len));
-            return 0;
+            failed = true;
         }
     }
 
-    if (locs->pm_complement) {
-        complement_probe(probestring, probe_len);
+    if (!failed) {
+        if (locs->pm_complement) {
+            complement_probe(probestring, probe_len);
+        }
+        psg.reversed = 0;
+
+        freedup(locs->pm_sequence, probestring);
+        psg.main_probe = locs->pm_sequence;
+
+        pt_build_pos_to_weight((PT_MATCH_TYPE)locs->sort_by, probestring);
+
+        MatchRequest req(*locs, probe_len);
+
+        pt_assert(req.allowed_mismatches() >= 0); // till [8011] value<0 was used to trigger "new match" (feature unused)
+        Mismatches mismatch(req);
+        req.collect_hits_for(probestring, psg.TREE_ROOT2(), mismatch, 0);
+
+        if (locs->pm_reversed) {
+            psg.reversed  = 1;
+            char *rev_pro = create_reversed_probe(probestring, probe_len);
+            complement_probe(rev_pro, probe_len);
+            freeset(locs->pm_csequence, psg.main_probe = strdup(rev_pro));
+
+            Mismatches rev_mismatch(req);
+            req.collect_hits_for(rev_pro, psg.TREE_ROOT2(), rev_mismatch, 0);
+            free(rev_pro);
+        }
+        pt_sort_match_list(locs);
+        splits_for_match_overlay[locs] = Splits(locs);
     }
-    psg.reversed = 0;
-
-    freedup(locs->pm_sequence, probestring);
-    psg.main_probe = locs->pm_sequence;
-
-    pt_build_pos_to_weight((PT_MATCH_TYPE)locs->sort_by, probestring);
-
-    MatchRequest req(*locs, probe_len);
-
-    pt_assert(req.allowed_mismatches() >= 0); // till [8011] value<0 was used to trigger "new match" (feature unused)
-    Mismatches mismatch(req);
-    req.collect_hits_for(probestring, psg.TREE_ROOT2(), mismatch, 0);
-
-    if (locs->pm_reversed) {
-        psg.reversed  = 1;
-        char *rev_pro = create_reversed_probe(probestring, probe_len);
-        complement_probe(rev_pro, probe_len);
-        freeset(locs->pm_csequence, psg.main_probe = strdup(rev_pro));
-
-        Mismatches rev_mismatch(req);
-        req.collect_hits_for(rev_pro, psg.TREE_ROOT2(), rev_mismatch, 0);
-        free(rev_pro);
-    }
-    pt_sort_match_list(locs);
-    splits_for_match_overlay[locs] = Splits(locs);
     free(probestring);
 
     return 0;
