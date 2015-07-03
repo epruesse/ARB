@@ -1,0 +1,49 @@
+[Tue Dec 24 11:02:23 2013: ARB consensus tree build from 3 trees:
+ - consense/7/disjunct_del2_1.tree (86.7%; 13/15)
+ - consense/7/disjunct_del2_2.tree (86.7%; 13/15)
+ - consense/7/disjunct_del2_3.tree (86.7%; 13/15)
+Tue Dec 24 11:02:23 2013: tree_overlap_mostly saved to consense/7/overlap_mostly.tree
+]
+(
+  (
+    EbiProka:0.05276,
+    (
+      EbiProk2:0.06546,
+      (
+        DewArcha:0.05453,
+        (
+          DewArch2:0.06831,
+          (
+            DewArch3:0.08434,
+            (
+              DewArch4:0.01016,
+              NoName00:0.01261
+            )67:0.04936
+          )67:0.02020
+        )67:0.01245
+      )67:0.01663
+    )67:0.29652
+  )0:0.27721,
+  (
+    (
+      DewBact2:0.03635,
+      DewBacte:0.02655
+    )67:0.02551,
+    (
+      EbiProk3:0.07157,
+      (
+        (
+          EbiProk4:0.08063,
+          EbiProk5:0.05996
+        )67:0.01546,
+        (
+          DewBact5:0.02497,
+          (
+            DewBact3:0.02732,
+            DewBact4:0.02121
+          )67:0.02367
+        )67:0.03519
+      )67:0.05375
+    )67:0.02016
+  )0:0.27721
+);
