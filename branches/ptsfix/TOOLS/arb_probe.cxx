@@ -1435,7 +1435,7 @@ void TEST_SLOW_match_probe() {
             "PtVVVulg\1" "  PtVVVulg            8     0 10.7  84    72 0   GAGCGGCGG-=======a=U======G=U===========C===ACC=-UGACUGGGG\1"
             "AclPleur\1" "  AclPleur            9     0 10.8  84    72 0   GAGUGGCGG-=======a========u=UA==========Cg=AA=C=-UGACUGGGG\1"
             "PsAAAA00\1" "  PsAAAA00           10     0 11.9  84    72 0   CAGCGGCGG-======gu=C======G==C==========C==ACgC=-UGGUAACAA\1"
-            "LgtLytic\1" "  LgtLytic           10     0 12.8  84    72 0   GAGUGGCGA-=======uG=======uCAA==========C==AA=C=-UGACUGGGG\1"
+            "LgtLytic\1" "  LgtLytic           10     0 12.8  84    72 0   GAGNGGCGA-=======uG=======uCAA==========C==AA=C=-UGACUGGGG\1"
             "VbrFurni\1" "  VbrFurni           10     0 12.8  84    72 0   GAGCGGCGG-======CauU======GAU===========C===A=C=-UGACUGGGG\1"
             "VblVulni\1" "  VblVulni           10     0 12.8  84    72 0   GAGCGGCGG-======CauU======GAU===========C===A=C=-UGACUGGGG\1"
             "Stsssola\1" "  Stsssola           10     0 12.9  84    72 0   AAGUGGCGC-======gG=U======G=UC=============AACA=-UGAUUGGGG\1"
@@ -1788,7 +1788,7 @@ void TEST_SLOW_design_probe() {
             "GAAACGGGC  9 C-  4   83    5    1  66.7 30.0 GCCCGUUUC | - -  -  -  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1\n"
             "GCCGUAGGA  9 I=152  138    3    1  66.7 30.0 UCCUACGGC | 1 1  8  8  8  8  8  8  8  8  8  8  9  9  9  9  9  9 12 12\n"
             "CCGUAGGAG  9 I+  1  139    3    1  66.7 30.0 CUCCUACGG | 1 1 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 11 11\n"
-            "GUCGAGCGA  9 A-  7   21    3    1  66.7 30.0 UCGCUCGAC | 3 3 11 11 11 11 11 11 11 11 11 11 11 11 11 12 12 12 12 14\n";
+            "GUCGAGCGA  9 A-  7   21    3    1  66.7 30.0 UCGCUCGAC | 3 3 11 11 11 11 11 11 11 11 11 11 11 11 11 11 11 11 11 13\n";
 
         TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expected);
     }
@@ -1968,9 +1968,9 @@ void TEST_SLOW_design_probe() {
 #endif
             "UGGGCGGC  8 B=67   60    8    1  87.5 30.0 GCCGCCCA | - - - - - - - 1 1 1 1 1 1 1 1 1 1 1 1 1\n"
 #if defined(RES_64)
-            "CGGCGAGC  8 B+ 4   60    8    1  87.5 30.0 GCUCGCCG | - - - - - - - 2 2 2 2 2 2 2 4 4 4 4 4 4\n"
+            "CGGCGAGC  8 B+ 4   60    8    1  87.5 30.0 GCUCGCCG | - - - - - - - 2 2 2 2 2 2 2 3 3 3 3 3 3\n"
 #else // !defined(RES_64)
-            "CGGCGAGC  8 B+ 4   60    8    1  87.5 30.0 GCUCGCCG | - - - - - - - 2 2 2 2 2 2 2 4 4 4 4 4 5\n"
+            "CGGCGAGC  8 B+ 4   60    8    1  87.5 30.0 GCUCGCCG | - - - - - - - 2 2 2 2 2 2 2 4 4 4 4 4 5\n" // @@@ check whether 32bit result changed
 #endif
             "GGGCGGCG  8 B+ 1   60    8    1 100.0 32.0 CGCCGCCC | - - - - - - - 3 3 3 3 3 3 3 3 3 3 3 3 3\n"
             "GGCGGCGA  8 B+ 2   60    8    1  87.5 30.0 UCGCCGCC | - - - - - - - 3 3 3 3 3 3 3 3 3 3 3 3 3\n"
