@@ -562,7 +562,7 @@ const char *get_match_overlay(const PT_probematch *ml) {
                     int r = base_2_readable(ts);
                     if (is_std_base(ps) && is_std_base(ts)) {
                         double h = splits.check(ml->sequence[pr_pos], ts);
-                        if (h>=0.0) r = tolower(r);
+                        if (h>=0.0) r = tolower(r); // if mismatch does not split probe into two domains -> show as lowercase
                     }
                     pref[pr_pos] = r;
                 }
