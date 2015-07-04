@@ -1970,7 +1970,7 @@ void TEST_SLOW_design_probe() {
 #if defined(RES_64)
             "CGGCGAGC  8 B+ 4   60    8    1  87.5 30.0 GCUCGCCG | - - - - - - - 2 2 2 2 2 2 2 3 3 3 3 3 3\n"
 #else // !defined(RES_64)
-            "CGGCGAGC  8 B+ 4   60    8    1  87.5 30.0 GCUCGCCG | - - - - - - - 2 2 2 2 2 2 2 4 4 4 4 4 5\n" // @@@ check whether 32bit result changed
+            "CGGCGAGC  8 B+ 4   60    8    1  87.5 30.0 GCUCGCCG | - - - - - - - 2 2 2 2 2 2 2 4 4 4 4 4 5\n"
 #endif
             "GGGCGGCG  8 B+ 1   60    8    1 100.0 32.0 CGCCGCCC | - - - - - - - 3 3 3 3 3 3 3 3 3 3 3 3 3\n"
             "GGCGGCGA  8 B+ 2   60    8    1  87.5 30.0 UCGCCGCC | - - - - - - - 3 3 3 3 3 3 3 3 3 3 3 3 3\n"
