@@ -113,7 +113,10 @@ public:
 
     double check(char base, char ref) const {
         pt_assert(valid);
-        pt_assert(is_std_base(base) && is_std_base(ref));
+
+        pt_assert(is_std_base(base));
+        pt_assert(is_std_base(ref));
+
         return split[safeCharIndex(base)][safeCharIndex(ref)];
     }
 };

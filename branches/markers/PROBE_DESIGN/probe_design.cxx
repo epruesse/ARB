@@ -757,7 +757,7 @@ static void probe_match_event(const ProbeMatchSettings& matchSettings, ProbeMatc
         Maybe dontReadAwars;
         Maybe dontWriteAwars;
 
-        if (!event_param->selection_id) {
+        if (!event_param || !event_param->selection_id) {
             dontReadAwars = new LocallyModify<bool>(AW_awar::deny_read, true);
             dontWriteAwars = new LocallyModify<bool>(AW_awar::deny_write, true);
         }
@@ -1078,7 +1078,7 @@ static void probe_match_event(const ProbeMatchSettings& matchSettings, ProbeMatc
         }
 
         if (error) {
-            event_param->hits_summary = "[none]"; // clear hits
+            if (event_param) event_param->hits_summary = "[none]"; // clear hits
             aw_message(error);
         }
         else {
@@ -1120,11 +1120,13 @@ static void probe_match_event_using_awars(AW_root *root, ProbeMatchEventParam *e
 
         LocallyModify<bool> flag(allow_probe_match_event, false);
 
-        if (event_param->refresh_sai_display) {
-            root->awar(AWAR_SPV_DB_FIELD_NAME)->touch(); // force refresh of SAI/Probe window
-        }
-        if (event_param->selection_id) {
-            root->awar(AWAR_PD_MATCH_NHITS)->write_string(event_param->hits_summary.c_str()); // update hits in probe match window
+        if (event_param) {
+            if (event_param->refresh_sai_display) {
+                root->awar(AWAR_SPV_DB_FIELD_NAME)->touch(); // force refresh of SAI/Probe window
+            }
+            if (event_param->selection_id) {
+                root->awar(AWAR_PD_MATCH_NHITS)->write_string(event_param->hits_summary.c_str()); // update hits in probe match window
+            }
         }
         root->awar(AWAR_TREE_REFRESH)->touch(); // refresh tree
     }
