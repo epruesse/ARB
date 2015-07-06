@@ -2300,8 +2300,6 @@ static AW_window *create_probe_match_specificity_control_window(AW_root *root) {
 
         aws->at_newline();
 
-        // @@@ move controls below to TreeDisplay
-
         aws->label("Clade marked threshold");
         aws->create_input_field_with_scaler(AWAR_DTREE_GROUP_MARKED_THRESHOLD, FIELDSIZE, SCALERSIZE);
 
@@ -2312,8 +2310,10 @@ static AW_window *create_probe_match_specificity_control_window(AW_root *root) {
 
         aws->at_newline();
 
-        aws->label("Marker width");
-        aws->create_input_field_with_scaler(AWAR_DTREE_MARKER_WIDTH, FIELDSIZE, SCALERSIZE);
+        aws->callback(TREE_create_marker_settings_window);
+        aws->create_autosize_button("MARKER_SETTINGS", "Marker display settings", "d");
+
+        aws->at_newline();
     }
 
     return aws;

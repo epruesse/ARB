@@ -3088,6 +3088,49 @@ AW_window *TREE_create_settings_window(AW_root *aw_root) {
 
 // --------------------------------------------------------------------------------
 
+AW_window *TREE_create_marker_settings_window(AW_root *root) {
+    static AW_window_simple *aws = NULL;
+
+    if (!aws) {
+        aws = new AW_window_simple;
+
+        aws->init(root, "MARKER_SETTINGS", "Tree marker settings");
+
+        aws->auto_space(10, 10);
+
+        aws->callback((AW_CB0)AW_POPDOWN);
+        aws->create_button("CLOSE", "CLOSE", "C");
+
+        aws->callback(makeHelpCallback("nt_tree_marker_settings.hlp"));
+        aws->create_button("HELP", "HELP", "H");
+
+        aws->at_newline();
+
+        const int FIELDSIZE  = 5;
+        const int SCALERSIZE = 250;
+        aws->label_length(35);
+
+        aws->label("Group marked threshold");
+        aws->create_input_field_with_scaler(AWAR_DTREE_GROUP_MARKED_THRESHOLD, FIELDSIZE, SCALERSIZE);
+
+        aws->at_newline();
+
+        aws->label("Group partially marked threshold");
+        aws->create_input_field_with_scaler(AWAR_DTREE_GROUP_PARTIALLY_MARKED_THRESHOLD, FIELDSIZE, SCALERSIZE);
+
+        aws->at_newline();
+
+        aws->label("Marker width");
+        aws->create_input_field_with_scaler(AWAR_DTREE_MARKER_WIDTH, FIELDSIZE, SCALERSIZE);
+
+        aws->at_newline();
+    }
+
+    return aws;
+}
+
+// --------------------------------------------------------------------------------
+
 #ifdef UNIT_TESTS
 #include <test_unit.h>
 #include <../../WINDOW/aw_common.hxx>

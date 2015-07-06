@@ -485,6 +485,7 @@ void       TREE_create_awars(AW_root *aw_root, AW_default db);
 void       TREE_install_update_callbacks(AWT_canvas *ntw);
 void       TREE_insert_jump_option_menu(AW_window *aws, const char *label, const char *awar_name);
 AW_window *TREE_create_settings_window(AW_root *aw_root);
+AW_window *TREE_create_marker_settings_window(AW_root *root);
 
 AWT_graphic_tree *NT_generate_tree(AW_root *root, GBDATA *gb_main, AD_map_viewer_cb map_viewer_cb);
 
