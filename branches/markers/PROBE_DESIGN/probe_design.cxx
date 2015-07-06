@@ -1193,36 +1193,44 @@ static void selected_match_changed_cb(AW_root *root) {
     free(selected_match);
 }
 
-static void probelength_changed_cb(AW_root *root, bool min_changed) {
-    AW_awar *awar_minl = root->awar(AWAR_PD_DESIGN_MIN_LENGTH);
-    AW_awar *awar_maxl = root->awar(AWAR_PD_DESIGN_MAX_LENGTH);
+static void probelength_changed_cb(AW_root *root, bool maxChanged) {
+    static bool avoid_recursion = false;
+    if (!avoid_recursion) {
+        AW_awar *awar_minl = root->awar(AWAR_PD_DESIGN_MIN_LENGTH);
+        AW_awar *awar_maxl = root->awar(AWAR_PD_DESIGN_MAX_LENGTH);
 
-    int minl = awar_minl->read_int();
-    int maxl = awar_maxl->read_int();
+        int minl = awar_minl->read_int();
+        int maxl = awar_maxl->read_int();
 
-    if (minl>maxl) {
-        if (min_changed) awar_maxl->write_int(minl);
-        else             awar_minl->write_int(maxl);
+        if (minl>maxl) {
+            if (maxChanged) awar_minl->write_int(maxl);
+            else            awar_maxl->write_int(minl);
+        }
     }
 }
 
-static void gc_minmax_changed_cb(AW_root *root, bool maxChanged) {
+static void minmax_awar_pair_changed_cb(AW_root *root, bool maxChanged, const char *minAwarName, const char *maxAwarName) {
     static bool avoid_recursion = false;
     if (!avoid_recursion) {
         LocallyModify<bool> flag(avoid_recursion, true);
 
-        AW_awar *awar_minGC = root->awar(AWAR_PD_DESIGN_MIN_GC);
-        AW_awar *awar_maxGC = root->awar(AWAR_PD_DESIGN_MAX_GC);
+        AW_awar *awar_min = root->awar(minAwarName);
+        AW_awar *awar_max = root->awar(maxAwarName);
 
-        if (maxChanged) {
-            float currMax = awar_maxGC->read_float();
-            if (currMax>0) awar_minGC->set_minmax(0.0, currMax);
-        }
-        else {
-            float currMin = awar_minGC->read_float();
-            if (currMin<100.0) awar_maxGC->set_minmax(currMin, 100.0);
+        double currMin = awar_min->read_float();
+        double currMax = awar_max->read_float();
+
+        if (currMin>currMax) { // invalid -> correct
+            if (maxChanged) awar_min->write_float(currMax);
+            else            awar_max->write_float(currMin);
         }
     }
+}
+static void gc_minmax_changed_cb(AW_root *root, bool maxChanged) {
+    minmax_awar_pair_changed_cb(root, maxChanged, AWAR_PD_DESIGN_MIN_GC, AWAR_PD_DESIGN_MAX_GC);
+}
+static void temp_minmax_changed_cb(AW_root *root, bool maxChanged) {
+    minmax_awar_pair_changed_cb(root, maxChanged, AWAR_PD_DESIGN_MIN_TEMP, AWAR_PD_DESIGN_MAX_TEMP);
 }
 
 void create_probe_design_variables(AW_root *root, AW_default props, AW_default db) {
@@ -1253,17 +1261,14 @@ void create_probe_design_variables(AW_root *root, AW_default props, AW_default d
     root->awar_float(AWAR_PD_DESIGN_MINTARGETS, 50.0, props)->set_minmax(0, 100);
 
     AW_awar *awar_min_len = root->awar_int(AWAR_PD_DESIGN_MIN_LENGTH, 18, props);
-    awar_min_len->set_minmax(DOMAIN_MIN_LENGTH, 100)->add_callback(makeRootCallback(probelength_changed_cb, true));
-    root->awar_int(AWAR_PD_DESIGN_MAX_LENGTH, awar_min_len->read_int(), props)->set_minmax(DOMAIN_MIN_LENGTH, 100)->add_callback(makeRootCallback(probelength_changed_cb, false));
+    awar_min_len->set_minmax(DOMAIN_MIN_LENGTH, 100)->add_callback(makeRootCallback(probelength_changed_cb, false));
+    root->awar_int(AWAR_PD_DESIGN_MAX_LENGTH, awar_min_len->read_int(), props)->set_minmax(DOMAIN_MIN_LENGTH, 100)->add_callback(makeRootCallback(probelength_changed_cb, true));
 
-    root->awar_float(AWAR_PD_DESIGN_MIN_TEMP,     30.0,   props)->set_minmax(0, 1000);
-    root->awar_float(AWAR_PD_DESIGN_MAX_TEMP,     100.0,  props)->set_minmax(0, 1000);
+    root->awar_float(AWAR_PD_DESIGN_MIN_TEMP,     30.0,   props)->set_minmax(0, 1000)->add_callback(makeRootCallback(temp_minmax_changed_cb, false));
+    root->awar_float(AWAR_PD_DESIGN_MAX_TEMP,     100.0,  props)->set_minmax(0, 1000)->add_callback(makeRootCallback(temp_minmax_changed_cb, true));
 
-    AW_awar *awar_minGC = root->awar_float(AWAR_PD_DESIGN_MIN_GC, 50.0,  props);
-    AW_awar *awar_maxGC = root->awar_float(AWAR_PD_DESIGN_MAX_GC, 100.0, props);
-
-    awar_minGC->add_callback(makeRootCallback(gc_minmax_changed_cb, false)); // @@@ weird test (undo or better replace by auto-adjustment of opposite value when gtk-bug is fixed)
-    awar_maxGC->add_callback(makeRootCallback(gc_minmax_changed_cb, true));
+    root->awar_float(AWAR_PD_DESIGN_MIN_GC, 50.0,  props)->add_callback(makeRootCallback(gc_minmax_changed_cb, false));
+    root->awar_float(AWAR_PD_DESIGN_MAX_GC, 100.0, props)->add_callback(makeRootCallback(gc_minmax_changed_cb, true));
 
     gc_minmax_changed_cb(root, false);
     gc_minmax_changed_cb(root, true);
