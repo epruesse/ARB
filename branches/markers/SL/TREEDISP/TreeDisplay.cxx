@@ -2749,9 +2749,9 @@ void AWT_graphic_tree::read_tree_settings() {
     freeset(species_name, aw_root->awar(AWAR_SPECIES_NAME)->read_string());
 
     if (display_markers) {
-        groupThreshold.marked          = aw_root->awar(AWAR_PC_CLADE_MARKED_THRESHOLD)->read_float() * 0.01;
-        groupThreshold.partiallyMarked = aw_root->awar(AWAR_PC_CLADE_PARTIALLY_MARKED_THRESHOLD)->read_float() * 0.01;
-        MarkerXPos::marker_width       = aw_root->awar(AWAR_PC_MATCH_COL_WIDTH)->read_int();
+        groupThreshold.marked          = aw_root->awar(AWAR_DTREE_GROUP_MARKED_THRESHOLD)->read_float() * 0.01;
+        groupThreshold.partiallyMarked = aw_root->awar(AWAR_DTREE_GROUP_PARTIALLY_MARKED_THRESHOLD)->read_float() * 0.01;
+        MarkerXPos::marker_width       = aw_root->awar(AWAR_DTREE_MARKER_WIDTH)->read_int();
     }
 }
 
@@ -2883,6 +2883,29 @@ AWT_graphic_tree *NT_generate_tree(AW_root *root, GBDATA *gb_main, AD_map_viewer
     return apdt;
 }
 
+static void markerThresholdChanged_cb(AW_root *root, bool partChanged) {
+    static bool avoid_recursion = false;
+    if (!avoid_recursion) {
+        LocallyModify<bool> flag(avoid_recursion, true);
+
+        AW_awar *awar_marked     = root->awar(AWAR_DTREE_GROUP_MARKED_THRESHOLD);
+        AW_awar *awar_partMarked = root->awar(AWAR_DTREE_GROUP_PARTIALLY_MARKED_THRESHOLD);
+
+        double marked     = awar_marked->read_float();
+        double partMarked = awar_partMarked->read_float();
+
+        if (partMarked>marked) { // unwanted state
+            if (partChanged) {
+                awar_marked->write_float(partMarked);
+            }
+            else {
+                awar_partMarked->write_float(marked);
+            }
+        }
+        root->awar(AWAR_TREE_REFRESH)->touch();
+    }
+}
+
 void TREE_create_awars(AW_root *aw_root, AW_default db) {
     aw_root->awar_int(AWAR_DTREE_BASELINEWIDTH, 1)  ->set_minmax(1,    10);
     aw_root->awar_float(AWAR_DTREE_VERICAL_DIST,  1.0)->set_minmax(0.01, 30);
@@ -2904,6 +2927,10 @@ void TREE_create_awars(AW_root *aw_root, AW_default db) {
     aw_root->awar_int(AWAR_DTREE_RADIAL_XPAD,      150)->set_minmax(-100, 2000);
     aw_root->awar_int(AWAR_DTREE_DENDRO_ZOOM_TEXT, 0);
     aw_root->awar_int(AWAR_DTREE_DENDRO_XPAD,      300)->set_minmax(-100, 2000);
+
+    aw_root->awar_int  (AWAR_DTREE_MARKER_WIDTH,                     3)    ->set_minmax(1, 20);
+    aw_root->awar_float(AWAR_DTREE_GROUP_MARKED_THRESHOLD,           100.0)->set_minmax(0, 100);
+    aw_root->awar_float(AWAR_DTREE_GROUP_PARTIALLY_MARKED_THRESHOLD, 0.0)  ->set_minmax(0, 100);
 
     aw_root->awar_int(AWAR_TREE_REFRESH, 0, db);
 }
@@ -2944,6 +2971,11 @@ void TREE_install_update_callbacks(AWT_canvas *ntw) {
 
     // track selected species (autoscroll)
     awr->awar(AWAR_SPECIES_NAME)->add_callback(makeRootCallback(TREE_auto_jump_cb, ntw, false));
+
+    // refresh on changes of marker display settings
+    awr->awar(AWAR_DTREE_MARKER_WIDTH)                    ->add_callback(expose_cb);
+    awr->awar(AWAR_DTREE_GROUP_MARKED_THRESHOLD)          ->add_callback(makeRootCallback(markerThresholdChanged_cb,  false));
+    awr->awar(AWAR_DTREE_GROUP_PARTIALLY_MARKED_THRESHOLD)->add_callback(makeRootCallback(markerThresholdChanged_cb,  true));
 }
 
 void TREE_insert_jump_option_menu(AW_window *aws, const char *label, const char *awar_name) {

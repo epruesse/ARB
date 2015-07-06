@@ -45,16 +45,9 @@
 #define AWAR_DTREE_DENDRO_ZOOM_TEXT "awt/dtree/dendro/zoomtext"
 #define AWAR_DTREE_DENDRO_XPAD      "awt/dtree/dendro/xpadding"
 
-// ----------------------------------------------------
-// probe collection awars used by TreeDisplay
-// see also ../../PROBE_DESIGN/probe_design.cxx@AWAR_PC_
-
-#define AWAR_PC_NUM_PROBES                       "probe_collection/number_of_probes"                 // @@@ dont use awar: pass via MarkerDisplay
-
-#define AWAR_PC_CLADE_MARKED_THRESHOLD           "probe_collection/clade_marked_threshold"           // @@@ change store-location + name
-#define AWAR_PC_CLADE_PARTIALLY_MARKED_THRESHOLD "probe_collection/clade_partially_marked_threshold" // @@@ change store-location + name
-#define AWAR_PC_MATCH_COL_WIDTH                  "probe_collection/match_col_width"                  // @@@ change store-location + name
-
+#define AWAR_DTREE_GROUP_MARKED_THRESHOLD           "awt/dtree/markers/group_marked_threshold"
+#define AWAR_DTREE_GROUP_PARTIALLY_MARKED_THRESHOLD "awt/dtree/markers/group_partially_marked_threshold"
+#define AWAR_DTREE_MARKER_WIDTH                     "awt/dtree/markers/marker_width"
 
 #define NT_BOX_WIDTH      7 // pixel
 #define NT_ROOT_WIDTH     9

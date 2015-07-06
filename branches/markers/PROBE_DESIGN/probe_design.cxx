@@ -91,7 +91,6 @@
 
 // --------------------------------
 // probe collection awars
-// see also ../SL/TREEDISP/TreeDisplay.hxx@AWAR_PC_
 
 // probe collection window
 #define AWAR_PC_TARGET_STRING      "probe_collection/target_string"
@@ -1303,7 +1302,6 @@ void create_probe_design_variables(AW_root *root, AW_default props, AW_default d
 
     root->awar_int(AWAR_PC_MATCH_NHITS,     0, db);
     root->awar_int(AWAR_PC_AUTO_MATCH,      0, props);
-    root->awar_int(AWAR_PC_MATCH_COL_WIDTH, 3, props)->set_minmax(1, 20);
 
     root->awar_string(AWAR_PC_TARGET_STRING,  "", db)->set_srt(REPLACE_TARGET_CONTROL_CHARS);
     root->awar_string(AWAR_PC_TARGET_NAME,    "", db)->set_srt(REPLACE_TARGET_CONTROL_CHARS);
@@ -1312,9 +1310,7 @@ void create_probe_design_variables(AW_root *root, AW_default props, AW_default d
     root->awar_float(AWAR_PC_MATCH_WIDTH, 1.0, db)->set_minmax(0.01, 100.0);
     root->awar_float(AWAR_PC_MATCH_BIAS,  0.0, db)->set_minmax(-1.0, 1.0);
 
-    root->awar_float(AWAR_PC_MISMATCH_THRESHOLD,                 0.0, db)->set_minmax(0, 100); // Note: limits will be modified by probe_match_with_specificity_event
-    root->awar_float(AWAR_PC_CLADE_MARKED_THRESHOLD,           100.0, db)->set_minmax(0, 100);
-    root->awar_float(AWAR_PC_CLADE_PARTIALLY_MARKED_THRESHOLD,   0.0, db)->set_minmax(0, 100);
+    root->awar_float(AWAR_PC_MISMATCH_THRESHOLD, 0.0, db)->set_minmax(0, 100); // Note: limits will be modified by probe_match_with_specificity_event
 
     double default_weights[16] = {0.0};
     double default_width = 1.0;
@@ -1338,10 +1334,8 @@ void create_probe_design_variables(AW_root *root, AW_default props, AW_default d
 
     // read probes from DB and add them to collection
     {
-        AW_awar *awar_current   = root->awar_string(AWAR_PC_CURRENT_COLLECTION, "", db);
-        AW_awar *awar_numProbes = root->awar_int(AWAR_PC_NUM_PROBES, 0, db);
-
-        char *current = awar_current->read_string();
+        AW_awar *awar_current = root->awar_string(AWAR_PC_CURRENT_COLLECTION, "", db);
+        char    *current      = awar_current->read_string();
 
         if (current && current[0]) {
             // Note: target sequences/names do not contain '#'/':' (see REPLACE_TARGET_CONTROL_CHARS)
@@ -1362,7 +1356,6 @@ void create_probe_design_variables(AW_root *root, AW_default props, AW_default d
                     aw_message(GBS_global_string("Saved probe ignored: has wrong format ('%s', expected 'name:seq')", probe));
                 }
             }
-            awar_numProbes->write_int(g_probe_collection.probeList().size());
         }
         free(current);
     }
@@ -2307,18 +2300,20 @@ static AW_window *create_probe_match_specificity_control_window(AW_root *root) {
 
         aws->at_newline();
 
+        // @@@ move controls below to TreeDisplay
+
         aws->label("Clade marked threshold");
-        aws->create_input_field_with_scaler(AWAR_PC_CLADE_MARKED_THRESHOLD, FIELDSIZE, SCALERSIZE);
+        aws->create_input_field_with_scaler(AWAR_DTREE_GROUP_MARKED_THRESHOLD, FIELDSIZE, SCALERSIZE);
 
         aws->at_newline();
 
         aws->label("Clade partially marked threshold");
-        aws->create_input_field_with_scaler(AWAR_PC_CLADE_PARTIALLY_MARKED_THRESHOLD, FIELDSIZE, SCALERSIZE);
+        aws->create_input_field_with_scaler(AWAR_DTREE_GROUP_PARTIALLY_MARKED_THRESHOLD, FIELDSIZE, SCALERSIZE);
 
         aws->at_newline();
 
         aws->label("Marker width");
-        aws->create_input_field_with_scaler(AWAR_PC_MATCH_COL_WIDTH, FIELDSIZE, SCALERSIZE);
+        aws->create_input_field_with_scaler(AWAR_DTREE_MARKER_WIDTH, FIELDSIZE, SCALERSIZE);
     }
 
     return aws;
@@ -2435,7 +2430,7 @@ public:
     }
 };
 
-static void refresh_matchedProbesDisplay_cb(AW_root *root, AWT_canvas *ntw, bool clearDisplayCache) {
+static void refresh_matchedProbesDisplay_cb(AW_root *root, AWT_canvas *ntw, bool clearDisplayCache) { // @@@ clearDisplayCache is always true
     // setup parameters for display of probe collection matches and trigger tree refresh
     LocallyModify<bool> flag(allow_probe_match_event, false);
 
@@ -2628,34 +2623,8 @@ static void probe_forget_matches_event(AW_window *aww, ArbPM_Context *pContext) 
 
 // ----------------------------------------------------------------------------
 
-static void markedThresholdChanged_cb(AW_root *root, bool partChanged) {
-    static bool avoid_recursion = false;
-    if (!avoid_recursion) {
-        LocallyModify<bool> flag(avoid_recursion, true);
-
-        AW_awar *awar_marked     = root->awar(AWAR_PC_CLADE_MARKED_THRESHOLD);
-        AW_awar *awar_partMarked = root->awar(AWAR_PC_CLADE_PARTIALLY_MARKED_THRESHOLD);
-
-        double marked     = awar_marked->read_float();
-        double partMarked = awar_partMarked->read_float();
-
-        if (partMarked>marked) { // unwanted state
-            if (partChanged) {
-                awar_marked->write_float(partMarked);
-            }
-            else {
-                awar_partMarked->write_float(marked);
-            }
-        }
-        root->awar(AWAR_TREE_REFRESH)->touch();
-    }
-}
-
 static void add_threshold_callbacks(AW_root *root, AWT_canvas *ntw) {
-    root->awar(AWAR_PC_MATCH_COL_WIDTH)                 ->add_callback(makeRootCallback(refresh_matchedProbesDisplay_cb, ntw, false));
     root->awar(AWAR_PC_MISMATCH_THRESHOLD)              ->add_callback(makeRootCallback(refresh_matchedProbesDisplay_cb, ntw, true));
-    root->awar(AWAR_PC_CLADE_MARKED_THRESHOLD)          ->add_callback(makeRootCallback(markedThresholdChanged_cb,  false));
-    root->awar(AWAR_PC_CLADE_PARTIALLY_MARKED_THRESHOLD)->add_callback(makeRootCallback(markedThresholdChanged_cb,  true));
 }
 
 AW_window *create_probe_match_with_specificity_window(AW_root *root, AWT_canvas *ntw) {
@@ -2751,7 +2720,6 @@ static void save_probe_list_to_DB(const ArbProbePtrList& rProbeList, AW_root *ro
     }
 
     root->awar(AWAR_PC_CURRENT_COLLECTION)->write_string(saved.empty() ? "" : saved.c_str()+1);
-    root->awar(AWAR_PC_NUM_PROBES)->write_int(rProbeList.size());
 }
 
 static void show_probes_in_sellist(const ArbProbePtrList& rProbeList, AW_selection_list *sellist) {
