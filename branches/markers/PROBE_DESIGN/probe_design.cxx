@@ -2430,7 +2430,7 @@ public:
     }
 };
 
-static void refresh_matchedProbesDisplay_cb(AW_root *root, AWT_canvas *ntw, bool clearDisplayCache) { // @@@ clearDisplayCache is always true
+static void refresh_matchedProbesDisplay_cb(AW_root *root, AWT_canvas *ntw) {
     // setup parameters for display of probe collection matches and trigger tree refresh
     LocallyModify<bool> flag(allow_probe_match_event, false);
 
@@ -2443,7 +2443,7 @@ static void refresh_matchedProbesDisplay_cb(AW_root *root, AWT_canvas *ntw, bool
 
         MarkerDisplay *markerDisplay = agt->get_marker_display();
         if (markerDisplay) {
-            if (clearDisplayCache) markerDisplay->flush_cache();
+            markerDisplay->flush_cache();
         }
         else {
             agt->set_marker_display(new ProbeCollDisplay(get_probe_collection().probeList().size()));
@@ -2598,7 +2598,7 @@ static void probe_match_with_specificity_event(AW_root *root, AWT_canvas *ntw) {
             }
         }
 
-        refresh_matchedProbesDisplay_cb(root, ntw, true);
+        refresh_matchedProbesDisplay_cb(root, ntw);
     }
 }
 
@@ -2618,20 +2618,16 @@ static void probe_forget_matches_event(AW_window *aww, ArbPM_Context *pContext) 
 
     get_results_manager().reset();
     root->awar(AWAR_PC_MATCH_NHITS)->write_int(0);
-    refresh_matchedProbesDisplay_cb(root, pContext->ntw, true);
+    refresh_matchedProbesDisplay_cb(root, pContext->ntw);
 }
 
 // ----------------------------------------------------------------------------
-
-static void add_threshold_callbacks(AW_root *root, AWT_canvas *ntw) {
-    root->awar(AWAR_PC_MISMATCH_THRESHOLD)              ->add_callback(makeRootCallback(refresh_matchedProbesDisplay_cb, ntw, true));
-}
 
 AW_window *create_probe_match_with_specificity_window(AW_root *root, AWT_canvas *ntw) {
     static AW_window_simple *aws = 0; // the one and only probe match window
 
     if (!aws) {
-        add_threshold_callbacks(root, ntw);
+        root->awar(AWAR_PC_MISMATCH_THRESHOLD)->add_callback(makeRootCallback(refresh_matchedProbesDisplay_cb, ntw));
 
         aws = new AW_window_simple;
 
