@@ -363,91 +363,79 @@ static void nt_extract_configuration(AW_window *aww, extractType ext_type) {
         aw_message("Please select a configuration");
     }
     else {
-        GBDATA *gb_configuration = GBT_find_configuration(GLOBAL.gb_main, cn);
-        if (!gb_configuration) {
-            aw_message(GBS_global_string("Configuration '%s' not found in the database", cn));
-        }
-        else {
-            GBDATA *gb_middle_area  = GB_search(gb_configuration, "middle_area", GB_STRING);
-            char   *md              = 0;
+        GB_ERROR    error = NULL;
+        GBT_config *cfg   = GBT_load_configuration_data(GLOBAL.gb_main, cn, &error);
+
+        if (cfg) {
             size_t  unknown_species = 0;
             bool    refresh         = false;
 
-            if (gb_middle_area) {
-                GB_HASH *was_marked = NULL; // only used for CONF_COMBINE
+            GB_HASH *was_marked = NULL; // only used for CONF_COMBINE
 
-                switch (ext_type) {
-                    case CONF_EXTRACT:
-                        GBT_mark_all(GLOBAL.gb_main, 0); // unmark all for extract
-                        refresh = true;
-                        break;
-                    case CONF_COMBINE: {
-                        // store all marked species in hash and unmark them
-                        was_marked = GBS_create_hash(GBT_get_species_count(GLOBAL.gb_main), GB_IGNORE_CASE);
-                        for (GBDATA *gbd = GBT_first_marked_species(GLOBAL.gb_main); gbd; gbd = GBT_next_marked_species(gbd)) {
-                            int marked = GB_read_flag(gbd);
-                            if (marked) {
-                                GBS_write_hash(was_marked, GBT_read_name(gbd), 1);
-                                GB_write_flag(gbd, 0);
+            switch (ext_type) {
+                case CONF_EXTRACT: // unmark all
+                    GBT_mark_all(GLOBAL.gb_main, 0);
+                    refresh = true;
+                    break;
+
+                case CONF_COMBINE: // store all marked species in hash and unmark them
+                    was_marked = GBT_create_marked_species_hash(GLOBAL.gb_main);
+                    GBT_mark_all(GLOBAL.gb_main, 0);
+                    refresh    = GBS_hash_elements(was_marked);
+                    break;
+
+                default:
+                    break;
+            }
+
+            GBT_config_item *citem = GBT_create_config_item();
+            for (int mode = 0; mode<=1 && !error; ++mode) {
+                GBT_config_parser *cparser = GBT_start_config_parser(mode ? cfg->middle_area : cfg->top_area);
+
+                while (1) {
+                    error = GBT_parse_next_config_item(cparser, citem);
+                    if (error || citem->type == CI_END_OF_CONFIG) break;
+
+                    if (citem->type == CI_SPECIES) {
+                        GBDATA *gb_species = GBT_find_species(GLOBAL.gb_main, citem->name);
+
+                        if (gb_species) {
+                            int oldmark = GB_read_flag(gb_species);
+                            int newmark = oldmark;
+                            switch (ext_type) {
+                                case CONF_EXTRACT:
+                                case CONF_MARK:     newmark = 1; break;
+                                case CONF_UNMARK:   newmark = 0; break;
+                                case CONF_INVERT:   newmark = !oldmark; break;
+                                case CONF_COMBINE: {
+                                    nt_assert(!oldmark); // should have been unmarked above
+                                    newmark = GBS_read_hash(was_marked, citem->name); // mark if was_marked
+                                    break;
+                                }
+                                default: nt_assert(0); break;
+                            }
+                            if (newmark != oldmark) {
+                                GB_write_flag(gb_species, newmark);
+                                refresh = true;
                             }
                         }
-
-                        refresh = refresh || GBS_hash_elements(was_marked);
-                        break;
-                    }
-                    default:
-                        break;
-                }
-
-                md = GB_read_string(gb_middle_area);
-                if (md) {
-                    char *p;
-                    char tokens[2];
-                    tokens[0] = 1;
-                    tokens[1] = 0;
-                    for (p = strtok(md, tokens); p; p = strtok(NULL, tokens)) {
-                        if (p[0] == 'L') {
-                            const char *species_name = p+1;
-                            GBDATA     *gb_species   = GBT_find_species(GLOBAL.gb_main, species_name);
-
-                            if (gb_species) {
-                                int oldmark = GB_read_flag(gb_species);
-                                int newmark = oldmark;
-                                switch (ext_type) {
-                                    case CONF_EXTRACT:
-                                    case CONF_MARK:     newmark = 1; break;
-                                    case CONF_UNMARK:   newmark = 0; break;
-                                    case CONF_INVERT:   newmark = !oldmark; break;
-                                    case CONF_COMBINE: {
-                                        nt_assert(!oldmark); // should have been unmarked above
-                                        newmark = GBS_read_hash(was_marked, species_name); // mark if was_marked
-                                        break;
-                                    }
-                                    default: nt_assert(0); break;
-                                }
-                                if (newmark != oldmark) {
-                                    GB_write_flag(gb_species, newmark);
-                                    refresh = true;
-                                }
-                            }
-                            else {
-                                unknown_species++;
-                            }
+                        else {
+                            unknown_species++;
                         }
                     }
                 }
 
-                if (was_marked) GBS_free_hash(was_marked);
+                GBT_free_config_parser(cparser);
             }
+            GBT_free_config_item(citem);
 
-            if (unknown_species>0) {
-                aw_message(GBS_global_string("configuration '%s' contains %zu unknown species", cn, unknown_species));
-            }
-
+            if (was_marked) GBS_free_hash(was_marked);
+            if (unknown_species>0 && !error) error = GBS_global_string("configuration '%s' contains %zu unknown species", cn, unknown_species);
             if (refresh) aw_root->awar(AWAR_TREE_REFRESH)->touch();
 
-            free(md);
+            GBT_free_configuration_data(cfg);
         }
+        aw_message_if(error);
     }
     free(cn);
 }
@@ -577,7 +565,7 @@ static AW_window *create_configuration_admin_window(AW_root *root, AWT_canvas *n
         init_config_awars(root);
 
         AW_window_simple *aws = new AW_window_simple;
-        aws->init(root, "SPECIES_SELECTIONS", "Species Selections");
+        aws->init(root, GBS_global_string("SPECIES_SELECTIONS_%i", ntw_id), "Species Selections");
         aws->load_xfig("nt_selection.fig");
 
         aws->at("close");
