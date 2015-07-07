@@ -14,13 +14,131 @@
 #include <aw_awars.hxx>
 #include <aw_root.hxx>
 #include <aw_msg.hxx>
+#include <aw_select.hxx>
 #include <ad_config.h>
 #include <TreeNode.h>
 #include <arb_strbuf.h>
 #include <arb_global_defs.h>
+#include <TreeDisplay.hxx>
+#include <arb_strarray.h>
+#include <map>
+#include <string>
+
+using namespace std;
 
 static void init_config_awars(AW_root *root) {
     root->awar_string(AWAR_CONFIGURATION, "default_configuration", GLOBAL.gb_main);
+}
+
+typedef map<string, string> ConfigHits; // key=speciesname; value[markerIdx]==1 -> highlighted
+
+class ConfigMarkerDisplay : public MarkerDisplay {
+    SmartPtr<StrArray> config; // configuration names
+    ConfigHits         hits;
+
+    void updateHits(GBDATA *gb_main) {
+        hits.clear();
+        for (int c = 0; c<size(); ++c) {
+            GB_ERROR   error;
+            GBT_config cfg(gb_main, (*config)[c], error);
+
+            for (int area = 0; area<=1 && !error; ++area) {
+                GBT_config_parser cparser(cfg, area);
+
+                while (1) {
+                    const GBT_config_item& item = cparser.nextItem(error);
+                    if (error || item.type == CI_END_OF_CONFIG) break;
+                    if (item.type == CI_SPECIES) {
+                        ConfigHits::iterator found = hits.find(item.name);
+                        if (found == hits.end()) {
+                            string h(size(), '0');
+                            h[c]            = '1';
+                            hits[item.name] = h;
+                        }
+                        else {
+                            (found->second)[c] = '1';
+                        }
+                    }
+                }
+            }
+
+            aw_message_if(error);
+        }
+    }
+public:
+    ConfigMarkerDisplay(SmartPtr<StrArray> config_, GBDATA *gb_main)
+        : MarkerDisplay(config_->size()),
+          config(config_)
+    {
+        updateHits(gb_main);
+    }
+    const char *get_marker_name(int markerIdx) const OVERRIDE {
+        return (*config)[markerIdx];
+    }
+    void retrieve_marker_state(const char *speciesName, NodeMarkers& node) OVERRIDE {
+        ConfigHits::const_iterator found = hits.find(speciesName);
+        if (found != hits.end()) {
+            const string& hit = found->second;
+
+            for (int c = 0; c<size(); ++c) {
+                if (hit[c] == '1') node.incMarker(c);
+            }
+        }
+        node.incNodeSize();
+    }
+};
+
+static void selected_configs_changed_cb(AW_selection *selected_configs, AW_CL cl_ntw) {
+    AWT_canvas         *ntw = (AWT_canvas*)cl_ntw;
+    AWT_graphic_tree   *agt = DOWNCAST(AWT_graphic_tree*, ntw->gfx);
+    SmartPtr<StrArray>  config(new StrArray);
+
+    selected_configs->get_values(*config);
+
+    if (config->empty()) {
+        // @@@ test for existing MarkerDisplay: dont hide if type differs
+        agt->hide_marker_display();
+    }
+    else {
+        ConfigMarkerDisplay *disp = new ConfigMarkerDisplay(config, ntw->gb_main);
+        agt->set_marker_display(disp);
+    }
+
+    AW_root::SINGLETON->awar(AWAR_TREE_REFRESH)->touch();
+}
+
+static AW_window *create_configuration_marker_window(AW_root *root, AWT_canvas *ntw) {
+    int               ntw_id = NT_get_canvas_id(ntw);
+    AW_window_simple *aws    = new AW_window_simple;
+
+    aws->init(root, GBS_global_string("MARK_CONFIGS_%i", ntw_id), "Highlight configurations in tree");
+    aws->load_xfig("mark_configs.fig");
+
+    aws->auto_space(10, 10);
+
+    aws->at("close");
+    aws->callback(AW_POPDOWN);
+    aws->create_button("CLOSE", "CLOSE", "C");
+
+    aws->at("help");
+    aws->callback(makeHelpCallback("mark_configs.hlp"));
+    aws->create_button("HELP", "HELP", "H");
+
+    aws->at("list");
+    AW_DB_selection *all_configs = awt_create_CONFIG_selection_list(GLOBAL.gb_main, aws, AWAR_CONFIGURATION, true);
+    awt_create_subset_selection_list(aws, all_configs->get_sellist(), "selected", "add", "sort", selected_configs_changed_cb, AW_CL(ntw));
+
+    // @@@ would like to use ntw-specific awar for this selection list (opening two lists links them)
+
+    // @@@ add show-toggle? "show"
+
+    aws->at("config");
+    aws->callback(TREE_create_marker_settings_window);
+    aws->create_autosize_button("SETTINGS", "Settings", "S");
+
+    // @@@ missing callback: if one of the shown configs is changed(=saved again) -> retrieve again and update display
+
+    return aws;
 }
 
 // -----------------------------
@@ -607,6 +725,10 @@ static AW_window *create_configuration_admin_window(AW_root *root, AWT_canvas *n
         aws->at("rename");
         aws->callback(nt_rename_configuration);
         aws->create_button("RENAME", "RENAME", "R");
+
+        aws->at("highlight");
+        aws->callback(makeCreateWindowCallback(create_configuration_marker_window, ntw));
+        aws->create_autosize_button(GBS_global_string("HIGHLIGHT_%i", ntw_id), "Highlight in tree", "t");
 
         existing_aws[ntw_id] = aws;
     }

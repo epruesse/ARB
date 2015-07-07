@@ -71,7 +71,7 @@ void awt_create_SAI_selection_button(GBDATA *gb_main, AW_window *aws, const char
 AW_DB_selection *awt_create_SAI_selection_list(GBDATA *gb_main, AW_window *aws, const char *varname, bool fallback2default, awt_sai_sellist_filter filter_poc = 0, AW_CL filter_cd = 0);
 void awt_popup_SAI_selection_list(AW_window *aww, const char *awar_name, GBDATA *gb_main);
 
-void  awt_create_CONFIG_selection_list(GBDATA *gb_main, AW_window *aws, const char *varname, bool fallback2default);
+AW_DB_selection *awt_create_CONFIG_selection_list(GBDATA *gb_main, AW_window *aws, const char *varname, bool fallback2default);
 
 // ---------------------------
 //      related functions

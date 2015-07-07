@@ -31,7 +31,12 @@ DESCRIPTION	Each species is either marked or unmarked. All species that are
                 The current tree displayed within the ARB_NT main window is stored
                 with the configuration.
 
+		You may highlight selected configurations in the tree 
+		display using the 'Highlight in tree' button (see LINK{mark_configs.hlp}).
+
 		ARB_EDIT4 may load all marked species or all species stored in a configuration.
 
-NOTES   Saving the database means also saving all configurations.
+NOTES           Saving the database means also saving all configurations.
 
+                The configuration window is as well available via the button that shows the number
+                of marked species in the top area of the main arb window.

@@ -445,14 +445,16 @@ struct AWT_configuration_selection : public AW_DB_selection {
     }
 };
 
-void awt_create_CONFIG_selection_list(GBDATA *gb_main, AW_window *aws, const char *varname, bool fallback2default) {
+AW_DB_selection *awt_create_CONFIG_selection_list(GBDATA *gb_main, AW_window *aws, const char *varname, bool fallback2default) {
     GBDATA *gb_configuration_data;
     {
         GB_transaction ta(gb_main);
         gb_configuration_data = GB_search(gb_main, CONFIG_DATA_PATH, GB_CREATE_CONTAINER);
     }
-    AW_selection_list *sellist = aws->create_selection_list(varname, 40, 15, fallback2default);
-    (new AWT_configuration_selection(sellist, gb_configuration_data))->refresh();
+    AW_selection_list           *sellist = aws->create_selection_list(varname, 40, 15, fallback2default);
+    AWT_configuration_selection *confSel = new AWT_configuration_selection(sellist, gb_configuration_data);
+    confSel->refresh();
+    return confSel;
 }
 
 char *awt_create_CONFIG_string(GBDATA *gb_main) {
@@ -1163,6 +1165,9 @@ AW_selection *awt_create_subset_selection_list(AW_window *aww, AW_selection_list
 
     aww->at(at_sort);
     awt_create_order_buttons(aww, reorder_subset_cb, (AW_CL)subsel);
+
+    // @@@ missing callback: if content of 'parent_selection' changes
+    // -> delete from subset if necessary and call subChanged_cb
 
     return subsel;
 }

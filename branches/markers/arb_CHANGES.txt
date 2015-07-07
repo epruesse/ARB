@@ -33,6 +33,7 @@ Major changes for next release:
    * added option to cut-off DNA sequence (was done at end of sequence by old version. fixed)
    * fixed several minor bugs
  - ARB probeSpec: visualisation of probe set specificity (thanks to Paavo Jumppanen, CSIRO)
+ - reuse the visualisation introduced with probeSpec to highlight sets of species configurations
  - expand zombies in tree (unfold groups)
  - compare taxonomy (and mark differences)
  - external (command line) aligners:

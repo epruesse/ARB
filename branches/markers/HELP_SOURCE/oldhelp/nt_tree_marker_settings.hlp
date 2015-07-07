@@ -14,7 +14,10 @@ OCCURRENCE      ARB_NT/Match Probes with Specifity/Display control/Marker displa
 
 DESCRIPTION     Controls display parameters for markers shown in tree display.
 
-                Currently such markers are available from LINK{probespec.hlp}.
+                Currently such markers are available from
+
+                 * LINK{probespec.hlp} and
+                 * LINK{mark_configs.hlp}
 
                 Available parameters:
 
