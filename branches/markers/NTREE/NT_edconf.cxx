@@ -363,10 +363,10 @@ static void nt_extract_configuration(AW_window *aww, extractType ext_type) {
         aw_message("Please select a configuration");
     }
     else {
-        GB_ERROR    error = NULL;
-        GBT_config *cfg   = GBT_load_configuration_data(GLOBAL.gb_main, cn, &error);
+        GB_ERROR   error = NULL;
+        GBT_config cfg(GLOBAL.gb_main, cn, error);
 
-        if (cfg) {
+        if (!error) {
             size_t  unknown_species = 0;
             bool    refresh         = false;
 
@@ -388,16 +388,15 @@ static void nt_extract_configuration(AW_window *aww, extractType ext_type) {
                     break;
             }
 
-            GBT_config_item *citem = GBT_create_config_item();
-            for (int mode = 0; mode<=1 && !error; ++mode) {
-                GBT_config_parser *cparser = GBT_start_config_parser(mode ? cfg->middle_area : cfg->top_area);
+            for (int area = 0; area<=1 && !error; ++area) {
+                GBT_config_parser cparser(cfg, area);
 
                 while (1) {
-                    error = GBT_parse_next_config_item(cparser, citem);
-                    if (error || citem->type == CI_END_OF_CONFIG) break;
+                    const GBT_config_item& citem = cparser.nextItem(error);
+                    if (error || citem.type == CI_END_OF_CONFIG) break;
 
-                    if (citem->type == CI_SPECIES) {
-                        GBDATA *gb_species = GBT_find_species(GLOBAL.gb_main, citem->name);
+                    if (citem.type == CI_SPECIES) {
+                        GBDATA *gb_species = GBT_find_species(GLOBAL.gb_main, citem.name);
 
                         if (gb_species) {
                             int oldmark = GB_read_flag(gb_species);
@@ -409,7 +408,7 @@ static void nt_extract_configuration(AW_window *aww, extractType ext_type) {
                                 case CONF_INVERT:   newmark = !oldmark; break;
                                 case CONF_COMBINE: {
                                     nt_assert(!oldmark); // should have been unmarked above
-                                    newmark = GBS_read_hash(was_marked, citem->name); // mark if was_marked
+                                    newmark = GBS_read_hash(was_marked, citem.name); // mark if was_marked
                                     break;
                                 }
                                 default: nt_assert(0); break;
@@ -424,16 +423,11 @@ static void nt_extract_configuration(AW_window *aww, extractType ext_type) {
                         }
                     }
                 }
-
-                GBT_free_config_parser(cparser);
             }
-            GBT_free_config_item(citem);
 
             if (was_marked) GBS_free_hash(was_marked);
             if (unknown_species>0 && !error) error = GBS_global_string("configuration '%s' contains %zu unknown species", cn, unknown_species);
             if (refresh) aw_root->awar(AWAR_TREE_REFRESH)->touch();
-
-            GBT_free_configuration_data(cfg);
         }
         aw_message_if(error);
     }
