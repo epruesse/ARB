@@ -445,14 +445,16 @@ struct AWT_configuration_selection : public AW_DB_selection {
     }
 };
 
-void awt_create_CONFIG_selection_list(GBDATA *gb_main, AW_window *aws, const char *varname, bool fallback2default) {
+AW_DB_selection *awt_create_CONFIG_selection_list(GBDATA *gb_main, AW_window *aws, const char *varname, bool fallback2default) {
     GBDATA *gb_configuration_data;
     {
         GB_transaction ta(gb_main);
         gb_configuration_data = GB_search(gb_main, CONFIG_DATA_PATH, GB_CREATE_CONTAINER);
     }
-    AW_selection_list *sellist = aws->create_selection_list(varname, 40, 15, fallback2default);
-    (new AWT_configuration_selection(sellist, gb_configuration_data))->refresh();
+    AW_selection_list           *sellist = aws->create_selection_list(varname, 40, 15, fallback2default);
+    AWT_configuration_selection *confSel = new AWT_configuration_selection(sellist, gb_configuration_data);
+    confSel->refresh();
+    return confSel;
 }
 
 char *awt_create_CONFIG_string(GBDATA *gb_main) {
@@ -1013,6 +1015,9 @@ AW_window *awt_create_load_box(AW_root     *aw_root,
 class AW_subset_selection : public AW_selection {
     AW_selection_list& parent_sellist;
 
+    SubsetChangedCb subChanged_cb;
+    AW_CL           cl_user;
+
     static void finish_fill_box(AW_selection_list *parent_sellist, AW_selection_list *sub_sellist) {
         sub_sellist->insert_default(parent_sellist->get_default_display(), parent_sellist->get_default_value());
         sub_sellist->update();
@@ -1036,11 +1041,17 @@ class AW_subset_selection : public AW_selection {
         return sub_sellist;
     }
 
+    void callChangedCallback() { if (subChanged_cb) subChanged_cb(this, cl_user); }
+
 public:
-    AW_subset_selection(AW_window *aww, AW_selection_list& parent_sellist_)
+    AW_subset_selection(AW_window *aww, AW_selection_list& parent_sellist_, SubsetChangedCb subChanged_cb_, AW_CL cl_user_)
         : AW_selection(create_box(aww, parent_sellist_)),
-          parent_sellist(parent_sellist_)
-    {}
+          parent_sellist(parent_sellist_),
+          subChanged_cb(subChanged_cb_),
+          cl_user(cl_user_)
+    {
+        callChangedCallback();
+    }
 
     AW_selection_list *get_parent_sellist() const { return &parent_sellist; }
 
@@ -1103,6 +1114,7 @@ public:
                 finish_fill_box(whole_list, subset_list);
                 break;
         }
+        callChangedCallback();
     }
     void reorder_subset_cb(awt_reorder_mode dest) {
         AW_selection_list *subset_list = get_sellist();
@@ -1128,19 +1140,20 @@ public:
                 }
             }
         }
+        callChangedCallback();
     }
 };
 
 static void collect_subset_cb(AW_window *, awt_collect_mode what, AW_CL cl_subsel) { ((AW_subset_selection*)cl_subsel)->collect_subset_cb(what); }
 static void reorder_subset_cb(AW_window *, awt_reorder_mode dest, AW_CL cl_subsel) { ((AW_subset_selection*)cl_subsel)->reorder_subset_cb(dest); }
 
-AW_selection *awt_create_subset_selection_list(AW_window *aww, AW_selection_list *parent_selection, const char *at_box, const char *at_add, const char *at_sort) {
+AW_selection *awt_create_subset_selection_list(AW_window *aww, AW_selection_list *parent_selection, const char *at_box, const char *at_add, const char *at_sort, SubsetChangedCb subChanged_cb, AW_CL cl_user) {
     awt_assert(parent_selection);
 
     aww->at(at_box);
     int x_list = aww->get_at_xposition();
 
-    AW_subset_selection *subsel = new AW_subset_selection(aww, *parent_selection);
+    AW_subset_selection *subsel = new AW_subset_selection(aww, *parent_selection, subChanged_cb, cl_user);
 
     aww->button_length(0);
 
@@ -1152,6 +1165,9 @@ AW_selection *awt_create_subset_selection_list(AW_window *aww, AW_selection_list
 
     aww->at(at_sort);
     awt_create_order_buttons(aww, reorder_subset_cb, (AW_CL)subsel);
+
+    // @@@ missing callback: if content of 'parent_selection' changes
+    // -> delete from subset if necessary and call subChanged_cb
 
     return subsel;
 }
