@@ -23,6 +23,7 @@
 #include <arb_strarray.h>
 #include <map>
 #include <string>
+#include <ad_cb_prot.h>
 
 using namespace std;
 
@@ -32,11 +33,12 @@ static void init_config_awars(AW_root *root) {
 
 typedef map<string, string> ConfigHits; // key=speciesname; value[markerIdx]==1 -> highlighted
 
-class ConfigMarkerDisplay : public MarkerDisplay {
-    SmartPtr<StrArray> config; // configuration names
-    ConfigHits         hits;
+class ConfigMarkerDisplay : public MarkerDisplay, virtual Noncopyable {
+    GBDATA             *gb_main;
+    SmartPtr<StrArray>  config; // configuration names
+    ConfigHits          hits;
 
-    void updateHits(GBDATA *gb_main) {
+    void updateHits() {
         hits.clear();
         for (int c = 0; c<size(); ++c) {
             GB_ERROR   error;
@@ -65,12 +67,35 @@ class ConfigMarkerDisplay : public MarkerDisplay {
             aw_message_if(error);
         }
     }
+
+    static void config_changed_cb(GBDATA *, ConfigMarkerDisplay *markerDisplay, GB_CB_TYPE cbtype) {
+        nt_assert(cbtype == GB_CB_CHANGED);
+        markerDisplay->updateHits();
+        AW_root::SINGLETON->awar(AWAR_TREE_REFRESH)->touch();
+    }
+
+    void set_config_callbacks(bool install) {
+        GB_transaction ta(gb_main);
+        for (int c = 0; c<size(); ++c) {
+            GBDATA *gb_cfg = GBT_find_configuration(gb_main, (*config)[c]);
+            if (gb_cfg) {
+                if (install) GB_add_callback   (gb_cfg, GB_CB_CHANGED, makeDatabaseCallback(config_changed_cb, this));
+                else         GB_remove_callback(gb_cfg, GB_CB_CHANGED, makeDatabaseCallback(config_changed_cb, this));
+            }
+        }
+    }
+
 public:
-    ConfigMarkerDisplay(SmartPtr<StrArray> config_, GBDATA *gb_main)
+    ConfigMarkerDisplay(SmartPtr<StrArray> config_, GBDATA *gb_main_)
         : MarkerDisplay(config_->size()),
+          gb_main(gb_main_),
           config(config_)
     {
-        updateHits(gb_main);
+        updateHits();
+        set_config_callbacks(true);
+    }
+    ~ConfigMarkerDisplay() {
+        set_config_callbacks(false);
     }
     const char *get_marker_name(int markerIdx) const OVERRIDE {
         return (*config)[markerIdx];
