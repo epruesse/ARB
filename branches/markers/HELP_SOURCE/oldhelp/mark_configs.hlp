@@ -24,7 +24,11 @@ DESCRIPTION     Highlights all configurations (contained in the left list)
 
 NOTES		None
 
-EXAMPLES	None
+EXAMPLES	The intended way to use this feature:
+
+                 * use the search tool to find and mark all species with some attribute
+                 * save a configuration (name should decribe attribute)
+                 * highlight several attributes in tree
 
 WARNINGS	None
 
