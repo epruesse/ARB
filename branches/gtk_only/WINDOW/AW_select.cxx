@@ -60,6 +60,8 @@ AW_selection_list::AW_selection_list(AW_awar *awar_, bool fallback2default)
       activate_cb_id(0),
       selected_index(0),
       select_default_on_unknown_awar_value(fallback2default),
+      update_cb(NULL),
+      cl_update(NULL),
       list_table(NULL),
       last_of_list_table(NULL),
       default_select(NULL),
@@ -194,6 +196,15 @@ void AW_selection_list::update() {
 
     auto_append_to_default = false; // further updates will not insert behind (terminal) default_select
     refresh();
+
+    if (update_cb) update_cb(this, cl_update);
+}
+
+void AW_selection_list::set_update_callback(sellist_update_cb ucb, AW_CL cl_user) {
+    aw_assert(!update_cb || !ucb); // overwrite allowed only with NULL!
+
+    update_cb = ucb;
+    cl_update = cl_user;
 }
 
 void AW_selection_list::refresh() {
