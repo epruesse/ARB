@@ -33,6 +33,7 @@
 
 #include <list>
 #include <map>
+#include <set>
 
 using namespace std;
 
@@ -1142,10 +1143,48 @@ public:
         }
         callChangedCallback();
     }
+
+    void delete_entries_missing_in_parent() {
+        // check subset for entries missing in parent,
+        // delete these and update
+        typedef std::set<const char*, charpLess> Entries;
+
+        bool    deleted = false;
+        Entries pEntry;
+        {
+            AW_selection_list_iterator pIter(&parent_sellist);
+            while (pIter) {
+                pEntry.insert(pIter.get_value());
+                ++pIter;
+            }
+        }
+
+        AW_selection_list *subsel = get_sellist();
+        int                size   = subsel->size();
+
+        for (int i = 0; i<size; ++i) {
+            if (pEntry.find(subsel->get_value_at(i)) == pEntry.end()) { // entry missing in parent list
+                subsel->delete_element_at(i);
+                deleted = true;
+                --i; --size;
+            }
+        }
+
+        if (deleted) {
+            subsel->update();
+            callChangedCallback();
+        }
+    }
 };
 
 static void collect_subset_cb(AW_window *, awt_collect_mode what, AW_CL cl_subsel) { ((AW_subset_selection*)cl_subsel)->collect_subset_cb(what); }
 static void reorder_subset_cb(AW_window *, awt_reorder_mode dest, AW_CL cl_subsel) { ((AW_subset_selection*)cl_subsel)->reorder_subset_cb(dest); }
+
+static void parent_selection_changed_cb(AW_selection_list *parent_sel, AW_CL cl_subsel) {
+    AW_subset_selection *subsel = (AW_subset_selection*)cl_subsel;
+    aw_assert(subsel->get_parent_sellist() == parent_sel);
+    subsel->delete_entries_missing_in_parent();
+}
 
 AW_selection *awt_create_subset_selection_list(AW_window *aww, AW_selection_list *parent_selection, const char *at_box, const char *at_add, const char *at_sort, SubsetChangedCb subChanged_cb, AW_CL cl_user) {
     awt_assert(parent_selection);
@@ -1166,8 +1205,7 @@ AW_selection *awt_create_subset_selection_list(AW_window *aww, AW_selection_list
     aww->at(at_sort);
     awt_create_order_buttons(aww, reorder_subset_cb, (AW_CL)subsel);
 
-    // @@@ missing callback: if content of 'parent_selection' changes
-    // -> delete from subset if necessary and call subChanged_cb
+    parent_selection->set_update_callback(parent_selection_changed_cb, AW_CL(subsel));
 
     return subsel;
 }
