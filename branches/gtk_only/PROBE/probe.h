@@ -90,9 +90,10 @@ enum PT_base {
     PT_B_UNDEF,
 };
 
-inline bool is_std_base(char b) { return b >= PT_A && b <= PT_T; }
-inline bool is_ambig_base(char b) { return b == PT_QU || b == PT_N; }
-inline bool is_valid_base(char b) { return b >= PT_QU && b < PT_BASES; }
+inline bool is_std_base     (char b) { return b >= PT_A && b <= PT_T; }
+inline bool is_std_base_or_N(char b) { return b >= PT_N && b <= PT_T; }
+inline bool is_ambig_base   (char b) { return b == PT_QU || b == PT_N; }
+inline bool is_valid_base   (char b) { return b >= PT_QU && b < PT_BASES; }
 
 inline char base_2_readable(char base) {
     static char table[] = ".NACGU";

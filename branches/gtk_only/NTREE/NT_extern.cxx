@@ -20,7 +20,7 @@
 
 #include <TreeCallbacks.hxx>
 #include <AW_rename.hxx>
-#include <probe_design.hxx>
+#include <probe_gui.hxx>
 #include <primer_design.hxx>
 #include <gde.hxx>
 #include <awtc_submission.hxx>
