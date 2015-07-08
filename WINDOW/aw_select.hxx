@@ -68,15 +68,19 @@ public:
 };
 
 typedef int (*sellist_cmp_fun)(const char *disp1, const char *disp2);
+typedef void (*sellist_update_cb)(AW_selection_list *, AW_CL);
 
 class AW_selection_list : virtual Noncopyable {
-    AW_awar       *awar;
-    GtkTreeModel  *model;
-    GtkWidget     *widget;
-    unsigned long  change_cb_id;
-    unsigned long  activate_cb_id;
-    int            selected_index;
-    bool           select_default_on_unknown_awar_value; /**< If true the default value is selected if no entry that matches the awars value can be found*/
+    AW_awar           *awar;
+    GtkTreeModel      *model;
+    GtkWidget         *widget;
+    unsigned long      change_cb_id;
+    unsigned long      activate_cb_id;
+    int                selected_index;
+    bool               select_default_on_unknown_awar_value; /**< If true the default value is selected if no entry that matches the awars value can be found*/
+    sellist_update_cb  update_cb;
+    AW_CL              cl_update;
+
 
     GtkTreeModel *get_model(); // lazy eval
 
@@ -138,9 +142,11 @@ public:
     void insert_default(const char *displayed, GBDATA *pointer);
 
     void init_from_array(const CharPtrArray& entries, const char *default_displayed, const char *default_value);
-    
+
     void update();
     void refresh();
+
+    void set_update_callback(sellist_update_cb ucb, AW_CL cl_user);
 
     void sort(bool backward, bool case_sensitive); // uses displayed value!
     void sortCustom(sellist_cmp_fun cmp);          // uses displayed value!
