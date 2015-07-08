@@ -36,10 +36,12 @@ typedef map<string, string> ConfigHits; // key=speciesname; value[markerIdx]==1 
 class ConfigMarkerDisplay : public MarkerDisplay, virtual Noncopyable {
     GBDATA             *gb_main;
     SmartPtr<StrArray>  config; // configuration names
+    StrArray            errors; // config load-errors
     ConfigHits          hits;
 
     void updateHits() {
         hits.clear();
+        errors.erase();
         for (int c = 0; c<size(); ++c) {
             GB_ERROR   error;
             GBT_config cfg(gb_main, (*config)[c], error);
@@ -64,7 +66,7 @@ class ConfigMarkerDisplay : public MarkerDisplay, virtual Noncopyable {
                 }
             }
 
-            aw_message_if(error);
+            errors.put(strdup(error ? error : ""));
         }
     }
 
@@ -98,7 +100,10 @@ public:
         set_config_callbacks(false);
     }
     const char *get_marker_name(int markerIdx) const OVERRIDE {
-        return (*config)[markerIdx];
+        const char *error = errors[markerIdx];
+        const char *name  = (*config)[markerIdx];
+        if (error && error[0]) return GBS_global_string("%s (Error: %s)", name, error);
+        return name;
     }
     void retrieve_marker_state(const char *speciesName, NodeMarkers& node) OVERRIDE {
         ConfigHits::const_iterator found = hits.find(speciesName);
