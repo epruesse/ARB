@@ -3,7 +3,7 @@
 # Installs tools and libraries needed to run, compile or develop ARB on Ubuntu.
 #
 # Tested with:
-#       * Ubuntu 10.04 (Lucid Lynx)
+#       * Ubuntu 12.04 (Precise Pangolin)
 #
 # [ May as well work with other ubuntu flavors or debian.
 #   Please report working tests and/or send needed changes to devel@arb-home.de
@@ -39,8 +39,9 @@ else
             echo \
                 gnuplot \
                 gv \
-                xfig \
+                libxerces-c28 \
                 transfig \
+                xfig \
                 xterm \
 
 #                treetool 
@@ -59,6 +60,7 @@ else
                 libtiff4-dev \
                 libx11-dev \
                 libxext-dev \
+                libxerces-c2-dev \
                 libxml2-utils \
                 lynx \
                 xsltproc \

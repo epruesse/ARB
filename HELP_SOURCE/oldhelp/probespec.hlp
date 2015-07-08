@@ -30,7 +30,7 @@ DESCRIPTION
 		To add a probe to the collection enter the 'Target String' and the
 		'Probe Name' and press the ADD button. To remove a probe from the
 		collection select the probe from the 'Probes' list and press the
-		REMOVE button. Pressing the 'CLEAR' button will remove all probes
+		REMOVE button. Pressing the 'FORGET' button will remove all probes
 		from the collection and start a fresh.
 
 		To save the probe collection to file press the 'SAVE' button and

@@ -160,7 +160,7 @@ ui_species.o: $(ARBHOME)/INCLUDE/gccver.h
 ui_species.o: $(ARBHOME)/INCLUDE/item_sel_list.h
 ui_species.o: $(ARBHOME)/INCLUDE/items.h
 ui_species.o: $(ARBHOME)/INCLUDE/pos_range.h
-ui_species.o: $(ARBHOME)/INCLUDE/probe_design.hxx
+ui_species.o: $(ARBHOME)/INCLUDE/probe_gui.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/PT_global_defs.h
 ui_species.o: $(ARBHOME)/INCLUDE/smartptr.h
 ui_species.o: $(ARBHOME)/INCLUDE/static_assert.h

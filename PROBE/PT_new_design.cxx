@@ -206,10 +206,22 @@ public:
     }
 
     MatchingOligo bind_against(char c, const Splits& splits) const {
-        pt_assert(c != PT_QU);
+        pt_assert(is_std_base_or_N(c));
 
-        char   pc       = dangling_char();
-        double strength = splits.check(pc, c);
+        char pc = dangling_char();
+        double strength;
+
+        if (c == PT_N) {
+            // we are checking outgroup-matches here => assume strongest possible bind versus N
+            strength = -100.0;
+            for (int base = PT_A; base < PT_BASES; ++base) {
+                strength = std::max(strength, splits.check(pc, base));
+            }
+            pt_assert(strength>-100.0);
+        }
+        else {
+            strength = splits.check(pc, c);
+        }
 
         return strength<0.0
             ? MatchingOligo(*this, strength)
@@ -982,7 +994,7 @@ class OutgroupMatcher : virtual Noncopyable {
                             announce_possible_match(all, ptdotson);
                         }
 
-                        for (int i = PT_A; i<PT_BASES; ++i) {
+                        for (int i = PT_N; i<PT_BASES; ++i) {
                             POS_TREE2 *ptson = PT_read_son(pt, (PT_base)i);
                             if (ptson) {
                                 bind_rest(oligo.bind_against(i, splits), ptson, height+1);
@@ -1015,7 +1027,7 @@ class OutgroupMatcher : virtual Noncopyable {
         pt_assert(might_reach_centigrade_pos(oligo));             // otherwise ReadableDataLoc is constructed w/o need (very expensive!)
         pt_assert(loc.get_pid().outside_group());                 // otherwise we are not interested in the result
 
-        if (is_std_base(loc[height])) { // do not try to bind domain versus dot or N
+        if (is_std_base_or_N(loc[height])) { // do not try to bind domain versus dot
             MatchingOligo more = oligo.bind_against(loc[height], splits);
             if (more.dangling()) {
                 if (might_reach_centigrade_pos(more)) {
