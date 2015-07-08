@@ -71,7 +71,7 @@ void awt_create_SAI_selection_button(GBDATA *gb_main, AW_window *aws, const char
 AW_DB_selection *awt_create_SAI_selection_list(GBDATA *gb_main, AW_window *aws, const char *varname, bool fallback2default, awt_sai_sellist_filter filter_poc = 0, AW_CL filter_cd = 0);
 void awt_popup_SAI_selection_list(AW_window *aww, const char *awar_name, GBDATA *gb_main);
 
-void  awt_create_CONFIG_selection_list(GBDATA *gb_main, AW_window *aws, const char *varname, bool fallback2default);
+AW_DB_selection *awt_create_CONFIG_selection_list(GBDATA *gb_main, AW_window *aws, const char *varname, bool fallback2default);
 
 // ---------------------------
 //      related functions
@@ -82,7 +82,8 @@ char *awt_create_CONFIG_string(GBDATA *gb_main);
 // --------------------------
 //      subset selection
 
-AW_selection *awt_create_subset_selection_list(AW_window *aww, AW_selection_list *select_subset_from, const char *at_box, const char *at_add, const char *at_sort);
+typedef       void (*SubsetChangedCb)(AW_selection*, AW_CL cl_user);
+AW_selection *awt_create_subset_selection_list(AW_window *aww, AW_selection_list *select_subset_from, const char *at_box, const char *at_add, const char *at_sort, SubsetChangedCb subChanged_cb = NULL, AW_CL cl_user = 0);
 
 // -------------------------------
 //      generic file prompter
