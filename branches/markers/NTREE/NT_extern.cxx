@@ -1643,6 +1643,8 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
     awm->set_info_area_height(bottomy+2);
     awm->set_bottom_area_height(0);
 
+    NT_activate_configMarkers_display(ntw);
+
     // ------------------------------------
     //      Autostarts for development
 

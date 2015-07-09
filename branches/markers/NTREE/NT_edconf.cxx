@@ -27,6 +27,9 @@
 
 using namespace std;
 
+// AWT_canvas-local (%i=canvas-id):
+#define AWAR_CL_SELECTED_CONFIGS "configuration_data/win%i/selected"
+
 static void init_config_awars(AW_root *root) {
     root->awar_string(AWAR_CONFIGURATION, "default_configuration", GLOBAL.gb_main);
 }
@@ -34,10 +37,10 @@ static void init_config_awars(AW_root *root) {
 typedef map<string, string> ConfigHits; // key=speciesname; value[markerIdx]==1 -> highlighted
 
 class ConfigMarkerDisplay : public MarkerDisplay, virtual Noncopyable {
-    GBDATA             *gb_main;
-    SmartPtr<StrArray>  config; // configuration names
-    StrArray            errors; // config load-errors
-    ConfigHits          hits;
+    GBDATA                  *gb_main;
+    SmartPtr<ConstStrArray>  config; // configuration names
+    StrArray                 errors; // config load-errors
+    ConfigHits               hits;
 
     void updateHits() {
         hits.clear();
@@ -88,7 +91,7 @@ class ConfigMarkerDisplay : public MarkerDisplay, virtual Noncopyable {
     }
 
 public:
-    ConfigMarkerDisplay(SmartPtr<StrArray> config_, GBDATA *gb_main_)
+    ConfigMarkerDisplay(SmartPtr<ConstStrArray> config_, GBDATA *gb_main_)
         : MarkerDisplay(config_->size()),
           gb_main(gb_main_),
           config(config_)
@@ -118,12 +121,20 @@ public:
     }
 };
 
-static void selected_configs_changed_cb(AW_selection *selected_configs, AW_CL cl_ntw) {
-    AWT_canvas         *ntw = (AWT_canvas*)cl_ntw;
-    AWT_graphic_tree   *agt = DOWNCAST(AWT_graphic_tree*, ntw->gfx);
-    SmartPtr<StrArray>  config(new StrArray);
+#define CONFIG_SEPARATOR ";"
 
-    selected_configs->get_values(*config);
+static SmartPtr<ConstStrArray> get_selected_configs_from_awar(AWT_canvas *ntw) {
+    char *config_str = ntw->awr->awar(GBS_global_string(AWAR_CL_SELECTED_CONFIGS, NT_get_canvas_id(ntw)))->read_string();
+
+    SmartPtr<ConstStrArray> config(new ConstStrArray);
+    GBT_splitNdestroy_string(*config, config_str, CONFIG_SEPARATOR, true);
+
+    return config;
+}
+
+static void selected_configs_awar_changed_cb(AW_root *, AWT_canvas *ntw) {
+    AWT_graphic_tree        *agt    = DOWNCAST(AWT_graphic_tree*, ntw->gfx);
+    SmartPtr<ConstStrArray>  config = get_selected_configs_from_awar(ntw);
 
     if (config->empty()) {
         // @@@ test for existing MarkerDisplay: dont hide if type differs
@@ -135,13 +146,35 @@ static void selected_configs_changed_cb(AW_selection *selected_configs, AW_CL cl
     }
 
     AW_root::SINGLETON->awar(AWAR_TREE_REFRESH)->touch();
+
+    // @@@ should also update content of subset-selection (e.g. when reloading a config is implemented)
+}
+
+static bool allow_subset_selection_cb = true;
+
+static void selected_configs_changed_cb(AW_selection *selected_configs, AW_CL cl_ntw) {
+    if (allow_subset_selection_cb) {
+        AWT_canvas         *ntw = (AWT_canvas*)cl_ntw;
+        SmartPtr<StrArray>  config(new StrArray);
+
+        selected_configs->get_values(*config);
+
+        char *config_str = GBT_join_names(*config, CONFIG_SEPARATOR[0]);
+        ntw->awr->awar(GBS_global_string(AWAR_CL_SELECTED_CONFIGS, NT_get_canvas_id(ntw)))->write_string(config_str);
+        free(config_str);
+    }
+}
+
+void NT_activate_configMarkers_display(AWT_canvas *ntw) {
+    AW_awar *awar_selCfgs = ntw->awr->awar_string(GBS_global_string(AWAR_CL_SELECTED_CONFIGS, NT_get_canvas_id(ntw)), "", ntw->gb_main);
+    awar_selCfgs->add_callback(makeRootCallback(selected_configs_awar_changed_cb, ntw));
+    awar_selCfgs->touch(); // force initial refresh
 }
 
 static AW_window *create_configuration_marker_window(AW_root *root, AWT_canvas *ntw) {
-    int               ntw_id = NT_get_canvas_id(ntw);
-    AW_window_simple *aws    = new AW_window_simple;
+    AW_window_simple *aws = new AW_window_simple;
 
-    aws->init(root, GBS_global_string("MARK_CONFIGS_%i", ntw_id), "Highlight configurations in tree");
+    aws->init(root, GBS_global_string("MARK_CONFIGS_%i", NT_get_canvas_id(ntw)), "Highlight configurations in tree");
     aws->load_xfig("mark_configs.fig");
 
     aws->auto_space(10, 10);
@@ -154,9 +187,15 @@ static AW_window *create_configuration_marker_window(AW_root *root, AWT_canvas *
     aws->callback(makeHelpCallback("mark_configs.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
+
     aws->at("list");
     AW_DB_selection *all_configs = awt_create_CONFIG_selection_list(GLOBAL.gb_main, aws, AWAR_CONFIGURATION, true);
-    awt_create_subset_selection_list(aws, all_configs->get_sellist(), "selected", "add", "sort", selected_configs_changed_cb, AW_CL(ntw));
+    AW_selection *sub_sel;
+    {
+        LocallyModify<bool> avoid(allow_subset_selection_cb, false);
+        sub_sel = awt_create_subset_selection_list(aws, all_configs->get_sellist(), "selected", "add", "sort", selected_configs_changed_cb, AW_CL(ntw));
+    }
+    awt_set_subset_selection_content(sub_sel, *get_selected_configs_from_awar(ntw));
 
     // @@@ would like to use ntw-specific awar for this selection list (opening two lists links them)
 
