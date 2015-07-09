@@ -1059,10 +1059,6 @@ public:
     const char *default_select_value() const { return parent_sellist.get_default_value(); }
     const char *default_select_display() const { return parent_sellist.get_default_display(); }
 
-    void get_subset(StrArray& subset) {
-        get_sellist()->to_array(subset, true);
-    }
-
     void fill() OVERRIDE { awt_assert(0); } // unused
 
     void collect_subset_cb(awt_collect_mode what) {
@@ -1175,6 +1171,27 @@ public:
             callChangedCallback();
         }
     }
+
+    void fill_entries_matching_values(const CharPtrArray& values) {
+        AW_selection_list *subset_list = get_sellist();
+        subset_list->clear();
+
+        for (size_t e = 0; e<values.size(); ++e) {
+            const char *value = values[e];
+
+            AW_selection_list_iterator pIter(&parent_sellist);
+            while (pIter) {
+                if (strcmp(pIter.get_value(), value) == 0) {
+                    subset_list->insert(pIter.get_displayed(), pIter.get_value());
+                    break;
+                }
+                ++pIter;
+            }
+        }
+
+        finish_fill_box(&parent_sellist, subset_list);
+        callChangedCallback();
+    }
 };
 
 static void collect_subset_cb(AW_window *, awt_collect_mode what, AW_CL cl_subsel) { ((AW_subset_selection*)cl_subsel)->collect_subset_cb(what); }
@@ -1208,6 +1225,15 @@ AW_selection *awt_create_subset_selection_list(AW_window *aww, AW_selection_list
     parent_selection->set_update_callback(parent_selection_changed_cb, AW_CL(subsel));
 
     return subsel;
+}
+
+void awt_set_subset_selection_content(AW_selection *subset_sel_, const CharPtrArray& values) {
+    /*! sets content of a subset-selection-list
+     * @param subset_sel_ selection list created by awt_create_subset_selection_list()
+     * @param values      e.g. retrieved using subset_sel_->get_values()
+     */
+    AW_subset_selection *subset_sel = dynamic_cast<AW_subset_selection*>(subset_sel_);
+    if (subset_sel) subset_sel->fill_entries_matching_values(values);
 }
 
 AW_selection_list *awt_create_selection_list_with_input_field(AW_window *aww, const char *awar_name, const char *at_box, const char *at_field) {

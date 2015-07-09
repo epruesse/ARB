@@ -84,6 +84,7 @@ char *awt_create_CONFIG_string(GBDATA *gb_main);
 
 typedef       void (*SubsetChangedCb)(AW_selection*, AW_CL cl_user);
 AW_selection *awt_create_subset_selection_list(AW_window *aww, AW_selection_list *select_subset_from, const char *at_box, const char *at_add, const char *at_sort, SubsetChangedCb subChanged_cb = NULL, AW_CL cl_user = 0);
+void          awt_set_subset_selection_content(AW_selection *subset_sel_, const CharPtrArray& values);
 
 // -------------------------------
 //      generic file prompter
