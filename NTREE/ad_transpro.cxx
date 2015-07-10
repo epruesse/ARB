@@ -147,7 +147,7 @@ static void realign_event(AW_window *aww) {
                 error = ta.close(GBT_set_alignment_len(gb_main, ali_dest, neededLength));
             }
             if (!error) {
-                aw_message(GBS_global_string("Alignment length of '%s' has been set to %li\n"
+                aw_message(GBS_global_string("Alignment length of '%s' has been set to %zu\n"
                                              "running re-aligner again!",
                                              ali_dest, neededLength));
 
@@ -161,7 +161,7 @@ static void realign_event(AW_window *aww) {
             GB_transaction ta(gb_main);
             long           destLen = GBT_get_alignment_len(gb_main, ali_dest);
             nt_assert(destLen>0 && size_t(destLen)<neededLength);
-            error = GBS_global_string("Missing %li columns in alignment '%s' (got=%li, need=%zu)\n"
+            error = GBS_global_string("Missing %zu columns in alignment '%s' (got=%li, need=%zu)\n"
                                       "(check toggle to permit auto-increment)",
                                       size_t(neededLength-destLen), ali_dest, destLen, neededLength);
         }

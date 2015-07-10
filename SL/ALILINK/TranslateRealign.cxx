@@ -878,7 +878,7 @@ public:
         char   *buffer         = NULL;
 
         if (ali_len<wanted_ali_len) {
-            fail_reason = GBS_global_string("Alignment '%s' is too short (increase its length to %li)", ali_dest, wanted_ali_len);
+            fail_reason = GBS_global_string("Alignment '%s' is too short (increase its length to %zu)", ali_dest, wanted_ali_len);
             if (wanted_ali_len>needed_ali_len) needed_ali_len = wanted_ali_len;
         }
         else {
