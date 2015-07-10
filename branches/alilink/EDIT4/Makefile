@@ -244,6 +244,7 @@ ED4_dots.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ED4_dots.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_dots.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ED4_dots.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+ED4_dots.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 ED4_dots.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ED4_dots.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 ED4_dots.o: $(ARBHOME)/INCLUDE/cb.h
@@ -641,6 +642,7 @@ ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/awt.hxx
+ED4_no_class.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/awt_seq_colors.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
@@ -648,6 +650,7 @@ ED4_no_class.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/cb_base.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/cbtypes.h
+ED4_no_class.o: $(ARBHOME)/INCLUDE/consensus_config.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/downcast.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -760,6 +763,7 @@ ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/cb_base.h
@@ -891,6 +895,7 @@ ED4_root.o: $(ARBHOME)/INCLUDE/gde.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/macros.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/pos_range.h
 ED4_root.o: $(ARBHOME)/INCLUDE/smartptr.h
+ED4_root.o: $(ARBHOME)/INCLUDE/st_window.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/static_assert.h
 ED4_root.o: $(ARBHOME)/INCLUDE/svn_revision.h
 ED4_root.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -1245,6 +1250,7 @@ graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+graph_aligner_gui.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/bytestring.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/cb.h

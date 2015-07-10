@@ -59,7 +59,14 @@ SECTION GDE menus language
                 menumeta:meta_key   Meta key equivalence (quick keys)
                 menumask:expert     Whole menu will be inaccessible in ARBs novice mode
 
-                item:item name      Name of current menu item
+                item:item name
+
+                          Name of current menu item
+
+                          Please do not change 'item name' for cosmetic
+                          purposes - doing so will invalidate user-stored-configs!
+
+
                 itemmeta:meta_key   Meta key equivalence (quick keys)
                 itemhelp:help_file  Help file (either full path, or in $ARBHOME/lib/help)
                 itemmethod:         Unix command
@@ -96,6 +103,9 @@ SECTION GDE menus language
                         Name of this variable. It will appear
                         in the itemmethod: line with a dollar
                         sign ($) in front of it.
+
+                        Please do not change 'argument_variable_name' for cosmetic
+                        purposes - doing so will invalidate user-stored-configs!
 
             argtype:TYPE
                         The type of graphic object

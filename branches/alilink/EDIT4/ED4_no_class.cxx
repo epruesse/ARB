@@ -35,6 +35,8 @@
 #include <limits.h>
 
 #include <vector>
+#include <awt_config_manager.hxx>
+#include <consensus_config.h>
 
 using namespace std;
 
@@ -805,13 +807,13 @@ void ED4_exit() {
         ed4w = ed4w->next;
     }
 
-    delete ED4_ROOT->main_manager;
-
     while (ED4_ROOT->first_window)
         ED4_ROOT->first_window->delete_window(ED4_ROOT->first_window);
 
 
     shutdown_macro_recording(ED4_ROOT->aw_root);
+
+    delete ED4_ROOT;
 
     GBDATA *gb_main = GLOBAL_gb_main;
     GLOBAL_gb_main  = NULL;
@@ -910,7 +912,8 @@ void ED4_set_reference_species(AW_window *aww, AW_CL disable, AW_CL ) {
                 char *name = GBT_read_string(GLOBAL_gb_main, AWAR_SPECIES_NAME);
 
                 ED4_ROOT->reference->init(name, ED4_ROOT->alignment_name);
-                delete name;
+
+                free(name);
             }
         }
         else {
@@ -1376,6 +1379,23 @@ void ED4_compression_toggle_changed_cb(AW_root *root, AW_CL cd1, AW_CL /* cd2 */
     root->awar(ED4_AWAR_COMPRESS_SEQUENCE_TYPE)->write_int(int(mode));
 }
 
+static AWT_config_mapping_def editor_options_config_mapping[] = {
+    { ED4_AWAR_COMPRESS_SEQUENCE_GAPS,    "compressgaps" },
+    { ED4_AWAR_COMPRESS_SEQUENCE_HIDE,    "hidenucs" },
+    { ED4_AWAR_COMPRESS_SEQUENCE_PERCENT, "hidepercent" },
+    { AWAR_EDIT_HELIX_SPACING,            "helixspacing" },
+    { AWAR_EDIT_TERMINAL_SPACING,         "terminalspacing" },
+    { ED4_AWAR_SCROLL_SPEED_X,            "scrollspeedx" },
+    { ED4_AWAR_SCROLL_SPEED_Y,            "scrollspeedy" },
+    { ED4_AWAR_SCROLL_MARGIN,             "scrollmargin" },
+    { ED4_AWAR_GAP_CHARS,                 "gapchars" },
+    { ED4_AWAR_DIGITS_AS_REPEAT,          "digitsasrepeat" },
+    { ED4_AWAR_FAST_CURSOR_JUMP,          "fastcursorjump" },
+    { ED4_AWAR_ANNOUNCE_CHECKSUM_CHANGES, "announcechecksumchanges" },
+
+    { 0, 0 }
+};
+
 AW_window *ED4_create_level_1_options_window(AW_root *root) {
     AW_window_simple *aws = new AW_window_simple;
 
@@ -1448,6 +1468,9 @@ AW_window *ED4_create_level_1_options_window(AW_root *root) {
     aws->label("Announce all checksum changes\ncaused by editing commands.");
     aws->create_toggle(ED4_AWAR_ANNOUNCE_CHECKSUM_CHANGES);
 
+    aws->at("config");
+    AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "options", editor_options_config_mapping);
+
     return aws;
 }
 
@@ -1464,6 +1487,16 @@ static AW_window *CON_create_groupswin_cb(AW_root *aw_root) {
     return aws;
 }
 
+static AWT_config_mapping_def consensus_config_mapping[] = {
+    { ED4_AWAR_CONSENSUS_COUNTGAPS,   CONSENSUS_CONFIG_COUNTGAPS },
+    { ED4_AWAR_CONSENSUS_GAPBOUND,    CONSENSUS_CONFIG_GAPBOUND },
+    { ED4_AWAR_CONSENSUS_GROUP,       CONSENSUS_CONFIG_GROUP },
+    { ED4_AWAR_CONSENSUS_CONSIDBOUND, CONSENSUS_CONFIG_CONSIDBOUND },
+    { ED4_AWAR_CONSENSUS_UPPER,       CONSENSUS_CONFIG_UPPER },
+    { ED4_AWAR_CONSENSUS_LOWER,       CONSENSUS_CONFIG_LOWER },
+
+    { 0, 0 }
+};
 
 AW_window *ED4_create_consensus_definition_window(AW_root *root) {
     static AW_window_simple *aws = 0;
@@ -1514,6 +1547,9 @@ AW_window *ED4_create_consensus_definition_window(AW_root *root) {
         aws->at("show");
         aws->label("Display consensus?");
         aws->create_toggle(ED4_AWAR_CONSENSUS_SHOW);
+
+        aws->at("config");
+        AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, CONSENSUS_CONFIG_ID, consensus_config_mapping);
     }
 
     return aws;

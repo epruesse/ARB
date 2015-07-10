@@ -38,7 +38,8 @@ DESCRIPTION     Here you can change various options:
 
                      Draw a skeleton of the secondary structure with variable line thickness.
 
-NOTES		None
+NOTES		Using the config-manager icon in the lower right corner of the window
+		will also handle the settings made in the 'Bond definitions' subwindow.
 
 EXAMPLES	None
 

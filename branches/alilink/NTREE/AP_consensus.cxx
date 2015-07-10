@@ -7,20 +7,7 @@
  *
  * Global Functions:              x
  *
- * Global Variables:              AWARS:
- *                  AW_STRING, "tmp/con/alignment"     : name of alignment
- *                  AW_STRING, "tmp/con/which_species" : only marked species ?
- *                  AW_STRING, "con/group"         : allow Sgrouping ?
- *                  AW_STRING, "con/countgaps"
- *                  AW_DOUBLE, "con/fupper"
- *                  AW_INT, "con/lower"
- *                  AW_INT, "con/gapbound"  : result is '-' if more than
- *                                            'gapbound' per cent gaps
- *                  AW_DOUBLE, "con/fconsidbound" : if frequency of character is
- *                                     more than 'fconsidbound' per cent, this
- *                                     character can contribute to groups
- *                  AW_STRING, "tmp/con/name"   : save with this name
- *                  AW_STRING, "con/result" : result has one or more lines ?
+ * Global Variables:              AWARS (see CON_calculate_cb)
  *
  * Global Structures:             x
  *
@@ -54,15 +41,30 @@
 #include <aw_awar.hxx>
 #include <arbdbt.h>
 #include <arb_strbuf.h>
+#include <awt_config_manager.hxx>
+#include <consensus_config.h>
 
 // AISC_MKPT_PROMOTE:#ifndef AW_BASE_HXX
 // AISC_MKPT_PROMOTE:#include <aw_base.hxx>
 // AISC_MKPT_PROMOTE:#endif
 
-#define AWAR_MAX_FREQ   "tmp/CON_MAX_FREQ/"
+#define AWAR_MAX_FREQ_PREFIX      "tmp/CON_MAX_FREQ/"
+#define AWAR_CONSENSUS_PREFIX     "con/"
+#define AWAR_CONSENSUS_PREFIX_TMP "tmp/" AWAR_CONSENSUS_PREFIX
 
-#define AWAR_MAX_FREQ_NO_GAPS AWAR_MAX_FREQ "no_gaps"
-#define AWAR_MAX_FREQ_SAI_NAME AWAR_MAX_FREQ "sai_name"
+#define AWAR_MAX_FREQ_NO_GAPS  AWAR_MAX_FREQ_PREFIX "no_gaps"
+#define AWAR_MAX_FREQ_SAI_NAME AWAR_MAX_FREQ_PREFIX "sai_name"
+
+#define AWAR_CONSENSUS_SPECIES      AWAR_CONSENSUS_PREFIX_TMP "which_species"
+#define AWAR_CONSENSUS_ALIGNMENT    AWAR_CONSENSUS_PREFIX_TMP "alignment"
+#define AWAR_CONSENSUS_COUNTGAPS    AWAR_CONSENSUS_PREFIX "countgaps"
+#define AWAR_CONSENSUS_GAPBOUND     AWAR_CONSENSUS_PREFIX "gapbound"
+#define AWAR_CONSENSUS_GROUP        AWAR_CONSENSUS_PREFIX "group"
+#define AWAR_CONSENSUS_FCONSIDBOUND AWAR_CONSENSUS_PREFIX "fconsidbound"
+#define AWAR_CONSENSUS_FUPPER       AWAR_CONSENSUS_PREFIX "fupper"
+#define AWAR_CONSENSUS_LOWER        AWAR_CONSENSUS_PREFIX "lower"
+#define AWAR_CONSENSUS_RESULT       AWAR_CONSENSUS_PREFIX "result"
+#define AWAR_CONSENSUS_NAME         AWAR_CONSENSUS_PREFIX_TMP "name"
 
 enum {
     BAS_GAP,
@@ -570,19 +572,17 @@ static void CON_cleartables(int **statistic, int isamino) {
  * Global Variables modified:    x
  *
  * AWARs referenced:
- *                  AW_STRING, "tmp/con/alignment"     : name of alignment
- *                  AW_STRING, "tmp/con/which_species" : only marked species ?
- *                  AW_STRING, "con/group"         : allow grouping ?
- *                  AW_STRING, "con/countgaps"
- *                  AW_DOUBLE, "con/fupper"
- *                  AW_INT, "con/lower"
- *                  AW_INT, "con/gapbound"  : result is '-' if more than
- *                                            'gapbound' per cent gaps
- *                  AW_DOUBLE, "con/fconsidbound" : if frequency of character is
- *                                     more than 'considbound' per cent, this
- *                                     character can contribute to groups
- *                  AW_STRING, "tmp/intcon/name"   : save with this name
- *                  AW_STRING, "con/result" : result has one or more lines ?
+ *                  AWAR_CONSENSUS_ALIGNMENT    : name of alignment
+ *                  AWAR_CONSENSUS_SPECIES      : only marked species ?
+ *                  AWAR_CONSENSUS_GROUP        : allow grouping ?
+ *                  AWAR_CONSENSUS_COUNTGAPS
+ *                  AWAR_CONSENSUS_FUPPER
+ *                  AWAR_CONSENSUS_LOWER
+ *                  AWAR_CONSENSUS_GAPBOUND     : result is '-' if more than 'gapbound' per cent gaps
+ *                  AWAR_CONSENSUS_FCONSIDBOUND : if frequency of character is more than 'considbound' per cent,
+ *                                                this character can contribute to groups
+ *                  AWAR_CONSENSUS_NAME         : save with this name
+ *                  AWAR_CONSENSUS_RESULT       : result has one or more lines ?
  *
  * AWARs modified:               x
  *
@@ -595,7 +595,7 @@ static void CON_cleartables(int **statistic, int isamino) {
 static void CON_calculate_cb(AW_window *aw)
 {
     AW_root  *awr   = aw->get_root();
-    char     *align = awr->awar("tmp/con/alignment")->read_string();
+    char     *align = awr->awar(AWAR_CONSENSUS_ALIGNMENT)->read_string();
     GB_ERROR  error = 0;
 
     GB_push_transaction(GLOBAL.gb_main);
@@ -609,8 +609,8 @@ static void CON_calculate_cb(AW_window *aw)
         int resultiscomplex = 1;
 
         {
-            char *marked        = awr->awar("tmp/con/which_species")->read_string();
-            char *complexresult = awr->awar("con/result")->read_string();
+            char *marked        = awr->awar(AWAR_CONSENSUS_SPECIES)->read_string();
+            char *complexresult = awr->awar(AWAR_CONSENSUS_RESULT)->read_string();
 
             if (strcmp("marked", marked)        != 0) onlymarked = 0;
             if (strcmp("complex", complexresult) != 0) resultiscomplex = 0;
@@ -629,8 +629,8 @@ static void CON_calculate_cb(AW_window *aw)
         arb_progress progress("Calculating consensus");
 
         long   nrofspecies = CON_makestatistic(statistic, convtable, align, onlymarked);
-        double fupper      = awr->awar("con/fupper")->read_float();
-        int    lower       = (int)awr->awar("con/lower")->read_int();
+        double fupper      = awr->awar(AWAR_CONSENSUS_FUPPER)->read_float();
+        int    lower       = (int)awr->awar(AWAR_CONSENSUS_LOWER)->read_int();
 
         if (fupper>100.0)   fupper = 100;
         if (fupper<0)       fupper = 0;
@@ -641,18 +641,18 @@ static void CON_calculate_cb(AW_window *aw)
         }
         else {
 
-            double fconsidbound                = awr->awar("con/fconsidbound")->read_float();
+            double fconsidbound                = awr->awar(AWAR_CONSENSUS_FCONSIDBOUND)->read_float();
             if (fconsidbound>100) fconsidbound = 100;
             if (fconsidbound<0)   fconsidbound = 0;
 
-            int gapbound               = (int)awr->awar("con/gapbound")->read_int();
+            int gapbound               = (int)awr->awar(AWAR_CONSENSUS_GAPBOUND)->read_int();
             if (gapbound<0)   gapbound = 0;
             if (gapbound>100) gapbound = 100;
 
             int groupallowed, countgap;
             {
-                char *group     = awr->awar("con/group")->read_string();
-                char *countgaps = awr->awar("con/countgaps")->read_string();
+                char *group     = awr->awar(AWAR_CONSENSUS_GROUP)->read_string();
+                char *countgaps = awr->awar(AWAR_CONSENSUS_COUNTGAPS)->read_string();
 
                 groupallowed = strcmp("on", group) == 0;
                 countgap     = strcmp("on", countgaps) == 0;
@@ -670,7 +670,7 @@ static void CON_calculate_cb(AW_window *aw)
             char *result = 0;
             CON_evaluatestatistic(result, statistic, groupflags, groupnames, (int)maxalignlen, fupper, lower, fconsidbound, gapbound, countgap, numgroups);
 
-            char *savename = awr->awar("tmp/con/name")->read_string();
+            char *savename = awr->awar(AWAR_CONSENSUS_NAME)->read_string();
 
             error = CON_export(savename, align, statistic, result, convtable, groupnames,
                                onlymarked, nrofspecies, maxalignlen, countgap, gapbound, groupallowed,
@@ -694,22 +694,21 @@ void AP_create_consensus_var(AW_root *aw_root, AW_default aw_def)
     GB_transaction ta(GLOBAL.gb_main);
     {
         char *defali = GBT_get_default_alignment(GLOBAL.gb_main);
-        aw_root->awar_string("tmp/con/alignment", defali, aw_def);
+        aw_root->awar_string(AWAR_CONSENSUS_ALIGNMENT, defali, aw_def);
         free(defali);
     }
-    aw_root->awar_string("tmp/con/which_species", "marked", aw_def);
-    aw_root->awar_string("con/group", "off", aw_def);
-    aw_root->awar_string("con/countgaps", "on", aw_def);
-    aw_root->awar_float("con/fupper", 95, aw_def);
-    aw_root->awar_int("con/lower", 70, aw_def);
-    aw_root->awar_int("con/gapbound", 60, aw_def);
-    aw_root->awar_float("con/fconsidbound", 30, aw_def);
-    aw_root->awar_string("tmp/con/name", "CONSENSUS", aw_def);
-    aw_root->awar_string("con/result", "single line", aw_def);
+    aw_root->awar_string(AWAR_CONSENSUS_SPECIES,      "marked",      aw_def);
+    aw_root->awar_string(AWAR_CONSENSUS_GROUP,        "off",         aw_def);
+    aw_root->awar_string(AWAR_CONSENSUS_COUNTGAPS,    "on",          aw_def);
+    aw_root->awar_float (AWAR_CONSENSUS_FUPPER,       95,            aw_def);
+    aw_root->awar_int   (AWAR_CONSENSUS_LOWER,        70,            aw_def);
+    aw_root->awar_int   (AWAR_CONSENSUS_GAPBOUND,     60,            aw_def);
+    aw_root->awar_float (AWAR_CONSENSUS_FCONSIDBOUND, 30,            aw_def);
+    aw_root->awar_string(AWAR_CONSENSUS_NAME,         "CONSENSUS",   aw_def);
+    aw_root->awar_string(AWAR_CONSENSUS_RESULT,       "single line", aw_def);
 
     aw_root->awar_string(AWAR_MAX_FREQ_SAI_NAME, "MAX_FREQUENCY", aw_def);
-    aw_root->awar_int(AWAR_MAX_FREQ_NO_GAPS, 1, aw_def);
-
+    aw_root->awar_int   (AWAR_MAX_FREQ_NO_GAPS,  1,               aw_def);
 }
 
 // Open window to show IUPAC tables
@@ -725,6 +724,24 @@ static AW_window * CON_showgroupswin_cb(AW_root *aw_root)
 
     return (AW_window *)aws;
 }
+
+static AWT_config_mapping_def consensus_config_mapping[] = {
+    { AWAR_CONSENSUS_COUNTGAPS,    CONSENSUS_CONFIG_COUNTGAPS },
+    { AWAR_CONSENSUS_GAPBOUND,     CONSENSUS_CONFIG_GAPBOUND },
+    { AWAR_CONSENSUS_GROUP,        CONSENSUS_CONFIG_GROUP },
+    { AWAR_CONSENSUS_FCONSIDBOUND, CONSENSUS_CONFIG_CONSIDBOUND },
+    { AWAR_CONSENSUS_FUPPER,       CONSENSUS_CONFIG_UPPER },
+    { AWAR_CONSENSUS_LOWER,        CONSENSUS_CONFIG_LOWER },
+
+    // make sure the keywords of the following entries
+    // DIFFER from those defined at ../TEMPLATES/consensus_config.h@CommonEntries
+
+    { AWAR_CONSENSUS_SPECIES, "species" },
+    { AWAR_CONSENSUS_RESULT,  "result" },
+    { AWAR_CONSENSUS_NAME,    "name" },
+
+    { 0, 0 }
+};
 
 AW_window *AP_create_con_expert_window(AW_root *aw_root) {
     AW_window_simple *aws = new AW_window_simple;
@@ -744,13 +761,13 @@ AW_window *AP_create_con_expert_window(AW_root *aw_root) {
     aws->button_length(10);
 
     aws->at("which_species");
-    aws->create_toggle_field("tmp/con/which_species", NULL, "");
+    aws->create_toggle_field(AWAR_CONSENSUS_SPECIES, NULL, "");
     aws->insert_toggle("all", "1", "all");
     aws->insert_default_toggle("marked",   "1", "marked");
     aws->update_toggle_field();
 
     aws->at("which_alignment");
-    awt_create_ALI_selection_list(GLOBAL.gb_main, (AW_window *)aws, "tmp/con/alignment", "*=");
+    awt_create_ALI_selection_list(GLOBAL.gb_main, (AW_window *)aws, AWAR_CONSENSUS_ALIGNMENT, "*=");
 
     aws->button_length(15);
 
@@ -759,40 +776,43 @@ AW_window *AP_create_con_expert_window(AW_root *aw_root) {
     aws->create_button("GO", "GO", "G");
 
     aws->at("group");
-    aws->create_toggle_field("con/group", NULL, "");
+    aws->create_toggle_field(AWAR_CONSENSUS_GROUP, NULL, "");
     aws->insert_toggle("on", "1", "on");
     aws->insert_default_toggle("off", "1", "off");
     aws->update_toggle_field();
 
     aws->at("countgaps");
-    aws->create_toggle_field("con/countgaps", NULL, "");
+    aws->create_toggle_field(AWAR_CONSENSUS_COUNTGAPS, NULL, "");
     aws->insert_toggle("on", "1", "on");
     aws->insert_default_toggle("off", "1", "off");
     aws->update_toggle_field();
 
     aws->at("upper");
-    aws->create_input_field("con/fupper", 4);
+    aws->create_input_field(AWAR_CONSENSUS_FUPPER, 4);
 
     aws->at("lower");
-    aws->create_input_field("con/lower", 4);
+    aws->create_input_field(AWAR_CONSENSUS_LOWER, 4);
 
     aws->at("considbound");
-    aws->create_input_field("con/fconsidbound", 4);
+    aws->create_input_field(AWAR_CONSENSUS_FCONSIDBOUND, 4);
 
     aws->at("gapbound");
-    aws->create_input_field("con/gapbound", 4);
+    aws->create_input_field(AWAR_CONSENSUS_GAPBOUND, 4);
 
     aws->at("name");
-    aws->create_input_field("tmp/con/name", 10);
+    aws->create_input_field(AWAR_CONSENSUS_NAME, 10);
 
     aws->at("result");
-    aws->create_toggle_field("con/result", NULL, "");
+    aws->create_toggle_field(AWAR_CONSENSUS_RESULT, NULL, "");
     aws->insert_toggle("single line", "1", "single line");
     aws->insert_default_toggle("complex", "1", "complex");
     aws->update_toggle_field();
 
     aws->at("save_box");
-    awt_create_SAI_selection_list(GLOBAL.gb_main, aws, "tmp/con/name", false);
+    awt_create_SAI_selection_list(GLOBAL.gb_main, aws, AWAR_CONSENSUS_NAME, false);
+
+    aws->at("config");
+    AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, CONSENSUS_CONFIG_ID, consensus_config_mapping);
 
     return aws;
 }

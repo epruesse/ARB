@@ -100,6 +100,8 @@ ALLOWED_gcc_VERSIONS=\
         4.7.1 4.7.2 4.7.3 4.7.4 \
   4.8.0 4.8.1 4.8.2 4.8.3 4.8.4 \
   4.9.0 4.9.1 4.9.2 \
+  5.1.0 \
+
 
 # supported clang versions:
 ALLOWED_clang_VERSIONS=\
@@ -141,6 +143,7 @@ USE_GCC_46_OR_HIGHER:=
 USE_GCC_47_OR_HIGHER:=
 USE_GCC_48_OR_HIGHER:=
 USE_GCC_49_OR_HIGHER:=
+USE_GCC_50_OR_HIGHER:=
 
 ifeq ($(USE_GCC_MAJOR),4)
  ifeq ($(USE_GCC_MINOR),5)
@@ -168,6 +171,7 @@ else
  USE_GCC_47_OR_HIGHER:=yes
  USE_GCC_48_OR_HIGHER:=yes
  USE_GCC_49_OR_HIGHER:=yes
+ USE_GCC_50_OR_HIGHER:=yes
 endif
 
 #---------------------- define special directories for non standard builds
@@ -505,6 +509,7 @@ COMMON_SANITIZE_FLAGS:=-ggdb3 -fno-omit-frame-pointer
 # activate AddressSanitizer+LeakSanitizer?
 ifeq ($(SANITIZE_ADDRESS),1)
  cflags += $(COMMON_SANITIZE_FLAGS) -fsanitize=address
+ dflags += -DLEAKS_SANITIZED
  EXECLIBS += -lasan
 # EXECLIBS += -static-libasan
 endif
@@ -512,6 +517,10 @@ endif
 # activate UndefinedBehaviorSanitizer?
 ifeq ($(SANITIZE_UNDEFINED),1)
  cflags += $(COMMON_SANITIZE_FLAGS) -fsanitize=undefined
+ ifeq ('$(USE_GCC_50_OR_HIGHER)', 'yes')
+# (temporarily) disable new sanitizers introduced with gcc 5.1.0
+  cflags += -fno-sanitize=vptr,alignment,null,bounds
+ endif
  ifeq ('$(DEBUG)','1')
   ifeq ($(USE_GCC_MAJOR),4)
    ifeq ($(USE_GCC_MINOR),9)
@@ -679,6 +688,12 @@ LINK_SHARED_LIB := $(LINK_STATIC_LIB)
 else
 SHARED_LIB_SUFFIX = so# shared lib suffix
 LINK_SHARED_LIB := $(A_CXX) $(clflags) -shared $(GCOVFLAGS) -o# link shared lib
+endif
+
+ifeq ($(DARWIN),1)
+lflags4perl:=
+else
+lflags4perl:=$(cross_lflags) -shared
 endif
 
 # delete variables unused below
@@ -1122,8 +1137,8 @@ ARCHS_NTREE = \
 $(NTREE): $(ARCHS_NTREE:.a=.dummy) link_awt
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_NTREE) $(GUI_LIBS) $(use_ARB_main) || ( \
 		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_NTREE) $(ARCHS_CLIENT_PROBE) $(GUI_LIBS) $(EXECLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_NTREE) $(ARCHS_CLIENT_PROBE) $(GUI_LIBS) $(EXECLIBS) && \
+		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(EXECLIBS) $(ARCHS_NTREE) $(ARCHS_CLIENT_PROBE) $(GUI_LIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(EXECLIBS) $(ARCHS_NTREE) $(ARCHS_CLIENT_PROBE) $(GUI_LIBS) && \
 		echo "$(SEP) Link $@ [done]"; \
 		)
 
@@ -1159,8 +1174,8 @@ LIBS_EDIT4 := $(GL_LIBS)
 $(EDIT4): $(ARCHS_EDIT4:.a=.dummy) link_awt 
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_EDIT4) $(GUI_LIBS) $(use_ARB_main) || ( \
 		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_EDIT4) $(ARCHS_CLIENT_NAMES) $(GUI_LIBS) $(LIBS_EDIT4) $(EXECLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_EDIT4) $(ARCHS_CLIENT_NAMES) $(GUI_LIBS) $(LIBS_EDIT4) $(EXECLIBS) && \
+		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(EXECLIBS) $(ARCHS_EDIT4) $(ARCHS_CLIENT_NAMES) $(GUI_LIBS) $(LIBS_EDIT4)" ; \
+		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(EXECLIBS) $(ARCHS_EDIT4) $(ARCHS_CLIENT_NAMES) $(GUI_LIBS) $(LIBS_EDIT4) && \
 		echo "$(SEP) Link $@ [done]"; \
 		)
 
@@ -1172,8 +1187,8 @@ ARCHS_RNACMA = \
 $(RNACMA) : $(ARCHS_RNACMA:.a=.dummy) link_db
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_RNACMA) || ( \
 		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_RNACMA) $(LIBS) $(EXECLIBS)"; \
-		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_RNACMA) $(LIBS) $(EXECLIBS) && \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(EXECLIBS) $(ARCHS_RNACMA) $(LIBS)"; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(EXECLIBS) $(ARCHS_RNACMA) $(LIBS) && \
 		echo "$(SEP) Link $@ [done]"; \
 		)
 
@@ -1188,8 +1203,8 @@ ARCHS_WETC = \
 $(WETC): $(ARCHS_WETC:.a=.dummy) link_awt
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_WETC) $(GUI_LIBS) $(use_ARB_main) || ( \
 		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_WETC) $(GUI_LIBS) $(EXECLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_WETC) $(GUI_LIBS) $(EXECLIBS) && \
+		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(EXECLIBS) $(ARCHS_WETC) $(GUI_LIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(EXECLIBS) $(ARCHS_WETC) $(GUI_LIBS) && \
 		echo "$(SEP) Link $@ [done]"; \
 		)
 
@@ -1213,8 +1228,8 @@ ARCHS_DIST = \
 $(DIST): $(ARCHS_DIST:.a=.dummy) link_awt
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_DIST) $(GUI_LIBS) $(use_ARB_main) || ( \
 		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_DIST) $(ARCHS_CLIENT_PROBE) $(GUI_LIBS) $(EXECLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_DIST) $(ARCHS_CLIENT_PROBE) $(GUI_LIBS) $(EXECLIBS) && \
+		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(EXECLIBS) $(ARCHS_DIST) $(ARCHS_CLIENT_PROBE) $(GUI_LIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(EXECLIBS) $(ARCHS_DIST) $(ARCHS_CLIENT_PROBE) $(GUI_LIBS) && \
 		echo "$(SEP) Link $@ [done]"; \
 		)
 
@@ -1237,8 +1252,8 @@ ARCHS_PARSIMONY = \
 $(PARSIMONY): $(ARCHS_PARSIMONY:.a=.dummy) link_awt
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PARSIMONY) $(GUI_LIBS) $(use_ARB_main) || ( \
 		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_PARSIMONY) $(ARCHS_CLIENT_NAMES) $(GUI_LIBS) $(EXECLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_PARSIMONY) $(ARCHS_CLIENT_NAMES) $(GUI_LIBS) $(EXECLIBS) && \
+		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(EXECLIBS) $(ARCHS_PARSIMONY) $(ARCHS_CLIENT_NAMES) $(GUI_LIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(EXECLIBS) $(ARCHS_PARSIMONY) $(ARCHS_CLIENT_NAMES) $(GUI_LIBS) && \
 		echo "$(SEP) Link $@ [done]"; \
 		)
 
@@ -1250,8 +1265,8 @@ ARCHS_CONVERT_ALN =	\
 $(CONVERT_ALN) : $(ARCHS_CONVERT_ALN:.a=.dummy) link_db
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_CONVERT_ALN) $(use_ARB_main) || ( \
 		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_CONVERT_ALN) $(LIBS) $(EXECLIBS)"; \
-		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_CONVERT_ALN) $(LIBS) $(EXECLIBS) && \
+		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(EXECLIBS) $(ARCHS_CONVERT_ALN) $(LIBS)"; \
+		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(EXECLIBS) $(ARCHS_CONVERT_ALN) $(LIBS) && \
 		echo "$(SEP) Link $@ [done]"; \
 		)
 
@@ -1264,8 +1279,8 @@ ARCHS_TREEGEN =	\
 $(TREEGEN) :  $(ARCHS_TREEGEN:.a=.dummy)
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_TREEGEN) $(use_ARB_main_C) || ( \
 		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main_C) $(LIBPATH) $(ARCHS_TREEGEN) $(EXECLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(use_ARB_main_C) $(LIBPATH) $(ARCHS_TREEGEN) $(EXECLIBS) && \
+		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main_C) $(LIBPATH) $(EXECLIBS) $(ARCHS_TREEGEN)" ; \
+		$(LINK_EXECUTABLE) $@ $(use_ARB_main_C) $(LIBPATH) $(EXECLIBS) $(ARCHS_TREEGEN) && \
 		echo "$(SEP) Link $@ [done]"; \
 		)
 
@@ -1279,8 +1294,8 @@ ARCHS_NALIGNER = \
 $(NALIGNER): $(ARCHS_NALIGNER:.a=.dummy) link_db
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_NALIGNER) $(use_ARB_main) || ( \
 		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_NALIGNER) $(ARCHS_CLIENT_PROBE) $(LIBS) $(EXECLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_NALIGNER) $(ARCHS_CLIENT_PROBE) $(LIBS) $(EXECLIBS) && \
+		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(EXECLIBS) $(ARCHS_NALIGNER) $(ARCHS_CLIENT_PROBE) $(LIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(EXECLIBS) $(ARCHS_NALIGNER) $(ARCHS_CLIENT_PROBE) $(LIBS) && \
 		echo "$(SEP) Link $@ [done]"; \
 		)
 
@@ -1297,8 +1312,8 @@ ARCHS_PHYLO = \
 $(PHYLO): $(ARCHS_PHYLO:.a=.dummy) link_awt
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PHYLO) $(GUI_LIBS) $(use_ARB_main) || ( \
 		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_PHYLO) $(GUI_LIBS) $(EXECLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_PHYLO) $(GUI_LIBS) $(EXECLIBS) && \
+		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(EXECLIBS) $(ARCHS_PHYLO) $(GUI_LIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(EXECLIBS) $(ARCHS_PHYLO) $(GUI_LIBS) && \
 		echo "$(SEP) Link $@ [done]"; \
 		)
 
@@ -1315,8 +1330,8 @@ ARCHS_DBSERVER = \
 $(DBSERVER): $(ARCHS_DBSERVER:.a=.dummy) link_db
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_DBSERVER) $(ARBDB_LIB) $(use_ARB_main) || ( \
 		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_DBSERVER) $(ARBDB_LIB) $(ARCHS_CLIENT_PROBE) $(SYSLIBS) $(EXECLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_DBSERVER) $(ARBDB_LIB) $(ARCHS_CLIENT_PROBE) $(SYSLIBS) $(EXECLIBS) && \
+		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(EXECLIBS) $(ARCHS_DBSERVER) $(ARBDB_LIB) $(ARCHS_CLIENT_PROBE) $(SYSLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(EXECLIBS) $(ARCHS_DBSERVER) $(ARBDB_LIB) $(ARCHS_CLIENT_PROBE) $(SYSLIBS) && \
 		echo "$(SEP) Link $@ [done]"; \
 		)
 
@@ -1338,8 +1353,8 @@ ARCHS_PROBE_DEPEND = \
 $(PROBE): $(ARCHS_PROBE_DEPEND:.a=.dummy) link_db 
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PROBE_LINK) $(ARBDB_LIB) $(ARCHS_SERVER_PROBE) config.makefile $(use_ARB_main) || ( \
 		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_PROBE_LINK) $(ARBDB_LIB) $(ARCHS_SERVER_PROBE) $(SYSLIBS) $(EXECLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_PROBE_LINK) $(ARBDB_LIB) $(ARCHS_SERVER_PROBE) $(SYSLIBS) $(EXECLIBS) && \
+		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(EXECLIBS) $(ARCHS_PROBE_LINK) $(ARBDB_LIB) $(ARCHS_SERVER_PROBE) $(SYSLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(EXECLIBS) $(ARCHS_PROBE_LINK) $(ARBDB_LIB) $(ARCHS_SERVER_PROBE) $(SYSLIBS) && \
 		echo "$(SEP) Link $@ [done]"; \
 		)
 
@@ -1352,8 +1367,8 @@ ARCHS_NAMES = \
 $(NAMES): $(ARCHS_NAMES:.a=.dummy) link_db
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_NAMES) $(ARBDB_LIB) $(ARCHS_CLIENT_NAMES) $(use_ARB_main) || ( \
 		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_NAMES) $(ARBDB_LIB) $(ARCHS_CLIENT_NAMES) NAMES_COM/server.a $(SYSLIBS) $(EXECLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_NAMES) $(ARBDB_LIB) $(ARCHS_CLIENT_NAMES) NAMES_COM/server.a $(SYSLIBS) $(EXECLIBS) && \
+		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(EXECLIBS) $(ARCHS_NAMES) $(ARBDB_LIB) $(ARCHS_CLIENT_NAMES) NAMES_COM/server.a $(SYSLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(EXECLIBS) $(ARCHS_NAMES) $(ARBDB_LIB) $(ARCHS_CLIENT_NAMES) NAMES_COM/server.a $(SYSLIBS) && \
 		echo "$(SEP) Link $@ [done]"; \
 		)
 
@@ -1893,8 +1908,8 @@ realperl: perltools
 		$(TIME) $(MAKE) -C PERL2ARB -r -f Makefile.main \
 			"AUTODEPENDS=1" \
 			"dflags=$(dflags)" \
-			"cross_cflags=$(cross_cflags) $(cxxflags) $(dflags)" \
-			"cross_lflags=$(cross_lflags)" \
+			"cflags4perl=$(cflags) $(cxxflags) $(dflags)" \
+			"lflags4perl=$(lflags4perl)" \
 			"COMPILER_VERSION=$(COMPILER_VERSION)" \
 			all && \
 		$(TEST_PERL_SCRIPTS) && \
@@ -2456,6 +2471,17 @@ post_commit_check:
 	$(MAKE) things_that_always_should_work
 	@echo "---------------------------------------- [Final]"
 	$(MAKE) check_svn_state
+
+# --------------------------------------------------------------------------------
+# sanitize arb_ntree; also works for clients (arb_edit4, ...) started from there.
+
+sanitize: all
+	( \
+		export "LSAN_OPTIONS=max_leaks=30:suppressions=$(ARBHOME)/SOURCE_TOOLS/arb.leaksan.supp"; \
+		echo "sake[1]: Entering directory \`$(ARBHOME)'"; \
+		$(ARBHOME)/bin/arb_ntree --execute _logged ~/data/test.arb 2>&1 ; \
+		echo "sake[1]: Leaving directory \`$(ARBHOME)'" \
+	) | $(ARBHOME)/SOURCE_TOOLS/asan2msg.pl
 
 # --------------------------------------------------------------------------------
 

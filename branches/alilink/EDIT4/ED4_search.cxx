@@ -1701,9 +1701,8 @@ static AW_window *save_search_parameters(AW_root *root, AW_CL cl_param) {
 }
 
 
-static void setup_search_config(AWT_config_definition& cdef, AW_CL cl_search_type) {
-    int             search_type = int(cl_search_type);
-    SearchAwarList *awarList    = &awar_list[search_type];
+static void setup_search_config(AWT_config_definition& cdef, ED4_SearchPositionType search_type) {
+    SearchAwarList *awarList = &awar_list[search_type];
 
     cdef.add(awarList->show, "show");
     cdef.add(awarList->openFolded, "openFolded");
@@ -1824,7 +1823,7 @@ void ED4_popup_search_window(AW_window *aww, AW_CL cl_search_type) {
         aws->create_toggle(awarList->exact);
 
         aws->at("config");
-        AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "search", setup_search_config, (AW_CL)type);
+        AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "search", makeConfigSetupCallback(setup_search_config, type));
     }
 
     aws->activate();

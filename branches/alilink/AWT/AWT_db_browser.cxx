@@ -802,6 +802,7 @@ static void selected_node_modified_cb(GBDATA *gb_node, GB_CB_TYPE cb_type) {
         static bool avoid_recursion = false;
         if (!avoid_recursion) {
             LocallyModify<bool> flag(avoid_recursion, true);
+            GlobalStringBuffers *old_buffers = GBS_store_global_buffers();
 
             AW_root *aw_root   = AW_root::SINGLETON;
             AW_awar *awar_path = aw_root->awar_no_error(AWAR_DBB_PATH);
@@ -828,6 +829,7 @@ static void selected_node_modified_cb(GBDATA *gb_node, GB_CB_TYPE cb_type) {
                     awar_path->touch();
                 }
             }
+            GBS_restore_global_buffers(old_buffers);
         }
     }
 }

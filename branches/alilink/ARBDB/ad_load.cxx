@@ -1145,7 +1145,10 @@ static long gb_read_bin(FILE *in, GBCONTAINER *gbc, bool allowed_to_load_diff, a
 
         gb_assert(mapped || map_fail_reason);
 
-        if (mapped) return 0; // succeded loading mapfile -> no need to load normal DB file
+        if (mapped) {
+            Main->mapped = true;
+            return 0; // succeded loading mapfile -> no need to load normal DB file
+        }
         GB_informationf("ARB: %s => loading entire DB", map_fail_reason);
     }
 

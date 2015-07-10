@@ -74,6 +74,7 @@ GDE.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+GDE.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 GDE.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 GDE.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 GDE.o: $(ARBHOME)/INCLUDE/cb.h

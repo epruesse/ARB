@@ -701,7 +701,7 @@ void gb_install_command_table(GBDATA *gb_main, struct GBL_command_table *table, 
         GBS_write_hash(Main->command_hash, table->command_identifier, (long)table->function);
     }
 
-    gb_assert((GBS_hash_count_elems(Main->command_hash)+1) == table_size);
+    gb_assert((GBS_hash_elements(Main->command_hash)+1) == table_size);
 }
 
 static char *gbs_search_second_x(const char *str) {

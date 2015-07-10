@@ -26,6 +26,7 @@
 #include <mode_text.h>
 
 #include <arb_file.h>
+#include <awt_config_manager.hxx>
 
 #ifndef sec_assert // happens in NDEBUG mode
 #define sec_assert(cond) arb_assert(cond)
@@ -560,7 +561,7 @@ static AW_window *SEC_create_bonddef_window(AW_root *awr) {
 
 #define INSERT_PAIR_FIELDS(label, pairname)                             \
     aws->at_x(x_label);                                                 \
-    aws->create_button("", label);                                      \
+    aws->create_button(NULL, label);                                    \
     aws->at_x(x_pairs);                                                 \
     aws->create_input_field(AWAR_SECEDIT_##pairname##_PAIRS, 30);       \
     aws->at_x(x_chars);                                                 \
@@ -569,14 +570,45 @@ static AW_window *SEC_create_bonddef_window(AW_root *awr) {
 
     INSERT_PAIR_FIELDS("Strong pairs", STRONG);
     INSERT_PAIR_FIELDS("Normal pairs", NORMAL);
-    INSERT_PAIR_FIELDS("Weak pairs", WEAK);
-    INSERT_PAIR_FIELDS("No pairs", NO);
-    INSERT_PAIR_FIELDS("User pairs", USER);
+    INSERT_PAIR_FIELDS("Weak pairs",   WEAK);
+    INSERT_PAIR_FIELDS("No pairs",     NO);
+    INSERT_PAIR_FIELDS("User pairs",   USER);
 
 #undef INSERT_PAIR_FIELDS
 
     return aws;
 }
+
+#define INSERT_PAIR_MAPPING(pairname)                              \
+    { AWAR_SECEDIT_##pairname##_PAIRS, "pairs_" #pairname },       \
+    { AWAR_SECEDIT_##pairname##_PAIR_CHAR, "char_" #pairname }
+
+static AWT_config_mapping_def secedit_display_config_mapping[] = {
+    { AWAR_SECEDIT_HIDE_BASES,        "hidebases" },
+    { AWAR_SECEDIT_DIST_BETW_STRANDS, "stranddist" },
+    { AWAR_SECEDIT_SHOW_BONDS,        "showbonds" },
+
+    INSERT_PAIR_MAPPING(STRONG),
+    INSERT_PAIR_MAPPING(NORMAL),
+    INSERT_PAIR_MAPPING(WEAK),
+    INSERT_PAIR_MAPPING(NO),
+    INSERT_PAIR_MAPPING(USER),
+
+    { AWAR_SECEDIT_BOND_THICKNESS,     "bondthickness" },
+    { AWAR_SECEDIT_SHOW_CURPOS,        "showposition" },
+    { AWAR_SECEDIT_SHOW_HELIX_NRS,     "showhelixnrs" },
+    { AWAR_SECEDIT_SHOW_ECOLI_POS,     "showecolipos" },
+    { AWAR_SECEDIT_DISPLAY_SEARCH,     "showsearch" },
+    { AWAR_SECEDIT_DISPLAY_SAI,        "showsai" },
+    { AWAR_SECEDIT_DISPPOS_BINDING,    "disppos_helix" },
+    { AWAR_SECEDIT_DISPPOS_ECOLI,      "disppos_ecoli" },
+    { AWAR_SECEDIT_SHOW_STR_SKELETON,  "skeleton" },
+    { AWAR_SECEDIT_SKELETON_THICKNESS, "skeleton_thickness" },
+
+    { 0, 0 }
+};
+
+#undef INSERT_PAIR_MAPPING
 
 static AW_window *SEC_create_display_window(AW_root *awr) {
     AW_window_simple *aws = new AW_window_simple;
@@ -670,6 +702,9 @@ static AW_window *SEC_create_display_window(AW_root *awr) {
     aws->label("Show debug info:");
     aws->create_toggle(AWAR_SECEDIT_SHOW_DEBUG);
 #endif
+
+    aws->at("config");
+    AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "secedit_display", secedit_display_config_mapping);
 
     return aws;
 }
