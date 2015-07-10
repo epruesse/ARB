@@ -645,10 +645,11 @@ static GBCM_ServerResult gbcms_write_keys(int socket, GBDATA *gbd) { // @@@ move
     if (gbcm_write(socket, (const char *)buffer, 4*sizeof(long))) return GBCM_SERVER_FAULT;
 
     for (int i=1; i<Main->keycnt; i++) {
-        buffer[0] = Main->keys[i].nref;
-        buffer[1] = Main->keys[i].next_free_key;
+        gb_Key &key = Main->keys[i];
+        buffer[0] = key.nref;
+        buffer[1] = key.next_free_key;
         if (gbcm_write(socket, (const char *)buffer, sizeof(long)*2)) return GBCM_SERVER_FAULT;
-        if (gbcm_write_string(socket, Main->keys[i].key)) return GBCM_SERVER_FAULT;
+        if (gbcm_write_string(socket, key.key)) return GBCM_SERVER_FAULT;
     }
     return GBCM_SERVER_OK;
 }
@@ -1396,14 +1397,15 @@ static GB_ERROR gbcmc_read_keys(int socket, GBDATA *gbd) { // @@@ move into GB_M
             return GB_export_error("ARB_DB CLIENT ERROR receive failed 6253");
         }
 
-        Main->keys[i].nref          = buffer[0];    // to control malloc_index
-        Main->keys[i].next_free_key = buffer[1];    // to control malloc_index
+        gb_Key &KEY = Main->keys[i];
+
+        KEY.nref          = buffer[0];    // to control malloc_index
+        KEY.next_free_key = buffer[1];    // to control malloc_index
 
         char *key = gbcm_read_string(socket);
         if (key) {
             GBS_write_hash(Main->key_2_index_hash, key, i);
-            if (Main->keys[i].key) free (Main->keys[i].key);
-            Main->keys[i].key = key;
+            freeset(KEY.key, key);
         }
     }
     Main->keycnt = (int)size;

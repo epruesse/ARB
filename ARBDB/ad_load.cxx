@@ -727,13 +727,13 @@ static long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbc_dest, long nitems, lon
         long    type2    = (type>>4)&0xf;
         GBQUARK key      = (GBQUARK)gb_get_number(in);
 
-        if (key >= Main->keycnt || !Main->keys[key].key) {
+        if (key >= Main->keycnt || !quark2key(Main, key)) {
             const char *reason = GBS_global_string("database entry with unknown field quark %i", key);
             if (gb_recover_corrupt_file(gbc_dest, in, reason, is_quicksave)) return -1;
             continue;
         }
 
-        DEBUG_DUMP_INDENTED(deep, GBS_global_string("key='%s' type2=%li", Main->keys[key].key, type2));
+        DEBUG_DUMP_INDENTED(deep, GBS_global_string("key='%s' type2=%li", quark2key(Main, key), type2));
 
         GBENTRY     *gbe = NULL;
         GBCONTAINER *gbc = NULL;
@@ -1115,7 +1115,7 @@ static long gb_read_bin(FILE *in, GBCONTAINER *gbc, bool allowed_to_load_diff, a
 
                             gb_main_array[new_idx] = Main;
 
-                            gbm_free_mem(Main->root_container, sizeof(GBCONTAINER), GB_QUARK_2_GBMINDEX(Main, 0));
+                            gbm_free_mem(Main->root_container, sizeof(GBCONTAINER), quark2gbmindex(Main, 0));
 
                             Main->root_container = new_gbc;
                             father->main_idx     = new_idx;

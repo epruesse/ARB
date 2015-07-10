@@ -28,6 +28,7 @@ struct gb_project;
 struct gb_Key;
 struct gb_server_data;
 struct gb_hierarchy_callback_list;
+class  gb_hierarchy_location;
 
 // --------------------------------------------------------------------------------
 
@@ -99,7 +100,8 @@ class GB_MAIN_TYPE : virtual Noncopyable {
 
         callback_group() : hierarchy_cbs(NULL) {}
 
-        inline void add_hcb(GBDATA *gb_representative, const TypedDatabaseCallback& dbcb);
+        inline void add_hcb(const gb_hierarchy_location& loc, const TypedDatabaseCallback& dbcb);
+        inline void remove_hcb(const gb_hierarchy_location& loc, const TypedDatabaseCallback& dbcb);
         inline void forget_hcbs();
 
         void trigger(GBDATA *gbd, GB_CB_TYPE type, gb_callback_list *dataCBs);
@@ -210,7 +212,8 @@ public:
     bool has_pending_change_callback() const { return changeCBs.pending.pending(); }
     bool has_pending_delete_callback() const { return deleteCBs.pending.pending(); }
 
-    GB_ERROR add_hierarchy_cb(GBDATA *gbd, const TypedDatabaseCallback& dbcb);
+    GB_ERROR add_hierarchy_cb(const gb_hierarchy_location& loc, const TypedDatabaseCallback& dbcb);
+    GB_ERROR remove_hierarchy_cb(const gb_hierarchy_location& loc, const TypedDatabaseCallback& dbcb);
     void forget_hierarchy_cbs();
 
     inline void trigger_change_callbacks(GBDATA *gbd, GB_CB_TYPE type);
@@ -220,7 +223,4 @@ public:
 #else
 #error gb_main.h included twice
 #endif // GB_MAIN_H
-
-
-
 
