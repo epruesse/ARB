@@ -97,8 +97,7 @@ static void EXP_create_mask_submenu(AW_window_menu_modes *awm, GBDATA *gb_main) 
     AWT_create_mask_submenu(awm, AWT_IT_EXPERIMENT, EXP_open_mask_window, gb_main);
 }
 
-static AW_window *create_colorize_experiments_window(AW_root *aw_root, AW_CL cl_gb_main) {
-    GBDATA *gb_main = (GBDATA*)cl_gb_main;
+static AW_window *create_colorize_experiments_window(AW_root *aw_root, GBDATA *gb_main) {
     return QUERY::create_colorize_items_window(aw_root, gb_main, EXP_get_selector());
 }
 
@@ -110,13 +109,13 @@ void EXP_create_experiments_submenu(AW_window_menu_modes *awm, GBDATA *gb_main, 
     else awm->create_menu(title, hotkey, AWM_ALL);
 
     {
-        awm->insert_menu_topic("experiment_info",   "Experiment information", "i", "experiment_info.hlp",   AWM_ALL, RootAsWindowCallback::simple(EXP_popup_experiment_window, gb_main));
-        awm->insert_menu_topic("experiment_search", "Search and query",       "q", "experiment_search.hlp", AWM_ALL, AW_POPUP, (AW_CL)EXP_create_experiment_query_window, (AW_CL)gb_main);
+        awm->insert_menu_topic("experiment_info",   "Experiment information", "i", "experiment_info.hlp",   AWM_ALL, RootAsWindowCallback::simple(EXP_popup_experiment_window,        gb_main));
+        awm->insert_menu_topic("experiment_search", "Search and query",       "q", "experiment_search.hlp", AWM_ALL, makeCreateWindowCallback    (EXP_create_experiment_query_window, gb_main));
 
         EXP_create_mask_submenu(awm, gb_main);
 
         awm->sep______________();
-        awm->insert_menu_topic("experiment_colors",     "Colors ...",           "C",    "colorize.hlp", AWM_ALL, AW_POPUP,  (AW_CL)create_colorize_experiments_window, (AW_CL)gb_main);
+        awm->insert_menu_topic("experiment_colors", "Colors ...", "C", "colorize.hlp", AWM_ALL, makeCreateWindowCallback(create_colorize_experiments_window, gb_main));
     }
     if (submenu) awm->close_sub_menu();
 }

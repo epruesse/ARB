@@ -43,6 +43,7 @@
 #include <arbdbt.h>
 #include <ad_cb.h>
 #include <macros.hxx>
+#include <st_window.hxx>
 
 #include <cctype>
 #include <map>
@@ -1479,7 +1480,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->insert_menu_topic("fast_aligner",       INTEGRATED_ALIGNERS_TITLE,             "I", "faligner.hlp",     AWM_ALL,            AW_POPUP,                               (AW_CL)ED4_create_faligner_window, (AW_CL)&dataAccess_4_aligner);
     awmm->insert_menu_topic("fast_align_set_ref", "Set aligner reference [Ctrl-R]",      "R", "faligner.hlp",     AWM_ALL,            (AW_CB)FastAligner_set_reference_species, (AW_CL)aw_root,                    0);
     awmm->insert_menu_topic("align_sequence",     "Old aligner from ARB_EDIT [broken]",  "O", "ne_align_seq.hlp", AWM_DISABLED,       AW_POPUP,                               (AW_CL)create_naligner_window,     0);
-    awmm->insert_menu_topic("sina",               "SINA (SILVA Incremental Aligner)",    "S", "sina_main.hlp",    sina_mask(aw_root), show_sina_window,                       (AW_CL)&dataAccess_4_aligner,      0);
+    awmm->insert_menu_topic("sina",               "SINA (SILVA Incremental Aligner)",    "S", "sina_main.hlp",    sina_mask(aw_root), makeWindowCallback(show_sina_window, &dataAccess_4_aligner));
     awmm->insert_menu_topic("del_ali_tmp",        "Remove all aligner Entries",          "v", 0,                  AWM_ALL,            ED4_remove_faligner_entries,            1,                                 0);
     awmm->sep______________();
     awmm->insert_menu_topic("missing_bases", "Dot potentially missing bases", "D", "missbase.hlp", AWM_EXP, ED4_popup_dot_missing_bases_window, 0, 0);
@@ -2007,13 +2008,17 @@ ED4_root::ED4_root(int* argc, char*** argv)
 ED4_root::~ED4_root() {
     delete aw_root;
     delete first_window;
-    delete main_manager;
-    delete middle_area_man;
-    delete top_area_man;
+    delete main_manager; // also deletes middle_area_man + top_area_man
     delete database;
     delete ecoli_ref;
     delete selected_objects;
+    delete helix;
+    delete sequence_colors;
+    delete edk;
+    delete reference;
+    STAT_destroy_ST_ML(st_ml);
 
     free(protstruct);
     free(db_name);
+    free(alignment_name);
 }

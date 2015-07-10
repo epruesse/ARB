@@ -35,6 +35,7 @@
 #include <climits>
 
 #include <list>
+#include <awt_config_manager.hxx>
 
 // --------------------------------------------------------------------------------
 
@@ -2571,7 +2572,7 @@ static AW_window *create_island_hopping_window(AW_root *root, AW_CL) {
     aws->label("Gap C");
     aws->create_input_field(FA_AWAR_GAP_C, 5);
 
-    return (AW_window *)aws;
+    return aws;
 }
 
 static AW_window *create_family_settings_window(AW_root *root) {
@@ -2596,6 +2597,46 @@ static AW_window *create_family_settings_window(AW_root *root) {
 
     return aws;
 }
+
+static AWT_config_mapping_def aligner_config_mapping[] = {
+    { FA_AWAR_USE_ISLAND_HOPPING,  "island" },
+    { FA_AWAR_TO_ALIGN,            "target" },
+    { FA_AWAR_REFERENCE,           "ref" },
+    { FA_AWAR_REFERENCE_NAME,      "refname" },
+    { FA_AWAR_RELATIVE_RANGE,      "relrange" },
+    { FA_AWAR_NEXT_RELATIVES,      "relatives" },
+    { FA_AWAR_PT_SERVER_ALIGNMENT, "ptali" },
+
+    // relative-search specific parameters from subwindow (create_family_settings_window)
+    // same as ../DB_UI/ui_species.cxx@RELATIVES_CONFIG
+    { AWAR_NN_OLIGO_LEN,   "oligolen" },
+    { AWAR_NN_MISMATCHES,  "mismatches" },
+    { AWAR_NN_FAST_MODE,   "fastmode" },
+    { AWAR_NN_REL_MATCHES, "relmatches" },
+    { AWAR_NN_REL_SCALING, "relscaling" },
+
+    // island-hopping parameters (create_island_hopping_window)
+    { FA_AWAR_USE_SECONDARY,        "use2nd" },
+    { FA_AWAR_ESTIMATE_BASE_FREQ,   "estbasefreq" },
+    { FA_AWAR_BASE_FREQ_A,          "freq_a" },
+    { FA_AWAR_BASE_FREQ_C,          "freq_c" },
+    { FA_AWAR_BASE_FREQ_G,          "freq_g" },
+    { FA_AWAR_BASE_FREQ_T,          "freq_t" },
+    { FA_AWAR_SUBST_PARA_AC,        "subst_ac" },
+    { FA_AWAR_SUBST_PARA_AG,        "subst_ag" },
+    { FA_AWAR_SUBST_PARA_AT,        "subst_at" },
+    { FA_AWAR_SUBST_PARA_CG,        "subst_cg" },
+    { FA_AWAR_SUBST_PARA_CT,        "subst_ct" },
+    { FA_AWAR_SUBST_PARA_GT,        "subst_gt" },
+    { FA_AWAR_EXPECTED_DISTANCE,    "distance" },
+    { FA_AWAR_STRUCTURE_SUPPLEMENT, "supplement" },
+    { FA_AWAR_THRESHOLD,            "threshold" },
+    { FA_AWAR_GAP_A,                "gap_a" },
+    { FA_AWAR_GAP_B,                "gap_b" },
+    { FA_AWAR_GAP_C,                "gap_c" },
+
+    { 0, 0 }
+};
 
 AW_window *FastAligner_create_window(AW_root *root, const AlignDataAccess *data_access) {
     AW_window_simple *aws = new AW_window_simple;
@@ -2663,17 +2704,19 @@ AW_window *FastAligner_create_window(AW_root *root, const AlignDataAccess *data_
     aws->at("pt_server");
     awt_create_PTSERVER_selection_button(aws, AWAR_PT_SERVER);
 
+    aws->label_length(23);
     aws->at("relrange");
     aws->label("Data from range only, plus");
     aws->create_input_field(FA_AWAR_RELATIVE_RANGE, 3);
     
-    aws->at("use_ali");
-    aws->label("Alignment");
-    aws->create_input_field(FA_AWAR_PT_SERVER_ALIGNMENT, 12);
-
     aws->at("relatives");
     aws->label("Number of relatives to use");
     aws->create_input_field(FA_AWAR_NEXT_RELATIVES, 3);
+
+    aws->label_length(9);
+    aws->at("use_ali");
+    aws->label("Alignment");
+    aws->create_input_field(FA_AWAR_PT_SERVER_ALIGNMENT, 12);
 
     aws->at("relSett");
     aws->callback(AW_POPUP, (AW_CL)create_family_settings_window, (AW_CL)root);
@@ -2753,6 +2796,9 @@ AW_window *FastAligner_create_window(AW_root *root, const AlignDataAccess *data_
     aws->callback(FastAligner_start, (AW_CL)data_access);
     aws->highlight();
     aws->create_button("GO", "GO", "G");
+
+    aws->at("config");
+    AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "aligner", aligner_config_mapping);
 
     return aws;
 }

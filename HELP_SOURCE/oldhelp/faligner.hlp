@@ -4,7 +4,7 @@ UP	glossary.hlp
 UP	arb_edit4.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
-#SUB	subtopic.hlp
+SUB	islandhopping.hlp
 
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
@@ -117,6 +117,9 @@ SECTION         ADJUSTMENTS
 NOTES	 	This aligner knows about and uses all extended base characters
 		(ACGTUMRWSYKVHDN) for the alignment.
 		In other words: M aligned to R costs no penalty.
+
+		The config-manager icon handles the settings in the 'Integrated Aligners' window and those in
+		its subwindows 'Parameters for Island Hopping' and 'Family search parameters'.
 
 EXAMPLES	None
 

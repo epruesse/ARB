@@ -758,6 +758,8 @@ void File_selection::filename_changed(bool post_filter_change_HACK) {
             if (strchr(fname, '*')) { // wildcard -> search for suffix
                 trigger_refresh();
             }
+
+            free(newName);
         }
     }
 

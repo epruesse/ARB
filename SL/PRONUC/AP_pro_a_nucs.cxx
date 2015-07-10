@@ -228,7 +228,7 @@ AWT_translator::AWT_translator(int arb_protein_code_nr) :
     build_table('.', "???", "???");
     build_table('X', "NNN", "NNN");
 
-    pn_assert(GBS_hash_count_elems(t2i_hash) <= T2I_ENTRIES_MAX);
+    pn_assert(GBS_hash_elements(t2i_hash) <= T2I_ENTRIES_MAX);
 
     pro_2_bitset = create_pro_to_bits();
 }

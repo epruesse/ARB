@@ -1398,7 +1398,7 @@ void QUERY::copy_selection_list_2_query_box(DbQuery *query, AW_selection_list *s
                   "next_neighbours.hlp");
     }
 
-    long inHitlist = GBS_hash_count_elems(list_hash);
+    long inHitlist = GBS_hash_elements(list_hash);
     long seenInDB  = 0;
 
     for (GBDATA *gb_species = GBT_first_species(query->gb_main);
@@ -2295,6 +2295,17 @@ AW_window *QUERY::create_colorize_items_window(AW_root *aw_root, GBDATA *gb_main
     return create_colorize_window(aw_root, gb_main, NULL, &sel);
 }
 
+static void setup_modify_fields_config(AWT_config_definition& cdef, const DbQuery *query) {
+    cdef.add(query->awar_parskey,         "key");
+    cdef.add(query->awar_use_tag,         "usetag");
+    cdef.add(query->awar_deftag,          "deftag");
+    cdef.add(query->awar_tag,             "modtag");
+    cdef.add(query->awar_double_pars,     "doubleparse");
+    cdef.add(query->awar_createDestField, "createdest");
+    cdef.add(query->awar_acceptConvError, "acceptconv");
+    cdef.add(query->awar_parsvalue,       "aci");
+}
+
 static AW_window *create_modify_fields_window(AW_root *aw_root, DbQuery *query) {
     AW_window_simple *aws = new AW_window_simple;
 
@@ -2320,7 +2331,7 @@ static AW_window *create_modify_fields_window(AW_root *aw_root, DbQuery *query) 
 
     aws->at("helptags");
     aws->callback(makeHelpCallback("tags.hlp"));
-    aws->create_button("HELP_TAGS", "HELP TAGS", "H");
+    aws->create_button("HELP_TAGS", "Help tags", "H");
 
     aws->at("usetag");  aws->create_toggle(query->awar_use_tag);
     aws->at("deftag");  aws->create_input_field(query->awar_deftag);
@@ -2366,6 +2377,12 @@ static AW_window *create_modify_fields_window(AW_root *aw_root, DbQuery *query) 
     else {
         aws->get_root()->awar(query->awar_parspredefined)->add_callback(makeRootCallback(predef_prg, query));
     }
+
+    aws->at("config");
+    AWT_insert_config_manager(aws, AW_ROOT_DEFAULT,
+                              GBS_global_string("mod_%s_fields", query->selector.item_name),
+                              makeConfigSetupCallback(setup_modify_fields_config, query));
+
     return aws;
 }
 
@@ -2573,9 +2590,8 @@ static void new_selection_made_cb(AW_root *aw_root, const char *awar_selection, 
     free(item_name);
 }
 
-static void query_box_setup_config(AWT_config_definition& cdef, AW_CL cd_query) {
+static void query_box_setup_config(AWT_config_definition& cdef, DbQuery *query) {
     // this defines what is saved/restored to/from configs
-    DbQuery *query = (DbQuery*)cd_query;
     for (int key_id = 0; key_id<QUERY_SEARCHES; ++key_id) {
         cdef.add(query->awar_keys[key_id], "key", key_id);
         cdef.add(query->awar_queries[key_id], "query", key_id);
@@ -2855,7 +2871,7 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
         aws->button_length(0);
         aws->at(awtqs->config_pos_fig);
         char *macro_id = GBS_global_string_copy("SAVELOAD_CONFIG_%s", query_id);
-        AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "query_box", query_box_setup_config, (AW_CL)query, macro_id);
+        AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "query_box", makeConfigSetupCallback(query_box_setup_config, query), macro_id);
         free(macro_id);
     }
 

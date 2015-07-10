@@ -165,7 +165,7 @@ static void awt_www_select_change(AW_window *aww, int selected) {
     aw_root->awar(AWAR_WWW_SELECT)->write_int(selected);
 }
 
-static void www_setup_config(AWT_config_definition& cdef, AW_CL) {
+static void www_setup_config(AWT_config_definition& cdef) {
     for (int i=0; i<WWW_COUNT; i++) {
         char buf[256];
         sprintf(buf, AWAR_WWW_SELECT_TEMPLATE, i); cdef.add(buf, "active",      i);
@@ -242,7 +242,7 @@ AW_window *AWT_create_www_window(AW_root *aw_root, GBDATA *gb_main) {
     aws->create_button(0, "URL");
 
     aws->at("config");
-    AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "www", www_setup_config, 0);
+    AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "www", makeConfigSetupCallback(www_setup_config));
 
     awt_www_select_change(aws, aw_root->awar(AWAR_WWW_SELECT)->read_int());
     return aws;
