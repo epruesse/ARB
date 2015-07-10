@@ -231,7 +231,7 @@ void ARB_seqtree::remove_delete_cb_rec(ARB_tree_node_del_cb cb) {
 }
 
 GB_ERROR ARB_seqtree::preloadLeafSequences() {
-    GB_ERROR error;
+    GB_ERROR error = NULL;
     if (is_leaf) {
         if (gb_node) {
             seq   = get_tree_root()->get_seqTemplate()->dup();
