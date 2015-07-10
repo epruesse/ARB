@@ -16,6 +16,7 @@
 #include "gb_ts.h"
 #include "gb_index.h"
 
+#include <rpc/types.h>
 #include <rpc/xdr.h>
 
 gb_local_data *gb_local = 0;
