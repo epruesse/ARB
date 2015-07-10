@@ -34,6 +34,7 @@ rm -f $CFG
 TARSUF=""
 UNIT_TESTS=1
 DEBUG=0
+SANITIZE=1
 DEVELOPER="JENKINS" # see ../UNIT_TESTER/README.txt@DEVEL_JENKINS
 
 case $MODE in
@@ -47,6 +48,7 @@ case $MODE in
   RELEASE)
     DEVELOPER="RELEASE"
     UNIT_TESTS=0
+    SANITIZE=0 # never sanitize release!
     ;;
   *)
     echo "Error: unknown MODE '$MODE' passed to jenkins_build.sh"
@@ -83,6 +85,7 @@ echo "DEBUG_GRAPHICS := 0" >> $CFG
 echo "PTPAN := 0" >> $CFG
 echo "ARB_64 := 1" >> $CFG
 echo "TRACESYM := 1" >> $CFG
+echo "SANITIZE := $SANITIZE" >> $CFG
 echo "COVERAGE := 0" >> $CFG
 # done with config.makefile
 

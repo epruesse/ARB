@@ -146,63 +146,75 @@ GB_ERROR arb_open_socket(const char* name, bool do_connect, int *fd, char** file
     return error;
 }
 
-static GB_ERROR arb_open_unix_socket(char* filename, bool do_connect, int *fd) {   
+static GB_ERROR arb_open_unix_socket(char* filename, bool do_connect, int *fd) {
+    GB_ERROR error = NULL;
+
     // create structure for connect/bind
     sockaddr_un unix_socket;
     unix_socket.sun_family = AF_UNIX;
     if (strlen(filename)+1 > sizeof(unix_socket.sun_path)) {
-        return GBS_global_string("Failed to create unix socket: "
-                                 "\"%s\" is longer than the allowed %li characters",
-                                 filename, sizeof(unix_socket.sun_path));
-    }
-    strncpy(unix_socket.sun_path, filename, sizeof(unix_socket.sun_path));
-    
-    // create socket
-    *fd = socket(PF_UNIX, SOCK_STREAM, 0);
-    if (*fd < 0) {
-        return GBS_global_string("Failed to create unix socket: %s", strerror(errno));
-    }
-    
-    // connect or bind socket
-    if (do_connect) {
-        if (connect(*fd, (sockaddr*)&unix_socket, sizeof(sockaddr_un))) {
-            if (errno == ECONNREFUSED || errno == ENOENT) {
-                return "";
-            } else {
-                return GBS_global_string("Failed to connect unix socket \"%s\": %s (%i)",
-                                         filename, strerror(errno), errno);
-            }
-        }
+        error = GBS_global_string("Failed to create unix socket: "
+                                  "\"%s\" is longer than the allowed %li characters",
+                                  filename, sizeof(unix_socket.sun_path));
     }
     else {
-        struct stat stt;
-        if (!stat(filename, &stt)) {
-            if (!S_ISSOCK(stt.st_mode)) {
-                return GBS_global_string("Failed to create unix socket at \"%s\": file exists"
-                                         " and is not a socket", filename);
-            }
-            if (unlink(filename)) {
-                return GBS_global_string("Failed to create unix socket at \"%s\": cannot remove"
-                                         " existing socket", filename);
-            }
+        strncpy(unix_socket.sun_path, filename, sizeof(unix_socket.sun_path));
+
+        // create socket
+        *fd = socket(PF_UNIX, SOCK_STREAM, 0);
+        if (*fd < 0) {
+            error = GBS_global_string("Failed to create unix socket: %s", strerror(errno));
         }
-        if (bind(*fd, (sockaddr*)&unix_socket, sizeof(sockaddr_un))) {
-            return  GBS_global_string("Failed to bind unix socket \"%s\": %s",
-                                      filename, strerror(errno));
-        }
-    }
+        else {
+            // connect or bind socket
+            if (do_connect) {
+                if (connect(*fd, (sockaddr*)&unix_socket, sizeof(sockaddr_un))) {
+                    if (errno == ECONNREFUSED || errno == ENOENT) {
+                        error = "";
+                    }
+                    else {
+                        error = GBS_global_string("Failed to connect unix socket \"%s\": %s (%i)",
+                                                  filename, strerror(errno), errno);
+                    }
+                }
+            }
+            else {
+                struct stat stt;
+                if (!stat(filename, &stt)) {
+                    if (!S_ISSOCK(stt.st_mode)) {
+                        error = GBS_global_string("Failed to create unix socket at \"%s\": file exists"
+                                                  " and is not a socket", filename);
+                    }
+                    else if (unlink(filename)) {
+                        error = GBS_global_string("Failed to create unix socket at \"%s\": cannot remove"
+                                                  " existing socket", filename);
+                    }
+                }
+                if (!error && bind(*fd, (sockaddr*)&unix_socket, sizeof(sockaddr_un))) {
+                    error = GBS_global_string("Failed to bind unix socket \"%s\": %s",
+                                              filename, strerror(errno));
+                }
+            }
 
 #ifdef SO_NOSIGPIPE
-    // OSX has SO_NOSIGPIPE but not MSG_NOSIGNAL
-    // prevent SIGPIPE here:
-    int one = 1;
-    if (setsockopt(*fd, SOL_SOCKET, SO_NOSIGPIPE, (const char *)&one, sizeof(one))){
-        fprintf(stderr, "Warning: setsockopt(...NOSIGPIPE...) failed: %s", strerror(errno));
-    }
+            if (!error) {
+                // OSX has SO_NOSIGPIPE but not MSG_NOSIGNAL
+                // prevent SIGPIPE here:
+                int one = 1;
+                if (setsockopt(*fd, SOL_SOCKET, SO_NOSIGPIPE, (const char *)&one, sizeof(one))){
+                    fprintf(stderr, "Warning: setsockopt(...NOSIGPIPE...) failed: %s", strerror(errno));
+                }
+            }
 #endif
-    
 
-    return NULL;
+            if (error) {
+                close(*fd);
+                *fd = -1;
+            }
+        }
+    }
+
+    return error;
 }
 
 static GB_ERROR arb_open_tcp_socket(char* name, bool do_connect, int *fd) {
@@ -211,60 +223,64 @@ static GB_ERROR arb_open_tcp_socket(char* name, bool do_connect, int *fd) {
     // create socket
     *fd = socket(PF_INET, SOCK_STREAM, 0);
     if (*fd < 0) {
-        return GBS_global_string("Failed to create tcp socket: %s", strerror(errno));
+        error = GBS_global_string("Failed to create tcp socket: %s", strerror(errno));
     }
+    else {
+        // create sockaddr struct
+        sockaddr_in tcp_socket;
+        tcp_socket.sin_family = AF_INET;
 
-    // create sockaddr struct
-    sockaddr_in tcp_socket;
-    tcp_socket.sin_family = AF_INET;
+        struct hostent *he;
+        // get port and host
+        char *p = strchr(name, ':');
+        if (!p) { // <port>
+            tcp_socket.sin_port = htons(atoi(name));
+            arb_gethostbyname(arb_gethostname(), he, error);
+        }
+        else { // <host>:<port>
+            tcp_socket.sin_port = htons(atoi(p+1));
+            p[0]='\0';
+            arb_gethostbyname(name, he, error);
+            p[0]=':';
+        }
+        if (tcp_socket.sin_port == 0) {
+            error = "Cannot open tcp socket on port 0. Is the port name malformed?";
+        }
+        if (!error) {
+            memcpy(&tcp_socket.sin_addr, he->h_addr_list[0], he->h_length);
 
-    struct hostent *he;    
-    // get port and host
-    char *p = strchr(name, ':');
-    if (!p) { // <port>
-        tcp_socket.sin_port = htons(atoi(name));
-        arb_gethostbyname(arb_gethostname(), he, error);
-    }
-    else { // <host>:<port>
-        tcp_socket.sin_port = htons(atoi(p+1));
-        p[0]='\0';
-        arb_gethostbyname(name, he, error);
-        p[0]=':';
-    }
-    if (tcp_socket.sin_port == 0) {
-        return "Cannot open tcp socket on port 0. Is the port name malformed?";
-    }
-    if (error) {
-        return error;
-    }
-    memcpy(&tcp_socket.sin_addr, he->h_addr_list[0], he->h_length);
+            int one = 1;
+            if (do_connect) {
+                if (connect(*fd, (sockaddr*)&tcp_socket, sizeof(tcp_socket))) {
+                    if (errno == ECONNREFUSED) {
+                        error = "";
+                    } else {
+                        error = GBS_global_string("Failed to connect TCP socket \"%s\": %s",
+                                                  name, strerror(errno));
+                    }
+                }
+            }
+            else { // no connect (bind)
+                if (setsockopt(*fd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one))) {
+                    fprintf(stderr, "Warning: setsockopt(...REUSEADDR...) failed: %s", strerror(errno));
+                }
+                if (bind(*fd, (sockaddr*)&tcp_socket, sizeof(tcp_socket))) {
+                    error = GBS_global_string("Failed to bind TCP socket \"%s\": %s",
+                                              name, strerror(errno));
+                }
+            }
 
-    int one = 1;
-    if (do_connect) {
-        if (connect(*fd, (sockaddr*)&tcp_socket, sizeof(tcp_socket))) {
-            if (errno == ECONNREFUSED) {
-                return "";
-            } else {
-                return GBS_global_string("Failed to connect TCP socket \"%s\": %s",
-                                     name, strerror(errno));
+            if (setsockopt(*fd, IPPROTO_TCP, TCP_NODELAY, &one, sizeof(one))) {
+                fprintf(stderr, "Warning: setsockopt(...TCP_NODELAY...) failed: %s", strerror(errno));
             }
         }
-    }
-    else { // no connect (bind)
-        if (setsockopt(*fd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one))) {
-            fprintf(stderr, "Warning: setsockopt(...REUSEADDR...) failed: %s", strerror(errno));
-        }
-        if (bind(*fd, (sockaddr*)&tcp_socket, sizeof(tcp_socket))) {
-            return GBS_global_string("Failed to bind TCP socket \"%s\": %s",
-                                     name, strerror(errno));
-        }
-    }
-    
-    if (setsockopt(*fd, IPPROTO_TCP, TCP_NODELAY, &one, sizeof(one))) {
-        fprintf(stderr, "Warning: setsockopt(...TCP_NODELAY...) failed: %s", strerror(errno));
-    }
 
-    return NULL;
+        if (error) {
+            close(*fd);
+            *fd = -1;
+        }
+    }
+    return error;
 }
 
 ////////// UNIT TESTS ///////////
@@ -290,25 +306,28 @@ int echo_server(const char* portname) {
         exit(2);
     }
 
-    int cli_fd = accept(fd, NULL, NULL);
-    if (cli_fd < 0) {
-        exit(3);
+    {
+        int cli_fd = accept(fd, NULL, NULL);
+        if (cli_fd < 0) {
+            exit(3);
+        }
+
+        char buf[500];
+        ssize_t n;
+        while(1) {
+            n = sizeof(buf);
+            n = arb_socket_read(cli_fd, buf, n);
+            if (n == 0) break;
+            n = arb_socket_write(cli_fd, buf, n);
+            if (n == -1) break;;
+            if (strcmp(buf, "exit") == 0) break;
+        }
+
+        close(cli_fd);
     }
 
-
-    char buf[500];
-    ssize_t n;
-    while(1) {
-        n = sizeof(buf);
-        n = arb_socket_read(cli_fd, buf, n);
-        if (n == 0) break;
-        n = arb_socket_write(cli_fd, buf, n);
-        if (n == -1) break;;
-        if (strcmp(buf, "exit") == 0) break;
-    }
-             
     close(fd);
-    if (filename) { 
+    if (filename) {
         unlink(filename);
         free(filename);
     }
@@ -331,7 +350,7 @@ void TEST_open_socket() {
         snprintf(tcp_socket, sizeof(tcp_socket), "%i", port);
         const char *err = arb_open_socket(tcp_socket, true, &fd, &filename);
         if (!err) { // connected
-            close(fd);
+            TEST_EXPECT_EQUAL(close(fd), 0);
         } 
         else if (err[0] == '\0') { // could not connect
             // found a free socket
@@ -379,7 +398,7 @@ void TEST_open_socket() {
     // Test connecting to existing unix socket
     server_pid = echo_server(unix_socket);
     usleep(20000);
-    TEST_EXPECT_NULL(arb_open_socket(unix_socket, true, &fd, &filename)); // @@@ randomly fails in jenkins (build820/u1304/DEBUG, build817/cent5/DEBUG+cent6/NDEBUG)
+    TEST_EXPECT_NULL(arb_open_socket(unix_socket, true, &fd, &filename)); // @@@ randomly fails in jenkins (build820/u1304/DEBUG, build817/cent5/DEBUG+cent6/NDEBUG, failed again in build 876/u1304/NDEBUG)
     TEST_EXPECT(fd>0);
 
     // Test read/write

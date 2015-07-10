@@ -19,10 +19,12 @@ my @strictly_as_in_svn_when_matchesDir = (
 my @skipped_directories = (
                            qr/\/.+\/bin$/o,
                            qr/\/.+\/build$/o,
+                           qr/\/bin\/sativa$/o,
                            qr/\/HELP_SOURCE\/Xml$/o,
                            qr/\/GDE\/MUSCLE\/obj$/o,
                            qr/\/GDE\/PHYML20130708\/phyml\/autom4te.cache$/o,
                            qr/\/GDE\/RAxML8\/builddir/o,
+                           qr/\/GDE\/SATIVA\/builddir/o,
                            qr/\/ignore\./o,
                            qr/\/PERL2ARB\/blib$/o,
                            qr/\/HEADERLIBS\/[^\/]+/o,
@@ -215,6 +217,7 @@ my @used_when_matchesFull = (
                              qr/^\.\/util\/config\..*$/o,
                              qr/\/GDE\/.*\/Makefile\.[^\/]+$/io,
                              qr/\/GDE\/PHYML[^\/]+\/phyml\//o,
+                             qr/\/GDE\/SATIVA\/sativa\//o,
                             );
 
 # skipped_when_matchesFull and forced_when_matchesFull are always tested! (@3)

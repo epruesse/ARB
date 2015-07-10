@@ -16,14 +16,10 @@
 
 using namespace std;
 
-#define MAX_SPECIES 250000L
-#define MAX_DSTACKSIZE (MAX_SPECIES*2)   // defaultwert fuer dynamischen stack
-
 AP_STACK::AP_STACK() {
     first = 0;
     pointer = 0;
     stacksize = 0;
-    max_stacksize = MAX_DSTACKSIZE;
 }
 
 AP_STACK::~AP_STACK() {
@@ -33,14 +29,11 @@ AP_STACK::~AP_STACK() {
 }
 
 void AP_STACK::push(void * element) {
-    AP_STACK_ELEM * stackelem = new AP_STACK_ELEM;
-    if (stacksize > max_stacksize) {
-        new AP_ERR("AP_STACK:push()", "Stack owerflow!", 0);
-    }
+    AP_STACK_ELEM *stackelem = new AP_STACK_ELEM;
     stackelem->node = element;
     stackelem->next = first;
     first = stackelem;
-    stacksize ++;
+    stacksize++;
 }
 
 void * AP_STACK::pop() {
