@@ -8,7 +8,7 @@ $(MAIN): $(C_OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(C_OBJECTS)
 
 .c.o:
-	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE)
+	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE) $<
 
 clean:
 	rm -f $(C_OBJECTS) *.a

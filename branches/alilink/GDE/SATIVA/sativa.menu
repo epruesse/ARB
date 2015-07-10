@@ -13,19 +13,19 @@ informat:genbank
 insave:
 
 arg:MARKEDONLY
-arglabel:Process marked species only ?
+arglabel:Process marked species only?
 argtype:choice_menu
 argchoice:Yes:--marked-only
 argchoice:No:
 
 arg:MARKMIS
-arglabel:Mark found misplaced species ?
+arglabel:Mark found misplaced species?
 argtype:choice_menu
 argchoice:Yes:--mark-misplaced
 argchoice:No:
 
 arg:RANKTEST
-arglabel:Test for misplaced higher ranks ?
+arglabel:Test for misplaced higher ranks?
 argtype:choice_menu
 argchoice:No:
 argchoice:Yes:--rank-test

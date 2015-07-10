@@ -401,7 +401,7 @@ arb_presets		%% (%
 		start			%i 0
 		pars			""
 		group			%i 0
-		leaf			%i 1
+		leaf			%i 0
 		%) /*viewkey*/
 
 	viewkey			%% (%
@@ -411,8 +411,8 @@ arb_presets		%% (%
 		len2			%i 10
 		start			%i 0
 		pars			"taxonomy(1)"
-		group			%i 1
-		leaf			%i 1
+		group			%i 0
+		leaf			%i 0
 		%) /*viewkey*/
 
 	viewkey			%% (%

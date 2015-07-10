@@ -5,6 +5,11 @@
 ARCHS:=$(shell find . -maxdepth 1 -type d)# find all direct sub-directories
 ARCHS:=$(sort $(filter-out . .svn,$(subst ./,,$(ARCHS))))# remove prefix './' and get rid of '.' and '.svn'
 ARCHS:=$(shell echo $(ARCHS) | perl -pn -e 's/([A-Za-z0-9_]+)/\1\/\1/g;')# replace not possible $(patsubst %,%/%,$(ARCHS))
+
+# when you attempt to remove a subdir of SL, make will fail on targets 'depends', 'clean' and 'proto'
+# next line manually excludes the removed subdir (which is still present in WC until commit)
+ARCHS:=$(subst ROOTED_TREE/ROOTED_TREE,,$(ARCHS))
+
 ARCHS:=$(ARCHS:%=%.dummy)
 
 # --------------------------------------------------------------------------------

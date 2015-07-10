@@ -1,0 +1,38 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+UP	pa_optimizer.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+SUB	pa_globopti.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Local optimization 
+
+OCCURRENCE	ARB_PARSIMONY/Tree/Tree Optimization/Recursive NNI
+                ARB_PARSIMONY/<NNI-mode-button>
+
+DESCRIPTION     Locally optimizes (parts of) the current tree.
+
+                When called from the 'Tree optimization' window, the optimization is always
+                applied to the whole tree. When called via LINK{mode_nni.hlp}, it depends on
+                where you click to.
+                The settings from LINK{pa_optimizer.hlp} are used to select
+                the branches to optimize (e.g. marked and/or visible only).
+
+                At each such branch, this optimization attempts one NNI (see LINK{nni.hlp}).
+                If the tree topology improves by that modification, it will be kept.
+                Otherwise it will be undone.
+
+                If a better topology has been found, the recursion starts again (and again...)
+                until no NNI further improved the tree (see LINK{mode_nni.hlp} for exceptions).
+
+NOTES           None
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known

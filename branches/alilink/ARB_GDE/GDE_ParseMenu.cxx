@@ -33,7 +33,7 @@ inline __ATTR__NORETURN void throwError(const char *msg) {
 }
 
 static __ATTR__NORETURN void throwParseError(const char *msg, const LineReader& file) {
-    fprintf(stderr, "\n%s:%li: %s\n", file.getFilename().c_str(), file.getLineNumber(), msg);
+    fprintf(stderr, "\n%s:%zu: %s\n", file.getFilename().c_str(), file.getLineNumber(), msg);
     fflush(stderr);
     throwError(msg);
 }
@@ -160,9 +160,18 @@ static void ParseMenus(LineReader& in) {
                 THROW_IF_NO_MENU();
                 char wanted_meta = temp[0];
                 if (!thismenu_firstOccurance && thismenu->meta != wanted_meta) {
-                    throwParseError(GBS_global_string("menumeta has inconsistent definitions (in different definitions of menu '%s')", thismenu->label), in);
+                    if (wanted_meta != 0) {
+                        if (thismenu->meta != 0) {
+                            throwParseError(GBS_global_string("menumeta has inconsistent definitions (in different definitions of menu '%s')", thismenu->label), in);
+                        }
+                        else {
+                            thismenu->meta = wanted_meta;
+                        }
+                    }
                 }
-                thismenu->meta = wanted_meta;
+                else {
+                    thismenu->meta = wanted_meta;
+                }
             }
             // item: chooses menu item to use
             else if (strcmp(head, "item") == 0) {
@@ -574,7 +583,7 @@ void TEST_load_menu() {
         TEST_EXPECT_NO_ERROR(LoadMenus());
 
         // basic check of loaded data (needs to be adapted if menus change):
-        TEST_EXPECT_EQUAL(num_menus, 12);
+        TEST_EXPECT_EQUAL(num_menus, 13);
 
         string menus;
         string menuitems;
@@ -584,9 +593,9 @@ void TEST_load_menu() {
         }
 
         TEST_EXPECT_EQUAL(menus,
-                          "Import;Export;Print;Align;User;SAI;Incremental phylogeny;Phylogeny Distance Matrix;"
-                          "Phylogeny max. parsimony;Phylogeny max. Likelyhood EXP;Phylogeny max. Likelyhood;Phylogeny (Other);");
-        TEST_EXPECT_EQUAL(menuitems, "3;1;2;11;1;1;1;3;2;1;8;5;");
+                          "Import;Export;Print;Align;Network;SAI;Incremental phylogeny;Phylogeny Distance Matrix;"
+                          "Phylogeny max. parsimony;Phylogeny max. Likelyhood EXP;Phylogeny max. Likelyhood;Phylogeny (Other);User;");
+        TEST_EXPECT_EQUAL(menuitems, "3;1;2;11;1;1;1;3;2;1;8;5;0;");
     }
     TEST_EXPECT_EQUAL((void*)arb_test::fakeenv, (void*)GB_install_getenv_hook(old));
 }

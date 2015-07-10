@@ -15,20 +15,27 @@ OCCURRENCE	Anywhere (buttons with config icon)
 DESCRIPTION     This provides a general way to store and restore settings
                 from the window, where this has been called from.
 
-                - STORE: stores current settings into properties.
-                - RESTORE: restores settings from properties.
-                - DELETE: delete stored settings from properties
-                - SAVE: STORE and save stored settings to a file 
-                - LOAD: load settings from a file, STORE and RESTORE
+                - Restore: restores a named configuration (from properties)
+                - Store: store current settings as named configuration (into properties)
+                - Delete: delete named configuration
+                - Load: load settings from a file, STORE and RESTORE
+                - Save: RESTORE stored settings and save them to a file
+                - Factory defaults: reset all values to their defaults
 
-NOTES		To save stored settings permanently, use SAVE PROPERTIES!
+		You may enter a description for each stored configuration.
+
+NOTES		To keep stored settings permanently (i.e. for future arb sessions), 
+		use 'Save properties' from the 'Properties' menu!
 
                 Saving configurations allows you to share them with other users.
                 The configs are saved in directory pointed to by environmentvariable
                 ARBCONFIG (which defaults to ~/.arb_prop/cfgSave). See also LINK{arb_envar.hlp}.
 
+		Predefined (hardcoded) configurations are marked by a leading '*'.
+		You may only restore or save such configurations.
+
 EXAMPLES	None
 
 WARNINGS	None
 
-BUGS		Deleted settings remain in properties (inaccessible!)
+BUGS		None

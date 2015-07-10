@@ -10,7 +10,7 @@
 
 #include "NJ.hxx"
 #include <neighbourjoin.hxx>
-#include <arbdbt.h>
+#include <TreeNode.h>
 #include <arb_diff.h>
 
 PH_NEIGHBOUR_DIST::PH_NEIGHBOUR_DIST()
@@ -207,16 +207,16 @@ AP_FLOAT PH_NEIGHBOURJOINING::get_dist(long i, long j)
     return dist_matrix[j][i].val;
 }
 
-GBT_TREE *neighbourjoining(const char *const *names, const AP_smatrix& smatrix) { // @@@ pass ConstStrArray
-    // structure_size >= sizeof(GBT_TREE);
+TreeNode *neighbourjoining(const char *const *names, const AP_smatrix& smatrix, TreeRoot *troot) { // @@@ pass ConstStrArray
+    // structure_size >= sizeof(TreeNode);
     // lower triangular matrix
     // size: size of matrix
 
     PH_NEIGHBOURJOINING   nj(smatrix);
-    GBT_TREE            **nodes = (GBT_TREE **)calloc(sizeof(GBT_TREE *), smatrix.size());
+    TreeNode            **nodes = (TreeNode **)calloc(sizeof(TreeNode *), smatrix.size());
 
     for (size_t i=0; i<smatrix.size(); i++) {
-        nodes[i] = new GBT_TREE;
+        nodes[i] = troot->makeNode();
         nodes[i]->name = strdup(names[i]);
         nodes[i]->is_leaf = true;
     }
@@ -228,7 +228,7 @@ GBT_TREE *neighbourjoining(const char *const *names, const AP_smatrix& smatrix) 
         AP_FLOAT ll, rl;
         nj.join_nodes(a, b, ll, rl);
 
-        GBT_TREE *father = new GBT_TREE;
+        TreeNode *father = troot->makeNode();
         father->leftson  = nodes[a];
         father->rightson = nodes[b];
         father->leftlen  = ll;
@@ -247,15 +247,20 @@ GBT_TREE *neighbourjoining(const char *const *names, const AP_smatrix& smatrix) 
         AP_FLOAT ll = dist*0.5;
         AP_FLOAT rl = dist*0.5;
 
-        GBT_TREE *father = new GBT_TREE;
-        father->leftson = nodes[a];
+        TreeNode *father    = troot->makeNode();
+
+        father->leftson  = nodes[a];
         father->rightson = nodes[b];
-        father->leftlen = ll;
+
+        father->leftlen  = ll;
         father->rightlen = rl;
+
         nodes[a]->father = father;
         nodes[b]->father = father;
 
         free(nodes);
+
+        father->get_tree_root()->change_root(NULL, father);
         return father;
     }
 }
@@ -354,7 +359,7 @@ void TEST_neighbourjoining() {
 
         }
 
-        GBT_TREE *tree = neighbourjoining(names, sym_matrix);
+        TreeNode *tree = neighbourjoining(names, sym_matrix, new SimpleRoot);
 
         switch (test) {
 #if defined(TEST_FORWARD_ORDER)
@@ -374,7 +379,7 @@ void TEST_neighbourjoining() {
             default: arb_assert(0); break;
         }
 
-        delete tree;
+        destroy(tree);
     }
 }
 TEST_PUBLISH(TEST_neighbourjoining);

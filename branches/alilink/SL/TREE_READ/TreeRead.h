@@ -20,8 +20,8 @@
 
 inline bool is_marked_as_default_len(GBT_LEN len) { return len <= DEFAULT_BRANCH_LENGTH_MARKER; }
 
-GBT_TREE *TREE_load(const char *path, const TreeNodeFactory& nodeMaker, char **commentPtr, bool allow_length_scaling, char **warningPtr);
-void TREE_scale(GBT_TREE *tree, double length_scale, double bootstrap_scale);
+TreeNode *TREE_load(const char *path, TreeRoot *troot, char **commentPtr, bool allow_length_scaling, char **warningPtr);
+void TREE_scale(TreeNode *tree, double length_scale, double bootstrap_scale);
 
 #else
 #error TreeRead.h included twice

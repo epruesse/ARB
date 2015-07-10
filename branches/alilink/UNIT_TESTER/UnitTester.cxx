@@ -46,10 +46,12 @@
 #endif
 
 #if defined(DEBUG)
-# if defined(DEVEL_RALF) && (GCC_VERSION_CODE>=408)
-#  warning TEST_VALID_LOCATION disabled
-# else
-#  define TEST_VALID_LOCATION
+# if defined(DEVEL_RALF)
+#  if (GCC_VERSION_CODE>=408)
+#   warning TEST_VALID_LOCATION disabled - does not work with this gcc version
+#  else
+#   define TEST_VALID_LOCATION
+#  endif
 # endif
 #endif
 
@@ -523,7 +525,7 @@ bool SimpleTester::perform(size_t which) {
 
 #if defined(TEST_VALID_LOCATION)
     bool invalid = test.location == NULL; // in NDEBUG mode location is always missing
-#else                                     // !defined(DEBUG)
+#else
     bool invalid = false;
 #endif
 

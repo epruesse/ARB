@@ -4,7 +4,7 @@ CPP_OBJECTS = probe_design.o SaiProbeVisualization.o probe_match_parser.o
 $(MAIN): $(CPP_OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
 .cxx.o:
-	$(A_CXX) $(cflags) $(cxxflags) -c -o $@ $(@:.o=.cxx)  $(CXX_INCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) -c -o $@ $(@:.o=.cxx)  $(CXX_INCLUDES) $(POST_COMPILE) $<
 
 clean:
 	rm -f $(CPP_OBJECTS) *.a
@@ -86,13 +86,13 @@ probe_design.o: $(ARBHOME)/INCLUDE/items.h
 probe_design.o: $(ARBHOME)/INCLUDE/iupac.h
 probe_design.o: $(ARBHOME)/INCLUDE/PT_com.h
 probe_design.o: $(ARBHOME)/INCLUDE/PT_server.h
-probe_design.o: $(ARBHOME)/INCLUDE/RootedTree.h
 probe_design.o: $(ARBHOME)/INCLUDE/servercntrl.h
 probe_design.o: $(ARBHOME)/INCLUDE/smartptr.h
 probe_design.o: $(ARBHOME)/INCLUDE/static_assert.h
 probe_design.o: $(ARBHOME)/INCLUDE/test_global.h
 probe_design.o: $(ARBHOME)/INCLUDE/TreeCallbacks.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx
+probe_design.o: $(ARBHOME)/INCLUDE/TreeNode.h
 probe_design.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 probe_match_parser.o: probe_match_parser.hxx

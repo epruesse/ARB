@@ -22,7 +22,7 @@ $(MAIN): $(CPP_OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
 
 .cxx.o:
-	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE) $<
 
 clean:
 	rm -f $(CPP_OBJECTS) *.a
@@ -220,7 +220,6 @@ MP_noclass.o: $(ARBHOME)/INCLUDE/downcast.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/dupstr.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/gccver.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/PT_com.h
-MP_noclass.o: $(ARBHOME)/INCLUDE/RootedTree.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/servercntrl.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/smartptr.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/static_assert.h
@@ -228,6 +227,7 @@ MP_noclass.o: $(ARBHOME)/INCLUDE/test_global.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/test_unit.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/TreeCallbacks.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx
+MP_noclass.o: $(ARBHOME)/INCLUDE/TreeNode.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 MP_permute.o: mpdefs.h
@@ -411,10 +411,10 @@ MP_sondentopf.o: $(ARBHOME)/INCLUDE/downcast.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/dupstr.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/gccver.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/PT_com.h
-MP_sondentopf.o: $(ARBHOME)/INCLUDE/RootedTree.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/smartptr.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/static_assert.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/test_global.h
+MP_sondentopf.o: $(ARBHOME)/INCLUDE/TreeNode.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 MP_Window.o: MP_externs.hxx

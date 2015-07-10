@@ -177,6 +177,36 @@ sub dump_junitlog(\@) {
   close(JLOG);
 }
 
+sub removeDonefileFor($) {
+  my ($unitName) = @_;
+
+  my @donefiles = ();
+  my $donefile_dir = ($slow_delay==0) ? 'tests.slow' : 'tests';
+  opendir(DIR,$donefile_dir) || die "can't read directory '$donefile_dir' (Reason: $!)";
+  foreach (readdir(DIR)) {
+    if (/\.done$/o) {
+      if (/$unitName/) {
+        push @donefiles, $_;
+      }
+    }
+  }
+  closedir(DIR);
+
+  my $donefiles = scalar(@donefiles);
+  if ($donefiles==1) {
+    my $donefile = $donefile_dir.'/'.$donefiles[0];
+    print "Unlinking $donefile (for unit '$unitName')\n";
+    unlink($donefile);
+  }
+  else {
+    print "donefiles found: $donefiles\n";
+    if ($donefiles>0) {
+      foreach (@donefiles) { print "- $_\n"; }
+      die "could not determine .done-file for '$unitName'";
+    }
+  }
+}
+
 # --------------------------------------------------------------------------------
 
 my $tests     = 0;
@@ -209,6 +239,7 @@ sub parse_log($\@) {
   if ($log =~ /\/([^\.\/]+)\.[^\/]+$/o) { $unitName = $1; }
 
   my $dump_log = 0;
+  my $remove_donefile = 0;
 
   my @testcases   = ();
   my $case_ok     = 0;
@@ -264,7 +295,7 @@ sub parse_log($\@) {
         if (not defined $curr_target) { die "Don't know current target"; }
         $duration{$curr_target} = $1;
       }
-      if (/valgrind.*error/)  { $valgrind++; $dump_log = 1; }
+      if (/valgrind.*error/)  { $valgrind++; $dump_log = 1; $remove_donefile = 1; }
       if (/coverage/)  { $dump_log = 1; }
     }
     elsif (/^[^\s:]+:[0-9]+:\s+Error:\s+/o) {
@@ -278,12 +309,17 @@ sub parse_log($\@) {
     elsif (/ERROR:\s*(AddressSanitizer|LeakSanitizer):/o) {
       $last_error_message = $';
       $seenSanitized++;
+      $remove_donefile = 1;
     }
     elsif (/\s+runtime\s+error:\s+/o) {
       $dump_log = 1;
     }
   }
   close(LOG);
+
+  if ($remove_donefile == 1) {
+    removeDonefileFor($unitName);
+  }
 
   # write whole suite to junit log
   {
@@ -313,6 +349,12 @@ sub parse_log($\@) {
     else {
       $crashed++;
       print "(maybe the test did not compile or crashed)\n";
+    }
+  }
+  else {
+    if ($seenSanitized>0) {
+      $sanitized++;
+      print "Detected Sanitizer warnings\n";
     }
   }
 

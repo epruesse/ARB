@@ -81,11 +81,21 @@ inline void CLEAR_QUERIED(GBDATA *gb_species, DbQuery *query) {
     free(name);
 }
 
-inline const char *getHitInfo(GBDATA *gb_species, DbQuery *query) {
-    char *name = query->selector.generate_item_id(query->gb_main, gb_species);
-    long  info = GBS_read_hash(query->hit_description, name);
-    free(name);
+inline const char *getHitInfo(const char *item_id, DbQuery *query) {
+    long info = GBS_read_hash(query->hit_description, item_id);
     return reinterpret_cast<const char*>(info);
+}
+inline const char *getHitInfo(GBDATA *gb_species, DbQuery *query) {
+    char       *name   = query->selector.generate_item_id(query->gb_main, gb_species);
+    const char *result = getHitInfo(name, query);
+    free(name);
+    return result;
+}
+inline string keptHitReason(const string& currentHitReason, GBDATA *gb_item, DbQuery *query) {
+    string      reason  = string("kept because ")+currentHitReason;
+    const char *hitinfo = getHitInfo(gb_item, query);
+    if (hitinfo) reason = string(hitinfo)+" ("+reason+')';
+    return reason;
 }
 
 static void create_query_independent_awars(AW_root *aw_root, AW_default aw_def) {
@@ -476,7 +486,7 @@ void QUERY::DbQuery_update_list(DbQuery *query) {
                 info = toFree;
             }
             else {
-                info = reinterpret_cast<const char *>(GBS_read_hash(query->hit_description, name));
+                info = getHitInfo(name, query);
                 if (!info) info = "<no hit info>";
             }
 
@@ -1335,11 +1345,7 @@ static void perform_query_cb(AW_window*, DbQuery *query, EXT_QUERY_TYPES ext_que
                         if (hit) {
                             dbq_assert(!hit_reason.empty());
 
-                            if (mode == QUERY_REDUCE) {
-                                string prev_info = getHitInfo(gb_item, query);
-                                hit_reason = prev_info+" (kept cause "+hit_reason+")";
-                            }
-
+                            if (mode == QUERY_REDUCE) hit_reason = keptHitReason(hit_reason, gb_item, query);
                             SET_QUERIED(gb_item, query, hit_reason.c_str(), hit_reason.length());
                         }
                         else CLEAR_QUERIED(gb_item, query);
@@ -1413,10 +1419,7 @@ void QUERY::copy_selection_list_2_query_box(DbQuery *query, AW_selection_list *s
         if ((displayed == 0) == (type == QUERY_DONT_MATCH)) {
             string hit_reason = GBS_global_string(hit_description, displayed ? displayed : "<no near neighbour>");
 
-            if (mode == QUERY_REDUCE) {
-                string prev_info = getHitInfo(gb_species, query);
-                hit_reason = prev_info+" (kept cause "+hit_reason+")";
-            }
+            if (mode == QUERY_REDUCE) hit_reason = keptHitReason(hit_reason, gb_species, query);
             SET_QUERIED(gb_species, query, hit_reason.c_str(), hit_reason.length());
         }
         else {
@@ -1511,8 +1514,10 @@ void QUERY::search_duplicated_field_content(AW_window *, DbQuery *query, bool to
 
                                 if (IS_QUERIED(gb_old, query)) {
                                     const char *prevInfo = getHitInfo(gb_old, query);
-
-                                    if (strstr(prevInfo, firstInfo) == 0) { // not already have 1st-entry here
+                                    if (!prevInfo) {
+                                        oldInfo = firstInfo;
+                                    }
+                                    else if (strstr(prevInfo, firstInfo) == 0) { // not already have 1st-entry here
                                         oldInfo = GBS_global_string("%s %s", prevInfo, firstInfo);
                                     }
                                 }
@@ -2568,24 +2573,15 @@ static void new_selection_made_cb(AW_root *aw_root, const char *awar_selection, 
     free(item_name);
 }
 
-static void query_box_init_config(AWT_config_definition& cdef, DbQuery *query) {
+static void query_box_setup_config(AWT_config_definition& cdef, AW_CL cd_query) {
     // this defines what is saved/restored to/from configs
+    DbQuery *query = (DbQuery*)cd_query;
     for (int key_id = 0; key_id<QUERY_SEARCHES; ++key_id) {
         cdef.add(query->awar_keys[key_id], "key", key_id);
         cdef.add(query->awar_queries[key_id], "query", key_id);
         cdef.add(query->awar_not[key_id], "not", key_id);
         cdef.add(query->awar_operator[key_id], "operator", key_id);
     }
-}
-static char *query_box_store_config(AW_CL cl_query, AW_CL) {
-    AWT_config_definition cdef;
-    query_box_init_config(cdef, (DbQuery *)cl_query);
-    return cdef.read();
-}
-static void query_box_restore_config(const char *stored, AW_CL cl_query, AW_CL) {
-    AWT_config_definition cdef;
-    query_box_init_config(cdef, (DbQuery *)cl_query);
-    cdef.write(stored);
 }
 
 template<typename CB>
@@ -2859,9 +2855,7 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
         aws->button_length(0);
         aws->at(awtqs->config_pos_fig);
         char *macro_id = GBS_global_string_copy("SAVELOAD_CONFIG_%s", query_id);
-        AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "query_box",
-                                  query_box_store_config, query_box_restore_config, (AW_CL)query, 0,
-                                  macro_id);
+        AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "query_box", query_box_setup_config, (AW_CL)query, macro_id);
         free(macro_id);
     }
 

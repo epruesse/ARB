@@ -218,6 +218,7 @@ symlink_file ../ARBDB/arbdb.h INCLUDE/arbdb.h &&
 symlink_file ../ARBDB/arbdb_base.h INCLUDE/arbdb_base.h &&
 symlink_file ../ARBDB/arbdbt.h INCLUDE/arbdbt.h &&
 symlink_file ../ARBDB/dbitem_set.h INCLUDE/dbitem_set.h &&
+symlink_file ../ARBDB/TreeNode.h INCLUDE/TreeNode.h &&
 symlink_file ../ARB_GDE/gde.hxx INCLUDE/gde.hxx &&
 symlink_file ../AWT/awt.hxx INCLUDE/awt.hxx &&
 symlink_file ../AWT/awt_asciiprint.hxx INCLUDE/awt_asciiprint.hxx &&
@@ -315,7 +316,6 @@ symlink_file ../SL/PRONUC/iupac.h INCLUDE/iupac.h &&
 symlink_file ../SL/PTCLEAN/ptclean.h INCLUDE/ptclean.h &&
 symlink_file ../SL/REFENTRIES/refentries.h INCLUDE/refentries.h &&
 symlink_file ../SL/REGEXPR/RegExpr.hxx INCLUDE/RegExpr.hxx &&
-symlink_file ../SL/ROOTED_TREE/RootedTree.h INCLUDE/RootedTree.h &&
 symlink_file ../SL/SEQIO/seqio.hxx INCLUDE/seqio.hxx &&
 symlink_file ../SL/SEQUENCE/AP_seq_dna.hxx INCLUDE/AP_seq_dna.hxx &&
 symlink_file ../SL/SEQUENCE/AP_seq_protein.hxx INCLUDE/AP_seq_protein.hxx &&
