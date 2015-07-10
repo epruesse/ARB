@@ -3,11 +3,7 @@
 .SUFFIXES: .o .c .cxx .depend
 
 C_OBJECTS = 
-CPP_OBJECTS = \
-	AP_seq_dna.o \
-	AP_seq_protein.o \
-	AP_seq_simple_pro.o \
-	AP_sequence.o \
+CPP_OBJECTS = $(subst .cxx,.o,$(wildcard *.cxx))
 
 OBJECTS=$(C_OBJECTS) $(CPP_OBJECTS)
 

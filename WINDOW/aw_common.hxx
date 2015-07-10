@@ -119,8 +119,8 @@ public:
           default_config(NULL),
           color(0),
           last_fg_color(0),
-          fontsize(-1), 
-          fontnr(-1) 
+          fontsize(-1),
+          fontnr(-1)
     {
         init_char_widths();
     }
@@ -261,7 +261,7 @@ public:
     AW_rgb get_XOR_color() const {
         return data_colors ? data_colors[AW_DATA_BG] : frame_colors[AW_WINDOW_BG];
     }
-    
+
     void new_gc(int gc) { gcset.add_gc(gc, create_gc()); }
     bool gc_mapable(int gc) const { return gcset.gc_mapable(gc); }
     const AW_GC *map_gc(int gc) const { return gcset.map_gc(gc); }

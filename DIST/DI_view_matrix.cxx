@@ -364,7 +364,7 @@ void MatrixDisplay::draw() {
 
                     double len = ((val2-min_view_dist)/(max_view_dist-min_view_dist)) * maxw;
                     if (len >= 0) {
-                        device->box(DI_G_RULER_DISPLAY, true, x2, y1, int(len+0.5), hbox);
+                        device->box(DI_G_RULER_DISPLAY, AW::FillStyle::SOLID, x2, y1, int(len+0.5), hbox);
                     }
                     else {
                         device->text(DI_G_STANDARD, "???", cellx, celly);

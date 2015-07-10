@@ -415,7 +415,7 @@ UnitTestResult execute_guarded(UnitTest_function fun, long *duration_usec, long 
         deadlockguard(max_allowed_duration_ms, detect_environment_calls);
 #else
 #warning DEADLOCKGUARD has been disabled (not default!)
-        detect_environment_calls = detect_environment_calls; // dont warn
+        detect_environment_calls = !!detect_environment_calls; // dont warn
 #endif
         exit(EXIT_FAILURE);
     }

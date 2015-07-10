@@ -108,14 +108,13 @@ public:
     AW_active      global_mask;
     bool           focus_follows_mouse;
     GB_HASH       *hash_table_for_variables;
-    bool           variable_set_by_toggle_field;
     int            number_of_toggle_fields;
     int            number_of_option_menus;
     char          *program_name;
 
     bool            disable_callbacks;
     AW_window      *current_modal_window;
-    AW_root_cblist *focus_callback_list;
+    AW_root_cblist *focus_callback_list; // @@@ always NULL?
 
     int  active_windows;
     void window_show();         // a window is set to screen

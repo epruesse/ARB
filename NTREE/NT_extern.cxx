@@ -214,6 +214,7 @@ static void nt_create_all_awars(AW_root *awr, AW_default def) {
     }
     NT_create_transpro_variables(awr, def);
     NT_create_resort_awars(awr, def);
+    NT_create_compare_taxonomy_awars(awr, def);
     NT_create_trackAliChanges_Awars(awr, GLOBAL.gb_main);
 
     NT_create_alignment_vars(awr, def, GLOBAL.gb_main);
@@ -1261,8 +1262,8 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
                 awm->close_sub_menu();
 
                 awm->insert_sub_menu("Maximum Likelihood methods", "L");
-                GDE_load_menu(awm, AWM_EXP, "Phylogeny max. Likelyhood EXP");
-                GDE_load_menu(awm, AWM_ALL, "Phylogeny max. Likelyhood");
+                GDE_load_menu(awm, AWM_EXP, "Phylogeny max. Likelihood EXP");
+                GDE_load_menu(awm, AWM_ALL, "Phylogeny max. Likelihood");
                 awm->close_sub_menu();
 
                 awm->insert_sub_menu("Other methods", "O", AWM_EXP);
@@ -1312,6 +1313,10 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
 
         awm->insert_menu_topic(awm->local_id("branch_analysis"), "Branch analysis", "s", "branch_analysis.hlp", AWM_ALL, makeCreateWindowCallback(NT_create_branch_analysis_window, ntw));
         awm->insert_menu_topic(awm->local_id("mark_duplicates"), "Mark duplicates", "u", "mark_duplicates.hlp", AWM_ALL, makeWindowCallback(NT_mark_duplicates, ntw));
+
+        awm->sep______________();
+
+        awm->insert_menu_topic(awm->local_id("compare_taxonomy"), "Compare taxonomy...", "x", "compare_taxonomy.hlp", AWM_ALL, makeCreateWindowCallback(NT_create_compare_taxonomy_window, ntw));
 
         awm->sep______________();
 

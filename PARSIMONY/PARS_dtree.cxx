@@ -329,9 +329,11 @@ AW_gc_manager AWT_graphic_parsimony::init_devices(AW_window *aww, AW_device *dev
                      "Zombies etc.$#cc5924",
 
                      "--unused", "--unused", // these reserve the numbers which are used for probe colors in ARB_NTREE
-                     "--unused", "--unused", // (this is necessary because ARB_PARS and ARB_NTREE use the same tree painting routines)
-                     "--unused", "--unused",
-                     "--unused", "--unused",
+                                             // (this is necessary because ARB_PARS and ARB_NTREE use the same tree painting routines)
+                     "--unused", "--unused", "--unused",
+                     "--unused", "--unused", "--unused",
+                     "--unused", "--unused", "--unused",
+                     "--unused", "--unused", "--unused",
 
                      NULL);
     return gc_manager;
@@ -637,7 +639,7 @@ void TEST_calc_bootstraps() {
         AP_tree_nlen *root      = env.root_node();
         AP_tree_edge *root_edge = rootEdge();
 
-        TEST_EXPECT(root && rootEdge);
+        TEST_EXPECT(root && root_edge);
 
         root->reorder_tree(BIG_BRANCHES_TO_TOP); TEST_EXPECT_NEWICK(nREMARK, root, bs_origi_topo);
 

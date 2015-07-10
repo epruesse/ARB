@@ -59,22 +59,22 @@ struct export_format : virtual Noncopyable {
     char *suffix;
     char *form; // transformed export expression (part behind 'BEGIN')
 
-    enum EXPORT_CMD export_mode;
+    EXPORT_CMD export_mode;
 
-    export_format();
-    ~export_format();
+    export_format()
+        : system(NULL),
+          new_format(NULL),
+          suffix(NULL),
+          form(NULL),
+          export_mode(EXPORT_XML)
+    {}
+    ~export_format() {
+        free(system);
+        free(new_format);
+        free(suffix);
+        free(form);
+    }
 };
-
-export_format::export_format() {
-    memset((char *)this, 0, sizeof(export_format));
-}
-
-export_format::~export_format() {
-    free(system);
-    free(new_format);
-    free(suffix);
-    free(form);
-}
 
 static GB_ERROR read_export_format(export_format *efo, const char *file, bool load_complete_form) {
     GB_ERROR error = 0;

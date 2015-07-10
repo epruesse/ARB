@@ -32,6 +32,7 @@ endif
 # ------------------------------------------------------------
 # if you change lib-dependencies here,
 # please update corresponding definitions in ../BINDEP/
+# and in ../Makefile@TOOLSLIBDEPENDS
 
 LIB_ARBDB               := $(LIBPATH) $(ARBDB_LIB) $(ARB_GLIB_LIBS)
 LIBS_ARB_PROBE          := ../SERVERCNTRL/SERVERCNTRL.a ../PROBE_COM/client.a ../SL/REGEXPR/REGEXPR.a

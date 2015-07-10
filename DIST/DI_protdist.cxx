@@ -326,21 +326,23 @@ void di_protdist::code()
     }
 }
 
-void di_protdist::transition()
-{
+void di_protdist::transition() {
     // calculations related to transition-transversion ratio
-    double          aa, bb, freqr, freqy, freqgr, freqty;
 
-    freqr = freqa + freqg;
-    freqy = freqc + freqt;
-    freqgr = freqg / freqr;
-    freqty = freqt / freqy;
-    aa = ttratio * freqr * freqy - freqa * freqg - freqc * freqt;
-    bb = freqa * freqgr + freqc * freqty;
+    double freqr  = freqa + freqg;
+    double freqy  = freqc + freqt;
+    double freqgr = freqg / freqr;
+    double freqty = freqt / freqy;
+
+    double aa = ttratio * freqr * freqy - freqa * freqg - freqc * freqt;
+    double bb = freqa * freqgr + freqc *                          freqty;
+
     xi = aa / (aa + bb);
     xv = 1.0 - xi;
-    if (xi <= 0.0 && xi >= -epsilon)
+
+    if (xi <= 0.0 && xi >= -epsilon) {
         xi = 0.0;
+    }
     if (xi < 0.0) {
         GBK_terminate("This transition-transversion ratio is impossible with these base frequencies"); // @@@ should be handled better
     }
@@ -750,22 +752,50 @@ di_protdist::~di_protdist() {
     clean_slopes();
 }
 
-di_protdist::di_protdist(di_codetype codei, di_cattype cati, long nentries, DI_ENTRY     **entriesi, long seq_len, AP_smatrix *matrixi) {
-    memset((char *)this, 0, sizeof(di_protdist));
-    entries = entriesi;
-    matrix = matrixi;
-    freqa = .25;
-    freqc = .25;
-    freqg = .25;
-    freqt = .25;
-    ttratio = 2.0;
-    ease = 0.457;
-    spp = nentries;
-    chars = seq_len;
-    transition();
-    whichcode = codei;
-    whichcat = cati;
-    switch (cati) {
+di_protdist::di_protdist(di_codetype code_, di_cattype cat_, long nentries, DI_ENTRY **entries_, long seq_len, AP_smatrix *matrix_)
+    : whichcode(code_),
+      whichcat(cat_),
+      spp(nentries),
+      chars(seq_len),
+      freqa(.25),
+      freqc(.25),
+      freqg(.25),
+      freqt(.25),
+      ttratio(2.0),
+      ease(0.457),
+      fracchange(0.0),
+      entries(entries_),
+      akt_slopes(NULL),
+      akt_curves(NULL),
+      akt_infs(NULL),
+      matrix(matrix_),
+      p(0.0),
+      dp(0.0),
+      d2p(0.0)
+{
+    memset(trans, 0, sizeof(trans));
+    memset(pi, 0, sizeof(pi));
+
+    for (int i = 0; i<DI_MAX_AA; ++i) {
+        cat[i]      = 0;
+        eig[i]      = 0;
+        exptteig[i] = 0;
+
+        for (int j = 0; j<DI_MAX_AA; ++j) {
+            prob[i][j]    = 0;
+            eigvecs[i][j] = 0;
+        }
+    }
+
+    for (int i = 0; i<(DI_RESOLUTION*DI_MAX_DIST); ++i) {
+        slopes[i] = NULL;
+        curves[i] = NULL;
+        infs[i]   = NULL;
+    }
+
+    transition(); // initializes members 'xi' and 'xv'
+
+    switch (whichcat) {
         case NONE:
         case SIMILARITY:
         case KIMURA:
