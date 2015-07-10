@@ -19,6 +19,7 @@
 #include <xercesc/util/XMLUni.hpp>
 #include <math.h>
 #include <arbdbt.h>
+#include <algorithm>
 
 
 using namespace xercesc;
@@ -996,24 +997,22 @@ void ArbProbeCollection::getParameters(double aValues[16], double& dWidth, doubl
 
 // ----------------------------------------------------------------------------
 
+struct hasSequence {
+    std::string seq;
+    hasSequence(std::string seq_) : seq(seq_) {}
+    bool operator()(const ArbProbe *probe) {
+        return probe && probe->sequence() == seq;
+    }
+};
+
 const ArbProbe *ArbProbeCollection::find(const char *pSequence) const {
-    const ArbProbe *pProbe = 0;
-
-    if (pSequence != 0) {
-        ArbProbePtrListConstIter  Iter;
-        std::string               rSequence(pSequence);
-
-        for (Iter = ProbeList.begin() ; Iter != ProbeList.end() ; ++Iter) {
-            const ArbProbe *pTestProbe = *Iter;
-
-            if ((pTestProbe != 0) && (pTestProbe->sequence() == rSequence)) {
-                pProbe = pTestProbe;
-                break;
-            }
+    if (pSequence) {
+        ArbProbePtrListConstIter found = find_if(ProbeList.begin(), ProbeList.end(), hasSequence(pSequence));
+        if (found != ProbeList.end()) {
+            return *found;
         }
     }
-
-    return (pProbe);
+    return NULL;
 }
 
 // ----------------------------------------------------------------------------
@@ -1021,16 +1020,13 @@ const ArbProbe *ArbProbeCollection::find(const char *pSequence) const {
 bool ArbProbeCollection::add(const char *pName, const char *pSequence, const ArbProbe **ppProbe) {
     bool bAdded = false;
 
-    if ((pSequence          != 0) &&
-        (strlen(pSequence)  >= ArbMIN_PROBE_LENGTH)) {
+    if (pSequence && (strlen(pSequence) >= ArbMIN_PROBE_LENGTH)) {
         ArbProbe *pNewProbe = new ArbProbe(pName, pSequence);
 
         if (pNewProbe != 0) {
             ProbeList.push_back(pNewProbe);
 
-            if (ppProbe != 0) {
-                *ppProbe = pNewProbe;
-            }
+            if (ppProbe != 0) *ppProbe = pNewProbe;
 
             HasChanged  = true;
             bAdded      = true;
@@ -1039,6 +1035,26 @@ bool ArbProbeCollection::add(const char *pName, const char *pSequence, const Arb
 
     return (bAdded);
 }
+
+bool ArbProbeCollection::replace(const char *oldSequence, const char *pName, const char *pSequence, const ArbProbe **ppProbe) {
+    bool bReplaced = false;
+
+    if (oldSequence && pSequence && (strlen(pSequence) >= ArbMIN_PROBE_LENGTH)) {
+        ArbProbePtrListIter found = find_if(ProbeList.begin(), ProbeList.end(), hasSequence(oldSequence));
+        if (found != ProbeList.end()) {
+            (*found)->free();
+            *found = new ArbProbe(pName, pSequence);
+
+            if (ppProbe != 0) *ppProbe = *found;
+
+            HasChanged = true;
+            bReplaced  = true;
+        }
+    }
+
+    return (bReplaced);
+}
+
 
 // ----------------------------------------------------------------------------
 
@@ -1631,10 +1647,10 @@ void ArbMatchResultsManager::updateResults() {
 
 // ----------------------------------------------------------------------------
 
-int ArbMatchResultsManager::enumerateResults(ArbMatchResultsEnumCallback pCallback, void *pContext, bool& bAborted) {
+int ArbMatchResultsManager::enumerate_results(ArbMatchResultsEnumCallback pCallback, void *pContext) {
     int nResults = 0;
 
-    bAborted = false;
+    bool bAborted = false;
 
     if (pCallback != 0) {
         ArbMatchResultPtrByDoubleMultiMap rResultsMap;

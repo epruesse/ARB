@@ -31,6 +31,8 @@ __ATTR__NORETURN inline void selection_type_mismatch(const char *triedType) { ty
 AW_selection_list::AW_selection_list(const char *variable_name_, int variable_type_, Widget select_list_widget_)
     : variable_name(nulldup(variable_name_)),
       variable_type(AW_VARIABLE_TYPE(variable_type_)),
+      update_cb(NULL),
+      cl_update(NULL),
       select_list_widget(select_list_widget_),
       list_table(NULL),
       last_of_list_table(NULL),
@@ -82,6 +84,15 @@ void AW_selection_list::update() {
 
     for (size_t i=0; i<count; i++) XmStringFree(strtab[i]);
     delete [] strtab;
+
+    if (update_cb) update_cb(this, cl_update);
+}
+
+void AW_selection_list::set_update_callback(sellist_update_cb ucb, AW_CL cl_user) {
+    aw_assert(!update_cb || !ucb); // overwrite allowed only with NULL!
+
+    update_cb = ucb;
+    cl_update = cl_user;
 }
 
 void AW_selection_list::refresh() {

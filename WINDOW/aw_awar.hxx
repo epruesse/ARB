@@ -108,6 +108,11 @@ public:
     AW_VARIABLE_TYPE  variable_type;                // type of the awar
     char             *awar_name;                    // name of the awar
 
+#if defined(ASSERTION_USED)
+    static bool deny_read;  // true -> make awar reads fail
+    static bool deny_write; // true -> make awar writes fail
+#endif
+
     void unlink();                                  // unconditionally unlink from DB
 
     bool unlink_from_DB(GBDATA *gb_main);

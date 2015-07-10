@@ -35,6 +35,10 @@
 #define AWAR_CHANGE_DUMP(name, where, format)
 #endif // DEBUG
 
+#if defined(ASSERTION_USED)
+bool AW_awar::deny_read = false;
+bool AW_awar::deny_write = false;
+#endif
 
 struct AW_widget_refresh_cb : virtual Noncopyable {
     AW_widget_refresh_cb(AW_widget_refresh_cb *previous, AW_awar *vs, AW_CL cd1, Widget w, AW_widget_type type, AW_window *awi);
@@ -129,6 +133,7 @@ static GB_ERROR AW_MSG_UNMAPPED_AWAR = "Error (unmapped AWAR):\n"
 
 #define WRITE_BODY(self,format,func)                    \
     if (!gb_var) return AW_MSG_UNMAPPED_AWAR;           \
+    aw_assert(!deny_write);                             \
     GB_transaction ta(gb_var);                          \
     AWAR_CHANGE_DUMP(awar_name, #self, format);         \
     GB_ERROR error = func(gb_var, para);                \
@@ -157,12 +162,14 @@ WRITE_SKELETON(write_pointer, GBDATA*, "%p", GB_write_pointer) // defines rewrit
 
 
 char *AW_awar::read_as_string() const {
+    aw_assert(!deny_read);
     if (!gb_var) return strdup("");
     GB_transaction ta(gb_var);
     return GB_read_as_string(gb_var);
 }
 
 const char *AW_awar::read_char_pntr() const {
+    aw_assert(!deny_read);
     aw_assert(variable_type == AW_STRING);
 
     if (!gb_var) return "";
@@ -171,24 +178,28 @@ const char *AW_awar::read_char_pntr() const {
 }
 
 double AW_awar::read_float() const {
+    aw_assert(!deny_read);
     if (!gb_var) return 0.0;
     GB_transaction ta(gb_var);
     return GB_read_float(gb_var);
 }
 
 long AW_awar::read_int() const {
+    aw_assert(!deny_read);
     if (!gb_var) return 0;
     GB_transaction ta(gb_var);
     return (long)GB_read_int(gb_var);
 }
 
 GBDATA *AW_awar::read_pointer() const {
+    aw_assert(!deny_read);
     if (!gb_var) return NULL;
     GB_transaction ta(gb_var);
     return GB_read_pointer(gb_var);
 }
 
 char *AW_awar::read_string() const {
+    aw_assert(!deny_read);
     aw_assert(variable_type == AW_STRING);
 
     if (!gb_var) return strdup("");
@@ -197,12 +208,14 @@ char *AW_awar::read_string() const {
 }
 
 void AW_awar::touch() {
+    aw_assert(!deny_write);
     if (gb_var) {
         GB_transaction ta(gb_var);
         GB_touch(gb_var);
     }
 }
 GB_ERROR AW_awar::reset_to_default() {
+    aw_assert(!deny_write);
     GB_ERROR error = NULL;
     switch (variable_type) {
         case AW_STRING:  error = write_string (default_value.s); break;

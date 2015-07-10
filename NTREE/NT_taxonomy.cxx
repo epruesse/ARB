@@ -48,12 +48,6 @@ enum Target {
     MISSING_RIGHT,
 };
 
-struct charpLess {
-    bool operator()(const char *n1, const char *n2) const {
-        return strcmp(n1, n2)<0;
-    }
-};
-
 static TreeNode *findParentGroup(TreeNode *node) {
     TreeNode *parent_group = NULL;
 
