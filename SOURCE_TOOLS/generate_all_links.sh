@@ -246,6 +246,7 @@ symlink_file ../CORE/arb_diff.h INCLUDE/arb_diff.h &&
 symlink_file ../CORE/arb_file.h INCLUDE/arb_file.h &&
 symlink_file ../CORE/arb_handlers.h INCLUDE/arb_handlers.h &&
 symlink_file ../CORE/arb_match.h INCLUDE/arb_match.h &&
+symlink_file ../CORE/arb_mem.h INCLUDE/arb_mem.h &&
 symlink_file ../CORE/arb_misc.h INCLUDE/arb_misc.h &&
 symlink_file ../CORE/arb_msg.h INCLUDE/arb_msg.h &&
 symlink_file ../CORE/arb_msg_fwd.h INCLUDE/arb_msg_fwd.h &&
