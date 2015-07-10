@@ -26,7 +26,7 @@
 #define AWAR_TRANSPRO_DEST   AWAR_TRANSPRO_PREFIX "dest"
 
 // translator only:
-#define AWAR_TRANSPRO_POS    AWAR_TRANSPRO_PREFIX "pos" // [0..N-1]
+#define AWAR_TRANSPRO_POS    AWAR_TRANSPRO_PREFIX "pos" // [0..3]: 0-2 = reading frame; 3 = autodetect
 #define AWAR_TRANSPRO_MODE   AWAR_TRANSPRO_PREFIX "mode"
 #define AWAR_TRANSPRO_XSTART AWAR_TRANSPRO_PREFIX "xstart"
 #define AWAR_TRANSPRO_WRITE  AWAR_TRANSPRO_PREFIX "write"
@@ -61,9 +61,13 @@ static void transpro_event(AW_window *aww) {
 }
 
 static void nt_trans_cursorpos_changed(AW_root *awr) {
-    int pos = bio2info(awr->awar(AWAR_CURSOR_POSITION)->read_int());
-    pos = pos % 3;
-    awr->awar(AWAR_TRANSPRO_POS)->write_int(pos);
+    AW_awar *awar_startpos = awr->awar(AWAR_TRANSPRO_POS);
+
+    if (awar_startpos->read_int() != AUTODETECT_STARTPOS) {
+        int pos = bio2info(awr->awar(AWAR_CURSOR_POSITION)->read_int());
+        pos     = pos % 3;
+        awar_startpos->write_int(pos);
+    }
 }
 
 AW_window *NT_create_dna_2_pro_window(AW_root *root) {
@@ -108,6 +112,8 @@ AW_window *NT_create_dna_2_pro_window(AW_root *root) {
         char label[2] = { char(p+'0'), 0 };
         aws->insert_option(label, label, bio2info(p));
     }
+    aws->insert_option("choose best", "choose best", AUTODETECT_STARTPOS);
+
     aws->update_option_menu();
     aws->get_root()->awar_int(AWAR_CURSOR_POSITION)->add_callback(nt_trans_cursorpos_changed);
 

@@ -23,6 +23,7 @@ AW_window *create_probe_design_window(AW_root *root, GBDATA *gb_main);
 AW_window *create_probe_match_window(AW_root *root, GBDATA *gb_main);
 AW_window *create_probe_admin_window(AW_root *root, GBDATA *gb_main);
 AW_window *create_probe_group_result_window(AW_root *awr, AWT_canvas *ntw);
+AW_window *create_probe_match_with_specificity_window(AW_root *root, AWT_canvas *ntw);
 
 #define PROBE_DESIGN_EXCEPTION_MAX 1
 #define AWAR_PROBE_ADMIN_PT_SERVER "tmp/probe_admin/pt_server"
