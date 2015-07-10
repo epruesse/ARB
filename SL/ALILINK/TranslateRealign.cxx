@@ -75,15 +75,18 @@ typedef SizedBufferPtr<char>       SizedWriteBuffer;
 // ----------------------------------
 //      Translate protein -> dna
 
+inline bool legal_ORF_pos(int p) { return p >= 0 && p<=2; }
+
 GB_ERROR ALI_translate_marked(GBDATA *gb_main, bool use_entries, bool save_entries, int selected_startpos, bool translate_all, const char *ali_source, const char *ali_dest) {
     // if use_entries   == true -> use fields 'codon_start' and 'transl_table' for translation
-    //                           (selected_startpos and AWAR_PROTEIN_TYPE are only used both fields are missing,
-    //                            if only one is missing, now an error occurs)
+    //                             (selected_startpos and AWAR_PROTEIN_TYPE are only used if both fields are missing,
+    //                             if only one is missing, now an error occurs)
     // if use_entries   == false -> always use selected_startpos and AWAR_PROTEIN_TYPE
     // if translate_all == true -> a selected_startpos > 1 produces a leading 'X' in protein data
     //                             (otherwise nucleotides in front of the starting pos are simply ignored)
+    // if selected_startpos == AUTODETECT_STARTPOS -> the start pos is chosen to minimise number of stop codons
 
-    ali_assert(selected_startpos >= 0 && selected_startpos < 3);
+    ali_assert(legal_ORF_pos(selected_startpos) || selected_startpos == AUTODETECT_STARTPOS);
 
     GB_ERROR  error   = 0;
     char     *to_free = 0;
@@ -176,6 +179,7 @@ GB_ERROR ALI_translate_marked(GBDATA *gb_main, bool use_entries, bool save_entri
                     else {
                         ali_assert(sp_codon_start != -1); // either both should be defined or none
                         found_transl_info = true;
+                        ali_assert(legal_ORF_pos(sp_codon_start));
                     }
 
                     if (sp_arb_table != table) continue; // species has not current transl_table
@@ -190,6 +194,7 @@ GB_ERROR ALI_translate_marked(GBDATA *gb_main, bool use_entries, bool save_entri
                     if (!gb_source_data) { ++no_data; }
                     else {
                         char *data = GB_read_string(gb_source_data);
+                        size_t  data_size = GB_read_string_count(gb_source_data);
                         if (!data) {
                             GB_print_error(); // cannot read data (ignore species)
                             ++no_data;
@@ -197,7 +202,43 @@ GB_ERROR ALI_translate_marked(GBDATA *gb_main, bool use_entries, bool save_entri
                         else {
                             if (!found_transl_info) ++spec_no_transl_info; // count species with missing info
 
-                            stops += AWT_pro_a_nucs_convert(table, data, GB_read_string_count(gb_source_data), startpos, translate_all, false, false, 0); // do the translation
+                            if (startpos == AUTODETECT_STARTPOS)
+                            {
+                                int   cn;
+                                int   stop_codons;
+                                int   least_stop_codons = -1;
+                                char* trial_data[3]     = {data, strdup(data), strdup(data)};
+
+                                for (cn = 0 ; cn < 3 ; cn++)
+                                {
+                                    stop_codons = AWT_pro_a_nucs_convert(table, trial_data[cn], data_size, cn, translate_all, false, false, 0); // do the translation
+
+                                    if ((stop_codons < least_stop_codons) ||
+                                        (least_stop_codons == -1))
+                                    {
+                                        least_stop_codons = stop_codons;
+                                        startpos          = cn;
+                                    }
+                                }
+
+                                for (cn = 0 ; cn < 3 ; cn++)
+                                {
+                                    if (cn != startpos)
+                                    {
+                                        free(trial_data[cn]);
+                                    }
+                                }
+
+                                data   = trial_data[startpos];
+                                stops += least_stop_codons;
+
+                            }
+                            else
+                            {
+                                stops += AWT_pro_a_nucs_convert(table, data, data_size, startpos, translate_all, false, false, 0); // do the translation
+                            }
+
+                            ali_assert(legal_ORF_pos(startpos));
                             ++count;
 
                             GBDATA *gb_dest_data     = GBT_add_data(gb_species, ali_dest, "data", GB_STRING);

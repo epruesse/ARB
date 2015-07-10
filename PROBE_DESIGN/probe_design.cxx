@@ -37,6 +37,8 @@
 #include <arb_file.h>
 #include <aw_edit.hxx>
 
+#include "probe_collection.hxx"
+
 // general awars
 
 #define AWAR_PROBE_CREATE_GENE_SERVER "tmp/probe_admin/gene_server" // whether to create a gene pt server
@@ -85,6 +87,29 @@
 #define AWAR_PD_MATCH_LIM_NMATCH "probe_match/lim_nmatch"
 #define AWAR_PD_MATCH_MAX_RES    "probe_match/maxres"
 
+// --------------------------------
+// probe collection awars
+// see also ../SL/TREEDISP/TreeDisplay.hxx@AWAR_PC_
+
+// probe collection window
+#define AWAR_PC_TARGET_STRING     "probe_collection/target_string"
+#define AWAR_PC_TARGET_NAME       "probe_collection/target_name"
+#define AWAR_PC_MATCH_WEIGHTS     "probe_collection/match_weights/pos"
+#define AWAR_PC_MATCH_WIDTH       "probe_collection/match_weights/width"
+#define AWAR_PC_MATCH_BIAS        "probe_collection/match_weights/bias"
+
+#define AWAR_PC_CURRENT_COLLECTION "probe_collection/current"
+#define AWAR_PC_SELECTED_PROBE     "tmp/probe_collection/probe"
+
+// probe match collection window
+#define AWAR_PMC_SELECTED_PROBE   "tmp/probe_match_collection/probe"
+#define AWAR_PMC_MATCH_NHITS      "tmp/probe_match_collection/nhits"
+
+// probe collection matching control parameters
+#define AWAR_PC_MISMATCH_THRESHOLD               "probe_collection/mismatch_threshold"
+
+#define REPLACE_TARGET_CONTROL_CHARS ":#=_:\\:=_"
+
 // ----------------------------------------
 
 static saiProbeData *g_spd = 0;
@@ -123,7 +148,9 @@ struct AutoMatchSettings {
 
 static AutoMatchSettings auto_match_cb_settings;
 
-static void probe_match_event(AW_window *aww, ProbeMatchEventParam *event_param); // prototype
+// prototypes:
+static void probe_match_event(AW_window *aww, ProbeMatchEventParam *event_param);
+static void update_species_matched_string(AW_root *root, AWT_canvas *ntw);
 
 static void auto_match_cb(AW_root *root) {
     if (!auto_match_cb_settings.disable) {
@@ -202,19 +229,19 @@ static void popup_probe_design_result_window(AW_window *aww, GBDATA *gb_main) {
 
         PD.win->at("result");
         PD.resultList = PD.win->create_selection_list(AWAR_TARGET_STRING, 40, 5, false);
-        const StorableSelectionList *storable_result_list = new StorableSelectionList(TypedSelectionList("prb", PD.resultList, "designed probes", "designed")); // @@@ make member of PD ? 
+        const StorableSelectionList *storable_result_list = new StorableSelectionList(TypedSelectionList("prb", PD.resultList, "designed probes", "designed")); // @@@ make member of PD ?
 
         PD.resultList->clear();
         PD.resultList->insert_default("No probes designed yet", "");
 
         PD.win->at("buttons");
-        
+
         PD.win->callback((AW_CB0)AW_POPDOWN);
         PD.win->create_button("CLOSE", "CLOSE", "C");
 
         PD.win->callback(makeWindowCallback(awt_clear_selection_list_cb, PD.resultList));
         PD.win->create_button("CLEAR", "CLEAR", "R");
-        
+
         PD.win->callback(makeCreateWindowCallback(create_load_box_for_selection_lists, storable_result_list));
         PD.win->create_button("LOAD", "LOAD", "L");
 
@@ -235,8 +262,7 @@ static void popup_probe_design_result_window(AW_window *aww, GBDATA *gb_main) {
     PD.win->activate();
 }
 
-static int init_local_com_struct()
-{
+static int init_local_com_struct() {
     const char *user = GB_getenvUSER();
 
     if (aisc_create(PD.link, PT_MAIN, PD.com,
@@ -385,7 +411,7 @@ inline const char *bond_awar_name(int i) {
 static int probe_common_send_data(AW_root *root) {
     // send data common to probe-design AND -match
     if (aisc_put(PD.link, PT_LOCS, PD.locs,
-                 LOCS_SPLIT,   (double)root->awar(AWAR_PD_COMMON_EXP_SPLIT)->read_float(),
+                 LOCS_SPLIT, (double)root->awar(AWAR_PD_COMMON_EXP_SPLIT)->read_float(),
                  NULL))
         return 1;
 
@@ -410,7 +436,7 @@ static int probe_design_send_data(AW_root *root, const T_PT_PDC& pdc) {
 }
 static int probe_match_send_data(AW_root *root) {
     if (aisc_put(PD.link, PT_LOCS, PD.locs,
-                 LOCS_MATCH_N_ACCEPT, root->awar(AWAR_PD_MATCH_NMATCHES)->read_int(),  
+                 LOCS_MATCH_N_ACCEPT, root->awar(AWAR_PD_MATCH_NMATCHES)->read_int(),
                  LOCS_MATCH_N_LIMIT,  root->awar(AWAR_PD_MATCH_LIM_NMATCH)->read_int(),
                  LOCS_MATCH_MAX_HITS, root->awar(AWAR_PD_MATCH_MAX_RES)->read_int(),
                  NULL))
@@ -500,12 +526,12 @@ static void probe_design_event(AW_window *aww, GBDATA *gb_main) {
                     PDC_MINTARGETS,   (double)root->awar(AWAR_PD_DESIGN_MINTARGETS)->read_float()/100.0,
                     NULL))
     {
-        aw_message ("Connection to PT_SERVER lost (1)");
+        aw_message("Connection to PT_SERVER lost (1)");
         return;
     }
-    
+
     if (probe_design_send_data(root, pdc)) {
-        aw_message ("Connection to PT_SERVER lost (1)");
+        aw_message("Connection to PT_SERVER lost (1)");
         return;
     }
 
@@ -519,8 +545,9 @@ static void probe_design_event(AW_window *aww, GBDATA *gb_main) {
     bytestring unknown_names;
     if (aisc_get(PD.link, PT_PDC, pdc,
                  PDC_UNKNOWN_NAMES, &unknown_names,
-                 NULL)) {
-        aw_message ("Connection to PT_SERVER lost (1)");
+                 NULL))
+    {
+        aw_message("Connection to PT_SERVER lost (1)");
         return;
     }
 
@@ -604,7 +631,7 @@ static void probe_design_event(AW_window *aww, GBDATA *gb_main) {
                          LOCS_ERROR, &locs_error,
                          NULL))
             {
-                aw_message ("Connection to PT_SERVER lost (1)");
+                aw_message("Connection to PT_SERVER lost (1)");
                 abort = true;
             }
             else if (*locs_error) {
@@ -686,7 +713,7 @@ static void probe_match_event(AW_window *aww, ProbeMatchEventParam *event_param)
         if (!gb_main) { error = "Please open probe match window once to enable auto-match"; }
 
         SmartPtr<arb_progress> progress;
-        
+
         if (!error) {
             const char *servername = PD_probe_pt_look_for_server(root, error);
 
@@ -734,9 +761,7 @@ static void probe_match_event(AW_window *aww, ProbeMatchEventParam *event_param)
                 g_spd = new saiProbeData;
                 transferProbeData(g_spd);
 
-                if (selection_id) {
-                    g_spd->setProbeTarget(probe);
-                }
+                g_spd->setProbeTarget(probe);
             }
         }
 
@@ -923,7 +948,7 @@ static void probe_match_event(AW_window *aww, ProbeMatchEventParam *event_param)
 
                         if (write_2_tmp) {
                             // write or append to field 'tmp'
-                        
+
                             GBDATA   *gb_tmp = 0;
                             GB_ERROR  error2 = 0;
                             bool      append = true;
@@ -976,10 +1001,9 @@ static void probe_match_event(AW_window *aww, ProbeMatchEventParam *event_param)
                         sprintf(result, "%c %s", flags[0], match_info); // only first flag ( = species related)
                         if (selection_id) selection_id->insert(result, match_name);   // @@@ wert fuer awar eintragen
 
-                        if (selection_id) {  // storing probe data into linked lists
-                            g_spd->probeSeq.push_back(strdup(match_info));
-                            g_spd->probeSpecies.push_back(strdup(match_name));
-                        }
+                        // storing probe data into linked lists
+                        g_spd->probeSeq.push_back(std::string(match_info));
+                        g_spd->probeSpecies.push_back(std::string(match_name));
                     }
                     mcount++;
                 }
@@ -1066,7 +1090,7 @@ static void probe_match_all_event(AW_window *aww, AW_selection_list *iselection_
 
         ++selentry;
         progress.inc();
-        
+
     }
 
     if (got_result) {
@@ -1138,15 +1162,13 @@ static void gc_minmax_changed_cb(AW_root *root, bool maxChanged) {
     }
 }
 
-void create_probe_design_variables(AW_root *root, AW_default props, AW_default db)
-{
+void create_probe_design_variables(AW_root *root, AW_default props, AW_default db) {
     PD.win = 0;        // design result window not created
 
     root->awar_string(AWAR_SPECIES_NAME,         "", props);
     root->awar_string(AWAR_PD_SELECTED_MATCH,    "", props)->add_callback(selected_match_changed_cb);
     root->awar_float (AWAR_PD_DESIGN_EXP_DTEDGE, .5, props);
     root->awar_float (AWAR_PD_DESIGN_EXP_DT,     .5, props);
-
 
     double default_bonds[16] = {
         0.0, 0.0, 0.5, 1.1,
@@ -1189,31 +1211,95 @@ void create_probe_design_variables(AW_root *root, AW_default props, AW_default d
     root->awar_int(AWAR_PT_SERVER,      0, props);
     root->awar_int(AWAR_PD_DESIGN_GENE, 0, props);
 
-    root->awar_int   (AWAR_PD_MATCH_MARKHITS,   1,       props);
-    root->awar_int   (AWAR_PD_MATCH_SORTBY,     0,       props);
-    root->awar_int   (AWAR_PD_MATCH_WRITE2TMP,  0,       props);
-    root->awar_int   (AWAR_PD_MATCH_COMPLEMENT, 0,       props);
+    root->awar_int(AWAR_PD_MATCH_MARKHITS,   1, props);
+    root->awar_int(AWAR_PD_MATCH_SORTBY,     0, props);
+    root->awar_int(AWAR_PD_MATCH_WRITE2TMP,  0, props);
+    root->awar_int(AWAR_PD_MATCH_COMPLEMENT, 0, props);
 
-    root->awar_int   (AWAR_MAX_MISMATCHES,      0,       db)->set_min(0);
-    root->awar_string(AWAR_TARGET_STRING,       0,       db);
+    root->awar_int   (AWAR_MAX_MISMATCHES, 0, db)->set_min(0);
+    root->awar_string(AWAR_TARGET_STRING,  0, db);
 
-    root->awar_string(AWAR_PD_MATCH_NHITS,      "[none]",props);
-    root->awar_int   (AWAR_PD_MATCH_NMATCHES,   1,       props);
-    root->awar_int   (AWAR_PD_MATCH_LIM_NMATCH, 4,       props);
-    root->awar_int   (AWAR_PD_MATCH_MAX_RES,    1000000, props);
+    root->awar_string(AWAR_PD_MATCH_NHITS,      "[none]", props);
+    root->awar_int   (AWAR_PD_MATCH_NMATCHES,   1,        props);
+    root->awar_int   (AWAR_PD_MATCH_LIM_NMATCH, 4,        props);
+    root->awar_int   (AWAR_PD_MATCH_MAX_RES,    1000000,  props);
 
-    root->awar_int   (AWAR_PD_MATCH_AUTOMATCH,  0,    props)->add_callback(auto_match_changed);
+    root->awar_int(AWAR_PD_MATCH_AUTOMATCH, 0, props)->add_callback(auto_match_changed);
 
     root->awar_string(AWAR_PD_MATCH_RESOLVE, "", props)->add_callback(resolved_probe_chosen);
-    root->awar_string(AWAR_ITARGET_STRING, "", db);
+    root->awar_string(AWAR_ITARGET_STRING,   "", db);
 
-    root->awar_int   (AWAR_PROBE_ADMIN_PT_SERVER,    0,  db);
-    root->awar_int   (AWAR_PROBE_CREATE_GENE_SERVER, 0,  db);
+    root->awar_int(AWAR_PROBE_ADMIN_PT_SERVER,    0, db);
+    root->awar_int(AWAR_PROBE_CREATE_GENE_SERVER, 0, db);
 
     root->awar_string(AWAR_SPV_SAI_2_PROBE,    "",     db); // name of SAI selected in list
     root->awar_string(AWAR_SPV_DB_FIELD_NAME,  "name", db); // name of displayed species field
     root->awar_int   (AWAR_SPV_DB_FIELD_WIDTH, 10,     db); // width of displayed species field
     root->awar_string(AWAR_SPV_ACI_COMMAND,    "",     db); // User defined or pre-defined ACI command to display
+
+    root->awar_int   (AWAR_PMC_MATCH_NHITS,    0,  db);
+    root->awar_string(AWAR_PMC_SELECTED_PROBE, "", db);
+
+    root->awar_string(AWAR_PC_TARGET_STRING,  "", db)->set_srt(REPLACE_TARGET_CONTROL_CHARS);
+    root->awar_string(AWAR_PC_TARGET_NAME,    "", db)->set_srt(REPLACE_TARGET_CONTROL_CHARS);
+    root->awar_string(AWAR_PC_SELECTED_PROBE, "", db);
+
+    root->awar_float(AWAR_PC_MATCH_WIDTH, 1.0, db)->set_minmax(0.01, 100.0);
+    root->awar_float(AWAR_PC_MATCH_BIAS,  0.0, db)->set_minmax(-1.0, 1.0);
+
+    root->awar_float(AWAR_PC_MISMATCH_THRESHOLD,                 0.0, db)->set_minmax(0, 100); // Note: limits will be modified by probe_match_with_specificity_event
+    root->awar_float(AWAR_PC_CLADE_MARKED_THRESHOLD,           100.0, db)->set_minmax(0, 100);
+    root->awar_float(AWAR_PC_CLADE_PARTIALLY_MARKED_THRESHOLD,   0.0, db)->set_minmax(0, 100);
+
+    double default_weights[16] = {0.0};
+    double default_width = 1.0;
+    double default_bias  = 0.0;
+
+    ArbProbeCollection& g_probe_collection = get_probe_collection();
+    g_probe_collection.getParameters(default_weights, default_width, default_bias);
+    g_probe_collection.clear();
+
+    char buffer[256] = {0};
+
+    for (int i = 0; i < 16 ; i++) {
+        sprintf(buffer, AWAR_PC_MATCH_WEIGHTS"%i", i);
+        AW_awar *awar = root->awar_float(buffer, 0.0, db);
+
+        awar->set_minmax(0, 10);
+        default_weights[i] = awar->read_float();
+    }
+
+    g_probe_collection.setParameters(default_weights, default_width, default_bias);
+
+    // read probes from DB and add them to collection
+    {
+        AW_awar *awar_current   = root->awar_string(AWAR_PC_CURRENT_COLLECTION, "", db);
+        AW_awar *awar_numProbes = root->awar_int(AWAR_PC_NUM_PROBES, 0, db);
+
+        char *current = awar_current->read_string();
+
+        if (current && current[0]) {
+            // Note: target sequences/names do not contain '#'/':' (see REPLACE_TARGET_CONTROL_CHARS)
+            ConstStrArray probes;
+            GBT_splitNdestroy_string(probes, current, "#", true);
+
+            for (size_t i = 0; i<probes.size(); ++i) {
+                const char *probe = probes[i];
+                const char *colon = strchr(probe, ':');
+
+                if (colon) {
+                    char       *name = GB_strpartdup(probe, colon-1);
+                    const char *seq  = colon+1;
+                    g_probe_collection.add(name, seq);
+                    free(name);
+                }
+                else {
+                    aw_message(GBS_global_string("Saved probe ignored: has wrong format ('%s', expected 'name:seq')", probe));
+                }
+            }
+            awar_numProbes->write_int(g_probe_collection.probeList().size());
+        }
+    }
     root->awar_string(AWAR_SPV_SELECTED_PROBE, "",     db); // For highlighting the selected PROBE
 }
 
@@ -1227,7 +1313,7 @@ static AW_window *create_probe_expert_window(AW_root *root, bool for_design) {
         aws->init(root, "PM_exp", "Probe Match (Expert)");
         aws->load_xfig("pm_spec.fig");
     }
-    
+
     aws->label_length(30);
     aws->button_length(10);
 
@@ -1616,9 +1702,9 @@ AW_window *create_probe_match_window(AW_root *root, GBDATA *gb_main) {
         selection_id = aws->create_selection_list(AWAR_PD_SELECTED_MATCH, 110, 15, true);
         selection_id->insert_default("****** No results yet *******", "");  // if list is empty -> crashed if new species was selected in ARB_EDIT4
 
-        TypedSelectionList *typed_selection = new TypedSelectionList("match", selection_id, "probe match", "probe_match");
+        static SmartPtr<TypedSelectionList> typed_selection = new TypedSelectionList("match", selection_id, "probe match", "probe_match");
         aws->at("print");
-        aws->callback(makeWindowCallback(create_print_box_for_selection_lists, typed_selection));
+        aws->callback(makeWindowCallback(create_print_box_for_selection_lists, &*typed_selection));
         aws->create_button("PRINT", "PRINT", "P");
 
         aws->at("matchSai");
@@ -1691,10 +1777,10 @@ static void pd_start_pt_server(AW_window *aww) {
     if (error) aw_message(error);
 }
 
-static void pd_kill_pt_server(AW_window *aww, bool kill_all)
-{
+static void pd_kill_pt_server(AW_window *aww, bool kill_all) {
     if (aw_ask_sure("kill_ptserver",
-                    GBS_global_string("Are you sure to stop %s", kill_all ? "all servers" : "that server"))) {
+                    GBS_global_string("Are you sure to stop %s", kill_all ? "all servers" : "that server")))
+    {
         long min = 0;
         long max = 0;
 
@@ -1940,7 +2026,7 @@ static struct pg_global_struct {
     AWT_canvas        *ntw;                         // canvas of main window
 
     char   *pg_filename;                            // database containing results (from one result file)
-    GBDATA *pg_main;                                // root-handle of probe-group-database 
+    GBDATA *pg_main;                                // root-handle of probe-group-database
 } pg_global;
 
 
@@ -2132,5 +2218,773 @@ AW_window *create_probe_group_result_window(AW_root *awr, AWT_canvas *ntw) {
     return awt_create_load_box(awr, "Load", "arb_probe_group result", ".", "arb",
                                &pg_global.awar_pg_result_filename,
                                makeWindowCallback(create_probe_group_groups_window));
+}
+
+// ----------------------------------------------------------------------------
+
+static AW_window *create_probe_match_specificity_control_window(AW_root *root) {
+    static AW_window_simple *aws = NULL;
+
+    if (!aws) {
+        aws = new AW_window_simple;
+
+        aws->init(root, "MATCH_DISPLAYCONTROL", "MATCH DISPLAY CONTROL");
+
+        aws->auto_space(10, 10);
+        aws->label_length(35);
+
+        const int FIELDSIZE  = 5;
+        const int SCALERSIZE = 500;
+
+        aws->label("Mismatch threshold");
+        aws->create_input_field_with_scaler(AWAR_PC_MISMATCH_THRESHOLD, FIELDSIZE, SCALERSIZE);
+
+        aws->at_newline();
+
+        aws->label("Clade marked threshold");
+        aws->create_input_field_with_scaler(AWAR_PC_CLADE_MARKED_THRESHOLD, FIELDSIZE, SCALERSIZE);
+
+        aws->at_newline();
+
+        aws->label("Clade partially marked threshold");
+        aws->create_input_field_with_scaler(AWAR_PC_CLADE_PARTIALLY_MARKED_THRESHOLD, FIELDSIZE, SCALERSIZE);
+    }
+
+    return aws;
+}
+
+// ----------------------------------------------------------------------------
+
+struct ArbPM_Context {
+    AW_selection_list *probes_id;
+    AWT_canvas        *ntw;
+
+    ArbPM_Context()
+        : probes_id(NULL),
+          ntw(NULL)
+    {}
+};
+
+static ArbPM_Context PM_Context;
+
+static void       probe_match_update_probe_list(ArbPM_Context *pContext);
+static AW_window *create_probe_collection_window(AW_root *root, ArbPM_Context *pContext);
+
+struct ArbWriteFile_Context {
+    FILE         *pFile;
+    arb_progress *pProgress;
+    int           nLastPercent;
+
+    ArbWriteFile_Context()
+        : pFile(NULL),
+          pProgress(NULL),
+          nLastPercent(0)
+    {}
+};
+
+// ----------------------------------------------------------------------------
+
+static bool probe_match_with_specificity_enum_callback(void *pVoidContext, const char *pResult, bool bIsComment, int nItem, int nItems) {
+    ArbWriteFile_Context *pContext = (ArbWriteFile_Context*)pVoidContext;
+    int                   nPercent = (int)(100.0 * nItem / nItems);
+    bool                  bAborted = false;
+
+    if (!bIsComment) {
+        if (pContext->nLastPercent != nPercent) {
+            pContext->nLastPercent = nPercent;
+            pContext->pProgress->inc();
+        }
+    }
+
+    bAborted = pContext->pProgress->aborted();
+
+    if (pContext->pFile != 0) {
+        // Update status - put after matching cause matching writes its own status messages
+        fprintf(pContext->pFile, "%s\n", pResult);
+    }
+
+    return (bAborted);
+}
+
+// ----------------------------------------------------------------------------
+
+static void probe_match_with_specificity_edit_event() {
+    AW_edit(get_results_manager().resultsFileName(), 0, 0, 0);
+}
+
+// ----------------------------------------------------------------------------
+
+static void probe_match_with_specificity_event(AW_window *aww, AWT_canvas *ntw) {
+    if (allow_probe_match_event) {
+        AW_root     *root                = aww->get_root();
+        int          last_mark           = (int)root->awar(AWAR_PD_MATCH_MARKHITS)->read_int();
+        int          last_write_2_tmp    = (int)root->awar(AWAR_PD_MATCH_WRITE2TMP)->read_int();
+        int          last_max_mismatches = (int)root->awar(AWAR_MAX_MISMATCHES)->read_int();
+        bool         bAborted            = false;
+        std::string  last_target_string(root->awar(AWAR_TARGET_STRING)->read_char_pntr());
+
+        root->awar(AWAR_PD_MATCH_MARKHITS)->write_int(0);
+        root->awar(AWAR_PD_MATCH_WRITE2TMP)->write_int(0);
+
+        ArbMatchResultsManager& g_results_manager = get_results_manager();
+        g_results_manager.reset();
+
+        // Using g_probe_collection instance of ArbProbeCollection, need to loop
+        // through all the probes in the collect and then call probe_match_event,
+        // collating the results as we go. The results can be obtained from the
+        // g_spd->probeSeq list.
+        const ArbProbePtrList&   rProbeList  = get_probe_collection().probeList();
+        int                      nItems      = rProbeList.size();
+        int                      nItem       = 1;
+        int                      nHits       = 0;
+        int                      nProbeIndex = 0;
+        int                      cn;
+        bool                     gene_flag   = false;
+        ArbProbePtrListConstIter ProbeIter;
+
+        // This extra scope needed to ensure the arb_progress object is released
+        // prior to the next one being used to show progress on write results to file
+        {
+            arb_progress progress("Matching probe collection", nItems);
+
+            ArbProbeCollection& g_probe_collection = get_probe_collection();
+
+            for (ProbeIter = rProbeList.begin() ; ProbeIter != rProbeList.end() ; ++ProbeIter) {
+                const ArbProbe *pProbe = *ProbeIter;
+
+                if (pProbe != 0) {
+                    int                nMatches;
+                    ArbMatchResultSet *pResultSet = g_results_manager.addResultSet(pProbe);
+
+                    if (progress.aborted()) {
+                        bAborted = true;
+                        break;
+                    }
+
+                    // Update status - put after matching cause matching writes its own status messages
+                    progress.subtitle(GBS_global_string("Matching probe %i of %i", nItem, nItems));
+                    progress.inc();
+
+                    // Perform match on pProbe
+                    root->awar(AWAR_TARGET_STRING)->write_string(pProbe->sequence().c_str());
+                    root->awar(AWAR_MAX_MISMATCHES)->write_int(pProbe->allowedMismatches());
+
+                    int                   counter = -1;
+                    ProbeMatchEventParam  match_event(ntw->gb_main, &counter);
+
+                    probe_match_event(aww, &match_event);
+                    pResultSet->initialise(pProbe, nProbeIndex);
+                    nProbeIndex++;
+
+                    if ((g_spd != 0) && (g_spd->getHeadline() != 0)) {
+                        ProbeMatchParser parser(pProbe->sequence().c_str(), g_spd->getHeadline());
+
+                        if (parser.get_error()) {
+                            progress.subtitle(GBS_global_string("ProbeMatchParser error: %s", parser.get_error()));
+                        }
+                        else {
+                            int nStartFullName  = 0;
+                            int nEndFullName    = 0;
+
+                            parser.getColumnRange("fullname", &nStartFullName, &nEndFullName);
+
+                            pResultSet->headline(g_spd->getHeadline(), nEndFullName);
+
+                            gene_flag = parser.is_gene_result();
+
+                            // Collate match results
+                            nMatches = g_spd->probeSeq.size();
+
+                            for (cn = 0 ; cn < nMatches ; cn++) {
+                                const std::string& sResult = g_spd->probeSeq[cn];
+
+                                ParsedProbeMatch  parsed(sResult.c_str(), parser);
+
+                                if (parsed.get_error()) {
+                                    progress.subtitle(GBS_global_string("ParsedProbeMatch error: %s", parsed.get_error()));
+                                }
+
+                                char       *pName      = parsed.get_column_content("name", true);
+                                char       *pFullName  = parsed.get_column_content("fullname", true);
+                                const char *pMatchPart = parsed.get_probe_region();
+
+                                pResultSet->add(pName,
+                                                pFullName,
+                                                pMatchPart,
+                                                sResult.c_str(),
+                                                g_probe_collection.matchWeighting());
+
+                                if (pName != 0) {
+                                    free(pName);
+                                }
+
+                                if (pFullName != 0) {
+                                    free(pFullName);
+                                }
+                            }
+                        }
+                    }
+
+                    nItem++;
+                }
+            }
+
+            progress.done();
+        }
+
+        // Clear any previously marked species
+        GB_push_transaction(ntw->gb_main);
+
+        GBDATA *gb_species_data = GB_search(ntw->gb_main, "species_data", GB_CREATE_CONTAINER);
+
+        for (GBDATA *gb_species = GBT_first_marked_species_rel_species_data(gb_species_data) ;
+             gb_species ;
+             gb_species = GBT_next_marked_species(gb_species))
+        {
+            GB_write_flag(gb_species, 0);
+        }
+
+        if (gene_flag) {
+            // unmark genes of ALL species
+            for (GBDATA *gb_species = GBT_first_species_rel_species_data(gb_species_data) ;
+                 gb_species ;
+                 gb_species = GBT_next_species(gb_species))
+            {
+                GBDATA *genData = GEN_find_gene_data(gb_species);
+
+                if (genData) {
+                    for (GBDATA *gb_gene = GEN_first_marked_gene(gb_species) ;
+                         gb_gene ;
+                         gb_gene = GEN_next_marked_gene(gb_gene))
+                    {
+                        GB_write_flag(gb_gene, 0);
+                    }
+                }
+            }
+        }
+
+        GB_pop_transaction(ntw->gb_main);
+
+        if (!bAborted) {
+            ArbWriteFile_Context Context;
+            arb_progress         progress(GBS_global_string("Writing results to file %s", g_results_manager.resultsFileName()), 100);
+
+            Context.pFile         = fopen(g_results_manager.resultsFileName(), "w");
+            Context.pProgress     = &progress;
+            Context.nLastPercent  = 0;
+
+            nHits = g_results_manager.enumerateResults(probe_match_with_specificity_enum_callback, (void*)&Context, bAborted);
+
+            fclose(Context.pFile);
+
+            progress.done();
+        }
+
+        root->awar(AWAR_PMC_MATCH_NHITS)->write_int(nHits);
+
+        // Restore previous settings
+        root->awar(AWAR_MAX_MISMATCHES)    ->write_int(last_max_mismatches);
+        root->awar(AWAR_PD_MATCH_MARKHITS) ->write_int(last_mark);
+        root->awar(AWAR_PD_MATCH_WRITE2TMP)->write_int(last_write_2_tmp);
+        root->awar(AWAR_TARGET_STRING)     ->write_string(last_target_string.c_str());
+
+        if (bAborted) {
+            // Clear the results set
+            g_results_manager.reset();
+        }
+        else {
+            // Open the Probe Match Specificity dialog to interactively show how the
+            // matches target the phylongeny
+            create_probe_match_specificity_control_window(root)->show();
+        }
+
+        double oldMaxWeight = g_results_manager.maximumWeight();
+        g_results_manager.updateResults();
+        double newMaxWeight = g_results_manager.maximumWeight();
+
+        if (newMaxWeight != oldMaxWeight) {
+            // set new limits for scaler and force current value into limits
+            root->awar(AWAR_PC_MISMATCH_THRESHOLD)->set_minmax(0.0, newMaxWeight)->touch();
+        }
+
+        update_species_matched_string(root, ntw); // forces a refresh of the phylogenic tree
+    }
+}
+
+// ----------------------------------------------------------------------------
+
+static void probe_match_clear_event(AW_window *aww, ArbPM_Context *pContext) {
+    int action = aw_question("probe_match_with_specificity_clear",
+                             "Do you want to clear the probe match results?",
+                             "Yes,No");
+
+    if (action == 0) {
+        AW_root *root = aww->get_root();
+
+        get_results_manager().reset();
+        root->awar(AWAR_PMC_MATCH_NHITS)->write_int(0);
+        update_species_matched_string(root, pContext->ntw); // forces a refresh of the phylogenic tree
+    }
+}
+
+// ----------------------------------------------------------------------------
+
+static void markedThresholdChanged_cb(AW_root *root, bool partChanged) {
+    static bool avoid_recursion = false;
+    if (!avoid_recursion) {
+        LocallyModify<bool> flag(avoid_recursion, true);
+
+        AW_awar *awar_marked     = root->awar(AWAR_PC_CLADE_MARKED_THRESHOLD);
+        AW_awar *awar_partMarked = root->awar(AWAR_PC_CLADE_PARTIALLY_MARKED_THRESHOLD);
+
+        double marked     = awar_marked->read_float();
+        double partMarked = awar_partMarked->read_float();
+
+        if (partMarked>marked) { // unwanted state
+            if (partChanged) {
+                awar_marked->write_float(partMarked);
+            }
+            else {
+                awar_partMarked->write_float(marked);
+            }
+        }
+        root->awar(AWAR_TREE_REFRESH)->touch();
+    }
+}
+
+static void add_threshold_callbacks(AW_root *root, AWT_canvas *ntw) {
+    root->awar(AWAR_PC_MISMATCH_THRESHOLD)              ->add_callback(makeRootCallback(update_species_matched_string, ntw));
+    root->awar(AWAR_PC_CLADE_MARKED_THRESHOLD)          ->add_callback(makeRootCallback(markedThresholdChanged_cb,     false));
+    root->awar(AWAR_PC_CLADE_PARTIALLY_MARKED_THRESHOLD)->add_callback(makeRootCallback(markedThresholdChanged_cb,     true));
+}
+
+AW_window *create_probe_match_with_specificity_window(AW_root *root, AWT_canvas *ntw) {
+    static AW_window_simple *aws = 0; // the one and only probe match window
+
+    if (!aws) {
+        add_threshold_callbacks(root, ntw);
+
+        aws = new AW_window_simple;
+
+        aws->init(root, "PROBE_MATCH_WITH_SPECIFICITY", "PROBE MATCH WITH SPECIFICITY");
+
+        aws->load_xfig("pd_match_with_specificity.fig");
+
+        aws->callback((AW_CB0)AW_POPDOWN);
+        aws->at("close");
+        aws->create_button("CLOSE", "CLOSE", "C");
+
+        aws->callback(makeHelpCallback("probespec.hlp"));
+        aws->at("help");
+        aws->create_button("HELP", "HELP", "H");
+
+        AW_selection_list *probes_id;
+
+        aws->at("probes");
+        probes_id = aws->create_selection_list(AWAR_PMC_SELECTED_PROBE, 110, 10, false);
+        probes_id->insert_default("", "");
+
+        PM_Context.probes_id = probes_id;
+        PM_Context.ntw       = ntw;
+
+        aws->callback(makeWindowCallback(probe_match_with_specificity_edit_event));
+        aws->at("results");
+        aws->create_button("RESULTS", "RESULTS", "R");
+
+        aws->at("pt_server");
+        awt_create_PTSERVER_selection_button(aws, AWAR_PT_SERVER);
+
+        aws->at("nhits");
+        aws->create_button(0, AWAR_PMC_MATCH_NHITS);
+
+        aws->callback(makeWindowCallback(probe_match_with_specificity_event, ntw));
+        aws->at("match");
+        aws->create_button("MATCH", "MATCH", "D");
+
+        aws->callback(makeCreateWindowCallback(create_probe_collection_window, &PM_Context));
+        aws->at("edit");
+        aws->create_button("EDIT", "EDIT", "E");
+
+        aws->callback(makeWindowCallback(probe_match_clear_event, &PM_Context));
+        aws->at("clear");
+        aws->create_button("CLEAR", "CLEAR", "L");
+
+        aws->callback(makeCreateWindowCallback(create_probe_match_specificity_control_window));
+        aws->at("control");
+        aws->create_autosize_button("CONTROL", "Display control", "D");
+
+        probe_match_update_probe_list(&PM_Context);
+    }
+
+    return aws;
+}
+
+// ----------------------------------------------------------------------------
+
+struct ArbPC_Context {
+    AW_selection_list *selection_id;
+    ArbPM_Context     *PM_Context;
+
+    ArbPC_Context()
+        : selection_id(NULL),
+          PM_Context(NULL)
+    {}
+};
+
+static ArbPC_Context PC_Context;
+
+// ----------------------------------------------------------------------------
+
+static void save_probe_list_to_DB(const ArbProbePtrList& rProbeList, AW_root *root) {
+    std::string saved;
+    for (ArbProbePtrListConstIter ProbeIter = rProbeList.begin() ; ProbeIter != rProbeList.end() ; ++ProbeIter) {
+        const ArbProbe *pProbe = *ProbeIter;
+        if (pProbe) {
+            // Note: target sequences/names do not contain '#'/':' (see REPLACE_TARGET_CONTROL_CHARS)
+            saved = saved + '#'+pProbe->name()+':'+pProbe->sequence();
+        }
+    }
+
+    root->awar(AWAR_PC_CURRENT_COLLECTION)->write_string(saved.empty() ? "" : saved.c_str()+1);
+    root->awar(AWAR_PC_NUM_PROBES)->write_int(rProbeList.size());
+}
+
+static void show_probes_in_sellist(const ArbProbePtrList& rProbeList, AW_selection_list *sellist) {
+    sellist->clear();
+    sellist->insert_default("", "");
+    for (ArbProbePtrListConstIter ProbeIter = rProbeList.begin() ; ProbeIter != rProbeList.end() ; ++ProbeIter) {
+        const ArbProbe *pProbe = *ProbeIter;
+        if (pProbe) {
+            sellist->insert(pProbe->displayName().c_str(), pProbe->sequence().c_str());
+        }
+    }
+    sellist->update();
+}
+
+static void load_probe_collection(AW_window *aww, ArbPC_Context *Context, const char * const *awar_filename) {
+    char *pFileName = aww->get_root()->awar(*awar_filename)->read_string();
+
+    ArbProbeCollection ProbeCollection;
+    std::string        sErrorMessage;
+
+    if (ProbeCollection.openXML(pFileName, sErrorMessage)) {
+        int     cn;
+        char    buffer[256] = {0};
+        double  weights[16] = {0.0};
+        double  dWidth      = 1.0;
+        double  dBias       = 0.0;
+
+        ArbProbeCollection& g_probe_collection = get_probe_collection();
+        g_probe_collection = ProbeCollection;
+
+        g_probe_collection.getParameters(weights, dWidth, dBias);
+
+        AW_root *root = AW_root::SINGLETON;
+        root->awar(AWAR_PC_MATCH_WIDTH)->write_float(dWidth);
+        root->awar(AWAR_PC_MATCH_BIAS)->write_float(dBias);
+
+        for (cn = 0; cn < 16 ; cn++) {
+            sprintf(buffer, AWAR_PC_MATCH_WEIGHTS"%i", cn);
+
+            root->awar(buffer)->write_float(weights[cn]);
+        }
+
+        const ArbProbePtrList& rProbeList = g_probe_collection.probeList();
+
+        save_probe_list_to_DB(rProbeList, root);
+        show_probes_in_sellist(rProbeList, Context->selection_id);
+
+        probe_match_update_probe_list(Context->PM_Context);
+        aww->hide();
+    }
+    else {
+        // Print error message
+        aw_message(sErrorMessage.c_str());
+    }
+
+    free(pFileName);
+}
+
+// ----------------------------------------------------------------------------
+
+static void probe_collection_update_parameters() {
+    int     cn;
+    char    buffer[256] = {0};
+    double  weights[16] = {0.0};
+    AW_root *root   = AW_root::SINGLETON;
+    double   dWidth = root->awar(AWAR_PC_MATCH_WIDTH)->read_float();
+    double   dBias  = root->awar(AWAR_PC_MATCH_BIAS)->read_float();
+
+    for (cn = 0; cn < 16 ; cn++) {
+        sprintf(buffer, AWAR_PC_MATCH_WEIGHTS"%i", cn);
+
+        weights[cn] = root->awar(buffer)->read_float();
+    }
+
+    ArbProbeCollection& g_probe_collection = get_probe_collection();
+    g_probe_collection.setParameters(weights, dWidth, dBias);
+
+    save_probe_list_to_DB(g_probe_collection.probeList(), root);
+}
+
+// ----------------------------------------------------------------------------
+
+static void save_probe_collection(AW_window *aww, const char * const *awar_filename) {
+    char *pFileName = aww->get_root()->awar(*awar_filename)->read_string();
+
+    struct stat   FileStatus;
+    int           nResult = ::stat(pFileName, &FileStatus);
+    bool          bWrite  = true;
+
+    if (nResult == 0) {
+        bWrite = (aw_question("probe_collection_save", "File already exists. Overwrite?", "YES,NO") == 0);
+    }
+
+    if (bWrite) {
+        probe_collection_update_parameters();
+        get_probe_collection().saveXML(pFileName);
+
+        aww->hide();
+    }
+
+    free(pFileName);
+}
+
+// ----------------------------------------------------------------------------
+
+static void add_probe_to_collection_event(AW_window *aww, ArbPC_Context *pContext) {
+    AW_selection_list *selection_id = pContext->selection_id;
+    const char        *pSequence    = aww->get_root()->awar(AWAR_PC_TARGET_STRING)->read_string();
+    const char        *pName        = aww->get_root()->awar(AWAR_PC_TARGET_NAME)->read_string();
+
+    if ((selection_id != 0) &&
+        (pSequence    != 0) &&
+        (pName        != 0) &&
+        (strlen(pSequence) > 0))
+    {
+        const ArbProbe *pProbe = 0;
+
+        if (get_probe_collection().add(pName, pSequence, &pProbe) && (pProbe != 0)) {
+            selection_id->insert(pProbe->displayName().c_str(), pSequence);
+            selection_id->update();
+            probe_match_update_probe_list(pContext->PM_Context);
+            probe_collection_update_parameters();
+        }
+    }
+}
+
+// ----------------------------------------------------------------------------
+
+static void remove_probe_from_collection_event(AW_window *aww, ArbPC_Context *pContext) {
+    AW_selection_list *selection_id = pContext->selection_id;
+    const char        *pSequence    = aww->get_root()->awar(AWAR_PC_SELECTED_PROBE)->read_string();
+
+    if ((selection_id != 0) &&
+        (pSequence    != 0))
+    {
+        ArbProbeCollection& g_probe_collection = get_probe_collection();
+        const ArbProbe *pProbe = g_probe_collection.find(pSequence);
+
+        if (pProbe != 0) {
+            selection_id->delete_element_at(selection_id->get_index_of_selected());
+
+            if (selection_id->size() < 1) {
+                selection_id->insert_default("", "");
+            }
+
+            selection_id->update();
+            g_probe_collection.remove(pSequence);
+            probe_match_update_probe_list(pContext->PM_Context);
+            probe_collection_update_parameters();
+        }
+    }
+}
+
+// ----------------------------------------------------------------------------
+
+static AW_window *probe_collection_load_prompt(AW_root *root, ArbPC_Context *pContext) {
+    static char *awar_name = NULL; // do not free, bound to callback
+    return awt_create_load_box(root, "Load", "probe collection",
+                               ".", "xpc", &awar_name,
+                               makeWindowCallback(load_probe_collection, pContext, (const char*const*)&awar_name));
+}
+static AW_window *probe_collection_save_prompt(AW_root *root) {
+    static char *awar_name = NULL; // do not free, bound to callback
+    return awt_create_load_box(root, "Save", "probe collection",
+                               ".", "xpc", &awar_name,
+                               makeWindowCallback(save_probe_collection, (const char*const*)&awar_name));
+}
+
+// ----------------------------------------------------------------------------
+
+static void probe_match_update_probe_list(ArbPM_Context *pContext) {
+    if (pContext) {
+        AW_selection_list *sellist = pContext->probes_id;
+        if (sellist) show_probes_in_sellist(get_probe_collection().probeList(), sellist);
+    }
+}
+static void clear_probe_collection_event(AW_window *, ArbPC_Context *pContext) {
+    if (get_probe_collection().clear()) {
+        probe_match_update_probe_list(pContext->PM_Context);
+    }
+}
+
+// ----------------------------------------------------------------------------
+
+static void probe_collection_close(AW_window *aww) {
+    probe_collection_update_parameters();
+    aww->hide();
+}
+
+// ----------------------------------------------------------------------------
+
+static AW_window *create_probe_collection_window(AW_root *root, ArbPM_Context *pContext) {
+    static AW_window_simple *aws = 0;     // the one and only probe match window
+    char                     buffer[256];
+
+    pd_assert(pContext);
+    PC_Context.PM_Context = pContext;
+
+    if (!aws) {
+        aws = new AW_window_simple;
+
+        aws->init(root, "PROBE_COLLECTION", "PROBE COLLECTION");
+
+        aws->load_xfig("pd_match_probe_collection.fig");
+
+        aws->callback((AW_CB0)probe_collection_close);
+        aws->at("close");
+        aws->create_button("CLOSE", "CLOSE", "C");
+
+        aws->callback(makeHelpCallback("probespec.hlp"));
+        aws->at("help");
+        aws->create_button("HELP", "HELP", "H");
+
+        AW_selection_list *selection_id;
+
+        aws->at("probes");
+        selection_id = aws->create_selection_list(AWAR_PC_SELECTED_PROBE, 110, 10, false);
+        selection_id->insert_default("", "");
+
+        PC_Context.selection_id = selection_id;
+
+        aws->at("string");
+        aws->create_input_field(AWAR_PC_TARGET_STRING, 32);
+
+        aws->at("name");
+        aws->create_input_field(AWAR_PC_TARGET_NAME, 32);
+
+        aws->callback(makeWindowCallback(add_probe_to_collection_event, &PC_Context));
+        aws->at("add");
+        aws->create_button("ADD", "ADD", "A");
+
+        aws->callback(makeWindowCallback(remove_probe_from_collection_event, &PC_Context));
+        aws->at("remove");
+        aws->create_button("REMOVE", "REMOVE", "R");
+
+        aws->callback(makeCreateWindowCallback(probe_collection_load_prompt, &PC_Context));
+        aws->at("open");
+        aws->create_button("LOAD", "LOAD", "L");
+
+        aws->callback(makeCreateWindowCallback(probe_collection_save_prompt));
+        aws->at("save");
+        aws->create_button("SAVE", "SAVE", "S");
+
+        aws->callback(makeWindowCallback(clear_probe_collection_event, &PC_Context));
+        aws->at("clear");
+        aws->create_button("CLEAR", "CLEAR", "L");
+
+        for (int i = 0 ; i < 16 ; i++) {
+            sprintf(buffer, "%i", i);
+            aws->at(buffer);
+            sprintf(buffer, AWAR_PC_MATCH_WEIGHTS"%i", i);
+            aws->create_input_field(buffer, 4);
+        }
+
+        aws->at("width");
+        aws->create_input_field(AWAR_PC_MATCH_WIDTH, 5);
+
+        aws->at("bias");
+        aws->create_input_field(AWAR_PC_MATCH_BIAS, 5);
+
+        show_probes_in_sellist(get_probe_collection().probeList(), selection_id);
+    }
+    return aws;
+}
+
+// ----------------------------------------------------------------------------
+
+static const char *getProbeName(int nProbe) {
+    const ArbProbePtrList&   rProbeList = get_probe_collection().probeList();
+    ArbProbePtrListConstIter wanted     = rProbeList.begin();
+
+    if (nProbe>=0 && nProbe<int(rProbeList.size())) advance(wanted, nProbe);
+    else wanted = rProbeList.end();
+
+    if (wanted == rProbeList.end()) return GBS_global_string("<invalid probeindex %i>", nProbe);
+    return (*wanted)->name().c_str();
+}
+
+static void update_species_matched_string(AW_root *root, AWT_canvas *ntw) {
+    bool display = false;
+    ArbMatchResultsManager& g_results_manager = get_results_manager();
+    if (g_results_manager.hasResults()) {
+        int   nProbes        = get_probe_collection().probeList().size();
+        char *pMatchedString = new char[nProbes + 1];
+
+        if (pMatchedString != 0) {
+            GB_push_transaction(ntw->gb_main);
+
+            // Write match results to database
+            double  dMismatchThreshold = root->awar(AWAR_PC_MISMATCH_THRESHOLD)->read_float();
+
+            for (GBDATA *gb_species = GBT_first_species(ntw->gb_main) ;
+                 gb_species ;
+                 gb_species = GBT_next_species(gb_species))
+            {
+                const char *pSpeciesName      = GBT_read_char_pntr(gb_species, "name");
+                GBDATA     *gb_matched_string = GB_search(gb_species, "matched_string", GB_STRING);
+
+                if (pSpeciesName != 0) {
+                    ArbMatchResultPtrByStringMultiMapConstIter  Iter;
+                    ArbMatchResultPtrByStringMultiMapConstIter  Upper;
+                    std::string                                 rKey(pSpeciesName);
+
+                    ::memset(pMatchedString, '0', nProbes);
+
+                    pMatchedString[nProbes] = 0;
+
+                    // Loop through all probes being matched
+                    Iter  = g_results_manager.resultsMap().lower_bound(rKey);
+                    Upper = g_results_manager.resultsMap().upper_bound(rKey);
+
+                    for (; Iter != Upper ; ++Iter) {
+                        const ArbMatchResult *pMatchResult = (*Iter).second;
+
+                        if (pMatchResult->weight() <= dMismatchThreshold) {
+                            int nProbe = pMatchResult->index();
+
+                            pMatchedString[nProbe] = '1';
+                        }
+                    }
+                }
+
+                GB_write_string(gb_matched_string, pMatchedString);
+            }
+
+            GB_pop_transaction(ntw->gb_main);
+
+            delete[] pMatchedString;
+        }
+
+        display = true;
+    }
+
+    LocallyModify<bool> flag(allow_probe_match_event, false);
+
+    AWT_graphic_tree *agt = DOWNCAST(AWT_graphic_tree*, ntw->gfx);
+    agt->set_probeCollectionDisplay(display, getProbeName);
+
+    root->awar(AWAR_TREE_REFRESH)->touch();
 }
 
