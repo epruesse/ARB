@@ -85,6 +85,10 @@ void NT_resort_data_by_phylogeny(AW_window *, AW_CL cl_ntw, AW_CL dummy_1x);
 void NT_create_resort_awars(AW_root *awr, AW_default aw_def);
 AW_window *NT_create_resort_window(AW_root *awr);
 
+/* NT_taxonomy.cxx */
+void NT_create_compare_taxonomy_awars(AW_root *aw_root, AW_default props);
+AW_window *NT_create_compare_taxonomy_window(AW_root *aw_root, AWT_canvas *ntw);
+
 /* NT_trackAliChanges.cxx */
 void NT_create_trackAliChanges_Awars(AW_root *root, AW_default properties);
 AW_window *NT_create_trackAliChanges_window(AW_root *root);

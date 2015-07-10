@@ -67,7 +67,7 @@ class AW_selection_list : virtual Noncopyable {
     AW_VARIABLE_TYPE  variable_type;
 
 public:
-    AW_selection_list(const char *variable_namei, int variable_typei, Widget select_list_widgeti);
+    AW_selection_list(const char *variable_name_, int variable_type_, Widget select_list_widget_);
     ~AW_selection_list();
 
     Widget select_list_widget;

@@ -99,6 +99,17 @@ struct AW_event {
     // fields valid for type == AW_Keyboard
     AW_key_code keycode;            // which key type was pressed
     char        character;          // the c character
+
+    AW_event()
+        : type(AW_event_type(0)),
+          time(0),
+          keymodifier(AW_KEYMODE_NONE),
+          button(AW_BUTTON_NONE),
+          x(0),
+          y(0),
+          keycode(AW_KEY_NONE),
+          character(0)
+    {}
 };
 
 void AW_help_popup(AW_window *aw, const char *help_file);
@@ -225,6 +236,23 @@ enum AW_PosRecalc {
     AW_REPOS_TO_MOUSE_ONCE = 3,                     // like AW_REPOS_TO_MOUSE, but only done once!
 };
 
+enum AW_ScalerType {
+    AW_SCALER_LINEAR,
+    AW_SCALER_EXP_LOWER,  // fine-tuned at lower border, big steps at upper border
+    AW_SCALER_EXP_UPPER,  // fine-tuned at upper border, big steps at lower border
+    AW_SCALER_EXP_CENTER, // fine-tuned at center, big steps at borders
+    AW_SCALER_EXP_BORDER, // fine-tuned at borders, big steps at center
+};
+
+class AW_ScalerTransformer {
+    AW_ScalerType type;
+public:
+    AW_ScalerTransformer(AW_ScalerType type_) : type(type_) {}
+
+    float scaler2awar(float scaler, AW_awar *awar); // [0..1] -> awar-range
+    float awar2scaler(AW_awar *awar); // returns [0..1]
+};
+
 class AW_window : virtual Noncopyable {
     AW_SizeRecalc recalc_size_at_show;
     AW_PosRecalc  recalc_pos_at_show;
@@ -308,6 +336,7 @@ public:
     void update_toggle(Widget widget, const char *var_value, AW_CL cd);
     void update_input_field(Widget widget, const char *var_value);
     void update_text_field(Widget widget, const char *var_value);
+    void update_scaler(Widget widget, AW_awar *awar, AW_ScalerType scalerType);
 
     void  create_invisible(int columns);
     void *_create_option_entry(AW_VARIABLE_TYPE type, const char *name, const char *mnemonic, const char *name_of_color);
@@ -316,7 +345,7 @@ public:
     void  increment_at_commands(int width, int height);
 
 
-    AW_color_idx alloc_named_data_color(int colnum, char *colorname);
+    AW_color_idx alloc_named_data_color(int colnum, const char *colorname);
 
     // special for EDIT4
     void _get_area_size(AW_area area, AW_screen_area *square);
@@ -563,9 +592,9 @@ public:
     void create_toggle(const char *awar_name, const char *nobitmap, const char *yesbitmap, int buttonWidth = 0);
     void create_text_toggle(const char *var_name, const char *noText, const char *yesText, int buttonWidth = 0);
 
-    void create_input_field(const char *awar_name, int columns = 0);   // One line textfield
-    void create_text_field(const char *awar_name, int columns = 20, int rows = 4);   // Multi line textfield
-    // with scrollbars
+    void create_input_field(const char *awar_name, int columns = 0);                 // One line textfield
+    void create_text_field(const char *awar_name, int columns = 20, int rows = 4);   // Multi line textfield with scrollbars
+    void create_input_field_with_scaler(const char *awar_name, int textcolumns = 4, int scaler_length = 250, AW_ScalerType scalerType = AW_SCALER_LINEAR);
 
 
     // ***** option_menu is a menu where only one selection is visible at a time

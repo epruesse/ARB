@@ -60,6 +60,15 @@ OBJECTS = $(GB_O) $(GB_T) $(GB_PP) $(GB_X)
 
 LIB_SHARED=../lib/$(MAIN:.a=).$(SHARED_LIB_SUFFIX)
 
+# ---------------------------------------- allow misaligned data access in ARBDB
+ARBDB_CFLAGS := $(cflags)
+ifeq ('$(USE_GCC_50_OR_HIGHER)', 'yes')
+ ifneq ('$(SANITIZE)', '0')
+  ARBDB_CFLAGS := $(cflags) -fno-sanitize=alignment
+ endif
+endif
+# ---------------------------------------- 
+
 # MAIN contains .a (instead of wanted .so). Translate via do_...-target
 it: do_$(MAIN)
 
@@ -73,7 +82,7 @@ $(LIB_SHARED): $(OBJECTS)
 	$(LINK_SHARED_LIB) $(LIB_SHARED) $(OBJECTS)
 
 .cxx.o:
-	$(A_CXX) $(shared_cflags) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE) $<
+	$(A_CXX) $(shared_cflags) $(ARBDB_CFLAGS) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE) $<
 
 proto:	global_proto local_proto
 

@@ -229,8 +229,16 @@ sub ensureDir($) {
     if (not -d $dir) {
       my $dparent = parentDir($dir);
       ensureDir($dparent);
-      print "Creating directory '$dir'\n";
-      mkdir($dir) || die "Failed to create '$dir' (Reason: $!)";
+      if (not mkdir($dir)) {
+        # accept error if dir exists (race-condition: parallel call created dir after -d test above)
+        my $failReason="$!";
+        if (not -d $dir) {
+          die "Failed to create directory '$dir' (Reason: $failReason)";
+        }
+      }
+      else {
+        print "Created directory '$dir'\n";
+      }
     }
   }
 }

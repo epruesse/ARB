@@ -160,7 +160,8 @@ void gb_load_single_key_data(GBDATA *gb_main, GBQUARK q) {
         {
             char buffer[256];
             sprintf(buffer, "%s/@master_data/@%s", GB_SYSTEM_FOLDER, key);
-            ks->gb_master_ali = GB_search(gb_main, buffer, GB_FIND)->as_container();
+
+            ks->gb_master_ali = GBDATA::as_container(GB_search(gb_main, buffer, GB_FIND));
             if (ks->gb_master_ali) {
                 GB_ensure_callback(ks->gb_master_ali, GB_CB_CHANGED_OR_DELETED, makeDatabaseCallback(gb_system_master_changed_cb, q));
             }

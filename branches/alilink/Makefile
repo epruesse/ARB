@@ -299,8 +299,10 @@ WEFFC_BROKEN:=0
 	extended_cpp_warnings += -Wstrict-aliasing# gcc 3.4
 	extended_cpp_warnings += -Wextra# gcc 3.4.0
  ifeq ($(DEBUG),1)
+  ifeq ($(USE_CLANG),0)
 #       turn off -Wmaybe-uninitialized in debug mode (gets activated with -Wextra). too many bogus warnings
 	extended_cpp_warnings += -Wno-maybe-uninitialized
+  endif
  endif
  ifeq ('$(USE_GCC_452_OR_HIGHER)','yes')
 	extended_cpp_warnings += -Wlogical-op# gcc 4.5.2
@@ -348,6 +350,7 @@ endif
 ASAN_OPTIONS:=handle_segv=0:color=0
 ASAN_OPTIONS+=:detect_leaks=1 # comment-out to disable leak-detection
 ASAN_OPTIONS+=:check_initialization_order=1
+# ASAN_OPTIONS+=:abort_on_error=1
 
 # suppressions: SOURCE_TOOLS/arb.leaksan.supp
 LSAN_OPTIONS:=max_leaks=3:suppressions=$(ARBHOME)/SOURCE_TOOLS/arb.leaksan.supp
@@ -397,6 +400,14 @@ ifeq ($(SANITIZE_UNDEFINED),1)
   $(info UndefinedBehaviorSanitizer not usable with gcc $(COMPILER_VERSION) - disabled)
   SANITIZE_UNDEFINED:=0
  endif
+endif
+
+SANITIZE_ANY:=0
+ifeq ($(SANITIZE_ADDRESS),1)
+ SANITIZE_ANY:=1
+endif
+ifeq ($(SANITIZE_UNDEFINED),1)
+ SANITIZE_ANY:=1
 endif
 
 #---------------------- 32 or 64 bit
@@ -517,10 +528,9 @@ endif
 # activate UndefinedBehaviorSanitizer?
 ifeq ($(SANITIZE_UNDEFINED),1)
  cflags += $(COMMON_SANITIZE_FLAGS) -fsanitize=undefined
- ifeq ('$(USE_GCC_50_OR_HIGHER)', 'yes')
-# (temporarily) disable new sanitizers introduced with gcc 5.1.0
-  cflags += -fno-sanitize=vptr,alignment,null,bounds
- endif
+# uncomment next line to abort on runtime errors (needs 'rebuild')
+#cflags += -fno-sanitize-recover
+# Note: alignment-sanitizer is deactivated for ARBDB and PROBE!
  ifeq ('$(DEBUG)','1')
   ifeq ($(USE_GCC_MAJOR),4)
    ifeq ($(USE_GCC_MINOR),9)
@@ -644,6 +654,7 @@ endif
 
 ifeq ($(DEBUG),0)
  ifeq ($(USE_GCC_49_OR_HIGHER),yes)
+  ifeq ($(SANITIZE_ANY),0)
 #	cflags += -fopt-info
 	cflags += -fopt-info-vec
 
@@ -651,6 +662,24 @@ ifeq ($(DEBUG),0)
 #	cflags += -fopt-info-vec-missed
 
 	POST_COMPILE += --check-loop-optimization
+  endif
+ else
+  ifeq ($(USE_GCC_48_OR_HIGHER),yes)
+# no automatic vectorization-check for gcc<4.9.0
+# -> uncomment the next 2 lines and grep the spam it will produce for 'vectorized.*loops'
+#	cflags += -fopt-info -fopt-info-vec-missed
+#	POST_COMPILE += --original
+  endif
+ endif
+endif
+
+#---------------------- stop early on broken flags/compiler combination
+
+ifeq ($(DEBUG),0)
+ ifeq ($(SANITIZE_ANY),1)
+  ifeq ('$(COMPILER_VERSION)','4.9.1')
+   $(error compiling DEBUG=0 + SANITIZE!=0 crashes with gcc $(COMPILER_VERSION) (gcc 4.9.2 works))
+  endif
  endif
 endif
 
@@ -1187,8 +1216,8 @@ ARCHS_RNACMA = \
 $(RNACMA) : $(ARCHS_RNACMA:.a=.dummy) link_db
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_RNACMA) || ( \
 		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(EXECLIBS) $(ARCHS_RNACMA) $(LIBS)"; \
-		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(EXECLIBS) $(ARCHS_RNACMA) $(LIBS) && \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_RNACMA) $(LIBS) $(EXECLIBS)"; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_RNACMA) $(LIBS) $(EXECLIBS) && \
 		echo "$(SEP) Link $@ [done]"; \
 		)
 
@@ -1542,11 +1571,16 @@ endif
 UNIT_TESTER/UNIT_TESTER.dummy:		link_db \
 	SERVERCNTRL/SERVERCNTRL.dummy \
 
+# see also TOOLS/Makefile@TOOLSLIBDEPENDS
 TOOLS/TOOLS.dummy : links_non_perl link_db \
-	SERVERCNTRL/SERVERCNTRL.dummy \
-	SL/TREE_WRITE/TREE_WRITE.dummy \
-	SL/TREE_READ/TREE_READ.dummy \
 	CONSENSUS_TREE/CONSENSUS_TREE.dummy \
+	SERVERCNTRL/SERVERCNTRL.dummy \
+	SL/FILTER/FILTER.dummy \
+	SL/INSDEL/INSDEL.dummy \
+	SL/REGEXPR/REGEXPR.dummy \
+	SL/SEQIO/SEQIO.dummy \
+	SL/TREE_READ/TREE_READ.dummy \
+	SL/TREE_WRITE/TREE_WRITE.dummy \
 	XML/XML.dummy \
 
 AWTC/AWTC.dummy :   			com

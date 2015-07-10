@@ -51,7 +51,8 @@ enum AW_widget_type {
     AW_WIDGET_CHOICE_MENU,
     AW_WIDGET_TOGGLE_FIELD,
     AW_WIDGET_SELECTION_LIST,
-    AW_WIDGET_TOGGLE
+    AW_WIDGET_TOGGLE,
+    AW_WIDGET_SCALER,
 };
 
 
@@ -78,6 +79,9 @@ class AW_awar : virtual Noncopyable {
     bool in_tmp_branch;
 
     static bool allowed_to_run_callbacks;
+
+    double callback_time_sum;   // in seconds
+    int    callback_time_count; // number of callbacks traced in callback_time_sum
 
 #if defined(DEBUG)
     bool is_global;
@@ -107,8 +111,15 @@ public:
     void unlink();                                  // unconditionally unlink from DB
 
     bool unlink_from_DB(GBDATA *gb_main);
-    
+
     void run_callbacks();
+    double mean_callback_time() const {
+        if (callback_time_sum>0) {
+            return callback_time_sum / callback_time_count;
+        }
+        return 0.0;
+    }
+
     void update_target(AW_var_target*pntr);
     void update_targets();
 
@@ -133,7 +144,7 @@ public:
     AW_awar *add_target_var(float *pfloat);
     void    update();       // awar has changed
 
-    AW_awar *set_minmax(float min, float max);
+    AW_awar *set_minmax(float min, float max); // min<max !!!
     float    get_min() const;
     float    get_max() const;
     AW_awar *set_min(float min) { return set_minmax(min, get_max()); }

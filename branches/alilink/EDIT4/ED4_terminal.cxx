@@ -780,9 +780,9 @@ ED4_returncode ED4_bracket_terminal::draw() {
 #if defined(DEBUG) && 0
         static bool toggle = false;
         toggle             = !toggle;
-        device->box(toggle ? ED4_G_SELECTED : ED4_G_SELECTED+1, true, term_area);
+        device->box(toggle ? ED4_G_SELECTED : ED4_G_SELECTED+1, AW::FillStyle::SOLID, term_area);
 #else // !defined(DEBUG)
-        device->box(ED4_G_SELECTED, true, term_area);
+        device->box(ED4_G_SELECTED, AW::FillStyle::SOLID, term_area);
 #endif
     }
 
@@ -1000,7 +1000,7 @@ ED4_returncode ED4_line_terminal::draw() {
 
     device->line(ED4_G_STANDARD, x1, y1, x2, y1);
 #if defined(DEBUG)
-    device->box(ED4_G_MARKED, true, x1, y1+1, x2-x1+1, y2-y1-1);
+    device->box(ED4_G_MARKED, AW::FillStyle::SOLID, x1, y1+1, x2-x1+1, y2-y1-1);
 #else
     device->clear_part(x1, y1+1, x2-x1+1, y2-y1-1, AW_ALL_DEVICES);
 #endif // DEBUG
@@ -1202,14 +1202,14 @@ ED4_returncode ED4_columnStat_terminal::draw() {
 
             if (color!=old_color) {
                 if (x2>old_x2 && old_color!=ED4_G_STANDARD) {
-                    device->box(old_color, true, old_x2, y, x2-old_x2, term_height);
+                    device->box(old_color, AW::FillStyle::SOLID, old_x2, y, x2-old_x2, term_height);
                 }
                 old_color = color;
                 old_x2 = x2;
             }
         }
         if (x2>old_x2 && old_color!=ED4_G_STANDARD) {
-            device->box(old_color, true, old_x2, y, x2-old_x2, term_height);
+            device->box(old_color, AW::FillStyle::SOLID, old_x2, y, x2-old_x2, term_height);
         }
 
         x2 = text_x + font_width*left + 1;
@@ -1232,7 +1232,7 @@ ED4_returncode ED4_columnStat_terminal::draw() {
                          r--, y2-=COLUMN_STAT_ROW_HEIGHT(font_height), bit>>=1)
                     {
                         if (found&bit) {
-                            device->box(color, true, x2, y2-2*font_height+1, font_width, 2*font_height);
+                            device->box(color, AW::FillStyle::SOLID, x2, y2-2*font_height+1, font_width, 2*font_height);
                         }
                     }
                 }

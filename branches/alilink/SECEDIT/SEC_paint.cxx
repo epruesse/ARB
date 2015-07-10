@@ -47,7 +47,7 @@ inline bool valid_cb_params(AW_device *device) {
 
 static void paintDebugInfo(AW_device *device, int color, const Position& pos, const char *txt) {
     sec_assert(valid_cb_params(device));
-    device->circle(color, true, pos.xpos(), pos.ypos(), 0.06, 0.06);
+    device->circle(color, AW::FillStyle::SOLID, pos.xpos(), pos.ypos(), 0.06, 0.06);
     device->text(SEC_GC_DEFAULT, txt, pos.xpos(), pos.ypos(), 0, AW_SCREEN, 0);
 }
 static void paintStrandDebugInfo(AW_device *device, int color, SEC_helix_strand *strand) {
@@ -212,7 +212,7 @@ void SEC_root::paintAnnotation(AW_device *device, int gc,
         Rectangle box(note_center+center_corner, -2*center_corner);
 
         device->clear_part(box, -1);
-        device->box(gc, false, box);
+        device->box(gc, AW::FillStyle::EMPTY, box);
     }
 
     device->text(gc, text, textcorner);
@@ -301,7 +301,7 @@ void SEC_root::showSomeAbsolutePositions(AW_device *device) {
         Rectangle showInside(screen.upper_left_corner()+diag3*1.85, diag3);
 
         AW_click_cd cd(device, 0, -1);
-        device->box(SEC_GC_DEFAULT, false, showInside);
+        device->box(SEC_GC_DEFAULT, AW::FillStyle::EMPTY, showInside);
 
         PosMap::const_iterator end = drawnPositions->end();
         for (PosMap::const_iterator pos = drawnPositions->begin(); pos != end; ++pos) {
@@ -359,8 +359,8 @@ void SEC_loop::paint_constraints(AW_device *device) {
     if (minS>0 || maxS>0) {
         AW_click_cd cd(device, self(), abspos);
         
-        if (minS>0) device->circle(SEC_GC_DEFAULT, false, center, Vector(minS, minS));
-        if (maxS>0) device->circle(SEC_GC_DEFAULT, false, center, Vector(maxS, maxS));
+        if (minS>0) device->circle(SEC_GC_DEFAULT, AW::FillStyle::EMPTY, center, Vector(minS, minS));
+        if (maxS>0) device->circle(SEC_GC_DEFAULT, AW::FillStyle::EMPTY, center, Vector(maxS, maxS));
 
         device->text(SEC_GC_DEFAULT, GBS_global_string("%.1f-%.1f", minS, maxS), center+Vector(0, max(minS, maxS)/2), 0.5, AW_ALL_DEVICES_UNSCALED);
     }
@@ -432,11 +432,11 @@ void SEC_root::paintBackgroundColor(AW_device *device, SEC_bgpaint_mode mode, co
         }
 
         if (mode & BG_PAINT_FIRST && color1 >= 0) { // paint first circle ?
-            device->circle(color1, true, p1, Vector(radius1, radius1));
+            device->circle(color1, AW::FillStyle::SOLID, p1, Vector(radius1, radius1));
         }
 
         if (mode & BG_PAINT_SECOND && color2 >= 0) { // paint second circle ?
-            device->circle(color2, true, p2, Vector(radius1, radius1));
+            device->circle(color2, AW::FillStyle::SOLID, p2, Vector(radius1, radius1));
         }
 
         if (color1 == color2 && color1 >= 0) { // colors are equal -> paint background between points
@@ -582,8 +582,8 @@ void SEC_bond_def::paint(AW_device *device, int GC, char bondChar, const Positio
             const int OUTSIDE = 15;
 
             Vector vRadius(radius, radius);
-            device->arc(GC, false, c1, vRadius, deg+180+INSIDE, -(180+INSIDE+OUTSIDE));
-            device->arc(GC, false, c2, vRadius, deg+INSIDE,     -(180+INSIDE+OUTSIDE));
+            device->arc(GC, AW::FillStyle::EMPTY, c1, vRadius, deg+180+INSIDE, -(180+INSIDE+OUTSIDE));
+            device->arc(GC, AW::FillStyle::EMPTY, c2, vRadius, deg+INSIDE,     -(180+INSIDE+OUTSIDE));
             break;
         }
 
@@ -603,7 +603,7 @@ void SEC_bond_def::paint(AW_device *device, int GC, char bondChar, const Positio
         case '.': {             // circles
             double radius            = aside.length();
             if (bondChar == 'o') radius *= 2;
-            device->circle(GC, false, center, Vector(radius, radius));
+            device->circle(GC, AW::FillStyle::EMPTY, center, Vector(radius, radius));
             break;
         }
 
@@ -1032,7 +1032,7 @@ GB_ERROR SEC_root::paint(AW_device *device) {
 
             Position textPos(loop_center.xpos(), upperleft_corner.ypos());
 
-            device->box(SEC_GC_DEFAULT, false, upperleft_corner, diagonal, AW_ALL_DEVICES_UNSCALED);
+            device->box(SEC_GC_DEFAULT, AW::FillStyle::EMPTY, upperleft_corner, diagonal, AW_ALL_DEVICES_UNSCALED);
             device->text(SEC_GC_DEFAULT, structId, textPos, 0.5, AW_ALL_DEVICES_UNSCALED, 0);
         }
 

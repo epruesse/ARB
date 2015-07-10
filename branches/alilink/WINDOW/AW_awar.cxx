@@ -84,6 +84,10 @@ static void aw_cp_awar_2_widget_cb(AW_root *root, AW_widget_refresh_cb *widgetli
                 break;
             case AW_WIDGET_SELECTION_LIST:
                 ((AW_selection_list *)widgetlist->cd)->refresh();
+                break;
+            case AW_WIDGET_SCALER:
+                widgetlist->aw->update_scaler(widgetlist->widget, widgetlist->awar, (AW_ScalerType)widgetlist->cd);
+                break;
             default:
                 break;
         }
@@ -272,8 +276,22 @@ static void AW_var_gbdata_callback_delete_intern(GBDATA *gbd, AW_awar *awar) {
 
 AW_awar::AW_awar(AW_VARIABLE_TYPE var_type, const char *var_name,
                  const char *var_value, double var_double_value,
-                 AW_default default_file, AW_root *rooti) {
-    memset((char *)this, 0, sizeof(AW_awar));
+                 AW_default default_file, AW_root *rooti)
+    : callback_list(NULL),
+      target_list(NULL),
+      refresh_list(NULL),
+      callback_time_sum(0.0),
+      callback_time_count(0),
+#if defined(DEBUG)
+      is_global(false),
+#endif
+      root(rooti),
+      gb_var(NULL)
+{
+    pp.f.min = 0;
+    pp.f.max = 0;
+    pp.srt   = NULL;
+
     GB_transaction ta(default_file);
 
     aw_assert(var_name && var_name[0] != 0);
@@ -283,9 +301,8 @@ AW_awar::AW_awar(AW_VARIABLE_TYPE var_type, const char *var_name,
     aw_assert(!err);
 #endif // DEBUG
 
-    this->awar_name = strdup(var_name);
-    this->root      = rooti;
-    GBDATA *gb_def  = GB_search(default_file, var_name, GB_FIND);
+    awar_name      = strdup(var_name);
+    GBDATA *gb_def = GB_search(default_file, var_name, GB_FIND);
 
     in_tmp_branch = strncmp(var_name, "tmp/", 4) == 0;
 
@@ -352,8 +369,8 @@ AW_awar::AW_awar(AW_VARIABLE_TYPE var_type, const char *var_name,
         if (error) GB_warningf("AWAR '%s': failed to set temporary on creation (Reason: %s)", var_name, error);
     }
 
-    variable_type   = var_type;
-    this->gb_origin = gb_def;
+    variable_type = var_type;
+    gb_origin     = gb_def;
     this->map(gb_def);
 
     aw_assert(is_valid());
@@ -501,7 +518,11 @@ AW_awar *AW_awar::remove_callback(const RootCallback& rcb) {
 
 AW_awar *AW_awar::set_minmax(float min, float max) {
     if (variable_type == AW_STRING) GBK_terminatef("set_minmax does not apply to string AWAR '%s'", awar_name);
-    if (min>max) GBK_terminatef("illegal values in set_minmax for AWAR '%s'", awar_name);
+    if (min>=max) {
+        // 'min>max'  would set impossible limits
+        // 'min==max' would remove limits, which is not allowed!
+        GBK_terminatef("illegal values in set_minmax for AWAR '%s'", awar_name);
+    }
 
     pp.f.min = min;
     pp.f.max = max;
@@ -566,7 +587,25 @@ AW_awar *AW_awar::unmap() {
 }
 
 void AW_awar::run_callbacks() {
-    if (allowed_to_run_callbacks) AW_root_cblist::call(callback_list, root);
+    if (allowed_to_run_callbacks) {
+        clock_t start = clock();
+
+        AW_root_cblist::call(callback_list, root);
+
+        clock_t end = clock();
+
+        if (start<end) { // ignore overflown
+            double cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+
+            if (callback_time_count>19 && (callback_time_count%2) == 0) {
+                callback_time_count = callback_time_count/2;
+                callback_time_sum   = callback_time_sum/2.0;
+            }
+
+            callback_time_sum += cpu_time_used;
+            callback_time_count++;
+        }
+    }
 }
 
 

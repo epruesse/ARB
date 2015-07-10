@@ -27,8 +27,8 @@ DESCRIPTION	Takes sequences, a tree and a column statistic as input,
 
                 For each slice a students t-test (see LINK{http://en.wikipedia.org/wiki/T-test}) is
                 performed and its result is written into the XXX portions of the entries mentioned below.
-                The t-test tests whether the likelyhood of a specific sequence slice (of one species) follows
-                a t-distribution of the likelyhoods for that sequence slice in all examined species.
+                The t-test tests whether the likelihood of a specific sequence slice (of one species) follows
+                a t-distribution of the likelihoods for that sequence slice in all examined species.
 
                 The meaning of each X contains the result of the t-test (the "t-value") as follows:
                     * if the t-test succeeds the value of X is '1' up to '8' (where '5' is shown as '-').

@@ -158,6 +158,79 @@ void AW_window::d_callback(const WindowCallback& wcb) {
     _d_callback = new AW_cb(this, wcb);
 }
 
+// -------------------------------------------------------------
+//      code used by scalers (common between motif and gtk)
+
+static float apply_ScalerType(float val, AW_ScalerType scalerType, bool inverse) {
+    float res;
+
+    aw_assert(val>=0.0 && val<=1.0);
+
+    switch (scalerType) {
+        case AW_SCALER_LINEAR:
+            res = val;
+            break;
+
+        case AW_SCALER_EXP_LOWER:
+            if (inverse) res = pow(val, 1/3.0);
+            else         res = pow(val, 3.0);
+            break;
+
+        case AW_SCALER_EXP_UPPER:
+            res = 1.0-apply_ScalerType(1.0-val, AW_SCALER_EXP_LOWER, inverse);
+            break;
+
+        case AW_SCALER_EXP_BORDER:
+            inverse = !inverse;
+            // fall-through
+        case AW_SCALER_EXP_CENTER: {
+            AW_ScalerType subType = inverse ? AW_SCALER_EXP_UPPER : AW_SCALER_EXP_LOWER;
+            if      (val>0.5) res = (1+apply_ScalerType(2*val-1, subType, false))/2;
+            else if (val<0.5) res = (1-apply_ScalerType(1-2*val, subType, false))/2;
+            else              res = val;
+            break;
+        }
+    }
+
+    aw_assert(res>=0.0 && res<=1.0);
+
+    return res;
+}
+
+float AW_ScalerTransformer::scaler2awar(float scaler, AW_awar *awar) {
+    float amin        = awar->get_min();
+    float amax        = awar->get_max();
+    float modScaleRel = apply_ScalerType(scaler, type, false);
+    float aval        = amin + modScaleRel*(amax-amin);
+
+    return aval;
+}
+
+float AW_ScalerTransformer::awar2scaler(AW_awar *awar) {
+    float amin = awar->get_min();
+    float amax = awar->get_max();
+
+    float awarRel = 0.0;
+    switch (awar->variable_type) {
+        case AW_FLOAT:
+            awarRel = (awar->read_float()-amin) / (amax-amin);
+            break;
+
+        case AW_INT:
+            awarRel = (awar->read_int()-amin) / (amax-amin);
+            break;
+
+        default:
+            GBK_terminatef("Unsupported awar type %i in calculate_scaler_value", int(awar->variable_type));
+            break;
+    }
+
+    aw_assert(awarRel>=0.0 && awarRel<=1.0);
+
+    return apply_ScalerType(awarRel, type, true);
+}
+
+
 // ----------------------------------------------------------------------
 // force-diff-sync 7284637824 (remove after merging back to trunk)
 // ----------------------------------------------------------------------
@@ -1058,14 +1131,32 @@ void AW_window::window_fit() {
 }
 
 AW_window::AW_window()
+    : recalc_size_at_show(AW_KEEP_SIZE),
+      recalc_pos_at_show(AW_KEEP_POS),
+      hide_cb(NULL),
+      expose_callback_added(false),
+      focus_cb(NULL),
+      xfig_data(NULL),
+      _at(new AW_at),
+      left_indent_of_horizontal_scrollbar(0),
+      top_indent_of_vertical_scrollbar(0),
+      root(NULL),
+      click_time(0),
+      color_table_size(0),
+      color_table(NULL),
+      number_of_timed_title_changes(0),
+      p_w(new AW_window_Motif),
+      _callback(NULL),
+      _d_callback(NULL),
+      window_name(NULL),
+      window_defaults_name(NULL),
+      window_is_shown(false),
+      slider_pos_vertical(0),
+      slider_pos_horizontal(0),
+      main_drag_gc(0),
+      picture(new AW_screen_area)
 {
-    memset((char *)this, 0, sizeof(AW_window)); // @@@ may conflict with vtable - fix
-    p_w = new AW_window_Motif;
-    _at = new AW_at; // Note to valgrinders : the whole AW_window memory management suffers because Windows are NEVER deleted
-    picture = new AW_screen_area;
     reset_scrolled_picture_size();
-    slider_pos_vertical = 0;
-    slider_pos_horizontal = 0;
 }
 
 AW_window::~AW_window() {
@@ -1222,9 +1313,35 @@ static void aw_onExpose_calc_WM_offsets(AW_window *aww) {
     }
 }
 
-AW_root_Motif::AW_root_Motif() {
-    memset((char*)this, 0, sizeof(*this));
-}
+AW_root_Motif::AW_root_Motif()
+    : last_widget(0),
+      display(NULL),
+      context(0),
+      toplevel_widget(0),
+      main_widget(0),
+      main_aww(NULL),
+      message_shell(0),
+      foreground(0),
+      background(0),
+      fontlist(0),
+      option_menu_list(NULL),
+      last_option_menu(NULL),
+      current_option_menu(NULL),
+      toggle_field_list(NULL),
+      last_toggle_field(NULL),
+      selection_list(NULL),
+      last_selection_list(NULL),
+      screen_depth(0),
+      color_table(NULL),
+      colormap(0),
+      help_active(0),
+      clock_cursor(0),
+      question_cursor(0),
+      old_cursor_display(NULL),
+      old_cursor_window(0),
+      no_exit(false),
+      action_hash(NULL)
+{}
 
 AW_root_Motif::~AW_root_Motif() {
     GBS_free_hash(action_hash);
@@ -1889,7 +2006,7 @@ void AW_area_management::create_devices(AW_window *aww, AW_area ar) {
     common = new AW_common_Xm(XtDisplay(area), XtWindow(area), p_global->color_table, aww->color_table, aww->color_table_size, aww, ar);
 }
 
-AW_color_idx AW_window::alloc_named_data_color(int colnum, char *colorname) {
+AW_color_idx AW_window::alloc_named_data_color(int colnum, const char *colorname) {
     if (!color_table_size) {
         color_table_size = AW_STD_COLOR_IDX_MAX + colnum;
         color_table      = (AW_rgb*)malloc(sizeof(AW_rgb) *color_table_size);
@@ -3152,6 +3269,32 @@ AW_toggle_field_struct::AW_toggle_field_struct(int toggle_field_numberi,
     correct_for_at_center_intern = correct;
 }
 
-AW_window_Motif::AW_window_Motif() {
-    memset((char*)this, 0, sizeof(AW_window_Motif));
+AW_window_Motif::AW_window_Motif()
+    : shell(0),
+      scroll_bar_vertical(0),
+      scroll_bar_horizontal(0),
+      menu_deep(0),
+      help_pull_down(0),
+      mode_area(0),
+      number_of_modes(0),
+      modes_f_callbacks(NULL),
+      modes_widgets(NULL),
+      selected_mode(0),
+      popup_cb(NULL),
+      frame(0),
+      toggle_field(0),
+      toggle_label(0),
+      toggle_field_var_name(NULL),
+      toggle_field_var_type(AW_NONE),
+      keymodifier(AW_KEYMODE_NONE),
+      WM_top_offset(0),
+      WM_left_offset(0)
+{
+    for (int i = 0; i<AW_MAX_MENU_DEEP; ++i) {
+        menu_bar[i] = 0;
+    }
+    for (int i = 0; i<AW_MAX_AREA; ++i) {
+        areas[i] = NULL;
+    }
 }
+
