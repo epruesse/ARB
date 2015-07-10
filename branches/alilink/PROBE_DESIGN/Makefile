@@ -48,7 +48,8 @@ probe_collection.o: $(ARBHOME)/INCLUDE/static_assert.h
 probe_collection.o: $(ARBHOME)/INCLUDE/test_global.h
 
 probe_design.o: probe_collection.hxx
-probe_design.o: probe_design.hxx
+probe_design.o: probe_gui.hxx
+probe_design.o: probe_local.hxx
 probe_design.o: probe_match_parser.hxx
 probe_design.o: SaiProbeVisualization.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -108,6 +109,7 @@ probe_design.o: $(ARBHOME)/INCLUDE/items.h
 probe_design.o: $(ARBHOME)/INCLUDE/iupac.h
 probe_design.o: $(ARBHOME)/INCLUDE/PT_com.h
 probe_design.o: $(ARBHOME)/INCLUDE/PT_server.h
+probe_design.o: $(ARBHOME)/INCLUDE/rootAsWin.h
 probe_design.o: $(ARBHOME)/INCLUDE/servercntrl.h
 probe_design.o: $(ARBHOME)/INCLUDE/smartptr.h
 probe_design.o: $(ARBHOME)/INCLUDE/static_assert.h

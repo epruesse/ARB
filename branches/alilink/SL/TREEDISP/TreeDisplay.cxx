@@ -61,8 +61,6 @@ static int MatchProbeGC[MATCH_FLAG_COLORS] = {
     AWT_GC_PINK,
 };
 
-const int MATCH_COL_WIDTH = 3;
-
 using namespace AW;
 
 AW_gc_manager AWT_graphic_tree::init_devices(AW_window *aww, AW_device *device, AWT_canvas* ntw) {
@@ -1841,34 +1839,36 @@ void AWT_graphic_tree::update(GBDATA *) {
     }
 }
 
-void AWT_graphic_tree::enumerateClade(AP_tree *at, int* pMatchCounts, int& nCladeSize, int nNumProbes) {
+
+
+void AWT_graphic_tree::enumerateClade(AP_tree *at, CladeMatches& matches) {
+    /*! summarizes matches of each probe for subtree 'at' in result param 'matches'
+     * uses pcoll.cache to avoid repeated calculations
+     */
     td_assert(pcoll.display);
+    td_assert(matches.getCladeSize() == 0);
     if (at->is_leaf) {
-        if (at->name && (disp_device->get_filter() & leaf_text_filter)) {
-            const char* pDB_MatchString = GBT_read_char_pntr(at->gb_node, "matched_string");
-
-            if ((pDB_MatchString != 0) && (int(strlen(pDB_MatchString)) == nNumProbes)) {
-                for (int cn = 0 ; cn < nNumProbes ; cn++) {
-                    switch (pDB_MatchString[cn]) {
-                        case '1': {
-                            pMatchCounts[cn] += 1;
-                            break;
-                        }
-
-                        default:
-                        case '0': {
-                            break;
-                        }
-                    }
-                }
-
-                nCladeSize++;
-            }
+        if (at->name) {
+            pcoll.get_matches(at->name, matches);
         }
     }
     else {
-        enumerateClade(at->get_leftson(), pMatchCounts, nCladeSize, nNumProbes);
-        enumerateClade(at->get_rightson(), pMatchCounts, nCladeSize, nNumProbes);
+        if (at->is_named_group()) {
+            CladeCache::const_iterator found = pcoll.cache.find(at);
+            if (found != pcoll.cache.end()) {
+                matches = found->second; // use cached matches
+                return;
+            }
+        }
+
+        enumerateClade(at->get_leftson(), matches);
+        CladeMatches rightMatches(pcoll.numProbes);
+        enumerateClade(at->get_rightson(), rightMatches);
+        matches.add(rightMatches);
+
+        if (at->is_named_group()) {
+            pcoll.cache[at] = matches;
+        }
     }
 }
 
@@ -1878,9 +1878,11 @@ class MatchFlagXPos {
     int numProbes;
 public:
 
+    static int match_col_width;
+
     MatchFlagXPos(AW_pos scale, int numProbes_)
-        : Width((MATCH_COL_WIDTH-1) / scale),
-          Offset(MATCH_COL_WIDTH / scale),
+        : Width((match_col_width-1) / scale),
+          Offset(match_col_width / scale),
           numProbes(numProbes_)
     {}
 
@@ -1890,6 +1892,8 @@ public:
     double leftx  (int nProbe) const { return (nProbe - numProbes - 1.0) * offset(); }
     double centerx(int nProbe) const { return leftx(nProbe) + width()/2; }
 };
+
+int MatchFlagXPos::match_col_width = 3;
 
 class MatchFlagPosition : public MatchFlagXPos {
     double y1, y2;
@@ -1918,48 +1922,32 @@ void AWT_graphic_tree::detectAndDrawMatchFlags(AP_tree *at, const double y1, con
     td_assert(pcoll.display);
 
     if (disp_device->type() != AW_DEVICE_SIZE) {
-        // Note: extra device scaling needed to show flags is done by drawMatchFlagNames
+        // Note: extra device scaling (needed to show flags) is done by drawMatchFlagNames
 
         MatchFlagPosition flag(disp_device->get_scale(), pcoll.numProbes, y1, y2);
+        CladeMatches      matches(pcoll.numProbes);
 
-        int *pMatchCounts = new int[pcoll.numProbes];
+        enumerateClade(at, matches);
 
-        if (pMatchCounts != 0) {
-            memset(pMatchCounts, 0, pcoll.numProbes * sizeof(*pMatchCounts));
-
-            int nCladeSize = 0;
-            enumerateClade(at, pMatchCounts, nCladeSize, pcoll.numProbes);
-
+        if (matches.getCladeSize()>0) {
             AW_click_cd clickflag(disp_device, (AW_CL)0, (AW_CL)"flag");
+            for (int nProbe = 0 ; nProbe < pcoll.numProbes ; nProbe++) {
+                if (matches.getHits(nProbe) > 0) {
+                    bool draw    = at->is_leaf;
+                    bool partial = false;
 
-            if (!at->is_leaf) {
-                if (nCladeSize > 0) {
-                    const int nMatchedSize          = (int)(nCladeSize * pcoll.cladeThreshold.marked + 0.5);
-                    const int nPartiallyMatchedSize = (int)(nCladeSize * pcoll.cladeThreshold.partiallyMarked + 0.5);
-
-                    for (int nProbe = 0 ; nProbe < pcoll.numProbes ; nProbe++) {
-                        bool bMatched      = (pMatchCounts[nProbe] >= nMatchedSize);
-                        bool bPartialMatch = false;
-
-                        // Only check for partial match if we don't have a match. If a partial
-                        // match is found then isMatched() should return true.
-                        if (!bMatched) {
-                            bPartialMatch = (pMatchCounts[nProbe] > nPartiallyMatchedSize);
-                            bMatched      = bPartialMatch;
-                        }
-
-                        if (bMatched) {
-                            clickflag.set_cd1(nProbe);
-                            drawMatchFlag(flag, bPartialMatch, nProbe);
+                    if (!draw) { // group
+                        td_assert(at->is_named_group());
+                        double matchRate = matches.getHits(nProbe) / double(matches.getCladeSize());
+                        if (matchRate>pcoll.cladeThreshold.partiallyMarked) {
+                            draw    = true;
+                            partial = matchRate<pcoll.cladeThreshold.marked;
                         }
                     }
-                }
-            }
-            else {
-                for (int nProbe = 0 ; nProbe < pcoll.numProbes ; nProbe++) {
-                    if (pMatchCounts[nProbe] > 0) {
+
+                    if (draw) {
                         clickflag.set_cd1(nProbe);
-                        drawMatchFlag(flag, false, nProbe);
+                        drawMatchFlag(flag, partial, nProbe);
                     }
                 }
             }
@@ -2762,6 +2750,8 @@ void AWT_graphic_tree::read_tree_settings() {
         pcoll.numProbes                      = aw_root->awar(AWAR_PC_NUM_PROBES)->read_int();
         pcoll.cladeThreshold.marked          = aw_root->awar(AWAR_PC_CLADE_MARKED_THRESHOLD)->read_float() * 0.01;
         pcoll.cladeThreshold.partiallyMarked = aw_root->awar(AWAR_PC_CLADE_PARTIALLY_MARKED_THRESHOLD)->read_float() * 0.01;
+
+        if (!pcoll.numProbes) pcoll.display = false; // avoid problems while exiting arb
     }
 }
 
@@ -2885,6 +2875,18 @@ void AWT_graphic_tree::show(AW_device *device) {
 
 void AWT_graphic_tree::info(AW_device */*device*/, AW_pos /*x*/, AW_pos /*y*/, AW_clicked_line */*cl*/, AW_clicked_text */*ct*/) {
     aw_message("INFO MESSAGE");
+}
+
+void AWT_graphic_tree::set_probeCollectionDisplay(bool show_collection, get_probe_name get_name, get_probe_matches get_matches, int match_col_width, bool invalidateCache) {
+    pcoll.display     = show_collection;
+    pcoll.get_name    = get_name;
+    pcoll.get_matches = get_matches;
+
+    if (invalidateCache) {
+        pcoll.cache.erase(pcoll.cache.begin(), pcoll.cache.end());
+    }
+
+    MatchFlagXPos::match_col_width = match_col_width;
 }
 
 AWT_graphic_tree *NT_generate_tree(AW_root *root, GBDATA *gb_main, AD_map_viewer_cb map_viewer_cb) {
@@ -3123,8 +3125,6 @@ static AW_rgb *dcolors       = colors_def;
 static long    dcolors_count = ARRAY_ELEMS(colors_def);
 
 class fake_AW_GC : public AW_GC {
-    virtual void wm_set_fill_solid() OVERRIDE {  }
-    virtual void wm_set_fill_stipple() OVERRIDE {  }
     virtual void wm_set_foreground_color(AW_rgb /*col*/) OVERRIDE {  }
     virtual void wm_set_function(AW_function /*mode*/) OVERRIDE { td_assert(0); }
     virtual void wm_set_lineattributes(short /*lwidth*/, AW_linestyle /*lstyle*/) OVERRIDE {}

@@ -106,6 +106,7 @@ namespace arb_test {
               show_warnings(true),
               assertion_failed(false),
               running_test(false),
+              entered_mutex_loop(false),
               warnings(0)
         {}
         ~GlobalTestData() {
