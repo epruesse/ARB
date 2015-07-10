@@ -418,6 +418,8 @@ static void colstat_2_gnuplot_cb(AW_window *aww, AW_CL cl_column_stat, AW_CL cl_
                     SortedFreq  *sorted;            // STAT_SORT
                 } data;
 
+                data.amount = { NULL, NULL, NULL, NULL }; // silence warning
+
                 PlotType plot_type = string2PlotType(type);
                 switch (plot_type) {
                     case PT_GC_RATIO:
