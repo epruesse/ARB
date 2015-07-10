@@ -8,7 +8,7 @@ $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .cxx.o:
-	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE) $<
 
 clean:
 	rm -f $(OBJECTS) *.a
@@ -67,4 +67,5 @@ nds.o: $(ARBHOME)/INCLUDE/smartptr.h
 nds.o: $(ARBHOME)/INCLUDE/static_assert.h
 nds.o: $(ARBHOME)/INCLUDE/test_global.h
 nds.o: $(ARBHOME)/INCLUDE/test_unit.h
+nds.o: $(ARBHOME)/INCLUDE/TreeNode.h
 nds.o: $(ARBHOME)/INCLUDE/ttypes.h

@@ -418,7 +418,9 @@ static void colstat_2_gnuplot_cb(AW_window *aww, AW_CL cl_column_stat, AW_CL cl_
                     SortedFreq  *sorted;            // STAT_SORT
                 } data;
 
-                data.amount = { NULL, NULL, NULL, NULL }; // silence warning
+                data.amount.C  = NULL; // silence warnings
+                data.amount.G  = NULL;
+                data.amount.TU = NULL;
 
                 PlotType plot_type = string2PlotType(type);
                 switch (plot_type) {

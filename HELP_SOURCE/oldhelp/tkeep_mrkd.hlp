@@ -17,10 +17,8 @@ DESCRIPTION	Removes all unmarked species and zombies (see LINK{glossary.hlp}) fr
 
 NOTES		None
 
-EXAMPLES	none
+EXAMPLES	None
 
-WARNINGS	!!! No 'undo' function available yet !!!
+WARNINGS	None
 
-		It is recommended to copy the tree before modifying it.
-
-BUGS		no bugs
+BUGS		Undo does not work. See WARNINGS/BUGS for LINK{mode_move.hlp}

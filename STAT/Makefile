@@ -11,7 +11,7 @@ $(MAIN): $(CPP_OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
 
 .cxx.o:
-	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE) $<
 
 clean:
 	rm -f $(CPP_OBJECTS) *.a
@@ -66,10 +66,10 @@ ST_ml.o: $(ARBHOME)/INCLUDE/downcast.h
 ST_ml.o: $(ARBHOME)/INCLUDE/dupstr.h
 ST_ml.o: $(ARBHOME)/INCLUDE/gccver.h
 ST_ml.o: $(ARBHOME)/INCLUDE/gui_aliview.hxx
-ST_ml.o: $(ARBHOME)/INCLUDE/RootedTree.h
 ST_ml.o: $(ARBHOME)/INCLUDE/smartptr.h
 ST_ml.o: $(ARBHOME)/INCLUDE/static_assert.h
 ST_ml.o: $(ARBHOME)/INCLUDE/test_global.h
+ST_ml.o: $(ARBHOME)/INCLUDE/TreeNode.h
 ST_ml.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 ST_quality.o: MostLikelySeq.hxx

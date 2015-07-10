@@ -102,7 +102,8 @@ sub parse($) {
   eval {
   LINE: while (defined ($line = <IN>)) {
       $lineNr++;
-      if ($line =~ /^(([0-9a-f]|\s)+) (.+?) (.*)\n/o) {
+      chomp($line);
+      if ($line =~ /^(([0-9a-f]|\s)+) (.+?) (.*)$/o) {
         my ($type,$rest) = ($3,$4);
         my $symbol;
         my $location = undef;

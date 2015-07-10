@@ -14,6 +14,9 @@
 #ifndef AP_SEQUENCE_HXX
 #include <AP_sequence.hxx>
 #endif
+#ifndef DOWNCAST_H
+#include <downcast.h>
+#endif
 
 enum aas {
     ALA, ARG, ASN, ASP, CYS, GLN, GLU, GLY, HIS, ILEU, LEU, LYS, MET, PHE, PRO,
@@ -39,6 +42,10 @@ public:
 
     AP_FLOAT combine(const AP_sequence *lefts, const AP_sequence *rights, char *mutation_per_site = 0) OVERRIDE;
     void partial_match(const AP_sequence* part, long *overlap, long *penalty) const OVERRIDE;
+    uint32_t checksum() const OVERRIDE;
+
+    bool equals(const AP_sequence_simple_protein */*other*/) const { arb_assert(0); return false; } // unused
+    bool equals(const AP_sequence *other) const OVERRIDE { return equals(DOWNCAST(const AP_sequence_simple_protein*, other)); }
 
     const ap_pro *get_sequence() const { return sequence; }
     ap_pro *get_sequence() { return sequence; }

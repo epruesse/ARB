@@ -174,7 +174,7 @@ namespace arb_test {
 
         static void assertfailmsg(const char *filename, int lineno, const char *condition) {
             FlushedOutput yes;
-            fprintf(stderr, "%s:%i: Assertion '%s' failed", filename, lineno, condition);
+            fprintf(stderr, "\n%s:%i: Assertion '%s' failed", filename, lineno, condition);
             print_annotation();
         }
     };

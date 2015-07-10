@@ -13,7 +13,7 @@ SUB	organisms.hlp
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		What are Genes ?
+TITLE		What are Genes?
 
 DESCRIPTION	One gene is one database entry containing subentries which
                 describe the gene. Every gene belongs to a specific

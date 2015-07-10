@@ -177,8 +177,8 @@ FEATURE TESTS
 
     Here all existing helpfile features should be tested:
 
-        * first testing an inlined link to another help file: TOPIC 'Search
-          and Replace Tool (SRT)'
+        * first testing an inlined link to another help file: 'Search and
+          Replace Tool (SRT)'
 
         * and a link to the arb homepage http://www.arb-home.de/ followed
           by text.

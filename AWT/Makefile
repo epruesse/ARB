@@ -20,7 +20,7 @@ $(LIB_SHARED): $(OBJECTS)
 	$(LINK_SHARED_LIB) $(LIB_SHARED) $(OBJECTS)
 
 .cxx.o:
-	$(A_CXX) $(shared_cflags) $(cflags) $(cxxflags) -c $<  $(CXX_INCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(shared_cflags) $(cflags) $(cxxflags) -c $<  $(CXX_INCLUDES) $(POST_COMPILE) $<
 
 clean:
 	rm -f $(OBJECTS) *.a *.so
@@ -174,6 +174,7 @@ AWT_config_manager.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/arb_defs.h
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/arb_error.h
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AWT_config_manager.o: $(ARBHOME)/INCLUDE/arb_str.h
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/arb_string.h
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/arbdb.h

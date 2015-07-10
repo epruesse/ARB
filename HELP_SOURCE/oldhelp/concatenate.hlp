@@ -65,7 +65,7 @@ NOTES
     
             3. Usually newly generated (merged) species are marked and use the same to
             perform concatenation. CAUTION: Make sure that the new alignment name DOES NOT
-            coinside with the selected alignments (names) to be concatenated !!!
+            coinside with the selected alignments (names) to be concatenated!
 
 EXAMPLES	None
 

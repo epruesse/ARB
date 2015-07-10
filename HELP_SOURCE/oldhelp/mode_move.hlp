@@ -12,7 +12,6 @@ UP	mode.hlp
 TITLE		MOVE MODE
 
 OCCURRENCE	ARB_NT and ARB_PARSIMONY: <MOVE> button in the left column
-# @@@ do not mention F10 (normally blocked by WM)
 
 DESCRIPTION	The 'MOVE MODE' allows to change the topology of the
 		displayed tree by moving subtrees.
@@ -37,15 +36,16 @@ SECTION         ARB_PARSIMONY specific
 		tree topologies with respect to maximum parsimony criteria by
 		moving subtrees. The current parsimony value is shown after the
 		'Current Par' prompt and can be compared with the 'Optimum Par'
-		value of the initial tree.
+		value of the initial tree (see LINK{pa_value.hlp}).
 
 
 NOTES		None
 
 EXAMPLES	None
 
-WARNINGS	!!! No 'undo' function available yet !!!
+WARNINGS        It is recommended to copy the tree before using the 'MOVE MODE',
+                to avoid problems caused by that bug:
 
-		It is recommended to copy the tree before using the 'MOVE MODE'.
+BUGS		Undo 'Move Group Info' does not work (leads to loss of groupname).
+                See http://bugs.arb-home.de/ticket/496
 
-BUGS		No bugs known

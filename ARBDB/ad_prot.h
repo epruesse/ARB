@@ -186,6 +186,7 @@ char *GBS_string_eval(const char *insource, const char *icommand, GBDATA *gb_con
 
 /* admath.cxx */
 double GB_log_fak(int n);
+void GB_random_seed(unsigned seed);
 int GB_random(int range);
 
 /* adoptimize.cxx */
@@ -400,6 +401,7 @@ GB_ERROR GB_commit_transaction(GBDATA *gbd);
 GB_ERROR GB_end_transaction(GBDATA *gbd, GB_ERROR error);
 void GB_end_transaction_show_error(GBDATA *gbd, GB_ERROR error, void (*error_handler)(GB_ERROR));
 int GB_get_transaction_level(GBDATA *gbd);
+GB_ERROR GB_release(GBDATA *gbd);
 int GB_nsons(GBDATA *gbd);
 void GB_disable_quicksave(GBDATA *gbd, const char *reason);
 GB_ERROR GB_resort_data_base(GBDATA *gb_main, GBDATA **new_order_list, long listsize);

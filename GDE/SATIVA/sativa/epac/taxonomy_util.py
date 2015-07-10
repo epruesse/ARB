@@ -27,7 +27,9 @@ class Taxonomy:
         return ranks[rank_level]
         
     @staticmethod    
-    def get_rank_uid(ranks, rank_level):
+    def get_rank_uid(ranks, rank_level=-1):
+        if rank_level == -1:
+            rank_level = Taxonomy.lowest_assigned_rank_level(ranks)        
         return Taxonomy.RANK_UID_DELIM.join(ranks[:rank_level+1])
 
     @staticmethod    
@@ -57,7 +59,11 @@ class GGTaxonomyFile(Taxonomy):
     def strip_prefix(ranks):
         new_ranks = ['']*len(ranks);
         for i in range(len(ranks)):
-            new_ranks[i] = ranks[i].lstrip(GGTaxonomyFile.rank_placeholders[i])
+            if ranks[i].startswith(GGTaxonomyFile.rank_placeholders[i]):
+                plen = len(GGTaxonomyFile.rank_placeholders[i])
+                new_ranks[i] = ranks[i][plen:]
+            else:
+                new_ranks[i] = ranks[i]
         return new_ranks
 
     @staticmethod
@@ -141,7 +147,7 @@ class GGTaxonomyFile(Taxonomy):
     def iteritems(self):
         return self.seq_ranks_map.items()
 
-    def map(self):
+    def get_map(self):
         return self.seq_ranks_map
 
     def remove_seq(self, seqid):
@@ -401,51 +407,7 @@ class TaxTreeBuilder:
 
         self.prune_unifu_nodes(t0)
         return t0, seq_ids
-
-
-def extrac_trainning_taxonomy(fin, fout_test, fout_train):
-    with open(fin) as f:
-        lines = f.readlines()
-    species_list = []
-    
-    with open(fout_train, "w") as fo:
-        with open(fout_test, "w") as fot:
-            for line in lines:
-                toks = line.strip().split("\t")
-                seqid = toks[0]
-                ranks = toks[1].split(";")
-                spe = ranks[-1].strip()
-                if not spe in species_list:
-                    species_list.append(spe)
-                    fo.write(line)
-                else:
-                    fot.write(line)
-    
-
-def extrac_sequences(fin_taxonomy, fin_db, fout):
-    with open(fin_taxonomy) as ft:
-        lines = ft.readlines()
-    taxlist = []
-    for line in lines:
-        taxlist.append(line.split("\t")[0].strip())
-    
-    with open(fin_db) as fd:
-        dbs = fd.readlines()
-    with open(fout, "w") as fout:
-        for tax in taxlist:
-            seq = ""
-            for i in range(len(dbs)):
-                if i % 2 == 0:
-                    sid = dbs[i].strip()[1:]
-                    if sid == tax:
-                        seq = dbs[i + 1]
-                        break
-            fout.write(">" + tax + "\n")
-            fout.write(seq)
-        
   
 if __name__ == "__main__":
-    #extrac_trainning_taxonomy(fin = "testdata/gg_clostridia_tax.txt", fout_train = "training_tax.txt", fout_test = "testing_tax.txt")
-    #extrac_sequences(fin_taxonomy = "testing_tax.txt", fin_db = "test1_seq.fa", fout = "testing_seq.fa")
     gt = GGTaxonomyFile("/home/zhangje/GIT/EPA-classifier/example/training_tax.txt")
     print gt.get_common_ranks()

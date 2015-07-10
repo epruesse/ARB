@@ -98,7 +98,7 @@ ALLOWED_gcc_VERSIONS=\
               4.5.2 \
         4.6.1 4.6.2 4.6.3 \
         4.7.1 4.7.2 4.7.3 4.7.4 \
-  4.8.0 4.8.1 4.8.2 4.8.3 \
+  4.8.0 4.8.1 4.8.2 4.8.3 4.8.4 \
   4.9.0 4.9.1 4.9.2 \
 
 # supported clang versions:
@@ -233,6 +233,12 @@ endif
 ifeq ($(DARWIN),0)
 	lflags += -g
 	clflags += -Wl,-g
+
+# TEMPORARY WORKAROUND for linker issues with launchpad binutils
+# code was added to ld to check for overlapping FDEs. Since ARB
+# worked before, we want this not to fail for the moment.
+# FIXME: remove this!
+        clflags += -Wl,-noinhibit-exec
 endif
 
  ifeq ($(DEBUG_GRAPHICS),1)
@@ -245,6 +251,8 @@ endif # DEBUG only
 # (please do not change default in SVN, use developer specific setting as below)
 	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl
 #	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl --original# dont modify compiler output
+#	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl --loop-optimization-candi# show candidates for vectorization check
+#	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl --dump-loop-optimization# useful while optimizing code for vectorization
 #	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl --hide-Noncopyable-advices
 #	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl --show-useless-Weff++
 #	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl --no-warnings
@@ -286,6 +294,10 @@ WEFFC_BROKEN:=0
 	extended_cpp_warnings += -Winit-self# gcc 3.4.0
 	extended_cpp_warnings += -Wstrict-aliasing# gcc 3.4
 	extended_cpp_warnings += -Wextra# gcc 3.4.0
+ ifeq ($(DEBUG),1)
+#       turn off -Wmaybe-uninitialized in debug mode (gets activated with -Wextra). too many bogus warnings
+	extended_cpp_warnings += -Wno-maybe-uninitialized
+ endif
  ifeq ('$(USE_GCC_452_OR_HIGHER)','yes')
 	extended_cpp_warnings += -Wlogical-op# gcc 4.5.2
  endif
@@ -617,6 +629,20 @@ ifeq ($(DARWIN),1)
 	TIME:=gtime
 else
 	TIME:=/usr/bin/time
+endif
+
+#---------------------- SSE vectorizer
+
+ifeq ($(DEBUG),0)
+ ifeq ($(USE_GCC_49_OR_HIGHER),yes)
+#	cflags += -fopt-info
+	cflags += -fopt-info-vec
+
+#	Shows reasons for unsuccessful vectorization:
+#	cflags += -fopt-info-vec-missed
+
+	POST_COMPILE += --check-loop-optimization
+ endif
 endif
 
 # -------------------------------------------------------------------------
@@ -1031,7 +1057,6 @@ ARCHS_TREE = \
 		$(ARCHS_SEQUENCE) \
 		SL/FILTER/FILTER.a \
 		SL/ARB_TREE/ARB_TREE.a \
-		SL/ROOTED_TREE/ROOTED_TREE.a \
 
 # parsimony tree (used by NTREE, PARSIMONY, STAT(->EDIT4), DIST(obsolete!))
 ARCHS_AP_TREE = \
@@ -1479,7 +1504,6 @@ SL/PRONUC/PRONUC.dummy:			links_non_perl
 SL/PTCLEAN/PTCLEAN.dummy:		links_non_perl link_db
 SL/REFENTRIES/REFENTRIES.dummy:		links_non_perl
 SL/REGEXPR/REGEXPR.dummy:		links_non_perl
-SL/ROOTED_TREE/ROOTED_TREE.dummy:	links_non_perl
 SL/SEQIO/SEQIO.dummy:			links_non_perl
 SL/SEQUENCE/SEQUENCE.dummy:		links_non_perl
 SL/TRANSLATE/TRANSLATE.dummy:		links_non_perl
@@ -1505,7 +1529,6 @@ UNIT_TESTER/UNIT_TESTER.dummy:		link_db \
 
 TOOLS/TOOLS.dummy : links_non_perl link_db \
 	SERVERCNTRL/SERVERCNTRL.dummy \
-	SL/ROOTED_TREE/ROOTED_TREE.dummy \
 	SL/TREE_WRITE/TREE_WRITE.dummy \
 	SL/TREE_READ/TREE_READ.dummy \
 	CONSENSUS_TREE/CONSENSUS_TREE.dummy \
@@ -1642,7 +1665,7 @@ fa:	SL/FAST_ALIGNER/FAST_ALIGNER.dummy
 
 #********************************************************************************
 
-up_by_remake: depends proto
+up_by_remake: depends proto vectorize_checks
 
 up: up_by_remake tags valgrind_update
 
@@ -1676,7 +1699,7 @@ comdepends: comtools clrdotdepends
 	$(MAKE) PROBE_COM/PROBE_COM.depends NAMES_COM/NAMES_COM.depends
 	$(MAKE) PROBE_COM/server.depends    NAMES_COM/server.depends
 
-depends: genheaders comdepends
+depends: genheaders comdepends vectorize_checks
 	@echo "$(SEP) Updating other dependencies"
 	$(MAKE) $(subst NAMES_COM/server.depends,,$(subst PROBE_COM/server.depends,,$(ARCHS:.a=.depends))) \
 		HELP_SOURCE/HELP_SOURCE.depends \
@@ -1704,6 +1727,11 @@ dependstest6: silent_clean
 	$(MAKE) nt
 dependstest7: silent_clean
 	$(MAKE) all
+# ------------------------------------------------------------
+
+vectorize_checks:
+	$(MAKE) -C SOURCE_TOOLS -r vectorize_checks
+
 # ------------------------------------------------------------
 
 AISC_MKPTPS/AISC_MKPTPS.dummy: links
@@ -2157,7 +2185,6 @@ TESTED_UNITS_AUTO = $(ARCHS:.a=.test)
 UNITS_WORKING = \
 	$(RNA3D_TEST) \
 	AWTI/AWTI.test \
-	DIST/DIST.test \
 	EISPACK/EISPACK.test \
 	GENOM/GENOM.test \
 	GL/glAW/libglAW.test \
@@ -2191,7 +2218,6 @@ UNITS_WORKING = \
 	TREEGEN/TREEGEN.test \
 	WETC/WETC.test \
 	XML/XML.test \
-	SL/ROOTED_TREE/ROOTED_TREE.test \
 
 # untestable units
 
@@ -2205,7 +2231,17 @@ UNITS_UNTESTABLE_ATM = \
 # for the moment, put all units containing tests into UNITS_TESTED or UNITS_TESTED_FIRST
 
 UNITS_TESTED_FIRST = \
+	DIST/DIST.test \
 	PARSIMONY/PARSIMONY.test \
+	EDIT4/EDIT4.test \
+	NTREE/NTREE.test \
+	MULTI_PROBE/MULTI_PROBE.test \
+
+# plain test-libaries not linked anywhere
+TEST_SANDBOXES = \
+	SL/CB/CB.test \
+
+UNITS_TESTED = \
 	SL/NEIGHBOURJOIN/NEIGHBOURJOIN.test \
 	SL/NDS/NDS.test \
 	ARB_GDE/ARB_GDE.test \
@@ -2220,12 +2256,6 @@ UNITS_TESTED_FIRST = \
 	TOOLS/arb_probe.test \
 	PERLTOOLS/arb_proto_2_xsub.test \
 	AWTC/AWTC.test \
-
-# plain test-libaries not linked anywhere
-TEST_SANDBOXES = \
-	SL/CB/CB.test \
-
-UNITS_TESTED = \
 	SL/ALILINK/ALILINK.test \
 	SL/TREE_READ/TREE_READ.test \
 	DBSERVER/DBSERVER.test \
@@ -2233,11 +2263,8 @@ UNITS_TESTED = \
 	CORE/libCORE.test \
 	SL/INSDEL/INSDEL.test \
 	SL/TREEDISP/TREEDISP.test \
-	NTREE/NTREE.test \
 	AISC_MKPTPS/mkptypes.test \
-	EDIT4/EDIT4.test \
 	MERGE/MERGE.test \
-	MULTI_PROBE/MULTI_PROBE.test \
 	SERVERCNTRL/SERVERCNTRL.test \
 	SL/FAST_ALIGNER/FAST_ALIGNER.test \
 	SL/PRONUC/PRONUC.test \

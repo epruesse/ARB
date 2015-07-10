@@ -1,7 +1,10 @@
 # list of known leaks (suppressed by LeakSanitizer)
 # see also valgrind suppressions in arb.supp
+#
+# the number of leaks shown may be defined at ../Makefile@LSAN_OPTIONS
+#
+# Note: better use valgrind to detect leaks (fainer grained suppression possible there)
 
-leak:TEST_tree_remove_add_all
 leak:illegal_alidata_composition
 leak:test_opendb
 leak:test_another_shell

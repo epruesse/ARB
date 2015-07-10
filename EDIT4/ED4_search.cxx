@@ -1701,8 +1701,9 @@ static AW_window *save_search_parameters(AW_root *root, AW_CL cl_param) {
 }
 
 
-static void search_init_config(AWT_config_definition& cdef, int search_type) {
-    SearchAwarList *awarList = &awar_list[search_type];
+static void setup_search_config(AWT_config_definition& cdef, AW_CL cl_search_type) {
+    int             search_type = int(cl_search_type);
+    SearchAwarList *awarList    = &awar_list[search_type];
 
     cdef.add(awarList->show, "show");
     cdef.add(awarList->openFolded, "openFolded");
@@ -1717,18 +1718,6 @@ static void search_init_config(AWT_config_definition& cdef, int search_type) {
     cdef.add(awarList->reverse, "reverse");
     cdef.add(awarList->complement, "complement");
     cdef.add(awarList->exact, "exact");
-}
-
-static char *search_store_config(AW_CL cl_search_type, AW_CL) {
-    AWT_config_definition cdef;
-    search_init_config(cdef, int(cl_search_type));
-    return cdef.read();
-}
-
-static void search_restore_config(const char *stored_string, AW_CL cl_search_type, AW_CL) {
-    AWT_config_definition cdef;
-    search_init_config(cdef, int(cl_search_type));
-    cdef.write(stored_string);
 }
 
 struct search_windows : public Noncopyable {
@@ -1835,8 +1824,7 @@ void ED4_popup_search_window(AW_window *aww, AW_CL cl_search_type) {
         aws->create_toggle(awarList->exact);
 
         aws->at("config");
-        AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "search", search_store_config, search_restore_config, (AW_CL)type, 0);
-
+        AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "search", setup_search_config, (AW_CL)type);
     }
 
     aws->activate();
