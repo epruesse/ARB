@@ -111,8 +111,8 @@ public:
             return predef ? predef->config : "";
         }
         else {
-            GB_transaction  ta(AW_ROOT_DEFAULT);
-            GBDATA         *gb_cfg = GB_search(AW_ROOT_DEFAULT, get_config_dbpath(cfgname).c_str(), GB_FIND);
+            GB_transaction  ta(default_file);
+            GBDATA         *gb_cfg = GB_search(default_file, get_config_dbpath(cfgname).c_str(), GB_FIND);
             return gb_cfg ? GB_read_char_pntr(gb_cfg) : "";
         }
     }
@@ -122,8 +122,8 @@ public:
             error = "cannot modify predefined config";
         }
         else {
-            GB_transaction  ta(AW_ROOT_DEFAULT);
-            GBDATA         *gb_cfg = GB_search(AW_ROOT_DEFAULT, get_config_dbpath(cfgname).c_str(), GB_STRING);
+            GB_transaction  ta(default_file);
+            GBDATA         *gb_cfg = GB_search(default_file, get_config_dbpath(cfgname).c_str(), GB_STRING);
             if (!gb_cfg) {
                 error = GB_await_error();
             }
@@ -325,8 +325,8 @@ void AWT_configuration::erase_deleted_configs() {
     string   cfg_base = get_awar_name("", false);
     GB_ERROR error    = NULL;
     {
-        GB_transaction  ta(AW_ROOT_DEFAULT);
-        GBDATA         *gb_base = GB_search(AW_ROOT_DEFAULT, cfg_base.c_str(), GB_FIND);
+        GB_transaction  ta(default_file);
+        GBDATA         *gb_base = GB_search(default_file, cfg_base.c_str(), GB_FIND);
         if (gb_base) {
             for (GBDATA *gb_cfg = GB_child(gb_base); gb_cfg && !error; ) {
                 GBDATA     *gb_next = GB_nextChild(gb_cfg);
@@ -1057,13 +1057,6 @@ char *AWT_config::config_string() const {
     return strdup(result.c_str());
 }
 void AWT_config::write_to_awars(const AWT_config_mapping *cfgname_2_awar, bool warn) const {
-    GB_transaction ta(AW_ROOT_DEFAULT);
-    // Notes:
-    // * Opening a TA on AW_ROOT_DEFAULT has no effect, as awar-DB is TA-free and each
-    //   awar-change opens a TA anyway.
-    // * Motif version did open TA on awar->gb_var (in 1st loop), which would make a
-    //   difference IF the 1st awar is bound to main-DB. At best old behavior was obscure.
-
     awt_assert(!parse_error);
     AW_root *aw_root  = AW_root::SINGLETON;
     int      unmapped = 0;
@@ -1176,8 +1169,6 @@ void AWT_config_definition::write(const char *config_char_ptr) const {
 
 void AWT_config_definition::reset() const {
     // reset all awars (stored in config) to factory defaults
-
-    GB_transaction ta(AW_ROOT_DEFAULT); // see also notes .@write_to_awars
     AW_root *aw_root = AW_root::SINGLETON;
     for (config_map::iterator e = config_mapping->begin(); e != config_mapping->end(); ++e) {
         const string&  awar_name(e->second);
