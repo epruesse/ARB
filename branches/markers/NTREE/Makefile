@@ -597,6 +597,7 @@ NT_edconf.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
+NT_edconf.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/cb.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/cb_base.h

@@ -25,6 +25,7 @@
 #include <set>
 #include <string>
 #include <ad_cb_prot.h>
+#include <awt_config_manager.hxx>
 
 using namespace std;
 
@@ -247,6 +248,14 @@ void NT_activate_configMarkers_display(AWT_canvas *ntw) {
     install_config_change_callbacks(gb_main);
 }
 
+static void setup_configmarker_config_cb(AWT_config_definition& config, int ntw_id) {
+    AW_awar *selcfg_awar = get_config_awar(ntw_id);
+    nt_assert(selcfg_awar);
+    if (selcfg_awar) {
+        config.add(selcfg_awar->awar_name, "selected_configs");
+    }
+}
+
 static AW_window *create_configuration_marker_window(AW_root *root, AWT_canvas *ntw) {
     AW_window_simple *aws = new AW_window_simple;
 
@@ -280,9 +289,11 @@ static AW_window *create_configuration_marker_window(AW_root *root, AWT_canvas *
 
     // @@@ add show-toggle? "show"
 
-    aws->at("config");
+    aws->at("settings");
     aws->callback(TREE_create_marker_settings_window);
     aws->create_autosize_button("SETTINGS", "Settings", "S");
+
+    AWT_insert_config_manager(aws, GLOBAL.gb_main, "configmarkers", makeConfigSetupCallback(setup_configmarker_config_cb, ntw_id));
 
     return aws;
 }
