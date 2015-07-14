@@ -193,7 +193,7 @@ static AW_window *create_configuration_marker_window(AW_root *root, AWT_canvas *
     AW_selection *sub_sel;
     {
         LocallyModify<bool> avoid(allow_subset_selection_cb, false);
-        sub_sel = awt_create_subset_selection_list(aws, all_configs->get_sellist(), "selected", "add", "sort", selected_configs_changed_cb, AW_CL(ntw));
+        sub_sel = awt_create_subset_selection_list(aws, all_configs->get_sellist(), "selected", "add", "sort", true, selected_configs_changed_cb, AW_CL(ntw));
     }
     awt_set_subset_selection_content(sub_sel, *get_selected_configs_from_awar(ntw));
 
