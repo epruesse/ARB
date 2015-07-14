@@ -1916,7 +1916,7 @@ void AWT_graphic_tree::drawMarker(const class MarkerPosition& marker, const bool
 
     const int gc = MarkerGC[markerIdx % MARKER_COLORS];
 
-    if (partial) disp_device->set_grey_level(gc, 0.5);
+    if (partial) disp_device->set_grey_level(gc, marker_greylevel);
     disp_device->box(gc, partial ? AW::FillStyle::SHADED : AW::FillStyle::SOLID, marker.pos(markerIdx), marker.size(), marker_filter);
 }
 
@@ -2008,7 +2008,7 @@ void AWT_graphic_tree::pixel_box(int gc, const AW::Position& pos, int pixel_widt
     Vector diagonal(diameter, diameter);
 
     td_assert(!filled.is_shaded()); // the pixel box is either filled or empty! (by design)
-    if (filled.somehow()) disp_device->set_grey_level(gc, grey_level); // @@@ should not be needed here, but changes test-results (xfig-shading need fixes anyway)
+    if (filled.somehow()) disp_device->set_grey_level(gc, group_greylevel); // @@@ should not be needed here, but changes test-results (xfig-shading need fixes anyway)
     else                  disp_device->set_line_attributes(gc, 1, AW_SOLID);
     disp_device->box(gc, filled, pos-0.5*diagonal, diagonal, mark_filter);
 }
@@ -2156,7 +2156,7 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
             detectAndDrawMarkers(at, s0.ypos(), s1.ypos());
         }
 
-        disp_device->set_grey_level(at->gr.gc, grey_level);
+        disp_device->set_grey_level(at->gr.gc, group_greylevel);
         disp_device->polygon(at->gr.gc, AW::FillStyle::SHADED_WITH_BORDER, 4, group, line_filter);
 
         const AW_font_limits& charLimits  = disp_device->get_font_limits(at->gr.gc, 'A');
@@ -2344,7 +2344,7 @@ void AWT_graphic_tree::show_radial_tree(AP_tree * at, double x_center,
         q[4] = x_center+l_max*cos(w);
         q[5] = y_center+l_max*sin(w);
 
-        disp_device->set_grey_level(at->gr.gc, grey_level);
+        disp_device->set_grey_level(at->gr.gc, group_greylevel);
         disp_device->polygon(at->gr.gc, AW::FillStyle::SHADED_WITH_BORDER, 3, &q[0], line_filter);
 
         if (at->gb_node && (disp_device->get_filter() & group_text_filter)) {
@@ -2737,7 +2737,7 @@ void AWT_graphic_tree::show_nds_list(GBDATA *, bool use_nds) {
 
 void AWT_graphic_tree::read_tree_settings() {
     scaled_branch_distance = aw_root->awar(AWAR_DTREE_VERICAL_DIST)->read_float(); // not final value!
-    grey_level             = aw_root->awar(AWAR_DTREE_GREY_LEVEL)->read_int()*.01;
+    group_greylevel        = aw_root->awar(AWAR_DTREE_GREY_LEVEL)->read_int() * 0.01;
     baselinewidth          = aw_root->awar(AWAR_DTREE_BASELINEWIDTH)->read_int();
     show_brackets          = aw_root->awar(AWAR_DTREE_SHOW_BRACKETS)->read_int();
     show_circle            = aw_root->awar(AWAR_DTREE_SHOW_CIRCLE)->read_int();
@@ -2752,6 +2752,7 @@ void AWT_graphic_tree::read_tree_settings() {
         groupThreshold.marked          = aw_root->awar(AWAR_DTREE_GROUP_MARKED_THRESHOLD)->read_float() * 0.01;
         groupThreshold.partiallyMarked = aw_root->awar(AWAR_DTREE_GROUP_PARTIALLY_MARKED_THRESHOLD)->read_float() * 0.01;
         MarkerXPos::marker_width       = aw_root->awar(AWAR_DTREE_MARKER_WIDTH)->read_int();
+        marker_greylevel               = aw_root->awar(AWAR_DTREE_PARTIAL_GREYLEVEL)->read_int() * 0.01;
     }
 }
 
@@ -2919,7 +2920,7 @@ void TREE_create_awars(AW_root *aw_root, AW_default db) {
 
     aw_root->awar_float(AWAR_DTREE_CIRCLE_ZOOM,     1.0)->set_minmax(0.01, 20);
     aw_root->awar_float(AWAR_DTREE_CIRCLE_MAX_SIZE, 1.5)->set_minmax(0.01, 200);
-    aw_root->awar_int(AWAR_DTREE_GREY_LEVEL,      20) ->set_minmax(0,    100);
+    aw_root->awar_int  (AWAR_DTREE_GREY_LEVEL,      20) ->set_minmax(0,    100);
 
     aw_root->awar_int(AWAR_DTREE_BOOTSTRAP_MIN, 0)->set_minmax(0,100);
 
@@ -2929,6 +2930,7 @@ void TREE_create_awars(AW_root *aw_root, AW_default db) {
     aw_root->awar_int(AWAR_DTREE_DENDRO_XPAD,      300)->set_minmax(-100, 2000);
 
     aw_root->awar_int  (AWAR_DTREE_MARKER_WIDTH,                     3)    ->set_minmax(1, 20);
+    aw_root->awar_int  (AWAR_DTREE_PARTIAL_GREYLEVEL,                37)   ->set_minmax(0, 100);
     aw_root->awar_float(AWAR_DTREE_GROUP_MARKED_THRESHOLD,           100.0)->set_minmax(0, 100);
     aw_root->awar_float(AWAR_DTREE_GROUP_PARTIALLY_MARKED_THRESHOLD, 0.0)  ->set_minmax(0, 100);
 
@@ -2974,6 +2976,7 @@ void TREE_install_update_callbacks(AWT_canvas *ntw) {
 
     // refresh on changes of marker display settings
     awr->awar(AWAR_DTREE_MARKER_WIDTH)                    ->add_callback(expose_cb);
+    awr->awar(AWAR_DTREE_PARTIAL_GREYLEVEL)               ->add_callback(expose_cb);
     awr->awar(AWAR_DTREE_GROUP_MARKED_THRESHOLD)          ->add_callback(makeRootCallback(markerThresholdChanged_cb,  false));
     awr->awar(AWAR_DTREE_GROUP_PARTIALLY_MARKED_THRESHOLD)->add_callback(makeRootCallback(markerThresholdChanged_cb,  true));
 }
@@ -3124,6 +3127,11 @@ AW_window *TREE_create_marker_settings_window(AW_root *root) {
         aws->create_input_field_with_scaler(AWAR_DTREE_MARKER_WIDTH, FIELDSIZE, SCALERSIZE);
 
         aws->at_newline();
+
+        aws->label("Partial marker greylevel");
+        aws->create_input_field_with_scaler(AWAR_DTREE_PARTIAL_GREYLEVEL, FIELDSIZE, SCALERSIZE);
+
+        aws->at_newline();
     }
 
     return aws;
@@ -3233,7 +3241,7 @@ class fake_AWT_graphic_tree : public AWT_graphic_tree {
         scaled_branch_distance = 1.0; // not final value!
         // var_mode is in range [0..3]
         // it is used to vary tree settings such that many different combinations get tested
-        grey_level             = 20*.01;
+        group_greylevel        = 20*.01;
         baselinewidth          = (var_mode == 3)+1;
         show_brackets          = (var_mode != 2);
         show_circle            = var_mode%3;

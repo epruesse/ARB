@@ -150,7 +150,7 @@ AW_pos AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, AW_pos x_offset) {
             Vector    frame2box(IRS.gap, IRS.gap);
             Rectangle gbox(frame.upper_left_corner()+frame2box, Vector(frame.width()*.5, frame.height()-2*IRS.gap));
 
-            disp_device->set_grey_level(gc, grey_level);
+            disp_device->set_grey_level(gc, group_greylevel);
             disp_device->box(gc, AW::FillStyle::SHADED_WITH_BORDER, gbox);
 
             Position box_rcenter = gbox.right_edge().centroid();

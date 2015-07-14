@@ -48,6 +48,7 @@
 #define AWAR_DTREE_GROUP_MARKED_THRESHOLD           "awt/dtree/markers/group_marked_threshold"
 #define AWAR_DTREE_GROUP_PARTIALLY_MARKED_THRESHOLD "awt/dtree/markers/group_partially_marked_threshold"
 #define AWAR_DTREE_MARKER_WIDTH                     "awt/dtree/markers/marker_width"
+#define AWAR_DTREE_PARTIAL_GREYLEVEL                "awt/dtree/markers/partial_greylevel"
 
 #define NT_BOX_WIDTH      7 // pixel
 #define NT_ROOT_WIDTH     9
@@ -233,7 +234,8 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
     AWT_scaled_font_limits scaled_font;
     double                 scaled_branch_distance; // vertical distance between branches (may be extra-scaled in options)
 
-    AW_pos grey_level;
+    AW_grey_level group_greylevel;
+    AW_grey_level marker_greylevel;
 
     AW_device *disp_device; // device for recursive functions
 
