@@ -1942,7 +1942,7 @@ void AWT_graphic_tree::detectAndDrawMarkers(AP_tree *at, const double y1, const 
                     if (!draw) { // group
                         td_assert(at->is_named_group());
                         double markRate = markers.getMarkRate(markerIdx);
-                        if (markRate>groupThreshold.partiallyMarked) {
+                        if (markRate>=groupThreshold.partiallyMarked && markRate>0.0) {
                             draw    = true;
                             partial = markRate<groupThreshold.marked;
                         }
