@@ -1042,7 +1042,7 @@ class AW_subset_selection : public AW_selection {
         return sub_sellist;
     }
 
-    void callChangedCallback() { if (subChanged_cb) subChanged_cb(this, cl_user); }
+    void callChangedCallback(bool interactive_change) { if (subChanged_cb) subChanged_cb(this, interactive_change, cl_user); }
 
 public:
     AW_subset_selection(AW_window *aww, AW_selection_list& parent_sellist_, SubsetChangedCb subChanged_cb_, AW_CL cl_user_)
@@ -1051,17 +1051,13 @@ public:
           subChanged_cb(subChanged_cb_),
           cl_user(cl_user_)
     {
-        callChangedCallback();
+        callChangedCallback(false);
     }
 
     AW_selection_list *get_parent_sellist() const { return &parent_sellist; }
 
     const char *default_select_value() const { return parent_sellist.get_default_value(); }
     const char *default_select_display() const { return parent_sellist.get_default_display(); }
-
-    void get_subset(StrArray& subset) {
-        get_sellist()->to_array(subset, true);
-    }
 
     void fill() OVERRIDE { awt_assert(0); } // unused
 
@@ -1115,7 +1111,7 @@ public:
                 finish_fill_box(whole_list, subset_list);
                 break;
         }
-        callChangedCallback();
+        callChangedCallback(true);
     }
     void reorder_subset_cb(awt_reorder_mode dest) {
         AW_selection_list *subset_list = get_sellist();
@@ -1141,7 +1137,7 @@ public:
                 }
             }
         }
-        callChangedCallback();
+        callChangedCallback(true);
     }
 
     void delete_entries_missing_in_parent() {
@@ -1172,21 +1168,42 @@ public:
 
         if (deleted) {
             subsel->update();
-            callChangedCallback();
+            callChangedCallback(false);
         }
+    }
+
+    void fill_entries_matching_values(const CharPtrArray& values) {
+        AW_selection_list *subset_list = get_sellist();
+        subset_list->clear();
+
+        for (size_t e = 0; e<values.size(); ++e) {
+            const char *value = values[e];
+
+            AW_selection_list_iterator pIter(&parent_sellist);
+            while (pIter) {
+                if (strcmp(pIter.get_value(), value) == 0) {
+                    subset_list->insert(pIter.get_displayed(), pIter.get_value());
+                    break;
+                }
+                ++pIter;
+            }
+        }
+
+        finish_fill_box(&parent_sellist, subset_list);
+        callChangedCallback(false);
     }
 };
 
 static void collect_subset_cb(AW_window *, awt_collect_mode what, AW_CL cl_subsel) { ((AW_subset_selection*)cl_subsel)->collect_subset_cb(what); }
 static void reorder_subset_cb(AW_window *, awt_reorder_mode dest, AW_CL cl_subsel) { ((AW_subset_selection*)cl_subsel)->reorder_subset_cb(dest); }
 
-static void parent_selection_changed_cb(AW_selection_list *parent_sel, AW_CL cl_subsel) {
+static void correct_subselection_cb(AW_selection_list *parent_sel, AW_CL cl_subsel) {
     AW_subset_selection *subsel = (AW_subset_selection*)cl_subsel;
     aw_assert(subsel->get_parent_sellist() == parent_sel);
     subsel->delete_entries_missing_in_parent();
 }
 
-AW_selection *awt_create_subset_selection_list(AW_window *aww, AW_selection_list *parent_selection, const char *at_box, const char *at_add, const char *at_sort, SubsetChangedCb subChanged_cb, AW_CL cl_user) {
+AW_selection *awt_create_subset_selection_list(AW_window *aww, AW_selection_list *parent_selection, const char *at_box, const char *at_add, const char *at_sort, bool autocorrect_subselection, SubsetChangedCb subChanged_cb, AW_CL cl_user) {
     awt_assert(parent_selection);
 
     aww->at(at_box);
@@ -1205,9 +1222,18 @@ AW_selection *awt_create_subset_selection_list(AW_window *aww, AW_selection_list
     aww->at(at_sort);
     awt_create_order_buttons(aww, reorder_subset_cb, (AW_CL)subsel);
 
-    parent_selection->set_update_callback(parent_selection_changed_cb, AW_CL(subsel));
+    if (autocorrect_subselection) parent_selection->set_update_callback(correct_subselection_cb, AW_CL(subsel));
 
     return subsel;
+}
+
+void awt_set_subset_selection_content(AW_selection *subset_sel_, const CharPtrArray& values) {
+    /*! sets content of a subset-selection-list
+     * @param subset_sel_ selection list created by awt_create_subset_selection_list()
+     * @param values      e.g. retrieved using subset_sel_->get_values()
+     */
+    AW_subset_selection *subset_sel = dynamic_cast<AW_subset_selection*>(subset_sel_);
+    if (subset_sel) subset_sel->fill_entries_matching_values(values);
 }
 
 AW_selection_list *awt_create_selection_list_with_input_field(AW_window *aww, const char *awar_name, const char *at_box, const char *at_field) {

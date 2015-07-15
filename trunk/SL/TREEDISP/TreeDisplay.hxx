@@ -45,14 +45,10 @@
 #define AWAR_DTREE_DENDRO_ZOOM_TEXT "awt/dtree/dendro/zoomtext"
 #define AWAR_DTREE_DENDRO_XPAD      "awt/dtree/dendro/xpadding"
 
-// ----------------------------------------------------
-// probe collection awars used by TreeDisplay
-// see also ../../PROBE_DESIGN/probe_design.cxx@AWAR_PC_
-
-#define AWAR_PC_NUM_PROBES                       "probe_collection/number_of_probes"
-#define AWAR_PC_CLADE_MARKED_THRESHOLD           "probe_collection/clade_marked_threshold"
-#define AWAR_PC_CLADE_PARTIALLY_MARKED_THRESHOLD "probe_collection/clade_partially_marked_threshold"
-
+#define AWAR_DTREE_GROUP_MARKED_THRESHOLD           "awt/dtree/markers/group_marked_threshold"
+#define AWAR_DTREE_GROUP_PARTIALLY_MARKED_THRESHOLD "awt/dtree/markers/group_partially_marked_threshold"
+#define AWAR_DTREE_MARKER_WIDTH                     "awt/dtree/markers/marker_width"
+#define AWAR_DTREE_PARTIAL_GREYLEVEL                "awt/dtree/markers/partial_greylevel"
 
 #define NT_BOX_WIDTH      7 // pixel
 #define NT_ROOT_WIDTH     9
@@ -143,41 +139,70 @@ enum CollapseMode {
     EXPAND_ZOMBIES    = 16, // do not collapse groups containing zombies
 };
 
-class CladeMatches {
-    int              cladeSize; // number of species in clade
-    std::vector<int> probe; // how often each probe does match in clade
+class NodeMarkers {
+    // represents markers at a node (species or group)
+
+    int              nodeSize; // number of species in group (or 1)
+    std::vector<int> mark;     // how often each marker is set in group
 public:
-    CladeMatches() {} // default for map
-    explicit CladeMatches(int numProbes)
-        : cladeSize(0),
-          probe(numProbes, 0)
+    NodeMarkers() {} // default for cache
+    explicit NodeMarkers(int numMarks)
+        : nodeSize(0),
+          mark(numMarks, 0)
     {}
 
-    void incHit(size_t probeNum) {
-        td_assert(probeNum<probe.size());
-        probe[probeNum]++;
+    void incMarker(size_t markerIdx) {
+        td_assert(markerIdx<mark.size());
+        mark[markerIdx]++;
     }
-    int getHits(size_t probeNum) {
-        td_assert(probeNum<probe.size());
-        return probe[probeNum];
+    int markerCount(size_t markerIdx) const {
+        td_assert(markerIdx<mark.size());
+        return mark[markerIdx];
     }
 
-    void incCladeSize() { cladeSize++; }
-    int getCladeSize() const { return cladeSize; }
+    void incNodeSize() { nodeSize++; }
+    int getNodeSize() const { return nodeSize; }
 
-    void add(const CladeMatches& other) {
-        size_t size = probe.size();
-        td_assert(size == other.probe.size());
+    double getMarkRate(size_t markerIdx) const { return markerCount(markerIdx) / double(getNodeSize()); }
+
+    void add(const NodeMarkers& other) {
+        size_t size = mark.size();
+        td_assert(size == other.mark.size());
         for (size_t i = 0; i<size; ++i) {
-            probe[i] += other.probe[i];
+            mark[i] += other.mark[i];
         }
-        cladeSize += other.cladeSize;
+        nodeSize += other.nodeSize;
     }
 };
-typedef std::map<AP_tree*,CladeMatches> CladeCache;
 
-typedef const char *(*get_probe_name)(int nProbe);
-typedef void (*get_probe_matches)(const char *speciesName, CladeMatches& matches);
+class MarkerDisplay {
+    // defines which markers shall be displayed
+
+    typedef std::map<const AP_tree*,NodeMarkers> GroupMarkerCache;
+
+    GroupMarkerCache cache;
+    int              numMarkers;
+
+public:
+    MarkerDisplay(int numMarkers_)
+        : numMarkers(numMarkers_)
+    {
+        td_assert(numMarkers>0);
+    }
+    virtual ~MarkerDisplay() {}
+
+    virtual const char *get_marker_name(int markerIdx) const                          = 0;
+    virtual void retrieve_marker_state(const char *speciesName, NodeMarkers& matches) = 0;
+
+    const NodeMarkers *read_cache(const AP_tree *at) const {
+        GroupMarkerCache::const_iterator found = cache.find(at);
+        return found == cache.end() ? NULL : &found->second;
+    }
+    void write_cache(const AP_tree *at, const NodeMarkers& markers) { cache[at] = markers; }
+    void flush_cache() { cache.erase(cache.begin(), cache.end()); }
+
+    int size() const { return numMarkers; }
+};
 
 class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
     char         *species_name;
@@ -209,32 +234,25 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
     AWT_scaled_font_limits scaled_font;
     double                 scaled_branch_distance; // vertical distance between branches (may be extra-scaled in options)
 
-    AW_pos grey_level;
+    AW_grey_level group_greylevel;
+    AW_grey_level marker_greylevel;
 
     AW_device *disp_device; // device for recursive functions
 
     const AW_bitset line_filter, vert_line_filter, mark_filter, group_bracket_filter, bs_circle_filter;
     const AW_bitset leaf_text_filter, group_text_filter, remark_text_filter, other_text_filter;
-    const AW_bitset ruler_filter, root_filter, match_flag_filter;
+    const AW_bitset ruler_filter, root_filter, marker_filter;
 
     bool nds_show_all;
 
-    struct pcoll_display_settings {
-        bool display;
-        int  numProbes;
-        struct {
-            double marked;
-            double partiallyMarked;
-        } cladeThreshold;
-        get_probe_name    get_name;
-        get_probe_matches get_matches;
-        CladeCache        cache;
-
-        pcoll_display_settings() : display(false) {}
-    } pcoll;
+    MarkerDisplay *display_markers;
+    struct {
+        double marked;
+        double partiallyMarked;
+    } groupThreshold;
 
     AD_map_viewer_cb  map_viewer_cb;
-    AWT_command_data  *cmd_data;
+    AWT_command_data *cmd_data;
 
     AP_tree_root *tree_static;
 
@@ -255,10 +273,10 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
     void show_nds_list(GBDATA * gb_main, bool use_nds);
     void show_irs_tree(AP_tree *at, double height);
 
-    void enumerateClade(AP_tree *at, CladeMatches& matches);
-    void drawMatchFlag(const class MatchFlagPosition& flag, const bool bPartial, const int nProbe);
-    void detectAndDrawMatchFlags(AP_tree *at, double y1, double y2);
-    void drawMatchFlagNames(AW::Position& Pen);
+    void summarizeGroupMarkers(AP_tree *at, NodeMarkers& markers);
+    void drawMarker(const class MarkerPosition& marker, const bool partial, const int midx);
+    void detectAndDrawMarkers(AP_tree *at, double y1, double y2);
+    void drawMarkerNames(AW::Position& Pen);
 
     void pixel_box(int gc, const AW::Position& pos, int pixel_width, AW::FillStyle filled);
 
@@ -356,7 +374,15 @@ public:
     void show_ruler(AW_device *device, int gc);
     void get_zombies_and_duplicates(int& zomb, int& dups) const { zomb = zombies; dups = duplicates; }
 
-    void set_probeCollectionDisplay(bool show_collection, get_probe_name get_name, get_probe_matches get_matches, int match_col_width, bool invalidateCache);
+    void hide_marker_display() {
+        delete display_markers;
+        display_markers = NULL;
+    }
+    void set_marker_display(MarkerDisplay *display) { // takes ownership of 'display'
+        hide_marker_display();
+        display_markers = display;
+    }
+    MarkerDisplay *get_marker_display() { return display_markers; }
 
 #if defined(UNIT_TESTS) // UT_DIFF
     friend class fake_AWT_graphic_tree;
@@ -380,7 +406,7 @@ class ClickedTarget {
 
     bool ruler;
     bool branch;
-    int  matchflag; // = probe number + 1
+    int  markerflag; // = markerindex + 1
 
     const AW_clicked_element *elem;
 
@@ -389,7 +415,7 @@ class ClickedTarget {
         gb_species = NULL;
         ruler      = false;
         branch     = false;
-        matchflag  = 0;
+        markerflag  = 0;
     }
 
     void identify(AWT_graphic_tree *agt) {
@@ -406,7 +432,7 @@ class ClickedTarget {
                     ruler = !elem->cd1();
                 }
                 else if (strcmp(what, "flag") == 0) {
-                    matchflag = elem->cd1()+1;
+                    markerflag = elem->cd1()+1;
                 }
                 else if (strcmp(what, "branch") == 0) {
                     branch = true; // indicates that a line really IS the branch (opposed to other branch-related lines like e.g. group-brackets)
@@ -416,7 +442,7 @@ class ClickedTarget {
                 }
             }
 
-            if (!(gb_species || ruler || matchflag)) {
+            if (!(gb_species || ruler || markerflag)) {
                 tree_node = (AP_tree*)elem->cd1();
                 td_assert(branch || !what);
             }
@@ -442,13 +468,13 @@ public:
     const AW_clicked_element *element() const { return elem; }
     AP_tree *node() const { return tree_node; }
     GBDATA *species() const { return gb_species; }
-    int get_probeindex() const { return matchflag-1; }
+    int get_markerindex() const { return markerflag-1; }
 
     bool is_text() const { return elem && elem->is_text(); }
     bool is_line() const { return elem && elem->is_line(); }
     bool is_branch() const { return branch; }
     bool is_ruler() const { return ruler; }
-    bool is_matchflag() const { return matchflag; }
+    bool is_marker() const { return markerflag; }
 
     double get_rel_attach() const {
         // return [0..1] according to exact position where element is dropped
@@ -461,6 +487,7 @@ void       TREE_create_awars(AW_root *aw_root, AW_default db);
 void       TREE_install_update_callbacks(AWT_canvas *ntw);
 void       TREE_insert_jump_option_menu(AW_window *aws, const char *label, const char *awar_name);
 AW_window *TREE_create_settings_window(AW_root *aw_root);
+AW_window *TREE_create_marker_settings_window(AW_root *root);
 
 AWT_graphic_tree *NT_generate_tree(AW_root *root, GBDATA *gb_main, AD_map_viewer_cb map_viewer_cb);
 
