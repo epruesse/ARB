@@ -833,17 +833,23 @@ NT_dbrepair.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 NT_edconf.o: NT_local.h
 NT_edconf.o: NT_local_proto.h
+NT_edconf.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/ad_config.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/ad_prot.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+NT_edconf.o: $(ARBHOME)/INCLUDE/AliView.hxx
+NT_edconf.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
+NT_edconf.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/arb_assert.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/arb_core.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/arb_defs.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/arb_error.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/arb_global_defs.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/arb_msg.h
+NT_edconf.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/arb_string.h
+NT_edconf.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/arbdb.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -858,6 +864,7 @@ NT_edconf.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
+NT_edconf.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_device.hxx
@@ -877,11 +884,15 @@ NT_edconf.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_rgb.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+NT_edconf.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
+NT_edconf.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_signal.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
+NT_edconf.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
+NT_edconf.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/cb.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/cb_base.h
@@ -893,6 +904,7 @@ NT_edconf.o: $(ARBHOME)/INCLUDE/gccver.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/smartptr.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/static_assert.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/test_global.h
+NT_edconf.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/TreeNode.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/ttypes.h
 
