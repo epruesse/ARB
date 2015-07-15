@@ -218,43 +218,40 @@ GB_ERROR GBT_commit_rename_session() { // goes to header: __ATTR__USERESULT
             arb_progress progress(GBS_global_string("Correcting names in %i config%c", config_count, "s"[config_count<2]), config_count);
 
             for (int count = 0; !error && count<config_count; ++count) {
-                GBT_config *config = GBT_load_configuration_data(NameSession.gb_main, config_names[count], &error);
+                GBT_config config(NameSession.gb_main, config_names[count], error);
                 if (!error) {
                     int need_save = 0;
-                    int mode;
-
-                    for (mode = 0; !error && mode<2; ++mode) {
-                        char              **configStrPtr = (mode == 0 ? &config->top_area : &config->middle_area);
-                        GBT_config_parser  *parser       = GBT_start_config_parser(*configStrPtr);
-                        GBT_config_item    *item         = GBT_create_config_item();
+                    for (int area = 0; !error && area<2; ++area) {
+                        GBT_config_parser   parser(config, area);
                         GBS_strstruct      *strstruct    = GBS_stropen(1000);
 
-                        error = GBT_parse_next_config_item(parser, item);
-                        while (!error && item->type != CI_END_OF_CONFIG) {
-                            if (item->type == CI_SPECIES) {
-                                gbt_renamed *rns = (gbt_renamed *)GBS_read_hash(NameSession.renamed_hash, item->name);
+                        while (1) {
+                            const GBT_config_item& item = parser.nextItem(error);
+                            if (error || item.type == CI_END_OF_CONFIG) break;
+
+                            if (item.type == CI_SPECIES) {
+                                gbt_renamed *rns = (gbt_renamed *)GBS_read_hash(NameSession.renamed_hash, item.name);
                                 if (rns) { // species was renamed
-                                    freedup(item->name, rns->data);
+                                    GBT_append_to_config_string(GBT_config_item(CI_SPECIES, rns->data), strstruct);
                                     need_save = 1;
+                                    continue;
                                 }
                             }
                             GBT_append_to_config_string(item, strstruct);
-                            error = GBT_parse_next_config_item(parser, item);
                         }
 
-                        if (!error) freeset(*configStrPtr, GBS_strclose(strstruct));
+                        if (!error) {
+                            config.set(area, GBS_strclose(strstruct));
+                        }
                         else {
                             error = GBS_global_string("Failed to parse configuration '%s' (Reason: %s)", config_names[count], error);
+                            GBS_strforget(strstruct);
                         }
-
-                        GBT_free_config_item(item);
-                        GBT_free_config_parser(parser);
                     }
 
                     if (!error && need_save) {
-                        error = GBT_save_configuration_data(config, NameSession.gb_main, config_names[count]);
+                        error = config.save(NameSession.gb_main, config_names[count]);
                     }
-                    GBT_free_configuration_data(config);
                 }
                 progress.inc_and_check_user_abort(error);
             }

@@ -23,6 +23,7 @@ GB_O = \
 	adtcp.o \
 	adtune.o \
 	arbdb.o \
+	ad_cb.o \
         adExperiment.o \
         adGene.o \
         ad_core.o \
@@ -135,6 +136,46 @@ depend.init:
 
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl (from main)
+
+ad_cb.o: ad_cb.h
+ad_cb.o: ad_cb_prot.h
+ad_cb.o: ad_hcb.h
+ad_cb.o: ad_prot.h
+ad_cb.o: arbdb.h
+ad_cb.o: arbdb_base.h
+ad_cb.o: gb_cb.h
+ad_cb.o: gb_compress.h
+ad_cb.o: gb_data.h
+ad_cb.o: gb_header.h
+ad_cb.o: gb_key.h
+ad_cb.o: gb_local.h
+ad_cb.o: gb_main.h
+ad_cb.o: gb_memory.h
+ad_cb.o: gb_prot.h
+ad_cb.o: gb_storage.h
+ad_cb.o: gb_ta.h
+ad_cb.o: gb_ts.h
+ad_cb.o: gb_tune.h
+ad_cb.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ad_cb.o: $(ARBHOME)/INCLUDE/arb_core.h
+ad_cb.o: $(ARBHOME)/INCLUDE/arb_error.h
+ad_cb.o: $(ARBHOME)/INCLUDE/arb_msg.h
+ad_cb.o: $(ARBHOME)/INCLUDE/arb_strarray.h
+ad_cb.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
+ad_cb.o: $(ARBHOME)/INCLUDE/arb_string.h
+ad_cb.o: $(ARBHOME)/INCLUDE/arbtools.h
+ad_cb.o: $(ARBHOME)/INCLUDE/attributes.h
+ad_cb.o: $(ARBHOME)/INCLUDE/cb.h
+ad_cb.o: $(ARBHOME)/INCLUDE/cb_base.h
+ad_cb.o: $(ARBHOME)/INCLUDE/cbtypes.h
+ad_cb.o: $(ARBHOME)/INCLUDE/cxxforward.h
+ad_cb.o: $(ARBHOME)/INCLUDE/dupstr.h
+ad_cb.o: $(ARBHOME)/INCLUDE/gccver.h
+ad_cb.o: $(ARBHOME)/INCLUDE/smartptr.h
+ad_cb.o: $(ARBHOME)/INCLUDE/static_assert.h
+ad_cb.o: $(ARBHOME)/INCLUDE/test_global.h
+ad_cb.o: $(ARBHOME)/INCLUDE/test_unit.h
+ad_cb.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 ad_config.o: ad_config.h
 ad_config.o: ad_prot.h
@@ -1241,7 +1282,6 @@ adtree.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 adtune.o: gb_tune.h
 
-arbdb.o: ad_hcb.h
 arbdb.o: ad_prot.h
 arbdb.o: arbdb.h
 arbdb.o: arbdb_base.h
@@ -1265,7 +1305,6 @@ arbdb.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arbdb.o: $(ARBHOME)/INCLUDE/arb_core.h
 arbdb.o: $(ARBHOME)/INCLUDE/arb_error.h
 arbdb.o: $(ARBHOME)/INCLUDE/arb_msg.h
-arbdb.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 arbdb.o: $(ARBHOME)/INCLUDE/arb_string.h
 arbdb.o: $(ARBHOME)/INCLUDE/arbtools.h
 arbdb.o: $(ARBHOME)/INCLUDE/attributes.h

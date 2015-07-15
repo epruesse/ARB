@@ -362,7 +362,7 @@ GBENTRY *gb_make_entry(GBCONTAINER *father, const char *key, long index_pos, GBQ
 
     if (!keyq) keyq = gb_find_or_create_quark(Main, key);
 
-    long     gbm_index = GB_QUARK_2_GBMINDEX(Main, keyq);
+    long     gbm_index = quark2gbmindex(Main, keyq);
     GBENTRY *gbe       = (GBENTRY*)gbm_get_mem(sizeof(GBENTRY), gbm_index);
 
     GB_GBM_INDEX(gbe) = gbm_index;
@@ -424,7 +424,7 @@ GBCONTAINER *gb_make_container(GBCONTAINER * father, const char *key, long index
         GB_MAIN_TYPE *Main = GBCONTAINER_MAIN(father);
 
         if (!keyq) keyq   = gb_find_or_create_NULL_quark(Main, key);
-        long gbm_index    = GB_QUARK_2_GBMINDEX(Main, keyq);
+        long gbm_index    = quark2gbmindex(Main, keyq);
         gbc               = (GBCONTAINER *)gbm_get_mem(sizeof(GBCONTAINER), gbm_index);
         GB_GBM_INDEX(gbc) = gbm_index;
 
@@ -524,7 +524,7 @@ void gb_delete_entry(GBDATA*& gbd) {
 }
 
 static void gb_delete_main_entry(GBCONTAINER*& gb_main) {
-    GBQUARK sys_quark = gb_find_existing_quark(GB_MAIN(gb_main), GB_SYSTEM_FOLDER);
+    GBQUARK sys_quark = key2quark(GB_MAIN(gb_main), GB_SYSTEM_FOLDER);
 
     // Note: sys_quark may be 0 (happens when destroying client db which never established a connection).
     // In this case no system folder/quark has been created (and we do no longer try to create it)

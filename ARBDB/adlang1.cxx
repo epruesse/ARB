@@ -2321,7 +2321,7 @@ static char *filter_seq(const char *seq, const char *filter, size_t flen, void *
     if (!flen) flen = strlen(filter);
     size_t mlen     = slen<flen ? slen : flen;
 
-    GBS_strstruct *out = GBS_stropen(mlen);
+    GBS_strstruct *out = GBS_stropen(mlen+1); // +1 to avoid invalid, zero-length buffer
 
     const char *charset;
     int         include;

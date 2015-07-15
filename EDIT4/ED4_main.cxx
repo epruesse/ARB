@@ -282,7 +282,7 @@ static void ed4_bind_mainDB_awar_callbacks(AW_root *root) {
     root->awar(AWAR_SAI_NAME)->add_callback(ED4_selected_SAI_changed_cb);
 }
 
-static void ed4_create_mainDB_awars(AW_root *root, const char *config_name) {
+static void ed4_create_mainDB_awars(AW_root *root) {
     // WARNING: do not bind callbacks here -> do it in ed4_bind_mainDB_awar_callbacks()
 
     root->awar_string(AWAR_ITARGET_STRING, "", GLOBAL_gb_main);
@@ -296,16 +296,15 @@ static void ed4_create_mainDB_awars(AW_root *root, const char *config_name) {
     root->awar_string(AWAR_SPECIES_NAME, "", GLOBAL_gb_main);
     root->awar_string(AWAR_SAI_NAME,     "", GLOBAL_gb_main);
     root->awar_string(AWAR_SAI_GLOBAL,   "", GLOBAL_gb_main);
-
-    root->awar_string(AWAR_EDIT_CONFIGURATION, config_name, GLOBAL_gb_main);
-
-    ED4_create_search_awars(root);
 }
 
 static void ed4_create_all_awars(AW_root *root, const char *config_name) {
     // Note: cursor awars are created in window constructor
 
-    ed4_create_mainDB_awars(root, config_name);
+    root->awar_string(AWAR_EDIT_CONFIGURATION, config_name, AW_ROOT_DEFAULT);
+
+    ed4_create_mainDB_awars(root);
+    ED4_create_search_awars(root);
 
 #if defined(DEBUG)
     AWT_create_db_browser_awars(root, AW_ROOT_DEFAULT);

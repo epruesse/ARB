@@ -39,10 +39,15 @@ struct gb_Key {
     GB_DICTIONARY *dictionary;                      // optional dictionary
 };
 
-inline GBQUARK GB_KEY_QUARK(GBDATA *gbd) { return GB_DATA_LIST_HEADER(GB_FATHER(gbd)->d)[gbd->index].flags.key_quark; }
-inline char *GB_KEY(GBDATA *gbd) { return GB_MAIN(gbd)->keys[GB_KEY_QUARK(gbd)].key; }
+inline GBQUARK key2quark(GB_MAIN_TYPE *Main, const char *key) {
+    return key ? GBS_read_hash(Main->key_2_index_hash, key) : -1;
+}
+inline const char *quark2key(GB_MAIN_TYPE *Main, GBQUARK key_quark) { return Main->keys[key_quark].key; }
+inline long quark2gbmindex(GB_MAIN_TYPE *Main, GBQUARK key_quark)  { return (Main->keys[key_quark].nref<GBM_MAX_UNINDEXED_ENTRIES) ? 0 : key_quark; }
 
-inline long GB_QUARK_2_GBMINDEX(GB_MAIN_TYPE *Main, GBQUARK key_quark)  { return (Main->keys[key_quark].nref<GBM_MAX_UNINDEXED_ENTRIES) ? 0 : key_quark; }
+inline GBQUARK GB_KEY_QUARK(GBDATA *gbd) { return GB_DATA_LIST_HEADER(GB_FATHER(gbd)->d)[gbd->index].flags.key_quark; }
+inline const char *GB_KEY(GBDATA *gbd) { return quark2key(GB_MAIN(gbd), GB_KEY_QUARK(gbd)); }
+
 
 #else
 #error gb_key.h included twice
