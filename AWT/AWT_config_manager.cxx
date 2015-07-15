@@ -49,23 +49,29 @@ enum ConfigAwar {
 
 bool is_prefined(const string& cfgname) { return cfgname[0] == '*'; }
 
-class AWT_configuration : virtual Noncopyable {
-    string id;
-
-    AWT_store_config_to_string store;
-    AWT_load_or_reset_config   load_or_reset;
-
-    AW_CL client1; // client data for callbacks above
-    AW_CL client2;
-
+class ConfigDefinition : virtual Noncopyable {
     AW_default default_file;
+    string     id;
 
     AW_awar *std_awar[CONFIG_AWARS];
 
-    const AWT_predefined_config *predefined;
+public:
+    ConfigDefinition(AW_default default_file_, const char *id_)
+        : default_file(default_file_),
+          id(id_)
+    {
+        std_awar[VISIBLE_COMMENT] = get_awar("comment", true);
+        std_awar[STORED_COMMENTS] = get_awar("comments");
+        std_awar[EXISTING_CFGS]   = get_awar("existing");
+        std_awar[CURRENT_CFG]     = get_awar("current");
+        std_awar[SELECTED_FIELD]  = get_awar("field",   true);
+        std_awar[FIELD_CONTENT]   = get_awar("content", true);
+    }
 
-    AW_window         *aw_edit;
-    AW_selection_list *field_selection;
+    bool operator<(const ConfigDefinition& other) const { return id<other.id; }
+
+    AW_default get_db() const { return default_file; }
+    const char *get_id() const { return id.c_str(); }
 
     string get_awar_name(const string& subname, bool temp = false) const {
         return string("tmp/general_configs/"+(temp ? 0 : 4))+id+'/'+subname;
@@ -78,32 +84,38 @@ class AWT_configuration : virtual Noncopyable {
         string   awar_name = get_awar_name(subname, temp);
         return AW_root::SINGLETON->awar_string(awar_name.c_str(), "", default_file);
     }
+    AW_awar *get_awar(ConfigAwar a) const { return std_awar[a]; }
+
+    string get_awar_value(ConfigAwar a) const { return get_awar(a)->read_char_pntr(); }
+    void set_awar_value(ConfigAwar a, const string& new_value) const { get_awar(a)->write_string(new_value.c_str()); }
+};
+
+class AWT_configuration : public ConfigDefinition { // derived from Noncopyable
+    AWT_store_config_to_string store;
+    AWT_load_or_reset_config   load_or_reset;
+
+    AW_CL client1; // client data for callbacks above
+    AW_CL client2;
+
+    const AWT_predefined_config *predefined;
+
+    AW_window         *aw_edit;
+    AW_selection_list *field_selection;
 
     GB_ERROR update_config(const string& cfgname, const AWT_config& config);
 
 public:
     AWT_configuration(AW_default default_file_, const char *id_, AWT_store_config_to_string store_, AWT_load_or_reset_config load_or_reset_, AW_CL cl1, AW_CL cl2, const AWT_predefined_config *predef)
-        : id(id_),
+        : ConfigDefinition(default_file_, id_),
           store(store_),
           load_or_reset(load_or_reset_),
           client1(cl1),
           client2(cl2),
-          default_file(default_file_),
           predefined(predef),
           aw_edit(NULL),
           field_selection(NULL)
     {
-        std_awar[VISIBLE_COMMENT] = get_awar("comment", true);
-        std_awar[STORED_COMMENTS] = get_awar("comments");
-        std_awar[EXISTING_CFGS]   = get_awar("existing");
-        std_awar[CURRENT_CFG]     = get_awar("current");
-        std_awar[SELECTED_FIELD]  = get_awar("field",   true);
-        std_awar[FIELD_CONTENT]   = get_awar("content", true);
     }
-
-    bool operator<(const AWT_configuration& other) const { return id<other.id; }
-
-    AW_awar *get_awar(ConfigAwar a) const { return std_awar[a]; }
 
     string get_config(const string& cfgname) {
         if (is_prefined(cfgname)) {
@@ -111,8 +123,8 @@ public:
             return predef ? predef->config : "";
         }
         else {
-            GB_transaction  ta(AW_ROOT_DEFAULT);
-            GBDATA         *gb_cfg = GB_search(AW_ROOT_DEFAULT, get_config_dbpath(cfgname).c_str(), GB_FIND);
+            GB_transaction  ta(get_db());
+            GBDATA         *gb_cfg = GB_search(get_db(), get_config_dbpath(cfgname).c_str(), GB_FIND);
             return gb_cfg ? GB_read_char_pntr(gb_cfg) : "";
         }
     }
@@ -122,8 +134,8 @@ public:
             error = "cannot modify predefined config";
         }
         else {
-            GB_transaction  ta(AW_ROOT_DEFAULT);
-            GBDATA         *gb_cfg = GB_search(AW_ROOT_DEFAULT, get_config_dbpath(cfgname).c_str(), GB_STRING);
+            GB_transaction  ta(get_db());
+            GBDATA         *gb_cfg = GB_search(get_db(), get_config_dbpath(cfgname).c_str(), GB_STRING);
             if (!gb_cfg) {
                 error = GB_await_error();
             }
@@ -134,11 +146,6 @@ public:
         }
         return error;
     }
-
-    string get_awar_value(ConfigAwar a) const { return get_awar(a)->read_char_pntr(); }
-    void set_awar_value(ConfigAwar a, const string& new_value) const { get_awar(a)->write_string(new_value.c_str()); }
-
-    const char *get_id() const { return id.c_str(); }
 
     char *Store() const { return store(client1, client2); }
     GB_ERROR Restore(const string& s) const {
@@ -256,12 +263,12 @@ GB_ERROR AWT_configuration::Save(const char* filename, const string& cfg_name, c
     }
     else {
         if (comment.empty()) {
-            fprintf(out, HEADER ":%s\n", id.c_str()); // =same as old format
+            fprintf(out, HEADER ":%s\n", get_id()); // =same as old format
         }
         else {
             string encoded_comment(comment);
             encode_escapes(encoded_comment, "");
-            fprintf(out, HEADER ":%s;%s\n", id.c_str(), encoded_comment.c_str());
+            fprintf(out, HEADER ":%s;%s\n", get_id(), encoded_comment.c_str());
         }
 
         string content = get_config(cfg_name);
@@ -298,8 +305,8 @@ GB_ERROR AWT_configuration::Load(const char* filename, const string& cfg_name, s
                 char *comment = strchr(id_pos, ';');
                 if (comment) *comment++ = 0;
 
-                if (strcmp(id_pos, id.c_str()) != 0) {
-                    error = GBS_global_string("Wrong config type (expected=%s, found=%s)", id.c_str(), id_pos);
+                if (strcmp(id_pos, get_id()) != 0) {
+                    error = GBS_global_string("Wrong config type (expected=%s, found=%s)", get_id(), id_pos);
                 }
                 else {
                     error = set_config(cfg_name, nl);
@@ -325,8 +332,8 @@ void AWT_configuration::erase_deleted_configs() {
     string   cfg_base = get_awar_name("", false);
     GB_ERROR error    = NULL;
     {
-        GB_transaction  ta(AW_ROOT_DEFAULT);
-        GBDATA         *gb_base = GB_search(AW_ROOT_DEFAULT, cfg_base.c_str(), GB_FIND);
+        GB_transaction  ta(get_db());
+        GBDATA         *gb_base = GB_search(get_db(), cfg_base.c_str(), GB_FIND);
         if (gb_base) {
             for (GBDATA *gb_cfg = GB_child(gb_base); gb_cfg && !error; ) {
                 GBDATA     *gb_next = GB_nextChild(gb_cfg);
@@ -770,10 +777,15 @@ void AWT_configuration::popup_edit_window(AW_window *aw_config) {
 static void edit_cb(AW_window *aww, AWT_configuration *config) { config->popup_edit_window(aww); }
 static void reset_cb(AW_window *, AWT_configuration *config) { config->Reset(); }
 
-static void refresh_config_sellist_cb(AW_root*, AWT_configuration *config, AW_selection_list *sel) {
-    string        cfgs_str = config->get_awar_value(EXISTING_CFGS);
-    ConstStrArray cfgs;
+static void get_existing_configs(ConfigDefinition& configDef, ConstStrArray& cfgs) {
+    string cfgs_str = configDef.get_awar_value(EXISTING_CFGS);
     GBT_split_string(cfgs, cfgs_str.c_str(), ';');
+}
+
+static void refresh_config_sellist_cb(AW_root*, AWT_configuration *config, AW_selection_list *sel) {
+    ConstStrArray cfgs;
+    get_existing_configs(*config, cfgs);
+
     config->add_predefined_to(cfgs);
     sel->init_from_array(cfgs, "<new>", "");
 }
@@ -1057,13 +1069,6 @@ char *AWT_config::config_string() const {
     return strdup(result.c_str());
 }
 void AWT_config::write_to_awars(const AWT_config_mapping *cfgname_2_awar, bool warn) const {
-    GB_transaction ta(AW_ROOT_DEFAULT);
-    // Notes:
-    // * Opening a TA on AW_ROOT_DEFAULT has no effect, as awar-DB is TA-free and each
-    //   awar-change opens a TA anyway.
-    // * Motif version did open TA on awar->gb_var (in 1st loop), which would make a
-    //   difference IF the 1st awar is bound to main-DB. At best old behavior was obscure.
-
     awt_assert(!parse_error);
     AW_root *aw_root  = AW_root::SINGLETON;
     int      unmapped = 0;
@@ -1176,8 +1181,6 @@ void AWT_config_definition::write(const char *config_char_ptr) const {
 
 void AWT_config_definition::reset() const {
     // reset all awars (stored in config) to factory defaults
-
-    GB_transaction ta(AW_ROOT_DEFAULT); // see also notes .@write_to_awars
     AW_root *aw_root = AW_root::SINGLETON;
     for (config_map::iterator e = config_mapping->begin(); e != config_mapping->end(); ++e) {
         const string&  awar_name(e->second);
@@ -1191,3 +1194,62 @@ void AWT_config_definition::reset() const {
     }
 }
 
+// --------------------------------------------------------------------------------
+
+void AWT_modify_managed_configs(AW_default default_file, const char *id, ConfigModifyCallback mod_cb, AW_CL cl_user) {
+    /*! allows to modify (parts of) all stored configs
+     * @param default_file   has to be same as used in AWT_insert_config_manager()
+     * @param id             ditto
+     * @param mod_cb         called with each key/value pair of each stored config. result == NULL -> delete pair; result != NULL -> change or leave unchanged (result has to be a heapcopy!)
+     * @param cl_user        forwarded to mod_cb
+     */
+
+    ConfigDefinition configDef(default_file, id);
+
+    ConstStrArray cfgs;
+    get_existing_configs(configDef, cfgs);
+
+    for (size_t c = 0; c<cfgs.size(); ++c) {
+        GB_transaction  ta(configDef.get_db());
+        GBDATA         *gb_cfg = GB_search(configDef.get_db(), configDef.get_config_dbpath(cfgs[c]).c_str(), GB_FIND);
+        GB_ERROR        error  = NULL;
+
+        if (gb_cfg) {
+            const char *content = GB_read_char_pntr(gb_cfg);
+
+            AWT_config cmap(content);
+            error = cmap.parseError();
+            if (!error) {
+                ConstStrArray entries;
+                cmap.get_entries(entries);
+
+                bool update = false;
+                for (size_t e = 0; e<entries.size(); ++e) {
+                    const char *old_content = cmap.get_entry(entries[e]);
+                    char       *new_content = mod_cb(entries[e], old_content, cl_user);
+
+                    if (!new_content) {
+                        cmap.delete_entry(entries[e]);
+                        update = true;
+                    }
+                    else if (strcmp(old_content, new_content) != 0) {
+                        cmap.set_entry(entries[e], new_content);
+                        update = true;
+                    }
+                    free(new_content);
+                }
+
+                if (update) {
+                    char *cs = cmap.config_string();
+                    error    = GB_write_string(gb_cfg, cs);
+                    free(cs);
+                }
+            }
+        }
+
+        if (error) {
+            error = GBS_global_string("%s (config='%s')", error, cfgs[c]);
+            aw_message(error);
+        }
+    }
+}

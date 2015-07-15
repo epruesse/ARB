@@ -1663,7 +1663,7 @@ static void aw_update_window_geometry_awars(AW_window *aww) {
     }
 #if defined(DEBUG)
     else {
-        fprintf(stderr, " WM_offsets unknown. Did not update awars!\n");
+        fprintf(stderr, "Warning: WM_offsets unknown => did not update awars for window '%s'\n", aww->get_window_title());
     }
 #endif
     aww->store_size_in_awars(width, height);

@@ -9,29 +9,39 @@ SUB	mark.hlp
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		Selections of Species (Configurations)
+TITLE		Species selections (=configurations)
 
 OCCURRENCE	ARB_NTREE/Species/Selections
 
-DESCRIPTION	Each species is either marked or unmarked. All species that are
-		marked are called marked species. In order to handle multiple
-		sets of marked species we use configurations ( = selections of species).
+DESCRIPTION     Species selections basically are sets of species.
 
-                Several operations are possible with the configurations:
+                Technically the terms "species selections" and "editor configurations"
+                (or simply "configurations") are synonymic. For a detailed description
+                what is stored in an editor configuration see LINK{config_saveload.hlp}.
+
+                You may use configurations to
+
+                    * save/restore which species are currently marked (see LINK{mark.hlp}). Available operations are decribed below.
+                    * start the sequence editor on a defined set of species (see LINK{arb_edit4.hlp})
+                    * highlight multiple configurations in the tree display
+                      using the 'Highlight in tree' button (see LINK{mark_configs.hlp})
+
+                This window provides several operations on configurations:
 
                         - STORE (save a (new) configuration)
-                        - EXTRACT (= unmark all, then mark those from configuration)
+                        - EXTRACT (= unmark all, then mark the species stored in the selected configuration)
                         - MARK/UNMARK/INVERT (mix currently marked species with those marked in configuration)
                         - COMBINE (unmarks all that are not in configuration. This does an intersection
-                          between the currently marked species and the selected configuration)
+                          between the currently marked species and those from the selected configuration)
                         - DELETE (delete a configuration)
                         - RENAME (rename a configuration)
 
-		Each configuration has a unique name and is part of the database.
-                The current tree displayed within the ARB_NT main window is stored
-                with the configuration.
+NOTES           The configuration window is as well available via the button that shows the number
+                of marked species in the top area of the main arb window.
 
-		ARB_EDIT4 may load all marked species or all species stored in a configuration.
+EXAMPLES	None
 
-NOTES   Saving the database means also saving all configurations.
+WARNINGS	None
+
+BUGS		No bugs known
 
