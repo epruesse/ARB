@@ -1,0 +1,75 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		How is the consensus calculated?
+
+OCCURRENCE	ARB_NT/SAI/Create SAI using../Consensus
+                ARB_EDIT4/Properties/Consensus definition
+
+DESCRIPTION     What to do with gaps?
+
+		     If a column contains only gaps the result will be shown as '='.
+
+                     Define whether to use or to ignore gaps entirely:
+
+                            If you count gaps and the gap frequency exceeds 'threshold for gaps',
+                            the result will be shown as '-'.
+
+                            If the switch is 'off', the algorithm will virtually remove all gaps.
+                            That means if you have a column with two 'A's
+                            and 500 gaps the program thinks of 100% 'A'.
+                            (If the switch is 'on', the relative number of 'A's would be 2%)
+
+                Simplify using IUPAC
+
+                     Define whether the most frequent base or the IUPAC code
+                     (more then one base) should be shown at the particular
+                     position by pressing the respective checkbox after the
+                     'simplify' prompt.
+
+                     Characters are used for IUPAC encoding only if their
+                     frequency exceeds 'threshold for character'.
+
+                     Example:
+
+                        If you have 40% 'A', 10% 'C', 40% 'G' and 10% 'T' and
+                        'threshold for character' is set to 20%, the
+                        program looks for a iupac code only for 'A' and 'G'.
+
+                     Note:
+
+                        The IUPAC codes are displayed after pressing
+                        the 'show IUPAC' button.
+
+                Show as upper or lower case?
+
+                     Define whether the character is displayed in upper or lower case
+                     or whether a dot is displayed.
+
+                     Define upper and lower limit:
+
+                            If the percentage of a character is above or equal to the upper
+                            limit, the character is displayed in upper case.
+
+                            If the percentage of a character is above or equal to the lower
+                            limit and below the upper limit, the character is displayed in lower case.
+
+                            Otherwise a dot ('.') is displayed.
+
+NOTES		You can save/load the consensus settings to/from a file using the config-manager icon.
+                This allows you to exchange
+                     * the consensus settings used in EDIT4 and
+                     * the settings used to calculate the SAI 'CONSENSUS' from the ARB main window.
+
+EXAMPLES	None
+
+WARNINGS	IUPAC symbols in source sequences are ignored.
+
+BUGS		None
+
