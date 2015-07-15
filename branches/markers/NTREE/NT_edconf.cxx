@@ -191,7 +191,7 @@ static void selected_configs_awar_changed_cb(AW_root *, AWT_canvas *ntw) {
     AW_root::SINGLETON->awar(AWAR_TREE_REFRESH)->touch();
 }
 
-static void configs_selectionlist_changed_cb(AW_selection *selected_configs, AW_CL ntw_id) {
+static void configs_selectionlist_changed_cb(AW_selection *selected_configs, bool /*interactive_change*/, AW_CL ntw_id) {
     if (allow_selection2awar_update) {
         StrArray config;
         selected_configs->get_values(config);

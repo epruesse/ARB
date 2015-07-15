@@ -1042,7 +1042,7 @@ class AW_subset_selection : public AW_selection {
         return sub_sellist;
     }
 
-    void callChangedCallback() { if (subChanged_cb) subChanged_cb(this, cl_user); }
+    void callChangedCallback(bool interactive_change) { if (subChanged_cb) subChanged_cb(this, interactive_change, cl_user); }
 
 public:
     AW_subset_selection(AW_window *aww, AW_selection_list& parent_sellist_, SubsetChangedCb subChanged_cb_, AW_CL cl_user_)
@@ -1051,7 +1051,7 @@ public:
           subChanged_cb(subChanged_cb_),
           cl_user(cl_user_)
     {
-        callChangedCallback();
+        callChangedCallback(false);
     }
 
     AW_selection_list *get_parent_sellist() const { return &parent_sellist; }
@@ -1111,7 +1111,7 @@ public:
                 finish_fill_box(whole_list, subset_list);
                 break;
         }
-        callChangedCallback();
+        callChangedCallback(true);
     }
     void reorder_subset_cb(awt_reorder_mode dest) {
         AW_selection_list *subset_list = get_sellist();
@@ -1137,7 +1137,7 @@ public:
                 }
             }
         }
-        callChangedCallback();
+        callChangedCallback(true);
     }
 
     void delete_entries_missing_in_parent() {
@@ -1168,7 +1168,7 @@ public:
 
         if (deleted) {
             subsel->update();
-            callChangedCallback();
+            callChangedCallback(false);
         }
     }
 
@@ -1190,7 +1190,7 @@ public:
         }
 
         finish_fill_box(&parent_sellist, subset_list);
-        callChangedCallback();
+        callChangedCallback(false);
     }
 };
 
