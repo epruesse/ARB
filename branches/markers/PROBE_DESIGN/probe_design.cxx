@@ -2435,6 +2435,8 @@ public:
     }
 };
 
+inline bool displays_probeColl_markers(MarkerDisplay *md) { return dynamic_cast<ProbeCollDisplay*>(md); }
+
 static void refresh_matchedProbesDisplay_cb(AW_root *root, AWT_canvas *ntw) {
     // setup parameters for display of probe collection matches and trigger tree refresh
     LocallyModify<bool> flag(allow_probe_match_event, false);
@@ -2442,23 +2444,28 @@ static void refresh_matchedProbesDisplay_cb(AW_root *root, AWT_canvas *ntw) {
     AWT_graphic_tree *agt     = DOWNCAST(AWT_graphic_tree*, ntw->gfx);
     bool              display = get_results_manager().hasResults();
 
+    MarkerDisplay *markerDisplay = agt->get_marker_display();
+    bool           redraw        = false;
     if (display) {
         getMatchesContext = new GetMatchesContext(root->awar(AWAR_PC_MISMATCH_THRESHOLD)->read_float(),
                                                   get_probe_collection().probeList().size());
 
-        MarkerDisplay *markerDisplay = agt->get_marker_display();
-        if (markerDisplay) {
+        if (displays_probeColl_markers(markerDisplay)) {
             markerDisplay->flush_cache();
         }
         else {
             agt->set_marker_display(new ProbeCollDisplay(get_probe_collection().probeList().size()));
         }
+        redraw = true;
     }
     else {
-        agt->hide_marker_display();
+        if (displays_probeColl_markers(markerDisplay)) {
+            agt->hide_marker_display();
+            redraw = true;
+        }
     }
 
-    root->awar(AWAR_TREE_REFRESH)->touch();
+    if (redraw) root->awar(AWAR_TREE_REFRESH)->touch();
 }
 
 // ----------------------------------------------------------------------------

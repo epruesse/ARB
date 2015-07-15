@@ -30,7 +30,8 @@
 using namespace std;
 
 // AWT_canvas-local (%i=canvas-id):
-#define AWAR_CL_SELECTED_CONFIGS "configuration_data/win%i/selected"
+#define AWAR_CL_SELECTED_CONFIGS       "configuration_data/win%i/selected"
+#define AWAR_CL_DISPLAY_CONFIG_MARKERS "configuration_data/win%i/display"
 
 static void init_config_awars(AW_root *root) {
     root->awar_string(AWAR_CONFIGURATION, "default_configuration", GLOBAL.gb_main);
@@ -103,11 +104,15 @@ public:
     }
 };
 
+inline bool displays_config_markers(MarkerDisplay *md) { return dynamic_cast<ConfigMarkerDisplay*>(md); }
+
 #define CONFIG_SEPARATOR "\1"
 
-inline AW_awar *get_config_awar(int canvas_id) {
-    return AW_root::SINGLETON->awar_no_error(GBS_global_string(AWAR_CL_SELECTED_CONFIGS, canvas_id));
+inline AW_awar *get_canvas_awar(const char *awar_name_format, int canvas_id) {
+    return AW_root::SINGLETON->awar_no_error(GBS_global_string(awar_name_format, canvas_id));
 }
+inline AW_awar *get_config_awar        (int canvas_id) { return get_canvas_awar(AWAR_CL_SELECTED_CONFIGS,       canvas_id); }
+inline AW_awar *get_display_toggle_awar(int canvas_id) { return get_canvas_awar(AWAR_CL_DISPLAY_CONFIG_MARKERS, canvas_id); }
 
 static SmartPtr<ConstStrArray> get_selected_configs_from_awar(int canvas_id) {
     // returns configs stored in awar as array (empty array if awar undefined!)
@@ -126,6 +131,8 @@ static void write_configs_to_awar(int canvas_id, const CharPtrArray& configs) {
     AW_root::SINGLETON->awar(GBS_global_string(AWAR_CL_SELECTED_CONFIGS, canvas_id))->write_string(config_str);
     free(config_str);
 }
+
+// --------------------------------------------------------------------------------
 
 static void configuration_renamed_cb(const char *old_name, const char *new_name) {
     for (int canvas_id = 0; canvas_id<MAX_NT_WINDOWS; ++canvas_id) {
@@ -167,19 +174,28 @@ static void configuration_deleted_cb(const char *name) {
 
 static AW_selection *selected_configs_list[MAX_NT_WINDOWS] = { MAX_NT_WINDOWS_NULLINIT };
 static bool allow_selection2awar_update = true;
+static bool allow_to_activate_display   = false;
 
 static void selected_configs_awar_changed_cb(AW_root *, AWT_canvas *ntw) {
     AWT_graphic_tree        *agt    = DOWNCAST(AWT_graphic_tree*, ntw->gfx);
     int                      ntw_id = NT_get_canvas_id(ntw);
     SmartPtr<ConstStrArray>  config = get_selected_configs_from_awar(ntw_id);
+    bool                     redraw = false;
 
-    if (config->empty()) {
-        // @@@ test for existing MarkerDisplay: dont hide if type differs
-        agt->hide_marker_display();
+    if (config->empty() || get_display_toggle_awar(ntw_id)->read_int() == 0) {
+        if (displays_config_markers(agt->get_marker_display())) { // only hide config markers
+            agt->hide_marker_display();
+            redraw = true;
+        }
     }
     else {
-        ConfigMarkerDisplay *disp = new ConfigMarkerDisplay(config, ntw->gb_main);
-        agt->set_marker_display(disp);
+        bool activate = allow_to_activate_display || displays_config_markers(agt->get_marker_display());
+
+        if (activate) {
+            ConfigMarkerDisplay *disp = new ConfigMarkerDisplay(config, ntw->gb_main);
+            agt->set_marker_display(disp);
+            redraw = true;
+        }
     }
 
     if (selected_configs_list[ntw_id]) { // if configuration_marker_window has been opened
@@ -188,11 +204,18 @@ static void selected_configs_awar_changed_cb(AW_root *, AWT_canvas *ntw) {
         awt_set_subset_selection_content(selected_configs_list[ntw_id], *config);
     }
 
-    AW_root::SINGLETON->awar(AWAR_TREE_REFRESH)->touch();
+    if (redraw) AW_root::SINGLETON->awar(AWAR_TREE_REFRESH)->touch();
 }
 
-static void configs_selectionlist_changed_cb(AW_selection *selected_configs, bool /*interactive_change*/, AW_CL ntw_id) {
+static void selected_configs_display_awar_changed_cb(AW_root *root, AWT_canvas *ntw) {
+    LocallyModify<bool> allowInteractiveActivation(allow_to_activate_display, true);
+    selected_configs_awar_changed_cb(root, ntw);
+}
+
+static void configs_selectionlist_changed_cb(AW_selection *selected_configs, bool interactive_change, AW_CL ntw_id) {
     if (allow_selection2awar_update) {
+        LocallyModify<bool> allowInteractiveActivation(allow_to_activate_display, interactive_change);
+
         StrArray config;
         selected_configs->get_values(config);
         write_configs_to_awar(ntw_id, config);
@@ -243,8 +266,11 @@ void NT_activate_configMarkers_display(AWT_canvas *ntw) {
 
     AW_awar *awar_selCfgs = ntw->awr->awar_string(GBS_global_string(AWAR_CL_SELECTED_CONFIGS, NT_get_canvas_id(ntw)), "", gb_main);
     awar_selCfgs->add_callback(makeRootCallback(selected_configs_awar_changed_cb, ntw));
-    awar_selCfgs->touch(); // force initial refresh
 
+    AW_awar *awar_dispCfgs = ntw->awr->awar_int(GBS_global_string(AWAR_CL_DISPLAY_CONFIG_MARKERS, NT_get_canvas_id(ntw)), 1, gb_main);
+    awar_dispCfgs->add_callback(makeRootCallback(selected_configs_display_awar_changed_cb, ntw));
+
+    awar_selCfgs->touch(); // force initial refresh
     install_config_change_callbacks(gb_main);
 }
 
@@ -287,7 +313,9 @@ static AW_window *create_configuration_marker_window(AW_root *root, AWT_canvas *
 
     // @@@ would like to use ntw-specific awar for this selection list (opening two lists links them)
 
-    // @@@ add show-toggle? "show"
+    aws->at("show");
+    aws->label("Display?");
+    aws->create_toggle(get_display_toggle_awar(ntw_id)->awar_name);
 
     aws->at("settings");
     aws->callback(TREE_create_marker_settings_window);
@@ -716,8 +744,8 @@ static void nt_delete_configuration(AW_window *aww) {
     GBDATA *gb_configuration = GBT_find_configuration(GLOBAL.gb_main, name);
     if (gb_configuration) {
         GB_ERROR error = GB_delete(gb_configuration);
+        error          = ta.close(error);
         if (error) {
-            error = ta.close(error);
             aw_message(error);
         }
         else {
