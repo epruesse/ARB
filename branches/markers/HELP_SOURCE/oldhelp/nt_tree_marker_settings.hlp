@@ -36,6 +36,10 @@ DESCRIPTION     Controls display parameters for markers shown in tree display.
 
                    display width of markers
 
+                 * Partial marker greylevel
+
+                   defines greylevel used to draw partial markers.
+
 
 NOTES           None
 
