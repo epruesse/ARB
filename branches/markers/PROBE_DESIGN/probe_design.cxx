@@ -2939,7 +2939,7 @@ static void modify_probe_event(AW_window *aww, ArbPC_Context *pContext) {
                 probe_collection_update_parameters();
 
                 awar_selected->write_string(pSequence);
-                if (sequenceChanged) trigger_auto_match(root);
+                trigger_auto_match(root);
             }
             else {
                 error = "failed to replace probe";
