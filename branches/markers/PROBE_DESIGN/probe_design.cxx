@@ -2716,13 +2716,17 @@ AW_window *create_probe_match_with_specificity_window(AW_root *root, AWT_canvas 
         aws->at("auto");
         aws->label("Auto match");
         aws->create_toggle(AWAR_PC_AUTO_MATCH);
-        root->awar(AWAR_PC_AUTO_MATCH)->add_callback(makeRootCallback(auto_match_cb, ntw));
+
+        AW_awar *awar_automatch = root->awar(AWAR_PC_AUTO_MATCH);
+        awar_automatch->add_callback(makeRootCallback(auto_match_cb, ntw));
 
         aws->callback(makeCreateWindowCallback(create_probe_match_specificity_control_window));
         aws->at("control");
         aws->create_autosize_button("CONTROL", "Display control", "D");
 
         probe_match_update_probe_list(&PM_Context);
+
+        awar_automatch->touch(); // automatically run match if 'auto-match' is checked at startup
     }
 
     return aws;
