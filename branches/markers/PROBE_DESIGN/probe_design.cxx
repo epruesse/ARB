@@ -2473,7 +2473,7 @@ static void refresh_matchedProbesDisplay_cb(AW_root *root, AWT_canvas *ntw) {
         size_t probesCount = get_probe_collection().probeList().size();
         getMatchesContext  = new GetMatchesContext(root->awar(AWAR_PC_MISMATCH_THRESHOLD)->read_float(), probesCount);
 
-        if (displays_probeColl_markers(markerDisplay) && probesCount == markerDisplay->size()) {
+        if (displays_probeColl_markers(markerDisplay) && probesCount == size_t(markerDisplay->size())) {
             markerDisplay->flush_cache();
         }
         else {
@@ -2660,10 +2660,48 @@ static void probe_forget_matches_event(AW_window *aww, ArbPM_Context *pContext) 
     refresh_matchedProbesDisplay_cb(root, pContext->ntw);
 }
 
+static void selected_probe_changed_cb(AW_root *root) {
+    char *pSequence = root->awar(AWAR_PC_SELECTED_PROBE)->read_string();
+    if (pSequence) {
+        const ArbProbe *pProbe = get_probe_collection().find(pSequence);
+        if (pProbe) {
+            const char *seq = pProbe->sequence().c_str();
+            root->awar(AWAR_PC_TARGET_STRING)->write_string(seq);
+            root->awar(AWAR_PC_TARGET_NAME)  ->write_string(pProbe->name().c_str());
+
+            root->awar(AWAR_TARGET_STRING)->write_string(seq); // copy to probe match & match in edit4
+        }
+    }
+    free(pSequence);
+}
+
+static void target_string_changed_cb(AW_root *root) {
+    char *pSequence = root->awar(AWAR_PC_TARGET_STRING)->read_string();
+    if (pSequence && pSequence[0]) {
+        const ArbProbe *pProbe = get_probe_collection().find(pSequence);
+        if (pProbe) root->awar(AWAR_PC_SELECTED_PROBE)->write_string(pSequence);
+    }
+    free(pSequence);
+}
+
+static void match_changed_cb(AW_root *root) {
+    // automatically adapt to last probe matched
+    // (also adapts to last selected designed probe)
+    char *pSequence = root->awar(AWAR_TARGET_STRING)->read_string();
+    if (pSequence && pSequence[0]) {
+        AW_awar *awar_target = root->awar(AWAR_PC_TARGET_STRING);
+        if (strcmp(awar_target->read_char_pntr(), pSequence) != 0) {
+            root->awar(AWAR_PC_TARGET_NAME)->write_string(""); // clear name
+        }
+        awar_target->write_string(pSequence);
+    }
+    free(pSequence);
+}
+
 // ----------------------------------------------------------------------------
 
 AW_window *create_probe_match_with_specificity_window(AW_root *root, AWT_canvas *ntw) {
-    static AW_window_simple *aws = 0; // the one and only probe match window
+    static AW_window_simple *aws = 0; // the one and only probeSpec window
 
     if (!aws) {
         root->awar(AWAR_PC_MISMATCH_THRESHOLD)->add_callback(makeRootCallback(refresh_matchedProbesDisplay_cb, ntw));
@@ -2725,6 +2763,10 @@ AW_window *create_probe_match_with_specificity_window(AW_root *root, AWT_canvas 
         aws->create_autosize_button("CONTROL", "Display control", "D");
 
         probe_match_update_probe_list(&PM_Context);
+
+        root->awar(AWAR_PC_SELECTED_PROBE)->add_callback(makeRootCallback(selected_probe_changed_cb));
+        root->awar(AWAR_PC_TARGET_STRING)->add_callback(makeRootCallback(target_string_changed_cb));
+        root->awar(AWAR_TARGET_STRING)->add_callback(makeRootCallback(match_changed_cb));
 
         awar_automatch->touch(); // automatically run match if 'auto-match' is checked at startup
     }
@@ -2986,44 +3028,6 @@ static void remove_probe_from_collection_event(AW_window *aww, ArbPC_Context *pC
     }
 }
 
-static void selected_probe_changed_cb(AW_root *root) {
-    char *pSequence = root->awar(AWAR_PC_SELECTED_PROBE)->read_string();
-    if (pSequence) {
-        const ArbProbe *pProbe = get_probe_collection().find(pSequence);
-        if (pProbe) {
-            const char *seq = pProbe->sequence().c_str();
-            root->awar(AWAR_PC_TARGET_STRING)->write_string(seq);
-            root->awar(AWAR_PC_TARGET_NAME)  ->write_string(pProbe->name().c_str());
-
-            root->awar(AWAR_TARGET_STRING)->write_string(seq); // copy to probe match & match in edit4
-        }
-    }
-    free(pSequence);
-}
-
-static void target_string_changed_cb(AW_root *root) {
-    char *pSequence = root->awar(AWAR_PC_TARGET_STRING)->read_string();
-    if (pSequence && pSequence[0]) {
-        const ArbProbe *pProbe = get_probe_collection().find(pSequence);
-        if (pProbe) root->awar(AWAR_PC_SELECTED_PROBE)->write_string(pSequence);
-    }
-    free(pSequence);
-}
-
-static void match_changed_cb(AW_root *root) {
-    // automatically adapt to last probe matched
-    // (also adapts to last selected designed probe)
-    char *pSequence = root->awar(AWAR_TARGET_STRING)->read_string();
-    if (pSequence && pSequence[0]) {
-        AW_awar *awar_target = root->awar(AWAR_PC_TARGET_STRING);
-        if (strcmp(awar_target->read_char_pntr(), pSequence) != 0) {
-            root->awar(AWAR_PC_TARGET_NAME)->write_string(""); // clear name
-        }
-        awar_target->write_string(pSequence);
-    }
-    free(pSequence);
-}
-
 // ----------------------------------------------------------------------------
 
 static AW_window *probe_collection_load_prompt(AW_root *root, ArbPC_Context *pContext) {
@@ -3091,10 +3095,6 @@ static AW_window *create_probe_collection_window(AW_root *root, ArbPM_Context *p
         aws->at("probes");
         selection_id = aws->create_selection_list(AWAR_PC_SELECTED_PROBE, 110, 10, false);
         selection_id->insert_default("", "");
-
-        root->awar(AWAR_PC_SELECTED_PROBE)->add_callback(makeRootCallback(selected_probe_changed_cb));
-        root->awar(AWAR_PC_TARGET_STRING)->add_callback(makeRootCallback(target_string_changed_cb));
-        root->awar(AWAR_TARGET_STRING)->add_callback(makeRootCallback(match_changed_cb));
 
         PC_Context.selection_id = selection_id;
 
