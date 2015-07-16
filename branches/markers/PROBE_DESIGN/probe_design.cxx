@@ -2470,10 +2470,10 @@ static void refresh_matchedProbesDisplay_cb(AW_root *root, AWT_canvas *ntw) {
     MarkerDisplay *markerDisplay = agt->get_marker_display();
     bool           redraw        = false;
     if (display) {
-        getMatchesContext = new GetMatchesContext(root->awar(AWAR_PC_MISMATCH_THRESHOLD)->read_float(),
-                                                  get_probe_collection().probeList().size());
+        size_t probesCount = get_probe_collection().probeList().size();
+        getMatchesContext  = new GetMatchesContext(root->awar(AWAR_PC_MISMATCH_THRESHOLD)->read_float(), probesCount);
 
-        if (displays_probeColl_markers(markerDisplay)) {
+        if (displays_probeColl_markers(markerDisplay) && probesCount == markerDisplay->size()) {
             markerDisplay->flush_cache();
         }
         else {
