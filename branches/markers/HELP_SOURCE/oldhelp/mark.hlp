@@ -46,3 +46,13 @@ EXAMPLES	Mark one known species:
 			1. Select the <MARK MODE>
 			2. Press the left mouse button at a subtree.
 
+		Mark queried species:
+
+			1. Select 'Search' from the ARB main window
+			2. Perform a search
+			3. Use 'Mark Listed Unmark Rest' to mark all queried species
+
+		Save/Restore sets of marked species:
+
+			see LINK{configuration.hlp}
+
