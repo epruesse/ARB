@@ -263,6 +263,7 @@ AP_consensus.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
+AP_consensus.o: $(ARBHOME)/INCLUDE/awt_misc.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/cb.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/cb_base.h
