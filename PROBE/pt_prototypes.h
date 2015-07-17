@@ -70,6 +70,7 @@ bytestring *MP_all_species_string(const PT_local *);
 int MP_count_all_species(const PT_local *);
 
 /* PT_new_design.cxx */
+int pt_init_bond_matrix(PT_local *THIS);
 char *get_design_info(const PT_tprobes *tprobe);
 char *get_design_hinfo(const PT_pdc *pdc);
 int PT_start_design(PT_pdc *pdc, int dummy_1x);

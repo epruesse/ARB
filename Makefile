@@ -193,7 +193,6 @@ else
 endif
 
 shared_cflags :=# flags for shared lib compilation
-lflags :=# linker flags
 clflags :=# linker flags (when passed through gcc)
 extended_warnings :=# warning flags for C and C++-compiler
 extended_cpp_warnings :=# warning flags for C++-compiler only
@@ -204,13 +203,11 @@ ifeq ($(DEBUG),0)
 		cflags := -O3# compiler flags (C and C++)
 	else
 		cflags := -O4# compiler flags (C and C++)
-		lflags += -O2# linker flags
 		clflags += -Wl,-O2# passthrough linker flags
 	endif
 endif
 
 ifeq ($(DEBIAN),1)
-	lflags += -rpath=/usr/lib/arb/lib -z relro
 	clflags += -Wl,-rpath=/usr/lib/arb/lib -Wl,-z,relro
 endif
 
@@ -235,7 +232,6 @@ endif
 #	cflags := -O2 $(gdb_common) # use this for callgrind (force inlining)
 
 ifeq ($(DARWIN),0)
-	lflags += -g
 	clflags += -Wl,-g
 
 # TEMPORARY WORKAROUND for linker issues with launchpad binutils
@@ -453,7 +449,6 @@ else
 endif
 
 cflags  += $(cross_cflags)
-lflags  += $(cross_lflags)
 clflags += $(cross_clflags)
 
 ifeq ('$(CROSS_LIB)','')
@@ -641,7 +636,6 @@ endif
 ifeq ($(TRACESYM),1)
 	ifeq ($(USE_CLANG),0)
 		cflags  += -rdynamic
-		lflags  += --export-dynamic
 		clflags += -rdynamic -Wl,--export-dynamic
 	endif
 endif
@@ -712,7 +706,7 @@ cxxflags += -std=gnu++0x
  endif
 endif
 
-LINK_STATIC_LIB := ld $(lflags) -r -o# link static lib
+LINK_STATIC_LIB := ar -csq# link static lib
 LINK_EXECUTABLE := $(A_CXX) $(clflags) -o# link executable (c++)
 
 ifeq ($(LINK_STATIC),1)
@@ -730,7 +724,6 @@ lflags4perl:=$(cross_lflags) -shared
 endif
 
 # delete variables unused below
-lflags:=
 clflags:=
 
 # other used tools
@@ -1085,9 +1078,6 @@ ARCHS = \
 ARCHS_CLIENT_PROBE = PROBE_COM/client.a
 ARCHS_CLIENT_NAMES = NAMES_COM/client.a
 
-ARCHS_SERVER_PROBE = PROBE_COM/server.a $(ARCHS_CLIENT_PROBE)
-ARCHS_SERVER_NAMES = NAMES_COM/server.a $(ARCHS_CLIENT_NAMES)
-
 ARCHS_MAKEBIN = AISC_MKPTPS/AISC_MKPTPS.a AISC/AISC.a
 
 # communication libs need aisc and aisc_mkpts:
@@ -1102,14 +1092,14 @@ ARCHS_SEQUENCE = \
 		SL/PRONUC/PRONUC.a \
 
 ARCHS_TREE = \
-		$(ARCHS_SEQUENCE) \
-		SL/FILTER/FILTER.a \
 		SL/ARB_TREE/ARB_TREE.a \
+		SL/FILTER/FILTER.a \
+		$(ARCHS_SEQUENCE) \
 
 # parsimony tree (used by NTREE, PARSIMONY, STAT(->EDIT4), DIST(obsolete!))
 ARCHS_AP_TREE = \
-		$(ARCHS_TREE) \
 		SL/AP_TREE/AP_TREE.a \
+		$(ARCHS_TREE) \
 
 # --------------------------------------------------------------------------------
 # dependencies for linking shared libs
@@ -1133,11 +1123,12 @@ ARCHS_NTREE = \
 		NTREE/NTREE.a \
 		$(ARCHS_AP_TREE) \
 		ARB_GDE/ARB_GDE.a \
+		SL/DB_UI/DB_UI.a \
 		AWTC/AWTC.a \
 		AWTI/AWTI.a \
 		CONSENSUS_TREE/CONSENSUS_TREE.a \
-		GENOM/GENOM.a \
 		GENOM_IMPORT/GENOM_IMPORT.a \
+		GENOM/GENOM.a \
 		MERGE/MERGE.a \
 		MULTI_PROBE/MULTI_PROBE.a \
 		PRIMER_DESIGN/PRIMER_DESIGN.a \
@@ -1146,10 +1137,10 @@ ARCHS_NTREE = \
 		SERVERCNTRL/SERVERCNTRL.a \
 		SL/ALILINK/ALILINK.a \
 		SL/AW_NAME/AW_NAME.a \
-		SL/DB_UI/DB_UI.a \
 		SL/DB_SCANNER/DB_SCANNER.a \
 		SL/DB_QUERY/DB_QUERY.a \
 		SL/SEQIO/SEQIO.a \
+		STAT/STAT.a \
 		SL/GUI_ALIVIEW/GUI_ALIVIEW.a \
 		SL/HELIX/HELIX.a \
 		SL/REGEXPR/REGEXPR.a \
@@ -1164,7 +1155,6 @@ ARCHS_NTREE = \
 		SL/TREE_ADMIN/TREE_ADMIN.a \
 		SL/TREE_READ/TREE_READ.a \
 		SL/TREE_WRITE/TREE_WRITE.a \
-		STAT/STAT.a \
 		XML/XML.a \
 
 $(NTREE): $(ARCHS_NTREE:.a=.dummy) link_awt
@@ -1180,22 +1170,22 @@ EDIT4 = bin/arb_edit4
 
 ARCHS_EDIT4 := \
 		EDIT4/EDIT4.a \
-		$(ARCHS_AP_TREE) \
 		ARB_GDE/ARB_GDE.a \
+		SL/FAST_ALIGNER/FAST_ALIGNER.a \
 		AWTC/AWTC.a \
 		ISLAND_HOPPING/ISLAND_HOPPING.a \
 		SECEDIT/SECEDIT.a \
 		SERVERCNTRL/SERVERCNTRL.a \
 		SL/AW_HELIX/AW_HELIX.a \
 		SL/AW_NAME/AW_NAME.a \
-		SL/FAST_ALIGNER/FAST_ALIGNER.a \
 		SL/ITEMS/ITEMS.a \
+		STAT/STAT.a \
 		SL/GUI_ALIVIEW/GUI_ALIVIEW.a \
 		SL/HELIX/HELIX.a \
 		SL/TRANSLATE/TRANSLATE.a \
 		SL/MACROS/MACROS.a \
 		SL/NDS/NDS.a \
-		STAT/STAT.a \
+		$(ARCHS_AP_TREE) \
 		XML/XML.a \
 
 ifeq ($(OPENGL),1)
@@ -1244,9 +1234,8 @@ $(WETC): $(ARCHS_WETC:.a=.dummy) link_awt
 #***********************************	arb_dist **************************************
 DIST = bin/arb_dist
 ARCHS_DIST = \
-		$(ARCHS_AP_TREE) \
-		CONSENSUS_TREE/CONSENSUS_TREE.a \
 		DIST/DIST.a \
+		CONSENSUS_TREE/CONSENSUS_TREE.a \
 		EISPACK/EISPACK.a \
 		SERVERCNTRL/SERVERCNTRL.a \
 		SL/GUI_ALIVIEW/GUI_ALIVIEW.a \
@@ -1257,6 +1246,7 @@ ARCHS_DIST = \
 		SL/ITEMS/ITEMS.a \
 		SL/NEIGHBOURJOIN/NEIGHBOURJOIN.a \
 		XML/XML.a \
+		$(ARCHS_AP_TREE) \
 
 $(DIST): $(ARCHS_DIST:.a=.dummy) link_awt
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_DIST) $(GUI_LIBS) $(use_ARB_main) || ( \
@@ -1269,7 +1259,6 @@ $(DIST): $(ARCHS_DIST:.a=.dummy) link_awt
 #***********************************	arb_pars **************************************
 PARSIMONY = bin/arb_pars
 ARCHS_PARSIMONY = \
-		$(ARCHS_AP_TREE) \
 		PARSIMONY/PARSIMONY.a \
 		SERVERCNTRL/SERVERCNTRL.a \
 		SL/AW_NAME/AW_NAME.a \
@@ -1281,6 +1270,7 @@ ARCHS_PARSIMONY = \
 		SL/TRANSLATE/TRANSLATE.a \
 		SL/TREEDISP/TREEDISP.a \
 		XML/XML.a \
+		$(ARCHS_AP_TREE) \
 
 $(PARSIMONY): $(ARCHS_PARSIMONY:.a=.dummy) link_awt
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PARSIMONY) $(GUI_LIBS) $(use_ARB_main) || ( \
@@ -1371,23 +1361,23 @@ $(DBSERVER): $(ARCHS_DBSERVER:.a=.dummy) link_db
 #***********************************	arb_pt_server **************************************
 PROBE = bin/arb_pt_server
 ARCHS_PROBE_COMMON = \
+		SL/PTCLEAN/PTCLEAN.a \
 		SERVERCNTRL/SERVERCNTRL.a \
 		SL/HELIX/HELIX.a \
-		SL/PTCLEAN/PTCLEAN.a \
 
 ARCHS_PROBE_LINK = \
-		$(ARCHS_PROBE_COMMON) \
 		$(ARCHS_PT_SERVER_LINK) \
+		$(ARCHS_PROBE_COMMON) \
 
 ARCHS_PROBE_DEPEND = \
-		$(ARCHS_PROBE_COMMON) \
 		$(ARCHS_PT_SERVER) \
+		$(ARCHS_PROBE_COMMON) \
 
 $(PROBE): $(ARCHS_PROBE_DEPEND:.a=.dummy) link_db
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PROBE_LINK) $(ARBDB_LIB) $(ARCHS_SERVER_PROBE) config.makefile $(use_ARB_main) || ( \
 		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(EXECLIBS) $(ARCHS_PROBE_LINK) $(ARBDB_LIB) $(ARCHS_SERVER_PROBE) $(SYSLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(EXECLIBS) $(ARCHS_PROBE_LINK) $(ARBDB_LIB) $(ARCHS_SERVER_PROBE) $(SYSLIBS) && \
+		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(EXECLIBS) $(ARCHS_PROBE_LINK) $(ARCHS_CLIENT_PROBE) $(ARBDB_LIB) $(SYSLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(EXECLIBS) $(ARCHS_PROBE_LINK) $(ARCHS_CLIENT_PROBE) $(ARBDB_LIB) $(SYSLIBS) && \
 		echo "$(SEP) Link $@ [done]"; \
 		)
 

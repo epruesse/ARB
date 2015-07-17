@@ -1,6 +1,7 @@
 .SUFFIXES: .o .cxx .depend
 
 OBJECTS = $(subst .cxx,.o,$(wildcard *.cxx))
+SERVERLIB=../PROBE_COM/server.a
 
 # ---------------------------------------- allow misaligned data access in PROBE
 PROBE_CFLAGS := $(cflags)
@@ -11,8 +12,14 @@ ifeq ('$(USE_GCC_50_OR_HIGHER)', 'yes')
 endif
 # ---------------------------------------- 
 
-$(MAIN): $(OBJECTS) 
-	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
+$(MAIN): $(OBJECTS) $(SERVERLIB)
+# $(SERVERLIB) and $(MAIN) reference each other
+# unpack all objects from $(SERVERLIB) and ar them together with local objects
+	mkdir -p serverlib
+	cd serverlib;ar x ../$(SERVERLIB)
+	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS) serverlib/*.o
+	rm serverlib/*.o
+	rmdir serverlib
 
 .cxx.o:
 	$(A_CXX) $(PROBE_CFLAGS) $(cxxflags) -c $<  $(CXX_INCLUDES) $(POST_COMPILE) $<
