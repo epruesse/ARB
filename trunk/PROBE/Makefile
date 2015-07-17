@@ -19,7 +19,9 @@ $(MAIN): $(OBJECTS) $(SERVERLIB)
 	cd serverlib;ar x ../$(SERVERLIB)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS) serverlib/*.o
 	rm serverlib/*.o
-	ls -al serverlib/
+ifeq ($(DARWIN),1)
+	-rm serverlib/__.SYMDEF
+endif
 	rmdir serverlib
 
 .cxx.o:
