@@ -19,6 +19,7 @@ $(MAIN): $(OBJECTS) $(SERVERLIB)
 	cd serverlib;ar x ../$(SERVERLIB)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS) serverlib/*.o
 	rm serverlib/*.o
+	ls -al serverlib/
 	rmdir serverlib
 
 .cxx.o:
