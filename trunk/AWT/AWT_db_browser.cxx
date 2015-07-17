@@ -1097,10 +1097,6 @@ AW_window *DB_browser::get_window(AW_root *aw_root) {
         aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
 
-        aws->callback(makeHelpCallback("db_browser.hlp"));
-        aws->at("help");
-        aws->create_button("HELP", "HELP", "H");
-
         aws->at("db");
         update_DB_selector();
 
@@ -1163,7 +1159,7 @@ static void callallcallbacks(AW_window *aww, int mode) {
 void AWT_create_debug_menu(AW_window *awmm) {
     awmm->create_menu("4debugz", "z", AWM_ALL);
 
-    awmm->insert_menu_topic(awmm->local_id("-db_browser"), "Browse loaded database(s)", "B", "db_browser.hlp", AWM_ALL, create_db_browser);
+    awmm->insert_menu_topic(awmm->local_id("-db_browser"), "Browse loaded database(s)", "B", NULL, AWM_ALL, create_db_browser);
 
     awmm->sep______________();
     {
