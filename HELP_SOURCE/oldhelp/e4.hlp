@@ -85,24 +85,9 @@ DESCRIPTION     The editor allows you to view and modify the sequences of 'marke
 
                         This undoes/redoes everything you did.
 
-        Jump:
+        Jump/Get:
 
-                        If you selected a species in any other ARB component
-                        (i.e. in the Tree or in the Search Hitlist), you can
-                        jump to the selected species using this button.
-
-                        In general the editor will automatically jump to the
-                        selected species, unless the species is in a folded group.
-                        In this case all necessary groups will be unfolded.
-
-        Get:
-
-                        If the species is already in the editor 'Get' does the
-                        same as 'Jump'. If the species is NOT loaded in the editor
-                        it will be inserted into the group 'More Sequences'.
-
-                        If you like to load several species into the editor, mark
-                        those species and use 'ARB_EDIT4/Edit/Load marked species'
+                        see LINK{e4_get_species.hlp}.
 
         Editing:
 

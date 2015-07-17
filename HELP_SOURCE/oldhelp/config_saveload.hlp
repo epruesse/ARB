@@ -29,7 +29,7 @@ DESCRIPTION     Editor configurations define
                  * using the configuration manager (see LINK{configuration.hlp})
 
                 Using the first method gives you complete control over what exactly is stored in
-                the configuration.
+                the configuration (see LINK{e4_mode.hlp}).
                 The other two methods will
                  * always add all SAIs associated with the selected alignment (and fold them as defined; see LINK{ad_extended.hlp})
                  * always use the folding of the currently displayed tree
