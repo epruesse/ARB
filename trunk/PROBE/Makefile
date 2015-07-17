@@ -20,7 +20,7 @@ $(MAIN): $(OBJECTS) $(SERVERLIB)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS) serverlib/*.o
 	rm serverlib/*.o
 ifeq ($(DARWIN),1)
-	-rm serverlib/__.SYMDEF
+	-rm serverlib/__.*
 endif
 	rmdir serverlib
 
