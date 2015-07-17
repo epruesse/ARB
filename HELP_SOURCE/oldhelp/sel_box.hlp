@@ -10,7 +10,7 @@ UP	glossary.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Write to File
 
-OCCURRENCE	ARB_NT/ETC/Probe Design/PROBE DESIGN <RESULT/SAVE>
+OCCURRENCE	ARB_NT/Probes/Design Probes/RESULT/SAVE
 
 DESCRIPTION	Writes data to an ascii file.
 
