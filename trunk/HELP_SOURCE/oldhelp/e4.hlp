@@ -5,7 +5,7 @@ UP      alignment.hlp
 UP      security.hlp
 UP      helix.hlp
 UP      ecoliref.hlp
-UP      configuration.hlp
+UP      species_configs.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
 SUB     man_arb_edit4.hlp

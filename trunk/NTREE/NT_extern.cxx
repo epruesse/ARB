@@ -1081,9 +1081,9 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
             awm->sep______________();
 
             NT_insert_mark_submenus(awm, ntw, 1);
-            awm->insert_menu_topic("mark_by_ref",     "Mark by reference..", "r", "markbyref.hlp",     AWM_EXP, makeCreateWindowCallback(create_mark_by_refentries_window, GLOBAL.gb_main));
-            awm->insert_menu_topic("species_colors",  "Set Colors",          "l", "colorize.hlp",   AWM_ALL, create_colorize_species_window);
-            awm->insert_menu_topic("selection_admin", "Configurations",      "o", "configuration.hlp", AWM_ALL, NT_popup_configuration_admin, (AW_CL)ntw,                              0);
+            awm->insert_menu_topic("mark_by_ref",     "Mark by reference..", "r", "markbyref.hlp",       AWM_EXP, makeCreateWindowCallback(create_mark_by_refentries_window, GLOBAL.gb_main));
+            awm->insert_menu_topic("species_colors",  "Set Colors",          "l", "colorize.hlp",        AWM_ALL, create_colorize_species_window);
+            awm->insert_menu_topic("selection_admin", "Configurations",      "o", "species_configs.hlp", AWM_ALL, NT_popup_configuration_admin, (AW_CL)ntw,                              0);
 
             awm->sep______________();
 
@@ -1630,7 +1630,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
 
     awm->at(db_infox, second_uppery);
     awm->button_length(13);
-    awm->help_text("configuration.hlp");
+    awm->help_text("species_configs.hlp");
     awm->callback(NT_popup_configuration_admin, (AW_CL)ntw, 0);
     awm->create_button("selection_admin2", AWAR_MARKED_SPECIES_COUNTER);
     {

@@ -17,7 +17,7 @@ DESCRIPTION     Controls display parameters for markers shown in tree display.
                 Currently such markers are available from
 
                  * LINK{probespec.hlp} and
-                 * LINK{mark_configs.hlp}
+                 * LINK{species_configs_highlight.hlp}
 
                 Available parameters:
 
