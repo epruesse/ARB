@@ -41,7 +41,7 @@ DESCRIPTION     The mode buttons provide different interaction modes with the se
                      (at the left side of the sequence area).
 
 NOTES           To store the changes applied in MOVE or KILL MODE,
-                you may save a named configuration (see LINK{config_saveload.hlp}).
+                you may save a named configuration (see LINK{species_configs_saveload.hlp}).
 
                 The KILL MODE will auto-deactivate (e.g. if you click into a sequence) to avoid accidental deletes.
 

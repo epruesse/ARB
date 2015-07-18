@@ -5,7 +5,7 @@ UP	mode.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
 SUB	sp_search.hlp
-SUB	configuration.hlp
+SUB	species_configs.hlp
 SUB	colorize.hlp
 SUB	mode_mark.hlp
 SUB	sp_mark.hlp
@@ -54,5 +54,5 @@ EXAMPLES	Mark one known species:
 
 		Save/Restore sets of marked species:
 
-			see LINK{configuration.hlp}
+			see LINK{species_configs.hlp}
 

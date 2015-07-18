@@ -26,6 +26,10 @@ NOTES		To reset ARB to it's defaults simply remove one/all *.arb
 		You can hand over your properties to another user by giving him
 		your property-files.
 
+                Several windows provide a more fine-grained possibility
+                to exchange settings with other users, using the Save/Load
+                functions for configurations (see LINK{prop_configs.hlp}).
+
 SECTION GENERAL NOTES ABOUT PROPERTIES
 
     Most settings you can change in ARB are saved either

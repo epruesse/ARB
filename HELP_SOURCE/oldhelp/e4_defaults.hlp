@@ -1,0 +1,45 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Save properties of ARB_EDIT4
+
+OCCURRENCE	ARB_EDIT4/Properties/Save properties
+
+DESCRIPTION     General information about saving properties applies to ARB_EDIT4 as
+                well (see LINK{savedef.hlp}).
+
+                Special about ARB_EDIT4 properties is the presence of multiple properties:
+                  * alignment name specific properties
+                  * alignment type specific properties
+                  * general properties
+
+                When starting ARB_EDIT4 it will load the first matching properties-file in
+                the order listed above,
+
+                i.e. if alignment name specific properties have been saved for the currently
+                selected alignment (see LINK{nt_align_select.hlp}), ARB_EDIT4 will use them.
+
+                If no such properties exist, ARB_EDIT4 will look for alignment type
+                specific properties.
+
+                If no such properties exist, ARB_EDIT4 will use the general properties.
+
+NOTES		To get rid of unwanted, too specific properties, you have to delete
+                the corresponding property file. You normally find them in the
+                directory ~/.arb_prop/
+
+                The name of the used property file is displayed behind the menu
+                entry 'Save loaded properties'.
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known

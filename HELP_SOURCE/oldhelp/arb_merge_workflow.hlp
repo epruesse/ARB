@@ -6,7 +6,7 @@ UP      glossary.hlp
 SUB     mg_species.hlp
 SUB     mg_extendeds.hlp
 SUB     mg_trees.hlp
-SUB     mg_configs.hlp
+SUB     mg_species_configs.hlp
 
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
