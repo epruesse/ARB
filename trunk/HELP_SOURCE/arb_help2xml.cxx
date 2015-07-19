@@ -1329,7 +1329,11 @@ static void add_link_attributes(XML_Tag& link, LinkType type, const string& dest
         if (fullhelp.empty()) {
             link.add_attribute("missing", "1");
             string deadlink = strf("Dead link to '%s'", dest.c_str());
+#if defined(DEVEL_RELEASE)
             throw LineAttachedMessage(deadlink, source_line);
+#else // !defined(DEVEL_RELEASE)
+            add_warning(deadlink, source_line);
+#endif
         }
     }
 }
