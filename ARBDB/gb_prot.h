@@ -39,7 +39,7 @@ void gb_del_ref_and_extern_gb_transaction_save(gb_transaction_save *ts);
 void gb_save_extern_data_in_ts(GBENTRY *gbe);
 void gb_write_index_key(GBCONTAINER *father, long index, GBQUARK new_index);
 void gb_create_key_array(GB_MAIN_TYPE *Main, int index);
-long gb_create_key(GB_MAIN_TYPE *Main, const char *s, bool create_gb_key);
+long gb_create_key(GB_MAIN_TYPE *Main, const char *key, bool create_gb_key);
 char *gb_abort_entry(GBDATA *gbd);
 void gb_abort_transaction_local_rek(GBDATA*& gbd);
 GB_ERROR gb_commit_transaction_local_rek(GBDATA*& gbd, long mode, int *pson_created);

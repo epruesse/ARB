@@ -1404,6 +1404,11 @@ static GB_ERROR gbcmc_read_keys(int socket, GBDATA *gbd) { // @@@ move into GB_M
 
         char *key = gbcm_read_string(socket);
         if (key) {
+            if (!key[0]) { // empty key
+                free(key);
+                return GB_export_error("Invalid empty key received (from server)");
+            }
+
             GBS_write_hash(Main->key_2_index_hash, key, i);
             freeset(KEY.key, key);
         }
