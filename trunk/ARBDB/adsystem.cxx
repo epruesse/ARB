@@ -234,9 +234,14 @@ GB_ERROR gb_load_key_data_and_dictionaries(GB_MAIN_TYPE *Main) { // goes to head
                     const char *name = GB_read_char_pntr(gb_name);
                     if (!name) error = GB_await_error();
                     else {
-                        GBQUARK quark = gb_find_or_create_quark(Main, name);
-                        if (quark<=0 || quark >= Main->sizeofkeys || !quark2key(Main, quark)) {
-                            error = GB_delete(gb_key);  // delete unused key
+                        if (!name[0]) {
+                            error = GB_delete(gb_key);  // delete invalid empty key
+                        }
+                        else {
+                            GBQUARK quark = gb_find_or_create_quark(Main, name);
+                            if (quark<=0 || quark >= Main->sizeofkeys || !quark2key(Main, quark)) {
+                                error = GB_delete(gb_key);  // delete unused key
+                            }
                         }
                     }
                 }

@@ -1531,8 +1531,11 @@ GB_CSTR gb_read_key_pntr(GBDATA *gbd) {
 
 GBQUARK gb_find_or_create_quark(GB_MAIN_TYPE *Main, const char *key) {
     //! @return existing or newly created quark for 'key'
-    GBQUARK quark     = key2quark(Main, key);
-    if (!quark) quark = gb_create_key(Main, key, true);
+    GBQUARK quark = key2quark(Main, key);
+    if (!quark) {
+        if (!key[0]) GBK_terminate("Attempt to create quark from empty key");
+        quark = gb_create_key(Main, key, true);
+    }
     return quark;
 }
 
