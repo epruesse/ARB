@@ -309,7 +309,7 @@ inline GB_MAIN_TYPE *GB_MAIN_NO_FATHER(GBDATA *gbd) {
 // ---------------------------------------------------------
 //      strictly-aliased forwarders for some functions:
 
-inline GB_ERROR gb_commit_transaction_local_rek(GBCONTAINER*& gbc, long mode, int *pson_created) {
+inline __ATTR__USERESULT GB_ERROR gb_commit_transaction_local_rek(GBCONTAINER*& gbc, long mode, int *pson_created) {
     return gb_commit_transaction_local_rek(StrictlyAliased_BasePtrRef<GBCONTAINER,GBDATA>(gbc).forward(), mode, pson_created);
 }
 

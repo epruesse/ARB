@@ -735,7 +735,12 @@ long gb_create_key(GB_MAIN_TYPE *Main, const char *key, bool create_gb_key) {
     if (Main->is_client()) {
         long test_index = gbcmc_key_alloc(Main->gb_main(), key);
         if (test_index != index) {
-            GBK_terminatef("Database corrupt (allocating quark '%s' in server failed)", key);
+            if (test_index == 0) { // comm error
+                GBK_terminatef("Allocating quark for '%s' failed (Reason: %s)", key, GB_await_error());
+            }
+            else {
+                GBK_terminatef("Database corrupt (allocating quark '%s' in server failed)", key);
+            }
         }
     }
     Main->keys[index].nref = 0;
@@ -830,6 +835,8 @@ void gb_abort_transaction_local_rek(GBDATA*& gbd) {
 }
 
 GB_ERROR gb_commit_transaction_local_rek(GBDATA*& gbd, long mode, int *pson_created) {
+    // goes to header: __ATTR__USERESULT
+
     /* commit created / delete deleted
      *   mode   0   local     = server    or
      *              begin trans in client or
