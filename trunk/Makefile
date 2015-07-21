@@ -1502,14 +1502,14 @@ CONSENSUS_TREE/CONSENSUS_TREE.dummy:	links_non_perl
 CONVERTALN/CONVERTALN.dummy:		links_non_perl
 DBSERVER/DBSERVER.dummy:		links_non_perl
 DIST/DIST.dummy:			links_non_perl
-EDIT4/EDIT4.dummy:			links_non_perl genheaders com
+EDIT4/EDIT4.dummy:			links_non_perl com
 EISPACK/EISPACK.dummy:			links_non_perl
 GDE/GDE.dummy:				links_non_perl
 GENOM/GENOM.dummy:			links_non_perl
 GENOM_IMPORT/GENOM_IMPORT.dummy:	links_non_perl
 ISLAND_HOPPING/ISLAND_HOPPING.dummy:	links_non_perl
 MERGE/MERGE.dummy:			links_non_perl
-NTREE/NTREE.dummy:			links_non_perl genheaders
+NTREE/NTREE.dummy:			links_non_perl
 PARSIMONY/PARSIMONY.dummy:		links_non_perl
 PHYLO/PHYLO.dummy:			links_non_perl
 PRIMER_DESIGN/PRIMER_DESIGN.dummy:	links_non_perl
@@ -1846,7 +1846,7 @@ forcelinks:
 	-rm $(LINKSTAMP)
 	$(MAKE) links
 
-$(LINKSTAMP): SOURCE_TOOLS/generate_all_links.sh
+$(LINKSTAMP): SOURCE_TOOLS/generate_all_links.sh genheaders
 	+SOURCE_TOOLS/generate_all_links.sh
 	touch $(LINKSTAMP)
 
