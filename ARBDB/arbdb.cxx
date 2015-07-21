@@ -664,8 +664,8 @@ void GB_close(GBDATA *gbd) {
 
     bool quick_exit = Main->mapped;
     if (Main->is_client()) {
-        long result            = gbcmc_close(Main->c_link);
-        if (result != 0) error = GBS_global_string("gbcmc_close returns %li", result);
+        GBCM_ServerResult result = gbcmc_close(Main->c_link);
+        if (result != GBCM_SERVER_OK) error = GBS_global_string("close failed (with %i:%s)", result, GB_await_error());
 
         gb_assert(!quick_exit); // client cannot be mapped
     }
@@ -711,7 +711,10 @@ void gb_abort_and_close_all_DBs() {
         // abort any open transactions
         GB_MAIN_TYPE *Main = GB_MAIN(gb_main);
         while (Main->get_transaction_level()>0) {
-            Main->abort_transaction();
+            GB_ERROR error = Main->abort_transaction();
+            if (error) {
+                fprintf(stderr, "Error in gb_abort_and_close_all_DBs: %s\n", error);
+            }
         }
         // and close DB
         GB_close(gb_main);
@@ -2130,7 +2133,7 @@ inline GB_ERROR GB_MAIN_TYPE::push_transaction() {
 
 inline GB_ERROR GB_MAIN_TYPE::pop_transaction() {
     if (transaction_level==0) return "attempt to pop nested transaction while none running";
-    if (transaction_level<0)  return 0;  // NO_TRANSACTION_MODE
+    if (transaction_level<0)  return NULL;  // NO_TRANSACTION_MODE
     if (transaction_level==1) return commit_transaction();
     transaction_level--;
     return NULL;

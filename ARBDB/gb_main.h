@@ -85,9 +85,9 @@ struct gb_cache : virtual Noncopyable {
 #define ALLOWED_DATES 256
 
 class GB_MAIN_TYPE : virtual Noncopyable {
-    inline GB_ERROR start_transaction();
+    inline GB_ERROR start_transaction() __ATTR__USERESULT;
     GB_ERROR check_quick_save() const;
-    GB_ERROR initial_client_transaction();
+    GB_ERROR initial_client_transaction() __ATTR__USERESULT;
 
     int transaction_level;
     int aborted_transaction;
@@ -182,18 +182,18 @@ public:
 
     GBDATA *gb_main() const { return (GBDATA*)root_container; }
 
-    GB_ERROR login_remote(const char *db_path, const char *opent);
+    GB_ERROR login_remote(const char *db_path, const char *opent) __ATTR__USERESULT;
 
-    inline GB_ERROR begin_transaction();
-    inline GB_ERROR commit_transaction();
-    inline GB_ERROR abort_transaction();
+    inline GB_ERROR begin_transaction() __ATTR__USERESULT;
+    inline GB_ERROR commit_transaction() __ATTR__USERESULT;
+    inline GB_ERROR abort_transaction() __ATTR__USERESULT;
 
-    inline GB_ERROR push_transaction();
-    inline GB_ERROR pop_transaction();
+    inline GB_ERROR push_transaction() __ATTR__USERESULT;
+    inline GB_ERROR pop_transaction() __ATTR__USERESULT;
 
     inline GB_ERROR no_transaction();
 
-    __ATTR__USERESULT GB_ERROR send_update_to_server(GBDATA *gbd);
+    __ATTR__USERESULT GB_ERROR send_update_to_server(GBDATA *gbd) __ATTR__USERESULT;
 
     GB_ERROR save_quick(const char *refpath);
 
