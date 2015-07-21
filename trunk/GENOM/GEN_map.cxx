@@ -1574,7 +1574,11 @@ AW_window *GEN_create_first_map(AW_root *aw_root, GBDATA *gb_main) {
 void GEN_map_window::init(AW_root *awr, GBDATA *gb_main) {
     {
         char *windowName = (window_nr == 0) ? strdup("ARB Gene Map") : GBS_global_string_copy("ARB Gene Map %i", window_nr);
-        AW_window_menu_modes::init(awr, "ARB_GENE_MAP", windowName, 200, 200);
+        char *windowID   = (window_nr == 0) ? strdup("ARB_GENE_MAP") : GBS_global_string_copy("ARB_GENE_MAP_%i", window_nr);
+
+        AW_window_menu_modes::init(awr, windowID, windowName, 200, 200);
+
+        free(windowID);
         free(windowName);
     }
 
@@ -1599,7 +1603,7 @@ void GEN_map_window::init(AW_root *awr, GBDATA *gb_main) {
     // File Menu
     create_menu("File", "F", AWM_ALL);
     insert_menu_topic("close", "Close", "C", "quit.hlp", AWM_ALL, (AW_CB)AW_POPDOWN, 0, 0);
-    insert_menu_topic("new_view", "New view", "v", "new_view.hlp", AWM_ALL, makeCreateWindowCallback(GEN_create_map, new GEN_create_map_param(gb_main, window_nr+1)));
+    insert_menu_topic(local_id("new_view"), "New view", "v", "new_view.hlp", AWM_ALL, makeCreateWindowCallback(GEN_create_map, new GEN_create_map_param(gb_main, window_nr+1)));
 
     GEN_create_genes_submenu       (this, gb_main, false); // Genes
     GEN_create_gene_species_submenu(this, gb_main, false); // Gene-species
@@ -1609,10 +1613,10 @@ void GEN_map_window::init(AW_root *awr, GBDATA *gb_main) {
 
     // Properties Menu
     create_menu("Properties", "r", AWM_ALL);
-    insert_menu_topic("gene_props_menu", "Menu: Colors and Fonts ...",          "M", "props_frame.hlp",  AWM_ALL, AW_preset_window);
-    insert_menu_topic("gene_props",      "GENEMAP: Colors and Fonts ...",       "C", "color_props.hlp",  AWM_ALL, makeCreateWindowCallback(AW_create_gc_window, gen_canvas->gc_manager)); // @@@ FIXME: replace AW_create_gc_window by local function returning same window for all mapped views
-    insert_menu_topic("gene_layout",     "Layout",                              "L", "gene_layout.hlp",  AWM_ALL, GEN_create_layout_window);
-    insert_menu_topic("gene_options",    "Options",                             "O", "gene_options.hlp", AWM_ALL, GEN_create_options_window);
+    insert_menu_topic(local_id("gene_props_menu"), "Menu: Colors and Fonts ...",          "M", "props_frame.hlp",  AWM_ALL, AW_preset_window);
+    insert_menu_topic(local_id("gene_props"),      "GENEMAP: Colors and Fonts ...",       "C", "color_props.hlp",  AWM_ALL, makeCreateWindowCallback(AW_create_gc_window, gen_canvas->gc_manager)); // @@@ FIXME: replace AW_create_gc_window by local function returning same window for all mapped views
+    insert_menu_topic(local_id("gene_layout"),     "Layout",                              "L", "gene_layout.hlp",  AWM_ALL, GEN_create_layout_window);
+    insert_menu_topic(local_id("gene_options"),    "Options",                             "O", "gene_options.hlp", AWM_ALL, GEN_create_options_window);
     insert_menu_topic("gene_nds",        "NDS ( Select Gene Information ) ...", "N", "props_nds.hlp",    AWM_ALL, AW_POPUP, (AW_CL)GEN_open_nds_window, (AW_CL)gb_main);
     sep______________();
     AW_insert_common_property_menu_entries(this);
