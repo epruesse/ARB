@@ -580,7 +580,7 @@ static void reorder_up_down(AW_window *aws, Itemfield_Selection *sel_right, int 
     if (warning) aw_message(warning);
 }
 
-inline const char *selectorSpecific_windowID(const ItemSelector& selector, const char *window_id) {
+inline const char *itemTypeSpecificWindowID(const ItemSelector& selector, const char *window_id) {
     if (selector.type == QUERY_ITEM_SPECIES) {
         return window_id; // for species return given window id
     }
@@ -596,11 +596,11 @@ inline const char *selectorSpecific_windowID(const ItemSelector& selector, const
     return GBS_global_string("%s_%s", window_id, item_type_id);
 }
 
-static void initSelectorSpecificWindow(AW_window_simple *aws, AW_root *awr, const char *id, const char *title_format, const ItemSelector& selector) {
-    const char *s_id    = selectorSpecific_windowID(selector, id);
-    char       *s_title = GBS_global_string_copy(title_format, selector.item_name);
+void DBUI::init_itemType_specific_window(AW_root *aw_root, AW_window_simple *aws, const ItemSelector& itemType, const char *id, const char *title_format) {
+    const char *s_id    = itemTypeSpecificWindowID(itemType, id);
+    char       *s_title = GBS_global_string_copy(title_format, itemType.item_name);
 
-    aws->init(awr, s_id, s_title);
+    aws->init(aw_root, s_id, s_title);
     free(s_title);
 }
 
@@ -612,7 +612,7 @@ AW_window *DBUI::create_fields_reorder_window(AW_root *root, BoundItemSel *bound
         AW_window_simple *aws = new AW_window_simple;
         awsa[selector.type]  = aws;
 
-        initSelectorSpecificWindow(aws, root, "REORDER_FIELDS", "Reorder %s fields", selector);
+        init_itemType_specific_window(root, aws, selector, "REORDER_FIELDS", "Reorder %s fields");
         aws->load_xfig("ad_kreo.fig");
 
         aws->callback((AW_CB0)AW_POPDOWN);
@@ -741,7 +741,7 @@ AW_window *DBUI::create_field_delete_window(AW_root *root, BoundItemSel *bound_s
         AW_window_simple *aws = new AW_window_simple;
         awsa[selector.type]  = aws;
 
-        initSelectorSpecificWindow(aws, root, "DELETE_FIELD", "Delete %s field", selector);
+        init_itemType_specific_window(root, aws, selector, "DELETE_FIELD", "Delete %s field");
         aws->load_xfig("ad_delof.fig");
         aws->button_length(6);
 
@@ -803,7 +803,7 @@ AW_window *DBUI::create_field_create_window(AW_root *root, BoundItemSel *bound_s
     AW_window_simple *aws = new AW_window_simple;
     awsa[selector.type]  = aws;
 
-    initSelectorSpecificWindow(aws, root, "CREATE_FIELD", "Create new %s field", selector);
+    init_itemType_specific_window(root, aws, selector, "CREATE_FIELD", "Create new %s field");
     aws->load_xfig("ad_fcrea.fig");
 
     aws->callback((AW_CB0)AW_POPDOWN);
@@ -870,7 +870,7 @@ static AW_window *create_field_convert_window(AW_root *root, BoundItemSel *bound
     AW_window_simple *aws = new AW_window_simple;
     awsa[selector.type]  = aws;
 
-    initSelectorSpecificWindow(aws, root, "CONVERT_FIELD", "Convert %s field", selector);
+    init_itemType_specific_window(root, aws, selector, "CONVERT_FIELD", "Convert %s field");
     aws->load_xfig("ad_conv.fig");
 
     aws->at("close");
@@ -1444,10 +1444,10 @@ static AW_window *popup_new_speciesOrganismWindow(AW_root *aw_root, GBDATA *gb_m
         if (organismWindow) aws->create_menu("ORGANISM",    "O", AWM_ALL);
         else                aws->create_menu("SPECIES",     "S", AWM_ALL);
 
-        aws->insert_menu_topic("species_delete",        "Delete",         "D", "spa_delete.hlp",  AWM_ALL, makeWindowCallback      (species_delete_cb,            gb_main));
-        aws->insert_menu_topic("species_rename",        "Rename",         "R", "spa_rename.hlp",  AWM_ALL, makeWindowCallback      (species_rename_cb,            gb_main));
-        aws->insert_menu_topic("species_copy",          "Copy",           "y", "spa_copy.hlp",    AWM_ALL, makeWindowCallback      (species_copy_cb,              gb_main));
-        aws->insert_menu_topic("species_create",        "Create",         "C", "spa_create.hlp",  AWM_ALL, makeCreateWindowCallback(create_species_create_window, gb_main));
+        aws->insert_menu_topic("species_delete",                "Delete", "D", "spa_delete.hlp", AWM_ALL, makeWindowCallback      (species_delete_cb,            gb_main));
+        aws->insert_menu_topic("species_rename",                "Rename", "R", "spa_rename.hlp", AWM_ALL, makeWindowCallback      (species_rename_cb,            gb_main));
+        aws->insert_menu_topic("species_copy",                  "Copy",   "y", "spa_copy.hlp",   AWM_ALL, makeWindowCallback      (species_copy_cb,              gb_main));
+        aws->insert_menu_topic(aws->local_id("species_create"), "Create", "C", "spa_create.hlp", AWM_ALL, makeCreateWindowCallback(create_species_create_window, gb_main));
         aws->sep______________();
         aws->insert_menu_topic("species_convert_2_sai", "Convert to SAI", "S", "sp_sp_2_ext.hlp", AWM_ALL, makeWindowCallback      (move_species_to_extended,     gb_main));
     }
