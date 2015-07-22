@@ -457,9 +457,9 @@ static void EXP_create_field_items(AW_window *aws, GBDATA *gb_main) {
     static BoundItemSel *bis = new BoundItemSel(gb_main, EXP_get_selector());
     exp_assert(bis->gb_main == gb_main);
 
-    aws->insert_menu_topic("exp_reorder_fields", "Reorder fields ...",    "R", "spaf_reorder.hlp", AD_F_ALL, makeCreateWindowCallback(DBUI::create_fields_reorder_window, bis));
-    aws->insert_menu_topic("exp_delete_field",   "Delete/Hide Field ...", "D", "spaf_delete.hlp",  AD_F_ALL, makeCreateWindowCallback(DBUI::create_field_delete_window, bis));
-    aws->insert_menu_topic("exp_create_field",   "Create fields ...",     "C", "spaf_create.hlp",  AD_F_ALL, makeCreateWindowCallback(DBUI::create_field_create_window, bis));
+    aws->insert_menu_topic(aws->local_id("exp_reorder_fields"), "Reorder fields ...",    "R", "spaf_reorder.hlp", AD_F_ALL, makeCreateWindowCallback(DBUI::create_fields_reorder_window, bis));
+    aws->insert_menu_topic(aws->local_id("exp_delete_field"),   "Delete/Hide Field ...", "D", "spaf_delete.hlp",  AD_F_ALL, makeCreateWindowCallback(DBUI::create_field_delete_window, bis));
+    aws->insert_menu_topic(aws->local_id("exp_create_field"),   "Create fields ...",     "C", "spaf_create.hlp",  AD_F_ALL, makeCreateWindowCallback(DBUI::create_field_create_window, bis));
     aws->sep______________();
     aws->insert_menu_topic("exp_unhide_fields",  "Show all hidden fields", "S", "scandb.hlp", AD_F_ALL, makeWindowCallback(experiment_field_selection_list_unhide_all_cb, gb_main, FIELD_FILTER_NDS));
     aws->insert_menu_topic("exp_refresh_fields", "Refresh fields",         "f", "scandb.hlp", AD_F_ALL, makeWindowCallback(experiment_field_selection_list_update_cb,     gb_main, FIELD_FILTER_NDS));
