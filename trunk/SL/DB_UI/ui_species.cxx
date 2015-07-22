@@ -580,6 +580,30 @@ static void reorder_up_down(AW_window *aws, Itemfield_Selection *sel_right, int 
     if (warning) aw_message(warning);
 }
 
+inline const char *selectorSpecific_windowID(const ItemSelector& selector, const char *window_id) {
+    if (selector.type == QUERY_ITEM_SPECIES) {
+        return window_id; // for species return given window id
+    }
+    const char *item_type_id = NULL;
+    switch (selector.type) {
+        case QUERY_ITEM_GENES:       item_type_id = "GENE";       break;
+        case QUERY_ITEM_EXPERIMENTS: item_type_id = "EXPERIMENT"; break;
+
+        case QUERY_ITEM_SPECIES:
+        case QUERY_ITEM_TYPES: ui_assert(0); break;
+    }
+    ui_assert(item_type_id);
+    return GBS_global_string("%s_%s", window_id, item_type_id);
+}
+
+static void initSelectorSpecificWindow(AW_window_simple *aws, AW_root *awr, const char *id, const char *title_format, const ItemSelector& selector) {
+    const char *s_id    = selectorSpecific_windowID(selector, id);
+    char       *s_title = GBS_global_string_copy(title_format, selector.item_name);
+
+    aws->init(awr, s_id, s_title);
+    free(s_title);
+}
+
 AW_window *DBUI::create_fields_reorder_window(AW_root *root, BoundItemSel *bound_selector) {
     ItemSelector& selector = bound_selector->selector;
 
@@ -588,7 +612,7 @@ AW_window *DBUI::create_fields_reorder_window(AW_root *root, BoundItemSel *bound
         AW_window_simple *aws = new AW_window_simple;
         awsa[selector.type]  = aws;
 
-        aws->init(root, "REORDER_FIELDS", "REORDER FIELDS");
+        initSelectorSpecificWindow(aws, root, "REORDER_FIELDS", "Reorder %s fields", selector);
         aws->load_xfig("ad_kreo.fig");
 
         aws->callback((AW_CB0)AW_POPDOWN);
@@ -717,7 +741,7 @@ AW_window *DBUI::create_field_delete_window(AW_root *root, BoundItemSel *bound_s
         AW_window_simple *aws = new AW_window_simple;
         awsa[selector.type]  = aws;
 
-        aws->init(root, "DELETE_FIELD", "DELETE FIELD");
+        initSelectorSpecificWindow(aws, root, "DELETE_FIELD", "Delete %s field", selector);
         aws->load_xfig("ad_delof.fig");
         aws->button_length(6);
 
@@ -779,7 +803,7 @@ AW_window *DBUI::create_field_create_window(AW_root *root, BoundItemSel *bound_s
     AW_window_simple *aws = new AW_window_simple;
     awsa[selector.type]  = aws;
 
-    aws->init(root, "CREATE_FIELD", "CREATE A NEW FIELD");
+    initSelectorSpecificWindow(aws, root, "CREATE_FIELD", "Create new %s field", selector);
     aws->load_xfig("ad_fcrea.fig");
 
     aws->callback((AW_CB0)AW_POPDOWN);
@@ -846,7 +870,7 @@ static AW_window *create_field_convert_window(AW_root *root, BoundItemSel *bound
     AW_window_simple *aws = new AW_window_simple;
     awsa[selector.type]  = aws;
 
-    aws->init(root, "CONVERT_FIELD", "CONVERT FIELDS");
+    initSelectorSpecificWindow(aws, root, "CONVERT_FIELD", "Convert %s field", selector);
     aws->load_xfig("ad_conv.fig");
 
     aws->at("close");
