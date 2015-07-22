@@ -69,6 +69,7 @@ db_query.o: $(ARBHOME)/INCLUDE/cb.h
 db_query.o: $(ARBHOME)/INCLUDE/cb_base.h
 db_query.o: $(ARBHOME)/INCLUDE/cbtypes.h
 db_query.o: $(ARBHOME)/INCLUDE/cxxforward.h
+db_query.o: $(ARBHOME)/INCLUDE/dbui.h
 db_query.o: $(ARBHOME)/INCLUDE/downcast.h
 db_query.o: $(ARBHOME)/INCLUDE/dupstr.h
 db_query.o: $(ARBHOME)/INCLUDE/gccver.h

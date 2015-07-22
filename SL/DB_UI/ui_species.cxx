@@ -596,9 +596,9 @@ inline const char *itemTypeSpecificWindowID(const ItemSelector& selector, const 
     return GBS_global_string("%s_%s", window_id, item_type_id);
 }
 
-void DBUI::init_itemType_specific_window(AW_root *aw_root, AW_window_simple *aws, const ItemSelector& itemType, const char *id, const char *title_format) {
+void DBUI::init_itemType_specific_window(AW_root *aw_root, AW_window_simple *aws, const ItemSelector& itemType, const char *id, const char *title_format, bool plural) {
     const char *s_id    = itemTypeSpecificWindowID(itemType, id);
-    char       *s_title = GBS_global_string_copy(title_format, itemType.item_name);
+    char       *s_title = GBS_global_string_copy(title_format, plural ? itemType.items_name : itemType.item_name);
 
     aws->init(aw_root, s_id, s_title);
     free(s_title);
