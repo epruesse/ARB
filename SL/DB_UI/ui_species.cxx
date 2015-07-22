@@ -1416,15 +1416,17 @@ static AW_window *popup_new_speciesOrganismWindow(AW_root *aw_root, GBDATA *gb_m
     DbScanner         *scanner = create_db_scanner(gb_main, aws, "box", 0, "field", "enable", DB_VIEWER, 0, "mark", FIELD_FILTER_NDS, itemType);
     const InfoWindow&  infoWin = InfoWindowRegistry::infowin.registerInfoWindow(aws, scanner, detach_id);
 
-    if (organismWindow) aws->create_menu("ORGANISM",    "O", AWM_ALL);
-    else                aws->create_menu("SPECIES",     "S", AWM_ALL);
+    if (infoWin.is_maininfo()) {
+        if (organismWindow) aws->create_menu("ORGANISM",    "O", AWM_ALL);
+        else                aws->create_menu("SPECIES",     "S", AWM_ALL);
 
-    aws->insert_menu_topic("species_delete",        "Delete",         "D", "spa_delete.hlp",  AWM_ALL, makeWindowCallback      (species_delete_cb,            gb_main));
-    aws->insert_menu_topic("species_rename",        "Rename",         "R", "spa_rename.hlp",  AWM_ALL, makeWindowCallback      (species_rename_cb,            gb_main));
-    aws->insert_menu_topic("species_copy",          "Copy",           "y", "spa_copy.hlp",    AWM_ALL, makeWindowCallback      (species_copy_cb,              gb_main));
-    aws->insert_menu_topic("species_create",        "Create",         "C", "spa_create.hlp",  AWM_ALL, makeCreateWindowCallback(create_species_create_window, gb_main));
-    aws->insert_menu_topic("species_convert_2_sai", "Convert to SAI", "S", "sp_sp_2_ext.hlp", AWM_ALL, makeWindowCallback      (move_species_to_extended,     gb_main));
-    aws->sep______________();
+        aws->insert_menu_topic("species_delete",        "Delete",         "D", "spa_delete.hlp",  AWM_ALL, makeWindowCallback      (species_delete_cb,            gb_main));
+        aws->insert_menu_topic("species_rename",        "Rename",         "R", "spa_rename.hlp",  AWM_ALL, makeWindowCallback      (species_rename_cb,            gb_main));
+        aws->insert_menu_topic("species_copy",          "Copy",           "y", "spa_copy.hlp",    AWM_ALL, makeWindowCallback      (species_copy_cb,              gb_main));
+        aws->insert_menu_topic("species_create",        "Create",         "C", "spa_create.hlp",  AWM_ALL, makeCreateWindowCallback(create_species_create_window, gb_main));
+        aws->sep______________();
+        aws->insert_menu_topic("species_convert_2_sai", "Convert to SAI", "S", "sp_sp_2_ext.hlp", AWM_ALL, makeWindowCallback      (move_species_to_extended,     gb_main));
+    }
 
     aws->create_menu("FIELDS", "F", AWM_ALL);
     insert_field_admin_menuitems(aws, gb_main);
