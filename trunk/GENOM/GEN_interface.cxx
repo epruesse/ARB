@@ -977,12 +977,13 @@ static AW_window *popup_new_gene_window(AW_root *aw_root, GBDATA *gb_main, int d
     DbScanner         *scanner = create_db_scanner(gb_main, aws, "box", 0, "field", "enable", DB_VIEWER, 0, "mark", FIELD_FILTER_NDS, itemType);
     const InfoWindow&  infoWin = InfoWindowRegistry::infowin.registerInfoWindow(aws, scanner, detach_id);
 
-    aws->create_menu("GENE", "G", AD_F_ALL);
-    aws->insert_menu_topic("gene_delete", "Delete",     "D", "spa_delete.hlp", AD_F_ALL, makeWindowCallback      (gene_delete_cb,            gb_main));
-    aws->insert_menu_topic("gene_rename", "Rename ...", "R", "spa_rename.hlp", AD_F_ALL, makeCreateWindowCallback(create_gene_rename_window, gb_main));
-    aws->insert_menu_topic("gene_copy",   "Copy ...",   "y", "spa_copy.hlp",   AD_F_ALL, makeCreateWindowCallback(create_gene_copy_window,   gb_main));
-    aws->insert_menu_topic("gene_create", "Create ...", "C", "gen_create.hlp", AD_F_ALL, makeCreateWindowCallback(create_gene_create_window, gb_main));
-    aws->sep______________();
+    if (infoWin.is_maininfo()) {
+        aws->create_menu("GENE", "G", AD_F_ALL);
+        aws->insert_menu_topic("gene_delete", "Delete",     "D", "spa_delete.hlp", AD_F_ALL, makeWindowCallback      (gene_delete_cb,            gb_main));
+        aws->insert_menu_topic("gene_rename", "Rename ...", "R", "spa_rename.hlp", AD_F_ALL, makeCreateWindowCallback(create_gene_rename_window, gb_main));
+        aws->insert_menu_topic("gene_copy",   "Copy ...",   "y", "spa_copy.hlp",   AD_F_ALL, makeCreateWindowCallback(create_gene_copy_window,   gb_main));
+        aws->insert_menu_topic("gene_create", "Create ...", "C", "gen_create.hlp", AD_F_ALL, makeCreateWindowCallback(create_gene_create_window, gb_main));
+    }
 
     aws->create_menu("FIELDS", "F", AD_F_ALL);
     GEN_create_field_items(aws, gb_main);
