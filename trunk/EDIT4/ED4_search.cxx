@@ -1505,7 +1505,7 @@ static void str2pattern(char *s) { // works on string
 
 #undef ESC
 
-static void save_search_paras_to_file(AW_window *aw, AW_CL cl_type) {
+static void save_search_paras_to_file(AW_window *aw, ED4_SearchPositionType type) {
     GB_ERROR  error    = NULL;
     AW_root  *root     = ED4_ROOT->aw_root;
     char     *filename = root->awar(ED4_SEARCH_SAVE_BASE"/file_name")->read_string();
@@ -1529,8 +1529,7 @@ static void save_search_paras_to_file(AW_window *aw, AW_CL cl_type) {
             error = GBS_global_string("Can't write file '%s' (%s)", filename, strerror(errno));
         }
         else {
-            ED4_SearchPositionType  type = ED4_SearchPositionType(cl_type);
-            SearchSettings         *s    = settings[type];
+            SearchSettings *s = settings[type];
 
             char *fpat = pattern2str(s->get_pattern());
 
@@ -1571,7 +1570,7 @@ static void save_search_paras_to_file(AW_window *aw, AW_CL cl_type) {
     free(filename);
 }
 
-static void load_search_paras_from_file(AW_window *aw, AW_CL cl_type) {
+static void load_search_paras_from_file(AW_window *aw, ED4_SearchPositionType type) {
     GB_CSTR  error    = NULL;
     AW_root *root     = ED4_ROOT->aw_root;
     char    *filename = root->awar(ED4_SEARCH_SAVE_BASE"/file_name")->read_string();
@@ -1581,8 +1580,7 @@ static void load_search_paras_from_file(AW_window *aw, AW_CL cl_type) {
         error = GBS_global_string("File '%s' not found", filename);
     }
     else {
-        ED4_SearchPositionType  type = ED4_SearchPositionType(cl_type);
-        SearchAwarList         *al   = &awar_list[type];
+        SearchAwarList *al = &awar_list[type];
 
         while (1) {
             const int BUFFERSIZE = 10000;
@@ -1652,14 +1650,14 @@ struct LoadSaveSearchParam {
     {}
 };
 
-static AW_window *loadsave_search_parameters(AW_root *root, const LoadSaveSearchParam& param, bool load) {
+static AW_window *loadsave_search_parameters(AW_root *root, const LoadSaveSearchParam *param, bool load) {
     AW_window_simple *aws = new AW_window_simple;
 
     if (load) {
-        aws_init_localized(root, aws, "load_%s_search_para_%i", "Load %s Search Parameters", ED4_SearchPositionTypeId[param.type], param.winNum);
+        aws_init_localized(root, aws, "load_%s_search_para_%i", "Load %s Search Parameters", ED4_SearchPositionTypeId[param->type], param->winNum);
     }
     else {
-        aws_init_localized(root, aws, "save_%s_search_para_%i", "Save %s Search Parameters", ED4_SearchPositionTypeId[param.type], param.winNum);
+        aws_init_localized(root, aws, "save_%s_search_para_%i", "Save %s Search Parameters", ED4_SearchPositionTypeId[param->type], param->winNum);
     }
 
     aws->load_xfig("edit4/save_search.fig");
@@ -1679,27 +1677,16 @@ static AW_window *loadsave_search_parameters(AW_root *root, const LoadSaveSearch
 
     aws->at("save");
     if (load) {
-        aws->callback(load_search_paras_from_file, (AW_CL)param.type);
+        aws->callback(makeWindowCallback(load_search_paras_from_file, param->type));
         aws->create_button("LOAD", "LOAD", "L");
     }
     else {
-        aws->callback(save_search_paras_to_file, (AW_CL)param.type);
+        aws->callback(makeWindowCallback(save_search_paras_to_file, param->type));
         aws->create_button("SAVE", "SAVE", "S");
     }
 
     return aws;
 }
-
-static AW_window *load_search_parameters(AW_root *root, AW_CL cl_param) {
-    LoadSaveSearchParam *param = (LoadSaveSearchParam*)cl_param;
-    return loadsave_search_parameters(root, *param, true);
-}
-
-static AW_window *save_search_parameters(AW_root *root, AW_CL cl_param) {
-    LoadSaveSearchParam *param = (LoadSaveSearchParam*)cl_param;
-    return loadsave_search_parameters(root, *param, false);
-}
-
 
 static void setup_search_config(AWT_config_definition& cdef, ED4_SearchPositionType search_type) {
     SearchAwarList *awarList = &awar_list[search_type];
@@ -1759,11 +1746,11 @@ void ED4_popup_search_window(AW_window *aww, AW_CL cl_search_type) {
         LoadSaveSearchParam *param = new LoadSaveSearchParam(type, ed4w->id); // bound to callbacks (dont free)
 
         aws->at("load");
-        aws->callback(AW_POPUP, (AW_CL)load_search_parameters, (AW_CL)param);
+        aws->callback(makeCreateWindowCallback(loadsave_search_parameters, param, true));
         aws->create_button("LOAD", "LOAD", "L");
 
         aws->at("save");
-        aws->callback(AW_POPUP, (AW_CL)save_search_parameters, (AW_CL)param);
+        aws->callback(makeCreateWindowCallback(loadsave_search_parameters, param, false));
         aws->create_button("SAVE", "SAVE", "S");
 
         aws->at("next");
