@@ -1379,7 +1379,7 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
     awm->create_menu("Properties", "P", AWM_ALL);
     {
         awm->insert_menu_topic("props_tree2", "Tree options",            "o", "nt_tree_settings.hlp", AWM_ALL, TREE_create_settings_window);
-        awm->insert_menu_topic("props_tree",  "Tree colors & fonts",     "c", "pars_props_data.hlp",  AWM_ALL, makeCreateWindowCallback(AW_create_gc_window, ntw->gc_manager));
+        awm->insert_menu_topic("props_tree",  "Tree colors & fonts",     "c", "color_props.hlp",      AWM_ALL, makeCreateWindowCallback(AW_create_gc_window, ntw->gc_manager));
         awm->insert_menu_topic("props_kl",    "Optimizer settings (KL)", "K", "kernlin.hlp",          AWM_ALL, makeCreateWindowCallback(create_kernighan_properties_window));
         awm->sep______________();
         AW_insert_common_property_menu_entries(awm);
