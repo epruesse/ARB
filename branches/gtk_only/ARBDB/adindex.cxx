@@ -800,6 +800,7 @@ GB_ERROR GB_undo(GBDATA *gb_main, GB_UNDO_TYPE type) { // goes to header: __ATTR
 
 char *GB_undo_info(GBDATA *gb_main, GB_UNDO_TYPE type) {
     // get some information about the next undo
+    // returns NULL in case of exported error
 
     GB_MAIN_TYPE *Main = GB_MAIN(gb_main);
     if (Main->is_client()) {
@@ -809,8 +810,7 @@ char *GB_undo_info(GBDATA *gb_main, GB_UNDO_TYPE type) {
             case GB_UNDO_REDO:
                 return gbcmc_send_undo_info_commands(gb_main, _GBCMC_UNDOCOM_INFO_REDO);
             default:
-                GB_internal_error("unknown undo type in GB_undo");
-                GB_export_error("Internal UNDO error");
+                GB_export_error("GB_undo_info: unknown undo type specified");
                 return 0;
         }
     }

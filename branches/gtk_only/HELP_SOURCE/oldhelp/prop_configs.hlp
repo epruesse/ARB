@@ -8,7 +8,7 @@ UP	glossary.hlp
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		Help on configurations
+TITLE		Property/settings configurations
 
 OCCURRENCE	Anywhere (buttons with config icon)
 
@@ -20,7 +20,7 @@ DESCRIPTION     This provides a general way to store and restore settings
                 - Delete: delete named configuration
                 - Load: load settings from a file, STORE and RESTORE
                 - Save: RESTORE stored settings and save them to a file
-                - Edit: allows to edit stored settings (see LINK{edit_config.hlp})
+                - Edit: allows to edit stored settings (see LINK{prop_configs_edit.hlp})
                 - Factory defaults: reset all values to their defaults
 
 		You may enter a description for each stored configuration.
@@ -37,6 +37,10 @@ NOTES		To keep stored settings permanently (i.e. for future arb sessions),
 
 EXAMPLES	None
 
-WARNINGS	None
+WARNINGS        Unfortunately we use the term 'configuration' for two things:
+                  * species-selections aka editor-configurations (as described in LINK{species_configs.hlp})
+                  * configurations of settings/properties (as described here)
+
+                Please do not mix them up.
 
 BUGS		None

@@ -1,7 +1,7 @@
 // =============================================================== //
 //                                                                 //
 //   File      : ad_config.cxx                                     //
-//   Purpose   : editor configurations                             //
+//   Purpose   : editor configurations (aka species selections)    //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in May 2005       //
 //   Institute of Microbiology (Technical University Munich)       //

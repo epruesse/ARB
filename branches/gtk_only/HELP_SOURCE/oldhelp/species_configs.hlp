@@ -9,7 +9,7 @@ SUB	mark.hlp
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		Species selections (=configurations)
+TITLE		Species selections (=editor configurations)
 
 OCCURRENCE	ARB_NTREE/Species/Selections
 
@@ -17,14 +17,14 @@ DESCRIPTION     Species selections basically are sets of species.
 
                 Technically the terms "species selections" and "editor configurations"
                 (or simply "configurations") are synonymic. For a detailed description
-                what is stored in an editor configuration see LINK{config_saveload.hlp}.
+                what is stored in an editor configuration see LINK{species_configs_saveload.hlp}.
 
                 You may use configurations to
 
                     * save/restore which species are currently marked (see LINK{mark.hlp}). Available operations are decribed below.
                     * start the sequence editor on a defined set of species (see LINK{arb_edit4.hlp})
                     * highlight multiple configurations in the tree display
-                      using the 'Highlight in tree' button (see LINK{mark_configs.hlp})
+                      using the 'Highlight in tree' button (see LINK{species_configs_highlight.hlp})
 
                 This window provides several operations on configurations:
 
@@ -41,7 +41,11 @@ NOTES           The configuration window is as well available via the button tha
 
 EXAMPLES	None
 
-WARNINGS	None
+WARNINGS        Unfortunately we use the term 'configuration' for two things:
+                  * configurations of settings/properties (as described in LINK{prop_configs.hlp})
+                  * species-selections aka editor-configurations (as described here)
+
+                Please do not mix them up.
 
 BUGS		No bugs known
 

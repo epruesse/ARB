@@ -731,7 +731,7 @@ void AWT_configuration::popup_edit_window(AW_window *aw_config) {
         aws->create_button("CLOSE", "CLOSE");
 
         aws->at("help");
-        aws->callback(makeHelpCallback("edit_config.hlp"));
+        aws->callback(makeHelpCallback("prop_configs_edit.hlp"));
         aws->create_button("HELP", "HELP");
 
         aws->at("content");
@@ -804,7 +804,7 @@ static AW_window *create_config_manager_window(AW_root *, AWT_configuration *con
     aws->create_button("CLOSE", "CLOSE");
 
     aws->at("help");
-    aws->callback(makeHelpCallback("configurations.hlp"));
+    aws->callback(makeHelpCallback("prop_configs.hlp"));
     aws->create_button("HELP", "HELP");
 
     // create awars
