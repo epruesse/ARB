@@ -1423,10 +1423,10 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
 
     awmm->insert_menu_topic("new_win",        "New Editor Window",     "W", 0, AWM_ALL, ED4_new_editor_window);
     awmm->sep______________();
-    awmm->insert_menu_topic("save_config",    "Save configuration",        "S", "config_saveload.hlp", AWM_ALL, makeWindowCallback(ED4_save_configuration, false));
-    awmm->insert_menu_topic("save_config_as", "Save configuration as ...", "a", "config_saveload.hlp", AWM_ALL, AW_POPUP,                                  (AW_CL)ED4_save_configuration_as_open_window, (int)0);
-    awmm->insert_menu_topic("load_config",    "Load configuration ...",    "L", "config_saveload.hlp", AWM_ALL, AW_POPUP,                                  (AW_CL)ED4_start_editor_on_old_configuration, 0);
-    awmm->insert_menu_topic("reload_config",  "Reload configuration",      "R", "config_saveload.hlp", AWM_ALL, ED4_restart_editor,                        0,                                            0);
+    awmm->insert_menu_topic("save_config",    "Save configuration",        "S", "species_configs_saveload.hlp", AWM_ALL, makeWindowCallback(ED4_save_configuration, false));
+    awmm->insert_menu_topic("save_config_as", "Save configuration as ...", "a", "species_configs_saveload.hlp", AWM_ALL, AW_POPUP,                                  (AW_CL)ED4_save_configuration_as_open_window, (int)0);
+    awmm->insert_menu_topic("load_config",    "Load configuration ...",    "L", "species_configs_saveload.hlp", AWM_ALL, AW_POPUP,                                  (AW_CL)ED4_start_editor_on_old_configuration, 0);
+    awmm->insert_menu_topic("reload_config",  "Reload configuration",      "R", "species_configs_saveload.hlp", AWM_ALL, ED4_restart_editor,                        0,                                            0);
     insert_macro_menu_entry(awmm, true);
     awmm->sep______________();
     GDE_load_menu(awmm, AWM_ALL, "Print");
@@ -1450,9 +1450,9 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     //      Edit
 
     awmm->create_menu("Edit", "E", AWM_ALL);
-    awmm->insert_menu_topic("refresh",      "Refresh [Ctrl-L]",           "f", 0, AWM_ALL, (AW_CB)ED4_request_full_refresh,       0, 0);
-    awmm->insert_menu_topic("load_current", "Load current species [GET]", "G", 0, AWM_ALL, ED4_get_and_jump_to_current_from_menu, 0, 0);
-    awmm->insert_menu_topic("load_marked",  "Load marked species",        "m", 0, AWM_ALL, ED4_get_marked_from_menu,              0, 0);
+    awmm->insert_menu_topic("refresh",      "Refresh [Ctrl-L]",           "f", 0,                    AWM_ALL, (AW_CB)ED4_request_full_refresh,       0, 0);
+    awmm->insert_menu_topic("load_current", "Load current species [GET]", "G", "e4_get_species.hlp", AWM_ALL, ED4_get_and_jump_to_current_from_menu, 0, 0);
+    awmm->insert_menu_topic("load_marked",  "Load marked species",        "m", "e4_get_species.hlp", AWM_ALL, ED4_get_marked_from_menu,              0, 0);
     awmm->sep______________();
     awmm->insert_menu_topic("refresh_ecoli",       "Reload Ecoli sequence",        "E", "ecoliref.hlp", AWM_ALL, (AW_CB)reload_ecoli_cb, 0, 0);
     awmm->insert_menu_topic("refresh_helix",       "Reload Helix",                 "H", "helix.hlp",    AWM_ALL, (AW_CB)reload_helix_cb, 0, 0);
@@ -1541,8 +1541,8 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
 
     awmm->sep______________();
     awmm->insert_menu_topic("change_cursor", "Change cursor type",                "t", 0,                   AWM_ALL, ED4_change_cursor);
-    awmm->insert_menu_topic("show_all",      "Show all bases ",                   "a", "set_reference.hlp", AWM_ALL, ED4_set_reference_species, 1, 0);
     awmm->insert_menu_topic("show_diff",     "Show only differences to selected", "d", "set_reference.hlp", AWM_ALL, ED4_set_reference_species, 0, 0);
+    awmm->insert_menu_topic("show_all",      "Show all bases",                    "a", "set_reference.hlp", AWM_ALL, ED4_set_reference_species, 1, 0);
     awmm->sep______________();
     awmm->insert_menu_topic("enable_col_stat",  "Activate column statistics", "v", "st_ml.hlp", AWM_EXP, ED4_activate_col_stat,            0, 0);
     awmm->insert_menu_topic("disable_col_stat", "Disable column statistics",  "i", "st_ml.hlp", AWM_EXP, ED4_disable_col_stat,             0, 0);
@@ -1737,12 +1737,12 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
 
     awmm->at("jump");
     awmm->callback(ED4_jump_to_current_species, 0);
-    awmm->help_text("e4.hlp");
+    awmm->help_text("e4_get_species.hlp");
     awmm->create_button("JUMP", "Jump");
 
     awmm->at("get");
     awmm->callback(ED4_get_and_jump_to_current, 0);
-    awmm->help_text("e4.hlp");
+    awmm->help_text("e4_get_species.hlp");
     awmm->create_button("GET", "Get");
 
     awmm->button_length(0);
@@ -1902,9 +1902,9 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
 
     // Buttons at left window border
 
-    awmm->create_mode("edit/arrow.xpm", "normal.hlp", AWM_ALL, makeWindowCallback(modes_cb, ED4_SM_MOVE));
-    awmm->create_mode("edit/kill.xpm",  "kill.hlp",   AWM_ALL, makeWindowCallback(modes_cb, ED4_SM_KILL));
-    awmm->create_mode("edit/mark.xpm",  "mark.hlp",   AWM_ALL, makeWindowCallback(modes_cb, ED4_SM_MARK));
+    awmm->create_mode("edit/arrow.xpm", "e4_mode.hlp", AWM_ALL, makeWindowCallback(modes_cb, ED4_SM_MOVE));
+    awmm->create_mode("edit/kill.xpm",  "e4_mode.hlp", AWM_ALL, makeWindowCallback(modes_cb, ED4_SM_KILL));
+    awmm->create_mode("edit/mark.xpm",  "e4_mode.hlp", AWM_ALL, makeWindowCallback(modes_cb, ED4_SM_MARK));
 
     FastAligner_create_variables(awmm->get_root(), props_db);
 

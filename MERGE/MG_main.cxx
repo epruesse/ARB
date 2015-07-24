@@ -342,7 +342,7 @@ AW_window *MERGE_create_main_window(AW_root *aw_root, bool dst_is_new, void (*ex
 
         awm->at("configs");
         awm->callback(MG_create_merge_configs_window);
-        awm->help_text("mg_configs.hlp");
+        awm->help_text("mg_species_configs.hlp");
         awm->create_button("TRANSFER_CONFIGS", "Transfer configurations ...");
 
         {

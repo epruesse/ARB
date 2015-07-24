@@ -1,7 +1,7 @@
 #Please insert up references in the next lines (line starts with keyword UP)
 UP	arb.hlp
 UP	glossary.hlp
-UP	configurations.hlp
+UP	prop_configs.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
 #SUB	subtopic.hlp
@@ -11,7 +11,7 @@ UP	configurations.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Edit config entries
 
-OCCURRENCE	In each config manager (see LINK{configurations.hlp})
+OCCURRENCE	In each config manager (see LINK{prop_configs.hlp})
 
 DESCRIPTION     Allows to delete entries from a config.
 

@@ -1328,9 +1328,12 @@ static void add_link_attributes(XML_Tag& link, LinkType type, const string& dest
         string fullhelp = ((type&LT_HLP) ? locate_helpfile : locate_document)(dest);
         if (fullhelp.empty()) {
             link.add_attribute("missing", "1");
-            string warning = strf("Dead link to '%s'", dest.c_str());
-            h2x_assert(source_line<1000); // illegal line number ?
-            add_warning(warning, source_line);
+            string deadlink = strf("Dead link to '%s'", dest.c_str());
+#if defined(DEVEL_RELEASE)
+            throw LineAttachedMessage(deadlink, source_line);
+#else // !defined(DEVEL_RELEASE)
+            add_warning(deadlink, source_line);
+#endif
         }
     }
 }
