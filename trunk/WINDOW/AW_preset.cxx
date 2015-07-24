@@ -22,6 +22,7 @@
 #include "aw_advice.hxx"
 #include "aw_question.hxx"
 #include "aw_msg.hxx"
+#include "aw_nawar.hxx"
 
 #include <arbdbt.h>
 
@@ -156,8 +157,9 @@ void AW_copy_GCs(AW_root *aw_root, const char *source_window, const char *dest_w
 }
 
 static void add_common_property_menu_entries(AW_window *aw) {
-    aw->insert_menu_topic("enable_advices",   "Reactivate advices",   "R", "advice.hlp",    AWM_ALL, AW_reactivate_all_advices);
-    aw->insert_menu_topic("enable_questions", "Reactivate questions", "q", "questions.hlp", AWM_ALL, AW_reactivate_all_questions);
+    aw->insert_menu_topic("enable_advices",   "Reactivate advices",   "R", "advice.hlp",           AWM_ALL, AW_reactivate_all_advices);
+    aw->insert_menu_topic("enable_questions", "Reactivate questions", "q", "questions.hlp",        AWM_ALL, AW_reactivate_all_questions);
+    aw->insert_menu_topic("reset_win_layout", "Reset window layout",  "w", "reset_win_layout.hlp", AWM_ALL, AW_forget_all_window_geometry);
 }
 void AW_insert_common_property_menu_entries(AW_window_menu_modes *awmm) { add_common_property_menu_entries(awmm); }
 void AW_insert_common_property_menu_entries(AW_window_simple_menu *awsm) { add_common_property_menu_entries(awsm); }
