@@ -34,6 +34,7 @@
 #include <rootAsWin.h>
 #include <ad_cb.h>
 #include <Keeper.h>
+#include <dbui.h>
 
 using namespace std;
 using namespace QUERY;
@@ -2473,9 +2474,9 @@ static void set_field_of_queried_cb(AW_window*, DbQuery *query, bool append) {
     free(value);
 }
 
-AW_window *create_awt_do_set_list(AW_root *aw_root, DbQuery *query) {
+static AW_window *create_writeFieldOfListed_window(AW_root *aw_root, DbQuery *query) {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init(aw_root, "SET_DATABASE_FIELD_OF_LISTED", "SET MANY FIELDS");
+    init_itemType_specific_window(aw_root, aws, query->selector, "SET_DATABASE_FIELD_OF_LISTED", "Write field of listed %s", true);
     aws->load_xfig("query/write_fields.fig");
 
     aws->at("close");
@@ -2542,7 +2543,7 @@ static void set_protection_of_queried_cb(AW_window*, DbQuery *query) {
 
 static AW_window *create_set_protection_window(AW_root *aw_root, DbQuery *query) {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init(aw_root, "SET_PROTECTION_OF_FIELD_OF_LISTED", "SET PROTECTIONS OF FIELDS");
+    init_itemType_specific_window(aw_root, aws, query->selector, "SET_PROTECTION_OF_FIELD_OF_LISTED", "Protect field of listed %s", true);
     aws->load_xfig("query/set_protection.fig");
 
     aws->at("close");
@@ -2556,12 +2557,12 @@ static AW_window *create_set_protection_window(AW_root *aw_root, DbQuery *query)
 
     aws->at("prot");
     aws->create_toggle_field(query->awar_setprotection, 0);
-    aws->insert_toggle("0 Temporary", "0", 0);
-    aws->insert_toggle("1 Checked", "1", 1);
-    aws->insert_toggle("2", "2", 2);
-    aws->insert_toggle("3", "3", 3);
-    aws->insert_toggle("4 normal", "4", 4);
-    aws->insert_toggle("5 ", "5", 5);
+    aws->insert_toggle("0 temporary", "0", 0);
+    aws->insert_toggle("1 checked",   "1", 1);
+    aws->insert_toggle("2",           "2", 2);
+    aws->insert_toggle("3",           "3", 3);
+    aws->insert_toggle("4 normal",    "4", 4);
+    aws->insert_toggle("5 ",          "5", 5);
     aws->insert_toggle("6 the truth", "5", 6);
     aws->update_toggle_field();
 
@@ -2569,7 +2570,7 @@ static AW_window *create_set_protection_window(AW_root *aw_root, DbQuery *query)
 
     aws->at("go");
     aws->callback(makeWindowCallback(set_protection_of_queried_cb, query));
-    aws->create_button("SET_PROTECTION_OF_FIELD_OF_LISTED", "SET PROTECTION");
+    aws->create_autosize_button("SET_PROTECTION_OF_FIELD_OF_LISTED", "Assign\nprotection\nto field\nof listed");
 
     return aws;
 }
@@ -2940,7 +2941,7 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
 
         aws->at(awtqs->do_set_pos_fig);
         aws->help_text("mod_field_list.hlp");
-        aws->callback(makeCreateWindowCallback(create_awt_do_set_list, query));
+        aws->callback(makeCreateWindowCallback(create_writeFieldOfListed_window, query));
         char *macro_id = GBS_global_string_copy("WRITE_TO_FIELDS_OF_LISTED_%s", query_id);
         aws->create_button(macro_id, "Write to Fields\nof Listed", "S");
         free(macro_id);

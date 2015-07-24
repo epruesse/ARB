@@ -105,6 +105,8 @@ struct MutableBoundItemSel {
 
 typedef const MutableBoundItemSel BoundItemSel;
 
+void init_itemType_specific_window(AW_root *aw_root, class AW_window_simple *aws, const ItemSelector& itemType, const char *id, const char *title_format, bool plural = false);
+
 ItemSelector& SPECIES_get_selector();
 ItemSelector& ORGANISM_get_selector();
 

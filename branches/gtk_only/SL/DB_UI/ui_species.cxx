@@ -588,7 +588,7 @@ AW_window *DBUI::create_fields_reorder_window(AW_root *root, BoundItemSel *bound
         AW_window_simple *aws = new AW_window_simple;
         awsa[selector.type]  = aws;
 
-        aws->init(root, "REORDER_FIELDS", "REORDER FIELDS");
+        init_itemType_specific_window(root, aws, selector, "REORDER_FIELDS", "Reorder %s fields");
         aws->load_xfig("ad_kreo.fig");
 
         aws->callback((AW_CB0)AW_POPDOWN);
@@ -717,7 +717,7 @@ AW_window *DBUI::create_field_delete_window(AW_root *root, BoundItemSel *bound_s
         AW_window_simple *aws = new AW_window_simple;
         awsa[selector.type]  = aws;
 
-        aws->init(root, "DELETE_FIELD", "DELETE FIELD");
+        init_itemType_specific_window(root, aws, selector, "DELETE_FIELD", "Delete %s field");
         aws->load_xfig("ad_delof.fig");
         aws->button_length(6);
 
@@ -779,7 +779,7 @@ AW_window *DBUI::create_field_create_window(AW_root *root, BoundItemSel *bound_s
     AW_window_simple *aws = new AW_window_simple;
     awsa[selector.type]  = aws;
 
-    aws->init(root, "CREATE_FIELD", "CREATE A NEW FIELD");
+    init_itemType_specific_window(root, aws, selector, "CREATE_FIELD", "Create new %s field");
     aws->load_xfig("ad_fcrea.fig");
 
     aws->callback((AW_CB0)AW_POPDOWN);
@@ -846,7 +846,7 @@ static AW_window *create_field_convert_window(AW_root *root, BoundItemSel *bound
     AW_window_simple *aws = new AW_window_simple;
     awsa[selector.type]  = aws;
 
-    aws->init(root, "CONVERT_FIELD", "CONVERT FIELDS");
+    init_itemType_specific_window(root, aws, selector, "CONVERT_FIELD", "Convert %s field");
     aws->load_xfig("ad_conv.fig");
 
     aws->at("close");
@@ -885,8 +885,8 @@ void DBUI::insert_field_admin_menuitems(AW_window *aws, GBDATA *gb_main) {
     aws->insert_menu_topic(aws->local_id("spec_create_field"),   "Create fields ...",      "C", "spaf_create.hlp",  AWM_ALL, makeCreateWindowCallback(create_field_create_window,   bis));
     aws->insert_menu_topic(aws->local_id("spec_convert_field"),  "Convert fields ...",     "t", "spaf_convert.hlp", AWM_EXP, makeCreateWindowCallback(create_field_convert_window,  bis));
     aws->sep______________();
-    aws->insert_menu_topic(aws->local_id("spec_unhide_fields"),  "Show all hidden fields", "S", "scandb.hlp", AWM_ALL, makeWindowCallback(species_field_selection_list_unhide_all_cb, gb_main, FIELD_FILTER_NDS));
-    aws->insert_menu_topic(aws->local_id("spec_refresh_fields"), "Refresh fields",         "f", "scandb.hlp", AWM_ALL, makeWindowCallback(species_field_selection_list_update_cb,     gb_main, FIELD_FILTER_NDS));
+    aws->insert_menu_topic("spec_unhide_fields",  "Show all hidden fields", "S", "scandb.hlp", AWM_ALL, makeWindowCallback(species_field_selection_list_unhide_all_cb, gb_main, FIELD_FILTER_NDS));
+    aws->insert_menu_topic("spec_refresh_fields", "Refresh fields",         "f", "scandb.hlp", AWM_ALL, makeWindowCallback(species_field_selection_list_update_cb,     gb_main, FIELD_FILTER_NDS));
 }
 
 inline int get_and_fix_range_from_awar(AW_awar *awar) {
@@ -1416,15 +1416,17 @@ static AW_window *popup_new_speciesOrganismWindow(AW_root *aw_root, GBDATA *gb_m
     DbScanner         *scanner = create_db_scanner(gb_main, aws, "box", 0, "field", "enable", DB_VIEWER, 0, "mark", FIELD_FILTER_NDS, itemType);
     const InfoWindow&  infoWin = InfoWindowRegistry::infowin.registerInfoWindow(aws, scanner, detach_id);
 
-    if (organismWindow) aws->create_menu("ORGANISM",    "O", AWM_ALL);
-    else                aws->create_menu("SPECIES",     "S", AWM_ALL);
+    if (infoWin.is_maininfo()) {
+        if (organismWindow) aws->create_menu("ORGANISM",    "O", AWM_ALL);
+        else                aws->create_menu("SPECIES",     "S", AWM_ALL);
 
-    aws->insert_menu_topic("species_delete",        "Delete",         "D", "spa_delete.hlp",  AWM_ALL, makeWindowCallback      (species_delete_cb,            gb_main));
-    aws->insert_menu_topic("species_rename",        "Rename",         "R", "spa_rename.hlp",  AWM_ALL, makeWindowCallback      (species_rename_cb,            gb_main));
-    aws->insert_menu_topic("species_copy",          "Copy",           "y", "spa_copy.hlp",    AWM_ALL, makeWindowCallback      (species_copy_cb,              gb_main));
-    aws->insert_menu_topic("species_create",        "Create",         "C", "spa_create.hlp",  AWM_ALL, makeCreateWindowCallback(create_species_create_window, gb_main));
-    aws->insert_menu_topic("species_convert_2_sai", "Convert to SAI", "S", "sp_sp_2_ext.hlp", AWM_ALL, makeWindowCallback      (move_species_to_extended,     gb_main));
-    aws->sep______________();
+        aws->insert_menu_topic("species_delete",                "Delete", "D", "spa_delete.hlp", AWM_ALL, makeWindowCallback      (species_delete_cb,            gb_main));
+        aws->insert_menu_topic("species_rename",                "Rename", "R", "spa_rename.hlp", AWM_ALL, makeWindowCallback      (species_rename_cb,            gb_main));
+        aws->insert_menu_topic("species_copy",                  "Copy",   "y", "spa_copy.hlp",   AWM_ALL, makeWindowCallback      (species_copy_cb,              gb_main));
+        aws->insert_menu_topic(aws->local_id("species_create"), "Create", "C", "spa_create.hlp", AWM_ALL, makeCreateWindowCallback(create_species_create_window, gb_main));
+        aws->sep______________();
+        aws->insert_menu_topic("species_convert_2_sai", "Convert to SAI", "S", "sp_sp_2_ext.hlp", AWM_ALL, makeWindowCallback      (move_species_to_extended,     gb_main));
+    }
 
     aws->create_menu("FIELDS", "F", AWM_ALL);
     insert_field_admin_menuitems(aws, gb_main);
