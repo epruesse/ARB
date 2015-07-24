@@ -83,7 +83,7 @@ DESCRIPTION     The editor allows you to view and modify the sequences of 'marke
 
         Undo/Redo:
 
-                        This undoes/redoes everything you did.
+                        This undoes/redoes all performed database changes (see LINK{undo.hlp}).
 
         Jump/Get:
 

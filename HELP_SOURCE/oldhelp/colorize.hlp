@@ -16,14 +16,17 @@ OCCURRENCE	Species/Colors
                 Organisms/Colors
                 Experiments/Colors
 
-DESCRIPTION     Allows to toggle between colored and marked items.
+DESCRIPTION     Allows to colorize marked items and to mark colorized items.
 
                 First select which color group should be targeted on the right side.
 
                 Then select an action by clicking onto one of the action buttons on
-                the left side.
+                the left side. Available actions are:
 
-NOTES		You can define the color names in properties.
+                 * assign marked to color group
+                 * mark/unmark/invert all members of a color group
+
+NOTES		See also LINK{color.hlp}
 
 EXAMPLES	None
 
