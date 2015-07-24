@@ -10,7 +10,7 @@ UP	glossary.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Color properties
 
-OCCURRENCE	many places
+OCCURRENCE	many places (normally accessible via 'Properties/Colors and fonts')
 
 DESCRIPTION     This is a generic window that allows you to configure
                 the display colors of the current application.
@@ -43,6 +43,8 @@ EXAMPLES	When called from ARB_NT, this window allows to define colours and fonts
 
                 When called from ARB_EDIT4, this window allows to define colours and fonts
                 for the sequence display area.
+
+                    See also LINK{e4_background_priority.hlp}
 
 WARNINGS	None
 

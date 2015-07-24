@@ -1107,14 +1107,17 @@ static void insert_search_fields(AW_window_menu_modes *awmm,
     }
 
     awmm->at(cat(buf, label_prefix, "n"));
+    awmm->help_text("e4_search.hlp");
     awmm->callback(ED4_search_cb, ED4_encodeSearchDescriptor(+1, type), (AW_CL)ed4w);
     awmm->create_button(cat(buf, macro_prefix, "_SEARCH_NEXT"), "#edit/next.xpm");
 
     awmm->at(cat(buf, label_prefix, "l"));
+    awmm->help_text("e4_search.hlp");
     awmm->callback(ED4_search_cb, ED4_encodeSearchDescriptor(-1, type), (AW_CL)ed4w);
     awmm->create_button(cat(buf, macro_prefix, "_SEARCH_LAST"), "#edit/last.xpm");
 
     awmm->at(cat(buf, label_prefix, "d"));
+    awmm->help_text("e4_search.hlp");
     awmm->callback(ED4_popup_search_window, (AW_CL)type);
     awmm->create_button(cat(buf, macro_prefix, "_SEARCH_DETAIL"), "#edit/detail.xpm");
 

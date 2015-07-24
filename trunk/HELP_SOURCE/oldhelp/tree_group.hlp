@@ -4,9 +4,7 @@ UP      glossary.hlp
 UP      mode_group.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
-SUB	color.hlp
-SUB	markcolor.hlp
-SUB	set_color_of_listed.hlp
+#SUB	subtopic.hlp
 
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
@@ -29,7 +27,7 @@ DESCRIPTION     The items in this menu allow to control which
                  * Expand all: expands all groups (and subgroups)
                  * Expand marked: expands all groups that contain marked species, collapses other groups
                  * Expand zombies: expands all groups that contain zombies (see LINK{glossary.hlp}), collapses other groups
-                 * Expand color: expands all groups that contain species in specific, any or no color
+                 * Expand color: expands all groups that contain species in specific, any or no color (see LINK{color.hlp})
 
 NOTES           The lengths of the triangle sides reflect the longest and shortest overall
                 branch lengths within the subtree.
