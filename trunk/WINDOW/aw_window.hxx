@@ -494,7 +494,9 @@ public:
     void store_pos_in_awars(int xpos, int ypos);
     void get_pos_from_awars(int& xpos, int& ypos);
 
+#if defined(ARB_MOTIF)
     void reset_geometry_awars();
+#endif
 
     // *****************
     void get_screen_size(int& width, int& height);
