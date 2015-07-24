@@ -45,8 +45,6 @@ namespace DBUI {
 
     void init_info_window(AW_root *aw_root, AW_window_simple_menu *aws, const ItemSelector& itemType, int detach_id);
 
-    void init_itemType_specific_window(AW_root *aw_root, AW_window_simple *aws, const ItemSelector& itemType, const char *id, const char *title_format, bool plural = false);
-
     void unquery_all();
     void query_update_list();
 };
