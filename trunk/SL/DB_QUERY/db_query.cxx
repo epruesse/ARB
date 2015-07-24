@@ -2476,7 +2476,7 @@ static void set_field_of_queried_cb(AW_window*, DbQuery *query, bool append) {
 
 static AW_window *create_writeFieldOfListed_window(AW_root *aw_root, DbQuery *query) {
     AW_window_simple *aws = new AW_window_simple;
-    DBUI::init_itemType_specific_window(aw_root, aws, query->selector, "SET_DATABASE_FIELD_OF_LISTED", "Write field of listed %s", true);
+    init_itemType_specific_window(aw_root, aws, query->selector, "SET_DATABASE_FIELD_OF_LISTED", "Write field of listed %s", true);
     aws->load_xfig("query/write_fields.fig");
 
     aws->at("close");
@@ -2543,7 +2543,7 @@ static void set_protection_of_queried_cb(AW_window*, DbQuery *query) {
 
 static AW_window *create_set_protection_window(AW_root *aw_root, DbQuery *query) {
     AW_window_simple *aws = new AW_window_simple;
-    DBUI::init_itemType_specific_window(aw_root, aws, query->selector, "SET_PROTECTION_OF_FIELD_OF_LISTED", "Protect field of listed %s", true);
+    init_itemType_specific_window(aw_root, aws, query->selector, "SET_PROTECTION_OF_FIELD_OF_LISTED", "Protect field of listed %s", true);
     aws->load_xfig("query/set_protection.fig");
 
     aws->at("close");
