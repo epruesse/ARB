@@ -47,28 +47,25 @@ int Complement::calc_complement(int base) {
 // overloaded functions to avoid problems with type-punning:
 inline void aisc_link(dll_public *dll, PT_tprobes *tprobe)   { aisc_link(reinterpret_cast<dllpublic_ext*>(dll), reinterpret_cast<dllheader_ext*>(tprobe)); }
 
-extern "C" {
-    int pt_init_bond_matrix(PT_local *THIS)
-    {
-        THIS->bond[0].val  = 0.0;
-        THIS->bond[1].val  = 0.0;
-        THIS->bond[2].val  = 0.5;
-        THIS->bond[3].val  = 1.1;
-        THIS->bond[4].val  = 0.0;
-        THIS->bond[5].val  = 0.0;
-        THIS->bond[6].val  = 1.5;
-        THIS->bond[7].val  = 0.0;
-        THIS->bond[8].val  = 0.5;
-        THIS->bond[9].val  = 1.5;
-        THIS->bond[10].val = 0.4;
-        THIS->bond[11].val = 0.9;
-        THIS->bond[12].val = 1.1;
-        THIS->bond[13].val = 0.0;
-        THIS->bond[14].val = 0.9;
-        THIS->bond[15].val = 0.0;
+int pt_init_bond_matrix(PT_local *THIS) {
+    THIS->bond[0].val  = 0.0;
+    THIS->bond[1].val  = 0.0;
+    THIS->bond[2].val  = 0.5;
+    THIS->bond[3].val  = 1.1;
+    THIS->bond[4].val  = 0.0;
+    THIS->bond[5].val  = 0.0;
+    THIS->bond[6].val  = 1.5;
+    THIS->bond[7].val  = 0.0;
+    THIS->bond[8].val  = 0.5;
+    THIS->bond[9].val  = 1.5;
+    THIS->bond[10].val = 0.4;
+    THIS->bond[11].val = 0.9;
+    THIS->bond[12].val = 1.1;
+    THIS->bond[13].val = 0.0;
+    THIS->bond[14].val = 0.9;
+    THIS->bond[15].val = 0.0;
 
-        return 0;
-    }
+    return 0;
 }
 
 struct dt_bondssum {

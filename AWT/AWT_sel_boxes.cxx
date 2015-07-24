@@ -96,7 +96,7 @@ public:
         }
     }
 
-    void create_button(AW_window *aws) const;
+    void createButton(AW_window *aws) const;
 };
 WinMap SelectionListSpec::window_map; 
 
@@ -105,7 +105,7 @@ static void popup_SelectionListSpec_cb(UNFIXED, const SelectionListSpec *spec) {
     spec->popup();
 }
 #endif
-void SelectionListSpec::create_button(AW_window *aws) const {
+void SelectionListSpec::createButton(AW_window *aws) const {
     // WARNING: this is bound to callback (do not free)
 #if defined(ARB_GTK) // use option menu in gtk
     create_optionMenu(aws, true);
@@ -184,7 +184,7 @@ AW_DB_selection *awt_create_ALI_selection_list(GBDATA *gb_main, AW_window *aws, 
 }
 
 void awt_create_ALI_selection_button(GBDATA *gb_main, AW_window *aws, const char *varname, const char *ali_type_match) {
-    (new ALI_sellst_spec(varname, gb_main, ali_type_match))->create_button(aws); // do not free yet (bound to callback in ARB_MOTIF)
+    (new ALI_sellst_spec(varname, gb_main, ali_type_match))->createButton(aws); // do not free yet (bound to callback in ARB_MOTIF)
 }
 
 void awt_reconfigure_ALI_selection_list(AW_DB_selection *dbsel, const char *ali_type_match) {
@@ -581,7 +581,7 @@ AW_DB_selection *awt_create_SAI_selection_list(GBDATA *gb_main, AW_window *aws, 
 }
 
 void awt_create_SAI_selection_button(GBDATA *gb_main, AW_window *aws, const char *varname, awt_sai_sellist_filter filter_poc, AW_CL filter_cd) {
-    (new SAI_sellst_spec(varname, gb_main, filter_poc, filter_cd))->create_button(aws); // do not free yet (bound to callback in ARB_MOTIF)
+    (new SAI_sellst_spec(varname, gb_main, filter_poc, filter_cd))->createButton(aws); // do not free yet (bound to callback in ARB_MOTIF)
 }
 
 // --------------------------------------------------
