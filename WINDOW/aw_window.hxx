@@ -494,6 +494,8 @@ public:
     void store_pos_in_awars(int xpos, int ypos);
     void get_pos_from_awars(int& xpos, int& ypos);
 
+    void reset_geometry_awars();
+
     // *****************
     void get_screen_size(int& width, int& height);
     bool get_mouse_pos(int& x, int& y);

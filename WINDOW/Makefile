@@ -502,6 +502,7 @@ AW_preset.o: aw_def.hxx
 AW_preset.o: aw_device.hxx
 AW_preset.o: aw_keysym.hxx
 AW_preset.o: aw_msg.hxx
+AW_preset.o: aw_nawar.hxx
 AW_preset.o: aw_position.hxx
 AW_preset.o: aw_preset.hxx
 AW_preset.o: aw_question.hxx
