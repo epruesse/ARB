@@ -1619,7 +1619,6 @@ void AW_window::set_horizontal_change_callback(const WindowCallback& wcb) {
 
 
 void AW_window::set_window_size(int width, int height) {
-    // only used from GDE once (@@@ looks like a hack -- delete?)
     prvt->set_size(width, height); 
 }
 
