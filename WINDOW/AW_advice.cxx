@@ -121,7 +121,7 @@ static void advice_close_cb(AW_window *aww, const char *id, AW_Advice_Type type)
             if (!in_advice) {
                 in_advice = true;
                 AW_advice("You have disabled an advice.\n"
-                          "In order to disable it PERMANENTLY, save properties.", AW_ADVICE_TOGGLE);
+                          "In order to disable it PERMANENTLY, save properties.", AW_ADVICE_TOGGLE, "Advice disabled", "advice.hlp");
                 in_advice = false;
             }
         }

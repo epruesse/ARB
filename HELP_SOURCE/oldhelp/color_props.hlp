@@ -10,7 +10,7 @@ UP	glossary.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Color properties
 
-OCCURRENCE	many places (normally accessible via 'Properties/Colors and fonts')
+OCCURRENCE	<any properties menu>/Colors and fonts
 
 DESCRIPTION     This is a generic window that allows you to configure
                 the display colors of the current application.
