@@ -10,7 +10,7 @@ UP	glossary.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Save properties
 
-OCCURRENCE	In 'Properties' menus
+OCCURRENCE	<any properties menu>/Save properties
 
 DESCRIPTION	Saves the userdefined setup (colours, fonts, ...) to property files.
                 These files are located in the directory pointed to by the

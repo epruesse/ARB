@@ -10,7 +10,7 @@ SUB	color.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Configure color groups
 
-OCCURRENCE	.../Properties/Colors and Fonts/Edit color groups
+OCCURRENCE	<any properties menu>/Colors and Fonts/Edit color groups
 
 DESCRIPTION     This allows to configure the colors and names used for the different
                 color groups.
