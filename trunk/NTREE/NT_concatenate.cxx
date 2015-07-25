@@ -34,7 +34,6 @@ using namespace std;
 #define AWAR_CON_MERGE_FIELD         "tmp/concat/merge_field"
 #define AWAR_CON_STORE_SIM_SP_NO     "tmp/concat/store_sim_sp_no"
 
-#define MERGE_SIMILAR_CONCATENATE_ALIGNMENTS 1
 #define MOVE_DOWN  0
 #define MOVE_UP    1
 
@@ -47,12 +46,12 @@ struct SpeciesConcatenateList {
 
 // --------------------------creating and initializing AWARS----------------------------------------
 void NT_createConcatenationAwars(AW_root *aw_root, AW_default aw_def) {
-    aw_root->awar_string(AWAR_CON_SEQUENCE_TYPE,       "ami",                         aw_def);
-    aw_root->awar_string(AWAR_CON_NEW_ALIGNMENT_NAME, "ali_concat",                   aw_def);
-    aw_root->awar_string(AWAR_CON_ALIGNMENT_SEPARATOR, "XXX",                         aw_def);
-    aw_root->awar_string(AWAR_CON_MERGE_FIELD,         "full_name",                   aw_def);
-    aw_root->awar_string(AWAR_CON_STORE_SIM_SP_NO,     "merged_species",              aw_def);
-    aw_root->awar_string(AWAR_CON_DB_ALIGNS,           "",                            aw_def);
+    aw_root->awar_string(AWAR_CON_SEQUENCE_TYPE,       "ami",            aw_def);
+    aw_root->awar_string(AWAR_CON_NEW_ALIGNMENT_NAME,  "ali_concat",     aw_def)->set_srt("ali_*=*:*=ali_*"); // auto-prefix with "ali_"
+    aw_root->awar_string(AWAR_CON_ALIGNMENT_SEPARATOR, "XXX",            aw_def);
+    aw_root->awar_string(AWAR_CON_MERGE_FIELD,         "full_name",      aw_def);
+    aw_root->awar_string(AWAR_CON_STORE_SIM_SP_NO,     "merged_species", aw_def);
+    aw_root->awar_string(AWAR_CON_DB_ALIGNS,           "",               aw_def);
 }
 
 // ------------------------Selecting alignments from the database for concatenation----------------------
@@ -92,7 +91,7 @@ static GB_ERROR create_concatInfo_SAI(GBDATA *gb_main, const char *new_ali_name,
 
     if (!gb_extended) error = GB_await_error();
     else {
-        GBDATA *gb_data = GBT_add_data(gb_extended, new_ali_name, "data", GB_STRING);
+        GBDATA *gb_data = GBT_add_data(gb_extended, new_ali_name, "data", GB_STRING); // @@@ wrong if exists?
 
         if (!gb_data) {
             error = GB_await_error();
@@ -145,9 +144,8 @@ static GB_ERROR create_concatInfo_SAI(GBDATA *gb_main, const char *new_ali_name,
 }
 
 // ---------------------------------------- Concatenation function ----------------------------------
-static void concatenateAlignments(AW_window *aws, AW_CL cl_selected_alis) {
-    nt_assert(cl_selected_alis);
-    AW_selection *selected_alis = (AW_selection*)cl_selected_alis;
+static void concatenateAlignments(AW_window *aws, AW_selection *selected_alis) {
+    nt_assert(selected_alis);
 
     GB_push_transaction(GLOBAL.gb_main);
     long marked_species = GBT_count_marked_species(GLOBAL.gb_main);
@@ -553,8 +551,15 @@ static GB_ERROR checkAndCreateNewField(GBDATA *gb_main, char *new_field_name) {
     return 0;
 }
 
-static void mergeSimilarSpecies(AW_window *aws, AW_CL cl_mergeSimilarConcatenateAlignments, AW_CL cl_selected_alis) {
-    GB_ERROR error = NULL;
+enum MergeSpeciesType {
+    MERGE_SPECIES_SIMPLE,
+    MERGE_SPECIES_AND_CONCAT_ALI,
+};
+
+static void mergeSimilarSpecies(AW_window *aws, MergeSpeciesType mergeType, AW_selection *selected_alis) {
+    nt_assert(correlated(selected_alis, mergeType == MERGE_SPECIES_AND_CONCAT_ALI));
+
+    GB_ERROR     error = NULL;
     arb_progress wrapper;
     {
         AW_root *aw_root          = aws->get_root();
@@ -649,18 +654,23 @@ static void mergeSimilarSpecies(AW_window *aws, AW_CL cl_mergeSimilarConcatenate
 
         GB_end_transaction_show_error(GLOBAL.gb_main, error, aw_message);
     }
-    // Concatenate alignments of the merged species if cl_mergeSimilarConcatenateAlignments = MERGE_SIMILAR_CONCATENATE_ALIGNMENTS
-    if (cl_mergeSimilarConcatenateAlignments && !error) concatenateAlignments(aws, cl_selected_alis);
+
+    if (mergeType == MERGE_SPECIES_AND_CONCAT_ALI && !error) {
+        concatenateAlignments(aws, selected_alis);
+    }
 }
 
-
-
-static AW_window *createMergeSimilarSpeciesWindow(AW_root *aw_root, AW_CL option, AW_CL cl_subsel) {
+static AW_window *createMergeSimilarSpeciesWindow(AW_root *aw_root, MergeSpeciesType mergeType, AW_selection *selected_alis) {
     AW_window_simple *aws = new AW_window_simple;
 
     {
-        char *window_id = GBS_global_string_copy("MERGE_SPECIES_%i", int(option));
-        aws->init(aw_root, window_id, "MERGE SPECIES WINDOW");
+        char *window_id = GBS_global_string_copy("MERGE_SPECIES_%i", mergeType);
+        const char *window_title;
+        switch (mergeType) {
+            case MERGE_SPECIES_SIMPLE:         window_title = "Merge species";         break;
+            case MERGE_SPECIES_AND_CONCAT_ALI: window_title = "Merge and concatenate"; break;
+        }
+        aws->init(aw_root, window_id, window_title);
         free(window_id);
     }
     aws->load_xfig("merge_species.fig");
@@ -678,26 +688,44 @@ static AW_window *createMergeSimilarSpeciesWindow(AW_root *aw_root, AW_CL option
     aws->label_length(20);
     aws->create_input_field(AWAR_CON_STORE_SIM_SP_NO, 20);
 
-    aws->at("merge");
-    aws->callback(mergeSimilarSpecies, option, cl_subsel);
-    aws->create_button("MERGE_SIMILAR_SPECIES", "MERGE SIMILAR SPECIES", "M");
+    {
+        const char *buttonText;
+        switch (mergeType) {
+            case MERGE_SPECIES_SIMPLE:         buttonText = "Merge similar species";                       break;
+            case MERGE_SPECIES_AND_CONCAT_ALI: buttonText = "Merge similar species and concat alignments"; break;
+        }
+
+        aws->at("merge");
+        aws->callback(makeWindowCallback(mergeSimilarSpecies, mergeType, selected_alis));
+        aws->create_autosize_button("MERGE_SIMILAR_SPECIES", buttonText, "M");
+    }
 
     aws->at("close");
     aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    return (AW_window *)aws;
+    return aws;
 }
 
 AW_window *NT_createMergeSimilarSpeciesWindow(AW_root *aw_root) {
     static AW_window *aw = 0;
-    if (!aw) aw = createMergeSimilarSpeciesWindow(aw_root, 0, 0);
+    if (!aw) aw = createMergeSimilarSpeciesWindow(aw_root, MERGE_SPECIES_SIMPLE, NULL);
     return aw;
 }
 
-static AW_window *NT_createMergeSimilarSpeciesAndConcatenateWindow(AW_root *aw_root, AW_CL cl_subsel) {
-    static AW_window *aw = 0;
-    if (!aw) aw = createMergeSimilarSpeciesWindow(aw_root, MERGE_SIMILAR_CONCATENATE_ALIGNMENTS, cl_subsel);
+static AW_window *NT_createMergeSimilarSpeciesAndConcatenateWindow(AW_root *aw_root, AW_selection *selected_alis) {
+    static AW_window *aw = NULL;
+#if defined(ASSERTION_USED)
+    static AW_selection *prev_selected_alis = NULL;
+#endif
+
+    if (!aw) {
+        aw                 = createMergeSimilarSpeciesWindow(aw_root, MERGE_SPECIES_AND_CONCAT_ALI, selected_alis);
+        prev_selected_alis = selected_alis;
+    }
+#if defined(ASSERTION_USED)
+    nt_assert(selected_alis == prev_selected_alis); // would need multiple windows in that case
+#endif
     return aw;
 }
 
@@ -744,7 +772,7 @@ AW_window *NT_createConcatenationWindow(AW_root *aw_root) {
     aws->auto_space(5, 5);
     aws->at("go");
 
-    aws->callback(concatenateAlignments, (AW_CL)sel_alis);
+    aws->callback(makeWindowCallback(concatenateAlignments, sel_alis));
     aws->create_button("CONCATENATE", "CONCATENATE", "A");
 
     aws->callback(NT_createMergeSimilarSpeciesWindow);
