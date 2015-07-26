@@ -200,9 +200,9 @@ static void concatenateAlignments(AW_window *aws, AW_selection *selected_alis) {
                  gb_species && !error;
                  gb_species = GBT_next_marked_species(gb_species))
             {
-                GBS_strstruct *str_seq = GBS_stropen(new_alignment_len+1); // create output stream
-                int            ali_len = 0;
-                int            ali_ctr = 0;
+                GBS_strstruct *str_seq       = GBS_stropen(new_alignment_len+1); // create output stream
+                int            ali_len       = 0;
+                int            data_inserted = 0;
 
                 for (size_t a = 0; a<ali_count; ++a) {
                     if (a) GBS_strcat(str_seq, ali_separator);
@@ -210,25 +210,30 @@ static void concatenateAlignments(AW_window *aws, AW_selection *selected_alis) {
                     if (gb_seq_data) {
                         const char *str_data = GB_read_char_pntr(gb_seq_data);
                         GBS_strcat(str_seq, str_data);
-                        ++found[ali_ctr];
+                        ++found[a];
+                        ++data_inserted;
                     }
                     else {
                         char *speciesName = GB_read_string(GB_entry(gb_species, "full_name"));
                         char *question    = GBS_global_string_copy("\"%s\" alignment doesn't exist in \"%s\"!", ali_names[a], speciesName);
-                        int skip_ali      = ask_about_missing_alignment.get_answer("insert_gaps_for_missing_ali", question, "Insert Gaps for Missing Alignment,Skip Missing Alignment", "all", true);
+                        int   skip_ali    = ask_about_missing_alignment.get_answer("insert_gaps_for_missing_ali", question, "Insert gaps for missing alignment,Skip missing alignment", "all", false);
                         if (!skip_ali) {
                             ali_len = GBT_get_alignment_len(GLOBAL.gb_main, ali_names[a]);
                             GBS_chrncat(str_seq, '.', ali_len);
                         }
-                        ++missing[ali_ctr];
+                        ++missing[a];
                         free(question);
                         free(speciesName);
                     }
                 }
 
-                {
-                    char *concatenated_ali_seq_data = GBS_strclose(str_seq);
-                    GBDATA *gb_data = GBT_add_data(gb_species, new_ali_name, "data", GB_STRING);
+                if (!data_inserted) {
+                    error = GBS_global_string("None of the source alignments had data for species '%s'", GBT_read_name(gb_species));
+                }
+                else {
+                    char   *concatenated_ali_seq_data = GBS_strclose(str_seq);
+                    GBDATA *gb_data                   = GBT_add_data(gb_species, new_ali_name, "data", GB_STRING);
+
                     GB_write_string(gb_data, concatenated_ali_seq_data);
                     free(concatenated_ali_seq_data);
                 }
@@ -237,9 +242,9 @@ static void concatenateAlignments(AW_window *aws, AW_selection *selected_alis) {
 
             if (!error) {
                 // ............. print missing alignments...........
-                aw_message(GBS_global_string("Concatenation of Alignments was performed for %ld species.", marked_species));
+                aw_message(GBS_global_string("Concatenation of alignments was performed for %ld species.", marked_species));
                 for (size_t a = 0; a<ali_count; ++a) {
-                    aw_message(GBS_global_string("%s : Found in %d species & Missing in %d species.", ali_names[a], found[a], missing[a]));
+                    aw_message(GBS_global_string("%s: was found in %d species and missing in %d species.", ali_names[a], found[a], missing[a]));
                 }                
             }
 
