@@ -162,7 +162,7 @@ void AW_window::d_callback(const WindowCallback& wcb) {
 //      code used by scalers (common between motif and gtk)
 
 static float apply_ScalerType(float val, AW_ScalerType scalerType, bool inverse) {
-    float res;
+    float res = 0.0;
 
     aw_assert(val>=0.0 && val<=1.0);
 

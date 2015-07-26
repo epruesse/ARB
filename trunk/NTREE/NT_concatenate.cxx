@@ -720,8 +720,10 @@ static AW_window *NT_createMergeSimilarSpeciesAndConcatenateWindow(AW_root *aw_r
 #endif
 
     if (!aw) {
-        aw                 = createMergeSimilarSpeciesWindow(aw_root, MERGE_SPECIES_AND_CONCAT_ALI, selected_alis);
+        aw = createMergeSimilarSpeciesWindow(aw_root, MERGE_SPECIES_AND_CONCAT_ALI, selected_alis);
+#if defined(ASSERTION_USED)
         prev_selected_alis = selected_alis;
+#endif
     }
 #if defined(ASSERTION_USED)
     nt_assert(selected_alis == prev_selected_alis); // would need multiple windows in that case
