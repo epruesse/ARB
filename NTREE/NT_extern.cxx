@@ -227,7 +227,7 @@ static void nt_create_all_awars(AW_root *awr, AW_default def) {
     awr->awar_string(AWAR_DB_COMMENT, "<no description>", GLOBAL.gb_main);
 
     AWTC_create_submission_variables(awr, GLOBAL.gb_main);
-    NT_createConcatenationAwars(awr, def);
+    NT_createConcatenationAwars(awr, def, GLOBAL.gb_main);
     NT_createValidNamesAwars(awr, def); // lothar
     SQ_create_awars(awr, def);
     RefEntries::create_refentries_awars(awr, def);

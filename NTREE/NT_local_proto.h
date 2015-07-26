@@ -48,7 +48,7 @@ void NT_system_cb(AW_window *aww, AW_CL cl_command, AW_CL cl_auto_help_file);
 void NT_system_in_xterm_cb(AW_window *aww, AW_CL cl_command, AW_CL cl_auto_help_file);
 
 /* NT_concatenate.cxx */
-void NT_createConcatenationAwars(AW_root *aw_root, AW_default aw_def);
+void NT_createConcatenationAwars(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main);
 AW_window *NT_createMergeSimilarSpeciesWindow(AW_root *aw_root);
 AW_window *NT_createConcatenationWindow(AW_root *aw_root);
 

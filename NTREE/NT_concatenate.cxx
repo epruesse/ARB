@@ -24,15 +24,19 @@
 #include <arb_strbuf.h>
 #include <arb_strarray.h>
 #include <awt_modules.hxx>
+#include <arb_global_defs.h>
 
 using namespace std;
 
 #define AWAR_CON_SEQUENCE_TYPE       "tmp/concat/sequence_type"
 #define AWAR_CON_NEW_ALIGNMENT_NAME  "tmp/concat/new_alignment_name"
 #define AWAR_CON_ALIGNMENT_SEPARATOR "tmp/concat/alignment_separator"
-#define AWAR_CON_DB_ALIGNS           "tmp/concat/database_alignments"
+#define AWAR_CON_SELECTED_ALI        "tmp/concat/database_alignments"
 #define AWAR_CON_MERGE_FIELD         "tmp/concat/merge_field"
 #define AWAR_CON_STORE_SIM_SP_NO     "tmp/concat/store_sim_sp_no"
+
+#define AWAR_CON_ALLOW_OVERWRITE_ALI   "tmp/concat/overwrite"
+#define AWAR_CON_INSGAPS_FOR_MISS_ALIS "tmp/concat/insgaps"
 
 #define MOVE_DOWN  0
 #define MOVE_UP    1
@@ -45,13 +49,23 @@ struct SpeciesConcatenateList {
 };
 
 // --------------------------creating and initializing AWARS----------------------------------------
-void NT_createConcatenationAwars(AW_root *aw_root, AW_default aw_def) {
-    aw_root->awar_string(AWAR_CON_SEQUENCE_TYPE,       "ami",            aw_def);
+void NT_createConcatenationAwars(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main) {
+    GB_transaction  ta(gb_main);
+    char           *ali_default = GBT_get_default_alignment(gb_main);
+    char           *ali_type    = GBT_get_alignment_type_string(gb_main, ali_default);
+
+    aw_root->awar_string(AWAR_CON_SEQUENCE_TYPE,       ali_type,         aw_def);
     aw_root->awar_string(AWAR_CON_NEW_ALIGNMENT_NAME,  "ali_concat",     aw_def)->set_srt("ali_*=*:*=ali_*"); // auto-prefix with "ali_"
     aw_root->awar_string(AWAR_CON_ALIGNMENT_SEPARATOR, "XXX",            aw_def);
+    aw_root->awar_string(AWAR_CON_SELECTED_ALI,        "",               aw_def);
     aw_root->awar_string(AWAR_CON_MERGE_FIELD,         "full_name",      aw_def);
     aw_root->awar_string(AWAR_CON_STORE_SIM_SP_NO,     "merged_species", aw_def);
-    aw_root->awar_string(AWAR_CON_DB_ALIGNS,           "",               aw_def);
+
+    aw_root->awar_int(AWAR_CON_ALLOW_OVERWRITE_ALI,   0, aw_def);
+    aw_root->awar_int(AWAR_CON_INSGAPS_FOR_MISS_ALIS, 1, aw_def);
+
+    free(ali_type);
+    free(ali_default);
 }
 
 // ------------------------Selecting alignments from the database for concatenation----------------------
@@ -148,29 +162,36 @@ static void concatenateAlignments(AW_window *aws, AW_selection *selected_alis) {
     nt_assert(selected_alis);
 
     GB_push_transaction(GLOBAL.gb_main);
-    long marked_species = GBT_count_marked_species(GLOBAL.gb_main);
-    arb_progress  progress("Concatenating alignments", marked_species);
-    AW_root      *aw_root = aws->get_root();
 
-    char     *new_ali_name = aw_root->awar(AWAR_CON_NEW_ALIGNMENT_NAME)->read_string();
-    GB_ERROR  error        = GBT_check_alignment_name(new_ali_name);
+    long      marked_species = GBT_count_marked_species(GLOBAL.gb_main);
+    AW_root  *aw_root        = aws->get_root();
+    char     *new_ali_name   = aw_root->awar(AWAR_CON_NEW_ALIGNMENT_NAME)->read_string();
+    GB_ERROR  error          = GBT_check_alignment_name(new_ali_name);
 
     StrArray ali_names;
     selected_alis->get_values(ali_names);
-    
-    size_t ali_count = ali_names.size();
-    if (!error && ali_count<2) error = "Not enough alignments selected for concatenation (need at least 2)";
 
+    arb_progress progress("Concatenating alignments", marked_species);
+    size_t       ali_count = ali_names.size();
+
+    if (!error && ali_count<2) {
+        error = "Not enough alignments selected for concatenation (need at least 2)";
+    }
     if (!error) {
-        int found[ali_count], missing[ali_count];
-        for (size_t j = 0; j<ali_count; j++) { found[j] = 0; missing[j] = 0; }  // initializing found and missing alis
+        int found[ali_count], missing[ali_count], ali_length[ali_count];
 
-        char *ali_separator = aw_root->awar(AWAR_CON_ALIGNMENT_SEPARATOR)->read_string();
-        int   sep_len       = strlen(ali_separator);
+        for (size_t a = 0; a<ali_count; a++) {
+            found[a]      = 0;
+            missing[a]    = 0;
+            ali_length[a] = GBT_get_alignment_len(GLOBAL.gb_main, ali_names[a]);
+        }
 
-        long new_alignment_len = 0;
+        char      *ali_separator = aw_root->awar(AWAR_CON_ALIGNMENT_SEPARATOR)->read_string();
+        const int  sep_len       = strlen(ali_separator);
+
+        long new_alignment_len = (ali_count-1)*sep_len;
         for (size_t a = 0; a<ali_count; ++a) {
-            new_alignment_len += GBT_get_alignment_len(GLOBAL.gb_main, ali_names[a]) + (a ? sep_len : 0);
+            new_alignment_len += ali_length[a];
         }
 
         GBDATA *gb_presets          = GBT_get_presets(GLOBAL.gb_main);
@@ -178,52 +199,46 @@ static void concatenateAlignments(AW_window *aws, AW_selection *selected_alis) {
         GBDATA *gb_new_alignment    = 0;
         char   *seq_type            = aw_root->awar(AWAR_CON_SEQUENCE_TYPE)->read_string();
 
-        if (gb_alignment_exists) {    // check wheather new alignment exists or not, if yes prompt user to overwrite the existing alignment; if no create an empty alignment
-            bool overwrite = aw_ask_sure("concat_ali_overwrite", GBS_global_string("Existing data in alignment \"%s\" may be overwritten. Do you want to continue?", new_ali_name));
-            if (!overwrite) {
-                error = "Alignment exists - aborted";
-            }
-            else {
+        if (gb_alignment_exists) {
+            // target alignment exists
+            if (aw_root->awar(AWAR_CON_ALLOW_OVERWRITE_ALI)->read_int()) { // allow overwrite
                 gb_new_alignment             = GBT_get_alignment(GLOBAL.gb_main, new_ali_name);
                 if (!gb_new_alignment) error = GB_await_error();
             }
+            else {
+                error = GBS_global_string("Target alignment '%s' already exists\n(check overwrite-toggle if you really want to overwrite)", new_ali_name);
+            }
         }
         else {
+            // create new target alignment
             gb_new_alignment             = GBT_create_alignment(GLOBAL.gb_main, new_ali_name, new_alignment_len, 0, 0, seq_type);
             if (!gb_new_alignment) error = GB_await_error();
         }
 
         if (!error) {
             AW_repeated_question ask_about_missing_alignment;
+            bool                 insertGaps = aw_root->awar(AWAR_CON_INSGAPS_FOR_MISS_ALIS)->read_int();
 
             for (GBDATA *gb_species = GBT_first_marked_species(GLOBAL.gb_main);
                  gb_species && !error;
                  gb_species = GBT_next_marked_species(gb_species))
             {
                 GBS_strstruct *str_seq       = GBS_stropen(new_alignment_len+1); // create output stream
-                int            ali_len       = 0;
                 int            data_inserted = 0;
 
                 for (size_t a = 0; a<ali_count; ++a) {
                     if (a) GBS_strcat(str_seq, ali_separator);
+
                     GBDATA *gb_seq_data = GBT_find_sequence(gb_species, ali_names[a]);
-                    if (gb_seq_data) {
+                    if (gb_seq_data) { // found data
                         const char *str_data = GB_read_char_pntr(gb_seq_data);
                         GBS_strcat(str_seq, str_data);
                         ++found[a];
                         ++data_inserted;
                     }
-                    else {
-                        char *speciesName = GB_read_string(GB_entry(gb_species, "full_name"));
-                        char *question    = GBS_global_string_copy("\"%s\" alignment doesn't exist in \"%s\"!", ali_names[a], speciesName);
-                        int   skip_ali    = ask_about_missing_alignment.get_answer("insert_gaps_for_missing_ali", question, "Insert gaps for missing alignment,Skip missing alignment", "all", false);
-                        if (!skip_ali) {
-                            ali_len = GBT_get_alignment_len(GLOBAL.gb_main, ali_names[a]);
-                            GBS_chrncat(str_seq, '.', ali_len);
-                        }
+                    else { // missing data
+                        if (insertGaps) GBS_chrncat(str_seq, '.', ali_length[a]);
                         ++missing[a];
-                        free(question);
-                        free(speciesName);
                     }
                 }
 
@@ -736,6 +751,17 @@ static AW_window *NT_createMergeSimilarSpeciesAndConcatenateWindow(AW_root *aw_r
     return aw;
 }
 
+static void useSelectedAlignment(AW_window *aww) {
+    AW_root    *root   = aww->get_root();
+    const char *selali = root->awar(AWAR_CON_SELECTED_ALI)->read_char_pntr();
+    if (selali && strcmp(selali, NO_ALI_SELECTED) != 0) {
+        root->awar(AWAR_CON_NEW_ALIGNMENT_NAME)->write_string(selali);
+    }
+    else {
+        aw_message("Select alignment to use in the left alignment list");
+    }
+}
+
 // ----------------------------Creating concatenation window-----------------------------------------
 AW_window *NT_createConcatenationWindow(AW_root *aw_root) {
     AW_window_simple *aws = new AW_window_simple;
@@ -743,6 +769,7 @@ AW_window *NT_createConcatenationWindow(AW_root *aw_root) {
     aws->init(aw_root, "CONCAT_ALIGNMENTS", "Concatenate Alignments");
     aws->load_xfig("concatenate.fig");
 
+    aws->auto_space(5, 5);
     aws->button_length(8);
 
     aws->callback(makeHelpCallback("concatenate.hlp"));
@@ -754,7 +781,7 @@ AW_window *NT_createConcatenationWindow(AW_root *aw_root) {
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("dbAligns");
-    AW_DB_selection *all_alis = createSelectionList(GLOBAL.gb_main, aws, AWAR_CON_DB_ALIGNS);
+    AW_DB_selection *all_alis = createSelectionList(GLOBAL.gb_main, aws, AWAR_CON_SELECTED_ALI);
     AW_selection    *sel_alis = awt_create_subset_selection_list(aws, all_alis->get_sellist(), "concatAligns", "collect", "sort");
 
     aws->at("type");
@@ -765,18 +792,24 @@ AW_window *NT_createConcatenationWindow(AW_root *aw_root) {
     aws->update_option_menu();
     aw_root->awar(AWAR_CON_SEQUENCE_TYPE)->add_callback(alitype_changed_cb, (AW_CL)all_alis);
 
-    aws->button_length(0);
-
-    aws->at("aliName");
-    aws->label_length(15);
-    aws->create_input_field(AWAR_CON_NEW_ALIGNMENT_NAME, 25);
-
     aws->at("aliSeparator");
-    aws->label_length(5);
     aws->create_input_field(AWAR_CON_ALIGNMENT_SEPARATOR, 10);
 
+    aws->at("aliName");
+    aws->create_input_field(AWAR_CON_NEW_ALIGNMENT_NAME, 25);
+    aws->button_length(5);
+    aws->callback(useSelectedAlignment);
+    aws->create_button("USE", "Use");
+
+    aws->at("overwrite");
+    aws->label("Allow to overwrite an existing alignment?");
+    aws->create_toggle(AWAR_CON_ALLOW_OVERWRITE_ALI);
+
+    aws->at("insgaps");
+    aws->label("Insert gaps for missing alignment data?");
+    aws->create_toggle(AWAR_CON_INSGAPS_FOR_MISS_ALIS);
+
     aws->button_length(22);
-    aws->auto_space(5, 5);
     aws->at("go");
 
     aws->callback(makeWindowCallback(concatenateAlignments, sel_alis));
@@ -788,7 +821,6 @@ AW_window *NT_createConcatenationWindow(AW_root *aw_root) {
     aws->callback(AW_POPUP, (AW_CL)NT_createMergeSimilarSpeciesAndConcatenateWindow, (AW_CL)sel_alis);
     aws->create_button("MERGE_CONCATENATE", "MERGE & CONCATENATE", "S");
 
-    aws->show();
     return aws;
 }
 // -------------------------------------------------------------------------------------------------------
