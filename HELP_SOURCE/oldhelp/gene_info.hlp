@@ -17,18 +17,20 @@ SUB     gen_create.hlp
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE           GENE INFORMATION
+TITLE           Gene information
 
 OCCURRENCE      ARB_GENEMAP/<INFO> button (on the left side)
-                ARB_NT/Genes/Info
-                ARB_NT/Genes/Search
-                ARB_GENEMAP/Genes/Info
-                ARB_GENEMAP/Genes/Search
+                ARB_NT/Genome/Gene information
+                ARB_NT/Genome/Search and Query/Info
+                ARB_GENEMAP/Genome/Gene information
+                ARB_GENEMAP/Genome/Search and Query/Info
 
 DESCRIPTION     Displays gene information stored within the 'fields' (see LINK{glossary.hlp}).
+
                 The particular 'gene' (see LINK{glossary.hlp})
                 can be 'marked' or 'unmarked' (see LINK{glossary.hlp})
                 by pressing the checkbox after the 'Marked?' prompt.
+
                 Editing of 'field' entries is enabled or prevented by
                 pressing the 'Edit enabled?' checkbox.
 

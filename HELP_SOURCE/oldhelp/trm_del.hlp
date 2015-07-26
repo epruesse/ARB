@@ -16,11 +16,14 @@ DESCRIPTION     Removes zombie species (see LINK{glossary.hlp}) from the current
 
 NOTES           Nodes and IDs of species which have been deleted from the 
                 database, e.g. by
-                - ARB_NT/Species/Delete Marked Species
-                - ARB_NT/Species/Search/DELETE LISTED SPECIES or
-                - ARB_NT/Species/Info/SPECIES/Delete
 
-                are maintained in the trees and indicated as deleted by enclosing their name into '<' and '>' (e.g. '<EscColi>').
+                 - LINK{sp_del_mrkd.hlp}
+                 - LINK{del_list.hlp}
+                 - LINK{spa_delete.hlp}
+
+                are maintained in the trees and indicated as deleted by
+                enclosing their name into '<' and '>' (e.g. '<EscColi>')
+                and drawing them in different color (see LINK{color_props.hlp}).
 
 EXAMPLES        None
 

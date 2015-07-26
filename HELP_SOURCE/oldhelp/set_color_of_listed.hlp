@@ -12,9 +12,9 @@ SUB	tree_group.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Colorize listed items
 
-OCCURRENCE	Species/Search&Query/More Functions/Set color of listed species
-                Genes/Search&Query/More Functions/Set color of listed genes
-                Organism/Search&Query/More Functions/Set color of listed organisms
+OCCURRENCE	ARB_NT/Species/Search and Query/More Functions/Set color of listed species
+                ARB_NT/Genome/Search and query/More Functions/Set color of listed genes
+                ARB_NT/Genome/Experiment/Search and query/More Functions/Set color of listed experiments
 
 DESCRIPTION     Sets the internal color flag ('ARB_color') of the currently listed items
                 (e.g. species, genes, ...) to the selected color group, when you press the

@@ -1419,7 +1419,7 @@ static void GEN_create_organism_submenu(AW_window_menu_modes *awm, GBDATA *gb_ma
     else awm->create_menu(title, hotkey, AWM_ALL);
 
     {
-        awm->insert_menu_topic("organism_info", "Organism information", "i", "organism_info.hlp", AWM_ALL, RootAsWindowCallback::simple(DBUI::popup_organism_info_window, gb_main));
+        awm->insert_menu_topic("organism_info", "Organism information", "i", "sp_info.hlp", AWM_ALL, RootAsWindowCallback::simple(DBUI::popup_organism_info_window, gb_main));
 
         awm->sep______________();
 
@@ -1674,7 +1674,7 @@ void GEN_map_window::init(AW_root *awr, GBDATA *gb_main) {
     button_length(20);
 
     at(gene_x, first_line_y);
-    help_text("organism_search.hlp");
+    help_text("sp_search.hlp");
     callback(makeCreateWindowCallback(DBUI::create_species_query_window, gb_main)); // @@@ should use an organism search (using ITEM_organism) 
     create_button("SEARCH_ORGANISM", AWAR_LOCAL_ORGANISM_NAME(window_nr));
 
