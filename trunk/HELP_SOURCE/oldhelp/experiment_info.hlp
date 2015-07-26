@@ -1,0 +1,38 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Experiment information
+
+OCCURRENCE	ARB_NT/Genome/Experiment/Experiment information
+                ARB_NT/Experiment/Search and query/Info
+                ARB_GENEMAP/Experiment/Experiment information
+                ARB_GENEMAP/Experiment/Search and query/Info
+
+DESCRIPTION     Displays experiment information stored within the 'fields' (see LINK{glossary.hlp}).
+
+                The particular 'experiment' (see LINK{glossary.hlp})
+                can be 'marked' or 'unmarked' (see LINK{glossary.hlp})
+                by pressing the checkbox after the 'Marked?' prompt.
+
+                Editing of 'field' entries is enabled or prevented by
+                pressing the 'Edit enabled?' checkbox.
+
+                The entries of a 'field' are modified by choosing it from
+                the 'DATABASE FIELDS' subwindow and modifying the entries
+                displayed in the 'Edit box' subwindow.
+
+NOTES		The 'SEARCH & QUERY' window can be displayed by pressing the <SEARCH>
+                button.
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known

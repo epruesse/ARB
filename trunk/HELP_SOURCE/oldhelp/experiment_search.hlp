@@ -1,0 +1,28 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Search Database for Experiments
+
+OCCURRENCE	ARB_NT/Experiment/Search and query
+                ARB_NT/Genome/Experiment/Experiment information/Search
+                ARB_GENEMAP/Experiment/Search and query
+                ARB_GENEMAP/Experiment/Experiment information/Search
+
+DESCRIPTION     Searches for a (set of) experiments
+		that match (don't match) a query or are marked.
+
+NOTES		see LINK{gene_search.hlp} and LINK{searching.hlp} for general details
+                about database search.
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known
