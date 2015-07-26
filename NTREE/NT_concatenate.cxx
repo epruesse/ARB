@@ -105,7 +105,7 @@ static GB_ERROR create_concatInfo_SAI(GBDATA *gb_main, const char *new_ali_name,
 
     if (!gb_extended) error = GB_await_error();
     else {
-        GBDATA *gb_data = GBT_add_data(gb_extended, new_ali_name, "data", GB_STRING); // @@@ wrong if exists?
+        GBDATA *gb_data = GBT_add_data(gb_extended, new_ali_name, "data", GB_STRING);
 
         if (!gb_data) {
             error = GB_await_error();
@@ -260,12 +260,13 @@ static void concatenateAlignments(AW_window *aws, AW_selection *selected_alis) {
                 aw_message(GBS_global_string("Concatenation of alignments was performed for %ld species.", marked_species));
                 for (size_t a = 0; a<ali_count; ++a) {
                     aw_message(GBS_global_string("%s: was found in %d species and missing in %d species.", ali_names[a], found[a], missing[a]));
-                }                
+                }
             }
 
+            if (!error) error = GBT_check_data(GLOBAL.gb_main, new_ali_name); // update alignment info (otherwise create_concatInfo_SAI fails when overwriting an alignment)
             if (!error) error = create_concatInfo_SAI(GLOBAL.gb_main, new_ali_name, ali_separator, ali_names);
         }
-        
+
         free(seq_type);
         free(ali_separator);
     }
