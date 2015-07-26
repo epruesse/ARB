@@ -184,91 +184,97 @@ static void concatenateAlignments(AW_window *aws, AW_selection *selected_alis) {
             found[a]      = 0;
             missing[a]    = 0;
             ali_length[a] = GBT_get_alignment_len(GLOBAL.gb_main, ali_names[a]);
-        }
 
-        char      *ali_separator = aw_root->awar(AWAR_CON_ALIGNMENT_SEPARATOR)->read_string();
-        const int  sep_len       = strlen(ali_separator);
-
-        long new_alignment_len = (ali_count-1)*sep_len;
-        for (size_t a = 0; a<ali_count; ++a) {
-            new_alignment_len += ali_length[a];
-        }
-
-        GBDATA *gb_presets          = GBT_get_presets(GLOBAL.gb_main);
-        GBDATA *gb_alignment_exists = GB_find_string(gb_presets, "alignment_name", new_ali_name, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
-        GBDATA *gb_new_alignment    = 0;
-        char   *seq_type            = aw_root->awar(AWAR_CON_SEQUENCE_TYPE)->read_string();
-
-        if (gb_alignment_exists) {
-            // target alignment exists
-            if (aw_root->awar(AWAR_CON_ALLOW_OVERWRITE_ALI)->read_int()) { // allow overwrite
-                gb_new_alignment             = GBT_get_alignment(GLOBAL.gb_main, new_ali_name);
-                if (!gb_new_alignment) error = GB_await_error();
+            if (strcmp(ali_names[a], new_ali_name) == 0) {
+                error = "Target alignment may not be one of the source alignments";
             }
-            else {
-                error = GBS_global_string("Target alignment '%s' already exists\n(check overwrite-toggle if you really want to overwrite)", new_ali_name);
-            }
-        }
-        else {
-            // create new target alignment
-            gb_new_alignment             = GBT_create_alignment(GLOBAL.gb_main, new_ali_name, new_alignment_len, 0, 0, seq_type);
-            if (!gb_new_alignment) error = GB_await_error();
         }
 
         if (!error) {
-            AW_repeated_question ask_about_missing_alignment;
-            bool                 insertGaps = aw_root->awar(AWAR_CON_INSGAPS_FOR_MISS_ALIS)->read_int();
+            char      *ali_separator = aw_root->awar(AWAR_CON_ALIGNMENT_SEPARATOR)->read_string();
+            const int  sep_len       = strlen(ali_separator);
 
-            for (GBDATA *gb_species = GBT_first_marked_species(GLOBAL.gb_main);
-                 gb_species && !error;
-                 gb_species = GBT_next_marked_species(gb_species))
-            {
-                GBS_strstruct *str_seq       = GBS_stropen(new_alignment_len+1); // create output stream
-                int            data_inserted = 0;
+            long new_alignment_len = (ali_count-1)*sep_len;
+            for (size_t a = 0; a<ali_count; ++a) {
+                new_alignment_len += ali_length[a];
+            }
 
-                for (size_t a = 0; a<ali_count; ++a) {
-                    if (a) GBS_strcat(str_seq, ali_separator);
+            GBDATA *gb_presets          = GBT_get_presets(GLOBAL.gb_main);
+            GBDATA *gb_alignment_exists = GB_find_string(gb_presets, "alignment_name", new_ali_name, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
+            GBDATA *gb_new_alignment    = 0;
+            char   *seq_type            = aw_root->awar(AWAR_CON_SEQUENCE_TYPE)->read_string();
 
-                    GBDATA *gb_seq_data = GBT_find_sequence(gb_species, ali_names[a]);
-                    if (gb_seq_data) { // found data
-                        const char *str_data = GB_read_char_pntr(gb_seq_data);
-                        GBS_strcat(str_seq, str_data);
-                        ++found[a];
-                        ++data_inserted;
-                    }
-                    else { // missing data
-                        if (insertGaps) GBS_chrncat(str_seq, '.', ali_length[a]);
-                        ++missing[a];
-                    }
-                }
-
-                if (!data_inserted) {
-                    error = GBS_global_string("None of the source alignments had data for species '%s'", GBT_read_name(gb_species));
+            if (gb_alignment_exists) {
+                // target alignment exists
+                if (aw_root->awar(AWAR_CON_ALLOW_OVERWRITE_ALI)->read_int()) { // allow overwrite
+                    gb_new_alignment             = GBT_get_alignment(GLOBAL.gb_main, new_ali_name);
+                    if (!gb_new_alignment) error = GB_await_error();
                 }
                 else {
-                    char   *concatenated_ali_seq_data = GBS_strclose(str_seq);
-                    GBDATA *gb_data                   = GBT_add_data(gb_species, new_ali_name, "data", GB_STRING);
-
-                    GB_write_string(gb_data, concatenated_ali_seq_data);
-                    free(concatenated_ali_seq_data);
+                    error = GBS_global_string("Target alignment '%s' already exists\n(check overwrite-toggle if you really want to overwrite)", new_ali_name);
                 }
-                progress.inc_and_check_user_abort(error);
+            }
+            else {
+                // create new target alignment
+                gb_new_alignment             = GBT_create_alignment(GLOBAL.gb_main, new_ali_name, new_alignment_len, 0, 0, seq_type);
+                if (!gb_new_alignment) error = GB_await_error();
             }
 
             if (!error) {
-                // ............. print missing alignments...........
-                aw_message(GBS_global_string("Concatenation of alignments was performed for %ld species.", marked_species));
-                for (size_t a = 0; a<ali_count; ++a) {
-                    aw_message(GBS_global_string("%s: was found in %d species and missing in %d species.", ali_names[a], found[a], missing[a]));
+                AW_repeated_question ask_about_missing_alignment;
+                bool                 insertGaps = aw_root->awar(AWAR_CON_INSGAPS_FOR_MISS_ALIS)->read_int();
+
+                for (GBDATA *gb_species = GBT_first_marked_species(GLOBAL.gb_main);
+                     gb_species && !error;
+                     gb_species = GBT_next_marked_species(gb_species))
+                {
+                    GBS_strstruct *str_seq       = GBS_stropen(new_alignment_len+1); // create output stream
+                    int            data_inserted = 0;
+
+                    for (size_t a = 0; a<ali_count; ++a) {
+                        if (a) GBS_strcat(str_seq, ali_separator);
+
+                        GBDATA *gb_seq_data = GBT_find_sequence(gb_species, ali_names[a]);
+                        if (gb_seq_data) { // found data
+                            const char *str_data = GB_read_char_pntr(gb_seq_data);
+                            GBS_strcat(str_seq, str_data);
+                            ++found[a];
+                            ++data_inserted;
+                        }
+                        else { // missing data
+                            if (insertGaps) GBS_chrncat(str_seq, '.', ali_length[a]);
+                            ++missing[a];
+                        }
+                    }
+
+                    if (!data_inserted) {
+                        error = GBS_global_string("None of the source alignments had data for species '%s'", GBT_read_name(gb_species));
+                    }
+                    else {
+                        char   *concatenated_ali_seq_data = GBS_strclose(str_seq);
+                        GBDATA *gb_data                   = GBT_add_data(gb_species, new_ali_name, "data", GB_STRING);
+
+                        GB_write_string(gb_data, concatenated_ali_seq_data);
+                        free(concatenated_ali_seq_data);
+                    }
+                    progress.inc_and_check_user_abort(error);
                 }
+
+                if (!error) {
+                    // ............. print missing alignments...........
+                    aw_message(GBS_global_string("Concatenation of alignments was performed for %ld species.", marked_species));
+                    for (size_t a = 0; a<ali_count; ++a) {
+                        aw_message(GBS_global_string("%s: was found in %d species and missing in %d species.", ali_names[a], found[a], missing[a]));
+                    }
+                }
+
+                if (!error) error = GBT_check_data(GLOBAL.gb_main, new_ali_name); // update alignment info (otherwise create_concatInfo_SAI fails when overwriting an alignment)
+                if (!error) error = create_concatInfo_SAI(GLOBAL.gb_main, new_ali_name, ali_separator, ali_names);
             }
 
-            if (!error) error = GBT_check_data(GLOBAL.gb_main, new_ali_name); // update alignment info (otherwise create_concatInfo_SAI fails when overwriting an alignment)
-            if (!error) error = create_concatInfo_SAI(GLOBAL.gb_main, new_ali_name, ali_separator, ali_names);
+            free(seq_type);
+            free(ali_separator);
         }
-
-        free(seq_type);
-        free(ali_separator);
     }
 
     if (!error) {
