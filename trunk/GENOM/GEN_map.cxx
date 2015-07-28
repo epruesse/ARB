@@ -1587,8 +1587,8 @@ void GEN_map_window::init(AW_root *awr, GBDATA *gb_main) {
 
     // File Menu
     create_menu("File", "F", AWM_ALL);
-    insert_menu_topic("close", "Close", "C", "quit.hlp", AWM_ALL, (AW_CB)AW_POPDOWN, 0, 0);
-    insert_menu_topic(local_id("new_view"), "New view", "v", "new_view.hlp", AWM_ALL, makeCreateWindowCallback(GEN_create_map, new GEN_create_map_param(gb_main, window_nr+1)));
+    insert_menu_topic("close",              "Close",    "C", NULL,               AWM_ALL, (AW_CB)AW_POPDOWN, 0, 0);
+    insert_menu_topic(local_id("new_view"), "New view", "v", "gen_new_view.hlp", AWM_ALL, makeCreateWindowCallback(GEN_create_map, new GEN_create_map_param(gb_main, window_nr+1)));
 
     GEN_create_genes_submenu       (this, gb_main, false); // Genes
     GEN_create_gene_species_submenu(this, gb_main, false); // Gene-species
