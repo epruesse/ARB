@@ -732,17 +732,14 @@ AW_window *DBUI::create_field_delete_window(AW_root *root, BoundItemSel *bound_s
         aws->button_length(13);
         aws->at("hide");
         aws->callback(makeWindowCallback(hide_field_cb, item_sel, 1));
-        aws->help_text("rm_field_only.hlp");
         aws->create_button("HIDE_FIELD", "Hide field", "H");
 
         aws->at("unhide");
         aws->callback(makeWindowCallback(hide_field_cb, item_sel, 0));
-        aws->help_text("rm_field_only.hlp");
         aws->create_button("UNHIDE_FIELD", "Unhide field", "U");
 
         aws->at("delf");
         aws->callback(makeWindowCallback(field_delete_cb, item_sel));
-        aws->help_text("rm_field_cmpt.hlp");
         aws->create_button("DELETE_FIELD", "Delete field\n(data deleted)", "C");
     }
     
