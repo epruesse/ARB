@@ -22,6 +22,7 @@
 #include <arbdbt.h>
 
 #include <iostream>
+#include <arb_global_defs.h>
 
 
 using namespace std;
@@ -375,16 +376,25 @@ static char *GetDisplayInfo(AW_root *root, GBDATA *gb_main, const char *speciesN
     else {
         char *field_content = 0;
         {
-            char   *dbFieldName = root->awar_string(AWAR_SPV_DB_FIELD_NAME)->read_string();
-            GBDATA *gb_field    = GB_search(gb_Species, dbFieldName, GB_FIND);
-            if (gb_field) {
-                field_content             = GB_read_as_string(gb_field);
-                if (!field_content) error = GB_await_error();
+            const char *dbFieldName = root->awar_string(AWAR_SPV_DB_FIELD_NAME)->read_char_pntr();
+            if (strcmp(dbFieldName, NO_FIELD_SELECTED) == 0) {
+                field_content = strdup("no field, no content");
             }
             else {
-                error = GBS_global_string("No entry '%s' in species '%s'", dbFieldName, speciesName);
+                GBDATA *gb_field = GB_search(gb_Species, dbFieldName, GB_FIND);
+                if (gb_field) {
+                    field_content             = GB_read_as_string(gb_field);
+                    if (!field_content) error = GB_await_error();
+                }
+                else {
+                    if (GB_have_error()) {
+                        error = GBS_global_string("Failed to retrieve field '%s' (Reason: %s)", dbFieldName, GB_await_error());
+                    }
+                    else {
+                        error = GBS_global_string("No entry '%s' in species '%s'", dbFieldName, speciesName);
+                    }
+                }
             }
-            free(dbFieldName);
         }
 
         if (!error) {
@@ -670,8 +680,18 @@ static AW_window *createDisplayField_window(AW_root *aw_root, GBDATA *gb_main) {
     static AW_window_simple *aws = 0;
     if (!aws) {
         aws = new AW_window_simple;
-        aws->init(aw_root, "SELECT_DISPLAY_FIELD", "SELECT DISPLAY FIELD");
+        aws->init(aw_root, "SELECT_DISPLAY_FIELD", "Select display field");
         aws->load_xfig("displayField.fig");
+
+        aws->button_length(10);
+
+        aws->at("close");
+        aws->callback(AW_POPDOWN);
+        aws->create_button("CLOSE", "CLOSE", "C");
+
+        aws->at("help");
+        aws->callback(makeHelpCallback("displayField.hlp"));
+        aws->create_button("HELP", "HELP", "H");
 
         aws->at("dbField");
         aws->button_length(20);
@@ -685,17 +705,10 @@ static AW_window *createDisplayField_window(AW_root *aw_root, GBDATA *gb_main) {
         aws->create_button("SELECT_ACI", "Select ACI");
 
         aws->at("aciCmd");
-        aws->button_length(20);
         aws->create_input_field(AWAR_SPV_ACI_COMMAND, 40);
 
         aws->at("width");
-        aws->button_length(5);
         aws->create_input_field(AWAR_SPV_DB_FIELD_WIDTH, 4);
-
-        aws->at("close");
-        aws->button_length(10);
-        aws->callback(AW_POPDOWN);
-        aws->create_button("CLOSE", "CLOSE", "C");
 
         aws->window_fit();
     }
@@ -720,16 +733,16 @@ AW_window *createSaiProbeMatchWindow(AW_root *awr, GBDATA *gb_main) {
 
     scr->recalc_size();
 
-    awm->insert_help_topic("How to Visualize SAI`s ?", "V", "saiProbeHelp.hlp", AWM_ALL, makeHelpCallback("saiProbeHelp.hlp"));
+    awm->insert_help_topic("How to Visualize SAI`s ?", "V", "saiProbe.hlp", AWM_ALL, makeHelpCallback("saiProbe.hlp"));
 
     awm->create_menu("File", "F", AWM_ALL);
     awm->insert_menu_topic("close", "Close", "C", "quit.hlp", AWM_ALL, AW_POPDOWN);
 
     awm->create_menu("Properties", "P", AWM_ALL);
-    awm->insert_menu_topic("selectDispField", "Select Display Field",      "F", "displayField.hlp", AWM_ALL, makeCreateWindowCallback(createDisplayField_window, gb_main));
-    awm->insert_menu_topic("selectSAI",       "Select SAI",                "S", NULL,               AWM_ALL, makeWindowCallback(awt_popup_SAI_selection_list, AWAR_SPV_SAI_2_PROBE, gb_main));
-    awm->insert_menu_topic("clrTransTable",   "Define Color Translations", "D", NULL,               AWM_ALL, create_colorTranslationTable_window);
-    awm->insert_menu_topic("SetColors",       "Set Colors and Fonts",      "t", "setColors.hlp",    AWM_ALL, makeCreateWindowCallback(createSaiColorWindow, scr->gc_manager));
+    awm->insert_menu_topic("selectDispField", "Select display field",      "F", "displayField.hlp", AWM_ALL, makeCreateWindowCallback(createDisplayField_window, gb_main));
+    awm->insert_menu_topic("selectSAI",       "Select SAI",                "S", "saiProbe.hlp",     AWM_ALL, makeWindowCallback(awt_popup_SAI_selection_list, AWAR_SPV_SAI_2_PROBE, gb_main));
+    awm->insert_menu_topic("clrTransTable",   "Define Color Translations", "D", "saiProbe.hlp",     AWM_ALL, create_colorTranslationTable_window);
+    awm->insert_menu_topic("SetColors",       "Set Colors and Fonts",      "t", "color_props.hlp",  AWM_ALL, makeCreateWindowCallback(createSaiColorWindow, scr->gc_manager));
 
     addCallBacks(awr, scr);
 
