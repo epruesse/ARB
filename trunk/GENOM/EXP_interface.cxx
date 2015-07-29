@@ -191,6 +191,8 @@ static GBDATA *next_experiment_in_range(GBDATA *gb_prev, QUERY_RANGE range) {
     return gb_next;
 }
 
+static void refresh_displayed_experiments() {} // nothing todo here
+
 #if defined(WARN_TODO)
 #warning move EXP_item_selector to SL/ITEMS
 #endif
@@ -213,6 +215,7 @@ static struct MutableItemSelector EXP_item_selector = {
     EXP_get_current_experiment,
     add_selected_experiment_changed_cb,
     &ORGANISM_get_selector(), GB_get_grandfather,
+    refresh_displayed_experiments,
 };
 
 ItemSelector& EXP_get_selector() { return EXP_item_selector; }
