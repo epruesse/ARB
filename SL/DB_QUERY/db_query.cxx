@@ -1901,8 +1901,11 @@ static void mark_colored_cb(AW_window *aww, BoundItemSel *cmd, mark_mode mode) {
 
 struct color_save_data {
     BoundItemSel      *cmd;
-    const char        *items_name;
     AW_selection_list *colorsets;
+
+    const char *get_items_name() const {
+        return cmd->selector.items_name;
+    }
 };
 
 #define AWAR_COLOR_LOADSAVE_NAME "tmp/colorset/name"
@@ -1910,7 +1913,7 @@ struct color_save_data {
 static GBDATA *get_colorset_root(const color_save_data *csd) {
     GBDATA *gb_main      = csd->cmd->gb_main;
     GBDATA *gb_colorsets = GB_search(gb_main, "colorsets", GB_CREATE_CONTAINER);
-    GBDATA *gb_item_root = GB_search(gb_colorsets, csd->items_name, GB_CREATE_CONTAINER);
+    GBDATA *gb_item_root = GB_search(gb_colorsets, csd->get_items_name(), GB_CREATE_CONTAINER);
 
     dbq_assert(gb_item_root);
     return gb_item_root;
@@ -1956,11 +1959,13 @@ static char *create_colorset_representation(const color_save_data *csd, AW_root 
              !error && gb_item;
              gb_item = sel.get_next_item(gb_item, QUERY_ALL_ITEMS))
         {
-            long        color     = AW_find_color_group(gb_item, true);
-            char       *id        = sel.generate_item_id(gb_main, gb_item);
-            const char *color_def = GBS_global_string("%s=%li", id, color);
-            cl.push_front(color_def);
-            free(id);
+            long color = AW_find_color_group(gb_item, true);
+            if (color>0) {
+                char       *id        = sel.generate_item_id(gb_main, gb_item);
+                const char *color_def = GBS_global_string("%s=%li", id, color);
+                cl.push_front(color_def);
+                free(id);
+            }
         }
     }
 
@@ -2041,7 +2046,9 @@ static GB_ERROR restore_colorset_representation(const color_save_data *csd, cons
         }
         else {
             int color_group = atoi(equal+1);
-            AW_set_color_group(gb_item, color_group);
+            if (color_group>0) { // bugfix: saved color groups contained zero (which means "no color") by mistake; ignore 
+                AW_set_color_group(gb_item, color_group);
+            }
         }
         colorset = semi ? semi+1 : 0;
     }
@@ -2137,8 +2144,8 @@ static AW_window *create_loadsave_colored_window(AW_root *aw_root, color_save_da
         // init window
         AW_window_simple *aws = new AW_window_simple;
         {
-            char *window_id = GBS_global_string_copy("colorset_loadsave_%s", csd->items_name);
-            aws->init(aw_root, window_id, GBS_global_string("Load/Save %s colorset", csd->items_name));
+            char *window_id = GBS_global_string_copy("colorset_loadsave_%s", csd->get_items_name());
+            aws->init(aw_root, window_id, GBS_global_string("Load/Save %s colorset", csd->get_items_name()));
             free(window_id);
         }
 
@@ -2261,7 +2268,6 @@ static AW_window *create_colorize_window(AW_root *aw_root, GBDATA *gb_main, DbQu
 
     color_save_data *csd = new color_save_data; // do not free!
     csd->cmd             = cmd;
-    csd->items_name      = Sel.items_name;
     csd->colorsets       = 0;
 
     aws->at("loadsave");
