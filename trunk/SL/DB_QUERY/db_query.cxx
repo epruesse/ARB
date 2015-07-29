@@ -1900,30 +1900,30 @@ static void mark_colored_cb(AW_window *aww, BoundItemSel *cmd, mark_mode mode) {
 // color sets
 
 struct color_save_data {
-    BoundItemSel      *cmd;
+    BoundItemSel      *bsel;
     AW_selection_list *colorsets;
 
     const char *get_items_name() const {
-        return cmd->selector.items_name;
+        return bsel->selector.items_name;
     }
 };
 
 #define AWAR_COLOR_LOADSAVE_NAME "tmp/colorset/name"
 
-static GBDATA *get_colorset_root(const color_save_data *csd) {
-    GBDATA *gb_main      = csd->cmd->gb_main;
+static GBDATA *get_colorset_root(BoundItemSel *bsel) {
+    GBDATA *gb_main      = bsel->gb_main;
     GBDATA *gb_colorsets = GB_search(gb_main, "colorsets", GB_CREATE_CONTAINER);
-    GBDATA *gb_item_root = GB_search(gb_colorsets, csd->get_items_name(), GB_CREATE_CONTAINER);
+    GBDATA *gb_item_root = GB_search(gb_colorsets, bsel->selector.items_name, GB_CREATE_CONTAINER);
 
     dbq_assert(gb_item_root);
     return gb_item_root;
 }
 
 static void update_colorset_selection_list(const color_save_data *csd) {
-    GB_transaction ta(csd->cmd->gb_main);
+    GB_transaction ta(csd->bsel->gb_main);
 
     csd->colorsets->clear();
-    GBDATA *gb_item_root = get_colorset_root(csd);
+    GBDATA *gb_item_root = get_colorset_root(csd->bsel);
 
     csd->colorsets->insert_default("<new colorset>", "");
     for (GBDATA *gb_colorset = GB_entry(gb_item_root, "colorset");
@@ -1942,16 +1942,15 @@ static void colorset_changed_cb(GBDATA*, const color_save_data *csd, GB_CB_TYPE 
     }
 }
 
-static char *create_colorset_representation(const color_save_data *csd, AW_root *aw_root, GB_ERROR& error) {
-    BoundItemSel  *cmd     = csd->cmd;
-    ItemSelector&  sel     = cmd->selector;
+static char *create_colorset_representation(BoundItemSel *bsel, AW_root *aw_root, GB_ERROR& error) {
+    ItemSelector&  sel     = bsel->selector;
     QUERY_RANGE    range   = QUERY_ALL_ITEMS;
-    GBDATA        *gb_main = cmd->gb_main;
+    GBDATA        *gb_main = bsel->gb_main;
 
     typedef list<string> ColorList;
     ColorList             cl;
 
-    for (GBDATA *gb_item_container = sel.get_first_item_container(cmd->gb_main, aw_root, range);
+    for (GBDATA *gb_item_container = sel.get_first_item_container(bsel->gb_main, aw_root, range);
          !error && gb_item_container;
          gb_item_container = sel.get_next_item_container(gb_item_container, range))
     {
@@ -1986,13 +1985,12 @@ static char *create_colorset_representation(const color_save_data *csd, AW_root 
     return result;
 }
 
-static GB_ERROR clear_all_colors(const color_save_data *csd, AW_root *aw_root) {
-    BoundItemSel  *cmd     = csd->cmd;
-    ItemSelector&  sel     = cmd->selector;
-    QUERY_RANGE    range   = QUERY_ALL_ITEMS;
-    GB_ERROR       error   = 0;
+static GB_ERROR clear_all_colors(BoundItemSel *bsel, AW_root *aw_root) {
+    ItemSelector& sel   = bsel->selector;
+    QUERY_RANGE   range = QUERY_ALL_ITEMS;
+    GB_ERROR      error = 0;
 
-    for (GBDATA *gb_item_container = sel.get_first_item_container(cmd->gb_main, aw_root, range);
+    for (GBDATA *gb_item_container = sel.get_first_item_container(bsel->gb_main, aw_root, range);
          !error && gb_item_container;
          gb_item_container = sel.get_next_item_container(gb_item_container, range))
     {
@@ -2007,9 +2005,9 @@ static GB_ERROR clear_all_colors(const color_save_data *csd, AW_root *aw_root) {
     return error;
 }
 
-static void clear_all_colors_cb(AW_window *aww, const color_save_data *csd) {
-    GB_transaction ta(csd->cmd->gb_main);
-    GB_ERROR       error = clear_all_colors(csd, aww->get_root());
+static void clear_all_colors_cb(AW_window *aww, BoundItemSel *bsel) {
+    GB_transaction ta(bsel->gb_main);
+    GB_ERROR       error = clear_all_colors(bsel, aww->get_root());
 
     if (error) {
         error = ta.close(error);
@@ -2017,10 +2015,9 @@ static void clear_all_colors_cb(AW_window *aww, const color_save_data *csd) {
     }
 }
 
-static GB_ERROR restore_colorset_representation(const color_save_data *csd, const char *colorset) {
-    BoundItemSel  *cmd     = csd->cmd;
-    ItemSelector&  sel     = cmd->selector;
-    GBDATA        *gb_main = cmd->gb_main;
+static GB_ERROR restore_colorset_representation(BoundItemSel *bsel, const char *colorset) {
+    ItemSelector&  sel     = bsel->selector;
+    GBDATA        *gb_main = bsel->gb_main;
 
     int   buffersize = 200;
     char *buffer     = (char*)malloc(buffersize);
@@ -2064,7 +2061,7 @@ enum loadsave_mode {
     DELETE,
 };
 
-static void loadsave_colorset_cb(AW_window *aws, const color_save_data *csd, loadsave_mode mode) {
+static void loadsave_colorset_cb(AW_window *aws, BoundItemSel *bsel, loadsave_mode mode) {
     AW_root  *aw_root = aws->get_root();
     char     *name    = aw_root->awar(AWAR_COLOR_LOADSAVE_NAME)->read_string();
     GB_ERROR  error   = 0;
@@ -2073,8 +2070,8 @@ static void loadsave_colorset_cb(AW_window *aws, const color_save_data *csd, loa
         error = "Please enter a name for the colorset.";
     }
     else {
-        GB_transaction ta(csd->cmd->gb_main);
-        GBDATA *gb_colorset_root = get_colorset_root(csd);
+        GB_transaction ta(bsel->gb_main);
+        GBDATA *gb_colorset_root = get_colorset_root(bsel);
         dbq_assert(gb_colorset_root);
 
         GBDATA *gb_colorset_name = GB_find_string(gb_colorset_root, "name", name, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
@@ -2088,7 +2085,7 @@ static void loadsave_colorset_cb(AW_window *aws, const color_save_data *csd, loa
             dbq_assert(gb_colorset || error);
 
             if (!error) {
-                char *colorset = create_colorset_representation(csd, aw_root, error);
+                char *colorset = create_colorset_representation(bsel, aw_root, error);
                 if (colorset) {
                     error = GBT_write_string(gb_colorset, "color_set", colorset);
                     free(colorset);
@@ -2109,8 +2106,8 @@ static void loadsave_colorset_cb(AW_window *aws, const color_save_data *csd, loa
                         const char *colorset = GB_read_char_pntr(gb_set);
                         if (!colorset) error = GB_await_error();
                         else {
-                            if (mode == LOAD) error = clear_all_colors(csd, aw_root);
-                            if (!error)       error = restore_colorset_representation(csd, colorset);
+                            if (mode == LOAD) error = clear_all_colors(bsel, aw_root);
+                            if (!error)       error = restore_colorset_representation(bsel, colorset);
                         }
                     }
                 }
@@ -2136,7 +2133,7 @@ static AW_window *create_loadsave_colored_window(AW_root *aw_root, color_save_da
         aw_loadsave = (AW_window**)GB_calloc(QUERY_ITEM_TYPES, sizeof(*aw_loadsave)); // contains loadsave windows for each item type
     }
 
-    QUERY_ITEM_TYPE  type = csd->cmd->selector.type;
+    QUERY_ITEM_TYPE type = csd->bsel->selector.type;
 
     dbq_assert(type<QUERY_ITEM_TYPES);
 
@@ -2164,19 +2161,19 @@ static AW_window *create_loadsave_colored_window(AW_root *aw_root, color_save_da
 
         update_colorset_selection_list(csd);
 
-        aws->at("save");    aws->callback(makeWindowCallback(loadsave_colorset_cb, csd, SAVE));    aws->create_button("save",    "Save",    "S");
-        aws->at("load");    aws->callback(makeWindowCallback(loadsave_colorset_cb, csd, LOAD));    aws->create_button("load",    "Load",    "L");
-        aws->at("overlay"); aws->callback(makeWindowCallback(loadsave_colorset_cb, csd, OVERLAY)); aws->create_button("overlay", "Overlay", "O");
-        aws->at("delete");  aws->callback(makeWindowCallback(loadsave_colorset_cb, csd, DELETE));  aws->create_button("delete",  "Delete",  "D");
+        aws->at("save");    aws->callback(makeWindowCallback(loadsave_colorset_cb, csd->bsel, SAVE));    aws->create_button("save",    "Save",    "S");
+        aws->at("load");    aws->callback(makeWindowCallback(loadsave_colorset_cb, csd->bsel, LOAD));    aws->create_button("load",    "Load",    "L");
+        aws->at("overlay"); aws->callback(makeWindowCallback(loadsave_colorset_cb, csd->bsel, OVERLAY)); aws->create_button("overlay", "Overlay", "O");
+        aws->at("delete");  aws->callback(makeWindowCallback(loadsave_colorset_cb, csd->bsel, DELETE));  aws->create_button("delete",  "Delete",  "D");
 
         aws->at("reset");
-        aws->callback(makeWindowCallback(clear_all_colors_cb, csd));
+        aws->callback(makeWindowCallback(clear_all_colors_cb, csd->bsel));
         aws->create_button("reset", "Reset", "R");
 
         // callbacks
         {
-            GB_transaction  ta(csd->cmd->gb_main);
-            GBDATA         *gb_colorset = get_colorset_root(csd);
+            GB_transaction  ta(csd->bsel->gb_main);
+            GBDATA         *gb_colorset = get_colorset_root(csd->bsel);
             GB_add_callback(gb_colorset, GB_CB_CHANGED, makeDatabaseCallback(colorset_changed_cb, csd));
         }
 
@@ -2248,10 +2245,10 @@ static AW_window *create_colorize_window(AW_root *aw_root, GBDATA *gb_main, DbQu
 
     aws->at("colorize");
 
-    BoundItemSel *cmd = new BoundItemSel(gb_main, ((mode == COLORIZE_MARKED) ? *sel : query->selector));
+    BoundItemSel *bsel = new BoundItemSel(gb_main, ((mode == COLORIZE_MARKED) ? *sel : query->selector)); // do not free, bound to CB
 
     if (mode == COLORIZE_LISTED) aws->callback(makeWindowCallback(colorize_queried_cb, query));
-    else                         aws->callback(makeWindowCallback(colorize_marked_cb, cmd));
+    else                         aws->callback(makeWindowCallback(colorize_marked_cb, bsel));
 
     aws->create_autosize_button("COLORIZE", GBS_global_string_copy("Set color of %s %s to ...", what, Sel.items_name), "S", 2);
 
@@ -2266,8 +2263,8 @@ static AW_window *create_colorize_window(AW_root *aw_root, GBDATA *gb_main, DbQu
         aws->update_option_menu();
     }
 
-    color_save_data *csd = new color_save_data; // do not free!
-    csd->cmd             = cmd;
+    color_save_data *csd = new color_save_data; // do not free, bound to CB
+    csd->bsel            = bsel;
     csd->colorsets       = 0;
 
     aws->at("loadsave");
@@ -2276,15 +2273,15 @@ static AW_window *create_colorize_window(AW_root *aw_root, GBDATA *gb_main, DbQu
 
     if (mode == COLORIZE_MARKED) {
         aws->at("mark");
-        aws->callback(makeWindowCallback(mark_colored_cb, cmd, MARK));
+        aws->callback(makeWindowCallback(mark_colored_cb, bsel, MARK));
         aws->create_autosize_button("MARK_COLORED", GBS_global_string_copy("Mark all %s of ...", Sel.items_name), "M", 2);
 
         aws->at("unmark");
-        aws->callback(makeWindowCallback(mark_colored_cb, cmd, UNMARK));
+        aws->callback(makeWindowCallback(mark_colored_cb, bsel, UNMARK));
         aws->create_autosize_button("UNMARK_COLORED", GBS_global_string_copy("Unmark all %s of ...", Sel.items_name), "U", 2);
 
         aws->at("invert");
-        aws->callback(makeWindowCallback(mark_colored_cb, cmd, INVERT));
+        aws->callback(makeWindowCallback(mark_colored_cb, bsel, INVERT));
         aws->create_autosize_button("INVERT_COLORED", GBS_global_string_copy("Invert all %s of ...", Sel.items_name), "I", 2);
     }
 
