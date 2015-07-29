@@ -1811,6 +1811,7 @@ static void colorize_queried_cb(AW_window *, DbQuery *query) {
     AW_root        *aw_root     = query->aws->get_root();
     int             color_group = aw_root->awar(AWAR_COLORIZE)->read_int();
     QUERY_RANGE     range       = (QUERY_RANGE)aw_root->awar(query->awar_where)->read_int();
+    bool            changed     = false;
 
     for (GBDATA *gb_item_container = selector.get_first_item_container(query->gb_main, aw_root, range);
          !error && gb_item_container;
@@ -1821,12 +1822,14 @@ static void colorize_queried_cb(AW_window *, DbQuery *query) {
              gb_item       = selector.get_next_item(gb_item, QUERY_ALL_ITEMS))
         {
             if (IS_QUERIED(gb_item, query)) {
-                error = AW_set_color_group(gb_item, color_group);
+                error               = AW_set_color_group(gb_item, color_group);
+                if (!error) changed = true;
             }
         }
     }
 
     if (error) GB_export_error(error);
+    else if (changed) selector.trigger_display_refresh();
 }
 
 static void colorize_marked_cb(AW_window *aww, BoundItemSel *cmd) {
@@ -1986,9 +1989,10 @@ static char *create_colorset_representation(BoundItemSel *bsel, AW_root *aw_root
 }
 
 static GB_ERROR clear_all_colors(BoundItemSel *bsel, AW_root *aw_root) {
-    ItemSelector& sel   = bsel->selector;
-    QUERY_RANGE   range = QUERY_ALL_ITEMS;
-    GB_ERROR      error = 0;
+    ItemSelector& sel     = bsel->selector;
+    QUERY_RANGE   range   = QUERY_ALL_ITEMS;
+    GB_ERROR      error   = 0;
+    bool          changed = false;
 
     for (GBDATA *gb_item_container = sel.get_first_item_container(bsel->gb_main, aw_root, range);
          !error && gb_item_container;
@@ -1998,10 +2002,12 @@ static GB_ERROR clear_all_colors(BoundItemSel *bsel, AW_root *aw_root) {
              !error && gb_item;
              gb_item = sel.get_next_item(gb_item, QUERY_ALL_ITEMS))
         {
-            error = AW_set_color_group(gb_item, 0); // clear colors
+            error               = AW_set_color_group(gb_item, 0); // clear colors
+            if (!error) changed = true;
         }
     }
 
+    if (changed && !error) sel.trigger_display_refresh();
     return error;
 }
 
@@ -2018,11 +2024,13 @@ static void clear_all_colors_cb(AW_window *aww, BoundItemSel *bsel) {
 static GB_ERROR restore_colorset_representation(BoundItemSel *bsel, const char *colorset) {
     ItemSelector&  sel     = bsel->selector;
     GBDATA        *gb_main = bsel->gb_main;
+    bool           changed = false;
+    GB_ERROR       error   = NULL;
 
-    int   buffersize = 200;
-    char *buffer     = (char*)malloc(buffersize);
+    int       buffersize = 200;
+    char     *buffer     = (char*)malloc(buffersize);
 
-    while (colorset) {
+    while (colorset && !error) {
         const char *equal = strchr(colorset, '=');
         dbq_assert(equal);
         const char *semi  = strchr(equal, ';');
@@ -2039,19 +2047,22 @@ static GB_ERROR restore_colorset_representation(BoundItemSel *bsel, const char *
 
         GBDATA *gb_item = sel.find_item_by_id(gb_main, buffer);
         if (!gb_item) {
-            aw_message(GBS_global_string("No such %s: '%s'", sel.item_name, buffer));
+            aw_message(GBS_global_string("No such %s: '%s'", sel.item_name, buffer)); // only warn
         }
         else {
             int color_group = atoi(equal+1);
-            if (color_group>0) { // bugfix: saved color groups contained zero (which means "no color") by mistake; ignore 
-                AW_set_color_group(gb_item, color_group);
+            if (color_group>0) { // bugfix: saved color groups contained zero (which means "no color") by mistake; ignore
+                error = AW_set_color_group(gb_item, color_group);
+                if (!error) changed = true;
             }
         }
         colorset = semi ? semi+1 : 0;
     }
 
+    if (changed && !error) sel.trigger_display_refresh();
     free(buffer);
-    return 0;
+
+    return error;
 }
 
 enum loadsave_mode {
