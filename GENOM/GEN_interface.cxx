@@ -223,6 +223,10 @@ static GBDATA *next_gene_in_range(GBDATA *gb_prev, QUERY_RANGE range) {
 #warning move GEN_item_selector to SL/ITEMS
 #endif
 
+static void refresh_displayed_genes() {
+    GEN_refresh_all_windows();
+}
+
 static struct MutableItemSelector GEN_item_selector = {
     QUERY_ITEM_GENES,
     GEN_select_gene,
@@ -241,6 +245,7 @@ static struct MutableItemSelector GEN_item_selector = {
     GEN_get_current_gene,
     add_selected_gene_changed_cb,
     &ORGANISM_get_selector(), GB_get_grandfather,
+    refresh_displayed_genes,
 };
 
 ItemSelector& GEN_get_selector() { return GEN_item_selector; }

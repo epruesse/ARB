@@ -72,6 +72,8 @@ struct GEN_create_map_param {
 
 GB_ERROR GEN_mark_organism_or_corresponding_organism(GBDATA *gb_species, int *client_data);
 
+void GEN_refresh_all_windows();
+
 // --------------------------------------------------------------------------------
 
 #else
