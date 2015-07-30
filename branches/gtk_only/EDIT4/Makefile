@@ -1565,7 +1565,6 @@ ED4_text_terminals.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
-ED4_text_terminals.o: $(ARBHOME)/INCLUDE/awt_attributes.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/awt_seq_colors.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/BI_helix.hxx

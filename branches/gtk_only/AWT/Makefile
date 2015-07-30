@@ -99,25 +99,6 @@ AWT_asciiprint.o: $(ARBHOME)/INCLUDE/static_assert.h
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/test_global.h
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/ttypes.h
 
-AWT_attributes.o: awt_attributes.hxx
-AWT_attributes.o: $(ARBHOME)/INCLUDE/ad_prot.h
-AWT_attributes.o: $(ARBHOME)/INCLUDE/arb_assert.h
-AWT_attributes.o: $(ARBHOME)/INCLUDE/arb_core.h
-AWT_attributes.o: $(ARBHOME)/INCLUDE/arb_error.h
-AWT_attributes.o: $(ARBHOME)/INCLUDE/arb_msg.h
-AWT_attributes.o: $(ARBHOME)/INCLUDE/arb_string.h
-AWT_attributes.o: $(ARBHOME)/INCLUDE/arbdb.h
-AWT_attributes.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-AWT_attributes.o: $(ARBHOME)/INCLUDE/arbtools.h
-AWT_attributes.o: $(ARBHOME)/INCLUDE/attributes.h
-AWT_attributes.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-AWT_attributes.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
-AWT_attributes.o: $(ARBHOME)/INCLUDE/cxxforward.h
-AWT_attributes.o: $(ARBHOME)/INCLUDE/dupstr.h
-AWT_attributes.o: $(ARBHOME)/INCLUDE/gccver.h
-AWT_attributes.o: $(ARBHOME)/INCLUDE/smartptr.h
-AWT_attributes.o: $(ARBHOME)/INCLUDE/test_global.h
-
 AWT_canio.o: awt_canvas.hxx
 AWT_canio.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWT_canio.o: $(ARBHOME)/INCLUDE/ad_t_prot.h

@@ -35,6 +35,7 @@
 #include <ad_cb.h>
 #include <Keeper.h>
 #include <dbui.h>
+#include <ad_colorset.h>
 
 using namespace std;
 using namespace QUERY;
@@ -1822,7 +1823,7 @@ static void colorize_queried_cb(AW_window *, DbQuery *query) {
              gb_item       = selector.get_next_item(gb_item, QUERY_ALL_ITEMS))
         {
             if (IS_QUERIED(gb_item, query)) {
-                error               = AW_set_color_group(gb_item, color_group);
+                error               = GBT_set_color_group(gb_item, color_group);
                 if (!error) changed = true;
             }
         }
@@ -1849,7 +1850,7 @@ static void colorize_marked_cb(AW_window *aww, BoundItemSel *cmd) {
              gb_item       = sel.get_next_item(gb_item, QUERY_ALL_ITEMS))
         {
             if (GB_read_flag(gb_item)) {
-                error = AW_set_color_group(gb_item, color_group);
+                error = GBT_set_color_group(gb_item, color_group);
             }
         }
     }
@@ -1880,7 +1881,7 @@ static void mark_colored_cb(AW_window *aww, BoundItemSel *cmd, mark_mode mode) {
              gb_item;
              gb_item = sel.get_next_item(gb_item, QUERY_ALL_ITEMS))
         {
-            long my_color = AW_find_color_group(gb_item, true);
+            long my_color = GBT_get_color_group(gb_item);
             if (my_color == color_group) {
                 bool marked = GB_read_flag(gb_item);
 
@@ -1913,30 +1914,24 @@ struct color_save_data {
 
 #define AWAR_COLOR_LOADSAVE_NAME "tmp/colorset/name"
 
-static GBDATA *get_colorset_root(BoundItemSel *bsel) {
-    GBDATA *gb_main      = bsel->gb_main;
-    GBDATA *gb_colorsets = GB_search(gb_main, "colorsets", GB_CREATE_CONTAINER);
-    GBDATA *gb_item_root = GB_search(gb_colorsets, bsel->selector.items_name, GB_CREATE_CONTAINER);
-
-    dbq_assert(gb_item_root);
-    return gb_item_root;
+inline GBDATA *get_colorset_root(BoundItemSel *bsel) {
+    return GBT_colorset_root(bsel->gb_main, bsel->selector.items_name);
 }
 
 static void update_colorset_selection_list(const color_save_data *csd) {
-    GB_transaction ta(csd->bsel->gb_main);
-
-    csd->colorsets->clear();
-    GBDATA *gb_item_root = get_colorset_root(csd->bsel);
-
-    csd->colorsets->insert_default("<new colorset>", "");
-    for (GBDATA *gb_colorset = GB_entry(gb_item_root, "colorset");
-         gb_colorset;
-         gb_colorset = GB_nextEntry(gb_colorset))
+    ConstStrArray foundSets;
     {
-        const char *name = GBT_read_name(gb_colorset);
-        csd->colorsets->insert(name, name);
+        GB_transaction ta(csd->bsel->gb_main);
+        GBT_get_colorset_names(foundSets, get_colorset_root(csd->bsel));
     }
-    csd->colorsets->update();
+
+    AW_selection_list *sel = csd->colorsets;
+    sel->clear();
+    sel->insert_default("<new colorset>", "");
+    for (size_t i = 0; i<foundSets.size(); ++i) {
+        sel->insert(foundSets[i], foundSets[i]);
+    }
+    sel->update();
 }
 
 static void colorset_changed_cb(GBDATA*, const color_save_data *csd, GB_CB_TYPE cbt) {
@@ -1945,64 +1940,50 @@ static void colorset_changed_cb(GBDATA*, const color_save_data *csd, GB_CB_TYPE 
     }
 }
 
-static char *create_colorset_representation(BoundItemSel *bsel, AW_root *aw_root, GB_ERROR& error) {
+static void create_colorset_representation(BoundItemSel *bsel, AW_root *aw_root, StrArray& colordefs, GB_ERROR& error) {
     ItemSelector&  sel     = bsel->selector;
-    QUERY_RANGE    range   = QUERY_ALL_ITEMS;
     GBDATA        *gb_main = bsel->gb_main;
 
-    typedef list<string> ColorList;
-    ColorList             cl;
+    dbq_assert(!error);
 
-    for (GBDATA *gb_item_container = sel.get_first_item_container(bsel->gb_main, aw_root, range);
-         !error && gb_item_container;
-         gb_item_container = sel.get_next_item_container(gb_item_container, range))
+    for (GBDATA *gb_item_container = sel.get_first_item_container(gb_main, aw_root, QUERY_ALL_ITEMS);
+         gb_item_container;
+         gb_item_container = sel.get_next_item_container(gb_item_container, QUERY_ALL_ITEMS))
     {
         for (GBDATA *gb_item = sel.get_first_item(gb_item_container, QUERY_ALL_ITEMS);
-             !error && gb_item;
+             gb_item;
              gb_item = sel.get_next_item(gb_item, QUERY_ALL_ITEMS))
         {
-            long color = AW_find_color_group(gb_item, true);
+            long color = GBT_get_color_group(gb_item);
             if (color>0) {
-                char       *id        = sel.generate_item_id(gb_main, gb_item);
-                const char *color_def = GBS_global_string("%s=%li", id, color);
-                cl.push_front(color_def);
+                char *id        = sel.generate_item_id(gb_main, gb_item);
+                char *color_def = GBS_global_string_copy("%s=%li", id, color);
+
+                colordefs.put(color_def);
                 free(id);
             }
         }
     }
 
-    char *result = 0;
-    if (cl.empty()) {
-        error = GBS_global_string("Could not find any %s", sel.items_name);
+    if (colordefs.empty()) {
+        error = GBS_global_string("Could not find any colored %s", sel.items_name);
     }
-    else {
-        string res;
-        for (ColorList::iterator ci = cl.begin(); ci != cl.end(); ++ci) {
-            res += (*ci) + ';';
-        }
-
-        size_t len = res.length();
-        if (len>0) --len;                           // skip trailing ';'
-        result     = GB_strndup(res.c_str(), len);
-    }
-    return result;
 }
 
 static GB_ERROR clear_all_colors(BoundItemSel *bsel, AW_root *aw_root) {
     ItemSelector& sel     = bsel->selector;
-    QUERY_RANGE   range   = QUERY_ALL_ITEMS;
     GB_ERROR      error   = 0;
     bool          changed = false;
 
-    for (GBDATA *gb_item_container = sel.get_first_item_container(bsel->gb_main, aw_root, range);
+    for (GBDATA *gb_item_container = sel.get_first_item_container(bsel->gb_main, aw_root, QUERY_ALL_ITEMS);
          !error && gb_item_container;
-         gb_item_container = sel.get_next_item_container(gb_item_container, range))
+         gb_item_container = sel.get_next_item_container(gb_item_container, QUERY_ALL_ITEMS))
     {
         for (GBDATA *gb_item = sel.get_first_item(gb_item_container, QUERY_ALL_ITEMS);
              !error && gb_item;
              gb_item = sel.get_next_item(gb_item, QUERY_ALL_ITEMS))
         {
-            error               = AW_set_color_group(gb_item, 0); // clear colors
+            error               = GBT_set_color_group(gb_item, 0); // clear colors
             if (!error) changed = true;
         }
     }
@@ -2021,46 +2002,37 @@ static void clear_all_colors_cb(AW_window *aww, BoundItemSel *bsel) {
     }
 }
 
-static GB_ERROR restore_colorset_representation(BoundItemSel *bsel, const char *colorset) {
+static GB_ERROR restore_colorset_representation(BoundItemSel *bsel, CharPtrArray& colordefs) {
     ItemSelector&  sel     = bsel->selector;
     GBDATA        *gb_main = bsel->gb_main;
     bool           changed = false;
     GB_ERROR       error   = NULL;
 
-    int       buffersize = 200;
-    char     *buffer     = (char*)malloc(buffersize);
+    for (size_t d = 0; d<colordefs.size() && !error; ++d) {
+        const char *def   = colordefs[d];
+        const char *equal = strchr(def, '=');
 
-    while (colorset && !error) {
-        const char *equal = strchr(colorset, '=');
-        dbq_assert(equal);
-        const char *semi  = strchr(equal, ';');
+        if (equal) {
+            LocallyModify<char> tempSplit(const_cast<char*>(equal)[0], 0);
 
-        int size = equal-colorset;
-        if (size >= buffersize) {
-            buffersize = int(size*1.5);
-            freeset(buffer, (char*)malloc(buffersize));
-        }
-
-        dbq_assert(buffer && buffersize>size);
-        memcpy(buffer, colorset, size);
-        buffer[size] = 0;       // now buffer contains the item id
-
-        GBDATA *gb_item = sel.find_item_by_id(gb_main, buffer);
-        if (!gb_item) {
-            aw_message(GBS_global_string("No such %s: '%s'", sel.item_name, buffer)); // only warn
-        }
-        else {
-            int color_group = atoi(equal+1);
-            if (color_group>0) { // bugfix: saved color groups contained zero (which means "no color") by mistake; ignore
-                error = AW_set_color_group(gb_item, color_group);
-                if (!error) changed = true;
+            const char *id      = def;
+            GBDATA     *gb_item = sel.find_item_by_id(gb_main, id);
+            if (!gb_item) {
+                aw_message(GBS_global_string("No such %s: '%s'", sel.item_name, id)); // only warn
+            }
+            else {
+                int color_group = atoi(equal+1);
+                if (color_group>0) { // bugfix: saved color groups contained zero (which means "no color") by mistake; ignore
+                    error = GBT_set_color_group(gb_item, color_group);
+                    if (!error) changed = true;
+                }
             }
         }
-        colorset = semi ? semi+1 : 0;
+        else {
+            aw_message(GBS_global_string("Invalid colordef '%s' (ignored)", def));
+        }
     }
-
     if (changed && !error) sel.trigger_display_refresh();
-    free(buffer);
 
     return error;
 }
@@ -2077,58 +2049,46 @@ static void loadsave_colorset_cb(AW_window *aws, BoundItemSel *bsel, loadsave_mo
     char     *name    = aw_root->awar(AWAR_COLOR_LOADSAVE_NAME)->read_string();
     GB_ERROR  error   = 0;
 
-    if (name[0] == 0) {
-        error = "Please enter a name for the colorset.";
-    }
+    if (name[0] == 0) error = "Please enter a name for the colorset.";
     else {
         GB_transaction ta(bsel->gb_main);
+
         GBDATA *gb_colorset_root = get_colorset_root(bsel);
-        dbq_assert(gb_colorset_root);
+        GBDATA *gb_colorset      = gb_colorset_root ? GBT_find_colorset(gb_colorset_root, name) : NULL;
 
-        GBDATA *gb_colorset_name = GB_find_string(gb_colorset_root, "name", name, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
-        GBDATA *gb_colorset      = gb_colorset_name ? GB_get_father(gb_colorset_name) : 0;
-        if (mode == SAVE) {
-            if (!gb_colorset) { // create new (otherwise overwrite w/o comment)
-                gb_colorset             = GB_create_container(gb_colorset_root, "colorset");
-                if (!gb_colorset) error = GB_await_error();
-                else error              = GBT_write_string(gb_colorset, "name", name);
-            }
-            dbq_assert(gb_colorset || error);
-
-            if (!error) {
-                char *colorset = create_colorset_representation(bsel, aw_root, error);
-                if (colorset) {
-                    error = GBT_write_string(gb_colorset, "color_set", colorset);
-                    free(colorset);
-                }
-            }
-        }
+        if (GB_have_error()) error = GB_await_error();
         else {
-            if (!gb_colorset) {
-                error = GBS_global_string("Colorset '%s' not found", name);
+            if (mode == SAVE) {
+                if (!gb_colorset) { // create new colorset
+                    gb_colorset             = GBT_find_or_create_colorset(gb_colorset_root, name);
+                    if (!gb_colorset) error = GB_await_error();
+                }
+                dbq_assert(gb_colorset || error);
+
+                if (!error) {
+                    StrArray colordefs;
+                    create_colorset_representation(bsel, aw_root, colordefs, error);
+                    if (!error) error = GBT_save_colorset(gb_colorset, colordefs);
+                }
             }
             else {
-                if (mode == LOAD || mode == OVERLAY) {
-                    GBDATA *gb_set = GB_entry(gb_colorset, "color_set");
-                    if (!gb_set) {
-                        error = "colorset is empty (oops)";
+                if (!gb_colorset) error = GBS_global_string("Colorset '%s' not found", name);
+                else {
+                    if (mode == LOAD || mode == OVERLAY) {
+                        ConstStrArray colordefs;
+                        error = GBT_load_colorset(gb_colorset, colordefs);
+
+                        if (!error && colordefs.empty()) error = "oops.. empty colorset";
+                        if (!error && mode == LOAD)      error = clear_all_colors(bsel, aw_root);
+                        if (!error)                      error = restore_colorset_representation(bsel, colordefs);
                     }
                     else {
-                        const char *colorset = GB_read_char_pntr(gb_set);
-                        if (!colorset) error = GB_await_error();
-                        else {
-                            if (mode == LOAD) error = clear_all_colors(bsel, aw_root);
-                            if (!error)       error = restore_colorset_representation(bsel, colorset);
-                        }
+                        dbq_assert(mode == DELETE);
+                        error = GB_delete(gb_colorset);
                     }
-                }
-                else {
-                    dbq_assert(mode == DELETE);
-                    error = GB_delete(gb_colorset);
                 }
             }
         }
-
         error = ta.close(error);
     }
     free(name);

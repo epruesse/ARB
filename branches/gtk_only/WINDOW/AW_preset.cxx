@@ -20,6 +20,7 @@
 #include "aw_msg.hxx"
 #include "aw_assert.hxx"
 #include <arbdbt.h>
+#include <ad_colorset.h>
 
 CONSTEXPR_RETURN inline bool valid_color_group(int color_group) {
     return color_group>0 && color_group<=AW_COLOR_GROUPS;
@@ -388,23 +389,16 @@ void AW_init_color_group_defaults(const char *for_program) {
     }
 }
 
-GB_ERROR AW_set_color_group(GBDATA *gbd, long color_group) {
-    /*! Set or clear active color group of item (species, gene, ..)
-     * @param gbd the db item
-     * @param color_group (0 = clear color group; 1..AW_COLOR_GROUPS = set color group)
-     */
-    aw_assert(valid_color_group(color_group) || color_group == 0);
-    return GBT_write_int(gbd, AW_COLOR_GROUP_ENTRY, color_group);
-}
-
 #if defined(UNIT_TESTS)
 static bool always_ignore_usage_flag = false;
 #endif
 
-long AW_find_color_group(GBDATA *gbd, bool ignore_usage_flag) {
-    /* species/genes etc. may have a color group entry ('ARB_color')
-     * call with ignore_usage_flag == true to read color group regardless of global usage flag (AWAR_COLOR_GROUPS_USE)
+long AW_find_active_color_group(GBDATA *gb_item) {
+    /*! same as GBT_get_color_group() if color groups are active
+     * @param gb_item the item
+     * @return always 0 if color groups are inactive
      */
+    bool ignore_usage_flag = false;
 #if defined(UNIT_TESTS)
     if (always_ignore_usage_flag) ignore_usage_flag = true;
 #endif
@@ -413,11 +407,10 @@ long AW_find_color_group(GBDATA *gbd, bool ignore_usage_flag) {
         int use_color_groups = AW_root::SINGLETON->awar(AWAR_COLOR_GROUPS_USE)->read_int();
         if (!use_color_groups) return 0;
     }
-
-    GBDATA *gb_group = GB_entry(gbd, AW_COLOR_GROUP_ENTRY);
-    if (gb_group) return GB_read_int(gb_group);
-    return 0;                   // no color group
+    return GBT_get_color_group(gb_item);
 }
+
+
 
 #if defined(UNIT_TESTS)
 void fake_AW_init_color_groups() {
