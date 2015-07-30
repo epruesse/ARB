@@ -109,8 +109,9 @@ sub scanExistingRessources() {
   foreach (sort keys %unknown) {
     if (/readme[^\/]*$/i)                    { ; } # ignore readme files
     elsif (/\/genhelp\/.*(footer|header)$/o) { ; } # ignore files used for help generation
+    elsif (/\.bak$/o)                        { ; } # ignore bak files
     else {
-      print "$_:0: Unhandled file in ressource directory\n";
+        print "$_:0: Unhandled file in ressource directory\n";
     }
   }
 
@@ -118,7 +119,17 @@ sub scanExistingRessources() {
   foreach (keys %pixmap)   { my $full = $pixmaps  [$pixmap{$_}];   $full2rel{$full} = $_; }
   foreach (keys %helpfile) { my $full = $helpfiles[$helpfile{$_}]; $full2rel{$full} = $_; }
 
-  foreach (keys %full2rel) { $rel2full{$full2rel{$_}} = $_; }
+  foreach (keys %full2rel) {
+    my $rel = $full2rel{$_};
+    die if not defined $rel;
+    if (exists $rel2full{$rel}) {
+      print "$_:0: Error: ressource name clashes with ...\n";
+      print $rel2full{$rel}.":0: ... this one\n";
+    }
+    else {
+      $rel2full{$rel} = $_;
+    }
+  }
 }
 
 # --------------------------------------------------------------------------------
@@ -610,7 +621,15 @@ sub scanCode() {
   if ($unused>0) {
     print "Detected $unused unused ressources.\nRunning brute force scan..\n";
     my $reg_unused = '';
-    foreach (keys %unused) { $reg_unused .= '|'.quotemeta($full2rel{$_}); }
+    foreach (keys %unused) {
+      my $rel=$full2rel{$_};
+      if (defined $rel) {
+        $reg_unused .= '|'.quotemeta($rel);
+      }
+      else {
+        print "$_:0: Warning: possibly duplicate help in different dirs\n";
+      }
+    }
     $reg_unused = substr($reg_unused,1);
     print "reg_unused='$reg_unused'\n";
     $reg_unused = qr/$reg_unused/;
@@ -622,7 +641,7 @@ sub scanCode() {
 
     foreach (sort keys %unused) {
       my $rel = $full2rel{$_};
-      my $seen = $seen_unused{$rel};
+      my $seen = (defined $rel) ? $seen_unused{$rel} : undef;
       if (defined $seen) {
         print "$_:0: Warning: Checker failed to detect ressource usage\n";
         my @seen = split(',',$seen);

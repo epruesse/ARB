@@ -209,6 +209,7 @@ symlink_file ../AISC_COM/C/struct_man.h INCLUDE/struct_man.h &&
 symlink_file ../ARBDB/ad_cb.h INCLUDE/ad_cb.h &&
 symlink_file ../ARBDB/ad_cb_prot.h INCLUDE/ad_cb_prot.h &&
 symlink_file ../ARBDB/ad_config.h INCLUDE/ad_config.h &&
+symlink_file ../ARBDB/ad_colorset.h INCLUDE/ad_colorset.h &&
 symlink_file ../ARBDB/ad_p_prot.h INCLUDE/ad_p_prot.h &&
 symlink_file ../ARBDB/ad_prot.h INCLUDE/ad_prot.h &&
 symlink_file ../ARBDB/ad_remote.h INCLUDE/ad_remote.h &&
@@ -223,7 +224,6 @@ symlink_file ../ARBDB/TreeNode.h INCLUDE/TreeNode.h &&
 symlink_file ../ARB_GDE/gde.hxx INCLUDE/gde.hxx &&
 symlink_file ../AWT/awt.hxx INCLUDE/awt.hxx &&
 symlink_file ../AWT/awt_asciiprint.hxx INCLUDE/awt_asciiprint.hxx &&
-symlink_file ../AWT/awt_attributes.hxx INCLUDE/awt_attributes.hxx &&
 symlink_file ../AWT/awt_canvas.hxx INCLUDE/awt_canvas.hxx &&
 symlink_file ../AWT/awt_config_manager.hxx INCLUDE/awt_config_manager.hxx &&
 symlink_file ../AWT/awt_hotkeys.hxx INCLUDE/awt_hotkeys.hxx &&

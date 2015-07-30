@@ -148,6 +148,7 @@ SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/arb_core.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/arb_error.h
+SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/arb_global_defs.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/arb_msg.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/arb_string.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/arbdb.h

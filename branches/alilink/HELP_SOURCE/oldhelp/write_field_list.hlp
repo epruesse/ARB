@@ -9,10 +9,11 @@ UP      security.hlp
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE           WRITE TO FIELDS OF LISTED SPECIES/GENES
+TITLE           Write to fields of Listed
 
-OCCURRENCE      ARB_NT/Species/Search: WRITE TO FIELDS OF LISTED
-                ARB_NT/Genes/Search: WRITE TO FIELDS OF LISTED
+OCCURRENCE      ARB_NT/Species/Search and Query/Write to fields of Listed
+                ARB_NT/Genome/Search and query/Write to fields of Listed
+                ARB_NT/Genome/Experiment/Search and query/Write to fields of Listed
 
 DESCRIPTION     Writes the same text or integers to the selected fields of
                 all listed species/genes.

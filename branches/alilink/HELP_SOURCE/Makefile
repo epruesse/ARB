@@ -194,11 +194,13 @@ XSLTPROC_ARGS=--nonet --nomkdir --stringparam xml_location "$(XML_LOCATION)"
 
 INTERDEPENDS=.depends
 INTERDEPENDS_SOURCE=$(XML)
-XML2DEPENDS=./xml_2_depends.sh
+XML2DEPENDS=./xml_2_depends.pl
 
 $(INTERDEPENDS): $(INTERDEPENDS_SOURCE) $(XML2DEPENDS) Makefile $(STYLE_DEPENDS)
-	@( ( echo "$(INTERDEPENDS_SOURCE)" | $(XML2DEPENDS) $(XSLTPROC) $(STYLE_DEPENDS) $(XSLTPROC_ARGS) >$@ ) 2>interdep.err && rm interdep.err ) || \
-		(cat interdep.err; false)
+	@( ( echo "$(INTERDEPENDS_SOURCE)" | $(XML2DEPENDS) $(XSLTPROC) $(STYLE_DEPENDS) $(XSLTPROC_ARGS) >$@ ) 2>interdep.err && \
+	   ( $(XML2DEPENDS) CHECK $@ ) 2>>interdep.err && \
+	   rm interdep.err ) || \
+         (cat interdep.err; false)
 
 interdepends: $(INTERDEPENDS)
 

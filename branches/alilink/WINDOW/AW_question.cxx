@@ -217,15 +217,15 @@ int aw_question(const char *uniqueID, const char *question, const char *buttons,
                     char       *advice  = GBS_global_string_copy("You will not be asked that question again in this session.\n"
                                                                  "%s will always assume the answer you just gave.\n"
                                                                  "\n"
-                                                                 "When you restart %s that question will be asked again.\n"
+                                                                 "After restarting %s that question will be asked again.\n"
                                                                  "To disable that question permanently for future sessions,\n"
                                                                  "you need to save properties.\n"
                                                                  "\n"
-                                                                 "Depending on the type of question doing that might be\n"
+                                                                 "Depending on the type of question, disabling it might be\n"
                                                                  "helpful or obstructive.\n"
                                                                  "Disabled questions can be reactivated from the properties menu.\n",
                                                                  appname, appname);
-                    AW_advice(advice, AW_ADVICE_TOGGLE, "Disabling questions", NULL);
+                    AW_advice(advice, AW_ADVICE_TOGGLE, "Disabling questions", "questions.hlp");
                     free(advice);
                 }
             }

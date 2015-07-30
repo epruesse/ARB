@@ -105,6 +105,12 @@ void AWT_insert_config_manager(AW_window *aww, AW_default default_file_, const c
 void AWT_insert_config_manager(AW_window *aww, AW_default default_file_, const char *id, ConfigSetupCallback setup_cb, const char *macro_id = NULL, const AWT_predefined_config *predef = NULL);
 void AWT_insert_config_manager(AW_window *aww, AW_default default_file_, const char *id, const AWT_config_mapping_def *mapping, const char *macro_id = NULL, const AWT_predefined_config *predef = NULL);
 
+// -------------------------------
+//      modify stored configs
+
+typedef char *(*ConfigModifyCallback)(const char *key, const char *value, AW_CL cl_user);
+void AWT_modify_managed_configs(AW_default default_file_, const char *id, ConfigModifyCallback mod_cb, AW_CL cl_user);
+
 #else
 #error awt_config_manager.hxx included twice
 #endif // AWT_CONFIG_MANAGER_HXX

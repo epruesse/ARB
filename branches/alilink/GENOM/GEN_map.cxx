@@ -127,10 +127,12 @@ GEN_map_manager *GEN_map_manager::get_map_manager() {
 }
 
 void GEN_map_manager::with_all_mapped_windows(GMW_CB2 callback, AW_CL cd1, AW_CL cd2) {
-    GEN_map_manager *mm       = get_map_manager();
-    int              winCount = mm->no_of_managed_windows();
-    for (int nr = 0; nr<winCount; ++nr) {
-        callback(mm->get_map_window(nr), cd1, cd2);
+    if (aw_root) { // no genemap opened yet
+        GEN_map_manager *mm       = get_map_manager();
+        int              winCount = mm->no_of_managed_windows();
+        for (int nr = 0; nr<winCount; ++nr) {
+            callback(mm->get_map_window(nr), cd1, cd2);
+        }
     }
 }
 
@@ -328,6 +330,14 @@ static void GEN_map_window_zoom_reset_and_refresh(GEN_map_window *gmw) {
 #define DISPLAY_TYPE_BIT(disp_type) (1<<(disp_type))
 #define ALL_DISPLAY_TYPES           (DISPLAY_TYPE_BIT(GEN_DISPLAY_STYLES)-1)
 
+static void GEN_map_window_refresh(GEN_map_window *win, AW_CL) {
+    win->get_canvas()->refresh();
+}
+
+void GEN_refresh_all_windows() {
+    GEN_map_manager::with_all_mapped_windows(GEN_map_window_refresh, NULL);
+}
+
 static void GEN_map_window_refresh_if_display_type(GEN_map_window *win, AW_CL cl_display_type_mask) {
     int display_type_mask = int(cl_display_type_mask);
     int my_display_type   = win->get_graphic()->get_display_style();
@@ -520,58 +530,25 @@ static void GEN_undo_cb(AW_window *, AW_CL undo_type, AW_CL cl_gb_main) {
 
 static AW_window *GEN_create_options_window(AW_root *awr) {
     static AW_window_simple *aws = 0;
-    if (!aws) {
-
-        aws = new AW_window_simple;
-        aws->init(awr, "GEN_OPTIONS", "GENE MAP OPTIONS");
-        aws->load_xfig("gene_options.fig");
-
-        aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
-        aws->create_button("CLOSE", "CLOSE", "C");
-
-        aws->at("help"); aws->callback(makeHelpCallback("gene_options.hlp"));
-        aws->create_button("HELP", "HELP", "H");
-
-        aws->at("button");
-        aws->auto_space(10, 10);
-        aws->label_length(30);
-
-        aws->label("Auto jump to selected gene");
-        aws->create_toggle(AWAR_GENMAP_AUTO_JUMP);
-        aws->at_newline();
-    }
-    return aws;
-}
-
-static AW_window *GEN_create_layout_window(AW_root *awr) {
-    static AW_window_simple *aws = 0;
 
     if (!aws) {
         aws = new AW_window_simple;
 
-        aws->init(awr, "GENE_LAYOUT", "Gene Map Layout");
-        aws->load_xfig("gene_layout.fig");
+        aws->init(awr, "GEN_OPTS", "Genemap options");
+        aws->load_xfig("gen_options.fig");
 
         aws->callback((AW_CB0)AW_POPDOWN);
         aws->at("close");
         aws->create_button("CLOSE", "CLOSE", "C");
 
-        aws->callback(makeHelpCallback("gen_layout.hlp"));
+        aws->callback(makeHelpCallback("gen_options.hlp"));
         aws->at("help");
         aws->create_button("HELP", "HELP", "H");
 
-        aws->at("base_pos");        aws->create_input_field(AWAR_GENMAP_BOOK_BASES_PER_LINE, 15);
-        aws->at("width_factor");    aws->create_input_field(AWAR_GENMAP_BOOK_WIDTH_FACTOR, 7);
-        aws->at("line_height");     aws->create_input_field(AWAR_GENMAP_BOOK_LINE_HEIGHT, 5);
-        aws->at("line_space");      aws->create_input_field(AWAR_GENMAP_BOOK_LINE_SPACE, 5);
-
-        aws->at("factor_x");        aws->create_input_field(AWAR_GENMAP_VERTICAL_FACTOR_X, 5);
-        aws->at("factor_y");        aws->create_input_field(AWAR_GENMAP_VERTICAL_FACTOR_Y, 5);
-
-        aws->at("inside");          aws->create_input_field(AWAR_GENMAP_RADIAL_INSIDE, 5);
-        aws->at("outside");         aws->create_input_field(AWAR_GENMAP_RADIAL_OUTSIDE, 5);
-
+        // all displays:
         aws->at("arrow_size");      aws->create_input_field(AWAR_GENMAP_ARROW_SIZE, 5);
+
+        aws->label_length(26);
 
         aws->at("show_hidden");
         aws->label("Show hidden genes");
@@ -580,6 +557,24 @@ static AW_window *GEN_create_layout_window(AW_root *awr) {
         aws->at("show_all");
         aws->label("Show NDS for all genes");
         aws->create_toggle(AWAR_GENMAP_SHOW_ALL_NDS);
+
+        aws->at("autojump");
+        aws->label("Auto jump to selected gene");
+        aws->create_toggle(AWAR_GENMAP_AUTO_JUMP);
+
+        // book-style:
+        aws->at("base_pos");        aws->create_input_field(AWAR_GENMAP_BOOK_BASES_PER_LINE, 15);
+        aws->at("width_factor");    aws->create_input_field(AWAR_GENMAP_BOOK_WIDTH_FACTOR, 7);
+        aws->at("line_height");     aws->create_input_field(AWAR_GENMAP_BOOK_LINE_HEIGHT, 5);
+        aws->at("line_space");      aws->create_input_field(AWAR_GENMAP_BOOK_LINE_SPACE, 5);
+
+        // vertical-style:
+        aws->at("factor_x");        aws->create_input_field(AWAR_GENMAP_VERTICAL_FACTOR_X, 5);
+        aws->at("factor_y");        aws->create_input_field(AWAR_GENMAP_VERTICAL_FACTOR_Y, 5);
+
+        // radial style:
+        aws->at("inside");          aws->create_input_field(AWAR_GENMAP_RADIAL_INSIDE, 5);
+        aws->at("outside");         aws->create_input_field(AWAR_GENMAP_RADIAL_OUTSIDE, 5);
     }
     return aws;
 }
@@ -1419,7 +1414,7 @@ static void GEN_create_organism_submenu(AW_window_menu_modes *awm, GBDATA *gb_ma
     else awm->create_menu(title, hotkey, AWM_ALL);
 
     {
-        awm->insert_menu_topic("organism_info", "Organism information", "i", "organism_info.hlp", AWM_ALL, RootAsWindowCallback::simple(DBUI::popup_organism_info_window, gb_main));
+        awm->insert_menu_topic("organism_info", "Organism information", "i", "sp_info.hlp", AWM_ALL, RootAsWindowCallback::simple(DBUI::popup_organism_info_window, gb_main));
 
         awm->sep______________();
 
@@ -1464,7 +1459,7 @@ void GEN_create_genes_submenu(AW_window_menu_modes *awm, GBDATA *gb_main, bool f
     awm->create_menu("Genome", "G", AWM_ALL);
     {
 #if defined(DEBUG)
-        awm->insert_menu_topic("debug_awars", "[DEBUG] Show main AWARs", "A", "no.hlp", AWM_ALL, AW_POPUP, (AW_CL)GEN_create_awar_debug_window, 0);
+        awm->insert_menu_topic("debug_awars", "[DEBUG] Show main AWARs", "A", NULL, AWM_ALL, AW_POPUP, (AW_CL)GEN_create_awar_debug_window, 0);
         awm->sep______________();
 #endif // DEBUG
 
@@ -1478,8 +1473,8 @@ void GEN_create_genes_submenu(AW_window_menu_modes *awm, GBDATA *gb_main, bool f
             awm->sep______________();
         }
 
-        awm->insert_menu_topic("gene_info",   "Gene information", "i", "gene_info.hlp",   AWM_ALL, RootAsWindowCallback::simple(GEN_popup_gene_infowindow,    gb_main));
-        awm->insert_menu_topic("gene_search", "Search and Query", "Q", "gene_search.hlp", AWM_ALL, makeCreateWindowCallback    (GEN_create_gene_query_window, gb_main));
+        awm->insert_menu_topic("gene_info",                  "Gene information", "i", "gene_info.hlp",   AWM_ALL, RootAsWindowCallback::simple(GEN_popup_gene_infowindow,    gb_main));
+        awm->insert_menu_topic(awm->local_id("gene_search"), "Search and Query", "Q", "gene_search.hlp", AWM_ALL, makeCreateWindowCallback    (GEN_create_gene_query_window, gb_main));
 
         GEN_create_mask_submenu(awm, gb_main);
 
@@ -1574,7 +1569,11 @@ AW_window *GEN_create_first_map(AW_root *aw_root, GBDATA *gb_main) {
 void GEN_map_window::init(AW_root *awr, GBDATA *gb_main) {
     {
         char *windowName = (window_nr == 0) ? strdup("ARB Gene Map") : GBS_global_string_copy("ARB Gene Map %i", window_nr);
-        AW_window_menu_modes::init(awr, "ARB_GENE_MAP", windowName, 200, 200);
+        char *windowID   = (window_nr == 0) ? strdup("ARB_GENE_MAP") : GBS_global_string_copy("ARB_GENE_MAP_%i", window_nr);
+
+        AW_window_menu_modes::init(awr, windowID, windowName, 200, 200);
+
+        free(windowID);
         free(windowName);
     }
 
@@ -1598,8 +1597,8 @@ void GEN_map_window::init(AW_root *awr, GBDATA *gb_main) {
 
     // File Menu
     create_menu("File", "F", AWM_ALL);
-    insert_menu_topic("close", "Close", "C", "quit.hlp", AWM_ALL, (AW_CB)AW_POPDOWN, 0, 0);
-    insert_menu_topic("new_view", "New view", "v", "new_view.hlp", AWM_ALL, makeCreateWindowCallback(GEN_create_map, new GEN_create_map_param(gb_main, window_nr+1)));
+    insert_menu_topic("close",              "Close",    "C", NULL,               AWM_ALL, (AW_CB)AW_POPDOWN, 0, 0);
+    insert_menu_topic(local_id("new_view"), "New view", "v", "gen_new_view.hlp", AWM_ALL, makeCreateWindowCallback(GEN_create_map, new GEN_create_map_param(gb_main, window_nr+1)));
 
     GEN_create_genes_submenu       (this, gb_main, false); // Genes
     GEN_create_gene_species_submenu(this, gb_main, false); // Gene-species
@@ -1609,11 +1608,10 @@ void GEN_map_window::init(AW_root *awr, GBDATA *gb_main) {
 
     // Properties Menu
     create_menu("Properties", "r", AWM_ALL);
-    insert_menu_topic("gene_props_menu", "Menu: Colors and Fonts ...",          "M", "props_frame.hlp",     AWM_ALL, AW_preset_window);
-    insert_menu_topic("gene_props",      "GENEMAP: Colors and Fonts ...",       "C", "gene_props_data.hlp", AWM_ALL, makeCreateWindowCallback(AW_create_gc_window, gen_canvas->gc_manager)); // @@@ FIXME: replace AW_create_gc_window by local function returning same window for all mapped views
-    insert_menu_topic("gene_layout",     "Layout",                              "L", "gene_layout.hlp",     AWM_ALL, GEN_create_layout_window);
-    insert_menu_topic("gene_options",    "Options",                             "O", "gene_options.hlp",    AWM_ALL, GEN_create_options_window);
-    insert_menu_topic("gene_nds",        "NDS ( Select Gene Information ) ...", "N", "props_nds.hlp",       AWM_ALL, AW_POPUP, (AW_CL)GEN_open_nds_window, (AW_CL)gb_main);
+    insert_menu_topic(local_id("gene_props_menu"), "Menu: Colors and Fonts ...",          "M", "props_frame.hlp", AWM_ALL, AW_preset_window);
+    insert_menu_topic(local_id("gene_props"),      "GENEMAP: Colors and Fonts ...",       "C", "color_props.hlp", AWM_ALL, makeCreateWindowCallback(AW_create_gc_window, gen_canvas->gc_manager)); // @@@ FIXME: replace AW_create_gc_window by local function returning same window for all mapped views
+    insert_menu_topic(local_id("gene_options"),    "Options",                             "O", "gen_options.hlp", AWM_ALL, GEN_create_options_window);
+    insert_menu_topic("gene_nds",                  "NDS ( Select Gene Information ) ...", "N", "props_nds.hlp",   AWM_ALL, AW_POPUP, (AW_CL)GEN_open_nds_window, (AW_CL)gb_main);
     sep______________();
     AW_insert_common_property_menu_entries(this);
     sep______________();
@@ -1670,7 +1668,7 @@ void GEN_map_window::init(AW_root *awr, GBDATA *gb_main) {
     button_length(20);
 
     at(gene_x, first_line_y);
-    help_text("organism_search.hlp");
+    help_text("sp_search.hlp");
     callback(makeCreateWindowCallback(DBUI::create_species_query_window, gb_main)); // @@@ should use an organism search (using ITEM_organism) 
     create_button("SEARCH_ORGANISM", AWAR_LOCAL_ORGANISM_NAME(window_nr));
 
@@ -1696,11 +1694,11 @@ void GEN_map_window::init(AW_root *awr, GBDATA *gb_main) {
     button_length(4);
 
     at(dtype_x1, first_line_y);
-    help_text("gen_disp_radial.hlp");
+    help_text("gen_disp_style.hlp");
     callback(GEN_set_display_style, (AW_CL)GEN_DISPLAY_STYLE_RADIAL);
     create_button("RADIAL_DISPLAY_TYPE", "#gen_radial.xpm", 0);
 
-    help_text("gen_disp_book.hlp");
+    help_text("gen_disp_style.hlp");
     callback(GEN_set_display_style, (AW_CL)GEN_DISPLAY_STYLE_BOOK);
     create_button("BOOK_DISPLAY_TYPE", "#gen_book.xpm", 0);
 
@@ -1708,7 +1706,7 @@ void GEN_map_window::init(AW_root *awr, GBDATA *gb_main) {
     int jump_x = cur_x;
 
     at(dtype_x1, second_line_y);
-    help_text("gen_disp_vertical.hlp");
+    help_text("gen_disp_style.hlp");
     callback(GEN_set_display_style, (AW_CL)GEN_DISPLAY_STYLE_VERTICAL);
     create_button("VERTICAL_DISPLAY_TYPE", "#gen_vertical.xpm", 0);
 

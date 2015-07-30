@@ -60,15 +60,21 @@ bool AW_device_Xm::text_impl(int gc, const char *str, const Position& pos, AW_po
     return text_overlay(gc, str, opt_strlen, pos, alignment, filteri, (AW_CL)this, 0.0, 0.0, AW_draw_string_on_screen);
 }
 
-const int STIPPLE_TYPES = 3;
+enum StippleType {
+    ST_UNDEFINED = -1,
+    FILLED_125   = 0,
+    FILLED_25,
+    FILLED_375,
+    FILLED_50,
+    FILLED_625,
+    FILLED_75,
+    FILLED_875,
+};
+
 const int PIXMAP_SIZE   = 8; // 8x8 stipple mask
+const int STIPPLE_TYPES = FILLED_875+1;
 
-static Pixmap getStipplePixmap(AW_common_Xm *common, int stippleType) {
-    // stippleType         fill percentage
-    //       0                  25%
-    //       1                  50%
-    //       2                  75%
-
+static Pixmap getStipplePixmap(AW_common_Xm *common, StippleType stippleType) {
     aw_assert(stippleType>=0 && stippleType<STIPPLE_TYPES);
 
     static Pixmap pixmap[STIPPLE_TYPES];
@@ -77,9 +83,13 @@ static Pixmap getStipplePixmap(AW_common_Xm *common, int stippleType) {
     if (!initialized) {
         for (int t = 0; t<STIPPLE_TYPES; ++t) {
             static unsigned char stippleBits[STIPPLE_TYPES][PIXMAP_SIZE] = {
-                { 0x88, 0x22, 0x88, 0x22, 0x88, 0x22, 0x88, 0x22 },
-                { 0x55, 0xaa, 0x55, 0xaa, 0x55, 0xaa, 0x55, 0xaa },
-                { 0xbb, 0xee, 0xbb, 0xee, 0xbb, 0xee, 0xbb, 0xee }
+                { 0x40, 0x08, 0x01, 0x20, 0x04, 0x80, 0x10, 0x02 }, // 12.5%
+                { 0x88, 0x22, 0x88, 0x22, 0x88, 0x22, 0x88, 0x22 }, // 25%
+                { 0x15, 0xa2, 0x54, 0x8a, 0x51, 0x2a, 0x45, 0xa8 }, // 37.5%
+                { 0x55, 0xaa, 0x55, 0xaa, 0x55, 0xaa, 0x55, 0xaa }, // 50%
+                { 0xd5, 0xba, 0x57, 0xea, 0x5d, 0xab, 0x75, 0xae }, // 62.5%
+                { 0xbb, 0xee, 0xbb, 0xee, 0xbb, 0xee, 0xbb, 0xee }, // 75%
+                { 0xbf, 0xf7, 0xfe, 0xdf, 0xfb, 0x7f, 0xef, 0xfd }  // 87.5%
             };
             pixmap[t] = XCreateBitmapFromData(common->get_display(), common->get_window_id(), reinterpret_cast<const char *>(stippleBits[t]), PIXMAP_SIZE, PIXMAP_SIZE);
         }
@@ -103,20 +113,19 @@ AW_device_Xm::FillStyle AW_device_Xm::setFillstyleForGreylevel(int gc, AW::FillS
 
     AW_grey_level greylevel = get_grey_level(gc);
 
-    if (greylevel<0.125) {
+    if (greylevel<0.0625) {
         return FS_EMPTY;
     }
-    if (greylevel<0.875) { // otherwise draw solid
-        int stippleType = -1;
-        if (greylevel<0.375) {
-            stippleType = 0; // 25%
-        }
-        else if (greylevel<0.625) {
-            stippleType = 1; // 50%
-        }
-        else {
-            stippleType = 2; // 75%
-        }
+    if (greylevel<0.9375) { // otherwise draw solid
+        StippleType stippleType = ST_UNDEFINED;
+
+        if      (greylevel<0.1875) stippleType = FILLED_125;
+        else if (greylevel<0.3125) stippleType = FILLED_25;
+        else if (greylevel<0.4375) stippleType = FILLED_375;
+        else if (greylevel<0.5626) stippleType = FILLED_50;
+        else if (greylevel<0.6875) stippleType = FILLED_625;
+        else if (greylevel<0.8125) stippleType = FILLED_75;
+        else stippleType                       = FILLED_875;
 
         AW_common_Xm *Common  = get_common();
         Pixmap        stipple = getStipplePixmap(Common, stippleType);

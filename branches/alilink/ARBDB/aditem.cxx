@@ -16,16 +16,19 @@
 
 
 GBDATA *GBT_find_or_create_item_rel_item_data(GBDATA *gb_item_data, const char *itemname, const char *id_field, const char *id, bool markCreated) {
-    /* Search for a item with field 'id_field' set to given 'id' (id compare is case-insensitive)
-     * If item does not exist, create it.
-     * Newly created items are automatically marked, if 'markCreated' is true
-     * items may be: species, genes, SAIs, ...
+    /*! Search for an existing or create a new, named item.
+     * @param gb_item_data  item container
+     * @param itemname      description of itemtype (for error messages)
+     * @param id_field      item-field containing ID (e.g. "name")
+     * @param id            the ID itself (compare is case-insensitive)
+     * @param markCreated   true -> mark item if it was created
+     * @return found/created item or NULL if an error occurs (which is exported in that case)
      */
 
     GBDATA   *gb_item = 0;
     GB_ERROR  error   = 0;
 
-    if (!gb_item_data) error = "No container";
+    if (!gb_item_data) error = "Missing parent container";
     else {
         gb_item = GBT_find_item_rel_item_data(gb_item_data, id_field, id);
         if (!gb_item) {

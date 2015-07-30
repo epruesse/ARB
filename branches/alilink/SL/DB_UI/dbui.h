@@ -25,6 +25,7 @@
 
 // @@@ rename the functions below
 
+class AW_window_simple;
 class AW_window_simple_menu;
 
 namespace DBUI {

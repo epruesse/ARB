@@ -91,7 +91,6 @@
 
 // --------------------------------
 // probe collection awars
-// see also ../SL/TREEDISP/TreeDisplay.hxx@AWAR_PC_
 
 // probe collection window
 #define AWAR_PC_TARGET_STRING      "probe_collection/target_string"
@@ -107,7 +106,6 @@
 
 // probe collection matching control parameters
 #define AWAR_PC_MISMATCH_THRESHOLD "probe_collection/mismatch_threshold"
-#define AWAR_PC_MATCH_COL_WIDTH    "probe_collection/match_col_width"
 
 #define REPLACE_TARGET_CONTROL_CHARS ":#=_:\\:=_"
 
@@ -1195,36 +1193,44 @@ static void selected_match_changed_cb(AW_root *root) {
     free(selected_match);
 }
 
-static void probelength_changed_cb(AW_root *root, bool min_changed) {
-    AW_awar *awar_minl = root->awar(AWAR_PD_DESIGN_MIN_LENGTH);
-    AW_awar *awar_maxl = root->awar(AWAR_PD_DESIGN_MAX_LENGTH);
+static void probelength_changed_cb(AW_root *root, bool maxChanged) {
+    static bool avoid_recursion = false;
+    if (!avoid_recursion) {
+        AW_awar *awar_minl = root->awar(AWAR_PD_DESIGN_MIN_LENGTH);
+        AW_awar *awar_maxl = root->awar(AWAR_PD_DESIGN_MAX_LENGTH);
 
-    int minl = awar_minl->read_int();
-    int maxl = awar_maxl->read_int();
+        int minl = awar_minl->read_int();
+        int maxl = awar_maxl->read_int();
 
-    if (minl>maxl) {
-        if (min_changed) awar_maxl->write_int(minl);
-        else             awar_minl->write_int(maxl);
+        if (minl>maxl) {
+            if (maxChanged) awar_minl->write_int(maxl);
+            else            awar_maxl->write_int(minl);
+        }
     }
 }
 
-static void gc_minmax_changed_cb(AW_root *root, bool maxChanged) {
+static void minmax_awar_pair_changed_cb(AW_root *root, bool maxChanged, const char *minAwarName, const char *maxAwarName) {
     static bool avoid_recursion = false;
     if (!avoid_recursion) {
         LocallyModify<bool> flag(avoid_recursion, true);
 
-        AW_awar *awar_minGC = root->awar(AWAR_PD_DESIGN_MIN_GC);
-        AW_awar *awar_maxGC = root->awar(AWAR_PD_DESIGN_MAX_GC);
+        AW_awar *awar_min = root->awar(minAwarName);
+        AW_awar *awar_max = root->awar(maxAwarName);
 
-        if (maxChanged) {
-            float currMax = awar_maxGC->read_float();
-            if (currMax>0) awar_minGC->set_minmax(0.0, currMax);
-        }
-        else {
-            float currMin = awar_minGC->read_float();
-            if (currMin<100.0) awar_maxGC->set_minmax(currMin, 100.0);
+        double currMin = awar_min->read_float();
+        double currMax = awar_max->read_float();
+
+        if (currMin>currMax) { // invalid -> correct
+            if (maxChanged) awar_min->write_float(currMax);
+            else            awar_max->write_float(currMin);
         }
     }
+}
+static void gc_minmax_changed_cb(AW_root *root, bool maxChanged) {
+    minmax_awar_pair_changed_cb(root, maxChanged, AWAR_PD_DESIGN_MIN_GC, AWAR_PD_DESIGN_MAX_GC);
+}
+static void temp_minmax_changed_cb(AW_root *root, bool maxChanged) {
+    minmax_awar_pair_changed_cb(root, maxChanged, AWAR_PD_DESIGN_MIN_TEMP, AWAR_PD_DESIGN_MAX_TEMP);
 }
 
 void create_probe_design_variables(AW_root *root, AW_default props, AW_default db) {
@@ -1255,17 +1261,14 @@ void create_probe_design_variables(AW_root *root, AW_default props, AW_default d
     root->awar_float(AWAR_PD_DESIGN_MINTARGETS, 50.0, props)->set_minmax(0, 100);
 
     AW_awar *awar_min_len = root->awar_int(AWAR_PD_DESIGN_MIN_LENGTH, 18, props);
-    awar_min_len->set_minmax(DOMAIN_MIN_LENGTH, 100)->add_callback(makeRootCallback(probelength_changed_cb, true));
-    root->awar_int(AWAR_PD_DESIGN_MAX_LENGTH, awar_min_len->read_int(), props)->set_minmax(DOMAIN_MIN_LENGTH, 100)->add_callback(makeRootCallback(probelength_changed_cb, false));
+    awar_min_len->set_minmax(DOMAIN_MIN_LENGTH, 100)->add_callback(makeRootCallback(probelength_changed_cb, false));
+    root->awar_int(AWAR_PD_DESIGN_MAX_LENGTH, awar_min_len->read_int(), props)->set_minmax(DOMAIN_MIN_LENGTH, 100)->add_callback(makeRootCallback(probelength_changed_cb, true));
 
-    root->awar_float(AWAR_PD_DESIGN_MIN_TEMP,     30.0,   props)->set_minmax(0, 1000);
-    root->awar_float(AWAR_PD_DESIGN_MAX_TEMP,     100.0,  props)->set_minmax(0, 1000);
+    root->awar_float(AWAR_PD_DESIGN_MIN_TEMP,     30.0,   props)->set_minmax(0, 1000)->add_callback(makeRootCallback(temp_minmax_changed_cb, false));
+    root->awar_float(AWAR_PD_DESIGN_MAX_TEMP,     100.0,  props)->set_minmax(0, 1000)->add_callback(makeRootCallback(temp_minmax_changed_cb, true));
 
-    AW_awar *awar_minGC = root->awar_float(AWAR_PD_DESIGN_MIN_GC, 50.0,  props);
-    AW_awar *awar_maxGC = root->awar_float(AWAR_PD_DESIGN_MAX_GC, 100.0, props);
-
-    awar_minGC->add_callback(makeRootCallback(gc_minmax_changed_cb, false)); // @@@ weird test (undo or better replace by auto-adjustment of opposite value when gtk-bug is fixed)
-    awar_maxGC->add_callback(makeRootCallback(gc_minmax_changed_cb, true));
+    root->awar_float(AWAR_PD_DESIGN_MIN_GC, 50.0,  props)->add_callback(makeRootCallback(gc_minmax_changed_cb, false));
+    root->awar_float(AWAR_PD_DESIGN_MAX_GC, 100.0, props)->add_callback(makeRootCallback(gc_minmax_changed_cb, true));
 
     gc_minmax_changed_cb(root, false);
     gc_minmax_changed_cb(root, true);
@@ -1304,7 +1307,6 @@ void create_probe_design_variables(AW_root *root, AW_default props, AW_default d
 
     root->awar_int(AWAR_PC_MATCH_NHITS,     0, db);
     root->awar_int(AWAR_PC_AUTO_MATCH,      0, props);
-    root->awar_int(AWAR_PC_MATCH_COL_WIDTH, 3, props)->set_minmax(1, 20);
 
     root->awar_string(AWAR_PC_TARGET_STRING,  "", db)->set_srt(REPLACE_TARGET_CONTROL_CHARS);
     root->awar_string(AWAR_PC_TARGET_NAME,    "", db)->set_srt(REPLACE_TARGET_CONTROL_CHARS);
@@ -1313,9 +1315,7 @@ void create_probe_design_variables(AW_root *root, AW_default props, AW_default d
     root->awar_float(AWAR_PC_MATCH_WIDTH, 1.0, db)->set_minmax(0.01, 100.0);
     root->awar_float(AWAR_PC_MATCH_BIAS,  0.0, db)->set_minmax(-1.0, 1.0);
 
-    root->awar_float(AWAR_PC_MISMATCH_THRESHOLD,                 0.0, db)->set_minmax(0, 100); // Note: limits will be modified by probe_match_with_specificity_event
-    root->awar_float(AWAR_PC_CLADE_MARKED_THRESHOLD,           100.0, db)->set_minmax(0, 100);
-    root->awar_float(AWAR_PC_CLADE_PARTIALLY_MARKED_THRESHOLD,   0.0, db)->set_minmax(0, 100);
+    root->awar_float(AWAR_PC_MISMATCH_THRESHOLD, 0.0, db)->set_minmax(0, 100); // Note: limits will be modified by probe_match_with_specificity_event
 
     double default_weights[16] = {0.0};
     double default_width = 1.0;
@@ -1339,10 +1339,8 @@ void create_probe_design_variables(AW_root *root, AW_default props, AW_default d
 
     // read probes from DB and add them to collection
     {
-        AW_awar *awar_current   = root->awar_string(AWAR_PC_CURRENT_COLLECTION, "", db);
-        AW_awar *awar_numProbes = root->awar_int(AWAR_PC_NUM_PROBES, 0, db);
-
-        char *current = awar_current->read_string();
+        AW_awar *awar_current = root->awar_string(AWAR_PC_CURRENT_COLLECTION, "", db);
+        char    *current      = awar_current->read_string();
 
         if (current && current[0]) {
             // Note: target sequences/names do not contain '#'/':' (see REPLACE_TARGET_CONTROL_CHARS)
@@ -1363,7 +1361,6 @@ void create_probe_design_variables(AW_root *root, AW_default props, AW_default d
                     aw_message(GBS_global_string("Saved probe ignored: has wrong format ('%s', expected 'name:seq')", probe));
                 }
             }
-            awar_numProbes->write_int(g_probe_collection.probeList().size());
         }
         free(current);
     }
@@ -1775,6 +1772,7 @@ AW_window *create_probe_match_window(AW_root *root, GBDATA *gb_main) {
         aws->create_button("PRINT", "PRINT", "P");
 
         aws->at("matchSai");
+        aws->help_text("saiProbe.hlp");
         aws->callback(makeWindowCallback(popupSaiProbeMatchWindow, gb_main));
         aws->create_button("MATCH_SAI", "Match SAI", "S");
 
@@ -2309,17 +2307,19 @@ static AW_window *create_probe_match_specificity_control_window(AW_root *root) {
         aws->at_newline();
 
         aws->label("Clade marked threshold");
-        aws->create_input_field_with_scaler(AWAR_PC_CLADE_MARKED_THRESHOLD, FIELDSIZE, SCALERSIZE);
+        aws->create_input_field_with_scaler(AWAR_DTREE_GROUP_MARKED_THRESHOLD, FIELDSIZE, SCALERSIZE);
 
         aws->at_newline();
 
         aws->label("Clade partially marked threshold");
-        aws->create_input_field_with_scaler(AWAR_PC_CLADE_PARTIALLY_MARKED_THRESHOLD, FIELDSIZE, SCALERSIZE);
+        aws->create_input_field_with_scaler(AWAR_DTREE_GROUP_PARTIALLY_MARKED_THRESHOLD, FIELDSIZE, SCALERSIZE);
 
         aws->at_newline();
 
-        aws->label("Marker width");
-        aws->create_input_field_with_scaler(AWAR_PC_MATCH_COL_WIDTH, FIELDSIZE, SCALERSIZE);
+        aws->callback(TREE_create_marker_settings_window);
+        aws->create_autosize_button("MARKER_SETTINGS", "Marker display settings", "d");
+
+        aws->at_newline();
     }
 
     return aws;
@@ -2383,18 +2383,7 @@ static void probe_match_with_specificity_edit_event() {
 
 // ----------------------------------------------------------------------------
 
-static const char *getProbeName(int nProbe) {
-    const ArbProbePtrList&   rProbeList = get_probe_collection().probeList();
-    ArbProbePtrListConstIter wanted     = rProbeList.begin();
-
-    if (nProbe>=0 && nProbe<int(rProbeList.size())) advance(wanted, nProbe);
-    else wanted = rProbeList.end();
-
-    if (wanted == rProbeList.end()) return GBS_global_string("<invalid probeindex %i>", nProbe);
-    return (*wanted)->name().c_str();
-}
-
-class GetMatchesContext {
+class GetMatchesContext { // @@@ merge with ProbeCollDisplay?
     double mismatchThreshold;
     int    nProbes;
 
@@ -2409,39 +2398,75 @@ public:
           results(get_results_manager().resultsMap())
     {}
 
-    void detect(std::string speciesName, CladeMatches& matches) const {
+    void detect(std::string speciesName, NodeMarkers& matches) const {
         std::pair<MatchMapIter,MatchMapIter> iter = results.equal_range(speciesName);
 
         for (; iter.first != iter.second ; ++iter.first) {
             const ArbMatchResult *pMatchResult = iter.first->second;
             if (pMatchResult->weight() <= mismatchThreshold) {
                 int nProbe = pMatchResult->index();
-                matches.incHit(nProbe);
+                matches.incMarker(nProbe);
             }
         }
-        matches.incCladeSize();
+        matches.incNodeSize();
     }
 };
 
 static SmartPtr<GetMatchesContext> getMatchesContext;
-static void getProbeMatches(const char *speciesName, CladeMatches& matches) {
-    getMatchesContext->detect(speciesName, matches);
-}
 
-static void refresh_matchedProbesDisplay_cb(AW_root *root, AWT_canvas *ntw, bool clearDisplayCache) {
+class ProbeCollDisplay : public MarkerDisplay {
+public:
+    ProbeCollDisplay(int numProbes)
+        : MarkerDisplay(numProbes)
+    {}
+
+    // MarkerDisplay interface
+    const char *get_marker_name(int markerIdx) const OVERRIDE {
+        const ArbProbePtrList&   rProbeList = get_probe_collection().probeList();
+        ArbProbePtrListConstIter wanted     = rProbeList.begin();
+
+        if (markerIdx>=0 && markerIdx<int(rProbeList.size())) advance(wanted, markerIdx);
+        else wanted = rProbeList.end();
+
+        if (wanted == rProbeList.end()) return GBS_global_string("<invalid probeindex %i>", markerIdx);
+        return (*wanted)->name().c_str();
+    }
+    void retrieve_marker_state(const char *speciesName, NodeMarkers& matches) OVERRIDE {
+        getMatchesContext->detect(speciesName, matches);
+    }
+};
+
+inline bool displays_probeColl_markers(MarkerDisplay *md) { return dynamic_cast<ProbeCollDisplay*>(md); }
+
+static void refresh_matchedProbesDisplay_cb(AW_root *root, AWT_canvas *ntw) {
     // setup parameters for display of probe collection matches and trigger tree refresh
     LocallyModify<bool> flag(allow_probe_match_event, false);
 
     AWT_graphic_tree *agt     = DOWNCAST(AWT_graphic_tree*, ntw->gfx);
     bool              display = get_results_manager().hasResults();
 
+    MarkerDisplay *markerDisplay = agt->get_marker_display();
+    bool           redraw        = false;
     if (display) {
         getMatchesContext = new GetMatchesContext(root->awar(AWAR_PC_MISMATCH_THRESHOLD)->read_float(),
                                                   get_probe_collection().probeList().size());
-    }
-    agt->set_probeCollectionDisplay(display, getProbeName, getProbeMatches, root->awar(AWAR_PC_MATCH_COL_WIDTH)->read_int(), clearDisplayCache);
 
-    root->awar(AWAR_TREE_REFRESH)->touch();
+        if (displays_probeColl_markers(markerDisplay)) {
+            markerDisplay->flush_cache();
+        }
+        else {
+            agt->set_marker_display(new ProbeCollDisplay(get_probe_collection().probeList().size()));
+        }
+        redraw = true;
+    }
+    else {
+        if (displays_probeColl_markers(markerDisplay)) {
+            agt->hide_marker_display();
+            redraw = true;
+        }
+    }
+
+    if (redraw) root->awar(AWAR_TREE_REFRESH)->touch();
 }
 
 // ----------------------------------------------------------------------------
@@ -2586,7 +2611,7 @@ static void probe_match_with_specificity_event(AW_root *root, AWT_canvas *ntw) {
             }
         }
 
-        refresh_matchedProbesDisplay_cb(root, ntw, true);
+        refresh_matchedProbesDisplay_cb(root, ntw);
     }
 }
 
@@ -2606,46 +2631,16 @@ static void probe_forget_matches_event(AW_window *aww, ArbPM_Context *pContext) 
 
     get_results_manager().reset();
     root->awar(AWAR_PC_MATCH_NHITS)->write_int(0);
-    refresh_matchedProbesDisplay_cb(root, pContext->ntw, true);
+    refresh_matchedProbesDisplay_cb(root, pContext->ntw);
 }
 
 // ----------------------------------------------------------------------------
-
-static void markedThresholdChanged_cb(AW_root *root, bool partChanged) {
-    static bool avoid_recursion = false;
-    if (!avoid_recursion) {
-        LocallyModify<bool> flag(avoid_recursion, true);
-
-        AW_awar *awar_marked     = root->awar(AWAR_PC_CLADE_MARKED_THRESHOLD);
-        AW_awar *awar_partMarked = root->awar(AWAR_PC_CLADE_PARTIALLY_MARKED_THRESHOLD);
-
-        double marked     = awar_marked->read_float();
-        double partMarked = awar_partMarked->read_float();
-
-        if (partMarked>marked) { // unwanted state
-            if (partChanged) {
-                awar_marked->write_float(partMarked);
-            }
-            else {
-                awar_partMarked->write_float(marked);
-            }
-        }
-        root->awar(AWAR_TREE_REFRESH)->touch();
-    }
-}
-
-static void add_threshold_callbacks(AW_root *root, AWT_canvas *ntw) {
-    root->awar(AWAR_PC_MATCH_COL_WIDTH)                 ->add_callback(makeRootCallback(refresh_matchedProbesDisplay_cb, ntw, false));
-    root->awar(AWAR_PC_MISMATCH_THRESHOLD)              ->add_callback(makeRootCallback(refresh_matchedProbesDisplay_cb, ntw, true));
-    root->awar(AWAR_PC_CLADE_MARKED_THRESHOLD)          ->add_callback(makeRootCallback(markedThresholdChanged_cb,  false));
-    root->awar(AWAR_PC_CLADE_PARTIALLY_MARKED_THRESHOLD)->add_callback(makeRootCallback(markedThresholdChanged_cb,  true));
-}
 
 AW_window *create_probe_match_with_specificity_window(AW_root *root, AWT_canvas *ntw) {
     static AW_window_simple *aws = 0; // the one and only probe match window
 
     if (!aws) {
-        add_threshold_callbacks(root, ntw);
+        root->awar(AWAR_PC_MISMATCH_THRESHOLD)->add_callback(makeRootCallback(refresh_matchedProbesDisplay_cb, ntw));
 
         aws = new AW_window_simple;
 
@@ -2734,7 +2729,6 @@ static void save_probe_list_to_DB(const ArbProbePtrList& rProbeList, AW_root *ro
     }
 
     root->awar(AWAR_PC_CURRENT_COLLECTION)->write_string(saved.empty() ? "" : saved.c_str()+1);
-    root->awar(AWAR_PC_NUM_PROBES)->write_int(rProbeList.size());
 }
 
 static void show_probes_in_sellist(const ArbProbePtrList& rProbeList, AW_selection_list *sellist) {

@@ -3,24 +3,22 @@ UP	arb.hlp
 UP	glossary.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
-SUB	set_color_of_listed.hlp
-SUB	color.hlp
-SUB	tree_group.hlp
-SUB	mark.hlp
+#SUB	subtopic.hlp
 
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		Mark color groups
+TITLE		Genemap display types
 
-OCCURRENCE	Species/Mark colored species
-                Species/Unmark colored species
-                Species/Swap marks of colored species
+OCCURRENCE	ARB Gene Map/<display type buttons in top-area>
 
-DESCRIPTION     Allows you to mark/unmark/swap marks of all species
-                belonging (or not belonging) to one color group.
+DESCRIPTION     ARB Gene Map supports three displays styles:
 
-NOTES		None
+                  * Radial style
+                  * Book style
+                  * Vertical style
+
+NOTES		Display options for each style can be customized using LINK{gen_options.hlp}.
 
 EXAMPLES	None
 
