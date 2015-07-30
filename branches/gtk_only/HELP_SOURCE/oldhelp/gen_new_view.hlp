@@ -1,0 +1,33 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP      arb.hlp
+UP      glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB    subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE           New genemap view
+
+OCCURRENCE      ARB Gene Map/File/New view
+
+DESCRIPTION     Opens a new window genemap window.
+
+                Multiple windows allows to
+                  * view genes of the same organism in different views
+                  * view genes of the different organisms
+
+                Normally the selected organism (species) will be displayed.
+
+                Checking the toggle behind the organism name in the top-area of the genemap,
+                will lock the currently display organism, i.e. when you select a different organism,
+                the display with the checked toggle  will not change the displayed organism.
+
+NOTES           None
+
+EXAMPLES        None
+
+WARNINGS        None
+
+BUGS            No bugs known

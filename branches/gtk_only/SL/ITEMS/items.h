@@ -72,6 +72,8 @@ struct MutableItemSelector { // @@@ remove AW_root arguments!
 
     ItemSelector *parent_selector;              // selector of parent item (or NULL if item has no parents)
     GBDATA *(*get_parent)(GBDATA *gb_item);     // if 'parent_selector' is defined, this function returns the parent of the item
+
+    void (*trigger_display_refresh)(); // shall be called when displays shall be refreshed (e.g. tree-display for species)
 };
 
 #define AWAR_KEY_SELECT "tmp/viewkeys/key_select"

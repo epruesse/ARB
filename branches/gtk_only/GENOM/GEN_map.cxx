@@ -127,10 +127,12 @@ GEN_map_manager *GEN_map_manager::get_map_manager() {
 }
 
 void GEN_map_manager::with_all_mapped_windows(GMW_CB2 callback, AW_CL cd1, AW_CL cd2) {
-    GEN_map_manager *mm       = get_map_manager();
-    int              winCount = mm->no_of_managed_windows();
-    for (int nr = 0; nr<winCount; ++nr) {
-        callback(mm->get_map_window(nr), cd1, cd2);
+    if (aw_root) { // no genemap opened yet
+        GEN_map_manager *mm       = get_map_manager();
+        int              winCount = mm->no_of_managed_windows();
+        for (int nr = 0; nr<winCount; ++nr) {
+            callback(mm->get_map_window(nr), cd1, cd2);
+        }
     }
 }
 
@@ -327,6 +329,14 @@ static void GEN_map_window_zoom_reset_and_refresh(GEN_map_window *gmw) {
 
 #define DISPLAY_TYPE_BIT(disp_type) (1<<(disp_type))
 #define ALL_DISPLAY_TYPES           (DISPLAY_TYPE_BIT(GEN_DISPLAY_STYLES)-1)
+
+static void GEN_map_window_refresh(GEN_map_window *win, AW_CL) {
+    win->get_canvas()->refresh();
+}
+
+void GEN_refresh_all_windows() {
+    GEN_map_manager::with_all_mapped_windows(GEN_map_window_refresh, NULL);
+}
 
 static void GEN_map_window_refresh_if_display_type(GEN_map_window *win, AW_CL cl_display_type_mask) {
     int display_type_mask = int(cl_display_type_mask);
@@ -1587,8 +1597,8 @@ void GEN_map_window::init(AW_root *awr, GBDATA *gb_main) {
 
     // File Menu
     create_menu("File", "F", AWM_ALL);
-    insert_menu_topic("close", "Close", "C", "quit.hlp", AWM_ALL, (AW_CB)AW_POPDOWN, 0, 0);
-    insert_menu_topic(local_id("new_view"), "New view", "v", "new_view.hlp", AWM_ALL, makeCreateWindowCallback(GEN_create_map, new GEN_create_map_param(gb_main, window_nr+1)));
+    insert_menu_topic("close",              "Close",    "C", NULL,               AWM_ALL, (AW_CB)AW_POPDOWN, 0, 0);
+    insert_menu_topic(local_id("new_view"), "New view", "v", "gen_new_view.hlp", AWM_ALL, makeCreateWindowCallback(GEN_create_map, new GEN_create_map_param(gb_main, window_nr+1)));
 
     GEN_create_genes_submenu       (this, gb_main, false); // Genes
     GEN_create_gene_species_submenu(this, gb_main, false); // Gene-species
