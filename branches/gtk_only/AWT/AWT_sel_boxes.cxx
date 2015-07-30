@@ -1197,7 +1197,7 @@ public:
 static void collect_subset_cb(AW_window *, awt_collect_mode what, AW_CL cl_subsel) { ((AW_subset_selection*)cl_subsel)->collect_subset_cb(what); }
 static void reorder_subset_cb(AW_window *, awt_reorder_mode dest, AW_CL cl_subsel) { ((AW_subset_selection*)cl_subsel)->reorder_subset_cb(dest); }
 
-static void correct_subselection_cb(AW_selection_list *parent_sel, AW_CL cl_subsel) {
+static void correct_subselection_cb(AW_selection_list *IF_ASSERTION_USED(parent_sel), AW_CL cl_subsel) {
     AW_subset_selection *subsel = (AW_subset_selection*)cl_subsel;
     aw_assert(subsel->get_parent_sellist() == parent_sel);
     subsel->delete_entries_missing_in_parent();

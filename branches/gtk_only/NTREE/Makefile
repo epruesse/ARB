@@ -733,6 +733,7 @@ NT_concatenate.o: $(ARBHOME)/INCLUDE/arb_assert.h
 NT_concatenate.o: $(ARBHOME)/INCLUDE/arb_core.h
 NT_concatenate.o: $(ARBHOME)/INCLUDE/arb_defs.h
 NT_concatenate.o: $(ARBHOME)/INCLUDE/arb_error.h
+NT_concatenate.o: $(ARBHOME)/INCLUDE/arb_global_defs.h
 NT_concatenate.o: $(ARBHOME)/INCLUDE/arb_msg.h
 NT_concatenate.o: $(ARBHOME)/INCLUDE/arb_progress.h
 NT_concatenate.o: $(ARBHOME)/INCLUDE/arb_strarray.h

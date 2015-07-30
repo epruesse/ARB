@@ -11,8 +11,7 @@ UP	sp_info.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Delete Fields
 
-OCCURRENCE	ARB_NT/Species/Info/FIELDS/Delete fields in list
-	        ARB_NT/Genes/Info/FIELDS/Delete fields in list
+OCCURRENCE	<any information window>/FIELDS/Delete fields in list
 
 DESCRIPTION	Allows to delete/hide fields.
 

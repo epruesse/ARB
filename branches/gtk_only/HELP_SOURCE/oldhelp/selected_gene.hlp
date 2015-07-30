@@ -11,7 +11,7 @@ UP	species.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Selected gene
 
-OCCURRENCE	ARB_NT/Genes/Info
+OCCURRENCE	ARB_NT/Genome/Gene information
 
 DESCRIPTION	An individual gene can be selected.
 
