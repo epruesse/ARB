@@ -109,8 +109,9 @@ sub scanExistingRessources() {
   foreach (sort keys %unknown) {
     if (/readme[^\/]*$/i)                    { ; } # ignore readme files
     elsif (/\/genhelp\/.*(footer|header)$/o) { ; } # ignore files used for help generation
+    elsif (/\.bak$/o)                        { ; } # ignore bak files
     else {
-      print "$_:0: Unhandled file in ressource directory\n";
+        print "$_:0: Unhandled file in ressource directory\n";
     }
   }
 
