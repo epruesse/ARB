@@ -11,10 +11,10 @@ SUB	color.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Colorizing marked items / Marking colored items
 
-OCCURRENCE	Species/Colors
-                Genes/Colors
-                Organisms/Colors
-                Experiments/Colors
+OCCURRENCE	ARB_NT/Species/Colors ...
+                ARB_NT/Genome/Colors ...
+                ARB_NT/Genome/Organims/Colors ...
+                ARB_NT/Genome/Experiments/Colors ...
 
 DESCRIPTION     Allows to colorize marked items and to mark colorized items.
 
@@ -26,7 +26,9 @@ DESCRIPTION     Allows to colorize marked items and to mark colorized items.
                  * assign marked to color group
                  * mark/unmark/invert all members of a color group
 
-NOTES		See also LINK{color.hlp}
+                To save colorsets, use LINK{color_loadsave.hlp}.
+
+NOTES		See also LINK{color.hlp} 
 
 EXAMPLES	None
 
