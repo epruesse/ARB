@@ -26,7 +26,7 @@ struct fake_agt : public AWT_graphic_parsimony, virtual Noncopyable {
         delete templ;
     }
     void init(AliView *aliview) {
-        fake_AW_init_color_groups(); // acts like no species has a color
+        fake_AW_init_color_groups(); // acts like color_groups were active
         delete templ;
         templ = aliview->has_data() ? new SEQTYPE(aliview) : NULL;
         AWT_graphic_parsimony::init(aliview, templ, true, false);
