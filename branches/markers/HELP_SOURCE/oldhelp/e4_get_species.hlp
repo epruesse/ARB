@@ -1,0 +1,54 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Load species into running editor
+
+OCCURRENCE	ARB_EDIT4/<GET-button>
+		ARB_EDIT4/<JUMP-button>
+		ARB_EDIT4/Edit/Load current species
+		ARB_EDIT4/Edit/Load marked species
+
+DESCRIPTION     Several functions allow to load missing species into a running ARB_EDIT4 instance.
+
+		GET-button in top area:
+
+			Loads the currently selected species (see LINK{selected.hlp}) into the editor.
+
+		JUMP-button in top area:
+
+                        Jumps to the selected species, i.e. scrolls the species into
+                        the viewport and places the cursor into the species.
+
+                        If the species is inside a folded group, this group and any
+                        folded parent groups will be unfolded.
+
+                        In general the editor will automatically jump to the
+                        selected species, unless the species is in a folded group.
+
+                        If the species is not loaded into the editor yet, the JUMP
+                        button behaves like the GET button, i.e. loads the species and
+                        then jumps to it.
+
+		ARB_EDIT4/Edit/Load current species:
+
+                        Same as GET button
+
+		ARB_EDIT4/Edit/Load marked species:
+
+                        Similar to GET button, but operates on all marked species.
+
+NOTES		When loading (a previously missing) species into ARB_EDIT4, the species gets placed into
+                a group named 'More Sequences'.
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known

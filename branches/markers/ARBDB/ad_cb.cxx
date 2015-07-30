@@ -23,16 +23,21 @@ static GB_MAIN_TYPE          *inside_callback_main  = NULL; // points to DB root
 gb_hierarchy_location::gb_hierarchy_location(GBDATA *gb_main, const char *db_path) {
     invalidate();
     if (db_path) {
+        GB_MAIN_TYPE *Main = GB_MAIN(gb_main);
+        GB_test_transaction(Main);
+
         ConstStrArray keys;
         GBT_split_string(keys, db_path, '/');
 
         size_t size = keys.size();
         if (size>1 && !keys[0][0]) { // db_path starts with '/' and contains sth
-            GB_MAIN_TYPE *Main = GB_MAIN(gb_main);
-            size_t        q    = 0;
-
+            size_t q = 0;
             for (size_t offset = size-1; offset>0; --offset, ++q) {
-                quark[q] = key2quark(Main, keys[offset]);
+                if (!keys[offset][0]) { // empty key
+                    invalidate();
+                    return;
+                }
+                quark[q] = gb_find_or_create_quark(Main, keys[offset]);
                 if (quark[q]<1) { // unknown/invalid key
                     invalidate();
                     return;
@@ -396,7 +401,7 @@ GB_ERROR GB_MAIN_TYPE::remove_hierarchy_cb(const gb_hierarchy_location& loc, con
     return NULL;
 }
 
-#undef CHECK_HIER_CB_CONDITION()
+#undef CHECK_HIER_CB_CONDITION
 
 GB_ERROR GB_add_hierarchy_callback(GBDATA *gbd, GB_CB_TYPE type, const DatabaseCallback& dbcb) {
     /*! bind callback to ALL entries which are at the same DB-hierarchy as 'gbd'.
@@ -471,8 +476,7 @@ static void re_add_self_cb(GBDATA *gbe, int *calledCounter, GB_CB_TYPE cbtype) {
     DatabaseCallback dbcb = makeDatabaseCallback(re_add_self_cb, calledCounter);
     GB_remove_callback(gbe, cbtype, dbcb);
 
-    GB_ERROR error = GB_add_callback(gbe, cbtype, dbcb);
-    gb_assert(!error);
+    ASSERT_NO_ERROR(GB_add_callback(gbe, cbtype, dbcb));
 }
 
 void TEST_db_callbacks_ta_nota() {
@@ -1124,6 +1128,8 @@ void TEST_hierarchy_callbacks() {
 
     // test gb_hierarchy_location
     {
+        GB_transaction ta(gb_main);
+
         gb_hierarchy_location loc_top(top1);
         gb_hierarchy_location loc_son(son11);
         gb_hierarchy_location loc_grandson(grandson222);
@@ -1184,14 +1190,15 @@ void TEST_hierarchy_callbacks() {
             free(path_grandson);
         }
 
-        gb_hierarchy_location loc_invalid(gb_main, "/no/such/path");
+        gb_hierarchy_location loc_invalid(gb_main, "");
         TEST_REJECT(loc_invalid.is_valid());
         TEST_REJECT(loc_invalid == loc_invalid); // invalid locations equal nothing
 
-        TEST_REJECT(gb_hierarchy_location(gb_main, "/grandson/missing/son").is_valid());
         TEST_EXPECT(gb_hierarchy_location(gb_main, "/grandson/cont_top/son").is_valid()); // non-existing path with existing keys is valid
+        TEST_EXPECT(gb_hierarchy_location(gb_main, "/no/such/path").is_valid());          // non-existing keys generate key-quarks on-the-fly
+        TEST_EXPECT(gb_hierarchy_location(gb_main, "/grandson/missing/son").is_valid());  // non-existing keys generate key-quarks on-the-fly
+
         // test some pathological locations:
-        TEST_REJECT(gb_hierarchy_location(gb_main, "")     .is_valid());
         TEST_REJECT(gb_hierarchy_location(gb_main, "/")    .is_valid());
         TEST_REJECT(gb_hierarchy_location(gb_main, "//")   .is_valid());
         TEST_REJECT(gb_hierarchy_location(gb_main, "  /  ").is_valid());
@@ -1350,7 +1357,10 @@ void TEST_hierarchy_callbacks() {
         const char       *locpath = "/cont_top/son";
         DatabaseCallback  dbcb    = makeDatabaseCallback(some_cb, &HIERARCHY_TRACESTRUCT(anyElem,changed));
 
-        TEST_EXPECT_NO_ERROR(GB_add_hierarchy_callback(gb_main, locpath, GB_CB_CHANGED, dbcb));
+        {
+            GB_transaction ta(gb_main);
+            TEST_EXPECT_NO_ERROR(GB_add_hierarchy_callback(gb_main, locpath, GB_CB_CHANGED, dbcb));
+        }
 
         // now both should trigger again
         TRIGGER_2_CHANGES(top1, son11);
@@ -1358,7 +1368,10 @@ void TEST_hierarchy_callbacks() {
         TEST_EXPECT_CHANGE_HIER_TRIGGERED(anyElem, son11);
         TEST_EXPECT_TRIGGERS_CHECKED();
 
-        TEST_EXPECT_NO_ERROR(GB_remove_hierarchy_callback(gb_main, locpath, GB_CB_CHANGED, dbcb));
+        {
+            GB_transaction ta(gb_main);
+            TEST_EXPECT_NO_ERROR(GB_remove_hierarchy_callback(gb_main, locpath, GB_CB_CHANGED, dbcb));
+        }
 
         TRIGGER_2_CHANGES(top1, son11);
         // son11 no longer triggers -> ok
@@ -1366,9 +1379,32 @@ void TEST_hierarchy_callbacks() {
         TEST_EXPECT_TRIGGERS_CHECKED();
 
         // check some failing binds
-        const char *invalidPath = "/no/such";
-        TEST_EXPECT_ERROR_CONTAINS(GB_add_hierarchy_callback(gb_main, invalidPath, GB_CB_CHANGED, dbcb), "invalid hierarchy location");
-        TEST_EXPECT_ERROR_CONTAINS(GB_add_hierarchy_callback(gb_main, GB_CB_CHANGED, dbcb), "invalid hierarchy location");
+        const char *invalidPath = "//such";
+        {
+            GB_transaction ta(gb_main);
+            TEST_EXPECT_ERROR_CONTAINS(GB_add_hierarchy_callback(gb_main, invalidPath,   GB_CB_CHANGED, dbcb), "invalid hierarchy location");
+            TEST_EXPECT_ERROR_CONTAINS(GB_add_hierarchy_callback(gb_main,                GB_CB_CHANGED, dbcb), "invalid hierarchy location");
+        }
+
+        // bind a hierarchy callback to a "not yet existing" path (i.e. path containing yet unused keys),
+        // then create an db-entry at that path and test that callback is trigger
+        const char *unknownPath = "/unknownPath/unknownEntry";
+        {
+            GB_transaction ta(gb_main);
+            TEST_EXPECT_NO_ERROR(GB_add_hierarchy_callback(gb_main, unknownPath, GB_CB_CHANGED, dbcb));
+        }
+        TEST_EXPECT_TRIGGERS_CHECKED();
+
+        GBDATA *gb_unknown;
+        {
+            GB_transaction ta(gb_main);
+            TEST_EXPECT_RESULT__NOERROREXPORTED(gb_unknown = GB_search(gb_main, unknownPath, GB_STRING));
+        }
+        TEST_EXPECT_TRIGGERS_CHECKED(); // creating an entry does not trigger callback (could call a new callback-type)
+
+        TRIGGER_CHANGE(gb_unknown);
+        TEST_EXPECT_CHANGE_HIER_TRIGGERED(anyElem, gb_unknown);
+        TEST_EXPECT_TRIGGERS_CHECKED();
     }
 
     // cleanup

@@ -271,6 +271,9 @@ public:
     int WM_top_offset;                 // correction between position set and position reported ( = size of window frame - in most cases!)
     int WM_left_offset;
 
+    static int WM_max_top_offset;
+    static int WM_max_left_offset;
+
     bool knows_WM_offset() const { return WM_top_offset != AW_CALC_OFFSET_ON_EXPOSE; }
 
     AW_window_Motif();

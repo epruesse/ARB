@@ -13,7 +13,6 @@
 
 #include <nds.h>
 
-#include <awt_attributes.hxx>
 #include <awt_config_manager.hxx>
 
 #include <aw_preset.hxx>
@@ -32,6 +31,7 @@
 #include <unistd.h>
 #include <iostream>
 #include <cfloat>
+#include <ad_colorset.h>
 
 /*!*************************
   class AP_tree
@@ -310,7 +310,7 @@ bool AWT_graphic_tree::group_tree(AP_tree *at, CollapseMode mode, int color_grou
                 if (GB_read_flag(at->gb_node)) expand_me = true;
             }
             if (!expand_me && (mode & EXPAND_COLOR)) { // do not group specified color_group
-                int my_color_group = AW_find_color_group(at->gb_node, true);
+                int my_color_group = GBT_get_color_group(at->gb_node);
 
                 expand_me =
                     my_color_group == color_group || // specific or no color
@@ -2664,7 +2664,7 @@ void AWT_graphic_tree::show_nds_list(GBDATA *, bool use_nds) {
             int gc                            = AWT_GC_NSELECTED;
             if (nds_show_all && is_marked) gc = AWT_GC_SELECTED;
             else {
-                int color_group     = AWT_species_get_dominant_color(gb_species);
+                int color_group     = AW_find_active_color_group(gb_species);
                 if (color_group) gc = AWT_GC_FIRST_COLOR_GROUP+color_group-1;
             }
             ListDisplayRow *curr = new ListDisplayRow(gb_main, gb_species, y_position+text_y_offset, gc, *disp_device, use_nds, tree_name);

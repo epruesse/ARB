@@ -15,9 +15,11 @@ OCCURRENCE	ARB_EDIT4/Block
 DESCRIPTION	This menu allows you to perform different block operations.
 
 		All block operations work on what we call 'Selected Species'.
-		To select some species use the right mouse button on the 
-		name or sequence data of the species/groups.
 
+		To select some species use the right mouse button on the 
+		name or sequence data of the species/groups. The selected
+		sequences or sequence ranges will be drawn with a different
+		background color (see also LINK{e4_background_priority.hlp}).
 
 		More selection functions are available in the first section
 		of the Block menu:
@@ -40,7 +42,9 @@ DESCRIPTION	This menu allows you to perform different block operations.
 
 		  - Selected species:
 
-                    species selected in ARB_EDIT4 (right click)
+                    species selected in ARB_EDIT4 using right click
+                    (Note: unfortunately the term "Selected species" is often also
+                    used for what we call "Current species" here)
 
 		  - Current species:
 

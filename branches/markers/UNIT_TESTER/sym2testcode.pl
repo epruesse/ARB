@@ -156,7 +156,7 @@ sub parse($) {
           }
         }
       }
-      else {
+      elsif (($line ne "\n") and ($line ne '') and not ($line =~ /^[A-Za-z0-9_]+\.o:$/)) {
         die "can't parse line '$line'\n";
       }
     }

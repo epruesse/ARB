@@ -332,7 +332,7 @@ static AW_window *create_configuration_marker_window(AW_root *root, AWT_canvas *
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
-    aws->callback(makeHelpCallback("mark_configs.hlp"));
+    aws->callback(makeHelpCallback("species_configs_highlight.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
 
@@ -925,7 +925,7 @@ static AW_window *create_configuration_admin_window(AW_root *root, AWT_canvas *n
         aws->create_button("CLOSE", "CLOSE", "C");
 
         aws->at("help");
-        aws->callback(makeHelpCallback("configuration.hlp"));
+        aws->callback(makeHelpCallback("species_configs.hlp"));
         aws->create_button("HELP", "HELP", "H");
 
         aws->at("name");

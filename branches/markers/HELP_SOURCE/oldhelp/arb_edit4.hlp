@@ -5,7 +5,7 @@ UP	glossary.hlp
 #Please insert subtopic references  (line starts with keyword SUB)
 SUB	man_arb_edit4.hlp
 SUB	e4.hlp
-SUB	configuration.hlp
+SUB	species_configs.hlp
 
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
@@ -42,7 +42,7 @@ SECTION How to start ARB_EDIT4?
       use "Sequence/Edit Sequences/Using earlier configuration"
       and select the configuration from the popup window.
 
-      See LINK{config_saveload.hlp} for HOWTO create such configurations.
+      See LINK{species_configs_saveload.hlp} for HOWTO create such configurations.
 
 NOTES		None
 

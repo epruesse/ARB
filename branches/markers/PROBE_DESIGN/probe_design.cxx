@@ -1795,6 +1795,7 @@ AW_window *create_probe_match_window(AW_root *root, GBDATA *gb_main) {
         aws->create_button("PRINT", "PRINT", "P");
 
         aws->at("matchSai");
+        aws->help_text("saiProbe.hlp");
         aws->callback(makeWindowCallback(popupSaiProbeMatchWindow, gb_main));
         aws->create_button("MATCH_SAI", "Match SAI", "S");
 

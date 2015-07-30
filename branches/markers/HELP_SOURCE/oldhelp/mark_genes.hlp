@@ -20,13 +20,13 @@ NOTES		None
 
 EXAMPLES	Mark one known gene:
 
-			1. Search for the Gene: <ARB_NT/Genes/Search>
+			1. Search for the Gene using LINK{gene_search.hlp}
 			2. Select the gene
 			3. Mark it
 
 		Mark a list of genes:
 
-			1. Search for the gene: <ARB_NT/Genes/search>
+			1. Search for the genes using LINK{gene_search.hlp}
 			2. Press <Mark Listed/Unmark Rest>
 
 WARNINGS	Be careful: The marked genes can be spread over several

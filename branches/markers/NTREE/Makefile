@@ -487,6 +487,7 @@ NT_concatenate.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 NT_concatenate.o: $(ARBHOME)/INCLUDE/arb_assert.h
 NT_concatenate.o: $(ARBHOME)/INCLUDE/arb_core.h
 NT_concatenate.o: $(ARBHOME)/INCLUDE/arb_error.h
+NT_concatenate.o: $(ARBHOME)/INCLUDE/arb_global_defs.h
 NT_concatenate.o: $(ARBHOME)/INCLUDE/arb_msg.h
 NT_concatenate.o: $(ARBHOME)/INCLUDE/arb_progress.h
 NT_concatenate.o: $(ARBHOME)/INCLUDE/arb_strarray.h
@@ -525,6 +526,7 @@ NT_concatenate.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 NT_dbrepair.o: NT_local.h
 NT_dbrepair.o: NT_local_proto.h
+NT_dbrepair.o: $(ARBHOME)/INCLUDE/ad_colorset.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/ad_prot.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/adGene.h
@@ -542,7 +544,6 @@ NT_dbrepair.o: $(ARBHOME)/INCLUDE/arbdbt.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/arbtools.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/attributes.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-NT_dbrepair.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/cb.h

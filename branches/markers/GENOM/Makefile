@@ -188,7 +188,6 @@ GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-GEN_graphic.o: $(ARBHOME)/INCLUDE/awt_attributes.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/cb.h
 GEN_graphic.o: $(ARBHOME)/INCLUDE/cb_base.h

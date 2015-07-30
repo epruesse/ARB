@@ -40,4 +40,5 @@ EXAMPLES	None
 
 WARNINGS	None
 
-BUGS		Hopefully no bugs
+BUGS		Undo crashes when "deleting a group" is undone (and in similar cases).
+		See LINK{http://bugs.arb-home.de/ticket/496}

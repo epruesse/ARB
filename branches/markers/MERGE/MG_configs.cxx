@@ -168,7 +168,7 @@ AW_window *MG_create_merge_configs_window(AW_root *awr) {
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
-    aws->callback(makeHelpCallback("mg_configs.hlp"));
+    aws->callback(makeHelpCallback("mg_species_configs.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
     aws->at("configs1");
@@ -200,7 +200,7 @@ AW_window *MG_create_merge_configs_window(AW_root *awr) {
     aws->button_length(0);
     aws->shadow_width(1);
     aws->at("icon");
-    aws->callback(makeHelpCallback("mg_configs.hlp"));
+    aws->callback(makeHelpCallback("mg_species_configs.hlp"));
     aws->create_button("HELP_MERGE", "#merge/icon.xpm");
 
     return aws;

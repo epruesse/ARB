@@ -1578,7 +1578,7 @@ AW_window *ED4_start_editor_on_old_configuration(AW_root *awr) {
         aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
 
-        aws->callback(makeHelpCallback("config_saveload.hlp"));
+        aws->callback(makeHelpCallback("species_configs_saveload.hlp"));
         aws->create_button("HELP", "HELP");
 
         awt_create_CONFIG_selection_list(GLOBAL_gb_main, aws, AWAR_EDIT_CONFIGURATION, false);
@@ -1614,7 +1614,7 @@ AW_window *ED4_save_configuration_as_open_window(AW_root *awr) {
     aws->create_button("CLOSE", "CLOSE");
 
     aws->at("help");
-    aws->callback(makeHelpCallback("config_saveload.hlp"));
+    aws->callback(makeHelpCallback("species_configs_saveload.hlp"));
     aws->create_button("HELP", "HELP");
 
     aws->at("save");
