@@ -8,17 +8,19 @@ UP	glossary.hlp
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		General options for ARB_GENE_MAP
+TITLE		Jump to selected gene
 
-OCCURRENCE	ARB_GENE_MAP/Properties/Options
+OCCURRENCE	ARB_NT/Genome/Gene Map/JUMP
 
-DESCRIPTION	If 'Auto jump to selected gene' is on, the display
-                should automatically center to the selected gene.
+DESCRIPTION     Scrolls the display to the currently selected gene.
 
-NOTES		None
+		Press multiple times to center the gene or toggle between multiple 
+		display positions of one gene (happens e.g. in book-style mode).
+
+NOTES		See also LINK{gen_options.hlp}.
 
 EXAMPLES	None
 
 WARNINGS	None
 
-BUGS		Not working yet!!!
+BUGS		No bugs known

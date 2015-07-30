@@ -27,7 +27,6 @@
 #include <aw_root.hxx>
 
 #include <awt_seq_colors.hxx>
-#include <awt_attributes.hxx>
 #include <st_window.hxx>
 #include <arbdbt.h>
 
@@ -418,10 +417,10 @@ ED4_returncode ED4_sequence_terminal::draw() {
 
     {
         GB_transaction       ta(GLOBAL_gb_main);
-        ST_ML_Color         *colors       = 0;
+        ST_ML_Color         *statColors   = 0;
         char                *searchColors = results().buildColorString(this, seq_start, seq_end); // defined in ED4_SearchResults class : ED4_search.cxx
         ED4_species_manager *spec_man     = get_parent(ED4_L_SPECIES)->to_species_manager();
-        int                  color_group  = AWT_species_get_dominant_color(spec_man->get_species_pointer());
+        int                  color_group  = AW_find_active_color_group(spec_man->get_species_pointer());
 
         PosRange selection;
         int      is_selected = ED4_get_selected_range(this, selection);
@@ -431,7 +430,7 @@ ED4_returncode ED4_sequence_terminal::draw() {
             ED4_ROOT->column_stat_activated &&
             (st_ml_node || (st_ml_node = STAT_find_node_by_name(ED4_ROOT->st_ml, this->species_name))))
             {
-                colors = STAT_get_color_string(ED4_ROOT->st_ml, 0, st_ml_node, seq_start, seq_end);
+                statColors = STAT_get_color_string(ED4_ROOT->st_ml, 0, st_ml_node, seq_start, seq_end);
             }
 
         const char *saiColors = 0;
@@ -444,7 +443,7 @@ ED4_returncode ED4_sequence_terminal::draw() {
             saiColors = ED4_getSaiColorString(ED4_ROOT->aw_root, seq_start, seq_end);
         }
 
-        if (colors || searchColors || is_marked || is_selected || color_group || saiColors) {
+        if (statColors || searchColors || is_marked || is_selected || color_group || saiColors) {
             int    i;
             AW_pos width      = ED4_ROOT->font_group.get_width(ED4_G_HELIX);
             int    real_left  = left;
@@ -464,14 +463,17 @@ ED4_returncode ED4_sequence_terminal::draw() {
             for (i = real_left; i <= real_right; i++, x2 += width) {
                 int new_pos = rm->screen_to_sequence(i);  // getting the real position of the base in the sequence
 
+                // Note: if you change background color priorities,
+                // please update help in ../HELP_SOURCE/oldhelp/e4_background_priority.hlp@COLOR_PRIORITY
+
                 if (searchColors && searchColors[new_pos]) {
                     color = searchColors[new_pos];
                 }
                 else if (is_selected && selection.contains(new_pos)) {
                     color = ED4_G_SELECTED;
                 }
-                else if (colors) {
-                    color = colors[new_pos] + ED4_G_CBACK_0;
+                else if (statColors) {
+                    color = statColors[new_pos] + ED4_G_CBACK_0;
                     if (color > ED4_G_CBACK_9) color = ED4_G_CBACK_9;
                 }
                 else if (saiColors) {

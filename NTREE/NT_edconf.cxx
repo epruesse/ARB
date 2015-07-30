@@ -14,13 +14,352 @@
 #include <aw_awars.hxx>
 #include <aw_root.hxx>
 #include <aw_msg.hxx>
+#include <aw_select.hxx>
 #include <ad_config.h>
 #include <TreeNode.h>
 #include <arb_strbuf.h>
 #include <arb_global_defs.h>
+#include <TreeDisplay.hxx>
+#include <arb_strarray.h>
+#include <map>
+#include <set>
+#include <string>
+#include <ad_cb_prot.h>
+#include <awt_config_manager.hxx>
+
+using namespace std;
+
+// AWT_canvas-local (%i=canvas-id):
+#define AWAR_CL_SELECTED_CONFIGS       "configuration_data/win%i/selected"
+#define AWAR_CL_DISPLAY_CONFIG_MARKERS "configuration_data/win%i/display"
 
 static void init_config_awars(AW_root *root) {
     root->awar_string(AWAR_CONFIGURATION, "default_configuration", GLOBAL.gb_main);
+}
+
+typedef map<string, string> ConfigHits; // key=speciesname; value[markerIdx]==1 -> highlighted
+
+class ConfigMarkerDisplay : public MarkerDisplay, virtual Noncopyable {
+    GBDATA                  *gb_main;
+    SmartPtr<ConstStrArray>  config; // configuration names
+    StrArray                 errors; // config load-errors
+    ConfigHits               hits;
+
+    void updateHits() {
+        flush_cache();
+        hits.clear();
+        errors.erase();
+        for (int c = 0; c<size(); ++c) {
+            GB_ERROR   error;
+            GBT_config cfg(gb_main, (*config)[c], error);
+
+            for (int area = 0; area<=1 && !error; ++area) {
+                GBT_config_parser cparser(cfg, area);
+
+                while (1) {
+                    const GBT_config_item& item = cparser.nextItem(error);
+                    if (error || item.type == CI_END_OF_CONFIG) break;
+                    if (item.type == CI_SPECIES) {
+                        ConfigHits::iterator found = hits.find(item.name);
+                        if (found == hits.end()) {
+                            string h(size(), '0');
+                            h[c]            = '1';
+                            hits[item.name] = h;
+                        }
+                        else {
+                            (found->second)[c] = '1';
+                        }
+                    }
+                }
+            }
+
+            errors.put(strdup(error ? error : ""));
+        }
+    }
+
+public:
+    ConfigMarkerDisplay(SmartPtr<ConstStrArray> config_, GBDATA *gb_main_)
+        : MarkerDisplay(config_->size()),
+          gb_main(gb_main_),
+          config(config_)
+    {
+        updateHits();
+    }
+    const char *get_marker_name(int markerIdx) const OVERRIDE {
+        const char *error = errors[markerIdx];
+        const char *name  = (*config)[markerIdx];
+        if (error && error[0]) return GBS_global_string("%s (Error: %s)", name, error);
+        return name;
+    }
+    void retrieve_marker_state(const char *speciesName, NodeMarkers& node) OVERRIDE {
+        ConfigHits::const_iterator found = hits.find(speciesName);
+        if (found != hits.end()) {
+            const string& hit = found->second;
+
+            for (int c = 0; c<size(); ++c) {
+                if (hit[c] == '1') node.incMarker(c);
+            }
+        }
+        node.incNodeSize();
+    }
+};
+
+inline bool displays_config_markers(MarkerDisplay *md) { return dynamic_cast<ConfigMarkerDisplay*>(md); }
+
+#define CONFIG_SEPARATOR "\1"
+
+inline AW_awar *get_canvas_awar(const char *awar_name_format, int canvas_id) {
+    return AW_root::SINGLETON->awar_no_error(GBS_global_string(awar_name_format, canvas_id));
+}
+inline AW_awar *get_config_awar        (int canvas_id) { return get_canvas_awar(AWAR_CL_SELECTED_CONFIGS,       canvas_id); }
+inline AW_awar *get_display_toggle_awar(int canvas_id) { return get_canvas_awar(AWAR_CL_DISPLAY_CONFIG_MARKERS, canvas_id); }
+
+static SmartPtr<ConstStrArray> get_selected_configs_from_awar(int canvas_id) {
+    // returns configs stored in awar as array (empty array if awar undefined!)
+    SmartPtr<ConstStrArray> config(new ConstStrArray);
+
+    AW_awar *awar = get_config_awar(canvas_id);
+    if (awar) {
+        char *config_str = awar->read_string();
+        GBT_splitNdestroy_string(*config, config_str, CONFIG_SEPARATOR, true);
+    }
+
+    return config;
+}
+static void write_configs_to_awar(int canvas_id, const CharPtrArray& configs) {
+    char *config_str = GBT_join_names(configs, CONFIG_SEPARATOR[0]);
+    AW_root::SINGLETON->awar(GBS_global_string(AWAR_CL_SELECTED_CONFIGS, canvas_id))->write_string(config_str);
+    free(config_str);
+}
+
+// --------------------------------------------------------------------------------
+
+static AW_selection *selected_configs_list[MAX_NT_WINDOWS] = { MAX_NT_WINDOWS_NULLINIT };
+static bool allow_selection2awar_update = true;
+static bool allow_to_activate_display   = false;
+
+static void selected_configs_awar_changed_cb(AW_root *, AWT_canvas *ntw) {
+    AWT_graphic_tree        *agt    = DOWNCAST(AWT_graphic_tree*, ntw->gfx);
+    int                      ntw_id = NT_get_canvas_id(ntw);
+    SmartPtr<ConstStrArray>  config = get_selected_configs_from_awar(ntw_id);
+    bool                     redraw = false;
+
+    if (config->empty() || get_display_toggle_awar(ntw_id)->read_int() == 0) {
+        if (displays_config_markers(agt->get_marker_display())) { // only hide config markers
+            agt->hide_marker_display();
+            redraw = true;
+        }
+    }
+    else {
+        bool activate = allow_to_activate_display || displays_config_markers(agt->get_marker_display());
+
+        if (activate) {
+            ConfigMarkerDisplay *disp = new ConfigMarkerDisplay(config, ntw->gb_main);
+            agt->set_marker_display(disp);
+            redraw = true;
+        }
+    }
+
+    if (selected_configs_list[ntw_id]) { // if configuration_marker_window has been opened
+        // update content of subset-selection (needed when reloading a config-set (not implemented yet) or after renaming a config)
+        LocallyModify<bool> avoid(allow_selection2awar_update, false);
+        awt_set_subset_selection_content(selected_configs_list[ntw_id], *config);
+    }
+
+    if (redraw) AW_root::SINGLETON->awar(AWAR_TREE_REFRESH)->touch();
+}
+
+static void selected_configs_display_awar_changed_cb(AW_root *root, AWT_canvas *ntw) {
+    LocallyModify<bool> allowInteractiveActivation(allow_to_activate_display, true);
+    selected_configs_awar_changed_cb(root, ntw);
+}
+
+static void configs_selectionlist_changed_cb(AW_selection *selected_configs, bool interactive_change, AW_CL ntw_id) {
+    if (allow_selection2awar_update) {
+        LocallyModify<bool> allowInteractiveActivation(allow_to_activate_display, interactive_change);
+
+        StrArray config;
+        selected_configs->get_values(config);
+        write_configs_to_awar(ntw_id, config);
+    }
+}
+
+static void config_modified_cb(GBDATA *gb_cfg_area) { // called with "top_area" AND "middle_area" entry!
+    static GBDATA   *gb_lastname = NULL;
+    static GB_ULONG  lastcall     = 0;
+
+    GBDATA   *gb_name  = GB_entry(GB_get_father(gb_cfg_area), "name");
+    GB_ULONG  thiscall = GB_time_of_day();
+
+    bool is_same_modification = gb_name == gb_lastname && (thiscall == lastcall || thiscall == (lastcall+1));
+    if (!is_same_modification) { // avoid duplicate check if "top_area" and "middle_area" changed (=standard case)
+        // touch all canvas-specific awars that contain 'name'
+        const char *name = GB_read_char_pntr(gb_name);
+
+        for (int canvas_id = 0; canvas_id<MAX_NT_WINDOWS; ++canvas_id) {
+            SmartPtr<ConstStrArray> config = get_selected_configs_from_awar(canvas_id);
+            for (size_t c = 0; c<config->size(); ++c) {
+                if (strcmp((*config)[c], name) == 0) {
+                    get_config_awar(canvas_id)->touch();
+                    break;
+                }
+            }
+        }
+    }
+    gb_lastname = gb_name;
+    lastcall    = thiscall;
+}
+
+#define CONFIG_BASE_PATH "/configuration_data/configuration"
+
+static void install_config_change_callbacks(GBDATA *gb_main) {
+    static bool installed = false;
+    if (!installed) {
+        DatabaseCallback dbcb = makeDatabaseCallback(config_modified_cb);
+        ASSERT_NO_ERROR(GB_add_hierarchy_callback(gb_main, CONFIG_BASE_PATH "/middle_area", GB_CB_CHANGED, dbcb));
+        ASSERT_NO_ERROR(GB_add_hierarchy_callback(gb_main, CONFIG_BASE_PATH "/top_area",    GB_CB_CHANGED, dbcb));
+
+        installed = true;
+    }
+}
+
+void NT_activate_configMarkers_display(AWT_canvas *ntw) {
+    GBDATA *gb_main = ntw->gb_main;
+
+    AW_awar *awar_selCfgs = ntw->awr->awar_string(GBS_global_string(AWAR_CL_SELECTED_CONFIGS, NT_get_canvas_id(ntw)), "", gb_main);
+    awar_selCfgs->add_callback(makeRootCallback(selected_configs_awar_changed_cb, ntw));
+
+    AW_awar *awar_dispCfgs = ntw->awr->awar_int(GBS_global_string(AWAR_CL_DISPLAY_CONFIG_MARKERS, NT_get_canvas_id(ntw)), 1, gb_main);
+    awar_dispCfgs->add_callback(makeRootCallback(selected_configs_display_awar_changed_cb, ntw));
+
+    awar_selCfgs->touch(); // force initial refresh
+    install_config_change_callbacks(gb_main);
+}
+
+// define where to store config-sets (using config-manager):
+#define MANAGED_CONFIGSET_SECTION "configmarkers"
+#define MANAGED_CONFIGSET_ENTRY   "selected_configs"
+
+static void setup_configmarker_config_cb(AWT_config_definition& config, int ntw_id) {
+    AW_awar *selcfg_awar = get_config_awar(ntw_id);
+    nt_assert(selcfg_awar);
+    if (selcfg_awar) {
+        config.add(selcfg_awar->awar_name, MANAGED_CONFIGSET_ENTRY);
+    }
+}
+
+struct ConfigModifier : virtual Noncopyable {
+    virtual ~ConfigModifier() {}
+    virtual const char *modify(const char *old) const = 0;
+
+    bool modifyConfig(ConstStrArray& config) const {
+        bool changed = false;
+        for (size_t i = 0; i<config.size(); ++i) {
+            const char *newContent = modify(config[i]);
+            if (!newContent) {
+                config.remove(i);
+                changed = true;
+            }
+            else if (strcmp(newContent, config[i]) != 0) {
+                config.replace(i, newContent);
+                changed = true;
+            }
+        }
+        return changed;
+    }
+};
+class ConfigRenamer : public ConfigModifier { // derived from Noncopyable
+    const char *oldName;
+    const char *newName;
+    const char *modify(const char *name) const OVERRIDE {
+        return strcmp(name, oldName) == 0 ? newName : name;
+    }
+public:
+    ConfigRenamer(const char *oldName_, const char *newName_)
+        : oldName(oldName_),
+          newName(newName_)
+    {}
+};
+class ConfigDeleter : public ConfigModifier { // derived from Noncopyable
+    const char *toDelete;
+    const char *modify(const char *name) const OVERRIDE {
+        return strcmp(name, toDelete) == 0 ? NULL : name;
+    }
+public:
+    ConfigDeleter(const char *toDelete_)
+        : toDelete(toDelete_)
+    {}
+};
+
+static char *correct_managed_configsets_cb(const char *key, const char *value, AW_CL cl_ConfigModifier) {
+    char *modified_value = NULL;
+    if (strcmp(key, MANAGED_CONFIGSET_ENTRY) == 0) {
+        const ConfigModifier *mod = (const ConfigModifier*)cl_ConfigModifier;
+        ConstStrArray         config;
+        GBT_split_string(config, value, CONFIG_SEPARATOR, true);
+        if (mod->modifyConfig(config)) {
+            modified_value = GBT_join_names(config, CONFIG_SEPARATOR[0]);
+        }
+    }
+    return modified_value ? modified_value : strdup(value);
+}
+static void modify_configurations(const ConfigModifier& mod) {
+    for (int canvas_id = 0; canvas_id<MAX_NT_WINDOWS; ++canvas_id) {
+        // modify currently selected configs:
+        SmartPtr<ConstStrArray> config = get_selected_configs_from_awar(canvas_id);
+        if (mod.modifyConfig(*config)) {
+            write_configs_to_awar(canvas_id, *config);
+        }
+    }
+    // change all configuration-sets stored in config-manager (shared by all windows)
+    AWT_modify_managed_configs(GLOBAL.gb_main, MANAGED_CONFIGSET_SECTION, correct_managed_configsets_cb, AW_CL(&mod));
+}
+
+static void configuration_renamed_cb(const char *old_name, const char *new_name) { modify_configurations(ConfigRenamer(old_name, new_name)); }
+static void configuration_deleted_cb(const char *name)                           { modify_configurations(ConfigDeleter(name)); }
+
+static AW_window *create_configuration_marker_window(AW_root *root, AWT_canvas *ntw) {
+    AW_window_simple *aws = new AW_window_simple;
+
+    int ntw_id = NT_get_canvas_id(ntw);
+    aws->init(root, GBS_global_string("MARK_CONFIGS_%i", ntw_id), "Highlight configurations in tree");
+    aws->load_xfig("mark_configs.fig");
+
+    aws->auto_space(10, 10);
+
+    aws->at("close");
+    aws->callback(AW_POPDOWN);
+    aws->create_button("CLOSE", "CLOSE", "C");
+
+    aws->at("help");
+    aws->callback(makeHelpCallback("species_configs_highlight.hlp"));
+    aws->create_button("HELP", "HELP", "H");
+
+
+    aws->at("list");
+    AW_DB_selection *all_configs = awt_create_CONFIG_selection_list(GLOBAL.gb_main, aws, AWAR_CONFIGURATION, true);
+    AW_selection *sub_sel;
+    {
+        LocallyModify<bool> avoid(allow_selection2awar_update, false); // avoid awar gets updated from empty sub-selectionlist
+        sub_sel = awt_create_subset_selection_list(aws, all_configs->get_sellist(), "selected", "add", "sort", false, configs_selectionlist_changed_cb, NT_get_canvas_id(ntw));
+    }
+
+    awt_set_subset_selection_content(sub_sel, *get_selected_configs_from_awar(ntw_id));
+    selected_configs_list[ntw_id] = sub_sel;
+
+    // @@@ would like to use ntw-specific awar for this selection list (opening two lists links them)
+
+    aws->at("show");
+    aws->label("Display?");
+    aws->create_toggle(get_display_toggle_awar(ntw_id)->awar_name);
+
+    aws->at("settings");
+    aws->callback(TREE_create_marker_settings_window);
+    aws->create_autosize_button("SETTINGS", "Settings", "S");
+
+    AWT_insert_config_manager(aws, GLOBAL.gb_main, MANAGED_CONFIGSET_SECTION, makeConfigSetupCallback(setup_configmarker_config_cb, ntw_id));
+
+    return aws;
 }
 
 // -----------------------------
@@ -363,104 +702,93 @@ static void nt_extract_configuration(AW_window *aww, extractType ext_type) {
         aw_message("Please select a configuration");
     }
     else {
-        GBDATA *gb_configuration = GBT_find_configuration(GLOBAL.gb_main, cn);
-        if (!gb_configuration) {
-            aw_message(GBS_global_string("Configuration '%s' not found in the database", cn));
-        }
-        else {
-            GBDATA *gb_middle_area  = GB_search(gb_configuration, "middle_area", GB_STRING);
-            char   *md              = 0;
+        GB_ERROR   error = NULL;
+        GBT_config cfg(GLOBAL.gb_main, cn, error);
+
+        if (!error) {
             size_t  unknown_species = 0;
             bool    refresh         = false;
 
-            if (gb_middle_area) {
-                GB_HASH *was_marked = NULL; // only used for CONF_COMBINE
+            GB_HASH *was_marked = NULL; // only used for CONF_COMBINE
 
-                switch (ext_type) {
-                    case CONF_EXTRACT:
-                        GBT_mark_all(GLOBAL.gb_main, 0); // unmark all for extract
-                        refresh = true;
-                        break;
-                    case CONF_COMBINE: {
-                        // store all marked species in hash and unmark them
-                        was_marked = GBS_create_hash(GBT_get_species_count(GLOBAL.gb_main), GB_IGNORE_CASE);
-                        for (GBDATA *gbd = GBT_first_marked_species(GLOBAL.gb_main); gbd; gbd = GBT_next_marked_species(gbd)) {
-                            int marked = GB_read_flag(gbd);
-                            if (marked) {
-                                GBS_write_hash(was_marked, GBT_read_name(gbd), 1);
-                                GB_write_flag(gbd, 0);
+            switch (ext_type) {
+                case CONF_EXTRACT: // unmark all
+                    GBT_mark_all(GLOBAL.gb_main, 0);
+                    refresh = true;
+                    break;
+
+                case CONF_COMBINE: // store all marked species in hash and unmark them
+                    was_marked = GBT_create_marked_species_hash(GLOBAL.gb_main);
+                    GBT_mark_all(GLOBAL.gb_main, 0);
+                    refresh    = GBS_hash_elements(was_marked);
+                    break;
+
+                default:
+                    break;
+            }
+
+            for (int area = 0; area<=1 && !error; ++area) {
+                GBT_config_parser cparser(cfg, area);
+
+                while (1) {
+                    const GBT_config_item& citem = cparser.nextItem(error);
+                    if (error || citem.type == CI_END_OF_CONFIG) break;
+
+                    if (citem.type == CI_SPECIES) {
+                        GBDATA *gb_species = GBT_find_species(GLOBAL.gb_main, citem.name);
+
+                        if (gb_species) {
+                            int oldmark = GB_read_flag(gb_species);
+                            int newmark = oldmark;
+                            switch (ext_type) {
+                                case CONF_EXTRACT:
+                                case CONF_MARK:     newmark = 1; break;
+                                case CONF_UNMARK:   newmark = 0; break;
+                                case CONF_INVERT:   newmark = !oldmark; break;
+                                case CONF_COMBINE: {
+                                    nt_assert(!oldmark); // should have been unmarked above
+                                    newmark = GBS_read_hash(was_marked, citem.name); // mark if was_marked
+                                    break;
+                                }
+                                default: nt_assert(0); break;
+                            }
+                            if (newmark != oldmark) {
+                                GB_write_flag(gb_species, newmark);
+                                refresh = true;
                             }
                         }
-
-                        refresh = refresh || GBS_hash_elements(was_marked);
-                        break;
-                    }
-                    default:
-                        break;
-                }
-
-                md = GB_read_string(gb_middle_area);
-                if (md) {
-                    char *p;
-                    char tokens[2];
-                    tokens[0] = 1;
-                    tokens[1] = 0;
-                    for (p = strtok(md, tokens); p; p = strtok(NULL, tokens)) {
-                        if (p[0] == 'L') {
-                            const char *species_name = p+1;
-                            GBDATA     *gb_species   = GBT_find_species(GLOBAL.gb_main, species_name);
-
-                            if (gb_species) {
-                                int oldmark = GB_read_flag(gb_species);
-                                int newmark = oldmark;
-                                switch (ext_type) {
-                                    case CONF_EXTRACT:
-                                    case CONF_MARK:     newmark = 1; break;
-                                    case CONF_UNMARK:   newmark = 0; break;
-                                    case CONF_INVERT:   newmark = !oldmark; break;
-                                    case CONF_COMBINE: {
-                                        nt_assert(!oldmark); // should have been unmarked above
-                                        newmark = GBS_read_hash(was_marked, species_name); // mark if was_marked
-                                        break;
-                                    }
-                                    default: nt_assert(0); break;
-                                }
-                                if (newmark != oldmark) {
-                                    GB_write_flag(gb_species, newmark);
-                                    refresh = true;
-                                }
-                            }
-                            else {
-                                unknown_species++;
-                            }
+                        else {
+                            unknown_species++;
                         }
                     }
                 }
-
-                if (was_marked) GBS_free_hash(was_marked);
             }
 
-            if (unknown_species>0) {
-                aw_message(GBS_global_string("configuration '%s' contains %zu unknown species", cn, unknown_species));
-            }
-
+            if (was_marked) GBS_free_hash(was_marked);
+            if (unknown_species>0 && !error) error = GBS_global_string("configuration '%s' contains %zu unknown species", cn, unknown_species);
             if (refresh) aw_root->awar(AWAR_TREE_REFRESH)->touch();
-
-            free(md);
         }
+        aw_message_if(error);
     }
     free(cn);
 }
 
 static void nt_delete_configuration(AW_window *aww) {
-    GB_transaction transaction_var(GLOBAL.gb_main);
-    char *cn = aww->get_root()->awar(AWAR_CONFIGURATION)->read_string();
-    GBDATA *gb_configuration = GBT_find_configuration(GLOBAL.gb_main, cn);
+    GB_transaction ta(GLOBAL.gb_main);
+
+    char   *name             = aww->get_root()->awar(AWAR_CONFIGURATION)->read_string();
+    GBDATA *gb_configuration = GBT_find_configuration(GLOBAL.gb_main, name);
     if (gb_configuration) {
         GB_ERROR error = GB_delete(gb_configuration);
-        if (error) aw_message(error);
+        error          = ta.close(error);
+        if (error) {
+            aw_message(error);
+        }
+        else {
+            configuration_deleted_cb(name);
+        }
     }
-    free(cn);
+    free(name);
 }
 
 
@@ -542,30 +870,42 @@ static void nt_store_configuration(AW_window*, AWT_canvas *ntw) {
 static void nt_rename_configuration(AW_window *aww) {
     AW_awar  *awar_curr_cfg = aww->get_root()->awar(AWAR_CONFIGURATION);
     char     *old_name      = awar_curr_cfg->read_string();
-    GB_ERROR  err           = 0;
 
-    GB_transaction ta(GLOBAL.gb_main);
+    {
+        char *new_name = aw_input("Rename selection", "Enter the new name of the selection", old_name);
+        if (new_name) {
+            GB_ERROR err = NULL;
 
-    char *new_name = aw_input("Rename selection", "Enter the new name of the selection", old_name);
-    if (new_name) {
-        GBDATA *gb_existing_cfg  = GBT_find_configuration(GLOBAL.gb_main, new_name);
-        if (gb_existing_cfg) err = GBS_global_string("There is already a selection named '%s'", new_name);
-        else {
-            GBDATA *gb_old_cfg = GBT_find_configuration(GLOBAL.gb_main, old_name);
-            if (gb_old_cfg) {
-                GBDATA *gb_name = GB_entry(gb_old_cfg, "name");
-                if (gb_name) {
-                    err = GB_write_string(gb_name, new_name);
-                    if (!err) awar_curr_cfg->write_string(new_name);
+            {
+                GB_transaction ta(GLOBAL.gb_main);
+
+                GBDATA *gb_existing_cfg  = GBT_find_configuration(GLOBAL.gb_main, new_name);
+                if (gb_existing_cfg) err = GBS_global_string("There is already a selection named '%s'", new_name);
+                else {
+                    GBDATA *gb_old_cfg = GBT_find_configuration(GLOBAL.gb_main, old_name);
+                    if (gb_old_cfg) {
+                        GBDATA *gb_name = GB_entry(gb_old_cfg, "name");
+                        if (gb_name) {
+                            err = GB_write_string(gb_name, new_name);
+                            if (!err) awar_curr_cfg->write_string(new_name);
+                        }
+                        else err = "Selection has no name";
+                    }
+                    else err = "Can't find that selection";
                 }
-                else err = "Selection has no name";
+                err = ta.close(err);
             }
-            else err = "Can't find that selection";
-        }
-        free(new_name);
-    }
 
-    if (err) aw_message(err);
+            if (err) {
+                aw_message(err);
+            }
+            else {
+                nt_assert(GB_get_transaction_level(GLOBAL.gb_main) == 0); // otherwise callback below behaves wrong
+                configuration_renamed_cb(old_name, new_name);
+            }
+            free(new_name);
+        }
+    }
     free(old_name);
 }
 
@@ -577,7 +917,7 @@ static AW_window *create_configuration_admin_window(AW_root *root, AWT_canvas *n
         init_config_awars(root);
 
         AW_window_simple *aws = new AW_window_simple;
-        aws->init(root, "SPECIES_SELECTIONS", "Species Selections");
+        aws->init(root, GBS_global_string("SPECIES_SELECTIONS_%i", ntw_id), "Species Selections");
         aws->load_xfig("nt_selection.fig");
 
         aws->at("close");
@@ -585,7 +925,7 @@ static AW_window *create_configuration_admin_window(AW_root *root, AWT_canvas *n
         aws->create_button("CLOSE", "CLOSE", "C");
 
         aws->at("help");
-        aws->callback(makeHelpCallback("configuration.hlp"));
+        aws->callback(makeHelpCallback("species_configs.hlp"));
         aws->create_button("HELP", "HELP", "H");
 
         aws->at("name");
@@ -625,6 +965,10 @@ static AW_window *create_configuration_admin_window(AW_root *root, AWT_canvas *n
         aws->at("rename");
         aws->callback(nt_rename_configuration);
         aws->create_button("RENAME", "RENAME", "R");
+
+        aws->at("highlight");
+        aws->callback(makeCreateWindowCallback(create_configuration_marker_window, ntw));
+        aws->create_autosize_button(GBS_global_string("HIGHLIGHT_%i", ntw_id), "Highlight in tree", "t");
 
         existing_aws[ntw_id] = aws;
     }
@@ -678,5 +1022,6 @@ void NT_start_editor_on_tree(AW_window *, int use_species_aside, AWT_canvas *ntw
     if (!error) error = GBK_system("arb_edit4 -c " DEFAULT_CONFIGURATION " &");
     aw_message_if(error);
 }
+
 
 

@@ -9,7 +9,7 @@ UP  rna3d_general.hlp
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		General Display Options
+TITLE		RNA3D Display Options
 
 OCCURRENCE	In Primary Structure Editor (ARB_EDIT4) -> RNA3D Program
 

@@ -1576,26 +1576,32 @@ void ED4_restart_editor(AW_window *aww, AW_CL, AW_CL)
     ED4_start_editor_on_configuration(aww);
 }
 
-AW_window *ED4_start_editor_on_old_configuration(AW_root *awr)
-{
+AW_window *ED4_start_editor_on_old_configuration(AW_root *awr) {
     static AW_window_simple *aws = 0;
 
-    if (aws) return (AW_window *)aws;
-    aws = new AW_window_simple;
-    aws->init(awr, "LOAD_OLD_CONFIGURATION", "SELECT A CONFIGURATION");
-    aws->at(10, 10);
-    aws->auto_space(0, 0);
-    awt_create_CONFIG_selection_list(GLOBAL_gb_main, aws, AWAR_EDIT_CONFIGURATION, false);
-    aws->at_newline();
+    if (!aws) {
+        aws = new AW_window_simple;
+        aws->init(awr, "LOAD_OLD_CONFIGURATION", "SELECT A CONFIGURATION");
 
-    aws->callback((AW_CB0)ED4_start_editor_on_configuration);
-    aws->create_button("LOAD", "LOAD");
+        aws->at(10, 10);
+        aws->auto_space(0, 0);
 
-    aws->callback(AW_POPDOWN);
-    aws->create_button("CLOSE", "CLOSE", "C");
+        aws->callback(AW_POPDOWN);
+        aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->window_fit();
-    return (AW_window *)aws;
+        aws->callback(makeHelpCallback("species_configs_saveload.hlp"));
+        aws->create_button("HELP", "HELP");
+
+        awt_create_CONFIG_selection_list(GLOBAL_gb_main, aws, AWAR_EDIT_CONFIGURATION, false);
+
+        aws->at_newline();
+
+        aws->callback((AW_CB0)ED4_start_editor_on_configuration);
+        aws->create_button("LOAD", "LOAD");
+
+        aws->window_fit();
+    }
+    return aws;
 }
 
 void ED4_save_configuration(AW_window *aww, bool hide_aww) {
@@ -1619,7 +1625,7 @@ AW_window *ED4_save_configuration_as_open_window(AW_root *awr) {
     aws->create_button("CLOSE", "CLOSE");
 
     aws->at("help");
-    aws->callback(makeHelpCallback("configuration.hlp"));
+    aws->callback(makeHelpCallback("species_configs_saveload.hlp"));
     aws->create_button("HELP", "HELP");
 
     aws->at("save");

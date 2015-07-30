@@ -14,6 +14,8 @@ OCCURRENCE      ARB_NT/Species/Merge Species/Join marked species
 
 DESCRIPTION
 
+	    WARNING: This module is obsolete by newer modules. See NOTES below!
+
             "Join species" merges several similar species into one species.
 
             All database fields and the sequences get concatenated.
@@ -46,7 +48,7 @@ EXAMPLES
                           and use the field 'species_name'.
 
 
-NOTES           There's a second function to merge species: see LINK{merge_species.hlp}
+NOTES           There's a second, newer function to merge species: see LINK{merge_species.hlp}
 
                 There's a special new function to concatenate alignments: see LINK{concatenate.hlp}
 

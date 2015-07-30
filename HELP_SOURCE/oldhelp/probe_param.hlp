@@ -1,7 +1,6 @@
 #Please insert up references in the next lines (line starts with keyword UP)
 UP	arb.hlp
 UP	glossary.hlp
-UP	pt_server.hlp
 UP	probedesign.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
@@ -11,91 +10,90 @@ SUB	probedesignresult.hlp
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		Probe Parameters
+TITLE		Probe Design parameters
 
-OCCURRENCE	ARB_NT/ETC/Probe Design/PROBE DESIGN
+OCCURRENCE	ARB_NT/Probes/Design Probes
 
-DESCRIPTION	Allows to select the 'PT_SERVER' and its database, to customize
+DESCRIPTION     Allows to select the 'PT_SERVER' and its database, to customize
 		the presentation of the results, define the stringency of target
 		search and physical characteristics of the probes.
 
-		Select a 'PT_SERVER':
+		Select the 'PT_SERVER' to use:
 
-			Select the appropriate 'PT_SERVER' from the menu
-			displayed after pressing the button below the
-			'PT_SERVER' prompt. The 'PT_SERVER' database (*.arb)
-			has to be consistent with the current. (see 'Main
-			Topics': 'Probe Design'; 'PT_SERVER What Why and How')
+                        Probe design is not run on your current database, but on
+                        the database state at the time the PT_SERVER has been
+                        updated (see LINK{pt_server.hlp}).
 
-		Customize output of results:
+                        After changing sequence data or species IDs or after
+                        adding new sequences to the database, you need to
+                        update the PT_SERVER to get correct results
+                        (see LINK{probeadmin.hlp}).
 
-			Type the number of probe target proposals to be
-			displayed in the 'PD RESULT' window by typing it to the
-			'Length of output' subwindow.
+		Length of output:
 
-		Define number of accepted non-targets:
+			Defines the number of probe target proposals to be
+			displayed in the 'PD RESULT' window (see LINK{probedesignresult.hlp}).
+                        If more probes are found, the result list will be clipped.
 
-			Type the number of non-target species which you would
-			accept to be detected by the probe to the 'Max. non
-			group hits' subwindow.
+		Max. non-group hits:
+
+                        Defines the maximum number of matched species accepted outside of the
+                        group of species that have been marked.
+                        If more species are matched by a probe, the probe gets discarded.
 
 			This helps not to miss potential target sites in case
 			that species belonging to the particular specificity
-			group had been overlooked while marking (see: 'Main
-			Topics': 'Probe Design').
+			group had been overlooked while marking.
 
-		Define number of accepted inter- and intraprobe base pairings:
+		Max. hairpin bonds:
 
-			Type the number of potential base pairings within or
-			between probe molecules.
-			!!! Not yet implemented !!!
+                        Defines the maximum number of accepted, potential inter- and intraprobe
+                        base pairings.
 
-		Define minimum number of target species:
+			!!! Not implemented !!!
 
-			Type the fraction (%) of marked species which have to
-			share the target site to the 'Min. group hits (%)
-			subwindow.
+                Min group hits:
+
+                        Defines the minimum fraction (%) of target species (=marked species)
+                        which have to share the target site.
+                        Probe targets matching fewer target species will be discarded.
 
 			This helps to design multiple probes in case that common
 			target sites are not present in all species of the
 			particular specificity group.
 
-		Define length of the probe:
+		Length of probe:
 
-			Type minimum and maximum number of nucleotides to the
-			corresponding 'Length of probe' subwindows to define
-			probe length.
+			Defines the minimum and maximum length of designed probe targets.
+                        Shorter or longer probe targets will be discarded.
 
-		Define dissociation temperature:
+		Temperature:
 
-			A range of allowed dissociation temperatures (= 4xGC +
-			2xAU; centigrade) can be defined by typing minimum and
-			maximum values to the corresponding subwindows.
+			Defines a range of allowed dissociation temperatures (= 4xGC +
+			2xAU; centigrade) for designed probe targets.
 
-		Define the G+C content:
+		G+C content:
 
-			A range of allowed G+C fractions (%) can be defined by
-			typing minimum and maximum values to the corresponding
-			subwindows.
+			Defines a range of allowed G+C fractions (%) for designed probe targets.
 
-		Define target region:
+                ECOLI position:
 
-			A preferred sequence (alignment) region can be defined
-			for the probe target sites by typing the nucleotide
-			numbers of the homologous positions within the E. coli
-			molecule.
+			Defines a preferred sequence (alignment) region
+			for the probe target sites.
 
-			This requires:
+                        The positions of that region have to be specified
+                        relative to the E.coli molecule (Hint: ARB_EDIT4 displays the
+                        E.coli position of the cursor in its top area).
 
-				1. Your (pt_server) data is aligned.
+			Doing so requires that:
 
-				2. There is a SAI named 'ECOLI' which
-				   includes the reference sequence.
+				1. your data was aligned (when PT_SERVER was updated)
 
-		Press the 'EXPERT' button to display the 'PD SPECIAL' window if
-			base pairings should be individually weighted (see LINK{pd_spec_param.hlp}).
+				2. there is a SAI named 'ECOLI' which
+				   contains the reference sequence.
 
-		Press the 'GO' button to start the calculations.
+                Press the 'EXPERT' button to use individually weighted
+                base pairings (see LINK{pd_spec_param.hlp}).
 
 
 NOTES		Increasing of the 'Max. non group hits' and reducing

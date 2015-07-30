@@ -8,10 +8,11 @@ UP	gene_search.hlp
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		MARK LISTED SPECIES/GENES
+TITLE		Mark Listed Unmark Rest
 
-OCCURRENCE	ARB_NT/Species/Search: MARK LISTED UNMARK REST
-		ARB_NT/Genes/Search: MARK LISTED UNMARK REST
+OCCURRENCE	ARB_NT/Species/Search and Query/Mark Listed Unmark Rest
+		ARB_NT/Genome/Search and query/Mark Listed Unmark Rest
+		ARB_NT/Genome/Experiment/Search and query/Mark Listed Unmark Rest
 
 DESCRIPTION	Marks all listed species/genes, 
 		unmarks all species which are not listed

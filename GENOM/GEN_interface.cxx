@@ -223,6 +223,10 @@ static GBDATA *next_gene_in_range(GBDATA *gb_prev, QUERY_RANGE range) {
 #warning move GEN_item_selector to SL/ITEMS
 #endif
 
+static void refresh_displayed_genes() {
+    GEN_refresh_all_windows();
+}
+
 static struct MutableItemSelector GEN_item_selector = {
     QUERY_ITEM_GENES,
     GEN_select_gene,
@@ -241,6 +245,7 @@ static struct MutableItemSelector GEN_item_selector = {
     GEN_get_current_gene,
     add_selected_gene_changed_cb,
     &ORGANISM_get_selector(), GB_get_grandfather,
+    refresh_displayed_genes,
 };
 
 ItemSelector& GEN_get_selector() { return GEN_item_selector; }
@@ -927,14 +932,12 @@ static void GEN_create_field_items(AW_window *aws, GBDATA *gb_main) {
     static BoundItemSel *bis = new BoundItemSel(gb_main, GEN_get_selector());
     gen_assert(bis->gb_main == gb_main);
 
-    aws->insert_menu_topic("gen_reorder_fields", "Reorder fields ...",    "R", "spaf_reorder.hlp", AD_F_ALL, makeCreateWindowCallback(DBUI::create_fields_reorder_window, bis));
-    aws->insert_menu_topic("gen_delete_field",   "Delete/Hide field ...", "D", "spaf_delete.hlp",  AD_F_ALL, makeCreateWindowCallback(DBUI::create_field_delete_window,   bis));
-    aws->insert_menu_topic("gen_create_field",   "Create fields ...",     "C", "spaf_create.hlp",  AD_F_ALL, makeCreateWindowCallback(DBUI::create_field_create_window,   bis));
+    aws->insert_menu_topic(aws->local_id("gen_reorder_fields"), "Reorder fields ...",    "R", "spaf_reorder.hlp", AD_F_ALL, makeCreateWindowCallback(DBUI::create_fields_reorder_window, bis));
+    aws->insert_menu_topic(aws->local_id("gen_delete_field"),   "Delete/Hide field ...", "D", "spaf_delete.hlp",  AD_F_ALL, makeCreateWindowCallback(DBUI::create_field_delete_window,   bis));
+    aws->insert_menu_topic(aws->local_id("gen_create_field"),   "Create fields ...",     "C", "spaf_create.hlp",  AD_F_ALL, makeCreateWindowCallback(DBUI::create_field_create_window,   bis));
     aws->sep______________();
     aws->insert_menu_topic("gen_unhide_fields",  "Show all hidden fields", "S", "scandb.hlp", AD_F_ALL, makeWindowCallback(gene_field_selection_list_unhide_all_cb, gb_main, FIELD_FILTER_NDS));
     aws->insert_menu_topic("gen_refresh_fields", "Refresh fields",         "f", "scandb.hlp", AD_F_ALL, makeWindowCallback(gene_field_selection_list_update_cb,     gb_main, FIELD_FILTER_NDS));
-    aws->sep______________();
-    aws->insert_menu_topic("gen_edit_loc", "Edit gene location", "l", "gen_create.hlp", AD_F_ALL, makeWindowCallback(popup_gene_location_editor, gb_main));
 }
 
 #if defined(WARN_TODO)
@@ -977,12 +980,15 @@ static AW_window *popup_new_gene_window(AW_root *aw_root, GBDATA *gb_main, int d
     DbScanner         *scanner = create_db_scanner(gb_main, aws, "box", 0, "field", "enable", DB_VIEWER, 0, "mark", FIELD_FILTER_NDS, itemType);
     const InfoWindow&  infoWin = InfoWindowRegistry::infowin.registerInfoWindow(aws, scanner, detach_id);
 
-    aws->create_menu("GENE", "G", AD_F_ALL);
-    aws->insert_menu_topic("gene_delete", "Delete",     "D", "spa_delete.hlp", AD_F_ALL, makeWindowCallback      (gene_delete_cb,            gb_main));
-    aws->insert_menu_topic("gene_rename", "Rename ...", "R", "spa_rename.hlp", AD_F_ALL, makeCreateWindowCallback(create_gene_rename_window, gb_main));
-    aws->insert_menu_topic("gene_copy",   "Copy ...",   "y", "spa_copy.hlp",   AD_F_ALL, makeCreateWindowCallback(create_gene_copy_window,   gb_main));
-    aws->insert_menu_topic("gene_create", "Create ...", "C", "gen_create.hlp", AD_F_ALL, makeCreateWindowCallback(create_gene_create_window, gb_main));
-    aws->sep______________();
+    if (infoWin.is_maininfo()) {
+        aws->create_menu("GENE", "G", AD_F_ALL);
+        aws->insert_menu_topic("gene_delete",  "Delete",             "D", "spa_delete.hlp", AD_F_ALL, makeWindowCallback      (gene_delete_cb,             gb_main));
+        aws->insert_menu_topic("gene_rename",  "Rename ...",         "R", "spa_rename.hlp", AD_F_ALL, makeCreateWindowCallback(create_gene_rename_window,  gb_main));
+        aws->insert_menu_topic("gene_copy",    "Copy ...",           "y", "spa_copy.hlp",   AD_F_ALL, makeCreateWindowCallback(create_gene_copy_window,    gb_main));
+        aws->insert_menu_topic("gene_create",  "Create ...",         "C", "gen_create.hlp", AD_F_ALL, makeCreateWindowCallback(create_gene_create_window,  gb_main));
+        aws->sep______________();
+        aws->insert_menu_topic("gen_edit_loc", "Edit gene location", "l", "gen_create.hlp", AD_F_ALL, makeWindowCallback      (popup_gene_location_editor, gb_main));
+    }
 
     aws->create_menu("FIELDS", "F", AD_F_ALL);
     GEN_create_field_items(aws, gb_main);

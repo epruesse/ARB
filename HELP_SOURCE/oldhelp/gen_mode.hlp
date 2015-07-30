@@ -1,0 +1,41 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP      arb.hlp
+UP      glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB    subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE           Gene Map modes
+
+OCCURRENCE      ARB Gene Map/<mode buttons at left edge>
+
+DESCRIPTION     To select a mode click on one of the mode buttons
+                at the left edge of the 'ARB Gene Map' window.
+
+                The name of and basic help for the selected mode are displayed
+                at the bottom of the top-area.
+
+                Modes available for genemap:
+
+                  SELECT MODE
+
+                        Click on a gene in genome display to select it.
+
+                  ZOOM MODE
+
+                        Left/right click (or select an area) to zoom in/out.
+
+                  INFO MODE
+
+                        Click on a gene to display its gene information.
+
+NOTES           None
+
+EXAMPLES        None
+
+WARNINGS        None
+
+BUGS            No bugs known

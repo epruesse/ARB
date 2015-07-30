@@ -162,7 +162,7 @@ void AW_window::d_callback(const WindowCallback& wcb) {
 //      code used by scalers (common between motif and gtk)
 
 static float apply_ScalerType(float val, AW_ScalerType scalerType, bool inverse) {
-    float res;
+    float res = 0.0;
 
     aw_assert(val>=0.0 && val<=1.0);
 
@@ -1091,7 +1091,6 @@ void AW_window::set_horizontal_change_callback(const WindowCallback& wcb) {
 
 
 void AW_window::set_window_size(int width, int height) {
-    // only used from GDE once (@@@ looks like a hack -- delete?)
     XtVaSetValues(p_w->shell, XmNwidth, (int)width, XmNheight, (int)height, NULL);
 }
 
@@ -1230,13 +1229,14 @@ AW_window_simple_menu::~AW_window_simple_menu() {}
 AW_window_message::AW_window_message() {}
 AW_window_message::~AW_window_message() {}
 
+#define LAYOUT_AWAR_ROOT "window/windows"
 #define BUFSIZE 256
 static char aw_size_awar_name_buffer[BUFSIZE];
 static const char *aw_size_awar_name(AW_window *aww, const char *sub_entry) {
 #if defined(DEBUG)
     int size =
 #endif // DEBUG
-            sprintf(aw_size_awar_name_buffer, "window/windows/%s/%s",
+            sprintf(aw_size_awar_name_buffer, LAYOUT_AWAR_ROOT "/%s/%s",
                     aww->window_defaults_name, sub_entry);
 #if defined(DEBUG)
     aw_assert(size < BUFSIZE);
@@ -1279,6 +1279,18 @@ void AW_window::get_pos_from_awars(int& posx, int& posy) {
     posy = get_root()->awar(aw_awar_name_posy(this))->read_int();
 }
 
+void AW_window::reset_geometry_awars() {
+    AW_root *awr = get_root();
+
+    ASSERT_NO_ERROR(awr->awar(aw_awar_name_posx(this))  ->reset_to_default());
+    ASSERT_NO_ERROR(awr->awar(aw_awar_name_posy(this))  ->reset_to_default());
+    ASSERT_NO_ERROR(awr->awar(aw_awar_name_width(this)) ->reset_to_default());
+    ASSERT_NO_ERROR(awr->awar(aw_awar_name_height(this))->reset_to_default());
+
+    recalc_pos_atShow(AW_REPOS_TO_MOUSE_ONCE);
+    recalc_size_atShow(AW_RESIZE_ANY);
+}
+
 #undef aw_awar_name_posx
 #undef aw_awar_name_posy
 #undef aw_awar_name_width
@@ -1307,9 +1319,49 @@ static void aw_onExpose_calc_WM_offsets(AW_window *aww) {
     }
     else if (!motif->knows_WM_offset()) {
         int oposx, oposy; aww->get_pos_from_awars(oposx, oposy);
+
         // calculate offset
-        motif->WM_top_offset  = posy-oposy;
-        motif->WM_left_offset = posx-oposx;
+        int left = posx-oposx;
+        int top  = posy-oposy;
+
+        if (top == 0 || left == 0)  { // invalid frame size
+            if (motif->WM_left_offset == 0) {
+                motif->WM_left_offset = 1; // hack: unused yet, use as flag to avoid endless repeats
+#if defined(DEBUG)
+                fprintf(stderr, "aw_onExpose_calc_WM_offsets: failed to detect framesize (shift window 1 pixel and retry)\n");
+#endif
+                oposx = oposx>10 ? oposx-1 : oposx+1;
+                oposy = oposy>10 ? oposy-1 : oposy+1;
+
+                aww->set_window_frame_pos(oposx, oposy);
+                aww->store_pos_in_awars(oposx, oposy);
+
+                aww->get_root()->add_timed_callback(500, makeTimedCallback(aw_calc_WM_offsets_delayed, aww));
+                return;
+            }
+            else {
+                // use maximum seen frame size
+                top  = AW_window_Motif::WM_max_top_offset;
+                left = AW_window_Motif::WM_max_left_offset;
+
+                if (top == 0 || left == 0) { // still invalid -> retry later
+                    aww->get_root()->add_timed_callback(10000, makeTimedCallback(aw_calc_WM_offsets_delayed, aww));
+                    return;
+                }
+            }
+        }
+        motif->WM_top_offset  = top;
+        motif->WM_left_offset = left;
+
+        // remember maximum seen offsets
+        AW_window_Motif::WM_max_top_offset  = std::max(AW_window_Motif::WM_max_top_offset,  motif->WM_top_offset);
+        AW_window_Motif::WM_max_left_offset = std::max(AW_window_Motif::WM_max_left_offset, motif->WM_left_offset);
+
+#if defined(DEBUG)
+            fprintf(stderr, "WM_top_offset=%i WM_left_offset=%i (pos from awar: %i/%i, content-pos: %i/%i)\n",
+                    motif->WM_top_offset, motif->WM_left_offset,
+                    oposx, oposy, posx, posy);
+#endif
     }
 }
 
@@ -1653,8 +1705,8 @@ static void aw_update_window_geometry_awars(AW_window *aww) {
                   NULL);
 
     if (motif->knows_WM_offset()) {
-        posy -= motif->WM_top_offset;
         posx -= motif->WM_left_offset;
+        posy -= motif->WM_top_offset;
 
         if (posx<0) posx = 0;
         if (posy<0) posy = 0;
@@ -1663,7 +1715,7 @@ static void aw_update_window_geometry_awars(AW_window *aww) {
     }
 #if defined(DEBUG)
     else {
-        fprintf(stderr, " WM_offsets unknown. Did not update awars!\n");
+        fprintf(stderr, "Warning: WM_offsets unknown => did not update awars for window '%s'\n", aww->get_window_title());
     }
 #endif
     aww->store_size_in_awars(width, height);
@@ -1678,9 +1730,13 @@ void AW_window::show() {
         was_shown       = false;
     }
 
+    int  width, height; // w/o window frame
     if (recalc_size_at_show != AW_KEEP_SIZE) {
         if (recalc_size_at_show == AW_RESIZE_DEFAULT) {
+            // window ignores user-size (even if changed inside current session).
+            // used for question boxes, user masks, ...
             window_fit();
+            get_window_size(width, height);
         }
         else {
             aw_assert(recalc_size_at_show == AW_RESIZE_USER);
@@ -1692,78 +1748,113 @@ void AW_window::show() {
             if (user_width <min_width)  user_width  = min_width;
             if (user_height<min_height) user_height = min_height;
 
-            set_window_size(user_width, user_height);
+            set_window_size(user_width, user_height); // restores user size
+
+            width  = user_width;
+            height = user_height;
+
+#if defined(DEBUG)
+            if (!was_shown) { // first popup
+                // warn about too big default size
+#define LOWEST_SUPPORTED_SCREEN_X 1280
+#define LOWEST_SUPPORTED_SCREEN_Y 800
+
+                if (min_width>LOWEST_SUPPORTED_SCREEN_X || min_height>LOWEST_SUPPORTED_SCREEN_Y) {
+                    fprintf(stderr,
+                            "Warning: Window '%s' won't fit on %ix%i (win=%ix%i)\n",
+                            get_window_title(),
+                            LOWEST_SUPPORTED_SCREEN_X, LOWEST_SUPPORTED_SCREEN_Y,
+                            min_width, min_height);
+#if defined(DEVEL_RALF)
+                    aw_assert(0);
+#endif
+                }
+            }
+#endif
         }
+        store_size_in_awars(width, height);
         recalc_size_at_show = AW_KEEP_SIZE;
+    }
+    else {
+        get_window_size(width, height);
     }
 
     {
         int  posx, posy;
-        bool setPos = false;
+        int  swidth, sheight; get_screen_size(swidth, sheight);
+        bool posIsFrame = false;
 
         switch (recalc_pos_at_show) {
             case AW_REPOS_TO_MOUSE_ONCE:
                 recalc_pos_at_show = AW_KEEP_POS;
                 // fallthrough
             case AW_REPOS_TO_MOUSE: {
-                int mx, my; if (!get_mouse_pos(mx, my)) goto FALLBACK_CENTER;
-                int width, height; get_window_size(width, height);
-                {
-                    int wx, wy; get_window_content_pos(wx, wy);
-                    if (wx || wy) {
-                        if (p_w->knows_WM_offset()) {
-                            wx -= p_w->WM_left_offset;
-                            wy -= p_w->WM_top_offset; // @@@ values of wx/wy never used
+                int mx, my;
+                if (!get_mouse_pos(mx, my)) goto FALLBACK_CENTER;
 
-                            // add size of window decoration
-                            width  += p_w->WM_left_offset;
-                            height += p_w->WM_top_offset;
-                        }
-                    }
-                }
-
-                setPos = true;
                 posx   = mx-width/2;
                 posy   = my-height/2;
-
-                // avoid windows outside of screen
-                {
-                    int swidth, sheight; get_screen_size(swidth, sheight);
-                    int maxx = swidth-width;
-                    int maxy = sheight-height;
-
-                    if (posx>maxx) posx = maxx;
-                    if (posy>maxy) posy = maxy;
-
-                    if (posx<0) posx = 0;
-                    if (posy<0) posy = 0;
-                }
-
                 break;
             }
-            case AW_REPOS_TO_CENTER: {
-                  FALLBACK_CENTER :
-                int width, height; get_window_size(width, height);
-                int swidth, sheight; get_screen_size(swidth, sheight);
-
-                setPos = true;
+            case AW_REPOS_TO_CENTER:
+            FALLBACK_CENTER:
                 posx   = (swidth-width)/2;
                 posy   = (sheight-height)/4;
                 break;
-            }
 
             case AW_KEEP_POS:
                 if (was_shown) {
                     // user might have moved the window -> store (new) positions
                     aw_update_window_geometry_awars(this);
                 }
+                get_pos_from_awars(posx, posy);
+                get_size_from_awars(width, height);
+                posIsFrame = true;
                 break;
         }
 
-        if (setPos) store_pos_in_awars(posx, posy);
-        else get_pos_from_awars(posx, posy);
+        int frameWidth, frameHeight;
+        if (p_w->knows_WM_offset()) {
+            frameWidth  = p_w->WM_left_offset;
+            frameHeight = p_w->WM_top_offset;
+        }
+        else {
+            // estimate
+            frameWidth  = AW_window_Motif::WM_max_left_offset + 1;
+            frameHeight = AW_window_Motif::WM_max_top_offset  + 1;
+        }
 
-        set_window_frame_pos(posx, posy); // always set pos
+        if (!posIsFrame) {
+            posx       -= frameWidth;
+            posy       -= frameHeight;
+            posIsFrame  = true;
+        }
+
+        // avoid windows outside of screen (or too near to screen-edges)
+        {
+            int maxx = swidth  - 2*frameWidth           - width;
+            int maxy = sheight - frameWidth-frameHeight - height; // assumes lower border-width == frameWidth
+
+            if (posx>maxx) posx = maxx;
+            if (posy>maxy) posy = maxy;
+
+            if (p_w->knows_WM_offset()) {
+                if (posx<0) posx = 0;
+                if (posy<0) posy = 0;
+            }
+            else {
+                // workaround a bug leading to wrong WM-offsets (occurs when window-content is placed at screen-border)
+                // shift window away from border
+                if (posx<frameWidth)  posx = frameWidth;
+                if (posy<frameHeight) posy = frameHeight;
+            }
+        }
+
+        aw_assert(implicated(p_w->knows_WM_offset(), posIsFrame));
+
+        // store position and position window
+        store_pos_in_awars(posx, posy);
+        set_window_frame_pos(posx, posy);
     }
 
     XtPopup(p_w->shell, XtGrabNone);
@@ -2128,9 +2219,35 @@ static long aw_loop_get_window_geometry(const char *, long val, void *) {
     aw_update_window_geometry_awars((AW_window *)val);
     return val;
 }
-
 void aw_update_all_window_geometry_awars(AW_root *awr) {
     GBS_hash_do_loop(awr->hash_for_windows, aw_loop_get_window_geometry, NULL);
+}
+
+static long aw_loop_forget_window_geometry(const char *, long val, void *) {
+    ((AW_window*)val)->reset_geometry_awars();
+    return val;
+}
+void AW_forget_all_window_geometry(AW_window *aww) {
+    AW_root *awr = aww->get_root();
+    GBS_hash_do_loop(awr->hash_for_windows, aw_loop_forget_window_geometry, NULL); // reset geometry for used windows
+
+    // reset geometry in stored, unused windows
+    GBDATA         *gb_props = awr->check_properties(NULL);
+    GB_transaction  ta(gb_props);
+    GBDATA         *gb_win   = GB_search(gb_props, LAYOUT_AWAR_ROOT, GB_FIND);
+    if (gb_win) {
+        for (GBDATA *gbw = GB_child(gb_win); gbw; ) {
+            const char *key     = GB_read_key_pntr(gbw);
+            long        usedWin = GBS_read_hash(awr->hash_for_windows, key);
+            GBDATA     *gbnext  = GB_nextChild(gbw);
+
+            if (!usedWin) {
+                GB_ERROR error = GB_delete(gbw);
+                aw_message_if(error);
+            }
+            gbw = gbnext;
+        }
+    }
 }
 
 static const char *existingPixmap(const char *icon_relpath, const char *name) {
@@ -3298,3 +3415,5 @@ AW_window_Motif::AW_window_Motif()
     }
 }
 
+int AW_window_Motif::WM_max_top_offset  = 0;
+int AW_window_Motif::WM_max_left_offset = 0;

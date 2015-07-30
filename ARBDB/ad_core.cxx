@@ -721,7 +721,7 @@ void gb_create_key_array(GB_MAIN_TYPE *Main, int index) {
     gb_assert(index<Main->sizeofkeys);
 }
 
-long gb_create_key(GB_MAIN_TYPE *Main, const char *s, bool create_gb_key) {
+long gb_create_key(GB_MAIN_TYPE *Main, const char *key, bool create_gb_key) {
     long index;
     if (Main->first_free_key) {
         index = Main->first_free_key;
@@ -733,16 +733,23 @@ long gb_create_key(GB_MAIN_TYPE *Main, const char *s, bool create_gb_key) {
         gb_create_key_array(Main, (int)index+1);
     }
     if (Main->is_client()) {
-        long test_index = gbcmc_key_alloc(Main->gb_main(), s);
+        long test_index = gbcmc_key_alloc(Main->gb_main(), key);
         if (test_index != index) {
-            GBK_terminatef("Database corrupt (allocating quark '%s' in server failed)", s);
+            if (test_index == 0) { // comm error
+                GBK_terminatef("Allocating quark for '%s' failed (Reason: %s)", key, GB_await_error());
+            }
+            else {
+                GBK_terminatef("Database corrupt (allocating quark '%s' in server failed)", key);
+            }
         }
     }
     Main->keys[index].nref = 0;
 
-    if (s) {
-        Main->keys[index].key = strdup(s);
-        GBS_write_hash(Main->key_2_index_hash, s, index);
+    if (key) {
+        if (!key[0]) GBK_terminate("Attempt to allocate empty key");
+
+        Main->keys[index].key = strdup(key);
+        GBS_write_hash(Main->key_2_index_hash, key, index);
         gb_assert(GBS_hash_elements(Main->key_2_index_hash) <= ALLOWED_KEYS);
         if (Main->gb_key_data && create_gb_key) {
             gb_load_single_key_data(Main->gb_main(), (GBQUARK)index);
@@ -828,6 +835,8 @@ void gb_abort_transaction_local_rek(GBDATA*& gbd) {
 }
 
 GB_ERROR gb_commit_transaction_local_rek(GBDATA*& gbd, long mode, int *pson_created) {
+    // goes to header: __ATTR__USERESULT
+
     /* commit created / delete deleted
      *   mode   0   local     = server    or
      *              begin trans in client or

@@ -13,7 +13,6 @@
 
 #include <nds.h>
 
-#include <awt_attributes.hxx>
 #include <awt_config_manager.hxx>
 
 #include <aw_preset.hxx>
@@ -32,6 +31,7 @@
 #include <unistd.h>
 #include <iostream>
 #include <cfloat>
+#include <ad_colorset.h>
 
 /*!*************************
   class AP_tree
@@ -43,8 +43,8 @@
 #define DEFAULT_RULER_LINEWIDTH tree_defaults::LINEWIDTH
 #define DEFAULT_RULER_LENGTH    tree_defaults::LENGTH
 
-const int MATCH_FLAG_COLORS = 12;
-static int MatchProbeGC[MATCH_FLAG_COLORS] = {
+const int MARKER_COLORS = 12;
+static int MarkerGC[MARKER_COLORS] = {
     // double rainbow
     AWT_GC_RED,
     AWT_GC_YELLOW,
@@ -310,7 +310,7 @@ bool AWT_graphic_tree::group_tree(AP_tree *at, CollapseMode mode, int color_grou
                 if (GB_read_flag(at->gb_node)) expand_me = true;
             }
             if (!expand_me && (mode & EXPAND_COLOR)) { // do not group specified color_group
-                int my_color_group = AW_find_color_group(at->gb_node, true);
+                int my_color_group = GBT_get_color_group(at->gb_node);
 
                 expand_me =
                     my_color_group == color_group || // specific or no color
@@ -1423,9 +1423,9 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
             }
             return;
         }
-        else if (clicked.is_matchflag()) {
+        else if (clicked.is_marker()) {
             if (clicked.element()->distance <= 3) { // accept 3 pixel distance
-                aw_message_if(pcoll.get_name(clicked.get_probeindex()));
+                aw_message_if(display_markers->get_marker_name(clicked.get_markerindex())); // @@@ pass clicked to display_markers and let it handle the click?
             }
             return;
         }
@@ -1673,7 +1673,7 @@ AWT_graphic_tree::AWT_graphic_tree(AW_root *aw_root_, GBDATA *gb_main_, AD_map_v
       other_text_filter   (AW_SCREEN|AW_PRINTER|AW_SIZE_UNSCALED),
       ruler_filter        (AW_SCREEN|AW_CLICK|AW_PRINTER),          // appropriate size-filter added manually in code
       root_filter         (AW_SCREEN|AW_PRINTER_EXT),
-      match_flag_filter   (AW_SCREEN|AW_CLICK|AW_PRINTER_EXT|AW_SIZE_UNSCALED)
+      marker_filter       (AW_SCREEN|AW_CLICK|AW_PRINTER_EXT|AW_SIZE_UNSCALED)
 {
     td_assert(gb_main_);
 
@@ -1689,6 +1689,7 @@ AWT_graphic_tree::AWT_graphic_tree(AW_root *aw_root_, GBDATA *gb_main_, AD_map_v
     cmd_data         = NULL;
     nds_show_all     = true;
     map_viewer_cb    = map_viewer_cb_;
+    display_markers  = NULL;
 }
 
 AWT_graphic_tree::~AWT_graphic_tree() {
@@ -1696,6 +1697,7 @@ AWT_graphic_tree::~AWT_graphic_tree() {
     free(species_name);
     destroy(tree_proto);
     delete tree_static;
+    delete display_markers;
 }
 
 AP_tree_root *AWT_graphic_tree::create_tree_root(AliView *aliview, AP_sequence *seq_prototype, bool insert_delete_cbs) {
@@ -1841,113 +1843,114 @@ void AWT_graphic_tree::update(GBDATA *) {
 
 
 
-void AWT_graphic_tree::enumerateClade(AP_tree *at, CladeMatches& matches) {
+void AWT_graphic_tree::summarizeGroupMarkers(AP_tree *at, NodeMarkers& markers) {
     /*! summarizes matches of each probe for subtree 'at' in result param 'matches'
      * uses pcoll.cache to avoid repeated calculations
      */
-    td_assert(pcoll.display);
-    td_assert(matches.getCladeSize() == 0);
+    td_assert(display_markers);
+    td_assert(markers.getNodeSize() == 0);
     if (at->is_leaf) {
         if (at->name) {
-            pcoll.get_matches(at->name, matches);
+            display_markers->retrieve_marker_state(at->name, markers);
         }
     }
     else {
         if (at->is_named_group()) {
-            CladeCache::const_iterator found = pcoll.cache.find(at);
-            if (found != pcoll.cache.end()) {
-                matches = found->second; // use cached matches
+            const NodeMarkers *cached = display_markers->read_cache(at);
+            if (cached) {
+                markers = *cached;
                 return;
             }
         }
 
-        enumerateClade(at->get_leftson(), matches);
-        CladeMatches rightMatches(pcoll.numProbes);
-        enumerateClade(at->get_rightson(), rightMatches);
-        matches.add(rightMatches);
+        summarizeGroupMarkers(at->get_leftson(), markers);
+        NodeMarkers rightMarkers(display_markers->size());
+        summarizeGroupMarkers(at->get_rightson(), rightMarkers);
+        markers.add(rightMarkers);
 
         if (at->is_named_group()) {
-            pcoll.cache[at] = matches;
+            display_markers->write_cache(at, markers);
         }
     }
 }
 
-class MatchFlagXPos {
+class MarkerXPos {
     double Width;
     double Offset;
-    int numProbes;
+    int    markers;
 public:
 
-    static int match_col_width;
+    static int marker_width;
 
-    MatchFlagXPos(AW_pos scale, int numProbes_)
-        : Width((match_col_width-1) / scale),
-          Offset(match_col_width / scale),
-          numProbes(numProbes_)
+    MarkerXPos(AW_pos scale, int markers_)
+        : Width((marker_width-1) / scale),
+          Offset(marker_width / scale),
+          markers(markers_)
     {}
 
     double width() const  { return Width; }
     double offset() const { return Offset; }
 
-    double leftx  (int nProbe) const { return (nProbe - numProbes - 1.0) * offset(); }
-    double centerx(int nProbe) const { return leftx(nProbe) + width()/2; }
+    double leftx  (int markerIdx) const { return (markerIdx - markers - 1.0) * offset(); }
+    double centerx(int markerIdx) const { return leftx(markerIdx) + width()/2; }
 };
 
-int MatchFlagXPos::match_col_width = 3;
+int MarkerXPos::marker_width = 3;
 
-class MatchFlagPosition : public MatchFlagXPos {
+class MarkerPosition : public MarkerXPos {
     double y1, y2;
 public:
-    MatchFlagPosition(AW_pos scale, int numProbes_, double y1_, double y2_)
-        : MatchFlagXPos(scale, numProbes_),
+    MarkerPosition(AW_pos scale, int markers_, double y1_, double y2_)
+        : MarkerXPos(scale, markers_),
           y1(y1_),
           y2(y2_)
     {}
 
-    Position pos(int nProbe) const { return Position(leftx(nProbe), y1); }
+    Position pos(int markerIdx) const { return Position(leftx(markerIdx), y1); }
     Vector size() const { return Vector(width(), y2-y1); }
 };
 
 
-void AWT_graphic_tree::drawMatchFlag(const class MatchFlagPosition& flag, const bool bPartial, const int nProbe) {
-    td_assert(pcoll.display);
+void AWT_graphic_tree::drawMarker(const class MarkerPosition& marker, const bool partial, const int markerIdx) {
+    td_assert(display_markers);
 
-    const int gc = MatchProbeGC[nProbe % MATCH_FLAG_COLORS];
+    const int gc = MarkerGC[markerIdx % MARKER_COLORS];
 
-    if (bPartial) disp_device->set_grey_level(gc, 0.5);
-    disp_device->box(gc, bPartial ? AW::FillStyle::SHADED : AW::FillStyle::SOLID, flag.pos(nProbe), flag.size(), match_flag_filter);
+    if (partial) disp_device->set_grey_level(gc, marker_greylevel);
+    disp_device->box(gc, partial ? AW::FillStyle::SHADED : AW::FillStyle::SOLID, marker.pos(markerIdx), marker.size(), marker_filter);
 }
 
-void AWT_graphic_tree::detectAndDrawMatchFlags(AP_tree *at, const double y1, const double y2) {
-    td_assert(pcoll.display);
+void AWT_graphic_tree::detectAndDrawMarkers(AP_tree *at, const double y1, const double y2) {
+    td_assert(display_markers);
 
     if (disp_device->type() != AW_DEVICE_SIZE) {
-        // Note: extra device scaling (needed to show flags) is done by drawMatchFlagNames
+        // Note: extra device scaling (needed to show flags) is done by drawMarkerNames
 
-        MatchFlagPosition flag(disp_device->get_scale(), pcoll.numProbes, y1, y2);
-        CladeMatches      matches(pcoll.numProbes);
+        int            numMarkers = display_markers->size();
+        MarkerPosition flag(disp_device->get_scale(), numMarkers, y1, y2);
+        NodeMarkers    markers(numMarkers);
 
-        enumerateClade(at, matches);
+        summarizeGroupMarkers(at, markers);
 
-        if (matches.getCladeSize()>0) {
+        if (markers.getNodeSize()>0) {
             AW_click_cd clickflag(disp_device, (AW_CL)0, (AW_CL)"flag");
-            for (int nProbe = 0 ; nProbe < pcoll.numProbes ; nProbe++) {
-                if (matches.getHits(nProbe) > 0) {
+            for (int markerIdx = 0 ; markerIdx < numMarkers ; markerIdx++) {
+                if (markers.markerCount(markerIdx) > 0) {
                     bool draw    = at->is_leaf;
                     bool partial = false;
 
                     if (!draw) { // group
                         td_assert(at->is_named_group());
-                        double matchRate = matches.getHits(nProbe) / double(matches.getCladeSize());
-                        if (matchRate>pcoll.cladeThreshold.partiallyMarked) {
+                        double markRate = markers.getMarkRate(markerIdx);
+                        if (markRate>groupThreshold.partiallyMarked) {
                             draw    = true;
-                            partial = matchRate<pcoll.cladeThreshold.marked;
+                            partial = markRate<groupThreshold.marked;
                         }
                     }
 
                     if (draw) {
-                        clickflag.set_cd1(nProbe);
-                        drawMatchFlag(flag, partial, nProbe);
+                        clickflag.set_cd1(markerIdx);
+                        drawMarker(flag, partial, markerIdx);
                     }
                 }
             }
@@ -1955,13 +1958,14 @@ void AWT_graphic_tree::detectAndDrawMatchFlags(AP_tree *at, const double y1, con
     }
 }
 
-void AWT_graphic_tree::drawMatchFlagNames(Position& Pen) {
-    td_assert(pcoll.display);
+void AWT_graphic_tree::drawMarkerNames(Position& Pen) {
+    td_assert(display_markers);
 
-    MatchFlagXPos flag(disp_device->get_scale(), pcoll.numProbes);
+    int        numMarkers = display_markers->size();
+    MarkerXPos flag(disp_device->get_scale(), numMarkers);
 
     if (disp_device->type() != AW_DEVICE_SIZE) {
-        Position pl1(flag.centerx(pcoll.numProbes-1), Pen.ypos()); // upper point of thin line
+        Position pl1(flag.centerx(numMarkers-1), Pen.ypos()); // upper point of thin line
         Pen.movey(scaled_branch_distance);
         Position pl2(pl1.xpos(), Pen.ypos()); // lower point of thin line
 
@@ -1969,22 +1973,20 @@ void AWT_graphic_tree::drawMatchFlagNames(Position& Pen) {
         Vector b2t(2*flag.offset(), scaled_branch_distance); // offset box->text
         Vector toNext(-flag.offset(), scaled_branch_distance); // offset to next box
 
-        Rectangle mbox(Position(flag.leftx(pcoll.numProbes-1), pl2.ypos()), sizeb); // the match box
+        Rectangle mbox(Position(flag.leftx(numMarkers-1), pl2.ypos()), sizeb); // the marker box
 
         AW_click_cd clickflag(disp_device, (AW_CL)0, (AW_CL)"flag");
 
-        // Loop through probes in reverse probe collection order so the match columns
-        // match the probe list
-        for (int nProbe = pcoll.numProbes - 1 ; nProbe >= 0 ; nProbe--) {
-            const char *pProbeName = pcoll.get_name(nProbe);
-            if (pProbeName != 0) {
-                int gc = MatchProbeGC[nProbe % MATCH_FLAG_COLORS];
+        for (int markerIdx = numMarkers - 1 ; markerIdx >= 0 ; markerIdx--) {
+            const char *markerName = display_markers->get_marker_name(markerIdx);
+            if (markerName) {
+                int gc = MarkerGC[markerIdx % MARKER_COLORS];
 
-                clickflag.set_cd1(nProbe);
+                clickflag.set_cd1(markerIdx);
 
-                disp_device->line(gc, pl1, pl2, match_flag_filter);
-                disp_device->box(gc, AW::FillStyle::SOLID, mbox, match_flag_filter);
-                disp_device->text(gc, pProbeName, mbox.upper_left_corner()+b2t, 0, match_flag_filter, strlen(pProbeName));
+                disp_device->line(gc, pl1, pl2, marker_filter);
+                disp_device->box(gc, AW::FillStyle::SOLID, mbox, marker_filter);
+                disp_device->text(gc, markerName, mbox.upper_left_corner()+b2t, 0, marker_filter);
             }
 
             pl1.movex(toNext.x());
@@ -1992,12 +1994,12 @@ void AWT_graphic_tree::drawMatchFlagNames(Position& Pen) {
             mbox.move(toNext);
         }
 
-        Pen.movey(scaled_branch_distance * (pcoll.numProbes+2));
+        Pen.movey(scaled_branch_distance * (numMarkers+2));
     }
     else { // just reserve space on size device
-        Pen.movey(scaled_branch_distance * (pcoll.numProbes+3));
+        Pen.movey(scaled_branch_distance * (numMarkers+3));
         Position leftmost(flag.leftx(0), Pen.ypos());
-        disp_device->line(AWT_GC_CURSOR, Pen, leftmost, match_flag_filter);
+        disp_device->line(AWT_GC_CURSOR, Pen, leftmost, marker_filter);
     }
 }
 
@@ -2006,7 +2008,7 @@ void AWT_graphic_tree::pixel_box(int gc, const AW::Position& pos, int pixel_widt
     Vector diagonal(diameter, diameter);
 
     td_assert(!filled.is_shaded()); // the pixel box is either filled or empty! (by design)
-    if (filled.somehow()) disp_device->set_grey_level(gc, grey_level); // @@@ should not be needed here, but changes test-results (xfig-shading need fixes anyway)
+    if (filled.somehow()) disp_device->set_grey_level(gc, group_greylevel); // @@@ should not be needed here, but changes test-results (xfig-shading need fixes anyway)
     else                  disp_device->set_line_attributes(gc, 1, AW_SOLID);
     disp_device->box(gc, filled, pos-0.5*diagonal, diagonal, mark_filter);
 }
@@ -2115,8 +2117,8 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
             size_t   data_len = strlen(data);
             Position textPos  = Pen + 0.5*Vector((charLimits.width+NT_BOX_WIDTH)*unscale, scaled_font.ascent);
 
-            if (pcoll.display) {
-                detectAndDrawMatchFlags(at, Pen.ypos() - scaled_branch_distance * 0.495, Pen.ypos() + scaled_branch_distance * 0.495);
+            if (display_markers) {
+                detectAndDrawMarkers(at, Pen.ypos() - scaled_branch_distance * 0.495, Pen.ypos() + scaled_branch_distance * 0.495);
             }
             disp_device->text(at->gr.gc, data, textPos, 0.0, leaf_text_filter, data_len);
 
@@ -2150,11 +2152,11 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
 
         set_line_attributes_for(at);
 
-        if (pcoll.display) {
-            detectAndDrawMatchFlags(at, s0.ypos(), s1.ypos());
+        if (display_markers) {
+            detectAndDrawMarkers(at, s0.ypos(), s1.ypos());
         }
 
-        disp_device->set_grey_level(at->gr.gc, grey_level);
+        disp_device->set_grey_level(at->gr.gc, group_greylevel);
         disp_device->polygon(at->gr.gc, AW::FillStyle::SHADED_WITH_BORDER, 4, group, line_filter);
 
         const AW_font_limits& charLimits  = disp_device->get_font_limits(at->gr.gc, 'A');
@@ -2342,7 +2344,7 @@ void AWT_graphic_tree::show_radial_tree(AP_tree * at, double x_center,
         q[4] = x_center+l_max*cos(w);
         q[5] = y_center+l_max*sin(w);
 
-        disp_device->set_grey_level(at->gr.gc, grey_level);
+        disp_device->set_grey_level(at->gr.gc, group_greylevel);
         disp_device->polygon(at->gr.gc, AW::FillStyle::SHADED_WITH_BORDER, 3, &q[0], line_filter);
 
         if (at->gb_node && (disp_device->get_filter() & group_text_filter)) {
@@ -2662,7 +2664,7 @@ void AWT_graphic_tree::show_nds_list(GBDATA *, bool use_nds) {
             int gc                            = AWT_GC_NSELECTED;
             if (nds_show_all && is_marked) gc = AWT_GC_SELECTED;
             else {
-                int color_group     = AWT_species_get_dominant_color(gb_species);
+                int color_group     = AW_find_active_color_group(gb_species);
                 if (color_group) gc = AWT_GC_FIRST_COLOR_GROUP+color_group-1;
             }
             ListDisplayRow *curr = new ListDisplayRow(gb_main, gb_species, y_position+text_y_offset, gc, *disp_device, use_nds, tree_name);
@@ -2735,7 +2737,7 @@ void AWT_graphic_tree::show_nds_list(GBDATA *, bool use_nds) {
 
 void AWT_graphic_tree::read_tree_settings() {
     scaled_branch_distance = aw_root->awar(AWAR_DTREE_VERICAL_DIST)->read_float(); // not final value!
-    grey_level             = aw_root->awar(AWAR_DTREE_GREY_LEVEL)->read_int()*.01;
+    group_greylevel        = aw_root->awar(AWAR_DTREE_GREY_LEVEL)->read_int() * 0.01;
     baselinewidth          = aw_root->awar(AWAR_DTREE_BASELINEWIDTH)->read_int();
     show_brackets          = aw_root->awar(AWAR_DTREE_SHOW_BRACKETS)->read_int();
     show_circle            = aw_root->awar(AWAR_DTREE_SHOW_CIRCLE)->read_int();
@@ -2746,12 +2748,11 @@ void AWT_graphic_tree::read_tree_settings() {
 
     freeset(species_name, aw_root->awar(AWAR_SPECIES_NAME)->read_string());
 
-    if (pcoll.display) {
-        pcoll.numProbes                      = aw_root->awar(AWAR_PC_NUM_PROBES)->read_int();
-        pcoll.cladeThreshold.marked          = aw_root->awar(AWAR_PC_CLADE_MARKED_THRESHOLD)->read_float() * 0.01;
-        pcoll.cladeThreshold.partiallyMarked = aw_root->awar(AWAR_PC_CLADE_PARTIALLY_MARKED_THRESHOLD)->read_float() * 0.01;
-
-        if (!pcoll.numProbes) pcoll.display = false; // avoid problems while exiting arb
+    if (display_markers) {
+        groupThreshold.marked          = aw_root->awar(AWAR_DTREE_GROUP_MARKED_THRESHOLD)->read_float() * 0.01;
+        groupThreshold.partiallyMarked = aw_root->awar(AWAR_DTREE_GROUP_PARTIALLY_MARKED_THRESHOLD)->read_float() * 0.01;
+        MarkerXPos::marker_width       = aw_root->awar(AWAR_DTREE_MARKER_WIDTH)->read_int();
+        marker_greylevel               = aw_root->awar(AWAR_DTREE_PARTIAL_GREYLEVEL)->read_int() * 0.01;
     }
 }
 
@@ -2832,8 +2833,8 @@ void AWT_graphic_tree::show(AW_device *device) {
                 show_dendrogram(displayed_root, pen, limits);
 
                 int rulerOffset = 2;
-                if (pcoll.display) {
-                    drawMatchFlagNames(pen);
+                if (display_markers) {
+                    drawMarkerNames(pen);
                     ++rulerOffset;
                 }
                 list_tree_ruler_y = pen.ypos() + double(rulerOffset) * scaled_branch_distance;
@@ -2877,22 +2878,33 @@ void AWT_graphic_tree::info(AW_device */*device*/, AW_pos /*x*/, AW_pos /*y*/, A
     aw_message("INFO MESSAGE");
 }
 
-void AWT_graphic_tree::set_probeCollectionDisplay(bool show_collection, get_probe_name get_name, get_probe_matches get_matches, int match_col_width, bool invalidateCache) {
-    pcoll.display     = show_collection;
-    pcoll.get_name    = get_name;
-    pcoll.get_matches = get_matches;
-
-    if (invalidateCache) {
-        pcoll.cache.erase(pcoll.cache.begin(), pcoll.cache.end());
-    }
-
-    MatchFlagXPos::match_col_width = match_col_width;
-}
-
 AWT_graphic_tree *NT_generate_tree(AW_root *root, GBDATA *gb_main, AD_map_viewer_cb map_viewer_cb) {
     AWT_graphic_tree *apdt = new AWT_graphic_tree(root, gb_main, map_viewer_cb);
     apdt->init(new AliView(gb_main), NULL, true, false); // tree w/o sequence data
     return apdt;
+}
+
+static void markerThresholdChanged_cb(AW_root *root, bool partChanged) {
+    static bool avoid_recursion = false;
+    if (!avoid_recursion) {
+        LocallyModify<bool> flag(avoid_recursion, true);
+
+        AW_awar *awar_marked     = root->awar(AWAR_DTREE_GROUP_MARKED_THRESHOLD);
+        AW_awar *awar_partMarked = root->awar(AWAR_DTREE_GROUP_PARTIALLY_MARKED_THRESHOLD);
+
+        double marked     = awar_marked->read_float();
+        double partMarked = awar_partMarked->read_float();
+
+        if (partMarked>marked) { // unwanted state
+            if (partChanged) {
+                awar_marked->write_float(partMarked);
+            }
+            else {
+                awar_partMarked->write_float(marked);
+            }
+        }
+        root->awar(AWAR_TREE_REFRESH)->touch();
+    }
 }
 
 void TREE_create_awars(AW_root *aw_root, AW_default db) {
@@ -2908,7 +2920,7 @@ void TREE_create_awars(AW_root *aw_root, AW_default db) {
 
     aw_root->awar_float(AWAR_DTREE_CIRCLE_ZOOM,     1.0)->set_minmax(0.01, 20);
     aw_root->awar_float(AWAR_DTREE_CIRCLE_MAX_SIZE, 1.5)->set_minmax(0.01, 200);
-    aw_root->awar_int(AWAR_DTREE_GREY_LEVEL,      20) ->set_minmax(0,    100);
+    aw_root->awar_int  (AWAR_DTREE_GREY_LEVEL,      20) ->set_minmax(0,    100);
 
     aw_root->awar_int(AWAR_DTREE_BOOTSTRAP_MIN, 0)->set_minmax(0,100);
 
@@ -2916,6 +2928,11 @@ void TREE_create_awars(AW_root *aw_root, AW_default db) {
     aw_root->awar_int(AWAR_DTREE_RADIAL_XPAD,      150)->set_minmax(-100, 2000);
     aw_root->awar_int(AWAR_DTREE_DENDRO_ZOOM_TEXT, 0);
     aw_root->awar_int(AWAR_DTREE_DENDRO_XPAD,      300)->set_minmax(-100, 2000);
+
+    aw_root->awar_int  (AWAR_DTREE_MARKER_WIDTH,                     3)    ->set_minmax(1, 20);
+    aw_root->awar_int  (AWAR_DTREE_PARTIAL_GREYLEVEL,                37)   ->set_minmax(0, 100);
+    aw_root->awar_float(AWAR_DTREE_GROUP_MARKED_THRESHOLD,           100.0)->set_minmax(0, 100);
+    aw_root->awar_float(AWAR_DTREE_GROUP_PARTIALLY_MARKED_THRESHOLD, 0.0)  ->set_minmax(0, 100);
 
     aw_root->awar_int(AWAR_TREE_REFRESH, 0, db);
 }
@@ -2956,6 +2973,12 @@ void TREE_install_update_callbacks(AWT_canvas *ntw) {
 
     // track selected species (autoscroll)
     awr->awar(AWAR_SPECIES_NAME)->add_callback(makeRootCallback(TREE_auto_jump_cb, ntw, false));
+
+    // refresh on changes of marker display settings
+    awr->awar(AWAR_DTREE_MARKER_WIDTH)                    ->add_callback(expose_cb);
+    awr->awar(AWAR_DTREE_PARTIAL_GREYLEVEL)               ->add_callback(expose_cb);
+    awr->awar(AWAR_DTREE_GROUP_MARKED_THRESHOLD)          ->add_callback(makeRootCallback(markerThresholdChanged_cb,  false));
+    awr->awar(AWAR_DTREE_GROUP_PARTIALLY_MARKED_THRESHOLD)->add_callback(makeRootCallback(markerThresholdChanged_cb,  true));
 }
 
 void TREE_insert_jump_option_menu(AW_window *aws, const char *label, const char *awar_name) {
@@ -3068,6 +3091,54 @@ AW_window *TREE_create_settings_window(AW_root *aw_root) {
 
 // --------------------------------------------------------------------------------
 
+AW_window *TREE_create_marker_settings_window(AW_root *root) {
+    static AW_window_simple *aws = NULL;
+
+    if (!aws) {
+        aws = new AW_window_simple;
+
+        aws->init(root, "MARKER_SETTINGS", "Tree marker settings");
+
+        aws->auto_space(10, 10);
+
+        aws->callback((AW_CB0)AW_POPDOWN);
+        aws->create_button("CLOSE", "CLOSE", "C");
+
+        aws->callback(makeHelpCallback("nt_tree_marker_settings.hlp"));
+        aws->create_button("HELP", "HELP", "H");
+
+        aws->at_newline();
+
+        const int FIELDSIZE  = 5;
+        const int SCALERSIZE = 250;
+        aws->label_length(35);
+
+        aws->label("Group marked threshold");
+        aws->create_input_field_with_scaler(AWAR_DTREE_GROUP_MARKED_THRESHOLD, FIELDSIZE, SCALERSIZE);
+
+        aws->at_newline();
+
+        aws->label("Group partially marked threshold");
+        aws->create_input_field_with_scaler(AWAR_DTREE_GROUP_PARTIALLY_MARKED_THRESHOLD, FIELDSIZE, SCALERSIZE);
+
+        aws->at_newline();
+
+        aws->label("Marker width");
+        aws->create_input_field_with_scaler(AWAR_DTREE_MARKER_WIDTH, FIELDSIZE, SCALERSIZE);
+
+        aws->at_newline();
+
+        aws->label("Partial marker greylevel");
+        aws->create_input_field_with_scaler(AWAR_DTREE_PARTIAL_GREYLEVEL, FIELDSIZE, SCALERSIZE);
+
+        aws->at_newline();
+    }
+
+    return aws;
+}
+
+// --------------------------------------------------------------------------------
+
 #ifdef UNIT_TESTS
 #include <test_unit.h>
 #include <../../WINDOW/aw_common.hxx>
@@ -3170,7 +3241,7 @@ class fake_AWT_graphic_tree : public AWT_graphic_tree {
         scaled_branch_distance = 1.0; // not final value!
         // var_mode is in range [0..3]
         // it is used to vary tree settings such that many different combinations get tested
-        grey_level             = 20*.01;
+        group_greylevel        = 20*.01;
         baselinewidth          = (var_mode == 3)+1;
         show_brackets          = (var_mode != 2);
         show_circle            = var_mode%3;

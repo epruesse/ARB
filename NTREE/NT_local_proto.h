@@ -50,7 +50,7 @@ void NT_system_cb(AW_window *aww, AW_CL cl_command, AW_CL cl_auto_help_file);
 void NT_system_in_xterm_cb(AW_window *aww, AW_CL cl_command, AW_CL cl_auto_help_file);
 
 /* NT_concatenate.cxx */
-void NT_createConcatenationAwars(AW_root *aw_root, AW_default aw_def);
+void NT_createConcatenationAwars(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main);
 AW_window *NT_createMergeSimilarSpeciesWindow(AW_root *aw_root);
 AW_window *NT_createConcatenationWindow(AW_root *aw_root);
 
@@ -59,6 +59,7 @@ GB_ERROR NT_repair_DB(GBDATA *gb_main);
 void NT_rerepair_DB(AW_window *, AW_CL cl_gbmain, AW_CL dummy_1x);
 
 /* NT_edconf.cxx */
+void NT_activate_configMarkers_display(AWT_canvas *ntw);
 void NT_popup_configuration_admin(AW_window *aw_main, AW_CL cl_ntw, AW_CL dummy_1x);
 AW_window *NT_create_startEditorOnOldConfiguration_window(AW_root *awr);
 void NT_start_editor_on_tree(AW_window *, int use_species_aside, AWT_canvas *ntw);

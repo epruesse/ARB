@@ -39,10 +39,10 @@ void gb_del_ref_and_extern_gb_transaction_save(gb_transaction_save *ts);
 void gb_save_extern_data_in_ts(GBENTRY *gbe);
 void gb_write_index_key(GBCONTAINER *father, long index, GBQUARK new_index);
 void gb_create_key_array(GB_MAIN_TYPE *Main, int index);
-long gb_create_key(GB_MAIN_TYPE *Main, const char *s, bool create_gb_key);
+long gb_create_key(GB_MAIN_TYPE *Main, const char *key, bool create_gb_key);
 char *gb_abort_entry(GBDATA *gbd);
 void gb_abort_transaction_local_rek(GBDATA*& gbd);
-GB_ERROR gb_commit_transaction_local_rek(GBDATA*& gbd, long mode, int *pson_created);
+GB_ERROR gb_commit_transaction_local_rek(GBDATA*& gbd, long mode, int *pson_created) __ATTR__USERESULT;
 
 /* ad_load.cxx */
 GB_MAIN_IDX gb_make_main_idx(GB_MAIN_TYPE *Main);
@@ -63,20 +63,20 @@ char *gb_alloc_cache_index(GBENTRY *gbe, size_t size);
 
 /* adcomm.cxx */
 GB_ERROR gbcm_unfold_client(GBCONTAINER *gbc, long deep, long index_pos) __ATTR__USERESULT;
-GB_ERROR gbcmc_begin_sendupdate(GBDATA *gbd);
-GB_ERROR gbcmc_end_sendupdate(GBDATA *gbd);
-GB_ERROR gbcmc_sendupdate_create(GBDATA *gbd);
-GB_ERROR gbcmc_sendupdate_delete(GBDATA *gbd);
-GB_ERROR gbcmc_sendupdate_update(GBDATA *gbd, int send_headera);
-GB_ERROR gbcmc_begin_transaction(GBDATA *gbd);
-GB_ERROR gbcmc_init_transaction(GBCONTAINER *gbc);
-GB_ERROR gbcmc_commit_transaction(GBDATA *gbd);
-GB_ERROR gbcmc_abort_transaction(GBDATA *gbd);
+GB_ERROR gbcmc_begin_sendupdate(GBDATA *gbd) __ATTR__USERESULT;
+GB_ERROR gbcmc_end_sendupdate(GBDATA *gbd) __ATTR__USERESULT;
+GB_ERROR gbcmc_sendupdate_create(GBDATA *gbd) __ATTR__USERESULT;
+GB_ERROR gbcmc_sendupdate_delete(GBDATA *gbd) __ATTR__USERESULT;
+GB_ERROR gbcmc_sendupdate_update(GBDATA *gbd, int send_headera) __ATTR__USERESULT;
+GB_ERROR gbcmc_begin_transaction(GBDATA *gbd) __ATTR__USERESULT;
+GB_ERROR gbcmc_init_transaction(GBCONTAINER *gbc) __ATTR__USERESULT;
+GB_ERROR gbcmc_commit_transaction(GBDATA *gbd) __ATTR__USERESULT;
+GB_ERROR gbcmc_abort_transaction(GBDATA *gbd) __ATTR__USERESULT;
 GB_ERROR gbcms_add_to_delete_list(GBDATA *gbd);
 long gbcmc_key_alloc(GBDATA *gbd, const char *key);
 GB_ERROR gbcmc_send_undo_commands(GBDATA *gbd, enum gb_undo_commands command) __ATTR__USERESULT;
 char *gbcmc_send_undo_info_commands(GBDATA *gbd, enum gb_undo_commands command);
-GB_ERROR gbcm_login(GBCONTAINER *gb_main, const char *loginname);
+GB_ERROR gbcm_login(GBCONTAINER *gb_main, const char *loginname) __ATTR__USERESULT;
 GBCM_ServerResult gbcmc_close(gbcmc_comm *link);
 GB_ERROR gbcm_logout(GB_MAIN_TYPE *Main, const char *loginname);
 
