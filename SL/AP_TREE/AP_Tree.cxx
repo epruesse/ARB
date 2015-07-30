@@ -11,7 +11,6 @@
 #include "AP_Tree.hxx"
 
 #include <AP_filter.hxx>
-#include <awt_attributes.hxx>
 #include <aw_msg.hxx>
 
 #include <math.h>
@@ -636,7 +635,7 @@ void AP_tree::update_subtree_information() {
             }
             else {
                 // check for user color
-                long color_group = AWT_species_get_dominant_color(gb_node);
+                long color_group = AW_find_active_color_group(gb_node);
                 if (color_group == 0) {
                     gr.gc = AWT_GC_NSELECTED;
                 }

@@ -27,7 +27,6 @@
 #include <aw_root.hxx>
 
 #include <awt_seq_colors.hxx>
-#include <awt_attributes.hxx>
 #include <st_window.hxx>
 #include <arbdbt.h>
 
@@ -421,7 +420,7 @@ ED4_returncode ED4_sequence_terminal::draw() {
         ST_ML_Color         *statColors   = 0;
         char                *searchColors = results().buildColorString(this, seq_start, seq_end); // defined in ED4_SearchResults class : ED4_search.cxx
         ED4_species_manager *spec_man     = get_parent(ED4_L_SPECIES)->to_species_manager();
-        int                  color_group  = AWT_species_get_dominant_color(spec_man->get_species_pointer());
+        int                  color_group  = AW_find_active_color_group(spec_man->get_species_pointer());
 
         PosRange selection;
         int      is_selected = ED4_get_selected_range(this, selection);

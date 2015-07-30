@@ -269,7 +269,6 @@ GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
-GEN_graphic.o: $(ARBHOME)/INCLUDE/awt_attributes.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/cb.h
 GEN_graphic.o: $(ARBHOME)/INCLUDE/cb_base.h
