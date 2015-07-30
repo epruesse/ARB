@@ -8,17 +8,20 @@ UP	glossary.hlp
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		General options for ARB_GENE_MAP
+TITLE		Genemap display types
 
-OCCURRENCE	ARB_GENE_MAP/Properties/Options
+OCCURRENCE	ARB Gene Map/<display type buttons in top-area>
 
-DESCRIPTION	If 'Auto jump to selected gene' is on, the display
-                should automatically center to the selected gene.
+DESCRIPTION     ARB Gene Map supports three displays styles:
 
-NOTES		None
+                  * Radial style
+                  * Book style
+                  * Vertical style
+
+NOTES		Display options for each style can be customized using LINK{gen_options.hlp}.
 
 EXAMPLES	None
 
 WARNINGS	None
 
-BUGS		Not working yet!!!
+BUGS		No bugs known

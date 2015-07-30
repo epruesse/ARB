@@ -520,58 +520,25 @@ static void GEN_undo_cb(AW_window *, AW_CL undo_type, AW_CL cl_gb_main) {
 
 static AW_window *GEN_create_options_window(AW_root *awr) {
     static AW_window_simple *aws = 0;
-    if (!aws) {
-
-        aws = new AW_window_simple;
-        aws->init(awr, "GEN_OPTIONS", "GENE MAP OPTIONS");
-        aws->load_xfig("gene_options.fig");
-
-        aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
-        aws->create_button("CLOSE", "CLOSE", "C");
-
-        aws->at("help"); aws->callback(makeHelpCallback("gene_options.hlp"));
-        aws->create_button("HELP", "HELP", "H");
-
-        aws->at("button");
-        aws->auto_space(10, 10);
-        aws->label_length(30);
-
-        aws->label("Auto jump to selected gene");
-        aws->create_toggle(AWAR_GENMAP_AUTO_JUMP);
-        aws->at_newline();
-    }
-    return aws;
-}
-
-static AW_window *GEN_create_layout_window(AW_root *awr) {
-    static AW_window_simple *aws = 0;
 
     if (!aws) {
         aws = new AW_window_simple;
 
-        aws->init(awr, "GENE_LAYOUT", "Gene Map Layout");
-        aws->load_xfig("gene_layout.fig");
+        aws->init(awr, "GEN_OPTS", "Genemap options");
+        aws->load_xfig("gen_options.fig");
 
         aws->callback((AW_CB0)AW_POPDOWN);
         aws->at("close");
         aws->create_button("CLOSE", "CLOSE", "C");
 
-        aws->callback(makeHelpCallback("gen_layout.hlp"));
+        aws->callback(makeHelpCallback("gen_options.hlp"));
         aws->at("help");
         aws->create_button("HELP", "HELP", "H");
 
-        aws->at("base_pos");        aws->create_input_field(AWAR_GENMAP_BOOK_BASES_PER_LINE, 15);
-        aws->at("width_factor");    aws->create_input_field(AWAR_GENMAP_BOOK_WIDTH_FACTOR, 7);
-        aws->at("line_height");     aws->create_input_field(AWAR_GENMAP_BOOK_LINE_HEIGHT, 5);
-        aws->at("line_space");      aws->create_input_field(AWAR_GENMAP_BOOK_LINE_SPACE, 5);
-
-        aws->at("factor_x");        aws->create_input_field(AWAR_GENMAP_VERTICAL_FACTOR_X, 5);
-        aws->at("factor_y");        aws->create_input_field(AWAR_GENMAP_VERTICAL_FACTOR_Y, 5);
-
-        aws->at("inside");          aws->create_input_field(AWAR_GENMAP_RADIAL_INSIDE, 5);
-        aws->at("outside");         aws->create_input_field(AWAR_GENMAP_RADIAL_OUTSIDE, 5);
-
+        // all displays:
         aws->at("arrow_size");      aws->create_input_field(AWAR_GENMAP_ARROW_SIZE, 5);
+
+        aws->label_length(26);
 
         aws->at("show_hidden");
         aws->label("Show hidden genes");
@@ -580,6 +547,24 @@ static AW_window *GEN_create_layout_window(AW_root *awr) {
         aws->at("show_all");
         aws->label("Show NDS for all genes");
         aws->create_toggle(AWAR_GENMAP_SHOW_ALL_NDS);
+
+        aws->at("autojump");
+        aws->label("Auto jump to selected gene");
+        aws->create_toggle(AWAR_GENMAP_AUTO_JUMP);
+
+        // book-style:
+        aws->at("base_pos");        aws->create_input_field(AWAR_GENMAP_BOOK_BASES_PER_LINE, 15);
+        aws->at("width_factor");    aws->create_input_field(AWAR_GENMAP_BOOK_WIDTH_FACTOR, 7);
+        aws->at("line_height");     aws->create_input_field(AWAR_GENMAP_BOOK_LINE_HEIGHT, 5);
+        aws->at("line_space");      aws->create_input_field(AWAR_GENMAP_BOOK_LINE_SPACE, 5);
+
+        // vertical-style:
+        aws->at("factor_x");        aws->create_input_field(AWAR_GENMAP_VERTICAL_FACTOR_X, 5);
+        aws->at("factor_y");        aws->create_input_field(AWAR_GENMAP_VERTICAL_FACTOR_Y, 5);
+
+        // radial style:
+        aws->at("inside");          aws->create_input_field(AWAR_GENMAP_RADIAL_INSIDE, 5);
+        aws->at("outside");         aws->create_input_field(AWAR_GENMAP_RADIAL_OUTSIDE, 5);
     }
     return aws;
 }
@@ -1613,10 +1598,9 @@ void GEN_map_window::init(AW_root *awr, GBDATA *gb_main) {
 
     // Properties Menu
     create_menu("Properties", "r", AWM_ALL);
-    insert_menu_topic(local_id("gene_props"),      "GENEMAP: Colors and Fonts ...",       "C", "color_props.hlp",  AWM_ALL, makeCreateWindowCallback(AW_create_gc_window, gen_canvas->gc_manager)); // @@@ FIXME: replace AW_create_gc_window by local function returning same window for all mapped views
-    insert_menu_topic(local_id("gene_layout"),     "Layout",                              "L", "gene_layout.hlp",  AWM_ALL, GEN_create_layout_window);
-    insert_menu_topic(local_id("gene_options"),    "Options",                             "O", "gene_options.hlp", AWM_ALL, GEN_create_options_window);
-    insert_menu_topic("gene_nds",        "NDS ( Select Gene Information ) ...", "N", "props_nds.hlp",    AWM_ALL, AW_POPUP, (AW_CL)GEN_open_nds_window, (AW_CL)gb_main);
+    insert_menu_topic(local_id("gene_props"),      "GENEMAP: Colors and Fonts ...",       "C", "color_props.hlp", AWM_ALL, makeCreateWindowCallback(AW_create_gc_window, gen_canvas->gc_manager)); // @@@ FIXME: replace AW_create_gc_window by local function returning same window for all mapped views
+    insert_menu_topic(local_id("gene_options"),    "Options",                             "O", "gen_options.hlp", AWM_ALL, GEN_create_options_window);
+    insert_menu_topic("gene_nds",                  "NDS ( Select Gene Information ) ...", "N", "props_nds.hlp",   AWM_ALL, AW_POPUP, (AW_CL)GEN_open_nds_window, (AW_CL)gb_main);
     sep______________();
     AW_insert_common_property_menu_entries(this);
     sep______________();
@@ -1699,11 +1683,11 @@ void GEN_map_window::init(AW_root *awr, GBDATA *gb_main) {
     button_length(4);
 
     at(dtype_x1, first_line_y);
-    help_text("gen_disp_radial.hlp");
+    help_text("gen_disp_style.hlp");
     callback(GEN_set_display_style, (AW_CL)GEN_DISPLAY_STYLE_RADIAL);
     create_button("RADIAL_DISPLAY_TYPE", "#gen_radial.xpm", 0);
 
-    help_text("gen_disp_book.hlp");
+    help_text("gen_disp_style.hlp");
     callback(GEN_set_display_style, (AW_CL)GEN_DISPLAY_STYLE_BOOK);
     create_button("BOOK_DISPLAY_TYPE", "#gen_book.xpm", 0);
 
@@ -1711,7 +1695,7 @@ void GEN_map_window::init(AW_root *awr, GBDATA *gb_main) {
     int jump_x = cur_x;
 
     at(dtype_x1, second_line_y);
-    help_text("gen_disp_vertical.hlp");
+    help_text("gen_disp_style.hlp");
     callback(GEN_set_display_style, (AW_CL)GEN_DISPLAY_STYLE_VERTICAL);
     create_button("VERTICAL_DISPLAY_TYPE", "#gen_vertical.xpm", 0);
 
