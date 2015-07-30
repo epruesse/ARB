@@ -20,92 +20,110 @@
 
 using namespace std;
 
-/** 
- * Ask the user a question. Blocks all UI input until the answer is provided.
- * 
- * @param  uniqueID Unique ID to identify the question. Must be valid hkey.
- * @param  question The question. 
- * @param  buttons  Comma separated list of button names. A button named starting
- *                  with "^" will begin a new row of buttons. A button named "EXIT"
- *                  will cause abnormal (EXIT_FAILURE) termination of program.
- *                  If NULL, a single "Ok" Button will be displayed.
- * @param  sameSize Make all buttons have the same size.
- * @param  helpfile Adds a "HELP" button. May be NULL. (currently ignored)
- * @return the index of the selected answer
- */
-int aw_question(const char *unique_id, const char *question, const char *buttons, bool sameSize, const char *helpfile) {
+int aw_question(const char *unique_id, const char *question, const char *buttons, bool sameSizeButtons, const char *helpfile) {
+    /*! Ask the user a question. Blocks all UI input until the answer is provided.
+     *
+     * @param  unique_id       Unique ID to identify the question. Must be valid hkey.
+     * @param  question        The question.
+     * @param  buttons         Comma separated list of button names. A button named starting
+     *                         with "^" will begin a new row of buttons. A button named "EXIT"
+     *                         will cause abnormal (EXIT_FAILURE) termination of program.
+     * @param  sameSizeButtons Make all buttons have the same size.
+     * @param  helpfile        Adds a "HELP" button. May be NULL. (currently ignored)
+     * @return the index of the selected answer
+     */
+
     // @@@ TODO: add help button
+    // @@@ TODO: sameSizeButtons is ignored (check example)
 
-    if (!buttons)  buttons  = "Ok";
-    if (!question) question = "No question?! Please report this as a bug.";
+    aw_assert(buttons);
 
-    AW_dialog dialog("Question box", question);
-    dialog.create_buttons(buttons);
-
-    // create no-repeat checkbox if we have a unique-id
-    AW_awar *awar = NULL;
+    AW_awar *awar_neverAskAgain = NULL;
     if (unique_id) {
-        awar = AW_root::SINGLETON->awar_int(GBS_global_string("answers/%s", unique_id),
-                                            0, AW_ROOT_DEFAULT);
-        if (awar) {
-            if (awar->read_int() > 0) {
-                return awar->read_int() - 1;
-            } else {
-                dialog.create_toggle(awar, "Never show again");
-            }
+        GB_ERROR error = GB_check_key(unique_id);
+        if (error) {
+            aw_message(error);
+            unique_id = NULL;
+        }
+        else {
+            awar_neverAskAgain = AW_root::SINGLETON->awar_int(GBS_global_string("answers/%s", unique_id), 0, AW_ROOT_DEFAULT);
         }
     }
 
-    dialog.run();
+    int result = awar_neverAskAgain ? awar_neverAskAgain->read_int() : 0;
+    if (result>0) { // have auto-answer
+        --result;
+    }
+    else { // no auto-answer
+        if (!question) question = "No question?! Please report this as a bug.";
 
-    // if we have an awar and no-repeat was active, store the result
-    // also warn user about what he's done.
-    if (awar && awar->read_int()) {
-        awar->write_int(dialog.get_result() + 1);
-        char *advice  = GBS_global_string_copy
-            ("You will not be asked that question again in this session.\n"
-             "%s will always assume the answer you just gave.\n"
-             "\n"
-             "After restarting %s that question will be asked again.\n"
-             "To disable that question permanently for future sessions,\n"
-             "you need to save properties.\n"
-             "\n"
-             "Depending on the type of question, disabling it might be\n"
-             "helpful or obstructive.\n"
-             "Disabled questions can be reactivated from the properties menu.\n",
-             AW_root::SINGLETON->program_name,
-             AW_root::SINGLETON->program_name);
+        AW_dialog dialog("Question box", question);
+        dialog.create_buttons(buttons);
 
-        AW_advice(advice, AW_ADVICE_TOGGLE, "Disabling questions", "questions.hlp");
-        free(advice);
+        // create no-repeat checkbox if we have a unique-id
+        if (awar_neverAskAgain) {
+            dialog.create_toggle(awar_neverAskAgain, "Never show again");
+        }
+
+        dialog.run();
+
+        // if we have an awar and no-repeat got checked,
+        // store the result and warn user about what he's done.
+        if (awar_neverAskAgain && awar_neverAskAgain->read_int()) {
+            int answerCode = dialog.get_result() >= 0 ? dialog.get_result()+1 : 0;
+            awar_neverAskAgain->write_int(answerCode);
+
+            if (answerCode>0) {
+                const char *appname = AW_root::SINGLETON->program_name;
+                char       *advice  = GBS_global_string_copy
+                    ("You will not be asked that question again in this session.\n"
+                     "%s will always assume the answer you just gave.\n"
+                     "\n"
+                     "After restarting %s that question will be asked again.\n"
+                     "To disable that question permanently for future sessions,\n"
+                     "you need to save properties.\n"
+                     "\n"
+                     "Depending on the type of question, disabling it might be\n"
+                     "helpful or obstructive.\n"
+                     "Disabled questions can be reactivated from the properties menu.\n",
+                     appname, appname);
+
+                AW_advice(advice, AW_ADVICE_TOGGLE, "Disabling questions", "questions.hlp");
+                free(advice);
+            }
+        }
+
+        result = dialog.get_result();
     }
 
-    return dialog.get_result();
+    // @@@ missing terminate behavior?
+
+    return result;
 }
 
-/**
- * pop up a modal yes/no question
- * @param  unique_id If given, the dialog will get an "do not show again" checkbox
- * @param  msg       The question.
- * @return True if the answer was "Yes"
- */
 bool aw_ask_sure(const char *unique_id, const char *msg) {
+    /*!
+     * pop up a modal yes/no question
+     * @param  unique_id If given, the dialog will get an "do not show again" checkbox
+     * @param  msg       The question.
+     * @return True if the answer was "Yes"
+     */
     return aw_question(unique_id, msg, "Yes,No", true, NULL) == 0;
 }
 
-/**
- * Pop up a modal message with an Ok button
- * @param msg The message.
- */
 void aw_popup_ok(const char *msg) {
+    /*!
+     * Pop up a modal message with an Ok button
+     * @param msg The message.
+     */
     aw_question(NULL, msg, "Ok", true, NULL);
 }
 
-/**
- * Pop up a modal message with an Exit button. 
- * Won't return but exit with "EXIT_FAILURE"
- */
 __ATTR__NORETURN void aw_popup_exit(const char *msg) {
+    /*!
+     * Pop up a modal message with an Exit button.
+     * Won't return but exit with "EXIT_FAILURE"
+     */
     aw_question(NULL, msg, "EXIT", true, NULL);
     aw_assert(0); // should not be reached
     exit(EXIT_FAILURE);
@@ -138,7 +156,7 @@ void AW_repeated_question::add_help(const char *help_file) {
     freedup(helpfile, help_file);
 }
 
-int AW_repeated_question::get_answer(const char *uniqueID, const char *question, const char *buttons, const char *to_all, bool add_abort)
+int AW_repeated_question::get_answer(const char *unique_id, const char *question, const char *buttons, const char *to_all, bool add_abort)
 {
     if (!buttons_used) {
         buttons_used = strdup(buttons);
@@ -194,7 +212,7 @@ int AW_repeated_question::get_answer(const char *uniqueID, const char *question,
             free(all);
         }
 
-        int user_answer = aw_question(uniqueID, question, new_buttons, true, helpfile);
+        int user_answer = aw_question(unique_id, question, new_buttons, true, helpfile);
 
         if (dont_ask_again) {   // ask question as normal when called first (dont_ask_again later)
             answer = user_answer;
