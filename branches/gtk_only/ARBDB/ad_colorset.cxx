@@ -27,7 +27,12 @@ GB_ERROR GBT_set_color_group(GBDATA *gb_item, long color_group) {
      * @param color_group the color group [1...]
      * @return error if sth went wrong
      */
-    return GBT_write_int(gb_item, GB_COLORGROUP_ENTRY, color_group);;
+
+    if (color_group) return GBT_write_int(gb_item, GB_COLORGROUP_ENTRY, color_group);
+
+    // do not store 0
+    GBDATA *gb_cgroup = GB_entry(gb_item, GB_COLORGROUP_ENTRY);
+    return gb_cgroup ? GB_delete(gb_cgroup) : NULL;
 }
 
 GBDATA *GBT_colorset_root(GBDATA *gb_main, const char *itemsname) {

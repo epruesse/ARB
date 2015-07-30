@@ -1081,7 +1081,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
 
             NT_insert_mark_submenus(awm, ntw, 1);
             awm->insert_menu_topic("mark_by_ref",     "Mark by reference..", "r", "markbyref.hlp",       AWM_EXP, makeCreateWindowCallback(create_mark_by_refentries_window, GLOBAL.gb_main));
-            awm->insert_menu_topic("species_colors",  "Set Colors",          "l", "colorize.hlp",        AWM_ALL, create_colorize_species_window);
+            awm->insert_menu_topic("species_colors",  "Colors ...",          "l", "colorize.hlp",        AWM_ALL, create_colorize_species_window);
             awm->insert_menu_topic("selection_admin", "Configurations",      "o", "species_configs.hlp", AWM_ALL, NT_popup_configuration_admin, (AW_CL)ntw,                              0);
 
             awm->sep______________();
