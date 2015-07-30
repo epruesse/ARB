@@ -1,13 +1,12 @@
-// ============================================================= //
-//                                                               //
-//   File      : AW_preset.cxx                                    //
-//   Purpose   :                                                 //
-//                                                               //
-//   Coded by Arne Boeckmann aboeckma@mpi-bremen.de on Aug 2, 2012   //
-//   Institute of Microbiology (Technical University Munich)     //
-//   http://www.arb-home.de/                                     //
-//                                                               //
-// ============================================================= //
+// ================================================================ //
+//                                                                  //
+//   File      : AW_preset.cxx                                      //
+//   Purpose   :                                                    //
+//                                                                  //
+//   Institute of Microbiology (Technical University Munich)        //
+//   http://www.arb-home.de/                                        //
+//                                                                  //
+// ================================================================ //
 
 #include <aw_color_groups.hxx>
 #include "aw_preset.hxx"
@@ -276,6 +275,10 @@ void _AW_gc_manager::update_aa_setting() {
     device->queue_draw();
 }
 
+// ----------------------------------------------------------------------
+// force-diff-sync 931274892174 (remove after merging back to trunk)
+// ----------------------------------------------------------------------
+
 void AW_copy_GCs(AW_root *aw_root, const char *source_window, const char *dest_window, bool has_font_info, const char *id0, ...) {
     // read the values of the specified GCs from 'source_window'
     // and write the values into same-named GCs of 'dest_window'
@@ -303,51 +306,61 @@ void AW_copy_GCs(AW_root *aw_root, const char *source_window, const char *dest_w
     va_end(parg);
 }
 
-/**
- * creates some GC pairs: one for normal operation,
- * the other for drag mode
- * eg.
- * AW_manage_GC(aww,"ARB_NT",device,10,20,AW_GCM_DATA_AREA, my_expose_cb, cd1 ,cd2, "name","#sequence",NULL);
- * (see implementation for more details on parameter strings)
- * will create 4 GCs:
- *  GC 10 (normal) and 20 (drag)
- *  GC 11 (normal and monospaced (indicated by '#')
- *  21 drag and monospaced
- *  don't forget the 0 at the end of the fontname field
- *  When the GCs are modified the 'changecb' is called
- *
- * @param aww        base window
- * @[aram gc_base_name (usually the window_id, prefixed to awars)
- * @param device     screen device
- * @param base_gc    first gc number @@@REFACTOR: always 0 so far...
- * @param base_drag  one after last gc
- * @param area       AW_GCM_DATA_AREA or AW_GCM_WINDOW_AREA
- * @param changecb   cb if changed
- * @param cd1,cd2    free Parameters to changecb
- * @param define_color_groups  true -> add colors for color groups
- * @param ...        NULL terminated list of \0 terminated strings:
- *                   first GC is fixed: '-background'
- *                   optionsSTRING   name of GC and AWAR
- *                   options:  #   fixed fonts only
- *                             -   no fonts
- *                             --  completely hide GC
- *                             =   no color selector
- *                             +   append next in same line
- *                             $color at end of string = > define default color value
- *                             ${GCname} at end of string = > use default of previously defined color
- */
+// ----------------------------------------------------------------------
+// force-diff-sync 265873246583745 (remove after merging back to trunk)
+// ----------------------------------------------------------------------
+
 AW_gc_manager AW_manage_GC(AW_window             *aww,
                            const char            *gc_base_name,
-                           AW_device             *device, int base_gc, int base_drag, AW_GCM_AREA /*area*/,
+                           AW_device             *device,
+                           int                    base_gc,
+                           int                    base_drag,
+                           AW_GCM_AREA            /*area*/, // remove AFTERMERGE
                            const WindowCallback&  changecb,
                            bool                   define_color_groups,
                            const char            *default_background_color,
-                           ...) {
+                           ...)
+{
+    /*!
+     * creates some GC pairs: one for normal operation,
+     * the other for drag mode
+     * eg.
+     *     AW_manage_GC(aww,"ARB_NT",device,10,20,AW_GCM_DATA_AREA, my_expose_cb, cd1 ,cd2, "name","#sequence",NULL);
+     *     (see implementation for more details on parameter strings)
+     *     will create 4 GCs:
+     *      GC 10 (normal) and 20 (drag)
+     *      GC 11 (normal and monospaced (indicated by '#')
+     *      GC 21 drag and monospaced
+     *  Don't forget the 0 at the end of the fontname field
+     *  When the GCs are modified the 'changecb' is called
+     *
+     * @param aww          base window
+     * @param gc_base_name (usually the window_id, prefixed to awars)
+     * @param device       screen device
+     * @param base_gc      first gc number @@@REFACTOR: always 0 so far...
+     * @param base_drag    one after last gc
+     * @param area         AW_GCM_DATA_AREA or AW_GCM_WINDOW_AREA (motif only)
+     * @param changecb     cb if changed
+     * @param cd1,cd2      free Parameters to changecb
+     * @param define_color_groups  true -> add colors for color groups
+     * @param ...                  NULL terminated list of \0 terminated strings:
+     *                             first GC is fixed: '-background'
+     *                             optionsSTRING   name of GC and AWAR
+     *                             options:        #   fixed fonts only
+     *                                             -   no fonts
+     *                                             --  completely hide GC
+     *                                             =   no color selector
+     *                                             +   append next in same line
+     *
+     *                                             $color at end of string    => define default color value
+     *                                             ${GCname} at end of string => use default of previously defined color
+     */
+
     aw_assert(default_background_color[0]);
     aw_assert(base_gc == 0);
-    // assert that aww->window_defaults_name is equal to gc_base_name?
+    // @@@ assert that aww->window_defaults_name is equal to gc_base_name?
 
-    AW_root    *aw_root = AW_root::SINGLETON;
+    AW_root *aw_root = AW_root::SINGLETON;
 
     AW_gc_manager gcmgr = new _AW_gc_manager(gc_base_name, device, base_drag);
 
@@ -359,7 +372,7 @@ AW_gc_manager AW_manage_GC(AW_window             *aww,
 
     va_list parg;
     va_start(parg, default_background_color);
-    const char *id;   
+    const char *id;
     while ( (id = va_arg(parg, char*)) ) {
         gcmgr->add_gc(id);
     }
@@ -409,14 +422,6 @@ long AW_find_active_color_group(GBDATA *gb_item) {
     }
     return GBT_get_color_group(gb_item);
 }
-
-
-
-#if defined(UNIT_TESTS)
-void fake_AW_init_color_groups() {
-    always_ignore_usage_flag = true;
-}
-#endif
 
 char *AW_get_color_group_name(AW_root *awr, int color_group) {
     aw_assert(valid_color_group(color_group));
@@ -477,11 +482,11 @@ AW_window *AW_create_gc_window(AW_root *aw_root, AW_gc_manager id_par) {
     return AW_create_gc_window_named(aw_root, id_par, "PROPS_GC", "Colors and Fonts");
 }
 
-// same as AW_create_gc_window, but uses different window id and name
-// (use if if there are two or more color def windows in one application,
-// otherwise they save the same window properties)
-AW_window *AW_create_gc_window_named(AW_root *aw_root, AW_gc_manager id_par, const char *wid,
-                                     const char *windowname) {
+AW_window *AW_create_gc_window_named(AW_root *aw_root, AW_gc_manager id_par, const char *wid, const char *windowname) {
+    // same as AW_create_gc_window, but uses different window id and name
+    // (use if if there are two or more color def windows in one application,
+    // otherwise they save the same window properties)
+
     AW_window_simple * aws = new AW_window_simple;
 
     aws->init(aw_root, wid, windowname);
@@ -500,14 +505,23 @@ AW_window *AW_create_gc_window_named(AW_root *aw_root, AW_gc_manager id_par, con
     id_par->create_gc_buttons(aws);
 
     aws->window_fit();
-    return (AW_window *) aws;
+    return aws;
 }
 
-////// FIXME, move somewhere more sensible:
+#if defined(UNIT_TESTS)
+void fake_AW_init_color_groups() {
+    always_ignore_usage_flag = true;
+}
+#endif
+
+// @@@ move somewhere more sensible: (after!merge)
 
 static void add_common_property_menu_entries(AW_window *aw) {
     aw->insert_menu_topic("enable_advices",   "Reactivate advices",   "R", "advice.hlp",    AWM_ALL, AW_reactivate_all_advices);
     aw->insert_menu_topic("enable_questions", "Reactivate questions", "q", "questions.hlp", AWM_ALL, AW_reactivate_all_questions);
+#if defined(ARB_MOTIF)
+    aw->insert_menu_topic("reset_win_layout", "Reset window layout",  "w", "reset_win_layout.hlp", AWM_ALL, AW_forget_all_window_geometry);
+#endif
 }
 void AW_insert_common_property_menu_entries(AW_window_menu_modes *awmm) { add_common_property_menu_entries(awmm); }
 void AW_insert_common_property_menu_entries(AW_window_simple_menu *awsm) { add_common_property_menu_entries(awsm); }
