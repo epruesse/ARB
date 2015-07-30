@@ -133,6 +133,7 @@ TreeDisplay.o: TreeCallbacks.hxx
 TreeDisplay.o: TreeDisplay.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/ad_cb.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
+TreeDisplay.o: $(ARBHOME)/INCLUDE/ad_colorset.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/ad_prot.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/AliView.hxx
@@ -167,7 +168,6 @@ TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-TreeDisplay.o: $(ARBHOME)/INCLUDE/awt_attributes.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/cb.h

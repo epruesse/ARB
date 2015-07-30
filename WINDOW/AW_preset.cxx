@@ -25,6 +25,7 @@
 #include "aw_nawar.hxx"
 
 #include <arbdbt.h>
+#include <ad_colorset.h>
 
 // values optimized for ARB_NTREE :
 static const char *ARB_NTREE_color_group[AW_COLOR_GROUPS+1] = {
@@ -210,10 +211,6 @@ static const char *AW_get_color_group_name_awarname(int color_group) {
     return 0;
 }
 
-GB_ERROR AW_set_color_group(GBDATA *gbd, long color_group) {
-    return GBT_write_int(gbd, AW_COLOR_GROUP_ENTRY, color_group);
-}
-
 char *AW_get_color_group_name(AW_root *awr, int color_group) {
     aw_assert(color_groups_initialized);
     aw_assert(color_group>0 && color_group <= AW_COLOR_GROUPS);
@@ -246,16 +243,13 @@ static void aw_gc_color_changed_cb(AW_root *root, AW_MGC_awar_cb_struct *cbs, in
     free(colorname);
 }
 
-long AW_find_color_group(GBDATA *gbd, bool ignore_usage_flag) {
-    /* species/genes etc. may have a color group entry ('ARB_color')
-     * call with ignore_usage_flag == true to read color group regardless of global usage flag (AWAR_COLOR_GROUPS_USE)
+long AW_find_active_color_group(GBDATA *gb_item) {
+    /*! same as GBT_get_color_group() if color groups are active
+     * @param gb_item the item
+     * @return always 0 if color groups are inactive
      */
     aw_assert(color_groups_initialized);
-    if (!use_color_groups && !ignore_usage_flag) return 0;
-
-    GBDATA *gb_group = GB_entry(gbd, AW_COLOR_GROUP_ENTRY);
-    if (gb_group) return GB_read_int(gb_group);
-    return 0;                   // no color group
+    return use_color_groups ? GBT_get_color_group(gb_item) : 0;
 }
 
 static void AW_color_group_usage_changed_cb(AW_root *awr) {

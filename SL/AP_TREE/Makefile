@@ -58,7 +58,6 @@ AP_Tree.o: $(ARBHOME)/INCLUDE/attributes.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AP_Tree.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 AP_Tree.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
-AP_Tree.o: $(ARBHOME)/INCLUDE/awt_attributes.hxx
 AP_Tree.o: $(ARBHOME)/INCLUDE/cb.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/cb_base.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/cbtypes.h
