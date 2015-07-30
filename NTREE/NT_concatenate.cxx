@@ -50,9 +50,20 @@ struct SpeciesConcatenateList {
 
 // --------------------------creating and initializing AWARS----------------------------------------
 void NT_createConcatenationAwars(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main) {
-    GB_transaction  ta(gb_main);
-    char           *ali_default = GBT_get_default_alignment(gb_main);
-    char           *ali_type    = GBT_get_alignment_type_string(gb_main, ali_default);
+    GB_transaction ta(gb_main);
+
+    char *ali_default = GBT_get_default_alignment(gb_main);
+    char *ali_type    = NULL;
+
+    if (ali_default) {
+        ali_type = GBT_get_alignment_type_string(gb_main, ali_default);
+        if (!ali_type) {
+            // Note: this message will appear during startup (i.e. stick to general statement here!)
+            aw_message(GBS_global_string("Failed to detect type of default alignment (%s)\n"
+                                         "(Reason: %s)", ali_default, GB_await_error()));
+        }
+    }
+    if (!ali_type) ali_type = strdup("rna");
 
     aw_root->awar_string(AWAR_CON_SEQUENCE_TYPE,       ali_type,         aw_def);
     aw_root->awar_string(AWAR_CON_NEW_ALIGNMENT_NAME,  "ali_concat",     aw_def)->set_srt("ali_*=*:*=ali_*"); // auto-prefix with "ali_"
