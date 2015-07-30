@@ -10,7 +10,7 @@ UP	glossary.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Reset window layout
 
-OCCURRENCE	in all Properties menus
+OCCURRENCE	<any properties menu>/Reset window layout
 
 DESCRIPTION     ARB remembers the size and/or position of each window.
 		
