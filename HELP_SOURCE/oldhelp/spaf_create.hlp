@@ -11,8 +11,7 @@ UP	sp_info.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Create a Field
 
-OCCURRENCE	ARB_NT/Species/Info/FIELDS/Create a field
-	        ARB_NT/Genes/Info/FIELDS/Create a field
+OCCURRENCE	<any information window>/FIELDS/Create a field
 
 DESCRIPTION	Allows to create new fields.
 
