@@ -3,21 +3,21 @@ UP	arb.hlp
 UP	glossary.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
-SUB	gene_mark.hlp
+#SUB	subtopic.hlp
 
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		Hiding genes
+TITLE		Jump to selected gene
 
-OCCURRENCE	ARB_NT/ARB_GENE_MAP/Hide
+OCCURRENCE	ARB_NT/Genome/Gene Map/JUMP
 
-DESCRIPTION	You can hide genes. 
+DESCRIPTION     Scrolls the display to the currently selected gene.
 
-		Hidden genes will normally not be displayed in ARB_GENE_MAP.
-		You may change that behavior in LINK{gen_options.hlp}.		
+		Press multiple times to center the gene or toggle between multiple 
+		display positions of one gene (happens e.g. in book-style mode).
 
-NOTES		None	
+NOTES		See also LINK{gen_options.hlp}.
 
 EXAMPLES	None
 
