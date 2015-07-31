@@ -20,6 +20,7 @@
 #include <arb_diff.h>
 
 #include <cctype>
+#include "ad_colorset.h"
 
 struct gbt_renamed {
     int     used_by;
@@ -167,7 +168,7 @@ static GB_ERROR gbt_rename_tree_rek(TreeNode *tree, int tree_index) {
 
 GB_ERROR GBT_commit_rename_session() { // goes to header: __ATTR__USERESULT
     bool         is_genome_db = GEN_is_genome_db(NameSession.gb_main, -1);
-    arb_progress commit_progress("Correcting name references", 2+is_genome_db);
+    arb_progress commit_progress("Correcting name references", 3+is_genome_db);
     GB_ERROR     error        = 0;
 
     commit_progress.allow_title_reuse();
@@ -256,8 +257,59 @@ GB_ERROR GBT_commit_rename_session() { // goes to header: __ATTR__USERESULT
                 progress.inc_and_check_user_abort(error);
             }
         }
+        commit_progress.inc_and_check_user_abort(error);
     }
-    commit_progress.inc_and_check_user_abort(error);
+
+    // rename species in saved colorsets
+    if (!error) {
+        GBDATA *gb_species_colorset_root = GBT_colorset_root(NameSession.gb_main, "species");
+        if (gb_species_colorset_root) {
+            ConstStrArray colorset_names;
+            GBT_get_colorset_names(colorset_names, gb_species_colorset_root);
+
+            int colorset_count = colorset_names.size();
+            if (colorset_count>0) {
+                arb_progress progress(GBS_global_string("Correcting names in %i colorset%c", colorset_count, "s"[colorset_count<2]), colorset_count);
+
+                for (int c = 0; c<colorset_count && !error; ++c) {
+                    GBDATA *gb_colorset     = GBT_find_colorset(gb_species_colorset_root, colorset_names[c]);
+                    if (!gb_colorset) error = GB_await_error();
+                    else {
+                        ConstStrArray colorDefs;
+                        error = GBT_load_colorset(gb_colorset, colorDefs);
+                        if (!error) {
+                            StrArray modifiedDefs;
+                            bool     changed = false;
+
+                            for (size_t d = 0; d<colorDefs.size(); ++d) {
+                                const char *def   = colorDefs[d];
+                                const char *equal = strchr(def, '=');
+
+                                if (equal) { // only handle correct entries (do not touch rest)
+                                    gbt_renamed *rns;
+                                    {
+                                        LocallyModify<char>  tempSplit(const_cast<char*>(equal)[0], 0);
+                                        rns = (gbt_renamed *)GBS_read_hash(NameSession.renamed_hash, def);
+                                    }
+                                    if (rns) { // species was renamed
+                                        char *newDef = GBS_global_string_copy("%s%s", rns->data, equal);
+                                        colorDefs.replace(d, newDef); // replace colorDefs
+                                        modifiedDefs.put(newDef);     // keep heapcopy until colorDefs gets written
+
+                                        changed = true;
+                                    }
+                                }
+                            }
+
+                            if (changed && !error) error = GBT_save_colorset(gb_colorset, colorDefs);
+                        }
+                    }
+                    progress.inc_and_check_user_abort(error);
+                }
+            }
+        }
+        commit_progress.inc_and_check_user_abort(error);
+    }
 
     // rename links in pseudo-species
     if (!error && is_genome_db) {
