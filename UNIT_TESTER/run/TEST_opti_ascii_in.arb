@@ -1398,7 +1398,7 @@ colorsets		%% (%
 	species			%% (%
 		colorset		%% (%
 			name			"someother"
-			color_set		"MetMazei=2;MthBurto=2;MtsHunga=2;NatMagad=2;CalSacch=1;LacPonti=1;LacReute=1;CloTherm=1;BctFragi=3;DslToluo=3;St0Isola=3;DsfDesul=3;FrnPhilo=3;PseFlave=1"
+			color_set		"MetMazei=2;MthBurto=2;MtsHunga=2;NatMagad=2;CalSacch=1;VibChole=0;LacPonti=1;LacReute=1;CloTherm=1;BctFragi=3;DslToluo=3;St0Isola=3;DsfDesul=3;FrnPhilo=3;PseFlave=1"
 			%) /*colorset*/
 
 		%) /*species*/
