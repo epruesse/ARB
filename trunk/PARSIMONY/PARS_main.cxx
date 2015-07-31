@@ -1131,12 +1131,12 @@ static void init_TEST_menu(AW_window_menu_modes *awm, AWT_canvas *ntw)
 }
 #endif // TESTMENU
 
-static GB_ERROR pars_check_size(AW_root *awr, GB_ERROR& warning) {
+static GB_ERROR pars_check_size(AW_root *awr, GB_ERROR& warning, const adfiltercbstruct *filterDef) {
     GB_ERROR error = NULL;
     warning        = NULL;
 
     char *tree_name = awr->awar(AWAR_TREE)->read_string();
-    char *filter    = awr->awar(AWAR_FILTER_FILTER)->read_string();
+    char *filter    = awr->awar(filterDef->def_filter)->read_string();
     long  ali_len   = 0;
 
     if (strlen(filter)) {
@@ -1217,7 +1217,7 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
     GB_begin_transaction(gb_main);
     {
         GB_ERROR warning;
-        GB_ERROR error = pars_check_size(awr, warning);
+        GB_ERROR error = pars_check_size(awr, warning, wfilt->get_adfiltercbstruct());
 
         if (warning && !error) {
             char *question = GBS_global_string_copy("%s\nDo you want to continue?", warning);
@@ -1633,22 +1633,17 @@ static void create_optimize_vars(AW_root *aw_root, AW_default props) {
 static void pars_create_all_awars(AW_root *awr, AW_default aw_def, GBDATA *gb_main) {
     awr->awar_string(AWAR_SPECIES_NAME, "",     gb_main);
     awr->awar_string(AWAR_FOOTER,       "",     aw_def);
-    awr->awar_string(AWAR_FILTER_NAME,  "none", gb_main);
 
+    // copy currently selected alignment to awar:
     {
         GB_transaction  ta(gb_main);
         char           *dali = GBT_get_default_alignment(gb_main);
-
         awr->awar_string(AWAR_ALIGNMENT, dali, gb_main)->write_string(dali);
         free(dali);
     }
 
+    awt_create_filter_awars(awr, aw_def, AWAR_FILTER_NAME, AWAR_ALIGNMENT);
     awt_set_awar_to_valid_filter_good_for_tree_methods(gb_main, awr, AWAR_FILTER_NAME);
-
-    awr->awar_string(AWAR_FILTER_FILTER,    "", gb_main);
-    awr->awar_string(AWAR_FILTER_ALIGNMENT, "", aw_def);
-
-    awr->awar(AWAR_FILTER_ALIGNMENT)->map(AWAR_ALIGNMENT);
 
     awr->awar_int(AWAR_PARS_TYPE, PARS_WAGNER, gb_main);
 
