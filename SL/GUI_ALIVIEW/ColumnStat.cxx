@@ -97,9 +97,10 @@ GB_ERROR ColumnStat::calculate(AP_filter *filter) {
     forget(); // delete previously calculated stats
 
     GB_transaction ta(gb_main);
-    GB_ERROR       error            = 0;
+    GB_ERROR       error            = filter ? filter->is_invalid() : NULL;
     size_t         alignment_length = 0;
-    {
+
+    if (!error) {
         long alignment_length_l = GBT_get_alignment_len(gb_main, alignment_name);
         if (alignment_length_l <= 1) {
             error = GBS_global_string("Unknown size for alignment '%s'", alignment_name);
