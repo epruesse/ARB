@@ -30,10 +30,7 @@
 #define AWAR_EXPORT_MULTIPLE_FILES "tmp/export/multiple_files"
 #define AWAR_EXPORT_MARKED         "export/marked"
 #define AWAR_EXPORT_COMPRESS       "export/compress"
-#define AWAR_EXPORT_FILTER_PREFIX  "export/filter"
-#define AWAR_EXPORT_FILTER_NAME    AWAR_EXPORT_FILTER_PREFIX "/name"
-#define AWAR_EXPORT_FILTER_FILTER  AWAR_EXPORT_FILTER_PREFIX "/filter"
-#define AWAR_EXPORT_FILTER_ALI     AWAR_EXPORT_FILTER_PREFIX "/alignment"
+#define AWAR_EXPORT_FILTER_NAME    "tmp/export/filter/name"
 #define AWAR_EXPORT_CUTSTOP        "export/cutstop"
 
 #define awti_assert(cond) arb_assert(cond)
@@ -92,10 +89,8 @@ static void create_export_awars(AW_root *awr, AW_default def) {
 
     awr->awar_int(AWAR_EXPORT_MARKED, 1, def); // marked only
     awr->awar_int(AWAR_EXPORT_COMPRESS, 1, def); // vertical gaps
-    awr->awar_string(AWAR_EXPORT_FILTER_NAME, "none", def); // no default filter
-    awr->awar_string(AWAR_EXPORT_FILTER_FILTER, "", def);
-    AW_awar *awar_ali = awr->awar_string(AWAR_EXPORT_FILTER_ALI, "", def);
-    awar_ali->map(AWAR_DEFAULT_ALIGNMENT);
+
+    awt_create_filter_awars(awr, def, AWAR_EXPORT_FILTER_NAME, AWAR_DEFAULT_ALIGNMENT);
 
     awr->awar_int(AWAR_EXPORT_CUTSTOP, 0, def); // don't cut stop-codon
 }
