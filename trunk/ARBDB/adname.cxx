@@ -281,22 +281,28 @@ GB_ERROR GBT_commit_rename_session() { // goes to header: __ATTR__USERESULT
                             StrArray modifiedDefs;
                             bool     changed = false;
 
-                            for (size_t d = 0; d<colorDefs.size(); ++d) {
+                            for (int d = colorDefs.size()-1; d>=0; --d) {
                                 const char *def   = colorDefs[d];
                                 const char *equal = strchr(def, '=');
 
                                 if (equal) { // only handle correct entries (do not touch rest)
-                                    gbt_renamed *rns;
-                                    {
-                                        LocallyModify<char>  tempSplit(const_cast<char*>(equal)[0], 0);
-                                        rns = (gbt_renamed *)GBS_read_hash(NameSession.renamed_hash, def);
-                                    }
-                                    if (rns) { // species was renamed
-                                        char *newDef = GBS_global_string_copy("%s%s", rns->data, equal);
-                                        colorDefs.replace(d, newDef); // replace colorDefs
-                                        modifiedDefs.put(newDef);     // keep heapcopy until colorDefs gets written
-
+                                    if (strcmp(equal+1, "0") == 0) { // unneeded "no color"-entry (see [14094])
+                                        colorDefs.remove(d);
                                         changed = true;
+                                    }
+                                    else {
+                                        gbt_renamed *rns;
+                                        {
+                                            LocallyModify<char>  tempSplit(const_cast<char*>(equal)[0], 0);
+                                            rns = (gbt_renamed *)GBS_read_hash(NameSession.renamed_hash, def);
+                                        }
+                                        if (rns) { // species was renamed
+                                            char *newDef = GBS_global_string_copy("%s%s", rns->data, equal);
+                                            colorDefs.replace(d, newDef); // replace colorDefs
+                                            modifiedDefs.put(newDef);     // keep heapcopy until colorDefs gets written
+
+                                            changed = true;
+                                        }
                                     }
                                 }
                             }
