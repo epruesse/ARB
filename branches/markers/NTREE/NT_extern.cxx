@@ -648,8 +648,7 @@ static void relink_pseudo_species_to_organisms(GBDATA *&ref_gb_node, char *&ref_
     }
 }
 
-static void NT_pseudo_species_to_organism(AW_window *, AW_CL ntwcl) {
-    AWT_canvas     *ntw       = (AWT_canvas *)ntwcl;
+static void NT_pseudo_species_to_organism(AW_window *, AWT_canvas *ntw) {
     GB_transaction  ta(ntw->gb_main);
     AP_tree        *tree_root = AWT_TREE(ntw)->get_root_node();
 
@@ -1346,7 +1345,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
         if (is_genome_db) {
             awm->insert_sub_menu("Other..",  "O", AWM_EXP);
             {
-                awm->insert_menu_topic(awm->local_id("tree_pseudo_species_to_organism"), "Change pseudo species to organisms in tree", "p", "tree_pseudo.hlp",        AWM_EXP, (AW_CB)NT_pseudo_species_to_organism, (AW_CL)ntw, 0);
+                awm->insert_menu_topic(awm->local_id("tree_pseudo_species_to_organism"), "Relink tree to organisms", "o", "tree_pseudo.hlp", AWM_EXP, makeWindowCallback(NT_pseudo_species_to_organism, ntw));
             }
             awm->close_sub_menu();
         }

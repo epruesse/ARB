@@ -1698,7 +1698,7 @@ static AW_window *create_IUPAC_resolve_window(AW_root *root, GBDATA *gb_main) {
     aws->load_xfig("pd_match_iupac.fig");
 
     aws->button_length(11);
-    
+
     aws->at("close");
     aws->callback((AW_CB0)AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");

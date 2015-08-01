@@ -20,9 +20,7 @@
 
 
 #define AWAR_ALIGNMENT        "tmp/pars/alignment"
-#define AWAR_FILTER_NAME      "tmp/pars/filter/name"
-#define AWAR_FILTER_FILTER    "tmp/pars/filter/filter"
-#define AWAR_FILTER_ALIGNMENT "tmp/pars/filter/alignment"
+#define AWAR_FILTER_NAME      "tmp/pars/filter/name" 
 #define AWAR_PARSIMONY        "tmp/pars/parsimony"
 #define AWAR_BEST_PARSIMONY   "tmp/pars/best_parsimony"
 #define AWAR_STACKPOINTER     "tmp/pars/stackpointer"

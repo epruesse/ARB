@@ -65,7 +65,7 @@ NOTES
             perform concatenation. CAUTION: Make sure that the new alignment name DOES NOT
             coinside with the selected alignments (names) to be concatenated!
 
-EXAMPLES	None
+EXAMPLES	See LINK{gene_species.hlp}
 
 WARNINGS	None
 
