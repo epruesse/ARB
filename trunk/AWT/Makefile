@@ -313,6 +313,26 @@ AWT_map_key.o: $(ARBHOME)/INCLUDE/static_assert.h
 AWT_map_key.o: $(ARBHOME)/INCLUDE/test_global.h
 AWT_map_key.o: $(ARBHOME)/INCLUDE/ttypes.h
 
+AWT_misc.o: awt_misc.hxx
+AWT_misc.o: $(ARBHOME)/INCLUDE/arb_assert.h
+AWT_misc.o: $(ARBHOME)/INCLUDE/arb_core.h
+AWT_misc.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+AWT_misc.o: $(ARBHOME)/INCLUDE/arbtools.h
+AWT_misc.o: $(ARBHOME)/INCLUDE/attributes.h
+AWT_misc.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+AWT_misc.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+AWT_misc.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+AWT_misc.o: $(ARBHOME)/INCLUDE/cb.h
+AWT_misc.o: $(ARBHOME)/INCLUDE/cb_base.h
+AWT_misc.o: $(ARBHOME)/INCLUDE/cbtypes.h
+AWT_misc.o: $(ARBHOME)/INCLUDE/cxxforward.h
+AWT_misc.o: $(ARBHOME)/INCLUDE/dupstr.h
+AWT_misc.o: $(ARBHOME)/INCLUDE/gccver.h
+AWT_misc.o: $(ARBHOME)/INCLUDE/smartptr.h
+AWT_misc.o: $(ARBHOME)/INCLUDE/static_assert.h
+AWT_misc.o: $(ARBHOME)/INCLUDE/test_global.h
+AWT_misc.o: $(ARBHOME)/INCLUDE/ttypes.h
+
 AWT_modules.o: awt_modules.hxx
 AWT_modules.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_modules.o: $(ARBHOME)/INCLUDE/arb_core.h

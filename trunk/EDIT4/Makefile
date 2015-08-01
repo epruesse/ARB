@@ -643,6 +643,7 @@ ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/awt.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
+ED4_no_class.o: $(ARBHOME)/INCLUDE/awt_misc.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/awt_seq_colors.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
