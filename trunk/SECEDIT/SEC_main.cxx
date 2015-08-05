@@ -511,12 +511,18 @@ static void SEC_delete_structure(AW_window *, AW_CL cl_db, AW_CL) {
     }
 }
 
-static void SEC_sync_colors(AW_window *aww, AW_CL cl_mode, AW_CL) {
+enum SyncColors {
+    COLOR_SYNC_SEARCH = 1,
+    COLOR_SYNC_RANGE  = 2,
+    COLOR_SYNC_REST   = 4,
+
+    COLOR_SYNC_ALL = (COLOR_SYNC_SEARCH|COLOR_SYNC_RANGE|COLOR_SYNC_REST),
+};
+
+static void SEC_sync_colors(AW_window *aww, SyncColors which) {
     // overwrites color settings with those from EDIT4
 
-    int mode = (int)cl_mode;
-
-    if (mode & 1) { // search string colors
+    if (which & COLOR_SYNC_SEARCH) {
         AW_copy_GCs(aww->get_root(), "ARB_EDIT4", "ARB_SECEDIT", false,
                     "User1",   "User2",   "Probe",
                     "Primerl", "Primerr", "Primerg",
@@ -524,7 +530,7 @@ static void SEC_sync_colors(AW_window *aww, AW_CL cl_mode, AW_CL) {
                     "MISMATCHES",
                     NULL);
     }
-    if (mode & 2) { // range colors
+    if (which & COLOR_SYNC_RANGE) {
         AW_copy_GCs(aww->get_root(), "ARB_EDIT4", "ARB_SECEDIT", false,
                     "RANGE_0", "RANGE_1", "RANGE_2",
                     "RANGE_3", "RANGE_4", "RANGE_5",
@@ -532,7 +538,7 @@ static void SEC_sync_colors(AW_window *aww, AW_CL cl_mode, AW_CL) {
                     "RANGE_9",
                     NULL);
     }
-    if (mode & 4) { // other colors
+    if (which & COLOR_SYNC_REST) {
         AW_copy_GCs(aww->get_root(), "ARB_EDIT4", "ARB_SECEDIT", false,
                     "CURSOR",
                     NULL);
@@ -758,10 +764,10 @@ AW_window *start_SECEDIT_plugin(ED4_plugin_host& host) {
     awm->sep______________();
     awm->insert_menu_topic("props_secedit", "Change Colors and Fonts", "C", "color_props.hlp", AWM_ALL, makeCreateWindowCallback(AW_create_gc_window, scr->gc_manager));
     awm->sep______________();
-    awm->insert_menu_topic("sync_search_colors", "Sync search colors with EDIT4", "s", "sync_colors.hlp", AWM_ALL, SEC_sync_colors, (AW_CL)1, 0);
-    awm->insert_menu_topic("sync_range_colors",  "Sync range colors with EDIT4",  "r", "sync_colors.hlp", AWM_ALL, SEC_sync_colors, (AW_CL)2, 0);
-    awm->insert_menu_topic("sync_other_colors",  "Sync other colors with EDIT4",  "o", "sync_colors.hlp", AWM_ALL, SEC_sync_colors, (AW_CL)4, 0);
-    awm->insert_menu_topic("sync_all_colors",    "Sync all colors with EDIT4",    "a", "sync_colors.hlp", AWM_ALL, SEC_sync_colors, (AW_CL)(1|2|4), 0);
+    awm->insert_menu_topic("sync_search_colors", "Sync search colors with EDIT4", "s", "sync_colors.hlp", AWM_ALL, makeWindowCallback(SEC_sync_colors, COLOR_SYNC_SEARCH));
+    awm->insert_menu_topic("sync_range_colors",  "Sync range colors with EDIT4",  "r", "sync_colors.hlp", AWM_ALL, makeWindowCallback(SEC_sync_colors, COLOR_SYNC_RANGE));
+    awm->insert_menu_topic("sync_other_colors",  "Sync other colors with EDIT4",  "o", "sync_colors.hlp", AWM_ALL, makeWindowCallback(SEC_sync_colors, COLOR_SYNC_REST));
+    awm->insert_menu_topic("sync_all_colors",    "Sync all colors with EDIT4",    "a", "sync_colors.hlp", AWM_ALL, makeWindowCallback(SEC_sync_colors, COLOR_SYNC_ALL));
     awm->sep______________();
     awm->insert_menu_topic("sec_save_props",    "How to save properties",   "p", "savedef.hlp", AWM_ALL, makeHelpCallback("sec_props.hlp"));
 
