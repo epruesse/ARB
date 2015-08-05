@@ -138,6 +138,8 @@ NOTES		Highlighted search patterns are drawn on top of
                 i.e. "User1" is painted above "Primer (global)" and hence parts of
                 the latter may be invisible.
 
+                The hits may also be highlighted in ARB_SECEDIT (see LINK{sec_display.hlp}).
+
 EXAMPLES	None
 
 WARNINGS	None

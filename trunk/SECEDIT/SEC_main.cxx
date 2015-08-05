@@ -651,7 +651,7 @@ static AW_window *SEC_create_display_window(AW_root *awr) {
     aws->update_option_menu();
 
     aws->at("bonddef");
-    aws->callback(AW_POPUP, (AW_CL)SEC_create_bonddef_window, 0);
+    aws->callback(makeCreateWindowCallback(SEC_create_bonddef_window));
     aws->create_button("sec_bonddef", "Define", 0);
 
     aws->at("bondThickness");
@@ -755,8 +755,8 @@ AW_window *start_SECEDIT_plugin(ED4_plugin_host& host) {
     awm->insert_menu_topic("secedit_import", "Load structure", "L", "secedit_imexport.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_import, (AW_CL)db);
     awm->insert_menu_topic("secedit_export", "Save structure", "S", "secedit_imexport.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_export, (AW_CL)db);
     awm->sep______________();
-    awm->insert_menu_topic("secStruct2xfig", "Export Structure to XFIG", "X", "sec_layout.hlp",  AWM_ALL, makeWindowCallback(AWT_popup_sec_export_window, scr));
-    awm->insert_menu_topic("print_secedit",  "Print Structure",          "P", "secedit2prt.hlp", AWM_ALL, makeWindowCallback(AWT_popup_print_window, scr));
+    awm->insert_menu_topic("secStruct2xfig", "Export structure to XFIG", "X", "tree2file.hlp", AWM_ALL, makeWindowCallback(AWT_popup_sec_export_window, scr));
+    awm->insert_menu_topic("print_secedit",  "Print Structure",          "P", "tree2prt.hlp",  AWM_ALL, makeWindowCallback(AWT_popup_print_window,      scr));
     awm->sep______________();
 
     awm->insert_menu_topic("close", "Close", "C", "quit.hlp", AWM_ALL, (AW_CB)AW_POPDOWN, 0, 0);
