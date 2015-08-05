@@ -242,46 +242,50 @@ static void SEC_undo_cb(AW_window *, AW_CL cl_db, AW_CL cl_undo_type) {
 #define ASS_EOS   "[end of structure]"
 #define ASS_EOF   "[end of " ASS "]"
 
-static void export_structure_to_file(AW_window *, AW_CL cl_db)
-{
-    SEC_db_interface *db       = (SEC_db_interface*)cl_db;
-    AW_root          *aw_root  = db->awroot();
-    char             *filename = aw_root->awar(AWAR_SECEDIT_SAVEDIR"/file_name")->read_string();
-    FILE             *out      = fopen(filename, "wt");
-    GB_ERROR          error    = 0;
+static void export_structure_to_file(AW_window *, SEC_db_interface *db) {
+    GB_ERROR  error    = 0;
+    SEC_root *sec_root = db->secroot();
 
-    if (out) {
-        SEC_root *sec_root = db->secroot();
-
-        fputs(ASS_START, out); fputc('\n', out);
-
-        char *strct = sec_root->buildStructureString();
-        fputs(strct, out);
-        delete [] strct;
-
-        fputs(ASS_EOS, out); fputc('\n', out);
-
-        const XString& xstr     = sec_root->get_xString();
-        const char    *x_string = xstr.get_x_string();
-
-        sec_assert(xstr.get_x_string_length() == strlen(x_string));
-
-        char *foldInfo = SEC_xstring_to_foldedHelixList(x_string, xstr.get_x_string_length(), sec_root->get_helixDef(), error);
-        if (foldInfo) {
-            fprintf(out, "foldedHelices=%s\n", foldInfo);
-            free(foldInfo);
-        }
-
-        fputs(ASS_EOF, out); fputc('\n', out);
-        fclose(out);
-
-        if (error) GB_unlink_or_warn(filename, &error);
+    if (!sec_root->get_root_loop()) {
+        error = "Please select a species (to display structure once) before saving";
     }
     else {
-        error = GB_export_errorf("Can't write secondary structure to '%s'", filename);
-    }
+        AW_root *aw_root  = db->awroot();
+        char    *filename = aw_root->awar(AWAR_SECEDIT_SAVEDIR"/file_name")->read_string();
+        FILE    *out      = fopen(filename, "wt");
 
-    free(filename);
+        if (out) {
+
+            fputs(ASS_START, out); fputc('\n', out);
+
+            char *strct = sec_root->buildStructureString();
+            fputs(strct, out);
+            delete [] strct;
+
+            fputs(ASS_EOS, out); fputc('\n', out);
+
+            const XString& xstr     = sec_root->get_xString();
+            const char    *x_string = xstr.get_x_string();
+
+            sec_assert(xstr.get_x_string_length() == strlen(x_string));
+
+            char *foldInfo = SEC_xstring_to_foldedHelixList(x_string, xstr.get_x_string_length(), sec_root->get_helixDef(), error);
+            if (foldInfo) {
+                fprintf(out, "foldedHelices=%s\n", foldInfo);
+                free(foldInfo);
+            }
+
+            fputs(ASS_EOF, out); fputc('\n', out);
+            fclose(out);
+
+            if (error) GB_unlink_or_warn(filename, &error);
+        }
+        else {
+            error = GB_export_errorf("Can't write secondary structure to '%s'", filename);
+        }
+
+        free(filename);
+    }
     if (error) aw_message(error);
 }
 
@@ -327,10 +331,9 @@ static GB_ERROR expectToken(LineReader& file, const char *token, string& content
     return error;
 }
 
-static void import_structure_from_file(AW_window *, AW_CL cl_db) {
-    GB_ERROR          error = 0;
-    SEC_db_interface *db    = (SEC_db_interface*)cl_db;
-    SEC_root         *root  = db->secroot();
+static void import_structure_from_file(AW_window *, SEC_db_interface *db) {
+    GB_ERROR  error = 0;
+    SEC_root *root  = db->secroot();
 
     if (!root->has_xString()) {
         error = "Please select a species in EDIT4";
@@ -409,8 +412,7 @@ static void import_structure_from_file(AW_window *, AW_CL cl_db) {
 #undef ASS_EOS
 #undef ASS_EOF
 
-static AW_window *SEC_importExport(AW_root *root, int export_to_file, SEC_db_interface *db)
-{
+static AW_window *SEC_importExport(AW_root *root, int export_to_file, SEC_db_interface *db) {
     AW_window_simple *aws = new AW_window_simple;
 
     if (export_to_file) aws->init(root, "export_secondary_structure", "Export secondary structure to ...");
@@ -430,11 +432,11 @@ static AW_window *SEC_importExport(AW_root *root, int export_to_file, SEC_db_int
 
     aws->at("save");
     if (export_to_file) {
-        aws->callback(export_structure_to_file, (AW_CL)db);
+        aws->callback(makeWindowCallback(export_structure_to_file, db));
         aws->create_button("EXPORT", "EXPORT", "E");
     }
     else {
-        aws->callback(import_structure_from_file, (AW_CL)db);
+        aws->callback(makeWindowCallback(import_structure_from_file, db));
         aws->create_button("IMPORT", "IMPORT", "I");
     }
 
