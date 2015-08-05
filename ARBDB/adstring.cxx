@@ -1210,7 +1210,7 @@ void TEST_DB_key_generation() {
         free(result);                                                    \
     } while(0)
 
-#define TEST_MERGE_TAGGED__BROKEN(t1,t2,r1,r2,s1,s2,expected,got) do {           \
+#define TEST_MERGE_TAGGED__BROKEN(t1,t2,r1,r2,s1,s2,expected,got) do {   \
         char *result = GBS_merge_tagged_strings(s1, t1, r1, s2, t2, r2); \
         TEST_EXPECT_EQUAL__BROKEN(result, expected, got);                \
         free(result);                                                    \

@@ -8,9 +8,9 @@ UP      glossary.hlp
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE           Transfer one field of selected species
+TITLE           Transfer one field of listed species
 
-OCCURRENCE      ARB_MERGE/Transfer Species/Transfer Field ...
+OCCURRENCE      ARB_MERGE/Transfer Species/<Transfer field ...> button (at center)
 
 DESCRIPTION     Copies just one field from all species listed in the source database (DB)
                 on the left side, to the corresponding species (i.e. the species with
@@ -31,5 +31,6 @@ DESCRIPTION     Copies just one field from all species listed in the source data
 NOTES           Transferring fields that are not of string type in append mode
                 does not work
 
+                See also LINK{mg_xfer_field_of_sel.hlp}.
 
 BUGS            No bugs known
