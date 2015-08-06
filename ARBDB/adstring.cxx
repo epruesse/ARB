@@ -539,7 +539,7 @@ static GB_ERROR g_bs_add_value_tag_to_hash(GBDATA *gb_main, GB_HASH *hash, char 
 
     GB_HASH *sh = (GB_HASH *)GBS_read_hash(hash, value);
     if (!sh) {
-        sh = GBS_create_hash(10, GB_IGNORE_CASE); // Tags are case independent
+        sh = GBS_create_hash(10, GB_IGNORE_CASE);        // Tags are case independent
         GBS_write_hash(hash, value, (long)sh);
     }
 
@@ -602,20 +602,19 @@ static long g_bs_merge_tags(const char *tag, long val, void *cd_sub_result) {
 }
 
 static long g_bs_read_tagged_hash(const char *value, long subhash, void *cd_g_bs_collect_tags_hash) {
-    char          *str;
-    static int     counter    = 0;
-    GBS_strstruct *sub_result = GBS_stropen(100);
+    static int counter = 0;
 
+    GBS_strstruct *sub_result = GBS_stropen(100);
     GBS_hash_do_sorted_loop((GB_HASH *)subhash, g_bs_merge_tags, GBS_HCF_sortedByKey, sub_result);
     GBS_intcat(sub_result, counter++); // create a unique number
 
-    str = GBS_strclose(sub_result);
+    char *str = GBS_strclose(sub_result);
 
     GB_HASH *g_bs_collect_tags_hash = (GB_HASH*)cd_g_bs_collect_tags_hash;
     GBS_write_hash(g_bs_collect_tags_hash, str, (long)strdup(value)); // send output to new hash for sorting
 
     free(str);
-    return 0;
+    return subhash;
 }
 
 static long g_bs_read_final_hash(const char *tag, long value, void *cd_merge_result) {
