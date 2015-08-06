@@ -805,7 +805,7 @@ void aw_initstatus() {
         aw_stg.is_child = true; // mark as child
 
         GB_shell shell;
-        AW_root *aw_root = new AW_root("status.arb", "ARB_STATUS", true, new NullTracker, 0, NULL); // uses_pix_res("icons/ARB_STATUS.xpm"); see ../SOURCE_TOOLS/check_ressources.pl@uses_pix_res
+        AW_root *aw_root = new AW_root("status.arb", "ARB_STATUS", true, new NullTracker, 0, NULL); // uses_pix_res("icons/ARB_STATUS.xpm"); see ../SOURCE_TOOLS/check_resources.pl@uses_pix_res
         create_status_awars(aw_root);
 
         AW_window_simple *aws = new AW_window_simple;
