@@ -335,7 +335,7 @@ static void GEN_map_window_refresh(GEN_map_window *win, AW_CL) {
 }
 
 void GEN_refresh_all_windows() {
-    GEN_map_manager::with_all_mapped_windows(GEN_map_window_refresh, NULL);
+    GEN_map_manager::with_all_mapped_windows(GEN_map_window_refresh, 0);
 }
 
 static void GEN_map_window_refresh_if_display_type(GEN_map_window *win, AW_CL cl_display_type_mask) {

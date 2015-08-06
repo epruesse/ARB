@@ -32,7 +32,7 @@ AW_selection_list::AW_selection_list(const char *variable_name_, int variable_ty
     : variable_name(nulldup(variable_name_)),
       variable_type(AW_VARIABLE_TYPE(variable_type_)),
       update_cb(NULL),
-      cl_update(NULL),
+      cl_update(0),
       select_list_widget(select_list_widget_),
       list_table(NULL),
       last_of_list_table(NULL),
