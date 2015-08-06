@@ -215,8 +215,6 @@ public:
 
     virtual void show(AW_device *device) = 0;
 
-    virtual void info(AW_device *device, AW_pos x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct) = 0;     // double click
-
     /* init gcs, if any gc is changed you may call AWT_expose_cb(NULL, scr); or AWT_resize_cb(NULL, scr); */
     virtual AW_gc_manager init_devices(AW_window *, AW_device *, AWT_canvas *scr) = 0;
 

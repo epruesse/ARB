@@ -81,10 +81,6 @@ int GEN_graphic::check_update(GBDATA *) {
     return do_zoom_reset;
 }
 
-void GEN_graphic::info(AW_device */*device*/, AW_pos /*x*/, AW_pos /*y*/, AW_clicked_line */*cl*/, AW_clicked_text */*ct*/) {
-    aw_message("INFO MESSAGE");
-}
-
 void GEN_graphic::handle_command(AW_device *, AWT_graphic_event& event) {
     if (event.type() == AW_Mouse_Press) {
         switch (event.cmd()) {

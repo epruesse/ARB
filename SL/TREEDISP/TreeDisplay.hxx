@@ -341,8 +341,6 @@ public:
     void show(AW_device *device) OVERRIDE;
     const AW::Position& get_cursor() const { return cursor; }
 
-    void info(AW_device *device, AW_pos x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct) OVERRIDE;
-
 private:
     void handle_key(AW_device *device, AWT_graphic_event& event);
 public:
