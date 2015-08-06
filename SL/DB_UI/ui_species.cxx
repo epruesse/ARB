@@ -1407,7 +1407,7 @@ static AW_window *popup_new_speciesOrganismWindow(AW_root *aw_root, GBDATA *gb_m
     aws->create_autosize_button("SEARCH", "Search...", "S");
 
     aws->at("help");
-    aws->callback(makeHelpCallback(detach_id ? "sp_info_locked.hlp" : "sp_info.hlp")); // uses_hlp_res("sp_info_locked.hlp", "sp_info.hlp"); see ../../SOURCE_TOOLS/check_ressources.pl@uses_hlp_res
+    aws->callback(makeHelpCallback(detach_id ? "sp_info_locked.hlp" : "sp_info.hlp")); // uses_hlp_res("sp_info_locked.hlp", "sp_info.hlp"); see ../../SOURCE_TOOLS/check_resources.pl@uses_hlp_res
     aws->create_button("HELP", "Help", "H");
 
     DbScanner         *scanner = create_db_scanner(gb_main, aws, "box", 0, "field", "enable", DB_VIEWER, 0, "mark", FIELD_FILTER_NDS, itemType);
