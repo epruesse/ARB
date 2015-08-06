@@ -43,6 +43,7 @@
 #include <arb_strbuf.h>
 #include <awt_config_manager.hxx>
 #include <consensus_config.h>
+#include <awt_misc.hxx>
 
 #define AWAR_MAX_FREQ_PREFIX      "tmp/CON_MAX_FREQ/"
 #define AWAR_CONSENSUS_PREFIX     "con/"
@@ -707,20 +708,6 @@ void AP_create_consensus_var(AW_root *aw_root, AW_default aw_def)
     aw_root->awar_int   (AWAR_MAX_FREQ_NO_GAPS,  1,               aw_def);
 }
 
-// Open window to show IUPAC tables
-static AW_window * CON_showgroupswin_cb(AW_root *aw_root)
-{
-    AW_window_simple *aws = new AW_window_simple;
-    aws->init(aw_root, "SHOW_IUPAC", "Show IUPAC");
-    aws->load_xfig("consensus/groups.fig");
-    aws->button_length(7);
-
-    aws->at("ok"); aws->callback((AW_CB0)AW_POPDOWN);
-    aws->create_button("CLOSE", "CLOSE", "O");
-
-    return (AW_window *)aws;
-}
-
 static AWT_config_mapping_def consensus_config_mapping[] = {
     { AWAR_CONSENSUS_COUNTGAPS,    CONSENSUS_CONFIG_COUNTGAPS },
     { AWAR_CONSENSUS_GAPBOUND,     CONSENSUS_CONFIG_GAPBOUND },
@@ -745,16 +732,18 @@ AW_window *AP_create_con_expert_window(AW_root *aw_root) {
     aws->load_xfig("consensus/expert.fig");
     aws->button_length(6);
 
-    aws->at("cancel"); aws->callback((AW_CB0)AW_POPDOWN);
+    aws->at("cancel");
+    aws->callback((AW_CB0)AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->at("help"); aws->callback(makeHelpCallback("consensus.hlp"));
+    aws->at("help");
+    aws->callback(makeHelpCallback("consensus.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
     aws->button_length(10);
-    aws->at("showgroups"); aws->callback(AW_POPUP, (AW_CL)CON_showgroupswin_cb, 0);
+    aws->at("showgroups");
+    aws->callback(AWT_create_IUPAC_info_window);
     aws->create_button("SHOW_IUPAC", "show\nIUPAC...", "s");
-    aws->button_length(10);
 
     aws->at("which_species");
     aws->create_toggle_field(AWAR_CONSENSUS_SPECIES, NULL, "");

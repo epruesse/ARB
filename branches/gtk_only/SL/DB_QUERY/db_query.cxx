@@ -2007,6 +2007,7 @@ static GB_ERROR restore_colorset_representation(BoundItemSel *bsel, CharPtrArray
     GBDATA        *gb_main = bsel->gb_main;
     bool           changed = false;
     GB_ERROR       error   = NULL;
+    int            ignores = 0;
 
     for (size_t d = 0; d<colordefs.size() && !error; ++d) {
         const char *def   = colordefs[d];
@@ -2018,7 +2019,8 @@ static GB_ERROR restore_colorset_representation(BoundItemSel *bsel, CharPtrArray
             const char *id      = def;
             GBDATA     *gb_item = sel.find_item_by_id(gb_main, id);
             if (!gb_item) {
-                aw_message(GBS_global_string("No such %s: '%s'", sel.item_name, id)); // only warn
+                aw_message(GBS_global_string("No such %s: '%s' (ignored)", sel.item_name, id)); // only warn
+                ++ignores;
             }
             else {
                 int color_group = atoi(equal+1);
@@ -2030,9 +2032,13 @@ static GB_ERROR restore_colorset_representation(BoundItemSel *bsel, CharPtrArray
         }
         else {
             aw_message(GBS_global_string("Invalid colordef '%s' (ignored)", def));
+            ++ignores;
         }
     }
     if (changed && !error) sel.trigger_display_refresh();
+    if (ignores>0 && !error) {
+        aw_message(GBS_global_string("Warning: failed to restore color assignment for %i %s", ignores, sel.items_name));
+    }
 
     return error;
 }

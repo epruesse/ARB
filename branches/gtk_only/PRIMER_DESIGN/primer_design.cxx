@@ -127,7 +127,7 @@ static void create_primer_design_result_window(AW_window *aww) {
         pdrw->auto_space(10, 10);
 
         pdrw->at("help");
-        pdrw->callback(makeHelpCallback("primerdesignresult.hlp"));
+        pdrw->callback(makeHelpCallback("primer_result.hlp"));
         pdrw->create_button("HELP", "HELP", "H");
 
         pdrw->at("result");

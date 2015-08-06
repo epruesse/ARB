@@ -274,7 +274,7 @@ AW_window *MERGE_create_main_window(AW_root *aw_root, bool dst_is_new, void (*ex
 
         awm->create_menu("File", "F", AWM_ALL);
         if (save_src_enabled) {
-            awm->insert_menu_topic("save_DB1", "Save source DB ...", "S", "save_as.hlp", AWM_ALL, makeCreateWindowCallback(MG_save_source_cb, AWAR_DB_SRC));
+            awm->insert_menu_topic("save_DB1", "Save source DB ...", "S", "save.hlp", AWM_ALL, makeCreateWindowCallback(MG_save_source_cb, AWAR_DB_SRC));
         }
 
         awm->insert_menu_topic("quit", "Quit", "Q", "quit.hlp", AWM_ALL, makeWindowCallback(MG_exit, false));
@@ -353,10 +353,12 @@ AW_window *MERGE_create_main_window(AW_root *aw_root, bool dst_is_new, void (*ex
 
             awm->at("save");
             awm->callback(makeCreateWindowCallback(MG_create_save_result_window, AWAR_DB_DST));
+            awm->help_text("save.hlp");
             awm->create_button("SAVE_WHOLE_DB2", "Save whole target DB as ...");
 
             awm->at("save_quick");
             awm->callback(MG_save_quick_result_cb);
+            awm->help_text("save.hlp");
             awm->create_button("SAVE_CHANGES_OF_DB2", "Quick-save changes of target DB");
 
             awm->sens_mask(AWM_ALL);

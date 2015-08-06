@@ -1,0 +1,29 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Save / load secondary structure
+
+OCCURRENCE	ARB_SECEDIT/File/Load structure
+		ARB_SECEDIT/File/Save structure
+
+DESCRIPTION     Allows to save/load the secondary structure information into/from
+                a file.
+
+                The information is stored HELIX-relative, i.e. two alignments sharing the
+                same HELIX information, may exchange their secondary structure information
+                using this function.
+
+NOTES		None
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known

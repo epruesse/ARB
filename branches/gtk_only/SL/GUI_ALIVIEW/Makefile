@@ -51,6 +51,7 @@ AWT_filter.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/arb_defs.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/arb_error.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AWT_filter.o: $(ARBHOME)/INCLUDE/arb_str.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/arb_string.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -181,6 +182,7 @@ GUI_aliview.o: $(ARBHOME)/INCLUDE/arb_msg.h
 GUI_aliview.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 GUI_aliview.o: $(ARBHOME)/INCLUDE/arbtools.h
 GUI_aliview.o: $(ARBHOME)/INCLUDE/attributes.h
+GUI_aliview.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 GUI_aliview.o: $(ARBHOME)/INCLUDE/cxxforward.h
 GUI_aliview.o: $(ARBHOME)/INCLUDE/dupstr.h
 GUI_aliview.o: $(ARBHOME)/INCLUDE/gccver.h

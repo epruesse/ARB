@@ -37,6 +37,7 @@
 #include <vector>
 #include <awt_config_manager.hxx>
 #include <consensus_config.h>
+#include <awt_misc.hxx>
 
 using namespace std;
 
@@ -1474,19 +1475,6 @@ AW_window *ED4_create_level_1_options_window(AW_root *root) {
     return aws;
 }
 
-static AW_window *CON_create_groupswin_cb(AW_root *aw_root) {
-    // Create window showing IUPAC tables
-    AW_window_simple *aws = new AW_window_simple;
-    aws->init(aw_root, "SHOW_IUPAC", "Show IUPAC");
-    aws->load_xfig("consensus/groups.fig");
-    aws->button_length(7);
-
-    aws->at("ok"); aws->callback((AW_CB0)AW_POPDOWN);
-    aws->create_button("CLOSE", "CLOSE", "O");
-
-    return aws;
-}
-
 static AWT_config_mapping_def consensus_config_mapping[] = {
     { ED4_AWAR_CONSENSUS_COUNTGAPS,   CONSENSUS_CONFIG_COUNTGAPS },
     { ED4_AWAR_CONSENSUS_GAPBOUND,    CONSENSUS_CONFIG_GAPBOUND },
@@ -1516,8 +1504,9 @@ AW_window *ED4_create_consensus_definition_window(AW_root *root) {
         aws->create_button("HELP", "HELP", "H");
 
         aws->button_length(10);
+
         aws->at("showgroups");
-        aws->callback(CON_create_groupswin_cb);
+        aws->callback(AWT_create_IUPAC_info_window);
         aws->create_button("SHOW_IUPAC", "show\nIUPAC...", "s");
 
         aws->at("countgaps");

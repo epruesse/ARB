@@ -404,7 +404,7 @@ static AW_window *NT_create_save_quick_as_window(AW_root *aw_root, const char *b
     static AW_window_simple *aws = 0;
     if (!aws) {
         aws = new AW_window_simple;
-        aws->init(aw_root, "SAVE_CHANGES_TO", "SAVE CHANGES TO");
+        aws->init(aw_root, "SAVE_CHANGES_TO", "Quicksave changes as");
         aws->load_xfig("save_as.fig");
 
         aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
@@ -647,8 +647,7 @@ static void relink_pseudo_species_to_organisms(GBDATA *&ref_gb_node, char *&ref_
     }
 }
 
-static void NT_pseudo_species_to_organism(AW_window *, AW_CL ntwcl) {
-    AWT_canvas     *ntw       = (AWT_canvas *)ntwcl;
+static void NT_pseudo_species_to_organism(AW_window *, AWT_canvas *ntw) {
     GB_transaction  ta(ntw->gb_main);
     AP_tree        *tree_root = AWT_TREE(ntw)->get_root_node();
 
@@ -1345,7 +1344,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
         if (is_genome_db) {
             awm->insert_sub_menu("Other..",  "O", AWM_EXP);
             {
-                awm->insert_menu_topic(awm->local_id("tree_pseudo_species_to_organism"), "Change pseudo species to organisms in tree", "p", "tree_pseudo.hlp",        AWM_EXP, (AW_CB)NT_pseudo_species_to_organism, (AW_CL)ntw, 0);
+                awm->insert_menu_topic(awm->local_id("tree_pseudo_species_to_organism"), "Relink tree to organisms", "o", "tree_pseudo.hlp", AWM_EXP, makeWindowCallback(NT_pseudo_species_to_organism, ntw));
             }
             awm->close_sub_menu();
         }
@@ -1481,7 +1480,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
     awm->create_button("SAVE", "#save.xpm");
 
     awm->callback(makeCreateWindowCallback(NT_create_save_as, "tmp/nt/arbdb"));
-    awm->help_text("saveas.hlp");
+    awm->help_text("save.hlp");
     awm->create_button("SAVE_AS", "#saveAs.xpm");
 
     // undo/redo:
@@ -1503,7 +1502,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
     // size of DB-name button is determined by buttons below:
     awm->at_set_to(false, false, db_pathx2-db_pathx-1, second_liney-first_liney+1);
     awm->callback(makeCreateWindowCallback(NT_create_save_quick_as_window, "tmp/nt/arbdb"));
-    awm->help_text("saveas.hlp");
+    awm->help_text("save.hlp");
     awm->create_button("QUICK_SAVE_AS", AWAR_DB_NAME);
 
     // -----------------------------
@@ -1577,7 +1576,8 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
     awm->at_set_to(false, false, ((2-is_genome_db)*EDIT_XSIZE), EDIT_YSIZE);
     awm->callback(makeWindowCallback(NT_start_editor_on_tree, 0, ntw));
     awm->help_text("arb_edit4.hlp");
-    awm->create_button("EDIT_SEQUENCES", is_genome_db ? "#editor_small.xpm" : "#editor.xpm");
+    if (is_genome_db) awm->create_button("EDIT_SEQUENCES", "#editor_small.xpm");
+    else              awm->create_button("EDIT_SEQUENCES", "#editor.xpm");
 
     if (is_genome_db) {
         awm->at_set_to(false, false, EDIT_XSIZE, EDIT_YSIZE);

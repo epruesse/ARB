@@ -15,7 +15,7 @@ OCCURRENCE      ARB_NT/Genome/Extract marked genes/...
                 ARB_GENE_MAP/Genome/Extract marked genes/...
 
 DESCRIPTION	For every marked gene this command creates a so called
-		'gene-species'.
+		'gene-species' (see LINK{gene_species.hlp}).
 
 		Just enter the name of the alignment you like to create or
 		to add species to.
