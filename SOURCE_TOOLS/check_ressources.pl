@@ -102,7 +102,7 @@ sub scanFilesAndIndex(\%\@$$$$) {
 
 sub scanExistingRessources() {
   scanFilesAndIndex(%picture,  @pictures,  $ARBHOME.'/lib/pictures',        '.*\.(fig|vfont)$',                 1, 0);
-  scanFilesAndIndex(%pixmap,   @pixmaps,   $ARBHOME.'/lib/pixmaps',         '.*\.(xpm)$',                       1, 0);
+  scanFilesAndIndex(%pixmap,   @pixmaps,   $ARBHOME.'/lib/pixmaps',         '.*\.(xpm|png)$',                   1, 0);
   scanFilesAndIndex(%helpfile, @helpfiles, $ARBHOME.'/HELP_SOURCE/oldhelp', '.*\.(hlp|ps|pdf|ps\.gz|pdf\.gz)$', 1, 0);
   scanFilesAndIndex(%helpfile, @helpfiles, $ARBHOME.'/HELP_SOURCE/genhelp', '.*\.(hlp|ps|pdf|ps\.gz|pdf\.gz)$', 1, 0);
 
@@ -110,6 +110,7 @@ sub scanExistingRessources() {
     if (/readme[^\/]*$/i)                    { ; } # ignore readme files
     elsif (/\/genhelp\/.*(footer|header)$/o) { ; } # ignore files used for help generation
     elsif (/\.bak$/o)                        { ; } # ignore bak files
+    elsif (/\.svg$/o)                        { ; } # ignore svg files (used as source to create png)
     else {
         print "$_:0: Unhandled file in ressource directory\n";
     }
@@ -327,7 +328,7 @@ sub isPixmapRef($) {
 sub isIconRes($) {
   my ($res_param) = @_;
   my $base = 'icons/'.$res_param;
-  return ($base.'.xpm');
+  return ($base.'.xpm', $base.'.png');
 }
 sub isHelpRef($) {
   my ($res_param) = @_;
@@ -430,7 +431,6 @@ sub scanCodeFile($) {
                         $used{$full_ressource} = 1;
                         $ruleMatched[$d] = 1;
                         $used = 1;
-                        last UNQUOTED;
                       }
                     }
 
@@ -610,6 +610,12 @@ sub scanCode() {
   print "Scanned $LOC LOC.\n";
 
   autouse($ARBHOME.'/HELP_SOURCE/oldhelp/unittest.hlp');
+
+  if (defined $ENV{GTK}) { # AFTERMERGE: remove this test and resource files below
+    autouse($ARBHOME.'/lib/pictures/fileselect.fig'); # gtk version uses builtin fileselector
+    autouse($ARBHOME.'/lib/pixmaps/no.xpm');          # gtk version uses builtin toggle
+    autouse($ARBHOME.'/lib/pixmaps/yes.xpm');         # gtk version uses builtin toggle
+  }
 
   my %unused = ();
   foreach (sort keys %known) {

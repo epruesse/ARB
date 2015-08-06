@@ -13,6 +13,7 @@ export use_ARB_main_C
 export DEBUG
 export OPENGL 
 export RNA3D_LIB 
+export GTK
 
 export MACH
 export DARWIN
