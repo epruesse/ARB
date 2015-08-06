@@ -595,7 +595,7 @@ sub scanCode() {
     for (my $d=0; $d<scalar(@defs); ++$d) {
       if ($ruleMatched[$d] == 0) {
         if ($intro==0) { print "Some code-rules never applied:"; $intro = 1; }
-        print " $d";
+        print " \#$d";
       }
     }
     if ($intro==1) { print "\n"; }
@@ -655,6 +655,9 @@ sub scanCode() {
         $errors++;
       }
     }
+  }
+  else {
+    print "All found ressources are referenced from code :-)\n"
   }
 }
 

@@ -31,6 +31,7 @@
 
 #define AWAR_SQ_PERM "seq_quality/"     // saved in properties
 #define AWAR_SQ_TEMP "tmp/seq_quality/" // not saved in properties
+
 #define AWAR_SQ_WEIGHT_BASES     AWAR_SQ_PERM "weight_bases"
 #define AWAR_SQ_WEIGHT_DEVIATION AWAR_SQ_PERM "weight_deviation"
 #define AWAR_SQ_WEIGHT_HELIX     AWAR_SQ_PERM "weight_helix"
@@ -38,31 +39,25 @@
 #define AWAR_SQ_WEIGHT_IUPAC     AWAR_SQ_PERM "weight_iupac"
 #define AWAR_SQ_WEIGHT_GC        AWAR_SQ_PERM "weight_gc"
 
-#define AWAR_SQ_MARK_ONLY_FLAG  AWAR_SQ_PERM "mark_only_flag"
-#define AWAR_SQ_MARK_FLAG  AWAR_SQ_PERM "mark_flag"
-#define AWAR_SQ_MARK_BELOW AWAR_SQ_PERM "mark_below"
-#define AWAR_SQ_REEVALUATE AWAR_SQ_PERM "reevaluate"
+#define AWAR_SQ_MARK_ONLY_FLAG AWAR_SQ_PERM "mark_only_flag"
+#define AWAR_SQ_MARK_FLAG      AWAR_SQ_PERM "mark_flag"
+#define AWAR_SQ_MARK_BELOW     AWAR_SQ_PERM "mark_below"
+#define AWAR_SQ_REEVALUATE     AWAR_SQ_PERM "reevaluate"
+#define AWAR_SQ_FILTER_NAME    AWAR_SQ_TEMP "filter/name"
 
-#define AWAR_FILTER_PREFIX  AWAR_SQ_TEMP "filter/"
-#define AWAR_FILTER_NAME    AWAR_FILTER_PREFIX "name"
-#define AWAR_FILTER_FILTER  AWAR_FILTER_PREFIX "filter"
-#define AWAR_FILTER_ALI     AWAR_FILTER_PREFIX "alignment"
-
-void SQ_create_awars(AW_root * aw_root, AW_default aw_def) {
-    aw_root->awar_int(AWAR_SQ_WEIGHT_BASES, 5, aw_def);
+void SQ_create_awars(AW_root *aw_root, AW_default aw_def) {
+    aw_root->awar_int(AWAR_SQ_WEIGHT_BASES,     5,  aw_def);
     aw_root->awar_int(AWAR_SQ_WEIGHT_DEVIATION, 15, aw_def);
-    aw_root->awar_int(AWAR_SQ_WEIGHT_HELIX, 15, aw_def);
+    aw_root->awar_int(AWAR_SQ_WEIGHT_HELIX,     15, aw_def);
     aw_root->awar_int(AWAR_SQ_WEIGHT_CONSENSUS, 50, aw_def);
-    aw_root->awar_int(AWAR_SQ_WEIGHT_IUPAC, 5, aw_def);
-    aw_root->awar_int(AWAR_SQ_WEIGHT_GC, 10, aw_def);
-    aw_root->awar_int(AWAR_SQ_MARK_ONLY_FLAG, 0, aw_def);
-    aw_root->awar_int(AWAR_SQ_MARK_FLAG, 1, aw_def);
-    aw_root->awar_int(AWAR_SQ_MARK_BELOW, 40, aw_def);
-    aw_root->awar_int(AWAR_SQ_REEVALUATE, 0, aw_def);
-    aw_root->awar_string(AWAR_FILTER_NAME, "none", aw_def);
-    aw_root->awar_string(AWAR_FILTER_FILTER, "", aw_def);
-    AW_awar *awar_ali = aw_root->awar_string(AWAR_FILTER_ALI, "", aw_def);
-    awar_ali->map(AWAR_DEFAULT_ALIGNMENT);
+    aw_root->awar_int(AWAR_SQ_WEIGHT_IUPAC,     5,  aw_def);
+    aw_root->awar_int(AWAR_SQ_WEIGHT_GC,        10, aw_def);
+    aw_root->awar_int(AWAR_SQ_MARK_ONLY_FLAG,   0,  aw_def);
+    aw_root->awar_int(AWAR_SQ_MARK_FLAG,        1,  aw_def);
+    aw_root->awar_int(AWAR_SQ_MARK_BELOW,       40, aw_def);
+    aw_root->awar_int(AWAR_SQ_REEVALUATE,       0,  aw_def);
+
+    awt_create_filter_awars(aw_root, aw_def, AWAR_SQ_FILTER_NAME, AWAR_DEFAULT_ALIGNMENT);
 }
 
 // --------------------------------------------------------------------------------
@@ -270,9 +265,9 @@ AW_window *SQ_create_seq_quality_window(AW_root *aw_root, GBDATA *gb_main) {
     awt_create_TREE_selection_list(gb_main, aws, AWAR_TREE, true);
 
     aws->at("filter");
-    adfiltercbstruct *adfilter = awt_create_select_filter(aws->get_root(), gb_main, AWAR_FILTER_NAME);
+    adfiltercbstruct *adfilter = awt_create_select_filter(aws->get_root(), gb_main, AWAR_SQ_FILTER_NAME);
     aws->callback(makeCreateWindowCallback(awt_create_select_filter_win, adfilter));
-    aws->create_button("SELECT_FILTER", AWAR_FILTER_NAME);
+    aws->create_button("SELECT_FILTER", AWAR_SQ_FILTER_NAME);
 
     aws->at("go");
     aws->callback(sq_calc_seq_quality_cb, (AW_CL)adfilter, (AW_CL)gb_main);

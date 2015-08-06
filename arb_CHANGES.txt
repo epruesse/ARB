@@ -44,8 +44,10 @@ Major changes for next release:
  - config-managers:
    * possibility to restore factory defaults
    * added comment field for configurations
+ - colorsets were invalidated by generating new IDs (#660). fixed.
  - updated/added external tools:
    - added alternate RAxML (DNA only; version 8.0.26)
+ - updated integrated documentation
 
 Minor changes
  - add threshold for visible support values (default 50% support)

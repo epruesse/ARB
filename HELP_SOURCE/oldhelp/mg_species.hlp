@@ -65,10 +65,10 @@ DESCRIPTION     Allows
                 To transfer the entries of a 'field' selected from the 'Search
                 field' subwindow for all listed 'species, press the
                 'TRANSFER A FIELD FOR ALL LISTED SPECIES' button in the
-                middle column of the 'TRANSFER SPECIES' window.
+                middle column of the 'TRANSFER SPECIES'
+                window (see LINK{mg_xfer_field_of_listed.hlp}).
 
-                To save modifications press the 'Save result' button of the
-                'ARB_MERGE' window.
+                See LINK{save.hlp} for howto save the modified database(s).
 
         Adapt Alignment:
 

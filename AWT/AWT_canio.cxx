@@ -834,10 +834,12 @@ void AWT_popup_sec_export_window(AW_window *parent_win, AWT_canvas *scr) {
         aws->init(awr, "EXPORT_TREE_AS_XFIG", "EXPORT STRUCTURE TO XFIG");
         aws->load_xfig("awt/secExport.fig");
 
-        aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
+        aws->at("close");
+        aws->callback((AW_CB0)AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
 
-        aws->at("help"); aws->callback(makeHelpCallback("tree2file.hlp"));
+        aws->at("help");
+        aws->callback(makeHelpCallback("tree2file.hlp"));
         aws->create_button("HELP", "HELP", "H");
 
         aws->label_length(15);
@@ -854,7 +856,8 @@ void AWT_popup_sec_export_window(AW_window *parent_win, AWT_canvas *scr) {
         aws->label("Export colors");
         aws->create_toggle(AWAR_CANIO_COLOR);
 
-        aws->at("xfig"); aws->callback(makeWindowCallback(canvas_to_xfig_and_run_xfig, scr));
+        aws->at("xfig");
+        aws->callback(makeWindowCallback(canvas_to_xfig_and_run_xfig, scr));
         aws->create_autosize_button("START_XFIG", "EXPORT to XFIG", "X");
     }
 

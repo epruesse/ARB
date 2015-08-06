@@ -29,6 +29,9 @@ static char GDEBLANK[] = "\0";
 
 #define SLIDERWIDTH 5           // input field width for numbers
 
+#define AWAR_GDE_ALIGNMENT   "tmp/gde/alignment"
+#define AWAR_GDE_FILTER_NAME "tmp/gde/filter/name"
+
 struct gde_iteminfo {
     GmenuItem *item;
     int        idx;
@@ -484,7 +487,6 @@ GB_ERROR GDE_init(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main, GDE_get_
     db_access.client_data   = client_data;
     db_access.gb_main       = gb_main;
 
-    aw_root->awar_string(AWAR_GDE_ALIGNMENT, "", aw_def);
 
     switch (db_access.window_type) {
         case GDE_WINDOWTYPE_EDIT4:
@@ -506,19 +508,15 @@ GB_ERROR GDE_init(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main, GDE_get_
             break;
     }
 
-    aw_root->awar_string(AWAR_DEFAULT_ALIGNMENT, "", db_access.gb_main);
-    
-    aw_root->awar_string(AWAR_GDE_FILTER_NAME,      "", aw_def);
-    aw_root->awar_string(AWAR_GDE_FILTER_FILTER,    "", aw_def);
-    aw_root->awar_string(AWAR_GDE_FILTER_ALIGNMENT, "", aw_def);
+    AW_awar *awar_defali = aw_root->awar_string(AWAR_DEFAULT_ALIGNMENT, "", db_access.gb_main);
+    aw_root->awar_string(AWAR_GDE_ALIGNMENT, "", aw_def)->map(awar_defali);
+
+    awt_create_filter_awars(aw_root, aw_def, AWAR_GDE_FILTER_NAME, AWAR_GDE_ALIGNMENT);
 
     aw_root->awar_int(AWAR_GDE_CUTOFF_STOPCODON, 0, aw_def);
     aw_root->awar_int(AWAR_GDE_SPECIES,          1, aw_def);
 
     aw_root->awar_int(AWAR_GDE_COMPRESSION, COMPRESS_NONINFO_COLUMNS, aw_def);
-
-    aw_root->awar(AWAR_GDE_ALIGNMENT)->map(AWAR_DEFAULT_ALIGNMENT);
-    aw_root->awar(AWAR_GDE_FILTER_ALIGNMENT)->map(AWAR_DEFAULT_ALIGNMENT);
 
     return LoadMenus();
 }

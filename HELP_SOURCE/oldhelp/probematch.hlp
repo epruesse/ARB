@@ -11,7 +11,7 @@ UP      pt_server.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE           Probe Match
 
-OCCURRENCE      ARB_NT/ETC/Probe Match
+OCCURRENCE      ARB_NT/Probes/Match Probes
 
 DESCRIPTION     Finds and displays all occurrences of a given target and/or
                 probe sequence within any specified 'PT_SERVER' database. The
@@ -78,6 +78,8 @@ DESCRIPTION     Finds and displays all occurrences of a given target and/or
 #               To write the results to an ascii file press the 'SAVE'
 #               button to display the 'SELECTION BOX' window.
 
+                The 'IUPAC' button allows to match multiple probes
+                by specifying a probe containing IUPAC codes (see LINK{pd_match_iupac.hlp}).
 
 NOTES           Unlike the 'ARB_PROBE_DESIGN' tool, the 'ARB_PROBE_MATCH' tool
                 does not depend on the consistency of the current and the

@@ -1386,7 +1386,24 @@ configuration_data		%% (%
 		middle_area		"\AGSAI-Maingroup\AFSAI:SAI's\ASAaaa\ASmarkerline\ASposvar_full_all\ASprimer_3\AE\AFSAI:default_group\ASPOS_VAR_BY_PARSIMONY\AE\AE\AFMore Sequences\AE\ALVibFurni\ALVibVulni\ALVibChole\ALHlmHalod\ALPseAerug\ALLegLytic\ALDchNodos\ALPelAcety\ALPelPropi\ALAnaMargi\ALCowRumin\ALAzoCauli\ALBraJapon\ALRhoMarin\ALChlPneum\ALChlTrach\ALPlaLimno\ALFusNecro\ALProModes\ALMycChlor\ALBifBifid\ALDicTherm\ALThnCellu\ALCloCorin\ALCloParap\ALCloPerfr\ALCloColla\ALCloSardi\ALCloTyrob\ALCloProte\ALCloBifer\ALCloGhoni\ALClrFervi\ALMooTherm\ALLacAcido\ALLacFruct\ALLacSanfr\ALStrSaliv\ALCarAlter\ALStaHaemo\ALStaHomin\ALStaAureu\ALBacGlobi\ALBacLiche\ALBacMetha\ALBacStear"
 		%) /*configuration*/
 
+	configuration		%% (%
+		name			"inboth"
+		top_area		"\ASHELIX_NR\ASHELIX\ASECOLI"
+		middle_area		"\AGSAI-Maingroup\AFSAI:SAI's\ASAaaa\ASmarkerline\ASposvar_full_all\ASprimer_3\AE\AFSAI:default_group\ASPOS_VAR_BY_PARSIMONY\AE\AE\AFMore Sequences\AE\ALPseFlave\ALhccaSlaC\ALCloTherm\ALLacPonti\ALetueRcaL"
+		%) /*configuration*/
+
 	%) /*configuration_data*/
+
+colorsets		%% (%
+	species			%% (%
+		colorset		%% (%
+			name			"someother"
+			color_set		"MetMazei=2;MthBurto=2;MtsHunga=2;NatMagad=2;hccaSlaC=1;LacPonti=1;etueRcaL=1;CloTherm=1;BctFragi=3;DslToluo=3;St0Isola=3;luseDfsD=3;olihPnrF=3;PseFlave=1"
+			%) /*colorset*/
+
+		%) /*species*/
+
+	%) /*colorsets*/
 
 tmp			%% (%
 	message			%% (%

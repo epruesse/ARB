@@ -1204,6 +1204,50 @@ void TEST_DB_key_generation() {
                     "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
 }
 
+#define TEST_MERGE_TAGGED(t1,t2,r1,r2,s1,s2,expected) do {               \
+        char *result = GBS_merge_tagged_strings(s1, t1, r1, s2, t2, r2); \
+        TEST_EXPECT_EQUAL(result, expected);                             \
+        free(result);                                                    \
+    } while(0)
+
+#define TEST_MERGE_TAGGED__BROKEN(t1,t2,r1,r2,s1,s2,expected,got) do {   \
+        char *result = GBS_merge_tagged_strings(s1, t1, r1, s2, t2, r2); \
+        TEST_EXPECT_EQUAL__BROKEN(result, expected, got);                \
+        free(result);                                                    \
+    } while(0)
+
+void TEST_merge_tagged_strings() {
+    // merge two fields:
+    TEST_MERGE_TAGGED("S",   "D",   "", "", "source", "dest", " [D_] dest [S_] source");   // @@@ elim leading space?
+    TEST_MERGE_TAGGED("SRC", "DST", "", 0,  "source", "dest", " [DST] dest [SRC] source");
+    TEST_MERGE_TAGGED("SRC", "DST", 0,  "", "source", "dest", " [DST] dest [SRC] source");
+    TEST_MERGE_TAGGED("SRC", "DST", 0,  0,  "sth",    "sth",  " [DST,SRC] sth");
+
+    // update fields:
+    TEST_MERGE_TAGGED("SRC", "DST", 0, "SRC", "newsource", " [DST] dest [SRC] source", " [DST] dest [SRC] newsource");
+    TEST_MERGE_TAGGED("SRC", "DST", 0, "SRC", "newsource", " [DST,SRC] sth",           " [DST] sth [SRC] newsource");
+    TEST_MERGE_TAGGED("SRC", "DST", 0, "SRC", "sth",       " [DST] sth [SRC] source",  " [DST,SRC] sth");
+
+    // append (opposed to update this keeps old entries with same tag; useless?)
+    TEST_MERGE_TAGGED("SRC", "DST", 0, 0, "newsource", "[DST] dest [SRC] source", " [DST] dest [SRC] newsource [SRC] source");
+    TEST_MERGE_TAGGED("SRC", "DST", 0, 0, "newsource", "[DST,SRC] sth",           " [DST,SRC] sth [SRC] newsource");
+    TEST_MERGE_TAGGED("SRC", "DST", 0, 0, "sth",       "[DST] sth [SRC] source",  " [DST,SRC] sth [SRC] source");
+
+    // merge three fields:
+    TEST_MERGE_TAGGED("OTH", "DST", 0, 0, "oth",    " [DST] dest [SRC] source", " [DST] dest [OTH] oth [SRC] source");
+    TEST_MERGE_TAGGED("OTH", "DST", 0, 0, "oth",    " [DST,SRC] sth",           " [DST,SRC] sth [OTH] oth");
+    TEST_MERGE_TAGGED("OTH", "DST", 0, 0, "sth",    " [DST,SRC] sth",           " [DST,OTH,SRC] sth");
+    TEST_MERGE_TAGGED("OTH", "DST", 0, 0, "dest",   " [DST] dest [SRC] source", " [DST,OTH] dest [SRC] source");
+    TEST_MERGE_TAGGED("OTH", "DST", 0, 0, "source", " [DST] dest [SRC] source", " [DST] dest [OTH,SRC] source");
+
+    // same tests as in section above, but vv
+    TEST_MERGE_TAGGED("DST", "OTH", 0, 0, " [DST] dest [SRC] source", "oth",    " [DST] dest [OTH] oth [SRC] source");
+    TEST_MERGE_TAGGED("DST", "OTH", 0, 0, " [DST,SRC] sth",           "oth",    " [DST,SRC] sth [OTH] oth");
+    TEST_MERGE_TAGGED("DST", "OTH", 0, 0, " [DST,SRC] sth",           "sth",    " [DST,OTH,SRC] sth");
+    TEST_MERGE_TAGGED("DST", "OTH", 0, 0, " [DST] dest [SRC] source", "dest",   " [DST,OTH] dest [SRC] source");
+    TEST_MERGE_TAGGED("DST", "OTH", 0, 0, " [DST] dest [SRC] source", "source", " [DST] dest [OTH,SRC] source");
+}
+
 void TEST_date_stamping() {
     {
         char *dated = GBS_log_dated_action_to("comment", "action");
