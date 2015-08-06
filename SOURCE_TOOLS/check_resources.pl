@@ -37,7 +37,7 @@ my %helpfile = (); # key=subdir/name (as used in code), value=index into @helpfi
 
 my %used = (); # key=file, value=1 -> used in code, value=2 -> used in helpfile
 
-my %full2rel = (); # key=full ressource, value=relative ressource (w/o rootdir)
+my %full2rel = (); # key=full resource, value=relative resource (w/o rootdir)
 my %rel2full = (); # opposite
 
 # --------------------------------------------------------------------------------
@@ -55,7 +55,7 @@ sub scanFiles(\@$$$$) {
       my $full = $dir.'/'.$_;
       if (-d $full) {
         if (/unused/o) {
-          print "Ignoring ressource directory '$full' (assuming it contains unused things)\n";
+          print "Ignoring resource directory '$full' (assuming it contains unused things)\n";
         }
         elsif (not (/^.svn$/o or /^CVS$/o)) {
           push @subdirs, $full;
@@ -102,7 +102,7 @@ sub scanFilesAndIndex(\%\@$$$$) {
 
 sub scanExistingRessources() {
   scanFilesAndIndex(%picture,  @pictures,  $ARBHOME.'/lib/pictures',        '.*\.(fig|vfont)$',                 1, 0);
-  scanFilesAndIndex(%pixmap,   @pixmaps,   $ARBHOME.'/lib/pixmaps',         '.*\.(xpm)$',                       1, 0);
+  scanFilesAndIndex(%pixmap,   @pixmaps,   $ARBHOME.'/lib/pixmaps',         '.*\.(xpm|png)$',                   1, 0);
   scanFilesAndIndex(%helpfile, @helpfiles, $ARBHOME.'/HELP_SOURCE/oldhelp', '.*\.(hlp|ps|pdf|ps\.gz|pdf\.gz)$', 1, 0);
   scanFilesAndIndex(%helpfile, @helpfiles, $ARBHOME.'/HELP_SOURCE/genhelp', '.*\.(hlp|ps|pdf|ps\.gz|pdf\.gz)$', 1, 0);
 
@@ -110,8 +110,9 @@ sub scanExistingRessources() {
     if (/readme[^\/]*$/i)                    { ; } # ignore readme files
     elsif (/\/genhelp\/.*(footer|header)$/o) { ; } # ignore files used for help generation
     elsif (/\.bak$/o)                        { ; } # ignore bak files
+    elsif (/\.svg$/o)                        { ; } # ignore svg files (used as source to create png)
     else {
-        print "$_:0: Unhandled file in ressource directory\n";
+        print "$_:0: Unhandled file in resource directory\n";
     }
   }
 
@@ -123,7 +124,7 @@ sub scanExistingRessources() {
     my $rel = $full2rel{$_};
     die if not defined $rel;
     if (exists $rel2full{$rel}) {
-      print "$_:0: Error: ressource name clashes with ...\n";
+      print "$_:0: Error: resource name clashes with ...\n";
       print $rel2full{$rel}.":0: ... this one\n";
     }
     else {
@@ -169,7 +170,7 @@ sub scanNextToken(\$\@\$) {
       while ($found==0) {
         if ($$rest_r =~ $reg_parse_eoc) {
           # print "\$`='$`' \$&='$&' \$'='$''\n";
-          if (not $& eq '*/') { die "expected to see '*/', parsed '$&' from '$$rest_r' (this is a bug in check_ressources.pl!)"; }
+          if (not $& eq '*/') { die "expected to see '*/', parsed '$&' from '$$rest_r' (this is a bug in check_resources.pl!)"; }
           $$rest_r = $';
           $found = 1;
         }
@@ -327,7 +328,7 @@ sub isPixmapRef($) {
 sub isIconRes($) {
   my ($res_param) = @_;
   my $base = 'icons/'.$res_param;
-  return ($base.'.xpm');
+  return ($base.'.xpm', $base.'.png');
 }
 sub isHelpRef($) {
   my ($res_param) = @_;
@@ -357,15 +358,15 @@ my @defs =
    [ qr/\b(insert_toggle)\b/,              [ 1 ],                 \%pixmap,      \&isPixmapRef,   ],
    [ qr/\b(load_xfig)\b/,                  [ 1 ],                 \%picture,     \&acceptAll,     ],
 
-   # pseudos (used in comment to mark a ressource as used)
+   # pseudos (used in comment to mark a resource as used)
    [ qr/\b(uses_hlp_res)\b/,               [ 1, -2, -3, -4, -5 ], \%helpfile, \&isHelpRef,     ],
    # [ qr/\b(uses_pic_res)\b/,               [ 1, -2, -3, -4, -5 ], \%picture,  \&acceptAll,     ],
    [ qr/\b(uses_pix_res)\b/,               [ 1, -2, -3, -4, -5 ], \%pixmap,   \&acceptAll,     ],
   );
 
 # - param numbers is [1..n] or [-1..-n] for optional params
-# - isRessource gets the unquoted potential ressource (without possible '(AW_CL)'-cast) and
-#   returns the plain ressource name or undef (if it's definitely no ressource)
+# - isRessource gets the unquoted potential resource (without possible '(AW_CL)'-cast) and
+#   returns the plain resource name or undef (if it's definitely no resource)
 
 my $defs                = scalar(@defs);
 my $errors              = 0;
@@ -404,7 +405,7 @@ sub scanCodeFile($) {
           if ($calltype==2) {
             my $pnum_r = $$def_r[1]; 
             my $pis = scalar(@$pnum_r);
-            for (my $pi=0; $pi<$pis; $pi++) { # for all params referencing a ressource
+            for (my $pi=0; $pi<$pis; $pi++) { # for all params referencing a resource
               my $pnum = $$pnum_r[$pi];
               my $param = $params[$pnum<0 ? -$pnum-1 : $pnum-1];
 
@@ -413,24 +414,23 @@ sub scanCodeFile($) {
                 my $unquoted = isQuoted($param);
                 if (defined $unquoted) {
                   my $test_r = $$def_r[3];
-                  my @unquoted = &$test_r($unquoted); # test if definitely NO ressource
+                  my @unquoted = &$test_r($unquoted); # test if definitely NO resource
 
-                  if (scalar(@unquoted)>0) { # possible ressource(s)
-                    my $idx_r = $$def_r[2]; # ressource index
+                  if (scalar(@unquoted)>0) { # possible resource(s)
+                    my $idx_r = $$def_r[2]; # resource index
                     my $used = 0;
                   UNQUOTED: foreach my $unquoted (@unquoted) {
-                      my $full_ressource_idx = $$idx_r{$unquoted};
-                      if (not defined $full_ressource_idx and $unquoted =~ /\.(ps|pdf)$/o) {
+                      my $full_resource_idx = $$idx_r{$unquoted};
+                      if (not defined $full_resource_idx and $unquoted =~ /\.(ps|pdf)$/o) {
                         $unquoted .= '.gz';  # try zipped version
-                        $full_ressource_idx = $$idx_r{$unquoted};
+                        $full_resource_idx = $$idx_r{$unquoted};
                       }
-                      if (defined $full_ressource_idx) { # existing ressource
-                        my $full_ressource = $rel2full{$unquoted};
-                        if (not defined $full_ressource) { die "expected ressource '$unquoted' to be defined"; }
-                        $used{$full_ressource} = 1;
+                      if (defined $full_resource_idx) { # existing resource
+                        my $full_resource = $rel2full{$unquoted};
+                        if (not defined $full_resource) { die "expected resource '$unquoted' to be defined"; }
+                        $used{$full_resource} = 1;
                         $ruleMatched[$d] = 1;
                         $used = 1;
-                        last UNQUOTED;
                       }
                     }
 
@@ -442,7 +442,7 @@ sub scanCodeFile($) {
                 }
                 else {
                   if ($showSpecialWarnings==1) {
-                    print "$file:$lineNr: Warning: Param '$param' is not an explicit ressource, can't check\n";
+                    print "$file:$lineNr: Warning: Param '$param' is not an explicit resource, can't check\n";
                     # print "Params:\n"; foreach (@params) { print "- param='$_'\n"; }
                   }
                 }
@@ -475,7 +475,7 @@ sub scanCodeFile($) {
 sub autouse($) {
   my ($res) = @_;
   if (not defined $known{$res}) {
-    print "Warning: Invalid autouse($res) -- unknown ressource\n";
+    print "Warning: Invalid autouse($res) -- unknown resource\n";
   }
   else {
     $used{$res} = 1;
@@ -495,7 +495,7 @@ sub scanCodeFile_forUnuseds($\$\%) {
     my $line = $file[$lineNr];
     while ($line =~ $$reg_r) {
       my $res = $&;
-      # print "$file:$lineNr: Warning: Checker failed to detect potential usage of ressource '$res'\n";
+      # print "$file:$lineNr: Warning: Checker failed to detect potential usage of resource '$res'\n";
       my $seen = $$seen_r{$res};
       if (defined $seen) { $seen .= ",$file:$lineNr"; }
       else { $seen = "$file:$lineNr"; }
@@ -513,11 +513,11 @@ sub referenceHelp($);
 sub referenceHelp($) {
   my ($referred) = @_;
 
-  my $full_ressource_idx = $helpfile{$referred};
-  if (defined $full_ressource_idx) { # existing ressource
-    my $full_ressource = $rel2full{$referred};
-    if (not defined $full_ressource) { die "expected ressource '$referred' to be defined"; }
-    $used{$full_ressource} = 1;
+  my $full_resource_idx = $helpfile{$referred};
+  if (defined $full_resource_idx) { # existing resource
+    my $full_resource = $rel2full{$referred};
+    if (not defined $full_resource) { die "expected resource '$referred' to be defined"; }
+    $used{$full_resource} = 1;
     $newHelpRef++;
   }
   else {
@@ -611,6 +611,12 @@ sub scanCode() {
 
   autouse($ARBHOME.'/HELP_SOURCE/oldhelp/unittest.hlp');
 
+  if (defined $ENV{GTK}) { # AFTERMERGE: remove this test and resource files below
+    autouse($ARBHOME.'/lib/pictures/fileselect.fig'); # gtk version uses builtin fileselector
+    autouse($ARBHOME.'/lib/pixmaps/no.xpm');          # gtk version uses builtin toggle
+    autouse($ARBHOME.'/lib/pixmaps/yes.xpm');         # gtk version uses builtin toggle
+  }
+
   my %unused = ();
   foreach (sort keys %known) {
     if (not defined $used{$_}) { $unused{$_} = 1; }
@@ -619,7 +625,7 @@ sub scanCode() {
   my $unused = scalar(keys %unused);
 
   if ($unused>0) {
-    print "Detected $unused unused ressources.\nRunning brute force scan..\n";
+    print "Detected $unused unused resources.\nRunning brute force scan..\n";
     my $reg_unused = '';
     foreach (keys %unused) {
       my $rel=$full2rel{$_};
@@ -643,7 +649,7 @@ sub scanCode() {
       my $rel = $full2rel{$_};
       my $seen = (defined $rel) ? $seen_unused{$rel} : undef;
       if (defined $seen) {
-        print "$_:0: Warning: Checker failed to detect ressource usage\n";
+        print "$_:0: Warning: Checker failed to detect resource usage\n";
         my @seen = split(',',$seen);
         my %seen = map { $_ => 1; } @seen;
         foreach (sort keys %seen) {
@@ -657,12 +663,12 @@ sub scanCode() {
     }
   }
   else {
-    print "All found ressources are referenced from code :-)\n"
+    print "All found resources are referenced from code :-)\n"
   }
 }
 
 sub main() {
-  print "Checking ARB ressources\n";
+  print "Checking ARB resources\n";
 
   scanExistingRessources();
   print ' - '.scalar(@pictures)." pictures\n";
@@ -670,7 +676,7 @@ sub main() {
   print ' - '.scalar(@helpfiles)." helpfiles\n";
 
   scanCode();
-  if ($errors>0) { die "$errors errors detected by ressource checker\n"; }
+  if ($errors>0) { die "$errors errors detected by resource checker\n"; }
 }
 
 main();

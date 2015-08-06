@@ -144,7 +144,7 @@ if [ $BUILD == 1 ]; then
                 if [ "$ARG" == "from_tarball" ]; then
                     echo "Note: build from tarball - do not attempt to create a tarball"
                 else
-                    # check ressource usage:
+                    # check resource usage:
                     ${JMAKE} check_res
 
                     # save tarball:

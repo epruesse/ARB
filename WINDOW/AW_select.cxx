@@ -61,7 +61,7 @@ AW_selection_list::AW_selection_list(AW_awar *awar_, bool fallback2default)
       selected_index(0),
       select_default_on_unknown_awar_value(fallback2default),
       update_cb(NULL),
-      cl_update(NULL),
+      cl_update(0),
       list_table(NULL),
       last_of_list_table(NULL),
       default_select(NULL),

@@ -60,7 +60,7 @@ inline AP_tree_edge *rootEdge() {
 }
 
 // ------------------------------------------
-//      stack-aware ressource management
+//      stack-aware resource management
 
 #define REUSE_EDGES
 

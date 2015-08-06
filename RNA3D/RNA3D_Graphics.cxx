@@ -60,11 +60,6 @@ void RNA3D_Graphics::show(AW_device *device) {
     paint(device);
 }
 
-void RNA3D_Graphics::info(AW_device * /* device */, AW_pos /* x */, AW_pos /* y */, AW_clicked_line * /* cl */, AW_clicked_text * /* ct */)
-{
-    aw_message("INFO MESSAGE");
-}
-
 void RNA3D_Graphics::paint(AW_device * /* device */) {
     MapDisplayParameters(aw_root);
     RefreshOpenGLDisplay();
