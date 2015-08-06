@@ -88,7 +88,7 @@ class  AP_tree_edge;
 class  AP_main;
 
 class AP_pars_root : public AP_tree_root {
-    // @@@ add responsibility for node/edge ressources
+    // @@@ add responsibility for node/edge resources
     bool has_been_saved;
 public:
     AP_pars_root(AliView *aliView, AP_sequence *seq_proto, bool add_delete_callbacks)

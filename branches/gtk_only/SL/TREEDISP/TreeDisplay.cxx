@@ -2874,10 +2874,6 @@ void AWT_graphic_tree::show(AW_device *device) {
     disp_device = NULL;
 }
 
-void AWT_graphic_tree::info(AW_device */*device*/, AW_pos /*x*/, AW_pos /*y*/, AW_clicked_line */*cl*/, AW_clicked_text */*ct*/) {
-    aw_message("INFO MESSAGE");
-}
-
 AWT_graphic_tree *NT_generate_tree(AW_root *root, GBDATA *gb_main, AD_map_viewer_cb map_viewer_cb) {
     AWT_graphic_tree *apdt = new AWT_graphic_tree(root, gb_main, map_viewer_cb);
     apdt->init(new AliView(gb_main), NULL, true, false); // tree w/o sequence data

@@ -795,8 +795,4 @@ void SEC_graphic::show(AW_device *device) {
     }
 }
 
-void SEC_graphic::info(AW_device */*device*/, AW_pos /*x*/, AW_pos /*y*/, AW_clicked_line */*cl*/, AW_clicked_text */*ct*/) {
-    aw_message("INFO MESSAGE");
-}
-
 
