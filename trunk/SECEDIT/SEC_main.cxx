@@ -621,6 +621,11 @@ static AWT_config_mapping_def secedit_display_config_mapping[] = {
 static AW_window *SEC_create_display_window(AW_root *awr) {
     AW_window_simple *aws = new AW_window_simple;
 
+    const int SCALED_TEXT_COLUMNS = 7;
+    const int SCALER_WIDTH        = 200;
+
+    aws->auto_space(5, 5);
+
     aws->init(awr, "SEC_DISPLAY_OPTS", "Display options");
     aws->load_xfig("sec_display.fig");
 
@@ -640,7 +645,7 @@ static AW_window *SEC_create_display_window(AW_root *awr) {
 
     aws->at("strand_dist");
     aws->label("Distance between strands   :");
-    aws->create_input_field(AWAR_SECEDIT_DIST_BETW_STRANDS);
+    aws->create_input_field_with_scaler(AWAR_SECEDIT_DIST_BETW_STRANDS, SCALED_TEXT_COLUMNS, SCALER_WIDTH, AW_SCALER_EXP_LOWER);
 
     aws->at("bonds");
     aws->label("Display bonds");
@@ -656,7 +661,7 @@ static AW_window *SEC_create_display_window(AW_root *awr) {
 
     aws->at("bondThickness");
     aws->label("Bond thickness             :");
-    aws->create_input_field(AWAR_SECEDIT_BOND_THICKNESS);
+    aws->create_input_field_with_scaler(AWAR_SECEDIT_BOND_THICKNESS, SCALED_TEXT_COLUMNS, SCALER_WIDTH, AW_SCALER_EXP_LOWER);
 
     // ----------------------------------------
 
@@ -703,7 +708,7 @@ static AW_window *SEC_create_display_window(AW_root *awr) {
 
     aws->at("skelThickness");
     aws->label("Skeleton thickness         :");
-    aws->create_input_field(AWAR_SECEDIT_SKELETON_THICKNESS);
+    aws->create_input_field_with_scaler(AWAR_SECEDIT_SKELETON_THICKNESS, SCALED_TEXT_COLUMNS, SCALER_WIDTH, AW_SCALER_EXP_LOWER);
 
 #ifdef DEBUG
     aws->at("show_debug");
@@ -762,7 +767,7 @@ AW_window *start_SECEDIT_plugin(ED4_plugin_host& host) {
     awm->insert_menu_topic("close", "Close", "C", "quit.hlp", AWM_ALL, (AW_CB)AW_POPDOWN, 0, 0);
 
     awm->create_menu("Properties", "P", AWM_ALL);
-    awm->insert_menu_topic("sec_display", "Display options", "D", "sec_display.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_create_display_window, 0);
+    awm->insert_menu_topic("sec_display", "Display options", "D", "sec_display.hlp", AWM_ALL, SEC_create_display_window);
     awm->sep______________();
     awm->insert_menu_topic("props_secedit", "Change Colors and Fonts", "C", "color_props.hlp", AWM_ALL, makeCreateWindowCallback(AW_create_gc_window, scr->gc_manager));
     awm->sep______________();
