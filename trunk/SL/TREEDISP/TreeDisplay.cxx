@@ -802,38 +802,30 @@ static bool command_on_GBDATA(GBDATA *gbd, const AWT_graphic_event& event, AD_ma
     return refresh;
 }
 
-class LineOrText {
-    /*! Stores a copy of AW_clicked_line or AW_clicked_text.
+class ClickedElement {
+    /*! Stores a copy of AW_clicked_element.
      * Used as Drag&Drop source and target.
      */
-    AW_clicked_line line;
-    AW_clicked_text text;
-    const AW_clicked_element *elem;
+    AW_clicked_element *elem;
 
 public:
-    LineOrText(const AW_clicked_element& e) { set(e); }
-    LineOrText(const LineOrText& other) { set(*other.element()); }
-    DECLARE_ASSIGNMENT_OPERATOR(LineOrText);
+    ClickedElement(const AW_clicked_element& e) : elem(e.clone()) {}
+    ClickedElement(const ClickedElement& other) : elem(other.element()->clone()) {}
+    DECLARE_ASSIGNMENT_OPERATOR(ClickedElement);
+    ~ClickedElement() { delete elem; }
 
-    void set(const AW_clicked_line& l) { line = l; elem = &line; }
-    void set(const AW_clicked_text& t) { text = t; elem = &text; }
-    void set(const AW_clicked_element& e) {
-        if (e.is_text()) set(dynamic_cast<const AW_clicked_text&>(e));
-        else set(dynamic_cast<const AW_clicked_line&>(e));
-    }
     const AW_clicked_element *element() const { return elem; }
 
-    bool operator == (const LineOrText& other) const {
+    bool operator == (const ClickedElement& other) const {
         return
             element()->is_text() == other.element()->is_text() &&
-            line                 == other.line                 &&
-            text                 == other.text;
+            element()            == other.element();
     }
-    bool operator != (const LineOrText& other) const { return !(*this == other); }
+    bool operator != (const ClickedElement& other) const { return !(*this == other); }
 };
 
 class DragNDrop : public Dragged {
-    LineOrText Drag, Drop;
+    ClickedElement Drag, Drop;
 
     virtual void perform_drop() = 0;
 

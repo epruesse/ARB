@@ -40,11 +40,12 @@ protected:
     }
 
     AW_clicked_element() { init(); }
-    virtual ~AW_clicked_element() {}
 
     virtual void clear() = 0;
 
 public:
+
+    virtual ~AW_clicked_element() {}
 
     AW_CL cd1() const { return client_data1; }
     AW_CL cd2() const { return client_data2; }
@@ -62,6 +63,7 @@ public:
 
     virtual AW::Position get_attach_point() const = 0;
     virtual bool is_text() const                  = 0;
+    virtual AW_clicked_element *clone() const     = 0;
 
     bool is_line() const { return !is_text(); }
 
@@ -100,6 +102,10 @@ public:
 
     AW::LineVector get_line() const { return AW::LineVector(x0, y0, x1, y1); }
     int indicate_selected(AW_device *d, int gc) const OVERRIDE;
+
+    AW_clicked_element *clone() const OVERRIDE {
+        return new AW_clicked_line(*this);
+    }
 };
 
 class AW_clicked_text : public AW_clicked_element {
@@ -125,6 +131,10 @@ public:
         return textArea.centroid(); // @@@ uses center atm - should attach to bounding box
     }
     int indicate_selected(AW_device *d, int gc) const OVERRIDE;
+
+    AW_clicked_element *clone() const OVERRIDE {
+        return new AW_clicked_text(*this);
+    }
 };
 
 #define AWT_CATCH    30         // max-pixel distance to graphical element (to accept a click or command)
