@@ -481,12 +481,7 @@ static void input_event(AW_window *aww, AWT_canvas *scr) {
 
         scr->gfx->show(click_device);
 
-        AW_clicked_line clicked_line;
-        AW_clicked_text clicked_text;
-        click_device->get_clicked_line(&clicked_line);
-        click_device->get_clicked_text(&clicked_text);
-
-        AWT_graphic_event gevent(scr->mode, event, false, &clicked_line, &clicked_text);
+        AWT_graphic_event gevent(scr->mode, event, false, click_device);
         scr->gfx->handle_command(device, gevent);
 
         scr->postevent_handler();
@@ -586,23 +581,19 @@ static void motion_event(AW_window *aww, AWT_canvas *scr) {
                 nt_draw_zoom_box(device, scr);
             }
             else {
-                AW_clicked_line clicked_line;
-                AW_clicked_text clicked_text;
+                AW_device_click *click_device = NULL;
 
                 if (scr->mode == AWT_MODE_MOVE) {
                     // move-mode is the only mode which uses a drop-target
-                    AW_device_click *click_device = aww->get_click_device(AW_MIDDLE_AREA, event.x, event.y, AWT_CATCH);
+                    click_device = aww->get_click_device(AW_MIDDLE_AREA, event.x, event.y, AWT_CATCH);
                     click_device->set_filter(AW_CLICK_DROP);
 
                     scr->init_device(click_device);
                     scr->gfx->show(click_device);
-
-                    click_device->get_clicked_line(&clicked_line);
-                    click_device->get_clicked_text(&clicked_text);
                 }
 
                 scr->init_device(device);
-                AWT_graphic_event gevent(scr->mode, event, true, &clicked_line, &clicked_text);
+                AWT_graphic_event gevent(scr->mode, event, true, click_device);
                 scr->gfx->handle_command(device, gevent);
             }
         }
@@ -767,39 +758,44 @@ const AW_clicked_element *AWT_graphic_event::best_click(ClickPreference prefer) 
 
     const AW_clicked_element *bestClick = 0;
 
-    if (M_cl->exists) {
-        if (M_ct->exists) {
-            switch (prefer) {
-                case PREFER_NEARER:
-                    if (M_cl->distance < M_ct->distance) {
-                        bestClick = M_cl;
-                    }
-                    else {
-                        bestClick = M_ct;
-                    }
-                    break;
+    if (click_dev) {
+        const AW_clicked_line& cl = click_dev->get_clicked_line();
+        const AW_clicked_text& ct = click_dev->get_clicked_text();
 
-                case PREFER_LINE: bestClick = M_cl; break;
-                case PREFER_TEXT: bestClick = M_ct; break;
+        if (cl.exists) {
+            if (ct.exists) {
+                switch (prefer) {
+                    case PREFER_NEARER:
+                        if (cl.distance < ct.distance) {
+                            bestClick = &cl;
+                        }
+                        else {
+                            bestClick = &ct;
+                        }
+                        break;
+
+                    case PREFER_LINE: bestClick = &cl; break;
+                    case PREFER_TEXT: bestClick = &ct; break;
+                }
+            }
+            else {
+                bestClick = &cl;
             }
         }
-        else {
-            bestClick = M_cl;
+        else if (ct.exists) {
+            bestClick = &ct;
         }
-    }
-    else if (M_ct->exists) {
-        bestClick = M_ct;
-    }
 
 #if defined(DEBUG) && 0
-    if (bestClick) {
-        const char *type = bestClick == M_cl ? "line" : "text";
-        printf("best click catches '%s' (distance=%i)\n", type, bestClick->distance);
-    }
-    else {
-        printf("click catched nothing\n");
-    }
+        if (bestClick) {
+            const char *type = bestClick == &cl ? "line" : "text";
+            printf("best click catches '%s' (distance=%i)\n", type, bestClick->distance);
+        }
+        else {
+            printf("click catched nothing\n");
+        }
 #endif
+    }
 
     return bestClick;
 }

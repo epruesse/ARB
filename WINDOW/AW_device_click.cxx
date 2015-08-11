@@ -192,16 +192,6 @@ bool AW_device_click::text_impl(int gc, const char *str, const AW::Position& pos
     return true;
 }
 
-
-void AW_device_click::get_clicked_line(AW_clicked_line *ptr) const {
-    *ptr = opt_line;
-}
-
-
-void AW_device_click::get_clicked_text(AW_clicked_text *ptr) const {
-    *ptr = opt_text;
-}
-
 int AW_clicked_line::indicate_selected(AW_device *d, int gc) const {
     return d->line(gc, x0, y0, x1, y1);
 }

@@ -135,6 +135,9 @@ class AW_device_click : public AW_simple_device {
     int    max_distance_line;
     int    max_distance_text;
 
+    AW_clicked_line opt_line;
+    AW_clicked_text opt_text;
+
     bool line_impl(int gc, const AW::LineVector& Line, AW_bitset filteri) OVERRIDE;
     bool text_impl(int gc, const char *str, const AW::Position& pos, AW_pos alignment, AW_bitset filteri, long opt_strlen) OVERRIDE;
     bool invisible_impl(const AW::Position& pos, AW_bitset filteri) OVERRIDE { return generic_invisible(pos, filteri); }
@@ -142,17 +145,14 @@ class AW_device_click : public AW_simple_device {
     void specific_reset() OVERRIDE {}
     
 public:
-    AW_clicked_line opt_line; // @@@ make private
-    AW_clicked_text opt_text;
-
     AW_device_click(AW_common *common_);
 
     AW_DEVICE_TYPE type() OVERRIDE;
 
     void init_click(AW_pos mousex, AW_pos mousey, int max_distance, AW_bitset filteri);
 
-    void get_clicked_line(class AW_clicked_line *ptr) const; // @@@ make real accessors returning const&
-    void get_clicked_text(class AW_clicked_text *ptr) const;
+    const AW_clicked_line& get_clicked_line() const { return opt_line; }
+    const AW_clicked_text& get_clicked_text() const { return opt_text; }
 };
 
 #else
