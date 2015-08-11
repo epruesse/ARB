@@ -261,10 +261,9 @@ GB_HASH *GBS_create_hash(long estimated_elements, GB_CASE case_sens) {
      * @param case_sens GB_IGNORE_CASE or GB_MIND_CASE
      * Uses linked lists to avoid collisions.
      */
-    GB_HASH *hs;
     long     size = hash_size(estimated_elements);
+    GB_HASH *hs   = (GB_HASH*)GB_calloc(sizeof(*hs), 1);
 
-    hs            = (GB_HASH*)GB_calloc(sizeof(*hs), 1);
     hs->size      = size;
     hs->nelem     = 0;
     hs->case_sens = case_sens;

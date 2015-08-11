@@ -240,12 +240,7 @@ static void input_cb(AW_window *aww, MatrixDisplay *disp) {
         }
 
         if (event.type == AW_Mouse_Press) {
-            AW_clicked_text clicked_text;
-            AW_clicked_line clicked_line;
-            click_device->get_clicked_text(&clicked_text);
-            click_device->get_clicked_line(&clicked_line);
-
-            AWT_graphic_event         gevent(AWT_MODE_NONE, event, false, &clicked_line, &clicked_text);
+            AWT_graphic_event   gevent(AWT_MODE_NONE, event, false, click_device);
             const AW_clicked_element *clicked = gevent.best_click();
 
             if (clicked) {

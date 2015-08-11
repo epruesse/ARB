@@ -18,8 +18,6 @@
 
 class AWT_canvas;
 class AW_device;
-class AW_clicked_line;
-class AW_clicked_text;
 
 enum AWT_COMMAND_MODE {
     AWT_MODE_NONE,
@@ -160,11 +158,10 @@ class AWT_graphic_event : virtual Noncopyable {
 
     AW::Position mousepos;
 
-    const AW_clicked_line *M_cl; // text and/or
-    const AW_clicked_text *M_ct; // line selected by current mouse position
+    AW_device_click *click_dev;
 
 public:
-    AWT_graphic_event(AWT_COMMAND_MODE cmd_, const AW_event& event, bool is_drag, const AW_clicked_line  *cl_, const AW_clicked_text  *ct_)
+    AWT_graphic_event(AWT_COMMAND_MODE cmd_, const AW_event& event, bool is_drag, AW_device_click *click_dev_)
         : M_cmd(cmd_),
           M_button(event.button),
           M_key_modifier(event.keymodifier),
@@ -172,8 +169,7 @@ public:
           M_key_char(event.character),
           M_type(is_drag ? AW_Mouse_Drag : event.type),
           mousepos(event.x, event.y),
-          M_cl(cl_),
-          M_ct(ct_)
+          click_dev(click_dev_)
     {}
 
     AWT_COMMAND_MODE cmd() const { return M_cmd; }
@@ -273,8 +269,6 @@ public:
     int zoom_drag_ex;
     int zoom_drag_ey;
     int drag;
-    AW_clicked_line clicked_line;
-    AW_clicked_text clicked_text;
 
     void set_scrollbars();
     void set_dragEndpoint(int x, int y);
