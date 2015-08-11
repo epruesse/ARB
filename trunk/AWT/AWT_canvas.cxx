@@ -762,11 +762,11 @@ const AW_clicked_element *AWT_graphic_event::best_click(ClickPreference prefer) 
         const AW_clicked_line& cl = click_dev->get_clicked_line();
         const AW_clicked_text& ct = click_dev->get_clicked_text();
 
-        if (cl.exists) {
-            if (ct.exists) {
+        if (cl.does_exist()) {
+            if (ct.does_exist()) {
                 switch (prefer) {
                     case PREFER_NEARER:
-                        if (cl.distance < ct.distance) {
+                        if (cl.get_distance() < ct.get_distance()) {
                             bestClick = &cl;
                         }
                         else {
@@ -782,7 +782,7 @@ const AW_clicked_element *AWT_graphic_event::best_click(ClickPreference prefer) 
                 bestClick = &cl;
             }
         }
-        else if (ct.exists) {
+        else if (ct.does_exist()) {
             bestClick = &ct;
         }
 
