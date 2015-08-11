@@ -565,6 +565,10 @@ namespace AW {
         aw_dump(v.x(), "x"); fputs(", ", stderr);
         aw_dump(v.y(), "y"); fputs(" }", stderr);
     }
+    inline void aw_dump(const Angle& a, const char *varname) {
+        fprintf(stderr, "Angle %s={ ", varname);
+        aw_dump(a.degrees(), "degrees()"); fputs(" }", stderr);
+    }
     inline void aw_dump(const LineVector& v, const char *varname) {
         fprintf(stderr, "LineVector %s={ ", varname);
         aw_dump(v.start(), "start"); fputs(", ", stderr);
