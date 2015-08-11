@@ -153,6 +153,11 @@ int AW_clicked_line::indicate_selected(AW_device *d, int gc) const {
     return d->line(gc, line);
 }
 int AW_clicked_text::indicate_selected(AW_device *d, int gc) const {
+#if defined(ARB_MOTIF)
     return d->box(gc, AW::FillStyle::SOLID, textArea);
+#else // !defined(ARB_MOTIF)
+    d->set_grey_level(gc, 0.2);
+    return d->box(gc, AW::FillStyle::SHADED_WITH_BORDER, textArea);
+#endif
 }
 
