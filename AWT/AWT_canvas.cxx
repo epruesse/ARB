@@ -480,10 +480,13 @@ static void input_event(AW_window *aww, AWT_canvas *scr) {
         scr->init_device(device);
 
         scr->gfx->show(click_device);
-        click_device->get_clicked_line(&scr->clicked_line);
-        click_device->get_clicked_text(&scr->clicked_text);
 
-        AWT_graphic_event gevent(scr->mode, event, false, &scr->clicked_line, &scr->clicked_text);
+        AW_clicked_line clicked_line;
+        AW_clicked_text clicked_text;
+        click_device->get_clicked_line(&clicked_line);
+        click_device->get_clicked_text(&clicked_text);
+
+        AWT_graphic_event gevent(scr->mode, event, false, &clicked_line, &clicked_text);
         scr->gfx->handle_command(device, gevent);
 
         scr->postevent_handler();
@@ -576,38 +579,32 @@ static void motion_event(AW_window *aww, AWT_canvas *scr) {
         scr->scroll(-dx*3, -dy*3);
     }
     else {
-        bool run_command = true;
-
         if (event.button == AW_BUTTON_LEFT || event.button == AW_BUTTON_RIGHT) {
-            switch (scr->mode) {
-                case AWT_MODE_ZOOM:
-                    nt_draw_zoom_box(device, scr);
-                    scr->set_dragEndpoint(event.x, event.y);
-                    nt_draw_zoom_box(device, scr);
-                    run_command = false;
-                    break;
+            if (scr->mode == AWT_MODE_ZOOM) {
+                nt_draw_zoom_box(device, scr);
+                scr->set_dragEndpoint(event.x, event.y);
+                nt_draw_zoom_box(device, scr);
+            }
+            else {
+                AW_clicked_line clicked_line;
+                AW_clicked_text clicked_text;
 
-                case AWT_MODE_MOVE: {
-                    scr->init_device(device);
+                if (scr->mode == AWT_MODE_MOVE) {
+                    // move-mode is the only mode which uses a drop-target
                     AW_device_click *click_device = aww->get_click_device(AW_MIDDLE_AREA, event.x, event.y, AWT_CATCH);
                     click_device->set_filter(AW_CLICK_DROP);
+
                     scr->init_device(click_device);
                     scr->gfx->show(click_device);
-                    click_device->get_clicked_line(&scr->clicked_line);
-                    click_device->get_clicked_text(&scr->clicked_text);
-                    run_command  = true;
-                    break;
+
+                    click_device->get_clicked_line(&clicked_line);
+                    click_device->get_clicked_text(&clicked_text);
                 }
-                default:
-                    break;
+
+                scr->init_device(device);
+                AWT_graphic_event gevent(scr->mode, event, true, &clicked_line, &clicked_text);
+                scr->gfx->handle_command(device, gevent);
             }
-        }
-
-        if (run_command) {
-            scr->init_device(device);
-
-            AWT_graphic_event gevent(scr->mode, event, true, &scr->clicked_line, &scr->clicked_text);
-            scr->gfx->handle_command(device, gevent);
         }
     }
 
@@ -764,6 +761,9 @@ void AWT_nonDB_graphic::update(GBDATA *) {
 const AW_clicked_element *AWT_graphic_event::best_click(ClickPreference prefer) {
     // returns the element with lower distance (to mouse-click- or key-"click"-position).
     // or NULL (if no element was found inside catch-distance)
+    //
+    // Note: during drag/drop a target element is only available in AWT_MODE_MOVE!
+    // (see .@motion_event)
 
     const AW_clicked_element *bestClick = 0;
 
