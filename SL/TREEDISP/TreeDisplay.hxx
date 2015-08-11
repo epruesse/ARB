@@ -418,7 +418,7 @@ class ClickedTarget {
 
     void identify(AWT_graphic_tree *agt) {
         init();
-        if (elem && elem->exists) {
+        if (elem && elem->does_exist()) {
             const char *what = (const char*)elem->cd2();
 
             if (what) {

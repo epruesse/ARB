@@ -1423,7 +1423,7 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
     }
 
     if (clicked.is_marker()) {
-        if (clicked.element()->distance <= 3) { // accept 3 pixel distance
+        if (clicked.element()->get_distance() <= 3) { // accept 3 pixel distance
             aw_message_if(display_markers->get_marker_name(clicked.get_markerindex())); // @@@ pass clicked to display_markers and let it handle the click?
         }
         return;
