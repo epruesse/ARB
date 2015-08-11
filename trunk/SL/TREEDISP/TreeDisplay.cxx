@@ -1337,6 +1337,11 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
     td_assert(event.button() == AW_BUTTON_LEFT || event.button() == AW_BUTTON_RIGHT); // nothing else should come here
 
     ClickedTarget clicked(this, event.best_click(preferredForCommand(event.cmd())));
+    // Note: during drag/release 'clicked'
+    //       - contains drop-target (only in AWT_MODE_MOVE)
+    //       - no longer contains initially clicked element (in all other modes)
+    // see also ../../AWT/AWT_canvas.cxx@motion_event
+
     if (clicked.species()) {
         if (command_on_GBDATA(clicked.species(), event, map_viewer_cb)) {
             exports.refresh = 1;
@@ -1382,66 +1387,66 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
         }
     }
 
-    if (event.type() == AW_Mouse_Press) {
-        if (clicked.is_ruler()) {
-            DB_scalable xdata;
-            DB_scalable ydata;
-            double      unscale = device->get_unscale();
+    if (event.type() != AW_Mouse_Press) return; // no drag/drop handling below!
 
-            switch (event.cmd()) {
-                case AWT_MODE_LENGTH:
-                case AWT_MODE_MULTIFURC: { // scale ruler
-                    xdata = GB_searchOrCreate_float(gb_tree, RULER_SIZE, DEFAULT_RULER_LENGTH);
+    if (clicked.is_ruler()) {
+        DB_scalable xdata;
+        DB_scalable ydata;
+        double      unscale = device->get_unscale();
 
-                    double rel  = clicked.get_rel_attach();
-                    if (tree_sort == AP_TREE_IRS) {
-                        unscale /= (rel-1)*irs_tree_ruler_scale_factor; // ruler has opposite orientation in IRS mode
-                    }
-                    else {
-                        unscale /= rel;
-                    }
+        switch (event.cmd()) {
+            case AWT_MODE_LENGTH:
+            case AWT_MODE_MULTIFURC: { // scale ruler
+                xdata = GB_searchOrCreate_float(gb_tree, RULER_SIZE, DEFAULT_RULER_LENGTH);
 
-                    if (event.button() == AW_BUTTON_RIGHT) xdata.set_discretion_factor(10);
-                    xdata.set_min(0.01);
-                    break;
+                double rel  = clicked.get_rel_attach();
+                if (tree_sort == AP_TREE_IRS) {
+                    unscale /= (rel-1)*irs_tree_ruler_scale_factor; // ruler has opposite orientation in IRS mode
                 }
-                case AWT_MODE_LINE: // scale ruler linewidth
-                    ydata = GB_searchOrCreate_int(gb_tree, RULER_LINEWIDTH, DEFAULT_RULER_LINEWIDTH);
-                    ydata.set_min(0);
-                    ydata.inverse();
-                    break;
-
-                default: { // move ruler or ruler text
-                    bool isText = clicked.is_text();
-                    xdata = GB_searchOrCreate_float(gb_tree, ruler_awar(isText ? "text_x" : "ruler_x"), 0.0);
-                    ydata = GB_searchOrCreate_float(gb_tree, ruler_awar(isText ? "text_y" : "ruler_y"), 0.0);
-                    break;
+                else {
+                    unscale /= rel;
                 }
-            }
-            if (!is_nan_or_inf(unscale)) {
-                store_command_data(new RulerScaler(mousepos, unscale, xdata, ydata, exports));
-            }
-            return;
-        }
-        else if (clicked.is_marker()) {
-            if (clicked.element()->distance <= 3) { // accept 3 pixel distance
-                aw_message_if(display_markers->get_marker_name(clicked.get_markerindex())); // @@@ pass clicked to display_markers and let it handle the click?
-            }
-            return;
-        }
 
-        if (warn_inappropriate_mode(event.cmd())) {
-            return;
+                if (event.button() == AW_BUTTON_RIGHT) xdata.set_discretion_factor(10);
+                xdata.set_min(0.01);
+                break;
+            }
+            case AWT_MODE_LINE: // scale ruler linewidth
+                ydata = GB_searchOrCreate_int(gb_tree, RULER_LINEWIDTH, DEFAULT_RULER_LINEWIDTH);
+                ydata.set_min(0);
+                ydata.inverse();
+                break;
+
+            default: { // move ruler or ruler text
+                bool isText = clicked.is_text();
+                xdata = GB_searchOrCreate_float(gb_tree, ruler_awar(isText ? "text_x" : "ruler_x"), 0.0);
+                ydata = GB_searchOrCreate_float(gb_tree, ruler_awar(isText ? "text_y" : "ruler_y"), 0.0);
+                break;
+            }
         }
+        if (!is_nan_or_inf(unscale)) {
+            store_command_data(new RulerScaler(mousepos, unscale, xdata, ydata, exports));
+        }
+        return;
     }
 
+    if (clicked.is_marker()) {
+        if (clicked.element()->distance <= 3) { // accept 3 pixel distance
+            aw_message_if(display_markers->get_marker_name(clicked.get_markerindex())); // @@@ pass clicked to display_markers and let it handle the click?
+        }
+        return;
+    }
+
+    if (warn_inappropriate_mode(event.cmd())) {
+        return;
+    }
 
     switch (event.cmd()) {
-            // -----------------------------
-            //      two point commands:
+        // -----------------------------
+        //      two point commands:
 
         case AWT_MODE_MOVE:
-            if (event.type() == AW_Mouse_Press && clicked.node() && clicked.node()->father) {
+            if (clicked.node() && clicked.node()->father) {
                 BranchMover *mover = new BranchMover(clicked.element(), event.button(), exports);
                 store_command_data(mover);
                 mover->draw_drag_indicator(device, drag_gc);
@@ -1450,7 +1455,7 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
 
         case AWT_MODE_LENGTH:
         case AWT_MODE_MULTIFURC:
-            if (event.type() == AW_Mouse_Press && clicked.node() && clicked.is_branch()) {
+            if (clicked.node() && clicked.is_branch()) {
                 bool allow_neg_branches = aw_root->awar(AWAR_EXPERT)->read_int();
                 bool discrete_lengths   = event.button() == AW_BUTTON_RIGHT;
 
@@ -1466,7 +1471,7 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
             break;
 
         case AWT_MODE_ROTATE:
-            if (event.type() == AW_Mouse_Press && clicked.node() && clicked.is_branch()) {
+            if (clicked.node() && clicked.is_branch()) {
                 const AW_clicked_line *cl = dynamic_cast<const AW_clicked_line*>(clicked.element());
                 td_assert(cl);
                 BranchRotator *rotator = new BranchRotator(device, clicked.node(), cl->get_line(), mousepos, exports);
@@ -1476,7 +1481,7 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
             break;
 
         case AWT_MODE_LINE:
-            if (event.type()==AW_Mouse_Press && clicked.node()) {
+            if (clicked.node()) {
                 BranchLinewidthScaler *widthScaler = new BranchLinewidthScaler(clicked.node(), mousepos, event.button() == AW_BUTTON_RIGHT, exports);
                 store_command_data(widthScaler);
                 widthScaler->draw_drag_indicator(device, drag_gc);
@@ -1484,7 +1489,7 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
             break;
 
         case AWT_MODE_SPREAD:
-            if (event.type() == AW_Mouse_Press && clicked.node() && clicked.is_branch()) {
+            if (clicked.node() && clicked.is_branch()) {
                 const AW_clicked_line *cl = dynamic_cast<const AW_clicked_line*>(clicked.element());
                 td_assert(cl);
                 BranchScaler *spreader = new BranchScaler(SCALE_SPREAD, clicked.node(), cl->get_line(), clicked.element()->get_attach_point(), mousepos, device->get_unscale(), false, false, exports);
@@ -1493,33 +1498,31 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
             }
             break;
 
-            // -----------------------------
-            //      one point commands:
+        // -----------------------------
+        //      one point commands:
 
         case AWT_MODE_LZOOM:
-            if (event.type()==AW_Mouse_Press) {
-                switch (event.button()) {
-                    case AW_BUTTON_LEFT:
-                        if (clicked.node()) {
-                            displayed_root     = clicked.node();
-                            exports.zoom_reset = 1;
-                        }
-                        break;
-                    case AW_BUTTON_RIGHT:
-                        if (displayed_root->father) {
-                            displayed_root     = displayed_root->get_father();
-                            exports.zoom_reset = 1;
-                        }
-                        break;
+            switch (event.button()) {
+                case AW_BUTTON_LEFT:
+                    if (clicked.node()) {
+                        displayed_root     = clicked.node();
+                        exports.zoom_reset = 1;
+                    }
+                    break;
+                case AW_BUTTON_RIGHT:
+                    if (displayed_root->father) {
+                        displayed_root     = displayed_root->get_father();
+                        exports.zoom_reset = 1;
+                    }
+                    break;
 
-                    default: td_assert(0); break;
-                }
+                default: td_assert(0); break;
             }
             break;
 
 act_like_group :
         case AWT_MODE_GROUP:
-            if (event.type()==AW_Mouse_Press && clicked.node()) {
+            if (clicked.node()) {
                 switch (event.button()) {
                     case AW_BUTTON_LEFT: {
                         AP_tree *at = clicked.node();
@@ -1547,23 +1550,21 @@ act_like_group :
             break;
 
         case AWT_MODE_SETROOT:
-            if (event.type() == AW_Mouse_Press) {
-                switch (event.button()) {
-                    case AW_BUTTON_LEFT:
-                        if (clicked.node()) clicked.node()->set_root();
-                        break;
-                    case AW_BUTTON_RIGHT:
-                        tree_static->find_innermost_edge().set_root();
-                        break;
-                    default: td_assert(0); break;
-                }
-                exports.save       = 1;
-                exports.zoom_reset = 1;
+            switch (event.button()) {
+                case AW_BUTTON_LEFT:
+                    if (clicked.node()) clicked.node()->set_root();
+                    break;
+                case AW_BUTTON_RIGHT:
+                    tree_static->find_innermost_edge().set_root();
+                    break;
+                default: td_assert(0); break;
             }
+            exports.save       = 1;
+            exports.zoom_reset = 1;
             break;
 
         case AWT_MODE_SWAP:
-            if (event.type()==AW_Mouse_Press && clicked.node()) {
+            if (clicked.node()) {
                 switch (event.button()) {
                     case AW_BUTTON_LEFT:  clicked.node()->swap_sons(); break;
                     case AW_BUTTON_RIGHT: clicked.node()->rotate_subtree();     break;
@@ -1574,15 +1575,13 @@ act_like_group :
             break;
 
         case AWT_MODE_MARK: // see also .@OTHER_MODE_MARK_HANDLER
-            if (event.type() == AW_Mouse_Press && clicked.node()) {
+            if (clicked.node()) {
                 GB_transaction ta(tree_static->get_gb_main());
 
-                if (event.type() == AW_Mouse_Press) {
-                    switch (event.button()) {
-                        case AW_BUTTON_LEFT:  mark_species_in_tree(clicked.node(), 1); break;
-                        case AW_BUTTON_RIGHT: mark_species_in_tree(clicked.node(), 0); break;
-                        default: td_assert(0); break;
-                    }
+                switch (event.button()) {
+                    case AW_BUTTON_LEFT:  mark_species_in_tree(clicked.node(), 1); break;
+                    case AW_BUTTON_RIGHT: mark_species_in_tree(clicked.node(), 0); break;
+                    default: td_assert(0); break;
                 }
                 exports.refresh = 1;
                 tree_static->update_timers(); // do not reload the tree
@@ -1592,7 +1591,7 @@ act_like_group :
 
         case AWT_MODE_NONE:
         case AWT_MODE_SELECT:
-            if (event.type()==AW_Mouse_Press && clicked.node()) {
+            if (clicked.node()) {
                 GB_transaction ta(tree_static->get_gb_main());
                 exports.refresh = 1;        // No refresh needed !! AD_map_viewer will do the refresh (needed by arb_pars)
                 map_viewer_cb(clicked.node()->gb_node, ADMVT_SELECT);

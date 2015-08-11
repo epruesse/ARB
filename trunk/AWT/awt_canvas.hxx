@@ -271,8 +271,6 @@ public:
     int zoom_drag_ex;
     int zoom_drag_ey;
     int drag;
-    AW_clicked_line clicked_line;
-    AW_clicked_text clicked_text;
 
     void set_scrollbars();
     void set_dragEndpoint(int x, int y);
