@@ -145,9 +145,6 @@ public:
 
     void init_click(AW_pos mousex, AW_pos mousey, int max_distance, AW_bitset filteri);
 
-    const AW_clicked_line& get_clicked_line() const { return opt_line; }
-    const AW_clicked_text& get_clicked_text() const { return opt_text; }
-
     enum ClickPreference { PREFER_NEARER, PREFER_LINE, PREFER_TEXT };
     const AW_clicked_element *best_click(ClickPreference prefer = PREFER_NEARER);
 };
