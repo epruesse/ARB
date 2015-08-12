@@ -99,7 +99,7 @@ static Pixmap getStipplePixmap(AW_common_Xm *common, StippleType stippleType) {
     return pixmap[stippleType];
 }
 
-AW_device_Xm::FillStyle AW_device_Xm::setFillstyleForGreylevel(int gc, AW::FillStyle filled) {
+AW_device_Xm::Fill_Style AW_device_Xm::setFillstyleForGreylevel(int gc, AW::FillStyle filled) {
     // sets fillstyle and stipple for current greylevel of 'gc'
 
     switch (filled.get_style()) {
@@ -158,7 +158,7 @@ bool AW_device_Xm::box_impl(int gc, AW::FillStyle filled, const Rectangle& rect,
             Rectangle clippedRect;
             drawflag = box_clip(transRect, clippedRect);
             if (drawflag) {
-                FillStyle fillStyle = setFillstyleForGreylevel(gc, filled);
+                Fill_Style fillStyle = setFillstyleForGreylevel(gc, filled);
 
                 if (fillStyle != FS_EMPTY) {
                     XFillRectangle(XDRAW_PARAM3(get_common(), gc),
@@ -200,7 +200,7 @@ bool AW_device_Xm::polygon_impl(int gc, AW::FillStyle filled, int npos, const AW
 
             drawflag = box_clip(npos, transPos, nclippedPos, clippedPos);
             if (drawflag) {
-                FillStyle fillStyle = setFillstyleForGreylevel(gc, filled);
+                Fill_Style fillStyle = setFillstyleForGreylevel(gc, filled);
 
                 if (fillStyle != FS_EMPTY) {
                     XPoint *xpos = new XPoint[nclippedPos];

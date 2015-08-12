@@ -16,9 +16,9 @@ class AW_device_Xm : public AW_device {
 
     void specific_reset() {}
 
-    enum FillStyle { FS_EMPTY, FS_GREY, FS_SOLID };
+    enum Fill_Style { FS_EMPTY, FS_GREY, FS_SOLID };
     
-    AW_device_Xm::FillStyle setFillstyleForGreylevel(int gc, AW::FillStyle filled);
+    AW_device_Xm::Fill_Style setFillstyleForGreylevel(int gc, AW::FillStyle filled);
     void resetFillstyleForGreylevel(int gc);
 
 public:
