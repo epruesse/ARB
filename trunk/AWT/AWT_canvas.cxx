@@ -749,55 +749,5 @@ void AWT_nonDB_graphic::update(GBDATA *) {
 #endif // DEBUG
 }
 
-const AW_clicked_element *AWT_graphic_event::best_click(ClickPreference prefer) {
-    // returns the element with lower distance (to mouse-click- or key-"click"-position).
-    // or NULL (if no element was found inside catch-distance)
-    //
-    // Note: during drag/drop a target element is only available in AWT_MODE_MOVE!
-    // (see .@motion_event)
-
-    const AW_clicked_element *bestClick = 0;
-
-    if (click_dev) {
-        const AW_clicked_line& cl = click_dev->get_clicked_line();
-        const AW_clicked_text& ct = click_dev->get_clicked_text();
-
-        if (cl.does_exist()) {
-            if (ct.does_exist()) {
-                switch (prefer) {
-                    case PREFER_NEARER:
-                        if (cl.get_distance() < ct.get_distance()) {
-                            bestClick = &cl;
-                        }
-                        else {
-                            bestClick = &ct;
-                        }
-                        break;
-
-                    case PREFER_LINE: bestClick = &cl; break;
-                    case PREFER_TEXT: bestClick = &ct; break;
-                }
-            }
-            else {
-                bestClick = &cl;
-            }
-        }
-        else if (ct.does_exist()) {
-            bestClick = &ct;
-        }
-
-#if defined(DEBUG) && 0
-        if (bestClick) {
-            const char *type = bestClick == &cl ? "line" : "text";
-            printf("best click catches '%s' (distance=%i)\n", type, bestClick->distance);
-        }
-        else {
-            printf("click catched nothing\n");
-        }
-#endif
-    }
-
-    return bestClick;
-}
 
 

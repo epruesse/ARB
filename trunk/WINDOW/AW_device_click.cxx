@@ -149,6 +149,52 @@ bool AW_device_click::text_impl(int gc, const char *str, const AW::Position& pos
     return true;
 }
 
+const AW_clicked_element *AW_device_click::best_click(ClickPreference prefer) {
+    // returns the element with lower distance (to mouse-click- or key-"click"-position).
+    // or NULL (if no element was found inside catch-distance)
+    //
+    // Note: during drag/drop a target element is only available in AWT_MODE_MOVE!
+    // see ../AWT/AWT_canvas.cxx@motion_event
+
+    const AW_clicked_element *bestClick = 0;
+
+    if (opt_line.does_exist()) {
+        if (opt_text.does_exist()) {
+            switch (prefer) {
+                case PREFER_NEARER:
+                    if (opt_line.get_distance() < opt_text.get_distance()) {
+                        bestClick = &opt_line;
+                    }
+                    else {
+                        bestClick = &opt_text;
+                    }
+                    break;
+
+                case PREFER_LINE: bestClick = &opt_line; break;
+                case PREFER_TEXT: bestClick = &opt_text; break;
+            }
+        }
+        else {
+            bestClick = &opt_line;
+        }
+    }
+    else if (opt_text.does_exist()) {
+        bestClick = &opt_text;
+    }
+
+#if defined(DEBUG) && 0
+    if (bestClick) {
+        const char *type = bestClick == &opt_line ? "line" : "text";
+        printf("best click catches '%s' (distance=%i)\n", type, bestClick->distance);
+    }
+    else {
+        printf("click catched nothing\n");
+    }
+#endif
+
+    return bestClick;
+}
+
 int AW_clicked_line::indicate_selected(AW_device *d, int gc) const {
     return d->line(gc, line);
 }

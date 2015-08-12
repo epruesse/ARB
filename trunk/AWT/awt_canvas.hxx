@@ -181,8 +181,9 @@ public:
 
     const AW::Position& position() const { return mousepos; } // screen-coordinates
 
-    enum ClickPreference { PREFER_NEARER, PREFER_LINE, PREFER_TEXT };
-    const AW_clicked_element *best_click(ClickPreference prefer = PREFER_NEARER);
+    const AW_clicked_element *best_click(AW_device_click::ClickPreference prefer = AW_device_click::PREFER_NEARER) {
+        return click_dev ? click_dev->best_click(prefer) : NULL;
+    }
 };
 
 class AWT_graphic {
