@@ -19,14 +19,13 @@ using namespace AW;
 //      AW_device_click
 
 AW_device_click::AW_device_click(AW_common *common_)
-        : AW_simple_device(common_) {
-    init_click(0, 0, AWT_NO_CATCH, AW_ALL_DEVICES);
+        : AW_simple_device(common_)
+{
+    init_click(Origin, AWT_NO_CATCH, AW_ALL_DEVICES);
 }
 
-void AW_device_click::init_click(AW_pos mousex, AW_pos mousey, int max_distance, AW_bitset filteri) {
-    mouse_x = mousex;
-    mouse_y = mousey;
-
+void AW_device_click::init_click(const AW::Position& click, int max_distance, AW_bitset filteri) {
+    mouse  = click;
     filter = filteri;
 
     max_distance_line = max_distance;
@@ -47,7 +46,6 @@ bool AW_device_click::line_impl(int /*gc*/, const AW::LineVector& Line, AW_bitse
     LineVector clippedLine;
     bool       drawflag  = clip(transLine, clippedLine);
     if (drawflag) {
-        Position mouse(mouse_x, mouse_y);
         double   nearest_rel_pos;
         Position nearest  = nearest_linepoint(mouse, clippedLine, nearest_rel_pos);
         double   distance = Distance(mouse, nearest);
@@ -93,13 +91,13 @@ bool AW_device_click::text_impl(int gc, const char *str, const AW::Position& pos
     int  dist2text = 0; // exact hit -> distance == 0
 
     // vertical check against textborders
-    if (mouse_y > Y1) { // above text
-        int ydist = mouse_y-Y1;
+    if (mouse.ypos() > Y1) { // above text
+        int ydist = mouse.ypos()-Y1;
         if (ydist > max_distance_text) return false; // too far above
         dist2text = ydist;
     }
-    else if (mouse_y < Y0) { // below text
-        int ydist = Y0-mouse_y;
+    else if (mouse.ypos() < Y0) { // below text
+        int ydist = Y0-mouse.ypos();
         if (ydist > max_distance_text) return false; // too far below
         dist2text = ydist;
     }
@@ -116,13 +114,13 @@ bool AW_device_click::text_impl(int gc, const char *str, const AW::Position& pos
     if (X0 > clipRect.r) return false;
 
     // horizontal check against textborders
-    if (mouse_x > X1) { // right of text
-        int xdist = mouse_x-X1;
+    if (mouse.xpos() > X1) { // right of text
+        int xdist = mouse.xpos()-X1;
         if (xdist > max_distance_text) return false; // too far right
         dist2text = std::max(xdist, dist2text);
     }
-    else if (mouse_x < X0) { // left of text
-        int xdist = X0-mouse_x;
+    else if (mouse.xpos() < X0) { // left of text
+        int xdist = X0-mouse.xpos();
         if (xdist > max_distance_text) return false; // too far left
         dist2text = std::max(xdist, dist2text);
     }
@@ -139,7 +137,6 @@ bool AW_device_click::text_impl(int gc, const char *str, const AW::Position& pos
 
         bool visible = clip(orientation, clippedOrientation);
         if (visible) {
-            Position mouse(mouse_x, mouse_y);
             double   nearest_rel_pos;
             Position nearest = nearest_linepoint(mouse, clippedOrientation, nearest_rel_pos);
 
