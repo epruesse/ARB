@@ -124,7 +124,7 @@ inline bool AW_clicked_element::is_line() const { return dynamic_cast<const AW_c
 #define AWT_NO_CATCH -1
 
 class AW_device_click : public AW_simple_device {
-    AW_pos mouse_x, mouse_y; // @@@ use 'int' instead
+    AW::Position mouse;
 
     int max_distance_line;
     int max_distance_text;
@@ -143,7 +143,7 @@ public:
 
     AW_DEVICE_TYPE type() OVERRIDE;
 
-    void init_click(AW_pos mousex, AW_pos mousey, int max_distance, AW_bitset filteri);
+    void init_click(const AW::Position& click, int max_distance, AW_bitset filteri);
 
     enum ClickPreference { PREFER_NEARER, PREFER_LINE, PREFER_TEXT };
     const AW_clicked_element *best_click(ClickPreference prefer = PREFER_NEARER);
