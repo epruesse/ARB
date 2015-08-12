@@ -1296,7 +1296,7 @@ public:
     }
 };
 
-static AWT_graphic_event::ClickPreference preferredForCommand(AWT_COMMAND_MODE mode) {
+static AW_device_click::ClickPreference preferredForCommand(AWT_COMMAND_MODE mode) {
     // return preferred click target for tree-display
     // (Note: not made this function a member of AWT_graphic_event,
     //  since modes are still reused in other ARB applications,
@@ -1307,10 +1307,10 @@ static AWT_graphic_event::ClickPreference preferredForCommand(AWT_COMMAND_MODE m
         case AWT_MODE_LENGTH:
         case AWT_MODE_MULTIFURC:
         case AWT_MODE_SPREAD:
-            return AWT_graphic_event::PREFER_LINE;
+            return AW_device_click::PREFER_LINE;
 
         default:
-            return AWT_graphic_event::PREFER_NEARER;
+            return AW_device_click::PREFER_NEARER;
     }
 }
 
