@@ -279,7 +279,6 @@ public:
     void get_event(AW_event *eventi) const;       // In an event callback get the events info
 
     void force_expose(); // forces the window to expose instantly
-     
 
     // ******************* Get the devices **********************
     AW_device *get_device(AW_area area);
@@ -291,28 +290,30 @@ public:
 
     /**
      * Creates a new top level menu.
-     * @param name Name of the menu.
-     * @param mnemonic FIXME
-     * @param mask FIXME
+     * @param name     Name of the menu.
+     * @param mnemonic Shortcut (optional)
+     * @param mask     Experts only?
      */
     void create_menu(const char *name, const char *mnemonic, AW_active mask = AWM_ALL);
+
     /**
      * Insert a sub menu into the last created menu.
-     * @param name Name of the sub menu.
-     * @param mnemonic FIXME
-     * @param mask FIXME
+     * @param name     Name of the sub menu.
+     * @param mnemonic Shortcut (optional)
+     * @param mask     Experts only?
      */
     void insert_sub_menu(const char *name, const char *mnemonic, AW_active mask = AWM_ALL);
+
     /**
      * Insert a menu item into the last created menu or sub menu.
-     * @param id FIXME
-     * @param name Name of the item.
-     * @param mnemonic FIXME
-     * @param help_text_ FIXME
-     * @param mask FIXME
-     * @param cb Callback that should be called when the item is activated.
+     * @param id           Unique id (for macros)
+     * @param name         Name of the item.
+     * @param mnemonic     Shortcut (optional)
+     * @param help_text_   Name of helpfile (optional)
+     * @param mask         Experts only?
+     * @param wcb Callback that should be called when the item is activated.
      */
-    void insert_menu_topic(const char *id, const char *name, const char *mnemonic, const char *help_text_, AW_active mask, const WindowCallback& cb);
+    void insert_menu_topic(const char *id, const char *name, const char *mnemonic, const char *help_text_, AW_active mask, const WindowCallback& wcb);
 
     void insert_menu_topic(const char *id, const char *name, const char *mnemonic, const char *help_text_, AW_active mask, const CreateWindowCallback& cwcb) { insert_menu_topic(id, name, mnemonic, help_text_, mask, makeWindowPopper(cwcb)); }
     void insert_menu_topic(const char *id, const char *name, const char *mnemonic, const char *help_text_, AW_active mask, WindowCallbackSimple cb)          { insert_menu_topic(id, name, mnemonic, help_text_, mask, makeWindowCallback(cb)); }
@@ -321,7 +322,7 @@ public:
     void insert_menu_topic(const char *id, const char *name, const char *mnemonic, const char *help_text_, AW_active mask, AW_CB cb, AW_CL cd1, AW_CL cd2) __ATTR__DEPRECATED_TODO("pass WindowCallback") { insert_menu_topic(id, name, mnemonic, help_text_, mask, makeWindowCallback(cb, cd1, cd2)); }
     void insert_menu_topic(const char *id, const char *name, const char *mnemonic, const char *help_text_, AW_active mask, AW_CB1 cb, AW_CL cd1) __ATTR__DEPRECATED_TODO("pass WindowCallback") { insert_menu_topic(id, name, mnemonic, help_text_, mask, makeWindowCallback(cb, cd1)); }
 
-    void sep______________(); 
+    void sep______________();
     void close_sub_menu();
 
     void insert_help_topic(const char *labeli, const char *mnemonic, const char *helpText, AW_active mask, const WindowCallback& cb);

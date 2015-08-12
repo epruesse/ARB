@@ -1038,9 +1038,10 @@ void AW_window::all_menus_created() const { // this is called by AW_window::show
 // ----------------------------------------------------------------------
 
 void AW_window::draw_line(int x1, int y1, int x2, int y2, int width, bool resize) {
-    aw_return_if_fail(xfig_data != NULL); // forgot to call load_xfig ?
-    
+    aw_return_if_fail(xfig_data); // forgot to call load_xfig ?
+
     xfig_data->add_line(x1, y1, x2, y2, width);
+
     _at->set_xfig(xfig_data);
 
     if (resize) {
@@ -1050,7 +1051,6 @@ void AW_window::draw_line(int x1, int y1, int x2, int y2, int width, bool resize
 #endif
     }
 }
-
 
 AW_device_click *AW_window::get_click_device(AW_area area, int mousex, int mousey, int max_distance) {
     AW_area_management *aram         = prvt->areas[area];
@@ -1062,32 +1062,31 @@ AW_device_click *AW_window::get_click_device(AW_area area, int mousex, int mouse
     }
     return click_device;
 }
-AW_device *AW_window::get_device(AW_area area){
-    AW_area_management *aram   = prvt->areas[area];
-    arb_assert(NULL != aram);
-    return (AW_device *)aram->get_screen_device();
+
+AW_device *AW_window::get_device(AW_area area) { // @@@ rename to get_screen_device
+    AW_area_management *aram = prvt->areas[area];
+    arb_assert(aram);
+    return aram->get_screen_device();
 }
 
 void AW_window::get_event(AW_event *eventi) const {
     *eventi = event;
 }
 
-AW_device_print *AW_window::get_print_device(AW_area area){
+AW_device_print *AW_window::get_print_device(AW_area area) {
     AW_area_management *aram = prvt->areas[area];
-    aw_return_val_if_fail(aram, NULL);
-    return aram->get_print_device();
+    return aram ? aram->get_print_device() : NULL;
 }
 
-AW_device_size *AW_window::get_size_device(AW_area area){
+AW_device_size *AW_window::get_size_device(AW_area area) {
     AW_area_management *aram        = prvt->areas[area];
     aw_return_val_if_fail(aram, NULL);
 
     AW_device_size *size_device = aram->get_size_device();
-    aw_return_val_if_fail(size_device, NULL); //paranoia
-
-    size_device->restart_tracking();
-    size_device->reset(); // @@@ hm
-
+    if (size_device) {
+        size_device->restart_tracking();
+        size_device->reset(); // @@@ hm
+    }
     return size_device;
 }
 
@@ -1105,6 +1104,7 @@ void AW_window::insert_help_topic(const char *labeli,
     current_mscope     = tmp;
 #endif
 
+    // insert one help-sub-menu-entry
     prvt->menus.push(prvt->help_menu);
     insert_menu_topic(helpText, labeli, mnemonic, helpText, mask, cb);
     prvt->menus.pop();
@@ -1200,7 +1200,7 @@ void AW_window::get_font_size(int& width, int& height) {
 
 void AW_window::load_xfig(const char *file, bool resize /*= true*/) {
     int width, height;
-    prvt->get_font_size(width, height);
+    get_font_size(width, height);
 
     // 0.8 is _exactly_ right, +/- 0.01 already looks off
     width *= 0.8; height *=0.8;
@@ -1208,7 +1208,7 @@ void AW_window::load_xfig(const char *file, bool resize /*= true*/) {
     if (file)   xfig_data = new AW_xfig(file, width, height);
     else        xfig_data = new AW_xfig(width, height); // create an empty xfig
 
-    xfig_data->create_gcs(get_device(AW_INFO_AREA)); 
+    xfig_data->create_gcs(get_device(AW_INFO_AREA));
 
     _at->set_xfig(xfig_data);
 
@@ -1256,7 +1256,7 @@ void AW_window::set_expose_callback(AW_area area, const WindowCallback& wcb) {
 
 /**
  * Registers a focus callback.
- * They used to be called as soon as the mouse entered the main drawing area. 
+ * In motif-version, they used to be called as soon as the mouse entered the main drawing area.
  * For now, they are not called at all.
  */
 void AW_window::set_focus_callback(const WindowCallback& wcb) {
@@ -1394,7 +1394,6 @@ AW_awar *AW_window::window_local_awar(const char *localname, bool tmp) {
 
 void AW_window::create_window_variables() {
     aw_return_if_fail(prvt->drawing_area != NULL);
-
     RootCallback scrollbar_recalc_cb = makeRootCallback(_aw_window_recalc_scrollbar_cb, this);
 
     get_root()->awar_int(window_local_awarname("horizontal_page_increment"), 50)->add_callback(scrollbar_recalc_cb);
