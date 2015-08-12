@@ -44,6 +44,7 @@ char *aw_input(const char *title, const char *prompt, const char *default_input)
 char *aw_input(const char *prompt, const char *default_input);
 inline char *aw_input(const char *prompt) { return aw_input(prompt, NULL); }
 char *aw_file_selection(const char *title, const char *dir, const char *def_name, const char *suffix);
+char* aw_convert_mnemonic(const char* text, const char* mnemonic);
 
 class AW_window;
 class AW_xfig;

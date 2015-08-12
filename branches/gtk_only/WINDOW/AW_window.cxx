@@ -3,35 +3,24 @@
 //   File      : AW_window.cxx                                   //
 //   Purpose   :                                                 //
 //                                                               //
-//   Coded by Arne Boeckmann aboeckma@mpi-bremen.de on Jul 26, 2012   //
+//   Coded by Arne Boeckmann aboeckma@mpi-bremen.de in Jul 2012  //
 //   Institute of Microbiology (Technical University Munich)     //
 //   http://www.arb-home.de/                                     //
 //                                                               //
 // ============================================================= //
-   
+
 #include "aw_gtk_migration_helpers.hxx"
 #include "aw_window.hxx"
 #include "aw_window_gtk.hxx"
-#include "aw_area_management.hxx"
 #include "aw_xfig.hxx" 
-#include "aw_root.hxx"
-#include "aw_device_click.hxx"  
-#include "aw_device_size.hxx"
 #include "aw_at.hxx"
 #include "aw_msg.hxx"
 #include "aw_awar.hxx"
-#include "aw_common.hxx"
-#include "aw_help.hxx"
-#include "aw_type_checking.hxx"
-#include "aw_select.hxx"
-#include "aw_choice.hxx"
-#include <gtk/gtk.h>
 
-#include <string>
-#include <sstream>
-// #include <arbdb.h>
 #include <arb_str.h>
 #include <arb_strarray.h>
+
+#include <sstream>
 
 void AW_POPDOWN(AW_window *window){
     window->hide();
@@ -231,7 +220,7 @@ float AW_ScalerTransformer::awar2scaler(AW_awar *awar) {
 // force-diff-sync 7284637824 (remove after merging back to trunk)
 // ----------------------------------------------------------------------
 
-static char* aw_convert_mnemonic(const char* text, const char* mnemonic) {
+char* aw_convert_mnemonic(const char* text, const char* mnemonic) {
     /*!
      * Converts ARB type mnemonics into GTK style mnemoics.
      * @param  text     the label text
@@ -1044,180 +1033,12 @@ void AW_window::all_menus_created() const { // this is called by AW_window::show
 #endif // DEBUG
 }
 
-AW_selection_list *AW_window::create_option_menu(const char *awar_name, bool fallback2default){
-    AW_awar* awar = get_root()->awar_no_error(awar_name);
-    aw_return_val_if_fail(awar, NULL);
-
-    GtkWidget *combo_box = gtk_combo_box_new();
-    AW_selection_list *slist = new AW_selection_list(awar, fallback2default);
-    slist->bind_widget(combo_box);
-
-    prvt->combo_box = combo_box;
-    prvt->selection_list = slist;
-    return slist;
-}
-
-void AW_window::insert_option(const char *on, const char *mn, const char *vv) {
-    insert_option_internal(on, mn, vv, false); 
-}
-void AW_window::insert_default_option(const char *on, const char *mn, const char *vv) { 
-    insert_option_internal(on, mn, vv, true); 
-}
-void AW_window::insert_option(const char *on, const char *mn, int vv) { 
-    insert_option_internal(on, mn, vv, false);
-}
-void AW_window::insert_default_option(const char *on, const char *mn, int vv) { 
-    insert_option_internal(on, mn, vv, true); 
-}
-void AW_window::insert_option(const char *on, const char *mn, float vv) { 
-    insert_option_internal(on, mn, vv, false); 
-}
-void AW_window::insert_default_option(const char *on, const char *mn, float vv) { 
-    insert_option_internal(on, mn, vv, true); 
-}
-
-
-template <class T>
-void AW_window::insert_option_internal(const char *option_name, const char */*mnemonic*/, 
-                                       T var_value, 
-                                       bool default_option) {
-    aw_return_if_fail(prvt->selection_list != NULL); //current option menu has to be set
-    //aw_return_if_fail(prvt->selection_list->variable_type == AW_TypeCheck::getVarType(var_value)); //type missmatch
-    FIXME("check for distinct per-option callbacks");
-    FIXME("setting sensitivity of option menu entries not implemented");
-    
-    if(default_option) {
-        prvt->selection_list->insert_default(option_name, var_value);
-    }
-    else {
-        prvt->selection_list->insert(option_name, var_value);
-    }
-}
-
-void AW_window::update_option_menu() {
-    aw_return_if_fail(prvt->selection_list);
-    prvt->selection_list->update();
-    put_with_label(prvt->combo_box);
-    prvt->selection_list = NULL;
-}
-
-void AW_window::clear_option_menu(AW_selection_list *sel) {
-    sel->clear();
-}
-
-AW_selection_list* AW_window::create_selection_list(const char *awar_name, int columns, int rows, bool fallback2default) {
-    AW_awar* awar = get_root()->awar_no_error(awar_name);
-    aw_return_val_if_fail(awar, NULL);
-    aw_warn_if_fail(!_at->label_for_inputfield); // labels have no effect for selection lists
-
-   
-    GtkWidget *tree = gtk_tree_view_new();
-    gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(tree), FALSE);
-   
-    GtkWidget *scrolled_win = gtk_scrolled_window_new(NULL, NULL);
-    gtk_container_add(GTK_CONTAINER(scrolled_win), tree);
-
-    if (!_at->to_position_exists) {
-        // set size
-        int char_width, char_height;
-        prvt->get_font_size(char_width, char_height);
-        gtk_widget_set_size_request(scrolled_win, char_width * columns, char_height * rows);
-    }
-
-    AW_selection_list *slist = new AW_selection_list(awar, fallback2default);
-    slist->bind_widget(tree);
-
-    awar->dclicked += prvt->action_template.dclicked;
-    prvt->action_template = AW_action();
-
-    put_with_label(scrolled_win);
-    return slist;
-}
-
-// BEGIN TOGGLE FIELD STUFF
-
-/**
- * Begins a radio button group
- * @param var_name    name of awar
- * @param orientation 0 -> vertical, != 0 horizontal layout
- */
-void AW_window::create_toggle_field(const char *var_name, int orientation /*= 0*/){
-    AW_awar* awar = get_root()->awar_no_error(var_name);
-    aw_return_if_fail(awar != NULL);
-    
-    if (orientation == 0) {
-        prvt->toggle_field = gtk_vbox_new(true, 2);
-    } 
-    else {
-        prvt->toggle_field = gtk_hbox_new(true, 2);
-    }
-
-    prvt->toggle_field_awar_name = var_name;
-}
-
-/**
- * Begins a radio button group with a label
- */
-void AW_window::create_toggle_field(const char *var_name, const char *labeli, const char *mnemonic) {
-    if(labeli){
-        char *lab = aw_convert_mnemonic(labeli, mnemonic);
-        this->label(lab);
-        free(lab);
-    }
-    create_toggle_field(var_name);
-}
-
-template <class T>
-void AW_window::insert_toggle_internal(const char *toggle_label, const char *mnemonic, T var_value) {
-    AW_awar* awar = get_root()->awar_no_error(prvt->toggle_field_awar_name);
-    aw_return_if_fail(awar != NULL);
-
-    prvt->radio_last = GTK_RADIO_BUTTON(gtk_radio_button_new_from_widget(prvt->radio_last));
-
-    gtk_container_add(GTK_CONTAINER(prvt->radio_last),
-                      make_label(toggle_label, 0, mnemonic));
-    
-    gtk_box_pack_start(GTK_BOX(prvt->toggle_field), 
-                       GTK_WIDGET(prvt->radio_last), true, true, 2);
-
-    prvt->action_template.set_label(toggle_label); // fixme mnemonic
-
-    AW_choice *choice = awar->add_choice(prvt->action_template, var_value);
-    choice->bind(GTK_WIDGET(prvt->radio_last), "clicked");
-    choice->set_label(toggle_label);
-}
-
-void AW_window::insert_toggle        (const char *toggle_label, const char *mnemonic, const char *var_value) { insert_toggle_internal(toggle_label, mnemonic, var_value); }
-void AW_window::insert_toggle        (const char *toggle_label, const char *mnemonic, int var_value)         { insert_toggle_internal(toggle_label, mnemonic, var_value); }
-void AW_window::insert_toggle        (const char *toggle_label, const char *mnemonic, float var_value)       { insert_toggle_internal(toggle_label, mnemonic, var_value); }
-
-void AW_window::insert_default_toggle(const char *toggle_label, const char *mnemonic, const char *var_value) { insert_toggle_internal(toggle_label, mnemonic, var_value); }
-void AW_window::insert_default_toggle(const char *toggle_label, const char *mnemonic, int var_value)         { insert_toggle_internal(toggle_label, mnemonic, var_value); }
-void AW_window::insert_default_toggle(const char *toggle_label, const char *mnemonic, float var_value)       { insert_toggle_internal(toggle_label, mnemonic, var_value); }
-
-
-void AW_window::update_toggle_field() { 
-    gtk_widget_show_all(prvt->toggle_field);
-    GtkAlignment* align = GTK_ALIGNMENT(gtk_alignment_new(0.0f, 0.0f, 0.0f, 0.0f));
-    put_with_label(prvt->toggle_field, align);
-
-    // select the toggle associated with current awar value:
-    AW_awar* awar = get_root()->awar_no_error(prvt->toggle_field_awar_name);
-    aw_assert(awar);
-    if (awar) awar->update_choices();
-
-    prvt->radio_last             = NULL; // end of radio group
-    prvt->toggle_field           = NULL;
-    prvt->toggle_field_awar_name = NULL;
-}
-// END TOGGLE FIELD STUFF
-
 // ----------------------------------------------------------------------
 // force-diff-sync 2939128467234 (remove after merging back to trunk)
 // ----------------------------------------------------------------------
 
 void AW_window::draw_line(int x1, int y1, int x2, int y2, int width, bool resize) {
-    aw_return_if_fail(xfig_data != NULL);  // forgot to call load_xfig ?
+    aw_return_if_fail(xfig_data != NULL); // forgot to call load_xfig ?
     
     xfig_data->add_line(x1, y1, x2, y2, width);
     _at->set_xfig(xfig_data);
@@ -1951,3 +1772,4 @@ AW_action* AW_window::action_register(const char* action_id, bool localize) {
 }
 
 #undef OPTIONALLY
+
