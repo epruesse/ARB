@@ -428,10 +428,33 @@ public:
     AW_device_print *get_print_device(AW_area area);
 
     // ************** Create the menu buttons *********
-    void create_menu(AW_label name, const char *mnemonic, AW_active mask = AWM_ALL);
-    void insert_sub_menu(AW_label name, const char *mnemonic, AW_active mask = AWM_ALL);
 
-    void insert_menu_topic(const char *id, const char *name, const char *mnemonic, const char *help_text_, AW_active mask, const WindowCallback& cb);
+    /**
+     * Creates a new top level menu.
+     * @param name     Name of the menu.
+     * @param mnemonic Shortcut (optional)
+     * @param mask     Experts only?
+     */
+    void create_menu(const char *name, const char *mnemonic, AW_active mask = AWM_ALL);
+
+    /**
+     * Insert a sub menu into the last created menu.
+     * @param name     Name of the sub menu.
+     * @param mnemonic Shortcut (optional)
+     * @param mask     Experts only?
+     */
+    void insert_sub_menu(const char *name, const char *mnemonic, AW_active mask = AWM_ALL);
+
+    /**
+     * Insert a menu item into the last created menu or sub menu.
+     * @param id           Unique id (for macros)
+     * @param name         Name of the item.
+     * @param mnemonic     Shortcut (optional)
+     * @param help_text_   Name of helpfile (optional)
+     * @param mask         Experts only?
+     * @param wcb Callback that should be called when the item is activated.
+     */
+    void insert_menu_topic(const char *id, const char *name, const char *mnemonic, const char *help_text_, AW_active mask, const WindowCallback& wcb);
 
     void insert_menu_topic(const char *id, const char *name, const char *mnemonic, const char *help_text_, AW_active mask, const CreateWindowCallback& cwcb) { insert_menu_topic(id, name, mnemonic, help_text_, mask, makeWindowPopper(cwcb)); }
     void insert_menu_topic(const char *id, const char *name, const char *mnemonic, const char *help_text_, AW_active mask, WindowCallbackSimple cb)          { insert_menu_topic(id, name, mnemonic, help_text_, mask, makeWindowCallback(cb)); }
@@ -502,6 +525,7 @@ public:
     void get_screen_size(int& width, int& height);
     bool get_mouse_pos(int& x, int& y);
     void set_focus_policy(bool follow_mouse);
+    void get_font_size(int& w, int& h);
 #endif
     
     // ************** ********************************************************************  *********
