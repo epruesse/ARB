@@ -106,10 +106,7 @@ namespace AW {
 
         bool valid() const { return !is_nan_or_inf(x) && !is_nan_or_inf(y); }
 
-        Position(double X, double Y) : x(X), y(Y) {
-            ISVALID(*this);
-        }
-
+        Position(double X, double Y) : x(X), y(Y) { ISVALID(*this); }
         // Position(const Position& other) : x(other.x), y(other.y) { ISVALID(*this); }
         Position() : x(NAN), y(NAN) {} // default is no position
         ~Position() {}
@@ -219,12 +216,7 @@ namespace AW {
     // -----------------------------------------
     //      inline Position members
 
-    inline Position& Position::operator += (const Vector& v) 
-    {
-        x += v.x();
-        y += v.y();
-        aw_assert(valid());
-        return *this; }
+    inline Position& Position::operator += (const Vector& v) { x += v.x(); y += v.y(); ISVALID(*this); return *this; }
     inline Position& Position::operator -= (const Vector& v) { x -= v.x(); y -= v.y(); ISVALID(*this); return *this; }
 
     // ------------------------------------------
@@ -287,16 +279,11 @@ namespace AW {
         void standardize();
 
     public:
-        bool valid() const {
-            return Start.valid() && ToEnd.valid();
-        }
+        bool valid() const { return Start.valid() && ToEnd.valid(); }
 
         LineVector(const Position& startpos, const Position& end) : Start(startpos), ToEnd(startpos, end) { ISVALID(*this); }
         LineVector(const Position& startpos, const Vector& to_end) : Start(startpos), ToEnd(to_end) { ISVALID(*this); }
-        LineVector(double X1, double Y1, double X2, double Y2) : Start(X1, Y1), ToEnd(X2-X1, Y2-Y1)
-        {
-            ISVALID(*this);
-        }
+        LineVector(double X1, double Y1, double X2, double Y2) : Start(X1, Y1), ToEnd(X2-X1, Y2-Y1) { ISVALID(*this); }
         explicit LineVector(const AW_screen_area& r, AW_screen_area_conversion_mode mode) {
             switch (mode) {
                 case INCLUSIVE_OUTLINE:
@@ -583,10 +570,10 @@ namespace AW {
 
 #define AW_DUMP(x) do { aw_dump(x, #x); fputc('\n', stderr); } while(0)
     
-#endif //DEBUG
+#endif
 
-    inline AW_pos x_alignment(AW_pos x_pos, AW_pos x_size, AW_pos alignment) { 
-        return x_pos - x_size*alignment; 
+    inline AW_pos x_alignment(AW_pos x_pos, AW_pos x_size, AW_pos alignment) {
+        return x_pos - x_size*alignment;
     }
 };
 
