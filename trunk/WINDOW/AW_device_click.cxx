@@ -33,6 +33,7 @@ void AW_device_click::init_click(const AW::Position& click, int max_distance, AW
 
     opt_line = AW_clicked_line();
     opt_text = AW_clicked_text();
+    opt_box  = AW_clicked_box();
 }
 
 AW_DEVICE_TYPE AW_device_click::type() {
@@ -58,6 +59,37 @@ bool AW_device_click::line_impl(int /*gc*/, const AW::LineVector& Line, AW_bitse
     return drawflag;
 }
 
+bool AW_device_click::box_impl(int gc, AW::FillStyle filled, const AW::Rectangle& rect, AW_bitset filteri) {
+    if (!(filteri & filter)) return false; // motif-only
+
+    int dist = -1;
+    if (filled.is_empty()) {
+        LocallyModify<AW_clicked_line> saveLine(opt_line, AW_clicked_line());
+        LocallyModify<int>             saveDist(max_distance_line, max_distance_line);
+
+        if (!generic_box(gc, rect, filteri)) return false;
+        if (!opt_line.does_exist()) return true; // no click near any borderline detected
+
+        dist = opt_line.get_distance();
+    }
+    else {
+        Rectangle transRect = transform(rect);
+        if (!transRect.contains(mouse)) {
+            return box_impl(gc, FillStyle::EMPTY, rect, filteri); // otherwise use min. dist to box frame
+        }
+        dist = 0; // if inside rect -> use zero distance
+    }
+
+    aw_assert(dist != -1);
+    if (!opt_box.does_exist() || dist<opt_box.get_distance()) {
+        opt_box.assign(rect, dist, 0.0, click_cd);
+    }
+    return true;
+}
+
+bool AW_device_click::polygon_impl(int gc, AW::FillStyle filled, int npos, const AW::Position *pos, AW_bitset filteri) {
+    return generic_polygon(gc, npos, pos, filteri); // stores single lines - shall store polygon
+}
 
 bool AW_device_click::text_impl(int gc, const char *str, const AW::Position& pos, AW_pos alignment, AW_bitset filteri, long opt_strlen) {
     if (!(filteri & filter)) return false; // motif only - gtk should
@@ -155,39 +187,24 @@ const AW_clicked_element *AW_device_click::best_click(ClickPreference prefer) {
 
     const AW_clicked_element *bestClick = 0;
 
-    if (opt_line.does_exist()) {
-        if (opt_text.does_exist()) {
-            switch (prefer) {
-                case PREFER_NEARER:
-                    if (opt_line.get_distance() < opt_text.get_distance()) {
-                        bestClick = &opt_line;
-                    }
-                    else {
-                        bestClick = &opt_text;
-                    }
-                    break;
+    if (prefer == PREFER_LINE && opt_line.does_exist()) bestClick = &opt_line;
+    if (prefer == PREFER_TEXT && opt_text.does_exist()) bestClick = &opt_text;
 
-                case PREFER_LINE: bestClick = &opt_line; break;
-                case PREFER_TEXT: bestClick = &opt_text; break;
+    if (!bestClick) {
+        const AW_clicked_element *maybeClicked[] = {
+            &opt_line,
+            &opt_text,
+            &opt_box,
+        };
+
+        for (size_t i = 0; i<ARRAY_ELEMS(maybeClicked); ++i) {
+            if (maybeClicked[i]->does_exist()) {
+                if (!bestClick || maybeClicked[i]->get_distance()<bestClick->get_distance()) {
+                    bestClick = maybeClicked[i];
+                }
             }
         }
-        else {
-            bestClick = &opt_line;
-        }
     }
-    else if (opt_text.does_exist()) {
-        bestClick = &opt_text;
-    }
-
-#if defined(DEBUG) && 0
-    if (bestClick) {
-        const char *type = bestClick == &opt_line ? "line" : "text";
-        printf("best click catches '%s' (distance=%i)\n", type, bestClick->distance);
-    }
-    else {
-        printf("click catched nothing\n");
-    }
-#endif
 
     return bestClick;
 }
@@ -203,4 +220,7 @@ int AW_clicked_text::indicate_selected(AW_device *d, int gc) const {
     return d->box(gc, AW::FillStyle::SHADED_WITH_BORDER, textArea);
 #endif
 }
-
+int AW_clicked_box::indicate_selected(AW_device *d, int gc) const {
+    fprintf(stderr, "AW_clicked_box::indicate_selected\n");
+    return d->box(gc, AW::FillStyle::SOLID, box);
+}
