@@ -275,8 +275,6 @@ public:
     }
 };
 
-inline AW_pos x_alignment(AW_pos x_pos, AW_pos x_size, AW_pos alignment) { return x_pos - x_size*alignment; }
-
 inline void AW_GC::set_effective_color() {
     AW_rgb col = color^(function == AW_XOR ? common->get_XOR_color(): AW_rgb(0));
     if (col != last_fg_color) {

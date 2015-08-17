@@ -573,6 +573,9 @@ namespace AW {
     
 #endif
 
+    inline AW_pos x_alignment(AW_pos x_pos, AW_pos x_size, AW_pos alignment) {
+        return x_pos - x_size*alignment;
+    }
 };
 
 #else
