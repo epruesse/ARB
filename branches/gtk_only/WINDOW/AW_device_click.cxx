@@ -32,16 +32,19 @@ void AW_device_click::init_click(const AW::Position& click, int max_distance, AW
     max_distance_line = max_distance;
     max_distance_text = max_distance;
 
-    opt_line = AW_clicked_line();
-    opt_text = AW_clicked_text();
-    opt_box  = AW_clicked_box();
+    opt_line    = AW_clicked_line();
+    opt_text    = AW_clicked_text();
+    opt_box     = AW_clicked_box();
+    opt_polygon = AW_clicked_polygon();
 }
 
 AW_DEVICE_TYPE AW_device_click::type() {
     return AW_DEVICE_CLICK;
 }
 
-bool AW_device_click::line_impl(int /*gc*/, const AW::LineVector& Line, AW_bitset /*filteri*/) {
+bool AW_device_click::line_impl(int /*gc*/, const AW::LineVector& Line, AW_bitset filteri) {
+    if (!(filteri & filter)) return false; // needed for motif only?
+
     LineVector transLine = transform(Line);
     LineVector clippedLine;
     bool       drawflag  = clip(transLine, clippedLine);
@@ -59,7 +62,7 @@ bool AW_device_click::line_impl(int /*gc*/, const AW::LineVector& Line, AW_bitse
 }
 
 bool AW_device_click::box_impl(int gc, AW::FillStyle filled, const AW::Rectangle& rect, AW_bitset filteri) {
-    if (!(filteri & filter)) return false; // motif-only
+    if (!(filteri & filter)) return false; // needed for motif only?
 
     int dist = -1;
     if (filled.is_empty()) {
@@ -86,12 +89,70 @@ bool AW_device_click::box_impl(int gc, AW::FillStyle filled, const AW::Rectangle
     return true;
 }
 
+inline double kpt2(const Position& a, const Position& b, const Position& c) {
+    if (a.xpos() == b.xpos() && a.ypos() == b.ypos()) return 0;
+    if (a.ypos() <= b.ypos() || a.ypos() >  c.ypos()) return 1;
+
+    double d = (b.xpos()-a.xpos()) * (c.ypos()-a.ypos()) - (b.ypos()-a.ypos()) * (c.xpos()-a.xpos());
+    return d>0 ? -1 : (d<0 ? 1 : 0);
+}
+inline double KreuzProdTest(const Position& a, const Position& b, const Position& c) {
+    if (a.ypos() == b.ypos() && b.ypos() == c.ypos()) {
+        if (is_between(b.xpos(), a.xpos(), c.xpos())) return 0;
+        return 1;
+    }
+    return (b.ypos()>c.ypos()) ? kpt2(a, c, b) : kpt2(a, b, c);
+}
+static bool polygon_contains(const Position& mouse, int npos, const Position *pos) {
+    // Jordan test for "Position inside polygon?" (see https://de.wikipedia.org/wiki/Punkt-in-Polygon-Test_nach_Jordan)
+    double t = -1 * KreuzProdTest(mouse, pos[npos-1], pos[0]);
+    for (int i = 1; i<npos; ++i) {
+        t = t*KreuzProdTest(mouse, pos[i-1], pos[i]);
+    }
+    return t>=0;
+}
+
 bool AW_device_click::polygon_impl(int gc, AW::FillStyle filled, int npos, const AW::Position *pos, AW_bitset filteri) {
-    return generic_polygon(gc, npos, pos, filteri); // stores single lines - shall store polygon
+    if (!(filteri & filter)) return false; // needed for motif only?
+
+    int dist = -1;
+    aw_assert(npos>2);
+
+    if (filled.is_empty()) {
+        LocallyModify<AW_clicked_line> saveLine(opt_line, AW_clicked_line());
+        LocallyModify<int>             saveDist(max_distance_line, max_distance_line);
+
+        if (!generic_polygon(gc, npos, pos, filteri)) return false;
+        if (!opt_line.does_exist()) return true; // no click near any borderline detected
+
+        dist = opt_line.get_distance();
+    }
+    else {
+        bool inside;
+        {
+            AW::Position *tpos = new AW::Position[npos];
+            for (int i = 0; i<npos; ++i) {
+                tpos[i] = transform(pos[i]);
+            }
+            inside = polygon_contains(mouse, npos, tpos);
+            delete [] tpos;
+        }
+
+        if (!inside) {
+            return polygon_impl(gc, FillStyle::EMPTY, npos, pos, filteri);
+        }
+        dist = 0; // if inside polygon -> use zero distance
+    }
+
+    aw_assert(dist != -1);
+    if (!opt_polygon.does_exist() || dist<opt_polygon.get_distance()) {
+        opt_polygon.assign(npos, pos, dist, 0.0, click_cd);
+    }
+    return true;
 }
 
 bool AW_device_click::text_impl(int gc, const char *str, const AW::Position& pos, AW_pos alignment, AW_bitset filteri, long opt_strlen) {
-    if (!(filteri & filter)) return false; // motif only
+    if (!(filteri & filter)) return false; // needed for motif only?
 
     AW_pos X0, Y0;          // Transformed pos
     this->transform(pos.xpos(), pos.ypos(), X0, Y0);
@@ -191,9 +252,11 @@ const AW_clicked_element *AW_device_click::best_click(ClickPreference prefer) {
 
     if (!bestClick) {
         const AW_clicked_element *maybeClicked[] = {
+            // earlier elements are preferred over later elements
+            &opt_polygon,
+            &opt_box,
             &opt_line,
             &opt_text,
-            &opt_box,
         };
 
         for (size_t i = 0; i<ARRAY_ELEMS(maybeClicked); ++i) {
@@ -220,8 +283,20 @@ int AW_clicked_text::indicate_selected(AW_device *d, int gc) const {
 #endif
 }
 int AW_clicked_box::indicate_selected(AW_device *d, int gc) const {
-    fprintf(stderr, "AW_clicked_box::indicate_selected\n");
+#if defined(ARB_MOTIF)
     return d->box(gc, AW::FillStyle::SOLID, box);
+#else // !defined(ARB_MOTIF)
+    d->set_grey_level(gc, 0.4);
+    return d->box(gc, AW::FillStyle::SHADED_WITH_BORDER, box);
+#endif
+}
+int AW_clicked_polygon::indicate_selected(AW_device *d, int gc) const {
+#if defined(ARB_MOTIF)
+    return d->polygon(gc, AW::FillStyle::SOLID, npos, pos);
+#else // !defined(ARB_MOTIF)
+    d->set_grey_level(gc, 0.4);
+    return d->polygon(gc, AW::FillStyle::SHADED_WITH_BORDER, npos, pos);
+#endif
 }
 
 /**

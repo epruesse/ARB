@@ -95,12 +95,12 @@ namespace AW {
 
     class Vector;
 
+    inline bool is_between(const double& coord1, const double& between, const double& coord2) {
+        return ((coord1-between)*(between-coord2)) >= 0.0;
+    }
+
     class Position {
         double x, y;
-
-        static bool is_between(const double& coord1, const double& between, const double& coord2) {
-            return ((coord1-between)*(between-coord2)) >= 0.0;
-        }
 
     public:
 
@@ -127,7 +127,7 @@ namespace AW {
         void moveTo(const Position& pos) { *this = pos; }
 
         inline bool is_between(const Position& p1, const Position& p2) const {
-            return is_between(p1.x, x, p2.x) && is_between(p1.y, y, p2.y);
+            return AW::is_between(p1.x, x, p2.x) && AW::is_between(p1.y, y, p2.y);
         }
     };
 
