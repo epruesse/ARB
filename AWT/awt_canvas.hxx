@@ -10,6 +10,9 @@
 #ifndef ATTRIBUTES_H
 #include <attributes.h>
 #endif
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
+#endif
 
 #ifndef AW_POSITION_HXX
 #include <aw_position.hxx>
