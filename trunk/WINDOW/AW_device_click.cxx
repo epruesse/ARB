@@ -282,8 +282,19 @@ int AW_clicked_text::indicate_selected(AW_device *d, int gc) const {
 #endif
 }
 int AW_clicked_box::indicate_selected(AW_device *d, int gc) const {
+#if defined(ARB_MOTIF)
     return d->box(gc, AW::FillStyle::SOLID, box);
+#else // !defined(ARB_MOTIF)
+    d->set_grey_level(gc, 0.4);
+    return d->box(gc, AW::FillStyle::SHADED_WITH_BORDER, box);
+#endif
 }
 int AW_clicked_polygon::indicate_selected(AW_device *d, int gc) const {
+#if defined(ARB_MOTIF)
     return d->polygon(gc, AW::FillStyle::SOLID, npos, pos);
+#else // !defined(ARB_MOTIF)
+    d->set_grey_level(gc, 0.4);
+    return d->polygon(gc, AW::FillStyle::SHADED_WITH_BORDER, npos, pos);
+#endif
 }
+
