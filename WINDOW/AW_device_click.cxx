@@ -127,10 +127,17 @@ bool AW_device_click::polygon_impl(int gc, AW::FillStyle filled, int npos, const
         dist = opt_line.get_distance();
     }
     else {
-        AW::Position tpos[npos];
-        for (int i = 0; i<npos; ++i) tpos[i] = transform(pos[i]);
+        bool inside;
+        {
+            AW::Position *tpos = new AW::Position[npos];
+            for (int i = 0; i<npos; ++i) {
+                tpos[i] = transform(pos[i]);
+            }
+            inside = polygon_contains(mouse, npos, tpos);
+            delete [] tpos;
+        }
 
-        if (!polygon_contains(mouse, npos, tpos)) {
+        if (!inside) {
             return polygon_impl(gc, FillStyle::EMPTY, npos, pos, filteri);
         }
         dist = 0; // if inside polygon -> use zero distance
