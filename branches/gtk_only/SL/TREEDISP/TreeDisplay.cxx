@@ -816,11 +816,7 @@ public:
 
     const AW_clicked_element *element() const { return elem; }
 
-    bool operator == (const ClickedElement& other) const {
-        return
-            element()->is_text() == other.element()->is_text() &&
-            element()            == other.element();
-    }
+    bool operator == (const ClickedElement& other) const { return *element() == *other.element(); }
     bool operator != (const ClickedElement& other) const { return !(*this == other); }
 };
 
@@ -861,8 +857,10 @@ public:
     void draw_drag_indicator(AW_device *device, int drag_gc) const {
         td_assert(valid_drag_device(device));
         source_element()->indicate_selected(device, drag_gc);
-        if (Drag != Drop) dest_element()->indicate_selected(device, drag_gc);
-        device->line(drag_gc, source_element()->get_connecting_line(*dest_element()));
+        if (Drag != Drop) {
+            dest_element()->indicate_selected(device, drag_gc);
+            device->line(drag_gc, source_element()->get_connecting_line(*dest_element()));
+        }
     }
 };
 
@@ -1592,8 +1590,8 @@ act_like_group :
             }
             break;
 
-            // now handle all modes which only act on tips (aka species) and
-            // shall perform identically in tree- and list-modes
+        // now handle all modes which only act on tips (aka species) and
+        // shall perform identically in tree- and list-modes
 
         case AWT_MODE_INFO:
         case AWT_MODE_WWW: {
@@ -1655,7 +1653,7 @@ AWT_graphic_tree::AWT_graphic_tree(AW_root *aw_root_, GBDATA *gb_main_, AD_map_v
     : AWT_graphic(),
       line_filter         (AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_PRINTER|AW_SIZE),
       vert_line_filter    (AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_PRINTER),
-      mark_filter         (AW_SCREEN|AW_PRINTER_EXT),
+      mark_filter         (AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_PRINTER_EXT),
       group_bracket_filter(AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_PRINTER|AW_SIZE_UNSCALED),
       bs_circle_filter    (AW_SCREEN|AW_PRINTER|AW_SIZE_UNSCALED),
       leaf_text_filter    (AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_PRINTER|AW_SIZE_UNSCALED),

@@ -19,7 +19,7 @@ class AW_clicked_element {
 
     bool   exists;          // true if a drawn element was clicked, else false
     int    distance;        // distance in pixel to nearest line/text
-    AW_pos nearest_rel_pos; // 0 = at left(upper) small-side, 1 = at right(lower) small-side of textArea or line
+    AW_pos nearest_rel_pos; // 0 = at left(upper) small-side, 1 = at right(lower) small-side of textArea or line (does not make sense for box or polygon)
 
     void copy_cds(const AW_click_cd *click_cd) {
         if (click_cd) {
@@ -60,8 +60,10 @@ public:
     virtual AW_clicked_element *clone() const     = 0;
 
     bool does_exist() const { return exists; }
+
     inline bool is_text() const;
     inline bool is_line() const;
+    inline bool is_box() const;
 
     double get_rel_pos() const { return nearest_rel_pos; }
     int get_distance() const { return distance; }
@@ -70,7 +72,8 @@ public:
         return AW::LineVector(get_attach_point(), other.get_attach_point());
     }
 
-    virtual int indicate_selected(AW_device *d, int gc) const = 0;
+    virtual bool operator==(const AW_clicked_element& other) const = 0;
+    virtual int indicate_selected(AW_device *d, int gc) const  = 0;
 };
 
 class AW_clicked_line : public AW_clicked_element {
@@ -81,7 +84,10 @@ public:
         line = line_;
     }
 
-    bool operator == (const AW_clicked_line& other) const { return nearlyEqual(get_line(), other.get_line()); }
+    bool operator == (const AW_clicked_element& other) const OVERRIDE {
+        const AW_clicked_line *otherLine = dynamic_cast<const AW_clicked_line*>(&other);
+        return otherLine ? nearlyEqual(get_line(), otherLine->get_line()) : false;
+    }
 
     AW::Position get_attach_point() const OVERRIDE {
         double nrp = get_rel_pos();
@@ -101,7 +107,10 @@ public:
         textArea = textArea_;
     }
 
-    bool operator == (const AW_clicked_text& other) const { return nearlyEqual(textArea, other.textArea); }
+    bool operator == (const AW_clicked_element& other) const OVERRIDE {
+        const AW_clicked_text *otherText = dynamic_cast<const AW_clicked_text*>(&other);
+        return otherText ? nearlyEqual(textArea, otherText->textArea) : false;
+    }
 
     AW::Position get_attach_point() const OVERRIDE {
         return textArea.centroid(); // @@@ uses center atm - should attach to bounding box
@@ -111,28 +120,57 @@ public:
     AW_clicked_element *clone() const OVERRIDE { return new AW_clicked_text(*this); }
 };
 
+class AW_clicked_box : public AW_clicked_element {
+    AW::Rectangle box; // world coordinates of clicked box
+public:
+    void assign(AW::Rectangle box_, int distance_, const AW_pos& nearest_rel_pos_, const AW_click_cd *click_cd_) {
+        AW_clicked_element::assign(distance_, nearest_rel_pos_, click_cd_);
+        box    = box_;
+    }
+
+    bool operator == (const AW_clicked_element& other) const OVERRIDE {
+        const AW_clicked_box *otherBox = dynamic_cast<const AW_clicked_box*>(&other);
+        return otherBox ? nearlyEqual(box, otherBox->box) : false;
+    }
+
+    AW::Position get_attach_point() const OVERRIDE {
+        return box.centroid(); // @@@ uses center atm - should attach to bounding box
+    }
+    int indicate_selected(AW_device *d, int gc) const OVERRIDE;
+    AW_clicked_element *clone() const OVERRIDE { return new AW_clicked_box(*this); }
+};
+
 // ---------------------
 //      type checks
 
 inline bool AW_clicked_element::is_text() const { return dynamic_cast<const AW_clicked_text*>(this); }
 inline bool AW_clicked_element::is_line() const { return dynamic_cast<const AW_clicked_line*>(this); }
+inline bool AW_clicked_element::is_box()  const { return dynamic_cast<const AW_clicked_box*>(this); }
 
 #define AWT_CATCH    30         // max-pixel distance to graphical element (to accept a click or command)
 #define AWT_NO_CATCH -1
 
 class AW_device_click : public AW_simple_device {
-    AW_pos mouse_x, mouse_y; // @@@ use 'int' instead
+    AW::Position mouse;
 
     int max_distance_line;
     int max_distance_text;
 
     AW_clicked_line opt_line;
     AW_clicked_text opt_text;
+    AW_clicked_box  opt_box;
+    // @@@ add AW_clicked_polygon
 
     bool line_impl(int gc, const AW::LineVector& Line, AW_bitset filteri) OVERRIDE;
     bool text_impl(int gc, const char *str, const AW::Position& pos, AW_pos alignment, AW_bitset filteri, long opt_strlen) OVERRIDE;
-    bool invisible_impl(const AW::Position& pos, AW_bitset filteri) OVERRIDE { return generic_invisible(pos, filteri); }
+    bool box_impl(int gc, AW::FillStyle filled, const AW::Rectangle& rect, AW_bitset filteri) OVERRIDE;
+    bool polygon_impl(int gc, AW::FillStyle filled, int npos, const AW::Position *pos, AW_bitset filteri) OVERRIDE;
 
+    // completely ignore clicks to circles and arcs
+    bool circle_impl(int, AW::FillStyle, const AW::Position&, const AW::Vector&, AW_bitset) OVERRIDE { return false; }
+    bool arc_impl(int, AW::FillStyle, const AW::Position&, const AW::Vector&, int, int, AW_bitset) OVERRIDE { return false; }
+
+    bool invisible_impl(const AW::Position& pos, AW_bitset filteri) OVERRIDE { return generic_invisible(pos, filteri); }
     void specific_reset() OVERRIDE {}
     
 public:
@@ -140,7 +178,7 @@ public:
 
     AW_DEVICE_TYPE type() OVERRIDE;
 
-    void init_click(AW_pos mousex, AW_pos mousey, int max_distance, AW_bitset filteri);
+    void init_click(const AW::Position& click, int max_distance, AW_bitset filteri);
 
     enum ClickPreference { PREFER_NEARER, PREFER_LINE, PREFER_TEXT };
     const AW_clicked_element *best_click(ClickPreference prefer = PREFER_NEARER);
