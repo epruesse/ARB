@@ -1332,7 +1332,7 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
 
     ClickedTarget clicked(this, event.best_click(preferredForCommand(event.cmd())));
     // Note: during drag/release 'clicked'
-    //       - contains drop-target (only in AWT_MODE_MOVE)
+    //       - contains drop-target (only if AWT_graphic::drag_target_detection is requested)
     //       - no longer contains initially clicked element (in all other modes)
     // see also ../../AWT/AWT_canvas.cxx@motion_event
 
@@ -1441,6 +1441,7 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
 
         case AWT_MODE_MOVE:
             if (clicked.node() && clicked.node()->father) {
+                drag_target_detection(true);
                 BranchMover *mover = new BranchMover(clicked.element(), event.button(), exports);
                 store_command_data(mover);
                 mover->draw_drag_indicator(device, drag_gc);
