@@ -195,6 +195,8 @@ class AWT_graphic {
     void refresh_by_exports(AWT_canvas *scr);
     void postevent_handler(GBDATA *gb_main);
 
+    bool detect_drag_target;
+
 protected:
     int drag_gc;
 
@@ -220,6 +222,9 @@ public:
 
     virtual void handle_command(AW_device *device, AWT_graphic_event& event) = 0;
     virtual void update_structure()                                          = 0; // called when exports.structure_change == 1
+
+    bool wants_drag_target() const { return detect_drag_target; }
+    void drag_target_detection(bool detect) { detect_drag_target = detect; }
 };
 
 class AWT_nonDB_graphic : public AWT_graphic { // @@@ check AWT_nonDB_graphic
