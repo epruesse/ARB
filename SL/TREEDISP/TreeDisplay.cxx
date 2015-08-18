@@ -1074,8 +1074,7 @@ class BranchScaler : public Scaler { // derived from Noncopyable
     LineVector branch;
     Position   attach; // point on 'branch' (next to click position)
 
-    bool discrete; // @@@ replace me by (discretion_factor == 0);
-    int  discretion_factor;
+    int discretion_factor;  // !=0 = > scale to discrete values
 
     bool allow_neg_val;
 
@@ -1096,14 +1095,15 @@ class BranchScaler : public Scaler { // derived from Noncopyable
         }
     }
 
-    void init_discretion_factor() {
-        if (discrete) {
+    void init_discretion_factor(bool discrete) {
+        if (start_val != 0 && discrete) {
             discretion_factor = 10;
-            if (start_val != 0) {
-                while ((start_val*discretion_factor)<1) {
-                    discretion_factor *= 10;
-                }
+            while ((start_val*discretion_factor)<1) {
+                discretion_factor *= 10;
             }
+        }
+        else {
+            discretion_factor = 0;
         }
     }
 
@@ -1179,7 +1179,7 @@ class BranchScaler : public Scaler { // derived from Noncopyable
                             val = 0.0; // do NOT accept negative values
                         }
                     }
-                    if (discrete) {
+                    if (discretion_factor) {
                         val = discrete_value(val, discretion_factor);
                     }
                     set_val(NONAN(val));
@@ -1194,7 +1194,7 @@ class BranchScaler : public Scaler { // derived from Noncopyable
 
 public:
 
-    BranchScaler(ScaleMode mode_, AP_tree *node_, const LineVector& branch_, const Position& attach_, const Position& start, double unscale_, bool discrete_, bool allow_neg_values_, AWT_graphic_exports& exports_)
+    BranchScaler(ScaleMode mode_, AP_tree *node_, const LineVector& branch_, const Position& attach_, const Position& start, double unscale_, bool discrete, bool allow_neg_values_, AWT_graphic_exports& exports_)
         : Scaler(start, unscale_, exports_),
           mode(mode_),
           node(node_),
@@ -1202,10 +1202,9 @@ public:
           zero_val_removed(false),
           branch(branch_),
           attach(attach_),
-          discrete(discrete_),
           allow_neg_val(allow_neg_values_)
     {
-        init_discretion_factor();
+        init_discretion_factor(discrete);
     }
 };
 
