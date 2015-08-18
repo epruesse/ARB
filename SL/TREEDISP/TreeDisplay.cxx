@@ -1116,6 +1116,11 @@ class BranchScaler : public Scaler { // derived from Noncopyable
             Vector   moveOnBranch = orthogonal_projection(moved, attach2tip);
             return attach+moveOnBranch;
         }
+        Vector attach2base = branch.start()-attach;
+        if (attach2base.length()>0) {
+            Vector moveOnBranch = orthogonal_projection(moved, attach2base);
+            return attach+moveOnBranch;
+        }
         return Position(); // no position
     }
 
