@@ -50,7 +50,8 @@
 #define AWAR_DTREE_MARKER_WIDTH                     "awt/dtree/markers/marker_width"
 #define AWAR_DTREE_PARTIAL_GREYLEVEL                "awt/dtree/markers/partial_greylevel"
 
-#define NT_BOX_WIDTH      7 // pixel
+#define NT_BOX_WIDTH      7   // pixel
+#define NT_DIAMOND_RADIUS 5
 #define NT_ROOT_WIDTH     9
 #define NT_SELECTED_WIDTH 11
 
@@ -283,7 +284,7 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
 public:
     void filled_box(int gc, const AW::Position& pos, int pixel_width) { pixel_box(gc, pos, pixel_width, AW::FillStyle::SOLID); }
     void empty_box(int gc, const AW::Position& pos, int pixel_width) { pixel_box(gc, pos, pixel_width, AW::FillStyle::EMPTY); }
-    void diamond(int gc, const AW::Position& pos, int pixel_width);
+    void diamond(int gc, const AW::Position& pos, int pixel_radius);
 
     const char *ruler_awar(const char *name);
 
