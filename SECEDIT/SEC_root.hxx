@@ -687,6 +687,8 @@ class SEC_root : virtual Noncopyable {
     double charRadius[SEC_GC_DATA_COUNT];  // radius and..
     short  bg_linewidth[SEC_GC_DATA_COUNT]; // ..linewidth for drawing background (index = gc)
     Vector center_char[SEC_GC_FONT_COUNT]; // correction vector to center the base character at its position (world coordinates)
+    double skelThickWorld;                 // skeleton_thickness as world-size
+    double bondThickWorld;                 // bond_thickness as world-size
 
     char *bg_color;       // only valid after paint (contains EDIT4 GCs), may be NULL
 
@@ -848,6 +850,8 @@ public:
 
     // draw a annotation next to a base (only works after paint())
     void paintPosAnnotation(AW_device *device, int gc, size_t absPos, const char *text, bool lineToBase, bool boxText);
+
+    double get_bondThickWorld() const { return bondThickWorld; }
 };
 
 
