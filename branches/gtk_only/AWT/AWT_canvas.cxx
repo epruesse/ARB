@@ -478,6 +478,11 @@ static void input_event(AW_window *aww, AWT_canvas *scr) {
         scr->init_device(device);
 
         scr->gfx->show(click_device);
+        if (event.type == AW_Mouse_Press) {
+            scr->gfx->drag_target_detection(false);
+            // drag_target_detection is off by default.
+            // it should be activated in handle_command (by all modes that need it)
+        }
 
         AWT_graphic_event gevent(scr->mode, event, false, click_device);
         scr->gfx->handle_command(device, gevent);
@@ -581,8 +586,8 @@ static void motion_event(AW_window *aww, AWT_canvas *scr) {
             else {
                 AW_device_click *click_device = NULL;
 
-                if (scr->mode == AWT_MODE_MOVE) {
-                    // move-mode is the only mode which uses a drop-target
+                if (scr->gfx->wants_drag_target()) {
+                    // drag/drop-target is only updated if requested via AWT_graphic::drag_target_detection
                     click_device = aww->get_click_device(AW_MIDDLE_AREA, event.x, event.y, AWT_CATCH);
                     click_device->set_filter(AW_CLICK_DROP);
 

@@ -1074,8 +1074,7 @@ class BranchScaler : public Scaler { // derived from Noncopyable
     LineVector branch;
     Position   attach; // point on 'branch' (next to click position)
 
-    bool discrete; // @@@ replace me by (discretion_factor == 0);
-    int  discretion_factor;
+    int discretion_factor;  // !=0 = > scale to discrete values
 
     bool allow_neg_val;
 
@@ -1096,14 +1095,15 @@ class BranchScaler : public Scaler { // derived from Noncopyable
         }
     }
 
-    void init_discretion_factor() {
-        if (discrete) {
+    void init_discretion_factor(bool discrete) {
+        if (start_val != 0 && discrete) {
             discretion_factor = 10;
-            if (start_val != 0) {
-                while ((start_val*discretion_factor)<1) {
-                    discretion_factor *= 10;
-                }
+            while ((start_val*discretion_factor)<1) {
+                discretion_factor *= 10;
             }
+        }
+        else {
+            discretion_factor = 0;
         }
     }
 
@@ -1114,6 +1114,11 @@ class BranchScaler : public Scaler { // derived from Noncopyable
 
         if (attach2tip.length()>0) {
             Vector   moveOnBranch = orthogonal_projection(moved, attach2tip);
+            return attach+moveOnBranch;
+        }
+        Vector attach2base = branch.start()-attach;
+        if (attach2base.length()>0) {
+            Vector moveOnBranch = orthogonal_projection(moved, attach2base);
             return attach+moveOnBranch;
         }
         return Position(); // no position
@@ -1179,7 +1184,7 @@ class BranchScaler : public Scaler { // derived from Noncopyable
                             val = 0.0; // do NOT accept negative values
                         }
                     }
-                    if (discrete) {
+                    if (discretion_factor) {
                         val = discrete_value(val, discretion_factor);
                     }
                     set_val(NONAN(val));
@@ -1194,7 +1199,7 @@ class BranchScaler : public Scaler { // derived from Noncopyable
 
 public:
 
-    BranchScaler(ScaleMode mode_, AP_tree *node_, const LineVector& branch_, const Position& attach_, const Position& start, double unscale_, bool discrete_, bool allow_neg_values_, AWT_graphic_exports& exports_)
+    BranchScaler(ScaleMode mode_, AP_tree *node_, const LineVector& branch_, const Position& attach_, const Position& start, double unscale_, bool discrete, bool allow_neg_values_, AWT_graphic_exports& exports_)
         : Scaler(start, unscale_, exports_),
           mode(mode_),
           node(node_),
@@ -1202,10 +1207,9 @@ public:
           zero_val_removed(false),
           branch(branch_),
           attach(attach_),
-          discrete(discrete_),
           allow_neg_val(allow_neg_values_)
     {
-        init_discretion_factor();
+        init_discretion_factor(discrete);
     }
 };
 
@@ -1328,7 +1332,7 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
 
     ClickedTarget clicked(this, event.best_click(preferredForCommand(event.cmd())));
     // Note: during drag/release 'clicked'
-    //       - contains drop-target (only in AWT_MODE_MOVE)
+    //       - contains drop-target (only if AWT_graphic::drag_target_detection is requested)
     //       - no longer contains initially clicked element (in all other modes)
     // see also ../../AWT/AWT_canvas.cxx@motion_event
 
@@ -1437,6 +1441,7 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
 
         case AWT_MODE_MOVE:
             if (clicked.node() && clicked.node()->father) {
+                drag_target_detection(true);
                 BranchMover *mover = new BranchMover(clicked.element(), event.button(), exports);
                 store_command_data(mover);
                 mover->draw_drag_indicator(device, drag_gc);
@@ -2002,20 +2007,20 @@ void AWT_graphic_tree::pixel_box(int gc, const AW::Position& pos, int pixel_widt
     disp_device->box(gc, filled, pos-0.5*diagonal, diagonal, mark_filter);
 }
 
-void AWT_graphic_tree::diamond(int gc, const Position& pos, int pixel_width) {
-    // box with one corner down
-    double diameter = disp_device->rtransform_pixelsize(pixel_width);
-    double radius  = diameter*0.5;
+void AWT_graphic_tree::diamond(int gc, const Position& posIn, int pixel_radius) {
+    // filled box with one corner down
+    Position spos = disp_device->transform(posIn);
+    Vector   hor  = Vector(pixel_radius, 0);
+    Vector   ver  = Vector(0, pixel_radius);
 
-    Position t(pos.xpos(), pos.ypos()-radius);
-    Position b(pos.xpos(), pos.ypos()+radius);
-    Position l(pos.xpos()-radius, pos.ypos());
-    Position r(pos.xpos()+radius, pos.ypos());
+    Position corner[4] = {
+        disp_device->rtransform(spos+hor),
+        disp_device->rtransform(spos+ver),
+        disp_device->rtransform(spos-hor),
+        disp_device->rtransform(spos-ver),
+    };
 
-    disp_device->line(gc, l, t, mark_filter);
-    disp_device->line(gc, r, t, mark_filter);
-    disp_device->line(gc, l, b, mark_filter);
-    disp_device->line(gc, r, b, mark_filter);
+    disp_device->polygon(gc, AW::FillStyle::SOLID, 4, corner, mark_filter);
 }
 
 bool TREE_show_branch_remark(AW_device *device, const char *remark_branch, bool is_leaf, const Position& pos, AW_pos alignment, AW_bitset filteri, int bootstrap_min) {
@@ -2200,46 +2205,42 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
 
         Position s1(s0.xpos(), n1.ypos());
 
-        if (at->name) {
-            diamond(at->gr.gc, attach, NT_BOX_WIDTH*2);
+        if (at->name && show_brackets) {
+            double                unscale          = disp_device->get_unscale();
+            const AW_font_limits& charLimits       = disp_device->get_font_limits(at->gr.gc, 'A');
+            double                half_text_ascent = charLimits.ascent * unscale * 0.5;
 
-            if (show_brackets) {
-                double                unscale          = disp_device->get_unscale();
-                const AW_font_limits& charLimits       = disp_device->get_font_limits(at->gr.gc, 'A');
-                double                half_text_ascent = charLimits.ascent * unscale * 0.5;
+            double x1 = limits.x_right + scaled_branch_distance*0.1;
+            double x2 = x1 + scaled_branch_distance * 0.3;
+            double y1 = limits.y_top - half_text_ascent * 0.5;
+            double y2 = limits.y_bot + half_text_ascent * 0.5;
 
-                double x1 = limits.x_right + scaled_branch_distance*0.1;
-                double x2 = x1 + scaled_branch_distance * 0.3;
-                double y1 = limits.y_top - half_text_ascent * 0.5;
-                double y2 = limits.y_bot + half_text_ascent * 0.5;
+            Rectangle bracket(Position(x1, y1), Position(x2, y2));
 
-                Rectangle bracket(Position(x1, y1), Position(x2, y2));
+            set_line_attributes_for(at);
 
-                set_line_attributes_for(at);
+            unsigned int gc = at->gr.gc;
+            disp_device->line(gc, bracket.upper_edge(), group_bracket_filter);
+            disp_device->line(gc, bracket.lower_edge(), group_bracket_filter);
+            disp_device->line(gc, bracket.right_edge(), group_bracket_filter);
 
-                unsigned int gc = at->gr.gc;
-                disp_device->line(gc, bracket.upper_edge(), group_bracket_filter);
-                disp_device->line(gc, bracket.lower_edge(), group_bracket_filter);
-                disp_device->line(gc, bracket.right_edge(), group_bracket_filter);
+            limits.x_right = x2;
 
-                limits.x_right = x2;
+            if (at->gb_node && (disp_device->get_filter() & group_text_filter)) {
+                const char *data     = make_node_text_nds(this->gb_main, at->gb_node, NDS_OUTPUT_LEAFTEXT, at, tree_static->get_tree_name());
+                size_t      data_len = strlen(data);
 
-                if (at->gb_node && (disp_device->get_filter() & group_text_filter)) {
-                    const char *data     = make_node_text_nds(this->gb_main, at->gb_node, NDS_OUTPUT_LEAFTEXT, at, tree_static->get_tree_name());
-                    size_t      data_len = strlen(data);
+                LineVector worldBracket = disp_device->transform(bracket.right_edge());
+                LineVector clippedWorldBracket;
+                bool       visible      = disp_device->clip(worldBracket, clippedWorldBracket);
+                if (visible) {
+                    LineVector clippedBracket = disp_device->rtransform(clippedWorldBracket);
 
-                    LineVector worldBracket = disp_device->transform(bracket.right_edge());
-                    LineVector clippedWorldBracket;
-                    bool       visible      = disp_device->clip(worldBracket, clippedWorldBracket);
-                    if (visible) {
-                        LineVector clippedBracket = disp_device->rtransform(clippedWorldBracket);
+                    Position textPos = clippedBracket.centroid()+Vector(half_text_ascent, half_text_ascent);
+                    disp_device->text(at->gr.gc, data, textPos, 0.0, group_text_filter, data_len);
 
-                        Position textPos = clippedBracket.centroid()+Vector(half_text_ascent, half_text_ascent);
-                        disp_device->text(at->gr.gc, data, textPos, 0.0, group_text_filter, data_len);
-
-                        double textsize = disp_device->get_string_size(at->gr.gc, data, data_len) * unscale;
-                        limits.x_right  = textPos.xpos()+textsize;
-                    }
+                    double textsize = disp_device->get_string_size(at->gr.gc, data, data_len) * unscale;
+                    limits.x_right  = textPos.xpos()+textsize;
                 }
             }
         }
@@ -2273,6 +2274,9 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
             unsigned int gc = son->gr.gc;
             draw_branch_line(gc, s, n, line_filter);
             draw_branch_line(gc, attach, s, vert_line_filter);
+        }
+        if (at->name) {
+            diamond(at->gr.gc, attach, NT_DIAMOND_RADIUS);
         }
         limits.y_branch = attach.ypos();
     }
