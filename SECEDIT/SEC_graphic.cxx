@@ -438,11 +438,10 @@ GB_ERROR SEC_graphic::handleMouse(AW_device *device, AW_event_type event, int bu
         }
 
         case AWT_MODE_CURSOR: // set cursor in ARB_EDIT4
-            if (event == AW_Mouse_Press) {
-                if (abspos >= 0 && size_t(abspos) < sec_root->max_index()) {
-                    // sequence position in AWAR_SET_CURSOR_POSITION is starting with 0!
-                    aw_root->awar_int(AWAR_SET_CURSOR_POSITION)->write_int(abspos);
-                }
+            drag_target_detection(true);
+            if (abspos >= 0 && size_t(abspos) < sec_root->max_index()) {
+                // sequence position in AWAR_SET_CURSOR_POSITION is starting with 0!
+                aw_root->awar_int(AWAR_SET_CURSOR_POSITION)->write_int(abspos);
             }
             break;
 
@@ -480,8 +479,15 @@ void SEC_graphic::handle_command(AW_device *device, AWT_graphic_event& event) {
             static SEC_base *elem   = NULL;
             static int       abspos = -1;
 
-            if (event.type() == AW_Mouse_Press) {
-                // on initial button-down, store information about clicked SEC_base
+            bool updateClicked = false;
+
+            if (event.type() == AW_Mouse_Press) updateClicked = true; // initial button-down
+            else if (event.cmd() == AWT_MODE_CURSOR) { // special modes which act identical in click/drag/release
+                updateClicked = true;
+            }
+
+            if (updateClicked) {
+                // store information about clicked SEC_base
                 const AW_clicked_element *clicked = event.best_click();
                 if (clicked) {
                     elem   = reinterpret_cast<SEC_base*>(clicked->cd1());

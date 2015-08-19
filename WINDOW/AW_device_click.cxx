@@ -242,7 +242,8 @@ const AW_clicked_element *AW_device_click::best_click(ClickPreference prefer) {
     // returns the element with lower distance (to mouse-click- or key-"click"-position).
     // or NULL (if no element was found inside catch-distance)
     //
-    // Note: during drag/drop a target element is only available in AWT_MODE_MOVE!
+    // Note: during drag/drop the target element at mouse position
+    //       is only updated if requested using AWT_graphic::drag_target_detection
     // see ../AWT/AWT_canvas.cxx@motion_event
 
     const AW_clicked_element *bestClick = 0;
