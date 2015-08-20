@@ -59,8 +59,9 @@ public:
     AW_CL cd1() const { return client_data1; }
     AW_CL cd2() const { return client_data2; }
 
-    virtual AW::Position get_attach_point() const = 0;
-    virtual AW_clicked_element *clone() const     = 0;
+    virtual AW::Position get_attach_point() const  = 0;
+    virtual AW::Rectangle get_bounding_box() const = 0;
+    virtual AW_clicked_element *clone() const      = 0;
 
     bool does_exist() const { return exists; }
 
@@ -97,6 +98,7 @@ public:
         double nrp = get_rel_pos();
         return line.start() + nrp*line.line_vector();
     }
+    AW::Rectangle get_bounding_box() const OVERRIDE { return AW::Rectangle(line); }
     const AW::LineVector& get_line() const { return line; }
 
     int indicate_selected(AW_device *d, int gc) const OVERRIDE;
@@ -116,9 +118,8 @@ public:
         return otherText ? nearlyEqual(textArea, otherText->textArea) : false;
     }
 
-    AW::Position get_attach_point() const OVERRIDE {
-        return textArea.centroid(); // @@@ uses center atm - should attach to bounding box
-    }
+    AW::Position get_attach_point() const OVERRIDE { return textArea.centroid(); }
+    AW::Rectangle get_bounding_box() const OVERRIDE { return textArea; }
 
     int indicate_selected(AW_device *d, int gc) const OVERRIDE;
     AW_clicked_element *clone() const OVERRIDE { return new AW_clicked_text(*this); }
@@ -137,9 +138,8 @@ public:
         return otherBox ? nearlyEqual(box, otherBox->box) : false;
     }
 
-    AW::Position get_attach_point() const OVERRIDE {
-        return box.centroid();
-    }
+    AW::Position get_attach_point() const OVERRIDE { return box.centroid(); }
+    AW::Rectangle get_bounding_box() const OVERRIDE { return box; }
     int indicate_selected(AW_device *d, int gc) const OVERRIDE;
     AW_clicked_element *clone() const OVERRIDE { return new AW_clicked_box(*this); }
 };
@@ -202,6 +202,7 @@ public:
         }
         return AW::Position(c.xpos()/npos, c.ypos()/npos);
     }
+    AW::Rectangle get_bounding_box() const OVERRIDE;
     int indicate_selected(AW_device *d, int gc) const OVERRIDE;
     AW_clicked_element *clone() const OVERRIDE {
         return new AW_clicked_polygon(*this);

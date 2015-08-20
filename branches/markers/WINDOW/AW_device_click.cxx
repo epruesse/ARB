@@ -271,6 +271,14 @@ const AW_clicked_element *AW_device_click::best_click(ClickPreference prefer) {
     return bestClick;
 }
 
+AW::Rectangle AW_clicked_polygon::get_bounding_box() const {
+    Rectangle box = bounding_box(pos[0], pos[1]);
+    for (int i = 2; i<npos; ++i) {
+        box = bounding_box(box, pos[i]);
+    }
+    return box;
+}
+
 int AW_clicked_line::indicate_selected(AW_device *d, int gc) const {
     return d->line(gc, line);
 }
