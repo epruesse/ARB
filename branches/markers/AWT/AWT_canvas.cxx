@@ -480,10 +480,13 @@ static void input_event(AW_window *aww, AWT_canvas *scr) {
         scr->init_device(device);
 
         scr->gfx->show(click_device);
-        click_device->get_clicked_line(&scr->clicked_line);
-        click_device->get_clicked_text(&scr->clicked_text);
+        if (event.type == AW_Mouse_Press) {
+            scr->gfx->drag_target_detection(false);
+            // drag_target_detection is off by default.
+            // it should be activated in handle_command (by all modes that need it)
+        }
 
-        AWT_graphic_event gevent(scr->mode, event, false, &scr->clicked_line, &scr->clicked_text);
+        AWT_graphic_event gevent(scr->mode, event, false, click_device);
         scr->gfx->handle_command(device, gevent);
 
         scr->postevent_handler();
@@ -576,38 +579,28 @@ static void motion_event(AW_window *aww, AWT_canvas *scr) {
         scr->scroll(-dx*3, -dy*3);
     }
     else {
-        bool run_command = true;
-
         if (event.button == AW_BUTTON_LEFT || event.button == AW_BUTTON_RIGHT) {
-            switch (scr->mode) {
-                case AWT_MODE_ZOOM:
-                    nt_draw_zoom_box(device, scr);
-                    scr->set_dragEndpoint(event.x, event.y);
-                    nt_draw_zoom_box(device, scr);
-                    run_command = false;
-                    break;
+            if (scr->mode == AWT_MODE_ZOOM) {
+                nt_draw_zoom_box(device, scr);
+                scr->set_dragEndpoint(event.x, event.y);
+                nt_draw_zoom_box(device, scr);
+            }
+            else {
+                AW_device_click *click_device = NULL;
 
-                case AWT_MODE_MOVE: {
-                    scr->init_device(device);
-                    AW_device_click *click_device = aww->get_click_device(AW_MIDDLE_AREA, event.x, event.y, AWT_CATCH);
+                if (scr->gfx->wants_drag_target()) {
+                    // drag/drop-target is only updated if requested via AWT_graphic::drag_target_detection
+                    click_device = aww->get_click_device(AW_MIDDLE_AREA, event.x, event.y, AWT_CATCH);
                     click_device->set_filter(AW_CLICK_DROP);
+
                     scr->init_device(click_device);
                     scr->gfx->show(click_device);
-                    click_device->get_clicked_line(&scr->clicked_line);
-                    click_device->get_clicked_text(&scr->clicked_text);
-                    run_command  = true;
-                    break;
                 }
-                default:
-                    break;
+
+                scr->init_device(device);
+                AWT_graphic_event gevent(scr->mode, event, true, click_device);
+                scr->gfx->handle_command(device, gevent);
             }
-        }
-
-        if (run_command) {
-            scr->init_device(device);
-
-            AWT_graphic_event gevent(scr->mode, event, true, &scr->clicked_line, &scr->clicked_text);
-            scr->gfx->handle_command(device, gevent);
         }
     }
 
@@ -761,47 +754,5 @@ void AWT_nonDB_graphic::update(GBDATA *) {
 #endif // DEBUG
 }
 
-const AW_clicked_element *AWT_graphic_event::best_click(ClickPreference prefer) {
-    // returns the element with lower distance (to mouse-click- or key-"click"-position).
-    // or NULL (if no element was found inside catch-distance)
-
-    const AW_clicked_element *bestClick = 0;
-
-    if (M_cl->exists) {
-        if (M_ct->exists) {
-            switch (prefer) {
-                case PREFER_NEARER:
-                    if (M_cl->distance < M_ct->distance) {
-                        bestClick = M_cl;
-                    }
-                    else {
-                        bestClick = M_ct;
-                    }
-                    break;
-
-                case PREFER_LINE: bestClick = M_cl; break;
-                case PREFER_TEXT: bestClick = M_ct; break;
-            }
-        }
-        else {
-            bestClick = M_cl;
-        }
-    }
-    else if (M_ct->exists) {
-        bestClick = M_ct;
-    }
-
-#if defined(DEBUG) && 0
-    if (bestClick) {
-        const char *type = bestClick == M_cl ? "line" : "text";
-        printf("best click catches '%s' (distance=%i)\n", type, bestClick->distance);
-    }
-    else {
-        printf("click catched nothing\n");
-    }
-#endif
-
-    return bestClick;
-}
 
 

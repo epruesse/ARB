@@ -205,7 +205,7 @@ static void aw_help_edit_help(AW_window *aww) {
         const char *base = GB_path_in_ARBHOME("HELP_SOURCE/oldhelp");
 #endif
 
-        const char *copy_cmd = GBS_global_string("cp %s/FORM.hlp %s", base, helpfile); // uses_hlp_res("FORM.hlp"); see ../SOURCE_TOOLS/check_ressources.pl@uses_hlp_res
+        const char *copy_cmd = GBS_global_string("cp %s/FORM.hlp %s", base, helpfile); // uses_hlp_res("FORM.hlp"); see ../SOURCE_TOOLS/check_resources.pl@uses_hlp_res
         aw_message_if(GBK_system(copy_cmd));
     }
 

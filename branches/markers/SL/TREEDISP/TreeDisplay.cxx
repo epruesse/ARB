@@ -802,38 +802,26 @@ static bool command_on_GBDATA(GBDATA *gbd, const AWT_graphic_event& event, AD_ma
     return refresh;
 }
 
-class LineOrText {
-    /*! Stores a copy of AW_clicked_line or AW_clicked_text.
+class ClickedElement {
+    /*! Stores a copy of AW_clicked_element.
      * Used as Drag&Drop source and target.
      */
-    AW_clicked_line line;
-    AW_clicked_text text;
-    const AW_clicked_element *elem;
+    AW_clicked_element *elem;
 
 public:
-    LineOrText(const AW_clicked_element& e) { set(e); }
-    LineOrText(const LineOrText& other) { set(*other.element()); }
-    DECLARE_ASSIGNMENT_OPERATOR(LineOrText);
+    ClickedElement(const AW_clicked_element& e) : elem(e.clone()) {}
+    ClickedElement(const ClickedElement& other) : elem(other.element()->clone()) {}
+    DECLARE_ASSIGNMENT_OPERATOR(ClickedElement);
+    ~ClickedElement() { delete elem; }
 
-    void set(const AW_clicked_line& l) { line = l; elem = &line; }
-    void set(const AW_clicked_text& t) { text = t; elem = &text; }
-    void set(const AW_clicked_element& e) {
-        if (e.is_text()) set(dynamic_cast<const AW_clicked_text&>(e));
-        else set(dynamic_cast<const AW_clicked_line&>(e));
-    }
     const AW_clicked_element *element() const { return elem; }
 
-    bool operator == (const LineOrText& other) const {
-        return
-            element()->is_text() == other.element()->is_text() &&
-            line                 == other.line                 &&
-            text                 == other.text;
-    }
-    bool operator != (const LineOrText& other) const { return !(*this == other); }
+    bool operator == (const ClickedElement& other) const { return *element() == *other.element(); }
+    bool operator != (const ClickedElement& other) const { return !(*this == other); }
 };
 
 class DragNDrop : public Dragged {
-    LineOrText Drag, Drop;
+    ClickedElement Drag, Drop;
 
     virtual void perform_drop() = 0;
 
@@ -869,8 +857,10 @@ public:
     void draw_drag_indicator(AW_device *device, int drag_gc) const {
         td_assert(valid_drag_device(device));
         source_element()->indicate_selected(device, drag_gc);
-        if (Drag != Drop) dest_element()->indicate_selected(device, drag_gc);
-        device->line(drag_gc, source_element()->get_connecting_line(*dest_element()));
+        if (Drag != Drop) {
+            dest_element()->indicate_selected(device, drag_gc);
+            device->line(drag_gc, source_element()->get_connecting_line(*dest_element()));
+        }
     }
 };
 
@@ -1084,8 +1074,7 @@ class BranchScaler : public Scaler { // derived from Noncopyable
     LineVector branch;
     Position   attach; // point on 'branch' (next to click position)
 
-    bool discrete; // @@@ replace me by (discretion_factor == 0);
-    int  discretion_factor;
+    int discretion_factor;  // !=0 = > scale to discrete values
 
     bool allow_neg_val;
 
@@ -1106,14 +1095,15 @@ class BranchScaler : public Scaler { // derived from Noncopyable
         }
     }
 
-    void init_discretion_factor() {
-        if (discrete) {
+    void init_discretion_factor(bool discrete) {
+        if (start_val != 0 && discrete) {
             discretion_factor = 10;
-            if (start_val != 0) {
-                while ((start_val*discretion_factor)<1) {
-                    discretion_factor *= 10;
-                }
+            while ((start_val*discretion_factor)<1) {
+                discretion_factor *= 10;
             }
+        }
+        else {
+            discretion_factor = 0;
         }
     }
 
@@ -1124,6 +1114,11 @@ class BranchScaler : public Scaler { // derived from Noncopyable
 
         if (attach2tip.length()>0) {
             Vector   moveOnBranch = orthogonal_projection(moved, attach2tip);
+            return attach+moveOnBranch;
+        }
+        Vector attach2base = branch.start()-attach;
+        if (attach2base.length()>0) {
+            Vector moveOnBranch = orthogonal_projection(moved, attach2base);
             return attach+moveOnBranch;
         }
         return Position(); // no position
@@ -1189,7 +1184,7 @@ class BranchScaler : public Scaler { // derived from Noncopyable
                             val = 0.0; // do NOT accept negative values
                         }
                     }
-                    if (discrete) {
+                    if (discretion_factor) {
                         val = discrete_value(val, discretion_factor);
                     }
                     set_val(NONAN(val));
@@ -1204,7 +1199,7 @@ class BranchScaler : public Scaler { // derived from Noncopyable
 
 public:
 
-    BranchScaler(ScaleMode mode_, AP_tree *node_, const LineVector& branch_, const Position& attach_, const Position& start, double unscale_, bool discrete_, bool allow_neg_values_, AWT_graphic_exports& exports_)
+    BranchScaler(ScaleMode mode_, AP_tree *node_, const LineVector& branch_, const Position& attach_, const Position& start, double unscale_, bool discrete, bool allow_neg_values_, AWT_graphic_exports& exports_)
         : Scaler(start, unscale_, exports_),
           mode(mode_),
           node(node_),
@@ -1212,10 +1207,9 @@ public:
           zero_val_removed(false),
           branch(branch_),
           attach(attach_),
-          discrete(discrete_),
           allow_neg_val(allow_neg_values_)
     {
-        init_discretion_factor();
+        init_discretion_factor(discrete);
     }
 };
 
@@ -1304,7 +1298,7 @@ public:
     }
 };
 
-static AWT_graphic_event::ClickPreference preferredForCommand(AWT_COMMAND_MODE mode) {
+static AW_device_click::ClickPreference preferredForCommand(AWT_COMMAND_MODE mode) {
     // return preferred click target for tree-display
     // (Note: not made this function a member of AWT_graphic_event,
     //  since modes are still reused in other ARB applications,
@@ -1315,10 +1309,10 @@ static AWT_graphic_event::ClickPreference preferredForCommand(AWT_COMMAND_MODE m
         case AWT_MODE_LENGTH:
         case AWT_MODE_MULTIFURC:
         case AWT_MODE_SPREAD:
-            return AWT_graphic_event::PREFER_LINE;
+            return AW_device_click::PREFER_LINE;
 
         default:
-            return AWT_graphic_event::PREFER_NEARER;
+            return AW_device_click::PREFER_NEARER;
     }
 }
 
@@ -1337,6 +1331,11 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
     td_assert(event.button() == AW_BUTTON_LEFT || event.button() == AW_BUTTON_RIGHT); // nothing else should come here
 
     ClickedTarget clicked(this, event.best_click(preferredForCommand(event.cmd())));
+    // Note: during drag/release 'clicked'
+    //       - contains drop-target (only if AWT_graphic::drag_target_detection is requested)
+    //       - no longer contains initially clicked element (in all other modes)
+    // see also ../../AWT/AWT_canvas.cxx@motion_event
+
     if (clicked.species()) {
         if (command_on_GBDATA(clicked.species(), event, map_viewer_cb)) {
             exports.refresh = 1;
@@ -1382,66 +1381,67 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
         }
     }
 
-    if (event.type() == AW_Mouse_Press) {
-        if (clicked.is_ruler()) {
-            DB_scalable xdata;
-            DB_scalable ydata;
-            double      unscale = device->get_unscale();
+    if (event.type() != AW_Mouse_Press) return; // no drag/drop handling below!
 
-            switch (event.cmd()) {
-                case AWT_MODE_LENGTH:
-                case AWT_MODE_MULTIFURC: { // scale ruler
-                    xdata = GB_searchOrCreate_float(gb_tree, RULER_SIZE, DEFAULT_RULER_LENGTH);
+    if (clicked.is_ruler()) {
+        DB_scalable xdata;
+        DB_scalable ydata;
+        double      unscale = device->get_unscale();
 
-                    double rel  = clicked.get_rel_attach();
-                    if (tree_sort == AP_TREE_IRS) {
-                        unscale /= (rel-1)*irs_tree_ruler_scale_factor; // ruler has opposite orientation in IRS mode
-                    }
-                    else {
-                        unscale /= rel;
-                    }
+        switch (event.cmd()) {
+            case AWT_MODE_LENGTH:
+            case AWT_MODE_MULTIFURC: { // scale ruler
+                xdata = GB_searchOrCreate_float(gb_tree, RULER_SIZE, DEFAULT_RULER_LENGTH);
 
-                    if (event.button() == AW_BUTTON_RIGHT) xdata.set_discretion_factor(10);
-                    xdata.set_min(0.01);
-                    break;
+                double rel  = clicked.get_rel_attach();
+                if (tree_sort == AP_TREE_IRS) {
+                    unscale /= (rel-1)*irs_tree_ruler_scale_factor; // ruler has opposite orientation in IRS mode
                 }
-                case AWT_MODE_LINE: // scale ruler linewidth
-                    ydata = GB_searchOrCreate_int(gb_tree, RULER_LINEWIDTH, DEFAULT_RULER_LINEWIDTH);
-                    ydata.set_min(0);
-                    ydata.inverse();
-                    break;
-
-                default: { // move ruler or ruler text
-                    bool isText = clicked.is_text();
-                    xdata = GB_searchOrCreate_float(gb_tree, ruler_awar(isText ? "text_x" : "ruler_x"), 0.0);
-                    ydata = GB_searchOrCreate_float(gb_tree, ruler_awar(isText ? "text_y" : "ruler_y"), 0.0);
-                    break;
+                else {
+                    unscale /= rel;
                 }
-            }
-            if (!is_nan_or_inf(unscale)) {
-                store_command_data(new RulerScaler(mousepos, unscale, xdata, ydata, exports));
-            }
-            return;
-        }
-        else if (clicked.is_marker()) {
-            if (clicked.element()->distance <= 3) { // accept 3 pixel distance
-                aw_message_if(display_markers->get_marker_name(clicked.get_markerindex())); // @@@ pass clicked to display_markers and let it handle the click?
-            }
-            return;
-        }
 
-        if (warn_inappropriate_mode(event.cmd())) {
-            return;
+                if (event.button() == AW_BUTTON_RIGHT) xdata.set_discretion_factor(10);
+                xdata.set_min(0.01);
+                break;
+            }
+            case AWT_MODE_LINE: // scale ruler linewidth
+                ydata = GB_searchOrCreate_int(gb_tree, RULER_LINEWIDTH, DEFAULT_RULER_LINEWIDTH);
+                ydata.set_min(0);
+                ydata.inverse();
+                break;
+
+            default: { // move ruler or ruler text
+                bool isText = clicked.is_text();
+                xdata = GB_searchOrCreate_float(gb_tree, ruler_awar(isText ? "text_x" : "ruler_x"), 0.0);
+                ydata = GB_searchOrCreate_float(gb_tree, ruler_awar(isText ? "text_y" : "ruler_y"), 0.0);
+                break;
+            }
         }
+        if (!is_nan_or_inf(unscale)) {
+            store_command_data(new RulerScaler(mousepos, unscale, xdata, ydata, exports));
+        }
+        return;
     }
 
+    if (clicked.is_marker()) {
+        if (clicked.element()->get_distance() <= 3) { // accept 3 pixel distance
+            aw_message_if(display_markers->get_marker_name(clicked.get_markerindex())); // @@@ pass clicked to display_markers and let it handle the click?
+        }
+        return;
+    }
+
+    if (warn_inappropriate_mode(event.cmd())) {
+        return;
+    }
 
     switch (event.cmd()) {
-            // -----------------------------
-            //      two point commands:
+        // -----------------------------
+        //      two point commands:
 
         case AWT_MODE_MOVE:
-            if (event.type() == AW_Mouse_Press && clicked.node() && clicked.node()->father) {
+            if (clicked.node() && clicked.node()->father) {
+                drag_target_detection(true);
                 BranchMover *mover = new BranchMover(clicked.element(), event.button(), exports);
                 store_command_data(mover);
                 mover->draw_drag_indicator(device, drag_gc);
@@ -1450,7 +1450,7 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
 
         case AWT_MODE_LENGTH:
         case AWT_MODE_MULTIFURC:
-            if (event.type() == AW_Mouse_Press && clicked.node() && clicked.is_branch()) {
+            if (clicked.node() && clicked.is_branch()) {
                 bool allow_neg_branches = aw_root->awar(AWAR_EXPERT)->read_int();
                 bool discrete_lengths   = event.button() == AW_BUTTON_RIGHT;
 
@@ -1466,7 +1466,7 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
             break;
 
         case AWT_MODE_ROTATE:
-            if (event.type() == AW_Mouse_Press && clicked.node() && clicked.is_branch()) {
+            if (clicked.node() && clicked.is_branch()) {
                 const AW_clicked_line *cl = dynamic_cast<const AW_clicked_line*>(clicked.element());
                 td_assert(cl);
                 BranchRotator *rotator = new BranchRotator(device, clicked.node(), cl->get_line(), mousepos, exports);
@@ -1476,7 +1476,7 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
             break;
 
         case AWT_MODE_LINE:
-            if (event.type()==AW_Mouse_Press && clicked.node()) {
+            if (clicked.node()) {
                 BranchLinewidthScaler *widthScaler = new BranchLinewidthScaler(clicked.node(), mousepos, event.button() == AW_BUTTON_RIGHT, exports);
                 store_command_data(widthScaler);
                 widthScaler->draw_drag_indicator(device, drag_gc);
@@ -1484,7 +1484,7 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
             break;
 
         case AWT_MODE_SPREAD:
-            if (event.type() == AW_Mouse_Press && clicked.node() && clicked.is_branch()) {
+            if (clicked.node() && clicked.is_branch()) {
                 const AW_clicked_line *cl = dynamic_cast<const AW_clicked_line*>(clicked.element());
                 td_assert(cl);
                 BranchScaler *spreader = new BranchScaler(SCALE_SPREAD, clicked.node(), cl->get_line(), clicked.element()->get_attach_point(), mousepos, device->get_unscale(), false, false, exports);
@@ -1493,33 +1493,31 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
             }
             break;
 
-            // -----------------------------
-            //      one point commands:
+        // -----------------------------
+        //      one point commands:
 
         case AWT_MODE_LZOOM:
-            if (event.type()==AW_Mouse_Press) {
-                switch (event.button()) {
-                    case AW_BUTTON_LEFT:
-                        if (clicked.node()) {
-                            displayed_root     = clicked.node();
-                            exports.zoom_reset = 1;
-                        }
-                        break;
-                    case AW_BUTTON_RIGHT:
-                        if (displayed_root->father) {
-                            displayed_root     = displayed_root->get_father();
-                            exports.zoom_reset = 1;
-                        }
-                        break;
+            switch (event.button()) {
+                case AW_BUTTON_LEFT:
+                    if (clicked.node()) {
+                        displayed_root     = clicked.node();
+                        exports.zoom_reset = 1;
+                    }
+                    break;
+                case AW_BUTTON_RIGHT:
+                    if (displayed_root->father) {
+                        displayed_root     = displayed_root->get_father();
+                        exports.zoom_reset = 1;
+                    }
+                    break;
 
-                    default: td_assert(0); break;
-                }
+                default: td_assert(0); break;
             }
             break;
 
 act_like_group :
         case AWT_MODE_GROUP:
-            if (event.type()==AW_Mouse_Press && clicked.node()) {
+            if (clicked.node()) {
                 switch (event.button()) {
                     case AW_BUTTON_LEFT: {
                         AP_tree *at = clicked.node();
@@ -1547,23 +1545,21 @@ act_like_group :
             break;
 
         case AWT_MODE_SETROOT:
-            if (event.type() == AW_Mouse_Press) {
-                switch (event.button()) {
-                    case AW_BUTTON_LEFT:
-                        if (clicked.node()) clicked.node()->set_root();
-                        break;
-                    case AW_BUTTON_RIGHT:
-                        tree_static->find_innermost_edge().set_root();
-                        break;
-                    default: td_assert(0); break;
-                }
-                exports.save       = 1;
-                exports.zoom_reset = 1;
+            switch (event.button()) {
+                case AW_BUTTON_LEFT:
+                    if (clicked.node()) clicked.node()->set_root();
+                    break;
+                case AW_BUTTON_RIGHT:
+                    tree_static->find_innermost_edge().set_root();
+                    break;
+                default: td_assert(0); break;
             }
+            exports.save       = 1;
+            exports.zoom_reset = 1;
             break;
 
         case AWT_MODE_SWAP:
-            if (event.type()==AW_Mouse_Press && clicked.node()) {
+            if (clicked.node()) {
                 switch (event.button()) {
                     case AW_BUTTON_LEFT:  clicked.node()->swap_sons(); break;
                     case AW_BUTTON_RIGHT: clicked.node()->rotate_subtree();     break;
@@ -1574,15 +1570,13 @@ act_like_group :
             break;
 
         case AWT_MODE_MARK: // see also .@OTHER_MODE_MARK_HANDLER
-            if (event.type() == AW_Mouse_Press && clicked.node()) {
+            if (clicked.node()) {
                 GB_transaction ta(tree_static->get_gb_main());
 
-                if (event.type() == AW_Mouse_Press) {
-                    switch (event.button()) {
-                        case AW_BUTTON_LEFT:  mark_species_in_tree(clicked.node(), 1); break;
-                        case AW_BUTTON_RIGHT: mark_species_in_tree(clicked.node(), 0); break;
-                        default: td_assert(0); break;
-                    }
+                switch (event.button()) {
+                    case AW_BUTTON_LEFT:  mark_species_in_tree(clicked.node(), 1); break;
+                    case AW_BUTTON_RIGHT: mark_species_in_tree(clicked.node(), 0); break;
+                    default: td_assert(0); break;
                 }
                 exports.refresh = 1;
                 tree_static->update_timers(); // do not reload the tree
@@ -1592,7 +1586,7 @@ act_like_group :
 
         case AWT_MODE_NONE:
         case AWT_MODE_SELECT:
-            if (event.type()==AW_Mouse_Press && clicked.node()) {
+            if (clicked.node()) {
                 GB_transaction ta(tree_static->get_gb_main());
                 exports.refresh = 1;        // No refresh needed !! AD_map_viewer will do the refresh (needed by arb_pars)
                 map_viewer_cb(clicked.node()->gb_node, ADMVT_SELECT);
@@ -1601,8 +1595,8 @@ act_like_group :
             }
             break;
 
-            // now handle all modes which only act on tips (aka species) and
-            // shall perform identically in tree- and list-modes
+        // now handle all modes which only act on tips (aka species) and
+        // shall perform identically in tree- and list-modes
 
         case AWT_MODE_INFO:
         case AWT_MODE_WWW: {
@@ -1664,7 +1658,7 @@ AWT_graphic_tree::AWT_graphic_tree(AW_root *aw_root_, GBDATA *gb_main_, AD_map_v
     : AWT_graphic(),
       line_filter         (AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_PRINTER|AW_SIZE),
       vert_line_filter    (AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_PRINTER),
-      mark_filter         (AW_SCREEN|AW_PRINTER_EXT),
+      mark_filter         (AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_PRINTER_EXT),
       group_bracket_filter(AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_PRINTER|AW_SIZE_UNSCALED),
       bs_circle_filter    (AW_SCREEN|AW_PRINTER|AW_SIZE_UNSCALED),
       leaf_text_filter    (AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_PRINTER|AW_SIZE_UNSCALED),
@@ -2013,20 +2007,20 @@ void AWT_graphic_tree::pixel_box(int gc, const AW::Position& pos, int pixel_widt
     disp_device->box(gc, filled, pos-0.5*diagonal, diagonal, mark_filter);
 }
 
-void AWT_graphic_tree::diamond(int gc, const Position& pos, int pixel_width) {
-    // box with one corner down
-    double diameter = disp_device->rtransform_pixelsize(pixel_width);
-    double radius  = diameter*0.5;
+void AWT_graphic_tree::diamond(int gc, const Position& posIn, int pixel_radius) {
+    // filled box with one corner down
+    Position spos = disp_device->transform(posIn);
+    Vector   hor  = Vector(pixel_radius, 0);
+    Vector   ver  = Vector(0, pixel_radius);
 
-    Position t(pos.xpos(), pos.ypos()-radius);
-    Position b(pos.xpos(), pos.ypos()+radius);
-    Position l(pos.xpos()-radius, pos.ypos());
-    Position r(pos.xpos()+radius, pos.ypos());
+    Position corner[4] = {
+        disp_device->rtransform(spos+hor),
+        disp_device->rtransform(spos+ver),
+        disp_device->rtransform(spos-hor),
+        disp_device->rtransform(spos-ver),
+    };
 
-    disp_device->line(gc, l, t, mark_filter);
-    disp_device->line(gc, r, t, mark_filter);
-    disp_device->line(gc, l, b, mark_filter);
-    disp_device->line(gc, r, b, mark_filter);
+    disp_device->polygon(gc, AW::FillStyle::SOLID, 4, corner, mark_filter);
 }
 
 bool TREE_show_branch_remark(AW_device *device, const char *remark_branch, bool is_leaf, const Position& pos, AW_pos alignment, AW_bitset filteri, int bootstrap_min) {
@@ -2211,46 +2205,42 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
 
         Position s1(s0.xpos(), n1.ypos());
 
-        if (at->name) {
-            diamond(at->gr.gc, attach, NT_BOX_WIDTH*2);
+        if (at->name && show_brackets) {
+            double                unscale          = disp_device->get_unscale();
+            const AW_font_limits& charLimits       = disp_device->get_font_limits(at->gr.gc, 'A');
+            double                half_text_ascent = charLimits.ascent * unscale * 0.5;
 
-            if (show_brackets) {
-                double                unscale          = disp_device->get_unscale();
-                const AW_font_limits& charLimits       = disp_device->get_font_limits(at->gr.gc, 'A');
-                double                half_text_ascent = charLimits.ascent * unscale * 0.5;
+            double x1 = limits.x_right + scaled_branch_distance*0.1;
+            double x2 = x1 + scaled_branch_distance * 0.3;
+            double y1 = limits.y_top - half_text_ascent * 0.5;
+            double y2 = limits.y_bot + half_text_ascent * 0.5;
 
-                double x1 = limits.x_right + scaled_branch_distance*0.1;
-                double x2 = x1 + scaled_branch_distance * 0.3;
-                double y1 = limits.y_top - half_text_ascent * 0.5;
-                double y2 = limits.y_bot + half_text_ascent * 0.5;
+            Rectangle bracket(Position(x1, y1), Position(x2, y2));
 
-                Rectangle bracket(Position(x1, y1), Position(x2, y2));
+            set_line_attributes_for(at);
 
-                set_line_attributes_for(at);
+            unsigned int gc = at->gr.gc;
+            disp_device->line(gc, bracket.upper_edge(), group_bracket_filter);
+            disp_device->line(gc, bracket.lower_edge(), group_bracket_filter);
+            disp_device->line(gc, bracket.right_edge(), group_bracket_filter);
 
-                unsigned int gc = at->gr.gc;
-                disp_device->line(gc, bracket.upper_edge(), group_bracket_filter);
-                disp_device->line(gc, bracket.lower_edge(), group_bracket_filter);
-                disp_device->line(gc, bracket.right_edge(), group_bracket_filter);
+            limits.x_right = x2;
 
-                limits.x_right = x2;
+            if (at->gb_node && (disp_device->get_filter() & group_text_filter)) {
+                const char *data     = make_node_text_nds(this->gb_main, at->gb_node, NDS_OUTPUT_LEAFTEXT, at, tree_static->get_tree_name());
+                size_t      data_len = strlen(data);
 
-                if (at->gb_node && (disp_device->get_filter() & group_text_filter)) {
-                    const char *data     = make_node_text_nds(this->gb_main, at->gb_node, NDS_OUTPUT_LEAFTEXT, at, tree_static->get_tree_name());
-                    size_t      data_len = strlen(data);
+                LineVector worldBracket = disp_device->transform(bracket.right_edge());
+                LineVector clippedWorldBracket;
+                bool       visible      = disp_device->clip(worldBracket, clippedWorldBracket);
+                if (visible) {
+                    LineVector clippedBracket = disp_device->rtransform(clippedWorldBracket);
 
-                    LineVector worldBracket = disp_device->transform(bracket.right_edge());
-                    LineVector clippedWorldBracket;
-                    bool       visible      = disp_device->clip(worldBracket, clippedWorldBracket);
-                    if (visible) {
-                        LineVector clippedBracket = disp_device->rtransform(clippedWorldBracket);
+                    Position textPos = clippedBracket.centroid()+Vector(half_text_ascent, half_text_ascent);
+                    disp_device->text(at->gr.gc, data, textPos, 0.0, group_text_filter, data_len);
 
-                        Position textPos = clippedBracket.centroid()+Vector(half_text_ascent, half_text_ascent);
-                        disp_device->text(at->gr.gc, data, textPos, 0.0, group_text_filter, data_len);
-
-                        double textsize = disp_device->get_string_size(at->gr.gc, data, data_len) * unscale;
-                        limits.x_right  = textPos.xpos()+textsize;
-                    }
+                    double textsize = disp_device->get_string_size(at->gr.gc, data, data_len) * unscale;
+                    limits.x_right  = textPos.xpos()+textsize;
                 }
             }
         }
@@ -2284,6 +2274,9 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
             unsigned int gc = son->gr.gc;
             draw_branch_line(gc, s, n, line_filter);
             draw_branch_line(gc, attach, s, vert_line_filter);
+        }
+        if (at->name) {
+            diamond(at->gr.gc, attach, NT_DIAMOND_RADIUS);
         }
         limits.y_branch = attach.ypos();
     }
@@ -2872,10 +2865,6 @@ void AWT_graphic_tree::show(AW_device *device) {
     }
 
     disp_device = NULL;
-}
-
-void AWT_graphic_tree::info(AW_device */*device*/, AW_pos /*x*/, AW_pos /*y*/, AW_clicked_line */*cl*/, AW_clicked_text */*ct*/) {
-    aw_message("INFO MESSAGE");
 }
 
 AWT_graphic_tree *NT_generate_tree(AW_root *root, GBDATA *gb_main, AD_map_viewer_cb map_viewer_cb) {

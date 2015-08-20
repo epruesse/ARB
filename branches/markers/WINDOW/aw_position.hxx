@@ -96,12 +96,12 @@ namespace AW {
 
     class Vector;
 
+    inline bool is_between(const double& coord1, const double& between, const double& coord2) {
+        return ((coord1-between)*(between-coord2)) >= 0.0;
+    }
+
     class Position {
         double x, y;
-
-        static bool is_between(const double& coord1, const double& between, const double& coord2) {
-            return ((coord1-between)*(between-coord2)) >= 0.0;
-        }
 
     public:
 
@@ -128,7 +128,7 @@ namespace AW {
         void moveTo(const Position& pos) { *this = pos; }
 
         inline bool is_between(const Position& p1, const Position& p2) const {
-            return is_between(p1.x, x, p2.x) && is_between(p1.y, y, p2.y);
+            return AW::is_between(p1.x, x, p2.x) && AW::is_between(p1.y, y, p2.y);
         }
     };
 
@@ -553,6 +553,10 @@ namespace AW {
         aw_dump(v.x(), "x"); fputs(", ", stderr);
         aw_dump(v.y(), "y"); fputs(" }", stderr);
     }
+    inline void aw_dump(const Angle& a, const char *varname) {
+        fprintf(stderr, "Angle %s={ ", varname);
+        aw_dump(a.degrees(), "degrees()"); fputs(" }", stderr);
+    }
     inline void aw_dump(const LineVector& v, const char *varname) {
         fprintf(stderr, "LineVector %s={ ", varname);
         aw_dump(v.start(), "start"); fputs(", ", stderr);
@@ -569,6 +573,9 @@ namespace AW {
     
 #endif
 
+    inline AW_pos x_alignment(AW_pos x_pos, AW_pos x_size, AW_pos alignment) {
+        return x_pos - x_size*alignment;
+    }
 };
 
 #else

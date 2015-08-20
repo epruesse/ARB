@@ -524,14 +524,12 @@ void AW_window::all_menus_created() const { // this is called by AW_window::show
 // ----------------------------------------------------------------------
 
 void AW_window::draw_line(int x1, int y1, int x2, int y2, int width, bool resize) {
-    AW_xfig *xfig = (AW_xfig*)xfig_data;
-    aw_assert(xfig);
-    // forgot to call load_xfig ?
+    aw_assert(xfig_data); // forgot to call load_xfig ?
 
-    xfig->add_line(x1, y1, x2, y2, width);
+    xfig_data->add_line(x1, y1, x2, y2, width);
 
-    _at->max_x_size = std::max(_at->max_x_size, xfig->maxx - xfig->minx);
-    _at->max_y_size = std::max(_at->max_y_size, xfig->maxy - xfig->miny);
+    _at->max_x_size = std::max(_at->max_x_size, xfig_data->maxx - xfig_data->minx);
+    _at->max_y_size = std::max(_at->max_y_size, xfig_data->maxy - xfig_data->miny);
 
     if (resize) {
         recalc_size_atShow(AW_RESIZE_ANY);
@@ -541,23 +539,21 @@ void AW_window::draw_line(int x1, int y1, int x2, int y2, int width, bool resize
     }
 }
 
-AW_device_click *AW_window::get_click_device(AW_area area, int mousex, int mousey, int max_distance) { 
+AW_device_click *AW_window::get_click_device(AW_area area, int mousex, int mousey, int max_distance) {
     AW_area_management *aram         = MAP_ARAM(area);
     AW_device_click    *click_device = NULL;
 
     if (aram) {
         click_device = aram->get_click_device();
-        click_device->init_click(mousex, mousey, max_distance, AW_ALL_DEVICES);
+        click_device->init_click(AW::Position(mousex, mousey), max_distance, AW_ALL_DEVICES);
     }
     return click_device;
 }
 
 AW_device *AW_window::get_device(AW_area area) { // @@@ rename to get_screen_device
-    AW_area_management *aram   = MAP_ARAM(area);
-    AW_device_Xm       *device = NULL;
-
-    if (aram) device = aram->get_screen_device();
-    return device;
+    AW_area_management *aram = MAP_ARAM(area);
+    arb_assert(aram);
+    return aram->get_screen_device();
 }
 
 void AW_window::get_event(AW_event *eventi) const {
@@ -565,23 +561,19 @@ void AW_window::get_event(AW_event *eventi) const {
 }
 
 AW_device_print *AW_window::get_print_device(AW_area area) {
-    AW_area_management *aram         = MAP_ARAM(area);
-    AW_device_print    *print_device = NULL;
-
-    if (aram) print_device = aram->get_print_device();
-    return print_device;
+    AW_area_management *aram = MAP_ARAM(area);
+    return aram ? aram->get_print_device() : NULL;
 }
 
 AW_device_size *AW_window::get_size_device(AW_area area) {
-    AW_area_management *aram        = MAP_ARAM(area);
-    AW_device_size     *size_device = NULL;
+    AW_area_management *aram = MAP_ARAM(area);
+    if (!aram) return NULL;
 
-    if (aram) {
-        size_device = aram->get_size_device();
+    AW_device_size *size_device = aram->get_size_device();
+    if (size_device) {
         size_device->restart_tracking();
         size_device->reset(); // @@@ hm
     }
-
     return size_device;
 }
 
@@ -600,7 +592,7 @@ void AW_window::insert_help_topic(const char *labeli,
     current_mscope     = tmp;
 #endif
 
-    // create one help-sub-menu-point
+    // insert one help-sub-menu-entry
     button = XtVaCreateManagedWidget("", xmPushButtonWidgetClass,
                                      p_w->help_pull_down,
                                      RES_CONVERT(XmNlabelString, labeli),
@@ -614,7 +606,7 @@ void AW_window::insert_help_topic(const char *labeli,
 
 void AW_window::insert_menu_topic(const char *topic_id, const char *labeltext,
                                   const char *mnemonic, const char *helpText,
-                                  AW_active mask, const WindowCallback& cb) {
+                                  AW_active mask, const WindowCallback& wcb) {
     aw_assert(legal_mask(mask));
     Widget button;
 
@@ -647,7 +639,7 @@ void AW_window::insert_menu_topic(const char *topic_id, const char *labeltext,
     }
 
     AW_label_in_awar_list(this, button, labeltext);
-    AW_cb *cbs = new AW_cb(this, cb, helpText);
+    AW_cb *cbs = new AW_cb(this, wcb, helpText);
     XtAddCallback(button, XmNactivateCallback,
                   (XtCallbackProc) AW_server_callback,
                   (XtPointer) cbs);
@@ -736,13 +728,18 @@ static void AW_xfigCB_info_area(AW_window *aww, AW_xfig *xfig) {
     xfig->print(device);
 }
 
+void AW_window::get_font_size(int& width, int& height) {
+    width  = get_root()->font_width;
+    height = get_root()->font_height;
+}
+
 // ----------------------------------------------------------------------
 // force-diff-sync 264782364273 (remove after merging back to trunk)
 // ----------------------------------------------------------------------
 
-void AW_window::load_xfig(const char *file, bool resize) {
-    int width  = get_root()->font_width;
-    int height = get_root()->font_height;
+void AW_window::load_xfig(const char *file, bool resize /*= true*/) {
+    int width, height;
+    get_font_size(width, height);
 
     if (file)   xfig_data = new AW_xfig(file, width, height);
     else        xfig_data = new AW_xfig(width, height); // create an empty xfig
@@ -1012,10 +1009,10 @@ void AW_window::create_window_variables() {
 
     get_root()->awar_int(window_local_awarname("horizontal_page_increment"), 50)->add_callback(hor_src);
     get_root()->awar_int(window_local_awarname("vertical_page_increment"),   50)->add_callback(ver_src);
-    get_root()->awar_int(window_local_awarname("scroll_delay_horizontal"),   20)->add_callback(hor_src);
-    get_root()->awar_int(window_local_awarname("scroll_delay_vertical"),     20)->add_callback(ver_src);
     get_root()->awar_int(window_local_awarname("scroll_width_horizontal"),    9)->add_callback(hor_src);
     get_root()->awar_int(window_local_awarname("scroll_width_vertical"),     20)->add_callback(ver_src);
+    get_root()->awar_int(window_local_awarname("scroll_delay_horizontal"),   20)->add_callback(hor_src);
+    get_root()->awar_int(window_local_awarname("scroll_delay_vertical"),     20)->add_callback(ver_src);
 }
 
 void AW_window::set_vertical_scrollbar_position(int position){
@@ -1103,10 +1100,8 @@ void AW_window::set_window_title(const char *title){
     freedup(window_name, title);
 }
 
-const char *AW_window::get_window_title() const {
-    char *title;
-    XtVaGetValues(p_w->shell, XmNtitle, &title, NULL);
-    return title;
+const char* AW_window::get_window_title() const {
+    return window_name;
 }
 
 void AW_window::shadow_width(int shadow_thickness) {
@@ -1159,8 +1154,8 @@ AW_window::AW_window()
 }
 
 AW_window::~AW_window() {
-    delete p_w;
     delete picture;
+    delete p_w;
 }
 
 #if defined(DEBUG)

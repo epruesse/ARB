@@ -407,20 +407,109 @@ static inline void dumpEvent(const char *where, AW_event *event) {
 #define dumpEvent(w, e)
 #endif
 
-ED4_returncode  ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *aww)             // handles an input event coming from parent
-{
-    static ED4_species_name_terminal    *dragged_name_terminal = 0;
-    static int              dragged_was_selected;
-    static bool                 pressed_left_button = 0;
-    static int              other_x, other_y; // coordinates of last event
-    static bool                 right_button_started_on_sequence_term = 0;
+ED4_returncode ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *aww) {
+    // handles an input event coming from parent
 
-    switch (event->type) {
-        case AW_Mouse_Press: {
-            switch (event->button) {
-                case AW_BUTTON_LEFT: {
-                    pressed_left_button = 0;
-                    if (is_species_name_terminal()) {
+    // static data to move terminal:
+    static ED4_species_name_terminal *dragged_name_terminal = 0;
+
+    static bool pressed_left_button  = false;
+    static int  other_x, other_y;                                    // coordinates of last event
+    static bool dragged_was_selected = false;                        // the dragged terminal is temp. added to selected
+
+    // ----------------------------
+    //      drag/drop terminal
+    if (dragged_name_terminal) {
+        if (event->button == AW_BUTTON_LEFT) {
+            switch (event->type) {
+                case AW_Mouse_Drag: {
+                    ED4_selection_entry *sel_info = dragged_name_terminal->selection_info;
+
+                    if (pressed_left_button) {
+                        AW_pos world_x, world_y;
+
+                        dragged_name_terminal->calc_world_coords(&world_x, &world_y);
+                        current_ed4w()->world_to_win_coords(&world_x, &world_y);
+
+                        sel_info->drag_old_x = world_x;
+                        sel_info->drag_old_y = world_y;
+                        sel_info->drag_off_x = world_x-other_x;
+                        sel_info->drag_off_y = world_y-other_y;
+                        sel_info->old_event_y = -1;
+
+                        pressed_left_button = false;
+                    }
+
+                    GB_CSTR text = dragged_name_terminal->get_displayed_text();
+
+                    if (dragged_name_terminal->dragged) {
+                        dragged_name_terminal->draw_drag_box(sel_info->drag_old_x, sel_info->drag_old_y, text, sel_info->old_event_y);
+                    }
+
+                    AW_pos new_x = sel_info->drag_off_x + event->x;
+                    AW_pos new_y = sel_info->drag_off_y + event->y;
+
+                    dragged_name_terminal->draw_drag_box(new_x, new_y, text, event->y); // @@@ event->y ist falsch, falls vertikal gescrollt ist!
+
+                    sel_info->drag_old_x = new_x;
+                    sel_info->drag_old_y = new_y;
+                    sel_info->old_event_y = event->y;
+
+                    dragged_name_terminal->dragged = true;
+                    break;
+                }
+                case AW_Mouse_Release: {
+                    if (dragged_name_terminal->dragged) {
+                        {
+                            char                *db_pointer = dragged_name_terminal->resolve_pointer_to_string_copy();
+                            ED4_selection_entry *sel_info   = dragged_name_terminal->selection_info;
+
+                            dragged_name_terminal->draw_drag_box(sel_info->drag_old_x, sel_info->drag_old_y, db_pointer, sel_info->old_event_y);
+                            dragged_name_terminal->dragged = false;
+
+                            free(db_pointer);
+                        }
+                        {
+                            ED4_move_info mi;
+
+                            mi.object = dragged_name_terminal;
+                            mi.end_x = event->x;
+                            mi.end_y = event->y;
+                            mi.mode = ED4_M_FREE;
+                            mi.preferred_parent = ED4_L_NO_LEVEL;
+
+                            dragged_name_terminal->parent->move_requested_by_child(&mi);
+                        }
+                        {
+                            ED4_device_manager *device_manager = ED4_ROOT->get_device_manager();
+
+                            for (int i=0; i<device_manager->children->members(); i++) { // when moving species numbers have to be recalculated
+                                ED4_base *member = device_manager->children->member(i);
+
+                                if (member->is_area_manager()) {
+                                    member->to_area_manager()->get_multi_species_manager()->update_requested_by_child();
+                                }
+                            }
+                        }
+                    }
+                    if (!dragged_was_selected) {
+                        ED4_ROOT->remove_from_selected(dragged_name_terminal);
+                    }
+
+                    pressed_left_button = false;
+                    dragged_name_terminal = 0;
+                    break;
+                }
+                default:
+                    break;
+            }
+        }
+    }
+    else {
+        switch (event->button) {
+            case AW_BUTTON_LEFT: {
+                if (is_species_name_terminal()) {
+                    if (event->type == AW_Mouse_Press) {
                         switch (ED4_ROOT->species_mode) {
                             case ED4_SM_KILL: {
                                 if (containing_species_manager()->is_selected()) ED4_ROOT->remove_from_selected(this->to_species_name_terminal());
@@ -429,17 +518,15 @@ ED4_returncode  ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *a
                             }
                             case ED4_SM_MOVE: {
                                 dragged_name_terminal = to_species_name_terminal();
-                                pressed_left_button = 1;
+                                pressed_left_button   = true;
+
                                 other_x = event->x;
                                 other_y = event->y;
 
-                                if (!containing_species_manager()->is_selected()) {
+                                dragged_was_selected = containing_species_manager()->is_selected();
+                                if (!dragged_was_selected) {
                                     ED4_ROOT->add_to_selected(dragged_name_terminal);
-                                    dragged_was_selected = 0;
                                     ED4_trigger_instant_refresh();
-                                }
-                                else {
-                                    dragged_was_selected = 1;
                                 }
                                 break;
                             }
@@ -450,10 +537,7 @@ ED4_returncode  ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *a
                                 if (gbd) {
                                     GB_write_flag(gbd, !GB_read_flag(gbd));
                                     request_refresh();
-                                    // ProtView: Refreshing orf terminals
-                                    if (ED4_ROOT->alignment_type ==  GB_AT_DNA) {
-                                        PV_RefreshWindow(aww->get_root());
-                                    }
+                                    if (ED4_ROOT->alignment_type ==  GB_AT_DNA) PV_RefreshWindow(aww->get_root()); // ProtView: Refreshing orf terminals (@@@ weird)
                                 }
                                 break;
                             }
@@ -463,179 +547,75 @@ ED4_returncode  ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *a
                             }
                         }
                     }
-                    else if (is_bracket_terminal()) { // fold/unfold group
-                        if (dynamic_prop & ED4_P_IS_FOLDED) {
-                            to_bracket_terminal()->unfold();
-                        }
-                        else {
-                            to_bracket_terminal()->fold();
-                        }
-                    }
-                    else {
-                        if (dynamic_prop & ED4_P_CURSOR_ALLOWED) {
-                            ED4_no_dangerous_modes();
-                            current_cursor().show_clicked_cursor(event->x, this);
-                        }
-                    }
-                    break;
                 }
-                case AW_BUTTON_RIGHT: {
-                    right_button_started_on_sequence_term = 0;
-                    if (is_bracket_terminal()) { // right click on bracket terminal
-                        ED4_base *group = get_parent(ED4_L_GROUP);
-                        if (group) {
-                            group->to_group_manager()->get_multi_species_manager()->toggle_selected_species();
-                        }
+                else if (is_bracket_terminal()) { // fold/unfold group
+                    if (event->type == AW_Mouse_Press) {
+                        if (dynamic_prop & ED4_P_IS_FOLDED) to_bracket_terminal()->unfold();
+                        else                                to_bracket_terminal()->fold();
                     }
-                    else if (is_species_name_terminal()) {
-                        ED4_species_manager *species_man = get_parent(ED4_L_SPECIES)->to_species_manager();
-
-                        if (species_man->is_consensus_manager()) { // click on consensus-name
-                            ED4_multi_species_manager *multi_man = species_man->get_parent(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
-                            multi_man->toggle_selected_species();
-                        }
-                        else { // click on species or SAI name
-                            if (!species_man->is_selected()) { // select if not selected
-                                if (ED4_ROOT->add_to_selected(this->to_species_name_terminal()) == ED4_R_OK) ED4_correctBlocktypeAfterSelection();
-                            }
-                            else { // deselect if already selected
-                                ED4_ROOT->remove_from_selected(this->to_species_name_terminal());
-                                ED4_correctBlocktypeAfterSelection();
-                            }
-                        }
-                    }
-                    else if (is_sequence_terminal()) {
-                        dumpEvent("Press", event);
-
+                }
+                else if (is_sequence_terminal()) {
+                    if (dynamic_prop & ED4_P_CURSOR_ALLOWED) {
                         ED4_no_dangerous_modes();
-                        ED4_setColumnblockCorner(event, to_sequence_terminal()); // mark columnblock
-                        right_button_started_on_sequence_term = 1;
+                        current_cursor().show_clicked_cursor(event->x, this);
                     }
-                    break;
                 }
-                default : break;
+                break;
             }
-            break;
-        }
-        case AW_Mouse_Drag: {
-            switch (event->button) {
-                case AW_BUTTON_LEFT: {
-                    if (dragged_name_terminal) {
-                        ED4_selection_entry *sel_info = dragged_name_terminal->selection_info;
+            case AW_BUTTON_RIGHT: {
+                // static data for block-selection:
+                static bool select_started_on_seqterm = false;
 
-                        if (pressed_left_button) {
-                            AW_pos world_x, world_y;
+                switch (event->type) {
+                    case AW_Mouse_Press: {
+                        select_started_on_seqterm = false;
+                        if (is_species_name_terminal()) {
+                            ED4_species_manager *species_man = get_parent(ED4_L_SPECIES)->to_species_manager();
 
-                            dragged_name_terminal->calc_world_coords(&world_x, &world_y);
-                            current_ed4w()->world_to_win_coords(&world_x, &world_y);
-
-                            sel_info->drag_old_x = world_x;
-                            sel_info->drag_old_y = world_y;
-                            sel_info->drag_off_x = world_x-other_x;
-                            sel_info->drag_off_y = world_y-other_y;
-                            sel_info->old_event_y = -1;
-
-                            pressed_left_button = 0;
-                        }
-
-                        GB_CSTR text = dragged_name_terminal->get_displayed_text();
-
-                        if (dragged_name_terminal->dragged) {
-                            dragged_name_terminal->draw_drag_box(sel_info->drag_old_x, sel_info->drag_old_y, text, sel_info->old_event_y);
-                        }
-
-                        AW_pos new_x = sel_info->drag_off_x + event->x;
-                        AW_pos new_y = sel_info->drag_off_y + event->y;
-
-                        dragged_name_terminal->draw_drag_box(new_x, new_y, text, event->y); // @@@ event->y ist falsch, falls vertikal gescrollt ist!
-
-                        sel_info->drag_old_x = new_x;
-                        sel_info->drag_old_y = new_y;
-                        sel_info->old_event_y = event->y;
-
-                        dragged_name_terminal->dragged = true;
-                    }
-
-                    break;
-                }
-                case AW_BUTTON_RIGHT: {
-                    if (is_sequence_terminal() && right_button_started_on_sequence_term) {
-                        ED4_no_dangerous_modes();
-                        ED4_setColumnblockCorner(event, to_sequence_terminal()); // mark columnblock
-                    }
-                    break;
-                }
-                default: break; 
-            }
-            break;
-        }
-        case AW_Mouse_Release: {
-            switch (event->button) {
-                case AW_BUTTON_LEFT: {
-                    if (dragged_name_terminal) {
-                        if (dragged_name_terminal->dragged) {
-                            {
-                                char                *db_pointer = dragged_name_terminal->resolve_pointer_to_string_copy();
-                                ED4_selection_entry *sel_info   = dragged_name_terminal->selection_info;
-
-                                dragged_name_terminal->draw_drag_box(sel_info->drag_old_x, sel_info->drag_old_y, db_pointer, sel_info->old_event_y);
-                                dragged_name_terminal->dragged = false;
-
-                                free(db_pointer);
+                            if (species_man->is_consensus_manager()) { // click on consensus-name
+                                ED4_multi_species_manager *multi_man = species_man->get_parent(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
+                                multi_man->toggle_selected_species();
                             }
-                            {
-                                ED4_move_info mi;
-
-                                mi.object = dragged_name_terminal;
-                                mi.end_x = event->x;
-                                mi.end_y = event->y;
-                                mi.mode = ED4_M_FREE;
-                                mi.preferred_parent = ED4_L_NO_LEVEL;
-
-                                dragged_name_terminal->parent->move_requested_by_child(&mi);
-                            }
-                            {
-                                ED4_device_manager *device_manager = ED4_ROOT->get_device_manager();
-
-                                for (int i=0; i<device_manager->children->members(); i++) { // when moving species numbers have to be recalculated
-                                    ED4_base *member = device_manager->children->member(i);
-
-                                    if (member->is_area_manager()) {
-                                        member->to_area_manager()->get_multi_species_manager()->update_requested_by_child();
-                                    }
+                            else { // click on species or SAI name
+                                if (!species_man->is_selected()) { // select if not selected
+                                    if (ED4_ROOT->add_to_selected(this->to_species_name_terminal()) == ED4_R_OK) ED4_correctBlocktypeAfterSelection();
+                                }
+                                else { // deselect if already selected
+                                    ED4_ROOT->remove_from_selected(this->to_species_name_terminal());
+                                    ED4_correctBlocktypeAfterSelection();
                                 }
                             }
                         }
-                        if (!dragged_was_selected) {
-                            ED4_ROOT->remove_from_selected(dragged_name_terminal);
+                        else if (is_bracket_terminal()) {
+                            ED4_base *group = get_parent(ED4_L_GROUP);
+                            if (group) {
+                                group->to_group_manager()->get_multi_species_manager()->toggle_selected_species();
+                            }
                         }
-
-                        pressed_left_button = 0;
-                        dragged_name_terminal = 0;
+                        else if (is_sequence_terminal()) {
+                            ED4_no_dangerous_modes();
+                            ED4_setColumnblockCorner(event, to_sequence_terminal()); // mark columnblock
+                            select_started_on_seqterm = true;
+                        }
+                        break;
                     }
-                    break;
-                }
 
-                case AW_BUTTON_RIGHT: {
-                    if (right_button_started_on_sequence_term && is_sequence_terminal()) {
-                        dumpEvent("Relea", event);
-                        ED4_no_dangerous_modes();
-                        ED4_setColumnblockCorner(event, to_sequence_terminal()); // mark columnblock
-                    }
-                    break;
+                    case AW_Mouse_Drag:
+                    case AW_Mouse_Release:
+                        if (select_started_on_seqterm && is_sequence_terminal()) {
+                            ED4_no_dangerous_modes();
+                            ED4_setColumnblockCorner(event, to_sequence_terminal()); // mark columnblock
+                        }
+                        break;
+
+                    default:
+                        break;
                 }
-                default: break; 
+                break;
             }
-            break;
         }
-        default:
-#ifdef ARB_GTK
-            // there can be many other events here...
-#else
-            e4_assert(0);
-#endif
-            break;
     }
+
     return (ED4_R_OK);
 }
 

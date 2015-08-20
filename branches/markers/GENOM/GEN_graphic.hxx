@@ -78,7 +78,6 @@ public:
     AW_gc_manager init_devices(AW_window *, AW_device *, AWT_canvas *scr) OVERRIDE;
 
     virtual void show(AW_device *device) OVERRIDE;
-    virtual void info(AW_device *device, AW_pos x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct) OVERRIDE;
 
     void handle_command(AW_device *device, AWT_graphic_event& event) OVERRIDE;
     virtual int check_update(GBDATA *gbdummy) OVERRIDE;

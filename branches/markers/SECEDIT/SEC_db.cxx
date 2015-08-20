@@ -372,9 +372,9 @@ static void create_awars(AW_root *aw_root, AW_default def) {
         free(dir);
     }
 
-    aw_root->awar_float(AWAR_SECEDIT_DIST_BETW_STRANDS, 1, def)->set_minmax(0.001, 1000);
-    aw_root->awar_int(AWAR_SECEDIT_SKELETON_THICKNESS, 1, def)->set_minmax(1, 100);
-    aw_root->awar_int(AWAR_SECEDIT_BOND_THICKNESS, 1, def)->set_minmax(1, 100);
+    aw_root->awar_float(AWAR_SECEDIT_DIST_BETW_STRANDS,  1, def)->set_minmax(0.01, 40);
+    aw_root->awar_int  (AWAR_SECEDIT_SKELETON_THICKNESS, 1, def)->set_minmax(1,    10);
+    aw_root->awar_int  (AWAR_SECEDIT_BOND_THICKNESS,     1, def)->set_minmax(1,    10);
 
 #if defined(DEBUG)
     aw_root->awar_int(AWAR_SECEDIT_SHOW_DEBUG,        0,                def);

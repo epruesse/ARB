@@ -242,46 +242,50 @@ static void SEC_undo_cb(AW_window *, AW_CL cl_db, AW_CL cl_undo_type) {
 #define ASS_EOS   "[end of structure]"
 #define ASS_EOF   "[end of " ASS "]"
 
-static void export_structure_to_file(AW_window *, AW_CL cl_db)
-{
-    SEC_db_interface *db       = (SEC_db_interface*)cl_db;
-    AW_root          *aw_root  = db->awroot();
-    char             *filename = aw_root->awar(AWAR_SECEDIT_SAVEDIR"/file_name")->read_string();
-    FILE             *out      = fopen(filename, "wt");
-    GB_ERROR          error    = 0;
+static void export_structure_to_file(AW_window *, SEC_db_interface *db) {
+    GB_ERROR  error    = 0;
+    SEC_root *sec_root = db->secroot();
 
-    if (out) {
-        SEC_root *sec_root = db->secroot();
-
-        fputs(ASS_START, out); fputc('\n', out);
-
-        char *strct = sec_root->buildStructureString();
-        fputs(strct, out);
-        delete [] strct;
-
-        fputs(ASS_EOS, out); fputc('\n', out);
-
-        const XString& xstr     = sec_root->get_xString();
-        const char    *x_string = xstr.get_x_string();
-
-        sec_assert(xstr.get_x_string_length() == strlen(x_string));
-
-        char *foldInfo = SEC_xstring_to_foldedHelixList(x_string, xstr.get_x_string_length(), sec_root->get_helixDef(), error);
-        if (foldInfo) {
-            fprintf(out, "foldedHelices=%s\n", foldInfo);
-            free(foldInfo);
-        }
-
-        fputs(ASS_EOF, out); fputc('\n', out);
-        fclose(out);
-
-        if (error) GB_unlink_or_warn(filename, &error);
+    if (!sec_root->get_root_loop()) {
+        error = "Please select a species (to display structure once) before saving";
     }
     else {
-        error = GB_export_errorf("Can't write secondary structure to '%s'", filename);
-    }
+        AW_root *aw_root  = db->awroot();
+        char    *filename = aw_root->awar(AWAR_SECEDIT_SAVEDIR"/file_name")->read_string();
+        FILE    *out      = fopen(filename, "wt");
 
-    free(filename);
+        if (out) {
+
+            fputs(ASS_START, out); fputc('\n', out);
+
+            char *strct = sec_root->buildStructureString();
+            fputs(strct, out);
+            delete [] strct;
+
+            fputs(ASS_EOS, out); fputc('\n', out);
+
+            const XString& xstr     = sec_root->get_xString();
+            const char    *x_string = xstr.get_x_string();
+
+            sec_assert(xstr.get_x_string_length() == strlen(x_string));
+
+            char *foldInfo = SEC_xstring_to_foldedHelixList(x_string, xstr.get_x_string_length(), sec_root->get_helixDef(), error);
+            if (foldInfo) {
+                fprintf(out, "foldedHelices=%s\n", foldInfo);
+                free(foldInfo);
+            }
+
+            fputs(ASS_EOF, out); fputc('\n', out);
+            fclose(out);
+
+            if (error) GB_unlink_or_warn(filename, &error);
+        }
+        else {
+            error = GB_export_errorf("Can't write secondary structure to '%s'", filename);
+        }
+
+        free(filename);
+    }
     if (error) aw_message(error);
 }
 
@@ -327,10 +331,9 @@ static GB_ERROR expectToken(LineReader& file, const char *token, string& content
     return error;
 }
 
-static void import_structure_from_file(AW_window *, AW_CL cl_db) {
-    GB_ERROR          error = 0;
-    SEC_db_interface *db    = (SEC_db_interface*)cl_db;
-    SEC_root         *root  = db->secroot();
+static void import_structure_from_file(AW_window *, SEC_db_interface *db) {
+    GB_ERROR  error = 0;
+    SEC_root *root  = db->secroot();
 
     if (!root->has_xString()) {
         error = "Please select a species in EDIT4";
@@ -409,8 +412,7 @@ static void import_structure_from_file(AW_window *, AW_CL cl_db) {
 #undef ASS_EOS
 #undef ASS_EOF
 
-static AW_window *SEC_importExport(AW_root *root, int export_to_file, SEC_db_interface *db)
-{
+static AW_window *SEC_importExport(AW_root *root, int export_to_file, SEC_db_interface *db) {
     AW_window_simple *aws = new AW_window_simple;
 
     if (export_to_file) aws->init(root, "export_secondary_structure", "Export secondary structure to ...");
@@ -430,11 +432,11 @@ static AW_window *SEC_importExport(AW_root *root, int export_to_file, SEC_db_int
 
     aws->at("save");
     if (export_to_file) {
-        aws->callback(export_structure_to_file, (AW_CL)db);
+        aws->callback(makeWindowCallback(export_structure_to_file, db));
         aws->create_button("EXPORT", "EXPORT", "E");
     }
     else {
-        aws->callback(import_structure_from_file, (AW_CL)db);
+        aws->callback(makeWindowCallback(import_structure_from_file, db));
         aws->create_button("IMPORT", "IMPORT", "I");
     }
 
@@ -511,12 +513,18 @@ static void SEC_delete_structure(AW_window *, AW_CL cl_db, AW_CL) {
     }
 }
 
-static void SEC_sync_colors(AW_window *aww, AW_CL cl_mode, AW_CL) {
+enum SyncColors {
+    COLOR_SYNC_SEARCH = 1,
+    COLOR_SYNC_RANGE  = 2,
+    COLOR_SYNC_REST   = 4,
+
+    COLOR_SYNC_ALL = (COLOR_SYNC_SEARCH|COLOR_SYNC_RANGE|COLOR_SYNC_REST),
+};
+
+static void SEC_sync_colors(AW_window *aww, SyncColors which) {
     // overwrites color settings with those from EDIT4
 
-    int mode = (int)cl_mode;
-
-    if (mode & 1) { // search string colors
+    if (which & COLOR_SYNC_SEARCH) {
         AW_copy_GCs(aww->get_root(), "ARB_EDIT4", "ARB_SECEDIT", false,
                     "User1",   "User2",   "Probe",
                     "Primerl", "Primerr", "Primerg",
@@ -524,7 +532,7 @@ static void SEC_sync_colors(AW_window *aww, AW_CL cl_mode, AW_CL) {
                     "MISMATCHES",
                     NULL);
     }
-    if (mode & 2) { // range colors
+    if (which & COLOR_SYNC_RANGE) {
         AW_copy_GCs(aww->get_root(), "ARB_EDIT4", "ARB_SECEDIT", false,
                     "RANGE_0", "RANGE_1", "RANGE_2",
                     "RANGE_3", "RANGE_4", "RANGE_5",
@@ -532,7 +540,7 @@ static void SEC_sync_colors(AW_window *aww, AW_CL cl_mode, AW_CL) {
                     "RANGE_9",
                     NULL);
     }
-    if (mode & 4) { // other colors
+    if (which & COLOR_SYNC_REST) {
         AW_copy_GCs(aww->get_root(), "ARB_EDIT4", "ARB_SECEDIT", false,
                     "CURSOR",
                     NULL);
@@ -613,6 +621,11 @@ static AWT_config_mapping_def secedit_display_config_mapping[] = {
 static AW_window *SEC_create_display_window(AW_root *awr) {
     AW_window_simple *aws = new AW_window_simple;
 
+    const int SCALED_TEXT_COLUMNS = 7;
+    const int SCALER_WIDTH        = 200;
+
+    aws->auto_space(5, 5);
+
     aws->init(awr, "SEC_DISPLAY_OPTS", "Display options");
     aws->load_xfig("sec_display.fig");
 
@@ -632,7 +645,7 @@ static AW_window *SEC_create_display_window(AW_root *awr) {
 
     aws->at("strand_dist");
     aws->label("Distance between strands   :");
-    aws->create_input_field(AWAR_SECEDIT_DIST_BETW_STRANDS);
+    aws->create_input_field_with_scaler(AWAR_SECEDIT_DIST_BETW_STRANDS, SCALED_TEXT_COLUMNS, SCALER_WIDTH, AW_SCALER_EXP_LOWER);
 
     aws->at("bonds");
     aws->label("Display bonds");
@@ -643,12 +656,12 @@ static AW_window *SEC_create_display_window(AW_root *awr) {
     aws->update_option_menu();
 
     aws->at("bonddef");
-    aws->callback(AW_POPUP, (AW_CL)SEC_create_bonddef_window, 0);
+    aws->callback(makeCreateWindowCallback(SEC_create_bonddef_window));
     aws->create_button("sec_bonddef", "Define", 0);
 
     aws->at("bondThickness");
     aws->label("Bond thickness             :");
-    aws->create_input_field(AWAR_SECEDIT_BOND_THICKNESS);
+    aws->create_input_field_with_scaler(AWAR_SECEDIT_BOND_THICKNESS, SCALED_TEXT_COLUMNS, SCALER_WIDTH, AW_SCALER_EXP_LOWER);
 
     // ----------------------------------------
 
@@ -695,7 +708,7 @@ static AW_window *SEC_create_display_window(AW_root *awr) {
 
     aws->at("skelThickness");
     aws->label("Skeleton thickness         :");
-    aws->create_input_field(AWAR_SECEDIT_SKELETON_THICKNESS);
+    aws->create_input_field_with_scaler(AWAR_SECEDIT_SKELETON_THICKNESS, SCALED_TEXT_COLUMNS, SCALER_WIDTH, AW_SCALER_EXP_LOWER);
 
 #ifdef DEBUG
     aws->at("show_debug");
@@ -747,21 +760,21 @@ AW_window *start_SECEDIT_plugin(ED4_plugin_host& host) {
     awm->insert_menu_topic("secedit_import", "Load structure", "L", "secedit_imexport.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_import, (AW_CL)db);
     awm->insert_menu_topic("secedit_export", "Save structure", "S", "secedit_imexport.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_export, (AW_CL)db);
     awm->sep______________();
-    awm->insert_menu_topic("secStruct2xfig", "Export Structure to XFIG", "X", "sec_layout.hlp",  AWM_ALL, makeWindowCallback(AWT_popup_sec_export_window, scr));
-    awm->insert_menu_topic("print_secedit",  "Print Structure",          "P", "secedit2prt.hlp", AWM_ALL, makeWindowCallback(AWT_popup_print_window, scr));
+    awm->insert_menu_topic("secStruct2xfig", "Export structure to XFIG", "X", "tree2file.hlp", AWM_ALL, makeWindowCallback(AWT_popup_sec_export_window, scr));
+    awm->insert_menu_topic("print_secedit",  "Print Structure",          "P", "tree2prt.hlp",  AWM_ALL, makeWindowCallback(AWT_popup_print_window,      scr));
     awm->sep______________();
 
     awm->insert_menu_topic("close", "Close", "C", "quit.hlp", AWM_ALL, (AW_CB)AW_POPDOWN, 0, 0);
 
     awm->create_menu("Properties", "P", AWM_ALL);
-    awm->insert_menu_topic("sec_display", "Display options", "D", "sec_display.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_create_display_window, 0);
+    awm->insert_menu_topic("sec_display", "Display options", "D", "sec_display.hlp", AWM_ALL, SEC_create_display_window);
     awm->sep______________();
     awm->insert_menu_topic("props_secedit", "Change Colors and Fonts", "C", "color_props.hlp", AWM_ALL, makeCreateWindowCallback(AW_create_gc_window, scr->gc_manager));
     awm->sep______________();
-    awm->insert_menu_topic("sync_search_colors", "Sync search colors with EDIT4", "s", "sync_colors.hlp", AWM_ALL, SEC_sync_colors, (AW_CL)1, 0);
-    awm->insert_menu_topic("sync_range_colors",  "Sync range colors with EDIT4",  "r", "sync_colors.hlp", AWM_ALL, SEC_sync_colors, (AW_CL)2, 0);
-    awm->insert_menu_topic("sync_other_colors",  "Sync other colors with EDIT4",  "o", "sync_colors.hlp", AWM_ALL, SEC_sync_colors, (AW_CL)4, 0);
-    awm->insert_menu_topic("sync_all_colors",    "Sync all colors with EDIT4",    "a", "sync_colors.hlp", AWM_ALL, SEC_sync_colors, (AW_CL)(1|2|4), 0);
+    awm->insert_menu_topic("sync_search_colors", "Sync search colors with EDIT4", "s", "sync_colors.hlp", AWM_ALL, makeWindowCallback(SEC_sync_colors, COLOR_SYNC_SEARCH));
+    awm->insert_menu_topic("sync_range_colors",  "Sync range colors with EDIT4",  "r", "sync_colors.hlp", AWM_ALL, makeWindowCallback(SEC_sync_colors, COLOR_SYNC_RANGE));
+    awm->insert_menu_topic("sync_other_colors",  "Sync other colors with EDIT4",  "o", "sync_colors.hlp", AWM_ALL, makeWindowCallback(SEC_sync_colors, COLOR_SYNC_REST));
+    awm->insert_menu_topic("sync_all_colors",    "Sync all colors with EDIT4",    "a", "sync_colors.hlp", AWM_ALL, makeWindowCallback(SEC_sync_colors, COLOR_SYNC_ALL));
     awm->sep______________();
     awm->insert_menu_topic("sec_save_props",    "How to save properties",   "p", "savedef.hlp", AWM_ALL, makeHelpCallback("sec_props.hlp"));
 

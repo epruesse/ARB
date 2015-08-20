@@ -97,10 +97,6 @@ void SAI_graphic::show(AW_device *device) {
     paint(device);
 }
 
-void SAI_graphic::info(AW_device */*device*/, AW_pos /*x*/, AW_pos /*y*/, AW_clicked_line */*cl*/, AW_clicked_text */*ct*/) {
-    aw_message("INFO MESSAGE");
-}
-
 static void colorDefChanged_callback(AW_root *awr, int awarNo) {
     if (!in_colorDefChanged_callback) {
         LocallyModify<bool> flag(in_colorDefChanged_callback, true);

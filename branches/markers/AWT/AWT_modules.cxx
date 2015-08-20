@@ -40,7 +40,7 @@ void awt_create_order_buttons(AW_window *aws, awt_orderfun reorder_cb, AW_CL cl)
 
 inline const char *bitmap_name(bool rightwards, bool all) {
     if (all) return rightwards ? "#moveAllRight.xpm" : "#moveAllLeft.xpm"; // uses_pix_res("moveAllRight.xpm", "moveAllLeft.xpm");
-    return rightwards ? "#moveRight.xpm" : "#moveLeft.xpm";                // uses_pix_res("moveRight.xpm", "moveLeft.xpm"); see ../SOURCE_TOOLS/check_ressources.pl@uses_pix_res
+    return rightwards ? "#moveRight.xpm" : "#moveLeft.xpm";                // uses_pix_res("moveRight.xpm", "moveLeft.xpm"); see ../SOURCE_TOOLS/check_resources.pl@uses_pix_res
 }
 
 void awt_create_collect_buttons(AW_window *aws, bool collect_rightwards, awt_collectfun collect_cb, AW_CL cl) {

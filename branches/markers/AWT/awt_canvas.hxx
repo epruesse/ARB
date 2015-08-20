@@ -13,11 +13,12 @@
 #ifndef ATTRIBUTES_H
 #include <attributes.h>
 #endif
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
+#endif
 
 class AWT_canvas;
 class AW_device;
-class AW_clicked_line;
-class AW_clicked_text;
 
 enum AWT_COMMAND_MODE {
     AWT_MODE_NONE,
@@ -158,11 +159,10 @@ class AWT_graphic_event : virtual Noncopyable {
 
     AW::Position mousepos;
 
-    const AW_clicked_line *M_cl; // text and/or
-    const AW_clicked_text *M_ct; // line selected by current mouse position
+    AW_device_click *click_dev;
 
 public:
-    AWT_graphic_event(AWT_COMMAND_MODE cmd_, const AW_event& event, bool is_drag, const AW_clicked_line  *cl_, const AW_clicked_text  *ct_)
+    AWT_graphic_event(AWT_COMMAND_MODE cmd_, const AW_event& event, bool is_drag, AW_device_click *click_dev_)
         : M_cmd(cmd_),
           M_button(event.button),
           M_key_modifier(event.keymodifier),
@@ -170,8 +170,7 @@ public:
           M_key_char(event.character),
           M_type(is_drag ? AW_Mouse_Drag : event.type),
           mousepos(event.x, event.y),
-          M_cl(cl_),
-          M_ct(ct_)
+          click_dev(click_dev_)
     {}
 
     AWT_COMMAND_MODE cmd() const { return M_cmd; }
@@ -185,8 +184,9 @@ public:
 
     const AW::Position& position() const { return mousepos; } // screen-coordinates
 
-    enum ClickPreference { PREFER_NEARER, PREFER_LINE, PREFER_TEXT };
-    const AW_clicked_element *best_click(ClickPreference prefer = PREFER_NEARER);
+    const AW_clicked_element *best_click(AW_device_click::ClickPreference prefer = AW_device_click::PREFER_NEARER) {
+        return click_dev ? click_dev->best_click(prefer) : NULL;
+    }
 };
 
 class AWT_graphic {
@@ -194,6 +194,8 @@ class AWT_graphic {
 
     void refresh_by_exports(AWT_canvas *scr);
     void postevent_handler(GBDATA *gb_main);
+
+    bool detect_drag_target;
 
 protected:
     int drag_gc;
@@ -215,13 +217,14 @@ public:
 
     virtual void show(AW_device *device) = 0;
 
-    virtual void info(AW_device *device, AW_pos x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct) = 0;     // double click
-
     /* init gcs, if any gc is changed you may call AWT_expose_cb(NULL, scr); or AWT_resize_cb(NULL, scr); */
     virtual AW_gc_manager init_devices(AW_window *, AW_device *, AWT_canvas *scr) = 0;
 
     virtual void handle_command(AW_device *device, AWT_graphic_event& event) = 0;
     virtual void update_structure()                                          = 0; // called when exports.structure_change == 1
+
+    bool wants_drag_target() const { return detect_drag_target; }
+    void drag_target_detection(bool detect) { detect_drag_target = detect; }
 };
 
 class AWT_nonDB_graphic : public AWT_graphic { // @@@ check AWT_nonDB_graphic
@@ -273,8 +276,6 @@ public:
     int zoom_drag_ex;
     int zoom_drag_ey;
     int drag;
-    AW_clicked_line clicked_line;
-    AW_clicked_text clicked_text;
 
     void set_scrollbars();
     void set_dragEndpoint(int x, int y);

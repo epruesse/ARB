@@ -405,7 +405,7 @@ static AW_window *NT_create_save_quick_as_window(AW_root *aw_root, const char *b
     static AW_window_simple *aws = 0;
     if (!aws) {
         aws = new AW_window_simple;
-        aws->init(aw_root, "SAVE_CHANGES_TO", "SAVE CHANGES TO");
+        aws->init(aw_root, "SAVE_CHANGES_TO", "Quicksave changes as");
         aws->load_xfig("save_as.fig");
 
         aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
@@ -1481,7 +1481,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
     awm->create_button("SAVE", "#save.xpm");
 
     awm->callback(makeCreateWindowCallback(NT_create_save_as, "tmp/nt/arbdb"));
-    awm->help_text("saveas.hlp");
+    awm->help_text("save.hlp");
     awm->create_button("SAVE_AS", "#saveAs.xpm");
 
     // undo/redo:
@@ -1503,7 +1503,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
     // size of DB-name button is determined by buttons below:
     awm->at_set_to(false, false, db_pathx2-db_pathx-1, second_liney-first_liney+1);
     awm->callback(makeCreateWindowCallback(NT_create_save_quick_as_window, "tmp/nt/arbdb"));
-    awm->help_text("saveas.hlp");
+    awm->help_text("save.hlp");
     awm->create_button("QUICK_SAVE_AS", AWAR_DB_NAME);
 
     // -----------------------------
@@ -1577,7 +1577,8 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
     awm->at_set_to(false, false, ((2-is_genome_db)*EDIT_XSIZE), EDIT_YSIZE);
     awm->callback(makeWindowCallback(NT_start_editor_on_tree, 0, ntw));
     awm->help_text("arb_edit4.hlp");
-    awm->create_button("EDIT_SEQUENCES", is_genome_db ? "#editor_small.xpm" : "#editor.xpm");
+    if (is_genome_db) awm->create_button("EDIT_SEQUENCES", "#editor_small.xpm");
+    else              awm->create_button("EDIT_SEQUENCES", "#editor.xpm");
 
     if (is_genome_db) {
         awm->at_set_to(false, false, EDIT_XSIZE, EDIT_YSIZE);

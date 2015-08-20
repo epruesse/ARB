@@ -840,7 +840,7 @@ endif
 		@echo ' patch       - save svn diff to patchfile'
 		@echo ' source_doc  - create doxygen documentation'
 		@echo ' relocated   - rebuild partly (use when you have relocated ARBHOME)'
-		@echo ' check_res   - check ressource usage'
+		@echo ' check_res   - check resource usage'
 		@echo ' dep_graph   - Build dependency graphs'
 		@echo ' clean_cov   - Clean coverage results'
 		@echo ''
@@ -1981,10 +1981,10 @@ cloc:
 	@echo 'External rest:'
 	@$(CLOC) $(CLOCFLAGS) $(CLOCREST) $(CLOCEXT) | $(CLOCFILT)
 
-# ---------------------------------------- check ressources
+# ---------------------------------------- check resources
 
 check_res:
-	$(ARBHOME)/SOURCE_TOOLS/check_ressources.pl
+	$(ARBHOME)/SOURCE_TOOLS/check_resources.pl
 
 # ---------------------------------------- cleaning
 
