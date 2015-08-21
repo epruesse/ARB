@@ -2340,12 +2340,12 @@ void AWT_graphic_tree::show_radial_tree(AP_tree *at, const AW::Position& base, c
             Position corner[3];
             corner[0] = tip;
             {
-                Angle right(orientation.radian() + 0.25*tree_spread + at->gr.right_angle);
-                corner[1] = tip + right.normal()*l_min;
+                Angle left(orientation.radian() + 0.25*tree_spread + at->gr.left_angle);
+                corner[1] = tip + left.normal()*l_min;
             }
             {
-                Angle left(orientation.radian() - 0.25*tree_spread + at->gr.right_angle); // @@@ why right_angle here? (used till [2])
-                corner[2] = tip + left.normal()*l_max;
+                Angle right(orientation.radian() - 0.25*tree_spread + at->gr.right_angle);
+                corner[2] = tip + right.normal()*l_max;
             }
 
             disp_device->set_grey_level(at->gr.gc, group_greylevel);
