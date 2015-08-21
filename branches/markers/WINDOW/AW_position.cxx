@@ -20,6 +20,11 @@ const Vector   AW::ZeroVector(0, 0, 0);
 const double AW::Angle::rad2deg = 180/M_PI;
 const double AW::Angle::deg2rad = M_PI/180;
 
+const Angle AW::Eastwards (  0*Angle::deg2rad);
+const Angle AW::Southwards( 90*Angle::deg2rad);
+const Angle AW::Westwards (180*Angle::deg2rad);
+const Angle AW::Northwards(270*Angle::deg2rad);
+
 void LineVector::standardize() {
     // make diagonal positive (i.e. make it a Vector which contains width and height of a Rectangle)
     // this changes the start position to the upper-left corner

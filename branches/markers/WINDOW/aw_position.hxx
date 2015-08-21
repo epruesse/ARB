@@ -435,6 +435,7 @@ namespace AW {
     class Angle {
         mutable Vector Normal;  // the normal vector representing the angle (x = cos(angle), y = sin(angle))
         mutable double Radian;  // the radian of the angle
+                                // (starts at 3 o'clock running forward!!! i.e. South is 90 degrees; caused by y-direction of canvas)
 
         void recalcRadian() const;
         void recalcNormal() const;
@@ -518,6 +519,8 @@ namespace AW {
 
     inline Angle operator*(const Angle& a, const double& fact) { return Angle(a) *= fact; }
     inline Angle operator/(const Angle& a, const double& divi) { return Angle(a) *= (1.0/divi); }
+
+    extern const Angle Northwards, Westwards, Southwards, Eastwards;
 
     // ---------------------
     //      some helpers
