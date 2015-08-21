@@ -32,6 +32,7 @@
 #include <iostream>
 #include <cfloat>
 #include <ad_colorset.h>
+#include <algorithm>
 
 /*!*************************
   class AP_tree
@@ -76,6 +77,9 @@ AW_gc_manager AWT_graphic_tree::init_devices(AW_window *aww, AW_device *device, 
                      // Many gc indices are shared between ABR_NTREE and ARB_PARSIMONY
                      // e.g. the tree drawing routines use same gc's for drawing both trees
                      // (check PARS_dtree.cxx AWT_graphic_parsimony::init_devices)
+
+                     // Note: in radial tree display, branches with lower gc(-index) are drawn AFTER branches
+                     //       with higher gc(-index), i.e. marked branches are drawn on top of unmarked branches.
 
                      "Cursor$white",
                      "Branch remarks$#b6ffb6",
@@ -2282,70 +2286,85 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
     }
 }
 
+struct Subinfo { // subtree info (used to implement branch draw precedence)
+    AP_tree *at;
+    double   pc; // percent of space (depends on # of species in subtree)
+    double   orientation;
+    double   len;
+};
 
-void AWT_graphic_tree::scale_text_koordinaten(AW_device *device, int gc, double& x, double& y, double orientation, int flag) {
-    if (flag!=1) {
-        const AW_font_limits& charLimits  = device->get_font_limits(gc, 'A');
-        double                text_height = charLimits.height * disp_device->get_unscale();
-        double                dist        = charLimits.height * disp_device->get_unscale();
+void AWT_graphic_tree::calc_text_coordinates_near_tip(AW_device *device, int gc, double& x, double& y, double orientation) { // @@@ x/y->Position, orientation->Angle
+    /*! calculates text coordinates for text placed at the tip of a vector
+     * @param device      output device
+     * @param gc          context
+     * @param x/y         tip of the vector (world coordinates)
+     * @param orientation orientation of the vector (towards its tip)
+     */
+    const AW_font_limits& charLimits  = device->get_font_limits(gc, 'A');
+    double                text_height = charLimits.height * disp_device->get_unscale();
+    double                dist        = charLimits.height * disp_device->get_unscale();
 
-        x += cos(orientation) * dist;
-        y += sin(orientation) * dist + 0.3*text_height;
-    }
+    x += cos(orientation) * dist;
+    y += sin(orientation) * dist + 0.3*text_height;
 }
 
-void AWT_graphic_tree::show_radial_tree(AP_tree * at, double x_center,
-                                        double y_center, double tree_spread, double tree_orientation,
-                                        double x_root, double y_root)
+void AWT_graphic_tree::show_radial_tree(AP_tree *at,
+                                        double x_center, double y_center, // @@@ -> const Position&
+                                        const double tree_spread,
+                                        const double tree_orientation, // @@@ -> const Angle&
+                                        const double x_root, const double y_root) // @@@ -> const Position&
 {
-    double l, r, w, z, l_min, l_max;
-
     AW_click_cd cd(disp_device, (AW_CL)at);
     set_line_attributes_for(at);
     draw_branch_line(at->gr.gc, Position(x_root, y_root), Position(x_center, y_center), line_filter);
 
-    if (at->is_leaf) {
-        // draw mark box
-        if (at->gb_node && GB_read_flag(at->gb_node)) {
+    if (at->is_leaf) { // draw leaf node
+        if (at->gb_node && GB_read_flag(at->gb_node)) { // draw mark box
             filled_box(at->gr.gc, Position(x_center, y_center), NT_BOX_WIDTH);
         }
 
         if (at->name && (disp_device->get_filter() & leaf_text_filter)) {
             if (at->hasName(species_name)) cursor = Position(x_center, y_center);
-            scale_text_koordinaten(disp_device, at->gr.gc, x_center, y_center, tree_orientation, 0);
+            calc_text_coordinates_near_tip(disp_device, at->gr.gc, x_center, y_center, tree_orientation);
             const char *data =  make_node_text_nds(this->gb_main, at->gb_node, NDS_OUTPUT_LEAFTEXT, at, tree_static->get_tree_name());
             disp_device->text(at->gr.gc, data,
                               (AW_pos)x_center, (AW_pos) y_center,
                               (AW_pos) .5 - .5 * cos(tree_orientation),
                               leaf_text_filter);
         }
-        return;
     }
+    else if (at->gr.grouped) { // draw folded group
+        const double l_min = at->gr.min_tree_depth;
+        const double l_max = at->gr.max_tree_depth;
 
-    if (at->gr.grouped) {
-        l_min = at->gr.min_tree_depth;
-        l_max = at->gr.max_tree_depth;
+        const double pc_right = 0.5;
+        const double pc_left  = 0.5;
 
-        r    = l = 0.5;
         AW_pos q[6];
         q[0] = x_center;
         q[1] = y_center;
-        w    = tree_orientation + r*0.5*tree_spread + at->gr.right_angle;
-        q[2] = x_center+l_min*cos(w);
-        q[3] = y_center+l_min*sin(w);
-        w    = tree_orientation - l*0.5*tree_spread + at->gr.right_angle;
-        q[4] = x_center+l_max*cos(w);
-        q[5] = y_center+l_max*sin(w);
+        {
+            const double w = tree_orientation + pc_right*0.5*tree_spread + at->gr.right_angle;
+            q[2]           = x_center+l_min*cos(w);
+            q[3]           = y_center+l_min*sin(w);
+        }
+        {
+            const double w = tree_orientation - pc_left*0.5*tree_spread + at->gr.right_angle;
+            q[4]           = x_center+l_max*cos(w);
+            q[5]           = y_center+l_max*sin(w);
+        }
 
         disp_device->set_grey_level(at->gr.gc, group_greylevel);
         disp_device->polygon(at->gr.gc, AW::FillStyle::SHADED_WITH_BORDER, 3, &q[0], line_filter);
 
         if (at->gb_node && (disp_device->get_filter() & group_text_filter)) {
-            w = tree_orientation + at->gr.right_angle;
-            l_max = (l_max+l_min)*.5;
-            x_center = x_center+l_max*cos(w);
-            y_center = y_center+l_max*sin(w);
-            scale_text_koordinaten(disp_device, at->gr.gc, x_center, y_center, w, 0);
+            const double w      = tree_orientation + at->gr.right_angle;
+            const double l_mean = (l_max+l_min)*.5;
+
+            x_center = x_center+l_mean*cos(w);
+            y_center = y_center+l_mean*sin(w);
+
+            calc_text_coordinates_near_tip(disp_device, at->gr.gc, x_center, y_center, w);
 
             // insert text (e.g. name of group)
             const char *data = make_node_text_nds(this->gb_main, at->gb_node, NDS_OUTPUT_LEAFTEXT, at, tree_static->get_tree_name());
@@ -2354,74 +2373,44 @@ void AWT_graphic_tree::show_radial_tree(AP_tree * at, double x_center,
                               (AW_pos).5 - .5 * cos(tree_orientation),
                               group_text_filter);
         }
-        return;
     }
-    l = (double) at->get_leftson()->gr.view_sum / (double)at->gr.view_sum;
-    r = 1.0 - (double)l;
+    else { // draw subtrees
+        Subinfo sub[2];
+        sub[0].at = at->get_leftson();
+        sub[1].at = at->get_rightson();
 
-    {
-        AP_tree *at_leftson  = at->get_leftson();
-        AP_tree *at_rightson = at->get_rightson();
+        sub[0].pc = sub[0].at->gr.view_sum / (double)at->gr.view_sum;
+        sub[1].pc = 1.0-sub[0].pc;
 
-        if (at_leftson->gr.gc > at_rightson->gr.gc) {
-            // bring selected gc to front
+        sub[0].orientation = tree_orientation + sub[1].pc*0.5*tree_spread + at->gr.left_angle;
+        sub[1].orientation = tree_orientation - sub[0].pc*0.5*tree_spread + at->gr.right_angle;
 
-            //!* left branch **
-            w = r*0.5*tree_spread + tree_orientation + at->gr.left_angle;
-            z = at->leftlen;
-            show_radial_tree(at_leftson,
-                             x_center + z * cos(w),
-                             y_center + z * sin(w),
-                             (at->leftson->is_leaf) ? 1.0 : tree_spread * l * at_leftson->gr.spread,
-                             w,
-                             x_center, y_center);
+        sub[0].len = at->leftlen;
+        sub[1].len = at->rightlen;
 
-            //!* right branch **
-            w = tree_orientation - l*0.5*tree_spread + at->gr.right_angle;
-            z = at->rightlen;
-            show_radial_tree(at_rightson,
-                             x_center + z * cos(w),
-                             y_center + z * sin(w),
-                             (at->rightson->is_leaf) ? 1.0 : tree_spread * r * at_rightson->gr.spread,
-                             w,
+        if (sub[0].at->gr.gc <= sub[1].at->gr.gc) { // @@@ change < to <= later (changes test results)
+            std::swap(sub[0], sub[1]); // swap branch draw order (branches with lower gc are drawn on top of branches with higher gc)
+        }
+
+        for (int s = 0; s<2; ++s) {
+            show_radial_tree(sub[s].at,
+                             x_center + sub[s].len * cos(sub[s].orientation),
+                             y_center + sub[s].len * sin(sub[s].orientation),
+                             sub[s].at->is_leaf ? 1.0 : tree_spread * sub[s].pc * sub[s].at->gr.spread,
+                             sub[s].orientation,
                              x_center, y_center);
         }
-        else {
-            //!* right branch **
-            w = tree_orientation - l*0.5*tree_spread + at->gr.right_angle;
-            z = at->rightlen;
-            show_radial_tree(at_rightson,
-                             x_center + z * cos(w),
-                             y_center + z * sin(w),
-                             (at->rightson->is_leaf) ? 1.0 : tree_spread * r * at_rightson->gr.spread,
-                             w,
-                             x_center, y_center);
+        if (show_circle) {
+            if (sub[0].at->gr.gc >= sub[1].at->gr.gc) std::swap(sub[0], sub[1]); // @@@ remove later (changes test results)
 
-            //!* left branch **
-            w = r*0.5*tree_spread + tree_orientation + at->gr.left_angle;
-            z = at->leftlen;
-            show_radial_tree(at_leftson,
-                             x_center + z * cos(w),
-                             y_center + z * sin(w),
-                             (at->leftson->is_leaf) ? 1.0 : tree_spread * l * at_leftson->gr.spread,
-                             w,
-                             x_center, y_center);
-        }
-    }
-    if (show_circle) {
-        if (at->leftson->get_remark()) {
-            AW_click_cd cdl(disp_device, (AW_CL)at->leftson);
-            w = r*0.5*tree_spread + tree_orientation + at->gr.left_angle;
-            z = at->leftlen * .5;
-            Position center(x_center + z * cos(w), y_center + z * sin(w));
-            show_bootstrap_circle(disp_device, at->leftson->get_remark(), circle_zoom_factor, circle_max_size, at->leftlen, center, false, 0, bs_circle_filter);
-        }
-        if (at->rightson->get_remark()) {
-            AW_click_cd cdr(disp_device, (AW_CL)at->rightson);
-            w = tree_orientation - l*0.5*tree_spread + at->gr.right_angle;
-            z = at->rightlen * .5;
-            Position center(x_center + z * cos(w), y_center + z * sin(w));
-            show_bootstrap_circle(disp_device, at->rightson->get_remark(), circle_zoom_factor, circle_max_size, at->rightlen, center, false, 0, bs_circle_filter);
+            for (int s = 0; s<2; ++s) {
+                if (sub[s].at->get_remark()) {
+                    AW_click_cd  sub_cd(disp_device, (AW_CL)sub[s].at);
+                    const double z = sub[s].len * .5;
+                    Position     center(x_center + z * cos(sub[s].orientation), y_center + z * sin(sub[s].orientation));
+                    show_bootstrap_circle(disp_device, sub[s].at->get_remark(), circle_zoom_factor, circle_max_size, sub[s].len, center, false, 0, bs_circle_filter);
+                }
+            }
         }
     }
 }

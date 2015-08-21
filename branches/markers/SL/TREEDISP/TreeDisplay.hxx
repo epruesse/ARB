@@ -257,7 +257,7 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
 
     AP_tree_root *tree_static;
 
-    void scale_text_koordinaten(AW_device *device, int gc, double& x, double& y, double orientation, int flag);
+    void calc_text_coordinates_near_tip(AW_device *device, int gc, double& x, double& y, double orientation);
 
     // functions to compute displayinformation
 
