@@ -2293,23 +2293,26 @@ struct Subinfo { // subtree info (used to implement branch draw precedence)
     double   len;
 };
 
-void AWT_graphic_tree::calc_text_coordinates_near_tip(AW_device *device, int gc, double& x, double& y, double orientation) { // @@@ x/y->Position, orientation->Angle
+inline Position calc_text_coordinates_near_tip(AW_device *device, int gc, const double& x, const double& y, double orientation) { // @@@ x/y->Position, orientation->Angle
     /*! calculates text coordinates for text placed at the tip of a vector
      * @param device      output device
      * @param gc          context
      * @param x/y         tip of the vector (world coordinates)
      * @param orientation orientation of the vector (towards its tip)
      */
-    const AW_font_limits& charLimits  = device->get_font_limits(gc, 'A');
-    double                text_height = charLimits.height * disp_device->get_unscale();
-    double                dist        = charLimits.height * disp_device->get_unscale();
+    const AW_font_limits& charLimits = device->get_font_limits(gc, 'A');
 
-    x += cos(orientation) * dist;
-    y += sin(orientation) * dist + 0.3*text_height;
+    const double text_height = charLimits.height * device->get_unscale();
+    const double dist        = charLimits.height * device->get_unscale(); // @@@ same as text_height (ok?)
+
+    return
+        Position(x, y) +
+        Vector(cos(orientation) * dist,
+               sin(orientation) * dist + 0.3*text_height);
 }
 
 void AWT_graphic_tree::show_radial_tree(AP_tree *at,
-                                        double x_center, double y_center, // @@@ -> const Position&
+                                        const double x_center, const double y_center, // @@@ -> const Position&
                                         const double tree_spread,
                                         const double tree_orientation, // @@@ -> const Angle&
                                         const double x_root, const double y_root) // @@@ -> const Position&
@@ -2325,10 +2328,12 @@ void AWT_graphic_tree::show_radial_tree(AP_tree *at,
 
         if (at->name && (disp_device->get_filter() & leaf_text_filter)) {
             if (at->hasName(species_name)) cursor = Position(x_center, y_center);
-            calc_text_coordinates_near_tip(disp_device, at->gr.gc, x_center, y_center, tree_orientation);
+
+            Position textpos = calc_text_coordinates_near_tip(disp_device, at->gr.gc, x_center, y_center, tree_orientation);
+
             const char *data =  make_node_text_nds(this->gb_main, at->gb_node, NDS_OUTPUT_LEAFTEXT, at, tree_static->get_tree_name());
             disp_device->text(at->gr.gc, data,
-                              (AW_pos)x_center, (AW_pos) y_center,
+                              textpos,
                               (AW_pos) .5 - .5 * cos(tree_orientation),
                               leaf_text_filter);
         }
@@ -2361,16 +2366,16 @@ void AWT_graphic_tree::show_radial_tree(AP_tree *at,
             const double w      = tree_orientation + at->gr.right_angle;
             const double l_mean = (l_max+l_min)*.5;
 
-            x_center = x_center+l_mean*cos(w);
-            y_center = y_center+l_mean*sin(w);
+            const double x_edge = x_center+l_mean*cos(w);
+            const double y_edge = y_center+l_mean*sin(w);
 
-            calc_text_coordinates_near_tip(disp_device, at->gr.gc, x_center, y_center, w);
+            Position textpos = calc_text_coordinates_near_tip(disp_device, at->gr.gc, x_edge, y_edge, w);
 
             // insert text (e.g. name of group)
-            const char *data = make_node_text_nds(this->gb_main, at->gb_node, NDS_OUTPUT_LEAFTEXT, at, tree_static->get_tree_name());
+            const char                          *data = make_node_text_nds(this->gb_main, at->gb_node, NDS_OUTPUT_LEAFTEXT, at, tree_static->get_tree_name());
             disp_device->text(at->gr.gc, data,
-                              (AW_pos)x_center, (AW_pos) y_center,
-                              (AW_pos).5 - .5 * cos(tree_orientation),
+                              textpos,
+                              (AW_pos).5 - .5 *  cos(tree_orientation),
                               group_text_filter);
         }
     }
