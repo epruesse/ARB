@@ -2310,25 +2310,20 @@ inline Position calc_text_coordinates_near_tip(AW_device *device, int gc, const 
     return near;
 }
 
-void AWT_graphic_tree::show_radial_tree(AP_tree             *at,
-                                        const AW::Position&  center,      // @@@ rename -> tip?
-                                        const double         tree_spread,
-                                        const Angle&         orientation,
-                                        const AW::Position&  root)        // @@@ rename -> base?
-{
+void AWT_graphic_tree::show_radial_tree(AP_tree *at, const AW::Position& base, const AW::Position& tip, const AW::Angle& orientation, const double tree_spread) {
     AW_click_cd cd(disp_device, (AW_CL)at);
     set_line_attributes_for(at);
-    draw_branch_line(at->gr.gc, root, center, line_filter);
+    draw_branch_line(at->gr.gc, base, tip, line_filter);
 
     if (at->is_leaf) { // draw leaf node
         if (at->gb_node && GB_read_flag(at->gb_node)) { // draw mark box
-            filled_box(at->gr.gc, center, NT_BOX_WIDTH);
+            filled_box(at->gr.gc, tip, NT_BOX_WIDTH);
         }
 
         if (at->name && (disp_device->get_filter() & leaf_text_filter)) {
-            if (at->hasName(species_name)) cursor = center;
+            if (at->hasName(species_name)) cursor = tip;
 
-            Position textpos = calc_text_coordinates_near_tip(disp_device, at->gr.gc, center, orientation);
+            Position textpos = calc_text_coordinates_near_tip(disp_device, at->gr.gc, tip, orientation);
 
             const char *data =  make_node_text_nds(this->gb_main, at->gb_node, NDS_OUTPUT_LEAFTEXT, at, tree_static->get_tree_name());
             disp_device->text(at->gr.gc, data,
@@ -2343,14 +2338,14 @@ void AWT_graphic_tree::show_radial_tree(AP_tree             *at,
 
         {
             Position corner[3];
-            corner[0] = center;
+            corner[0] = tip;
             {
                 Angle right(orientation.radian() + 0.25*tree_spread + at->gr.right_angle);
-                corner[1] = center + right.normal()*l_min;
+                corner[1] = tip + right.normal()*l_min;
             }
             {
                 Angle left(orientation.radian() - 0.25*tree_spread + at->gr.right_angle); // @@@ why right_angle here? (used till [2])
-                corner[2] = center + left.normal()*l_max;
+                corner[2] = tip + left.normal()*l_max;
             }
 
             disp_device->set_grey_level(at->gr.gc, group_greylevel);
@@ -2361,7 +2356,7 @@ void AWT_graphic_tree::show_radial_tree(AP_tree             *at,
             Angle        toText(orientation.radian() + at->gr.right_angle);
             const double l_mean = (l_max+l_min)*.5;
 
-            Position edge = center + l_mean * toText.normal();
+            Position edge = tip + l_mean * toText.normal();
             Position textpos = calc_text_coordinates_near_tip(disp_device, at->gr.gc, edge, toText);
 
             // insert text (e.g. name of group)
@@ -2392,10 +2387,10 @@ void AWT_graphic_tree::show_radial_tree(AP_tree             *at,
 
         for (int s = 0; s<2; ++s) {
             show_radial_tree(sub[s].at,
-                             center + sub[s].len * sub[s].orientation.normal(),
-                             sub[s].at->is_leaf ? 1.0 : tree_spread * sub[s].pc * sub[s].at->gr.spread,
+                             tip,
+                             tip + sub[s].len * sub[s].orientation.normal(),
                              sub[s].orientation,
-                             center);
+                             sub[s].at->is_leaf ? 1.0 : tree_spread * sub[s].pc * sub[s].at->gr.spread);
         }
         if (show_circle) {
             if (sub[0].at->gr.gc >= sub[1].at->gr.gc) std::swap(sub[0], sub[1]); // @@@ remove later (changes test results)
@@ -2403,7 +2398,7 @@ void AWT_graphic_tree::show_radial_tree(AP_tree             *at,
             for (int s = 0; s<2; ++s) {
                 if (sub[s].at->get_remark()) {
                     AW_click_cd sub_cd(disp_device, (AW_CL)sub[s].at);
-                    Position    sub_branch_center = center + sub[s].len*.5 * sub[s].orientation.normal();
+                    Position    sub_branch_center = tip + (sub[s].len*.5) * sub[s].orientation.normal();
                     show_bootstrap_circle(disp_device, sub[s].at->get_remark(), circle_zoom_factor, circle_max_size, sub[s].len, sub_branch_center, false, 0, bs_circle_filter);
                 }
             }
@@ -2820,7 +2815,7 @@ void AWT_graphic_tree::show(AW_device *device) {
             }
             case AP_TREE_RADIAL:
                 empty_box(displayed_root->gr.gc, Origin, NT_ROOT_WIDTH);
-                show_radial_tree(displayed_root, Origin, 2*M_PI, Eastwards, Origin);
+                show_radial_tree(displayed_root, Origin, Origin, Eastwards, 2*M_PI);
                 break;
 
             case AP_TREE_IRS:
