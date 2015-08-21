@@ -260,15 +260,7 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
     // functions to compute displayinformation
 
     void show_dendrogram(AP_tree *at, AW::Position& pen, DendroSubtreeLimits& limits);
-
-    void show_radial_tree(AP_tree *at,
-                          double   x_center,
-                          double   y_center,
-                          double   tree_sprad,
-                          double   tree_orientation,
-                          double   x_root,
-                          double   y_root);
-
+    void show_radial_tree(AP_tree *at, const AW::Position& center, double tree_sprad, double tree_orientation, const AW::Position& root);
     void show_nds_list(GBDATA * gb_main, bool use_nds);
     void show_irs_tree(AP_tree *at, double height);
 
