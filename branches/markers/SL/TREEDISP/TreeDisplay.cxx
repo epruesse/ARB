@@ -1494,7 +1494,6 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
                             else {
                                 rotator = new BranchRotator(device, clicked.node()->get_rightson(), right, mousepos, exports);
                             }
-                            
                         }
                     }
                 }
@@ -2331,7 +2330,11 @@ inline Position calc_text_coordinates_near_tip(AW_device *device, int gc, const 
     const double text_height = charLimits.height * device->get_unscale();
     const double dist        = charLimits.height * device->get_unscale(); // @@@ same as text_height (ok?)
 
-    Position near = pos + dist*orientation.normal();
+    Vector shift = orientation.normal();
+    // use sqrt of sin(=y) to move text faster between positions below and above branch:
+    shift.sety(shift.y()>0 ? sqrt(shift.y()) : -sqrt(-shift.y()));
+
+    Position near = pos + dist*shift;
     near.movey(.3*text_height); // @@@ just a hack. fix.
     return near;
 }
@@ -2359,37 +2362,30 @@ void AWT_graphic_tree::show_radial_tree(AP_tree *at, const AW::Position& base, c
         }
     }
     else if (at->gr.grouped) { // draw folded group
-        const double l_min = at->gr.min_tree_depth;
-        const double l_max = at->gr.max_tree_depth;
-
+        Position corner[3];
+        corner[0] = tip;
         {
-            Position corner[3];
-            corner[0] = tip;
-            {
-                Angle left(orientation.radian() + 0.25*tree_spread + at->gr.left_angle);
-                corner[1] = tip + left.normal()*l_min;
-            }
-            {
-                Angle right(orientation.radian() - 0.25*tree_spread + at->gr.right_angle);
-                corner[2] = tip + right.normal()*l_max;
-            }
-
-            disp_device->set_grey_level(at->gr.gc, group_greylevel);
-            disp_device->polygon(at->gr.gc, AW::FillStyle::SHADED_WITH_BORDER, 3, corner, line_filter);
+            Angle left(orientation.radian() + 0.25*tree_spread + at->gr.left_angle);
+            corner[1] = tip + left.normal()*at->gr.min_tree_depth;
+        }
+        {
+            Angle right(orientation.radian() - 0.25*tree_spread + at->gr.right_angle);
+            corner[2] = tip + right.normal()*at->gr.max_tree_depth;
         }
 
-        if (at->gb_node && (disp_device->get_filter() & group_text_filter)) {
-            Angle        toText(orientation.radian() + at->gr.right_angle);
-            const double l_mean = (l_max+l_min)*.5;
+        disp_device->set_grey_level(at->gr.gc, group_greylevel);
+        disp_device->polygon(at->gr.gc, AW::FillStyle::SHADED_WITH_BORDER, 3, corner, line_filter);
 
-            Position edge = tip + l_mean * toText.normal();
-            Position textpos = calc_text_coordinates_near_tip(disp_device, at->gr.gc, edge, toText);
+        if (at->gb_node && (disp_device->get_filter() & group_text_filter)) {
+            Angle toText = orientation;
+            toText.rotate90deg();
+            Position textpos = calc_text_coordinates_near_tip(disp_device, at->gr.gc, corner[1], toText);
 
             // insert text (e.g. name of group)
-            const char                          *data = make_node_text_nds(this->gb_main, at->gb_node, NDS_OUTPUT_LEAFTEXT, at, tree_static->get_tree_name());
+            const char *data = make_node_text_nds(this->gb_main, at->gb_node, NDS_OUTPUT_LEAFTEXT, at, tree_static->get_tree_name());
             disp_device->text(at->gr.gc, data,
                               textpos,
-                              .5 - .5*orientation.cos(),
+                              .5 - .5*toText.cos(),
                               group_text_filter);
         }
     }
