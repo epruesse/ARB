@@ -438,9 +438,18 @@ void SEC_root::paintBackgroundColor(AW_device *device, SEC_bgpaint_mode mode, co
                 Vector v12(p1, p2);
                 double vlen = v12.length();
 
-                if ((radius1+radius2+skelThickWorld) < vlen) { // test if there is enough space between characters
-                    s1 = p1 + v12*((radius1+skelThickWorld/2)/vlen); // skeleton<->base attach-points
-                    s2 = p2 - v12*((radius2+skelThickWorld/2)/vlen);
+                // Note: LINE_THICKNESS
+                //       Lines drawn with thickness != 1 differ between motif-version and gtk-version:
+                //       in motif thicker lines are also drawn longer than specified (half thickness on each side)
+#if defined(ARB_MOTIF)
+                const double CORR = skelThickWorld;
+#else // !defined(ARB_MOTIF)
+                const double CORR = 0.0;
+#endif
+
+                if ((radius1+radius2+CORR) < vlen) { // test if there is enough space between characters
+                    s1 = p1 + v12*((radius1+CORR/2)/vlen); // skeleton<->base attach-points
+                    s2 = p2 - v12*((radius2+CORR/2)/vlen);
                     space = true;
                 }
             }
@@ -777,7 +786,11 @@ void SEC_helix_strand::paint_strands(AW_device *device, const Vector& strand_vec
         if (disp.show_bonds == SHOW_NHELIX_BONDS || (disp.show_bonds == SHOW_HELIX_BONDS && curr->isPair)) {
             AW_click_cd cd(device, self(), curr->abs[0]);
             db->bonds()->paint(device, base[0], base[1], curr->realpos[0], curr->realpos[1], vnext,
-                               root->get_char_radius(pair2helixGC[curr->isPair])+root->get_bondThickWorld()/2);
+                               root->get_char_radius(pair2helixGC[curr->isPair])
+#if defined(ARB_MOTIF)
+                               +root->get_bondThickWorld()/2 // see .@LINE_THICKNESS
+#endif
+                               );
         }
     }
 }
@@ -1016,8 +1029,10 @@ GB_ERROR SEC_root::paint(AW_device *device) {
             charRadius[gc]  = device->rtransform_size(maxSize) * 0.5;   // was 0.75
         }
 
+#if defined(ARB_MOTIF)
         skelThickWorld = device->rtransform_size(displayParams.skeleton_thickness);
         bondThickWorld = device->rtransform_size(displayParams.bond_thickness);
+#endif
 
         cacheBackgroundColor();
 
