@@ -2407,7 +2407,7 @@ void AWT_graphic_tree::show_radial_tree(AP_tree *at, const AW::Position& base, c
         sub[0].len = at->leftlen;
         sub[1].len = at->rightlen;
 
-        if (sub[0].at->gr.gc <= sub[1].at->gr.gc) { // @@@ change < to <= later (changes test results)
+        if (sub[0].at->gr.gc < sub[1].at->gr.gc) {
             std::swap(sub[0], sub[1]); // swap branch draw order (branches with lower gc are drawn on top of branches with higher gc)
         }
 
@@ -2419,8 +2419,6 @@ void AWT_graphic_tree::show_radial_tree(AP_tree *at, const AW::Position& base, c
                              sub[s].at->is_leaf ? 1.0 : tree_spread * sub[s].pc * sub[s].at->gr.spread);
         }
         if (show_circle) {
-            if (sub[0].at->gr.gc >= sub[1].at->gr.gc) std::swap(sub[0], sub[1]); // @@@ remove later (changes test results)
-
             for (int s = 0; s<2; ++s) {
                 if (sub[s].at->get_remark()) {
                     AW_click_cd sub_cd(disp_device, (AW_CL)sub[s].at);
