@@ -206,6 +206,12 @@ public:
     AW_clicked_element *clone() const OVERRIDE {
         return new AW_clicked_polygon(*this);
     }
+
+    const AW::Position *get_polygon(int& posCount) const {
+        aw_assert(does_exist());
+        posCount = npos;
+        return pos;
+    }
 };
 
 
