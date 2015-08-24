@@ -1309,7 +1309,6 @@ static AW_device_click::ClickPreference preferredForCommand(AWT_COMMAND_MODE mod
     //  e.g. AWT_MODE_ROTATE in SECEDIT)
 
     switch (mode) {
-        case AWT_MODE_ROTATE:
         case AWT_MODE_LENGTH:
         case AWT_MODE_MULTIFURC:
         case AWT_MODE_SPREAD:
@@ -1470,12 +1469,39 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
             break;
 
         case AWT_MODE_ROTATE:
-            if (clicked.node() && clicked.is_branch()) {
-                const AW_clicked_line *cl = dynamic_cast<const AW_clicked_line*>(clicked.element());
-                td_assert(cl);
-                BranchRotator *rotator = new BranchRotator(device, clicked.node(), cl->get_line(), mousepos, exports);
-                store_command_data(rotator);
-                rotator->draw_drag_indicator(device, drag_gc);
+            if (clicked.node()) {
+                BranchRotator *rotator = NULL;
+                if (clicked.is_branch()) {
+                    const AW_clicked_line *cl = dynamic_cast<const AW_clicked_line*>(clicked.element());
+                    td_assert(cl);
+                    rotator = new BranchRotator(device, clicked.node(), cl->get_line(), mousepos, exports);
+                }
+                else { // rotate branches inside a folded group (allows to modify size of group triangle)
+                    const AW_clicked_polygon *poly = dynamic_cast<const AW_clicked_polygon*>(clicked.element());
+                    if (poly) {
+                        int                 npos;
+                        const AW::Position *pos = poly->get_polygon(npos);
+
+                        if (npos == 3) { // only makes sense in radial mode (which uses triangles)
+                            LineVector left(pos[0], pos[1]);
+                            LineVector right(pos[0], pos[2]);
+
+                            Position mousepos_world = device->rtransform(mousepos);
+
+                            if (Distance(mousepos_world, left) < Distance(mousepos_world, right)) {
+                                rotator = new BranchRotator(device, clicked.node()->get_leftson(), left, mousepos, exports);
+                            }
+                            else {
+                                rotator = new BranchRotator(device, clicked.node()->get_rightson(), right, mousepos, exports);
+                            }
+                            
+                        }
+                    }
+                }
+                if (rotator) {
+                    store_command_data(rotator);
+                    rotator->draw_drag_indicator(device, drag_gc);
+                }
             }
             break;
 
