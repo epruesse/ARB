@@ -58,7 +58,7 @@ void NT_rerepair_DB(AW_window *, AW_CL cl_gbmain, AW_CL dummy_1x);
 
 /* NT_edconf.cxx */
 void NT_activate_configMarkers_display(AWT_canvas *ntw);
-void NT_popup_configuration_admin(AW_window *aw_main, AW_CL cl_ntw, AW_CL dummy_1x);
+void NT_popup_configuration_admin(AW_window *aw_main, AWT_canvas *ntw);
 AW_window *NT_create_startEditorOnOldConfiguration_window(AW_root *awr);
 void NT_start_editor_on_tree(AW_window *, int use_species_aside, AWT_canvas *ntw);
 

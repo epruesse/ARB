@@ -986,9 +986,8 @@ static AW_window *create_configuration_admin_window(AW_root *root, AWT_canvas *n
     return existing_aws[ntw_id];
 }
 
-void NT_popup_configuration_admin(AW_window *aw_main, AW_CL cl_ntw, AW_CL) {
-    AW_window *aww = create_configuration_admin_window(aw_main->get_root(), (AWT_canvas*)cl_ntw);
-    aww->activate();
+void NT_popup_configuration_admin(AW_window *aw_main, AWT_canvas *ntw) {
+    create_configuration_admin_window(aw_main->get_root(), ntw)->activate();
 }
 
 // -----------------------------------------
