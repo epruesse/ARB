@@ -2438,6 +2438,16 @@ public:
 static SmartPtr<GetMatchesContext> getMatchesContext;
 
 class ProbeCollDisplay : public MarkerDisplay {
+    ArbProbe *find_probe(int markerIdx) const {
+        const ArbProbePtrList&   rProbeList = get_probe_collection().probeList();
+        ArbProbePtrListConstIter wanted     = rProbeList.begin();
+
+        if (markerIdx>=0 && markerIdx<int(rProbeList.size())) advance(wanted, markerIdx);
+        else wanted = rProbeList.end();
+
+        return wanted == rProbeList.end() ? NULL : *wanted;
+    }
+
 public:
     ProbeCollDisplay(int numProbes)
         : MarkerDisplay(numProbes)
@@ -2445,17 +2455,20 @@ public:
 
     // MarkerDisplay interface
     const char *get_marker_name(int markerIdx) const OVERRIDE {
-        const ArbProbePtrList&   rProbeList = get_probe_collection().probeList();
-        ArbProbePtrListConstIter wanted     = rProbeList.begin();
-
-        if (markerIdx>=0 && markerIdx<int(rProbeList.size())) advance(wanted, markerIdx);
-        else wanted = rProbeList.end();
-
-        if (wanted == rProbeList.end()) return GBS_global_string("<invalid probeindex %i>", markerIdx);
-        return (*wanted)->name().c_str();
+        ArbProbe *probe = find_probe(markerIdx);
+        return probe ? probe->name().c_str() : GBS_global_string("<invalid probeindex %i>", markerIdx);
     }
     void retrieve_marker_state(const char *speciesName, NodeMarkers& matches) OVERRIDE {
         getMatchesContext->detect(speciesName, matches);
+    }
+
+    void handle_click(int markerIdx, AW_MouseButton button, AWT_graphic_exports&) OVERRIDE {
+        // select probe in selection list
+        ArbProbe *probe = find_probe(markerIdx);
+        if (probe) AW_root::SINGLETON->awar(AWAR_PC_SELECTED_PROBE)->write_string(probe->sequence().c_str());
+#if defined(DEBUG)
+        else fprintf(stderr, "ProbeCollDisplay::handle_click: no probe found for markerIdx=%i\n", markerIdx);
+#endif
     }
 };
 
