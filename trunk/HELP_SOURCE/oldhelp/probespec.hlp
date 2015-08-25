@@ -84,6 +84,8 @@ DESCRIPTION
 		bar will open a status message telling you which probe the bar
 		corresponds to.
 
+SECTION 	Match display control
+
 		What constitutes a match is controlled by the MATCH DISPLAY CONTROL
 		parameters in the MATCH DISPLAY CONTROL window. The controls
 		allow you to test, in real time, the match performance of probe
@@ -107,11 +109,14 @@ DESCRIPTION
 		indicated with a stippled bar whereas for a full match the bar is
 		solid.
 
-		Choose the 'Probe Collection' item from the 'ARB_NT/Probes' menu to
-		display the PROBE COLLECTION window, the 'Match Probes with Specificity'
-		item from the 'ARB_NT/Probes' menu to display the MATCH PROBES WITH
-		SPECIFICITY window and the 'Match Display Control' item from the
-		'ARB_NT/Probes' menu to display the MATCH DISPLAY CONTROL window.
+                More options are available via 'Marker display settings'
+                (see LINK{nt_tree_marker_settings.hlp}).
+
+SECTION         Display interaction
+
+                  Click (and drag) on a marker shown in tree display, to
+                  display its name and to select the corresponding probe
+                  in the probe selection list.
 
 SECTION PROBE COLLECTION XML
 

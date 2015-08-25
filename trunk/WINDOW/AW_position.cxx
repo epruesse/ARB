@@ -64,6 +64,20 @@ void Angle::recalcNormal() const {
     aw_assert(Normal.is_normalized());
 }
 
+Position Rectangle::nearest_corner(const Position& topos) const {
+    Position nearest = get_corner(0);
+    double   mindist = Distance(nearest, topos);
+    for (int i = 1; i<4; ++i) {
+        Position c    = get_corner(i);
+        double   dist = Distance(c, topos);
+        if (dist<mindist) {
+            mindist = dist;
+            nearest = c;
+        }
+    }
+    return nearest;
+}
+
 // --------------------------------------------------------------------------------
 
 namespace AW {
@@ -132,3 +146,4 @@ namespace AW {
         return nearest;
     }
 };
+
