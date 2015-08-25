@@ -1,0 +1,6 @@
+# libraries needed to link against SL/DB_QUERY/DB_QUERY.a
+
+# lib/libAWT.so
+
+SL/ITEMS/ITEMS.a
+

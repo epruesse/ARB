@@ -1,0 +1,43 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+SUB	species_configs.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Highlight configurations in tree
+
+OCCURRENCE	ARB_NTREE/Species/Selections/Highlight in tree
+
+DESCRIPTION     Highlights all configurations (contained in the left list)
+                in the tree.
+
+                Use the buttons between both lists to add/remove configurations to/from
+                the left list.
+
+                Use the buttons on the left side to sort the selected configurations.
+
+                Use the 'Settings' button to configure LINK{nt_tree_marker_settings.hlp}
+
+SECTION		Display interaction
+
+                Left click (and drag) markers to display their name and select the corresponding
+                species selection in the "Species selections" window.
+
+                Right click markers to EXTRACT the corresponding species
+                selection (see LINK{species_configs.hlp}).
+
+NOTES		None
+
+EXAMPLES	The intended way to use this feature:
+
+                 * use the search tool to find and mark all species with some attribute
+                 * save a configuration (name should describe attribute)
+                 * highlight several attributes in tree
+
+WARNINGS	None
+
+BUGS		No bugs known

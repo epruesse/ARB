@@ -1,0 +1,44 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Calculate the Percentage of the Most Frequent Base
+
+OCCURRENCE	ARB_NT/SAI/create SAI/Max Frequency
+
+DESCRIPTION	Finds the most frequent base in each column for all marked
+		species. Than the number of all sequences with this base are
+		divided by:
+			a: the number of all marked sequences, if not ignoring gaps
+			b: the number of bases in this column, if ignoring gaps
+		The resulting percentage is divided by ten and the second last
+		digit taken:
+
+			0%  - 25% will never occur
+			25% - 29% -> '2'
+			30% - 39% -> '3'
+			...
+			90% - 99% -> '9'
+			100%	  -> '0'
+
+
+NOTE		The result can be used as a conservation profile and filter:
+		W.L.'s rule:
+		The higher the number the more conserved the position.
+
+EXAMPLES	Say one column contains 7 A's 4 G's and 5 Gaps.
+		Ignoring Gaps will result in 7/11 == 64 %
+		which is converted to '6'.
+		Otherwise we get 7/16 == 44% which will be indicated by a
+		'4' in the target sequence.
+
+NOTE		'-' @#@ are regarded as gaps.
+		'.' are always ignored.
+
+BUGS		No bugs known yet

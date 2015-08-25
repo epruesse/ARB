@@ -1,0 +1,52 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP      arb.hlp
+UP      glossary.hlp
+UP      tr_type_radial.hlp
+UP      tr_type_list.hlp
+UP      nt_tree_select.hlp
+UP      treeadm.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB    subtopic.hlp
+SUB     dist.hlp
+SUB     phylo.hlp
+SUB     pars.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE           Export to xfig
+
+OCCURRENCE      ARB_NT/Tree/Export tree to Xfig
+                ARB_SECEDIT/File/Export structure to XFIG
+
+DESCRIPTION     Exports a ONE page screenshot of the displayed tree to a
+                file. 
+
+                Select a file name from the 'Directories and Files' subwindow or type it
+                to the 'File Name' subwindow.
+
+                Choose wanted magnification by zooming the tree/structure (physical zoom).
+
+                Choose clipping:
+                    - Export screen only (visible part only)
+                    - Export all / Export complete structure
+
+                Choose whether handles shall be printed (tree only). Handles are
+                    - boxes at marked/selected species
+                    - boxes at root of open groups
+
+
+                Choose whether to export colors or black/white only.
+
+                Click 'Export to Xfig' to export and to run xfig on the exported
+                file.
+
+NOTES           The suffix shown or typed in the 'Suffix' subwindow is used as a
+                filter for the displayed file names and is automatically
+                appended to the file name in the 'File Name' subwindow.
+
+EXAMPLES        None
+
+BUGS            No bugs known
+

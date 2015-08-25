@@ -1,0 +1,33 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+UP	species.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Selected gene
+
+OCCURRENCE	ARB_NT/Genome/Gene information
+
+DESCRIPTION	An individual gene can be selected.
+
+		There are several ways to select a gene:
+
+		1.	Search for a gene using ARB_NT/Genes/Search
+			and then select one gene from the result list.
+
+		2.	Click on a gene in ARB_NT/Gene Map
+
+		When a gene is selected the content of the GENE INFORMATION
+		window changes.
+
+NOTES		Selecting a gene of another species changes
+                the current species!
+
+WARNINGS	None
+
+BUGS		No bugs known

@@ -1,0 +1,43 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP      arb.hlp
+UP      glossary.hlp
+UP      genes.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+SUB     alignment.hlp
+SUB     mark.hlp
+SUB     selected.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE           What are Species?
+
+DESCRIPTION     One species is one database entry containing many database entries
+                describing the species and one or more sequences (every sequence
+                belongs to a different alignment).
+
+                A species is not necessarily consistent with a taxonomic species.
+
+
+                [Database field name]           [Comment]
+
+                name                            Unique identifier of the species
+                                                (max 8 characters long)
+
+                acc                             Accession number
+
+                full_name                       (User defined) name of the species
+
+                strain
+
+                author
+
+                journal
+
+                ali_16s/data                    a 16s sequence (part of the 16s alignment)
+                ali_23s/data                    a 23s sequence
+                ali_.../data                    a ... sequence
+
+                The description of the alignment, e.g. type or length, is not stored in every
+                species but in an alignment description.

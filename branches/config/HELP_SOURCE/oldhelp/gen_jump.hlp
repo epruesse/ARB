@@ -1,0 +1,26 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Jump to selected gene
+
+OCCURRENCE	ARB_NT/Genome/Gene Map/JUMP
+
+DESCRIPTION     Scrolls the display to the currently selected gene.
+
+		Press multiple times to center the gene or toggle between multiple 
+		display positions of one gene (happens e.g. in book-style mode).
+
+NOTES		See also LINK{gen_options.hlp}.
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known

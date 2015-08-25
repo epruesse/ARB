@@ -1,0 +1,41 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP      arb.hlp
+UP      glossary.hlp
+UP      mode_group.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE           Collapse/expand tree
+
+OCCURRENCE      ARB_NT/Tree/Collapse expand tree
+
+DESCRIPTION     The items in this menu allow to control which
+                groups (groups of species; see LINK{mode_group.hlp})
+                shall be collapsed and which shall be expanded.
+
+                Collapsed groups are displayed as triangles (or rectangles
+                in IRS tree; see LINK{tr_type_irs.hlp}).
+
+                Different ways to collapse/expand:
+
+                 * Collapse all: collapses all groups (and subgroups)
+                 * Collapse terminal: collapses terminal groups, expands other groups
+                 * Expand all: expands all groups (and subgroups)
+                 * Expand marked: expands all groups that contain marked species, collapses other groups
+                 * Expand zombies: expands all groups that contain zombies (see LINK{glossary.hlp}), collapses other groups
+                 * Expand color: expands all groups that contain species in specific, any or no color (see LINK{color.hlp})
+
+NOTES           The lengths of the triangle sides reflect the longest and shortest overall
+                branch lengths within the subtree.
+
+                To collapse/expand via keyboard, see LINK{nt_keys.hlp}.
+
+EXAMPLES        None
+
+WARNINGS        None
+
+BUGS            No bugs known

@@ -1,0 +1,25 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	sp_search.hlp
+UP	gene_search.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Unmark Listed Mark Rest
+
+OCCURRENCE	ARB_NT/Species/Search and Query/Unmark Listed Mark Rest
+		ARB_NT/Genome/Search and query/Unmark Listed Mark Rest
+		ARB_NT/Genome/Experiment/Search and query/Unmark Listed Mark Rest
+
+DESCRIPTION	Unmarks listed species/genes.
+
+NOTES		None
+
+EXAMPLES	None
+
+WARNINGS	Result list may be truncated.
+
+BUGS		None

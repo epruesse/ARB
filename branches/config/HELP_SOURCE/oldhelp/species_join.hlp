@@ -1,0 +1,58 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP      arb.hlp
+UP      glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB    subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE           Join species
+
+OCCURRENCE      ARB_NT/Species/Merge Species/Join marked species
+
+DESCRIPTION
+
+	    WARNING: This module is obsolete by newer modules. See NOTES below!
+
+            "Join species" merges several similar species into one species.
+
+            All database fields and the sequences get concatenated.
+
+            - Mark all species that should be examined for similarity.
+
+            - Select a database field entry from the list
+              to set a similarity-criterion used to detect
+              candidates for joining (for e.g., full_name).
+
+            - Check separators for fields and sequences.
+
+            - Press GO to start.
+
+EXAMPLES
+
+                For example you have a 23s and a 16s database and you want
+                to append the 16s to the 23s sequences than you have to do:
+
+                        - merge the 16s to the 23s sequences.
+
+                        - create a field 'species_name' which holds the
+                          real name of the species.
+                          That means the species_name of the 16s sequence
+                          should be the same as of the 23s seq.
+                          Do not use the 'name'-field because it is
+                          used as a UNIQUE id to the database.
+
+                        - ARB_NT/Species/Merge Species/Join Marked Species
+                          and use the field 'species_name'.
+
+
+NOTES           There's a second, newer function to merge species: see LINK{merge_species.hlp}
+
+                There's a special new function to concatenate alignments: see LINK{concatenate.hlp}
+
+WARNINGS        'Join marked species' does only merge fields of type STRING, all other fields are skipped
+                (taken from one of the joined species).
+
+BUGS            No bugs known

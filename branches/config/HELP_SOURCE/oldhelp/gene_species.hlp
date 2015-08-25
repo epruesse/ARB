@@ -1,0 +1,45 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+SUB	gene_extract.hlp
+SUB	gene_species_mark.hlp
+SUB	organisms.hlp
+SUB	gene_species_field_transfer.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		What are Gene-species?
+
+DESCRIPTION	In order to work with alignments of genes you first have to
+		extract the wanted genes into some kind of pseudo-species.
+		We called them 'gene-species'.
+
+                You can do that using LINK{gene_extract.hlp}.
+
+		These gene-species store additional information about the
+		organism and the gene they originated from (in fields 'ARB_origin_gene'
+                and 'ARB_origin_organism'). They only contain that part of the
+                organisms sequence, the gene corresponds to.
+
+                The intention is to create different alignments for different
+                groups of genes and to calculate your trees using these
+                alignment(s).
+
+                You may also concatenate multiple genes into
+                a multi-gene-alignment (see LINK{concatenate.hlp})
+                and calculate a tree using that alignment.
+
+                You may relink trees based on gene-species to the original organisms
+                using LINK{tree_pseudo.hlp}.
+
+NOTES		It's possible to export these gene-species to a separate ARB
+                database using the merge tool.
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known

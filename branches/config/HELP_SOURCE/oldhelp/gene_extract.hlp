@@ -1,0 +1,33 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+SUB	gene_species.hlp
+SUB	translate_dna_2_pro.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Extract genes to gene-species
+
+OCCURRENCE      ARB_NT/Genome/Extract marked genes/...
+                ARB_GENE_MAP/Genome/Extract marked genes/...
+
+DESCRIPTION	For every marked gene this command creates a so called
+		'gene-species' (see LINK{gene_species.hlp}).
+
+		Just enter the name of the alignment you like to create or
+		to add species to.
+
+NOTES		Depending on the value of 'complement' of the gene the forward
+                or the reverse-complement sequence is extracted
+
+                The fields 'codon_start' and 'transl_table' are exported to the
+                resulting gene-species. They will be used by 'ARB_NT/Sequence/Translate..'
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known
