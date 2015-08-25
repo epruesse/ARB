@@ -2423,6 +2423,8 @@ void AWT_graphic_tree::show_radial_tree(AP_tree *at, const AW::Position& base, c
                 }
             }
         }
+
+        if (at->name) diamond(at->gr.gc, tip, NT_DIAMOND_RADIUS);
     }
 }
 
