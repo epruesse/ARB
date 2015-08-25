@@ -1855,6 +1855,7 @@ GB_ERROR AWT_graphic_tree::load(GBDATA *, const char *name, AW_CL /* cl_link_to_
                 displayed_root = get_root_node();
 
                 get_root_node()->compute_tree();
+                if (display_markers) display_markers->flush_cache();
 
                 tree_static->set_root_changed_callback(AWT_graphic_tree_root_changed, this);
                 tree_static->set_node_deleted_callback(AWT_graphic_tree_node_deleted, this);
@@ -1869,6 +1870,7 @@ GB_ERROR AWT_graphic_tree::save(GBDATA * /* dummy */, const char * /* name */, A
     GB_ERROR error = NULL;
     if (get_root_node()) {
         error = tree_static->saveToDB();
+        if (display_markers) display_markers->flush_cache();
     }
     else if (tree_static && tree_static->get_tree_name()) {
         if (tree_static->gb_tree_gone) {
