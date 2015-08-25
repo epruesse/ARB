@@ -149,22 +149,23 @@ bool ArbStringCache::saveString(const char *pString, int nLength, ArbCachedStrin
 
 // ----------------------------------------------------------------------------
 
-bool ArbStringCache::loadString(std::string& rString,
-                                const ArbCachedString& rCachedString) const {
+bool ArbStringCache::loadString(std::string& rString, const ArbCachedString& rCachedString) const {
     bool bLoaded = false;
 
     if (IsOpen                  &&
         (rCachedString.Len > 0) &&
         allocReadBuffer(rCachedString.Len))
     {
-        fpos_t  nPos = rCachedString.pos();
-
+        fpos_t nPos = rCachedString.pos();
         fsetpos(ReadCacheFile, &nPos);
-        fread(ReadBuffer, rCachedString.Len * sizeof(char), 1, ReadCacheFile);
-        ReadBuffer[rCachedString.Len] = '\0';
 
-        rString = ReadBuffer;
-        bLoaded = true;
+        size_t read = fread(ReadBuffer, sizeof(char), rCachedString.Len, ReadCacheFile);
+        if (read == size_t(rCachedString.Len)) {
+            ReadBuffer[rCachedString.Len] = '\0';
+
+            rString = ReadBuffer;
+            bLoaded = true;
+        }
     }
 
     return (bLoaded);

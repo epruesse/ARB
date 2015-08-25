@@ -1353,7 +1353,7 @@ class MarkerIdentifier : public Dragged, virtual Noncopyable {
 
         device->text(drag_gc, name.c_str(), textPos, alignment);
     }
-    void perform(DragAction action, const AW_clicked_element *target, const Position& mousepos) OVERRIDE {
+    void perform(DragAction, const AW_clicked_element*, const Position& mousepos) OVERRIDE {
         click = mousepos;
         get_exports().refresh = 1;
     }

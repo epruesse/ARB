@@ -613,6 +613,8 @@ ED4_returncode ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *aw
                 }
                 break;
             }
+
+            default: break;
         }
     }
 
