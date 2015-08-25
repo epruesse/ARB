@@ -22,12 +22,20 @@ DESCRIPTION     Highlights all configurations (contained in the left list)
 
                 Use the 'Settings' button to configure LINK{nt_tree_marker_settings.hlp}
 
+SECTION		Display interaction
+
+                Left click (and drag) markers to display their name and select the corresponding
+                species selection in the "Species selections" window.
+
+                Right click markers to EXTRACT the corresponding species
+                selection (see LINK{species_configs.hlp}).
+
 NOTES		None
 
 EXAMPLES	The intended way to use this feature:
 
                  * use the search tool to find and mark all species with some attribute
-                 * save a configuration (name should decribe attribute)
+                 * save a configuration (name should describe attribute)
                  * highlight several attributes in tree
 
 WARNINGS	None

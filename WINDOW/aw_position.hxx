@@ -351,6 +351,16 @@ namespace AW {
         Position upper_right_corner()       const { return Position(start().xpos()+line_vector().x(), start().ypos()); }
         Position lower_right_corner()       const { return head(); }
 
+        Position get_corner(int i) const {
+            switch (i%4) {
+                case 0: return upper_left_corner();
+                case 1: return upper_right_corner();
+                case 2: return lower_right_corner();
+                default: return lower_left_corner();
+            }
+        }
+        Position nearest_corner(const Position& topos) const;
+
         double left()   const { return upper_left_corner().xpos(); }
         double top()    const { return upper_left_corner().ypos(); }
         double right()  const { return lower_right_corner().xpos(); }
