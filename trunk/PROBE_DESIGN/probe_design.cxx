@@ -2462,7 +2462,7 @@ public:
         getMatchesContext->detect(speciesName, matches);
     }
 
-    void handle_click(int markerIdx, AW_MouseButton button, AWT_graphic_exports&) OVERRIDE {
+    void handle_click(int markerIdx, AW_MouseButton, AWT_graphic_exports&) OVERRIDE {
         // select probe in selection list
         ArbProbe *probe = find_probe(markerIdx);
         if (probe) AW_root::SINGLETON->awar(AWAR_PC_SELECTED_PROBE)->write_string(probe->sequence().c_str());
