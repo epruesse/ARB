@@ -1,4 +1,0 @@
-# libraries needed to link against SL/ALILINK/ALILINK.a
-
-lib/libAWT.so
-SL/INSDEL/INSDEL.a
