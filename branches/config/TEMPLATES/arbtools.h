@@ -142,7 +142,7 @@ inline int double_cmp(const double d1, const double d2) {
 template <typename NUM>
 inline int calc_digits(NUM val) {
     /*! calculate output length of val (w/o sign) */
-    return log10(val)+1;
+    return val ? log10(val)+1 : 1;
 }
 template <typename NUM>
 inline int calc_signed_digits(NUM val) {
