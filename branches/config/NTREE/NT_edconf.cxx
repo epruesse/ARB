@@ -922,7 +922,7 @@ void update_config_comment_cb(AW_root *root) {
     const char *comment         = root->awar(AWAR_CONFIG_COMMENT)->read_char_pntr();
     bool        nonemptyComment = comment && comment[0];
     const char *config          = root->awar(AWAR_CONFIGURATION)->read_char_pntr();
-    GB_ERROR    error           = "Please select a species selection to edit its comment";
+    GB_ERROR    error           = "Please select an existing species selection to edit its comment";
 
     if (config && config[0]) {
         GBDATA *gb_configuration = GBT_find_configuration(GLOBAL.gb_main, config);
