@@ -1015,7 +1015,7 @@ public:
         int furcs     = nodes-leafs;    // = inner nodes
         int realfurcs = furcs-multifurcs;
 
-        int node_digits = log10(nodes)+1;
+        int node_digits = calc_digits(nodes);
 
         ap_assert(zeroleafs<=leafs);
         ap_assert(zeroedges<=edges);
