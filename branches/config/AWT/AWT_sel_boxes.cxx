@@ -435,12 +435,43 @@ struct AWT_configuration_selection : public AW_DB_selection {
         : AW_DB_selection(sellist_, gb_configuration_data)
     {}
 
+    int countSpeciesInConfig(const char *name) {
+        GB_ERROR   error;
+        GBT_config cfg(get_gb_main(), name, error);
+
+        int count;
+        if (!error) {
+            for (int area = 0; area<2; ++area) {
+                GBT_config_parser parser(cfg, area);
+                while (1) {
+                    const GBT_config_item& item = parser.nextItem(error);
+                    if (error || item.type == CI_END_OF_CONFIG) break;
+                    if (item.type == CI_SPECIES) ++count;
+                }
+            }
+        }
+        return count;
+    }
+
     void fill() OVERRIDE {
         ConstStrArray config;
         GBT_get_configuration_names(config, get_gb_main());
 
         if (!config.empty()) {
-            for (int c = 0; config[c]; c++) insert(config[c], config[c]);
+            int  maxlen   = 0;
+            int  maxcount = 0;
+            int *count    = new int[config.size()];
+            for (int c = 0; config[c]; ++c) {
+                maxlen   = max(maxlen, int(strlen(config[c])));
+                count[c] = countSpeciesInConfig(config[c]);
+                maxcount = max(maxcount, count[c]);
+            }
+            int maxdigits = calc_digits(maxcount);
+            for (int c = 0; config[c]; ++c) {
+                int digits = calc_digits(count[c]);
+                insert(GBS_global_string("%-*s %*s(%i)", maxlen, config[c], (maxdigits-digits), "", count[c]), config[c]);
+            }
+            delete [] count;
         }
         insert_default(DISPLAY_NONE, NO_CONFIG_SELECTED);
     }

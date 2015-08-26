@@ -42,6 +42,8 @@ DESCRIPTION     Species selections basically are sets of species.
 NOTES           The configuration window is as well available via the button that shows the number
                 of marked species in the top area of the main arb window.
 
+		The number behind the species selections is the number of selected species.
+
 EXAMPLES	None
 
 WARNINGS        Unfortunately we use the term 'configuration' for two things:
