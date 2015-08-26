@@ -32,11 +32,13 @@ void GBT_get_configuration_names(struct ConstStrArray& configNames, GBDATA *gb_m
 class GBT_config : virtual Noncopyable {
     char *top_area;
     char *middle_area;
+    char *comment; // NULL if no comment exists
 public:
     GBT_config(GBDATA *gb_main, const char *name, GB_ERROR& error);
     ~GBT_config() {
         free(top_area);
         free(middle_area);
+        free(comment);
     }
 
     const char *get(int area) const {
@@ -48,6 +50,9 @@ public:
         char*& Area = area ? middle_area : top_area;
         freeset(Area, new_def);
     }
+
+    const char *get_comment() const { return comment; }
+    void set_comment(const char *newComment) { freedup(comment, newComment); }
 
     GB_ERROR save(GBDATA *gb_main, const char *name) const;
 };

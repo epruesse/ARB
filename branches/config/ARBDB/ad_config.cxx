@@ -84,6 +84,7 @@ GBT_config::GBT_config(GBDATA *gb_main, const char *name, GB_ERROR& error) {
         error       = GBS_global_string("No such configuration '%s'", name);
         top_area    = NULL;
         middle_area = NULL;
+        comment     = NULL;
     }
     else {
         top_area    = GBT_read_string(gb_config, "top_area");
@@ -92,6 +93,8 @@ GBT_config::GBT_config(GBDATA *gb_main, const char *name, GB_ERROR& error) {
         if (!top_area || !middle_area) {
             error = GBS_global_string("Configuration '%s' is corrupted (Reason: %s)", name, GB_await_error());
         }
+
+        comment = GBT_read_string(gb_config, "comment");
     }
 
     error = GB_end_transaction(gb_main, error);
@@ -109,6 +112,16 @@ GB_ERROR GBT_config::save(GBDATA *gb_main, const char *name) const {
     else {
         error             = GBT_write_string(gb_config, "top_area",    top_area);
         if (!error) error = GBT_write_string(gb_config, "middle_area", middle_area);
+
+        if (!error) {
+            if (comment && comment[0]) { // non-empty
+                error = GBT_write_string(gb_config, "comment", comment);
+            }
+            else {
+                GBDATA *gb_comment = GB_entry(gb_config, "comment");
+                if (gb_comment) error = GB_delete(gb_comment); // delete field if comment empty
+            }
+        }
 
         if (error) error = GBS_global_string("%s (in configuration '%s')", error, name);
     }
