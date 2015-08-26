@@ -62,7 +62,7 @@ GBDATA *GBT_find_configuration(GBDATA *gb_main, const char *name) {
     return gb_config_name ? GB_get_father(gb_config_name) : 0;
 }
 
-GBDATA *GBT_create_configuration(GBDATA *gb_main, const char *name) {
+GBDATA *GBT_findOrCreate_configuration(GBDATA *gb_main, const char *name) {
     GBDATA *gb_config = GBT_find_configuration(gb_main, name);
     if (!gb_config) {
         GBDATA *gb_config_data = GB_search(gb_main, CONFIG_DATA_PATH, GB_DB);
@@ -102,7 +102,7 @@ GB_ERROR GBT_config::save(GBDATA *gb_main, const char *name) const {
 
     GB_push_transaction(gb_main);
 
-    GBDATA *gb_config = GBT_create_configuration(gb_main, name);
+    GBDATA *gb_config = GBT_findOrCreate_configuration(gb_main, name);
     if (!gb_config) {
         error = GBS_global_string("Can't create configuration '%s' (Reason: %s)", name, GB_await_error());
     }
@@ -267,7 +267,7 @@ void TEST_GBT_get_configuration_names() {
 
         const char *configs[] = { "arb", "BASIC", "Check it", "dummy" };
         for (size_t i = 0; i<ARRAY_ELEMS(configs); ++i) {
-            TEST_EXPECT_RESULT__NOERROREXPORTED(GBT_create_configuration(gb_main, configs[i]));
+            TEST_EXPECT_RESULT__NOERROREXPORTED(GBT_findOrCreate_configuration(gb_main, configs[i]));
         }
 
         ConstStrArray cnames;

@@ -25,7 +25,7 @@
 #define CONFIG_ITEM      "configuration"
 
 GBDATA *GBT_find_configuration(GBDATA *gb_main, const char *name);
-GBDATA *GBT_create_configuration(GBDATA *gb_main, const char *name);
+GBDATA *GBT_findOrCreate_configuration(GBDATA *gb_main, const char *name);
 
 void GBT_get_configuration_names(struct ConstStrArray& configNames, GBDATA *gb_main);
 

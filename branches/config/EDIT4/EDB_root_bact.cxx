@@ -593,7 +593,7 @@ char *EDB_root_bact::generate_config_string(char *confname) { // and save it in 
             long string_length = strlen(generated_string);
             if (generated_string[string_length - 1] == 1) generated_string[string_length - 1] = '\0';
 
-            GBDATA *gb_configuration = GBT_create_configuration(GLOBAL_gb_main, confname);
+            GBDATA *gb_configuration = GBT_findOrCreate_configuration(GLOBAL_gb_main, confname);
             GBDATA *gb_area;
             if (counter == 0) {
                 gb_area = GB_search(gb_configuration, "top_area", GB_STRING);

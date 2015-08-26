@@ -852,7 +852,7 @@ static GB_ERROR nt_create_configuration(TreeNode *tree, const char *conf_name, i
             {
                 char   *middle    = GBS_strclose(topmid);
                 char   *top       = GBS_strclose(topfile);
-                GBDATA *gb_config = GBT_create_configuration(GLOBAL.gb_main, conf_name);
+                GBDATA *gb_config = GBT_findOrCreate_configuration(GLOBAL.gb_main, conf_name);
 
                 if (!gb_config) error = GB_await_error();
                 else {
