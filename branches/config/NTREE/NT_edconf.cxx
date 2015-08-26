@@ -33,9 +33,7 @@ using namespace std;
 #define AWAR_CL_SELECTED_CONFIGS       "configuration_data/win%i/selected"
 #define AWAR_CL_DISPLAY_CONFIG_MARKERS "configuration_data/win%i/display"
 
-static void init_config_awars(AW_root *root) {
-    root->awar_string(AWAR_CONFIGURATION, "default_configuration", GLOBAL.gb_main);
-}
+#define AWAR_CONFIG_COMMENT "tmp/configuration/comment"
 
 enum extractType {
     CONF_EXTRACT,
@@ -920,12 +918,63 @@ static void nt_rename_configuration(AW_window *aww) {
     free(old_name);
 }
 
+void update_config_comment_cb(AW_root *root) {
+    const char *comment         = root->awar(AWAR_CONFIG_COMMENT)->read_char_pntr();
+    bool        nonemptyComment = comment && comment[0];
+    const char *config          = root->awar(AWAR_CONFIGURATION)->read_char_pntr();
+    GB_ERROR    error           = "Please select a species selection to edit its comment";
+
+    if (config && config[0]) {
+        GBDATA *gb_configuration = GBT_find_configuration(GLOBAL.gb_main, config);
+        if (gb_configuration) {
+            error = NULL;
+
+            GBDATA *gb_comment = GB_entry(gb_configuration, "comment");
+            if (nonemptyComment) {
+                if (!gb_comment) gb_comment = GB_search(gb_configuration, "comment", GB_STRING);
+                error                       = GB_write_string(gb_comment, comment);
+            }
+            else if (gb_comment) {
+                error = GB_delete(gb_comment);
+            }
+        }
+    }
+    if (error && nonemptyComment) {
+        aw_message(error);
+    }
+}
+void selected_config_changed_cb(AW_root *root) {
+    const char *config  = root->awar(AWAR_CONFIGURATION)->read_char_pntr();
+    const char *comment = "";
+
+    if (config && config[0]) {
+        GBDATA *gb_configuration = GBT_find_configuration(GLOBAL.gb_main, config);
+        if (gb_configuration) {
+            GBDATA *gb_comment = GB_entry(gb_configuration, "comment");
+            if (gb_comment) {
+                comment = GB_read_char_pntr(gb_comment);
+                if (!comment) comment = GBS_global_string("Error reading comment: %s", GB_await_error());
+            }
+        }
+    }
+    root->awar(AWAR_CONFIG_COMMENT)->write_string(comment);
+}
+
+static void init_config_awars(AW_root *root) {
+    root->awar_string(AWAR_CONFIGURATION, "default_configuration", GLOBAL.gb_main);
+}
+static void init_config_admin_awars(AW_root *root) {
+    init_config_awars(root);
+    root->awar_string(AWAR_CONFIG_COMMENT, "", GLOBAL.gb_main)->add_callback(update_config_comment_cb);
+    root->awar(AWAR_CONFIGURATION)->add_callback(selected_config_changed_cb);
+}
+
 static AW_window *create_configuration_admin_window(AW_root *root, AWT_canvas *ntw) {
     static AW_window_simple *existing_aws[MAX_NT_WINDOWS] = { MAX_NT_WINDOWS_NULLINIT };
 
     int ntw_id = NT_get_canvas_id(ntw);
     if (!existing_aws[ntw_id]) {
-        init_config_awars(root);
+        init_config_admin_awars(root);
 
         AW_window_simple *aws = new AW_window_simple;
         aws->init(root, GBS_global_string("SPECIES_SELECTIONS_%i", ntw_id), "Species Selections");
@@ -941,6 +990,9 @@ static AW_window *create_configuration_admin_window(AW_root *root, AWT_canvas *n
 
         aws->at("name");
         aws->create_input_field(AWAR_CONFIGURATION);
+
+        aws->at("comment");
+        aws->create_text_field(AWAR_CONFIG_COMMENT);
 
         aws->at("list");
         awt_create_CONFIG_selection_list(GLOBAL.gb_main, aws, AWAR_CONFIGURATION, false);

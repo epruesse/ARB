@@ -36,6 +36,9 @@ DESCRIPTION     Species selections basically are sets of species.
                         - DELETE (delete a configuration)
                         - RENAME (rename a configuration)
 
+                Each configuration has a comment which may be changed by
+                editing the 'Comment' textfield.
+
 NOTES           The configuration window is as well available via the button that shows the number
                 of marked species in the top area of the main arb window.
 
