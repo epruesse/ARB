@@ -94,7 +94,7 @@ public:
         fflush(stdout);
         fflush(stderr);
         fputc('>', stdout);
-        int digits = log10(len)+2;
+        int digits = calc_signed_digits(len);
         for (int pos = 0; pos<len; ++pos) {
             if (data[pos] == dontShow) {
                 fprintf(stdout, "%*s", digits, "_");
