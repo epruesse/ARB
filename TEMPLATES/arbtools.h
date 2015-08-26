@@ -139,11 +139,13 @@ inline int double_cmp(const double d1, const double d2) {
     return d<0 ? -1 : (d>0 ? 1 : 0);
 }
 
-inline int calc_digits(size_t val) {
+template <typename NUM>
+inline int calc_digits(NUM val) {
     /*! calculate output length of val (w/o sign) */
     return log10(val)+1;
 }
-inline int calc_signed_digits(long val) {
+template <typename NUM>
+inline int calc_signed_digits(NUM val) {
     /*! calculate output length of val (with sign) */
     return val<0 ? calc_digits(-val)+1 : calc_digits(val);
 }
