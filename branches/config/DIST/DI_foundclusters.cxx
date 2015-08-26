@@ -242,7 +242,7 @@ class DisplayFormat : virtual Noncopyable {
     mutable char *format_string;
 
     static char *make_format(size_t val) {
-        int digits = calc_signed_digits(val);
+        int digits = calc_digits(val);
         return GBS_global_string_copy("%%%izu", digits);
     }
 
@@ -281,7 +281,7 @@ public:
     }
 
     const char *get_header() const {
-        int countSize = calc_signed_digits(max_count) + 2; // allow to use two of the spaces behind count
+        int countSize = calc_digits(max_count) + 2; // allow to use two of the spaces behind count
         int distSize, baseSize;
         {
             int afterdot;
