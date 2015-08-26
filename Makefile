@@ -810,7 +810,8 @@ first_target:
 		@echo ''
 		@echo ' clean       - remove generated files ("SUBDIR/SUBDIR.clean" to clean only SUBDIR)'
 		@echo ' rebuild     - clean + all'
-		@echo ' relink      - remove all binaries and relink them from objects'
+		@echo ' cleanlinked - remove all binaries'
+		@echo ' relink      - cleanlinked + all (=relink all from objects)'
 		@echo ''
 		@echo 'Some often used sub targets (make all makes them all):'
 		@echo ''
@@ -2087,8 +2088,10 @@ help4ever: clean
 rebuild: clean
 	$(MAKE) all
 
-relink: bin/bin.clean libclean
-	$(MAKE) build
+cleanlinked: bin/bin.clean libclean
+
+relink: cleanlinked
+	$(MAKE) all
 
 tarfile: rebuild
 	$(MAKE) prepare_libdir
