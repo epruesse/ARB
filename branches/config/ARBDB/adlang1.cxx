@@ -1849,13 +1849,6 @@ static GB_ERROR gbl_sequence_type(GBL_command_arguments *args) {
     return error;
 }
 
-inline int calc_digits(size_t val) {
-    int digits = log10(val)+1;
-    gb_assert(digits>0);
-    return digits;
-}
-
-
 static GB_ERROR gbl_format_sequence(GBL_command_arguments *args) {
     GB_ERROR error = 0;
     int      ic;
