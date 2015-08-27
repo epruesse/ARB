@@ -242,7 +242,7 @@ GB_ERROR GBT_commit_rename_session() { // goes to header: __ATTR__USERESULT
                         }
 
                         if (!error) {
-                            config.set(area, GBS_strclose(strstruct));
+                            config.set_definition(area, GBS_strclose(strstruct));
                         }
                         else {
                             error = GBS_global_string("Failed to parse configuration '%s' (Reason: %s)", config_names[count], error);

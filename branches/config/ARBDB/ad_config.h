@@ -35,17 +35,23 @@ class GBT_config : virtual Noncopyable {
     char *comment; // NULL if no comment exists
 public:
     GBT_config(GBDATA *gb_main, const char *name, GB_ERROR& error);
+    GBT_config() : top_area(NULL), middle_area(NULL), comment(NULL) {}
     ~GBT_config() {
         free(top_area);
         free(middle_area);
         free(comment);
     }
 
-    const char *get(int area) const {
+    static const int TOP_AREA    = 0;
+    static const int MIDDLE_AREA = 1;
+
+    bool exists() const { return top_area || middle_area; }
+
+    const char *get_definition(int area) const {
         arb_assert(area == 0 || area == 1);
         return area ? middle_area : top_area;
     }
-    void set(int area, char *new_def) {
+    void set_definition(int area, char *new_def) {
         arb_assert(area == 0 || area == 1);
         char*& Area = area ? middle_area : top_area;
         freeset(Area, new_def);
@@ -83,7 +89,7 @@ class GBT_config_parser : virtual Noncopyable {
     GBT_config_item item;
 public:
     GBT_config_parser(const GBT_config& cfg, int area)
-        : config_string(nulldup(cfg.get(area))),
+        : config_string(nulldup(cfg.get_definition(area))),
           parse_pos(0)
     {}
     ~GBT_config_parser() { free(config_string); }

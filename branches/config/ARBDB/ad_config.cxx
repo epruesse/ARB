@@ -77,9 +77,10 @@ GBDATA *GBT_findOrCreate_configuration(GBDATA *gb_main, const char *name) {
 }
 
 GBT_config::GBT_config(GBDATA *gb_main, const char *name, GB_ERROR& error) {
-    error             = GB_push_transaction(gb_main);
-    GBDATA *gb_config = GBT_find_configuration(gb_main, name);
+    GB_transaction  ta(gb_main);
+    GBDATA         *gb_config = GBT_find_configuration(gb_main, name);
 
+    error = NULL;
     if (!gb_config) {
         error       = GBS_global_string("No such configuration '%s'", name);
         top_area    = NULL;
@@ -96,8 +97,6 @@ GBT_config::GBT_config(GBDATA *gb_main, const char *name, GB_ERROR& error) {
 
         comment = GBT_read_string(gb_config, "comment");
     }
-
-    error = GB_end_transaction(gb_main, error);
 }
 
 GB_ERROR GBT_config::save(GBDATA *gb_main, const char *name) const {
@@ -228,7 +227,7 @@ void GBT_test_config_parser(GBDATA *gb_main) {
 
                 for (area = 0; area<2 && !error; ++area) {
                     const char        *area_name       = area ? "middle_area" : "top_area";
-                    const char        *area_config_def = config.get(area);
+                    const char        *area_config_def = config.get_definition(area);
                     GBT_config_parser  parser(config, area);
                     GBS_strstruct     *new_config      = GBS_stropen(1000);
 

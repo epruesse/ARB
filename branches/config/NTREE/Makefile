@@ -527,6 +527,7 @@ NT_dbrepair.o: $(ARBHOME)/INCLUDE/static_assert.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/test_global.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/ttypes.h
 
+NT_edconf.o: ad_trees.h
 NT_edconf.o: NT_local.h
 NT_edconf.o: NT_local_proto.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
