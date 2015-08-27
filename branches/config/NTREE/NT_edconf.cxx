@@ -874,6 +874,12 @@ static void nt_store_configuration(AW_window*, AWT_canvas *ntw) {
     const char *cfgName = AW_root::SINGLETON->awar(AWAR_CONFIGURATION)->read_char_pntr();
     GB_ERROR    err     = nt_create_configuration(NT_get_tree_root_of_canvas(ntw), cfgName, 0);
     aw_message_if(err);
+
+    // if comment field contains sth
+    // (e.g. leftover from previously selected config or
+    //       because comment was entered after changing config name)
+    // => store that comment in new config:
+    AW_root::SINGLETON->awar(AWAR_CONFIG_COMMENT)->touch();
 }
 
 static void nt_rename_configuration(AW_window *aww) {
@@ -918,46 +924,72 @@ static void nt_rename_configuration(AW_window *aww) {
     free(old_name);
 }
 
-void update_config_comment_cb(AW_root *root) {
-    const char *comment         = root->awar(AWAR_CONFIG_COMMENT)->read_char_pntr();
-    bool        nonemptyComment = comment && comment[0];
-    const char *config          = root->awar(AWAR_CONFIGURATION)->read_char_pntr();
-    GB_ERROR    error           = "Please select an existing species selection to edit its comment";
+static void selected_config_changed_cb(AW_root *root) {
+    const char *config = root->awar(AWAR_CONFIGURATION)->read_char_pntr();
 
-    if (config && config[0]) {
+    bool    nonexisting_config = false;
+    GBDATA *gb_target_commment = NULL;
+    if (config[0]) {
         GBDATA *gb_configuration = GBT_find_configuration(GLOBAL.gb_main, config);
         if (gb_configuration) {
-            error = NULL;
-
-            GBDATA *gb_comment = GB_entry(gb_configuration, "comment");
-            if (nonemptyComment) {
-                if (!gb_comment) gb_comment = GB_search(gb_configuration, "comment", GB_STRING);
-                error                       = GB_write_string(gb_comment, comment);
-            }
-            else if (gb_comment) {
-                error = GB_delete(gb_comment);
-            }
+            gb_target_commment = GB_entry(gb_configuration, "comment");
+        }
+        else {
+            nonexisting_config = true;
         }
     }
-    if (error && nonemptyComment) {
-        aw_message(error);
+
+    AW_awar *awar_comment = root->awar(AWAR_CONFIG_COMMENT);
+    if (gb_target_commment) {
+        awar_comment->map(gb_target_commment);
+    }
+    else {
+        char *reuse_comment = nonexisting_config ? awar_comment->read_string() : strdup("");
+        awar_comment->unmap();
+        awar_comment->write_string(reuse_comment);
+        free(reuse_comment);
     }
 }
-void selected_config_changed_cb(AW_root *root) {
-    const char *config  = root->awar(AWAR_CONFIGURATION)->read_char_pntr();
-    const char *comment = "";
+static void config_comment_changed_cb(AW_root *root) {
+    // called when comment-awar changes or gets re-map-ped
 
-    if (config && config[0]) {
-        GBDATA *gb_configuration = GBT_find_configuration(GLOBAL.gb_main, config);
-        if (gb_configuration) {
-            GBDATA *gb_comment = GB_entry(gb_configuration, "comment");
-            if (gb_comment) {
-                comment = GB_read_char_pntr(gb_comment);
-                if (!comment) comment = GBS_global_string("Error reading comment: %s", GB_await_error());
+    AW_awar    *awar_comment = root->awar(AWAR_CONFIG_COMMENT);
+    const char *comment      = awar_comment->read_char_pntr();
+
+    const char *config           = root->awar(AWAR_CONFIGURATION)->read_char_pntr();
+    GBDATA     *gb_configuration = config[0] ? GBT_find_configuration(GLOBAL.gb_main, config) : NULL;
+
+    GB_ERROR error = NULL;
+    if (awar_comment->is_mapped()) {
+        if (!comment[0]) { // empty existing comment
+            nt_assert(gb_configuration);
+            GBDATA *gb_commment = GB_entry(gb_configuration, "comment");
+            nt_assert(gb_commment);
+            if (gb_commment) {
+                awar_comment->unmap();
+                error = GB_delete(gb_commment);
             }
         }
     }
-    root->awar(AWAR_CONFIG_COMMENT)->write_string(comment);
+    else {
+        if (comment[0]) { // ignore empty comment for unmapped awar
+            if (gb_configuration) {
+                nt_assert(!GB_entry(gb_configuration, "comment"));
+                error = GBT_write_string(gb_configuration, "comment", comment);
+                if (!error) {
+                    awar_comment->write_string("");
+                    selected_config_changed_cb(root);
+                }
+            }
+            else if (!config[0]) {
+                // do NOT warn if name field contains (not yet) existing name
+                // (allows to edit comment while creating new config)
+                error = "Please select an existing species selection to edit its comment";
+            }
+        }
+    }
+
+    aw_message_if(error);
 }
 
 static void init_config_awars(AW_root *root) {
@@ -965,8 +997,8 @@ static void init_config_awars(AW_root *root) {
 }
 static void init_config_admin_awars(AW_root *root) {
     init_config_awars(root);
-    root->awar_string(AWAR_CONFIG_COMMENT, "", GLOBAL.gb_main)->add_callback(update_config_comment_cb);
-    root->awar(AWAR_CONFIGURATION)->add_callback(selected_config_changed_cb);
+    root->awar_string(AWAR_CONFIG_COMMENT, "", GLOBAL.gb_main)->add_callback(config_comment_changed_cb);
+    root->awar(AWAR_CONFIGURATION)->add_callback(selected_config_changed_cb)->touch();
 }
 
 static AW_window *create_configuration_admin_window(AW_root *root, AWT_canvas *ntw) {
