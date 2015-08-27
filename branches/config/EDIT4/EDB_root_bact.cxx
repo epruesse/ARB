@@ -610,7 +610,7 @@ void EDB_root_bact::save_current_config(char *confname) { // and save it in data
         free(newComment);
     }
 
-    error = cfg.save(GLOBAL_gb_main, confname);
+    error = cfg.save(GLOBAL_gb_main, confname, true);
     aw_message_if(error);
 }
 

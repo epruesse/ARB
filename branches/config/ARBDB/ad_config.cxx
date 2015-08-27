@@ -99,7 +99,7 @@ GBT_config::GBT_config(GBDATA *gb_main, const char *name, GB_ERROR& error) {
     }
 }
 
-GB_ERROR GBT_config::save(GBDATA *gb_main, const char *name) const {
+GB_ERROR GBT_config::save(GBDATA *gb_main, const char *name, bool warnIfSavingDefault) const {
     GB_ERROR error = 0;
 
     GB_push_transaction(gb_main);
@@ -123,6 +123,10 @@ GB_ERROR GBT_config::save(GBDATA *gb_main, const char *name) const {
         }
 
         if (error) error = GBS_global_string("%s (in configuration '%s')", error, name);
+    }
+
+    if (warnIfSavingDefault && strcmp(name, DEFAULT_CONFIGURATION) == 0) {
+        GBT_message(gb_main, "Note: You saved the '" DEFAULT_CONFIGURATION "'.\nStarting ARB_EDIT4 will probably overwrite it!");
     }
 
     return GB_end_transaction(gb_main, error);

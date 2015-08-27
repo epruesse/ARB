@@ -451,7 +451,7 @@ int ARB_main(int argc, char *argv[]) {
                 "       database    name of database or ':' to connect to arb-database-server\n"
                 "\n"
                 "       options:\n"
-                "       -c config   loads configuration 'config' (default: 'default_configuration')\n"
+                "       -c config   loads configuration 'config' (default: '" DEFAULT_CONFIGURATION "')\n"
             );
         return EXIT_SUCCESS;
     }
@@ -461,9 +461,9 @@ int ARB_main(int argc, char *argv[]) {
         strcpy(config_name, argv[2]);
         argc -= 2; argv += 2;
     }
-    else { // load 'default_configuration' if no command line is given
-        config_name = strdup("default_configuration");
-        printf("Using 'default_configuration'\n");
+    else { // load default configuration if no command line is given
+        config_name = strdup(DEFAULT_CONFIGURATION);
+        printf("Using '%s'\n", DEFAULT_CONFIGURATION);
     }
 
     if (argc>1) {

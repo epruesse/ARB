@@ -24,6 +24,8 @@
 #define CONFIG_DATA_PATH "configuration_data"
 #define CONFIG_ITEM      "configuration"
 
+#define DEFAULT_CONFIGURATION "default_configuration"
+
 GBDATA *GBT_find_configuration(GBDATA *gb_main, const char *name);
 GBDATA *GBT_findOrCreate_configuration(GBDATA *gb_main, const char *name);
 
@@ -60,7 +62,7 @@ public:
     const char *get_comment() const { return comment; }
     void set_comment(const char *newComment) { freedup(comment, newComment); }
 
-    GB_ERROR save(GBDATA *gb_main, const char *name) const;
+    GB_ERROR save(GBDATA *gb_main, const char *name, bool warnIfSavingDefault) const;
 };
 
 enum GBT_CONFIG_ITEM_TYPE {
