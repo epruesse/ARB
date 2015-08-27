@@ -1146,72 +1146,49 @@ void group_species_cb(AW_window *aww, AW_CL cl_use_fields, AW_CL) {
     }
 }
 
-static void ED4_load_new_config(char *string) {
-    GB_transaction ta(GLOBAL_gb_main);
+static GB_ERROR ED4_load_new_config(char *name) {
+    GB_ERROR error;
+    GBT_config cfg(GLOBAL_gb_main, name, error);
+    if (cfg.exists()) {
+        ED4_ROOT->main_manager->clear_whole_background();
+        ED4_calc_terminal_extentions();
 
-    ED4_ROOT->main_manager->clear_whole_background();
-    ED4_calc_terminal_extentions();
+        max_seq_terminal_length = 0;
 
-    max_seq_terminal_length = 0;
+        ED4_init_notFoundMessage();
 
-    ED4_init_notFoundMessage();
-
-    if (ED4_ROOT->selected_objects->size() > 0) {
-        ED4_ROOT->deselect_all();
-    }
-
-    ED4_ROOT->remove_all_callbacks();
-
-    ED4_ROOT->scroll_picture.scroll         = 0;
-    ED4_ROOT->scroll_picture.old_x          = 0;
-    ED4_ROOT->scroll_picture.old_y          = 0;
-
-    ED4_ROOT->ref_terminals.clear();
-
-    for (ED4_window *window = ED4_ROOT->first_window; window; window=window->next) {
-        window->cursor.init();
-        window->aww->set_horizontal_scrollbar_position (0);
-        window->aww->set_vertical_scrollbar_position (0);
-    }
-
-    ED4_ROOT->scroll_links.link_for_hor_slider = NULL;
-    ED4_ROOT->scroll_links.link_for_ver_slider = NULL;
-    ED4_ROOT->middle_area_man                  = NULL;
-    ED4_ROOT->top_area_man                     = NULL;
-
-    
-
-    delete ED4_ROOT->main_manager;
-    ED4_ROOT->main_manager = NULL;
-    delete ED4_ROOT->ecoli_ref;
-
-    char *config_data_top    = NULL;
-    char *config_data_middle = NULL;
-    {
-        GB_push_transaction(GLOBAL_gb_main);
-        GBDATA *gb_configuration = GBT_find_configuration(GLOBAL_gb_main, string);
-        if (!gb_configuration) {
-            GB_ERROR error = GB_await_error();
-            aw_message(error);
-
-            config_data_middle = strdup("");
-            config_data_top    = strdup("");
+        if (ED4_ROOT->selected_objects->size() > 0) {
+            ED4_ROOT->deselect_all();
         }
-        else {
-            GBDATA *gb_middle_area = GB_search(gb_configuration, "middle_area", GB_FIND);
-            GBDATA *gb_top_area    = GB_search(gb_configuration, "top_area", GB_FIND);
-            config_data_middle     = GB_read_as_string(gb_middle_area);
-            config_data_top        = GB_read_as_string(gb_top_area);
+
+        ED4_ROOT->remove_all_callbacks();
+
+        ED4_ROOT->scroll_picture.scroll = 0;
+        ED4_ROOT->scroll_picture.old_x  = 0;
+        ED4_ROOT->scroll_picture.old_y  = 0;
+
+        ED4_ROOT->ref_terminals.clear();
+
+        for (ED4_window *window = ED4_ROOT->first_window; window; window=window->next) {
+            window->cursor.init();
+            window->aww->set_horizontal_scrollbar_position (0);
+            window->aww->set_vertical_scrollbar_position (0);
         }
-        GB_pop_transaction(GLOBAL_gb_main);
+
+        ED4_ROOT->scroll_links.link_for_hor_slider = NULL;
+        ED4_ROOT->scroll_links.link_for_ver_slider = NULL;
+        ED4_ROOT->middle_area_man                  = NULL;
+        ED4_ROOT->top_area_man                     = NULL;
+
+        delete ED4_ROOT->main_manager;
+        ED4_ROOT->main_manager = NULL;
+        delete ED4_ROOT->ecoli_ref;
+
+        ED4_ROOT->first_window->reset_all_for_new_config();
+        ED4_ROOT->create_hierarchy(cfg.get_definition(GBT_config::MIDDLE_AREA), cfg.get_definition(GBT_config::TOP_AREA));
     }
 
-    ED4_ROOT->first_window->reset_all_for_new_config();
-
-    ED4_ROOT->create_hierarchy(config_data_middle, config_data_top);
-
-    free(config_data_middle);
-    free(config_data_top);
+    return error;
 }
 
 static long ED4_get_edit_mode(AW_root *root)
@@ -1281,10 +1258,18 @@ void ED4_new_editor_window(AW_window *aww) {
 
 static void ED4_start_editor_on_configuration(AW_window *aww) {
     aww->hide();
-    char *cn = aww->get_root()->awar(AWAR_EDIT_CONFIGURATION)->read_string();
 
-    ED4_load_new_config(cn);
-    free(cn);
+    GB_ERROR error;
+    {
+        char *name = aww->get_root()->awar(AWAR_EDIT_CONFIGURATION)->read_string();
+        error      = ED4_load_new_config(name);
+        free(name);
+    }
+
+    if (error) {
+        aw_message(error);
+        aww->show(); // show old window
+    }
 }
 
 struct cursorpos {
@@ -1560,8 +1545,7 @@ void ED4_create_consensus_awars(AW_root *aw_root) {
     cons_show->add_callback(ED4_consensus_display_changed);
 }
 
-void ED4_restart_editor(AW_window *aww, AW_CL, AW_CL)
-{
+void ED4_restart_editor(AW_window *aww) {
     ED4_start_editor_on_configuration(aww);
 }
 
@@ -1594,39 +1578,38 @@ AW_window *ED4_start_editor_on_old_configuration(AW_root *awr) {
 }
 
 void ED4_save_configuration(AW_window *aww, bool hide_aww) {
-    char *cn = aww->get_root()->awar(AWAR_EDIT_CONFIGURATION)->read_string();
     if (hide_aww) aww->hide();
 
-    ED4_ROOT->database->generate_config_string(cn);
-
-    free(cn);
+    char *name = aww->get_root()->awar(AWAR_EDIT_CONFIGURATION)->read_string();
+    ED4_ROOT->database->save_current_config(name);
+    free(name);
 }
 
 AW_window *ED4_save_configuration_as_open_window(AW_root *awr) {
     static AW_window_simple *aws = 0;
-    if (aws) return (AW_window *)aws;
-    aws = new AW_window_simple;
-    aws->init(awr, "SAVE_CONFIGURATION", "SAVE A CONFIGURATION");
-    aws->load_xfig("edit4/save_config.fig");
+    if (!aws) {
+        aws = new AW_window_simple;
+        aws->init(awr, "SAVE_CONFIGURATION", "SAVE A CONFIGURATION");
+        aws->load_xfig("edit4/save_config.fig");
 
-    aws->at("close");
-    aws->callback(AW_POPDOWN);
-    aws->create_button("CLOSE", "CLOSE");
+        aws->at("close");
+        aws->callback(AW_POPDOWN);
+        aws->create_button("CLOSE", "CLOSE");
 
-    aws->at("help");
-    aws->callback(makeHelpCallback("species_configs_saveload.hlp"));
-    aws->create_button("HELP", "HELP");
+        aws->at("help");
+        aws->callback(makeHelpCallback("species_configs_saveload.hlp"));
+        aws->create_button("HELP", "HELP");
 
-    aws->at("save");
-    aws->create_input_field(AWAR_EDIT_CONFIGURATION);
+        aws->at("save");
+        aws->create_input_field(AWAR_EDIT_CONFIGURATION);
 
-    aws->at("confs");
-    awt_create_CONFIG_selection_list(GLOBAL_gb_main, aws, AWAR_EDIT_CONFIGURATION, false);
+        aws->at("confs");
+        awt_create_CONFIG_selection_list(GLOBAL_gb_main, aws, AWAR_EDIT_CONFIGURATION, false);
 
-    aws->at("go");
-    aws->callback(makeWindowCallback(ED4_save_configuration, true));
-    aws->create_button("SAVE", "SAVE");
-
+        aws->at("go");
+        aws->callback(makeWindowCallback(ED4_save_configuration, true));
+        aws->create_button("SAVE", "SAVE");
+    }
     return aws;
 }
 
