@@ -27,6 +27,7 @@
 #include <string>
 #include <ad_cb_prot.h>
 #include <awt_config_manager.hxx>
+#include <awt_modules.hxx>
 
 using namespace std;
 
@@ -1043,6 +1044,68 @@ static void init_config_admin_awars(AW_root *root) {
     root->awar(AWAR_CONFIGURATION)->add_callback(selected_config_changed_cb)->touch();
 }
 
+static GB_ERROR swap_configs(GBDATA *gb_main, StrArray& config, int i1, int i2) {
+    GB_ERROR error = NULL;
+    if (i1>i2) swap(i1, i2); // otherwise overwrite below does not work
+    nt_assert(i1<i2 && i1>=0 && i2<config.size());
+
+    GBT_config c1(gb_main, config[i1], error);
+    if (!error) {
+        GBT_config c2(gb_main, config[i2], error);
+        if (!error) error = c1.saveAsOver(gb_main, config[i1], config[i2], false);
+        if (!error) error = c2.saveAsOver(gb_main, config[i2], config[i1], false);
+        if (!error) config.swap(i1, i2);
+    }
+    return error;
+}
+
+static void reorder_configs_cb(AW_window *aww, awt_reorder_mode mode, AW_CL cl_sel) {
+    AW_root    *awr         = aww->get_root();
+    AW_awar    *awar_config = awr->awar(AWAR_CONFIGURATION);
+    const char *selected    = awar_config->read_char_pntr();
+
+    if (selected && selected[0]) {
+        AW_DB_selection   *sel     = (AW_DB_selection*)cl_sel;
+        AW_selection_list *sellist = sel->get_sellist();
+
+        int source_idx = sellist->get_index_of(selected);
+        int target_idx = -1;
+        switch (mode) {
+            case ARM_TOP:    target_idx = 0;            break;
+            case ARM_UP:     target_idx = source_idx-1; break;
+            case ARM_DOWN:   target_idx = source_idx+1; break;
+            case ARM_BOTTOM: target_idx = -1;           break;
+        }
+
+        int entries = sellist->size();
+        target_idx  = (target_idx+entries)%entries;
+
+        {
+            GBDATA         *gb_main = sel->get_gb_main();
+            GB_transaction  ta(gb_main);
+
+            StrArray config;
+            sellist->to_array(config, true);
+
+            GB_ERROR error = NULL;
+            if (source_idx<target_idx) {
+                for (int i = source_idx+1; i<=target_idx; ++i) {
+                    swap_configs(gb_main, config, i-1, i);
+                }
+            }
+            else if (source_idx>target_idx) {
+                for (int i = source_idx-1; i>=target_idx; --i) {
+                    swap_configs(gb_main, config, i+1, i);
+                }
+            }
+
+            error = ta.close(error);
+            aw_message_if(error);
+        }
+        awar_config->touch();
+    }
+}
+
 static AW_window *create_configuration_admin_window(AW_root *root, AWT_canvas *ntw) {
     static AW_window_simple *existing_aws[MAX_NT_WINDOWS] = { MAX_NT_WINDOWS_NULLINIT };
 
@@ -1069,7 +1132,9 @@ static AW_window *create_configuration_admin_window(AW_root *root, AWT_canvas *n
         aws->create_text_field(AWAR_CONFIG_COMMENT);
 
         aws->at("list");
-        awt_create_CONFIG_selection_list(GLOBAL.gb_main, aws, AWAR_CONFIGURATION, false);
+        AW_DB_selection *dbsel = awt_create_CONFIG_selection_list(GLOBAL.gb_main, aws, AWAR_CONFIGURATION, false);
+
+        aws->button_length(8);
 
         aws->at("store");
         aws->callback(makeWindowCallback(nt_store_configuration, ntw));
@@ -1106,6 +1171,10 @@ static AW_window *create_configuration_admin_window(AW_root *root, AWT_canvas *n
         aws->at("highlight");
         aws->callback(makeCreateWindowCallback(create_configuration_marker_window, ntw));
         aws->create_autosize_button(GBS_global_string("HIGHLIGHT_%i", ntw_id), "Highlight in tree", "t");
+
+        aws->button_length(0);
+        aws->at("sort");
+        awt_create_order_buttons(aws, reorder_configs_cb, AW_CL(dbsel));
 
         existing_aws[ntw_id] = aws;
     }

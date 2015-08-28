@@ -62,7 +62,10 @@ public:
     const char *get_comment() const { return comment; }
     void set_comment(const char *newComment) { freedup(comment, newComment); }
 
-    GB_ERROR save(GBDATA *gb_main, const char *name, bool warnIfSavingDefault) const;
+    GB_ERROR saveAsOver(GBDATA *gb_main, const char *name, const char *oldName, bool warnIfSavingDefault) const;
+    GB_ERROR save(GBDATA *gb_main, const char *name, bool warnIfSavingDefault) const {
+        return saveAsOver(gb_main, name, name, warnIfSavingDefault);
+    }
 };
 
 enum GBT_CONFIG_ITEM_TYPE {

@@ -99,16 +99,21 @@ GBT_config::GBT_config(GBDATA *gb_main, const char *name, GB_ERROR& error) {
     }
 }
 
-GB_ERROR GBT_config::save(GBDATA *gb_main, const char *name, bool warnIfSavingDefault) const {
+GB_ERROR GBT_config::saveAsOver(GBDATA *gb_main, const char *name, const char *oldName, bool warnIfSavingDefault) const {
+    /*! save config as 'name' (overwriting config 'oldName')
+     * if 'warnIfSavingDefault' is true, saving DEFAULT_CONFIGURATION raises a warning
+     */
     GB_ERROR error = 0;
 
     GB_push_transaction(gb_main);
 
-    GBDATA *gb_config = GBT_findOrCreate_configuration(gb_main, name);
+    GBDATA *gb_config = GBT_findOrCreate_configuration(gb_main, oldName);
     if (!gb_config) {
-        error = GBS_global_string("Can't create configuration '%s' (Reason: %s)", name, GB_await_error());
+        error = GBS_global_string("Can't create configuration '%s' (Reason: %s)", oldName, GB_await_error());
     }
     else {
+        if (strcmp(name, oldName) != 0) error = GBT_write_string(gb_config, "name",    name);
+
         error             = GBT_write_string(gb_config, "top_area",    top_area);
         if (!error) error = GBT_write_string(gb_config, "middle_area", middle_area);
 
