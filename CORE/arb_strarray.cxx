@@ -250,17 +250,16 @@ void TEST_GBT_split_join_names() {
     TEST_SPLIT_JOIN("....", '.');
 }
 
-void TEST_GBT_names_index_of() {
+void TEST_StrArray_index_of() {
     ConstStrArray names;
     GBT_split_string(names, "**a**b*c*", '*');
 
-    TEST_EXPECT_EQUAL(GBT_names_index_of(names, "a"), 2);
-    TEST_EXPECT_EQUAL(GBT_names_index_of(names, "b"), 4);
-    TEST_EXPECT_EQUAL(GBT_names_index_of(names, "c"), 5);
-    TEST_EXPECT_EQUAL(GBT_names_index_of(names, ""), 0);
-    TEST_EXPECT_EQUAL(GBT_names_index_of(names, "no"), -1);
+    TEST_EXPECT_EQUAL(names.index_of("a"), 2);
+    TEST_EXPECT_EQUAL(names.index_of("b"), 4);
+    TEST_EXPECT_EQUAL(names.index_of("c"), 5);
+    TEST_EXPECT_EQUAL(names.index_of(""), 0);
+    TEST_EXPECT_EQUAL(names.index_of("no"), -1);
 }
-TEST_PUBLISH(TEST_GBT_names_index_of);
 
 #define TEST_EXPECT_NAMES_JOIN_TO(names, sep, expected) \
     do {                                                \
@@ -291,49 +290,49 @@ void TEST_GBT_names_erase() {
     TEST_EXPECT_NAMES_JOIN_TO(names, '*', "b*d");
 }
 
-void TEST_GBT_names_move() {
+void TEST_StrArray_move() {
     ConstStrArray names;
     GBT_split_string(names, "a*b*c*dee", '*');
 
-    GBT_names_move(names, 0, -1); // -1 means last
+    names.move(0, -1); // -1 means last
     TEST_EXPECT_NAMES_JOIN_TO(names, '*', "b*c*dee*a");
-    GBT_names_move(names, -1, 0); 
+    names.move(-1, 0);
     TEST_EXPECT_NAMES_JOIN_TO(names, '*', "a*b*c*dee");
-    GBT_names_move(names, 2, 3); 
+    names.move(2, 3);
     TEST_EXPECT_NAMES_JOIN_TO(names, '*', "a*b*dee*c");
-    GBT_names_move(names, 2, 1); 
+    names.move(2, 1);
     TEST_EXPECT_NAMES_JOIN_TO(names, '*', "a*dee*b*c");
 
     // test wrap arounds
-    GBT_names_move(names, 0, -1);
+    names.move(0, -1);
     TEST_EXPECT_NAMES_JOIN_TO(names, '*', "dee*b*c*a");
-    GBT_names_move(names, -1, 99999);
+    names.move(-1, 99999);
     TEST_EXPECT_NAMES_JOIN_TO(names, '*', "a*dee*b*c");
 }
 
-void TEST_GBT_names_add() { // test after GBT_names_move (cause add depends on move)
+void TEST_StrArray_put_before() { // test after TEST_StrArray_move (cause put_before() depends on move())
     ConstStrArray names;
     GBT_split_string(names, "a", '*');
 
-    GBT_names_add(names, -1, "b");                  // append at end
+    names.put_before(-1, "b");          // append at end
     TEST_EXPECT_NAMES_JOIN_TO(names, '*', "a*b");
 
-    GBT_names_add(names, 2, "c");                   // append at end (using non-existing index)
+    names.put_before(2, "c");           // append at end (using non-existing index)
     TEST_EXPECT_NAMES_JOIN_TO(names, '*', "a*b*c");
 
-    GBT_names_add(names, 99, "d");                  // append at end (using even bigger non-existing index)
+    names.put_before(99, "d");          // append at end (using even bigger non-existing index)
     TEST_EXPECT_NAMES_JOIN_TO(names, '*', "a*b*c*d");
 
-    GBT_names_add(names, 2, "b2");                  // insert inside
+    names.put_before(2, "b2");          // insert inside
     TEST_EXPECT_NAMES_JOIN_TO(names, '*', "a*b*b2*c*d");
 
-    GBT_names_add(names, 0, "a0");                  // insert at beginning
+    names.put_before(0, "a0");          // insert at beginning
     TEST_EXPECT_NAMES_JOIN_TO(names, '*', "a0*a*b*b2*c*d");
 
-    GBT_names_add(names, 5, "d0");                  // insert before last
+    names.put_before(5, "d0");          // insert before last
     TEST_EXPECT_NAMES_JOIN_TO(names, '*', "a0*a*b*b2*c*d0*d");
 }
-TEST_PUBLISH(TEST_GBT_names_add);
+TEST_PUBLISH(TEST_StrArray_put_before);
 
 #endif // UNIT_TESTS
 
