@@ -110,6 +110,10 @@ public:
         elems--;
         arb_assert(ok());
     }
+    void safe_remove(int i) {
+        //! like remove, but does NOOP if index out of bounds
+        if (elem_index(i)) remove(i);
+    }
 
     void resize(int newsize) {
         // truncates array to 'newsize'
@@ -235,12 +239,6 @@ inline void GBT_split_string(ConstStrArray& dest, const char *namelist, char sep
 }
 
 char *GBT_join_strings(const CharPtrArray& strings, char separator);
-
-inline void GBT_names_erase(CharPtrArray& names, int index) { // @@@ elim!
-    if (index >= 0 && size_t(index)<names.size()) {
-        names.remove(index);
-    }
-}
 
 #else
 #error arb_strarray.h included twice
