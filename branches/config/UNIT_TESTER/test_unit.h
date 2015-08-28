@@ -31,7 +31,7 @@
 #include <dupstr.h>
 #endif
 
-#if defined(_GLIBCXX_STRING)
+#if defined(_GLIBCXX_STRING) || defined(_LIBCPP_STRING)
 #define TESTS_KNOW_STRING
 #endif
 #ifdef ARBDB_BASE_H

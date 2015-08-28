@@ -362,7 +362,7 @@ void remove_from_configs(const string& config, string& existing_configs) {
         }
     }
 
-    char *rest       = GBT_join_names(remaining, ';');
+    char *rest       = GBT_join_strings(remaining, ';');
     existing_configs = rest;
     free(rest);
 }

@@ -146,7 +146,7 @@ static SmartPtr<ConstStrArray> get_selected_configs_from_awar(int canvas_id) {
     return config;
 }
 static void write_configs_to_awar(int canvas_id, const CharPtrArray& configs) {
-    char *config_str = GBT_join_names(configs, CONFIG_SEPARATOR[0]);
+    char *config_str = GBT_join_strings(configs, CONFIG_SEPARATOR[0]);
     AW_root::SINGLETON->awar(GBS_global_string(AWAR_CL_SELECTED_CONFIGS, canvas_id))->write_string(config_str);
     free(config_str);
 }
@@ -317,7 +317,7 @@ static char *correct_managed_configsets_cb(const char *key, const char *value, A
         ConstStrArray         config;
         GBT_split_string(config, value, CONFIG_SEPARATOR, true);
         if (mod->modifyConfig(config)) {
-            modified_value = GBT_join_names(config, CONFIG_SEPARATOR[0]);
+            modified_value = GBT_join_strings(config, CONFIG_SEPARATOR[0]);
         }
     }
     return modified_value ? modified_value : strdup(value);

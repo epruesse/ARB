@@ -1153,7 +1153,7 @@ public:
             StrArray listContent;
             subset_list->to_array(listContent, true);
 
-            int old_pos = GBT_names_index_of(listContent, selected);
+            int old_pos = listContent.index_of(selected);
             if (old_pos >= 0) {
                 int new_pos = 0;
                 switch (dest) {
@@ -1163,7 +1163,7 @@ public:
                     case ARM_BOTTOM: new_pos= -1;        break;
                 }
                 if (old_pos != new_pos) {
-                    GBT_names_move(listContent, old_pos, new_pos);
+                    listContent.move(old_pos, new_pos);
                     subset_list->init_from_array(listContent, subset_list->get_default_display(), subset_list->get_default_value());
                 }
             }

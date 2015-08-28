@@ -285,7 +285,7 @@ static void read_references(ConstStrArray& refs, AW_root *aw_root)  {
     GBT_splitNdestroy_string(refs, ref_string, " \n,;", true);
 }
 static void write_references(AW_root *aw_root, const CharPtrArray& ref_array) {
-    char *ref_string = GBT_join_names(ref_array, '\n');
+    char *ref_string = GBT_join_strings(ref_array, '\n');
     aw_root->awar(AWAR_REMAP_SPECIES_LIST)->write_string(ref_string);
     aw_root->awar(AWAR_REMAP_ENABLE)->write_int(ref_string[0] != 0);
     free(ref_string);
@@ -311,11 +311,11 @@ static void add_selected_cb(AW_window *aww, preserve_para *para) {
 
     char *candidate  = aw_root->awar(AWAR_REMAP_CANDIDATE)->read_string();
     char *selected   = get_selected_reference(aw_root);
-    int   cand_index = GBT_names_index_of(refs, candidate);
-    int   sel_index  = GBT_names_index_of(refs, selected);
+    int   cand_index = refs.index_of(candidate);
+    int   sel_index  = refs.index_of(selected);
 
-    if (cand_index == -1) GBT_names_add(refs, sel_index+1, candidate);
-    else                  GBT_names_move(refs, cand_index, sel_index);
+    if (cand_index == -1) refs.put_before(sel_index+1, candidate);
+    else                  refs.move(cand_index, sel_index);
 
     write_references(aw_root, refs);
     select_reference(aw_root, candidate);
@@ -337,11 +337,11 @@ static void del_reference_cb(AW_window *aww) {
     read_references(refs, aw_root);
 
     char *selected  = get_selected_reference(aw_root);
-    int   sel_index = GBT_names_index_of(refs, selected);
+    int   sel_index = refs.index_of(selected);
 
     if (sel_index >= 0) {
         select_reference(aw_root, refs[sel_index+1]);
-        GBT_names_erase(refs, sel_index);
+        refs.safe_remove(sel_index);
         write_references(aw_root, refs);
     }
 
@@ -354,10 +354,10 @@ static void lower_reference_cb(AW_window *aww) {
     read_references(refs, aw_root);
 
     char *selected  = get_selected_reference(aw_root);
-    int   sel_index = GBT_names_index_of(refs, selected);
+    int   sel_index = refs.index_of(selected);
 
     if (sel_index >= 0) {
-        GBT_names_move(refs, sel_index, sel_index+1);
+        refs.move(sel_index, sel_index+1);
         write_references(aw_root, refs);
     }
 
@@ -369,10 +369,10 @@ static void raise_reference_cb(AW_window *aww) {
     read_references(refs, aw_root);
 
     char *selected  = get_selected_reference(aw_root);
-    int   sel_index = GBT_names_index_of(refs, selected);
+    int   sel_index = refs.index_of(selected);
 
     if (sel_index > 0) {
-        GBT_names_move(refs, sel_index, sel_index-1);
+        refs.move(sel_index, sel_index-1);
         write_references(aw_root, refs);
     }
 
