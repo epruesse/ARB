@@ -659,7 +659,7 @@ GBDATA *AW_DB_selection::get_gb_main() {
 #define TEST_LIST_CONTENT(list,values,expected) do {    \
         StrArray a;                                     \
         (list).to_array(a, values);                     \
-        char *str = GBT_join_names(a, ';');             \
+        char *str = GBT_join_strings(a, ';');           \
         TEST_EXPECT_EQUAL(str, expected);               \
         free(str);                                      \
     } while(0)

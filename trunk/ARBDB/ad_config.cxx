@@ -275,7 +275,7 @@ void TEST_GBT_get_configuration_names() {
 
         TEST_EXPECT_EQUAL(cnames.size(), 4U);
 
-        char *joined = GBT_join_names(cnames, '*');
+        char *joined = GBT_join_strings(cnames, '*');
         TEST_EXPECT_EQUAL(joined, "arb*BASIC*Check it*dummy");
         free(joined);
     }

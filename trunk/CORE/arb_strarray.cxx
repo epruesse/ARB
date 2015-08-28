@@ -99,27 +99,25 @@ void GBT_splitNdestroy_string(ConstStrArray& dest, char*& namelist, char separat
     GBT_splitNdestroy_string(dest, namelist, separator_string, false);
 }
 
-char *GBT_join_names(const CharPtrArray& names, char separator) {
+char *GBT_join_strings(const CharPtrArray& strings, char separator) {
     /*! Joins a NULL-terminated array of 'char*' into one string
      *
-     * @param names array of strings to join (maybe generated using GBT_split_string() or GBT_splitNdestroy_string)
+     * @param strings   array of strings to join (maybe generated using GBT_split_string() or GBT_splitNdestroy_string)
      * @param separator is put between the concatenated strings
      *
      * @return heap-copy of joined strings
      */
+
+    if (!strings[0]) return strdup("");
+
     GBS_strstruct *out = GBS_stropen(1000);
-
-    if (names[0]) {
-        GBS_strcat(out, names[0]);
-        arb_assert(strchr(names[0], separator) == 0); // otherwise you'll never be able to GBT_split_string
-        int n;
-        for (n = 1; names[n]; ++n) {
-            GBS_chrcat(out, separator);
-            GBS_strcat(out, names[n]);
-            arb_assert(strchr(names[n], separator) == 0); // otherwise you'll never be able to GBT_split_string
-        }
+    GBS_strcat(out, strings[0]);
+    arb_assert(strchr(strings[0], separator) == 0); // otherwise you'll never be able to GBT_split_string
+    for (int n = 1; strings[n]; ++n) {
+        GBS_chrcat(out, separator);
+        GBS_strcat(out, strings[n]);
+        arb_assert(strchr(strings[n], separator) == 0); // otherwise you'll never be able to GBT_split_string
     }
-
     return GBS_strclose(out);
 }
 
@@ -231,7 +229,7 @@ void TEST_StrArray_truncate() {
     do {                                                \
         ConstStrArray cnames;                           \
         GBT_split_string(cnames, str, sep);             \
-        char *joined = GBT_join_names(cnames, sep);     \
+        char *joined = GBT_join_strings(cnames, sep);   \
         TEST_EXPECT_EQUAL(str, joined);                 \
         free(joined);                                   \
     } while(0)
@@ -287,7 +285,7 @@ TEST_PUBLISH(TEST_GBT_names_index_of);
 
 #define TEST_EXPECT_NAMES_JOIN_TO(names, sep, expected) \
     do {                                                \
-        char *joined = GBT_join_names(names, sep);      \
+        char *joined = GBT_join_strings(names, sep);    \
         TEST_EXPECT_EQUAL(joined, expected);            \
         free(joined);                                   \
     } while(0)                                          \
