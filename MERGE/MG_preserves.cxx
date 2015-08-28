@@ -341,7 +341,7 @@ static void del_reference_cb(AW_window *aww) {
 
     if (sel_index >= 0) {
         select_reference(aw_root, refs[sel_index+1]);
-        GBT_names_erase(refs, sel_index);
+        refs.safe_remove(sel_index);
         write_references(aw_root, refs);
     }
 

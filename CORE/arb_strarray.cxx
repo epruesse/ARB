@@ -268,25 +268,25 @@ void TEST_StrArray_index_of() {
         free(joined);                                   \
     } while(0)                                          \
     
-void TEST_GBT_names_erase() {
+void TEST_StrArray_safe_remove() {
     ConstStrArray names;
     GBT_split_string(names, "a*b*c*d*e", '*');
 
     TEST_EXPECT_EQUAL(names.size(), 5U);
 
-    GBT_names_erase(names, 0); 
+    names.safe_remove(0);
     TEST_EXPECT_NAMES_JOIN_TO(names, '*', "b*c*d*e");
 
-    GBT_names_erase(names, 3);
+    names.safe_remove(3);
     TEST_EXPECT_NAMES_JOIN_TO(names, '*', "b*c*d");
 
-    GBT_names_erase(names, 3);                      // index out of range
+    names.safe_remove(3);                      // index out of range
     TEST_EXPECT_NAMES_JOIN_TO(names, '*', "b*c*d");
 
-    GBT_names_erase(names, -1);                     // illegal index
+    names.safe_remove(-1);                     // illegal index
     TEST_EXPECT_NAMES_JOIN_TO(names, '*', "b*c*d");
 
-    GBT_names_erase(names, 1);
+    names.safe_remove(1);
     TEST_EXPECT_NAMES_JOIN_TO(names, '*', "b*d");
 }
 
