@@ -153,7 +153,7 @@ public:
         elems++;
         arb_assert(ok());
     }
-    void put_in_front_of(int insert_before, char *elem) { // tranfers ownership of elem!
+    void put_before(int insert_before, char *elem) { // tranfers ownership of elem!
         // insert a new 'name' before position 'insert_before'
         // if 'insert_before' == -1 (or bigger than array size) -> append at end
         put(elem);
@@ -200,7 +200,7 @@ public:
         elems++;
         arb_assert(ok());
     }
-    void put_in_front_of(int insert_before, const char *elem) {
+    void put_before(int insert_before, const char *elem) {
         // insert a new 'name' before position 'insert_before'
         // if 'insert_before' == -1 (or bigger than array size) -> append at end
         put(elem);
@@ -236,21 +236,10 @@ inline void GBT_split_string(ConstStrArray& dest, const char *namelist, char sep
 
 char *GBT_join_strings(const CharPtrArray& strings, char separator);
 
-inline int GBT_names_index_of(const CharPtrArray& names, const char *search_for) { // @@@ elim
-    return names.index_of(search_for);
-}
-
-inline void GBT_names_erase(CharPtrArray& names, int index) { // @@@ elim
+inline void GBT_names_erase(CharPtrArray& names, int index) { // @@@ elim!
     if (index >= 0 && size_t(index)<names.size()) {
         names.remove(index);
     }
-}
-
-inline void GBT_names_add(ConstStrArray& names, int insert_before, const char *name) { // @@@ elim
-    names.put_in_front_of(insert_before, name);
-}
-inline void GBT_names_move(CharPtrArray& names, int old_index, int new_index) { // @@@ elim
-    names.move(old_index, new_index);
 }
 
 #else
