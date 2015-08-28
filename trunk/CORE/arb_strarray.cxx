@@ -34,7 +34,6 @@ void CharPtrArray::uniq(CharPtrArray_compare_fun compare, void *client_data) {
     }
 }
 
-
 /* ----------------------------------------
  * conversion between
  *
@@ -121,12 +120,12 @@ char *GBT_join_strings(const CharPtrArray& strings, char separator) {
     return GBS_strclose(out);
 }
 
-int GBT_names_index_of(const CharPtrArray& names, const char *search_for) {
+int CharPtrArray::index_of(const char *search_for) const {
     // return index of 'search_for' or -1 if not found or given
     int index = -1;
     if (search_for) {
-        for (int i = 0; names[i]; ++i) {
-            if (strcmp(names[i], search_for) == 0) {
+        for (int i = 0; str[i]; ++i) {
+            if (strcmp(str[i], search_for) == 0) {
                 index = i;
                 break;
             }
@@ -135,43 +134,23 @@ int GBT_names_index_of(const CharPtrArray& names, const char *search_for) {
     return index;
 }
 
-void GBT_names_erase(CharPtrArray& names, int index) {
-    if (index >= 0 && size_t(index)<names.size()) {
-        names.remove(index);
-    }
-}
-
-inline void move_last_elem(CharPtrArray& names, int before_pos) {
-    int last_idx = int(names.size())-1;
-    if (before_pos != -1 && before_pos < last_idx) {
-        GBT_names_move(names, last_idx, before_pos);
-    }
-}
-void GBT_names_add(ConstStrArray& names, int insert_before, const char *name) {
-    // insert a new 'name' before position 'insert_before'
-    // if 'insert_before' == -1 (or bigger than array size) -> append at end
-    names.put(name);
-    move_last_elem(names, insert_before);
-}
-
-void GBT_names_move(CharPtrArray& names, int old_index, int new_index) {
-    /*! moves array-entry from 'old_index' to 'new_index' 
+void CharPtrArray::move(int oidx, int nidx) {
+    /*! moves an array-entry from 'oidx' to 'nidx'
+     *  (entries between get shifted by one)
      * -1 means "last entry"
-     * if new_index is out of bounds, it'll be moved to start of array
+     * if 'nidx' is out of bounds, it'll be moved to start of array
      */
-    int size = (int)names.size();
+    int siz = size();
 
-    if (old_index == -1) old_index        = size-1;
-    if (new_index == -1) new_index        = size-1;
-    else if (new_index >= size) new_index = 0;
+    if (oidx == -1)       oidx = siz-1;
+    if (nidx == -1)       nidx = siz-1;
+    else if (nidx >= siz) nidx = 0;
 
-    if (old_index != new_index && new_index<size && old_index<size) {
-        if (old_index>new_index) {
-            for (int i = old_index-1; i >= new_index; --i) names.swap(i, i+1);
-        }
-        else {
-            for (int i = old_index; i < new_index; ++i) names.swap(i, i+1);
-        }
+    arb_assert(nidx<siz);
+
+    if (oidx != nidx && oidx<siz) {
+        if (oidx>nidx) for (int i = oidx-1; i>= nidx; --i) swap(i, i+1);
+        else           for (int i = oidx;   i<  nidx; ++i) swap(i, i+1);
     }
 }
 
