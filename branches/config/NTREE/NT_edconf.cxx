@@ -28,6 +28,7 @@
 #include <ad_cb_prot.h>
 #include <awt_config_manager.hxx>
 #include <awt_modules.hxx>
+#include <RegExpr.hxx>
 
 using namespace std;
 
@@ -1047,7 +1048,7 @@ static void init_config_admin_awars(AW_root *root) {
 static GB_ERROR swap_configs(GBDATA *gb_main, StrArray& config, int i1, int i2) {
     GB_ERROR error = NULL;
     if (i1>i2) swap(i1, i2); // otherwise overwrite below does not work
-    nt_assert(i1<i2 && i1>=0 && i2<config.size());
+    nt_assert(i1<i2 && i1>=0 && i2<int(config.size()));
 
     GBT_config c1(gb_main, config[i1], error);
     if (!error) {
@@ -1106,6 +1107,29 @@ static void reorder_configs_cb(AW_window *aww, awt_reorder_mode mode, AW_CL cl_s
     }
 }
 
+static void clear_comment_cb(AW_window *aww) {
+    AW_awar *awar_comment = aww->get_root()->awar(AWAR_CONFIG_COMMENT);
+    char    *comment      = awar_comment->read_string();
+
+    ConstStrArray line;
+    GBT_splitNdestroy_string(line, comment, '\n');
+
+    bool    removedDatedLines = false;
+    RegExpr datedLine("^([A-Z][a-z]{2}\\s){2}[0-9]+\\s([0-9]{2}:){2}[0-9]{2}\\s[0-9]{4}:\\s", false); // matches lines created with GBS_log_dated_action_to()
+    for (int i = line.size()-1; i >= 0; --i) {
+        const RegMatch *match = datedLine.match(line[i]);
+        if (match && match->didMatch()) {
+            line.safe_remove(i);
+            removedDatedLines = true;
+        }
+    }
+
+    if (!removedDatedLines) line.clear(); // erase all
+
+    comment = GBT_join_strings(line, '\n');
+    awar_comment->write_string(comment);
+}
+
 static AW_window *create_configuration_admin_window(AW_root *root, AWT_canvas *ntw) {
     static AW_window_simple *existing_aws[MAX_NT_WINDOWS] = { MAX_NT_WINDOWS_NULLINIT };
 
@@ -1130,6 +1154,10 @@ static AW_window *create_configuration_admin_window(AW_root *root, AWT_canvas *n
 
         aws->at("comment");
         aws->create_text_field(AWAR_CONFIG_COMMENT);
+
+        aws->at("clr");
+        aws->callback(clear_comment_cb);
+        aws->create_autosize_button("CLEAR", "Clear", "l");
 
         aws->at("list");
         AW_DB_selection *dbsel = awt_create_CONFIG_selection_list(GLOBAL.gb_main, aws, AWAR_CONFIGURATION, false);
