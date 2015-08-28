@@ -205,7 +205,7 @@ inline char *cbtype2readable(GB_CB_TYPE type) {
 
     gb_assert(type == GB_CB_NONE);
 
-    return GBT_join_names(septype, '|');
+    return GBT_join_strings(septype, '|');
 }
 
 char *TypedDatabaseCallback::get_info() const {

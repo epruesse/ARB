@@ -934,7 +934,7 @@ void TEST_alignment() {
             ConstStrArray names;
             GBT_get_alignment_names(names, gb_main);
             {
-                char *joined = GBT_join_names(names, '*');
+                char *joined = GBT_join_strings(names, '*');
                 TEST_EXPECT_EQUAL(joined, "ali_tuf_pro*ali_tuf_dna");
                 free(joined);
             }

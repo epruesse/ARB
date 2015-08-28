@@ -285,7 +285,7 @@ static void read_references(ConstStrArray& refs, AW_root *aw_root)  {
     GBT_splitNdestroy_string(refs, ref_string, " \n,;", true);
 }
 static void write_references(AW_root *aw_root, const CharPtrArray& ref_array) {
-    char *ref_string = GBT_join_names(ref_array, '\n');
+    char *ref_string = GBT_join_strings(ref_array, '\n');
     aw_root->awar(AWAR_REMAP_SPECIES_LIST)->write_string(ref_string);
     aw_root->awar(AWAR_REMAP_ENABLE)->write_int(ref_string[0] != 0);
     free(ref_string);

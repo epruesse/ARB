@@ -1238,7 +1238,7 @@ static const char *getTreeOrder(GBDATA *gb_main) {
     ConstStrArray names;
     GBT_get_tree_names(names, gb_main, true);
 
-    char *joined         = GBT_join_names(names, '|');
+    char *joined         = GBT_join_strings(names, '|');
     char *size_and_names = GBS_global_string_copy("%zu:%s", names.size(), joined);
     free(joined);
 
@@ -1334,7 +1334,7 @@ void TEST_copy_rename_delete_tree_order() {
                 TEST_EXPECT_EQUAL(long(species_count), inner_nodes+1);
 
                 {
-                    char *joined = GBT_join_names(species2, '*');
+                    char *joined = GBT_join_strings(species2, '*');
                     TEST_EXPECT_EQUAL(joined, "CloButyr*CloButy2*CorGluta*CorAquat*CurCitre*CytAquat");
                     free(joined);
                 }
