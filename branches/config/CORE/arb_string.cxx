@@ -106,7 +106,7 @@ const char *GB_dateTime_suffix() {
 #if defined(ASSERTION_USED)
     size_t printed =
 #endif
-        strftime(buffer, SUFFIXLEN, "%Y%m%d_%H%M%S", p);
+        strftime(buffer, SUFFIXLEN+1, "%Y%m%d_%H%M%S", p);
     arb_assert(printed == SUFFIXLEN);
     buffer[SUFFIXLEN] = 0;
 
