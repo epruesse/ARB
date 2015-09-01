@@ -192,8 +192,9 @@ public:
     }
     virtual ~MarkerDisplay() {}
 
-    virtual const char *get_marker_name(int markerIdx) const                          = 0;
-    virtual void retrieve_marker_state(const char *speciesName, NodeMarkers& matches) = 0;
+    virtual const char *get_marker_name(int markerIdx) const                                      = 0;
+    virtual void retrieve_marker_state(const char *speciesName, NodeMarkers& matches)             = 0;
+    virtual void handle_click(int markerIdx, AW_MouseButton button, AWT_graphic_exports& exports) = 0;
 
     const NodeMarkers *read_cache(const AP_tree *at) const {
         GroupMarkerCache::const_iterator found = cache.find(at);

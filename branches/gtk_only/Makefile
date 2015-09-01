@@ -96,7 +96,7 @@ ALLOWED_gcc_VERSIONS=\
         4.3.1 4.3.2 4.3.3 4.3.4 \
         4.4.1       4.4.3       4.4.5 4.4.6  4.4.7 \
               4.5.2 \
-        4.6.1 4.6.2 4.6.3 \
+        4.6.1 4.6.2 4.6.3 4.6.4 \
         4.7.1 4.7.2 4.7.3 4.7.4 \
   4.8.0 4.8.1 4.8.2 4.8.3 4.8.4 4.8.5 \
   4.9.0 4.9.1 4.9.2 4.9.3 \
@@ -810,7 +810,8 @@ first_target:
 		@echo ''
 		@echo ' clean       - remove generated files ("SUBDIR/SUBDIR.clean" to clean only SUBDIR)'
 		@echo ' rebuild     - clean + all'
-		@echo ' relink      - remove all binaries and relink them from objects'
+		@echo ' cleanlinked - remove all binaries'
+		@echo ' relink      - cleanlinked + all (=relink all from objects)'
 		@echo ''
 		@echo 'Some often used sub targets (make all makes them all):'
 		@echo ''
@@ -2087,8 +2088,10 @@ help4ever: clean
 rebuild: clean
 	$(MAKE) all
 
-relink: bin/bin.clean libclean
-	$(MAKE) build
+cleanlinked: bin/bin.clean libclean
+
+relink: cleanlinked
+	$(MAKE) all
 
 tarfile: rebuild
 	$(MAKE) prepare_libdir

@@ -1302,6 +1302,80 @@ public:
     }
 };
 
+inline Position calc_text_coordinates_near_tip(AW_device *device, int gc, const Position& pos, const Angle& orientation, AW_pos& alignment) {
+    /*! calculates text coordinates for text placed at the tip of a vector
+     * @param device      output device
+     * @param gc          context
+     * @param x/y         tip of the vector (world coordinates)
+     * @param orientation orientation of the vector (towards its tip)
+     * @param alignment   result param (alignment for call to text())
+     */
+    const AW_font_limits& charLimits = device->get_font_limits(gc, 'A');
+
+    const double text_height = charLimits.height * device->get_unscale();
+    const double dist        = charLimits.height * device->get_unscale(); // @@@ same as text_height (ok?)
+
+    Vector shift = orientation.normal();
+    // use sqrt of sin(=y) to move text faster between positions below and above branch:
+    shift.sety(shift.y()>0 ? sqrt(shift.y()) : -sqrt(-shift.y()));
+
+    Position near = pos + dist*shift;
+    near.movey(.3*text_height); // @@@ just a hack. fix.
+
+    alignment = .5 - .5*orientation.cos();
+
+    return near;
+}
+
+class MarkerIdentifier : public Dragged, virtual Noncopyable {
+    AW_clicked_element *marker; // maybe box, line or text!
+    Position            click;
+    std::string         name;
+
+    void draw_drag_indicator(AW_device *device, int drag_gc) const OVERRIDE {
+        Position  click_world = device->rtransform(click);
+        Rectangle bbox        = marker->get_bounding_box();
+        Position  center      = bbox.centroid();
+
+        Vector toClick(center, click_world);
+        {
+            double minLen = Vector(center, bbox.nearest_corner(click_world)).length();
+            if (toClick.length()<minLen) toClick.set_length(minLen);
+        }
+        LineVector toHead(center, 1.5*toClick);
+
+        marker->indicate_selected(device, drag_gc);
+        device->line(drag_gc, toHead);
+
+        Angle    orientation(toHead.line_vector());
+        AW_pos   alignment;
+        Position textPos = calc_text_coordinates_near_tip(device, drag_gc, toHead.head(), Angle(toHead.line_vector()), alignment);
+
+        device->text(drag_gc, name.c_str(), textPos, alignment);
+    }
+    void perform(DragAction, const AW_clicked_element*, const Position& mousepos) OVERRIDE {
+        click = mousepos;
+        get_exports().refresh = 1;
+    }
+    void abort() OVERRIDE {
+        get_exports().refresh = 1;
+    }
+
+public:
+    MarkerIdentifier(const AW_clicked_element *marker_, const Position& start, const char *name_, AWT_graphic_exports& exports_)
+        : Dragged(exports_),
+          marker(marker_->clone()),
+          click(start),
+          name(name_)
+    {
+        get_exports().refresh = 1;
+    }
+    ~MarkerIdentifier() {
+        delete marker;
+    }
+
+};
+
 static AW_device_click::ClickPreference preferredForCommand(AWT_COMMAND_MODE mode) {
     // return preferred click target for tree-display
     // (Note: not made this function a member of AWT_graphic_event,
@@ -1429,7 +1503,11 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
 
     if (clicked.is_marker()) {
         if (clicked.element()->get_distance() <= 3) { // accept 3 pixel distance
-            aw_message_if(display_markers->get_marker_name(clicked.get_markerindex())); // @@@ pass clicked to display_markers and let it handle the click?
+            display_markers->handle_click(clicked.get_markerindex(), event.button(), exports);
+            if (event.button() == AW_BUTTON_LEFT) {
+                const char *name = display_markers->get_marker_name(clicked.get_markerindex());
+                store_command_data(new MarkerIdentifier(clicked.element(), mousepos, name, exports));
+            }
         }
         return;
     }
@@ -1777,6 +1855,7 @@ GB_ERROR AWT_graphic_tree::load(GBDATA *, const char *name, AW_CL /* cl_link_to_
                 displayed_root = get_root_node();
 
                 get_root_node()->compute_tree();
+                if (display_markers) display_markers->flush_cache();
 
                 tree_static->set_root_changed_callback(AWT_graphic_tree_root_changed, this);
                 tree_static->set_node_deleted_callback(AWT_graphic_tree_node_deleted, this);
@@ -1791,6 +1870,7 @@ GB_ERROR AWT_graphic_tree::save(GBDATA * /* dummy */, const char * /* name */, A
     GB_ERROR error = NULL;
     if (get_root_node()) {
         error = tree_static->saveToDB();
+        if (display_markers) display_markers->flush_cache();
     }
     else if (tree_static && tree_static->get_tree_name()) {
         if (tree_static->gb_tree_gone) {
@@ -1965,7 +2045,7 @@ void AWT_graphic_tree::detectAndDrawMarkers(AP_tree *at, const double y1, const 
                     if (!draw) { // group
                         td_assert(at->is_named_group());
                         double markRate = markers.getMarkRate(markerIdx);
-                        if (markRate>groupThreshold.partiallyMarked) {
+                        if (markRate>=groupThreshold.partiallyMarked && markRate>0.0) {
                             draw    = true;
                             partial = markRate<groupThreshold.marked;
                         }
@@ -2318,23 +2398,6 @@ struct Subinfo { // subtree info (used to implement branch draw precedence)
     double   len;
 };
 
-inline Position calc_text_coordinates_near_tip(AW_device *device, int gc, const Position& pos, const Angle& orientation) {
-    /*! calculates text coordinates for text placed at the tip of a vector
-     * @param device      output device
-     * @param gc          context
-     * @param x/y         tip of the vector (world coordinates)
-     * @param orientation orientation of the vector (towards its tip)
-     */
-    const AW_font_limits& charLimits = device->get_font_limits(gc, 'A');
-
-    const double text_height = charLimits.height * device->get_unscale();
-    const double dist        = charLimits.height * device->get_unscale(); // @@@ same as text_height (ok?)
-
-    Position near = pos + dist*orientation.normal();
-    near.movey(.3*text_height); // @@@ just a hack. fix.
-    return near;
-}
-
 void AWT_graphic_tree::show_radial_tree(AP_tree *at, const AW::Position& base, const AW::Position& tip, const AW::Angle& orientation, const double tree_spread) {
     AW_click_cd cd(disp_device, (AW_CL)at);
     set_line_attributes_for(at);
@@ -2348,47 +2411,43 @@ void AWT_graphic_tree::show_radial_tree(AP_tree *at, const AW::Position& base, c
         if (at->name && (disp_device->get_filter() & leaf_text_filter)) {
             if (at->hasName(species_name)) cursor = tip;
 
-            Position textpos = calc_text_coordinates_near_tip(disp_device, at->gr.gc, tip, orientation);
+            AW_pos   alignment;
+            Position textpos = calc_text_coordinates_near_tip(disp_device, at->gr.gc, tip, orientation, alignment);
 
             const char *data =  make_node_text_nds(this->gb_main, at->gb_node, NDS_OUTPUT_LEAFTEXT, at, tree_static->get_tree_name());
             disp_device->text(at->gr.gc, data,
                               textpos,
-                              .5 - .5*orientation.cos(),
+                              alignment,
                               leaf_text_filter);
         }
     }
     else if (at->gr.grouped) { // draw folded group
-        const double l_min = at->gr.min_tree_depth;
-        const double l_max = at->gr.max_tree_depth;
-
+        Position corner[3];
+        corner[0] = tip;
         {
-            Position corner[3];
-            corner[0] = tip;
-            {
-                Angle left(orientation.radian() + 0.25*tree_spread + at->gr.left_angle);
-                corner[1] = tip + left.normal()*l_min;
-            }
-            {
-                Angle right(orientation.radian() - 0.25*tree_spread + at->gr.right_angle);
-                corner[2] = tip + right.normal()*l_max;
-            }
-
-            disp_device->set_grey_level(at->gr.gc, group_greylevel);
-            disp_device->polygon(at->gr.gc, AW::FillStyle::SHADED_WITH_BORDER, 3, corner, line_filter);
+            Angle left(orientation.radian() + 0.25*tree_spread + at->gr.left_angle);
+            corner[1] = tip + left.normal()*at->gr.min_tree_depth;
+        }
+        {
+            Angle right(orientation.radian() - 0.25*tree_spread + at->gr.right_angle);
+            corner[2] = tip + right.normal()*at->gr.max_tree_depth;
         }
 
-        if (at->gb_node && (disp_device->get_filter() & group_text_filter)) {
-            Angle        toText(orientation.radian() + at->gr.right_angle);
-            const double l_mean = (l_max+l_min)*.5;
+        disp_device->set_grey_level(at->gr.gc, group_greylevel);
+        disp_device->polygon(at->gr.gc, AW::FillStyle::SHADED_WITH_BORDER, 3, corner, line_filter);
 
-            Position edge = tip + l_mean * toText.normal();
-            Position textpos = calc_text_coordinates_near_tip(disp_device, at->gr.gc, edge, toText);
+        if (at->gb_node && (disp_device->get_filter() & group_text_filter)) {
+            Angle toText = orientation;
+            toText.rotate90deg();
+
+            AW_pos   alignment;
+            Position textpos = calc_text_coordinates_near_tip(disp_device, at->gr.gc, corner[1], toText, alignment);
 
             // insert text (e.g. name of group)
-            const char                          *data = make_node_text_nds(this->gb_main, at->gb_node, NDS_OUTPUT_LEAFTEXT, at, tree_static->get_tree_name());
+            const char *data = make_node_text_nds(this->gb_main, at->gb_node, NDS_OUTPUT_LEAFTEXT, at, tree_static->get_tree_name());
             disp_device->text(at->gr.gc, data,
                               textpos,
-                              .5 - .5*orientation.cos(),
+                              alignment,
                               group_text_filter);
         }
     }
@@ -2426,6 +2485,8 @@ void AWT_graphic_tree::show_radial_tree(AP_tree *at, const AW::Position& base, c
                 }
             }
         }
+
+        if (at->name) diamond(at->gr.gc, tip, NT_DIAMOND_RADIUS);
     }
 }
 

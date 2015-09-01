@@ -21,6 +21,9 @@
 #ifndef CXXFORWARD_H
 #include <cxxforward.h>
 #endif
+#ifndef _GLIBCXX_CMATH
+#include <cmath>
+#endif
 
 //  Base class for classes that may not be copied, neither via copy
 //  constructor or assignment operator.
@@ -134,6 +137,17 @@ inline int double_cmp(const double d1, const double d2) {
     /*! returns <0 if d1<d2, >0 if d1>d2 (i.e. this function behaves like strcmp) */
     double d = d1-d2;
     return d<0 ? -1 : (d>0 ? 1 : 0);
+}
+
+template <typename NUM>
+inline int calc_digits(NUM val) {
+    /*! calculate output length of val (w/o sign) */
+    return log10(val)+1;
+}
+template <typename NUM>
+inline int calc_signed_digits(NUM val) {
+    /*! calculate output length of val (with sign) */
+    return val<0 ? calc_digits(-val)+1 : calc_digits(val);
 }
 
 #else
