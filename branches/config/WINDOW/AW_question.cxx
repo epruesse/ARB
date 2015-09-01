@@ -91,8 +91,11 @@ int aw_question(const char *unique_id, const char *question, const char *buttons
         if (!aw_msg) {
             aw_msg = new AW_window_message;
             GBS_write_hash(hash_windows, hindex, (long)aw_msg);
-
-            aw_msg->init(root, "QUESTION BOX", false);
+            {
+                char *wid = GBS_string_2_key(GBS_global_string("QUESTION BOX %s", unique_id));
+                aw_msg->init(root, wid, "QUESTION BOX", false);
+                free(wid);
+            }
             aw_msg->recalc_size_atShow(AW_RESIZE_DEFAULT); // force size recalc (ignores user size)
 
             aw_msg->label_length(10);

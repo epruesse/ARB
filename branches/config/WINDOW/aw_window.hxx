@@ -714,7 +714,8 @@ private:
 public:
     AW_window_message();
     ~AW_window_message();
-    void init(AW_root *root, const char *windowname, bool allow_close);
+    void init(AW_root *root_in, const char *wid, const char *windowname, bool allow_close);
+    void init(AW_root *root_in, const char *windowname, bool allow_close); // auto-generates window id from title
 };
 
 typedef struct aw_gc_manager *AW_gc_manager;
