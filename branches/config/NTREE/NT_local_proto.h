@@ -60,7 +60,7 @@ void NT_rerepair_DB(AW_window *, AW_CL cl_gbmain, AW_CL dummy_1x);
 void NT_activate_configMarkers_display(AWT_canvas *ntw);
 void NT_popup_configuration_admin(AW_window *aw_main, AWT_canvas *ntw);
 AW_window *NT_create_startEditorOnOldConfiguration_window(AW_root *awr);
-void NT_start_editor_on_tree(AW_window *, int use_species_aside, AWT_canvas *ntw);
+void NT_start_editor_on_tree(AW_window *aww, int use_species_aside, AWT_canvas *ntw);
 
 /* NT_extern.cxx */
 void NT_start(const char *arb_ntree_args, bool restart_with_new_ARB_PID);

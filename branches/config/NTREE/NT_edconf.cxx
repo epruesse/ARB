@@ -1248,8 +1248,9 @@ AW_window *NT_create_startEditorOnOldConfiguration_window(AW_root *awr) {
     return aws;
 }
 
-void NT_start_editor_on_tree(AW_window *, int use_species_aside, AWT_canvas *ntw) {
-    GB_ERROR error = nt_create_configuration(NT_get_tree_root_of_canvas(ntw), DEFAULT_CONFIGURATION, use_species_aside, BY_CALLING_THE_EDITOR);
+void NT_start_editor_on_tree(AW_window *aww, int use_species_aside, AWT_canvas *ntw) {
+    init_config_awars(aww->get_root());
+    GB_ERROR error    = nt_create_configuration(NT_get_tree_root_of_canvas(ntw), DEFAULT_CONFIGURATION, use_species_aside, BY_CALLING_THE_EDITOR);
     if (!error) error = GBK_system("arb_edit4 -c " DEFAULT_CONFIGURATION " &");
     aw_message_if(error);
 }
