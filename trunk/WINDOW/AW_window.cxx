@@ -2943,7 +2943,7 @@ void AW_window_simple_menu::init(AW_root *root_in, const char *wid, const char *
     create_devices();
 }
 
-void AW_window_message::init(AW_root *root_in, const char *windowname, bool allow_close) {
+void AW_window_message::init(AW_root *root_in, const char *wid, const char *windowname, bool allow_close) {
     root = root_in; // for macro
 
     int width  = 100;
@@ -2951,8 +2951,8 @@ void AW_window_message::init(AW_root *root_in, const char *windowname, bool allo
     int posx   = 50;
     int posy   = 50;
 
-    window_name = strdup(windowname);
-    window_defaults_name = GBS_string_2_key(window_name);
+    window_name          = strdup(windowname);
+    window_defaults_name = strdup(wid);
 
     // create shell for message box
     p_w->shell = aw_create_shell(this, true, allow_close, width, height, posx, posy);
@@ -2972,6 +2972,11 @@ void AW_window_message::init(AW_root *root_in, const char *windowname, bool allo
                     NULL));
 
     aw_realize_widget(this);
+}
+void AW_window_message::init(AW_root *root_in, const char *windowname, bool allow_close) {
+    char *wid = GBS_string_2_key(window_name);
+    init(root_in, wid, windowname, allow_close);
+    free(wid);
 }
 
 void AW_window::set_focus_policy(bool follow_mouse) {
