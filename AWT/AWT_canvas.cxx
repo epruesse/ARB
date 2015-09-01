@@ -579,9 +579,11 @@ static void motion_event(AW_window *aww, AWT_canvas *scr) {
     else {
         if (event.button == AW_BUTTON_LEFT || event.button == AW_BUTTON_RIGHT) {
             if (scr->mode == AWT_MODE_ZOOM) {
-                nt_draw_zoom_box(device, scr);
-                scr->set_dragEndpoint(event.x, event.y);
-                nt_draw_zoom_box(device, scr);
+                if (scr->gfx->exports.zoom_mode != AWT_ZOOM_NEVER) {
+                    nt_draw_zoom_box(device, scr);
+                    scr->set_dragEndpoint(event.x, event.y);
+                    nt_draw_zoom_box(device, scr);
+                }
             }
             else {
                 AW_device_click *click_device = NULL;

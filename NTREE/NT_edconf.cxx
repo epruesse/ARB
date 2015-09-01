@@ -37,6 +37,15 @@ static void init_config_awars(AW_root *root) {
     root->awar_string(AWAR_CONFIGURATION, "default_configuration", GLOBAL.gb_main);
 }
 
+enum extractType {
+    CONF_EXTRACT,
+    CONF_MARK,
+    CONF_UNMARK,
+    CONF_INVERT,
+    CONF_COMBINE // logical AND
+};
+static void nt_extract_configuration(UNFIXED, extractType ext_type);
+
 typedef map<string, string> ConfigHits; // key=speciesname; value[markerIdx]==1 -> highlighted
 
 class ConfigMarkerDisplay : public MarkerDisplay, virtual Noncopyable {
@@ -102,6 +111,16 @@ public:
         }
         node.incNodeSize();
     }
+
+    void handle_click(int markerIdx, AW_MouseButton button, AWT_graphic_exports& exports) OVERRIDE {
+        if (button == AW_BUTTON_LEFT || button == AW_BUTTON_RIGHT) {
+            AW_root::SINGLETON->awar(AWAR_CONFIGURATION)->write_string(get_marker_name(markerIdx)); // select config of clicked marker
+            if (button == AW_BUTTON_RIGHT) { // extract configuration
+                nt_extract_configuration(NULL, CONF_EXTRACT);
+                exports.structure_change = 1; // needed to recalculate branch colors
+            }
+        }
+    }
 };
 
 inline bool displays_config_markers(MarkerDisplay *md) { return dynamic_cast<ConfigMarkerDisplay*>(md); }
@@ -127,7 +146,7 @@ static SmartPtr<ConstStrArray> get_selected_configs_from_awar(int canvas_id) {
     return config;
 }
 static void write_configs_to_awar(int canvas_id, const CharPtrArray& configs) {
-    char *config_str = GBT_join_names(configs, CONFIG_SEPARATOR[0]);
+    char *config_str = GBT_join_strings(configs, CONFIG_SEPARATOR[0]);
     AW_root::SINGLETON->awar(GBS_global_string(AWAR_CL_SELECTED_CONFIGS, canvas_id))->write_string(config_str);
     free(config_str);
 }
@@ -298,7 +317,7 @@ static char *correct_managed_configsets_cb(const char *key, const char *value, A
         ConstStrArray         config;
         GBT_split_string(config, value, CONFIG_SEPARATOR, true);
         if (mod->modifyConfig(config)) {
-            modified_value = GBT_join_names(config, CONFIG_SEPARATOR[0]);
+            modified_value = GBT_join_strings(config, CONFIG_SEPARATOR[0]);
         }
     }
     return modified_value ? modified_value : strdup(value);
@@ -685,17 +704,9 @@ static void nt_build_conf_marked(GB_HASH *used, GBS_strstruct *file) {
     GBS_chrcat(file, 'E');   // Group end indicated by 'E'
 }
 
-enum extractType {
-    CONF_EXTRACT,
-    CONF_MARK,
-    CONF_UNMARK,
-    CONF_INVERT,
-    CONF_COMBINE // logical AND
-};
-
-static void nt_extract_configuration(AW_window *aww, extractType ext_type) {
+static void nt_extract_configuration(UNFIXED, extractType ext_type) {
     GB_transaction  ta(GLOBAL.gb_main);
-    AW_root        *aw_root = aww->get_root();
+    AW_root        *aw_root = AW_root::SINGLETON;
     char           *cn      = aw_root->awar(AWAR_CONFIGURATION)->read_string();
 
     if (strcmp(cn, NO_CONFIG_SELECTED) == 0) {

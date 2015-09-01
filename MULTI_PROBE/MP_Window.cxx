@@ -704,7 +704,7 @@ void TEST_SLOW_design_probes_and_load_result() {
             free(probe);
         }
 
-        saved_design_result = GBT_join_names(saved_lines, '\n');
+        saved_design_result = GBT_join_strings(saved_lines, '\n');
         TEST_EXPECT_EQUAL(saved_design_result, recent_probeDesignSave); // see comment in TEST_LATE_recent_probe_design_result
     }
 

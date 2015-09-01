@@ -305,7 +305,7 @@ static void GBT_transform_names(StrArray& dest, const StrArray& source, char *tr
         GBS_read_dir(contents, fulldir, mask);                                          \
         StrArray  contents_no_path;                                                     \
         GBT_transform_names(contents_no_path, contents, remove_path, (void*)fulldir);   \
-        char     *joined  = GBT_join_names(contents_no_path, '!');                      \
+        char     *joined  = GBT_join_strings(contents_no_path, '!');                    \
         TEST_EXPECT_EQUAL(joined, expected);                                            \
         free(joined);                                                                   \
     } while(0)

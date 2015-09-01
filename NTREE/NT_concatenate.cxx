@@ -702,8 +702,8 @@ static AW_window *createMergeSimilarSpeciesWindow(AW_root *aw_root, MergeSpecies
     AW_window_simple *aws = new AW_window_simple;
 
     {
-        char *window_id = GBS_global_string_copy("MERGE_SPECIES_%i", mergeType);
-        const char *window_title;
+        char       *window_id    = GBS_global_string_copy("MERGE_SPECIES_%i", mergeType);
+        const char *window_title = NULL;
         switch (mergeType) {
             case MERGE_SPECIES_SIMPLE:         window_title = "Merge species";         break;
             case MERGE_SPECIES_AND_CONCAT_ALI: window_title = "Merge and concatenate"; break;
@@ -727,7 +727,7 @@ static AW_window *createMergeSimilarSpeciesWindow(AW_root *aw_root, MergeSpecies
     aws->create_input_field(AWAR_CON_STORE_SIM_SP_NO, 20);
 
     {
-        const char *buttonText;
+        const char *buttonText = NULL;
         switch (mergeType) {
             case MERGE_SPECIES_SIMPLE:         buttonText = "Merge similar species";                       break;
             case MERGE_SPECIES_AND_CONCAT_ALI: buttonText = "Merge similar species and concat alignments"; break;
