@@ -2974,7 +2974,7 @@ void AW_window_message::init(AW_root *root_in, const char *wid, const char *wind
     aw_realize_widget(this);
 }
 void AW_window_message::init(AW_root *root_in, const char *windowname, bool allow_close) {
-    char *wid = GBS_string_2_key(window_name);
+    char *wid = GBS_string_2_key(windowname);
     init(root_in, wid, windowname, allow_close);
     free(wid);
 }
