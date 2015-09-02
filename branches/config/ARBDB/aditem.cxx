@@ -354,7 +354,12 @@ long GBT_count_marked_species(GBDATA *gb_main) {
 
 char *GBT_store_marked_species(GBDATA *gb_main, bool unmark_all) {
     /*! stores the currently marked species in a string
+     * @param gb_main    database
      * @param unmark_all if true -> unmark species
+     * @return ';'-separated list of species names
+     *
+     * Note: a faster (but less robust) way to temporarily store species marks,
+     *       is to use the flag GB_USERFLAG_WASMARKED together with GB_write_user_flag
      */
     GBS_strstruct *out = GBS_stropen(10000);
     GBDATA        *gb_species;
@@ -373,7 +378,13 @@ char *GBT_store_marked_species(GBDATA *gb_main, bool unmark_all) {
 }
 
 NOT4PERL GB_ERROR GBT_with_stored_species(GBDATA *gb_main, const char *stored, species_callback doit, int *clientdata) {
-    // call function 'doit' with all species stored in 'stored'
+    /*! call a function with each species of a list
+     * @param gb_main    database
+     * @param stored     ';'-separated list of species names
+     * @param doit       function to call with each species in 'stored'
+     * @param clientdata is passed to 'doit'
+     * @return error if sth goes wrong (or if 'doit' reports error)
+     */
 
 #define MAX_NAME_LEN 20
     char     name[MAX_NAME_LEN+1];
@@ -410,7 +421,9 @@ static GB_ERROR restore_mark(GBDATA *gb_species, int *) {
 
 GB_ERROR GBT_restore_marked_species(GBDATA *gb_main, const char *stored_marked) {
     /*! restores marked species.
-     * @param stored_marked contains a list of species to mark (as returned by GBT_store_marked_species)
+     * @param gb_main       database
+     * @param stored_marked contains a ';'-separated list of species names to mark (as returned by GBT_store_marked_species)
+     * @return error if sth goes wrong
      */
     GBT_mark_all(gb_main, 0);   // unmark all species
     return GBT_with_stored_species(gb_main, stored_marked, restore_mark, 0);
