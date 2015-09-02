@@ -35,7 +35,7 @@ Major changes for next release:
  - ARB probeSpec: visualisation of probe set specificity (thanks to Paavo Jumppanen, CSIRO)
  - species selections (editor configurations):
    * visualisation of multiple selections in standard tree view (#658; example in database demo.arb)
-   * added comment field (#607)
+   * order can be changed; each configuration has a comment; import stores configuration (#607)
  - expand zombies in tree (unfold groups)
  - compare taxonomy (and mark differences; #651)
  - external (command line) aligners:
