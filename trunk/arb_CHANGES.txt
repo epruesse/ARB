@@ -33,9 +33,11 @@ Major changes for next release:
    * added option to cut-off DNA sequence (was done at end of sequence by old version. fixed)
    * fixed several minor bugs
  - ARB probeSpec: visualisation of probe set specificity (thanks to Paavo Jumppanen, CSIRO)
- - reuse the visualisation introduced with probeSpec to highlight sets of species configurations (example in database demo.arb)
+ - species selections (editor configurations):
+   * visualisation of multiple selections in standard tree view (#658; example in database demo.arb)
+   * order can be changed; each configuration has a comment; import stores configuration (#607)
  - expand zombies in tree (unfold groups)
- - compare taxonomy (and mark differences)
+ - compare taxonomy (and mark differences; #651)
  - external (command line) aligners:
    * fixed incorrect handling of 'T' vs 'U': now all aligned sequences will contain the correct base depending on alignment type
    * preserve gap-type ('-' vs '.') and upper-/lower-case of original alignment
@@ -44,6 +46,7 @@ Major changes for next release:
  - config-managers:
    * possibility to restore factory defaults
    * added comment field for configurations
+   * added them throughout arb (#647)
  - colorsets were invalidated by generating new IDs (#660). fixed.
  - updated/added external tools:
    - added alternate RAxML (DNA only; version 8.0.26)

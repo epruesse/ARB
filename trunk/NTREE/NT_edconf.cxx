@@ -9,6 +9,7 @@
 // =============================================================== //
 
 #include "NT_local.h"
+#include "ad_trees.h"
 
 #include <awt_sel_boxes.hxx>
 #include <aw_awars.hxx>
@@ -26,6 +27,8 @@
 #include <string>
 #include <ad_cb_prot.h>
 #include <awt_config_manager.hxx>
+#include <awt_modules.hxx>
+#include <RegExpr.hxx>
 
 using namespace std;
 
@@ -33,9 +36,7 @@ using namespace std;
 #define AWAR_CL_SELECTED_CONFIGS       "configuration_data/win%i/selected"
 #define AWAR_CL_DISPLAY_CONFIG_MARKERS "configuration_data/win%i/display"
 
-static void init_config_awars(AW_root *root) {
-    root->awar_string(AWAR_CONFIGURATION, "default_configuration", GLOBAL.gb_main);
-}
+#define AWAR_CONFIG_COMMENT "tmp/configuration/comment"
 
 enum extractType {
     CONF_EXTRACT,
@@ -784,12 +785,16 @@ static void nt_extract_configuration(UNFIXED, extractType ext_type) {
     free(cn);
 }
 
-static void nt_delete_configuration(AW_window *aww) {
+static void nt_delete_configuration(AW_window *aww, AW_DB_selection *dbsel) {
     GB_transaction ta(GLOBAL.gb_main);
 
-    char   *name             = aww->get_root()->awar(AWAR_CONFIGURATION)->read_string();
-    GBDATA *gb_configuration = GBT_find_configuration(GLOBAL.gb_main, name);
+    AW_awar *awar_selected    = aww->get_root()->awar(AWAR_CONFIGURATION);
+    char    *name             = awar_selected->read_string();
+    GBDATA  *gb_configuration = GBT_find_configuration(GLOBAL.gb_main, name);
+
     if (gb_configuration) {
+        dbsel->get_sellist()->move_selection(1);
+
         GB_ERROR error = GB_delete(gb_configuration);
         error          = ta.close(error);
         if (error) {
@@ -802,8 +807,13 @@ static void nt_delete_configuration(AW_window *aww) {
     free(name);
 }
 
+enum ConfigCreation {
+    BY_CALLING_THE_EDITOR,
+    FROM_IMPORTER,
+    FROM_MANAGER,
+};
 
-static GB_ERROR nt_create_configuration(TreeNode *tree, const char *conf_name, int use_species_aside) {
+static GB_ERROR nt_create_configuration(TreeNode *tree, const char *conf_name, int use_species_aside, ConfigCreation creation) {
     GB_ERROR error = NULL;
 
     if (!conf_name || !conf_name[0]) error = "no config name given";
@@ -822,59 +832,103 @@ static GB_ERROR nt_create_configuration(TreeNode *tree, const char *conf_name, i
         }
 
         if (!error) {
-            GB_transaction  ta(GLOBAL.gb_main); // open close transaction
-            GB_HASH        *used    = GBS_create_hash(GBT_get_species_count(GLOBAL.gb_main), GB_MIND_CASE);
-            GBS_strstruct  *topfile = GBS_stropen(1000);
-            GBS_strstruct  *topmid  = GBS_stropen(10000);
-            {
-                GBS_strstruct *middlefile = GBS_stropen(10000);
-                nt_build_sai_string(topfile, topmid);
+            GB_transaction ta(GLOBAL.gb_main);  // open close transaction
 
-                if (use_species_aside) {
-                    Store_species *extra_marked_species = 0;
-                    int            auto_mark            = 0;
-                    int            marked_at_right;
+            GBT_config newcfg;
+            {
+                GB_HASH       *used    = GBS_create_hash(GBT_get_species_count(GLOBAL.gb_main), GB_MIND_CASE);
+                GBS_strstruct *topfile = GBS_stropen(1000);
+                GBS_strstruct *topmid  = GBS_stropen(10000);
+                {
+                    GBS_strstruct *middlefile = GBS_stropen(10000);
+                    nt_build_sai_string(topfile, topmid);
+
+                    if (use_species_aside) {
+                        Store_species *extra_marked_species = 0;
+                        int            auto_mark            = 0;
+                        int            marked_at_right;
                     
-                    nt_build_conf_string_rek(used, tree, middlefile, &extra_marked_species, use_species_aside, &auto_mark, use_species_aside, &marked_at_right);
-                    if (extra_marked_species) {
-                        extra_marked_species->call(unmark_species);
-                        delete extra_marked_species;
+                        nt_build_conf_string_rek(used, tree, middlefile, &extra_marked_species, use_species_aside, &auto_mark, use_species_aside, &marked_at_right);
+                        if (extra_marked_species) {
+                            extra_marked_species->call(unmark_species);
+                            delete extra_marked_species;
+                        }
                     }
+                    else {
+                        int dummy_1=0, dummy_2;
+                        nt_build_conf_string_rek(used, tree, middlefile, 0, 0, &dummy_1, 0, &dummy_2);
+                    }
+                    nt_build_conf_marked(used, topmid);
+                    char *mid = GBS_strclose(middlefile);
+                    GBS_strcat(topmid, mid);
+                    free(mid);
                 }
-                else {
-                    int dummy_1=0, dummy_2;
-                    nt_build_conf_string_rek(used, tree, middlefile, 0, 0, &dummy_1, 0, &dummy_2);
-                }
-                nt_build_conf_marked(used, topmid);
-                char *mid = GBS_strclose(middlefile);
-                GBS_strcat(topmid, mid);
-                free(mid);
+
+                newcfg.set_definition(GBT_config::TOP_AREA,    GBS_strclose(topfile));
+                newcfg.set_definition(GBT_config::MIDDLE_AREA, GBS_strclose(topmid));
+
+                GBS_free_hash(used);
             }
 
-            {
-                char   *middle    = GBS_strclose(topmid);
-                char   *top       = GBS_strclose(topfile);
-                GBDATA *gb_config = GBT_create_configuration(GLOBAL.gb_main, conf_name);
+            AW_root *awr = AW_root::SINGLETON;
 
-                if (!gb_config) error = GB_await_error();
-                else {
-                    error             = GBT_write_string(gb_config, "top_area", top);
-                    if (!error) error = GBT_write_string(gb_config, "middle_area", middle);
+            GBT_config previous(GLOBAL.gb_main, conf_name, error);
+            error = NULL; // ignore
+
+            const char *prevComment         = NULL; // old or fixed comment
+            const char *comment             = NULL;
+            bool        warnIfSavingDefault = true;
+            switch (creation) {
+                case BY_CALLING_THE_EDITOR: { // always saves DEFAULT_CONFIGURATION!
+                    prevComment         = "This configuration will be OVERWRITTEN each time\nARB_EDIT4 is started w/o specifying a config!\n---";
+                    comment             = "created for ARB_EDIT4";
+                    warnIfSavingDefault = false;
+                    break;
                 }
-
-                free(middle);
-                free(top);
+                case FROM_MANAGER: {
+                    if (previous.exists()) {
+                        prevComment = previous.get_comment();
+                        comment     = "updated manually";
+                    }
+                    else {
+                        prevComment                      = awr->awar(AWAR_CONFIG_COMMENT)->read_char_pntr();
+                        if (!prevComment[0]) prevComment = NULL;
+                        comment                          = "created manually";
+                    }
+                    break;
+                }
+                case FROM_IMPORTER:
+                    nt_assert(!previous.exists());
+                    comment = "created by importer";
+                    break;
             }
-            GBS_free_hash(used);
+
+            nt_assert(implicated(prevComment, comment));
+            if (comment) {
+                // annotate with treename
+                const char *treename = awr->awar(AWAR_TREE_NAME)->read_char_pntr();
+                if (treename[0]) {
+                    comment = GBS_global_string("%s (tree=%s)", comment, treename);
+                }
+                else {
+                    comment = GBS_global_string("%s (no tree)", comment);
+                }
+                char *dated = GBS_log_dated_action_to(prevComment, comment);
+                newcfg.set_comment(dated);
+                free(dated);
+            }
+
+            error = newcfg.save(GLOBAL.gb_main, conf_name, warnIfSavingDefault);
+            awr->awar(AWAR_CONFIGURATION)->touch(); // refreshes comment field
         }
     }
-    
+
     return error;
 }
 
 static void nt_store_configuration(AW_window*, AWT_canvas *ntw) {
     const char *cfgName = AW_root::SINGLETON->awar(AWAR_CONFIGURATION)->read_char_pntr();
-    GB_ERROR    err     = nt_create_configuration(NT_get_tree_root_of_canvas(ntw), cfgName, 0);
+    GB_ERROR    err     = nt_create_configuration(NT_get_tree_root_of_canvas(ntw), cfgName, 0, FROM_MANAGER);
     aw_message_if(err);
 }
 
@@ -920,12 +974,177 @@ static void nt_rename_configuration(AW_window *aww) {
     free(old_name);
 }
 
+static void selected_config_changed_cb(AW_root *root) {
+    const char *config = root->awar(AWAR_CONFIGURATION)->read_char_pntr();
+
+    bool    nonexisting_config = false;
+    GBDATA *gb_target_commment = NULL;
+    if (config[0]) {
+        GBDATA *gb_configuration = GBT_find_configuration(GLOBAL.gb_main, config);
+        if (gb_configuration) {
+            gb_target_commment = GB_entry(gb_configuration, "comment");
+        }
+        else {
+            nonexisting_config = true;
+        }
+    }
+
+    AW_awar *awar_comment = root->awar(AWAR_CONFIG_COMMENT);
+    if (gb_target_commment) {
+        if (!awar_comment->is_mapped()) awar_comment->write_string("");
+        awar_comment->map(gb_target_commment);
+    }
+    else {
+        char *reuse_comment = nonexisting_config ? awar_comment->read_string() : strdup("");
+        if (awar_comment->is_mapped()) {
+            awar_comment->unmap();
+        }
+        awar_comment->write_string(reuse_comment);
+        free(reuse_comment);
+    }
+}
+static void config_comment_changed_cb(AW_root *root) {
+    // called when comment-awar changes or gets re-map-ped
+
+    AW_awar    *awar_comment = root->awar(AWAR_CONFIG_COMMENT);
+    const char *comment      = awar_comment->read_char_pntr();
+
+    const char *config           = root->awar(AWAR_CONFIGURATION)->read_char_pntr();
+    GBDATA     *gb_configuration = config[0] ? GBT_find_configuration(GLOBAL.gb_main, config) : NULL;
+
+    GB_ERROR error = NULL;
+    if (awar_comment->is_mapped()) {
+        if (!comment[0]) { // empty existing comment
+            nt_assert(gb_configuration);
+            GBDATA *gb_commment = GB_entry(gb_configuration, "comment");
+            nt_assert(gb_commment);
+            if (gb_commment) {
+                awar_comment->unmap();
+                error = GB_delete(gb_commment);
+            }
+        }
+    }
+    else {
+        if (comment[0]) { // ignore empty comment for unmapped awar
+            if (gb_configuration) {
+                nt_assert(!GB_entry(gb_configuration, "comment"));
+                error = GBT_write_string(gb_configuration, "comment", comment);
+                if (!error) {
+                    awar_comment->write_string("");
+                    selected_config_changed_cb(root);
+                }
+            }
+            else if (!config[0]) {
+                // do NOT warn if name field contains (not yet) existing name
+                // (allows to edit comment while creating new config)
+                error = "Please select an existing species selection to edit its comment";
+            }
+        }
+    }
+
+    aw_message_if(error);
+}
+
+static void init_config_awars(AW_root *root) {
+    root->awar_string(AWAR_CONFIGURATION, DEFAULT_CONFIGURATION, GLOBAL.gb_main);
+}
+static void init_config_admin_awars(AW_root *root) {
+    init_config_awars(root);
+    root->awar_string(AWAR_CONFIG_COMMENT, "", GLOBAL.gb_main)->add_callback(config_comment_changed_cb);
+    root->awar(AWAR_CONFIGURATION)->add_callback(selected_config_changed_cb)->touch();
+}
+
+static GB_ERROR swap_configs(GBDATA *gb_main, StrArray& config, int i1, int i2) {
+    GB_ERROR error = NULL;
+    if (i1>i2) swap(i1, i2); // otherwise overwrite below does not work
+    nt_assert(i1<i2 && i1>=0 && i2<int(config.size()));
+
+    GBT_config c1(gb_main, config[i1], error);
+    if (!error) {
+        GBT_config c2(gb_main, config[i2], error);
+        if (!error) error = c1.saveAsOver(gb_main, config[i1], config[i2], false);
+        if (!error) error = c2.saveAsOver(gb_main, config[i2], config[i1], false);
+        if (!error) config.swap(i1, i2);
+    }
+    return error;
+}
+
+static void reorder_configs_cb(AW_window *aww, awt_reorder_mode mode, AW_CL cl_sel) {
+    AW_root    *awr         = aww->get_root();
+    AW_awar    *awar_config = awr->awar(AWAR_CONFIGURATION);
+    const char *selected    = awar_config->read_char_pntr();
+
+    if (selected && selected[0]) {
+        AW_DB_selection   *sel     = (AW_DB_selection*)cl_sel;
+        AW_selection_list *sellist = sel->get_sellist();
+
+        int source_idx = sellist->get_index_of(selected);
+        int target_idx = -1;
+        switch (mode) {
+            case ARM_TOP:    target_idx = 0;            break;
+            case ARM_UP:     target_idx = source_idx-1; break;
+            case ARM_DOWN:   target_idx = source_idx+1; break;
+            case ARM_BOTTOM: target_idx = -1;           break;
+        }
+
+        int entries = sellist->size();
+        target_idx  = (target_idx+entries)%entries;
+
+        {
+            GBDATA         *gb_main = sel->get_gb_main();
+            GB_transaction  ta(gb_main);
+
+            StrArray config;
+            sellist->to_array(config, true);
+
+            GB_ERROR error = NULL;
+            if (source_idx<target_idx) {
+                for (int i = source_idx+1; i<=target_idx; ++i) {
+                    swap_configs(gb_main, config, i-1, i);
+                }
+            }
+            else if (source_idx>target_idx) {
+                for (int i = source_idx-1; i>=target_idx; --i) {
+                    swap_configs(gb_main, config, i+1, i);
+                }
+            }
+
+            error = ta.close(error);
+            aw_message_if(error);
+        }
+        awar_config->touch();
+    }
+}
+
+static void clear_comment_cb(AW_window *aww) {
+    AW_awar *awar_comment = aww->get_root()->awar(AWAR_CONFIG_COMMENT);
+    char    *comment      = awar_comment->read_string();
+
+    ConstStrArray line;
+    GBT_splitNdestroy_string(line, comment, '\n');
+
+    bool    removedDatedLines = false;
+    RegExpr datedLine("^([A-Z][a-z]{2}\\s){2}[0-9]+\\s([0-9]{2}:){2}[0-9]{2}\\s[0-9]{4}:\\s", false); // matches lines created with GBS_log_dated_action_to()
+    for (int i = line.size()-1; i >= 0; --i) {
+        const RegMatch *match = datedLine.match(line[i]);
+        if (match && match->didMatch()) {
+            line.safe_remove(i);
+            removedDatedLines = true;
+        }
+    }
+
+    if (!removedDatedLines) line.clear(); // erase all
+
+    comment = GBT_join_strings(line, '\n');
+    awar_comment->write_string(comment);
+}
+
 static AW_window *create_configuration_admin_window(AW_root *root, AWT_canvas *ntw) {
     static AW_window_simple *existing_aws[MAX_NT_WINDOWS] = { MAX_NT_WINDOWS_NULLINIT };
 
     int ntw_id = NT_get_canvas_id(ntw);
     if (!existing_aws[ntw_id]) {
-        init_config_awars(root);
+        init_config_admin_awars(root);
 
         AW_window_simple *aws = new AW_window_simple;
         aws->init(root, GBS_global_string("SPECIES_SELECTIONS_%i", ntw_id), "Species Selections");
@@ -942,8 +1161,17 @@ static AW_window *create_configuration_admin_window(AW_root *root, AWT_canvas *n
         aws->at("name");
         aws->create_input_field(AWAR_CONFIGURATION);
 
+        aws->at("comment");
+        aws->create_text_field(AWAR_CONFIG_COMMENT);
+
+        aws->at("clr");
+        aws->callback(clear_comment_cb);
+        aws->create_autosize_button("CLEAR", "Clear", "l");
+
         aws->at("list");
-        awt_create_CONFIG_selection_list(GLOBAL.gb_main, aws, AWAR_CONFIGURATION, false);
+        AW_DB_selection *dbsel = awt_create_CONFIG_selection_list(GLOBAL.gb_main, aws, AWAR_CONFIGURATION, false);
+
+        aws->button_length(8);
 
         aws->at("store");
         aws->callback(makeWindowCallback(nt_store_configuration, ntw));
@@ -970,7 +1198,7 @@ static AW_window *create_configuration_admin_window(AW_root *root, AWT_canvas *n
         aws->create_button("COMBINE", "COMBINE", "C");
 
         aws->at("delete");
-        aws->callback(nt_delete_configuration);
+        aws->callback(makeWindowCallback(nt_delete_configuration, dbsel));
         aws->create_button("DELETE", "DELETE", "D");
 
         aws->at("rename");
@@ -981,20 +1209,21 @@ static AW_window *create_configuration_admin_window(AW_root *root, AWT_canvas *n
         aws->callback(makeCreateWindowCallback(create_configuration_marker_window, ntw));
         aws->create_autosize_button(GBS_global_string("HIGHLIGHT_%i", ntw_id), "Highlight in tree", "t");
 
+        aws->button_length(0);
+        aws->at("sort");
+        awt_create_order_buttons(aws, reorder_configs_cb, AW_CL(dbsel));
+
         existing_aws[ntw_id] = aws;
     }
     return existing_aws[ntw_id];
 }
 
-void NT_popup_configuration_admin(AW_window *aw_main, AW_CL cl_ntw, AW_CL) {
-    AW_window *aww = create_configuration_admin_window(aw_main->get_root(), (AWT_canvas*)cl_ntw);
-    aww->activate();
+void NT_popup_configuration_admin(AW_window *aw_main, AWT_canvas *ntw) {
+    create_configuration_admin_window(aw_main->get_root(), ntw)->activate();
 }
 
 // -----------------------------------------
 //      various ways to start the editor
-
-#define DEFAULT_CONFIGURATION "default_configuration"
 
 static void nt_start_editor_on_configuration(AW_window *aww) {
     aww->hide();
@@ -1028,10 +1257,60 @@ AW_window *NT_create_startEditorOnOldConfiguration_window(AW_root *awr) {
     return aws;
 }
 
-void NT_start_editor_on_tree(AW_window *, int use_species_aside, AWT_canvas *ntw) {
-    GB_ERROR error = nt_create_configuration(NT_get_tree_root_of_canvas(ntw), DEFAULT_CONFIGURATION, use_species_aside);
+void NT_start_editor_on_tree(AW_window *aww, int use_species_aside, AWT_canvas *ntw) {
+    init_config_awars(aww->get_root());
+    GB_ERROR error    = nt_create_configuration(NT_get_tree_root_of_canvas(ntw), DEFAULT_CONFIGURATION, use_species_aside, BY_CALLING_THE_EDITOR);
     if (!error) error = GBK_system("arb_edit4 -c " DEFAULT_CONFIGURATION " &");
     aw_message_if(error);
+}
+
+inline void nt_create_config_after_import(AWT_canvas *ntw) {
+    init_config_awars(ntw->awr);
+
+    const char *dated_suffix = GB_dateTime_suffix();
+    char       *configName   = GBS_global_string_copy("imported_%s", dated_suffix);
+
+    // ensure unique config-name
+    {
+        int unique = 1;
+        GB_transaction ta(ntw->gb_main);
+        while (GBT_find_configuration(ntw->gb_main, configName)) {
+            freeset(configName, GBS_global_string_copy("imported_%s_%i", dated_suffix, ++unique));
+        }
+    }
+
+    GB_ERROR error = nt_create_configuration(NT_get_tree_root_of_canvas(ntw), configName, 0, FROM_IMPORTER);
+    aw_message_if(error);
+
+    free(configName);
+}
+
+void NT_create_config_after_import(AWT_canvas *ntw, bool imported_from_scratch) {
+    /*! create a new config after import
+     * @param imported_from_scratch if true -> DB was created from scratch, all species in DB are marked.
+     *                              if false -> data was imported into existing DB. Other species may be marked as well, imported species are "queried".
+     */
+
+    if (imported_from_scratch) {
+        nt_create_config_after_import(ntw);
+    }
+    else {
+        GB_transaction ta(ntw->gb_main);
+
+        // remember marks + mark queried species:
+        for (GBDATA *gb_species = GBT_first_species(ntw->gb_main); gb_species; gb_species = GBT_next_species(gb_species)) {
+            GB_write_user_flag(gb_species, GB_USERFLAG_WASMARKED, GB_read_flag(gb_species));
+            GB_write_flag(gb_species, GB_user_flag(gb_species, GB_USERFLAG_QUERY));
+        }
+
+        nt_create_config_after_import(ntw);
+
+        // restore old marks:
+        for (GBDATA *gb_species = GBT_first_species(ntw->gb_main); gb_species; gb_species = GBT_next_species(gb_species)) {
+            GB_write_flag(gb_species, GB_user_flag(gb_species, GB_USERFLAG_WASMARKED));
+            GB_clear_user_flag(gb_species, GB_USERFLAG_WASMARKED);
+        }
+    }
 }
 
 

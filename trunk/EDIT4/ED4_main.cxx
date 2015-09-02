@@ -451,7 +451,7 @@ int ARB_main(int argc, char *argv[]) {
                 "       database    name of database or ':' to connect to arb-database-server\n"
                 "\n"
                 "       options:\n"
-                "       -c config   loads configuration 'config' (default: 'default_configuration')\n"
+                "       -c config   loads configuration 'config' (default: '" DEFAULT_CONFIGURATION "')\n"
             );
         return EXIT_SUCCESS;
     }
@@ -461,9 +461,9 @@ int ARB_main(int argc, char *argv[]) {
         strcpy(config_name, argv[2]);
         argc -= 2; argv += 2;
     }
-    else { // load 'default_configuration' if no command line is given
-        config_name = strdup("default_configuration");
-        printf("Using 'default_configuration'\n");
+    else { // load default configuration if no command line is given
+        config_name = strdup(DEFAULT_CONFIGURATION);
+        printf("Using '%s'\n", DEFAULT_CONFIGURATION);
     }
 
     if (argc>1) {
@@ -531,26 +531,17 @@ int ARB_main(int argc, char *argv[]) {
 
                 if (config_name)
                 {
-                    GB_begin_transaction(GLOBAL_gb_main);
-                    GBDATA *gb_configuration = GBT_find_configuration(GLOBAL_gb_main, config_name);
+                    GB_transaction ta(GLOBAL_gb_main);
+                    GB_ERROR       cfg_error;
+                    GBT_config     cfg(GLOBAL_gb_main, config_name, cfg_error);
 
-                    if (gb_configuration) {
-                        GBDATA *gb_middle_area = GB_search(gb_configuration, "middle_area", GB_FIND);
-                        GBDATA *gb_top_area = GB_search(gb_configuration, "top_area", GB_FIND);
-                        char *config_data_middle = GB_read_as_string(gb_middle_area);
-                        char *config_data_top   = GB_read_as_string(gb_top_area);
-
-                        ED4_ROOT->create_hierarchy(config_data_middle, config_data_top); // create internal hierarchy
-                        free(config_data_middle);
-                        free(config_data_top);
-
+                    if (cfg.exists()) {
+                        ED4_ROOT->create_hierarchy(cfg.get_definition(GBT_config::MIDDLE_AREA), cfg.get_definition(GBT_config::TOP_AREA)); // create internal hierarchy
                         found_config = 1;
                     }
                     else {
                         aw_message(GBS_global_string("Could not find configuration '%s'", config_name));
                     }
-
-                    GB_commit_transaction(GLOBAL_gb_main);
                 }
 
                 if (!found_config) {
