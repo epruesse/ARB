@@ -785,12 +785,16 @@ static void nt_extract_configuration(UNFIXED, extractType ext_type) {
     free(cn);
 }
 
-static void nt_delete_configuration(AW_window *aww) {
+static void nt_delete_configuration(AW_window *aww, AW_DB_selection *dbsel) {
     GB_transaction ta(GLOBAL.gb_main);
 
-    char   *name             = aww->get_root()->awar(AWAR_CONFIGURATION)->read_string();
-    GBDATA *gb_configuration = GBT_find_configuration(GLOBAL.gb_main, name);
+    AW_awar *awar_selected    = aww->get_root()->awar(AWAR_CONFIGURATION);
+    char    *name             = awar_selected->read_string();
+    GBDATA  *gb_configuration = GBT_find_configuration(GLOBAL.gb_main, name);
+
     if (gb_configuration) {
+        dbsel->get_sellist()->move_selection(1);
+
         GB_ERROR error = GB_delete(gb_configuration);
         error          = ta.close(error);
         if (error) {
@@ -1194,7 +1198,7 @@ static AW_window *create_configuration_admin_window(AW_root *root, AWT_canvas *n
         aws->create_button("COMBINE", "COMBINE", "C");
 
         aws->at("delete");
-        aws->callback(nt_delete_configuration);
+        aws->callback(makeWindowCallback(nt_delete_configuration, dbsel));
         aws->create_button("DELETE", "DELETE", "D");
 
         aws->at("rename");
