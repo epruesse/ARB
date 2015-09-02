@@ -238,7 +238,9 @@ static void start_main_window_after_import(AW_root *aw_root) {
     AWT_canvas *ntw = NULL;
     aw_message_if(startup_mainwindow_and_dbserver(aw_root, NULL, ntw));
 
-    NT_create_config_after_import(ntw, true);
+    if (aw_root->awar(AWAR_IMPORT_AUTOCONF)->read_int()) {
+        NT_create_config_after_import(ntw, true);
+    }
 
     aw_root->awar(AWAR_TREE_REFRESH)->touch();
 }

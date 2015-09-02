@@ -1298,6 +1298,7 @@ void AWTI_open_import_window(AW_root *awr, const char *defname, bool do_exit, GB
     awr->awar_int(AWAR_IMPORT_ALI_PROTECTION, 0);    // which is called via genom_flag_changed() below
 
     awr->awar_int(AWAR_IMPORT_GENOM_DB, IMP_PLAIN_SEQUENCE);
+    awr->awar_int(AWAR_IMPORT_AUTOCONF, 1);
 
     awr->awar(AWAR_IMPORT_GENOM_DB)->add_callback(genom_flag_changed);
     genom_flag_changed(awr);
@@ -1351,6 +1352,9 @@ void AWTI_open_import_window(AW_root *awr, const char *defname, bool do_exit, GB
         aws->sens_mask(AWM_ALL);
         aws->insert_toggle("Import selected format", "f", IMP_PLAIN_SEQUENCE);
         aws->update_toggle_field();
+
+        aws->at("autoconf");
+        aws->create_toggle(AWAR_IMPORT_AUTOCONF);
 
         aws->at("go");
         aws->callback(import_go_cb);

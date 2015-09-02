@@ -39,7 +39,9 @@ static void nt_seq_load_cb(AW_root *awr, AWT_canvas *ntw) {
     GLOBAL_gb_src = NULL;
     GLOBAL_gb_dst = NULL;
 
-    NT_create_config_after_import(ntw, false);
+    if (awr->awar(AWAR_IMPORT_AUTOCONF)->read_int()) {
+        NT_create_config_after_import(ntw, false);
+    }
 }
 
 
