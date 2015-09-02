@@ -805,6 +805,7 @@ static void nt_delete_configuration(AW_window *aww) {
 
 enum ConfigCreation {
     BY_CALLING_THE_EDITOR,
+    FROM_IMPORTER,
     FROM_MANAGER,
 };
 
@@ -892,9 +893,13 @@ static GB_ERROR nt_create_configuration(TreeNode *tree, const char *conf_name, i
                     }
                     break;
                 }
+                case FROM_IMPORTER:
+                    nt_assert(!previous.exists());
+                    comment = "created by importer";
+                    break;
             }
 
-            aw_assert(implicated(prevComment, comment));
+            nt_assert(implicated(prevComment, comment));
             if (comment) {
                 // annotate with treename
                 const char *treename = awr->awar(AWAR_TREE_NAME)->read_char_pntr();
@@ -1253,6 +1258,55 @@ void NT_start_editor_on_tree(AW_window *aww, int use_species_aside, AWT_canvas *
     GB_ERROR error    = nt_create_configuration(NT_get_tree_root_of_canvas(ntw), DEFAULT_CONFIGURATION, use_species_aside, BY_CALLING_THE_EDITOR);
     if (!error) error = GBK_system("arb_edit4 -c " DEFAULT_CONFIGURATION " &");
     aw_message_if(error);
+}
+
+inline void nt_create_config_after_import(AWT_canvas *ntw) {
+    init_config_awars(ntw->awr);
+
+    const char *dated_suffix = GB_dateTime_suffix();
+    char       *configName   = GBS_global_string_copy("imported_%s", dated_suffix);
+
+    // ensure unique config-name
+    {
+        int unique = 1;
+        GB_transaction ta(ntw->gb_main);
+        while (GBT_find_configuration(ntw->gb_main, configName)) {
+            freeset(configName, GBS_global_string_copy("imported_%s_%i", dated_suffix, ++unique));
+        }
+    }
+
+    GB_ERROR error = nt_create_configuration(NT_get_tree_root_of_canvas(ntw), configName, 0, FROM_IMPORTER);
+    aw_message_if(error);
+
+    free(configName);
+}
+
+void NT_create_config_after_import(AWT_canvas *ntw, bool imported_from_scratch) {
+    /*! create a new config after import
+     * @param imported_from_scratch if true -> DB was created from scratch, all species in DB are marked.
+     *                              if false -> data was imported into existing DB. Other species may be marked as well, imported species are "queried".
+     */
+
+    if (imported_from_scratch) {
+        nt_create_config_after_import(ntw);
+    }
+    else {
+        GB_transaction ta(ntw->gb_main);
+
+        // remember marks + mark queried species:
+        for (GBDATA *gb_species = GBT_first_species(ntw->gb_main); gb_species; gb_species = GBT_next_species(gb_species)) {
+            GB_write_user_flag(gb_species, GB_USERFLAG_WASMARKED, GB_read_flag(gb_species));
+            GB_write_flag(gb_species, GB_user_flag(gb_species, GB_USERFLAG_QUERY));
+        }
+
+        nt_create_config_after_import(ntw);
+
+        // restore old marks:
+        for (GBDATA *gb_species = GBT_first_species(ntw->gb_main); gb_species; gb_species = GBT_next_species(gb_species)) {
+            GB_write_flag(gb_species, GB_user_flag(gb_species, GB_USERFLAG_WASMARKED));
+            GB_clear_user_flag(gb_species, GB_USERFLAG_WASMARKED);
+        }
+    }
 }
 
 

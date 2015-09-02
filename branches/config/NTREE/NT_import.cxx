@@ -25,7 +25,7 @@
 
 #include <arbdbt.h>
 
-static void nt_seq_load_cb(AW_root *awr) {
+static void nt_seq_load_cb(AW_root *awr, AWT_canvas *ntw) {
     GLOBAL_gb_dst     = GLOBAL.gb_main;
     AW_window *aww    = DBUI::create_species_query_window(awr, GLOBAL.gb_main);
     DBUI::unquery_all();
@@ -38,10 +38,12 @@ static void nt_seq_load_cb(AW_root *awr) {
 
     GLOBAL_gb_src = NULL;
     GLOBAL_gb_dst = NULL;
+
+    NT_create_config_after_import(ntw, false);
 }
 
 
-void NT_import_sequences(AW_window *aww, AW_CL, AW_CL) {
+void NT_import_sequences(AW_window *aww, AWT_canvas *ntw) {
     /*! Opens the "Import Sequences" dialog from the ARB main window (ARB_NTREE)
      */
 
@@ -50,7 +52,7 @@ void NT_import_sequences(AW_window *aww, AW_CL, AW_CL) {
     awr->awar_int(AWAR_READ_GENOM_DB, IMP_PLAIN_SEQUENCE); // value is overwritten below
 
     nt_assert(!GLOBAL_gb_src);
-    AWTI_open_import_window(aww->get_root(), "", false, GLOBAL.gb_main, makeRootCallback(nt_seq_load_cb));
+    AWTI_open_import_window(aww->get_root(), "", false, GLOBAL.gb_main, makeRootCallback(nt_seq_load_cb, ntw));
     GLOBAL_gb_src = AWTI_peek_imported_DB();
 
     nt_assert(got_macro_ability(awr));
