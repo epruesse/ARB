@@ -157,8 +157,9 @@ public:
 
     AW_awar *map(const char *awarn);
     AW_awar *map(AW_default dest); // map to new address
-    AW_awar *map(AW_awar *dest); // map to new address
-    AW_awar *unmap();           // map to original address
+    AW_awar *map(AW_awar *dest);   // map to new address
+    AW_awar *unmap();              // map to original address
+    bool is_mapped() const { return gb_var != gb_origin; }
 
 #if defined(ASSERTION_USED)
     bool is_valid() const { return correlated(gb_var, gb_origin); } // both or none NULL

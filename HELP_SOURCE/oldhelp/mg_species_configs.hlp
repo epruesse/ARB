@@ -13,7 +13,7 @@ TITLE		Transfer Configurations
 
 OCCURRENCE	ARB_MERGE/Transfer configurations
 
-DESCRIPTION	Transfers editor configurations.
+DESCRIPTION	Transfers editor configurations (=species selections).
 
                 Press the 'Transfer configurations' button of the 'ARB_MERGE' window to
                 display the 'MERGE CONFIGS' window.

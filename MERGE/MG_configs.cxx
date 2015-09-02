@@ -159,7 +159,7 @@ AW_window *MG_create_merge_configs_window(AW_root *awr) {
 
     AW_window_simple *aws = new AW_window_simple;
 
-    aws->init(awr, "MERGE_CONFIGS", "MERGE CONFIGS");
+    aws->init(awr, "MERGE_CONFIGS", "Merge species selections (=editor configs)");
     aws->load_xfig("merge/configs.fig");
 
     aws->button_length(20);
