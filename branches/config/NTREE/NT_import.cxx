@@ -46,11 +46,7 @@ static void nt_seq_load_cb(AW_root *awr, AWT_canvas *ntw) {
 void NT_import_sequences(AW_window *aww, AWT_canvas *ntw) {
     /*! Opens the "Import Sequences" dialog from the ARB main window (ARB_NTREE)
      */
-
     AW_root *awr = aww->get_root();
-
-    awr->awar_int(AWAR_READ_GENOM_DB, IMP_PLAIN_SEQUENCE); // value is overwritten below
-
     nt_assert(!GLOBAL_gb_src);
     AWTI_open_import_window(aww->get_root(), "", false, GLOBAL.gb_main, makeRootCallback(nt_seq_load_cb, ntw));
     GLOBAL_gb_src = AWTI_peek_imported_DB();

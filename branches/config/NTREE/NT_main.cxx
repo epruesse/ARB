@@ -269,8 +269,6 @@ static void nt_intro_start_import(AW_window *aw_intro) {
 
     AW_root *aw_root = aw_intro->get_root();
     aw_root->awar_string(AWAR_DB_PATH)->write_string("noname.arb");
-    aw_root->awar_int(AWAR_READ_GENOM_DB, IMP_PLAIN_SEQUENCE); // Default toggle  in window  "Create&import" is Non-Genom
-
     nt_assert(!GLOBAL.gb_main);
     AWTI_open_import_window(aw_root, "", true, 0, makeRootCallback(start_main_window_after_import));
     GLOBAL.gb_main = AWTI_peek_imported_DB();
@@ -898,8 +896,6 @@ static void startup_gui(NtreeCommandLine& cl, ARB_ERROR& error) {
             error = check_argument_for_mode(database, browser_startdir, mode);
             if (!error) {
                 if (mode == IMPORT) {
-                    aw_root->awar_int(AWAR_READ_GENOM_DB, IMP_PLAIN_SEQUENCE);
-
                     AWTI_open_import_window(aw_root, database, true, 0, makeRootCallback(start_main_window_after_import));
                     nt_assert(!GLOBAL.gb_main);
                     GLOBAL.gb_main = AWTI_peek_imported_DB();

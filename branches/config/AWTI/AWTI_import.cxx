@@ -1286,9 +1286,11 @@ void AWTI_open_import_window(AW_root *awr, const char *defname, bool do_exit, GB
         AW_create_fileselection_awars(awr, AWAR_FORM,      path.get_data(), ".ift", "*");
     }
 
-    awr->awar_string(AWAR_ALI, "dummy"); // these defaults are never used
+    awr->awar_string(AWAR_ALI,      "dummy"); // these defaults are never used
     awr->awar_string(AWAR_ALI_TYPE, "dummy"); // they are overwritten by AWTI_import_set_ali_and_type
-    awr->awar_int(AWAR_ALI_PROTECTION, 0); // which is called via genom_flag_changed() below
+    awr->awar_int(AWAR_ALI_PROTECTION, 0);    // which is called via genom_flag_changed() below
+
+    awr->awar_int(AWAR_READ_GENOM_DB, IMP_PLAIN_SEQUENCE);
 
     awr->awar(AWAR_READ_GENOM_DB)->add_callback(genom_flag_changed);
     genom_flag_changed(awr);
