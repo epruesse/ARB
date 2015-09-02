@@ -1207,11 +1207,11 @@ void AWTI_import_set_ali_and_type(AW_root *awr, const char *ali_name, const char
 static void genom_flag_changed(AW_root *awr) {
     if (awr->awar(AWAR_IMPORT_GENOM_DB)->read_int() == IMP_PLAIN_SEQUENCE) {
         AWTI_import_set_ali_and_type(awr, last_ali.name(), last_ali.type(), 0);
-        awr->awar_string(AWAR_IMPORT_FORMATFILTER, ".ift");
+        awr->awar(AWAR_IMPORT_FORMATFILTER)->write_string(".ift");
     }
     else {
         AWTI_import_set_ali_and_type(awr, GENOM_ALIGNMENT, "dna", 0);
-        awr->awar_string(AWAR_IMPORT_FORMATFILTER, ".fit"); // *hack* to hide normal import filters // @@@ doesnt work?!
+        awr->awar(AWAR_IMPORT_FORMATFILTER)->write_string(".fit"); // *hack* to hide normal import filters
     }
 }
 
@@ -1237,7 +1237,14 @@ static void import_window_close_cb(AW_window *aww) {
 }
 
 static void import_go_cb(AW_window *aww) { importer->go(aww); }
-static void detect_input_format_cb(AW_window *aww) { importer->detect_format(aww->get_root()); }
+static void detect_input_format_cb(AW_window *aww) {
+    if (aww->get_root()->awar(AWAR_IMPORT_GENOM_DB)->read_int() == IMP_PLAIN_SEQUENCE) {
+        importer->detect_format(aww->get_root());
+    }
+    else {
+        aw_message("Only works together with 'Import selected format'");
+    }
+}
 
 GBDATA *AWTI_peek_imported_DB() {
     awti_assert(importer);
