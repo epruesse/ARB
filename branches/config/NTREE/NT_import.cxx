@@ -67,7 +67,7 @@ void NT_import_sequences(AW_window *aww, AWT_canvas *ntw) {
     }
 
 
-    awr->awar(AWAR_READ_GENOM_DB)->write_int(gb_main_is_genom_db ? IMP_GENOME_FLATFILE : IMP_PLAIN_SEQUENCE);
+    awr->awar(AWAR_IMPORT_GENOM_DB)->write_int(gb_main_is_genom_db ? IMP_GENOME_FLATFILE : IMP_PLAIN_SEQUENCE);
 
     {
         GB_transaction ta(GLOBAL.gb_main);
