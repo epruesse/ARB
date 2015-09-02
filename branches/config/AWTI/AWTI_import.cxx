@@ -1220,20 +1220,26 @@ static void genom_flag_changed(AW_root *awr) {
 static ArbImporter *importer = NULL;
 
 void AWTI_cleanup_importer() {
-    awti_assert(importer);
+    if (importer) {
 #if defined(DEBUG)
-    AWT_browser_forget_db(importer->peekImportDB());
+        AWT_browser_forget_db(importer->peekImportDB());
 #endif
-    delete importer; // closes the import DB if it still is owned by the 'importer'
-    importer = NULL;
+        delete importer; // closes the import DB if it still is owned by the 'importer'
+        importer = NULL;
+    }
 }
 
 static void import_window_close_cb(AW_window *aww) {
-    bool doExit = importer->doExit;
-    AWTI_cleanup_importer();
+    if (importer) {
+        bool doExit = importer->doExit;
+        AWTI_cleanup_importer();
 
-    if (doExit) exit(EXIT_SUCCESS);
-    else AW_POPDOWN(aww);
+        if (doExit) exit(EXIT_SUCCESS);
+        else AW_POPDOWN(aww);
+    }
+    else {
+        AW_POPDOWN(aww);
+    }
 }
 
 static void import_go_cb(AW_window *aww) { importer->go(aww); }

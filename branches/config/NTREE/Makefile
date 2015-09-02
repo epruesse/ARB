@@ -638,6 +638,7 @@ NT_extern.o: $(ARBHOME)/INCLUDE/awt_TreeAwars.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/awt_www.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/awtc_submission.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/awti_export.hxx
+NT_extern.o: $(ARBHOME)/INCLUDE/awti_import.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/cb.h
 NT_extern.o: $(ARBHOME)/INCLUDE/cb_base.h
 NT_extern.o: $(ARBHOME)/INCLUDE/cbtypes.h

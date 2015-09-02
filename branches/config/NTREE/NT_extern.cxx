@@ -56,6 +56,7 @@
 #include <refentries.h>
 #include <rootAsWin.h>
 #include <insdel.h>
+#include <awti_import.hxx>
 
 #define AWAR_EXPORT_NDS             "tmp/export_nds"
 #define AWAR_EXPORT_NDS_SEPARATOR   AWAR_EXPORT_NDS "/separator"
@@ -330,6 +331,7 @@ __ATTR__NORETURN static void really_exit(int exitcode, bool kill_my_clients) {
 
 void NT_exit(AW_window *aws, AW_CL exitcode) {
     AW_root *aw_root = aws->get_root();
+    AWTI_cleanup_importer();
     shutdown_macro_recording(aw_root);
     bool is_server_and_has_clients = GLOBAL.gb_main && GB_read_clients(GLOBAL.gb_main)>0;
     if (nt_disconnect_from_db(aw_root, GLOBAL.gb_main)) {
