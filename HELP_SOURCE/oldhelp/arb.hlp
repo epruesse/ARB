@@ -2,11 +2,12 @@
 UP	help.hlp
 UP	FAQS.hlp
 UP	glossary.hlp
-UP	version.hlp
 UP	arb_commands.hlp
-UP	copyright.hlp
+UP	copyNpaste.hlp
 UP	arb.pdf
 UP	changes.hlp
+UP	version.hlp
+UP	copyright.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
 SUB	arb_ntree.hlp
