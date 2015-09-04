@@ -52,11 +52,8 @@ NOTES           The 'SEARCH & QUERY' window can be displayed by pressing the <SE
                 window (ARB_NT/Protection) equal to or higher than that
                 assigned to the selected 'field'
 
-                Cut and paste of the window system can be used in the 'Edit
-                box' subwindow. This provides is an easy way to export/import
-                sequences.
-                Use the left mouse button to mark (cut is done automatically).
-                Then use the middle mouse button to paste.
+		LINK{copyNpaste.hlp} can be used in the 'Edit box' subwindow. 
+		This provides is easy way to manually export/import (sequence) data.
 
 SECTION         Locking information window to a specific species
 
