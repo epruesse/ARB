@@ -56,6 +56,7 @@
 #include <refentries.h>
 #include <rootAsWin.h>
 #include <insdel.h>
+#include <awti_import.hxx>
 
 #define AWAR_EXPORT_NDS             "tmp/export_nds"
 #define AWAR_EXPORT_NDS_SEPARATOR   AWAR_EXPORT_NDS "/separator"
@@ -329,6 +330,7 @@ __ATTR__NORETURN static void really_exit(int exitcode, bool kill_my_clients) {
 
 void NT_exit(AW_window *aws, AW_CL exitcode) {
     AW_root *aw_root = aws->get_root();
+    AWTI_cleanup_importer();
     shutdown_macro_recording(aw_root);
     bool is_server_and_has_clients = GLOBAL.gb_main && GB_read_clients(GLOBAL.gb_main)>0;
     if (nt_disconnect_from_db(aw_root, GLOBAL.gb_main)) {
@@ -928,7 +930,12 @@ static void canvas_tree_awar_changed_cb(AW_awar *, bool, AWT_canvas *ntw) {
 // ##########################################
 // ##########################################
 
-static AW_window *popup_new_main_window(AW_root *awr, int clone) {
+static AW_window *popup_new_main_window(AW_root *awr, int clone, AWT_canvas **result_ntw) {
+    /*! create ARB_NTREE main window
+     * @param awr application root
+     * @param clone == 0 -> first window (full functionality); >0 -> additional tree views (restricted functionality)
+     * @param result_ntw is set to the created AWT_canvas (passed pointer may be NULL if result is not needed)
+     */
     GB_push_transaction(GLOBAL.gb_main);
 
     char        window_title[256];
@@ -964,6 +971,8 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
         tree->set_tree_type(old_sort_type, ntw);
         ntw->set_mode(AWT_MODE_SELECT);
     }
+
+    if (result_ntw) *result_ntw = ntw;
 
     {
         AW_awar    *tree_awar          = awr->awar_string(awar_tree);
@@ -1001,7 +1010,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
     if (clone) {
         awm->create_menu("File", "F", AWM_ALL);
         if (allow_new_window) {
-            awm->insert_menu_topic(awm->local_id("new_window"), "New window (same database)", "N", "newwindow.hlp", AWM_ALL, makeCreateWindowCallback(popup_new_main_window, clone+1));
+            awm->insert_menu_topic(awm->local_id("new_window"), "New window (same database)", "N", "newwindow.hlp", AWM_ALL, makeCreateWindowCallback(popup_new_main_window, clone+1, (AWT_canvas**)NULL));
         }
         awm->insert_menu_topic("close", "Close", "C", 0, AWM_ALL, (AW_CB)AW_POPDOWN, 0, 0);
     }
@@ -1020,7 +1029,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
             awm->insert_menu_topic("save_all_as",  "Save whole database as ...", "w", "save.hlp",      AWM_ALL, makeCreateWindowCallback(NT_create_save_as, "tmp/nt/arbdb"));
             if (allow_new_window) {
                 awm->sep______________();
-                awm->insert_menu_topic("new_window", "New window (same database)", "N", "newwindow.hlp", AWM_ALL, makeCreateWindowCallback(popup_new_main_window, clone+1));
+                awm->insert_menu_topic("new_window", "New window (same database)", "N", "newwindow.hlp", AWM_ALL, makeCreateWindowCallback(popup_new_main_window, clone+1, (AWT_canvas**)NULL));
             }
             awm->sep______________();
             awm->insert_menu_topic("optimize_db",  "Optimize database compression", "O", "optimize.hlp",  AWM_ALL, NT_create_database_optimization_window);
@@ -1029,7 +1038,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
             awm->insert_sub_menu("Import",      "I");
             {
                 awm->insert_menu_topic("merge_from", "Merge from other ARB database", "d", "arb_merge_into.hlp", AWM_ALL, NT_create_merge_from_window);
-                awm->insert_menu_topic("import_seq", "Import from external format",   "I", "arb_import.hlp",     AWM_ALL, NT_import_sequences, 0, 0);
+                awm->insert_menu_topic("import_seq", "Import from external format",   "I", "arb_import.hlp",     AWM_ALL, makeWindowCallback(NT_import_sequences, ntw));
                 GDE_load_menu(awm, AWM_EXP, "Import");
             }
             awm->close_sub_menu();
@@ -1081,7 +1090,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
             NT_insert_mark_submenus(awm, ntw, 1);
             awm->insert_menu_topic("mark_by_ref",     "Mark by reference..", "r", "markbyref.hlp",       AWM_EXP, makeCreateWindowCallback(create_mark_by_refentries_window, GLOBAL.gb_main));
             awm->insert_menu_topic("species_colors",  "Colors ...",          "l", "colorize.hlp",        AWM_ALL, create_colorize_species_window);
-            awm->insert_menu_topic("selection_admin", "Configurations",      "o", "species_configs.hlp", AWM_ALL, NT_popup_configuration_admin, (AW_CL)ntw,                              0);
+            awm->insert_menu_topic("selection_admin", "Selections ...",      "o", "species_configs.hlp", AWM_ALL, makeWindowCallback(NT_popup_configuration_admin, ntw));
 
             awm->sep______________();
 
@@ -1630,7 +1639,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
     awm->at(db_infox, second_uppery);
     awm->button_length(13);
     awm->help_text("species_configs.hlp");
-    awm->callback(NT_popup_configuration_admin, (AW_CL)ntw, 0);
+    awm->callback(makeWindowCallback(NT_popup_configuration_admin, ntw));
     awm->create_button("selection_admin2", AWAR_MARKED_SPECIES_COUNTER);
     {
         GBDATA *gb_species_data = GBT_get_species_data(GLOBAL.gb_main);
@@ -1660,15 +1669,18 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone) {
     return awm;
 }
 
-void NT_create_main_window(AW_root *aw_root) {
+AWT_canvas *NT_create_main_window(AW_root *aw_root) {
     GB_ERROR error = GB_request_undo_type(GLOBAL.gb_main, GB_UNDO_NONE);
     if (error) aw_message(error);
 
     nt_create_all_awars(aw_root, AW_ROOT_DEFAULT);
 
-    AW_window *aww = popup_new_main_window(aw_root, 0);
+    AWT_canvas *ntw = NULL;
+    AW_window  *aww = popup_new_main_window(aw_root, 0, &ntw);
     aww->show();
 
     error = GB_request_undo_type(GLOBAL.gb_main, GB_UNDO_UNDO);
     if (error) aw_message(error);
+
+    return ntw;
 }

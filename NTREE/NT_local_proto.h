@@ -58,9 +58,10 @@ void NT_rerepair_DB(AW_window *, AW_CL cl_gbmain, AW_CL dummy_1x);
 
 /* NT_edconf.cxx */
 void NT_activate_configMarkers_display(AWT_canvas *ntw);
-void NT_popup_configuration_admin(AW_window *aw_main, AW_CL cl_ntw, AW_CL dummy_1x);
+void NT_popup_configuration_admin(AW_window *aw_main, AWT_canvas *ntw);
 AW_window *NT_create_startEditorOnOldConfiguration_window(AW_root *awr);
-void NT_start_editor_on_tree(AW_window *, int use_species_aside, AWT_canvas *ntw);
+void NT_start_editor_on_tree(AW_window *aww, int use_species_aside, AWT_canvas *ntw);
+void NT_create_config_after_import(AWT_canvas *ntw, bool imported_from_scratch);
 
 /* NT_extern.cxx */
 void NT_start(const char *arb_ntree_args, bool restart_with_new_ARB_PID);
@@ -68,10 +69,10 @@ void NT_exit(AW_window *aws, AW_CL exitcode);
 void NT_restart(AW_root *aw_root, const char *arb_ntree_args);
 TreeNode *NT_get_tree_root_of_canvas(AWT_canvas *ntw);
 int NT_get_canvas_id(AWT_canvas *ntw);
-void NT_create_main_window(AW_root *aw_root);
+AWT_canvas *NT_create_main_window(AW_root *aw_root);
 
 /* NT_import.cxx */
-void NT_import_sequences(AW_window *aww, AW_CL dummy_1x, AW_CL dummy_2x);
+void NT_import_sequences(AW_window *aww, AWT_canvas *ntw);
 
 /* NT_join.cxx */
 AW_window *NT_create_species_join_window(AW_root *root);

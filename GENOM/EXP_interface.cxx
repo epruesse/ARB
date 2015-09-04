@@ -88,6 +88,7 @@ static GBDATA *EXP_get_first_experiment_data(GBDATA *gb_main, AW_root *aw_root, 
     GBDATA   *gb_organism = 0;
     GB_ERROR  error      = 0;
 
+    gen_assert(!old_species_marks); // old_species_marks may be out of date (better call EXP_get_(first|next)_experiment_data until it returns NULL!)
     exp_restore_old_species_marks(gb_main);
 
     switch (range) {
@@ -104,12 +105,14 @@ static GBDATA *EXP_get_first_experiment_data(GBDATA *gb_main, AW_root *aw_root, 
                 old_species_marks = GBT_store_marked_species(gb_main, true); // store and unmark marked species
                 error             = GBT_with_stored_species(gb_main, old_species_marks, GEN_mark_organism_or_corresponding_organism, 0); // mark organisms related with stored
 
-                if (!error) gb_organism = GEN_first_marked_organism(gb_main);
+                if (!error) {
+                    gb_organism = GEN_first_marked_organism(gb_main);
+                    if (!gb_organism) exp_restore_old_species_marks(gb_main); // got all -> clean up
+                }
             }
             else {
                 gb_organism = GEN_first_marked_organism(gb_main);
             }
-
             break;
         }
         case QUERY_ALL_ITEMS: {
@@ -137,7 +140,6 @@ static GBDATA *EXP_get_next_experiment_data(GBDATA *gb_experiment_data, QUERY_RA
             gb_organism             = GEN_next_marked_organism(gb_last_species);
 
             if (!gb_organism) exp_restore_old_species_marks(GB_get_root(gb_experiment_data)); // got all -> clean up
-
             break;
         }
         case QUERY_ALL_ITEMS: {

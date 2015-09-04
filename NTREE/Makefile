@@ -773,6 +773,7 @@ NT_dbrepair.o: $(ARBHOME)/INCLUDE/static_assert.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/test_global.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/ttypes.h
 
+NT_edconf.o: ad_trees.h
 NT_edconf.o: NT_local.h
 NT_edconf.o: NT_local_proto.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
@@ -835,6 +836,7 @@ NT_edconf.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
+NT_edconf.o: $(ARBHOME)/INCLUDE/awt_modules.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/cb.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/cb_base.h
@@ -843,6 +845,7 @@ NT_edconf.o: $(ARBHOME)/INCLUDE/cxxforward.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/downcast.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/dupstr.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/gccver.h
+NT_edconf.o: $(ARBHOME)/INCLUDE/RegExpr.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/smartptr.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/static_assert.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -927,6 +930,7 @@ NT_extern.o: $(ARBHOME)/INCLUDE/awt_TreeAwars.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/awt_www.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/awtc_submission.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/awti_export.hxx
+NT_extern.o: $(ARBHOME)/INCLUDE/awti_import.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/cb.h
 NT_extern.o: $(ARBHOME)/INCLUDE/cb_base.h
 NT_extern.o: $(ARBHOME)/INCLUDE/cbtypes.h

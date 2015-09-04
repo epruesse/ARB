@@ -532,7 +532,7 @@ static ARB_ERROR force_group_update(ED4_base *base) {
     return NULL;
 }
 
-ED4_returncode ED4_root::create_hierarchy(char *area_string_middle, char *area_string_top) {
+ED4_returncode ED4_root::create_hierarchy(const char *area_string_middle, const char *area_string_top) {
     // creates internal hierarchy of editor
 
     long total_no_of_groups  = 0;
@@ -1427,9 +1427,9 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->insert_menu_topic("new_win",        "New Editor Window",     "W", 0, AWM_ALL, ED4_new_editor_window);
     awmm->sep______________();
     awmm->insert_menu_topic("save_config",    "Save configuration",        "S", "species_configs_saveload.hlp", AWM_ALL, makeWindowCallback(ED4_save_configuration, false));
-    awmm->insert_menu_topic("save_config_as", "Save configuration as ...", "a", "species_configs_saveload.hlp", AWM_ALL, AW_POPUP,                                  (AW_CL)ED4_save_configuration_as_open_window, (int)0);
-    awmm->insert_menu_topic("load_config",    "Load configuration ...",    "L", "species_configs_saveload.hlp", AWM_ALL, AW_POPUP,                                  (AW_CL)ED4_start_editor_on_old_configuration, 0);
-    awmm->insert_menu_topic("reload_config",  "Reload configuration",      "R", "species_configs_saveload.hlp", AWM_ALL, ED4_restart_editor,                        0,                                            0);
+    awmm->insert_menu_topic("save_config_as", "Save configuration as ...", "a", "species_configs_saveload.hlp", AWM_ALL, ED4_save_configuration_as_open_window);
+    awmm->insert_menu_topic("load_config",    "Load configuration ...",    "L", "species_configs_saveload.hlp", AWM_ALL, ED4_start_editor_on_old_configuration);
+    awmm->insert_menu_topic("reload_config",  "Reload configuration",      "R", "species_configs_saveload.hlp", AWM_ALL, ED4_restart_editor);
     insert_macro_menu_entry(awmm, true);
     awmm->sep______________();
     GDE_load_menu(awmm, AWM_ALL, "Print");

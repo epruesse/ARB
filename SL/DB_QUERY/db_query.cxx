@@ -52,7 +52,7 @@ static void free_hit_description(long info) {
 inline void SET_QUERIED(GBDATA *gb_species, DbQuery *query, const char *hitInfo, size_t hitInfoLen = 0) {
     dbq_assert(hitInfo);
 
-    GB_set_user_flag(gb_species, query->select_bit);
+    GB_raise_user_flag(gb_species, query->select_bit);
 
     char *name = query->selector.generate_item_id(query->gb_main, gb_species);
     char *info;

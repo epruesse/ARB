@@ -2426,17 +2426,21 @@ bool GB_user_flag(GBDATA *gbd, unsigned char user_bit) {
     gb_assert(legal_user_bitmask(user_bit));
     return get_user_flags(gbd).user_bits & user_bit;
 }
-void GB_set_user_flag(GBDATA *gbd, unsigned char user_bit) {
+
+void GB_raise_user_flag(GBDATA *gbd, unsigned char user_bit) {
     gb_assert(legal_user_bitmask(user_bit));
     gb_flag_types2& flags  = get_user_flags(gbd);
     flags.user_bits       |= user_bit;
 }
-
 void GB_clear_user_flag(GBDATA *gbd, unsigned char user_bit) {
     gb_assert(legal_user_bitmask(user_bit));
     gb_flag_types2& flags  = get_user_flags(gbd);
     flags.user_bits       &= (user_bit^GB_USERFLAG_ANY);
 }
+void GB_write_user_flag(GBDATA *gbd, unsigned char user_bit, bool state) {
+    (state ? GB_raise_user_flag : GB_clear_user_flag)(gbd, user_bit);
+}
+
 
 // ------------------------
 //      mark DB entries

@@ -180,7 +180,7 @@ struct EDB_root_bact {
     ED4_returncode fill_species(ED4_multi_species_manager  *multi_species_manager,
                                 ED4_sequence_info_terminal *ref_sequence_info_terminal,
                                 ED4_sequence_terminal      *ref_sequence_terminal,
-                                char                       *string,
+                                const char                 *str,
                                 int                        *index,
                                 ED4_index                  *y,
                                 ED4_index                   curr_local_position,
@@ -211,7 +211,7 @@ struct EDB_root_bact {
     ED4_index scan_string(ED4_multi_species_manager  *parent,
                           ED4_sequence_info_terminal *ref_sequence_info_terminal,
                           ED4_sequence_terminal      *ref_sequence_terminal,
-                          char                       *string,
+                          const char                 *str,
                           int                        *index,
                           ED4_index                  *y,
                           arb_progress&               progress);
@@ -227,7 +227,7 @@ struct EDB_root_bact {
                                        bool                         is_folded,
                                        ED4_index                    local_count_position);
 
-    char *generate_config_string(char *confname);
+    void save_current_config(char *confname);
 
 
     EDB_root_bact() {}
@@ -1612,7 +1612,7 @@ public:
     inline ED4_device_manager *get_device_manager();
 
     // Initializing functions
-    ED4_returncode  create_hierarchy(char *area_string_middle, char *area_string_top);
+    ED4_returncode  create_hierarchy(const char *area_string_middle, const char *area_string_top);
     ARB_ERROR init_alignment();
     void recalc_font_group();
 
@@ -2350,7 +2350,7 @@ void ED4_request_full_refresh();
 void ED4_request_full_instant_refresh();
 
 AW_window *ED4_start_editor_on_old_configuration  (AW_root *awr);
-void       ED4_restart_editor          (AW_window *aww, AW_CL, AW_CL);
+void       ED4_restart_editor(AW_window *aww);
 void       ED4_save_configuration(AW_window *aww, bool hide_aww);
 AW_window *ED4_save_configuration_as_open_window  (AW_root *awr);
 

@@ -435,12 +435,51 @@ struct AWT_configuration_selection : public AW_DB_selection {
         : AW_DB_selection(sellist_, gb_configuration_data)
     {}
 
+    int getConfigInfo(const char *name, string& comment) {
+        // returns number of species in config + sets comment
+        GB_ERROR   error;
+        GBT_config cfg(get_gb_main(), name, error);
+
+        int count;
+        if (!error) {
+            comment = cfg.get_comment();
+            for (int area = 0; area<2; ++area) {
+                GBT_config_parser parser(cfg, area);
+                while (1) {
+                    const GBT_config_item& item = parser.nextItem(error);
+                    if (error || item.type == CI_END_OF_CONFIG) break;
+                    if (item.type == CI_SPECIES) ++count;
+                }
+            }
+        }
+        else {
+            comment = "";
+        }
+        return count;
+    }
+
     void fill() OVERRIDE {
         ConstStrArray config;
         GBT_get_configuration_names(config, get_gb_main());
 
         if (!config.empty()) {
-            for (int c = 0; config[c]; c++) insert(config[c], config[c]);
+            int     maxlen   = 0;
+            int     maxcount = 0;
+            int    *count    = new int[config.size()];
+            string *comment  = new string[config.size()];
+
+            for (int c = 0; config[c]; ++c) {
+                maxlen   = max(maxlen, int(strlen(config[c])));
+                count[c] = getConfigInfo(config[c], comment[c]);
+                maxcount = max(maxcount, count[c]);
+            }
+            int maxdigits = calc_digits(maxcount);
+            for (int c = 0; config[c]; ++c) {
+                int digits = calc_digits(count[c]);
+                insert(GBS_global_string("%-*s %*s(%i) %s", maxlen, config[c], (maxdigits-digits), "", count[c], comment[c].c_str()), config[c]);
+            }
+            delete [] comment;
+            delete [] count;
         }
         insert_default(DISPLAY_NONE, NO_CONFIG_SELECTED);
     }

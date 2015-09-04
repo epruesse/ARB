@@ -57,7 +57,7 @@ DESCRIPTION     Editor configurations define
                     Reloads the loaded configuration (i.e. undos all configuration changes made since
                     startup or last save of configuration)
 
-NOTES		None
+NOTES		"Editor configurations" and "Species selections" are synonyms!
 
 EXAMPLES	None
 
