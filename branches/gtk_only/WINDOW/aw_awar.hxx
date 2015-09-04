@@ -121,6 +121,7 @@ public:
     virtual AW_awar *map(AW_default dest)   = 0; // map to new address
     virtual AW_awar *map(AW_awar *dest)     = 0; // map to new address
     virtual AW_awar *unmap()                = 0; // map to original address
+    virtual bool is_mapped() const          = 0; // returns true if awar is remapped to new address
 
     // read access
     virtual bool        has_default_value() const = 0;

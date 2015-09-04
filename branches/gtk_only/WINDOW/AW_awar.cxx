@@ -774,9 +774,11 @@ AW_awar *AW_awar_impl::map(AW_awar *dest) {
 AW_awar *AW_awar_impl::map(const char *awarn) {
     return map(AW_root::SINGLETON->awar(awarn));
 }
-
 AW_awar *AW_awar_impl::unmap() {
     return this->map(gb_origin);
+}
+bool AW_awar_impl::is_mapped() const {
+    return gb_var != gb_origin;
 }
 
 void AW_awar_impl::unlink() {

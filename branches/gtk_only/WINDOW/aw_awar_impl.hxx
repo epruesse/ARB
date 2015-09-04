@@ -120,8 +120,9 @@ public:
 
     virtual AW_awar *map(const char *awarn) OVERRIDE;
     virtual AW_awar *map(AW_default dest) OVERRIDE; // map to new address
-    virtual AW_awar *map(AW_awar *dest) OVERRIDE; // map to new address
-    virtual AW_awar *unmap() OVERRIDE;           // map to original addres
+    virtual AW_awar *map(AW_awar *dest) OVERRIDE;   // map to new address
+    virtual AW_awar *unmap() OVERRIDE;              // map to original addres
+    virtual bool     is_mapped() const OVERRIDE;    // returns true if awar is remapped to new address
     virtual void     touch() OVERRIDE;
 };
 
@@ -232,4 +233,5 @@ public:
     GBDATA*     read_pointer() const OVERRIDE;
     GB_ERROR    reset_to_default() OVERRIDE;
 };
+
 

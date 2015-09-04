@@ -376,7 +376,7 @@ static GB_ERROR gbt_write_tree(GBDATA *gb_main, GBDATA *gb_tree, const char *tre
             // mark all old style tree data for deletion
             GBDATA *gb_node;
             for (gb_node = GB_entry(gb_tree, "node"); gb_node; gb_node = GB_nextEntry(gb_node)) {
-                GB_set_user_flag(gb_node, GB_USERFLAG_GHOSTNODE); // mark as "possibly unused"
+                GB_raise_user_flag(gb_node, GB_USERFLAG_GHOSTNODE); // mark as "possibly unused"
             }
 
             // build tree-string and save to DB
