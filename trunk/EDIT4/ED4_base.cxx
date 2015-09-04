@@ -328,9 +328,9 @@ ED4_returncode ED4_base::generate_configuration_string(char **generated_string)
         if (species_type == ED4_SP_CONSENSUS) {
             cons_id = new char[strlen(id)+1];
             int i;
-            for (i=0; id[i] != '(' && id[i] != '\0'; i++) cons_id[i] = id[i];
-            if (id[i] == '(') cons_id[i-1] = '\0';
-            new_size   = old_size + strlen(cons_id) + 2;
+            for (i=0; id[i] && id[i]!='('; i++) cons_id[i] = id[i];
+            cons_id[i-(id[i]=='(')] = 0;
+            new_size = old_size + strlen(cons_id) + 2;
         }
         else { // we are Species or SAI
             int len;
