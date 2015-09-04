@@ -1227,7 +1227,7 @@ public:
     ED4_terminal        *get_next_terminal();
     ED4_terminal        *get_prev_terminal();
 
-    ED4_returncode      generate_configuration_string(char **generated_string);
+    void generate_configuration_string(GBS_strstruct& buffer);
 
     virtual ED4_returncode  remove_callbacks();
     

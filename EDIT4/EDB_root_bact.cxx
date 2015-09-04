@@ -587,19 +587,14 @@ void EDB_root_bact::save_current_config(char *confname) { // and save it in data
 
     int                 counter        = 0;
     ED4_device_manager *device_manager = ED4_ROOT->get_device_manager();
+    ED4_members        *children       = device_manager->children;
 
-    for (int i=0; i<device_manager->children->members(); i++) {
-        if (device_manager->children->member(i)->is_area_manager()) {
-            char *generated_string = NULL;
-            device_manager->children->member(i)->generate_configuration_string(&generated_string); // @@@ should use GBS_strstruct!
-
-            long string_length = strlen(generated_string);
-            if (generated_string[string_length - 1] == 1) generated_string[string_length - 1] = '\0';
-
-            cfg.set_definition(counter++, strdup(generated_string)); // (need strdup, otherwise memchecker will complain free/del mismatch)
-
-            delete [] generated_string;
-            generated_string = NULL;
+    for (int i=0; i<children->members(); i++) {
+        ED4_base *area = children->member(i);
+        if (area->is_area_manager()) {
+            GBS_strstruct area_config(10000);
+            area->generate_configuration_string(area_config);
+            cfg.set_definition(counter++, area_config.release());
         }
     }
 
