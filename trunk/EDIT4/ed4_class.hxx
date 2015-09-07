@@ -2320,69 +2320,7 @@ inline ED4_species_name_terminal *ED4_multi_species_manager::get_consensus_name_
     return consensus_man ? consensus_man->get_name_terminal() : NULL;
 }
 
-// --------------------------------------------
-//      Prototype functions without a class
-
-extern      ST_ML *st_ml;
-
-void ED4_with_all_edit_windows(void (*cb)(ED4_window *));
-
-void ED4_expose_recalculations();
-void ED4_calc_terminal_extentions();
-
-void        ED4_input_cb            (AW_window *aww);
-
-void ED4_remote_event(AW_event *faked_event);
-
-void        ED4_quit                    (AW_window *aww, AW_CL cd1, AW_CL cd2);
-void        ED4_motion_cb               (AW_window *aww);
-void        ED4_vertical_change_cb      (AW_window *aww);
-void        ED4_horizontal_change_cb    (AW_window *aww);
-void        ED4_scrollbar_change_cb     (AW_window *aww);
-
-void        ED4_no_dangerous_modes      ();
-void        group_species_cb        (AW_window *aww, AW_CL cd1, AW_CL cd2);
-AW_window   *ED4_create_group_species_by_field_window(AW_root *aw_root);
-
-void ED4_trigger_instant_refresh();
-void ED4_request_relayout();
-void ED4_request_full_refresh();
-void ED4_request_full_instant_refresh();
-
-AW_window *ED4_start_editor_on_old_configuration  (AW_root *awr);
-void       ED4_restart_editor(AW_window *aww);
-void       ED4_save_configuration(AW_window *aww, bool hide_aww);
-AW_window *ED4_save_configuration_as_open_window  (AW_root *awr);
-
-void        ED4_set_iupac           (AW_window *aww, char *awar_name, bool callback_flag);
-void        ED4_set_helixnr         (AW_window *aww, char *awar_name, bool callback_flag);
-void        ed4_changesecurity      (AW_root *root, AW_CL cd1);
-void        ed4_change_edit_mode        (AW_root *root, AW_CL cd1);
-
-ARB_ERROR rebuild_consensus(ED4_base *object);
-
-void ED4_exit() __ATTR__NORETURN;
-
-void        ED4_quit_editor         (AW_window *aww);                 // Be Careful: Is this the last window?
-
-void        ED4_store_curpos        (AW_window *aww);
-void        ED4_restore_curpos      (AW_window *aww);
-void        ED4_clear_stored_curpos     ();
-void        ED4_helix_jump_opposite     (AW_window *aww);
-void        ED4_jump_to_cursor_position (AW_window *aww, AW_CL cl_awar_name, AW_CL cl_pos_type);
-void        ED4_remote_set_cursor_cb    (AW_root *awr);
-void        ED4_change_cursor       (AW_window *aww);
-void        ED4_set_reference_species   (AW_window *aww, AW_CL cd1, AW_CL cd2);
-
-void        ED4_new_editor_window       (AW_window *aww);
-
-AW_window  *ED4_create_consensus_definition_window(AW_root *root);
-void        ED4_create_consensus_awars(AW_root *aw_root);
-void        ED4_consensus_definition_changed(AW_root*);
-void        ED4_consensus_display_changed(AW_root *root);
-
-AW_window   *ED4_create_level_1_options_window  (AW_root *root);
-void        ED4_compression_toggle_changed_cb   (AW_root *root, AW_CL cd1, AW_CL cd2);
+// ----------------------------------------
 
 enum SpeciesCreationMode {
     CREATE_NEW_SPECIES,
@@ -2394,34 +2332,89 @@ enum SpeciesCreationMode {
 CONSTEXPR_RETURN inline bool valid(SpeciesCreationMode m) { return m>=CREATE_NEW_SPECIES && m<=COPY_SPECIES; }
 #endif
 
-AW_window *ED4_create_new_seq_window(AW_root *root, SpeciesCreationMode creation_mode);
+extern ST_ML *st_ml;
+struct AlignDataAccess;
 
-void ED4_jump_to_current_species     (AW_window *, AW_CL);
-void ED4_get_and_jump_to_current      (AW_window *, AW_CL);
-void ED4_get_and_jump_to_current_from_menu    (AW_window *aw, AW_CL cl, AW_CL);
-void ED4_get_and_jump_to_species     (GB_CSTR species_name);
-void ED4_get_marked_from_menu        (AW_window *, AW_CL, AW_CL);
-void ED4_selected_species_changed_cb     (AW_root *aw_root);
-void ED4_selected_SAI_changed_cb     (AW_root *aw_root);
+// --------------------------------------------
+//      Prototype functions without a class
+
+void ED4_new_editor_window(AW_window *aww);
+void ED4_with_all_edit_windows(void (*cb)(ED4_window *));
+
+void ED4_expose_recalculations();
+void ED4_calc_terminal_extentions();
+
+void ED4_input_cb(AW_window *aww);
+void ED4_remote_event(AW_event *faked_event);
+void ED4_motion_cb(AW_window *aww);
+void ED4_vertical_change_cb(AW_window *aww);
+void ED4_horizontal_change_cb(AW_window *aww);
+void ED4_scrollbar_change_cb(AW_window *aww);
+void ED4_trigger_instant_refresh();
+void ED4_request_relayout();
+void ED4_request_full_refresh();
+void ED4_request_full_instant_refresh();
+
+void ED4_store_curpos(AW_window *aww);
+void ED4_restore_curpos(AW_window *aww);
+void ED4_clear_stored_curpos();
+void ED4_helix_jump_opposite(AW_window *aww);
+void ED4_jump_to_cursor_position(AW_window *aww, AW_CL cl_awar_name, AW_CL cl_pos_type);
+void ED4_remote_set_cursor_cb(AW_root *awr);
+void ED4_change_cursor(AW_window *aww);
+
+void ED4_set_iupac(AW_window *aww, char *awar_name, bool callback_flag);
+void ED4_set_helixnr(AW_window *aww, char *awar_name, bool callback_flag);
+void ed4_changesecurity(AW_root *root, AW_CL cd1);
+void ed4_change_edit_mode(AW_root *root, AW_CL cd1);
+
+void ED4_jump_to_current_species(AW_window *, AW_CL);
+void ED4_get_and_jump_to_current(AW_window *, AW_CL);
+void ED4_get_and_jump_to_current_from_menu(AW_window *aw, AW_CL cl, AW_CL);
+void ED4_get_and_jump_to_species(GB_CSTR species_name);
+
+void ED4_get_marked_from_menu(AW_window *, AW_CL, AW_CL);
+void ED4_selected_species_changed_cb(AW_root *aw_root);
+void ED4_selected_SAI_changed_cb(AW_root *aw_root);
 
 void ED4_init_notFoundMessage();
 void ED4_finish_and_show_notFoundMessage();
 
+void ED4_init_aligner_data_access(AlignDataAccess *data_access);
+void ED4_set_reference_species(AW_window *aww, AW_CL cd1, AW_CL cd2);
+
+void ED4_popup_gc_window(AW_window *awp, AW_gc_manager gcman);
+void ED4_no_dangerous_modes();
+
+void       group_species_cb(AW_window *aww, AW_CL cd1, AW_CL cd2);
+AW_window *ED4_create_group_species_by_field_window(AW_root *aw_root);
+
+AW_window *ED4_start_editor_on_old_configuration(AW_root *awr);
+void       ED4_restart_editor(AW_window *aww);
+void       ED4_save_configuration(AW_window *aww, bool hide_aww);
+AW_window *ED4_save_configuration_as_open_window(AW_root *awr);
+
+ARB_ERROR  rebuild_consensus(ED4_base *object);
+
+void       ED4_create_consensus_awars(AW_root *aw_root);
+AW_window *ED4_create_consensus_definition_window(AW_root *root);
+void       ED4_consensus_definition_changed(AW_root*);
+void       ED4_consensus_display_changed(AW_root *root);
+
+AW_window *ED4_create_level_1_options_window(AW_root *root);
+void       ED4_compression_toggle_changed_cb(AW_root *root, AW_CL cd1, AW_CL cd2);
+void       ED4_compression_changed_cb(AW_root *awr);
+void       ED4_alignment_length_changed(GBDATA *gb_alignment_len, GB_CB_TYPE gbtype);
+
+AW_window *ED4_create_new_seq_window(AW_root *root, SpeciesCreationMode creation_mode);
+
 ED4_species_name_terminal *ED4_find_species_name_terminal(const char *species_name);
 ED4_multi_species_manager *ED4_new_species_multi_species_manager();     // returns manager into which new species should be inserted
 
-void ED4_compression_changed_cb(AW_root *awr);
+void ED4_quit_editor(AW_window *aww);
+void ED4_quit(AW_window *aww, AW_CL cd1, AW_CL cd2);
+void ED4_exit() __ATTR__NORETURN;
 
-// functions passed to external c-functions (i.e. as callbacks) have to be declared as 'extern "C"'
-
-extern "C" {
-    void ED4_alignment_length_changed(GBDATA *gb_alignment_len, GB_CB_TYPE gbtype);
-}
-
-struct AlignDataAccess;
-void ED4_init_aligner_data_access(AlignDataAccess *data_access);
-
-void ED4_popup_gc_window(AW_window *awp, AW_gc_manager gcman);
 
 #else
 #error ed4_class included twice
