@@ -392,8 +392,9 @@ static void PV_WriteTranslatedSequenceToDB(ED4_orf_terminal *aaSeqTerm, const ch
         else {
             GBDATA *gb_SeqData = GBT_find_sequence(gb_species, defaultAlignment);
             if (!gb_SeqData) {
-                error = GB_get_error();
-                if (!error) error = GBS_global_string("Species '%s' has no data in alignment '%s'", spName, defaultAlignment);
+                error = GB_have_error()
+                    ? GB_await_error()
+                    : GBS_global_string("Species '%s' has no data in alignment '%s'", spName, defaultAlignment);
             }
             else {
                 char *str_SeqData       = GB_read_string(gb_SeqData);
@@ -522,8 +523,9 @@ static void TranslateGeneToAminoAcidSequence(AW_root * /* root */, ED4_orf_termi
         else {
             GBDATA *gb_SeqData = GBT_find_sequence(gb_species, defaultAlignment);
             if (!gb_SeqData) {
-                error = GB_get_error();
-                if (!error) error = GBS_global_string("Species '%s' has no data in alignment '%s'", speciesName, defaultAlignment);
+                error = GB_have_error()
+                    ? GB_await_error()
+                    : GBS_global_string("Species '%s' has no data in alignment '%s'", speciesName, defaultAlignment);
             }
             else {
                 e4_assert(startPos4Translation>=0 && startPos4Translation<=2);
