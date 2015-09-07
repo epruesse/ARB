@@ -1424,12 +1424,12 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
 
     awmm->create_menu("File", "F", AWM_ALL);
 
-    awmm->insert_menu_topic("new_win",        "New Editor Window",     "W", 0, AWM_ALL, ED4_new_editor_window);
+    awmm->insert_menu_topic("new_win", "New Editor Window", "W", 0, AWM_ALL, ED4_new_editor_window);
     awmm->sep______________();
-    awmm->insert_menu_topic("save_config",    "Save configuration",        "S", "species_configs_saveload.hlp", AWM_ALL, makeWindowCallback(ED4_save_configuration, false));
-    awmm->insert_menu_topic("save_config_as", "Save configuration as ...", "a", "species_configs_saveload.hlp", AWM_ALL, ED4_save_configuration_as_open_window);
-    awmm->insert_menu_topic("load_config",    "Load configuration ...",    "L", "species_configs_saveload.hlp", AWM_ALL, ED4_start_editor_on_old_configuration);
-    awmm->insert_menu_topic("reload_config",  "Reload configuration",      "R", "species_configs_saveload.hlp", AWM_ALL, ED4_restart_editor);
+    awmm->insert_menu_topic("save_config",                    "Save configuration",        "S", "species_configs_saveload.hlp", AWM_ALL, makeWindowCallback(ED4_saveConfiguration, false));
+    awmm->insert_menu_topic(awmm->local_id("save_config_as"), "Save configuration as ...", "a", "species_configs_saveload.hlp", AWM_ALL, ED4_create_saveConfigurationAs_window);
+    awmm->insert_menu_topic(awmm->local_id("load_config"),    "Load configuration ...",    "L", "species_configs_saveload.hlp", AWM_ALL, ED4_create_loadConfiguration_window);
+    awmm->insert_menu_topic("reload_config",                  "Reload configuration",      "R", "species_configs_saveload.hlp", AWM_ALL, ED4_reloadConfiguration);
     insert_macro_menu_entry(awmm, true);
     awmm->sep______________();
     GDE_load_menu(awmm, AWM_ALL, "Print");
@@ -1442,9 +1442,9 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     //      Create
 
     awmm->create_menu("Create", "C", AWM_ALL);
-    awmm->insert_menu_topic("create_species",                "Create new species",                "n", 0, AWM_ALL, makeCreateWindowCallback(ED4_create_new_seq_window, CREATE_NEW_SPECIES));
-    awmm->insert_menu_topic("create_species_from_consensus", "Create new species from consensus", "u", 0, AWM_ALL, makeCreateWindowCallback(ED4_create_new_seq_window, CREATE_FROM_CONSENSUS));
-    awmm->insert_menu_topic("copy_species",                  "Copy current species",              "C", 0, AWM_ALL, makeCreateWindowCallback(ED4_create_new_seq_window, COPY_SPECIES));
+    awmm->insert_menu_topic(awmm->local_id("create_species"),                "Create new species",                "n", 0, AWM_ALL, makeCreateWindowCallback(ED4_create_new_seq_window, CREATE_NEW_SPECIES));
+    awmm->insert_menu_topic(awmm->local_id("create_species_from_consensus"), "Create new species from consensus", "u", 0, AWM_ALL, makeCreateWindowCallback(ED4_create_new_seq_window, CREATE_FROM_CONSENSUS));
+    awmm->insert_menu_topic(awmm->local_id("copy_species"),                  "Copy current species",              "C", 0, AWM_ALL, makeCreateWindowCallback(ED4_create_new_seq_window, COPY_SPECIES));
     awmm->sep______________();
     awmm->insert_menu_topic("create_group",           "Create new Group",              "G", 0, AWM_ALL, group_species_cb, 0, 0);
     awmm->insert_menu_topic("create_groups_by_field", "Create new groups using Field", "F", 0, AWM_ALL, group_species_cb, 1, 0);
@@ -1601,11 +1601,11 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->create_menu("Properties", "P", AWM_ALL);
 
 #ifdef ARB_MOTIF
-    awmm->insert_menu_topic("props_frame", "Frame Settings ", "F", 0, AWM_ALL, AW_preset_window);
+    awmm->insert_menu_topic(awmm->local_id("props_frame"), "Frame settings ...", "F", 0, AWM_ALL, AW_preset_window);
 #endif
 
-    awmm->insert_menu_topic("props_options",   "Editor Options ",       "O", "e4_options.hlp",   AWM_ALL, ED4_create_level_1_options_window);
-    awmm->insert_menu_topic("props_consensus", "Consensus Definition ", "u", "e4_consensus.hlp", AWM_ALL, ED4_create_consensus_definition_window);
+    awmm->insert_menu_topic(awmm->local_id("props_options"),   "Editor Options ",       "O", "e4_options.hlp",   AWM_ALL, ED4_create_level_1_options_window);
+    awmm->insert_menu_topic(awmm->local_id("props_consensus"), "Consensus Definition ", "u", "e4_consensus.hlp", AWM_ALL, ED4_create_consensus_definition_window);
     awmm->sep______________();
 
     awmm->insert_menu_topic("props_data",       "Change Colors & Fonts ", "C", 0,                     AWM_ALL, makeWindowCallback(ED4_popup_gc_window, first_gc_manager));

@@ -1608,6 +1608,9 @@ void GEN_map_window::init(AW_root *awr, GBDATA *gb_main) {
 
     // Properties Menu
     create_menu("Properties", "r", AWM_ALL);
+#if defined(ARB_MOTIF)
+    insert_menu_topic(local_id("gene_props_menu"), "Frame settings ...",                  "M", "props_frame.hlp", AWM_ALL, AW_preset_window);
+#endif
     insert_menu_topic(local_id("gene_props"),      "GENEMAP: Colors and Fonts ...",       "C", "color_props.hlp", AWM_ALL, makeCreateWindowCallback(AW_create_gc_window, gen_canvas->gc_manager)); // @@@ FIXME: replace AW_create_gc_window by local function returning same window for all mapped views
     insert_menu_topic(local_id("gene_options"),    "Options",                             "O", "gen_options.hlp", AWM_ALL, GEN_create_options_window);
     insert_menu_topic("gene_nds",                  "NDS ( Select Gene Information ) ...", "N", "props_nds.hlp",   AWM_ALL, AW_POPUP, (AW_CL)GEN_open_nds_window, (AW_CL)gb_main);
