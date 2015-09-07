@@ -1545,30 +1545,29 @@ void ED4_create_consensus_awars(AW_root *aw_root) {
     cons_show->add_callback(ED4_consensus_display_changed);
 }
 
-void ED4_restart_editor(AW_window *aww) {
+void ED4_reloadConfiguration(AW_window *aww) {
     ED4_start_editor_on_configuration(aww);
 }
 
-AW_window *ED4_start_editor_on_old_configuration(AW_root *awr) {
+AW_window *ED4_create_loadConfiguration_window(AW_root *awr) {
     static AW_window_simple *aws = 0;
-
     if (!aws) {
         aws = new AW_window_simple;
-        aws->init(awr, "LOAD_OLD_CONFIGURATION", "SELECT A CONFIGURATION");
+        aws->init(awr, "LOAD_CONFIGURATION", "Load existing configuration");
+        aws->load_xfig("edit4/load_config.fig");
 
-        aws->at(10, 10);
-        aws->auto_space(0, 0);
-
+        aws->at("close");
         aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
 
+        aws->at("help");
         aws->callback(makeHelpCallback("species_configs_saveload.hlp"));
         aws->create_button("HELP", "HELP");
 
+        aws->at("confs");
         awt_create_CONFIG_selection_list(GLOBAL_gb_main, aws, AWAR_EDIT_CONFIGURATION, false);
 
-        aws->at_newline();
-
+        aws->at("go");
         aws->callback((AW_CB0)ED4_start_editor_on_configuration);
         aws->create_button("LOAD", "LOAD");
 
@@ -1577,7 +1576,7 @@ AW_window *ED4_start_editor_on_old_configuration(AW_root *awr) {
     return aws;
 }
 
-void ED4_save_configuration(AW_window *aww, bool hide_aww) {
+void ED4_saveConfiguration(AW_window *aww, bool hide_aww) {
     if (hide_aww) aww->hide();
 
     char *name = aww->get_root()->awar(AWAR_EDIT_CONFIGURATION)->read_string();
@@ -1585,11 +1584,11 @@ void ED4_save_configuration(AW_window *aww, bool hide_aww) {
     free(name);
 }
 
-AW_window *ED4_save_configuration_as_open_window(AW_root *awr) {
+AW_window *ED4_create_saveConfigurationAs_window(AW_root *awr) {
     static AW_window_simple *aws = 0;
     if (!aws) {
         aws = new AW_window_simple;
-        aws->init(awr, "SAVE_CONFIGURATION", "SAVE A CONFIGURATION");
+        aws->init(awr, "SAVE_CONFIGURATION", "Save current configuration as");
         aws->load_xfig("edit4/save_config.fig");
 
         aws->at("close");
@@ -1607,7 +1606,7 @@ AW_window *ED4_save_configuration_as_open_window(AW_root *awr) {
         awt_create_CONFIG_selection_list(GLOBAL_gb_main, aws, AWAR_EDIT_CONFIGURATION, false);
 
         aws->at("go");
-        aws->callback(makeWindowCallback(ED4_save_configuration, true));
+        aws->callback(makeWindowCallback(ED4_saveConfiguration, true));
         aws->create_button("SAVE", "SAVE");
     }
     return aws;

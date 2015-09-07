@@ -1378,6 +1378,9 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
 
     awm->create_menu("Properties", "P", AWM_ALL);
     {
+#if defined(ARB_MOTIF)
+        awm->insert_menu_topic("props_menu",  "Frame settings ...",      "F", "props_frame.hlp",      AWM_ALL, AW_preset_window);
+#endif
         awm->insert_menu_topic("props_tree2", "Tree options",            "o", "nt_tree_settings.hlp", AWM_ALL, TREE_create_settings_window);
         awm->insert_menu_topic("props_tree",  "Tree colors & fonts",     "c", "color_props.hlp",      AWM_ALL, makeCreateWindowCallback(AW_create_gc_window, ntw->gc_manager));
         awm->insert_menu_topic("props_kl",    "Optimizer settings (KL)", "K", "kernlin.hlp",          AWM_ALL, makeCreateWindowCallback(create_kernighan_properties_window));
@@ -1525,7 +1528,9 @@ static AW_window *create_pars_init_window(AW_root *awr, const PARS_commands *cmd
     aws->callback(pars_exit);
     aws->at("close");
     aws->create_button("ABORT", "ABORT", "A");
+#if defined(ARB_GTK)
     aws->set_close_action("ABORT");
+#endif
 
     aws->callback(makeHelpCallback("arb_pars_init.hlp"));
     aws->at("help");

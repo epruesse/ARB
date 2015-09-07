@@ -1400,11 +1400,17 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone, AWT_canvas **re
 
         awm->create_menu("Properties", "r", AWM_ALL);
         {
+#if defined(ARB_MOTIF)
+            awm->insert_menu_topic("props_menu",                 "Frame settings ...",          "F", "props_frame.hlp",      AWM_ALL, AW_preset_window);
+#endif
             awm->insert_menu_topic(awm->local_id("props_tree2"), "Tree options",                "o", "nt_tree_settings.hlp", AWM_ALL, TREE_create_settings_window);
             awm->insert_menu_topic("props_tree",                 "Tree colors & fonts",         "c", "color_props.hlp",      AWM_ALL, makeCreateWindowCallback(AW_create_gc_window, ntw->gc_manager));
             awm->insert_menu_topic("props_www",                  "Search world wide web (WWW)", "W", "props_www.hlp",        AWM_ALL, makeCreateWindowCallback(AWT_create_www_window, GLOBAL.gb_main));
             awm->sep______________();
             awm->insert_menu_topic("!toggle_expert", "Toggle expert mode",         "x", 0, AWM_ALL, NT_toggle_expert_mode,  0, 0);
+#if defined(ARB_MOTIF)
+            awm->insert_menu_topic("!toggle_focus",  "Toggle focus follows mouse", "m", 0, AWM_ALL, NT_toggle_focus_policy, 0, 0);
+#endif
             awm->sep______________();
             AW_insert_common_property_menu_entries(awm);
             awm->sep______________();
@@ -1465,10 +1471,14 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone, AWT_canvas **re
     }
     else {
         awm->callback(NT_exit, EXIT_SUCCESS);
+#if defined(ARB_GTK)
         awm->set_hide_on_close(false); //the main window should really close when closed
+#endif
         awm->help_text("quit.hlp");
         awm->create_button("QUIT", "#quit.xpm");
+#if defined(ARB_GTK)
         awm->set_close_action("QUIT");
+#endif
     }
 
     int db_pathx = awm->get_at_xposition();

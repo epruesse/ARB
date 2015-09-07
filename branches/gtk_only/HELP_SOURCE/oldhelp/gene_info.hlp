@@ -46,11 +46,8 @@ NOTES           The 'SEARCH & QUERY' window can be displayed by pressing the <SE
                 window (ARB_NT/Protection) equal to or higher than that
                 assigned to the selected 'field'
 
-                Cut and paste of the window system can be used in the 'Edit
-                box' subwindow. This provides is an easy way to export/import
-                data.
-                Use the left mouse button to mark (cut is done automatically).
-                Then use the middle mouse button to paste.
+		LINK{copyNpaste.hlp} can be used in the 'Edit box' subwindow. 
+		This provides is easy way to manually export/import data.
 
                 When you open this window it will always show the information of
                 the current species. That means if you select another species (in ARB_NT or in the editor)
