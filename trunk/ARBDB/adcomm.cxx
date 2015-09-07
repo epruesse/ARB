@@ -1519,7 +1519,7 @@ GB_ERROR gbcmc_begin_transaction(GBDATA *gbd) {
                 }
                 break;
             case GBCM_COMMAND_PUT_UPDATE_CREATE:
-                if (gbcm_read_bin(socket, gb2->as_container(), buffer, mode, 0, 0)) {
+                if (gbcm_read_bin(socket, GBDATA::as_container(gb2), buffer, mode, 0, 0)) {
                     return CLIENT_RECEIVE_ERROR();
                 }
                 if (gb2) {
