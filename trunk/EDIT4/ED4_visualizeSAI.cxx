@@ -724,15 +724,15 @@ AW_window *ED4_createVisualizeSAI_window(AW_root *aw_root) {
 
         aws->at("edit");
         aws->button_length(10);
-        aws->callback(AW_POPUP, (AW_CL)create_editColorTranslationTable_window, 0);
+        aws->callback(create_editColorTranslationTable_window);
         aws->create_button("EDIT", "EDIT");
 
         aws->at("create");
-        aws->callback(AW_POPUP, (AW_CL)create_createColorTranslationTable_window, 0);
+        aws->callback(create_createColorTranslationTable_window);
         aws->create_button("CREATE", "CREATE");
 
         aws->at("copy");
-        aws->callback(AW_POPUP, (AW_CL)create_copyColorTranslationTable_window, 0);
+        aws->callback(create_copyColorTranslationTable_window);
         aws->create_button("COPY", "COPY");
 
         aws->at("delete");

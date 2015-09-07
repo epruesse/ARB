@@ -1037,7 +1037,7 @@ AW_window *ED4_CreateProteinViewer_window(AW_root *aw_root) {
         aws->update_toggle_field();
 
         aws->at("colMaps");
-        aws->callback(AW_POPUP, (AW_CL)create_seq_colors_window, (AW_CL)ED4_ROOT->sequence_colors);
+        aws->callback(makeCreateWindowCallback(create_seq_colors_window, ED4_ROOT->sequence_colors));
         aws->button_length(0);
         aws->create_button("COLORMAPS", "#colorMaps.xpm");
 

@@ -1061,7 +1061,7 @@ static void ED4_clear_errors(AW_window *aww, AW_CL) {
     aw_clear_message_cb(aww);
 }
 
-static AW_window *ED4_zoom_message_window(AW_root *root, AW_CL)
+static AW_window *ED4_zoom_message_window(AW_root *root)
 {
     AW_window_simple *aws = new AW_window_simple;
 
@@ -1285,9 +1285,7 @@ void ED4_init_aligner_data_access(AlignDataAccess *data_access) {
     if (error) aw_message(error);
 }
 
-static AW_window *ED4_create_faligner_window(AW_root *awr, AW_CL cl_AlignDataAccess) {
-    AlignDataAccess *data_access = (AlignDataAccess*)cl_AlignDataAccess;
-
+static AW_window *ED4_create_faligner_window(AW_root *awr, AlignDataAccess *data_access) {
 #if defined(DEBUG)
     static AlignDataAccess *last_data_access = NULL;
 
@@ -1480,11 +1478,11 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
 #endif
     
     awmm->sep______________();
-    awmm->insert_menu_topic("fast_aligner",       INTEGRATED_ALIGNERS_TITLE,             "I", "faligner.hlp",     AWM_ALL,            AW_POPUP,                               (AW_CL)ED4_create_faligner_window, (AW_CL)&dataAccess_4_aligner);
-    awmm->insert_menu_topic("fast_align_set_ref", "Set aligner reference [Ctrl-R]",      "R", "faligner.hlp",     AWM_ALL,            (AW_CB)FastAligner_set_reference_species, (AW_CL)aw_root,                    0);
-    awmm->insert_menu_topic("align_sequence",     "Old aligner from ARB_EDIT [broken]",  "O", "ne_align_seq.hlp", AWM_DISABLED,       AW_POPUP,                               (AW_CL)create_naligner_window,     0);
-    awmm->insert_menu_topic("sina",               "SINA (SILVA Incremental Aligner)",    "S", "sina_main.hlp",    sina_mask(aw_root), makeWindowCallback(show_sina_window, &dataAccess_4_aligner));
-    awmm->insert_menu_topic("del_ali_tmp",        "Remove all aligner Entries",          "v", 0,                  AWM_ALL,            ED4_remove_faligner_entries,            1,                                 0);
+    awmm->insert_menu_topic(awmm->local_id("fast_aligner"),   INTEGRATED_ALIGNERS_TITLE,            "I", "faligner.hlp",     AWM_ALL,            makeCreateWindowCallback(ED4_create_faligner_window, &dataAccess_4_aligner));
+    awmm->insert_menu_topic("fast_align_set_ref",             "Set aligner reference [Ctrl-R]",     "R", "faligner.hlp",     AWM_ALL,            (AW_CB)FastAligner_set_reference_species, (AW_CL)aw_root,                    0);
+    awmm->insert_menu_topic(awmm->local_id("align_sequence"), "Old aligner from ARB_EDIT [broken]", "O", "ne_align_seq.hlp", AWM_DISABLED,       create_naligner_window);
+    awmm->insert_menu_topic("sina",                           "SINA (SILVA Incremental Aligner)",   "S", "sina_main.hlp",    sina_mask(aw_root), makeWindowCallback(show_sina_window, &dataAccess_4_aligner));
+    awmm->insert_menu_topic("del_ali_tmp",                    "Remove all aligner Entries",         "v", 0,                  AWM_ALL,            ED4_remove_faligner_entries,            1,                                 0);
     awmm->sep______________();
     awmm->insert_menu_topic("missing_bases", "Dot potentially missing bases", "D", "missbase.hlp", AWM_EXP, ED4_popup_dot_missing_bases_window, 0, 0);
 
@@ -1552,12 +1550,12 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->insert_menu_topic("detail_col_stat",  "Toggle detailed Col.-Stat.", "C", "st_ml.hlp", AWM_EXP, ED4_toggle_detailed_column_stats, 0, 0);
     awmm->insert_menu_topic("dcs_threshold",    "Set threshold for D.c.s.",   "f", "st_ml.hlp", AWM_EXP, ED4_set_col_stat_threshold,       0, 0);
     awmm->sep______________();
-    awmm->insert_menu_topic("visualize_SAI", "Visualize SAIs",                "z", "visualizeSAI.hlp",   AWM_ALL, AW_POPUP,             (AW_CL)ED4_createVisualizeSAI_window, 0);
-    awmm->insert_menu_topic("toggle_saisec", "Toggle secondary info for SAI", "o", "toggle_secinfo.hlp", AWM_ALL, toggle_helix_for_SAI, 0,                                    0);
+    awmm->insert_menu_topic(awmm->local_id("visualize_SAI"), "Visualize SAIs",                "z", "visualizeSAI.hlp",   AWM_ALL, ED4_createVisualizeSAI_window);
+    awmm->insert_menu_topic("toggle_saisec",                 "Toggle secondary info for SAI", "o", "toggle_secinfo.hlp", AWM_ALL, toggle_helix_for_SAI, 0,                                    0);
 
     // Enable ProteinViewer only for DNA sequence type
     if (alignment_type == GB_AT_DNA) {
-        awmm->insert_menu_topic("Protein_Viewer", "Protein Viewer", "w", "proteinViewer.hlp", AWM_ALL, AW_POPUP, (AW_CL)ED4_CreateProteinViewer_window, 0);
+        awmm->insert_menu_topic(awmm->local_id("Protein_Viewer"), "Protein Viewer", "w", "proteinViewer.hlp", AWM_ALL, ED4_CreateProteinViewer_window);
     }
 
     // ---------------
@@ -1588,8 +1586,8 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->insert_menu_topic("unalignBlockCenter", "Unalign block center", "c", "e4_block.hlp", AWM_ALL, ED4_menu_perform_block_operation, AW_CL(ED4_BO_UNALIGN_CENTER), 0);
     awmm->insert_menu_topic("unalignBlockRight",  "Unalign block right",  "b", "e4_block.hlp", AWM_ALL, ED4_menu_perform_block_operation, AW_CL(ED4_BO_UNALIGN_RIGHT),  0);
     awmm->sep______________();
-    awmm->insert_menu_topic("replace", "Search & Replace ", "h", "e4_replace.hlp", AWM_ALL, AW_POPUP, AW_CL(ED4_create_replace_window), 0);
-    awmm->insert_menu_topic("setsai",  "Modify SAI ",       "y", "e4_modsai.hlp",  AWM_ALL, AW_POPUP, AW_CL(ED4_create_modsai_window),  0);
+    awmm->insert_menu_topic(awmm->local_id("replace"), "Search & Replace ", "h", "e4_replace.hlp", AWM_ALL, ED4_create_replace_window);
+    awmm->insert_menu_topic(awmm->local_id("setsai"),  "Modify SAI ",       "y", "e4_modsai.hlp",  AWM_ALL, ED4_create_modsai_window);
     awmm->sep______________();
     awmm->insert_menu_topic("toggle_block_type", "Exchange: Line<->Column", "x", "e4_block.hlp", AWM_ALL, ED4_menu_select,                  AW_CL(ED4_MS_TOGGLE_BLOCKTYPE), 0);
     awmm->insert_menu_topic("shift_left",        "Shift block left ",       "l", "e4_block.hlp", AWM_ALL, ED4_menu_perform_block_operation, AW_CL(ED4_BO_SHIFT_LEFT),       0);
@@ -1608,16 +1606,16 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->insert_menu_topic(awmm->local_id("props_consensus"), "Consensus Definition ", "u", "e4_consensus.hlp", AWM_ALL, ED4_create_consensus_definition_window);
     awmm->sep______________();
 
-    awmm->insert_menu_topic("props_data",       "Change Colors & Fonts ", "C", 0,                     AWM_ALL, makeWindowCallback(ED4_popup_gc_window, first_gc_manager));
-    awmm->insert_menu_topic("props_seq_colors", "Sequence color mapping", "S", "sequence_colors.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_seq_colors_window, (AW_CL)sequence_colors);
+    awmm->insert_menu_topic("props_data",                       "Change Colors & Fonts ", "C", 0,                     AWM_ALL, makeWindowCallback      (ED4_popup_gc_window,      first_gc_manager));
+    awmm->insert_menu_topic(awmm->local_id("props_seq_colors"), "Sequence color mapping", "S", "sequence_colors.hlp", AWM_ALL, makeCreateWindowCallback(create_seq_colors_window, sequence_colors));
 
     awmm->sep______________();
 
     if (alignment_type == GB_AT_AA) awmm->insert_menu_topic("props_pfold",     "Protein Match Settings ", "P", "pfold_props.hlp", AWM_ALL, AW_POPUP, (AW_CL)ED4_pfold_create_props_window, (AW_CL)ED4_request_relayout);
     else                            awmm->insert_menu_topic("props_helix_sym", "Helix Settings ",         "H", "helixsym.hlp",    AWM_ALL, AW_POPUP, (AW_CL)create_helix_props_window,     (AW_CL)ED4_request_relayout);
 
-    awmm->insert_menu_topic("props_key_map", "Key Mappings ",              "K", "nekey_map.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_key_map_window, 0);
-    awmm->insert_menu_topic("props_nds",     "Select visible info (NDS) ", "D", "ed4_nds.hlp",   AWM_ALL, AW_POPUP, (AW_CL)ED4_create_nds_window, 0);
+    awmm->insert_menu_topic(awmm->local_id("props_key_map"), "Key Mappings ",              "K", "nekey_map.hlp", AWM_ALL, create_key_map_window);
+    awmm->insert_menu_topic(awmm->local_id("props_nds"),     "Select visible info (NDS) ", "D", "ed4_nds.hlp",   AWM_ALL, ED4_create_nds_window);
     awmm->sep______________();
     AW_insert_common_property_menu_entries(awmm);
     awmm->sep______________();
@@ -1766,12 +1764,12 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->button_length(7);
 
     awmm->at("aligner");
-    awmm->callback(AW_POPUP, (AW_CL)ED4_create_faligner_window, (AW_CL)&dataAccess_4_aligner);
+    awmm->callback(makeCreateWindowCallback(ED4_create_faligner_window, &dataAccess_4_aligner));
     awmm->help_text("faligner.hlp");
     awmm->create_button("ALIGNER", "Aligner");
 
     awmm->at("saiviz");
-    awmm->callback(AW_POPUP, (AW_CL)ED4_createVisualizeSAI_window, 0);
+    awmm->callback(ED4_createVisualizeSAI_window);
     awmm->help_text("visualizeSAI.hlp");
     awmm->create_button("SAIVIZ", "SAIviz");
 
@@ -1840,7 +1838,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
 
         awmm->at("zoom");
         if (xoffset) { awmm->get_at_position(&x, &y); awmm->at(x+xoffset, y); }
-        awmm->callback(AW_POPUP, (AW_CL)ED4_zoom_message_window, (AW_CL)0);
+        awmm->callback(ED4_zoom_message_window);
         awmm->create_button("ZOOM", "#edit/zoom.xpm");
 
         awmm->at("clear");
