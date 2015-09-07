@@ -2389,10 +2389,10 @@ void ED4_no_dangerous_modes();
 void       group_species_cb(AW_window *aww, AW_CL cd1, AW_CL cd2);
 AW_window *ED4_create_group_species_by_field_window(AW_root *aw_root);
 
-AW_window *ED4_start_editor_on_old_configuration(AW_root *awr);
-void       ED4_restart_editor(AW_window *aww);
-void       ED4_save_configuration(AW_window *aww, bool hide_aww);
-AW_window *ED4_save_configuration_as_open_window(AW_root *awr);
+AW_window *ED4_create_loadConfiguration_window(AW_root *awr);
+void       ED4_reloadConfiguration(AW_window *aww);
+void       ED4_saveConfiguration(AW_window *aww, bool hide_aww);
+AW_window *ED4_create_saveConfigurationAs_window(AW_root *awr);
 
 ARB_ERROR  rebuild_consensus(ED4_base *object);
 
