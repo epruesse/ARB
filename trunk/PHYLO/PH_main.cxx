@@ -466,7 +466,9 @@ static AW_window *create_phyl_main_window(AW_root *aw_root, PH_root *ph_root) {
 
     // Properties menu
     awm->create_menu("Properties", "P");
+#if defined(ARB_MOTIF)
     awm->insert_menu_topic("props_menu", "Frame settings ...",   "F", "props_frame.hlp", AWM_ALL, AW_preset_window);
+#endif
     awm->insert_menu_topic("props_data", "Colors and Fonts ...", "C", "color_props.hlp", AWM_ALL, makeCreateWindowCallback(AW_create_gc_window, gcmiddle));
     awm->sep______________();
     AW_insert_common_property_menu_entries(awm);
@@ -483,6 +485,9 @@ static AW_window *create_phyl_main_window(AW_root *aw_root, PH_root *ph_root) {
     awm->button_length(0);
     awm->help_text("quit.hlp");
     awm->create_button("QUIT", "QUIT");
+#if defined(ARB_GTK)
+    awm->set_close_action("QUIT");
+#endif
 
     awm->callback(makeHelpCallback("phylo.hlp"));
     awm->button_length(0);
@@ -518,6 +523,10 @@ static AW_window *create_select_alignment_window(AW_root *aw_root, AW_window *ma
 
     aws->callback(makeWindowCallback(ph_exit, ph_root));
     aws->create_button("ABORT", "Abort", "D");
+
+#if defined(ARB_GTK)
+    aws->set_close_action("ABORT");
+#endif
 
     return aws;
 }
