@@ -328,9 +328,10 @@ static void ed4_create_all_awars(AW_root *root, const char *config_name) {
     root->awar_int(AWAR_INSERT_MODE, 1)->add_callback(ed4_change_edit_mode, (AW_CL)0);
 
     root->awar_int(AWAR_EDIT_RIGHTWARD, 1)->add_target_var(&awar_edit_rightward)->add_callback(ED4_edit_direction_changed);
-    root->awar_int(AWAR_EDIT_HELIX_SPACING, 0)->add_target_var(&ED4_ROOT->helix_add_spacing)->add_callback((AW_RCB0)ED4_request_relayout);
-    root->awar_int(AWAR_EDIT_TERMINAL_SPACING, 0)->add_target_var(&ED4_ROOT->terminal_add_spacing)->add_callback((AW_RCB0)ED4_request_relayout);
     root->awar_int(AWAR_EDIT_TITLE_MODE, 0);
+
+    root->awar_int(AWAR_EDIT_HELIX_SPACING,    0) ->set_minmax(-30, 30) ->add_target_var(&ED4_ROOT->helix_add_spacing)    ->add_callback(makeRootCallback(ED4_request_relayout));
+    root->awar_int(AWAR_EDIT_TERMINAL_SPACING, 0) ->set_minmax(-30, 30) ->add_target_var(&ED4_ROOT->terminal_add_spacing) ->add_callback(makeRootCallback(ED4_request_relayout));
 
     ed4_changesecurity(root, 0);
 
