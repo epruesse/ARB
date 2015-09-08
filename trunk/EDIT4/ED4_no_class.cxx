@@ -1388,6 +1388,11 @@ AW_window *ED4_create_level_1_options_window(AW_root *root) {
     aws->init(root, "EDIT4_PROPS", "EDIT4 Options");
     aws->load_xfig("edit4/options.fig");
 
+    aws->auto_space(5, 5);
+
+    const int SCALEDCOLUMNS = 4;
+    const int SCALERLEN     = 200;
+
     aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("close");
     aws->create_button("CLOSE", "CLOSE", "C");
@@ -1413,16 +1418,13 @@ AW_window *ED4_create_level_1_options_window(AW_root *root) {
     aws->update_toggle_field();
 
     aws->at("percent");
-    aws->create_input_field(ED4_AWAR_COMPRESS_SEQUENCE_PERCENT);
+    aws->create_input_field_with_scaler(ED4_AWAR_COMPRESS_SEQUENCE_PERCENT, SCALEDCOLUMNS, SCALERLEN, AW_SCALER_LINEAR);
 
     //  --------------
     //      Layout
 
-    aws->at("seq_helix");
-    aws->create_input_field(AWAR_EDIT_HELIX_SPACING);
-
-    aws->at("seq_seq");
-    aws->create_input_field(AWAR_EDIT_TERMINAL_SPACING);
+    aws->at("seq_helix"); aws->create_input_field_with_scaler(AWAR_EDIT_HELIX_SPACING,    SCALEDCOLUMNS, SCALERLEN, AW_SCALER_EXP_CENTER);
+    aws->at("seq_seq");   aws->create_input_field_with_scaler(AWAR_EDIT_TERMINAL_SPACING, SCALEDCOLUMNS, SCALERLEN, AW_SCALER_EXP_CENTER);
 
     //  --------------------
     //      Scroll-Speed
@@ -1443,15 +1445,12 @@ AW_window *ED4_create_level_1_options_window(AW_root *root) {
     aws->create_input_field(ED4_AWAR_GAP_CHARS);
 
     aws->at("repeat");
-    aws->label("Use digits to repeat edit commands?");
     aws->create_toggle(ED4_AWAR_DIGITS_AS_REPEAT);
 
     aws->at("fast");
-    aws->label("Should Ctrl-Cursor jump over next group?");
     aws->create_toggle(ED4_AWAR_FAST_CURSOR_JUMP);
 
     aws->at("checksum");
-    aws->label("Announce all checksum changes\ncaused by editing commands.");
     aws->create_toggle(ED4_AWAR_ANNOUNCE_CHECKSUM_CHANGES);
 
     aws->at("config");
