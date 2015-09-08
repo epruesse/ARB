@@ -1056,7 +1056,7 @@ static void setup_pfold_config(AWT_config_definition& cdef) {
     }
 }
 
-AW_window *ED4_pfold_create_props_window(AW_root *awr, void (*cb)(AW_window*)) {
+AW_window *ED4_pfold_create_props_window(AW_root *awr, const WindowCallback *refreshCallback) {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(awr, "PFOLD_PROPS", "PROTEIN_MATCH_SETTINGS");
 
@@ -1080,7 +1080,7 @@ AW_window *ED4_pfold_create_props_window(AW_root *awr, void (*cb)(AW_window*)) {
 
     // create toggle field for showing the protein structure match
     aws->label("Show protein structure match?");
-    aws->callback(makeWindowCallback(cb));
+    aws->callback(*refreshCallback);
     aws->create_toggle(PFOLD_AWAR_ENABLE);
     aws->at_newline();
 
@@ -1101,7 +1101,7 @@ AW_window *ED4_pfold_create_props_window(AW_root *awr, void (*cb)(AW_window*)) {
     aws->label("Match Method");
     aws->create_option_menu(PFOLD_AWAR_MATCH_METHOD, true);
     for (int i = 0; const char *mm_aw = pfold_match_method_awars[i].name; i++) {
-        aws->callback(makeWindowCallback(cb));
+        aws->callback(*refreshCallback);
         if (match_method == pfold_match_method_awars[i].value) {
             aws->insert_default_option(mm_aw, "", match_method);
         }
@@ -1116,20 +1116,20 @@ AW_window *ED4_pfold_create_props_window(AW_root *awr, void (*cb)(AW_window*)) {
     // TODO: show only fields that are relevant for current match method -> bind to callback function?
     aws->label_length(40);
     aws->label("Match Symbols (Range 0-100% in steps of 10%)");
-    aws->callback(makeWindowCallback(cb));
+    aws->callback(*refreshCallback);
     aws->create_input_field(PFOLD_AWAR_SYMBOL_TEMPLATE_2, 10);
     aws->at_newline();
     for (int i = 0; pfold_match_type_awars[i].name; i++) {
         aws->label_length(12);
         sprintf(awar, PFOLD_AWAR_PAIR_TEMPLATE, pfold_match_type_awars[i].name);
         aws->label(pfold_match_type_awars[i].name);
-        aws->callback(makeWindowCallback(cb));
+        aws->callback(*refreshCallback);
         aws->create_input_field(awar, 30);
         // TODO: is it possible to disable input field for STRUCT_UNKNOWN?
         // if (pfold_match_type_awars[i].value == STRUCT_UNKNOWN)
         if (!i) aws->get_at_position(&ex, &ey);
         sprintf(awar, PFOLD_AWAR_SYMBOL_TEMPLATE, pfold_match_type_awars[i].name);
-        aws->callback(makeWindowCallback(cb));
+        aws->callback(*refreshCallback);
         aws->create_input_field(awar, 3);
         aws->at_newline();
     }
