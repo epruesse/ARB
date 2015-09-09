@@ -48,13 +48,13 @@ public:
     AWT_reference(GBDATA *gb_main);
     ~AWT_reference();
 
-    void init();
-    void init(const char *species_name, const char *alignment_name);
-    void init(const char *name, const char *sequence_data, int len);
+    void clear();
+    void define(const char *species_name, const char *alignment_name);
+    void define(const char *name, const char *sequence_data, int len);
 
     void expand_to_length(int len);             // make sure that reference is at least len long
 
-    int convert(char c, int pos) const                           { return (c=='-' || c!=reference[pos]) ? c : '.'; }
+    int convert(char c, int pos) const                          { return (c=='-' || c!=reference[pos]) ? c : '.'; } // @@@ customize
     int reference_species_is(const char *species_name) const    { return init_species_name ? strcmp(species_name, init_species_name)==0 : 0; }
 };
 

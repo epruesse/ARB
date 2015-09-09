@@ -266,7 +266,7 @@ AWT_reference::AWT_reference(GBDATA *_gb_main) {
     init_species_name = 0;
 }
 
-void AWT_reference::init() {
+void AWT_reference::clear() {
     free(reference);
     reference = 0;
     ref_len = 0;
@@ -287,14 +287,14 @@ void AWT_reference::expand_to_length(int len) {
     }
 }
 
-void AWT_reference::init(const char *species_name, const char *alignment_name) {
+void AWT_reference::define(const char *species_name, const char *alignment_name) {
     awt_assert(species_name);
     awt_assert(alignment_name);
 
     GB_transaction ta(gb_main);
     GBDATA *gb_species = GBT_find_species(gb_main, species_name);
 
-    init();
+    clear();
     if (gb_species) {
         GBDATA *gb_data = GBT_find_sequence(gb_species, alignment_name);
         if (gb_data) {
@@ -307,12 +307,12 @@ void AWT_reference::init(const char *species_name, const char *alignment_name) {
     }
 }
 
-void AWT_reference::init(const char *name, const char *sequence_data, int len) {
+void AWT_reference::define(const char *name, const char *sequence_data, int len) {
     awt_assert(name);
     awt_assert(sequence_data);
     awt_assert(len>0);
 
-    init();
+    clear();
 
     reference = (char*)GB_calloc(sizeof(char), len+1);
     memcpy(reference, sequence_data, len);

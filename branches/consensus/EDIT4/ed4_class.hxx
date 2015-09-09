@@ -2381,7 +2381,7 @@ void ED4_init_notFoundMessage();
 void ED4_finish_and_show_notFoundMessage();
 
 void ED4_init_aligner_data_access(AlignDataAccess *data_access);
-void ED4_set_reference_species(AW_window *aww, AW_CL cd1, AW_CL cd2);
+void ED4_set_reference_species(AW_window *aww, bool enable);
 
 void ED4_popup_gc_window(AW_window *awp, AW_gc_manager gcman);
 void ED4_no_dangerous_modes();
@@ -2401,7 +2401,7 @@ AW_window *ED4_create_consensus_definition_window(AW_root *root);
 void       ED4_consensus_definition_changed(AW_root*);
 void       ED4_consensus_display_changed(AW_root *root);
 
-AW_window *ED4_create_level_1_options_window(AW_root *root);
+AW_window *ED4_create_editor_options_window(AW_root *root);
 void       ED4_compression_toggle_changed_cb(AW_root *root, AW_CL cd1, AW_CL cd2);
 void       ED4_compression_changed_cb(AW_root *awr);
 void       ED4_alignment_length_changed(GBDATA *gb_alignment_len, GB_CB_TYPE gbtype);

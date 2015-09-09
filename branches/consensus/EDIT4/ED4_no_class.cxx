@@ -881,12 +881,12 @@ void ED4_request_relayout() {
     ED4_trigger_instant_refresh();
 }
 
-void ED4_set_reference_species(AW_window *aww, AW_CL disable, AW_CL ) {
+void ED4_set_reference_species(AW_window *aww, bool enable) {
     ED4_LocalWinContext uses(aww);
     GB_transaction      ta(GLOBAL_gb_main);
 
-    if (disable) {
-        ED4_ROOT->reference->init();
+    if (!enable) {
+        ED4_ROOT->reference->clear();
     }
     else {
         ED4_cursor *cursor = &current_cursor();
@@ -896,7 +896,7 @@ void ED4_set_reference_species(AW_window *aww, AW_CL disable, AW_CL ) {
                 ED4_char_table *table     = &cursor->owner_of_cursor->get_parent(ED4_L_GROUP)->to_group_manager()->table();
                 char           *consensus = table->build_consensus_string();
 
-                ED4_ROOT->reference->init("CONSENSUS", consensus, table->size());
+                ED4_ROOT->reference->define("CONSENSUS", consensus, table->size()); // @@@ need different names for diff. consensi
                 free(consensus);
             }
             else if (cursor->in_SAI_terminal()) {
@@ -904,7 +904,7 @@ void ED4_set_reference_species(AW_window *aww, AW_CL disable, AW_CL ) {
                 int   datalen;
                 char *data = cursor->owner_of_cursor->resolve_pointer_to_string_copy(&datalen);
 
-                ED4_ROOT->reference->init(name, data, datalen);
+                ED4_ROOT->reference->define(name, data, datalen);
 
                 free(data);
                 free(name);
@@ -912,7 +912,7 @@ void ED4_set_reference_species(AW_window *aww, AW_CL disable, AW_CL ) {
             else {
                 char *name = GBT_read_string(GLOBAL_gb_main, AWAR_SPECIES_NAME);
 
-                ED4_ROOT->reference->init(name, ED4_ROOT->alignment_name);
+                ED4_ROOT->reference->define(name, ED4_ROOT->alignment_name);
 
                 free(name);
             }
@@ -1382,7 +1382,7 @@ static AWT_config_mapping_def editor_options_config_mapping[] = {
     { 0, 0 }
 };
 
-AW_window *ED4_create_level_1_options_window(AW_root *root) {
+AW_window *ED4_create_editor_options_window(AW_root *root) {
     AW_window_simple *aws = new AW_window_simple;
 
     aws->init(root, "EDIT4_PROPS", "EDIT4 Options");

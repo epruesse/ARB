@@ -1542,8 +1542,8 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
 
     awmm->sep______________();
     awmm->insert_menu_topic("change_cursor", "Change cursor type",                "t", 0,                   AWM_ALL, ED4_change_cursor);
-    awmm->insert_menu_topic("show_diff",     "Show only differences to selected", "d", "set_reference.hlp", AWM_ALL, ED4_set_reference_species, 0, 0);
-    awmm->insert_menu_topic("show_all",      "Show all bases",                    "a", "set_reference.hlp", AWM_ALL, ED4_set_reference_species, 1, 0);
+    awmm->insert_menu_topic("show_diff",     "Show only differences to selected", "d", "set_reference.hlp", AWM_ALL, makeWindowCallback(ED4_set_reference_species, true));
+    awmm->insert_menu_topic("show_all",      "Show all bases",                    "a", "set_reference.hlp", AWM_ALL, makeWindowCallback(ED4_set_reference_species, false));
     awmm->sep______________();
     awmm->insert_menu_topic("enable_col_stat",  "Activate column statistics", "v", "st_ml.hlp", AWM_EXP, ED4_activate_col_stat,            0, 0);
     awmm->insert_menu_topic("disable_col_stat", "Disable column statistics",  "i", "st_ml.hlp", AWM_EXP, ED4_disable_col_stat,             0, 0);
@@ -1602,7 +1602,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->insert_menu_topic(awmm->local_id("props_frame"), "Frame settings ...", "F", 0, AWM_ALL, AW_preset_window);
 #endif
 
-    awmm->insert_menu_topic(awmm->local_id("props_options"),   "Editor Options ",       "O", "e4_options.hlp",   AWM_ALL, ED4_create_level_1_options_window);
+    awmm->insert_menu_topic(awmm->local_id("props_options"),   "Editor Options ",       "O", "e4_options.hlp",   AWM_ALL, ED4_create_editor_options_window);
     awmm->insert_menu_topic(awmm->local_id("props_consensus"), "Consensus Definition ", "u", "e4_consensus.hlp", AWM_ALL, ED4_create_consensus_definition_window);
     awmm->sep______________();
 
