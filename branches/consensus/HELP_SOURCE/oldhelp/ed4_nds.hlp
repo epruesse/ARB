@@ -1,0 +1,51 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		ARB_EDIT4: Node Display Setup (NDS)
+
+OCCURRENCE	ARB_EDIT4/Properties/NDS
+
+NOTE            Read this text carefully. You won't need this function, but
+		it offers many many new possibilities.
+
+DESCRIPTION	Extracts data from the database entries of every species and builds a
+		user-readable string from that data.
+		This string is used to show the species information at the left side of
+		every sequence in the editor window.
+		It allows you to show part of the sequences, the full_name, the accession
+		numbers and more.
+
+		Choose the 'NDS' item from the 'ARB_EDIT4/Properties' menu to
+		display the 'NDS' window.
+
+		Used maximum group depth:
+			Here you define your common maximum group depth. It will
+			be added automatically to the width (see below).
+
+		Enable field extraction:
+			Select the desired field extraction by selecting one of the
+			toggles at the left border.
+
+		Description:
+			You may enter a description for each ACI PROGRAM.
+			The intention is to make it more easy for you to remember what
+			every ACI PROGRAM does.
+
+		Generate new ACI program:
+			Type the program to the 'ACI SRT PROGRAM' subwindow
+                        (see LINK{srt.hlp}, LINK{aci.hlp} and LINK{reg.hlp}). 
+
+		Width:
+			Defines the width of the display in characters.
+
+EXAMPLES	@@@@@
+
+WARNINGS	None
+
+BUGS		The width of the output is limited to 4000 characters.
+

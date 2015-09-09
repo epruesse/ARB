@@ -1,0 +1,172 @@
+Provided by: Matt Cottrell
+revised Sept 30, 2009
+
+removed unused xmkmf (ralf; Jul 2013)
+
+If you are looking for an easy way to install ARB on OS X, then see the instructions in the file
+ARB_OS_X_MacPorts.txt.  There you will find instructions for installing ARB, including all of the
+necesary dependencies using MacPorts the easy way.
+
+Continue with the steps below only if you want to build ARB and its dependencies by hand the hard way.
+______________________________________________________________________________________________________
+
+Building 64-bit ARB on Mac OS X (Snow Leopard 10.6)
+
+Warning - installing the 64-bit version of ARB will break ARB installed by Fink!
+
+The cshrc shell is indicated by the % prompt.
+Downloads are placed on the Desktop and final installation will be in /usr/local/arb
+------------------------------------------------------------------------------------
+
+- If ARB was previously installed using Fink you must first remove ARB and then skip to step (XQuartz).
+        
+        % fink remove arb
+
+- If arb is not installed by fink start by installing the Developer Tools from the Leopard disc.
+
+        Use the Mac OS X Snow Leopard DVD to install the developer tools
+
+- Install Fink 
+
+        Get it from (http://www.finkproject.org/)
+        These instructions assume that you installed the source distribution.
+
+- Install sed, lynx and dos2unix using Fink
+
+        %fink install sed lynx dos2unix libsablot
+
+Note: The BSD flavor of sed provided with OS X will not work with ARB.  You need the GNU sed provided by Fink.
+      There are other ways to install GNU sed, lynx and dos2unix, but using Fink is probably the easiest.
+
+- Install the latest version of XQuartz
+
+        Get it from (http://xquartz.macosforge.org/trac/wiki/Releases)
+        
+        Use the downloaded X11-*.*.*.dmg to install. 
+
+- Download and install Open Motif from the IST web site
+
+        Get it from (http://www.ist-inc.com/DOWNLOADS/motif_download.html)
+        Download the version for Mac OS X 10.5 Universal (Leopard)
+        Use the downloaded openmotif-compat-2.1.32_IST.macosx10.5.dmg to install
+
+- Download and install freeglut
+
+        Get it from (http://freeglut.sourceforge.net/)
+        
+        % cd freeglut-2.4.0
+        % env CC=gcc\ -arch\ x86_64 LDFLAGS=-L/Developer/SDKs/MacOSX10.5.sdk/usr/X11/lib/ CPPFLAGS=-I/Developer/SDKs/MacOSX10.5.sdk/usr/X11/include/ ./configure --disable-warnings 
+        % make
+        % sudo make install
+        
+- Download the OpenGL Extension Wrangler Library (GLEW)
+
+        Get it from (http://glew.sourceforge.net/install.html)
+        
+        % cd glew
+        % dos2unix Makefile
+        % dos2unix config/config.guess
+        % chmod a+x config/config.guess
+        % env LD=-arch\ x86_64 CFLAGS.EXTRA=-arch\ x86_64 make
+        % sudo env GLEW_DEST=/usr/local make install
+        
+- Build and install 64-bit libGLw provided by mesa
+
+        Get it from (http://www.mesa3d.org/)
+        Click on the Source Forge link and and then download MesaLib
+        
+        % cd Mesa-7.2
+        % env CFLAGS=-arch\ x86_64 CXXFLAGS=-arch\ x86_64 CPPFLAGS=-I/usr/OpenMotif/include/ LDFLAGS=-L/usr/OpenMotif/lib ./configure --enable-motif
+        % make
+        % sudo make install
+        % cd src/glw
+        % make
+        % sudo make install
+
+- Build and install 64-bit tiff (v3.8.2)
+
+        Get it from (http://dl.maptools.org/dl/libtiff/)
+        
+        % cd tiff-3.8.2
+        % env CFLAGS=-arch\ x86_64 CXXFLAGS=-arch\ x86_64 ./configure
+        % make
+        % sudo make install
+
+- Download the latest ARB build
+
+        % mkdir ARB
+        % cd ARB
+        
+        In your browser get arb from http://download.arb-home.de/release/latest/
+        
+        % tar xzvf arbsrc.tgz
+  
+        or check out from svn
+  
+    % svn co http://svn.mikro.biologie.tu-muenchen.de/readonly/branches/stable_5.0 ARB
+  
+  Create and edit config.makefile like this:
+        
+        % cp config.makefile.template config.makefile
+  
+  Change these lines in config.makefile
+  
+        From: ARB_64 := 0# compile 64bit ARB version (still very buggy!)
+        To:   ARB_64 := 1# compile 64bit ARB version (still very buggy!)
+  
+        From: MACH  := LINUX# Linux g++  and gcc
+        To:  #MACH  := LINUX# Linux g++  and gcc
+  
+        From: LINUX := 1
+        To:  #LINUX := 1
+
+        From: #MACH   := DARWIN#
+        To:    MACH   := DARWIN#
+  
+        From: #DARWIN := 1
+        To:    DARWIN := 1
+  
+  Prepare by setting the ARBHOME and PATH environment variables
+  
+        % env ARBHOME=/Users/<your_user_name>/Desktop/ARB
+        % env PATH=$PATH:/Users/<your_user_name>/Desktop/ARB
+  
+  Build ARB
+  
+        % make all
+        
+  After the compiler is finished you will be prompted to start ARB by typing "arb".
+  Give it a try now, but then quit ARB and continue the installation steps below.
+
+- Install arb to /usr/local/arb
+
+        % sudo mkdir -p /usr/local/arb 
+        % sudo cp -R bin /usr/local/arb
+        % sudo cp -R lib /usr/local/arb
+        % sudo cp -R GDEHELP /usr/local/arb
+        % sudo cp -R PERL_SCRIPTS /usr/local/arb
+        % sudo cp -R HELP_SOURCE/oldhelp/ /usr/local/arb/lib/help
+        % sudo cp demo.arb /usr/local/arb
+        % sudo cp -r SH /usr/local/arb
+
+- Fix the permissions on the pt_server directory
+
+        % sudo chmod a+w /usr/local/arb/lib/pts
+
+- Edit your .cshrc file
+
+  Add these lines
+  
+  setenv ARBHOME /usr/local/bin
+  setenv PATH $PATH:/usr/local/bin
+
+- Update the loaded environment variables and path
+
+        % source ~/.cshrc
+        % rehash
+ 
+- Start ARB
+
+        % arb
+
+end

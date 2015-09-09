@@ -1,0 +1,18 @@
+SUFFIX          gb
+BEGIN
+*(|define(formatMeta, "split(\\\"[\\\",1)|split(\\\"|\\\",0)|crop(\\\" \\\")|dropempty|merge(\\\"\n\\\")|format(firsttab=0;tab=12;width=70;forcenl=\\\"\n\\\")"))\
+LOCUS       *(name|tab(10))*(|export_sequence|len(.-)|pretab(7)) bp ss-*(|sequence_type|upper|tab(5))           *(|sequence_type|upper) *(date:* *=*1)
+*(full_name|   do(formatMeta)|dropempty|srt("*=DEFINITION  *\n"))\
+ACCESSION   *(acc)
+*(source|      do(formatMeta)|dropempty|srt("*=SOURCE      *\n"))\
+*(tax|         do(formatMeta)|dropempty|srt("*=  ORGANISM  *\n"))\
+REFERENCE   1
+*(author|      do(formatMeta)|dropempty|srt("*=  AUTHORS   *\n"))\
+*(title|       do(formatMeta)|dropempty|srt("*=  TITLE     *\n"))\
+*(journal|     do(formatMeta)|dropempty|srt("*=  JOURNAL   *\n"))\
+*(pubmed_id|   do(formatMeta)|dropempty|srt("*=   PUBMED   *\n"))\
+*(medline_id|  do(formatMeta)|dropempty|srt("*=  MEDLINE   *\n"))\
+*(strain|      do(formatMeta)|dropempty|srt("*=COMMENT     *\n"))\
+ORIGIN
+*(|export_sequence|format_sequence(firsttab=12;tab=12;width=60;numleft;gap=10))
+//

@@ -1,0 +1,68 @@
+
+ARB requirements on Ubuntu 10.04
+--------------------------------
+
+[Note:]
+You may use the provided install script, e.g.
+    sudo SH/arb_installubuntu4arb.sh
+
+
+
+1) Package dependencies for running precompiled ARB
+   
+ 1a) Non OPENGL version
+
+     - gnuplot
+     - gv
+     - libmotif3 (Ubuntu 12.04: libmotif4)
+     - xfig
+     - transfig
+     - xterm
+
+ 1b) OPENGL version 
+
+     - packets mentioned under 1a)
+     - libpng12-0
+
+
+2) Package dependencies for compiling ARB
+
+ 2a) Non OPENGL version
+
+     - packets mentioned under 1a)
+     - g++
+     - libmotif-dev
+     - libreadline-dev
+     - libtiff4-dev
+     - libx11-dev
+     - libxaw7-dev
+     - libxext-dev
+     - libxml2-utils
+     - libxpm-dev
+     - libxt-dev
+     - lynx
+     - time
+     - x11proto-print-dev
+     - xsltproc
+     - xutils-dev
+
+ 2b) OPENGL version
+
+     Add the following repository to your packet manager:
+
+         deb http://dev.mikro.biologie.tu-muenchen.de/debian hardy non-free
+
+         (replace 'hardy' with your ubuntu distribution; see
+          http://dev.mikro.biologie.tu-muenchen.de/debian/dists/
+          for available distributions)
+
+     Install the following packets:
+
+     - libglw-mesa-arb
+     - packets mentioned under 1b)
+     - packets mentioned under 2a)
+     - freeglut3-dev
+     - libglew1.5-dev
+     - libpng12-dev
+
+

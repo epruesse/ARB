@@ -1,0 +1,32 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+UP	probematch.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Resolve IUPAC for Probe Match
+
+OCCURRENCE	ARB_NT/Probes/Match Probes/IUPAC
+
+DESCRIPTION     Entering a probe containing IUPAC codes into the 'Resolve IUPAC'
+                input field, will generate all possible combinations (using ACGT
+                and N) that match the entered probe and show them in the
+                list at the bottom.
+
+                Press 'Match all' to run probe match for each combination.
+
+                The number of hits for each probe combination will be displayed
+                in front of the probe.
+
+NOTES		None
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known

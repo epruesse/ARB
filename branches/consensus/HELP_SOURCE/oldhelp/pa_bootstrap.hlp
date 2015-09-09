@@ -1,0 +1,63 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+
+TITLE		Estimation of Bootstrap by Parsimony
+
+OCCURRENCE	ARB_PARSIMONY/Tree/Calculate Upper Bootstrap Limit
+
+DESCRIPTION	Given a large tree, traditional ways to calculate bootstrap
+		values are by magnitudes to slow. So a faster algorithm was
+		developed:
+
+                        the bootstrap value for each branch is calculated under
+                        the assumption that all other branches have a 100% value.
+                        Doing this we get an upper limit for the real bootstrap values.
+
+
+NOTES		The program does not use the traditional Monte Carlo method to
+		estimate the bootstrap values, but calculates them correctly
+		under the assumption that the tree changes only locally.
+		Try different filters and see the effect on the tree.
+
+SECTION         ALGORITHM
+
+                For each branch B do:
+
+		      a                 b
+		       \               /
+			>-------------<
+		       /	B      \
+                      c                 d
+
+		exchange a with b ( or a with d ) and count all columns in the alignment
+		with a greater/smaller/equal minimal number of mutations
+		than the original tree.
+
+		result:		n_plus, n_minus, n_equal
+				freq_n_plus = n_plus/ (seq_len)
+				...
+
+		Bootstrap value = sum of
+
+			for all i = 1.. seqlen do
+				for all combinations of np, nm,ne with np - nm == i do
+					sum +=	freq_n_plus  ^ np *
+						freq_n_minus ^ nm *
+						freq_n_equal ^ ne *
+						seq_len! / np! /nm! /ne!
+				done
+			done
+
+SECTION         PUBLIC
+
+                This algorithm is not published and I am not going to publish
+		it. If you feel the strong need to do this, please don't forget
+		to mention me (Oliver Strunk <strunk@mikro.biologie.tu-muenchen.de>)
+
+WARNINGS	Use filters to exclude superfluous gaps and to
+		increase bootstrap values
+
+BUGS		Does not work with weights
+		Does not work with proteins

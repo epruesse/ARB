@@ -1,0 +1,28 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+SUB	sp_sort_fld.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Sort Species According to Phylogeny
+
+OCCURRENCE	ARB_NT/Species/Sort Species According to Phylogeny
+
+DESCRIPTION	Arranges the species entries in the order of their ranking
+		within the tree currently shown in the tree display area of the
+		'ARB_NT' window
+
+NOTES		This order is used by other tools displaying species data
+		(sequence editor, pretty print, export foreign format)	
+
+		
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known
