@@ -53,7 +53,7 @@ public:
     const char *get_shared_id() const { return filetype_id.c_str(); }
 };
 
-typedef char *(*awt_sai_sellist_filter)(GBDATA *, AW_CL);
+typedef char *(*awt_sai_sellist_filter)(GBDATA *, AW_CL); // returns NULL for unwanted SAI; heap-allocated selection-list display-string for wanted
 
 // -----------------------------------------
 //      various database selection boxes

@@ -585,36 +585,30 @@ void ED4_finish_and_show_notFoundMessage() {
     not_found_message = 0;
 }
 
-void ED4_get_and_jump_to_species(GB_CSTR species_name)
-{
-    e4_assert(species_name && species_name[0]);
+static ED4_species_name_terminal *insert_new_species_terminal(GB_CSTR species_name, bool is_SAI) {
+    ED4_multi_species_manager *insert_into_manager = ED4_new_species_multi_species_manager();
+    ED4_group_manager         *group_man           = insert_into_manager->get_parent(ED4_L_GROUP)->to_group_manager();
 
-    GB_transaction ta(GLOBAL_gb_main);
-    ED4_species_name_terminal *name_term = ED4_find_species_name_terminal(species_name);
-    int loaded = 0;
+    ED4_init_notFoundMessage();
+    {
+        char *buffer = (char*)GB_calloc(strlen(species_name)+3, sizeof(*buffer));
+        sprintf(buffer, "-%c%s", is_SAI ? 'S' : 'L', species_name);
 
-    if (!name_term) { // insert new species
-        ED4_multi_species_manager *insert_into_manager = ED4_new_species_multi_species_manager();
-        ED4_group_manager         *group_man           = insert_into_manager->get_parent(ED4_L_GROUP)->to_group_manager();
-        char                      *string              = (char*)GB_calloc(strlen(species_name)+3, sizeof(*string));
-        int                        index               = 0;
-        ED4_index                  y                   = 0;
-        ED4_index                  lot                 = 0;
-
-        ED4_init_notFoundMessage();
-
-        sprintf(string, "-L%s", species_name);
+        int       index = 0;
+        ED4_index y     = 0;
+        ED4_index lot   = 0;
         ED4_ROOT->database->fill_species(insert_into_manager,
                                          ED4_ROOT->ref_terminals.get_ref_sequence_info(), ED4_ROOT->ref_terminals.get_ref_sequence(),
-                                         string, &index, &y, 0, &lot, insert_into_manager->calc_group_depth(), NULL);
-        loaded = 1;
+                                         buffer, &index, &y, 0, &lot, insert_into_manager->calc_group_depth(), NULL);
+        free(buffer);
+    }
+    ED4_finish_and_show_notFoundMessage();
 
-        ED4_finish_and_show_notFoundMessage();
+    {
+        GBDATA *gb_item = is_SAI ? GBT_find_SAI(GLOBAL_gb_main, species_name) : GBT_find_species(GLOBAL_gb_main, species_name);
 
-        {
-            GBDATA *gb_species = GBT_find_species(GLOBAL_gb_main, species_name);
-            GBDATA *gbd = GBT_find_sequence(gb_species, ED4_ROOT->alignment_name);
-
+        if (gb_item) {
+            GBDATA *gbd = GBT_find_sequence(gb_item, ED4_ROOT->alignment_name);
             if (gbd) {
                 char *data = GB_read_string(gbd);
                 int   len  = GB_read_string_count(gbd);
@@ -622,34 +616,71 @@ void ED4_get_and_jump_to_species(GB_CSTR species_name)
                 group_man->update_bases(0, 0, data, len);
             }
         }
+    }
 
-        name_term = ED4_find_species_name_terminal(species_name);
-        if (name_term) {
-            // new AAseqTerminals should be created if it is in ProtView mode
-            if (ED4_ROOT->alignment_type == GB_AT_DNA) {
-                PV_AddCorrespondingOrfTerminals(name_term);
-            }
-            ED4_ROOT->main_manager->request_resize(); // @@@ instead needs to be called whenever adding or deleting PV-terminals
-            // it should create new AA Sequence terminals if the protein viewer is enabled
+    ED4_species_name_terminal *name_term = ED4_find_species_name_terminal(species_name);
+    if (name_term) {
+        // new AAseqTerminals should be created if it is in ProtView mode
+        if (ED4_ROOT->alignment_type == GB_AT_DNA && !is_SAI) {
+            PV_AddCorrespondingOrfTerminals(name_term);
         }
-        delete string;
+        ED4_ROOT->main_manager->request_resize(); // @@@ instead needs to be called whenever adding or deleting PV-terminals
+        // it should create new AA Sequence terminals if the protein viewer is enabled
+    }
+    insert_into_manager->invalidate_species_counters();
 
-        insert_into_manager->invalidate_species_counters();
+    return name_term;
+}
+
+void ED4_get_and_jump_to_selected_SAI(AW_window *aww) {
+    const char *sai_name = aww->get_root()->awar(AWAR_SAI_NAME)->read_char_pntr();
+
+    if (sai_name && sai_name[0]) {
+        ED4_MostRecentWinContext   context;
+        GB_transaction             ta(GLOBAL_gb_main);
+        ED4_species_name_terminal *name_term = ED4_find_species_name_terminal(sai_name);
+        bool                       loaded    = false;
+
+        if (!name_term) {
+            name_term = insert_new_species_terminal(sai_name, true);
+            loaded    = true;
+        }
+        if (name_term) {
+            jump_to_species(name_term, -1, true, ED4_JUMP_KEEP_POSITION);
+            if (!loaded) aw_message(GBS_global_string("SAI '%s' is already loaded.", sai_name));
+            else {
+                GB_touch(GBT_get_SAI_data(GLOBAL_gb_main)); // touch SAI data to force update of SAI selection list
+            }
+        }
+        else {
+            aw_message(GBS_global_string("Failed to load SAI '%s'", sai_name));
+        }
+    }
+}
+
+void ED4_get_and_jump_to_species(GB_CSTR species_name) {
+    e4_assert(species_name && species_name[0]);
+
+    GB_transaction             ta(GLOBAL_gb_main);
+    ED4_species_name_terminal *name_term = ED4_find_species_name_terminal(species_name);
+    bool                       loaded    = false;
+
+    if (!name_term) { // insert new species
+        name_term = insert_new_species_terminal(species_name, false);
+        loaded    = true;
     }
     if (name_term) {
         jump_to_species(name_term, -1, true, ED4_JUMP_KEEP_POSITION);
-        if (!loaded) {
-            aw_message(GBS_global_string("'%s' is already loaded.", species_name));
-        }
+        if (!loaded) aw_message(GBS_global_string("Species '%s' is already loaded.", species_name));
     }
     else {
-        aw_message(GBS_global_string("Cannot get species '%s'", species_name));
+        aw_message(GBS_global_string("Failed to get species '%s'", species_name));
     }
 }
 
 void ED4_get_and_jump_to_current(AW_window *aww, AW_CL) {
-    ED4_LocalWinContext uses(aww);
-    char *name = GBT_read_string(GLOBAL_gb_main, AWAR_SPECIES_NAME);
+    ED4_LocalWinContext  uses(aww);
+    char                *name = GBT_read_string(GLOBAL_gb_main, AWAR_SPECIES_NAME);
     if (name && name[0]) {
         ED4_get_and_jump_to_species(name);
     }

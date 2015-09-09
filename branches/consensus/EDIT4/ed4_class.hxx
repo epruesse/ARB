@@ -2375,7 +2375,10 @@ void ED4_get_and_jump_to_species(GB_CSTR species_name);
 
 void ED4_get_marked_from_menu(AW_window *, AW_CL, AW_CL);
 void ED4_selected_species_changed_cb(AW_root *aw_root);
-void ED4_selected_SAI_changed_cb(AW_root *aw_root);
+
+AW_window *ED4_create_loadSAI_window(AW_root *awr);
+void       ED4_get_and_jump_to_selected_SAI(AW_window *aww);
+void       ED4_selected_SAI_changed_cb(AW_root *aw_root);
 
 void ED4_init_notFoundMessage();
 void ED4_finish_and_show_notFoundMessage();

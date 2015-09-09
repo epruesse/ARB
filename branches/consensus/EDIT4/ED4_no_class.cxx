@@ -1611,6 +1611,45 @@ AW_window *ED4_create_saveConfigurationAs_window(AW_root *awr) {
     return aws;
 }
 
+static char *filter_loadable_SAIs(GBDATA *gb_sai, AW_CL) {
+    GBDATA *gb_ali = GB_search(gb_sai, ED4_ROOT->alignment_name, GB_FIND);
+    if (gb_ali) {
+        GBDATA *gb_data = GB_search(gb_ali, "data", GB_FIND);
+        if (gb_data) {
+            const char *sai_name = GBT_get_name(gb_sai);
+            if (!ED4_find_species_name_terminal(sai_name)) { // if not loaded yet
+                return strdup(sai_name);
+            }
+        }
+    }
+    return NULL;
+}
+
+AW_window *ED4_create_loadSAI_window(AW_root *awr) {
+    static AW_window_simple *aws = 0;
+    if (!aws) {
+        aws = new AW_window_simple;
+        aws->init(awr, "LOAD_SAI", "Load additional SAI");
+        aws->load_xfig("edit4/load_sai.fig");
+
+        aws->at("close");
+        aws->callback(AW_POPDOWN);
+        aws->create_button("CLOSE", "CLOSE");
+
+        aws->at("help");
+        aws->callback(makeHelpCallback("e4_get_species.hlp"));
+        aws->create_button("HELP", "HELP");
+
+        aws->at("sai");
+        awt_create_SAI_selection_list(GLOBAL_gb_main, aws, AWAR_SAI_NAME, false, filter_loadable_SAIs, 0);
+
+        aws->at("go");
+        aws->callback(ED4_get_and_jump_to_selected_SAI);
+        aws->create_button("LOAD", "LOAD");
+    }
+    return aws;
+}
+
 static GB_ERROR createDataFromConsensus(GBDATA *gb_species, ED4_group_manager *group_man)
 {
     GB_ERROR error = 0;
