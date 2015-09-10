@@ -36,6 +36,7 @@ Major changes for next release:
  - species selections (editor configurations):
    * visualisation of multiple selections in standard tree view (#658; example in database demo.arb)
    * order can be changed; each configuration has a comment; import stores configuration (#607)
+ - ARB EDIT4: allow to load missing SAIs
  - expand zombies in tree (unfold groups)
  - compare taxonomy (and mark differences; #651)
  - external (command line) aligners:

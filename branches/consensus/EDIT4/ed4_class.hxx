@@ -1553,6 +1553,11 @@ inline ED4_window *current_ed4w() { return ED4_WinContext::get_current_context()
 inline AW_window *current_aww() { return current_ed4w()->aww; }
 inline ED4_cursor& current_cursor() { return current_ed4w()->cursor; }
 
+enum LoadableSaiState {
+    LSAI_UNUSED,
+    LSAI_UPTODATE,
+    LSAI_OUTDATED,
+};
 
 class ED4_root : virtual Noncopyable {
     void ED4_ROOT() const { e4_assert(0); } // avoid ED4_root-members use global ED4_ROOT
@@ -1599,6 +1604,9 @@ public:
     bool column_stat_initialized;
     bool visualizeSAI;
     bool visualizeSAI_allSpecies;
+
+    LoadableSaiState loadable_SAIs; // maintain proper refresh of list of loadable SAIs
+    void loadable_SAIs_may_have_changed() { if (loadable_SAIs == LSAI_UPTODATE) loadable_SAIs = LSAI_OUTDATED; }
 
     int temp_gc;
     AW_font_group font_group;

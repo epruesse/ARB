@@ -177,6 +177,11 @@ ED4_returncode ED4_root::refresh_all_windows(bool redraw) {
 
     if (main_manager->update_info.refresh) main_manager->clear_refresh();
 
+    if (loadable_SAIs == LSAI_OUTDATED) {
+        GB_touch(GBT_get_SAI_data(GLOBAL_gb_main)); // touch SAI data to force update of SAI selection list
+        loadable_SAIs = LSAI_UPTODATE;
+    }
+
     return (ED4_R_OK);
 }
 
@@ -2005,6 +2010,7 @@ ED4_root::ED4_root(int* argc, char*** argv)
       column_stat_initialized(false),
       visualizeSAI(false),
       visualizeSAI_allSpecies(false),
+      loadable_SAIs(LSAI_UNUSED),
       temp_gc(0)
 {}
 

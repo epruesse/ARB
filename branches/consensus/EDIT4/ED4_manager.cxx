@@ -1669,6 +1669,7 @@ ED4_species_manager::ED4_species_manager(ED4_species_type type_, const char *tem
     selected(false)
 {
     e4_assert(type != ED4_SP_NONE);
+    if (type == ED4_SP_SAI) ED4_ROOT->loadable_SAIs_may_have_changed();
 }
 
 #if defined(DEBUG)
@@ -1677,6 +1678,8 @@ ED4_species_manager::ED4_species_manager(ED4_species_type type_, const char *tem
 
 
 ED4_species_manager::~ED4_species_manager() {
+    if (type == ED4_SP_SAI) ED4_ROOT->loadable_SAIs_may_have_changed();
+
 #if defined(DEBUG_SPMAN_CALLBACKS)
     if (!callbacks.empty()) {
         printf("this=%p - non-empty callbacks\n", (char*)this);

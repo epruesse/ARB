@@ -648,9 +648,6 @@ void ED4_get_and_jump_to_selected_SAI(AW_window *aww) {
         if (name_term) {
             jump_to_species(name_term, -1, true, ED4_JUMP_KEEP_POSITION);
             if (!loaded) aw_message(GBS_global_string("SAI '%s' is already loaded.", sai_name));
-            else {
-                GB_touch(GBT_get_SAI_data(GLOBAL_gb_main)); // touch SAI data to force update of SAI selection list
-            }
         }
         else {
             aw_message(GBS_global_string("Failed to load SAI '%s'", sai_name));

@@ -1642,6 +1642,7 @@ AW_window *ED4_create_loadSAI_window(AW_root *awr) {
 
         aws->at("sai");
         awt_create_SAI_selection_list(GLOBAL_gb_main, aws, AWAR_SAI_NAME, false, filter_loadable_SAIs, 0);
+        ED4_ROOT->loadable_SAIs = LSAI_UPTODATE;
 
         aws->at("go");
         aws->callback(ED4_get_and_jump_to_selected_SAI);
