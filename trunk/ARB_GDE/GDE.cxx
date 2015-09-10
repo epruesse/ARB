@@ -29,8 +29,8 @@ static char GDEBLANK[] = "\0";
 
 #define SLIDERWIDTH 5           // input field width for numbers
 
-#define AWAR_GDE_ALIGNMENT   "tmp/gde/alignment"
-#define AWAR_GDE_FILTER_NAME "tmp/gde/filter/name"
+#define AWAR_GDE_ALIGNMENT   AWAR_PREFIX_GDE_TEMP "/alignment"
+#define AWAR_GDE_FILTER_NAME AWAR_PREFIX_GDE_TEMP "/filter/name"
 
 struct gde_iteminfo {
     GmenuItem *item;
@@ -61,8 +61,8 @@ static char *GDE_makeawarname_in(GmenuItem *gmenuitem, long i, const char *awar_
     return name;
 }
 
-char *GDE_makeawarname(GmenuItem *gmenuitem, long i) { return GDE_makeawarname_in(gmenuitem, i, "gde"); }
-char *GDE_maketmpawarname(GmenuItem *gmenuitem, long i) { return GDE_makeawarname_in(gmenuitem, i, "tmp/gde"); }
+char *GDE_makeawarname   (GmenuItem *gmenuitem, long i) { return GDE_makeawarname_in(gmenuitem, i, AWAR_PREFIX_GDE); }
+char *GDE_maketmpawarname(GmenuItem *gmenuitem, long i) { return GDE_makeawarname_in(gmenuitem, i, AWAR_PREFIX_GDE_TEMP); }
 
 static void GDE_slide_awar_int_cb(AW_window *aws, AW_CL cl_awar_name, AW_CL cd_diff)
 {
