@@ -1455,10 +1455,10 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     //      Edit
 
     awmm->create_menu("Edit", "E", AWM_ALL);
-    awmm->insert_menu_topic("refresh",      "Refresh [Ctrl-L]",           "f", 0,                    AWM_ALL, (AW_CB)ED4_request_full_refresh,       0, 0);
-    awmm->insert_menu_topic("load_current", "Load current species [GET]", "G", "e4_get_species.hlp", AWM_ALL, ED4_get_and_jump_to_current_from_menu, 0, 0);
-    awmm->insert_menu_topic("load_marked",  "Load marked species",        "m", "e4_get_species.hlp", AWM_ALL, ED4_get_marked_from_menu,              0, 0);
-    awmm->insert_menu_topic("load_SAI",     "Load SAI ...",               "S", "e4_get_species.hlp", AWM_ALL, ED4_create_loadSAI_window);
+    awmm->insert_menu_topic("refresh",                  "Refresh [Ctrl-L]",           "f", 0,                    AWM_ALL, (AW_CB)ED4_request_full_refresh,       0, 0);
+    awmm->insert_menu_topic("load_current",             "Load current species [GET]", "G", "e4_get_species.hlp", AWM_ALL, ED4_get_and_jump_to_current_from_menu, 0, 0);
+    awmm->insert_menu_topic("load_marked",              "Load marked species",        "m", "e4_get_species.hlp", AWM_ALL, ED4_get_marked_from_menu,              0, 0);
+    awmm->insert_menu_topic(awmm->local_id("load_SAI"), "Load SAI ...",               "S", "e4_get_species.hlp", AWM_ALL, ED4_create_loadSAI_window);
     awmm->sep______________();
     awmm->insert_menu_topic("refresh_ecoli",       "Reload Ecoli sequence",        "E", "ecoliref.hlp", AWM_ALL, (AW_CB)reload_ecoli_cb, 0, 0);
     awmm->insert_menu_topic("refresh_helix",       "Reload Helix",                 "H", "helix.hlp",    AWM_ALL, (AW_CB)reload_helix_cb, 0, 0);
