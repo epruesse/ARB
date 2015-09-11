@@ -398,10 +398,8 @@ ED4_returncode ED4_sequence_terminal::draw() {
         char *char_2_char = (aliType && (aliType==GB_AT_AA)) ? ED4_ROOT->sequence_colors->char_2_char_aa : ED4_ROOT->sequence_colors->char_2_char;
         char *char_2_gc   = (aliType && (aliType==GB_AT_AA)) ? ED4_ROOT->sequence_colors->char_2_gc_aa : ED4_ROOT->sequence_colors->char_2_gc;
 
-        int scr_pos;
-        int is_ref = ref->reference_species_is(species_name);
-
-        for (scr_pos=left; scr_pos <= right; scr_pos++) {
+        bool is_ref = ref->reference_species_is(this);
+        for (int scr_pos=left; scr_pos <= right; scr_pos++) {
             int seq_pos = rm->screen_to_sequence(scr_pos);
             int c = db_pointer[seq_pos];
             int gc = char_2_gc[c];

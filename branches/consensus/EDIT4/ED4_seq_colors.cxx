@@ -271,17 +271,16 @@ ED4_seq_colors::ED4_seq_colors(int baseGC, void (*changed_cb)()) {
 
 ED4_reference::ED4_reference(GBDATA *_gb_main)
     : gb_main(_gb_main),
+      nodiff('#'), // notused; overwritten by user default later
       ref_len(0),
       reference(NULL),
-      init_species_name(NULL),
-      nodiff('#') // notused; overwritten by user default later
+      ref_term(NULL)
 {}
 
 void ED4_reference::clear() {
     freenull(reference);
-    ref_len = 0;
-    delete init_species_name;
-    init_species_name = 0;
+    ref_len  = 0;
+    ref_term = NULL;
 }
 
 void ED4_reference::expand_to_length(int len) {
@@ -297,7 +296,7 @@ void ED4_reference::expand_to_length(int len) {
     }
 }
 
-void ED4_reference::define(const char *species_name, const char *alignment_name) {
+void ED4_reference::define(const ED4_abstract_sequence_terminal *rterm, const char *species_name, const char *alignment_name) {
     e4_assert(species_name);
     e4_assert(alignment_name);
 
@@ -310,25 +309,22 @@ void ED4_reference::define(const char *species_name, const char *alignment_name)
         if (gb_data) {
             reference = GB_read_as_string(gb_data);
             if (reference) {
-                ref_len = strlen(reference);
-                init_species_name = strdup(species_name);
+                ref_len  = strlen(reference);
+                ref_term = rterm;
             }
         }
     }
 }
 
-void ED4_reference::define(const char *name, const char *sequence_data, int len) {
-    e4_assert(name);
+void ED4_reference::define(const ED4_abstract_sequence_terminal *rterm, const char *sequence_data, int len) {
     e4_assert(sequence_data);
     e4_assert(len>0);
 
     clear();
 
-    reference = (char*)GB_calloc(sizeof(char), len+1);
-    memcpy(reference, sequence_data, len);
-    reference[len] = 0;
-    ref_len = len;
-    init_species_name = strdup(name);
+    reference = GB_strpartdup(sequence_data, sequence_data+len-1);
+    ref_len   = len;
+    ref_term  = rterm;
 }
 
 ED4_reference::~ED4_reference() {
@@ -375,35 +371,33 @@ static void set_diff_reference(ED4_terminal *refTerm) {
         ref->clear();
     }
     else {
-        AW_awar                   *awar_refName = AW_root::SINGLETON->awar(AWAR_DIFF_NAME);
-        ED4_species_name_terminal *nameTerm     = dynamic_cast<ED4_abstract_sequence_terminal*>(refTerm)->corresponding_species_name_terminal();
+        AW_awar                        *awar_refName = AW_root::SINGLETON->awar(AWAR_DIFF_NAME);
+        ED4_abstract_sequence_terminal *refSeqTerm   = dynamic_cast<ED4_abstract_sequence_terminal*>(refTerm);
+        ED4_species_name_terminal      *nameTerm     = refSeqTerm->corresponding_species_name_terminal();
 
         if (refTerm->is_consensus_terminal()) {
             ED4_char_table *table     = &refTerm->get_parent(ED4_L_GROUP)->to_group_manager()->table();
             char           *consensus = table->build_consensus_string();
 
-            ref->define("CONSENSUS", consensus, table->size()); // @@@ need different names for diff. consensi // @@@ clashes with SAI:CONSENSUS
-
+            ref->define(refSeqTerm, consensus, table->size());
             awar_refName->write_string(GBS_global_string("consensus %s", nameTerm->get_displayed_text()));
+
             free(consensus);
         }
         else if (refTerm->is_SAI_terminal()) {
-            char *name = GBT_read_string(GLOBAL_gb_main, AWAR_SAI_NAME); // @@@ read from refTerm or its manager
             int   datalen;
             char *data = refTerm->resolve_pointer_to_string_copy(&datalen);
 
-            ref->define(name, data, datalen);
+            ref->define(refSeqTerm, data, datalen);
             awar_refName->write_string(nameTerm->get_displayed_text());
 
             free(data);
-            free(name);
-
         }
         else {
             e4_assert(refTerm->is_species_seq_terminal());
             char *name = GBT_read_string(GLOBAL_gb_main, AWAR_SPECIES_NAME); // @@@ read from refTerm or its manager
 
-            ref->define(name, ED4_ROOT->alignment_name);
+            ref->define(refSeqTerm, name, ED4_ROOT->alignment_name);
             awar_refName->write_string(nameTerm->get_displayed_text());
 
             free(name);

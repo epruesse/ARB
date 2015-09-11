@@ -22,6 +22,7 @@
 class GBDATA;
 class AW_root;
 class AW_window;
+class ED4_abstract_sequence_terminal;
 
 class ED4_seq_colors {
     int base_gc;
@@ -41,28 +42,30 @@ public:
 };
 
 class ED4_reference : virtual Noncopyable {
+    // general:
     GBDATA *gb_main;
-    int     ref_len;
-    char   *reference;
-    char   *init_species_name;
     char    nodiff;
+
+    // current reference:
+    int   ref_len;
+    char *reference;
+    const ED4_abstract_sequence_terminal *ref_term;
 
 public:
     ED4_reference(GBDATA *gb_main);
     ~ED4_reference();
 
-    void clear();
-    void define(const char *species_name, const char *alignment_name);
-    void define(const char *name, const char *sequence_data, int len);
-
-    bool is_set() const { return reference; }
-
-    void expand_to_length(int len);             // make sure that reference is at least len long
-
     void set_nodiff_indicator(char ind) { nodiff = ind; }
 
-    int convert(char c, int pos) const                          { return (c=='-' || c!=reference[pos]) ? c : nodiff; }
-    int reference_species_is(const char *species_name) const    { return init_species_name ? strcmp(species_name, init_species_name)==0 : 0; } // @@@ test using 'ED4_terminal*'
+    void clear();
+    void define(const ED4_abstract_sequence_terminal *rterm, const char *species_name, const char *alignment_name);
+    void define(const ED4_abstract_sequence_terminal *rterm, const char *sequence_data, int len);
+
+    bool is_set() const { return reference; }
+    void expand_to_length(int len); // make sure that reference is at least len long
+
+    int convert(char c, int pos) const { return (c=='-' || c!=reference[pos]) ? c : nodiff; }
+    bool reference_species_is(const ED4_abstract_sequence_terminal *term) const { return term == ref_term; }
 };
 
 AW_window *ED4_create_seq_colors_window(AW_root *awr, ED4_seq_colors *sc);
