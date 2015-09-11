@@ -8,18 +8,17 @@ UP	glossary.hlp
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		Show only differences to selected
+TITLE		View differences to selected
 
-OCCURRENCE	ARB_EDIT4/View/Show only differences to selected
-                ARB_EDIT4/View/Show all bases
+OCCURRENCE	ARB_EDIT4/View/View differences ...
 
-DESCRIPTION     Select a species by clicking into sequence data.
+DESCRIPTION     Select a species, SAI or group consensus by clicking into its sequence data.
 
-                Then choose "ARB_EDIT4/View/Show only differences to selected" to
-                restrict the sequence display of all other sequences (i.e. all but the
-                selected sequence) to show only the differences to the selected sequence.
+                Then check 'Selected' or press 'SET' to restrict the sequence display
+                of all other sequences (i.e. all but the selected sequence) to
+                show only the differences to the selected sequence.
 
-                To revert display to standard mode, select "ARB_EDIT4/View/Show all bases".
+                To revert display to standard mode, select 'None'.
 
 NOTES		Useful to manually correct alignments.
 

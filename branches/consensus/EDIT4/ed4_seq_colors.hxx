@@ -54,13 +54,16 @@ public:
     void define(const char *species_name, const char *alignment_name);
     void define(const char *name, const char *sequence_data, int len);
 
+    bool is_set() const { return reference; }
+
     void expand_to_length(int len);             // make sure that reference is at least len long
 
     int convert(char c, int pos) const                          { return (c=='-' || c!=reference[pos]) ? c : '.'; } // @@@ customize
-    int reference_species_is(const char *species_name) const    { return init_species_name ? strcmp(species_name, init_species_name)==0 : 0; }
+    int reference_species_is(const char *species_name) const    { return init_species_name ? strcmp(species_name, init_species_name)==0 : 0; } // @@@ test using 'ED4_terminal*'
 };
 
 AW_window *ED4_create_seq_colors_window(AW_root *awr, ED4_seq_colors *sc);
+AW_window *ED4_create_viewDifferences_window(AW_root *awr);
 
 
 #else

@@ -2392,7 +2392,6 @@ void ED4_init_notFoundMessage();
 void ED4_finish_and_show_notFoundMessage();
 
 void ED4_init_aligner_data_access(AlignDataAccess *data_access);
-void ED4_set_reference_species(AW_window *aww, bool enable);
 
 void ED4_popup_gc_window(AW_window *awp, AW_gc_manager gcman);
 void ED4_no_dangerous_modes();

@@ -881,50 +881,6 @@ void ED4_request_relayout() {
     ED4_trigger_instant_refresh();
 }
 
-void ED4_set_reference_species(AW_window *aww, bool enable) {
-    ED4_LocalWinContext uses(aww);
-    GB_transaction      ta(GLOBAL_gb_main);
-
-    if (!enable) {
-        ED4_ROOT->reference->clear();
-    }
-    else {
-        ED4_cursor *cursor = &current_cursor();
-
-        if (cursor->owner_of_cursor) {
-            if (cursor->in_consensus_terminal()) {
-                ED4_char_table *table     = &cursor->owner_of_cursor->get_parent(ED4_L_GROUP)->to_group_manager()->table();
-                char           *consensus = table->build_consensus_string();
-
-                ED4_ROOT->reference->define("CONSENSUS", consensus, table->size()); // @@@ need different names for diff. consensi
-                free(consensus);
-            }
-            else if (cursor->in_SAI_terminal()) {
-                char *name = GBT_read_string(GLOBAL_gb_main, AWAR_SPECIES_NAME);
-                int   datalen;
-                char *data = cursor->owner_of_cursor->resolve_pointer_to_string_copy(&datalen);
-
-                ED4_ROOT->reference->define(name, data, datalen);
-
-                free(data);
-                free(name);
-            }
-            else {
-                char *name = GBT_read_string(GLOBAL_gb_main, AWAR_SPECIES_NAME);
-
-                ED4_ROOT->reference->define(name, ED4_ROOT->alignment_name);
-
-                free(name);
-            }
-        }
-        else {
-            aw_message("First you have to place your cursor");
-        }
-    }
-
-    ED4_ROOT->request_refresh_for_sequence_terminals();
-}
-
 #define SIGNIFICANT_FIELD_CHARS 30 // length used to compare field contents (in createGroupFromSelected)
 
 static void createGroupFromSelected(GB_CSTR group_name, GB_CSTR field_name, GB_CSTR field_content) {

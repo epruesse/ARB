@@ -14,6 +14,7 @@
 
 #include <aw_root.hxx>
 #include <aw_awar.hxx>
+#include <aw_awar_defs.hxx>
 #include <aw_msg.hxx>
 #include <arbdbt.h>
 
@@ -332,4 +333,162 @@ void ED4_reference::define(const char *name, const char *sequence_data, int len)
 
 ED4_reference::~ED4_reference() {
     free(reference);
+}
+
+// --------------------------------------------------------------------------------
+
+#define APREFIX_DIFF_SAVE "edit4/diff/"
+#define APREFIX_DIFF_TEMP "tmp/" APREFIX_DIFF_SAVE
+
+#define AWAR_DIFF_TYPE APREFIX_DIFF_TEMP "type"
+#define AWAR_DIFF_NAME APREFIX_DIFF_TEMP "name"
+
+enum ViewDiffType {
+    VD_DISABLED,
+    VD_SELECTED,
+};
+
+static ED4_terminal *detect_current_ref_terminal()  {
+    ED4_cursor   *cursor  = &current_cursor();
+    ED4_terminal *refTerm = cursor->owner_of_cursor;
+
+    if (refTerm) {
+        if (!(refTerm->is_consensus_terminal() ||
+              refTerm->is_SAI_terminal() ||
+              refTerm->is_species_seq_terminal()))
+        {
+            refTerm = NULL;
+        }
+    }
+
+    if (!refTerm) {
+        aw_message("Please set the cursor to a species, SAI or group consensus.");
+    }
+
+    return refTerm;
+}
+
+static void set_diff_reference(ED4_terminal *refTerm) {
+    ED4_reference *ref = ED4_ROOT->reference;
+    if (!refTerm) {
+        ref->clear();
+    }
+    else {
+        AW_awar                   *awar_refName = AW_root::SINGLETON->awar(AWAR_DIFF_NAME);
+        ED4_species_name_terminal *nameTerm     = dynamic_cast<ED4_abstract_sequence_terminal*>(refTerm)->corresponding_species_name_terminal();
+
+        if (refTerm->is_consensus_terminal()) {
+            ED4_char_table *table     = &refTerm->get_parent(ED4_L_GROUP)->to_group_manager()->table();
+            char           *consensus = table->build_consensus_string();
+
+            ref->define("CONSENSUS", consensus, table->size()); // @@@ need different names for diff. consensi // @@@ clashes with SAI:CONSENSUS
+
+            awar_refName->write_string(GBS_global_string("consensus %s", nameTerm->get_displayed_text()));
+            free(consensus);
+        }
+        else if (refTerm->is_SAI_terminal()) {
+            char *name = GBT_read_string(GLOBAL_gb_main, AWAR_SAI_NAME); // @@@ read from refTerm or its manager
+            int   datalen;
+            char *data = refTerm->resolve_pointer_to_string_copy(&datalen);
+
+            ref->define(name, data, datalen);
+            awar_refName->write_string(nameTerm->get_displayed_text());
+
+            free(data);
+            free(name);
+
+        }
+        else {
+            e4_assert(refTerm->is_species_seq_terminal());
+            char *name = GBT_read_string(GLOBAL_gb_main, AWAR_SPECIES_NAME); // @@@ read from refTerm or its manager
+
+            ref->define(name, ED4_ROOT->alignment_name);
+            awar_refName->write_string(nameTerm->get_displayed_text());
+
+            free(name);
+        }
+    }
+
+    ED4_ROOT->request_refresh_for_sequence_terminals();
+}
+
+static ED4_terminal *last_used_ref_term = NULL;
+
+static void set_current_as_diffRef(bool enable) {
+    ED4_MostRecentWinContext context;
+    ED4_terminal *refTerm = enable ? detect_current_ref_terminal() : NULL;
+    set_diff_reference(refTerm);
+
+    if (refTerm) last_used_ref_term = refTerm;
+}
+
+static void change_reference_cb(AW_window *aww) {
+    set_current_as_diffRef(true);
+
+    AW_awar *awar_refType = aww->get_root()->awar(AWAR_DIFF_TYPE);
+    if (awar_refType->read_int() == VD_DISABLED) {
+        awar_refType->write_int(VD_SELECTED);
+    }
+}
+
+static void diff_type_changed_cb(AW_root *awr) {
+    AW_awar      *awar_refType = awr->awar(AWAR_DIFF_TYPE);
+    ViewDiffType  type         = ViewDiffType(awar_refType->read_int());
+
+    switch (type) {
+        case VD_DISABLED:
+            set_current_as_diffRef(false);
+            break;
+
+        case VD_SELECTED:
+            if (last_used_ref_term) {
+                set_diff_reference(last_used_ref_term);
+            }
+            else {
+                set_current_as_diffRef(true);
+            }
+            if (!ED4_ROOT->reference->is_set()) {
+                awar_refType->write_int(VD_DISABLED);
+            }
+            break;
+    }
+}
+
+static void create_viewDifferences_awars(AW_root *awr) {
+    awr->awar_int(AWAR_DIFF_TYPE, VD_DISABLED)->add_callback(diff_type_changed_cb);
+    awr->awar_string(AWAR_DIFF_NAME, "<none selected>");
+}
+AW_window *ED4_create_viewDifferences_window(AW_root *awr) {
+    static AW_window_simple *aws = 0;
+    if (!aws) {
+        create_viewDifferences_awars(awr);
+
+        aws = new AW_window_simple;
+        aws->init(awr, "VIEW_DIFF", "View sequence differences");
+        aws->load_xfig("edit4/viewdiff.fig");
+
+        aws->at("close");
+        aws->callback(AW_POPDOWN);
+        aws->create_button("CLOSE", "CLOSE", "C");
+
+        aws->at("help");
+        aws->callback(makeHelpCallback("sequence_colors.hlp"));
+        aws->create_button("HELP", "HELP");
+
+        aws->at("show");
+        aws->create_toggle_field(AWAR_DIFF_TYPE);
+        aws->insert_toggle("None (=disable)", "N", VD_DISABLED);
+        aws->insert_toggle("Selected",        "S", VD_SELECTED);
+        aws->update_toggle_field();
+
+        aws->at("ref");
+        aws->button_length(20);
+        aws->create_button(NULL, AWAR_DIFF_NAME, NULL, "+");
+
+        aws->at("set");
+        aws->button_length(4);
+        aws->callback(change_reference_cb);
+        aws->create_button("SET", "SET");
+    }
+    return aws;
 }

@@ -1546,9 +1546,8 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->close_sub_menu();
 
     awmm->sep______________();
-    awmm->insert_menu_topic("change_cursor", "Change cursor type",                "t", 0,                   AWM_ALL, ED4_change_cursor);
-    awmm->insert_menu_topic("show_diff",     "Show only differences to selected", "d", "set_reference.hlp", AWM_ALL, makeWindowCallback(ED4_set_reference_species, true));
-    awmm->insert_menu_topic("show_all",      "Show all bases",                    "a", "set_reference.hlp", AWM_ALL, makeWindowCallback(ED4_set_reference_species, false));
+    awmm->insert_menu_topic("change_cursor",             "Change cursor type",   "t", 0,                   AWM_ALL, ED4_change_cursor);
+    awmm->insert_menu_topic(awmm->local_id("view_diff"), "View differences ...", "V", "set_reference.hlp", AWM_ALL, ED4_create_viewDifferences_window);
     awmm->sep______________();
     awmm->insert_menu_topic("enable_col_stat",  "Activate column statistics", "v", "st_ml.hlp", AWM_EXP, ED4_activate_col_stat,            0, 0);
     awmm->insert_menu_topic("disable_col_stat", "Disable column statistics",  "i", "st_ml.hlp", AWM_EXP, ED4_disable_col_stat,             0, 0);
@@ -1556,7 +1555,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->insert_menu_topic("dcs_threshold",    "Set threshold for D.c.s.",   "f", "st_ml.hlp", AWM_EXP, ED4_set_col_stat_threshold,       0, 0);
     awmm->sep______________();
     awmm->insert_menu_topic(awmm->local_id("visualize_SAI"), "Visualize SAIs",                "z", "visualizeSAI.hlp",   AWM_ALL, ED4_createVisualizeSAI_window);
-    awmm->insert_menu_topic("toggle_saisec",                 "Toggle secondary info for SAI", "o", "toggle_secinfo.hlp", AWM_ALL, toggle_helix_for_SAI, 0,                                    0);
+    awmm->insert_menu_topic("toggle_saisec",                 "Toggle secondary info for SAI", "o", "toggle_secinfo.hlp", AWM_ALL, toggle_helix_for_SAI, 0, 0);
 
     // Enable ProteinViewer only for DNA sequence type
     if (alignment_type == GB_AT_DNA) {

@@ -969,6 +969,7 @@ ED4_seq_colors.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ED4_seq_colors.o: $(ARBHOME)/INCLUDE/arbtools.h
 ED4_seq_colors.o: $(ARBHOME)/INCLUDE/attributes.h
 ED4_seq_colors.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
+ED4_seq_colors.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 ED4_seq_colors.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_seq_colors.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_seq_colors.o: $(ARBHOME)/INCLUDE/aw_device.hxx
