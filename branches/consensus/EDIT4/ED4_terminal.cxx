@@ -16,13 +16,13 @@
 #include "ed4_block.hxx"
 #include "ed4_nds.hxx"
 #include "ed4_ProteinViewer.hxx"
+#include "ed4_seq_colors.hxx"
 
 #include <aw_preset.hxx>
 #include <aw_awar.hxx>
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
 #include <aw_question.hxx>
-#include <awt_seq_colors.hxx>
 #include <st_window.hxx>
 
 // -----------------------------------

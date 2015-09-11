@@ -16,6 +16,7 @@
 #include "ed4_tools.hxx"
 #include "ed4_nds.hxx"
 #include "ed4_list.hxx"
+#include "ed4_seq_colors.hxx"
 
 #include <ad_config.h>
 #include <AW_helix.hxx>
@@ -23,7 +24,6 @@
 #include <awt.hxx>
 #include <item_sel_list.h>
 #include <awt_sel_boxes.hxx>
-#include <awt_seq_colors.hxx>
 #include <aw_awars.hxx>
 #include <aw_msg.hxx>
 #include <arb_progress.h>

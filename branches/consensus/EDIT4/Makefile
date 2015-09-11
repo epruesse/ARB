@@ -353,6 +353,7 @@ ED4_main.o: ed4_nds.hxx
 ED4_main.o: ed4_protein_2nd_structure.hxx
 ED4_main.o: ed4_ProteinViewer.hxx
 ED4_main.o: ed4_search.hxx
+ED4_main.o: ed4_seq_colors.hxx
 ED4_main.o: ed4_visualizeSAI.hxx
 ED4_main.o: graph_aligner_gui.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/ad_config.h
@@ -609,6 +610,7 @@ ED4_no_class.o: ed4_extern.hxx
 ED4_no_class.o: ed4_list.hxx
 ED4_no_class.o: ed4_nds.hxx
 ED4_no_class.o: ed4_search.hxx
+ED4_no_class.o: ed4_seq_colors.hxx
 ED4_no_class.o: ed4_tools.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/ad_config.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -782,6 +784,7 @@ ED4_ProteinViewer.o: ed4_class.hxx
 ED4_ProteinViewer.o: ed4_defs.hxx
 ED4_ProteinViewer.o: ed4_ProteinViewer.hxx
 ED4_ProteinViewer.o: ed4_search.hxx
+ED4_ProteinViewer.o: ed4_seq_colors.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/AP_codon_table.hxx
@@ -998,6 +1001,7 @@ ED4_terminal.o: ed4_extern.hxx
 ED4_terminal.o: ed4_nds.hxx
 ED4_terminal.o: ed4_ProteinViewer.hxx
 ED4_terminal.o: ed4_search.hxx
+ED4_terminal.o: ed4_seq_colors.hxx
 ED4_terminal.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ED4_terminal.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ED4_terminal.o: $(ARBHOME)/INCLUDE/arb_core.h
@@ -1045,6 +1049,7 @@ ED4_text_terminals.o: ed4_nds.hxx
 ED4_text_terminals.o: ed4_protein_2nd_structure.hxx
 ED4_text_terminals.o: ed4_ProteinViewer.hxx
 ED4_text_terminals.o: ed4_search.hxx
+ED4_text_terminals.o: ed4_seq_colors.hxx
 ED4_text_terminals.o: ed4_visualizeSAI.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/ad_t_prot.h

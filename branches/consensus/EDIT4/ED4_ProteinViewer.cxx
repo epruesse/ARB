@@ -11,12 +11,12 @@
 // =======================================================================================
 
 #include "ed4_ProteinViewer.hxx"
+#include "ed4_seq_colors.hxx"
 #include "ed4_class.hxx"
 
 #include <AP_pro_a_nucs.hxx>
 #include <AP_codon_table.hxx>
 #include <Translate.hxx>
-#include <awt_seq_colors.hxx>
 #include <aw_question.hxx>
 #include <aw_preset.hxx>
 #include <aw_awars.hxx>

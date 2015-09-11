@@ -18,6 +18,7 @@
 #include "ed4_visualizeSAI.hxx"
 #include "ed4_ProteinViewer.hxx"
 #include "ed4_protein_2nd_structure.hxx"
+#include "ed4_seq_colors.hxx"
 
 #include <aw_preset.hxx>
 #include <aw_awar.hxx>
@@ -26,7 +27,6 @@
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
 
-#include <awt_seq_colors.hxx>
 #include <st_window.hxx>
 #include <arbdbt.h>
 

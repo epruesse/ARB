@@ -18,6 +18,7 @@
 #include "ed4_protein_2nd_structure.hxx"
 #include "ed4_dots.hxx"
 #include "ed4_naligner.hxx"
+#include "ed4_seq_colors.hxx"
 #include "graph_aligner_gui.hxx"
 #include <ed4_extern.hxx>
 
@@ -26,7 +27,6 @@
 #include <AW_helix.hxx>
 #include <AP_pro_a_nucs.hxx>
 #include <ad_config.h>
-#include <awt_seq_colors.hxx>
 #include <awt_map_key.hxx>
 #include <awt.hxx>
 
