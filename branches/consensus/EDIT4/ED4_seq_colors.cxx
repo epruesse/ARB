@@ -269,16 +269,16 @@ ED4_seq_colors::ED4_seq_colors(int baseGC, void (*changed_cb)()) {
 //      ED4_reference
 
 
-ED4_reference::ED4_reference(GBDATA *_gb_main) {
-    reference = 0;
-    ref_len = 0;
-    gb_main = _gb_main;
-    init_species_name = 0;
-}
+ED4_reference::ED4_reference(GBDATA *_gb_main)
+    : gb_main(_gb_main),
+      ref_len(0),
+      reference(NULL),
+      init_species_name(NULL),
+      nodiff('#') // notused; overwritten by user default later
+{}
 
 void ED4_reference::clear() {
-    free(reference);
-    reference = 0;
+    freenull(reference);
     ref_len = 0;
     delete init_species_name;
     init_species_name = 0;
@@ -340,8 +340,9 @@ ED4_reference::~ED4_reference() {
 #define APREFIX_DIFF_SAVE "edit4/diff/"
 #define APREFIX_DIFF_TEMP "tmp/" APREFIX_DIFF_SAVE
 
-#define AWAR_DIFF_TYPE APREFIX_DIFF_TEMP "type"
-#define AWAR_DIFF_NAME APREFIX_DIFF_TEMP "name"
+#define AWAR_DIFF_TYPE        APREFIX_DIFF_TEMP "type"
+#define AWAR_DIFF_NAME        APREFIX_DIFF_TEMP "name"
+#define AWAR_NODIFF_INDICATOR APREFIX_DIFF_SAVE "indicator"
 
 enum ViewDiffType {
     VD_DISABLED,
@@ -453,10 +454,25 @@ static void diff_type_changed_cb(AW_root *awr) {
             break;
     }
 }
+static void nodiff_indicator_changed_cb(AW_root *awr) {
+    AW_awar    *awar_indicator = awr->awar(AWAR_NODIFF_INDICATOR);
+    const char *indicator      = awar_indicator->read_char_pntr();
+
+    if (!indicator[0]) {
+        awar_indicator->write_string(" ");
+    }
+    else {
+        ED4_ROOT->reference->set_nodiff_indicator(indicator[0]);
+        ED4_ROOT->request_refresh_for_sequence_terminals();
+    }
+}
 
 static void create_viewDifferences_awars(AW_root *awr) {
     awr->awar_int(AWAR_DIFF_TYPE, VD_DISABLED)->add_callback(diff_type_changed_cb);
     awr->awar_string(AWAR_DIFF_NAME, "<none selected>");
+
+    AW_awar *awar_indicator = awr->awar_string(AWAR_NODIFF_INDICATOR, " ")->add_callback(nodiff_indicator_changed_cb)->set_srt(" ?=?:? =?:?*=?");
+    ED4_ROOT->reference->set_nodiff_indicator(awar_indicator->read_char_pntr()[0]);
 }
 AW_window *ED4_create_viewDifferences_window(AW_root *awr) {
     static AW_window_simple *aws = 0;
@@ -472,7 +488,7 @@ AW_window *ED4_create_viewDifferences_window(AW_root *awr) {
         aws->create_button("CLOSE", "CLOSE", "C");
 
         aws->at("help");
-        aws->callback(makeHelpCallback("sequence_colors.hlp"));
+        aws->callback(makeHelpCallback("set_reference.hlp"));
         aws->create_button("HELP", "HELP");
 
         aws->at("show");
@@ -489,6 +505,9 @@ AW_window *ED4_create_viewDifferences_window(AW_root *awr) {
         aws->button_length(4);
         aws->callback(change_reference_cb);
         aws->create_button("SET", "SET");
+
+        aws->at("nodiff");
+        aws->create_input_field(AWAR_NODIFF_INDICATOR);
     }
     return aws;
 }

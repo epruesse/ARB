@@ -18,6 +18,12 @@ DESCRIPTION     Select a species, SAI or group consensus by clicking into its se
                 of all other sequences (i.e. all but the selected sequence) to
                 show only the differences to the selected sequence.
 
+                You may define the character used for positions where selected and displayed
+                sequence do NOT differ.
+                Default is to display a space, other recommended values
+                are '|' (esp. w/o helix display and smaller seq-spacing),
+                '_', '~', ':' or single quotes.
+
                 To revert display to standard mode, select 'None'.
 
 NOTES		Useful to manually correct alignments.

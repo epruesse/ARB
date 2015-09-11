@@ -45,6 +45,7 @@ class ED4_reference : virtual Noncopyable {
     int     ref_len;
     char   *reference;
     char   *init_species_name;
+    char    nodiff;
 
 public:
     ED4_reference(GBDATA *gb_main);
@@ -58,7 +59,9 @@ public:
 
     void expand_to_length(int len);             // make sure that reference is at least len long
 
-    int convert(char c, int pos) const                          { return (c=='-' || c!=reference[pos]) ? c : '.'; } // @@@ customize
+    void set_nodiff_indicator(char ind) { nodiff = ind; }
+
+    int convert(char c, int pos) const                          { return (c=='-' || c!=reference[pos]) ? c : nodiff; }
     int reference_species_is(const char *species_name) const    { return init_species_name ? strcmp(species_name, init_species_name)==0 : 0; } // @@@ test using 'ED4_terminal*'
 };
 
