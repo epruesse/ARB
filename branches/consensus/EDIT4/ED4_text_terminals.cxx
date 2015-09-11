@@ -239,7 +239,7 @@ ED4_returncode ED4_orf_terminal::draw() {
 
         if (iDisplayMode == PV_AA_NAME || iDisplayMode == PV_AA_CODE) {
             // transform strings, compress if needed
-            AWT_reference *ref = ED4_ROOT->reference;
+            ED4_reference *ref = ED4_ROOT->reference;
             ref->expand_to_length(seq_end);
 
             char *char_2_char = ED4_ROOT->sequence_colors->char_2_char_aa;
@@ -389,7 +389,7 @@ ED4_returncode ED4_sequence_terminal::draw() {
 
     // transform strings, compress if needed
     {
-        AWT_reference *ref        = ED4_ROOT->reference;
+        ED4_reference *ref        = ED4_ROOT->reference;
         unsigned char *db_pointer = (unsigned char *)resolve_pointer_to_string_copy();
 
         ref->expand_to_length(seq_end);

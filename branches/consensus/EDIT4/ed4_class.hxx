@@ -151,8 +151,8 @@ class ED4_tree_terminal;
 class ED4_window;
 
 class AP_tree;
-class AWT_reference;
-class AWT_seq_colors;
+class ED4_reference;
+class ED4_seq_colors;
 class BI_ecoli_ref;
 class AW_helix;
 class arb_progress;
@@ -1587,8 +1587,8 @@ public:
     BI_ecoli_ref            *ecoli_ref;
     char                    *alignment_name;
     GB_alignment_type        alignment_type;
-    AWT_reference           *reference;
-    AWT_seq_colors          *sequence_colors;
+    ED4_reference           *reference;
+    ED4_seq_colors          *sequence_colors;
     AW_gc_manager            gc_manager;
     ST_ML                   *st_ml;
     AW_helix                *helix;

@@ -618,7 +618,7 @@ ED4_returncode ED4_root::create_hierarchy(const char *area_string_middle, const 
 
             y += 3;
 
-            reference = new AWT_reference(GLOBAL_gb_main);
+            reference = new ED4_reference(GLOBAL_gb_main);
 
             int index = 0;
             database->scan_string(top_multi_species_manager, ref_terminals.get_ref_sequence_info(), ref_terminals.get_ref_sequence(),
@@ -1611,8 +1611,8 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->insert_menu_topic(awmm->local_id("props_consensus"), "Consensus Definition ", "u", "e4_consensus.hlp", AWM_ALL, ED4_create_consensus_definition_window);
     awmm->sep______________();
 
-    awmm->insert_menu_topic("props_data",                       "Change Colors & Fonts ", "C", 0,                     AWM_ALL, makeWindowCallback      (ED4_popup_gc_window,      first_gc_manager));
-    awmm->insert_menu_topic(awmm->local_id("props_seq_colors"), "Sequence color mapping", "S", "sequence_colors.hlp", AWM_ALL, makeCreateWindowCallback(create_seq_colors_window, sequence_colors));
+    awmm->insert_menu_topic("props_data",                       "Change Colors & Fonts ", "C", 0,                     AWM_ALL, makeWindowCallback      (ED4_popup_gc_window,          first_gc_manager));
+    awmm->insert_menu_topic(awmm->local_id("props_seq_colors"), "Sequence color mapping", "S", "sequence_colors.hlp", AWM_ALL, makeCreateWindowCallback(ED4_create_seq_colors_window, sequence_colors));
 
     awmm->sep______________();
 

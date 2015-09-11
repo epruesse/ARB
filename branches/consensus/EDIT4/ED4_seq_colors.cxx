@@ -25,6 +25,12 @@ static int default_AMI_set = 3;     // number of default amino acid set
 #define SEQ_COLOR_SETS      8
 #define SEQ_COLOR_SET_ELEMS 28 // has to be a even number!
 
+#define AWAR_SEQ_PATH                  "awt/seq_colors/"
+#define AWAR_SEQ_NAME_STRINGS_TEMPLATE AWAR_SEQ_PATH  "strings/elem_%i"
+#define AWAR_SEQ_NAME_TEMPLATE         AWAR_SEQ_PATH  "set_%i/elem_%i"
+#define AWAR_SEQ_NAME_SELECTOR_NA      AWAR_SEQ_PATH   "na/select"
+#define AWAR_SEQ_NAME_SELECTOR_AA      AWAR_SEQ_PATH   "aa/select"
+
 static const char *default_sets[SEQ_COLOR_SETS] = {
     //A B C D E F G H I J K L M N O P Q R S T U V W X Y Z * -
     "=2=0=3=0=0=0=4=0=0=0=0=0=0=6=0=0=0=0=0=5=5=0=0=0=0=0=0=6", // A, C, G, TU and N in 5 colors
@@ -73,14 +79,14 @@ static const char *default_color(int cset, int elem) {
     return result;
 }
 
-static void color_awar_changed_cb(AW_root *, AWT_seq_colors *sc) {
+static void color_awar_changed_cb(AW_root *, ED4_seq_colors *sc) {
     sc->reload();
 }
 
-static void create_seq_color_awars(AW_root *awr, AWT_seq_colors *asc) {
+static void create_seq_color_awars(AW_root *awr, ED4_seq_colors *sc) {
     e4_assert(!seq_color_awars_created);
 
-    RootCallback update_cb = makeRootCallback(color_awar_changed_cb, asc);
+    RootCallback update_cb = makeRootCallback(color_awar_changed_cb, sc);
     awr->awar_int(AWAR_SEQ_NAME_SELECTOR_NA, default_NUC_set, AW_ROOT_DEFAULT)->add_callback(update_cb);
     awr->awar_int(AWAR_SEQ_NAME_SELECTOR_AA, default_AMI_set, AW_ROOT_DEFAULT)->add_callback(update_cb);
 
@@ -106,12 +112,12 @@ static void create_seq_color_awars(AW_root *awr, AWT_seq_colors *asc) {
     seq_color_awars_created = true;
 }
 
-AW_window *create_seq_colors_window(AW_root *awr, AWT_seq_colors *asc) {
+AW_window *ED4_create_seq_colors_window(AW_root *awr, ED4_seq_colors *sc) {
     char                     buf[256];
     static AW_window_simple *aws = 0;
     if (aws) return aws;
 
-    if (!seq_color_awars_created) create_seq_color_awars(awr, asc);
+    if (!seq_color_awars_created) create_seq_color_awars(awr, sc);
 
     aws = new AW_window_simple;
     aws->init(awr, "SEQUENCE_MAPPING", "Sequence color mapping");
@@ -196,7 +202,7 @@ AW_window *create_seq_colors_window(AW_root *awr, AWT_seq_colors *asc) {
     return aws;
 }
 
-void AWT_seq_colors::reload() {
+void ED4_seq_colors::reload() {
     for (int i=0; i<256; i++) {
         char_2_gc[i]   = char_2_gc_aa[i]   = base_gc;
         char_2_char[i] = char_2_char_aa[i] = i;
@@ -251,23 +257,25 @@ void AWT_seq_colors::reload() {
     run_cb();
 }
 
-AWT_seq_colors::AWT_seq_colors(int baseGC, void (*changed_cb)()) {
+ED4_seq_colors::ED4_seq_colors(int baseGC, void (*changed_cb)()) {
     cb      = changed_cb;
     base_gc = baseGC;
 
     this->reload();
 }
 
+// -----------------------
+//      ED4_reference
 
 
-AWT_reference::AWT_reference(GBDATA *_gb_main) {
+ED4_reference::ED4_reference(GBDATA *_gb_main) {
     reference = 0;
     ref_len = 0;
     gb_main = _gb_main;
     init_species_name = 0;
 }
 
-void AWT_reference::clear() {
+void ED4_reference::clear() {
     free(reference);
     reference = 0;
     ref_len = 0;
@@ -275,7 +283,7 @@ void AWT_reference::clear() {
     init_species_name = 0;
 }
 
-void AWT_reference::expand_to_length(int len) {
+void ED4_reference::expand_to_length(int len) {
     if (len > ref_len) {
         char *ref2 = (char *)GB_calloc(sizeof(char), len+1);
 
@@ -288,7 +296,7 @@ void AWT_reference::expand_to_length(int len) {
     }
 }
 
-void AWT_reference::define(const char *species_name, const char *alignment_name) {
+void ED4_reference::define(const char *species_name, const char *alignment_name) {
     e4_assert(species_name);
     e4_assert(alignment_name);
 
@@ -308,7 +316,7 @@ void AWT_reference::define(const char *species_name, const char *alignment_name)
     }
 }
 
-void AWT_reference::define(const char *name, const char *sequence_data, int len) {
+void ED4_reference::define(const char *name, const char *sequence_data, int len) {
     e4_assert(name);
     e4_assert(sequence_data);
     e4_assert(len>0);
@@ -322,6 +330,6 @@ void AWT_reference::define(const char *name, const char *sequence_data, int len)
     init_species_name = strdup(name);
 }
 
-AWT_reference::~AWT_reference() {
+ED4_reference::~ED4_reference() {
     free(reference);
 }

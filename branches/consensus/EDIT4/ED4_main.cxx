@@ -496,7 +496,7 @@ int ARB_main(int argc, char *argv[]) {
             ed4_create_all_awars(ED4_ROOT->aw_root, config_name);
 
             ED4_ROOT->st_ml           = STAT_create_ST_ML(GLOBAL_gb_main);
-            ED4_ROOT->sequence_colors = new AWT_seq_colors(ED4_G_SEQUENCES, seq_colors_changed_cb);
+            ED4_ROOT->sequence_colors = new ED4_seq_colors(ED4_G_SEQUENCES, seq_colors_changed_cb);
 
             ED4_ROOT->edk = new ed_key;
             ED4_ROOT->edk->create_awars(ED4_ROOT->aw_root);

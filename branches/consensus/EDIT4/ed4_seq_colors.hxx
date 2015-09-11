@@ -12,17 +12,18 @@
 #ifndef AWT_SEQ_COLORS_HXX
 #define AWT_SEQ_COLORS_HXX
 
-#ifndef AW_WINDOW_HXX
-#include <aw_window.hxx>
+#ifndef ARBTOOLS_H
+#include <arbtools.h>
+#endif
+#ifndef _GLIBCXX_CSTRING
+#include <cstring>
 #endif
 
-#define AWAR_SEQ_PATH                  "awt/seq_colors/"
-#define AWAR_SEQ_NAME_STRINGS_TEMPLATE AWAR_SEQ_PATH  "strings/elem_%i"
-#define AWAR_SEQ_NAME_TEMPLATE         AWAR_SEQ_PATH  "set_%i/elem_%i"
-#define AWAR_SEQ_NAME_SELECTOR_NA      AWAR_SEQ_PATH   "na/select"
-#define AWAR_SEQ_NAME_SELECTOR_AA      AWAR_SEQ_PATH   "aa/select"
+class GBDATA;
+class AW_root;
+class AW_window;
 
-class AWT_seq_colors {
+class ED4_seq_colors {
     int base_gc;
     void (*cb)();
 
@@ -36,18 +37,18 @@ public:
     char char_2_gc_aa[256];      // translate to gc  - for aminoacid sequence
     char char_2_char_aa[256];    // translate to char - for aminoacid sequence
 
-    AWT_seq_colors(int baseGC, void (*changed_cb)());
+    ED4_seq_colors(int baseGC, void (*changed_cb)());
 };
 
-class AWT_reference : virtual Noncopyable {
+class ED4_reference : virtual Noncopyable {
     GBDATA *gb_main;
     int     ref_len;
     char   *reference;
     char   *init_species_name;
 
 public:
-    AWT_reference(GBDATA *gb_main);
-    ~AWT_reference();
+    ED4_reference(GBDATA *gb_main);
+    ~ED4_reference();
 
     void clear();
     void define(const char *species_name, const char *alignment_name);
@@ -59,9 +60,9 @@ public:
     int reference_species_is(const char *species_name) const    { return init_species_name ? strcmp(species_name, init_species_name)==0 : 0; }
 };
 
-AW_window *create_seq_colors_window(AW_root *awr, AWT_seq_colors *asc);
+AW_window *ED4_create_seq_colors_window(AW_root *awr, ED4_seq_colors *sc);
 
 
 #else
-#error awt_seq_colors.hxx included twice
+#error ed4_seq_colors.hxx included twice
 #endif // AWT_SEQ_COLORS_HXX
