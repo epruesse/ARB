@@ -22,13 +22,13 @@
 #include "ed4_protein_2nd_structure.hxx"
 #include "graph_aligner_gui.hxx"
 #include "ed4_colStat.hxx"
+#include "ed4_seq_colors.hxx"
 
 #include <ed4_extern.hxx>
 #include <fast_aligner.hxx>
 #include <AW_helix.hxx>
 #include <gde.hxx>
 #include <awt.hxx>
-#include <awt_seq_colors.hxx>
 #include <awt_map_key.hxx>
 #include <aw_awars.hxx>
 #include <aw_preset.hxx>

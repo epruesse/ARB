@@ -232,7 +232,6 @@ symlink_file ../AWT/awt_map_key.hxx INCLUDE/awt_map_key.hxx &&
 symlink_file ../AWT/awt_misc.hxx INCLUDE/awt_misc.hxx &&
 symlink_file ../AWT/awt_modules.hxx INCLUDE/awt_modules.hxx &&
 symlink_file ../AWT/awt_sel_boxes.hxx INCLUDE/awt_sel_boxes.hxx &&
-symlink_file ../AWT/awt_seq_colors.hxx INCLUDE/awt_seq_colors.hxx &&
 symlink_file ../AWT/awt_TreeAwars.hxx INCLUDE/awt_TreeAwars.hxx &&
 symlink_file ../AWT/awt_www.hxx INCLUDE/awt_www.hxx &&
 symlink_file ../AWT/awtlocal.hxx INCLUDE/awtlocal.hxx &&

@@ -1,7 +1,8 @@
 // =========================================================== //
 //                                                             //
-//   File      : awt_seq_colors.hxx                            //
-//   Purpose   :                                               //
+//   File      : ed4_seq_colors.hxx                            //
+//   Purpose   : Sequence foreground coloring.                 //
+//               Viewing differences only.                     //
 //                                                             //
 //   Institute of Microbiology (Technical University Munich)   //
 //   http://www.arb-home.de/                                   //

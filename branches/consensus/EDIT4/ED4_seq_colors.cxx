@@ -1,15 +1,16 @@
 // ================================================================ //
 //                                                                  //
-//   File      : AWT_seq_colors.cxx                                 //
-//   Purpose   :                                                    //
+//   File      : ED4_seq_colors.cxx                                 //
+//   Purpose   : Sequence foreground coloring.                      //
+//               Viewing differences only.                          //
 //                                                                  //
 //   Institute of Microbiology (Technical University Munich)        //
 //   http://www.arb-home.de/                                        //
 //                                                                  //
 // ================================================================ //
 
-#include "awt_seq_colors.hxx"
-#include "awt.hxx"
+#include "ed4_seq_colors.hxx"
+#include "ed4_class.hxx"
 
 #include <aw_root.hxx>
 #include <aw_awar.hxx>
@@ -77,7 +78,7 @@ static void color_awar_changed_cb(AW_root *, AWT_seq_colors *sc) {
 }
 
 static void create_seq_color_awars(AW_root *awr, AWT_seq_colors *asc) {
-    awt_assert(!seq_color_awars_created);
+    e4_assert(!seq_color_awars_created);
 
     RootCallback update_cb = makeRootCallback(color_awar_changed_cb, asc);
     awr->awar_int(AWAR_SEQ_NAME_SELECTOR_NA, default_NUC_set, AW_ROOT_DEFAULT)->add_callback(update_cb);
@@ -288,8 +289,8 @@ void AWT_reference::expand_to_length(int len) {
 }
 
 void AWT_reference::define(const char *species_name, const char *alignment_name) {
-    awt_assert(species_name);
-    awt_assert(alignment_name);
+    e4_assert(species_name);
+    e4_assert(alignment_name);
 
     GB_transaction ta(gb_main);
     GBDATA *gb_species = GBT_find_species(gb_main, species_name);
@@ -308,9 +309,9 @@ void AWT_reference::define(const char *species_name, const char *alignment_name)
 }
 
 void AWT_reference::define(const char *name, const char *sequence_data, int len) {
-    awt_assert(name);
-    awt_assert(sequence_data);
-    awt_assert(len>0);
+    e4_assert(name);
+    e4_assert(sequence_data);
+    e4_assert(len>0);
 
     clear();
 

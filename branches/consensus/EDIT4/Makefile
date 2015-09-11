@@ -388,7 +388,6 @@ ED4_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/awt.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/awt_map_key.hxx
-ED4_main.o: $(ARBHOME)/INCLUDE/awt_seq_colors.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/cb.h
@@ -646,7 +645,6 @@ ED4_no_class.o: $(ARBHOME)/INCLUDE/awt.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/awt_misc.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
-ED4_no_class.o: $(ARBHOME)/INCLUDE/awt_seq_colors.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/cb.h
@@ -812,7 +810,6 @@ ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/awt_seq_colors.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/cb_base.h
@@ -843,6 +840,7 @@ ED4_root.o: ed4_plugins.hxx
 ED4_root.o: ed4_protein_2nd_structure.hxx
 ED4_root.o: ed4_ProteinViewer.hxx
 ED4_root.o: ed4_search.hxx
+ED4_root.o: ed4_seq_colors.hxx
 ED4_root.o: ed4_tools.hxx
 ED4_root.o: ed4_visualizeSAI.hxx
 ED4_root.o: graph_aligner_gui.hxx
@@ -882,7 +880,6 @@ ED4_root.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/awt.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/awt_map_key.hxx
-ED4_root.o: $(ARBHOME)/INCLUDE/awt_seq_colors.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/cb.h
@@ -952,6 +949,46 @@ ED4_search.o: $(ARBHOME)/INCLUDE/static_assert.h
 ED4_search.o: $(ARBHOME)/INCLUDE/test_global.h
 ED4_search.o: $(ARBHOME)/INCLUDE/ttypes.h
 
+ED4_seq_colors.o: ed4_class.hxx
+ED4_seq_colors.o: ed4_defs.hxx
+ED4_seq_colors.o: ed4_search.hxx
+ED4_seq_colors.o: ed4_seq_colors.hxx
+ED4_seq_colors.o: $(ARBHOME)/INCLUDE/ad_prot.h
+ED4_seq_colors.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+ED4_seq_colors.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ED4_seq_colors.o: $(ARBHOME)/INCLUDE/arb_core.h
+ED4_seq_colors.o: $(ARBHOME)/INCLUDE/arb_error.h
+ED4_seq_colors.o: $(ARBHOME)/INCLUDE/arb_msg.h
+ED4_seq_colors.o: $(ARBHOME)/INCLUDE/arb_string.h
+ED4_seq_colors.o: $(ARBHOME)/INCLUDE/arbdb.h
+ED4_seq_colors.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+ED4_seq_colors.o: $(ARBHOME)/INCLUDE/arbdbt.h
+ED4_seq_colors.o: $(ARBHOME)/INCLUDE/arbtools.h
+ED4_seq_colors.o: $(ARBHOME)/INCLUDE/attributes.h
+ED4_seq_colors.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
+ED4_seq_colors.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+ED4_seq_colors.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
+ED4_seq_colors.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+ED4_seq_colors.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
+ED4_seq_colors.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+ED4_seq_colors.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
+ED4_seq_colors.o: $(ARBHOME)/INCLUDE/aw_position.hxx
+ED4_seq_colors.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+ED4_seq_colors.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+ED4_seq_colors.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
+ED4_seq_colors.o: $(ARBHOME)/INCLUDE/cb.h
+ED4_seq_colors.o: $(ARBHOME)/INCLUDE/cb_base.h
+ED4_seq_colors.o: $(ARBHOME)/INCLUDE/cbtypes.h
+ED4_seq_colors.o: $(ARBHOME)/INCLUDE/cxxforward.h
+ED4_seq_colors.o: $(ARBHOME)/INCLUDE/downcast.h
+ED4_seq_colors.o: $(ARBHOME)/INCLUDE/dupstr.h
+ED4_seq_colors.o: $(ARBHOME)/INCLUDE/gccver.h
+ED4_seq_colors.o: $(ARBHOME)/INCLUDE/pos_range.h
+ED4_seq_colors.o: $(ARBHOME)/INCLUDE/smartptr.h
+ED4_seq_colors.o: $(ARBHOME)/INCLUDE/static_assert.h
+ED4_seq_colors.o: $(ARBHOME)/INCLUDE/test_global.h
+ED4_seq_colors.o: $(ARBHOME)/INCLUDE/ttypes.h
+
 ED4_terminal.o: ed4_awars.hxx
 ED4_terminal.o: ed4_block.hxx
 ED4_terminal.o: ed4_class.hxx
@@ -983,7 +1020,6 @@ ED4_terminal.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 ED4_terminal.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 ED4_terminal.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ED4_terminal.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-ED4_terminal.o: $(ARBHOME)/INCLUDE/awt_seq_colors.hxx
 ED4_terminal.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 ED4_terminal.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_terminal.o: $(ARBHOME)/INCLUDE/cb_base.h
@@ -1034,7 +1070,6 @@ ED4_text_terminals.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-ED4_text_terminals.o: $(ARBHOME)/INCLUDE/awt_seq_colors.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/cb.h
