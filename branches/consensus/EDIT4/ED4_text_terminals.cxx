@@ -90,13 +90,17 @@ ED4_returncode ED4_consensus_sequence_terminal::draw() {
 
         ensure_buffer(buffer, buffer_size, index_range.end()+1);
 
+        ED4_reference *ref    = ED4_ROOT->reference;
+        bool           is_ref = ref->reference_species_is(this);
+
         for (int pos = index_range.start(); pos <= index_range.end(); ++pos) {
             int seq_pos = rm->screen_to_sequence(pos);
             if (seq_pos<0) {
                 buffer[pos] = ' ';
             }
             else {
-                buffer[pos] = cons[seq_pos-seq_range.start()];
+                char c      = cons[seq_pos-seq_range.start()];
+                buffer[pos] = is_ref ? c : ref->convert(c, seq_pos);
                 e4_assert(buffer[pos]);
             }
         }

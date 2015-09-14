@@ -404,7 +404,7 @@ static void set_diff_reference(ED4_terminal *refTerm) {
         }
     }
 
-    ED4_ROOT->request_refresh_for_sequence_terminals();
+    ED4_ROOT->request_refresh_for_specific_terminals(ED4_L_SEQUENCE_STRING);
 }
 
 static ED4_terminal *last_used_ref_term = NULL;
@@ -457,7 +457,7 @@ static void nodiff_indicator_changed_cb(AW_root *awr) {
     }
     else {
         ED4_ROOT->reference->set_nodiff_indicator(indicator[0]);
-        ED4_ROOT->request_refresh_for_sequence_terminals();
+        ED4_ROOT->request_refresh_for_specific_terminals(ED4_L_SEQUENCE_STRING);
     }
 }
 
