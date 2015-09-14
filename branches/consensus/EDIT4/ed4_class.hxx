@@ -1918,22 +1918,27 @@ public:
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_abstract_group_manager);
 };
 
-typedef void (*ED4_species_manager_cb)(ED4_species_manager*, AW_CL);
+template <class C>
+struct ED4_cb {
+    typedef void (*type)(C*,AW_CL);
 
-class ED4_species_manager_cb_data {
-    ED4_species_manager_cb cb;
-    AW_CL                  cd; // client data
+private:
+    type  cb;
+    AW_CL cd; // client data
 
 public:
-    ED4_species_manager_cb_data(ED4_species_manager_cb cb_, AW_CL cd_) : cb(cb_), cd(cd_) {}
+    ED4_cb(type cb_, AW_CL cd_) : cb(cb_), cd(cd_) {}
 
-    void call(ED4_species_manager *man) const { cb(man, cd); }
-    bool operator == (const ED4_species_manager_cb_data& other) const {
+    void call(C *c) const { cb(c, cd); }
+    bool operator == (const ED4_cb<C>& other) const {
         return
             (char*)cb == (char*)other.cb &&
             (char*)cd == (char*)other.cd;
     }
 };
+
+typedef ED4_cb<ED4_species_manager>       ED4_species_manager_cb_data;
+typedef ED4_cb<ED4_species_manager>::type ED4_species_manager_cb;
 
 class ED4_species_manager : public ED4_manager {
     E4B_AVOID_UNNEEDED_CASTS(species_manager);
