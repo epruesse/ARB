@@ -426,13 +426,12 @@ bool ED4_species_manager::setCursorTo(ED4_cursor *cursor, int seq_pos, bool unfo
     return false;
 }
 
-static void jump_to_species(ED4_species_name_terminal *name_term, int seq_pos, bool unfold_groups, ED4_CursorJumpType jump_type) // @@@ has to work for species and SAI; rename
-{
+static void jump_to_corresponding_seq_terminal(ED4_species_name_terminal *name_term, bool unfold_groups) {
     ED4_species_manager *species_manager = name_term->get_parent(ED4_L_SPECIES)->to_species_manager();
-    ED4_cursor *cursor = &current_cursor();
-    bool jumped = false;
+    ED4_cursor          *cursor          = &current_cursor();
+    bool                 jumped          = false;
 
-    if (species_manager) jumped = species_manager->setCursorTo(cursor, seq_pos, unfold_groups, jump_type);
+    if (species_manager) jumped = species_manager->setCursorTo(cursor, -1, unfold_groups, ED4_JUMP_KEEP_POSITION);
     if (!jumped) cursor->HideCursor();
 }
 
@@ -474,7 +473,7 @@ static void select_named_sequence_terminal(const char *name) {
 #if defined(TRACE_JUMPS)
             printf("Jumping to species/SAI '%s'\n", name);
 #endif
-            jump_to_species(name_term, -1, false, ED4_JUMP_KEEP_POSITION);
+            jump_to_corresponding_seq_terminal(name_term, false);
         }
         else {
 #if defined(TRACE_JUMPS)
@@ -529,7 +528,7 @@ void ED4_jump_to_current_species(AW_window *aww, AW_CL) {
         ED4_species_name_terminal *name_term = ED4_find_species_name_terminal(name);
 
         if (name_term) {
-            jump_to_species(name_term, -1, true, ED4_JUMP_KEEP_POSITION);
+            jump_to_corresponding_seq_terminal(name_term, true);
         }
         else {
             aw_message(GBS_global_string("Species '%s' is not loaded - use GET to load it.", name));
@@ -650,7 +649,7 @@ void ED4_get_and_jump_to_selected_SAI(AW_window *aww) {
             loaded    = true;
         }
         if (name_term) {
-            jump_to_species(name_term, -1, true, ED4_JUMP_KEEP_POSITION);
+            jump_to_corresponding_seq_terminal(name_term, true);
             if (!loaded) aw_message(GBS_global_string("SAI '%s' is already loaded.", sai_name));
         }
         else {
@@ -671,7 +670,7 @@ void ED4_get_and_jump_to_species(GB_CSTR species_name) {
         loaded    = true;
     }
     if (name_term) {
-        jump_to_species(name_term, -1, true, ED4_JUMP_KEEP_POSITION);
+        jump_to_corresponding_seq_terminal(name_term, true);
         if (!loaded) aw_message(GBS_global_string("Species '%s' is already loaded.", species_name));
     }
     else {
