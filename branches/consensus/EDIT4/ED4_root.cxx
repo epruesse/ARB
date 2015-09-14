@@ -870,23 +870,38 @@ static ARB_ERROR ED4_with_all_loaded_species(ED4_Species_Callback cb, AW_CL cd) 
     return ED4_ROOT->root_group_man->route_down_hierarchy(do_sth_with_species, (AW_CL)cb, cd);
 }
 
-static bool has_species_name(ED4_base *base, AW_CL cl_species_name) {
+static bool is_named(ED4_base *base, AW_CL cl_species_name) {
     ED4_species_name_terminal *name_term = base->to_species_name_terminal();
-    GBDATA *gbd = name_term->get_species_pointer();
-
+    GBDATA                    *gbd       = name_term->get_species_pointer();
     if (gbd) {
-        const char *name = GB_read_char_pntr(gbd);
+        const char *wanted_name = (const char*)cl_species_name;
+        const char *name        = GB_read_char_pntr(gbd);
         e4_assert(name);
-        return strcmp(name, (const char*)cl_species_name)==0;
-    }
 
+        return strcmp(name, wanted_name) == 0;
+    }
     return false;
 }
 
+static bool is_species_named(ED4_base *base, AW_CL cl_species_name) {
+    return base->inside_species_seq_manager() && is_named(base, cl_species_name);
+}
+
+static bool is_SAI_named(ED4_base *base, AW_CL cl_species_name) {
+    return base->inside_SAI_manager() && is_named(base, cl_species_name);
+}
+
+ED4_species_name_terminal *ED4_find_species_or_SAI_name_terminal(const char *species_name) {
+    ED4_base *base = ED4_ROOT->root_group_man->find_first_that(ED4_L_SPECIES_NAME, is_species_named, (AW_CL)species_name);
+    return base ? base->to_species_name_terminal() : NULL;
+}
 ED4_species_name_terminal *ED4_find_species_name_terminal(const char *species_name) {
-    // works for SAIs as well
-    ED4_base *base = ED4_ROOT->root_group_man->find_first_that(ED4_L_SPECIES_NAME, has_species_name, (AW_CL)species_name);
-    return base ? base->to_species_name_terminal() : 0;
+    ED4_base *base = ED4_ROOT->root_group_man->find_first_that(ED4_L_SPECIES_NAME, is_species_named, (AW_CL)species_name);
+    return base ? base->to_species_name_terminal() : NULL;
+}
+ED4_species_name_terminal *ED4_find_SAI_name_terminal(const char *sai_name) {
+    ED4_base *base = ED4_ROOT->root_group_man->find_first_that(ED4_L_SPECIES_NAME, is_SAI_named, (AW_CL)sai_name);
+    return base ? base->to_species_name_terminal() : NULL;
 }
 
 static char *get_group_consensus(const char *species_name, PosRange range) {

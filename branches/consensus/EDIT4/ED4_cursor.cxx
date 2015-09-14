@@ -426,7 +426,7 @@ bool ED4_species_manager::setCursorTo(ED4_cursor *cursor, int seq_pos, bool unfo
     return false;
 }
 
-static void jump_to_species(ED4_species_name_terminal *name_term, int seq_pos, bool unfold_groups, ED4_CursorJumpType jump_type)
+static void jump_to_species(ED4_species_name_terminal *name_term, int seq_pos, bool unfold_groups, ED4_CursorJumpType jump_type) // @@@ has to work for species and SAI; rename
 {
     ED4_species_manager *species_manager = name_term->get_parent(ED4_L_SPECIES)->to_species_manager();
     ED4_cursor *cursor = &current_cursor();
@@ -441,7 +441,7 @@ static bool ignore_selected_SAI_changes_cb     = false;
 
 static void select_named_sequence_terminal(const char *name) {
     GB_transaction ta(GLOBAL_gb_main);
-    ED4_species_name_terminal *name_term = ED4_find_species_name_terminal(name);
+    ED4_species_name_terminal *name_term = ED4_find_species_or_SAI_name_terminal(name);
     if (name_term) {
         ED4_MostRecentWinContext context; // use the last used window for selection
 
@@ -559,7 +559,8 @@ static bool multi_species_man_consensus_id_starts_with(ED4_base *base, AW_CL cl_
     return false;
 }
 
-ED4_multi_species_manager *ED4_new_species_multi_species_manager() {     // returns manager into which new species should be inserted
+ED4_multi_species_manager *ED4_new_species_multi_species_manager() {
+    // returns manager into which new species should be inserted
     ED4_base *manager = ED4_ROOT->root_group_man->find_first_that(ED4_L_MULTI_SPECIES, multi_species_man_consensus_id_starts_with, (AW_CL)"More Sequences");
     return manager ? manager->to_multi_species_manager() : 0;
 }
@@ -618,7 +619,10 @@ static ED4_species_name_terminal *insert_new_species_terminal(GB_CSTR species_na
         }
     }
 
-    ED4_species_name_terminal *name_term = ED4_find_species_name_terminal(species_name);
+    ED4_species_name_terminal *name_term = is_SAI
+        ? ED4_find_SAI_name_terminal(species_name)
+        : ED4_find_species_name_terminal(species_name);
+
     if (name_term) {
         // new AAseqTerminals should be created if it is in ProtView mode
         if (ED4_ROOT->alignment_type == GB_AT_DNA && !is_SAI) {
@@ -638,7 +642,7 @@ void ED4_get_and_jump_to_selected_SAI(AW_window *aww) {
     if (sai_name && sai_name[0]) {
         ED4_MostRecentWinContext   context;
         GB_transaction             ta(GLOBAL_gb_main);
-        ED4_species_name_terminal *name_term = ED4_find_species_name_terminal(sai_name);
+        ED4_species_name_terminal *name_term = ED4_find_SAI_name_terminal(sai_name);
         bool                       loaded    = false;
 
         if (!name_term) {

@@ -2419,7 +2419,10 @@ void       ED4_alignment_length_changed(GBDATA *gb_alignment_len, GB_CB_TYPE gbt
 AW_window *ED4_create_new_seq_window(AW_root *root, SpeciesCreationMode creation_mode);
 
 ED4_species_name_terminal *ED4_find_species_name_terminal(const char *species_name);
-ED4_multi_species_manager *ED4_new_species_multi_species_manager();     // returns manager into which new species should be inserted
+ED4_species_name_terminal *ED4_find_SAI_name_terminal(const char *sai_name);
+ED4_species_name_terminal *ED4_find_species_or_SAI_name_terminal(const char *species_name);
+
+ED4_multi_species_manager *ED4_new_species_multi_species_manager();
 
 void ED4_quit_editor(AW_window *aww);
 void ED4_quit(AW_window *aww, AW_CL cd1, AW_CL cd2);

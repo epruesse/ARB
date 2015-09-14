@@ -1573,7 +1573,7 @@ static char *filter_loadable_SAIs(GBDATA *gb_sai, AW_CL) {
         GBDATA *gb_data = GB_search(gb_ali, "data", GB_FIND);
         if (gb_data) {
             const char *sai_name = GBT_get_name(gb_sai);
-            if (!ED4_find_species_name_terminal(sai_name)) { // if not loaded yet
+            if (!ED4_find_SAI_name_terminal(sai_name)) { // if not loaded yet
                 return strdup(sai_name);
             }
         }
