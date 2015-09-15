@@ -281,6 +281,7 @@ void ED4_reference::clear() {
     freenull(reference);
     ref_len  = 0;
     ref_term = NULL;
+    // @@@ remove change cb
 }
 
 void ED4_reference::expand_to_length(int len) {
@@ -296,35 +297,25 @@ void ED4_reference::expand_to_length(int len) {
     }
 }
 
-void ED4_reference::define(const ED4_abstract_sequence_terminal *rterm, const char *species_name, const char *alignment_name) {
-    e4_assert(species_name);
-    e4_assert(alignment_name);
-
-    GB_transaction ta(gb_main);
-    GBDATA *gb_species = GBT_find_species(gb_main, species_name);
-
-    clear();
-    if (gb_species) {
-        GBDATA *gb_data = GBT_find_sequence(gb_species, alignment_name);
-        if (gb_data) {
-            reference = GB_read_as_string(gb_data);
-            if (reference) {
-                ref_len  = strlen(reference);
-                ref_term = rterm;
-            }
+void ED4_reference::update_data() {
+    char *data = ref_term->resolve_pointer_to_string_copy(&ref_len);
+    if (!data) {
+        const ED4_consensus_sequence_terminal *cterm = DOWNCAST(const ED4_consensus_sequence_terminal*,ref_term);
+        e4_assert(cterm); // failed to get data for non-consensus terminal.. should not happen
+        if (cterm) { // handle consensus terminal
+            ED4_char_table *table = &cterm->get_parent(ED4_L_GROUP)->to_group_manager()->table();
+            data                  = table->build_consensus_string();
+            ref_len               = table->size();
         }
     }
+    reassign(reference, data);
 }
 
-void ED4_reference::define(const ED4_abstract_sequence_terminal *rterm, const char *sequence_data, int len) {
-    e4_assert(sequence_data);
-    e4_assert(len>0);
-
+void ED4_reference::define(const ED4_sequence_terminal *rterm) {
     clear();
-
-    reference = GB_strpartdup(sequence_data, sequence_data+len-1);
-    ref_len   = len;
-    ref_term  = rterm;
+    ref_term = rterm;
+    update_data();
+    // @@@ add change cb
 }
 
 ED4_reference::~ED4_reference() {
@@ -371,36 +362,22 @@ static void set_diff_reference(ED4_terminal *refTerm) {
         ref->clear();
     }
     else {
-        AW_awar                        *awar_refName = AW_root::SINGLETON->awar(AWAR_DIFF_NAME);
-        ED4_abstract_sequence_terminal *refSeqTerm   = dynamic_cast<ED4_abstract_sequence_terminal*>(refTerm);
-        ED4_species_name_terminal      *nameTerm     = refSeqTerm->corresponding_species_name_terminal();
+        ED4_sequence_terminal *refSeqTerm = dynamic_cast<ED4_sequence_terminal*>(refTerm);
+        if (refSeqTerm) {
+            AW_awar                   *awar_refName = AW_root::SINGLETON->awar(AWAR_DIFF_NAME);
+            ED4_species_name_terminal *nameTerm     = refSeqTerm->corresponding_species_name_terminal();
 
-        if (refTerm->is_consensus_terminal()) {
-            ED4_char_table *table     = &refTerm->get_parent(ED4_L_GROUP)->to_group_manager()->table();
-            char           *consensus = table->build_consensus_string();
-
-            ref->define(refSeqTerm, consensus, table->size());
-            awar_refName->write_string(GBS_global_string("consensus %s", nameTerm->get_displayed_text()));
-
-            free(consensus);
-        }
-        else if (refTerm->is_SAI_terminal()) {
-            int   datalen;
-            char *data = refTerm->resolve_pointer_to_string_copy(&datalen);
-
-            ref->define(refSeqTerm, data, datalen);
-            awar_refName->write_string(nameTerm->get_displayed_text());
-
-            free(data);
+            ref->define(refSeqTerm);
+            if (refTerm->is_consensus_terminal()) {
+                awar_refName->write_string(GBS_global_string("consensus %s", nameTerm->get_displayed_text()));
+            }
+            else {
+                e4_assert(refTerm->is_species_seq_terminal() || refTerm->is_SAI_terminal());
+                awar_refName->write_string(nameTerm->get_displayed_text());
+            }
         }
         else {
-            e4_assert(refTerm->is_species_seq_terminal());
-            char *name = GBT_read_string(GLOBAL_gb_main, AWAR_SPECIES_NAME); // @@@ read from refTerm or its manager
-
-            ref->define(refSeqTerm, name, ED4_ROOT->alignment_name);
-            awar_refName->write_string(nameTerm->get_displayed_text());
-
-            free(name);
+            aw_message("Not supported for this terminal type");
         }
     }
 

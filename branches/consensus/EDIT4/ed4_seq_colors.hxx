@@ -22,7 +22,7 @@
 class GBDATA;
 class AW_root;
 class AW_window;
-class ED4_abstract_sequence_terminal;
+class ED4_sequence_terminal;
 
 class ED4_seq_colors {
     int base_gc;
@@ -49,7 +49,10 @@ class ED4_reference : virtual Noncopyable {
     // current reference:
     int   ref_len;
     char *reference;
-    const ED4_abstract_sequence_terminal *ref_term;
+
+    const ED4_sequence_terminal *ref_term;
+
+    void update_data();
 
 public:
     ED4_reference(GBDATA *gb_main);
@@ -58,14 +61,13 @@ public:
     void set_nodiff_indicator(char ind) { nodiff = ind; }
 
     void clear();
-    void define(const ED4_abstract_sequence_terminal *rterm, const char *species_name, const char *alignment_name);
-    void define(const ED4_abstract_sequence_terminal *rterm, const char *sequence_data, int len);
+    void define(const ED4_sequence_terminal *rterm);
 
     bool is_set() const { return reference; }
     void expand_to_length(int len); // make sure that reference is at least len long
 
     int convert(char c, int pos) const { return (c=='-' || c!=reference[pos]) ? c : nodiff; }
-    bool reference_species_is(const ED4_abstract_sequence_terminal *term) const { return term == ref_term; }
+    bool reference_species_is(const ED4_sequence_terminal *term) const { return term == ref_term; }
 };
 
 AW_window *ED4_create_seq_colors_window(AW_root *awr, ED4_seq_colors *sc);
