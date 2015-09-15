@@ -702,11 +702,14 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
                 //      - CTRL-E    Toggle edit/align                   ok
                 //      - CTRL-I    Toggle insert/replace               ok
                 //      - CTRL-J    Jump opposite helix position        ok
+                //      - CTRL-K    Toggle compression on/off           ok
                 //      - CTRL-L    Refresh                             ok
                 //      - CTRL-M    Invert mark                         ok
-                //      - CTRL-R    set aligner reference species       ok
+                //      - CTRL-O    = ALT-LEFT                          ok
+                //      - CTRL-P    = ALT-RIGHT                         ok
+                //      - CTRL-R    Set aligner reference species       ok
                 //      - CTRL-S    Repeat last search                  ok
-                //      - CTRL-U    Undo                                @@@ crashes!!!
+                //      - CTRL-U    Undo                                @@@ crashes! disabled atm!
 
 
                 if (key >0 && key<=26) { // CTRL-Keys
@@ -823,19 +826,9 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
                             cursor_jump = ED4_JUMP_CENTERED;
                             break;
                         }
-                        case 'M': // CTRL-M = Invert mark(s)
+                        case 'M': { // CTRL-M = Invert mark(s)
                             if (is_consensus) { cannot_handle = 1; return 0; }
                             toggle_mark_of_specData(gb_data);
-                            break;
-                        
-                        case 'S': { // CTRL-S = Repeat last search
-                            ad_err      = ED4_repeat_last_search(current_ed4w());
-                            seq_pos     = current_cursor().get_sequence_pos();
-                            cursor_jump = ED4_JUMP_KEEP_POSITION;
-                            break;
-                        }
-                        case 'U': {
-                            // ad_err = GB_undo(gb_main, GB_UNDO_UNDO); // @@@ stuerzt ab - wahrscheinlich weil Transaktion offen ist
                             break;
                         }
                         case 'O': { //  for ALT-left
@@ -848,6 +841,16 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
                             keycode = AW_KEY_RIGHT;
                             keymod = AW_KEYMODE_ALT;
                             reinterpret_key = true;
+                            break;
+                        }
+                        case 'S': { // CTRL-S = Repeat last search
+                            ad_err      = ED4_repeat_last_search(current_ed4w());
+                            seq_pos     = current_cursor().get_sequence_pos();
+                            cursor_jump = ED4_JUMP_KEEP_POSITION;
+                            break;
+                        }
+                        case 'U': {
+                            // ad_err = GB_undo(gb_main, GB_UNDO_UNDO); // @@@ stuerzt ab - wahrscheinlich weil Transaktion offen ist
                             break;
                         }
                     }

@@ -1797,6 +1797,20 @@ int ED4_remap::sequence_to_screen(int sequence_pos) const {
     if (scr_pos<0) scr_pos = -scr_pos;
     return scr_pos;
 }
+
+void ED4_remap::adjacent_screen_positions(int seq_pos, int& screen_pos_left, int& screen_pos_right) {
+    e4_assert(!is_shown(seq_pos)); // otherwise use sequence_to_screen()
+
+    screen_pos_left = -1;
+    for (int p = seq_pos-1; screen_pos_left<0 && p>=0; --p) {
+        screen_pos_left = sequence_to_screen_PLAIN(p);
+    }
+    screen_pos_right = -1;
+    for (int p = seq_pos+1; screen_pos_right<0 && size_t(p)<=sequence_len; ++p) {
+        screen_pos_right = sequence_to_screen_PLAIN(p);
+    }
+}
+
 inline void ED4_remap::set_sequence_to_screen(int pos, int newVal) {
     e4_assert(pos>=0 && size_t(pos)<sequence_table_len);
     if (sequence_to_screen_tab[pos]!=newVal) {
