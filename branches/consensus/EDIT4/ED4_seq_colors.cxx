@@ -268,7 +268,6 @@ ED4_seq_colors::ED4_seq_colors(int baseGC, void (*changed_cb)()) {
 // -----------------------
 //      ED4_reference
 
-
 ED4_reference::ED4_reference(GBDATA *_gb_main)
     : gb_main(_gb_main),
       nodiff('#'), // notused; overwritten by user default later
@@ -277,11 +276,8 @@ ED4_reference::ED4_reference(GBDATA *_gb_main)
       ref_term(NULL)
 {}
 
-void ED4_reference::clear() {
-    freenull(reference);
-    ref_len  = 0;
-    ref_term = NULL;
-    // @@@ remove change cb
+ED4_reference::~ED4_reference() {
+    clear();
 }
 
 void ED4_reference::expand_to_length(int len) {
@@ -301,15 +297,39 @@ void ED4_reference::update_data() {
     freeset(reference, ref_term->get_sequence_copy(&ref_len));
 }
 
+void ED4_reference::data_changed_cb(ED4_species_manager *IF_ASSERTION_USED(calledFrom)) {
+    e4_assert(ref_term);
+    if (ref_term) {
+        e4_assert(ref_term->get_parent(ED4_L_SPECIES)->to_species_manager() == calledFrom);
+        update_data();
+    }
+}
+static void refdata_changed_cb(ED4_species_manager *sman, AW_CL cl_ref) {
+    ED4_reference *ref = (ED4_reference*)cl_ref;
+    ref->data_changed_cb(sman);
+    ED4_ROOT->request_refresh_for_specific_terminals(ED4_L_SEQUENCE_STRING); // refresh all sequences
+}
+
+void ED4_reference::clear() {
+    // remove change cb
+    if (ref_term) {
+        ED4_species_manager *sman = ref_term->get_parent(ED4_L_SPECIES)->to_species_manager();
+        sman->remove_sequence_changed_cb(refdata_changed_cb, (AW_CL)this);
+    }
+
+    freenull(reference);
+    ref_len  = 0;
+    ref_term = NULL;
+}
+
 void ED4_reference::define(const ED4_sequence_terminal *rterm) {
     clear();
     ref_term = rterm;
     update_data();
-    // @@@ add change cb
-}
 
-ED4_reference::~ED4_reference() {
-    free(reference);
+    // add change cb
+    ED4_species_manager *sman = ref_term->get_parent(ED4_L_SPECIES)->to_species_manager();
+    sman->add_sequence_changed_cb(refdata_changed_cb, (AW_CL)this);
 }
 
 // --------------------------------------------------------------------------------

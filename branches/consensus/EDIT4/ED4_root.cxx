@@ -2032,6 +2032,7 @@ ED4_root::ED4_root(int* argc, char*** argv)
 ED4_root::~ED4_root() {
     delete aw_root;
     delete first_window;
+    delete reference; // needs to be deleted before main_manager (to ensure reference callbacks are removed)
     delete main_manager; // also deletes middle_area_man + top_area_man
     delete database;
     delete ecoli_ref;
@@ -2039,7 +2040,6 @@ ED4_root::~ED4_root() {
     delete helix;
     delete sequence_colors;
     delete edk;
-    delete reference;
     STAT_destroy_ST_ML(st_ml);
 
     free(protstruct);

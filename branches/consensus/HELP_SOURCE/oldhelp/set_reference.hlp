@@ -28,6 +28,9 @@ DESCRIPTION     Select a species, SAI or group consensus by clicking into its se
 
 NOTES		Useful to manually correct alignments.
 
+		The IUPAC field in the top area can be used to guess the sequence 
+		data at cursor position.
+
 EXAMPLES	None
 
 WARNINGS	Editing works as usual, even if you do not see what you edit.

@@ -23,6 +23,7 @@ class GBDATA;
 class AW_root;
 class AW_window;
 class ED4_sequence_terminal;
+class ED4_species_manager;
 
 class ED4_seq_colors {
     int base_gc;
@@ -68,6 +69,8 @@ public:
 
     int convert(char c, int pos) const { return (c=='-' || c!=reference[pos]) ? c : nodiff; }
     bool reference_species_is(const ED4_sequence_terminal *term) const { return term == ref_term; }
+
+    void data_changed_cb(ED4_species_manager *calledFrom);
 };
 
 AW_window *ED4_create_seq_colors_window(AW_root *awr, ED4_seq_colors *sc);

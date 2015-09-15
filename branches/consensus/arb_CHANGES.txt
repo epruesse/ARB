@@ -36,7 +36,13 @@ Major changes for next release:
  - species selections (editor configurations):
    * visualisation of multiple selections in standard tree view (#658; example in database demo.arb)
    * order can be changed; each configuration has a comment; import stores configuration (#607)
- - ARB EDIT4: allow to load missing SAIs
+ - ARB EDIT4:
+   * allow to load missing SAIs
+   * "view differences" to selected sequence:
+      - customizable: char used for "equality" (i.e. what is displayed where a sequence is equal to selected sequence)
+      - equal data also gets hidden in consensus
+      - refresh differences of all displayed sequences, when data of selected sequences changes
+      - fixed minor bugs
  - expand zombies in tree (unfold groups)
  - compare taxonomy (and mark differences; #651)
  - external (command line) aligners:
