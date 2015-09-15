@@ -1823,7 +1823,7 @@ class ED4_remap : virtual Noncopyable {
     size_t screen_len;          // size of recently compiled part of screen_to_sequence_tab
 
     int *screen_to_sequence_tab;
-    int *sequence_to_screen_tab;    // <0 means position is not mapped (last displayed sequence position)
+    int *sequence_to_screen_tab;    // <0 means position is not mapped (last displayed sequence position); 0 may be mapped or not; see is_shown() below
 
     int changed;            // remap-table changed at last compile
     int update_needed;          // remapping should be recompiled
@@ -1863,6 +1863,8 @@ public:
 
     size_t get_max_screen_pos() const { return screen_len-1; }
 
+    void adjacent_screen_positions(int seq_pos, int& screen_pos_left, int& screen_pos_right);
+
     ED4_remap_mode get_mode() const { return mode; }
     void set_mode(ED4_remap_mode Mode, int above_percent) {
         if (Mode<0 || Mode>=ED4_RM_MODES) {
@@ -1888,7 +1890,14 @@ public:
     GB_ERROR compile(ED4_root_group_manager *gm);
     int was_changed() const { return changed; }     // mapping changed by last compile ?
 
-    int is_shown(int position) const { return sequence_to_screen_PLAIN(position)>=0; }
+    int is_shown(int seq_pos) const {
+        int scr_pos = sequence_to_screen_PLAIN(seq_pos);
+        if (scr_pos<0) return false;
+        if (scr_pos>0) return true;
+
+        int seq_pos2    = screen_to_sequence_tab[0];
+        return seq_pos == seq_pos2;
+    }
 
     ExplicitRange clip_screen_range(PosRange screen_range) const { return ExplicitRange(screen_range, screen_len-1); }
 };
@@ -2419,4 +2428,5 @@ void ED4_exit() __ATTR__NORETURN;
 #else
 #error ed4_class included twice
 #endif
+
 
