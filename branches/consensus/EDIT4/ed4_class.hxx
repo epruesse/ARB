@@ -2187,6 +2187,8 @@ public:
     virtual void deleted_from_database() OVERRIDE;
     virtual int get_length() const OVERRIDE { return ED4_abstract_sequence_terminal::get_length(); }
 
+    virtual char *get_sequence_copy(int *str_len = 0) const { return resolve_pointer_to_string_copy(str_len); }
+
     void set_secstruct_display(bool show) { shall_display_secstruct_info = show; }
 
     ED4_SearchResults& results() const { return searchResults; }
@@ -2287,6 +2289,7 @@ public:
     ED4_consensus_sequence_terminal(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
 
     virtual int get_length() const OVERRIDE;
+    virtual char *get_sequence_copy(int *str_len = 0) const OVERRIDE;
 
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_sequence_terminal);
 };
@@ -2478,5 +2481,6 @@ void ED4_exit() __ATTR__NORETURN;
 #else
 #error ed4_class included twice
 #endif
+
 
 

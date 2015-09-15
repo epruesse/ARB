@@ -32,10 +32,6 @@
 
 #include <iostream>
 
-int ED4_consensus_sequence_terminal::get_length() const {
-    return get_char_table().size();
-}
-
 inline void ensure_buffer(char*& buffer, size_t& buffer_size, size_t needed) {
     if (needed>buffer_size) {
         delete [] buffer;

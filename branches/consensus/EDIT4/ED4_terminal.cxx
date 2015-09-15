@@ -896,6 +896,18 @@ ED4_consensus_sequence_terminal::ED4_consensus_sequence_terminal(const char *tem
     species_name = NULL;
 }
 
+char *ED4_consensus_sequence_terminal::get_sequence_copy(int *str_len) const {
+    ED4_char_table& table = get_char_table();
+
+    if (str_len) *str_len = table.size();
+    return table.build_consensus_string();
+}
+
+int ED4_consensus_sequence_terminal::get_length() const {
+    return get_char_table().size();
+}
+
+
 ED4_abstract_sequence_terminal::ED4_abstract_sequence_terminal(const ED4_objspec& spec_, const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
     : ED4_text_terminal(spec_, temp_id, x, y, width, height, temp_parent)
 {

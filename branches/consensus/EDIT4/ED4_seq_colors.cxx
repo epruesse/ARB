@@ -298,17 +298,7 @@ void ED4_reference::expand_to_length(int len) {
 }
 
 void ED4_reference::update_data() {
-    char *data = ref_term->resolve_pointer_to_string_copy(&ref_len);
-    if (!data) {
-        const ED4_consensus_sequence_terminal *cterm = DOWNCAST(const ED4_consensus_sequence_terminal*,ref_term);
-        e4_assert(cterm); // failed to get data for non-consensus terminal.. should not happen
-        if (cterm) { // handle consensus terminal
-            ED4_char_table *table = &cterm->get_parent(ED4_L_GROUP)->to_group_manager()->table();
-            data                  = table->build_consensus_string();
-            ref_len               = table->size();
-        }
-    }
-    reassign(reference, data);
+    freeset(reference, ref_term->get_sequence_copy(&ref_len));
 }
 
 void ED4_reference::define(const ED4_sequence_terminal *rterm) {
