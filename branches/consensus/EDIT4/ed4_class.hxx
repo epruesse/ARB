@@ -1949,10 +1949,42 @@ public:
 typedef ED4_cb<ED4_species_manager>       ED4_species_manager_cb_data;
 typedef ED4_cb<ED4_species_manager>::type ED4_species_manager_cb;
 
+template <class C>
+struct ED4_cb_list {
+    typedef ED4_cb<C>                cbtype;
+    typedef typename ED4_cb<C>::type type;
+
+private:
+    std::list<cbtype> callbacks;
+
+public:
+#if defined(ASSERTION_USED)
+    ED4_cb_list() {}
+    ~ED4_cb_list() {
+        e4_assert(empty()); // calling removeAllCallbacks() does not remove all callbacks!
+    }
+#endif
+
+    void add_cb(type cb, AW_CL cd) {
+        callbacks.push_back(cbtype(cb,cd));
+    }
+    void remove_cb(type cb, AW_CL cd) {
+        callbacks.remove(cbtype(cb,cd));
+    }
+
+    void do_cbs(C *c) {
+        for (typename std::list<cbtype>::iterator cb = callbacks.begin(); cb != callbacks.end(); ++cb) {
+            cb->call(c);
+        }
+    }
+
+    bool empty() const { return callbacks.empty(); }
+};
+
 class ED4_species_manager : public ED4_manager {
     E4B_AVOID_UNNEEDED_CASTS(species_manager);
-    
-    std::list<ED4_species_manager_cb_data> callbacks;
+
+    ED4_cb_list<ED4_species_manager> changed_cbs; // called when sequence changes
 
     ED4_species_type type;
     bool selected;
@@ -1973,11 +2005,11 @@ public:
 
     bool setCursorTo(ED4_cursor *cursor, int seq_pos, bool unfold_groups, ED4_CursorJumpType jump_type);
 
-    void add_sequence_changed_cb(ED4_species_manager_cb cb, AW_CL cd);
-    void remove_sequence_changed_cb(ED4_species_manager_cb cb, AW_CL cd);
-    void remove_all_callbacks();
+    void add_sequence_changed_cb(ED4_species_manager_cb cb, AW_CL cd) { changed_cbs.add_cb(cb, cd); }
+    void remove_sequence_changed_cb(ED4_species_manager_cb cb, AW_CL cd) { changed_cbs.remove_cb(cb, cd); }
+    void do_callbacks() { changed_cbs.do_cbs(this); }
 
-    void do_callbacks();
+    void remove_all_callbacks();
 
     ED4_species_name_terminal *get_name_terminal() const { return children->member(0)->to_species_name_terminal(); }
 };
