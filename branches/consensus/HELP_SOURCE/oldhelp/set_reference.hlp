@@ -16,7 +16,14 @@ DESCRIPTION     Select a species, SAI or group consensus by clicking into its se
 
                 Then check 'Selected' or press 'SET' to restrict the sequence display
                 of all other sequences (i.e. all but the selected sequence) to
-                show only the differences to the selected sequence.
+                show only the differences to the selected sequence (aka reference sequence).
+
+                Key bindings:
+
+                    * CTRL-D: toggles "View differences" mode
+                    * CTRL-R: sets reference sequence to the cursor terminal (this only
+                      works if "View differences" mode is active, otherwise CTRL-R sets
+                      the aligner reference species; see LINK{faligner.hlp})
 
                 You may define the character used for positions where selected and displayed
                 sequence do NOT differ.

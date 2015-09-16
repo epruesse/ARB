@@ -7,6 +7,7 @@
 #include "ed4_edit_string.hxx"
 #include "ed4_class.hxx"
 #include "ed4_awars.hxx"
+#include "ed4_seq_colors.hxx"
 
 #include <aw_awar.hxx>
 #include <aw_msg.hxx>
@@ -699,6 +700,7 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
                 //      keyboard layout:
                 //
                 //      - CTRL-A    Align                               ok
+                //      - CTRL-D    Toggle view differences             ok
                 //      - CTRL-E    Toggle edit/align                   ok
                 //      - CTRL-I    Toggle insert/replace               ok
                 //      - CTRL-J    Jump opposite helix position        ok
@@ -707,19 +709,13 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
                 //      - CTRL-M    Invert mark                         ok
                 //      - CTRL-O    = ALT-LEFT                          ok
                 //      - CTRL-P    = ALT-RIGHT                         ok
-                //      - CTRL-R    Set aligner reference species       ok
+                //      - CTRL-R    Set aligner OR viewDiff reference species       ok
                 //      - CTRL-S    Repeat last search                  ok
                 //      - CTRL-U    Undo                                @@@ crashes! disabled atm!
 
 
                 if (key >0 && key<=26) { // CTRL-Keys
                     switch (key+'A'-1) {
-                        case 'R': {  // CTRL-R = set aligner reference species
-                            if (is_consensus) { cannot_handle = 1; return 0; };
-
-                            FastAligner_set_reference_species(0, (AW_CL)ED4_ROOT->aw_root);
-                            break;
-                        }
                         case 'A': { // CTRL-A = Start Fast-Aligner
                             AW_window *aw_tmp = current_aww();
                             if (is_consensus) { cannot_handle = 1; return 0; };
@@ -782,6 +778,21 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
                                     }
                                 }
                             }
+                            break;
+                        }
+                        case 'R': {  // CTRL-R = set aligner reference species OR set reference for diff-mode
+                            ED4_reference *ref = ED4_ROOT->reference;
+                            if (ref->is_set()) { // if "view differences" is active = > set new reference
+                                ED4_viewDifferences_setNewReference();
+                            }
+                            else { // otherwise set aligner reference
+                                if (is_consensus) { cannot_handle = 1; return 0; };
+                                FastAligner_set_reference_species(0, (AW_CL)ED4_ROOT->aw_root);
+                            }
+                            break;
+                        }
+                        case 'D': { // CTRL-D = Toggle view differences
+                            ED4_toggle_viewDifferences(ED4_ROOT->aw_root);
                             break;
                         }
                         case 'E': { // CTRL-E = Toggle Edit/Align-Mode

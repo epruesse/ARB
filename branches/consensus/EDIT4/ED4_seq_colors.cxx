@@ -281,7 +281,7 @@ ED4_reference::~ED4_reference() {
 }
 
 void ED4_reference::expand_to_length(int len) {
-    if (len > ref_len) {
+    if (len>ref_len && is_set()) {
         char *ref2 = (char *)GB_calloc(sizeof(char), len+1);
 
         if (reference) {
@@ -337,7 +337,7 @@ void ED4_reference::define(const ED4_sequence_terminal *rterm) {
 #define APREFIX_DIFF_SAVE "edit4/diff/"
 #define APREFIX_DIFF_TEMP "tmp/" APREFIX_DIFF_SAVE
 
-#define AWAR_DIFF_TYPE        APREFIX_DIFF_TEMP "type"
+#define AWAR_DIFF_TYPE        APREFIX_DIFF_TEMP "type" // @@@ save in props?
 #define AWAR_DIFF_NAME        APREFIX_DIFF_TEMP "name"
 #define AWAR_NODIFF_INDICATOR APREFIX_DIFF_SAVE "indicator"
 
@@ -448,17 +448,46 @@ static void nodiff_indicator_changed_cb(AW_root *awr) {
     }
 }
 
-static void create_viewDifferences_awars(AW_root *awr) {
-    awr->awar_int(AWAR_DIFF_TYPE, VD_DISABLED)->add_callback(diff_type_changed_cb);
-    awr->awar_string(AWAR_DIFF_NAME, "<none selected>");
+static bool viewDifferences_awars_initialized = false;
 
-    AW_awar *awar_indicator = awr->awar_string(AWAR_NODIFF_INDICATOR, " ")->add_callback(nodiff_indicator_changed_cb)->set_srt(" ?=?:? =?:?*=?");
-    ED4_ROOT->reference->set_nodiff_indicator(awar_indicator->read_char_pntr()[0]);
+static void create_viewDifferences_awars(AW_root *awr) {
+    if (!viewDifferences_awars_initialized) {
+        awr->awar_int(AWAR_DIFF_TYPE, VD_DISABLED)->add_callback(diff_type_changed_cb);
+        awr->awar_string(AWAR_DIFF_NAME, "<none selected>");
+
+        AW_awar *awar_indicator = awr->awar_string(AWAR_NODIFF_INDICATOR, " ")->add_callback(nodiff_indicator_changed_cb)->set_srt(" ?=?:? =?:?*=?");
+        ED4_ROOT->reference->set_nodiff_indicator(awar_indicator->read_char_pntr()[0]);
+
+        viewDifferences_awars_initialized = true;
+    }
 }
+
+void ED4_toggle_viewDifferences(AW_root *awr) {
+    static ViewDiffType lastActiveType = VD_SELECTED;
+
+    create_viewDifferences_awars(awr);
+
+    AW_awar      *awar_difftype = awr->awar(AWAR_DIFF_TYPE);
+    ViewDiffType  currType      = ViewDiffType(awar_difftype->read_int());
+
+    if (currType == VD_DISABLED) {
+        currType = lastActiveType;
+    }
+    else {
+        lastActiveType = currType;
+        currType       = VD_DISABLED;
+    }
+
+    awar_difftype->write_int(currType);
+}
+void ED4_viewDifferences_setNewReference() {
+    set_current_as_diffRef(true);
+}
+
 AW_window *ED4_create_viewDifferences_window(AW_root *awr) {
     static AW_window_simple *aws = 0;
     if (!aws) {
-        create_viewDifferences_awars(awr);
+        ED4_toggle_viewDifferences(awr);
 
         aws = new AW_window_simple;
         aws->init(awr, "VIEW_DIFF", "View sequence differences");

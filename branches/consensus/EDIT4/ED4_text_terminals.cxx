@@ -86,8 +86,8 @@ ED4_returncode ED4_consensus_sequence_terminal::draw() {
 
         ensure_buffer(buffer, buffer_size, index_range.end()+1);
 
-        ED4_reference *ref    = ED4_ROOT->reference;
-        bool           is_ref = ref->reference_species_is(this);
+        ED4_reference *ref            = ED4_ROOT->reference;
+        bool           only_show_diff = ref->only_show_diff_for(this);
 
         for (int pos = index_range.start(); pos <= index_range.end(); ++pos) {
             int seq_pos = rm->screen_to_sequence(pos);
@@ -96,7 +96,7 @@ ED4_returncode ED4_consensus_sequence_terminal::draw() {
             }
             else {
                 char c      = cons[seq_pos-seq_range.start()];
-                buffer[pos] = is_ref ? c : ref->convert(c, seq_pos);
+                buffer[pos] = only_show_diff ? ref->convert(c, seq_pos) : c;
                 e4_assert(buffer[pos]);
             }
         }
@@ -398,14 +398,14 @@ ED4_returncode ED4_sequence_terminal::draw() {
         char *char_2_char = (aliType && (aliType==GB_AT_AA)) ? ED4_ROOT->sequence_colors->char_2_char_aa : ED4_ROOT->sequence_colors->char_2_char;
         char *char_2_gc   = (aliType && (aliType==GB_AT_AA)) ? ED4_ROOT->sequence_colors->char_2_gc_aa : ED4_ROOT->sequence_colors->char_2_gc;
 
-        bool is_ref = ref->reference_species_is(this);
+        bool only_show_diff = ref->only_show_diff_for(this);
         for (int scr_pos=left; scr_pos <= right; scr_pos++) {
             int seq_pos = rm->screen_to_sequence(scr_pos);
             int c = db_pointer[seq_pos];
             int gc = char_2_gc[c];
 
             color_is_used[gc] = scr_pos+1;
-            colored_strings[gc][scr_pos] = char_2_char[is_ref ? c : ref->convert(c, seq_pos)];
+            colored_strings[gc][scr_pos] = char_2_char[only_show_diff ? ref->convert(c, seq_pos) : c];
         }
 
         free(db_pointer);

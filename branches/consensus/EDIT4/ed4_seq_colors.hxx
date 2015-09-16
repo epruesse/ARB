@@ -18,6 +18,11 @@
 #ifndef _GLIBCXX_CSTRING
 #include <cstring>
 #endif
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
+#endif
+
+#define e4_assert(bed) arb_assert(bed)
 
 class GBDATA;
 class AW_root;
@@ -68,13 +73,21 @@ public:
     void expand_to_length(int len); // make sure that reference is at least len long
 
     int convert(char c, int pos) const { return (c=='-' || c!=reference[pos]) ? c : nodiff; }
-    bool reference_species_is(const ED4_sequence_terminal *term) const { return term == ref_term; }
+    bool reference_species_is(const ED4_sequence_terminal *term) const {
+        e4_assert(is_set()); // otherwise check makes no sense
+        return term == ref_term;
+    }
+    bool only_show_diff_for(const ED4_sequence_terminal *term) const {
+        return is_set() && !reference_species_is(term);
+    }
 
     void data_changed_cb(ED4_species_manager *calledFrom);
 };
 
 AW_window *ED4_create_seq_colors_window(AW_root *awr, ED4_seq_colors *sc);
 AW_window *ED4_create_viewDifferences_window(AW_root *awr);
+void ED4_toggle_viewDifferences(AW_root *awr);
+void ED4_viewDifferences_setNewReference();
 
 
 #else

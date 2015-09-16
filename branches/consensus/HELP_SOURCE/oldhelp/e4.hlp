@@ -220,6 +220,10 @@ DESCRIPTION     The editor allows you to view and modify the sequences of 'marke
 
                                 Call Aligner with current settings (see LINK{faligner.hlp}).
 
+                        CTRL-D
+
+                                Toggle "view differences" mode (see LINK{set_reference.hlp}).
+
                         CTRL-E
 
                                 Toggle EDIT/ALIGN mode (see above).
@@ -242,7 +246,9 @@ DESCRIPTION     The editor allows you to view and modify the sequences of 'marke
 
                         CTRL-R
 
-                                Set aligner reference species (see LINK{faligner.hlp}).
+                                Shared key:
+                                  * sets reference sequence for "view differences" (only if active; see LINK{set_reference.hlp})
+                                  * otherwise sets aligner reference species (see LINK{faligner.hlp})
 
                         CTRL-S
 

@@ -300,6 +300,7 @@ ED4_edit_string.o: ed4_class.hxx
 ED4_edit_string.o: ed4_defs.hxx
 ED4_edit_string.o: ed4_edit_string.hxx
 ED4_edit_string.o: ed4_search.hxx
+ED4_edit_string.o: ed4_seq_colors.hxx
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/arb_assert.h
