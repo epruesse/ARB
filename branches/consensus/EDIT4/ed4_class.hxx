@@ -1058,6 +1058,60 @@ public:
     }
 };
 
+// ------------------------
+//      callback types
+
+template <class C>
+struct ED4_cb {
+    typedef void (*type)(C*,AW_CL);
+
+private:
+    type  cb;
+    AW_CL cd; // client data
+
+public:
+    ED4_cb(type cb_, AW_CL cd_) : cb(cb_), cd(cd_) {}
+
+    void call(C *c) const { cb(c, cd); }
+    bool operator == (const ED4_cb<C>& other) const {
+        return
+            (char*)cb == (char*)other.cb &&
+            (char*)cd == (char*)other.cd;
+    }
+};
+
+template <class C>
+struct ED4_cb_list {
+    typedef ED4_cb<C>                cbtype;
+    typedef typename ED4_cb<C>::type type;
+
+private:
+    std::list<cbtype> callbacks;
+
+public:
+#if defined(ASSERTION_USED)
+    ED4_cb_list() {}
+    ~ED4_cb_list() {
+        e4_assert(empty()); // calling removeAllCallbacks() does not remove all callbacks!
+    }
+#endif
+
+    void add_cb(type cb, AW_CL cd) {
+        callbacks.push_back(cbtype(cb,cd));
+    }
+    void remove_cb(type cb, AW_CL cd) {
+        callbacks.remove(cbtype(cb,cd));
+    }
+
+    void do_cbs(C *c) {
+        for (typename std::list<cbtype>::iterator cb = callbacks.begin(); cb != callbacks.end(); ++cb) {
+            cb->call(c);
+        }
+    }
+
+    bool empty() const { return callbacks.empty(); }
+};
+
 // -----------------
 //      ED4_base
 
@@ -1925,57 +1979,6 @@ public:
     virtual void resize_requested_children() OVERRIDE;
 
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_abstract_group_manager);
-};
-
-template <class C>
-struct ED4_cb {
-    typedef void (*type)(C*,AW_CL);
-
-private:
-    type  cb;
-    AW_CL cd; // client data
-
-public:
-    ED4_cb(type cb_, AW_CL cd_) : cb(cb_), cd(cd_) {}
-
-    void call(C *c) const { cb(c, cd); }
-    bool operator == (const ED4_cb<C>& other) const {
-        return
-            (char*)cb == (char*)other.cb &&
-            (char*)cd == (char*)other.cd;
-    }
-};
-
-template <class C>
-struct ED4_cb_list {
-    typedef ED4_cb<C>                cbtype;
-    typedef typename ED4_cb<C>::type type;
-
-private:
-    std::list<cbtype> callbacks;
-
-public:
-#if defined(ASSERTION_USED)
-    ED4_cb_list() {}
-    ~ED4_cb_list() {
-        e4_assert(empty()); // calling removeAllCallbacks() does not remove all callbacks!
-    }
-#endif
-
-    void add_cb(type cb, AW_CL cd) {
-        callbacks.push_back(cbtype(cb,cd));
-    }
-    void remove_cb(type cb, AW_CL cd) {
-        callbacks.remove(cbtype(cb,cd));
-    }
-
-    void do_cbs(C *c) {
-        for (typename std::list<cbtype>::iterator cb = callbacks.begin(); cb != callbacks.end(); ++cb) {
-            cb->call(c);
-        }
-    }
-
-    bool empty() const { return callbacks.empty(); }
 };
 
 class ED4_species_manager : public ED4_manager {
