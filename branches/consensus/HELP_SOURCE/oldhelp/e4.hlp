@@ -222,7 +222,7 @@ DESCRIPTION     The editor allows you to view and modify the sequences of 'marke
 
                         CTRL-D
 
-                                Toggle "view differences" mode (see LINK{set_reference.hlp}).
+                                Toggle "view differences" mode (see LINK{viewdiff.hlp}).
 
                         CTRL-E
 
@@ -247,7 +247,7 @@ DESCRIPTION     The editor allows you to view and modify the sequences of 'marke
                         CTRL-R
 
                                 Shared key:
-                                  * sets reference sequence for "view differences" (only if active; see LINK{set_reference.hlp})
+                                  * sets reference sequence for "view differences" (only if active; see LINK{viewdiff.hlp})
                                   * otherwise sets aligner reference species (see LINK{faligner.hlp})
 
                         CTRL-S

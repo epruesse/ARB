@@ -498,7 +498,7 @@ AW_window *ED4_create_viewDifferences_window(AW_root *awr) {
         aws->create_button("CLOSE", "CLOSE", "C");
 
         aws->at("help");
-        aws->callback(makeHelpCallback("set_reference.hlp"));
+        aws->callback(makeHelpCallback("viewdiff.hlp"));
         aws->create_button("HELP", "HELP");
 
         aws->at("show");

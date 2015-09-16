@@ -46,7 +46,7 @@ SECTION         ADJUSTMENTS
                                 If you choose a fixed species, you may press the 'COPY' button
                                 to copy the name of the 'Current Species' to the 'Reference' species.
                                 Alternatively you may use CTRL-R while the focus is inside the sequence view
-                                (Note: CTRL-R does not work, if LINK{set_reference.hlp} is active).
+                                (Note: CTRL-R does not work, if LINK{viewdiff.hlp} is active).
 
 				If you choose 'Auto search by pt_server', the
 				aligner will use the next relative(s) as reference.

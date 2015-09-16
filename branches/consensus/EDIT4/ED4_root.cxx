@@ -1561,8 +1561,8 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->close_sub_menu();
 
     awmm->sep______________();
-    awmm->insert_menu_topic("change_cursor",             "Change cursor type",   "t", 0,                   AWM_ALL, ED4_change_cursor);
-    awmm->insert_menu_topic(awmm->local_id("view_diff"), "View differences ...", "V", "set_reference.hlp", AWM_ALL, ED4_create_viewDifferences_window);
+    awmm->insert_menu_topic("change_cursor",             "Change cursor type",   "t", 0,              AWM_ALL, ED4_change_cursor);
+    awmm->insert_menu_topic(awmm->local_id("view_diff"), "View differences ...", "V", "viewdiff.hlp", AWM_ALL, ED4_create_viewDifferences_window);
     awmm->sep______________();
     awmm->insert_menu_topic("enable_col_stat",  "Activate column statistics", "v", "st_ml.hlp", AWM_EXP, ED4_activate_col_stat,            0, 0);
     awmm->insert_menu_topic("disable_col_stat", "Disable column statistics",  "i", "st_ml.hlp", AWM_EXP, ED4_disable_col_stat,             0, 0);
