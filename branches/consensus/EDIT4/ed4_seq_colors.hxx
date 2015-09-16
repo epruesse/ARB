@@ -88,6 +88,7 @@ AW_window *ED4_create_seq_colors_window(AW_root *awr, ED4_seq_colors *sc);
 AW_window *ED4_create_viewDifferences_window(AW_root *awr);
 void ED4_toggle_viewDifferences(AW_root *awr);
 void ED4_viewDifferences_setNewReference();
+void ED4_viewDifferences_disable();
 
 
 #else

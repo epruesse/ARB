@@ -1092,7 +1092,7 @@ public:
 #if defined(ASSERTION_USED)
     ED4_cb_list() {}
     ~ED4_cb_list() {
-        e4_assert(empty()); // calling removeAllCallbacks() does not remove all callbacks!
+        e4_assert(empty()); // calling ED4_root::remove_all_callbacks() did not remove all callbacks!
     }
 #endif
 
@@ -1103,12 +1103,14 @@ public:
         callbacks.remove(cbtype(cb,cd));
     }
 
-    void do_cbs(C *c) {
-        for (typename std::list<cbtype>::iterator cb = callbacks.begin(); cb != callbacks.end(); ++cb) {
-            cb->call(c);
+    void call(C *c) {
+        for (typename std::list<cbtype>::iterator cb = callbacks.begin(); cb != callbacks.end();) {
+            typename std::list<cbtype>::iterator curr = cb;
+            ++cb;
+            curr->call(c); // Note: may be removed while called
         }
     }
-
+    void clear() { callbacks.clear(); }
     bool empty() const { return callbacks.empty(); }
 };
 
@@ -1393,11 +1395,16 @@ public:
     inline bool is_species_seq_terminal() const;
 };
 
-struct ED4_manager : public ED4_base { // derived from a Noncopyable
+class ED4_manager : public ED4_base { // derived from a Noncopyable
+    ED4_cb_list<ED4_manager> delete_cbs;
+public:
     ED4_members *children;
 
     E4B_AVOID_UNNEEDED_CASTS(manager);
     DECLARE_DUMP_FOR_BASECLASS(ED4_manager, ED4_base);
+
+    void add_delete_callback(ED4_cb<ED4_manager>::type cb, AW_CL cd) { delete_cbs.add_cb(cb, cd); }
+    void remove_delete_callback(ED4_cb<ED4_manager>::type cb, AW_CL cd) { delete_cbs.remove_cb(cb, cd); }
 
     int refresh_flag_ok();
 
@@ -2007,9 +2014,7 @@ public:
 
     void add_sequence_changed_cb(ED4_cb<ED4_species_manager>::type cb, AW_CL cd) { changed_cbs.add_cb(cb, cd); }
     void remove_sequence_changed_cb(ED4_cb<ED4_species_manager>::type cb, AW_CL cd) { changed_cbs.remove_cb(cb, cd); }
-    void do_callbacks() { changed_cbs.do_cbs(this); }
-
-    void remove_all_callbacks();
+    void do_callbacks() { changed_cbs.call(this); }
 
     ED4_species_name_terminal *get_name_terminal() const { return children->member(0)->to_species_name_terminal(); }
 };
@@ -2337,7 +2342,6 @@ inline void ED4_base::request_resize() {
 void ED4_manager::resize_requested_by_child() { 
     if (!update_info.resize) request_resize();
 }
-
 
 inline bool ED4_terminal::setCursorTo(ED4_cursor *cursor, int seq_pos, bool unfoldGroups, ED4_CursorJumpType jump_type) {
     ED4_species_manager *sm = get_parent(ED4_L_SPECIES)->to_species_manager();

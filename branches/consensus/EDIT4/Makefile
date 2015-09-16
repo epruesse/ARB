@@ -416,6 +416,7 @@ ED4_manager.o: ed4_list.hxx
 ED4_manager.o: ed4_protein_2nd_structure.hxx
 ED4_manager.o: ed4_ProteinViewer.hxx
 ED4_manager.o: ed4_search.hxx
+ED4_manager.o: ed4_seq_colors.hxx
 ED4_manager.o: ed4_tools.hxx
 ED4_manager.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ED4_manager.o: $(ARBHOME)/INCLUDE/ad_t_prot.h

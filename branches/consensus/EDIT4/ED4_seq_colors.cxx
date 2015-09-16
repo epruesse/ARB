@@ -309,12 +309,16 @@ static void refdata_changed_cb(ED4_species_manager *sman, AW_CL cl_ref) {
     ref->data_changed_cb(sman);
     ED4_ROOT->request_refresh_for_specific_terminals(ED4_L_SEQUENCE_STRING); // refresh all sequences
 }
+static void refdata_deleted_cb(ED4_manager *, AW_CL ) {
+    ED4_viewDifferences_disable();
+}
 
 void ED4_reference::clear() {
     // remove change cb
     if (ref_term) {
         ED4_species_manager *sman = ref_term->get_parent(ED4_L_SPECIES)->to_species_manager();
         sman->remove_sequence_changed_cb(refdata_changed_cb, (AW_CL)this);
+        sman->remove_delete_callback(refdata_deleted_cb, 0);
     }
 
     freenull(reference);
@@ -330,6 +334,7 @@ void ED4_reference::define(const ED4_sequence_terminal *rterm) {
     // add change cb
     ED4_species_manager *sman = ref_term->get_parent(ED4_L_SPECIES)->to_species_manager();
     sman->add_sequence_changed_cb(refdata_changed_cb, (AW_CL)this);
+    sman->add_delete_callback(refdata_deleted_cb, 0);
 }
 
 // --------------------------------------------------------------------------------
@@ -394,14 +399,14 @@ static void set_diff_reference(ED4_terminal *refTerm) {
     ED4_ROOT->request_refresh_for_specific_terminals(ED4_L_SEQUENCE_STRING);
 }
 
-static ED4_terminal *last_used_ref_term = NULL;
+static SmartCharPtr last_used_ref_term_name;
 
 static void set_current_as_diffRef(bool enable) {
     ED4_MostRecentWinContext context;
     ED4_terminal *refTerm = enable ? detect_current_ref_terminal() : NULL;
     set_diff_reference(refTerm);
 
-    if (refTerm) last_used_ref_term = refTerm;
+    if (refTerm) last_used_ref_term_name = strdup(refTerm->id);
 }
 
 static void change_reference_cb(AW_window *aww) {
@@ -422,7 +427,14 @@ static void diff_type_changed_cb(AW_root *awr) {
             set_current_as_diffRef(false);
             break;
 
-        case VD_SELECTED:
+        case VD_SELECTED: {
+            ED4_terminal *last_used_ref_term = NULL;
+            if (last_used_ref_term_name.isSet()) {
+                ED4_base *found = ED4_ROOT->main_manager->search_ID(&*last_used_ref_term_name);
+                if (found && found->is_terminal()) {
+                    last_used_ref_term = found->to_terminal();
+                }
+            }
             if (last_used_ref_term) {
                 set_diff_reference(last_used_ref_term);
             }
@@ -433,6 +445,7 @@ static void diff_type_changed_cb(AW_root *awr) {
                 awar_refType->write_int(VD_DISABLED);
             }
             break;
+        }
     }
 }
 static void nodiff_indicator_changed_cb(AW_root *awr) {
@@ -470,7 +483,7 @@ void ED4_toggle_viewDifferences(AW_root *awr) {
     AW_awar      *awar_difftype = awr->awar(AWAR_DIFF_TYPE);
     ViewDiffType  currType      = ViewDiffType(awar_difftype->read_int());
 
-    if (currType == VD_DISABLED) {
+    if (currType == VD_DISABLED || !ED4_ROOT->reference->is_set()) {
         currType = lastActiveType;
     }
     else {
@@ -478,10 +491,13 @@ void ED4_toggle_viewDifferences(AW_root *awr) {
         currType       = VD_DISABLED;
     }
 
-    awar_difftype->write_int(currType);
+    awar_difftype->rewrite_int(currType); // rewrite to allow activation after automatic deactivation in ED4_reference (e.g. by killing ref-term)
 }
 void ED4_viewDifferences_setNewReference() {
     set_current_as_diffRef(true);
+}
+void ED4_viewDifferences_disable() {
+    set_current_as_diffRef(NULL);
 }
 
 AW_window *ED4_create_viewDifferences_window(AW_root *awr) {
