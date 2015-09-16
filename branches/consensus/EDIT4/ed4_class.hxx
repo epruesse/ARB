@@ -1946,9 +1946,6 @@ public:
     }
 };
 
-typedef ED4_cb<ED4_species_manager>       ED4_species_manager_cb_data;
-typedef ED4_cb<ED4_species_manager>::type ED4_species_manager_cb;
-
 template <class C>
 struct ED4_cb_list {
     typedef ED4_cb<C>                cbtype;
@@ -2005,8 +2002,8 @@ public:
 
     bool setCursorTo(ED4_cursor *cursor, int seq_pos, bool unfold_groups, ED4_CursorJumpType jump_type);
 
-    void add_sequence_changed_cb(ED4_species_manager_cb cb, AW_CL cd) { changed_cbs.add_cb(cb, cd); }
-    void remove_sequence_changed_cb(ED4_species_manager_cb cb, AW_CL cd) { changed_cbs.remove_cb(cb, cd); }
+    void add_sequence_changed_cb(ED4_cb<ED4_species_manager>::type cb, AW_CL cd) { changed_cbs.add_cb(cb, cd); }
+    void remove_sequence_changed_cb(ED4_cb<ED4_species_manager>::type cb, AW_CL cd) { changed_cbs.remove_cb(cb, cd); }
     void do_callbacks() { changed_cbs.do_cbs(this); }
 
     void remove_all_callbacks();
