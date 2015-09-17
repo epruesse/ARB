@@ -467,18 +467,22 @@ static void create_viewDifferences_awars(AW_root *awr) {
     if (!viewDifferences_awars_initialized) {
         awr->awar_int(AWAR_DIFF_TYPE, VD_DISABLED)->add_callback(diff_type_changed_cb);
         awr->awar_string(AWAR_DIFF_NAME, "<none selected>");
-
-        AW_awar *awar_indicator = awr->awar_string(AWAR_NODIFF_INDICATOR, " ")->add_callback(nodiff_indicator_changed_cb)->set_srt(" ?=?:? =?:?*=?");
-        ED4_ROOT->reference->set_nodiff_indicator(awar_indicator->read_char_pntr()[0]);
+        awr->awar_string(AWAR_NODIFF_INDICATOR, " ")->add_callback(nodiff_indicator_changed_cb)->set_srt(" ?=?:? =?:?*=?");
 
         viewDifferences_awars_initialized = true;
     }
+}
+
+static void update_reference_settings(AW_root *awr) {
+    ED4_reference *ref = ED4_ROOT->reference;
+    ref->set_nodiff_indicator(awr->awar(AWAR_NODIFF_INDICATOR)->read_char_pntr()[0]);
 }
 
 void ED4_toggle_viewDifferences(AW_root *awr) {
     static ViewDiffType lastActiveType = VD_SELECTED;
 
     create_viewDifferences_awars(awr);
+    update_reference_settings(awr);
 
     AW_awar      *awar_difftype = awr->awar(AWAR_DIFF_TYPE);
     ViewDiffType  currType      = ViewDiffType(awar_difftype->read_int());
