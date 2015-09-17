@@ -173,6 +173,7 @@ ED4_cursor.o: ed4_edit_string.hxx
 ED4_cursor.o: ed4_extern.hxx
 ED4_cursor.o: ed4_ProteinViewer.hxx
 ED4_cursor.o: ed4_search.hxx
+ED4_cursor.o: ed4_seq_colors.hxx
 ED4_cursor.o: ed4_tools.hxx
 ED4_cursor.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ED4_cursor.o: $(ARBHOME)/INCLUDE/ad_t_prot.h

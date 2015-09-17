@@ -18,6 +18,9 @@ DESCRIPTION     Select a species, SAI or group consensus by clicking into its se
                 of all other sequences (i.e. all but the selected sequence) to
                 show only the differences to the selected sequence (aka reference sequence).
 
+		Checking 'Follow cursor' will instantly set a new reference sequence,
+		as soon as you set the cursor into a new sequence.
+
                 To revert display to standard mode, select 'None'.
 
                 Key bindings:

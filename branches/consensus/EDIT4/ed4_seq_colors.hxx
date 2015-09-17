@@ -106,6 +106,7 @@ AW_window *ED4_create_viewDifferences_window(AW_root *awr);
 void ED4_toggle_viewDifferences(AW_root *awr);
 void ED4_viewDifferences_setNewReference();
 void ED4_viewDifferences_disable();
+void ED4_viewDifferences_announceTerminalChange();
 
 
 #else

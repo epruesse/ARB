@@ -368,6 +368,7 @@ void ED4_reference::define(const ED4_sequence_terminal *rterm) {
 enum ViewDiffType {
     VD_DISABLED,
     VD_SELECTED,
+    VD_FOLLOW,
 };
 
 static ED4_terminal *detect_current_ref_terminal()  {
@@ -422,10 +423,12 @@ static SmartCharPtr last_used_ref_term_name;
 
 static void set_current_as_diffRef(bool enable) {
     ED4_MostRecentWinContext context;
-    ED4_terminal *refTerm = enable ? detect_current_ref_terminal() : NULL;
-    set_diff_reference(refTerm);
 
-    if (refTerm) last_used_ref_term_name = strdup(refTerm->id);
+    ED4_terminal *refTerm = enable ? detect_current_ref_terminal() : NULL;
+    if (!enable || refTerm) { // do not disable, if current terminal has wrong type
+        set_diff_reference(refTerm);
+        if (refTerm) last_used_ref_term_name = strdup(refTerm->id);
+    }
 }
 
 static void change_reference_cb(AW_window *aww) {
@@ -446,6 +449,7 @@ static void diff_type_changed_cb(AW_root *awr) {
             set_current_as_diffRef(false);
             break;
 
+        case VD_FOLLOW:
         case VD_SELECTED: {
             ED4_terminal *last_used_ref_term = NULL;
             if (last_used_ref_term_name.isSet()) {
@@ -456,6 +460,7 @@ static void diff_type_changed_cb(AW_root *awr) {
             }
             if (last_used_ref_term) {
                 set_diff_reference(last_used_ref_term);
+                if (type == VD_FOLLOW) set_current_as_diffRef(true);
             }
             else {
                 set_current_as_diffRef(true);
@@ -528,8 +533,15 @@ void ED4_toggle_viewDifferences(AW_root *awr) {
 void ED4_viewDifferences_setNewReference() {
     set_current_as_diffRef(true);
 }
+void ED4_viewDifferences_announceTerminalChange() {
+    if (ED4_ROOT->reference->is_set() &&
+        ED4_ROOT->aw_root->awar(AWAR_DIFF_TYPE)->read_int() == VD_FOLLOW)
+    {
+        ED4_viewDifferences_setNewReference();
+    }
+}
 void ED4_viewDifferences_disable() {
-    set_current_as_diffRef(NULL);
+    set_current_as_diffRef(false);
 }
 
 AW_window *ED4_create_viewDifferences_window(AW_root *awr) {
@@ -552,7 +564,8 @@ AW_window *ED4_create_viewDifferences_window(AW_root *awr) {
         aws->at("show");
         aws->create_toggle_field(AWAR_DIFF_TYPE);
         aws->insert_toggle("None (=disable)", "N", VD_DISABLED);
-        aws->insert_toggle("Selected",        "S", VD_SELECTED);
+        aws->insert_toggle("Selected:",       "S", VD_SELECTED);
+        aws->insert_toggle("Follow cursor",   "F", VD_FOLLOW);
         aws->update_toggle_field();
 
         aws->at("ref");

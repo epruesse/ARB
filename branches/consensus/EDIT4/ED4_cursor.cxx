@@ -16,6 +16,7 @@
 #include "ed4_tools.hxx"
 #include "ed4_awars.hxx"
 #include "ed4_ProteinViewer.hxx"
+#include "ed4_seq_colors.hxx"
 
 #include <arb_strbuf.h>
 #include <arb_defs.h>
@@ -847,6 +848,7 @@ void ED4_cursor::updateAwars(bool new_term_selected) {
             trace_termChange_in_global_awar(owner_of_cursor, last_set_species, ignore_selected_species_changes_cb, AWAR_SPECIES_NAME);
         }
     }
+    if (new_term_selected) ED4_viewDifferences_announceTerminalChange();
 
     // update awars for cursor position:
     aw_root->awar(win->awar_path_for_cursor)->write_int(info2bio(seq_pos));
@@ -858,8 +860,8 @@ void ED4_cursor::updateAwars(bool new_term_selected) {
 
     if (owner_of_cursor && owner_of_cursor->is_sequence_terminal()) {
         ED4_sequence_terminal *seq_term = owner_of_cursor->to_sequence_terminal();
-        ED4_SearchResults &results = seq_term->results();
-        ED4_SearchPosition *pos = results.get_shown_at(seq_pos);
+        ED4_SearchResults     &results  = seq_term->results();
+        ED4_SearchPosition    *pos      = results.get_shown_at(seq_pos);
 
         if (pos) {
             GB_CSTR comment = pos->get_comment();

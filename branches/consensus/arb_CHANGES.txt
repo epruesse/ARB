@@ -38,10 +38,14 @@ Major changes for next release:
    * order can be changed; each configuration has a comment; import stores configuration (#607)
  - ARB EDIT4:
    * allow to load missing SAIs
-   * "view differences" to selected sequence:
-      - customizable: char used for "equality" (i.e. what is displayed where a sequence is equal to selected sequence)
+   * "view differences" to a reference sequence:
+      - customizable:
+        - char used for "equality" (i.e. what is displayed where a sequence is equal to selected sequence)
+        - case-sensitivity
+        - ignore different gap-types
       - equal data also gets hidden in consensus
       - refresh differences of all displayed sequences, when data of selected sequences changes
+      - change reference sequence using CTRL-R or automatically let it follow the cursor
       - fixed minor bugs
  - expand zombies in tree (unfold groups)
  - compare taxonomy (and mark differences; #651)
