@@ -83,7 +83,7 @@ public:
     int convert(char c, int pos) const {
         char r = reference[pos];
         if (c != r) {
-            if (!is_gap[c] || !is_gap[r]) {
+            if (!is_gap[safeCharIndex(c)] || !is_gap[safeCharIndex(r)]) {
                 if (mindcase) return c;
                 if (tolower(c) != tolower(r)) return c;
             }
