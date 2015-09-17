@@ -275,10 +275,25 @@ ED4_reference::ED4_reference(GBDATA *_gb_main)
       ref_len(0),
       reference(NULL),
       ref_term(NULL)
-{}
+{
+    reset_gap_table();
+}
 
 ED4_reference::~ED4_reference() {
     clear();
+}
+
+void ED4_reference::reset_gap_table() {
+    for (int i = 0; i<256; ++i) is_gap[i] = false;
+}
+
+void ED4_reference::set_gap_handling(bool mindgaptype, const char *gaptypes) {
+    reset_gap_table();
+    if (!mindgaptype) { // treat all gaps as "equal"
+        for (int i; gaptypes[i]; ++i) {
+            is_gap[safeCharIndex(gaptypes[i])] = true;
+        }
+    }
 }
 
 void ED4_reference::expand_to_length(int len) {
@@ -347,6 +362,8 @@ void ED4_reference::define(const ED4_sequence_terminal *rterm) {
 #define AWAR_DIFF_NAME        APREFIX_DIFF_TEMP "name"
 #define AWAR_NODIFF_INDICATOR APREFIX_DIFF_SAVE "indicator"
 #define AWAR_DIFF_MINDCASE    APREFIX_DIFF_SAVE "mindcase"
+#define AWAR_DIFF_MINDGAPTYPE APREFIX_DIFF_SAVE "mindgaptype"
+#define AWAR_DIFF_GAPTYPES    APREFIX_DIFF_SAVE "gaptypes"
 
 enum ViewDiffType {
     VD_DISABLED,
@@ -455,6 +472,7 @@ static void update_reference_settings(AW_root *awr) {
     ED4_reference *ref = ED4_ROOT->reference;
     ref->set_nodiff_indicator(awr->awar(AWAR_NODIFF_INDICATOR)->read_char_pntr()[0]);
     ref->set_case_sensitive(awr->awar(AWAR_DIFF_MINDCASE)->read_int());
+    ref->set_gap_handling(awr->awar(AWAR_DIFF_MINDGAPTYPE)->read_int(), awr->awar(AWAR_DIFF_GAPTYPES)->read_char_pntr());
 }
 static void diff_setting_changed_cb(AW_root *awr) {
     update_reference_settings(awr);
@@ -481,6 +499,8 @@ static void create_viewDifferences_awars(AW_root *awr) {
         awr->awar_string(AWAR_DIFF_NAME, "<none selected>");
         awr->awar_string(AWAR_NODIFF_INDICATOR, " ")->add_callback(nodiff_indicator_changed_cb)->set_srt(" ?=?:? =?:?*=?");
         awr->awar_int(AWAR_DIFF_MINDCASE, 1)->add_callback(diff_setting_changed_cb);
+        awr->awar_int(AWAR_DIFF_MINDGAPTYPE, 1)->add_callback(diff_setting_changed_cb);
+        awr->awar_string(AWAR_DIFF_GAPTYPES, "-=.?")->add_callback(diff_setting_changed_cb);
 
         viewDifferences_awars_initialized = true;
     }
@@ -549,6 +569,11 @@ AW_window *ED4_create_viewDifferences_window(AW_root *awr) {
 
         aws->at("case");
         aws->create_toggle(AWAR_DIFF_MINDCASE);
+
+        aws->at("gap");
+        aws->create_toggle(AWAR_DIFF_MINDGAPTYPE);
+        aws->at("gapchars");
+        aws->create_input_field(AWAR_DIFF_GAPTYPES, 8);
     }
     return aws;
 }

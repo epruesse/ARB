@@ -55,6 +55,7 @@ class ED4_reference : virtual Noncopyable {
     GBDATA *gb_main;
     char    nodiff;
     bool    mindcase;
+    bool    is_gap[256];
 
     // current reference:
     int   ref_len;
@@ -63,6 +64,7 @@ class ED4_reference : virtual Noncopyable {
     const ED4_sequence_terminal *ref_term;
 
     void update_data();
+    void reset_gap_table();
 
 public:
     ED4_reference(GBDATA *gb_main);
@@ -70,6 +72,7 @@ public:
 
     void set_nodiff_indicator(char ind) { nodiff = ind; }
     void set_case_sensitive(bool mindcase_) { mindcase = mindcase_; }
+    void set_gap_handling(bool mindgaptype_, const char *gaptypes);
 
     void clear();
     void define(const ED4_sequence_terminal *rterm);
@@ -78,9 +81,12 @@ public:
     void expand_to_length(int len); // make sure that reference is at least len long
 
     int convert(char c, int pos) const {
-        if (c != reference[pos]) {
-            if (mindcase) return c;
-            if (tolower(c) != tolower(reference[pos])) return c;
+        char r = reference[pos];
+        if (c != r) {
+            if (!is_gap[c] || !is_gap[r]) {
+                if (mindcase) return c;
+                if (tolower(c) != tolower(r)) return c;
+            }
         }
         return nodiff;
     }

@@ -36,6 +36,9 @@ DESCRIPTION     Select a species, SAI or group consensus by clicking into its se
                 If 'Mind case?' is checked, characters only differing in case are displayed as
                 differences.
 
+		If 'Mind gap type?' is checked, different gaps are displayed as "differences".
+		What is regarded as "gap" may be defined in the text field behind the toggle.
+
 NOTES		Useful to manually correct alignments.
 
 		The IUPAC field in the top area can be used to guess the sequence 
