@@ -78,7 +78,6 @@ public:
     void expand_to_length(int len); // make sure that reference is at least len long
 
     int convert(char c, int pos) const {
-        if (c == '-') return c; // @@@ change behavior?
         if (c != reference[pos]) {
             if (mindcase) return c;
             if (tolower(c) != tolower(reference[pos])) return c;
