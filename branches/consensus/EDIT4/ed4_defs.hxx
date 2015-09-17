@@ -106,7 +106,6 @@ extern bool         DRAW;
 #define AWAR_EDIT_TERMINAL_SPACING "edit4/terminal_add_spacing"
 
 #define CHARACTEROFFSET 5       // spacer-width left of text-terminal
-#define CONSENSUS       "Consensusfunktion"
 
 typedef long ED4_index;
 

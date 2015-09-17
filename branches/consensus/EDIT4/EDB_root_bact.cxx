@@ -565,8 +565,8 @@ ED4_returncode EDB_root_bact::create_group_header(ED4_multi_species_manager   *p
 
             {
                 AW_device             *device            = ED4_ROOT->first_window->get_device();
-                int                    pixel_length      = device->get_string_size(ED4_G_SEQUENCES, CONSENSUS,   0);
-                ED4_sequence_terminal *sequence_terminal = new ED4_consensus_sequence_terminal(CONSENSUS, SEQUENCEINFOSIZE, 0, pixel_length + 10, height_terminal, sequence_manager);
+                int                    pixel_length      = device->get_string_size(ED4_G_SEQUENCES, "whatever",   0);
+                ED4_sequence_terminal *sequence_terminal = new ED4_consensus_sequence_terminal(NULL, SEQUENCEINFOSIZE, 0, pixel_length + 10, height_terminal, sequence_manager);
 
                 sequence_terminal->set_property(ED4_P_CURSOR_ALLOWED);
                 sequence_terminal->set_links(ref_sequence_terminal, ref_sequence_terminal);

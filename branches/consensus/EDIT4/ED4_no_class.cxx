@@ -246,13 +246,13 @@ static void executeKeystroke(AW_event *event, int repeatCount) {
                 work_info->working_terminal = terminal;
 
                 if (terminal->is_sequence_terminal()) {
-                    work_info->mode           = awar_edit_mode;
+                    work_info->mode        = awar_edit_mode;
                     work_info->rightward   = awar_edit_rightward;
-                    work_info->is_sequence    = 1;
+                    work_info->is_sequence = 1;
                 }
                 else {
                     work_info->rightward   = true;
-                    work_info->is_sequence    = 0;
+                    work_info->is_sequence = 0;
 
                     if (terminal->is_pure_text_terminal()) {
                         work_info->mode = awar_edit_mode;
@@ -275,7 +275,9 @@ static void executeKeystroke(AW_event *event, int repeatCount) {
                     work_info->gb_data = terminal->to_columnStat_terminal()->corresponding_sequence_terminal()->get_species_pointer();
                 }
                 else {
-                    work_info->string = terminal->id;
+                    e4_assert(terminal->is_consensus_terminal());
+                    ED4_consensus_sequence_terminal *cterm = terminal->to_consensus_sequence_terminal();
+                    work_info->string                      = cterm->temp_cons_seq;
                 }
 
                 ED4_Edit_String *edit_string = new ED4_Edit_String;
@@ -284,10 +286,11 @@ static void executeKeystroke(AW_event *event, int repeatCount) {
                 GB_push_transaction(GLOBAL_gb_main);
 
                 if (terminal->is_consensus_terminal()) {
-                    ED4_group_manager *group_manager = terminal->get_parent(ED4_L_GROUP)->to_group_manager();
+                    ED4_consensus_sequence_terminal *cterm         = terminal->to_consensus_sequence_terminal();
+                    ED4_group_manager               *group_manager = terminal->get_parent(ED4_L_GROUP)->to_group_manager();
 
-                    e4_assert(terminal->id == 0); // @@@ safety-belt for terminal->id-misuse
-                    work_info->string = terminal->id = group_manager->table().build_consensus_string();
+                    e4_assert(cterm->temp_cons_seq == 0);
+                    work_info->string = cterm->temp_cons_seq = group_manager->table().build_consensus_string();
 
                     error = edit_string->edit(work_info);
 
@@ -305,7 +308,7 @@ static void executeKeystroke(AW_event *event, int repeatCount) {
                         group_manager->rebuild_consensi(group_manager, ED4_U_UP_DOWN);
                     }
 
-                    freenull(terminal->id);
+                    freenull(cterm->temp_cons_seq);
                 }
                 else {
                     error = edit_string->edit(work_info);

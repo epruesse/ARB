@@ -1351,29 +1351,30 @@ public:
 #define E4B_AVOID_UNNEEDED_CASTS(name) E4B_AVOID_CAST__helper(concat(ED4_,name), concat(to_,name), concat(is_,name))
 #define E4B_IMPL_CASTOP(name)          E4B_IMPL_CASTOP_helper(concat(ED4_,name), concat(to_,name), concat(is_,name))
 
-    E4B_DECL_CASTOP(area_manager);           // to_area_manager
-    E4B_DECL_CASTOP(abstract_group_manager); // to_abstract_group_manager
-    E4B_DECL_CASTOP(bracket_terminal);       // to_bracket_terminal
-    E4B_DECL_CASTOP(columnStat_terminal);    // to_columnStat_terminal
-    E4B_DECL_CASTOP(device_manager);         // to_device_manager
-    E4B_DECL_CASTOP(group_manager);          // to_group_manager
-    E4B_DECL_CASTOP(line_terminal);          // to_line_terminal
-    E4B_DECL_CASTOP(manager);                // to_manager
-    E4B_DECL_CASTOP(multi_name_manager);     // to_multi_name_manager
-    E4B_DECL_CASTOP(multi_sequence_manager); // to_multi_sequence_manager
-    E4B_DECL_CASTOP(multi_species_manager);  // to_multi_species_manager
-    E4B_DECL_CASTOP(name_manager);           // to_name_manager
-    E4B_DECL_CASTOP(orf_terminal);           // to_orf_terminal
-    E4B_DECL_CASTOP(pure_text_terminal);     // to_pure_text_terminal
-    E4B_DECL_CASTOP(root_group_manager);     // to_root_group_manager
-    E4B_DECL_CASTOP(sequence_info_terminal); // to_sequence_info_terminal
-    E4B_DECL_CASTOP(sequence_manager);       // to_sequence_manager
-    E4B_DECL_CASTOP(sequence_terminal);      // to_sequence_terminal
-    E4B_DECL_CASTOP(spacer_terminal);        // to_spacer_terminal
-    E4B_DECL_CASTOP(species_manager);        // to_species_manager
-    E4B_DECL_CASTOP(species_name_terminal);  // to_species_name_terminal
-    E4B_DECL_CASTOP(terminal);               // to_terminal
-    E4B_DECL_CASTOP(text_terminal);          // to_text_terminal
+    E4B_DECL_CASTOP(area_manager);                // to_area_manager
+    E4B_DECL_CASTOP(abstract_group_manager);      // to_abstract_group_manager
+    E4B_DECL_CASTOP(bracket_terminal);            // to_bracket_terminal
+    E4B_DECL_CASTOP(columnStat_terminal);         // to_columnStat_terminal
+    E4B_DECL_CASTOP(consensus_sequence_terminal); // to_consensus_sequence_terminal
+    E4B_DECL_CASTOP(device_manager);              // to_device_manager
+    E4B_DECL_CASTOP(group_manager);               // to_group_manager
+    E4B_DECL_CASTOP(line_terminal);               // to_line_terminal
+    E4B_DECL_CASTOP(manager);                     // to_manager
+    E4B_DECL_CASTOP(multi_name_manager);          // to_multi_name_manager
+    E4B_DECL_CASTOP(multi_sequence_manager);      // to_multi_sequence_manager
+    E4B_DECL_CASTOP(multi_species_manager);       // to_multi_species_manager
+    E4B_DECL_CASTOP(name_manager);                // to_name_manager
+    E4B_DECL_CASTOP(orf_terminal);                // to_orf_terminal
+    E4B_DECL_CASTOP(pure_text_terminal);          // to_pure_text_terminal
+    E4B_DECL_CASTOP(root_group_manager);          // to_root_group_manager
+    E4B_DECL_CASTOP(sequence_info_terminal);      // to_sequence_info_terminal
+    E4B_DECL_CASTOP(sequence_manager);            // to_sequence_manager
+    E4B_DECL_CASTOP(sequence_terminal);           // to_sequence_terminal
+    E4B_DECL_CASTOP(spacer_terminal);             // to_spacer_terminal
+    E4B_DECL_CASTOP(species_manager);             // to_species_manager
+    E4B_DECL_CASTOP(species_name_terminal);       // to_species_name_terminal
+    E4B_DECL_CASTOP(terminal);                    // to_terminal
+    E4B_DECL_CASTOP(text_terminal);               // to_text_terminal
 
     // simple access to containing managers
     inline ED4_species_manager *containing_species_manager() const;
@@ -1393,6 +1394,10 @@ public:
     inline bool is_consensus_terminal() const;
     inline bool is_SAI_terminal() const;
     inline bool is_species_seq_terminal() const;
+
+    inline bool is_consensus_sequence_terminal() const { // alias for CASTOP
+        return is_consensus_terminal();
+    }
 };
 
 class ED4_manager : public ED4_base { // derived from a Noncopyable
@@ -2285,13 +2290,18 @@ struct ED4_pure_text_terminal : public ED4_text_terminal {
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_text_terminal);
 };
 
-class ED4_consensus_sequence_terminal : public ED4_sequence_terminal {
+class ED4_consensus_sequence_terminal : public ED4_sequence_terminal { // derived from a Noncopyable
     E4B_AVOID_UNNEEDED_CASTS(consensus_sequence_terminal);
     
     virtual ED4_returncode draw() OVERRIDE;
     ED4_char_table& get_char_table() const { return get_parent(ED4_L_GROUP)->to_group_manager()->table(); }
 public:
+    char *temp_cons_seq; // used for editing consensus (normally NULL)
+
     ED4_consensus_sequence_terminal(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
+#if defined(ASSERTION_USED)
+    virtual ~ED4_consensus_sequence_terminal() { e4_assert(!temp_cons_seq); }
+#endif
 
     virtual int get_length() const OVERRIDE;
     virtual char *get_sequence_copy(int *str_len = 0) const OVERRIDE;
@@ -2348,29 +2358,30 @@ inline bool ED4_terminal::setCursorTo(ED4_cursor *cursor, int seq_pos, bool unfo
     return sm->setCursorTo(cursor, seq_pos, unfoldGroups, jump_type);
 }
 
-E4B_IMPL_CASTOP(area_manager);           // to_area_manager
-E4B_IMPL_CASTOP(abstract_group_manager); // to_abstract_group_manager
-E4B_IMPL_CASTOP(bracket_terminal);       // to_bracket_terminal
-E4B_IMPL_CASTOP(columnStat_terminal);    // to_columnStat_terminal
-E4B_IMPL_CASTOP(device_manager);         // to_device_manager
-E4B_IMPL_CASTOP(group_manager);          // to_group_manager
-E4B_IMPL_CASTOP(line_terminal);          // to_line_terminal
-E4B_IMPL_CASTOP(manager);                // to_manager
-E4B_IMPL_CASTOP(multi_name_manager);     // to_multi_name_manager
-E4B_IMPL_CASTOP(multi_sequence_manager); // to_multi_sequence_manager
-E4B_IMPL_CASTOP(multi_species_manager);  // to_multi_species_manager
-E4B_IMPL_CASTOP(name_manager);           // to_name_manager
-E4B_IMPL_CASTOP(orf_terminal);           // to_orf_terminal
-E4B_IMPL_CASTOP(pure_text_terminal);     // to_pure_text_terminal
-E4B_IMPL_CASTOP(root_group_manager);     // to_root_group_manager
-E4B_IMPL_CASTOP(sequence_info_terminal); // to_sequence_info_terminal
-E4B_IMPL_CASTOP(sequence_manager);       // to_sequence_manager
-E4B_IMPL_CASTOP(sequence_terminal);      // to_sequence_terminal
-E4B_IMPL_CASTOP(spacer_terminal);        // to_spacer_terminal
-E4B_IMPL_CASTOP(species_manager);        // to_species_manager
-E4B_IMPL_CASTOP(species_name_terminal);  // to_species_name_terminal
-E4B_IMPL_CASTOP(terminal);               // to_terminal
-E4B_IMPL_CASTOP(text_terminal);          // to_text_terminal
+E4B_IMPL_CASTOP(area_manager);                // to_area_manager
+E4B_IMPL_CASTOP(abstract_group_manager);      // to_abstract_group_manager
+E4B_IMPL_CASTOP(bracket_terminal);            // to_bracket_terminal
+E4B_IMPL_CASTOP(columnStat_terminal);         // to_columnStat_terminal
+E4B_IMPL_CASTOP(consensus_sequence_terminal); // to_consensus_sequence_terminal
+E4B_IMPL_CASTOP(device_manager);              // to_device_manager
+E4B_IMPL_CASTOP(group_manager);               // to_group_manager
+E4B_IMPL_CASTOP(line_terminal);               // to_line_terminal
+E4B_IMPL_CASTOP(manager);                     // to_manager
+E4B_IMPL_CASTOP(multi_name_manager);          // to_multi_name_manager
+E4B_IMPL_CASTOP(multi_sequence_manager);      // to_multi_sequence_manager
+E4B_IMPL_CASTOP(multi_species_manager);       // to_multi_species_manager
+E4B_IMPL_CASTOP(name_manager);                // to_name_manager
+E4B_IMPL_CASTOP(orf_terminal);                // to_orf_terminal
+E4B_IMPL_CASTOP(pure_text_terminal);          // to_pure_text_terminal
+E4B_IMPL_CASTOP(root_group_manager);          // to_root_group_manager
+E4B_IMPL_CASTOP(sequence_info_terminal);      // to_sequence_info_terminal
+E4B_IMPL_CASTOP(sequence_manager);            // to_sequence_manager
+E4B_IMPL_CASTOP(sequence_terminal);           // to_sequence_terminal
+E4B_IMPL_CASTOP(spacer_terminal);             // to_spacer_terminal
+E4B_IMPL_CASTOP(species_manager);             // to_species_manager
+E4B_IMPL_CASTOP(species_name_terminal);       // to_species_name_terminal
+E4B_IMPL_CASTOP(terminal);                    // to_terminal
+E4B_IMPL_CASTOP(text_terminal);               // to_text_terminal
 
 inline ED4_device_manager *ED4_root::get_device_manager() {
     return main_manager->search_spec_child_rek(ED4_L_DEVICE)->to_device_manager();
