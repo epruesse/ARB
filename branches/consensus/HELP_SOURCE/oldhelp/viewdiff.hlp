@@ -18,6 +18,8 @@ DESCRIPTION     Select a species, SAI or group consensus by clicking into its se
                 of all other sequences (i.e. all but the selected sequence) to
                 show only the differences to the selected sequence (aka reference sequence).
 
+                To revert display to standard mode, select 'None'.
+
                 Key bindings:
 
                     * CTRL-D: toggles "View differences" mode
@@ -25,13 +27,14 @@ DESCRIPTION     Select a species, SAI or group consensus by clicking into its se
                       works if "View differences" mode is active, otherwise CTRL-R sets
                       the aligner reference species; see LINK{faligner.hlp})
 
-                You may define the character used for positions where selected and displayed
-                sequence do NOT differ.
+                You may define the character used for positions where the displayed
+                sequence does NOT differ from the reference sequence.
                 Default is to display a space, other recommended values
                 are '|' (esp. w/o helix display and smaller seq-spacing),
                 '_', '~', ':' or single quotes.
 
-                To revert display to standard mode, select 'None'.
+                If 'Mind case?' is checked, characters only differing in case are displayed as
+                differences.
 
 NOTES		Useful to manually correct alignments.
 

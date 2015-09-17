@@ -21,6 +21,9 @@
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
 #endif
+#ifndef _GLIBCXX_CCTYPE
+#include <cctype>
+#endif
 
 #define e4_assert(bed) arb_assert(bed)
 
@@ -51,6 +54,7 @@ class ED4_reference : virtual Noncopyable {
     // general:
     GBDATA *gb_main;
     char    nodiff;
+    bool    mindcase;
 
     // current reference:
     int   ref_len;
@@ -65,6 +69,7 @@ public:
     ~ED4_reference();
 
     void set_nodiff_indicator(char ind) { nodiff = ind; }
+    void set_case_sensitive(bool mindcase_) { mindcase = mindcase_; }
 
     void clear();
     void define(const ED4_sequence_terminal *rterm);
@@ -72,7 +77,14 @@ public:
     bool is_set() const { return reference; }
     void expand_to_length(int len); // make sure that reference is at least len long
 
-    int convert(char c, int pos) const { return (c=='-' || c!=reference[pos]) ? c : nodiff; }
+    int convert(char c, int pos) const {
+        if (c == '-') return c; // @@@ change behavior?
+        if (c != reference[pos]) {
+            if (mindcase) return c;
+            if (tolower(c) != tolower(reference[pos])) return c;
+        }
+        return nodiff;
+    }
     bool reference_species_is(const ED4_sequence_terminal *term) const {
         e4_assert(is_set()); // otherwise check makes no sense
         return term == ref_term;

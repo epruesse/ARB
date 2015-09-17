@@ -271,6 +271,7 @@ ED4_seq_colors::ED4_seq_colors(int baseGC, void (*changed_cb)()) {
 ED4_reference::ED4_reference(GBDATA *_gb_main)
     : gb_main(_gb_main),
       nodiff('#'), // notused; overwritten by user default later
+      mindcase(true),
       ref_len(0),
       reference(NULL),
       ref_term(NULL)
@@ -345,6 +346,7 @@ void ED4_reference::define(const ED4_sequence_terminal *rterm) {
 #define AWAR_DIFF_TYPE        APREFIX_DIFF_TEMP "type" // @@@ save in props?
 #define AWAR_DIFF_NAME        APREFIX_DIFF_TEMP "name"
 #define AWAR_NODIFF_INDICATOR APREFIX_DIFF_SAVE "indicator"
+#define AWAR_DIFF_MINDCASE    APREFIX_DIFF_SAVE "mindcase"
 
 enum ViewDiffType {
     VD_DISABLED,
@@ -448,6 +450,17 @@ static void diff_type_changed_cb(AW_root *awr) {
         }
     }
 }
+
+static void update_reference_settings(AW_root *awr) {
+    ED4_reference *ref = ED4_ROOT->reference;
+    ref->set_nodiff_indicator(awr->awar(AWAR_NODIFF_INDICATOR)->read_char_pntr()[0]);
+    ref->set_case_sensitive(awr->awar(AWAR_DIFF_MINDCASE)->read_int());
+}
+static void diff_setting_changed_cb(AW_root *awr) {
+    update_reference_settings(awr);
+    ED4_ROOT->request_refresh_for_specific_terminals(ED4_L_SEQUENCE_STRING);
+}
+
 static void nodiff_indicator_changed_cb(AW_root *awr) {
     AW_awar    *awar_indicator = awr->awar(AWAR_NODIFF_INDICATOR);
     const char *indicator      = awar_indicator->read_char_pntr();
@@ -456,8 +469,7 @@ static void nodiff_indicator_changed_cb(AW_root *awr) {
         awar_indicator->write_string(" ");
     }
     else {
-        ED4_ROOT->reference->set_nodiff_indicator(indicator[0]);
-        ED4_ROOT->request_refresh_for_specific_terminals(ED4_L_SEQUENCE_STRING);
+        diff_setting_changed_cb(awr);
     }
 }
 
@@ -468,14 +480,10 @@ static void create_viewDifferences_awars(AW_root *awr) {
         awr->awar_int(AWAR_DIFF_TYPE, VD_DISABLED)->add_callback(diff_type_changed_cb);
         awr->awar_string(AWAR_DIFF_NAME, "<none selected>");
         awr->awar_string(AWAR_NODIFF_INDICATOR, " ")->add_callback(nodiff_indicator_changed_cb)->set_srt(" ?=?:? =?:?*=?");
+        awr->awar_int(AWAR_DIFF_MINDCASE, 1)->add_callback(diff_setting_changed_cb);
 
         viewDifferences_awars_initialized = true;
     }
-}
-
-static void update_reference_settings(AW_root *awr) {
-    ED4_reference *ref = ED4_ROOT->reference;
-    ref->set_nodiff_indicator(awr->awar(AWAR_NODIFF_INDICATOR)->read_char_pntr()[0]);
 }
 
 void ED4_toggle_viewDifferences(AW_root *awr) {
@@ -507,7 +515,7 @@ void ED4_viewDifferences_disable() {
 AW_window *ED4_create_viewDifferences_window(AW_root *awr) {
     static AW_window_simple *aws = 0;
     if (!aws) {
-        ED4_toggle_viewDifferences(awr);
+        if (!ED4_ROOT->reference->is_set()) ED4_toggle_viewDifferences(awr); // automatically activate if off
 
         aws = new AW_window_simple;
         aws->init(awr, "VIEW_DIFF", "View sequence differences");
@@ -538,6 +546,9 @@ AW_window *ED4_create_viewDifferences_window(AW_root *awr) {
 
         aws->at("nodiff");
         aws->create_input_field(AWAR_NODIFF_INDICATOR);
+
+        aws->at("case");
+        aws->create_toggle(AWAR_DIFF_MINDCASE);
     }
     return aws;
 }
