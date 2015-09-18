@@ -1270,21 +1270,21 @@ void TEST_char_table() {
 
 void TEST_consensus() {
     const char *sequence[] = {
-        "-.AAAAAAAAAAcAAAAAAAAATTTTTTTTTTTTTTTTTAAAAAAAAgggggAAAAgA",
-        "-.-AAAAAAAAAccAAAAAAAAggTTgTTTTgTTTTTTTcccAAAAAgggggAAAAgA",
-        "-.--AAAAAAAAcccAAAAAAA-ggTggTTTggTTTTTTccccAAAAgggCCtAAAgA",
-        "-.---AAAAAAAccccAAAAAA-ggggggTTgggTTTTTcccccAAAggCCC-tAACt",
-        "-.----AAAAAAcccccAAAAA----ggggTggggTTTTGGGcccAAgCCCt-ttACt",
-        "-.-----AAAAAccccccAAAA----ggggggggggTTgGGGGcccAcCCtt--tttC",
-        "-.------AAAAcccccccAAA---------ggggggTgGGGGGccccCt----tt-g",
-        "-.-------AAAccccccccAA---------ggggggggttGGGGccct------t--",
-        "-.--------AAcccccccccA----------------gttGGGGGct-------t--",
-        "-.---------Acccccccccc----------------gtAGGGGGG-----------",
+        "-.AAAAAAAAAAcAAAAAAAAATTTTTTTTTTTTTTTTTAAAAAAAAgggggAAAAgA---",
+        "-.-AAAAAAAAAccAAAAAAAAggTTgTTTTgTTTTTTTcccAAAAAgggggAAAAgA---",
+        "-.--AAAAAAAAcccAAAAAAA-ggTggTTTggTTTTTTccccAAAAgggCCtAAAgA---",
+        "-.---AAAAAAAccccAAAAAA-ggggggTTgggTTTTTcccccAAAggCCC-tAACt---",
+        "-.----AAAAAAcccccAAAAA----ggggTggggTTTTGGGcccAAgCCCt-ttACt---",
+        "-.-----AAAAAccccccAAAA----ggggggggggTTgGGGGcccAcCCtt--tttC---",
+        "-.------AAAAcccccccAAA---------ggggggTgGGGGGccccCt----tt-g---",
+        "-.-------AAAccccccccAA---------ggggggggttGGGGccct------t--yyk",
+        "-.--------AAcccccccccA----------------gttGGGGGct-------t--ymm",
+        "-.---------Acccccccccc----------------gtAGGGGGG--------------",
     };
     const char *expected_consensus[] = {
-        "==----..aaaACccMMMMMaa----.....g.kkk.uKb.ssVVmmss...-.ww..", // default settings (see ConsensusBuildParams-ctor), gapbound=60, considbound=30, lower/upper=70/95
-        "==......aaaACccMMMMMaa.........g.kkk.uKb.ssVVmmss.....ww..", // countgaps = 0
-        "==aaaaaaaAAACCCMMMMMAAggguggkuuggKKKuuKBsSSVVMMSssccaawWga", // countgaps = 0, considbound=26, lower=0, upper=75 (as described in #663)
+        "==----..aaaACccMMMMMaa----.....g.kkk.uKb.ssVVmmss...-.ww..---", // default settings (see ConsensusBuildParams-ctor), gapbound=60, considbound=30, lower/upper=70/95
+        "==......aaaACccMMMMMaa.........g.kkk.uKb.ssVVmmss.....ww.....", // countgaps = 0
+        "==aaaaaaaAAACCCMMMMMAAggguggkuuggKKKuuKBsSSVVMMSssccaawWgannn", // countgaps = 0, considbound=26, lower=0, upper=75 (as described in #663)
     };
     const size_t seqlen         = strlen(sequence[0]);
     const int    sequenceCount  = ARRAY_ELEMS(sequence);
