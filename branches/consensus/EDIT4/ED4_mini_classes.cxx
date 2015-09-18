@@ -488,20 +488,20 @@ void ED4_char_table::build_consensus_string_to(char *consensus_string, ExplicitR
             DUMPINT(column);
 #endif
 
-            int o        = i-left_idx;
-            int bases    = 0;           // count of all bases together
-            int base[MAX_BASES_TABLES]; // count of specific base
-            int j;
-            int max_base = -1;          // maximum count of specific base
-            int max_j    = -1;          // index of this base
+            const int o = i-left_idx; // output offset
 
-            for (j=0; j<used_bases_tables; j++) {
+            int bases        = 0;       // count of all bases together
+            int base[MAX_BASES_TABLES]; // count of specific base
+            int max_base     = -1;      // maximum count of specific base
+            int max_base_idx = -1;      // index of this base
+
+            for (int j=0; j<used_bases_tables; j++) {
                 base[j] = linear_table(j)[i];
                 if (!ADPP_IS_ALIGN_CHARACTER(index_to_upperChar(j))) {
                     bases += base[j];
                     if (base[j]>max_base) { // search for most used base
-                        max_base = base[j];
-                        max_j = j;
+                        max_base     = base[j];
+                        max_base_idx = j;
                     }
                 }
             }
@@ -531,7 +531,7 @@ void ED4_char_table::build_consensus_string_to(char *consensus_string, ExplicitR
                         int no_of_bases = 0; // count of different bases used to create iupac
                         char used_bases[MAX_BASES_TABLES+1]; // string containing those bases
 
-                        for (j=0; j<used_bases_tables; j++) {
+                        for (int j=0; j<used_bases_tables; j++) {
                             int bchar = index_to_upperChar(j);
 
                             if (!ADPP_IS_ALIGN_CHARACTER(bchar)) {
@@ -557,10 +557,10 @@ void ED4_char_table::build_consensus_string_to(char *consensus_string, ExplicitR
                         const int amino_groups = iupac::AA_GROUP_COUNT;
                         int       group_count[amino_groups];
 
-                        for (j=0; j<amino_groups; j++) {
+                        for (int j=0; j<amino_groups; j++) {
                             group_count[j] = 0;
                         }
-                        for (j=0; j<used_bases_tables; j++) {
+                        for (int j=0; j<used_bases_tables; j++) {
                             unsigned char bchar = index_to_upperChar(j);
 
                             if (!ADPP_IS_ALIGN_CHARACTER(bchar)) {
@@ -571,7 +571,7 @@ void ED4_char_table::build_consensus_string_to(char *consensus_string, ExplicitR
                         }
 
                         int bestGroup = 0;
-                        for (j=0; j<amino_groups; j++) {
+                        for (int j=0; j<amino_groups; j++) {
                             if (group_count[j]>kcount) {
                                 bestGroup = j;
                                 kcount = group_count[j];
@@ -583,15 +583,17 @@ void ED4_char_table::build_consensus_string_to(char *consensus_string, ExplicitR
                 }
                 else {                   // IUPAC grouping is off
                     e4_assert(max_base); // expect at least one base to occur
-                    e4_assert(max_j >= 0);
+                    e4_assert(max_base_idx >= 0);
 
-                    kchar  = index_to_upperChar(max_j);
+                    kchar  = index_to_upperChar(max_base_idx);
                     kcount = max_base;
-                    e4_assert(kchar);
                 }
 
-                // show as upper or lower case ?
+                e4_assert(kchar);
+                // e4_assert(kcount); // @@@ fails in unit tests
                 e4_assert(kcount<=bases);
+
+                // show as upper or lower case ?
                 int percent = PERCENT(kcount, sequences); // @@@ if gaps==off -> calc percent of non-gaps
                 DUMPINT(percent);
                 DUMPINT(BK->upper);
