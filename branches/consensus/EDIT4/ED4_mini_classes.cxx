@@ -20,6 +20,7 @@
 
 #include <cctype>
 #include <arb_msg.h>
+#include <arb_defs.h>
 
 // ------------------------
 //      ED4_bases_table
@@ -397,7 +398,7 @@ struct ConsensusBuildParams {
     }
 #if defined(UNIT_TESTS) // UT_DIFF
     ConsensusBuildParams() {
-        // uses awar defaults
+        // (should) use awar defaults
         countgaps   = 1;
         gapbound    = 60;
         group       = 1;
@@ -1206,8 +1207,7 @@ void TEST_char_table() {
     ED4_char_table::initial_setup(gapChars, GB_AT_RNA);
     ED4_init_is_align_character(gapChars);
 
-    TEST_REJECT(BK);
-    BK = new ConsensusBuildParams;
+    TEST_REJECT(BK); BK = new ConsensusBuildParams;
 
     // BK->lower = 70; BK->upper = 95; BK->gapbound = 60; // defaults from awars
     BK->lower    = 40; BK->upper = 70; BK->gapbound = 40;
@@ -1265,8 +1265,58 @@ void TEST_char_table() {
         }
     }
 
-    delete BK;
-    BK = 0;
+    delete BK; BK = 0;
+}
+
+void TEST_consensus() {
+    const char *sequence[] = {
+        "-.AAAAAAAAAAcAAAAAAAAATTTTTTTTTTTTTTTTTAAAAAAAAgggggAAAAgA",
+        "-.-AAAAAAAAAccAAAAAAAAggTTgTTTTgTTTTTTTcccAAAAAgggggAAAAgA",
+        "-.--AAAAAAAAcccAAAAAAA-ggTggTTTggTTTTTTccccAAAAgggCCtAAAgA",
+        "-.---AAAAAAAccccAAAAAA-ggggggTTgggTTTTTcccccAAAggCCC-tAACt",
+        "-.----AAAAAAcccccAAAAA----ggggTggggTTTTGGGcccAAgCCCt-ttACt",
+        "-.-----AAAAAccccccAAAA----ggggggggggTTgGGGGcccAcCCtt--tttC",
+        "-.------AAAAcccccccAAA---------ggggggTgGGGGGccccCt----tt-g",
+        "-.-------AAAccccccccAA---------ggggggggttGGGGccct------t--",
+        "-.--------AAcccccccccA----------------gttGGGGGct-------t--",
+        "-.---------Acccccccccc----------------gtAGGGGGG-----------",
+    };
+    const char *expected_consensus[] = {
+        "==----..aaaACccMMMMMaa----.....g.kkk.uKb.ssVVmmss...-.ww..", // default settings (see ConsensusBuildParams-ctor), gapbound=60, considbound=30, lower/upper=70/95
+        "==......aaaACccMMMMMaa.........g.kkk.uKb.ssVVmmss.....ww..", // countgaps = 0
+        "==--aaaaaAAACCCMMMMMAA-g-uggkuuggKKKuuKBsSSVVMMSssc--awWga", // countgaps = 0, considbound=26, lower=0, upper=75 (as described in #663)
+    };
+    const size_t seqlen         = strlen(sequence[0]);
+    const int    sequenceCount  = ARRAY_ELEMS(sequence);
+    const int    consensusCount = ARRAY_ELEMS(expected_consensus);
+
+    const char *gapChars = ".-";
+    ED4_char_table::initial_setup(gapChars, GB_AT_RNA);
+    ED4_init_is_align_character(gapChars);
+
+    TEST_REJECT(BK); BK = new ConsensusBuildParams;
+
+    ED4_char_table tab(seqlen);
+    for (int s = 0; s<sequenceCount; ++s) {
+        e4_assert(strlen(sequence[s]) == seqlen);
+        tab.add(sequence[s], seqlen);
+    }
+
+    for (int c = 0; c<consensusCount; ++c) {
+        TEST_ANNOTATE(GBS_global_string("c=%i", c));
+        switch (c) {
+            case 0: break;                                                      // use default settings
+            case 1: BK->countgaps   = 0; break;                                 // dont count gaps
+            case 2: BK->considbound = 26; BK->lower = 0; BK->upper = 75; break; // settings from #663
+            default: e4_assert(0); break;                                       // missing
+        }
+
+        char *consensus = tab.build_consensus_string();
+        TEST_EXPECT_EQUAL(consensus, expected_consensus[c]);
+        free(consensus);
+    }
+
+    delete BK; BK = 0;
 }
 
 void TEST_bases_table() {

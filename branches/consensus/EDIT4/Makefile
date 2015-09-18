@@ -500,6 +500,7 @@ ED4_mini_classes.o: ed4_search.hxx
 ED4_mini_classes.o: ed4_tools.hxx
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/arb_core.h
+ED4_mini_classes.o: $(ARBHOME)/INCLUDE/arb_defs.h
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/arb_error.h
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/arbdb_base.h
