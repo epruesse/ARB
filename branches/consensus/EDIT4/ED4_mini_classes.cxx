@@ -536,7 +536,7 @@ void ED4_char_table::build_consensus_string_to(char *consensus_string, ExplicitR
                             int bchar = index_to_upperChar(j);
 
                             if (!ADPP_IS_ALIGN_CHARACTER(bchar)) {
-                                if (PERCENT(base[j],sequences) >= BK->considbound) { // @@@ should calc percent of non-gaps!
+                                if (PERCENT(base[j],bases) >= BK->considbound) {
 #if defined(DEBUG_CONSENSUS)
                                     if (!kcount) DUMPINT(BK->considbound);
 #endif
@@ -544,7 +544,7 @@ void ED4_char_table::build_consensus_string_to(char *consensus_string, ExplicitR
                                     kcount                    += base[j];
 
                                     DUMPINT(base[j]);
-                                    DUMPINT(PERCENT(base[j],sequences));
+                                    DUMPINT(PERCENT(base[j],bases));
                                     DUMPINT(kcount);
                                 }
                             }
@@ -1244,11 +1244,11 @@ void TEST_char_table() {
         {
             char *consensus = tab.build_consensus_string();
             switch (seed) {
-                case 677741240: TEST_EXPECT_EQUAL(consensus, ".-s-NW..aWu.NnWYa.R.mgcNK.c..."); break;
-                case 721151648: TEST_EXPECT_EQUAL(consensus, "a.nn..K..-gU.RW-SNcau.WNNacn.u"); break;
-                case 345295160: TEST_EXPECT_EQUAL(consensus, "..-g...MSn...guc.n.u.R.n.-Ng.k"); break;
-                case 346389111: TEST_EXPECT_EQUAL(consensus, ".unAn...gN.kc-cS.Raun...Sa-gY."); break;
-                case 367171911: TEST_EXPECT_EQUAL(consensus, "na.Na.nu.c-.-NU.aYgn-nng-.Wa.M"); break;
+                case 677741240: TEST_EXPECT_EQUAL(consensus, "k-s-NW..aWu.NnWYa.R.mKcNK.c.rn"); break;
+                case 721151648: TEST_EXPECT_EQUAL(consensus, "aNnn..K..-gU.RW-SNcau.WNNacn.u"); break;
+                case 345295160: TEST_EXPECT_EQUAL(consensus, "yy-g..kMSn...NucyNny.Rnn.-Ng.k"); break;
+                case 346389111: TEST_EXPECT_EQUAL(consensus, ".unAn.y.nN.kc-cS.RauNm..Sa-kY."); break;
+                case 367171911: TEST_EXPECT_EQUAL(consensus, "na.NanNunc-.-NU.aYgn-nng-nWanM"); break;
                 default: TEST_EXPECT_EQUAL(consensus, "undef");
             }
             free(consensus);
@@ -1284,7 +1284,7 @@ void TEST_consensus() {
     const char *expected_consensus[] = {
         "==----..aaaACccMMMMMaa----.....g.kkk.uKb.ssVVmmss...-.ww..---", // default settings (see ConsensusBuildParams-ctor), gapbound=60, considbound=30, lower/upper=70/95
         "==......aaaACccMMMMMaa.........g.kkk.uKb.ssVVmmss.....ww.....", // countgaps = 0
-        "==aaaaaaaAAACCCMMMMMAAggguggkuuggKKKuuKBsSSVVMMSssccaawWgannn", // countgaps = 0, considbound=26, lower=0, upper=75 (as described in #663)
+        "==aaaaaaaAAACCCMMMMMAAkgkugkkkuggKKKuuKBsSSVVMMSsssbwwwWswnnn", // countgaps = 0, considbound=26, lower=0, upper=75 (as described in #663)
     };
     const size_t seqlen         = strlen(sequence[0]);
     const int    sequenceCount  = ARRAY_ELEMS(sequence);
