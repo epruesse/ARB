@@ -582,7 +582,7 @@ void ED4_char_table::build_consensus_string_to(char *consensus_string, ExplicitR
                         kchar = iupac::get_amino_consensus_char(iupac::Amino_Group(bestGroup));
                     }
                 }
-                else {                   // IUPAC grouping is off
+                if (!kcount) {           // IUPAC grouping is either off OR didnt consider any bases
                     e4_assert(max_base); // expect at least one base to occur
                     e4_assert(max_base_idx >= 0);
 
@@ -591,7 +591,7 @@ void ED4_char_table::build_consensus_string_to(char *consensus_string, ExplicitR
                 }
 
                 e4_assert(kchar);
-                // e4_assert(kcount); // @@@ fails in unit tests
+                e4_assert(kcount);
                 e4_assert(kcount<=bases);
 
                 // show as upper or lower case ?
@@ -1284,7 +1284,7 @@ void TEST_consensus() {
     const char *expected_consensus[] = {
         "==----..aaaACccMMMMMaa----.....g.kkk.uKb.ssVVmmss...-.ww..", // default settings (see ConsensusBuildParams-ctor), gapbound=60, considbound=30, lower/upper=70/95
         "==......aaaACccMMMMMaa.........g.kkk.uKb.ssVVmmss.....ww..", // countgaps = 0
-        "==--aaaaaAAACCCMMMMMAA-g-uggkuuggKKKuuKBsSSVVMMSssc--awWga", // countgaps = 0, considbound=26, lower=0, upper=75 (as described in #663)
+        "==aaaaaaaAAACCCMMMMMAAggguggkuuggKKKuuKBsSSVVMMSssccaawWga", // countgaps = 0, considbound=26, lower=0, upper=75 (as described in #663)
     };
     const size_t seqlen         = strlen(sequence[0]);
     const int    sequenceCount  = ARRAY_ELEMS(sequence);
