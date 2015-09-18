@@ -97,6 +97,7 @@ public:
     bool only_show_diff_for(const ED4_sequence_terminal *term) const {
         return is_set() && !reference_species_is(term);
     }
+    bool reference_is_a_consensus() const;
 
     void data_changed_cb(ED4_species_manager *calledFrom);
 };

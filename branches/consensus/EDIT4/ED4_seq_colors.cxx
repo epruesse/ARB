@@ -316,7 +316,9 @@ void ED4_reference::update_data() {
 void ED4_reference::data_changed_cb(ED4_species_manager *IF_ASSERTION_USED(calledFrom)) {
     e4_assert(ref_term);
     if (ref_term) {
-        e4_assert(ref_term->get_parent(ED4_L_SPECIES)->to_species_manager() == calledFrom);
+#if defined(ASSERTION_USED)
+        if (calledFrom) e4_assert(ref_term->get_parent(ED4_L_SPECIES)->to_species_manager() == calledFrom);
+#endif
         update_data();
     }
 }
@@ -351,6 +353,10 @@ void ED4_reference::define(const ED4_sequence_terminal *rterm) {
     ED4_species_manager *sman = ref_term->get_parent(ED4_L_SPECIES)->to_species_manager();
     sman->add_sequence_changed_cb(refdata_changed_cb, (AW_CL)this);
     sman->add_delete_callback(refdata_deleted_cb, 0);
+}
+
+bool ED4_reference::reference_is_a_consensus() const {
+    return is_set() && ref_term->is_consensus_sequence_terminal();
 }
 
 // --------------------------------------------------------------------------------

@@ -13,6 +13,7 @@
 #include "ed4_edit_string.hxx"
 #include "ed4_awars.hxx"
 #include "ed4_tools.hxx"
+#include "ed4_seq_colors.hxx"
 
 #include <aw_awar.hxx>
 #include <aw_root.hxx>
@@ -413,7 +414,15 @@ static ConsensusBuildParams *BK = NULL; // @@@ make member of ED4_char_table ?
 
 void ED4_consensus_definition_changed(AW_root*) {
     delete BK; BK = 0; // invalidate
-    ED4_ROOT->request_refresh_for_consensus_terminals();
+
+    ED4_reference *ref = ED4_ROOT->reference;
+    if (ref->reference_is_a_consensus()) {
+        ref->data_changed_cb(NULL);
+        ED4_ROOT->request_refresh_for_specific_terminals(ED4_L_SEQUENCE_STRING); // refresh all sequences
+    }
+    else {
+        ED4_ROOT->request_refresh_for_consensus_terminals();
+    }
 }
 
 static ARB_ERROR toggle_consensus_display(ED4_base *base, AW_CL show) {
