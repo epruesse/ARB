@@ -451,6 +451,12 @@ char *ED4_char_table::build_consensus_string(PosRange r) const {
     return new_buf;
 }
 
+#if defined(DEBUG)
+ #if defined(DEVEL_RALF)
+  #define DEBUG_CONSENSUS
+ #endif
+#endif
+
 void ED4_char_table::build_consensus_string_to(char *consensus_string, ExplicitRange range) const {
     // 'consensus_string' has to be a buffer of size 'range.size()+1'
     // Note : Always check that consensus behavior is identical to that used in CON_evaluatestatistic()
@@ -468,8 +474,20 @@ void ED4_char_table::build_consensus_string_to(char *consensus_string, ExplicitR
     const int left_idx  = range.start();
     const int right_idx = range.end();
 
+#if defined(DEBUG_CONSENSUS)
+ #define DUMPINT(var) do { if (dumpcol) fprintf(stderr, "%s=%i ", #var, var); } while(0)
+#else
+ #define DUMPINT(var)
+#endif
+
     if (sequences) {
         for (int i=left_idx; i<=right_idx; i++) {
+#if defined(DEBUG_CONSENSUS)
+            int  column  = i+1;
+            bool dumpcol = (column == 21);
+            DUMPINT(column);
+#endif
+
             int o        = i-left_idx;
             int bases    = 0;           // count of all bases together
             int base[MAX_BASES_TABLES]; // count of specific base
@@ -490,33 +508,43 @@ void ED4_char_table::build_consensus_string_to(char *consensus_string, ExplicitR
 
             int gaps = sequences-bases; // count of gaps
 
+            DUMPINT(sequences);
+            DUMPINT(gaps);
+            DUMPINT(bases);
+
             // What to do with gaps?
 
             if (gaps == sequences) {
                 consensus_string[o] = '=';
             }
-            else if (BK->countgaps && PERCENT(gaps, sequences)>=BK->gapbound) {
+            else if (BK->countgaps && PERCENT(gaps, sequences) >= BK->gapbound) {
+                DUMPINT(PERCENT(gaps,sequences));
+                DUMPINT(BK->gapbound);
                 consensus_string[o] = '-';
             }
             else {
-                // Simplify using IUPAC :
+                char kchar  = 0; // character for consensus
+                int  kcount = 0; // count this character
 
-                char kchar;     // character for consensus
-                int  kcount;    // count this character
-
-                if (BK->group) { // group -> iupac
+                if (BK->group) { // simplify using IUPAC
                     if (ali_type == GB_AT_RNA || ali_type == GB_AT_DNA) {
                         int no_of_bases = 0; // count of different bases used to create iupac
                         char used_bases[MAX_BASES_TABLES+1]; // string containing those bases
 
-                        kcount = 0;
                         for (j=0; j<used_bases_tables; j++) {
                             int bchar = index_to_upperChar(j);
 
                             if (!ADPP_IS_ALIGN_CHARACTER(bchar)) {
-                                if (PERCENT(base[j], sequences)>=BK->considbound) {
-                                    used_bases[no_of_bases++] = index_to_upperChar(j);
-                                    kcount += base[j];
+                                if (PERCENT(base[j],sequences) >= BK->considbound) { // @@@ should calc percent of non-gaps!
+#if defined(DEBUG_CONSENSUS)
+                                    if (!kcount) DUMPINT(BK->considbound);
+#endif
+                                    used_bases[no_of_bases++]  = index_to_upperChar(j);
+                                    kcount                    += base[j];
+
+                                    DUMPINT(base[j]);
+                                    DUMPINT(PERCENT(base[j],sequences));
+                                    DUMPINT(kcount);
                                 }
                             }
                         }
@@ -536,13 +564,12 @@ void ED4_char_table::build_consensus_string_to(char *consensus_string, ExplicitR
                             unsigned char bchar = index_to_upperChar(j);
 
                             if (!ADPP_IS_ALIGN_CHARACTER(bchar)) {
-                                if (PERCENT(base[j], sequences)>=BK->considbound) {
+                                if (PERCENT(base[j], sequences) >= BK->considbound) { // @@@ should calc percent of non-gaps!
                                     group_count[iupac::get_amino_group_for(bchar)] += base[j];
                                 }
                             }
                         }
 
-                        kcount = 0;
                         int bestGroup = 0;
                         for (j=0; j<amino_groups; j++) {
                             if (group_count[j]>kcount) {
@@ -554,8 +581,8 @@ void ED4_char_table::build_consensus_string_to(char *consensus_string, ExplicitR
                         kchar = iupac::get_amino_consensus_char(iupac::Amino_Group(bestGroup));
                     }
                 }
-                else {
-                    e4_assert(max_base);            // expect at least one base to occur
+                else {                   // IUPAC grouping is off
+                    e4_assert(max_base); // expect at least one base to occur
                     e4_assert(max_j >= 0);
 
                     kchar  = index_to_upperChar(max_j);
@@ -564,9 +591,11 @@ void ED4_char_table::build_consensus_string_to(char *consensus_string, ExplicitR
                 }
 
                 // show as upper or lower case ?
-
-                int percent = PERCENT(kcount, sequences);
-
+                e4_assert(kcount<=bases);
+                int percent = PERCENT(kcount, sequences); // @@@ if gaps==off -> calc percent of non-gaps
+                DUMPINT(percent);
+                DUMPINT(BK->upper);
+                DUMPINT(BK->lower);
                 if (percent>=BK->upper) {
                     consensus_string[o] = kchar;
                 }
@@ -578,6 +607,10 @@ void ED4_char_table::build_consensus_string_to(char *consensus_string, ExplicitR
                 }
             }
             e4_assert(consensus_string[o]);
+
+#if defined(DEBUG_CONSENSUS)
+            if (dumpcol) fprintf(stderr, "result='%c'\n", consensus_string[o]);
+#endif
         }
     }
     else {
