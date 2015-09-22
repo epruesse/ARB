@@ -1,0 +1,86 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP      arb.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB    changes.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE           Version Info
+
+SECTION VERSION LIST (since 2000)
+
+        See LINK{changes.hlp} for info about changes in recent and current versions.
+
+        See also LINK{http://bugs.arb-home.de/wiki#ARBversions}
+
+SECTION HISTORIC VERSION LIST (1993-1999)
+
+        Version Date            Comments
+        (b=beta)
+
+        1.0:    1993-94         Openwin Version
+
+        2.0.0b  June 95         Full Motif Version,
+                                Phylip included,
+                                Final database but untested
+                                Only online help available
+
+        2.0.1b  July            Undo Redo,
+                                Phylip running fully in background
+                                save/load branch labels to NEWICK Format
+
+        2.1.0   November        GDE editor can save
+                                NEW ALI editor from Niels, Fogt ...
+                                a lot of bug fixes: database fixes,
+                                recover from corrupt database, ...
+
+        2.1.1   January 96      GDE is working now
+                                compressing matrices is possible
+
+        _       May             Save Changes as
+                                Parsimony inserts species sorted by sequence length
+                                bug fixes:      - import by readseq improved
+
+        2.1.2   July            USA visit.
+                                Simple Import Function implemented
+                                Perl Interface is running
+
+        2.1.3   August          PT_server can be updated on the fly
+
+        2.2b    August          Fast Load File implemented (uff a lot of work)
+                                bug fixes:      Consensus, import sequences
+                                new:            set protection of database fields
+
+        2.2.2b  August          more bug fixes in Fast Load File
+
+        2.3b    September       much better sequence compression
+                                bug fix: probes for groups
+
+        2.4b    October         Tags implemented, Tags can be used to subdivide fields
+                                resize of most windows does work
+
+        2.5b    November        Overall Compression
+                                Incremental fastdnaml
+                                phylips dnapars is running twice as fast now
+                                Search nearest neighbours + Equal Fields
+
+        _       December        Linux Version
+
+        _       January 97      Macros
+
+        _       February        One major bug fixed in the database system
+                                Prototype of the new editor
+
+        _       March           OSF Alpha Version
+                                Bootstrap for Neighbour Joining
+
+        _       April           Fast Aligner
+                                Merge preserves alignment
+
+        _       February 99     ARB_EDIT4 now is the default editor.
+                                Code for amino-DNA-translation/realignment
+                                completely rewritten.
+
+

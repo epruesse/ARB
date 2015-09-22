@@ -1,0 +1,45 @@
+#!/bin/bash
+
+IS_X_EDITOR=0
+
+if [ -z "$ARB_TEXTEDIT" ]; then
+        echo '$ARB_TEXTEDIT is not defined - searching for an editor..'
+        echo ''
+
+        # try to find an editor (order = basic to convenient; last found is used):
+        if [ -x "`which edit`" ] ;     then ARB_TEXTEDIT=edit;     IS_X_EDITOR=0; fi
+        if [ -x "`which editor`" ] ;   then ARB_TEXTEDIT=editor ;  IS_X_EDITOR=0; fi
+        if [ -x "`which vi`" ] ;       then ARB_TEXTEDIT=vi ;      IS_X_EDITOR=0; fi
+        if [ -x "`which vim`" ] ;      then ARB_TEXTEDIT=vim ;     IS_X_EDITOR=0; fi
+        
+        if [ -x "`which emacs`" ] ;    then ARB_TEXTEDIT=emacs ;   IS_X_EDITOR=1; fi
+        if [ -x "`which xemacs`" ] ;   then ARB_TEXTEDIT=xemacs ;  IS_X_EDITOR=1; fi
+        if [ -x "`which xedit`" ] ;    then ARB_TEXTEDIT=xedit ;   IS_X_EDITOR=1; fi
+        if [ -x "`which textedit`" ] ; then ARB_TEXTEDIT=textedit; IS_X_EDITOR=1; fi
+        if [ -x "`which kwrite`" ] ;   then ARB_TEXTEDIT=kwrite ;  IS_X_EDITOR=1; fi
+        if [ -x "`which kate`" ] ;     then ARB_TEXTEDIT=kate ;    IS_X_EDITOR=1; fi
+        if [ -x "`which gedit`" ] ;    then ARB_TEXTEDIT=gedit ;   IS_X_EDITOR=1; fi
+        
+        if [ -z "$ARB_TEXTEDIT" ]; then
+                echo "Can't guess an editor. Even 'vi' seems to be absent."
+                echo "Please set the environment variable \$ARB_TEXTEDIT to the"
+                echo "name of your preferred text editor."
+                echo ""
+                echo "Press ENTER to continue.."
+                read x
+                exit 1;
+        fi
+        echo ''
+        echo "Using '$ARB_TEXTEDIT' as text editor."
+fi
+
+if [ -z "$1" ]; then
+    echo "Usage: arb_textedit filename"
+    echo "Edits a file using $ARB_TEXTEDIT"
+else
+    if [ $IS_X_EDITOR = 1 ]; then
+        $ARB_TEXTEDIT $1
+    else
+        ${ARB_XCMD:-xterm -geometry 120x50 -e} $ARB_TEXTEDIT $1
+    fi
+fi

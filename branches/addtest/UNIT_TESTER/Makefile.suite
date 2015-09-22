@@ -1,0 +1,89 @@
+
+notarget:
+	@echo "Usage: make (init|cleanup|unskip)" 
+	false
+
+include Makefile.setup.include
+
+TEST_BASE=`pwd`
+
+TEST_REPORTER = ./reporter.pl
+TEST_LOG_DIR = ./logs
+TEST_FLAG_DIR = ./flags
+
+JUNIT_LOG = $(TEST_LOG_DIR)/junit_log.xml# see also reporter.pl@JUNITLOGNAME
+
+PATCHNAMEBASE:=TestsOk
+PATCHNAMESUFFIX:=
+
+VALGRIND_INTERNAL=$(findstring B,$(VALGRIND))$(findstring A,$(VALGRIND))
+VALGRIND_EXTERNAL=$(findstring E,$(VALGRIND))
+VALGRIND_ANY=$(VALGRIND_INTERNAL)$(VALGRIND_EXTERNAL)
+
+# -------------------- build patch name
+
+ifneq ('$(RESTRICT_LIB)','')
+PATCHNAMESUFFIX:=$(PATCHNAMESUFFIX)__only_$(RESTRICT_LIB)
+endif
+
+ifneq ($(RESTRICT_MODULE),'.')
+PATCHNAMESUFFIX:=$(PATCHNAMESUFFIX)__notAllFiles
+endif
+
+SKIPPED_SLOW:=$(shell (test -f skipslow.stamp && ls -1 skipslow.stamp))
+ifneq ('$(SKIPPED_SLOW)','')
+PATCHNAMESUFFIX:=$(PATCHNAMESUFFIX)__SLOW_skipped
+endif
+
+ifneq ('$(VALGRIND_ANY)','')
+PATCHNAMESUFFIX:=$(PATCHNAMESUFFIX)__valgrinded_$(VALGRIND_ANY)
+endif
+
+PATCHNAMESUFFIX:=$(subst :,_,$(PATCHNAMESUFFIX))
+
+# -------------------- targets
+
+failed_to_clean:
+	@echo "$(TEST_BASE)/Makefile.suite:45: Error: Failed to clean environment"
+	@echo "If there are any changing|failed*.flag files listed here:"
+	@ls -al $(TEST_FLAG_DIR)/changing*.flag $(TEST_FLAG_DIR)/failed*.flag
+	@echo "then some test_environment failed to setup or cleanup properly!"
+	@echo "[Note: removing flag-files now to avoid failure of next test-run]"
+	rm $(TEST_FLAG_DIR)/changing*.flag $(TEST_FLAG_DIR)/failed*.flag
+	@echo "$(TEST_BASE)/$(TEST_LOG_DIR):0: Hint: if no error is reported further below, you may also find the cause in these log-files"
+	@grep -Pin 'arb-backtrace|segv' $(TEST_BASE)/$(TEST_LOG_DIR)/*.log | grep -v 'GBK_install_SIGSEGV_handler'
+# do NOT fail here, otherwise reporter will get no chance to list failure-reason 
+
+cleanup_environment:
+	((./test_environment clean 2>&1) | $(ARBHOME)/SOURCE_TOOLS/asan2msg.pl) || $(MAKE) -f Makefile.suite failed_to_clean
+ifneq ($(SANITIZE),0)
+# delay until servers were able to append to log (before reporter scans logs)
+# cannot be ensured as they run asynchronous
+	sleep 1
+endif
+ifeq ($(VALGRIND_EXTERNAL),E)
+	./valgrind/arb_valgrind_logged WAIT
+endif
+
+tests_passed: cleanup_environment
+	@$(TEST_REPORTER) report $(TEST_LOG_DIR) $(SKIP_SLOW)
+
+update_patches_if_passed: tests_passed
+	@../SOURCE_TOOLS/arb_create_patch.sh $(PATCHNAMEBASE)$(PATCHNAMESUFFIX)
+	@../SOURCE_TOOLS/arb_cleanup_patches.pl $(PATCHNAMEBASE) $(PATCHES_KEEP_HOURS) $(PATCHES_MIN_KEPT) 
+
+unskip:
+	@(test -f skipslow.stamp && rm skipslow.stamp) || true
+
+init:
+	@echo "$(SEP) Running unit tests"
+	@-rm $(JUNIT_LOG)
+#ifeq ($(VALGRIND_EXTERNAL),E)
+	./valgrind/arb_valgrind_logged INIT "$(VALGRIND_EXTERNAL)" $(CHECK_LEAKS)
+#endif
+	(export CHECK_RESTRICT=$(RESTRICT_LIB); $(TEST_REPORTER) init $(TEST_LOG_DIR) $(SKIP_SLOW))
+
+cleanup: update_patches_if_passed
+	ls -al $(JUNIT_LOG)
+	@echo "$(SEP) All unit tests passed"
+
