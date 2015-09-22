@@ -1270,23 +1270,23 @@ void TEST_char_table() {
 
 void TEST_nucleotide_consensus() {
     const char *sequence[] = {
-        "-.AAAAAAAAAAcAAAAAAAAATTTTTTTTTTTTTTTTTAAAAAAAAgggggAAAAgAA",
-        "-.-AAAAAAAAAccAAAAAAAAggTTgTTTTgTTTTTTTcccAAAAAgggggAAAAgAA",
-        "-.--AAAAAAAAcccAAAAAAA-ggTggTTTggTTTTTTccccAAAAgggCCtAAAgAC",
-        "-.---AAAAAAAccccAAAAAA-ggggggTTgggTTTTTcccccAAAggCCC-tAACtC",
-        "-.----AAAAAAcccccAAAAA----ggggTggggTTTTGGGcccAAgCCCt-ttACtG",
-        "-.-----AAAAAccccccAAAA----ggggggggggTTgGGGGcccAcCCtt--tttCG",
-        "-.------AAAAcccccccAAA---------ggggggTgGGGGGccccCt----tt-gT",
-        "-.-------AAAccccccccAA---------ggggggggttGGGGccct------t--T",
-        "-.--------AAcccccccccA----------------gttGGGGGct-------t---",
-        "-.---------Acccccccccc----------------gtAGGGGGG------------",
+        "-.AAAAAAAAAAcAAAAAAAAATTTTTTTTTTTTTTTTTAAAAAAAAgggggAAAAgAA---",
+        "-.-AAAAAAAAAccAAAAAAAAggTTgTTTTgTTTTTTTcccAAAAAgggggAAAAgAA---",
+        "-.--AAAAAAAAcccAAAAAAA-ggTggTTTggTTTTTTccccAAAAgggCCtAAAgAC---",
+        "-.---AAAAAAAccccAAAAAA-ggggggTTgggTTTTTcccccAAAggCCC-tAACtC---",
+        "-.----AAAAAAcccccAAAAA----ggggTggggTTTTGGGcccAAgCCCt-ttACtG---",
+        "-.-----AAAAAccccccAAAA----ggggggggggTTgGGGGcccAcCCtt--tttCG---",
+        "-.------AAAAcccccccAAA---------ggggggTgGGGGGccccCt----tt-gT---",
+        "-.-------AAAccccccccAA---------ggggggggttGGGGccct------t--Tyyk",
+        "-.--------AAcccccccccA----------------gttGGGGGct-------t---ymm",
+        "-.---------Acccccccccc----------------gtAGGGGGG---------------",
     };
     const char *expected_consensus[] = {
-        "==----..aaaACccMMMMMaa----.....g.kkk.uKb.ssVVmmss...-.ww...", // default settings (see ConsensusBuildParams-ctor), gapbound=60, considbound=30, lower/upper=70/95
-        "==......aaaACccMMMMMaa.........g.kkk.uKb.ssVVmmss.....ww...", // countgaps=0
-        "==--aaaaaAAACCCMMMMMAA-g-uggkuuggKKKuuKBsSSVVMMSssc--awWga-", // countgaps=0,              considbound=26, lower=0, upper=75 (as described in #663)
-        "==---aaaaAAACCCMMMMMAA-g-uggkuuggKKKuuKBsSSVVMMSssc--awWga-", // countgaps=1, gapbound=70, considbound=26, lower=0, upper=75
-        "==---aaaaAAACCMMMMMMMA-gkugkkkugKKKKKuKBNSVVVVMSsssb-wwWswN", // countgaps=1, gapbound=70, considbound=20, lower=0, upper=75
+        "==----..aaaACccMMMMMaa----.....g.kkk.uKb.ssVVmmss...-.ww...---", // default settings (see ConsensusBuildParams-ctor), gapbound=60, considbound=30, lower/upper=70/95
+        "==......aaaACccMMMMMaa.........g.kkk.uKb.ssVVmmss.....ww......", // countgaps=0
+        "==--aaaaaAAACCCMMMMMAA-g-uggkuuggKKKuuKBsSSVVMMSssc--awWga----", // countgaps=0,              considbound=26, lower=0, upper=75 (as described in #663)
+        "==---aaaaAAACCCMMMMMAA-g-uggkuuggKKKuuKBsSSVVMMSssc--awWga----", // countgaps=1, gapbound=70, considbound=26, lower=0, upper=75
+        "==---aaaaAAACCMMMMMMMA-gkugkkkugKKKKKuKBNSVVVVMSsssb-wwWswN---", // countgaps=1, gapbound=70, considbound=20, lower=0, upper=75
     };
     const size_t seqlen         = strlen(sequence[0]);
     const int    sequenceCount  = ARRAY_ELEMS(sequence);
