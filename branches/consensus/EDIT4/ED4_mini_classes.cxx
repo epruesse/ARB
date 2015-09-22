@@ -574,7 +574,7 @@ void ED4_char_table::build_consensus_string_to(char *consensus_string, ExplicitR
                             unsigned char bchar = index_to_upperChar(j);
 
                             if (!ADPP_IS_ALIGN_CHARACTER(bchar)) {
-                                if (PERCENT(base[j], sequences) >= BK->considbound) { // @@@ should calc percent of non-gaps!
+                                if (PERCENT(base[j], bases) >= BK->considbound) {
                                     group_count[iupac::get_amino_group_for(bchar)] += base[j];
                                 }
                             }
@@ -1348,9 +1348,9 @@ void TEST_amino_consensus() {
     const char *expected_consensus[] = {
         "==----..aaaAhhh...bbb----.....i.....f...aaaAa.....--=...====", // default settings (see ConsensusBuildParams-ctor), gapbound=60, considbound=30, lower/upper=70/95
         "==......aaaAhhh...bbb.........i.....f...aaaAa.......=...====", // countgaps=0
-        "==ppaaaaaAAAHHhhbbbBBvivfiiiffiiiifffbbaaAAAaaaaabbb=pph====", // countgaps=0,              considbound=26, lower=0, upper=75
-        "==---aaaaAAAHHhhbbbBB-ivfiiiffiiiifffbbaaAAAaaaaabb-=pph====", // countgaps=1, gapbound=70, considbound=26, lower=0, upper=75
-        "==---aaaaAAAHHhhbbbBB-iifiiiffiiiifffbaaaAAAaaaaabb-=pah====", // countgaps=1, gapbound=70, considbound=20, lower=0, upper=75
+        "==aaaaaaaAAAHHhhbbbBBiiifiiiffiiiifffbbaaAAAaaaaabbb=pph====", // countgaps=0,              considbound=26, lower=0, upper=75
+        "==---aaaaAAAHHhhbbbBB-iifiiiffiiiifffbbaaAAAaaaaabb-=pph====", // countgaps=1, gapbound=70, considbound=26, lower=0, upper=75
+        "==---aaaaAAAHHhhbbbBB-iifiiiffiiiifffbaaaAAAaaaaabb-=aah====", // countgaps=1, gapbound=70, considbound=20, lower=0, upper=75
     };
     const size_t seqlen         = strlen(sequence[0]);
     const int    sequenceCount  = ARRAY_ELEMS(sequence);
