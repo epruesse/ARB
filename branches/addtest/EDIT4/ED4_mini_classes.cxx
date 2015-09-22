@@ -13,6 +13,7 @@
 #include "ed4_edit_string.hxx"
 #include "ed4_awars.hxx"
 #include "ed4_tools.hxx"
+#include "ed4_seq_colors.hxx"
 
 #include <aw_awar.hxx>
 #include <aw_root.hxx>
@@ -413,7 +414,15 @@ static ConsensusBuildParams *BK = NULL; // @@@ make member of ED4_char_table ?
 
 void ED4_consensus_definition_changed(AW_root*) {
     delete BK; BK = 0; // invalidate
-    ED4_ROOT->request_refresh_for_consensus_terminals();
+
+    ED4_reference *ref = ED4_ROOT->reference;
+    if (ref->reference_is_a_consensus()) {
+        ref->data_changed_cb(NULL);
+        ED4_ROOT->request_refresh_for_specific_terminals(ED4_L_SEQUENCE_STRING); // refresh all sequences
+    }
+    else {
+        ED4_ROOT->request_refresh_for_consensus_terminals();
+    }
 }
 
 static ARB_ERROR toggle_consensus_display(ED4_base *base, AW_CL show) {
@@ -536,7 +545,7 @@ void ED4_char_table::build_consensus_string_to(char *consensus_string, ExplicitR
                             int bchar = index_to_upperChar(j);
 
                             if (!ADPP_IS_ALIGN_CHARACTER(bchar)) {
-                                if (PERCENT(base[j],sequences) >= BK->considbound) { // @@@ should calc percent of non-gaps!
+                                if (PERCENT(base[j],bases) >= BK->considbound) {
 #if defined(DEBUG_CONSENSUS)
                                     if (!kcount) DUMPINT(BK->considbound);
 #endif
@@ -544,7 +553,7 @@ void ED4_char_table::build_consensus_string_to(char *consensus_string, ExplicitR
                                     kcount                    += base[j];
 
                                     DUMPINT(base[j]);
-                                    DUMPINT(PERCENT(base[j],sequences));
+                                    DUMPINT(PERCENT(base[j],bases));
                                     DUMPINT(kcount);
                                 }
                             }
@@ -582,7 +591,7 @@ void ED4_char_table::build_consensus_string_to(char *consensus_string, ExplicitR
                         kchar = iupac::get_amino_consensus_char(iupac::Amino_Group(bestGroup));
                     }
                 }
-                else {                   // IUPAC grouping is off
+                if (!kcount) {           // IUPAC grouping is either off OR didnt consider any bases
                     e4_assert(max_base); // expect at least one base to occur
                     e4_assert(max_base_idx >= 0);
 
@@ -591,7 +600,7 @@ void ED4_char_table::build_consensus_string_to(char *consensus_string, ExplicitR
                 }
 
                 e4_assert(kchar);
-                // e4_assert(kcount); // @@@ fails in unit tests
+                e4_assert(kcount);
                 e4_assert(kcount<=bases);
 
                 // show as upper or lower case ?
@@ -1244,11 +1253,11 @@ void TEST_char_table() {
         {
             char *consensus = tab.build_consensus_string();
             switch (seed) {
-                case 677741240: TEST_EXPECT_EQUAL(consensus, ".-s-NW..aWu.NnWYa.R.mgcNK.c..."); break;
-                case 721151648: TEST_EXPECT_EQUAL(consensus, "a.nn..K..-gU.RW-SNcau.WNNacn.u"); break;
-                case 345295160: TEST_EXPECT_EQUAL(consensus, "..-g...MSn...guc.n.u.R.n.-Ng.k"); break;
-                case 346389111: TEST_EXPECT_EQUAL(consensus, ".unAn...gN.kc-cS.Raun...Sa-gY."); break;
-                case 367171911: TEST_EXPECT_EQUAL(consensus, "na.Na.nu.c-.-NU.aYgn-nng-.Wa.M"); break;
+                case 677741240: TEST_EXPECT_EQUAL(consensus, "k-s-NW..aWu.NnWYa.R.mKcNK.c.rn"); break;
+                case 721151648: TEST_EXPECT_EQUAL(consensus, "aNnn..K..-gU.RW-SNcau.WNNacn.u"); break;
+                case 345295160: TEST_EXPECT_EQUAL(consensus, "yy-g..kMSn...NucyNny.Rnn.-Ng.k"); break;
+                case 346389111: TEST_EXPECT_EQUAL(consensus, ".unAn.y.nN.kc-cS.RauNm..Sa-kY."); break;
+                case 367171911: TEST_EXPECT_EQUAL(consensus, "na.NanNunc-.-NU.aYgn-nng-nWanM"); break;
                 default: TEST_EXPECT_EQUAL(consensus, "undef");
             }
             free(consensus);
@@ -1284,9 +1293,9 @@ void TEST_nucleotide_consensus() {
     const char *expected_consensus[] = {
         "==----..aaaACccMMMMMaa----.....g.kkk.uKb.ssVVmmss...-.ww...---", // default settings (see ConsensusBuildParams-ctor), gapbound=60, considbound=30, lower/upper=70/95
         "==......aaaACccMMMMMaa.........g.kkk.uKb.ssVVmmss.....ww......", // countgaps=0
-        "==--aaaaaAAACCCMMMMMAA-g-uggkuuggKKKuuKBsSSVVMMSssc--awWga----", // countgaps=0,              considbound=26, lower=0, upper=75 (as described in #663)
-        "==---aaaaAAACCCMMMMMAA-g-uggkuuggKKKuuKBsSSVVMMSssc--awWga----", // countgaps=1, gapbound=70, considbound=26, lower=0, upper=75
-        "==---aaaaAAACCMMMMMMMA-gkugkkkugKKKKKuKBNSVVVVMSsssb-wwWswN---", // countgaps=1, gapbound=70, considbound=20, lower=0, upper=75
+        "==aaaaaaaAAACCCMMMMMAAkgkugkkkuggKKKuuKBsSSVVMMSsssbwwwWswannn", // countgaps=0,              considbound=26, lower=0, upper=75 (as described in #663)
+        "==---aaaaAAACCCMMMMMAA-gkugkkkuggKKKuuKBsSSVVMMSsssb-wwWswa---", // countgaps=1, gapbound=70, considbound=26, lower=0, upper=75
+        "==---aaaaAAACCMMMMMMMA-kkkgkkkugKKKKKuKBNSVVVVMSsssb-wwWswN---", // countgaps=1, gapbound=70, considbound=20, lower=0, upper=75
     };
     const size_t seqlen         = strlen(sequence[0]);
     const int    sequenceCount  = ARRAY_ELEMS(sequence);
@@ -1339,9 +1348,9 @@ void TEST_amino_consensus() {
     const char *expected_consensus[] = {
         "==----..aaaAhhh...bbb----.....i.....f...aaaAa.....--=...====", // default settings (see ConsensusBuildParams-ctor), gapbound=60, considbound=30, lower/upper=70/95
         "==......aaaAhhh...bbb.........i.....f...aaaAa.......=...====", // countgaps=0
-        "==??aaaaaAAAHHhhbbbBB?i?fiiiffiiiifffbbaaAAAaaaaabbb=??h====", // countgaps=0,              considbound=26, lower=0, upper=75 // @@@ '?' are wrong
-        "==---aaaaAAAHHhhbbbBB-i?fiiiffiiiifffbbaaAAAaaaaabb-=??h====", // countgaps=1, gapbound=70, considbound=26, lower=0, upper=75 // @@@ '?' are wrong
-        "==---aaaaAAAHHhhbbbBB-iifiiiffiiiifffbaaaAAAaaaaabb-=?ah====", // countgaps=1, gapbound=70, considbound=20, lower=0, upper=75
+        "==ppaaaaaAAAHHhhbbbBBvivfiiiffiiiifffbbaaAAAaaaaabbb=pph====", // countgaps=0,              considbound=26, lower=0, upper=75
+        "==---aaaaAAAHHhhbbbBB-ivfiiiffiiiifffbbaaAAAaaaaabb-=pph====", // countgaps=1, gapbound=70, considbound=26, lower=0, upper=75
+        "==---aaaaAAAHHhhbbbBB-iifiiiffiiiifffbaaaAAAaaaaabb-=pah====", // countgaps=1, gapbound=70, considbound=20, lower=0, upper=75
     };
     const size_t seqlen         = strlen(sequence[0]);
     const int    sequenceCount  = ARRAY_ELEMS(sequence);

@@ -497,6 +497,7 @@ ED4_mini_classes.o: ed4_class.hxx
 ED4_mini_classes.o: ed4_defs.hxx
 ED4_mini_classes.o: ed4_edit_string.hxx
 ED4_mini_classes.o: ed4_search.hxx
+ED4_mini_classes.o: ed4_seq_colors.hxx
 ED4_mini_classes.o: ed4_tools.hxx
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/arb_core.h
