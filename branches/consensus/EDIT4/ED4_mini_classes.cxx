@@ -1277,23 +1277,25 @@ void TEST_char_table() {
     delete BK; BK = 0;
 }
 
-void TEST_consensus() {
+void TEST_nucleotide_consensus() {
     const char *sequence[] = {
-        "-.AAAAAAAAAAcAAAAAAAAATTTTTTTTTTTTTTTTTAAAAAAAAgggggAAAAgA---",
-        "-.-AAAAAAAAAccAAAAAAAAggTTgTTTTgTTTTTTTcccAAAAAgggggAAAAgA---",
-        "-.--AAAAAAAAcccAAAAAAA-ggTggTTTggTTTTTTccccAAAAgggCCtAAAgA---",
-        "-.---AAAAAAAccccAAAAAA-ggggggTTgggTTTTTcccccAAAggCCC-tAACt---",
-        "-.----AAAAAAcccccAAAAA----ggggTggggTTTTGGGcccAAgCCCt-ttACt---",
-        "-.-----AAAAAccccccAAAA----ggggggggggTTgGGGGcccAcCCtt--tttC---",
-        "-.------AAAAcccccccAAA---------ggggggTgGGGGGccccCt----tt-g---",
-        "-.-------AAAccccccccAA---------ggggggggttGGGGccct------t--yyk",
-        "-.--------AAcccccccccA----------------gttGGGGGct-------t--ymm",
-        "-.---------Acccccccccc----------------gtAGGGGGG--------------",
+        "-.AAAAAAAAAAcAAAAAAAAATTTTTTTTTTTTTTTTTAAAAAAAAgggggAAAAgAA---",
+        "-.-AAAAAAAAAccAAAAAAAAggTTgTTTTgTTTTTTTcccAAAAAgggggAAAAgAA---",
+        "-.--AAAAAAAAcccAAAAAAA-ggTggTTTggTTTTTTccccAAAAgggCCtAAAgAC---",
+        "-.---AAAAAAAccccAAAAAA-ggggggTTgggTTTTTcccccAAAggCCC-tAACtC---",
+        "-.----AAAAAAcccccAAAAA----ggggTggggTTTTGGGcccAAgCCCt-ttACtG---",
+        "-.-----AAAAAccccccAAAA----ggggggggggTTgGGGGcccAcCCtt--tttCG---",
+        "-.------AAAAcccccccAAA---------ggggggTgGGGGGccccCt----tt-gT---",
+        "-.-------AAAccccccccAA---------ggggggggttGGGGccct------t--Tyyk",
+        "-.--------AAcccccccccA----------------gttGGGGGct-------t---ymm",
+        "-.---------Acccccccccc----------------gtAGGGGGG---------------",
     };
     const char *expected_consensus[] = {
-        "==----..aaaACccMMMMMaa----.....g.kkk.uKb.ssVVmmss...-.ww..---", // default settings (see ConsensusBuildParams-ctor), gapbound=60, considbound=30, lower/upper=70/95
-        "==......aaaACccMMMMMaa.........g.kkk.uKb.ssVVmmss.....ww.....", // countgaps = 0
-        "==aaaaaaaAAACCCMMMMMAAkgkugkkkuggKKKuuKBsSSVVMMSsssbwwwWswnnn", // countgaps = 0, considbound=26, lower=0, upper=75 (as described in #663)
+        "==----..aaaACccMMMMMaa----.....g.kkk.uKb.ssVVmmss...-.ww...---", // default settings (see ConsensusBuildParams-ctor), gapbound=60, considbound=30, lower/upper=70/95
+        "==......aaaACccMMMMMaa.........g.kkk.uKb.ssVVmmss.....ww......", // countgaps=0
+        "==aaaaaaaAAACCCMMMMMAAkgkugkkkuggKKKuuKBsSSVVMMSsssbwwwWswannn", // countgaps=0,              considbound=26, lower=0, upper=75 (as described in #663)
+        "==---aaaaAAACCCMMMMMAA-gkugkkkuggKKKuuKBsSSVVMMSsssb-wwWswa---", // countgaps=1, gapbound=70, considbound=26, lower=0, upper=75
+        "==---aaaaAAACCMMMMMMMA-kkkgkkkugKKKKKuKBNSVVVVMSsssb-wwWswN---", // countgaps=1, gapbound=70, considbound=20, lower=0, upper=75
     };
     const size_t seqlen         = strlen(sequence[0]);
     const int    sequenceCount  = ARRAY_ELEMS(sequence);
@@ -1317,6 +1319,63 @@ void TEST_consensus() {
             case 0: break;                                                      // use default settings
             case 1: BK->countgaps   = 0; break;                                 // dont count gaps
             case 2: BK->considbound = 26; BK->lower = 0; BK->upper = 75; break; // settings from #663
+            case 3: BK->countgaps   = 1; BK->gapbound = 70; break;
+            case 4: BK->considbound = 20; break;
+            default: e4_assert(0); break;                                       // missing
+        }
+
+        char *consensus = tab.build_consensus_string();
+        TEST_EXPECT_EQUAL(consensus, expected_consensus[c]);
+        free(consensus);
+    }
+
+    delete BK; BK = 0;
+}
+
+void TEST_amino_consensus() {
+    const char *sequence[] = {
+        "-.ppppppppppQQQQQQQQQwwwwwwwwwwwwwwwwgggggggggggSSSe-PPP----",
+        "-.-pppppppppkQQQQQQQQVVwwVwwwwVwwwwwwSgggggggggSSSee-QPP----",
+        "-.--ppppppppkkQQQQQQQ-VVwVVwwwVVwwwwwSSgggggggSSSeee-KQP----",
+        "-.---pppppppkkkQQQQQQ-VVVVVVwwVVVwwwwSSSgggggSSSeee--LQQ----",
+        "-.----ppppppkkkkQQQQQ----VVVVwVVVVwwweSSSgggSSSeee---WKQ----",
+        "-.-----pppppkkkkkQQQQ----VVVVVVVVVVwweeSSSggSSeee-----KQ----",
+        "-.------ppppkkkkkkQQQ---------VVVVVVweeeSSSgSeee------LK----",
+        "-.-------pppkkkkkkkQQ---------VVVVVVVeeeeSSSeee-------LK----",
+        "-.--------ppkkkkkkkkQ----------------eeeeeSSee--------WK----",
+        "-.---------pkkkkkkkkk----------------eeeeeeSe---------WK----",
+    };
+    const char *expected_consensus[] = {
+        "==----..aaaAhhh...bbb----.....i.....f...aaaAa.....--=...====", // default settings (see ConsensusBuildParams-ctor), gapbound=60, considbound=30, lower/upper=70/95
+        "==......aaaAhhh...bbb.........i.....f...aaaAa.......=...====", // countgaps=0
+        "==ppaaaaaAAAHHhhbbbBBvivfiiiffiiiifffbbaaAAAaaaaabbb=pph====", // countgaps=0,              considbound=26, lower=0, upper=75
+        "==---aaaaAAAHHhhbbbBB-ivfiiiffiiiifffbbaaAAAaaaaabb-=pph====", // countgaps=1, gapbound=70, considbound=26, lower=0, upper=75
+        "==---aaaaAAAHHhhbbbBB-iifiiiffiiiifffbaaaAAAaaaaabb-=pah====", // countgaps=1, gapbound=70, considbound=20, lower=0, upper=75
+    };
+    const size_t seqlen         = strlen(sequence[0]);
+    const int    sequenceCount  = ARRAY_ELEMS(sequence);
+    const int    consensusCount = ARRAY_ELEMS(expected_consensus);
+
+    const char *gapChars = ".-";
+    ED4_char_table::initial_setup(gapChars, GB_AT_AA);
+    ED4_init_is_align_character(gapChars);
+
+    TEST_REJECT(BK); BK = new ConsensusBuildParams;
+
+    ED4_char_table tab(seqlen);
+    for (int s = 0; s<sequenceCount; ++s) {
+        e4_assert(strlen(sequence[s]) == seqlen);
+        tab.add(sequence[s], seqlen);
+    }
+
+    for (int c = 0; c<consensusCount; ++c) {
+        TEST_ANNOTATE(GBS_global_string("c=%i", c));
+        switch (c) {
+            case 0: break;                                                      // use default settings
+            case 1: BK->countgaps   = 0; break;                                 // dont count gaps
+            case 2: BK->considbound = 26; BK->lower = 0; BK->upper = 75; break; // settings from #663
+            case 3: BK->countgaps   = 1; BK->gapbound = 70; break;
+            case 4: BK->considbound = 20; break;
             default: e4_assert(0); break;                                       // missing
         }
 
