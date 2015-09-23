@@ -591,7 +591,7 @@ void ED4_char_table::build_consensus_string_to(char *consensus_string, ExplicitR
                         kchar = iupac::get_amino_consensus_char(iupac::Amino_Group(bestGroup));
                     }
                 }
-                if (!kcount || max_base>=kcount) { // IUPAC grouping is either off OR didnt consider enough bases
+                if (!kcount) {           // IUPAC grouping is either off OR didnt consider any bases
                     e4_assert(max_base); // expect at least one base to occur
                     e4_assert(max_base_idx >= 0);
 
@@ -1346,11 +1346,11 @@ void TEST_amino_consensus() {
         "-.---------pkkkkkkkkknnnnnqiiiii----------------eeeeeeSe---------WK-BZJ-",
     };
     const char *expected_consensus[] = {
-        "==----..pppPkkk...qqqnnBBBBIIIll----.....v.....w...aaaAa.....--=...=bB-=", // default settings (see ConsensusBuildParams-ctor), gapbound=60, considbound=30, lower/upper=70/95
-        "==......pppPkkk...qqqnnBBBBIIIll.........v.....w...aaaAa.......=...=bB.=", // countgaps=0
-        "==pppppppPPPKKkkqqqQQNNBBBBIIILLvvvwvvvwwvvvvwwweeaaAAAaassseee=ppk=BBi=", // countgaps=0,              considbound=26, lower=0, upper=75
-        "==---ppppPPPKKkkqqqQQNNBBBBIIILL-vvwvvvwwvvvvwwweeaaAAAaasssee-=ppk=BBi=", // countgaps=1, gapbound=70, considbound=26, lower=0, upper=75
-        "==---ppppPPPKKkkqqqQQNBBBBBIIIIL-vvwvvvwwvvvvwwweeaaAAAaaassee-=ppk=BBi=", // countgaps=1, gapbound=70, considbound=20, lower=0, upper=75
+        "==----..aaaAhhh...bbbbbBBBBIIIii----.....i.....f...aaaAa.....--=...=bB-=", // default settings (see ConsensusBuildParams-ctor), gapbound=60, considbound=30, lower/upper=70/95
+        "==......aaaAhhh...bbbbbBBBBIIIii.........i.....f...aaaAa.......=...=bB.=", // countgaps=0
+        "==aaaaaaaAAAHHhhbbbBBBBBBBBIIIIIiiifiiiffiiiifffbbaaAAAaaaaabbb=pph=BBi=", // countgaps=0,              considbound=26, lower=0, upper=75
+        "==---aaaaAAAHHhhbbbBBBBBBBBIIIII-iifiiiffiiiifffbbaaAAAaaaaabb-=pph=BBi=", // countgaps=1, gapbound=70, considbound=26, lower=0, upper=75
+        "==---aaaaAAAHHhhbbbBBBBBBBBIIIII-iifiiiffiiiifffbaaaAAAaaaaabb-=aah=BBi=", // countgaps=1, gapbound=70, considbound=20, lower=0, upper=75
     };
     const size_t seqlen         = strlen(sequence[0]);
     const int    sequenceCount  = ARRAY_ELEMS(sequence);
