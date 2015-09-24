@@ -34,16 +34,22 @@
  */
 
 #include "NT_local.h"
-#include <awt_sel_boxes.hxx>
-#include <arb_progress.h>
+
 #include <aw_root.hxx>
 #include <aw_msg.hxx>
 #include <aw_awar.hxx>
+
 #include <arbdbt.h>
+
 #include <arb_strbuf.h>
+#include <arb_defs.h>
+#include <arb_progress.h>
+
 #include <awt_config_manager.hxx>
-#include <consensus_config.h>
 #include <awt_misc.hxx>
+#include <awt_sel_boxes.hxx>
+
+#include <consensus_config.h>
 
 #define AWAR_MAX_FREQ_PREFIX      "tmp/CON_MAX_FREQ/"
 #define AWAR_CONSENSUS_PREFIX     "con/"
@@ -948,3 +954,160 @@ AW_window *AP_create_max_freq_window(AW_root *aw_root) {
     return aws;
 }
 
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#ifndef TEST_UNIT_H
+#include <test_unit.h>
+#endif
+
+static GBDATA *create_simple_seq_db(const char *aliname, const char *alitype, const char **sequence, int sequenceCount, int sequenceLength) {
+    GBDATA *gb_main = GB_open("nosuch.arb", "wc");
+
+    {
+        GB_transaction  ta(gb_main);
+        GBDATA         *gb_species_data = GBT_get_species_data(gb_main);
+        int             specCounter     = 0;
+
+        TEST_EXPECT_RESULT__NOERROREXPORTED(GBT_create_alignment(gb_main, aliname, sequenceLength, true, 6, alitype));
+
+        for (int s = 0; s<sequenceCount; ++s) {
+            GBDATA *gb_species = GBT_find_or_create_species_rel_species_data(gb_species_data, GBS_global_string("name%04i", ++specCounter));
+            GBDATA *gb_data    = GBT_add_data(gb_species, aliname, "data", GB_STRING);
+
+            TEST_EXPECT_EQUAL(strlen(sequence[s]), sequenceLength);
+            TEST_EXPECT_NO_ERROR(GB_write_string(gb_data, sequence[s]));
+        }
+    }
+
+#if 0
+    // save DB (to view data; should be inactive when committed)
+    char *dbname = GBS_global_string_copy("cons_%s.arb", alitype);
+    TEST_EXPECT_NO_ERROR(GB_save(gb_main, dbname, "a"));
+    free(dbname);
+#endif
+
+    return gb_main;
+}
+
+void TEST_nucleotide_consensus() {
+    // keep similar to ../EDIT4/ED4_mini_classes.cxx@TEST_nucleotide_consensus
+    const char *sequence[] = {
+        "-.AAAAAAAAAAcAAAAAAAAATTTTTTTTTTTTTTTTTAAAAAAAAgggggAAAAgAA---",
+        "-.-AAAAAAAAAccAAAAAAAAggTTgTTTTgTTTTTTTcccAAAAAgggggAAAAgAA---",
+        "-.--AAAAAAAAcccAAAAAAA-ggTggTTTggTTTTTTccccAAAAgggCCtAAAgAC---",
+        "-.---AAAAAAAccccAAAAAA-ggggggTTgggTTTTTcccccAAAggCCC-tAACtC---",
+        "-.----AAAAAAcccccAAAAA----ggggTggggTTTTGGGcccAAgCCCt-ttACtG---",
+        "-.-----AAAAAccccccAAAA----ggggggggggTTgGGGGcccAcCCtt--tttCG---",
+        "-.------AAAAcccccccAAA---------ggggggTgGGGGGccccCt----tt-gT---",
+        "-.-------AAAccccccccAA---------ggggggggttGGGGccct------t--Tyyk",
+        "-.--------AAcccccccccA----------------gttGGGGGct-------t---ymm",
+        "-.---------Acccccccccc----------------gtAGGGGGG---------------",
+    };
+    const char *expected_consensus[] = {
+        "==----..aaaACccMMMMMaa----.....g.kkk.uKb.ssVVmmss...-.ww...---", // default settings (see ConsensusBuildParams-ctor), gapbound=60, considbound=30, lower/upper=70/95
+        "==......aaaACccMMMMMaa.........g.kkk.uKb.ssVVmmss.....ww......", // countgaps=0
+        "==aaaaaaaAAACCCMMMMMAAkgkugkkkuggKKKuuKBsSSVVMMSsssbwwwWswannn", // countgaps=0,              considbound=26, lower=0, upper=75 (as described in #663)
+        "==---aaaaAAACCCMMMMMAA-gkugkkkuggKKKuuKBsSSVVMMSsssb-wwWswa---", // countgaps=1, gapbound=70, considbound=26, lower=0, upper=75
+        "==---aaaaAAACCMMMMMMMA-kkkgkkkugKKKKKuKBNSVVVVMSsssb-wwWswN---", // countgaps=1, gapbound=70, considbound=20, lower=0, upper=75
+    };
+    const size_t seqlen         = strlen(sequence[0]);
+    const int    sequenceCount  = ARRAY_ELEMS(sequence);
+    const int    consensusCount = ARRAY_ELEMS(expected_consensus);
+
+    // create DB
+    GB_shell    shell;
+    const char *aliname = "ali_nuc";
+    GBDATA     *gb_main = create_simple_seq_db(aliname, "rna", sequence, sequenceCount, seqlen);
+
+    ConsensusBuildParams BK;
+    for (int c = 0; c<consensusCount; ++c) {
+        TEST_ANNOTATE(GBS_global_string("c=%i", c));
+        switch (c) {
+            case 0: break;                                                     // use default settings
+            case 1: BK.countgaps   = 0; break;                                 // dont count gaps
+            case 2: BK.considbound = 26; BK.lower = 0; BK.upper = 75; break;   // settings from #663
+            case 3: BK.countgaps   = 1; BK.gapbound = 70; break;
+            case 4: BK.considbound = 20; break;
+            default: arb_assert(0); break;                                     // missing
+        }
+
+        {
+            GB_transaction  ta(gb_main);
+            const char     *sainame = "CONSENSUS";
+            CON_calculate(gb_main, BK, aliname, false, sainame, false); // @@@ return and check error
+
+            GBDATA     *gb_consensus = GBT_find_SAI(gb_main, sainame);
+            GBDATA     *gb_seq       = GBT_find_sequence(gb_consensus, aliname);
+            const char *consensus    = GB_read_char_pntr(gb_seq);
+
+            // TEST_EXPECT_EQUAL(consensus, expected_consensus[c]);
+            TEST_EXPECT_DIFFERENT(consensus, expected_consensus[c]); // @@@ activate check
+        }
+    }
+
+    GB_close(gb_main);
+}
+
+void TEST_amino_consensus() {
+    // keep similar to ../EDIT4/ED4_mini_classes.cxx@TEST_amino_consensus
+    const char *sequence[] = {
+        "-.ppppppppppQQQQQQQQQDDDDDELLLLLwwwwwwwwwwwwwwwwgggggggggggSSSe-PPP-DEL-",
+        "-.-pppppppppkQQQQQQQQnDDDDELLLLLVVwwVwwwwVwwwwwwSgggggggggSSSee-QPP-DEL-",
+        "-.--ppppppppkkQQQQQQQnnDDDELLLLL-VVwVVwwwVVwwwwwSSgggggggSSSeee-KQP-DEI-",
+        "-.---pppppppkkkQQQQQQnnnDDELLLLL-VVVVVVwwVVVwwwwSSSgggggSSSeee--LQQ-DQI-",
+        "-.----ppppppkkkkQQQQQnnnnDELLLLL----VVVVwVVVVwwweSSSgggSSSeee---WKQ-NQJ-",
+        "-.-----pppppkkkkkQQQQnnnnnqiLLLL----VVVVVVVVVVwweeSSSggSSeee-----KQ-NQJ-",
+        "-.------ppppkkkkkkQQQnnnnnqiiLLL---------VVVVVVweeeSSSgSeee------LK-NZJ-",
+        "-.-------pppkkkkkkkQQnnnnnqiiiLL---------VVVVVVVeeeeSSSeee-------LK-NZJ-",
+        "-.--------ppkkkkkkkkQnnnnnqiiiiL----------------eeeeeSSee--------WK-BZJ-",
+        "-.---------pkkkkkkkkknnnnnqiiiii----------------eeeeeeSe---------WK-BZJ-",
+    };
+    const char *expected_consensus[] = {
+        "==----..aaaAhhh...bbbbbBBBBIIIii----.....i.....f...aaaAa.....--=...=bB-=", // default settings (see ConsensusBuildParams-ctor), gapbound=60, considbound=30, lower/upper=70/95
+        "==......aaaAhhh...bbbbbBBBBIIIii.........i.....f...aaaAa.......=...=bB.=", // countgaps=0
+        "==aaaaaaaAAAHHhhbbbBBBBBBBBIIIIIiiifiiiffiiiifffbbaaAAAaaaaabbb=pph=BBi=", // countgaps=0,              considbound=26, lower=0, upper=75
+        "==---aaaaAAAHHhhbbbBBBBBBBBIIIII-iifiiiffiiiifffbbaaAAAaaaaabb-=pph=BBi=", // countgaps=1, gapbound=70, considbound=26, lower=0, upper=75
+        "==---aaaaAAAHHhhbbbBBBBBBBBIIIII-iifiiiffiiiifffbaaaAAAaaaaabb-=aah=BBi=", // countgaps=1, gapbound=70, considbound=20, lower=0, upper=75
+    };
+    const size_t seqlen         = strlen(sequence[0]);
+    const int    sequenceCount  = ARRAY_ELEMS(sequence);
+    const int    consensusCount = ARRAY_ELEMS(expected_consensus);
+
+    // create DB
+    GB_shell    shell;
+    const char *aliname = "ali_ami";
+    GBDATA     *gb_main = create_simple_seq_db(aliname, "ami", sequence, sequenceCount, seqlen);
+
+    ConsensusBuildParams BK;
+    for (int c = 0; c<consensusCount; ++c) {
+        TEST_ANNOTATE(GBS_global_string("c=%i", c));
+        switch (c) {
+            case 0: break;                                                     // use default settings
+            case 1: BK.countgaps   = 0; break;                                 // dont count gaps
+            case 2: BK.considbound = 26; BK.lower = 0; BK.upper = 75; break;   // settings from #663
+            case 3: BK.countgaps   = 1; BK.gapbound = 70; break;
+            case 4: BK.considbound = 20; break;
+            default: arb_assert(0); break;                                     // missing
+        }
+
+        {
+            GB_transaction  ta(gb_main);
+            const char     *sainame = "CONSENSUS";
+            CON_calculate(gb_main, BK, aliname, false, sainame, false); // @@@ return and check error
+
+            GBDATA     *gb_consensus = GBT_find_SAI(gb_main, sainame);
+            GBDATA     *gb_seq       = GBT_find_sequence(gb_consensus, aliname);
+            const char *consensus    = GB_read_char_pntr(gb_seq);
+
+            // TEST_EXPECT_EQUAL(consensus, expected_consensus[c]);
+            TEST_EXPECT_DIFFERENT(consensus, expected_consensus[c]); // @@@ activate check
+        }
+    }
+
+    GB_close(gb_main);
+}
+
+#endif // UNIT_TESTS
+
+// --------------------------------------------------------------------------------

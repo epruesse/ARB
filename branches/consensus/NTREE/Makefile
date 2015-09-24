@@ -246,6 +246,7 @@ AP_consensus.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/arb_core.h
+AP_consensus.o: $(ARBHOME)/INCLUDE/arb_defs.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/arb_error.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/arb_progress.h
@@ -276,6 +277,7 @@ AP_consensus.o: $(ARBHOME)/INCLUDE/gccver.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/smartptr.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/static_assert.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/test_global.h
+AP_consensus.o: $(ARBHOME)/INCLUDE/test_unit.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 AP_pos_var_pars.o: AP_pos_var_pars.h

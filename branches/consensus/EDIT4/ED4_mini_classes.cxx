@@ -1278,6 +1278,7 @@ void TEST_char_table() {
 }
 
 void TEST_nucleotide_consensus() {
+    // keep similar to ../NTREE/AP_consensus.cxx@TEST_nucleotide_consensus
     const char *sequence[] = {
         "-.AAAAAAAAAAcAAAAAAAAATTTTTTTTTTTTTTTTTAAAAAAAAgggggAAAAgAA---",
         "-.-AAAAAAAAAccAAAAAAAAggTTgTTTTgTTTTTTTcccAAAAAgggggAAAAgAA---",
@@ -1333,6 +1334,7 @@ void TEST_nucleotide_consensus() {
 }
 
 void TEST_amino_consensus() {
+    // keep similar to ../NTREE/AP_consensus.cxx@TEST_amino_consensus
     const char *sequence[] = {
         "-.ppppppppppQQQQQQQQQDDDDDELLLLLwwwwwwwwwwwwwwwwgggggggggggSSSe-PPP-DEL-",
         "-.-pppppppppkQQQQQQQQnDDDDELLLLLVVwwVwwwwVwwwwwwSgggggggggSSSee-QPP-DEL-",
