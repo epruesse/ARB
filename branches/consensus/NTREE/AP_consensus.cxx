@@ -96,25 +96,19 @@ static void CON_evaluatestatistic(char*& result, int **statistic, char **groupfl
     /*! calculates consensus from 'statistic'
      * @@@ doc params
      */
-    int row = 0; // @@@ fix locals
-    int j   = 0;
-    int groupfr[MAX_GROUPS]; // frequency of group
-    int highestfr;
-    int highestgr;
-
     arb_progress progress("calculating result", alignlength);
 
     result = (char *)GB_calloc(alignlength+1, 1);
 
     for (int column=0; column<alignlength; column++) {
         long numentries = 0;
-        for (row=0; statistic[row]; row++) numentries += statistic[row][column];
+        for (int row = 0; statistic[row]; ++row) numentries += statistic[row][column];
         if (numentries==0) {
-            result[column]='.';
+            result[column] = '.';
         }
         else {
             if (numentries-statistic[0][column]==0) {
-                result[column]='='; // 100 per cent `-` -> `=` 
+                result[column] = '='; // 100% gaps
             }
             else {
                 if (!BK.countgaps) {
@@ -126,25 +120,24 @@ static void CON_evaluatestatistic(char*& result, int **statistic, char **groupfl
                     result[column] = '-';
                 }
                 else {
-                    for (j=0; j<numgroups; j++) {
+                    int groupfr[MAX_GROUPS]; // frequency of group
+                    for (int j = 0; j<numgroups; ++j) {
                         groupfr[j] = 0;
                     }
 
-                    row=0;
-                    while (statistic[row]) {
+                    for (int row = 0; statistic[row]; ++row) {
                         if (statistic[row][column]*100 >= BK.considbound*numentries) {
-                            for (j=numgroups-1; j>=0; j--) {
+                            for (int j = numgroups-1; j>=0; --j) {
                                 if (groupflags[j][row]) {
                                     groupfr[j] += statistic[row][column];
                                 }
                             }
                         }
-                        row++;
                     }
 
-                    highestfr = 0;
-                    highestgr = 0;
-                    for (j=0; j<numgroups; j++) {
+                    int highestfr = 0;
+                    int highestgr = 0;
+                    for (int j=0; j<numgroups; ++j) {
                         if (groupfr[j] > highestfr) {
                             highestfr = groupfr[j];
                             highestgr = j;
