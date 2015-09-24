@@ -381,7 +381,7 @@ int ED4_bases_table::empty() const
 
 // we make static copies of the awars to avoid performance breakdown (BK_up_to_date is changed by callback ED4_consensus_definition_changed)
 
-struct ConsensusBuildParams {
+struct ConsensusBuildParams { // @@@ DRY vs ../NTREE/AP_consensus.cxx@ConsensusBuildParams
     int countgaps;
     int gapbound;
     int group;

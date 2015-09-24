@@ -72,6 +72,46 @@ enum {
     MAX_GROUPS  = 40
 };
 
+struct ConsensusBuildParams { // @@@ DRY; copy of ../EDIT4/ED4_mini_classes.cxx@ConsensusBuildParams
+    int countgaps; // @@@ -> bool
+    int gapbound;
+    int group; // @@@ -> bool
+    int considbound;
+    int upper;
+    int lower;
+
+    static void force_in_range(int low, int& val, int high) {
+        val = std::min(std::max(low, val), high);
+    }
+
+    void make_valid() {
+        force_in_range(0, gapbound,    100);
+        force_in_range(0, considbound, 100);
+        force_in_range(0, upper,       100);
+        force_in_range(0, lower,       100);
+    }
+
+    ConsensusBuildParams(AW_root *awr) {
+        countgaps   = strcmp(awr->awar(AWAR_CONSENSUS_COUNTGAPS)->read_char_pntr(), "on") == 0;
+        gapbound    = awr->awar(AWAR_CONSENSUS_GAPBOUND)->read_int();
+        group       = strcmp(awr->awar(AWAR_CONSENSUS_GROUP)->read_char_pntr(), "on") == 0;
+        considbound = awr->awar(AWAR_CONSENSUS_FCONSIDBOUND)->read_float();
+        upper       = awr->awar(AWAR_CONSENSUS_FUPPER)->read_float();
+        lower       = awr->awar(AWAR_CONSENSUS_LOWER)->read_int();
+    }
+#if defined(UNIT_TESTS) // UT_DIFF
+    ConsensusBuildParams() {
+        // (should) use awar defaults // @@@ check
+        countgaps   = 1;
+        gapbound    = 60;
+        group       = 1;
+        considbound = 30;
+        upper       = 95;
+        lower       = 70;
+    }
+#endif
+};
+
 /* -----------------------------------------------------------------
  * Function:                     CON_evaluatestatistic
  *
@@ -289,7 +329,7 @@ static int CON_makegrouptable(char **gf, char *groupnames,
  */
 
 
-static long CON_makestatistic(int **statistic, int *convtable, char *align, int onlymarked) {
+static long CON_makestatistic(int **statistic, int *convtable, const char *align, int onlymarked) {
     long maxalignlen = GBT_get_alignment_len(GLOBAL.gb_main, align);
 
     int nrofspecies;
@@ -401,7 +441,7 @@ static void CON_maketables(int *convtable, int **statistic, long maxalignlen, in
 }
 
 // export results into database
-static GB_ERROR CON_export(char *savename, char *align, int **statistic, char *result, int *convtable, char *groupnames, int onlymarked, long nrofspecies, long maxalignlen, int countgaps, int gapbound, int groupallowed, double fconsidbound, double fupper, int lower, int resultiscomplex) {
+static GB_ERROR CON_export(const char *savename, const char *align, int **statistic, char *result, int *convtable, char *groupnames, int onlymarked, long nrofspecies, long maxalignlen, int countgaps, int gapbound, int groupallowed, double fconsidbound, double fupper, int lower, int resultiscomplex) {
     const char *off = "off";
     const char *on  = "on";
 
@@ -589,11 +629,9 @@ static void CON_cleartables(int **statistic, int isamino) {
  *                               CON_evaluatestatistic
  * -----------------------------------------------------------------
  */
-static void CON_calculate_cb(AW_window *aw)
-{
-    AW_root  *awr   = aw->get_root();
-    char     *align = awr->awar(AWAR_CONSENSUS_ALIGNMENT)->read_string();
-    GB_ERROR  error = 0;
+
+static void CON_calculate(const ConsensusBuildParams& BK, const char *align, bool onlymarked, const char *sainame, bool resultiscomplex) {
+    GB_ERROR error = 0;
 
     GB_push_transaction(GLOBAL.gb_main);
 
@@ -601,21 +639,7 @@ static void CON_calculate_cb(AW_window *aw)
     if (maxalignlen <= 0) error = GB_export_errorf("alignment '%s' doesn't exist", align);
 
     if (!error) {
-        int isamino         = GBT_is_alignment_protein(GLOBAL.gb_main, align);
-        int onlymarked      = 1;
-        int resultiscomplex = 1;
-
-        {
-            char *marked        = awr->awar(AWAR_CONSENSUS_SPECIES)->read_string();
-            char *complexresult = awr->awar(AWAR_CONSENSUS_RESULT)->read_string();
-
-            if (strcmp("marked", marked)        != 0) onlymarked = 0;
-            if (strcmp("complex", complexresult) != 0) resultiscomplex = 0;
-
-            free(complexresult);
-            free(marked);
-        }
-
+        int isamino = GBT_is_alignment_protein(GLOBAL.gb_main, align); // @@@ -> bool
 
         // creating the table for characters and allocating memory for 'statistic'
         int *statistic[MAX_AMINOS+1];
@@ -625,56 +649,24 @@ static void CON_calculate_cb(AW_window *aw)
         // filling the statistic table
         arb_progress progress("Calculating consensus");
 
-        long   nrofspecies = CON_makestatistic(statistic, convtable, align, onlymarked);
-        double fupper      = awr->awar(AWAR_CONSENSUS_FUPPER)->read_float();
-        int    lower       = (int)awr->awar(AWAR_CONSENSUS_LOWER)->read_int();
+        long nrofspecies = CON_makestatistic(statistic, convtable, align, onlymarked);
 
-        if (fupper>100.0)   fupper = 100;
-        if (fupper<0)       fupper = 0;
-        if (lower<0)        lower  = 0;
-
-        if (lower>fupper) {
+        if (BK.lower>BK.upper) {
             error = "fault: lower greater than upper";
         }
         else {
-
-            double fconsidbound                = awr->awar(AWAR_CONSENSUS_FCONSIDBOUND)->read_float();
-            if (fconsidbound>100) fconsidbound = 100;
-            if (fconsidbound<0)   fconsidbound = 0;
-
-            int gapbound               = (int)awr->awar(AWAR_CONSENSUS_GAPBOUND)->read_int();
-            if (gapbound<0)   gapbound = 0;
-            if (gapbound>100) gapbound = 100;
-
-            int groupallowed, countgap;
-            {
-                char *group     = awr->awar(AWAR_CONSENSUS_GROUP)->read_string();
-                char *countgaps = awr->awar(AWAR_CONSENSUS_COUNTGAPS)->read_string();
-
-                groupallowed = strcmp("on", group) == 0;
-                countgap     = strcmp("on", countgaps) == 0;
-
-                free(countgaps);
-                free(group);
-            }
-
             // creating the table for groups
             char *groupflags[40];
             char  groupnames[40];
-            int   numgroups = CON_makegrouptable(groupflags, groupnames, isamino, groupallowed);
+            int   numgroups = CON_makegrouptable(groupflags, groupnames, isamino, BK.group);
 
             // calculate and export the result strings
             char *result = 0;
-            CON_evaluatestatistic(result, statistic, groupflags, groupnames, (int)maxalignlen, fupper, lower, fconsidbound, gapbound, countgap, numgroups);
+            CON_evaluatestatistic(result, statistic, groupflags, groupnames, (int)maxalignlen, BK.upper, BK.lower, BK.considbound, BK.gapbound, BK.countgaps, numgroups);
 
-            char *savename = awr->awar(AWAR_CONSENSUS_NAME)->read_string();
-
-            error = CON_export(savename, align, statistic, result, convtable, groupnames,
-                               onlymarked, nrofspecies, maxalignlen, countgap, gapbound, groupallowed,
-                               fconsidbound, fupper, lower, resultiscomplex);
+            error = CON_export(sainame, align, statistic, result, convtable, groupnames, onlymarked, nrofspecies, maxalignlen, BK.countgaps, BK.gapbound, BK.group, BK.considbound, BK.upper, BK.lower, resultiscomplex);
 
             // freeing allocated memory
-            free(savename);
             free(result);
             for (int i=0; i<MAX_GROUPS; i++) free(groupflags[i]);
         }
@@ -682,8 +674,30 @@ static void CON_calculate_cb(AW_window *aw)
         CON_cleartables(statistic, isamino);
     }
 
-    free(align);
     GB_end_transaction_show_error(GLOBAL.gb_main, error, aw_message);
+}
+
+static void CON_calculate_cb(AW_window *aw) {
+    AW_root *awr             = aw->get_root();
+    char    *align           = awr->awar(AWAR_CONSENSUS_ALIGNMENT)->read_string();
+    char    *sainame         = awr->awar(AWAR_CONSENSUS_NAME)->read_string();
+    bool     onlymarked      = strcmp(awr->awar(AWAR_CONSENSUS_SPECIES)->read_char_pntr(), "marked") == 0;
+    bool     resultiscomplex = strcmp(awr->awar(AWAR_CONSENSUS_RESULT)->read_char_pntr(), "complex") == 0;
+
+    ConsensusBuildParams BK(awr);
+
+    {
+#if defined(ASSERTION_USED)
+        GB_transaction ta(GLOBAL.gb_main);
+        LocallyModify<bool> denyAwarReads(AW_awar::deny_read, true);
+        LocallyModify<bool> denyAwarWrites(AW_awar::deny_write, true);
+#endif
+
+        CON_calculate(BK, align, onlymarked, sainame, resultiscomplex);
+    }
+
+    free(sainame);
+    free(align);
 }
 
 void AP_create_consensus_var(AW_root *aw_root, AW_default aw_def)
@@ -931,6 +945,6 @@ AW_window *AP_create_max_freq_window(AW_root *aw_root) {
 
     GB_pop_transaction(GLOBAL.gb_main);
 
-    return (AW_window *)aws;
+    return aws;
 }
 
