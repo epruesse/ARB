@@ -123,39 +123,34 @@ static char *CON_evaluatestatistic(const int *const*statistic, const char *const
                     result[column] = '-';
                 }
                 else {
-                    int groupfr[MAX_GROUPS]; // frequency of group
+                    int group_freq[MAX_GROUPS]; // frequency of group
                     for (int j = 0; j<numgroups; ++j) {
-                        groupfr[j] = 0;
+                        group_freq[j] = 0;
                     }
 
                     for (int row = 1; statistic[row]; ++row) {
                         if (statistic[row][column]*100 >= BK.considbound*numentries) {
-                            for (int j = numgroups-1; j>=0; --j) {
+                            for (int j = numgroups-1; j>=0; --j) { // @@@ why reverse?
                                 if (groupflags[j][row]) {
-                                    groupfr[j] += statistic[row][column];
+                                    group_freq[j] += statistic[row][column];
                                 }
                             }
                         }
                     }
 
-                    int highestfr = 0;
-                    int highestgr = 0;
-                    for (int j=0; j<numgroups; ++j) {
-                        if (groupfr[j] > highestfr) {
-                            highestfr = groupfr[j];
-                            highestgr = j;
+                    int maxFreq       = 0;
+                    int maxFreq_group = 0;
+                    for (int j = 0; j<numgroups; ++j) {
+                        if (group_freq[j] > maxFreq) {
+                            maxFreq       = group_freq[j];
+                            maxFreq_group = j;
                         }
                     }
 
-                    if ((highestfr*100/numentries) >= BK.upper) {
-                        result[column] = groupnames[highestgr];
-                    }
-                    else if ((highestfr*100/numentries) >= BK.lower) {
-                        result[column] = tolower(groupnames[highestgr]);
-                    }
-                    else {
-                        result[column] = '.';
-                    }
+                    int percent = maxFreq*100/numentries;
+                    if      (percent >= BK.upper) result[column] = groupnames[maxFreq_group];
+                    else if (percent >= BK.lower) result[column] = tolower(groupnames[maxFreq_group]);
+                    else                          result[column] = '.';
                 }
             }
         }
