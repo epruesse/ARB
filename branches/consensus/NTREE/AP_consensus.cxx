@@ -172,7 +172,7 @@ static void CON_evaluatestatistic(char*& result, int **statistic, char **groupfl
 
 
 
-static int CON_makegrouptable(char **gf, char *groupnames, int isamino, int groupallowed) {
+static int CON_makegrouptable(char **const gf, char *const groupnames, bool isamino, bool groupallowed) {
     /*! initialize group tables
      * 'gf' will be allocated and initialized:
      *      'gf[GROUP][CTV] == 1' means: all 'c' with 'convtable[c] == CTV' are members of group 'GROUP'
@@ -198,9 +198,9 @@ static int CON_makegrouptable(char **gf, char *groupnames, int isamino, int grou
             gf[14][BAS_C]=1; gf[14][BAS_G]=1; gf[14][BAS_T]=1;
             gf[15][BAS_A]=1; gf[15][BAS_C]=1;
             gf[15][BAS_G]=1; gf[15][BAS_T]=1;
-            return (16);
+            return 16;
         }
-        return (5);
+        return 5;
     }
     else {
         strcpy(groupnames, "-ABCDEFGHI*KLMN.PQRST.VWXYZADHIF\0");
@@ -209,28 +209,24 @@ static int CON_makegrouptable(char **gf, char *groupnames, int isamino, int grou
 
 #define SC(x, P) gf[x][P-'A'+1] = 1
         if (groupallowed) {
-            SC(27, 'P'); SC(27, 'A'); SC(27, 'G'); SC(27, 'S'); SC(27, 'T');
-            // PAGST
-            SC(28, 'Q'); SC(28, 'N'); SC(28, 'E'); SC(28, 'D'); SC(28, 'B');
-            SC(28, 'Z');   // QNEDBZ
-            SC(29, 'H'); SC(29, 'K'); SC(29, 'R');
-            // HKR
-            SC(30, 'L'); SC(30, 'I'); SC(30, 'V'); SC(30, 'M');
-            // LIVM
-            SC(31, 'F'); SC(31, 'Y'); SC(31, 'W');
-            // FYW
-            return (32);
+            SC(27, 'P'); SC(27, 'A'); SC(27, 'G'); SC(27, 'S'); SC(27, 'T');                // PAGST
+            SC(28, 'Q'); SC(28, 'N'); SC(28, 'E'); SC(28, 'D'); SC(28, 'B'); SC(28, 'Z');   // QNEDBZ
+            SC(29, 'H'); SC(29, 'K'); SC(29, 'R');                                          // HKR
+            SC(30, 'L'); SC(30, 'I'); SC(30, 'V'); SC(30, 'M');                             // LIVM
+            SC(31, 'F'); SC(31, 'Y'); SC(31, 'W');                                          // FYW
+
+            return 32;
         }
 #undef SC
-        return (27);
+        return 27;
     }
 }
 
 
-static long CON_makestatistic(GBDATA *gb_main, int **statistic, int *convtable, const char *align, int onlymarked) { // @@@ rename -> countAndGroupChars; fix param types (const, bool)
+static long CON_makestatistic(GBDATA *gb_main, int *const*const statistic, const int *convtable, const char *aliname, bool onlymarked) {
     /*! read sequence data and fill into 'statistic'
      */
-    long maxalignlen = GBT_get_alignment_len(gb_main, align);
+    long maxalignlen = GBT_get_alignment_len(gb_main, aliname);
 
     int nrofspecies;
     if (onlymarked) {
@@ -252,15 +248,14 @@ static long CON_makestatistic(GBDATA *gb_main, int **statistic, int *convtable, 
     }
 
     while (gb_species) {
-        GBDATA *alidata = GBT_find_sequence(gb_species, align);
+        GBDATA *alidata = GBT_find_sequence(gb_species, aliname);
         if (alidata) {
             unsigned char        c;
             const unsigned char *data = (const unsigned char *)GB_read_char_pntr(alidata);
 
             int i = 0;
             while ((c=data[i])) {
-                if ((c=='-') || ((c>='a')&&(c<='z')) || ((c>='A')&&(c<='Z'))
-                    || (c=='*')) {
+                if ((c=='-') || ((c>='a')&&(c<='z')) || ((c>='A')&&(c<='Z')) || (c=='*')) {
                     if (i > maxalignlen) break;
                     statistic[convtable[c]][i] += 1;
                 }
@@ -278,7 +273,7 @@ static long CON_makestatistic(GBDATA *gb_main, int **statistic, int *convtable, 
     return nrofspecies;
 }
 
-static void CON_maketables(int *convtable, int **statistic, long maxalignlen, int isamino) {
+static void CON_maketables(int *const convtable, int **const statistic, long maxalignlen, bool isamino) {
     /*! initialize tables 'convtable' and 'statistic'.
      * convtable[c] == k means: character 'c' will (later) be counted in row 'k' of 'statistic'
      */
@@ -313,7 +308,7 @@ static void CON_maketables(int *convtable, int **statistic, long maxalignlen, in
     }
 }
 
-static GB_ERROR CON_export(GBDATA *gb_main, const char *savename, const char *align, int **statistic, char *result, int *convtable, char *groupnames, int onlymarked, long nrofspecies, long maxalignlen, int countgaps, int gapbound, int groupallowed, double fconsidbound, double fupper, int lower, int resultiscomplex) {
+static GB_ERROR CON_export(GBDATA *gb_main, const char *savename, const char *align, const int *const*statistic, const char *result, const int *const convtable, const char *groupnames, bool onlymarked, long nrofspecies, long maxalignlen, bool countgaps, int gapbound, bool groupallowed, double fconsidbound, double fupper, int lower, bool resultiscomplex) {
     /*! writes consensus SAI to DB
      * @@@ document params
      */
@@ -454,7 +449,7 @@ static GB_ERROR CON_export(GBDATA *gb_main, const char *savename, const char *al
 }
 
 
-static void CON_cleartables(int **statistic, int isamino) {
+static void CON_cleartables(int **const statistic, bool isamino) {
     int i;
     int no_of_tables = isamino ? MAX_AMINOS : MAX_BASES;
 
