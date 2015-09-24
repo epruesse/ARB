@@ -1005,11 +1005,11 @@ void TEST_nucleotide_consensus() {
         "-.---------Acccccccccc----------------gtAGGGGGG---------------",
     };
     const char *expected_consensus[] = {
-        "==----..aaaACccMMMMMaa----.....g.kkk.uKb.ssVVmmss...-.ww...---", // default settings (see ConsensusBuildParams-ctor), gapbound=60, considbound=30, lower/upper=70/95
-        "==......aaaACccMMMMMaa.........g.kkk.uKb.ssVVmmss.....ww......", // countgaps=0
-        "==aaaaaaaAAACCCMMMMMAAkgkugkkkuggKKKuuKBsSSVVMMSsssbwwwWswannn", // countgaps=0,              considbound=26, lower=0, upper=75 (as described in #663)
-        "==---aaaaAAACCCMMMMMAA-gkugkkkuggKKKuuKBsSSVVMMSsssb-wwWswa---", // countgaps=1, gapbound=70, considbound=26, lower=0, upper=75
-        "==---aaaaAAACCMMMMMMMA-kkkgkkkugKKKKKuKBNSVVVVMSsssb-wwWswN---", // countgaps=1, gapbound=70, considbound=20, lower=0, upper=75
+        "=.---...aaaACccMMMMMaa-........g.kkk.uKb.ssVVmmss...-.ww...---", // default settings (see ConsensusBuildParams-ctor), gapbound=60, considbound=30, lower/upper=70/95
+        "=.AAAAAAAAAACccMMMMMaaKgKugKKKuggKKKuuKb.ssVVmmssssBWWWWs..MMM", // countgaps=0
+        "=.AAAAAAAAAACCCMMMMMAAKGKUGKKKUGGKKKUUKBsSSVVMMSSSSBWWWWSw-MMM", // countgaps=0,              considbound=26, lower=0, upper=75 (as described in #663)
+        "=.--aaaaaAAACCCMMMMMAA-g-uggkuuggKKKuuKBsSSVVMMSssc--awWga----", // countgaps=1, gapbound=70, considbound=26, lower=0, upper=75
+        "=.--aaaaaAAACCMMMMMMMA-gkugkkkugKKKKKuKBNSVVVVMSsssbawwWswN---", // countgaps=1, gapbound=70, considbound=20, lower=0, upper=75
     };
     const size_t seqlen         = strlen(sequence[0]);
     const int    sequenceCount  = ARRAY_ELEMS(sequence);
@@ -1041,8 +1041,7 @@ void TEST_nucleotide_consensus() {
             GBDATA     *gb_seq       = GBT_find_sequence(gb_consensus, aliname);
             const char *consensus    = GB_read_char_pntr(gb_seq);
 
-            // TEST_EXPECT_EQUAL(consensus, expected_consensus[c]);
-            TEST_EXPECT_DIFFERENT(consensus, expected_consensus[c]); // @@@ activate check
+            TEST_EXPECT_EQUAL(consensus, expected_consensus[c]);
         }
     }
 
@@ -1064,11 +1063,11 @@ void TEST_amino_consensus() {
         "-.---------pkkkkkkkkknnnnnqiiiii----------------eeeeeeSe---------WK-BZJ-",
     };
     const char *expected_consensus[] = {
-        "==----..aaaAhhh...bbbbbBBBBIIIii----.....i.....f...aaaAa.....--=...=bB-=", // default settings (see ConsensusBuildParams-ctor), gapbound=60, considbound=30, lower/upper=70/95
-        "==......aaaAhhh...bbbbbBBBBIIIii.........i.....f...aaaAa.......=...=bB.=", // countgaps=0
-        "==aaaaaaaAAAHHhhbbbBBBBBBBBIIIIIiiifiiiffiiiifffbbaaAAAaaaaabbb=pph=BBi=", // countgaps=0,              considbound=26, lower=0, upper=75
-        "==---aaaaAAAHHhhbbbBBBBBBBBIIIII-iifiiiffiiiifffbbaaAAAaaaaabb-=pph=BBi=", // countgaps=1, gapbound=70, considbound=26, lower=0, upper=75
-        "==---aaaaAAAHHhhbbbBBBBBBBBIIIII-iifiiiffiiiifffbaaaAAAaaaaabb-=aah=BBi=", // countgaps=1, gapbound=70, considbound=20, lower=0, upper=75
+        "=.---...pppPkkk...qqqnnDDDDIIIll-........v.....w...aaaAa......-=...=dD.=", // default settings (see ConsensusBuildParams-ctor), gapbound=60, considbound=30, lower/upper=70/95
+        "=.PPPPPPPPPPkkk...qqqnnDDDDIIIll.v.wv...wvv...ww...aaaAa.....eE=...=dD.=", // countgaps=0
+        "=.PPPPPPPPPPKKkkkqqQQNNDDDDIIILLvVvWVvvwWVVvvwWWeeaaAAAaaeeeeEE=--k=DD*=", // countgaps=0,              considbound=26, lower=0, upper=75
+        "=.--pppppPPPKKkkkqqQQNNDDDDIIILL-v-wvvvwwvvvvwwweeaaAAAaaeeeeee=--k=DD*=", // countgaps=1, gapbound=70, considbound=26, lower=0, upper=75
+        "=.--pppppPPPKKkkkqqQQNDDDDDIIIIL-vvwvvvwwvvvvwwweeaaAAAaaaeeeee=-kk=DD*=", // countgaps=1, gapbound=70, considbound=20, lower=0, upper=75
     };
     const size_t seqlen         = strlen(sequence[0]);
     const int    sequenceCount  = ARRAY_ELEMS(sequence);
@@ -1100,8 +1099,7 @@ void TEST_amino_consensus() {
             GBDATA     *gb_seq       = GBT_find_sequence(gb_consensus, aliname);
             const char *consensus    = GB_read_char_pntr(gb_seq);
 
-            // TEST_EXPECT_EQUAL(consensus, expected_consensus[c]);
-            TEST_EXPECT_DIFFERENT(consensus, expected_consensus[c]); // @@@ activate check
+            TEST_EXPECT_EQUAL(consensus, expected_consensus[c]);
         }
     }
 
