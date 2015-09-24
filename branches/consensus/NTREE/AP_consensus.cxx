@@ -1,37 +1,11 @@
-/* -----------------------------------------------------------------
- * Project:                       ARB
- *
- * Module:                        consensus [abbrev.:CON]
- *
- * Exported Classes:              x
- *
- * Global Functions:              x
- *
- * Global Variables:              AWARS (see CON_calculate_cb)
- *
- * Global Structures:             x
- *
- * Private Classes:               .
- *
- * Private Functions:             .
- *
- * Private Variables:             .
- *
- * Dependencies:       Needs consens.fig and CON_groups.fig
- *
- * Description: This module calculates the consensus of sequences of
- *              bases or amino acids. The result can be one or more lines
- *              of characters and it is written to the extended data of
- *              the alignment.
- *
- * Integration Notes: To use this module the main function must have a
- *                    callback to the function
- *                    AW_window *AP_open_consensus_window( AW_root *aw_root)
- *                    and the function void AP_create_consensus_var
- *                    (AW_root *aw_root, AW_default aw_def) has to be called.
- *
- * -----------------------------------------------------------------
- */
+// ================================================================= //
+//                                                                   //
+//   File      : AP_consensus.cxx                                    //
+//   Purpose   : calculate consensus SAIs                            //
+//                                                                   //
+//   http://www.arb-home.de/                                         //
+//                                                                   //
+// ================================================================= //
 
 #include "NT_local.h"
 
@@ -118,36 +92,10 @@ struct ConsensusBuildParams { // @@@ DRY; copy of ../EDIT4/ED4_mini_classes.cxx@
 #endif
 };
 
-/* -----------------------------------------------------------------
- * Function:                     CON_evaluatestatistic
- *
- * Arguments:                    int **statistic,char **groupflags,
- *                               char *groupnames
- * Returns:                      char *result
- *
- * Description:       This function creates one or more result strings out
- *                    of table statistic. Memory for result is allocated
- *                    and later freed in function CON_calculate_cb
- *
- * NOTE:              Usage of groupflags and groupnames see function
- *                    CON_makegrouptable.
- *
- * Global Variables referenced:  .
- *
- * Global Variables modified:    x
- *
- * AWARs referenced:             .
- *
- * AWARs modified:               x
- *
- * Dependencies:                 Always check that behavior is identical to that
- *                               of ED4_char_table::build_consensus_string()
- * -----------------------------------------------------------------
- */
-static void CON_evaluatestatistic(char   *&result, int **statistic, char **groupflags,
-                           char    *groupnames, int alignlength, double fupper, int lower,
-                           double   fconsidbound, int gapbound, int countgap, int numgroups)
-{
+static void CON_evaluatestatistic(char*& result, int **statistic, char **groupflags, char *groupnames, int alignlength, double fupper, int lower, double fconsidbound, int gapbound, int countgap, int numgroups) {
+    /*! calculates consensus from 'statistic'
+     * @@@ doc params
+     */
     int row=0;
     int j = 0;
     int groupfr[MAX_GROUPS]; // frequency of group
@@ -224,36 +172,12 @@ static void CON_evaluatestatistic(char   *&result, int **statistic, char **group
 
 
 
-/* -----------------------------------------------------------------
- * Function:                     CON_makegrouptable
- *
- * Arguments:                    .
- *
- * Returns:                      char **gf [groupflags],char *groupnames
- *
- * Description:       Creates table groupflags that is used in function
- *                    CON_evaluatestatistic. E.g. gf[10][3]=1 means, that
- *                    all characters c with convtable[c]==3 are members
- *                    of group 10.
- *                    Table groupnames is also created.
- *                    E.g. c=groupnames[5] gives abbrev of 5th group.
- *
- * NOTE:                         .
- *
- * Global Variables referenced:  .
- *
- * Global Variables modified:    x
- *
- * AWARs referenced:             .
- *
- * AWARs modified:               x
- *
- * Dependencies:                 .
- * -----------------------------------------------------------------
- */
-static int CON_makegrouptable(char **gf, char *groupnames,
-                       int isamino, int groupallowed)
-{
+static int CON_makegrouptable(char **gf, char *groupnames, int isamino, int groupallowed) {
+    /*! initialize group tables
+     * 'gf' will be allocated and initialized:
+     *      'gf[GROUP][CTV] == 1' means: all 'c' with 'convtable[c] == CTV' are members of group 'GROUP'
+     * 'groupnames' will be filled with groups "names" ( = single character codes)
+     */
     for (int j=0; j<MAX_GROUPS; j++) {
         gf[j]=(char *)GB_calloc(MAX_GROUPS, 1); }
 
@@ -306,36 +230,9 @@ static int CON_makegrouptable(char **gf, char *groupnames,
 }
 
 
-/* -----------------------------------------------------------------
- * Function:                     CON_makestatistic
- *
- * Arguments:                    int *convtable
- *
- * Returns:                      int **statistic
- *
- * Description:       This function fills the table statistic, that is used
- *                    later by function CON_evaluatestatistic. The filling
- *                    is done depending on table convtable, that is created
- *                    in function CON_maketables. Memory for statistic is
- *                    allocated also in function CON_maketables.
- *
- *
- * NOTE:                         .
- *
- * Global Variables referenced:  .
- *
- * Global Variables modified:    x
- *
- * AWARs referenced:             .
- *
- * AWARs modified:               x
- *
- * Dependencies:                 .
- * -----------------------------------------------------------------
- */
-
-
-static long CON_makestatistic(GBDATA *gb_main, int **statistic, int *convtable, const char *align, int onlymarked) {
+static long CON_makestatistic(GBDATA *gb_main, int **statistic, int *convtable, const char *align, int onlymarked) { // @@@ rename -> countAndGroupChars; fix param types (const, bool)
+    /*! read sequence data and fill into 'statistic'
+     */
     long maxalignlen = GBT_get_alignment_len(gb_main, align);
 
     int nrofspecies;
@@ -384,36 +281,10 @@ static long CON_makestatistic(GBDATA *gb_main, int **statistic, int *convtable, 
     return nrofspecies;
 }
 
-
-/* -----------------------------------------------------------------
- * Function:          CON_maketables
- *
- * Arguments:         long maxalignlen,int isamino
- *
- * Returns:           return parameters: int *convtable,int **statistic
- *
- * Description:       Creates tables convtable and statistic, that are
- *                    used by function CON_makestatistic. The memory
- *                    allocated for both tables is freed in the
- *                    function CON_calculate_cb.
- *                    E.g. convtable['c']=k means that the character c
- *                    is counted in table statistic in row k.
- *
- * NOTE:                         .
- *
- * Global Variables referenced:  .
- *
- * Global Variables modified:    x
- *
- * AWARs referenced:             .
- *
- * AWARs modified:               x
- *
- * Dependencies:                 .
- * -----------------------------------------------------------------
- */
-static void CON_maketables(int *convtable, int **statistic, long maxalignlen, int isamino)
-{
+static void CON_maketables(int *convtable, int **statistic, long maxalignlen, int isamino) {
+    /*! initialize tables 'convtable' and 'statistic'.
+     * convtable[c] == k means: character 'c' will (later) be counted in row 'k' of 'statistic'
+     */
     int i;
     for (i=0; i<256; i++) { convtable[i]=0; }
     if (!isamino) {
@@ -442,12 +313,14 @@ static void CON_maketables(int *convtable, int **statistic, long maxalignlen, in
             statistic[i]=(int*)GB_calloc((unsigned int)maxalignlen, sizeof(int));
         }
         statistic[MAX_AMINOS]=NULL;
-        convtable['*']=10; // 'J'
+        convtable['*']=10; // 'J' // @@@ hack? careful when introducing 'J' later
     }
 }
 
-// export results into database
 static GB_ERROR CON_export(GBDATA *gb_main, const char *savename, const char *align, int **statistic, char *result, int *convtable, char *groupnames, int onlymarked, long nrofspecies, long maxalignlen, int countgaps, int gapbound, int groupallowed, double fconsidbound, double fupper, int lower, int resultiscomplex) {
+    /*! writes consensus SAI to DB
+     * @@@ document params
+     */
     const char *off = "off";
     const char *on  = "on";
 
@@ -594,49 +467,11 @@ static void CON_cleartables(int **statistic, int isamino) {
     }
 }
 
-/* -----------------------------------------------------------------
- * Function:                     void CON_calculate_cb(AW_window *aw )
- *
- * Arguments:                    .
- *
- * Returns:                      .
- *
- * Description:                  main callback
- *                               This function calculates the consensus.
- *                               Function CON_makestatistic creates the
- *                               statistic and function CON_evaluatestatistic
- *                               evaluates the statistic. Then the result
- *                               string(s) are written to the extended data of
- *                               the alignment.
- * NOTE:                         .
- *
- * Global Variables referenced:  .
- *
- * Global Variables modified:    x
- *
- * AWARs referenced:
- *                  AWAR_CONSENSUS_ALIGNMENT    : name of alignment
- *                  AWAR_CONSENSUS_SPECIES      : only marked species ?
- *                  AWAR_CONSENSUS_GROUP        : allow grouping ?
- *                  AWAR_CONSENSUS_COUNTGAPS
- *                  AWAR_CONSENSUS_FUPPER
- *                  AWAR_CONSENSUS_LOWER
- *                  AWAR_CONSENSUS_GAPBOUND     : result is '-' if more than 'gapbound' per cent gaps
- *                  AWAR_CONSENSUS_FCONSIDBOUND : if frequency of character is more than 'considbound' per cent,
- *                                                this character can contribute to groups
- *                  AWAR_CONSENSUS_NAME         : save with this name
- *                  AWAR_CONSENSUS_RESULT       : result has one or more lines ?
- *
- * AWARs modified:               x
- *
- * Dependencies:                 CON_maketables
- *                               CON_makestatistic
- *                               CON_makegrouptable
- *                               CON_evaluatestatistic
- * -----------------------------------------------------------------
- */
-
 static void CON_calculate(GBDATA *gb_main, const ConsensusBuildParams& BK, const char *align, bool onlymarked, const char *sainame, bool resultiscomplex) {
+    /*! calculates the consensus and writes it to SAI 'sainame'
+     * @@@ document params
+     * Description how consensus is calculated: ../HELP_SOURCE/oldhelp/consensus_def.hlp // @@@ update after #663 differences are resolved
+     */
     GB_ERROR error = 0;
 
     GB_push_transaction(gb_main);
@@ -822,17 +657,9 @@ AW_window *AP_create_con_expert_window(AW_root *aw_root) {
     return aws;
 }
 
-/* -----------------------------------------------------------------
- * Function:           CON_calc_max_freq_cb( AW_window *aw)
- *
- * Description:       Gets the maximum frequency for each columns.
- *
- * NOTE:
- *
- * -----------------------------------------------------------------
- */
-
 static void CON_calc_max_freq_cb(AW_window *aw) {
+    /*! gets the maximum frequency for all columns
+     */
     arb_assert(!GB_have_error());
 
     AW_root  *awr   = aw->get_root();
@@ -1108,4 +935,3 @@ void TEST_amino_consensus() {
 
 #endif // UNIT_TESTS
 
-// --------------------------------------------------------------------------------
