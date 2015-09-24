@@ -329,15 +329,15 @@ static int CON_makegrouptable(char **gf, char *groupnames,
  */
 
 
-static long CON_makestatistic(int **statistic, int *convtable, const char *align, int onlymarked) {
-    long maxalignlen = GBT_get_alignment_len(GLOBAL.gb_main, align);
+static long CON_makestatistic(GBDATA *gb_main, int **statistic, int *convtable, const char *align, int onlymarked) {
+    long maxalignlen = GBT_get_alignment_len(gb_main, align);
 
     int nrofspecies;
     if (onlymarked) {
-        nrofspecies = GBT_count_marked_species(GLOBAL.gb_main);
+        nrofspecies = GBT_count_marked_species(gb_main);
     }
     else {
-        nrofspecies = GBT_get_species_count(GLOBAL.gb_main);
+        nrofspecies = GBT_get_species_count(gb_main);
     }
 
     arb_progress progress(nrofspecies);
@@ -345,10 +345,10 @@ static long CON_makestatistic(int **statistic, int *convtable, const char *align
 
     GBDATA *gb_species;
     if (onlymarked) {
-        gb_species = GBT_first_marked_species(GLOBAL.gb_main);
+        gb_species = GBT_first_marked_species(gb_main);
     }
     else {
-        gb_species = GBT_first_species(GLOBAL.gb_main);
+        gb_species = GBT_first_species(gb_main);
     }
 
     while (gb_species) {
@@ -441,13 +441,13 @@ static void CON_maketables(int *convtable, int **statistic, long maxalignlen, in
 }
 
 // export results into database
-static GB_ERROR CON_export(const char *savename, const char *align, int **statistic, char *result, int *convtable, char *groupnames, int onlymarked, long nrofspecies, long maxalignlen, int countgaps, int gapbound, int groupallowed, double fconsidbound, double fupper, int lower, int resultiscomplex) {
+static GB_ERROR CON_export(GBDATA *gb_main, const char *savename, const char *align, int **statistic, char *result, int *convtable, char *groupnames, int onlymarked, long nrofspecies, long maxalignlen, int countgaps, int gapbound, int groupallowed, double fconsidbound, double fupper, int lower, int resultiscomplex) {
     const char *off = "off";
     const char *on  = "on";
 
     char *buffer = (char *)GB_calloc(2000, sizeof(char));
 
-    GBDATA   *gb_extended = GBT_find_or_create_SAI(GLOBAL.gb_main, savename);
+    GBDATA   *gb_extended = GBT_find_or_create_SAI(gb_main, savename);
     GBDATA   *gb_data     = GBT_add_data(gb_extended, align, "data", GB_STRING);
     GB_ERROR  err         = GB_write_string(gb_data, result);           // @@@ result is ignored
     GBDATA   *gb_options  = GBT_add_data(gb_extended, align, "_TYPE", GB_STRING);
@@ -472,8 +472,8 @@ static GB_ERROR CON_export(const char *savename, const char *align, int **statis
         GBDATA        *gb_species;
         GBS_strstruct *strstruct = GBS_stropen(1000);
 
-        if (onlymarked) gb_species = GBT_first_marked_species(GLOBAL.gb_main);
-        else gb_species            = GBT_first_species(GLOBAL.gb_main);
+        if (onlymarked) gb_species = GBT_first_marked_species(gb_main);
+        else gb_species            = GBT_first_species(gb_main);
 
         while (gb_species) {
             if (GBT_find_sequence(gb_species, align)) {
@@ -630,16 +630,16 @@ static void CON_cleartables(int **statistic, int isamino) {
  * -----------------------------------------------------------------
  */
 
-static void CON_calculate(const ConsensusBuildParams& BK, const char *align, bool onlymarked, const char *sainame, bool resultiscomplex) {
+static void CON_calculate(GBDATA *gb_main, const ConsensusBuildParams& BK, const char *align, bool onlymarked, const char *sainame, bool resultiscomplex) {
     GB_ERROR error = 0;
 
-    GB_push_transaction(GLOBAL.gb_main);
+    GB_push_transaction(gb_main);
 
-    long maxalignlen = GBT_get_alignment_len(GLOBAL.gb_main, align);
+    long maxalignlen = GBT_get_alignment_len(gb_main, align);
     if (maxalignlen <= 0) error = GB_export_errorf("alignment '%s' doesn't exist", align);
 
     if (!error) {
-        int isamino = GBT_is_alignment_protein(GLOBAL.gb_main, align); // @@@ -> bool
+        int isamino = GBT_is_alignment_protein(gb_main, align); // @@@ -> bool
 
         // creating the table for characters and allocating memory for 'statistic'
         int *statistic[MAX_AMINOS+1];
@@ -649,7 +649,7 @@ static void CON_calculate(const ConsensusBuildParams& BK, const char *align, boo
         // filling the statistic table
         arb_progress progress("Calculating consensus");
 
-        long nrofspecies = CON_makestatistic(statistic, convtable, align, onlymarked);
+        long nrofspecies = CON_makestatistic(gb_main, statistic, convtable, align, onlymarked);
 
         if (BK.lower>BK.upper) {
             error = "fault: lower greater than upper";
@@ -664,7 +664,7 @@ static void CON_calculate(const ConsensusBuildParams& BK, const char *align, boo
             char *result = 0;
             CON_evaluatestatistic(result, statistic, groupflags, groupnames, (int)maxalignlen, BK.upper, BK.lower, BK.considbound, BK.gapbound, BK.countgaps, numgroups);
 
-            error = CON_export(sainame, align, statistic, result, convtable, groupnames, onlymarked, nrofspecies, maxalignlen, BK.countgaps, BK.gapbound, BK.group, BK.considbound, BK.upper, BK.lower, resultiscomplex);
+            error = CON_export(gb_main, sainame, align, statistic, result, convtable, groupnames, onlymarked, nrofspecies, maxalignlen, BK.countgaps, BK.gapbound, BK.group, BK.considbound, BK.upper, BK.lower, resultiscomplex);
 
             // freeing allocated memory
             free(result);
@@ -674,7 +674,7 @@ static void CON_calculate(const ConsensusBuildParams& BK, const char *align, boo
         CON_cleartables(statistic, isamino);
     }
 
-    GB_end_transaction_show_error(GLOBAL.gb_main, error, aw_message);
+    GB_end_transaction_show_error(gb_main, error, aw_message);
 }
 
 static void CON_calculate_cb(AW_window *aw) {
@@ -693,7 +693,7 @@ static void CON_calculate_cb(AW_window *aw) {
         LocallyModify<bool> denyAwarWrites(AW_awar::deny_write, true);
 #endif
 
-        CON_calculate(BK, align, onlymarked, sainame, resultiscomplex);
+        CON_calculate(GLOBAL.gb_main, BK, align, onlymarked, sainame, resultiscomplex);
     }
 
     free(sainame);
@@ -851,7 +851,7 @@ static void CON_calc_max_freq_cb(AW_window *aw) {
         CON_maketables(convtable, statistic, maxalignlen, isamino);
 
         const int onlymarked  = 1;
-        long      nrofspecies = CON_makestatistic(statistic, convtable, align, onlymarked);
+        long      nrofspecies = CON_makestatistic(GLOBAL.gb_main, statistic, convtable, align, onlymarked);
 
         int end = isamino ? MAX_AMINOS : MAX_BASES;
 
