@@ -178,16 +178,14 @@ static int CON_makegrouptable(char **gf, char *groupnames, int isamino, int grou
      *      'gf[GROUP][CTV] == 1' means: all 'c' with 'convtable[c] == CTV' are members of group 'GROUP'
      * 'groupnames' will be filled with groups "names" ( = single character codes)
      */
-    for (int j=0; j<MAX_GROUPS; j++) {
-        gf[j]=(char *)GB_calloc(MAX_GROUPS, 1); }
+    for (int j=0; j<MAX_GROUPS; j++) gf[j]=(char *)GB_calloc(MAX_GROUPS, 1);
 
-    if (!isamino)
-    {
+    if (!isamino) {
         strcpy(groupnames, "-ACGUMRWSYKVHDBN\0");
-        for (int i=1; i<MAX_BASES; i++) {
-            gf[i][i]=1; }
-        if (groupallowed)
-        {
+
+        for (int i=1; i<MAX_BASES; i++) gf[i][i]=1;
+
+        if (groupallowed) {
             gf[5][BAS_A]=1; gf[5][BAS_C]=1;
             gf[6][BAS_A]=1; gf[6][BAS_G]=1;
             gf[7][BAS_A]=1; gf[7][BAS_T]=1;
@@ -204,14 +202,13 @@ static int CON_makegrouptable(char **gf, char *groupnames, int isamino, int grou
         }
         return (5);
     }
-    else
-    {
+    else {
         strcpy(groupnames, "-ABCDEFGHI*KLMN.PQRST.VWXYZADHIF\0");
-        for (int i=1; i<MAX_AMINOS; i++) {
-            gf[i][i]=1; }
-        if (groupallowed)
+
+        for (int i=1; i<MAX_AMINOS; i++) gf[i][i] = 1;
+
 #define SC(x, P) gf[x][P-'A'+1] = 1
-        {
+        if (groupallowed) {
             SC(27, 'P'); SC(27, 'A'); SC(27, 'G'); SC(27, 'S'); SC(27, 'T');
             // PAGST
             SC(28, 'Q'); SC(28, 'N'); SC(28, 'E'); SC(28, 'D'); SC(28, 'B');
@@ -286,7 +283,7 @@ static void CON_maketables(int *convtable, int **statistic, long maxalignlen, in
      * convtable[c] == k means: character 'c' will (later) be counted in row 'k' of 'statistic'
      */
     int i;
-    for (i=0; i<256; i++) { convtable[i]=0; }
+    for (i=0; i<256; i++) convtable[i]=0;
     if (!isamino) {
         for (i='a'; i <= 'z'; i++) convtable[i] = BAS_N;
         for (i='A'; i <= 'Z'; i++) convtable[i] = BAS_N;
@@ -304,8 +301,7 @@ static void CON_maketables(int *convtable, int **statistic, long maxalignlen, in
         statistic[MAX_BASES]=NULL;
     }
     else {
-        for (i=0; i<MAX_AMINOS-1; i++)
-        {
+        for (i=0; i<MAX_AMINOS-1; i++) {
             convtable['a'+i]=i+1;
             convtable['A'+i]=i+1;
         }
@@ -541,8 +537,7 @@ static void CON_calculate_cb(AW_window *aw) {
     free(align);
 }
 
-void AP_create_consensus_var(AW_root *aw_root, AW_default aw_def)
-{
+void AP_create_consensus_var(AW_root *aw_root, AW_default aw_def) {
     GB_transaction ta(GLOBAL.gb_main);
     {
         char *defali = GBT_get_default_alignment(GLOBAL.gb_main);
