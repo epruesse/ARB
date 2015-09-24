@@ -92,18 +92,19 @@ struct ConsensusBuildParams { // @@@ DRY; copy of ../EDIT4/ED4_mini_classes.cxx@
 #endif
 };
 
-static void CON_evaluatestatistic(char*& result, int **statistic, char **groupflags, char *groupnames, int alignlength, double fupper, int lower, double fconsidbound, int gapbound, int countgap, int numgroups) {
+static void CON_evaluatestatistic(char*& result, int **statistic, char **groupflags, char *groupnames, int alignlength, int numgroups, const ConsensusBuildParams& BK) {
     /*! calculates consensus from 'statistic'
      * @@@ doc params
      */
-    int row=0;
-    int j = 0;
+    int row = 0; // @@@ fix locals
+    int j   = 0;
     int groupfr[MAX_GROUPS]; // frequency of group
-    int highestfr, highestgr;
+    int highestfr;
+    int highestgr;
 
     arb_progress progress("calculating result", alignlength);
 
-    result=(char *)GB_calloc(alignlength+1, 1);
+    result = (char *)GB_calloc(alignlength+1, 1);
 
     for (int column=0; column<alignlength; column++) {
         long numentries = 0;
@@ -116,22 +117,22 @@ static void CON_evaluatestatistic(char*& result, int **statistic, char **groupfl
                 result[column]='='; // 100 per cent `-` -> `=` 
             }
             else {
-                if (!countgap) {
+                if (!BK.countgaps) {
                     numentries -= statistic[0][column];
                     statistic[0][column]=0;
                 }
 
-                if ((statistic[0][column]*100/numentries)>gapbound) {
-                    result[column]='-';
+                if ((statistic[0][column]*100/numentries)>BK.gapbound) {
+                    result[column] = '-';
                 }
                 else {
                     for (j=0; j<numgroups; j++) {
-                        groupfr[j]=0;
+                        groupfr[j] = 0;
                     }
 
                     row=0;
                     while (statistic[row]) {
-                        if ((statistic[row][column]*100.0)>=fconsidbound*numentries) {
+                        if (statistic[row][column]*100 >= BK.considbound*numentries) {
                             for (j=numgroups-1; j>=0; j--) {
                                 if (groupflags[j][row]) {
                                     groupfr[j] += statistic[row][column];
@@ -141,27 +142,23 @@ static void CON_evaluatestatistic(char*& result, int **statistic, char **groupfl
                         row++;
                     }
 
-                    highestfr=0;
-                    highestgr=0;
+                    highestfr = 0;
+                    highestgr = 0;
                     for (j=0; j<numgroups; j++) {
                         if (groupfr[j] > highestfr) {
-                            highestfr=groupfr[j];
-                            highestgr=j;
+                            highestfr = groupfr[j];
+                            highestgr = j;
                         }
                     }
 
-                    if ((highestfr*100.0/numentries)>=fupper) {
-                        result[column]=groupnames[highestgr];
+                    if ((highestfr*100/numentries) >= BK.upper) {
+                        result[column] = groupnames[highestgr];
                     }
-                    else if ((highestfr*100/numentries)>=lower) {
-                        char c=groupnames[highestgr];
-                        if (c>='A' && c<='Z') {
-                            c=c-'A'+'a';
-                        }
-                        result[column]=c;
+                    else if ((highestfr*100/numentries) >= BK.lower) {
+                        result[column] = tolower(groupnames[highestgr]);
                     }
                     else {
-                        result[column]='.';
+                        result[column] = '.';
                     }
                 }
             }
@@ -308,7 +305,7 @@ static void CON_maketables(int *const convtable, int **const statistic, long max
     }
 }
 
-static GB_ERROR CON_export(GBDATA *gb_main, const char *savename, const char *align, const int *const*statistic, const char *result, const int *const convtable, const char *groupnames, bool onlymarked, long nrofspecies, long maxalignlen, bool countgaps, int gapbound, bool groupallowed, double fconsidbound, double fupper, int lower, bool resultiscomplex) {
+static GB_ERROR CON_export(GBDATA *gb_main, const char *savename, const char *align, const int *const*statistic, const char *result, const int *const convtable, const char *groupnames, bool onlymarked, long nrofspecies, long maxalignlen, bool resultiscomplex, const ConsensusBuildParams& BK) {
     /*! writes consensus SAI to DB
      * @@@ document params
      */
@@ -323,15 +320,15 @@ static GB_ERROR CON_export(GBDATA *gb_main, const char *savename, const char *al
     GBDATA   *gb_options  = GBT_add_data(gb_extended, align, "_TYPE", GB_STRING);
 
     const char *allvsmarked     = onlymarked ? "marked" : "all";
-    const char *countgapsstring = countgaps ? on : off;
-    const char *simplifystring  = groupallowed ? on : off;
+    const char *countgapsstring = BK.countgaps ? on : off;
+    const char *simplifystring  = BK.group ? on : off;
 
     sprintf(buffer, "CON: [species: %s]  [number: %ld]  [count gaps: %s] "
             "[threshold for gaps: %d]  [simplify: %s] "
-            "[threshold for character: %f]  [upper: %f]  [lower: %d]",
+            "[threshold for character: %d]  [upper: %d]  [lower: %d]",
             allvsmarked, nrofspecies, countgapsstring,
-            gapbound, simplifystring,
-            fconsidbound, fupper, lower);
+            BK.gapbound, simplifystring,
+            BK.considbound, BK.upper, BK.lower);
 
     err = GB_write_string(gb_options, buffer);
 
@@ -403,7 +400,7 @@ static GB_ERROR CON_export(GBDATA *gb_main, const char *savename, const char *al
             while (neworder[group2]) {
                 colsum += statistic[neworder[group2++]][col];
             }
-            if (countgaps) colsum += statistic[0][col];
+            if (BK.countgaps) colsum += statistic[0][col];
             absolutrow[col] = colsum;
         }
 
@@ -494,9 +491,9 @@ static void CON_calculate(GBDATA *gb_main, const ConsensusBuildParams& BK, const
 
             // calculate and export the result strings
             char *result = 0;
-            CON_evaluatestatistic(result, statistic, groupflags, groupnames, (int)maxalignlen, BK.upper, BK.lower, BK.considbound, BK.gapbound, BK.countgaps, numgroups);
+            CON_evaluatestatistic(result, statistic, groupflags, groupnames, maxalignlen, numgroups, BK);
 
-            error = CON_export(gb_main, sainame, align, statistic, result, convtable, groupnames, onlymarked, nrofspecies, maxalignlen, BK.countgaps, BK.gapbound, BK.group, BK.considbound, BK.upper, BK.lower, resultiscomplex);
+            error = CON_export(gb_main, sainame, align, statistic, result, convtable, groupnames, onlymarked, nrofspecies, maxalignlen, resultiscomplex, BK);
 
             // freeing allocated memory
             free(result);
