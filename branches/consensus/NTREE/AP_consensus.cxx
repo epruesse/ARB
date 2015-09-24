@@ -92,7 +92,7 @@ struct ConsensusBuildParams { // @@@ DRY; copy of ../EDIT4/ED4_mini_classes.cxx@
 #endif
 };
 
-static char *CON_evaluatestatistic(int **statistic, char **groupflags, char *groupnames, int alignlength, int numgroups, const ConsensusBuildParams& BK) {
+static char *CON_evaluatestatistic(const int *const*statistic, const char *const*groupflags, const char *groupnames, int alignlength, int numgroups, const ConsensusBuildParams& BK) {
     /*! calculates consensus from 'statistic'
      * @@@ doc params
      */
@@ -107,16 +107,19 @@ static char *CON_evaluatestatistic(int **statistic, char **groupflags, char *gro
             result[column] = '.';
         }
         else {
-            if (numentries-statistic[0][column]==0) {
+            int gaps = statistic[0][column];
+            arb_assert(numentries>=gaps);
+
+            if (numentries == gaps) {
                 result[column] = '='; // 100% gaps
             }
             else {
                 if (!BK.countgaps) {
-                    numentries -= statistic[0][column];
-                    statistic[0][column]=0;
+                    numentries -= gaps;
+                    gaps        = 0;
                 }
 
-                if ((statistic[0][column]*100/numentries)>BK.gapbound) {
+                if ((gaps*100/numentries) > BK.gapbound) { // @@@ why not >=? (as below for other thresholds)
                     result[column] = '-';
                 }
                 else {
@@ -125,7 +128,7 @@ static char *CON_evaluatestatistic(int **statistic, char **groupflags, char *gro
                         groupfr[j] = 0;
                     }
 
-                    for (int row = 0; statistic[row]; ++row) {
+                    for (int row = 1; statistic[row]; ++row) {
                         if (statistic[row][column]*100 >= BK.considbound*numentries) {
                             for (int j = numgroups-1; j>=0; --j) {
                                 if (groupflags[j][row]) {
