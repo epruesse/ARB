@@ -92,13 +92,13 @@ struct ConsensusBuildParams { // @@@ DRY; copy of ../EDIT4/ED4_mini_classes.cxx@
 #endif
 };
 
-static void CON_evaluatestatistic(char*& result, int **statistic, char **groupflags, char *groupnames, int alignlength, int numgroups, const ConsensusBuildParams& BK) {
+static char *CON_evaluatestatistic(int **statistic, char **groupflags, char *groupnames, int alignlength, int numgroups, const ConsensusBuildParams& BK) {
     /*! calculates consensus from 'statistic'
      * @@@ doc params
      */
     arb_progress progress("calculating result", alignlength);
 
-    result = (char *)GB_calloc(alignlength+1, 1);
+    char *result = (char *)GB_calloc(alignlength+1, 1);
 
     for (int column=0; column<alignlength; column++) {
         long numentries = 0;
@@ -158,6 +158,8 @@ static void CON_evaluatestatistic(char*& result, int **statistic, char **groupfl
         }
         ++progress;
     }
+
+    return result;
 }
 
 
@@ -483,8 +485,7 @@ static void CON_calculate(GBDATA *gb_main, const ConsensusBuildParams& BK, const
             int   numgroups = CON_makegrouptable(groupflags, groupnames, isamino, BK.group);
 
             // calculate and export the result strings
-            char *result = 0;
-            CON_evaluatestatistic(result, statistic, groupflags, groupnames, maxalignlen, numgroups, BK);
+            char *result = CON_evaluatestatistic(statistic, groupflags, groupnames, maxalignlen, numgroups, BK);
 
             error = CON_export(gb_main, sainame, align, statistic, result, convtable, groupnames, onlymarked, nrofspecies, maxalignlen, resultiscomplex, BK);
 
