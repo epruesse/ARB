@@ -382,9 +382,9 @@ int ED4_bases_table::empty() const
 // ------------------------
 //      Build consensus
 
-ConsensusBuildParams *ED4_root::get_consensus_params() {
+const ConsensusBuildParams& ED4_root::get_consensus_params() {
     if (!cons_param) cons_param = new ConsensusBuildParams(aw_root);
-    return cons_param;
+    return *cons_param;
 }
 
 void ED4_root::reset_consensus_params() {
@@ -432,7 +432,7 @@ void ED4_consensus_display_changed(AW_root *root) {
     ED4_ROOT->root_group_man->route_down_hierarchy(toggle_consensus_display, show).expect_no_error();
 }
 
-char *ED4_char_table::build_consensus_string(PosRange r, const ConsensusBuildParams *cbp) const {
+char *ED4_char_table::build_consensus_string(PosRange r, const ConsensusBuildParams& cbp) const {
     ExplicitRange  range(r, size());
     long           entries = range.size();
     char          *new_buf = (char*)malloc(entries+1);
@@ -449,7 +449,7 @@ char *ED4_char_table::build_consensus_string(PosRange r, const ConsensusBuildPar
  #endif
 #endif
 
-void ED4_char_table::build_consensus_string_to(char *consensus_string, ExplicitRange range, const ConsensusBuildParams *BK) const {
+void ED4_char_table::build_consensus_string_to(char *consensus_string, ExplicitRange range, const ConsensusBuildParams& BK) const {
     // 'consensus_string' has to be a buffer of size 'range.size()+1'
     // Note : Always check that consensus behavior is identical to that used in CON_evaluatestatistic()
 
@@ -507,16 +507,16 @@ void ED4_char_table::build_consensus_string_to(char *consensus_string, ExplicitR
             if (gaps == sequences) {
                 consensus_string[o] = '=';
             }
-            else if (BK->countgaps && PERCENT(gaps, sequences) >= BK->gapbound) {
+            else if (BK.countgaps && PERCENT(gaps, sequences) >= BK.gapbound) {
                 DUMPINT(PERCENT(gaps,sequences));
-                DUMPINT(BK->gapbound);
+                DUMPINT(BK.gapbound);
                 consensus_string[o] = '-';
             }
             else {
                 char kchar  = 0; // character for consensus
                 int  kcount = 0; // count this character
 
-                if (BK->group) { // simplify using IUPAC
+                if (BK.group) { // simplify using IUPAC
                     if (ali_type == GB_AT_RNA || ali_type == GB_AT_DNA) {
                         int no_of_bases = 0; // count of different bases used to create iupac
                         char used_bases[MAX_BASES_TABLES+1]; // string containing those bases
@@ -525,9 +525,9 @@ void ED4_char_table::build_consensus_string_to(char *consensus_string, ExplicitR
                             int bchar = index_to_upperChar(j);
 
                             if (!ADPP_IS_ALIGN_CHARACTER(bchar)) {
-                                if (PERCENT(base[j],bases) >= BK->considbound) {
+                                if (PERCENT(base[j],bases) >= BK.considbound) {
 #if defined(DEBUG_CONSENSUS)
-                                    if (!kcount) DUMPINT(BK->considbound);
+                                    if (!kcount) DUMPINT(BK.considbound);
 #endif
                                     used_bases[no_of_bases++]  = index_to_upperChar(j);
                                     kcount                    += base[j];
@@ -554,7 +554,7 @@ void ED4_char_table::build_consensus_string_to(char *consensus_string, ExplicitR
                             unsigned char bchar = index_to_upperChar(j);
 
                             if (!ADPP_IS_ALIGN_CHARACTER(bchar)) {
-                                if (PERCENT(base[j], bases) >= BK->considbound) {
+                                if (PERCENT(base[j], bases) >= BK.considbound) {
                                     group_count[iupac::get_amino_group_for(bchar)] += base[j];
                                 }
                             }
@@ -586,12 +586,12 @@ void ED4_char_table::build_consensus_string_to(char *consensus_string, ExplicitR
                 // show as upper or lower case ?
                 int percent = PERCENT(kcount, sequences); // @@@ if gaps==off -> calc percent of non-gaps
                 DUMPINT(percent);
-                DUMPINT(BK->upper);
-                DUMPINT(BK->lower);
-                if (percent>=BK->upper) {
+                DUMPINT(BK.upper);
+                DUMPINT(BK.lower);
+                if (percent>=BK.upper) {
                     consensus_string[o] = kchar;
                 }
-                else if (percent>=BK->lower) {
+                else if (percent>=BK.lower) {
                     consensus_string[o] = tolower(kchar);
                 }
                 else {
@@ -1230,7 +1230,7 @@ void TEST_char_table() {
 
         // build consensi (just check regression)
         {
-            char *consensus = tab.build_consensus_string(&BK);
+            char *consensus = tab.build_consensus_string(BK);
             switch (seed) {
                 case 677741240: TEST_EXPECT_EQUAL(consensus, "k-s-NW..aWu.NnWYa.R.mKcNK.c.rn"); break;
                 case 721151648: TEST_EXPECT_EQUAL(consensus, "aNnn..K..-gU.RW-SNcau.WNNacn.u"); break;
@@ -1247,7 +1247,7 @@ void TEST_char_table() {
             freenull(added_seqs[a]);
         }
         {
-            char *consensus = tab.build_consensus_string(&BK);
+            char *consensus = tab.build_consensus_string(BK);
             TEST_EXPECT_EQUAL(consensus, "??????????????????????????????"); // check tab is empty
             free(consensus);
         }
@@ -1301,7 +1301,7 @@ void TEST_nucleotide_consensus() {
             default: e4_assert(0); break;                                      // missing
         }
 
-        char *consensus = tab.build_consensus_string(&BK);
+        char *consensus = tab.build_consensus_string(BK);
         TEST_EXPECT_EQUAL(consensus, expected_consensus[c]);
         free(consensus);
     }
@@ -1354,7 +1354,7 @@ void TEST_amino_consensus() {
             default: e4_assert(0); break;                                       // missing
         }
 
-        char *consensus = tab.build_consensus_string(&BK);
+        char *consensus = tab.build_consensus_string(BK);
         TEST_EXPECT_EQUAL(consensus, expected_consensus[c]);
         free(consensus);
     }

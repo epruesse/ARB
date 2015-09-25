@@ -1029,9 +1029,9 @@ public:
     void sub(const char *string, int len);
     void sub_and_add(const char *old_string, const char *new_string, PosRange range);
 
-    void build_consensus_string_to(char *consensus_string, ExplicitRange range, const ConsensusBuildParams *BK) const;
-    char *build_consensus_string(PosRange r, const ConsensusBuildParams *cbp) const;
-    char *build_consensus_string(const ConsensusBuildParams *cbp) const { return build_consensus_string(PosRange::whole(), cbp); }
+    void build_consensus_string_to(char *consensus_string, ExplicitRange range, const ConsensusBuildParams& BK) const;
+    char *build_consensus_string(PosRange r, const ConsensusBuildParams& cbp) const;
+    char *build_consensus_string(const ConsensusBuildParams& cbp) const { return build_consensus_string(PosRange::whole(), cbp); }
 
     void change_table_length(int new_length);
 };
@@ -1673,7 +1673,7 @@ public:
     bool visualizeSAI;
     bool visualizeSAI_allSpecies;
 
-    ConsensusBuildParams *get_consensus_params();
+    const ConsensusBuildParams& get_consensus_params();
     void reset_consensus_params();
 
     LoadableSaiState loadable_SAIs; // maintain proper refresh of list of loadable SAIs
