@@ -81,7 +81,7 @@ ED4_returncode ED4_consensus_sequence_terminal::draw() {
         char *cons = 0;
         if (!seq_range.is_empty()) {
             cons = GB_give_buffer(seq_range.size()+1);
-            get_char_table().build_consensus_string_to(cons, seq_range);
+            get_char_table().build_consensus_string_to(cons, seq_range, ED4_ROOT->get_consensus_params());
         }
 
         ensure_buffer(buffer, buffer_size, index_range.end()+1);

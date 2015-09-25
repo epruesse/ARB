@@ -153,11 +153,8 @@ static char *add_area_for_gde(ED4_area_manager *area_man, uchar **&the_names, uc
 
                 if (is_consensus) {
                     ED4_group_manager *group_manager = sequence_terminal->get_parent(ED4_L_GROUP)->to_group_manager();
-                    ED4_char_table&    groupTab      = group_manager->table();
-                    
-                    seq     = groupTab.build_consensus_string();
-                    seq_len = groupTab.size();
 
+                    group_manager->build_consensus_string(&seq_len);
                     e4_assert(strlen(seq) == size_t(seq_len));
 
                     ED4_group_manager *folded_group_man = sequence_terminal->is_in_folded_group();

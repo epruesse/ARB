@@ -290,7 +290,7 @@ static void executeKeystroke(AW_event *event, int repeatCount) {
                     ED4_group_manager               *group_manager = terminal->get_parent(ED4_L_GROUP)->to_group_manager();
 
                     e4_assert(cterm->temp_cons_seq == 0);
-                    work_info->string = cterm->temp_cons_seq = group_manager->table().build_consensus_string();
+                    work_info->string = cterm->temp_cons_seq = group_manager->build_consensus_string();
 
                     error = edit_string->edit(work_info);
 
@@ -1610,18 +1610,17 @@ AW_window *ED4_create_loadSAI_window(AW_root *awr) {
     return aws;
 }
 
-static GB_ERROR createDataFromConsensus(GBDATA *gb_species, ED4_group_manager *group_man)
-{
+static GB_ERROR createDataFromConsensus(GBDATA *gb_species, ED4_group_manager *group_man) {
     GB_ERROR error = 0;
-    ED4_char_table *table = &group_man->table();
-    char *consensus = table->build_consensus_string();
-    int len = table->size();
-    int p;
+
+    int   len;
+    char *consensus = group_man->build_consensus_string(&len);
+
     char *equal_to = ED4_ROOT->aw_root->awar(ED4_AWAR_CREATE_FROM_CONS_REPL_EQUAL)->read_string();
     char *point_to = ED4_ROOT->aw_root->awar(ED4_AWAR_CREATE_FROM_CONS_REPL_POINT)->read_string();
-    int allUpper = ED4_ROOT->aw_root->awar(ED4_AWAR_CREATE_FROM_CONS_ALL_UPPER)->read_int();
+    int   allUpper = ED4_ROOT->aw_root->awar(ED4_AWAR_CREATE_FROM_CONS_ALL_UPPER)->read_int();
 
-    for (p=0; p<len; p++) {
+    for (int p=0; p<len; p++) {
         switch (consensus[p]) {
             case '=': consensus[p] = equal_to[0]; break;
             case '.': consensus[p] = point_to[0]; break;
@@ -1635,11 +1634,11 @@ static GB_ERROR createDataFromConsensus(GBDATA *gb_species, ED4_group_manager *g
     }
 
     if (ED4_ROOT->aw_root->awar(ED4_AWAR_CREATE_FROM_CONS_CREATE_POINTS)) { // points at start & end of sequence?
-        for (p=0; p<len; p++) {
+        for (int p=0; p<len; p++) {
             if (!ADPP_IS_ALIGN_CHARACTER(consensus[p])) break;
             consensus[p] = '.';
         }
-        for (p=len-1; p>=0; p--) {
+        for (int p=len-1; p>=0; p--) {
             if (!ADPP_IS_ALIGN_CHARACTER(consensus[p])) break;
             consensus[p] = '.';
         }

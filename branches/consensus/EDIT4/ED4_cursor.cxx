@@ -900,7 +900,7 @@ void ED4_cursor::updateAwars(bool new_term_selected) {
             ED4_group_manager *group_manager = owner_of_cursor->get_parent(ED4_L_GROUP)->to_group_manager();
             ED4_char_table&    groupTab      = group_manager->table();
             if (seq_pos<groupTab.size()) {
-                groupTab.build_consensus_string_to(at, ExplicitRange(seq_pos, seq_pos));
+                groupTab.build_consensus_string_to(at, ExplicitRange(seq_pos, seq_pos), ED4_ROOT->get_consensus_params());
             }
         }
         else if (in_species_seq_terminal() || in_SAI_terminal()) {
@@ -1536,7 +1536,7 @@ void ED4_base_position::calc4term(const ED4_terminal *base) {
     if (species_manager->is_consensus_manager()) {
         ED4_group_manager *group_manager = base->get_parent(ED4_L_GROUP)->to_group_manager();
 
-        seq       = group_manager->table().build_consensus_string();
+        seq       = group_manager->build_consensus_string();
         len       = strlen(seq);
         isGap_fun = is_consensus_gap;
     }

@@ -382,10 +382,20 @@ int ED4_bases_table::empty() const
 // ------------------------
 //      Build consensus
 
-static ConsensusBuildParams *BK = NULL; // @@@ make member of ED4_char_table ?
+ConsensusBuildParams *ED4_root::get_consensus_params() {
+    if (!cons_param) cons_param = new ConsensusBuildParams(aw_root);
+    return cons_param;
+}
+
+void ED4_root::reset_consensus_params() {
+    if (cons_param) {
+        delete cons_param;
+        cons_param = NULL;
+    }
+}
 
 void ED4_consensus_definition_changed(AW_root*) {
-    delete BK; BK = 0; // invalidate
+    ED4_ROOT->reset_consensus_params();
 
     ED4_reference *ref = ED4_ROOT->reference;
     if (ref->reference_is_a_consensus()) {
@@ -422,12 +432,12 @@ void ED4_consensus_display_changed(AW_root *root) {
     ED4_ROOT->root_group_man->route_down_hierarchy(toggle_consensus_display, show).expect_no_error();
 }
 
-char *ED4_char_table::build_consensus_string(PosRange r) const {
+char *ED4_char_table::build_consensus_string(PosRange r, const ConsensusBuildParams *cbp) const {
     ExplicitRange  range(r, size());
     long           entries = range.size();
     char          *new_buf = (char*)malloc(entries+1);
 
-    build_consensus_string_to(new_buf, range);
+    build_consensus_string_to(new_buf, range, cbp);
     new_buf[entries] = 0;
 
     return new_buf;
@@ -439,11 +449,9 @@ char *ED4_char_table::build_consensus_string(PosRange r) const {
  #endif
 #endif
 
-void ED4_char_table::build_consensus_string_to(char *consensus_string, ExplicitRange range) const {
+void ED4_char_table::build_consensus_string_to(char *consensus_string, ExplicitRange range, const ConsensusBuildParams *BK) const {
     // 'consensus_string' has to be a buffer of size 'range.size()+1'
     // Note : Always check that consensus behavior is identical to that used in CON_evaluatestatistic()
-
-    if (!BK) BK = new ConsensusBuildParams(ED4_ROOT->aw_root);
 
     e4_assert(consensus_string);
     e4_assert(range.end()<size());
@@ -1188,10 +1196,9 @@ void TEST_char_table() {
     ED4_char_table::initial_setup(gapChars, GB_AT_RNA);
     ED4_init_is_align_character(gapChars);
 
-    TEST_REJECT(BK); BK = new ConsensusBuildParams;
-
-    // BK->lower = 70; BK->upper = 95; BK->gapbound = 60; // defaults from awars
-    BK->lower    = 40; BK->upper = 70; BK->gapbound = 40;
+    ConsensusBuildParams BK;
+    // BK.lower = 70; BK.upper = 95; BK.gapbound = 60; // defaults from awars
+    BK.lower    = 40; BK.upper = 70; BK.gapbound = 40;
 
     srand(100);
     for (int loop = 0; loop<5; ++loop) {
@@ -1223,7 +1230,7 @@ void TEST_char_table() {
 
         // build consensi (just check regression)
         {
-            char *consensus = tab.build_consensus_string();
+            char *consensus = tab.build_consensus_string(&BK);
             switch (seed) {
                 case 677741240: TEST_EXPECT_EQUAL(consensus, "k-s-NW..aWu.NnWYa.R.mKcNK.c.rn"); break;
                 case 721151648: TEST_EXPECT_EQUAL(consensus, "aNnn..K..-gU.RW-SNcau.WNNacn.u"); break;
@@ -1240,13 +1247,11 @@ void TEST_char_table() {
             freenull(added_seqs[a]);
         }
         {
-            char *consensus = tab.build_consensus_string();
+            char *consensus = tab.build_consensus_string(&BK);
             TEST_EXPECT_EQUAL(consensus, "??????????????????????????????"); // check tab is empty
             free(consensus);
         }
     }
-
-    delete BK; BK = 0;
 }
 
 void TEST_nucleotide_consensus() {
@@ -1278,31 +1283,28 @@ void TEST_nucleotide_consensus() {
     ED4_char_table::initial_setup(gapChars, GB_AT_RNA);
     ED4_init_is_align_character(gapChars);
 
-    TEST_REJECT(BK); BK = new ConsensusBuildParams;
-
     ED4_char_table tab(seqlen);
     for (int s = 0; s<sequenceCount; ++s) {
         e4_assert(strlen(sequence[s]) == seqlen);
         tab.add(sequence[s], seqlen);
     }
 
+    ConsensusBuildParams BK;
     for (int c = 0; c<consensusCount; ++c) {
         TEST_ANNOTATE(GBS_global_string("c=%i", c));
         switch (c) {
-            case 0: break;                                                      // use default settings
-            case 1: BK->countgaps   = false; break;                             // dont count gaps
-            case 2: BK->considbound = 26; BK->lower = 0; BK->upper = 75; break; // settings from #663
-            case 3: BK->countgaps   = true; BK->gapbound = 70; break;
-            case 4: BK->considbound = 20; break;
-            default: e4_assert(0); break;                                       // missing
+            case 0: break;                                                     // use default settings
+            case 1: BK.countgaps   = false; break;                             // dont count gaps
+            case 2: BK.considbound = 26; BK.lower = 0; BK.upper = 75; break;   // settings from #663
+            case 3: BK.countgaps   = true; BK.gapbound = 70; break;
+            case 4: BK.considbound = 20; break;
+            default: e4_assert(0); break;                                      // missing
         }
 
-        char *consensus = tab.build_consensus_string();
+        char *consensus = tab.build_consensus_string(&BK);
         TEST_EXPECT_EQUAL(consensus, expected_consensus[c]);
         free(consensus);
     }
-
-    delete BK; BK = 0;
 }
 
 void TEST_amino_consensus() {
@@ -1334,31 +1336,28 @@ void TEST_amino_consensus() {
     ED4_char_table::initial_setup(gapChars, GB_AT_AA);
     ED4_init_is_align_character(gapChars);
 
-    TEST_REJECT(BK); BK = new ConsensusBuildParams;
-
     ED4_char_table tab(seqlen);
     for (int s = 0; s<sequenceCount; ++s) {
         e4_assert(strlen(sequence[s]) == seqlen);
         tab.add(sequence[s], seqlen);
     }
 
+    ConsensusBuildParams BK;
     for (int c = 0; c<consensusCount; ++c) {
         TEST_ANNOTATE(GBS_global_string("c=%i", c));
         switch (c) {
             case 0: break;                                                      // use default settings
-            case 1: BK->countgaps   = false; break;                             // dont count gaps
-            case 2: BK->considbound = 26; BK->lower = 0; BK->upper = 75; break; // settings from #663
-            case 3: BK->countgaps   = true; BK->gapbound = 70; break;
-            case 4: BK->considbound = 20; break;
+            case 1: BK.countgaps   = false; break;                              // dont count gaps
+            case 2: BK.considbound = 26; BK.lower = 0; BK.upper = 75; break;    // settings from #663
+            case 3: BK.countgaps   = true; BK.gapbound = 70; break;
+            case 4: BK.considbound = 20; break;
             default: e4_assert(0); break;                                       // missing
         }
 
-        char *consensus = tab.build_consensus_string();
+        char *consensus = tab.build_consensus_string(&BK);
         TEST_EXPECT_EQUAL(consensus, expected_consensus[c]);
         free(consensus);
     }
-
-    delete BK; BK = 0;
 }
 
 void TEST_bases_table() {

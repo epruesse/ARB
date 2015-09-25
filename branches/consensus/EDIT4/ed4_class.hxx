@@ -947,6 +947,7 @@ public:
 };
 
 typedef ED4_bases_table *ED4_bases_table_ptr;
+class ConsensusBuildParams;
 
 class ED4_char_table : virtual Noncopyable {
     ED4_bases_table_ptr *bases_table;
@@ -1028,9 +1029,9 @@ public:
     void sub(const char *string, int len);
     void sub_and_add(const char *old_string, const char *new_string, PosRange range);
 
-    void build_consensus_string_to(char *buffer, ExplicitRange range) const;
-    char *build_consensus_string(PosRange range) const;
-    char *build_consensus_string() const { return build_consensus_string(PosRange::whole()); }
+    void build_consensus_string_to(char *consensus_string, ExplicitRange range, const ConsensusBuildParams *BK) const;
+    char *build_consensus_string(PosRange r, const ConsensusBuildParams *cbp) const;
+    char *build_consensus_string(const ConsensusBuildParams *cbp) const { return build_consensus_string(PosRange::whole(), cbp); }
 
     void change_table_length(int new_length);
 };
@@ -1631,7 +1632,8 @@ class ED4_root : virtual Noncopyable {
     void refresh_window_simple(bool redraw);
     void handle_update_requests(bool& redraw);
 
-    ED4_window *most_recently_used_window;
+    ED4_window           *most_recently_used_window;
+    ConsensusBuildParams *cons_param;
 
 public:
     char       *db_name;                            // name of Default Properties database (complete path)
@@ -1670,6 +1672,9 @@ public:
     bool column_stat_initialized;
     bool visualizeSAI;
     bool visualizeSAI_allSpecies;
+
+    ConsensusBuildParams *get_consensus_params();
+    void reset_consensus_params();
 
     LoadableSaiState loadable_SAIs; // maintain proper refresh of list of loadable SAIs
     void loadable_SAIs_may_have_changed() { if (loadable_SAIs == LSAI_UPTODATE) loadable_SAIs = LSAI_OUTDATED; }
@@ -1864,6 +1869,12 @@ public:
 
     ED4_multi_species_manager *get_multi_species_manager() const {
         return get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
+    }
+
+    char *build_consensus_string(PosRange range) const { return table().build_consensus_string(range, ED4_ROOT->get_consensus_params()); }
+    char *build_consensus_string(int *cons_length = NULL) const {
+        if (cons_length) *cons_length = table().size();
+        return table().build_consensus_string(ED4_ROOT->get_consensus_params());
     }
 };
 
@@ -2292,9 +2303,10 @@ struct ED4_pure_text_terminal : public ED4_text_terminal {
 
 class ED4_consensus_sequence_terminal : public ED4_sequence_terminal { // derived from a Noncopyable
     E4B_AVOID_UNNEEDED_CASTS(consensus_sequence_terminal);
-    
+
     virtual ED4_returncode draw() OVERRIDE;
-    ED4_char_table& get_char_table() const { return get_parent(ED4_L_GROUP)->to_group_manager()->table(); }
+    const ED4_abstract_group_manager *get_group_manager() const  { return get_parent(ED4_L_GROUP)->to_group_manager(); }
+    const ED4_char_table& get_char_table() const { return get_group_manager()->table(); }
 public:
     char *temp_cons_seq; // used for editing consensus (normally NULL)
 
@@ -2386,6 +2398,7 @@ E4B_IMPL_CASTOP(text_terminal);               // to_text_terminal
 inline ED4_device_manager *ED4_root::get_device_manager() {
     return main_manager->search_spec_child_rek(ED4_L_DEVICE)->to_device_manager();
 }
+
 
 inline ED4_species_name_terminal *ED4_multi_species_manager::get_consensus_name_terminal() const { 
     ED4_species_manager *consensus_man = get_consensus_manager();

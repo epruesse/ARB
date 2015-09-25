@@ -911,7 +911,7 @@ static char *get_group_consensus(const char *species_name, PosRange range) {
     if (name_term) {
         ED4_abstract_group_manager *group_man = name_term->get_parent(ED4_level(ED4_L_GROUP|ED4_L_ROOTGROUP))->to_abstract_group_manager();
         if (group_man) {
-            consensus = group_man->table().build_consensus_string(range);
+            consensus = group_man->build_consensus_string(range);
         }
     }
 

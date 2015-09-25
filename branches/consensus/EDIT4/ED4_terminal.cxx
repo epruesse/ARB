@@ -897,10 +897,7 @@ ED4_consensus_sequence_terminal::ED4_consensus_sequence_terminal(const char *tem
 }
 
 char *ED4_consensus_sequence_terminal::get_sequence_copy(int *str_len) const {
-    ED4_char_table& table = get_char_table();
-
-    if (str_len) *str_len = table.size();
-    return table.build_consensus_string();
+    return get_group_manager()->build_consensus_string(str_len);
 }
 
 int ED4_consensus_sequence_terminal::get_length() const {
