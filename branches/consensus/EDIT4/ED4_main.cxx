@@ -45,26 +45,26 @@
 AW_HEADER_MAIN
 
 ED4_root *ED4_ROOT;
-GBDATA   *GLOBAL_gb_main = NULL;                                        // global gb_main for arb_edit4
+GBDATA   *GLOBAL_gb_main = NULL; // global gb_main for arb_edit4
 
-int TERMINALHEIGHT;                                                     // this variable replaces the define
+int TERMINALHEIGHT;
 
 int INFO_TERM_TEXT_YOFFSET;
 int SEQ_TERM_TEXT_YOFFSET;
 
-int MAXSEQUENCECHARACTERLENGTH;                                         // greatest # of characters in a sequence string terminal
+int MAXSEQUENCECHARACTERLENGTH; // greatest # of characters in a sequence string terminal
 int MAXSPECIESWIDTH;
-int MAXINFOWIDTH;                                                       // # of pixels used to display sequence info ("CONS", "4data", etc.)
+int MAXINFOWIDTH;               // # of pixels used to display sequence info ("CONS", "4data", etc.)
 
 long ED4_counter = 0;
 
-size_t         not_found_counter;                   // nr of species which haven't been found
+size_t         not_found_counter; // nr of species which haven't been found
 GBS_strstruct *not_found_message;
 
-long         max_seq_terminal_length;               // global maximum of sequence terminal length
+long         max_seq_terminal_length; // global maximum of sequence terminal length
 ED4_EDITMODI awar_edit_mode;
 long         awar_edit_rightward;
-bool         move_cursor;                           // only needed for editing in consensus
+bool         move_cursor;             // only needed for editing in consensus
 bool         DRAW;
 
 inline void replaceChars(char *s, char o, char n) {

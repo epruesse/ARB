@@ -487,7 +487,7 @@ void ED4_char_table::build_consensus_string_to(char *consensus_string, ExplicitR
 
             for (int j=0; j<used_bases_tables; j++) {
                 base[j] = linear_table(j)[i];
-                if (!ADPP_IS_ALIGN_CHARACTER(index_to_upperChar(j))) {
+                if (!ADPP_IS_ALIGN_CHARACTER(index_to_upperChar(j))) { // @@@ elim ADPP_IS_ALIGN_CHARACTER here
                     bases += base[j];
                     if (base[j]>max_base) { // search for most used base
                         max_base     = base[j];
@@ -524,7 +524,7 @@ void ED4_char_table::build_consensus_string_to(char *consensus_string, ExplicitR
                         for (int j=0; j<used_bases_tables; j++) {
                             int bchar = index_to_upperChar(j);
 
-                            if (!ADPP_IS_ALIGN_CHARACTER(bchar)) {
+                            if (!ADPP_IS_ALIGN_CHARACTER(bchar)) { // @@@ elim ADPP_IS_ALIGN_CHARACTER here
                                 if (PERCENT(base[j],bases) >= BK.considbound) {
 #if defined(DEBUG_CONSENSUS)
                                     if (!kcount) DUMPINT(BK.considbound);
@@ -553,7 +553,7 @@ void ED4_char_table::build_consensus_string_to(char *consensus_string, ExplicitR
                         for (int j=0; j<used_bases_tables; j++) {
                             unsigned char bchar = index_to_upperChar(j);
 
-                            if (!ADPP_IS_ALIGN_CHARACTER(bchar)) {
+                            if (!ADPP_IS_ALIGN_CHARACTER(bchar)) { // @@@ elim ADPP_IS_ALIGN_CHARACTER here
                                 if (PERCENT(base[j], bases) >= BK.considbound) {
                                     group_count[iupac::get_amino_group_for(bchar)] += base[j];
                                 }
@@ -704,7 +704,7 @@ void ED4_char_table::initial_setup(const char *gap_chars, GB_alignment_type ali_
 ED4_char_table::ED4_char_table(int maxseqlength)
     : ignore(0)
 {
-    if (!initialized) {
+    if (!initialized) { // @@@ do not auto-init; just expect it has been done
         char *align_string = ED4_ROOT->aw_root->awar_string(ED4_AWAR_GAP_CHARS)->read_string();
         initial_setup(align_string, ED4_ROOT->alignment_type);
         free(align_string);
@@ -738,7 +738,7 @@ void ED4_char_table::bases_and_gaps_at(int column, int *bases, int *gaps) const
     for (i=0; i<used_bases_tables; i++) {
         char c = upper_index_chars[i];
 
-        if (ADPP_IS_ALIGN_CHARACTER(c)) {
+        if (ADPP_IS_ALIGN_CHARACTER(c)) { // @@@ elim ADPP_IS_ALIGN_CHARACTER here
             g += table(c)[column];
         }
         else {
@@ -1132,7 +1132,7 @@ bool ED4_char_table::ok() const
     }
 
     int i;
-    for (i=0; i<MAXSEQUENCECHARACTERLENGTH; i++) {
+    for (i=0; i<MAXSEQUENCECHARACTERLENGTH; i++) { // @@@ elim MAXSEQUENCECHARACTERLENGTH here
         int bases;
         int gaps;
 
@@ -1140,7 +1140,7 @@ bool ED4_char_table::ok() const
 
         if (!bases && !gaps) { // this occurs after insert column
             int j;
-            for (j=i+1; j<MAXSEQUENCECHARACTERLENGTH; j++) {    // test if we find any bases till end of table !!!
+            for (j=i+1; j<MAXSEQUENCECHARACTERLENGTH; j++) {    // test if we find any bases till end of table !!! // @@@ elim MAXSEQUENCECHARACTERLENGTH here 
 
                 bases_and_gaps_at(j, &bases, 0);
                 if (bases) { // bases found -> empty position was illegal
@@ -1194,7 +1194,7 @@ void TEST_char_table() {
     // const char *gapChars = ".";
     // const char *gapChars = "A"; // makes me fail
     ED4_char_table::initial_setup(gapChars, GB_AT_RNA);
-    ED4_init_is_align_character(gapChars);
+    ED4_init_is_align_character(gapChars); // @@@ elim here
 
     ConsensusBuildParams BK;
     // BK.lower = 70; BK.upper = 95; BK.gapbound = 60; // defaults from awars
@@ -1281,7 +1281,7 @@ void TEST_nucleotide_consensus() {
 
     const char *gapChars = ".-";
     ED4_char_table::initial_setup(gapChars, GB_AT_RNA);
-    ED4_init_is_align_character(gapChars);
+    ED4_init_is_align_character(gapChars); // @@@ elim here
 
     ED4_char_table tab(seqlen);
     for (int s = 0; s<sequenceCount; ++s) {
@@ -1334,7 +1334,7 @@ void TEST_amino_consensus() {
 
     const char *gapChars = ".-";
     ED4_char_table::initial_setup(gapChars, GB_AT_AA);
-    ED4_init_is_align_character(gapChars);
+    ED4_init_is_align_character(gapChars); // @@@ elim here
 
     ED4_char_table tab(seqlen);
     for (int s = 0; s<sequenceCount; ++s) {
