@@ -83,8 +83,7 @@ extern bool         DRAW;
 
 #define MAX_POSSIBLE_SEQ_LENGTH     100000000
 
-#define MAXCHARTABLE 256                            // Maximum of Consensustable
-#define MAXWINDOWS   5
+#define MAXWINDOWS 5
 
 #define AWAR_EDIT_MODE                  "tmp/edit4/edit_mode"
 #define AWAR_INSERT_MODE                "tmp/edit4/insert_mode"
