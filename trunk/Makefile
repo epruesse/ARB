@@ -707,7 +707,7 @@ cxxflags += -std=gnu++0x
 endif
 
 LINK_STATIC_LIB := ar -csq# link static lib
-LINK_EXECUTABLE := $(A_CXX) $(clflags) -o# link executable (c++)
+LINK_EXECUTABLE := $(A_CXX) $(clflags) -Wl,--no-undefined -o# link executable (c++)
 
 ifeq ($(LINK_STATIC),1)
 SHARED_LIB_SUFFIX = a# static lib suffix
