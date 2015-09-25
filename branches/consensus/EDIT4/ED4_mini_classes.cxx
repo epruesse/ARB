@@ -1290,9 +1290,9 @@ void TEST_nucleotide_consensus() {
         TEST_ANNOTATE(GBS_global_string("c=%i", c));
         switch (c) {
             case 0: break;                                                      // use default settings
-            case 1: BK->countgaps   = 0; break;                                 // dont count gaps
+            case 1: BK->countgaps   = false; break;                             // dont count gaps
             case 2: BK->considbound = 26; BK->lower = 0; BK->upper = 75; break; // settings from #663
-            case 3: BK->countgaps   = 1; BK->gapbound = 70; break;
+            case 3: BK->countgaps   = true; BK->gapbound = 70; break;
             case 4: BK->considbound = 20; break;
             default: e4_assert(0); break;                                       // missing
         }
@@ -1346,9 +1346,9 @@ void TEST_amino_consensus() {
         TEST_ANNOTATE(GBS_global_string("c=%i", c));
         switch (c) {
             case 0: break;                                                      // use default settings
-            case 1: BK->countgaps   = 0; break;                                 // dont count gaps
+            case 1: BK->countgaps   = false; break;                             // dont count gaps
             case 2: BK->considbound = 26; BK->lower = 0; BK->upper = 75; break; // settings from #663
-            case 3: BK->countgaps   = 1; BK->gapbound = 70; break;
+            case 3: BK->countgaps   = true; BK->gapbound = 70; break;
             case 4: BK->considbound = 20; break;
             default: e4_assert(0); break;                                       // missing
         }

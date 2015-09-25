@@ -27,9 +27,9 @@
 #endif
 
 struct ConsensusBuildParams {
-    int countgaps; // @@@ -> bool
+    bool countgaps;
     int gapbound;
-    int group; // @@@ -> bool
+    int group; // @@@ -> enum (containing group-type for amino-acids)
     int considbound;
     int upper;
     int lower;
@@ -83,7 +83,7 @@ struct ConsensusBuildParams {
 
 #if defined(UNIT_TESTS) // UT_DIFF
     ConsensusBuildParams() // uses defaults of EDIT4 awars (@@@ check NTREE awar defaults)
-        : countgaps(1),
+        : countgaps(true),
           gapbound(60),
           group(1),
           considbound(30),
