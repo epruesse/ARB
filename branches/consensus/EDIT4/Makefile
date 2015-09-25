@@ -34,7 +34,6 @@ depend.init:
 chartable.o: chartable.h
 chartable.o: ed4_defs.hxx
 chartable.o: ed4_edit_string.hxx
-chartable.o: ed4_tools.hxx
 chartable.o: $(ARBHOME)/INCLUDE/arb_assert.h
 chartable.o: $(ARBHOME)/INCLUDE/arb_core.h
 chartable.o: $(ARBHOME)/INCLUDE/arb_defs.h
@@ -283,6 +282,7 @@ ED4_cursor.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ED4_cursor.o: $(ARBHOME)/INCLUDE/downcast.h
 ED4_cursor.o: $(ARBHOME)/INCLUDE/dupstr.h
 ED4_cursor.o: $(ARBHOME)/INCLUDE/gccver.h
+ED4_cursor.o: $(ARBHOME)/INCLUDE/iupac.h
 ED4_cursor.o: $(ARBHOME)/INCLUDE/pos_range.h
 ED4_cursor.o: $(ARBHOME)/INCLUDE/smartptr.h
 ED4_cursor.o: $(ARBHOME)/INCLUDE/static_assert.h
@@ -655,7 +655,6 @@ ED4_no_class.o: ed4_list.hxx
 ED4_no_class.o: ed4_nds.hxx
 ED4_no_class.o: ed4_search.hxx
 ED4_no_class.o: ed4_seq_colors.hxx
-ED4_no_class.o: ed4_tools.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/ad_config.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
@@ -703,6 +702,7 @@ ED4_no_class.o: $(ARBHOME)/INCLUDE/dupstr.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/gccver.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/item_sel_list.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/items.h
+ED4_no_class.o: $(ARBHOME)/INCLUDE/iupac.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/macros.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/pos_range.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -1146,32 +1146,21 @@ ED4_text_terminals.o: $(ARBHOME)/INCLUDE/test_global.h
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 ED4_tools.o: chartable.h
-ED4_tools.o: ed4_awars.hxx
 ED4_tools.o: ed4_class.hxx
 ED4_tools.o: ed4_defs.hxx
-ED4_tools.o: ed4_edit_string.hxx
 ED4_tools.o: ed4_search.hxx
-ED4_tools.o: ed4_tools.hxx
-ED4_tools.o: $(ARBHOME)/INCLUDE/ad_prot.h
-ED4_tools.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ED4_tools.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ED4_tools.o: $(ARBHOME)/INCLUDE/arb_core.h
 ED4_tools.o: $(ARBHOME)/INCLUDE/arb_error.h
-ED4_tools.o: $(ARBHOME)/INCLUDE/arb_msg.h
-ED4_tools.o: $(ARBHOME)/INCLUDE/arb_string.h
-ED4_tools.o: $(ARBHOME)/INCLUDE/arbdb.h
 ED4_tools.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-ED4_tools.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ED4_tools.o: $(ARBHOME)/INCLUDE/arbtools.h
 ED4_tools.o: $(ARBHOME)/INCLUDE/attributes.h
-ED4_tools.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ED4_tools.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_tools.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_tools.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 ED4_tools.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
 ED4_tools.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_tools.o: $(ARBHOME)/INCLUDE/aw_position.hxx
-ED4_tools.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ED4_tools.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_tools.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 ED4_tools.o: $(ARBHOME)/INCLUDE/cb.h
@@ -1180,9 +1169,7 @@ ED4_tools.o: $(ARBHOME)/INCLUDE/cbtypes.h
 ED4_tools.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ED4_tools.o: $(ARBHOME)/INCLUDE/downcast.h
 ED4_tools.o: $(ARBHOME)/INCLUDE/dupstr.h
-ED4_tools.o: $(ARBHOME)/INCLUDE/fast_aligner.hxx
 ED4_tools.o: $(ARBHOME)/INCLUDE/gccver.h
-ED4_tools.o: $(ARBHOME)/INCLUDE/iupac.h
 ED4_tools.o: $(ARBHOME)/INCLUDE/pos_range.h
 ED4_tools.o: $(ARBHOME)/INCLUDE/smartptr.h
 ED4_tools.o: $(ARBHOME)/INCLUDE/static_assert.h

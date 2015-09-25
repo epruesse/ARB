@@ -18,7 +18,6 @@
 #include <consensus.h>
 
 #include "ed4_edit_string.hxx" // for ADPP_IS_ALIGN_CHARACTER (@@@ elim)
-#include "ed4_tools.hxx" // for ED4_encode_iupac (@@@ elim)
 
 
 // ------------------------
@@ -481,7 +480,7 @@ void ED4_char_table::build_consensus_string_to(char *consensus_string, ExplicitR
                             }
                         }
                         used_bases[no_of_bases] = 0;
-                        kchar = ED4_encode_iupac(used_bases, ali_type);
+                        kchar = iupac::encode(used_bases, ali_type);
                     }
                     else {
                         e4_assert(ali_type == GB_AT_AA);

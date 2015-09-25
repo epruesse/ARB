@@ -13,7 +13,6 @@
 #include "ed4_awars.hxx"
 #include "ed4_class.hxx"
 #include "ed4_edit_string.hxx"
-#include "ed4_tools.hxx"
 #include "ed4_nds.hxx"
 #include "ed4_list.hxx"
 #include "ed4_seq_colors.hxx"
@@ -30,6 +29,7 @@
 #include <aw_root.hxx>
 #include <macros.hxx>
 #include <arb_defs.h>
+#include <iupac.h>
 
 #include <cctype>
 #include <limits.h>
@@ -787,7 +787,7 @@ void ED4_set_iupac(AW_window *aww, char *awar_name, bool /* callback_flag */) {
 
             if (seq_pos<len) {
                 char *iupac    = ED4_ROOT->aw_root->awar(awar_name)->read_string();
-                char  new_char = ED4_encode_iupac(iupac, ED4_ROOT->alignment_type);
+                char  new_char = iupac::encode(iupac, ED4_ROOT->alignment_type);
 
                 seq[seq_pos] = new_char;
                 cursor->owner_of_cursor->write_sequence(seq, len);

@@ -8,6 +8,7 @@
 #include <aw_msg.hxx>
 #include <arb_progress.h>
 #include <aw_root.hxx>
+#include <iupac.h>
 
 #include <ed4_extern.hxx>
 
@@ -911,8 +912,8 @@ void ED4_cursor::updateAwars(bool new_term_selected) {
         }
 
         if (at[0]) {
-            char base = at[0];
-            const char *i = ED4_decode_iupac(base, ED4_ROOT->alignment_type);
+            char        base = at[0];
+            const char *i    = iupac::decode(base, ED4_ROOT->alignment_type, aw_root->awar(ED4_AWAR_CONSENSUS_GROUP)->read_int());
 
             e4_assert(strlen(i)<=MAXIUPAC);
             strcpy(iupac, i);
