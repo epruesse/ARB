@@ -23,6 +23,9 @@
 #include <arb_msg.h>
 #include <arb_defs.h>
 
+#define CONSENSUS_AWAR_SOURCE CAS_EDIT4
+#include <consensus.h>
+
 // ------------------------
 //      ED4_bases_table
 
@@ -378,37 +381,6 @@ int ED4_bases_table::empty() const
 
 // ------------------------
 //      Build consensus
-
-// we make static copies of the awars to avoid performance breakdown (BK_up_to_date is changed by callback ED4_consensus_definition_changed)
-
-struct ConsensusBuildParams { // @@@ DRY vs ../NTREE/AP_consensus.cxx@ConsensusBuildParams
-    int countgaps;
-    int gapbound;
-    int group;
-    int considbound;
-    int upper;
-    int lower;
-
-    ConsensusBuildParams(AW_root *awr) {
-        countgaps   = awr->awar(ED4_AWAR_CONSENSUS_COUNTGAPS)->read_int();
-        gapbound    = awr->awar(ED4_AWAR_CONSENSUS_GAPBOUND)->read_int();
-        group       = awr->awar(ED4_AWAR_CONSENSUS_GROUP)->read_int();
-        considbound = awr->awar(ED4_AWAR_CONSENSUS_CONSIDBOUND)->read_int();
-        upper       = awr->awar(ED4_AWAR_CONSENSUS_UPPER)->read_int();
-        lower       = awr->awar(ED4_AWAR_CONSENSUS_LOWER)->read_int();
-    }
-#if defined(UNIT_TESTS) // UT_DIFF
-    ConsensusBuildParams() {
-        // (should) use awar defaults
-        countgaps   = 1;
-        gapbound    = 60;
-        group       = 1;
-        considbound = 30;
-        upper       = 95;
-        lower       = 70;
-    }
-#endif
-};
 
 static ConsensusBuildParams *BK = NULL; // @@@ make member of ED4_char_table ?
 

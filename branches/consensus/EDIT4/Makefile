@@ -520,6 +520,7 @@ ED4_mini_classes.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/cb_base.h
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/cbtypes.h
+ED4_mini_classes.o: $(ARBHOME)/INCLUDE/consensus.h
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/downcast.h
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/dupstr.h

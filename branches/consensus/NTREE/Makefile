@@ -269,6 +269,7 @@ AP_consensus.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/cb.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/cb_base.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/cbtypes.h
+AP_consensus.o: $(ARBHOME)/INCLUDE/consensus.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/consensus_config.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/downcast.h

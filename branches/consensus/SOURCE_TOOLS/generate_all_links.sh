@@ -290,6 +290,7 @@ symlink_file ../SL/CB/cb_base.h INCLUDE/cb_base.h &&
 symlink_file ../SL/CB/cb_base.h INCLUDE/cb_base.h &&
 symlink_file ../SL/CB/cbtypes.h INCLUDE/cbtypes.h &&
 symlink_file ../SL/CB/rootAsWin.h INCLUDE/rootAsWin.h &&
+symlink_file ../SL/CONSENSUS/consensus.h INCLUDE/consensus.h &&
 symlink_file ../SL/DB_QUERY/db_query.h INCLUDE/db_query.h &&
 symlink_file ../SL/DB_SCANNER/db_scanner.hxx INCLUDE/db_scanner.hxx &&
 symlink_file ../SL/DB_UI/dbui.h INCLUDE/dbui.h &&

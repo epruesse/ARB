@@ -23,7 +23,6 @@
 #include <awt_misc.hxx>
 #include <awt_sel_boxes.hxx>
 
-#include <consensus_config.h>
 
 #define AWAR_MAX_FREQ_PREFIX      "tmp/CON_MAX_FREQ/"
 #define AWAR_CONSENSUS_PREFIX     "con/"
@@ -43,6 +42,10 @@
 #define AWAR_CONSENSUS_RESULT       AWAR_CONSENSUS_PREFIX "result"
 #define AWAR_CONSENSUS_NAME         AWAR_CONSENSUS_PREFIX_TMP "name"
 
+#define CONSENSUS_AWAR_SOURCE CAS_NTREE
+#include <consensus.h>
+#include <consensus_config.h>
+
 enum {
     BAS_GAP,
     BAS_A,  BAS_C,  BAS_G,  BAS_T, BAS_N,
@@ -50,46 +53,6 @@ enum {
     MAX_BASES,
     MAX_AMINOS  = 27,
     MAX_GROUPS  = 40
-};
-
-struct ConsensusBuildParams { // @@@ DRY; copy of ../EDIT4/ED4_mini_classes.cxx@ConsensusBuildParams
-    int countgaps; // @@@ -> bool
-    int gapbound;
-    int group; // @@@ -> bool
-    int considbound;
-    int upper;
-    int lower;
-
-    static void force_in_range(int low, int& val, int high) {
-        val = std::min(std::max(low, val), high);
-    }
-
-    void make_valid() {
-        force_in_range(0, gapbound,    100);
-        force_in_range(0, considbound, 100);
-        force_in_range(0, upper,       100);
-        force_in_range(0, lower,       100);
-    }
-
-    ConsensusBuildParams(AW_root *awr) {
-        countgaps   = strcmp(awr->awar(AWAR_CONSENSUS_COUNTGAPS)->read_char_pntr(), "on") == 0;
-        gapbound    = awr->awar(AWAR_CONSENSUS_GAPBOUND)->read_int();
-        group       = strcmp(awr->awar(AWAR_CONSENSUS_GROUP)->read_char_pntr(), "on") == 0;
-        considbound = awr->awar(AWAR_CONSENSUS_FCONSIDBOUND)->read_float();
-        upper       = awr->awar(AWAR_CONSENSUS_FUPPER)->read_float();
-        lower       = awr->awar(AWAR_CONSENSUS_LOWER)->read_int();
-    }
-#if defined(UNIT_TESTS) // UT_DIFF
-    ConsensusBuildParams() {
-        // (should) use awar defaults // @@@ check
-        countgaps   = 1;
-        gapbound    = 60;
-        group       = 1;
-        considbound = 30;
-        upper       = 95;
-        lower       = 70;
-    }
-#endif
 };
 
 static char *CON_evaluatestatistic(const int *const*statistic, const char *const*groupflags, const char *groupnames, int alignlength, int numgroups, const ConsensusBuildParams& BK) {
