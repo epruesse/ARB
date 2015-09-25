@@ -681,6 +681,21 @@ ifeq ($(DEBUG),0)
  endif
 endif
 
+#---------------------- differences between linking executables and shared libs:
+
+# executables:
+ifeq ($(DARWIN),1)
+blflags:=$(clflags)
+else
+blflags:=$(clflags) -Wl,--no-undefined
+endif
+
+# shared libraries
+llflags:=$(clflags)
+
+# dont use clflags below
+clflags:=
+
 # -------------------------------------------------------------------------
 #	Don't put any machine/version/etc conditionals below!
 #	(instead define variables above)
@@ -707,14 +722,14 @@ cxxflags += -std=gnu++0x
 endif
 
 LINK_STATIC_LIB := ar -csq# link static lib
-LINK_EXECUTABLE := $(A_CXX) $(clflags) -Wl,--no-undefined -o# link executable (c++)
+LINK_EXECUTABLE := $(A_CXX) $(blflags) -o# link executable (c++)
 
 ifeq ($(LINK_STATIC),1)
 SHARED_LIB_SUFFIX = a# static lib suffix
 LINK_SHARED_LIB := $(LINK_STATIC_LIB)
 else
 SHARED_LIB_SUFFIX = so# shared lib suffix
-LINK_SHARED_LIB := $(A_CXX) $(clflags) -shared $(GCOVFLAGS) -o# link shared lib
+LINK_SHARED_LIB := $(A_CXX) $(llflags) -shared $(GCOVFLAGS) -o# link shared lib
 endif
 
 ifeq ($(DARWIN),1)
@@ -724,7 +739,8 @@ lflags4perl:=$(cross_lflags) -shared
 endif
 
 # delete variables unused below
-clflags:=
+blflags:=
+llflags:=
 
 # other used tools
 MAKEDEPEND_PLAIN = makedepend
