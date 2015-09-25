@@ -32,36 +32,26 @@ depend.init:
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl (from main)
 
 chartable.o: chartable.h
-chartable.o: ed4_awars.hxx
-chartable.o: ed4_class.hxx
 chartable.o: ed4_defs.hxx
 chartable.o: ed4_edit_string.hxx
-chartable.o: ed4_search.hxx
 chartable.o: ed4_tools.hxx
 chartable.o: $(ARBHOME)/INCLUDE/arb_assert.h
 chartable.o: $(ARBHOME)/INCLUDE/arb_core.h
 chartable.o: $(ARBHOME)/INCLUDE/arb_defs.h
-chartable.o: $(ARBHOME)/INCLUDE/arb_error.h
 chartable.o: $(ARBHOME)/INCLUDE/arb_msg.h
 chartable.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 chartable.o: $(ARBHOME)/INCLUDE/arbtools.h
 chartable.o: $(ARBHOME)/INCLUDE/attributes.h
-chartable.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 chartable.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 chartable.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
-chartable.o: $(ARBHOME)/INCLUDE/aw_device.hxx
-chartable.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
 chartable.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 chartable.o: $(ARBHOME)/INCLUDE/aw_position.hxx
-chartable.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 chartable.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-chartable.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 chartable.o: $(ARBHOME)/INCLUDE/cb.h
 chartable.o: $(ARBHOME)/INCLUDE/cb_base.h
 chartable.o: $(ARBHOME)/INCLUDE/cbtypes.h
 chartable.o: $(ARBHOME)/INCLUDE/consensus.h
 chartable.o: $(ARBHOME)/INCLUDE/cxxforward.h
-chartable.o: $(ARBHOME)/INCLUDE/downcast.h
 chartable.o: $(ARBHOME)/INCLUDE/dupstr.h
 chartable.o: $(ARBHOME)/INCLUDE/gccver.h
 chartable.o: $(ARBHOME)/INCLUDE/iupac.h

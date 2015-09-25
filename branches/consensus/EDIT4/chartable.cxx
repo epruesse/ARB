@@ -19,10 +19,6 @@
 
 #include "ed4_edit_string.hxx" // for ADPP_IS_ALIGN_CHARACTER (@@@ elim)
 #include "ed4_tools.hxx" // for ED4_encode_iupac (@@@ elim)
-#include "ed4_awars.hxx" // for ED4_AWAR_GAP_CHARS (@@@ elim)
-#include "ed4_class.hxx" // for ED4_ROOT (@@@ elim)
-#include <aw_root.hxx> // for awar access (@@@ elim)
-#include <aw_awar.hxx> // for awar access (@@@ elim)
 
 
 // ------------------------
@@ -650,11 +646,7 @@ void ED4_char_table::initial_setup(const char *gap_chars, GB_alignment_type ali_
 ED4_char_table::ED4_char_table(int maxseqlength)
     : ignore(0)
 {
-    if (!initialized) { // @@@ do not auto-init; just expect it has been done
-        char *align_string = ED4_ROOT->aw_root->awar_string(ED4_AWAR_GAP_CHARS)->read_string();
-        initial_setup(align_string, ED4_ROOT->alignment_type);
-        free(align_string);
-    }
+    e4_assert(initialized);
 
     bases_table = new ED4_bases_table_ptr[used_bases_tables];
 
