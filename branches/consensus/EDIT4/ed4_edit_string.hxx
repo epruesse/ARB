@@ -20,7 +20,7 @@
 
 struct ED4_work_info;
 
-inline bool ADPP_IS_ALIGN_CHARACTER(unsigned char chr) { return ED4_char_table::isGap(chr); }
+inline bool ED4_is_gap_character(char chr) { return ED4_char_table::isGap(safeCharIndex(chr)); }
 void ED4_setup_gaps_and_alitype(const char *gap_chars, GB_alignment_type alitype);
 
 const char SEQ_POINT = '.';

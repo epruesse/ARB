@@ -1635,11 +1635,11 @@ static GB_ERROR createDataFromConsensus(GBDATA *gb_species, ED4_group_manager *g
 
     if (ED4_ROOT->aw_root->awar(ED4_AWAR_CREATE_FROM_CONS_CREATE_POINTS)) { // points at start & end of sequence?
         for (int p=0; p<len; p++) {
-            if (!ADPP_IS_ALIGN_CHARACTER(consensus[p])) break;
+            if (!ED4_is_gap_character(consensus[p])) break;
             consensus[p] = '.';
         }
         for (int p=len-1; p>=0; p--) {
-            if (!ADPP_IS_ALIGN_CHARACTER(consensus[p])) break;
+            if (!ED4_is_gap_character(consensus[p])) break;
             consensus[p] = '.';
         }
     }

@@ -1099,7 +1099,7 @@ public:
             int len;
             char *seq = seqTerm->resolve_pointer_to_string_copy(&len);
             if (seq) {
-                test_succeeded = len>seq_pos && bool(ADPP_IS_ALIGN_CHARACTER(seq[seq_pos]))!=want_base;
+                test_succeeded = len>seq_pos && bool(ED4_is_gap_character(seq[seq_pos]))!=want_base;
             }
             free(seq);
         }
@@ -1517,8 +1517,7 @@ void ED4_base_position::remove_changed_cb() {
     }
 }
 
-static bool is_gap(char c) { return ADPP_IS_ALIGN_CHARACTER(c); }
-static bool is_consensus_gap(char c) { return is_gap(c) || c == '='; }
+static bool is_consensus_gap(char c) { return ED4_is_gap_character(c) || c == '='; }
 
 void ED4_base_position::calc4term(const ED4_terminal *base) {
     e4_assert(base);
@@ -1544,7 +1543,7 @@ void ED4_base_position::calc4term(const ED4_terminal *base) {
     else {
         seq = base->resolve_pointer_to_string_copy(&len); 
         e4_assert((int)strlen(seq) == len);
-        isGap_fun = is_gap;
+        isGap_fun = ED4_is_gap_character;
     }
 
     e4_assert(seq);
@@ -1755,12 +1754,12 @@ struct test_basepos : public test_absrel {
     } while(0)
 
 
-#define TEST_BASE_POS_EQUALS(data,a2r,r2a) do {                                 \
-        {                                                                       \
-            BasePosition bpos(data, strlen(data), CharPredicate(is_gap));       \
-            TEST_ABSREL_EQUALS(test_basepos(bpos, true), a2r);                  \
-            TEST_ABSREL_EQUALS(test_basepos(bpos, false), r2a);                 \
-        }                                                                       \
+#define TEST_BASE_POS_EQUALS(data,a2r,r2a) do {                                               \
+        {                                                                                     \
+            BasePosition bpos(data, strlen(data), CharPredicate(ED4_is_gap_character));       \
+            TEST_ABSREL_EQUALS(test_basepos(bpos, true), a2r);                                \
+            TEST_ABSREL_EQUALS(test_basepos(bpos, false), r2a);                               \
+        }                                                                                     \
     } while(0)
 
 void TEST_BI_ecoli_ref() {

@@ -78,7 +78,7 @@ class SeqPart {
     int offset;
     int len; // of part
 
-    static char to_gap(char c) { return ADPP_IS_ALIGN_CHARACTER(c) ? c : 0; }
+    static char to_gap(char c) { return ED4_is_gap_character(c) ? c : 0; }
 
 public:
     SeqPart(const char *seq_, int offset_, int len_)
@@ -221,7 +221,7 @@ static GB_ERROR perform_block_operation_on_whole_sequence(const ED4_block_operat
         if (new_seq) {
             if (new_len<len) {
                 memcpy(seq, new_seq, new_len);
-                char gap = ADPP_IS_ALIGN_CHARACTER(seq[len-1]) ? seq[len-1] : '.';
+                char gap = ED4_is_gap_character(seq[len-1]) ? seq[len-1] : '.';
                 int l;
                 for (l=new_len; l<len; l++) {
                     seq[l] = gap;
@@ -230,7 +230,7 @@ static GB_ERROR perform_block_operation_on_whole_sequence(const ED4_block_operat
             }
             else if (new_len>len) {
                 for (int l=new_len-1; l>=len; l--) {
-                    if (!ADPP_IS_ALIGN_CHARACTER(new_seq[l])) {
+                    if (!ED4_is_gap_character(new_seq[l])) {
                         error = "Result of block-operation to large (not enough gaps at end of sequence data)";
                         break;
                     }
@@ -285,7 +285,7 @@ static GB_ERROR perform_block_operation_on_part_of_sequence(const ED4_block_oper
             }
             else if (new_len>len_part) {
                 for (int l=new_len-1; l>=len_part; l--) {
-                    if (!ADPP_IS_ALIGN_CHARACTER(new_seq_part[l])) {
+                    if (!ED4_is_gap_character(new_seq_part[l])) {
                         error = "Result of block-operation to large (not enough gaps at end of marked columnblock)";
                         break;
                     }
@@ -805,7 +805,7 @@ public:
         int n = 0;
 
         while (o<len) {
-            if (!ADPP_IS_ALIGN_CHARACTER(seq[o])) result[n++] = seq[o];
+            if (!ED4_is_gap_character(seq[o])) result[n++] = seq[o];
             o++;
         }
 
@@ -846,7 +846,7 @@ class shift_op : public ED4_block_operator {
         char       *result = 0;
         const char *seq    = part.data();
 
-        if (!ADPP_IS_ALIGN_CHARACTER(seq[0])) {
+        if (!ED4_is_gap_character(seq[0])) {
             error = "Need a gap at block start for shifting left";
         }
         else {
@@ -864,7 +864,7 @@ class shift_op : public ED4_block_operator {
         const char *seq    = part.data();
         int         len    = part.length();
 
-        if (!ADPP_IS_ALIGN_CHARACTER(seq[len-1])) {
+        if (!ED4_is_gap_character(seq[len-1])) {
             error = "Need a gap at block end for shifting right";
         }
         else {
