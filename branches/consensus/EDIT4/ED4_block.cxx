@@ -1044,10 +1044,10 @@ static arb_test::match_expectation blockop_expected_io(const ED4_block_operator&
 #define TEST_EXPECT_BLOCKOP_ERRORHAS__BROKEN(oversized_input,blockop,expected) TEST_EXPECTATION__BROKEN(blockop_expected_io(blockop, oversized_input, NULL, expected))
 
 void TEST_block_operators() {
-    ED4_init_is_align_character("-.");
+    ED4_setup_gaps_and_alitype("-.", GB_AT_RNA);
 
     // Note: make sure tests perform an identity block operation at least once for each operator
-    
+
     // replace_op
     TEST_EXPECT_BLOCKOP_PERFORMS("-A-C--", replace_op("-",  "."),  "A.C.");
     TEST_EXPECT_BLOCKOP_PERFORMS("-A-C--", replace_op("?",  "."),  "....");

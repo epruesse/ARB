@@ -1517,8 +1517,8 @@ void ED4_base_position::remove_changed_cb() {
     }
 }
 
-static bool is_gap(char c) { return ED4_is_align_character[safeCharIndex(c)]; }
-static bool is_consensus_gap(char c) { return ED4_is_align_character[safeCharIndex(c)] || c == '='; }
+static bool is_gap(char c) { return ADPP_IS_ALIGN_CHARACTER(c); }
+static bool is_consensus_gap(char c) { return is_gap(c) || c == '='; }
 
 void ED4_base_position::calc4term(const ED4_terminal *base) {
     e4_assert(base);
@@ -1549,9 +1549,6 @@ void ED4_base_position::calc4term(const ED4_terminal *base) {
 
     e4_assert(seq);
 
-#if defined(WARN_TODO)
-#warning ED4_is_align_character is kinda CharPredicate - refactor
-#endif
     CharPredicate pred_is_gap(isGap_fun);
     initialize(seq, len, pred_is_gap);
     calced4term = base;
@@ -1789,14 +1786,14 @@ void TEST_BI_ecoli_ref() {
 }
 
 void TEST_base_position() {
-    ED4_init_is_align_character("-"); // count '.' as base
+    ED4_setup_gaps_and_alitype("-", GB_AT_RNA); // count '.' as base
 
     TEST_BASE_POS_EQUALS("-.AC-G-T-.",
                          "  [0]  0  0  1  2  3  3  4  4  5  5  6  [6]", // abs -> rel
                          "  [0]  1  2  3  5  7  9  [9]");               // rel -> abs
 
     // ------------------------------
-    ED4_init_is_align_character(".-");
+    ED4_setup_gaps_and_alitype(".-", GB_AT_RNA); // count '.' as gap
 
     TEST_BASE_POS_EQUALS("-.AC-G-T-.",
                          "  [0]  0  0  0  1  2  2  3  3  4  4  4  [4]", // abs -> rel
