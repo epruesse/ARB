@@ -30,5 +30,23 @@ depend.init:
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl (from SL)
 
+chartable.o: chartable.h
+chartable.o: consensus.h
+chartable.o: $(ARBHOME)/INCLUDE/arb_assert.h
+chartable.o: $(ARBHOME)/INCLUDE/arb_core.h
+chartable.o: $(ARBHOME)/INCLUDE/arb_defs.h
+chartable.o: $(ARBHOME)/INCLUDE/arb_msg.h
+chartable.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+chartable.o: $(ARBHOME)/INCLUDE/arbtools.h
+chartable.o: $(ARBHOME)/INCLUDE/attributes.h
+chartable.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+chartable.o: $(ARBHOME)/INCLUDE/cxxforward.h
+chartable.o: $(ARBHOME)/INCLUDE/dupstr.h
+chartable.o: $(ARBHOME)/INCLUDE/gccver.h
+chartable.o: $(ARBHOME)/INCLUDE/iupac.h
+chartable.o: $(ARBHOME)/INCLUDE/pos_range.h
+chartable.o: $(ARBHOME)/INCLUDE/test_global.h
+chartable.o: $(ARBHOME)/INCLUDE/test_unit.h
+
 consensus.o: consensus.h
 consensus.o: $(ARBHOME)/INCLUDE/aw_base.hxx

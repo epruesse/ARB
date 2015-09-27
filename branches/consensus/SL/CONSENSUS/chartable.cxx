@@ -1118,8 +1118,7 @@ void ED4_char_table::test() const {
 #include <test_unit.h>
 #endif
 
-void ED4_init_is_align_character(const char*); // @@@ elim later
-#define SETUP(gapChars,alitype) do { ED4_char_table::setup(gapChars,alitype); ED4_init_is_align_character(""); } while(0)
+#define SETUP(gapChars,alitype) ED4_char_table::setup(gapChars,alitype)
 
 void TEST_char_table() {
     const char alphabeth[]   = "ACGTN-";
