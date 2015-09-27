@@ -140,6 +140,7 @@ class ED4_char_table : virtual Noncopyable {
     // @@@ move statics into own class:
     static bool               initialized;
     static unsigned char      char_to_index_tab[MAXCHARTABLE];
+    static bool               is_gap[MAXCHARTABLE];
     static unsigned char     *upper_index_chars;
     static unsigned char     *lower_index_chars;
     static int                used_bases_tables; // size of 'bases_table'
@@ -177,7 +178,7 @@ public:
     ED4_char_table(int maxseqlength=0);
     ~ED4_char_table();
 
-    static void initial_setup(const char *gap_chars, GB_alignment_type ali_type_);
+    static void setup(const char *gap_chars, GB_alignment_type ali_type_);
 
     void ignore_me() { ignore = 1; }
     int is_ignored() const { return ignore; }

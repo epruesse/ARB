@@ -557,6 +557,7 @@ void ED4_char_table::build_consensus_string_to(char *consensus_string, ExplicitR
 
 bool               ED4_char_table::initialized       = false;
 unsigned char      ED4_char_table::char_to_index_tab[MAXCHARTABLE];
+bool               ED4_char_table::is_gap[MAXCHARTABLE];
 unsigned char     *ED4_char_table::upper_index_chars = 0;
 unsigned char     *ED4_char_table::lower_index_chars = 0;
 int                ED4_char_table::used_bases_tables = 0;
@@ -584,10 +585,10 @@ void ED4_char_table::expand_tables() {
     }
 }
 
-void ED4_char_table::initial_setup(const char *gap_chars, GB_alignment_type ali_type_) {
-    const char *groups = 0;
-    used_bases_tables  = strlen(gap_chars);
-    ali_type           = ali_type_;
+void ED4_char_table::setup(const char *gap_chars, GB_alignment_type ali_type_) {
+    const char *groups       = 0;
+
+    ali_type = ali_type_;
 
     switch (ali_type) {
         case GB_AT_RNA:
@@ -606,9 +607,20 @@ void ED4_char_table::initial_setup(const char *gap_chars, GB_alignment_type ali_
 
     e4_assert(groups);
 
-    int i;
+    for (int i = 0; i<MAXCHARTABLE; ++i) is_gap[i] = false;
 
-    for (i=0; groups[i]; i++) {
+    int   gapcharcount     = 0;
+    char *unique_gap_chars = strdup(gap_chars);
+    for (int i = 0; gap_chars[i]; ++i) {
+        if (!is_gap[safeCharIndex(gap_chars[i])]) { // ignore duplicate occurrences in 'gap_chars'
+            is_gap[safeCharIndex(gap_chars[i])] = true;
+            unique_gap_chars[gapcharcount++]    = gap_chars[i];
+        }
+    }
+
+    used_bases_tables = gapcharcount;
+
+    for (int i=0; groups[i]; i++) {
         if (groups[i]==',') {
             used_bases_tables++;
         }
@@ -621,7 +633,7 @@ void ED4_char_table::initial_setup(const char *gap_chars, GB_alignment_type ali_
     unsigned char init_val = used_bases_tables-1; // map all unknown stuff to last table
     memset(char_to_index_tab, init_val, MAXCHARTABLE*sizeof(*char_to_index_tab));
 
-    for (i=0; groups[i]; i++) {
+    for (int i=0; groups[i]; i++) {
         if (groups[i]==',') {
             idx++;
         }
@@ -631,13 +643,14 @@ void ED4_char_table::initial_setup(const char *gap_chars, GB_alignment_type ali_
         }
     }
 
-    const char *align_string_ptr = gap_chars;
+    const char *align_string_ptr = unique_gap_chars;
     while (1) {
         char c = *align_string_ptr++;
         if (!c) break;
         set_char_to_index(c, idx++);
     }
 
+    free(unique_gap_chars);
     e4_assert(idx==used_bases_tables);
     initialized = true;
 }
@@ -1119,6 +1132,13 @@ void ED4_char_table::test() const {
 #include <test_unit.h>
 #endif
 
+
+#if 1
+#define SETUP(gapChars,alitype) ED4_setup_gaps_and_alitype(gapChars,alitype) // works
+#else
+#define SETUP(gapChars,alitype) do { ED4_char_table::setup(gapChars,alitype); ED4_init_is_align_character(""); } while(0) // @@@ fails. fix!
+#endif
+
 void TEST_char_table() {
     const char alphabeth[]   = "ACGTN-";
     const int alphabeth_size = strlen(alphabeth);
@@ -1130,8 +1150,7 @@ void TEST_char_table() {
     // const char *gapChars = "-";
     // const char *gapChars = ".";
     // const char *gapChars = "A"; // makes me fail
-    ED4_char_table::initial_setup(gapChars, GB_AT_RNA);
-    ED4_init_is_align_character(gapChars); // @@@ elim here
+    SETUP(gapChars, GB_AT_RNA);
 
     ConsensusBuildParams BK;
     // BK.lower = 70; BK.upper = 95; BK.gapbound = 60; // defaults from awars
@@ -1217,8 +1236,7 @@ void TEST_nucleotide_consensus() {
     const int    consensusCount = ARRAY_ELEMS(expected_consensus);
 
     const char *gapChars = ".-";
-    ED4_char_table::initial_setup(gapChars, GB_AT_RNA);
-    ED4_init_is_align_character(gapChars); // @@@ elim here
+    SETUP(gapChars, GB_AT_RNA);
 
     ED4_char_table tab(seqlen);
     for (int s = 0; s<sequenceCount; ++s) {
@@ -1270,8 +1288,7 @@ void TEST_amino_consensus() {
     const int    consensusCount = ARRAY_ELEMS(expected_consensus);
 
     const char *gapChars = ".-";
-    ED4_char_table::initial_setup(gapChars, GB_AT_AA);
-    ED4_init_is_align_character(gapChars); // @@@ elim here
+    SETUP(gapChars, GB_AT_AA);
 
     ED4_char_table tab(seqlen);
     for (int s = 0; s<sequenceCount; ++s) {

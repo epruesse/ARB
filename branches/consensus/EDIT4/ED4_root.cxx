@@ -566,12 +566,6 @@ ED4_returncode ED4_root::create_hierarchy(const char *area_string_middle, const 
 
     // [former position of ali-init-code]
 
-    {
-        char *gap_chars = aw_root->awar_string(ED4_AWAR_GAP_CHARS)->read_string();
-        ED4_char_table::initial_setup(gap_chars, alignment_type);
-        free(gap_chars);
-    }
-
     main_manager   = new ED4_main_manager("Main_Manager", 0, 0, 0, 0, NULL); // build a test hierarchy
     root_group_man = new ED4_root_group_manager("Root_Group_Manager", 0, 0, 0, 0, main_manager);
     

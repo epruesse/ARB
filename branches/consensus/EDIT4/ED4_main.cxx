@@ -251,10 +251,14 @@ static char *ED4_create_sequences_for_gde(AW_CL, GBDATA **&the_species, uchar **
     return err;
 }
 
+void ED4_setup_gaps_and_alitype(const char *gap_chars, GB_alignment_type alitype) {
+    ED4_init_is_align_character(gap_chars);
+    ED4_char_table::setup(gap_chars, alitype);
+}
+
 static void ED4_gap_chars_changed(AW_root *root) {
     char *gap_chars = root->awar_string(ED4_AWAR_GAP_CHARS)->read_string();
-
-    ED4_init_is_align_character(gap_chars);
+    ED4_setup_gaps_and_alitype(gap_chars, ED4_ROOT->alignment_type);
     free(gap_chars);
 }
 
