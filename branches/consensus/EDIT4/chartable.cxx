@@ -569,14 +569,6 @@ inline void ED4_char_table::set_char_to_index(unsigned char c, int index)
     char_to_index_tab[upper_index_chars[index] = toupper(c)] = index;
     char_to_index_tab[lower_index_chars[index] = tolower(c)] = index;
 }
-unsigned char ED4_char_table::index_to_upperChar(int index) const
-{
-    return upper_index_chars[index];
-}
-unsigned char ED4_char_table::index_to_lowerChar(int index) const
-{
-    return lower_index_chars[index];
-}
 
 void ED4_char_table::expand_tables() {
     int i;

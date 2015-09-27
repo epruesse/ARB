@@ -189,8 +189,8 @@ public:
 
     void bases_and_gaps_at(int column, int *bases, int *gaps) const;
 
-    unsigned char index_to_upperChar(int index) const;
-    unsigned char index_to_lowerChar(int index) const;
+    static unsigned char index_to_upperChar(int index) { return upper_index_chars[index]; }
+    static unsigned char index_to_lowerChar(int index) { return lower_index_chars[index]; }
 
     // linear access to all tables
     ED4_bases_table&        linear_table(int c)         { e4_assert(c<used_bases_tables); return *bases_table[c]; }
