@@ -17,8 +17,6 @@
 #define CONSENSUS_AWAR_SOURCE CAS_INTERNAL // not awar-constructable here
 #include <consensus.h>
 
-#include "ed4_defs.hxx" // @@@ for MAXSEQUENCECHARACTERLENGTH (@@@ elim)
-
 // ------------------------
 //      ED4_bases_table
 
@@ -1072,16 +1070,13 @@ bool ED4_char_table::ok() const
         return false;
     }
 
-    int i;
-    for (i=0; i<MAXSEQUENCECHARACTERLENGTH; i++) { // @@@ elim MAXSEQUENCECHARACTERLENGTH here
-        int bases;
-        int gaps;
-
+    const int table_size = size();
+    for (int i=0; i<table_size; i++) {
+        int bases, gaps;
         bases_and_gaps_at(i, &bases, &gaps);
 
-        if (!bases && !gaps) { // this occurs after insert column
-            int j;
-            for (j=i+1; j<MAXSEQUENCECHARACTERLENGTH; j++) {    // test if we find any bases till end of table !!! // @@@ elim MAXSEQUENCECHARACTERLENGTH here 
+        if (!bases && !gaps) {                      // this occurs after insert column
+            for (int j=i+1; j<table_size; j++) {    // test if we find any bases till end of table !!!
 
                 bases_and_gaps_at(j, &bases, 0);
                 if (bases) { // bases found -> empty position was illegal

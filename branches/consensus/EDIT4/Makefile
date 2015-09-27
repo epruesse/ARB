@@ -32,7 +32,6 @@ depend.init:
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl (from main)
 
 chartable.o: chartable.h
-chartable.o: ed4_defs.hxx
 chartable.o: $(ARBHOME)/INCLUDE/arb_assert.h
 chartable.o: $(ARBHOME)/INCLUDE/arb_core.h
 chartable.o: $(ARBHOME)/INCLUDE/arb_defs.h
@@ -41,24 +40,14 @@ chartable.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 chartable.o: $(ARBHOME)/INCLUDE/arbtools.h
 chartable.o: $(ARBHOME)/INCLUDE/attributes.h
 chartable.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-chartable.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
-chartable.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-chartable.o: $(ARBHOME)/INCLUDE/aw_position.hxx
-chartable.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-chartable.o: $(ARBHOME)/INCLUDE/cb.h
-chartable.o: $(ARBHOME)/INCLUDE/cb_base.h
-chartable.o: $(ARBHOME)/INCLUDE/cbtypes.h
 chartable.o: $(ARBHOME)/INCLUDE/consensus.h
 chartable.o: $(ARBHOME)/INCLUDE/cxxforward.h
 chartable.o: $(ARBHOME)/INCLUDE/dupstr.h
 chartable.o: $(ARBHOME)/INCLUDE/gccver.h
 chartable.o: $(ARBHOME)/INCLUDE/iupac.h
 chartable.o: $(ARBHOME)/INCLUDE/pos_range.h
-chartable.o: $(ARBHOME)/INCLUDE/smartptr.h
-chartable.o: $(ARBHOME)/INCLUDE/static_assert.h
 chartable.o: $(ARBHOME)/INCLUDE/test_global.h
 chartable.o: $(ARBHOME)/INCLUDE/test_unit.h
-chartable.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 ED4_base.o: chartable.h
 ED4_base.o: ed4_awars.hxx
