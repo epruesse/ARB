@@ -192,6 +192,8 @@ public:
     static unsigned char index_to_upperChar(int index) { return upper_index_chars[index]; }
     static unsigned char index_to_lowerChar(int index) { return lower_index_chars[index]; }
 
+    static bool isGap(char c) { return is_gap[safeCharIndex(c)]; }
+
     // linear access to all tables
     ED4_bases_table&        linear_table(int c)         { e4_assert(c<used_bases_tables); return *bases_table[c]; }
     const ED4_bases_table&  linear_table(int c) const   { e4_assert(c<used_bases_tables); return *bases_table[c]; }

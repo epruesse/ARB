@@ -17,8 +17,7 @@
 #define CONSENSUS_AWAR_SOURCE CAS_INTERNAL // not awar-constructable here
 #include <consensus.h>
 
-#include "ed4_edit_string.hxx" // for ADPP_IS_ALIGN_CHARACTER (@@@ elim)
-
+#include "ed4_defs.hxx" // @@@ for MAXSEQUENCECHARACTERLENGTH (@@@ elim)
 
 // ------------------------
 //      ED4_bases_table
@@ -428,7 +427,7 @@ void ED4_char_table::build_consensus_string_to(char *consensus_string, ExplicitR
 
             for (int j=0; j<used_bases_tables; j++) {
                 base[j] = linear_table(j)[i];
-                if (!ADPP_IS_ALIGN_CHARACTER(index_to_upperChar(j))) { // @@@ elim ADPP_IS_ALIGN_CHARACTER here
+                if (!isGap(index_to_upperChar(j))) {
                     bases += base[j];
                     if (base[j]>max_base) { // search for most used base
                         max_base     = base[j];
@@ -465,7 +464,7 @@ void ED4_char_table::build_consensus_string_to(char *consensus_string, ExplicitR
                         for (int j=0; j<used_bases_tables; j++) {
                             int bchar = index_to_upperChar(j);
 
-                            if (!ADPP_IS_ALIGN_CHARACTER(bchar)) { // @@@ elim ADPP_IS_ALIGN_CHARACTER here
+                            if (!isGap(bchar)) {
                                 if (PERCENT(base[j],bases) >= BK.considbound) {
 #if defined(DEBUG_CONSENSUS)
                                     if (!kcount) DUMPINT(BK.considbound);
@@ -494,7 +493,7 @@ void ED4_char_table::build_consensus_string_to(char *consensus_string, ExplicitR
                         for (int j=0; j<used_bases_tables; j++) {
                             unsigned char bchar = index_to_upperChar(j);
 
-                            if (!ADPP_IS_ALIGN_CHARACTER(bchar)) { // @@@ elim ADPP_IS_ALIGN_CHARACTER here
+                            if (!isGap(bchar)) {
                                 if (PERCENT(base[j], bases) >= BK.considbound) {
                                     group_count[iupac::get_amino_group_for(bchar)] += base[j];
                                 }
@@ -680,7 +679,7 @@ void ED4_char_table::bases_and_gaps_at(int column, int *bases, int *gaps) const
     for (i=0; i<used_bases_tables; i++) {
         char c = upper_index_chars[i];
 
-        if (ADPP_IS_ALIGN_CHARACTER(c)) { // @@@ elim ADPP_IS_ALIGN_CHARACTER here
+        if (isGap(c)) {
             g += table(c)[column];
         }
         else {
@@ -1124,12 +1123,8 @@ void ED4_char_table::test() const {
 #include <test_unit.h>
 #endif
 
-
-#if 1
-#define SETUP(gapChars,alitype) ED4_setup_gaps_and_alitype(gapChars,alitype) // works
-#else
-#define SETUP(gapChars,alitype) do { ED4_char_table::setup(gapChars,alitype); ED4_init_is_align_character(""); } while(0) // @@@ fails. fix!
-#endif
+void ED4_init_is_align_character(const char*); // @@@ elim later
+#define SETUP(gapChars,alitype) do { ED4_char_table::setup(gapChars,alitype); ED4_init_is_align_character(""); } while(0)
 
 void TEST_char_table() {
     const char alphabeth[]   = "ACGTN-";

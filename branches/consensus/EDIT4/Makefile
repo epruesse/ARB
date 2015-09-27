@@ -33,7 +33,6 @@ depend.init:
 
 chartable.o: chartable.h
 chartable.o: ed4_defs.hxx
-chartable.o: ed4_edit_string.hxx
 chartable.o: $(ARBHOME)/INCLUDE/arb_assert.h
 chartable.o: $(ARBHOME)/INCLUDE/arb_core.h
 chartable.o: $(ARBHOME)/INCLUDE/arb_defs.h
