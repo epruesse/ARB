@@ -234,11 +234,12 @@ endif
 ifeq ($(DARWIN),0)
 	clflags += -Wl,-g
 
-# TEMPORARY WORKAROUND for linker issues with launchpad binutils
-# code was added to ld to check for overlapping FDEs. Since ARB
-# worked before, we want this not to fail for the moment.
-# FIXME: remove this!
-        clflags += -Wl,-noinhibit-exec
+# Note:
+# Previously '-Wl,-noinhibit-exec' was added to 'clflags' here,
+# to fix some issues with launchpad binutils (see [12972]).
+# But that change also caused 'undefined symbols' NOT to be reported as errors
+# at link time, producing executables that fail at runtime :/
+
 endif
 
  ifeq ($(DEBUG_GRAPHICS),1)
