@@ -120,6 +120,7 @@ char *GB_find_latest_file(const char *dir, const char *mask);
 char *GB_lib_file(bool warn_when_not_found, const char *libprefix, const char *filename);
 char *GB_property_file(bool warn_when_not_found, const char *filename);
 void GBS_read_dir(StrArray& names, const char *dir, const char *mask);
+const char *GB_get_arb_revision_tag(void);
 
 /* adhash.cxx */
 GB_HASH *GBS_create_hash(long estimated_elements, GB_CASE case_sens);

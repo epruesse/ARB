@@ -25,7 +25,6 @@
 #include <SigHandler.h>
 #include <arb_signal.h>
 #include <arb_file.h>
-#include <svn_revision.h>
 
 static GBCM_ServerResult gbcms_talking(int con, long *hs, void *sin);
 
@@ -69,8 +68,8 @@ static GBCM_ServerResult gbcms_talking(int con, long *hs, void *sin);
 //      error generators
 
 inline GB_ERROR clientserver_error(const char *clientserver, const char *what_failed, int sourceLine) {
-    return GBS_global_string("ARBDB %s error: %s (errcode=" ARB_SVN_BRANCH "@" ARB_SVN_REVISION "#%i)",
-                             clientserver, what_failed, sourceLine);
+    const char *rev_tag = GB_get_arb_revision_tag();
+    return GBS_global_string("ARBDB %s error: %s (errcode=%s#%i)", clientserver, what_failed, rev_tag, sourceLine);
 }
 
 #define CLIENT_ERROR(reason)        clientserver_error("client", reason, __LINE__)
