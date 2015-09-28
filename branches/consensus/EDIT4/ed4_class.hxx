@@ -119,9 +119,9 @@ class ED4_Edit_String;
 class ED4_area_manager;
 class ED4_abstract_group_manager;
 class ED4_base;
-class ED4_bases_table;
+class SepBaseFreq;
 class ED4_bracket_terminal;
-class ED4_char_table;
+class BaseFrequencies;
 class ED4_columnStat_terminal;
 class ED4_consensus_sequence_terminal;
 class ED4_cursor;
@@ -1281,7 +1281,7 @@ public:
     ED4_returncode  update_bases(const ED4_base *old_base, const ED4_base *new_base, PosRange range = PosRange::whole());
     ED4_returncode  update_bases(const char *old_seq, int old_len, const char *new_seq, int new_len, PosRange range = PosRange::whole());
     ED4_returncode  update_bases(const char *old_seq, int old_len, const ED4_base *new_base, PosRange range = PosRange::whole());
-    ED4_returncode  update_bases(const ED4_char_table *old_table, const ED4_char_table *new_table, PosRange range = PosRange::whole());
+    ED4_returncode  update_bases(const BaseFrequencies *old_table, const BaseFrequencies *new_table, PosRange range = PosRange::whole());
 
     ED4_returncode  update_bases_and_rebuild_consensi(const char *old_seq, int old_len, ED4_base *species, ED4_update_flag update_flag, PosRange range = PosRange::whole());
 
@@ -1664,18 +1664,18 @@ public:
 class ED4_abstract_group_manager : public ED4_manager {
     E4B_AVOID_UNNEEDED_CASTS(abstract_group_manager);
 protected:
-    ED4_char_table my_table; // table concerning Consensusfunction
+    BaseFrequencies my_table; // table concerning Consensusfunction
 
 public:
     ED4_abstract_group_manager(const ED4_objspec& spec_, const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
 
     DECLARE_DUMP_FOR_BASECLASS(ED4_abstract_group_manager, ED4_manager);
 
-    ED4_char_table&         table() { return my_table; }
-    const ED4_char_table&   table() const { return my_table; }
+    BaseFrequencies&       table()       { return my_table; }
+    const BaseFrequencies& table() const { return my_table; }
 
-    ED4_bases_table& table(unsigned char c) { return table().table(c); }
-    const ED4_bases_table& table(unsigned char c) const { return table().table(c); }
+    SepBaseFreq&       table(unsigned char c)       { return table().table(c); }
+    const SepBaseFreq& table(unsigned char c) const { return table().table(c); }
 
     ED4_multi_species_manager *get_multi_species_manager() const {
         return get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
@@ -2116,7 +2116,7 @@ class ED4_consensus_sequence_terminal : public ED4_sequence_terminal { // derive
 
     virtual ED4_returncode draw() OVERRIDE;
     const ED4_abstract_group_manager *get_group_manager() const  { return get_parent(ED4_L_GROUP)->to_group_manager(); }
-    const ED4_char_table& get_char_table() const { return get_group_manager()->table(); }
+    const BaseFrequencies& get_char_table() const { return get_group_manager()->table(); }
 public:
     char *temp_cons_seq; // used for editing consensus (normally NULL)
 

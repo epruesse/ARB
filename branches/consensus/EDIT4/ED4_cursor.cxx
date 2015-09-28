@@ -899,7 +899,7 @@ void ED4_cursor::updateAwars(bool new_term_selected) {
 
         if (in_consensus_terminal()) {
             ED4_group_manager *group_manager = owner_of_cursor->get_parent(ED4_L_GROUP)->to_group_manager();
-            ED4_char_table&    groupTab      = group_manager->table();
+            BaseFrequencies&   groupTab      = group_manager->table();
             if (seq_pos<groupTab.size()) {
                 groupTab.build_consensus_string_to(at, ExplicitRange(seq_pos, seq_pos), ED4_ROOT->get_consensus_params());
             }

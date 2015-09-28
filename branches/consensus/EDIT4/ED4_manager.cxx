@@ -210,7 +210,7 @@ ED4_returncode ED4_manager::update_bases(const char *old_sequence, int old_len, 
     char *new_sequence = new_sequence_terminal->resolve_pointer_to_string_copy(&new_len);
 
     if (range.is_whole()) {
-        const PosRange *restricted = ED4_char_table::changed_range(old_sequence, new_sequence, std::min(old_len, new_len));
+        const PosRange *restricted = BaseFrequencies::changed_range(old_sequence, new_sequence, std::min(old_len, new_len));
         
         e4_assert(restricted);
         range = *restricted;
@@ -238,7 +238,7 @@ ED4_returncode ED4_manager::update_bases_and_rebuild_consensi(const char *old_se
 
     const PosRange *changedRange = 0;
     if (range.is_whole()) {
-        changedRange = ED4_char_table::changed_range(old_sequence, new_sequence, std::min(old_len, new_len));
+        changedRange = BaseFrequencies::changed_range(old_sequence, new_sequence, std::min(old_len, new_len));
     }
     else {
         changedRange = &range; // @@@ use method similar to changed_range here, which just reduces the existing range
@@ -305,7 +305,7 @@ ED4_returncode ED4_manager::update_bases(const ED4_base *old_base, const ED4_bas
     do {                                                                                        \
         while (walk_up) {                                                                       \
             if (walk_up->is_abstract_group_manager()) {                                         \
-                ED4_char_table& char_table = walk_up->to_abstract_group_manager()->table();     \
+                BaseFrequencies& char_table = walk_up->to_abstract_group_manager()->table();     \
                 char_table.COMMAND;                                                             \
                 if (char_table.is_ignored()) break; /* @@@ problematic */                       \
             }                                                                                   \
@@ -319,7 +319,7 @@ ED4_returncode ED4_manager::update_bases(const char *old_sequence, int old_len, 
     if (old_sequence) {
         if (new_sequence) {
             if (range.is_whole()) {
-                const PosRange *restricted = ED4_char_table::changed_range(old_sequence, new_sequence, std::min(old_len, new_len));
+                const PosRange *restricted = BaseFrequencies::changed_range(old_sequence, new_sequence, std::min(old_len, new_len));
                 if (!restricted) return ED4_R_OK;
                 
                 range = *restricted;
@@ -350,7 +350,7 @@ ED4_returncode ED4_manager::update_bases(const char *old_sequence, int old_len, 
     return ED4_R_OK;
 }
 
-ED4_returncode ED4_manager::update_bases(const ED4_char_table *old_table, const ED4_char_table *new_table, PosRange range) {
+ED4_returncode ED4_manager::update_bases(const BaseFrequencies *old_table, const BaseFrequencies *new_table, PosRange range) {
     ED4_manager *walk_up = this;
 
     if (old_table) {
@@ -1783,8 +1783,8 @@ GB_ERROR ED4_remap::compile(ED4_root_group_manager *gm)
 {
     e4_assert(update_needed);
 
-    const ED4_char_table&  table = gm->table();
-    size_t                 i, j;
+    const BaseFrequencies& table = gm->table();
+    size_t i, j;
 
     changed = 0; // is changed by set_sequence_to_screen
     update_needed = 0;

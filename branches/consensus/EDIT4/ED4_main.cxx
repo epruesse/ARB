@@ -252,7 +252,7 @@ static char *ED4_create_sequences_for_gde(AW_CL, GBDATA **&the_species, uchar **
 }
 
 void ED4_setup_gaps_and_alitype(const char *gap_chars, GB_alignment_type alitype) {
-    ED4_char_table::setup(gap_chars, alitype);
+    BaseFrequencies::setup(gap_chars, alitype);
 }
 
 static void ED4_gap_chars_changed(AW_root *root) {

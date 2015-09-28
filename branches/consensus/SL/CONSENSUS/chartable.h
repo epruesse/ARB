@@ -36,7 +36,10 @@
 #define SHORT_TABLE_MAX_VALUE 0xff
 #define LONG_TABLE_ELEM_SIZE  4
 
-class ED4_bases_table : virtual Noncopyable {
+class SepBaseFreq : virtual Noncopyable {
+    /*! counts occurances of one specific base (e.g. 'A') or a group of bases,
+     *  separately for each alignment position of multiple input sequences.
+     */
     int table_entry_size;       // how many bytes are used for each element of 'no_of_bases' (1 or 4 bytes)
     union {
         unsigned char *shortTable;
@@ -81,8 +84,8 @@ class ED4_bases_table : virtual Noncopyable {
 
 public:
 
-    ED4_bases_table(int maxseqlength);
-    ~ED4_bases_table();
+    SepBaseFreq(int maxseqlength);
+    ~SepBaseFreq();
 
     void init(int length);
     int size() const { return no_of_entries; }
@@ -113,12 +116,12 @@ public:
         set_elem_long(offset, old-1);
     }
 
-    int firstDifference(const ED4_bases_table& other, int start, int end, int *firstDifferentPos) const;
-    int lastDifference(const ED4_bases_table& other, int start, int end, int *lastDifferentPos) const;
+    int firstDifference(const SepBaseFreq& other, int start, int end, int *firstDifferentPos) const;
+    int lastDifference(const SepBaseFreq& other, int start, int end, int *lastDifferentPos) const;
 
-    void add(const ED4_bases_table& other, int start, int end);
-    void sub(const ED4_bases_table& other, int start, int end);
-    void sub_and_add(const ED4_bases_table& Sub, const ED4_bases_table& Add, PosRange range);
+    void add(const SepBaseFreq& other, int start, int end);
+    void sub(const SepBaseFreq& other, int start, int end);
+    void sub_and_add(const SepBaseFreq& Sub, const SepBaseFreq& Add, PosRange range);
 
     void change_table_length(int new_length, int default_entry);
 
@@ -128,14 +131,20 @@ public:
 #endif // TEST_CHAR_TABLE_INTEGRITY
 };
 
-typedef ED4_bases_table *ED4_bases_table_ptr;
+typedef SepBaseFreq *SingleFrequenciesPtr;
 class ConsensusBuildParams;
 
-class ED4_char_table : virtual Noncopyable {
-    ED4_bases_table_ptr *bases_table;
-    int                  sequences; // # of sequences added to the table
-    int                  ignore; // this table will be ignored when calculating tables higher in hierarchy // @@@ -> bool
-    // (used to suppress SAI in root_group_man tables)
+class BaseFrequencies : virtual Noncopyable {
+    /*! counts occurances of ALL bases of multiple sequences separately
+     *  for all alignment positions.
+     *
+     *  Bases are clustered in groups of bases (alignment type dependent).
+     */
+    SingleFrequenciesPtr *bases_table;
+
+    int sequences; // # of sequences added to the table
+    int ignore;    // this table will be ignored when calculating tables higher in hierarchy // @@@ -> bool
+                   // (used in EDIT4 to suppress SAIs in tables of ED4_root_group_manager)
 
     // @@@ move statics into own class:
     static bool               initialized;
@@ -148,8 +157,8 @@ class ED4_char_table : virtual Noncopyable {
 
     static inline void set_char_to_index(unsigned char c, int index);
 
-    void add(const ED4_char_table& other, int start, int end);
-    void sub(const ED4_char_table& other, int start, int end);
+    void add(const BaseFrequencies& other, int start, int end);
+    void sub(const BaseFrequencies& other, int start, int end);
 
     void expand_tables();
     int get_table_entry_size() const {
@@ -175,8 +184,8 @@ public:
     void test() const {}
 #endif
 
-    ED4_char_table(int maxseqlength=0);
-    ~ED4_char_table();
+    BaseFrequencies(int maxseqlength=0);
+    ~BaseFrequencies();
 
     static void setup(const char *gap_chars, GB_alignment_type ali_type_);
 
@@ -195,20 +204,20 @@ public:
     static bool isGap(char c) { return is_gap[safeCharIndex(c)]; }
 
     // linear access to all tables
-    ED4_bases_table&        linear_table(int c)         { e4_assert(c<used_bases_tables); return *bases_table[c]; }
-    const ED4_bases_table&  linear_table(int c) const   { e4_assert(c<used_bases_tables); return *bases_table[c]; }
+    SepBaseFreq&        linear_table(int c)         { e4_assert(c<used_bases_tables); return *bases_table[c]; }
+    const SepBaseFreq&  linear_table(int c) const   { e4_assert(c<used_bases_tables); return *bases_table[c]; }
 
     // access via character
-    ED4_bases_table&        table(int c)        { e4_assert(c>0 && c<MAXCHARTABLE); return linear_table(char_to_index_tab[c]); }
-    const ED4_bases_table&  table(int c) const  { e4_assert(c>0 && c<MAXCHARTABLE); return linear_table(char_to_index_tab[c]); }
+    SepBaseFreq&        table(int c)        { e4_assert(c>0 && c<MAXCHARTABLE); return linear_table(char_to_index_tab[c]); }
+    const SepBaseFreq&  table(int c) const  { e4_assert(c>0 && c<MAXCHARTABLE); return linear_table(char_to_index_tab[c]); }
 
-    const PosRange *changed_range(const ED4_char_table& other) const;
+    const PosRange *changed_range(const BaseFrequencies& other) const;
     static const PosRange *changed_range(const char *string1, const char *string2, int min_len);
 
-    void add(const ED4_char_table& other);
-    void sub(const ED4_char_table& other);
-    void sub_and_add(const ED4_char_table& Sub, const ED4_char_table& Add);
-    void sub_and_add(const ED4_char_table& Sub, const ED4_char_table& Add, PosRange range);
+    void add(const BaseFrequencies& other);
+    void sub(const BaseFrequencies& other);
+    void sub_and_add(const BaseFrequencies& Sub, const BaseFrequencies& Add);
+    void sub_and_add(const BaseFrequencies& Sub, const BaseFrequencies& Add, PosRange range);
 
     void add(const char *string, int len);
     void sub(const char *string, int len);

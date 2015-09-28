@@ -95,9 +95,6 @@ struct ConsensusBuildParams {
 #endif
 };
 
-
-// @@@ move ED4_bases_table here?
-
 #else
 #error consensus.h included twice
 #endif // CONSENSUS_H
