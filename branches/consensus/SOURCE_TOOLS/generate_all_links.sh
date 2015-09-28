@@ -168,7 +168,6 @@ symlink_file ../TEMPLATES/cache.h INCLUDE/cache.h &&
 symlink_file ../TEMPLATES/ChecksumCollector.h INCLUDE/ChecksumCollector.h &&
 symlink_file ../TEMPLATES/command_output.h INCLUDE/command_output.h &&
 symlink_file ../TEMPLATES/config_parser.h INCLUDE/config_parser.h &&
-symlink_file ../TEMPLATES/consensus_config.h INCLUDE/consensus_config.h &&
 symlink_file ../TEMPLATES/cxxforward.h INCLUDE/cxxforward.h &&
 symlink_file ../TEMPLATES/downcast.h INCLUDE/downcast.h &&
 symlink_file ../TEMPLATES/dupstr.h INCLUDE/dupstr.h &&
@@ -292,6 +291,7 @@ symlink_file ../SL/CB/cbtypes.h INCLUDE/cbtypes.h &&
 symlink_file ../SL/CB/rootAsWin.h INCLUDE/rootAsWin.h &&
 symlink_file ../SL/CONSENSUS/chartable.h INCLUDE/chartable.h &&
 symlink_file ../SL/CONSENSUS/consensus.h INCLUDE/consensus.h &&
+symlink_file ../SL/CONSENSUS/consensus_config.h INCLUDE/consensus_config.h &&
 symlink_file ../SL/DB_QUERY/db_query.h INCLUDE/db_query.h &&
 symlink_file ../SL/DB_SCANNER/db_scanner.hxx INCLUDE/db_scanner.hxx &&
 symlink_file ../SL/DB_UI/dbui.h INCLUDE/dbui.h &&
