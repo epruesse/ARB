@@ -21,7 +21,7 @@
 #include <arbdb_base.h>
 #endif
 
-#define e4_assert(bed) arb_assert(bed)
+#define ct_assert(bed) arb_assert(bed)
 
 #ifdef DEBUG
 // # define TEST_BASES_TABLE
@@ -53,33 +53,33 @@ namespace chartable {
 
         void set_elem_long(int offset, int value) {
 #ifdef TEST_BASES_TABLE
-            e4_assert(legal(offset));
-            e4_assert(table_entry_size==LONG_TABLE_ELEM_SIZE);
+            ct_assert(legal(offset));
+            ct_assert(table_entry_size==LONG_TABLE_ELEM_SIZE);
 #endif
             no_of_bases.longTable[offset] = value;
         }
 
         void set_elem_short(int offset, int value) {
 #ifdef TEST_BASES_TABLE
-            e4_assert(legal(offset));
-            e4_assert(table_entry_size==SHORT_TABLE_ELEM_SIZE);
-            e4_assert(value>=0 && value<=SHORT_TABLE_MAX_VALUE);
+            ct_assert(legal(offset));
+            ct_assert(table_entry_size==SHORT_TABLE_ELEM_SIZE);
+            ct_assert(value>=0 && value<=SHORT_TABLE_MAX_VALUE);
 #endif
             no_of_bases.shortTable[offset] = value;
         }
 
         int get_elem_long(int offset) const {
 #ifdef TEST_BASES_TABLE
-            e4_assert(legal(offset));
-            e4_assert(table_entry_size==LONG_TABLE_ELEM_SIZE);
+            ct_assert(legal(offset));
+            ct_assert(table_entry_size==LONG_TABLE_ELEM_SIZE);
 #endif
             return no_of_bases.longTable[offset];
         }
 
         int get_elem_short(int offset) const {
 #ifdef TEST_BASES_TABLE
-            e4_assert(legal(offset));
-            e4_assert(table_entry_size==SHORT_TABLE_ELEM_SIZE);
+            ct_assert(legal(offset));
+            ct_assert(table_entry_size==SHORT_TABLE_ELEM_SIZE);
 #endif
             return no_of_bases.shortTable[offset];
         }
@@ -100,12 +100,12 @@ namespace chartable {
 
         void inc_short(int offset)  {
             int old = get_elem_short(offset);
-            e4_assert(old<255);
+            ct_assert(old<255);
             set_elem_short(offset, old+1);
         }
         void dec_short(int offset)  {
             int old = get_elem_short(offset);
-            e4_assert(old>0);
+            ct_assert(old>0);
             set_elem_short(offset, old-1);
         }
         void inc_long(int offset)   {
@@ -114,7 +114,7 @@ namespace chartable {
         }
         void dec_long(int offset)   {
             int old = get_elem_long(offset);
-            e4_assert(old>0);
+            ct_assert(old>0);
             set_elem_long(offset, old-1);
         }
 
@@ -171,19 +171,19 @@ class BaseFrequencies : virtual Noncopyable {
         return linear_table(0).get_table_entry_size();
     }
     void prepare_to_add_elements(int new_sequences) {
-        e4_assert(used_bases_tables);
+        ct_assert(used_bases_tables);
         if (linear_table(0).bigger_table_entry_size_needed(sequences+new_sequences)) {
             expand_tables();
         }
     }
 
     // linear access to all tables
-    SepBaseFreq&       linear_table(int c)         { e4_assert(c<used_bases_tables); return *bases_table[c]; }
-    const SepBaseFreq& linear_table(int c) const   { e4_assert(c<used_bases_tables); return *bases_table[c]; }
+    SepBaseFreq&       linear_table(int c)         { ct_assert(c<used_bases_tables); return *bases_table[c]; }
+    const SepBaseFreq& linear_table(int c) const   { ct_assert(c<used_bases_tables); return *bases_table[c]; }
 
     // access via character
-    SepBaseFreq&       table(int c)        { e4_assert(c>0 && c<MAXCHARTABLE); return linear_table(char_to_index_tab[c]); }
-    const SepBaseFreq& table(int c) const  { e4_assert(c>0 && c<MAXCHARTABLE); return linear_table(char_to_index_tab[c]); }
+    SepBaseFreq&       table(int c)        { ct_assert(c>0 && c<MAXCHARTABLE); return linear_table(char_to_index_tab[c]); }
+    const SepBaseFreq& table(int c) const  { ct_assert(c>0 && c<MAXCHARTABLE); return linear_table(char_to_index_tab[c]); }
 
     static unsigned char index_to_upperChar(int index) { return upper_index_chars[index]; }
 

@@ -53,7 +53,7 @@ void SepBaseFreq::init(int length)
 }
 
 void SepBaseFreq::expand_table_entry_size() { // converts short table into long table
-    e4_assert(table_entry_size==SHORT_TABLE_ELEM_SIZE);
+    ct_assert(table_entry_size==SHORT_TABLE_ELEM_SIZE);
 
     int *new_table = new int[no_of_entries+1];
     int i;
@@ -76,10 +76,10 @@ void SepBaseFreq::expand_table_entry_size() { // converts short table into long 
 
 void SepBaseFreq::add(const SepBaseFreq& other, int start, int end)
 {
-    e4_assert(no_of_entries==other.no_of_entries);
-    e4_assert(start>=0);
-    e4_assert(end<no_of_entries);
-    e4_assert(start<=end);
+    ct_assert(no_of_entries==other.no_of_entries);
+    ct_assert(start>=0);
+    ct_assert(end<no_of_entries);
+    ct_assert(start<=end);
 
     int i;
     if (table_entry_size==SHORT_TABLE_ELEM_SIZE) {
@@ -107,10 +107,10 @@ void SepBaseFreq::add(const SepBaseFreq& other, int start, int end)
 }
 void SepBaseFreq::sub(const SepBaseFreq& other, int start, int end)
 {
-    e4_assert(no_of_entries==other.no_of_entries);
-    e4_assert(start>=0);
-    e4_assert(end<no_of_entries);
-    e4_assert(start<=end);
+    ct_assert(no_of_entries==other.no_of_entries);
+    ct_assert(start>=0);
+    ct_assert(end<no_of_entries);
+    ct_assert(start<=end);
 
     int i;
     if (table_entry_size==SHORT_TABLE_ELEM_SIZE) {
@@ -138,15 +138,15 @@ void SepBaseFreq::sub(const SepBaseFreq& other, int start, int end)
 }
 void SepBaseFreq::sub_and_add(const SepBaseFreq& Sub, const SepBaseFreq& Add, PosRange range)
 {
-    e4_assert(no_of_entries==Sub.no_of_entries);
-    e4_assert(no_of_entries==Add.no_of_entries);
+    ct_assert(no_of_entries==Sub.no_of_entries);
+    ct_assert(no_of_entries==Add.no_of_entries);
 
     int start = range.start();
     int end   = range.end();
 
-    e4_assert(start>=0);
-    e4_assert(end<no_of_entries);
-    e4_assert(start<=end);
+    ct_assert(start>=0);
+    ct_assert(end<no_of_entries);
+    ct_assert(start<=end);
 
     int i;
     if (table_entry_size==SHORT_TABLE_ELEM_SIZE) {
@@ -313,7 +313,7 @@ void SepBaseFreq::change_table_length(int new_length, int default_entry)
         if (table_entry_size==SHORT_TABLE_ELEM_SIZE) {
             unsigned char *new_table = new unsigned char[new_length+1];
 
-            e4_assert(default_entry>=0 && default_entry<256);
+            ct_assert(default_entry>=0 && default_entry<256);
 
             memcpy(new_table, no_of_bases.shortTable, min_length*sizeof(*new_table));
             new_table[new_length] = no_of_bases.shortTable[no_of_entries];
@@ -393,13 +393,13 @@ void BaseFrequencies::build_consensus_string_to(char *consensus_string, Explicit
     // 'consensus_string' has to be a buffer of size 'range.size()+1'
     // Note : Always check that consensus behavior is identical to that used in CON_evaluatestatistic()
 
-    e4_assert(consensus_string);
-    e4_assert(range.end()<size());
+    ct_assert(consensus_string);
+    ct_assert(range.end()<size());
 
 #define PERCENT(part, all)      ((100*(part))/(all))
 #define MAX_BASES_TABLES 41     // 25
 
-    e4_assert(used_bases_tables<=MAX_BASES_TABLES);     // this is correct for DNA/RNA -> build_consensus_string() must be corrected for AMI/PRO
+    ct_assert(used_bases_tables<=MAX_BASES_TABLES);     // this is correct for DNA/RNA -> build_consensus_string() must be corrected for AMI/PRO
 
     const int left_idx  = range.start();
     const int right_idx = range.end();
@@ -482,7 +482,7 @@ void BaseFrequencies::build_consensus_string_to(char *consensus_string, Explicit
                         kchar = iupac::encode(used_bases, ali_type);
                     }
                     else {
-                        e4_assert(ali_type == GB_AT_AA);
+                        ct_assert(ali_type == GB_AT_AA);
 
                         const int amino_groups = iupac::AA_GROUP_COUNT;
                         int       group_count[amino_groups];
@@ -512,16 +512,16 @@ void BaseFrequencies::build_consensus_string_to(char *consensus_string, Explicit
                     }
                 }
                 if (!kcount) {           // IUPAC grouping is either off OR didnt consider any bases
-                    e4_assert(max_base); // expect at least one base to occur
-                    e4_assert(max_base_idx >= 0);
+                    ct_assert(max_base); // expect at least one base to occur
+                    ct_assert(max_base_idx >= 0);
 
                     kchar  = index_to_upperChar(max_base_idx);
                     kcount = max_base;
                 }
 
-                e4_assert(kchar);
-                e4_assert(kcount);
-                e4_assert(kcount<=bases);
+                ct_assert(kchar);
+                ct_assert(kcount);
+                ct_assert(kcount<=bases);
 
                 // show as upper or lower case ?
                 int percent = PERCENT(kcount, sequences); // @@@ if gaps==off -> calc percent of non-gaps
@@ -538,7 +538,7 @@ void BaseFrequencies::build_consensus_string_to(char *consensus_string, Explicit
                     consensus_string[o] = '.';
                 }
             }
-            e4_assert(consensus_string[o]);
+            ct_assert(consensus_string[o]);
 
 #if defined(DEBUG_CONSENSUS)
             if (dumpcol) fprintf(stderr, "result='%c'\n", consensus_string[o]);
@@ -563,7 +563,7 @@ GB_alignment_type  BaseFrequencies::ali_type          = GB_AT_RNA;
 
 inline void BaseFrequencies::set_char_to_index(unsigned char c, int index)
 {
-    e4_assert(index>=0 && index<used_bases_tables);
+    ct_assert(index>=0 && index<used_bases_tables);
     char_to_index_tab[upper_index_chars[index] = toupper(c)] = index;
     char_to_index_tab[tolower(c)] = index;
 }
@@ -591,11 +591,11 @@ void BaseFrequencies::setup(const char *gap_chars, GB_alignment_type ali_type_) 
             groups = "P,A,G,S,T,Q,N,E,D,B,Z,H,K,R,L,I,V,M,F,Y,W,C,X"; // @@@ DRY (create 'groups' from AA_GROUP_...)
             break;
         default:
-            e4_assert(0);
+            ct_assert(0);
             break;
     }
 
-    e4_assert(groups);
+    ct_assert(groups);
 
     for (int i = 0; i<MAXCHARTABLE; ++i) is_gap[i] = false;
 
@@ -627,7 +627,7 @@ void BaseFrequencies::setup(const char *gap_chars, GB_alignment_type ali_type_) 
             idx++;
         }
         else {
-            e4_assert(isupper(groups[i]));
+            ct_assert(isupper(groups[i]));
             set_char_to_index(groups[i], idx);
         }
     }
@@ -640,14 +640,14 @@ void BaseFrequencies::setup(const char *gap_chars, GB_alignment_type ali_type_) 
     }
 
     free(unique_gap_chars);
-    e4_assert(idx==used_bases_tables);
+    ct_assert(idx==used_bases_tables);
     initialized = true;
 }
 
 BaseFrequencies::BaseFrequencies(int maxseqlength)
     : ignore(0)
 {
-    e4_assert(initialized);
+    ct_assert(initialized);
 
     bases_table = new SepBaseFreqPtr[used_bases_tables];
 
@@ -706,7 +706,7 @@ const PosRange *BaseFrequencies::changed_range(const BaseFrequencies& other) con
     int start = Size-1;
     int end = 0;
 
-    e4_assert(Size==other.size());
+    ct_assert(Size==other.size());
     for (i=0; i<used_bases_tables; i++) {
         if (linear_table(i).firstDifference(other.linear_table(i), 0, start, &start)) {
             if (end<start) {
@@ -722,7 +722,7 @@ const PosRange *BaseFrequencies::changed_range(const BaseFrequencies& other) con
                 linear_table(i).lastDifference(other.linear_table(i), end+1, Size-1, &end);
             }
 
-            e4_assert(start<=end);
+            ct_assert(start<=end);
 
             static PosRange range;
             range = PosRange(start, end);
@@ -746,7 +746,7 @@ void BaseFrequencies::add(const BaseFrequencies& other, int start, int end)
     test();
     other.test();
 
-    e4_assert(start<=end);
+    ct_assert(start<=end);
 
     int i;
     for (i=0; i<used_bases_tables; i++) {
@@ -770,7 +770,7 @@ void BaseFrequencies::sub(const BaseFrequencies& other, int start, int end)
 
     test();
     other.test();
-    e4_assert(start<=end);
+    ct_assert(start<=end);
 
     int i;
     for (i=0; i<used_bases_tables; i++) {
@@ -787,8 +787,8 @@ void BaseFrequencies::sub_and_add(const BaseFrequencies& Sub, const BaseFrequenc
     Sub.test();
     Add.test();
 
-    e4_assert(!Sub.ignore && !Add.ignore);
-    e4_assert(range.is_part());
+    ct_assert(!Sub.ignore && !Add.ignore);
+    ct_assert(range.is_part());
 
     int i;
     for (i=0; i<used_bases_tables; i++) {
@@ -840,7 +840,7 @@ const PosRange *BaseFrequencies::changed_range(const char *string1, const char *
         }
     }
 
-    e4_assert(start != -1 && end != -1);
+    ct_assert(start != -1 && end != -1);
 
     for (j=r-1; j>=0; j--) {    // search rest backwards
         if (string1[k+j] != string2[k+j]) {
@@ -865,7 +865,7 @@ const PosRange *BaseFrequencies::changed_range(const char *string1, const char *
         }
     }
 
-    e4_assert(start<=end);
+    ct_assert(start<=end);
 
     static PosRange range;
     range = PosRange(start, end);
@@ -949,7 +949,7 @@ void BaseFrequencies::sub_and_add(const char *old_string, const char *new_string
     test();
     int start = range.start();
     int end   = range.end();
-    e4_assert(start<=end);
+    ct_assert(start<=end);
 
     int i;
     SepBaseFreq& t = table('.');
@@ -959,8 +959,8 @@ void BaseFrequencies::sub_and_add(const char *old_string, const char *new_string
             unsigned char o = old_string[i];
             unsigned char n = new_string[i];
 
-            e4_assert(o); // @@@ if these never fail, some code below is superfluous
-            e4_assert(n);
+            ct_assert(o); // @@@ if these never fail, some code below is superfluous
+            ct_assert(n);
             
             if (!o) {
                 for (; n && i<=end; i++) {
@@ -989,8 +989,8 @@ void BaseFrequencies::sub_and_add(const char *old_string, const char *new_string
             unsigned char o = old_string[i];
             unsigned char n = new_string[i];
 
-            e4_assert(o); // @@@ if these never fail, some code below is superfluous
-            e4_assert(n);
+            ct_assert(o); // @@@ if these never fail, some code below is superfluous
+            ct_assert(n);
             
             if (!o) {
                 for (; n && i<=end; i++) {
@@ -1201,7 +1201,7 @@ void TEST_nucleotide_consensus() {
 
     BaseFrequencies tab(seqlen);
     for (int s = 0; s<sequenceCount; ++s) {
-        e4_assert(strlen(sequence[s]) == seqlen);
+        ct_assert(strlen(sequence[s]) == seqlen);
         tab.add(sequence[s], seqlen);
     }
 
@@ -1214,7 +1214,7 @@ void TEST_nucleotide_consensus() {
             case 2: BK.considbound = 26; BK.lower = 0; BK.upper = 75; break;   // settings from #663
             case 3: BK.countgaps   = true; BK.gapbound = 70; break;
             case 4: BK.considbound = 20; break;
-            default: e4_assert(0); break;                                      // missing
+            default: ct_assert(0); break;                                      // missing
         }
 
         char *consensus = tab.build_consensus_string(BK);
@@ -1253,7 +1253,7 @@ void TEST_amino_consensus() {
 
     BaseFrequencies tab(seqlen);
     for (int s = 0; s<sequenceCount; ++s) {
-        e4_assert(strlen(sequence[s]) == seqlen);
+        ct_assert(strlen(sequence[s]) == seqlen);
         tab.add(sequence[s], seqlen);
     }
 
@@ -1266,7 +1266,7 @@ void TEST_amino_consensus() {
             case 2: BK.considbound = 26; BK.lower = 0; BK.upper = 75; break;    // settings from #663
             case 3: BK.countgaps   = true; BK.gapbound = 70; break;
             case 4: BK.considbound = 20; break;
-            default: e4_assert(0); break;                                       // missing
+            default: ct_assert(0); break;                                       // missing
         }
 
         char *consensus = tab.build_consensus_string(BK);
