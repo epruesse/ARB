@@ -17,6 +17,8 @@
 #define CONSENSUS_AWAR_SOURCE CAS_INTERNAL // not awar-constructable here
 #include <consensus.h>
 
+using namespace chartable;
+
 // ------------------------
 //      SepBaseFreq
 
@@ -649,7 +651,7 @@ BaseFrequencies::BaseFrequencies(int maxseqlength)
 {
     e4_assert(initialized);
 
-    bases_table = new SingleFrequenciesPtr[used_bases_tables];
+    bases_table = new SepBaseFreqPtr[used_bases_tables];
 
     for (int i=0; i<used_bases_tables; i++) {
         bases_table[i] = new SepBaseFreq(maxseqlength);

@@ -119,7 +119,6 @@ class ED4_Edit_String;
 class ED4_area_manager;
 class ED4_abstract_group_manager;
 class ED4_base;
-class SepBaseFreq;
 class ED4_bracket_terminal;
 class BaseFrequencies;
 class ED4_columnStat_terminal;
@@ -1673,9 +1672,6 @@ public:
 
     BaseFrequencies&       table()       { return my_table; }
     const BaseFrequencies& table() const { return my_table; }
-
-    SepBaseFreq&       table(unsigned char c)       { return table().table(c); }
-    const SepBaseFreq& table(unsigned char c) const { return table().table(c); }
 
     ED4_multi_species_manager *get_multi_species_manager() const {
         return get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();

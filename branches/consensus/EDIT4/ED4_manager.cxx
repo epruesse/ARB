@@ -1789,7 +1789,7 @@ GB_ERROR ED4_remap::compile(ED4_root_group_manager *gm)
     changed = 0; // is changed by set_sequence_to_screen
     update_needed = 0;
 
-    sequence_len = table.table('A').size(); // take size of any table
+    sequence_len = table.size(); // take size of any table
     if ((sequence_len+1) > sequence_table_len) {
         delete [] sequence_to_screen_tab;
         sequence_to_screen_tab = new int[sequence_table_len = sequence_len+1];
