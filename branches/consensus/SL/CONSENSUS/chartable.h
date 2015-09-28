@@ -158,7 +158,6 @@ class BaseFrequencies : virtual Noncopyable {
     static unsigned char      char_to_index_tab[MAXCHARTABLE];
     static bool               is_gap[MAXCHARTABLE];
     static unsigned char     *upper_index_chars;
-    static unsigned char     *lower_index_chars;
     static int                used_bases_tables; // size of 'bases_table'
     static GB_alignment_type  ali_type;
 
@@ -186,17 +185,19 @@ class BaseFrequencies : virtual Noncopyable {
     SepBaseFreq&       table(int c)        { e4_assert(c>0 && c<MAXCHARTABLE); return linear_table(char_to_index_tab[c]); }
     const SepBaseFreq& table(int c) const  { e4_assert(c>0 && c<MAXCHARTABLE); return linear_table(char_to_index_tab[c]); }
 
-public:
-
-#if defined(TEST_CHAR_TABLE_INTEGRITY) || defined(ASSERTION_USED)
-    bool ok() const;
-    bool empty() const;
-#endif
+    static unsigned char index_to_upperChar(int index) { return upper_index_chars[index]; }
 
 #if defined(TEST_CHAR_TABLE_INTEGRITY)
     void test() const; // test if table is valid (dumps core if invalid)
 #else
     void test() const {}
+#endif
+
+public:
+
+#if defined(TEST_CHAR_TABLE_INTEGRITY) || defined(ASSERTION_USED)
+    bool ok() const;
+    bool empty() const;
 #endif
 
     BaseFrequencies(int maxseqlength=0);
@@ -213,9 +214,6 @@ public:
 
     void bases_and_gaps_at(int column, int *bases, int *gaps) const;
 
-    static unsigned char index_to_upperChar(int index) { return upper_index_chars[index]; }
-    static unsigned char index_to_lowerChar(int index) { return lower_index_chars[index]; }
-
     static bool isGap(char c) { return is_gap[safeCharIndex(c)]; }
 
     const PosRange *changed_range(const BaseFrequencies& other) const;
@@ -223,7 +221,6 @@ public:
 
     void add(const BaseFrequencies& other);
     void sub(const BaseFrequencies& other);
-    void sub_and_add(const BaseFrequencies& Sub, const BaseFrequencies& Add);
     void sub_and_add(const BaseFrequencies& Sub, const BaseFrequencies& Add, PosRange range);
 
     void add(const char *string, int len);

@@ -558,7 +558,6 @@ bool               BaseFrequencies::initialized       = false;
 unsigned char      BaseFrequencies::char_to_index_tab[MAXCHARTABLE];
 bool               BaseFrequencies::is_gap[MAXCHARTABLE];
 unsigned char     *BaseFrequencies::upper_index_chars = 0;
-unsigned char     *BaseFrequencies::lower_index_chars = 0;
 int                BaseFrequencies::used_bases_tables = 0;
 GB_alignment_type  BaseFrequencies::ali_type          = GB_AT_RNA;
 
@@ -566,7 +565,7 @@ inline void BaseFrequencies::set_char_to_index(unsigned char c, int index)
 {
     e4_assert(index>=0 && index<used_bases_tables);
     char_to_index_tab[upper_index_chars[index] = toupper(c)] = index;
-    char_to_index_tab[lower_index_chars[index] = tolower(c)] = index;
+    char_to_index_tab[tolower(c)] = index;
 }
 
 void BaseFrequencies::expand_tables() {
@@ -617,7 +616,6 @@ void BaseFrequencies::setup(const char *gap_chars, GB_alignment_type ali_type_) 
         }
     }
 
-    lower_index_chars = new unsigned char[used_bases_tables];
     upper_index_chars = new unsigned char[used_bases_tables];
 
     int idx = 0;
@@ -780,26 +778,6 @@ void BaseFrequencies::sub(const BaseFrequencies& other, int start, int end)
     }
 
     sequences -= other.sequences;
-
-    test();
-}
-
-void BaseFrequencies::sub_and_add(const BaseFrequencies& Sub, const BaseFrequencies& Add) {
-    test();
-
-    if (Sub.ignore) {
-        e4_assert(Add.ignore);
-        return;
-    }
-
-    Sub.test();
-    Add.test();
-
-    const PosRange *range = Sub.changed_range(Add);
-    if (range) {
-        prepare_to_add_elements(Add.added_sequences()-Sub.added_sequences());
-        sub_and_add(Sub, Add, *range);
-    }
 
     test();
 }
