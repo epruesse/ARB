@@ -760,25 +760,26 @@ static GBDATA *create_simple_seq_db(const char *aliname, const char *alitype, co
 }
 
 void TEST_nucleotide_consensus() {
-    // keep similar to ../EDIT4/ED4_mini_classes.cxx@TEST_nucleotide_consensus
+    // keep similar to ../SL/CONSENSUS/chartable.cxx@TEST_nucleotide_consensus_input
     const char *sequence[] = {
-        "-.AAAAAAAAAAcAAAAAAAAATTTTTTTTTTTTTTTTTAAAAAAAAgggggAAAAgAA---",
-        "-.-AAAAAAAAAccAAAAAAAAggTTgTTTTgTTTTTTTcccAAAAAgggggAAAAgAA---",
-        "-.--AAAAAAAAcccAAAAAAA-ggTggTTTggTTTTTTccccAAAAgggCCtAAAgAC---",
-        "-.---AAAAAAAccccAAAAAA-ggggggTTgggTTTTTcccccAAAggCCC-tAACtC---",
-        "-.----AAAAAAcccccAAAAA----ggggTggggTTTTGGGcccAAgCCCt-ttACtG---",
-        "-.-----AAAAAccccccAAAA----ggggggggggTTgGGGGcccAcCCtt--tttCG---",
-        "-.------AAAAcccccccAAA---------ggggggTgGGGGGccccCt----tt-gT---",
-        "-.-------AAAccccccccAA---------ggggggggttGGGGccct------t--Tyyk",
-        "-.--------AAcccccccccA----------------gttGGGGGct-------t---ymm",
-        "-.---------Acccccccccc----------------gtAGGGGGG---------------",
+        "-.AAAAAAAAAAcAAAAAAAAATTTTTTTTTTTTTTTTTAAAAAAAAgggggAAAAgAA----m-----yykm-mmmAAAAAAAAAmmmmmmmmm",
+        "-.-AAAAAAAAAccAAAAAAAAggTTgTTTTgTTTTTTTcccAAAAAgggggAAAAgAA----k-----kykr-rrrAAAAAAAAmmmmmmmmmT",
+        "-.--AAAAAAAAcccAAAAAAA-ggTggTTTggTTTTTTccccAAAAgggCCtAAAgAC----m-----sykw-wvsAAAAAAAmmmmmmmmmTT",
+        "-.---AAAAAAAccccAAAAAA-ggggggTTgggTTTTTcccccAAAggCCC-tAACtC----k----yyyys-smvAAAAAAmmmmmmmmmTTT",
+        "-.----AAAAAAcccccAAAAA----ggggTggggTTTTGGGcccAAgCCCt-ttACtG----m---nkkkky-yrmAAAAAmmmmmmmmmTTTT",
+        "-.-----AAAAAccccccAAAA----ggggggggggTTgGGGGcccAcCCtt--tttCG----k--nnssssk-kvrAAAAmmmmmmmmmTTTTT",
+        "-.------AAAAcccccccAAA---------ggggggTgGGGGGccccCt----tt-gT----mydddyyyy-vvmsAAAmmmmmmmmmTTTTTT",
+        "-.-------AAAccccccccAA---------ggggggggttGGGGccct------t--T-yykkkbbbkkkk-hhrvAAmmmmmmmmmTTTTTTT",
+        "-.--------AAcccccccccA----------------gttGGGGGct-------t----ymmmmnnnssss-ddvmAmmmmmmmmmTTTTTTTT",
+        "-.---------Acccccccccc----------------gtAGGGGGG----------------k---------bbmrmmmmmmmmmTTTTTTTTT",
     };
     const char *expected_consensus[] = {
-        "=.---...aaaACccMMMMMaa-........g.kkk.uKb.ssVVmmss...-.ww...---", // default settings (see ConsensusBuildParams-ctor), gapbound=60, considbound=30, lower/upper=70/95
-        "=.AAAAAAAAAACccMMMMMaaKgKugKKKuggKKKuuKb.ssVVmmssssBWWWWs..MMM", // countgaps=0
-        "=.AAAAAAAAAACCCMMMMMAAKGKUGKKKUGGKKKUUKBsSSVVMMSSSSBWWWWSw-MMM", // countgaps=0,              considbound=26, lower=0, upper=75 (as described in #663)
-        "=.--aaaaaAAACCCMMMMMAA-g-uggkuuggKKKuuKBsSSVVMMSssc--awWga----", // countgaps=1, gapbound=70, considbound=26, lower=0, upper=75
-        "=.--aaaaaAAACCMMMMMMMA-gkugkkkugKKKKKuKBNSVVVVMSsssbawwWswN---", // countgaps=1, gapbound=70, considbound=20, lower=0, upper=75
+        "=.---...aaaACccMMMMMaa-........g.kkk.uKb.ssVVmmss...-.ww...=---M--...mmm..MMMaaMMMMMmmmmm...uuu", // default settings (see ConsensusBuildParams-ctor), gapbound=60, considbound=30, lower/upper=70/95
+        "=.AAAAAAAAAACccMMMMMaaKgKugKKKuggKKKuuKb.ssVVmmssssBWWWWs..=MMMMMMMMMMMMMMMMMaaMMMMMmmmmm...uuu", // countgaps=0
+        "=.AAAAAAAAAACCCMMMMMAAKGKUGKKKUGGKKKUUKBsSSVVMMSSSSBWWWWSw-=MMMMMMMMMMMMMMMMMAAMMMMMMMMMmmuuuUU", // countgaps=0,              considbound=26, lower=0, upper=75 (as described in #663)
+        "=.AAAAAAAAAACCCMMMMMAAKKKKGKKKUGKKKKKUKBsSSVVMMSSSSBWWWWSwN=MMMMMMMMMMMMMMMMMAAMMMMMMMMMmmuuuUU", // countgaps=0,              considbound=25, lower=0, upper=75
+        "=.--aaaaaAAACCCMMMMMAA-g-uggkuuggKKKuuKBsSSVVMMSssc--awWga-=---MmmmmmMMMmmMMMAAMMMMMMMMMmmuuuUU", // countgaps=1, gapbound=70, considbound=26, lower=0, upper=75
+        "=.--aaaaaAAACCMMMMMMMA-gkugkkkugKKKKKuKBNSVVVVMSsssbawwWswN=---MmmmmmMMMmmMMMAMMMMMMMMMMmmuuuUU", // countgaps=1, gapbound=70, considbound=20, lower=0, upper=75
     };
     const size_t seqlen         = strlen(sequence[0]);
     const int    sequenceCount  = ARRAY_ELEMS(sequence);
@@ -796,8 +797,9 @@ void TEST_nucleotide_consensus() {
             case 0: break;                                                     // use default settings
             case 1: BK.countgaps   = false; break;                             // dont count gaps
             case 2: BK.considbound = 26; BK.lower = 0; BK.upper = 75; break;   // settings from #663
-            case 3: BK.countgaps   = true; BK.gapbound = 70; break;
-            case 4: BK.considbound = 20; break;
+            case 3: BK.considbound = 25; break;
+            case 4: BK.considbound = 26; BK.countgaps = true; BK.gapbound = 70; break;
+            case 5: BK.considbound = 20; break;
             default: arb_assert(0); break;                                     // missing
         }
 
@@ -818,7 +820,7 @@ void TEST_nucleotide_consensus() {
 }
 
 void TEST_amino_consensus() {
-    // keep similar to ../EDIT4/ED4_mini_classes.cxx@TEST_amino_consensus
+    // keep similar to ../SL/CONSENSUS/chartable.cxx@TEST_amino_consensus_input
     const char *sequence[] = {
         "-.ppppppppppQQQQQQQQQDDDDDELLLLLwwwwwwwwwwwwwwwwgggggggggggSSSe-PPP-DEL-",
         "-.-pppppppppkQQQQQQQQnDDDDELLLLLVVwwVwwwwVwwwwwwSgggggggggSSSee-QPP-DEL-",

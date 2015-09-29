@@ -1251,7 +1251,7 @@ void TEST_char_table() {
 }
 
 void TEST_nucleotide_consensus() {
-    // keep similar to ../NTREE/AP_consensus.cxx@TEST_nucleotide_consensus
+    // keep similar to ../../NTREE/AP_consensus.cxx@TEST_nucleotide_consensus_input
     const char *sequence[] = {
         "-.AAAAAAAAAAcAAAAAAAAATTTTTTTTTTTTTTTTTAAAAAAAAgggggAAAAgAA----m-----yykm-mmmAAAAAAAAAmmmmmmmmm",
         "-.-AAAAAAAAAccAAAAAAAAggTTgTTTTgTTTTTTTcccAAAAAgggggAAAAgAA----k-----kykr-rrrAAAAAAAAmmmmmmmmmT",
@@ -1293,7 +1293,7 @@ void TEST_nucleotide_consensus() {
             case 1: BK.countgaps   = false; break;                             // dont count gaps
             case 2: BK.considbound = 26; BK.lower = 0; BK.upper = 75; break;   // settings from #663
             case 3: BK.considbound = 25; break;
-            case 4: BK.considbound = 26; BK.countgaps   = true; BK.gapbound = 70; break;
+            case 4: BK.considbound = 26; BK.countgaps = true; BK.gapbound = 70; break;
             case 5: BK.considbound = 20; break;
             default: ct_assert(0); break;                                      // missing
         }
@@ -1305,7 +1305,7 @@ void TEST_nucleotide_consensus() {
 }
 
 void TEST_amino_consensus() {
-    // keep similar to ../NTREE/AP_consensus.cxx@TEST_amino_consensus
+    // keep similar to ../../NTREE/AP_consensus.cxx@TEST_amino_consensus_input
     const char *sequence[] = {
         "-.ppppppppppQQQQQQQQQDDDDDELLLLLwwwwwwwwwwwwwwwwgggggggggggSSSe-PPP-DEL-",
         "-.-pppppppppkQQQQQQQQnDDDDELLLLLVVwwVwwwwVwwwwwwSgggggggggSSSee-QPP-DEL-",
