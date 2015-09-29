@@ -20,6 +20,9 @@
 #ifndef ARBDB_BASE_H
 #include <arbdb_base.h>
 #endif
+#ifndef _STDINT_H
+#include <stdint.h>
+#endif
 
 #define ct_assert(bed) arb_assert(bed)
 
@@ -94,28 +97,28 @@ namespace chartable {
 
         int get_table_entry_size() const { return table_entry_size; }
         void expand_table_entry_size();
-        int bigger_table_entry_size_needed(int new_no_of_sequences) { return table_entry_size==SHORT_TABLE_ELEM_SIZE ? (new_no_of_sequences>SHORT_TABLE_MAX_VALUE) : 0; }
+        bool bigger_table_entry_size_needed(int new_max_count) { return table_entry_size==SHORT_TABLE_ELEM_SIZE ? (new_max_count>SHORT_TABLE_MAX_VALUE) : 0; }
 
         int operator[](int offset) const { return table_entry_size==SHORT_TABLE_ELEM_SIZE ? get_elem_short(offset) : get_elem_long(offset); }
 
-        void inc_short(int offset)  {
+        void inc_short(int offset, int incr)  {
             int old = get_elem_short(offset);
-            ct_assert(old<255);
-            set_elem_short(offset, old+1);
+            ct_assert((old+incr)<=255);
+            set_elem_short(offset, old+incr);
         }
-        void dec_short(int offset)  {
+        void dec_short(int offset, int decr)  {
             int old = get_elem_short(offset);
-            ct_assert(old>0);
-            set_elem_short(offset, old-1);
+            ct_assert(old>=decr);
+            set_elem_short(offset, old-decr);
         }
-        void inc_long(int offset)   {
+        void inc_long(int offset, int incr)   {
             int old = get_elem_long(offset);
-            set_elem_long(offset, old+1);
+            set_elem_long(offset, old+incr);
         }
-        void dec_long(int offset)   {
+        void dec_long(int offset, int decr)   {
             int old = get_elem_long(offset);
-            ct_assert(old>0);
-            set_elem_long(offset, old-1);
+            ct_assert(old>=decr);
+            set_elem_long(offset, old-decr);
         }
 
         int firstDifference(const SepBaseFreq& other, int start, int end, int *firstDifferentPos) const;
@@ -149,16 +152,17 @@ class BaseFrequencies : virtual Noncopyable {
 
     SepBaseFreqPtr *bases_table;
 
-    int sequences; // # of sequences added to the table
+    int sequenceUnits; // # of sequences added to the table (multiplied with 'units')
     int ignore;    // this table will be ignored when calculating tables higher in hierarchy // @@@ -> bool
                    // (used in EDIT4 to suppress SAIs in tables of ED4_root_group_manager)
 
     // @@@ move statics into own class:
     static bool               initialized;
+    static uint8_t            unitsPerSequence;                // multiplier per added sequence (to allow proper distribution of ambiguity codes)
     static unsigned char      char_to_index_tab[MAXCHARTABLE];
     static bool               is_gap[MAXCHARTABLE];
     static unsigned char     *upper_index_chars;
-    static int                used_bases_tables; // size of 'bases_table'
+    static int                used_bases_tables;               // size of 'bases_table'
     static GB_alignment_type  ali_type;
 
     static inline void set_char_to_index(unsigned char c, int index);
@@ -172,7 +176,7 @@ class BaseFrequencies : virtual Noncopyable {
     }
     void prepare_to_add_elements(int new_sequences) {
         ct_assert(used_bases_tables);
-        if (linear_table(0).bigger_table_entry_size_needed(sequences+new_sequences)) {
+        if (linear_table(0).bigger_table_entry_size_needed(sequenceUnits+new_sequences*unitsPerSequence)) {
             expand_tables();
         }
     }
@@ -210,7 +214,7 @@ public:
 
     void init(int maxseqlength);
     int size() const { return bases_table[0]->size(); }
-    int added_sequences() const { return sequences; }
+    int added_sequences() const { return sequenceUnits/unitsPerSequence; }
 
     void bases_and_gaps_at(int column, int *bases, int *gaps) const;
 

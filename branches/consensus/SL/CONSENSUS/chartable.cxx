@@ -410,7 +410,7 @@ void BaseFrequencies::build_consensus_string_to(char *consensus_string, Explicit
  #define DUMPINT(var)
 #endif
 
-    if (sequences) {
+    if (sequenceUnits) {
         for (int i=left_idx; i<=right_idx; i++) {
 #if defined(DEBUG_CONSENSUS)
             int  column  = i+1;
@@ -436,19 +436,19 @@ void BaseFrequencies::build_consensus_string_to(char *consensus_string, Explicit
                 }
             }
 
-            int gaps = sequences-bases; // count of gaps
+            int gaps = sequenceUnits-bases; // count of gaps
 
-            DUMPINT(sequences);
+            DUMPINT(sequenceUnits);
             DUMPINT(gaps);
             DUMPINT(bases);
 
             // What to do with gaps?
 
-            if (gaps == sequences) {
+            if (gaps == sequenceUnits) {
                 consensus_string[o] = '=';
             }
-            else if (BK.countgaps && PERCENT(gaps, sequences) >= BK.gapbound) {
-                DUMPINT(PERCENT(gaps,sequences));
+            else if (BK.countgaps && PERCENT(gaps, sequenceUnits) >= BK.gapbound) {
+                DUMPINT(PERCENT(gaps,sequenceUnits));
                 DUMPINT(BK.gapbound);
                 consensus_string[o] = '-';
             }
@@ -524,7 +524,7 @@ void BaseFrequencies::build_consensus_string_to(char *consensus_string, Explicit
                 ct_assert(kcount<=bases);
 
                 // show as upper or lower case ?
-                int percent = PERCENT(kcount, sequences); // @@@ if gaps==off -> calc percent of non-gaps
+                int percent = PERCENT(kcount, sequenceUnits); // @@@ if gaps==off -> calc percent of non-gaps
                 DUMPINT(percent);
                 DUMPINT(BK.upper);
                 DUMPINT(BK.lower);
@@ -555,6 +555,7 @@ void BaseFrequencies::build_consensus_string_to(char *consensus_string, Explicit
 //      BaseFrequencies
 
 bool               BaseFrequencies::initialized       = false;
+uint8_t            BaseFrequencies::unitsPerSequence  = 171; // @@@ should work with any positive amount
 unsigned char      BaseFrequencies::char_to_index_tab[MAXCHARTABLE];
 bool               BaseFrequencies::is_gap[MAXCHARTABLE];
 unsigned char     *BaseFrequencies::upper_index_chars = 0;
@@ -655,7 +656,7 @@ BaseFrequencies::BaseFrequencies(int maxseqlength)
         bases_table[i] = new SepBaseFreq(maxseqlength);
     }
 
-    sequences = 0;
+    sequenceUnits = 0;
 }
 
 void BaseFrequencies::init(int maxseqlength)
@@ -665,7 +666,7 @@ void BaseFrequencies::init(int maxseqlength)
         linear_table(i).init(maxseqlength);
     }
 
-    sequences = 0;
+    sequenceUnits = 0;
 }
 
 void BaseFrequencies::bases_and_gaps_at(int column, int *bases, int *gaps) const
@@ -685,8 +686,14 @@ void BaseFrequencies::bases_and_gaps_at(int column, int *bases, int *gaps) const
         }
     }
 
-    if (bases) *bases = b;
-    if (gaps)  *gaps  = g;
+    if (bases) {
+        *bases = b/unitsPerSequence;
+        ct_assert((b%unitsPerSequence) == 0);
+    }
+    if (gaps)  {
+        *gaps  = g/unitsPerSequence;
+        ct_assert((g%unitsPerSequence) == 0);
+    }
 }
 
 BaseFrequencies::~BaseFrequencies()
@@ -736,7 +743,7 @@ void BaseFrequencies::add(const BaseFrequencies& other)
 {
     if (other.ignore) return;
     if (other.size()==0) return;
-    prepare_to_add_elements(other.sequences);
+    prepare_to_add_elements(other.added_sequences());
     add(other, 0, other.size()-1);
 }
 void BaseFrequencies::add(const BaseFrequencies& other, int start, int end)
@@ -753,7 +760,7 @@ void BaseFrequencies::add(const BaseFrequencies& other, int start, int end)
         linear_table(i).add(other.linear_table(i), start, end);
     }
 
-    sequences += other.sequences;
+    sequenceUnits += other.sequenceUnits;
 
     test();
 }
@@ -777,7 +784,7 @@ void BaseFrequencies::sub(const BaseFrequencies& other, int start, int end)
         linear_table(i).sub(other.linear_table(i), start, end);
     }
 
-    sequences -= other.sequences;
+    sequenceUnits -= other.sequenceUnits;
 
     test();
 }
@@ -886,26 +893,26 @@ void BaseFrequencies::add(const char *scan_string, int len)
         for (i=0; i<len; i++) {
             unsigned char c = scan_string[i];
             if (!c) break;
-            table(c).inc_short(i);
+            table(c).inc_short(i, unitsPerSequence);
         }
         SepBaseFreq& t = table('.');
         for (; i<sz; i++) {
-            t.inc_short(i);
+            t.inc_short(i, unitsPerSequence);
         }
     }
     else {
         for (i=0; i<len; i++) {
             unsigned char c = scan_string[i];
             if (!c) break;
-            table(c).inc_long(i);
+            table(c).inc_long(i, unitsPerSequence);
         }
         SepBaseFreq& t = table('.');
         for (; i<sz; i++) { // LOOP_VECTORIZED
-            t.inc_long(i);
+            t.inc_long(i, unitsPerSequence);
         }
     }
 
-    sequences++;
+    sequenceUnits += unitsPerSequence;
 
     test();
 }
@@ -921,26 +928,26 @@ void BaseFrequencies::sub(const char *scan_string, int len)
         for (i=0; i<len; i++) {
             unsigned char c = scan_string[i];
             if (!c) break;
-            table(c).dec_short(i);
+            table(c).dec_short(i, unitsPerSequence);
         }
         SepBaseFreq& t = table('.');
         for (; i<sz; i++) {
-            t.dec_short(i);
+            t.dec_short(i, unitsPerSequence);
         }
     }
     else {
         for (i=0; i<len; i++) {
             unsigned char c = scan_string[i];
             if (!c) break;
-            table(c).dec_long(i);
+            table(c).dec_long(i, unitsPerSequence);
         }
         SepBaseFreq& t = table('.');
         for (; i<sz; i++) { // LOOP_VECTORIZED
-            t.dec_long(i);
+            t.dec_long(i, unitsPerSequence);
         }
     }
 
-    sequences--;
+    sequenceUnits -= unitsPerSequence;
 
     test();
 }
@@ -965,21 +972,21 @@ void BaseFrequencies::sub_and_add(const char *old_string, const char *new_string
             if (!o) {
                 for (; n && i<=end; i++) {
                     n = new_string[i];
-                    table(n).inc_short(i);
-                    t.dec_short(i);
+                    table(n).inc_short(i, unitsPerSequence);
+                    t.dec_short(i, unitsPerSequence);
                 }
             }
             else if (!n) {
                 for (; o && i<=end; i++) {
                     o = old_string[i];
-                    table(o).dec_short(i);
-                    t.inc_short(i);
+                    table(o).dec_short(i, unitsPerSequence);
+                    t.inc_short(i, unitsPerSequence);
                 }
 
             }
             else if (o!=n) {
-                table(o).dec_short(i);
-                table(n).inc_short(i);
+                table(o).dec_short(i, unitsPerSequence);
+                table(n).inc_short(i, unitsPerSequence);
 
             }
         }
@@ -995,21 +1002,21 @@ void BaseFrequencies::sub_and_add(const char *old_string, const char *new_string
             if (!o) {
                 for (; n && i<=end; i++) {
                     n = new_string[i];
-                    table(n).inc_long(i);
-                    t.dec_long(i);
+                    table(n).inc_long(i, unitsPerSequence);
+                    t.dec_long(i, unitsPerSequence);
                 }
             }
             else if (!n) {
                 for (; o && i<=end; i++) {
                     o = old_string[i];
-                    table(o).dec_long(i);
-                    t.inc_long(i);
+                    table(o).dec_long(i, unitsPerSequence);
+                    t.inc_long(i, unitsPerSequence);
                 }
 
             }
             else if (o!=n) {
-                table(o).dec_long(i);
-                table(n).inc_long(i);
+                table(o).dec_long(i, unitsPerSequence);
+                table(n).inc_long(i, unitsPerSequence);
             }
         }
     }
@@ -1045,8 +1052,8 @@ bool BaseFrequencies::ok() const
     if (empty()) return true;
     if (is_ignored()) return true;
 
-    if (sequences<0) {
-        fprintf(stderr, "Negative # of sequences (%i) in BaseFrequencies\n", sequences);
+    if (sequenceUnits<0) {
+        fprintf(stderr, "Negative # of sequences (%i) in BaseFrequencies\n", added_sequences());
         return false;
     }
 
@@ -1067,7 +1074,7 @@ bool BaseFrequencies::ok() const
             break;
         }
         else {
-            if ((bases+gaps)!=sequences) {
+            if ((bases+gaps)!=added_sequences()) {
                 fprintf(stderr, "bases+gaps should be equal to # of sequences at column %i\n", i);
                 return false;
             }
@@ -1275,22 +1282,22 @@ void TEST_amino_consensus() {
     }
 }
 
-void TEST_bases_table() {
+void TEST_SepBaseFreq() {
     const int LEN  = 20;
     const int OFF1 = 6;
     const int OFF2 = 7; // adjacent to OFF1
 
     SepBaseFreq short1(LEN), short2(LEN);
-    for (int i = 0; i<100; ++i) short1.inc_short(OFF1);
-    for (int i = 0; i<70;  ++i) short1.inc_short(OFF2);
-    for (int i = 0; i<150; ++i) short2.inc_short(OFF1);
-    for (int i = 0; i<80;  ++i) short2.inc_short(OFF2);
+    for (int i = 0; i<100; ++i) short1.inc_short(OFF1, 1);
+    for (int i = 0; i<70;  ++i) short1.inc_short(OFF2, 1);
+    for (int i = 0; i<150; ++i) short2.inc_short(OFF1, 1);
+    for (int i = 0; i<80;  ++i) short2.inc_short(OFF2, 1);
 
     SepBaseFreq long1(LEN), long2(LEN);
     long1.expand_table_entry_size();
     long2.expand_table_entry_size();
-    for (int i = 0; i<2000; ++i) long1.inc_long(OFF1);
-    for (int i = 0; i<2500; ++i) long2.inc_long(OFF1);
+    for (int i = 0; i<2000; ++i) long1.inc_long(OFF1, 1);
+    for (int i = 0; i<2500; ++i) long2.inc_long(OFF1, 1);
 
     SepBaseFreq shortsum(LEN);
     shortsum.add(short1, 0, LEN-1); TEST_EXPECT_EQUAL(shortsum[OFF1], 100); TEST_EXPECT_EQUAL(shortsum[OFF2],  70);
