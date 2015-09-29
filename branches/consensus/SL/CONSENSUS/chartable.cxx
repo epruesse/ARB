@@ -1163,6 +1163,21 @@ void TEST_char_table() {
                 case 367171911: TEST_EXPECT_EQUAL(consensus, "na.NanNunc-.-NU.aYgn-nng-nWanM"); break;
                 default: TEST_EXPECT_EQUAL(consensus, "undef");
             }
+
+            // test sub_and_add()
+            const char *s1 = "ACGTACGTAcgtacgtaCGTACGTACGTAC";
+            const char *s2 = "MRWSYKVHDBNmrwsykvhdbnSYKVHDBN"; // use ambiguities
+
+            tab.add(s1, seqlen);
+            PosRange r(0, seqlen-1);
+            tab.sub_and_add(s1, s2, r);
+            tab.sub_and_add(s2, consensus, r);
+            tab.sub(consensus, seqlen);
+
+            char *consensus2 = tab.build_consensus_string(BK);
+            TEST_EXPECT_EQUAL(consensus, consensus2);
+
+            free(consensus2);
             free(consensus);
         }
 
