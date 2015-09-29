@@ -958,63 +958,27 @@ void BaseFrequencies::sub_and_add(const char *old_string, const char *new_string
     int end   = range.end();
     ct_assert(start<=end);
 
-    int i;
-    SepBaseFreq& t = table('.');
-
     if (get_table_entry_size()==SHORT_TABLE_ELEM_SIZE) {
-        for (i=start; i<=end; i++) {
+        for (int i=start; i<=end; i++) {
             unsigned char o = old_string[i];
             unsigned char n = new_string[i];
 
-            ct_assert(o); // @@@ if these never fail, some code below is superfluous
-            ct_assert(n);
-            
-            if (!o) {
-                for (; n && i<=end; i++) {
-                    n = new_string[i];
-                    table(n).inc_short(i, unitsPerSequence);
-                    t.dec_short(i, unitsPerSequence);
-                }
-            }
-            else if (!n) {
-                for (; o && i<=end; i++) {
-                    o = old_string[i];
-                    table(o).dec_short(i, unitsPerSequence);
-                    t.inc_short(i, unitsPerSequence);
-                }
+            ct_assert(o && n); // passed string have to be defined in range
 
-            }
-            else if (o!=n) {
+            if (o!=n) {
                 table(o).dec_short(i, unitsPerSequence);
                 table(n).inc_short(i, unitsPerSequence);
-
             }
         }
     }
     else {
-        for (i=start; i<=end; i++) {
+        for (int i=start; i<=end; i++) {
             unsigned char o = old_string[i];
             unsigned char n = new_string[i];
 
-            ct_assert(o); // @@@ if these never fail, some code below is superfluous
-            ct_assert(n);
-            
-            if (!o) {
-                for (; n && i<=end; i++) {
-                    n = new_string[i];
-                    table(n).inc_long(i, unitsPerSequence);
-                    t.dec_long(i, unitsPerSequence);
-                }
-            }
-            else if (!n) {
-                for (; o && i<=end; i++) {
-                    o = old_string[i];
-                    table(o).dec_long(i, unitsPerSequence);
-                    t.inc_long(i, unitsPerSequence);
-                }
+            ct_assert(o && n); // passed string have to be defined in range
 
-            }
-            else if (o!=n) {
+            if (o!=n) {
                 table(o).dec_long(i, unitsPerSequence);
                 table(n).inc_long(i, unitsPerSequence);
             }
