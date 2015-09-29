@@ -555,7 +555,7 @@ void BaseFrequencies::build_consensus_string_to(char *consensus_string, Explicit
 //      BaseFrequencies
 
 bool               BaseFrequencies::initialized       = false;
-uint8_t            BaseFrequencies::unitsPerSequence  = 171; // @@@ should work with any positive amount
+uint8_t            BaseFrequencies::unitsPerSequence  = 12;
 unsigned char      BaseFrequencies::char_to_index_tab[MAXCHARTABLE];
 bool               BaseFrequencies::is_gap[MAXCHARTABLE];
 unsigned char     *BaseFrequencies::upper_index_chars = 0;
@@ -1105,6 +1105,9 @@ void TEST_char_table() {
         const int  add_count = 300;
         char      *added_seqs[add_count];
 
+        const char *s1 = "ACGTACGTAcgtacgtaCGTACGTACGTAC";
+        const char *s2 = "MRWSYKVHDBNmrwsykvhdbnSYKVHDBN"; // use ambiguities
+
         // add seq multiple times
         for (int a = 0; a<add_count; ++a) {
             tab.add(seq, seqlen);
@@ -1114,6 +1117,23 @@ void TEST_char_table() {
             int sidx  = rand()%seqlen;
             int aidx  = rand()%alphabeth_size;
             seq[sidx] = alphabeth[aidx];
+
+            if (a == 16) { // with 15 sequences in tab
+                // test sub_and_add (short table version)
+                char *consensus = tab.build_consensus_string(BK);
+
+                tab.add(s1, seqlen);
+                PosRange r(0, seqlen-1);
+                tab.sub_and_add(s1, s2, r);
+                tab.sub_and_add(s2, consensus, r);
+                tab.sub(consensus, seqlen);
+
+                char *consensus2 = tab.build_consensus_string(BK);
+                TEST_EXPECT_EQUAL(consensus, consensus2);
+
+                free(consensus2);
+                free(consensus);
+            }
         }
 
         // build consensi (just check regression)
@@ -1129,8 +1149,6 @@ void TEST_char_table() {
             }
 
             // test sub_and_add()
-            const char *s1 = "ACGTACGTAcgtacgtaCGTACGTACGTAC";
-            const char *s2 = "MRWSYKVHDBNmrwsykvhdbnSYKVHDBN"; // use ambiguities
 
             tab.add(s1, seqlen);
             PosRange r(0, seqlen-1);
