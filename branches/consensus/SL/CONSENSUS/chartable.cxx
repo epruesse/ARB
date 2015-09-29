@@ -555,7 +555,8 @@ void BaseFrequencies::build_consensus_string_to(char *consensus_string, Explicit
 //      BaseFrequencies
 
 bool               BaseFrequencies::initialized       = false;
-uint8_t            BaseFrequencies::unitsPerSequence  = 12;
+Ambiguity          BaseFrequencies::ambiguity_table[MAX_AMBIGUITY_CODES];
+uint8_t            BaseFrequencies::unitsPerSequence  = 1;
 unsigned char      BaseFrequencies::char_to_index_tab[MAXCHARTABLE];
 bool               BaseFrequencies::is_gap[MAXCHARTABLE];
 unsigned char     *BaseFrequencies::upper_index_chars = 0;
@@ -577,26 +578,44 @@ void BaseFrequencies::expand_tables() {
 }
 
 void BaseFrequencies::setup(const char *gap_chars, GB_alignment_type ali_type_) {
-    const char *groups       = 0;
+    const char *groups    = 0;
+    const char *ambigious = 0;
 
     ali_type = ali_type_;
 
     switch (ali_type) {
         case GB_AT_RNA:
-            groups = "A,C,G,TU,MRWSYKVHDBN,";
+            groups           = "A,C,G,TU,"; // Note: terminal ',' defines a group for unknown characters
+            ambigious        = "MRWSYKVHDBN";
+            unitsPerSequence = 12;
             break;
+
         case GB_AT_DNA:
-            groups = "A,C,G,UT,MRWSYKVHDBN,";
+            groups           = "A,C,G,UT,";
+            ambigious        = "MRWSYKVHDBN";
+            unitsPerSequence = 12;
             break;
+
         case GB_AT_AA:
-            groups = "P,A,G,S,T,Q,N,E,D,B,Z,H,K,R,L,I,V,M,F,Y,W,C,X"; // @@@ DRY (create 'groups' from AA_GROUP_...)
+            groups           = "P,A,G,S,T,Q,N,E,D,B,Z,H,K,R,L,I,V,M,F,Y,W,C,X"; // @@@ DRY (create 'groups' from AA_GROUP_...)
+            unitsPerSequence = 1;
             break;
+
         default:
             ct_assert(0);
             break;
     }
 
     ct_assert(groups);
+#if defined(ASSERTION_USED)
+    if (ali_type == GB_AT_AA) {
+        ct_assert(!ambigious);
+        // ct_assert(strlen(ambigious) <= MAX_AMBIGUITY_CODES); // @@@ later
+    }
+    else {
+        ct_assert(strlen(ambigious) == MAX_AMBIGUITY_CODES);
+    }
+#endif
 
     for (int i = 0; i<MAXCHARTABLE; ++i) is_gap[i] = false;
 
@@ -638,6 +657,30 @@ void BaseFrequencies::setup(const char *gap_chars, GB_alignment_type ali_type_) 
         char c = *align_string_ptr++;
         if (!c) break;
         set_char_to_index(c, idx++);
+    }
+
+    if (ambigious) {
+        ct_assert(ali_type == GB_AT_DNA || ali_type == GB_AT_RNA); // @@@ amino ambiguities not impl
+
+        const uint8_t indices2increment[MAX_TARGET_INDICES+1] = { 0, 0, 6, 4, 3 };
+        for (int i = 0; ambigious[i]; ++i) {
+            const char *contained = iupac::decode(ambigious[i], ali_type, false);
+
+            Ambiguity& amb = ambiguity_table[i];
+
+            amb.indices   = strlen(contained);
+            ct_assert(amb.indices>=2 && amb.indices<=MAX_TARGET_INDICES);
+            amb.increment = indices2increment[amb.indices];
+
+            for (int j = 0; j<amb.indices; ++j) {
+                int cidx     = char_to_index_tab[safeCharIndex(contained[j])];
+                ct_assert(cidx<MAX_INDEX_TABLES); // has to be non-ambigious
+                amb.index[j] = cidx;
+            }
+
+            char_to_index_tab[toupper(ambigious[i])] =
+            char_to_index_tab[tolower(ambigious[i])] = i+MAX_INDEX_TABLES;
+        }
     }
 
     free(unique_gap_chars);
@@ -688,11 +731,11 @@ void BaseFrequencies::bases_and_gaps_at(int column, int *bases, int *gaps) const
 
     if (bases) {
         *bases = b/unitsPerSequence;
-        ct_assert((b%unitsPerSequence) == 0);
+        ct_assert((b%unitsPerSequence) == 0); // could happen if an ambigious code contains a gap
     }
     if (gaps)  {
         *gaps  = g/unitsPerSequence;
-        ct_assert((g%unitsPerSequence) == 0);
+        ct_assert((g%unitsPerSequence) == 0); // could happen if an ambigious code contains a gap
     }
 }
 
@@ -880,6 +923,37 @@ const PosRange *BaseFrequencies::changed_range(const char *string1, const char *
     return &range;
 }
 
+#define INC_DEC(incdec) do {                                                    \
+        int idx = char_to_index_tab[c];                                         \
+        if (idx<MAX_INDEX_TABLES) {                                             \
+            table(c).incdec(offset, unitsPerSequence);                          \
+        }                                                                       \
+        else {                                                                  \
+            Ambiguity& amb = ambiguity_table[idx-MAX_INDEX_TABLES];             \
+            for (int i = 0; i<amb.indices; ++i) {                               \
+                linear_table(amb.index[i]).incdec(offset, amb.increment);       \
+            }                                                                   \
+        }                                                                       \
+    } while(0)
+
+void BaseFrequencies::incr_short(unsigned char c, int offset) {
+    INC_DEC(inc_short);
+}
+
+void BaseFrequencies::decr_short(unsigned char c, int offset) {
+    INC_DEC(dec_short);
+}
+
+void BaseFrequencies::incr_long(unsigned char c, int offset) {
+    INC_DEC(inc_long);
+}
+
+void BaseFrequencies::decr_long(unsigned char c, int offset) {
+    INC_DEC(dec_long);
+}
+
+#undef INC_DEC
+
 void BaseFrequencies::add(const char *scan_string, int len)
 {
     test();
@@ -893,7 +967,7 @@ void BaseFrequencies::add(const char *scan_string, int len)
         for (i=0; i<len; i++) {
             unsigned char c = scan_string[i];
             if (!c) break;
-            table(c).inc_short(i, unitsPerSequence);
+            incr_short(c, i);
         }
         SepBaseFreq& t = table('.');
         for (; i<sz; i++) {
@@ -904,7 +978,7 @@ void BaseFrequencies::add(const char *scan_string, int len)
         for (i=0; i<len; i++) {
             unsigned char c = scan_string[i];
             if (!c) break;
-            table(c).inc_long(i, unitsPerSequence);
+            incr_long(c, i);
         }
         SepBaseFreq& t = table('.');
         for (; i<sz; i++) { // LOOP_VECTORIZED
@@ -928,7 +1002,7 @@ void BaseFrequencies::sub(const char *scan_string, int len)
         for (i=0; i<len; i++) {
             unsigned char c = scan_string[i];
             if (!c) break;
-            table(c).dec_short(i, unitsPerSequence);
+            decr_short(c, i);
         }
         SepBaseFreq& t = table('.');
         for (; i<sz; i++) {
@@ -939,7 +1013,7 @@ void BaseFrequencies::sub(const char *scan_string, int len)
         for (i=0; i<len; i++) {
             unsigned char c = scan_string[i];
             if (!c) break;
-            table(c).dec_long(i, unitsPerSequence);
+            decr_long(c, i);
         }
         SepBaseFreq& t = table('.');
         for (; i<sz; i++) { // LOOP_VECTORIZED
@@ -966,8 +1040,8 @@ void BaseFrequencies::sub_and_add(const char *old_string, const char *new_string
             ct_assert(o && n); // passed string have to be defined in range
 
             if (o!=n) {
-                table(o).dec_short(i, unitsPerSequence);
-                table(n).inc_short(i, unitsPerSequence);
+                decr_short(o, i);
+                incr_short(n, i);
             }
         }
     }
@@ -979,8 +1053,8 @@ void BaseFrequencies::sub_and_add(const char *old_string, const char *new_string
             ct_assert(o && n); // passed string have to be defined in range
 
             if (o!=n) {
-                table(o).dec_long(i, unitsPerSequence);
-                table(n).inc_long(i, unitsPerSequence);
+                decr_long(o, i);
+                incr_long(n, i);
             }
         }
     }
@@ -1039,7 +1113,8 @@ bool BaseFrequencies::ok() const
         }
         else {
             if ((bases+gaps)!=added_sequences()) {
-                fprintf(stderr, "bases+gaps should be equal to # of sequences at column %i\n", i);
+                fprintf(stderr, "bases+gaps should be equal to # of sequences at column %i (bases=%i, gaps=%i, added_sequences=%i)\n",
+                        i, bases, gaps, added_sequences());
                 return false;
             }
         }
@@ -1140,11 +1215,11 @@ void TEST_char_table() {
         {
             char *consensus = tab.build_consensus_string(BK);
             switch (seed) {
-                case 677741240: TEST_EXPECT_EQUAL(consensus, "k-s-NW..aWu.NnWYa.R.mKcNK.c.rn"); break;
-                case 721151648: TEST_EXPECT_EQUAL(consensus, "aNnn..K..-gU.RW-SNcau.WNNacn.u"); break;
-                case 345295160: TEST_EXPECT_EQUAL(consensus, "yy-g..kMSn...NucyNny.Rnn.-Ng.k"); break;
-                case 346389111: TEST_EXPECT_EQUAL(consensus, ".unAn.y.nN.kc-cS.RauNm..Sa-kY."); break;
-                case 367171911: TEST_EXPECT_EQUAL(consensus, "na.NanNunc-.-NU.aYgn-nng-nWanM"); break;
+                case 677741240: TEST_EXPECT_EQUAL(consensus, "k-s-cWs.aWu.a.WYa.R.mKcaK.c.ry"); break;
+                case 721151648: TEST_EXPECT_EQUAL(consensus, "awm...Ka.-gUyRW-Sacau.Wa.acy.W"); break;
+                case 345295160: TEST_EXPECT_EQUAL(consensus, "yy-gmwkMS....gucy..Y.Rrr.-gg.K"); break;
+                case 346389111: TEST_EXPECT_EQUAL(consensus, "suwA.yYwSurKc-cSmRaY.mg.Sa-kY."); break;
+                case 367171911: TEST_EXPECT_EQUAL(consensus, ".augaY.u.c-c-cUDaYg.-.cg-cWWsM"); break;
                 default: TEST_EXPECT_EQUAL(consensus, "undef");
             }
 
@@ -1190,12 +1265,12 @@ void TEST_nucleotide_consensus() {
         "-.---------Acccccccccc----------------gtAGGGGGG----------------k---------bbmrmmmmmmmmmTTTTTTTTT",
     };
     const char *expected_consensus[] = {
-        "==----..aaaACccMMMMMaa----.....g.kkk.uKb.ssVVmmss...-.ww...=---N---..nnn.-NNNaaNNNNNnnnnNNNNNuu", // default settings (see ConsensusBuildParams-ctor), gapbound=60, considbound=30, lower/upper=70/95
-        "==......aaaACccMMMMMaa.........g.kkk.uKb.ssVVmmss.....ww...=...N.....nnn..NNNaaNNNNNnnnnNNNNNuu", // countgaps=0
-        "==aaaaaaaAAACCCMMMMMAAkgkugkkkuggKKKuuKBsSSVVMMSsssbwwwWswa=nnnNnnnnnNNNnnNNNAANNNNNNNNNNNNNNUU", // countgaps=0,              considbound=26, lower=0, upper=75 (as described in #663)
-        "==aaaaaaaAAACCCMMMMMAAkkkkgkkkugKKKKKuKBsSSVVMMSsssbwwwWswN=nnnNnnnnnNNNnnNNNAANNNNNNNNNNNNNNUU", // countgaps=0,              considbound=25, lower=0, upper=75
-        "==---aaaaAAACCCMMMMMAA-gkugkkkuggKKKuuKBsSSVVMMSsssb-wwWswa=---N--nnnNNNnnNNNAANNNNNNNNNNNNNNUU", // countgaps=1, gapbound=70, considbound=26, lower=0, upper=75
-        "==---aaaaAAACCMMMMMMMA-kkkgkkkugKKKKKuKBNSVVVVMSsssb-wwWswN=---N--nnnNNNnnNNNANNNNNNNNNNNNNNNNU", // countgaps=1, gapbound=70, considbound=20, lower=0, upper=75
+        "==----..aaaACccMMMMMaa----.....g.kkk.uKb.ssVVmmss...-.ww...=---.---..byk.-.mVAaaaaMMMMmmHH..uuu", // default settings (see ConsensusBuildParams-ctor), gapbound=60, considbound=30, lower/upper=70/95
+        "==......aaaACccMMMMMaa.........g.kkk.uKb.ssVVmmss.....ww...=.........byk...mVAaaaaMMMMmmHH..uuu", // countgaps=0
+        "==aaaaaaaAAACCCMMMMMAAkgkugkkkuggKKKuuKBsSSVVMMSsssbwwwWswa=ycaaykkkbBykaaaMVAAAAAMMMMMMHHuuuUU", // countgaps=0,              considbound=26, lower=0, upper=75 (as described in #663)
+        "==aaaaaaaAAACCCMMMMMAAkkkkgkkkugKKKKKuKBsSSVVMMSsssbwwwWswN=yhnNykkkbByknnNVVAAAAMMMMMMMHHHuuUU", // countgaps=0,              considbound=25, lower=0, upper=75
+        "==---aaaaAAACCCMMMMMAA-gkugkkkuggKKKuuKBsSSVVMMSsssb-wwWswa=---a--kkbBykaaaMVAAAAAMMMMMMHHuuuUU", // countgaps=1, gapbound=70, considbound=26, lower=0, upper=75
+        "==---aaaaAAACCMMMMMMMA-kkkgkkkugKKKKKuKBNSVVVVMSsssb-wwWswN=---N--nnbBBBnnNVVAAAMMMMMMMHHHHHuUU", // countgaps=1, gapbound=70, considbound=20, lower=0, upper=75
     };
     const size_t seqlen         = strlen(sequence[0]);
     const int    sequenceCount  = ARRAY_ELEMS(sequence);

@@ -237,7 +237,7 @@ char iupac::combine(char c1, char c2, GB_alignment_type ali) {
     return iupac::encode(buffer, ali);
 }
 
-const char* iupac::decode(char iupac, GB_alignment_type ali, int decode_amino_iupac_groups) {
+const char* iupac::decode(char iupac, GB_alignment_type ali, bool decode_amino_iupac_groups) {
     if (!isalpha(iupac)) {
         return IUPAC_EMPTY;
     }

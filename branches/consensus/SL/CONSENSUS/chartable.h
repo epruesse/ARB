@@ -39,7 +39,24 @@
 #define SHORT_TABLE_MAX_VALUE 0xff
 #define LONG_TABLE_ELEM_SIZE  4
 
+#define MAX_INDEX_TABLES    128     // max number of different non-ambigious indices (into BaseFrequencies::bases_table)
+#define MAX_TARGET_INDICES  4       // max number of non-ambigious indices affected by one ambigious code (4 for 'N' in RNA/DNA, 2 for amino-acids)
+#define MAX_AMBIGUITY_CODES (1+4+6) // for RNA/DNA (3 for amino-acids)
+
+// Note: short tables convert to long tables when adding 22 sequences (for nucleotides)
+// * maybe remove short tables completely OR
+// * increase values size in short tables to 16 bit
+
 namespace chartable {
+
+    struct Ambiguity {
+        /*! define how a specific ambiguity code is counted
+         */
+
+        uint8_t indices;                   // number of entries in bases_table affected by this ambiguity
+        uint8_t increment;                 // how much each entry gets incremented
+        uint8_t index[MAX_TARGET_INDICES]; // into BaseFrequencies::bases_table
+    };
 
     class SepBaseFreq : virtual Noncopyable {
         /*! counts occurances of one specific base (e.g. 'A') or a group of bases,
@@ -148,6 +165,7 @@ class BaseFrequencies : virtual Noncopyable {
      */
 
     typedef chartable::SepBaseFreq  SepBaseFreq;
+    typedef chartable::Ambiguity    Ambiguity;
     typedef SepBaseFreq            *SepBaseFreqPtr;
 
     SepBaseFreqPtr *bases_table;
@@ -158,8 +176,9 @@ class BaseFrequencies : virtual Noncopyable {
 
     // @@@ move statics into own class:
     static bool               initialized;
+    static Ambiguity          ambiguity_table[MAX_AMBIGUITY_CODES];
     static uint8_t            unitsPerSequence;                // multiplier per added sequence (to allow proper distribution of ambiguity codes)
-    static unsigned char      char_to_index_tab[MAXCHARTABLE];
+    static unsigned char      char_to_index_tab[MAXCHARTABLE]; // <MAX_INDEX_TABLES = > real index into 'bases_table', else index+MAX_INDEX_TABLES into ambiguity_table
     static bool               is_gap[MAXCHARTABLE];
     static unsigned char     *upper_index_chars;
     static int                used_bases_tables;               // size of 'bases_table'
@@ -190,6 +209,11 @@ class BaseFrequencies : virtual Noncopyable {
     const SepBaseFreq& table(int c) const  { ct_assert(c>0 && c<MAXCHARTABLE); return linear_table(char_to_index_tab[c]); }
 
     static unsigned char index_to_upperChar(int index) { return upper_index_chars[index]; }
+
+    void incr_short(unsigned char c, int offset);
+    void decr_short(unsigned char c, int offset);
+    void incr_long(unsigned char c, int offset);
+    void decr_long(unsigned char c, int offset);
 
 #if defined(TEST_CHAR_TABLE_INTEGRITY)
     void test() const; // test if table is valid (dumps core if invalid)
