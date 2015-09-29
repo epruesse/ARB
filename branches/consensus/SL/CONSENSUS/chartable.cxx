@@ -1178,23 +1178,24 @@ void TEST_char_table() {
 void TEST_nucleotide_consensus() {
     // keep similar to ../NTREE/AP_consensus.cxx@TEST_nucleotide_consensus
     const char *sequence[] = {
-        "-.AAAAAAAAAAcAAAAAAAAATTTTTTTTTTTTTTTTTAAAAAAAAgggggAAAAgAA---",
-        "-.-AAAAAAAAAccAAAAAAAAggTTgTTTTgTTTTTTTcccAAAAAgggggAAAAgAA---",
-        "-.--AAAAAAAAcccAAAAAAA-ggTggTTTggTTTTTTccccAAAAgggCCtAAAgAC---",
-        "-.---AAAAAAAccccAAAAAA-ggggggTTgggTTTTTcccccAAAggCCC-tAACtC---",
-        "-.----AAAAAAcccccAAAAA----ggggTggggTTTTGGGcccAAgCCCt-ttACtG---",
-        "-.-----AAAAAccccccAAAA----ggggggggggTTgGGGGcccAcCCtt--tttCG---",
-        "-.------AAAAcccccccAAA---------ggggggTgGGGGGccccCt----tt-gT---",
-        "-.-------AAAccccccccAA---------ggggggggttGGGGccct------t--Tyyk",
-        "-.--------AAcccccccccA----------------gttGGGGGct-------t---ymm",
-        "-.---------Acccccccccc----------------gtAGGGGGG---------------",
+        "-.AAAAAAAAAAcAAAAAAAAATTTTTTTTTTTTTTTTTAAAAAAAAgggggAAAAgAA----m-----yykm-mmm",
+        "-.-AAAAAAAAAccAAAAAAAAggTTgTTTTgTTTTTTTcccAAAAAgggggAAAAgAA----k-----kykr-rrr",
+        "-.--AAAAAAAAcccAAAAAAA-ggTggTTTggTTTTTTccccAAAAgggCCtAAAgAC----m-----sykw-wvs",
+        "-.---AAAAAAAccccAAAAAA-ggggggTTgggTTTTTcccccAAAggCCC-tAACtC----k----yyyys-smv",
+        "-.----AAAAAAcccccAAAAA----ggggTggggTTTTGGGcccAAgCCCt-ttACtG----m---nkkkky-yrm",
+        "-.-----AAAAAccccccAAAA----ggggggggggTTgGGGGcccAcCCtt--tttCG----k--nnssssk-kvr",
+        "-.------AAAAcccccccAAA---------ggggggTgGGGGGccccCt----tt-gT----mydddyyyy-vvms",
+        "-.-------AAAccccccccAA---------ggggggggttGGGGccct------t--T-yykkkbbbkkkk-hhrv",
+        "-.--------AAcccccccccA----------------gttGGGGGct-------t----ymmmmnnnssss-ddvm",
+        "-.---------Acccccccccc----------------gtAGGGGGG----------------k---------bbmr",
     };
     const char *expected_consensus[] = {
-        "==----..aaaACccMMMMMaa----.....g.kkk.uKb.ssVVmmss...-.ww...---", // default settings (see ConsensusBuildParams-ctor), gapbound=60, considbound=30, lower/upper=70/95
-        "==......aaaACccMMMMMaa.........g.kkk.uKb.ssVVmmss.....ww......", // countgaps=0
-        "==aaaaaaaAAACCCMMMMMAAkgkugkkkuggKKKuuKBsSSVVMMSsssbwwwWswannn", // countgaps=0,              considbound=26, lower=0, upper=75 (as described in #663)
-        "==---aaaaAAACCCMMMMMAA-gkugkkkuggKKKuuKBsSSVVMMSsssb-wwWswa---", // countgaps=1, gapbound=70, considbound=26, lower=0, upper=75
-        "==---aaaaAAACCMMMMMMMA-kkkgkkkugKKKKKuKBNSVVVVMSsssb-wwWswN---", // countgaps=1, gapbound=70, considbound=20, lower=0, upper=75
+        "==----..aaaACccMMMMMaa----.....g.kkk.uKb.ssVVmmss...-.ww...=---N---..nnn.-NNN", // default settings (see ConsensusBuildParams-ctor), gapbound=60, considbound=30, lower/upper=70/95
+        "==......aaaACccMMMMMaa.........g.kkk.uKb.ssVVmmss.....ww...=...N.....nnn..NNN", // countgaps=0
+        "==aaaaaaaAAACCCMMMMMAAkgkugkkkuggKKKuuKBsSSVVMMSsssbwwwWswa=nnnNnnnnnNNNnnNNN", // countgaps=0,              considbound=26, lower=0, upper=75 (as described in #663)
+        "==aaaaaaaAAACCCMMMMMAAkkkkgkkkugKKKKKuKBsSSVVMMSsssbwwwWswN=nnnNnnnnnNNNnnNNN", // countgaps=0,              considbound=25, lower=0, upper=75
+        "==---aaaaAAACCCMMMMMAA-gkugkkkuggKKKuuKBsSSVVMMSsssb-wwWswa=---N--nnnNNNnnNNN", // countgaps=1, gapbound=70, considbound=26, lower=0, upper=75
+        "==---aaaaAAACCMMMMMMMA-kkkgkkkugKKKKKuKBNSVVVVMSsssb-wwWswN=---N--nnnNNNnnNNN", // countgaps=1, gapbound=70, considbound=20, lower=0, upper=75
     };
     const size_t seqlen         = strlen(sequence[0]);
     const int    sequenceCount  = ARRAY_ELEMS(sequence);
@@ -1216,8 +1217,9 @@ void TEST_nucleotide_consensus() {
             case 0: break;                                                     // use default settings
             case 1: BK.countgaps   = false; break;                             // dont count gaps
             case 2: BK.considbound = 26; BK.lower = 0; BK.upper = 75; break;   // settings from #663
-            case 3: BK.countgaps   = true; BK.gapbound = 70; break;
-            case 4: BK.considbound = 20; break;
+            case 3: BK.considbound = 25; break;
+            case 4: BK.considbound = 26; BK.countgaps   = true; BK.gapbound = 70; break;
+            case 5: BK.considbound = 20; break;
             default: ct_assert(0); break;                                      // missing
         }
 
