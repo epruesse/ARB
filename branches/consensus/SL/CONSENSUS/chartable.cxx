@@ -529,7 +529,7 @@ void BaseFrequencies::build_consensus_string_to(char *consensus_string, Explicit
                 ct_assert(kcount<=bases);
 
                 // show as upper or lower case ?
-                int percent = PERCENT(kcount, sequenceUnits); // @@@ if gaps==off -> calc percent of non-gaps
+                int percent = PERCENT(kcount, BK.countgaps ? sequenceUnits : bases);
                 DUMPINT(percent);
                 DUMPINT(BK.upper);
                 DUMPINT(BK.lower);
@@ -1271,9 +1271,9 @@ void TEST_nucleotide_consensus() {
     };
     const char *expected_consensus[] = {
         "==----..aaaACccMMMMMaa----.....g.kkk.uKb.ssVVmmss...-.ww...=---.---..byk.-.mVAaaaaMMMMmmHH..uuu", // default settings (see ConsensusBuildParams-ctor), gapbound=60, considbound=30, lower/upper=70/95
-        "==......aaaACccMMMMMaa.........g.kkk.uKb.ssVVmmss.....ww...=.........byk...mVAaaaaMMMMmmHH..uuu", // countgaps=0
-        "==aaaaaaaAAACCCMMMMMAAkgkugkkkuggKKKuuKBsSSVVMMSsssbwwwWswa=ycaaykkkbBykaaaMVAAAAAMMMMMMHHuuuUU", // countgaps=0,              considbound=26, lower=0, upper=75 (as described in #663)
-        "==aaaaaaaAAACCCMMMMMAAkkkkgkkkugKKKKKuKBsSSVVMMSsssbwwwWswN=yhnNykkkbByknnNVVAAAAMMMMMMMHHHuuUU", // countgaps=0,              considbound=25, lower=0, upper=75
+        "==AAAAAAAAAACccMMMMMaaKgKugKKKuggKKKuuKb.ssVVmmssssBWWWWs..=Y.......BByk...mVAaaaaMMMMmmHH..uuu", // countgaps=0
+        "==AAAAAAAAAACCCMMMMMAAKGKUGKKKUGGKKKUUKBsSSVVMMSSSSBWWWWSwa=YcaaykkkBBYKaaaMVAAAAAMMMMMMHHuuuUU", // countgaps=0,              considbound=26, lower=0, upper=75 (as described in #663)
+        "==AAAAAAAAAACCCMMMMMAAKKKKGKKKUGKKKKKUKBsSSVVMMSSSSBWWWWSwN=YHNNykkkBBYKNNNVVAAAAMMMMMMMHHHuuUU", // countgaps=0,              considbound=25, lower=0, upper=75
         "==---aaaaAAACCCMMMMMAA-gkugkkkuggKKKuuKBsSSVVMMSsssb-wwWswa=---a--kkbBykaaaMVAAAAAMMMMMMHHuuuUU", // countgaps=1, gapbound=70, considbound=26, lower=0, upper=75
         "==---aaaaAAACCMMMMMMMA-kkkgkkkugKKKKKuKBNSVVVVMSsssb-wwWswN=---N--nnbBBBnnNVVAAAMMMMMMMHHHHHuUU", // countgaps=1, gapbound=70, considbound=20, lower=0, upper=75
     };
@@ -1325,8 +1325,8 @@ void TEST_amino_consensus() {
     };
     const char *expected_consensus[] = {
         "==----..aaaAhhh...dddDDDDDDIIIII----.....i.....f...aaaAa.....--=.X.=DD-=", // default settings (see ConsensusBuildParams-ctor), gapbound=60, considbound=30, lower/upper=70/95
-        "==......aaaAhhh...dddDDDDDDIIIII.........i.....f...aaaAa.......=.X.=DD.=", // countgaps=0
-        "==aaaaaaaAAAHHhhdddDDDDDDDDIIIIIiiifiiiffiiiifffdaaaAAAaaaaaddd=xXh=DDi=", // countgaps=0,              considbound=26, lower=0, upper=75
+        "==AAAAAAAAAAhhh...dddDDDDDDIIIII.i.fi...fii...ff...aaaAa.....dD=XX.=DDI=", // countgaps=0
+        "==AAAAAAAAAAHHhhdddDDDDDDDDIIIIIiIiFIiifFIIiifFFdaaaAAAaaaaadDD=XXh=DDI=", // countgaps=0,              considbound=26, lower=0, upper=75
         "==---aaaaAAAHHhhdddDDDDDDDDIIIII-iifiiiffiiiifffdaaaAAAaaaaadd-=xXh=DDi=", // countgaps=1, gapbound=70, considbound=26, lower=0, upper=75
         "==---aaaaAAAHHhhdddDDDDDDDDIIIII-iifiiiffiiiifffdaaaAAAaaaaadd-=aah=DDi=", // countgaps=1, gapbound=70, considbound=20, lower=0, upper=75
         "==---aaaaAAAHHhhXddDDDDDDDDIIIII-ixfiixffiiiXfffdXaaAAAaaaaxdd-=xXX=DDi=", // countgaps=1, gapbound=70, considbound=51, lower=0, upper=75
