@@ -39,7 +39,6 @@
 #define AWAR_CONSENSUS_FCONSIDBOUND AWAR_CONSENSUS_PREFIX "fconsidbound"
 #define AWAR_CONSENSUS_FUPPER       AWAR_CONSENSUS_PREFIX "fupper"
 #define AWAR_CONSENSUS_LOWER        AWAR_CONSENSUS_PREFIX "lower"
-#define AWAR_CONSENSUS_RESULT       AWAR_CONSENSUS_PREFIX "result"
 #define AWAR_CONSENSUS_NAME         AWAR_CONSENSUS_PREFIX_TMP "name"
 
 #define CONSENSUS_AWAR_SOURCE CAS_NTREE
@@ -261,7 +260,7 @@ static void CON_maketables(int *const convtable, int **const statistic, long max
     }
 }
 
-static GB_ERROR CON_export(GBDATA *gb_main, const char *savename, const char *align, const int *const*statistic, const char *result, const int *const convtable, const char *groupnames, bool onlymarked, long nrofspecies, long maxalignlen, bool resultiscomplex, const ConsensusBuildParams& BK) {
+static GB_ERROR CON_export(GBDATA *gb_main, const char *savename, const char *align, const char *result, bool onlymarked, long nrofspecies, const ConsensusBuildParams& BK) {
     /*! writes consensus SAI to DB
      * @@@ document params
      */
@@ -315,88 +314,14 @@ static GB_ERROR CON_export(GBDATA *gb_main, const char *savename, const char *al
         free(allnames);
     }
 
+    // remove data relicts from "complex consensus" (no longer supported)
     {
         char buffer2[256];
         sprintf(buffer2, "%s/FREQUENCIES", align);
         GBDATA *gb_graph = GB_search(gb_extended, buffer2, GB_FIND);
         if (gb_graph) GB_delete(gb_graph);  // delete old entry
     }
-    // export additional information
-    if (resultiscomplex) {
-        GBDATA *gb_graph = GBT_add_data(gb_extended, align, "FREQUENCIES", GB_DB);
-        char   *charname = (char *)GB_calloc(5, sizeof(char));
 
-        // problem : aminos, especially '*' -> new order
-
-        int *allreadycounted = (int*)GB_calloc((unsigned int)256, sizeof(char));
-        int *neworder        = (int*)GB_calloc((unsigned int)256, sizeof(int));
-        int  numdiffchars    = 1; // first additional row (nr. 0) is max-row
-
-        for (int c=0; c<256; c++) {
-            int k = convtable[c];
-            if (k) {
-                if (!(allreadycounted[k])) {
-                    allreadycounted[k]       = 1;
-                    neworder[numdiffchars++] = k;
-                }
-            }
-        }
-
-        float **additional = (float**)GB_calloc((unsigned int)numdiffchars, sizeof(float*));
-
-        for (int group=0; group<numdiffchars; group++) {
-            additional[group]=(float*)GB_calloc((unsigned int)maxalignlen, sizeof(float));
-        }
-
-        int *absolutrow = (int*)GB_calloc((unsigned int)maxalignlen, sizeof(int));
-
-        for (long col=0; col<maxalignlen; col++) {
-            int group2 = 1;
-            int colsum = 0;
-            while (neworder[group2]) {
-                colsum += statistic[neworder[group2++]][col];
-            }
-            if (BK.countgaps) colsum += statistic[0][col];
-            absolutrow[col] = colsum;
-        }
-
-        for (long col=0; col<maxalignlen; col++) {
-            if (absolutrow[col]) {
-                int   group2  = 1;
-                float highest = 0;
-                int   diffchar;
-
-                while ((diffchar=neworder[group2++])) {
-                    float relative = (float)statistic[diffchar][col] / (float)absolutrow[col];
-                    if (relative>highest) highest = relative;
-                    additional[diffchar][col]     = relative;
-                }
-                additional[0][col]=highest;
-            }
-            else {
-                additional[0][col]=0.0;
-            }
-        }
-
-        GBDATA *gb_relative = GB_search(gb_graph, "MAX", GB_FLOATS);
-        err = GB_write_floats(gb_relative, additional[0], maxalignlen);
-
-        for (int group=1; group<numdiffchars; group++) {
-            char ch = groupnames[neworder[group]];
-            if (ch <'A' || ch>'Z') continue;
-            
-            sprintf(charname, "N%c", ch);
-            gb_relative = GB_search(gb_graph, charname, GB_FLOATS);
-            err = GB_write_floats(gb_relative, additional[group], maxalignlen);
-        }
-
-        free(charname);
-        free(neworder);
-        free(allreadycounted);
-
-        for (int group=0; group<numdiffchars; group++) free(additional[group]);
-        free(additional);
-    }
     free(buffer);
     return err;
 }
@@ -411,7 +336,7 @@ static void CON_cleartables(int **const statistic, bool isamino) {
     }
 }
 
-static void CON_calculate(GBDATA *gb_main, const ConsensusBuildParams& BK, const char *align, bool onlymarked, const char *sainame, bool resultiscomplex) {
+static void CON_calculate(GBDATA *gb_main, const ConsensusBuildParams& BK, const char *align, bool onlymarked, const char *sainame) {
     /*! calculates the consensus and writes it to SAI 'sainame'
      * @@@ document params
      * Description how consensus is calculated: ../HELP_SOURCE/oldhelp/consensus_def.hlp // @@@ update after #663 differences are resolved
@@ -448,7 +373,7 @@ static void CON_calculate(GBDATA *gb_main, const ConsensusBuildParams& BK, const
             // calculate and export the result strings
             char *result = CON_evaluatestatistic(statistic, groupflags, groupnames, maxalignlen, numgroups, BK);
 
-            error = CON_export(gb_main, sainame, align, statistic, result, convtable, groupnames, onlymarked, nrofspecies, maxalignlen, resultiscomplex, BK);
+            error = CON_export(gb_main, sainame, align, result, onlymarked, nrofspecies, BK);
 
             // freeing allocated memory
             free(result);
@@ -462,11 +387,10 @@ static void CON_calculate(GBDATA *gb_main, const ConsensusBuildParams& BK, const
 }
 
 static void CON_calculate_cb(AW_window *aw) {
-    AW_root *awr             = aw->get_root();
-    char    *align           = awr->awar(AWAR_CONSENSUS_ALIGNMENT)->read_string();
-    char    *sainame         = awr->awar(AWAR_CONSENSUS_NAME)->read_string();
-    bool     onlymarked      = strcmp(awr->awar(AWAR_CONSENSUS_SPECIES)->read_char_pntr(), "marked") == 0;
-    bool     resultiscomplex = strcmp(awr->awar(AWAR_CONSENSUS_RESULT)->read_char_pntr(), "complex") == 0;
+    AW_root *awr        = aw->get_root();
+    char    *align      = awr->awar(AWAR_CONSENSUS_ALIGNMENT)->read_string();
+    char    *sainame    = awr->awar(AWAR_CONSENSUS_NAME)->read_string();
+    bool     onlymarked = strcmp(awr->awar(AWAR_CONSENSUS_SPECIES)->read_char_pntr(), "marked") == 0;
 
     ConsensusBuildParams BK(awr);
 
@@ -477,7 +401,7 @@ static void CON_calculate_cb(AW_window *aw) {
         LocallyModify<bool> denyAwarWrites(AW_awar::deny_write, true);
 #endif
 
-        CON_calculate(GLOBAL.gb_main, BK, align, onlymarked, sainame, resultiscomplex);
+        CON_calculate(GLOBAL.gb_main, BK, align, onlymarked, sainame);
     }
 
     free(sainame);
@@ -499,7 +423,6 @@ void AP_create_consensus_var(AW_root *aw_root, AW_default aw_def) {
     aw_root->awar_int   (AWAR_CONSENSUS_GAPBOUND,     60,            aw_def);
     aw_root->awar_float (AWAR_CONSENSUS_FCONSIDBOUND, 30,            aw_def);
     aw_root->awar_string(AWAR_CONSENSUS_NAME,         "CONSENSUS",   aw_def);
-    aw_root->awar_string(AWAR_CONSENSUS_RESULT,       "single line", aw_def);
 
     aw_root->awar_string(AWAR_MAX_FREQ_SAI_NAME,    "MAX_FREQUENCY", aw_def);
     aw_root->awar_int   (AWAR_MAX_FREQ_IGNORE_GAPS, 1,               aw_def);
@@ -517,7 +440,6 @@ static AWT_config_mapping_def consensus_config_mapping[] = {
     // DIFFER from those defined at ../TEMPLATES/consensus_config.h@CommonEntries
 
     { AWAR_CONSENSUS_SPECIES, "species" },
-    { AWAR_CONSENSUS_RESULT,  "result" },
     { AWAR_CONSENSUS_NAME,    "name" },
 
     { 0, 0 }
@@ -583,12 +505,6 @@ AW_window *AP_create_con_expert_window(AW_root *aw_root) {
 
     aws->at("name");
     aws->create_input_field(AWAR_CONSENSUS_NAME, 10);
-
-    aws->at("result");
-    aws->create_toggle_field(AWAR_CONSENSUS_RESULT, NULL, "");
-    aws->insert_toggle("single line", "1", "single line");
-    aws->insert_default_toggle("complex", "1", "complex");
-    aws->update_toggle_field();
 
     aws->at("save_box");
     awt_create_SAI_selection_list(GLOBAL.gb_main, aws, AWAR_CONSENSUS_NAME, false);
@@ -831,7 +747,7 @@ void TEST_nucleotide_consensus_and_maxFrequency() {
         {
             GB_transaction  ta(gb_main);
             const char     *sainame = "CONSENSUS";
-            CON_calculate(gb_main, BK, aliname, false, sainame, false); // @@@ return and check error
+            CON_calculate(gb_main, BK, aliname, false, sainame); // @@@ return and check error
 
             GBDATA     *gb_consensus = GBT_find_SAI(gb_main, sainame);
             GBDATA     *gb_seq       = GBT_find_sequence(gb_consensus, aliname);
@@ -910,7 +826,7 @@ void TEST_amino_consensus_and_maxFrequency() {
         {
             GB_transaction  ta(gb_main);
             const char     *sainame = "CONSENSUS";
-            CON_calculate(gb_main, BK, aliname, false, sainame, false); // @@@ return and check error
+            CON_calculate(gb_main, BK, aliname, false, sainame); // @@@ return and check error
 
             GBDATA     *gb_consensus = GBT_find_SAI(gb_main, sainame);
             GBDATA     *gb_seq       = GBT_find_sequence(gb_consensus, aliname);
