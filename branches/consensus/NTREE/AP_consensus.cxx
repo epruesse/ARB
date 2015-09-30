@@ -839,6 +839,7 @@ void TEST_amino_consensus() {
         "=.PPPPPPPPPPKKkkkqqQQNNDDDDIIILLvVvWVvvwWVVvvwWWeeaaAAAaaeeeeEE=--k=DD*=", // countgaps=0,              considbound=26, lower=0, upper=75
         "=.--pppppPPPKKkkkqqQQNNDDDDIIILL-v-wvvvwwvvvvwwweeaaAAAaaeeeeee=--k=DD*=", // countgaps=1, gapbound=70, considbound=26, lower=0, upper=75
         "=.--pppppPPPKKkkkqqQQNDDDDDIIIIL-vvwvvvwwvvvvwwweeaaAAAaaaeeeee=-kk=DD*=", // countgaps=1, gapbound=70, considbound=20, lower=0, upper=75
+        "=.-----ppPPPKKkk-qqQQNNnn---llLL---------vv---wwe----gg--------=---=--*=", // countgaps=1, gapbound=70, considbound=51, lower=0, upper=75
     };
     const size_t seqlen         = strlen(sequence[0]);
     const int    sequenceCount  = ARRAY_ELEMS(sequence);
@@ -858,6 +859,7 @@ void TEST_amino_consensus() {
             case 2: BK.considbound = 26; BK.lower = 0; BK.upper = 75; break;   // settings from #663
             case 3: BK.countgaps   = true; BK.gapbound = 70; break;
             case 4: BK.considbound = 20; break;
+            case 5: BK.considbound = 51; break;
             default: arb_assert(0); break;                                     // missing
         }
 

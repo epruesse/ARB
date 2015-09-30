@@ -506,8 +506,14 @@ void BaseFrequencies::build_consensus_string_to(char *consensus_string, Explicit
                             }
                         }
 
-                        kchar = iupac::get_amino_consensus_char(iupac::Amino_Group(bestGroup));
                         ct_assert(kcount>0);
+                        if (PERCENT(kcount, bases) >= BK.considbound) {
+                            kchar = iupac::get_amino_consensus_char(iupac::Amino_Group(bestGroup));
+                        }
+                        else {
+                            kchar  = 'X';
+                            kcount = bases;
+                        }
                     }
                 }
                 if (!kcount) {           // IUPAC grouping is either off OR didnt consider any bases
@@ -1318,11 +1324,12 @@ void TEST_amino_consensus() {
         "-.---------pkkkkkkkkknnnnnqiiiii----------------eeeeeeSe---------WK-BZJ-",
     };
     const char *expected_consensus[] = {
-        "==----..aaaAhhh...dddDDDDDDIIIII----.....i.....f...aaaAa.....--=...=DD-=", // default settings (see ConsensusBuildParams-ctor), gapbound=60, considbound=30, lower/upper=70/95
-        "==......aaaAhhh...dddDDDDDDIIIII.........i.....f...aaaAa.......=...=DD.=", // countgaps=0
-        "==aaaaaaaAAAHHhhdddDDDDDDDDIIIIIiiifiiiffiiiifffdaaaAAAaaaaaddd=aah=DDi=", // countgaps=0,              considbound=26, lower=0, upper=75
-        "==---aaaaAAAHHhhdddDDDDDDDDIIIII-iifiiiffiiiifffdaaaAAAaaaaadd-=aah=DDi=", // countgaps=1, gapbound=70, considbound=26, lower=0, upper=75
+        "==----..aaaAhhh...dddDDDDDDIIIII----.....i.....f...aaaAa.....--=.X.=DD-=", // default settings (see ConsensusBuildParams-ctor), gapbound=60, considbound=30, lower/upper=70/95
+        "==......aaaAhhh...dddDDDDDDIIIII.........i.....f...aaaAa.......=.X.=DD.=", // countgaps=0
+        "==aaaaaaaAAAHHhhdddDDDDDDDDIIIIIiiifiiiffiiiifffdaaaAAAaaaaaddd=xXh=DDi=", // countgaps=0,              considbound=26, lower=0, upper=75
+        "==---aaaaAAAHHhhdddDDDDDDDDIIIII-iifiiiffiiiifffdaaaAAAaaaaadd-=xXh=DDi=", // countgaps=1, gapbound=70, considbound=26, lower=0, upper=75
         "==---aaaaAAAHHhhdddDDDDDDDDIIIII-iifiiiffiiiifffdaaaAAAaaaaadd-=aah=DDi=", // countgaps=1, gapbound=70, considbound=20, lower=0, upper=75
+        "==---aaaaAAAHHhhXddDDDDDDDDIIIII-ixfiixffiiiXfffdXaaAAAaaaaxdd-=xXX=DDi=", // countgaps=1, gapbound=70, considbound=51, lower=0, upper=75
     };
     const size_t seqlen         = strlen(sequence[0]);
     const int    sequenceCount  = ARRAY_ELEMS(sequence);
@@ -1346,6 +1353,7 @@ void TEST_amino_consensus() {
             case 2: BK.considbound = 26; BK.lower = 0; BK.upper = 75; break;    // settings from #663
             case 3: BK.countgaps   = true; BK.gapbound = 70; break;
             case 4: BK.considbound = 20; break;
+            case 5: BK.considbound = 51; break;
             default: ct_assert(0); break;                                       // missing
         }
 
