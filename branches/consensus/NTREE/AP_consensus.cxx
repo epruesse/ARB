@@ -28,8 +28,8 @@
 #define AWAR_CONSENSUS_PREFIX     "con/"
 #define AWAR_CONSENSUS_PREFIX_TMP "tmp/" AWAR_CONSENSUS_PREFIX
 
-#define AWAR_MAX_FREQ_NO_GAPS  AWAR_MAX_FREQ_PREFIX "no_gaps"
-#define AWAR_MAX_FREQ_SAI_NAME AWAR_MAX_FREQ_PREFIX "sai_name"
+#define AWAR_MAX_FREQ_IGNORE_GAPS AWAR_MAX_FREQ_PREFIX "no_gaps"
+#define AWAR_MAX_FREQ_SAI_NAME    AWAR_MAX_FREQ_PREFIX "sai_name"
 
 #define AWAR_CONSENSUS_SPECIES      AWAR_CONSENSUS_PREFIX_TMP "which_species"
 #define AWAR_CONSENSUS_ALIGNMENT    AWAR_CONSENSUS_PREFIX_TMP "alignment"
@@ -281,7 +281,7 @@ static GB_ERROR CON_export(GBDATA *gb_main, const char *savename, const char *al
 
     sprintf(buffer, "CON: [species: %s]  [number: %ld]  [count gaps: %s] "
             "[threshold for gaps: %d]  [simplify: %s] "
-            "[threshold for character: %d]  [upper: %d]  [lower: %d]",
+            "[threshold for group: %d]  [upper: %d]  [lower: %d]",
             allvsmarked, nrofspecies, countgapsstring,
             BK.gapbound, simplifystring,
             BK.considbound, BK.upper, BK.lower);
@@ -501,8 +501,8 @@ void AP_create_consensus_var(AW_root *aw_root, AW_default aw_def) {
     aw_root->awar_string(AWAR_CONSENSUS_NAME,         "CONSENSUS",   aw_def);
     aw_root->awar_string(AWAR_CONSENSUS_RESULT,       "single line", aw_def);
 
-    aw_root->awar_string(AWAR_MAX_FREQ_SAI_NAME, "MAX_FREQUENCY", aw_def);
-    aw_root->awar_int   (AWAR_MAX_FREQ_NO_GAPS,  1,               aw_def);
+    aw_root->awar_string(AWAR_MAX_FREQ_SAI_NAME,    "MAX_FREQUENCY", aw_def);
+    aw_root->awar_int   (AWAR_MAX_FREQ_IGNORE_GAPS, 1,               aw_def);
 }
 
 static AWT_config_mapping_def consensus_config_mapping[] = {
@@ -599,25 +599,23 @@ AW_window *AP_create_con_expert_window(AW_root *aw_root) {
     return aws;
 }
 
-static void CON_calc_max_freq_cb(AW_window *aw) {
+
+
+static GB_ERROR CON_calc_max_freq(GBDATA *gb_main, bool ignore_gaps, const char *savename, const char *aliname) {
     /*! gets the maximum frequency for all columns
      */
     arb_assert(!GB_have_error());
 
-    AW_root  *awr   = aw->get_root();
-    GB_ERROR  error = NULL;
+    GB_ERROR       error = NULL;
+    GB_transaction ta(gb_main);
 
-    GB_transaction ta(GLOBAL.gb_main);
-
-    char *align       = GBT_get_default_alignment(GLOBAL.gb_main);
-    long  maxalignlen = GBT_get_alignment_len(GLOBAL.gb_main, align);
-
+    long maxalignlen = GBT_get_alignment_len(gb_main, aliname);
     if (maxalignlen<=0) {
         GB_clear_error();
         error = "alignment doesn't exist!";
     }
     else {
-        int isamino = GBT_is_alignment_protein(GLOBAL.gb_main, align);
+        int isamino = GBT_is_alignment_protein(gb_main, aliname);
 
         arb_progress progress("Calculating max. frequency");
 
@@ -626,7 +624,7 @@ static void CON_calc_max_freq_cb(AW_window *aw) {
         CON_maketables(convtable, statistic, maxalignlen, isamino);
 
         const int onlymarked  = 1;
-        long      nrofspecies = CON_makestatistic(GLOBAL.gb_main, statistic, convtable, align, onlymarked);
+        long      nrofspecies = CON_makestatistic(gb_main, statistic, convtable, aliname, onlymarked);
 
         int end = isamino ? MAX_AMINOS : MAX_BASES;
 
@@ -636,14 +634,12 @@ static void CON_calc_max_freq_cb(AW_window *aw) {
         result1[maxalignlen] = 0;
         result2[maxalignlen] = 0;
 
-        long no_gaps = awr->awar(AWAR_MAX_FREQ_NO_GAPS)->read_int();
-
         for (int pos = 0; pos < maxalignlen; pos++) {
             int sum = 0;
             int max = 0;
 
             for (int i=0; i<end; i++) {
-                if (no_gaps && (i == convtable[(unsigned char)'-'])) continue;
+                if (ignore_gaps && (i == convtable[(unsigned char)'-'])) continue;
                 sum                              += statistic[i][pos];
                 if (statistic[i][pos] > max) max  = statistic[i][pos];
             }
@@ -657,22 +653,21 @@ static void CON_calc_max_freq_cb(AW_window *aw) {
             }
         }
 
-        const char *savename    = awr->awar(AWAR_MAX_FREQ_SAI_NAME)->read_char_pntr();
-        GBDATA     *gb_extended = GBT_find_or_create_SAI(GLOBAL.gb_main, savename);
+        GBDATA *gb_extended = GBT_find_or_create_SAI(gb_main, savename);
         if (!gb_extended) {
             error = GB_await_error();
         }
         else {
-            GBDATA *gb_data1 = GBT_add_data(gb_extended, align, "data", GB_STRING);
-            GBDATA *gb_data2 = GBT_add_data(gb_extended, align, "dat2", GB_STRING);
+            GBDATA *gb_data1 = GBT_add_data(gb_extended, aliname, "data", GB_STRING);
+            GBDATA *gb_data2 = GBT_add_data(gb_extended, aliname, "dat2", GB_STRING);
 
             error             = GB_write_string(gb_data1, result1);
             if (!error) error = GB_write_string(gb_data2, result2);
 
-            GBDATA *gb_options = GBT_add_data(gb_extended, align, "_TYPE", GB_STRING);
+            GBDATA *gb_options = GBT_add_data(gb_extended, aliname, "_TYPE", GB_STRING);
 
             if (!error) {
-                const char *type = GBS_global_string("MFQ: [species: %li] [exclude gaps: %li]", nrofspecies, no_gaps);
+                const char *type = GBS_global_string("MFQ: [species: %li] [ignore gaps: %s]", nrofspecies, ignore_gaps ? "yes" : "no");
                 error            = GB_write_string(gb_options, type);
             }
         }
@@ -683,11 +678,21 @@ static void CON_calc_max_freq_cb(AW_window *aw) {
     }
 
     error = ta.close(error);
+    arb_assert(!GB_have_error());
+
+    return error;
+}
+
+static void CON_calc_max_freq_cb(AW_window *aw) {
+    AW_root    *awr         = aw->get_root();
+    bool        ignore_gaps = awr->awar(AWAR_MAX_FREQ_IGNORE_GAPS)->read_int();
+    const char *savename    = awr->awar(AWAR_MAX_FREQ_SAI_NAME)->read_char_pntr();
+    char       *aliname     = GBT_get_default_alignment(GLOBAL.gb_main);
+
+    GB_ERROR error = CON_calc_max_freq(GLOBAL.gb_main, ignore_gaps, savename, aliname);
     if (error) aw_message(error);
 
-    free(align);
-
-    arb_assert(!GB_have_error());
+    free(aliname);
 }
 
 AW_window *AP_create_max_freq_window(AW_root *aw_root) {
@@ -716,7 +721,7 @@ AW_window *AP_create_max_freq_window(AW_root *aw_root) {
     awt_create_SAI_selection_list(GLOBAL.gb_main, aws, AWAR_MAX_FREQ_SAI_NAME, false);
 
     aws->at("gaps");
-    aws->create_toggle(AWAR_MAX_FREQ_NO_GAPS);
+    aws->create_toggle(AWAR_MAX_FREQ_IGNORE_GAPS);
 
     GB_pop_transaction(GLOBAL.gb_main);
 
@@ -759,7 +764,19 @@ static GBDATA *create_simple_seq_db(const char *aliname, const char *alitype, co
     return gb_main;
 }
 
-void TEST_nucleotide_consensus() {
+static void read_frequency(GBDATA *gb_main, const char *sainame, const char *aliname, const char*& data, const char*& dat2) {
+    GB_transaction ta(gb_main);
+
+    GBDATA *gb_maxFreq = GBT_find_SAI(gb_main, sainame);
+    GBDATA *gb_ali     = GB_entry(gb_maxFreq, aliname);
+    GBDATA *gb_data    = GB_entry(gb_ali, "data");
+    GBDATA *gb_dat2    = GB_entry(gb_ali, "dat2");
+
+    data = GB_read_char_pntr(gb_data);
+    dat2 = GB_read_char_pntr(gb_dat2);
+}
+
+void TEST_nucleotide_consensus_and_maxFrequency() {
     // keep similar to ../SL/CONSENSUS/chartable.cxx@TEST_nucleotide_consensus_input
     const char *sequence[] = {
         "-.AAAAAAAAAAcAAAAAAAAATTTTTTTTTTTTTTTTTAAAAAAAAgggggAAAAgAA----m-----yykm-mmmAAAAAAAAAmmmmmmmmm",
@@ -772,6 +789,14 @@ void TEST_nucleotide_consensus() {
         "-.-------AAAccccccccAA---------ggggggggttGGGGccct------t--T-yykkkbbbkkkk-hhrvAAmmmmmmmmmTTTTTTT",
         "-.--------AAcccccccccA----------------gttGGGGGct-------t----ymmmmnnnssss-ddvmAmmmmmmmmmTTTTTTTT",
         "-.---------Acccccccccc----------------gtAGGGGGG----------------k---------bbmrmmmmmmmmmTTTTTTTTT",
+    };
+    const char *expected_frequency[] = {
+        // considering gaps:
+        "0=987656789009876567898666544457654567533654456543447545432088807765699966000987656789987656789",
+        "0=000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        // ignoring gaps:
+        "==000000000009876567895757865688765678533654456554536655542=00000000000000000987656789987656789",
+        "==000000000000000000000505360637520257000000000502036075025=00000000000000000000000000000000000",
     };
     const char *expected_consensus[] = {
         "=.---...aaaACccMMMMMaa-........g.kkk.uKb.ssVVmmss...-.ww...=---M--...mmm..MMMaaMMMMMmmmmm...uuu", // default settings (see ConsensusBuildParams-ctor), gapbound=60, considbound=30, lower/upper=70/95
@@ -816,10 +841,21 @@ void TEST_nucleotide_consensus() {
         }
     }
 
+    // test max.frequency
+    const char *sainame = "MAXFREQ";
+    for (int ignore_gaps = 0; ignore_gaps<=1; ++ignore_gaps) {
+        TEST_ANNOTATE(GBS_global_string("ignore_gaps=%i", ignore_gaps));
+        TEST_EXPECT_NO_ERROR(CON_calc_max_freq(gb_main, ignore_gaps, sainame, aliname));
+        const char *data, *dat2;
+        read_frequency(gb_main, sainame, aliname, data, dat2);
+        TEST_EXPECT_EQUAL(data, expected_frequency[ignore_gaps*2]);
+        TEST_EXPECT_EQUAL(dat2, expected_frequency[ignore_gaps*2+1]);
+    }
+
     GB_close(gb_main);
 }
 
-void TEST_amino_consensus() {
+void TEST_amino_consensus_and_maxFrequency() {
     // keep similar to ../SL/CONSENSUS/chartable.cxx@TEST_amino_consensus_input
     const char *sequence[] = {
         "-.ppppppppppQQQQQQQQQDDDDDELLLLLwwwwwwwwwwwwwwwwgggggggggggSSSe-PPP-DEL-",
@@ -832,6 +868,14 @@ void TEST_amino_consensus() {
         "-.-------pppkkkkkkkQQnnnnnqiiiLL---------VVVVVVVeeeeSSSeee-------LK-NZJ-",
         "-.--------ppkkkkkkkkQnnnnnqiiiiL----------------eeeeeSSee--------WK-BZJ-",
         "-.---------pkkkkkkkkknnnnnqiiiii----------------eeeeeeSe---------WK-BZJ-",
+    };
+    const char *expected_frequency[] = {
+        // considering gaps:
+        "0=9876567890987656789987655567898666544457654567654456743334567052404460",
+        "0=0000000000000000000000000000000000000000000000000000000000000000000000",
+        // ignoring gaps:
+        "==0000000000987656789987655567895757865688765678654456743345670=224=446=",
+        "==0000000000000000000000000000000505360637520257000000003720050=000=000=",
     };
     const char *expected_consensus[] = {
         "=.---...pppPkkk...qqqnnDDDDIIIll-........v.....w...aaaAa......-=...=dD.=", // default settings (see ConsensusBuildParams-ctor), gapbound=60, considbound=30, lower/upper=70/95
@@ -874,6 +918,17 @@ void TEST_amino_consensus() {
 
             TEST_EXPECT_EQUAL(consensus, expected_consensus[c]);
         }
+    }
+
+    // test max.frequency
+    const char *sainame = "MAXFREQ";
+    for (int ignore_gaps = 0; ignore_gaps<=1; ++ignore_gaps) {
+        TEST_ANNOTATE(GBS_global_string("ignore_gaps=%i", ignore_gaps));
+        TEST_EXPECT_NO_ERROR(CON_calc_max_freq(gb_main, ignore_gaps, sainame, aliname));
+        const char *data, *dat2;
+        read_frequency(gb_main, sainame, aliname, data, dat2);
+        TEST_EXPECT_EQUAL(data, expected_frequency[ignore_gaps*2]);
+        TEST_EXPECT_EQUAL(dat2, expected_frequency[ignore_gaps*2+1]);
     }
 
     GB_close(gb_main);
