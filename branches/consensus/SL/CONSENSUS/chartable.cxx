@@ -494,7 +494,7 @@ void BaseFrequencies::build_consensus_string_to(char *consensus_string, Explicit
                             unsigned char bchar = index_to_upperChar(j);
 
                             if (!isGap(bchar)) {
-                                if (PERCENT(base[j], bases) >= BK.considbound) {
+                                if (PERCENT(base[j], bases) >= BK.considbound) { // @@@ should not consider considbound
                                     group_count[iupac::get_amino_group_for(bchar)] += base[j];
                                 }
                             }
@@ -509,6 +509,7 @@ void BaseFrequencies::build_consensus_string_to(char *consensus_string, Explicit
                         }
 
                         kchar = iupac::get_amino_consensus_char(iupac::Amino_Group(bestGroup));
+                        // ct_assert(kcount>0);
                     }
                 }
                 if (!kcount) {           // IUPAC grouping is either off OR didnt consider any bases
@@ -1319,11 +1320,11 @@ void TEST_amino_consensus() {
         "-.---------pkkkkkkkkknnnnnqiiiii----------------eeeeeeSe---------WK-BZJ-",
     };
     const char *expected_consensus[] = {
-        "==----..aaaAhhh...bbbbbBBBBIIIii----.....i.....f...aaaAa.....--=...=bB-=", // default settings (see ConsensusBuildParams-ctor), gapbound=60, considbound=30, lower/upper=70/95
-        "==......aaaAhhh...bbbbbBBBBIIIii.........i.....f...aaaAa.......=...=bB.=", // countgaps=0
-        "==aaaaaaaAAAHHhhbbbBBBBBBBBIIIIIiiifiiiffiiiifffbbaaAAAaaaaabbb=pph=BBi=", // countgaps=0,              considbound=26, lower=0, upper=75
-        "==---aaaaAAAHHhhbbbBBBBBBBBIIIII-iifiiiffiiiifffbbaaAAAaaaaabb-=pph=BBi=", // countgaps=1, gapbound=70, considbound=26, lower=0, upper=75
-        "==---aaaaAAAHHhhbbbBBBBBBBBIIIII-iifiiiffiiiifffbaaaAAAaaaaabb-=aah=BBi=", // countgaps=1, gapbound=70, considbound=20, lower=0, upper=75
+        "==----..aaaAhhh...dddddDDDDIIIii----.....i.....f...aaaAa.....--=...=dD-=", // default settings (see ConsensusBuildParams-ctor), gapbound=60, considbound=30, lower/upper=70/95
+        "==......aaaAhhh...dddddDDDDIIIii.........i.....f...aaaAa.......=...=dD.=", // countgaps=0
+        "==aaaaaaaAAAHHhhdddDDDDDDDDIIIIIiiifiiiffiiiifffddaaAAAaaaaaddd=pph=DDi=", // countgaps=0,              considbound=26, lower=0, upper=75
+        "==---aaaaAAAHHhhdddDDDDDDDDIIIII-iifiiiffiiiifffddaaAAAaaaaadd-=pph=DDi=", // countgaps=1, gapbound=70, considbound=26, lower=0, upper=75
+        "==---aaaaAAAHHhhdddDDDDDDDDIIIII-iifiiiffiiiifffdaaaAAAaaaaadd-=aah=DDi=", // countgaps=1, gapbound=70, considbound=20, lower=0, upper=75
     };
     const size_t seqlen         = strlen(sequence[0]);
     const int    sequenceCount  = ARRAY_ELEMS(sequence);
