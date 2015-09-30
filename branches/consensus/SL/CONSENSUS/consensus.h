@@ -27,26 +27,22 @@
 #endif
 
 struct ConsensusBuildParams {
-    bool countgaps;
-    int gapbound;
-    int group; // @@@ -> enum (containing group-type for amino-acids)
-    int considbound;
-    int upper;
-    int lower;
+    bool countgaps;   // count gaps? (otherwise they are completely ignored)
+    int  gapbound;    // limit in % for gaps. If more gaps occur -> '-'
+    bool group;       // whether to group characters (NUC: using ambigious IUPAC codes; AMINO: using amino groups)
+    int  considbound; // limit in %. Bases occurring that often are used to create ambiguity codes (other bases are ignored). gaps are ignored when checking this limit.
+    int  upper;       // limit in %. If explicit base (or ambiguity code) occurs that often -> use upper case character
+    int  lower;       // limit in %. If explicit base (or ambiguity code) occurs that often -> use lower case character. Otherwise use '.'
 
     static void force_in_range(int low, int& val, int high) {
         val = std::min(std::max(low, val), high);
     }
-
-    static int forceLink; // @@@ elim later (just here to force link vs otherwise empty CONSENSUS.a)
 
     void make_valid() {
         force_in_range(0, gapbound,    100);
         force_in_range(0, considbound, 100);
         force_in_range(0, upper,       100);
         force_in_range(0, lower,       100);
-
-        forceLink++;
     }
 
 #if (CONSENSUS_AWAR_SOURCE == CAS_NTREE)

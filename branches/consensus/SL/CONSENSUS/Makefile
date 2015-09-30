@@ -47,6 +47,3 @@ chartable.o: $(ARBHOME)/INCLUDE/iupac.h
 chartable.o: $(ARBHOME)/INCLUDE/pos_range.h
 chartable.o: $(ARBHOME)/INCLUDE/test_global.h
 chartable.o: $(ARBHOME)/INCLUDE/test_unit.h
-
-consensus.o: consensus.h
-consensus.o: $(ARBHOME)/INCLUDE/aw_base.hxx
