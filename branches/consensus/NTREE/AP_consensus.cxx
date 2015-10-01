@@ -573,9 +573,10 @@ static GB_ERROR CON_calc_max_freq(GBDATA *gb_main, bool ignore_gaps, const char 
         for (int pos = 0; pos < maxalignlen; pos++) {
             double mf = freqs.max_frequency_at(pos, ignore_gaps);
             if (mf) {
-                // @@@ change unused character to '?' below:
-                result1[pos] = "01234567890"[int( 10*mf)%11]; // %11 maps 100% -> '0'
-                result2[pos] = "01234567890"[int(100*mf)%10];
+                if (mf<0.1) mf = 0.1; // hack: otherwise SAI will contain '0' (meaning 100% frequency)
+
+                result1[pos] = "?1234567890"[int( 10*mf)%11]; // %11 maps 100% -> '0'
+                result2[pos] = "0123456789" [int(100*mf)%10];
             }
             else {
                 result1[pos] = '=';
@@ -810,11 +811,11 @@ void TEST_amino_consensus_and_maxFrequency() {
     };
     const char *expected_frequency[] = {
         // considering gaps:
-        "0=9876567890987656789987655567898666544457654567654456743334567052404450",
-        "0=0000000000000000000000000000000000000000000000000000000000000000000005",
+        "0=9876567890987656789987655567898666544457654567654456743334567052404451",
+        "0=0000000000000000000000000000000000000000000000000000000000000000000000",
         // ignoring gaps:
-        "==0000000000987656789987655567895757865688765678654456743345670=224=4450",
-        "==0000000000000000000000000000000505360637520257000000003720050=000=0005",
+        "==0000000000987656789987655567895757865688765678654456743345670=224=4451",
+        "==0000000000000000000000000000000505360637520257000000003720050=000=0000",
     };
     const char *expected_consensus[] = {
         "=.---...pppPkkk...qqqnnDDDDIIIll-........v.....w...aaaAa......-=...=dD..", // default settings (see ConsensusBuildParams-ctor), gapbound=60, considbound=30, lower/upper=70/95

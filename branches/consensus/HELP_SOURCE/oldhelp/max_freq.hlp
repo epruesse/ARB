@@ -22,7 +22,7 @@ DESCRIPTION	Finds the most frequent base (or gap) in each column for all marked
 		The resulting percentage is divided by ten and then the second last
 		digit is taken:
 
-			0%  - 19%    (can not occur for nucleotides) 
+			0%  - 19%  ->  '1' (does not occur for nucleotides)
 			20% - 29%  ->  '2'
 			30% - 39%  ->  '3'
 			...
