@@ -44,6 +44,7 @@
 #define CONSENSUS_AWAR_SOURCE CAS_NTREE
 #include <consensus.h>
 #include <consensus_config.h>
+#include <chartable.h>
 
 enum {
     BAS_GAP,
@@ -175,7 +176,7 @@ static int CON_makegrouptable(char **const gf, char *const groupnames, bool isam
 }
 
 
-static long CON_makestatistic(GBDATA *gb_main, int *const*const statistic, const int *convtable, const char *aliname, bool onlymarked) {
+static int CON_makestatistic(GBDATA *gb_main, int *const*const statistic, const int *convtable, const char *aliname, bool onlymarked) {
     /*! read sequence data and fill into 'statistic'
      */
     long maxalignlen = GBT_get_alignment_len(gb_main, aliname);
@@ -220,6 +221,31 @@ static long CON_makestatistic(GBDATA *gb_main, int *const*const statistic, const
         else {
             gb_species = GBT_next_species(gb_species);
         }
+        ++progress;
+    }
+    return nrofspecies;
+}
+
+static int CON_insertSequences(GBDATA *gb_main, const char *aliname, bool onlymarked, BaseFrequencies& freqs) { // @@@ pass maxalignlen?
+    /*! read sequence data and fill into 'freqs'
+     */
+    long maxalignlen = GBT_get_alignment_len(gb_main, aliname);
+    int  nrofspecies = onlymarked ? GBT_count_marked_species(gb_main) : GBT_get_species_count(gb_main);
+
+    arb_progress progress(nrofspecies);
+    progress.auto_subtitles("Examining sequence");
+
+    GBDATA *gb_species = onlymarked ? GBT_first_marked_species(gb_main) : GBT_first_species(gb_main);
+    while (gb_species) {
+        GBDATA *alidata = GBT_find_sequence(gb_species, aliname);
+        if (alidata) {
+            const char *data   = GB_read_char_pntr(alidata);
+            size_t      length = GB_read_string_count(alidata);
+
+            nt_assert(long(length)<=maxalignlen);
+            freqs.add(data, length);
+        }
+        gb_species = onlymarked ? GBT_next_marked_species(gb_species) : GBT_next_species(gb_species);
         ++progress;
     }
     return nrofspecies;
@@ -336,7 +362,7 @@ static void CON_cleartables(int **const statistic, bool isamino) {
     }
 }
 
-static void CON_calculate(GBDATA *gb_main, const ConsensusBuildParams& BK, const char *align, bool onlymarked, const char *sainame) {
+static void CON_calculate(GBDATA *gb_main, const ConsensusBuildParams& BK, const char *align, bool onlymarked, const char *sainame) { // @@@ rewrite using BaseFrequencies
     /*! calculates the consensus and writes it to SAI 'sainame'
      * @@@ document params
      * Description how consensus is calculated: ../HELP_SOURCE/oldhelp/consensus_def.hlp // @@@ update after #663 differences are resolved
@@ -359,7 +385,7 @@ static void CON_calculate(GBDATA *gb_main, const ConsensusBuildParams& BK, const
         // filling the statistic table
         arb_progress progress("Calculating consensus");
 
-        long nrofspecies = CON_makestatistic(gb_main, statistic, convtable, align, onlymarked);
+        int nrofspecies = CON_makestatistic(gb_main, statistic, convtable, align, onlymarked);
 
         if (BK.lower>BK.upper) {
             error = "fault: lower greater than upper";
@@ -515,8 +541,6 @@ AW_window *AP_create_con_expert_window(AW_root *aw_root) {
     return aws;
 }
 
-
-
 static GB_ERROR CON_calc_max_freq(GBDATA *gb_main, bool ignore_gaps, const char *savename, const char *aliname) {
     /*! gets the maximum frequency for all columns
      */
@@ -531,18 +555,14 @@ static GB_ERROR CON_calc_max_freq(GBDATA *gb_main, bool ignore_gaps, const char 
         error = "alignment doesn't exist!";
     }
     else {
-        int isamino = GBT_is_alignment_protein(gb_main, aliname);
-
         arb_progress progress("Calculating max. frequency");
 
-        int *statistic[MAX_AMINOS+1];
-        int  convtable[256];
-        CON_maketables(convtable, statistic, maxalignlen, isamino);
+        GB_alignment_type alitype = GBT_get_alignment_type(gb_main, aliname);
+        BaseFrequencies::setup("-.", alitype);
 
         const int onlymarked  = 1;
-        long      nrofspecies = CON_makestatistic(gb_main, statistic, convtable, aliname, onlymarked);
-
-        int end = isamino ? MAX_AMINOS : MAX_BASES;
+        BaseFrequencies freqs(maxalignlen);
+        long nrofspecies = CON_insertSequences(gb_main, aliname, onlymarked, freqs);
 
         char *result1 = new char[maxalignlen+1];
         char *result2 = new char[maxalignlen+1];
@@ -551,21 +571,15 @@ static GB_ERROR CON_calc_max_freq(GBDATA *gb_main, bool ignore_gaps, const char 
         result2[maxalignlen] = 0;
 
         for (int pos = 0; pos < maxalignlen; pos++) {
-            int sum = 0;
-            int max = 0;
-
-            for (int i=0; i<end; i++) {
-                if (ignore_gaps && (i == convtable[(unsigned char)'-'])) continue;
-                sum                              += statistic[i][pos];
-                if (statistic[i][pos] > max) max  = statistic[i][pos];
-            }
-            if (sum == 0) {
-                result1[pos] = '=';
-                result2[pos] = '=';
+            double mf = freqs.max_frequency_at(pos, ignore_gaps);
+            if (mf) {
+                // @@@ change unused character to '?' below:
+                result1[pos] = "01234567890"[int( 10*mf)%11]; // %11 maps 100% -> '0'
+                result2[pos] = "01234567890"[int(100*mf)%10];
             }
             else {
-                result1[pos] = "01234567890"[(( 10*max)/sum)%11]; // @@@ why %11?
-                result2[pos] = "01234567890"[((100*max)/sum)%10];
+                result1[pos] = '=';
+                result2[pos] = '=';
             }
         }
 
@@ -590,7 +604,6 @@ static GB_ERROR CON_calc_max_freq(GBDATA *gb_main, bool ignore_gaps, const char 
 
         delete [] result1;
         delete [] result2;
-        CON_cleartables(statistic, isamino);
     }
 
     error = ta.close(error);
@@ -708,11 +721,11 @@ void TEST_nucleotide_consensus_and_maxFrequency() {
     };
     const char *expected_frequency[] = {
         // considering gaps:
-        "0=9876567890098765678986665444576545675336544565434475454320888077656999660009876567899876567899876567890523456000000000000000000987656789000000000000000000",
-        "0=0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "0=9876567890098765678986665444576545675336544565434475454320888277654333462439988776654434567899876543222523222333322222444433332987765443333444444333444444",
+        "0=0000000000000000000000000000000000000000000000000000000000000500000055005565050505055050000000000000025050025210098765752075207257025702568013568568013568",
         // ignoring gaps:
-        "==000000000009876567895757865688765678533654456554536655542=000000000000000009876567899876567890000000000224556000000000000000000987656789000000000000000000",
-        "==000000000000000000000505360637520257000000000502036075025=000000000000000000000000000000000000000000000002050000000000000000000000000000000000000000000000",
+        "==000000000009876567895757865688765678533654456554536655542=552233223333222439988776654434567892222222222222222333322222444433332987765443333444444333444444",
+        "==000000000000000000000505360637520257000000000502036075025=005530983388555565050505055050000005555555555555555210098765752075207257025702568013568568013568",
     };
     const char *expected_consensus[] = {
         "=.---...aaaACccMMMMMaa-........g.kkk.uKb.ssVVmmss...-.ww...=---M--...mmm..MMMaaMMMMMmmmmm...uuu---...mmmM......MMMMMMMMMMMMMMMMMMaaMMMMMmmMMMMMMMMMMMMMMMMMM", // default settings (see ConsensusBuildParams-ctor), gapbound=60, considbound=30, lower/upper=70/95
@@ -787,10 +800,10 @@ void TEST_amino_consensus_and_maxFrequency() {
     };
     const char *expected_frequency[] = {
         // considering gaps:
-        "0=9876567890987656789987655567898666544457654567654456743334567052404460",
+        "0=9876567890987656789987655567898666544457654567654456743334567052404450",
         "0=0000000000000000000000000000000000000000000000000000000000000000000000",
         // ignoring gaps:
-        "==0000000000987656789987655567895757865688765678654456743345670=224=446=",
+        "==0000000000987656789987655567895757865688765678654456743345670=224=445=",
         "==0000000000000000000000000000000505360637520257000000003720050=000=000=",
     };
     const char *expected_consensus[] = {

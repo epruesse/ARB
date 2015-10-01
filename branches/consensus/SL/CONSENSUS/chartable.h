@@ -241,6 +241,7 @@ public:
     int added_sequences() const { return sequenceUnits/unitsPerSequence; }
 
     void bases_and_gaps_at(int column, int *bases, int *gaps) const;
+    double max_frequency_at(int column, bool ignore_gaps) const;
 
     static bool isGap(char c) { return is_gap[safeCharIndex(c)]; }
 

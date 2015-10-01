@@ -719,11 +719,10 @@ void BaseFrequencies::init(int maxseqlength)
 
 void BaseFrequencies::bases_and_gaps_at(int column, int *bases, int *gaps) const
 {
-    int i,
-        b = 0,
-        g = 0;
+    int b = 0;
+    int g = 0;
 
-    for (i=0; i<used_bases_tables; i++) {
+    for (int i=0; i<used_bases_tables; i++) {
         char c = upper_index_chars[i];
 
         if (isGap(c)) {
@@ -742,6 +741,48 @@ void BaseFrequencies::bases_and_gaps_at(int column, int *bases, int *gaps) const
         *gaps  = g/unitsPerSequence;
         ct_assert((g%unitsPerSequence) == 0); // could happen if an ambigious code contains a gap
     }
+}
+
+double BaseFrequencies::max_frequency_at(int column, bool ignore_gaps) const {
+    int gaps  = 0;
+    int minus = 0;
+    int maxb  = 0;
+
+    for (int i=0; i<used_bases_tables; i++) {
+        char c = upper_index_chars[i];
+
+        if (isGap(c)) {
+            if (c == '-') {
+                minus += table(c)[column];
+            }
+            else {
+                gaps += table(c)[column];
+            }
+        }
+        else {
+            maxb = std::max(maxb, table(c)[column]);
+        }
+    }
+
+    if (ignore_gaps) {
+        gaps += minus;
+    }
+    else {
+        maxb = std::max(maxb, minus);
+    }
+
+    double mfreq;
+    if (sequenceUnits>gaps) {
+        mfreq = maxb/double(sequenceUnits-gaps);
+    }
+    else { // only gaps (but no '-')
+        ct_assert(sequenceUnits == gaps);
+        mfreq = 0.0;
+    }
+
+    ct_assert(mfreq == 0.0 || (mfreq>=0.2 && mfreq<=1.0));
+
+    return mfreq;
 }
 
 BaseFrequencies::~BaseFrequencies()
