@@ -34,6 +34,14 @@ NOTE		The result can be used as a conservation profile and filter.
 		Rule of thumb:
 		the higher the number, the more conserved the position (but mind the '0' which means 100%!).
 
+                Internally the SAI consists of two lines: the main line called 'data' and a second line called 'dat2'.
+
+                  The first is used when you use the SAI as conservation profile or filter and
+                  contains the SECOND LAST digit of the calculated frequencies.
+
+                  The second contains the LAST digit of the calculated frequencies. It is not used and does only
+                  show up, when you load the SAI into ARB_EDIT4, where it will show both lines.
+
 EXAMPLES	Say one column contains 7 A's 4 G's and 5 Gaps.
 
 		 * ignoring gaps will result in 7/11 == 64 % which is converted to '6'.
