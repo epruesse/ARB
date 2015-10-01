@@ -46,11 +46,10 @@
 #include <consensus_config.h>
 #include <chartable.h>
 
-static int CON_insertSequences(GBDATA *gb_main, const char *aliname, bool onlymarked, BaseFrequencies& freqs) { // @@@ pass maxalignlen?
+static int CON_insertSequences(GBDATA *gb_main, const char *aliname, long maxalignlen, bool onlymarked, BaseFrequencies& freqs) {
     /*! read sequence data and fill into 'freqs'
      */
-    long maxalignlen = GBT_get_alignment_len(gb_main, aliname);
-    int  nrofspecies = onlymarked ? GBT_count_marked_species(gb_main) : GBT_get_species_count(gb_main);
+    int nrofspecies = onlymarked ? GBT_count_marked_species(gb_main) : GBT_get_species_count(gb_main);
 
     arb_progress progress(nrofspecies);
     progress.auto_subtitles("Examining sequence");
@@ -137,7 +136,7 @@ static GB_ERROR CON_export(GBDATA *gb_main, const char *savename, const char *al
     return err;
 }
 
-static void CON_calculate(GBDATA *gb_main, const ConsensusBuildParams& BK, const char *aliname, bool onlymarked, const char *sainame) {
+static GB_ERROR CON_calculate(GBDATA *gb_main, const ConsensusBuildParams& BK, const char *aliname, bool onlymarked, const char *sainame) {
     /*! calculates the consensus and writes it to SAI 'sainame'
      * @@@ document params
      * Description how consensus is calculated: ../HELP_SOURCE/oldhelp/consensus_def.hlp // @@@ update after #663 differences are resolved
@@ -156,7 +155,7 @@ static void CON_calculate(GBDATA *gb_main, const ConsensusBuildParams& BK, const
         BaseFrequencies::setup("-.", alitype);
 
         BaseFrequencies freqs(maxalignlen);
-        int nrofspecies = CON_insertSequences(gb_main, aliname, onlymarked, freqs);
+        int nrofspecies = CON_insertSequences(gb_main, aliname, maxalignlen, onlymarked, freqs);
 
         if (BK.lower>BK.upper) {
             error = "fault: lower greater than upper";
@@ -168,7 +167,9 @@ static void CON_calculate(GBDATA *gb_main, const ConsensusBuildParams& BK, const
         }
     }
 
-    GB_end_transaction_show_error(gb_main, error, aw_message);
+    error = GB_end_transaction(gb_main, error);
+
+    return error;
 }
 
 static void CON_calculate_cb(AW_window *aw) {
@@ -186,7 +187,8 @@ static void CON_calculate_cb(AW_window *aw) {
         LocallyModify<bool> denyAwarWrites(AW_awar::deny_write, true);
 #endif
 
-        CON_calculate(GLOBAL.gb_main, BK, aliname, onlymarked, sainame);
+        GB_ERROR error = CON_calculate(GLOBAL.gb_main, BK, aliname, onlymarked, sainame);
+        aw_message_if(error);
     }
 
     free(sainame);
@@ -321,7 +323,7 @@ static GB_ERROR CON_calc_max_freq(GBDATA *gb_main, bool ignore_gaps, const char 
 
         const int onlymarked  = 1;
         BaseFrequencies freqs(maxalignlen);
-        long nrofspecies = CON_insertSequences(gb_main, aliname, onlymarked, freqs);
+        long nrofspecies = CON_insertSequences(gb_main, aliname, maxalignlen, onlymarked, freqs);
 
         char *result1 = new char[maxalignlen+1];
         char *result2 = new char[maxalignlen+1];
@@ -519,7 +521,7 @@ void TEST_nucleotide_consensus_and_maxFrequency() {
         {
             GB_transaction  ta(gb_main);
             const char     *sainame = "CONSENSUS";
-            CON_calculate(gb_main, BK, aliname, false, sainame); // @@@ return and check error
+            TEST_EXPECT_NO_ERROR(CON_calculate(gb_main, BK, aliname, false, sainame));
 
             GBDATA     *gb_consensus = GBT_find_SAI(gb_main, sainame);
             GBDATA     *gb_seq       = GBT_find_sequence(gb_consensus, aliname);
@@ -607,7 +609,7 @@ void TEST_amino_consensus_and_maxFrequency() {
         {
             GB_transaction  ta(gb_main);
             const char     *sainame = "CONSENSUS";
-            CON_calculate(gb_main, BK, aliname, false, sainame); // @@@ return and check error
+            TEST_EXPECT_NO_ERROR(CON_calculate(gb_main, BK, aliname, false, sainame));
 
             GBDATA     *gb_consensus = GBT_find_SAI(gb_main, sainame);
             GBDATA     *gb_seq       = GBT_find_sequence(gb_consensus, aliname);
