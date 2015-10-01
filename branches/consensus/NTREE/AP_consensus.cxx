@@ -695,32 +695,32 @@ static void read_frequency(GBDATA *gb_main, const char *sainame, const char *ali
 void TEST_nucleotide_consensus_and_maxFrequency() {
     // keep similar to ../SL/CONSENSUS/chartable.cxx@TEST_nucleotide_consensus_input
     const char *sequence[] = {
-        "-.AAAAAAAAAAcAAAAAAAAATTTTTTTTTTTTTTTTTAAAAAAAAgggggAAAAgAA----m-----yykm-mmmAAAAAAAAAmmmmmmmmm",
-        "-.-AAAAAAAAAccAAAAAAAAggTTgTTTTgTTTTTTTcccAAAAAgggggAAAAgAA----k-----kykr-rrrAAAAAAAAmmmmmmmmmT",
-        "-.--AAAAAAAAcccAAAAAAA-ggTggTTTggTTTTTTccccAAAAgggCCtAAAgAC----m-----sykw-wvsAAAAAAAmmmmmmmmmTT",
-        "-.---AAAAAAAccccAAAAAA-ggggggTTgggTTTTTcccccAAAggCCC-tAACtC----k----yyyys-smvAAAAAAmmmmmmmmmTTT",
-        "-.----AAAAAAcccccAAAAA----ggggTggggTTTTGGGcccAAgCCCt-ttACtG----m---nkkkky-yrmAAAAAmmmmmmmmmTTTT",
-        "-.-----AAAAAccccccAAAA----ggggggggggTTgGGGGcccAcCCtt--tttCG----k--nnssssk-kvrAAAAmmmmmmmmmTTTTT",
-        "-.------AAAAcccccccAAA---------ggggggTgGGGGGccccCt----tt-gT----mydddyyyy-vvmsAAAmmmmmmmmmTTTTTT",
-        "-.-------AAAccccccccAA---------ggggggggttGGGGccct------t--T-yykkkbbbkkkk-hhrvAAmmmmmmmmmTTTTTTT",
-        "-.--------AAcccccccccA----------------gttGGGGGct-------t----ymmmmnnnssss-ddvmAmmmmmmmmmTTTTTTTT",
-        "-.---------Acccccccccc----------------gtAGGGGGG----------------k---------bbmrmmmmmmmmmTTTTTTTTT",
+        "-.AAAAAAAAAAcAAAAAAAAATTTTTTTTTTTTTTTTTAAAAAAAAgggggAAAAgAA----m-----yykm-mmmAAAAAAAAAmmmmmmmmmNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNKKKKKKKKKWWWWWWWWW",
+        "-.-AAAAAAAAAccAAAAAAAAggTTgTTTTgTTTTTTTcccAAAAAgggggAAAAgAA----k-----kykr-rrrAAAAAAAAmmmmmmmmmT-NNNNNNNNNANNNNNbNNNNNNNNkNNNNNNNNaNNNNNNNNbKKKKKKKKbWWWWWWWW",
+        "-.--AAAAAAAAcccAAAAAAA-ggTggTTTggTTTTTTccccAAAAgggCCtAAAgAC----m-----sykw-wvsAAAAAAAmmmmmmmmmTT--NNNNNNNNCANNNNbbNNNNNNNkkNNNNNNNaaNNNNNNNbbKKKKKKKbbWWWWWWW",
+        "-.---AAAAAAAccccAAAAAA-ggggggTTgggTTTTTcccccAAAggCCC-tAACtC----k----yyyys-smvAAAAAAmmmmmmmmmTTT---NNNNNNNGCANNNbbbNNNNNNkkkNNNNNNaaaNNNNNNbbbKKKKKKbbbWWWWWW",
+        "-.----AAAAAAcccccAAAAA----ggggTggggTTTTGGGcccAAgCCCt-ttACtG----m---nkkkky-yrmAAAAAmmmmmmmmmTTTT----NNNNNNTGCANNbbbbNNNNNkkkkNNNNNaaaaNNNNNbbbbKKKKKbbbbWWWWW",
+        "-.-----AAAAAccccccAAAA----ggggggggggTTgGGGGcccAcCCtt--tttCG----k--nnssssk-kvrAAAAmmmmmmmmmTTTTT-----NNNNN-TGCANbbbbbNNNNkkkkkNNNNaaaaaNNNNbbbbbKKKKbbbbbWWWW",
+        "-.------AAAAcccccccAAA---------ggggggTgGGGGGccccCt----tt-gT----mydddyyyy-vvmsAAAmmmmmmmmmTTTTTT------NNNN-ATGCAbbbbbbNNNkkkkkkNNNaaaaaaNNNbbbbbbKKKbbbbbbWWW",
+        "-.-------AAAccccccccAA---------ggggggggttGGGGccct------t--T-yykkkbbbkkkk-hhrvAAmmmmmmmmmTTTTTTT-------NNN-C-TGCbbbbbbbNNkkkkkkkNNaaaaaaaNNbbbbbbbKKbbbbbbbWW",
+        "-.--------AAcccccccccA----------------gttGGGGGct-------t----ymmmmnnnssss-ddvmAmmmmmmmmmTTTTTTTT--------NN-G--TGbbbbbbbbNkkkkkkkkNaaaaaaaaNbbbbbbbbKbbbbbbbbW",
+        "-.---------Acccccccccc----------------gtAGGGGGG----------------k---------bbmrmmmmmmmmmTTTTTTTTT---------N-T---Tbbbbbbbbbkkkkkkkkkaaaaaaaaabbbbbbbbbbbbbbbbbb",
     };
     const char *expected_frequency[] = {
         // considering gaps:
-        "0=987656789009876567898666544457654567533654456543447545432088807765699966000987656789987656789",
-        "0=000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "0=9876567890098765678986665444576545675336544565434475454320888077656999660009876567899876567899876567890523456000000000000000000987656789000000000000000000",
+        "0=0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
         // ignoring gaps:
-        "==000000000009876567895757865688765678533654456554536655542=00000000000000000987656789987656789",
-        "==000000000000000000000505360637520257000000000502036075025=00000000000000000000000000000000000",
+        "==000000000009876567895757865688765678533654456554536655542=000000000000000009876567899876567890000000000224556000000000000000000987656789000000000000000000",
+        "==000000000000000000000505360637520257000000000502036075025=000000000000000000000000000000000000000000000002050000000000000000000000000000000000000000000000",
     };
     const char *expected_consensus[] = {
-        "=.---...aaaACccMMMMMaa-........g.kkk.uKb.ssVVmmss...-.ww...=---M--...mmm..MMMaaMMMMMmmmmm...uuu", // default settings (see ConsensusBuildParams-ctor), gapbound=60, considbound=30, lower/upper=70/95
-        "=.AAAAAAAAAACccMMMMMaaKgKugKKKuggKKKuuKb.ssVVmmssssBWWWWs..=MMMMMMMMMMMMMMMMMaaMMMMMmmmmm...uuu", // countgaps=0
-        "=.AAAAAAAAAACCCMMMMMAAKGKUGKKKUGGKKKUUKBsSSVVMMSSSSBWWWWSw-=MMMMMMMMMMMMMMMMMAAMMMMMMMMMmmuuuUU", // countgaps=0,              considbound=26, lower=0, upper=75 (as described in #663)
-        "=.AAAAAAAAAACCCMMMMMAAKKKKGKKKUGKKKKKUKBsSSVVMMSSSSBWWWWSwN=MMMMMMMMMMMMMMMMMAAMMMMMMMMMmmuuuUU", // countgaps=0,              considbound=25, lower=0, upper=75
-        "=.--aaaaaAAACCCMMMMMAA-g-uggkuuggKKKuuKBsSSVVMMSssc--awWga-=---MmmmmmMMMmmMMMAAMMMMMMMMMmmuuuUU", // countgaps=1, gapbound=70, considbound=26, lower=0, upper=75
-        "=.--aaaaaAAACCMMMMMMMA-gkugkkkugKKKKKuKBNSVVVVMSsssbawwWswN=---MmmmmmMMMmmMMMAMMMMMMMMMMmmuuuUU", // countgaps=1, gapbound=70, considbound=20, lower=0, upper=75
+        "=.---...aaaACccMMMMMaa-........g.kkk.uKb.ssVVmmss...-.ww...=---M--...mmm..MMMaaMMMMMmmmmm...uuu---...mmmM......MMMMMMMMMMMMMMMMMMaaMMMMMmmMMMMMMMMMMMMMMMMMM", // default settings (see ConsensusBuildParams-ctor), gapbound=60, considbound=30, lower/upper=70/95
+        "=.AAAAAAAAAACccMMMMMaaKgKugKKKuggKKKuuKb.ssVVmmssssBWWWWs..=MMMMMMMMMMMMMMMMMaaMMMMMmmmmm...uuuMMMMMMMMMM......MMMMMMMMMMMMMMMMMMaaMMMMMmmMMMMMMMMMMMMMMMMMM", // countgaps=0
+        "=.AAAAAAAAAACCCMMMMMAAKGKUGKKKUGGKKKUUKBsSSVVMMSSSSBWWWWSw-=MMMMMMMMMMMMMMMMMAAMMMMMMMMMmmuuuUUMMMMMMMMMM--mmmmMMMMMMMMMMMMMMMMMMAAMMMMMMMMMMMMMMMMMMMMMMMMM", // countgaps=0,              considbound=26, lower=0, upper=75 (as described in #663)
+        "=.AAAAAAAAAACCCMMMMMAAKKKKGKKKUGKKKKKUKBsSSVVMMSSSSBWWWWSwN=MMMMMMMMMMMMMMMMMAAMMMMMMMMMmmuuuUUMMMMMMMMMM--mmmmMMMMMMMMMMMMMMMMMMAAMMMMMMMMMMMMMMMMMMMMMMMMM", // countgaps=0,              considbound=25, lower=0, upper=75
+        "=.--aaaaaAAACCCMMMMMAA-g-uggkuuggKKKuuKBsSSVVMMSssc--awWga-=---MmmmmmMMMmmMMMAAMMMMMMMMMmmuuuUU--mmmmmMMM--mmmmMMMMMMMMMMMMMMMMMMAAMMMMMMMMMMMMMMMMMMMMMMMMM", // countgaps=1, gapbound=70, considbound=26, lower=0, upper=75
+        "=.--aaaaaAAACCMMMMMMMA-gkugkkkugKKKKKuKBNSVVVVMSsssbawwWswN=---MmmmmmMMMmmMMMAMMMMMMMMMMmmuuuUU--mmmmmMMM-NmmmmMMMMMMMMMMMMMMMMMMAMMMMMMMMMMMMMMMMMMMMMMMMMM", // countgaps=1, gapbound=70, considbound=20, lower=0, upper=75
     };
     const size_t seqlen         = strlen(sequence[0]);
     const int    sequenceCount  = ARRAY_ELEMS(sequence);
