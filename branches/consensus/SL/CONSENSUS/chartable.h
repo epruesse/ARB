@@ -170,9 +170,9 @@ class BaseFrequencies : virtual Noncopyable {
 
     SepBaseFreqPtr *bases_table;
 
-    int sequenceUnits; // # of sequences added to the table (multiplied with 'units')
-    int ignore;    // this table will be ignored when calculating tables higher in hierarchy // @@@ -> bool
-                   // (used in EDIT4 to suppress SAIs in tables of ED4_root_group_manager)
+    int  sequenceUnits; // # of sequences added to the table (multiplied with 'units')
+    bool ignore;        // this table will be ignored when calculating tables higher in hierarchy
+                        // (used in EDIT4 to suppress SAIs in tables of ED4_root_group_manager)
 
     // @@@ move statics into own class:
     static bool               initialized;

@@ -1265,6 +1265,7 @@ void TEST_char_table() {
         }
 
         // build consensi (just check regression)
+        // Note: semantic tests for consensus are in ../../NTREE/AP_consensus.cxx@TEST_nucleotide_consensus_and_maxFrequency
         {
             char *consensus = tab.build_consensus_string(BK);
             switch (seed) {

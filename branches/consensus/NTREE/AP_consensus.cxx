@@ -48,6 +48,12 @@
 
 static int CON_insertSequences(GBDATA *gb_main, const char *aliname, long maxalignlen, bool onlymarked, BaseFrequencies& freqs) {
     /*! read sequence data and fill into 'freqs'
+     * @param gb_main       database
+     * @param aliname       name of alignment
+     * @param maxalignlen   length of alignment
+     * @param onlymarked    true -> marked only
+     * @param freqs         sequences are inserted here (has to be empty)
+     * @return number of inserted sequences
      */
     int nrofspecies = onlymarked ? GBT_count_marked_species(gb_main) : GBT_get_species_count(gb_main);
 
@@ -67,12 +73,27 @@ static int CON_insertSequences(GBDATA *gb_main, const char *aliname, long maxali
         gb_species = onlymarked ? GBT_next_marked_species(gb_species) : GBT_next_species(gb_species);
         ++progress;
     }
-    return nrofspecies;
+
+    int inserted = freqs.added_sequences();
+    if (nrofspecies < inserted) {
+        GBT_message(gb_main, GBS_global_string("Only %i of %i %sspecies contain data in alignment '%s'",
+                                               inserted, nrofspecies, onlymarked ? "marked " : "", aliname));
+        progress.done();
+    }
+
+    return inserted;
 }
 
 static GB_ERROR CON_export(GBDATA *gb_main, const char *savename, const char *align, const char *result, bool onlymarked, long nrofspecies, const ConsensusBuildParams& BK) {
     /*! writes consensus SAI to DB
-     * @@@ document params
+     * @param gb_main      database
+     * @param savename     name of SAI to save to
+     * @param align        alignment name
+     * @param result       SAI data to write
+     * @param onlymarked   true -> was calculated on marked only (used for SAI comment)
+     * @param nrofspecies  number of used sequences (used for SAI comment; if less than 20 -> add an explicit list to field '_SPECIES')
+     * @param BK           parameters used for consensus calculation (used for SAI comment)
+     * @return error if something goes wrong
      */
     const char *off = "off";
     const char *on  = "on";
@@ -138,8 +159,13 @@ static GB_ERROR CON_export(GBDATA *gb_main, const char *savename, const char *al
 
 static GB_ERROR CON_calculate(GBDATA *gb_main, const ConsensusBuildParams& BK, const char *aliname, bool onlymarked, const char *sainame) {
     /*! calculates the consensus and writes it to SAI 'sainame'
-     * @@@ document params
      * Description how consensus is calculated: ../HELP_SOURCE/oldhelp/consensus_def.hlp // @@@ update after #663 differences are resolved
+     * @param gb_main     database
+     * @param BK          parameters for consensus calculation
+     * @param aliname     alignment name
+     * @param onlymarked  true -> use marked sequences only
+     * @param sainame     name of destination SAI
+     * @return error if something goes wrong
      */
     GB_ERROR error = 0;
 
@@ -303,7 +329,12 @@ AW_window *AP_create_con_expert_window(AW_root *aw_root) {
 }
 
 static GB_ERROR CON_calc_max_freq(GBDATA *gb_main, bool ignore_gaps, const char *savename, const char *aliname) {
-    /*! gets the maximum frequency for all columns
+    /*! calculates the maximum frequency for each column and write to SAI
+     * @param gb_main      database
+     * @param ignore_gaps  true -> ignore gaps; see ../HELP_SOURCE/oldhelp/max_freq.hlp@Gaps
+     * @param savename     name of destination SAI
+     * @param aliname      name of alignment to use
+     * @return error if something goes wrong
      */
     arb_assert(!GB_have_error());
 
