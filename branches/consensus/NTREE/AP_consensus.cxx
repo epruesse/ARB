@@ -466,7 +466,6 @@ static void read_frequency(GBDATA *gb_main, const char *sainame, const char *ali
 }
 
 void TEST_nucleotide_consensus_and_maxFrequency() {
-    // keep similar to ../SL/CONSENSUS/chartable.cxx@TEST_nucleotide_consensus_input
     const char *sequence[] = {
         "-.AAAAAAAAAAcAAAAAAAAATTTTTTTTTTTTTTTTTAAAAAAAAgggggAAAAgAA----m-----yykm-mmmAAAAAAAAAmmmmmmmmmNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNKKKKKKKKKWWWWWWWWW",
         "-.-AAAAAAAAAccAAAAAAAAggTTgTTTTgTTTTTTTcccAAAAAgggggAAAAgAA----k-----kykr-rrrAAAAAAAAmmmmmmmmmT-NNNNNNNNNANNNNNbNNNNNNNNkNNNNNNNNaNNNNNNNNbKKKKKKKKbWWWWWWWW",
@@ -545,7 +544,6 @@ void TEST_nucleotide_consensus_and_maxFrequency() {
 }
 
 void TEST_amino_consensus_and_maxFrequency() {
-    // keep similar to ../SL/CONSENSUS/chartable.cxx@TEST_amino_consensus_input
     const char *sequence[] = {
         "-.ppppppppppQQQQQQQQQDDDDDELLLLLwwwwwwwwwwwwwwwwgggggggggggSSSe-PPP-DELp",
         "-.-pppppppppkQQQQQQQQnDDDDELLLLLVVwwVwwwwVwwwwwwSgggggggggSSSee-QPP-DELa",
