@@ -46,186 +46,6 @@
 #include <consensus_config.h>
 #include <chartable.h>
 
-enum {
-    BAS_GAP,
-    BAS_A,  BAS_C,  BAS_G,  BAS_T, BAS_N,
-
-    MAX_BASES,
-    MAX_AMINOS  = 27,
-    MAX_GROUPS  = 40
-};
-
-static char *CON_evaluatestatistic(const int *const*statistic, const char *const*groupflags, const char *groupnames, int alignlength, int numgroups, const ConsensusBuildParams& BK) {
-    /*! calculates consensus from 'statistic'
-     * @@@ doc params
-     */
-    arb_progress progress("calculating result", alignlength);
-
-    char *result = (char *)GB_calloc(alignlength+1, 1);
-
-    for (int column=0; column<alignlength; column++) {
-        long numentries = 0;
-        for (int row = 0; statistic[row]; ++row) numentries += statistic[row][column];
-        if (numentries==0) {
-            result[column] = '.';
-        }
-        else {
-            int gaps = statistic[0][column];
-            arb_assert(numentries>=gaps);
-
-            if (numentries == gaps) {
-                result[column] = '='; // 100% gaps
-            }
-            else {
-                if (!BK.countgaps) {
-                    numentries -= gaps;
-                    gaps        = 0;
-                }
-
-                if ((gaps*100/numentries) > BK.gapbound) { // @@@ why not >=? (as below for other thresholds)
-                    result[column] = '-';
-                }
-                else {
-                    int group_freq[MAX_GROUPS]; // frequency of group
-                    for (int j = 0; j<numgroups; ++j) {
-                        group_freq[j] = 0;
-                    }
-
-                    for (int row = 1; statistic[row]; ++row) {
-                        if (statistic[row][column]*100 >= BK.considbound*numentries) {
-                            for (int j = numgroups-1; j>=0; --j) { // @@@ why reverse?
-                                if (groupflags[j][row]) {
-                                    group_freq[j] += statistic[row][column];
-                                }
-                            }
-                        }
-                    }
-
-                    int maxFreq       = 0;
-                    int maxFreq_group = 0;
-                    for (int j = 0; j<numgroups; ++j) {
-                        if (group_freq[j] > maxFreq) {
-                            maxFreq       = group_freq[j];
-                            maxFreq_group = j;
-                        }
-                    }
-
-                    int percent = maxFreq*100/numentries;
-                    if      (percent >= BK.upper) result[column] = groupnames[maxFreq_group];
-                    else if (percent >= BK.lower) result[column] = tolower(groupnames[maxFreq_group]);
-                    else                          result[column] = '.';
-                }
-            }
-        }
-        ++progress;
-    }
-
-    return result;
-}
-
-
-
-static int CON_makegrouptable(char **const gf, char *const groupnames, bool isamino, bool groupallowed) {
-    /*! initialize group tables
-     * 'gf' will be allocated and initialized:
-     *      'gf[GROUP][CTV] == 1' means: all 'c' with 'convtable[c] == CTV' are members of group 'GROUP'
-     * 'groupnames' will be filled with groups "names" ( = single character codes)
-     */
-    for (int j=0; j<MAX_GROUPS; j++) gf[j]=(char *)GB_calloc(MAX_GROUPS, 1);
-
-    if (!isamino) {
-        strcpy(groupnames, "-ACGUMRWSYKVHDBN\0");
-
-        for (int i=1; i<MAX_BASES; i++) gf[i][i]=1;
-
-        if (groupallowed) {
-            gf[5][BAS_A]=1; gf[5][BAS_C]=1;
-            gf[6][BAS_A]=1; gf[6][BAS_G]=1;
-            gf[7][BAS_A]=1; gf[7][BAS_T]=1;
-            gf[8][BAS_C]=1; gf[8][BAS_G]=1;
-            gf[9][BAS_C]=1; gf[9][BAS_T]=1;
-            gf[10][BAS_G]=1; gf[10][BAS_T]=1;
-            gf[11][BAS_A]=1; gf[11][BAS_C]=1; gf[11][BAS_G]=1;
-            gf[12][BAS_A]=1; gf[12][BAS_C]=1; gf[12][BAS_T]=1;
-            gf[13][BAS_A]=1; gf[13][BAS_G]=1; gf[13][BAS_T]=1;
-            gf[14][BAS_C]=1; gf[14][BAS_G]=1; gf[14][BAS_T]=1;
-            gf[15][BAS_A]=1; gf[15][BAS_C]=1;
-            gf[15][BAS_G]=1; gf[15][BAS_T]=1;
-            return 16;
-        }
-        return 5;
-    }
-    else {
-        strcpy(groupnames, "-ABCDEFGHI*KLMN.PQRST.VWXYZADHIF\0");
-
-        for (int i=1; i<MAX_AMINOS; i++) gf[i][i] = 1;
-
-#define SC(x, P) gf[x][P-'A'+1] = 1
-        if (groupallowed) {
-            SC(27, 'P'); SC(27, 'A'); SC(27, 'G'); SC(27, 'S'); SC(27, 'T');                // PAGST
-            SC(28, 'Q'); SC(28, 'N'); SC(28, 'E'); SC(28, 'D'); SC(28, 'B'); SC(28, 'Z');   // QNEDBZ
-            SC(29, 'H'); SC(29, 'K'); SC(29, 'R');                                          // HKR
-            SC(30, 'L'); SC(30, 'I'); SC(30, 'V'); SC(30, 'M');                             // LIVM
-            SC(31, 'F'); SC(31, 'Y'); SC(31, 'W');                                          // FYW
-
-            return 32;
-        }
-#undef SC
-        return 27;
-    }
-}
-
-
-static int CON_makestatistic(GBDATA *gb_main, int *const*const statistic, const int *convtable, const char *aliname, bool onlymarked) {
-    /*! read sequence data and fill into 'statistic'
-     */
-    long maxalignlen = GBT_get_alignment_len(gb_main, aliname);
-
-    int nrofspecies;
-    if (onlymarked) {
-        nrofspecies = GBT_count_marked_species(gb_main);
-    }
-    else {
-        nrofspecies = GBT_get_species_count(gb_main);
-    }
-
-    arb_progress progress(nrofspecies);
-    progress.auto_subtitles("Examining sequence");
-
-    GBDATA *gb_species;
-    if (onlymarked) {
-        gb_species = GBT_first_marked_species(gb_main);
-    }
-    else {
-        gb_species = GBT_first_species(gb_main);
-    }
-
-    while (gb_species) {
-        GBDATA *alidata = GBT_find_sequence(gb_species, aliname);
-        if (alidata) {
-            unsigned char        c;
-            const unsigned char *data = (const unsigned char *)GB_read_char_pntr(alidata);
-
-            int i = 0;
-            while ((c=data[i])) {
-                if ((c=='-') || ((c>='a')&&(c<='z')) || ((c>='A')&&(c<='Z')) || (c=='*')) {
-                    if (i > maxalignlen) break;
-                    statistic[convtable[c]][i] += 1;
-                }
-                i++;
-            }
-        }
-        if (onlymarked) {
-            gb_species = GBT_next_marked_species(gb_species);
-        }
-        else {
-            gb_species = GBT_next_species(gb_species);
-        }
-        ++progress;
-    }
-    return nrofspecies;
-}
-
 static int CON_insertSequences(GBDATA *gb_main, const char *aliname, bool onlymarked, BaseFrequencies& freqs) { // @@@ pass maxalignlen?
     /*! read sequence data and fill into 'freqs'
      */
@@ -249,41 +69,6 @@ static int CON_insertSequences(GBDATA *gb_main, const char *aliname, bool onlyma
         ++progress;
     }
     return nrofspecies;
-}
-
-static void CON_maketables(int *const convtable, int **const statistic, long maxalignlen, bool isamino) {
-    /*! initialize tables 'convtable' and 'statistic'.
-     * convtable[c] == k means: character 'c' will (later) be counted in row 'k' of 'statistic'
-     */
-    int i;
-    for (i=0; i<256; i++) convtable[i]=0;
-    if (!isamino) {
-        for (i='a'; i <= 'z'; i++) convtable[i] = BAS_N;
-        for (i='A'; i <= 'Z'; i++) convtable[i] = BAS_N;
-
-        convtable['a']=BAS_A;   convtable['A']=BAS_A;
-        convtable['c']=BAS_C;   convtable['C']=BAS_C;
-        convtable['g']=BAS_G;   convtable['G']=BAS_G;
-        convtable['t']=BAS_T;   convtable['T']=BAS_T;
-        convtable['u']=BAS_T;   convtable['U']=BAS_T;
-
-
-        for (i=0; i<MAX_BASES; i++) {
-            statistic[i]=(int*)GB_calloc((unsigned int)maxalignlen, sizeof(int));
-        }
-        statistic[MAX_BASES]=NULL;
-    }
-    else {
-        for (i=0; i<MAX_AMINOS-1; i++) {
-            convtable['a'+i]=i+1;
-            convtable['A'+i]=i+1;
-        }
-        for (i=0; i<MAX_AMINOS; i++) {
-            statistic[i]=(int*)GB_calloc((unsigned int)maxalignlen, sizeof(int));
-        }
-        statistic[MAX_AMINOS]=NULL;
-        convtable['*']=10; // 'J' // @@@ hack? careful when introducing 'J' later
-    }
 }
 
 static GB_ERROR CON_export(GBDATA *gb_main, const char *savename, const char *align, const char *result, bool onlymarked, long nrofspecies, const ConsensusBuildParams& BK) {
@@ -352,17 +137,7 @@ static GB_ERROR CON_export(GBDATA *gb_main, const char *savename, const char *al
     return err;
 }
 
-
-static void CON_cleartables(int **const statistic, bool isamino) {
-    int i;
-    int no_of_tables = isamino ? MAX_AMINOS : MAX_BASES;
-
-    for (i = 0; i<no_of_tables; ++i) {
-        free(statistic[i]);
-    }
-}
-
-static void CON_calculate(GBDATA *gb_main, const ConsensusBuildParams& BK, const char *align, bool onlymarked, const char *sainame) { // @@@ rewrite using BaseFrequencies
+static void CON_calculate(GBDATA *gb_main, const ConsensusBuildParams& BK, const char *aliname, bool onlymarked, const char *sainame) {
     /*! calculates the consensus and writes it to SAI 'sainame'
      * @@@ document params
      * Description how consensus is calculated: ../HELP_SOURCE/oldhelp/consensus_def.hlp // @@@ update after #663 differences are resolved
@@ -371,42 +146,26 @@ static void CON_calculate(GBDATA *gb_main, const ConsensusBuildParams& BK, const
 
     GB_push_transaction(gb_main);
 
-    long maxalignlen = GBT_get_alignment_len(gb_main, align);
-    if (maxalignlen <= 0) error = GB_export_errorf("alignment '%s' doesn't exist", align);
+    long maxalignlen = GBT_get_alignment_len(gb_main, aliname);
+    if (maxalignlen <= 0) error = GB_export_errorf("alignment '%s' doesn't exist", aliname);
 
     if (!error) {
-        int isamino = GBT_is_alignment_protein(gb_main, align); // @@@ -> bool
-
-        // creating the table for characters and allocating memory for 'statistic'
-        int *statistic[MAX_AMINOS+1];
-        int  convtable[256];
-        CON_maketables(convtable, statistic, maxalignlen, isamino);
-
-        // filling the statistic table
         arb_progress progress("Calculating consensus");
 
-        int nrofspecies = CON_makestatistic(gb_main, statistic, convtable, align, onlymarked);
+        GB_alignment_type alitype = GBT_get_alignment_type(gb_main, aliname);
+        BaseFrequencies::setup("-.", alitype);
+
+        BaseFrequencies freqs(maxalignlen);
+        int nrofspecies = CON_insertSequences(gb_main, aliname, onlymarked, freqs);
 
         if (BK.lower>BK.upper) {
             error = "fault: lower greater than upper";
         }
         else {
-            // creating the table for groups
-            char *groupflags[40];
-            char  groupnames[40];
-            int   numgroups = CON_makegrouptable(groupflags, groupnames, isamino, BK.group);
-
-            // calculate and export the result strings
-            char *result = CON_evaluatestatistic(statistic, groupflags, groupnames, maxalignlen, numgroups, BK);
-
-            error = CON_export(gb_main, sainame, align, result, onlymarked, nrofspecies, BK);
-
-            // freeing allocated memory
+            char *result = freqs.build_consensus_string(BK);
+            error = CON_export(gb_main, sainame, aliname, result, onlymarked, nrofspecies, BK);
             free(result);
-            for (int i=0; i<MAX_GROUPS; i++) free(groupflags[i]);
         }
-
-        CON_cleartables(statistic, isamino);
     }
 
     GB_end_transaction_show_error(gb_main, error, aw_message);
@@ -414,7 +173,7 @@ static void CON_calculate(GBDATA *gb_main, const ConsensusBuildParams& BK, const
 
 static void CON_calculate_cb(AW_window *aw) {
     AW_root *awr        = aw->get_root();
-    char    *align      = awr->awar(AWAR_CONSENSUS_ALIGNMENT)->read_string();
+    char    *aliname    = awr->awar(AWAR_CONSENSUS_ALIGNMENT)->read_string();
     char    *sainame    = awr->awar(AWAR_CONSENSUS_NAME)->read_string();
     bool     onlymarked = strcmp(awr->awar(AWAR_CONSENSUS_SPECIES)->read_char_pntr(), "marked") == 0;
 
@@ -427,11 +186,11 @@ static void CON_calculate_cb(AW_window *aw) {
         LocallyModify<bool> denyAwarWrites(AW_awar::deny_write, true);
 #endif
 
-        CON_calculate(GLOBAL.gb_main, BK, align, onlymarked, sainame);
+        CON_calculate(GLOBAL.gb_main, BK, aliname, onlymarked, sainame);
     }
 
     free(sainame);
-    free(align);
+    free(aliname);
 }
 
 void AP_create_consensus_var(AW_root *aw_root, AW_default aw_def) {
@@ -729,12 +488,12 @@ void TEST_nucleotide_consensus_and_maxFrequency() {
         "==000000000000000000000505360637520257000000000502036075025=005530983388555565050505055050000005555555555555555210098765752075207257025702568013568568013568",
     };
     const char *expected_consensus[] = {
-        "=.---...aaaACccMMMMMaa-........g.kkk.uKb.ssVVmmss...-.ww...=---M--...mmm..MMMaaMMMMMmmmmm...uuu---...mmmM......MMMMMMMMMMMMMMMMMMaaMMMMMmmMMMMMMMMMMMMMMMMMM", // default settings (see ConsensusBuildParams-ctor), gapbound=60, considbound=30, lower/upper=70/95
-        "=.AAAAAAAAAACccMMMMMaaKgKugKKKuggKKKuuKb.ssVVmmssssBWWWWs..=MMMMMMMMMMMMMMMMMaaMMMMMmmmmm...uuuMMMMMMMMMM......MMMMMMMMMMMMMMMMMMaaMMMMMmmMMMMMMMMMMMMMMMMMM", // countgaps=0
-        "=.AAAAAAAAAACCCMMMMMAAKGKUGKKKUGGKKKUUKBsSSVVMMSSSSBWWWWSw-=MMMMMMMMMMMMMMMMMAAMMMMMMMMMmmuuuUUMMMMMMMMMM--mmmmMMMMMMMMMMMMMMMMMMAAMMMMMMMMMMMMMMMMMMMMMMMMM", // countgaps=0,              considbound=26, lower=0, upper=75 (as described in #663)
-        "=.AAAAAAAAAACCCMMMMMAAKKKKGKKKUGKKKKKUKBsSSVVMMSSSSBWWWWSwN=MMMMMMMMMMMMMMMMMAAMMMMMMMMMmmuuuUUMMMMMMMMMM--mmmmMMMMMMMMMMMMMMMMMMAAMMMMMMMMMMMMMMMMMMMMMMMMM", // countgaps=0,              considbound=25, lower=0, upper=75
-        "=.--aaaaaAAACCCMMMMMAA-g-uggkuuggKKKuuKBsSSVVMMSssc--awWga-=---MmmmmmMMMmmMMMAAMMMMMMMMMmmuuuUU--mmmmmMMM--mmmmMMMMMMMMMMMMMMMMMMAAMMMMMMMMMMMMMMMMMMMMMMMMM", // countgaps=1, gapbound=70, considbound=26, lower=0, upper=75
-        "=.--aaaaaAAACCMMMMMMMA-gkugkkkugKKKKKuKBNSVVVVMSsssbawwWswN=---MmmmmmMMMmmMMMAMMMMMMMMMMmmuuuUU--mmmmmMMM-NmmmmMMMMMMMMMMMMMMMMMMAMMMMMMMMMMMMMMMMMMMMMMMMMM", // countgaps=1, gapbound=70, considbound=20, lower=0, upper=75
+        "==----..aaaACccMMMMMaa----.....g.kkk.uKb.ssVVmmss...-.ww...=---.---..byk.-.mVAaaaaMMMMmmHH..uuu----............BBbb.....Kkkkkk...aaaa.....BkkkkkkkKB....wwww", // default settings (see ConsensusBuildParams-ctor), gapbound=60, considbound=30, lower/upper=70/95
+        "==AAAAAAAAAACccMMMMMaaKgKugKKKuggKKKuuKb.ssVVmmssssBWWWWs..=Y.......BByk...mVAaaaaMMMMmmHH..uuu................BBbb.....Kkkkkk...aaaa.....BkkkkkkkKB....wwww", // countgaps=0
+        "==AAAAAAAAAACCCMMMMMAAKGKUGKKKUGGKKKUUKBsSSVVMMSSSSBWWWWSwa=YcaaykkkBBYKaaaMVAAAAAMMMMMMHHuuuUUaaaaaaaaaaaaaaaaBBBBBBBBcKKKKKkkkkAAAaaaaaaBBKKKKKKKBBuuuwWWW", // countgaps=0,              considbound=26, lower=0, upper=75 (as described in #663)
+        "==AAAAAAAAAACCCMMMMMAAKKKKGKKKUGKKKKKUKBsSSVVMMSSSSBWWWWSwN=YHNNykkkBBYKNNNVVAAAAMMMMMMMHHHuuUUNNNNNNNNNNNNNNNNBBBBBBBBBKKKKKkkkkAAAaaaaaaBBKKKKKKKBBuuwwWWW", // countgaps=0,              considbound=25, lower=0, upper=75
+        "==---aaaaAAACCCMMMMMAA-gkugkkkuggKKKuuKBsSSVVMMSsssb-wwWswa=---a--kkbBykaaaMVAAAAAMMMMMMHHuuuUU---aaaaaaaaaaaaaBBBBBBBBcKKKKKkkkkAAAaaaaaaBBKKKKKKKBBuuuwWWW", // countgaps=1, gapbound=70, considbound=26, lower=0, upper=75
+        "==---aaaaAAACCMMMMMMMA-kkkgkkkugKKKKKuKBNSVVVVMSsssb-wwWswN=---N--nnbBBBnnNVVAAAMMMMMMMHHHHHuUU---nnnnNNNnNnNNNBBBBBBBNNKKKKKkkNNAAAaaaaNNBBBBKKKKKBBBNwwWWW", // countgaps=1, gapbound=70, considbound=20, lower=0, upper=75
     };
     const size_t seqlen         = strlen(sequence[0]);
     const int    sequenceCount  = ARRAY_ELEMS(sequence);
@@ -818,12 +577,12 @@ void TEST_amino_consensus_and_maxFrequency() {
         "==0000000000000000000000000000000505360637520257000000003720050=000=0000",
     };
     const char *expected_consensus[] = {
-        "=.---...pppPkkk...qqqnnDDDDIIIll-........v.....w...aaaAa......-=...=dD..", // default settings (see ConsensusBuildParams-ctor), gapbound=60, considbound=30, lower/upper=70/95
-        "=.PPPPPPPPPPkkk...qqqnnDDDDIIIll.v.wv...wvv...ww...aaaAa.....eE=...=dD..", // countgaps=0
-        "=.PPPPPPPPPPKKkkkqqQQNNDDDDIIILLvVvWVvvwWVVvvwWWeeaaAAAaaeeeeEE=--k=DD*-", // countgaps=0,              considbound=26, lower=0, upper=75
-        "=.--pppppPPPKKkkkqqQQNNDDDDIIILL-v-wvvvwwvvvvwwweeaaAAAaaeeeeee=--k=DD*-", // countgaps=1, gapbound=70, considbound=26, lower=0, upper=75
-        "=.--pppppPPPKKkkkqqQQNDDDDDIIIIL-vvwvvvwwvvvvwwweeaaAAAaaaeeeee=-kk=DD*-", // countgaps=1, gapbound=70, considbound=20, lower=0, upper=75
-        "=.-----ppPPPKKkk-qqQQNNnn---llLL---------vv---wwe----gg--------=---=--*-", // countgaps=1, gapbound=70, considbound=51, lower=0, upper=75
+        "==----..aaaAhhh...dddDDDDDDIIIII----.....i.....f...aaaAa.....--=.X.=DD-.", // default settings (see ConsensusBuildParams-ctor), gapbound=60, considbound=30, lower/upper=70/95
+        "==AAAAAAAAAAhhh...dddDDDDDDIIIII.i.fi...fii...ff...aaaAa.....dD=XX.=DDI.", // countgaps=0
+        "==AAAAAAAAAAHHhhdddDDDDDDDDIIIIIiIiFIiifFIIiifFFdaaaAAAaaaaadDD=XXh=DDId", // countgaps=0,              considbound=26, lower=0, upper=75
+        "==---aaaaAAAHHhhdddDDDDDDDDIIIII-iifiiiffiiiifffdaaaAAAaaaaadd-=xXh=DDid", // countgaps=1, gapbound=70, considbound=26, lower=0, upper=75
+        "==---aaaaAAAHHhhdddDDDDDDDDIIIII-iifiiiffiiiifffdaaaAAAaaaaadd-=aah=DDid", // countgaps=1, gapbound=70, considbound=20, lower=0, upper=75
+        "==---aaaaAAAHHhhXddDDDDDDDDIIIII-ixfiixffiiiXfffdXaaAAAaaaaxdd-=xXX=DDiX", // countgaps=1, gapbound=70, considbound=51, lower=0, upper=75
     };
     const size_t seqlen         = strlen(sequence[0]);
     const int    sequenceCount  = ARRAY_ELEMS(sequence);
