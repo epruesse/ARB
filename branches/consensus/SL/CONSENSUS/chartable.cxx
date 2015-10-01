@@ -780,7 +780,14 @@ double BaseFrequencies::max_frequency_at(int column, bool ignore_gaps) const {
         mfreq = 0.0;
     }
 
-    ct_assert(mfreq == 0.0 || (mfreq>=0.2 && mfreq<=1.0));
+#if defined(ASSERTION_USED)
+    if (mfreq != 0.0) {
+        if (ali_type != GB_AT_AA) {
+            ct_assert(mfreq>=0.2); // wrong for amino acids
+        }
+        ct_assert(mfreq<=1.0);
+    }
+#endif
 
     return mfreq;
 }
