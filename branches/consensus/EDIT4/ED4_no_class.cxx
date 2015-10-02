@@ -1497,6 +1497,20 @@ AW_window *ED4_create_consensus_definition_window(AW_root *root) {
     return aws;
 }
 
+static void consensus_upper_lower_changed_cb(AW_root *awr, bool upper_changed) {
+    AW_awar *awar_lower = awr->awar(ED4_AWAR_CONSENSUS_LOWER);
+    AW_awar *awar_upper = awr->awar(ED4_AWAR_CONSENSUS_UPPER);
+
+    int lower = awar_lower->read_int();
+    int upper = awar_upper->read_int();
+
+    if (upper<lower) {
+        if (upper_changed) awar_lower->write_int(upper);
+        else               awar_upper->write_int(lower);
+    }
+    ED4_consensus_definition_changed(awr);
+}
+
 void ED4_create_consensus_awars(AW_root *aw_root) {
     GB_transaction ta(GLOBAL_gb_main);
 
@@ -1504,8 +1518,8 @@ void ED4_create_consensus_awars(AW_root *aw_root) {
     aw_root->awar_int(ED4_AWAR_CONSENSUS_GROUP,       1) ->add_callback(ED4_consensus_definition_changed);
     aw_root->awar_int(ED4_AWAR_CONSENSUS_GAPBOUND,    60)->set_minmax(0, 100)->add_callback(ED4_consensus_definition_changed);
     aw_root->awar_int(ED4_AWAR_CONSENSUS_CONSIDBOUND, 30)->set_minmax(0, 100)->add_callback(ED4_consensus_definition_changed);
-    aw_root->awar_int(ED4_AWAR_CONSENSUS_UPPER,       95)->set_minmax(0, 100)->add_callback(ED4_consensus_definition_changed);
-    aw_root->awar_int(ED4_AWAR_CONSENSUS_LOWER,       70)->set_minmax(0, 100)->add_callback(ED4_consensus_definition_changed);
+    aw_root->awar_int(ED4_AWAR_CONSENSUS_UPPER,       95)->set_minmax(0, 100)->add_callback(makeRootCallback(consensus_upper_lower_changed_cb, true));
+    aw_root->awar_int(ED4_AWAR_CONSENSUS_LOWER,       70)->set_minmax(0, 100)->add_callback(makeRootCallback(consensus_upper_lower_changed_cb, false));
 
     AW_awar *cons_show = aw_root->awar_int(ED4_AWAR_CONSENSUS_SHOW, 1);
 

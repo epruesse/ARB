@@ -221,6 +221,19 @@ static void CON_calculate_cb(AW_window *aw) {
     free(aliname);
 }
 
+static void consensus_upper_lower_changed_cb(AW_root *awr, bool upper_changed) {
+    AW_awar *awar_lower = awr->awar(AWAR_CONSENSUS_LOWER);
+    AW_awar *awar_upper = awr->awar(AWAR_CONSENSUS_UPPER);
+
+    int lower = awar_lower->read_int();
+    int upper = awar_upper->read_int();
+
+    if (upper<lower) {
+        if (upper_changed) awar_lower->write_int(upper);
+        else               awar_upper->write_int(lower);
+    }
+}
+
 void AP_create_consensus_var(AW_root *aw_root, AW_default aw_def) {
     GB_transaction ta(GLOBAL.gb_main);
     {
@@ -231,8 +244,8 @@ void AP_create_consensus_var(AW_root *aw_root, AW_default aw_def) {
     aw_root->awar_int(AWAR_CONSENSUS_MARKED_ONLY, 1,  aw_def);
     aw_root->awar_int(AWAR_CONSENSUS_GROUP,       0,  aw_def);
     aw_root->awar_int(AWAR_CONSENSUS_COUNTGAPS,   1,  aw_def);
-    aw_root->awar_int(AWAR_CONSENSUS_UPPER,       95, aw_def)->set_minmax(0, 100);
-    aw_root->awar_int(AWAR_CONSENSUS_LOWER,       70, aw_def)->set_minmax(0, 100);
+    aw_root->awar_int(AWAR_CONSENSUS_UPPER,       95, aw_def)->set_minmax(0, 100)->add_callback(makeRootCallback(consensus_upper_lower_changed_cb, true));
+    aw_root->awar_int(AWAR_CONSENSUS_LOWER,       70, aw_def)->set_minmax(0, 100)->add_callback(makeRootCallback(consensus_upper_lower_changed_cb, false));
     aw_root->awar_int(AWAR_CONSENSUS_GAPBOUND,    60, aw_def)->set_minmax(0, 100);
     aw_root->awar_int(AWAR_CONSENSUS_CONSIDBOUND, 30, aw_def)->set_minmax(0, 100);
     aw_root->awar_int(AWAR_MAX_FREQ_IGNORE_GAPS,  1,  aw_def);
