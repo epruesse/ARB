@@ -548,6 +548,9 @@ void TEST_nucleotide_consensus_and_maxFrequency() {
         "==AAAAAAAAAACCCMMMMMAAKKKKGKKKUGKKKKKUKBsSSVVMMSSSSBWWWWSwN=YHNNykkkBBYKNNNVVAAAAMMMMMMMHHHuuUUNNNNNNNNNNNNNNNNBBBBBBBBBKKKKKkkkkAAAaaaaaaBBKKKKKKKBBuuwwWWW", // countgaps=0,              considbound=25, lower=0, upper=75
         "==---aaaaAAACCCMMMMMAA-gkugkkkuggKKKuuKBsSSVVMMSsssb-wwWswa=---a--kkbBykaaaMVAAAAAMMMMMMHHuuuUU---aaaaaaaaaaaaaBBBBBBBBcKKKKKkkkkAAAaaaaaaBBKKKKKKKBBuuuwWWW", // countgaps=1, gapbound=70, considbound=26, lower=0, upper=75
         "==---aaaaAAACCMMMMMMMA-kkkgkkkugKKKKKuKBNSVVVVMSsssb-wwWswN=---N--nnbBBBnnNVVAAAMMMMMMMHHHHHuUU---nnnnNNNnNnNNNBBBBBBBNNKKKKKkkNNAAAaaaaNNBBBBKKKKKBBBNwwWWW", // countgaps=1, gapbound=70, considbound=20, lower=0, upper=75
+        "==---aaaaAAACMMMMMMMMM-kkkkkkkkKKKKKKKKNNVVVVVVBBbbb-wwWbnN=---N--nnbBBBnnNVVMMMMMMMMMHHHHHHHHH---nnnnNNNnNnNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNBBBBBBBBBNNNNNNNNN", // countgaps=1, gapbound=70, considbound= 1, lower=0, upper=75
+        "==---nnnnNNNNNNNNNNNNN-nnnnnnnnNNNNNNNNNNNNNNNNNNnnn-nnNnnN=---N--nnnNNNnnNNNNNNNNNNNNNNNNNNNNN---nnnnNNNnNnNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN", // countgaps=1, gapbound=70, considbound= 0, lower=0, upper=75
+        "==NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN=NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN", // countgaps=0,              considbound= 0, lower=0, upper=75
     };
     const size_t seqlen         = strlen(sequence[0]);
     const int    sequenceCount  = ARRAY_ELEMS(sequence);
@@ -568,6 +571,9 @@ void TEST_nucleotide_consensus_and_maxFrequency() {
             case 3: BK.considbound = 25; break;
             case 4: BK.considbound = 26; BK.countgaps = true; BK.gapbound = 70; break;
             case 5: BK.considbound = 20; break;
+            case 6: BK.considbound = 1; break;
+            case 7: BK.considbound = 0; break;
+            case 8: BK.countgaps   = false; break;
             default: arb_assert(0); break;                                     // missing
         }
 
@@ -632,10 +638,13 @@ void TEST_amino_consensus_and_maxFrequency() {
     const char *expected_consensus[] = {
         "==----..aaaAhhh...dddDDDDDDIIIII----.....i.....f...aaaAa.....--=.X.=DD-.", // default settings (see ConsensusBuildParams-ctor), gapbound=60, considbound=30, lower/upper=70/95
         "==AAAAAAAAAAhhh...dddDDDDDDIIIII.i.fi...fii...ff...aaaAa.....dD=XX.=DDI.", // countgaps=0
-        "==AAAAAAAAAAHHhhdddDDDDDDDDIIIIIiIiFIiifFIIiifFFdaaaAAAaaaaadDD=XXh=DDId", // countgaps=0,              considbound=26, lower=0, upper=75
-        "==---aaaaAAAHHhhdddDDDDDDDDIIIII-iifiiiffiiiifffdaaaAAAaaaaadd-=xXh=DDid", // countgaps=1, gapbound=70, considbound=26, lower=0, upper=75
-        "==---aaaaAAAHHhhdddDDDDDDDDIIIII-iifiiiffiiiifffdaaaAAAaaaaadd-=aah=DDid", // countgaps=1, gapbound=70, considbound=20, lower=0, upper=75
-        "==---aaaaAAAHHhhXddDDDDDDDDIIIII-ixfiixffiiiXfffdXaaAAAaaaaxdd-=xXX=DDiX", // countgaps=1, gapbound=70, considbound=51, lower=0, upper=75
+        "==AAAAAAAAAAHHhhdddDDDDDDDDIIIIIiIiFIiifFIIiifFFdaaaAAAaaaaadDD=XXh=DDId", // countgaps=0,              considbound= 26, lower=0, upper=75
+        "==---aaaaAAAHHhhdddDDDDDDDDIIIII-iifiiiffiiiifffdaaaAAAaaaaadd-=xXh=DDid", // countgaps=1, gapbound=70, considbound= 26, lower=0, upper=75
+        "==---aaaaAAAHHhhdddDDDDDDDDIIIII-iifiiiffiiiifffdaaaAAAaaaaadd-=aah=DDid", // countgaps=1, gapbound=70, considbound= 20, lower=0, upper=75
+        "==---aaaaAAAHHhhXddDDDDDDDDIIIII-ixfiixffiiiXfffdXaaAAAaaaaxdd-=xXX=DDiX", // countgaps=1, gapbound=70, considbound= 51, lower=0, upper=75
+        "==---aaaaAAAHXXXXXXXDDDDDDDIIIII-xxxxxxxxXXXXXXXXXXXXAAXXXxxxx-=xXX=DDiX", // countgaps=1, gapbound=70, considbound= 90, lower=0, upper=75
+        "==---aaaaAAAXXXXXXXXXDDDDDDIIIII-xxxxxxxxXXXXXXXXXXXXXAXXXxxxx-=xXX=DDiX", // countgaps=1, gapbound=70, considbound=100, lower=0, upper=75
+        "==---aaaaAAAHHhhdddDDDDDDDDIIIII-iifiiiffiiiifffdaaaAAAaaaaadd-=aah=DDid", // countgaps=1, gapbound=70, considbound=  0, lower=0, upper=75
     };
     const size_t seqlen         = strlen(sequence[0]);
     const int    sequenceCount  = ARRAY_ELEMS(sequence);
@@ -656,6 +665,9 @@ void TEST_amino_consensus_and_maxFrequency() {
             case 3: BK.countgaps   = true; BK.gapbound = 70; break;
             case 4: BK.considbound = 20; break;
             case 5: BK.considbound = 51; break;
+            case 6: BK.considbound = 90; break;
+            case 7: BK.considbound = 100; break;
+            case 8: BK.considbound = 0; break;
             default: arb_assert(0); break;                                     // missing
         }
 
