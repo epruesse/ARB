@@ -25,21 +25,21 @@
 
 
 #define AWAR_MAX_FREQ_PREFIX      "tmp/CON_MAX_FREQ/"
-#define AWAR_CONSENSUS_PREFIX     "con/"
+#define AWAR_CONSENSUS_PREFIX     "consensus/"
 #define AWAR_CONSENSUS_PREFIX_TMP "tmp/" AWAR_CONSENSUS_PREFIX
 
 #define AWAR_MAX_FREQ_IGNORE_GAPS AWAR_MAX_FREQ_PREFIX "no_gaps"
 #define AWAR_MAX_FREQ_SAI_NAME    AWAR_MAX_FREQ_PREFIX "sai_name"
 
-#define AWAR_CONSENSUS_SPECIES      AWAR_CONSENSUS_PREFIX_TMP "which_species"
-#define AWAR_CONSENSUS_ALIGNMENT    AWAR_CONSENSUS_PREFIX_TMP "alignment"
-#define AWAR_CONSENSUS_COUNTGAPS    AWAR_CONSENSUS_PREFIX "countgaps"
-#define AWAR_CONSENSUS_GAPBOUND     AWAR_CONSENSUS_PREFIX "gapbound"
-#define AWAR_CONSENSUS_GROUP        AWAR_CONSENSUS_PREFIX "group"
-#define AWAR_CONSENSUS_FCONSIDBOUND AWAR_CONSENSUS_PREFIX "fconsidbound"
-#define AWAR_CONSENSUS_FUPPER       AWAR_CONSENSUS_PREFIX "fupper"
-#define AWAR_CONSENSUS_LOWER        AWAR_CONSENSUS_PREFIX "lower"
-#define AWAR_CONSENSUS_NAME         AWAR_CONSENSUS_PREFIX_TMP "name"
+#define AWAR_CONSENSUS_MARKED_ONLY AWAR_CONSENSUS_PREFIX_TMP "marked_only"
+#define AWAR_CONSENSUS_ALIGNMENT   AWAR_CONSENSUS_PREFIX_TMP "alignment"
+#define AWAR_CONSENSUS_COUNTGAPS   AWAR_CONSENSUS_PREFIX "countgaps"
+#define AWAR_CONSENSUS_GAPBOUND    AWAR_CONSENSUS_PREFIX "gapbound"
+#define AWAR_CONSENSUS_GROUP       AWAR_CONSENSUS_PREFIX "group"
+#define AWAR_CONSENSUS_CONSIDBOUND AWAR_CONSENSUS_PREFIX "considbound"
+#define AWAR_CONSENSUS_UPPER       AWAR_CONSENSUS_PREFIX "upper"
+#define AWAR_CONSENSUS_LOWER       AWAR_CONSENSUS_PREFIX "lower"
+#define AWAR_CONSENSUS_NAME        AWAR_CONSENSUS_PREFIX_TMP "name"
 
 #define CONSENSUS_AWAR_SOURCE CAS_NTREE
 #include <consensus.h>
@@ -202,7 +202,7 @@ static void CON_calculate_cb(AW_window *aw) {
     AW_root *awr        = aw->get_root();
     char    *aliname    = awr->awar(AWAR_CONSENSUS_ALIGNMENT)->read_string();
     char    *sainame    = awr->awar(AWAR_CONSENSUS_NAME)->read_string();
-    bool     onlymarked = strcmp(awr->awar(AWAR_CONSENSUS_SPECIES)->read_char_pntr(), "marked") == 0;
+    bool     onlymarked = awr->awar(AWAR_CONSENSUS_MARKED_ONLY)->read_int();
 
     ConsensusBuildParams BK(awr);
 
@@ -228,32 +228,32 @@ void AP_create_consensus_var(AW_root *aw_root, AW_default aw_def) {
         aw_root->awar_string(AWAR_CONSENSUS_ALIGNMENT, defali, aw_def);
         free(defali);
     }
-    aw_root->awar_string(AWAR_CONSENSUS_SPECIES,      "marked",      aw_def);
-    aw_root->awar_string(AWAR_CONSENSUS_GROUP,        "off",         aw_def); // @@@ make int!
-    aw_root->awar_string(AWAR_CONSENSUS_COUNTGAPS,    "on",          aw_def); // @@@ make int!
-    aw_root->awar_float (AWAR_CONSENSUS_FUPPER,       95,            aw_def)->set_minmax(0, 100); // @@@ make int!
-    aw_root->awar_int   (AWAR_CONSENSUS_LOWER,        70,            aw_def)->set_minmax(0, 100);
-    aw_root->awar_int   (AWAR_CONSENSUS_GAPBOUND,     60,            aw_def)->set_minmax(0, 100);
-    aw_root->awar_float (AWAR_CONSENSUS_FCONSIDBOUND, 30,            aw_def)->set_minmax(0, 100); // @@@ make int!
-    aw_root->awar_string(AWAR_CONSENSUS_NAME,         "CONSENSUS",   aw_def);
+    aw_root->awar_int(AWAR_CONSENSUS_MARKED_ONLY, 1,  aw_def);
+    aw_root->awar_int(AWAR_CONSENSUS_GROUP,       0,  aw_def);
+    aw_root->awar_int(AWAR_CONSENSUS_COUNTGAPS,   1,  aw_def);
+    aw_root->awar_int(AWAR_CONSENSUS_UPPER,       95, aw_def)->set_minmax(0, 100);
+    aw_root->awar_int(AWAR_CONSENSUS_LOWER,       70, aw_def)->set_minmax(0, 100);
+    aw_root->awar_int(AWAR_CONSENSUS_GAPBOUND,    60, aw_def)->set_minmax(0, 100);
+    aw_root->awar_int(AWAR_CONSENSUS_CONSIDBOUND, 30, aw_def)->set_minmax(0, 100);
+    aw_root->awar_int(AWAR_MAX_FREQ_IGNORE_GAPS,  1,  aw_def);
 
-    aw_root->awar_string(AWAR_MAX_FREQ_SAI_NAME,    "MAX_FREQUENCY", aw_def);
-    aw_root->awar_int   (AWAR_MAX_FREQ_IGNORE_GAPS, 1,               aw_def);
+    aw_root->awar_string(AWAR_CONSENSUS_NAME,    "CONSENSUS",     aw_def);
+    aw_root->awar_string(AWAR_MAX_FREQ_SAI_NAME, "MAX_FREQUENCY", aw_def);
 }
 
 static AWT_config_mapping_def consensus_config_mapping[] = {
-    { AWAR_CONSENSUS_COUNTGAPS,    CONSENSUS_CONFIG_COUNTGAPS },
-    { AWAR_CONSENSUS_GAPBOUND,     CONSENSUS_CONFIG_GAPBOUND },
-    { AWAR_CONSENSUS_GROUP,        CONSENSUS_CONFIG_GROUP },
-    { AWAR_CONSENSUS_FCONSIDBOUND, CONSENSUS_CONFIG_CONSIDBOUND },
-    { AWAR_CONSENSUS_FUPPER,       CONSENSUS_CONFIG_UPPER },
-    { AWAR_CONSENSUS_LOWER,        CONSENSUS_CONFIG_LOWER },
+    { AWAR_CONSENSUS_COUNTGAPS,   CONSENSUS_CONFIG_COUNTGAPS },
+    { AWAR_CONSENSUS_GAPBOUND,    CONSENSUS_CONFIG_GAPBOUND },
+    { AWAR_CONSENSUS_GROUP,       CONSENSUS_CONFIG_GROUP },
+    { AWAR_CONSENSUS_CONSIDBOUND, CONSENSUS_CONFIG_CONSIDBOUND },
+    { AWAR_CONSENSUS_UPPER,       CONSENSUS_CONFIG_UPPER },
+    { AWAR_CONSENSUS_LOWER,       CONSENSUS_CONFIG_LOWER },
 
     // make sure the keywords of the following entries
     // DIFFER from those defined at ../TEMPLATES/consensus_config.h@CommonEntries
 
-    { AWAR_CONSENSUS_SPECIES, "species" },
-    { AWAR_CONSENSUS_NAME,    "name" },
+    { AWAR_CONSENSUS_MARKED_ONLY, "marked_only" },
+    { AWAR_CONSENSUS_NAME,        "name" },
 
     { 0, 0 }
 };
@@ -286,9 +286,9 @@ AW_window *AP_create_con_expert_window(AW_root *aw_root) {
     awt_create_ALI_selection_list(GLOBAL.gb_main, (AW_window *)aws, AWAR_CONSENSUS_ALIGNMENT, "*=");
 
     aws->at("which_species");
-    aws->create_toggle_field(AWAR_CONSENSUS_SPECIES, NULL, "");
-    aws->insert_toggle("all", "1", "all");
-    aws->insert_default_toggle("marked",   "1", "marked");
+    aws->create_toggle_field(AWAR_CONSENSUS_MARKED_ONLY);
+    aws->insert_toggle        ("all",    "a", 0);
+    aws->insert_default_toggle("marked", "m", 1);
     aws->update_toggle_field();
 
     aws->at("save_box");
@@ -300,8 +300,8 @@ AW_window *AP_create_con_expert_window(AW_root *aw_root) {
     // right part of window (same as in EDIT4):
     aws->at("countgaps");
     aws->create_toggle_field(AWAR_CONSENSUS_COUNTGAPS, NULL, "");
-    aws->insert_toggle("on", "1", "on");
-    aws->insert_default_toggle("off", "1", "off");
+    aws->insert_toggle        ("on",  "1", 1);
+    aws->insert_default_toggle("off", "0", 0);
     aws->update_toggle_field();
 
     aws->at("gapbound");
@@ -309,19 +309,19 @@ AW_window *AP_create_con_expert_window(AW_root *aw_root) {
 
     aws->at("group");
     aws->create_toggle_field(AWAR_CONSENSUS_GROUP, NULL, "");
-    aws->insert_toggle("on", "1", "on");
-    aws->insert_default_toggle("off", "1", "off");
+    aws->insert_toggle        ("on",  "1", 1);
+    aws->insert_default_toggle("off", "0", 0);
     aws->update_toggle_field();
 
     aws->at("considbound");
-    aws->create_input_field_with_scaler(AWAR_CONSENSUS_FCONSIDBOUND, SCALEDCOLUMNS, SCALERSIZE, AW_SCALER_LINEAR);
+    aws->create_input_field_with_scaler(AWAR_CONSENSUS_CONSIDBOUND, SCALEDCOLUMNS, SCALERSIZE, AW_SCALER_LINEAR);
 
     aws->at("showgroups");
     aws->callback(AWT_create_IUPAC_info_window);
     aws->create_autosize_button("SHOW_IUPAC", "Show IUPAC groups", "s");
 
     aws->at("upper");
-    aws->create_input_field_with_scaler(AWAR_CONSENSUS_FUPPER, SCALEDCOLUMNS, SCALERSIZE, AW_SCALER_LINEAR);
+    aws->create_input_field_with_scaler(AWAR_CONSENSUS_UPPER, SCALEDCOLUMNS, SCALERSIZE, AW_SCALER_LINEAR);
 
     aws->at("lower");
     aws->create_input_field_with_scaler(AWAR_CONSENSUS_LOWER, SCALEDCOLUMNS, SCALERSIZE, AW_SCALER_LINEAR);

@@ -47,11 +47,11 @@ struct ConsensusBuildParams {
 
 #if (CONSENSUS_AWAR_SOURCE == CAS_NTREE)
     ConsensusBuildParams(AW_root *awr)
-        : countgaps  (strcmp(awr->awar(AWAR_CONSENSUS_COUNTGAPS)->read_char_pntr(), "on") == 0),
+        : countgaps  (awr->awar(AWAR_CONSENSUS_COUNTGAPS)->read_int()),
           gapbound   (awr->awar(AWAR_CONSENSUS_GAPBOUND)->read_int()),
-          group      (strcmp(awr->awar(AWAR_CONSENSUS_GROUP)->read_char_pntr(), "on")     == 0),
-          considbound(awr->awar(AWAR_CONSENSUS_FCONSIDBOUND)->read_float()),
-          upper      (awr->awar(AWAR_CONSENSUS_FUPPER)->read_float()),
+          group      (awr->awar(AWAR_CONSENSUS_GROUP)->read_int()),
+          considbound(awr->awar(AWAR_CONSENSUS_CONSIDBOUND)->read_int()),
+          upper      (awr->awar(AWAR_CONSENSUS_UPPER)->read_int()),
           lower      (awr->awar(AWAR_CONSENSUS_LOWER)->read_int())
     {
         make_valid();
