@@ -584,20 +584,20 @@ void BaseFrequencies::expand_tables() {
 
 void BaseFrequencies::setup(const char *gap_chars, GB_alignment_type ali_type_) {
     const char *groups    = 0;
-    const char *ambigious = 0;
+    const char *ambiguous = 0;
 
     ali_type = ali_type_;
 
     switch (ali_type) {
         case GB_AT_RNA:
             groups           = "A,C,G,TU,"; // Note: terminal ',' defines a group for unknown characters
-            ambigious        = "MRWSYKVHDBN";
+            ambiguous        = "MRWSYKVHDBN";
             unitsPerSequence = 12;
             break;
 
         case GB_AT_DNA:
             groups           = "A,C,G,UT,";
-            ambigious        = "MRWSYKVHDBN";
+            ambiguous        = "MRWSYKVHDBN";
             unitsPerSequence = 12;
             break;
 
@@ -614,11 +614,11 @@ void BaseFrequencies::setup(const char *gap_chars, GB_alignment_type ali_type_) 
     ct_assert(groups);
 #if defined(ASSERTION_USED)
     if (ali_type == GB_AT_AA) {
-        ct_assert(!ambigious);
-        // ct_assert(strlen(ambigious) <= MAX_AMBIGUITY_CODES); // @@@ later
+        ct_assert(!ambiguous);
+        // ct_assert(strlen(ambiguous) <= MAX_AMBIGUITY_CODES); // @@@ later
     }
     else {
-        ct_assert(strlen(ambigious) == MAX_AMBIGUITY_CODES);
+        ct_assert(strlen(ambiguous) == MAX_AMBIGUITY_CODES);
     }
 #endif
 
@@ -664,12 +664,12 @@ void BaseFrequencies::setup(const char *gap_chars, GB_alignment_type ali_type_) 
         set_char_to_index(c, idx++);
     }
 
-    if (ambigious) {
+    if (ambiguous) {
         ct_assert(ali_type == GB_AT_DNA || ali_type == GB_AT_RNA); // @@@ amino ambiguities not impl
 
         const uint8_t indices2increment[MAX_TARGET_INDICES+1] = { 0, 0, 6, 4, 3 };
-        for (int i = 0; ambigious[i]; ++i) {
-            const char *contained = iupac::decode(ambigious[i], ali_type, false);
+        for (int i = 0; ambiguous[i]; ++i) {
+            const char *contained = iupac::decode(ambiguous[i], ali_type, false);
 
             Ambiguity& amb = ambiguity_table[i];
 
@@ -679,12 +679,12 @@ void BaseFrequencies::setup(const char *gap_chars, GB_alignment_type ali_type_) 
 
             for (int j = 0; j<amb.indices; ++j) {
                 int cidx     = char_to_index_tab[safeCharIndex(contained[j])];
-                ct_assert(cidx<MAX_INDEX_TABLES); // has to be non-ambigious
+                ct_assert(cidx<MAX_INDEX_TABLES); // has to be non-ambiguous
                 amb.index[j] = cidx;
             }
 
-            char_to_index_tab[toupper(ambigious[i])] =
-            char_to_index_tab[tolower(ambigious[i])] = i+MAX_INDEX_TABLES;
+            char_to_index_tab[toupper(ambiguous[i])] =
+            char_to_index_tab[tolower(ambiguous[i])] = i+MAX_INDEX_TABLES;
         }
     }
 
@@ -735,11 +735,11 @@ void BaseFrequencies::bases_and_gaps_at(int column, int *bases, int *gaps) const
 
     if (bases) {
         *bases = b/unitsPerSequence;
-        ct_assert((b%unitsPerSequence) == 0); // could happen if an ambigious code contains a gap
+        ct_assert((b%unitsPerSequence) == 0); // could happen if an ambiguous code contains a gap
     }
     if (gaps)  {
         *gaps  = g/unitsPerSequence;
-        ct_assert((g%unitsPerSequence) == 0); // could happen if an ambigious code contains a gap
+        ct_assert((g%unitsPerSequence) == 0); // could happen if an ambiguous code contains a gap
     }
 }
 

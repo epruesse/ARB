@@ -29,7 +29,7 @@
 struct ConsensusBuildParams {
     bool countgaps;   // count gaps? (otherwise they are completely ignored)
     int  gapbound;    // limit in % for gaps. If more gaps occur -> '-'
-    bool group;       // whether to group characters (NUC: using ambigious IUPAC codes; AMINO: using amino groups)
+    bool group;       // whether to group characters (NUC: using ambiguous IUPAC codes; AMINO: using amino groups)
     int  considbound; // limit in %. Bases occurring that often are used to create ambiguity codes (other bases are ignored). gaps are ignored when checking this limit.
     int  upper;       // limit in %. If explicit base (or ambiguity code) occurs that often -> use upper case character
     int  lower;       // limit in %. If explicit base (or ambiguity code) occurs that often -> use lower case character. Otherwise use '.'

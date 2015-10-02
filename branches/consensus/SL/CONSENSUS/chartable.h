@@ -39,8 +39,8 @@
 #define SHORT_TABLE_MAX_VALUE 0xff
 #define LONG_TABLE_ELEM_SIZE  4
 
-#define MAX_INDEX_TABLES    128     // max number of different non-ambigious indices (into BaseFrequencies::bases_table)
-#define MAX_TARGET_INDICES  4       // max number of non-ambigious indices affected by one ambigious code (4 for 'N' in RNA/DNA, 2 for amino-acids)
+#define MAX_INDEX_TABLES    128     // max number of different non-ambiguous indices (into BaseFrequencies::bases_table)
+#define MAX_TARGET_INDICES  4       // max number of non-ambiguous indices affected by one ambiguous code (4 for 'N' in RNA/DNA, 2 for amino-acids)
 #define MAX_AMBIGUITY_CODES (1+4+6) // for RNA/DNA (3 for amino-acids)
 
 // Note: short tables convert to long tables when adding 22 sequences (for nucleotides)
