@@ -1430,6 +1430,8 @@ static AWT_config_mapping_def consensus_config_mapping[] = {
 };
 
 AW_window *ED4_create_consensus_definition_window(AW_root *root) {
+    // keep in sync with ../NTREE/AP_consensus.cxx@AP_create_con_expert_window
+
     static AW_window_simple *aws = 0;
 
     if (!aws) {
@@ -1443,6 +1445,9 @@ AW_window *ED4_create_consensus_definition_window(AW_root *root) {
         const int SCALEDCOLUMNS = 3;
         const int SCALERSIZE    = 150;
 
+        // top part of window:
+        aws->button_length(9);
+
         aws->callback((AW_CB0)AW_POPDOWN);
         aws->at("close");
         aws->create_button("CLOSE", "CLOSE", "C");
@@ -1451,12 +1456,7 @@ AW_window *ED4_create_consensus_definition_window(AW_root *root) {
         aws->at("help");
         aws->create_button("HELP", "HELP", "H");
 
-        aws->button_length(10);
-
-        aws->at("showgroups");
-        aws->callback(AWT_create_IUPAC_info_window);
-        aws->create_autosize_button("SHOW_IUPAC", "Show IUPAC groups", "S");
-
+        // center part of window (same as in NTREE):
         aws->at("countgaps");
         aws->create_toggle_field(ED4_AWAR_CONSENSUS_COUNTGAPS);
         aws->insert_toggle("on", "1", 1);
@@ -1475,12 +1475,17 @@ AW_window *ED4_create_consensus_definition_window(AW_root *root) {
         aws->at("considbound");
         aws->create_input_field_with_scaler(ED4_AWAR_CONSENSUS_CONSIDBOUND, SCALEDCOLUMNS, SCALERSIZE, AW_SCALER_LINEAR);
 
+        aws->at("showgroups");
+        aws->callback(AWT_create_IUPAC_info_window);
+        aws->create_autosize_button("SHOW_IUPAC", "Show IUPAC groups", "S");
+
         aws->at("upper");
         aws->create_input_field_with_scaler(ED4_AWAR_CONSENSUS_UPPER, SCALEDCOLUMNS, SCALERSIZE, AW_SCALER_LINEAR);
 
         aws->at("lower");
         aws->create_input_field_with_scaler(ED4_AWAR_CONSENSUS_LOWER, SCALEDCOLUMNS, SCALERSIZE, AW_SCALER_LINEAR);
 
+        // bottom part of window:
         aws->at("show");
         aws->label("Display consensus?");
         aws->create_toggle(ED4_AWAR_CONSENSUS_SHOW);

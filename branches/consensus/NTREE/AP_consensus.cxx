@@ -229,12 +229,12 @@ void AP_create_consensus_var(AW_root *aw_root, AW_default aw_def) {
         free(defali);
     }
     aw_root->awar_string(AWAR_CONSENSUS_SPECIES,      "marked",      aw_def);
-    aw_root->awar_string(AWAR_CONSENSUS_GROUP,        "off",         aw_def);
-    aw_root->awar_string(AWAR_CONSENSUS_COUNTGAPS,    "on",          aw_def);
-    aw_root->awar_float (AWAR_CONSENSUS_FUPPER,       95,            aw_def);
-    aw_root->awar_int   (AWAR_CONSENSUS_LOWER,        70,            aw_def);
-    aw_root->awar_int   (AWAR_CONSENSUS_GAPBOUND,     60,            aw_def);
-    aw_root->awar_float (AWAR_CONSENSUS_FCONSIDBOUND, 30,            aw_def);
+    aw_root->awar_string(AWAR_CONSENSUS_GROUP,        "off",         aw_def); // @@@ make int!
+    aw_root->awar_string(AWAR_CONSENSUS_COUNTGAPS,    "on",          aw_def); // @@@ make int!
+    aw_root->awar_float (AWAR_CONSENSUS_FUPPER,       95,            aw_def)->set_minmax(0, 100); // @@@ make int!
+    aw_root->awar_int   (AWAR_CONSENSUS_LOWER,        70,            aw_def)->set_minmax(0, 100);
+    aw_root->awar_int   (AWAR_CONSENSUS_GAPBOUND,     60,            aw_def)->set_minmax(0, 100);
+    aw_root->awar_float (AWAR_CONSENSUS_FCONSIDBOUND, 30,            aw_def)->set_minmax(0, 100); // @@@ make int!
     aw_root->awar_string(AWAR_CONSENSUS_NAME,         "CONSENSUS",   aw_def);
 
     aw_root->awar_string(AWAR_MAX_FREQ_SAI_NAME,    "MAX_FREQUENCY", aw_def);
@@ -259,10 +259,19 @@ static AWT_config_mapping_def consensus_config_mapping[] = {
 };
 
 AW_window *AP_create_con_expert_window(AW_root *aw_root) {
+    // keep in sync with ../EDIT4/ED4_no_class.cxx@ED4_create_consensus_definition_window
+
     AW_window_simple *aws = new AW_window_simple;
-    aws->init(aw_root, "BUILD_CONSENSUS", "CONSENSUS OF SEQUENCES");
+    aws->init(aw_root, "CALCULATE_CONSENSUS", "CONSENSUS OF SEQUENCES");
     aws->load_xfig("consensus/expert.fig");
-    aws->button_length(6);
+
+    aws->auto_space(5, 5);
+
+    const int SCALEDCOLUMNS = 3;
+    const int SCALERSIZE    = 150;
+
+    // top part of window:
+    aws->button_length(9);
 
     aws->at("cancel");
     aws->callback((AW_CB0)AW_POPDOWN);
@@ -272,10 +281,9 @@ AW_window *AP_create_con_expert_window(AW_root *aw_root) {
     aws->callback(makeHelpCallback("consensus.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
-    aws->button_length(10);
-    aws->at("showgroups");
-    aws->callback(AWT_create_IUPAC_info_window);
-    aws->create_button("SHOW_IUPAC", "show\nIUPAC...", "s");
+    // left part of window:
+    aws->at("which_alignment");
+    awt_create_ALI_selection_list(GLOBAL.gb_main, (AW_window *)aws, AWAR_CONSENSUS_ALIGNMENT, "*=");
 
     aws->at("which_species");
     aws->create_toggle_field(AWAR_CONSENSUS_SPECIES, NULL, "");
@@ -283,14 +291,21 @@ AW_window *AP_create_con_expert_window(AW_root *aw_root) {
     aws->insert_default_toggle("marked",   "1", "marked");
     aws->update_toggle_field();
 
-    aws->at("which_alignment");
-    awt_create_ALI_selection_list(GLOBAL.gb_main, (AW_window *)aws, AWAR_CONSENSUS_ALIGNMENT, "*=");
+    aws->at("save_box");
+    awt_create_SAI_selection_list(GLOBAL.gb_main, aws, AWAR_CONSENSUS_NAME, false);
 
-    aws->button_length(15);
+    aws->at("name");
+    aws->create_input_field(AWAR_CONSENSUS_NAME, 10);
 
-    // activation of consensus calculation by button ...
-    aws->at("calculate"); aws->callback((AW_CB0)CON_calculate_cb);
-    aws->create_button("GO", "GO", "G");
+    // right part of window (same as in EDIT4):
+    aws->at("countgaps");
+    aws->create_toggle_field(AWAR_CONSENSUS_COUNTGAPS, NULL, "");
+    aws->insert_toggle("on", "1", "on");
+    aws->insert_default_toggle("off", "1", "off");
+    aws->update_toggle_field();
+
+    aws->at("gapbound");
+    aws->create_input_field_with_scaler(AWAR_CONSENSUS_GAPBOUND, SCALEDCOLUMNS, SCALERSIZE, AW_SCALER_LINEAR);
 
     aws->at("group");
     aws->create_toggle_field(AWAR_CONSENSUS_GROUP, NULL, "");
@@ -298,29 +313,23 @@ AW_window *AP_create_con_expert_window(AW_root *aw_root) {
     aws->insert_default_toggle("off", "1", "off");
     aws->update_toggle_field();
 
-    aws->at("countgaps");
-    aws->create_toggle_field(AWAR_CONSENSUS_COUNTGAPS, NULL, "");
-    aws->insert_toggle("on", "1", "on");
-    aws->insert_default_toggle("off", "1", "off");
-    aws->update_toggle_field();
+    aws->at("considbound");
+    aws->create_input_field_with_scaler(AWAR_CONSENSUS_FCONSIDBOUND, SCALEDCOLUMNS, SCALERSIZE, AW_SCALER_LINEAR);
+
+    aws->at("showgroups");
+    aws->callback(AWT_create_IUPAC_info_window);
+    aws->create_autosize_button("SHOW_IUPAC", "Show IUPAC groups", "s");
 
     aws->at("upper");
-    aws->create_input_field(AWAR_CONSENSUS_FUPPER, 4);
+    aws->create_input_field_with_scaler(AWAR_CONSENSUS_FUPPER, SCALEDCOLUMNS, SCALERSIZE, AW_SCALER_LINEAR);
 
     aws->at("lower");
-    aws->create_input_field(AWAR_CONSENSUS_LOWER, 4);
+    aws->create_input_field_with_scaler(AWAR_CONSENSUS_LOWER, SCALEDCOLUMNS, SCALERSIZE, AW_SCALER_LINEAR);
 
-    aws->at("considbound");
-    aws->create_input_field(AWAR_CONSENSUS_FCONSIDBOUND, 4);
-
-    aws->at("gapbound");
-    aws->create_input_field(AWAR_CONSENSUS_GAPBOUND, 4);
-
-    aws->at("name");
-    aws->create_input_field(AWAR_CONSENSUS_NAME, 10);
-
-    aws->at("save_box");
-    awt_create_SAI_selection_list(GLOBAL.gb_main, aws, AWAR_CONSENSUS_NAME, false);
+    // bottom part of window:
+    aws->at("calculate");
+    aws->callback((AW_CB0)CON_calculate_cb);
+    aws->create_button("GO", "GO", "G");
 
     aws->at("config");
     AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, CONSENSUS_CONFIG_ID, consensus_config_mapping);
