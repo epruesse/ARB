@@ -465,7 +465,7 @@ void BaseFrequencies::build_consensus_string_to(char *consensus_string, Explicit
                             int bchar = index_to_upperChar(j);
 
                             if (!isGap(bchar)) {
-                                if (PERCENT(base[j],bases) >= BK.considbound) {
+                                if (base[j]>0 && PERCENT(base[j],bases) >= BK.considbound) {
 #if defined(DEBUG_CONSENSUS)
                                     if (!kcount) DUMPINT(BK.considbound);
 #endif

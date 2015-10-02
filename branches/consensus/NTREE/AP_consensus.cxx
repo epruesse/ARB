@@ -549,8 +549,8 @@ void TEST_nucleotide_consensus_and_maxFrequency() {
         "==---aaaaAAACCCMMMMMAA-gkugkkkuggKKKuuKBsSSVVMMSsssb-wwWswa=---a--kkbBykaaaMVAAAAAMMMMMMHHuuuUU---aaaaaaaaaaaaaBBBBBBBBcKKKKKkkkkAAAaaaaaaBBKKKKKKKBBuuuwWWW", // countgaps=1, gapbound=70, considbound=26, lower=0, upper=75
         "==---aaaaAAACCMMMMMMMA-kkkgkkkugKKKKKuKBNSVVVVMSsssb-wwWswN=---N--nnbBBBnnNVVAAAMMMMMMMHHHHHuUU---nnnnNNNnNnNNNBBBBBBBNNKKKKKkkNNAAAaaaaNNBBBBKKKKKBBBNwwWWW", // countgaps=1, gapbound=70, considbound=20, lower=0, upper=75
         "==---aaaaAAACMMMMMMMMM-kkkkkkkkKKKKKKKKNNVVVVVVBBbbb-wwWbnN=---N--nnbBBBnnNVVMMMMMMMMMHHHHHHHHH---nnnnNNNnNnNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNBBBBBBBBBNNNNNNNNN", // countgaps=1, gapbound=70, considbound= 1, lower=0, upper=75
-        "==---nnnnNNNNNNNNNNNNN-nnnnnnnnNNNNNNNNNNNNNNNNNNnnn-nnNnnN=---N--nnnNNNnnNNNNNNNNNNNNNNNNNNNNN---nnnnNNNnNnNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN", // countgaps=1, gapbound=70, considbound= 0, lower=0, upper=75
-        "==NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN=NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN", // countgaps=0,              considbound= 0, lower=0, upper=75
+        "==---aaaaAAACMMMMMMMMM-kkkkkkkkKKKKKKKKNNVVVVVVBBbbb-wwWbnN=---N--nnbBBBnnNVVMMMMMMMMMHHHHHHHHH---nnnnNNNnNnNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNBBBBBBBBBNNNNNNNNN", // countgaps=1, gapbound=70, considbound= 0, lower=0, upper=75
+        "==AAAAAAAAAACMMMMMMMMMKKKKKKKKKKKKKKKKKNNVVVVVVBBBBBWWWWBNN=YHNNNNNNBBBBNNNVVMMMMMMMMMHHHHHHHHHNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNBBBBBBBBBNNNNNNNNN", // countgaps=0,              considbound= 0, lower=0, upper=75
     };
     const size_t seqlen         = strlen(sequence[0]);
     const int    sequenceCount  = ARRAY_ELEMS(sequence);
