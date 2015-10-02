@@ -1435,8 +1435,13 @@ AW_window *ED4_create_consensus_definition_window(AW_root *root) {
     if (!aws) {
         aws = new AW_window_simple;
 
-        aws->init(root, "EDIT4_CONSENSUS", "EDIT4 Consensus Definition");
+        aws->init(root, "EDIT4_CONSENSUS_DEFm", "EDIT4 Consensus Definition");
         aws->load_xfig("edit4/consensus.fig");
+
+        aws->auto_space(5, 5);
+
+        const int SCALEDCOLUMNS = 3;
+        const int SCALERSIZE    = 150;
 
         aws->callback((AW_CB0)AW_POPDOWN);
         aws->at("close");
@@ -1450,7 +1455,7 @@ AW_window *ED4_create_consensus_definition_window(AW_root *root) {
 
         aws->at("showgroups");
         aws->callback(AWT_create_IUPAC_info_window);
-        aws->create_button("SHOW_IUPAC", "show\nIUPAC...", "s");
+        aws->create_autosize_button("SHOW_IUPAC", "Show IUPAC groups", "S");
 
         aws->at("countgaps");
         aws->create_toggle_field(ED4_AWAR_CONSENSUS_COUNTGAPS);
@@ -1459,7 +1464,7 @@ AW_window *ED4_create_consensus_definition_window(AW_root *root) {
         aws->update_toggle_field();
 
         aws->at("gapbound");
-        aws->create_input_field(ED4_AWAR_CONSENSUS_GAPBOUND, 4);
+        aws->create_input_field_with_scaler(ED4_AWAR_CONSENSUS_GAPBOUND, SCALEDCOLUMNS, SCALERSIZE, AW_SCALER_LINEAR);
 
         aws->at("group");
         aws->create_toggle_field(ED4_AWAR_CONSENSUS_GROUP);
@@ -1468,13 +1473,13 @@ AW_window *ED4_create_consensus_definition_window(AW_root *root) {
         aws->update_toggle_field();
 
         aws->at("considbound");
-        aws->create_input_field(ED4_AWAR_CONSENSUS_CONSIDBOUND, 4);
+        aws->create_input_field_with_scaler(ED4_AWAR_CONSENSUS_CONSIDBOUND, SCALEDCOLUMNS, SCALERSIZE, AW_SCALER_LINEAR);
 
         aws->at("upper");
-        aws->create_input_field(ED4_AWAR_CONSENSUS_UPPER, 4);
+        aws->create_input_field_with_scaler(ED4_AWAR_CONSENSUS_UPPER, SCALEDCOLUMNS, SCALERSIZE, AW_SCALER_LINEAR);
 
         aws->at("lower");
-        aws->create_input_field(ED4_AWAR_CONSENSUS_LOWER, 4);
+        aws->create_input_field_with_scaler(ED4_AWAR_CONSENSUS_LOWER, SCALEDCOLUMNS, SCALERSIZE, AW_SCALER_LINEAR);
 
         aws->at("show");
         aws->label("Display consensus?");
@@ -1491,11 +1496,11 @@ void ED4_create_consensus_awars(AW_root *aw_root) {
     GB_transaction ta(GLOBAL_gb_main);
 
     aw_root->awar_int(ED4_AWAR_CONSENSUS_COUNTGAPS,   1) ->add_callback(ED4_consensus_definition_changed);
-    aw_root->awar_int(ED4_AWAR_CONSENSUS_GAPBOUND,    60)->add_callback(ED4_consensus_definition_changed);
     aw_root->awar_int(ED4_AWAR_CONSENSUS_GROUP,       1) ->add_callback(ED4_consensus_definition_changed);
-    aw_root->awar_int(ED4_AWAR_CONSENSUS_CONSIDBOUND, 30)->add_callback(ED4_consensus_definition_changed);
-    aw_root->awar_int(ED4_AWAR_CONSENSUS_UPPER,       95)->add_callback(ED4_consensus_definition_changed);
-    aw_root->awar_int(ED4_AWAR_CONSENSUS_LOWER,       70)->add_callback(ED4_consensus_definition_changed);
+    aw_root->awar_int(ED4_AWAR_CONSENSUS_GAPBOUND,    60)->set_minmax(0, 100)->add_callback(ED4_consensus_definition_changed);
+    aw_root->awar_int(ED4_AWAR_CONSENSUS_CONSIDBOUND, 30)->set_minmax(0, 100)->add_callback(ED4_consensus_definition_changed);
+    aw_root->awar_int(ED4_AWAR_CONSENSUS_UPPER,       95)->set_minmax(0, 100)->add_callback(ED4_consensus_definition_changed);
+    aw_root->awar_int(ED4_AWAR_CONSENSUS_LOWER,       70)->set_minmax(0, 100)->add_callback(ED4_consensus_definition_changed);
 
     AW_awar *cons_show = aw_root->awar_int(ED4_AWAR_CONSENSUS_SHOW, 1);
 
