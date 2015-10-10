@@ -56,7 +56,7 @@ public:
 
 
 class RegExpr : virtual Noncopyable {
-    //! for regexpression format see http://dev.mikro.biologie.tu-muenchen.de/help_nightly/reg.html#Syntax_of_POSIX_extended_regular_expressions_as_used_in_ARB 
+    //! for regexpression format see http://help.arb-home.de/reg.html#Syntax_of_POSIX_extended_regular_expressions_as_used_in_ARB
 
     std::string expression;                         // the regular expression
     bool        ignore_case;
