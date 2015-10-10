@@ -4,7 +4,7 @@
 //   Purpose   : Visualize sequence associated information (SAI)   //
 //               in the Editor                                     //
 //                                                                 //
-//   Coded by Yadhu Kumar (yadhu@mikro.biologie.tu-muenchen.de)    //
+//   Coded by Yadhu Kumar                                          //
 //   Institute of Microbiology (Technical University Munich)       //
 //   http://www.arb-home.de/                                       //
 //                                                                 //
