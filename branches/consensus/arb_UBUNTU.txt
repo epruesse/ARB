@@ -50,10 +50,10 @@ You may use the provided install script, e.g.
 
      Add the following repository to your packet manager:
 
-         deb http://dev.mikro.biologie.tu-muenchen.de/debian hardy non-free
+         deb http://dev.arb-home.de/debian hardy non-free
 
          (replace 'hardy' with your ubuntu distribution; see
-          http://dev.mikro.biologie.tu-muenchen.de/debian/dists/
+          http://dev.arb-home.de/debian/dists/
           for available distributions)
 
      Install the following packets:
