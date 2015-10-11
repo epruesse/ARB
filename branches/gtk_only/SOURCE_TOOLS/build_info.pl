@@ -105,11 +105,11 @@ sub guessSvnBranchInsideJenkins() {
     if ($url eq '') { $url = undef; }
     else {
       my $suffix = undef;
-      if ($url =~ /^(http:\/\/svn\.mikro\.biologie\.tu-muenchen\.de\/(svn|readonly))\//o) {
+      if ($url =~ /^(http:\/\/vc\.arb-home\.de\/(svn|readonly))\//o) {
         $suffix = $';
         $root = $1;
       }
-      elsif ($url =~ /^(svn\+ssh:\/\/.*svn\.arb-home\.de\/svn\/ARB)\//o) {
+      elsif ($url =~ /^(svn\+ssh:\/\/.*vc\.arb-home\.de\/home\/vc\/repos\/ARB)\//o) {
         $suffix = $';
         $root = $1;
       }
@@ -140,6 +140,11 @@ sub getRevision() {
   if (not defined $revision) { die "Failed to detect revision number"; }
   if (defined $jrevision) {
     if ($jrevision ne $revision) {
+      if ($revision =~ /M/) {
+        print "------------------------------------------------------------ [svn diff]\n";
+        system('cd $ARBHOME;svn diff');
+        print "------------------------------------------------------------\n";
+      }
       die "Conflicting revision numbers (jrevision='$jrevision', revision='$revision')";
     }
   }
