@@ -142,6 +142,11 @@ sub getRevision() {
   if (not defined $revision) { die "Failed to detect revision number"; }
   if (defined $jrevision) {
     if ($jrevision ne $revision) {
+      if ($revision =~ /M/) {
+        print "------------------------------------------------------------ [svn diff]\n";
+        system('cd $ARBHOME;svn diff');
+        print "------------------------------------------------------------\n";
+      }
       die "Conflicting revision numbers (jrevision='$jrevision', revision='$revision')";
     }
   }
