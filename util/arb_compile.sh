@@ -11,7 +11,7 @@
 # 2. checkout arb, e.g. (the last argument is the name of the target directory) 
 # svn co svn+ssh://USERNAME@svn.arb-home.de/svn/ARB/trunk myARB
 # # or
-# svn co http://svn.mikro.biologie.tu-muenchen.de/readonly/trunk myARB
+# svn co http://vc.arb-home.de/readonly/trunk myARB
 #
 # 3. link the included compile script, e.g.
 # ln -s myARB/util/arb_compile.sh compile_myARB.sh
