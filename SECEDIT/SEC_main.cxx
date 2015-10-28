@@ -167,24 +167,17 @@ void SEC_root::position_cursor(bool toCenter, bool evenIfVisible) {
     }
 }
 
-static void SEC_toggle_cb(AW_window *, AW_CL cl_secroot, AW_CL) {
-    SEC_root               *root = (SEC_root*)cl_secroot;
-    const SEC_db_interface *db   = root->get_db();
-
+static void SEC_toggle_cb(AW_window*, const SEC_db_interface *db) {
     GB_ERROR error = db->structure()->next();
     if (error) aw_message(error);
     db->canvas()->refresh();
 }
 
-static void SEC_center_cb(AW_window *, AW_CL cl_secroot, AW_CL) {
-    SEC_root *root = (SEC_root*)cl_secroot;
+static void SEC_center_cb(AW_window *, SEC_root *root) {
     root->position_cursor(true, true);
 }
 
-static void SEC_fit_window_cb(AW_window * /* aw */, AW_CL cl_secroot, AW_CL) {
-    SEC_root               *root = (SEC_root*)cl_secroot;
-    const SEC_db_interface *db   = root->get_db();
-
+static void SEC_fit_window_cb(AW_window*, const SEC_db_interface *db) {
     db->graphic()->request_update(SEC_UPDATE_ZOOM_RESET);
     db->canvas()->refresh();
 }
@@ -219,10 +212,7 @@ static void sec_mode_event(AW_window *aws, SEC_root *sec_root, AWT_COMMAND_MODE 
     scr->refresh();
 }
 
-static void SEC_undo_cb(AW_window *, AW_CL cl_db, AW_CL cl_undo_type) {
-    SEC_db_interface *db        = (SEC_db_interface*)cl_db;
-    GB_UNDO_TYPE      undo_type = (GB_UNDO_TYPE)cl_undo_type;
-
+static void SEC_undo_cb(AW_window *, const SEC_db_interface *db, GB_UNDO_TYPE undo_type) {
     GBDATA   *gb_main = db->gbmain();
     GB_ERROR  error   = GB_undo(gb_main, undo_type);
     if (error) {
@@ -242,7 +232,7 @@ static void SEC_undo_cb(AW_window *, AW_CL cl_db, AW_CL cl_undo_type) {
 #define ASS_EOS   "[end of structure]"
 #define ASS_EOF   "[end of " ASS "]"
 
-static void export_structure_to_file(AW_window *, SEC_db_interface *db) {
+static void export_structure_to_file(AW_window *, const SEC_db_interface *db) {
     GB_ERROR  error    = 0;
     SEC_root *sec_root = db->secroot();
 
@@ -331,7 +321,7 @@ static GB_ERROR expectToken(LineReader& file, const char *token, string& content
     return error;
 }
 
-static void import_structure_from_file(AW_window *, SEC_db_interface *db) {
+static void import_structure_from_file(AW_window *, const SEC_db_interface *db) {
     GB_ERROR  error = 0;
     SEC_root *root  = db->secroot();
 
@@ -412,7 +402,7 @@ static void import_structure_from_file(AW_window *, SEC_db_interface *db) {
 #undef ASS_EOS
 #undef ASS_EOF
 
-static AW_window *SEC_importExport(AW_root *root, int export_to_file, SEC_db_interface *db) {
+static AW_window *SEC_importExport(AW_root *root, bool export_to_file, const SEC_db_interface *db) {
     AW_window_simple *aws = new AW_window_simple;
 
     if (export_to_file) aws->init(root, "export_secondary_structure", "Export secondary structure to ...");
@@ -443,11 +433,7 @@ static AW_window *SEC_importExport(AW_root *root, int export_to_file, SEC_db_int
     return aws;
 }
 
-static AW_window *SEC_import(AW_root *root, AW_CL cl_db) { return SEC_importExport(root, 0, (SEC_db_interface*)cl_db); }
-static AW_window *SEC_export(AW_root *root, AW_CL cl_db) { return SEC_importExport(root, 1, (SEC_db_interface*)cl_db); }
-
-static void SEC_rename_structure(AW_window *, AW_CL cl_db, AW_CL) {
-    SEC_db_interface      *db        = (SEC_db_interface*)cl_db;
+static void SEC_rename_structure(AW_window*, const SEC_db_interface *db) {
     SEC_structure_toggler *structure = db->structure();
 
     char *new_name = aw_input("Rename structure", "New name", structure->name());
@@ -458,8 +444,7 @@ static void SEC_rename_structure(AW_window *, AW_CL cl_db, AW_CL) {
     }
 }
 
-static void SEC_new_structure(AW_window *, AW_CL cl_db, AW_CL) {
-    SEC_db_interface      *db        = (SEC_db_interface*)cl_db;
+static void SEC_new_structure(AW_window*, const SEC_db_interface *db) {
     SEC_structure_toggler *structure = db->structure();
 
     if (!structure) {
@@ -493,12 +478,11 @@ static void SEC_new_structure(AW_window *, AW_CL cl_db, AW_CL) {
     if (done) {
         db->graphic()->request_update(SEC_UPDATE_ZOOM_RESET);
         db->canvas()->refresh();
-        SEC_rename_structure(0, cl_db, 0);
+        SEC_rename_structure(0, db);
     }
 }
 
-static void SEC_delete_structure(AW_window *, AW_CL cl_db, AW_CL) {
-    SEC_db_interface      *db        = (SEC_db_interface*)cl_db;
+static void SEC_delete_structure(AW_window*, const SEC_db_interface *db) {
     SEC_structure_toggler *structure = db->structure();
 
     if (structure->getCount()>1) {
@@ -753,18 +737,18 @@ AW_window *start_SECEDIT_plugin(ED4_plugin_host& host) {
 
     awm->create_menu("File", "F", AWM_ALL);
 
-    awm->insert_menu_topic("secedit_new", "New structure", "N", 0, AWM_ALL, SEC_new_structure, (AW_CL)db, 0);
-    awm->insert_menu_topic("secedit_rename", "Rename structure", "R", 0, AWM_ALL, SEC_rename_structure, (AW_CL)db, 0);
-    awm->insert_menu_topic("secedit_delete", "Delete structure", "D", 0, AWM_ALL, SEC_delete_structure, (AW_CL)db, 0);
+    awm->insert_menu_topic("secedit_new",    "New structure",    "N", 0, AWM_ALL, makeWindowCallback(SEC_new_structure,    db));
+    awm->insert_menu_topic("secedit_rename", "Rename structure", "R", 0, AWM_ALL, makeWindowCallback(SEC_rename_structure, db));
+    awm->insert_menu_topic("secedit_delete", "Delete structure", "D", 0, AWM_ALL, makeWindowCallback(SEC_delete_structure, db));
     awm->sep______________();
-    awm->insert_menu_topic("secedit_import", "Load structure", "L", "secedit_imexport.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_import, (AW_CL)db);
-    awm->insert_menu_topic("secedit_export", "Save structure", "S", "secedit_imexport.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_export, (AW_CL)db);
+    awm->insert_menu_topic("secedit_import", "Load structure", "L", "secedit_imexport.hlp", AWM_ALL, makeCreateWindowCallback(SEC_importExport, false, db));
+    awm->insert_menu_topic("secedit_export", "Save structure", "S", "secedit_imexport.hlp", AWM_ALL, makeCreateWindowCallback(SEC_importExport, true, db));
     awm->sep______________();
     awm->insert_menu_topic("secStruct2xfig", "Export structure to XFIG", "X", "tree2file.hlp", AWM_ALL, makeWindowCallback(AWT_popup_sec_export_window, scr));
     awm->insert_menu_topic("print_secedit",  "Print Structure",          "P", "tree2prt.hlp",  AWM_ALL, makeWindowCallback(AWT_popup_print_window,      scr));
     awm->sep______________();
 
-    awm->insert_menu_topic("close", "Close", "C", "quit.hlp", AWM_ALL, (AW_CB)AW_POPDOWN, 0, 0);
+    awm->insert_menu_topic("close", "Close", "C", "quit.hlp", AWM_ALL, AW_POPDOWN);
 
     awm->create_menu("Properties", "P", AWM_ALL);
     awm->insert_menu_topic("sec_display", "Display options", "D", "sec_display.hlp", AWM_ALL, SEC_create_display_window);
@@ -800,23 +784,23 @@ AW_window *start_SECEDIT_plugin(ED4_plugin_host& host) {
     awm->help_text("arb_secedit.hlp");
     awm->create_button("HELP", "#help.xpm");
 
-    awm->callback(SEC_undo_cb, (AW_CL)db, (AW_CL)GB_UNDO_UNDO);
+    awm->callback(makeWindowCallback(SEC_undo_cb, db, GB_UNDO_UNDO));
     awm->help_text("undo.hlp");
     awm->create_button("Undo", "#undo.xpm");
 
-    awm->callback(SEC_undo_cb, (AW_CL)db, (AW_CL)GB_UNDO_REDO);
+    awm->callback(makeWindowCallback(SEC_undo_cb, db, GB_UNDO_REDO));
     awm->help_text("undo.hlp");
     awm->create_button("Redo", "#redo.xpm");
 
-    awm->callback(SEC_toggle_cb, (AW_CL)root, 0);
+    awm->callback(makeWindowCallback(SEC_toggle_cb, db));
     awm->help_text("sec_main.hlp");
     awm->create_button("Toggle", "Toggle");
 
-    awm->callback(SEC_center_cb, (AW_CL)root, 0);
+    awm->callback(makeWindowCallback(SEC_center_cb, root));
     awm->help_text("sec_main.hlp");
     awm->create_button("Center", "Center");
 
-    awm->callback((AW_CB)SEC_fit_window_cb, (AW_CL)root, 0);
+    awm->callback(makeWindowCallback(SEC_fit_window_cb, db));
     awm->help_text("sec_main.hlp");
     awm->create_button("fitWindow", "Fit");
 
