@@ -27,12 +27,9 @@
 
 static const char * const SAI_COUNTED_CHARS = "COUNTED_CHARS";
 
-void NT_count_different_chars(AW_window *, AW_CL cl_gb_main, AW_CL) {
+void NT_count_different_chars(AW_window*, GBDATA *gb_main) {
     // @@@ extract algorithm and call extracted from testcode
-    ARB_ERROR  error;
-    GBDATA    *gb_main = (GBDATA*)cl_gb_main;
-
-    error = GB_begin_transaction(gb_main);                      // open transaction
+    ARB_ERROR error = GB_begin_transaction(gb_main); // open transaction
 
     char *alignment_name = GBT_get_default_alignment(gb_main);  // info about sequences
     int   alignment_len  = GBT_get_alignment_len(gb_main, alignment_name);
@@ -116,7 +113,7 @@ void NT_count_different_chars(AW_window *, AW_CL cl_gb_main, AW_CL) {
     GB_end_transaction_show_error(gb_main, error, aw_message);
 }
 
-void NT_create_sai_from_pfold(AW_window *aww, AW_CL ntw, AW_CL) {
+void NT_create_sai_from_pfold(AW_window *aww, AWT_canvas *ntw) {
     /*! \brief Creates an SAI from protein secondary structure of a selected species.
      *
      *  \param[in] aww AW_window
@@ -230,7 +227,7 @@ void NT_create_sai_from_pfold(AW_window *aww, AW_CL ntw, AW_CL) {
         AW_window *sai_info = NT_create_extendeds_window(aww->get_root());
         // TODO: why doesn't info box show anything on first startup? proper refresh needed?
         sai_info->activate();
-        ((AWT_canvas *)ntw)->refresh(); // refresh doesn't work, I guess...
+        ntw->refresh(); // refresh doesn't work, I guess...
     }
 
     free(species_name);
@@ -302,7 +299,7 @@ void TEST_count_chars() {
         TEST_EXPECT_RESULT__NOERROREXPORTED(gb_main = GB_open(prot ? "TEST_prot.arb" : "TEST_nuc.arb", "rw"));
 
         GBT_mark_all(gb_main, 1);
-        NT_count_different_chars(NULL, (AW_CL)gb_main, 0);
+        NT_count_different_chars(NULL, gb_main);
 
         uint32_t expected = prot ? 0x9cad14cc : 0xefb05e4e;
         TEST_EXPECT_EQUAL(counted_chars_checksum(gb_main), expected);
@@ -348,7 +345,7 @@ void TEST_SLOW_count_chars() {
 
         TEST_EXPECT_NO_ERROR(error.deliver());
 
-        NT_count_different_chars(NULL, (AW_CL)gb_main, 0);
+        NT_count_different_chars(NULL, gb_main);
 
         // TEST_EXPECT_EQUAL(counted_chars_checksum(gb_main), 0x1d34a14f);
         // TEST_EXPECT_EQUAL(counted_chars_checksum(gb_main), 0x609d788b);

@@ -33,7 +33,7 @@
 
 #define AWT_TREE(ntw)  DOWNCAST(AWT_graphic_tree *, (ntw)->tree_disp)
 
-void NT_delete_mark_all_cb(void *, AWT_canvas *ntw) {
+void NT_delete_mark_all_cb(AW_window*, AWT_canvas *ntw) {
     if (aw_ask_sure("delete_marked_species",
                     "Are you sure to delete species ??\n"
                     "This will destroy primary data !!!"))
@@ -148,15 +148,13 @@ AW_window *NT_create_select_alignment_window(AW_root *awr)
     return aws;
 }
 
-void NT_system_cb(AW_window *aww, AW_CL cl_command, AW_CL cl_auto_help_file) {
-    AW_system(aww, (const char *)cl_command, (const char *)cl_auto_help_file);
+void NT_system_cb(AW_window *aww, const char *command) {
+    AW_system(aww, command, NULL);
 }
-
-void NT_system_in_xterm_cb(AW_window *aww, AW_CL cl_command, AW_CL cl_auto_help_file) {
-    char *command = (char *)cl_command;
-    const char *autohelpfile = (const char *)cl_auto_help_file;
-    if (autohelpfile) AW_help_popup(aww, autohelpfile);
-
+void NT_xterm(AW_window*) {
+    GB_xterm();
+}
+void NT_system_in_xterm_cb(AW_window*, const char *command) {
     GB_ERROR error = GB_xcmd(command, true, true);
     if (error) aw_message(error);
 }

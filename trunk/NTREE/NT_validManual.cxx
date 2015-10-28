@@ -89,8 +89,7 @@ static void fillSelNamList(selectValidNameStruct* svnp) {
     }
 }
 
-static void updateValNameList(AW_root *awr, AW_CL cl_svnp) {
-    selectValidNameStruct *svnp = reinterpret_cast<selectValidNameStruct*>(cl_svnp);
+static void updateValNameList(AW_root *awr, selectValidNameStruct *svnp) {
     const char* selectedName = awr->awar(AWAR_INPUT_INITIALS)->read_string();
 
 #ifdef DUMP
@@ -119,10 +118,8 @@ static selectValidNameStruct* createValNameList(GBDATA *gb_main, AW_window *aws,
     return svnp;
 }
 
-// this function transfer a the selected valid name upon mouse click on select button to selected species
-static void selectValidNameFromList(AW_window* selManWindowRoot, AW_CL, AW_CL)
-
-{
+static void selectValidNameFromList(AW_window* selManWindowRoot) {
+    // transfers the selected valid name to selected species
     char *selectedValName     = selManWindowRoot->get_root()->awar(AWAR_SELECTED_VALNAME)->read_string();
     char *selectedSpeciesName = selManWindowRoot->get_root()->awar(AWAR_SPECIES_NAME)->read_string();
 
@@ -173,13 +170,13 @@ AW_window *NT_create_searchManuallyNames_window(AW_root *aw_root) {
     selectValidNameStruct *vns = createValNameList(GLOBAL.gb_main, aws, AWAR_SELECTED_VALNAME);
 
     aws->at("select");
-    aws->callback(selectValidNameFromList, 0, 0); // (... 0,0)
+    aws->callback(selectValidNameFromList);
     aws->create_button("SELECT", "SELECT");
 
     aws->at("enterInitial");
     aws->create_input_field(AWAR_INPUT_INITIALS,  30);
 
-    aw_root->awar(AWAR_INPUT_INITIALS)->add_callback(updateValNameList, (AW_CL)vns);
+    aw_root->awar(AWAR_INPUT_INITIALS)->add_callback(makeRootCallback(updateValNameList, vns));
 
 
     return aws;
