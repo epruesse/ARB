@@ -14,6 +14,9 @@
 #ifndef GDE_DEF_H
 #include "GDE_def.h"
 #endif
+#ifndef CB_H
+#include <cb.h>
+#endif
 
 struct GargChoice {
     char *label;                // name for display in dialog box
@@ -63,10 +66,12 @@ struct GmenuItem {
     char          seqtype;        // A -> amino, N -> nucleotide, '-' -> no sequence, otherwise both
     bool          aligned;
     char         *help;           // associated helpfile ("agde_*.hlp")
+
     // ARB BEGIN
-    struct Gmenu *parent_menu;
-    AW_window    *aws;            // opened window
-    AW_active     active_mask;    // expert/novice
+    struct Gmenu   *parent_menu;
+    AW_window      *aws;               // opened window
+    AW_active       active_mask;       // expert/novice
+    WindowCallback *popup;             // callback to create/reopen window
 };
 
 struct Gmenu {
