@@ -26,7 +26,7 @@ struct GBS_strstruct;
 
 typedef int ED4_COORDINATE;
 
-enum ED4_EDITMODI {
+enum ED4_EDITMODE {
     AD_ALIGN,   // add & remove of . possible (default)
     AD_NOWRITE, // no edits allowed
     AD_NOWRITE_IF_COMPRESSED,
@@ -55,7 +55,7 @@ extern size_t         not_found_counter;            // nr of species which haven
 extern GBS_strstruct *not_found_message;            // error message containing (some) missing/unloadable species
 
 extern long         max_seq_terminal_length;        // global maximum of sequence terminal length
-extern ED4_EDITMODI awar_edit_mode;
+extern ED4_EDITMODE awar_edit_mode;
 extern long         awar_edit_rightward;            // 0 = leftward, 1 = rightward
 extern bool         move_cursor;                    // only needed for editing in consensus
 extern bool         DRAW;
@@ -295,7 +295,7 @@ struct ED4_work_info
 
     bool rightward; // contains direction of editing (0 = leftward, 1 = rightward)
 
-    ED4_EDITMODI mode;
+    ED4_EDITMODE mode;
 
     bool    is_sequence;        // ==1 -> special handling for sequences
     bool    cannot_handle;      // if TRUE then cannot edit

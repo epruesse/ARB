@@ -2256,8 +2256,8 @@ void ED4_change_cursor(AW_window *aww);
 
 void ED4_set_iupac(AW_window *aww, const char *awar_name);
 void ED4_set_helixnr(AW_window *aww, const char *awar_name);
-void ed4_changesecurity(AW_root *root, AW_CL cd1);
-void ed4_change_edit_mode(AW_root *root, AW_CL cd1);
+void ed4_changesecurity(AW_root *root);
+void ed4_change_edit_mode(AW_root *root);
 
 void ED4_jump_to_current_species(AW_window *);
 void ED4_get_and_jump_to_current(AW_window *);
@@ -2294,7 +2294,7 @@ void       ED4_consensus_definition_changed(AW_root*);
 void       ED4_consensus_display_changed(AW_root *root);
 
 AW_window *ED4_create_editor_options_window(AW_root *root);
-void       ED4_compression_toggle_changed_cb(AW_root *root, AW_CL cd1, AW_CL cd2);
+void       ED4_compression_toggle_changed_cb(AW_root *root, bool hideChanged);
 void       ED4_compression_changed_cb(AW_root *awr);
 void       ED4_alignment_length_changed(GBDATA *gb_alignment_len, GB_CB_TYPE gbtype);
 

@@ -38,7 +38,7 @@ void ED4_get_NDS_sizes(int *width, int *brackets) {
     *brackets = ED4_ROOT->aw_root->awar(ED4_AWAR_NDS_BRACKETS)->read_int();
 }
 
-static void NDS_changed(AW_root *root, AW_CL refresh) {
+static void NDS_changed(AW_root *root, bool doRefresh) {
     int toggle = root->awar(ED4_AWAR_NDS_SELECT)->read_int();
 
     char buf[256];
@@ -48,9 +48,7 @@ static void NDS_changed(AW_root *root, AW_CL refresh) {
     sprintf(buf, ED4_AWAR_NDS_WIDTH_TEMPLATE, toggle);
     NDS_width = root->awar(buf)->read_int();
 
-    if (refresh) {
-        ED4_request_relayout();
-    }
+    if (doRefresh) ED4_request_relayout();
 }
 
 void ED4_create_NDS_awars(AW_root *root)
@@ -58,10 +56,11 @@ void ED4_create_NDS_awars(AW_root *root)
     int i;
     GB_transaction ta(GLOBAL_gb_main);
 
-    root->awar_int(ED4_AWAR_NDS_SELECT, 0)->add_callback(NDS_changed, 1);
-    root->awar_int(ED4_AWAR_NDS_BRACKETS, 6)->set_minmax(0, 99)->add_callback(NDS_changed, 1);
-    root->awar_int(ED4_AWAR_NDS_INFO_WIDTH, 5)->set_minmax(0, 99)->add_callback(NDS_changed, 1);
-    root->awar_string(ED4_AWAR_NDS_ECOLI_NAME, "Ecoli")->add_callback(NDS_changed, 1);
+    RootCallback ndsRefreshCb = makeRootCallback(NDS_changed, true);
+    root->awar_int(ED4_AWAR_NDS_SELECT, 0)->add_callback(ndsRefreshCb);
+    root->awar_int(ED4_AWAR_NDS_BRACKETS, 6)->set_minmax(0, 99)->add_callback(ndsRefreshCb);
+    root->awar_int(ED4_AWAR_NDS_INFO_WIDTH, 5)->set_minmax(0, 99)->add_callback(ndsRefreshCb);
+    root->awar_string(ED4_AWAR_NDS_ECOLI_NAME, "Ecoli")->add_callback(ndsRefreshCb);
 
     for (i=0; i<NDS_COUNT; i++) {
         char buf[256];
@@ -85,7 +84,7 @@ void ED4_create_NDS_awars(AW_root *root)
             case 1: aci = "readdb(full_name)"; break;
             default: aci = "\"<not defined>\""; break;
         }
-        root->awar_string(buf, aci)->add_callback(NDS_changed, 1);
+        root->awar_string(buf, aci)->add_callback(ndsRefreshCb);
 
         int len;
         sprintf(buf, ED4_AWAR_NDS_WIDTH_TEMPLATE, i);
@@ -94,10 +93,10 @@ void ED4_create_NDS_awars(AW_root *root)
             case 1: len = 27; break;
             default: len = 20; break;
         }
-        root->awar_int(buf, len)->add_callback(NDS_changed, 1);
+        root->awar_int(buf, len)->add_callback(ndsRefreshCb);
     }
 
-    NDS_changed(root, 0); // init globals
+    NDS_changed(root, false); // init globals (no refresh needed)
 }
 
 // a crazy implementation of a toggle field

@@ -62,7 +62,7 @@ size_t         not_found_counter; // nr of species which haven't been found
 GBS_strstruct *not_found_message;
 
 long         max_seq_terminal_length; // global maximum of sequence terminal length
-ED4_EDITMODI awar_edit_mode;
+ED4_EDITMODE awar_edit_mode;
 long         awar_edit_rightward;
 bool         move_cursor;             // only needed for editing in consensus
 bool         DRAW;
@@ -321,11 +321,11 @@ static void ed4_create_all_awars(AW_root *root, const char *config_name) {
 #endif
     root->awar_int(AWAR_EDIT_SECURITY_LEVEL, def_sec_level, AW_ROOT_DEFAULT);
 
-    root->awar_int(AWAR_EDIT_SECURITY_LEVEL_ALIGN, def_sec_level, AW_ROOT_DEFAULT)->add_callback(ed4_changesecurity, (AW_CL) def_sec_level);
-    root->awar_int(AWAR_EDIT_SECURITY_LEVEL_CHANGE, def_sec_level, AW_ROOT_DEFAULT)->add_callback(ed4_changesecurity, (AW_CL) def_sec_level);
+    root->awar_int(AWAR_EDIT_SECURITY_LEVEL_ALIGN,  def_sec_level, AW_ROOT_DEFAULT)->add_callback(ed4_changesecurity);
+    root->awar_int(AWAR_EDIT_SECURITY_LEVEL_CHANGE, def_sec_level, AW_ROOT_DEFAULT)->add_callback(ed4_changesecurity);
 
-    root->awar_int(AWAR_EDIT_MODE,    0)->add_callback(ed4_change_edit_mode, (AW_CL)0);
-    root->awar_int(AWAR_INSERT_MODE, 1)->add_callback(ed4_change_edit_mode, (AW_CL)0);
+    root->awar_int(AWAR_EDIT_MODE,   0)->add_callback(ed4_change_edit_mode);
+    root->awar_int(AWAR_INSERT_MODE, 1)->add_callback(ed4_change_edit_mode);
 
     root->awar_int(AWAR_EDIT_RIGHTWARD, 1)->add_target_var(&awar_edit_rightward)->add_callback(ED4_edit_direction_changed);
     root->awar_int(AWAR_EDIT_TITLE_MODE, 0);
@@ -333,11 +333,11 @@ static void ed4_create_all_awars(AW_root *root, const char *config_name) {
     root->awar_int(AWAR_EDIT_HELIX_SPACING,    0) ->set_minmax(-30, 30) ->add_target_var(&ED4_ROOT->helix_add_spacing)    ->add_callback(makeRootCallback(ED4_request_relayout));
     root->awar_int(AWAR_EDIT_TERMINAL_SPACING, 0) ->set_minmax(-30, 30) ->add_target_var(&ED4_ROOT->terminal_add_spacing) ->add_callback(makeRootCallback(ED4_request_relayout));
 
-    ed4_changesecurity(root, 0);
+    ed4_changesecurity(root);
 
-    root->awar_int(ED4_AWAR_COMPRESS_SEQUENCE_GAPS, 0)->add_callback(ED4_compression_toggle_changed_cb, AW_CL(0), 0);
-    root->awar_int(ED4_AWAR_COMPRESS_SEQUENCE_HIDE, 0)->add_callback(ED4_compression_toggle_changed_cb, AW_CL(1), 0);
-    root->awar_int(ED4_AWAR_COMPRESS_SEQUENCE_TYPE, 0)->add_callback(ED4_compression_changed_cb);
+    root->awar_int(ED4_AWAR_COMPRESS_SEQUENCE_GAPS,    0)->add_callback(makeRootCallback(ED4_compression_toggle_changed_cb, false));
+    root->awar_int(ED4_AWAR_COMPRESS_SEQUENCE_HIDE,    0)->add_callback(makeRootCallback(ED4_compression_toggle_changed_cb, true));
+    root->awar_int(ED4_AWAR_COMPRESS_SEQUENCE_TYPE,    0)->add_callback(ED4_compression_changed_cb);
     root->awar_int(ED4_AWAR_COMPRESS_SEQUENCE_PERCENT, 1)->add_callback(ED4_compression_changed_cb)->set_minmax(1, 99);
 
     root->awar_int(ED4_AWAR_DIGITS_AS_REPEAT, 0);

@@ -116,7 +116,7 @@ static bool colorTransTable_exists(AW_root *awr, const char *name) {
     return searchFrom != 0;
 }
 
-static void colorDefChanged_callback(AW_root *awr, AW_CL cl_awarNo) {
+static void colorDefChanged_callback(AW_root *awr, int awarNo) {
     clrDefinitionsChanged = true;
 
     if (!in_colorDefChanged_callback) { // this callback is special, because it may change all other color defs
@@ -138,7 +138,6 @@ static void colorDefChanged_callback(AW_root *awr, AW_CL cl_awarNo) {
                         free(awarString_next);
                     }
 
-                    int   awarNo     = (int)cl_awarNo;
                     char *awarString = awr->awar_string(getAwarName(awarNo))->read_string();
                     for (int c=0; awarString[c]; ++c) {
                         charUsed[(unsigned char)awarString[c]] = awarNo;
@@ -311,9 +310,8 @@ static void saiChanged_callback(AW_root *awr) {
     free(saiName);
 }
 
-static void update_ClrTransTabNamesList_cb(AW_root *awr, AW_CL cl_colorTransList) {
-    AW_selection_list *colorTransList   = (AW_selection_list*)cl_colorTransList;
-    char              *clrTransTabNames = awr->awar(AWAR_SAI_CLR_TRANS_TAB_NAMES)->read_string();
+static void update_ClrTransTabNamesList_cb(AW_root *awr, AW_selection_list *colorTransList) {
+    char *clrTransTabNames = awr->awar(AWAR_SAI_CLR_TRANS_TAB_NAMES)->read_string();
 
     colorTransList->clear();
 
@@ -383,7 +381,7 @@ void ED4_createVisualizeSAI_Awars(AW_root *aw_root, AW_default aw_def) {  // ---
 
     for (int i=0; i<10; i++) { // initializing 10 color definition string AWARS
        AW_awar *def_awar = aw_root->awar_string(getAwarName(i), "", aw_def);
-       def_awar->add_callback(colorDefChanged_callback, (AW_CL)i);
+       def_awar->add_callback(makeRootCallback(colorDefChanged_callback, i));
     }
     aw_root->awar(AWAR_SAI_ENABLE)         ->add_callback(setVisualizeSAI_cb);
     aw_root->awar(AWAR_SAI_ALL_SPECIES)    ->add_callback(setVisualizeSAI_options_cb);
@@ -491,7 +489,7 @@ static AW_selection_list *buildClrTransTabNamesList(AW_window *aws) {
     AW_root           *awr            = aws->get_root();
     AW_selection_list *colorTransList = aws->create_selection_list(AWAR_SAI_CLR_TRANS_TABLE, true);
 
-    update_ClrTransTabNamesList_cb(awr, (AW_CL)colorTransList);
+    update_ClrTransTabNamesList_cb(awr, colorTransList);
 
     return colorTransList;
 }
@@ -742,7 +740,7 @@ AW_window *ED4_createVisualizeSAI_window(AW_root *aw_root) {
         aws->update_toggle_field();
 
         AW_awar *trans_tabs = aw_root->awar(AWAR_SAI_CLR_TRANS_TAB_NAMES);
-        trans_tabs->add_callback(update_ClrTransTabNamesList_cb, (AW_CL)clrTransTableLst);
+        trans_tabs->add_callback(makeRootCallback(update_ClrTransTabNamesList_cb, clrTransTableLst));
         trans_tabs->touch();        // force update
     }
     aws->show();

@@ -1145,19 +1145,14 @@ static GB_ERROR ED4_load_new_config(char *name) {
     return error;
 }
 
-static long ED4_get_edit_mode(AW_root *root)
-{
-    if (!root->awar(AWAR_EDIT_MODE)->read_int()) {
-        return AD_ALIGN;
-    }
+static ED4_EDITMODE ED4_get_edit_mode(AW_root *root) {
+    if (!root->awar(AWAR_EDIT_MODE)->read_int()) return AD_ALIGN;
     return root->awar(AWAR_INSERT_MODE)->read_int() ? AD_INSERT : AD_REPLACE;
 }
 
-void ed4_changesecurity(AW_root *root, AW_CL /* cd1 */)
-{
-    long mode = ED4_get_edit_mode(root);
-    long level;
-    const char *awar_name = 0;
+void ed4_changesecurity(AW_root *root) {
+    ED4_EDITMODE  mode      = ED4_get_edit_mode(root);
+    const char   *awar_name = 0;
 
     switch (mode) {
         case AD_ALIGN:
@@ -1168,14 +1163,14 @@ void ed4_changesecurity(AW_root *root, AW_CL /* cd1 */)
     }
 
     ED4_ROOT->aw_root->awar(AWAR_EDIT_SECURITY_LEVEL)->map(awar_name);
-    level = ED4_ROOT->aw_root->awar(awar_name)->read_int();
+
+    long level = ED4_ROOT->aw_root->awar(awar_name)->read_int();
     GB_change_my_security(GLOBAL_gb_main, level);
 }
 
-void ed4_change_edit_mode(AW_root *root, AW_CL cd1)
-{
-    awar_edit_mode = (ED4_EDITMODI)ED4_get_edit_mode(root);
-    ed4_changesecurity(root, cd1);
+void ed4_change_edit_mode(AW_root *root) {
+    awar_edit_mode = ED4_get_edit_mode(root);
+    ed4_changesecurity(root);
 }
 
 ARB_ERROR rebuild_consensus(ED4_base *object) {
@@ -1274,30 +1269,24 @@ void ED4_compression_changed_cb(AW_root *awr) {
     }
 }
 
-void ED4_compression_toggle_changed_cb(AW_root *root, AW_CL cd1, AW_CL /* cd2 */) {
+void ED4_compression_toggle_changed_cb(AW_root *root, bool hideChanged) {
     int gaps = root->awar(ED4_AWAR_COMPRESS_SEQUENCE_GAPS)->read_int();
     int hide = root->awar(ED4_AWAR_COMPRESS_SEQUENCE_HIDE)->read_int();
 
     ED4_remap_mode mode = ED4_remap_mode(root->awar(ED4_AWAR_COMPRESS_SEQUENCE_TYPE)->read_int()); // @@@ mode is overwritten below
 
-    switch (int(cd1)) {
-        case 0: { // ED4_AWAR_COMPRESS_SEQUENCE_GAPS changed
-            if (gaps!=2 && hide!=0) {
-                root->awar(ED4_AWAR_COMPRESS_SEQUENCE_HIDE)->write_int(0);
-                return;
-            }
-            break;
+    if (hideChanged) {
+        // ED4_AWAR_COMPRESS_SEQUENCE_HIDE changed
+        if (hide!=0 && gaps!=2) {
+            root->awar(ED4_AWAR_COMPRESS_SEQUENCE_GAPS)->write_int(2);
+            return;
         }
-        case 1: { // ED4_AWAR_COMPRESS_SEQUENCE_HIDE changed
-            if (hide!=0 && gaps!=2) {
-                root->awar(ED4_AWAR_COMPRESS_SEQUENCE_GAPS)->write_int(2);
-                return;
-            }
-            break;
-        }
-        default: {
-            e4_assert(0);
-            break;
+    }
+    else {
+        // ED4_AWAR_COMPRESS_SEQUENCE_GAPS changed
+        if (gaps!=2 && hide!=0) {
+            root->awar(ED4_AWAR_COMPRESS_SEQUENCE_HIDE)->write_int(0);
+            return;
         }
     }
 

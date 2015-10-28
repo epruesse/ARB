@@ -56,7 +56,7 @@ class ED4_Edit_String : virtual Noncopyable {
     GB_ERROR replace(char *text, long position, int direction);
     GB_ERROR swap_gaps(long position, char ch);
 
-    GB_ERROR command(AW_key_mod keymod, AW_key_code keycode, char key, int direction, ED4_EDITMODI mode, bool is_consensus,
+    GB_ERROR command(AW_key_mod keymod, AW_key_code keycode, char key, int direction, ED4_EDITMODE mode, bool is_consensus,
                      long &cursorpos, bool& changed_flag, ED4_CursorJumpType& cursor_jump, bool& cannot_handle, bool& write_fault, GBDATA *gb_data, bool is_sequence);
 
     unsigned char get_gap_type(long pos, int direction);
