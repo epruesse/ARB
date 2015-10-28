@@ -494,10 +494,14 @@ void GDE_load_menu(AW_window *awm, AW_active /*mask*/, const char *menulabel) {
 
         long num_items = menu[nmenu].numitems;
         for (long nitem=0; nitem<num_items; nitem++) {
-            GmenuItem *menuitem=&menu[nmenu].item[nitem];
+            GmenuItem *menuitem = &menu[nmenu].item[nitem];
             gde_assert(!menuitem->help || ARB_strBeginsWith(menuitem->help, "agde_"));
-            hotkey[0] = menuitem->meta;
-            awm->insert_menu_topic(menuitem->label, menuitem->label, hotkey, menuitem->help, menuitem->active_mask, makeCreateWindowCallback(GDE_menuitem_cb, menuitem));
+            hotkey[0]           = menuitem->meta;
+
+            if (!menuitem->popup) {
+                menuitem->popup = new WindowCallback(AW_window::makeWindowPopper(makeCreateWindowCallback(GDE_menuitem_cb, menuitem)));
+            }
+            awm->insert_menu_topic(menuitem->label, menuitem->label, hotkey, menuitem->help, menuitem->active_mask, *menuitem->popup);
         }
 
         if (!menulabel) {
