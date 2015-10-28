@@ -102,64 +102,68 @@ static GB_ERROR CON_export(GBDATA *gb_main, const char *savename, const char *al
 
     GBDATA   *gb_extended = GBT_find_or_create_SAI(gb_main, savename);
     GBDATA   *gb_data     = GBT_add_data(gb_extended, align, "data", GB_STRING);
-    GB_ERROR  err         = GB_write_string(gb_data, result);           // @@@ result is ignored
-    GBDATA   *gb_options  = GBT_add_data(gb_extended, align, "_TYPE", GB_STRING);
+    GB_ERROR  err         = GB_write_string(gb_data, result);
+    if (!err) {
+        GBDATA *gb_options = GBT_add_data(gb_extended, align, "_TYPE", GB_STRING);
 
-    const char *allvsmarked     = onlymarked ? "marked" : "all";
-    const char *countgapsstring = BK.countgaps ? on : off;
-    const char *simplifystring  = BK.group ? on : off;
+        const char *allvsmarked     = onlymarked ? "marked" : "all";
+        const char *countgapsstring = BK.countgaps ? on : off;
+        const char *simplifystring  = BK.group ? on : off;
 
-    sprintf(buffer, "CON: [species: %s]  [number: %ld]  [count gaps: %s] "
-            "[threshold for gaps: %d]  [simplify: %s] "
-            "[threshold for group: %d]  [upper: %d]  [lower: %d]",
-            allvsmarked, nrofspecies, countgapsstring,
-            BK.gapbound, simplifystring,
-            BK.considbound, BK.upper, BK.lower);
+        sprintf(buffer, "CON: [species: %s]  [number: %ld]  [count gaps: %s] "
+                "[threshold for gaps: %d]  [simplify: %s] "
+                "[threshold for group: %d]  [upper: %d]  [lower: %d]",
+                allvsmarked, nrofspecies, countgapsstring,
+                BK.gapbound, simplifystring,
+                BK.considbound, BK.upper, BK.lower);
 
-    err = GB_write_string(gb_options, buffer);
-
-    GBDATA *gb_names = GB_search(GB_get_father(gb_options), "_SPECIES", GB_FIND);
-    if (gb_names) GB_delete(gb_names); // delete old entry
-
-    if (nrofspecies<20) {
-        GBDATA        *gb_species;
-        GBS_strstruct *strstruct = GBS_stropen(1000);
-
-        if (onlymarked) gb_species = GBT_first_marked_species(gb_main);
-        else gb_species            = GBT_first_species(gb_main);
-
-        while (gb_species) {
-            if (GBT_find_sequence(gb_species, align)) {
-                GBDATA     *gb_speciesname = GB_search(gb_species, "name", GB_FIND);
-                const char *name           = GB_read_char_pntr(gb_speciesname);
-
-                GBS_strcat(strstruct, name);
-                GBS_chrcat(strstruct, ' ');
-            }
-            if (onlymarked) gb_species = GBT_next_marked_species(gb_species);
-            else gb_species            = GBT_next_species(gb_species);
+        err = GB_write_string(gb_options, buffer);
+        if (!err) {
+            GBDATA *gb_names  = GB_search(GB_get_father(gb_options), "_SPECIES", GB_FIND);
+            if (gb_names) err = GB_delete(gb_names); // delete old entry
         }
 
-        char *allnames = GBS_strclose(strstruct);
-        err            = GBT_write_string(GB_get_father(gb_options), "_SPECIES", allnames);
-        free(allnames);
-    }
+        if (!err && nrofspecies<20) {
+            GBDATA        *gb_species;
+            GBS_strstruct *strstruct = GBS_stropen(1000);
 
-    // remove data relicts from "complex consensus" (no longer supported)
-    {
-        char buffer2[256];
-        sprintf(buffer2, "%s/FREQUENCIES", align);
-        GBDATA *gb_graph = GB_search(gb_extended, buffer2, GB_FIND);
-        if (gb_graph) GB_delete(gb_graph);  // delete old entry
+            if (onlymarked) gb_species = GBT_first_marked_species(gb_main);
+            else gb_species            = GBT_first_species(gb_main);
+
+            while (gb_species) {
+                if (GBT_find_sequence(gb_species, align)) {
+                    GBDATA     *gb_speciesname = GB_search(gb_species, "name", GB_FIND);
+                    const char *name           = GB_read_char_pntr(gb_speciesname);
+
+                    GBS_strcat(strstruct, name);
+                    GBS_chrcat(strstruct, ' ');
+                }
+                if (onlymarked) gb_species = GBT_next_marked_species(gb_species);
+                else gb_species            = GBT_next_species(gb_species);
+            }
+
+            char *allnames = GBS_strclose(strstruct);
+            err            = GBT_write_string(GB_get_father(gb_options), "_SPECIES", allnames);
+            free(allnames);
+        }
+
+        // remove data relicts from "complex consensus" (no longer supported)
+        if (!err) {
+            char    buffer2[256];
+            sprintf(buffer2, "%s/FREQUENCIES", align);
+            GBDATA *gb_graph  = GB_search(gb_extended, buffer2, GB_FIND);
+            if (gb_graph) err = GB_delete(gb_graph);  // delete old entry
+        }
     }
 
     free(buffer);
+    if (err) err = GBS_global_string("Failed to store consensus '%s' (Reason: %s)", savename, err);
     return err;
 }
 
 static GB_ERROR CON_calculate(GBDATA *gb_main, const ConsensusBuildParams& BK, const char *aliname, bool onlymarked, const char *sainame) {
     /*! calculates the consensus and writes it to SAI 'sainame'
-     * Description how consensus is calculated: ../HELP_SOURCE/oldhelp/consensus_def.hlp // @@@ update after #663 differences are resolved
+     * Description how consensus is calculated: ../HELP_SOURCE/oldhelp/consensus_def.hlp
      * @param gb_main     database
      * @param BK          parameters for consensus calculation
      * @param aliname     alignment name
