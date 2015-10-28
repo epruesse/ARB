@@ -776,7 +776,7 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
                             }
                             else { // otherwise set aligner reference
                                 if (is_consensus) { cannot_handle = 1; return 0; };
-                                FastAligner_set_reference_species(0, (AW_CL)ED4_ROOT->aw_root);
+                                FastAligner_set_reference_species(ED4_ROOT->aw_root);
                             }
                             break;
                         }

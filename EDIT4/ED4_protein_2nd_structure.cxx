@@ -1005,10 +1005,9 @@ GB_ERROR ED4_pfold_set_SAI(char **protstruct, GBDATA *gb_main, const char *align
  *  necessary if only the SAI filter changed but not the selected SAI.
  */
 
-static void ED4_pfold_select_SAI_and_update_option_menu(AW_window *aww, AW_CL oms, AW_CL set_sai) {
+static void ED4_pfold_select_SAI_and_update_option_menu(AW_window *aww, AW_option_menu_struct *oms, bool set_sai) {
     e4_assert(aww);
-    AW_option_menu_struct *_oms = ((AW_option_menu_struct*)oms);
-    e4_assert(_oms);
+    e4_assert(oms);
     char *selected_sai = ED4_ROOT->aw_root->awar(PFOLD_AWAR_SELECTED_SAI)->read_string();
     char *sai_filter   = ED4_ROOT->aw_root->awar(PFOLD_AWAR_SAI_FILTER)->read_string();
 
@@ -1017,7 +1016,7 @@ static void ED4_pfold_select_SAI_and_update_option_menu(AW_window *aww, AW_CL om
         if (err) aw_message(err);
     }
 
-    aww->clear_option_menu(_oms);
+    aww->clear_option_menu(oms);
     aww->insert_default_option(selected_sai, "", selected_sai);
     GB_transaction ta(GLOBAL_gb_main);
 
@@ -1027,7 +1026,7 @@ static void ED4_pfold_select_SAI_and_update_option_menu(AW_window *aww, AW_CL om
     {
         const char *sai_name = GBT_read_name(sai);
         if (strcmp(sai_name, selected_sai) != 0 && strstr(sai_name, sai_filter) != 0) {
-            aww->callback(ED4_pfold_select_SAI_and_update_option_menu, (AW_CL)_oms, true);
+            aww->callback(makeWindowCallback(ED4_pfold_select_SAI_and_update_option_menu, oms, true));
             aww->insert_option(sai_name, "", sai_name);
         }
     }
@@ -1088,10 +1087,10 @@ AW_window *ED4_pfold_create_props_window(AW_root *awr, const WindowCallback *ref
     aws->label_length(30);
     aws->label("Selected Protein Structure SAI");
     AW_option_menu_struct *oms_sai = aws->create_option_menu(PFOLD_AWAR_SELECTED_SAI, true);
-    ED4_pfold_select_SAI_and_update_option_menu(aws, (AW_CL)oms_sai, 0);
+    ED4_pfold_select_SAI_and_update_option_menu(aws, oms_sai, false);
     aws->at_newline();
     aws->label("-> Filter SAI names for");
-    aws->callback(ED4_pfold_select_SAI_and_update_option_menu, (AW_CL)oms_sai, 0);
+    aws->callback(makeWindowCallback(ED4_pfold_select_SAI_and_update_option_menu, oms_sai, false));
     aws->create_input_field(PFOLD_AWAR_SAI_FILTER, 10);
     aws->at_newline();
 

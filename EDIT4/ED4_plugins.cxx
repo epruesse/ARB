@@ -128,10 +128,7 @@ static const PlugIn *findPlugin(const char *name) {
     return NULL;
 }
 
-void ED4_start_plugin(AW_window *aw, AW_CL cl_gbmain, AW_CL cl_pluginname) {
-    const char *pluginname = (const char *)cl_pluginname;
-    GBDATA     *gb_main    = (GBDATA*)cl_gbmain;
-
+void ED4_start_plugin(AW_window *aw, GBDATA *gb_main, const char *pluginname) {
     const PlugIn *plugin = findPlugin(pluginname);
 
     GB_ERROR error = plugin

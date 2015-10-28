@@ -667,12 +667,10 @@ void ED4_remote_set_cursor_cb(AW_root *awr) {
     }
 }
 
-void ED4_jump_to_cursor_position(AW_window *aww, AW_CL cl_awar_name, AW_CL cl_pos_type) {
-    const char          *awar_name = (const char *)cl_awar_name;
-    PositionType         posType   = (PositionType)cl_pos_type;
+void ED4_jump_to_cursor_position(AW_window *aww, const char *awar_name, PositionType posType) {
     ED4_LocalWinContext  uses(aww);
-    ED4_cursor          *cursor    = &current_cursor();
-    GB_ERROR             error     = 0;
+    ED4_cursor          *cursor = &current_cursor();
+    GB_ERROR             error  = 0;
 
     long pos = aww->get_root()->awar(awar_name)->read_int();
 
@@ -744,7 +742,7 @@ void ED4_jump_to_cursor_position(AW_window *aww, AW_CL cl_awar_name, AW_CL cl_po
     }
 }
 
-void ED4_set_helixnr(AW_window *aww, char *awar_name, bool /* callback_flag */) {
+void ED4_set_helixnr(AW_window *aww, const char *awar_name) {
     ED4_LocalWinContext uses(aww);
     ED4_cursor *cursor = &current_cursor();
 
@@ -770,7 +768,7 @@ void ED4_set_helixnr(AW_window *aww, char *awar_name, bool /* callback_flag */) 
     }
 }
 
-void ED4_set_iupac(AW_window *aww, char *awar_name, bool /* callback_flag */) {
+void ED4_set_iupac(AW_window *aww, const char *awar_name) {
     ED4_LocalWinContext uses(aww);
     ED4_cursor *cursor = &current_cursor();
 
@@ -1090,10 +1088,7 @@ static AW_window *create_group_species_by_field_window(AW_root *aw_root, AW_wind
     return aws;
 }
 
-void group_species_cb(AW_window *aww, AW_CL cl_use_fields, AW_CL) {
-
-    int use_fields = int(cl_use_fields);
-
+void group_species_cb(AW_window *aww, bool use_fields) {
     if (!use_fields) {
         group_species(0, aww);
     }

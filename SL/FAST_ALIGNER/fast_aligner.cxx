@@ -36,6 +36,7 @@
 
 #include <list>
 #include <awt_config_manager.hxx>
+#include <rootAsWin.h>
 
 // --------------------------------------------------------------------------------
 
@@ -2475,11 +2476,9 @@ void FastAligner_set_align_current(AW_root *root, AW_default db1) {
     root->awar_int(FA_AWAR_TO_ALIGN, FA_CURRENT, db1);
 }
 
-void FastAligner_set_reference_species(AW_window * /* aww */, AW_CL cl_AW_root) {
+void FastAligner_set_reference_species(AW_root *root) {
     // sets the aligner reference species to current species
-    AW_root *root     = (AW_root*)cl_AW_root;
-    char    *specName = root->awar(AWAR_SPECIES_NAME)->read_string();
-
+    char *specName = root->awar(AWAR_SPECIES_NAME)->read_string();
     root->awar(FA_AWAR_REFERENCE_NAME)->write_string(specName);
     free(specName);
 }
@@ -2697,7 +2696,7 @@ AW_window *FastAligner_create_window(AW_root *root, const AlignDataAccess *data_
     aws->create_input_field(FA_AWAR_REFERENCE_NAME, 2);
 
     aws->at("copy");
-    aws->callback(FastAligner_set_reference_species, (AW_CL)root);
+    aws->callback(RootAsWindowCallback::simple(FastAligner_set_reference_species));
     aws->create_button("Copy", "Copy", "");
 
     aws->label_length(0);

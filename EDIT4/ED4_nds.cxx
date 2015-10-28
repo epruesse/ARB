@@ -101,21 +101,17 @@ void ED4_create_NDS_awars(AW_root *root)
 }
 
 // a crazy implementation of a toggle field
-static void ed4_nds_select_change(AW_window *aww, AW_CL selected) {
-    int i;
+static void ed4_nds_select_change(AW_window *aww, int selected) {
     AW_root *aw_root = aww->get_root();
-    for (i=0; i<NDS_COUNT; i++) {
+    for (int i=0; i<NDS_COUNT; i++) {
         const char *awar_name = GBS_global_string(ED4_AWAR_NDS_SELECT_TEMPLATE, i);
         aw_root->awar(awar_name)->write_int((i==selected) ? 1 : 0);
     }
     aw_root->awar(ED4_AWAR_NDS_SELECT)->write_int(selected);
 }
 
-AW_window *ED4_create_nds_window(AW_root *root)
-{
+AW_window *ED4_create_nds_window(AW_root *root) {
     AW_window_simple *aws = new AW_window_simple;
-    int               description_x, aci_x, length_x;
-    int               i, dummy, fieldselectx;
 
     aws->init(root, "NDS_PROPS", "NDS");
     aws->load_xfig("edit4/nds.fig");
@@ -144,12 +140,14 @@ AW_window *ED4_create_nds_window(AW_root *root)
 
     aws->at("toggle");
     aws->at_newline();
+
+    int dummy, fieldselectx, description_x, aci_x, length_x;
     aws->get_at_position(&fieldselectx, &dummy);
 
-    for (i=0; i<NDS_COUNT; ++i) {
+    for (int i=0; i<NDS_COUNT; ++i) {
         char buf[256];
         sprintf(buf, ED4_AWAR_NDS_SELECT_TEMPLATE, i);
-        aws->callback(ed4_nds_select_change, i);
+        aws->callback(makeWindowCallback(ed4_nds_select_change, i));
         aws->create_toggle(buf);
 
         aws->get_at_position(&description_x, &dummy);

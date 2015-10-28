@@ -230,7 +230,7 @@ static AWT_config_mapping_def dotbases_config_mapping[] = {
     { 0, 0 }
 };
 
-void ED4_popup_dot_missing_bases_window(AW_window *editor_window, AW_CL, AW_CL) {
+void ED4_popup_dot_missing_bases_window(AW_window *editor_window) {
     AW_root                 *aw_root = editor_window->get_root();
     static AW_window_simple *aws     = 0;
 

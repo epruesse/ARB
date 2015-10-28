@@ -2250,21 +2250,20 @@ void ED4_store_curpos(AW_window *aww);
 void ED4_restore_curpos(AW_window *aww);
 void ED4_clear_stored_curpos();
 void ED4_helix_jump_opposite(AW_window *aww);
-void ED4_jump_to_cursor_position(AW_window *aww, AW_CL cl_awar_name, AW_CL cl_pos_type);
+void ED4_jump_to_cursor_position(AW_window *aww, const char *awar_name, PositionType posType);
 void ED4_remote_set_cursor_cb(AW_root *awr);
 void ED4_change_cursor(AW_window *aww);
 
-void ED4_set_iupac(AW_window *aww, char *awar_name, bool callback_flag);
-void ED4_set_helixnr(AW_window *aww, char *awar_name, bool callback_flag);
+void ED4_set_iupac(AW_window *aww, const char *awar_name);
+void ED4_set_helixnr(AW_window *aww, const char *awar_name);
 void ed4_changesecurity(AW_root *root, AW_CL cd1);
 void ed4_change_edit_mode(AW_root *root, AW_CL cd1);
 
-void ED4_jump_to_current_species(AW_window *, AW_CL);
-void ED4_get_and_jump_to_current(AW_window *, AW_CL);
-void ED4_get_and_jump_to_current_from_menu(AW_window *aw, AW_CL cl, AW_CL);
+void ED4_jump_to_current_species(AW_window *);
+void ED4_get_and_jump_to_current(AW_window *);
 void ED4_get_and_jump_to_species(GB_CSTR species_name);
 
-void ED4_get_marked_from_menu(AW_window *, AW_CL, AW_CL);
+void ED4_get_marked_from_menu(AW_window *);
 void ED4_selected_species_changed_cb(AW_root *aw_root);
 
 AW_window *ED4_create_loadSAI_window(AW_root *awr);
@@ -2279,7 +2278,7 @@ void ED4_init_aligner_data_access(AlignDataAccess *data_access);
 void ED4_popup_gc_window(AW_window *awp, AW_gc_manager gcman);
 void ED4_no_dangerous_modes();
 
-void       group_species_cb(AW_window *aww, AW_CL cd1, AW_CL cd2);
+void       group_species_cb(AW_window *aww, bool use_fields);
 AW_window *ED4_create_group_species_by_field_window(AW_root *aw_root);
 
 AW_window *ED4_create_loadConfiguration_window(AW_root *awr);
