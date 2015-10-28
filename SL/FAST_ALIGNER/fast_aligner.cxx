@@ -36,6 +36,7 @@
 
 #include <list>
 #include <awt_config_manager.hxx>
+#include <rootAsWin.h>
 
 // --------------------------------------------------------------------------------
 
@@ -202,9 +203,8 @@ static ARB_ERROR reverseComplement(GBDATA *gb_species, GB_CSTR ali, int max_prot
     return error;
 }
 
-static void build_reverse_complement(AW_window *aw, AW_CL cl_AlignDataAccess) {
-    const AlignDataAccess *data_access = (const AlignDataAccess *)cl_AlignDataAccess;
-    GBDATA                *gb_main     = data_access->gb_main;
+static void build_reverse_complement(AW_window *aw, const AlignDataAccess *data_access) {
+    GBDATA *gb_main = data_access->gb_main;
 
     GB_push_transaction(gb_main);
 
@@ -2165,14 +2165,13 @@ ARB_ERROR Aligner::run() {
     return error;
 }
 
-void FastAligner_start(AW_window *aw, AW_CL cl_AlignDataAccess) {
-    AW_root               *root          = aw->get_root();
-    char                  *reference     = NULL;    // align against next relatives
-    char                  *toalign       = NULL;    // align marked species
-    ARB_ERROR              error         = NULL;
-    const AlignDataAccess *data_access   = (const AlignDataAccess *)cl_AlignDataAccess;
-    int                    get_consensus = 0;
-    int                    pt_server_id  = -1;
+void FastAligner_start(AW_window *aw, const AlignDataAccess *data_access) {
+    AW_root   *root          = aw->get_root();
+    char      *reference     = NULL; // align against next relatives
+    char      *toalign       = NULL; // align marked species
+    ARB_ERROR  error         = NULL;
+    int        get_consensus = 0;
+    int        pt_server_id  = -1;
 
     Aligner_get_first_selected_species get_first_selected_species = 0;
     Aligner_get_next_selected_species  get_next_selected_species  = 0;
@@ -2475,16 +2474,14 @@ void FastAligner_set_align_current(AW_root *root, AW_default db1) {
     root->awar_int(FA_AWAR_TO_ALIGN, FA_CURRENT, db1);
 }
 
-void FastAligner_set_reference_species(AW_window * /* aww */, AW_CL cl_AW_root) {
+void FastAligner_set_reference_species(AW_root *root) {
     // sets the aligner reference species to current species
-    AW_root *root     = (AW_root*)cl_AW_root;
-    char    *specName = root->awar(AWAR_SPECIES_NAME)->read_string();
-
+    char *specName = root->awar(AWAR_SPECIES_NAME)->read_string();
     root->awar(FA_AWAR_REFERENCE_NAME)->write_string(specName);
     free(specName);
 }
 
-static AW_window *create_island_hopping_window(AW_root *root, AW_CL) {
+static AW_window *create_island_hopping_window(AW_root *root) {
     AW_window_simple *aws = new AW_window_simple;
 
     aws->init(root, "ISLAND_HOPPING_PARA", "Parameters for Island Hopping");
@@ -2665,7 +2662,7 @@ AW_window *FastAligner_create_window(AW_root *root, const AlignDataAccess *data_
 
     aws->button_length(12);
     aws->at("island_para");
-    aws->callback(AW_POPUP, (AW_CL)create_island_hopping_window, 0);
+    aws->callback(create_island_hopping_window);
     aws->sens_mask(AWM_EXP);
     aws->create_button("island_para", "Parameters", "");
     aws->sens_mask(AWM_ALL);
@@ -2673,7 +2670,7 @@ AW_window *FastAligner_create_window(AW_root *root, const AlignDataAccess *data_
     aws->button_length(10);
 
     aws->at("rev_compl");
-    aws->callback(build_reverse_complement, (AW_CL)data_access);
+    aws->callback(makeWindowCallback(build_reverse_complement, data_access));
     aws->create_button("reverse_complement", "Turn now!", "");
 
     aws->at("what");
@@ -2697,7 +2694,7 @@ AW_window *FastAligner_create_window(AW_root *root, const AlignDataAccess *data_
     aws->create_input_field(FA_AWAR_REFERENCE_NAME, 2);
 
     aws->at("copy");
-    aws->callback(FastAligner_set_reference_species, (AW_CL)root);
+    aws->callback(RootAsWindowCallback::simple(FastAligner_set_reference_species));
     aws->create_button("Copy", "Copy", "");
 
     aws->label_length(0);
@@ -2719,7 +2716,7 @@ AW_window *FastAligner_create_window(AW_root *root, const AlignDataAccess *data_
     aws->create_input_field(FA_AWAR_PT_SERVER_ALIGNMENT, 12);
 
     aws->at("relSett");
-    aws->callback(AW_POPUP, (AW_CL)create_family_settings_window, (AW_CL)root);
+    aws->callback(create_family_settings_window);
     aws->create_autosize_button("Settings", "More settings", "");
 
     // Range
@@ -2793,7 +2790,7 @@ AW_window *FastAligner_create_window(AW_root *root, const AlignDataAccess *data_
     aws->update_option_menu();
 
     aws->at("align");
-    aws->callback(FastAligner_start, (AW_CL)data_access);
+    aws->callback(makeWindowCallback(FastAligner_start, data_access));
     aws->highlight();
     aws->create_button("GO", "GO", "G");
 

@@ -267,7 +267,7 @@ static void Change3DMolecule_CB(AW_root *awr) {
     RefreshCanvas(awr);
 }
 
-static void Change3DMolecule(AW_window *aww, long int molID) {
+static void Change3DMolecule(AW_window *aww, int molID) {
     // changes the displayed 3D structure in the case of 23S rRNA
     aww->get_root()->awar(AWAR_3D_23S_RRNA_MOL)->write_int(molID);
 }
@@ -592,17 +592,17 @@ static AW_window *CreateChangeMolecule_window(AW_root *aw_root) {
     aws->button_length(0);
     aws->create_button("CLOSE", "#closeText.xpm");
 
-    aws->callback(Change3DMolecule, 1);
+    aws->callback(makeWindowCallback(Change3DMolecule, 1));
     aws->at("1pnu");
     aws->button_length(73);
     aws->create_button(0, "1PNU: 8.7 A^ Vila-Sanjurjo et al. Proc.Nat.Acad.Sci.(2003) 100, 8682.");
 
-    aws->callback(Change3DMolecule, 2);
+    aws->callback(makeWindowCallback(Change3DMolecule, 2));
     aws->at("1vor");
     aws->button_length(73);
     aws->create_button(0, "1VOR: 11.5 A^ Vila-Sanjurjo et al. Nat.Struct.Mol.Biol.(2004) 11, 1054.");
 
-    aws->callback(Change3DMolecule, 3);
+    aws->callback(makeWindowCallback(Change3DMolecule, 3));
     aws->at("1c2w");
     aws->button_length(73);
     aws->create_button(0, "1C2W: 7.5 A^ Mueller et al. J.Mol.Biol.(2000) 298, 35-59.", 0, "white");
@@ -636,10 +636,10 @@ AW_window *CreateRNA3DMainWindow(AW_root *awr, GBDATA *gb_main, ED4_plugin_host&
         arb_assert(RNA3D->cStructure);
         int rnaType = RNA3D->cStructure->FindTypeOfRNA();
         if (rnaType == LSU_23S) {
-            awm->insert_menu_topic("changeMolecule", "Change Molecule", "M", "rna3d_changeMolecule.hlp", AWM_ALL, AW_POPUP, (AW_CL)CreateChangeMolecule_window, 0);
+            awm->insert_menu_topic("changeMolecule", "Change Molecule", "M", "rna3d_changeMolecule.hlp", AWM_ALL, CreateChangeMolecule_window);
         }
     }
-    awm->insert_menu_topic("close", "Close", "C", "quit.hlp", AWM_ALL, (AW_CB)AW_POPDOWN, 0, 0);
+    awm->insert_menu_topic("close", "Close", "C", "quit.hlp", AWM_ALL, AW_POPDOWN);
 
     {
         awm->at(1, 2);
@@ -668,7 +668,7 @@ AW_window *CreateRNA3DMainWindow(AW_root *awr, GBDATA *gb_main, ED4_plugin_host&
 
         awm->get_at_position(&cur_x, &cur_y);
         awm->help_text("rna3d_dispBases.hlp");
-        awm->callback(AW_POPUP, (AW_CL)CreateDisplayBases_window, (AW_CL)0);
+        awm->callback(CreateDisplayBases_window);
         awm->button_length(0);
         awm->create_button("displayBases", "#basesText.xpm");
 
@@ -678,7 +678,7 @@ AW_window *CreateRNA3DMainWindow(AW_root *awr, GBDATA *gb_main, ED4_plugin_host&
 
         awm->get_at_position(&cur_x, &cur_y);
         awm->help_text("rna3d_dispHelices.hlp");
-        awm->callback(AW_POPUP, (AW_CL)CreateDisplayHelices_window, (AW_CL)0);
+        awm->callback(CreateDisplayHelices_window);
         awm->button_length(0);
         awm->create_button("displayHelix", "#helixText.xpm");
 
@@ -688,13 +688,13 @@ AW_window *CreateRNA3DMainWindow(AW_root *awr, GBDATA *gb_main, ED4_plugin_host&
 
         awm->get_at_position(&cur_x, &cur_y);
         awm->help_text("rna3d_dispMolecule.hlp");
-        awm->callback(AW_POPUP, (AW_CL)CreateDisplayOptions_window, (AW_CL)0);
+        awm->callback(CreateDisplayOptions_window);
         awm->button_length(0);
         awm->create_button("displayMolecule", "#molText.xpm");
 
         awm->get_at_position(&cur_x, &cur_y);
         awm->help_text("rna3d_mapSeqData.hlp");
-        awm->callback(AW_POPUP, (AW_CL)CreateMapSequenceData_window, (AW_CL)0);
+        awm->callback(CreateMapSequenceData_window);
         awm->button_length(0);
         awm->create_button("mapSpecies", "#mapping.xpm");
 

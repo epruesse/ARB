@@ -122,6 +122,7 @@ fast_aligner.o: $(ARBHOME)/INCLUDE/island_hopping.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/pos_range.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/PT_global_defs.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/RangeList.h
+fast_aligner.o: $(ARBHOME)/INCLUDE/rootAsWin.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/smartptr.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/static_assert.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/test_global.h

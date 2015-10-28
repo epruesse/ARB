@@ -16,13 +16,13 @@
 #include "ed4_block.hxx"
 #include "ed4_nds.hxx"
 #include "ed4_ProteinViewer.hxx"
+#include "ed4_seq_colors.hxx"
 
 #include <aw_preset.hxx>
 #include <aw_awar.hxx>
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
 #include <aw_question.hxx>
-#include <awt_seq_colors.hxx>
 #include <st_window.hxx>
 
 // -----------------------------------
@@ -667,8 +667,7 @@ void ED4_terminal::request_refresh(int clear) {
 }
 
 
-ED4_base* ED4_terminal::search_ID(const char *temp_id)
-{
+ED4_base* ED4_terminal::search_ID(const char *temp_id) {
     if (id && strcmp(temp_id, id) == 0) return (this);
     return (NULL);
 }
@@ -891,10 +890,20 @@ ED4_sequence_info_terminal::ED4_sequence_info_terminal(const char *temp_id, /* G
 }
 
 ED4_consensus_sequence_terminal::ED4_consensus_sequence_terminal(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
-    : ED4_sequence_terminal(temp_id, x, y, width, height, temp_parent, false)
+    : ED4_sequence_terminal(temp_id, x, y, width, height, temp_parent, false),
+      temp_cons_seq(NULL)
 {
     species_name = NULL;
 }
+
+char *ED4_consensus_sequence_terminal::get_sequence_copy(int *str_len) const {
+    return get_group_manager()->build_consensus_string(str_len);
+}
+
+int ED4_consensus_sequence_terminal::get_length() const {
+    return get_char_table().size();
+}
+
 
 ED4_abstract_sequence_terminal::ED4_abstract_sequence_terminal(const ED4_objspec& spec_, const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
     : ED4_text_terminal(spec_, temp_id, x, y, width, height, temp_parent)

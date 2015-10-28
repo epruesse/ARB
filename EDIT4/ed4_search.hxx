@@ -27,13 +27,6 @@ enum ED4_SEARCH_GAPS {
     ED4_SG_IGNORE_GAPS
 };
 
-void ED4_search_cb(AW_window *aww, AW_CL searchDescriptor, AW_CL cl_ed4w);
-
-GB_ERROR ED4_repeat_last_search(class ED4_window *ed4w);
-void ED4_popup_search_window(AW_window *aww, AW_CL cl_search_type);
-
-void ED4_create_search_awars(AW_root *root);
-
 // --------------------------------------------------------------------------------
 
 #define MAX_MISMATCHES  5
@@ -155,6 +148,15 @@ public:
     char *buildColorString(const ED4_sequence_terminal *seq_terminal, int start, int end);
 };
 
+// global functions
+
+class ED4_window;
+void  ED4_search_cb(UNFIXED, int searchDescriptor, ED4_window *ed4w);
+
+GB_ERROR ED4_repeat_last_search(class ED4_window *ed4w);
+void ED4_popup_search_window(AW_window *aww, ED4_SearchPositionType type);
+
+void ED4_create_search_awars(AW_root *root);
 
 #else
 #error ed4_search.hxx included twice

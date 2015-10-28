@@ -22,13 +22,13 @@
 #include "ed4_protein_2nd_structure.hxx"
 #include "graph_aligner_gui.hxx"
 #include "ed4_colStat.hxx"
+#include "ed4_seq_colors.hxx"
 
 #include <ed4_extern.hxx>
 #include <fast_aligner.hxx>
 #include <AW_helix.hxx>
 #include <gde.hxx>
 #include <awt.hxx>
-#include <awt_seq_colors.hxx>
 #include <awt_map_key.hxx>
 #include <aw_awars.hxx>
 #include <aw_preset.hxx>
@@ -44,6 +44,7 @@
 #include <ad_cb.h>
 #include <macros.hxx>
 #include <st_window.hxx>
+#include <rootAsWin.h>
 
 #include <cctype>
 #include <map>
@@ -176,6 +177,11 @@ ED4_returncode ED4_root::refresh_all_windows(bool redraw) {
     }
 
     if (main_manager->update_info.refresh) main_manager->clear_refresh();
+
+    if (loadable_SAIs == LSAI_OUTDATED) {
+        GB_touch(GBT_get_SAI_data(GLOBAL_gb_main)); // touch SAI data to force update of SAI selection list
+        loadable_SAIs = LSAI_UPTODATE;
+    }
 
     return (ED4_R_OK);
 }
@@ -613,7 +619,7 @@ ED4_returncode ED4_root::create_hierarchy(const char *area_string_middle, const 
 
             y += 3;
 
-            reference = new AWT_reference(GLOBAL_gb_main);
+            reference = new ED4_reference(GLOBAL_gb_main);
 
             int index = 0;
             database->scan_string(top_multi_species_manager, ref_terminals.get_ref_sequence_info(), ref_terminals.get_ref_sequence(),
@@ -865,24 +871,38 @@ static ARB_ERROR ED4_with_all_loaded_species(ED4_Species_Callback cb, AW_CL cd) 
     return ED4_ROOT->root_group_man->route_down_hierarchy(do_sth_with_species, (AW_CL)cb, cd);
 }
 
-static bool has_species_name(ED4_base *base, AW_CL cl_species_name) {
+static bool is_named(ED4_base *base, AW_CL cl_species_name) {
     ED4_species_name_terminal *name_term = base->to_species_name_terminal();
-    GBDATA *gbd = name_term->get_species_pointer();
-
+    GBDATA                    *gbd       = name_term->get_species_pointer();
     if (gbd) {
-        const char *name = GB_read_char_pntr(gbd);
+        const char *wanted_name = (const char*)cl_species_name;
+        const char *name        = GB_read_char_pntr(gbd);
         e4_assert(name);
-        return strcmp(name, (const char*)cl_species_name)==0;
-    }
 
+        return strcmp(name, wanted_name) == 0;
+    }
     return false;
 }
 
-ED4_species_name_terminal *ED4_find_species_name_terminal(const char *species_name)
-{
-    ED4_base *base = ED4_ROOT->root_group_man->find_first_that(ED4_L_SPECIES_NAME, has_species_name, (AW_CL)species_name);
+static bool is_species_named(ED4_base *base, AW_CL cl_species_name) {
+    return base->inside_species_seq_manager() && is_named(base, cl_species_name);
+}
 
-    return base ? base->to_species_name_terminal() : 0;
+static bool is_SAI_named(ED4_base *base, AW_CL cl_species_name) {
+    return base->inside_SAI_manager() && is_named(base, cl_species_name);
+}
+
+ED4_species_name_terminal *ED4_find_species_or_SAI_name_terminal(const char *species_name) {
+    ED4_base *base = ED4_ROOT->root_group_man->find_first_that(ED4_L_SPECIES_NAME, is_species_named, (AW_CL)species_name);
+    return base ? base->to_species_name_terminal() : NULL;
+}
+ED4_species_name_terminal *ED4_find_species_name_terminal(const char *species_name) {
+    ED4_base *base = ED4_ROOT->root_group_man->find_first_that(ED4_L_SPECIES_NAME, is_species_named, (AW_CL)species_name);
+    return base ? base->to_species_name_terminal() : NULL;
+}
+ED4_species_name_terminal *ED4_find_SAI_name_terminal(const char *sai_name) {
+    ED4_base *base = ED4_ROOT->root_group_man->find_first_that(ED4_L_SPECIES_NAME, is_SAI_named, (AW_CL)sai_name);
+    return base ? base->to_species_name_terminal() : NULL;
 }
 
 static char *get_group_consensus(const char *species_name, PosRange range) {
@@ -892,7 +912,7 @@ static char *get_group_consensus(const char *species_name, PosRange range) {
     if (name_term) {
         ED4_abstract_group_manager *group_man = name_term->get_parent(ED4_level(ED4_L_GROUP|ED4_L_ROOTGROUP))->to_abstract_group_manager();
         if (group_man) {
-            consensus = group_man->table().build_consensus_string(range);
+            consensus = group_man->build_consensus_string(range);
         }
     }
 
@@ -950,7 +970,7 @@ static ARB_ERROR ED4_delete_temp_entries(GBDATA *species, AW_CL cl_alignment_nam
     return FastAligner_delete_temp_entries(species, (GB_CSTR)cl_alignment_name);
 }
 
-static void ED4_remove_faligner_entries(AW_window *, AW_CL, AW_CL) {
+static void ED4_remove_faligner_entries() {
     ARB_ERROR error = GB_begin_transaction(GLOBAL_gb_main);
     if (!error) error = ED4_with_all_loaded_species(ED4_delete_temp_entries, (AW_CL)ED4_ROOT->alignment_name);
     GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
@@ -1003,7 +1023,7 @@ void ED4_testSplitNMerge(AW_window *aw, AW_CL, AW_CL)
 
 #endif
 
-static void toggle_helix_for_SAI(AW_window *aww, AW_CL, AW_CL) {
+static void toggle_helix_for_SAI(AW_window *aww) {
     ED4_LocalWinContext  uses(aww);
     ED4_cursor          *cursor = &current_cursor();
 
@@ -1030,8 +1050,7 @@ static void toggle_helix_for_SAI(AW_window *aww, AW_CL, AW_CL) {
     }
 }
 
-static void title_mode_changed(AW_root *aw_root, AW_window *aww)
-{
+static void title_mode_changed(AW_root *aw_root, AW_window *aww) {
     int title_mode = aw_root->awar(AWAR_EDIT_TITLE_MODE)->read_int();
 
     if (title_mode==0) {
@@ -1042,9 +1061,9 @@ static void title_mode_changed(AW_root *aw_root, AW_window *aww)
     }
 }
 
-static void ED4_undo_redo(AW_window *aww, AW_CL undo_type) {
+static void ED4_undo_redo(AW_window *aww, GB_UNDO_TYPE undo_type) {
     ED4_LocalWinContext uses(aww);
-    GB_ERROR error = GB_undo(GLOBAL_gb_main, (GB_UNDO_TYPE)undo_type);
+    GB_ERROR error = GB_undo(GLOBAL_gb_main, undo_type);
 
     if (error) {
         aw_message(error);
@@ -1057,11 +1076,7 @@ static void ED4_undo_redo(AW_window *aww, AW_CL undo_type) {
     }
 }
 
-static void ED4_clear_errors(AW_window *aww, AW_CL) {
-    aw_clear_message_cb(aww);
-}
-
-static AW_window *ED4_zoom_message_window(AW_root *root, AW_CL)
+static AW_window *ED4_zoom_message_window(AW_root *root)
 {
     AW_window_simple *aws = new AW_window_simple;
 
@@ -1072,7 +1087,7 @@ static AW_window *ED4_zoom_message_window(AW_root *root, AW_CL)
     aws->at("hide");
     aws->create_button("HIDE", "HIDE");
 
-    aws->callback(ED4_clear_errors, (AW_CL)0);
+    aws->callback(aw_clear_message_cb);
     aws->at("clear");
     aws->create_button("CLEAR", "CLEAR");
 
@@ -1108,33 +1123,32 @@ static void insert_search_fields(AW_window_menu_modes *awmm,
 
     awmm->at(cat(buf, label_prefix, "n"));
     awmm->help_text("e4_search.hlp");
-    awmm->callback(ED4_search_cb, ED4_encodeSearchDescriptor(+1, type), (AW_CL)ed4w);
+    awmm->callback(makeWindowCallback(ED4_search_cb, ED4_encodeSearchDescriptor(+1, type), ed4w));
     awmm->create_button(cat(buf, macro_prefix, "_SEARCH_NEXT"), "#edit/next.xpm");
 
     awmm->at(cat(buf, label_prefix, "l"));
     awmm->help_text("e4_search.hlp");
-    awmm->callback(ED4_search_cb, ED4_encodeSearchDescriptor(-1, type), (AW_CL)ed4w);
+    awmm->callback(makeWindowCallback(ED4_search_cb, ED4_encodeSearchDescriptor(-1, type), ed4w));
     awmm->create_button(cat(buf, macro_prefix, "_SEARCH_LAST"), "#edit/last.xpm");
 
     awmm->at(cat(buf, label_prefix, "d"));
     awmm->help_text("e4_search.hlp");
-    awmm->callback(ED4_popup_search_window, (AW_CL)type);
+    awmm->callback(makeWindowCallback(ED4_popup_search_window, type));
     awmm->create_button(cat(buf, macro_prefix, "_SEARCH_DETAIL"), "#edit/detail.xpm");
 
     awmm->at(cat(buf, label_prefix, "s"));
     awmm->create_toggle(show_awar_name);
 }
 
-static void ED4_set_protection(AW_window *aww, AW_CL cd1, AW_CL /* cd2 */) {
+static void ED4_set_protection(AW_window *aww, int wanted_protection) {
     ED4_LocalWinContext uses(aww);
     ED4_cursor *cursor = &current_cursor();
     GB_ERROR    error  = 0;
 
     if (cursor->owner_of_cursor) {
-        int                         wanted_protection = int(cd1);
-        ED4_sequence_terminal      *seq_term          = cursor->owner_of_cursor->to_sequence_terminal();
-        ED4_sequence_info_terminal *seq_info_term     = seq_term->parent->search_spec_child_rek(ED4_L_SEQUENCE_INFO)->to_sequence_info_terminal();
-        GBDATA                     *gbd               = seq_info_term->data();
+        ED4_sequence_terminal      *seq_term      = cursor->owner_of_cursor->to_sequence_terminal();
+        ED4_sequence_info_terminal *seq_info_term = seq_term->parent->search_spec_child_rek(ED4_L_SEQUENCE_INFO)->to_sequence_info_terminal();
+        GBDATA                     *gbd           = seq_info_term->data();
 
         GB_push_transaction(gbd);
 
@@ -1164,9 +1178,8 @@ enum MenuSelectType {
     ED4_MS_TOGGLE_BLOCKTYPE
 };
 
-static void ED4_menu_select(AW_window *aww, AW_CL type, AW_CL) {
-    GB_transaction ta(GLOBAL_gb_main);
-    MenuSelectType select = MenuSelectType(type);
+static void ED4_menu_select(AW_window *aww, MenuSelectType select) {
+    GB_transaction             ta(GLOBAL_gb_main);
     ED4_multi_species_manager *middle_multi_man = ED4_ROOT->middle_area_man->get_multi_species_manager();
 
     e4_assert(middle_multi_man);
@@ -1243,8 +1256,8 @@ static void ED4_menu_select(AW_window *aww, AW_CL type, AW_CL) {
     ED4_request_full_refresh();
 }
 
-static void ED4_menu_perform_block_operation(AW_window */*aww*/, AW_CL type, AW_CL) {
-    ED4_perform_block_operation(ED4_blockoperation_type(type));
+static void ED4_menu_perform_block_operation(AW_window *, ED4_blockoperation_type type) {
+    ED4_perform_block_operation(type);
 }
 
 static void modes_cb(AW_window*, ED4_species_mode smode) {
@@ -1285,9 +1298,7 @@ void ED4_init_aligner_data_access(AlignDataAccess *data_access) {
     if (error) aw_message(error);
 }
 
-static AW_window *ED4_create_faligner_window(AW_root *awr, AW_CL cl_AlignDataAccess) {
-    AlignDataAccess *data_access = (AlignDataAccess*)cl_AlignDataAccess;
-
+static AW_window *ED4_create_faligner_window(AW_root *awr, AlignDataAccess *data_access) {
 #if defined(DEBUG)
     static AlignDataAccess *last_data_access = NULL;
 
@@ -1303,9 +1314,7 @@ static AW_window *ED4_create_faligner_window(AW_root *awr, AW_CL cl_AlignDataAcc
     return aws;
 }
 
-static void ED4_save_properties(AW_window *aw, AW_CL cl_mode, AW_CL) {
-    int mode = (int)cl_mode;
-
+static void ED4_save_properties(AW_window *aw, int mode) {
     AW_save_specific_properties(aw, ED4_propertyName(mode));
 }
 
@@ -1446,19 +1455,20 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->insert_menu_topic(awmm->local_id("create_species_from_consensus"), "Create new species from consensus", "u", 0, AWM_ALL, makeCreateWindowCallback(ED4_create_new_seq_window, CREATE_FROM_CONSENSUS));
     awmm->insert_menu_topic(awmm->local_id("copy_species"),                  "Copy current species",              "C", 0, AWM_ALL, makeCreateWindowCallback(ED4_create_new_seq_window, COPY_SPECIES));
     awmm->sep______________();
-    awmm->insert_menu_topic("create_group",           "Create new Group",              "G", 0, AWM_ALL, group_species_cb, 0, 0);
-    awmm->insert_menu_topic("create_groups_by_field", "Create new groups using Field", "F", 0, AWM_ALL, group_species_cb, 1, 0);
+    awmm->insert_menu_topic("create_group",           "Create new Group",              "G", 0, AWM_ALL, makeWindowCallback(group_species_cb, false));
+    awmm->insert_menu_topic("create_groups_by_field", "Create new groups using Field", "F", 0, AWM_ALL, makeWindowCallback(group_species_cb, true));
 
     // --------------
     //      Edit
 
     awmm->create_menu("Edit", "E", AWM_ALL);
-    awmm->insert_menu_topic("refresh",      "Refresh [Ctrl-L]",           "f", 0,                    AWM_ALL, (AW_CB)ED4_request_full_refresh,       0, 0);
-    awmm->insert_menu_topic("load_current", "Load current species [GET]", "G", "e4_get_species.hlp", AWM_ALL, ED4_get_and_jump_to_current_from_menu, 0, 0);
-    awmm->insert_menu_topic("load_marked",  "Load marked species",        "m", "e4_get_species.hlp", AWM_ALL, ED4_get_marked_from_menu,              0, 0);
+    awmm->insert_menu_topic("refresh",                  "Refresh [Ctrl-L]",           "f", 0,                    AWM_ALL, makeWindowCallback(ED4_request_full_refresh));
+    awmm->insert_menu_topic("load_current",             "Load current species [GET]", "G", "e4_get_species.hlp", AWM_ALL, makeWindowCallback(ED4_get_and_jump_to_current));
+    awmm->insert_menu_topic("load_marked",              "Load marked species",        "m", "e4_get_species.hlp", AWM_ALL, makeWindowCallback(ED4_get_marked_from_menu));
+    awmm->insert_menu_topic(awmm->local_id("load_SAI"), "Load SAI ...",               "S", "e4_get_species.hlp", AWM_ALL, ED4_create_loadSAI_window);
     awmm->sep______________();
-    awmm->insert_menu_topic("refresh_ecoli",       "Reload Ecoli sequence",        "E", "ecoliref.hlp", AWM_ALL, (AW_CB)reload_ecoli_cb, 0, 0);
-    awmm->insert_menu_topic("refresh_helix",       "Reload Helix",                 "H", "helix.hlp",    AWM_ALL, (AW_CB)reload_helix_cb, 0, 0);
+    awmm->insert_menu_topic("refresh_ecoli",       "Reload Ecoli sequence",        "E", "ecoliref.hlp", AWM_ALL, makeWindowCallback(reload_ecoli_cb));
+    awmm->insert_menu_topic("refresh_helix",       "Reload Helix",                 "H", "helix.hlp",    AWM_ALL, makeWindowCallback(reload_helix_cb));
     awmm->insert_menu_topic("helix_jump_opposite", "Jump helix opposite [Ctrl-J]", "J", 0,              AWM_ALL, ED4_helix_jump_opposite);
     awmm->sep______________();
 
@@ -1470,7 +1480,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
 
         for (char i='0'; i<='6'; i++) {
             macro[3] = topic[6] = hotkey[0] = i;
-            awmm->insert_menu_topic(macro, topic, hotkey, "security.hlp", AWM_ALL, ED4_set_protection, AW_CL(i-'0'), 0);
+            awmm->insert_menu_topic(macro, topic, hotkey, "security.hlp", AWM_ALL, makeWindowCallback(ED4_set_protection, i-'0'));
         }
     }
     awmm->close_sub_menu();
@@ -1480,22 +1490,22 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
 #endif
     
     awmm->sep______________();
-    awmm->insert_menu_topic("fast_aligner",       INTEGRATED_ALIGNERS_TITLE,             "I", "faligner.hlp",     AWM_ALL,            AW_POPUP,                               (AW_CL)ED4_create_faligner_window, (AW_CL)&dataAccess_4_aligner);
-    awmm->insert_menu_topic("fast_align_set_ref", "Set aligner reference [Ctrl-R]",      "R", "faligner.hlp",     AWM_ALL,            (AW_CB)FastAligner_set_reference_species, (AW_CL)aw_root,                    0);
-    awmm->insert_menu_topic("align_sequence",     "Old aligner from ARB_EDIT [broken]",  "O", "ne_align_seq.hlp", AWM_DISABLED,       AW_POPUP,                               (AW_CL)create_naligner_window,     0);
-    awmm->insert_menu_topic("sina",               "SINA (SILVA Incremental Aligner)",    "S", "sina_main.hlp",    sina_mask(aw_root), makeWindowCallback(show_sina_window, &dataAccess_4_aligner));
-    awmm->insert_menu_topic("del_ali_tmp",        "Remove all aligner Entries",          "v", 0,                  AWM_ALL,            ED4_remove_faligner_entries,            1,                                 0);
+    awmm->insert_menu_topic(awmm->local_id("fast_aligner"),   INTEGRATED_ALIGNERS_TITLE,            "I", "faligner.hlp",     AWM_ALL,            makeCreateWindowCallback(ED4_create_faligner_window, &dataAccess_4_aligner));
+    awmm->insert_menu_topic("fast_align_set_ref",             "Set aligner reference [Ctrl-R]",     "R", "faligner.hlp",     AWM_ALL,            RootAsWindowCallback::simple(FastAligner_set_reference_species));
+    awmm->insert_menu_topic(awmm->local_id("align_sequence"), "Old aligner from ARB_EDIT [broken]", "O", "ne_align_seq.hlp", AWM_DISABLED,       create_naligner_window);
+    awmm->insert_menu_topic("sina",                           "SINA (SILVA Incremental Aligner)",   "S", "sina_main.hlp",    sina_mask(aw_root), makeWindowCallback(show_sina_window, &dataAccess_4_aligner));
+    awmm->insert_menu_topic("del_ali_tmp",                    "Remove all aligner Entries",         "v", 0,                  AWM_ALL,            makeWindowCallback(ED4_remove_faligner_entries));
     awmm->sep______________();
-    awmm->insert_menu_topic("missing_bases", "Dot potentially missing bases", "D", "missbase.hlp", AWM_EXP, ED4_popup_dot_missing_bases_window, 0, 0);
+    awmm->insert_menu_topic("missing_bases", "Dot potentially missing bases", "D", "missbase.hlp", AWM_EXP, ED4_popup_dot_missing_bases_window);
 
     if (alignment_type == GB_AT_RNA) { // if the database contains valid alignment of rRNA sequences
         awmm->sep______________();
-        awmm->insert_menu_topic("sec_edit", "Edit secondary structure", "c", "arb_secedit.hlp", AWM_ALL, ED4_start_plugin, (AW_CL)GLOBAL_gb_main, (AW_CL)"SECEDIT");
+        awmm->insert_menu_topic("sec_edit", "Edit secondary structure", "c", "arb_secedit.hlp", AWM_ALL, makeWindowCallback(ED4_start_plugin, GLOBAL_gb_main, "SECEDIT"));
 #if defined(ARB_OPENGL)
-        awmm->insert_menu_topic("rna3d", "View 3D molecule", "3", "rna3d_general.hlp", AWM_ALL, ED4_start_plugin, (AW_CL)GLOBAL_gb_main, (AW_CL)"RNA3D");
+        awmm->insert_menu_topic("rna3d", "View 3D molecule", "3", "rna3d_general.hlp", AWM_ALL, makeWindowCallback(ED4_start_plugin, GLOBAL_gb_main, "RNA3D"));
 #endif // ARB_OPENGL
 #if defined(DEBUG)
-        awmm->insert_menu_topic("noplugin", "DEBUG: call unknown plugin", "u", 0, AWM_ALL, ED4_start_plugin, (AW_CL)GLOBAL_gb_main, (AW_CL)"testplugin");
+        awmm->insert_menu_topic("noplugin", "DEBUG: call unknown plugin", "u", 0, AWM_ALL, makeWindowCallback(ED4_start_plugin, GLOBAL_gb_main, "testplugin"));
 #endif // DEBUG
     }
 
@@ -1531,7 +1541,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
             sprintf(menu_entry_name, "%s Search", id);
 
             hotkey[0] = hotkeys[s];
-            awmm->insert_menu_topic(awmm->local_id(macro_name), menu_entry_name, hotkey, "e4_search.hlp", AWM_ALL, ED4_popup_search_window, AW_CL(type));
+            awmm->insert_menu_topic(awmm->local_id(macro_name), menu_entry_name, hotkey, "e4_search.hlp", AWM_ALL, makeWindowCallback(ED4_popup_search_window, type));
         }
     }
     awmm->close_sub_menu();
@@ -1543,21 +1553,20 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->close_sub_menu();
 
     awmm->sep______________();
-    awmm->insert_menu_topic("change_cursor", "Change cursor type",                "t", 0,                   AWM_ALL, ED4_change_cursor);
-    awmm->insert_menu_topic("show_diff",     "Show only differences to selected", "d", "set_reference.hlp", AWM_ALL, ED4_set_reference_species, 0, 0);
-    awmm->insert_menu_topic("show_all",      "Show all bases",                    "a", "set_reference.hlp", AWM_ALL, ED4_set_reference_species, 1, 0);
+    awmm->insert_menu_topic("change_cursor",             "Change cursor type",   "t", 0,              AWM_ALL, ED4_change_cursor);
+    awmm->insert_menu_topic(awmm->local_id("view_diff"), "View differences ...", "V", "viewdiff.hlp", AWM_ALL, ED4_create_viewDifferences_window);
     awmm->sep______________();
-    awmm->insert_menu_topic("enable_col_stat",  "Activate column statistics", "v", "st_ml.hlp", AWM_EXP, ED4_activate_col_stat,            0, 0);
-    awmm->insert_menu_topic("disable_col_stat", "Disable column statistics",  "i", "st_ml.hlp", AWM_EXP, ED4_disable_col_stat,             0, 0);
-    awmm->insert_menu_topic("detail_col_stat",  "Toggle detailed Col.-Stat.", "C", "st_ml.hlp", AWM_EXP, ED4_toggle_detailed_column_stats, 0, 0);
-    awmm->insert_menu_topic("dcs_threshold",    "Set threshold for D.c.s.",   "f", "st_ml.hlp", AWM_EXP, ED4_set_col_stat_threshold,       0, 0);
+    awmm->insert_menu_topic("enable_col_stat",  "Activate column statistics", "v", "st_ml.hlp", AWM_EXP, ED4_activate_col_stat);
+    awmm->insert_menu_topic("disable_col_stat", "Disable column statistics",  "i", "st_ml.hlp", AWM_EXP, ED4_disable_col_stat);
+    awmm->insert_menu_topic("detail_col_stat",  "Toggle detailed Col.-Stat.", "C", "st_ml.hlp", AWM_EXP, ED4_toggle_detailed_column_stats);
+    awmm->insert_menu_topic("dcs_threshold",    "Set threshold for D.c.s.",   "f", "st_ml.hlp", AWM_EXP, makeWindowCallback(ED4_set_col_stat_threshold));
     awmm->sep______________();
-    awmm->insert_menu_topic("visualize_SAI", "Visualize SAIs",                "z", "visualizeSAI.hlp",   AWM_ALL, AW_POPUP,             (AW_CL)ED4_createVisualizeSAI_window, 0);
-    awmm->insert_menu_topic("toggle_saisec", "Toggle secondary info for SAI", "o", "toggle_secinfo.hlp", AWM_ALL, toggle_helix_for_SAI, 0,                                    0);
+    awmm->insert_menu_topic(awmm->local_id("visualize_SAI"), "Visualize SAIs",                "z", "visualizeSAI.hlp",   AWM_ALL, ED4_createVisualizeSAI_window);
+    awmm->insert_menu_topic("toggle_saisec",                 "Toggle secondary info for SAI", "o", "toggle_secinfo.hlp", AWM_ALL, toggle_helix_for_SAI);
 
     // Enable ProteinViewer only for DNA sequence type
     if (alignment_type == GB_AT_DNA) {
-        awmm->insert_menu_topic("Protein_Viewer", "Protein Viewer", "w", "proteinViewer.hlp", AWM_ALL, AW_POPUP, (AW_CL)ED4_CreateProteinViewer_window, 0);
+        awmm->insert_menu_topic(awmm->local_id("Protein_Viewer"), "Protein Viewer", "w", "proteinViewer.hlp", AWM_ALL, ED4_CreateProteinViewer_window);
     }
 
     // ---------------
@@ -1565,35 +1574,35 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
 
     awmm->create_menu("Block", "B", AWM_ALL);
 
-    awmm->insert_menu_topic("select_marked",   "Select marked species",   "e", "e4_block.hlp", AWM_ALL, ED4_menu_select, AW_CL(ED4_MS_SELECT_MARKED),   0);
-    awmm->insert_menu_topic("deselect_marked", "Deselect marked species", "k", "e4_block.hlp", AWM_ALL, ED4_menu_select, AW_CL(ED4_MS_DESELECT_MARKED), 0);
-    awmm->insert_menu_topic("select_all",      "Select all species",      "S", "e4_block.hlp", AWM_ALL, ED4_menu_select, AW_CL(ED4_MS_ALL),             0);
-    awmm->insert_menu_topic("deselect_all",    "Deselect all",            "D", "e4_block.hlp", AWM_ALL, ED4_menu_select, AW_CL(ED4_MS_NONE),            0);
+    awmm->insert_menu_topic("select_marked",   "Select marked species",   "e", "e4_block.hlp", AWM_ALL, makeWindowCallback(ED4_menu_select, ED4_MS_SELECT_MARKED));
+    awmm->insert_menu_topic("deselect_marked", "Deselect marked species", "k", "e4_block.hlp", AWM_ALL, makeWindowCallback(ED4_menu_select, ED4_MS_DESELECT_MARKED));
+    awmm->insert_menu_topic("select_all",      "Select all species",      "S", "e4_block.hlp", AWM_ALL, makeWindowCallback(ED4_menu_select, ED4_MS_ALL));
+    awmm->insert_menu_topic("deselect_all",    "Deselect all",            "D", "e4_block.hlp", AWM_ALL, makeWindowCallback(ED4_menu_select, ED4_MS_NONE));
     awmm->sep______________();
-    awmm->insert_menu_topic("mark_selected",   "Mark selected species",   "M", "e4_block.hlp", AWM_ALL, ED4_menu_select, AW_CL(ED4_MS_MARK_SELECTED),   0);
-    awmm->insert_menu_topic("unmark_selected", "Unmark selected species", "n", "e4_block.hlp", AWM_ALL, ED4_menu_select, AW_CL(ED4_MS_UNMARK_SELECTED), 0);
-    awmm->insert_menu_topic("unmark_all",      "Unmark all species",      "U", "e4_block.hlp", AWM_ALL, ED4_menu_select, AW_CL(ED4_MS_UNMARK_ALL),      0);
+    awmm->insert_menu_topic("mark_selected",   "Mark selected species",   "M", "e4_block.hlp", AWM_ALL, makeWindowCallback(ED4_menu_select, ED4_MS_MARK_SELECTED));
+    awmm->insert_menu_topic("unmark_selected", "Unmark selected species", "n", "e4_block.hlp", AWM_ALL, makeWindowCallback(ED4_menu_select, ED4_MS_UNMARK_SELECTED));
+    awmm->insert_menu_topic("unmark_all",      "Unmark all species",      "U", "e4_block.hlp", AWM_ALL, makeWindowCallback(ED4_menu_select, ED4_MS_UNMARK_ALL));
     awmm->sep______________();
-    awmm->insert_menu_topic("invert_all",   "Invert selected species", "I", "e4_block.hlp", AWM_ALL, ED4_menu_select, AW_CL(ED4_MS_INVERT),       0);
-    awmm->insert_menu_topic("invert_group", "Invert group",            "g", "e4_block.hlp", AWM_ALL, ED4_menu_select, AW_CL(ED4_MS_INVERT_GROUP), 0);
+    awmm->insert_menu_topic("invert_all",   "Invert selected species", "I", "e4_block.hlp", AWM_ALL, makeWindowCallback(ED4_menu_select, ED4_MS_INVERT));
+    awmm->insert_menu_topic("invert_group", "Invert group",            "g", "e4_block.hlp", AWM_ALL, makeWindowCallback(ED4_menu_select, ED4_MS_INVERT_GROUP));
     awmm->sep______________();
-    awmm->insert_menu_topic("lowcase", "Change to lower case ", "w", "e4_block.hlp", AWM_ALL, ED4_menu_perform_block_operation, AW_CL(ED4_BO_LOWER_CASE), 0);
-    awmm->insert_menu_topic("upcase",  "Change to upper case",  "p", "e4_block.hlp", AWM_ALL, ED4_menu_perform_block_operation, AW_CL(ED4_BO_UPPER_CASE), 0);
+    awmm->insert_menu_topic("lowcase", "Change to lower case ", "w", "e4_block.hlp", AWM_ALL, makeWindowCallback(ED4_menu_perform_block_operation, ED4_BO_LOWER_CASE));
+    awmm->insert_menu_topic("upcase",  "Change to upper case",  "p", "e4_block.hlp", AWM_ALL, makeWindowCallback(ED4_menu_perform_block_operation, ED4_BO_UPPER_CASE));
     awmm->sep______________();
-    awmm->insert_menu_topic("reverse",            "Reverse selection ",    "v", "e4_block.hlp", AWM_ALL, ED4_menu_perform_block_operation, AW_CL(ED4_BO_REVERSE),            0);
-    awmm->insert_menu_topic("complement",         "Complement selection ", "o", "e4_block.hlp", AWM_ALL, ED4_menu_perform_block_operation, AW_CL(ED4_BO_COMPLEMENT),         0);
-    awmm->insert_menu_topic("reverse_complement", "Reverse complement",    "t", "e4_block.hlp", AWM_ALL, ED4_menu_perform_block_operation, AW_CL(ED4_BO_REVERSE_COMPLEMENT), 0);
+    awmm->insert_menu_topic("reverse",            "Reverse selection ",    "v", "e4_block.hlp", AWM_ALL, makeWindowCallback(ED4_menu_perform_block_operation, ED4_BO_REVERSE));
+    awmm->insert_menu_topic("complement",         "Complement selection ", "o", "e4_block.hlp", AWM_ALL, makeWindowCallback(ED4_menu_perform_block_operation, ED4_BO_COMPLEMENT));
+    awmm->insert_menu_topic("reverse_complement", "Reverse complement",    "t", "e4_block.hlp", AWM_ALL, makeWindowCallback(ED4_menu_perform_block_operation, ED4_BO_REVERSE_COMPLEMENT));
     awmm->sep______________();
-    awmm->insert_menu_topic("unalignBlockLeft",   "Unalign block left",   "a", "e4_block.hlp", AWM_ALL, ED4_menu_perform_block_operation, AW_CL(ED4_BO_UNALIGN_LEFT),   0);
-    awmm->insert_menu_topic("unalignBlockCenter", "Unalign block center", "c", "e4_block.hlp", AWM_ALL, ED4_menu_perform_block_operation, AW_CL(ED4_BO_UNALIGN_CENTER), 0);
-    awmm->insert_menu_topic("unalignBlockRight",  "Unalign block right",  "b", "e4_block.hlp", AWM_ALL, ED4_menu_perform_block_operation, AW_CL(ED4_BO_UNALIGN_RIGHT),  0);
+    awmm->insert_menu_topic("unalignBlockLeft",   "Unalign block left",   "a", "e4_block.hlp", AWM_ALL, makeWindowCallback(ED4_menu_perform_block_operation, ED4_BO_UNALIGN_LEFT));
+    awmm->insert_menu_topic("unalignBlockCenter", "Unalign block center", "c", "e4_block.hlp", AWM_ALL, makeWindowCallback(ED4_menu_perform_block_operation, ED4_BO_UNALIGN_CENTER));
+    awmm->insert_menu_topic("unalignBlockRight",  "Unalign block right",  "b", "e4_block.hlp", AWM_ALL, makeWindowCallback(ED4_menu_perform_block_operation, ED4_BO_UNALIGN_RIGHT));
     awmm->sep______________();
-    awmm->insert_menu_topic("replace", "Search & Replace ", "h", "e4_replace.hlp", AWM_ALL, AW_POPUP, AW_CL(ED4_create_replace_window), 0);
-    awmm->insert_menu_topic("setsai",  "Modify SAI ",       "y", "e4_modsai.hlp",  AWM_ALL, AW_POPUP, AW_CL(ED4_create_modsai_window),  0);
+    awmm->insert_menu_topic(awmm->local_id("replace"), "Search & Replace ", "h", "e4_replace.hlp", AWM_ALL, ED4_create_replace_window);
+    awmm->insert_menu_topic(awmm->local_id("setsai"),  "Modify SAI ",       "y", "e4_modsai.hlp",  AWM_ALL, ED4_create_modsai_window);
     awmm->sep______________();
-    awmm->insert_menu_topic("toggle_block_type", "Exchange: Line<->Column", "x", "e4_block.hlp", AWM_ALL, ED4_menu_select,                  AW_CL(ED4_MS_TOGGLE_BLOCKTYPE), 0);
-    awmm->insert_menu_topic("shift_left",        "Shift block left ",       "l", "e4_block.hlp", AWM_ALL, ED4_menu_perform_block_operation, AW_CL(ED4_BO_SHIFT_LEFT),       0);
-    awmm->insert_menu_topic("shift_right",       "Shift block right",       "r", "e4_block.hlp", AWM_ALL, ED4_menu_perform_block_operation, AW_CL(ED4_BO_SHIFT_RIGHT),      0);
+    awmm->insert_menu_topic("toggle_block_type", "Exchange: Line<->Column", "x", "e4_block.hlp", AWM_ALL, makeWindowCallback(ED4_menu_select, ED4_MS_TOGGLE_BLOCKTYPE));
+    awmm->insert_menu_topic("shift_left",        "Shift block left ",       "l", "e4_block.hlp", AWM_ALL, makeWindowCallback(ED4_menu_perform_block_operation, ED4_BO_SHIFT_LEFT));
+    awmm->insert_menu_topic("shift_right",       "Shift block right",       "r", "e4_block.hlp", AWM_ALL, makeWindowCallback(ED4_menu_perform_block_operation, ED4_BO_SHIFT_RIGHT));
 
     // --------------------
     //      Properties
@@ -1604,20 +1613,23 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->insert_menu_topic(awmm->local_id("props_frame"), "Frame settings ...", "F", 0, AWM_ALL, AW_preset_window);
 #endif
 
-    awmm->insert_menu_topic(awmm->local_id("props_options"),   "Editor Options ",       "O", "e4_options.hlp",   AWM_ALL, ED4_create_level_1_options_window);
+    awmm->insert_menu_topic(awmm->local_id("props_options"),   "Editor Options ",       "O", "e4_options.hlp",   AWM_ALL, ED4_create_editor_options_window);
     awmm->insert_menu_topic(awmm->local_id("props_consensus"), "Consensus Definition ", "u", "e4_consensus.hlp", AWM_ALL, ED4_create_consensus_definition_window);
     awmm->sep______________();
 
-    awmm->insert_menu_topic("props_data",       "Change Colors & Fonts ", "C", 0,                     AWM_ALL, makeWindowCallback(ED4_popup_gc_window, first_gc_manager));
-    awmm->insert_menu_topic("props_seq_colors", "Sequence color mapping", "S", "sequence_colors.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_seq_colors_window, (AW_CL)sequence_colors);
+    awmm->insert_menu_topic("props_data",                       "Change Colors & Fonts ", "C", 0,                     AWM_ALL, makeWindowCallback      (ED4_popup_gc_window,          first_gc_manager));
+    awmm->insert_menu_topic(awmm->local_id("props_seq_colors"), "Sequence color mapping", "S", "sequence_colors.hlp", AWM_ALL, makeCreateWindowCallback(ED4_create_seq_colors_window, sequence_colors));
 
     awmm->sep______________();
 
-    if (alignment_type == GB_AT_AA) awmm->insert_menu_topic("props_pfold",     "Protein Match Settings ", "P", "pfold_props.hlp", AWM_ALL, AW_POPUP, (AW_CL)ED4_pfold_create_props_window, (AW_CL)ED4_request_relayout);
-    else                            awmm->insert_menu_topic("props_helix_sym", "Helix Settings ",         "H", "helixsym.hlp",    AWM_ALL, AW_POPUP, (AW_CL)create_helix_props_window,     (AW_CL)ED4_request_relayout);
+    {
+        static WindowCallback reqRelCb = makeWindowCallback(ED4_request_relayout);
+        if (alignment_type == GB_AT_AA) awmm->insert_menu_topic(awmm->local_id("props_pfold"),     "Protein Match Settings ", "P", "pfold_props.hlp", AWM_ALL, makeCreateWindowCallback(ED4_pfold_create_props_window, &reqRelCb));
+        else                            awmm->insert_menu_topic(awmm->local_id("props_helix_sym"), "Helix Settings ",         "H", "helixsym.hlp",    AWM_ALL, makeCreateWindowCallback(create_helix_props_window,     &reqRelCb));
+    }
 
-    awmm->insert_menu_topic("props_key_map", "Key Mappings ",              "K", "nekey_map.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_key_map_window, 0);
-    awmm->insert_menu_topic("props_nds",     "Select visible info (NDS) ", "D", "ed4_nds.hlp",   AWM_ALL, AW_POPUP, (AW_CL)ED4_create_nds_window, 0);
+    awmm->insert_menu_topic(awmm->local_id("props_key_map"), "Key Mappings ",              "K", "nekey_map.hlp", AWM_ALL, create_key_map_window);
+    awmm->insert_menu_topic(awmm->local_id("props_nds"),     "Select visible info (NDS) ", "D", "ed4_nds.hlp",   AWM_ALL, ED4_create_nds_window);
     awmm->sep______________();
     AW_insert_common_property_menu_entries(awmm);
     awmm->sep______________();
@@ -1637,14 +1649,14 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
         if (default_mode == -1) default_mode = 2; // no properties yet -> use 'edit4.arb'
 
         const char *entry = GBS_global_string("Save loaded Properties (%s)", ED4_propertyName(default_mode));
-        awmm->insert_menu_topic("save_loaded_props", entry, "l", "e4_defaults.hlp", AWM_ALL, ED4_save_properties, (AW_CL)default_mode, 0);
+        awmm->insert_menu_topic("save_loaded_props", entry, "l", "e4_defaults.hlp", AWM_ALL, makeWindowCallback(ED4_save_properties, default_mode));
         awmm->sep______________();
 
         for (int mode = 2; mode >= 0; --mode) {
             char hotkey[] = "x";
             hotkey[0]     = "Pta"[mode];
             entry         = GBS_global_string("Save %sProperties (%s)", entry_type[mode], ED4_propertyName(mode));
-            awmm->insert_menu_topic(tag[mode], entry, hotkey, "e4_defaults.hlp", AWM_ALL, ED4_save_properties, (AW_CL)mode, 0);
+            awmm->insert_menu_topic(tag[mode], entry, hotkey, "e4_defaults.hlp", AWM_ALL, makeWindowCallback(ED4_save_properties, mode));
         }
     }
     awmm->close_sub_menu();
@@ -1653,7 +1665,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
 
     // ----------------------------------------------------------------------------------------------------
 
-    aw_root->awar_int(AWAR_EDIT_TITLE_MODE)->add_callback((AW_RCB1)title_mode_changed, (AW_CL)awmm);
+    aw_root->awar_int(AWAR_EDIT_TITLE_MODE)->add_callback(makeRootCallback(title_mode_changed, static_cast<AW_window*>(awmm)));
     awmm->set_bottom_area_height(0);   // No bottom area
 
     awmm->auto_space(5, -2);
@@ -1714,23 +1726,23 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->at("helixnrTxt"); awmm->create_button(0, "Helix#");
 
     awmm->at("pos");
-    awmm->callback((AW_CB)ED4_jump_to_cursor_position, (AW_CL) current_ed4w()->awar_path_for_cursor, AW_CL(ED4_POS_SEQUENCE));
+    awmm->callback(makeWindowCallback(ED4_jump_to_cursor_position, current_ed4w()->awar_path_for_cursor, ED4_POS_SEQUENCE));
     awmm->create_input_field(current_ed4w()->awar_path_for_cursor, 7);
 
     awmm->at("ecoli");
-    awmm->callback((AW_CB)ED4_jump_to_cursor_position, (AW_CL) current_ed4w()->awar_path_for_Ecoli, AW_CL(ED4_POS_ECOLI));
+    awmm->callback(makeWindowCallback(ED4_jump_to_cursor_position, current_ed4w()->awar_path_for_Ecoli, ED4_POS_ECOLI));
     awmm->create_input_field(current_ed4w()->awar_path_for_Ecoli, 6);
 
     awmm->at("base");
-    awmm->callback((AW_CB)ED4_jump_to_cursor_position, (AW_CL) current_ed4w()->awar_path_for_basePos, AW_CL(ED4_POS_BASE));
+    awmm->callback(makeWindowCallback(ED4_jump_to_cursor_position, current_ed4w()->awar_path_for_basePos, ED4_POS_BASE));
     awmm->create_input_field(current_ed4w()->awar_path_for_basePos, 6);
 
     awmm->at("iupac");
-    awmm->callback((AW_CB)ED4_set_iupac, (AW_CL) current_ed4w()->awar_path_for_IUPAC, AW_CL(0));
+    awmm->callback(makeWindowCallback(ED4_set_iupac, current_ed4w()->awar_path_for_IUPAC));
     awmm->create_input_field(current_ed4w()->awar_path_for_IUPAC, 4);
 
     awmm->at("helixnr");
-    awmm->callback((AW_CB)ED4_set_helixnr, (AW_CL) current_ed4w()->awar_path_for_helixNr, AW_CL(0));
+    awmm->callback(makeWindowCallback(ED4_set_helixnr, current_ed4w()->awar_path_for_helixNr));
     awmm->create_input_field(current_ed4w()->awar_path_for_helixNr, 5);
 
     // ----------------------------
@@ -1739,24 +1751,24 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->button_length(4);
 
     awmm->at("jump");
-    awmm->callback(ED4_jump_to_current_species, 0);
+    awmm->callback(ED4_jump_to_current_species);
     awmm->help_text("e4_get_species.hlp");
     awmm->create_button("JUMP", "Jump");
 
     awmm->at("get");
-    awmm->callback(ED4_get_and_jump_to_current, 0);
+    awmm->callback(makeWindowCallback(ED4_get_and_jump_to_current));
     awmm->help_text("e4_get_species.hlp");
     awmm->create_button("GET", "Get");
 
     awmm->button_length(0);
 
     awmm->at("undo");
-    awmm->callback(ED4_undo_redo, GB_UNDO_UNDO);
+    awmm->callback(makeWindowCallback(ED4_undo_redo, GB_UNDO_UNDO));
     awmm->help_text("undo.hlp");
     awmm->create_button("UNDO", "#undo.xpm");
 
     awmm->at("redo");
-    awmm->callback(ED4_undo_redo, GB_UNDO_REDO);
+    awmm->callback(makeWindowCallback(ED4_undo_redo, GB_UNDO_REDO));
     awmm->help_text("undo.hlp");
     awmm->create_button("REDO", "#redo.xpm");
 
@@ -1766,12 +1778,12 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->button_length(7);
 
     awmm->at("aligner");
-    awmm->callback(AW_POPUP, (AW_CL)ED4_create_faligner_window, (AW_CL)&dataAccess_4_aligner);
+    awmm->callback(makeCreateWindowCallback(ED4_create_faligner_window, &dataAccess_4_aligner));
     awmm->help_text("faligner.hlp");
     awmm->create_button("ALIGNER", "Aligner");
 
     awmm->at("saiviz");
-    awmm->callback(AW_POPUP, (AW_CL)ED4_createVisualizeSAI_window, 0);
+    awmm->callback(ED4_createVisualizeSAI_window);
     awmm->help_text("visualizeSAI.hlp");
     awmm->create_button("SAIVIZ", "SAIviz");
 
@@ -1816,13 +1828,13 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
         awmm->button_length(0);
 
         awmm->at("secedit");
-        awmm->callback(ED4_start_plugin, (AW_CL)GLOBAL_gb_main, (AW_CL)"SECEDIT");
+        awmm->callback(makeWindowCallback(ED4_start_plugin, GLOBAL_gb_main, "SECEDIT"));
         awmm->help_text("arb_secedit.hlp");
         awmm->create_button("SECEDIT", "#edit/secedit.xpm");
 
 #if defined(ARB_OPENGL)
         awmm->at("rna3d");
-        awmm->callback(ED4_start_plugin, (AW_CL)GLOBAL_gb_main, (AW_CL)"RNA3D");
+        awmm->callback(makeWindowCallback(ED4_start_plugin, GLOBAL_gb_main, "RNA3D"));
         awmm->help_text("rna3d_general.hlp");
         awmm->create_button("RNA3D", "#edit/rna3d.xpm");
 #endif // ARB_OPENGL
@@ -1840,12 +1852,12 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
 
         awmm->at("zoom");
         if (xoffset) { awmm->get_at_position(&x, &y); awmm->at(x+xoffset, y); }
-        awmm->callback(AW_POPUP, (AW_CL)ED4_zoom_message_window, (AW_CL)0);
+        awmm->callback(ED4_zoom_message_window);
         awmm->create_button("ZOOM", "#edit/zoom.xpm");
 
         awmm->at("clear");
         if (xoffset) { awmm->get_at_position(&x, &y); awmm->at(x+xoffset, y); }
-        awmm->callback(ED4_clear_errors, (AW_CL)0);
+        awmm->callback(aw_clear_message_cb);
         awmm->create_button("CLEAR", "#edit/clear.xpm");
 
         awmm->at("errortext");
@@ -1894,11 +1906,11 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
 #undef INSERT_SEARCH_FIELDS
 
     awmm->at("alast");
-    awmm->callback(ED4_search_cb, ED4_encodeSearchDescriptor(-1, ED4_ANY_PATTERN), (AW_CL)current_ed4w());
+    awmm->callback(makeWindowCallback(ED4_search_cb, ED4_encodeSearchDescriptor(-1, ED4_ANY_PATTERN), current_ed4w()));
     awmm->create_button("ALL_SEARCH_LAST", "#edit/last.xpm");
 
     awmm->at("anext");
-    awmm->callback(ED4_search_cb, ED4_encodeSearchDescriptor(+1, ED4_ANY_PATTERN), (AW_CL)current_ed4w());
+    awmm->callback(makeWindowCallback(ED4_search_cb, ED4_encodeSearchDescriptor(+1, ED4_ANY_PATTERN), current_ed4w()));
     awmm->create_button("ALL_SEARCH_NEXT", "#edit/next.xpm");
 
     title_mode_changed(aw_root, awmm);
@@ -2004,6 +2016,7 @@ ED4_root::ED4_root(int* argc, char*** argv)
       column_stat_initialized(false),
       visualizeSAI(false),
       visualizeSAI_allSpecies(false),
+      loadable_SAIs(LSAI_UNUSED),
       temp_gc(0)
 {}
 
@@ -2011,6 +2024,7 @@ ED4_root::ED4_root(int* argc, char*** argv)
 ED4_root::~ED4_root() {
     delete aw_root;
     delete first_window;
+    delete reference; // needs to be deleted before main_manager (to ensure reference callbacks are removed)
     delete main_manager; // also deletes middle_area_man + top_area_man
     delete database;
     delete ecoli_ref;
@@ -2018,7 +2032,6 @@ ED4_root::~ED4_root() {
     delete helix;
     delete sequence_colors;
     delete edk;
-    delete reference;
     STAT_destroy_ST_ML(st_ml);
 
     free(protstruct);

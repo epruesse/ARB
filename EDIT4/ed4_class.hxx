@@ -37,6 +37,9 @@
 #ifndef DOWNCAST_H
 #include <downcast.h>
 #endif
+#ifndef CHARTABLE_H
+#include "chartable.h"
+#endif
 
 #if defined(IMPLEMENT_DUMP) // ------------------------------
 
@@ -116,9 +119,8 @@ class ED4_Edit_String;
 class ED4_area_manager;
 class ED4_abstract_group_manager;
 class ED4_base;
-class ED4_bases_table;
 class ED4_bracket_terminal;
-class ED4_char_table;
+class BaseFrequencies;
 class ED4_columnStat_terminal;
 class ED4_consensus_sequence_terminal;
 class ED4_cursor;
@@ -151,13 +153,14 @@ class ED4_tree_terminal;
 class ED4_window;
 
 class AP_tree;
-class AWT_reference;
-class AWT_seq_colors;
+class ED4_reference;
+class ED4_seq_colors;
 class BI_ecoli_ref;
 class AW_helix;
 class arb_progress;
 class ST_ML;
 class ed_key;
+class ConsensusBuildParams;
 
 template <class T> class ED4_list;      // derived from Noncopyable
 template <class T> class ED4_list_elem; // derived from Noncopyable
@@ -842,199 +845,6 @@ public:
     ~ED4_members();
 };
 
-#ifdef DEBUG
-// # define TEST_BASES_TABLE
-#endif
-
-#if defined(DEBUG) && !defined(DEVEL_RELEASE)
-# define TEST_CHAR_TABLE_INTEGRITY
-#endif
-
-#define SHORT_TABLE_ELEM_SIZE 1
-#define SHORT_TABLE_MAX_VALUE 0xff
-#define LONG_TABLE_ELEM_SIZE  4
-
-class ED4_bases_table : virtual Noncopyable {
-    int table_entry_size;       // how many bytes are used for each element of 'no_of_bases' (1 or 4 bytes)
-    union {
-        unsigned char *shortTable;
-        int           *longTable;
-    } no_of_bases;      // counts bases for each sequence position
-    int no_of_entries;      // length of bases table
-
-    int legal(int offset) const { return offset>=0 && offset<no_of_entries; }
-
-    void set_elem_long(int offset, int value) {
-#ifdef TEST_BASES_TABLE
-        e4_assert(legal(offset));
-        e4_assert(table_entry_size==LONG_TABLE_ELEM_SIZE);
-#endif
-        no_of_bases.longTable[offset] = value;
-    }
-
-    void set_elem_short(int offset, int value) {
-#ifdef TEST_BASES_TABLE
-        e4_assert(legal(offset));
-        e4_assert(table_entry_size==SHORT_TABLE_ELEM_SIZE);
-        e4_assert(value>=0 && value<=SHORT_TABLE_MAX_VALUE);
-#endif
-        no_of_bases.shortTable[offset] = value;
-    }
-
-    int get_elem_long(int offset) const {
-#ifdef TEST_BASES_TABLE
-        e4_assert(legal(offset));
-        e4_assert(table_entry_size==LONG_TABLE_ELEM_SIZE);
-#endif
-        return no_of_bases.longTable[offset];
-    }
-
-    int get_elem_short(int offset) const {
-#ifdef TEST_BASES_TABLE
-        e4_assert(legal(offset));
-        e4_assert(table_entry_size==SHORT_TABLE_ELEM_SIZE);
-#endif
-        return no_of_bases.shortTable[offset];
-    }
-
-public:
-
-    ED4_bases_table(int maxseqlength);
-    ~ED4_bases_table();
-
-    void init(int length);
-    int size() const { return no_of_entries; }
-
-    int get_table_entry_size() const { return table_entry_size; }
-    void expand_table_entry_size();
-    int bigger_table_entry_size_needed(int new_no_of_sequences) { return table_entry_size==SHORT_TABLE_ELEM_SIZE ? (new_no_of_sequences>SHORT_TABLE_MAX_VALUE) : 0; }
-
-    int operator[](int offset) const { return table_entry_size==SHORT_TABLE_ELEM_SIZE ? get_elem_short(offset) : get_elem_long(offset); }
-
-    void inc_short(int offset)  {
-        int old = get_elem_short(offset);
-        e4_assert(old<255);
-        set_elem_short(offset, old+1);
-    }
-    void dec_short(int offset)  {
-        int old = get_elem_short(offset);
-        e4_assert(old>0);
-        set_elem_short(offset, old-1);
-    }
-    void inc_long(int offset)   {
-        int old = get_elem_long(offset);
-        set_elem_long(offset, old+1);
-    }
-    void dec_long(int offset)   {
-        int old = get_elem_long(offset);
-        e4_assert(old>0);
-        set_elem_long(offset, old-1);
-    }
-
-    int firstDifference(const ED4_bases_table& other, int start, int end, int *firstDifferentPos) const;
-    int lastDifference(const ED4_bases_table& other, int start, int end, int *lastDifferentPos) const;
-
-    void add(const ED4_bases_table& other, int start, int end);
-    void sub(const ED4_bases_table& other, int start, int end);
-    void sub_and_add(const ED4_bases_table& Sub, const ED4_bases_table& Add, PosRange range);
-
-    void change_table_length(int new_length, int default_entry);
-
-
-#if defined(TEST_CHAR_TABLE_INTEGRITY) || defined(ASSERTION_USED)
-    int empty() const;
-#endif // TEST_CHAR_TABLE_INTEGRITY
-};
-
-typedef ED4_bases_table *ED4_bases_table_ptr;
-
-class ED4_char_table : virtual Noncopyable {
-    ED4_bases_table_ptr *bases_table;
-    int                  sequences; // # of sequences added to the table
-    int                  ignore; // this table will be ignored when calculating tables higher in hierarchy // @@@ -> bool
-    // (used to suppress SAI in root_group_man tables)
-
-    // @@@ move statics into own class:
-    static bool               initialized;
-    static unsigned char      char_to_index_tab[MAXCHARTABLE];
-    static unsigned char     *upper_index_chars;
-    static unsigned char     *lower_index_chars;
-    static int                used_bases_tables; // size of 'bases_table'
-    static GB_alignment_type  ali_type;
-
-    static inline void set_char_to_index(unsigned char c, int index);
-
-    void add(const ED4_char_table& other, int start, int end);
-    void sub(const ED4_char_table& other, int start, int end);
-
-    void expand_tables();
-    int get_table_entry_size() const {
-        return linear_table(0).get_table_entry_size();
-    }
-    void prepare_to_add_elements(int new_sequences) {
-        e4_assert(used_bases_tables);
-        if (linear_table(0).bigger_table_entry_size_needed(sequences+new_sequences)) {
-            expand_tables();
-        }
-    }
-
-public:
-
-#if defined(TEST_CHAR_TABLE_INTEGRITY) || defined(ASSERTION_USED)
-    bool ok() const;
-    bool empty() const;
-#endif
-
-#if defined(TEST_CHAR_TABLE_INTEGRITY)
-    void test() const; // test if table is valid (dumps core if invalid)
-#else
-    void test() const {}
-#endif
-
-    ED4_char_table(int maxseqlength=0);
-    ~ED4_char_table();
-
-    static void initial_setup(const char *gap_chars, GB_alignment_type ali_type_);
-
-    void ignore_me() { ignore = 1; }
-    int is_ignored() const { return ignore; }
-
-    void init(int maxseqlength);
-    int size() const { return bases_table[0]->size(); }
-    int added_sequences() const { return sequences; }
-
-    void bases_and_gaps_at(int column, int *bases, int *gaps) const;
-
-    unsigned char index_to_upperChar(int index) const;
-    unsigned char index_to_lowerChar(int index) const;
-
-    // linear access to all tables
-    ED4_bases_table&        linear_table(int c)         { e4_assert(c<used_bases_tables); return *bases_table[c]; }
-    const ED4_bases_table&  linear_table(int c) const   { e4_assert(c<used_bases_tables); return *bases_table[c]; }
-
-    // access via character
-    ED4_bases_table&        table(int c)        { e4_assert(c>0 && c<MAXCHARTABLE); return linear_table(char_to_index_tab[c]); }
-    const ED4_bases_table&  table(int c) const  { e4_assert(c>0 && c<MAXCHARTABLE); return linear_table(char_to_index_tab[c]); }
-
-    const PosRange *changed_range(const ED4_char_table& other) const;
-    static const PosRange *changed_range(const char *string1, const char *string2, int min_len);
-
-    void add(const ED4_char_table& other);
-    void sub(const ED4_char_table& other);
-    void sub_and_add(const ED4_char_table& Sub, const ED4_char_table& Add);
-    void sub_and_add(const ED4_char_table& Sub, const ED4_char_table& Add, PosRange range);
-
-    void add(const char *string, int len);
-    void sub(const char *string, int len);
-    void sub_and_add(const char *old_string, const char *new_string, PosRange range);
-
-    void build_consensus_string_to(char *buffer, ExplicitRange range) const;
-    char *build_consensus_string(PosRange range) const;
-    char *build_consensus_string() const { return build_consensus_string(PosRange::whole()); }
-
-    void change_table_length(int new_length);
-};
-
 // ----------------------------
 //      ED4_species_pointer
 
@@ -1051,20 +861,76 @@ public:
     ED4_species_pointer();
     ~ED4_species_pointer();
 
-    GBDATA *Get() const { return species_pointer; } 
+    GBDATA *Get() const { return species_pointer; }
     void Set(GBDATA *gbd, ED4_base *base);
     void notify_deleted() {
         species_pointer=0;
     }
 };
 
+// ------------------------
+//      callback types
+
+template <class C>
+struct ED4_cb {
+    typedef void (*type)(C*,AW_CL);
+
+private:
+    type  cb;
+    AW_CL cd; // client data
+
+public:
+    ED4_cb(type cb_, AW_CL cd_) : cb(cb_), cd(cd_) {}
+
+    void call(C *c) const { cb(c, cd); }
+    bool operator == (const ED4_cb<C>& other) const {
+        return
+            (char*)cb == (char*)other.cb &&
+            (char*)cd == (char*)other.cd;
+    }
+};
+
+template <class C>
+struct ED4_cb_list {
+    typedef ED4_cb<C>                cbtype;
+    typedef typename ED4_cb<C>::type type;
+
+private:
+    std::list<cbtype> callbacks;
+
+public:
+#if defined(ASSERTION_USED)
+    ED4_cb_list() {}
+    ~ED4_cb_list() {
+        e4_assert(empty()); // calling ED4_root::remove_all_callbacks() did not remove all callbacks!
+    }
+#endif
+
+    void add_cb(type cb, AW_CL cd) {
+        callbacks.push_back(cbtype(cb,cd));
+    }
+    void remove_cb(type cb, AW_CL cd) {
+        callbacks.remove(cbtype(cb,cd));
+    }
+
+    void call(C *c) {
+        for (typename std::list<cbtype>::iterator cb = callbacks.begin(); cb != callbacks.end();) {
+            typename std::list<cbtype>::iterator curr = cb;
+            ++cb;
+            curr->call(c); // Note: may be removed while called
+        }
+    }
+    void clear() { callbacks.clear(); }
+    bool empty() const { return callbacks.empty(); }
+};
+
 // -----------------
 //      ED4_base
 
 class ED4_base;
-typedef ARB_ERROR (*ED4_cb)(ED4_base *, AW_CL, AW_CL);
-typedef ARB_ERROR (*ED4_cb1)(ED4_base *, AW_CL);
-typedef ARB_ERROR (*ED4_cb0)(ED4_base *);
+typedef ARB_ERROR (*ED4_route_cb)(ED4_base *, AW_CL, AW_CL);
+typedef ARB_ERROR (*ED4_route_cb1)(ED4_base *, AW_CL);
+typedef ARB_ERROR (*ED4_route_cb0)(ED4_base *);
 
 enum ED4_species_type {
     ED4_SP_NONE, 
@@ -1190,9 +1056,9 @@ public:
 
     virtual ED4_returncode  handle_move(ED4_move_info *moveinfo) = 0;
 
-    virtual ARB_ERROR route_down_hierarchy(ED4_cb cb, AW_CL cd1, AW_CL cd2);
-    virtual ARB_ERROR route_down_hierarchy(ED4_cb1 cb, AW_CL cd) { return route_down_hierarchy(ED4_cb(cb), cd, 0); }
-    virtual ARB_ERROR route_down_hierarchy(ED4_cb0 cb) { return route_down_hierarchy(ED4_cb(cb), 0, 0); }
+    virtual ARB_ERROR route_down_hierarchy(ED4_route_cb cb, AW_CL cd1, AW_CL cd2);
+    virtual ARB_ERROR route_down_hierarchy(ED4_route_cb1 cb, AW_CL cd) { return route_down_hierarchy(ED4_route_cb(cb), cd, 0); }
+    virtual ARB_ERROR route_down_hierarchy(ED4_route_cb0 cb) { return route_down_hierarchy(ED4_route_cb(cb), 0, 0); }
 
     int calc_group_depth();
 
@@ -1295,29 +1161,30 @@ public:
 #define E4B_AVOID_UNNEEDED_CASTS(name) E4B_AVOID_CAST__helper(concat(ED4_,name), concat(to_,name), concat(is_,name))
 #define E4B_IMPL_CASTOP(name)          E4B_IMPL_CASTOP_helper(concat(ED4_,name), concat(to_,name), concat(is_,name))
 
-    E4B_DECL_CASTOP(area_manager);           // to_area_manager
-    E4B_DECL_CASTOP(abstract_group_manager); // to_abstract_group_manager
-    E4B_DECL_CASTOP(bracket_terminal);       // to_bracket_terminal
-    E4B_DECL_CASTOP(columnStat_terminal);    // to_columnStat_terminal
-    E4B_DECL_CASTOP(device_manager);         // to_device_manager
-    E4B_DECL_CASTOP(group_manager);          // to_group_manager
-    E4B_DECL_CASTOP(line_terminal);          // to_line_terminal
-    E4B_DECL_CASTOP(manager);                // to_manager
-    E4B_DECL_CASTOP(multi_name_manager);     // to_multi_name_manager
-    E4B_DECL_CASTOP(multi_sequence_manager); // to_multi_sequence_manager
-    E4B_DECL_CASTOP(multi_species_manager);  // to_multi_species_manager
-    E4B_DECL_CASTOP(name_manager);           // to_name_manager
-    E4B_DECL_CASTOP(orf_terminal);           // to_orf_terminal
-    E4B_DECL_CASTOP(pure_text_terminal);     // to_pure_text_terminal
-    E4B_DECL_CASTOP(root_group_manager);     // to_root_group_manager
-    E4B_DECL_CASTOP(sequence_info_terminal); // to_sequence_info_terminal
-    E4B_DECL_CASTOP(sequence_manager);       // to_sequence_manager
-    E4B_DECL_CASTOP(sequence_terminal);      // to_sequence_terminal
-    E4B_DECL_CASTOP(spacer_terminal);        // to_spacer_terminal
-    E4B_DECL_CASTOP(species_manager);        // to_species_manager
-    E4B_DECL_CASTOP(species_name_terminal);  // to_species_name_terminal
-    E4B_DECL_CASTOP(terminal);               // to_terminal
-    E4B_DECL_CASTOP(text_terminal);          // to_text_terminal
+    E4B_DECL_CASTOP(area_manager);                // to_area_manager
+    E4B_DECL_CASTOP(abstract_group_manager);      // to_abstract_group_manager
+    E4B_DECL_CASTOP(bracket_terminal);            // to_bracket_terminal
+    E4B_DECL_CASTOP(columnStat_terminal);         // to_columnStat_terminal
+    E4B_DECL_CASTOP(consensus_sequence_terminal); // to_consensus_sequence_terminal
+    E4B_DECL_CASTOP(device_manager);              // to_device_manager
+    E4B_DECL_CASTOP(group_manager);               // to_group_manager
+    E4B_DECL_CASTOP(line_terminal);               // to_line_terminal
+    E4B_DECL_CASTOP(manager);                     // to_manager
+    E4B_DECL_CASTOP(multi_name_manager);          // to_multi_name_manager
+    E4B_DECL_CASTOP(multi_sequence_manager);      // to_multi_sequence_manager
+    E4B_DECL_CASTOP(multi_species_manager);       // to_multi_species_manager
+    E4B_DECL_CASTOP(name_manager);                // to_name_manager
+    E4B_DECL_CASTOP(orf_terminal);                // to_orf_terminal
+    E4B_DECL_CASTOP(pure_text_terminal);          // to_pure_text_terminal
+    E4B_DECL_CASTOP(root_group_manager);          // to_root_group_manager
+    E4B_DECL_CASTOP(sequence_info_terminal);      // to_sequence_info_terminal
+    E4B_DECL_CASTOP(sequence_manager);            // to_sequence_manager
+    E4B_DECL_CASTOP(sequence_terminal);           // to_sequence_terminal
+    E4B_DECL_CASTOP(spacer_terminal);             // to_spacer_terminal
+    E4B_DECL_CASTOP(species_manager);             // to_species_manager
+    E4B_DECL_CASTOP(species_name_terminal);       // to_species_name_terminal
+    E4B_DECL_CASTOP(terminal);                    // to_terminal
+    E4B_DECL_CASTOP(text_terminal);               // to_text_terminal
 
     // simple access to containing managers
     inline ED4_species_manager *containing_species_manager() const;
@@ -1337,13 +1204,22 @@ public:
     inline bool is_consensus_terminal() const;
     inline bool is_SAI_terminal() const;
     inline bool is_species_seq_terminal() const;
+
+    inline bool is_consensus_sequence_terminal() const { // alias for CASTOP
+        return is_consensus_terminal();
+    }
 };
 
-struct ED4_manager : public ED4_base { // derived from a Noncopyable
+class ED4_manager : public ED4_base { // derived from a Noncopyable
+    ED4_cb_list<ED4_manager> delete_cbs;
+public:
     ED4_members *children;
 
     E4B_AVOID_UNNEEDED_CASTS(manager);
     DECLARE_DUMP_FOR_BASECLASS(ED4_manager, ED4_base);
+
+    void add_delete_callback(ED4_cb<ED4_manager>::type cb, AW_CL cd) { delete_cbs.add_cb(cb, cd); }
+    void remove_delete_callback(ED4_cb<ED4_manager>::type cb, AW_CL cd) { delete_cbs.remove_cb(cb, cd); }
 
     int refresh_flag_ok();
 
@@ -1373,9 +1249,9 @@ struct ED4_manager : public ED4_base { // derived from a Noncopyable
 
     void create_consensus(ED4_abstract_group_manager *upper_group_manager, arb_progress *progress);
 
-    virtual ARB_ERROR route_down_hierarchy(ED4_cb cb, AW_CL cd1, AW_CL cd2) OVERRIDE;
-    virtual ARB_ERROR route_down_hierarchy(ED4_cb1 cb, AW_CL cd) OVERRIDE { return route_down_hierarchy(ED4_cb(cb), cd, 0); }
-    virtual ARB_ERROR route_down_hierarchy(ED4_cb0 cb) OVERRIDE { return route_down_hierarchy(ED4_cb(cb), 0, 0); }
+    virtual ARB_ERROR route_down_hierarchy(ED4_route_cb cb, AW_CL cd1, AW_CL cd2) OVERRIDE;
+    virtual ARB_ERROR route_down_hierarchy(ED4_route_cb1 cb, AW_CL cd) OVERRIDE { return route_down_hierarchy(ED4_route_cb(cb), cd, 0); }
+    virtual ARB_ERROR route_down_hierarchy(ED4_route_cb0 cb) OVERRIDE { return route_down_hierarchy(ED4_route_cb(cb), 0, 0); }
 
     ED4_base* find_first_that(ED4_level level, bool (*condition)(ED4_base *to_test, AW_CL arg), AW_CL arg);
     ED4_base* find_first_that(ED4_level level, bool (*condition)(ED4_base *to_test)) {
@@ -1404,7 +1280,7 @@ struct ED4_manager : public ED4_base { // derived from a Noncopyable
     ED4_returncode  update_bases(const ED4_base *old_base, const ED4_base *new_base, PosRange range = PosRange::whole());
     ED4_returncode  update_bases(const char *old_seq, int old_len, const char *new_seq, int new_len, PosRange range = PosRange::whole());
     ED4_returncode  update_bases(const char *old_seq, int old_len, const ED4_base *new_base, PosRange range = PosRange::whole());
-    ED4_returncode  update_bases(const ED4_char_table *old_table, const ED4_char_table *new_table, PosRange range = PosRange::whole());
+    ED4_returncode  update_bases(const BaseFrequencies *old_table, const BaseFrequencies *new_table, PosRange range = PosRange::whole());
 
     ED4_returncode  update_bases_and_rebuild_consensi(const char *old_seq, int old_len, ED4_base *species, ED4_update_flag update_flag, PosRange range = PosRange::whole());
 
@@ -1553,6 +1429,11 @@ inline ED4_window *current_ed4w() { return ED4_WinContext::get_current_context()
 inline AW_window *current_aww() { return current_ed4w()->aww; }
 inline ED4_cursor& current_cursor() { return current_ed4w()->cursor; }
 
+enum LoadableSaiState {
+    LSAI_UNUSED,
+    LSAI_UPTODATE,
+    LSAI_OUTDATED,
+};
 
 class ED4_root : virtual Noncopyable {
     void ED4_ROOT() const { e4_assert(0); } // avoid ED4_root-members use global ED4_ROOT
@@ -1560,7 +1441,8 @@ class ED4_root : virtual Noncopyable {
     void refresh_window_simple(bool redraw);
     void handle_update_requests(bool& redraw);
 
-    ED4_window *most_recently_used_window;
+    ED4_window           *most_recently_used_window;
+    ConsensusBuildParams *cons_param;
 
 public:
     char       *db_name;                            // name of Default Properties database (complete path)
@@ -1582,8 +1464,8 @@ public:
     BI_ecoli_ref            *ecoli_ref;
     char                    *alignment_name;
     GB_alignment_type        alignment_type;
-    AWT_reference           *reference;
-    AWT_seq_colors          *sequence_colors;
+    ED4_reference           *reference;
+    ED4_seq_colors          *sequence_colors;
     AW_gc_manager            gc_manager;
     ST_ML                   *st_ml;
     AW_helix                *helix;
@@ -1599,6 +1481,12 @@ public:
     bool column_stat_initialized;
     bool visualizeSAI;
     bool visualizeSAI_allSpecies;
+
+    const ConsensusBuildParams& get_consensus_params();
+    void reset_consensus_params();
+
+    LoadableSaiState loadable_SAIs; // maintain proper refresh of list of loadable SAIs
+    void loadable_SAIs_may_have_changed() { if (loadable_SAIs == LSAI_UPTODATE) loadable_SAIs = LSAI_OUTDATED; }
 
     int temp_gc;
     AW_font_group font_group;
@@ -1775,21 +1663,24 @@ public:
 class ED4_abstract_group_manager : public ED4_manager {
     E4B_AVOID_UNNEEDED_CASTS(abstract_group_manager);
 protected:
-    ED4_char_table my_table; // table concerning Consensusfunction
+    BaseFrequencies my_table; // table concerning Consensusfunction
 
 public:
     ED4_abstract_group_manager(const ED4_objspec& spec_, const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
 
     DECLARE_DUMP_FOR_BASECLASS(ED4_abstract_group_manager, ED4_manager);
 
-    ED4_char_table&         table() { return my_table; }
-    const ED4_char_table&   table() const { return my_table; }
-
-    ED4_bases_table& table(unsigned char c) { return table().table(c); }
-    const ED4_bases_table& table(unsigned char c) const { return table().table(c); }
+    BaseFrequencies&       table()       { return my_table; }
+    const BaseFrequencies& table() const { return my_table; }
 
     ED4_multi_species_manager *get_multi_species_manager() const {
         return get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
+    }
+
+    char *build_consensus_string(PosRange range) const { return table().build_consensus_string(range, ED4_ROOT->get_consensus_params()); }
+    char *build_consensus_string(int *cons_length = NULL) const {
+        if (cons_length) *cons_length = table().size();
+        return table().build_consensus_string(ED4_ROOT->get_consensus_params());
     }
 };
 
@@ -1823,7 +1714,7 @@ class ED4_remap : virtual Noncopyable {
     size_t screen_len;          // size of recently compiled part of screen_to_sequence_tab
 
     int *screen_to_sequence_tab;
-    int *sequence_to_screen_tab;    // <0 means position is not mapped (last displayed sequence position)
+    int *sequence_to_screen_tab;    // <0 means position is not mapped (last displayed sequence position); 0 may be mapped or not; see is_shown() below
 
     int changed;            // remap-table changed at last compile
     int update_needed;          // remapping should be recompiled
@@ -1863,6 +1754,8 @@ public:
 
     size_t get_max_screen_pos() const { return screen_len-1; }
 
+    void adjacent_screen_positions(int seq_pos, int& screen_pos_left, int& screen_pos_right);
+
     ED4_remap_mode get_mode() const { return mode; }
     void set_mode(ED4_remap_mode Mode, int above_percent) {
         if (Mode<0 || Mode>=ED4_RM_MODES) {
@@ -1888,7 +1781,14 @@ public:
     GB_ERROR compile(ED4_root_group_manager *gm);
     int was_changed() const { return changed; }     // mapping changed by last compile ?
 
-    int is_shown(int position) const { return sequence_to_screen_PLAIN(position)>=0; }
+    int is_shown(int seq_pos) const {
+        int scr_pos = sequence_to_screen_PLAIN(seq_pos);
+        if (scr_pos<0) return false;
+        if (scr_pos>0) return true;
+
+        int seq_pos2    = screen_to_sequence_tab[0];
+        return seq_pos == seq_pos2;
+    }
 
     ExplicitRange clip_screen_range(PosRange screen_range) const { return ExplicitRange(screen_range, screen_len-1); }
 };
@@ -1910,27 +1810,10 @@ public:
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_abstract_group_manager);
 };
 
-typedef void (*ED4_species_manager_cb)(ED4_species_manager*, AW_CL);
-
-class ED4_species_manager_cb_data {
-    ED4_species_manager_cb cb;
-    AW_CL                  cd; // client data
-
-public:
-    ED4_species_manager_cb_data(ED4_species_manager_cb cb_, AW_CL cd_) : cb(cb_), cd(cd_) {}
-
-    void call(ED4_species_manager *man) const { cb(man, cd); }
-    bool operator == (const ED4_species_manager_cb_data& other) const {
-        return
-            (char*)cb == (char*)other.cb &&
-            (char*)cd == (char*)other.cd;
-    }
-};
-
 class ED4_species_manager : public ED4_manager {
     E4B_AVOID_UNNEEDED_CASTS(species_manager);
-    
-    std::list<ED4_species_manager_cb_data> callbacks;
+
+    ED4_cb_list<ED4_species_manager> changed_cbs; // called when sequence changes
 
     ED4_species_type type;
     bool selected;
@@ -1951,11 +1834,9 @@ public:
 
     bool setCursorTo(ED4_cursor *cursor, int seq_pos, bool unfold_groups, ED4_CursorJumpType jump_type);
 
-    void add_sequence_changed_cb(ED4_species_manager_cb cb, AW_CL cd);
-    void remove_sequence_changed_cb(ED4_species_manager_cb cb, AW_CL cd);
-    void remove_all_callbacks();
-
-    void do_callbacks();
+    void add_sequence_changed_cb(ED4_cb<ED4_species_manager>::type cb, AW_CL cd) { changed_cbs.add_cb(cb, cd); }
+    void remove_sequence_changed_cb(ED4_cb<ED4_species_manager>::type cb, AW_CL cd) { changed_cbs.remove_cb(cb, cd); }
+    void do_callbacks() { changed_cbs.call(this); }
 
     ED4_species_name_terminal *get_name_terminal() const { return children->member(0)->to_species_name_terminal(); }
 };
@@ -2133,6 +2014,8 @@ public:
     virtual void deleted_from_database() OVERRIDE;
     virtual int get_length() const OVERRIDE { return ED4_abstract_sequence_terminal::get_length(); }
 
+    virtual char *get_sequence_copy(int *str_len = 0) const { return resolve_pointer_to_string_copy(str_len); }
+
     void set_secstruct_display(bool show) { shall_display_secstruct_info = show; }
 
     ED4_SearchResults& results() const { return searchResults; }
@@ -2224,15 +2107,22 @@ struct ED4_pure_text_terminal : public ED4_text_terminal {
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_text_terminal);
 };
 
-class ED4_consensus_sequence_terminal : public ED4_sequence_terminal {
+class ED4_consensus_sequence_terminal : public ED4_sequence_terminal { // derived from a Noncopyable
     E4B_AVOID_UNNEEDED_CASTS(consensus_sequence_terminal);
-    
+
     virtual ED4_returncode draw() OVERRIDE;
-    ED4_char_table& get_char_table() const { return get_parent(ED4_L_GROUP)->to_group_manager()->table(); }
+    const ED4_abstract_group_manager *get_group_manager() const  { return get_parent(ED4_L_GROUP)->to_group_manager(); }
+    const BaseFrequencies& get_char_table() const { return get_group_manager()->table(); }
 public:
+    char *temp_cons_seq; // used for editing consensus (normally NULL)
+
     ED4_consensus_sequence_terminal(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
+#if defined(ASSERTION_USED)
+    virtual ~ED4_consensus_sequence_terminal() { e4_assert(!temp_cons_seq); }
+#endif
 
     virtual int get_length() const OVERRIDE;
+    virtual char *get_sequence_copy(int *str_len = 0) const OVERRIDE;
 
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_sequence_terminal);
 };
@@ -2281,39 +2171,40 @@ void ED4_manager::resize_requested_by_child() {
     if (!update_info.resize) request_resize();
 }
 
-
 inline bool ED4_terminal::setCursorTo(ED4_cursor *cursor, int seq_pos, bool unfoldGroups, ED4_CursorJumpType jump_type) {
     ED4_species_manager *sm = get_parent(ED4_L_SPECIES)->to_species_manager();
     return sm->setCursorTo(cursor, seq_pos, unfoldGroups, jump_type);
 }
 
-E4B_IMPL_CASTOP(area_manager);           // to_area_manager
-E4B_IMPL_CASTOP(abstract_group_manager); // to_abstract_group_manager
-E4B_IMPL_CASTOP(bracket_terminal);       // to_bracket_terminal
-E4B_IMPL_CASTOP(columnStat_terminal);    // to_columnStat_terminal
-E4B_IMPL_CASTOP(device_manager);         // to_device_manager
-E4B_IMPL_CASTOP(group_manager);          // to_group_manager
-E4B_IMPL_CASTOP(line_terminal);          // to_line_terminal
-E4B_IMPL_CASTOP(manager);                // to_manager
-E4B_IMPL_CASTOP(multi_name_manager);     // to_multi_name_manager
-E4B_IMPL_CASTOP(multi_sequence_manager); // to_multi_sequence_manager
-E4B_IMPL_CASTOP(multi_species_manager);  // to_multi_species_manager
-E4B_IMPL_CASTOP(name_manager);           // to_name_manager
-E4B_IMPL_CASTOP(orf_terminal);           // to_orf_terminal
-E4B_IMPL_CASTOP(pure_text_terminal);     // to_pure_text_terminal
-E4B_IMPL_CASTOP(root_group_manager);     // to_root_group_manager
-E4B_IMPL_CASTOP(sequence_info_terminal); // to_sequence_info_terminal
-E4B_IMPL_CASTOP(sequence_manager);       // to_sequence_manager
-E4B_IMPL_CASTOP(sequence_terminal);      // to_sequence_terminal
-E4B_IMPL_CASTOP(spacer_terminal);        // to_spacer_terminal
-E4B_IMPL_CASTOP(species_manager);        // to_species_manager
-E4B_IMPL_CASTOP(species_name_terminal);  // to_species_name_terminal
-E4B_IMPL_CASTOP(terminal);               // to_terminal
-E4B_IMPL_CASTOP(text_terminal);          // to_text_terminal
+E4B_IMPL_CASTOP(area_manager);                // to_area_manager
+E4B_IMPL_CASTOP(abstract_group_manager);      // to_abstract_group_manager
+E4B_IMPL_CASTOP(bracket_terminal);            // to_bracket_terminal
+E4B_IMPL_CASTOP(columnStat_terminal);         // to_columnStat_terminal
+E4B_IMPL_CASTOP(consensus_sequence_terminal); // to_consensus_sequence_terminal
+E4B_IMPL_CASTOP(device_manager);              // to_device_manager
+E4B_IMPL_CASTOP(group_manager);               // to_group_manager
+E4B_IMPL_CASTOP(line_terminal);               // to_line_terminal
+E4B_IMPL_CASTOP(manager);                     // to_manager
+E4B_IMPL_CASTOP(multi_name_manager);          // to_multi_name_manager
+E4B_IMPL_CASTOP(multi_sequence_manager);      // to_multi_sequence_manager
+E4B_IMPL_CASTOP(multi_species_manager);       // to_multi_species_manager
+E4B_IMPL_CASTOP(name_manager);                // to_name_manager
+E4B_IMPL_CASTOP(orf_terminal);                // to_orf_terminal
+E4B_IMPL_CASTOP(pure_text_terminal);          // to_pure_text_terminal
+E4B_IMPL_CASTOP(root_group_manager);          // to_root_group_manager
+E4B_IMPL_CASTOP(sequence_info_terminal);      // to_sequence_info_terminal
+E4B_IMPL_CASTOP(sequence_manager);            // to_sequence_manager
+E4B_IMPL_CASTOP(sequence_terminal);           // to_sequence_terminal
+E4B_IMPL_CASTOP(spacer_terminal);             // to_spacer_terminal
+E4B_IMPL_CASTOP(species_manager);             // to_species_manager
+E4B_IMPL_CASTOP(species_name_terminal);       // to_species_name_terminal
+E4B_IMPL_CASTOP(terminal);                    // to_terminal
+E4B_IMPL_CASTOP(text_terminal);               // to_text_terminal
 
 inline ED4_device_manager *ED4_root::get_device_manager() {
     return main_manager->search_spec_child_rek(ED4_L_DEVICE)->to_device_manager();
 }
+
 
 inline ED4_species_name_terminal *ED4_multi_species_manager::get_consensus_name_terminal() const { 
     ED4_species_manager *consensus_man = get_consensus_manager();
@@ -2359,34 +2250,35 @@ void ED4_store_curpos(AW_window *aww);
 void ED4_restore_curpos(AW_window *aww);
 void ED4_clear_stored_curpos();
 void ED4_helix_jump_opposite(AW_window *aww);
-void ED4_jump_to_cursor_position(AW_window *aww, AW_CL cl_awar_name, AW_CL cl_pos_type);
+void ED4_jump_to_cursor_position(AW_window *aww, const char *awar_name, PositionType posType);
 void ED4_remote_set_cursor_cb(AW_root *awr);
 void ED4_change_cursor(AW_window *aww);
 
-void ED4_set_iupac(AW_window *aww, char *awar_name, bool callback_flag);
-void ED4_set_helixnr(AW_window *aww, char *awar_name, bool callback_flag);
-void ed4_changesecurity(AW_root *root, AW_CL cd1);
-void ed4_change_edit_mode(AW_root *root, AW_CL cd1);
+void ED4_set_iupac(AW_window *aww, const char *awar_name);
+void ED4_set_helixnr(AW_window *aww, const char *awar_name);
+void ed4_changesecurity(AW_root *root);
+void ed4_change_edit_mode(AW_root *root);
 
-void ED4_jump_to_current_species(AW_window *, AW_CL);
-void ED4_get_and_jump_to_current(AW_window *, AW_CL);
-void ED4_get_and_jump_to_current_from_menu(AW_window *aw, AW_CL cl, AW_CL);
+void ED4_jump_to_current_species(AW_window *);
+void ED4_get_and_jump_to_current(AW_window *);
 void ED4_get_and_jump_to_species(GB_CSTR species_name);
 
-void ED4_get_marked_from_menu(AW_window *, AW_CL, AW_CL);
+void ED4_get_marked_from_menu(AW_window *);
 void ED4_selected_species_changed_cb(AW_root *aw_root);
-void ED4_selected_SAI_changed_cb(AW_root *aw_root);
+
+AW_window *ED4_create_loadSAI_window(AW_root *awr);
+void       ED4_get_and_jump_to_selected_SAI(AW_window *aww);
+void       ED4_selected_SAI_changed_cb(AW_root *aw_root);
 
 void ED4_init_notFoundMessage();
 void ED4_finish_and_show_notFoundMessage();
 
 void ED4_init_aligner_data_access(AlignDataAccess *data_access);
-void ED4_set_reference_species(AW_window *aww, AW_CL cd1, AW_CL cd2);
 
 void ED4_popup_gc_window(AW_window *awp, AW_gc_manager gcman);
 void ED4_no_dangerous_modes();
 
-void       group_species_cb(AW_window *aww, AW_CL cd1, AW_CL cd2);
+void       group_species_cb(AW_window *aww, bool use_fields);
 AW_window *ED4_create_group_species_by_field_window(AW_root *aw_root);
 
 AW_window *ED4_create_loadConfiguration_window(AW_root *awr);
@@ -2401,15 +2293,18 @@ AW_window *ED4_create_consensus_definition_window(AW_root *root);
 void       ED4_consensus_definition_changed(AW_root*);
 void       ED4_consensus_display_changed(AW_root *root);
 
-AW_window *ED4_create_level_1_options_window(AW_root *root);
-void       ED4_compression_toggle_changed_cb(AW_root *root, AW_CL cd1, AW_CL cd2);
+AW_window *ED4_create_editor_options_window(AW_root *root);
+void       ED4_compression_toggle_changed_cb(AW_root *root, bool hideChanged);
 void       ED4_compression_changed_cb(AW_root *awr);
 void       ED4_alignment_length_changed(GBDATA *gb_alignment_len, GB_CB_TYPE gbtype);
 
 AW_window *ED4_create_new_seq_window(AW_root *root, SpeciesCreationMode creation_mode);
 
 ED4_species_name_terminal *ED4_find_species_name_terminal(const char *species_name);
-ED4_multi_species_manager *ED4_new_species_multi_species_manager();     // returns manager into which new species should be inserted
+ED4_species_name_terminal *ED4_find_SAI_name_terminal(const char *sai_name);
+ED4_species_name_terminal *ED4_find_species_or_SAI_name_terminal(const char *species_name);
+
+ED4_multi_species_manager *ED4_new_species_multi_species_manager();
 
 void ED4_quit_editor(AW_window *aww);
 void ED4_quit(AW_window *aww, AW_CL cd1, AW_CL cd2);
@@ -2419,4 +2314,6 @@ void ED4_exit() __ATTR__NORETURN;
 #else
 #error ed4_class included twice
 #endif
+
+
 

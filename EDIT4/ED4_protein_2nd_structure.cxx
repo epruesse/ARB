@@ -1005,10 +1005,9 @@ GB_ERROR ED4_pfold_set_SAI(char **protstruct, GBDATA *gb_main, const char *align
  *  necessary if only the SAI filter changed but not the selected SAI.
  */
 
-static void ED4_pfold_select_SAI_and_update_option_menu(AW_window *aww, AW_CL oms, AW_CL set_sai) {
+static void ED4_pfold_select_SAI_and_update_option_menu(AW_window *aww, AW_option_menu_struct *oms, bool set_sai) {
     e4_assert(aww);
-    AW_option_menu_struct *_oms = ((AW_option_menu_struct*)oms);
-    e4_assert(_oms);
+    e4_assert(oms);
     char *selected_sai = ED4_ROOT->aw_root->awar(PFOLD_AWAR_SELECTED_SAI)->read_string();
     char *sai_filter   = ED4_ROOT->aw_root->awar(PFOLD_AWAR_SAI_FILTER)->read_string();
 
@@ -1017,7 +1016,7 @@ static void ED4_pfold_select_SAI_and_update_option_menu(AW_window *aww, AW_CL om
         if (err) aw_message(err);
     }
 
-    aww->clear_option_menu(_oms);
+    aww->clear_option_menu(oms);
     aww->insert_default_option(selected_sai, "", selected_sai);
     GB_transaction ta(GLOBAL_gb_main);
 
@@ -1027,7 +1026,7 @@ static void ED4_pfold_select_SAI_and_update_option_menu(AW_window *aww, AW_CL om
     {
         const char *sai_name = GBT_read_name(sai);
         if (strcmp(sai_name, selected_sai) != 0 && strstr(sai_name, sai_filter) != 0) {
-            aww->callback(ED4_pfold_select_SAI_and_update_option_menu, (AW_CL)_oms, true);
+            aww->callback(makeWindowCallback(ED4_pfold_select_SAI_and_update_option_menu, oms, true));
             aww->insert_option(sai_name, "", sai_name);
         }
     }
@@ -1056,7 +1055,7 @@ static void setup_pfold_config(AWT_config_definition& cdef) {
     }
 }
 
-AW_window *ED4_pfold_create_props_window(AW_root *awr, void (*cb)(AW_window*)) {
+AW_window *ED4_pfold_create_props_window(AW_root *awr, const WindowCallback *refreshCallback) {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(awr, "PFOLD_PROPS", "PROTEIN_MATCH_SETTINGS");
 
@@ -1080,7 +1079,7 @@ AW_window *ED4_pfold_create_props_window(AW_root *awr, void (*cb)(AW_window*)) {
 
     // create toggle field for showing the protein structure match
     aws->label("Show protein structure match?");
-    aws->callback(makeWindowCallback(cb));
+    aws->callback(*refreshCallback);
     aws->create_toggle(PFOLD_AWAR_ENABLE);
     aws->at_newline();
 
@@ -1088,10 +1087,10 @@ AW_window *ED4_pfold_create_props_window(AW_root *awr, void (*cb)(AW_window*)) {
     aws->label_length(30);
     aws->label("Selected Protein Structure SAI");
     AW_option_menu_struct *oms_sai = aws->create_option_menu(PFOLD_AWAR_SELECTED_SAI, true);
-    ED4_pfold_select_SAI_and_update_option_menu(aws, (AW_CL)oms_sai, 0);
+    ED4_pfold_select_SAI_and_update_option_menu(aws, oms_sai, false);
     aws->at_newline();
     aws->label("-> Filter SAI names for");
-    aws->callback(ED4_pfold_select_SAI_and_update_option_menu, (AW_CL)oms_sai, 0);
+    aws->callback(makeWindowCallback(ED4_pfold_select_SAI_and_update_option_menu, oms_sai, false));
     aws->create_input_field(PFOLD_AWAR_SAI_FILTER, 10);
     aws->at_newline();
 
@@ -1101,7 +1100,7 @@ AW_window *ED4_pfold_create_props_window(AW_root *awr, void (*cb)(AW_window*)) {
     aws->label("Match Method");
     aws->create_option_menu(PFOLD_AWAR_MATCH_METHOD, true);
     for (int i = 0; const char *mm_aw = pfold_match_method_awars[i].name; i++) {
-        aws->callback(makeWindowCallback(cb));
+        aws->callback(*refreshCallback);
         if (match_method == pfold_match_method_awars[i].value) {
             aws->insert_default_option(mm_aw, "", match_method);
         }
@@ -1116,20 +1115,20 @@ AW_window *ED4_pfold_create_props_window(AW_root *awr, void (*cb)(AW_window*)) {
     // TODO: show only fields that are relevant for current match method -> bind to callback function?
     aws->label_length(40);
     aws->label("Match Symbols (Range 0-100% in steps of 10%)");
-    aws->callback(makeWindowCallback(cb));
+    aws->callback(*refreshCallback);
     aws->create_input_field(PFOLD_AWAR_SYMBOL_TEMPLATE_2, 10);
     aws->at_newline();
     for (int i = 0; pfold_match_type_awars[i].name; i++) {
         aws->label_length(12);
         sprintf(awar, PFOLD_AWAR_PAIR_TEMPLATE, pfold_match_type_awars[i].name);
         aws->label(pfold_match_type_awars[i].name);
-        aws->callback(makeWindowCallback(cb));
+        aws->callback(*refreshCallback);
         aws->create_input_field(awar, 30);
         // TODO: is it possible to disable input field for STRUCT_UNKNOWN?
         // if (pfold_match_type_awars[i].value == STRUCT_UNKNOWN)
         if (!i) aws->get_at_position(&ex, &ey);
         sprintf(awar, PFOLD_AWAR_SYMBOL_TEMPLATE, pfold_match_type_awars[i].name);
-        aws->callback(makeWindowCallback(cb));
+        aws->callback(*refreshCallback);
         aws->create_input_field(awar, 3);
         aws->at_newline();
     }

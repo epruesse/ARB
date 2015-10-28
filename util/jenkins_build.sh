@@ -27,6 +27,14 @@ case $OSNAME in
     ;;
 esac
 
+# fallback language (avoid perl spam)
+if [ -z "${LANG:-}" ]; then
+    echo "Note: LANG was unset (using fallback 'C')"
+    export LANG=C
+else
+    echo "Note: LANG is '$LANG'"
+fi
+
 # prepare config.makefile
 CFG=config.makefile
 rm -f $CFG

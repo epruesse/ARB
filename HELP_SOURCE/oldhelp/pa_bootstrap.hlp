@@ -54,7 +54,7 @@ SECTION         PUBLIC
 
                 This algorithm is not published and I am not going to publish
 		it. If you feel the strong need to do this, please don't forget
-		to mention me (Oliver Strunk <strunk@mikro.biologie.tu-muenchen.de>)
+		to mention me (Oliver Strunk).
 
 WARNINGS	Use filters to exclude superfluous gaps and to
 		increase bootstrap values
