@@ -61,7 +61,7 @@ int getelem(NA_Sequence *a, int b);
 void putelem(NA_Sequence *a, int b, NA_Base c);
 
 /* GDE_event.cxx */
-void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL dummy_1x);
+void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem);
 
 #else
 #error GDE_proto.h included twice
