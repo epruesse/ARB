@@ -364,7 +364,7 @@ static void toggle_mark_of_specData(GBDATA *gb_data) {
     if (gb_species) GB_write_flag(gb_species, !GB_read_flag(gb_species));
 }
 
-GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char key, int direction, ED4_EDITMODI mode, bool is_consensus,
+GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char key, int direction, ED4_EDITMODE mode, bool is_consensus,
                                   long &seq_pos, bool &changed_flag, ED4_CursorJumpType& cursor_jump, bool &cannot_handle, bool &write_fault, GBDATA* gb_data, bool is_sequence)
 {
     changed_flag = 0;

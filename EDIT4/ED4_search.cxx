@@ -665,13 +665,8 @@ static SearchTree     *tree[SEARCH_PATTERNS]; // Search trees for each type
 
 // --------------------------------------------------------------------------------
 
-static void searchParamsChanged(AW_root *root, AW_CL cl_type, AW_CL cl_action)
-{
-    ED4_SearchPositionType type = ED4_SearchPositionType(cl_type);
-    enum search_params_changed_action action = (enum search_params_changed_action)cl_action;
-
+static void searchParamsChanged(AW_root *root, ED4_SearchPositionType type, search_params_changed_action action) {
     // check awar values
-
     if (action & (TEST_MIN_MISMATCH|TEST_MAX_MISMATCH)) {
         int mimi = root->awar(awar_list[type].min_mismatches)->read_int();
         int mami = root->awar(awar_list[type].max_mismatches)->read_int();
@@ -774,10 +769,9 @@ static void searchParamsChanged(AW_root *root, AW_CL cl_type, AW_CL cl_action)
 
 void ED4_create_search_awars(AW_root *root)
 {
-#define cb(action) add_callback(searchParamsChanged, AW_CL(i), AW_CL(action))
+#define cb(action) add_callback(makeRootCallback(searchParamsChanged, ED4_SearchPositionType(i), search_params_changed_action(action)));
 
-    int i;
-    for (i=0; i<SEARCH_PATTERNS; i++) {
+    for (int i=0; i<SEARCH_PATTERNS; i++) {
         root->awar_string(awar_list[i].pattern, 0, GLOBAL_gb_main)                             ->cb(REFRESH_IF_SHOWN | RECALC_SEARCH_TREE | DO_AUTO_JUMP);
         root->awar_int(awar_list[i].case_sensitive, ED4_SC_CASE_INSENSITIVE, GLOBAL_gb_main)   ->cb(REFRESH_IF_SHOWN | RECALC_SEARCH_TREE | DO_AUTO_JUMP);
         root->awar_int(awar_list[i].tu, ED4_ST_T_EQUAL_U, GLOBAL_gb_main)                      ->cb(REFRESH_IF_SHOWN | RECALC_SEARCH_TREE | DO_AUTO_JUMP);
@@ -793,7 +787,7 @@ void ED4_create_search_awars(AW_root *root)
         root->awar_int(awar_list[i].autoJump, 1, GLOBAL_gb_main)                               ->cb(DO_AUTO_JUMP);
 
         settings[i] = new SearchSettings(&awar_list[i]);
-        tree[i] = new SearchTree(settings[i]);
+        tree[i]     = new SearchTree(settings[i]);
     }
 
     root->awar_int(ED4_AWAR_SEARCH_RESULT_CHANGED, 0, GLOBAL_gb_main);
@@ -1314,7 +1308,7 @@ GB_ERROR ED4_repeat_last_search(ED4_window *ed4w) {
         return GBS_global_string("You have to search first, before you can repeat a search.");
     }
 
-    ED4_search_cb(0, last_searchDescriptor, ed4w);
+    ED4_search_cb(NULL, last_searchDescriptor, ed4w);
     return 0;
 }
 
