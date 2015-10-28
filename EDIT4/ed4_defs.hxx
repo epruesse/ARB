@@ -83,8 +83,7 @@ extern bool         DRAW;
 
 #define MAX_POSSIBLE_SEQ_LENGTH     100000000
 
-#define MAXCHARTABLE 256                            // Maximum of Consensustable
-#define MAXWINDOWS   5
+#define MAXWINDOWS 5
 
 #define AWAR_EDIT_MODE                  "tmp/edit4/edit_mode"
 #define AWAR_INSERT_MODE                "tmp/edit4/insert_mode"
@@ -106,7 +105,6 @@ extern bool         DRAW;
 #define AWAR_EDIT_TERMINAL_SPACING "edit4/terminal_add_spacing"
 
 #define CHARACTEROFFSET 5       // spacer-width left of text-terminal
-#define CONSENSUS       "Consensusfunktion"
 
 typedef long ED4_index;
 

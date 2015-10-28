@@ -120,7 +120,7 @@ static void dot_missing_bases(AW_window *aww) {
         ED4_group_manager *group_manager = cursor->owner_of_cursor->get_parent(ED4_L_GROUP)->to_group_manager();
         {
             // build list of positions where consensus contains upper case characters:
-            char *consensus = group_manager->table().build_consensus_string();
+            char *consensus = group_manager->build_consensus_string();
             for (int pass = 1; pass <= 2; pass++) {
                 stat.pos_count = 0;
                 for (int pos = 0; consensus[pos]; pos++) {

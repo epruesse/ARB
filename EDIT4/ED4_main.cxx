@@ -18,6 +18,7 @@
 #include "ed4_protein_2nd_structure.hxx"
 #include "ed4_dots.hxx"
 #include "ed4_naligner.hxx"
+#include "ed4_seq_colors.hxx"
 #include "graph_aligner_gui.hxx"
 #include <ed4_extern.hxx>
 
@@ -26,7 +27,6 @@
 #include <AW_helix.hxx>
 #include <AP_pro_a_nucs.hxx>
 #include <ad_config.h>
-#include <awt_seq_colors.hxx>
 #include <awt_map_key.hxx>
 #include <awt.hxx>
 
@@ -45,26 +45,26 @@
 AW_HEADER_MAIN
 
 ED4_root *ED4_ROOT;
-GBDATA   *GLOBAL_gb_main = NULL;                                        // global gb_main for arb_edit4
+GBDATA   *GLOBAL_gb_main = NULL; // global gb_main for arb_edit4
 
-int TERMINALHEIGHT;                                                     // this variable replaces the define
+int TERMINALHEIGHT;
 
 int INFO_TERM_TEXT_YOFFSET;
 int SEQ_TERM_TEXT_YOFFSET;
 
-int MAXSEQUENCECHARACTERLENGTH;                                         // greatest # of characters in a sequence string terminal
+int MAXSEQUENCECHARACTERLENGTH; // greatest # of characters in a sequence string terminal
 int MAXSPECIESWIDTH;
-int MAXINFOWIDTH;                                                       // # of pixels used to display sequence info ("CONS", "4data", etc.)
+int MAXINFOWIDTH;               // # of pixels used to display sequence info ("CONS", "4data", etc.)
 
 long ED4_counter = 0;
 
-size_t         not_found_counter;                   // nr of species which haven't been found
+size_t         not_found_counter; // nr of species which haven't been found
 GBS_strstruct *not_found_message;
 
-long         max_seq_terminal_length;               // global maximum of sequence terminal length
+long         max_seq_terminal_length; // global maximum of sequence terminal length
 ED4_EDITMODI awar_edit_mode;
 long         awar_edit_rightward;
-bool         move_cursor;                           // only needed for editing in consensus
+bool         move_cursor;             // only needed for editing in consensus
 bool         DRAW;
 
 inline void replaceChars(char *s, char o, char n) {
@@ -153,11 +153,8 @@ static char *add_area_for_gde(ED4_area_manager *area_man, uchar **&the_names, uc
 
                 if (is_consensus) {
                     ED4_group_manager *group_manager = sequence_terminal->get_parent(ED4_L_GROUP)->to_group_manager();
-                    ED4_char_table&    groupTab      = group_manager->table();
-                    
-                    seq     = groupTab.build_consensus_string();
-                    seq_len = groupTab.size();
 
+                    group_manager->build_consensus_string(&seq_len);
                     e4_assert(strlen(seq) == size_t(seq_len));
 
                     ED4_group_manager *folded_group_man = sequence_terminal->is_in_folded_group();
@@ -254,10 +251,13 @@ static char *ED4_create_sequences_for_gde(AW_CL, GBDATA **&the_species, uchar **
     return err;
 }
 
+void ED4_setup_gaps_and_alitype(const char *gap_chars, GB_alignment_type alitype) {
+    BaseFrequencies::setup(gap_chars, alitype);
+}
+
 static void ED4_gap_chars_changed(AW_root *root) {
     char *gap_chars = root->awar_string(ED4_AWAR_GAP_CHARS)->read_string();
-
-    ED4_init_is_align_character(gap_chars);
+    ED4_setup_gaps_and_alitype(gap_chars, ED4_ROOT->alignment_type);
     free(gap_chars);
 }
 
@@ -496,7 +496,7 @@ int ARB_main(int argc, char *argv[]) {
             ed4_create_all_awars(ED4_ROOT->aw_root, config_name);
 
             ED4_ROOT->st_ml           = STAT_create_ST_ML(GLOBAL_gb_main);
-            ED4_ROOT->sequence_colors = new AWT_seq_colors(ED4_G_SEQUENCES, seq_colors_changed_cb);
+            ED4_ROOT->sequence_colors = new ED4_seq_colors(ED4_G_SEQUENCES, seq_colors_changed_cb);
 
             ED4_ROOT->edk = new ed_key;
             ED4_ROOT->edk->create_awars(ED4_ROOT->aw_root);

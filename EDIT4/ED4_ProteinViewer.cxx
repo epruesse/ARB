@@ -11,12 +11,12 @@
 // =======================================================================================
 
 #include "ed4_ProteinViewer.hxx"
+#include "ed4_seq_colors.hxx"
 #include "ed4_class.hxx"
 
 #include <AP_pro_a_nucs.hxx>
 #include <AP_codon_table.hxx>
 #include <Translate.hxx>
-#include <awt_seq_colors.hxx>
 #include <aw_question.hxx>
 #include <aw_preset.hxx>
 #include <aw_awars.hxx>
@@ -1037,7 +1037,7 @@ AW_window *ED4_CreateProteinViewer_window(AW_root *aw_root) {
         aws->update_toggle_field();
 
         aws->at("colMaps");
-        aws->callback(makeCreateWindowCallback(create_seq_colors_window, ED4_ROOT->sequence_colors));
+        aws->callback(makeCreateWindowCallback(ED4_create_seq_colors_window, ED4_ROOT->sequence_colors));
         aws->button_length(0);
         aws->create_button("COLORMAPS", "#colorMaps.xpm");
 

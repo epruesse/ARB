@@ -55,15 +55,16 @@ namespace iupac {
 #undef _____________
 
     static const char *aminoGroupMembers[AA_GROUP_COUNT] = {
-        "JOUX",   // AA_GROUP_NONE
+        // Note: first character has to representative character of the group
+        "XJOU",   // AA_GROUP_NONE
         "AGPST",  // AA_GROUP_ALPHA
-        "BDENQZ", // AA_GROUP_BETA
+        "DBENQZ", // AA_GROUP_BETA
         "HKR",    // AA_GROUP_GAMMA
         "ILMV",   // AA_GROUP_DELTA
         "FWY",    // AA_GROUP_EPSILON
         "C",      // AA_GROUP_ZETA
     };
-    
+
     static Amino_Group amino_group[26];
 
     class Setup { // setup static data in this module
@@ -237,7 +238,7 @@ char iupac::combine(char c1, char c2, GB_alignment_type ali) {
     return iupac::encode(buffer, ali);
 }
 
-const char* iupac::decode(char iupac, GB_alignment_type ali, int decode_amino_iupac_groups) {
+const char* iupac::decode(char iupac, GB_alignment_type ali, bool decode_amino_iupac_groups) {
     if (!isalpha(iupac)) {
         return IUPAC_EMPTY;
     }

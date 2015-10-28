@@ -1155,6 +1155,7 @@ ARCHS_NTREE = \
 		SERVERCNTRL/SERVERCNTRL.a \
 		SL/ALILINK/ALILINK.a \
 		SL/AW_NAME/AW_NAME.a \
+		SL/CONSENSUS/CONSENSUS.a \
 		SL/DB_SCANNER/DB_SCANNER.a \
 		SL/DB_QUERY/DB_QUERY.a \
 		SL/SEQIO/SEQIO.a \
@@ -1196,6 +1197,7 @@ ARCHS_EDIT4 := \
 		SERVERCNTRL/SERVERCNTRL.a \
 		SL/AW_HELIX/AW_HELIX.a \
 		SL/AW_NAME/AW_NAME.a \
+		SL/CONSENSUS/CONSENSUS.a \
 		SL/ITEMS/ITEMS.a \
 		STAT/STAT.a \
 		SL/GUI_ALIVIEW/GUI_ALIVIEW.a \
@@ -1542,6 +1544,7 @@ SL/ALIVIEW/ALIVIEW.dummy:		links_non_perl
 SL/AP_TREE/AP_TREE.dummy:		links_non_perl
 SL/ARB_TREE/ARB_TREE.dummy:		links_non_perl
 SL/AW_HELIX/AW_HELIX.dummy:		links_non_perl
+SL/CONSENSUS/CONSENSUS.dummy:		links_non_perl
 SL/DB_QUERY/DB_QUERY.dummy:		links_non_perl
 SL/DB_SCANNER/DB_SCANNER.dummy:		links_non_perl
 SL/DB_UI/DB_UI.dummy:			links_non_perl
@@ -2294,6 +2297,7 @@ UNITS_UNTESTABLE_ATM = \
 # for the moment, put all units containing tests into UNITS_TESTED or UNITS_TESTED_FIRST
 
 UNITS_TESTED_FIRST = \
+	SL/CONSENSUS/CONSENSUS.test \
 	DIST/DIST.test \
 	PARSIMONY/PARSIMONY.test \
 	EDIT4/EDIT4.test \
