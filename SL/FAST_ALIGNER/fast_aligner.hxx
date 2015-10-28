@@ -50,7 +50,7 @@ void FastAligner_create_variables(AW_root *root, AW_default db1);
 void FastAligner_set_align_current(AW_root *root, AW_default db1);
 void FastAligner_set_reference_species(AW_root *root);
 
-void      FastAligner_start(AW_window *aw, AW_CL cl_AlignDataAccess);
+void      FastAligner_start(AW_window *aw, const AlignDataAccess *data_access);
 ARB_ERROR FastAligner_delete_temp_entries(GBDATA *gb_main, const char *alignment);
 
 // --------------------------------------------------------------------------------
