@@ -13,9 +13,9 @@
 #include "ed4_awars.hxx"
 #include "ed4_class.hxx"
 #include "ed4_edit_string.hxx"
-#include "ed4_tools.hxx"
 #include "ed4_nds.hxx"
 #include "ed4_list.hxx"
+#include "ed4_seq_colors.hxx"
 
 #include <ad_config.h>
 #include <AW_helix.hxx>
@@ -23,13 +23,13 @@
 #include <awt.hxx>
 #include <item_sel_list.h>
 #include <awt_sel_boxes.hxx>
-#include <awt_seq_colors.hxx>
 #include <aw_awars.hxx>
 #include <aw_msg.hxx>
 #include <arb_progress.h>
 #include <aw_root.hxx>
 #include <macros.hxx>
 #include <arb_defs.h>
+#include <iupac.h>
 
 #include <cctype>
 #include <limits.h>
@@ -246,13 +246,13 @@ static void executeKeystroke(AW_event *event, int repeatCount) {
                 work_info->working_terminal = terminal;
 
                 if (terminal->is_sequence_terminal()) {
-                    work_info->mode           = awar_edit_mode;
+                    work_info->mode        = awar_edit_mode;
                     work_info->rightward   = awar_edit_rightward;
-                    work_info->is_sequence    = 1;
+                    work_info->is_sequence = 1;
                 }
                 else {
                     work_info->rightward   = true;
-                    work_info->is_sequence    = 0;
+                    work_info->is_sequence = 0;
 
                     if (terminal->is_pure_text_terminal()) {
                         work_info->mode = awar_edit_mode;
@@ -275,7 +275,9 @@ static void executeKeystroke(AW_event *event, int repeatCount) {
                     work_info->gb_data = terminal->to_columnStat_terminal()->corresponding_sequence_terminal()->get_species_pointer();
                 }
                 else {
-                    work_info->string = terminal->id;
+                    e4_assert(terminal->is_consensus_terminal());
+                    ED4_consensus_sequence_terminal *cterm = terminal->to_consensus_sequence_terminal();
+                    work_info->string                      = cterm->temp_cons_seq;
                 }
 
                 ED4_Edit_String *edit_string = new ED4_Edit_String;
@@ -284,10 +286,11 @@ static void executeKeystroke(AW_event *event, int repeatCount) {
                 GB_push_transaction(GLOBAL_gb_main);
 
                 if (terminal->is_consensus_terminal()) {
-                    ED4_group_manager *group_manager = terminal->get_parent(ED4_L_GROUP)->to_group_manager();
+                    ED4_consensus_sequence_terminal *cterm         = terminal->to_consensus_sequence_terminal();
+                    ED4_group_manager               *group_manager = terminal->get_parent(ED4_L_GROUP)->to_group_manager();
 
-                    e4_assert(terminal->id == 0); // @@@ safety-belt for terminal->id-misuse
-                    work_info->string = terminal->id = group_manager->table().build_consensus_string();
+                    e4_assert(cterm->temp_cons_seq == 0);
+                    work_info->string = cterm->temp_cons_seq = group_manager->build_consensus_string();
 
                     error = edit_string->edit(work_info);
 
@@ -305,7 +308,7 @@ static void executeKeystroke(AW_event *event, int repeatCount) {
                         group_manager->rebuild_consensi(group_manager, ED4_U_UP_DOWN);
                     }
 
-                    freenull(terminal->id);
+                    freenull(cterm->temp_cons_seq);
                 }
                 else {
                     error = edit_string->edit(work_info);
@@ -784,7 +787,7 @@ void ED4_set_iupac(AW_window *aww, char *awar_name, bool /* callback_flag */) {
 
             if (seq_pos<len) {
                 char *iupac    = ED4_ROOT->aw_root->awar(awar_name)->read_string();
-                char  new_char = ED4_encode_iupac(iupac, ED4_ROOT->alignment_type);
+                char  new_char = iupac::encode(iupac, ED4_ROOT->alignment_type);
 
                 seq[seq_pos] = new_char;
                 cursor->owner_of_cursor->write_sequence(seq, len);
@@ -879,50 +882,6 @@ void ED4_request_relayout() {
     ED4_expose_recalculations();
     ED4_ROOT->main_manager->request_resize();
     ED4_trigger_instant_refresh();
-}
-
-void ED4_set_reference_species(AW_window *aww, AW_CL disable, AW_CL ) {
-    ED4_LocalWinContext uses(aww);
-    GB_transaction      ta(GLOBAL_gb_main);
-
-    if (disable) {
-        ED4_ROOT->reference->init();
-    }
-    else {
-        ED4_cursor *cursor = &current_cursor();
-
-        if (cursor->owner_of_cursor) {
-            if (cursor->in_consensus_terminal()) {
-                ED4_char_table *table     = &cursor->owner_of_cursor->get_parent(ED4_L_GROUP)->to_group_manager()->table();
-                char           *consensus = table->build_consensus_string();
-
-                ED4_ROOT->reference->init("CONSENSUS", consensus, table->size());
-                free(consensus);
-            }
-            else if (cursor->in_SAI_terminal()) {
-                char *name = GBT_read_string(GLOBAL_gb_main, AWAR_SPECIES_NAME);
-                int   datalen;
-                char *data = cursor->owner_of_cursor->resolve_pointer_to_string_copy(&datalen);
-
-                ED4_ROOT->reference->init(name, data, datalen);
-
-                free(data);
-                free(name);
-            }
-            else {
-                char *name = GBT_read_string(GLOBAL_gb_main, AWAR_SPECIES_NAME);
-
-                ED4_ROOT->reference->init(name, ED4_ROOT->alignment_name);
-
-                free(name);
-            }
-        }
-        else {
-            aw_message("First you have to place your cursor");
-        }
-    }
-
-    ED4_ROOT->request_refresh_for_sequence_terminals();
 }
 
 #define SIGNIFICANT_FIELD_CHARS 30 // length used to compare field contents (in createGroupFromSelected)
@@ -1382,7 +1341,7 @@ static AWT_config_mapping_def editor_options_config_mapping[] = {
     { 0, 0 }
 };
 
-AW_window *ED4_create_level_1_options_window(AW_root *root) {
+AW_window *ED4_create_editor_options_window(AW_root *root) {
     AW_window_simple *aws = new AW_window_simple;
 
     aws->init(root, "EDIT4_PROPS", "EDIT4 Options");
@@ -1471,13 +1430,23 @@ static AWT_config_mapping_def consensus_config_mapping[] = {
 };
 
 AW_window *ED4_create_consensus_definition_window(AW_root *root) {
+    // keep in sync with ../NTREE/AP_consensus.cxx@AP_create_con_expert_window
+
     static AW_window_simple *aws = 0;
 
     if (!aws) {
         aws = new AW_window_simple;
 
-        aws->init(root, "EDIT4_CONSENSUS", "EDIT4 Consensus Definition");
+        aws->init(root, "EDIT4_CONSENSUS_DEFm", "EDIT4 Consensus Definition");
         aws->load_xfig("edit4/consensus.fig");
+
+        aws->auto_space(5, 5);
+
+        const int SCALEDCOLUMNS = 3;
+        const int SCALERSIZE    = 150;
+
+        // top part of window:
+        aws->button_length(9);
 
         aws->callback((AW_CB0)AW_POPDOWN);
         aws->at("close");
@@ -1487,12 +1456,7 @@ AW_window *ED4_create_consensus_definition_window(AW_root *root) {
         aws->at("help");
         aws->create_button("HELP", "HELP", "H");
 
-        aws->button_length(10);
-
-        aws->at("showgroups");
-        aws->callback(AWT_create_IUPAC_info_window);
-        aws->create_button("SHOW_IUPAC", "show\nIUPAC...", "s");
-
+        // center part of window (same as in NTREE):
         aws->at("countgaps");
         aws->create_toggle_field(ED4_AWAR_CONSENSUS_COUNTGAPS);
         aws->insert_toggle("on", "1", 1);
@@ -1500,7 +1464,7 @@ AW_window *ED4_create_consensus_definition_window(AW_root *root) {
         aws->update_toggle_field();
 
         aws->at("gapbound");
-        aws->create_input_field(ED4_AWAR_CONSENSUS_GAPBOUND, 4);
+        aws->create_input_field_with_scaler(ED4_AWAR_CONSENSUS_GAPBOUND, SCALEDCOLUMNS, SCALERSIZE, AW_SCALER_LINEAR);
 
         aws->at("group");
         aws->create_toggle_field(ED4_AWAR_CONSENSUS_GROUP);
@@ -1509,14 +1473,19 @@ AW_window *ED4_create_consensus_definition_window(AW_root *root) {
         aws->update_toggle_field();
 
         aws->at("considbound");
-        aws->create_input_field(ED4_AWAR_CONSENSUS_CONSIDBOUND, 4);
+        aws->create_input_field_with_scaler(ED4_AWAR_CONSENSUS_CONSIDBOUND, SCALEDCOLUMNS, SCALERSIZE, AW_SCALER_LINEAR);
+
+        aws->at("showgroups");
+        aws->callback(AWT_create_IUPAC_info_window);
+        aws->create_autosize_button("SHOW_IUPAC", "Show IUPAC groups", "S");
 
         aws->at("upper");
-        aws->create_input_field(ED4_AWAR_CONSENSUS_UPPER, 4);
+        aws->create_input_field_with_scaler(ED4_AWAR_CONSENSUS_UPPER, SCALEDCOLUMNS, SCALERSIZE, AW_SCALER_LINEAR);
 
         aws->at("lower");
-        aws->create_input_field(ED4_AWAR_CONSENSUS_LOWER, 4);
+        aws->create_input_field_with_scaler(ED4_AWAR_CONSENSUS_LOWER, SCALEDCOLUMNS, SCALERSIZE, AW_SCALER_LINEAR);
 
+        // bottom part of window:
         aws->at("show");
         aws->label("Display consensus?");
         aws->create_toggle(ED4_AWAR_CONSENSUS_SHOW);
@@ -1528,15 +1497,29 @@ AW_window *ED4_create_consensus_definition_window(AW_root *root) {
     return aws;
 }
 
+static void consensus_upper_lower_changed_cb(AW_root *awr, bool upper_changed) {
+    AW_awar *awar_lower = awr->awar(ED4_AWAR_CONSENSUS_LOWER);
+    AW_awar *awar_upper = awr->awar(ED4_AWAR_CONSENSUS_UPPER);
+
+    int lower = awar_lower->read_int();
+    int upper = awar_upper->read_int();
+
+    if (upper<lower) {
+        if (upper_changed) awar_lower->write_int(upper);
+        else               awar_upper->write_int(lower);
+    }
+    ED4_consensus_definition_changed(awr);
+}
+
 void ED4_create_consensus_awars(AW_root *aw_root) {
     GB_transaction ta(GLOBAL_gb_main);
 
     aw_root->awar_int(ED4_AWAR_CONSENSUS_COUNTGAPS,   1) ->add_callback(ED4_consensus_definition_changed);
-    aw_root->awar_int(ED4_AWAR_CONSENSUS_GAPBOUND,    60)->add_callback(ED4_consensus_definition_changed);
     aw_root->awar_int(ED4_AWAR_CONSENSUS_GROUP,       1) ->add_callback(ED4_consensus_definition_changed);
-    aw_root->awar_int(ED4_AWAR_CONSENSUS_CONSIDBOUND, 30)->add_callback(ED4_consensus_definition_changed);
-    aw_root->awar_int(ED4_AWAR_CONSENSUS_UPPER,       95)->add_callback(ED4_consensus_definition_changed);
-    aw_root->awar_int(ED4_AWAR_CONSENSUS_LOWER,       70)->add_callback(ED4_consensus_definition_changed);
+    aw_root->awar_int(ED4_AWAR_CONSENSUS_GAPBOUND,    60)->set_minmax(0, 100)->add_callback(ED4_consensus_definition_changed);
+    aw_root->awar_int(ED4_AWAR_CONSENSUS_CONSIDBOUND, 30)->set_minmax(0, 100)->add_callback(ED4_consensus_definition_changed);
+    aw_root->awar_int(ED4_AWAR_CONSENSUS_UPPER,       95)->set_minmax(0, 100)->add_callback(makeRootCallback(consensus_upper_lower_changed_cb, true));
+    aw_root->awar_int(ED4_AWAR_CONSENSUS_LOWER,       70)->set_minmax(0, 100)->add_callback(makeRootCallback(consensus_upper_lower_changed_cb, false));
 
     AW_awar *cons_show = aw_root->awar_int(ED4_AWAR_CONSENSUS_SHOW, 1);
 
@@ -1611,18 +1594,57 @@ AW_window *ED4_create_saveConfigurationAs_window(AW_root *awr) {
     return aws;
 }
 
-static GB_ERROR createDataFromConsensus(GBDATA *gb_species, ED4_group_manager *group_man)
-{
+static char *filter_loadable_SAIs(GBDATA *gb_sai, AW_CL) {
+    GBDATA *gb_ali = GB_search(gb_sai, ED4_ROOT->alignment_name, GB_FIND);
+    if (gb_ali) {
+        GBDATA *gb_data = GB_search(gb_ali, "data", GB_FIND);
+        if (gb_data) {
+            const char *sai_name = GBT_get_name(gb_sai);
+            if (!ED4_find_SAI_name_terminal(sai_name)) { // if not loaded yet
+                return strdup(sai_name);
+            }
+        }
+    }
+    return NULL;
+}
+
+AW_window *ED4_create_loadSAI_window(AW_root *awr) {
+    static AW_window_simple *aws = 0;
+    if (!aws) {
+        aws = new AW_window_simple;
+        aws->init(awr, "LOAD_SAI", "Load additional SAI");
+        aws->load_xfig("edit4/load_sai.fig");
+
+        aws->at("close");
+        aws->callback(AW_POPDOWN);
+        aws->create_button("CLOSE", "CLOSE");
+
+        aws->at("help");
+        aws->callback(makeHelpCallback("e4_get_species.hlp"));
+        aws->create_button("HELP", "HELP");
+
+        aws->at("sai");
+        awt_create_SAI_selection_list(GLOBAL_gb_main, aws, AWAR_SAI_NAME, false, filter_loadable_SAIs, 0);
+        ED4_ROOT->loadable_SAIs = LSAI_UPTODATE;
+
+        aws->at("go");
+        aws->callback(ED4_get_and_jump_to_selected_SAI);
+        aws->create_button("LOAD", "LOAD");
+    }
+    return aws;
+}
+
+static GB_ERROR createDataFromConsensus(GBDATA *gb_species, ED4_group_manager *group_man) {
     GB_ERROR error = 0;
-    ED4_char_table *table = &group_man->table();
-    char *consensus = table->build_consensus_string();
-    int len = table->size();
-    int p;
+
+    int   len;
+    char *consensus = group_man->build_consensus_string(&len);
+
     char *equal_to = ED4_ROOT->aw_root->awar(ED4_AWAR_CREATE_FROM_CONS_REPL_EQUAL)->read_string();
     char *point_to = ED4_ROOT->aw_root->awar(ED4_AWAR_CREATE_FROM_CONS_REPL_POINT)->read_string();
-    int allUpper = ED4_ROOT->aw_root->awar(ED4_AWAR_CREATE_FROM_CONS_ALL_UPPER)->read_int();
+    int   allUpper = ED4_ROOT->aw_root->awar(ED4_AWAR_CREATE_FROM_CONS_ALL_UPPER)->read_int();
 
-    for (p=0; p<len; p++) {
+    for (int p=0; p<len; p++) {
         switch (consensus[p]) {
             case '=': consensus[p] = equal_to[0]; break;
             case '.': consensus[p] = point_to[0]; break;
@@ -1636,12 +1658,12 @@ static GB_ERROR createDataFromConsensus(GBDATA *gb_species, ED4_group_manager *g
     }
 
     if (ED4_ROOT->aw_root->awar(ED4_AWAR_CREATE_FROM_CONS_CREATE_POINTS)) { // points at start & end of sequence?
-        for (p=0; p<len; p++) {
-            if (!ADPP_IS_ALIGN_CHARACTER(consensus[p])) break;
+        for (int p=0; p<len; p++) {
+            if (!ED4_is_gap_character(consensus[p])) break;
             consensus[p] = '.';
         }
-        for (p=len-1; p>=0; p--) {
-            if (!ADPP_IS_ALIGN_CHARACTER(consensus[p])) break;
+        for (int p=len-1; p>=0; p--) {
+            if (!ED4_is_gap_character(consensus[p])) break;
             consensus[p] = '.';
         }
     }

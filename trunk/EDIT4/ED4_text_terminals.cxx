@@ -18,6 +18,7 @@
 #include "ed4_visualizeSAI.hxx"
 #include "ed4_ProteinViewer.hxx"
 #include "ed4_protein_2nd_structure.hxx"
+#include "ed4_seq_colors.hxx"
 
 #include <aw_preset.hxx>
 #include <aw_awar.hxx>
@@ -26,15 +27,10 @@
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
 
-#include <awt_seq_colors.hxx>
 #include <st_window.hxx>
 #include <arbdbt.h>
 
 #include <iostream>
-
-int ED4_consensus_sequence_terminal::get_length() const {
-    return get_char_table().size();
-}
 
 inline void ensure_buffer(char*& buffer, size_t& buffer_size, size_t needed) {
     if (needed>buffer_size) {
@@ -85,10 +81,13 @@ ED4_returncode ED4_consensus_sequence_terminal::draw() {
         char *cons = 0;
         if (!seq_range.is_empty()) {
             cons = GB_give_buffer(seq_range.size()+1);
-            get_char_table().build_consensus_string_to(cons, seq_range);
+            get_char_table().build_consensus_string_to(cons, seq_range, ED4_ROOT->get_consensus_params());
         }
 
         ensure_buffer(buffer, buffer_size, index_range.end()+1);
+
+        ED4_reference *ref            = ED4_ROOT->reference;
+        bool           only_show_diff = ref->only_show_diff_for(this);
 
         for (int pos = index_range.start(); pos <= index_range.end(); ++pos) {
             int seq_pos = rm->screen_to_sequence(pos);
@@ -96,7 +95,8 @@ ED4_returncode ED4_consensus_sequence_terminal::draw() {
                 buffer[pos] = ' ';
             }
             else {
-                buffer[pos] = cons[seq_pos-seq_range.start()];
+                char c      = cons[seq_pos-seq_range.start()];
+                buffer[pos] = only_show_diff ? ref->convert(c, seq_pos) : c;
                 e4_assert(buffer[pos]);
             }
         }
@@ -239,7 +239,7 @@ ED4_returncode ED4_orf_terminal::draw() {
 
         if (iDisplayMode == PV_AA_NAME || iDisplayMode == PV_AA_CODE) {
             // transform strings, compress if needed
-            AWT_reference *ref = ED4_ROOT->reference;
+            ED4_reference *ref = ED4_ROOT->reference;
             ref->expand_to_length(seq_end);
 
             char *char_2_char = ED4_ROOT->sequence_colors->char_2_char_aa;
@@ -389,7 +389,7 @@ ED4_returncode ED4_sequence_terminal::draw() {
 
     // transform strings, compress if needed
     {
-        AWT_reference *ref        = ED4_ROOT->reference;
+        ED4_reference *ref        = ED4_ROOT->reference;
         unsigned char *db_pointer = (unsigned char *)resolve_pointer_to_string_copy();
 
         ref->expand_to_length(seq_end);
@@ -398,16 +398,14 @@ ED4_returncode ED4_sequence_terminal::draw() {
         char *char_2_char = (aliType && (aliType==GB_AT_AA)) ? ED4_ROOT->sequence_colors->char_2_char_aa : ED4_ROOT->sequence_colors->char_2_char;
         char *char_2_gc   = (aliType && (aliType==GB_AT_AA)) ? ED4_ROOT->sequence_colors->char_2_gc_aa : ED4_ROOT->sequence_colors->char_2_gc;
 
-        int scr_pos;
-        int is_ref = ref->reference_species_is(species_name);
-
-        for (scr_pos=left; scr_pos <= right; scr_pos++) {
+        bool only_show_diff = ref->only_show_diff_for(this);
+        for (int scr_pos=left; scr_pos <= right; scr_pos++) {
             int seq_pos = rm->screen_to_sequence(scr_pos);
             int c = db_pointer[seq_pos];
             int gc = char_2_gc[c];
 
             color_is_used[gc] = scr_pos+1;
-            colored_strings[gc][scr_pos] = char_2_char[is_ref ? c : ref->convert(c, seq_pos)];
+            colored_strings[gc][scr_pos] = char_2_char[only_show_diff ? ref->convert(c, seq_pos) : c];
         }
 
         free(db_pointer);

@@ -246,6 +246,7 @@ AP_consensus.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/arb_core.h
+AP_consensus.o: $(ARBHOME)/INCLUDE/arb_defs.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/arb_error.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/arb_progress.h
@@ -268,14 +269,18 @@ AP_consensus.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/cb.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/cb_base.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/cbtypes.h
+AP_consensus.o: $(ARBHOME)/INCLUDE/chartable.h
+AP_consensus.o: $(ARBHOME)/INCLUDE/consensus.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/consensus_config.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/downcast.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/dupstr.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/gccver.h
+AP_consensus.o: $(ARBHOME)/INCLUDE/pos_range.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/smartptr.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/static_assert.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/test_global.h
+AP_consensus.o: $(ARBHOME)/INCLUDE/test_unit.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 AP_pos_var_pars.o: AP_pos_var_pars.h

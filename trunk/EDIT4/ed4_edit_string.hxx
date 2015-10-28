@@ -14,13 +14,14 @@
 #ifndef ED4_DEFS_HXX
 #include "ed4_defs.hxx"
 #endif
+#ifndef CHARTABLE_H
+#include <chartable.h>
+#endif
 
 struct ED4_work_info;
 
- // @@@ replace ED4_is_align_character by class containing table (store whereever)
-extern unsigned char *ED4_is_align_character;
-inline bool ADPP_IS_ALIGN_CHARACTER(unsigned char chr) { return ED4_is_align_character[chr] != 0; }
-void ED4_init_is_align_character(GB_CSTR gap_chars);
+inline bool ED4_is_gap_character(char chr) { return BaseFrequencies::isGap(safeCharIndex(chr)); }
+void ED4_setup_gaps_and_alitype(const char *gap_chars, GB_alignment_type alitype);
 
 const char SEQ_POINT = '.';
 

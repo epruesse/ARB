@@ -22,13 +22,13 @@
 #include "ed4_protein_2nd_structure.hxx"
 #include "graph_aligner_gui.hxx"
 #include "ed4_colStat.hxx"
+#include "ed4_seq_colors.hxx"
 
 #include <ed4_extern.hxx>
 #include <fast_aligner.hxx>
 #include <AW_helix.hxx>
 #include <gde.hxx>
 #include <awt.hxx>
-#include <awt_seq_colors.hxx>
 #include <awt_map_key.hxx>
 #include <aw_awars.hxx>
 #include <aw_preset.hxx>
@@ -176,6 +176,11 @@ ED4_returncode ED4_root::refresh_all_windows(bool redraw) {
     }
 
     if (main_manager->update_info.refresh) main_manager->clear_refresh();
+
+    if (loadable_SAIs == LSAI_OUTDATED) {
+        GB_touch(GBT_get_SAI_data(GLOBAL_gb_main)); // touch SAI data to force update of SAI selection list
+        loadable_SAIs = LSAI_UPTODATE;
+    }
 
     return (ED4_R_OK);
 }
@@ -613,7 +618,7 @@ ED4_returncode ED4_root::create_hierarchy(const char *area_string_middle, const 
 
             y += 3;
 
-            reference = new AWT_reference(GLOBAL_gb_main);
+            reference = new ED4_reference(GLOBAL_gb_main);
 
             int index = 0;
             database->scan_string(top_multi_species_manager, ref_terminals.get_ref_sequence_info(), ref_terminals.get_ref_sequence(),
@@ -865,24 +870,38 @@ static ARB_ERROR ED4_with_all_loaded_species(ED4_Species_Callback cb, AW_CL cd) 
     return ED4_ROOT->root_group_man->route_down_hierarchy(do_sth_with_species, (AW_CL)cb, cd);
 }
 
-static bool has_species_name(ED4_base *base, AW_CL cl_species_name) {
+static bool is_named(ED4_base *base, AW_CL cl_species_name) {
     ED4_species_name_terminal *name_term = base->to_species_name_terminal();
-    GBDATA *gbd = name_term->get_species_pointer();
-
+    GBDATA                    *gbd       = name_term->get_species_pointer();
     if (gbd) {
-        const char *name = GB_read_char_pntr(gbd);
+        const char *wanted_name = (const char*)cl_species_name;
+        const char *name        = GB_read_char_pntr(gbd);
         e4_assert(name);
-        return strcmp(name, (const char*)cl_species_name)==0;
-    }
 
+        return strcmp(name, wanted_name) == 0;
+    }
     return false;
 }
 
-ED4_species_name_terminal *ED4_find_species_name_terminal(const char *species_name)
-{
-    ED4_base *base = ED4_ROOT->root_group_man->find_first_that(ED4_L_SPECIES_NAME, has_species_name, (AW_CL)species_name);
+static bool is_species_named(ED4_base *base, AW_CL cl_species_name) {
+    return base->inside_species_seq_manager() && is_named(base, cl_species_name);
+}
 
-    return base ? base->to_species_name_terminal() : 0;
+static bool is_SAI_named(ED4_base *base, AW_CL cl_species_name) {
+    return base->inside_SAI_manager() && is_named(base, cl_species_name);
+}
+
+ED4_species_name_terminal *ED4_find_species_or_SAI_name_terminal(const char *species_name) {
+    ED4_base *base = ED4_ROOT->root_group_man->find_first_that(ED4_L_SPECIES_NAME, is_species_named, (AW_CL)species_name);
+    return base ? base->to_species_name_terminal() : NULL;
+}
+ED4_species_name_terminal *ED4_find_species_name_terminal(const char *species_name) {
+    ED4_base *base = ED4_ROOT->root_group_man->find_first_that(ED4_L_SPECIES_NAME, is_species_named, (AW_CL)species_name);
+    return base ? base->to_species_name_terminal() : NULL;
+}
+ED4_species_name_terminal *ED4_find_SAI_name_terminal(const char *sai_name) {
+    ED4_base *base = ED4_ROOT->root_group_man->find_first_that(ED4_L_SPECIES_NAME, is_SAI_named, (AW_CL)sai_name);
+    return base ? base->to_species_name_terminal() : NULL;
 }
 
 static char *get_group_consensus(const char *species_name, PosRange range) {
@@ -892,7 +911,7 @@ static char *get_group_consensus(const char *species_name, PosRange range) {
     if (name_term) {
         ED4_abstract_group_manager *group_man = name_term->get_parent(ED4_level(ED4_L_GROUP|ED4_L_ROOTGROUP))->to_abstract_group_manager();
         if (group_man) {
-            consensus = group_man->table().build_consensus_string(range);
+            consensus = group_man->build_consensus_string(range);
         }
     }
 
@@ -1451,9 +1470,10 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     //      Edit
 
     awmm->create_menu("Edit", "E", AWM_ALL);
-    awmm->insert_menu_topic("refresh",      "Refresh [Ctrl-L]",           "f", 0,                    AWM_ALL, (AW_CB)ED4_request_full_refresh,       0, 0);
-    awmm->insert_menu_topic("load_current", "Load current species [GET]", "G", "e4_get_species.hlp", AWM_ALL, ED4_get_and_jump_to_current_from_menu, 0, 0);
-    awmm->insert_menu_topic("load_marked",  "Load marked species",        "m", "e4_get_species.hlp", AWM_ALL, ED4_get_marked_from_menu,              0, 0);
+    awmm->insert_menu_topic("refresh",                  "Refresh [Ctrl-L]",           "f", 0,                    AWM_ALL, (AW_CB)ED4_request_full_refresh,       0, 0);
+    awmm->insert_menu_topic("load_current",             "Load current species [GET]", "G", "e4_get_species.hlp", AWM_ALL, ED4_get_and_jump_to_current_from_menu, 0, 0);
+    awmm->insert_menu_topic("load_marked",              "Load marked species",        "m", "e4_get_species.hlp", AWM_ALL, ED4_get_marked_from_menu,              0, 0);
+    awmm->insert_menu_topic(awmm->local_id("load_SAI"), "Load SAI ...",               "S", "e4_get_species.hlp", AWM_ALL, ED4_create_loadSAI_window);
     awmm->sep______________();
     awmm->insert_menu_topic("refresh_ecoli",       "Reload Ecoli sequence",        "E", "ecoliref.hlp", AWM_ALL, (AW_CB)reload_ecoli_cb, 0, 0);
     awmm->insert_menu_topic("refresh_helix",       "Reload Helix",                 "H", "helix.hlp",    AWM_ALL, (AW_CB)reload_helix_cb, 0, 0);
@@ -1541,9 +1561,8 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->close_sub_menu();
 
     awmm->sep______________();
-    awmm->insert_menu_topic("change_cursor", "Change cursor type",                "t", 0,                   AWM_ALL, ED4_change_cursor);
-    awmm->insert_menu_topic("show_diff",     "Show only differences to selected", "d", "set_reference.hlp", AWM_ALL, ED4_set_reference_species, 0, 0);
-    awmm->insert_menu_topic("show_all",      "Show all bases",                    "a", "set_reference.hlp", AWM_ALL, ED4_set_reference_species, 1, 0);
+    awmm->insert_menu_topic("change_cursor",             "Change cursor type",   "t", 0,              AWM_ALL, ED4_change_cursor);
+    awmm->insert_menu_topic(awmm->local_id("view_diff"), "View differences ...", "V", "viewdiff.hlp", AWM_ALL, ED4_create_viewDifferences_window);
     awmm->sep______________();
     awmm->insert_menu_topic("enable_col_stat",  "Activate column statistics", "v", "st_ml.hlp", AWM_EXP, ED4_activate_col_stat,            0, 0);
     awmm->insert_menu_topic("disable_col_stat", "Disable column statistics",  "i", "st_ml.hlp", AWM_EXP, ED4_disable_col_stat,             0, 0);
@@ -1551,7 +1570,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->insert_menu_topic("dcs_threshold",    "Set threshold for D.c.s.",   "f", "st_ml.hlp", AWM_EXP, ED4_set_col_stat_threshold,       0, 0);
     awmm->sep______________();
     awmm->insert_menu_topic(awmm->local_id("visualize_SAI"), "Visualize SAIs",                "z", "visualizeSAI.hlp",   AWM_ALL, ED4_createVisualizeSAI_window);
-    awmm->insert_menu_topic("toggle_saisec",                 "Toggle secondary info for SAI", "o", "toggle_secinfo.hlp", AWM_ALL, toggle_helix_for_SAI, 0,                                    0);
+    awmm->insert_menu_topic("toggle_saisec",                 "Toggle secondary info for SAI", "o", "toggle_secinfo.hlp", AWM_ALL, toggle_helix_for_SAI, 0, 0);
 
     // Enable ProteinViewer only for DNA sequence type
     if (alignment_type == GB_AT_DNA) {
@@ -1602,12 +1621,12 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->insert_menu_topic(awmm->local_id("props_frame"), "Frame settings ...", "F", 0, AWM_ALL, AW_preset_window);
 #endif
 
-    awmm->insert_menu_topic(awmm->local_id("props_options"),   "Editor Options ",       "O", "e4_options.hlp",   AWM_ALL, ED4_create_level_1_options_window);
+    awmm->insert_menu_topic(awmm->local_id("props_options"),   "Editor Options ",       "O", "e4_options.hlp",   AWM_ALL, ED4_create_editor_options_window);
     awmm->insert_menu_topic(awmm->local_id("props_consensus"), "Consensus Definition ", "u", "e4_consensus.hlp", AWM_ALL, ED4_create_consensus_definition_window);
     awmm->sep______________();
 
-    awmm->insert_menu_topic("props_data",                       "Change Colors & Fonts ", "C", 0,                     AWM_ALL, makeWindowCallback      (ED4_popup_gc_window,      first_gc_manager));
-    awmm->insert_menu_topic(awmm->local_id("props_seq_colors"), "Sequence color mapping", "S", "sequence_colors.hlp", AWM_ALL, makeCreateWindowCallback(create_seq_colors_window, sequence_colors));
+    awmm->insert_menu_topic("props_data",                       "Change Colors & Fonts ", "C", 0,                     AWM_ALL, makeWindowCallback      (ED4_popup_gc_window,          first_gc_manager));
+    awmm->insert_menu_topic(awmm->local_id("props_seq_colors"), "Sequence color mapping", "S", "sequence_colors.hlp", AWM_ALL, makeCreateWindowCallback(ED4_create_seq_colors_window, sequence_colors));
 
     awmm->sep______________();
 
@@ -2005,6 +2024,7 @@ ED4_root::ED4_root(int* argc, char*** argv)
       column_stat_initialized(false),
       visualizeSAI(false),
       visualizeSAI_allSpecies(false),
+      loadable_SAIs(LSAI_UNUSED),
       temp_gc(0)
 {}
 
@@ -2012,6 +2032,7 @@ ED4_root::ED4_root(int* argc, char*** argv)
 ED4_root::~ED4_root() {
     delete aw_root;
     delete first_window;
+    delete reference; // needs to be deleted before main_manager (to ensure reference callbacks are removed)
     delete main_manager; // also deletes middle_area_man + top_area_man
     delete database;
     delete ecoli_ref;
@@ -2019,7 +2040,6 @@ ED4_root::~ED4_root() {
     delete helix;
     delete sequence_colors;
     delete edk;
-    delete reference;
     STAT_destroy_ST_ML(st_ml);
 
     free(protstruct);

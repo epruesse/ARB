@@ -1,28 +1,26 @@
-// =============================================================== //
-//                                                                 //
-//   File      : ED4_mini_classes.cxx                              //
-//   Purpose   :                                                   //
-//                                                                 //
-//   Institute of Microbiology (Technical University Munich)       //
-//   http://www.arb-home.de/                                       //
-//                                                                 //
-// =============================================================== //
+// ================================================================= //
+//                                                                   //
+//   File      : chartable.cxx                                       //
+//   Purpose   : count characters of multiple sequences              //
+//                                                                   //
+//   Institute of Microbiology (Technical University Munich)         //
+//   http://www.arb-home.de/                                         //
+//                                                                   //
+// ================================================================= //
 
-
-#include "ed4_class.hxx"
-#include "ed4_edit_string.hxx"
-#include "ed4_awars.hxx"
-#include "ed4_tools.hxx"
-
-#include <aw_awar.hxx>
-#include <aw_root.hxx>
-#include <iupac.h>
-
-#include <cctype>
+#include "chartable.h"
 #include <arb_msg.h>
+#include <iupac.h>
+#include <cctype>
+#include <arb_defs.h>
+
+#define CONSENSUS_AWAR_SOURCE CAS_INTERNAL // not awar-constructable here
+#include <consensus.h>
+
+using namespace chartable;
 
 // ------------------------
-//      ED4_bases_table
+//      SepBaseFreq
 
 #ifdef DEBUG
 // # define COUNT_BASES_TABLE_SIZE
@@ -32,7 +30,7 @@
 static long bases_table_size = 0L;
 #endif
 
-void ED4_bases_table::init(int length)
+void SepBaseFreq::init(int length)
 {
     if (length) {
         if (no_of_bases.shortTable) {
@@ -54,8 +52,8 @@ void ED4_bases_table::init(int length)
     }
 }
 
-void ED4_bases_table::expand_table_entry_size() { // converts short table into long table
-    e4_assert(table_entry_size==SHORT_TABLE_ELEM_SIZE);
+void SepBaseFreq::expand_table_entry_size() { // converts short table into long table
+    ct_assert(table_entry_size==SHORT_TABLE_ELEM_SIZE);
 
     int *new_table = new int[no_of_entries+1];
     int i;
@@ -74,14 +72,14 @@ void ED4_bases_table::expand_table_entry_size() { // converts short table into l
     table_entry_size = LONG_TABLE_ELEM_SIZE;
 }
 
-#define INVALID_TABLE_OPERATION() GBK_terminatef("ED4_bases_table: invalid operation at %i", __LINE__)
+#define INVALID_TABLE_OPERATION() GBK_terminatef("SepBaseFreq: invalid operation at %i", __LINE__)
 
-void ED4_bases_table::add(const ED4_bases_table& other, int start, int end)
+void SepBaseFreq::add(const SepBaseFreq& other, int start, int end)
 {
-    e4_assert(no_of_entries==other.no_of_entries);
-    e4_assert(start>=0);
-    e4_assert(end<no_of_entries);
-    e4_assert(start<=end);
+    ct_assert(no_of_entries==other.no_of_entries);
+    ct_assert(start>=0);
+    ct_assert(end<no_of_entries);
+    ct_assert(start<=end);
 
     int i;
     if (table_entry_size==SHORT_TABLE_ELEM_SIZE) {
@@ -107,12 +105,12 @@ void ED4_bases_table::add(const ED4_bases_table& other, int start, int end)
         }
     }
 }
-void ED4_bases_table::sub(const ED4_bases_table& other, int start, int end)
+void SepBaseFreq::sub(const SepBaseFreq& other, int start, int end)
 {
-    e4_assert(no_of_entries==other.no_of_entries);
-    e4_assert(start>=0);
-    e4_assert(end<no_of_entries);
-    e4_assert(start<=end);
+    ct_assert(no_of_entries==other.no_of_entries);
+    ct_assert(start>=0);
+    ct_assert(end<no_of_entries);
+    ct_assert(start<=end);
 
     int i;
     if (table_entry_size==SHORT_TABLE_ELEM_SIZE) {
@@ -138,17 +136,17 @@ void ED4_bases_table::sub(const ED4_bases_table& other, int start, int end)
         }
     }
 }
-void ED4_bases_table::sub_and_add(const ED4_bases_table& Sub, const ED4_bases_table& Add, PosRange range)
+void SepBaseFreq::sub_and_add(const SepBaseFreq& Sub, const SepBaseFreq& Add, PosRange range)
 {
-    e4_assert(no_of_entries==Sub.no_of_entries);
-    e4_assert(no_of_entries==Add.no_of_entries);
+    ct_assert(no_of_entries==Sub.no_of_entries);
+    ct_assert(no_of_entries==Add.no_of_entries);
 
     int start = range.start();
     int end   = range.end();
 
-    e4_assert(start>=0);
-    e4_assert(end<no_of_entries);
-    e4_assert(start<=end);
+    ct_assert(start>=0);
+    ct_assert(end<no_of_entries);
+    ct_assert(start<=end);
 
     int i;
     if (table_entry_size==SHORT_TABLE_ELEM_SIZE) {
@@ -191,7 +189,7 @@ void ED4_bases_table::sub_and_add(const ED4_bases_table& Sub, const ED4_bases_ta
     }
 }
 
-int ED4_bases_table::firstDifference(const ED4_bases_table& other, int start, int end, int *firstDifferentPos) const
+int SepBaseFreq::firstDifference(const SepBaseFreq& other, int start, int end, int *firstDifferentPos) const
 {
     int i;
     int result = 0;
@@ -239,7 +237,7 @@ int ED4_bases_table::firstDifference(const ED4_bases_table& other, int start, in
 
     return result;
 }
-int ED4_bases_table::lastDifference(const ED4_bases_table& other, int start, int end, int *lastDifferentPos) const
+int SepBaseFreq::lastDifference(const SepBaseFreq& other, int start, int end, int *lastDifferentPos) const
 {
     int i;
     int result = 0;
@@ -289,7 +287,7 @@ int ED4_bases_table::lastDifference(const ED4_bases_table& other, int start, int
 }
 
 
-ED4_bases_table::ED4_bases_table(int maxseqlength)
+SepBaseFreq::SepBaseFreq(int maxseqlength)
     : table_entry_size(SHORT_TABLE_ELEM_SIZE),
       no_of_entries(0)
 {
@@ -297,7 +295,7 @@ ED4_bases_table::ED4_bases_table(int maxseqlength)
     if (maxseqlength) init(maxseqlength);
 }
 
-ED4_bases_table::~ED4_bases_table()
+SepBaseFreq::~SepBaseFreq()
 {
     delete [] no_of_bases.shortTable;
 #ifdef COUNT_BASES_TABLE_SIZE
@@ -306,7 +304,7 @@ ED4_bases_table::~ED4_bases_table()
 #endif
 }
 
-void ED4_bases_table::change_table_length(int new_length, int default_entry)
+void SepBaseFreq::change_table_length(int new_length, int default_entry)
 {
     if (new_length!=no_of_entries) {
         int min_length = new_length<no_of_entries ? new_length : no_of_entries;
@@ -315,7 +313,7 @@ void ED4_bases_table::change_table_length(int new_length, int default_entry)
         if (table_entry_size==SHORT_TABLE_ELEM_SIZE) {
             unsigned char *new_table = new unsigned char[new_length+1];
 
-            e4_assert(default_entry>=0 && default_entry<256);
+            ct_assert(default_entry>=0 && default_entry<256);
 
             memcpy(new_table, no_of_bases.shortTable, min_length*sizeof(*new_table));
             new_table[new_length] = no_of_bases.shortTable[no_of_entries];
@@ -351,7 +349,7 @@ void ED4_bases_table::change_table_length(int new_length, int default_entry)
 
 #if defined(TEST_CHAR_TABLE_INTEGRITY) || defined(ASSERTION_USED)
 
-int ED4_bases_table::empty() const
+int SepBaseFreq::empty() const
 {
     int i;
 
@@ -374,210 +372,182 @@ int ED4_bases_table::empty() const
 }
 #endif // ASSERTION_USED
 
-// ------------------------
-//      Build consensus
-
-// we make static copies of the awars to avoid performance breakdown (BK_up_to_date is changed by callback ED4_consensus_definition_changed)
-
-struct ConsensusBuildParams {
-    int countgaps;
-    int gapbound;
-    int group;
-    int considbound;
-    int upper;
-    int lower;
-
-    ConsensusBuildParams(AW_root *awr) {
-        countgaps   = awr->awar(ED4_AWAR_CONSENSUS_COUNTGAPS)->read_int();
-        gapbound    = awr->awar(ED4_AWAR_CONSENSUS_GAPBOUND)->read_int();
-        group       = awr->awar(ED4_AWAR_CONSENSUS_GROUP)->read_int();
-        considbound = awr->awar(ED4_AWAR_CONSENSUS_CONSIDBOUND)->read_int();
-        upper       = awr->awar(ED4_AWAR_CONSENSUS_UPPER)->read_int();
-        lower       = awr->awar(ED4_AWAR_CONSENSUS_LOWER)->read_int();
-    }
-#if defined(UNIT_TESTS) // UT_DIFF
-    ConsensusBuildParams() {
-        // uses awar defaults
-        countgaps   = 1;
-        gapbound    = 60;
-        group       = 1;
-        considbound = 30;
-        upper       = 95;
-        lower       = 70;
-    }
-#endif
-};
-
-static ConsensusBuildParams *BK = NULL; // @@@ make member of ED4_char_table ?
-
-void ED4_consensus_definition_changed(AW_root*) {
-    delete BK; BK = 0; // invalidate
-    ED4_ROOT->request_refresh_for_consensus_terminals();
-}
-
-static ARB_ERROR toggle_consensus_display(ED4_base *base, AW_CL show) {
-    if (base->is_consensus_manager()) {
-        ED4_manager *consensus_man = base->to_manager();
-        ED4_spacer_terminal *spacer = consensus_man->parent->get_defined_level(ED4_L_SPACER)->to_spacer_terminal();
-
-        if (show) {
-            consensus_man->unhide_children();
-            spacer->extension.size[HEIGHT] = SPACERHEIGHT;
-        }
-        else {
-            consensus_man->hide_children();
-
-            ED4_group_manager *group_man = consensus_man->get_parent(ED4_L_GROUP)->to_group_manager();
-            spacer->extension.size[HEIGHT] = (group_man->dynamic_prop&ED4_P_IS_FOLDED) ? SPACERNOCONSENSUSHEIGHT : SPACERHEIGHT;
-        }
-    }
-
-    return NULL;
-}
-
-void ED4_consensus_display_changed(AW_root *root) {
-    int show = root->awar(ED4_AWAR_CONSENSUS_SHOW)->read_int();
-    ED4_ROOT->root_group_man->route_down_hierarchy(toggle_consensus_display, show).expect_no_error();
-}
-
-char *ED4_char_table::build_consensus_string(PosRange r) const {
+char *BaseFrequencies::build_consensus_string(PosRange r, const ConsensusBuildParams& cbp) const {
     ExplicitRange  range(r, size());
     long           entries = range.size();
     char          *new_buf = (char*)malloc(entries+1);
 
-    build_consensus_string_to(new_buf, range);
+    build_consensus_string_to(new_buf, range, cbp);
     new_buf[entries] = 0;
 
     return new_buf;
 }
 
-void ED4_char_table::build_consensus_string_to(char *consensus_string, ExplicitRange range) const {
+#if defined(DEBUG)
+ #if defined(DEVEL_RALF)
+  #define DEBUG_CONSENSUS
+ #endif
+#endif
+
+void BaseFrequencies::build_consensus_string_to(char *consensus_string, ExplicitRange range, const ConsensusBuildParams& BK) const {
     // 'consensus_string' has to be a buffer of size 'range.size()+1'
     // Note : Always check that consensus behavior is identical to that used in CON_evaluatestatistic()
 
-    if (!BK) BK = new ConsensusBuildParams(ED4_ROOT->aw_root);
-
-    e4_assert(consensus_string);
-    e4_assert(range.end()<size());
+    ct_assert(consensus_string);
+    ct_assert(range.end()<size());
 
 #define PERCENT(part, all)      ((100*(part))/(all))
 #define MAX_BASES_TABLES 41     // 25
 
-    e4_assert(used_bases_tables<=MAX_BASES_TABLES);     // this is correct for DNA/RNA -> build_consensus_string() must be corrected for AMI/PRO
+    ct_assert(used_bases_tables<=MAX_BASES_TABLES);     // this is correct for DNA/RNA -> build_consensus_string() must be corrected for AMI/PRO
 
     const int left_idx  = range.start();
     const int right_idx = range.end();
 
-    if (sequences) {
-        for (int i=left_idx; i<=right_idx; i++) {
-            int o        = i-left_idx;
-            int bases    = 0;           // count of all bases together
-            int base[MAX_BASES_TABLES]; // count of specific base
-            int j;
-            int max_base = -1;          // maximum count of specific base
-            int max_j    = -1;          // index of this base
+#if defined(DEBUG_CONSENSUS)
+ #define DUMPINT(var) do { if (dumpcol) fprintf(stderr, "%s=%i ", #var, var); } while(0)
+#else
+ #define DUMPINT(var)
+#endif
 
-            for (j=0; j<used_bases_tables; j++) {
+    if (sequenceUnits) {
+        for (int i=left_idx; i<=right_idx; i++) {
+#if defined(DEBUG_CONSENSUS)
+            int  column  = i+1;
+            bool dumpcol = (column == 21);
+            DUMPINT(column);
+#endif
+
+            const int o = i-left_idx; // output offset
+
+            int bases        = 0;       // count of all bases together
+            int base[MAX_BASES_TABLES]; // count of specific base
+            int max_base     = -1;      // maximum count of specific base
+            int max_base_idx = -1;      // index of this base
+
+            for (int j=0; j<used_bases_tables; j++) {
                 base[j] = linear_table(j)[i];
-                if (!ADPP_IS_ALIGN_CHARACTER(index_to_upperChar(j))) {
+                if (!isGap(index_to_upperChar(j))) {
                     bases += base[j];
                     if (base[j]>max_base) { // search for most used base
-                        max_base = base[j];
-                        max_j = j;
+                        max_base     = base[j];
+                        max_base_idx = j;
                     }
                 }
             }
 
-            int gaps = sequences-bases; // count of gaps
+            int gaps = sequenceUnits-bases; // count of gaps
+
+            DUMPINT(sequenceUnits);
+            DUMPINT(gaps);
+            DUMPINT(bases);
 
             // What to do with gaps?
 
-            if (gaps == sequences) {
+            if (gaps == sequenceUnits) {
                 consensus_string[o] = '=';
             }
-            else if (BK->countgaps && PERCENT(gaps, sequences)>=BK->gapbound) {
+            else if (BK.countgaps && PERCENT(gaps, sequenceUnits) >= BK.gapbound) {
+                DUMPINT(PERCENT(gaps,sequenceUnits));
+                DUMPINT(BK.gapbound);
                 consensus_string[o] = '-';
             }
             else {
-                // Simplify using IUPAC :
+                char kchar  = 0; // character for consensus
+                int  kcount = 0; // count this character
 
-                char kchar;     // character for consensus
-                int  kcount;    // count this character
-
-                if (BK->group) { // group -> iupac
+                if (BK.group) { // simplify using IUPAC
                     if (ali_type == GB_AT_RNA || ali_type == GB_AT_DNA) {
                         int no_of_bases = 0; // count of different bases used to create iupac
                         char used_bases[MAX_BASES_TABLES+1]; // string containing those bases
 
-                        kcount = 0;
-                        for (j=0; j<used_bases_tables; j++) {
+                        for (int j=0; j<used_bases_tables; j++) {
                             int bchar = index_to_upperChar(j);
 
-                            if (!ADPP_IS_ALIGN_CHARACTER(bchar)) {
-                                if (PERCENT(base[j], sequences)>=BK->considbound) {
-                                    used_bases[no_of_bases++] = index_to_upperChar(j);
-                                    kcount += base[j];
+                            if (!isGap(bchar)) {
+                                if (base[j]>0 && PERCENT(base[j],bases) >= BK.considbound) {
+#if defined(DEBUG_CONSENSUS)
+                                    if (!kcount) DUMPINT(BK.considbound);
+#endif
+                                    used_bases[no_of_bases++]  = index_to_upperChar(j);
+                                    kcount                    += base[j];
+
+                                    DUMPINT(base[j]);
+                                    DUMPINT(PERCENT(base[j],bases));
+                                    DUMPINT(kcount);
                                 }
                             }
                         }
                         used_bases[no_of_bases] = 0;
-                        kchar = ED4_encode_iupac(used_bases, ali_type);
+                        kchar = iupac::encode(used_bases, ali_type);
                     }
                     else {
-                        e4_assert(ali_type == GB_AT_AA);
+                        ct_assert(ali_type == GB_AT_AA);
 
                         const int amino_groups = iupac::AA_GROUP_COUNT;
                         int       group_count[amino_groups];
 
-                        for (j=0; j<amino_groups; j++) {
+                        for (int j=0; j<amino_groups; j++) {
                             group_count[j] = 0;
                         }
-                        for (j=0; j<used_bases_tables; j++) {
+                        for (int j=0; j<used_bases_tables; j++) {
                             unsigned char bchar = index_to_upperChar(j);
 
-                            if (!ADPP_IS_ALIGN_CHARACTER(bchar)) {
-                                if (PERCENT(base[j], sequences)>=BK->considbound) {
-                                    group_count[iupac::get_amino_group_for(bchar)] += base[j];
-                                }
+                            if (!isGap(bchar)) {
+                                group_count[iupac::get_amino_group_for(bchar)] += base[j];
                             }
                         }
 
-                        kcount = 0;
                         int bestGroup = 0;
-                        for (j=0; j<amino_groups; j++) {
+                        for (int j=0; j<amino_groups; j++) {
                             if (group_count[j]>kcount) {
                                 bestGroup = j;
                                 kcount = group_count[j];
                             }
                         }
 
-                        kchar = iupac::get_amino_consensus_char(iupac::Amino_Group(bestGroup));
+                        ct_assert(kcount>0);
+                        if (PERCENT(kcount, bases) >= BK.considbound) {
+                            kchar = iupac::get_amino_consensus_char(iupac::Amino_Group(bestGroup));
+                        }
+                        else {
+                            kchar  = 'X';
+                            kcount = bases;
+                        }
                     }
                 }
-                else {
-                    e4_assert(max_base);            // expect at least one base to occur
-                    e4_assert(max_j >= 0);
+                if (!kcount) {           // IUPAC grouping is either off OR didnt consider any bases
+                    ct_assert(max_base); // expect at least one base to occur
+                    ct_assert(max_base_idx >= 0);
 
-                    kchar  = index_to_upperChar(max_j);
+                    kchar  = index_to_upperChar(max_base_idx);
                     kcount = max_base;
-                    e4_assert(kchar);
                 }
+
+                ct_assert(kchar);
+                ct_assert(kcount);
+                ct_assert(kcount<=bases);
 
                 // show as upper or lower case ?
-
-                int percent = PERCENT(kcount, sequences);
-
-                if (percent>=BK->upper) {
+                int percent = PERCENT(kcount, BK.countgaps ? sequenceUnits : bases);
+                DUMPINT(percent);
+                DUMPINT(BK.upper);
+                DUMPINT(BK.lower);
+                if (percent>=BK.upper) {
                     consensus_string[o] = kchar;
                 }
-                else if (percent>=BK->lower) {
+                else if (percent>=BK.lower) {
                     consensus_string[o] = tolower(kchar);
                 }
                 else {
                     consensus_string[o] = '.';
                 }
             }
-            e4_assert(consensus_string[o]);
+            ct_assert(consensus_string[o]);
+
+#if defined(DEBUG_CONSENSUS)
+            if (dumpcol) fprintf(stderr, "result='%c'\n", consensus_string[o]);
+#endif
         }
     }
     else {
@@ -587,133 +557,175 @@ void ED4_char_table::build_consensus_string_to(char *consensus_string, ExplicitR
 }
 
 // -----------------------
-//      ED4_char_table
+//      BaseFrequencies
 
-bool               ED4_char_table::initialized       = false;
-unsigned char      ED4_char_table::char_to_index_tab[MAXCHARTABLE];
-unsigned char     *ED4_char_table::upper_index_chars = 0;
-unsigned char     *ED4_char_table::lower_index_chars = 0;
-int                ED4_char_table::used_bases_tables = 0;
-GB_alignment_type  ED4_char_table::ali_type          = GB_AT_RNA;
+bool               BaseFrequencies::initialized       = false;
+Ambiguity          BaseFrequencies::ambiguity_table[MAX_AMBIGUITY_CODES];
+uint8_t            BaseFrequencies::unitsPerSequence  = 1;
+unsigned char      BaseFrequencies::char_to_index_tab[MAXCHARTABLE];
+bool               BaseFrequencies::is_gap[MAXCHARTABLE];
+unsigned char     *BaseFrequencies::upper_index_chars = 0;
+int                BaseFrequencies::used_bases_tables = 0;
+GB_alignment_type  BaseFrequencies::ali_type          = GB_AT_RNA;
 
-inline void ED4_char_table::set_char_to_index(unsigned char c, int index)
+inline void BaseFrequencies::set_char_to_index(unsigned char c, int index)
 {
-    e4_assert(index>=0 && index<used_bases_tables);
+    ct_assert(index>=0 && index<used_bases_tables);
     char_to_index_tab[upper_index_chars[index] = toupper(c)] = index;
-    char_to_index_tab[lower_index_chars[index] = tolower(c)] = index;
-}
-unsigned char ED4_char_table::index_to_upperChar(int index) const
-{
-    return upper_index_chars[index];
-}
-unsigned char ED4_char_table::index_to_lowerChar(int index) const
-{
-    return lower_index_chars[index];
+    char_to_index_tab[tolower(c)] = index;
 }
 
-void ED4_char_table::expand_tables() {
+void BaseFrequencies::expand_tables() {
     int i;
     for (i=0; i<used_bases_tables; i++) {
         linear_table(i).expand_table_entry_size();
     }
 }
 
-void ED4_char_table::initial_setup(const char *gap_chars, GB_alignment_type ali_type_) {
-    const char *groups = 0;
-    used_bases_tables  = strlen(gap_chars);
-    ali_type           = ali_type_;
+void BaseFrequencies::setup(const char *gap_chars, GB_alignment_type ali_type_) {
+    const char *groups    = 0;
+    const char *ambiguous = 0;
+
+    ali_type = ali_type_;
 
     switch (ali_type) {
         case GB_AT_RNA:
-            groups = "A,C,G,TU,MRWSYKVHDBN,";
+            groups           = "A,C,G,TU,"; // Note: terminal ',' defines a group for unknown characters
+            ambiguous        = "MRWSYKVHDBN";
+            unitsPerSequence = 12;
             break;
+
         case GB_AT_DNA:
-            groups = "A,C,G,UT,MRWSYKVHDBN,";
+            groups           = "A,C,G,UT,";
+            ambiguous        = "MRWSYKVHDBN";
+            unitsPerSequence = 12;
             break;
+
         case GB_AT_AA:
-            groups = "P,A,G,S,T,Q,N,E,D,B,Z,H,K,R,L,I,V,M,F,Y,W,C,X"; // @@@ DRY (create 'groups' from AA_GROUP_...)
+            groups           = "P,A,G,S,T,Q,N,E,D,B,Z,H,K,R,L,I,V,M,F,Y,W,C,X"; // @@@ DRY (create 'groups' from AA_GROUP_...)
+            unitsPerSequence = 1;
             break;
+
         default:
-            e4_assert(0);
+            ct_assert(0);
             break;
     }
 
-    e4_assert(groups);
+    ct_assert(groups);
+#if defined(ASSERTION_USED)
+    if (ali_type == GB_AT_AA) {
+        ct_assert(!ambiguous);
+        // ct_assert(strlen(ambiguous) <= MAX_AMBIGUITY_CODES); // @@@ later
+    }
+    else {
+        ct_assert(strlen(ambiguous) == MAX_AMBIGUITY_CODES);
+    }
+#endif
 
-    int i;
+    for (int i = 0; i<MAXCHARTABLE; ++i) is_gap[i] = false;
 
-    for (i=0; groups[i]; i++) {
+    int   gapcharcount     = 0;
+    char *unique_gap_chars = strdup(gap_chars);
+    for (int i = 0; gap_chars[i]; ++i) {
+        if (!is_gap[safeCharIndex(gap_chars[i])]) { // ignore duplicate occurrences in 'gap_chars'
+            is_gap[safeCharIndex(gap_chars[i])] = true;
+            unique_gap_chars[gapcharcount++]    = gap_chars[i];
+        }
+    }
+
+    used_bases_tables = gapcharcount;
+
+    for (int i=0; groups[i]; i++) {
         if (groups[i]==',') {
             used_bases_tables++;
         }
     }
 
-    lower_index_chars = new unsigned char[used_bases_tables];
     upper_index_chars = new unsigned char[used_bases_tables];
 
     int idx = 0;
     unsigned char init_val = used_bases_tables-1; // map all unknown stuff to last table
     memset(char_to_index_tab, init_val, MAXCHARTABLE*sizeof(*char_to_index_tab));
 
-    for (i=0; groups[i]; i++) {
+    for (int i=0; groups[i]; i++) {
         if (groups[i]==',') {
             idx++;
         }
         else {
-            e4_assert(isupper(groups[i]));
+            ct_assert(isupper(groups[i]));
             set_char_to_index(groups[i], idx);
         }
     }
 
-    const char *align_string_ptr = gap_chars;
+    const char *align_string_ptr = unique_gap_chars;
     while (1) {
         char c = *align_string_ptr++;
         if (!c) break;
         set_char_to_index(c, idx++);
     }
 
-    e4_assert(idx==used_bases_tables);
+    if (ambiguous) {
+        ct_assert(ali_type == GB_AT_DNA || ali_type == GB_AT_RNA); // @@@ amino ambiguities not impl
+
+        const uint8_t indices2increment[MAX_TARGET_INDICES+1] = { 0, 0, 6, 4, 3 };
+        for (int i = 0; ambiguous[i]; ++i) {
+            const char *contained = iupac::decode(ambiguous[i], ali_type, false);
+
+            Ambiguity& amb = ambiguity_table[i];
+
+            amb.indices   = strlen(contained);
+            ct_assert(amb.indices>=2 && amb.indices<=MAX_TARGET_INDICES);
+            amb.increment = indices2increment[amb.indices];
+
+            for (int j = 0; j<amb.indices; ++j) {
+                int cidx     = char_to_index_tab[safeCharIndex(contained[j])];
+                ct_assert(cidx<MAX_INDEX_TABLES); // has to be non-ambiguous
+                amb.index[j] = cidx;
+            }
+
+            char_to_index_tab[toupper(ambiguous[i])] =
+            char_to_index_tab[tolower(ambiguous[i])] = i+MAX_INDEX_TABLES;
+        }
+    }
+
+    free(unique_gap_chars);
+    ct_assert(idx==used_bases_tables);
     initialized = true;
 }
 
-ED4_char_table::ED4_char_table(int maxseqlength)
+BaseFrequencies::BaseFrequencies(int maxseqlength)
     : ignore(0)
 {
-    if (!initialized) {
-        char *align_string = ED4_ROOT->aw_root->awar_string(ED4_AWAR_GAP_CHARS)->read_string();
-        initial_setup(align_string, ED4_ROOT->alignment_type);
-        free(align_string);
-    }
+    ct_assert(initialized);
 
-    bases_table = new ED4_bases_table_ptr[used_bases_tables];
+    bases_table = new SepBaseFreqPtr[used_bases_tables];
 
     for (int i=0; i<used_bases_tables; i++) {
-        bases_table[i] = new ED4_bases_table(maxseqlength);
+        bases_table[i] = new SepBaseFreq(maxseqlength);
     }
 
-    sequences = 0;
+    sequenceUnits = 0;
 }
 
-void ED4_char_table::init(int maxseqlength)
+void BaseFrequencies::init(int maxseqlength)
 {
     int i;
     for (i=0; i<used_bases_tables; i++) {
         linear_table(i).init(maxseqlength);
     }
 
-    sequences = 0;
+    sequenceUnits = 0;
 }
 
-void ED4_char_table::bases_and_gaps_at(int column, int *bases, int *gaps) const
+void BaseFrequencies::bases_and_gaps_at(int column, int *bases, int *gaps) const
 {
-    int i,
-        b = 0,
-        g = 0;
+    int b = 0;
+    int g = 0;
 
-    for (i=0; i<used_bases_tables; i++) {
+    for (int i=0; i<used_bases_tables; i++) {
         char c = upper_index_chars[i];
 
-        if (ADPP_IS_ALIGN_CHARACTER(c)) {
+        if (isGap(c)) {
             g += table(c)[column];
         }
         else {
@@ -721,11 +733,66 @@ void ED4_char_table::bases_and_gaps_at(int column, int *bases, int *gaps) const
         }
     }
 
-    if (bases) *bases = b;
-    if (gaps)  *gaps  = g;
+    if (bases) {
+        *bases = b/unitsPerSequence;
+        ct_assert((b%unitsPerSequence) == 0); // could happen if an ambiguous code contains a gap
+    }
+    if (gaps)  {
+        *gaps  = g/unitsPerSequence;
+        ct_assert((g%unitsPerSequence) == 0); // could happen if an ambiguous code contains a gap
+    }
 }
 
-ED4_char_table::~ED4_char_table()
+double BaseFrequencies::max_frequency_at(int column, bool ignore_gaps) const {
+    int gaps  = 0;
+    int minus = 0;
+    int maxb  = 0;
+
+    for (int i=0; i<used_bases_tables; i++) {
+        char c = upper_index_chars[i];
+
+        if (isGap(c)) {
+            if (c == '-') {
+                minus += table(c)[column];
+            }
+            else {
+                gaps += table(c)[column];
+            }
+        }
+        else {
+            maxb = std::max(maxb, table(c)[column]);
+        }
+    }
+
+    if (ignore_gaps) {
+        gaps += minus;
+    }
+    else {
+        maxb = std::max(maxb, minus);
+    }
+
+    double mfreq;
+    if (sequenceUnits>gaps) {
+        mfreq = maxb/double(sequenceUnits-gaps);
+    }
+    else { // only gaps (but no '-')
+        ct_assert(sequenceUnits == gaps);
+        mfreq = 0.0;
+    }
+
+#if defined(ASSERTION_USED)
+    if (mfreq != 0.0) {
+        if (ali_type != GB_AT_AA) {
+            ct_assert(mfreq>=0.2); // wrong for amino acids
+        }
+        ct_assert(mfreq<=1.0);
+    }
+#endif
+
+    return mfreq;
+}
+
+BaseFrequencies::~BaseFrequencies()
 {
     int i;
     for (i=0; i<used_bases_tables; i++) {
@@ -735,14 +802,14 @@ ED4_char_table::~ED4_char_table()
     delete [] bases_table;
 }
 
-const PosRange *ED4_char_table::changed_range(const ED4_char_table& other) const
+const PosRange *BaseFrequencies::changed_range(const BaseFrequencies& other) const
 {
     int i;
     int Size = size();
     int start = Size-1;
     int end = 0;
 
-    e4_assert(Size==other.size());
+    ct_assert(Size==other.size());
     for (i=0; i<used_bases_tables; i++) {
         if (linear_table(i).firstDifference(other.linear_table(i), 0, start, &start)) {
             if (end<start) {
@@ -758,7 +825,7 @@ const PosRange *ED4_char_table::changed_range(const ED4_char_table& other) const
                 linear_table(i).lastDifference(other.linear_table(i), end+1, Size-1, &end);
             }
 
-            e4_assert(start<=end);
+            ct_assert(start<=end);
 
             static PosRange range;
             range = PosRange(start, end);
@@ -768,83 +835,63 @@ const PosRange *ED4_char_table::changed_range(const ED4_char_table& other) const
     }
     return NULL;
 }
-void ED4_char_table::add(const ED4_char_table& other)
+void BaseFrequencies::add(const BaseFrequencies& other)
 {
     if (other.ignore) return;
     if (other.size()==0) return;
-    prepare_to_add_elements(other.sequences);
+    prepare_to_add_elements(other.added_sequences());
     add(other, 0, other.size()-1);
 }
-void ED4_char_table::add(const ED4_char_table& other, int start, int end)
+void BaseFrequencies::add(const BaseFrequencies& other, int start, int end)
 {
     if (other.ignore) return;
 
     test();
     other.test();
 
-    e4_assert(start<=end);
+    ct_assert(start<=end);
 
     int i;
     for (i=0; i<used_bases_tables; i++) {
         linear_table(i).add(other.linear_table(i), start, end);
     }
 
-    sequences += other.sequences;
+    sequenceUnits += other.sequenceUnits;
 
     test();
 }
 
-void ED4_char_table::sub(const ED4_char_table& other)
+void BaseFrequencies::sub(const BaseFrequencies& other)
 {
     if (other.ignore) return;
     sub(other, 0, other.size()-1);
 }
 
-void ED4_char_table::sub(const ED4_char_table& other, int start, int end)
+void BaseFrequencies::sub(const BaseFrequencies& other, int start, int end)
 {
     if (other.ignore) return;
 
     test();
     other.test();
-    e4_assert(start<=end);
+    ct_assert(start<=end);
 
     int i;
     for (i=0; i<used_bases_tables; i++) {
         linear_table(i).sub(other.linear_table(i), start, end);
     }
 
-    sequences -= other.sequences;
+    sequenceUnits -= other.sequenceUnits;
 
     test();
 }
 
-void ED4_char_table::sub_and_add(const ED4_char_table& Sub, const ED4_char_table& Add) {
-    test();
-
-    if (Sub.ignore) {
-        e4_assert(Add.ignore);
-        return;
-    }
-
-    Sub.test();
-    Add.test();
-
-    const PosRange *range = Sub.changed_range(Add);
-    if (range) {
-        prepare_to_add_elements(Add.added_sequences()-Sub.added_sequences());
-        sub_and_add(Sub, Add, *range);
-    }
-
-    test();
-}
-
-void ED4_char_table::sub_and_add(const ED4_char_table& Sub, const ED4_char_table& Add, PosRange range) {
+void BaseFrequencies::sub_and_add(const BaseFrequencies& Sub, const BaseFrequencies& Add, PosRange range) {
     test();
     Sub.test();
     Add.test();
 
-    e4_assert(!Sub.ignore && !Add.ignore);
-    e4_assert(range.is_part());
+    ct_assert(!Sub.ignore && !Add.ignore);
+    ct_assert(range.is_part());
 
     int i;
     for (i=0; i<used_bases_tables; i++) {
@@ -854,7 +901,7 @@ void ED4_char_table::sub_and_add(const ED4_char_table& Sub, const ED4_char_table
     test();
 }
 
-const PosRange *ED4_char_table::changed_range(const char *string1, const char *string2, int min_len)
+const PosRange *BaseFrequencies::changed_range(const char *string1, const char *string2, int min_len)
 {
     const unsigned long *range1 = (const unsigned long *)string1;
     const unsigned long *range2 = (const unsigned long *)string2;
@@ -896,7 +943,7 @@ const PosRange *ED4_char_table::changed_range(const char *string1, const char *s
         }
     }
 
-    e4_assert(start != -1 && end != -1);
+    ct_assert(start != -1 && end != -1);
 
     for (j=r-1; j>=0; j--) {    // search rest backwards
         if (string1[k+j] != string2[k+j]) {
@@ -921,7 +968,7 @@ const PosRange *ED4_char_table::changed_range(const char *string1, const char *s
         }
     }
 
-    e4_assert(start<=end);
+    ct_assert(start<=end);
 
     static PosRange range;
     range = PosRange(start, end);
@@ -929,7 +976,38 @@ const PosRange *ED4_char_table::changed_range(const char *string1, const char *s
     return &range;
 }
 
-void ED4_char_table::add(const char *scan_string, int len)
+#define INC_DEC(incdec) do {                                                    \
+        int idx = char_to_index_tab[c];                                         \
+        if (idx<MAX_INDEX_TABLES) {                                             \
+            table(c).incdec(offset, unitsPerSequence);                          \
+        }                                                                       \
+        else {                                                                  \
+            Ambiguity& amb = ambiguity_table[idx-MAX_INDEX_TABLES];             \
+            for (int i = 0; i<amb.indices; ++i) {                               \
+                linear_table(amb.index[i]).incdec(offset, amb.increment);       \
+            }                                                                   \
+        }                                                                       \
+    } while(0)
+
+void BaseFrequencies::incr_short(unsigned char c, int offset) {
+    INC_DEC(inc_short);
+}
+
+void BaseFrequencies::decr_short(unsigned char c, int offset) {
+    INC_DEC(dec_short);
+}
+
+void BaseFrequencies::incr_long(unsigned char c, int offset) {
+    INC_DEC(inc_long);
+}
+
+void BaseFrequencies::decr_long(unsigned char c, int offset) {
+    INC_DEC(dec_long);
+}
+
+#undef INC_DEC
+
+void BaseFrequencies::add(const char *scan_string, int len)
 {
     test();
 
@@ -942,31 +1020,31 @@ void ED4_char_table::add(const char *scan_string, int len)
         for (i=0; i<len; i++) {
             unsigned char c = scan_string[i];
             if (!c) break;
-            table(c).inc_short(i);
+            incr_short(c, i);
         }
-        ED4_bases_table& t = table('.');
+        SepBaseFreq& t = table('.');
         for (; i<sz; i++) {
-            t.inc_short(i);
+            t.inc_short(i, unitsPerSequence);
         }
     }
     else {
         for (i=0; i<len; i++) {
             unsigned char c = scan_string[i];
             if (!c) break;
-            table(c).inc_long(i);
+            incr_long(c, i);
         }
-        ED4_bases_table& t = table('.');
+        SepBaseFreq& t = table('.');
         for (; i<sz; i++) { // LOOP_VECTORIZED
-            t.inc_long(i);
+            t.inc_long(i, unitsPerSequence);
         }
     }
 
-    sequences++;
+    sequenceUnits += unitsPerSequence;
 
     test();
 }
 
-void ED4_char_table::sub(const char *scan_string, int len)
+void BaseFrequencies::sub(const char *scan_string, int len)
 {
     test();
 
@@ -977,95 +1055,59 @@ void ED4_char_table::sub(const char *scan_string, int len)
         for (i=0; i<len; i++) {
             unsigned char c = scan_string[i];
             if (!c) break;
-            table(c).dec_short(i);
+            decr_short(c, i);
         }
-        ED4_bases_table& t = table('.');
+        SepBaseFreq& t = table('.');
         for (; i<sz; i++) {
-            t.dec_short(i);
+            t.dec_short(i, unitsPerSequence);
         }
     }
     else {
         for (i=0; i<len; i++) {
             unsigned char c = scan_string[i];
             if (!c) break;
-            table(c).dec_long(i);
+            decr_long(c, i);
         }
-        ED4_bases_table& t = table('.');
+        SepBaseFreq& t = table('.');
         for (; i<sz; i++) { // LOOP_VECTORIZED
-            t.dec_long(i);
+            t.dec_long(i, unitsPerSequence);
         }
     }
 
-    sequences--;
+    sequenceUnits -= unitsPerSequence;
 
     test();
 }
 
-void ED4_char_table::sub_and_add(const char *old_string, const char *new_string, PosRange range) {
+void BaseFrequencies::sub_and_add(const char *old_string, const char *new_string, PosRange range) {
     test();
     int start = range.start();
     int end   = range.end();
-    e4_assert(start<=end);
-
-    int i;
-    ED4_bases_table& t = table('.');
+    ct_assert(start<=end);
 
     if (get_table_entry_size()==SHORT_TABLE_ELEM_SIZE) {
-        for (i=start; i<=end; i++) {
+        for (int i=start; i<=end; i++) {
             unsigned char o = old_string[i];
             unsigned char n = new_string[i];
 
-            e4_assert(o); // @@@ if these never fail, some code below is superfluous
-            e4_assert(n);
-            
-            if (!o) {
-                for (; n && i<=end; i++) {
-                    n = new_string[i];
-                    table(n).inc_short(i);
-                    t.dec_short(i);
-                }
-            }
-            else if (!n) {
-                for (; o && i<=end; i++) {
-                    o = old_string[i];
-                    table(o).dec_short(i);
-                    t.inc_short(i);
-                }
+            ct_assert(o && n); // passed string have to be defined in range
 
-            }
-            else if (o!=n) {
-                table(o).dec_short(i);
-                table(n).inc_short(i);
-
+            if (o!=n) {
+                decr_short(o, i);
+                incr_short(n, i);
             }
         }
     }
     else {
-        for (i=start; i<=end; i++) {
+        for (int i=start; i<=end; i++) {
             unsigned char o = old_string[i];
             unsigned char n = new_string[i];
 
-            e4_assert(o); // @@@ if these never fail, some code below is superfluous
-            e4_assert(n);
-            
-            if (!o) {
-                for (; n && i<=end; i++) {
-                    n = new_string[i];
-                    table(n).inc_long(i);
-                    t.dec_long(i);
-                }
-            }
-            else if (!n) {
-                for (; o && i<=end; i++) {
-                    o = old_string[i];
-                    table(o).dec_long(i);
-                    t.inc_long(i);
-                }
+            ct_assert(o && n); // passed string have to be defined in range
 
-            }
-            else if (o!=n) {
-                table(o).dec_long(i);
-                table(n).inc_long(i);
+            if (o!=n) {
+                decr_long(o, i);
+                incr_long(n, i);
             }
         }
     }
@@ -1073,7 +1115,7 @@ void ED4_char_table::sub_and_add(const char *old_string, const char *new_string,
     test();
 }
 
-void ED4_char_table::change_table_length(int new_length) {
+void BaseFrequencies::change_table_length(int new_length) {
     for (int c=0; c<used_bases_tables; c++) {
         linear_table(c).change_table_length(new_length, 0);
     }
@@ -1085,7 +1127,7 @@ void ED4_char_table::change_table_length(int new_length) {
 
 #if defined(TEST_CHAR_TABLE_INTEGRITY) || defined(ASSERTION_USED)
 
-bool ED4_char_table::empty() const
+bool BaseFrequencies::empty() const
 {
     int i;
     for (i=0; i<used_bases_tables; i++) {
@@ -1096,38 +1138,36 @@ bool ED4_char_table::empty() const
     return true;
 }
 
-bool ED4_char_table::ok() const
+bool BaseFrequencies::ok() const
 {
     if (empty()) return true;
     if (is_ignored()) return true;
 
-    if (sequences<0) {
-        fprintf(stderr, "Negative # of sequences (%i) in ED4_char_table\n", sequences);
+    if (sequenceUnits<0) {
+        fprintf(stderr, "Negative # of sequences (%i) in BaseFrequencies\n", added_sequences());
         return false;
     }
 
-    int i;
-    for (i=0; i<MAXSEQUENCECHARACTERLENGTH; i++) {
-        int bases;
-        int gaps;
-
+    const int table_size = size();
+    for (int i=0; i<table_size; i++) {
+        int bases, gaps;
         bases_and_gaps_at(i, &bases, &gaps);
 
-        if (!bases && !gaps) { // this occurs after insert column
-            int j;
-            for (j=i+1; j<MAXSEQUENCECHARACTERLENGTH; j++) {    // test if we find any bases till end of table !!!
+        if (!bases && !gaps) {                      // this occurs after insert column
+            for (int j=i+1; j<table_size; j++) {    // test if we find any bases till end of table !!!
 
                 bases_and_gaps_at(j, &bases, 0);
                 if (bases) { // bases found -> empty position was illegal
-                    fprintf(stderr, "Zero in ED4_char_table at column %i\n", i);
+                    fprintf(stderr, "Zero in BaseFrequencies at column %i\n", i);
                     return false;
                 }
             }
             break;
         }
         else {
-            if ((bases+gaps)!=sequences) {
-                fprintf(stderr, "bases+gaps should be equal to # of sequences at column %i\n", i);
+            if ((bases+gaps)!=added_sequences()) {
+                fprintf(stderr, "bases+gaps should be equal to # of sequences at column %i (bases=%i, gaps=%i, added_sequences=%i)\n",
+                        i, bases, gaps, added_sequences());
                 return false;
             }
         }
@@ -1140,10 +1180,10 @@ bool ED4_char_table::ok() const
 
 #if defined(TEST_CHAR_TABLE_INTEGRITY)
 
-void ED4_char_table::test() const {
+void BaseFrequencies::test() const {
 
     if (!ok()) {
-        GBK_terminate("ED4_char_table::test() failed");
+        GBK_terminate("BaseFrequencies::test() failed");
     }
 }
 
@@ -1157,6 +1197,8 @@ void ED4_char_table::test() const {
 #include <test_unit.h>
 #endif
 
+#define SETUP(gapChars,alitype) BaseFrequencies::setup(gapChars,alitype)
+
 void TEST_char_table() {
     const char alphabeth[]   = "ACGTN-";
     const int alphabeth_size = strlen(alphabeth);
@@ -1168,14 +1210,11 @@ void TEST_char_table() {
     // const char *gapChars = "-";
     // const char *gapChars = ".";
     // const char *gapChars = "A"; // makes me fail
-    ED4_char_table::initial_setup(gapChars, GB_AT_RNA);
-    ED4_init_is_align_character(gapChars);
+    SETUP(gapChars, GB_AT_RNA);
 
-    TEST_REJECT(BK);
-    BK = new ConsensusBuildParams;
-
-    // BK->lower = 70; BK->upper = 95; BK->gapbound = 60; // defaults from awars
-    BK->lower    = 40; BK->upper = 70; BK->gapbound = 40;
+    ConsensusBuildParams BK;
+    // BK.lower = 70; BK.upper = 95; BK.gapbound = 60; // defaults from awars
+    BK.lower    = 40; BK.upper = 70; BK.gapbound = 40;
 
     srand(100);
     for (int loop = 0; loop<5; ++loop) {
@@ -1183,7 +1222,7 @@ void TEST_char_table() {
 
         srand(seed);
 
-        ED4_char_table tab(seqlen);
+        BaseFrequencies tab(seqlen);
 
         // build some seq
         for (int c = 0; c<seqlen; ++c) seq[c] = alphabeth[rand()%alphabeth_size];
@@ -1194,6 +1233,9 @@ void TEST_char_table() {
         const int  add_count = 300;
         char      *added_seqs[add_count];
 
+        const char *s1 = "ACGTACGTAcgtacgtaCGTACGTACGTAC";
+        const char *s2 = "MRWSYKVHDBNmrwsykvhdbnSYKVHDBN"; // use ambiguities
+
         // add seq multiple times
         for (int a = 0; a<add_count; ++a) {
             tab.add(seq, seqlen);
@@ -1203,19 +1245,50 @@ void TEST_char_table() {
             int sidx  = rand()%seqlen;
             int aidx  = rand()%alphabeth_size;
             seq[sidx] = alphabeth[aidx];
+
+            if (a == 16) { // with 15 sequences in tab
+                // test sub_and_add (short table version)
+                char *consensus = tab.build_consensus_string(BK);
+
+                tab.add(s1, seqlen);
+                PosRange r(0, seqlen-1);
+                tab.sub_and_add(s1, s2, r);
+                tab.sub_and_add(s2, consensus, r);
+                tab.sub(consensus, seqlen);
+
+                char *consensus2 = tab.build_consensus_string(BK);
+                TEST_EXPECT_EQUAL(consensus, consensus2);
+
+                free(consensus2);
+                free(consensus);
+            }
         }
 
         // build consensi (just check regression)
+        // Note: semantic tests for consensus are in ../../NTREE/AP_consensus.cxx@TEST_nucleotide_consensus_and_maxFrequency
         {
-            char *consensus = tab.build_consensus_string();
+            char *consensus = tab.build_consensus_string(BK);
             switch (seed) {
-                case 677741240: TEST_EXPECT_EQUAL(consensus, ".-s-NW..aWu.NnWYa.R.mgcNK.c..."); break;
-                case 721151648: TEST_EXPECT_EQUAL(consensus, "a.nn..K..-gU.RW-SNcau.WNNacn.u"); break;
-                case 345295160: TEST_EXPECT_EQUAL(consensus, "..-g...MSn...guc.n.u.R.n.-Ng.k"); break;
-                case 346389111: TEST_EXPECT_EQUAL(consensus, ".unAn...gN.kc-cS.Raun...Sa-gY."); break;
-                case 367171911: TEST_EXPECT_EQUAL(consensus, "na.Na.nu.c-.-NU.aYgn-nng-.Wa.M"); break;
+                case 677741240: TEST_EXPECT_EQUAL(consensus, "k-s-cWs.aWu.a.WYa.R.mKcaK.c.ry"); break;
+                case 721151648: TEST_EXPECT_EQUAL(consensus, "awm...Ka.-gUyRW-Sacau.Wa.acy.W"); break;
+                case 345295160: TEST_EXPECT_EQUAL(consensus, "yy-gmwkMS....gucy..Y.Rrr.-gg.K"); break;
+                case 346389111: TEST_EXPECT_EQUAL(consensus, "suwA.yYwSurKc-cSmRaY.mg.Sa-kY."); break;
+                case 367171911: TEST_EXPECT_EQUAL(consensus, ".augaY.u.c-c-cUDaYg.-.cg-cWWsM"); break;
                 default: TEST_EXPECT_EQUAL(consensus, "undef");
             }
+
+            // test sub_and_add()
+
+            tab.add(s1, seqlen);
+            PosRange r(0, seqlen-1);
+            tab.sub_and_add(s1, s2, r);
+            tab.sub_and_add(s2, consensus, r);
+            tab.sub(consensus, seqlen);
+
+            char *consensus2 = tab.build_consensus_string(BK);
+            TEST_EXPECT_EQUAL(consensus, consensus2);
+
+            free(consensus2);
             free(consensus);
         }
 
@@ -1224,34 +1297,31 @@ void TEST_char_table() {
             freenull(added_seqs[a]);
         }
         {
-            char *consensus = tab.build_consensus_string();
+            char *consensus = tab.build_consensus_string(BK);
             TEST_EXPECT_EQUAL(consensus, "??????????????????????????????"); // check tab is empty
             free(consensus);
         }
     }
-
-    delete BK;
-    BK = 0;
 }
 
-void TEST_bases_table() {
+void TEST_SepBaseFreq() {
     const int LEN  = 20;
     const int OFF1 = 6;
     const int OFF2 = 7; // adjacent to OFF1
 
-    ED4_bases_table short1(LEN), short2(LEN);
-    for (int i = 0; i<100; ++i) short1.inc_short(OFF1);
-    for (int i = 0; i<70;  ++i) short1.inc_short(OFF2);
-    for (int i = 0; i<150; ++i) short2.inc_short(OFF1);
-    for (int i = 0; i<80;  ++i) short2.inc_short(OFF2);
+    SepBaseFreq short1(LEN), short2(LEN);
+    for (int i = 0; i<100; ++i) short1.inc_short(OFF1, 1);
+    for (int i = 0; i<70;  ++i) short1.inc_short(OFF2, 1);
+    for (int i = 0; i<150; ++i) short2.inc_short(OFF1, 1);
+    for (int i = 0; i<80;  ++i) short2.inc_short(OFF2, 1);
 
-    ED4_bases_table long1(LEN), long2(LEN);
+    SepBaseFreq long1(LEN), long2(LEN);
     long1.expand_table_entry_size();
     long2.expand_table_entry_size();
-    for (int i = 0; i<2000; ++i) long1.inc_long(OFF1);
-    for (int i = 0; i<2500; ++i) long2.inc_long(OFF1);
+    for (int i = 0; i<2000; ++i) long1.inc_long(OFF1, 1);
+    for (int i = 0; i<2500; ++i) long2.inc_long(OFF1, 1);
 
-    ED4_bases_table shortsum(LEN);
+    SepBaseFreq shortsum(LEN);
     shortsum.add(short1, 0, LEN-1); TEST_EXPECT_EQUAL(shortsum[OFF1], 100); TEST_EXPECT_EQUAL(shortsum[OFF2],  70);
     shortsum.add(short2, 0, LEN-1); TEST_EXPECT_EQUAL(shortsum[OFF1], 250); TEST_EXPECT_EQUAL(shortsum[OFF2], 150);
     shortsum.sub(short1, 0, LEN-1); TEST_EXPECT_EQUAL(shortsum[OFF1], 150); TEST_EXPECT_EQUAL(shortsum[OFF2],  80);
@@ -1260,7 +1330,7 @@ void TEST_bases_table() {
 
     // shortsum.add(long1, 0, LEN-1); // invalid operation -> terminate
 
-    ED4_bases_table longsum(LEN);
+    SepBaseFreq longsum(LEN);
     longsum.expand_table_entry_size();
     longsum.add(long1,  0, LEN-1); TEST_EXPECT_EQUAL(longsum[OFF1], 2000);
     longsum.add(long2,  0, LEN-1); TEST_EXPECT_EQUAL(longsum[OFF1], 4500);
@@ -1287,3 +1357,6 @@ void TEST_bases_table() {
 #endif // UNIT_TESTS
 
 // --------------------------------------------------------------------------------
+
+
+

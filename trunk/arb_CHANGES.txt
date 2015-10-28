@@ -36,6 +36,28 @@ Major changes for next release:
  - species selections (editor configurations):
    * visualisation of multiple selections in standard tree view (#658; example in database demo.arb)
    * order can be changed; each configuration has a comment; import stores configuration (#607)
+ - ARB_EDIT4:
+   * allow to load missing SAIs
+   * "view differences" to a reference sequence:
+      - customizable:
+        * char used for "equality" (i.e. what is displayed where a sequence is equal to selected sequence)
+        * case-sensitivity
+        * ignore different gap-types
+      - equal data also gets hidden in consensus
+      - refresh differences of all displayed sequences, when data of selected sequences changes
+      - change reference sequence using CTRL-R or automatically let it follow the cursor
+      - added hotkey to toggle mode: CTRL-D
+      - fixed minor bugs
+   * consensus calculation in ARB_EDIT4 and calculation of CONSENSUS SAI
+     - now both calculations are strictly consistent:
+       * gaps are now ignored while deciding whether to simplify using IUPAC ambiguity codes
+       * IUPAC ambiguity codes encountered in sequence data are now counted proportionally (=> fewer 'N's occur in consensus)
+     - added sliders to consensus definition windows
+     - user defined consensus settings exchangable between both consensus setups
+     - fixed and updated documentation
+ - SAI: MAX_FREQUENCY
+   * considers IUPAC ambiguity codes proportionally
+   * amino acids: if MAX_FREQUENCY is below 10% SAI now shows '1' (prev. it did show '0', i.e. 100%)
  - expand zombies in tree (unfold groups)
  - compare taxonomy (and mark differences; #651)
  - external (command line) aligners:

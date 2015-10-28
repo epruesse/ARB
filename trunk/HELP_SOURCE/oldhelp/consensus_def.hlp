@@ -1,51 +1,74 @@
 #Please insert up references in the next lines (line starts with keyword UP)
-UP	arb.hlp
-UP	glossary.hlp
+UP      arb.hlp
+UP      glossary.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
 
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		How is the consensus calculated?
+TITLE           How is the consensus calculated?
 
-OCCURRENCE	ARB_NT/SAI/Create SAI using../Consensus
+OCCURRENCE      ARB_NT/SAI/Create SAI using../Consensus
                 ARB_EDIT4/Properties/Consensus definition
 
 DESCRIPTION     What to do with gaps?
 
-		     If a column contains only gaps the result will be shown as '='.
-
                      Define whether to use or to ignore gaps entirely:
 
-                            If you count gaps and the gap frequency exceeds 'threshold for gaps',
-                            the result will be shown as '-'.
+                            If you count gaps and the gap frequency exceeds the specified
+                            threshold, the consensus will show a '-'.
 
                             If the switch is 'off', the algorithm will virtually remove all gaps.
-                            That means if you have a column with two 'A's
-                            and 500 gaps the program thinks of 100% 'A'.
-                            (If the switch is 'on', the relative number of 'A's would be 2%)
+                            That means if you have a column with 10 'A's
+                            and 500 gaps the program thinks of 100% 'A'
+                            (if the switch is 'on', the relative number of 'A's would be 2%).
 
-                Simplify using IUPAC
+                     Regardless of how gaps are handled,
+                     if a column contains only gaps, the consensus will always show a '='.
 
-                     Define whether the most frequent base or the IUPAC code
-                     (more then one base) should be shown at the particular
-                     position by pressing the respective checkbox after the
-                     'simplify' prompt.
+                Simplify using base character groups
 
-                     Characters are used for IUPAC encoding only if their
-                     frequency exceeds 'threshold for character'.
+                     If grouping is 'off' the most frequent character will be used in consensus (even
+                     if another character has the same frequency).
+
+                     If grouping is 'on' base characters will be grouped as follows:
+
+                        * RNA/DNA alignments use the IUPAC ambiguity codes (MRWSYKVHDBN)
+                        * Amino acid alignments use amino acid classes (ADHIFC)
+
+                     Click the "Show IUPAC" button to display detailed information
+                     about these character groups.
+
+                     The threshold defines how characters are grouped:
+
+                        * in RNA/DNA alignments the threshold specifies, whether a
+                          non-ambiguous character is considered for grouping (i.e.
+                          all characters below the threshold will be removed and the
+                          rest will be grouped. See also example below)
+
+                        * in amino acid alignments the threshold specifies, whether
+                          all characters of a group together are frequent enough to
+                          show that group in the consensus. If not, an 'X' will be displayed
+                          in consensus.
 
                      Example:
 
                         If you have 40% 'A', 10% 'C', 40% 'G' and 10% 'T' and
-                        'threshold for character' is set to 20%, the
-                        program looks for a iupac code only for 'A' and 'G'.
+                        'threshold for character' is set to 20%, arb will
+                        use the iupac code representing 'A' and 'G' (i.e. 'R').
 
-                     Note:
+                     Reasonable thresholds explained:
 
-                        The IUPAC codes are displayed after pressing
-                        the 'show IUPAC' button.
+                        * amino acid:
+                          * 51% means: if most belong to one amino acid group, then show it (otherwise show 'X')
+                        * RNA/DNA:
+                          * 26% means: group up to 3 nucleotides in an ambiguity code (otherwise show most frequent base)
+                          * 25% means: group up to 4 nucleotides, i.e. will produce 'N' in consensus (only if the nucleotides are distributed EXACTLY even)
+                          * 20% is similar to 25%, but also slightly uneven distributions will produce 'N'
+                          * 51% will effectively turn off IUPAC grouping for nucleotides
+                          * 50% will group 2 nucleotides (only if they are distributed EXACTLY even)
+                          * 33% will group up to 3 nucleotides (only if they are distributed EXACTLY even)
 
                 Show as upper or lower case?
 
@@ -62,14 +85,18 @@ DESCRIPTION     What to do with gaps?
 
                             Otherwise a dot ('.') is displayed.
 
-NOTES		You can save/load the consensus settings to/from a file using the config-manager icon.
+                     If gaps are ignored (as explained at top), the percentage is calculated relative
+                     to all existing bases in the column.
+                     If gaps are NOT ignored, the percentage is calculated relative to the number of species.
+
+NOTES           You can save/load the consensus settings to/from a file using the config-manager icon.
                 This allows you to exchange
                      * the consensus settings used in EDIT4 and
                      * the settings used to calculate the SAI 'CONSENSUS' from the ARB main window.
 
-EXAMPLES	None
+EXAMPLES        None
 
-WARNINGS	IUPAC symbols in source sequences are ignored.
+WARNINGS        None
 
-BUGS		None
+BUGS            None
 

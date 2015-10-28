@@ -12,6 +12,7 @@
 #include "ed4_list.hxx"
 #include "ed4_ProteinViewer.hxx"
 #include "ed4_protein_2nd_structure.hxx"
+#include "ed4_seq_colors.hxx"
 
 #if defined(DEBUG)
 #define TEST_REFRESH_FLAG
@@ -209,7 +210,7 @@ ED4_returncode ED4_manager::update_bases(const char *old_sequence, int old_len, 
     char *new_sequence = new_sequence_terminal->resolve_pointer_to_string_copy(&new_len);
 
     if (range.is_whole()) {
-        const PosRange *restricted = ED4_char_table::changed_range(old_sequence, new_sequence, std::min(old_len, new_len));
+        const PosRange *restricted = BaseFrequencies::changed_range(old_sequence, new_sequence, std::min(old_len, new_len));
         
         e4_assert(restricted);
         range = *restricted;
@@ -237,7 +238,7 @@ ED4_returncode ED4_manager::update_bases_and_rebuild_consensi(const char *old_se
 
     const PosRange *changedRange = 0;
     if (range.is_whole()) {
-        changedRange = ED4_char_table::changed_range(old_sequence, new_sequence, std::min(old_len, new_len));
+        changedRange = BaseFrequencies::changed_range(old_sequence, new_sequence, std::min(old_len, new_len));
     }
     else {
         changedRange = &range; // @@@ use method similar to changed_range here, which just reduces the existing range
@@ -304,7 +305,7 @@ ED4_returncode ED4_manager::update_bases(const ED4_base *old_base, const ED4_bas
     do {                                                                                        \
         while (walk_up) {                                                                       \
             if (walk_up->is_abstract_group_manager()) {                                         \
-                ED4_char_table& char_table = walk_up->to_abstract_group_manager()->table();     \
+                BaseFrequencies& char_table = walk_up->to_abstract_group_manager()->table();     \
                 char_table.COMMAND;                                                             \
                 if (char_table.is_ignored()) break; /* @@@ problematic */                       \
             }                                                                                   \
@@ -318,7 +319,7 @@ ED4_returncode ED4_manager::update_bases(const char *old_sequence, int old_len, 
     if (old_sequence) {
         if (new_sequence) {
             if (range.is_whole()) {
-                const PosRange *restricted = ED4_char_table::changed_range(old_sequence, new_sequence, std::min(old_len, new_len));
+                const PosRange *restricted = BaseFrequencies::changed_range(old_sequence, new_sequence, std::min(old_len, new_len));
                 if (!restricted) return ED4_R_OK;
                 
                 range = *restricted;
@@ -349,7 +350,7 @@ ED4_returncode ED4_manager::update_bases(const char *old_sequence, int old_len, 
     return ED4_R_OK;
 }
 
-ED4_returncode ED4_manager::update_bases(const ED4_char_table *old_table, const ED4_char_table *new_table, PosRange range) {
+ED4_returncode ED4_manager::update_bases(const BaseFrequencies *old_table, const BaseFrequencies *new_table, PosRange range) {
     ED4_manager *walk_up = this;
 
     if (old_table) {
@@ -1235,6 +1236,9 @@ void ED4_terminal::Delete() {
 }
 
 void ED4_manager::Delete() {
+    delete_cbs.call(this);
+    delete_cbs.clear();
+
     for (int i=0; i<children->members(); i++) {
         children->member(i)->Delete();
     }
@@ -1669,70 +1673,18 @@ ED4_species_manager::ED4_species_manager(ED4_species_type type_, const char *tem
     selected(false)
 {
     e4_assert(type != ED4_SP_NONE);
+    if (type == ED4_SP_SAI) ED4_ROOT->loadable_SAIs_may_have_changed();
 }
-
-#if defined(DEBUG)
-// #define DEBUG_SPMAN_CALLBACKS
-#endif // DEBUG
-
 
 ED4_species_manager::~ED4_species_manager() {
-#if defined(DEBUG_SPMAN_CALLBACKS)
-    if (!callbacks.empty()) {
-        printf("this=%p - non-empty callbacks\n", (char*)this);
-    }
-#endif // DEBUG
-
-    e4_assert(callbacks.empty());
-    // if assertion fails, callbacks are still bound to this manager.
-    // You need to remove all callbacks at two places:
-    // 1. ED4_species_manager::remove_all_callbacks
-    // 2. ED4_exit()
-}
-
-void ED4_species_manager::add_sequence_changed_cb(ED4_species_manager_cb cb, AW_CL cd) {
-#if defined(DEBUG_SPMAN_CALLBACKS)
-    printf("this=%p - add_sequence_changed_cb\n", (char*)this);
-#endif // DEBUG
-    callbacks.push_back(ED4_species_manager_cb_data(cb, cd));
-}
-
-void ED4_species_manager::remove_sequence_changed_cb(ED4_species_manager_cb cb, AW_CL cd) {
-    e4_assert(this);
-#if defined(DEBUG_SPMAN_CALLBACKS)
-    printf("this=%p - remove_sequence_changed_cb\n", (char*)this);
-#endif // DEBUG
-    callbacks.remove(ED4_species_manager_cb_data(cb, cd));
-}
-
-void ED4_species_manager::do_callbacks() {
-    for (std::list<ED4_species_manager_cb_data>::iterator cb = callbacks.begin(); cb != callbacks.end(); ++cb) {
-        cb->call(this);
-    }
-}
-
-void ED4_species_manager::remove_all_callbacks() {
-    if (!callbacks.empty()) {
-        for (ED4_window *ew = ED4_ROOT->first_window; ew; ew = ew->next) {
-            ED4_cursor&  cursor                  = ew->cursor;
-            ED4_base    *cursors_species_manager = cursor.owner_of_cursor->get_parent(ED4_L_SPECIES);
-            if (cursors_species_manager == this) {
-                cursor.prepare_shutdown(); // removes any callbacks
-            }
-        }
-        e4_assert(callbacks.empty());
-    }
-}
-
-static ARB_ERROR removeAllCallbacks(ED4_base *base) {
-    if (base->is_species_manager()) {
-        base->to_species_manager()->remove_all_callbacks();
-    }
-    return NULL;
+    if (type == ED4_SP_SAI) ED4_ROOT->loadable_SAIs_may_have_changed();
 }
 
 void ED4_root::remove_all_callbacks() {
-    root_group_man->route_down_hierarchy(removeAllCallbacks).expect_no_error();
+    for (ED4_window *ew = first_window; ew; ew = ew->next) {
+        ew->cursor.prepare_shutdown(); // removes any callbacks
+    }
+    ED4_viewDifferences_disable();
 }
 
 // ------------------------
@@ -1831,13 +1783,13 @@ GB_ERROR ED4_remap::compile(ED4_root_group_manager *gm)
 {
     e4_assert(update_needed);
 
-    const ED4_char_table&  table = gm->table();
-    size_t                 i, j;
+    const BaseFrequencies& table = gm->table();
+    size_t i, j;
 
     changed = 0; // is changed by set_sequence_to_screen
     update_needed = 0;
 
-    sequence_len = table.table('A').size(); // take size of any table
+    sequence_len = table.size(); // take size of any table
     if ((sequence_len+1) > sequence_table_len) {
         delete [] sequence_to_screen_tab;
         sequence_to_screen_tab = new int[sequence_table_len = sequence_len+1];
