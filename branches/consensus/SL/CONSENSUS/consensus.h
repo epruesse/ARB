@@ -78,7 +78,7 @@ struct ConsensusBuildParams {
 #endif
 
 #if defined(UNIT_TESTS) // UT_DIFF
-    ConsensusBuildParams() // uses defaults of EDIT4 awars (@@@ check NTREE awar defaults)
+    ConsensusBuildParams() // uses defaults of EDIT4 awars
         : countgaps(true),
           gapbound(60),
           group(1),

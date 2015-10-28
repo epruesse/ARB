@@ -364,7 +364,7 @@ bool ED4_reference::reference_is_a_consensus() const {
 #define APREFIX_DIFF_SAVE "edit4/diff/"
 #define APREFIX_DIFF_TEMP "tmp/" APREFIX_DIFF_SAVE
 
-#define AWAR_DIFF_TYPE        APREFIX_DIFF_TEMP "type" // @@@ save in props?
+#define AWAR_DIFF_TYPE        APREFIX_DIFF_TEMP "type"
 #define AWAR_DIFF_NAME        APREFIX_DIFF_TEMP "name"
 #define AWAR_NODIFF_INDICATOR APREFIX_DIFF_SAVE "indicator"
 #define AWAR_DIFF_MINDCASE    APREFIX_DIFF_SAVE "mindcase"
