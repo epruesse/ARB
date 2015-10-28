@@ -267,6 +267,7 @@ my @forced_when_matchesFull = (
 # files that are even packed when generated and not in VC
 my @pack_fullGenerated = (
                           qr/\/TEMPLATES\/svn_revision\.h$/o,
+                          qr/\/lib\/revision_info\.txt$/o,
                          );
 
 # ------------------------------------------------------------

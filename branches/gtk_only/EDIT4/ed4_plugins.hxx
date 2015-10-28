@@ -40,7 +40,7 @@ struct ED4_plugin_host {
 typedef AW_window *ED4_plugin(ED4_plugin_host&);
 
 #if defined(IN_ARB_EDIT4)
-void ED4_start_plugin(AW_window *aw, AW_CL cl_gb_main, AW_CL cl_pluginname);
+void ED4_start_plugin(AW_window *aw, GBDATA *gb_main, const char *pluginname);
 #endif // IN_ARB_EDIT4
 
 #else

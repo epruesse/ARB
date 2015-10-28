@@ -7,6 +7,7 @@
 #include "ed4_edit_string.hxx"
 #include "ed4_class.hxx"
 #include "ed4_awars.hxx"
+#include "ed4_seq_colors.hxx"
 
 #include <aw_awar.hxx>
 #include <aw_msg.hxx>
@@ -20,17 +21,6 @@
 int ED4_Edit_String::nrepeat = 0;           // # of times command should be repeated
 int ED4_Edit_String::nrepeat_zero_requested = 0;    // nrepeat should be set to zero
 int ED4_Edit_String::nrepeat_is_already_set = 0;    // nrepeat was zero (and was set to 1)
-
-unsigned char *ED4_is_align_character = NULL;
-
-void ED4_init_is_align_character(GB_CSTR gap_chars) {
-    static unsigned char array[256];
-    memset(array, 0, 256);
-    for (int p = 0; gap_chars[p]; ++p) {
-        array[(unsigned char)(gap_chars[p])] = 1;
-    }
-    ED4_is_align_character = array;
-}
 
 GB_ERROR  ED4_Edit_String::insert(char *text, long position, int direction, int removeAtNextGap) {
     long i;
@@ -73,7 +63,7 @@ GB_ERROR  ED4_Edit_String::insert(char *text, long position, int direction, int 
         }
 
         for (i = rest_len-text_len; i<rest_len; i++) {
-            if (!ADPP_IS_ALIGN_CHARACTER(seq[position+i])) {
+            if (!ED4_is_gap_character(seq[position+i])) {
                 goto no_gaps;
             }
         }
@@ -92,7 +82,7 @@ GB_ERROR  ED4_Edit_String::insert(char *text, long position, int direction, int 
         }
 
         for (i = 0; i<text_len; i++) {
-            if (i<0 || !ADPP_IS_ALIGN_CHARACTER(seq[i])) {
+            if (i<0 || !ED4_is_gap_character(seq[i])) {
                 goto no_gaps;
             }
         }
@@ -190,11 +180,11 @@ GB_ERROR ED4_Edit_String::replace(char *text, long position, int direction) {
 GB_ERROR ED4_Edit_String::swap_gaps(long position, char ch) {
     long i;
     for (i = position; i < seq_len; i++) {
-        if (!ADPP_IS_ALIGN_CHARACTER(seq[i])) break;
+        if (!ED4_is_gap_character(seq[i])) break;
         seq[i] = ch;
     }
     for (i = position; i >= 0; i--) {
-        if (!ADPP_IS_ALIGN_CHARACTER(seq[i])) break;
+        if (!ED4_is_gap_character(seq[i])) break;
         seq[i] = ch;
     }
     return 0;
@@ -212,18 +202,18 @@ GB_ERROR ED4_Edit_String::moveBase(long source_position, long dest_position, uns
 
     int direction = dest_position<source_position ? -1 : 1;
     int base = seq[source_position];
-    e4_assert(!ADPP_IS_ALIGN_CHARACTER(base));
+    e4_assert(!ED4_is_gap_character(base));
     seq[source_position] = gap_to_use;
 
     long p = source_position+direction;
     while (p!=dest_position) {
 #ifdef SAFE_EDITING
-        if (!ADPP_IS_ALIGN_CHARACTER(seq[p])) {
+        if (!ED4_is_gap_character(seq[p])) {
             e4_assert(0);
             return "Internal error: Tried to change base order in moveBase()";
         }
 #endif
-        e4_assert(ADPP_IS_ALIGN_CHARACTER(seq[p]));
+        e4_assert(ED4_is_gap_character(seq[p]));
         seq[p] = gap_to_use;
         p += direction;
     }
@@ -246,7 +236,7 @@ GB_ERROR ED4_Edit_String::shiftBases(long source_pos, long last_source, long des
             if (err || source_pos>=last_source) break;
             source_pos++;
             dest_pos++;
-            while (!ADPP_IS_ALIGN_CHARACTER(seq[dest_pos])) {
+            while (!ED4_is_gap_character(seq[dest_pos])) {
                 dest_pos++;
             }
         }
@@ -259,7 +249,7 @@ GB_ERROR ED4_Edit_String::shiftBases(long source_pos, long last_source, long des
             if (err || source_pos<=last_source) break;
             source_pos--;
             dest_pos--;
-            while (!ADPP_IS_ALIGN_CHARACTER(seq[dest_pos])) {
+            while (!ED4_is_gap_character(seq[dest_pos])) {
                 dest_pos--;
             }
         }
@@ -276,7 +266,7 @@ long ED4_Edit_String::get_next_base(long position, int direction) {
     long pos;
     if (direction < 0) position--;
     for (pos = position; pos>=0 && pos < seq_len; pos += direction) {
-        if (!ADPP_IS_ALIGN_CHARACTER(seq[pos])) break;
+        if (!ED4_is_gap_character(seq[pos])) break;
     }
 
     return pos<0 || pos>=seq_len ? -1 : pos;
@@ -285,7 +275,7 @@ long ED4_Edit_String::get_next_gap(long position, int direction) {
     long pos;
     if (direction < 0) position--;
     for (pos = position; pos >= 0 && pos < seq_len; pos += direction) {
-        if (ADPP_IS_ALIGN_CHARACTER(seq[pos])) break;
+        if (ED4_is_gap_character(seq[pos])) break;
     }
 
     return pos<0 || pos>=seq_len ? -1 : pos;
@@ -295,7 +285,7 @@ long ED4_Edit_String::get_next_visible_base(long position, int direction)
     long pos;
     if (direction < 0) position--;
     for (pos = position; pos>=0 && pos < seq_len; pos += direction) {
-        if (!ADPP_IS_ALIGN_CHARACTER(seq[pos]) && remap->is_shown(pos)) {
+        if (!ED4_is_gap_character(seq[pos]) && remap->is_shown(pos)) {
             break;
         }
     }
@@ -306,7 +296,7 @@ long ED4_Edit_String::get_next_visible_gap(long position, int direction) {
     long pos;
     if (direction < 0) position--;
     for (pos = position; pos >= 0 && pos < seq_len; pos += direction) {
-        if (ADPP_IS_ALIGN_CHARACTER(seq[pos]) && remap->is_shown(pos)) {
+        if (ED4_is_gap_character(seq[pos]) && remap->is_shown(pos)) {
             break;
         }
     }
@@ -332,7 +322,7 @@ unsigned char ED4_Edit_String::get_gap_type(long pos, int direction)
     pos += direction;
     if (!legal_seqpos(pos)) return '.';
     char gap = seq[pos];
-    if (ADPP_IS_ALIGN_CHARACTER(gap)) return gap;
+    if (ED4_is_gap_character(gap)) return gap;
     return '-';
 }
 
@@ -374,7 +364,7 @@ static void toggle_mark_of_specData(GBDATA *gb_data) {
     if (gb_species) GB_write_flag(gb_species, !GB_read_flag(gb_species));
 }
 
-GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char key, int direction, ED4_EDITMODI mode, bool is_consensus,
+GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char key, int direction, ED4_EDITMODE mode, bool is_consensus,
                                   long &seq_pos, bool &changed_flag, ED4_CursorJumpType& cursor_jump, bool &cannot_handle, bool &write_fault, GBDATA* gb_data, bool is_sequence)
 {
     changed_flag = 0;
@@ -492,7 +482,7 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
                             long pos = adjacent_seq_pos;
 
                             if (ED4_ROOT->aw_root->awar(ED4_AWAR_FAST_CURSOR_JUMP)->read_int()) { // should cursor jump over next group?
-                                if (ADPP_IS_ALIGN_CHARACTER(seq[pos])) {
+                                if (ED4_is_gap_character(seq[pos])) {
                                     pos = get_next_visible_base(pos, direction);
                                     if (pos>=0) pos = get_next_visible_gap(pos, direction);
                                 }
@@ -505,11 +495,11 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
                                            : (direction<0 ? 0 : seq_len-1));
                             }
                             else {
-                                if (ADPP_IS_ALIGN_CHARACTER(seq[pos]))  { seq_pos = get_next_visible_base(pos, direction); }
-                                else                    { seq_pos = get_next_visible_gap(pos, direction); }
+                                if (ED4_is_gap_character(seq[pos])) { seq_pos = get_next_visible_base(pos, direction); }
+                                else                                { seq_pos = get_next_visible_gap(pos, direction); }
 
-                                if (direction<0)    { seq_pos = seq_pos==-1 ? 0       : seq_pos+1; }
-                                else        { seq_pos = seq_pos==-1 ? seq_len : seq_pos; }
+                                if (direction<0) { seq_pos = seq_pos==-1 ? 0       : seq_pos+1; }
+                                else             { seq_pos = seq_pos==-1 ? seq_len : seq_pos; }
                             }
                         }
                         continue;
@@ -520,7 +510,7 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
                     if (keymod & (AW_KEYMODE_ALT)) {
                         if (is_consensus) { cannot_handle = 1; return 0; }
 
-                        if (ADPP_IS_ALIGN_CHARACTER(seq[adjacent_seq_pos])) { // there's a _gap_ next to the cursor -> let's fetch
+                        if (ED4_is_gap_character(seq[adjacent_seq_pos])) { // there's a _gap_ next to the cursor -> let's fetch
                             if (jump_or_fetch!=1) {
                                 jump_or_fetch = 2;
                                 long source_pos = get_next_base(adjacent_seq_pos, direction); // position of base to fetch
@@ -541,7 +531,7 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
                                 jump_or_fetch = 1;
                                 int next_gap = adjacent_seq_pos - direction;
 
-                                if (ADPP_IS_ALIGN_CHARACTER(seq[next_gap])) {
+                                if (ED4_is_gap_character(seq[next_gap])) {
                                     int dest_pos = get_next_base(next_gap, -direction);
 
                                     if (dest_pos<0) {
@@ -551,7 +541,7 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
                                         dest_pos += direction;
                                     }
 
-                                    if (ADPP_IS_ALIGN_CHARACTER(seq[dest_pos])) {
+                                    if (ED4_is_gap_character(seq[dest_pos])) {
                                         ad_err = moveBase(adjacent_seq_pos, dest_pos, get_gap_type(adjacent_seq_pos, direction));
                                         if (!ad_err) {
                                             seq_pos = get_next_base(seq_pos, direction)+(direction<0);
@@ -584,17 +574,17 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
 
                     if (is_consensus) { cannot_handle = 1; return 0; };
 
-                    if (ADPP_IS_ALIGN_CHARACTER(seq[real_adjacent_seq_pos])) { // pull
+                    if (ED4_is_gap_character(seq[real_adjacent_seq_pos])) { // pull
                         long dest_pos = real_adjacent_seq_pos;
                         long source_pos = real_adjacent_seq_pos-direction;
 
-                        if (!ADPP_IS_ALIGN_CHARACTER(seq[source_pos]) && push_or_pull!=1) {
+                        if (!ED4_is_gap_character(seq[source_pos]) && push_or_pull!=1) {
                             push_or_pull = 2;
 
                             long next_gap = get_next_gap(source_pos, -direction);
                             long last_source = next_gap>=0 ? next_gap : (direction>0 ? 0 : seq_len-1);
 
-                            if (ADPP_IS_ALIGN_CHARACTER(seq[last_source])) {
+                            if (ED4_is_gap_character(seq[last_source])) {
                                 last_source = get_next_base(last_source, direction);
                             }
 
@@ -670,7 +660,7 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
                             else        offset = -nrepeat;
 
                             for (len = nrepeat-1; len>=0; len--) {
-                                if (!ADPP_IS_ALIGN_CHARACTER(seq[h+offset+len])) {
+                                if (!ED4_is_gap_character(seq[h+offset+len])) {
                                     ad_err = GBS_global_string("You cannot remove bases in align mode");
                                     break;
                                 }
@@ -699,24 +689,22 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
                 //      keyboard layout:
                 //
                 //      - CTRL-A    Align                               ok
+                //      - CTRL-D    Toggle view differences             ok
                 //      - CTRL-E    Toggle edit/align                   ok
                 //      - CTRL-I    Toggle insert/replace               ok
                 //      - CTRL-J    Jump opposite helix position        ok
+                //      - CTRL-K    Toggle compression on/off           ok
                 //      - CTRL-L    Refresh                             ok
                 //      - CTRL-M    Invert mark                         ok
-                //      - CTRL-R    set aligner reference species       ok
+                //      - CTRL-O    = ALT-LEFT                          ok
+                //      - CTRL-P    = ALT-RIGHT                         ok
+                //      - CTRL-R    Set aligner OR viewDiff reference species       ok
                 //      - CTRL-S    Repeat last search                  ok
-                //      - CTRL-U    Undo                                @@@ crashes!!!
+                //      - CTRL-U    Undo                                @@@ crashes! disabled atm!
 
 
                 if (key >0 && key<=26) { // CTRL-Keys
                     switch (key+'A'-1) {
-                        case 'R': {  // CTRL-R = set aligner reference species
-                            if (is_consensus) { cannot_handle = 1; return 0; };
-
-                            FastAligner_set_reference_species(0, (AW_CL)ED4_ROOT->aw_root);
-                            break;
-                        }
                         case 'A': { // CTRL-A = Start Fast-Aligner
                             AW_window *aw_tmp = current_aww();
                             if (is_consensus) { cannot_handle = 1; return 0; };
@@ -731,7 +719,7 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
                             AW_clock_cursor(ED4_ROOT->aw_root);
                             GB_commit_transaction(dataAccess_4_aligner.gb_main);
 
-                            FastAligner_start(aw_tmp, (AW_CL)&dataAccess_4_aligner);
+                            FastAligner_start(aw_tmp, &dataAccess_4_aligner);
 
                             GB_begin_transaction(dataAccess_4_aligner.gb_main);
                             AW_normal_cursor(ED4_ROOT->aw_root);
@@ -741,7 +729,7 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
                             int pos;
 
                             for (pos=0; pos < seq_pos && pos<seq_len; pos++) {    // count # of bases left of cursorpos
-                                if (!ADPP_IS_ALIGN_CHARACTER(seq[pos])) {
+                                if (!ED4_is_gap_character(seq[pos])) {
                                     basesLeftOf++;
                                 }
                             }
@@ -756,7 +744,7 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
                                 int basesLeftOf2   = 0;
                                 int lastCorrectPos = -1;
                                 for (pos=0; pos<seq_pos && pos<seq_len; pos++) {    // count # of bases left of cursorpos
-                                    if (!ADPP_IS_ALIGN_CHARACTER(seq[pos])) {
+                                    if (!ED4_is_gap_character(seq[pos])) {
                                         basesLeftOf2++;
                                         if (basesLeftOf2 == basesLeftOf) lastCorrectPos = pos;
                                     }
@@ -768,7 +756,7 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
                                     }
                                     else {
                                         for (; pos<seq_len; pos++) {
-                                            if (!ADPP_IS_ALIGN_CHARACTER(seq[pos])) {
+                                            if (!ED4_is_gap_character(seq[pos])) {
                                                 basesLeftOf2++;
                                                 if (basesLeftOf2 == basesLeftOf) {
                                                     seq_pos = pos+1;
@@ -779,6 +767,21 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
                                     }
                                 }
                             }
+                            break;
+                        }
+                        case 'R': {  // CTRL-R = set aligner reference species OR set reference for diff-mode
+                            ED4_reference *ref = ED4_ROOT->reference;
+                            if (ref->is_set()) { // if "view differences" is active = > set new reference
+                                ED4_viewDifferences_setNewReference();
+                            }
+                            else { // otherwise set aligner reference
+                                if (is_consensus) { cannot_handle = 1; return 0; };
+                                FastAligner_set_reference_species(ED4_ROOT->aw_root);
+                            }
+                            break;
+                        }
+                        case 'D': { // CTRL-D = Toggle view differences
+                            ED4_toggle_viewDifferences(ED4_ROOT->aw_root);
                             break;
                         }
                         case 'E': { // CTRL-E = Toggle Edit/Align-Mode
@@ -823,19 +826,9 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
                             cursor_jump = ED4_JUMP_CENTERED;
                             break;
                         }
-                        case 'M': // CTRL-M = Invert mark(s)
+                        case 'M': { // CTRL-M = Invert mark(s)
                             if (is_consensus) { cannot_handle = 1; return 0; }
                             toggle_mark_of_specData(gb_data);
-                            break;
-                        
-                        case 'S': { // CTRL-S = Repeat last search
-                            ad_err      = ED4_repeat_last_search(current_ed4w());
-                            seq_pos     = current_cursor().get_sequence_pos();
-                            cursor_jump = ED4_JUMP_KEEP_POSITION;
-                            break;
-                        }
-                        case 'U': {
-                            // ad_err = GB_undo(gb_main, GB_UNDO_UNDO); // @@@ stuerzt ab - wahrscheinlich weil Transaktion offen ist
                             break;
                         }
                         case 'O': { //  for ALT-left
@@ -850,6 +843,16 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
                             reinterpret_key = true;
                             break;
                         }
+                        case 'S': { // CTRL-S = Repeat last search
+                            ad_err      = ED4_repeat_last_search(current_ed4w());
+                            seq_pos     = current_cursor().get_sequence_pos();
+                            cursor_jump = ED4_JUMP_KEEP_POSITION;
+                            break;
+                        }
+                        case 'U': {
+                            // ad_err = GB_undo(gb_main, GB_UNDO_UNDO); // @@@ stuerzt ab - wahrscheinlich weil Transaktion offen ist
+                            break;
+                        }
                     }
                 }
                 else { // normal characters
@@ -862,7 +865,7 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
                             int  l    = seq[left];
                             int  r    = seq[seq_pos];
 
-                            char gapchar_at_pos = ADPP_IS_ALIGN_CHARACTER(l) ? l : (ADPP_IS_ALIGN_CHARACTER(r) ? r : 0);
+                            char gapchar_at_pos = ED4_is_gap_character(l) ? l : (ED4_is_gap_character(r) ? r : 0);
 
                             switch (keymod) {
                                 case AW_KEYMODE_NONE:
@@ -879,20 +882,20 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
                         str[0] = key;
                     }
 
-                    if (ADPP_IS_ALIGN_CHARACTER(key) && keymod == AW_KEYMODE_CONTROL) { // gap-type change works in all modes
+                    if (ED4_is_gap_character(key) && keymod == AW_KEYMODE_CONTROL) { // gap-type change works in all modes
                         // gap type functions ('.' <-> '-')
 
                         long left = seq_pos>0 ? seq_pos-1 : 0;
                         int  l    = seq[left];
                         int  r    = seq[seq_pos];
 
-                        if      (ADPP_IS_ALIGN_CHARACTER(l) && l!=key) { ad_err = swap_gaps(left, key);    changed_flag = 1; }
-                        else if (ADPP_IS_ALIGN_CHARACTER(r) && r!=key) { ad_err = swap_gaps(seq_pos, key); changed_flag = 1; }
+                        if      (ED4_is_gap_character(l) && l!=key) { ad_err = swap_gaps(left, key);    changed_flag = 1; }
+                        else if (ED4_is_gap_character(r) && r!=key) { ad_err = swap_gaps(seq_pos, key); changed_flag = 1; }
                     }
                     else {
                         switch (mode) {
                             case AD_ALIGN: {
-                                if (ADPP_IS_ALIGN_CHARACTER(key)) {
+                                if (ED4_is_gap_character(key)) {
                                     if (keymod == AW_KEYMODE_NONE) {
                                         if (!ad_err) {
                                             char *nstr = (char *)GB_calloc(1, nrepeat+1);

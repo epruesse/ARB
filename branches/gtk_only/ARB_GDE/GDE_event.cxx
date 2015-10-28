@@ -688,7 +688,7 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
         for(int j=0; j<current_item->numoutputs; j++) Action = ReplaceFile(Action, current_item->output[j]);
 
         if (Find(Action, "$FILTER") == true) {
-            char *filter_name = AWT_get_combined_filter_name(aw_root, "gde");
+            char *filter_name = AWT_get_combined_filter_name(aw_root, AWAR_PREFIX_GDE_TEMP);
             Action            = ReplaceString(Action, "$FILTER", filter_name);
             free(filter_name);
         }

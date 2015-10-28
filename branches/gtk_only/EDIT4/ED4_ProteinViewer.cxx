@@ -11,12 +11,12 @@
 // =======================================================================================
 
 #include "ed4_ProteinViewer.hxx"
+#include "ed4_seq_colors.hxx"
 #include "ed4_class.hxx"
 
 #include <AP_pro_a_nucs.hxx>
 #include <AP_codon_table.hxx>
 #include <Translate.hxx>
-#include <awt_seq_colors.hxx>
 #include <aw_question.hxx>
 #include <aw_preset.hxx>
 #include <aw_awars.hxx>
@@ -392,8 +392,9 @@ static void PV_WriteTranslatedSequenceToDB(ED4_orf_terminal *aaSeqTerm, const ch
         else {
             GBDATA *gb_SeqData = GBT_find_sequence(gb_species, defaultAlignment);
             if (!gb_SeqData) {
-                error = GB_get_error();
-                if (!error) error = GBS_global_string("Species '%s' has no data in alignment '%s'", spName, defaultAlignment);
+                error = GB_have_error()
+                    ? GB_await_error()
+                    : GBS_global_string("Species '%s' has no data in alignment '%s'", spName, defaultAlignment);
             }
             else {
                 char *str_SeqData       = GB_read_string(gb_SeqData);
@@ -522,8 +523,9 @@ static void TranslateGeneToAminoAcidSequence(AW_root * /* root */, ED4_orf_termi
         else {
             GBDATA *gb_SeqData = GBT_find_sequence(gb_species, defaultAlignment);
             if (!gb_SeqData) {
-                error = GB_get_error();
-                if (!error) error = GBS_global_string("Species '%s' has no data in alignment '%s'", speciesName, defaultAlignment);
+                error = GB_have_error()
+                    ? GB_await_error()
+                    : GBS_global_string("Species '%s' has no data in alignment '%s'", speciesName, defaultAlignment);
             }
             else {
                 e4_assert(startPos4Translation>=0 && startPos4Translation<=2);
@@ -1035,7 +1037,7 @@ AW_window *ED4_CreateProteinViewer_window(AW_root *aw_root) {
         aws->update_toggle_field();
 
         aws->at("colMaps");
-        aws->callback(AW_POPUP, (AW_CL)create_seq_colors_window, (AW_CL)ED4_ROOT->sequence_colors);
+        aws->callback(makeCreateWindowCallback(ED4_create_seq_colors_window, ED4_ROOT->sequence_colors));
         aws->button_length(0);
         aws->create_button("COLORMAPS", "#colorMaps.xpm");
 

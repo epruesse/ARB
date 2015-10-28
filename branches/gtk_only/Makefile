@@ -234,11 +234,12 @@ endif
 ifeq ($(DARWIN),0)
 	clflags += -Wl,-g
 
-# TEMPORARY WORKAROUND for linker issues with launchpad binutils
-# code was added to ld to check for overlapping FDEs. Since ARB
-# worked before, we want this not to fail for the moment.
-# FIXME: remove this!
-        clflags += -Wl,-noinhibit-exec
+# Note:
+# Previously '-Wl,-noinhibit-exec' was added to 'clflags' here,
+# to fix some issues with launchpad binutils (see [12972]).
+# But that change also caused 'undefined symbols' NOT to be reported as errors
+# at link time, producing executables that fail at runtime :/
+
 endif
 
  ifeq ($(DEBUG_GRAPHICS),1)
@@ -681,6 +682,21 @@ ifeq ($(DEBUG),0)
  endif
 endif
 
+#---------------------- differences between linking executables and shared libs:
+
+# executables:
+ifeq ($(DARWIN),1)
+blflags:=$(clflags)
+else
+blflags:=$(clflags) -Wl,--no-undefined
+endif
+
+# shared libraries
+llflags:=$(clflags)
+
+# dont use clflags below
+clflags:=
+
 # -------------------------------------------------------------------------
 #	Don't put any machine/version/etc conditionals below!
 #	(instead define variables above)
@@ -707,14 +723,14 @@ cxxflags += -std=gnu++0x
 endif
 
 LINK_STATIC_LIB := ar -csq# link static lib
-LINK_EXECUTABLE := $(A_CXX) $(clflags) -o# link executable (c++)
+LINK_EXECUTABLE := $(A_CXX) $(blflags) -o# link executable (c++)
 
 ifeq ($(LINK_STATIC),1)
 SHARED_LIB_SUFFIX = a# static lib suffix
 LINK_SHARED_LIB := $(LINK_STATIC_LIB)
 else
 SHARED_LIB_SUFFIX = so# shared lib suffix
-LINK_SHARED_LIB := $(A_CXX) $(clflags) -shared $(GCOVFLAGS) -o# link shared lib
+LINK_SHARED_LIB := $(A_CXX) $(llflags) -shared $(GCOVFLAGS) -o# link shared lib
 endif
 
 ifeq ($(DARWIN),1)
@@ -724,7 +740,8 @@ lflags4perl:=$(cross_lflags) -shared
 endif
 
 # delete variables unused below
-clflags:=
+blflags:=
+llflags:=
 
 # other used tools
 MAKEDEPEND_PLAIN = makedepend
@@ -1138,6 +1155,7 @@ ARCHS_NTREE = \
 		SERVERCNTRL/SERVERCNTRL.a \
 		SL/ALILINK/ALILINK.a \
 		SL/AW_NAME/AW_NAME.a \
+		SL/CONSENSUS/CONSENSUS.a \
 		SL/DB_SCANNER/DB_SCANNER.a \
 		SL/DB_QUERY/DB_QUERY.a \
 		SL/SEQIO/SEQIO.a \
@@ -1179,6 +1197,7 @@ ARCHS_EDIT4 := \
 		SERVERCNTRL/SERVERCNTRL.a \
 		SL/AW_HELIX/AW_HELIX.a \
 		SL/AW_NAME/AW_NAME.a \
+		SL/CONSENSUS/CONSENSUS.a \
 		SL/ITEMS/ITEMS.a \
 		STAT/STAT.a \
 		SL/GUI_ALIVIEW/GUI_ALIVIEW.a \
@@ -1525,6 +1544,7 @@ SL/ALIVIEW/ALIVIEW.dummy:		links_non_perl
 SL/AP_TREE/AP_TREE.dummy:		links_non_perl
 SL/ARB_TREE/ARB_TREE.dummy:		links_non_perl
 SL/AW_HELIX/AW_HELIX.dummy:		links_non_perl
+SL/CONSENSUS/CONSENSUS.dummy:		links_non_perl
 SL/DB_QUERY/DB_QUERY.dummy:		links_non_perl
 SL/DB_SCANNER/DB_SCANNER.dummy:		links_non_perl
 SL/DB_UI/DB_UI.dummy:			links_non_perl
@@ -2271,6 +2291,7 @@ UNITS_UNTESTABLE_ATM = \
 # for the moment, put all units containing tests into UNITS_TESTED or UNITS_TESTED_FIRST
 
 UNITS_TESTED_FIRST = \
+	SL/CONSENSUS/CONSENSUS.test \
 	DIST/DIST.test \
 	PARSIMONY/PARSIMONY.test \
 	EDIT4/EDIT4.test \

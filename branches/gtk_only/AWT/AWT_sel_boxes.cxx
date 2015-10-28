@@ -442,7 +442,8 @@ struct AWT_configuration_selection : public AW_DB_selection {
 
         int count;
         if (!error) {
-            comment = cfg.get_comment();
+            const char *cmt = cfg.get_comment();
+            comment         = cmt ? cmt : "";
             for (int area = 0; area<2; ++area) {
                 GBT_config_parser parser(cfg, area);
                 while (1) {

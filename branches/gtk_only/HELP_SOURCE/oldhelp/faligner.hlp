@@ -31,7 +31,7 @@ SECTION         ADJUSTMENTS
 
                                 Align current, marked or selected sequences.
 
-                                If you type 'Ctrl-A' in the main editor window
+                                If you type 'CTRL-A' in the main editor window
                                 this option is set to align the current species and
                                 the aligner gets called.
 
@@ -42,6 +42,11 @@ SECTION         ADJUSTMENTS
 				consensus of the group containing the species
 				or the next relative(s) found by the selected
 				PT-Server.
+
+                                If you choose a fixed species, you may press the 'COPY' button
+                                to copy the name of the 'Current Species' to the 'Reference' species.
+                                Alternatively you may use CTRL-R while the focus is inside the sequence view
+                                (Note: CTRL-R does not work, if LINK{viewdiff.hlp} is active).
 
 				If you choose 'Auto search by pt_server', the
 				aligner will use the next relative(s) as reference.

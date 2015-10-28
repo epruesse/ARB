@@ -14,6 +14,7 @@ OCCURRENCE	ARB_EDIT4/<GET-button>
 		ARB_EDIT4/<JUMP-button>
 		ARB_EDIT4/Edit/Load current species
 		ARB_EDIT4/Edit/Load marked species
+		ARB_EDIT4/Edit/Load SAI ...
 
 DESCRIPTION     Several functions allow to load missing species into a running ARB_EDIT4 instance.
 
@@ -44,8 +45,18 @@ DESCRIPTION     Several functions allow to load missing species into a running A
 
                         Similar to GET button, but operates on all marked species.
 
-NOTES		When loading (a previously missing) species into ARB_EDIT4, the species gets placed into
-                a group named 'More Sequences'.
+		ARB_EDIT4/Edit/Load SAI ...:
+
+                        Allows to load missing SAIs.
+
+                        Select one of the (not yet loaded) SAIs from
+                        the popup list and press LOAD.
+
+                        If the list is empty, all SAIs with data in the
+                        alignment (used by ARB_EDIT4) are already loaded.
+
+NOTES		When loading (a previously missing) species or SAI into ARB_EDIT4,
+                it will be placed in a group named 'More Sequences'.
 
 EXAMPLES	None
 

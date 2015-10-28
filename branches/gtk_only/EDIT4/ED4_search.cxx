@@ -665,13 +665,8 @@ static SearchTree     *tree[SEARCH_PATTERNS]; // Search trees for each type
 
 // --------------------------------------------------------------------------------
 
-static void searchParamsChanged(AW_root *root, AW_CL cl_type, AW_CL cl_action)
-{
-    ED4_SearchPositionType type = ED4_SearchPositionType(cl_type);
-    enum search_params_changed_action action = (enum search_params_changed_action)cl_action;
-
+static void searchParamsChanged(AW_root *root, ED4_SearchPositionType type, search_params_changed_action action) {
     // check awar values
-
     if (action & (TEST_MIN_MISMATCH|TEST_MAX_MISMATCH)) {
         int mimi = root->awar(awar_list[type].min_mismatches)->read_int();
         int mami = root->awar(awar_list[type].max_mismatches)->read_int();
@@ -763,7 +758,7 @@ static void searchParamsChanged(AW_root *root, AW_CL cl_type, AW_CL cl_action)
             }
 
             if (!jumped) {
-                ED4_search_cb(0, ED4_encodeSearchDescriptor(+1, type), (AW_CL)current_ed4w());
+                ED4_search_cb(NULL, ED4_encodeSearchDescriptor(+1, type), current_ed4w());
             }
         }
     }
@@ -774,10 +769,9 @@ static void searchParamsChanged(AW_root *root, AW_CL cl_type, AW_CL cl_action)
 
 void ED4_create_search_awars(AW_root *root)
 {
-#define cb(action) add_callback(searchParamsChanged, AW_CL(i), AW_CL(action))
+#define cb(action) add_callback(makeRootCallback(searchParamsChanged, ED4_SearchPositionType(i), search_params_changed_action(action)));
 
-    int i;
-    for (i=0; i<SEARCH_PATTERNS; i++) {
+    for (int i=0; i<SEARCH_PATTERNS; i++) {
         root->awar_string(awar_list[i].pattern, 0, GLOBAL_gb_main)                             ->cb(REFRESH_IF_SHOWN | RECALC_SEARCH_TREE | DO_AUTO_JUMP);
         root->awar_int(awar_list[i].case_sensitive, ED4_SC_CASE_INSENSITIVE, GLOBAL_gb_main)   ->cb(REFRESH_IF_SHOWN | RECALC_SEARCH_TREE | DO_AUTO_JUMP);
         root->awar_int(awar_list[i].tu, ED4_ST_T_EQUAL_U, GLOBAL_gb_main)                      ->cb(REFRESH_IF_SHOWN | RECALC_SEARCH_TREE | DO_AUTO_JUMP);
@@ -793,7 +787,7 @@ void ED4_create_search_awars(AW_root *root)
         root->awar_int(awar_list[i].autoJump, 1, GLOBAL_gb_main)                               ->cb(DO_AUTO_JUMP);
 
         settings[i] = new SearchSettings(&awar_list[i]);
-        tree[i] = new SearchTree(settings[i]);
+        tree[i]     = new SearchTree(settings[i]);
     }
 
     root->awar_int(ED4_AWAR_SEARCH_RESULT_CHANGED, 0, GLOBAL_gb_main);
@@ -1314,14 +1308,11 @@ GB_ERROR ED4_repeat_last_search(ED4_window *ed4w) {
         return GBS_global_string("You have to search first, before you can repeat a search.");
     }
 
-    ED4_search_cb(0, last_searchDescriptor, (AW_CL)ed4w);
+    ED4_search_cb(NULL, last_searchDescriptor, ed4w);
     return 0;
 }
 
-void ED4_search_cb(AW_window *, AW_CL searchDescriptor, AW_CL cl_ed4w) {
-    ED4_window *ed4w = (ED4_window*)cl_ed4w;
-    e4_assert(ed4w);
-
+void ED4_search_cb(UNFIXED, int searchDescriptor, ED4_window *ed4w) {
     ED4_LocalWinContext uses(ed4w);
 
     last_searchDescriptor = searchDescriptor;
@@ -1417,10 +1408,9 @@ void ED4_search_cb(AW_window *, AW_CL searchDescriptor, AW_CL cl_ed4w) {
     }
 }
 
-static void ED4_mark_matching_species(AW_window * /* aww */, AW_CL cl_pattern) {
-    ED4_SearchPositionType  pattern  = ED4_SearchPositionType(cl_pattern);
-    ED4_terminal           *terminal = ED4_ROOT->root_group_man->get_first_terminal();
-    GB_transaction          ta(GLOBAL_gb_main);
+static void ED4_mark_matching_species(AW_window *, ED4_SearchPositionType pattern) {
+    ED4_terminal   *terminal = ED4_ROOT->root_group_man->get_first_terminal();
+    GB_transaction  ta(GLOBAL_gb_main);
 
     while (terminal) {
         if (terminal->is_sequence_terminal()) {
@@ -1713,9 +1703,7 @@ struct search_windows : public Noncopyable {
 
 typedef std::map<ED4_window*, SmartPtr<search_windows> > search_window_map;
 
-void ED4_popup_search_window(AW_window *aww, AW_CL cl_search_type) {
-    ED4_SearchPositionType type = (ED4_SearchPositionType)cl_search_type;
-
+void ED4_popup_search_window(AW_window *aww, ED4_SearchPositionType type) {
     ED4_WinContext  uses(aww);
     ED4_window     *ed4w = uses.get_ed4w();
 
@@ -1754,15 +1742,15 @@ void ED4_popup_search_window(AW_window *aww, AW_CL cl_search_type) {
         aws->create_button("SAVE", "SAVE", "S");
 
         aws->at("next");
-        aws->callback(ED4_search_cb, (AW_CL)ED4_encodeSearchDescriptor(+1, type), (AW_CL)ed4w);
+        aws->callback(makeWindowCallback(ED4_search_cb, ED4_encodeSearchDescriptor(+1, type), ed4w));
         aws->create_button("SEARCH_NEXT", "#edit/next.xpm", "N");
 
         aws->at("previous");
-        aws->callback(ED4_search_cb, (AW_CL)ED4_encodeSearchDescriptor(-1, type), (AW_CL)ed4w);
+        aws->callback(makeWindowCallback(ED4_search_cb, ED4_encodeSearchDescriptor(-1, type), ed4w));
         aws->create_button("SEARCH_LAST", "#edit/last.xpm", "L");
 
         aws->at("mark");
-        aws->callback(ED4_mark_matching_species, (AW_CL)type);
+        aws->callback(makeWindowCallback(ED4_mark_matching_species, type));
         aws->create_autosize_button("MARK_SPECIES", "Mark species with matches", "M");
 
         aws->at("show");

@@ -173,6 +173,8 @@ DESCRIPTION     The editor allows you to view and modify the sequences of 'marke
                                 (amino acid) symbol, it will jump aside the next
                                 nucleotide (amino acid) symbol.
 
+                                Alternate keys are: CTRL-O and CTRL-P
+
                 Change gap type
 
                        Consecutive runs of gaps can be set to 
@@ -196,7 +198,7 @@ DESCRIPTION     The editor allows you to view and modify the sequences of 'marke
 
                         CTRL+UP/DOWN
 
-                                Like Ctrl-Left/Right, but vertical.
+                                Like CTRL-LEFT/RIGHT, but vertical.
 
                         HOME/END
 
@@ -214,9 +216,43 @@ DESCRIPTION     The editor allows you to view and modify the sequences of 'marke
 
                                 Jump to previous/next group consensus
 
-                        Ctrl-M
+                        CTRL-A
+
+                                Call Aligner with current settings (see LINK{faligner.hlp}).
+
+                        CTRL-D
+
+                                Toggle "view differences" mode (see LINK{viewdiff.hlp}).
+
+                        CTRL-E
+
+                                Toggle EDIT/ALIGN mode (see above).
+
+                        CTRL-I
+
+                                Toggle INSERT/REPLACE mode (see above).
+
+                        CTRL-J
+
+                                Jump to opposite helix position.
+
+                        CTRL-L
+
+                                Move cursor into view and refresh display.
+
+                        CTRL-M
 
                                 Toggle mark of species/group.
+
+                        CTRL-R
+
+                                Shared key:
+                                  * sets reference sequence for "view differences" (only if active; see LINK{viewdiff.hlp})
+                                  * otherwise sets aligner reference species (see LINK{faligner.hlp})
+
+                        CTRL-S
+
+                                Repeat last search (see LINK{e4_search.hlp}).
 
         Messages:
 

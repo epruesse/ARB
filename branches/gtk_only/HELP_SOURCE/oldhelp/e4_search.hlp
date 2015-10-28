@@ -49,7 +49,8 @@ SECTION         Detailed search parameters (one window for each pattern type)
 		Last/Next
 
 			Jumps to the last/next occurrence of any of the given patterns.
-			You can repeat your last search by pressing CTRL-S.
+			You can repeat your last search by pressing <CTRL-S> while focus
+                        is inside sequence view.
 
                         In the extended top-area of ARB_EDIT4 there are global NEXT/LAST
                         buttons. They jump to the next match of ANY of all 9 pattern types.
