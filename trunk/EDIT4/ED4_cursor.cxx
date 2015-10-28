@@ -519,7 +519,7 @@ void ED4_selected_species_changed_cb(AW_root * /* aw_root */) {
     }
 }
 
-void ED4_jump_to_current_species(AW_window *aww, AW_CL) {
+void ED4_jump_to_current_species(AW_window *aww) {
     ED4_LocalWinContext uses(aww);
     char *name = GBT_read_string(GLOBAL_gb_main, AWAR_SPECIES_NAME);
     if (name && name[0]) {
@@ -680,7 +680,7 @@ void ED4_get_and_jump_to_species(GB_CSTR species_name) {
     }
 }
 
-void ED4_get_and_jump_to_current(AW_window *aww, AW_CL) {
+void ED4_get_and_jump_to_current(AW_window *aww) {
     ED4_LocalWinContext  uses(aww);
     char                *name = GBT_read_string(GLOBAL_gb_main, AWAR_SPECIES_NAME);
     if (name && name[0]) {
@@ -691,11 +691,7 @@ void ED4_get_and_jump_to_current(AW_window *aww, AW_CL) {
     }
 }
 
-void ED4_get_and_jump_to_current_from_menu(AW_window *aw, AW_CL cl, AW_CL) {
-    ED4_get_and_jump_to_current(aw, cl);
-}
-
-void ED4_get_marked_from_menu(AW_window *, AW_CL, AW_CL) {
+void ED4_get_marked_from_menu(AW_window *) {
 #define BUFFERSIZE 1000
     GB_transaction ta(GLOBAL_gb_main);
     int marked = GBT_count_marked_species(GLOBAL_gb_main);
