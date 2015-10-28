@@ -2486,7 +2486,7 @@ char GB_type_2_char(GB_TYPES type) {
     return type2char[type];
 }
 
-GB_ERROR GB_print_debug_information(void */*dummy_AW_root*/, GBDATA *gb_main) {
+void GB_print_debug_information(struct Unfixed_cb_parameter *, GBDATA *gb_main) {
     GB_MAIN_TYPE *Main = GB_MAIN(gb_main);
     GB_push_transaction(gb_main);
     for (int i=0; i<Main->keycnt; i++) {
@@ -2500,7 +2500,6 @@ GB_ERROR GB_print_debug_information(void */*dummy_AW_root*/, GBDATA *gb_main) {
     }
     gbm_debug_mem();
     GB_pop_transaction(gb_main);
-    return 0;
 }
 
 static int GB_info_deep = 15;

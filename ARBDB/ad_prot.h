@@ -414,7 +414,7 @@ void GB_write_flag(GBDATA *gbd, long flag);
 int GB_read_flag(GBDATA *gbd);
 void GB_touch(GBDATA *gbd);
 char GB_type_2_char(GB_TYPES type);
-GB_ERROR GB_print_debug_information(void *, GBDATA *gb_main);
+void GB_print_debug_information(struct Unfixed_cb_parameter *, GBDATA *gb_main);
 int GB_info(GBDATA *gbd);
 long GB_number_of_subentries(GBDATA *gbd);
 

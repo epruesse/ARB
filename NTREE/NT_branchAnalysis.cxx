@@ -126,20 +126,17 @@ public:
 
 // --------------------------------------------------------------------------------
 
-static void mark_long_branches_cb       (AW_window *, AW_CL cl_bw) {((BranchWindow*)cl_bw)->markLongBranches(); }
-static void mark_deep_leafs_cb          (AW_window *, AW_CL cl_bw) {((BranchWindow*)cl_bw)->markDeepLeafs(); }
-static void mark_degenerated_branches_cb(AW_window *, AW_CL cl_bw) {((BranchWindow*)cl_bw)->markDegeneratedBranches(); }
-static void unmark_branches_cb          (AW_window *, AW_CL cl_bw) {((BranchWindow*)cl_bw)->unmark_all(); }
-static void distance_analysis_cb        (AW_window *, AW_CL cl_bw) {((BranchWindow*)cl_bw)->analyseDistances(); }
+static void mark_long_branches_cb       (AW_window*, BranchWindow *bw) { bw->markLongBranches(); }
+static void mark_deep_leafs_cb          (AW_window*, BranchWindow *bw) { bw->markDeepLeafs(); }
+static void mark_degenerated_branches_cb(AW_window*, BranchWindow *bw) { bw->markDegeneratedBranches(); }
+static void unmark_branches_cb          (AW_window*, BranchWindow *bw) { bw->unmark_all(); }
+static void distance_analysis_cb        (AW_window*, BranchWindow *bw) { bw->analyseDistances(); }
 
-static void tree_changed_cb(AW_root*, AW_CL cl_bw) {
-    BranchWindow *bw = (BranchWindow*)cl_bw;
-    bw->set_info("<tree has changed>");
-}
+static void tree_changed_cb             (AW_root*,   BranchWindow *bw) { bw->set_info("<tree has changed>"); }
 
 void BranchWindow::create_awars(AW_root *aw_root) {
     awar_info = aw_root->awar_string(local_awar_name(AWAR_BRANCH_ANALYSIS_TMP, "info"), "<No analysis performed yet>");
-    aw_root->awar(ntw->user_awar)->add_callback(tree_changed_cb, (AW_CL)this);
+    aw_root->awar(ntw->user_awar)->add_callback(makeRootCallback(tree_changed_cb, this));
 
     aw_root->awar_float(AWAR_BA_MIN_REL_DIFF, 75);
     aw_root->awar_float(AWAR_BA_MIN_ABS_DIFF, 0.01);
@@ -183,17 +180,17 @@ void BranchWindow::create_window(AW_root *aw_root) {
     aws->button_length(28);
     
     aws->at("dist_analyse");
-    aws->callback(distance_analysis_cb, (AW_CL)this);
+    aws->callback(makeWindowCallback(distance_analysis_cb, this));
     aws->create_button("ANALYSE", "Analyse distances in tree");
 
     aws->at("unmark");
-    aws->callback(unmark_branches_cb, (AW_CL)this);
+    aws->callback(makeWindowCallback(unmark_branches_cb, this));
     aws->create_button("UNMARK", "Unmark all species");
 
     const int WIDTH = 10;
 
     aws->at("mark_long");
-    aws->callback(mark_long_branches_cb, (AW_CL)this);
+    aws->callback(makeWindowCallback(mark_long_branches_cb, this));
     aws->create_button("MARK_LONG", "Mark long branches");
 
     aws->at("min_rel"); aws->create_input_field(AWAR_BA_MIN_REL_DIFF, WIDTH);
@@ -201,14 +198,14 @@ void BranchWindow::create_window(AW_root *aw_root) {
 
 
     aws->at("mark_deep");
-    aws->callback(mark_deep_leafs_cb, (AW_CL)this);
+    aws->callback(makeWindowCallback(mark_deep_leafs_cb, this));
     aws->create_button("MARK_DEEP", "Mark deep leafs");
 
     aws->at("tree_depth");   aws->create_input_field(AWAR_BA_MIN_DEPTH, WIDTH);
     aws->at("branch_depth"); aws->create_input_field(AWAR_BA_MIN_ROOTDIST, WIDTH);
 
     aws->at("mark_degen");
-    aws->callback(mark_degenerated_branches_cb, (AW_CL)this);
+    aws->callback(makeWindowCallback(mark_degenerated_branches_cb, this));
     aws->create_button("MARK_DEGENERATED", "Mark degenerated branches");
 
     aws->at("degen"); aws->create_input_field(AWAR_BA_DEGENERATION, WIDTH);
