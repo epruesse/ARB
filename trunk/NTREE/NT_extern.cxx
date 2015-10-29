@@ -295,6 +295,7 @@ bool nt_disconnect_from_db(AW_root *aw_root, GBDATA*& gb_main_ref) {
 #if defined(WARN_TODO)
 #warning instead of directly calling the following functions, try to add them as GB_atclose-callbacks
 #endif
+        GEN_disconnect_from_DB(); // disconnect genmap callback (has to be called b4 unlink_awars_from_DB!)
         aw_root->unlink_awars_from_DB(gb_main);
         AWT_destroy_input_masks();
 #if defined(DEBUG)
