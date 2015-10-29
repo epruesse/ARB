@@ -494,6 +494,22 @@ static void GEN_add_global_awar_callbacks(AW_root *awr) {
     awr->awar(AWAR_GENE_NAME)->add_callback(GEN_organism_or_gene_changed_cb);
 }
 
+void GEN_disconnect_from_DB() {
+    // called before ntree disconnects awars from DB
+    // (deactivates callbacks which otherwise would crash)
+
+    if (GEN_map_manager::initialized()) {
+        int window_count = GEN_map_manager::get_map_manager()->no_of_managed_windows();
+
+        AW_root *aw_root = AW_root::SINGLETON;
+        aw_root->awar(AWAR_ORGANISM_NAME)->write_string("");
+
+        for (int window_nr = 0; window_nr<window_count; ++window_nr) {
+            aw_root->awar(AWAR_LOCAL_ORGANISM_LOCK(window_nr))->write_int(0);
+            aw_root->awar(AWAR_LOCAL_ORGANISM_NAME(window_nr))->write_string("");
+        }
+    }
+}
 
 // --------------------------------------------------------------------------------
 
