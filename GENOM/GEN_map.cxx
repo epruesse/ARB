@@ -261,9 +261,7 @@ static void GEN_gene_container_cb_installer(CbInstallMode install, AWT_canvas *g
 
 static void GEN_jump_cb(AW_window *aww, bool force_center_if_fits) {
     // force_center_if_fits==true => center gene if it fits into display
-
-    GEN_map_window *win = dynamic_cast<GEN_map_window*>(aww); // @@@ use same callback-type as for with_all_mapped_windows
-    gen_assert(win);
+    GEN_map_window *win = DOWNCAST(GEN_map_window*, aww);
 
     AW_device             *device = win->get_graphic()->get_device();
     const AW_screen_area&  screen = device->get_area_size();
@@ -1535,8 +1533,7 @@ static void GEN_create_hide_submenu(AW_window_menu_modes *awm, GBDATA *gb_main) 
 }
 
 static void GEN_set_display_style(AW_window *aww, GEN_DisplayStyle style) {
-    GEN_map_window *win = dynamic_cast<GEN_map_window*>(aww); // @@@ use same callback-type as for with_all_mapped_windows
-    gen_assert(win);
+    GEN_map_window *win = DOWNCAST(GEN_map_window*, aww);
 
     win->get_root()->awar(AWAR_GENMAP_DISPLAY_TYPE(win->get_nr()))->write_int(style);
     win->get_graphic()->set_display_style(style);
