@@ -63,6 +63,7 @@
 // --------------------------------------------------------------------------------
 
 const char *GEN_window_local_awar_name(const char *awar_name, int window_nr);
+int         GEN_find_windowNr_for(class GEN_graphic *gg);
 
 struct GEN_create_map_param {
     GBDATA *gb_main;
