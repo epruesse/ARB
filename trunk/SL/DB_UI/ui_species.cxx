@@ -129,24 +129,28 @@ static void move_species_to_extended(AW_window *aww, GBDATA *gb_main) {
 
 
 static void species_create_cb(AW_window *aww, GBDATA *gb_main) {
-    char     *dest    = aww->get_root()->awar(AWAR_SPECIES_DEST)->read_string();
-    GB_ERROR  error   = GB_begin_transaction(gb_main);
-
-    if (!error) {
-        GBDATA *gb_species_data     = GBT_get_species_data(gb_main);
-        if (!gb_species_data) error = GB_await_error();
-        else {
-            GBDATA *gb_dest = GBT_find_species_rel_species_data(gb_species_data, dest);
-
-            if (gb_dest) error = GBS_global_string("Species '%s' already exists", dest);
+    char *dest = aww->get_root()->awar(AWAR_SPECIES_DEST)->read_string();
+    if (dest[0]) {
+        GB_ERROR error = GB_begin_transaction(gb_main);
+        if (!error) {
+            GBDATA *gb_species_data     = GBT_get_species_data(gb_main);
+            if (!gb_species_data) error = GB_await_error();
             else {
-                gb_dest             = GBT_find_or_create_species_rel_species_data(gb_species_data, dest);
-                if (!gb_dest) error = GB_await_error();
-                else aww->get_root()->awar(AWAR_SPECIES_NAME)->write_string(dest);
+                GBDATA *gb_dest = GBT_find_species_rel_species_data(gb_species_data, dest);
+
+                if (gb_dest) error = GBS_global_string("Species '%s' already exists", dest);
+                else {
+                    gb_dest             = GBT_find_or_create_species_rel_species_data(gb_species_data, dest);
+                    if (!gb_dest) error = GB_await_error();
+                    else aww->get_root()->awar(AWAR_SPECIES_NAME)->write_string(dest);
+                }
             }
         }
+        GB_end_transaction_show_error(gb_main, error, aw_message);
     }
-    GB_end_transaction_show_error(gb_main, error, aw_message);
+    else {
+        aw_message("Please enter a name for the new species");
+    }
     free(dest);
 }
 
