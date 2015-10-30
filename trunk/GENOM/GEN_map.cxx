@@ -318,8 +318,7 @@ static void GEN_jump_cb_auto(AW_root *root, GEN_map_window *win, bool force_refr
     else if (force_refresh) win->get_canvas()->refresh();
 }
 
-static void GEN_local_organism_or_gene_name_changed_cb(AW_root *awr, AW_CL cl_win) {
-    GEN_map_window *win = (GEN_map_window*)cl_win;
+static void GEN_local_organism_or_gene_name_changed_cb(AW_root *awr, GEN_map_window *win) {
     win->get_graphic()->reinit_gen_root(win->get_canvas(), false);
     GEN_jump_cb_auto(awr, win, true);
 }
@@ -339,7 +338,7 @@ void GEN_refresh_all_windows() {
     GEN_map_manager::with_all_mapped_windows(GEN_map_window_refresh, 0);
 }
 
-static void GEN_map_window_refresh_if_display_type(GEN_map_window *win, AW_CL cl_display_type_mask) {
+static void GEN_map_window_refresh_if_display_type(GEN_map_window *win, AW_CL cl_display_type_mask) { // @@@ elim AW_CL
     int display_type_mask = int(cl_display_type_mask);
     int my_display_type   = win->get_graphic()->get_display_style();
 
@@ -371,24 +370,22 @@ static void GEN_organism_or_gene_changed_cb(AW_root *awr) {
 }
 
 
-static void GEN_local_lock_changed_cb(AW_root *awr, AW_CL cl_win, AW_CL cl_what_lock) {
-    int             what_lock = (int)cl_what_lock;
-    GEN_map_window *win       = (GEN_map_window*)cl_win;
-    int             window_nr = win->get_nr();
+static void GEN_local_lock_changed_cb(AW_root *awr, GEN_map_window *win, bool gene_lock) {
+    int window_nr = win->get_nr();
 
     const char *local_awar_name      = 0;
     const char *local_lock_awar_name = 0;
     const char *global_awar_name     = 0;
 
-    if (what_lock == 0) { // organism
-        local_awar_name      = AWAR_LOCAL_ORGANISM_NAME(window_nr);
-        local_lock_awar_name = AWAR_LOCAL_ORGANISM_LOCK(window_nr);
-        global_awar_name     = AWAR_ORGANISM_NAME;
-    }
-    else { // gene
+    if (gene_lock) {
         local_awar_name      = AWAR_LOCAL_GENE_NAME(window_nr);
         local_lock_awar_name = AWAR_LOCAL_GENE_LOCK(window_nr);
         global_awar_name     = AWAR_GENE_NAME;
+    }
+    else { // otherwise organism
+        local_awar_name      = AWAR_LOCAL_ORGANISM_NAME(window_nr);
+        local_lock_awar_name = AWAR_LOCAL_ORGANISM_LOCK(window_nr);
+        global_awar_name     = AWAR_ORGANISM_NAME;
     }
 
     AW_awar *local_awar  = awr->awar(local_awar_name);
@@ -409,7 +406,7 @@ static void GEN_local_lock_changed_cb(AW_root *awr, AW_CL cl_win, AW_CL cl_what_
 // -------------------------------------
 //      display parameter change cb
 
-static void GEN_display_param_changed_cb(AW_root * /* awr */, AW_CL cl_display_type_mask) {
+static void GEN_display_param_changed_cb(AW_root*, AW_CL cl_display_type_mask) {
     GEN_map_manager::with_all_mapped_windows(GEN_map_window_refresh_if_display_type, cl_display_type_mask);
 }
 inline void set_display_update_callback(AW_root *awr, const char *awar_name, int display_type_mask) {
@@ -434,16 +431,17 @@ static void GEN_create_genemap_local_awars(AW_root *aw_root, AW_default /* def *
 static void GEN_add_local_awar_callbacks(AW_root *awr, AW_default /* def */, GEN_map_window *win) {
     int window_nr = win->get_nr();
 
-    awr->awar(AWAR_LOCAL_ORGANISM_NAME(window_nr))->add_callback(GEN_local_organism_or_gene_name_changed_cb, (AW_CL)win);
-    awr->awar(AWAR_LOCAL_GENE_NAME(window_nr))->add_callback(GEN_local_organism_or_gene_name_changed_cb, (AW_CL)win);
+    RootCallback nameChangedCb = makeRootCallback(GEN_local_organism_or_gene_name_changed_cb, win);
+    awr->awar(AWAR_LOCAL_ORGANISM_NAME(window_nr))->add_callback(nameChangedCb);
+    awr->awar(AWAR_LOCAL_GENE_NAME(window_nr))    ->add_callback(nameChangedCb);
 
-    AW_awar *awar_lock_organism = awr->awar(AWAR_LOCAL_ORGANISM_LOCK(window_nr));
-    AW_awar *awar_lock_gene     = awr->awar(AWAR_LOCAL_GENE_LOCK(window_nr));
+    AW_awar *awar_lock_orga = awr->awar(AWAR_LOCAL_ORGANISM_LOCK(window_nr));
+    AW_awar *awar_lock_gene = awr->awar(AWAR_LOCAL_GENE_LOCK(window_nr));
 
-    awar_lock_organism->add_callback(GEN_local_lock_changed_cb, (AW_CL)win, (AW_CL)0);
-    awar_lock_gene->add_callback(GEN_local_lock_changed_cb, (AW_CL)win, (AW_CL)1);
+    awar_lock_orga->add_callback(makeRootCallback(GEN_local_lock_changed_cb, win, false));
+    awar_lock_gene->add_callback(makeRootCallback(GEN_local_lock_changed_cb, win, true));
 
-    awar_lock_organism->touch();
+    awar_lock_orga->touch();
     awar_lock_gene->touch();
 }
 
