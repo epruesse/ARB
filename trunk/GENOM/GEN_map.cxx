@@ -587,6 +587,13 @@ static AW_window *GEN_create_options_window(AW_root *awr) {
     return aws;
 }
 
+static AW_window *GEN_create_gc_window(AW_root *awr, AW_gc_manager gcman) {
+    // only create one gc window for all genemap views
+    static AW_window *awgc = NULL;
+    if (!awgc) awgc        = AW_create_gc_window_named(awr, gcman, "GENMAP_PROPS_GC", "Genemap colors and fonts"); // use named gc window (otherwise clashes with ARB_NTREE gc window)
+    return awgc;
+}
+
 enum GEN_PERFORM_MODE {
     GEN_PERFORM_ALL_ORGANISMS,
     GEN_PERFORM_CURRENT_ORGANISM,
@@ -1602,7 +1609,7 @@ void GEN_map_window::init(AW_root *awr, GBDATA *gb_main) {
 #if defined(ARB_MOTIF)
     insert_menu_topic(local_id("gene_props_menu"), "Frame settings ...",                  "M", "props_frame.hlp", AWM_ALL, AW_preset_window);
 #endif
-    insert_menu_topic(local_id("gene_props"),      "GENEMAP: Colors and Fonts ...",       "C", "color_props.hlp", AWM_ALL, makeCreateWindowCallback(AW_create_gc_window, gen_canvas->gc_manager)); // @@@ FIXME: replace AW_create_gc_window by local function returning same window for all mapped views
+    insert_menu_topic(local_id("gene_props"),      "GENEMAP: Colors and Fonts ...",       "C", "color_props.hlp", AWM_ALL, makeCreateWindowCallback(GEN_create_gc_window, gen_canvas->gc_manager));
     insert_menu_topic(local_id("gene_options"),    "Options",                             "O", "gen_options.hlp", AWM_ALL, GEN_create_options_window);
     insert_menu_topic(local_id("gene_nds"),        "NDS ( Select Gene Information ) ...", "N", "props_nds.hlp",   AWM_ALL, makeCreateWindowCallback(GEN_open_nds_window, gb_main));
     sep______________();
