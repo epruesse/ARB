@@ -1090,8 +1090,11 @@ static void gene_extract_cb(AW_window *aww, GEN_extract_mode_param *param) {
         GB_transaction  ta(gb_main);
         GBDATA         *gb_ali = GBT_get_alignment(gb_main, ali);
 
-        if (!gb_ali && !GBT_create_alignment(gb_main, ali, 0, 0, 0, "dna")) {
-            error = GB_await_error();
+        if (!gb_ali) {
+            GB_clear_error(); // ali not found
+            if (!GBT_create_alignment(gb_main, ali, 0, 0, 0, "dna")) {
+                error = GB_await_error();
+            }
         }
     }
 
