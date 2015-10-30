@@ -67,6 +67,8 @@ public:
 // ------------------------
 //      GEN_map_manager
 
+DECLARE_CBTYPE_FVV_AND_BUILDERS(GenmapWindowCallback, void, GEN_map_window*); // generates makeGenmapWindowCallback
+
 class GEN_map_manager {
     static AW_root         *aw_root;
     static GBDATA          *gb_main;
@@ -92,13 +94,8 @@ public:
 
     int no_of_managed_windows() { return window_counter; }
 
-    typedef void (*GMW_CB2)(GEN_map_window*, AW_CL, AW_CL);
-    typedef void (*GMW_CB1)(GEN_map_window*, AW_CL);
-    typedef void (*GMW_CB0)(GEN_map_window*);
-
-    static void with_all_mapped_windows(GMW_CB2 callback, AW_CL cd1, AW_CL cd2); // @@@ used typed callback
-    static void with_all_mapped_windows(GMW_CB1 callback, AW_CL cd) { with_all_mapped_windows((GMW_CB2)callback, cd, 0); }
-    static void with_all_mapped_windows(GMW_CB0 callback) { with_all_mapped_windows((GMW_CB2)callback, 0, 0); }
+    static void with_all_mapped_windows(const GenmapWindowCallback& gwcb);
+    static void with_all_mapped_windows(void (*cb)(GEN_map_window*)) { with_all_mapped_windows(makeGenmapWindowCallback(cb)); }
 };
 
 // ____________________________________________________________
@@ -126,12 +123,12 @@ GEN_map_manager *GEN_map_manager::get_map_manager() {
     return the_manager;
 }
 
-void GEN_map_manager::with_all_mapped_windows(GMW_CB2 callback, AW_CL cd1, AW_CL cd2) {
+void GEN_map_manager::with_all_mapped_windows(const GenmapWindowCallback& gwcb) {
     if (aw_root) { // no genemap opened yet
         GEN_map_manager *mm       = get_map_manager();
         int              winCount = mm->no_of_managed_windows();
         for (int nr = 0; nr<winCount; ++nr) {
-            callback(mm->get_map_window(nr), cd1, cd2);
+            gwcb(mm->get_map_window(nr));
         }
     }
 }
@@ -330,32 +327,29 @@ static void GEN_map_window_zoom_reset_and_refresh(GEN_map_window *gmw) {
 #define DISPLAY_TYPE_BIT(disp_type) (1<<(disp_type))
 #define ALL_DISPLAY_TYPES           (DISPLAY_TYPE_BIT(GEN_DISPLAY_STYLES)-1)
 
-static void GEN_map_window_refresh(GEN_map_window *win, AW_CL) {
+static void GEN_map_window_refresh(GEN_map_window *win) {
     win->get_canvas()->refresh();
 }
-
 void GEN_refresh_all_windows() {
-    GEN_map_manager::with_all_mapped_windows(GEN_map_window_refresh, 0);
+    GEN_map_manager::with_all_mapped_windows(GEN_map_window_refresh);
 }
 
-static void GEN_map_window_refresh_if_display_type(GEN_map_window *win, AW_CL cl_display_type_mask) { // @@@ elim AW_CL
-    int display_type_mask = int(cl_display_type_mask);
-    int my_display_type   = win->get_graphic()->get_display_style();
-
+static void GEN_map_window_refresh_if_display_type(GEN_map_window *win, int display_type_mask) {
+    int my_display_type = win->get_graphic()->get_display_style();
     if (display_type_mask & DISPLAY_TYPE_BIT(my_display_type)) {
         AWT_canvas *canvas = win->get_canvas();
         canvas->refresh();
     }
 }
 
-static void GEN_update_unlocked_organism_and_gene_awars(GEN_map_window *win, AW_CL cl_organism, AW_CL cl_gene) {
+static void GEN_update_unlocked_organism_and_gene_awars(GEN_map_window *win, const char *organismName, const char *geneName) {
     AW_root *aw_root   = win->get_graphic()->get_aw_root();
     int      window_nr = win->get_nr();
     if (!aw_root->awar(AWAR_LOCAL_ORGANISM_LOCK(window_nr))->read_int()) {
-        aw_root->awar(AWAR_LOCAL_ORGANISM_NAME(window_nr))->write_string((const char*)cl_organism);
+        aw_root->awar(AWAR_LOCAL_ORGANISM_NAME(window_nr))->write_string(organismName);
     }
     if (!aw_root->awar(AWAR_LOCAL_GENE_LOCK(window_nr))->read_int()) {
-        aw_root->awar(AWAR_LOCAL_GENE_NAME(window_nr))->write_string((const char*)cl_gene);
+        aw_root->awar(AWAR_LOCAL_GENE_NAME(window_nr))->write_string(geneName);
     }
 }
 
@@ -363,7 +357,7 @@ static void GEN_organism_or_gene_changed_cb(AW_root *awr) {
     char *organism = awr->awar(AWAR_ORGANISM_NAME)->read_string();
     char *gene     = awr->awar(AWAR_GENE_NAME)->read_string();
 
-    GEN_map_manager::with_all_mapped_windows(GEN_update_unlocked_organism_and_gene_awars, (AW_CL)organism, (AW_CL)gene);
+    GEN_map_manager::with_all_mapped_windows(makeGenmapWindowCallback(GEN_update_unlocked_organism_and_gene_awars, organism, gene));
 
     free(gene);
     free(organism);
@@ -406,11 +400,11 @@ static void GEN_local_lock_changed_cb(AW_root *awr, GEN_map_window *win, bool ge
 // -------------------------------------
 //      display parameter change cb
 
-static void GEN_display_param_changed_cb(AW_root*, AW_CL cl_display_type_mask) {
-    GEN_map_manager::with_all_mapped_windows(GEN_map_window_refresh_if_display_type, cl_display_type_mask);
+static void GEN_display_param_changed_cb(AW_root*, int display_type_mask) {
+    GEN_map_manager::with_all_mapped_windows(makeGenmapWindowCallback(GEN_map_window_refresh_if_display_type, display_type_mask));
 }
 inline void set_display_update_callback(AW_root *awr, const char *awar_name, int display_type_mask) {
-    awr->awar(awar_name)->add_callback(GEN_display_param_changed_cb, AW_CL(display_type_mask));
+    awr->awar(awar_name)->add_callback(makeRootCallback(GEN_display_param_changed_cb, display_type_mask));
 }
 
 // --------------------------
