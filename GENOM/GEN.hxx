@@ -44,8 +44,6 @@ AW_window *GEN_create_first_map(AW_root *aw_root, GBDATA *gb_main);
 class AW_window_menu_modes;
 void GEN_create_genes_submenu(AW_window_menu_modes *awm, GBDATA *gb_main, bool for_ARB_NTREE);
 
-void GEN_disconnect_from_DB();
-
 // --------------------------------------------------------------------------------
 // genes:
 

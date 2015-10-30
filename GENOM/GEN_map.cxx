@@ -199,13 +199,31 @@ static void GEN_gene_container_changed_cb(GBDATA*, gene_container_changed_cb_dat
     cb_data->canvas->refresh();
 }
 
-static void GEN_gene_container_cb_installer(bool install, AWT_canvas *gmw, GEN_graphic *gg) {
+inline GBDATA *GEN_get_local_gene_data(GEN_graphic *gg) {
+    int window_nr = GEN_find_windowNr_for(gg);
+    gen_assert(window_nr>=0);
+
+    GBDATA *gb_gene_data = NULL;
+    if (window_nr>=0) {
+        const char *organism = gg->get_aw_root()->awar(AWAR_LOCAL_ORGANISM_NAME(window_nr))->read_char_pntr();
+        if (organism) {
+            GBDATA *gb_main              = gg->get_gb_main();
+            GBDATA *gb_species           = GBT_find_species(gb_main, organism);
+            if (gb_species) gb_gene_data = GEN_expect_gene_data(gb_species);
+        }
+    }
+
+    return gb_gene_data;
+}
+
+
+static void GEN_gene_container_cb_installer(CbInstallMode install, AWT_canvas *gmw, GEN_graphic *gg) {
     typedef map<GEN_graphic*, gene_container_changed_cb_data> callback_dict;
     static callback_dict                                      installed_callbacks;
 
     callback_dict::iterator found = installed_callbacks.find(gg);
     if (found == installed_callbacks.end()) {
-        gen_assert(install); // if !install then entry has to exist!
+        gen_assert(install == INSTALL_CBS); // if not installing -> entry has to exist!
         installed_callbacks[gg] = gene_container_changed_cb_data(gmw, gg, 0);
         found                   = installed_callbacks.find(gg);
         gen_assert(found != installed_callbacks.end());
@@ -213,21 +231,30 @@ static void GEN_gene_container_cb_installer(bool install, AWT_canvas *gmw, GEN_g
 
     gene_container_changed_cb_data *curr_cb_data = &(found->second);
 
-    if (install) {
-        gen_assert(curr_cb_data->gb_gene_data == 0); // 0 means : no callback installed
-        GBDATA         *gb_main    = gg->get_gb_main();
-        GB_transaction  ta(gb_main);
-        curr_cb_data->gb_gene_data = GEN_get_current_gene_data(gb_main, gg->get_aw_root());
-        // @@@ FIXME: get data of local genome!
+    switch (install) {
+        case INSTALL_CBS: {
+            gen_assert(curr_cb_data->gb_gene_data == 0); // 0 means : no callback installed
 
-        if (curr_cb_data->gb_gene_data) {
-            GB_add_callback(curr_cb_data->gb_gene_data, GB_CB_CHANGED_OR_DELETED, makeDatabaseCallback(GEN_gene_container_changed_cb, curr_cb_data));
+            GBDATA         *gb_main = gg->get_gb_main();
+            GB_transaction  ta(gb_main);
+
+            curr_cb_data->gb_gene_data = GEN_get_local_gene_data(gg);
+
+            if (curr_cb_data->gb_gene_data) {
+                GB_add_callback(curr_cb_data->gb_gene_data, GB_CB_CHANGED_OR_DELETED, makeDatabaseCallback(GEN_gene_container_changed_cb, curr_cb_data));
+            }
+            break;
         }
-    }
-    else {
-        if (curr_cb_data->gb_gene_data) { // if callback is installed
-            GB_remove_callback(curr_cb_data->gb_gene_data, GB_CB_CHANGED_OR_DELETED, makeDatabaseCallback(GEN_gene_container_changed_cb, curr_cb_data));
+        case REMOVE_CBS: {
+            if (curr_cb_data->gb_gene_data) { // if callback is installed
+                GB_remove_callback(curr_cb_data->gb_gene_data, GB_CB_CHANGED_OR_DELETED, makeDatabaseCallback(GEN_gene_container_changed_cb, curr_cb_data));
+                curr_cb_data->gb_gene_data = 0;
+            }
+            break;
+        }
+        case FORGET_CBS: {
             curr_cb_data->gb_gene_data = 0;
+            break;
         }
     }
 }
@@ -487,22 +514,6 @@ static void GEN_add_global_awar_callbacks(AW_root *awr) {
     awr->awar(AWAR_GENE_NAME)->add_callback(GEN_organism_or_gene_changed_cb);
 }
 
-void GEN_disconnect_from_DB() {
-    // called before ntree disconnects awars from DB
-    // (deactivates callbacks which otherwise would crash)
-
-    if (GEN_map_manager::initialized()) {
-        int window_count = GEN_map_manager::get_map_manager()->no_of_managed_windows();
-
-        AW_root *aw_root = AW_root::SINGLETON;
-        aw_root->awar(AWAR_ORGANISM_NAME)->write_string("");
-
-        for (int window_nr = 0; window_nr<window_count; ++window_nr) {
-            aw_root->awar(AWAR_LOCAL_ORGANISM_LOCK(window_nr))->write_int(0);
-            aw_root->awar(AWAR_LOCAL_ORGANISM_NAME(window_nr))->write_string("");
-        }
-    }
-}
 
 // --------------------------------------------------------------------------------
 
@@ -1741,3 +1752,16 @@ void GEN_map_window::init(AW_root *awr, GBDATA *gb_main) {
 // -end- of implementation of class GEN_map_window:.
 
 
+int GEN_find_windowNr_for(GEN_graphic *wanted_graphic) {
+    // returns window_nr of GEN_map_window using 'wanted_graphic' (or -1)
+    if (GEN_map_manager::initialized()) {
+        GEN_map_manager *mapman = GEN_map_manager::get_map_manager();
+        for (int window_nr = 0; window_nr<mapman->no_of_managed_windows(); ++window_nr) {
+            GEN_map_window *mapwin = mapman->get_map_window(window_nr);
+            if (mapwin && mapwin->get_graphic() == wanted_graphic) {
+                return window_nr;
+            }
+        }
+    }
+    return -1;
+}
