@@ -1129,24 +1129,26 @@ static void gene_extract_cb(AW_window *aww, GEN_extract_mode_param *param) {
     free(ali);
 }
 
-static void mark_organisms(AW_window*, int mark, GBDATA *gb_main) { // @@@ use enum for 'mark'
-    // mark == 0 -> unmark
-    // mark == 1 -> mark
-    // mark == 2 -> invert mark
-    // mark == 3 -> mark organisms, unmark rest
+enum MarkCommand {
+    UNMARK, // UNMARK and MARK have to be 0 and 1!
+    MARK,
+    INVERT,
+    MARK_UNMARK_REST,
+};
 
+static void mark_organisms(AW_window*, MarkCommand mark, GBDATA *gb_main) {
     GB_transaction ta(gb_main);
 
-    if (mark == 3) {
+    if (mark == MARK_UNMARK_REST) {
         GBT_mark_all(gb_main, 0); // unmark all species
-        mark = 1;
+        mark = MARK;
     }
 
     for (GBDATA *gb_org = GEN_first_organism(gb_main);
          gb_org;
          gb_org = GEN_next_organism(gb_org))
     {
-        if (mark == 2) {
+        if (mark == INVERT) {
             GB_write_flag(gb_org, !GB_read_flag(gb_org)); // invert mark of organism
         }
         else {
@@ -1156,24 +1158,19 @@ static void mark_organisms(AW_window*, int mark, GBDATA *gb_main) { // @@@ use e
 }
 
 
-static void mark_gene_species(AW_window*, int mark, GBDATA *gb_main) { // @@@ use enum for 'mark' 
-    //  mark == 0 -> unmark
-    //  mark == 1 -> mark
-    //  mark == 2 -> invert mark
-    //  mark == 3 -> mark gene-species, unmark rest
-
+static void mark_gene_species(AW_window*, MarkCommand mark, GBDATA *gb_main) {
     GB_transaction ta(gb_main);
 
-    if (mark == 3) {
+    if (mark == MARK_UNMARK_REST) {
         GBT_mark_all(gb_main, 0); // unmark all species
-        mark = 1;
+        mark = MARK;
     }
 
     for (GBDATA *gb_pseudo = GEN_first_pseudo_species(gb_main);
          gb_pseudo;
          gb_pseudo = GEN_next_pseudo_species(gb_pseudo))
     {
-        if (mark == 2) {
+        if (mark == INVERT) {
             GB_write_flag(gb_pseudo, !GB_read_flag(gb_pseudo)); // invert mark of pseudo-species
         }
         else {
@@ -1421,10 +1418,10 @@ static void GEN_create_organism_submenu(AW_window_menu_modes *awm, GBDATA *gb_ma
 
         awm->sep______________();
 
-        awm->insert_menu_topic("mark_organisms",             "Mark All organisms",              "A", "organism_mark.hlp", AWM_ALL, makeWindowCallback(mark_organisms, 1, gb_main));
-        awm->insert_menu_topic("mark_organisms_unmark_rest", "Mark all organisms, unmark Rest", "R", "organism_mark.hlp", AWM_ALL, makeWindowCallback(mark_organisms, 3, gb_main));
-        awm->insert_menu_topic("unmark_organisms",           "Unmark all organisms",            "U", "organism_mark.hlp", AWM_ALL, makeWindowCallback(mark_organisms, 0, gb_main));
-        awm->insert_menu_topic("invmark_organisms",          "Invert marks of all organisms",   "v", "organism_mark.hlp", AWM_ALL, makeWindowCallback(mark_organisms, 2, gb_main));
+        awm->insert_menu_topic("mark_organisms",             "Mark All organisms",              "A", "organism_mark.hlp", AWM_ALL, makeWindowCallback(mark_organisms, MARK,             gb_main));
+        awm->insert_menu_topic("mark_organisms_unmark_rest", "Mark all organisms, unmark Rest", "R", "organism_mark.hlp", AWM_ALL, makeWindowCallback(mark_organisms, MARK_UNMARK_REST, gb_main));
+        awm->insert_menu_topic("unmark_organisms",           "Unmark all organisms",            "U", "organism_mark.hlp", AWM_ALL, makeWindowCallback(mark_organisms, UNMARK,           gb_main));
+        awm->insert_menu_topic("invmark_organisms",          "Invert marks of all organisms",   "v", "organism_mark.hlp", AWM_ALL, makeWindowCallback(mark_organisms, INVERT,           gb_main));
         awm->sep______________();
         awm->insert_menu_topic("mark_organisms_with_marked_genes", "Mark organisms with marked Genes", "G", "organism_mark.hlp", AWM_ALL, makeWindowCallback(mark_organisms_with_marked_genes, gb_main));
         awm->sep______________();
@@ -1441,10 +1438,10 @@ static void GEN_create_gene_species_submenu(AW_window_menu_modes *awm, GBDATA *g
     else awm->create_menu(title, hotkey, AWM_ALL);
 
     {
-        awm->insert_menu_topic("mark_gene_species",             "Mark All gene-species",              "A", "gene_species_mark.hlp", AWM_ALL, makeWindowCallback(mark_gene_species, 1, gb_main));
-        awm->insert_menu_topic("mark_gene_species_unmark_rest", "Mark all gene-species, unmark Rest", "R", "gene_species_mark.hlp", AWM_ALL, makeWindowCallback(mark_gene_species, 3, gb_main));
-        awm->insert_menu_topic("unmark_gene_species",           "Unmark all gene-species",            "U", "gene_species_mark.hlp", AWM_ALL, makeWindowCallback(mark_gene_species, 0, gb_main));
-        awm->insert_menu_topic("invmark_gene_species",          "Invert marks of all gene-species",   "I", "gene_species_mark.hlp", AWM_ALL, makeWindowCallback(mark_gene_species, 2, gb_main));
+        awm->insert_menu_topic("mark_gene_species",             "Mark All gene-species",              "A", "gene_species_mark.hlp", AWM_ALL, makeWindowCallback(mark_gene_species, MARK,             gb_main));
+        awm->insert_menu_topic("mark_gene_species_unmark_rest", "Mark all gene-species, unmark Rest", "R", "gene_species_mark.hlp", AWM_ALL, makeWindowCallback(mark_gene_species, MARK_UNMARK_REST, gb_main));
+        awm->insert_menu_topic("unmark_gene_species",           "Unmark all gene-species",            "U", "gene_species_mark.hlp", AWM_ALL, makeWindowCallback(mark_gene_species, UNMARK,           gb_main));
+        awm->insert_menu_topic("invmark_gene_species",          "Invert marks of all gene-species",   "I", "gene_species_mark.hlp", AWM_ALL, makeWindowCallback(mark_gene_species, INVERT,           gb_main));
         awm->sep______________();
         awm->insert_menu_topic("mark_gene_species_of_marked_genes", "Mark gene-species of marked genes",             "M", "gene_species_mark.hlp", AWM_ALL, makeWindowCallback(mark_gene_species_of_marked_genes, gb_main));
         awm->insert_menu_topic("mark_gene_species_curr_ali",        "Mark all gene-species using Current alignment", "C", "gene_species_mark.hlp", AWM_ALL, makeWindowCallback(mark_gene_species_using_current_alignment, gb_main));
