@@ -611,6 +611,10 @@ static AW_window *CreateChangeMolecule_window(AW_root *aw_root) {
     return (AW_window *)aws;
 }
 
+static AW_window *CreateRNA3DGcWindow(AW_root *awr, AW_gc_manager gcman) {
+    return AW_create_gc_window_named(awr, gcman, "RNA3D_PROPS_GC", "RNA3D colors and fonts");
+}
+
 AW_window *CreateRNA3DMainWindow(AW_root *awr, GBDATA *gb_main, ED4_plugin_host& host) {
     // Main Window - Canvas on which the actual painting is done
     GB_transaction ta(gb_main);
@@ -662,7 +666,7 @@ AW_window *CreateRNA3DMainWindow(AW_root *awr, GBDATA *gb_main, ED4_plugin_host&
         awm->create_toggle(AWAR_3D_DISPLAY_MASK, "#unmask.xpm", "#mask.xpm");
 
         awm->get_at_position(&cur_x, &cur_y);
-        awm->callback(makeCreateWindowCallback(AW_create_gc_window, RNA3D->gl_Canvas->gc_manager));
+        awm->callback(makeCreateWindowCallback(CreateRNA3DGcWindow, RNA3D->gl_Canvas->gc_manager));
         awm->button_length(0);
         awm->create_button("setColors", "#colors.xpm");
 
