@@ -54,7 +54,7 @@ AW_window_simple *MP_Window::create_result_window(AW_root *aw_root) {
         result_window->create_button("HELP", "HELP");
 
         result_window->at("Comment");
-        result_window->callback(MP_Comment, (AW_CL)0);
+        result_window->callback(makeWindowCallback(MP_Comment, (const char *)NULL));
         result_window->create_input_field(MP_AWAR_RESULTPROBESCOMMENT);
 
         result_window->at("box");
@@ -83,13 +83,13 @@ AW_window_simple *MP_Window::create_result_window(AW_root *aw_root) {
         result_window->button_length(8);
 
         result_window->at("comment");
-        result_window->callback(MP_Comment, (AW_CL) "Bad");
+        result_window->callback(makeWindowCallback(MP_Comment, "Bad"));
         result_window->create_button("MARK_AS_BAD", "BAD");
 
-        result_window->callback(MP_Comment, (AW_CL) "???");
+        result_window->callback(makeWindowCallback(MP_Comment, "???"));
         result_window->create_button("MARK_AS_GOOD", "???");
 
-        result_window->callback(MP_Comment, (AW_CL) "Good");
+        result_window->callback(makeWindowCallback(MP_Comment, "Good"));
         result_window->create_button("MARK_AS_BEST", "Good");
 
         result_window->at("auto");
@@ -100,11 +100,11 @@ AW_window_simple *MP_Window::create_result_window(AW_root *aw_root) {
         result_window->button_length(3);
 
         result_window->at("ct_back");
-        result_window->callback(MP_show_probes_in_tree_move, (AW_CL)1, (AW_CL)result_probes_list);
+        result_window->callback(makeWindowCallback(MP_show_probes_in_tree_move, true, result_probes_list));
         result_window->create_button("COLOR_TREE_BACKWARD", "#rightleft_small.xpm");
 
         result_window->at("ct_fwd");
-        result_window->callback(MP_show_probes_in_tree_move, (AW_CL)0, (AW_CL)result_probes_list);
+        result_window->callback(makeWindowCallback(MP_show_probes_in_tree_move, false, result_probes_list));
         result_window->create_button("COLOR_TREE_FORWARD", "#leftright_small.xpm");
 
         result_window->button_length(8);
@@ -437,7 +437,7 @@ MP_Window::MP_Window(AW_root *aw_root, GBDATA *gb_main) {
 
     aws->button_length(10);
     aws->at("Compute");
-    aws->callback(MP_compute, (AW_CL)gb_main);
+    aws->callback(makeWindowCallback(MP_compute, gb_main));
     aws->highlight();
     aws->help_text("Compute possible Solutions");
     aws->create_button("GO", "GO");
