@@ -1234,8 +1234,8 @@ public:
     }
 };
 
-static void collect_subset_cb(AW_window *, awt_collect_mode what, AW_CL cl_subsel) { ((AW_subset_selection*)cl_subsel)->collect_subset_cb(what); }
-static void reorder_subset_cb(AW_window *, awt_reorder_mode dest, AW_CL cl_subsel) { ((AW_subset_selection*)cl_subsel)->reorder_subset_cb(dest); }
+static void collect_subset_cb(AW_window *, awt_collect_mode what, AW_subset_selection *subsel) { subsel->collect_subset_cb(what); }
+static void reorder_subset_cb(AW_window *, awt_reorder_mode dest, AW_subset_selection *subsel) { subsel->reorder_subset_cb(dest); }
 
 static void correct_subselection_cb(AW_selection_list *IF_ASSERTION_USED(parent_sel), AW_CL cl_subsel) {
     AW_subset_selection *subsel = (AW_subset_selection*)cl_subsel;
@@ -1257,10 +1257,10 @@ AW_selection *awt_create_subset_selection_list(AW_window *aww, AW_selection_list
     int x_buttons = aww->get_at_xposition();
 
     bool move_rightwards = x_list>x_buttons;
-    awt_create_collect_buttons(aww, move_rightwards, collect_subset_cb, (AW_CL)subsel);
+    awt_create_collect_buttons(aww, move_rightwards, collect_subset_cb, subsel);
 
     aww->at(at_sort);
-    awt_create_order_buttons(aww, reorder_subset_cb, (AW_CL)subsel);
+    awt_create_order_buttons(aww, reorder_subset_cb, subsel);
 
     if (autocorrect_subselection) parent_selection->set_update_callback(correct_subselection_cb, AW_CL(subsel));
 

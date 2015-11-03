@@ -619,7 +619,7 @@ static AW_window *create_tree_cmp_window(AW_root *root) {
     return aws;
 }
 
-static void reorder_trees_cb(AW_window *aww, awt_reorder_mode dest, AW_CL) {
+static void reorder_trees_cb(AW_window *aww, awt_reorder_mode dest) {
     // moves the tree in the list of trees
 
     char     *tree_name = aww->get_root()->awar(AWAR_TREE_NAME)->read_string();
@@ -745,7 +745,7 @@ void popup_tree_admin_window(AW_root *aw_root) {
         awt_create_TREE_selection_list(GLOBAL.gb_main, aws, AWAR_TREE_NAME, true);
 
         aws->at("sort");
-        awt_create_order_buttons(aws, reorder_trees_cb, 0);
+        awt_create_order_buttons(aws, reorder_trees_cb);
     }
 
     aws->activate();
