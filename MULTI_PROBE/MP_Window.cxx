@@ -299,7 +299,7 @@ static void track_ali_change_cb(AW_root*, GBDATA *gb_main) {
     free(aliname);
 }
 
-static void MP_collect_probes(AW_window*, awt_collect_mode mode, AW_CL) {
+static void MP_collect_probes(AW_window*, awt_collect_mode mode) {
     switch (mode) {
         case ACM_ADD:
             if (!probelist->default_is_selected()) {
@@ -375,7 +375,7 @@ MP_Window::MP_Window(AW_root *aw_root, GBDATA *gb_main) {
     probelist->insert_default("", "");
 
     aws->at("collect");
-    awt_create_collect_buttons(aws, true, MP_collect_probes, 0);
+    awt_create_collect_buttons(aws, true, MP_collect_probes);
     
     aws->auto_space(5, 5);
     aws->button_length(7);
