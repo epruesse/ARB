@@ -362,7 +362,7 @@ size_t AW_root::callallcallbacks(int mode) {
                         bool   skipcb = firstNameChar == '!' || GBS_read_hash(dontCallHash, remote_command);
 
                         if (!skipcb) {
-                            if (cbs->contains(AW_CB(AW_help_entry_pressed))) skipcb = true;
+                            if (cbs->contains(AnyWinCB(AW_help_entry_pressed))) skipcb = true;
                         }
 
                         if (skipcb) {

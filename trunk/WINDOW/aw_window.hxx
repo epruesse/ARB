@@ -121,6 +121,7 @@ void AW_normal_cursor(AW_root *);
 void AW_openURL(AW_root *aw_root, const char *url);
 
 typedef void (*AW_cb_struct_guard)();
+typedef WindowCallbackSimple AnyWinCB; // used to check whether function is contained in callback-list (does not check parameters!) 
 
 class AW_cb : virtual Noncopyable {
     WindowCallback cb;
@@ -138,13 +139,6 @@ public:
     char       *id;
 
     // real public section:
-    AW_cb(AW_window  *awi,
-          AW_CB       g,
-          AW_CL       cd1i       = 0,
-          AW_CL       cd2i       = 0,
-          const char *help_texti = 0,
-          AW_cb      *next       = 0);
-
     AW_cb(AW_window             *awi,
           const WindowCallback&  wcb,
           const char            *help_texti = 0,
@@ -156,7 +150,7 @@ public:
     }
 
     void run_callbacks();                           // runs the whole list
-    bool contains(AW_CB g);                         // test if contained in list
+    bool contains(AnyWinCB g);                      // test if contained in list
     bool is_equal(const AW_cb& other) const;
 
     int compare(const AW_cb& other) const { return cb<other.cb ? -1 : (other.cb<cb ? 1 : 0); }
@@ -394,7 +388,7 @@ public:
 
     void set_popup_callback(const WindowCallback& wcb);
     void set_focus_callback(const WindowCallback& wcb);
-    bool is_focus_callback(void (*f)(AW_window*, AW_CL, AW_CL));
+    bool is_focus_callback(AnyWinCB f);
 
     void set_expose_callback(AW_area area, const WindowCallback& wcb);
     void set_resize_callback(AW_area area, const WindowCallback& wcb);
@@ -410,11 +404,8 @@ public:
 
     void set_double_click_callback(AW_area area, const WindowCallback& wcb);
 
-    bool is_expose_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL));
-    bool is_resize_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL));
-    bool is_input_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL));
-    bool is_motion_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL));
-    bool is_double_click_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL));
+    bool is_expose_callback(AW_area area, AnyWinCB f);
+    bool is_resize_callback(AW_area area, AnyWinCB f);
 
     void get_event(AW_event *eventi) const;       // In an event callback get the events info
 
@@ -459,17 +450,11 @@ public:
     void insert_menu_topic(const char *id, const char *name, const char *mnemonic, const char *help_text_, AW_active mask, WindowCallbackSimple cb)          { insert_menu_topic(id, name, mnemonic, help_text_, mask, makeWindowCallback(cb)); }
     void insert_menu_topic(const char *id, const char *name, const char *mnemonic, const char *help_text_, AW_active mask, CreateWindowCallbackSimple cb)    { insert_menu_topic(id, name, mnemonic, help_text_, mask, makeCreateWindowCallback(cb)); }
 
-    void insert_menu_topic(const char *id, const char *name, const char *mnemonic, const char *help_text_, AW_active mask, AW_CB cb, AW_CL cd1, AW_CL cd2) __ATTR__DEPRECATED_TODO("pass WindowCallback") { insert_menu_topic(id, name, mnemonic, help_text_, mask, makeWindowCallback(cb, cd1, cd2)); }
-    void insert_menu_topic(const char *id, const char *name, const char *mnemonic, const char *help_text_, AW_active mask, AW_CB1 cb, AW_CL cd1) __ATTR__DEPRECATED_TODO("pass WindowCallback") { insert_menu_topic(id, name, mnemonic, help_text_, mask, makeWindowCallback(cb, cd1)); }
-
     void sep______________();
     void close_sub_menu();
 
     void insert_help_topic(const char *labeli, const char *mnemonic, const char *helpText, AW_active mask, const WindowCallback& cb);
     void insert_help_topic(const char *labeli, const char *mnemonic, const char *helpText, AW_active mask, WindowCallbackSimple cb) { insert_help_topic(labeli, mnemonic, helpText, mask, makeWindowCallback(cb)); }
-    void insert_help_topic(const char *labeli, const char *mnemonic, const char *helpText, AW_active mask, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) __ATTR__DEPRECATED_TODO("pass WindowCallback") {
-        insert_help_topic(labeli, mnemonic, helpText, mask, makeWindowCallback(f, cd1, cd2));
-    }
 
     // ************** Create modes on the left side ******************
     int create_mode(const char *pixmap, const char *help_text_, AW_active mask, const WindowCallback& cb);
@@ -602,9 +587,6 @@ public:
     void callback(const CreateWindowCallback& cwcb) { callback(makeWindowPopper(cwcb)); }
     void callback(CreateWindowCallbackSimple cb)    { callback(makeCreateWindowCallback(cb)); }
     void callback(WindowCallbackSimple cb)          { callback(makeWindowCallback(cb)); }
-
-    void callback(void (*f)(AW_window*, AW_CL), AW_CL cd1) __ATTR__DEPRECATED_TODO("pass WindowCallback") { callback(makeWindowCallback(f, cd1)); }
-    void callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) __ATTR__DEPRECATED_TODO("pass WindowCallback") { callback(makeWindowCallback(f, cd1, cd2)); }
 
     void d_callback(const WindowCallback& cb); // secondary callback (called for 'double click into selection list' and 'text field hit ENTER')
 

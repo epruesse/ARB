@@ -38,12 +38,6 @@ class  AW_root_cblist;
 struct AW_var_target;
 struct AW_widget_refresh_cb;
 
-// @@@ [CB] eliminate decls below? just use AW_RCB instead // @@@ duplicated in cb.h
-typedef AW_RCB  Awar_CB;
-typedef Awar_CB Awar_CB2;
-typedef         void (*Awar_CB1)(AW_root *, AW_CL);
-typedef         void (*Awar_CB0)(AW_root *);
-
 enum AW_widget_type {
     AW_WIDGET_INPUT_FIELD,
     AW_WIDGET_TEXT_FIELD,
@@ -135,14 +129,10 @@ public:
     void untie_all_widgets();
 
     AW_awar *add_callback(const RootCallback& cb);
-    AW_awar *add_callback(Awar_CB0 f) { return add_callback(makeRootCallback(f)); }
-    AW_awar *add_callback(Awar_CB1 f, AW_CL cd1) __ATTR__DEPRECATED_TODO("pass RootCallback") { return add_callback(makeRootCallback(f, cd1)); }
-    AW_awar *add_callback(Awar_CB2 f, AW_CL cd1, AW_CL cd2) __ATTR__DEPRECATED_TODO("pass RootCallback") { return add_callback(makeRootCallback(f, cd1, cd2)); }
+    AW_awar *add_callback(RootCallbackSimple f) { return add_callback(makeRootCallback(f)); }
 
     AW_awar *remove_callback(const RootCallback& cb);
-    AW_awar *remove_callback(Awar_CB0 f) { return remove_callback(makeRootCallback(f)); }
-    AW_awar *remove_callback(Awar_CB1 f, AW_CL cd1) __ATTR__DEPRECATED_TODO("pass RootCallback") { return remove_callback(makeRootCallback(f, cd1)); }
-    AW_awar *remove_callback(Awar_CB2 f, AW_CL cd1, AW_CL cd2) __ATTR__DEPRECATED_TODO("pass RootCallback") { return remove_callback(makeRootCallback(f, cd1, cd2)); }
+    AW_awar *remove_callback(RootCallbackSimple f) { return remove_callback(makeRootCallback(f)); }
 
     AW_awar *add_target_var(char **ppchr);
     AW_awar *add_target_var(long *pint);

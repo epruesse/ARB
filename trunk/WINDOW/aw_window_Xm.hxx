@@ -173,11 +173,8 @@ public:
     void set_double_click_callback(AW_window *aww, const WindowCallback& wcb);
     void set_motion_callback(AW_window *aww, const WindowCallback& wcb);
 
-    bool is_expose_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL));
-    bool is_resize_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL));
-    bool is_input_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL));
-    bool is_double_click_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL));
-    bool is_motion_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL));
+    bool is_expose_callback(AnyWinCB f);
+    bool is_resize_callback(AnyWinCB f);
 
     void run_expose_callback();
     void run_resize_callback();

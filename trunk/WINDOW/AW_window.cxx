@@ -787,7 +787,7 @@ void AW_window::set_focus_callback(const WindowCallback& wcb) {
     if (!focus_cb) {
         XtAddEventHandler(MIDDLE_WIDGET, EnterWindowMask, FALSE, AW_focusCB, (XtPointer) this);
     }
-    if (!focus_cb || !focus_cb->contains((AW_CB)wcb.callee())) {
+    if (!focus_cb || !focus_cb->contains((AnyWinCB)wcb.callee())) {
         focus_cb = new AW_cb(this, wcb, 0, focus_cb);
     }
 }
@@ -1474,7 +1474,7 @@ void AW_window::run_focus_callback() {
     if (focus_cb) focus_cb->run_callbacks();
 }
 
-bool AW_window::is_focus_callback(void (*f)(AW_window*, AW_CL, AW_CL)) {
+bool AW_window::is_focus_callback(AnyWinCB f) {
     return focus_cb && focus_cb->contains(f);
 }
 
@@ -1502,13 +1502,13 @@ void AW_area_management::set_expose_callback(AW_window *aww, const WindowCallbac
     expose_cb = new AW_cb(aww, cb, 0, expose_cb);
 }
 
-bool AW_area_management::is_expose_callback(AW_window * /* aww */, void (*f)(AW_window*, AW_CL, AW_CL)) {
+bool AW_area_management::is_expose_callback(AnyWinCB f) {
     return expose_cb && expose_cb->contains(f);
 }
 
-bool AW_window::is_expose_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL)) {
+bool AW_window::is_expose_callback(AW_area area, AnyWinCB f) {
     AW_area_management *aram = MAP_ARAM(area);
-    return aram && aram->is_expose_callback(this, f);
+    return aram && aram->is_expose_callback(f);
 }
 
 void AW_window::force_expose() {
@@ -1525,13 +1525,13 @@ void AW_window::force_expose() {
 //      resize
 
 
-bool AW_area_management::is_resize_callback(AW_window * /* aww */, void (*f)(AW_window*, AW_CL, AW_CL)) {
+bool AW_area_management::is_resize_callback(AnyWinCB f) {
     return resize_cb && resize_cb->contains(f);
 }
 
-bool AW_window::is_resize_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL)) {
+bool AW_window::is_resize_callback(AW_area area, AnyWinCB f) {
     AW_area_management *aram = MAP_ARAM(area);
-    return aram && aram->is_resize_callback(this, f);
+    return aram && aram->is_resize_callback(f);
 }
 
 void AW_window::set_window_frame_pos(int x, int y) {
@@ -2967,8 +2967,8 @@ void AW_window::select_mode(int mode) {
     XtVaSetValues(widget, XmNbackground, p_global->foreground, NULL);
 }
 
-static void aw_mode_callback(AW_window *aww, long mode, AW_cb *cbs) {
-    aww->select_mode((int)mode);
+static void aw_mode_callback(AW_window *aww, short mode, AW_cb *cbs) {
+    aww->select_mode(mode);
     cbs->run_callbacks();
 }
 
@@ -2997,7 +2997,7 @@ int AW_window::create_mode(const char *pixmap, const char *helpText, AW_active m
     XtVaGetValues(button, XmNforeground, &p_global->foreground, NULL);
 
     AW_cb *cbs = new AW_cb(this, cb, 0);
-    AW_cb *cb2 = new AW_cb(this, (AW_CB)aw_mode_callback, (AW_CL)p_w->number_of_modes, (AW_CL)cbs, helpText, cbs);
+    AW_cb *cb2 = new AW_cb(this, makeWindowCallback(aw_mode_callback, p_w->number_of_modes, cbs), helpText, cbs);
     XtAddCallback(button, XmNactivateCallback,
     (XtCallbackProc) AW_server_callback,
     (XtPointer) cb2);
