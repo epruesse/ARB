@@ -514,13 +514,12 @@ void GDE_load_menu(AW_window *awm, AW_active /*mask*/, const char *menulabel) {
     }
 }
 
-struct gde_database_access db_access = { NULL, NULL, GDE_WINDOWTYPE_DEFAULT, 0, NULL};
+struct gde_database_access db_access = { NULL, NULL, GDE_WINDOWTYPE_DEFAULT, NULL};
 
-GB_ERROR GDE_init(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main, GDE_get_sequences_cb get_sequences, GDE_format_alignment_cb format_ali, gde_window_type window_type, AW_CL client_data) {
+GB_ERROR GDE_init(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main, GDE_get_sequences_cb get_sequences, GDE_format_alignment_cb format_ali, gde_window_type window_type) {
     db_access.get_sequences = get_sequences;
     db_access.format_ali    = format_ali;
     db_access.window_type   = window_type;
-    db_access.client_data   = client_data;
     db_access.gb_main       = gb_main;
 
 

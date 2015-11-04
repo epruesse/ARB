@@ -210,7 +210,7 @@ static void nt_create_all_awars(AW_root *awr, AW_default def) {
     DBUI::create_dbui_awars(awr, def);
     AP_create_consensus_var(awr, def);
     {
-        GB_ERROR gde_err = GDE_init(awr, def, GLOBAL.gb_main, 0, ARB_format_alignment, GDE_WINDOWTYPE_DEFAULT, 0);
+        GB_ERROR gde_err = GDE_init(awr, def, GLOBAL.gb_main, 0, ARB_format_alignment, GDE_WINDOWTYPE_DEFAULT);
         if (gde_err) GBK_terminatef("Fatal: %s", gde_err);
     }
     NT_create_transpro_variables(awr, def);
