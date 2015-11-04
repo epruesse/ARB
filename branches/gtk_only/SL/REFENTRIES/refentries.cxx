@@ -233,7 +233,7 @@ namespace RefEntries {
 
         bind_result_refresh_cbs(aw_root, reh);
 
-        aws->callback((AW_CB0) AW_POPDOWN);
+        aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
 
         aws->callback(makeHelpCallback(help));

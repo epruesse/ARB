@@ -208,8 +208,8 @@ AW_window *create_insertDeleteColumn_window(AW_root *root) {
         aws->load_xfig("insdel.fig");
         aws->button_length(8);
 
-        aws->callback((AW_CB0)AW_POPDOWN);
         aws->at("close");
+        aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
 
         aws->callback(makeHelpCallback("insdel.hlp"));
@@ -275,8 +275,8 @@ AW_window *create_insertDeleteBySAI_window(AW_root *root, GBDATA *gb_main) {
         aws->load_xfig("insdel_sai.fig");
         aws->button_length(8);
 
-        aws->callback((AW_CB0)AW_POPDOWN);
         aws->at("close");
+        aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
 
         aws->callback(makeHelpCallback("insdel_sai.hlp"));

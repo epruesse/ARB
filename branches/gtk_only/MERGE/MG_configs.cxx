@@ -72,8 +72,8 @@ static AW_window *MG_create_config_rename_window(AW_root *root, int db_nr) {
     }
     aws->load_xfig("ad_al_si.fig");
 
-    aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("close");
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("label");
@@ -164,7 +164,8 @@ AW_window *MG_create_merge_configs_window(AW_root *awr) {
 
     aws->button_length(20);
 
-    aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
+    aws->at("close");
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");

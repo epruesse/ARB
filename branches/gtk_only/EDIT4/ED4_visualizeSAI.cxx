@@ -596,7 +596,7 @@ static AW_window *create_copyColorTranslationTable_window(AW_root *aw_root) { //
     aws->load_xfig("ad_al_si.fig");
 
     aws->at("close");
-    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("label");
@@ -618,7 +618,7 @@ static AW_window *create_createColorTranslationTable_window(AW_root *aw_root) { 
     aws->load_xfig("ad_al_si.fig");
 
     aws->at("close");
-    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("label");
@@ -700,7 +700,7 @@ AW_window *ED4_createVisualizeSAI_window(AW_root *aw_root) {
         aws->create_button("HELP", "HELP", "H");
 
         aws->at("close");
-        aws->callback((AW_CB0)AW_POPDOWN);
+        aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
 
         aws->at("enable");

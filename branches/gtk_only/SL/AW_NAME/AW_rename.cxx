@@ -568,12 +568,12 @@ AW_window *AWTC_create_rename_window(AW_root *root, GBDATA *gb_main) {
 
     aws->load_xfig("awtc/autoren.fig");
 
-    aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("close");
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback(makeHelpCallback("sp_rename.hlp"));
     aws->at("help");
+    aws->callback(makeHelpCallback("sp_rename.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
     aws->at("go");

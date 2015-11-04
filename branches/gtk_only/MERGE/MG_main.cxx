@@ -92,14 +92,16 @@ static AW_window *MG_save_source_cb(AW_root *aw_root, const char *base_name) {
     aws->init(aw_root, "MERGE_SAVE_DB_I", "Save source DB");
     aws->load_xfig("sel_box.fig");
 
-    aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
+    aws->at("close");
+    aws->callback(AW_POPDOWN); // @@@ this window has two close buttons -> remove one
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->at("save"); aws->callback(MG_save_merge_cb);
+    aws->at("save");
+    aws->callback(MG_save_merge_cb);
     aws->create_button("SAVE", "SAVE", "S");
 
-    aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("cancel");
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CANCEL", "C");
 
     AW_create_standard_fileselection(aws, base_name);
@@ -136,7 +138,8 @@ static AW_window *MG_create_save_result_window(AW_root *aw_root, const char *bas
     aws->init(aw_root, "MERGE_SAVE_WHOLE_DB", "SAVE WHOLE DATABASE");
     aws->load_xfig("sel_box_user3.fig");
 
-    aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
+    aws->at("close");
+    aws->callback(AW_POPDOWN); // @@@ this window has two close buttons -> remove one
     aws->create_button("CLOSE", "CLOSE", "C");
 
     AW_create_standard_fileselection(aws, base_name);
@@ -154,8 +157,8 @@ static AW_window *MG_create_save_result_window(AW_root *aw_root, const char *bas
     aws->at("user3");
     aws->create_text_field(AWAR_DB_COMMENT);
 
-    aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("cancel4");
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CANCEL", "C");
 
     aws->at("save4"); aws->callback(MG_save_cb);

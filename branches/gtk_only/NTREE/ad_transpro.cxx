@@ -353,8 +353,8 @@ AW_window *NT_create_dna_2_pro_window(AW_root *root) {
 
     aws->load_xfig("transpro.fig");
 
-    aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("close");
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->callback(makeHelpCallback("translate_dna_2_pro.hlp"));
@@ -1300,8 +1300,8 @@ AW_window *NT_create_realign_dna_window(AW_root *root) {
 
     aws->load_xfig("transdna.fig");
 
-    aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("close");
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->callback(makeHelpCallback("realign_dna.hlp"));

@@ -180,8 +180,8 @@ AW_window *NT_create_resort_window(AW_root *awr) {
     aws->init(awr, "SORT_DATABASE", "SORT DATABASE");
     aws->load_xfig("nt_sort.fig");
 
-    aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("close");
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->callback(makeHelpCallback("sp_sort_fld.hlp"));

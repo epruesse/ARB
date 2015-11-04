@@ -141,11 +141,11 @@ Itemfield_Selection *create_selection_list_on_itemfields(GBDATA         *gb_main
             aw_popup->auto_space(10, 10);
             aw_popup->at_newline();
 
-            aw_popup->callback((AW_CB0)AW_POPDOWN); // @@@ used as SELLIST_CLICK_CB (see #559)
+            aw_popup->callback(AW_POPDOWN); // @@@ used as SELLIST_CLICK_CB (see #559)
             sellist = aw_popup->create_selection_list(varname, columns, visible_rows, fallback2default);
 
             aw_popup->at_newline();
-            aw_popup->callback((AW_CB0)AW_POPDOWN);
+            aw_popup->callback(AW_POPDOWN);
             aw_popup->create_button("CLOSE", "CLOSE", "C");
 
             aw_popup->window_fit();

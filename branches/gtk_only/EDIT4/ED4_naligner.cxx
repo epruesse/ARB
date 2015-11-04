@@ -159,7 +159,7 @@ static AW_window *create_expert_naligner_window(AW_root *root) {
     aws->load_xfig("ed_al_ex.fig");
 
     aws->at("close");
-    aws->callback     ((AW_CB0)AW_POPDOWN);
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("minw"); aws->create_input_field("naligner/minw", mwidth);
@@ -184,7 +184,7 @@ static AW_window *create_special_naligner_window(AW_root *root) {
     aws->label_length(22);
 
     aws->at("close");
-    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("minr"); aws->create_input_field("naligner/minf", 6);
@@ -229,7 +229,7 @@ AW_window *create_naligner_window(AW_root *root) {
     aws->button_length(10);
 
     aws->at("close");
-    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "O");
 
     aws->at("help");

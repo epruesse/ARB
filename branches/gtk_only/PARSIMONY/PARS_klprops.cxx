@@ -22,7 +22,7 @@ AW_window *create_kernighan_properties_window(AW_root *aw_root) {
     aws->button_length(10);
 
     aws->at("close");
-    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");

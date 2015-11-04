@@ -161,7 +161,7 @@ AW_window *NT_create_trackAliChanges_window(AW_root *root) {
     aws->load_xfig("trackali.fig");
 
     aws->at("close");
-    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");

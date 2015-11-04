@@ -24,7 +24,7 @@ AW_window *AWT_create_IUPAC_info_window(AW_root *aw_root) {
         aws->button_length(7);
 
         aws->at("ok");
-        aws->callback((AW_CB0)AW_POPDOWN);
+        aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "O");
     }
     return aws;

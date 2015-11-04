@@ -1080,7 +1080,7 @@ static AW_window *create_group_species_by_field_window(AW_root *aw_root, AW_wind
 
     aws->button_length(10);
     aws->at("close");
-    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     create_selection_list_on_itemfields(GLOBAL_gb_main, aws, AWAR_FIELD_CHOSEN, true, -1, "source", 0, SPECIES_get_selector(), 20, 10, SF_STANDARD, NULL);
@@ -1336,7 +1336,7 @@ AW_window *ED4_create_editor_options_window(AW_root *root) {
     const int SCALEDCOLUMNS = 4;
     const int SCALERLEN     = 200;
 
-    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->callback(AW_POPDOWN);
     aws->at("close");
     aws->create_button("CLOSE", "CLOSE", "C");
 
@@ -1432,7 +1432,7 @@ AW_window *ED4_create_consensus_definition_window(AW_root *root) {
         // top part of window:
         aws->button_length(9);
 
-        aws->callback((AW_CB0)AW_POPDOWN);
+        aws->callback(AW_POPDOWN);
         aws->at("close");
         aws->create_button("CLOSE", "CLOSE", "C");
 
@@ -2094,7 +2094,7 @@ AW_window *ED4_create_new_seq_window(AW_root *root, SpeciesCreationMode creation
         aws->load_xfig("edit4/create_seq.fig");
     }
 
-    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->callback(AW_POPDOWN);
     aws->at("close");
     aws->create_button("CLOSE", "CLOSE", "C");
 

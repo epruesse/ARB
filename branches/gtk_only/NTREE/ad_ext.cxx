@@ -298,7 +298,7 @@ static AW_window *create_SAI_group_window(AW_root *aw_root) {
     aws->load_xfig("ad_ext_group.fig");
 
     aws->at("close");
-    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
@@ -324,7 +324,7 @@ AW_window *NT_create_extendeds_window(AW_root *aw_root) {
         aws->load_xfig("ad_ext.fig");
 
         aws->at("close");
-        aws->callback((AW_CB0)AW_POPDOWN);
+        aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
 
         aws->at("help");
