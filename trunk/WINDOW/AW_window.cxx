@@ -1884,7 +1884,7 @@ void AW_window::hide_or_notify(const char *error) {
 // force-diff-sync 9287423467632 (remove after merging back to trunk)
 // ----------------------------------------------------------------------
 
-void AW_window::on_hide(AW_CB0 call_on_hide) {
+void AW_window::on_hide(WindowCallbackSimple call_on_hide) {
     hide_cb = call_on_hide;
 }
 
