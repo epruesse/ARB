@@ -25,9 +25,6 @@
 
 using namespace std;
 
-static void EXP_species_name_changed_cb(AW_root * /* awr */) {
-}
-
 static void EXP_update_combined_cb(AW_root *awr) {
     char       *organism   = awr->awar(AWAR_ORGANISM_NAME)->read_string();
     char       *experiment = awr->awar(AWAR_EXPERIMENT_NAME)->read_string();
@@ -38,12 +35,12 @@ static void EXP_update_combined_cb(AW_root *awr) {
 }
 
 void EXP_create_awars(AW_root *aw_root, AW_default /* aw_def */, GBDATA *gb_main) {
-    aw_root->awar_string(AWAR_EXPERIMENT_NAME,          "", gb_main)->add_callback((AW_RCB0)EXP_update_combined_cb);
+    aw_root->awar_string(AWAR_EXPERIMENT_NAME,          "", gb_main)->add_callback(EXP_update_combined_cb);
     aw_root->awar_string(AWAR_PROTEOM_NAME,             "", gb_main);
     aw_root->awar_string(AWAR_PROTEIN_NAME,             "", gb_main);
-    aw_root->awar_string(AWAR_ORGANISM_NAME,            "", gb_main)->add_callback((AW_RCB0)EXP_update_combined_cb);
+    aw_root->awar_string(AWAR_ORGANISM_NAME,            "", gb_main)->add_callback(EXP_update_combined_cb);
     aw_root->awar_string(AWAR_COMBINED_EXPERIMENT_NAME, "", gb_main);
-    aw_root->awar_string(AWAR_SPECIES_NAME,             "", gb_main)->add_callback((AW_RCB0)EXP_species_name_changed_cb);
+    aw_root->awar_string(AWAR_SPECIES_NAME,             "", gb_main);
     aw_root->awar_string(AWAR_EXPERIMENT_DEST,          "", gb_main);
 }
 
