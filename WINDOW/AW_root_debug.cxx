@@ -380,10 +380,6 @@ size_t AW_root::callallcallbacks(int mode) {
                             if (GB_have_error()) {
                                 fprintf(stderr, "Unhandled error in '%s': %s\n", remote_command, GB_await_error());
                             }
-
-                            if (cbs->contains(AW_POPUP)) {
-                                fputs("Popping down windows not supported atm\n", stderr);
-                            }
                         }
                     }
                 }
