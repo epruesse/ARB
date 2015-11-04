@@ -3096,7 +3096,7 @@ static AW_window *create_probe_collection_window(AW_root *root, ArbPM_Context *p
 
         aws->load_xfig("pd_match_probe_collection.fig");
 
-        aws->callback((AW_CB0)probe_collection_close);
+        aws->callback(probe_collection_close);
         aws->at("close");
         aws->create_button("CLOSE", "CLOSE", "C");
 

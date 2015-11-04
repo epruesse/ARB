@@ -38,7 +38,7 @@ struct gde_iteminfo {
     gde_iteminfo(GmenuItem *item_, int idx_) : item(item_), idx(idx_) {}
 };
 
-static void GDE_showhelp_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /* cd */) {
+static void GDE_showhelp_cb(AW_window *aw, GmenuItem *gmenuitem) {
     if (gmenuitem->help) {
         AW_help_popup(aw, gmenuitem->help);
     }
@@ -109,18 +109,16 @@ static AW_window *GDE_create_filename_browser_window(AW_root *aw_root, const cha
     return aws;
 }
 
-static void GDE_popup_filename_browser(AW_window *aw, AW_CL cl_iteminfo, AW_CL cl_title) {
-    gde_iteminfo *info         = (gde_iteminfo*)cl_iteminfo;
-    GmenuItem    *gmenuitem    = info->item;
-    int           idx          = info->idx;
-    char         *base_awar    = GDE_maketmpawarname(gmenuitem, idx);
+static void GDE_popup_filename_browser(AW_window *aw, gde_iteminfo *info, const char *title) {
+    GmenuItem *gmenuitem = info->item;
+    int        idx       = info->idx;
+    char      *base_awar = GDE_maketmpawarname(gmenuitem, idx);
 
     static GB_HASH *popup_hash  = NULL;
     if (!popup_hash) popup_hash = GBS_create_hash(20, GB_MIND_CASE);
 
     AW_window *aw_browser = (AW_window*)GBS_read_hash(popup_hash, base_awar);
     if (!aw_browser) {
-        const char *title = (const char *)cl_title;
         aw_browser        = GDE_create_filename_browser_window(aw->get_root(), base_awar, title);
         GBS_write_hash(popup_hash, base_awar, (long)aw_browser);
     }
@@ -185,11 +183,11 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
         aws->auto_space(0, 10);
 
         aws->at("help");
-        aws->callback((AW_CB2)GDE_showhelp_cb, (AW_CL)gmenuitem, 0);
+        aws->callback(makeWindowCallback(GDE_showhelp_cb, gmenuitem));
         aws->create_button("GDE_HELP", "HELP", "H");
 
         aws->at("start");
-        aws->callback((AW_CB2)GDE_startaction_cb, (AW_CL)gmenuitem, 0);
+        aws->callback(makeWindowCallback(GDE_startaction_cb, gmenuitem));
         aws->create_button("GO", "GO", "O");
 
         aws->at("cancel");
@@ -379,7 +377,7 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
                 aws->label(itemarg.label);
                 aws->sens_mask(itemarg.active_mask);
                 aws->create_input_field(name_awar, 40);
-                aws->callback(GDE_popup_filename_browser, (AW_CL)new gde_iteminfo(gmenuitem, i), (AW_CL)strdup(itemarg.label));
+                aws->callback(makeWindowCallback(GDE_popup_filename_browser, new gde_iteminfo(gmenuitem, i), strdup(itemarg.label)));
                 aws->create_button("", "Browse");
 
                 free(name_awar);
@@ -460,12 +458,14 @@ void GDE_load_menu(AW_window *awm, AW_active /*mask*/, const char *menulabel) {
 
         long num_items = menu[nmenu].numitems;
         for (long nitem=0; nitem<num_items; nitem++) {
-            GmenuItem *menuitem=&menu[nmenu].item[nitem];
+            GmenuItem *menuitem = &menu[nmenu].item[nitem];
             gde_assert(!menuitem->help || ARB_strBeginsWith(menuitem->help, "agde_"));
-            hotkey[0] = menuitem->meta;
-            awm->insert_menu_topic(menuitem->label, menuitem->label, hotkey,
-                                   menuitem->help, menuitem->active_mask,
-                                   AW_POPUP, (AW_CL)GDE_menuitem_cb, (AW_CL)menuitem);
+            hotkey[0]           = menuitem->meta;
+
+            if (!menuitem->popup) {
+                menuitem->popup = new WindowCallback(AW_window::makeWindowPopper(makeCreateWindowCallback(GDE_menuitem_cb, menuitem)));
+            }
+            awm->insert_menu_topic(menuitem->label, menuitem->label, hotkey, menuitem->help, menuitem->active_mask, *menuitem->popup);
         }
 
         if (!menulabel) {

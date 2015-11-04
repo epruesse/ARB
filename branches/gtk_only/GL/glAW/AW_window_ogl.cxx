@@ -162,28 +162,28 @@ void AW_window_menu_modes_opengl::init(AW_root *root_in, const char *wid,
                                      XmNy, 0,
                                      NULL);
     p_w->areas[AW_INFO_AREA] =
-        new AW_area_management(root, form2, XtVaCreateManagedWidget("info_area",
-                                                                     xmDrawingAreaWidgetClass,
-                                                                     form2,
-                                                                     XmNheight, 0,
-                                                                     XmNbottomAttachment, XmATTACH_NONE,
-                                                                     XmNtopAttachment, XmATTACH_FORM,
-                                                                     XmNleftAttachment, XmATTACH_FORM,
-                                                                     XmNrightAttachment, XmATTACH_FORM,
-                                                                     XmNmarginHeight, 2,
-                                                                     XmNmarginWidth, 2,
-                                                                     NULL));
+        new AW_area_management(form2, XtVaCreateManagedWidget("info_area",
+                                                              xmDrawingAreaWidgetClass,
+                                                              form2,
+                                                              XmNheight, 0,
+                                                              XmNbottomAttachment, XmATTACH_NONE,
+                                                              XmNtopAttachment, XmATTACH_FORM,
+                                                              XmNleftAttachment, XmATTACH_FORM,
+                                                              XmNrightAttachment, XmATTACH_FORM,
+                                                              XmNmarginHeight, 2,
+                                                              XmNmarginWidth, 2,
+                                                              NULL));
 
     p_w->areas[AW_BOTTOM_AREA] =
-        new AW_area_management(root, form2, XtVaCreateManagedWidget("bottom_area",
-                                                                     xmDrawingAreaWidgetClass,
-                                                                     form2,
-                                                                     XmNheight, 0,
-                                                                     XmNbottomAttachment, XmATTACH_FORM,
-                                                                     XmNtopAttachment, XmATTACH_NONE,
-                                                                     XmNleftAttachment, XmATTACH_FORM,
-                                                                     XmNrightAttachment, XmATTACH_FORM,
-                                                                     NULL));
+        new AW_area_management(form2, XtVaCreateManagedWidget("bottom_area",
+                                                              xmDrawingAreaWidgetClass,
+                                                              form2,
+                                                              XmNheight, 0,
+                                                              XmNbottomAttachment, XmATTACH_FORM,
+                                                              XmNtopAttachment, XmATTACH_NONE,
+                                                              XmNleftAttachment, XmATTACH_FORM,
+                                                              XmNrightAttachment, XmATTACH_FORM,
+                                                              NULL));
 
     p_w->scroll_bar_horizontal = XtVaCreateWidget("scroll_bar_horizontal",
                                                    xmScrollBarWidgetClass,
@@ -282,8 +282,7 @@ void AW_window_menu_modes_opengl::init(AW_root *root_in, const char *wid,
     glw = XtCreateManagedWidget("glw", glwMDrawingAreaWidgetClass,
                                 form2, args, n);
 
-    p_w->areas[AW_MIDDLE_AREA] =
-        new AW_area_management(root, p_w->frame, glw);
+    p_w->areas[AW_MIDDLE_AREA] = new AW_area_management(p_w->frame, glw);
 
     XmMainWindowSetAreas(main_window, p_w->menu_bar[0], (Widget) NULL, (Widget) NULL, (Widget) NULL, form1);
 

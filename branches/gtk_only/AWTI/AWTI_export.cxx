@@ -35,14 +35,11 @@
 
 #define awti_assert(cond) arb_assert(cond)
 
-static void export_go_cb(AW_window *aww, AW_CL cl_gb_main, AW_CL res_from_awt_create_select_filter) {
+static void export_go_cb(AW_window *aww, GBDATA *gb_main, adfiltercbstruct *acbs) {
     awti_assert(!GB_have_error());
 
-    GBDATA           *gb_main = (GBDATA*)cl_gb_main;
-    GB_transaction    ta(gb_main);
-    adfiltercbstruct *acbs    = (adfiltercbstruct*)res_from_awt_create_select_filter;
-
-    arb_progress progress("Exporting data");
+    GB_transaction ta(gb_main);
+    arb_progress   progress("Exporting data");
 
     AW_root  *awr            = aww->get_root();
     char     *formname       = awr->awar(AWAR_EXPORT_FORM"/file_name")->read_string();
@@ -207,7 +204,7 @@ AW_window *create_AWTC_export_window(AW_root *awr, GBDATA *gb_main)
 
     aws->at("go");
     aws->highlight();
-    aws->callback(export_go_cb, (AW_CL)gb_main, (AW_CL)filtercd);
+    aws->callback(makeWindowCallback(export_go_cb, gb_main, filtercd));
     aws->create_button("GO", "GO", "G");
 
     return aws;

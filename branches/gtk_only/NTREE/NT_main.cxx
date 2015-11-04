@@ -283,7 +283,7 @@ static AW_window *nt_create_intro_window(AW_root *awr) {
     aws->init(awr, "ARB_INTRO", "ARB INTRO");
     aws->load_xfig("arb_intro.fig");
 
-    aws->callback(NT_exit, EXIT_SUCCESS);
+    aws->callback(makeWindowCallback(NT_exit, EXIT_SUCCESS));
     aws->at("close");
     aws->create_button("EXIT", "Exit", "x");
     aws->set_close_action("EXIT");
@@ -737,7 +737,7 @@ static bool merge_tool_running_as_client = true; // default to safe state (true 
 static void exit_from_merge(const char *restart_args) {
     if (merge_tool_running_as_client) { // there is a main ARB running
         if (restart_args) NT_start(restart_args, true);
-        exit(EXIT_SUCCESS); // exit w/o killing clients (as NT_exit() does)
+        exit(EXIT_SUCCESS); // exit w/o killing clients (in contrast to NT_exit())
     }
     else {
         NT_restart(AW_root::SINGLETON, restart_args ? restart_args : "");

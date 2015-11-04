@@ -61,7 +61,7 @@ static void st_ok_cb(AW_window *aww, ST_ML *st_ml) {
     free(alignment_name);
 }
 
-void STAT_set_postcalc_callback(ST_ML *st_ml, AW_CB0 postcalc_cb, AW_window *cb_win) {
+void STAT_set_postcalc_callback(ST_ML *st_ml, WindowCallbackSimple postcalc_cb, AW_window *cb_win) {
     st_ml->set_postcalc_callback(postcalc_cb, cb_win);
 }
 

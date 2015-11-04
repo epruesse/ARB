@@ -156,7 +156,7 @@ static void create_primer_design_result_window(AW_window *aww) {
     pdrw->show();
 }
 
-static void primer_design_event_go(AW_window *aww, AW_CL cl_gb_main) {
+static void primer_design_event_go(AW_window *aww, GBDATA *gb_main) {
     AW_root  *root     = aww->get_root();
     GB_ERROR  error    = 0;
     char     *sequence = 0;
@@ -169,7 +169,7 @@ static void primer_design_event_go(AW_window *aww, AW_CL cl_gb_main) {
     }
 
     {
-        GBDATA         *gb_main          = (GBDATA*)cl_gb_main;
+
         GB_transaction  ta(gb_main);
         char           *selected_species = root->awar(AWAR_SPECIES_NAME)->read_string();
         GBDATA         *gb_species       = GBT_find_species(gb_main, selected_species);
@@ -282,19 +282,18 @@ static void primer_design_event_check_gc_factor(AW_window *aww) {
     root->awar(AWAR_PRIMER_DESIGN_TEMP_FACTOR)->write_int(100-gc);
 }
 
-static void primer_design_event_init(AW_window *aww, AW_CL cl_gb_main, AW_CL cl_from_gene) {
-    bool            from_gene        = bool(cl_from_gene);
-    AW_root        *root             = aww->get_root();
-    GB_ERROR        error            = 0;
-    GBDATA         *gb_main          = (GBDATA*)cl_gb_main;
-    GB_transaction  ta(gb_main);
-    char           *selected_species = 0;
-    char           *selected_gene    = 0;
-    GBDATA         *gb_species       = 0;
-    GBDATA         *gb_gene          = 0;
-    GEN_position   *genPos           = 0;
-    GBDATA         *gb_seq           = 0;
-    bool            is_genom_db      = GEN_is_genome_db(gb_main, -1);
+static void primer_design_event_init(AW_window *aww, GBDATA *gb_main, bool from_gene) {
+    GB_transaction ta(gb_main);
+
+    AW_root      *root             = aww->get_root();
+    GB_ERROR      error            = 0;
+    char         *selected_species = 0;
+    char         *selected_gene    = 0;
+    GBDATA       *gb_species       = 0;
+    GBDATA       *gb_gene          = 0;
+    GEN_position *genPos           = 0;
+    GBDATA       *gb_seq           = 0;
+    bool          is_genom_db      = GEN_is_genome_db(gb_main, -1);
 
     if (is_genom_db && from_gene) {
         selected_species = root->awar(AWAR_ORGANISM_NAME)->read_string();
@@ -482,17 +481,17 @@ AW_window *create_primer_design_window(AW_root *root, GBDATA *gb_main) {
     aws->create_button("HELP", "HELP", "H");
 
     aws->at("init1");
-    aws->callback(primer_design_event_init, (AW_CL)gb_main, 0);
+    aws->callback(makeWindowCallback(primer_design_event_init, gb_main, false));
     aws->create_button("INIT_FROM_SPECIES", "Species", "I");
     
     if (is_genome_db) {
         aws->at("init2");
-        aws->callback(primer_design_event_init, (AW_CL)gb_main, 1);
+        aws->callback(makeWindowCallback(primer_design_event_init, gb_main, true));
         aws->create_button("INIT_FROM_GENE", "Gene", "I");
     }
 
     aws->at("design");
-    aws->callback(primer_design_event_go, (AW_CL)gb_main);
+    aws->callback(makeWindowCallback(primer_design_event_go, gb_main));
     aws->create_button("GO", "GO", "G");
     aws->highlight();
 

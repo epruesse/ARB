@@ -587,7 +587,7 @@ static char *preCreateTempfile(const char *name) {
     return fullname;
 }
 
-void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
+void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem) {
     gde_assert(!GB_have_error());
 
     AW_root   *aw_root      = aw->get_root();

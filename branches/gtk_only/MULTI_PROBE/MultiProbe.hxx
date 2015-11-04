@@ -176,7 +176,7 @@ public:
 // *****************************************************
 // Globale Klassenlose Funktionen
 // *****************************************************
-void MP_compute(AW_window *, AW_CL cl_gb_main);
+void MP_compute(AW_window*, GBDATA *gb_main);
 
 
 class Bakt_Info : virtual Noncopyable {

@@ -104,6 +104,18 @@ public:
     T old_value() const { return prevValue; }
 };
 
+// disallow_type
+// (useful to deny template instantiation with specific types)
+template <typename T, typename U> struct different_types {};
+template <typename T> struct different_types<T,T>;
+template <typename T, typename U> struct disallow_type {
+    // Usage example:
+    //     disallow_type<T, AW_CL>::here();
+    // where 'T' is a template parameter
+
+    different_types<T,U> wrong_type_used;
+    static inline void here(){}
+};
 
 // StrictlyAliased_BasePtrRef allows to pass a 'DERIVED*&'
 // to a function which expects a 'BASE*&'

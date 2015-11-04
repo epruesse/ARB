@@ -175,13 +175,12 @@ static Rectangle add_border_to_drawsize(const Rectangle& drawsize, double border
                      drawsize.lower_right_corner()+bordersize);
 }
 
-static void awt_print_tree_check_size(void *, AW_CL cl_canvas) {
-    AWT_canvas *scr         = (AWT_canvas*)cl_canvas;
-    AW_root    *awr         = scr->awr;
-    long        draw_all    = awr->awar(AWAR_CANIO_CLIP)->read_int();
-    double      border      = awr->awar(AWAR_CANIO_BORDERSIZE)->read_float();
-    Rectangle   drawsize    = get_drawsize(scr, draw_all);
-    Rectangle   with_border = add_border_to_drawsize(drawsize, border);
+static void awt_print_tree_check_size(UNFIXED, AWT_canvas *scr) {
+    AW_root   *awr         = scr->awr;
+    long       draw_all    = awr->awar(AWAR_CANIO_CLIP)->read_int();
+    double     border      = awr->awar(AWAR_CANIO_BORDERSIZE)->read_float();
+    Rectangle  drawsize    = get_drawsize(scr, draw_all);
+    Rectangle  with_border = add_border_to_drawsize(drawsize, border);
 
     awr->awar(AWAR_CANIO_GFX_SX)->write_float((with_border.width())/DPI_SCREEN);
     awr->awar(AWAR_CANIO_GFX_SY)->write_float((with_border.height())/DPI_SCREEN);
@@ -514,10 +513,11 @@ static void create_print_awars(AW_root *awr, AWT_canvas *scr) {
         awr->awar(AWAR_CANIO_PAPER_SX)->set_minmax(0.1, 100);
         awr->awar(AWAR_CANIO_PAPER_SY)->set_minmax(0.1, 100);
 
-        awt_print_tree_check_size(0, (AW_CL)scr);
 
-        awr->awar(AWAR_CANIO_CLIP)->add_callback((AW_RCB1)awt_print_tree_check_size, (AW_CL)scr);
-        awr->awar(AWAR_CANIO_BORDERSIZE)->add_callback((AW_RCB1)awt_print_tree_check_size, (AW_CL)scr);
+        RootCallback checkSizeCb = makeRootCallback(awt_print_tree_check_size, scr);
+        checkSizeCb(NULL);
+        awr->awar(AWAR_CANIO_CLIP)      ->add_callback(checkSizeCb);
+        awr->awar(AWAR_CANIO_BORDERSIZE)->add_callback(checkSizeCb);
 
         { // add callbacks for page recalculation
             const char *checked_awars[] = {
@@ -652,8 +652,7 @@ static void canvas_to_xfig_and_run_xfig(AW_window *aww, AWT_canvas *scr) {
     free(xfig);
 }
 
-static void canvas_to_printer(AW_window *aww, AW_CL cl_canvas) {
-    AWT_canvas     *scr       = (AWT_canvas*)cl_canvas;
+static void canvas_to_printer(AW_window *aww, AWT_canvas *scr) {
     GB_transaction  ta(scr->gb_main);
     AW_root        *awr       = aww->get_root();
     GB_ERROR        error     = 0;
@@ -867,13 +866,9 @@ void AWT_popup_sec_export_window(AW_window *parent_win, AWT_canvas *scr) {
 static void columns_changed_cb(AW_window *aww) { set_mag_from_psize(aww->get_root(), true); }
 static void rows_changed_cb(AW_window *aww) { set_mag_from_psize(aww->get_root(), false); }
 
-static void fit_pages_cb(AW_window *aww, AW_CL cl_pages) {
+static void fit_pages_cb(AW_window *aww, int wanted_pages) {
     AW_root *awr = aww->get_root();
-    int      wanted_pages;
-
-    if (cl_pages>0)
-        wanted_pages = cl_pages;
-    else {
+    if (wanted_pages<=0) {
         wanted_pages = awr->awar(AWAR_CANIO_PAGES)->read_int();
     }
     fit_pages(awr, wanted_pages, true);
@@ -924,7 +919,7 @@ void AWT_popup_print_window(AW_window *parent_win, AWT_canvas *scr) {
         //      page layout
 
         aws->at("getsize");
-        aws->callback((AW_CB1)awt_print_tree_check_size, (AW_CL)scr);
+        aws->callback(makeWindowCallback(awt_print_tree_check_size, scr));
         aws->create_autosize_button(0, "Get Graphic Size");
 
         aws->button_length(6);
@@ -974,7 +969,7 @@ void AWT_popup_print_window(AW_window *parent_win, AWT_canvas *scr) {
         aws->create_input_field(AWAR_CANIO_PAGE_SY, 4);
 
         aws->at("best_fit");
-        aws->callback(fit_pages_cb, 0);
+        aws->callback(makeWindowCallback(fit_pages_cb, 0));
         aws->create_autosize_button("fit_on", "Fit on");
 
         aws->at("pages");
@@ -990,7 +985,7 @@ void AWT_popup_print_window(AW_window *parent_win, AWT_canvas *scr) {
                 name[1] = '0'+p; // at-label, macro-name and button-text
                 if (aws->at_ifdef(name)) {
                     aws->at(name);
-                    aws->callback(fit_pages_cb, p);
+                    aws->callback(makeWindowCallback(fit_pages_cb, p));
                     aws->create_button(name, name+1);
                 }
             }
@@ -1024,10 +1019,10 @@ void AWT_popup_print_window(AW_window *parent_win, AWT_canvas *scr) {
 
         aws->at("go");
         aws->highlight();
-        aws->callback(canvas_to_printer, (AW_CL)scr);
+        aws->callback(makeWindowCallback(canvas_to_printer, scr));
         aws->create_autosize_button("PRINT", "PRINT", "P");
     }
 
-    awt_print_tree_check_size(0, (AW_CL)scr);
+    awt_print_tree_check_size(NULL, scr);
     aws->activate();
 }

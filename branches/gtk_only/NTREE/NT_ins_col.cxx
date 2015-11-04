@@ -150,10 +150,9 @@ void create_insertDeleteColumn_variables(AW_root *root, AW_default props) {
     update_RangeList(root, GLOBAL.gb_main);
 }
 
-static void insdel_event(AW_window *aws, AW_CL cl_insdelmode) {
-    GBDATA     *gb_main = GLOBAL.gb_main;
-    InsdelMode  mode    = InsdelMode(cl_insdelmode);
-    AW_root    *root    = aws->get_root();
+static void insdel_event(AW_window *aws, InsdelMode mode) {
+    GBDATA  *gb_main = GLOBAL.gb_main;
+    AW_root *root    = aws->get_root();
 
     long  pos       = bio2info(root->awar(AWAR_CURSOR_POSITION)->read_int());
     long  nchar     = root->awar(AWAR_INSDEL_AMOUNT)->read_int();
@@ -169,14 +168,13 @@ static void insdel_event(AW_window *aws, AW_CL cl_insdelmode) {
     GB_end_transaction_show_error(gb_main, error, aw_message);
 }
 
-static void insdel_sai_event(AW_window *aws, AW_CL cl_insdelmode) {
+static void insdel_sai_event(AW_window *aws, InsdelMode mode) {
     GBDATA   *gb_main = GLOBAL.gb_main;
     GB_ERROR  error   = GB_begin_transaction(GLOBAL.gb_main);
     if (!error) error = SELECTED.track_ali(gb_main);
 
     if (!error) {
-        InsdelMode  mode = InsdelMode(cl_insdelmode);
-        AW_root    *root = aws->get_root();
+        AW_root *root = aws->get_root();
 
         switch (mode) {
             case INSERT: {
@@ -235,8 +233,8 @@ AW_window *create_insertDeleteColumn_window(AW_root *root) {
         aws->auto_space(10, 0);
 
         aws->at("actions");
-        aws->callback(insdel_event, (AW_CL)INSERT); aws->create_button("INSERT", "INSERT", "I");
-        aws->callback(insdel_event, (AW_CL)DELETE); aws->create_button("DELETE", "DELETE", "D");
+        aws->callback(makeWindowCallback(insdel_event, INSERT)); aws->create_button("INSERT", "INSERT", "I");
+        aws->callback(makeWindowCallback(insdel_event, DELETE)); aws->create_button("DELETE", "DELETE", "D");
     }
     return aws;
 }
@@ -316,14 +314,14 @@ AW_window *create_insertDeleteBySAI_window(AW_root *root, GBDATA *gb_main) {
         aws->button_length(7);
 
         aws->at("delete");
-        aws->callback(insdel_sai_event, (AW_CL)DELETE);
+        aws->callback(makeWindowCallback(insdel_sai_event, DELETE));
         aws->create_button("DELETE", "DELETE", "D");
 
         aws->at("deletable");
         aws->create_input_field(AWAR_INSDEL_DELETABLE, 7);
 
         aws->at("insert");
-        aws->callback(insdel_sai_event, (AW_CL)INSERT);
+        aws->callback(makeWindowCallback(insdel_sai_event, INSERT));
         aws->create_button("INSERT", "INSERT", "I");
 
         aws->at("amount");

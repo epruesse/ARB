@@ -142,12 +142,9 @@ namespace RefEntries {
 #define AWAR_MARKBYREF_CONTENT  AWAR_MARKBYREF_TEMP "content"
 #define AWAR_MARKBYREF_RESULT   AWAR_MARKBYREF_TEMP "result"
 
-    static void perform_refentries(AW_window *aww, AW_CL cl_reh, AW_CL cl_ricb) {
-        ReferringEntriesHandler *reh  = (ReferringEntriesHandler*)cl_reh;
-        referred_item_handler    ricb = (referred_item_handler)cl_ricb;
-
-        AW_root         *aw_root   = aww->get_root();
-        QUERY_RANGE  range = aw_root->awar(AWAR_MARKBYREF_ALL)->read_int() ? QUERY_ALL_ITEMS : QUERY_MARKED_ITEMS;
+    static void perform_refentries(AW_window *aww, ReferringEntriesHandler *reh, referred_item_handler ricb) {
+        AW_root     *aw_root = aww->get_root();
+        QUERY_RANGE  range   = aw_root->awar(AWAR_MARKBYREF_ALL)->read_int() ? QUERY_ALL_ITEMS : QUERY_MARKED_ITEMS;
 
         RefSelector refsel(aw_root->awar(AWAR_MARKBYREF_FIELD)->read_char_pntr(),
                            aw_root->awar(AWAR_MARKBYREF_FILTER)->read_char_pntr(),
@@ -158,11 +155,10 @@ namespace RefEntries {
         aw_message_if(error);
     }
 
-    static void refresh_result_cb(AW_root *aw_root, AW_CL cl_reh) {
-        ReferringEntriesHandler *reh      = (ReferringEntriesHandler*)cl_reh;
-        ItemSelector&            itemtype = reh->get_referring_item();
-        GBDATA                  *gb_main  = reh->get_gbmain();
-        GB_transaction           ta(gb_main);
+    static void refresh_result_cb(AW_root *aw_root, ReferringEntriesHandler *reh) {
+        ItemSelector&   itemtype = reh->get_referring_item();
+        GBDATA         *gb_main  = reh->get_gbmain();
+        GB_transaction  ta(gb_main);
 
         GBDATA  *gb_item       = itemtype.get_selected_item(gb_main, aw_root);
         AW_awar *awar_selected = aw_root->awar(AWAR_MARKBYREF_SELECTED);
@@ -208,9 +204,11 @@ namespace RefEntries {
     }
 
     static void bind_result_refresh_cbs(AW_root *aw_root, ReferringEntriesHandler *reh) {
-        aw_root->awar(AWAR_MARKBYREF_FIELD)->add_callback(refresh_result_cb, (AW_CL)reh);
-        aw_root->awar(AWAR_MARKBYREF_FILTER)->add_callback(refresh_result_cb, (AW_CL)reh);
-        aw_root->awar(AWAR_SPECIES_NAME)->add_callback(refresh_result_cb, (AW_CL)reh); // @@@ hack
+        RootCallback refreshCb = makeRootCallback(refresh_result_cb, reh);
+
+        aw_root->awar(AWAR_MARKBYREF_FIELD) ->add_callback(refreshCb);
+        aw_root->awar(AWAR_MARKBYREF_FILTER)->add_callback(refreshCb);
+        aw_root->awar(AWAR_SPECIES_NAME)    ->add_callback(refreshCb);    // @@@ hack
     }
 
     void create_refentries_awars(AW_root *aw_root, AW_default aw_def) {
@@ -282,14 +280,14 @@ namespace RefEntries {
         if (build_client_area) build_client_area(aws);
 
         aws->at_newline();
-        aws->callback(perform_refentries, (AW_CL)reh, (AW_CL)action_cb);
+        aws->callback(makeWindowCallback(perform_refentries, reh, action_cb));
         aws->create_autosize_button("ACTION", action, "");
 
         aws->window_fit();
 
         free(items_name);
 
-        refresh_result_cb(aw_root, (AW_CL)reh);
+        refresh_result_cb(aw_root, reh);
 
         return aws;
     }

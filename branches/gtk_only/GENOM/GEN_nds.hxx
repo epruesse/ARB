@@ -17,7 +17,7 @@
 #endif
 
 void       GEN_create_nds_vars(AW_root *aw_root, AW_default awdef, GBDATA *gb_main, const DatabaseCallback& NDS_changed_callback);
-AW_window *GEN_open_nds_window(AW_root *aw_root, AW_CL cgb_main);
+AW_window *GEN_open_nds_window(AW_root *aw_root, GBDATA *gb_main);
 void       GEN_make_node_text_init(GBDATA *gb_main);
 char      *GEN_make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode);
 

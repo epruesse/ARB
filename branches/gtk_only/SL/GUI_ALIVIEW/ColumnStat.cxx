@@ -36,8 +36,7 @@ void ColumnStat::refresh_sai_selection_list() {
     if (saisel) saisel->refresh();
 }
 
-static void refresh_columnstat_selection(AW_root *, AW_CL cl_column_stat) {
-    ColumnStat *column_stat = (ColumnStat *)cl_column_stat;
+static void refresh_columnstat_selection(AW_root*, ColumnStat *column_stat) {
     column_stat->refresh_sai_selection_list();
 }
 
@@ -65,8 +64,8 @@ ColumnStat::ColumnStat(GBDATA *gb_maini, AW_root *awri, const char *awar_templat
     awr->awar_int(awar_smooth);
     awr->awar_int(awar_enable_helix, 1);
 
-    awr->awar(awar_alignment)->add_callback(refresh_columnstat_selection, (AW_CL)this);
-    refresh_sai_selection_list();                       // same as refresh_columnstat_selection(this)
+    awr->awar(awar_alignment)->add_callback(makeRootCallback(refresh_columnstat_selection, this));
+    refresh_sai_selection_list(); // same as refresh_columnstat_selection(this)
 }
 
 void ColumnStat::forget() {

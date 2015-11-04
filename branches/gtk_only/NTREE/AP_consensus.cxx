@@ -345,7 +345,7 @@ AW_window *AP_create_con_expert_window(AW_root *aw_root) {
 
     // bottom part of window:
     aws->at("calculate");
-    aws->callback((AW_CB0)CON_calculate_cb);
+    aws->callback(CON_calculate_cb);
     aws->create_button("GO", "GO", "G");
 
     aws->at("config");
@@ -389,12 +389,17 @@ static GB_ERROR CON_calc_max_freq(GBDATA *gb_main, bool ignore_gaps, const char 
         result2[maxalignlen] = 0;
 
         for (int pos = 0; pos < maxalignlen; pos++) {
-            double mf = freqs.max_frequency_at(pos, ignore_gaps);
-            if (mf) {
-                if (mf<0.1) mf = 0.1; // hack: otherwise SAI will contain '0' (meaning 100% frequency)
+            double mf  = freqs.max_frequency_at(pos, ignore_gaps);
+            int    mfi = int(mf*100.0+0.01); // frequency -> [0..100]; add 1/100 to reduce incompatibilities caused by 32/64 bit differences
 
-                result1[pos] = "?1234567890"[int( 10*mf)%11]; // %11 maps 100% -> '0'
-                result2[pos] = "0123456789" [int(100*mf)%10];
+            if (mfi) {
+                if (mfi<10) mfi = 10; // hack: otherwise SAI will contain '0' (meaning 100% frequency)
+
+                int mfh = int(mfi/10);
+                int mfl = mfi-10*mfh;
+
+                result1[pos] = "?1234567890"[mfh];
+                result2[pos] = "0123456789"[mfl];
             }
             else {
                 result1[pos] = '=';
@@ -459,7 +464,8 @@ AW_window *AP_create_max_freq_window(AW_root *aw_root) {
     aws->create_button("HELP", "HELP", "H");
 
     // activation of consensus calculation by button ...
-    aws->at("go"); aws->callback((AW_CB0)CON_calc_max_freq_cb);
+    aws->at("go");
+    aws->callback(CON_calc_max_freq_cb);
     aws->create_button("GO", "GO", "C");
 
     aws->at("save");
