@@ -68,24 +68,6 @@ void AW_window::destroyCreateWindowCallback(CreateWindowCallback *windowMaker) {
 }
 
 
-void AW_POPUP(AW_window */*window*/, AW_CL callback, AW_CL callback_data) { // @@@ obsolete (when #432 is done)
-    typedef AW_window* (*popup_cb_t)(AW_root*, AW_CL);
-    typedef std::map<std::pair<popup_cb_t,AW_CL>, AW_window*> window_map;
-
-    static window_map windows; // previously popped up windows
-
-    std::pair<popup_cb_t, AW_CL> popup((popup_cb_t)callback, callback_data);
-
-    if (windows.find(popup) == windows.end()) {
-        AW_window *made = popup.first(AW_root::SINGLETON, popup.second);
-        if (!made) { NOWINWARN(); return; }
-
-        windows[popup] = made;
-    }
-
-    windows[popup]->activate();
-}
-
 
 // proxy functions handing down stuff to AW_at
 void AW_window::at(int x, int y){ _at->at(x,y); }
