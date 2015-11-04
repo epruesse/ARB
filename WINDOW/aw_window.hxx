@@ -257,8 +257,8 @@ class AW_window : virtual Noncopyable {
     AW_SizeRecalc recalc_size_at_show;
     AW_PosRecalc  recalc_pos_at_show;
 
-    AW_CB0 hide_cb;
-    bool expose_callback_added;
+    WindowCallbackSimple hide_cb;
+    bool                 expose_callback_added;
 
     AW_cb *focus_cb;
 
@@ -323,7 +323,7 @@ public:
     AW_PosRecalc get_recalc_pos_atShow() const;
 
     void allow_delete_window(bool allow_close);
-    void on_hide(AW_CB0 call_on_hide);
+    void on_hide(WindowCallbackSimple call_on_hide);
 
 
 #if defined(ARB_MOTIF)
@@ -402,8 +402,8 @@ public:
 
 private:
     // motif relicts:
-    void set_expose_callback(AW_area area, AW_CB0 cb) { set_expose_callback(area, makeWindowCallback(cb)); }
-    void set_resize_callback(AW_area area, AW_CB0 cb) { set_resize_callback(area, makeWindowCallback(cb)); }
+    void set_expose_callback(AW_area area, WindowCallbackSimple cb) { set_expose_callback(area, makeWindowCallback(cb)); }
+    void set_resize_callback(AW_area area, WindowCallbackSimple cb) { set_resize_callback(area, makeWindowCallback(cb)); }
 public:
 
     void set_input_callback(AW_area area, const WindowCallback& wcb);
@@ -467,7 +467,7 @@ public:
     void close_sub_menu();
 
     void insert_help_topic(const char *labeli, const char *mnemonic, const char *helpText, AW_active mask, const WindowCallback& cb);
-    void insert_help_topic(const char *labeli, const char *mnemonic, const char *helpText, AW_active mask, AW_CB0 cb) { insert_help_topic(labeli, mnemonic, helpText, mask, makeWindowCallback(cb)); }
+    void insert_help_topic(const char *labeli, const char *mnemonic, const char *helpText, AW_active mask, WindowCallbackSimple cb) { insert_help_topic(labeli, mnemonic, helpText, mask, makeWindowCallback(cb)); }
     void insert_help_topic(const char *labeli, const char *mnemonic, const char *helpText, AW_active mask, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) __ATTR__DEPRECATED_TODO("pass WindowCallback") {
         insert_help_topic(labeli, mnemonic, helpText, mask, makeWindowCallback(f, cd1, cd2));
     }
