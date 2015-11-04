@@ -82,17 +82,13 @@ struct DbScanner {
     }
 };
 
-/* return the selected GBDATA pntr the should be no !!! running transaction and
-   this function will begin a transaction */
-
-static GBDATA *get_mapped_item_and_begin_trans(AW_CL arbdb_scanid) {
-    DbScanner *cbs     = (DbScanner *)arbdb_scanid;
-    AW_root         *aw_root = cbs->awr;
-
+static GBDATA *get_mapped_item_and_begin_trans(DbScanner *cbs) {
+    /* return the selected GBDATA pntr
+     * there should be no running transaction; this function will begin a transaction */
     cbs->may_be_an_error = false;
     GB_push_transaction(cbs->gb_main);
 
-    GBDATA *gbd = aw_root->awar(cbs->awarname_current_item)->read_pointer();
+    GBDATA *gbd = cbs->awr->awar(cbs->awarname_current_item)->read_pointer();
 
     if (!cbs->gb_user || !gbd || cbs->may_be_an_error) { // something changed in the database
         return NULL;
@@ -110,7 +106,7 @@ static bool inside_scanner_keydata(DbScanner *cbs, GBDATA *gbd) {
 }
 
 static void scanner_delete_selected_field(AW_window*, DbScanner *cbs) {
-    GBDATA *gbd = get_mapped_item_and_begin_trans((AW_CL)cbs);
+    GBDATA *gbd = get_mapped_item_and_begin_trans(cbs);
     if (!gbd) {
         aw_message("Sorry, cannot perform your operation, please redo it");
     }
@@ -156,7 +152,7 @@ static void editfield_value_changed(AW_window*, DbScanner *cbs)
     value[vlen]     = 0;
 
     // read the value from the window
-    GBDATA   *gbd         = get_mapped_item_and_begin_trans((AW_CL)cbs);
+    GBDATA   *gbd         = get_mapped_item_and_begin_trans(cbs);
     GB_ERROR  error       = 0;
     bool      update_self = false;
 
@@ -549,7 +545,7 @@ static void scanner_changed_cb(UNFIXED, DbScanner *cbs, GB_CB_TYPE gbtype) { // 
     }
     if (cbs->gb_user && !cbs->aws->is_shown()) {
         // unmap invisible window
-        // map_db_scanner((AW_CL)cbs,0);
+        // map_db_scanner(cbs,0);
         // recalls this function !!!!
         return;
     }
