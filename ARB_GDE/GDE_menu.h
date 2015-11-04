@@ -87,7 +87,6 @@ extern struct gde_database_access {
     GDE_get_sequences_cb     get_sequences;
     GDE_format_alignment_cb  format_ali;
     gde_window_type          window_type;
-    AW_CL                    client_data;
     GBDATA                  *gb_main;
 } db_access;
 
