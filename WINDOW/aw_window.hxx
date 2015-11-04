@@ -209,7 +209,7 @@ public:
     AW_PosRecalc get_recalc_pos_atShow() const;
 
     void allow_delete_window(bool allow_close);
-    void on_hide(AW_CB0 call_on_hide);
+    void on_hide(WindowCallbackSimple call_on_hide);
 
     AW_xfig* get_xfig_data(); //! @return The current xfig data or NULL.
 
@@ -326,7 +326,7 @@ public:
     void close_sub_menu();
 
     void insert_help_topic(const char *labeli, const char *mnemonic, const char *helpText, AW_active mask, const WindowCallback& cb);
-    void insert_help_topic(const char *labeli, const char *mnemonic, const char *helpText, AW_active mask, AW_CB0 cb) { insert_help_topic(labeli, mnemonic, helpText, mask, makeWindowCallback(cb)); }
+    void insert_help_topic(const char *labeli, const char *mnemonic, const char *helpText, AW_active mask, WindowCallbackSimple cb) { insert_help_topic(labeli, mnemonic, helpText, mask, makeWindowCallback(cb)); }
     void insert_help_topic(const char *labeli, const char *mnemonic, const char *helpText, AW_active mask, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) __ATTR__DEPRECATED_TODO("pass WindowCallback") {
         insert_help_topic(labeli, mnemonic, helpText, mask, makeWindowCallback(f, cd1, cd2));
     }
