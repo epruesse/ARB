@@ -98,10 +98,6 @@ static void destroy_AW_root() {
 }
 
 
-bool AW_root::is_focus_callback(AW_RCB fcb) const { // eliminated in gtk-branch
-    return focus_callback_list && focus_callback_list->contains(makeRootCallback(fcb, AW_CL(0), AW_CL(0)));
-}
-
 AW_root::AW_root(const char *propertyFile, const char *program, bool no_exit, UserActionTracker *user_tracker, int */*argc*/, char ***/*argv*/)
     : tracker(user_tracker),
       changer_of_variable(0),
@@ -110,7 +106,6 @@ AW_root::AW_root(const char *propertyFile, const char *program, bool no_exit, Us
       number_of_option_menus(0),
       disable_callbacks(false),
       current_modal_window(NULL),
-      focus_callback_list(NULL),
       active_windows(0)
 {
     aw_assert(!AW_root::SINGLETON);                 // only one instance allowed
@@ -141,7 +136,6 @@ AW_root::AW_root(const char *propertyFile)
       program_name(NULL),
       disable_callbacks(false),
       current_modal_window(NULL),
-      focus_callback_list(NULL),
       active_windows(0),
       font_width(0),
       font_height(0),
@@ -370,10 +364,8 @@ void AW_root::init_root(const char *programname, bool no_exit) {
 }
 
 AW_root::~AW_root() {
-    delete tracker; tracker = NULL;
-
-    AW_root_cblist::clear(focus_callback_list);
-    delete button_sens_list;    button_sens_list = NULL;
+    delete tracker;          tracker = NULL;
+    delete button_sens_list; button_sens_list = NULL;
 
     exit_root();
     exit_variables();
