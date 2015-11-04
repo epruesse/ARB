@@ -152,7 +152,7 @@ class AW_area_management {
     long click_time;
 
 public:
-    AW_area_management(AW_root *awr, Widget form, Widget widget);
+    AW_area_management(Widget form, Widget widget);
 
     Widget get_form() const { return form; }
     Widget get_area() const { return area; }
