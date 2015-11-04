@@ -622,7 +622,7 @@ static void NT_justify_branch_lenghs(UNFIXED, AWT_canvas *ntw) {
     if (tree_root) {
         tree_root->justify_branch_lenghs(ntw->gb_main);
         tree_root->compute_tree();
-        GB_ERROR error = AWT_TREE(ntw)->save(ntw->gb_main, 0, 0, 0);
+        GB_ERROR error = AWT_TREE(ntw)->save(ntw->gb_main, NULL);
         if (error) aw_message(error);
         ntw->refresh();
     }
@@ -661,7 +661,7 @@ static void NT_pseudo_species_to_organism(AW_window *, AWT_canvas *ntw) {
         GB_HASH *organism_hash = GBT_create_organism_hash(ntw->gb_main);
         tree_root->relink_tree(ntw->gb_main, relink_pseudo_species_to_organisms, organism_hash);
         tree_root->compute_tree();
-        GB_ERROR error = AWT_TREE(ntw)->save(ntw->gb_main, 0, 0, 0);
+        GB_ERROR error = AWT_TREE(ntw)->save(ntw->gb_main, NULL);
         if (error) aw_message(error);
         ntw->refresh();
         GBS_free_hash(organism_hash);

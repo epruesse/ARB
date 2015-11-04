@@ -424,10 +424,10 @@ void AWT_graphic::postevent_handler(GBDATA *gb_main) {
     // handle AWT_graphic_exports
 
     if (exports.save) {
-        GB_ERROR error = save(gb_main, 0, 0, 0);
+        GB_ERROR error = save(gb_main, NULL);
         if (error) {
             aw_message(error);
-            load(gb_main, 0, 0, 0);
+            load(gb_main, NULL);
         }
         exports.structure_change = 1;
     }
@@ -736,11 +736,11 @@ AWT_canvas::AWT_canvas(GBDATA *gb_maini, AW_window *awwi, const char *gc_base_na
 // --------------------------
 //      AWT_nonDB_graphic
 
-GB_ERROR AWT_nonDB_graphic::load(GBDATA *, const char *, AW_CL, AW_CL) {
+GB_ERROR AWT_nonDB_graphic::load(GBDATA *, const char *) {
     return "AWT_nonDB_graphic cannot be loaded";
 }
 
-GB_ERROR AWT_nonDB_graphic::save(GBDATA *, const char *, AW_CL, AW_CL) {
+GB_ERROR AWT_nonDB_graphic::save(GBDATA *, const char *) {
     return "AWT_nonDB_graphic cannot be saved";
 }
 

@@ -88,7 +88,7 @@ public:
     GB_ERROR load_tree(const char *tree_name) {
         GBDATA         *gb_main = ap_main->get_gb_main();
         GB_transaction  ta(gb_main);     // @@@ do inside AWT_graphic_tree::load?
-        GB_ERROR        error   = agt->load(gb_main, tree_name, 0, 0);
+        GB_ERROR        error   = agt->load(gb_main, tree_name);
         if (!error) {
             AP_tree_edge::initialize(rootNode());   // builds edges
 

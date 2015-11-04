@@ -205,13 +205,13 @@ public:
 
     AWT_graphic() { exports.init(); }
     virtual ~AWT_graphic() {}
-    
+
     // pure virtual interface (methods implemented by AWT_nonDB_graphic)
 
-    virtual GB_ERROR load(GBDATA *gb_main, const char *name, AW_CL cd1, AW_CL cd2) = 0;
-    virtual GB_ERROR save(GBDATA *gb_main, const char *name, AW_CL cd1, AW_CL cd2) = 0;
-    virtual int  check_update(GBDATA *gb_main)                                     = 0; // check whether anything changed
-    virtual void update(GBDATA *gb_main)                                           = 0; // mark the database
+    virtual GB_ERROR load(GBDATA *gb_main, const char *name) = 0;
+    virtual GB_ERROR save(GBDATA *gb_main, const char *name) = 0;
+    virtual int  check_update(GBDATA *gb_main)               = 0; // check whether anything changed
+    virtual void update(GBDATA *gb_main)                     = 0; // mark the database
 
     // pure virtual interface (rest)
 
@@ -235,8 +235,8 @@ public:
     virtual ~AWT_nonDB_graphic() OVERRIDE {}
 
     // dummy functions, only spittings out warnings:
-    GB_ERROR load(GBDATA *gb_main, const char *name, AW_CL cd1, AW_CL cd2) OVERRIDE __ATTR__USERESULT;
-    GB_ERROR save(GBDATA *gb_main, const char *name, AW_CL cd1, AW_CL cd2) OVERRIDE __ATTR__USERESULT;
+    GB_ERROR load(GBDATA *gb_main, const char *name) OVERRIDE __ATTR__USERESULT;
+    GB_ERROR save(GBDATA *gb_main, const char *name) OVERRIDE __ATTR__USERESULT;
     int  check_update(GBDATA *gb_main) OVERRIDE;
     void update(GBDATA *gb_main) OVERRIDE;
 };
