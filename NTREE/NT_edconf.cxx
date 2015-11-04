@@ -1150,7 +1150,7 @@ static AW_window *create_configuration_admin_window(AW_root *root, AWT_canvas *n
         aws->load_xfig("nt_selection.fig");
 
         aws->at("close");
-        aws->callback((AW_CB0)AW_POPDOWN);
+        aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
 
         aws->at("help");

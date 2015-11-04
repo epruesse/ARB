@@ -1083,7 +1083,7 @@ static AW_window *ED4_zoom_message_window(AW_root *root)
     aws->init(root, "ZOOM_ERR_MSG", "Errors and warnings");
     aws->load_xfig("edit4/message.fig");
 
-    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->callback(AW_POPDOWN);
     aws->at("hide");
     aws->create_button("HIDE", "HIDE");
 

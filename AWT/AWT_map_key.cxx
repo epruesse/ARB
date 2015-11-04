@@ -79,7 +79,7 @@ AW_window *create_key_map_window(AW_root *root) {
     aws->init(root, "KEY_MAPPINGS", "KEY MAPPINGS");
     aws->load_xfig("ed_key.fig");
 
-    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->callback(AW_POPDOWN);
     aws->at("close");
     aws->create_button("CLOSE", "CLOSE", "C");
 

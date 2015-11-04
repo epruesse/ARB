@@ -272,8 +272,9 @@ AW_window *EXP_create_experiment_query_window(AW_root *aw_root, GBDATA *gb_main)
         aws->button_length(7);
 
         aws->at("close");
-        aws->callback((AW_CB0)AW_POPDOWN);
+        aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
+
         aws->at("help");
         aws->callback(makeHelpCallback("experiment_search.hlp"));
         aws->create_button("HELP", "HELP", "H");
@@ -401,8 +402,8 @@ static AW_window *create_experiment_rename_window(AW_root *root, GBDATA *gb_main
     aws->init(root, "RENAME_EXPERIMENT", "EXPERIMENT RENAME");
     aws->load_xfig("ad_al_si.fig");
 
-    aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("close");
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("label");
@@ -422,8 +423,8 @@ static AW_window *create_experiment_copy_window(AW_root *root, GBDATA *gb_main) 
     aws->init(root, "COPY_EXPERIMENT", "EXPERIMENT COPY");
     aws->load_xfig("ad_al_si.fig");
 
-    aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("close");
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("label");
@@ -444,8 +445,8 @@ static AW_window *create_experiment_create_window(AW_root *root, GBDATA *gb_main
     aws->init(root, "CREATE_EXPERIMENT", "EXPERIMENT CREATE");
     aws->load_xfig("ad_al_si.fig");
 
-    aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("close");
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("label"); aws->create_autosize_button(0, "Please enter the name\nof the new experiment");
@@ -496,7 +497,7 @@ static AW_window *popup_new_experiment_window(AW_root *aw_root, GBDATA *gb_main,
     aws->button_length(8);
 
     aws->at("close");
-    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("search");

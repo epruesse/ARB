@@ -242,7 +242,7 @@ static void popup_probe_design_result_window(AW_window *aww, GBDATA *gb_main) {
 
         PD.win->at("buttons");
 
-        PD.win->callback((AW_CB0)AW_POPDOWN);
+        PD.win->callback(AW_POPDOWN);
         PD.win->create_button("CLOSE", "CLOSE", "C");
 
         PD.win->callback(makeWindowCallback(awt_clear_selection_list_cb, PD.resultList));
@@ -1387,8 +1387,8 @@ static AW_window *create_probe_expert_window(AW_root *root, bool for_design) {
     aws->label_length(30);
     aws->button_length(10);
 
-    aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("close");
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->callback(makeHelpCallback(for_design ? "pd_spec_param.hlp" : "pm_spec_param.hlp")); // uses_hlp_res("pm_spec_param.hlp", "pd_spec_param.hlp"); see ../SOURCE_TOOLS/check_resources.pl@uses_hlp_res
@@ -1466,8 +1466,8 @@ AW_window *create_probe_design_window(AW_root *root, GBDATA *gb_main) {
 
     aws->load_xfig("pd_main.fig");
 
-    aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("close");
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
@@ -1700,7 +1700,7 @@ static AW_window *create_IUPAC_resolve_window(AW_root *root, GBDATA *gb_main) {
     aws->button_length(11);
 
     aws->at("close");
-    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
@@ -1773,8 +1773,8 @@ AW_window *create_probe_match_window(AW_root *root, GBDATA *gb_main) {
 
         aws->load_xfig("pd_match.fig");
 
-        aws->callback((AW_CB0)AW_POPDOWN);
         aws->at("close");
+        aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
 
         aws->callback(makeHelpCallback("probematch.hlp"));
@@ -2055,8 +2055,8 @@ AW_window *create_probe_admin_window(AW_root *root, GBDATA *gb_main) {
     aws->at("help");
     aws->create_button("HELP", "HELP", "H");
 
-    aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("close");
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->button_length(18);
@@ -2281,7 +2281,7 @@ static void create_probe_group_groups_window(AW_window *aww) {
         aws->load_xfig("pg_select.fig");
 
         aws->at("close");
-        aws->callback((AW_CB0)AW_POPDOWN);
+        aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
 
         aws->at("help");
@@ -2726,8 +2726,8 @@ AW_window *create_probe_match_with_specificity_window(AW_root *root, AWT_canvas 
 
         aws->load_xfig("pd_match_with_specificity.fig");
 
-        aws->callback((AW_CB0)AW_POPDOWN);
         aws->at("close");
+        aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
 
         aws->callback(makeHelpCallback("probespec.hlp"));

@@ -1652,7 +1652,8 @@ static AW_window *loadsave_search_parameters(AW_root *root, const LoadSaveSearch
 
     aws->load_xfig("edit4/save_search.fig");
 
-    aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
+    aws->at("close");
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->callback(makeHelpCallback("e4_search.hlp"));
@@ -1661,8 +1662,8 @@ static AW_window *loadsave_search_parameters(AW_root *root, const LoadSaveSearch
 
     AW_create_standard_fileselection(aws, ED4_SEARCH_SAVE_BASE);
 
-    aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("cancel");
+    aws->callback(AW_POPDOWN);
     aws->create_button("CANCEL", "CANCEL", "C");
 
     aws->at("save");
@@ -1724,7 +1725,7 @@ void ED4_popup_search_window(AW_window *aww, ED4_SearchPositionType type) {
         aws->load_xfig("edit4/search.fig");
 
         aws->at("close");
-        aws->callback((AW_CB0)AW_POPDOWN);
+        aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
 
         aws->at("help");

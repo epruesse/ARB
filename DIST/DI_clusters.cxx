@@ -819,8 +819,9 @@ static void popup_group_clusters_window(AW_window *aw_clusterList) {
 
         aws->auto_space(10, 10);
 
-        aws->callback((AW_CB0)AW_POPDOWN);
+        aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
+
         aws->callback(makeHelpCallback("cluster_group.hlp"));
         aws->create_button("HELP", "HELP");
 

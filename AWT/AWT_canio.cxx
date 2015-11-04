@@ -786,7 +786,7 @@ void AWT_popup_tree_export_window(AW_window *parent_win, AWT_canvas *scr) {
         aws->init(awr, "EXPORT_TREE_AS_XFIG", "EXPORT TREE TO XFIG");
         aws->load_xfig("awt/export.fig");
 
-        aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
+        aws->at("close"); aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
 
         aws->at("help"); aws->callback(makeHelpCallback("tree2file.hlp"));
@@ -834,7 +834,7 @@ void AWT_popup_sec_export_window(AW_window *parent_win, AWT_canvas *scr) {
         aws->load_xfig("awt/secExport.fig");
 
         aws->at("close");
-        aws->callback((AW_CB0)AW_POPDOWN);
+        aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
 
         aws->at("help");
@@ -886,7 +886,7 @@ void AWT_popup_print_window(AW_window *parent_win, AWT_canvas *scr) {
         aws->init(awr, "PRINT_CANVAS", "PRINT GRAPHIC");
         aws->load_xfig("awt/print.fig");
 
-        aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
+        aws->at("close"); aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
 
         aws->at("help"); aws->callback(makeHelpCallback("tree2prt.hlp"));

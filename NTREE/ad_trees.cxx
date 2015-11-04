@@ -278,8 +278,8 @@ static AW_window *create_tree_export_window(AW_root *root) {
     aws->init(root, "SAVE_TREE", "TREE SAVE");
     aws->load_xfig("tree_export.fig");
 
-    aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("close");
+    aws->callback(AW_POPDOWN); // @@@ this window has two close buttons -> remove one
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
@@ -327,7 +327,7 @@ static AW_window *create_tree_export_window(AW_root *root) {
     aws->callback(tree_save_cb);
     aws->create_button("SAVE", "SAVE", "o");
 
-    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->callback(AW_POPDOWN);
     aws->create_button("CANCEL", "CANCEL", "C");
 
     AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "tree_export", tree_export_config_mapping);
@@ -439,8 +439,8 @@ static AW_window *create_tree_import_window(AW_root *root)
     aws->init(root, "LOAD_TREE", "TREE LOAD");
     aws->load_xfig("sel_box_tree.fig");
 
-    aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("close");
+    aws->callback(AW_POPDOWN); // @@@ this window has two close buttons -> remove one
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("format");
@@ -460,7 +460,7 @@ static AW_window *create_tree_import_window(AW_root *root)
     aws->callback(tree_load_cb);
     aws->create_button("LOAD", "LOAD", "o");
 
-    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->callback(AW_POPDOWN);
     aws->at("cancel2");
     aws->create_button("CANCEL", "CANCEL", "C");
 
@@ -1069,7 +1069,7 @@ AW_window *NT_create_multifurcate_tree_window(AW_root *aw_root, AWT_canvas *ntw)
     aws->at(10, 10);
     aws->auto_space(10, 10);
 
-    aws->callback((AW_CB0) AW_POPDOWN);
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->callback(makeHelpCallback("multifurcate.hlp"));

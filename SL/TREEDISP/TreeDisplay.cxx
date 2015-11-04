@@ -3072,7 +3072,7 @@ AW_window *TREE_create_settings_window(AW_root *aw_root) {
         aws->load_xfig("awt/tree_settings.fig");
 
         aws->at("close");
-        aws->callback((AW_CB0)AW_POPDOWN);
+        aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
 
         aws->at("help");
@@ -3154,7 +3154,7 @@ AW_window *TREE_create_marker_settings_window(AW_root *root) {
 
         aws->auto_space(10, 10);
 
-        aws->callback((AW_CB0)AW_POPDOWN);
+        aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
 
         aws->callback(makeHelpCallback("nt_tree_marker_settings.hlp"));
