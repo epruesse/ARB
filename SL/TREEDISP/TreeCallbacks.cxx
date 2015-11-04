@@ -330,7 +330,7 @@ void NT_insert_mark_submenus(AW_window_menu_modes *awm, AWT_canvas *ntw, int ins
 }
 
 static void save_changed_tree(AWT_canvas *ntw) {
-    GB_ERROR error = AWT_TREE(ntw)->save(ntw->gb_main, 0, 0, 0);
+    GB_ERROR error = AWT_TREE(ntw)->save(ntw->gb_main, NULL);
     if (error) aw_message(error);
     ntw->zoom_reset_and_refresh();
 }
@@ -590,7 +590,7 @@ static bool make_node_visible(AWT_canvas *ntw, AP_tree *node) {
     }
     if (changed) {
         AWT_TREE(ntw)->get_root_node()->compute_tree();
-        GB_ERROR error = AWT_TREE(ntw)->save(ntw->gb_main, 0, 0, 0);
+        GB_ERROR error = AWT_TREE(ntw)->save(ntw->gb_main, NULL);
         if (error) {
             aw_message(error);
             return false;
@@ -767,7 +767,7 @@ inline const char *plural(int val) {
 void NT_reload_tree_event(AW_root *awr, AWT_canvas *ntw, bool expose) {
     GB_push_transaction(ntw->gb_main);
     char     *tree_name = awr->awar(ntw->user_awar)->read_string();
-    GB_ERROR  error     = ntw->gfx->load(ntw->gb_main, tree_name, 0, 0);
+    GB_ERROR  error     = ntw->gfx->load(ntw->gb_main, tree_name);
     if (error) {
         aw_message(error);
     }

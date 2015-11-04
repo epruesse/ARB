@@ -461,7 +461,7 @@ static void SEC_new_structure(AW_window*, const SEC_db_interface *db) {
             error = structure->copyTo("Default");
             if (!error) {
                 db->secroot()->create_default_bone();
-                db->graphic()->save(0, 0, 0, 0);
+                db->graphic()->save(NULL, NULL);
                 done = true;
             }
             break;
