@@ -41,12 +41,6 @@
 
 class  AW_root_cblist;
 
-// @@@ [CB] eliminate decls below? just use AW_RCB instead // @@@ duplicated in cb.h
-typedef AW_RCB  Awar_CB;
-typedef Awar_CB Awar_CB2;
-typedef         void (*Awar_CB1)(AW_root *, AW_CL);
-typedef         void (*Awar_CB0)(AW_root *);
-
 class AW_awar;
 class AW_choice;
 
@@ -91,14 +85,8 @@ public:
     virtual AW_awar *add_callback(const RootCallback& cb)    = 0;
     virtual AW_awar *remove_callback(const RootCallback& cb) = 0;
 
-    AW_awar *add_callback(Awar_CB0 f)    { return add_callback(makeRootCallback(f)); }
-    AW_awar *remove_callback(Awar_CB0 f) { return remove_callback(makeRootCallback(f)); }
-
-    // wrappers (deprecated!)
-    AW_awar *add_callback(Awar_CB1 f, AW_CL cd1)               __ATTR__DEPRECATED_TODO("pass RootCallback") { return add_callback(makeRootCallback(f, cd1)); }
-    AW_awar *add_callback(Awar_CB2 f, AW_CL cd1, AW_CL cd2)    __ATTR__DEPRECATED_TODO("pass RootCallback") { return add_callback(makeRootCallback(f, cd1, cd2)); }
-    AW_awar *remove_callback(Awar_CB1 f, AW_CL cd1)            __ATTR__DEPRECATED_TODO("pass RootCallback") { return remove_callback(makeRootCallback(f, cd1)); }
-    AW_awar *remove_callback(Awar_CB2 f, AW_CL cd1, AW_CL cd2) __ATTR__DEPRECATED_TODO("pass RootCallback") { return remove_callback(makeRootCallback(f, cd1, cd2)); }
+    AW_awar *add_callback(RootCallbackSimple f)    { return add_callback(makeRootCallback(f)); }
+    AW_awar *remove_callback(RootCallbackSimple f) { return remove_callback(makeRootCallback(f)); }
 
     // target vars
     virtual AW_awar *add_target_var(char **ppchr) = 0;
