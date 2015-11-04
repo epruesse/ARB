@@ -47,7 +47,8 @@ enum GEN_DisplayStyle {
 // ---------------------
 //      GEN_graphic
 
-typedef void (*GEN_graphic_cb_installer)(bool install, AWT_canvas*, GEN_graphic*);
+enum CbInstallMode { INSTALL_CBS, REMOVE_CBS, FORGET_CBS };
+typedef void (*GEN_graphic_cb_installer)(CbInstallMode install, AWT_canvas*, GEN_graphic*);
 
 class GEN_graphic : public AWT_nonDB_graphic, virtual Noncopyable {
     AW_root                  *aw_root;
@@ -58,7 +59,7 @@ class GEN_graphic : public AWT_nonDB_graphic, virtual Noncopyable {
     GEN_DisplayStyle          style;
     bool                      want_zoom_reset; // true -> do zoom reset on next refresh
 
-    void delete_gen_root(AWT_canvas *scr);
+    void delete_gen_root(AWT_canvas *scr, bool just_forget_callbacks);
 
     void update_structure() {}
 

@@ -25,8 +25,7 @@ using namespace std;
 #define DUMP
 #endif // DEVEL_LOTHAR
 
-void NT_deleteValidNames(AW_window*, AW_CL, AW_CL)
-{
+void NT_deleteValidNames(AW_window*) {
     GB_ERROR error;
 
     GB_begin_transaction(GLOBAL.gb_main);
@@ -47,7 +46,7 @@ void NT_deleteValidNames(AW_window*, AW_CL, AW_CL)
 
 }
 
-void NT_importValidNames(AW_window*, AW_CL, AW_CL) {
+void NT_importValidNames(AW_window*) {
     using namespace        std;
     using                  validNames::Desco;
     typedef vector<string> StrL;
@@ -160,7 +159,7 @@ void NT_importValidNames(AW_window*, AW_CL, AW_CL) {
 }
 
 
-void NT_suggestValidNames(AW_window*, AW_CL, AW_CL) {
+void NT_suggestValidNames(AW_window*) {
     GB_begin_transaction(GLOBAL.gb_main);
 
     GBDATA*  gb_validNamesCont = GB_entry(GLOBAL.gb_main, "VALID_NAMES");

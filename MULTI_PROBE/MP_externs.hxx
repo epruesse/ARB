@@ -19,7 +19,7 @@ class AW_selection_list;
 class arb_progress;
 
 void MP_show_probes_in_tree(AW_window *aww);
-void MP_show_probes_in_tree_move(AW_window *aww, AW_CL cl_backward, AW_CL cl_result_probes_list);
+void MP_show_probes_in_tree_move(AW_window *aww, bool backward, AW_selection_list *resultProbesList);
 void MP_popup_result_window(AW_window *aww);
 void MP_delete_selected(UNFIXED, AW_selection_list *sellist);
 void MP_result_chosen(AW_window *aww);

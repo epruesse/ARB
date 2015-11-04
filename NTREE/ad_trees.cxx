@@ -619,7 +619,7 @@ static AW_window *create_tree_cmp_window(AW_root *root) {
     return aws;
 }
 
-static void reorder_trees_cb(AW_window *aww, awt_reorder_mode dest, AW_CL) {
+static void reorder_trees_cb(AW_window *aww, awt_reorder_mode dest) {
     // moves the tree in the list of trees
 
     char     *tree_name = aww->get_root()->awar(AWAR_TREE_NAME)->read_string();
@@ -732,11 +732,11 @@ void popup_tree_admin_window(AW_root *aw_root) {
         aws->sens_mask(AWM_ALL);
 
         aws->at("export");
-        aws->callback(AW_POPUP, (AW_CL)create_tree_export_window, 0);
+        aws->callback(create_tree_export_window);
         aws->create_button("EXPORT", "Export", "E");
 
         aws->at("import");
-        aws->callback(AW_POPUP, (AW_CL)create_tree_import_window, 0);
+        aws->callback(create_tree_import_window);
         aws->create_button("IMPORT", "Import", "I");
 
         aws->button_length(0);
@@ -745,7 +745,7 @@ void popup_tree_admin_window(AW_root *aw_root) {
         awt_create_TREE_selection_list(GLOBAL.gb_main, aws, AWAR_TREE_NAME, true);
 
         aws->at("sort");
-        awt_create_order_buttons(aws, reorder_trees_cb, 0);
+        awt_create_order_buttons(aws, reorder_trees_cb);
     }
 
     aws->activate();
@@ -755,7 +755,7 @@ void popup_tree_admin_window(AW_root *aw_root) {
 //      consense tree
 
 
-static void create_consense_tree_cb(AW_window *aww, AW_CL cl_selected_trees) {
+static void create_consense_tree_cb(AW_window *aww, AW_selection *selected_trees) {
     AW_root  *aw_root = aww->get_root();
     GB_ERROR  error   = NULL;
 
@@ -764,8 +764,6 @@ static void create_consense_tree_cb(AW_window *aww, AW_CL cl_selected_trees) {
         error = "No name specified for the consensus tree";
     }
     else {
-        AW_selection *selected_trees = (AW_selection*)cl_selected_trees;
-
         StrArray tree_names;
         selected_trees->get_values(tree_names);
 
@@ -855,7 +853,7 @@ AW_window *NT_create_consense_window(AW_root *aw_root) {
         aws->create_button("USE_AS_TARGET", "#moveLeft.xpm", 0);
 
         aws->at("build");
-        aws->callback(create_consense_tree_cb, AW_CL(selected_trees));
+        aws->callback(makeWindowCallback(create_consense_tree_cb, selected_trees));
         aws->create_autosize_button("BUILD", "Build consensus tree", "B");
     }
     return aws;

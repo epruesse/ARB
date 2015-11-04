@@ -1042,10 +1042,9 @@ GB_ERROR NT_repair_DB(GBDATA *gb_main) {
     return err;
 }
 
-void NT_rerepair_DB(AW_window*, AW_CL cl_gbmain, AW_CL) {
+void NT_rerepair_DB(AW_window*, GBDATA *gb_main) {
     // re-perform all DB checks
-    GBDATA   *gb_main = reinterpret_cast<GBDATA*>(cl_gbmain);
-    GB_ERROR  err     = 0;
+    GB_ERROR err = 0;
     {
         CheckedConsistencies check(gb_main);
         err = check.forgetDoneChecks();

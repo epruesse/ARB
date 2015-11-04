@@ -213,6 +213,7 @@ static void ParseMenus(LineReader& in) {
                 thisitem->parent_menu = thismenu;
                 thisitem->aws         = NULL; // no window opened yet
                 thisitem->active_mask = AWM_ALL;
+                thisitem->popup       = NULL;
 
                 for (int i = 0; i<curitem; ++i) {
                     if (strcmp(thismenu->item[i].label, thisitem->label) == 0) {

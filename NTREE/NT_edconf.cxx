@@ -1069,13 +1069,12 @@ static GB_ERROR swap_configs(GBDATA *gb_main, StrArray& config, int i1, int i2) 
     return error;
 }
 
-static void reorder_configs_cb(AW_window *aww, awt_reorder_mode mode, AW_CL cl_sel) {
+static void reorder_configs_cb(AW_window *aww, awt_reorder_mode mode, AW_DB_selection *sel) {
     AW_root    *awr         = aww->get_root();
     AW_awar    *awar_config = awr->awar(AWAR_CONFIGURATION);
     const char *selected    = awar_config->read_char_pntr();
 
     if (selected && selected[0]) {
-        AW_DB_selection   *sel     = (AW_DB_selection*)cl_sel;
         AW_selection_list *sellist = sel->get_sellist();
 
         int source_idx = sellist->get_index_of(selected);
@@ -1211,7 +1210,7 @@ static AW_window *create_configuration_admin_window(AW_root *root, AWT_canvas *n
 
         aws->button_length(0);
         aws->at("sort");
-        awt_create_order_buttons(aws, reorder_configs_cb, AW_CL(dbsel));
+        awt_create_order_buttons(aws, reorder_configs_cb, dbsel);
 
         existing_aws[ntw_id] = aws;
     }
@@ -1246,7 +1245,7 @@ AW_window *NT_create_startEditorOnOldConfiguration_window(AW_root *awr) {
         awt_create_CONFIG_selection_list(GLOBAL.gb_main, aws, AWAR_CONFIGURATION, false);
         aws->at_newline();
 
-        aws->callback((AW_CB0)nt_start_editor_on_configuration);
+        aws->callback(nt_start_editor_on_configuration);
         aws->create_button("START", "START");
 
         aws->callback(AW_POPDOWN);

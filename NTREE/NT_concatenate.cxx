@@ -85,9 +85,8 @@ inline char *get_alitype_eval(AW_root *aw_root) {
     return GBS_global_string_copy("%s=", aw_root->awar(AWAR_CON_SEQUENCE_TYPE)->read_char_pntr()); 
 }
 
-static void alitype_changed_cb(AW_root *aw_root, AW_CL cl_db_sel) {
-    AW_DB_selection *db_sel   = (AW_DB_selection*)cl_db_sel;
-    char            *ali_type = get_alitype_eval(aw_root);
+static void alitype_changed_cb(AW_root *aw_root, AW_DB_selection *db_sel) {
+    char *ali_type = get_alitype_eval(aw_root);
     awt_reconfigure_ALI_selection_list(db_sel, ali_type);
     free(ali_type);
 }
@@ -808,7 +807,7 @@ AW_window *NT_createConcatenationWindow(AW_root *aw_root) {
     aws->insert_option("RNA", "r", "rna");
     aws->insert_default_option("PROTEIN", "p", "ami");
     aws->update_option_menu();
-    aw_root->awar(AWAR_CON_SEQUENCE_TYPE)->add_callback(alitype_changed_cb, (AW_CL)all_alis);
+    aw_root->awar(AWAR_CON_SEQUENCE_TYPE)->add_callback(makeRootCallback(alitype_changed_cb, all_alis));
 
     aws->at("aliSeparator");
     aws->create_input_field(AWAR_CON_ALIGNMENT_SEPARATOR, 10);
@@ -836,7 +835,7 @@ AW_window *NT_createConcatenationWindow(AW_root *aw_root) {
     aws->callback(NT_createMergeSimilarSpeciesWindow);
     aws->create_button("MERGE_SPECIES", "MERGE SIMILAR SPECIES", "M");
 
-    aws->callback(AW_POPUP, (AW_CL)NT_createMergeSimilarSpeciesAndConcatenateWindow, (AW_CL)sel_alis);
+    aws->callback(makeCreateWindowCallback(NT_createMergeSimilarSpeciesAndConcatenateWindow, sel_alis));
     aws->create_button("MERGE_CONCATENATE", "MERGE & CONCATENATE", "S");
 
     return aws;

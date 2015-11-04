@@ -715,6 +715,10 @@ static void SEC_exit(GBDATA *, void *cl_sec_root) {
     delete sec_root;
 }
 
+static AW_window *SEC_create_gc_window(AW_root *awr, AW_gc_manager gcman) {
+    return AW_create_gc_window_named(awr, gcman, "SEC_PROPS_GC", "SECEDIT colors and fonts");
+}
+
 AW_window *start_SECEDIT_plugin(ED4_plugin_host& host) {
     AW_root *awr     = host.get_application_root();
     GBDATA  *gb_main = host.get_database();
@@ -753,7 +757,7 @@ AW_window *start_SECEDIT_plugin(ED4_plugin_host& host) {
     awm->create_menu("Properties", "P", AWM_ALL);
     awm->insert_menu_topic("sec_display", "Display options", "D", "sec_display.hlp", AWM_ALL, SEC_create_display_window);
     awm->sep______________();
-    awm->insert_menu_topic("props_secedit", "Change Colors and Fonts", "C", "color_props.hlp", AWM_ALL, makeCreateWindowCallback(AW_create_gc_window, scr->gc_manager));
+    awm->insert_menu_topic("props_secedit", "Change Colors and Fonts", "C", "color_props.hlp", AWM_ALL, makeCreateWindowCallback(SEC_create_gc_window, scr->gc_manager));
     awm->sep______________();
     awm->insert_menu_topic("sync_search_colors", "Sync search colors with EDIT4", "s", "sync_colors.hlp", AWM_ALL, makeWindowCallback(SEC_sync_colors, COLOR_SYNC_SEARCH));
     awm->insert_menu_topic("sync_range_colors",  "Sync range colors with EDIT4",  "r", "sync_colors.hlp", AWM_ALL, makeWindowCallback(SEC_sync_colors, COLOR_SYNC_RANGE));

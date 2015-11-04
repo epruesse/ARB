@@ -138,6 +138,9 @@ GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
+GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/cb.h
+GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/cb_base.h
+GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/cbtypes.h
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/cxxforward.h
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/downcast.h
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -145,6 +148,7 @@ GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/gccver.h
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/smartptr.h
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/static_assert.h
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/test_global.h
+GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 GDE_event.o: gde.hxx
 GDE_event.o: GDE_awars.h
@@ -233,6 +237,9 @@ GDE_FileIO.o: $(ARBHOME)/INCLUDE/arbtools.h
 GDE_FileIO.o: $(ARBHOME)/INCLUDE/attributes.h
 GDE_FileIO.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 GDE_FileIO.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
+GDE_FileIO.o: $(ARBHOME)/INCLUDE/cb.h
+GDE_FileIO.o: $(ARBHOME)/INCLUDE/cb_base.h
+GDE_FileIO.o: $(ARBHOME)/INCLUDE/cbtypes.h
 GDE_FileIO.o: $(ARBHOME)/INCLUDE/cxxforward.h
 GDE_FileIO.o: $(ARBHOME)/INCLUDE/downcast.h
 GDE_FileIO.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -240,6 +247,7 @@ GDE_FileIO.o: $(ARBHOME)/INCLUDE/gccver.h
 GDE_FileIO.o: $(ARBHOME)/INCLUDE/smartptr.h
 GDE_FileIO.o: $(ARBHOME)/INCLUDE/static_assert.h
 GDE_FileIO.o: $(ARBHOME)/INCLUDE/test_global.h
+GDE_FileIO.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 GDE_Genbank.o: gde.hxx
 GDE_Genbank.o: GDE_def.h
@@ -259,6 +267,9 @@ GDE_Genbank.o: $(ARBHOME)/INCLUDE/arbdbt.h
 GDE_Genbank.o: $(ARBHOME)/INCLUDE/arbtools.h
 GDE_Genbank.o: $(ARBHOME)/INCLUDE/attributes.h
 GDE_Genbank.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+GDE_Genbank.o: $(ARBHOME)/INCLUDE/cb.h
+GDE_Genbank.o: $(ARBHOME)/INCLUDE/cb_base.h
+GDE_Genbank.o: $(ARBHOME)/INCLUDE/cbtypes.h
 GDE_Genbank.o: $(ARBHOME)/INCLUDE/cxxforward.h
 GDE_Genbank.o: $(ARBHOME)/INCLUDE/downcast.h
 GDE_Genbank.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -266,6 +277,7 @@ GDE_Genbank.o: $(ARBHOME)/INCLUDE/gccver.h
 GDE_Genbank.o: $(ARBHOME)/INCLUDE/smartptr.h
 GDE_Genbank.o: $(ARBHOME)/INCLUDE/static_assert.h
 GDE_Genbank.o: $(ARBHOME)/INCLUDE/test_global.h
+GDE_Genbank.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 GDE_HGLfile.o: gde.hxx
 GDE_HGLfile.o: GDE_def.h
@@ -285,6 +297,9 @@ GDE_HGLfile.o: $(ARBHOME)/INCLUDE/arbdbt.h
 GDE_HGLfile.o: $(ARBHOME)/INCLUDE/arbtools.h
 GDE_HGLfile.o: $(ARBHOME)/INCLUDE/attributes.h
 GDE_HGLfile.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+GDE_HGLfile.o: $(ARBHOME)/INCLUDE/cb.h
+GDE_HGLfile.o: $(ARBHOME)/INCLUDE/cb_base.h
+GDE_HGLfile.o: $(ARBHOME)/INCLUDE/cbtypes.h
 GDE_HGLfile.o: $(ARBHOME)/INCLUDE/cxxforward.h
 GDE_HGLfile.o: $(ARBHOME)/INCLUDE/downcast.h
 GDE_HGLfile.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -292,6 +307,7 @@ GDE_HGLfile.o: $(ARBHOME)/INCLUDE/gccver.h
 GDE_HGLfile.o: $(ARBHOME)/INCLUDE/smartptr.h
 GDE_HGLfile.o: $(ARBHOME)/INCLUDE/static_assert.h
 GDE_HGLfile.o: $(ARBHOME)/INCLUDE/test_global.h
+GDE_HGLfile.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 GDE_ParseMenu.o: gde.hxx
 GDE_ParseMenu.o: GDE_def.h

@@ -78,7 +78,7 @@ static void nt_changesecurity(AW_root *aw_root) {
     GB_pop_transaction(GLOBAL.gb_main);
 }
 
-static void export_nds_cb(AW_window *aww, AW_CL print_flag) {
+static void export_nds_cb(AW_window *aww, bool do_print) {
     AW_root *aw_root = aww->get_root();
     char    *name    = aw_root->awar(AWAR_EXPORT_NDS"/file_name")->read_string();
     FILE    *out     = fopen(name, "w");
@@ -102,7 +102,7 @@ static void export_nds_cb(AW_window *aww, AW_CL print_flag) {
         }
         AW_refresh_fileselection(aw_root, AWAR_EXPORT_NDS);
         fclose(out);
-        if (print_flag) {
+        if (do_print) {
             GB_ERROR error = GB_textprint(name);
             if (error) aw_message(error);
         }
@@ -129,11 +129,11 @@ static AW_window *create_nds_export_window(AW_root *root) {
     aws->create_button("CLOSE", "CANCEL", "C");
 
     aws->at("save");
-    aws->callback(export_nds_cb, 0);
+    aws->callback(makeWindowCallback(export_nds_cb, false));
     aws->create_button("SAVE", "SAVE", "S");
 
     aws->at("print");
-    aws->callback(export_nds_cb, 1);
+    aws->callback(makeWindowCallback(export_nds_cb, true));
     aws->create_button("PRINT", "PRINT", "P");
 
     aws->at("toggle1");
@@ -165,7 +165,7 @@ static void expert_mode_changed_cb(AW_root *aw_root) {
     aw_root->awar(AWAR_AWM_MASK)->write_int(aw_root->awar(AWAR_EXPERT)->read_int() ? AWM_ALL : AWM_BASIC); // publish expert-mode globally
 }
 
-static void NT_toggle_expert_mode(AW_window *aww, AW_CL, AW_CL) { aww->get_root()->awar(AWAR_EXPERT)->toggle_toggle(); }
+static void NT_toggle_expert_mode(AW_window *aww) { aww->get_root()->awar(AWAR_EXPERT)->toggle_toggle(); }
 
 static void nt_create_all_awars(AW_root *awr, AW_default def) {
     // creates awars for all modules reachable from ARB_NT main window
@@ -328,7 +328,7 @@ __ATTR__NORETURN static void really_exit(int exitcode, bool kill_my_clients) {
     exit(exitcode);
 }
 
-void NT_exit(AW_window *aws, AW_CL exitcode) {
+void NT_exit(AW_window *aws, int exitcode) {
     AW_root *aw_root = aws->get_root();
     AWTI_cleanup_importer();
     shutdown_macro_recording(aw_root);
@@ -346,7 +346,7 @@ void NT_restart(AW_root *aw_root, const char *arb_ntree_args) {
     }
 }
 
-static void nt_start_2nd_arb(AW_window *aww, AW_CL cl_quit) {
+static void nt_start_2nd_arb(AW_window *aww, bool quit) {
     // start 2nd arb with intro window
     AW_root *aw_root = aww->get_root();
     char    *dir4intro;
@@ -355,7 +355,7 @@ static void nt_start_2nd_arb(AW_window *aww, AW_CL cl_quit) {
         dir4intro = strdup(".");
     }
 
-    if (cl_quit) {
+    if (quit) {
         NT_restart(aw_root, dir4intro);
     }
     else {
@@ -530,12 +530,12 @@ static AW_window *NT_create_save_as(AW_root *aw_root, const char *base_name)
     return aws;
 }
 
-static void NT_undo_cb(AW_window *, AW_CL undo_type, AW_CL ntw) {
-    GB_ERROR error = GB_undo(GLOBAL.gb_main, (GB_UNDO_TYPE)undo_type);
+static void NT_undo_cb(AW_window*, GB_UNDO_TYPE undo_type, AWT_canvas *ntw) {
+    GB_ERROR error = GB_undo(GLOBAL.gb_main, undo_type);
     if (error) aw_message(error);
     else {
         GB_transaction ta(GLOBAL.gb_main);
-        ((AWT_canvas *)ntw)->refresh();
+        ntw->refresh();
     }
 }
 
@@ -594,7 +594,7 @@ static void NT_modify_cb(UNFIXED, AWT_canvas *canvas, AWT_COMMAND_MODE mode) {
     nt_mode_event(NULL, canvas, mode);
 }
 
-static void NT_primer_cb() {
+static void NT_primer_cb(AW_window*) {
     GB_ERROR error = GB_xcmd("arb_primer", true, false);
     if (error) aw_message(error);
 }
@@ -1012,20 +1012,20 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone, AWT_canvas **re
         if (allow_new_window) {
             awm->insert_menu_topic(awm->local_id("new_window"), "New window (same database)", "N", "newwindow.hlp", AWM_ALL, makeCreateWindowCallback(popup_new_main_window, clone+1, (AWT_canvas**)NULL));
         }
-        awm->insert_menu_topic("close", "Close", "C", 0, AWM_ALL, (AW_CB)AW_POPDOWN, 0, 0);
+        awm->insert_menu_topic("close", "Close", "C", 0, AWM_ALL, AW_POPDOWN);
     }
     else {
 #if defined(DEBUG)
         // add more to debug-menu
         awm->sep______________();
-        awm->insert_menu_topic("fix_db",      "Fix database",            "F", 0, AWM_ALL, (AW_CB)NT_fix_database,            0,                                       0);
-        awm->insert_menu_topic("debug_arbdb", "Print debug information", "d", 0, AWM_ALL, (AW_CB)GB_print_debug_information, (AW_CL)                  GLOBAL.gb_main, 0);
-        awm->insert_menu_topic("test_compr",  "Test compression",        "T", 0, AWM_ALL, (AW_CB)GBT_compression_test,       (AW_CL)                  GLOBAL.gb_main, 0);
+        awm->insert_menu_topic("fix_db",      "Fix database",            "F", 0, AWM_ALL, NT_fix_database);
+        awm->insert_menu_topic("debug_arbdb", "Print debug information", "d", 0, AWM_ALL, makeWindowCallback(GB_print_debug_information, GLOBAL.gb_main));
+        awm->insert_menu_topic("test_compr",  "Test compression",        "T", 0, AWM_ALL, makeWindowCallback(GBT_compression_test,       GLOBAL.gb_main));
 #endif // DEBUG
 
         awm->create_menu("File", "F", AWM_ALL);
         {
-            awm->insert_menu_topic("save_changes", "Quicksave changes",          "s", "save.hlp",      AWM_ALL, (AW_CB)NT_save_quick_cb, 0, 0);
+            awm->insert_menu_topic("save_changes", "Quicksave changes",          "s", "save.hlp",      AWM_ALL, NT_save_quick_cb);
             awm->insert_menu_topic("save_all_as",  "Save whole database as ...", "w", "save.hlp",      AWM_ALL, makeCreateWindowCallback(NT_create_save_as, "tmp/nt/arbdb"));
             if (allow_new_window) {
                 awm->sep______________();
@@ -1062,19 +1062,11 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone, AWT_canvas **re
                 awm->insert_menu_topic("mailing_list", "Mailing list",                            "M", NULL,          AWM_ALL, makeWindowCallback(AWT_openURL, "http://bugs.arb-home.de/wiki/ArbMailingList"));
             }
             awm->close_sub_menu();
-#if 0
-            awm->sep______________();
-            awm->insert_menu_topic("undo",      "Undo",      "U", "undo.hlp", AWM_ALL, (AW_CB)NT_undo_cb,      (AW_CL)GB_UNDO_UNDO, (AW_CL)ntw);
-            awm->insert_menu_topic("redo",      "Redo",      "d", "undo.hlp", AWM_ALL, (AW_CB)NT_undo_cb,      (AW_CL)GB_UNDO_REDO, (AW_CL)ntw);
-            awm->insert_menu_topic("undo_info", "Undo info", "f", "undo.hlp", AWM_ALL, (AW_CB)NT_undo_info_cb, (AW_CL)GB_UNDO_UNDO, (AW_CL)0);
-            awm->insert_menu_topic("redo_info", "Redo info", "o", "undo.hlp", AWM_ALL, (AW_CB)NT_undo_info_cb, (AW_CL)GB_UNDO_REDO, (AW_CL)0);
-#endif
-
             awm->sep______________();
 
-            awm->insert_menu_topic("new_arb",     "Start second database",      "d", "quit.hlp", AWM_ALL, nt_start_2nd_arb, 0);
-            awm->insert_menu_topic("restart_arb", "Quit + load other database", "l", "quit.hlp", AWM_ALL, nt_start_2nd_arb, 1);
-            awm->insert_menu_topic("quit",        "Quit",                       "Q", "quit.hlp", AWM_ALL, NT_exit,          EXIT_SUCCESS);
+            awm->insert_menu_topic("new_arb",     "Start second database",      "d", "quit.hlp", AWM_ALL, makeWindowCallback(nt_start_2nd_arb, false));
+            awm->insert_menu_topic("restart_arb", "Quit + load other database", "l", "quit.hlp", AWM_ALL, makeWindowCallback(nt_start_2nd_arb, true));
+            awm->insert_menu_topic("quit",        "Quit",                       "Q", "quit.hlp", AWM_ALL, makeWindowCallback(NT_exit, EXIT_SUCCESS));
         }
 
         // -----------------
@@ -1101,12 +1093,12 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone, AWT_canvas **re
 
             awm->sep______________();
 
-            awm->insert_menu_topic("del_marked",    "Delete Marked Species",    "D", "sp_del_mrkd.hlp", AWM_ALL, (AW_CB)NT_delete_mark_all_cb,      (AW_CL)ntw, 0);
+            awm->insert_menu_topic("del_marked",    "Delete Marked Species",    "D", "sp_del_mrkd.hlp", AWM_ALL, makeWindowCallback(NT_delete_mark_all_cb, ntw));
 
             awm->insert_sub_menu("Sort Species",         "s");
             {
                 awm->insert_menu_topic("$sort_by_field", "According to Database Entries", "D", "sp_sort_fld.hlp",  AWM_ALL, NT_create_resort_window);
-                awm->insert_menu_topic("$sort_by_tree",  "According to Phylogeny",        "P", "sp_sort_phyl.hlp", AWM_ALL, NT_resort_data_by_phylogeny, (AW_CL)ntw, 0);
+                awm->insert_menu_topic("$sort_by_tree",  "According to Phylogeny",        "P", "sp_sort_phyl.hlp", AWM_ALL, makeWindowCallback(NT_resort_data_by_phylogeny, ntw));
             }
             awm->close_sub_menu();
 
@@ -1127,9 +1119,9 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone, AWT_canvas **re
 
             awm->insert_sub_menu("Valid Names ...", "V", AWM_EXP);
             {
-                awm->insert_menu_topic("imp_names",    "Import names from file", "I", "vn_import.hlp",  AWM_EXP, NT_importValidNames,  0, 0);
-                awm->insert_menu_topic("del_names",    "Delete names from DB",   "D", "vn_delete.hlp",  AWM_EXP, NT_deleteValidNames,  0, 0);
-                awm->insert_menu_topic("sug_names",    "Suggest valid names",    "v", "vn_suggest.hlp", AWM_EXP, NT_suggestValidNames, 0, 0);
+                awm->insert_menu_topic("imp_names",    "Import names from file", "I", "vn_import.hlp",  AWM_EXP, NT_importValidNames);
+                awm->insert_menu_topic("del_names",    "Delete names from DB",   "D", "vn_delete.hlp",  AWM_EXP, NT_deleteValidNames);
+                awm->insert_menu_topic("sug_names",    "Suggest valid names",    "v", "vn_suggest.hlp", AWM_EXP, NT_suggestValidNames);
                 awm->insert_menu_topic("search_names", "Search manually",        "m", "vn_search.hlp",  AWM_EXP, NT_create_searchManuallyNames_window);
             }
             awm->close_sub_menu();
@@ -1175,7 +1167,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone, AWT_canvas **re
             awm->sep______________();
 
             awm->insert_menu_topic("dna_2_pro", "Perform translation",      "t", "translate_dna_2_pro.hlp", AWM_ALL, NT_create_dna_2_pro_window);
-            awm->insert_menu_topic("arb_dist",  "Distance Matrix + ARB NJ", "D", "dist.hlp",                AWM_ALL, (AW_CB)NT_system_cb, (AW_CL)"arb_dist &", 0);
+            awm->insert_menu_topic("arb_dist",  "Distance Matrix + ARB NJ", "D", "dist.hlp",                AWM_ALL, makeWindowCallback(NT_system_cb, "arb_dist &"));
             awm->sep______________();
 
             awm->insert_menu_topic("seq_quality",   "Check Sequence Quality", "Q", "seq_quality.hlp",   AWM_EXP, makeCreateWindowCallback(SQ_create_seq_quality_window, GLOBAL.gb_main));
@@ -1197,8 +1189,8 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone, AWT_canvas **re
                 awm->insert_menu_topic("sai_max_freq",  "Max. Frequency",                                               "M", "max_freq.hlp",     AWM_EXP, AP_create_max_freq_window);
                 awm->insert_menu_topic("sai_consensus", "Consensus",                                                    "C", "consensus.hlp",    AWM_ALL, AP_create_con_expert_window);
                 awm->insert_menu_topic("pos_var_pars",  "Positional variability + Column statistic (parsimony method)", "a", "pos_var_pars.hlp", AWM_ALL, AP_create_pos_var_pars_window);
-                awm->insert_menu_topic("arb_phyl",      "Filter by base frequency",                                     "F", "phylo.hlp",        AWM_ALL, (AW_CB)NT_system_cb,      (AW_CL)"arb_phylo &", 0);
-                awm->insert_menu_topic("sai_pfold",     "Protein secondary structure (field \"sec_struct\")",           "P", "pfold.hlp",        AWM_EXP, NT_create_sai_from_pfold, (AW_CL)ntw,           0);
+                awm->insert_menu_topic("arb_phyl",      "Filter by base frequency",                                     "F", "phylo.hlp",        AWM_ALL, makeWindowCallback(NT_system_cb, "arb_phylo &"));
+                awm->insert_menu_topic("sai_pfold",     "Protein secondary structure (field \"sec_struct\")",           "P", "pfold.hlp",        AWM_EXP, makeWindowCallback(NT_create_sai_from_pfold, ntw));
 
                 GDE_load_menu(awm, AWM_EXP, "SAI");
             }
@@ -1206,8 +1198,8 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone, AWT_canvas **re
 
             awm->insert_sub_menu("Other functions", "O");
             {
-                awm->insert_menu_topic("count_different_chars", "Count different chars/column",             "C", "count_chars.hlp",    AWM_EXP, NT_count_different_chars, (AW_CL)GLOBAL.gb_main, 0);
-                awm->insert_menu_topic("corr_mutat_analysis",   "Compute clusters of correlated positions", "m", "",                   AWM_ALL, NT_system_in_xterm_cb,    (AW_CL)"arb_rnacma",   0);
+                awm->insert_menu_topic("count_different_chars", "Count different chars/column",             "C", "count_chars.hlp",    AWM_EXP, makeWindowCallback(NT_count_different_chars, GLOBAL.gb_main));
+                awm->insert_menu_topic("corr_mutat_analysis",   "Compute clusters of correlated positions", "m", "",                   AWM_ALL, makeWindowCallback(NT_system_in_xterm_cb,    "arb_rnacma"));
                 awm->insert_menu_topic("export_pos_var",        "Export Column Statistic (GNUPLOT format)", "E", "csp_2_gnuplot.hlp",  AWM_ALL, NT_create_colstat_2_gnuplot_window);
             }
             awm->close_sub_menu();
@@ -1225,7 +1217,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone, AWT_canvas **re
             awm->insert_menu_topic("probe_match_sp",   "Match Probes with Specificity", "f", "probespec.hlp", AWM_ALL, makeCreateWindowCallback(create_probe_match_with_specificity_window,    ntw));
             awm->sep______________();
             awm->insert_menu_topic("primer_design_new", "Design Primers",            "P", "primer_new.hlp", AWM_EXP, makeCreateWindowCallback(create_primer_design_window, GLOBAL.gb_main));
-            awm->insert_menu_topic("primer_design",     "Design Sequencing Primers", "S", "primer.hlp",     AWM_EXP, (AW_CB)NT_primer_cb, 0, 0);
+            awm->insert_menu_topic("primer_design",     "Design Sequencing Primers", "S", "primer.hlp",     AWM_EXP, NT_primer_cb);
             awm->sep______________();
             awm->insert_menu_topic("pt_server_admin",   "PT_SERVER Admin",           "A", "probeadmin.hlp",  AWM_ALL, makeCreateWindowCallback(create_probe_admin_window, GLOBAL.gb_main));
         }
@@ -1240,8 +1232,8 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone, AWT_canvas **re
         if (!clone) {
             awm->insert_sub_menu("Add Species to Existing Tree", "A");
             {
-                awm->insert_menu_topic("arb_pars_quick",   "ARB Parsimony (Quick add marked)", "Q", "pars.hlp",    AWM_ALL,   (AW_CB)NT_system_cb,    (AW_CL)"arb_pars -add_marked -quit &", 0);
-                awm->insert_menu_topic("arb_pars",         "ARB Parsimony interactive",        "i", "pars.hlp",    AWM_ALL,   (AW_CB)NT_system_cb,    (AW_CL)"arb_pars &",    0);
+                awm->insert_menu_topic("arb_pars_quick", "ARB Parsimony (Quick add marked)", "Q", "pars.hlp", AWM_ALL, makeWindowCallback(NT_system_cb, "arb_pars -add_marked -quit &"));
+                awm->insert_menu_topic("arb_pars",       "ARB Parsimony interactive",        "i", "pars.hlp", AWM_ALL, makeWindowCallback(NT_system_cb, "arb_pars &"));
                 GDE_load_menu(awm, AWM_EXP, "Incremental phylogeny");
             }
             awm->close_sub_menu();
@@ -1262,7 +1254,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone, AWT_canvas **re
             awm->insert_sub_menu("Build tree from sequence data",    "B");
             {
                 awm->insert_sub_menu("Distance matrix methods", "D");
-                awm->insert_menu_topic("arb_dist", "Distance Matrix + ARB NJ", "J", "dist.hlp", AWM_ALL, (AW_CB)NT_system_cb, (AW_CL)"arb_dist &", 0);
+                awm->insert_menu_topic("arb_dist", "Distance Matrix + ARB NJ", "J", "dist.hlp", AWM_ALL, makeWindowCallback(NT_system_cb, "arb_dist &"));
                 GDE_load_menu(awm, AWM_ALL, "Phylogeny Distance Matrix");
                 awm->close_sub_menu();
 
@@ -1330,7 +1322,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone, AWT_canvas **re
         awm->sep______________();
 
         awm->insert_menu_topic(awm->local_id("tree_select"),        "Select Tree",      "T", 0, AWM_ALL, makeCreateWindowCallback(NT_create_select_tree_window, awar_tree));
-        awm->insert_menu_topic(awm->local_id("tree_select_latest"), "Select Last Tree", "L", 0, AWM_ALL, (AW_CB)NT_select_bottom_tree, (AW_CL)awar_tree, 0);
+        awm->insert_menu_topic(awm->local_id("tree_select_latest"), "Select Last Tree", "L", 0, AWM_ALL, makeWindowCallback(NT_select_bottom_tree, awar_tree));
 
         awm->sep______________();
 
@@ -1368,7 +1360,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone, AWT_canvas **re
             awm->insert_menu_topic("names_admin",      "Name server admin (IDs)",    "s", "namesadmin.hlp",  AWM_ALL, makeCreateWindowCallback(AW_create_namesadmin_window, GLOBAL.gb_main));
             awm->insert_sub_menu("DB admin", "D", AWM_EXP);
             {
-                awm->insert_menu_topic("db_admin", "Re-repair DB", "R", "rerepair.hlp", AWM_EXP, NT_rerepair_DB, (AW_CL)GLOBAL.gb_main, 0);
+                awm->insert_menu_topic("db_admin", "Re-repair DB", "R", "rerepair.hlp", AWM_EXP, makeWindowCallback(NT_rerepair_DB, GLOBAL.gb_main));
             }
             awm->close_sub_menu();
             awm->insert_sub_menu("Network", "N", AWM_EXP);
@@ -1391,7 +1383,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone, AWT_canvas **re
             awm->close_sub_menu();
 
             awm->sep______________();
-            awm->insert_menu_topic("xterm",         "Start XTERM",             "X", 0,         AWM_ALL, (AW_CB)GB_xterm, 0, 0);
+            awm->insert_menu_topic("xterm", "Start XTERM", "X", 0, AWM_ALL, NT_xterm);
             awm->sep______________();
             GDE_load_menu(awm, AWM_EXP, "User");
         }
@@ -1407,9 +1399,9 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone, AWT_canvas **re
             awm->insert_menu_topic("props_tree",                 "Tree colors & fonts",         "c", "color_props.hlp",      AWM_ALL, makeCreateWindowCallback(AW_create_gc_window, ntw->gc_manager));
             awm->insert_menu_topic("props_www",                  "Search world wide web (WWW)", "W", "props_www.hlp",        AWM_ALL, makeCreateWindowCallback(AWT_create_www_window, GLOBAL.gb_main));
             awm->sep______________();
-            awm->insert_menu_topic("!toggle_expert", "Toggle expert mode",         "x", 0, AWM_ALL, NT_toggle_expert_mode,  0, 0);
+            awm->insert_menu_topic("!toggle_expert", "Toggle expert mode",         "x", 0, AWM_ALL, NT_toggle_expert_mode);
 #if defined(ARB_MOTIF)
-            awm->insert_menu_topic("!toggle_focus",  "Toggle focus follows mouse", "m", 0, AWM_ALL, NT_toggle_focus_policy, 0, 0);
+            awm->insert_menu_topic("!toggle_focus",  "Toggle focus follows mouse", "m", 0, AWM_ALL, NT_toggle_focus_policy);
 #endif
             awm->sep______________();
             AW_insert_common_property_menu_entries(awm);
@@ -1470,7 +1462,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone, AWT_canvas **re
         awm->create_button("CLOSE", "#close.xpm");
     }
     else {
-        awm->callback(NT_exit, EXIT_SUCCESS);
+        awm->callback(makeWindowCallback(NT_exit, EXIT_SUCCESS));
 #if defined(ARB_GTK)
         awm->set_hide_on_close(false); //the main window should really close when closed
 #endif
@@ -1503,11 +1495,11 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone, AWT_canvas **re
     awm->create_button("SAVE_AS", "#saveAs.xpm");
 
     // undo/redo:
-    awm->callback(NT_undo_cb, (AW_CL)GB_UNDO_UNDO, (AW_CL)ntw);
+    awm->callback(makeWindowCallback(NT_undo_cb, GB_UNDO_UNDO, ntw));
     awm->help_text("undo.hlp");
     awm->create_button("UNDO", "#undo.xpm");
 
-    awm->callback(NT_undo_cb, (AW_CL)GB_UNDO_REDO, (AW_CL)ntw);
+    awm->callback(makeWindowCallback(NT_undo_cb, GB_UNDO_REDO, ntw));
     awm->help_text("undo.hlp");
     awm->create_button("REDO", "#redo.xpm");
 

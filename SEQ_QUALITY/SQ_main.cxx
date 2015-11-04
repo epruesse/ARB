@@ -63,8 +63,7 @@ void SQ_create_awars(AW_root *aw_root, AW_default aw_def) {
 // --------------------------------------------------------------------------------
 
 
-static void sq_calc_seq_quality_cb(AW_window * aww, AW_CL res_from_awt_create_select_filter, AW_CL cl_gb_main) {
-    GBDATA   *gb_main     = (GBDATA*)cl_gb_main;
+static void sq_calc_seq_quality_cb(AW_window * aww, adfiltercbstruct *acbs, GBDATA *gb_main) {
     AW_root  *aw_root     = aww->get_root();
     GB_ERROR  error       = 0;
     TreeNode *tree        = 0;
@@ -117,7 +116,7 @@ static void sq_calc_seq_quality_cb(AW_window * aww, AW_CL res_from_awt_create_se
         int reevaluate = aw_root->awar(AWAR_SQ_REEVALUATE)->read_int();
 
         // Load and use Sequence-Filter
-        AP_filter *filter = awt_get_filter((adfiltercbstruct*)res_from_awt_create_select_filter);
+        AP_filter *filter = awt_get_filter(acbs);
         error             = awt_invalid_filter(filter);
 
         /*
@@ -198,9 +197,9 @@ static void sq_calc_seq_quality_cb(AW_window * aww, AW_CL res_from_awt_create_se
     destroy(tree);
 }
 
-static void sq_remove_quality_entries_cb(AW_window *, AW_CL cl_gb_main) {
-    GBDATA *gb_main = (GBDATA*)cl_gb_main;
-    SQ_remove_quality_entries(gb_main);
+static void sq_remove_quality_entries_cb(AW_window*, GBDATA *gb_main) {
+    GB_ERROR error = SQ_remove_quality_entries(gb_main);
+    aw_message_if(error);
 }
 
 static AWT_config_mapping_def seq_quality_config_mapping[] = {
@@ -270,7 +269,7 @@ AW_window *SQ_create_seq_quality_window(AW_root *aw_root, GBDATA *gb_main) {
     aws->create_button("SELECT_FILTER", AWAR_SQ_FILTER_NAME);
 
     aws->at("go");
-    aws->callback(sq_calc_seq_quality_cb, (AW_CL)adfilter, (AW_CL)gb_main);
+    aws->callback(makeWindowCallback(sq_calc_seq_quality_cb, adfilter, gb_main));
     aws->highlight();
     aws->create_button("GO", "GO", "G");
 
@@ -282,7 +281,7 @@ AW_window *SQ_create_seq_quality_window(AW_root *aw_root, GBDATA *gb_main) {
     aws->create_toggle(AWAR_SQ_REEVALUATE);
 
     aws->at("remove");
-    aws->callback(sq_remove_quality_entries_cb, (AW_CL)gb_main);
+    aws->callback(makeWindowCallback(sq_remove_quality_entries_cb, gb_main));
     aws->create_button("Remove", "Remove", "R");
 
     return aws;
