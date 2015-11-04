@@ -160,8 +160,8 @@ static AW_window *create_species_create_window(AW_root *root, GBDATA *gb_main) {
     aws->init(root, "CREATE_SPECIES", "SPECIES CREATE");
     aws->load_xfig("ad_al_si.fig");
 
-    aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("close");
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "Close", "C");
 
     aws->at("label");
@@ -595,13 +595,13 @@ AW_window *DBUI::create_fields_reorder_window(AW_root *root, BoundItemSel *bound
         init_itemType_specific_window(root, aws, selector, "REORDER_FIELDS", "Reorder %s fields");
         aws->load_xfig("ad_kreo.fig");
 
-        aws->callback((AW_CB0)AW_POPDOWN);
         aws->at("close");
+        aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "Close", "C");
 
+        aws->at("help");
         const char *HELPFILE = "spaf_reorder.hlp";
         aws->callback(makeHelpCallback(HELPFILE));
-        aws->at("help");
         aws->create_button("HELP", "Help", "H");
 
         Itemfield_Selection *sel1 = create_selection_list_on_itemfields(bound_selector->gb_main, aws, AWAR_FIELD_REORDER_SOURCE, true, FIELD_FILTER_NDS, "source", 0, selector, 20, 10, SF_STANDARD, NULL);
@@ -783,8 +783,8 @@ AW_window *DBUI::create_field_create_window(AW_root *root, BoundItemSel *bound_s
     init_itemType_specific_window(root, aws, selector, "CREATE_FIELD", "Create new %s field");
     aws->load_xfig("ad_fcrea.fig");
 
-    aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("close");
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "Close", "C");
 
     aws->at("input");
@@ -851,7 +851,7 @@ static AW_window *create_field_convert_window(AW_root *root, BoundItemSel *bound
     aws->load_xfig("ad_conv.fig");
 
     aws->at("close");
-    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "Close", "C");
 
     aws->at("help");
@@ -1298,7 +1298,7 @@ static AW_window *create_next_neighbours_listed_window(AW_root *aw_root, DbQuery
         aws->load_xfig("ad_spec_nnm.fig");
 
         aws->at("close");
-        aws->callback((AW_CB0)AW_POPDOWN);
+        aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "Close", "C");
 
         aws->at("help");
@@ -1331,7 +1331,7 @@ static AW_window *create_next_neighbours_selected_window(AW_root *aw_root, DbQue
         aws->load_xfig("ad_spec_nn.fig");
 
         aws->at("close");
-        aws->callback((AW_CB0)AW_POPDOWN);
+        aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "Close", "C");
 
         aws->at("help");
@@ -1511,7 +1511,7 @@ AW_window *DBUI::create_species_query_window(AW_root *aw_root, GBDATA *gb_main) 
         aws->button_length(7);
 
         aws->at("close");
-        aws->callback((AW_CB0)AW_POPDOWN);
+        aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "Close", "C");
 
         aws->at("help");

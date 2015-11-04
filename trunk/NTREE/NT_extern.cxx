@@ -116,7 +116,7 @@ static AW_window *create_nds_export_window(AW_root *root) {
     aws->init(root, "EXPORT_NDS_OF_MARKED", "EXPORT NDS OF MARKED SPECIES");
     aws->load_xfig("sel_box_nds.fig");
 
-    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->callback(AW_POPDOWN); // @@@ this window has two close buttons -> remove one
     aws->at("close");
     aws->create_button("CLOSE", "CLOSE", "C");
 
@@ -124,7 +124,7 @@ static AW_window *create_nds_export_window(AW_root *root) {
     aws->at("help");
     aws->create_button("HELP", "HELP", "H");
 
-    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->callback(AW_POPDOWN);
     aws->at("cancel");
     aws->create_button("CLOSE", "CANCEL", "C");
 
@@ -410,7 +410,8 @@ static AW_window *NT_create_save_quick_as_window(AW_root *aw_root, const char *b
         aws->init(aw_root, "SAVE_CHANGES_TO", "Quicksave changes as");
         aws->load_xfig("save_as.fig");
 
-        aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
+        aws->at("close");
+        aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
 
         aws->callback(makeHelpCallback("save.hlp"));
@@ -478,7 +479,8 @@ static AW_window *NT_create_database_optimization_window(AW_root *aw_root) {
     aws->at("trees");
     awt_create_TREE_selection_list(GLOBAL.gb_main, aws, "tmp/nt/arbdb/optimize_tree_name", true);
 
-    aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
+    aws->at("close");
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->callback(makeHelpCallback("optimize.hlp"));
@@ -500,7 +502,8 @@ static AW_window *NT_create_save_as(AW_root *aw_root, const char *base_name)
     aws->init(aw_root, "SAVE_DB", "SAVE ARB DB");
     aws->load_xfig("save_as.fig");
 
-    aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
+    aws->at("close");
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->callback(makeHelpCallback("save.hlp"));

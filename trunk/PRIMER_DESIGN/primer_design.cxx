@@ -137,7 +137,7 @@ static void create_primer_design_result_window(AW_window *aww) {
 
         pdrw->at("buttons");
 
-        pdrw->callback((AW_CB0)AW_POPDOWN);
+        pdrw->callback(AW_POPDOWN);
         pdrw->create_button("CLOSE", "CLOSE", "C");
 
         pdrw->callback(makeWindowCallback(awt_clear_selection_list_cb, resultList));
@@ -473,7 +473,7 @@ AW_window *create_primer_design_window(AW_root *root, GBDATA *gb_main) {
     aws->load_xfig("prd_main.fig");
 
     aws->at("close");
-    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");

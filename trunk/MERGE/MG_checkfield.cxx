@@ -304,7 +304,7 @@ AW_window *create_mg_check_fields_window(AW_root *aw_root) {
     aws->init(aw_root, "MERGE_COMPARE_FIELDS", "COMPARE DATABASE FIELDS");
     aws->load_xfig("merge/seqcheck.fig");
 
-    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");

@@ -384,7 +384,7 @@ static AW_window *CreateDisplayBases_window(AW_root *aw_root) {
     aws->create_button("HELP", "#help.xpm");
 
     aws->at("close");
-    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->callback(AW_POPDOWN);
     aws->button_length(0);
     aws->create_button("CLOSE", "#closeText.xpm");
 
@@ -433,7 +433,7 @@ static AW_window *CreateDisplayHelices_window(AW_root *aw_root) {
     aws->create_button("HELP", "#help.xpm");
 
     aws->at("close");
-    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->callback(AW_POPDOWN);
     aws->button_length(0);
     aws->create_button("CLOSE", "#closeText.xpm");
 
@@ -490,7 +490,7 @@ static AW_window *CreateDisplayOptions_window(AW_root *aw_root) {
     aws->create_button("HELP", "#help.xpm");
 
     aws->at("close");
-    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->callback(AW_POPDOWN);
     aws->button_length(0);
     aws->create_button("CLOSE", "#closeText.xpm");
 
@@ -530,7 +530,7 @@ static AW_window *CreateMapSequenceData_window(AW_root *aw_root) {
     aws->create_button("HELP", "#help.xpm");
 
     aws->at("close");
-    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->callback(AW_POPDOWN);
     aws->button_length(0);
     aws->create_button("CLOSE", "#closeText.xpm");
 
@@ -588,7 +588,7 @@ static AW_window *CreateChangeMolecule_window(AW_root *aw_root) {
     aws->create_button("HELP", "#help.xpm");
 
     aws->at("close");
-    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->callback(AW_POPDOWN);
     aws->button_length(0);
     aws->create_button("CLOSE", "#closeText.xpm");
 
@@ -653,7 +653,7 @@ AW_window *CreateRNA3DMainWindow(AW_root *awr, GBDATA *gb_main, ED4_plugin_host&
         int cur_x, cur_y, start_x, first_line_y, second_line_y;
         awm->get_at_position(&start_x, &first_line_y);
         awm->button_length(0);
-        awm->callback((AW_CB0)AW_POPDOWN);
+        awm->callback(AW_POPDOWN);
         awm->create_button("Quit", "#quit.xpm");
 
         awm->get_at_position(&cur_x, &cur_y);

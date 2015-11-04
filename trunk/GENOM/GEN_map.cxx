@@ -554,8 +554,8 @@ static AW_window *GEN_create_options_window(AW_root *awr) {
         aws->init(awr, "GEN_OPTS", "Genemap options");
         aws->load_xfig("gen_options.fig");
 
-        aws->callback((AW_CB0)AW_POPDOWN);
         aws->at("close");
+        aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
 
         aws->callback(makeHelpCallback("gen_options.hlp"));
@@ -1268,8 +1268,8 @@ static AW_window *create_gene_extract_window(AW_root *root, GEN_extract_mode_par
     aws->init(root, window_id.c_str(), "Extract genes to alignment");
     aws->load_xfig("ad_al_si.fig");
 
-    aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("close");
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("label");
@@ -1651,7 +1651,7 @@ void GEN_map_window::init(AW_root *awr, GBDATA *gb_main) {
 
     at(start_x, first_line_y);
     help_text("quit.hlp");
-    callback((AW_CB0)AW_POPDOWN);
+    callback(AW_POPDOWN);
     create_button("Close", "Close");
 
     get_at_position(&cur_x, &cur_y);

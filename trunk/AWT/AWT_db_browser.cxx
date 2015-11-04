@@ -1094,7 +1094,7 @@ AW_window *DB_browser::get_window(AW_root *aw_root) {
         aws->init(aw_root, "DB_BROWSER", "ARB database browser");
         aws->load_xfig("dbbrowser.fig");
 
-        aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
+        aws->at("close"); aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
 
         aws->at("db");

@@ -64,8 +64,8 @@ static AW_window *MG_create_extended_rename_window(AW_root *root, int db_nr) {
     }
     aws->load_xfig("ad_al_si.fig");
 
-    aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("close");
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("label");
@@ -150,7 +150,8 @@ AW_window *MG_create_merge_SAIs_window(AW_root *awr) {
     aws->init(awr, "MERGE_SAI", "MERGE SAI");
     aws->load_xfig("merge/extended.fig");
 
-    aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
+    aws->at("close");
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");

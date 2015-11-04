@@ -411,7 +411,7 @@ static AW_window *SEC_importExport(AW_root *root, bool export_to_file, const SEC
     aws->load_xfig("sec_imexport.fig");
 
     aws->at("close");
-    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
@@ -537,8 +537,8 @@ static AW_window *SEC_create_bonddef_window(AW_root *awr) {
     aws->init(awr, "SEC_BONDDEF", "Bond definitions");
     aws->load_xfig("sec_bonddef.fig");
 
-    aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("close");
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->callback(makeHelpCallback("sec_bonddef.hlp"));
@@ -613,8 +613,8 @@ static AW_window *SEC_create_display_window(AW_root *awr) {
     aws->init(awr, "SEC_DISPLAY_OPTS", "Display options");
     aws->load_xfig("sec_display.fig");
 
-    aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("close");
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->callback(makeHelpCallback("sec_display.hlp"));
@@ -781,7 +781,7 @@ AW_window *start_SECEDIT_plugin(ED4_plugin_host& host) {
 
     awm->button_length(0);
     awm->help_text("quit.hlp");
-    awm->callback((AW_CB0)AW_POPDOWN);
+    awm->callback(AW_POPDOWN);
     awm->create_button("Close", "#quit.xpm"); // use quit button, cause users regard secedit as separate program
 
     awm->callback(AW_help_entry_pressed);

@@ -374,7 +374,8 @@ AW_window *awt_create_select_filter_win(AW_root *aw_root, adfiltercbstruct *acbs
         aws->load_xfig("awt/filter.fig");
         aws->button_length(10);
 
-        aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
+        aws->at("close");
+        aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
 
         aws->at("help"); aws->callback(makeHelpCallback("sel_fil.hlp"));

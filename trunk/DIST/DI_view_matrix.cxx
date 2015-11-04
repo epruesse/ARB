@@ -619,7 +619,7 @@ static AW_window *create_matrix_settings_window(AW_root *awr) {
 
     aws->auto_space(10, 10);
 
-    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->callback(makeHelpCallback("matrix_settings.hlp"));

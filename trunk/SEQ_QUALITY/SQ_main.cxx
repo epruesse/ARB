@@ -226,7 +226,7 @@ AW_window *SQ_create_seq_quality_window(AW_root *aw_root, GBDATA *gb_main) {
     aws->load_xfig("seq_quality.fig");
 
     aws->at("close");
-    aws->callback((AW_CB0) AW_POPDOWN);
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");

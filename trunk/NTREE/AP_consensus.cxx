@@ -291,7 +291,7 @@ AW_window *AP_create_con_expert_window(AW_root *aw_root) {
     aws->button_length(9);
 
     aws->at("cancel");
-    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
@@ -457,7 +457,8 @@ AW_window *AP_create_max_freq_window(AW_root *aw_root) {
 
     aws->button_length(6);
 
-    aws->at("cancel"); aws->callback((AW_CB0)AW_POPDOWN);
+    aws->at("cancel");
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help"); aws->callback(makeHelpCallback("max_freq.hlp"));

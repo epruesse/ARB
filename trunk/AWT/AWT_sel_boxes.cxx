@@ -79,7 +79,7 @@ public:
             aws->load_xfig("select_simple.fig");
 
             aws->at("selection");
-            aws->callback((AW_CB0)AW_POPDOWN);
+            aws->callback(AW_POPDOWN);
             create_list(aws, true);
 
             aws->at("button");
@@ -368,11 +368,11 @@ static AW_window *create_PTSERVER_selection_window(AW_root *aw_root, const char 
     aw_popup->auto_space(10, 10);
 
     aw_popup->at_newline();
-    aw_popup->callback((AW_CB0)AW_POPDOWN); // @@@ used as SELLIST_CLICK_CB (see #559)
+    aw_popup->callback(AW_POPDOWN); // @@@ used as SELLIST_CLICK_CB (see #559)
     AW_selection_list *sellist = aw_popup->create_selection_list(varname, PT_SERVERNAME_SELLIST_WIDTH, 20, true);
 
     aw_popup->at_newline();
-    aw_popup->callback((AW_CB0)AW_POPDOWN);
+    aw_popup->callback(AW_POPDOWN);
     aw_popup->create_button("CLOSE", "CLOSE", "C");
 
     aw_popup->window_fit();
@@ -878,7 +878,7 @@ AW_window *create_save_box_for_selection_lists(AW_root *aw_root, const StorableS
     aws->button_length(10);
 
     aws->at("cancel");
-    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->callback(AW_POPDOWN);
     aws->create_button("CANCEL", "CANCEL", "C");
 
     aws->at("save");
@@ -928,7 +928,7 @@ AW_window *create_load_box_for_selection_lists(AW_root *aw_root, const StorableS
     aws->load_xfig("sl_l_box.fig");
 
     aws->at("cancel");
-    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->callback(AW_POPDOWN);
     aws->create_button("CANCEL", "CANCEL", "C");
 
     aws->at("load");
