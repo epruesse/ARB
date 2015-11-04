@@ -1245,7 +1245,7 @@ AW_window *NT_create_startEditorOnOldConfiguration_window(AW_root *awr) {
         awt_create_CONFIG_selection_list(GLOBAL.gb_main, aws, AWAR_CONFIGURATION, false);
         aws->at_newline();
 
-        aws->callback((AW_CB0)nt_start_editor_on_configuration);
+        aws->callback(nt_start_editor_on_configuration);
         aws->create_button("START", "START");
 
         aws->callback(AW_POPDOWN);

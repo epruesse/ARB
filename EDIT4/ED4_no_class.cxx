@@ -1534,7 +1534,7 @@ AW_window *ED4_create_loadConfiguration_window(AW_root *awr) {
         awt_create_CONFIG_selection_list(GLOBAL_gb_main, aws, AWAR_EDIT_CONFIGURATION, false);
 
         aws->at("go");
-        aws->callback((AW_CB0)ED4_start_editor_on_configuration);
+        aws->callback(ED4_start_editor_on_configuration);
         aws->create_button("LOAD", "LOAD");
 
         aws->window_fit();

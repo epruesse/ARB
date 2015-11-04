@@ -345,7 +345,7 @@ AW_window *AP_create_con_expert_window(AW_root *aw_root) {
 
     // bottom part of window:
     aws->at("calculate");
-    aws->callback((AW_CB0)CON_calculate_cb);
+    aws->callback(CON_calculate_cb);
     aws->create_button("GO", "GO", "G");
 
     aws->at("config");
@@ -465,7 +465,8 @@ AW_window *AP_create_max_freq_window(AW_root *aw_root) {
     aws->create_button("HELP", "HELP", "H");
 
     // activation of consensus calculation by button ...
-    aws->at("go"); aws->callback((AW_CB0)CON_calc_max_freq_cb);
+    aws->at("go");
+    aws->callback(CON_calc_max_freq_cb);
     aws->create_button("GO", "GO", "C");
 
     aws->at("save");
