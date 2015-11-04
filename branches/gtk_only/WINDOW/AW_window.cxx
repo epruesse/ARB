@@ -1738,7 +1738,7 @@ void AW_window::activate() {
 // force-diff-sync 9287423467632 (remove after merging back to trunk)
 // ----------------------------------------------------------------------
 
-void AW_window::on_hide(AW_CB0 call_on_hide) {
+void AW_window::on_hide(WindowCallbackSimple call_on_hide) {
     g_signal_connect_swapped(prvt->window, "hide", G_CALLBACK(call_on_hide), this);
 }
 
