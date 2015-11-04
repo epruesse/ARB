@@ -2532,28 +2532,28 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *w
                                     XmNy, 0,
                                     NULL);
     p_w->areas[AW_INFO_AREA] =
-        new AW_area_management(root, form2, XtVaCreateManagedWidget("info_area",
-                                                                    xmDrawingAreaWidgetClass,
-                                                                    form2,
-                                                                    XmNheight, 0,
-                                                                    XmNbottomAttachment, XmATTACH_NONE,
-                                                                    XmNtopAttachment, XmATTACH_FORM,
-                                                                    XmNleftAttachment, XmATTACH_FORM,
-                                                                    XmNrightAttachment, XmATTACH_FORM,
-                                                                    XmNmarginHeight, 2,
-                                                                    XmNmarginWidth, 2,
-                                                                    NULL));
+        new AW_area_management(form2, XtVaCreateManagedWidget("info_area",
+                                                              xmDrawingAreaWidgetClass,
+                                                              form2,
+                                                              XmNheight, 0,
+                                                              XmNbottomAttachment, XmATTACH_NONE,
+                                                              XmNtopAttachment, XmATTACH_FORM,
+                                                              XmNleftAttachment, XmATTACH_FORM,
+                                                              XmNrightAttachment, XmATTACH_FORM,
+                                                              XmNmarginHeight, 2,
+                                                              XmNmarginWidth, 2,
+                                                              NULL));
 
     p_w->areas[AW_BOTTOM_AREA] =
-        new AW_area_management(root, form2, XtVaCreateManagedWidget("bottom_area",
-                                                                    xmDrawingAreaWidgetClass,
-                                                                    form2,
-                                                                    XmNheight, 0,
-                                                                    XmNbottomAttachment, XmATTACH_FORM,
-                                                                    XmNtopAttachment, XmATTACH_NONE,
-                                                                    XmNleftAttachment, XmATTACH_FORM,
-                                                                    XmNrightAttachment, XmATTACH_FORM,
-                                                                    NULL));
+        new AW_area_management(form2, XtVaCreateManagedWidget("bottom_area",
+                                                              xmDrawingAreaWidgetClass,
+                                                              form2,
+                                                              XmNheight, 0,
+                                                              XmNbottomAttachment, XmATTACH_FORM,
+                                                              XmNtopAttachment, XmATTACH_NONE,
+                                                              XmNleftAttachment, XmATTACH_FORM,
+                                                              XmNrightAttachment, XmATTACH_FORM,
+                                                              NULL));
 
     p_w->scroll_bar_horizontal = XtVaCreateManagedWidget("scroll_bar_horizontal",
                                                          xmScrollBarWidgetClass,
@@ -2610,12 +2610,12 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *w
                                          NULL);
 
     p_w->areas[AW_MIDDLE_AREA] =
-        new AW_area_management(root, p_w->frame, XtVaCreateManagedWidget("draw area",
-                                                                         xmDrawingAreaWidgetClass,
-                                                                         p_w->frame,
-                                                                         XmNmarginHeight, 0,
-                                                                         XmNmarginWidth, 0,
-                                                                         NULL));
+        new AW_area_management(p_w->frame, XtVaCreateManagedWidget("draw area",
+                                                                   xmDrawingAreaWidgetClass,
+                                                                   p_w->frame,
+                                                                   XmNmarginHeight, 0,
+                                                                   XmNmarginWidth, 0,
+                                                                   NULL));
 
     XmMainWindowSetAreas(main_window, p_w->menu_bar[0], (Widget) NULL, (Widget) NULL, (Widget) NULL, form1);
 
@@ -2729,28 +2729,28 @@ void AW_window_menu::init(AW_root *root_in, const char *wid, const char *windown
                                     XmNy, 0,
                                     NULL);
     p_w->areas[AW_INFO_AREA] =
-        new AW_area_management(root, form2, XtVaCreateManagedWidget("info_area",
-                                                                    xmDrawingAreaWidgetClass,
-                                                                    form2,
-                                                                    XmNheight, 0,
-                                                                    XmNbottomAttachment, XmATTACH_NONE,
-                                                                    XmNtopAttachment, XmATTACH_FORM,
-                                                                    XmNleftAttachment, XmATTACH_FORM,
-                                                                    XmNrightAttachment, XmATTACH_FORM,
-                                                                    XmNmarginHeight, 2,
-                                                                    XmNmarginWidth, 2,
-                                                                    NULL));
+        new AW_area_management(form2, XtVaCreateManagedWidget("info_area",
+                                                              xmDrawingAreaWidgetClass,
+                                                              form2,
+                                                              XmNheight, 0,
+                                                              XmNbottomAttachment, XmATTACH_NONE,
+                                                              XmNtopAttachment, XmATTACH_FORM,
+                                                              XmNleftAttachment, XmATTACH_FORM,
+                                                              XmNrightAttachment, XmATTACH_FORM,
+                                                              XmNmarginHeight, 2,
+                                                              XmNmarginWidth, 2,
+                                                              NULL));
 
     p_w->areas[AW_BOTTOM_AREA] =
-        new AW_area_management(root, form2, XtVaCreateManagedWidget("bottom_area",
-                                                                    xmDrawingAreaWidgetClass,
-                                                                    form2,
-                                                                    XmNheight, 0,
-                                                                    XmNbottomAttachment, XmATTACH_FORM,
-                                                                    XmNtopAttachment, XmATTACH_NONE,
-                                                                    XmNleftAttachment, XmATTACH_FORM,
-                                                                    XmNrightAttachment, XmATTACH_FORM,
-                                                                    NULL));
+        new AW_area_management(form2, XtVaCreateManagedWidget("bottom_area",
+                                                              xmDrawingAreaWidgetClass,
+                                                              form2,
+                                                              XmNheight, 0,
+                                                              XmNbottomAttachment, XmATTACH_FORM,
+                                                              XmNtopAttachment, XmATTACH_NONE,
+                                                              XmNleftAttachment, XmATTACH_FORM,
+                                                              XmNrightAttachment, XmATTACH_FORM,
+                                                              NULL));
 
     p_w->scroll_bar_horizontal = XtVaCreateManagedWidget("scroll_bar_horizontal",
                                                          xmScrollBarWidgetClass,
@@ -2807,12 +2807,12 @@ void AW_window_menu::init(AW_root *root_in, const char *wid, const char *windown
                                          NULL);
 
     p_w->areas[AW_MIDDLE_AREA] =
-        new AW_area_management(root, p_w->frame, XtVaCreateManagedWidget("draw area",
-                                                                         xmDrawingAreaWidgetClass,
-                                                                         p_w->frame,
-                                                                         XmNmarginHeight, 0,
-                                                                         XmNmarginWidth, 0,
-                                                                         NULL));
+        new AW_area_management(p_w->frame, XtVaCreateManagedWidget("draw area",
+                                                                   xmDrawingAreaWidgetClass,
+                                                                   p_w->frame,
+                                                                   XmNmarginHeight, 0,
+                                                                   XmNmarginWidth, 0,
+                                                                   NULL));
 
     XmMainWindowSetAreas(main_window, p_w->menu_bar[0], (Widget) NULL,
                          (Widget) NULL, (Widget) NULL, form1);
@@ -2844,16 +2844,17 @@ void AW_window_simple::init(AW_root *root_in, const char *wid, const char *windo
             p_w->shell,
             NULL);
 
-    p_w->areas[AW_INFO_AREA] = new AW_area_management(root, form1, XtVaCreateManagedWidget("info_area",
-                    xmDrawingAreaWidgetClass,
-                    form1,
-                    XmNbottomAttachment, XmATTACH_FORM,
-                    XmNtopAttachment, XmATTACH_FORM,
-                    XmNleftAttachment, XmATTACH_FORM,
-                    XmNrightAttachment, XmATTACH_FORM,
-                    XmNmarginHeight, 2,
-                    XmNmarginWidth, 2,
-                    NULL));
+    p_w->areas[AW_INFO_AREA] =
+        new AW_area_management(form1, XtVaCreateManagedWidget("info_area",
+                                                              xmDrawingAreaWidgetClass,
+                                                              form1,
+                                                              XmNbottomAttachment, XmATTACH_FORM,
+                                                              XmNtopAttachment, XmATTACH_FORM,
+                                                              XmNleftAttachment, XmATTACH_FORM,
+                                                              XmNrightAttachment, XmATTACH_FORM,
+                                                              XmNmarginHeight, 2,
+                                                              XmNmarginWidth, 2,
+                                                              NULL));
 
     aw_realize_widget(this);
     create_devices();
@@ -2920,16 +2921,16 @@ void AW_window_simple_menu::init(AW_root *root_in, const char *wid, const char *
                                     NULL);
 
     p_w->areas[AW_INFO_AREA] =
-        new AW_area_management(root, form1, XtVaCreateManagedWidget("info_area",
-                                                                    xmDrawingAreaWidgetClass,
-                                                                    form1,
-                                                                    XmNbottomAttachment, XmATTACH_FORM,
-                                                                    XmNtopAttachment, XmATTACH_FORM,
-                                                                    XmNleftAttachment, XmATTACH_FORM,
-                                                                    XmNrightAttachment, XmATTACH_FORM,
-                                                                    XmNmarginHeight, 2,
-                                                                    XmNmarginWidth, 2,
-                                                                    NULL));
+        new AW_area_management(form1, XtVaCreateManagedWidget("info_area",
+                                                              xmDrawingAreaWidgetClass,
+                                                              form1,
+                                                              XmNbottomAttachment, XmATTACH_FORM,
+                                                              XmNtopAttachment, XmATTACH_FORM,
+                                                              XmNleftAttachment, XmATTACH_FORM,
+                                                              XmNrightAttachment, XmATTACH_FORM,
+                                                              XmNmarginHeight, 2,
+                                                              XmNmarginWidth, 2,
+                                                              NULL));
 
     aw_realize_widget(this);
 
@@ -2955,15 +2956,16 @@ void AW_window_message::init(AW_root *root_in, const char *wid, const char *wind
     XtVaSetValues(p_w->shell, XmNmwmFunctions, MWM_FUNC_MOVE | MWM_FUNC_CLOSE,
             NULL);
 
-    p_w->areas[AW_INFO_AREA] = new AW_area_management(root, p_w->shell, XtVaCreateManagedWidget("info_area",
-                    xmDrawingAreaWidgetClass,
-                    p_w->shell,
-                    XmNheight, 0,
-                    XmNbottomAttachment, XmATTACH_NONE,
-                    XmNtopAttachment, XmATTACH_FORM,
-                    XmNleftAttachment, XmATTACH_FORM,
-                    XmNrightAttachment, XmATTACH_FORM,
-                    NULL));
+    p_w->areas[AW_INFO_AREA] =
+        new AW_area_management(p_w->shell, XtVaCreateManagedWidget("info_area",
+                                                                   xmDrawingAreaWidgetClass,
+                                                                   p_w->shell,
+                                                                   XmNheight, 0,
+                                                                   XmNbottomAttachment, XmATTACH_NONE,
+                                                                   XmNtopAttachment, XmATTACH_FORM,
+                                                                   XmNleftAttachment, XmATTACH_FORM,
+                                                                   XmNrightAttachment, XmATTACH_FORM,
+                                                                   NULL));
 
     aw_realize_widget(this);
 }
@@ -3044,7 +3046,7 @@ int AW_window::create_mode(const char *pixmap, const char *helpText, AW_active m
     return p_w->number_of_modes;
 }
 
-AW_area_management::AW_area_management(AW_root *awr, Widget formi, Widget widget) { // @@@ elim 'awr'
+AW_area_management::AW_area_management(Widget formi, Widget widget) {
     memset((char *)this, 0, sizeof(AW_area_management));
     form = formi;
     area = widget;
