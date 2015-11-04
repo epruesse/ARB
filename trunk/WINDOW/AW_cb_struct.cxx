@@ -50,21 +50,16 @@ bool AW_cb::contains(AW_CB g) {
 bool AW_cb::is_equal(const AW_cb& other) const {
     bool equal = cb == other.cb;
     if (equal) {
-        if (AW_CB(cb.callee()) == AW_POPUP) {
+        equal = aw == other.aw;
+        if (!equal) {
             equal = aw->get_root() == other.aw->get_root();
-        }
-        else {
-            equal = aw == other.aw;
-            if (!equal) {
-                equal = aw->get_root() == other.aw->get_root();
 #if defined(DEBUG) && 0
-                if (equal) {
-                    fprintf(stderr,
-                            "callback '%s' instantiated twice with different windows (w1='%s' w2='%s') -- assuming the callbacks are equal\n",
-                            id, aw->get_window_id(), other.aw->get_window_id());
-                }
-#endif // DEBUG
+            if (equal) {
+                fprintf(stderr,
+                        "callback '%s' instantiated twice with different windows (w1='%s' w2='%s') -- assuming the callbacks are equal\n",
+                        id, aw->get_window_id(), other.aw->get_window_id());
             }
+#endif // DEBUG
         }
     }
     return equal;

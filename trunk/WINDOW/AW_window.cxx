@@ -92,24 +92,6 @@ void AW_window::destroyCreateWindowCallback(CreateWindowCallback *windowMaker) {
 }
 
 
-void AW_POPUP(AW_window */*window*/, AW_CL callback, AW_CL callback_data) { // @@@ obsolete (when #432 is done)
-    typedef AW_window* (*popup_cb_t)(AW_root*, AW_CL);
-    typedef std::map<std::pair<popup_cb_t,AW_CL>, AW_window*> window_map;
-
-    static window_map windows; // previously popped up windows
-
-    std::pair<popup_cb_t, AW_CL> popup((popup_cb_t)callback, callback_data);
-
-    if (windows.find(popup) == windows.end()) {
-        AW_window *made = popup.first(AW_root::SINGLETON, popup.second);
-        if (!made) { NOWINWARN(); return; }
-
-        windows[popup] = made;
-    }
-
-    windows[popup]->activate();
-}
-
 void AW_window::label(const char *_label) {
     freedup(_at->label_for_inputfield, _label);
 }
@@ -1440,33 +1422,27 @@ void AW_server_callback(Widget /*wgt*/, XtPointer aw_cb_struct, XtPointer /*call
 
     if (root->is_tracking()) root->track_action(cbs->id);
 
-    if (cbs->contains(AW_POPUP)) {
-        cbs->run_callbacks();
+    p_global->set_cursor(XtDisplay(p_global->toplevel_widget),
+                         XtWindow(p_aww(cbs->aw)->shell),
+                         p_global->clock_cursor);
+    cbs->run_callbacks();
+
+    XEvent event; // destroy all old events !!!
+    while (XCheckMaskEvent(XtDisplay(p_global->toplevel_widget),
+                           ButtonPressMask|ButtonReleaseMask|ButtonMotionMask|
+                           KeyPressMask|KeyReleaseMask|PointerMotionMask, &event)) {
+    }
+
+    if (p_global->help_active) {
+        p_global->set_cursor(XtDisplay(p_global->toplevel_widget),
+                             XtWindow(p_aww(cbs->aw)->shell),
+                             p_global->question_cursor);
     }
     else {
         p_global->set_cursor(XtDisplay(p_global->toplevel_widget),
-                XtWindow(p_aww(cbs->aw)->shell),
-                p_global->clock_cursor);
-        cbs->run_callbacks();
-
-        XEvent event; // destroy all old events !!!
-        while (XCheckMaskEvent(XtDisplay(p_global->toplevel_widget),
-        ButtonPressMask|ButtonReleaseMask|ButtonMotionMask|
-        KeyPressMask|KeyReleaseMask|PointerMotionMask, &event)) {
-        }
-
-        if (p_global->help_active) {
-            p_global->set_cursor(XtDisplay(p_global->toplevel_widget),
-                    XtWindow(p_aww(cbs->aw)->shell),
-                    p_global->question_cursor);
-        }
-        else {
-            p_global->set_cursor(XtDisplay(p_global->toplevel_widget),
-                    XtWindow(p_aww(cbs->aw)->shell),
-                    0);
-        }
+                             XtWindow(p_aww(cbs->aw)->shell),
+                             0);
     }
-
 }
 
 // ----------------------------------------------------------------------
