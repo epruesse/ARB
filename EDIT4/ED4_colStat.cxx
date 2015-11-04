@@ -83,7 +83,7 @@ static void col_stat_activated(AW_window *) {
     set_col_stat_activated_and_refresh(true);
 }
 
-static void configureColumnStat(bool forceConfig, AW_CB0 post_config_cb, AW_window *cb_win) {
+static void configureColumnStat(bool forceConfig, WindowCallbackSimple post_config_cb, AW_window *cb_win) {
     STAT_set_postcalc_callback(ED4_ROOT->st_ml, post_config_cb, cb_win);
 
     static AW_window *aw_config = NULL;

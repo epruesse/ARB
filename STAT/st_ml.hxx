@@ -125,8 +125,8 @@ class ST_ML : virtual Noncopyable {
     size_t        first_pos;                        // first..
     size_t        last_pos;                         // .. and last alignment position of current slice
 
-    AW_CB0     postcalc_cb;
-    AW_window *cb_window;
+    WindowCallbackSimple  postcalc_cb;
+    AW_window            *cb_window;
 
     GBDATA *gb_main;
 
@@ -197,7 +197,7 @@ public:
 
     AP_tree *find_node_by_name(const char *species_name);
 
-    void set_postcalc_callback(AW_CB0 postcalc_cb_, AW_window *cb_window_) {
+    void set_postcalc_callback(WindowCallbackSimple postcalc_cb_, AW_window *cb_window_) {
         postcalc_cb = postcalc_cb_;
         cb_window   = cb_window_;
     }
