@@ -108,7 +108,6 @@ void AW_cb::run_callbacks() {
             bool onlyRaise =
                 aw->is_expose_callback(AW_MIDDLE_AREA, f) ||
                 aw->is_focus_callback(f) ||
-                root->is_focus_callback((AW_RCB)f) ||
                 aw->is_resize_callback(AW_MIDDLE_AREA, f);
 
             if (root->current_modal_window) { 

@@ -111,12 +111,10 @@ public:
     int            number_of_toggle_fields;
     int            number_of_option_menus;
     char          *program_name;
+    bool           disable_callbacks;
+    AW_window     *current_modal_window;
+    int            active_windows;
 
-    bool            disable_callbacks;
-    AW_window      *current_modal_window;
-    AW_root_cblist *focus_callback_list; // @@@ always NULL?
-
-    int  active_windows;
     void window_show();         // a window is set to screen
     void window_hide(AW_window *aww);
 
@@ -146,8 +144,6 @@ public:
 
     void add_timed_callback(int ms, const TimedCallback& tcb);
     void add_timed_callback_never_disabled(int ms, const TimedCallback& tcb);
-
-    bool is_focus_callback(AW_RCB fcb) const;
 
     AW_awar *awar(const char *awar);
     AW_awar *awar_no_error(const char *awar);

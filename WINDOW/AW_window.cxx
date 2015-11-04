@@ -1494,11 +1494,6 @@ void AW_window::recalc_size_atShow(enum AW_SizeRecalc sr) {
 //      focus
 
 
-static void AW_root_focusCB(Widget /*wgt*/, XtPointer awrp, XEvent*, Boolean*) {
-    AW_root *aw_root = (AW_root *)awrp;
-    AW_root_cblist::call(aw_root->focus_callback_list, aw_root);
-}
-
 void AW_window::run_focus_callback() {
     if (focus_cb) focus_cb->run_callbacks();
 }
@@ -2361,7 +2356,6 @@ Widget aw_create_shell(AW_window *aww, bool allow_resize, bool allow_close, int 
             shell = XtCreatePopupShell("transient", transientShellWidgetClass, father, args.list(), args.size());
         }
     }
-    XtAddEventHandler(shell, EnterWindowMask, FALSE, AW_root_focusCB, (XtPointer) aww->get_root());
 
     if (!p_global->main_widget) {
         p_global->main_widget = shell;
@@ -3050,11 +3044,10 @@ int AW_window::create_mode(const char *pixmap, const char *helpText, AW_active m
     return p_w->number_of_modes;
 }
 
-AW_area_management::AW_area_management(AW_root *awr, Widget formi, Widget widget) {
+AW_area_management::AW_area_management(AW_root *awr, Widget formi, Widget widget) { // @@@ elim 'awr'
     memset((char *)this, 0, sizeof(AW_area_management));
     form = formi;
     area = widget;
-    XtAddEventHandler(area, EnterWindowMask, FALSE, AW_root_focusCB, (XtPointer)awr);
 }
 
 AW_device_Xm *AW_area_management::get_screen_device() {
