@@ -197,7 +197,7 @@ AW_window *NT_create_resort_window(AW_root *awr) {
     aws->at("rev3"); aws->label("Reverse"); aws->create_toggle(AWAR_TREE_REV3);
 
     aws->at("go");
-    aws->callback((AW_CB0)NT_resort_data_by_user_criteria);
+    aws->callback(NT_resort_data_by_user_criteria);
     aws->create_button("GO", "GO", "G");
 
     return aws;
