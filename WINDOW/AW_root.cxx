@@ -169,7 +169,7 @@ AW_awar *AW_root::label_is_awar(const char *label) {
 }
 
 void AW_root::define_remote_command(AW_cb *cbs) {
-    if (cbs->contains(AW_CB(AW_POPDOWN))) {
+    if (cbs->contains(AnyWinCB(AW_POPDOWN))) {
         aw_assert(!cbs->get_cd1() && !cbs->get_cd2()); // popdown takes no parameters (please pass ", 0, 0"!)
     }
 
