@@ -1066,14 +1066,6 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone, AWT_canvas **re
                 awm->insert_menu_topic("mailing_list", "Mailing list",                            "M", NULL,          AWM_ALL, makeWindowCallback(AWT_openURL, "http://bugs.arb-home.de/wiki/ArbMailingList"));
             }
             awm->close_sub_menu();
-#if 0
-            awm->sep______________();
-            awm->insert_menu_topic("undo",      "Undo",      "U", "undo.hlp", AWM_ALL, makeWindowCallback(NT_undo_cb,      GB_UNDO_UNDO, ntw));
-            awm->insert_menu_topic("redo",      "Redo",      "d", "undo.hlp", AWM_ALL, makeWindowCallback(NT_undo_cb,      GB_UNDO_REDO, ntw));
-            awm->insert_menu_topic("undo_info", "Undo info", "f", "undo.hlp", AWM_ALL, (AW_CB)NT_undo_info_cb, (AW_CL)GB_UNDO_UNDO, (AW_CL)0);
-            awm->insert_menu_topic("redo_info", "Redo info", "o", "undo.hlp", AWM_ALL, (AW_CB)NT_undo_info_cb, (AW_CL)GB_UNDO_REDO, (AW_CL)0);
-#endif
-
             awm->sep______________();
 
             awm->insert_menu_topic("new_arb",     "Start second database",      "d", "quit.hlp", AWM_ALL, makeWindowCallback(nt_start_2nd_arb, false));
