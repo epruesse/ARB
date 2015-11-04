@@ -72,7 +72,6 @@ typedef const char *AW_label;       // label for buttons menus etc
 const char *AW_get_pixmapPath(const char *pixmapName);
 
 void AW_POPDOWN(AW_window *);
-void AW_POPUP(AW_window*, AW_CL, AW_CL) __ATTR__DEPRECATED_TODO("directly pass CreateWindowCallback");
 
 /**
  * Switches the window into help mode.
