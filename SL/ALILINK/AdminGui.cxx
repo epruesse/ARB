@@ -134,8 +134,8 @@ static AW_window *create_alignment_copy_window(AW_root *, AliAdmin *admin) {
     admin->window_init(aws, "COPY_%s", "Copy %s");
     aws->load_xfig("ad_al_si.fig");
 
-    aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("close");
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("label");
@@ -156,8 +156,8 @@ static AW_window *create_alignment_rename_window(AW_root *, AliAdmin *admin) {
     admin->window_init(aws, "RENAME_%s", "Rename %s");
     aws->load_xfig("ad_al_si.fig");
 
-    aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("close");
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("label");
@@ -195,8 +195,8 @@ static AW_window *create_alignment_create_window(AW_root *, AliAdmin *admin) {
     admin->window_init(aws, "CREATE_%s", "Create %s");
     aws->load_xfig("ad_al_si.fig");
 
-    aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("close");
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("label");
@@ -223,12 +223,12 @@ AW_window *ALI_create_admin_window(AW_root *root, AliAdmin *admin) {
         admin->window_init(aws, "INFO_OF_%s", "%s information");
         aws->load_xfig("ad_align.fig");
 
-        aws->callback((AW_CB0)AW_POPDOWN);
         aws->at("close");
+        aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
 
-        aws->callback(makeHelpCallback("ad_align.hlp"));
         aws->at("help");
+        aws->callback(makeHelpCallback("ad_align.hlp"));
         aws->create_button("HELP", "HELP", "H");
 
         // button column

@@ -115,7 +115,7 @@ AW_window *ED4_create_nds_window(AW_root *root) {
     aws->init(root, "NDS_PROPS", "NDS");
     aws->load_xfig("edit4/nds.fig");
 
-    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->callback(AW_POPDOWN);
     aws->at("close");
     aws->create_button("CLOSE", "CLOSE", "C");
 

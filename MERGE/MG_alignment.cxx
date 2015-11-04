@@ -104,7 +104,8 @@ AW_window *MG_create_merge_alignment_window(AW_root *awr) {
     aws->init(awr, "MERGE_ALIGNMENTS", "MERGE ALIGNMENTS");
     aws->load_xfig("merge/alignment.fig");
 
-    aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
+    aws->at("close");
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");

@@ -1012,7 +1012,7 @@ static AW_window *createOptimizeWindow(AW_root *aw_root, AWT_canvas *ntw) {
     aws->load_xfig("pars/tree_opti.fig");
 
     aws->at("close");
-    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");

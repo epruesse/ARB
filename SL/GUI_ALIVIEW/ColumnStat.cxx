@@ -366,7 +366,8 @@ AW_window *COLSTAT_create_selection_window(AW_root *aw_root, ColumnStat *column_
     aws->init(aw_root, "SELECT_CSP", "Select Column Statistic");
     aws->load_xfig("awt/col_statistic.fig");
 
-    aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
+    aws->at("close");
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help"); aws->callback(makeHelpCallback("awt_csp.hlp"));

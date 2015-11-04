@@ -702,7 +702,7 @@ AW_window *ED4_create_replace_window(AW_root *root) {
     aws->load_xfig("edit4/replace.fig");
 
     aws->at("close");
-    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "Close", "C");
 
     aws->at("help");
@@ -988,7 +988,7 @@ AW_window *ED4_create_modsai_window(AW_root *root) {
     aws->load_xfig("edit4/modsai.fig");
 
     aws->at("close");
-    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "Close", "C");
 
     aws->at("help");

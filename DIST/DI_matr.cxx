@@ -1109,7 +1109,8 @@ AW_window *DI_create_save_matrix_window(AW_root *aw_root, save_matrix_params *sa
         aws->init(aw_root, "SAVE_MATRIX", "Save Matrix");
         aws->load_xfig("sel_box_user.fig");
 
-        aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
+        aws->at("close");
+        aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CANCEL", "C");
 
 
@@ -1129,8 +1130,8 @@ AW_window *DI_create_save_matrix_window(AW_root *aw_root, save_matrix_params *sa
         aws->callback(makeWindowCallback(di_save_matrix_cb));
         aws->create_button("SAVE", "SAVE", "S");
 
-        aws->callback((AW_CB0)AW_POPDOWN);
         aws->at("cancel2");
+        aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CANCEL", "C");
     }
     return aws;
@@ -1141,7 +1142,8 @@ static AW_window *awt_create_select_cancel_window(AW_root *aw_root) {
     aws->init(aw_root, "SELECT_CHARS_TO_CANCEL_COLUMN", "CANCEL SELECT");
     aws->load_xfig("di_cancel.fig");
 
-    aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
+    aws->at("close");
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("cancel");

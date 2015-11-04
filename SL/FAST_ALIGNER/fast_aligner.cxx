@@ -2488,7 +2488,7 @@ static AW_window *create_island_hopping_window(AW_root *root) {
     aws->load_xfig("faligner/islandhopping.fig");
 
     aws->at("close");
-    aws->callback     ((AW_CB0)AW_POPDOWN);
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "O");
 
     aws->at("help");
@@ -2582,7 +2582,7 @@ static AW_window *create_family_settings_window(AW_root *root) {
         aws->load_xfig("faligner/family_settings.fig");
 
         aws->at("close");
-        aws->callback     ((AW_CB0)AW_POPDOWN);
+        aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "O");
 
         aws->at("help");
@@ -2645,7 +2645,7 @@ AW_window *FastAligner_create_window(AW_root *root, const AlignDataAccess *data_
     aws->button_length(10);
 
     aws->at("close");
-    aws->callback     ((AW_CB0)AW_POPDOWN);
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "O");
 
     aws->at("help");

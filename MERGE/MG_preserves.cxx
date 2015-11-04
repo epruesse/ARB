@@ -404,7 +404,8 @@ AW_window *MG_create_preserves_selection_window(AW_root *aw_root) {
     aws->init(aw_root, "SELECT_PRESERVES", "Select adaption candidates");
     aws->load_xfig("merge/preserves.fig");
 
-    aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
+    aws->at("close");
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");

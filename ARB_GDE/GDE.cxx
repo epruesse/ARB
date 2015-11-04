@@ -136,7 +136,7 @@ static AW_window *GDE_create_filename_browser_window(AW_root *aw_root, const cha
     aws->load_xfig("sel_box.fig");
 
     aws->at("close");
-    aws->callback((AW_CB0) AW_POPDOWN);
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     AW_create_standard_fileselection(aws, awar_prefix);
@@ -226,7 +226,7 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
         aws->create_button("GO", "GO", "O");
 
         aws->at("cancel");
-        aws->callback((AW_CB0)AW_POPDOWN);
+        aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
 
         if (want_config_manager(gmenuitem)) {

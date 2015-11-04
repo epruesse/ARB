@@ -987,7 +987,7 @@ static void AW_create_gc_color_groups_name_window(AW_window *, AW_root *aw_root,
         aws->at(10, 10);
         aws->auto_space(5, 5);
 
-        aws->callback((AW_CB0) AW_POPDOWN);
+        aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
 
         for (int i = 1; i <= AW_COLOR_GROUPS; ++i) {
@@ -1036,7 +1036,7 @@ static void AW_create_gc_color_groups_window(AW_window *, AW_root *aw_root, aw_g
         aws->at(10, 10);
         aws->auto_space(5, 5);
 
-        aws->callback((AW_CB0) AW_POPDOWN);
+        aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
 
         aws->callback(makeHelpCallback("color_props_groups.hlp"));
@@ -1080,7 +1080,7 @@ AW_window *AW_create_gc_window_named(AW_root *aw_root, AW_gc_manager id_par, con
     aws->at(10, 10);
     aws->auto_space(5, 5);
 
-    aws->callback((AW_CB0) AW_POPDOWN);
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->callback(makeHelpCallback("color_props.hlp"));

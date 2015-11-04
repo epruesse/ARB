@@ -218,7 +218,8 @@ AW_window *MG_create_merge_trees_window(AW_root *awr) {
 
     aws->button_length(7);
 
-    aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
+    aws->at("close");
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");

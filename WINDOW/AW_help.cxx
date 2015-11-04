@@ -646,7 +646,7 @@ void AW_help_popup(AW_window *, const char *help_file) {
         aws->auto_space(5, 5);
 
         aws->at("close");
-        aws->callback((AW_CB0)AW_POPDOWN);
+        aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
 
         aws->callback(aw_help_back);

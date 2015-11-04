@@ -881,7 +881,8 @@ AW_window *MG_create_merge_species_window(AW_root *awr, bool dst_is_new) {
     aws->init(awr, "MERGE_TRANSFER_SPECIES", "TRANSFER SPECIES");
     aws->load_xfig("merge/species.fig");
 
-    aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
+    aws->at("close");
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");

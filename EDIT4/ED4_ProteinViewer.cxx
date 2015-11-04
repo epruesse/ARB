@@ -992,7 +992,7 @@ AW_window *ED4_CreateProteinViewer_window(AW_root *aw_root) {
     aws->create_button("HELP", "#help_text.xpm");
 
     aws->at("close");
-    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->callback(AW_POPDOWN);
     aws->button_length(0);
     aws->create_button("CLOSE", "#close_text.xpm");
 

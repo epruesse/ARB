@@ -429,8 +429,8 @@ static AW_window *create_gene_rename_window(AW_root *root, GBDATA *gb_main) {
     aws->init(root, "RENAME_GENE", "GENE RENAME");
     aws->load_xfig("ad_al_si.fig");
 
-    aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("close");
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("label");
@@ -485,8 +485,8 @@ static AW_window *create_gene_copy_window(AW_root *root, GBDATA *gb_main) {
     aws->init(root, "COPY_GENE", "GENE COPY");
     aws->load_xfig("ad_al_si.fig");
 
-    aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("close");
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("label");
@@ -870,8 +870,8 @@ static AW_window *get_gene_create_or_locationEdit_window(AW_root *root, bool cre
 
         aws->load_xfig("ad_gen_create.fig");
 
-        aws->callback((AW_CB0)AW_POPDOWN);
         aws->at("close");
+        aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "Close", "C");
 
         aws->at("help");
@@ -966,7 +966,7 @@ static AW_window *popup_new_gene_window(AW_root *aw_root, GBDATA *gb_main, int d
     aws->button_length(8);
 
     aws->at("close");
-    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("search");
@@ -1061,8 +1061,9 @@ AW_window *GEN_create_gene_query_window(AW_root *aw_root, GBDATA *gb_main) {
         aws->button_length(7);
 
         aws->at("close");
-        aws->callback((AW_CB0)AW_POPDOWN);
+        aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
+
         aws->at("help");
         aws->callback(makeHelpCallback("gene_search.hlp"));
         aws->create_button("HELP", "HELP", "H");
