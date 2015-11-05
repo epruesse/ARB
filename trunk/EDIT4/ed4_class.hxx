@@ -2273,7 +2273,7 @@ void       ED4_selected_SAI_changed_cb(AW_root *aw_root);
 void ED4_init_notFoundMessage();
 void ED4_finish_and_show_notFoundMessage();
 
-void ED4_init_aligner_data_access(AlignDataAccess *data_access);
+const AlignDataAccess *ED4_get_aligner_data_access();
 
 void ED4_popup_gc_window(AW_window *awp, AW_gc_manager gcman);
 void ED4_no_dangerous_modes();

@@ -21,6 +21,9 @@
 #ifndef POS_RANGE_H
 #include <pos_range.h>
 #endif
+#ifndef _GLIBCXX_STRING
+#include <string>
+#endif
 
 #define INTEGRATED_ALIGNERS_TITLE "Integrated Aligners"
 
@@ -28,18 +31,57 @@ typedef char*   (*Aligner_get_consensus_func)(const char *species_name, PosRange
 typedef bool    (*Aligner_get_selected_range)(PosRange& range);
 typedef GBDATA* (*Aligner_get_first_selected_species)(int *total_no_of_selected_species);
 typedef GBDATA* (*Aligner_get_next_selected_species)(void);
+typedef char* (*Aligner_get_helix_string)(GBDATA *gb_main, const char *alignment_name); // returns heap-copy!
 
 struct AlignDataAccess {
-    int do_refresh;                                 // if do_refresh == TRUE then FastAligner_start() does a refresh
+    GBDATA *gb_main;
+
+    std::string alignment_name;
+
+    bool do_refresh;                                // if do_refresh == true then FastAligner_start() does a refresh
     void (*refresh_display)();                      // via calling refresh_display()
 
     Aligner_get_consensus_func         get_group_consensus; // changed behavior in [8165]: returns only given range
     Aligner_get_selected_range         get_selected_range;
     Aligner_get_first_selected_species get_first_selected_species;
     Aligner_get_next_selected_species  get_next_selected_species;
+    Aligner_get_helix_string           get_helix_string;
 
-    char   *helix_string;                           // currently only used for island hopping
-    GBDATA *gb_main;                                // used by faligner
+    char *getHelixString() const { return get_helix_string(gb_main, alignment_name.c_str()); }
+
+    AlignDataAccess(GBDATA                             *gb_main_,
+                    const char                         *alignment_name_,
+                    bool                                do_refresh_,
+                    void                              (*refresh_display_)(),
+                    Aligner_get_consensus_func          get_group_consensus_,
+                    Aligner_get_selected_range          get_selected_range_,
+                    Aligner_get_first_selected_species  get_first_selected_species_,
+                    Aligner_get_next_selected_species   get_next_selected_species_,
+                    Aligner_get_helix_string            get_helix_string_)
+        : gb_main(gb_main_),
+          alignment_name(alignment_name_),
+          do_refresh(do_refresh_),
+          refresh_display(refresh_display_),
+          get_group_consensus(get_group_consensus_),
+          get_selected_range(get_selected_range_),
+          get_first_selected_species(get_first_selected_species_),
+          get_next_selected_species(get_next_selected_species_),
+          get_helix_string(get_helix_string_)
+    {}
+
+    AlignDataAccess(const AlignDataAccess& other)
+        : gb_main(other.gb_main),
+          alignment_name(other.alignment_name),
+          do_refresh(other.do_refresh),
+          refresh_display(other.refresh_display),
+          get_group_consensus(other.get_group_consensus),
+          get_selected_range(other.get_selected_range),
+          get_first_selected_species(other.get_first_selected_species),
+          get_next_selected_species(other.get_next_selected_species),
+          get_helix_string(other.get_helix_string)
+    {}
+
+    DECLARE_ASSIGNMENT_OPERATOR(AlignDataAccess);
 };
 
 // --------------------------------------------------------------------------------

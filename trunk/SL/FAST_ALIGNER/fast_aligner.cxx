@@ -2180,8 +2180,14 @@ void FastAligner_start(AW_window *aw, const AlignDataAccess *data_access) {
     if (root->awar(FA_AWAR_USE_ISLAND_HOPPING)->read_int()) {
         island_hopper = new IslandHopping;
         if (root->awar(FA_AWAR_USE_SECONDARY)->read_int()) {
-            if (data_access->helix_string) island_hopper->set_helix(data_access->helix_string);
-            else error = "Warning: No HELIX found. Can't use secondary structure";
+            char *helix_string = data_access->getHelixString();
+            if (helix_string) {
+                island_hopper->set_helix(helix_string);
+                free(helix_string);
+            }
+            else {
+                error = "Warning: No HELIX found. Can't use secondary structure";
+            }
         }
 
         if (!error) {

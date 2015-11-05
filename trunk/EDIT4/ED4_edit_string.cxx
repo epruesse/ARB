@@ -315,8 +315,6 @@ long ED4_Edit_String::get_next_visible_pos(long position, int direction)
     return pos<0 || pos>=seq_len ? -1 : pos;
 }
 
-extern AlignDataAccess dataAccess_4_aligner;
-
 unsigned char ED4_Edit_String::get_gap_type(long pos, int direction)
 {
     pos += direction;
@@ -710,20 +708,17 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
                             if (is_consensus) { cannot_handle = 1; return 0; };
                             if (mode==AD_NOWRITE) { write_fault = 1; return 0; }
 
-                            int old_refresh                 = dataAccess_4_aligner.do_refresh;
-                            dataAccess_4_aligner.do_refresh = 0;
-
-                            ED4_init_aligner_data_access(&dataAccess_4_aligner);
+                            AlignDataAccess localDataAccess(*ED4_get_aligner_data_access()); // use local modified copy
+                            localDataAccess.do_refresh = false;
 
                             FastAligner_set_align_current(ED4_ROOT->aw_root, ED4_ROOT->props_db);
                             AW_clock_cursor(ED4_ROOT->aw_root);
-                            GB_commit_transaction(dataAccess_4_aligner.gb_main);
+                            GB_commit_transaction(localDataAccess.gb_main);
 
-                            FastAligner_start(aw_tmp, &dataAccess_4_aligner);
+                            FastAligner_start(aw_tmp, &localDataAccess);
 
-                            GB_begin_transaction(dataAccess_4_aligner.gb_main);
+                            GB_begin_transaction(localDataAccess.gb_main);
                             AW_normal_cursor(ED4_ROOT->aw_root);
-                            dataAccess_4_aligner.do_refresh = old_refresh;
 
                             int basesLeftOf = 0;
                             int pos;
