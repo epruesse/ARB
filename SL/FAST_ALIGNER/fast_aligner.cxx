@@ -2319,12 +2319,16 @@ void FastAligner_start(AW_window *aw, const AlignDataAccess *data_access) {
 
             GBDATA *gb_main          = data_access->gb_main;
             char   *editor_alignment = 0;
+            long    alignment_length;
             {
                 GB_transaction  ta(gb_main);
                 char           *default_alignment = GBT_get_default_alignment(gb_main);
 
+                alignment_length = GBT_get_alignment_len(gb_main, default_alignment);
+
                 editor_alignment = root->awar_string(AWAR_EDITOR_ALIGNMENT, default_alignment)->read_string();
                 free(default_alignment);
+
             }
 
             char     *pt_server_alignment = root->awar(FA_AWAR_PT_SERVER_ALIGNMENT)->read_string();
@@ -2344,7 +2348,7 @@ void FastAligner_start(AW_window *aw, const AlignDataAccess *data_access) {
             }
 
             if (island_hopper) {
-                island_hopper->set_range(range);
+                island_hopper->set_range(ExplicitRange(range, alignment_length));
                 range = PosRange::whole();
             }
 
