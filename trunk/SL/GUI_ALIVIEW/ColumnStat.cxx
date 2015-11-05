@@ -324,10 +324,8 @@ void ColumnStat::print() {
     }
 }
 
-static char *filter_columnstat_SAIs(GBDATA *gb_extended, AW_CL cl_column_stat) {
-    // return NULL for non-columnstat SAIs
-    ColumnStat *column_stat = (ColumnStat*)cl_column_stat;
-
+static char *filter_columnstat_SAIs(GBDATA *gb_extended, ColumnStat *column_stat) {
+    // returns NULL for non-columnstat SAIs
     char *result = NULL;
     if (column_stat->has_valid_alignment()) {
         GBDATA *gb_type = GB_search(gb_extended, column_stat->get_type_path(), GB_FIND);
@@ -352,7 +350,7 @@ static char *filter_columnstat_SAIs(GBDATA *gb_extended, AW_CL cl_column_stat) {
 
 void ColumnStat::create_sai_selection_list(AW_window *aww) {
     GB_transaction ta(gb_main);
-    saisel = awt_create_SAI_selection_list(gb_main, aww, awar_name, true, filter_columnstat_SAIs, (AW_CL)this);
+    saisel = awt_create_SAI_selection_list(gb_main, aww, awar_name, true, makeSaiSelectionlistFilterCallback(filter_columnstat_SAIs, this));
 }
 
 void COLSTAT_create_selection_list(AW_window *aws, ColumnStat *column_stat) {

@@ -99,7 +99,7 @@ static void GDE_create_infieldwithpm(AW_window *aws, char *newawar, long width) 
     }
 }
 
-static char *gde_filter_weights(GBDATA *gb_sai, AW_CL) {
+static char *gde_filter_weights(GBDATA *gb_sai) {
     char   *ali_name = GBT_get_default_alignment(GB_get_root(gb_sai));
     GBDATA *gb_ali   = GB_entry(gb_sai, ali_name);
     char   *result   = 0;
@@ -444,7 +444,7 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
                 aw_root->awar_string(newawar, defopt, AW_ROOT_DEFAULT);
                 aws->sens_mask(itemarg.active_mask);
                 if (itemarg.label[0]) aws->create_button(NULL, itemarg.label);
-                AW_DB_selection *saisel = awt_create_SAI_selection_list(db_access.gb_main, aws, newawar, true, gde_filter_weights);
+                AW_DB_selection *saisel = awt_create_SAI_selection_list(db_access.gb_main, aws, newawar, true, makeSaiSelectionlistFilterCallback(gde_filter_weights));
                 free(newawar);
                 aw_root->awar(AWAR_GDE_ALIGNMENT)->add_callback(makeRootCallback(refresh_weights_sellist_cb, saisel));
             }
