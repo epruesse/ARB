@@ -322,9 +322,10 @@ static void sina_start(AW_window *window, const AlignDataAccess *data_access) {
 
 
 
-static char* filter_sai(GBDATA *gb_extended) {
-    char   *result = 0;
-    GBDATA *gbd    = GB_search(gb_extended, "ali_16s/_TYPE", GB_FIND); // @@@ restricting to ali_16s is wrong (should use alignment loaded into EDIT4! - see also filter_columnstat_SAIs)
+static char* filter_posvar_SAI_for_ali(GBDATA *gb_extended, const char *ali_name) {
+    char   *result   = 0;
+    char   *typePath = GBS_global_string_copy("%s/_TYPE", ali_name);
+    GBDATA *gbd      = GB_search(gb_extended, typePath, GB_FIND);
     if (gbd) {
         const char* type = GB_read_char_pntr(gbd);
         if (type && strncmp("PV", type, 2) == 0) {
@@ -332,6 +333,7 @@ static char* filter_sai(GBDATA *gb_extended) {
             result = GB_read_string(gbd);
         }
     }
+    free(typePath);
     return result;
 }
 
@@ -458,7 +460,7 @@ static AW_window_simple* new_sina_simple(AW_root *root, const AlignDataAccess *a
         aws->at_newline();
 
         aws->label("Pos. Var.:");
-        awt_create_SAI_selection_button(GLOBAL_gb_main, aws, GA_AWAR_SAI, makeSaiSelectionlistFilterCallback(filter_sai));
+        awt_create_SAI_selection_button(GLOBAL_gb_main, aws, GA_AWAR_SAI, makeSaiSelectionlistFilterCallback(filter_posvar_SAI_for_ali, alignData->alignment_name.c_str()));
 
         aws->at_newline();
         aws->label("Field used for automatic filter selection");
