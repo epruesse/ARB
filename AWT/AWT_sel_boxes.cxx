@@ -526,16 +526,30 @@ char *awt_create_CONFIG_string(GBDATA *gb_main) {
 //      SAI selection
 
 
+static char *get_SAI_description(GBDATA *gb_extended) {
+    const char *name     = GBT_read_name(gb_extended);
+    GBDATA     *gb_group = GB_entry(gb_extended, "sai_group");
+
+    if (gb_group) {
+        const char *group = GB_read_char_pntr(gb_group);
+        return GBS_global_string_copy("[%s] %s", group, name);;
+    }
+    return strdup(name);
+}
+
+const SaiSelectionlistFilterCallback& awt_std_SAI_filter_cb() {
+    static SaiSelectionlistFilterCallback std_SAI_filter_cb = makeSaiSelectionlistFilterCallback(get_SAI_description);
+    return std_SAI_filter_cb;
+}
+
 class SAI_selection : public AW_DB_selection { // derived from a Noncopyable
-    awt_sai_sellist_filter filter_poc;
-    AW_CL                  filter_cd;
+    SaiSelectionlistFilterCallback filter_cb;
 
 public:
 
-    SAI_selection(AW_selection_list *sellist_, GBDATA *gb_sai_data, awt_sai_sellist_filter filter_poc_, AW_CL filter_cd_)
+    SAI_selection(AW_selection_list *sellist_, GBDATA *gb_sai_data, const SaiSelectionlistFilterCallback& fcb)
         : AW_DB_selection(sellist_, gb_sai_data),
-          filter_poc(filter_poc_),
-          filter_cd(filter_cd_)
+          filter_cb(fcb)
     {}
 
     void fill() OVERRIDE;
@@ -552,27 +566,10 @@ void SAI_selection::fill() {
          gb_extended;
          gb_extended = GBT_next_SAI(gb_extended))
     {
-        if (filter_poc) {
-            char *res = filter_poc(gb_extended, filter_cd);
-            if (res) {
-                sel->insert(res, GBT_read_name(gb_extended));
-                free(res);
-            }
-        }
-        else {
-            const char *name     = GBT_read_name(gb_extended);
-            GBDATA     *gb_group = GB_entry(gb_extended, "sai_group");
-
-            if (gb_group) {
-                const char *group          = GB_read_char_pntr(gb_group);
-                char       *group_and_name = GBS_global_string_copy("[%s] %s", group, name);
-
-                sel->insert(group_and_name, name);
-                free(group_and_name);
-            }
-            else {
-                sel->insert(name, name);
-            }
+        char *res = filter_cb(gb_extended);
+        if (res) {
+            sel->insert(res, GBT_read_name(gb_extended));
+            free(res);
         }
     }
     sel->sort(false, false);
@@ -582,21 +579,19 @@ void SAI_selection::fill() {
 }
 
 class SAI_sellst_spec : public SelectionListSpec, virtual Noncopyable {
-    GBDATA                 *gb_main;
-    awt_sai_sellist_filter  filter_poc;
-    AW_CL                   filter_cd;
+    GBDATA                         *gb_main;
+    SaiSelectionlistFilterCallback  filter_cb;
 
     AW_DB_selection *create(AW_selection_list *sellist) const {
         GB_transaction ta(gb_main);
-        return new SAI_selection(sellist, GBT_get_SAI_data(gb_main), filter_poc, filter_cd);
+        return new SAI_selection(sellist, GBT_get_SAI_data(gb_main), filter_cb);
     }
 
 public:
-    SAI_sellst_spec(const char *awar_name_, GBDATA *gb_main_, awt_sai_sellist_filter filter_poc_, AW_CL filter_cd_)
+    SAI_sellst_spec(const char *awar_name_, GBDATA *gb_main_, const SaiSelectionlistFilterCallback& fcb)
         : SelectionListSpec(awar_name_),
           gb_main(gb_main_),
-          filter_poc(filter_poc_),
-          filter_cd(filter_cd_)
+          filter_cb(fcb)
     {
         // Warning: do not use different filters for same awar! (wont work as expected) // @@@ add assertion against
     }
@@ -606,22 +601,20 @@ public:
 };
 
 void awt_popup_SAI_selection_list(AW_window *, const char *awar_name, GBDATA *gb_main) {
-    SAI_sellst_spec spec(awar_name, gb_main, NULL, 0);
+    SAI_sellst_spec spec(awar_name, gb_main, awt_std_SAI_filter_cb());
     spec.popup();
 }
 
-AW_DB_selection *awt_create_SAI_selection_list(GBDATA *gb_main, AW_window *aws, const char *varname, bool fallback2default, awt_sai_sellist_filter filter_poc, AW_CL filter_cd) {
+AW_DB_selection *awt_create_SAI_selection_list(GBDATA *gb_main, AW_window *aws, const char *varname, bool fallback2default, const SaiSelectionlistFilterCallback& fcb) {
     /* Selection list for SAIs
-     *
-     * if filter_proc is set then show only those items on which
-     * filter_proc returns a string (string must be a heap copy)
+     * only shows those SAIs for which fcb returns a string (string must be a heap copy)
      */
-    SAI_sellst_spec spec(varname, gb_main, filter_poc, filter_cd);
+    SAI_sellst_spec spec(varname, gb_main, fcb);
     return spec.create_list(aws, fallback2default);
 }
 
-void awt_create_SAI_selection_button(GBDATA *gb_main, AW_window *aws, const char *varname, awt_sai_sellist_filter filter_poc, AW_CL filter_cd) {
-    (new SAI_sellst_spec(varname, gb_main, filter_poc, filter_cd))->createButton(aws); // do not free yet (bound to callback in ARB_MOTIF)
+void awt_create_SAI_selection_button(GBDATA *gb_main, AW_window *aws, const char *varname, const SaiSelectionlistFilterCallback& fcb) {
+    (new SAI_sellst_spec(varname, gb_main, fcb))->createButton(aws); // do not free yet (bound to callback in ARB_MOTIF)
 }
 
 // --------------------------------------------------

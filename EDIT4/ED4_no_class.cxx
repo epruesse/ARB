@@ -1578,7 +1578,7 @@ AW_window *ED4_create_saveConfigurationAs_window(AW_root *awr) {
     return aws;
 }
 
-static char *filter_loadable_SAIs(GBDATA *gb_sai, AW_CL) {
+static char *filter_loadable_SAIs(GBDATA *gb_sai) {
     GBDATA *gb_ali = GB_search(gb_sai, ED4_ROOT->alignment_name, GB_FIND);
     if (gb_ali) {
         GBDATA *gb_data = GB_search(gb_ali, "data", GB_FIND);
@@ -1608,7 +1608,7 @@ AW_window *ED4_create_loadSAI_window(AW_root *awr) {
         aws->create_button("HELP", "HELP");
 
         aws->at("sai");
-        awt_create_SAI_selection_list(GLOBAL_gb_main, aws, AWAR_SAI_NAME, false, filter_loadable_SAIs, 0);
+        awt_create_SAI_selection_list(GLOBAL_gb_main, aws, AWAR_SAI_NAME, false, makeSaiSelectionlistFilterCallback(filter_loadable_SAIs));
         ED4_ROOT->loadable_SAIs = LSAI_UPTODATE;
 
         aws->at("go");

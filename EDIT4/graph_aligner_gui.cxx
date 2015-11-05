@@ -322,9 +322,9 @@ static void sina_start(AW_window *window, const AlignDataAccess *data_access) {
 
 
 
-static char* filter_sai(GBDATA *gb_extended, AW_CL) {
+static char* filter_sai(GBDATA *gb_extended) {
     char   *result = 0;
-    GBDATA *gbd    = GB_search(gb_extended, "ali_16s/_TYPE", GB_FIND);
+    GBDATA *gbd    = GB_search(gb_extended, "ali_16s/_TYPE", GB_FIND); // @@@ restricting to ali_16s is wrong (should use alignment loaded into EDIT4! - see also filter_columnstat_SAIs)
     if (gbd) {
         const char* type = GB_read_char_pntr(gbd);
         if (type && strncmp("PV", type, 2) == 0) {
@@ -458,7 +458,7 @@ static AW_window_simple* new_sina_simple(AW_root *root, const AlignDataAccess *a
         aws->at_newline();
 
         aws->label("Pos. Var.:");
-        awt_create_SAI_selection_button(GLOBAL_gb_main, aws, GA_AWAR_SAI, filter_sai, 0);
+        awt_create_SAI_selection_button(GLOBAL_gb_main, aws, GA_AWAR_SAI, makeSaiSelectionlistFilterCallback(filter_sai));
 
         aws->at_newline();
         aws->label("Field used for automatic filter selection");
