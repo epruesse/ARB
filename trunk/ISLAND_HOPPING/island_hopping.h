@@ -123,7 +123,7 @@ public:
         toAlign_helix = hel;
     }
 
-    void set_range(PosRange range) {
+    void set_range(ExplicitRange range) {
         firstColumn = range.start();
         lastColumn  = range.end();
     }
