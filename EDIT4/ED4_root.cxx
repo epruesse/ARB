@@ -956,16 +956,6 @@ static GBDATA *get_first_selected_species(int *total_no_of_selected_species)
     return get_next_selected_species();
 }
 
-struct AlignDataAccess dataAccess_4_aligner = {
-    1,                                              // default is to do a refresh
-    ED4_trigger_instant_refresh,                    // with this function
-    get_group_consensus,                            // aligner fetches consensus of group of species via this function
-    get_selected_range,                             // aligner fetches column range of selection via this function
-    get_first_selected_species,                     // aligner fetches first and..
-    get_next_selected_species,                      // .. following selected species via this functions
-    0,                                              // AW_helix (needed for island_hopping)
-    NULL,                                           // gb_main
-};
 static ARB_ERROR ED4_delete_temp_entries(GBDATA *species, AW_CL cl_alignment_name) {
     return FastAligner_delete_temp_entries(species, (GB_CSTR)cl_alignment_name);
 }
@@ -1273,44 +1263,48 @@ void ED4_no_dangerous_modes() {
     }
 }
 
-void ED4_init_aligner_data_access(AlignDataAccess *data_access) {
-    GB_ERROR  error          = GB_push_transaction(GLOBAL_gb_main);
-    char     *alignment_name = GBT_get_default_alignment(GLOBAL_gb_main);
-    long      alilen         = GBT_get_alignment_len(GLOBAL_gb_main, alignment_name);
+static char *get_helix_string(GBDATA *gb_main, const char *alignment_name) {
+    GB_transaction ta(gb_main);
 
-    data_access->gb_main = GLOBAL_gb_main;
-
-    if (alilen<=0) error = GB_await_error();
-    else {
-        char   *helix_string = 0;
-        char   *helix_name   = GBT_get_default_helix(GLOBAL_gb_main);
-        GBDATA *gb_helix_con = GBT_find_SAI(GLOBAL_gb_main, helix_name);
-        if (gb_helix_con) {
-            GBDATA *gb_helix = GBT_find_sequence(gb_helix_con, alignment_name);
-            if (gb_helix) helix_string = GB_read_string(gb_helix);
-        }
-        free(helix_name);
-        freeset(data_access->helix_string, helix_string);
+    char   *helix_string = 0;
+    char   *helix_name   = GBT_get_default_helix(gb_main);
+    GBDATA *gb_helix_con = GBT_find_SAI(gb_main, helix_name);
+    if (gb_helix_con) {
+        GBDATA *gb_helix = GBT_find_sequence(gb_helix_con, alignment_name);
+        if (gb_helix) helix_string = GB_read_string(gb_helix);
     }
+    free(helix_name);
 
-    free(alignment_name);
-    error = GB_end_transaction(GLOBAL_gb_main, error);
-    if (error) aw_message(error);
+    return helix_string;
 }
 
-static AW_window *ED4_create_faligner_window(AW_root *awr, AlignDataAccess *data_access) {
+const AlignDataAccess *ED4_get_aligner_data_access() {
+    static SmartPtr<AlignDataAccess> aliDataAccess;
+
+    if (aliDataAccess.isNull()) {
+        aliDataAccess = new AlignDataAccess(GLOBAL_gb_main,
+                                            ED4_ROOT->alignment_name,
+                                            true, ED4_trigger_instant_refresh, // perform refresh
+                                            get_group_consensus,               // aligner fetches consensus of group of species via this function
+                                            get_selected_range,                // aligner fetches column range of selection via this function
+                                            get_first_selected_species,        // aligner fetches first and..
+                                            get_next_selected_species,         // .. following selected species via these functions
+                                            get_helix_string);                 // used by island_hopping (if configured to use sec-structure)
+    }
+
+    return aliDataAccess.isSet() ? &*aliDataAccess : NULL;
+}
+
+static AW_window *ED4_create_faligner_window(AW_root *awr, const AlignDataAccess *data_access) {
 #if defined(DEBUG)
-    static AlignDataAccess *last_data_access = NULL;
+    static const AlignDataAccess *last_data_access = NULL;
 
     e4_assert(!last_data_access || (last_data_access == data_access)); // there shall be only one AlignDataAccess
     last_data_access = data_access;
 #endif
 
     static AW_window *aws = NULL;
-    if (!aws) {
-        ED4_init_aligner_data_access(data_access);
-        aws = FastAligner_create_window(awr, data_access);
-    }
+    if (!aws) aws = FastAligner_create_window(awr, data_access);
     return aws;
 }
 
@@ -1490,10 +1484,10 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
 #endif
     
     awmm->sep______________();
-    awmm->insert_menu_topic(awmm->local_id("fast_aligner"),   INTEGRATED_ALIGNERS_TITLE,            "I", "faligner.hlp",     AWM_ALL,            makeCreateWindowCallback(ED4_create_faligner_window, &dataAccess_4_aligner));
+    awmm->insert_menu_topic(awmm->local_id("fast_aligner"),   INTEGRATED_ALIGNERS_TITLE,            "I", "faligner.hlp",     AWM_ALL,            makeCreateWindowCallback(ED4_create_faligner_window, ED4_get_aligner_data_access()));
     awmm->insert_menu_topic("fast_align_set_ref",             "Set aligner reference [Ctrl-R]",     "R", "faligner.hlp",     AWM_ALL,            RootAsWindowCallback::simple(FastAligner_set_reference_species));
     awmm->insert_menu_topic(awmm->local_id("align_sequence"), "Old aligner from ARB_EDIT [broken]", "O", "ne_align_seq.hlp", AWM_DISABLED,       create_naligner_window);
-    awmm->insert_menu_topic("sina",                           "SINA (SILVA Incremental Aligner)",   "S", "sina_main.hlp",    sina_mask(aw_root), makeWindowCallback(show_sina_window, &dataAccess_4_aligner));
+    awmm->insert_menu_topic("sina",                           "SINA (SILVA Incremental Aligner)",   "S", "sina_main.hlp",    sina_mask(aw_root), makeWindowCallback(show_sina_window, ED4_get_aligner_data_access()));
     awmm->insert_menu_topic("del_ali_tmp",                    "Remove all aligner Entries",         "v", 0,                  AWM_ALL,            makeWindowCallback(ED4_remove_faligner_entries));
     awmm->sep______________();
     awmm->insert_menu_topic("missing_bases", "Dot potentially missing bases", "D", "missbase.hlp", AWM_EXP, ED4_popup_dot_missing_bases_window);
@@ -1778,7 +1772,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->button_length(7);
 
     awmm->at("aligner");
-    awmm->callback(makeCreateWindowCallback(ED4_create_faligner_window, &dataAccess_4_aligner));
+    awmm->callback(makeCreateWindowCallback(ED4_create_faligner_window, ED4_get_aligner_data_access()));
     awmm->help_text("faligner.hlp");
     awmm->create_button("ALIGNER", "Aligner");
 
