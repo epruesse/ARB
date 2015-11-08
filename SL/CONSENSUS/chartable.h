@@ -43,6 +43,8 @@
 #define MAX_TARGET_INDICES  4       // max number of non-ambiguous indices affected by one ambiguous code (4 for 'N' in RNA/DNA, 2 for amino-acids)
 #define MAX_AMBIGUITY_CODES (1+4+6) // for RNA/DNA (3 for amino-acids)
 
+#define MAX_USED_BASES_TABLES 256
+
 // Note: short tables convert to long tables when adding 22 sequences (for nucleotides)
 // * maybe remove short tables completely OR
 // * increase values size in short tables to 16 bit
@@ -175,14 +177,14 @@ class BaseFrequencies : virtual Noncopyable {
                         // (used in EDIT4 to suppress SAIs in tables of ED4_root_group_manager)
 
     // @@@ move statics into own class:
-    static bool               initialized;
-    static Ambiguity          ambiguity_table[MAX_AMBIGUITY_CODES];
-    static uint8_t            unitsPerSequence;                // multiplier per added sequence (to allow proper distribution of ambiguity codes)
-    static unsigned char      char_to_index_tab[MAXCHARTABLE]; // <MAX_INDEX_TABLES = > real index into 'bases_table', else index+MAX_INDEX_TABLES into ambiguity_table
-    static bool               is_gap[MAXCHARTABLE];
-    static unsigned char     *upper_index_chars;
-    static int                used_bases_tables;               // size of 'bases_table'
-    static GB_alignment_type  ali_type;
+    static bool              initialized;
+    static Ambiguity         ambiguity_table[MAX_AMBIGUITY_CODES];
+    static uint8_t           unitsPerSequence;                // multiplier per added sequence (to allow proper distribution of ambiguity codes)
+    static unsigned char     char_to_index_tab[MAXCHARTABLE]; // <MAX_INDEX_TABLES = > real index into 'bases_table', else index+MAX_INDEX_TABLES into ambiguity_table
+    static bool              is_gap[MAXCHARTABLE];
+    static unsigned char     upper_index_chars[MAX_USED_BASES_TABLES];
+    static int               used_bases_tables;               // size of 'bases_table'
+    static GB_alignment_type ali_type;
 
     static inline void set_char_to_index(unsigned char c, int index);
 
