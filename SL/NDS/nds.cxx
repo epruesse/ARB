@@ -342,13 +342,13 @@ static void nds_init_config(AWT_config_definition& cdef) {
     }
 }
 
-static char *nds_store_config(AW_CL, AW_CL) {
+static char *nds_store_config() {
     AWT_config_definition cdef;
     nds_init_config(cdef);
     return cdef.read();
 }
 
-static void nds_restore_config(const char *stored, AW_CL cl_gb_main, AW_CL) {
+static void nds_restore_config(const char *stored, GBDATA *gb_main) {
     // if stored == NULL -> reset
 
     AWT_config_definition cdef;
@@ -448,7 +448,6 @@ static void nds_restore_config(const char *stored, AW_CL cl_gb_main, AW_CL) {
         }
     }
     else { // reset to factory defaults
-        GBDATA *gb_main = (GBDATA*)cl_gb_main;
         cdef.reset(); // AWAR values are just empty here
         create_nds_vars(AW_root::SINGLETON, AW_ROOT_DEFAULT, gb_main, true); // => reinit NDS
     }
@@ -485,7 +484,7 @@ AW_window *AWT_create_nds_window(AW_root *aw_root, GBDATA *gb_main) {
         aws->update_option_menu();
 
         aws->at("config");
-        AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "nds", nds_store_config, nds_restore_config, (AW_CL)gb_main, 0);
+        AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "nds", makeStoreConfigCallback(nds_store_config), makeRestoreConfigCallback(nds_restore_config, gb_main));
 
         // --------------------
 
