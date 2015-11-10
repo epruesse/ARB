@@ -1182,6 +1182,8 @@ public:
     }
 };
 
+DECLARE_CBTYPE_FVV_AND_BUILDERS(ED4_basePredicate, bool, ED4_base*); // generates makeED4_basePredicate
+
 class ED4_manager : public ED4_base { // derived from a Noncopyable
     ED4_cb_list<ED4_manager, ED4_managerCallback> delete_cbs;
 public:
@@ -1223,10 +1225,7 @@ public:
 
     virtual ARB_ERROR route_down_hierarchy(const ED4_route_cb& cb) OVERRIDE;
 
-    ED4_base* find_first_that(ED4_level level, bool (*condition)(ED4_base *to_test, AW_CL arg), AW_CL arg);
-    ED4_base* find_first_that(ED4_level level, bool (*condition)(ED4_base *to_test)) {
-        return find_first_that(level, (bool(*)(ED4_base*, AW_CL))condition, (AW_CL)0);
-    }
+    ED4_base *find_first_that(ED4_level level, const ED4_basePredicate& fulfills_predicate);
 
      // bottom-up functions
     virtual ED4_returncode  move_requested_by_child(ED4_move_info *moveinfo) OVERRIDE;

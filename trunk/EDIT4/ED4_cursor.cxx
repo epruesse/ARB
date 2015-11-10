@@ -541,10 +541,9 @@ void ED4_jump_to_current_species(AW_window *aww) {
     }
 }
 
-static bool multi_species_man_consensus_id_starts_with(ED4_base *base, AW_CL cl_start) { // TRUE if consensus id starts with 'start'
-    ED4_multi_species_manager *ms_man = base->to_multi_species_manager();
-    char *start = (char*)cl_start;
-    ED4_base *consensus = ms_man->search_spec_child_rek(ED4_L_SPECIES);
+static bool multi_species_man_consensus_id_starts_with(ED4_base *base, const char *start) { // TRUE if consensus id starts with 'start'
+    ED4_multi_species_manager *ms_man    = base->to_multi_species_manager();
+    ED4_base                  *consensus = ms_man->search_spec_child_rek(ED4_L_SPECIES);
 
     if (consensus) {
         ED4_base *consensus_name = consensus->search_spec_child_rek(ED4_L_SPECIES_NAME);
@@ -562,7 +561,7 @@ static bool multi_species_man_consensus_id_starts_with(ED4_base *base, AW_CL cl_
 
 ED4_multi_species_manager *ED4_new_species_multi_species_manager() {
     // returns manager into which new species should be inserted
-    ED4_base *manager = ED4_ROOT->root_group_man->find_first_that(ED4_L_MULTI_SPECIES, multi_species_man_consensus_id_starts_with, (AW_CL)"More Sequences");
+    ED4_base *manager = ED4_ROOT->root_group_man->find_first_that(ED4_L_MULTI_SPECIES, makeED4_basePredicate(multi_species_man_consensus_id_starts_with, "More Sequences"));
     return manager ? manager->to_multi_species_manager() : 0;
 }
 
