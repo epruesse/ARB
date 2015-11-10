@@ -837,9 +837,9 @@ static void reload_ecoli_cb() {
 // ---------------------------------------
 //      recursion through all species
 
-typedef ARB_ERROR (*ED4_Species_Callback)(GBDATA*, AW_CL);
+DECLARE_CBTYPE_FVV_AND_BUILDERS(ED4_Species_Callback, ARB_ERROR, GBDATA *); // generates makeED4_Species_Callback
 
-static ARB_ERROR do_sth_with_species(ED4_base *base, ED4_Species_Callback cb, AW_CL cd) {
+static ARB_ERROR do_sth_with_species(ED4_base *base, const ED4_Species_Callback *cb) {
     ARB_ERROR error = NULL;
 
     if (base->is_species_manager()) {
@@ -853,7 +853,7 @@ static ARB_ERROR do_sth_with_species(ED4_base *base, ED4_Species_Callback cb, AW
             GBDATA *species = GBT_find_species(GLOBAL_gb_main, species_name);
 
             error = species
-                ? cb(species, cd)
+                ? (*cb)(species)
                 : GB_append_exportedError(GBS_global_string("can't find species '%s'", species_name));
 
             free(species_name);
@@ -864,8 +864,8 @@ static ARB_ERROR do_sth_with_species(ED4_base *base, ED4_Species_Callback cb, AW
 }
 
 
-static ARB_ERROR ED4_with_all_loaded_species(ED4_Species_Callback cb, AW_CL cd) {
-    return ED4_ROOT->root_group_man->route_down_hierarchy(makeED4_route_cb(do_sth_with_species, cb, cd));
+static ARB_ERROR ED4_with_all_loaded_species(const ED4_Species_Callback& cb) {
+    return ED4_ROOT->root_group_man->route_down_hierarchy(makeED4_route_cb(do_sth_with_species, &cb));
 }
 
 static bool is_named(ED4_base *base, AW_CL cl_species_name) {
@@ -953,13 +953,13 @@ static GBDATA *get_first_selected_species(int *total_no_of_selected_species)
     return get_next_selected_species();
 }
 
-static ARB_ERROR ED4_delete_temp_entries(GBDATA *species, AW_CL cl_alignment_name) {
-    return FastAligner_delete_temp_entries(species, (GB_CSTR)cl_alignment_name);
+static ARB_ERROR ED4_delete_temp_entries(GBDATA *species, GB_CSTR alignment_name) {
+    return FastAligner_delete_temp_entries(species, alignment_name);
 }
 
 static void ED4_remove_faligner_entries() {
     ARB_ERROR error = GB_begin_transaction(GLOBAL_gb_main);
-    if (!error) error = ED4_with_all_loaded_species(ED4_delete_temp_entries, (AW_CL)ED4_ROOT->alignment_name);
+    if (!error) error = ED4_with_all_loaded_species(makeED4_Species_Callback(ED4_delete_temp_entries, ED4_ROOT->alignment_name));
     GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
 }
 
