@@ -49,8 +49,6 @@
 #include <cctype>
 #include <map>
 
-AW_window *AWTC_create_island_hopping_window(AW_root *root, AW_CL);
-
 ED4_WinContext ED4_WinContext::current_context;
 
 void ED4_folding_line::warn_illegal_dimension() {
@@ -962,53 +960,6 @@ static void ED4_remove_faligner_entries() {
     GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
 }
 
-#if defined(DEBUG) && 0
-
-void ED4_testSplitNMerge(AW_window *aw, AW_CL, AW_CL)
-{
-    AW_root *root = aw->get_root();
-    char *name;
-    GBDATA *species;
-    GBDATA *gbd;
-    char *data;
-    long length;
-
-    GB_ERROR error = GB_begin_transaction(gb_main);
-    char *ali = ED4_ROOT->alignment_name;
-
-    if (!error)
-    {
-        name = root->awar(AWAR_SPECIES_NAME)->read_string();
-        species = GBT_find_species(gb_main, name);
-        gbd = species ? GBT_find_sequence(species, ali) : NULL;
-        data = gbd ? GB_read_string(gbd) : NULL;
-        length = gbd ? GB_read_string_count(gbd) : NULL;
-
-        if (data)
-        {
-            char *newData = AWTC_testConstructSequence(data);
-
-            if (newData)
-            {
-                error = GB_write_string(gbd, newData);
-                delete [] newData;
-            }
-        }
-        else
-        {
-            error = GB_get_error();
-            if (!error) error = GB_export_error("Can't read data of '%s'", name);
-        }
-
-        delete name;
-        delete data;
-    }
-
-    GB_end_transaction_show_error(gb_main, error, aw_message);
-}
-
-#endif
-
 static void toggle_helix_for_SAI(AW_window *aww) {
     ED4_LocalWinContext  uses(aww);
     ED4_cursor          *cursor = &current_cursor();
@@ -1475,10 +1426,6 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     }
     awmm->close_sub_menu();
 
-#if !defined(NDEBUG) && 0
-    awmm->insert_menu_topic(0,               "Test (test split & merge)", "T", 0, AWM_ALL, ED4_testSplitNMerge, 1, 0);
-#endif
-    
     awmm->sep______________();
     awmm->insert_menu_topic(awmm->local_id("fast_aligner"),   INTEGRATED_ALIGNERS_TITLE,            "I", "faligner.hlp",     AWM_ALL,            makeCreateWindowCallback(ED4_create_faligner_window, ED4_get_aligner_data_access()));
     awmm->insert_menu_topic("fast_align_set_ref",             "Set aligner reference [Ctrl-R]",     "R", "faligner.hlp",     AWM_ALL,            RootAsWindowCallback::simple(FastAligner_set_reference_species));

@@ -2276,7 +2276,6 @@ ED4_species_name_terminal *ED4_find_species_or_SAI_name_terminal(const char *spe
 ED4_multi_species_manager *ED4_new_species_multi_species_manager();
 
 void ED4_quit_editor(AW_window *aww);
-void ED4_quit(AW_window *aww, AW_CL cd1, AW_CL cd2);
 void ED4_exit() __ATTR__NORETURN;
 
 

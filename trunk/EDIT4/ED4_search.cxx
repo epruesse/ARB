@@ -1301,10 +1301,10 @@ inline void decodeSearchDescriptor(int descriptor, int *direction, ED4_SearchPos
     *pattern = ED4_SearchPositionType(descriptor/2);
 }
 
-static AW_CL last_searchDescriptor = -1;
+static int last_searchDescriptor = -1;
 
 GB_ERROR ED4_repeat_last_search(ED4_window *ed4w) {
-    if (int(last_searchDescriptor)==-1) {
+    if (last_searchDescriptor==-1) {
         return GBS_global_string("You have to search first, before you can repeat a search.");
     }
 
