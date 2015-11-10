@@ -64,7 +64,7 @@ static void toggle_detailed_column_stat(ED4_sequence_terminal *seq_term, bool fo
     }
 }
 
-inline ARB_ERROR forget_cached_column_stat(ED4_base *base) {
+static ARB_ERROR forget_cached_column_stat(ED4_base *base) {
     if (base->is_sequence_terminal()) {
         ED4_sequence_terminal *seqTerm = base->to_sequence_terminal();
         toggle_detailed_column_stat(seqTerm, true);
@@ -99,7 +99,7 @@ void ED4_activate_col_stat(AW_window *aww) {
     if (!ED4_ROOT->column_stat_activated || !ED4_ROOT->column_stat_initialized) {
         if (ED4_ROOT->column_stat_initialized) {
             // re-initialize column-stat! first cleanup old column stat data
-            ED4_ROOT->main_manager->route_down_hierarchy(forget_cached_column_stat).expect_no_error();
+            ED4_ROOT->main_manager->route_down_hierarchy(makeED4_route_cb(forget_cached_column_stat)).expect_no_error();
         }
         configureColumnStat(true, col_stat_activated, aww);
     }

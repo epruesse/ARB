@@ -143,7 +143,7 @@ ED4_returncode ED4_manager::rebuild_consensi(ED4_base *start_species, ED4_update
                 temp_parent = temp_parent->parent;
             }
             if (first_group_manager)
-                first_group_manager->route_down_hierarchy(rebuild_consensus).expect_no_error();
+                first_group_manager->route_down_hierarchy(makeED4_route_cb(rebuild_consensus)).expect_no_error();
             break;
     }
     return ED4_R_OK;
