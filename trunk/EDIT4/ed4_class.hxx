@@ -871,33 +871,9 @@ public:
 // ------------------------
 //      callback types
 
-template <class C>
-struct ED4_cb {
-    typedef void (*type)(C*,AW_CL);
-
-private:
-    type  cb;
-    AW_CL cd; // client data
-
-public:
-    ED4_cb(type cb_, AW_CL cd_) : cb(cb_), cd(cd_) {}
-
-    void call(C *c) const { cb(c, cd); }
-    bool operator == (const ED4_cb<C>& other) const {
-        return
-            (char*)cb == (char*)other.cb &&
-            (char*)cd == (char*)other.cd;
-    }
-};
-
-template <class C>
-struct ED4_cb_list {
-    typedef ED4_cb<C>                cbtype;
-    typedef typename ED4_cb<C>::type type;
-
-private:
-    std::list<cbtype> callbacks;
-
+template <class BASE, class BASECB>
+class ED4_cb_list {
+    std::list<BASECB> callbacks;
 public:
 #if defined(ASSERTION_USED)
     ED4_cb_list() {}
@@ -905,24 +881,23 @@ public:
         e4_assert(empty()); // calling ED4_root::remove_all_callbacks() did not remove all callbacks!
     }
 #endif
+    void add_cb(BASECB cb) { callbacks.push_back(cb); }
+    void remove_cb(BASECB cb) { callbacks.remove(cb); }
 
-    void add_cb(type cb, AW_CL cd) {
-        callbacks.push_back(cbtype(cb,cd));
-    }
-    void remove_cb(type cb, AW_CL cd) {
-        callbacks.remove(cbtype(cb,cd));
-    }
-
-    void call(C *c) {
-        for (typename std::list<cbtype>::iterator cb = callbacks.begin(); cb != callbacks.end();) {
-            typename std::list<cbtype>::iterator curr = cb;
+    void call(BASE *b) {
+        for (typename std::list<BASECB>::iterator cb = callbacks.begin(); cb != callbacks.end();) {
+            typename std::list<BASECB>::iterator curr = cb;
             ++cb;
-            curr->call(c); // Note: may be removed while called
+            (*curr)(b); // Note: may be removed while called
         }
     }
     void clear() { callbacks.clear(); }
     bool empty() const { return callbacks.empty(); }
 };
+
+// declare callback types used in ED4_cb_list:
+DECLARE_CBTYPE_FVV_AND_BUILDERS(ED4_managerCallback,         void, ED4_manager*);         // generates makeED4_managerCallback
+DECLARE_CBTYPE_FVV_AND_BUILDERS(ED4_species_managerCallback, void, ED4_species_manager*); // generates makeED4_species_managerCallback
 
 // -----------------
 //      ED4_base
@@ -1211,15 +1186,15 @@ public:
 };
 
 class ED4_manager : public ED4_base { // derived from a Noncopyable
-    ED4_cb_list<ED4_manager> delete_cbs;
+    ED4_cb_list<ED4_manager, ED4_managerCallback> delete_cbs;
 public:
     ED4_members *children;
 
     E4B_AVOID_UNNEEDED_CASTS(manager);
     DECLARE_DUMP_FOR_BASECLASS(ED4_manager, ED4_base);
 
-    void add_delete_callback(ED4_cb<ED4_manager>::type cb, AW_CL cd) { delete_cbs.add_cb(cb, cd); }
-    void remove_delete_callback(ED4_cb<ED4_manager>::type cb, AW_CL cd) { delete_cbs.remove_cb(cb, cd); }
+    void add_delete_callback(const ED4_managerCallback& cb) { delete_cbs.add_cb(cb); }
+    void remove_delete_callback(const ED4_managerCallback& cb) { delete_cbs.remove_cb(cb); }
 
     int refresh_flag_ok();
 
@@ -1813,7 +1788,7 @@ public:
 class ED4_species_manager : public ED4_manager {
     E4B_AVOID_UNNEEDED_CASTS(species_manager);
 
-    ED4_cb_list<ED4_species_manager> changed_cbs; // called when sequence changes
+    ED4_cb_list<ED4_species_manager, ED4_species_managerCallback> changed_cbs; // called when sequence changes
 
     ED4_species_type type;
     bool selected;
@@ -1834,8 +1809,8 @@ public:
 
     bool setCursorTo(ED4_cursor *cursor, int seq_pos, bool unfold_groups, ED4_CursorJumpType jump_type);
 
-    void add_sequence_changed_cb(ED4_cb<ED4_species_manager>::type cb, AW_CL cd) { changed_cbs.add_cb(cb, cd); }
-    void remove_sequence_changed_cb(ED4_cb<ED4_species_manager>::type cb, AW_CL cd) { changed_cbs.remove_cb(cb, cd); }
+    void add_sequence_changed_cb(const ED4_species_managerCallback& cb) { changed_cbs.add_cb(cb); }
+    void remove_sequence_changed_cb(const ED4_species_managerCallback& cb) { changed_cbs.remove_cb(cb); }
     void do_callbacks() { changed_cbs.call(this); }
 
     ED4_species_name_terminal *get_name_terminal() const { return children->member(0)->to_species_name_terminal(); }

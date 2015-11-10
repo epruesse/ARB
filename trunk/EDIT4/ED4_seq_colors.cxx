@@ -322,12 +322,11 @@ void ED4_reference::data_changed_cb(ED4_species_manager *IF_ASSERTION_USED(calle
         update_data();
     }
 }
-static void refdata_changed_cb(ED4_species_manager *sman, AW_CL cl_ref) {
-    ED4_reference *ref = (ED4_reference*)cl_ref;
+static void refdata_changed_cb(ED4_species_manager *sman, ED4_reference *ref) {
     ref->data_changed_cb(sman);
     ED4_ROOT->request_refresh_for_specific_terminals(ED4_L_SEQUENCE_STRING); // refresh all sequences
 }
-static void refdata_deleted_cb(ED4_manager *, AW_CL ) {
+static void refdata_deleted_cb() {
     ED4_viewDifferences_disable();
 }
 
@@ -335,8 +334,8 @@ void ED4_reference::clear() {
     // remove change cb
     if (ref_term) {
         ED4_species_manager *sman = ref_term->get_parent(ED4_L_SPECIES)->to_species_manager();
-        sman->remove_sequence_changed_cb(refdata_changed_cb, (AW_CL)this);
-        sman->remove_delete_callback(refdata_deleted_cb, 0);
+        sman->remove_sequence_changed_cb(makeED4_species_managerCallback(refdata_changed_cb, this));
+        sman->remove_delete_callback(makeED4_managerCallback(refdata_deleted_cb));
     }
 
     freenull(reference);
@@ -351,8 +350,8 @@ void ED4_reference::define(const ED4_sequence_terminal *rterm) {
 
     // add change cb
     ED4_species_manager *sman = ref_term->get_parent(ED4_L_SPECIES)->to_species_manager();
-    sman->add_sequence_changed_cb(refdata_changed_cb, (AW_CL)this);
-    sman->add_delete_callback(refdata_deleted_cb, 0);
+    sman->add_sequence_changed_cb(makeED4_species_managerCallback(refdata_changed_cb, this));
+    sman->add_delete_callback(makeED4_managerCallback(refdata_deleted_cb));
 }
 
 bool ED4_reference::reference_is_a_consensus() const {
