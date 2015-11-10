@@ -1499,15 +1499,14 @@ ED4_returncode ED4_cursor::show_clicked_cursor(AW_pos click_xpos, ED4_terminal *
    ED4_base_position
    -------------------------------------------------------------------------------- */
 
-static void ed4_bp_sequence_changed_cb(ED4_species_manager *, AW_CL cl_base_pos) {
-    ED4_base_position *base_pos = (ED4_base_position*)cl_base_pos;
+static void ed4_bp_sequence_changed_cb(ED4_species_manager*, ED4_base_position *base_pos) {
     base_pos->invalidate();
 }
 
 void ED4_base_position::remove_changed_cb() {
     if (calced4term) {
         ED4_species_manager *species_manager = calced4term->get_parent(ED4_L_SPECIES)->to_species_manager();
-        species_manager->remove_sequence_changed_cb(ed4_bp_sequence_changed_cb, (AW_CL)this);
+        species_manager->remove_sequence_changed_cb(makeED4_species_managerCallback(ed4_bp_sequence_changed_cb, this));
 
         calced4term = NULL;
     }
@@ -1525,7 +1524,7 @@ void ED4_base_position::calc4term(const ED4_terminal *base) {
 
     if (base != calced4term) { // terminal changes => rebind callback to new manager
         remove_changed_cb();
-        species_manager->add_sequence_changed_cb(ed4_bp_sequence_changed_cb, (AW_CL)this);
+        species_manager->add_sequence_changed_cb(makeED4_species_managerCallback(ed4_bp_sequence_changed_cb, this));
     }
 
     bool (*isGap_fun)(char);
