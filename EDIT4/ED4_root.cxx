@@ -69,8 +69,7 @@ void ED4_WinContext::warn_missing_context() const {
     aw_message("Missing context - please send information from console to devel@arb-home.de");
 }
 
-static ARB_ERROR request_terminal_refresh(ED4_base *base, AW_CL cl_level) {
-    ED4_level lev = ED4_level(cl_level);
+static ARB_ERROR request_terminal_refresh(ED4_base *base, ED4_level lev) {
     if (lev == ED4_L_NO_LEVEL || (base->spec.level&lev) != 0) {
         if (base->is_terminal()) base->request_refresh();
     }
@@ -78,20 +77,19 @@ static ARB_ERROR request_terminal_refresh(ED4_base *base, AW_CL cl_level) {
 }
 
 void ED4_root::request_refresh_for_all_terminals() {
-    main_manager->route_down_hierarchy(request_terminal_refresh, ED4_L_NO_LEVEL).expect_no_error();
+    main_manager->route_down_hierarchy(makeED4_route_cb(request_terminal_refresh, ED4_L_NO_LEVEL)).expect_no_error();
 }
 
 void ED4_root::request_refresh_for_specific_terminals(ED4_level lev) {
-    main_manager->route_down_hierarchy(request_terminal_refresh, lev).expect_no_error();
+    main_manager->route_down_hierarchy(makeED4_route_cb(request_terminal_refresh, lev)).expect_no_error();
 }
 
 
-static ARB_ERROR request_sequence_refresh(ED4_base *base, AW_CL cl_consensi) {
+static ARB_ERROR request_sequence_refresh(ED4_base *base, bool consensi) {
     ARB_ERROR error;
     if (base->spec.level & ED4_L_SPECIES) {
-        bool consensi = bool(cl_consensi);
         if (base->is_consensus_manager() == consensi) {
-            error = base->to_manager()->route_down_hierarchy(request_terminal_refresh, ED4_L_SEQUENCE_STRING);
+            error = base->to_manager()->route_down_hierarchy(makeED4_route_cb(request_terminal_refresh, ED4_L_SEQUENCE_STRING));
         }
     }
     return error;
@@ -99,11 +97,11 @@ static ARB_ERROR request_sequence_refresh(ED4_base *base, AW_CL cl_consensi) {
 
 // if you want to refresh consensi AND sequences you may use request_refresh_for_specific_terminals(ED4_L_SEQUENCE_STRING)
 void ED4_root::request_refresh_for_consensus_terminals() {
-    main_manager->route_down_hierarchy(request_sequence_refresh, true).expect_no_error();
+    main_manager->route_down_hierarchy(makeED4_route_cb(request_sequence_refresh, true)).expect_no_error();
 }
 void ED4_root::request_refresh_for_sequence_terminals() {
     if (main_manager) {
-        main_manager->route_down_hierarchy(request_sequence_refresh, false).expect_no_error();
+        main_manager->route_down_hierarchy(makeED4_route_cb(request_sequence_refresh, false)).expect_no_error();
     }
 }
 
@@ -454,7 +452,7 @@ void ED4_root::resize_all() {
     }
 }
 
-static ARB_ERROR change_char_table_length(ED4_base *base, AW_CL new_length) {
+static ARB_ERROR change_char_table_length(ED4_base *base, int new_length) {
     if (base->is_abstract_group_manager()) {
         ED4_abstract_group_manager *group_man = base->to_abstract_group_manager();
         group_man->table().change_table_length(new_length);
@@ -492,7 +490,7 @@ void ED4_alignment_length_changed(GBDATA *gb_alignment_len, GB_CB_TYPE IF_ASSERT
         }
 
         if (was_increased) {
-            ED4_ROOT->main_manager->route_down_hierarchy(change_char_table_length, new_length).expect_no_error();
+            ED4_ROOT->main_manager->route_down_hierarchy(makeED4_route_cb(change_char_table_length, new_length)).expect_no_error();
             ED4_ROOT->root_group_man->remap()->mark_compile_needed_force();
         }
     }
@@ -720,7 +718,7 @@ ED4_returncode ED4_root::create_hierarchy(const char *area_string_middle, const 
     first_window->update_window_coords();
     resize_all();
 
-    main_manager->route_down_hierarchy(force_group_update).expect_no_error();
+    main_manager->route_down_hierarchy(makeED4_route_cb(force_group_update)).expect_no_error();
 
     if (!scroll_links.link_for_hor_slider) { // happens when no species AND no SAI has data
         startup_progress->done();
@@ -841,11 +839,10 @@ static void reload_ecoli_cb() {
 
 typedef ARB_ERROR (*ED4_Species_Callback)(GBDATA*, AW_CL);
 
-static ARB_ERROR do_sth_with_species(ED4_base *base, AW_CL cl_spec_cb, AW_CL cd) {
+static ARB_ERROR do_sth_with_species(ED4_base *base, ED4_Species_Callback cb, AW_CL cd) {
     ARB_ERROR error = NULL;
 
     if (base->is_species_manager()) {
-        ED4_Species_Callback       cb                    = (ED4_Species_Callback)cl_spec_cb;
         ED4_species_manager       *species_manager       = base->to_species_manager();
         ED4_species_name_terminal *species_name_terminal = species_manager->search_spec_child_rek(ED4_L_SPECIES_NAME)->to_species_name_terminal();
 
@@ -868,7 +865,7 @@ static ARB_ERROR do_sth_with_species(ED4_base *base, AW_CL cl_spec_cb, AW_CL cd)
 
 
 static ARB_ERROR ED4_with_all_loaded_species(ED4_Species_Callback cb, AW_CL cd) {
-    return ED4_ROOT->root_group_man->route_down_hierarchy(do_sth_with_species, (AW_CL)cb, cd);
+    return ED4_ROOT->root_group_man->route_down_hierarchy(makeED4_route_cb(do_sth_with_species, cb, cd));
 }
 
 static bool is_named(ED4_base *base, AW_CL cl_species_name) {

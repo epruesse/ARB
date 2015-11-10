@@ -903,9 +903,8 @@ DECLARE_CBTYPE_FVV_AND_BUILDERS(ED4_species_managerCallback, void, ED4_species_m
 //      ED4_base
 
 class ED4_base;
-typedef ARB_ERROR (*ED4_route_cb)(ED4_base *, AW_CL, AW_CL);
-typedef ARB_ERROR (*ED4_route_cb1)(ED4_base *, AW_CL);
-typedef ARB_ERROR (*ED4_route_cb0)(ED4_base *);
+
+DECLARE_CBTYPE_FVV_AND_BUILDERS(ED4_route_cb, ARB_ERROR, ED4_base*); // generates makeED4_route_cb
 
 enum ED4_species_type {
     ED4_SP_NONE, 
@@ -1031,9 +1030,7 @@ public:
 
     virtual ED4_returncode  handle_move(ED4_move_info *moveinfo) = 0;
 
-    virtual ARB_ERROR route_down_hierarchy(ED4_route_cb cb, AW_CL cd1, AW_CL cd2);
-    virtual ARB_ERROR route_down_hierarchy(ED4_route_cb1 cb, AW_CL cd) { return route_down_hierarchy(ED4_route_cb(cb), cd, 0); }
-    virtual ARB_ERROR route_down_hierarchy(ED4_route_cb0 cb) { return route_down_hierarchy(ED4_route_cb(cb), 0, 0); }
+    virtual ARB_ERROR route_down_hierarchy(const ED4_route_cb& cb);
 
     int calc_group_depth();
 
@@ -1224,9 +1221,7 @@ public:
 
     void create_consensus(ED4_abstract_group_manager *upper_group_manager, arb_progress *progress);
 
-    virtual ARB_ERROR route_down_hierarchy(ED4_route_cb cb, AW_CL cd1, AW_CL cd2) OVERRIDE;
-    virtual ARB_ERROR route_down_hierarchy(ED4_route_cb1 cb, AW_CL cd) OVERRIDE { return route_down_hierarchy(ED4_route_cb(cb), cd, 0); }
-    virtual ARB_ERROR route_down_hierarchy(ED4_route_cb0 cb) OVERRIDE { return route_down_hierarchy(ED4_route_cb(cb), 0, 0); }
+    virtual ARB_ERROR route_down_hierarchy(const ED4_route_cb& cb) OVERRIDE;
 
     ED4_base* find_first_that(ED4_level level, bool (*condition)(ED4_base *to_test, AW_CL arg), AW_CL arg);
     ED4_base* find_first_that(ED4_level level, bool (*condition)(ED4_base *to_test)) {

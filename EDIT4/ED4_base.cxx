@@ -370,16 +370,16 @@ void ED4_base::generate_configuration_string(GBS_strstruct& buffer) {
 }
 
 
-ARB_ERROR ED4_base::route_down_hierarchy(ED4_route_cb cb, AW_CL cd1, AW_CL cd2) {
+ARB_ERROR ED4_base::route_down_hierarchy(const ED4_route_cb& cb) {
     // executes 'cb' for every element in hierarchy
-    return cb(this, cd1, cd2);
+    return cb(this);
 }
 
-ARB_ERROR ED4_manager::route_down_hierarchy(ED4_route_cb cb, AW_CL cd1, AW_CL cd2) {
-    ARB_ERROR error = cb(this, cd1, cd2);
+ARB_ERROR ED4_manager::route_down_hierarchy(const ED4_route_cb& cb) {
+    ARB_ERROR error = cb(this);
     if (children && !error) {
         for (int i=0; i <children->members() && !error; i++) {
-            error = children->member(i)->route_down_hierarchy(cb, cd1, cd2);
+            error = children->member(i)->route_down_hierarchy(cb);
         }
     }
     return error;
