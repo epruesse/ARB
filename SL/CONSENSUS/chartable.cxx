@@ -384,9 +384,7 @@ char *BaseFrequencies::build_consensus_string(PosRange r, const ConsensusBuildPa
 }
 
 #if defined(DEBUG)
- #if defined(DEVEL_RALF)
-  #define DEBUG_CONSENSUS
- #endif
+// #define DEBUG_CONSENSUS
 #endif
 
 void BaseFrequencies::build_consensus_string_to(char *consensus_string, ExplicitRange range, const ConsensusBuildParams& BK) const {
