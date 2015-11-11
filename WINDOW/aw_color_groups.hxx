@@ -43,8 +43,6 @@
 //       AW_find_active_color_group() or GBT_get_color_group() to read
 //    the color of an item.
 
-#define AWAR_COLOR_GROUPS_PREFIX  "color_groups"
-#define AWAR_COLOR_GROUPS_USE     AWAR_COLOR_GROUPS_PREFIX "/use" // int : whether to use the colors in display or not
 #define AW_COLOR_GROUP_PREFIX     "color_group_"
 #define AW_COLOR_GROUP_PREFIX_LEN 12
 #define AW_COLOR_GROUP_NAME_LEN   (AW_COLOR_GROUP_PREFIX_LEN+2)

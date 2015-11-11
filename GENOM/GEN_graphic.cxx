@@ -49,7 +49,7 @@ AW_gc_manager GEN_graphic::init_devices(AW_window *aww, AW_device *device, AWT_c
                                             scr->get_gc_base_name(),
                                             device,
                                             GEN_GC_FIRST_FONT, GEN_GC_MAX, AW_GCM_DATA_AREA,
-                                            makeWindowCallback(AWT_resize_cb, scr),
+                                            makeGcChangedCallback(AWT_GC_changed_cb, scr),
                                             true, // define color groups
                                             "#55C0AA",
                                             "Default$#5555ff",
