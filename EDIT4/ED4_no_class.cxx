@@ -143,7 +143,7 @@ void ED4_expose_recalculations() {
         ED4_terminal *top_middle_line_terminal = ED4_ROOT->main_manager->get_top_middle_line_terminal();
 
         ED4_ROOT->main_manager->get_top_middle_spacer_terminal()->extension.size[HEIGHT] = TERMINALHEIGHT - top_middle_line_terminal->extension.size[HEIGHT];
-        ED4_ROOT->main_manager->route_down_hierarchy(update_terminal_extension).expect_no_error();
+        ED4_ROOT->main_manager->route_down_hierarchy(makeED4_route_cb(update_terminal_extension)).expect_no_error();
 
         ED4_ROOT->resize_all(); // may change mapping
 
@@ -156,7 +156,7 @@ void ED4_expose_recalculations() {
     }
 }
 
-static ARB_ERROR call_edit(ED4_base *object, AW_CL cl_work_info) {
+static ARB_ERROR call_edit(ED4_base *object, ED4_work_info *work_info) {
     // called after editing consensus to edit single sequences
     GB_ERROR error = NULL;
 
@@ -164,8 +164,7 @@ static ARB_ERROR call_edit(ED4_base *object, AW_CL cl_work_info) {
         int expected_prop = ED4_P_CURSOR_ALLOWED|ED4_P_ALIGNMENT_DATA;
 
         if ((object->dynamic_prop & expected_prop) == expected_prop) {
-            ED4_work_info *work_info = (ED4_work_info*)cl_work_info;
-            ED4_work_info  new_work_info;
+            ED4_work_info new_work_info;
 
             new_work_info.event            = work_info->event;
             new_work_info.char_position    = work_info->char_position;
@@ -304,7 +303,7 @@ static void executeKeystroke(AW_event *event, int repeatCount) {
                         if (!ED4_ROOT->edit_string) {
                             ED4_ROOT->edit_string = new ED4_Edit_String;
                         }
-                        error = group_manager->route_down_hierarchy(call_edit, (AW_CL)work_info);
+                        error = group_manager->route_down_hierarchy(makeED4_route_cb(call_edit, work_info));
                         group_manager->rebuild_consensi(group_manager, ED4_U_UP_DOWN);
                     }
 
@@ -1578,7 +1577,7 @@ AW_window *ED4_create_saveConfigurationAs_window(AW_root *awr) {
     return aws;
 }
 
-static char *filter_loadable_SAIs(GBDATA *gb_sai, AW_CL) {
+static char *filter_loadable_SAIs(GBDATA *gb_sai) {
     GBDATA *gb_ali = GB_search(gb_sai, ED4_ROOT->alignment_name, GB_FIND);
     if (gb_ali) {
         GBDATA *gb_data = GB_search(gb_ali, "data", GB_FIND);
@@ -1608,7 +1607,7 @@ AW_window *ED4_create_loadSAI_window(AW_root *awr) {
         aws->create_button("HELP", "HELP");
 
         aws->at("sai");
-        awt_create_SAI_selection_list(GLOBAL_gb_main, aws, AWAR_SAI_NAME, false, filter_loadable_SAIs, 0);
+        awt_create_SAI_selection_list(GLOBAL_gb_main, aws, AWAR_SAI_NAME, false, makeSaiSelectionlistFilterCallback(filter_loadable_SAIs));
         ED4_ROOT->loadable_SAIs = LSAI_UPTODATE;
 
         aws->at("go");
@@ -1674,7 +1673,7 @@ struct SpeciesMergeList {
     SpeciesMergeList *next;
 };
 
-static ARB_ERROR add_species_to_merge_list(ED4_base *base, AW_CL cl_SpeciesMergeListPtr, AW_CL cl_gb_species_data) {
+static ARB_ERROR add_species_to_merge_list(ED4_base *base, SpeciesMergeList **smlp, GBDATA *gb_species_data) {
     GB_ERROR error = NULL;
 
     if (base->is_species_name_terminal()) {
@@ -1682,12 +1681,10 @@ static ARB_ERROR add_species_to_merge_list(ED4_base *base, AW_CL cl_SpeciesMerge
 
         if (!name_term->inside_consensus_manager()) {
             char   *species_name    = name_term->resolve_pointer_to_string_copy();
-            GBDATA *gb_species_data = (GBDATA*)cl_gb_species_data;
             GBDATA *gb_species      = GBT_find_species_rel_species_data(gb_species_data, species_name);
 
             if (gb_species) {
-                SpeciesMergeList **smlp = (SpeciesMergeList**)cl_SpeciesMergeListPtr;
-                SpeciesMergeList  *sml  = new SpeciesMergeList;
+                SpeciesMergeList *sml = new SpeciesMergeList;
 
                 sml->species      = gb_species;
                 sml->species_name = strdup(species_name);
@@ -1841,7 +1838,7 @@ static void create_new_species(AW_window *, SpeciesCreationMode creation_mode) {
                         ED4_group_manager *group_man = cursor_terminal->get_parent(ED4_L_GROUP)->to_group_manager();
                         SpeciesMergeList  *sml       = 0;  // list of species in group
 
-                        error = group_man->route_down_hierarchy(add_species_to_merge_list, (AW_CL)&sml, (AW_CL)gb_species_data);
+                        error = group_man->route_down_hierarchy(makeED4_route_cb(add_species_to_merge_list, &sml, gb_species_data));
                         if (!error && !sml) {
                             error = "Please choose a none empty group!";
                         }

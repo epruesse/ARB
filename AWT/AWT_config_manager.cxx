@@ -91,11 +91,8 @@ public:
 };
 
 class AWT_configuration : public ConfigDefinition { // derived from Noncopyable
-    AWT_store_config_to_string store;
-    AWT_load_or_reset_config   load_or_reset;
-
-    AW_CL client1; // client data for callbacks above
-    AW_CL client2;
+    StoreConfigCallback   store;
+    RestoreConfigCallback load_or_reset;
 
     const AWT_predefined_config *predefined;
 
@@ -105,12 +102,10 @@ class AWT_configuration : public ConfigDefinition { // derived from Noncopyable
     GB_ERROR update_config(const string& cfgname, const AWT_config& config);
 
 public:
-    AWT_configuration(AW_default default_file_, const char *id_, AWT_store_config_to_string store_, AWT_load_or_reset_config load_or_reset_, AW_CL cl1, AW_CL cl2, const AWT_predefined_config *predef)
+    AWT_configuration(AW_default default_file_, const char *id_, const StoreConfigCallback& store_, const RestoreConfigCallback& load_or_reset_, const AWT_predefined_config *predef)
         : ConfigDefinition(default_file_, id_),
           store(store_),
           load_or_reset(load_or_reset_),
-          client1(cl1),
-          client2(cl2),
           predefined(predef),
           aw_edit(NULL),
           field_selection(NULL)
@@ -147,17 +142,17 @@ public:
         return error;
     }
 
-    char *Store() const { return store(client1, client2); }
+    char *Store() const { return store(); }
     GB_ERROR Restore(const string& s) const {
         GB_ERROR error = 0;
 
         if (s.empty()) error = "empty/nonexistant config";
-        else load_or_reset(s.c_str(), client1, client2);
+        else load_or_reset(s.c_str());
 
         return error;
     }
     void Reset() const {
-        load_or_reset(NULL, client1, client2);
+        load_or_reset(NULL);
     }
 
     GB_ERROR Save(const char* filename, const string& cfg_name, const string& comment); // AWAR content -> FILE
@@ -873,36 +868,32 @@ static AW_window *create_config_manager_window(AW_root *, AWT_configuration *con
 
 static void destroy_AWT_configuration(AWT_configuration *c, AW_window*) { delete c; }
 
-void AWT_insert_config_manager(AW_window *aww, AW_default default_file_, const char *id, AWT_store_config_to_string store_cb,
-                               AWT_load_or_reset_config load_or_reset_cb, AW_CL cl1, AW_CL cl2, const char *macro_id, const AWT_predefined_config *predef)
+void AWT_insert_config_manager(AW_window *aww, AW_default default_file_, const char *id, const StoreConfigCallback& store_cb,
+                               const RestoreConfigCallback& load_or_reset_cb, const char *macro_id, const AWT_predefined_config *predef)
 {
     /*! inserts a config-button into aww
      * @param default_file_ db where configs will be stored
      * @param id unique id (has to be a key)
      * @param store_cb creates a string from current state
      * @param load_or_reset_cb restores state from string or resets factory defaults if string is NULL
-     * @param cl1 client data (passed to store_cb and load_or_reset_cb)
-     * @param cl2 like cl1
      * @param macro_id custom macro id (normally NULL will do)
      * @param predef predefined configs
      */
-    AWT_configuration * const config = new AWT_configuration(default_file_, id, store_cb, load_or_reset_cb, cl1, cl2, predef);
+    AWT_configuration * const config = new AWT_configuration(default_file_, id, store_cb, load_or_reset_cb, predef);
 
     aww->button_length(0); // -> autodetect size by size of graphic
     aww->callback(makeCreateWindowCallback(create_config_manager_window, destroy_AWT_configuration, config, aww));
     aww->create_button(macro_id ? macro_id : "SAVELOAD_CONFIG", "#conf_save.xpm");
 }
 
-static char *store_generated_config_cb(AW_CL cl_setup_cb, AW_CL ) {
-    const ConfigSetupCallback *setup_cb = (const ConfigSetupCallback*)cl_setup_cb;
-    AWT_config_definition      cdef;
+static char *store_generated_config_cb(const ConfigSetupCallback *setup_cb) {
+    AWT_config_definition cdef;
     (*setup_cb)(cdef);
 
     return cdef.read();
 }
-static void load_or_reset_generated_config_cb(const char *stored_string, AW_CL cl_setup_cb, AW_CL ) {
-    const ConfigSetupCallback *setup_cb = (const ConfigSetupCallback*)cl_setup_cb;
-    AWT_config_definition      cdef;
+static void load_or_reset_generated_config_cb(const char *stored_string, const ConfigSetupCallback *setup_cb) {
+    AWT_config_definition cdef;
     (*setup_cb)(cdef);
 
     if (stored_string) cdef.write(stored_string);
@@ -918,7 +909,10 @@ void AWT_insert_config_manager(AW_window *aww, AW_default default_file_, const c
      */
 
     ConfigSetupCallback * const setup_cb_copy = new ConfigSetupCallback(setup_cb); // not freed (bound to cb)
-    AWT_insert_config_manager(aww, default_file_, id, store_generated_config_cb, load_or_reset_generated_config_cb, (AW_CL)setup_cb_copy, 0, macro_id, predef);
+    AWT_insert_config_manager(aww, default_file_, id,
+                              makeStoreConfigCallback(store_generated_config_cb, setup_cb_copy),
+                              makeRestoreConfigCallback(load_or_reset_generated_config_cb, setup_cb_copy),
+                              macro_id, predef);
 }
 
 static void generate_config_from_mapping_cb(AWT_config_definition& cdef, const AWT_config_mapping_def *mapping) {

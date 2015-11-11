@@ -541,7 +541,7 @@ static void SEC_structure_changed_cb(GBDATA *gb_seq, SEC_graphic *gfx, GB_CB_TYP
     }
 }
 
-GB_ERROR SEC_graphic::load(GBDATA *, const char *, AW_CL, AW_CL) {
+GB_ERROR SEC_graphic::load(GBDATA *, const char *) {
     //! (Re-)Load secondary structure from database
 
     sec_assert(sec_root->get_db()->canDisplay()); // need a sequence loaded (to fix bugs in versions < 3)
@@ -672,7 +672,7 @@ GB_ERROR SEC_graphic::load(GBDATA *, const char *, AW_CL, AW_CL) {
     return err;
 }
 
-GB_ERROR SEC_graphic::save(GBDATA *, const char *, AW_CL, AW_CL) {
+GB_ERROR SEC_graphic::save(GBDATA *, const char *) {
     //! Save secondary structure to database
 
     if (!gb_struct) return 0;   // not loaded, so don't save
@@ -732,7 +732,7 @@ int SEC_graphic::check_update(GBDATA *) {
 
     if (db && db->canDisplay()) {
         if (update_requested & SEC_UPDATE_RELOAD) {
-            GB_ERROR error   = load(0, 0, 0, 0); // sets change_flag
+            GB_ERROR error   = load(NULL, NULL); // sets change_flag
             if (error) {
                 error = ta.close(error);
                 aw_message(error);

@@ -116,17 +116,13 @@ static AW_window *create_nds_export_window(AW_root *root) {
     aws->init(root, "EXPORT_NDS_OF_MARKED", "EXPORT NDS OF MARKED SPECIES");
     aws->load_xfig("sel_box_nds.fig");
 
-    aws->callback(AW_POPDOWN); // @@@ this window has two close buttons -> remove one
+    aws->callback(AW_POPDOWN);
     aws->at("close");
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->callback(makeHelpCallback("arb_export_nds.hlp"));
     aws->at("help");
     aws->create_button("HELP", "HELP", "H");
-
-    aws->callback(AW_POPDOWN);
-    aws->at("cancel");
-    aws->create_button("CLOSE", "CANCEL", "C");
 
     aws->at("save");
     aws->callback(makeWindowCallback(export_nds_cb, false));
@@ -209,7 +205,7 @@ static void nt_create_all_awars(AW_root *awr, AW_default def) {
     DBUI::create_dbui_awars(awr, def);
     AP_create_consensus_var(awr, def);
     {
-        GB_ERROR gde_err = GDE_init(awr, def, GLOBAL.gb_main, 0, ARB_format_alignment, GDE_WINDOWTYPE_DEFAULT, 0);
+        GB_ERROR gde_err = GDE_init(awr, def, GLOBAL.gb_main, 0, ARB_format_alignment, GDE_WINDOWTYPE_DEFAULT);
         if (gde_err) GBK_terminatef("Fatal: %s", gde_err);
     }
     NT_create_transpro_variables(awr, def);
@@ -621,7 +617,7 @@ static void NT_justify_branch_lenghs(UNFIXED, AWT_canvas *ntw) {
     if (tree_root) {
         tree_root->justify_branch_lenghs(ntw->gb_main);
         tree_root->compute_tree();
-        GB_ERROR error = AWT_TREE(ntw)->save(ntw->gb_main, 0, 0, 0);
+        GB_ERROR error = AWT_TREE(ntw)->save(ntw->gb_main, NULL);
         if (error) aw_message(error);
         ntw->refresh();
     }
@@ -660,7 +656,7 @@ static void NT_pseudo_species_to_organism(AW_window *, AWT_canvas *ntw) {
         GB_HASH *organism_hash = GBT_create_organism_hash(ntw->gb_main);
         tree_root->relink_tree(ntw->gb_main, relink_pseudo_species_to_organisms, organism_hash);
         tree_root->compute_tree();
-        GB_ERROR error = AWT_TREE(ntw)->save(ntw->gb_main, 0, 0, 0);
+        GB_ERROR error = AWT_TREE(ntw)->save(ntw->gb_main, NULL);
         if (error) aw_message(error);
         ntw->refresh();
         GBS_free_hash(organism_hash);

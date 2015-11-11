@@ -354,8 +354,8 @@ public:
     void     reorder_tree(TreeOrder mode);
     GB_ERROR create_group(AP_tree * at) __ATTR__USERESULT;
     void     toggle_group(AP_tree * at);
-    GB_ERROR load(GBDATA *gb_main, const char *name, AW_CL,  AW_CL) OVERRIDE __ATTR__USERESULT;
-    GB_ERROR save(GBDATA *gb_main, const char *name, AW_CL cd1, AW_CL cd2) OVERRIDE __ATTR__USERESULT;
+    GB_ERROR load(GBDATA *gb_main, const char *name) OVERRIDE __ATTR__USERESULT;
+    GB_ERROR save(GBDATA *gb_main, const char *name) OVERRIDE __ATTR__USERESULT;
     int      check_update(GBDATA *gb_main) OVERRIDE;         // reload tree if needed
     void     update(GBDATA *gb_main) OVERRIDE;
     void     set_tree_type(AP_tree_display_type type, AWT_canvas *ntw);

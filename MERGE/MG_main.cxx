@@ -93,20 +93,16 @@ static AW_window *MG_save_source_cb(AW_root *aw_root, const char *base_name) {
     aws->load_xfig("sel_box.fig");
 
     aws->at("close");
-    aws->callback(AW_POPDOWN); // @@@ this window has two close buttons -> remove one
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("save");
     aws->callback(MG_save_merge_cb);
     aws->create_button("SAVE", "SAVE", "S");
 
-    aws->at("cancel");
-    aws->callback(AW_POPDOWN);
-    aws->create_button("CLOSE", "CANCEL", "C");
-
     AW_create_standard_fileselection(aws, base_name);
 
-    return (AW_window *)aws;
+    return aws;
 }
 
 static void MG_save_cb(AW_window *aww) {
@@ -139,7 +135,7 @@ static AW_window *MG_create_save_result_window(AW_root *aw_root, const char *bas
     aws->load_xfig("sel_box_user3.fig");
 
     aws->at("close");
-    aws->callback(AW_POPDOWN); // @@@ this window has two close buttons -> remove one
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     AW_create_standard_fileselection(aws, base_name);
@@ -157,14 +153,11 @@ static AW_window *MG_create_save_result_window(AW_root *aw_root, const char *bas
     aws->at("user3");
     aws->create_text_field(AWAR_DB_COMMENT);
 
-    aws->at("cancel4");
-    aws->callback(AW_POPDOWN);
-    aws->create_button("CLOSE", "CANCEL", "C");
-
-    aws->at("save4"); aws->callback(MG_save_cb);
+    aws->at("save4");
+    aws->callback(MG_save_cb);
     aws->create_button("SAVE", "SAVE", "S");
 
-    return (AW_window *)aws;
+    return aws;
 }
 
 static void MG_save_quick_result_cb(AW_window *aww) {

@@ -64,7 +64,7 @@ static char *GDE_makeawarname_in(GmenuItem *gmenuitem, long i, const char *awar_
 char *GDE_makeawarname   (GmenuItem *gmenuitem, long i) { return GDE_makeawarname_in(gmenuitem, i, AWAR_PREFIX_GDE); }
 char *GDE_maketmpawarname(GmenuItem *gmenuitem, long i) { return GDE_makeawarname_in(gmenuitem, i, AWAR_PREFIX_GDE_TEMP); }
 
-static char *gde_filter_weights(GBDATA *gb_sai, AW_CL) {
+static char *gde_filter_weights(GBDATA *gb_sai) {
     char   *ali_name = GBT_get_default_alignment(GB_get_root(gb_sai));
     GBDATA *gb_ali   = GB_entry(gb_sai, ali_name);
     char   *result   = 0;
@@ -408,7 +408,7 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
                 aw_root->awar_string(newawar, defopt, AW_ROOT_DEFAULT);
                 aws->sens_mask(itemarg.active_mask);
                 if (itemarg.label[0]) aws->create_button(NULL, itemarg.label);
-                AW_DB_selection *saisel = awt_create_SAI_selection_list(db_access.gb_main, aws, newawar, true, gde_filter_weights);
+                AW_DB_selection *saisel = awt_create_SAI_selection_list(db_access.gb_main, aws, newawar, true, makeSaiSelectionlistFilterCallback(gde_filter_weights));
                 free(newawar);
                 aw_root->awar(AWAR_GDE_ALIGNMENT)->add_callback(makeRootCallback(refresh_weights_sellist_cb, saisel));
             }
@@ -478,13 +478,12 @@ void GDE_load_menu(AW_window *awm, AW_active /*mask*/, const char *menulabel) {
     }
 }
 
-struct gde_database_access db_access = { NULL, NULL, GDE_WINDOWTYPE_DEFAULT, 0, NULL};
+struct gde_database_access db_access = { NULL, NULL, GDE_WINDOWTYPE_DEFAULT, NULL};
 
-GB_ERROR GDE_init(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main, GDE_get_sequences_cb get_sequences, GDE_format_alignment_cb format_ali, gde_window_type window_type, AW_CL client_data) {
+GB_ERROR GDE_init(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main, GDE_get_sequences_cb get_sequences, GDE_format_alignment_cb format_ali, gde_window_type window_type) {
     db_access.get_sequences = get_sequences;
     db_access.format_ali    = format_ali;
     db_access.window_type   = window_type;
-    db_access.client_data   = client_data;
     db_access.gb_main       = gb_main;
 
 

@@ -53,7 +53,10 @@ public:
     const char *get_shared_id() const { return filetype_id.c_str(); }
 };
 
-typedef char *(*awt_sai_sellist_filter)(GBDATA *, AW_CL); // returns NULL for unwanted SAI; heap-allocated selection-list display-string for wanted
+DECLARE_CBTYPE_FVV_AND_BUILDERS(SaiSelectionlistFilterCallback, char*, GBDATA*);   // generates makeSaiSelectionlistFilterCallback
+// (result of callback: - NULL if SAI unwanted; heap-allocated selection-list display-string otherwise)
+const SaiSelectionlistFilterCallback& awt_std_SAI_filter_cb();
+
 
 // -----------------------------------------
 //      various database selection boxes
@@ -67,9 +70,9 @@ AW_DB_selection *awt_create_TREE_selection_list(GBDATA *gb_main, AW_window *aws,
 void awt_create_PTSERVER_selection_button(AW_window *aws, const char *varname);
 void awt_create_PTSERVER_selection_list(AW_window *aws, const char *varname);
 
-void awt_create_SAI_selection_button(GBDATA *gb_main, AW_window *aws, const char *varname, awt_sai_sellist_filter filter_poc = 0, AW_CL filter_cd = 0);
-AW_DB_selection *awt_create_SAI_selection_list(GBDATA *gb_main, AW_window *aws, const char *varname, bool fallback2default, awt_sai_sellist_filter filter_poc = 0, AW_CL filter_cd = 0);
-void awt_popup_SAI_selection_list(AW_window *aww, const char *awar_name, GBDATA *gb_main);
+void             awt_create_SAI_selection_button(GBDATA *gb_main, AW_window *aws, const char *varname, const SaiSelectionlistFilterCallback& fcb = awt_std_SAI_filter_cb());
+AW_DB_selection *awt_create_SAI_selection_list(GBDATA *gb_main, AW_window *aws, const char *varname, bool fallback2default, const SaiSelectionlistFilterCallback& fcb = awt_std_SAI_filter_cb());
+void             awt_popup_SAI_selection_list(AW_window *aww, const char *awar_name, GBDATA *gb_main);
 
 AW_DB_selection *awt_create_CONFIG_selection_list(GBDATA *gb_main, AW_window *aws, const char *varname, bool fallback2default);
 

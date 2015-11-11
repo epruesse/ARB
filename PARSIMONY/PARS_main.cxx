@@ -70,7 +70,7 @@ void ArbParsimony::set_tree(AWT_graphic_parsimony *tree_) {
 static void pars_saveNrefresh_changed_tree(AWT_canvas *ntw) {
     ap_assert((AWT_TREE(ntw) == global_tree()));
 
-    GB_ERROR error = global_tree()->save(ntw->gb_main, 0, 0, 0);
+    GB_ERROR error = global_tree()->save(ntw->gb_main, NULL);
     if (error) aw_message(error);
 
     ntw->zoom_reset_and_refresh();
@@ -96,7 +96,7 @@ static void delete_kept_ghostnodes() {
             if (ap_main->get_tree_root()->was_saved()) {
                 // if tree was saved, DB may contain ghostnodes
                 // -> save again to delete them
-                error = global_tree()->save(GB_get_root(gb_tree), 0, 0, 0);
+                error = global_tree()->save(GB_get_root(gb_tree), NULL);
             }
         }
         if (error) aw_message(error);
@@ -1064,7 +1064,7 @@ static void refreshTree(AWT_canvas *ntw) {
     GB_transaction ta(ntw->gb_main);
 
     AWT_TREE(ntw)->check_update(ntw->gb_main);
-    GB_ERROR error = AWT_TREE(ntw)->save(ntw->gb_main, 0, 0, 0);
+    GB_ERROR error = AWT_TREE(ntw)->save(ntw->gb_main, NULL);
     if (error) aw_message(error);
     ntw->zoom_reset_and_refresh();
 }

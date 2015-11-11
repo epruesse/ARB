@@ -1816,7 +1816,7 @@ void AWT_graphic_tree::unload() {
     displayed_root = 0;
 }
 
-GB_ERROR AWT_graphic_tree::load(GBDATA *, const char *name, AW_CL /* cl_link_to_database */, AW_CL /* cl_insert_delete_cbs */) {
+GB_ERROR AWT_graphic_tree::load(GBDATA *, const char *name) {
     GB_ERROR error = 0;
 
     if (!name) { // happens in error-case (called by AWT_graphic::postevent_handler to load previous state)
@@ -1866,7 +1866,7 @@ GB_ERROR AWT_graphic_tree::load(GBDATA *, const char *name, AW_CL /* cl_link_to_
     return error;
 }
 
-GB_ERROR AWT_graphic_tree::save(GBDATA * /* dummy */, const char * /* name */, AW_CL /* cd1 */, AW_CL /* cd2 */) {
+GB_ERROR AWT_graphic_tree::save(GBDATA * /* dummy */, const char * /* name */) {
     GB_ERROR error = NULL;
     if (get_root_node()) {
         error = tree_static->saveToDB();
@@ -1915,7 +1915,7 @@ int AWT_graphic_tree::check_update(GBDATA *) {
                 case AP_UPDATE_RELOADED: {
                     const char *name = tree_static->get_tree_name();
                     if (name) {
-                        GB_ERROR error = load(gb_main, name, 1, 0);
+                        GB_ERROR error = load(gb_main, name);
                         if (error) aw_message(error);
                         exports.resize = 1;
                     }
@@ -3327,7 +3327,7 @@ void NOTEST_treeDisplay() {
 
     {
         GB_transaction ta(gb_main);
-        ASSERT_RESULT(const char *, NULL, agt.load(NULL, "tree_test", 0, 0));
+        ASSERT_RESULT(const char *, NULL, agt.load(NULL, "tree_test"));
     }
 
     const char *spoolnameof[] = {

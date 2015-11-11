@@ -20,10 +20,9 @@
 
 #define e4_assert(bed) arb_assert(bed)
 
-static bool has_species_name(ED4_base *base, AW_CL cl_species_name) {
+static bool has_species_name(ED4_base *base, const char *species_name) {
     if (base->is_sequence_terminal()) {
         ED4_sequence_terminal *seq_term = base->to_sequence_terminal();
-        const char *species_name = (const char *)cl_species_name;
         return species_name && seq_term && seq_term->species_name && strcmp(species_name, seq_term->species_name)==0;
     }
     return false;
@@ -51,7 +50,7 @@ public:
     GBDATA *get_database() const OVERRIDE { return gb_main; }
 
     void announce_current_species(const char *species_name) OVERRIDE {
-        ED4_base *base = ED4_ROOT->main_manager->find_first_that(ED4_L_SEQUENCE_STRING, has_species_name, (AW_CL)species_name);
+        ED4_base *base = ED4_ROOT->main_manager->find_first_that(ED4_L_SEQUENCE_STRING, makeED4_basePredicate(has_species_name, species_name));
         seq_term       = base ? base->to_sequence_terminal() : NULL;
     }
 

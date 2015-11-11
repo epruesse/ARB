@@ -384,9 +384,7 @@ char *BaseFrequencies::build_consensus_string(PosRange r, const ConsensusBuildPa
 }
 
 #if defined(DEBUG)
- #if defined(DEVEL_RALF)
-  #define DEBUG_CONSENSUS
- #endif
+// #define DEBUG_CONSENSUS
 #endif
 
 void BaseFrequencies::build_consensus_string_to(char *consensus_string, ExplicitRange range, const ConsensusBuildParams& BK) const {
@@ -559,14 +557,14 @@ void BaseFrequencies::build_consensus_string_to(char *consensus_string, Explicit
 // -----------------------
 //      BaseFrequencies
 
-bool               BaseFrequencies::initialized       = false;
-Ambiguity          BaseFrequencies::ambiguity_table[MAX_AMBIGUITY_CODES];
-uint8_t            BaseFrequencies::unitsPerSequence  = 1;
-unsigned char      BaseFrequencies::char_to_index_tab[MAXCHARTABLE];
-bool               BaseFrequencies::is_gap[MAXCHARTABLE];
-unsigned char     *BaseFrequencies::upper_index_chars = 0;
-int                BaseFrequencies::used_bases_tables = 0;
-GB_alignment_type  BaseFrequencies::ali_type          = GB_AT_RNA;
+bool              BaseFrequencies::initialized       = false;
+Ambiguity         BaseFrequencies::ambiguity_table[MAX_AMBIGUITY_CODES];
+uint8_t           BaseFrequencies::unitsPerSequence  = 1;
+unsigned char     BaseFrequencies::char_to_index_tab[MAXCHARTABLE];
+bool              BaseFrequencies::is_gap[MAXCHARTABLE];
+unsigned char     BaseFrequencies::upper_index_chars[MAX_USED_BASES_TABLES];
+int               BaseFrequencies::used_bases_tables = 0;
+GB_alignment_type BaseFrequencies::ali_type          = GB_AT_RNA;
 
 inline void BaseFrequencies::set_char_to_index(unsigned char c, int index)
 {
@@ -641,7 +639,7 @@ void BaseFrequencies::setup(const char *gap_chars, GB_alignment_type ali_type_) 
         }
     }
 
-    upper_index_chars = new unsigned char[used_bases_tables];
+    ct_assert(used_bases_tables<=MAX_USED_BASES_TABLES);
 
     int idx = 0;
     unsigned char init_val = used_bases_tables-1; // map all unknown stuff to last table

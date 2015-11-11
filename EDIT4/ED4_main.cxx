@@ -218,7 +218,7 @@ static char *add_area_for_gde(ED4_area_manager *area_man, uchar **&the_names, uc
     return 0;
 }
 
-static char *ED4_create_sequences_for_gde(AW_CL, GBDATA **&the_species, uchar **&the_names, uchar **&the_sequences, long &numberspecies, long &maxalign) {
+static char *ED4_create_sequences_for_gde(GBDATA **&the_species, uchar **&the_names, uchar **&the_sequences, long &numberspecies, long &maxalign) {
     int top     = ED4_ROOT->aw_root->awar("gde/top_area")->read_int();
     int tops    = ED4_ROOT->aw_root->awar("gde/top_area_sai")->read_int();
     int toph    = ED4_ROOT->aw_root->awar("gde/top_area_helix")->read_int();
@@ -361,7 +361,7 @@ static void ed4_create_all_awars(AW_root *root, const char *config_name) {
     root->awar_int(ED4_AWAR_ANNOUNCE_CHECKSUM_CHANGES, 0);
 
     {
-        GB_ERROR gde_err = GDE_init(ED4_ROOT->aw_root, ED4_ROOT->props_db, GLOBAL_gb_main, ED4_create_sequences_for_gde, 0, GDE_WINDOWTYPE_EDIT4, 0);
+        GB_ERROR gde_err = GDE_init(ED4_ROOT->aw_root, ED4_ROOT->props_db, GLOBAL_gb_main, ED4_create_sequences_for_gde, 0, GDE_WINDOWTYPE_EDIT4);
         if (gde_err) GBK_terminatef("Fatal error: %s", gde_err);
     }
 
