@@ -21,6 +21,9 @@
 #include <arbdbt.h>
 #include <ad_colorset.h>
 
+#define AWAR_COLOR_GROUPS_PREFIX  "color_groups"
+#define AWAR_COLOR_GROUPS_USE     AWAR_COLOR_GROUPS_PREFIX "/use" // int : whether to use the colors in display or not
+
 CONSTEXPR_RETURN inline bool valid_color_group(int color_group) {
     return color_group>0 && color_group<=AW_COLOR_GROUPS;
 }
@@ -79,7 +82,6 @@ static const char *ARB_EDIT4_color_group[AW_COLOR_GROUPS+1] = {
 };
 
 class _AW_gc_manager : virtual Noncopyable {
-private:
     const char         *gc_base_name;
     AW_device          *device;
     int                 drag_gc_offset;
@@ -108,20 +110,30 @@ private:
     
     std::vector<gc_desc>  GCs;
 
+    GcChangedCallback *changed_cb;
+
 public:
     static const char **color_group_defaults;
-    
-    _AW_gc_manager(const char* name, AW_device* device, 
-                   int drag_gc_offset);
+
+    _AW_gc_manager(const char* name, AW_device* device, int drag_gc_offset);
+    ~_AW_gc_manager() {
+        delete changed_cb;
+    }
+
     void add_gc(const char* gc_desc, bool is_color_group);
     void update_gc_color(int gc);
     void update_gc_font(int gc);
     void update_aa_setting();
 
     void create_gc_buttons(AW_window *aww);
-    AW_signal changed;
 
-    
+    void set_changed_cb(const GcChangedCallback& ccb) {
+        aw_assert(!changed_cb);
+        changed_cb = new GcChangedCallback(ccb);
+    }
+    void trigger_changed_cb(GcChange whatChanged) const {
+        if (changed_cb) (*changed_cb)(whatChanged);
+    }
 };
 
 const char **_AW_gc_manager::color_group_defaults = ARB_NTREE_color_group;
@@ -138,11 +150,11 @@ static void aw_update_aa_setting(AW_root*, _AW_gc_manager* mgr) {
     mgr->update_aa_setting();
 }
 
-_AW_gc_manager::_AW_gc_manager(const char* name, AW_device* device_, 
-                               int drag_gc_offset_) 
+_AW_gc_manager::_AW_gc_manager(const char* name, AW_device* device_, int drag_gc_offset_)
     : gc_base_name(name),
       device(device_),
-      drag_gc_offset(drag_gc_offset_)
+      drag_gc_offset(drag_gc_offset_),
+      changed_cb(NULL)
 {
     AW_root::SINGLETON->awar_int(_aa_awar_name(name), AW_AA_NONE)
         ->add_callback(makeRootCallback(aw_update_aa_setting, this));
@@ -253,26 +265,32 @@ void _AW_gc_manager::update_gc_color(int gc) {
     aw_assert(gc >= -1 && gc < (int)GCs.size() - 1);
     const char* color = GCs[gc+1].awar_color->read_char_pntr();
     device->set_foreground_color(gc, color);
-    if (gc != -1) 
+    if (gc != -1) {
         device->set_foreground_color(drag_gc_offset + gc, color);
-    changed.emit();
+    }
+    trigger_changed_cb(GC_COLOR_CHANGED);
     device->queue_draw();
 }
 
 void _AW_gc_manager::update_gc_font(int gc) {
     aw_assert(gc >= -1 && gc < (int)GCs.size() - 1);
     device->set_font(gc, GCs[gc+1].awar_font->read_char_pntr());
-    if (gc != -1) 
+    if (gc != -1) {
         device->set_font(drag_gc_offset + gc, GCs[gc+1].awar_font->read_char_pntr());
-    changed.emit();
+    }
+    trigger_changed_cb(GC_FONT_CHANGED);
     device->queue_draw();
 }
 
 void _AW_gc_manager::update_aa_setting() {
     AW_antialias aa = (AW_antialias) AW_root::SINGLETON->awar(_aa_awar_name(gc_base_name))->read_int();
     device->get_common()->set_default_aa(aa);
-    changed.emit();
+    trigger_changed_cb(GC_FONT_CHANGED); // @@@ no idea whether a resize is really necessary here
     device->queue_draw();
+}
+
+static void color_group_use_changed_cb(AW_root *, _AW_gc_manager *gcmgr) {
+    gcmgr->trigger_changed_cb(GC_COLOR_GROUP_USE_CHANGED);
 }
 
 // ----------------------------------------------------------------------
@@ -310,15 +328,15 @@ void AW_copy_GCs(AW_root *aw_root, const char *source_window, const char *dest_w
 // force-diff-sync 265873246583745 (remove after merging back to trunk)
 // ----------------------------------------------------------------------
 
-AW_gc_manager AW_manage_GC(AW_window             *aww,
-                           const char            *gc_base_name,
-                           AW_device             *device,
-                           int                    base_gc,
-                           int                    base_drag,
-                           AW_GCM_AREA            /*area*/, // remove AFTERMERGE
-                           const WindowCallback&  changecb,
-                           bool                   define_color_groups,
-                           const char            *default_background_color,
+AW_gc_manager AW_manage_GC(AW_window                *aww,
+                           const char               *gc_base_name,
+                           AW_device                *device,
+                           int                       base_gc,
+                           int                       base_drag,
+                           AW_GCM_AREA               /*area*/, // remove AFTERMERGE
+                           const GcChangedCallback&  changecb,
+                           bool                      define_color_groups,
+                           const char               *default_background_color,
                            ...)
 {
     /*!
@@ -341,7 +359,6 @@ AW_gc_manager AW_manage_GC(AW_window             *aww,
      * @param base_drag    one after last gc
      * @param area         AW_GCM_DATA_AREA or AW_GCM_WINDOW_AREA (motif only)
      * @param changecb     cb if changed
-     * @param cd1,cd2      free Parameters to changecb
      * @param define_color_groups  true -> add colors for color groups
      * @param ...                  NULL terminated list of \0 terminated strings:
      *                             first GC is fixed: '-background'
@@ -378,7 +395,7 @@ AW_gc_manager AW_manage_GC(AW_window             *aww,
     }
     va_end(parg);
     
-    aw_root->awar_int(AWAR_COLOR_GROUPS_USE, 1);
+    aw_root->awar_int(AWAR_COLOR_GROUPS_USE, 1)->add_callback(makeRootCallback(color_group_use_changed_cb, gcmgr));
     if (define_color_groups) {
         for (int i = 1; i <= AW_COLOR_GROUPS; ++i) {
             aw_root->awar_string(_colorgroupname_awarname(i), _colorgroup_name(i));
@@ -390,7 +407,7 @@ AW_gc_manager AW_manage_GC(AW_window             *aww,
         }
     }
 
-    gcmgr->changed.connect(changecb, aww);
+    gcmgr->set_changed_cb(changecb);
 
     return gcmgr;
 }

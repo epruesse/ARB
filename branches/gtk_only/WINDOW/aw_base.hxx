@@ -49,5 +49,11 @@ enum AW_area {
     // make sure matching labels exist in AW_area_management.cxx in AW_area_labels
 };
 
+enum GcChange {
+    GC_COLOR_CHANGED,           // -> normally a refresh should do
+    GC_FONT_CHANGED,            // -> display needs a resize
+    GC_COLOR_GROUP_USE_CHANGED, // -> might need extra calculations
+};
+
 AW_default get_AW_ROOT_DEFAULT();
 #define AW_ROOT_DEFAULT get_AW_ROOT_DEFAULT()

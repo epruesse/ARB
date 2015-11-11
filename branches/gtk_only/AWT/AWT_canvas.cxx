@@ -340,6 +340,19 @@ void AWT_resize_cb(UNFIXED, AWT_canvas *scr) {
     scr->zoom_reset();
 }
 
+void AWT_GC_changed_cb(GcChange whatChanged, AWT_canvas *scr) {
+    // standard callback which may be passed to AW_manage_GC
+    switch (whatChanged) {
+        case GC_COLOR_CHANGED:
+        case GC_COLOR_GROUP_USE_CHANGED:
+            AWT_expose_cb(NULL, scr);
+            break;
+        case GC_FONT_CHANGED:
+            AWT_resize_cb(NULL, scr);
+            break;
+    }
+}
+
 static void canvas_focus_cb(AW_window *, AWT_canvas *scr) {
     if (scr->gb_main) {
         scr->push_transaction();
