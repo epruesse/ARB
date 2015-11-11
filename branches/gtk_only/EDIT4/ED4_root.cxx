@@ -49,8 +49,6 @@
 #include <cctype>
 #include <map>
 
-AW_window *AWTC_create_island_hopping_window(AW_root *root, AW_CL);
-
 ED4_WinContext ED4_WinContext::current_context;
 
 void ED4_folding_line::warn_illegal_dimension() {
@@ -69,8 +67,7 @@ void ED4_WinContext::warn_missing_context() const {
     aw_message("Missing context - please send information from console to devel@arb-home.de");
 }
 
-static ARB_ERROR request_terminal_refresh(ED4_base *base, AW_CL cl_level) {
-    ED4_level lev = ED4_level(cl_level);
+static ARB_ERROR request_terminal_refresh(ED4_base *base, ED4_level lev) {
     if (lev == ED4_L_NO_LEVEL || (base->spec.level&lev) != 0) {
         if (base->is_terminal()) base->request_refresh();
     }
@@ -78,20 +75,19 @@ static ARB_ERROR request_terminal_refresh(ED4_base *base, AW_CL cl_level) {
 }
 
 void ED4_root::request_refresh_for_all_terminals() {
-    main_manager->route_down_hierarchy(request_terminal_refresh, ED4_L_NO_LEVEL).expect_no_error();
+    main_manager->route_down_hierarchy(makeED4_route_cb(request_terminal_refresh, ED4_L_NO_LEVEL)).expect_no_error();
 }
 
 void ED4_root::request_refresh_for_specific_terminals(ED4_level lev) {
-    main_manager->route_down_hierarchy(request_terminal_refresh, lev).expect_no_error();
+    main_manager->route_down_hierarchy(makeED4_route_cb(request_terminal_refresh, lev)).expect_no_error();
 }
 
 
-static ARB_ERROR request_sequence_refresh(ED4_base *base, AW_CL cl_consensi) {
+static ARB_ERROR request_sequence_refresh(ED4_base *base, bool consensi) {
     ARB_ERROR error;
     if (base->spec.level & ED4_L_SPECIES) {
-        bool consensi = bool(cl_consensi);
         if (base->is_consensus_manager() == consensi) {
-            error = base->to_manager()->route_down_hierarchy(request_terminal_refresh, ED4_L_SEQUENCE_STRING);
+            error = base->to_manager()->route_down_hierarchy(makeED4_route_cb(request_terminal_refresh, ED4_L_SEQUENCE_STRING));
         }
     }
     return error;
@@ -99,11 +95,11 @@ static ARB_ERROR request_sequence_refresh(ED4_base *base, AW_CL cl_consensi) {
 
 // if you want to refresh consensi AND sequences you may use request_refresh_for_specific_terminals(ED4_L_SEQUENCE_STRING)
 void ED4_root::request_refresh_for_consensus_terminals() {
-    main_manager->route_down_hierarchy(request_sequence_refresh, true).expect_no_error();
+    main_manager->route_down_hierarchy(makeED4_route_cb(request_sequence_refresh, true)).expect_no_error();
 }
 void ED4_root::request_refresh_for_sequence_terminals() {
     if (main_manager) {
-        main_manager->route_down_hierarchy(request_sequence_refresh, false).expect_no_error();
+        main_manager->route_down_hierarchy(makeED4_route_cb(request_sequence_refresh, false)).expect_no_error();
     }
 }
 
@@ -454,7 +450,7 @@ void ED4_root::resize_all() {
     }
 }
 
-static ARB_ERROR change_char_table_length(ED4_base *base, AW_CL new_length) {
+static ARB_ERROR change_char_table_length(ED4_base *base, int new_length) {
     if (base->is_abstract_group_manager()) {
         ED4_abstract_group_manager *group_man = base->to_abstract_group_manager();
         group_man->table().change_table_length(new_length);
@@ -492,7 +488,7 @@ void ED4_alignment_length_changed(GBDATA *gb_alignment_len, GB_CB_TYPE IF_ASSERT
         }
 
         if (was_increased) {
-            ED4_ROOT->main_manager->route_down_hierarchy(change_char_table_length, new_length).expect_no_error();
+            ED4_ROOT->main_manager->route_down_hierarchy(makeED4_route_cb(change_char_table_length, new_length)).expect_no_error();
             ED4_ROOT->root_group_man->remap()->mark_compile_needed_force();
         }
     }
@@ -720,7 +716,7 @@ ED4_returncode ED4_root::create_hierarchy(const char *area_string_middle, const 
     first_window->update_window_coords();
     resize_all();
 
-    main_manager->route_down_hierarchy(force_group_update).expect_no_error();
+    main_manager->route_down_hierarchy(makeED4_route_cb(force_group_update)).expect_no_error();
 
     if (!scroll_links.link_for_hor_slider) { // happens when no species AND no SAI has data
         startup_progress->done();
@@ -839,13 +835,12 @@ static void reload_ecoli_cb() {
 // ---------------------------------------
 //      recursion through all species
 
-typedef ARB_ERROR (*ED4_Species_Callback)(GBDATA*, AW_CL);
+DECLARE_CBTYPE_FVV_AND_BUILDERS(ED4_Species_Callback, ARB_ERROR, GBDATA *); // generates makeED4_Species_Callback
 
-static ARB_ERROR do_sth_with_species(ED4_base *base, AW_CL cl_spec_cb, AW_CL cd) {
+static ARB_ERROR do_sth_with_species(ED4_base *base, const ED4_Species_Callback *cb) {
     ARB_ERROR error = NULL;
 
     if (base->is_species_manager()) {
-        ED4_Species_Callback       cb                    = (ED4_Species_Callback)cl_spec_cb;
         ED4_species_manager       *species_manager       = base->to_species_manager();
         ED4_species_name_terminal *species_name_terminal = species_manager->search_spec_child_rek(ED4_L_SPECIES_NAME)->to_species_name_terminal();
 
@@ -856,7 +851,7 @@ static ARB_ERROR do_sth_with_species(ED4_base *base, AW_CL cl_spec_cb, AW_CL cd)
             GBDATA *species = GBT_find_species(GLOBAL_gb_main, species_name);
 
             error = species
-                ? cb(species, cd)
+                ? (*cb)(species)
                 : GB_append_exportedError(GBS_global_string("can't find species '%s'", species_name));
 
             free(species_name);
@@ -867,16 +862,15 @@ static ARB_ERROR do_sth_with_species(ED4_base *base, AW_CL cl_spec_cb, AW_CL cd)
 }
 
 
-static ARB_ERROR ED4_with_all_loaded_species(ED4_Species_Callback cb, AW_CL cd) {
-    return ED4_ROOT->root_group_man->route_down_hierarchy(do_sth_with_species, (AW_CL)cb, cd);
+static ARB_ERROR ED4_with_all_loaded_species(const ED4_Species_Callback& cb) {
+    return ED4_ROOT->root_group_man->route_down_hierarchy(makeED4_route_cb(do_sth_with_species, &cb));
 }
 
-static bool is_named(ED4_base *base, AW_CL cl_species_name) {
+static bool is_named(ED4_base *base, const char *wanted_name) {
     ED4_species_name_terminal *name_term = base->to_species_name_terminal();
     GBDATA                    *gbd       = name_term->get_species_pointer();
     if (gbd) {
-        const char *wanted_name = (const char*)cl_species_name;
-        const char *name        = GB_read_char_pntr(gbd);
+        const char *name = GB_read_char_pntr(gbd);
         e4_assert(name);
 
         return strcmp(name, wanted_name) == 0;
@@ -884,24 +878,24 @@ static bool is_named(ED4_base *base, AW_CL cl_species_name) {
     return false;
 }
 
-static bool is_species_named(ED4_base *base, AW_CL cl_species_name) {
-    return base->inside_species_seq_manager() && is_named(base, cl_species_name);
+static bool is_species_named(ED4_base *base, const char *species_name) {
+    return base->inside_species_seq_manager() && is_named(base, species_name);
 }
 
-static bool is_SAI_named(ED4_base *base, AW_CL cl_species_name) {
-    return base->inside_SAI_manager() && is_named(base, cl_species_name);
+static bool is_SAI_named(ED4_base *base, const char *sai_name) {
+    return base->inside_SAI_manager() && is_named(base, sai_name);
 }
 
 ED4_species_name_terminal *ED4_find_species_or_SAI_name_terminal(const char *species_name) {
-    ED4_base *base = ED4_ROOT->root_group_man->find_first_that(ED4_L_SPECIES_NAME, is_species_named, (AW_CL)species_name);
+    ED4_base *base = ED4_ROOT->root_group_man->find_first_that(ED4_L_SPECIES_NAME, makeED4_basePredicate(is_species_named, species_name));
     return base ? base->to_species_name_terminal() : NULL;
 }
 ED4_species_name_terminal *ED4_find_species_name_terminal(const char *species_name) {
-    ED4_base *base = ED4_ROOT->root_group_man->find_first_that(ED4_L_SPECIES_NAME, is_species_named, (AW_CL)species_name);
+    ED4_base *base = ED4_ROOT->root_group_man->find_first_that(ED4_L_SPECIES_NAME, makeED4_basePredicate(is_species_named, species_name));
     return base ? base->to_species_name_terminal() : NULL;
 }
 ED4_species_name_terminal *ED4_find_SAI_name_terminal(const char *sai_name) {
-    ED4_base *base = ED4_ROOT->root_group_man->find_first_that(ED4_L_SPECIES_NAME, is_SAI_named, (AW_CL)sai_name);
+    ED4_base *base = ED4_ROOT->root_group_man->find_first_that(ED4_L_SPECIES_NAME, makeED4_basePredicate(is_SAI_named, sai_name));
     return base ? base->to_species_name_terminal() : NULL;
 }
 
@@ -956,72 +950,15 @@ static GBDATA *get_first_selected_species(int *total_no_of_selected_species)
     return get_next_selected_species();
 }
 
-struct AlignDataAccess dataAccess_4_aligner = {
-    1,                                              // default is to do a refresh
-    ED4_trigger_instant_refresh,                    // with this function
-    get_group_consensus,                            // aligner fetches consensus of group of species via this function
-    get_selected_range,                             // aligner fetches column range of selection via this function
-    get_first_selected_species,                     // aligner fetches first and..
-    get_next_selected_species,                      // .. following selected species via this functions
-    0,                                              // AW_helix (needed for island_hopping)
-    NULL,                                           // gb_main
-};
-static ARB_ERROR ED4_delete_temp_entries(GBDATA *species, AW_CL cl_alignment_name) {
-    return FastAligner_delete_temp_entries(species, (GB_CSTR)cl_alignment_name);
+static ARB_ERROR ED4_delete_temp_entries(GBDATA *species, GB_CSTR alignment_name) {
+    return FastAligner_delete_temp_entries(species, alignment_name);
 }
 
 static void ED4_remove_faligner_entries() {
     ARB_ERROR error = GB_begin_transaction(GLOBAL_gb_main);
-    if (!error) error = ED4_with_all_loaded_species(ED4_delete_temp_entries, (AW_CL)ED4_ROOT->alignment_name);
+    if (!error) error = ED4_with_all_loaded_species(makeED4_Species_Callback(ED4_delete_temp_entries, ED4_ROOT->alignment_name));
     GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
 }
-
-#if defined(DEBUG) && 0
-
-void ED4_testSplitNMerge(AW_window *aw, AW_CL, AW_CL)
-{
-    AW_root *root = aw->get_root();
-    char *name;
-    GBDATA *species;
-    GBDATA *gbd;
-    char *data;
-    long length;
-
-    GB_ERROR error = GB_begin_transaction(gb_main);
-    char *ali = ED4_ROOT->alignment_name;
-
-    if (!error)
-    {
-        name = root->awar(AWAR_SPECIES_NAME)->read_string();
-        species = GBT_find_species(gb_main, name);
-        gbd = species ? GBT_find_sequence(species, ali) : NULL;
-        data = gbd ? GB_read_string(gbd) : NULL;
-        length = gbd ? GB_read_string_count(gbd) : NULL;
-
-        if (data)
-        {
-            char *newData = AWTC_testConstructSequence(data);
-
-            if (newData)
-            {
-                error = GB_write_string(gbd, newData);
-                delete [] newData;
-            }
-        }
-        else
-        {
-            error = GB_get_error();
-            if (!error) error = GB_export_error("Can't read data of '%s'", name);
-        }
-
-        delete name;
-        delete data;
-    }
-
-    GB_end_transaction_show_error(gb_main, error, aw_message);
-}
-
-#endif
 
 static void toggle_helix_for_SAI(AW_window *aww) {
     ED4_LocalWinContext  uses(aww);
@@ -1273,44 +1210,48 @@ void ED4_no_dangerous_modes() {
     }
 }
 
-void ED4_init_aligner_data_access(AlignDataAccess *data_access) {
-    GB_ERROR  error          = GB_push_transaction(GLOBAL_gb_main);
-    char     *alignment_name = GBT_get_default_alignment(GLOBAL_gb_main);
-    long      alilen         = GBT_get_alignment_len(GLOBAL_gb_main, alignment_name);
+static char *get_helix_string(GBDATA *gb_main, const char *alignment_name) {
+    GB_transaction ta(gb_main);
 
-    data_access->gb_main = GLOBAL_gb_main;
-
-    if (alilen<=0) error = GB_await_error();
-    else {
-        char   *helix_string = 0;
-        char   *helix_name   = GBT_get_default_helix(GLOBAL_gb_main);
-        GBDATA *gb_helix_con = GBT_find_SAI(GLOBAL_gb_main, helix_name);
-        if (gb_helix_con) {
-            GBDATA *gb_helix = GBT_find_sequence(gb_helix_con, alignment_name);
-            if (gb_helix) helix_string = GB_read_string(gb_helix);
-        }
-        free(helix_name);
-        freeset(data_access->helix_string, helix_string);
+    char   *helix_string = 0;
+    char   *helix_name   = GBT_get_default_helix(gb_main);
+    GBDATA *gb_helix_con = GBT_find_SAI(gb_main, helix_name);
+    if (gb_helix_con) {
+        GBDATA *gb_helix = GBT_find_sequence(gb_helix_con, alignment_name);
+        if (gb_helix) helix_string = GB_read_string(gb_helix);
     }
+    free(helix_name);
 
-    free(alignment_name);
-    error = GB_end_transaction(GLOBAL_gb_main, error);
-    if (error) aw_message(error);
+    return helix_string;
 }
 
-static AW_window *ED4_create_faligner_window(AW_root *awr, AlignDataAccess *data_access) {
+const AlignDataAccess *ED4_get_aligner_data_access() {
+    static SmartPtr<AlignDataAccess> aliDataAccess;
+
+    if (aliDataAccess.isNull()) {
+        aliDataAccess = new AlignDataAccess(GLOBAL_gb_main,
+                                            ED4_ROOT->alignment_name,
+                                            true, ED4_trigger_instant_refresh, // perform refresh
+                                            get_group_consensus,               // aligner fetches consensus of group of species via this function
+                                            get_selected_range,                // aligner fetches column range of selection via this function
+                                            get_first_selected_species,        // aligner fetches first and..
+                                            get_next_selected_species,         // .. following selected species via these functions
+                                            get_helix_string);                 // used by island_hopping (if configured to use sec-structure)
+    }
+
+    return aliDataAccess.isSet() ? &*aliDataAccess : NULL;
+}
+
+static AW_window *ED4_create_faligner_window(AW_root *awr, const AlignDataAccess *data_access) {
 #if defined(DEBUG)
-    static AlignDataAccess *last_data_access = NULL;
+    static const AlignDataAccess *last_data_access = NULL;
 
     e4_assert(!last_data_access || (last_data_access == data_access)); // there shall be only one AlignDataAccess
     last_data_access = data_access;
 #endif
 
     static AW_window *aws = NULL;
-    if (!aws) {
-        ED4_init_aligner_data_access(data_access);
-        aws = FastAligner_create_window(awr, data_access);
-    }
+    if (!aws) aws = FastAligner_create_window(awr, data_access);
     return aws;
 }
 
@@ -1485,15 +1426,11 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     }
     awmm->close_sub_menu();
 
-#if !defined(NDEBUG) && 0
-    awmm->insert_menu_topic(0,               "Test (test split & merge)", "T", 0, AWM_ALL, ED4_testSplitNMerge, 1, 0);
-#endif
-    
     awmm->sep______________();
-    awmm->insert_menu_topic(awmm->local_id("fast_aligner"),   INTEGRATED_ALIGNERS_TITLE,            "I", "faligner.hlp",     AWM_ALL,            makeCreateWindowCallback(ED4_create_faligner_window, &dataAccess_4_aligner));
+    awmm->insert_menu_topic(awmm->local_id("fast_aligner"),   INTEGRATED_ALIGNERS_TITLE,            "I", "faligner.hlp",     AWM_ALL,            makeCreateWindowCallback(ED4_create_faligner_window, ED4_get_aligner_data_access()));
     awmm->insert_menu_topic("fast_align_set_ref",             "Set aligner reference [Ctrl-R]",     "R", "faligner.hlp",     AWM_ALL,            RootAsWindowCallback::simple(FastAligner_set_reference_species));
     awmm->insert_menu_topic(awmm->local_id("align_sequence"), "Old aligner from ARB_EDIT [broken]", "O", "ne_align_seq.hlp", AWM_DISABLED,       create_naligner_window);
-    awmm->insert_menu_topic("sina",                           "SINA (SILVA Incremental Aligner)",   "S", "sina_main.hlp",    sina_mask(aw_root), makeWindowCallback(show_sina_window, &dataAccess_4_aligner));
+    awmm->insert_menu_topic("sina",                           "SINA (SILVA Incremental Aligner)",   "S", "sina_main.hlp",    sina_mask(aw_root), makeWindowCallback(show_sina_window, ED4_get_aligner_data_access()));
     awmm->insert_menu_topic("del_ali_tmp",                    "Remove all aligner Entries",         "v", 0,                  AWM_ALL,            makeWindowCallback(ED4_remove_faligner_entries));
     awmm->sep______________();
     awmm->insert_menu_topic("missing_bases", "Dot potentially missing bases", "D", "missbase.hlp", AWM_EXP, ED4_popup_dot_missing_bases_window);
@@ -1778,7 +1715,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->button_length(7);
 
     awmm->at("aligner");
-    awmm->callback(makeCreateWindowCallback(ED4_create_faligner_window, &dataAccess_4_aligner));
+    awmm->callback(makeCreateWindowCallback(ED4_create_faligner_window, ED4_get_aligner_data_access()));
     awmm->help_text("faligner.hlp");
     awmm->create_button("ALIGNER", "Aligner");
 

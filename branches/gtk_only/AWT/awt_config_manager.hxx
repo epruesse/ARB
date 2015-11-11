@@ -92,16 +92,15 @@ public:
 // ----------------------------------------
 //      callbacks from config manager :
 
-typedef char *(*AWT_store_config_to_string)(AW_CL cl1, AW_CL cl2);
-typedef void (*AWT_load_or_reset_config)(const char *stored_string, AW_CL cl1, AW_CL cl2);
-
-DECLARE_CBTYPE_FVV_AND_BUILDERS(ConfigSetupCallback, void, AWT_config_definition&); // defines makeConfigSetupCallback
+DECLARE_CBTYPE_FVV_AND_BUILDERS(ConfigSetupCallback,   void, AWT_config_definition&); // defines makeConfigSetupCallback
+DECLARE_CBTYPE_VV_AND_BUILDERS (StoreConfigCallback,   char*);                        // defines makeStoreConfigCallback
+DECLARE_CBTYPE_FVV_AND_BUILDERS(RestoreConfigCallback, void, const char *);           // defines makeRestoreConfigCallback
 
 // ----------------------------------
 // the config manager itself
 // adds button at cursor position when called (from a window generator function)
 
-void AWT_insert_config_manager(AW_window *aww, AW_default default_file_, const char *id, AWT_store_config_to_string store, AWT_load_or_reset_config load_or_reset, AW_CL cl1, AW_CL cl2, const char *macro_id = NULL, const AWT_predefined_config *predef = NULL);
+void AWT_insert_config_manager(AW_window *aww, AW_default default_file_, const char *id, const StoreConfigCallback& store, const RestoreConfigCallback& load_or_reset, const char *macro_id = NULL, const AWT_predefined_config *predef = NULL);
 void AWT_insert_config_manager(AW_window *aww, AW_default default_file_, const char *id, ConfigSetupCallback setup_cb, const char *macro_id = NULL, const AWT_predefined_config *predef = NULL);
 void AWT_insert_config_manager(AW_window *aww, AW_default default_file_, const char *id, const AWT_config_mapping_def *mapping, const char *macro_id = NULL, const AWT_predefined_config *predef = NULL);
 

@@ -827,9 +827,6 @@ void SEC_helix_strand::paint(AW_device *device) {
         }
 
         AW_click_cd cd(device, get_helix()->self(), startAttachAbspos());
-        // AW_CL cd1 = (AW_CL)get_helix()->self();
-        // AW_CL cd2 = (AW_CL)startAttachAbspos();
-
         device->line(SEC_GC_HELIX, strandArrow);
 
         Vector right = strandArrow.line_vector(); // left arrowhead vector
@@ -1047,8 +1044,6 @@ GB_ERROR SEC_root::paint(AW_device *device) {
             const char      *structId    = db->structure()->name();
 
             AW_click_cd cd(device, rootLoop->self(), -1);
-            // AW_CL cd1 = rootLoop->self();
-            // AW_CL cd2 = -1;
 
             Vector center2corner(-1, -1);
             center2corner.set_length(rootLoop->drawnSize()*0.33);

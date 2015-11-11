@@ -370,23 +370,23 @@ void ED4_base::generate_configuration_string(GBS_strstruct& buffer) {
 }
 
 
-ARB_ERROR ED4_base::route_down_hierarchy(ED4_route_cb cb, AW_CL cd1, AW_CL cd2) {
+ARB_ERROR ED4_base::route_down_hierarchy(const ED4_route_cb& cb) {
     // executes 'cb' for every element in hierarchy
-    return cb(this, cd1, cd2);
+    return cb(this);
 }
 
-ARB_ERROR ED4_manager::route_down_hierarchy(ED4_route_cb cb, AW_CL cd1, AW_CL cd2) {
-    ARB_ERROR error = cb(this, cd1, cd2);
+ARB_ERROR ED4_manager::route_down_hierarchy(const ED4_route_cb& cb) {
+    ARB_ERROR error = cb(this);
     if (children && !error) {
         for (int i=0; i <children->members() && !error; i++) {
-            error = children->member(i)->route_down_hierarchy(cb, cd1, cd2);
+            error = children->member(i)->route_down_hierarchy(cb);
         }
     }
     return error;
 }
 
-ED4_base *ED4_manager::find_first_that(ED4_level level, bool (*condition)(ED4_base *to_test, AW_CL arg), AW_CL arg) {
-    if ((spec.level&level) && condition(this, arg)) {
+ED4_base *ED4_manager::find_first_that(ED4_level level, const ED4_basePredicate& fulfills_predicate) {
+    if ((spec.level&level) && fulfills_predicate(this)) {
         return this;
     }
 
@@ -395,12 +395,12 @@ ED4_base *ED4_manager::find_first_that(ED4_level level, bool (*condition)(ED4_ba
             ED4_base *child = children->member(i);
 
             if (child->is_manager()) {
-                ED4_base *found = child->to_manager()->find_first_that(level, condition, arg);
+                ED4_base *found = child->to_manager()->find_first_that(level, fulfills_predicate);
                 if (found) {
                     return found;
                 }
             }
-            else if ((child->spec.level&level) && condition(child, arg)) {
+            else if ((child->spec.level&level) && fulfills_predicate(child)) {
                 return child;
             }
         }

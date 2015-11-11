@@ -47,7 +47,7 @@ void ED4_consensus_definition_changed(AW_root*) {
     }
 }
 
-static ARB_ERROR toggle_consensus_display(ED4_base *base, AW_CL show) {
+static ARB_ERROR toggle_consensus_display(ED4_base *base, bool show) {
     if (base->is_consensus_manager()) {
         ED4_manager *consensus_man = base->to_manager();
         ED4_spacer_terminal *spacer = consensus_man->parent->get_defined_level(ED4_L_SPACER)->to_spacer_terminal();
@@ -68,7 +68,7 @@ static ARB_ERROR toggle_consensus_display(ED4_base *base, AW_CL show) {
 }
 
 void ED4_consensus_display_changed(AW_root *root) {
-    int show = root->awar(ED4_AWAR_CONSENSUS_SHOW)->read_int();
-    ED4_ROOT->root_group_man->route_down_hierarchy(toggle_consensus_display, show).expect_no_error();
+    bool show = root->awar(ED4_AWAR_CONSENSUS_SHOW)->read_int();
+    ED4_ROOT->root_group_man->route_down_hierarchy(makeED4_route_cb(toggle_consensus_display, show)).expect_no_error();
 }
 
