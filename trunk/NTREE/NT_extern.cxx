@@ -116,17 +116,13 @@ static AW_window *create_nds_export_window(AW_root *root) {
     aws->init(root, "EXPORT_NDS_OF_MARKED", "EXPORT NDS OF MARKED SPECIES");
     aws->load_xfig("sel_box_nds.fig");
 
-    aws->callback(AW_POPDOWN); // @@@ this window has two close buttons -> remove one
+    aws->callback(AW_POPDOWN);
     aws->at("close");
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->callback(makeHelpCallback("arb_export_nds.hlp"));
     aws->at("help");
     aws->create_button("HELP", "HELP", "H");
-
-    aws->callback(AW_POPDOWN);
-    aws->at("cancel");
-    aws->create_button("CLOSE", "CANCEL", "C");
 
     aws->at("save");
     aws->callback(makeWindowCallback(export_nds_cb, false));
