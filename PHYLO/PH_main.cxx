@@ -104,17 +104,29 @@ __ATTR__NORETURN static void ph_exit(AW_window *aw_window, PH_root *ph_root) {
 
 
 void expose_cb() {
-    if (PH_display::ph_display->displayed()!=NONE) {
+    if (PH_display::ph_display && PH_display::ph_display->displayed()!=NONE) {
         PH_display::ph_display->clear_window();
         PH_display::ph_display->display();
     }
 }
 
-
 static void resize_cb() {
     if (PH_display::ph_display) {
         PH_display::ph_display->resized();
         PH_display::ph_display->display();
+    }
+}
+
+static void gc_changed_cb(GcChange whatChanged) {
+    switch (whatChanged) {
+        case GC_COLOR_GROUP_USE_CHANGED:
+            ph_assert(0); // not used atm -> fall-through
+        case GC_COLOR_CHANGED:
+            expose_cb();
+            break;
+        case GC_FONT_CHANGED:
+            resize_cb();
+            break;
     }
 }
 
@@ -422,11 +434,13 @@ static AW_window *create_phyl_main_window(AW_root *aw_root, PH_root *ph_root) {
 
     // create menus and menu inserts with callbacks
 
+    const GcChangedCallback gcChangedCb = makeGcChangedCallback(gc_changed_cb);
+
     AW_gc_manager gcmiddle = AW_manage_GC(awm,
                                           awm->get_window_id(),
                                           awm->get_device(AW_MIDDLE_AREA),
                                           PH_GC_0, PH_GC_0_DRAG, AW_GCM_DATA_AREA,
-                                          makeWindowCallback(resize_cb),
+                                          gcChangedCb,
                                           false, // no color groups
                                           "#CC9AF8",
                                           "#SEQUENCE$#000000",
@@ -437,7 +451,7 @@ static AW_window *create_phyl_main_window(AW_root *aw_root, PH_root *ph_root) {
                  awm->get_window_id(),
                  awm->get_device(AW_BOTTOM_AREA),
                  PH_GC_0, PH_GC_0_DRAG, AW_GCM_WINDOW_AREA,
-                 makeWindowCallback(resize_cb),
+                 gcChangedCb,
                  false, // no color groups
                  "pink",
                  "#FOOTER",

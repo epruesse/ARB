@@ -27,6 +27,9 @@
 #include <arbdbt.h>
 #include <ad_colorset.h>
 
+#define AWAR_COLOR_GROUPS_PREFIX  "color_groups"
+#define AWAR_COLOR_GROUPS_USE     AWAR_COLOR_GROUPS_PREFIX "/use" // int : whether to use the colors in display or not
+
 CONSTEXPR_RETURN inline bool valid_color_group(int color_group) {
     return color_group>0 && color_group<=AW_COLOR_GROUPS;
 }
@@ -67,17 +70,17 @@ static const char *ARB_EDIT4_color_group[AW_COLOR_GROUPS+1] = {
 };
 
 struct AW_MGC_cb_struct : virtual Noncopyable { // one for each canvas
-    AW_window      *aw;
-    WindowCallback  cb;
+    AW_window         *aw;
+    GcChangedCallback  cb;
 
-    void call() { cb(aw); }
+    void call(GcChange whatChanged) { cb(whatChanged); }
 
     char      *window_awar_name;
     AW_device *device;
 
     struct AW_MGC_awar_cb_struct *next_drag;
 
-    AW_MGC_cb_struct(AW_window *aw_, const char *gc_base_name, const WindowCallback& wcb)
+    AW_MGC_cb_struct(AW_window *aw_, const char *gc_base_name, const GcChangedCallback& wcb)
         : aw(aw_),
           cb(wcb),
           window_awar_name(strdup(gc_base_name)),
@@ -422,7 +425,7 @@ static void aw_gc_changed_cb(AW_root *awr, AW_MGC_awar_cb_struct *cbs, int mode)
         }
 
         if (mode != -1) {
-            cbs->cbs->call();
+            cbs->cbs->call(GC_FONT_CHANGED);
         }
         --dont_recurse;
     }
@@ -448,16 +451,14 @@ static void aw_gc_color_changed_cb(AW_root *root, AW_MGC_awar_cb_struct *cbs, in
         }
     }
     if (mode != -1) {
-        cbs->cbs->call();
+        cbs->cbs->call(GC_COLOR_CHANGED);
     }
     free(colorname);
 }
 
-static void AW_color_group_usage_changed_cb(AW_root *awr) {
-    use_color_groups       = awr->awar(AWAR_COLOR_GROUPS_USE)->read_int();
-    //     AWT_canvas *ntw = (AWT_canvas*)cl_ntw;
-    //     ntw->refresh();
-    // @@@ FIXME: a working refresh is missing
+static void AW_color_group_usage_changed_cb(AW_root *awr, const GcChangedCallback *gc_changed_cb) {
+    use_color_groups = awr->awar(AWAR_COLOR_GROUPS_USE)->read_int();
+    (*gc_changed_cb)(GC_COLOR_GROUP_USE_CHANGED);
 }
 
 static void AW_color_group_name_changed_cb(AW_root *) {
@@ -466,13 +467,13 @@ static void AW_color_group_name_changed_cb(AW_root *) {
               AW_ADVICE_TOGGLE, "Color group name has been changed", 0);
 }
 
-
-
-static void AW_init_color_groups(AW_root *awr, AW_default def) {
+static void AW_init_color_groups(AW_root *awr, AW_default def, const GcChangedCallback& gccb) {
     if (!color_groups_initialized) {
-        AW_awar *useAwar = awr->awar_int(AWAR_COLOR_GROUPS_USE, 1, def);
+        AW_awar                   *useAwar    = awr->awar_int(AWAR_COLOR_GROUPS_USE, 1, def);
+        GcChangedCallback * const  changed_cb = new GcChangedCallback(gccb); // bound to cb
+
         use_color_groups = useAwar->read_int();
-        useAwar->add_callback(AW_color_group_usage_changed_cb);
+        useAwar->add_callback(makeRootCallback(AW_color_group_usage_changed_cb, changed_cb));
 
         char name_buf[AW_COLOR_GROUP_NAME_LEN+1];
         for (int i = 1; i <= AW_COLOR_GROUPS; ++i) {
@@ -539,15 +540,15 @@ public:
 // force-diff-sync 265873246583745 (remove after merging back to trunk)
 // ----------------------------------------------------------------------
 
-AW_gc_manager AW_manage_GC(AW_window             *aww,
-                           const char            *gc_base_name,
-                           AW_device             *device,
-                           int                    base_gc,
-                           int                    base_drag,
-                           AW_GCM_AREA            area,
-                           const WindowCallback&  changecb,
-                           bool                   define_color_groups,
-                           const char            *default_background_color,
+AW_gc_manager AW_manage_GC(AW_window                *aww,
+                           const char               *gc_base_name,
+                           AW_device                *device,
+                           int                       base_gc,
+                           int                       base_drag,
+                           AW_GCM_AREA               area,
+                           const GcChangedCallback&  changecb,
+                           bool                      define_color_groups,
+                           const char               *default_background_color,
                            ...)
 {
     /*!
@@ -568,7 +569,6 @@ AW_gc_manager AW_manage_GC(AW_window             *aww,
      * @param base_drag    one after last gc
      * @param area         AW_GCM_DATA_AREA or AW_GCM_WINDOW_AREA (motif only)
      * @param changecb     cb if changed
-     * @param cd1,cd2      free Parameters to changecb
      * @param define_color_groups  true -> add colors for color groups
      * @param ...                  NULL terminated list of \0 terminated strings:
      *                             first GC is fixed: '-background'
@@ -593,7 +593,7 @@ AW_gc_manager AW_manage_GC(AW_window             *aww,
     mcbs->device = device;
 
     AW_default aw_def = AW_ROOT_DEFAULT;
-    AW_init_color_groups(aw_root, aw_def);
+    AW_init_color_groups(aw_root, aw_def, changecb);
 
     char background[50];
     sprintf(background, "-background$%s", default_background_color);

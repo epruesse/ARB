@@ -1276,8 +1276,10 @@ void ED4_popup_gc_window(AW_window *awp, AW_gc_manager gcman) {
     aww->activate();
 }
 
-static void refresh_on_gc_change_cb() {
-    ED4_expose_recalculations();
+static void gc_change_cb(GcChange whatChanged) {
+    if (whatChanged == GC_FONT_CHANGED) {
+        ED4_expose_recalculations();
+    }
     ED4_request_full_instant_refresh();
 }
 
@@ -1334,7 +1336,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
                               ED4_G_STANDARD,                // GC_Standard configuration
                               ED4_G_DRAG,
                               AW_GCM_DATA_AREA,
-                              makeWindowCallback(refresh_on_gc_change_cb), // callback triggering refresh on gc-change
+                              makeGcChangedCallback(gc_change_cb), // callback triggering refresh on gc-change
                               true,                          // use color groups
 
                               "#f8f8f8",

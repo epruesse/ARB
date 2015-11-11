@@ -52,7 +52,7 @@ AW_gc_manager SAI_graphic::init_devices(AW_window *aww, AW_device *device, AWT_c
                      SAI_GC_HIGHLIGHT,
                      SAI_GC_MAX,
                      AW_GCM_DATA_AREA,
-                     makeWindowCallback(AWT_resize_cb, scr),
+                     makeGcChangedCallback(AWT_GC_changed_cb, scr),
                      false,
                      "#005500",
                      "Selected Probe$#FF0000",

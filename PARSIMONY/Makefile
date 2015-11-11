@@ -277,6 +277,7 @@ PARS_dtree.o: $(ARBHOME)/INCLUDE/smartptr.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/static_assert.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/test_global.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/test_unit.h
+PARS_dtree.o: $(ARBHOME)/INCLUDE/TreeCallbacks.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/TreeNode.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/ttypes.h
