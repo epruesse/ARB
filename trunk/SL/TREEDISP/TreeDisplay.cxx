@@ -69,7 +69,7 @@ AW_gc_manager AWT_graphic_tree::init_devices(AW_window *aww, AW_device *device, 
         AW_manage_GC(aww,
                      ntw->get_gc_base_name(),
                      device, AWT_GC_CURSOR, AWT_GC_MAX, AW_GCM_DATA_AREA,
-                     makeWindowCallback(AWT_resize_cb, ntw),
+                     makeGcChangedCallback(TREE_GC_changed_cb, ntw),
                      true,      // define color groups
                      "#3be",
 
@@ -3016,9 +3016,6 @@ void TREE_install_update_callbacks(AWT_canvas *ntw) {
 
     // global refresh trigger (used where a refresh is/was missing)
     awr->awar(AWAR_TREE_REFRESH)->add_callback(expose_cb);
-
-    // refresh when 'color groups' are enabled/disabled
-    awr->awar(AWAR_COLOR_GROUPS_USE)->add_callback(makeRootCallback(TREE_recompute_cb, ntw));
 
     // refresh on NDS changes
     GBDATA *gb_arb_presets = GB_search(ntw->gb_main, "arb_presets", GB_CREATE_CONTAINER);

@@ -18,7 +18,7 @@ AW_gc_manager RNA3D_Graphics::init_devices(AW_window *aww, AW_device *device, AW
                       RNA3D_GC_FOREGROUND,
                       RNA3D_GC_MAX,
                       AW_GCM_DATA_AREA,
-                      makeWindowCallback(AWT_resize_cb, scr),
+                      makeGcChangedCallback(AWT_GC_changed_cb, scr),
                       false,
                       "#000000",
                       "+-Foreground$#FFFFFF",     "+-MOLECULE Skeleton$#606060", "-Mapped Species$#FF0000",

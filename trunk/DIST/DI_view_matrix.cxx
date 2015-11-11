@@ -30,19 +30,32 @@
 static void vertical_change_cb  (AW_window *aww, MatrixDisplay *disp) { disp->monitor_vertical_scroll_cb(aww); }
 static void horizontal_change_cb(AW_window *aww, MatrixDisplay *disp) { disp->monitor_horizontal_scroll_cb(aww); }
 
-static void redisplay_needed(AW_window *, MatrixDisplay *disp) {
+static void redisplay_needed(UNFIXED, MatrixDisplay *disp) {
     disp->mark(MatrixDisplay::NEED_CLEAR);
     disp->update_display();
 }
 
-static void reinit_needed(AW_root *, MatrixDisplay *disp) {
+static void reinit_needed(UNFIXED, MatrixDisplay *disp) {
     disp->mark(MatrixDisplay::NEED_SETUP);
     disp->update_display();
 }
 
-static void resize_needed(AW_window *, MatrixDisplay *disp) {
+static void resize_needed(UNFIXED, MatrixDisplay *disp) {
     disp->mark(MatrixDisplay::NEED_SETUP); // @@@ why not NEED_RESIZE?
     disp->update_display();
+}
+
+static void gc_changed_cb(GcChange whatChanged, MatrixDisplay *disp) {
+    switch (whatChanged) {
+        case GC_COLOR_GROUP_USE_CHANGED:
+            di_assert(0); // not used atm -> fall-through
+        case GC_COLOR_CHANGED:
+            redisplay_needed(NULL, disp);
+            break;
+        case GC_FONT_CHANGED:
+            resize_needed(NULL, disp);
+            break;
+    }
 }
 
 void MatrixDisplay::setup() {
@@ -652,7 +665,7 @@ static AW_window *create_matrix_settings_window(AW_root *awr) {
 }
 
 static void selected_species_changed_cb(AW_root*, MatrixDisplay *disp) {
-    if (disp) redisplay_needed(disp->awm, disp);
+    if (disp) redisplay_needed(NULL, disp);
 }
 
 AW_window *DI_create_view_matrix_window(AW_root *awr, MatrixDisplay *disp, save_matrix_params *sparam) {
@@ -679,7 +692,7 @@ AW_window *DI_create_view_matrix_window(AW_root *awr, MatrixDisplay *disp, save_
         AW_manage_GC(awm,
                      awm->get_window_id(),
                      disp->device, DI_G_STANDARD, DI_G_LAST, AW_GCM_DATA_AREA,
-                     makeWindowCallback(resize_needed, disp),
+                     makeGcChangedCallback(gc_changed_cb, disp),
                      false,
                      "#D0D0D0",
                      "#Standard$#000000",

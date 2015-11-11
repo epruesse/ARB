@@ -802,6 +802,15 @@ void TREE_recompute_cb(UNFIXED, AWT_canvas *ntw) {
     AWT_expose_cb(NULL, ntw);
 }
 
+void TREE_GC_changed_cb(GcChange whatChanged, AWT_canvas *ntw) {
+    if (whatChanged == GC_COLOR_GROUP_USE_CHANGED) {
+        TREE_recompute_cb(NULL, ntw);
+    }
+    else {
+        AWT_GC_changed_cb(whatChanged, ntw);
+    }
+}
+
 void NT_reinit_treetype(UNFIXED, AWT_canvas *ntw) {
     AWT_graphic_tree *gt = DOWNCAST(AWT_graphic_tree*, ntw->gfx);
     gt->set_tree_type(gt->tree_sort, ntw);
