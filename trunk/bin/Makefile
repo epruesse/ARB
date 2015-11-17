@@ -11,10 +11,10 @@ help:
 
 # ----------------------------------------
 
-all: cleanlinks
+all:
 	$(MAKE) scriptlinks mafftlinks
 
-develall: cleanlinks
+develall:
 	$(MAKE) scriptlinks mafftlinks devellinks
 
 # ----------------------------------------
