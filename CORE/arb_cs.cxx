@@ -78,6 +78,9 @@ ssize_t arb_socket_write(int socket, const char* ptr, size_t size) {
         // Linux has MSG_NOSIGNAL, but not SO_NOSIGPIPE
         // prevent SIGPIPE here
         ssize_t write_len = send(socket, ptr, to_write, MSG_NOSIGNAL);
+        // Note: if valgrind warns about uninitialized bytes sent,
+        // one common reason are parameters passed as int (instead of long).
+        // Affected functions are aisc_put, aisc_nput and aisc_create.
 #else
         ssize_t write_len = write(socket, ptr, to_write);
 #endif
