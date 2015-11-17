@@ -204,9 +204,10 @@ aisc_com *aisc_open(const char *path, AISC_Object& main_obj, long magic, GB_ERRO
     link->aisc_client_bytes_first = link->aisc_client_bytes_last = NULL;
     link->magic = magic;
     {
-        static char *unix_name = 0;
+        char *unix_name = 0;
         err = arb_open_socket(path, true, &link->socket, &unix_name);
-        freenull(unix_name);
+        aisc_assert(link->socket>=0);
+        free(unix_name);
     }
     if (err) {
         if (*err) {

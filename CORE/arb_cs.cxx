@@ -108,32 +108,35 @@ static GB_ERROR arb_open_tcp_socket(char* name, bool do_connect, int *fd);
  *
  * @param  name          name of port   {[<host>:]<port>|:<filename>} 
  * @param  do_connect    connect if true (client), otherwise bind (server)
- * @param  fd            file descriptor of opened socket (out)
+ * @param  *fd           file descriptor of opened socket (out) or 0 (never returns <0!)
  * @param  filename_out  filename of unix socket (out)
  *                       must be NULL or allocated (will be freed)
  *
- * @result NULL if all went fine
- *         "" if could not connect
- *         otherwise error message
+ * @result NULL if all went fine     -> *fd>0
+ *         "" if could not connect   -> *fd==0
+ *         otherwise error message   -> *fd==0
  */
 GB_ERROR arb_open_socket(const char* name, bool do_connect, int *fd, char** filename_out) {
-    if (!name || strlen(name) == 0) {
-        return "Error opening socket: empty name";
-    }
+    GB_ERROR error = NULL;
+    *fd            = 0;
 
-    GB_ERROR error;
-    if (name[0] == ':') {
+    if (!name || strlen(name) == 0) {
+        error = "Error opening socket: empty name";
+    }
+    else if (name[0] == ':') {
         // expand variables in path
         char *filename = arb_shell_expand(name+1);
         if (GB_have_error()) {
-            return GB_await_error();
-        } 
-
-        error = arb_open_unix_socket(filename, do_connect, fd);
-        if (error) {
-            free(filename);
-        } else {
-            reassign(*filename_out, filename);
+            error = GB_await_error();
+        }
+        else {
+            error = arb_open_unix_socket(filename, do_connect, fd);
+            if (error) {
+                free(filename);
+            }
+            else {
+                reassign(*filename_out, filename);
+            }
         }
     } 
     else {
@@ -142,7 +145,14 @@ GB_ERROR arb_open_socket(const char* name, bool do_connect, int *fd, char** file
         free(socket_name);
         freenull(*filename_out);
     }
-            
+
+    if (error) {
+        *fd = 0;
+    }
+    else {
+        arb_assert(fd>0);
+    }
+
     return error;
 }
 
