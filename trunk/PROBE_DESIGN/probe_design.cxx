@@ -1918,12 +1918,12 @@ static void pd_query_pt_server(AW_window *aww) {
 
     GB_ERROR error = NULL;
     {
-        const char *server = GBS_read_arb_tcp(server_tag);
-        if (!server) {
+        const char *socketid = GBS_read_arb_tcp(server_tag);
+        if (!socketid) {
             error = GB_await_error();
         }
         else {
-            char *arb_who = prefixSSH(server, "$ARBHOME/bin/arb_who", 0);
+            char *arb_who = createCallOnSocketHost(socketid, "$ARBHOME/bin/", "arb_who", WAIT_FOR_TERMINATION);
             GBS_strcat(strstruct, arb_who);
             free(arb_who);
         }

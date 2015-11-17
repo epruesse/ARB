@@ -727,6 +727,10 @@ static export_environment expenv;
 
 bool GB_host_is_local(const char *hostname) {
     // returns true if host is local
+
+    arb_assert(hostname);
+    arb_assert(hostname[0]);
+
     return
         ARB_stricmp(hostname, "localhost")       == 0 ||
         ARB_strBeginsWith(hostname, "127.0.0.")       ||
