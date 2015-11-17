@@ -205,7 +205,7 @@ static char *AP_probe_iterate_event(ARB_ERROR& error) {
 
                 aisc_put(pd_gl.link, PT_PEP, pep,
                          PEP_NUMGET,      (long)this_amount,
-                         PEP_FIND_PROBES, 0,
+                         PEP_FIND_PROBES, (long)0,
                          NULL);
 
                 char *pep_result = 0;
@@ -255,13 +255,13 @@ static char *AP_probe_design_event(ARB_ERROR& error) {
                         PDC_MAX_PROBELEN, (long)P.DESIGNMAXPROBELEN,
                         PDC_MINTEMP,      (double)P.MINTEMP,
                         PDC_MAXTEMP,      (double)P.MAXTEMP,
-                        PDC_MINGC,        P.MINGC/100.0,
-                        PDC_MAXGC,        P.MAXGC/100.0,
+                        PDC_MINGC,        (double)P.MINGC/100.0,
+                        PDC_MAXGC,        (double)P.MAXGC/100.0,
                         PDC_MAXBOND,      (double)P.MAXBOND,
                         PDC_MIN_ECOLIPOS, (long)P.MINPOS,
                         PDC_MAX_ECOLIPOS, (long)P.MAXPOS,
                         PDC_MISHIT,       (long)P.MISHIT,
-                        PDC_MINTARGETS,   P.MINTARGETS/100.0,
+                        PDC_MINTARGETS,   (double)P.MINTARGETS/100.0,
                         PDC_CLIPRESULT,   (long)P.DESIGNCLIPOUTPUT,
                         NULL))
         {
@@ -288,7 +288,7 @@ static char *AP_probe_design_event(ARB_ERROR& error) {
 
             aisc_put(pd_gl.link, PT_PDC, pdc,
                      PDC_NAMES, &bs,
-                     PDC_GO, 0,
+                     PDC_GO, (long)0,
                      NULL);
 
             {
@@ -349,7 +349,7 @@ static char *AP_probe_match_event(ARB_ERROR& error) {
         aisc_nput(pd_gl.link, PT_LOCS, pd_gl.locs,
                   LOCS_MATCH_REVERSED,       (long)P.COMPLEMENT,
                   LOCS_MATCH_SORT_BY,        (long)P.WEIGHTED,
-                  LOCS_MATCH_COMPLEMENT,     0L,
+                  LOCS_MATCH_COMPLEMENT,     (long)0,
                   LOCS_MATCH_MAX_MISMATCHES, (long)P.MISMATCHES,
                   LOCS_MATCH_N_ACCEPT,       (long)P.ACCEPTN,
                   LOCS_MATCH_N_LIMIT,        (long)P.LIMITN,

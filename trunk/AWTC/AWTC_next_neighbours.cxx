@@ -197,7 +197,7 @@ GB_ERROR PT_FamilyFinder::retrieve_family(const char *sequence, FF_complement co
          */
 
         ff_assert(!range.is_empty());
-         
+
         // create and init family finder object
         T_PT_FAMILYFINDER ffinder;
         if (aisc_create(ci->link, PT_LOCS, ci->locs,
@@ -208,7 +208,7 @@ GB_ERROR PT_FamilyFinder::retrieve_family(const char *sequence, FF_complement co
                         FAMILYFINDER_SORT_TYPE,       long(uses_rel_matches()), // 0: matches, 1: relative matches (0 hardcoded till July 2008)
                         FAMILYFINDER_REL_SCORING,     long(get_scaling()),      // scaling of relative scores
                         FAMILYFINDER_SORT_MAX,        long(max_results),        // speed up family sorting (only sort retrieved results)
-                        FAMILYFINDER_MIN_SCORE,       min_score,                // limit hits by score
+                        FAMILYFINDER_MIN_SCORE,       double(min_score),        // limit hits by score
                         FAMILYFINDER_COMPLEMENT,      long(compl_mode),         // any combination of: 1 = forward, 2 = reverse, 4 = reverse-complement, 8 = complement (1 hardcoded in PT-Server till July 2008)
                         FAMILYFINDER_RANGE_STARTPOS,  long(range.start()),
                         FAMILYFINDER_RANGE_ENDPOS,    long(range.is_limited() ? range.end() : -1),
