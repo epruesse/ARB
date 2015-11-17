@@ -44,6 +44,12 @@
 // AISC_MKPT_PROMOTE:
 // AISC_MKPT_PROMOTE:    char *tcp;
 // AISC_MKPT_PROMOTE:};
+// AISC_MKPT_PROMOTE:
+// AISC_MKPT_PROMOTE:enum SpawnMode {
+// AISC_MKPT_PROMOTE:    WAIT_FOR_TERMINATION,
+// AISC_MKPT_PROMOTE:    SPAWN_ASYNCHRONOUS,
+// AISC_MKPT_PROMOTE:    SPAWN_DAEMONIZED,
+// AISC_MKPT_PROMOTE:};
 
 #define TRIES 1
 
@@ -57,33 +63,47 @@ static struct gl_struct {
 } glservercntrl;
 
 
-char *prefixSSH(const char *host, const char *command, int async) {
-    /* 'host' is a hostname or 'hostname:port' (where hostname may be an IP)
-       'command' is the command to be executed
-       if 'async' is 1 -> append '&'
+inline void make_async_call(char*& command) {
+    freeset(command, GBS_global_string_copy("( %s ) &", command));
+}
 
-       returns a SSH system call for foreign host or
-       a direct system call for the local machine
-    */
+char *createCallOnSocketHost(const char *host, const char *remotePrefix, const char *command, SpawnMode spawnmode) {
+    /*! transforms a shell-command
+     * - use ssh if host is not local
+     * - add wrappers for detached execution
+     * @param host          socket specification (may be 'host:port', 'host' or ':portOrSocketfile')
+     * @param remotePrefix  prefixed to command if it is executed on remote host (e.g. "$ARBHOME/bin/" -> uses value of environment variable ARBHOME on remote host!)
+     * @param command       the shell command to execute
+     * @param spawnmode     how to spawn // @@@ doc spawntypes
+     * @return a SSH system call for remote hosts and direct system calls for the local machine
+     */
 
-    char *result    = 0;
-    char  asyncChar = " &"[!!async];
+    arb_assert((remotePrefix[0] == 0) || (strchr(remotePrefix, 0)[-1] == '/'));
+
+    char *call = 0;
+    if (spawnmode == SPAWN_DAEMONIZED) {
+        GBK_terminate("Not yet supported SpawnMode SPAWN_DAEMONIZED"); // @@@ impl
+    }
 
     if (host && host[0]) {
         const char *hostPort = strchr(host, ':');
         char       *hostOnly = GB_strpartdup(host, hostPort ? hostPort-1 : 0);
 
-        if (!GB_host_is_local(hostOnly)) {
-            result = GBS_global_string_copy("ssh %s -n '%s' %c", hostOnly, command, asyncChar);
+        if (hostOnly[0] && !GB_host_is_local(hostOnly)) {
+            call = GBS_global_string_copy("ssh %s -n '%s%s'", hostOnly, remotePrefix, command);
         }
         free(hostOnly);
     }
 
-    if (!result) {
-        result = GBS_global_string_copy("(%s) %c", command, asyncChar);
+    if (!call) {
+        call = strdup(command);
+        make_valgrinded_call(call); // only on local host
     }
 
-    return result;
+    bool run_async = spawnmode == SPAWN_ASYNCHRONOUS;
+    if (run_async) make_async_call(call);
+
+    return call;
 }
 
 GB_ERROR arb_start_server(const char *arb_tcp_env, int do_sleep)
@@ -133,24 +153,16 @@ GB_ERROR arb_start_server(const char *arb_tcp_env, int do_sleep)
         }
 
         {
-            char *command = 0;
+            char       *command = 0;
+            const char *port    = strchr(tcp_id, ':');
 
-            if (*tcp_id == ':') { // local mode
-                command = GBS_global_string_copy("%s %s -T%s &", server, serverparams, tcp_id);
-                make_valgrinded_call(command);
+            if (!port) {
+                error = GB_export_errorf("Error: Missing ':' in socket definition of '%s' in file $(ARBHOME)/lib/arb_tcp.dat", arb_tcp_env);
             }
             else {
-                const char *port = strchr(tcp_id, ':');
-
-                if (!port) {
-                    error = GB_export_errorf("Error: Missing ':' in line '%s' file $(ARBHOME)/lib/arb_tcp.dat", arb_tcp_env);
-                }
-                else {
-                    char *remoteCommand = GBS_global_string_copy("$ARBHOME/bin/%s %s -T%s", server, serverparams, port);
-                    make_valgrinded_call(remoteCommand);
-                    command = prefixSSH(tcp_id, remoteCommand, 1);
-                    free(remoteCommand);
-                }
+                char *plainCommand = GBS_global_string_copy("%s %s -T%s", server, serverparams, port);
+                command            = createCallOnSocketHost(tcp_id, "$ARBHOME/bin/", plainCommand, SPAWN_ASYNCHRONOUS);
+                free(plainCommand);
             }
 
             if (!error) {
