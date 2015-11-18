@@ -90,7 +90,9 @@ char *createCallOnSocketHost(const char *host, const char *remotePrefix, const c
         char       *hostOnly = GB_strpartdup(host, hostPort ? hostPort-1 : 0);
 
         if (hostOnly[0] && !GB_host_is_local(hostOnly)) {
-            call = GBS_global_string_copy("ssh %s -n '%s%s'", hostOnly, remotePrefix, command);
+            char *quotedRemoteCommand = GBK_singlequote(GBS_global_string("%s%s", remotePrefix, command));
+            call                      = GBS_global_string_copy("ssh %s -n %s", hostOnly, quotedRemoteCommand);
+            free(quotedRemoteCommand);
         }
         free(hostOnly);
     }
@@ -160,7 +162,7 @@ GB_ERROR arb_start_server(const char *arb_tcp_env, int do_sleep)
                 error = GB_export_errorf("Error: Missing ':' in socket definition of '%s' in file $(ARBHOME)/lib/arb_tcp.dat", arb_tcp_env);
             }
             else {
-                char *plainCommand = GBS_global_string_copy("%s %s -T%s", server, serverparams, port);
+                char *plainCommand = GBS_global_string_copy("%s %s '-T%s'", server, serverparams, port);
                 command            = createCallOnSocketHost(tcp_id, "$ARBHOME/bin/", plainCommand, SPAWN_ASYNCHRONOUS);
                 free(plainCommand);
             }
