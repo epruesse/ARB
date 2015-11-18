@@ -564,12 +564,16 @@ static void aw_help_search(AW_window *aww) {
 
             if (!helpfilename) error = GB_await_error();
             else {
-                const char *gen_help_tmpl = "cd %s;grep -i '^[^#]*%s' `find . -name \"*.hlp\"` | arb_sed -e 'sI:.*IIg' -e 'sI^\\./IIg' | sort | uniq > %s";
-                char       *gen_help_cmd  = GBS_global_string_copy(gen_help_tmpl, GB_getenvDOCPATH(), searchtext, helpfilename);
+                char       *quotedSearchExpression = GBK_singlequote(GBS_global_string("^[^#]*%s", searchtext));
+                char       *quotedDocpath          = GBK_singlequote(GB_getenvDOCPATH());
+                const char *gen_help_tmpl          = "cd %s;grep -i %s `find . -name \"*.hlp\"` | arb_sed -e 'sI:.*IIg' -e 'sI^\\./IIg' | sort | uniq > %s";
+                char       *gen_help_cmd           = GBS_global_string_copy(gen_help_tmpl, quotedDocpath, quotedSearchExpression, helpfilename);
 
                 error = GBK_system(gen_help_cmd);
 
                 free(gen_help_cmd);
+                free(quotedDocpath);
+                free(quotedSearchExpression);
                 GB_remove_on_exit(helpfilename);
             }
         }

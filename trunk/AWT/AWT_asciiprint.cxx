@@ -260,10 +260,11 @@ static void awt_aps_go(AW_window *aww) {
                         oristring = "-p -2 ";
                         break;
                 }
-                char *header = awr->awar(AWAR_APRINT_TITLE)->read_string();
-                a2ps_call = GBS_global_string_copy("arb_a2ps -ns -nP '-H%s' %s -l%i %s",
-                                                   header, oristring, default_lpp, tmp_file);
-                free(header);
+                const char *header          = awr->awar(AWAR_APRINT_TITLE)->read_char_pntr();
+                char       *quotedHeaderArg = GBK_singlequote(GBS_global_string("-H%s", header));
+                a2ps_call                   = GBS_global_string_copy("arb_a2ps -ns -nP %s %s -l%i %s",
+                                                                     quotedHeaderArg, oristring, default_lpp, tmp_file);
+                free(quotedHeaderArg);
             }
 
             const char *scall = 0;
@@ -275,9 +276,11 @@ static void awt_aps_go(AW_window *aww) {
                     break;
                 }
                 case AWT_APRINT_DEST_FILE_PS: {
-                    char *file = printFile(awr);
-                    fprintf(stderr, "Printing to PS file '%s'\n", file);
-                    scall = GBS_global_string("%s >%s;rm -f %s", a2ps_call, file, tmp_file);
+                    char *file       = printFile(awr);
+                    char *quotedFile = GBK_singlequote(file);
+                    fprintf(stderr, "Printing to PS file %s\n", quotedFile);
+                    scall            = GBS_global_string("%s >%s;rm -f %s", a2ps_call, quotedFile, tmp_file);
+                    free(quotedFile);
                     free(file);
                     break;
                 }

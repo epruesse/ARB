@@ -1227,10 +1227,11 @@ void NT_popup_configuration_admin(AW_window *aw_main, AWT_canvas *ntw) {
 static void nt_start_editor_on_configuration(AW_window *aww) {
     aww->hide();
 
-    const char *cn  = aww->get_root()->awar(AWAR_CONFIGURATION)->read_char_pntr();
-    const char *com = GBS_global_string("arb_edit4 -c '%s' &", cn);
-
-    aw_message_if(GBK_system(com));
+    const char *cfgName   = aww->get_root()->awar(AWAR_CONFIGURATION)->read_char_pntr();
+    char       *quotedCfg = GBK_singlequote(cfgName);
+    const char *cmd       = GBS_global_string("arb_edit4 -c %s &", quotedCfg);
+    free(quotedCfg);
+    aw_message_if(GBK_system(cmd));
 }
 
 AW_window *NT_create_startEditorOnOldConfiguration_window(AW_root *awr) {
