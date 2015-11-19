@@ -159,7 +159,7 @@ static GB_ERROR gb_create_reference(const char *master) {
     if (out) {
         fprintf(out, "***** The following files may be a link to %s ********\n", fullmaster);
         fclose(out);
-        error = GB_set_mode_of_file(fullref, 00666);
+        error = GB_failedTo_error("create reference file", NULL, GB_set_mode_of_file(fullref, 00666));
     }
     else {
         error = GBS_global_string("Cannot create reference file '%s'\n"
@@ -181,7 +181,7 @@ static GB_ERROR gb_add_reference(const char *master, const char *changes) {
     if (out) {
         fprintf(out, "%s\n", fullchanges);
         fclose(out);
-        error = GB_set_mode_of_file(fullref, 00666);
+        error = GB_failedTo_error("append to reference files", NULL, GB_set_mode_of_file(fullref, 00666));
     }
     else {
         error = GBS_global_string("Cannot add your file '%s'\n"
@@ -1123,7 +1123,7 @@ GB_ERROR GB_MAIN_TYPE::save_quick_as(const char *as_path) {
                     GB_ERROR sm_error = GB_set_mode_of_file(org_master, mode & ~(S_IWUSR | S_IWGRP | S_IWOTH));
                     if (sm_error) {
                         GB_warningf("%s\n"
-                                    "Ask your admin to remove write permissions from that master file.\n"
+                                    "Ask the owner to remove write permissions from that master file.\n"
                                     "NEVER delete or change it, otherwise your quicksaves will be rendered useless!", 
                                     sm_error);
                     }
@@ -1141,11 +1141,13 @@ GB_ERROR GB_MAIN_TYPE::save_quick_as(const char *as_path) {
                 if (!error) {
                     if ((uid_t)GB_getuid_of_file(full_path_of_source) != getuid()) {
                         GB_warningf("**** WARNING ******\n"
-                                    "   You now using a file '%s'\n"
-                                    "   which is owned by another user\n"
-                                    "   Please ask him not to delete this file\n"
-                                    "   If you don't trust him, don't save changes but\n"
-                                    "   the WHOLE database", full_path_of_source);
+                                    "   You are using the file '%s' \n"
+                                    "   as reference for your saved changes.\n"
+                                    "   That file is owned by ANOTHER USER.\n"
+                                    "   If that user deletes or overwrites that file, your saved\n"
+                                    "   changes will get useless (=they will be lost)!\n"
+                                    "   You should only 'save changes as' if you understand what that means.\n"
+                                    "   Otherwise use 'Save whole database as' NOW!", full_path_of_source);
                     }
 
                     GB_ERROR warning = gb_add_reference(full_path_of_source, as_path);
