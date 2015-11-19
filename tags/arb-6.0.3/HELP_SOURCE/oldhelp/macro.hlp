@@ -1,0 +1,93 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Macros
+
+OCCURRENCE	ARB_NT
+
+DESCRIPTION	Macros are used to combine a set of menu-actions. They work like
+		a tape recorder, which records all buttons presses, every input
+                to data fields, ...
+
+		To record a new macro, go to the directory where the new macro
+		should be placed, enter a macro name and press <RECORD>. The
+		button label will switch to <STOP>. 
+
+		Now perform all actions you like to record, then press <STOP>.
+
+		If you like to expand an existing macro, check the 'Expand?' toggle 
+		before pressing	<RECORD>. You can also check the 'Run before?' toggle
+		to execute the existing macro before expanding it.
+
+		To execute an existing macro, select the macro and press <EXECUTE>.
+
+		Press <Execute with each marked species> to execute the selected macro 
+		multiple times: once for each marked species.
+
+                         * this loop is performed in database order (see LINK{sp_sort_fld.hlp}).
+                         * before each call of the macro, one species will be marked AND
+                           selected - all other species will be unmarked.
+                         * afterwards the original species marks will be restored.
+
+		Press <EDIT> to edit the selected macro.
+
+		Press <DELETE> to delete the selected macro.
+
+SECTION What gets recorded?
+
+		The macro recorder only records elements like buttons, menues and 
+		values (like input fields, radio buttons, selection lists, toggles, ...).
+		Actions in the main area (e.g. tree view) will not be recorded!
+
+		Elements of a window are unknown to the macro playback if the window was not
+		opened before. So - if you just record some changes and clicks in an already 
+		open window, you need to open that window everytime before you run that macro.
+
+		Best practice is to CLOSE ALL SUBWINDOWS before you start recording a macro, then
+		open them (again) and then perform your clicks. In that case your macro will run
+		regardless whether the window has been opened before or not.
+		Note: You can also record "closing a window".
+
+		If you want to make sure that some field or toggle is set to a specific value
+		by your recorded macro, you need to CHANGE that value. If it already has the 
+		desired value, change it to something different and then change it back to your
+		desired value - otherwise nothing will be recorded!
+
+		You may also use this as an feature: If you do NOT change a value during macro
+		record, you can change it manually before calling the macro and that way perform
+		similar, but different actions with one macro. 
+
+		This may as well be helpful when using submacros (see below).
+
+SECTION Calling submacros
+
+		Macros can call other macros. To do this simply select the macro you like to call
+		as submacro and press execute. That will be recorded like any other action.
+
+		Calling submacros is a good way to compose complex macros. 
+
+		It offers you the possibility to change (or fix) small parts of a complex 
+		macro without the need to record it from scratch.
+
+NOTES		You can run macros directly on startup by calling arb by
+
+			arb --execute macroname your_database.arb
+
+		Such macros can even shutdown ARB, so you can use this to automate ARB.
+
+EXAMPLES	You can find some examples in $ARBHOME/lib/macros (this directory is reachable 
+		in the macro selection box by pressing the ARBMACRO line).
+
+WARNINGS	None
+
+BUGS		None
+
+
+

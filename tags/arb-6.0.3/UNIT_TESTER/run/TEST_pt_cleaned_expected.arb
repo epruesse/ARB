@@ -1,0 +1,257 @@
+/*ARBDB ASCII*/
+genom_db		%i 0
+presets			%% (%
+	alignment	:6000	%% (%
+		alignment_name	:7600	"ali_mini"
+		alignment_len	:7000	%i 187
+		aligned		:7000	%i 1
+		alignment_write_security	:7600	%i 0
+		alignment_type	:7000	"rna"
+		auto_format		%i 0
+		alignment_rem		"<NONE>"
+		%) /*alignment*/
+
+	key_data		%% (%
+		key			%% (%
+			key_name		"name"
+			key_type		%i 12
+			key_hidden		%i 0
+			%) /*key*/
+
+		key			%% (%
+			key_name		"acc"
+			key_type		%i 12
+			key_hidden		%i 0
+			%) /*key*/
+
+		key			%% (%
+			key_name		"ali_mini"
+			key_type		%i 15
+			key_hidden		%i 0
+			%) /*key*/
+
+		key			%% (%
+			key_name		"ali_mini/data"
+			key_type		%i 12
+			key_hidden		%i 0
+			%) /*key*/
+
+		%) /*key_data*/
+
+	use			"ali_mini"
+	%) /*presets*/
+
+species_data		%% (%
+	species			%% (%
+		name		:7600	"BcSSSS00"
+		ali_mini		%% (%
+			data		:7000	"UUUAUCGGAGAGUUUGAUCAAGUCGAGCGG--ACAGA----U--GGGAGCUUGCUCCC-------UGAU--GUUAGCGGC-GGACGGACUCCGGGAAACCGGGGCUAAUACCGGAUGGU-GAUGAUUGGGGUGAAGUCGUAACAA-GGUAGCCGUAUCGGAAGGUGCGGCUGGAUCACCUCCUUUCU"
+			%) /*ali_mini*/
+
+		acc			"ARB_2CA9F764"
+		%) /*species*/
+
+	species			%% (%
+		name		:7600	"Bl0LLL00"
+		ali_mini		%% (%
+			data		:7000	"........AGAGUUUGAUCAAGUCGAGCGG--ACCGA----C--GGGAGCUUGCUCCC-------UUAG--GUCAGCGGC-GGACGGACUCCGGGAAACCGGGGCUAAUACCGGAUGCU-GAUGAUUGGGGUGAAGUCGUAACAA-GGUAGCCGUAUCGGAAGGUGCGGCUGGAUC..........."
+			%) /*ali_mini*/
+
+		acc			"ARB_6B04C30A"
+		%) /*species*/
+
+	species			%% (%
+		name		:7600	"ClnCorin"
+		ali_mini		%% (%
+			data		:7000	".........GAGUUUGAUCAAGUCGAG-------CGA----U--GAAGUUCCUUCGGGA------AUGG--AUUAGCGGC-GGACGGGCCUUUCGAAAGGAAGAUUAAUACCGCAUAAG-ACAGCGAUUGGGGUGAAGUCGUAACAAGGUAGCCGUAGGAGAACCUU--GCCUGGCUGGAUCAUC.."
+			%) /*ali_mini*/
+
+		acc			"ARB_CEB24FD3"
+		%) /*species*/
+
+	species			%% (%
+		name		:7600	"CltBotul"
+		ali_mini		%% (%
+			data		:7000	"................AUCAAGUCGAG-------CGA----U--GAAGCUUCUUCGGAA------GUGG--AUUAGCGGC-GGACGGGCCUUUCGAAAGGAAGAUUAAUACCUCAUAAG-ACAGCGAUUGGGGUGAAGUCGUAACAG---------------G--U------------------U.."
+			%) /*ali_mini*/
+
+		acc			"ARB_4FCDD74F"
+		%) /*species*/
+
+	species			%% (%
+		name		:7600	"CPPParap"
+		ali_mini		%% (%
+			data		:7000	"NNNNNNGA-GAGUUUGAUCAAGUCGAG-------CGA----U--GAAGUUCCUUCGGGA------ACGG--AUUAGCGGC-GGACGGGCCUUCCGAAAGGAAGAUUAAUACCGCAUAAGAUCAGCGAUUGGGGU-AAGUCGUAACAAGGUAGCCGUAGGAGAACCUGCGGNUGGAUCACCUCCUU.."
+			%) /*ali_mini*/
+
+		acc			"ARB_CF69AC5C"
+		%) /*species*/
+
+	species			%% (%
+		name		:7600	"ClfPerfr"
+		ali_mini		%% (%
+			data		:7000	"-AAAUUGA-GAGUUUGAUCAAGUCGAG-------CGA----U--GAAGUUUCCUUCGGGAA----ACGG--AUUAGCGGCGGGACGGGCCUUCAGAACCUGCGGCUGGAUCAUCAUAAUGCAGCGAUUGGGGUGAAGUCGUAACAAGGUAGCCGUAGGCGAAAGGAAGAUUAAUACCCCUCCUUUCU"
+			%) /*ali_mini*/
+
+		acc			"ARB_5BEE4C92"
+		%) /*species*/
+
+	species			%% (%
+		name		:7600	"DlcTolu2"
+		ali_mini		%% (%
+			data		:7000	"........AGAGUUUGAUCAAGUCGAACGA--G-AA-----AGGGAUUGCUUGCAAUCCU------GAG--UAGAGUGGC-GCACGGACUGCCCGAAAGGACAGCUAAUACCGGAUGAA-GAUAAUUGGGGUGAAGUCGUAACAA-GGUAGCCGUUGAGGAAUCAGCGGCUGGAUCACCUCCUUNNN"
+			%) /*ali_mini*/
+
+		acc			"ARB_815E94DB"
+		%) /*species*/
+
+	species			%% (%
+		name		:7600	"PbcAcet2"
+		ali_mini		%% (%
+			data		:7000	"........AGAGUUUGAUCAAGUCGAACGU--G-AA-----A--GGGACUUCGGUCCU--------GAG--UAAAGUGGC-GCACGGACACUUCGAAAGGGGUGCUAAUACCGGAUAAG-GGUAACUGGGGUGAAGUCGUAACAA-GGUAGCCGUAGGGGAACCUGCGGCUGGAUCACCUCCUUUNN"
+			%) /*ali_mini*/
+
+		acc			"ARB_CC2D184F"
+		%) /*species*/
+
+	species			%% (%
+		name		:7600	"PbrPropi"
+		ali_mini		%% (%
+			data		:7000	"........AGAGUUUGAUCAAGUCGAACGG--G-AUU----A--AGGGGCUUGCUCCU--------UAA--UCUAGUGGC-GCACGGACACUUCGAAAGAGGUGCUAAUACCUGAUAAG-GGUGACUGGGGUGAAGUCGUAACAA-GGUAGCCGUAGGGGAACCUGCGGCUGGAUCACCUCCUUUNN"
+			%) /*ali_mini*/
+
+		acc			"ARB_2B59EE6C"
+		%) /*species*/
+
+	species			%% (%
+		name		:7600	"Stsssola"
+		ali_mini		%% (%
+			data		:7000	"AAACUGG-AGAGUUUGAUCAAGUCGAACGU--G-AA-----A-----GUCUUCGGGAU--------GAG--UAAAGUGGC-GCACGGACGGCUGGAAACGGUCGCUAAUACCGGAUAAC-AAUGAUUGGGGUGAAGUCGUAACAA-GGUAGCCGUAGGGGAACCUGCGGCUGGAUCACCUCCUUU.."
+			%) /*ali_mini*/
+
+		acc			"ARB_219182CE"
+		%) /*species*/
+
+	species			%% (%
+		name		:7600	"DsssDesu"
+		ali_mini		%% (%
+			data		:7000	"-AACUGG-AGAGUUUGAUCAAGUCGUACGA--G-AA-----AGGGG----CUUCGGCCCU------GAG--UAGAGUGGC-GCACGGACUCUGCGAAAGUGGAGCUAAUACCGGAUACA-G--------------A--------------------------------------------------G"
+			%) /*ali_mini*/
+
+		acc			"ARB_2F95EE99"
+		%) /*species*/
+
+	species			%% (%
+		name		:7600	"LgtLytic"
+		ali_mini		%% (%
+			data		:7000	"........AGAGUUUGAUCAAGUCGAACGGCAG-CACAGUCU--AGCUUGCUAGACGG--------GUG--GCGAGUGGC-GAACGGACUUGGGGAAACUCAAGCUAAUACCGCAUAAU-CAUGACUGGGGUGAAGUCGUAACAA-GGUAGCCGUAGGGGAACCUGCGGCUGGAUCACCUCCUN..."
+			%) /*ali_mini*/
+
+		acc			"ARB_470564F9"
+		%) /*species*/
+
+	species			%% (%
+		name		:7600	"DcdNodos"
+		ali_mini		%% (%
+			data		:7000	"......AACUGAAGAGUUUGAUCAAGUCGAACGGGGUUAUGU----AGCUUGCUAUGUAA-----------CCUAGUGGC-GGACGGACGUAUGGAAACGUACGCUAAUACCGCAUAAG-GAUGACUGGGGUGAAGUCGUAACAA-GGUAACCGUAGGGGAACCUGCGGUUGGAUCACCUCCUUU.."
+			%) /*ali_mini*/
+
+		acc			"ARB_30B40050"
+		%) /*species*/
+
+	species			%% (%
+		name		:7600	"FrhhPhil"
+		ali_mini		%% (%
+			data		:7000	"UUG-----AAGAGUUGAUCAAGUCGAACGG--U-AA-----C--AGGUCUUCGGAUGC--------UGA--CGA-GUGGC-GGACGGCCAGUUGGAAACGACUGUUAAUACCGCAUAAU-CAUGACUGGGGUGAAGUCGUAACAAUGGUAGCCGUA-GGGAACCUGCGGCUGGAUCACCUCCUU..."
+			%) /*ali_mini*/
+
+		acc			"ARB_948948A3"
+		%) /*species*/
+
+	species			%% (%
+		name		:7600	"PsAAAA00"
+		ali_mini		%% (%
+			data		:7000	"N-----UACUGAAGAGUUUGAUCAAGUCGAGCGGAUG---AAGGG-AGCUUGCUCCUGGAUUC--------A---GCGGC-GGACGGACGUCCGGAAACGGGCGCUAAUACCGCAUACG-CAU------G--G------UAACAA-GG------------AA----C---C------------UG.."
+			%) /*ali_mini*/
+
+		acc			"ARB_AEBB7869"
+		%) /*species*/
+
+	species			%% (%
+		name		:7600	"PslFlave"
+		ali_mini		%% (%
+			data		:7000	"........AGAGUUUGAUCAAGUCGAGCGGU...AGGGG-----AGCUUGCUCCCUGA--------UUC-----AGCGGC-GGACGGACGUUUCGAAAGGAACGCUAAUACCGCAUACG-CAUGACUGGGGUGAAGUCGUAACAA-GGUAGCCGUAGGGGAACCUGCGGCUGGAUCACCUCCU...."
+			%) /*ali_mini*/
+
+		acc			"ARB_1763CF6"
+		%) /*species*/
+
+	species			%% (%
+		name		:7600	"HllHalod"
+		ali_mini		%% (%
+			data		:7000	"........AGAGUUUGAUCAAGUCGAGCGG--A-AACGAUGG--AAGCUUGCUUCCAG--------GCG--UCGAGCGGC-GGACGGACCUGGGGAAACUCAGGCUAAUACCGCAUACG-CAUGACUGGGGUGAAGUCGUAACAA-GGUAGCCGUAGGGGAACCUGCGGCUGGAUCACCUCCUU..."
+			%) /*ali_mini*/
+
+		acc			"ARB_2180C521"
+		%) /*species*/
+
+	species			%% (%
+		name		:7600	"VbrFurni"
+		ali_mini		%% (%
+			data		:7000	"........AGAGUUUGAUCAAGUCGAGCGG--C-AGCGACA-ACAUUGAACCUUCGGGGGAUUUGUUGGGCGGCGAGCGGCGGACGGACCAUUGGAAACGAUGGCUAAUACCGCAUGAU-CAUGACUGGGGUGAAGUCGUAACAA-GGUAGCGCUAGGGGAACCUGGCGCUGGAUCACCUCCUUU.."
+			%) /*ali_mini*/
+
+		acc			"ARB_4C6C9E8C"
+		%) /*species*/
+
+	species			%% (%
+		name		:7600	"VblVulni"
+		ali_mini		%% (%
+			data		:7000	"........AGAGUUUGAUCAAGUCGAGCGG--C-AGC-----ACAGAGAAACUUG------UUUCUCGGGUGGCGAGCGGCGGACGGACCAUUGGAAACGAUGGCUAAUACCGCAUGAU-CAUGACUGGGGUGAAGUCGUAACAA-GGUAGCGCUAGGGGAACCUGGCGCUGGAUCACCUCCUUU.."
+			%) /*ali_mini*/
+
+		acc			"ARB_4E1D58F9"
+		%) /*species*/
+
+	species			%% (%
+		name		:7600	"VbhChole"
+		ali_mini		%% (%
+			data		:7000	"........AGAGUUUGAUCAAGUCGAGCGG--C-AGC-----ACAGAGGAACUUG------UUCCUUGGGUGGCGAGCGGCGGACGGACCAUUGGAAACGAUGGCUAAUACCGCAUAAC-CAUGACUGGGGUGAAGUCGUAACAA-GGUAGCGCUAGGGGAACCUGGCGCUGGAUCACCUCCUUU.."
+			%) /*ali_mini*/
+
+		acc			"ARB_FD102EA4"
+		%) /*species*/
+
+	species			%% (%
+		name		:7600	"AclPleur"
+		ali_mini		%% (%
+			data		:7000	"UG----AAUUGAAGAGUUUGAUCAAGUCGAACGGUAACGGGAAGGGAGCUUGCUUUCUUUGCCG-------ACGAGUGGC-GGACGGACUACGGGAAACUGUAGCUAAUACCGCGUAAU-CAUGACUGGGGUGAAGUCGUAGCAA-GGUAACCGUAGGGGAACCUGCGGUUGGAUCACCUCCUUA.."
+			%) /*ali_mini*/
+
+		acc			"ARB_9E1D1B16"
+		%) /*species*/
+
+	species			%% (%
+		name		:7600	"PtVVVulg"
+		ali_mini		%% (%
+			data		:7000	"U-----AAUUGAAGAGUUUGAUCAAGUCGAGCGGU...AGGAGAA-AGCUUGCUUUCUUGCUG--------ACGAGCGGC-GGACGGACUACUGGAAACGGUGGCUAAUACCGCAUGAC-CAUGACUGGGGUGAAGUCGUAACAA-GGUAACCGUAGGGGAACCUGCGGUUGGAUCACCUCCUUA.."
+			%) /*ali_mini*/
+
+		acc			"ARB_ED8B86F"
+		%) /*species*/
+
+	%) /*species_data*/
+
+extended_data	:7000	%% (%
+	extended		%% (%
+		name		:7000	"ECOLI"
+		acc			"J01695"
+		full_name		"Escherichia coli"
+		ali_mini		%% (%
+			data		:7000	".AAAUUGAAGAGUUUGAUCAUG----UCGAGCGGGCGGAACACAUGCAAAGCUUGCUUCUUUGCG------ACGAGUGGC-GGACGGGUGAGGGGAAACGGUAGCUAAUACCGCAUAAC-GAUGACUAAAGUUAAUACCUAUUGA-CGUUACCCGCAGAAGAAGCACCGGCUAACUCCGUGCCAG.."
+			%) /*ali_mini*/
+
+		%) /*extended*/
+
+	%) /*extended_data*/
+

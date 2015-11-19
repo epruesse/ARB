@@ -1,0 +1,193 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+UP	mark.hlp
+UP	phylo.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+SUB	user_matrix.hlp
+SUB	savedef.hlp
+SUB	props_frame.hlp
+SUB	sel_fil.hlp
+SUB	awt_csp.hlp
+SUB	bootstrap.hlp
+
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Neighbour joining
+
+OCCURRENCE	ARB_NT/Tree/Neighbour joining
+
+DESCRIPTION	Reconstructs a tree for all or marked species by first
+		calculating binary distances and subsequently applying the
+		neighbour joining method.
+
+		The tree topology is stored in the database and can be displayed
+		within the tree display area of the 'ARB_NT' window.
+
+		1. Mark all interesting species.
+
+                2. Select all or marked species from the 'Select Species' menu
+                   of the 'NEIGHBOUR JOINING' window.
+
+                3. Select Alignment from the 'Select Alignment' subwindow of
+                   the 'NEIGHBOUR JOINING' window.
+
+		4. Display the 'Select Filter' window by pressing the button
+                   after the 'Filter' prompt and define an alignment-associated
+                   mask which defines alignment positions to include for treeing.
+
+		5. Define Weights: !!! not implemented !!!
+
+		6. Select rate matrix (only implemented for some corrections; see LINK{user_matrix.hlp})
+
+                7. Type characters for the exclusion of alignment postions to
+		   the 'Exclude Column' subwindow. The positions are
+		   excluded from the calculation of binary distance values
+		   if one of the specified characters is present in one or
+		   both sequences. The described function acts as a second
+		   filter and affects only the particular sequence
+		   pairs, not the whole alignment.
+
+           	8. Select the type of distance correction from the 'Distance
+		   Correction' submenu. You can use the program to detect
+		   the best correction for you by pressing the AUTODETECT
+		   button.
+
+		   none:
+
+		   	Differences/Sequence length. May be a good
+		   	choice for short sequences (length < 300 )
+
+		   similarity:
+
+		   	1.0 - Differences/Sequence_Length
+
+		   jukes-cantor:
+
+		   	Accounts for multiple base changes, assumes
+		   	equal base frequencies.
+		   	Good choice for medium sized sequences
+		   	( 300 - 1000/2000 sequence length )
+
+		   felsenstein:
+
+		   	Similar to jukes-cantor transformation. Allows
+		   	unequal base frequencies.
+		   	( length > 1000/2000 )
+
+		   olsen:
+
+		   	As Felsenstein, except the base frequencies are
+		   	calculated for each pair of sequences.
+
+                   from selected tree:
+
+                        This is NOT a distance correction! By selecting 'from selected tree'
+                        distances are not calculated using sequence data.
+                        Instead they are extracted from the
+                        tree currently selected in the 'Trees in Database' selection list.
+
+                        The distance between two species is defined as the sum of the lengths
+                        of all branches that connect these two species.
+
+                        Please note that this is an experimental feature. The distances between two species
+                        are not directly based on the sequence differences between these two species.
+                        Instead they reflect the evolutionary distance assumed by the tree reconstruction
+                        algorithm used to build the tree.
+
+                        The distances extracted from a tree are expected to be (slightly) bigger than
+                        the distances directly calculated from the sequences.
+                        This seems reasonable, because it is very unlikely, that evolution always took the
+                        shortest possible way (which is represented by the direct sequence distance).
+                        This effect increases for more distant (unrelated) species, reflecting the
+                        indirections evolution most likely made.
+
+                   Please note:
+
+                          the other correcting functions are in an experimental state.
+                          Wait for new release.!!!
+
+		9. Select a name for the tree from the 'Trees in Database'
+		   subwindow or type a new tree name.
+		   The tree name has to be 'tree_*'.
+		   An existing tree with that name will be deleted.
+
+		10. Press the 'CALCULATE TREE' button
+
+		11. Now you may display the new tree in the ARB_NT main window
+			by selecting its name from the <Tree/Select> subwindow.
+			If its name is already selected, you will not need to
+			reselect it.
+
+		The distance matrix can be written to an ascii file:
+
+			Press the <SAVE MATRIX> button to display the 'SAVE
+			MATRIX' window. Select a file from the 'Directories
+			and Files' subwindow or type a file name to the 'FILE
+			NAME' subwindow. Press the <SAVE> button.
+			The suffix displayed in the 'SUFFIX' subwindow is added
+			to the typed file name and defines the selection of
+			files listed in the 'Directories and Files' subwindow.
+
+SECTION 	Calculate compressed matrix
+
+		You may select a tree to calculate a compressed matrix. A 
+		compressed matrix contains columns for all folded groups 
+		visible in the displayed tree (i.e. not for unfolded groups
+		and not for folded groups inside other folded groups).
+		
+		Species inside such groups are NOT listed as single entries.
+		
+		The distance shown for each group is the arithmetic average of 
+		of the distances of all contained species.
+
+SECTION		Automatic calculation
+
+                There are two toggles in the ARB_DIST main window allowing to
+                trigger instant recalculation:
+
+                - 'Auto recalculate' will force recalculation of the matrix
+                - 'Auto calculate tree' will force calculation of the tree
+
+                If 'Auto calculate tree' is checked, the tree will be calculated
+                whenever the matrix has been updated.
+
+                If 'Auto recalculate' is checked, the matrix will be recalculated
+                whenever any input changes, e.g. if
+
+                - the filter is changed (or its underlaying SAI changes),
+                - the excluded columns change,
+                - the user defined matrix changes,
+                - the correction is changed,
+                - the sequence data changes or species marks change or
+                - the tree selected for compression or sorting changes or a different
+                  tree is selected.
+
+                As you might have guessed, this is only useful for smaller sets of sequences.
+
+                Some suggestions:
+
+                     You might for example display the resulting NJ tree in one window and
+                     play with distance parameter to instantly see their effect on the tree.
+
+                     Or you may unmark unwanted species/subtrees in the tree display.
+
+                     Or you might align sequences to see the effect on the resulting topology.
+
+
+NOTES           Computing time can be estimated using the following formula:
+
+			time = (Sequence_Length * Nr.of.Spec * Nr.of.Spec)/
+				Computer Power
+
+                                Example: Sparc 10, 74 Sequences, length 8000 characters
+                                         -> 10 Seconds
+
+
+WARNINGS	Don't try to build a tree with the 'similarity' distance
+		correction selected.
+
+BUGS		None

@@ -1,0 +1,107 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	arb.pdf
+
+#Please insert subtopic references  (line starts with keyword SUB)
+SUB	trees.hlp
+SUB	helix.hlp
+SUB	props_nds.hlp
+SUB	pt_server.hlp
+SUB	extended.hlp
+SUB	species.hlp
+SUB	selected.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Glossary
+
+SECTION         What do we mean if we talk about ...
+
+        ALIGNMENT
+
+                        Subdatabase containing homologous sequences (different
+        		'alignments' can be stored along with the species information).
+                        See LINK{alignment.hlp} for more information.
+
+        ACI
+
+                        ARB Command Interpreter. ACI is a simple programing language
+        		for calculating special species information (eg. G+C Content..)
+                        See LINK{aci.hlp}.
+
+        EDGE
+
+                        Branch within a tree defined by nodes
+
+        FIELD
+
+                        Container for 'species' associated information
+
+        MARKED SPECIES
+
+                        Marking of 'species' defines the datasubset which is analyzed
+                        by the ARB tools.
+                        See LINK{mark.hlp}.
+
+        NAMES
+
+                        There are two kinds of name fields (for species, genes, etc.).
+
+                              - name
+
+                                        Identifier for 'species' entries.
+                                        Should be generated automatically using
+                                        the name server.
+
+                              - full_name
+
+                                        User defined full name of the species,...
+
+        NDS
+
+                        Node Display Setup: defines information which is displayed at
+        		tree nodes.
+
+        NODE
+
+                        Internal: connects branches of a tree
+        		Terminal: free end of branches representing 'species'
+
+        PT_SERVER
+
+                        Server using a special form of the ARB database for rapid
+        		similarity searching (automated alignment, probe design/check)
+
+        SAI
+
+                        Sequence Associated Information
+
+        SELECTED SPECIES
+
+                        The 'selected species' is that ONE species which has been selected
+                        by using any of the following actions
+
+                                - ARB_NTREE/Search + click onto one search result
+                                - ARB_MERGE/Transfer species + click onto one search result
+                                  (here there is one selected species in each of the two involved DBs)
+                                - clicking on the species name in the tree display in ARB_NT
+                                - placing the cursor into the sequence of a species in ARB_EDIT4
+
+                        The currently selected species will be displayed in the 'Species info window'
+
+        SPECIES
+
+                        Database entry containing a sequence and associated information.
+        		Not necessarily consistent with a taxonomic species
+
+        SRT
+
+                        Search and Replace Tool allows to search substrings in a string
+        		and replace them by another substring (see LINK{srt.hlp}).
+
+
+
+
+
+

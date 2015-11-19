@@ -1,0 +1,5 @@
+# libraries needed to link against TOOLS/arb_test.o
+
+lib/libARBDB.so
+
+

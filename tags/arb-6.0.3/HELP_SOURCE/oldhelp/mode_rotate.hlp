@@ -1,0 +1,36 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+UP	mode.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		ROTATE MODE
+
+OCCURRENCE	ARB_NT <button in the left column>
+
+DESCRIPTION	The 'ROTATE MODE' allows you to rotate branches or subtrees
+		of the displayed tree.
+
+		Click on the <button in the left column> of the
+                'ARB_NT' window to activate the 'ROTATE MODE'.
+
+                Simply click and drag a branch to rotate it. Please note this
+                only has an effect for radial tree display.
+
+                To reset the rotation of all branches of a subtree,
+                press the key '0' (zero) while pointing to that subtree.
+
+                See also LINK{mode_spread.hlp}.
+
+NOTES		None
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known

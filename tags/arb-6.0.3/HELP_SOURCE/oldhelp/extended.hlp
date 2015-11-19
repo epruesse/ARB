@@ -1,0 +1,45 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+UP	species.hlp
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	helix.hlp
+SUB	ecoliref.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		SAI Sequence Associated Information
+
+DESCRIPTION	The main database divides all sequences into two groups:
+
+                    1. Species sequences -> Species
+                    2. All other sequences -> SAI ( masks, filters, profiles )
+
+		You should keep the number of SAI's small for you cannot:
+
+			- search SAI's
+			- select a subset of SAI's
+
+
+SECTION         IMPLEMENTED SAI's
+
+		ECOLI
+
+                        A copy of the E.coli sequence. It is used to convert
+                        the absolute alignment position into
+                        an E.coli-based position and vice versa.
+                        (Note: you may use any other sequence instead of ECOLI. The
+                        name displayed in ARB_EDIT4 can be modified under Properties/NDS)
+
+		HELIX_NR
+
+                        Helix Numbering
+
+		HELIX
+
+                        and Helix template
+
+NOTE Read LINK{helix.hlp}
+
+

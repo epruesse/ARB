@@ -1,0 +1,114 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+SUB	mode.hlp
+SUB	arb_pars_init.hlp
+SUB	ap_stack.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+
+TITLE		ARB Parsimony
+
+OCCURRENCE	ARB_NT/Tree/Add species to existing tree/Parsimony ...
+
+DESCRIPTION	The 'ARB_Parsimony' and 'ARB_NT' windows are similar. 'ARB_
+		Parsimony' contains a subset of 'ARB_NT' functions and in
+		addition some tolls for tree reconstruction and evaluation.
+
+	Clicking on the prompts in the horizontal menu bar in the upper part of
+        the window displays the corresponding submenus. The submenus are
+        also available using keyboard shortcuts by pressing the meta and
+        a letter key indicated in the main menu bar by underlining.
+
+	The buttons of the area between the main menu bar and the tree display
+        area (from left to right) ('called top area'):
+
+		First large button:	Displays the name of the current
+					tree.
+
+		Stack button:		Displays the number of stored tree
+					topologies
+
+		Jump button:		Displays partial tree within the tree
+					display area of the 'ARB_NT' window
+					containing the selected 'species' (see
+					LINK{glossary.hlp})
+
+		HELP button:		Displays this help information.
+
+		First small button:	Displays radial tree
+
+		Second small button:	Displays dendrogram
+
+		+ and - buttons:	Define number of stored tree topologies.
+					Select version to be displayed.
+
+	The values after the 'Current Par' and 'Optimal Par' prompts indicate
+        current and optimal parsimony values for the displayed tree
+        while moving subtrees manually (see LINK{mode_move.hlp})
+
+        The program works on the selected tree, it does instantly change
+        the database.
+
+		FUNCTIONS:
+
+			Tree/quick add marked species:
+
+				Add all marked species to this tree.
+				No local rearrangements are performed.
+				If the species are already in the tree do
+				nothing.
+
+			Tree/quick add selected species:
+
+				Add the selected species to this tree.
+				To select a species open the 'Search & Query'
+				window in ARB Ntree (ARB_NT/species/search);
+				And select a species.
+				or: start the editor, make the cursor global
+				and select a sequence
+
+			Tree/add marked species:
+
+				Quick add plus local rearrangements.
+
+			Tree/add selected species:
+
+				Quick add sel. species plus local rearrangements.
+
+			Tree/Optimization/Local
+
+				Try to find a better tree moving all branches
+				across one other branch. Does not change
+				elements in folded subtrees.
+
+			Tree/Optimization/Global
+
+				Try to find a better tree by moving all branches,
+				over some branches. Does not change
+				elements in folded subtrees.
+				Note: This may take a long time. You may stop the
+				program any time and keep the current best tree.
+				If you have to answer the question either to
+				wait or to kill, answer wait.
+
+			Tree/calculate branch lengths
+
+				Does what it says
+
+			etc.. see ARB Ntree
+
+
+
+
+NOTES		To create (small) parsimony trees use the phylip program
+
+
+EXAMPLES        None
+
+
+BUGS		None
