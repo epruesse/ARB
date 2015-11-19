@@ -1,5 +1,9 @@
 ARB change log
 
+Fixes for arb-6.0.3 (19 Nov 2015):
+
+ - fixes permission problems when multiple users share databases or ptservers (thx to Alan McCulloch)
+
 Fixes for arb-6.0.2 (8 Aug 2014):
 
  - compile issues on Snow Leopard (OSX 10.6)
