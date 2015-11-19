@@ -48,28 +48,6 @@ inline const double& NONAN(const double& d) {
 
 namespace AW {
 
-    struct FillStyle {
-        enum Style {
-            EMPTY,
-            SHADED,             // uses greylevel of gc
-            SHADED_WITH_BORDER, // like SHADED, but with solid border
-            SOLID,
-        };
-
-    private:
-        Style style;
-
-    public:
-
-        FillStyle(Style filled) : style(filled) {} // non-explicit!
-
-        Style get_style() const { return style; }
-
-        bool is_shaded() const { return style == SHADED || style == SHADED_WITH_BORDER; }
-        bool is_empty() const { return style == EMPTY; }
-        bool somehow() const { return !is_empty(); }
-    };
-
     const double EPSILON = 0.001; // how equal is nearly equal
 
     inline bool nearlyEqual(const double& val1, const double& val2) { return std::abs(val1-val2) < EPSILON; }
@@ -96,12 +74,12 @@ namespace AW {
 
     class Vector;
 
-    inline bool is_between(const double& coord1, const double& between, const double& coord2) {
-        return ((coord1-between)*(between-coord2)) >= 0.0;
-    }
-
     class Position {
         double x, y;
+
+        static bool is_between(const double& coord1, const double& between, const double& coord2) {
+            return ((coord1-between)*(between-coord2)) >= 0.0;
+        }
 
     public:
 
@@ -128,7 +106,7 @@ namespace AW {
         void moveTo(const Position& pos) { *this = pos; }
 
         inline bool is_between(const Position& p1, const Position& p2) const {
-            return AW::is_between(p1.x, x, p2.x) && AW::is_between(p1.y, y, p2.y);
+            return is_between(p1.x, x, p2.x) && is_between(p1.y, y, p2.y);
         }
     };
 
@@ -351,16 +329,6 @@ namespace AW {
         Position upper_right_corner()       const { return Position(start().xpos()+line_vector().x(), start().ypos()); }
         Position lower_right_corner()       const { return head(); }
 
-        Position get_corner(int i) const {
-            switch (i%4) {
-                case 0: return upper_left_corner();
-                case 1: return upper_right_corner();
-                case 2: return lower_right_corner();
-                default: return lower_left_corner();
-            }
-        }
-        Position nearest_corner(const Position& topos) const;
-
         double left()   const { return upper_left_corner().xpos(); }
         double top()    const { return upper_left_corner().ypos(); }
         double right()  const { return lower_right_corner().xpos(); }
@@ -435,7 +403,6 @@ namespace AW {
     class Angle {
         mutable Vector Normal;  // the normal vector representing the angle (x = cos(angle), y = sin(angle))
         mutable double Radian;  // the radian of the angle
-                                // (starts at 3 o'clock running forward!!! i.e. South is 90 degrees; caused by y-direction of canvas)
 
         void recalcRadian() const;
         void recalcNormal() const;
@@ -520,8 +487,6 @@ namespace AW {
     inline Angle operator*(const Angle& a, const double& fact) { return Angle(a) *= fact; }
     inline Angle operator/(const Angle& a, const double& divi) { return Angle(a) *= (1.0/divi); }
 
-    extern const Angle Northwards, Westwards, Southwards, Eastwards;
-
     // ---------------------
     //      some helpers
 
@@ -566,10 +531,6 @@ namespace AW {
         aw_dump(v.x(), "x"); fputs(", ", stderr);
         aw_dump(v.y(), "y"); fputs(" }", stderr);
     }
-    inline void aw_dump(const Angle& a, const char *varname) {
-        fprintf(stderr, "Angle %s={ ", varname);
-        aw_dump(a.degrees(), "degrees()"); fputs(" }", stderr);
-    }
     inline void aw_dump(const LineVector& v, const char *varname) {
         fprintf(stderr, "LineVector %s={ ", varname);
         aw_dump(v.start(), "start"); fputs(", ", stderr);
@@ -586,9 +547,6 @@ namespace AW {
     
 #endif
 
-    inline AW_pos x_alignment(AW_pos x_pos, AW_pos x_size, AW_pos alignment) {
-        return x_pos - x_size*alignment;
-    }
 };
 
 #else

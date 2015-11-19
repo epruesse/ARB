@@ -79,7 +79,7 @@ NOTES           The sum of all branchlengths in a tree modified with 'Multifurca
                 remain constant (disregarding possible numerical problems and the abnormal case that
                 ALL branches get multifurcated).
 
-                See LINK{branch_analysis.hlp} on HOWTO calculate the sum of all
+                See LINK{/branch_analysis.hlp} on HOWTO calculate the sum of all
                 branchlengths of a tree.
 
 EXAMPLES        To see how the distribution works for single branches, display a small tree

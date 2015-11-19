@@ -242,18 +242,18 @@ GB_ERROR st_ml_check_sequence_quality(GBDATA     *gb_main, const char *tree_name
                                       int         marked_only, st_report_enum report, const char *dest_field)
 {
 #if defined(WARN_TODO)
-#warning parameter 'alignment_name' can be retrieved from WeightedFilter (as soon as automatic mapping works for filters)
+#warning parameter 'alignment_name' can be retrieved from WeightedFilter (as soon as automatic mapping works for filters)    
 #endif
     ST_ML    st_ml(gb_main);
     GB_ERROR error = st_ml.calc_st_ml(tree_name, alignment_name, 0, marked_only, colstat, weighted_filter);
+    arb_progress glob_progress("Sequence Quality Check");
 
     if (!error) {
         GB_HASH *species2info = GBS_create_dynaval_hash(GBT_get_species_count(gb_main), GB_IGNORE_CASE, destroy_ColumnQualityInfo);
         size_t   species_count;
-
-        GB_CSTR *snames  = GBT_get_names_of_species_in_tree(st_ml.get_gbt_tree(), &species_count);
-        int      seq_len = st_ml.get_filtered_length();
-        size_t   parts   = (seq_len-1)/ST_MAX_SEQ_PART+1;
+        GB_CSTR *snames               = GBT_get_names_of_species_in_tree(st_ml.get_gbt_tree(), &species_count);
+        int      seq_len              = st_ml.get_filtered_length();
+        size_t   parts                = (seq_len-1)/ST_MAX_SEQ_PART+1;
 
         {
             arb_progress add_progress("Calculating stat", parts*species_count);
@@ -270,7 +270,7 @@ GB_ERROR st_ml_check_sequence_quality(GBDATA     *gb_main, const char *tree_name
         }
 
         if (!error) {
-            arb_progress     res_progress("Calculating reports", species_count);
+            arb_progress     res_progress("Calculating result", species_count);
             const AP_filter *filter = st_ml.get_filter();
 
             for (GB_CSTR *pspecies_name = snames; *pspecies_name && !error; pspecies_name++) {

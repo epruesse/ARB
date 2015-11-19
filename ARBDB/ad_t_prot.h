@@ -38,9 +38,10 @@ GBDATA *GBT_create_alignment(GBDATA *gbd, const char *name, long len, long align
 GB_ERROR GBT_rename_alignment(GBDATA *gbMain, const char *source, const char *dest, int copy, int dele);
 NOT4PERL GBDATA *GBT_add_data(GBDATA *species, const char *ali_name, const char *key, GB_TYPES type) __ATTR__DEPRECATED_TODO("better use GBT_create_sequence_data()");
 NOT4PERL GBDATA *GBT_create_sequence_data(GBDATA *species, const char *ali_name, const char *key, GB_TYPES type, int security_write);
+GB_ERROR GBT_write_sequence(GBDATA *gb_data, const char *ali_name, long ali_len, const char *sequence);
 GBDATA *GBT_gen_accession_number(GBDATA *gb_species, const char *ali_name);
 int GBT_is_partial(GBDATA *gb_species, int default_value, bool define_if_undef);
-GBDATA *GBT_find_sequence(GBDATA *gb_species, const char *aliname);
+GBDATA *GBT_read_sequence(GBDATA *gb_species, const char *aliname);
 char *GBT_get_default_alignment(GBDATA *gb_main);
 GB_ERROR GBT_set_default_alignment(GBDATA *gb_main, const char *alignment_name);
 GBDATA *GBT_get_alignment(GBDATA *gb_main, const char *aliname);
@@ -81,7 +82,7 @@ char *GBT_create_unique_species_name(GBDATA *gb_main, const char *default_name);
 void GBT_mark_all(GBDATA *gb_main, int flag);
 void GBT_mark_all_that(GBDATA *gb_main, int flag, int (*condition)(GBDATA *, void *), void *cd);
 long GBT_count_marked_species(GBDATA *gb_main);
-char *GBT_store_marked_species(GBDATA *gb_main, bool unmark_all);
+char *GBT_store_marked_species(GBDATA *gb_main, int unmark_all);
 NOT4PERL GB_ERROR GBT_with_stored_species(GBDATA *gb_main, const char *stored, species_callback doit, int *clientdata);
 GB_ERROR GBT_restore_marked_species(GBDATA *gb_main, const char *stored_marked);
 GB_CSTR GBT_read_name(GBDATA *gb_item);
@@ -96,7 +97,7 @@ GB_ERROR GBT_commit_rename_session(void) __ATTR__USERESULT;
 
 /* adseqcompr.cxx */
 GB_ERROR GBT_compress_sequence_tree2(GBDATA *gbd, const char *tree_name, const char *ali_name) __ATTR__USERESULT;
-void GBT_compression_test(struct Unfixed_cb_parameter *, GBDATA *gb_main);
+void GBT_compression_test(void *, GBDATA *gb_main);
 
 /* adtables.cxx */
 GB_ERROR GBT_install_table_link_follower(GBDATA *gb_main);
@@ -147,20 +148,20 @@ GB_ERROR GB_notify(GBDATA *gb_main, int id, const char *message);
 
 /* adtree.cxx */
 GBDATA *GBT_get_tree_data(GBDATA *gb_main);
-TreeNode *GBT_remove_leafs(TreeNode *tree, GBT_TreeRemoveType mode, const GB_HASH *species_hash, int *removed, int *groups_removed);
+GBT_TREE *GBT_remove_leafs(GBT_TREE *tree, GBT_TreeRemoveType mode, const GB_HASH *species_hash, int *removed, int *groups_removed);
 GB_ERROR GBT_write_group_name(GBDATA *gb_group_name, const char *new_group_name);
-GB_ERROR GBT_write_tree(GBDATA *gb_main, const char *tree_name, TreeNode *tree);
-GB_ERROR GBT_overwrite_tree(GBDATA *gb_tree, TreeNode *tree);
+GB_ERROR GBT_write_tree(GBDATA *gb_main, const char *tree_name, GBT_TREE *tree);
+GB_ERROR GBT_overwrite_tree(GBDATA *gb_tree, GBT_TREE *tree);
 GB_ERROR GBT_write_tree_remark(GBDATA *gb_main, const char *tree_name, const char *remark);
 GB_ERROR GBT_log_to_tree_remark(GBDATA *gb_tree, const char *log_entry);
 GB_ERROR GBT_log_to_tree_remark(GBDATA *gb_main, const char *tree_name, const char *log_entry);
-GB_ERROR GBT_write_tree_with_remark(GBDATA *gb_main, const char *tree_name, TreeNode *tree, const char *remark);
-TreeNode *GBT_read_tree_and_size(GBDATA *gb_main, const char *tree_name, TreeRoot *troot, int *tree_size);
-TreeNode *GBT_read_tree(GBDATA *gb_main, const char *tree_name, TreeRoot *troot);
-size_t GBT_count_leafs(const TreeNode *tree);
-GB_ERROR GBT_is_invalid(const TreeNode *tree);
-GB_ERROR GBT_link_tree(TreeNode *tree, GBDATA *gb_main, bool show_status, int *zombies, int *duplicates);
-void GBT_unlink_tree(TreeNode *tree);
+GB_ERROR GBT_write_tree_with_remark(GBDATA *gb_main, const char *tree_name, GBT_TREE *tree, const char *remark);
+GBT_TREE *GBT_read_tree_and_size(GBDATA *gb_main, const char *tree_name, const TreeNodeFactory& nodeFactory, int *tree_size);
+GBT_TREE *GBT_read_tree(GBDATA *gb_main, const char *tree_name, const TreeNodeFactory& nodeFactory);
+size_t GBT_count_leafs(const GBT_TREE *tree);
+GB_ERROR GBT_is_invalid(const GBT_TREE *tree);
+GB_ERROR GBT_link_tree(GBT_TREE *tree, GBDATA *gb_main, bool show_status, int *zombies, int *duplicates);
+void GBT_unlink_tree(GBT_TREE *tree);
 GBDATA *GBT_find_tree(GBDATA *gb_main, const char *tree_name);
 GBDATA *GBT_find_largest_tree(GBDATA *gb_main);
 GBDATA *GBT_tree_infrontof(GBDATA *gb_tree);
@@ -179,8 +180,8 @@ void GBT_get_tree_names(ConstStrArray& names, GBDATA *gb_main, bool sorted);
 NOT4PERL GB_ERROR GBT_move_tree(GBDATA *gb_moved_tree, GBT_ORDER_MODE mode, GBDATA *gb_target_tree);
 GB_ERROR GBT_copy_tree(GBDATA *gb_main, const char *source_name, const char *dest_name);
 GB_ERROR GBT_rename_tree(GBDATA *gb_main, const char *source_name, const char *dest_name);
-GB_CSTR *GBT_get_names_of_species_in_tree(const TreeNode *tree, size_t *count);
-char *GBT_tree_2_newick(const TreeNode *tree, NewickFormat format, bool compact);
+GB_CSTR *GBT_get_names_of_species_in_tree(const GBT_TREE *tree, size_t *count);
+char *GBT_tree_2_newick(const GBT_TREE *tree, NewickFormat format);
 
 #else
 #error ad_t_prot.h included twice

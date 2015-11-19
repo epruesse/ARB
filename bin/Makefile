@@ -11,10 +11,10 @@ help:
 
 # ----------------------------------------
 
-all:
+all: cleanlinks
 	$(MAKE) scriptlinks mafftlinks
 
-develall:
+develall: cleanlinks
 	$(MAKE) scriptlinks mafftlinks devellinks
 
 # ----------------------------------------
@@ -36,8 +36,7 @@ mafft-%:
 mafftlinks: $(MAFFTLINKS)
 
 scriptlinks:
-	ln -s -f `find ../SH           -perm -100 ! -type d -print` .
-	ln -s -f `find ../PERL_SCRIPTS -perm -100 ! -type d ! -path '*/IFTHELP/*' ! -path '*/TESTS/*' -print` .
+	ln -s -f `find ../SH ../PERL_SCRIPTS -perm -100 ! -type d ! -name 'config*' -print` .
 
 devellinks:
 	ln -s -f `find ../SOURCE_TOOLS -name "arb_*" -perm -100 ! -type d -print` .

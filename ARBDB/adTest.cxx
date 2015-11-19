@@ -15,7 +15,7 @@ const char *GB_get_db_path(GBDATA *gbd) {
 
     if (gb_father) {
         const char *father_path = GB_get_db_path(gb_father);
-        const char *key         = GB_KEY(gbd);
+        char       *key         = GB_KEY(gbd);
         RETURN_LOCAL_ALLOC(GBS_global_string_copy("%s/%s", father_path, key ? key : "<gbmain>"));
     }
     return "";
@@ -215,7 +215,7 @@ static GB_ERROR gb_fix_recursive(GBDATA *gbd) {
 
             gb_assert(keyq != 0);
             {
-                long gbm_index    = quark2gbmindex(Main, keyq);
+                long gbm_index    = GB_QUARK_2_GBMINDEX(Main, keyq);
                 GB_GBM_INDEX(gbd) = gbm_index;      // set new index
 
                 // @@@ FIXME: above command has no effect

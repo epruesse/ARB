@@ -5,9 +5,8 @@ use warnings;
 
 # create/update build info into
 #     ../TEMPLATES/arb_build.h
-#     ../TEMPLATES/svn_revision.h
 # and
-#     ../lib/revision_info.txt
+#     ../TEMPLATES/svn_revision.h
 
 # --------------------------------------------------------------------------------
 
@@ -26,7 +25,6 @@ if ((not -d $ARBHOME) or (not -f $ARBHOME.'/arb_LICENSE.txt')) {
 
 my $TEMPLATES    = $ARBHOME.'/TEMPLATES';       if (not -d $TEMPLATES)    { die "no such directory '$TEMPLATES'"; }
 my $SOURCE_TOOLS = $ARBHOME.'/SOURCE_TOOLS';    if (not -d $SOURCE_TOOLS) { die "no such directory '$SOURCE_TOOLS'"; }
-my $lib          = $ARBHOME.'/lib';             if (not -d $lib)          { die "no such directory '$lib'"; }
 my $mv_if_diff   = $SOURCE_TOOLS.'/mv_if_diff'; if (not -x $mv_if_diff)   { die "no such script '$mv_if_diff'"; }
 
 # upgrade version?
@@ -272,7 +270,6 @@ sub hash2file(\%$) {
 
 my $arb_build_h    = $TEMPLATES.'/arb_build.h';
 my $svn_revision_h = $TEMPLATES.'/svn_revision.h';
-my $revision_info  = $lib.'/revision_info.txt';
 
 my $in_SVN = (-d $ARBHOME.'/.svn');
 
@@ -482,9 +479,3 @@ my @arb_build = (
 
 update($arb_build_h,@arb_build);
 
-
-my @revision_info = (
-                     $revision.'@'.$branch,
-                    );
-
-update($revision_info,@revision_info);

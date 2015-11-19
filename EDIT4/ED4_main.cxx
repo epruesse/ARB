@@ -18,7 +18,6 @@
 #include "ed4_protein_2nd_structure.hxx"
 #include "ed4_dots.hxx"
 #include "ed4_naligner.hxx"
-#include "ed4_seq_colors.hxx"
 #include "graph_aligner_gui.hxx"
 #include <ed4_extern.hxx>
 
@@ -27,6 +26,7 @@
 #include <AW_helix.hxx>
 #include <AP_pro_a_nucs.hxx>
 #include <ad_config.h>
+#include <awt_seq_colors.hxx>
 #include <awt_map_key.hxx>
 #include <awt.hxx>
 
@@ -45,26 +45,26 @@
 AW_HEADER_MAIN
 
 ED4_root *ED4_ROOT;
-GBDATA   *GLOBAL_gb_main = NULL; // global gb_main for arb_edit4
+GBDATA   *GLOBAL_gb_main = NULL;                                        // global gb_main for arb_edit4
 
-int TERMINALHEIGHT;
+int TERMINALHEIGHT;                                                     // this variable replaces the define
 
 int INFO_TERM_TEXT_YOFFSET;
 int SEQ_TERM_TEXT_YOFFSET;
 
-int MAXSEQUENCECHARACTERLENGTH; // greatest # of characters in a sequence string terminal
+int MAXSEQUENCECHARACTERLENGTH;                                         // greatest # of characters in a sequence string terminal
 int MAXSPECIESWIDTH;
-int MAXINFOWIDTH;               // # of pixels used to display sequence info ("CONS", "4data", etc.)
+int MAXINFOWIDTH;                                                       // # of pixels used to display sequence info ("CONS", "4data", etc.)
 
 long ED4_counter = 0;
 
-size_t         not_found_counter; // nr of species which haven't been found
+size_t         not_found_counter;                   // nr of species which haven't been found
 GBS_strstruct *not_found_message;
 
-long         max_seq_terminal_length; // global maximum of sequence terminal length
-ED4_EDITMODE awar_edit_mode;
+long         max_seq_terminal_length;               // global maximum of sequence terminal length
+ED4_EDITMODI awar_edit_mode;
 long         awar_edit_rightward;
-bool         move_cursor;             // only needed for editing in consensus
+bool         move_cursor;                           // only needed for editing in consensus
 bool         DRAW;
 
 inline void replaceChars(char *s, char o, char n) {
@@ -153,8 +153,11 @@ static char *add_area_for_gde(ED4_area_manager *area_man, uchar **&the_names, uc
 
                 if (is_consensus) {
                     ED4_group_manager *group_manager = sequence_terminal->get_parent(ED4_L_GROUP)->to_group_manager();
+                    ED4_char_table&    groupTab      = group_manager->table();
+                    
+                    seq     = groupTab.build_consensus_string();
+                    seq_len = groupTab.size();
 
-                    group_manager->build_consensus_string(&seq_len);
                     e4_assert(strlen(seq) == size_t(seq_len));
 
                     ED4_group_manager *folded_group_man = sequence_terminal->is_in_folded_group();
@@ -218,7 +221,7 @@ static char *add_area_for_gde(ED4_area_manager *area_man, uchar **&the_names, uc
     return 0;
 }
 
-static char *ED4_create_sequences_for_gde(GBDATA **&the_species, uchar **&the_names, uchar **&the_sequences, long &numberspecies, long &maxalign) {
+static char *ED4_create_sequences_for_gde(AW_CL, GBDATA **&the_species, uchar **&the_names, uchar **&the_sequences, long &numberspecies, long &maxalign) {
     int top     = ED4_ROOT->aw_root->awar("gde/top_area")->read_int();
     int tops    = ED4_ROOT->aw_root->awar("gde/top_area_sai")->read_int();
     int toph    = ED4_ROOT->aw_root->awar("gde/top_area_helix")->read_int();
@@ -251,13 +254,10 @@ static char *ED4_create_sequences_for_gde(GBDATA **&the_species, uchar **&the_na
     return err;
 }
 
-void ED4_setup_gaps_and_alitype(const char *gap_chars, GB_alignment_type alitype) {
-    BaseFrequencies::setup(gap_chars, alitype);
-}
-
 static void ED4_gap_chars_changed(AW_root *root) {
     char *gap_chars = root->awar_string(ED4_AWAR_GAP_CHARS)->read_string();
-    ED4_setup_gaps_and_alitype(gap_chars, ED4_ROOT->alignment_type);
+
+    ED4_init_is_align_character(gap_chars);
     free(gap_chars);
 }
 
@@ -282,7 +282,7 @@ static void ed4_bind_mainDB_awar_callbacks(AW_root *root) {
     root->awar(AWAR_SAI_NAME)->add_callback(ED4_selected_SAI_changed_cb);
 }
 
-static void ed4_create_mainDB_awars(AW_root *root) {
+static void ed4_create_mainDB_awars(AW_root *root, const char *config_name) {
     // WARNING: do not bind callbacks here -> do it in ed4_bind_mainDB_awar_callbacks()
 
     root->awar_string(AWAR_ITARGET_STRING, "", GLOBAL_gb_main);
@@ -296,15 +296,16 @@ static void ed4_create_mainDB_awars(AW_root *root) {
     root->awar_string(AWAR_SPECIES_NAME, "", GLOBAL_gb_main);
     root->awar_string(AWAR_SAI_NAME,     "", GLOBAL_gb_main);
     root->awar_string(AWAR_SAI_GLOBAL,   "", GLOBAL_gb_main);
+
+    root->awar_string(AWAR_EDIT_CONFIGURATION, config_name, GLOBAL_gb_main);
+
+    ED4_create_search_awars(root);
 }
 
 static void ed4_create_all_awars(AW_root *root, const char *config_name) {
     // Note: cursor awars are created in window constructor
 
-    root->awar_string(AWAR_EDIT_CONFIGURATION, config_name, AW_ROOT_DEFAULT);
-
-    ed4_create_mainDB_awars(root);
-    ED4_create_search_awars(root);
+    ed4_create_mainDB_awars(root, config_name);
 
 #if defined(DEBUG)
     AWT_create_db_browser_awars(root, AW_ROOT_DEFAULT);
@@ -321,23 +322,22 @@ static void ed4_create_all_awars(AW_root *root, const char *config_name) {
 #endif
     root->awar_int(AWAR_EDIT_SECURITY_LEVEL, def_sec_level, AW_ROOT_DEFAULT);
 
-    root->awar_int(AWAR_EDIT_SECURITY_LEVEL_ALIGN,  def_sec_level, AW_ROOT_DEFAULT)->add_callback(ed4_changesecurity);
-    root->awar_int(AWAR_EDIT_SECURITY_LEVEL_CHANGE, def_sec_level, AW_ROOT_DEFAULT)->add_callback(ed4_changesecurity);
+    root->awar_int(AWAR_EDIT_SECURITY_LEVEL_ALIGN, def_sec_level, AW_ROOT_DEFAULT)->add_callback(ed4_changesecurity, (AW_CL) def_sec_level);
+    root->awar_int(AWAR_EDIT_SECURITY_LEVEL_CHANGE, def_sec_level, AW_ROOT_DEFAULT)->add_callback(ed4_changesecurity, (AW_CL) def_sec_level);
 
-    root->awar_int(AWAR_EDIT_MODE,   0)->add_callback(ed4_change_edit_mode);
-    root->awar_int(AWAR_INSERT_MODE, 1)->add_callback(ed4_change_edit_mode);
+    root->awar_int(AWAR_EDIT_MODE,    0)->add_callback(ed4_change_edit_mode, (AW_CL)0);
+    root->awar_int(AWAR_INSERT_MODE, 1)->add_callback(ed4_change_edit_mode, (AW_CL)0);
 
     root->awar_int(AWAR_EDIT_RIGHTWARD, 1)->add_target_var(&awar_edit_rightward)->add_callback(ED4_edit_direction_changed);
+    root->awar_int(AWAR_EDIT_HELIX_SPACING, 0)->add_target_var(&ED4_ROOT->helix_add_spacing)->add_callback((AW_RCB0)ED4_request_relayout);
+    root->awar_int(AWAR_EDIT_TERMINAL_SPACING, 0)->add_target_var(&ED4_ROOT->terminal_add_spacing)->add_callback((AW_RCB0)ED4_request_relayout);
     root->awar_int(AWAR_EDIT_TITLE_MODE, 0);
 
-    root->awar_int(AWAR_EDIT_HELIX_SPACING,    0) ->set_minmax(-30, 30) ->add_target_var(&ED4_ROOT->helix_add_spacing)    ->add_callback(makeRootCallback(ED4_request_relayout));
-    root->awar_int(AWAR_EDIT_TERMINAL_SPACING, 0) ->set_minmax(-30, 30) ->add_target_var(&ED4_ROOT->terminal_add_spacing) ->add_callback(makeRootCallback(ED4_request_relayout));
+    ed4_changesecurity(root, 0);
 
-    ed4_changesecurity(root);
-
-    root->awar_int(ED4_AWAR_COMPRESS_SEQUENCE_GAPS,    0)->add_callback(makeRootCallback(ED4_compression_toggle_changed_cb, false));
-    root->awar_int(ED4_AWAR_COMPRESS_SEQUENCE_HIDE,    0)->add_callback(makeRootCallback(ED4_compression_toggle_changed_cb, true));
-    root->awar_int(ED4_AWAR_COMPRESS_SEQUENCE_TYPE,    0)->add_callback(ED4_compression_changed_cb);
+    root->awar_int(ED4_AWAR_COMPRESS_SEQUENCE_GAPS, 0)->add_callback(ED4_compression_toggle_changed_cb, AW_CL(0), 0);
+    root->awar_int(ED4_AWAR_COMPRESS_SEQUENCE_HIDE, 0)->add_callback(ED4_compression_toggle_changed_cb, AW_CL(1), 0);
+    root->awar_int(ED4_AWAR_COMPRESS_SEQUENCE_TYPE, 0)->add_callback(ED4_compression_changed_cb);
     root->awar_int(ED4_AWAR_COMPRESS_SEQUENCE_PERCENT, 1)->add_callback(ED4_compression_changed_cb)->set_minmax(1, 99);
 
     root->awar_int(ED4_AWAR_DIGITS_AS_REPEAT, 0);
@@ -361,7 +361,7 @@ static void ed4_create_all_awars(AW_root *root, const char *config_name) {
     root->awar_int(ED4_AWAR_ANNOUNCE_CHECKSUM_CHANGES, 0);
 
     {
-        GB_ERROR gde_err = GDE_init(ED4_ROOT->aw_root, ED4_ROOT->props_db, GLOBAL_gb_main, ED4_create_sequences_for_gde, 0, GDE_WINDOWTYPE_EDIT4);
+        GB_ERROR gde_err = GDE_create_var(ED4_ROOT->aw_root, ED4_ROOT->props_db, GLOBAL_gb_main, ED4_create_sequences_for_gde, GDE_WINDOWTYPE_EDIT4, 0);
         if (gde_err) GBK_terminatef("Fatal error: %s", gde_err);
     }
 
@@ -452,7 +452,7 @@ int ARB_main(int argc, char *argv[]) {
                 "       database    name of database or ':' to connect to arb-database-server\n"
                 "\n"
                 "       options:\n"
-                "       -c config   loads configuration 'config' (default: '" DEFAULT_CONFIGURATION "')\n"
+                "       -c config   loads configuration 'config' (default: 'default_configuration')\n"
             );
         return EXIT_SUCCESS;
     }
@@ -462,9 +462,9 @@ int ARB_main(int argc, char *argv[]) {
         strcpy(config_name, argv[2]);
         argc -= 2; argv += 2;
     }
-    else { // load default configuration if no command line is given
-        config_name = strdup(DEFAULT_CONFIGURATION);
-        printf("Using '%s'\n", DEFAULT_CONFIGURATION);
+    else { // load 'default_configuration' if no command line is given
+        config_name = strdup("default_configuration");
+        printf("Using 'default_configuration'\n");
     }
 
     if (argc>1) {
@@ -474,8 +474,8 @@ int ARB_main(int argc, char *argv[]) {
 
     aw_initstatus();
 
-    GB_shell  shell;
-    ARB_ERROR error;
+    GB_shell shell;
+    GB_ERROR error = NULL;
     GLOBAL_gb_main = GB_open(data_path, "rwt");
     if (!GLOBAL_gb_main) {
         error = GB_await_error();
@@ -490,13 +490,11 @@ int ARB_main(int argc, char *argv[]) {
         error = configure_macro_recording(ED4_ROOT->aw_root, "ARB_EDIT4", GLOBAL_gb_main);
         if (!error) {
             ED4_ROOT->database = new EDB_root_bact;
-            error              = ED4_ROOT->init_alignment();
-        }
-        if (!error) {
+            ED4_ROOT->init_alignment();
             ed4_create_all_awars(ED4_ROOT->aw_root, config_name);
 
             ED4_ROOT->st_ml           = STAT_create_ST_ML(GLOBAL_gb_main);
-            ED4_ROOT->sequence_colors = new ED4_seq_colors(ED4_G_SEQUENCES, seq_colors_changed_cb);
+            ED4_ROOT->sequence_colors = new AWT_seq_colors(ED4_G_SEQUENCES, seq_colors_changed_cb);
 
             ED4_ROOT->edk = new ed_key;
             ED4_ROOT->edk->create_awars(ED4_ROOT->aw_root);
@@ -532,17 +530,26 @@ int ARB_main(int argc, char *argv[]) {
 
                 if (config_name)
                 {
-                    GB_transaction ta(GLOBAL_gb_main);
-                    GB_ERROR       cfg_error;
-                    GBT_config     cfg(GLOBAL_gb_main, config_name, cfg_error);
+                    GB_begin_transaction(GLOBAL_gb_main);
+                    GBDATA *gb_configuration = GBT_find_configuration(GLOBAL_gb_main, config_name);
 
-                    if (cfg.exists()) {
-                        ED4_ROOT->create_hierarchy(cfg.get_definition(GBT_config::MIDDLE_AREA), cfg.get_definition(GBT_config::TOP_AREA)); // create internal hierarchy
+                    if (gb_configuration) {
+                        GBDATA *gb_middle_area = GB_search(gb_configuration, "middle_area", GB_FIND);
+                        GBDATA *gb_top_area = GB_search(gb_configuration, "top_area", GB_FIND);
+                        char *config_data_middle = GB_read_as_string(gb_middle_area);
+                        char *config_data_top   = GB_read_as_string(gb_top_area);
+
+                        ED4_ROOT->create_hierarchy(config_data_middle, config_data_top); // create internal hierarchy
+                        free(config_data_middle);
+                        free(config_data_top);
+
                         found_config = 1;
                     }
                     else {
                         aw_message(GBS_global_string("Could not find configuration '%s'", config_name));
                     }
+
+                    GB_commit_transaction(GLOBAL_gb_main);
                 }
 
                 if (!found_config) {
@@ -572,14 +579,13 @@ int ARB_main(int argc, char *argv[]) {
             ED4_ROOT->aw_root->main_loop(); // enter main-loop
         }
 
-        shutdown_macro_recording(ED4_ROOT->aw_root);
         GB_close(GLOBAL_gb_main);
     }
 
     bool have_aw_root = ED4_ROOT && ED4_ROOT->aw_root;
     if (error) {
-        if (have_aw_root) aw_popup_ok(error.deliver());
-        else fprintf(stderr, "arb_edit4: Error: %s\n", error.deliver());
+        if (have_aw_root) aw_popup_exit(error);
+        else fprintf(stderr, "arb_edit4: Error: %s\n", error);
     }
     if (have_aw_root) delete ED4_ROOT->aw_root;
 

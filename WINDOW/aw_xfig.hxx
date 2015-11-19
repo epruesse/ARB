@@ -71,8 +71,6 @@ class AW_xfig : virtual Noncopyable {
         minx = 0; maxx = 0; centerx = 0;
         miny = 0; maxy = 0; centery = 0;
 
-        size_x = size_y = 0;
-
         calc_scaling(font_width, font_height);
     }
 

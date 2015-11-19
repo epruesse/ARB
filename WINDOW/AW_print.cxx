@@ -51,7 +51,7 @@ bool AW_device_print::line_impl(int gc, const LineVector& Line, AW_bitset filter
                     line_mode,
                     AW_INT(line_width),
                     find_color_idx(gcm->get_last_fg_color()),
-                    gap_ratio,
+                    gap_ratio, 
                     print_pos(clippedLine.xpos()),
                     print_pos(clippedLine.ypos()),
                     print_pos(clippedLine.head().xpos()),
@@ -180,26 +180,26 @@ bool AW_device_print::text_impl(int gc, const char *str, const Position& pos, AW
     return text_overlay(gc, str, opt_strlen, pos, alignment, filteri, (AW_CL)this, 0.0, 0.0, AW_draw_string_on_printer);
 }
 
-bool AW_device_print::box_impl(int gc, AW::FillStyle filled, const Rectangle& rect, AW_bitset filteri) {
+bool AW_device_print::box_impl(int gc, bool filled, const Rectangle& rect, AW_bitset filteri) {
     bool drawflag = false;
     if (filter & filteri) {
-        if (filled.somehow()) {
+        if (filled) {
             Position q[4];
             q[0] = rect.upper_left_corner();
             q[1] = rect.upper_right_corner();
             q[2] = rect.lower_right_corner();
             q[3] = rect.lower_left_corner();
 
-            drawflag = polygon(gc, filled, 4, q, filteri);
+            drawflag = filled_area(gc, 4, q, filteri);
         }
         else {
-            drawflag = generic_box(gc, rect, filteri);
+            drawflag = generic_box(gc, false, rect, filteri);
         }
     }
     return drawflag;
 }
 
-bool AW_device_print::circle_impl(int gc, AW::FillStyle filled, const Position& center, const AW::Vector& radius, AW_bitset filteri) {
+bool AW_device_print::circle_impl(int gc, bool filled, const Position& center, const AW::Vector& radius, AW_bitset filteri) {
     bool drawflag = false;
     if (filteri & filter) {
         aw_assert(radius.x()>0 && radius.y()>0);
@@ -233,7 +233,7 @@ bool AW_device_print::circle_impl(int gc, AW::FillStyle filled, const Position& 
             {
                 int colorIdx = find_color_idx(gcm->get_last_fg_color());
                 int fill_color, area_fill;
-                if (filled.somehow()) {
+                if (filled) {
                     fill_color = colorIdx;
                     area_fill  = AW_INT(20+20*gcm->get_grey_level());    // 20 = full saturation; 40 = white;
                 }
@@ -250,14 +250,14 @@ bool AW_device_print::circle_impl(int gc, AW::FillStyle filled, const Position& 
 
             fprintf(out, "%d %d ", cx, cy); // center
             fprintf(out, "%d %d ", rx, ry); // radius
-            fprintf(out, "%d %d ", cx, cy); // start
-            fprintf(out, "%d %d\n", print_pos(Center.xpos()+screen_radius.x()), cy); // end
+            fprintf(out, "%d %d ", cx, cy); // start 
+            fprintf(out, "%d %d\n", print_pos(Center.xpos()+screen_radius.x()), cy); // end 
         }
     }
     return drawflag;
 }
 
-bool AW_device_print::arc_impl(int gc, AW::FillStyle filled, const AW::Position& center, const AW::Vector& radius, int start_degrees, int arc_degrees, AW_bitset filteri) {
+bool AW_device_print::arc_impl(int gc, bool filled, const AW::Position& center, const AW::Vector& radius, int start_degrees, int arc_degrees, AW_bitset filteri) {
     bool drawflag = false;
     if (filteri && filter) {
         aw_assert(radius.x()>0 && radius.y()>0);
@@ -291,7 +291,7 @@ bool AW_device_print::arc_impl(int gc, AW::FillStyle filled, const AW::Position&
                 int colorIdx = find_color_idx(gcm->get_last_fg_color());
                 int fill_color, area_fill;
 
-                if (filled.somehow()) {
+                if (filled) {
                     fill_color = colorIdx;
                     area_fill  = AW_INT(20+20*gcm->get_grey_level());    // 20 = full saturation; 40 = white;
                 }
@@ -372,10 +372,10 @@ bool AW_device_print::arc_impl(int gc, AW::FillStyle filled, const AW::Position&
     return drawflag;
 }
 
-bool AW_device_print::polygon_impl(int gc, AW::FillStyle filled, int npos, const Position *pos, AW_bitset filteri) {
+bool AW_device_print::filled_area_impl(int gc, int npos, const Position *pos, AW_bitset filteri) {
     bool drawflag = false;
     if (filter & filteri) {
-        drawflag = generic_polygon(gc, npos, pos, filteri);
+        drawflag = generic_filled_area(gc, npos, pos, filteri);
         if (drawflag) { // line visible -> area fill needed
             const AW_GC *gcm = get_common()->map_gc(gc);
 
@@ -388,7 +388,7 @@ bool AW_device_print::polygon_impl(int gc, AW::FillStyle filled, int npos, const
                     line_width, find_color_idx(gcm->get_last_fg_color()), greylevel, npos+1);
 
             // @@@ method used here for clipping leads to wrong results,
-            // since group border (drawn by generic_polygon() above) is clipped correctly,
+            // since group border (drawn by generic_filled_area() above) is clipped correctly,
             // but filled content is clipped different.
             //
             // fix: clip the whole polygon before drawing border
@@ -398,7 +398,7 @@ bool AW_device_print::polygon_impl(int gc, AW::FillStyle filled, int npos, const
 
                 Position transPos = transform(pos[j]);
                 Position clippedPos;
-                ASSERT_RESULT(bool, true, force_into_clipbox(transPos, clippedPos));
+                ASSERT_RESULT(bool, true, force_into_clipbox(transPos, clippedPos)); 
                 fprintf(out, "   %d %d\n", print_pos(clippedPos.xpos()), print_pos(clippedPos.ypos()));
             }
         }

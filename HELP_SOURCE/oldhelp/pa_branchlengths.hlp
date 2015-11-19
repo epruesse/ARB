@@ -1,7 +1,6 @@
 #Please insert up references in the next lines (line starts with keyword UP)
 UP	arb.hlp
 UP	glossary.hlp
-UP	pa_optimizer.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
 #SUB	subtopic.hlp
@@ -11,7 +10,7 @@ UP	pa_optimizer.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Calculate Branch Lengths
 
-OCCURRENCE	ARB_PARSIMONY/Tree/Calculate Branch Lengths
+OCCURRENCE	ARB_NT/Tree/Parsimony/Tree/Calculate Branch Lengths
 
 
 DESCRIPTION	Calculates branchlengths for the current tree.
@@ -22,11 +21,11 @@ SECTION Inner branches
                 To calculate the lengths of non-terminal branches, branch swapping
                 is used on them. 
 
-                Branch swapping (aka LINK{nni.hlp}) is the most
+                Branch swapping (aka NNI=Nearest Neighborhood Interchange) is the most
                 atomic operation possible at an inner branch and has as such an effect on
-                the overall costs of the tree (i.e. on the LINK{pa_value.hlp}).
+                the overall costs of the tree.
 
-                That effect is used as branchlength for inner branches.
+                That effect is used as branchlength of the inner branch.
 
                 The branchlength reflects the significance of the branch, i.e.
 
@@ -41,24 +40,35 @@ SECTION Inner branches
 SECTION Terminal branches
 
                 For terminal branches ARB_PARSIMONY checks how much the overall
-                tree costs changed by adding this species to the tree. The cost
-                gets weighted by the base-count of the species.
+                tree costs changed by adding this species to the tree. The price
+                is weighted by the base-count of the species.
 
                 i.e.
                 - if the species has an identical relative in the tree and is added
                   as neighbor of that relative, the resulting branchlength will be zero.
-                - if adding the species increases the tree costs by 50 (mutations) and the
-                  species contains 100 bases, the resulting branchlength will be 0.5
+                - if added the species increases the tree costs by 50 and the species
+                  contains 100 bases, the resulting branchlength will be 0.5
 
                 This does quite accurately reflect the percentage of residues changed
                 against the rest of the tree.
 
 SECTION Partial sequences
 
-                If you add species with partial sequences as fulllength-species, they
-                might group together in subtrees. To avoid that unwanted behavior,
-                use LINK{pa_partial.hlp}.
+                If you add species with partial sequences as fulllength-species, they will
+                group together in distant subtrees.
 
+                But if species are flagged to contain "partial sequences" (this is done by
+                "Add marked partial species"), they are handled differently:
+
+                - Each partial species corresponds to one non-partial species
+                - The partial-species is always inserted "below" the corresponding full-species.
+                  Multiple partials may correspond to the same full-species.
+                - By adding that partial sequence to the tree, the tree costs only raise
+                  by the weighted mismatches in the region that overlaps (opposed, non-partial
+                  sequences would as well count the missing part as "gap insertions", i.e.
+                  the costs for adding a sequence as "partial" are MUCH cheaper).
+
+                Species with partial sequences have the field "ARB_partial" set to 1
 
 SECTION Used terms
 

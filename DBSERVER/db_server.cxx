@@ -349,7 +349,7 @@ void TEST_SLOW_dbserver() {
     pid_t child_pid = fork();
     if (child_pid) { // parent ("the client")
         bool down = true;
-        int max_wait = (60*1000)/25; // set timeout to ~60 seconds
+        int max_wait = 2000/50;
         while (down) {
             GB_sleep(25, MS);
             down = server_is_down(tcp);

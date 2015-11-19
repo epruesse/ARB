@@ -3,7 +3,7 @@
 
 # --------------------------------------------------------------------------------
 
-LIBS = $(LIBPATH) $(EXECLIBS) $(ARBDB_LIB) $(SYSLIBS)
+LIBS = $(LIBPATH) $(ARBDB_LIB) $(SYSLIBS)
 
 # --------------------------------------------------------------------------------
 
@@ -33,47 +33,47 @@ SHARED_OBJECTS = ps_node.o ps_filebuffer.o ps_database.o ps_tools.o
 
 FB_TEST_OBJECTS = fb_test.o
 $(ARBHOME)/PROBE_SET/bin/fb_test : $(SHARED_OBJECTS) $(FB_TEST_OBJECTS)
-	$(LINK_EXECUTABLE) $@ $^ $(LIBS)
+	$(LINK_EXECUTABLE) $@ $^ $(LIBS) $(EXECLIBS)
 
 PS_CONVERT_OBJECTS = ps_convert_db.o
 $(ARBHOME)/PROBE_SET/bin/ps_convert : $(SHARED_OBJECTS) $(PS_CONVERT_OBJECTS)
-	$(LINK_EXECUTABLE) $@ $^ $(LIBS)
+	$(LINK_EXECUTABLE) $@ $^ $(LIBS) $(EXECLIBS)
 
 PS_MERGE_OBJECTS = ps_merge_my_dbs.o
 $(ARBHOME)/PROBE_SET/bin/ps_merge : $(SHARED_OBJECTS) $(PS_MERGE_OBJECTS)
-	$(LINK_EXECUTABLE) $@ $^ $(LIBS)
+	$(LINK_EXECUTABLE) $@ $^ $(LIBS) $(EXECLIBS)
 
 PS_DETECT_OBJECTS = ps_detect_weak_differences.o
 $(ARBHOME)/PROBE_SET/bin/ps_detect : $(SHARED_OBJECTS) $(PS_DETECT_OBJECTS)
-	$(LINK_EXECUTABLE) $@ $^ $(LIBS)
+	$(LINK_EXECUTABLE) $@ $^ $(LIBS) $(EXECLIBS)
 
 PS_FIND_OBJECTS = ps_find_probes.o
 $(ARBHOME)/PROBE_SET/bin/ps_find : $(SHARED_OBJECTS) $(PS_FIND_OBJECTS)
-	$(LINK_EXECUTABLE) $@ $^ $(LIBS)
+	$(LINK_EXECUTABLE) $@ $^ $(LIBS) $(EXECLIBS)
 
 PS_EVAL_OBJECTS = ps_eval_candidates.o
 $(ARBHOME)/PROBE_SET/bin/ps_eval : $(SHARED_OBJECTS) $(PS_EVAL_OBJECTS)
-	$(LINK_EXECUTABLE) $@ $^ $(LIBS)
+	$(LINK_EXECUTABLE) $@ $^ $(LIBS) $(EXECLIBS)
 
 PS_GET_PROBES_OBJECTS = ps_get_probes.o
 $(ARBHOME)/PROBE_SET/bin/ps_get_probes : $(SHARED_OBJECTS) $(PS_GET_PROBES_OBJECTS)
-	$(LINK_EXECUTABLE) $@ $^ $(LIBS)
+	$(LINK_EXECUTABLE) $@ $^ $(LIBS) $(EXECLIBS)
 
 PS_MY2ASCII_OBJECTS = ps_my2ascii.o
 $(ARBHOME)/PROBE_SET/bin/ps_my2ascii : $(SHARED_OBJECTS) $(PS_MY2ASCII_OBJECTS)
-	$(LINK_EXECUTABLE) $@ $^ $(LIBS)
+	$(LINK_EXECUTABLE) $@ $^ $(LIBS) $(EXECLIBS)
 
 PS_MY2ASCIIPATHS_OBJECTS = ps_my2asciipaths.o
 $(ARBHOME)/PROBE_SET/bin/ps_my2asciipaths : $(SHARED_OBJECTS) $(PS_MY2ASCIIPATHS_OBJECTS)
-	$(LINK_EXECUTABLE) $@ $^ $(LIBS)
+	$(LINK_EXECUTABLE) $@ $^ $(LIBS) $(EXECLIBS)
 
 PS_ARB2ASCIIPATHS_OBJECTS = ps_arb2asciipaths.o
 $(ARBHOME)/PROBE_SET/bin/ps_arb2asciipaths : $(SHARED_OBJECTS) $(PS_ARB2ASCIIPATHS_OBJECTS)
-	$(LINK_EXECUTABLE) $@ $^ $(LIBS)
+	$(LINK_EXECUTABLE) $@ $^ $(LIBS) $(EXECLIBS)
 
 PS_SHOW_RESULT_OBJECTS = ps_show_result.o
 $(ARBHOME)/PROBE_SET/bin/ps_show_result : $(SHARED_OBJECTS) $(PS_SHOW_RESULT_OBJECTS)
-	$(LINK_EXECUTABLE) $@ $^ $(LIBS)
+	$(LINK_EXECUTABLE) $@ $^ $(LIBS) $(EXECLIBS)
 
 CPP_OBJECTS = $(SHARED_OBJECTS) \
 	$(FB_TEST_OBJECTS) \
@@ -89,7 +89,7 @@ CPP_OBJECTS = $(SHARED_OBJECTS) \
 	$(PS_SHOW_RESULT_OBJECTS) \
 
 .cxx.o:
-	$(A_CXX) $(cflags) $(cxxflags) -c -o $@ $(@:.o=.cxx)  $(CXX_INCLUDES) $(POST_COMPILE) $<
+	$(A_CXX) $(cflags) $(cxxflags) -c -o $@ $(@:.o=.cxx)  $(CXX_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(CPP_OBJECTS)

@@ -40,7 +40,9 @@ static void delete_macro_cb(AW_window *aww) {
     free(macroName);
 }
 
-static void macro_execution_finished(AW_root *awr, char *macroName) {
+static void macro_execution_finished(AW_root *awr, AW_CL cl_macroName) {
+    char *macroName = (char*)cl_macroName;
+
 #if defined(DEBUG)
     fprintf(stderr, "macro_execution_finished(%s)\n", macroName);
 #endif
@@ -53,7 +55,7 @@ static void macro_execution_finished(AW_root *awr, char *macroName) {
 static void exec_macro_cb(AW_window *aww, bool loop_marked) {
     AW_root  *awr       = aww->get_root();
     char     *macroName = AW_get_selected_fullname(awr, AWAR_MACRO_BASE); // @@@ instead use function returning plain name w/o dir
-    GB_ERROR  error     = getMacroRecorder(awr)->execute(macroName, loop_marked, makeRootCallback(macro_execution_finished, macroName));
+    GB_ERROR  error     = getMacroRecorder(awr)->execute(macroName, loop_marked, macro_execution_finished, (AW_CL)macroName);
     if (error) {
         aw_message(error);
         free(macroName); // only free in error-case (see macro_execution_finished)
@@ -175,8 +177,6 @@ void insert_macro_menu_entry(AW_window *awm, bool prepend_separator) {
     }
 }
 
-static void dont_announce_done(AW_root*) {}
-
 void execute_macro(AW_root *root, const char *macroname) {
     // used to execute macro passed via CLI
     GB_ERROR error = 0;
@@ -184,7 +184,7 @@ void execute_macro(AW_root *root, const char *macroname) {
         // @@@ allow macro playback from client? (using server via AWAR)
         MacroRecorder *recorder = getMacroRecorder(root);
         if (!recorder) error    = "macro playback only available in server";
-        else           error    = recorder->execute(macroname, false, makeRootCallback(dont_announce_done));
+        else           error    = recorder->execute(macroname, false, NULL, 0);
     }
 
     if (error) {

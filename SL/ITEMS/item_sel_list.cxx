@@ -16,7 +16,7 @@
 #include <arbdbt.h>
 #include <arb_global_defs.h>
 
-#if defined(ARB_MOTIF)
+#if !defined(ARB_GTK)
 static AW_window *existing_window_creator(AW_root*, AW_window *aw_existing) {
     return aw_existing;
 }
@@ -37,11 +37,7 @@ Itemfield_Selection::Itemfield_Selection(AW_selection_list *sellist_,
 
 void Itemfield_Selection::fill() {
     if (field_filter & SF_PSEUDO) {
-#if defined(ARB_GTK)
-        insert_default(PSEUDO_FIELD_ANY_FIELD, PSEUDO_FIELD_ANY_FIELD);
-#else // ARB_MOTIF
         insert(PSEUDO_FIELD_ANY_FIELD, PSEUDO_FIELD_ANY_FIELD);
-#endif
         insert(PSEUDO_FIELD_ALL_FIELDS, PSEUDO_FIELD_ALL_FIELDS);
     }
 
@@ -83,10 +79,7 @@ void Itemfield_Selection::fill() {
             }
         }
     }
-
-    if (!get_sellist()->get_default_value()) {
-        insert_default("<no field>", NO_FIELD_SELECTED);
-    }
+    insert_default("<no field>", NO_FIELD_SELECTED);
 }
 
 
@@ -131,7 +124,7 @@ Itemfield_Selection *create_selection_list_on_itemfields(GBDATA         *gb_main
 #ifdef ARB_GTK
         aws->button_length(columns);
         sellist = aws->create_option_menu(varname, fallback2default);
-#else // ARB_MOTIF
+#else
         // create HIDDEN popup window containing the selection list
         AW_window *win_for_sellist = aws;
         {
@@ -141,11 +134,11 @@ Itemfield_Selection *create_selection_list_on_itemfields(GBDATA         *gb_main
             aw_popup->auto_space(10, 10);
             aw_popup->at_newline();
 
-            aw_popup->callback(AW_POPDOWN); // @@@ used as SELLIST_CLICK_CB (see #559)
+            aw_popup->callback((AW_CB0)AW_POPDOWN);
             sellist = aw_popup->create_selection_list(varname, columns, visible_rows, fallback2default);
 
             aw_popup->at_newline();
-            aw_popup->callback(AW_POPDOWN);
+            aw_popup->callback((AW_CB0)AW_POPDOWN);
             aw_popup->create_button("CLOSE", "CLOSE", "C");
 
             aw_popup->window_fit();

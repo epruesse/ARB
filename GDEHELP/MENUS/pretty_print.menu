@@ -17,13 +17,13 @@ insave:
 
 arg:NAMETOP
 argtype:choice_menu
-arglabel:Names at top?
+arglabel:Names at top  ?
 argchoice:No:
 argchoice:Yes:-nametop
 
 arg:NAMELEFT
 argtype:choice_menu
-arglabel:Names at left?
+arglabel:Names at left ?
 argchoice:No:
 argchoice:Yes:-nameleft
 
@@ -35,19 +35,19 @@ argchoice:No:
 
 arg:NUMTOP
 argtype:choice_menu
-arglabel:Numbers at top?
+arglabel:Numbers at top  ?
 argchoice:Yes:-numtop
 argchoice:No:
 
 arg:NUMBOT
 argtype:choice_menu
-arglabel:Numbers at tail?
+arglabel:Numbers at tail ?
 argchoice:No:
 argchoice:Yes:-numbot
 
 arg:NUMLEFT
 argtype:choice_menu
-arglabel:Numbers at left?
+arglabel:Numbers at left ?
 argchoice:Yes:-numleft
 argchoice:No:
 

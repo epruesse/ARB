@@ -16,7 +16,7 @@ using namespace AW;
 
 // *********************** paint sub tree ************************
 
-const int TIP_BOX_SIZE = 3;
+const int tipBoxSize = 3;
 
 struct IRS_data {
     bool   draw_separator;
@@ -144,14 +144,14 @@ AW_pos AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, AW_pos x_offset) {
             disp_device->line(gc, frame.lower_edge());
 
             gc = node->gr.gc;
+            disp_device->set_grey_level(gc, grey_level);
             set_line_attributes_for(node);
-            filled_box(gc, frame.upper_left_corner(), TIP_BOX_SIZE);
+            filled_box(gc, frame.upper_left_corner(), tipBoxSize);
 
             Vector    frame2box(IRS.gap, IRS.gap);
             Rectangle gbox(frame.upper_left_corner()+frame2box, Vector(frame.width()*.5, frame.height()-2*IRS.gap));
 
-            disp_device->set_grey_level(gc, group_greylevel);
-            disp_device->box(gc, AW::FillStyle::SHADED_WITH_BORDER, gbox);
+            disp_device->box(gc, true, gbox);
 
             Position box_rcenter = gbox.right_edge().centroid();
 
@@ -211,12 +211,11 @@ AW_pos AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, AW_pos x_offset) {
     if (left_y > IRS.min_y) {
         if (left_y < IRS.max_y) { // clip y on top border
             AW_click_cd cd(disp_device, (AW_CL)node->leftson);
-            Position    left(left_x, left_y);
             if (node->leftson->get_remark()) {
-                TREE_show_branch_remark(disp_device, node->leftson->get_remark(), node->leftson->is_leaf, left, 1, remark_text_filter, bootstrap_min);
+                AWT_show_branch_remark(disp_device, node->leftson->get_remark(), node->leftson->is_leaf, left_x, left_y, 1, remark_text_filter);
             }
-            set_line_attributes_for(node->get_leftson());
-            draw_branch_line(node->get_leftson()->gr.gc, Position(x_offset, left_y), left, line_filter);
+            set_line_attributes_for(node->get_leftson()); 
+            draw_branch_line(node->get_leftson()->gr.gc, Position(x_offset, left_y), Position(left_x, left_y), line_filter);
         }
     }
     else {
@@ -227,12 +226,11 @@ AW_pos AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, AW_pos x_offset) {
 
     if (right_y > IRS.min_y && right_y < IRS.max_y) { // visible right branch in lower part of display
         AW_click_cd cd(disp_device, (AW_CL)node->rightson);
-        Position    right(right_x, right_y);
         if (node->rightson->get_remark()) {
-            TREE_show_branch_remark(disp_device, node->rightson->get_remark(), node->rightson->is_leaf, right, 1, remark_text_filter, bootstrap_min);
+            AWT_show_branch_remark(disp_device, node->rightson->get_remark(), node->rightson->is_leaf, right_x, right_y, 1, remark_text_filter);
         }
-        set_line_attributes_for(node->get_rightson());
-        draw_branch_line(node->get_rightson()->gr.gc, Position(x_offset, right_y), right, line_filter);
+        set_line_attributes_for(node->get_rightson()); 
+        draw_branch_line(node->get_rightson()->gr.gc, Position(x_offset, right_y), Position(right_x,  right_y), line_filter);
     }
 
     AW_click_cd cd(disp_device, (AW_CL)node);
@@ -251,8 +249,9 @@ AW_pos AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, AW_pos x_offset) {
         disp_device->line(gc, x_offset-IRS.onePixel, group_y1, x_offset-IRS.onePixel,  IRS.y); // opened-group-frame
         
         gc = node->gr.gc;
+        disp_device->set_grey_level(gc, grey_level);
         set_line_attributes_for(node);
-        filled_box(gc, Position(x_offset-IRS.onePixel, group_y1), TIP_BOX_SIZE);
+        filled_box(gc, Position(x_offset-IRS.onePixel, group_y1), tipBoxSize);
     }
     return y_center;
 }

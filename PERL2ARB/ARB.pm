@@ -17,38 +17,6 @@ $VERSION = '0.01';
 
 bootstrap ARB $VERSION;
 
-# globally catch die, redirect to arb_message, then confess
-package CORE::GLOBAL;
-use subs 'die';
-my $already_dying = 0;
-
-sub show_arb_message($) {
-  my ($msg) = @_;
-  $msg =~ s/\n/\\n/g;
-  $msg =~ s/'/"/g;
-  system("arb_message '$msg'");
-}
-
-sub die {
-  if ($already_dying==0) {
-    $already_dying++; # do not recurse
-
-    ARB::prepare_to_die(); # abort all transactions and close all databases (too avoid deadlock; see #603)
-
-    my ($msg) = @_;
-    $msg =~ s/\n+$//g; # remove trailing LFs
-    if ($msg eq '') { $msg = 'Unknown macro execution error'; }
-    else { $msg = "Macro execution error: '$msg'"; }
-    show_arb_message($msg."\n(see console for details)");
-
-    use Carp;
-    Carp::confess("Macro execution error: '$msg'"); # recurses into this sub
-  }
-  else {
-    CORE::die @_;
-  }
-}
-
 # Preloaded methods go here.
 
 # Autoload methods go after =cut, and are processed by the autosplit program.

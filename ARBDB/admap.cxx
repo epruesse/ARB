@@ -572,9 +572,8 @@ static gbdByKey *createGbdByKey(GB_MAIN_TYPE *Main)
     for (idx=0; idx<Main->keycnt; idx++) {
         gbk[idx].cnt = 0;
 
-        gb_Key& KEY = Main->keys[idx];
-        if (KEY.key && KEY.nref>0) {
-            gbk[idx].gbdoff  = (gbdata_offset *)GB_calloc(KEY.nref, sizeof(*(gbk[idx].gbdoff)));
+        if (Main->keys[idx].key && Main->keys[idx].nref>0) {
+            gbk[idx].gbdoff  = (gbdata_offset *) GB_calloc((size_t)Main->keys[idx].nref, sizeof(*(gbk[idx].gbdoff)));
             if (!gbk[idx].gbdoff) goto err2;
         }
     }

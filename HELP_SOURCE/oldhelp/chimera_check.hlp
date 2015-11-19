@@ -27,8 +27,8 @@ DESCRIPTION	Takes sequences, a tree and a column statistic as input,
 
                 For each slice a students t-test (see LINK{http://en.wikipedia.org/wiki/T-test}) is
                 performed and its result is written into the XXX portions of the entries mentioned below.
-                The t-test tests whether the likelihood of a specific sequence slice (of one species) follows
-                a t-distribution of the likelihoods for that sequence slice in all examined species.
+                The t-test tests whether the likelyhood of a specific sequence slice (of one species) follows
+                a t-distribution of the likelyhoods for that sequence slice in all examined species.
 
                 The meaning of each X contains the result of the t-test (the "t-value") as follows:
                     * if the t-test succeeds the value of X is '1' up to '8' (where '5' is shown as '-').
@@ -55,19 +55,13 @@ DESCRIPTION	Takes sequences, a tree and a column statistic as input,
                 a "blown up" version of the "cXXXXX...XXXX" part of the sequence quality
                 field.
 
-                If 'Keep existing reports' is unchecked, the selected 'species field' and
-                the quality entry in the alignment are removed from ALL species when running
-                a (new) chimera check.
-
-                By clicking the 'Remove them now' button they will be removed w/o running
-                a new check. Make sure the selected 'species field' is correct!
-
 NOTES           Only sequences which are in the tree are used.
 
                 Slices in high variance regions more easily pass the t-test.
 
                 Slices from sequences with higher overall variance more easily pass the t-test.
 
-WARNINGS	Needs really a lot of memory!
+WARNINGS	Needs a really lot of computer memory!
 
-BUGS		None
+BUGS		Does not delete the destination field of species not in
+		the tree.

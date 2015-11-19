@@ -78,7 +78,7 @@ class SeqPart {
     int offset;
     int len; // of part
 
-    static char to_gap(char c) { return ED4_is_gap_character(c) ? c : 0; }
+    static char to_gap(char c) { return ADPP_IS_ALIGN_CHARACTER(c) ? c : 0; }
 
 public:
     SeqPart(const char *seq_, int offset_, int len_)
@@ -221,7 +221,7 @@ static GB_ERROR perform_block_operation_on_whole_sequence(const ED4_block_operat
         if (new_seq) {
             if (new_len<len) {
                 memcpy(seq, new_seq, new_len);
-                char gap = ED4_is_gap_character(seq[len-1]) ? seq[len-1] : '.';
+                char gap = ADPP_IS_ALIGN_CHARACTER(seq[len-1]) ? seq[len-1] : '.';
                 int l;
                 for (l=new_len; l<len; l++) {
                     seq[l] = gap;
@@ -230,7 +230,7 @@ static GB_ERROR perform_block_operation_on_whole_sequence(const ED4_block_operat
             }
             else if (new_len>len) {
                 for (int l=new_len-1; l>=len; l--) {
-                    if (!ED4_is_gap_character(new_seq[l])) {
+                    if (!ADPP_IS_ALIGN_CHARACTER(new_seq[l])) {
                         error = "Result of block-operation to large (not enough gaps at end of sequence data)";
                         break;
                     }
@@ -285,7 +285,7 @@ static GB_ERROR perform_block_operation_on_part_of_sequence(const ED4_block_oper
             }
             else if (new_len>len_part) {
                 for (int l=new_len-1; l>=len_part; l--) {
-                    if (!ED4_is_gap_character(new_seq_part[l])) {
+                    if (!ADPP_IS_ALIGN_CHARACTER(new_seq_part[l])) {
                         error = "Result of block-operation to large (not enough gaps at end of marked columnblock)";
                         break;
                     }
@@ -702,7 +702,7 @@ AW_window *ED4_create_replace_window(AW_root *root) {
     aws->load_xfig("edit4/replace.fig");
 
     aws->at("close");
-    aws->callback(AW_POPDOWN);
+    aws->callback((AW_CB0)AW_POPDOWN);
     aws->create_button("CLOSE", "Close", "C");
 
     aws->at("help");
@@ -805,7 +805,7 @@ public:
         int n = 0;
 
         while (o<len) {
-            if (!ED4_is_gap_character(seq[o])) result[n++] = seq[o];
+            if (!ADPP_IS_ALIGN_CHARACTER(seq[o])) result[n++] = seq[o];
             o++;
         }
 
@@ -846,7 +846,7 @@ class shift_op : public ED4_block_operator {
         char       *result = 0;
         const char *seq    = part.data();
 
-        if (!ED4_is_gap_character(seq[0])) {
+        if (!ADPP_IS_ALIGN_CHARACTER(seq[0])) {
             error = "Need a gap at block start for shifting left";
         }
         else {
@@ -864,7 +864,7 @@ class shift_op : public ED4_block_operator {
         const char *seq    = part.data();
         int         len    = part.length();
 
-        if (!ED4_is_gap_character(seq[len-1])) {
+        if (!ADPP_IS_ALIGN_CHARACTER(seq[len-1])) {
             error = "Need a gap at block end for shifting right";
         }
         else {
@@ -942,7 +942,7 @@ static void modsai_cb(AW_window *aww) {
                 : GBS_global_string("Failed to find SAI '%s'", sainame);
         }
         else {
-            GBDATA *gb_data = GBT_find_sequence(gb_sai, ED4_ROOT->alignment_name);
+            GBDATA *gb_data = GBT_read_sequence(gb_sai, ED4_ROOT->alignment_name);
 
             if (!gb_data) error = GB_await_error();
             else {
@@ -988,25 +988,29 @@ AW_window *ED4_create_modsai_window(AW_root *root) {
     aws->load_xfig("edit4/modsai.fig");
 
     aws->at("close");
-    aws->callback(AW_POPDOWN);
+    aws->callback((AW_CB0)AW_POPDOWN);
     aws->create_button("CLOSE", "Close", "C");
 
     aws->at("help");
     aws->callback(makeHelpCallback("e4_modsai.hlp"));
     aws->create_button("HELP", "Help", "H");
-
-    AW_selection_list *sellist = awt_create_selection_list_with_input_field(aws, AWAR_MOD_SAI_SCRIPT, "box", "script");
-    GB_ERROR           error;
-    {
-        StorableSelectionList storable_sellist(TypedSelectionList("sellst", sellist, "SRT/ACI scripts", "srt_aci"));
-        error = storable_sellist.load(GB_path_in_ARBLIB("sellists/mod_sequence*.sellst"), false);
-    }
-    aw_message_if(error);
+    
+    aws->at("script");
+    aws->create_input_field(AWAR_MOD_SAI_SCRIPT);
 
     aws->at("go");
     aws->callback(modsai_cb);
     aws->create_button("go", "GO");
 
+    aws->at("box");
+    AW_selection_list *sellist = aws->create_selection_list(AWAR_MOD_SAI_SCRIPT, false);
+    GB_ERROR error;
+    {
+        StorableSelectionList storable_sellist(TypedSelectionList("sellst", sellist, "SRT/ACI scripts", "srt_aci"));
+        error = storable_sellist.load(GB_path_in_ARBLIB("sellists/mod_sequence*.sellst"), false);
+    }
+    aw_message_if(error);
+    
     return aws;
 }
 
@@ -1044,10 +1048,10 @@ static arb_test::match_expectation blockop_expected_io(const ED4_block_operator&
 #define TEST_EXPECT_BLOCKOP_ERRORHAS__BROKEN(oversized_input,blockop,expected) TEST_EXPECTATION__BROKEN(blockop_expected_io(blockop, oversized_input, NULL, expected))
 
 void TEST_block_operators() {
-    ED4_setup_gaps_and_alitype("-.", GB_AT_RNA);
+    ED4_init_is_align_character("-.");
 
     // Note: make sure tests perform an identity block operation at least once for each operator
-
+    
     // replace_op
     TEST_EXPECT_BLOCKOP_PERFORMS("-A-C--", replace_op("-",  "."),  "A.C.");
     TEST_EXPECT_BLOCKOP_PERFORMS("-A-C--", replace_op("?",  "."),  "....");

@@ -38,8 +38,8 @@ if [ -z "$1" ]; then
     echo "Edits a file using $ARB_TEXTEDIT"
 else
     if [ $IS_X_EDITOR = 1 ]; then
-        $ARB_TEXTEDIT "$1"
+        $ARB_TEXTEDIT $1
     else
-        ${ARB_XCMD:-xterm -geometry 120x50 -e} $ARB_TEXTEDIT "$1"
+        ${ARB_XCMD:-xterm -geometry 120x50 -e} $ARB_TEXTEDIT $1
     fi
 fi

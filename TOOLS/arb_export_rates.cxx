@@ -112,7 +112,7 @@ int ARB_main(int argc, char *argv[]) {
                     if (!have_no_sai) {
                         GBDATA *gb_sai = GBT_find_SAI(gb_main, SAI_name);
                         if (gb_sai) {
-                            GBDATA *gb_data = GBT_find_sequence(gb_sai, ali_name);
+                            GBDATA *gb_data = GBT_read_sequence(gb_sai, ali_name);
                             if (gb_data) {
                                 seq = GB_read_string(gb_data);
                                 if (!seq) {

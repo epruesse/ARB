@@ -9,7 +9,7 @@ trace() {
 debug() {
     local MSG=$1
     # to debug uncomment next line:
-    trace "DEBUG: $MSG"
+    # trace "DEBUG: $MSG"
 }
 
 send_to_launcher() {
@@ -44,7 +44,6 @@ pipe_command() {
     fi
 
     send_to_launcher $NAMED_PIPE 'cmd_terminated'
-    debug "pipe_command terminates"
 }
 
 read_line() {
@@ -102,15 +101,6 @@ listen_pipe_unlogged() {
     else
         trace "Still have $RUNNING arb-processes - terminating nevertheless"
     fi
-
-    debug "listen_pipe_unlogged waits for subshells ..."
-    wait
-
-    trace "cleaning up arb session"
-    arb_clean show_session
-    arb_clean session
-
-    debug "listen_pipe_unlogged terminates"
 }
 
 shared_library_dependencies() {
@@ -306,12 +296,11 @@ create_pipe_reader() {
     trap "term_handler $NAMED_PIPE" TERM
     trap "rm -f $NAMED_PIPE" EXIT
 
-    { mkfifo -m 600 $NAMED_PIPE && listen_pipe $NAMED_PIPE ; debug "listen_pipe done" ; } || \
+    { mkfifo $NAMED_PIPE && listen_pipe $NAMED_PIPE ; } || \
       { echo "Error creating pipe '$NAMED_PIPE'" ; kill $PARENT_PID ; }
 
     debug "Pipe reader for '$NAMED_PIPE' terminates.."
     rm -f $NAMED_PIPE
-    debug "Pipe '$NAMED_PIPE' removed"
 }
 
 initial_send_to_launcher() {
@@ -336,9 +325,8 @@ wait_for_pipe() {
 }
 
 get_pipe_name() {
-    local SOCKETDIR="$HOME/.arb_tmp/sockets"
-    mkdir -p "$SOCKETDIR"
-    chmod 0700 "$SOCKETDIR"
+    local SOCKETDIR=$HOME/.arb_tmp/sockets
+    mkdir -p $SOCKETDIR
     echo "$SOCKETDIR/arb_launcher.$ARB_PID"
 
     # instead of the above code, use the following to test a pipe-creation failure:

@@ -10,11 +10,10 @@ UP	gene_info.hlp
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		Delete Species/Gene/Experiment
+TITLE		Delete Species/Gene
 
-OCCURRENCE	ARB_NT/Species/Species information/SPECIES/Delete
-	        ARB_NT/Genome/Gene information/GENE/Delete
-	        ARB_NT/Genome/Experiment/Experiment information/EXPERIMENT/Delete
+OCCURRENCE	ARB_NT/Species/Info/SPECIES/Delete
+	        ARB_NT/Genes/Info/SPECIES/Delete
 
 DESCRIPTION	Deletes a species/gene entry.
 

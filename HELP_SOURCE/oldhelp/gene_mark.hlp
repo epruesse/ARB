@@ -12,8 +12,8 @@ SUB	gene_species_mark.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Mark genes
 
-OCCURRENCE	ARB_NT/Genome/...
-		ARB_GENE_MAP/Genome/...
+OCCURRENCE	ARB_NT/Genes/
+		ARB_GENE_MAP/Genes/
 
 DESCRIPTION	Marking genes works similar to marking species.
 

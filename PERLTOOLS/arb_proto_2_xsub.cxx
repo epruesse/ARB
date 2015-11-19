@@ -1010,7 +1010,7 @@ void TEST_arb_proto_2_xsub() {
     TEST_EXPECT_NO_ERROR(valgrinded_system(cmd));
 
 #if defined(TEST_AUTO_UPDATE)
-    TEST_COPY_FILE(outname, expected);
+    system(GBS_global_string("cp %s %s", outname, expected));
 #else
     TEST_EXPECT_TEXTFILE_DIFFLINES(expected, outname, 0);
 #endif

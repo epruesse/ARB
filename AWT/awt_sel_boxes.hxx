@@ -53,41 +53,62 @@ public:
     const char *get_shared_id() const { return filetype_id.c_str(); }
 };
 
-DECLARE_CBTYPE_FVV_AND_BUILDERS(SaiSelectionlistFilterCallback, char*, GBDATA*);   // generates makeSaiSelectionlistFilterCallback
-// (result of callback: - NULL if SAI unwanted; heap-allocated selection-list display-string otherwise)
-const SaiSelectionlistFilterCallback& awt_std_SAI_filter_cb();
+typedef char *(*awt_sai_sellist_filter)(GBDATA *, AW_CL);
+class AWT_sai_selection;
 
+class SAI_selection_list_spec : virtual Noncopyable {
+    char   *awar_name;
+    GBDATA *gb_main;
+
+    awt_sai_sellist_filter filter_poc;
+    AW_CL                  filter_cd;
+
+public:
+    SAI_selection_list_spec(const char *awar_name_, GBDATA *gb_main_)
+        : awar_name(strdup(awar_name_)),
+          gb_main(gb_main_),
+          filter_poc(NULL),
+          filter_cd(0)
+    {}
+    ~SAI_selection_list_spec() { free(awar_name); }
+
+    void define_filter(awt_sai_sellist_filter filter_poc_, AW_CL filter_cd_) {
+        // Warning: do not use different filters for same awar! (wont work as expected)
+        filter_poc = filter_poc_;
+        filter_cd  = filter_cd_;
+    }
+
+    const char *get_awar_name() const { return awar_name; }
+
+    AWT_sai_selection *create_list(AW_window *aws, bool fallback2default) const;
+};
 
 // -----------------------------------------
 //      various database selection boxes
 
-void awt_create_ALI_selection_button(GBDATA *gb_main, AW_window *aws, const char *varname, const char *ali_type_match);
-AW_DB_selection *awt_create_ALI_selection_list(GBDATA *gb_main, AW_window *aws, const char *varname, const char *ali_type_match);
-void awt_reconfigure_ALI_selection_list(AW_DB_selection *alisel, const char *ali_type_match);
+AW_DB_selection *awt_create_selection_list_on_alignments(GBDATA *gb_main, AW_window *aws, const char *varname, const char *ali_type_match);
+void awt_reconfigure_selection_list_on_alignments(AW_DB_selection *alisel, const char *ali_type_match);
 
-AW_DB_selection *awt_create_TREE_selection_list(GBDATA *gb_main, AW_window *aws, const char *varname, bool fallback2default);
+AW_DB_selection *awt_create_selection_list_on_trees(GBDATA *gb_main, AW_window *aws, const char *varname, bool fallback2default);
 
-void awt_create_PTSERVER_selection_button(AW_window *aws, const char *varname);
-void awt_create_PTSERVER_selection_list(AW_window *aws, const char *varname);
-
-void             awt_create_SAI_selection_button(GBDATA *gb_main, AW_window *aws, const char *varname, const SaiSelectionlistFilterCallback& fcb = awt_std_SAI_filter_cb());
-AW_DB_selection *awt_create_SAI_selection_list(GBDATA *gb_main, AW_window *aws, const char *varname, bool fallback2default, const SaiSelectionlistFilterCallback& fcb = awt_std_SAI_filter_cb());
-void             awt_popup_SAI_selection_list(AW_window *aww, const char *awar_name, GBDATA *gb_main);
-
-AW_DB_selection *awt_create_CONFIG_selection_list(GBDATA *gb_main, AW_window *aws, const char *varname, bool fallback2default);
-
-// ---------------------------
-//      related functions
-
+void awt_create_selection_list_on_pt_servers(AW_window *aws, const char *varname, bool popup);
 void awt_edit_arbtcpdat_cb(AW_window *aww, GBDATA *gb_main);
-char *awt_create_CONFIG_string(GBDATA *gb_main);
 
-// --------------------------
-//      subset selection
+void awt_create_selection_list_on_tables(GBDATA *gb_main, AW_window *aws, const char *varname);
+void awt_create_selection_list_on_table_fields(GBDATA *gb_main, AW_window *aws, const char *tablename, const char *varname);
+AW_window *AWT_create_tables_admin_window(AW_root *aw_root, GBDATA *gb_main);
 
-typedef       void (*SubsetChangedCb)(AW_selection*, bool interactive_change, AW_CL cl_user);
-AW_selection *awt_create_subset_selection_list(AW_window *aww, AW_selection_list *select_subset_from, const char *at_box, const char *at_add, const char *at_sort, bool autocorrect_subselection = true, SubsetChangedCb subChanged_cb = NULL, AW_CL cl_user = 0);
-void          awt_set_subset_selection_content(AW_selection *subset_sel_, const CharPtrArray& values);
+AWT_sai_selection *awt_create_selection_list_on_sai(GBDATA *gb_main, AW_window *aws, const char *varname, bool fallback2default, awt_sai_sellist_filter filter_poc = 0, AW_CL filter_cd = 0);
+void awt_selection_list_on_sai_update_cb(UNFIXED, AWT_sai_selection *cbsid);
+void awt_popup_sai_selection_list(AW_window *aww, const char *awar_name, GBDATA *gb_main);
+void awt_create_SAI_selection_button(GBDATA *gb_main, AW_window *aws, const char *varname, awt_sai_sellist_filter filter_poc = 0, AW_CL filter_cd = 0);
+
+void  awt_create_selection_list_on_configurations(GBDATA *gb_main, AW_window *aws, const char *varname, bool fallback2default);
+char *awt_create_string_on_configurations(GBDATA *gb_main);
+
+// -------------------------------
+
+AW_selection *awt_create_subset_selection_list(AW_window *aww, AW_selection_list *select_subset_from, const char *at_box, const char *at_add, const char *at_sort);
 
 // -------------------------------
 //      generic file prompter
@@ -134,8 +155,6 @@ AW_window *create_load_box_for_selection_lists(AW_root *aw_root, const StorableS
 void create_print_box_for_selection_lists(AW_window *aw_window, const TypedSelectionList *typedsellist);
 
 void awt_clear_selection_list_cb(AW_window *, AW_selection_list *sellist);
-
-AW_selection_list *awt_create_selection_list_with_input_field(AW_window *aww, const char *awar_name, const char *at_box, const char *at_field);
 
 #else
 #error awt_sel_boxes.hxx included twice

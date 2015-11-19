@@ -169,7 +169,6 @@ void TEST_catched_exception() {
     catch (...) {
     }
 }
-TEST_PUBLISH(TEST_catched_exception);
 
 #if 0
 // this (wrong) example-test triggers ../UNIT_TESTER/UnitTester.cxx@terminate_called

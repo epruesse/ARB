@@ -69,10 +69,6 @@ static GBDATA *get_next_species(GBDATA *gb_prev, QUERY_RANGE range) {
     return gb_next;
 }
 
-static void refresh_displayed_species() {
-    AW_root::SINGLETON->awar(AWAR_TREE_REFRESH)->touch();
-}
-
 static struct MutableItemSelector ITEM_species = {
     QUERY_ITEM_SPECIES,
     select_species,
@@ -91,7 +87,6 @@ static struct MutableItemSelector ITEM_species = {
     get_selected_species,
     add_selected_species_changed_cb,
     0, 0,
-    refresh_displayed_species,
 };
 
 static struct MutableItemSelector ITEM_organism = {
@@ -112,7 +107,6 @@ static struct MutableItemSelector ITEM_organism = {
     get_selected_species,
     add_selected_species_changed_cb,
     0, 0,
-    refresh_displayed_species,
 };
 
 ItemSelector& SPECIES_get_selector() { return ITEM_species; }

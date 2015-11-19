@@ -44,6 +44,11 @@
 #include <arb_misc.h>
 #include <arb_defs.h>
 
+static int gbcm_pipe_violation_flag = 0;
+void gbcms_sigpipe(int) {
+    gbcm_pipe_violation_flag = 1;
+}
+
 // ------------------------------------------------
 //      private read and write socket functions
 
@@ -90,39 +95,44 @@ long gbcm_read(int socket, char *ptr, long size) {
 }
 
 GBCM_ServerResult gbcm_write_flush(int socket) {
-    long     leftsize = gb_local->write_ptr - gb_local->write_buffer;
-    ssize_t  writesize;
-    char    *ptr      = gb_local->write_buffer;
+    char *ptr      = gb_local->write_buffer;
+    long  leftsize = gb_local->write_ptr - ptr;
 
-    // once we're done, the buffer will be free
     gb_local->write_free = gb_local->write_bufsize;
-    gb_local->write_ptr = gb_local->write_buffer;
-    
-    while (leftsize) {
-#ifdef MSG_NOSIGNAL
-        // Linux has MSG_NOSIGNAL, but not SO_NOSIGPIPE
-        // prevent SIGPIPE here
-        writesize = send(socket, ptr, leftsize, MSG_NOSIGNAL);
-#else
-        writesize = write(socket, ptr, leftsize);
-#endif
 
-        if (writesize<0) {
+    if (leftsize) {
+        gb_local->write_ptr = ptr;
+        gbcm_pipe_violation_flag = 0;
+
+        long writesize = write(socket, ptr, (size_t)leftsize);
+
+        if (gbcm_pipe_violation_flag || writesize<0) {
             if (gb_local->iamclient) {
-                fprintf(stderr, 
-                        "Client (pid=%i) terminating after failure to contact database (%s).",
-                        getpid(), strerror(errno));
+                fprintf(stderr, "DB_Server is killed, Now I kill myself\n");
                 exit(EXIT_SUCCESS);
             }
-            else {
-                fprintf(stderr, "Error sending data to client (%s).", strerror(errno));
+            fprintf(stderr, "writesize: %li ppid %i\n", writesize, getppid());
+            return GBCM_SERVER_FAULT;
+        }
+        ptr += writesize;
+        leftsize = leftsize - writesize;
+
+        while (leftsize) {
+            GB_sleep(10, MS);
+
+            writesize = write(socket, ptr, (size_t)leftsize);
+            if (gbcm_pipe_violation_flag || writesize<0) {
+                if ((int)getppid() <= 1) {
+                    fprintf(stderr, "DB_Server is killed, Now I kill myself\n");
+                    exit(EXIT_SUCCESS);
+                }
+                fprintf(stderr, "write error\n");
                 return GBCM_SERVER_FAULT;
             }
+            ptr += writesize;
+            leftsize -= writesize;
         }
-        ptr      += writesize;
-        leftsize -= writesize;
     }
-
     return GBCM_SERVER_OK;
 }
 
@@ -142,15 +152,131 @@ GBCM_ServerResult gbcm_write(int socket, const char *ptr, long size) {
     return GBCM_SERVER_OK;
 }
 
-GB_ERROR gbcm_open_socket(const char *path, bool do_connect, int *psocket, char **unix_name) {
-    if (path && strcmp(path, ":") == 0) {
-        path = GBS_read_arb_tcp("ARB_DB_SERVER");
-        if (!path) {
-            return GB_await_error();
+static GB_ERROR gbcm_get_m_id(const char *path, char **m_name, long *id) {
+    // find the mach name and id
+    GB_ERROR error = 0;
+
+    if (!path) error = "missing hostname:socketid";
+    else {
+        if (strcmp(path, ":") == 0) {
+            path             = GBS_read_arb_tcp("ARB_DB_SERVER");
+            if (!path) error = GB_await_error();
+        }
+
+        if (!error) {
+            const char *p = strchr(path, ':');
+
+            if (!p) error = GBS_global_string("missing ':' in '%s'", path);
+            else {
+                if (path[0] == '*' || path[0] == ':') { // UNIX MODE
+                    *m_name = strdup(p+1);
+                    *id     = -1;
+                }
+                else {
+                    char *mn = GB_strpartdup(path, p-1);
+
+                    int i = atoi(p + 1);
+                    if ((i < 1) || (i > 4096)) {
+                        error = GBS_global_string("socketnumber %i not in [1..4096]", i);
+                    }
+
+                    if (!error) {
+                        *m_name = mn;
+                        *id     = i;
+                    }
+                    else {
+                        free(mn);
+                    }
+                }
+            }
         }
     }
 
-    return arb_open_socket(path, do_connect, psocket, unix_name);
+    if (error) error = GBS_global_string("OPEN_ARB_DB_CLIENT ERROR: %s", error);
+    return error;
+}
+
+GB_ERROR gbcm_open_socket(const char *path, long delay2, long do_connect, int *psocket, char **unix_name) {
+    char     *machName = 0;
+    long      socketID;
+    GB_ERROR  err      = gbcm_get_m_id(path, &machName, &socketID);
+    if (err) {
+        free(machName);
+        return err;
+    }
+
+    if (socketID >= 0) {    // TCP
+        sockaddr_in so_ad;
+        memset((char *)&so_ad, 0, sizeof(sockaddr_in));
+        *psocket = socket(PF_INET, SOCK_STREAM, 0);
+        if (*psocket <= 0) {
+            return "CANNOT CREATE SOCKET";
+        }
+
+        hostent *he;
+        arb_gethostbyname(machName, he, err);
+        if (err) return err;
+
+        in_addr addr;                                   // union -> u_long
+        
+        // simply take first address
+        addr.s_addr      = *(long *) (he->h_addr);
+        so_ad.sin_addr   = addr;
+        so_ad.sin_family = AF_INET;
+        so_ad.sin_port   = htons((unsigned short)socketID); // @@@ = pb_socket
+
+        if (do_connect) {
+            if (connect(*psocket, (sockaddr *)(&so_ad), sizeof(so_ad))) {
+                GB_warningf("Cannot connect to %s:%li   errno %i", machName, socketID, errno);
+                return "";
+            }
+        }
+        else {
+            int one = 1;
+            setsockopt(*psocket, SOL_SOCKET, SO_REUSEADDR, (const char *)&one, sizeof(one));
+            if (bind(*psocket, (sockaddr *)(&so_ad), sizeof(so_ad))) {
+                return "Could not open socket on Server";
+            }
+        }
+        free(machName);
+        if (delay2 == TCP_NODELAY) {
+            GB_UINT4      optval;
+            optval = 1;
+            setsockopt(*psocket, IPPROTO_TCP, TCP_NODELAY, (char *)&optval, sizeof (GB_UINT4));
+        }
+        *unix_name = 0;
+        return 0;
+    }
+    else {        // UNIX
+        sockaddr_un so_ad;
+        if (strlen(machName) >= sizeof(so_ad.sun_path)) {
+            return "Could not open socket on Server (socket name too long)";
+        }
+        memset((char *)&so_ad, 0, sizeof(so_ad));
+        *psocket = socket(PF_UNIX, SOCK_STREAM, 0);
+        if (*psocket <= 0) {
+            return "CANNOT CREATE SOCKET";
+        }
+        so_ad.sun_family = AF_UNIX;
+        strcpy(so_ad.sun_path, machName);
+
+        if (do_connect) {
+            if (connect(*psocket, (sockaddr*)(&so_ad), strlen(so_ad.sun_path)+2)) {
+                free(machName);
+                return "";
+            }
+        }
+        else {
+            if (unlink(machName) == 0) printf("old socket found\n");
+            if (bind(*psocket, (sockaddr*)(&so_ad), strlen(machName)+2)) {
+                free(machName);
+                return "Could not open socket on Server";
+            }
+            if (chmod(machName, 0777)) return GB_export_errorf("Cannot change mode of socket '%s'", machName);
+        }
+        *unix_name = machName;
+        return 0;
+    }
 }
 
 #if defined(WARN_TODO)
@@ -167,9 +293,16 @@ long gbcms_close(gbcmc_comm *link) {
     return 0;
 }
 
+static void gbcmc_suppress_sigpipe(int) {
+}
+
+inline bool is_default_or_ignore_or_own_sighandler(SigHandler sh) {
+    return sh == gbcmc_suppress_sigpipe || is_default_or_ignore_sighandler(sh);
+}
+
 gbcmc_comm *gbcmc_open(const char *path) {
     gbcmc_comm *link = (gbcmc_comm *)GB_calloc(sizeof(gbcmc_comm), 1);
-    GB_ERROR    err  = gbcm_open_socket(path, true, &link->socket, &link->unix_name);
+    GB_ERROR    err  = gbcm_open_socket(path, TCP_NODELAY, 1, &link->socket, &link->unix_name);
 
     if (err) {
         if (link->unix_name) free(link->unix_name); // @@@
@@ -179,11 +312,13 @@ gbcmc_comm *gbcmc_open(const char *path) {
         }
         return 0;
     }
+    ASSERT_RESULT_PREDICATE(is_default_or_ignore_or_own_sighandler, INSTALL_SIGHANDLER(SIGPIPE, gbcmc_suppress_sigpipe, "gbcmc_open"));
     gb_local->iamclient = true;
     return link;
 }
 
-long gbcm_write_two(int socket, long a, long c) {
+long gbcm_write_two(int socket, long a, long c)
+{
     long    ia[3];
     ia[0] = a;
     ia[1] = 3;
@@ -363,12 +498,10 @@ GB_ULONG GB_time_of_day() {
 
 GB_ERROR GB_textprint(const char *path) {
     // goes to header: __ATTR__USERESULT
-    char       *fpath        = GBS_eval_env(path);
-    char       *quoted_fpath = GBK_singlequote(fpath);
-    const char *command      = GBS_global_string("arb_textprint %s &", quoted_fpath);
-    GB_ERROR    error        = GBK_system(command);
-    error                    = GB_failedTo_error("print textfile", fpath, error);
-    free(quoted_fpath);
+    char       *fpath   = GBS_eval_env(path);
+    const char *command = GBS_global_string("arb_textprint '%s' &", fpath);
+    GB_ERROR    error   = GBK_system(command);
+    error               = GB_failedTo_error("print textfile", fpath, error);
     free(fpath);
     return error;
 }
@@ -729,10 +862,6 @@ static export_environment expenv;
 
 bool GB_host_is_local(const char *hostname) {
     // returns true if host is local
-
-    arb_assert(hostname);
-    arb_assert(hostname[0]);
-
     return
         ARB_stricmp(hostname, "localhost")       == 0 ||
         ARB_strBeginsWith(hostname, "127.0.0.")       ||
@@ -1042,7 +1171,7 @@ GB_CSTR GB_concat_path(GB_CSTR anypath_left, GB_CSTR anypath_right) {
         if (anypath_right[0] == '/') {
             result = GB_concat_path(anypath_left, anypath_right+1);
         }
-        else if (anypath_left && anypath_left[0]) {
+        else if (anypath_left) {
             if (anypath_left[strlen(anypath_left)-1] == '/') {
                 result = GBS_global_string_to_buffer(use_other_path_buf(), sizeof(path_buf[0]), "%s%s", anypath_left, anypath_right);
             }
@@ -1227,7 +1356,7 @@ void GB_remove_on_exit(const char *filename) {
 
 void GB_split_full_path(const char *fullpath, char **res_dir, char **res_fullname, char **res_name_only, char **res_suffix) {
     // Takes a file (or directory) name and splits it into "path/name.suffix".
-    // If result pointers (res_*) are non-NULL, they are assigned heap-copies of the split parts.
+    // If result pointers (res_*) are non-NULL, they are assigned heap-copies of the splitted parts.
     // If parts are not valid (e.g. cause 'fullpath' doesn't have a .suffix) the corresponding result pointer
     // is set to NULL.
     //
@@ -1276,6 +1405,73 @@ void GB_split_full_path(const char *fullpath, char **res_dir, char **res_fullnam
 #ifdef UNIT_TESTS
 
 #include <test_unit.h>
+
+static const char *ANY_NAME = "ANY_NAME";
+
+struct gbcm_get_m_id_TESTER : virtual Noncopyable {
+    const char *path;
+    GB_ERROR    error;
+    char       *name;
+    long        id;
+
+    gbcm_get_m_id_TESTER(const char *path_)
+        : path(path_)
+        , name(NULL)
+    {
+        error = gbcm_get_m_id(path, &name, &id);
+    }
+    ~gbcm_get_m_id_TESTER() {
+        TEST_EXPECT(!error || !name);               // if error occurs no name should exist!
+        TEST_EXPECT(error || name);                 // either error or result
+        free(name);
+    }
+
+    bool no_error() {
+        if (error) {
+            fprintf(stderr, "Unexpected error for path '%s': %s\n", path, error);
+            TEST_REJECT(name);
+        }
+        else if (!name) fprintf(stderr, "Neither error nor name for path '%s'\n", path);
+        return !error;
+    }
+    bool parsed_name(const char *expected_name) {
+        bool ok = no_error();
+        if (ok && strcmp(expected_name, name) != 0) {
+            if (expected_name != ANY_NAME) {
+                fprintf(stderr, "path '%s' produces unexpected name '%s' (expected '%s')\n", path, name, expected_name);
+                ok = false;
+            }
+        }
+        return ok;
+    }
+    bool parsed_id(long expected_id) {
+        bool ok = no_error();
+        if (ok && id != expected_id) {
+            fprintf(stderr, "path '%s' produces unexpected id '%li' (expected '%li')\n", path, id, expected_id);
+            ok = false;
+        }
+        return ok;
+    }
+
+    bool parsed(const char *expected_name, long expected_id) { return parsed_name(expected_name) && parsed_id(expected_id); }
+};
+
+void TEST_gbcm_get_m_id() {
+    TEST_REJECT_NULL(gbcm_get_m_id_TESTER(NULL).error);
+    TEST_REJECT_NULL(gbcm_get_m_id_TESTER("").error);
+    TEST_EXPECT(gbcm_get_m_id_TESTER(":").parsed(ANY_NAME, -1));
+
+    TEST_EXPECT(gbcm_get_m_id_TESTER("localhost:71").parsed("localhost", 71)); // fixed with [6486]
+    TEST_REJECT_NULL(gbcm_get_m_id_TESTER("localhost:0").error);
+    TEST_EXPECT_NULL(gbcm_get_m_id_TESTER("localhost:4096").error);
+    TEST_REJECT_NULL(gbcm_get_m_id_TESTER("localhost:4097").error);
+
+    TEST_EXPECT(gbcm_get_m_id_TESTER(":/tmp/arb_pt_ralf1").parsed("/tmp/arb_pt_ralf1", -1));
+
+    // @@@ no idea what "*" is used for, so the following tests are only descriptive!
+    TEST_EXPECT(gbcm_get_m_id_TESTER("*whatever:bar").parsed("bar", -1));
+    TEST_EXPECT(gbcm_get_m_id_TESTER("*:bar").parsed("bar", -1));
+}
 
 #define TEST_EXPECT_IS_CANONICAL(file)                  \
     do {                                                \

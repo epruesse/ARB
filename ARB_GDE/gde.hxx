@@ -24,15 +24,14 @@ enum gde_window_type {
     GDE_WINDOWTYPE_EDIT4, 
 };
 
-typedef char *(*GDE_get_sequences_cb)(GBDATA **&the_species,
+typedef char *(*GDE_get_sequences_cb)(AW_CL     cd,
+                                      GBDATA **&the_species,
                                       uchar  **&the_names,
                                       uchar  **&the_sequences,
                                       long     &numberspecies,
                                       long     &maxalignlen);
 
-typedef GB_ERROR (*GDE_format_alignment_cb)(GBDATA *gb_main, const char *ali_name);
-
-GB_ERROR GDE_init(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main, GDE_get_sequences_cb get_sequences, GDE_format_alignment_cb format_ali, gde_window_type window_type);
+GB_ERROR GDE_create_var(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main, GDE_get_sequences_cb get_sequences, gde_window_type window_type, AW_CL client_data);
 void GDE_load_menu(AW_window *awm, AW_active, const char *menulabel);
 
 #else

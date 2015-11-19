@@ -100,11 +100,9 @@ STATIC_ASSERT(TypeT<someclass>::IsClassT);
 
 #define TRACE
 
-DECLARE_CBTYPE_VV_AND_BUILDERS(CustomCallback, void); // defines makeCustomCallback
-
 static uint32_t traceChecksum;
-const int       BUFFERSIZE = 100;
-char            traceBuffer[BUFFERSIZE];
+const int            BUFFERSIZE = 100;
+char                 traceBuffer[BUFFERSIZE];
 
 __ATTR__FORMAT(1) static void tracef(const char *format, ...) {
     va_list parg;
@@ -304,16 +302,6 @@ static void dbcb1(GBDATA *gbd, const char *n, GB_CB_TYPE t) {
     tracef("dbcb1(%s) [const char]\n", n);
 }
 
-static void ccb11(const char *str) {
-    tracef("ccb11(%s)\n", str);
-}
-static void ccb12(int i) {
-    tracef("ccb12(%i)\n", i);
-}
-static void ccb2(int i, const char *str) {
-    tracef("ccb2(%i,%s)\n", i, str);
-}
-
 static void plaincb() {
     tracef("plaincb()\n");
 }
@@ -327,7 +315,6 @@ inline void call(const WindowCallback& wcb) { wcb(fake_win); }
 inline void call(const CreateWindowCallback& cwcb) { TEST_EXPECT(cwcb(fake_root) == fake_win); }
 inline void call(const DatabaseCallback& dbcb) { dbcb(fake_gbd, fake_gbtype); }
 inline void call(const TreeAwarCallback& tacb) { tacb(fake_awar, fake_bool); }
-inline void call(const CustomCallback& ccb) { ccb(); }
 
 #define TEST_CB(cb,expectedChecksum) do {                               \
         traceChecksum = -666;                                           \
@@ -449,18 +436,9 @@ void TEST_cbs() {
         TEST_CB_TRACE(makeCreateWindowCallback(cwcb1, con),   "cwcb1(con) [const]\n");
 
         free(mut);
-
-        // test callbacks w/o fixed argument
-        TEST_CB_TRACE(makeCustomCallback(plaincb),             "plaincb()\n");
-        TEST_CB_TRACE(makeCustomCallback(ccb11, "helo"),       "ccb11(helo)\n");
-        TEST_CB_TRACE(makeCustomCallback(ccb12, 4711),         "ccb12(4711)\n");
-        TEST_CB_TRACE(makeCustomCallback(ccb2,  4711, "helo"), "ccb2(4711,helo)\n");
-
-        TEST_CB_TRACE(makeCustomCallback(ccb11, freeCharp, strdup("dup")), "ccb11(dup)\n");
     }
 
 }
-TEST_PUBLISH(TEST_cbs);
 
 #endif // UNIT_TESTS
 

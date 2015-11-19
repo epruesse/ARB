@@ -1386,24 +1386,7 @@ configuration_data		%% (%
 		middle_area		"\AGSAI-Maingroup\AFSAI:SAI's\ASAaaa\ASmarkerline\ASposvar_full_all\ASprimer_3\AE\AFSAI:default_group\ASPOS_VAR_BY_PARSIMONY\AE\AE\AFMore Sequences\AE\ALVibFurni\ALVibVulni\ALVibChole\ALHlmHalod\ALPseAerug\ALLegLytic\ALDchNodos\ALPelAcety\ALPelPropi\ALAnaMargi\ALCowRumin\ALAzoCauli\ALBraJapon\ALRhoMarin\ALChlPneum\ALChlTrach\ALPlaLimno\ALFusNecro\ALProModes\ALMycChlor\ALBifBifid\ALDicTherm\ALThnCellu\ALCloCorin\ALCloParap\ALCloPerfr\ALCloColla\ALCloSardi\ALCloTyrob\ALCloProte\ALCloBifer\ALCloGhoni\ALClrFervi\ALMooTherm\ALLacAcido\ALLacFruct\ALLacSanfr\ALStrSaliv\ALCarAlter\ALStaHaemo\ALStaHomin\ALStaAureu\ALBacGlobi\ALBacLiche\ALBacMetha\ALBacStear"
 		%) /*configuration*/
 
-	configuration		%% (%
-		name			"inboth"
-		top_area		"\ASHELIX_NR\ASHELIX\ASECOLI"
-		middle_area		"\AGSAI-Maingroup\AFSAI:SAI's\ASAaaa\ASmarkerline\ASposvar_full_all\ASprimer_3\AE\AFSAI:default_group\ASPOS_VAR_BY_PARSIMONY\AE\AE\AFMore Sequences\AE\ALPseFlave\ALCalSacch\ALCloTherm\ALLacPonti\ALLacReute"
-		%) /*configuration*/
-
 	%) /*configuration_data*/
-
-colorsets		%% (%
-	species			%% (%
-		colorset		%% (%
-			name			"someother"
-			color_set		"MetMazei=2;MthBurto=2;MtsHunga=2;NatMagad=2;CalSacch=1;VibChole=0;LacPonti=1;LacReute=1;CloTherm=1;BctFragi=3;DslToluo=3;St0Isola=3;DsfDesul=3;FrnPhilo=3;PseFlave=1"
-			%) /*colorset*/
-
-		%) /*species*/
-
-	%) /*colorsets*/
 
 tmp			%% (%
 	message			%% (%
@@ -1412,6 +1395,5 @@ tmp			%% (%
 
 		%) /*message*/
 
-	trees_have_order		%i 1
 	%) /*tmp*/
 

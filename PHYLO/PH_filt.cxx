@@ -16,7 +16,6 @@
 #include <arb_progress.h>
 #include <aw_root.hxx>
 #include <cctype>
-#include <awt_config_manager.hxx>
 
 static long PH_timer() {
     static long time = 0;
@@ -411,27 +410,15 @@ void PH_create_filter_variables(AW_root *aw_root, AW_default default_file)
 
 }
 
-static AWT_config_mapping_def phyl_filter_config_mapping[] = {
-    { AWAR_PHYLO_FILTER_STARTCOL, "startcol" },
-    { AWAR_PHYLO_FILTER_STOPCOL,  "stopcol" },
-    { AWAR_PHYLO_FILTER_MINHOM,   "minhom" },
-    { AWAR_PHYLO_FILTER_MAXHOM,   "maxhom" },
-    { AWAR_PHYLO_FILTER_POINT,    "filtdot" },
-    { AWAR_PHYLO_FILTER_MINUS,    "filtminus" },
-    { AWAR_PHYLO_FILTER_REST,     "filtambig" },
-    { AWAR_PHYLO_FILTER_LOWER,    "filtlower" },
-
-    { 0, 0 }
-};
-
-AW_window *PH_create_filter_window(AW_root *aw_root) {
+AW_window *PH_create_filter_window(AW_root *aw_root)
+{
     AW_window_simple *aws = new AW_window_simple;
     aws->init(aw_root, "PHYL_FILTER", "PHYL FILTER");
     aws->load_xfig("phylo/filter.fig");
     aws->button_length(10);
 
     aws->at("close");
-    aws->callback(AW_POPDOWN);
+    aws->callback((AW_CB0)AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("startcol");
@@ -445,8 +432,6 @@ AW_window *PH_create_filter_window(AW_root *aw_root) {
 
     aws->at("maxhom");
     aws->create_input_field(AWAR_PHYLO_FILTER_MAXHOM, 3);
-
-    aws->label_length(20);
 
     aws->at("point_opts");
     aws->label("'.'");
@@ -486,9 +471,6 @@ AW_window *PH_create_filter_window(AW_root *aw_root) {
     aws->insert_option(filter_text[TREAT_AS_UPPERCASE],   "0", TREAT_AS_UPPERCASE);
     aws->update_option_menu();
 
-    aws->at("config");
-    AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "phylfilter", phyl_filter_config_mapping);
-
-    return aws;
+    return (AW_window *)aws;
 }
 

@@ -19,9 +19,6 @@
 #ifndef AW_BASE_HXX
 #include <aw_base.hxx>
 #endif
-#ifndef CB_H
-#include <cb.h>
-#endif
 
 class AW_cb;
 
@@ -37,7 +34,7 @@ public:
     bool is_enabled() const { return (enabled != 0) && (size()>0); }
 };
 
-AW_window *create_helix_props_window(AW_root *awr, const WindowCallback *refreshCallback);
+AW_window *create_helix_props_window(AW_root *awr, void (*cb)(AW_window*));
 
 #else
 #error AW_helix.hxx included twice

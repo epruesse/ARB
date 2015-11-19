@@ -23,10 +23,32 @@ class AW_awar;
 // generic callback parameter (used like a void*)
 typedef long AW_CL; // client data (casted from pointer or value)
 
+// Note:
+// most callbacks below are considered obsolete (as soon as #432 is completed)
+// They are mostly used to cast functions; better use make....Callback-wrappers 
+
+// AW_root callbacks
+typedef void (*AW_RCB2)(AW_root*, AW_CL, AW_CL);
+typedef void (*AW_RCB1)(AW_root*, AW_CL);
+typedef void (*AW_RCB0)(AW_root*);
+typedef AW_RCB2 AW_RCB;
+
+// AW_awar callbacks
+typedef AW_RCB2 Awar_CB2;
+typedef AW_RCB1 Awar_CB1;
+typedef AW_RCB0 Awar_CB0;
+typedef AW_RCB  Awar_CB;
+
+// AW_window callbacks
+typedef void (*AW_CB2)(AW_window*, AW_CL, AW_CL);
+typedef void (*AW_CB1)(AW_window*, AW_CL);
+typedef void (*AW_CB0)(AW_window*);
+typedef AW_CB2 AW_CB;
+
 // simplest callback flavours of each type
 typedef AW_window *(*CreateWindowCallbackSimple)(AW_root*); // use makeCreateWindowCallback if you need parameters
-typedef void (*RootCallbackSimple)(AW_root*);               // use makeRootCallback if you need parameters
-typedef void (*WindowCallbackSimple)(AW_window*);           // use makeWindowCallback if you need parameters
+typedef AW_RCB0 RootCallbackSimple;                         // use makeRootCallback if you need parameters
+typedef AW_CB0  WindowCallbackSimple;                       // use makeWindowCallback if you need parameters
 
 // ---------------------------
 //      typesafe callbacks

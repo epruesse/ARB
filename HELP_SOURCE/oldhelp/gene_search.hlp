@@ -17,10 +17,8 @@ SUB	selected_gene.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Search Database for Genes
 
-OCCURRENCE	ARB_NT/Genome/Search and Query
-                ARB_NT/Genome/Gene information/Search
-		ARB_GENEMAP/Genome/Search and Query
-                ARB_GENEMAP/Genome/Gene information/Search
+OCCURRENCE	ARB_NT/Genes/search
+		ARB_GENEMAP/Genes/search
 
 DESCRIPTION	Searches for a (set of) genes
 		that match (don't match) a query or are marked.

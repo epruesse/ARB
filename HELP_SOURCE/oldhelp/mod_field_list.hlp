@@ -2,18 +2,18 @@
 UP	sp_search.hlp
 UP	gene_search.hlp
 UP	security.hlp
+UP	tags.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
-SUB	tags.hlp
+#SUB	subtopic.hlp
 
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		Modify fields of listed
+TITLE		MODIFY FIELDS OF LISTED SPECIES/GENES
 
-OCCURRENCE	ARB_NT/Species/Search and Query/More Functions/Modify fields of listed
-		ARB_NT/Genome/Search and query/More Functions/Modify fields of listed
-		ARB_NT/Genome/Experiment/Search and query/More Functions/Modify fields of listed
+OCCURRENCE	ARB_NT/Species/Search/More Functions/Modify fields of listed
+		ARB_NT/Genes/Search/More Functions/Modify fields of listed
 		ARB_NT/Tree/NDS
 
 DESCRIPTION	Finds and replaces substrings within fields/tagged subfields of
@@ -54,14 +54,6 @@ DESCRIPTION	Finds and replaces substrings within fields/tagged subfields of
 
                      Read LINK{aci.hlp} for more information.
 
-SECTION Options
-
-                * 'Use Tags' allows to tag entries or modify only tagged parts of entries. See LINK{tags.hlp} for details.
-                * 'Double Pars' causes the result of the 'Command' to be interpreted and executed as command once again (special; in doubt don't use)
-                * 'Create missing target fields' with type=STRING if checked. Bail out with error otherwise.
-                * 'Accept conversion errors':
-                  - if checked, accepts modifications like writing "hello" to a numeric field (which will be written as '0')
-                  - otherwise arb will abort with an error in such cases (Note that writing "4711" to numeric fields will work w/o error)
 
 NOTES		You may add new commands by editing one of the files:
 

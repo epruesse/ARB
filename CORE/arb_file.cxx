@@ -359,7 +359,6 @@ void TEST_basic_file_checks() {
         TEST_EXPECT_DIFFERENT(GB_unlink(linkNowhere), -1);
     }
 }
-TEST_PUBLISH(TEST_basic_file_checks);
 
 #endif // UNIT_TESTS
 

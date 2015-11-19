@@ -217,7 +217,7 @@ GB_ERROR PHDATA::calculate_matrix(const char * /* cancel */, double /* alpha */,
             compare[(unsigned char)'-']=true;
             break;
     }
-    switch (options_vector[OPT_FILTER_AMBIG]) // ambiguous character in column
+    switch (options_vector[OPT_FILTER_AMBIG]) // ambigious character in column
     {
         case 0:                 // forget pair
             // do nothing: compare stays false

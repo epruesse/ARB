@@ -5,7 +5,7 @@ UP      alignment.hlp
 UP      security.hlp
 UP      helix.hlp
 UP      ecoliref.hlp
-UP      species_configs.hlp
+UP      configuration.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
 SUB     man_arb_edit4.hlp
@@ -83,11 +83,26 @@ DESCRIPTION     The editor allows you to view and modify the sequences of 'marke
 
         Undo/Redo:
 
-                        This undoes/redoes all performed database changes (see LINK{undo.hlp}).
+                        This undoes/redoes everything you did.
 
-        Jump/Get:
+        Jump:
 
-                        see LINK{e4_get_species.hlp}.
+                        If you selected a species in any other ARB component
+                        (i.e. in the Tree or in the Search Hitlist), you can
+                        jump to the selected species using this button.
+
+                        In general the editor will automatically jump to the
+                        selected species, unless the species is in a folded group.
+                        In this case all necessary groups will be unfolded.
+
+        Get:
+
+                        If the species is already in the editor 'Get' does the
+                        same as 'Jump'. If the species is NOT loaded in the editor
+                        it will be inserted into the group 'More Sequences'.
+
+                        If you like to load several species into the editor, mark
+                        those species and use 'ARB_EDIT4/Edit/Load marked species'
 
         Editing:
 
@@ -173,8 +188,6 @@ DESCRIPTION     The editor allows you to view and modify the sequences of 'marke
                                 (amino acid) symbol, it will jump aside the next
                                 nucleotide (amino acid) symbol.
 
-                                Alternate keys are: CTRL-O and CTRL-P
-
                 Change gap type
 
                        Consecutive runs of gaps can be set to 
@@ -198,7 +211,7 @@ DESCRIPTION     The editor allows you to view and modify the sequences of 'marke
 
                         CTRL+UP/DOWN
 
-                                Like CTRL-LEFT/RIGHT, but vertical.
+                                Like Ctrl-Left/Right, but vertical.
 
                         HOME/END
 
@@ -216,43 +229,9 @@ DESCRIPTION     The editor allows you to view and modify the sequences of 'marke
 
                                 Jump to previous/next group consensus
 
-                        CTRL-A
-
-                                Call Aligner with current settings (see LINK{faligner.hlp}).
-
-                        CTRL-D
-
-                                Toggle "view differences" mode (see LINK{viewdiff.hlp}).
-
-                        CTRL-E
-
-                                Toggle EDIT/ALIGN mode (see above).
-
-                        CTRL-I
-
-                                Toggle INSERT/REPLACE mode (see above).
-
-                        CTRL-J
-
-                                Jump to opposite helix position.
-
-                        CTRL-L
-
-                                Move cursor into view and refresh display.
-
-                        CTRL-M
+                        Ctrl-M
 
                                 Toggle mark of species/group.
-
-                        CTRL-R
-
-                                Shared key:
-                                  * sets reference sequence for "view differences" (only if active; see LINK{viewdiff.hlp})
-                                  * otherwise sets aligner reference species (see LINK{faligner.hlp})
-
-                        CTRL-S
-
-                                Repeat last search (see LINK{e4_search.hlp}).
 
         Messages:
 

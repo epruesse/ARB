@@ -14,13 +14,13 @@ BINARIES:=$(addprefix $(ARBHOME)/bin/,$(TOOLS))
 all: $(BINARIES)
 
 %.o: %.cxx 
-	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE) $<
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 %.o: %.c
-	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE) $<
+	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE)
 
 $(ARBHOME)/bin/%: %.o $(use_ARB_main)
-	$(LINK_EXECUTABLE) $@ $(use_ARB_main) $< $(EXECLIBS) $(LIB_ARBDB) 
+	$(LINK_EXECUTABLE) $@ $(use_ARB_main) $< $(LIB_ARBDB) $(EXECLIBS)
 
 clean:
 	rm -f $(BINARIES)

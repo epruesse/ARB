@@ -182,8 +182,7 @@ AW_window *MG_create_merge_names_window(AW_root *awr) {
     aws->init(awr, "MERGE_AUTORENAME_SPECIES", "Synchronize IDs");
     aws->load_xfig("merge/names.fig");
 
-    aws->at("close");
-    aws->callback(AW_POPDOWN);
+    aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");

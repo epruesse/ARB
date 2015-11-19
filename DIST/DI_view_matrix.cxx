@@ -30,32 +30,19 @@
 static void vertical_change_cb  (AW_window *aww, MatrixDisplay *disp) { disp->monitor_vertical_scroll_cb(aww); }
 static void horizontal_change_cb(AW_window *aww, MatrixDisplay *disp) { disp->monitor_horizontal_scroll_cb(aww); }
 
-static void redisplay_needed(UNFIXED, MatrixDisplay *disp) {
+static void redisplay_needed(AW_window *, MatrixDisplay *disp) {
     disp->mark(MatrixDisplay::NEED_CLEAR);
     disp->update_display();
 }
 
-static void reinit_needed(UNFIXED, MatrixDisplay *disp) {
+static void reinit_needed(AW_root *, MatrixDisplay *disp) {
     disp->mark(MatrixDisplay::NEED_SETUP);
     disp->update_display();
 }
 
-static void resize_needed(UNFIXED, MatrixDisplay *disp) {
+static void resize_needed(AW_window *, MatrixDisplay *disp) {
     disp->mark(MatrixDisplay::NEED_SETUP); // @@@ why not NEED_RESIZE?
     disp->update_display();
-}
-
-static void gc_changed_cb(GcChange whatChanged, MatrixDisplay *disp) {
-    switch (whatChanged) {
-        case GC_COLOR_GROUP_USE_CHANGED:
-            di_assert(0); // not used atm -> fall-through
-        case GC_COLOR_CHANGED:
-            redisplay_needed(NULL, disp);
-            break;
-        case GC_FONT_CHANGED:
-            resize_needed(NULL, disp);
-            break;
-    }
 }
 
 void MatrixDisplay::setup() {
@@ -80,8 +67,7 @@ void MatrixDisplay::setup() {
         max_chars[DI_G_ABOVE_DIST] = max_chars[DI_G_BELOW_DIST];
         max_chars[DI_G_NAMES]      = awr->awar(AWAR_MATRIX_NAMECHARS_TOP)->read_int();
 
-        for (int igc=DI_G_STANDARD; igc<=DI_G_LAST; ++igc) {
-            DI_gc gc = DI_gc(igc);
+        for (DI_gc gc=DI_G_STANDARD; gc<=DI_G_LAST; gc = DI_gc(int(gc)+1)) {
             if (max_chars[gc]) {
                 const AW_font_limits& lim = device->get_font_limits(gc, 0);
 
@@ -179,6 +165,7 @@ enum ClickAction {
 };
 
 #define MINMAX_GRANULARITY 10000L
+#define ROUNDUP            0.00005 // in order to round to 4 digits
 
 void MatrixDisplay::scroll_to(int sxpos, int sypos) {
     sxpos = force_in_range(0, sxpos, int(awm->get_scrolled_picture_width())-screen_width);
@@ -253,7 +240,12 @@ static void input_cb(AW_window *aww, MatrixDisplay *disp) {
         }
 
         if (event.type == AW_Mouse_Press) {
-            AWT_graphic_event   gevent(AWT_MODE_NONE, event, false, click_device);
+            AW_clicked_text clicked_text;
+            AW_clicked_line clicked_line;
+            click_device->get_clicked_text(&clicked_text);
+            click_device->get_clicked_line(&clicked_line);
+
+            AWT_graphic_event         gevent(AWT_MODE_NONE, event, false, &clicked_line, &clicked_text);
             const AW_clicked_element *clicked = gevent.best_click();
 
             if (clicked) {
@@ -372,7 +364,7 @@ void MatrixDisplay::draw() {
 
                     double len = ((val2-min_view_dist)/(max_view_dist-min_view_dist)) * maxw;
                     if (len >= 0) {
-                        device->box(DI_G_RULER_DISPLAY, AW::FillStyle::SOLID, x2, y1, int(len+0.5), hbox);
+                        device->box(DI_G_RULER_DISPLAY, true, x2, y1, int(len+0.5), hbox);
                     }
                     else {
                         device->text(DI_G_STANDARD, "???", cellx, celly);
@@ -456,8 +448,6 @@ void MatrixDisplay::draw() {
         device->line(DI_G_STANDARD, 0, liney2, width, liney2);
     }
 
-    free(selSpecies);
-
     device->set_offset(AW::Vector(0, 0));
 #undef BUFLEN
 }
@@ -471,6 +461,10 @@ void MatrixDisplay::set_scrollbar_steps(long width_h, long width_v, long page_h,
 
 #if defined(WARN_TODO)
 #warning test scrolling again with fixed box_impl()
+#endif
+
+#if defined(DEBUG) && 0
+#define DEBUG_GC DI_G_STANDARD
 #endif
 
 void MatrixDisplay::monitor_vertical_scroll_cb(AW_window *aww) { // draw area
@@ -491,12 +485,18 @@ void MatrixDisplay::monitor_vertical_scroll_cb(AW_window *aww) { // draw area
         if (diff>0 && diff<vert_page_size) { // scroll some positions up
             device->move_region(0, top_y+diff_pix, screen_width, keep_pix, 0, top_y);
             device->clear_part (0, top_y+keep_pix, screen_width, diff_pix, AW_SCREEN);
+#if defined(DEBUG_GC)
+            device->box (DEBUG_GC, true, 0, top_y+keep_pix, screen_width, diff_pix);
+#endif
             device->push_clip_scale();
             device->set_top_clip_border(top_y+keep_pix, true);
         }
         else if (diff>-vert_page_size && diff<0) { // scroll some positions down
             device->move_region(0, top_y, screen_width, keep_pix, 0, top_y+diff_pix);
             device->clear_part (0, top_y, screen_width, diff_pix, AW_SCREEN);
+#if defined(DEBUG_GC)
+            device->box (DEBUG_GC, true, 0, top_y, screen_width, diff_pix);
+#endif
             device->push_clip_scale();
             device->set_bottom_clip_border(top_y+diff_pix, true);
         }
@@ -528,12 +528,18 @@ void MatrixDisplay::monitor_horizontal_scroll_cb(AW_window *aww) { // draw area
         if (diff>0 && diff<horiz_page_size) {      // scroll some positions left
             device->move_region(off_dx+diff_pix, 0, keep_pix, screen_height, off_dx, 0);
             device->clear_part (off_dx+keep_pix, 0, diff_pix, screen_height, AW_SCREEN);
+#if defined(DEBUG_GC)
+            device->box(DEBUG_GC, true, off_dx+keep_pix, 0, diff_pix, screen_height);
+#endif
             device->push_clip_scale();
             device->set_left_clip_border(keep_pix, true);
         }
         else if (diff>-horiz_page_size && diff<0) { // scroll some positions right
             device->move_region(off_dx, 0, keep_pix, screen_height, off_dx+diff_pix, 0);
             device->clear_part (off_dx, 0, diff_pix, screen_height, AW_SCREEN);
+#if defined(DEBUG_GC)
+            device->box(DEBUG_GC, true, off_dx, 0, diff_pix, screen_height);
+#endif
             device->push_clip_scale();
             device->set_right_clip_border(off_dx+diff_pix, true);
         }
@@ -632,7 +638,7 @@ static AW_window *create_matrix_settings_window(AW_root *awr) {
 
     aws->auto_space(10, 10);
 
-    aws->callback(AW_POPDOWN);
+    aws->callback((AW_CB0)AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->callback(makeHelpCallback("matrix_settings.hlp"));
@@ -665,7 +671,7 @@ static AW_window *create_matrix_settings_window(AW_root *awr) {
 }
 
 static void selected_species_changed_cb(AW_root*, MatrixDisplay *disp) {
-    if (disp) redisplay_needed(NULL, disp);
+    if (disp) redisplay_needed(disp->awm, disp);
 }
 
 AW_window *DI_create_view_matrix_window(AW_root *awr, MatrixDisplay *disp, save_matrix_params *sparam) {
@@ -692,7 +698,7 @@ AW_window *DI_create_view_matrix_window(AW_root *awr, MatrixDisplay *disp, save_
         AW_manage_GC(awm,
                      awm->get_window_id(),
                      disp->device, DI_G_STANDARD, DI_G_LAST, AW_GCM_DATA_AREA,
-                     makeGcChangedCallback(gc_changed_cb, disp),
+                     makeWindowCallback(resize_needed, disp),
                      false,
                      "#D0D0D0",
                      "#Standard$#000000",
@@ -717,7 +723,7 @@ AW_window *DI_create_view_matrix_window(AW_root *awr, MatrixDisplay *disp, save_
 
     awm->create_menu("Properties", "P");
     awm->insert_menu_topic("matrix_settings", "Settings ...",         "S", "matrix_settings.hlp", AWM_ALL, create_matrix_settings_window);
-    awm->insert_menu_topic("matrix_colors",   "Colors and Fonts ...", "C", "color_props.hlp", AWM_ALL, makeCreateWindowCallback(AW_create_gc_window, gc_manager));
+    awm->insert_menu_topic("matrix_colors",   "Colors and Fonts ...", "C", "neprops_data.hlp", AWM_ALL, makeCreateWindowCallback(AW_create_gc_window, gc_manager));
     
     int x, y;
     awm->get_at_position(&x, &y);

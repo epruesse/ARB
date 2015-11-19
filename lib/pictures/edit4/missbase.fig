@@ -1,4 +1,4 @@
-#FIG 3.2  Produced by xfig version 3.2.5b
+#FIG 3.2  Produced by xfig version 3.2.5
 Landscape
 Center
 Metric
@@ -24,4 +24,3 @@ Single
 4 0 -1 0 0 18 12 0.0000 4 210 3360 1350 2520 Change only columns where SAI\001
 4 1 -1 0 0 18 12 0.0000 4 210 4080 3600 1350 Insert dots at potentially missing bases\001
 4 0 -1 0 0 18 12 0.0000 4 225 1065 1350 4185 $cons_def\001
-4 2 -1 0 0 18 13 0.0000 4 225 765 5850 2025 $config\001

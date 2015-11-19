@@ -41,31 +41,23 @@ enum {
     AWT_GC_NSELECTED,       // no hit
     AWT_GC_ZOMBIES,
 
-    // for probe coloring
+    // for multiprobecoloring
 
-    AWT_GC_BLACK,
-    AWT_GC_WHITE,
-
-    AWT_GC_RED,
-    AWT_GC_GREEN,
-    AWT_GC_BLUE,
-
-    AWT_GC_ORANGE,     // red+yellow // #FFD206
-    AWT_GC_AQUAMARIN,  // green+cyan
-    AWT_GC_PURPLE,     // blue+magenta
-
-    AWT_GC_YELLOW,     // red+green
-    AWT_GC_CYAN,       // green+blue
-    AWT_GC_MAGENTA,    // blue+red
-
-    AWT_GC_LAWNGREEN, // green+yellow
-    AWT_GC_SKYBLUE,    // blue+cyan
-    AWT_GC_PINK,       // red+magenta
-
-    // end probe coloring
+    AWT_GC_BLACK,   AWT_GC_YELLOW,
+    AWT_GC_RED,     AWT_GC_MAGENTA,
+    AWT_GC_GREEN,   AWT_GC_CYAN,
+    AWT_GC_BLUE,    AWT_GC_WHITE,
 
     AWT_GC_FIRST_COLOR_GROUP,
     AWT_GC_MAX = AWT_GC_FIRST_COLOR_GROUP+AW_COLOR_GROUPS
+};
+
+enum AP_STACK_MODE {
+    NOTHING   = 0,                                                      // nothing to buffer in AP_tree node
+    STRUCTURE = 1,                                                      // only structure
+    SEQUENCE  = 2,                                                      // only sequence
+    BOTH      = 3,                                                      // sequence & treestructure is buffered
+    ROOT      = 7                                                       // old root is buffered
 };
 
 enum AP_UPDATE_FLAGS {
@@ -75,11 +67,21 @@ enum AP_UPDATE_FLAGS {
     AP_UPDATE_ERROR    = 2
 };
 
+enum AP_TREE_SIDE {  // flags zum kennzeichnen von knoten
+    AP_LEFT,
+    AP_RIGHT,
+    AP_FATHER,
+    AP_LEFTSON,
+    AP_RIGHTSON,
+    AP_NONE
+};
+
 enum AWT_RemoveType { // bit flags
     AWT_REMOVE_MARKED        = GBT_REMOVE_MARKED,
     AWT_REMOVE_UNMARKED      = GBT_REMOVE_UNMARKED,
     AWT_REMOVE_ZOMBIES       = GBT_REMOVE_ZOMBIES,
     AWT_REMOVE_NO_SEQUENCE   = 8,
+    AWT_REMOVE_BUT_DONT_FREE = 16,
 
     // please keep AWT_RemoveType in sync with GBT_TreeRemoveType
     // see ../../ARBDB/arbdbt.h@sync_GBT_TreeRemoveType__AWT_RemoveType
@@ -127,20 +129,16 @@ public:
     long      table_timer;
     AP_rates *rates;
 
-    AP_tree_root(AliView *aliView, AP_sequence *seq_proto, bool add_delete_callbacks);
+    AP_tree_root(AliView *aliView, RootedTreeNodeFactory *nodeMaker_, AP_sequence *seq_proto, bool add_delete_callbacks);
     ~AP_tree_root() OVERRIDE;
     DEFINE_TREE_ROOT_ACCESSORS(AP_tree_root, AP_tree);
 
-    // TreeRoot interface
-    inline TreeNode *makeNode() const OVERRIDE;
-    inline void destroyNode(TreeNode *node) const OVERRIDE;
-
     // ARB_seqtree_root interface
 
-    virtual void change_root(TreeNode *old, TreeNode *newroot) OVERRIDE;
+    virtual void change_root(RootedTree *old, RootedTree *newroot) OVERRIDE;
 
-    GB_ERROR loadFromDB(const char *name) OVERRIDE;
-    GB_ERROR saveToDB() OVERRIDE;
+    virtual GB_ERROR loadFromDB(const char *name) OVERRIDE;
+    virtual GB_ERROR saveToDB() OVERRIDE;
 
     // AP_tree_root interface
 
@@ -166,7 +164,7 @@ namespace tree_defaults {
 struct AP_tree_members {
 public: // @@@ make members private
     unsigned int grouped : 1;   // indicates a folded group
-    unsigned int hidden : 1;    // not shown (because an anchestor is a folded group)
+    unsigned int hidden : 1;    // not shown because a father is a folded group
     unsigned int has_marked_children : 1; // at least one child is marked
     unsigned int callback_exists : 1;
     unsigned int gc : 6;        // color
@@ -226,9 +224,21 @@ public: // @@@ make members private
     }
 };
 
+struct AP_branch_members {
+public:
+    unsigned int touched : 1;       // nni and kl
+
+    void clear() {
+        touched = 0;
+    }
+};
+
 class AP_tree : public ARB_seqtree {
 public: // @@@ fix public members
-    AP_tree_members gr;
+    AP_tree_members   gr;
+    AP_branch_members br;
+
+    unsigned long stack_level; // @@@ maybe can be moved to AP_tree_nlen
 
     // ------------------
     //      functions
@@ -250,6 +260,8 @@ private:
     static inline int force_legal_width(int width) { return width<0 ? 0 : (width>128 ? 128 : width); }
 
     void buildLeafList_rek(AP_tree **list, long& num);
+    void buildNodeList_rek(AP_tree **list, long& num);
+    void buildBranchList_rek(AP_tree **list, long& num, bool create_terminal_branches, int deep);
 
     const AP_tree *flag_branch() const { return get_father()->get_father() ? this : get_father()->get_leftson(); }
 
@@ -259,15 +271,15 @@ private:
 
     void update_subtree_information();
 
-protected:
-    ~AP_tree() OVERRIDE;
-    friend class AP_tree_root; // allowed to call dtor
 public:
     explicit AP_tree(AP_tree_root *troot)
-        : ARB_seqtree(troot)
+        : ARB_seqtree(troot),
+          stack_level(0)
     {
         gr.clear();
+        br.clear();
     }
+    ~AP_tree() OVERRIDE;
 
     DEFINE_TREE_ACCESSORS(AP_tree_root, AP_tree);
 
@@ -286,7 +298,8 @@ public:
 
     virtual void insert(AP_tree *new_brother);
     virtual void initial_insert(AP_tree *new_brother, AP_tree_root *troot);
-    virtual AP_tree *REMOVE();
+    virtual void remove();                          // remove this+father (but do not delete)
+    virtual void swap_assymetric(AP_TREE_SIDE mode); // 0 = AP_LEFT_son  1=AP_RIGHT_son
 
     void swap_sons() OVERRIDE {
         rt_assert(!is_leaf); // @@@ if never fails -> remove condition below 
@@ -298,6 +311,8 @@ public:
 
     GB_ERROR cantMoveNextTo(AP_tree *new_brother);  // use this to detect impossible moves
     virtual void moveNextTo(AP_tree *new_brother, AP_FLOAT rel_pos); // move to new brother
+
+    void set_root() OVERRIDE;
 
     GB_ERROR tree_write_tree_rek(GBDATA *gb_tree);
     GB_ERROR relink() __ATTR__USERESULT; // @@@ used ? if yes -> move to AP_tree_root or ARB_seqtree_root
@@ -325,6 +340,15 @@ public:
     void reset_angle() { set_angle(tree_defaults::ANGLE); }
 
     void buildLeafList(AP_tree **&list, long &num); // returns a list of leafs
+    void buildNodeList(AP_tree **&list, long &num); // returns a list of inner nodes (w/o root)
+    void buildBranchList(AP_tree **&list, long &num, bool create_terminal_branches, int deep);
+
+    AP_tree **getRandomNodes(int nnodes); // returns a list of random nodes (no leafs)
+
+    void clear_branch_flags();
+
+    void touch_branch() { const_cast<AP_tree*>(flag_branch())->br.touched = 1; }
+    int get_branch_flag() const { return flag_branch()->br.touched; }
 
     GB_ERROR move_group_info(AP_tree *new_group) __ATTR__USERESULT;
     bool is_inside_folded_group() const;
@@ -345,15 +369,13 @@ public:
     void reset_subtree_layout();
 
     bool hasName(const char *Name) const { return Name && name && Name[0] == name[0] && strcmp(Name, name) == 0; }
-
-#if defined(ASSERTION_USED) || defined(UNIT_TESTS)
-    bool has_correct_mark_flags() const;
-#endif
 };
 
-inline TreeNode *AP_tree_root::makeNode() const { return new AP_tree(const_cast<AP_tree_root*>(this)); }
-inline void AP_tree_root::destroyNode(TreeNode *node) const { delete DOWNCAST(AP_tree*, node); }
-
+struct AP_TreeNodeFactory : public RootedTreeNodeFactory {
+    virtual RootedTree *makeNode(TreeRoot *root) const {
+        return new AP_tree(DOWNCAST(AP_tree_root*, root));
+    }
+};
 
 #else
 #error AP_Tree.hxx included twice

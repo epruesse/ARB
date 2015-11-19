@@ -18,12 +18,7 @@
 #include <cb.h>
 #endif
 
-// more awars defined at awti_imp_local.hxx@AWAR_IMPORT
-#define AWAR_IMPORT_PREFIX     "import/"
-#define AWAR_IMPORT_TMP_PREFIX "tmp/import/"
-
-#define AWAR_IMPORT_GENOM_DB AWAR_IMPORT_TMP_PREFIX "genom_db"
-#define AWAR_IMPORT_AUTOCONF AWAR_IMPORT_PREFIX "autoconf"
+#define AWAR_READ_GENOM_DB "tmp/import/genom_db"
 
 enum AWTI_ImportType { IMP_GENOME_FLATFILE, IMP_PLAIN_SEQUENCE };
 

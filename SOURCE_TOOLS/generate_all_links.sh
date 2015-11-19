@@ -172,7 +172,6 @@ symlink_file ../TEMPLATES/cxxforward.h INCLUDE/cxxforward.h &&
 symlink_file ../TEMPLATES/downcast.h INCLUDE/downcast.h &&
 symlink_file ../TEMPLATES/dupstr.h INCLUDE/dupstr.h &&
 symlink_file ../TEMPLATES/gccver.h INCLUDE/gccver.h &&
-symlink_file ../TEMPLATES/Keeper.h INCLUDE/Keeper.h &&
 symlink_file ../TEMPLATES/malloc.h INCLUDE/malloc.h &&
 symlink_file ../TEMPLATES/mode_text.h INCLUDE/mode_text.h &&
 symlink_file ../TEMPLATES/output.h INCLUDE/output.h &&
@@ -208,7 +207,6 @@ symlink_file ../AISC_COM/C/struct_man.h INCLUDE/struct_man.h &&
 symlink_file ../ARBDB/ad_cb.h INCLUDE/ad_cb.h &&
 symlink_file ../ARBDB/ad_cb_prot.h INCLUDE/ad_cb_prot.h &&
 symlink_file ../ARBDB/ad_config.h INCLUDE/ad_config.h &&
-symlink_file ../ARBDB/ad_colorset.h INCLUDE/ad_colorset.h &&
 symlink_file ../ARBDB/ad_p_prot.h INCLUDE/ad_p_prot.h &&
 symlink_file ../ARBDB/ad_prot.h INCLUDE/ad_prot.h &&
 symlink_file ../ARBDB/ad_remote.h INCLUDE/ad_remote.h &&
@@ -219,18 +217,18 @@ symlink_file ../ARBDB/arbdb.h INCLUDE/arbdb.h &&
 symlink_file ../ARBDB/arbdb_base.h INCLUDE/arbdb_base.h &&
 symlink_file ../ARBDB/arbdbt.h INCLUDE/arbdbt.h &&
 symlink_file ../ARBDB/dbitem_set.h INCLUDE/dbitem_set.h &&
-symlink_file ../ARBDB/TreeNode.h INCLUDE/TreeNode.h &&
 symlink_file ../ARB_GDE/gde.hxx INCLUDE/gde.hxx &&
 symlink_file ../AWT/awt.hxx INCLUDE/awt.hxx &&
 symlink_file ../AWT/awt_asciiprint.hxx INCLUDE/awt_asciiprint.hxx &&
+symlink_file ../AWT/awt_attributes.hxx INCLUDE/awt_attributes.hxx &&
 symlink_file ../AWT/awt_canvas.hxx INCLUDE/awt_canvas.hxx &&
 symlink_file ../AWT/awt_config_manager.hxx INCLUDE/awt_config_manager.hxx &&
 symlink_file ../AWT/awt_hotkeys.hxx INCLUDE/awt_hotkeys.hxx &&
 symlink_file ../AWT/awt_input_mask.hxx INCLUDE/awt_input_mask.hxx &&
 symlink_file ../AWT/awt_map_key.hxx INCLUDE/awt_map_key.hxx &&
-symlink_file ../AWT/awt_misc.hxx INCLUDE/awt_misc.hxx &&
 symlink_file ../AWT/awt_modules.hxx INCLUDE/awt_modules.hxx &&
 symlink_file ../AWT/awt_sel_boxes.hxx INCLUDE/awt_sel_boxes.hxx &&
+symlink_file ../AWT/awt_seq_colors.hxx INCLUDE/awt_seq_colors.hxx &&
 symlink_file ../AWT/awt_TreeAwars.hxx INCLUDE/awt_TreeAwars.hxx &&
 symlink_file ../AWT/awt_www.hxx INCLUDE/awt_www.hxx &&
 symlink_file ../AWT/awtlocal.hxx INCLUDE/awtlocal.hxx &&
@@ -247,7 +245,6 @@ symlink_file ../CORE/arb_diff.h INCLUDE/arb_diff.h &&
 symlink_file ../CORE/arb_file.h INCLUDE/arb_file.h &&
 symlink_file ../CORE/arb_handlers.h INCLUDE/arb_handlers.h &&
 symlink_file ../CORE/arb_match.h INCLUDE/arb_match.h &&
-symlink_file ../CORE/arb_mem.h INCLUDE/arb_mem.h &&
 symlink_file ../CORE/arb_misc.h INCLUDE/arb_misc.h &&
 symlink_file ../CORE/arb_msg.h INCLUDE/arb_msg.h &&
 symlink_file ../CORE/arb_msg_fwd.h INCLUDE/arb_msg_fwd.h &&
@@ -272,13 +269,12 @@ symlink_file ../ISLAND_HOPPING/island_hopping.h INCLUDE/island_hopping.h &&
 symlink_file ../MERGE/mg_merge.hxx INCLUDE/mg_merge.hxx &&
 symlink_file ../MULTI_PROBE/multi_probe.hxx INCLUDE/multi_probe.hxx &&
 symlink_file ../PRIMER_DESIGN/primer_design.hxx INCLUDE/primer_design.hxx &&
-symlink_file ../PROBE_DESIGN/probe_gui.hxx INCLUDE/probe_gui.hxx &&
+symlink_file ../PROBE_DESIGN/probe_design.hxx INCLUDE/probe_design.hxx &&
 symlink_file ../PROBE/PT_global_defs.h INCLUDE/PT_global_defs.h &&
 symlink_file ../SECEDIT/secedit_extern.hxx INCLUDE/secedit_extern.hxx &&
 symlink_file ../RNA3D/rna3d_extern.hxx INCLUDE/rna3d_extern.hxx &&
 symlink_file ../SEQ_QUALITY/seq_quality.h INCLUDE/seq_quality.h &&
 symlink_file ../SERVERCNTRL/servercntrl.h INCLUDE/servercntrl.h &&
-symlink_file ../SL/ALILINK/AliAdmin.h INCLUDE/AliAdmin.h &&
 symlink_file ../SL/ALIVIEW/AliView.hxx INCLUDE/AliView.hxx &&
 symlink_file ../SL/AP_TREE/AP_Tree.hxx INCLUDE/AP_Tree.hxx &&
 symlink_file ../SL/ARB_TREE/ARB_Tree.hxx INCLUDE/ARB_Tree.hxx &&
@@ -289,9 +285,6 @@ symlink_file ../SL/CB/cb_base.h INCLUDE/cb_base.h &&
 symlink_file ../SL/CB/cb_base.h INCLUDE/cb_base.h &&
 symlink_file ../SL/CB/cbtypes.h INCLUDE/cbtypes.h &&
 symlink_file ../SL/CB/rootAsWin.h INCLUDE/rootAsWin.h &&
-symlink_file ../SL/CONSENSUS/chartable.h INCLUDE/chartable.h &&
-symlink_file ../SL/CONSENSUS/consensus.h INCLUDE/consensus.h &&
-symlink_file ../SL/CONSENSUS/consensus_config.h INCLUDE/consensus_config.h &&
 symlink_file ../SL/DB_QUERY/db_query.h INCLUDE/db_query.h &&
 symlink_file ../SL/DB_SCANNER/db_scanner.hxx INCLUDE/db_scanner.hxx &&
 symlink_file ../SL/DB_UI/dbui.h INCLUDE/dbui.h &&
@@ -318,6 +311,7 @@ symlink_file ../SL/PRONUC/iupac.h INCLUDE/iupac.h &&
 symlink_file ../SL/PTCLEAN/ptclean.h INCLUDE/ptclean.h &&
 symlink_file ../SL/REFENTRIES/refentries.h INCLUDE/refentries.h &&
 symlink_file ../SL/REGEXPR/RegExpr.hxx INCLUDE/RegExpr.hxx &&
+symlink_file ../SL/ROOTED_TREE/RootedTree.h INCLUDE/RootedTree.h &&
 symlink_file ../SL/SEQIO/seqio.hxx INCLUDE/seqio.hxx &&
 symlink_file ../SL/SEQUENCE/AP_seq_dna.hxx INCLUDE/AP_seq_dna.hxx &&
 symlink_file ../SL/SEQUENCE/AP_seq_protein.hxx INCLUDE/AP_seq_protein.hxx &&

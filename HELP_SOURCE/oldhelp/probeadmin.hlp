@@ -11,7 +11,7 @@ UP	pt_server.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		PT_SERVER Administration
 
-OCCURRENCE	ARB_NT/Probes/PT_SERVER Admin
+OCCURRENCE	ARB_NT/ETC/PT Admin
 
 DESCRIPTION	Allows you to start/kill and build/update 'PT_SERVER'
 		databases.

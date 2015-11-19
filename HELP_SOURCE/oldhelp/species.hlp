@@ -11,7 +11,7 @@ SUB     selected.hlp
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE           What are Species?
+TITLE           What are Species ?
 
 DESCRIPTION     One species is one database entry containing many database entries
                 describing the species and one or more sequences (every sequence

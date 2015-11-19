@@ -7,7 +7,17 @@
 #include <aisc_server_extern.h>
 #include <import_proto.h>
 
-int pt_init_bond_matrix(PT_local *THIS);
+// this source is compiled as C++ !!!
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+    int pt_init_bond_matrix(PT_local *THIS);
+
+#ifdef __cplusplus
+}
+#endif
 
 int init_bond_matrix(PT_local *THIS) {
     pt_init_bond_matrix(THIS);

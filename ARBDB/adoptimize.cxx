@@ -147,9 +147,8 @@ static O_gbdByKey *g_b_opti_createGbdByKey(GB_MAIN_TYPE *Main)
     for (idx=1; idx<gbdByKey_cnt; idx++) {
         gbk[idx].cnt = 0;
 
-        gb_Key& KEY = Main->keys[idx];
-        if (KEY.key && KEY.nref>0) {
-            gbk[idx].gbds  = (GBDATA **) GB_calloc(KEY.nref, sizeof(GBDATA*));
+        if (Main->keys[idx].key && Main->keys[idx].nref>0) {
+            gbk[idx].gbds  = (GBDATA **) GB_calloc(Main->keys[idx].nref, sizeof(GBDATA*));
         }
         else {
             gbk[idx].gbds = NULL;
@@ -2421,7 +2420,7 @@ static GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem) {
 #if defined(TEST_ONE)
         // select wanted index
         for (idx=0; idx<gbdByKey_cnt; idx++) { // title author dew_author ebi_journal name ua_tax date full_name ua_title
-            if (gbk[idx].cnt && strcmp(quark2key(Main, idx), "tree")==0) break;
+            if (gbk[idx].cnt && strcmp(Main->keys[idx].key, "tree")==0) break;
         }
         gb_assert(idx<gbdByKey_cnt);
 #endif
@@ -2437,9 +2436,8 @@ static GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem) {
 
         {
             GB_DICTIONARY *dict;
-
-            GB_CSTR  key_name = quark2key(Main, idx);
-            GBDATA  *gb_main  = Main->gb_main();
+            GB_CSTR        key_name = Main->keys[idx].key;
+            GBDATA        *gb_main  = Main->gb_main();
 
 #ifdef TEST_SOME
             if (!( // add all wanted keys here
@@ -2480,6 +2478,8 @@ static GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem) {
 
                     size_t new_size;
 
+                    // UNCOVERED();
+
                     compr_mask &= ~GB_COMPRESSION_DICTIONARY;
                     error       = readAndWrite(&gbk[idx], old_compressed_size, new_size);
                     compr_mask  = old_compr_mask;
@@ -2510,11 +2510,9 @@ static GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem) {
                         memcpy(nint, dict->text, dict->textlen);
                     }
 
-                    const char *key = Main->keys[idx].key;
-
-                    error = gb_load_dictionary_data(gb_main, key, &old_dict_buffer, &old_dict_buffer_size);
+                    error = gb_load_dictionary_data(gb_main, Main->keys[idx].key, &old_dict_buffer, &old_dict_buffer_size);
                     if (!error) {
-                        gb_save_dictionary_data(gb_main, key, dict_buffer, dict_buffer_size);
+                        gb_save_dictionary_data(gb_main, Main->keys[idx].key, dict_buffer, dict_buffer_size);
 
                         // compress all data with new dictionary
                         printf("  * Compressing all with new dictionary ...\n");
@@ -2535,7 +2533,7 @@ static GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem) {
                             /* critical state: new dictionary has been written, but transaction will be aborted below.
                              * Solution: Write back old dictionary.
                              */
-                            gb_save_dictionary_data(gb_main, key, old_dict_buffer, old_dict_buffer_size);
+                            gb_save_dictionary_data(gb_main, Main->keys[idx].key, old_dict_buffer, old_dict_buffer_size);
                         }
                     }
 
@@ -2674,7 +2672,6 @@ void TEST_SLOW_optimize() {
 
     TEST_EXPECT_NO_ERROR(GBK_system(GBS_global_string("rm %s %s %s %s", target_ascii, nonopti, optimized, reoptimized)));
 }
-TEST_PUBLISH(TEST_SLOW_optimize);
 
 #endif // UNIT_TESTS
 

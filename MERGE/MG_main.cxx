@@ -9,7 +9,9 @@
 // =============================================================== //
 
 #include "merge.hxx"
+
 #include <AW_rename.hxx>
+
 #include <awt.hxx>
 
 #include <aw_preset.hxx>
@@ -92,17 +94,19 @@ static AW_window *MG_save_source_cb(AW_root *aw_root, const char *base_name) {
     aws->init(aw_root, "MERGE_SAVE_DB_I", "Save source DB");
     aws->load_xfig("sel_box.fig");
 
-    aws->at("close");
-    aws->callback(AW_POPDOWN);
+    aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->at("save");
-    aws->callback(MG_save_merge_cb);
+    aws->at("save"); aws->callback(MG_save_merge_cb);
     aws->create_button("SAVE", "SAVE", "S");
+
+    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->at("cancel");
+    aws->create_button("CLOSE", "CANCEL", "C");
 
     AW_create_standard_fileselection(aws, base_name);
 
-    return aws;
+    return (AW_window *)aws;
 }
 
 static void MG_save_cb(AW_window *aww) {
@@ -134,8 +138,7 @@ static AW_window *MG_create_save_result_window(AW_root *aw_root, const char *bas
     aws->init(aw_root, "MERGE_SAVE_WHOLE_DB", "SAVE WHOLE DATABASE");
     aws->load_xfig("sel_box_user3.fig");
 
-    aws->at("close");
-    aws->callback(AW_POPDOWN);
+    aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     AW_create_standard_fileselection(aws, base_name);
@@ -153,11 +156,14 @@ static AW_window *MG_create_save_result_window(AW_root *aw_root, const char *bas
     aws->at("user3");
     aws->create_text_field(AWAR_DB_COMMENT);
 
-    aws->at("save4");
-    aws->callback(MG_save_cb);
+    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->at("cancel4");
+    aws->create_button("CLOSE", "CANCEL", "C");
+
+    aws->at("save4"); aws->callback(MG_save_cb);
     aws->create_button("SAVE", "SAVE", "S");
 
-    return aws;
+    return (AW_window *)aws;
 }
 
 static void MG_save_quick_result_cb(AW_window *aww) {
@@ -270,7 +276,7 @@ AW_window *MERGE_create_main_window(AW_root *aw_root, bool dst_is_new, void (*ex
 
         awm->create_menu("File", "F", AWM_ALL);
         if (save_src_enabled) {
-            awm->insert_menu_topic("save_DB1", "Save source DB ...", "S", "save.hlp", AWM_ALL, makeCreateWindowCallback(MG_save_source_cb, AWAR_DB_SRC));
+            awm->insert_menu_topic("save_DB1", "Save source DB ...", "S", "save_as.hlp", AWM_ALL, makeCreateWindowCallback(MG_save_source_cb, AWAR_DB_SRC));
         }
 
         awm->insert_menu_topic("quit", "Quit", "Q", "quit.hlp", AWM_ALL, makeWindowCallback(MG_exit, false));
@@ -337,7 +343,7 @@ AW_window *MERGE_create_main_window(AW_root *aw_root, bool dst_is_new, void (*ex
 
         awm->at("configs");
         awm->callback(MG_create_merge_configs_window);
-        awm->help_text("mg_species_configs.hlp");
+        awm->help_text("mg_configs.hlp");
         awm->create_button("TRANSFER_CONFIGS", "Transfer configurations ...");
 
         {
@@ -348,12 +354,10 @@ AW_window *MERGE_create_main_window(AW_root *aw_root, bool dst_is_new, void (*ex
 
             awm->at("save");
             awm->callback(makeCreateWindowCallback(MG_create_save_result_window, AWAR_DB_DST));
-            awm->help_text("save.hlp");
             awm->create_button("SAVE_WHOLE_DB2", "Save whole target DB as ...");
 
             awm->at("save_quick");
             awm->callback(MG_save_quick_result_cb);
-            awm->help_text("save.hlp");
             awm->create_button("SAVE_CHANGES_OF_DB2", "Quick-save changes of target DB");
 
             awm->sens_mask(AWM_ALL);
@@ -373,6 +377,7 @@ void MERGE_create_all_awars(AW_root *awr, AW_default aw_def) {
     MG_create_trees_awar(awr, aw_def);
     MG_create_config_awar(awr, aw_def);
     MG_create_extendeds_awars(awr, aw_def);
+    MG_create_alignment_awars(awr, aw_def);
     MG_create_species_awars(awr, aw_def);
     MG_create_gene_species_awars(awr, aw_def);
 

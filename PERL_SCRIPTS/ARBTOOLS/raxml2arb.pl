@@ -3,7 +3,7 @@
 #                                                                 #
 #   File      : raxml2arb.pl                                      #
 #   Purpose   : Import XX best of YY calculated raxml trees into  #
-#               ARB and generate comment containing likelihood    #
+#               ARB and generate comment containing likelyhood    #
 #               and content of info file                          #
 #                                                                 #
 #   Coded by Ralf Westram (coder@reallysoft.de) in March 2008     #
@@ -124,11 +124,11 @@ sub treeInfo_normal($$) {
 
   my ($line) = firstLogLineMatching($log,qr/./); # first non-empty line
   if (not $line =~ / (.*)$/o) {
-    die "can't parse likelihood from '$log'";
+    die "can't parse likelyhood from '$log'";
   }
 
-  my $likelihood = $1;
-  return ($result,$likelihood);
+  my $likelyhood = $1;
+  return ($result,$likelyhood);
 }
 
 sub treeInfo_bootstrapped($$) {
@@ -140,20 +140,20 @@ sub treeInfo_bootstrapped($$) {
     if ($run>=$treeCount) {
       die "Invalid run number $run - has to be in [0 .. ".($treeCount-1)."]";
     }
-    my ($line,$likelihood) = firstLogLineMatching($info,qr/^Bootstrap\[$run\]:\s.*\slikelihood\s+([^\s,]+),/);
-    if (not defined $likelihood) {
-      die "Failed to parse likelihood for 'Bootstrap[$run]' from '$info'";
+    my ($line,$likelyhood) = firstLogLineMatching($info,qr/^Bootstrap\[$run\]:\s.*\slikelihood\s+([^\s,]+),/);
+    if (not defined $likelyhood) {
+      die "Failed to parse likelyhood for 'Bootstrap[$run]' from '$info'";
     }
-    return ($splitted_trees[$run],$likelihood);
+    return ($splitted_trees[$run],$likelyhood);
   }
   else {
     my $bestTree = raxml_filename('bipartitions',$name,undef);
-    my ($line,$likelihood) = firstLogLineMatching($info,qr/^Final ML Optimization Likelihood:\s+(.*)$/);
-    if (not defined $likelihood) {
-      arb_message("Failed to extract final likelihood from '$info'");
-      $likelihood = 'unknown';
+    my ($line,$likelyhood) = firstLogLineMatching($info,qr/^Final ML Optimization Likelihood:\s+(.*)$/);
+    if (not defined $likelyhood) {
+      arb_message("Failed to extract final likelyhood from '$info'");
+      $likelyhood = 'unknown';
     }
-    return ($bestTree,$likelihood);
+    return ($bestTree,$likelyhood);
   }
 }
 
@@ -169,9 +169,9 @@ sub treeInfo($$$) {
 }
 
 sub findTrees($$$$\%) {
-  my ($name,$mode,$runs,$take,$likelihood_r) = @_;
+  my ($name,$mode,$runs,$take,$likelyhood_r) = @_;
 
-  %$likelihood_r = ();
+  %$likelyhood_r = ();
 
   my $singleTree = 0;
   if    ($mode==$MODE_NORMAL)       { if ($runs==1) { $singleTree = 1; } }
@@ -184,7 +184,7 @@ sub findTrees($$$$\%) {
 
   if ($singleTree==1) {
     my ($tree,$likely) = treeInfo($mode,$name,undef);
-    $$likelihood_r{$tree} = $likely;
+    $$likelyhood_r{$tree} = $likely;
   }
   else {
     if ($mode==$MODE_BOOTSTRAPPED) {
@@ -194,7 +194,7 @@ sub findTrees($$$$\%) {
     }
     for (my $r = 0; $r<$runs; $r++) {
       my ($tree,$likely) = treeInfo($mode,$name,$r);
-      $$likelihood_r{$tree} = $likely;
+      $$likelyhood_r{$tree} = $likely;
     }
   }
 }
@@ -213,7 +213,7 @@ sub main() {
 
     if ($NUMBEROFRUNS<1) { die "NUMBEROFRUNS has to be 1 or higher (NUMBEROFRUNS=$NUMBEROFRUNS)"; }
 
-    my %likelihood  = (); # key=treefile, value=likelihood
+    my %likelyhood  = (); # key=treefile, value=likelyhood
     my @treesToTake = (); # treefiles
 
     my $mode = $MODE_NORMAL;
@@ -225,9 +225,9 @@ sub main() {
     if ($CONSENSE eq 'consense') { $calc_consense = 1; }
     elsif ($CONSENSE ne 'import') { die "Unknown value '$CONSENSE' (expected 'import' or 'consense')"; }
 
-    findTrees($RUNNAME,$mode,$NUMBEROFRUNS,$TAKETREES,%likelihood);
+    findTrees($RUNNAME,$mode,$NUMBEROFRUNS,$TAKETREES,%likelyhood);
 
-    my $createdTrees = scalar(keys %likelihood);
+    my $createdTrees = scalar(keys %likelyhood);
     print "Found ".someWhat($createdTrees,'tree').":\n";
 
     if ($TAKETREES > $createdTrees) {
@@ -235,8 +235,8 @@ sub main() {
       $TAKETREES = $createdTrees;
     }
 
-    my @sortedTrees = sort { $likelihood{$b} <=> $likelihood{$a}; } keys %likelihood;
-    foreach (@sortedTrees) { print "  $_ = ".$likelihood{$_}."\n"; }
+    my @sortedTrees = sort { $likelyhood{$b} <=> $likelyhood{$a}; } keys %likelyhood;
+    foreach (@sortedTrees) { print "  $_ = ".$likelyhood{$_}."\n"; }
 
     @treesToTake = splice(@sortedTrees,0,$TAKETREES);
 
@@ -257,13 +257,13 @@ sub main() {
       if ($treesToTake>1) { $count = 1; }
 
       foreach (@treesToTake) {
-        print "  $_ = ".$likelihood{$_}."\n";
+        print "  $_ = ".$likelyhood{$_}."\n";
         my $currTreename = $treename;
         if (defined $count) {
           $currTreename .= '_'.$count;
           $count++;
         }
-        my $command = 'arb_read_tree '.$currTreename.' '.$_.' "'.$COMMENT."\n".'likelihood='.$likelihood{$_}.'"';
+        my $command = 'arb_read_tree '.$currTreename.' '.$_.' "'.$COMMENT."\n".'likelyhood='.$likelyhood{$_}.'"';
         if (-f $infofile) { $command .= ' -commentFromFile '.$infofile; }
 
         system($command)==0 || die "can't execute '$command' (Reason: $?)";
@@ -277,7 +277,7 @@ sub main() {
       print 'Consensing '.someWhat($treesToTake,'tree').":\n";
       open(INTREE,'>intree') || die "can't write 'intree' (Reason: $!)";
       foreach (@treesToTake) {
-        my $LH = $likelihood{$_};
+        my $LH = $likelyhood{$_};
         print "  $_ = $LH\n";
         if (not defined $minLH) {
           $minLH = $maxLH = $LH;
@@ -306,7 +306,7 @@ sub main() {
         die "Consense failed (no 'outtree' generated)";
       }
 
-      my $comment = "$COMMENT\nConsensus tree of $treesToTake trees\nLikelihood: min=$minLH mean=$meanLH max=$maxLH";
+      my $comment = "$COMMENT\nConsensus tree of $treesToTake trees\nLikelyhood: min=$minLH mean=$meanLH max=$maxLH";
       $command = 'arb_read_tree -consense '.$treesToTake.' '.$treename.' outtree "'.$comment.'"';
       if (-f $infofile) { $command .= ' -commentFromFile '.$infofile; }
       system($command)==0 || die "can't execute '$command' (Reason: $?)";

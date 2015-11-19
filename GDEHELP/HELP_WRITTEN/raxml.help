@@ -35,7 +35,7 @@ PARAMETERS
                 the weights of e.g. POS_VAR_BY_PARSIMONY, such that the smallest weight
                 equals 1.
 
-                As a consequence the likelihood of the calculated tree is ~ 100000 times higher
+                As a consequence the likelyhood of the calculated tree is ~ 100000 times higher
                 than w/o weighting mask.
 
         Base tree / Use as constraint tree / Generate random starting tree
@@ -154,7 +154,7 @@ PARAMETERS
                 If 'Number of runs' is > 1, this specifies how many of the generated tree
                 shall be imported or merge using consense.
 
-                The trees with the best likelihood will be selected.
+                The trees with the best likelyhood will be selected.
 
         What to do with selected trees?
 

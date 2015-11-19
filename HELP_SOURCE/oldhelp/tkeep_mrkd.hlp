@@ -12,13 +12,15 @@ TITLE		Keep Marked
 
 OCCURRENCE	ARB_NT/Tree/Keep Marked
 
-DESCRIPTION	Removes all unmarked species and zombies (see LINK{glossary.hlp}) from
-                the currently displayed tree.
+DESCRIPTION	Removes all unmarked species and zombies from the currently
+		displayed tree.
 
 NOTES		None
 
-EXAMPLES	None
+EXAMPLES	none
 
-WARNINGS	None
+WARNINGS	!!! No 'undo' function available yet !!!
 
-BUGS		Undo does not work. See WARNINGS/BUGS for LINK{mode_move.hlp}
+		It is recommended to copy the tree before modifying it.
+
+BUGS		no bugs

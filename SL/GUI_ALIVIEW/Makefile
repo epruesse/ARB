@@ -14,10 +14,10 @@ $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .cxx.o:
-	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE) $<
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 .c.o:
-	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE) $<
+	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(OBJECTS) *.a
@@ -50,7 +50,6 @@ AWT_filter.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/arb_error.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/arb_msg.h
-AWT_filter.o: $(ARBHOME)/INCLUDE/arb_str.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/arb_string.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -101,8 +100,6 @@ ColumnStat.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-ColumnStat.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
-ColumnStat.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
@@ -130,7 +127,6 @@ GUI_aliview.o: $(ARBHOME)/INCLUDE/arb_msg.h
 GUI_aliview.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 GUI_aliview.o: $(ARBHOME)/INCLUDE/arbtools.h
 GUI_aliview.o: $(ARBHOME)/INCLUDE/attributes.h
-GUI_aliview.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 GUI_aliview.o: $(ARBHOME)/INCLUDE/cxxforward.h
 GUI_aliview.o: $(ARBHOME)/INCLUDE/dupstr.h
 GUI_aliview.o: $(ARBHOME)/INCLUDE/gccver.h

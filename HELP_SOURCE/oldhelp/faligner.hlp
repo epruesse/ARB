@@ -4,7 +4,7 @@ UP	glossary.hlp
 UP	arb_edit4.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
-SUB	islandhopping.hlp
+#SUB	subtopic.hlp
 
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
@@ -31,7 +31,7 @@ SECTION         ADJUSTMENTS
 
                                 Align current, marked or selected sequences.
 
-                                If you type 'CTRL-A' in the main editor window
+                                If you type 'Ctrl-A' in the main editor window
                                 this option is set to align the current species and
                                 the aligner gets called.
 
@@ -42,11 +42,6 @@ SECTION         ADJUSTMENTS
 				consensus of the group containing the species
 				or the next relative(s) found by the selected
 				PT-Server.
-
-                                If you choose a fixed species, you may press the 'COPY' button
-                                to copy the name of the 'Current Species' to the 'Reference' species.
-                                Alternatively you may use CTRL-R while the focus is inside the sequence view
-                                (Note: CTRL-R does not work, if LINK{viewdiff.hlp} is active).
 
 				If you choose 'Auto search by pt_server', the
 				aligner will use the next relative(s) as reference.
@@ -122,9 +117,6 @@ SECTION         ADJUSTMENTS
 NOTES	 	This aligner knows about and uses all extended base characters
 		(ACGTUMRWSYKVHDN) for the alignment.
 		In other words: M aligned to R costs no penalty.
-
-		The config-manager icon handles the settings in the 'Integrated Aligners' window and those in
-		its subwindows 'Parameters for Island Hopping' and 'Family search parameters'.
 
 EXAMPLES	None
 

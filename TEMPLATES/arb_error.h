@@ -147,37 +147,6 @@ public:
 #endif // DEBUG
 };
 
-class Validity {
-    // basically a bool telling whether sth is valid
-    // (if invalid -> knows why)
-    const char *why_invalid;
-public:
-    Validity() : why_invalid(0) {}
-    Validity(bool valid, const char *why_invalid_)
-        : why_invalid(valid ? 0 : why_invalid_)
-    {}
-    Validity(const Validity& other) : why_invalid(other.why_invalid) {}
-    Validity& operator = (const Validity& other) {
-#if defined(ASSERTION_USED)
-        arb_assert(!why_invalid); // attempt to overwrite invalidity!
-#endif
-        why_invalid = other.why_invalid;
-        return *this;
-    }
-
-    operator bool() const { return !why_invalid; }
-    const char *why_not() const { return why_invalid; }
-
-    void assert_is_valid() const {
-#if defined(ASSERTION_USED)
-        if (why_invalid) {
-            fprintf(stderr, "Invalid: %s\n", why_invalid);
-            arb_assert(0);
-        }
-#endif
-    }
-};
-
 #else
 #error arb_error.h included twice
 #endif // ARB_ERROR_H

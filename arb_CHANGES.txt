@@ -1,83 +1,8 @@
 ARB change log
 
-Major changes for next release:
+Fixes for arb-6.0.3 (19 Nov 2015):
 
- - ARB PARSIMONY
-   * topology optimization
-     - now (by default) strictly restricted to marked/visible parts of the tree (#640)
-     - restriction now customizable (marked/all; visible/all)
-     - tree costs for protein-data were not independent from root-position (as expected by model; #633).
-       Caused infinite running optimization under some circumstances.
-     - optimize-modes now strictly restrict to clicked subtrees. single/repeated optimization possible.
-     - KL-optimizer
-       * static path reduction slightly changed meaning. changed default settings.
-       * removed randomness (was just covering some bugs)
-       * improved general optimization speed
-   * branchlength calculation
-     - "forgot" to recalculate lengths under some conditions. fixed.
-     - is now independent of tree-root position (#641)
-   * adding species
-     - 'add partial species' failed if two partial species had NO overlap (#609). fixed.
-     - in 'add species + NNI' local optimization quality depended on insert position. fixed.
-   * generally reduced the number of performed combines (skipping many useless)
-   * added function to randomize (parts of) the tree
-   * warns about insufficient sequence data (e.g. as result of too restrictive filtering; #631)
-   * fixed 'RESTORE' (crashed after deleting species from tree; #528)
-   * corrected handling of dots ('.') while combining anchestor sequences
-   * fixed a bunch of internal bugs (#620, #627, ...)
- - DNA realigner
-   * several unjustified failures will no longer happen (fixes #419 and most likely #145)
-     - correctly re-syncs after 'X' (if possible at all)
-     - no longer fails for 'B' and 'Z'
-     - accepts 3 or more consecutive IUPAC codes in DNA
-   * added option to cut-off DNA sequence (was done at end of sequence by old version. fixed)
-   * fixed several minor bugs
- - ARB probeSpec: visualisation of probe set specificity (thanks to Paavo Jumppanen, CSIRO)
- - species selections (editor configurations):
-   * visualisation of multiple selections in standard tree view (#658; example in database demo.arb)
-   * order can be changed; each configuration has a comment; import stores configuration (#607)
- - ARB_EDIT4:
-   * allow to load missing SAIs
-   * "view differences" to a reference sequence:
-      - customizable:
-        * char used for "equality" (i.e. what is displayed where a sequence is equal to selected sequence)
-        * case-sensitivity
-        * ignore different gap-types
-      - equal data also gets hidden in consensus
-      - refresh differences of all displayed sequences, when data of selected sequences changes
-      - change reference sequence using CTRL-R or automatically let it follow the cursor
-      - added hotkey to toggle mode: CTRL-D
-      - fixed minor bugs
-   * consensus calculation in ARB_EDIT4 and calculation of CONSENSUS SAI
-     - now both calculations are strictly consistent:
-       * gaps are now ignored while deciding whether to simplify using IUPAC ambiguity codes
-       * IUPAC ambiguity codes encountered in sequence data are now counted proportionally (=> fewer 'N's occur in consensus)
-     - added sliders to consensus definition windows
-     - user defined consensus settings exchangable between both consensus setups
-     - fixed and updated documentation
- - SAI: MAX_FREQUENCY
-   * considers IUPAC ambiguity codes proportionally
-   * amino acids: if MAX_FREQUENCY is below 10% SAI now shows '1' (prev. it did show '0', i.e. 100%)
- - expand zombies in tree (unfold groups)
- - compare taxonomy (and mark differences; #651)
- - external (command line) aligners:
-   * fixed incorrect handling of 'T' vs 'U': now all aligned sequences will contain the correct base depending on alignment type
-   * preserve gap-type ('-' vs '.') and upper-/lower-case of original alignment
-   * no longer ask what to do with aligned sequence, just overwrite it
-     - only warn about real sequence changes (so please do NOT ignore from now on!)
- - config-managers:
-   * possibility to restore factory defaults
-   * added comment field for configurations
-   * added them throughout arb (#647)
- - colorsets were invalidated by generating new IDs (#660). fixed.
- - updated/added external tools:
-   - added alternate RAxML (DNA only; version 8.0.26)
- - updated integrated documentation
-
-Minor changes
- - add threshold for visible support values (default 50% support)
- - corrected EMBL export filter (numbers at seq.data)
- - NDS optionally uses only visible definitions
+ - fixes permission problems when multiple users share databases or ptservers (thx to Alan McCulloch)
 
 Fixes for arb-6.0.2 (8 Aug 2014):
 
@@ -96,7 +21,6 @@ Fixes for arb-6.0.1 (22 Jul 2014):
    - preview failed (showed empty postscript file)
    - print to file now always saves in user home
  - raxml (import tree with bootstrap values)
-
 
 Major changes for arb-6.0 (4 Jun 2014):
 
@@ -233,7 +157,7 @@ Fixes for arb_5.3 (10 Nov 2011):
 Fixes for arb_5.2 (5 Sep 2010):
 
  - bugfixes
-   - quicksave did silently do nothing (especially not save anything) if an error occurred
+   - quicksave did silently do nothing (especially not save anything) if an error occurred 
    - ARB_EDIT4: crashed when using config with MANY unknown species
    - ARB_SECEDIT: crashed when trying to paint strand w/o any base
    - ARB_NTREE/ARB_PARS: crashed when clicking on inner tree node w/o groupinfo
@@ -242,7 +166,7 @@ Fixes for arb_5.2 (5 Sep 2010):
  - internal fixes
    - karmic koala (gcc 4.4.1)
    - installation script
-   - arb build process uses xsltproc instead of sablotron
+   - arb build process uses xsltproc instead of sablotron 
 
 
 Fixes for arb_5.1 (1 Oct 2009):
@@ -355,7 +279,7 @@ Major changes in ARB 07.12.07org (7 Dec 2007):
  - arb_repair for databases of any size (script for database repair)
  - fixed bug in data compression
  - increased internal cache size (alignments up to 400.000bp possible w/o performance collapse)
- - ARBparsimony: increase hardcoded species limit (50.000 -> 250.000)
+ - ARBparsimony: increase hardcoded species limit (50.000 -> 250.000) 
  - GDE menus cleanup
  - translation/re-alignment tweaked
  - unalign right (EDIT4)

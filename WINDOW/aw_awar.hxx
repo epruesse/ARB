@@ -38,6 +38,12 @@ class  AW_root_cblist;
 struct AW_var_target;
 struct AW_widget_refresh_cb;
 
+// @@@ [CB] eliminate decls below? just use AW_RCB instead // @@@ duplicated in cb.h
+typedef AW_RCB  Awar_CB;
+typedef Awar_CB Awar_CB2;
+typedef         void (*Awar_CB1)(AW_root *, AW_CL);
+typedef         void (*Awar_CB0)(AW_root *);
+
 enum AW_widget_type {
     AW_WIDGET_INPUT_FIELD,
     AW_WIDGET_TEXT_FIELD,
@@ -45,8 +51,7 @@ enum AW_widget_type {
     AW_WIDGET_CHOICE_MENU,
     AW_WIDGET_TOGGLE_FIELD,
     AW_WIDGET_SELECTION_LIST,
-    AW_WIDGET_TOGGLE,
-    AW_WIDGET_SCALER,
+    AW_WIDGET_TOGGLE
 };
 
 
@@ -74,9 +79,6 @@ class AW_awar : virtual Noncopyable {
 
     static bool allowed_to_run_callbacks;
 
-    double callback_time_sum;   // in seconds
-    int    callback_time_count; // number of callbacks traced in callback_time_sum
-
 #if defined(DEBUG)
     bool is_global;
 #endif // DEBUG
@@ -102,23 +104,11 @@ public:
     AW_VARIABLE_TYPE  variable_type;                // type of the awar
     char             *awar_name;                    // name of the awar
 
-#if defined(ASSERTION_USED)
-    static bool deny_read;  // true -> make awar reads fail
-    static bool deny_write; // true -> make awar writes fail
-#endif
-
     void unlink();                                  // unconditionally unlink from DB
 
     bool unlink_from_DB(GBDATA *gb_main);
-
+    
     void run_callbacks();
-    double mean_callback_time() const {
-        if (callback_time_sum>0) {
-            return callback_time_sum / callback_time_count;
-        }
-        return 0.0;
-    }
-
     void update_target(AW_var_target*pntr);
     void update_targets();
 
@@ -129,17 +119,21 @@ public:
     void untie_all_widgets();
 
     AW_awar *add_callback(const RootCallback& cb);
-    AW_awar *add_callback(RootCallbackSimple f) { return add_callback(makeRootCallback(f)); }
+    AW_awar *add_callback(Awar_CB0 f) { return add_callback(makeRootCallback(f)); }
+    AW_awar *add_callback(Awar_CB1 f, AW_CL cd1) __ATTR__DEPRECATED_TODO("pass RootCallback") { return add_callback(makeRootCallback(f, cd1)); }
+    AW_awar *add_callback(Awar_CB2 f, AW_CL cd1, AW_CL cd2) __ATTR__DEPRECATED_TODO("pass RootCallback") { return add_callback(makeRootCallback(f, cd1, cd2)); }
 
     AW_awar *remove_callback(const RootCallback& cb);
-    AW_awar *remove_callback(RootCallbackSimple f) { return remove_callback(makeRootCallback(f)); }
+    AW_awar *remove_callback(Awar_CB0 f) { return remove_callback(makeRootCallback(f)); }
+    AW_awar *remove_callback(Awar_CB1 f, AW_CL cd1) __ATTR__DEPRECATED_TODO("pass RootCallback") { return remove_callback(makeRootCallback(f, cd1)); }
+    AW_awar *remove_callback(Awar_CB2 f, AW_CL cd1, AW_CL cd2) __ATTR__DEPRECATED_TODO("pass RootCallback") { return remove_callback(makeRootCallback(f, cd1, cd2)); }
 
     AW_awar *add_target_var(char **ppchr);
     AW_awar *add_target_var(long *pint);
     AW_awar *add_target_var(float *pfloat);
     void    update();       // awar has changed
 
-    AW_awar *set_minmax(float min, float max); // min<max !!!
+    AW_awar *set_minmax(float min, float max);
     float    get_min() const;
     float    get_max() const;
     AW_awar *set_min(float min) { return set_minmax(min, get_max()); }
@@ -147,9 +141,8 @@ public:
 
     AW_awar *map(const char *awarn);
     AW_awar *map(AW_default dest); // map to new address
-    AW_awar *map(AW_awar *dest);   // map to new address
-    AW_awar *unmap();              // map to original address
-    bool is_mapped() const { return gb_var != gb_origin; }
+    AW_awar *map(AW_awar *dest); // map to new address
+    AW_awar *unmap();           // map to original address
 
 #if defined(ASSERTION_USED)
     bool is_valid() const { return correlated(gb_var, gb_origin); } // both or none NULL
@@ -162,12 +155,12 @@ public:
 
     AW_VARIABLE_TYPE get_type() const;
 
-    char       *read_string() const;
-    const char *read_char_pntr() const;
-    char       *read_as_string() const;
-    long        read_int() const;
-    double      read_float() const;
-    GBDATA     *read_pointer() const;
+    char       *read_string();
+    const char *read_char_pntr();
+    char       *read_as_string();
+    long        read_int();
+    double      read_float();
+    GBDATA     *read_pointer();
 
     GB_ERROR write_string(const char *aw_string);
     GB_ERROR write_as_string(const char *aw_string);
@@ -188,8 +181,6 @@ public:
 
     GB_ERROR toggle_toggle();   // switches between 1/0
     void     touch();
-
-    GB_ERROR reset_to_default();
 
     GB_ERROR make_global() __ATTR__USERESULT;       // should be used by ARB_init_global_awars only
     void set_temp_if_is_default(GBDATA *gb_db);

@@ -59,14 +59,7 @@ SECTION GDE menus language
                 menumeta:meta_key   Meta key equivalence (quick keys)
                 menumask:expert     Whole menu will be inaccessible in ARBs novice mode
 
-                item:item name
-
-                          Name of current menu item
-
-                          Please do not change 'item name' for cosmetic
-                          purposes - doing so will invalidate user-stored-configs!
-
-
+                item:item name      Name of current menu item
                 itemmeta:meta_key   Meta key equivalence (quick keys)
                 itemhelp:help_file  Help file (either full path, or in $ARBHOME/lib/help)
                 itemmethod:         Unix command
@@ -103,9 +96,6 @@ SECTION GDE menus language
                         Name of this variable. It will appear
                         in the itemmethod: line with a dollar
                         sign ($) in front of it.
-
-                        Please do not change 'argument_variable_name' for cosmetic
-                        purposes - doing so will invalidate user-stored-configs!
 
             argtype:TYPE
                         The type of graphic object
@@ -213,18 +203,6 @@ SECTION GDE menus language
                         this format. Currently support
                         values are colormask, Genbank, and
                         flat.
-
-            outaligned:yes
-
-                        GDE assumes external tool is an aligner or similar
-                        which only changes the alignment of bases.
-                        Sequence data will be re-imported w/o asking questions.
-
-                        Several minor changes in sequence data (by external tool)
-                        will be accepted and silently reverted. This includes
-                             - changing 'U' into 'T' (or vv)
-                             - case changes
-                             - gap changes ('.' to '-' or vv)
 
             outsave:
 

@@ -150,8 +150,8 @@ AW_window *NT_create_species_join_window(AW_root *root) {
         aws->init(root, "JOIN_SPECIES", "JOIN SPECIES");
         aws->load_xfig("join_species.fig");
 
+        aws->callback((AW_CB0)AW_POPDOWN);
         aws->at("close");
-        aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
 
         aws->at("help"); aws->callback(makeHelpCallback("species_join.hlp"));

@@ -35,7 +35,6 @@
 #include <arb_diff.h>
 
 #include <cctype>
-#include <awt_config_manager.hxx>
 
 #define AWAR_TREE_SAV "ad_tree/"
 #define AWAR_TREE_TMP "tmp/ad_tree/"
@@ -95,13 +94,11 @@ static void tree_vars_callback(AW_root *aw_root) // Map tree vars to display obj
         free(treename);
     }
 }
-
-static void update_default_treename_cb(AW_root *aw_root) {
-    // update import tree name depending on file name
-    GB_transaction ta(GLOBAL.gb_main);
-
-    char *treename        = aw_root->awar(AWAR_TREE_IMPORT "/file_name")->read_string();
-    char *treename_nopath = strrchr(treename, '/');
+//  update import tree name depending on file name
+static void tree_import_callback(AW_root *aw_root) {
+    GB_transaction  ta(GLOBAL.gb_main);
+    char           *treename        = aw_root->awar(AWAR_TREE_IMPORT "/file_name")->read_string();
+    char           *treename_nopath = strrchr(treename, '/');
 
     if (treename_nopath) {
         ++treename_nopath;
@@ -110,12 +107,13 @@ static void update_default_treename_cb(AW_root *aw_root) {
         treename_nopath = treename;
     }
 
-    char *fname = GBS_string_eval(treename_nopath, "*.tree=tree_*1:*.ntree=tree_*1:*.xml=tree_*1:.=:-=_: =_", 0);
+    char *fname = GBS_string_eval(treename_nopath, "*.tree=tree_*1:*.ntree=tree_*1:*.xml=tree_*1:.=", 0);
     aw_root->awar(AWAR_TREE_IMPORT "/tree_name")->write_string(fname);
 
     free(fname);
     free(treename);
 }
+
 
 static void ad_tree_set_security(AW_root *aw_root)
 {
@@ -193,7 +191,7 @@ void create_trees_var(AW_root *aw_root, AW_default aw_def) {
 
     aw_root->awar_string(AWAR_TREE_IMPORT "/tree_name", "tree_",    aw_def)->set_srt(GBT_TREE_AWAR_SRT);
 
-    aw_root->awar(AWAR_TREE_IMPORT "/file_name")->add_callback(update_default_treename_cb);
+    aw_root->awar(AWAR_TREE_IMPORT "/file_name")->add_callback(tree_import_callback);
     awar_tree_name->add_callback(tree_vars_callback);
     awar_tree_name->map(AWAR_TREE);
     aw_root->awar(AWAR_TREE_SECURITY)->add_callback(ad_tree_set_security);
@@ -260,35 +258,19 @@ static void tree_save_cb(AW_window *aww) {
     free(tree_name);
 }
 
-static AWT_config_mapping_def tree_export_config_mapping[] = {
-    { AWAR_TREE_EXPORT_FORMAT,             "format" },
-    { AWAR_TREE_EXPORT_NDS,                "nodetype" },
-    { AWAR_TREE_EXPORT_INCLUDE_BRANCHLENS, "lengths" },
-    { AWAR_TREE_EXPORT_INCLUDE_BOOTSTRAPS, "bootstraps" },
-    { AWAR_TREE_EXPORT_INCLUDE_GROUPNAMES, "groupnames" },
-    { AWAR_TREE_EXPORT_HIDE_FOLDED_GROUPS, "hidefolded" },
-    { AWAR_TREE_EXPORT_QUOTEMODE,          "quotemode" },
-    { AWAR_TREE_EXPORT_REPLACE,            "replacechars" },
-
-    { 0, 0 }
-};
-
-static AW_window *create_tree_export_window(AW_root *root) {
+static AW_window *create_tree_export_window(AW_root *root)
+{
     AW_window_simple *aws = new AW_window_simple;
     aws->init(root, "SAVE_TREE", "TREE SAVE");
-    aws->load_xfig("tree_export.fig");
+    aws->load_xfig("sel_box_user2.fig");
 
+    aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("close");
-    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
     aws->callback(makeHelpCallback("tr_export.hlp"));
     aws->create_button("HELP", "HELP", "H");
-
-    AW_create_standard_fileselection(aws, AWAR_TREE_EXPORT_FILEBASE);
-
-    aws->auto_space(10, 10);
 
     aws->at("user");
     aws->create_option_menu(AWAR_TREE_EXPORT_FORMAT, true);
@@ -297,7 +279,10 @@ static AW_window *create_tree_export_window(AW_root *root) {
     aws->insert_option("ARB_XML TREE FORMAT",                  "X", AD_TREE_EXPORT_FORMAT_XML);
     aws->update_option_menu();
 
+    AW_create_standard_fileselection(aws, AWAR_TREE_EXPORT_FILEBASE);
+
     aws->at("user2");
+    aws->auto_space(10, 10);
     aws->label("Nodetype");
     aws->create_toggle_field(AWAR_TREE_EXPORT_NDS, 1);
     aws->insert_default_toggle("Species ID ('name')", "S", 0);
@@ -322,12 +307,11 @@ static AW_window *create_tree_export_window(AW_root *root) {
     aws->at_newline(); aws->label("Replace problem chars"); aws->create_toggle(AWAR_TREE_EXPORT_REPLACE);
 
     aws->at_newline();
-    aws->button_length(10);
-
     aws->callback(tree_save_cb);
     aws->create_button("SAVE", "SAVE", "o");
 
-    AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "tree_export", tree_export_config_mapping);
+    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->create_button("CANCEL", "CANCEL", "C");
 
     aws->window_fit();
     update_filter_cb(root);
@@ -393,15 +377,15 @@ static void tree_load_cb(AW_window *aww) {
         char *warnings     = 0;
         char *tree_comment = 0;
 
-        TreeNode *tree;
+        GBT_TREE *tree;
         if (strcmp(pcTreeFormat, "xml") == 0) {
             char *tempFname = readXmlTree(fname);
-            tree = TREE_load(tempFname, new SimpleRoot, &tree_comment, true, &warnings);
+            tree = TREE_load(tempFname, GBT_TREE_NodeFactory(), &tree_comment, true, &warnings);
             GB_unlink_or_warn(tempFname, NULL);
             free(tempFname);
         }
         else {
-            tree = TREE_load(fname, new SimpleRoot, &tree_comment, true, &warnings);
+            tree = TREE_load(fname, GBT_TREE_NodeFactory(), &tree_comment, true, &warnings);
         }
 
         if (!tree) error = GB_await_error();
@@ -416,8 +400,7 @@ static void tree_load_cb(AW_window *aww) {
 
             if (!error) aw_root->awar(AWAR_TREE)->write_string(tree_name); // show new tree
 
-            UNCOVERED();
-            destroy(tree);
+            delete tree;
         }
 
         free(warnings);
@@ -436,8 +419,8 @@ static AW_window *create_tree_import_window(AW_root *root)
     aws->init(root, "LOAD_TREE", "TREE LOAD");
     aws->load_xfig("sel_box_tree.fig");
 
+    aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("close");
-    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("format");
@@ -457,9 +440,13 @@ static AW_window *create_tree_import_window(AW_root *root)
     aws->callback(tree_load_cb);
     aws->create_button("LOAD", "LOAD", "o");
 
+    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->at("cancel2");
+    aws->create_button("CANCEL", "CANCEL", "C");
+
     aws->window_fit();
 
-    return aws;
+    return (AW_window *)aws;
 }
 
 static void ad_move_tree_info(AW_window *aww, TreeInfoMode mode) {
@@ -533,9 +520,9 @@ static AW_window_simple *create_select_two_trees_window(AW_root *root, const cha
     aws->create_button("HELP", "Help", "H");
 
     aws->at("tree1");
-    awt_create_TREE_selection_list(GLOBAL.gb_main, aws, TreeAdmin::source_tree_awar(root)->awar_name, true);
+    awt_create_selection_list_on_trees(GLOBAL.gb_main, aws, TreeAdmin::source_tree_awar(root)->awar_name, true);
     aws->at("tree2");
-    awt_create_TREE_selection_list(GLOBAL.gb_main, aws, TreeAdmin::dest_tree_awar(root)->awar_name, false);
+    awt_create_selection_list_on_trees(GLOBAL.gb_main, aws, TreeAdmin::dest_tree_awar(root)->awar_name, false);
 
     AW_awar *awar_displayed_tree = root->awar(AWAR_TREE_NAME);
 
@@ -573,7 +560,7 @@ static AW_window_simple *create_select_other_tree_window(AW_root *root, const ch
     AW_awar *awar_displayed_tree = root->awar(displayed_tree_awarname);
 
     aws->at("tree");
-    awt_create_TREE_selection_list(GLOBAL.gb_main, aws, TreeAdmin::source_tree_awar(root)->awar_name, true);
+    awt_create_selection_list_on_trees(GLOBAL.gb_main, aws, TreeAdmin::source_tree_awar(root)->awar_name, true);
 
     aws->at("select");
     aws->callback(makeWindowCallback(copy_tree_awar_cb, awar_displayed_tree, TreeAdmin::source_tree_awar(root)));  aws->create_autosize_button("SELECT_DISPLAYED", "Use");
@@ -612,7 +599,7 @@ static AW_window *create_tree_cmp_window(AW_root *root) {
     return aws;
 }
 
-static void reorder_trees_cb(AW_window *aww, awt_reorder_mode dest) {
+static void reorder_trees_cb(AW_window *aww, awt_reorder_mode dest, AW_CL) {
     // moves the tree in the list of trees
 
     char     *tree_name = aww->get_root()->awar(AWAR_TREE_NAME)->read_string();
@@ -725,20 +712,20 @@ void popup_tree_admin_window(AW_root *aw_root) {
         aws->sens_mask(AWM_ALL);
 
         aws->at("export");
-        aws->callback(create_tree_export_window);
+        aws->callback(AW_POPUP, (AW_CL)create_tree_export_window, 0);
         aws->create_button("EXPORT", "Export", "E");
 
         aws->at("import");
-        aws->callback(create_tree_import_window);
+        aws->callback(AW_POPUP, (AW_CL)create_tree_import_window, 0);
         aws->create_button("IMPORT", "Import", "I");
 
         aws->button_length(0);
 
         aws->at("list");
-        awt_create_TREE_selection_list(GLOBAL.gb_main, aws, AWAR_TREE_NAME, true);
+        awt_create_selection_list_on_trees(GLOBAL.gb_main, aws, AWAR_TREE_NAME, true);
 
         aws->at("sort");
-        awt_create_order_buttons(aws, reorder_trees_cb);
+        awt_create_order_buttons(aws, reorder_trees_cb, 0);
     }
 
     aws->activate();
@@ -748,7 +735,7 @@ void popup_tree_admin_window(AW_root *aw_root) {
 //      consense tree
 
 
-static void create_consense_tree_cb(AW_window *aww, AW_selection *selected_trees) {
+static void create_consense_tree_cb(AW_window *aww, AW_CL cl_selected_trees) {
     AW_root  *aw_root = aww->get_root();
     GB_ERROR  error   = NULL;
 
@@ -757,6 +744,8 @@ static void create_consense_tree_cb(AW_window *aww, AW_selection *selected_trees
         error = "No name specified for the consensus tree";
     }
     else {
+        AW_selection *selected_trees = (AW_selection*)cl_selected_trees;
+
         StrArray tree_names;
         selected_trees->get_values(tree_names);
 
@@ -773,8 +762,8 @@ static void create_consense_tree_cb(AW_window *aww, AW_selection *selected_trees
 
                 progress.subtitle("loading input trees");
                 for (size_t t = 0; t<tree_names.size() && !error; ++t) {
-                    TreeRoot      *root = new SizeAwareRoot; // will be deleted when tree gets deleted
-                    SizeAwareTree *tree = DOWNCAST(SizeAwareTree*, GBT_read_tree(gb_main, tree_names[t], root));
+                    TreeRoot      *root = new TreeRoot(new SizeAwareNodeFactory, true); // will be deleted when tree gets deleted
+                    SizeAwareTree *tree = DOWNCAST(SizeAwareTree*, GBT_read_tree(gb_main, tree_names[t], *root));
                     if (!tree) {
                         error = GB_await_error();
                     }
@@ -785,7 +774,7 @@ static void create_consense_tree_cb(AW_window *aww, AW_selection *selected_trees
 
                 if (!error) {
                     size_t    species_count;
-                    TreeNode *cons_tree = tree_builder.get(species_count, error); // triggers 2 implicit progress increments
+                    GBT_TREE *cons_tree = tree_builder.get(species_count, error); // triggers 2 implicit progress increments
 
                     if (!error && progress.aborted()) {
                         error = "user abort";
@@ -796,8 +785,7 @@ static void create_consense_tree_cb(AW_window *aww, AW_selection *selected_trees
                         char *comment = tree_builder.get_remark();
                         error         = GBT_write_tree_with_remark(gb_main, cons_tree_name, cons_tree, comment);
                         free(comment);
-                        UNCOVERED();
-                        destroy(cons_tree);
+                        delete cons_tree;
                     }
                 }
                 if (error) progress.done();
@@ -836,7 +824,7 @@ AW_window *NT_create_consense_window(AW_root *aw_root) {
         aws->create_button("HELP", "HELP", "H");
 
         aws->at("list");
-        AW_DB_selection *all_trees      = awt_create_TREE_selection_list(GLOBAL.gb_main, aws, AWAR_TREE_CONSENSE_SELECTED, true);
+        AW_DB_selection *all_trees      = awt_create_selection_list_on_trees(GLOBAL.gb_main, aws, AWAR_TREE_CONSENSE_SELECTED, true);
         AW_selection    *selected_trees = awt_create_subset_selection_list(aws, all_trees->get_sellist(), "selected", "add", "sort");
 
         aws->at("name");
@@ -846,7 +834,7 @@ AW_window *NT_create_consense_window(AW_root *aw_root) {
         aws->create_button("USE_AS_TARGET", "#moveLeft.xpm", 0);
 
         aws->at("build");
-        aws->callback(makeWindowCallback(create_consense_tree_cb, selected_trees));
+        aws->callback(create_consense_tree_cb, AW_CL(selected_trees));
         aws->create_autosize_button("BUILD", "Build consensus tree", "B");
     }
     return aws;
@@ -920,7 +908,7 @@ class SpeciesPosition {
     typedef std::map<std::string, unsigned> PosMap;
     PosMap spos;
 
-    void fillFromTree(const TreeNode *node) {
+    void fillFromTree(const GBT_TREE *node) {
         if (node->is_leaf) {
             size_t pos       = spos.size();
             spos[node->name] = pos;
@@ -931,7 +919,7 @@ class SpeciesPosition {
         }
     }
 public:
-    explicit SpeciesPosition(const TreeNode *tree) {
+    explicit SpeciesPosition(const GBT_TREE *tree) {
         fillFromTree(tree);
     }
 
@@ -948,7 +936,7 @@ class SortByTopo : virtual Noncopyable {
     SpeciesPosition        source_pos; // in ordering topology
     const SpeciesPosition *target_pos; // in target topology (used where source_pos does not provide order)
 
-    CombinedPosInfo reorder_subtree_rec(TreeNode *node) { // similar to ../ARBDB/TreeNode.cxx@reorder_subtree
+    CombinedPosInfo reorder_subtree_rec(RootedTree *node) { // similar to ../SL/ROOTED_TREE/RootedTree.cxx@reorder_subtree
         static const char *smallest_leafname; // has to be set to the alphabetically smallest name (when function exits)
 
         if (node->is_leaf) {
@@ -976,7 +964,7 @@ class SortByTopo : virtual Noncopyable {
     }
 public:
 
-    SortByTopo(const TreeNode *by)
+    SortByTopo(const GBT_TREE *by)
         : source_pos(by),
           target_pos(NULL)
     {}
@@ -985,28 +973,28 @@ public:
     PosInfo sourcePos(const char *name) { return source_pos.relative(name); }
 #endif
 
-    void reorder_subtree(TreeNode *tree) {
+    void reorder_subtree(RootedTree *tree) {
         SpeciesPosition tpos(tree);
         LocallyModify<const SpeciesPosition*> provide(target_pos, &tpos);
         reorder_subtree_rec(tree);
     }
 };
 
-static GB_ERROR sort_tree_by_other_tree(GBDATA *gb_main, TreeNode *tree, const char *other_tree) {
+static GB_ERROR sort_tree_by_other_tree(GBDATA *gb_main, RootedTree *tree, const char *other_tree) {
     GB_ERROR       error = NULL;
     GB_transaction ta(gb_main);
 
-    TreeNode *otherTree   = GBT_read_tree(gb_main, other_tree, new SimpleRoot);
+    GBT_TREE *otherTree   = GBT_read_tree(gb_main, other_tree, GBT_TREE_NodeFactory());
     if (!otherTree) error = GB_await_error();
     else {
         SortByTopo sorter(otherTree);
-        destroy(otherTree);
+        delete otherTree;
         sorter.reorder_subtree(tree);
     }
     return error;
 }
 
-static bool sort_dtree_by_other_tree_cb(TreeNode *tree, GB_ERROR& error) {
+static bool sort_dtree_by_other_tree_cb(RootedTree *tree, GB_ERROR& error) {
     const char *other_tree = TreeAdmin::source_tree_awar(AW_root::SINGLETON)->read_char_pntr();
     error = sort_tree_by_other_tree(GLOBAL.gb_main, tree, other_tree);
     return !error;
@@ -1053,7 +1041,7 @@ static void multifurcation_cb(UNFIXED, AWT_canvas *ntw) {
     if (aw_root->awar(AWAR_MFURC_CONSIDER_BOOTSTRAP)->read_int()) below_bootstrap = aw_root->awar(AWAR_MFURC_BOOTSTRAP_LIMIT)->read_float();
     if (aw_root->awar(AWAR_MFURC_CONSIDER_LENGTH)   ->read_int()) below_length    = aw_root->awar(AWAR_MFURC_LENGTH_LIMIT)   ->read_float();
 
-    NT_multifurcate_tree(ntw, TreeNode::multifurc_limits(below_bootstrap, below_length, applyAtLeafs));
+    NT_multifurcate_tree(ntw, RootedTree::multifurc_limits(below_bootstrap, below_length, applyAtLeafs));
 }
 AW_window *NT_create_multifurcate_tree_window(AW_root *aw_root, AWT_canvas *ntw) {
     AW_window_simple *aws = new AW_window_simple;
@@ -1062,7 +1050,7 @@ AW_window *NT_create_multifurcate_tree_window(AW_root *aw_root, AWT_canvas *ntw)
     aws->at(10, 10);
     aws->auto_space(10, 10);
 
-    aws->callback(AW_POPDOWN);
+    aws->callback((AW_CB0) AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->callback(makeHelpCallback("multifurcate.hlp"));
@@ -1101,16 +1089,16 @@ AW_window *NT_create_multifurcate_tree_window(AW_root *aw_root, AWT_canvas *ntw)
 #endif
 
 static GB_ERROR sort_namedtree_by_other_tree(GBDATA *gb_main, const char *tree, const char *other_tree) {
-    GB_ERROR        error = NULL;
-    GB_transaction  ta(gb_main);
-    SizeAwareTree  *Tree  = DOWNCAST(SizeAwareTree*, GBT_read_tree(gb_main, tree, new SizeAwareRoot));
-    if (!Tree) error      = GB_await_error();
+    GB_ERROR       error = NULL;
+    GB_transaction ta(gb_main);
+    SizeAwareTree *Tree = DOWNCAST(SizeAwareTree*, GBT_read_tree(gb_main, tree, *new TreeRoot(new SizeAwareNodeFactory, true)));
+    if (!Tree) error = GB_await_error();
     else {
         Tree->compute_tree();
         error             = sort_tree_by_other_tree(gb_main, Tree, other_tree);
         if (!error) error = GBT_write_tree(gb_main, tree, Tree);
     }
-    destroy(Tree);
+    delete Tree;
     return error;
 }
 
@@ -1132,7 +1120,7 @@ void TEST_sort_tree_by_other_tree() {
     // create sorted copies of tree_test
     {
         GB_transaction  ta(gb_main);
-        SizeAwareTree  *tree = DOWNCAST(SizeAwareTree*, GBT_read_tree(gb_main, "tree_test", new SizeAwareRoot));
+        SizeAwareTree  *tree = DOWNCAST(SizeAwareTree*, GBT_read_tree(gb_main, "tree_test", *new TreeRoot(new SizeAwareNodeFactory, true)));
         TEST_REJECT_NULL(tree);
         TEST_EXPECT_NEWICK(nLENGTH, tree, topo_test);
 
@@ -1156,7 +1144,7 @@ void TEST_sort_tree_by_other_tree() {
 
         tree->reorder_tree(BIG_BRANCHES_TO_EDGE); TEST_EXPECT_NO_ERROR(GBT_write_tree(gb_main, "tree_work", tree));
 
-        destroy(tree);
+        delete tree;
     }
 
 
@@ -1169,7 +1157,6 @@ void TEST_sort_tree_by_other_tree() {
 
     GB_close(gb_main);
 }
-TEST_PUBLISH(TEST_sort_tree_by_other_tree);
 
 void TEST_move_node_info() {
     GB_shell  shell;
@@ -1195,11 +1182,11 @@ void TEST_move_node_info() {
     // create copy of 'tree_removal'
     {
         GB_transaction  ta(gb_main);
-        TreeNode       *tree = GBT_read_tree(gb_main, "tree_removal", new SimpleRoot);
+        GBT_TREE       *tree = GBT_read_tree(gb_main, "tree_removal", GBT_TREE_NodeFactory());
 
         TEST_EXPECT_NEWICK(nSIMPLE, tree, org_topo);
         TEST_EXPECT_NO_ERROR(GBT_write_tree(gb_main, "tree_removal_copy", tree));
-        destroy(tree);
+        delete tree;
     }
 
     // move node info
@@ -1247,22 +1234,22 @@ void TEST_edges() {
 
     {
         GB_transaction  ta(gb_main);
-        TreeNode       *tree = GBT_read_tree(gb_main, "tree_test", new SizeAwareRoot);
+        RootedTree     *tree = DOWNCAST(RootedTree*, GBT_read_tree(gb_main, "tree_test", *new TreeRoot(new SizeAwareNodeFactory, true)));
 
-        TreeNode *left  = tree->findLeafNamed("CloTyro3"); TEST_REJECT_NULL(left);
-        TreeNode *node  = left->get_father();              TEST_REJECT_NULL(node);
-        TreeNode *right = node->findLeafNamed("CloTyro4"); TEST_REJECT_NULL(right);
+        RootedTree *left  = tree->findLeafNamed("CloTyro3"); TEST_REJECT_NULL(left);
+        RootedTree *node  = left->get_father();              TEST_REJECT_NULL(node);
+        RootedTree *right = node->findLeafNamed("CloTyro4"); TEST_REJECT_NULL(right);
 
         TEST_EXPECT(node == right->get_father());
         TEST_EXPECT(node->get_leftson()  == left);
         TEST_EXPECT(node->get_rightson() == right);
 
-        TreeNode *parent  = node->get_father();                TEST_REJECT_NULL(parent);
-        TreeNode *brother = parent->findLeafNamed("CloTyro2"); TEST_REJECT_NULL(brother);
+        RootedTree *parent  = node->get_father();                TEST_REJECT_NULL(parent);
+        RootedTree *brother = parent->findLeafNamed("CloTyro2"); TEST_REJECT_NULL(brother);
 
         TEST_EXPECT(node->get_brother() == brother);
 
-        TreeNode *grandpa  = parent->get_father(); TEST_REJECT_NULL(grandpa);
+        RootedTree *grandpa  = parent->get_father(); TEST_REJECT_NULL(grandpa);
 
         // topology:
         //
@@ -1341,7 +1328,7 @@ void TEST_edges() {
             TEST_EXPECT_SIMILAR(down.length(),   MOD_NLEN, EPSILON);
         }
 
-        destroy(tree);
+        delete tree;
     }
 
     GB_close(gb_main);
@@ -1354,7 +1341,7 @@ void TEST_toggle_bootstraps100() {
 
     {
         GB_transaction  ta(gb_main);
-        TreeNode       *tree = GBT_read_tree(gb_main, "tree_test", new SizeAwareRoot);
+        RootedTree     *tree = DOWNCAST(RootedTree*, GBT_read_tree(gb_main, "tree_test", *new TreeRoot(new SizeAwareNodeFactory, true)));
         TEST_REJECT_NULL(tree);
 
         const char *topo_org   = "(((((((CloTyro3,CloTyro4)'40%',CloTyro2)'0%',CloTyrob)'97%',CloInnoc)'0%',CloBifer)'53%',(((CloButy2,CloButyr)'100%',CloCarni)'33%',CloPaste)'97%')'100%',((((CorAquat,CurCitre)'100%',CorGluta)'17%',CelBiazo)'40%',CytAquat)'100%');";
@@ -1372,7 +1359,7 @@ void TEST_toggle_bootstraps100() {
         tree->remove_bootstrap();
         TEST_EXPECT_NEWICK(nREMARK, tree, topo_rem);
 
-        destroy(tree);
+        delete tree;
     }
 
     GB_close(gb_main);
@@ -1397,7 +1384,7 @@ void TEST_multifurcate_tree() {
 
     for (int test = 1; test<=6; ++test) {
         GB_transaction  ta(gb_main);
-        TreeNode       *tree = GBT_read_tree(gb_main, "tree_test", new SizeAwareRoot);
+        RootedTree     *tree = DOWNCAST(RootedTree*, GBT_read_tree(gb_main, "tree_test", *new TreeRoot(new SizeAwareNodeFactory, true)));
 
         TEST_REJECT_NULL(tree);
         if (test == 1) {
@@ -1407,32 +1394,32 @@ void TEST_multifurcate_tree() {
 
         switch (test) {
             case 1:
-                tree->multifurcate_whole_tree(TreeNode::multifurc_limits(101, 0.05, true));
+                tree->multifurcate_whole_tree(RootedTree::multifurc_limits(101, 0.05, true));
                 TEST_EXPECT_NEWICK(nALL, tree, topo_bs_less_101_005);
                 TEST_EXPECT_SIMILAR(tree->sum_child_lengths(), STABLE_LENGTH, EPSILON);
                 break;
             case 6:
-                tree->multifurcate_whole_tree(TreeNode::multifurc_limits(101, 0.05, false));
+                tree->multifurcate_whole_tree(RootedTree::multifurc_limits(101, 0.05, false));
                 TEST_EXPECT_NEWICK(nALL, tree, topo_bs_less_101_005_NT);
                 TEST_EXPECT_SIMILAR(tree->sum_child_lengths(), STABLE_LENGTH, EPSILON);
                 break;
             case 2:
-                tree->multifurcate_whole_tree(TreeNode::multifurc_limits(30, 0.05, true));
+                tree->multifurcate_whole_tree(RootedTree::multifurc_limits(30, 0.05, true));
                 TEST_EXPECT_NEWICK(nALL, tree, topo_bs_less_30_005);
                 TEST_EXPECT_SIMILAR(tree->sum_child_lengths(), STABLE_LENGTH, EPSILON);
                 break;
             case 3:
-                tree->multifurcate_whole_tree(TreeNode::multifurc_limits(30, 1000, true));
+                tree->multifurcate_whole_tree(RootedTree::multifurc_limits(30, 1000, true));
                 TEST_EXPECT_NEWICK(nALL, tree, topo_bs_less_30);
                 TEST_EXPECT_SIMILAR(tree->sum_child_lengths(), STABLE_LENGTH, EPSILON);
                 break;
             case 4:
-                tree->multifurcate_whole_tree(TreeNode::multifurc_limits(101, 1000, true)); // multifurcate all
+                tree->multifurcate_whole_tree(RootedTree::multifurc_limits(101, 1000, true)); // multifurcate all
                 TEST_EXPECT_NEWICK(nALL, tree, topo_all);
                 TEST_EXPECT_SIMILAR(tree->sum_child_lengths(), 0.0, EPSILON);
                 break;
             case 5: {
-                TreeNode *CloInnoc = tree->findLeafNamed("CloInnoc");
+                RootedTree *CloInnoc = tree->findLeafNamed("CloInnoc");
                 TEST_REJECT_NULL(CloInnoc);
 
                 parentEdge(CloInnoc).multifurcate();
@@ -1446,7 +1433,7 @@ void TEST_multifurcate_tree() {
                 break;
         }
 
-        destroy(tree);
+        delete tree;
     }
 
     GB_close(gb_main);

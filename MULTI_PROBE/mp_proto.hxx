@@ -15,7 +15,7 @@
 #ifndef MP_PROTO_HXX
 #define MP_PROTO_HXX
 
-void MP_Comment(AW_window *, const char *new_comment);
+void MP_Comment(AW_window *aww, AW_CL com);
 
 void MP_gen_quality(AW_root *awr);
 

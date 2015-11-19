@@ -63,7 +63,7 @@ argchoice:Yes:1
         
         arg:NUMCATEGORIES
         argtype:text
-        arglabel: No. rate categories (GTRCAT only)
+        arglabel: # rate categories (GTRCAT only)
         argtext:25
 
 #else

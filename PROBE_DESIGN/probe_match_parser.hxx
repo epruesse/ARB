@@ -31,7 +31,7 @@ public:
     ProbeMatchParser(const char *probe_target, const char *headline);
     ~ProbeMatchParser();
 
-    const char *get_error() const { return init_error; }
+    const char * get_error() const { return init_error; }
     bool is_gene_result() const;
     int get_probe_region_offset() const;
 

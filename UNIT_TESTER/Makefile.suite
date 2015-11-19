@@ -55,12 +55,7 @@ failed_to_clean:
 # do NOT fail here, otherwise reporter will get no chance to list failure-reason 
 
 cleanup_environment:
-	((./test_environment clean 2>&1) | $(ARBHOME)/SOURCE_TOOLS/asan2msg.pl) || $(MAKE) -f Makefile.suite failed_to_clean
-ifneq ($(SANITIZE),0)
-# delay until servers were able to append to log (before reporter scans logs)
-# cannot be ensured as they run asynchronous
-	sleep 1
-endif
+	./test_environment clean || $(MAKE) -f Makefile.suite failed_to_clean
 ifeq ($(VALGRIND_EXTERNAL),E)
 	./valgrind/arb_valgrind_logged WAIT
 endif

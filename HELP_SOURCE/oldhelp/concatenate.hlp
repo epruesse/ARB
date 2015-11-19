@@ -8,19 +8,20 @@ UP	glossary.hlp
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		 Concatenation of alignments/sequences
+TITLE		 CONCATENATION of ALIGNMENTS / SEQUENCES
 
 DESCRIPTION
 
-            With the help of the concatenation function, one can concatenate the aligned
+            With the help of concatenation function, one can concatenate the aligned
             sequences, which are contained in the same species preserving the ALIGNMENT.
             Before using concatenation function make sure that the species contains more
             than two aligned or unaligned sequences.
 
-            Specify a name for the newly created concatenated alignment in the field
-            "New alignment name".
+            Specify new name for the newly created concatenated alignment in the field
+            "New Alignment Name" (Make sure that the new alignment name starts with
+            "ali_.....").
 
-            Use "Sequence Type" button to display the desired type of alignments/sequences
+            Use "Sequence Type" button to load the desired type of alignments/sequences
             from the database.
 
             Use Arrow buttons (located in between the lists) to select or remove the
@@ -28,24 +29,25 @@ DESCRIPTION
 
             You can also rearrange the order of concatenation of alignments by using "up"
             and "down" arrow keys (located by the side of "Alignments to be concatenated"
-            list) before performing the actual concatenation.
+            list) before performing actual concatenation.
 
             Pressing CLEAR LIST button clears the alignments list selected for
             concatenation.
 
-            Use "Alignment Separator" to specify the tag/separator to be inserted into the
-            target sequence data between the data of the alignments to be concatenated.
+            Use "Alignment Separator" to specify the tag/separator between the alignments
+            to be concatenated.
 
-            Pressing the "CONCATENATE" button performs a concatenation of the alignments
-            selected in the order given in the "Alignments to be concatenated" list.
+            Pressing CONCATENATE button performs concatenation function for the alignments
+            selected in the order of the alignments present in the "Alignments to be
+            concatenated" list.
 
-            Use the "MERGE SIMILAR SPECIES" button to create new species by merging similar
-            species (for e.g., similar species having different sequence alignments).
-            This function is also available from the Species menu.
-            See LINK{merge_species.hlp} for details.
+            Use MERGE SIMILAR SPECIES button to create new species by merging similar
+            species (for e.g., Similar species having different sequence alignments).
+            Additionally, you can do the same from the "Species" menu clicking on "Merge
+            Similar Species" item.
 
             If the database contains similar species with different sequence alignments
-            use "MERGE & CONCATENATE" button to generate new species by merging similar
+            use "MERGE and CONCATENATE" button to generate new species by merging similar
             species in the database and concatenating the different sequence alignments
             contained in the newly merged species.
     
@@ -63,9 +65,9 @@ NOTES
     
             3. Usually newly generated (merged) species are marked and use the same to
             perform concatenation. CAUTION: Make sure that the new alignment name DOES NOT
-            coinside with the selected alignments (names) to be concatenated!
+            coinside with the selected alignments (names) to be concatenated !!!
 
-EXAMPLES	See LINK{gene_species.hlp}
+EXAMPLES	None
 
 WARNINGS	None
 

@@ -106,7 +106,6 @@ namespace arb_test {
               show_warnings(true),
               assertion_failed(false),
               running_test(false),
-              entered_mutex_loop(false),
               warnings(0)
         {}
         ~GlobalTestData() {
@@ -175,7 +174,7 @@ namespace arb_test {
 
         static void assertfailmsg(const char *filename, int lineno, const char *condition) {
             FlushedOutput yes;
-            fprintf(stderr, "\n%s:%i: Assertion '%s' failed", filename, lineno, condition);
+            fprintf(stderr, "%s:%i: Assertion '%s' failed", filename, lineno, condition);
             print_annotation();
         }
     };

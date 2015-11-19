@@ -44,12 +44,6 @@
 // AISC_MKPT_PROMOTE:
 // AISC_MKPT_PROMOTE:    char *tcp;
 // AISC_MKPT_PROMOTE:};
-// AISC_MKPT_PROMOTE:
-// AISC_MKPT_PROMOTE:enum SpawnMode {
-// AISC_MKPT_PROMOTE:    WAIT_FOR_TERMINATION,
-// AISC_MKPT_PROMOTE:    SPAWN_ASYNCHRONOUS,
-// AISC_MKPT_PROMOTE:    SPAWN_DAEMONIZED,
-// AISC_MKPT_PROMOTE:};
 
 #define TRIES 1
 
@@ -63,49 +57,33 @@ static struct gl_struct {
 } glservercntrl;
 
 
-inline void make_async_call(char*& command) {
-    freeset(command, GBS_global_string_copy("( %s ) &", command));
-}
+char *prefixSSH(const char *host, const char *command, int async) {
+    /* 'host' is a hostname or 'hostname:port' (where hostname may be an IP)
+       'command' is the command to be executed
+       if 'async' is 1 -> append '&'
 
-char *createCallOnSocketHost(const char *host, const char *remotePrefix, const char *command, SpawnMode spawnmode) {
-    /*! transforms a shell-command
-     * - use ssh if host is not local
-     * - add wrappers for detached execution
-     * @param host          socket specification (may be 'host:port', 'host' or ':portOrSocketfile')
-     * @param remotePrefix  prefixed to command if it is executed on remote host (e.g. "$ARBHOME/bin/" -> uses value of environment variable ARBHOME on remote host!)
-     * @param command       the shell command to execute
-     * @param spawnmode     how to spawn // @@@ doc spawntypes
-     * @return a SSH system call for remote hosts and direct system calls for the local machine
-     */
+       returns a SSH system call for foreign host or
+       a direct system call for the local machine
+    */
 
-    arb_assert((remotePrefix[0] == 0) || (strchr(remotePrefix, 0)[-1] == '/'));
-
-    char *call = 0;
-    if (spawnmode == SPAWN_DAEMONIZED) {
-        GBK_terminate("Not yet supported SpawnMode SPAWN_DAEMONIZED"); // @@@ impl
-    }
+    char *result    = 0;
+    char  asyncChar = " &"[!!async];
 
     if (host && host[0]) {
         const char *hostPort = strchr(host, ':');
         char       *hostOnly = GB_strpartdup(host, hostPort ? hostPort-1 : 0);
 
-        if (hostOnly[0] && !GB_host_is_local(hostOnly)) {
-            char *quotedRemoteCommand = GBK_singlequote(GBS_global_string("%s%s", remotePrefix, command));
-            call                      = GBS_global_string_copy("ssh %s -n %s", hostOnly, quotedRemoteCommand);
-            free(quotedRemoteCommand);
+        if (!GB_host_is_local(hostOnly)) {
+            result = GBS_global_string_copy("ssh %s -n '%s' %c", hostOnly, command, asyncChar);
         }
         free(hostOnly);
     }
 
-    if (!call) {
-        call = strdup(command);
-        make_valgrinded_call(call); // only on local host
+    if (!result) {
+        result = GBS_global_string_copy("(%s) %c", command, asyncChar);
     }
 
-    bool run_async = spawnmode == SPAWN_ASYNCHRONOUS;
-    if (run_async) make_async_call(call);
-
-    return call;
+    return result;
 }
 
 GB_ERROR arb_start_server(const char *arb_tcp_env, int do_sleep)
@@ -114,7 +92,7 @@ GB_ERROR arb_start_server(const char *arb_tcp_env, int do_sleep)
     GB_ERROR    error = 0;
 
     if (!(tcp_id = GBS_read_arb_tcp(arb_tcp_env))) {
-        error = GB_await_error();
+        error = GB_export_errorf("Entry '%s' in $(ARBHOME)/lib/arb_tcp.dat not found", arb_tcp_env);
     }
     else {
         const char *server       = strchr(tcp_id, 0) + 1;
@@ -155,16 +133,24 @@ GB_ERROR arb_start_server(const char *arb_tcp_env, int do_sleep)
         }
 
         {
-            char       *command = 0;
-            const char *port    = strchr(tcp_id, ':');
+            char *command = 0;
 
-            if (!port) {
-                error = GB_export_errorf("Error: Missing ':' in socket definition of '%s' in file $(ARBHOME)/lib/arb_tcp.dat", arb_tcp_env);
+            if (*tcp_id == ':') { // local mode
+                command = GBS_global_string_copy("%s %s -T%s &", server, serverparams, tcp_id);
+                make_valgrinded_call(command);
             }
             else {
-                char *plainCommand = GBS_global_string_copy("%s %s '-T%s'", server, serverparams, port);
-                command            = createCallOnSocketHost(tcp_id, "$ARBHOME/bin/", plainCommand, SPAWN_ASYNCHRONOUS);
-                free(plainCommand);
+                const char *port = strchr(tcp_id, ':');
+
+                if (!port) {
+                    error = GB_export_errorf("Error: Missing ':' in line '%s' file $(ARBHOME)/lib/arb_tcp.dat", arb_tcp_env);
+                }
+                else {
+                    char *remoteCommand = GBS_global_string_copy("$ARBHOME/bin/%s %s -T%s", server, serverparams, port);
+                    make_valgrinded_call(remoteCommand);
+                    command = prefixSSH(tcp_id, remoteCommand, 1);
+                    free(remoteCommand);
+                }
             }
 
             if (!error) {
@@ -198,14 +184,12 @@ static GB_ERROR arb_wait_for_server(const char *arb_tcp_env, const char *tcp_id,
 }
 
 GB_ERROR arb_look_and_start_server(long magic_number, const char *arb_tcp_env) {
-    arb_assert(!GB_have_error());
-
     GB_ERROR    error       = 0;
     const char *tcp_id      = GBS_read_arb_tcp(arb_tcp_env);
     const char *arb_tcp_dat = "$(ARBHOME)/lib/arb_tcp.dat";
 
     if (!tcp_id) {
-        error = GBS_global_string("Entry '%s' not found in %s (%s)", arb_tcp_env, arb_tcp_dat, GB_await_error());
+        error = GBS_global_string("Entry '%s' not found in %s", arb_tcp_env, arb_tcp_dat);
     }
     else {
         const char *file = GBS_scan_arb_tcp_param(tcp_id, "-d"); // find parameter behind '-d'
@@ -286,7 +270,6 @@ GB_ERROR arb_look_and_start_server(long magic_number, const char *arb_tcp_env) {
         }
     }
 
-    arb_assert(!GB_have_error());
     return error;
 }
 
@@ -295,7 +278,7 @@ GB_ERROR arb_look_and_kill_server(int magic_number, const char *arb_tcp_env) {
     GB_ERROR    error = 0;
 
     if (!(tcp_id = GBS_read_arb_tcp(arb_tcp_env))) {
-        error = GB_await_error();
+        error = GB_export_errorf("Missing line '%s' in $(ARBHOME)/lib/arb_tcp.dat:", arb_tcp_env);
     }
     else {
         const char *server = strchr(tcp_id, 0)+1;

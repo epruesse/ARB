@@ -269,14 +269,13 @@ void GEN_create_nds_vars(AW_root *aw_root, AW_default awdef, GBDATA *gb_main, co
     if (error) aw_message(error);
 }
 
-static void GEN_create_select_nds_window(AW_window *aww, const char *key_text, GBDATA *gb_main)
+static void GEN_create_select_nds_window(AW_window *aww, char *key_text, AW_CL cgb_main)
 {
 #if defined(WARN_TODO)
 #warning make this function more general like popup_select_species_field_window
 #endif
 
     static AW_window *win = 0;
-
     AW_root *aw_root = aww->get_root();
     aw_root->awar("tmp/gene_viewkey/key_text")->map(key_text);
     if (!win) {
@@ -289,14 +288,15 @@ static void GEN_create_select_nds_window(AW_window *aww, const char *key_text, G
         aws->at("close");
         aws->create_button("CLOSE", "CLOSE", "C");
 
-        create_selection_list_on_itemfields(gb_main, aws, "tmp/gene_viewkey/key_text", true, FIELD_FILTER_NDS, "scandb", "rescandb", GEN_get_selector(), 20, 10, SF_STANDARD, NULL);
+        create_selection_list_on_itemfields((GBDATA*)cgb_main, aws, "tmp/gene_viewkey/key_text", true, FIELD_FILTER_NDS, "scandb", "rescandb", GEN_get_selector(), 20, 10, SF_STANDARD, NULL);
 
-        win = aws;
+        win =  (AW_window*)aws;
     }
     win->activate();
 }
 
-AW_window *GEN_open_nds_window(AW_root *aw_root, GBDATA *gb_main) {
+AW_window *GEN_open_nds_window(AW_root *aw_root, AW_CL cgb_main)
+{
     static AW_window_simple *aws = 0;
     if (!aws) {
         aws = new AW_window_simple;
@@ -341,7 +341,7 @@ AW_window *GEN_open_nds_window(AW_root *aw_root, GBDATA *gb_main) {
             aws->create_input_field(buf, 15);
 
             aws->button_length(0);
-            aws->callback(makeWindowCallback(GEN_create_select_nds_window, strdup(buf), gb_main));
+            aws->callback((AW_CB)GEN_create_select_nds_window, (AW_CL)strdup(buf), cgb_main);
             aws->get_at_position(&fieldselectx, &dummy);
             sprintf(buf, "SELECT_NDS_%i", i);
             aws->create_button(buf, "S");

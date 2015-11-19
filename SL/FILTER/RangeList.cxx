@@ -163,7 +163,6 @@ void TEST_string2RangeList() {
     TEST_EXPECT_EQUAL(convert("x-x-x", "x", true),  "1-1,3-3");
     
 }
-TEST_PUBLISH(TEST_string2RangeList);
 
 #endif // UNIT_TESTS
 

@@ -251,7 +251,7 @@ GEN_position *GEN_read_position(GBDATA *gb_gene) {
 
     if (gb_pos_joined) {
         parts = GB_read_int(gb_pos_joined);
-        if (parts != 1) { // split
+        if (parts != 1) { // splitted
             if (parts>1) joinable = true;
             else if (parts<-1) parts = -parts; // neg value means "not joinable" (comes from feature location 'order(...)')
             else error = GBS_global_string("Illegal value %i in 'pos_joined'", parts);
@@ -367,7 +367,7 @@ GB_ERROR GEN_write_position(GBDATA *gb_gene, const GEN_position *pos, long seqLe
         }
         else { // unknown -> autodetect
             GBDATA *gb_organism = GB_get_grandfather(gb_gene);
-            GBDATA *gb_genome   = GBT_find_sequence(gb_organism, GENOM_ALIGNMENT);
+            GBDATA *gb_genome   = GBT_read_sequence(gb_organism, GENOM_ALIGNMENT);
 
             length = GB_read_count(gb_genome);
         }

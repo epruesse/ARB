@@ -11,16 +11,17 @@
 #ifndef AP_MAIN_HXX
 #define AP_MAIN_HXX
 
-#ifndef AP_MAIN_TYPE_HXX
-#include "ap_main_type.hxx"
+#ifndef AP_BUFFER_HXX
+#include "AP_buffer.hxx"
 #endif
-#ifndef AP_TREE_NLEN_HXX
-#include "ap_tree_nlen.hxx"
+#ifndef TREEDISPLAY_HXX
+#include <TreeDisplay.hxx>
 #endif
-
 
 #define AWAR_ALIGNMENT        "tmp/pars/alignment"
-#define AWAR_FILTER_NAME      "tmp/pars/filter/name" 
+#define AWAR_FILTER_NAME      "tmp/pars/filter/name"
+#define AWAR_FILTER_FILTER    "tmp/pars/filter/filter"
+#define AWAR_FILTER_ALIGNMENT "tmp/pars/filter/alignment"
 #define AWAR_PARSIMONY        "tmp/pars/parsimony"
 #define AWAR_BEST_PARSIMONY   "tmp/pars/best_parsimony"
 #define AWAR_STACKPOINTER     "tmp/pars/stackpointer"
@@ -49,78 +50,47 @@ struct PARS_commands {
     }
 };
 
-extern AP_main *ap_main; // @@@ elim
+class AP_tree_nlen;
+class AWT_graphic_tree;
 
-inline AP_tree_nlen *rootNode() {
-    return ap_main->get_root_node();
-}
+class AP_main : virtual Noncopyable {
+    AP_main_stack    *stack;
+    AP_main_list      list;
+    unsigned long     stack_level;
+    AWT_graphic_tree *agt;                          // provides access to tree!
+    unsigned long     user_push_counter;
 
-inline AP_tree_edge *rootEdge() {
-    return rootNode()->get_leftson()->edgeTo(rootNode()->get_rightson());
-}
-
-// ------------------------------------------
-//      stack-aware resource management
-
-#define REUSE_EDGES
-
-inline AP_tree_nlen *StackFrameData::makeNode(AP_pars_root *proot) {
-    return created.put(new AP_tree_nlen(proot));
-}
-inline AP_tree_edge *StackFrameData::makeEdge(AP_tree_nlen *n1, AP_tree_nlen *n2) {
-#if defined(REUSE_EDGES)
-    if (destroyed.has_edges()) {
-        AP_tree_edge *reuse = destroyed.getEdge();
-        reuse->relink(n1, n2);
-        return reuse;
+public:
+    AP_main()
+        : stack(NULL),
+          stack_level(0),
+          agt(NULL),
+          user_push_counter(0)
+    {}
+    ~AP_main() {
+        delete stack;
     }
-#endif
-    return created.put(new AP_tree_edge(n1, n2));
-}
 
-inline void StackFrameData::destroyNode(AP_tree_nlen *node) { destroyed.put(node); }
-inline void StackFrameData::destroyEdge(AP_tree_edge *edge) { destroyed.put(edge); }
+    void set_tree_root(AWT_graphic_tree *agt_);
+    AWT_graphic_tree *get_tree_root() { return agt; }
 
-inline AP_tree_nlen *AP_main::makeNode(AP_pars_root *proot) {
-    return currFrame ? frameData->makeNode(proot) : new AP_tree_nlen(proot);
-}
-inline AP_tree_edge *AP_main::makeEdge(AP_tree_nlen *n1, AP_tree_nlen *n2) {
-    return currFrame ? frameData->makeEdge(n1, n2) : new AP_tree_edge(n1, n2);
-}
-inline void AP_main::destroyNode(AP_tree_nlen *node) {
-    if (currFrame) {
-        ap_assert(!node->rightson && !node->leftson); // node needs to be unlinked from neighbours
-        frameData->destroyNode(node);
-    }
-    else {
-        ap_assert(!node->may_be_recollected());
-        delete node; // here child nodes are destroyed
-    }
-}
-inline void AP_main::destroyEdge(AP_tree_edge *edge) {
-    ap_assert(!edge->is_linked());
-    if (currFrame) {
-        frameData->destroyEdge(edge);
-    }
-    else {
-        delete edge;
-    }
-}
+    DEFINE_DOWNCAST_ACCESSORS(AP_tree_nlen, get_root_node, agt->get_root_node());
 
-inline TreeNode *AP_pars_root::makeNode() const {
-    return ap_main->makeNode(const_cast<AP_pars_root*>(this));
-}
-inline void AP_pars_root::destroyNode(TreeNode *node) const {
-    ap_main->destroyNode(DOWNCAST(AP_tree_nlen*, node));
-}
+    const char *get_aliname() const;
+    unsigned long get_user_push_counter() const { return user_push_counter; }
 
-inline AP_tree_edge *makeEdge(AP_tree_nlen *n1, AP_tree_nlen *n2) {
-    return ap_main->makeEdge(n1, n2);
-}
-inline void destroyEdge(AP_tree_edge *edge) {
-    ap_main->destroyEdge(edge);
-}
+    GB_ERROR open(const char *db_server);
 
+    void user_push();
+    void user_pop();
+    void push();
+    void pop();
+    void push_node(AP_tree_nlen *node, AP_STACK_MODE);
+    void clear();               // clears all buffers
+};
+
+extern AP_main *ap_main;
+extern GBDATA  *GLOBAL_gb_main;
 
 #else
 #error ap_main.hxx included twice

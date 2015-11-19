@@ -17,7 +17,6 @@
 #include <arb_str.h>
 #include <arb_file.h>
 #include <arb_defs.h>
-#include <arb_progress.h>
 
 #include "gb_key.h"
 #include "gb_localdata.h"
@@ -29,8 +28,6 @@ static int gb_verbose_mode = 0;
 void GB_set_verbose() {
     gb_verbose_mode = 1;
 }
-
-#define FILESIZE_GRANULARITY 1024 // progress will work with DB files up to 2Tb
 
 // ---------------------------------------------------
 //      helper code to read ascii file in portions
@@ -658,17 +655,11 @@ static void DEBUG_DUMP_INDENTED(long deep, const char *s) {
 #endif // DEBUG_READ
 // ----------------------------------------
 
-static long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbc_dest, long nitems, long version, 
-                               long reversed, long deep, arb_progress& progress) {
+
+static long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbc_dest, long nitems, long version, long reversed, long deep) {
     GB_MAIN_TYPE *Main = GB_MAIN(gbc_dest);
 
     DEBUG_DUMP_INDENTED(deep, GBS_global_string("Reading container with %li items", nitems));
-
-    progress.inc_to(ftell(in)/FILESIZE_GRANULARITY);
-    if (progress.aborted()) {
-        GB_export_error(progress.error_if_aborted());
-        return -1;
-    }
 
     gb_create_header_array(gbc_dest, (int)nitems);
     gb_header_list *header = GB_DATA_LIST_HEADER(gbc_dest->d);
@@ -727,13 +718,13 @@ static long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbc_dest, long nitems, lon
         long    type2    = (type>>4)&0xf;
         GBQUARK key      = (GBQUARK)gb_get_number(in);
 
-        if (key >= Main->keycnt || !quark2key(Main, key)) {
+        if (key >= Main->keycnt || !Main->keys[key].key) {
             const char *reason = GBS_global_string("database entry with unknown field quark %i", key);
             if (gb_recover_corrupt_file(gbc_dest, in, reason, is_quicksave)) return -1;
             continue;
         }
 
-        DEBUG_DUMP_INDENTED(deep, GBS_global_string("key='%s' type2=%li", quark2key(Main, key), type2));
+        DEBUG_DUMP_INDENTED(deep, GBS_global_string("key='%s' type2=%li", Main->keys[key].key, type2));
 
         GBENTRY     *gbe = NULL;
         GBCONTAINER *gbc = NULL;
@@ -858,7 +849,7 @@ static long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbc_dest, long nitems, lon
             case GB_DB: {
                 long size = gb_get_number(in);
                 // gbc->d.size  is automatically incremented
-                if (gb_read_bin_rek_V2(in, gbc, size, version, reversed, deep+1, progress)) {
+                if (gb_read_bin_rek_V2(in, gbc, size, version, reversed, deep+1)) {
                     if (!GBCONTAINER_MAIN(gbc_dest)->allow_corrupt_file_recovery) {
                         return -1;
                     }
@@ -931,7 +922,7 @@ inline bool read_keyword(const char *expected_keyword, FILE *in, GBCONTAINER *gb
     return as_expected;
 }
 
-static long gb_read_bin(FILE *in, GBCONTAINER *gbc, bool allowed_to_load_diff, arb_progress& progress) {
+static long gb_read_bin(FILE *in, GBCONTAINER *gbc, bool allowed_to_load_diff) {
     int   c = 1;
     long  i;
     long  error;
@@ -1115,7 +1106,7 @@ static long gb_read_bin(FILE *in, GBCONTAINER *gbc, bool allowed_to_load_diff, a
 
                             gb_main_array[new_idx] = Main;
 
-                            gbm_free_mem(Main->root_container, sizeof(GBCONTAINER), quark2gbmindex(Main, 0));
+                            gbm_free_mem(Main->root_container, sizeof(GBCONTAINER), GB_QUARK_2_GBMINDEX(Main, 0));
 
                             Main->root_container = new_gbc;
                             father->main_idx     = new_idx;
@@ -1145,10 +1136,7 @@ static long gb_read_bin(FILE *in, GBCONTAINER *gbc, bool allowed_to_load_diff, a
 
         gb_assert(mapped || map_fail_reason);
 
-        if (mapped) {
-            Main->mapped = true;
-            return 0; // succeded loading mapfile -> no need to load normal DB file
-        }
+        if (mapped) return 0; // succeded loading mapfile -> no need to load normal DB file
         GB_informationf("ARB: %s => loading entire DB", map_fail_reason);
     }
 
@@ -1165,7 +1153,7 @@ static long gb_read_bin(FILE *in, GBCONTAINER *gbc, bool allowed_to_load_diff, a
             if (Main->clock<=0) Main->clock++;
             // fall-through
         case 1: // master arb file
-            error = gb_read_bin_rek_V2(in, gbc, nodecnt, version, reversed, 0, progress);
+            error = gb_read_bin_rek_V2(in, gbc, nodecnt, version, reversed, 0);
             break;
         default:
             GB_internal_errorf("Sorry: This ARB Version does not support database format V%li", version);
@@ -1301,7 +1289,7 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
     int            ignoreMissingMaster = 0;
     int            loadedQuickIndex    = -1;
     GB_ERROR       error               = 0;
-    char          *path                = strdup(cpath?cpath:"");
+    char          *path                = strdup(cpath);
     bool           dbCreated           = false;
 
     gb_assert(strchr(opent, 'd') == NULL); // mode 'd' is deprecated. You have to use 'D' and store your defaults inside ARBHOME/lib/arb_default
@@ -1395,183 +1383,169 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
     gbc                           = gb_make_container(Main->dummy_father, NULL, -1, 0); // create "main"
 
     Main->root_container = gbc;
+    gbcm_login(gbc, user);
+    Main->opentype = opentype;
+    Main->security_level = 7;
 
-    error = gbcm_login(gbc, user);
-    if (!error) {
-        Main->opentype       = opentype;
-        Main->security_level = 7;
+    if (path && (strchr(opent, 'r'))) {
+        if (strchr(path, ':')) {
+            error = Main->login_remote(path, opent);
+        }
+        else {
+            int read_from_stdin = strcmp(path, "-") == 0;
 
-        if (path && (strchr(opent, 'r'))) {
-            if (strchr(path, ':')) {
-                error = Main->login_remote(path, opent);
+            GB_ULONG time_of_main_file = 0; long i;
+
+            Main->mark_as_server();
+            GB_begin_transaction(gbc);
+            Main->clock      = 0;                   // start clock
+
+            FILE *input = read_from_stdin ? stdin : fopen(path, "rb");
+            if (!input && ignoreMissingMaster) {
+                goto load_quick_save_file_only;
             }
-            else {
-                int read_from_stdin = strcmp(path, "-") == 0;
 
-                GB_ULONG time_of_main_file = 0; long i;
+            if (!input) {
+                if (strchr(opent, 'c')) {
+                    GB_disable_quicksave(gbc, "Database Created");
 
-                Main->mark_as_server();
-                GB_begin_transaction(gbc);
-                Main->clock      = 0;                   // start clock
-
-                FILE *input = read_from_stdin ? stdin : fopen(path, "rb");
-                if (!input && ignoreMissingMaster) {
-                    goto load_quick_save_file_only;
-                }
-
-                if (!input) {
-                    if (strchr(opent, 'c')) {
-                        GB_disable_quicksave(gbc, "Database Created");
-
-                        if (strchr(opent, 'D')) { // use default settings
-                            GB_clear_error(); // with default-files gb_scan_directory (used above) has created an error, cause the path was a fake path
+                    if (strchr(opent, 'D')) { // use default settings
+                        GB_clear_error(); // with default-files gb_scan_directory (used above) has created an error, cause the path was a fake path
                         
-                            gb_assert(!ARB_strBeginsWith(path, ".arb_prop/")); // do no longer pass path-prefix [deprecated!]  
-                            char *found_path = GB_property_file(false, path);
+                        gb_assert(!ARB_strBeginsWith(path, ".arb_prop/")); // do no longer pass path-prefix [deprecated!]  
+                        char *found_path = GB_property_file(false, path);
 
-                            if (!found_path) {
-                                fprintf(stderr, "file %s not found\n", path);
-                                dbCreated = true;
+                        if (!found_path) {
+                            fprintf(stderr, "file %s not found\n", path);
+                            dbCreated = true;
+                        }
+                        else {
+                            freeset(path, found_path);
+                            // cppcheck-suppress deallocuse (false positive; path is reassigned to non-NULL above)
+                            input = fopen(path, "rb");
+                        }
+                    }
+                    else {
+                        dbCreated = true;
+                    }
+
+                    if (dbCreated) printf(" database %s created\n", path);
+                }
+                else {
+                    error = GBS_global_string("Database '%s' not found", path);
+                    gbc   = 0;
+                }
+            }
+            if (input) {
+                if (strchr(opent, 'D')) { // we are loading properties -> be verboose
+                    fprintf(stderr, "Using properties from '%s'\n", path);
+                }
+                time_of_main_file = GB_time_of_file(path);
+
+                i = (input != stdin) ? gb_read_in_uint32(input, 0) : 0;
+
+                if (is_binary_db_id(i)) {
+                    i = gb_read_bin(input, gbc, false);     // read or map whole db
+                    gbc = Main->root_container;
+                    fclose(input);
+
+                    if (i) {
+                        if (Main->allow_corrupt_file_recovery) {
+                            GB_print_error();
+                            GB_clear_error();
+                        }
+                        else {
+                            gbc   = 0;
+                            error = GBS_global_string("Failed to load database '%s'\n"
+                                                      "Reason: %s",
+                                                      path,
+                                                      GB_await_error());
+                        }
+                    }
+
+                    if (gbc && quickFile) {
+                        long     err;
+                        GB_ERROR err_msg;
+                    load_quick_save_file_only :
+                        err     = 0;
+                        err_msg = 0;
+
+                        input = fopen(quickFile, "rb");
+
+                        if (input) {
+                            GB_ULONG time_of_quick_file = GB_time_of_file(quickFile);
+                            if (time_of_main_file && time_of_quick_file < time_of_main_file) {
+                                const char *warning = GBS_global_string("Your main database file '%s' is newer than\n"
+                                                                        "   the changes file '%s'\n"
+                                                                        "   That is very strange and happens only if files where\n"
+                                                                        "   moved/copied by hand\n"
+                                                                        "   Your file '%s' may be an old relict,\n"
+                                                                        "   if you ran into problems now,delete it",
+                                                                        path, quickFile, quickFile);
+                                GB_warning(warning);
+                            }
+                            i = gb_read_in_uint32(input, 0);
+                            if (is_binary_db_id(i)) {
+                                err = gb_read_bin(input, gbc, true);
+                                fclose (input);
+
+                                if (err) {
+                                    err_msg = GBS_global_string("Loading failed (file corrupt?)\n"
+                                                                "[Fail-Reason: '%s']",
+                                                                GB_await_error());
+                                }
                             }
                             else {
-                                freeset(path, found_path);
-                                // cppcheck-suppress deallocuse (false positive; path is reassigned to non-NULL above)
-                                input = fopen(path, "rb");
+                                err_msg = "Wrong file format (not a quicksave file)";
+                                err     = 1;
                             }
                         }
                         else {
-                            dbCreated = true;
+                            err_msg = "Can't open file";
+                            err     = 1;
                         }
 
-                        if (dbCreated) {
-                            fprintf(stderr, "Created new database \"%s\".\n", path);
-                        }
-                    }
-                    else {
-                        error = GBS_global_string("Database '%s' not found", path);
-                        gbc   = 0;
-                    }
-                }
-                if (input) {
-                    if (strchr(opent, 'D')) { // we are loading properties -> be verboose
-                        fprintf(stderr, "Using properties from '%s'\n", path);
-                    }
-                    time_of_main_file = GB_time_of_file(path);
+                        if (err) {
+                            error = GBS_global_string("I cannot load your quick file '%s'\n"
+                                                      "Reason: %s\n"
+                                                      "\n"
+                                                      "Note: you MAY restore an older version by running arb with:\n"
+                                                      "      arb <name of quicksave-file>",
+                                                      quickFile, err_msg);
 
-                    i = (input != stdin) ? gb_read_in_uint32(input, 0) : 0;
-
-                    if (is_binary_db_id(i)) {
-                        {
-                            arb_progress progress("Loading database", GB_size_of_FILE(input)/FILESIZE_GRANULARITY);
-                            i = gb_read_bin(input, gbc, false, progress);                  // read or map whole db
-                            progress.done();
-                        }
-                        gbc = Main->root_container;
-                        fclose(input);
-
-                        if (i) {
-                            if (Main->allow_corrupt_file_recovery) {
+                            if (!Main->allow_corrupt_file_recovery) {
+                                gbc = 0;
+                            }
+                            else {
+                                GB_export_error(error);
                                 GB_print_error();
                                 GB_clear_error();
-                            }
-                            else {
-                                gbc   = 0;
-                                error = GBS_global_string("Failed to load database '%s'\n"
-                                                          "Reason: %s",
-                                                          path,
-                                                          GB_await_error());
+                                error = 0;
+                                GB_disable_quicksave(gbc, "Couldn't load last quicksave (your latest changes are NOT included)");
                             }
                         }
-
-                        if (gbc && quickFile) {
-                            long     err;
-                            GB_ERROR err_msg;
-                          load_quick_save_file_only :
-                            err     = 0;
-                            err_msg = 0;
-
-                            input = fopen(quickFile, "rb");
-
-                            if (input) {
-                                GB_ULONG time_of_quick_file = GB_time_of_file(quickFile);
-                                if (time_of_main_file && time_of_quick_file < time_of_main_file) {
-                                    const char *warning = GBS_global_string("Your main database file '%s' is newer than\n"
-                                                                            "   the changes file '%s'\n"
-                                                                            "   That is very strange and happens only if files where\n"
-                                                                            "   moved/copied by hand\n"
-                                                                            "   Your file '%s' may be an old relict,\n"
-                                                                            "   if you ran into problems now,delete it",
-                                                                            path, quickFile, quickFile);
-                                    GB_warning(warning);
-                                }
-                                i = gb_read_in_uint32(input, 0);
-                                if (is_binary_db_id(i)) {
-                                    {
-                                        arb_progress progress("Loading quicksave", GB_size_of_FILE(input)/FILESIZE_GRANULARITY);
-                                        err = gb_read_bin(input, gbc, true, progress);
-                                        progress.done();
-                                    }
-                                    fclose (input);
-
-                                    if (err) {
-                                        err_msg = GBS_global_string("Loading failed (file corrupt?)\n"
-                                                                    "[Fail-Reason: '%s']",
-                                                                    GB_await_error());
-                                    }
-                                }
-                                else {
-                                    err_msg = "Wrong file format (not a quicksave file)";
-                                    err     = 1;
-                                }
-                            }
-                            else {
-                                err_msg = "Can't open file";
-                                err     = 1;
-                            }
-
-                            if (err) {
-                                error = GBS_global_string("I cannot load your quick file '%s'\n"
-                                                          "Reason: %s\n"
-                                                          "\n"
-                                                          "Note: you MAY restore an older version by running arb with:\n"
-                                                          "      arb <name of quicksave-file>",
-                                                          quickFile, err_msg);
-
-                                if (!Main->allow_corrupt_file_recovery) {
-                                    gbc = 0;
-                                }
-                                else {
-                                    GB_export_error(error);
-                                    GB_print_error();
-                                    GB_clear_error();
-                                    error = 0;
-                                    GB_disable_quicksave(gbc, "Couldn't load last quicksave (your latest changes are NOT included)");
-                                }
-                            }
-                        }
-                        Main->qs.last_index = loadedQuickIndex; // determines which # will be saved next
                     }
-                    else {
-                        if (input != stdin) fclose(input);
-                        error = gb_read_ascii(path, gbc);
-                        GB_disable_quicksave(gbc, "Sorry, I cannot save differences to ascii files\n"
-                                             "  Save whole database in binary mode first");
-                    }
+                    Main->qs.last_index = loadedQuickIndex; // determines which # will be saved next
+                }
+                else {
+                    if (input != stdin) fclose(input);
+                    error = gb_read_ascii(path, gbc);
+                    GB_disable_quicksave(gbc, "Sorry, I cannot save differences to ascii files\n"
+                                         "  Save whole database in binary mode first");
                 }
             }
         }
-        else {
-            GB_disable_quicksave(gbc, "Database not part of this process");
-            Main->mark_as_server();
-            GB_begin_transaction(gbc);
-        }
-
-        if (error) gbcm_logout(Main, user);
+    }
+    else {
+        GB_disable_quicksave(gbc, "Database not part of this process");
+        Main->mark_as_server();
+        GB_begin_transaction(gbc);
     }
 
     gb_assert(error || gbc);
 
     if (error) {
+        gbcm_logout(Main, user);
         gb_delete_dummy_father(Main->dummy_father);
         gbc = NULL;
         delete Main;
@@ -1753,6 +1727,7 @@ void TEST_io_number() {
 
 void TEST_GBDATA_size() {
     // protect GBDATA/GBENTRY/GBCONTAINER against unwanted changes
+
     GBENTRY fakeEntry;
 
 #if defined(ARB_64)
@@ -1777,6 +1752,5 @@ void TEST_GBDATA_size() {
 
 #endif
 }
-TEST_PUBLISH(TEST_GBDATA_size);
 
 #endif // UNIT_TESTS

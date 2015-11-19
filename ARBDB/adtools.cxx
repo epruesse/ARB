@@ -909,13 +909,12 @@ GB_ERROR GBT_macro_execute(const char *macro_name, bool loop_marked, bool run_as
     }
     else {
         char *perl_args = NULL;
-        freeset(fullMacro, GBK_singlequote(fullMacro));
         if (loop_marked) {
             const char *with_all_marked = GB_path_in_ARBHOME("PERL_SCRIPTS/MACROS/with_all_marked.pl");
-            perl_args = GBS_global_string_copy("'%s' %s", with_all_marked, fullMacro);
+            perl_args = GBS_global_string_copy("'%s' '%s'", with_all_marked, fullMacro);
         }
         else {
-            perl_args = GBS_global_string_copy("%s", fullMacro);
+            perl_args = GBS_global_string_copy("'%s'", fullMacro);
         }
 
         char *cmd = GBS_global_string_copy("perl %s %s", perl_args, run_async ? "&" : "");
@@ -1144,7 +1143,7 @@ GB_ERROR GB_notify(GBDATA *gb_main, int id, const char *message) {
         GB_transaction ta(gb_main);                     \
         StrArray fields;                                \
         GBT_scan_db(fields, gb_main, path);             \
-        char  *joined = GBT_join_strings(fields, ',');  \
+        char  *joined = GBT_join_names(fields, ',');    \
         TEST_EXPECT_EQUAL(joined, expected);            \
         free(joined);                                   \
     } while (0)
@@ -1242,6 +1241,6 @@ void TEST_find_macros() {
 
     TEST_EXPECT_EQUAL((void*)arb_test::fakeenv, (void*)GB_install_getenv_hook(old));
 }
-TEST_PUBLISH(TEST_find_macros);
+
 
 #endif // UNIT_TESTS

@@ -25,7 +25,6 @@
 typedef const char *GB_ERROR; // memory managed by CORE
 
 struct GBS_regex;
-class GlobalStringBuffers;
 
 enum GB_CASE {
     GB_IGNORE_CASE    = 0,

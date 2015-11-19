@@ -158,26 +158,21 @@ inline GB_ERROR PT_prepare_species_sequence(GBDATA *gb_species, const char *alig
     }
     else {
         const char *seq = GB_read_char_pntr(gb_data);
+
         if (!seq) {
             error = GBS_global_string("Could not read data in '%s' for species '%s'\n(Reason: %s)",
-                                      alignment_name, GBT_read_name(gb_species), GB_await_error());
+                                      psg.alignment_name, GBT_read_name(gb_species), GB_await_error());
         }
         else {
             size_t seqlen = GB_read_string_count(gb_data);
-            if (seqlen>compressed.get_allowed_size()) {
-                error = GBS_global_string("Sequence too long in '%s' of '%s'\n(Hint: format alignment to fix this problem)",
-                                          alignment_name, GBT_read_name(gb_species));
-            }
+            compressed.createFrom(seq, seqlen);
 
-            if (!error) {
-                compressed.createFrom(seq, seqlen);
-                {
-                    uint32_t  checksum = GB_checksum(seq, seqlen, 1, ".-");
-                    GBDATA   *gb_cs    = GB_create(gb_species, "cs", GB_INT);
-                    error              = gb_cs
-                        ? GB_write_int(gb_cs, int32_t(checksum))
-                        : GB_await_error();
-                }
+            {
+                uint32_t  checksum = GB_checksum(seq, seqlen, 1, ".-");
+                GBDATA   *gb_cs    = GB_create(gb_species, "cs", GB_INT);
+                error              = gb_cs
+                    ? GB_write_int(gb_cs, int32_t(checksum))
+                    : GB_await_error();
             }
 
             if (!error) {
@@ -274,7 +269,7 @@ GB_ERROR PT_init_input_data() {
 
         psg.ecoli = 0;
         if (gb_ref) {
-            GBDATA *gb_data = GBT_find_sequence(gb_ref, psg.alignment_name);
+            GBDATA *gb_data = GBT_read_sequence(gb_ref, psg.alignment_name);
             if (gb_data) {
                 psg.ecoli = GB_read_string(gb_data);
             }

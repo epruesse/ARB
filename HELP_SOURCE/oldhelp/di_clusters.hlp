@@ -48,16 +48,19 @@ SECTION Working with found clusters
 
                 Marking
 
-                        You can mark the members of the currently selected cluster by clicking
-                        on the 'Mark' button. Below that button you may select whether to mark
-                         - all species in the cluster,
-                         - all species in the cluster despite the representative or
-                         - only the representative.
+                        You can mark all members of a cluster by clicking on the 'Mark cluster' button.
 
-                        The second mode is useful when you plan to remove all but the
-                        representative from the tree.
+                        Options:
 
-                        You may also mark ALL clusters by clicking on the 'Mark all' button.
+                                - 'Mark representative': If enabled, the representative of the cluster
+                                  will be marked as well, otherwise only the rest of the cluster will be
+                                  marked. This is useful, when you plan to remove all but the
+                                  representative from the tree (or from DB)
+                                - 'Select representative': If enabled, the selected species will be changed
+                                  to the representative of the cluster, hence causing other parts of ARB
+                                  to jump to the representative.
+
+                        You can also mark all member of ALL clusters by clicking on the 'Mark all' button.
                         This is handy to expand all cluster in the tree or to load all clusters into the
                         sequence editor.
 
@@ -65,11 +68,6 @@ SECTION Working with found clusters
 
                         If you enable the 'Auto mark' toggle, ARB will automatically mark the cluster
                         as soon as you select it in the list.
-
-                Selecting representative
-
-                        If this option is checked, the representative species of the selected cluster
-                        will be become the 'selected species'.
 
                 Storing intermediate results
 
@@ -94,6 +92,8 @@ SECTION Working with found clusters
                 Cluster groups
 
                         Create groups for found clusters
+
+                @@@ Load/Save (not implemented)
 
 NOTES           The performance of the cluster detection is very sensitive to the parameters:
 

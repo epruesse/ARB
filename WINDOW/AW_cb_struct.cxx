@@ -22,6 +22,16 @@ AW_cb_struct_guard AW_cb::guard_after  = NULL;
 AW_postcb_cb       AW_cb::postcb       = NULL;
 
 
+AW_cb::AW_cb(AW_window *awi, AW_CB g, AW_CL cd1i, AW_CL cd2i, const char *help_texti, class AW_cb *nexti)
+    : cb(makeWindowCallback(g, cd1i, cd2i))
+{
+    aw         = awi;
+    help_text  = help_texti;
+    this->next = nexti;
+
+    id = NULL;
+}
+
 AW_cb::AW_cb(AW_window *awi, const WindowCallback& wcb, const char *help_texti, class AW_cb *nexti)
     : cb(wcb)
 {
@@ -33,23 +43,28 @@ AW_cb::AW_cb(AW_window *awi, const WindowCallback& wcb, const char *help_texti, 
 }
 
 
-bool AW_cb::contains(AnyWinCB g) {
-    return (AnyWinCB(cb.callee()) == g) || (next && next->contains(g));
+bool AW_cb::contains(AW_CB g) {
+    return (AW_CB(cb.callee()) == g) || (next && next->contains(g));
 }
 
 bool AW_cb::is_equal(const AW_cb& other) const {
     bool equal = cb == other.cb;
     if (equal) {
-        equal = aw == other.aw;
-        if (!equal) {
+        if (AW_CB(cb.callee()) == AW_POPUP) {
             equal = aw->get_root() == other.aw->get_root();
+        }
+        else {
+            equal = aw == other.aw;
+            if (!equal) {
+                equal = aw->get_root() == other.aw->get_root();
 #if defined(DEBUG) && 0
-            if (equal) {
-                fprintf(stderr,
-                        "callback '%s' instantiated twice with different windows (w1='%s' w2='%s') -- assuming the callbacks are equal\n",
-                        id, aw->get_window_id(), other.aw->get_window_id());
-            }
+                if (equal) {
+                    fprintf(stderr,
+                            "callback '%s' instantiated twice with different windows (w1='%s' w2='%s') -- assuming the callbacks are equal\n",
+                            id, aw->get_window_id(), other.aw->get_window_id());
+                }
 #endif // DEBUG
+            }
         }
     }
     return equal;
@@ -59,25 +74,25 @@ bool AW_cb::is_equal(const AW_cb& other) const {
 void AW_cb::run_callbacks() {
     if (next) next->run_callbacks();                // callback the whole list
 
-    AnyWinCB f = AnyWinCB(cb.callee());
+    AW_CB f = AW_CB(cb.callee());
     aw_assert(f);
 
     AW_root *root = aw->get_root();
     if (root->disable_callbacks) {
-        // some functions (namely aw_message, aw_input and aw_file_selection)
+        // some functions (namely aw_message, aw_input, aw_string_selection and aw_file_selection)
         // have to disable most callbacks, because they are often called from inside these callbacks
         // (e.g. because some exceptional condition occurred which needs user interaction) and if
         // callbacks weren't disabled, a recursive deadlock occurs.
 
         // the following callbacks are allowed even if disable_callbacks is true
 
-        bool isModalCallback = (f == AnyWinCB(message_cb) ||
-                                f == AnyWinCB(input_history_cb) ||
-                                f == AnyWinCB(input_cb)         ||
-                                f == AnyWinCB(file_selection_cb));
+        bool isModalCallback = (f == AW_CB(message_cb) ||
+                                f == AW_CB(input_history_cb) ||
+                                f == AW_CB(input_cb)         ||
+                                f == AW_CB(file_selection_cb));
 
-        bool isPopdown = (f == AnyWinCB(AW_POPDOWN));
-        bool isHelp    = (f == AnyWinCB(AW_help_popup));
+        bool isPopdown = (f == AW_CB(AW_POPDOWN));
+        bool isHelp    = (f == AW_CB(AW_help_popup));
         bool allow     = isModalCallback || isHelp || isPopdown;
 
         bool isInfoResizeExpose = false;
@@ -93,6 +108,7 @@ void AW_cb::run_callbacks() {
             bool onlyRaise =
                 aw->is_expose_callback(AW_MIDDLE_AREA, f) ||
                 aw->is_focus_callback(f) ||
+                root->is_focus_callback((AW_RCB)f) ||
                 aw->is_resize_callback(AW_MIDDLE_AREA, f);
 
             if (root->current_modal_window) { 

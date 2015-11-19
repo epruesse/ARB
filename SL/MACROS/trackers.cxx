@@ -151,25 +151,27 @@ __ATTR__USERESULT static GB_ERROR clearMacroExecutionAuthorization(GBDATA *gb_ma
     return error;
 }
 
-class ExecutingMacro : virtual Noncopyable {
-    RootCallback done_cb;
+class ExecutingMacro {
+    AW_RCB1 done_cb;
+    AW_CL   cd;
 
     ExecutingMacro        *next;
     static ExecutingMacro *head;
 
-    ExecutingMacro(const RootCallback& execution_done_cb)
+    ExecutingMacro(AW_RCB1 execution_done_cb, AW_CL client_data)
         : done_cb(execution_done_cb),
+          cd(client_data),
           next(head)
     {
         head = this;
     }
 
-    void call() const { done_cb(AW_root::SINGLETON); }
+    void call() const { done_cb(AW_root::SINGLETON, cd); }
     void destroy() { head = next; delete this; }
 
 public:
 
-    static void add(const RootCallback& execution_done_cb) { new ExecutingMacro(execution_done_cb); }
+    static void add(AW_RCB1 execution_done_cb, AW_CL client_data) { new ExecutingMacro(execution_done_cb, client_data); }
     static bool done() {
         // returns true if the last macro (of all recursively called macros) terminates
         if (head) {
@@ -207,7 +209,9 @@ static void macro_terminated(GBDATA *gb_terminated, GB_CB_TYPE IF_ASSERTION_USED
     }
 }
 
-GB_ERROR MacroRecorder::execute(const char *macroFile, bool loop_marked, const RootCallback& execution_done_cb) {
+static void dont_announce_done(AW_root*, AW_CL) {}
+
+GB_ERROR MacroRecorder::execute(const char *macroFile, bool loop_marked, AW_RCB1 execution_done_cb, AW_CL client_data) {
     GB_ERROR  error = NULL;
     {
         GBDATA         *gb_main = get_gbmain();
@@ -227,7 +231,9 @@ GB_ERROR MacroRecorder::execute(const char *macroFile, bool loop_marked, const R
     }
 
     if (!error) {
-        ExecutingMacro::add(execution_done_cb);
+        if (!execution_done_cb) execution_done_cb = dont_announce_done;
+        ExecutingMacro::add(execution_done_cb, client_data);
+
         error = GBT_macro_execute(macroFile, loop_marked, true);
         if (error) ExecutingMacro::drop(); // avoid double free
     }
@@ -250,17 +256,15 @@ GB_ERROR MacroRecorder::handle_tracked_client_action(char *&tracked) {
 
     GB_ERROR error = NULL;
     if (tracked && tracked[0]) {
-        char       *saveptr = NULL;
-        const char *app_id  = strtok_r(tracked, "*", &saveptr);
-        const char *cmd     = strtok_r(NULL,    "*", &saveptr);
-        char       *rest    = strtok_r(NULL,    "",  &saveptr);
+        char *saveptr = NULL;
+        char *app_id  = strtok_r(tracked, "*", &saveptr);
+        char *cmd     = strtok_r(NULL,    "*", &saveptr);
+        char *rest    = strtok_r(NULL,    "", &saveptr);
 
         if (recording) {
             if (strcmp(cmd, "AWAR") == 0) {
-                const char *awar_name = strtok_r(rest, "*", &saveptr);
-                const char *content   = strtok_r(NULL, "",  &saveptr);
-
-                if (!content) content = "";
+                char *awar_name = strtok_r(rest, "*", &saveptr);
+                char *content   = strtok_r(NULL, "",  &saveptr);
 
                 recording->write_awar_change(app_id, awar_name, content);
             }
