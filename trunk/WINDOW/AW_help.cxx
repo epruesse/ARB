@@ -38,16 +38,14 @@ void AW_openURL(AW_root *aw_root, const char *url) {
         char *new_browser = GBS_global_string_copy("%s%s%s", start, url, ka+6);
 
         free(start);
-        free(browser);
-
-        browser = new_browser;
+        freeset(browser, new_browser);
     }
 
-    char *command = GBS_global_string_copy("(%s)&", browser);
-    printf("Action: '%s'\n", command);
-    if (system(command)) aw_message(GBS_global_string("'%s' failed", command));
-    free(command);
+    char     *command = GBS_global_string_copy("(%s)&", browser);
+    GB_ERROR  error   = GBK_system(command);
+    aw_message_if(error);
 
+    free(command);
     free(browser);
 }
 

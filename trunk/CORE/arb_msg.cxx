@@ -501,7 +501,7 @@ void GBS_reuse_buffer(const char *global_buffer) {
 GB_ERROR GBK_system(const char *system_command) {
     // goes to header: __ATTR__USERESULT
     fflush(stdout);
-    fprintf(stderr, "[Action: '%s']\n", system_command); fflush(stderr);
+    fprintf(stderr, "[Action: `%s`]\n", system_command); fflush(stderr);
 
     int res = system(system_command);
 
