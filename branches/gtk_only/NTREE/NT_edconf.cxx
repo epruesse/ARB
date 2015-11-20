@@ -158,7 +158,10 @@ static AW_selection *selected_configs_list[MAX_NT_WINDOWS] = { MAX_NT_WINDOWS_NU
 static bool allow_selection2awar_update = true;
 static bool allow_to_activate_display   = false;
 
-static void selected_configs_awar_changed_cb(AW_root *, AWT_canvas *ntw) {
+static void init_config_awars(AW_root *root) {
+    root->awar_string(AWAR_CONFIGURATION, DEFAULT_CONFIGURATION, GLOBAL.gb_main);
+}
+static void selected_configs_awar_changed_cb(AW_root *aw_root, AWT_canvas *ntw) {
     AWT_graphic_tree        *agt    = DOWNCAST(AWT_graphic_tree*, ntw->gfx);
     int                      ntw_id = NT_get_canvas_id(ntw);
     SmartPtr<ConstStrArray>  config = get_selected_configs_from_awar(ntw_id);
@@ -174,6 +177,7 @@ static void selected_configs_awar_changed_cb(AW_root *, AWT_canvas *ntw) {
         bool activate = allow_to_activate_display || displays_config_markers(agt->get_marker_display());
 
         if (activate) {
+            init_config_awars(aw_root);
             ConfigMarkerDisplay *disp = new ConfigMarkerDisplay(config, ntw->gb_main);
             agt->set_marker_display(disp);
             redraw = true;
@@ -1045,9 +1049,6 @@ static void config_comment_changed_cb(AW_root *root) {
     aw_message_if(error);
 }
 
-static void init_config_awars(AW_root *root) {
-    root->awar_string(AWAR_CONFIGURATION, DEFAULT_CONFIGURATION, GLOBAL.gb_main);
-}
 static void init_config_admin_awars(AW_root *root) {
     init_config_awars(root);
     root->awar_string(AWAR_CONFIG_COMMENT, "", GLOBAL.gb_main)->add_callback(config_comment_changed_cb);
@@ -1227,10 +1228,11 @@ void NT_popup_configuration_admin(AW_window *aw_main, AWT_canvas *ntw) {
 static void nt_start_editor_on_configuration(AW_window *aww) {
     aww->hide();
 
-    const char *cn  = aww->get_root()->awar(AWAR_CONFIGURATION)->read_char_pntr();
-    const char *com = GBS_global_string("arb_edit4 -c '%s' &", cn);
-
-    aw_message_if(GBK_system(com));
+    const char *cfgName   = aww->get_root()->awar(AWAR_CONFIGURATION)->read_char_pntr();
+    char       *quotedCfg = GBK_singlequote(cfgName);
+    const char *cmd       = GBS_global_string("arb_edit4 -c %s &", quotedCfg);
+    free(quotedCfg);
+    aw_message_if(GBK_system(cmd));
 }
 
 AW_window *NT_create_startEditorOnOldConfiguration_window(AW_root *awr) {

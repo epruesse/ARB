@@ -436,8 +436,8 @@ static int probe_common_send_data(const ProbeCommonSettings& commonSettings) {
 
     for (int i=0; i<16; i++) {
         if (aisc_put(PD.link, PT_LOCS, PD.locs,
-                     PT_INDEX,  i,
-                     LOCS_BONDVAL, commonSettings.bonds[i],
+                     PT_INDEX,     (long)i,
+                     LOCS_BONDVAL, (double)commonSettings.bonds[i],
                      NULL))
             return 1;
     }
@@ -447,7 +447,7 @@ static int probe_design_send_data(AW_root *root, const T_PT_PDC& pdc) {
     if (aisc_put(PD.link, PT_PDC, pdc,
                  PDC_DTEDGE,     (double)root->awar(AWAR_PD_DESIGN_EXP_DTEDGE)->read_float()*100.0,
                  PDC_DT,         (double)root->awar(AWAR_PD_DESIGN_EXP_DT)->read_float()*100.0,
-                 PDC_CLIPRESULT, root->awar(AWAR_PD_DESIGN_CLIPRESULT)->read_int(),
+                 PDC_CLIPRESULT, (long)root->awar(AWAR_PD_DESIGN_CLIPRESULT)->read_int(),
                  NULL))
         return 1;
 
@@ -484,9 +484,9 @@ struct ProbeMatchSettings : public ProbeCommonSettings {
 
 static int probe_match_send_data(const ProbeMatchSettings& matchSettings) {
     if (aisc_put(PD.link, PT_LOCS, PD.locs,
-                 LOCS_MATCH_N_ACCEPT, matchSettings.nmatches,
-                 LOCS_MATCH_N_LIMIT,  matchSettings.nlimit,
-                 LOCS_MATCH_MAX_HITS, matchSettings.maxhits,
+                 LOCS_MATCH_N_ACCEPT, (long)matchSettings.nmatches,
+                 LOCS_MATCH_N_LIMIT,  (long)matchSettings.nlimit,
+                 LOCS_MATCH_MAX_HITS, (long)matchSettings.maxhits,
                  NULL))
         return 1;
 
@@ -561,8 +561,8 @@ static void probe_design_event(AW_window *aww, GBDATA *gb_main) {
 
     if (aisc_create(PD.link, PT_LOCS, PD.locs,
                     LOCS_PROBE_DESIGN_CONFIG, PT_PDC, pdc,
-                    PDC_MIN_PROBELEN, root->awar(AWAR_PD_DESIGN_MIN_LENGTH)->read_int(),
-                    PDC_MAX_PROBELEN, root->awar(AWAR_PD_DESIGN_MAX_LENGTH)->read_int(),
+                    PDC_MIN_PROBELEN, (long)root->awar(AWAR_PD_DESIGN_MIN_LENGTH)->read_int(),
+                    PDC_MAX_PROBELEN, (long)root->awar(AWAR_PD_DESIGN_MAX_LENGTH)->read_int(),
                     PDC_MINTEMP,      (double)root->awar(AWAR_PD_DESIGN_MIN_TEMP)->read_float(),
                     PDC_MAXTEMP,      (double)root->awar(AWAR_PD_DESIGN_MAX_TEMP)->read_float(),
                     PDC_MINGC,        (double)root->awar(AWAR_PD_DESIGN_MIN_GC)->read_float()/100.0,
@@ -570,7 +570,7 @@ static void probe_design_event(AW_window *aww, GBDATA *gb_main) {
                     PDC_MAXBOND,      (double)root->awar(AWAR_PD_DESIGN_MAXBOND)->read_int(),
                     PDC_MIN_ECOLIPOS, (long)ecolipos2int(root->awar(AWAR_PD_DESIGN_MIN_ECOLIPOS)->read_char_pntr()),
                     PDC_MAX_ECOLIPOS, (long)ecolipos2int(root->awar(AWAR_PD_DESIGN_MAX_ECOLIPOS)->read_char_pntr()),
-                    PDC_MISHIT,       root->awar(AWAR_PD_DESIGN_MISHIT)->read_int(),
+                    PDC_MISHIT,       (long)root->awar(AWAR_PD_DESIGN_MISHIT)->read_int(),
                     PDC_MINTARGETS,   (double)root->awar(AWAR_PD_DESIGN_MINTARGETS)->read_float()/100.0,
                     NULL))
     {
@@ -669,7 +669,7 @@ static void probe_design_event(AW_window *aww, GBDATA *gb_main) {
 
     if (!abort) {
         aisc_put(PD.link, PT_PDC, pdc,
-                 PDC_GO, 0,
+                 PDC_GO, (long)0,
                  NULL);
 
         progress.subtitle("Reading results from server");
@@ -806,10 +806,10 @@ static __ATTR__USERESULT GB_ERROR probe_match_event(const ProbeMatchSettings& ma
             if (show_status) progress->subtitle("Probe match running");
 
             if (aisc_nput(PD.link, PT_LOCS, PD.locs,
-                          LOCS_MATCH_REVERSED,       matchSettings.complement,
-                          LOCS_MATCH_SORT_BY,        matchSettings.sortBy,
-                          LOCS_MATCH_COMPLEMENT,     0,
-                          LOCS_MATCH_MAX_MISMATCHES, matchSettings.maxMismatches,
+                          LOCS_MATCH_REVERSED,       (long)matchSettings.complement, // @@@ use of complement/reverse looks suspect -> check (all uses of LOCS_MATCH_REVERSED and LOCS_MATCH_COMPLEMENT)
+                          LOCS_MATCH_COMPLEMENT,     (long)0,
+                          LOCS_MATCH_SORT_BY,        (long)matchSettings.sortBy,
+                          LOCS_MATCH_MAX_MISMATCHES, (long)matchSettings.maxMismatches,
                           LOCS_SEARCHMATCH,          probe,
                           NULL))
             {
@@ -1918,12 +1918,12 @@ static void pd_query_pt_server(AW_window *aww) {
 
     GB_ERROR error = NULL;
     {
-        const char *server = GBS_read_arb_tcp(server_tag);
-        if (!server) {
+        const char *socketid = GBS_read_arb_tcp(server_tag);
+        if (!socketid) {
             error = GB_await_error();
         }
         else {
-            char *arb_who = prefixSSH(server, "$ARBHOME/bin/arb_who", 0);
+            char *arb_who = createCallOnSocketHost(socketid, "$ARBHOME/bin/", "arb_who", WAIT_FOR_TERMINATION, NULL);
             GBS_strcat(strstruct, arb_who);
             free(arb_who);
         }

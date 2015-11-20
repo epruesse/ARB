@@ -61,6 +61,8 @@ void GB_information(const char *message);
 void GB_informationf(const char *templat, ...) __ATTR__FORMAT(1);
 void GBS_reuse_buffer(const char *global_buffer);
 GB_ERROR GBK_system(const char *system_command) __ATTR__USERESULT;
+char *GBK_singlequote(const char *arg);
+char *GBK_doublequote(const char *arg);
 
 #else
 #error arb_msg.h included twice

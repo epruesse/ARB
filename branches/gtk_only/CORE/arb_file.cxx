@@ -242,7 +242,7 @@ GB_ERROR GB_set_mode_of_file(const char *path, long mode) {
         return 0;
     }
 
-    if (chmod(path, (int)mode)) return GBS_global_string("Cannot change mode of '%s'", path);
+    if (chmod(path, (int)mode)) return GB_IO_error("changing mode of", path);
     return 0;
 }
 

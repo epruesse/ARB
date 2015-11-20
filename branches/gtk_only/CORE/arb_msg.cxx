@@ -15,6 +15,8 @@
 #include <arb_backtrace.h>
 #include <smartptr.h>
 #include <arb_handlers.h>
+#include <arb_defs.h>
+#include "arb_strbuf.h"
 
 // AISC_MKPT_PROMOTE:#ifndef _GLIBCXX_CSTDLIB
 // AISC_MKPT_PROMOTE:#include <cstdlib>
@@ -499,7 +501,7 @@ void GBS_reuse_buffer(const char *global_buffer) {
 GB_ERROR GBK_system(const char *system_command) {
     // goes to header: __ATTR__USERESULT
     fflush(stdout);
-    fprintf(stderr, "[Action: '%s']\n", system_command); fflush(stderr);
+    fprintf(stderr, "[Action: `%s`]\n", system_command); fflush(stderr);
 
     int res = system(system_command);
 
@@ -523,4 +525,145 @@ GB_ERROR GBK_system(const char *system_command) {
     }
     return error;
 }
+
+char *GBK_singlequote(const char *arg) {
+    /*! Enclose argument in single quotes (like 'arg') for POSIX shell commands.
+     */
+
+    if (!arg[0]) return strdup("''");
+
+    GBS_strstruct  out(500);
+    const char    *existing_quote = strchr(arg, '\'');
+
+    while (existing_quote) {
+        if (existing_quote>arg) {
+            out.put('\'');
+            out.ncat(arg, existing_quote-arg);
+            out.put('\'');
+        }
+        out.put('\\');
+        out.put('\'');
+        arg            = existing_quote+1;
+        existing_quote = strchr(arg, '\'');
+    }
+
+    if (arg[0]) {
+        out.put('\'');
+        out.cat(arg);
+        out.put('\'');
+    }
+    return out.release();
+}
+
+char *GBK_doublequote(const char *arg) {
+    /*! Enclose argument in single quotes (like "arg") for POSIX shell commands.
+     * Opposed to single quoted strings, shell will interpret double quoted strings.
+     */
+
+    const char    *charsToEscape = "\"\\";
+    const char    *escape      = arg+strcspn(arg, charsToEscape);
+    GBS_strstruct  out(500);
+
+    out.put('"');
+    while (escape[0]) {
+        out.ncat(arg, escape-arg);
+        out.put('\\');
+        out.put(escape[0]);
+        arg    = escape+1;
+        escape = arg+strcspn(arg, charsToEscape);
+    }
+    out.cat(arg);
+    out.put('"');
+    return out.release();
+}
+
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#ifndef TEST_UNIT_H
+#include <test_unit.h>
+#endif
+
+#include "FileContent.h"
+#include <unistd.h>
+
+#define TEST_EXPECT_SQUOTE(plain,squote_expected) do {          \
+        char *plain_squoted = GBK_singlequote(plain);           \
+        TEST_EXPECT_EQUAL(plain_squoted, squote_expected);      \
+        free(plain_squoted);                                    \
+    } while(0)
+
+#define TEST_EXPECT_DQUOTE(plain,dquote_expected) do {          \
+        char *plain_dquoted = GBK_doublequote(plain);           \
+        TEST_EXPECT_EQUAL(plain_dquoted, dquote_expected);      \
+        free(plain_dquoted);                                    \
+    } while(0)
+
+#define TEST_EXPECT_ECHOED_EQUALS(echoarg,expected_echo) do {                   \
+        char *cmd = GBS_global_string_copy("echo %s > %s", echoarg, tmpfile);   \
+        TEST_EXPECT_NO_ERROR(GBK_system(cmd));                                  \
+        FileContent out(tmpfile);                                               \
+        TEST_EXPECT_NO_ERROR(out.has_error());                                  \
+        TEST_EXPECT_EQUAL(out.lines()[0], expected_echo);                       \
+        free(cmd);                                                              \
+    } while(0)
+
+#define TEST_EXPECT_SQUOTE_IDENTITY(plain) do {         \
+        char *plain_squoted = GBK_singlequote(plain);   \
+        TEST_EXPECT_ECHOED_EQUALS(plain_squoted,plain); \
+        free(plain_squoted);                            \
+    } while(0)
+
+#define TEST_EXPECT_DQUOTE_IDENTITY(plain) do {         \
+        char *plain_dquoted = GBK_doublequote(plain);   \
+        TEST_EXPECT_ECHOED_EQUALS(plain_dquoted,plain); \
+        free(plain_dquoted);                            \
+    } while(0)
+
+void TEST_quoting() {
+    const char *tmpfile = "quoted.output";
+
+    struct quoting {
+        const char *plain;
+        const char *squoted;
+        const char *dquoted;
+    } args[] = {
+        { "",                       "''",                          "\"\"" },  // empty
+        { " ",                      "' '",                         "\" \"" }, // a space
+        { "unquoted",               "'unquoted'",                  "\"unquoted\"" },
+        { "part 'is' squoted",      "'part '\\''is'\\'' squoted'", "\"part 'is' squoted\"" },
+        { "part \"is\" dquoted",    "'part \"is\" dquoted'",       "\"part \\\"is\\\" dquoted\"" },
+        { "'squoted'",              "\\''squoted'\\'",             "\"'squoted'\"" },
+        { "\"dquoted\"",            "'\"dquoted\"'",               "\"\\\"dquoted\\\"\"" },
+        { "'",                      "\\'",                         "\"'\"" },  // a single quote
+        { "\"",                     "'\"'",                        "\"\\\"\"" },  // a double quote
+        { "\\",                     "'\\'",                        "\"\\\\\"" },  // a backslash
+        { "'\"'\"",                 "\\''\"'\\''\"'",              "\"'\\\"'\\\"\"" },  // interleaved quotes
+        { "`wc -c <min_ascii.arb`", "'`wc -c <min_ascii.arb`'",    "\"`wc -c <min_ascii.arb`\"" },  // interleaved quotes
+    };
+
+    for (unsigned a = 0; a<ARRAY_ELEMS(args); ++a) {
+        TEST_ANNOTATE(GBS_global_string("a=%i", a));
+        const quoting& arg = args[a];
+
+        TEST_EXPECT_SQUOTE(arg.plain, arg.squoted);
+        TEST_EXPECT_SQUOTE_IDENTITY(arg.plain);
+
+        TEST_EXPECT_DQUOTE(arg.plain, arg.dquoted);
+        if (a != 11) {
+            TEST_EXPECT_DQUOTE_IDENTITY(arg.plain);
+        }
+        else { // backticked wc call
+            char *dquoted = GBK_doublequote(arg.plain);
+            TEST_EXPECT_ECHOED_EQUALS(dquoted, "16"); // 16 is number of chars in min_ascii.arb
+            free(dquoted);
+        }
+    }
+
+    TEST_EXPECT_EQUAL(unlink(tmpfile), 0);
+}
+
+#endif // UNIT_TESTS
+
+// --------------------------------------------------------------------------------
 

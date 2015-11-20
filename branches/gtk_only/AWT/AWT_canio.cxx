@@ -641,11 +641,14 @@ static void canvas_to_xfig_and_run_xfig(AW_window *aww, AWT_canvas *scr) {
         error = canvas_to_xfig(scr, xfig, true, 0.0);
         if (!error) {
             awr->awar(AWAR_CANIO_FILE_DIR)->touch(); // reload dir to show created xfig
+            char *quotedXfig = GBK_singlequote(xfig);
+
 #if defined(ARB_GTK)
-            error = GBK_system(GBS_global_string("evince %s &", xfig));
+            error = GBK_system(GBS_global_string("evince %s &", quotedXfig));
 #else
-            error = GBK_system(GBS_global_string("xfig %s &", xfig));
+            error = GBK_system(GBS_global_string("xfig %s &", quotedXfig));
 #endif
+            free(quotedXfig);
         }
     }
     if (error) aw_message(error);
@@ -678,6 +681,7 @@ static void canvas_to_printer(AW_window *aww, AWT_canvas *scr) {
     }
 
     if (!error) {
+        char *quotedDest = GBK_singlequote(dest);
         char *xfig;
         {
             char *name = GB_unique_filename("arb_print", "xfig");
@@ -718,10 +722,11 @@ static void canvas_to_printer(AW_window *aww, AWT_canvas *scr) {
                 }
                 cmd.nprintf(20, " -m %f", magnification);
                 cmd.cat(landscape ? " -l 0" : " -p 0");              // landscape or portrait
-                cmd.nprintf(30, " -z %s", format.get_fig2dev_val()); // paperformat
 
-                cmd.put(' '); cmd.cat(xfig); // input
-                cmd.put(' '); cmd.cat(dest); // output
+                cmd.cat(" -z "); cmd.cat(format.get_fig2dev_val()); // paperformat
+
+                cmd.put(' '); cmd.cat(xfig);       // input
+                cmd.put(' '); cmd.cat(quotedDest); // output
 
                 error = GBK_system(cmd.get_data());
             }
@@ -761,6 +766,7 @@ static void canvas_to_printer(AW_window *aww, AWT_canvas *scr) {
 #endif
             free(xfig);
         }
+        free(quotedDest);
     }
 
     free(dest);
