@@ -211,7 +211,7 @@ int ALI_PT::find_family(ALI_SEQUENCE *sequence, int find_type)
         T_PT_FAMILYFINDER ffinder;
         if (aisc_create(link, PT_LOCS, locs,
                         LOCS_FFINDER, PT_FAMILYFINDER, ffinder, 
-                        FAMILYFINDER_FIND_TYPE,   find_type,
+                        FAMILYFINDER_FIND_TYPE,   (long)find_type,
                         FAMILYFINDER_FIND_FAMILY, &bs,
                         NULL))
         {

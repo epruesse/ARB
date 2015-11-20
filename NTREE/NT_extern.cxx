@@ -842,16 +842,18 @@ static AW_window *create_mark_by_refentries_window(AW_root *awr, GBDATA *gbmain)
 // --------------------------------------------------------------------------------------------------
 
 static void merge_from_to(AW_root *awr, const char *db_awar_name, bool merge_to) {
-    const char *db_name = awr->awar(db_awar_name)->read_char_pntr();
+    const char *db_name  = awr->awar(db_awar_name)->read_char_pntr();
+    char       *quotedDB = GBK_singlequote(db_name);
 
     char *cmd = GBS_global_string_copy(
         merge_to
         ? "arb_ntree : %s &"
         : "arb_ntree %s : &",
-        db_name);
+        quotedDB);
 
     aw_message_if(GBK_system(cmd));
     free(cmd);
+    free(quotedDB);
 }
 
 static void merge_from_cb(AW_window *aww, AW_CL cl_awarNamePtr) { merge_from_to(aww->get_root(), *(const char**)cl_awarNamePtr, false); }

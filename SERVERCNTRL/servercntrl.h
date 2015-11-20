@@ -30,7 +30,13 @@ struct arb_params {
     char *tcp;
 };
 
-char *prefixSSH(const char *host, const char *command, int async);
+enum SpawnMode {
+    WAIT_FOR_TERMINATION,
+    SPAWN_ASYNCHRONOUS,
+    SPAWN_DAEMONIZED,
+};
+
+char *createCallOnSocketHost(const char *host, const char *remotePrefix, const char *command, SpawnMode spawnmode, const char *logfile);
 GB_ERROR arb_start_server(const char *arb_tcp_env, int do_sleep);
 GB_ERROR arb_look_and_start_server(long magic_number, const char *arb_tcp_env);
 GB_ERROR arb_look_and_kill_server(int magic_number, const char *arb_tcp_env);

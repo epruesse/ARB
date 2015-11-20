@@ -204,9 +204,10 @@ aisc_com *aisc_open(const char *path, AISC_Object& main_obj, long magic, GB_ERRO
     link->aisc_client_bytes_first = link->aisc_client_bytes_last = NULL;
     link->magic = magic;
     {
-        static char *unix_name = 0;
+        char *unix_name = 0;
         err = arb_open_socket(path, true, &link->socket, &unix_name);
-        freenull(unix_name);
+        aisc_assert(link->socket>=0);
+        free(unix_name);
     }
     if (err) {
         if (*err) {
@@ -427,18 +428,15 @@ inline char *part_of(const char *str, size_t max_len, size_t str_len) {
 }
 
 static int aisc_collect_sets(aisc_com *link, int mes_cnt, va_list parg, int o_type, int count) {
-    int type, o_t; // @@@ fix locals
-    int attribute, code;
-    int len, ilen;
-    char        *str;
     int arg_cnt = 0;
 
     AISC_DUMP_SEP();
 
+    int code;
     while ((code=va_arg(parg, int))) {
-        attribute       = code & AISC_ATTR_MASK;
-        type            = code & AISC_VAR_TYPE_MASK;
-        o_t             = code & AISC_OBJ_TYPE_MASK;
+        int attribute = code & AISC_ATTR_MASK;
+        int type      = code & AISC_VAR_TYPE_MASK;
+        int o_t       = code & AISC_OBJ_TYPE_MASK;
 
         if (code != AISC_INDEX) {
             if ((o_t != (int)o_type)) {
@@ -473,10 +471,11 @@ static int aisc_collect_sets(aisc_com *link, int mes_cnt, va_list parg, int o_ty
                 link->aisc_mes_buffer[mes_cnt++] = darg.as_int[1];
                 break;
             }
-            case AISC_TYPE_STRING:
-                str = va_arg(parg, char *);
+            case AISC_TYPE_STRING: {
+                const char *str = va_arg(parg, const char *);
+                aisc_assert(str);
                 AISC_DUMP(aisc_collect_sets, charPtr, str);
-                len = strlen(str)+1;
+                size_t len = strlen(str)+1;
                 if (len > AISC_MAX_STRING_LEN) {
                     char *strpart = part_of(str, AISC_MAX_STRING_LEN-40, len-1);
                     sprintf(errbuf, "ARG %i: STRING \'%s\' TOO LONG", count+2, strpart);
@@ -488,12 +487,13 @@ static int aisc_collect_sets(aisc_com *link, int mes_cnt, va_list parg, int o_ty
 
                     return 0;
                 }
-                ilen = (len)/sizeof(long) + 1;
+                size_t ilen = (len)/sizeof(long) + 1;
                 link->aisc_mes_buffer[mes_cnt++] = ilen;
+                link->aisc_mes_buffer[mes_cnt+ilen-1] = 0; // make sure last sent long is completely initialized ('str' may only use part of it)
                 memcpy((char *)(&(link->aisc_mes_buffer[mes_cnt])), str, len);
                 mes_cnt += ilen;
                 break;
-
+            }
             case AISC_TYPE_BYTES:
                 {
                     bytestring *bs;
@@ -517,7 +517,7 @@ static int aisc_collect_sets(aisc_com *link, int mes_cnt, va_list parg, int o_ty
 
         count += 2;
         if ((arg_cnt++) >= MAX_AISC_SET_GET) {
-            sprintf(errbuf, "TOO MANY ARGS (>%i)", MAX_AISC_SET_GET);
+            sprintf(errbuf, "TOO MANY ARGS (%i>%i)", arg_cnt, MAX_AISC_SET_GET);
             link->error = errbuf;
             PRTERR("AISC_SET_ERROR");
             CORE();
@@ -571,6 +571,7 @@ int aisc_nput(aisc_com *link, int o_type, const AISC_Object& object, ...) { // g
     if (mes_cnt > 3) {
         link->aisc_mes_buffer[0] = mes_cnt - 2;
         link->aisc_mes_buffer[1] = AISC_NSET+link->magic;
+
         if (arb_socket_write(link->socket, (const char *)(link->aisc_mes_buffer), mes_cnt * sizeof(long))) {
             link->error = err_connection_problems;
             PRTERR("AISC_SET_ERROR");

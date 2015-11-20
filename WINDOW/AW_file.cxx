@@ -706,6 +706,14 @@ void File_selection::filename_changed(bool post_filter_change_HACK) {
                 }
             }
 
+            // Allow to select symbolic links for files (i.e. do not automatically switch to link-target;
+            // doing so made it impossible to load quicksaves done versus a master DB).
+            if (newName && strcmp(fname, newName) != 0) {
+                if (!GB_is_directory(fname) && !GB_is_directory(newName)) {
+                    if (GB_is_link(fname) ) freenull(newName); // do not follow symlink!
+                }
+            }
+
             if (newName) {
 #if defined(TRACE_FILEBOX)
                 printf("- newName ='%s'\n", newName);

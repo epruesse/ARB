@@ -363,10 +363,12 @@ GB_ULONG GB_time_of_day() {
 
 GB_ERROR GB_textprint(const char *path) {
     // goes to header: __ATTR__USERESULT
-    char       *fpath   = GBS_eval_env(path);
-    const char *command = GBS_global_string("arb_textprint '%s' &", fpath);
-    GB_ERROR    error   = GBK_system(command);
-    error               = GB_failedTo_error("print textfile", fpath, error);
+    char       *fpath        = GBS_eval_env(path);
+    char       *quoted_fpath = GBK_singlequote(fpath);
+    const char *command      = GBS_global_string("arb_textprint %s &", quoted_fpath);
+    GB_ERROR    error        = GBK_system(command);
+    error                    = GB_failedTo_error("print textfile", fpath, error);
+    free(quoted_fpath);
     free(fpath);
     return error;
 }
@@ -727,6 +729,10 @@ static export_environment expenv;
 
 bool GB_host_is_local(const char *hostname) {
     // returns true if host is local
+
+    arb_assert(hostname);
+    arb_assert(hostname[0]);
+
     return
         ARB_stricmp(hostname, "localhost")       == 0 ||
         ARB_strBeginsWith(hostname, "127.0.0.")       ||

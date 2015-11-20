@@ -148,8 +148,8 @@ AW_window *NT_create_select_alignment_window(AW_root *awr)
     return aws;
 }
 
-void NT_system_cb(AW_window *aww, const char *command) {
-    AW_system(aww, command, NULL);
+void NT_system_cb(AW_window *, const char *command) {
+    aw_message_if(GBK_system(command));
 }
 void NT_xterm(AW_window*) {
     GB_xterm();
