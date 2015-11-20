@@ -413,7 +413,7 @@ static GB_BUFFER gb_bin_2_ascii(GBENTRY *gbe) {
 
 #define GB_PUT_OUT(c, out) do { if (c>=10) c+='A'-10; else c += '0'; putc(c, out); } while (0)
 
-static void gb_write_rek(FILE *out, GBCONTAINER *gbc, long deep, long big_hunk) {
+static void gb_write_rek(FILE *out, GBCONTAINER *gbc, long deep) {
     // used by ASCII database save
     long     i;
     char    *s;
@@ -451,7 +451,7 @@ static void gb_write_rek(FILE *out, GBCONTAINER *gbc, long deep, long big_hunk) 
 
         if (gb->is_container()) {
             fprintf(out, "%%%c (%%\n", GB_read_flag(gb) ? '$' : '%');
-            gb_write_rek(out, gb->as_container(), deep+1, big_hunk);
+            gb_write_rek(out, gb->as_container(), deep+1);
             for (i=deep+1; i--;) putc('\t', out);
             fprintf(out, "%%) /*%s*/\n\n", GB_KEY(gb));
         }
@@ -958,7 +958,7 @@ GB_ERROR GB_MAIN_TYPE::save_as(const char *as_path, const char *savetype) {
 
                 if (saveASCII) {
                     fprintf(out, "/*ARBDB ASCII*/\n");
-                    gb_write_rek(out, root_container, 0, 1);
+                    gb_write_rek(out, root_container, 0);
                     freedup(qs.quick_save_disabled, "Database saved in ASCII mode");
                     if (deleteQuickAllowed) error = gb_remove_all_but_main(this, as_path);
                 }
