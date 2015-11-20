@@ -203,8 +203,6 @@ __ATTR__USERESULT_TODO inline GB_ERROR ARB_init_global_awars(AW_root *aw_root, A
 
 inline AW_default get_AW_ROOT_DEFAULT() { return AW_root::SINGLETON->check_properties(NULL); }
 
-void AW_system(AW_window *aww, const char *command, const char *auto_help_file);
-
 #else
 #error aw_root.hxx included twice
 #endif

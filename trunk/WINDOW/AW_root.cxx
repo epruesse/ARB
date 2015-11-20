@@ -26,11 +26,6 @@
 
 AW_root *AW_root::SINGLETON = NULL;
 
-void AW_system(AW_window *aww, const char *command, const char *auto_help_file) {
-    if (auto_help_file) AW_help_popup(aww, auto_help_file);
-    aw_message_if(GBK_system(command));
-}
-
 void AW_clock_cursor(AW_root *awr) {
     awr->prvt->set_cursor(0, 0, awr->prvt->clock_cursor);
 }
