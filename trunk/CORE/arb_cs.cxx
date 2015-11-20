@@ -153,7 +153,7 @@ GB_ERROR arb_open_socket(const char* name, bool do_connect, int *fd, char** file
         *fd = 0;
     }
     else {
-        arb_assert(fd>0);
+        arb_assert(*fd>0);
     }
 
     return error;
