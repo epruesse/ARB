@@ -1923,7 +1923,7 @@ static void pd_query_pt_server(AW_window *aww) {
             error = GB_await_error();
         }
         else {
-            char *arb_who = createCallOnSocketHost(socketid, "$ARBHOME/bin/", "arb_who", WAIT_FOR_TERMINATION);
+            char *arb_who = createCallOnSocketHost(socketid, "$ARBHOME/bin/", "arb_who", WAIT_FOR_TERMINATION, NULL);
             GBS_strcat(strstruct, arb_who);
             free(arb_who);
         }
