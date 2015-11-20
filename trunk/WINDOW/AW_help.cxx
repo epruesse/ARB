@@ -409,9 +409,7 @@ static unsigned autorefresh_helpfile(AW_root *awr) {
                 if (editLastChanged>helpfile_edited_stamp) {
                     GB_ERROR error = GBK_system("cd $ARBHOME; make help");
                     if (error) aw_message(error);
-                    else {
-                        helpfile_edited_stamp = editLastChanged;
-                    }
+                    helpfile_edited_stamp = editLastChanged;
                     callAgainIn = 10;
                 }
             }
