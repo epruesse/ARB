@@ -1400,7 +1400,7 @@ void TEST_paths() {
         TEST_EXPECT_IS_CANONICAL(nosuchpath_in_arbhome);
         TEST_EXPECT_IS_CANONICAL(file_in_nosuchpath);
 
-        TEST_EXPECT_IS_CANONICAL("/tmp"); // existing (most likely)
+        TEST_EXPECT_IS_CANONICAL("/sbin"); // existing (most likely)
         TEST_EXPECT_IS_CANONICAL("/tmp/arbtest.fig");
         TEST_EXPECT_IS_CANONICAL("/arbtest.fig"); // not existing (most likely)
 
