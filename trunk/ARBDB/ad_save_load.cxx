@@ -931,7 +931,9 @@ GB_ERROR GB_MAIN_TYPE::save_as(const char *as_path, const char *savetype) {
 
     if (!error) {
         char *mappath        = NULL;
-        char *sec_path       = strdup(gb_overwriteName(as_path));
+	// unless saving to a fifo, we append ~ to the file name we write to,
+	// and move that file if and when everything has gone well
+        char *sec_path       = strdup(GB_is_fifo(as_path) ? as_path : gb_overwriteName(as_path));
         char *sec_mappath    = NULL;
         bool  dump_to_stdout = strchr(savetype, 'S');
         FILE *out            = dump_to_stdout ? stdout : fopen(sec_path, "w");
@@ -996,9 +998,14 @@ GB_ERROR GB_MAIN_TYPE::save_as(const char *as_path, const char *savetype) {
                     GB_unlink_or_warn(sec_path, NULL);
                 }
                 else {
-                    bool unlinkMapfiles       = false;
-                    error                     = GB_rename_file(sec_path, as_path);
-                    if (error) unlinkMapfiles = true;
+                    bool unlinkMapfiles = false;
+                    if (strcmp(sec_path, as_path) != 0) {
+		        error = GB_rename_file(sec_path, as_path);
+                    }
+		    
+                    if (error) {
+                        unlinkMapfiles = true;
+                    }
                     else if (sec_mappath) {
                         error             = GB_rename_file(sec_mappath, mappath);
                         if (!error) error = GB_set_mode_of_file(mappath, GB_mode_of_file(as_path)); // set mapfile to same mode ...
