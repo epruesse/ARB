@@ -29,7 +29,7 @@ int ARB_main(int argc, char *argv[]) {
                 "\n"
             );
 
-        if (strcmp(argv[1], "--help") != 0) { error = "Missing arguments"; }
+        if (argc>1 && strcmp(argv[1], "--help") != 0) { error = "Missing arguments"; }
     }
     else {
         char rtype[256];
