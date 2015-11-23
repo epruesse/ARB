@@ -639,7 +639,9 @@ void TEST_quoting() {
         { "\"",                     "'\"'",                        "\"\\\"\"" },  // a double quote
         { "\\",                     "'\\'",                        "\"\\\\\"" },  // a backslash
         { "'\"'\"",                 "\\''\"'\\''\"'",              "\"'\\\"'\\\"\"" },  // interleaved quotes
-        { "`wc -c <min_ascii.arb`", "'`wc -c <min_ascii.arb`'",    "\"`wc -c <min_ascii.arb`\"" },  // interleaved quotes
+        { "`wc -c <min_ascii.arb | tr -d ' '`",
+	  "'`wc -c <min_ascii.arb | tr -d '\\'' '\\''`'",
+	  "\"`wc -c <min_ascii.arb | tr -d ' '`\"" },  // interleaved quotes
     };
 
     for (unsigned a = 0; a<ARRAY_ELEMS(args); ++a) {
