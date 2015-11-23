@@ -1,0 +1,3 @@
+# libraries needed to link against PERLTOOLS/arb_proto_2_xsub.o
+
+lib/libARBDB.so

@@ -1,0 +1,32 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Strength of base pairings
+
+OCCURRENCE	ARB_NT/Probes/Design Probes/EXPERT
+                ARB_NT/Probes/Match Probes/EXPERT
+
+DESCRIPTION	Allows to adjust values indicating the relative strengths of
+		base (mis) pairings. These values are used by the PTSERVER for
+                the ranking of potential probe target sites.
+
+		Strength of base pairings:
+
+			Type the values to the corresponding subwindows of the
+			'Relative Strength of Base Pairings' matrix.
+
+NOTES		The bond matrix and the 'Threshold for Splitting' are shared
+                between both expert windows (design + match).
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known

@@ -1,0 +1,34 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+UP	arb_edit4.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+SUB	insdel_sai.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Insert / Delete Column
+
+OCCURRENCE	ARB_NT/Sequence/Insert delete/columns
+
+DESCRIPTION	Inserts or deletes columns in the current alignment.
+
+		Select alignment position by typing it in the 'Sequence Position'
+		subwindow or by putting the cursor at the desired position in
+		the editor.
+
+		Type the number of columns to insert or delete from the defined
+		position towards the (3'-) ends of the sequences. 
+
+		Specify the characters to be deleted by typing in the 'Delete
+		Only' window
+
+NOTES		@@@ Beachte SAIS
+
+EXAMPLES	@@@ Delete Example mit Fehlern
+
+WARNINGS	None
+
+BUGS		@@@ Enden im Editor u.U. nicht sichtbar 

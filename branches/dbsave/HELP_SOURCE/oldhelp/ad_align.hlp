@@ -1,0 +1,62 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+UP	security.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+SUB	insdel.hlp
+
+
+#************* Title of helpfile !! and start of real helpfile ********
+
+
+TITLE		Alignment Administration
+
+OCCURRENCE	ARB_NT/Sequence/Admin
+                ARB_MERGE/Check alignments/MODIFY
+
+DESCRIPTION  This module allows handling and modification of 'alignments'
+             (see LINK{glossary.hlp}).
+
+		Select an alignment from the 'Alignments' subwindow
+
+		Define the type of sequences (DNA, RNA, protein):
+
+			Press the <Type of Sequences> button and choose from the
+			displayed menu.
+
+		Set protection:
+
+			Press the <Default Write Protection> button and choose
+			from the displayed menu.
+
+		Press the respective buttons to perform further functions:
+
+                      DELETE:	  Delete an alignment and its sequence data
+                      RENAME:	  Rename an alignment
+                      CREATE:	  Create a new alignment (no data)
+                      COPY:	  Copy an alignment
+                      CHECK LEN:  Find the longest sequence and set the
+                                  'Maximum Seq. Length' displayed in the
+                                  corresponding subwindow
+                      FORMAT:     Append '.' to sequences up to 'Maximum Seq.
+                                  Length'.
+
+                Auto format: Whether to ask, format or skip w/o asking
+                             whenever an unformatted alignment is detected.
+
+NOTES		Some functions require setting a protection level equal to or
+		higher than that of the 'alignment'.
+
+                There is one special alignment called "ali_genom" used for full
+                genome sequences. You can't format that alignment because it is
+                necessary to ensure that it's alignment positions match those
+                used in the gene entries. For the same reason you should never
+                ever put any gap into that alignment.
+
+EXAMPLES	None
+
+WARNINGS	Be careful when deleting or changing the name of an alignment
+		while other programs are using it (eg. parsimony programs ..)
+
+BUGS		No bugs known
