@@ -1641,10 +1641,11 @@ GB_ERROR GBT_check_arb_file(const char *name) { // goes to header: __ATTR__USERE
                         buffer[ASC_HEADER_SIZE] = 0;
 
                         const char *ascii_header = "/*ARBDB ASCII*/";
+                        uint32_t   *ui_buffer    = (uint32_t*)buffer;
 
-                        *(uint32_t*)(void*)buffer = i; // insert these bytes
+                        *ui_buffer = i; // insert these 4 bytes
                         if (strcmp(buffer, ascii_header) != 0) {
-                            *(uint32_t*)(void*)buffer = reverse_byteorder(i);
+                            *ui_buffer = reverse_byteorder(i); // insert them reversed
                             if (strcmp(buffer, ascii_header) != 0) {
                                 error = GBS_global_string("'%s' is not an arb file", name);
                             }
