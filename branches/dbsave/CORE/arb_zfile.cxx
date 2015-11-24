@@ -65,19 +65,12 @@ FILE *ARB_zfopen(const char *name, const char *mode, FileCompressionMode cmode, 
     }
     else {
         if (!error) {
-            char *iPipe = NULL;
-            char *oPipe = NULL;
+            const char *compressor      = NULL; // command used to compress (and decompress)
+            const char *decompress_flag = "-d"; // flag needed to decompress (assumes none to compress)
 
             switch (cmode) {
-                case ZFILE_GZIP:
-                    if (forOutput) oPipe = GBS_global_string_copy("gzip > %s", name);
-                    else           iPipe = GBS_global_string_copy("gunzip < %s", name);
-                    break;
-
-                case ZFILE_BZIP2:
-                    if (forOutput) oPipe = GBS_global_string_copy("bzip2 > %s", name);
-                    else           iPipe = GBS_global_string_copy("bunzip2 < %s", name);
-                    break;
+                case ZFILE_GZIP:  compressor = "gzip";  break;
+                case ZFILE_BZIP2: compressor = "bzip2"; break;
 
                 default:
                     error = GBS_global_string("Invalid compression mode (%i)", int(cmode));
@@ -85,18 +78,15 @@ FILE *ARB_zfopen(const char *name, const char *mode, FileCompressionMode cmode, 
 
 #if defined(USE_BROKEN_COMPRESSION)
                 case ZFILE_BROKEN:
-                    if (forOutput) {
-                        oPipe = GBS_global_string_copy("arb_weirdo > %s", name);
-                    }
-                    else {
-                        iPipe = GBS_global_string_copy("arb_weirdo < %s", name);
-                    }
+                    compressor = "arb_weirdo"; // a non-existing command!
                     break;
 #endif
             }
 
             if (!error) {
-                arb_assert(contradicted(oPipe, iPipe)); // need one!
+                char *pipeCmd = forOutput
+                    ? GBS_global_string_copy("%s > %s", compressor, name)
+                    : GBS_global_string_copy("%s %s < %s", compressor, decompress_flag, name);
 
                 // remove 'b' from mode (pipes are binary by default)
                 char *impl_b_mode = strdup(mode);
@@ -106,23 +96,17 @@ FILE *ARB_zfopen(const char *name, const char *mode, FileCompressionMode cmode, 
                     strcpy(b, b+1);
                 }
 
-                if (oPipe) { // write to pipe
-                    fp = popen(oPipe, impl_b_mode);
-                    if (!fp) {
-                        error = GB_IO_error("writing to pipe", oPipe);
-                    }
+                if (forOutput) { // write to pipe
+                    fp             = popen(pipeCmd, impl_b_mode);
+                    if (!fp) error = GB_IO_error("writing to pipe", pipeCmd);
                 }
                 else { // read from pipe
-                    fp = popen(iPipe, impl_b_mode);
-                    if (!fp) {
-                        error = GB_IO_error("reading from pipe", iPipe);
-                    }
+                    fp             = popen(pipeCmd, impl_b_mode);
+                    if (!fp) error = GB_IO_error("reading from pipe", pipeCmd);
                 }
                 free(impl_b_mode);
+                free(pipeCmd);
             }
-
-            free(oPipe);
-            free(iPipe);
         }
     }
 
