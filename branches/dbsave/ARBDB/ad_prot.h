@@ -225,7 +225,6 @@ char *GB_map_FILE(FILE *in, int writeable);
 char *GB_map_file(const char *path, int writeable);
 GB_ULONG GB_time_of_day(void);
 GB_ERROR GB_textprint(const char *path) __ATTR__USERESULT;
-char *GB_executable(GB_CSTR exe_name);
 GB_CSTR GB_getenvUSER(void);
 GB_CSTR GB_getenvARBHOME(void);
 GB_CSTR GB_getenvARBMACRO(void);
