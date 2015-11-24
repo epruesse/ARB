@@ -18,6 +18,7 @@
 #include <arb_file.h>
 #include <arb_defs.h>
 #include <arb_progress.h>
+#include <arb_zfile.h>
 
 #include "gb_key.h"
 #include "gb_localdata.h"
@@ -571,15 +572,18 @@ static GB_ERROR gb_read_ascii(const char *path, GBCONTAINER *gbc) {
 
     FILE     *in         = 0;
     GB_ERROR  error      = 0;
-    int       close_file = 0;
+    bool      close_file = false;
 
     if (strcmp(path, "-") == 0) {
         in = stdin;
     }
     else {
-        in              = fopen(path, "r");
-        if (!in) error  = GBS_global_string("Can't open '%s'", path);
-        else close_file = 1;
+        in = ARB_zfopen(path, "rb", ZFILE_AUTODETECT, error); // @@@ consider using buffered reader from CORE (to fix wrong line-endings)
+        if (!in) {
+            gb_assert(error);
+            error = GBS_global_string("Can't open '%s' (Reason: %s)", path, error);
+        }
+        else close_file = true;
     }
 
     if (!error) {
@@ -593,7 +597,7 @@ static GB_ERROR gb_read_ascii(const char *path, GBCONTAINER *gbc) {
         if (!error) error = cl_error;
     }
 
-    if (close_file) fclose(in);
+    if (close_file) error = ARB_zfclose(in, path);
     return error;
 }
 
@@ -1419,15 +1423,17 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
 
                 Main->mark_as_server();
                 GB_begin_transaction(gbc);
-                Main->clock      = 0;                   // start clock
+                Main->clock      = 0; // start clock
 
-                FILE *input = read_from_stdin ? stdin : fopen(path, "rb");
+                FILE *input = read_from_stdin ? stdin : ARB_zfopen(path, "rb", ZFILE_AUTODETECT, error);
                 if (!input && ignoreMissingMaster) {
+                    error = NULL; // @@@ maybe need to inspect error message here
                     goto load_quick_save_file_only;
                 }
 
                 if (!input) {
                     if (strchr(opent, 'c')) {
+                        error = NULL; // from ARB_zfopen
                         GB_disable_quicksave(gbc, "Database Created");
 
                         if (strchr(opent, 'D')) { // use default settings
@@ -1455,7 +1461,8 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
                         }
                     }
                     else {
-                        error = GBS_global_string("Database '%s' not found", path);
+                        gb_assert(error); // from ARB_zfopen
+                        error = GBS_global_string("Database '%s' not found (%s)", path, error);
                         gbc   = 0;
                     }
                 }
@@ -1473,8 +1480,8 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
                             i = gb_read_bin(input, gbc, false, progress);                  // read or map whole db
                             progress.done();
                         }
-                        gbc = Main->root_container;
-                        fclose(input);
+                        gbc   = Main->root_container;
+                        error = ARB_zfclose(input, path);
 
                         if (i) {
                             if (Main->allow_corrupt_file_recovery) {
@@ -1559,7 +1566,7 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
                         Main->qs.last_index = loadedQuickIndex; // determines which # will be saved next
                     }
                     else {
-                        if (input != stdin) fclose(input);
+                        if (input != stdin) ARB_zfclose(input, path);
                         error = gb_read_ascii(path, gbc);
                         GB_disable_quicksave(gbc, "Sorry, I cannot save differences to ascii files\n"
                                              "  Save whole database in binary mode first");
@@ -1625,9 +1632,10 @@ GB_ERROR GBT_check_arb_file(const char *name) { // goes to header: __ATTR__USERE
     GB_ERROR error = NULL;
     if (!strchr(name, ':'))  { // don't check remote DB
         if (GB_is_regularfile(name)) {
-            FILE *in = fopen(name, "rb");
+            FILE *in = ARB_zfopen(name, "rb", ZFILE_AUTODETECT, error);
             if (!in) {
-                error = GBS_global_string("Cannot find file '%s'", name);
+                gb_assert(error);
+                error = GBS_global_string("Cannot read file '%s' (Reason: %s)", name, error);
             }
             else {
                 uint32_t i = gb_read_in_uint32(in, 0);
@@ -1652,7 +1660,7 @@ GB_ERROR GBT_check_arb_file(const char *name) { // goes to header: __ATTR__USERE
                         }
                     }
                 }
-                fclose(in);
+                ARB_zfclose(in, name); // Note: error ignored here (will report broken pipe from decompressor)
             }
         }
         else {

@@ -291,6 +291,7 @@ ad_load.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ad_load.o: $(ARBHOME)/INCLUDE/arb_progress.h
 ad_load.o: $(ARBHOME)/INCLUDE/arb_str.h
 ad_load.o: $(ARBHOME)/INCLUDE/arb_string.h
+ad_load.o: $(ARBHOME)/INCLUDE/arb_zfile.h
 ad_load.o: $(ARBHOME)/INCLUDE/arbtools.h
 ad_load.o: $(ARBHOME)/INCLUDE/attributes.h
 ad_load.o: $(ARBHOME)/INCLUDE/cb.h
