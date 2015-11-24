@@ -577,7 +577,7 @@ static GB_ERROR gb_read_ascii(const char *path, GBCONTAINER *gbc) {
         in = stdin;
     }
     else {
-        in              = fopen(path, "rt");
+        in              = fopen(path, "r");
         if (!in) error  = GBS_global_string("Can't open '%s'", path);
         else close_file = 1;
     }
