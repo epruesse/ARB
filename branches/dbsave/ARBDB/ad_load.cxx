@@ -19,6 +19,7 @@
 #include <arb_defs.h>
 #include <arb_progress.h>
 #include <arb_zfile.h>
+#include <BufferedFileReader.h>
 
 #include "gb_key.h"
 #include "gb_localdata.h"
@@ -32,304 +33,6 @@ void GB_set_verbose() {
 }
 
 #define FILESIZE_GRANULARITY 1024 // progress will work with DB files up to 2Tb
-
-// ---------------------------------------------------
-//      helper code to read ascii file in portions
-
-#ifdef UNIT_TESTS // UT_DIFF
-#define READING_BUFFER_SIZE 100
-#else
-#define READING_BUFFER_SIZE (1024*32)
-#endif
-
-struct ReadingBuffer {
-    char          *data;
-    ReadingBuffer *next;
-    int            read_bytes;
-};
-
-static ReadingBuffer *unused_reading_buffers = 0;
-
-#if defined(DEBUG)
-// #define CHECK_RELEASED_BUFFERS
-#endif // DEBUG
-
-#if defined(CHECK_RELEASED_BUFFERS)
-static int is_a_unused_reading_buffer(ReadingBuffer *rb) {
-    if (unused_reading_buffers) {
-        ReadingBuffer *check = unused_reading_buffers;
-        for (; check; check = check->next) {
-            if (check == rb) return 1;
-        }
-    }
-    return 0;
-}
-#endif // CHECK_RELEASED_BUFFERS
-
-static ReadingBuffer *allocate_ReadingBuffer() {
-    ReadingBuffer *rb = (ReadingBuffer*)malloc(sizeof(*rb)+READING_BUFFER_SIZE);
-    rb->data          = ((char*)rb)+sizeof(*rb);
-    rb->next          = 0;
-    rb->read_bytes    = 0;
-    return rb;
-}
-
-static void release_ReadingBuffers(ReadingBuffer *rb) {
-    ReadingBuffer *last = rb;
-
-#if defined(CHECK_RELEASED_BUFFERS)
-    gb_assert(!is_a_unused_reading_buffer(rb));
-#endif // CHECK_RELEASED_BUFFERS
-    while (last->next) {
-        last = last->next;
-#if defined(CHECK_RELEASED_BUFFERS)
-        gb_assert(!is_a_unused_reading_buffer(last));
-#endif // CHECK_RELEASED_BUFFERS
-    }
-    gb_assert(last && !last->next);
-    last->next              = unused_reading_buffers;
-    unused_reading_buffers  = rb;
-}
-static void free_ReadingBuffer(ReadingBuffer *rb) {
-    if (rb) {
-        if (rb->next) free_ReadingBuffer(rb->next);
-        free(rb);
-    }
-}
-
-static ReadingBuffer *read_another_block(FILE *in) {
-    ReadingBuffer *buf = 0;
-    if (unused_reading_buffers) {
-        buf                    = unused_reading_buffers;
-        unused_reading_buffers = buf->next;
-        buf->next              = 0;
-        buf->read_bytes        = 0;
-    }
-    else {
-        buf = allocate_ReadingBuffer();
-    }
-
-    buf->read_bytes = fread(buf->data, 1, READING_BUFFER_SIZE, in);
-
-    return buf;
-}
-
-// ---------------
-//      Reader
-
-struct Reader {
-    FILE          *in;
-    ReadingBuffer *first;                           // allocated
-    GB_ERROR       error;
-
-    ReadingBuffer *current;                         // only reference
-    size_t         current_offset;                  // into 'current->data'
-
-    char   *current_line;
-    int     current_line_allocated;                 // whether 'current_line' was allocated
-    size_t  current_line_size;                      // size of 'current_line' (valid if current_line_allocated == 1)
-    size_t  line_number;
-
-};
-
-typedef unsigned long ReaderPos; // absolute position (relative to ReadingBuffer 'first')
-#define NOPOS (-1UL)
-
-
-static Reader *openReader(FILE *in) {
-    Reader *r = (Reader*)malloc(sizeof(*r));
-
-    gb_assert(unused_reading_buffers == 0);
-
-    r->in    = in;
-    r->error = 0;
-    r->first = read_another_block(r->in);
-
-    r->current_offset = 0;
-    r->current        = r->first;
-
-    r->current_line           = 0;
-    r->current_line_allocated = 0;
-    r->line_number            = 0;
-
-    return r;
-}
-
-static void freeCurrentLine(Reader *r) {
-    if (r->current_line_allocated && r->current_line) {
-        free(r->current_line);
-        r->current_line_allocated = 0;
-    }
-}
-
-static GB_ERROR closeReader(Reader *r) {
-    GB_ERROR error = r->error;
-
-    free_ReadingBuffer(r->first);
-    free_ReadingBuffer(unused_reading_buffers);
-    unused_reading_buffers = 0;
-
-    freeCurrentLine(r);
-    free(r);
-
-    return error;
-}
-
-static void releasePreviousBuffers(Reader *r) {
-    /* Release all buffers before current position.
-     * Warning: This invalidates all offsets!
-     */
-    ReadingBuffer *last_rel  = 0;
-    ReadingBuffer *old_first = r->first;
-
-    while (r->first != r->current) {
-        last_rel = r->first;
-        r->first = r->first->next;
-    }
-
-    if (last_rel) {
-        last_rel->next = 0;     // avoid to release 'current'
-        release_ReadingBuffers(old_first);
-        r->first       = r->current;
-    }
-}
-
-static char *getPointer(const Reader *r) {
-    return r->current->data + r->current_offset;
-}
-
-static ReaderPos getPosition(const Reader *r) {
-    ReaderPos      p = 0;
-    ReadingBuffer *b = r->first;
-    while (b != r->current) {
-        gb_assert(b);
-        p += b->read_bytes;
-        b  = b->next;
-    }
-    p += r->current_offset;
-    return p;
-}
-
-static int gotoNextBuffer(Reader *r) {
-    if (!r->current->next) {
-        if (r->current->read_bytes < READING_BUFFER_SIZE) { // eof
-            return 0;
-        }
-        r->current->next = read_another_block(r->in);
-    }
-
-    r->current        = r->current->next;
-    r->current_offset = 0;
-
-    return r->current != 0;
-}
-
-static int movePosition(Reader *r, int offset) {
-    int rest = r->current->read_bytes - r->current_offset - 1;
-
-    gb_assert(offset >= 0);     // not implemented for negative offsets
-    if (rest >= offset) {
-        r->current_offset += offset;
-        return 1;
-    }
-
-    if (gotoNextBuffer(r)) {
-        offset -= rest+1;
-        return offset == 0 ? 1 : movePosition(r, offset);
-    }
-
-    // in last buffer and position behind end -> position after last element
-    // (Note: last buffer cannot be full - only empty)
-    r->current_offset = r->current->read_bytes;
-    return 0;
-}
-
-static int gotoChar(Reader *r, char lookfor) {
-    const char *data  = r->current->data + r->current_offset;
-    size_t      size  = r->current->read_bytes-r->current_offset;
-    const char *found = (const char *)memchr(data, lookfor, size);
-
-    if (found) {
-        r->current_offset += (found-data);
-        return 1;
-    }
-
-    if (gotoNextBuffer(r)) {
-        return gotoChar(r, lookfor);
-    }
-
-    // in last buffer and char not found -> position after last element
-    // (Note: last buffer cannot be full - only empty)
-    r->current_offset = r->current->read_bytes;
-    return 0;
-}
-
-static char *getLine(Reader *r) {
-    releasePreviousBuffers(r);
-
-    {
-        ReaderPos      start        = getPosition(r);
-        ReadingBuffer *start_buffer = r->current;
-        char          *start_ptr    = getPointer(r);
-        int            eol_found    = gotoChar(r, '\n');
-
-        // now current position is on EOL or EOF
-
-        ReaderPos      eol        = getPosition(r);
-        ReadingBuffer *eol_buffer = r->current;
-        char          *eol_ptr    = getPointer(r);
-
-        movePosition(r, 1);
-
-        if (start_buffer == eol_buffer) { // start and eol in one ReadingBuffer -> no copy
-            freeCurrentLine(r);
-            r->current_line           = start_ptr;
-            r->current_line_allocated = 0;
-            eol_ptr[0]                = 0; // eos
-        }
-        else { // otherwise build a copy of the string
-            size_t  line_length = eol-start+1;
-            char   *bp;
-            size_t  len;
-
-            if (r->current_line_allocated == 0 || r->current_line_size < line_length) { // need alloc
-                freeCurrentLine(r);
-                r->current_line           = (char*)malloc(line_length);
-                r->current_line_size      = line_length;
-                r->current_line_allocated = 1;
-
-                gb_assert(r->current_line);
-            }
-
-            // copy contents of first buffer
-            bp            = r->current_line;
-            len           = start_buffer->read_bytes - (start_ptr-start_buffer->data);
-            memcpy(bp, start_ptr, len);
-            bp           += len;
-            start_buffer  = start_buffer->next;
-
-            // copy contents of middle buffers
-            while (start_buffer != eol_buffer) {
-                memcpy(bp, start_buffer->data, start_buffer->read_bytes);
-                bp           += start_buffer->read_bytes;
-                start_buffer  = start_buffer->next;
-            }
-
-            // copy contents from last buffer
-            len        = eol_ptr-start_buffer->data;
-            memcpy(bp, start_buffer->data, len);
-            bp        += len;
-            bp[0]  = 0; // eos
-        }
-
-        if (!eol_found && r->current_line[0] == 0)
-            return 0;               // report "eof seen"
-
-    }
-
-    ++r->line_number;
-    return r->current_line;
-}
 
 /* ----------------------------------------
  * ASCII format
@@ -392,17 +95,19 @@ static GB_ERROR set_protection_level(GB_MAIN_TYPE *Main, GBDATA *gbd, const char
     return error;
 }
 
-static GB_ERROR gb_parse_ascii_rek(Reader *r, GBCONTAINER *gb_parent, const char *parent_name) {
+static GB_ERROR gb_parse_ascii_rek(LineReader& r, GBCONTAINER *gb_parent, const char *parent_name) {
     // if parent_name == 0 -> we are parsing at root-level
     GB_ERROR      error = 0;
     int           done  = 0;
     GB_MAIN_TYPE *Main  = GBCONTAINER_MAIN(gb_parent);
 
     while (!error && !done) {
-        char *line = getLine(r);
-        if (!line) break;
+        string LINE;
+        if (!r.getLine(LINE)) break;
 
-    rest :
+        char *line = (char*)(LINE.c_str()); // HACK: code below will modify the content of the string
+
+      rest :
         line += strspn(line, " \t"); // goto first non-whitespace
 
         if (line[0]) {          // not empty
@@ -557,47 +262,70 @@ static GB_ERROR gb_parse_ascii_rek(Reader *r, GBCONTAINER *gb_parent, const char
     return error;
 }
 
-static GB_ERROR gb_parse_ascii(Reader *r, GBCONTAINER *gb_parent) {
+static GB_ERROR gb_parse_ascii(LineReader& r, GBCONTAINER *gb_parent) {
     GB_ERROR error = gb_parse_ascii_rek(r, gb_parent, 0);
     if (error) {
-        error = GBS_global_string("%s in line %zu", error, r->line_number);
+        error = GBS_global_string("%s in line %zu", error, r.getLineNumber()); // @@@ consider using r.lineError
     }
     return error;
 }
 
+struct BufferedPipeReader : public BufferedFileReader {
+    BufferedPipeReader(const string& pipename, FILE *in)
+        : BufferedFileReader(pipename, in)
+    {}
+    ~BufferedPipeReader() {
+        gb_assert(get_fp() == NULL); // you HAVETO call close() or dont_close() manually
+                                     // (to check the error and to close the pipe)
+    }
+
+    GB_ERROR close() {
+        FILE*&   pipe  = get_fp();
+        GB_ERROR error = ARB_zfclose(pipe, getFilename().c_str());
+        pipe           = NULL;
+        return error;
+    }
+
+    void dont_close() {
+        FILE*& f = get_fp();
+        f        = NULL;
+    }
+};
+
 static GB_ERROR gb_read_ascii(const char *path, GBCONTAINER *gbc) {
     /* This loads an ACSII database
-     * if path == "-" -> read from stdin
+     * if path           == "-" -> read from stdin
      */
+    FILE     *in          = 0;
+    GB_ERROR  error       = 0;
+    bool      from_stdin  = strcmp(path, "-") == 0;
 
-    FILE     *in         = 0;
-    GB_ERROR  error      = 0;
-    bool      close_file = false;
-
-    if (strcmp(path, "-") == 0) {
+    if (from_stdin) {
         in = stdin;
     }
     else {
-        in = ARB_zfopen(path, "rb", ZFILE_AUTODETECT, error); // @@@ consider using buffered reader from CORE (to fix wrong line-endings)
+        in = ARB_zfopen(path, "rb", ZFILE_AUTODETECT, error);
         if (!in) {
             gb_assert(error);
             error = GBS_global_string("Can't open '%s' (Reason: %s)", path, error);
         }
-        else close_file = true;
     }
 
     if (!error) {
-        Reader *r = openReader(in);
+        BufferedPipeReader r(path, in);
 
         GB_search(gbc, GB_SYSTEM_FOLDER, GB_CREATE_CONTAINER); // Switch to Version 3
 
         error = gb_parse_ascii(r, gbc);
 
-        GB_ERROR cl_error = closeReader(r);
-        if (!error) error = cl_error;
+        if (from_stdin) {
+            r.dont_close();
+        }
+        else {
+            GB_ERROR cl_error = r.close();
+            if (!error) error = cl_error;
+        }
     }
-
-    if (close_file) error = ARB_zfclose(in, path);
     return error;
 }
 
