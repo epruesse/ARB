@@ -22,17 +22,24 @@ FILE *ARB_zfopen(const char *name, const char *mode, FileCompressionMode cmode, 
         error = "Cannot append to file using ARB_zfopen";
         return NULL;
     }
+    if (strchr(mode, 't')) {
+        error = "Cannot use textmode for ARB_zfopen";
+        return NULL;
+    }
+    if (strchr(mode, '+')) {
+        error = "Cannot open file in read and write mode with ARB_zfopen";
+        return NULL;
+    }
 
     bool forOutput = strchr(mode, 'w');
-
-    FILE *fp = NULL;
+    FILE *fp       = NULL;
 
     if (cmode == ZFILE_AUTODETECT) {
         if (forOutput) {
             error = "Autodetecting compression mode only works for input files";
         }
         else {
-            fp = fopen(name, mode);
+            fp = fopen(name, "rb");
             if (!fp) error = GB_IO_error("opening", name);
             else {
                 // detect compression and set 'cmode'
@@ -53,7 +60,7 @@ FILE *ARB_zfopen(const char *name, const char *mode, FileCompressionMode cmode, 
     }
 
     if (cmode == ZFILE_UNCOMPRESSED) {
-        fp = fopen(name, mode);
+        fp             = fopen(name, mode);
         if (!fp) error = GB_IO_error("opening", name);
     }
     else {
@@ -91,18 +98,27 @@ FILE *ARB_zfopen(const char *name, const char *mode, FileCompressionMode cmode, 
             if (!error) {
                 arb_assert(contradicted(oPipe, iPipe)); // need one!
 
+                // remove 'b' from mode (pipes are binary by default)
+                char *impl_b_mode = strdup(mode);
+                while (1) {
+                    char *b = strchr(impl_b_mode, 'b');
+                    if (!b) break;
+                    strcpy(b, b+1);
+                }
+
                 if (oPipe) { // write to pipe
-                    fp = popen(oPipe, mode);
+                    fp = popen(oPipe, impl_b_mode);
                     if (!fp) {
                         error = GB_IO_error("writing to pipe", oPipe);
                     }
                 }
                 else { // read from pipe
-                    fp = popen(iPipe, mode);
+                    fp = popen(iPipe, impl_b_mode);
                     if (!fp) {
                         error = GB_IO_error("reading from pipe", iPipe);
                     }
                 }
+                free(impl_b_mode);
             }
 
             free(oPipe);
@@ -111,6 +127,7 @@ FILE *ARB_zfopen(const char *name, const char *mode, FileCompressionMode cmode, 
     }
 
     arb_assert(contradicted(fp, error));
+    arb_assert(implicated(error, error[0])); // deny empty error
     return fp;
 }
 
@@ -180,10 +197,12 @@ void TEST_compressed_io() {
     const char *inText  = "general/text.input";
     const char *outFile = "compressed.out";
 
-    TEST_EXPECT_ZFOPEN_FAILS("",      "",  ZFILE_UNCOMPRESSED, "Invalid argument");
-    TEST_EXPECT_ZFOPEN_FAILS(outFile, "a", ZFILE_UNCOMPRESSED, "Cannot append to file using ARB_zfopen");
-    TEST_EXPECT_ZFOPEN_FAILS(outFile, "r", ZFILE_UNDEFINED,    "Invalid compression mode");
-    TEST_EXPECT_ZFOPEN_FAILS(outFile, "w", ZFILE_AUTODETECT,   "only works for input files");
+    TEST_EXPECT_ZFOPEN_FAILS("",      "",   ZFILE_UNCOMPRESSED, "Invalid argument");
+    TEST_EXPECT_ZFOPEN_FAILS(outFile, "a",  ZFILE_UNCOMPRESSED, "Cannot append to file using ARB_zfopen");
+    TEST_EXPECT_ZFOPEN_FAILS(outFile, "r",  ZFILE_UNDEFINED,    "Invalid compression mode");
+    TEST_EXPECT_ZFOPEN_FAILS(outFile, "w",  ZFILE_AUTODETECT,   "only works for input files");
+    TEST_EXPECT_ZFOPEN_FAILS(outFile, "rt", ZFILE_AUTODETECT,   "Cannot use textmode");
+    TEST_EXPECT_ZFOPEN_FAILS(outFile, "r+", ZFILE_AUTODETECT,   "Cannot open file in read and write mode");
 
 #if defined(USE_BROKEN_COMPRESSION)
     TEST_EXPECT_ZFOPEN_FAILS(outFile, "r", ZFILE_BROKEN,   "broken pipe");
