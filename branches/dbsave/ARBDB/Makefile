@@ -303,6 +303,7 @@ ad_load.o: $(ARBHOME)/INCLUDE/gccver.h
 ad_load.o: $(ARBHOME)/INCLUDE/smartptr.h
 ad_load.o: $(ARBHOME)/INCLUDE/static_assert.h
 ad_load.o: $(ARBHOME)/INCLUDE/test_global.h
+ad_load.o: $(ARBHOME)/INCLUDE/test_unit.h
 ad_load.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 ad_save_load.o: ad_io_inline.h

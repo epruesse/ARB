@@ -622,11 +622,18 @@ static long gb_recover_corrupt_file(GBCONTAINER *gbc, FILE *in, GB_ERROR recover
         free(reason);
         return -1;
     }
+
+    if (GB_is_fifo(in)) {
+        GB_export_error("Unable to recover from corrupt file (Reason: cannot recover from stream)\n"
+                        "Note: if the file is a compressed arb-file, uncompress it manually and retry.");
+        return -1;
+    }
+
     long pos = ftell(in);
     if (old_in != in) {
-        file = (unsigned char *)GB_map_FILE(in, 0);
+        file   = (unsigned char *)GB_map_FILE(in, 0);
         old_in = in;
-        size = GB_size_of_FILE(in);
+        size   = GB_size_of_FILE(in);
     }
     for (; pos<size-10; pos ++) {
         if ((file[pos] & 0xf0) == (GB_STRING_SHRT<<4)) {
@@ -1626,14 +1633,22 @@ GB_ERROR GBT_check_arb_file(const char *name) { // goes to header: __ATTR__USERE
                 long i = gb_read_in_uint32(in, 0);
 
                 if (!is_binary_db_id(i)) {
-                    rewind(in);
-                    char buffer[100];
-                    if (!fgets(buffer, 50, in)) {
-                        error = GB_IO_error("reading", name);
-                    }
-                    else {
-                        bool is_ascii = strncmp(buffer, "/*ARBDB AS", 10) == 0;
-                        if (!is_ascii) error = GBS_global_string("'%s' is not an arb file", name);
+                    const int ASC_HEADER_SIZE = 15;
+                    char      buffer[ASC_HEADER_SIZE+1];
+
+                    size_t read_bytes = fread(buffer+4, 1, ASC_HEADER_SIZE-4, in); // 4 bytes have already been read as binary ID
+                    if (read_bytes == (ASC_HEADER_SIZE-4)) {
+                        buffer[ASC_HEADER_SIZE] = 0;
+
+                        const char *ascii_header = "/*ARBDB ASCII*/";
+
+                        *(uint32_t*)buffer = i; // insert these bytes
+                        if (strcmp(buffer, ascii_header) != 0) {
+                            *(uint32_t*)buffer = reverse_byteorder(i);
+                            if (strcmp(buffer, ascii_header) != 0) {
+                                error = GBS_global_string("'%s' is not an arb file", name);
+                            }
+                        }
                     }
                 }
                 fclose(in);
