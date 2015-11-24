@@ -255,6 +255,7 @@ arb_string.o: $(ARBHOME)/INCLUDE/test_unit.h
 arb_zfile.o: arb_assert.h
 arb_zfile.o: arb_core.h
 arb_zfile.o: arb_file.h
+arb_zfile.o: arb_misc.h
 arb_zfile.o: arb_msg.h
 arb_zfile.o: arb_zfile.h
 arb_zfile.o: $(ARBHOME)/INCLUDE/arbtools.h

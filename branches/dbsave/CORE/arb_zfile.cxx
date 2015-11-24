@@ -11,6 +11,7 @@
 #include "arb_zfile.h"
 #include "arb_file.h"
 #include "arb_msg.h"
+#include "arb_misc.h"
 #include "arb_assert.h"
 
 using namespace std;
@@ -69,7 +70,11 @@ FILE *ARB_zfopen(const char *name, const char *mode, FileCompressionMode cmode, 
             const char *decompress_flag = "-d"; // flag needed to decompress (assumes none to compress)
 
             switch (cmode) {
-                case ZFILE_GZIP:  compressor = "gzip";  break;
+                case ZFILE_GZIP:  {
+                    static char *pigz = ARB_executable("pigz", ARB_getenv_ignore_empty("PATH"));
+                    compressor = pigz ? pigz : "gzip";
+                    break;
+                }
                 case ZFILE_BZIP2: compressor = "bzip2"; break;
 
                 default:
