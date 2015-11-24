@@ -1630,7 +1630,7 @@ GB_ERROR GBT_check_arb_file(const char *name) { // goes to header: __ATTR__USERE
                 error = GBS_global_string("Cannot find file '%s'", name);
             }
             else {
-                long i = gb_read_in_uint32(in, 0);
+                uint32_t i = gb_read_in_uint32(in, 0);
 
                 if (!is_binary_db_id(i)) {
                     const int ASC_HEADER_SIZE = 15;
@@ -1642,9 +1642,9 @@ GB_ERROR GBT_check_arb_file(const char *name) { // goes to header: __ATTR__USERE
 
                         const char *ascii_header = "/*ARBDB ASCII*/";
 
-                        *(uint32_t*)buffer = i; // insert these bytes
+                        *(uint32_t*)(void*)buffer = i; // insert these bytes
                         if (strcmp(buffer, ascii_header) != 0) {
-                            *(uint32_t*)buffer = reverse_byteorder(i);
+                            *(uint32_t*)(void*)buffer = reverse_byteorder(i);
                             if (strcmp(buffer, ascii_header) != 0) {
                                 error = GBS_global_string("'%s' is not an arb file", name);
                             }
