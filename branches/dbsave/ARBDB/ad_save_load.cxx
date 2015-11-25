@@ -14,6 +14,7 @@
 
 #include <arb_file.h>
 #include <arb_diff.h>
+#include <arb_zfile.h>
 
 #include "gb_key.h"
 #include "gb_map.h"
@@ -763,12 +764,11 @@ static int gb_write_bin(FILE *out, GBCONTAINER *gbc, uint32_t version) {
 //      save database
 
 GB_ERROR GB_save(GBDATA *gb, const char *path, const char *savetype)
-     /* savetype 'a'    ascii
-      *          'aS'   dump to stdout
-      *          'b'    binary
-      *          'bm'   binary + mapfile
-      *          0      ascii
-      */
+    /*! save database
+     * @param gb database root
+     * @param path filename (if NULL -> use name stored in DB; otherwise store name in DB)
+     * @param savetype @see GB_save_as()
+     */
 {
     if (path && strchr(savetype, 'S') == 0) // 'S' dumps to stdout -> do not change path
     {
@@ -802,12 +802,11 @@ GB_ERROR GB_create_directory(const char *path) {
 }
 
 GB_ERROR GB_save_in_arbprop(GBDATA *gb, const char *path, const char *savetype) {
-    /* savetype
-     *      'a'    ascii
-     *      'b'    binary
-     *      'bm'   binary + mapfile
-     *
-     * automatically creates subdirectories
+    /*! save database inside arb-properties-directory.
+     * Automatically creates subdirectories as needed.
+     * @param gb database root
+     * @param path filename (if NULL -> use name stored in DB)
+     * @param savetype @see GB_save_as()
      */
 
     char     *fullname = strdup(GB_path_in_arbprop(path ? path : GB_MAIN(gb)->path));
@@ -916,6 +915,7 @@ static GB_ERROR protect_corruption_error(const char *savepath) {
 }
 
 GB_ERROR GB_MAIN_TYPE::save_as(const char *as_path, const char *savetype) {
+    /*! @see GB_save_as() */
     GB_ERROR error = 0;
 
     bool saveASCII                            = false;
@@ -936,9 +936,12 @@ GB_ERROR GB_MAIN_TYPE::save_as(const char *as_path, const char *savetype) {
         char *sec_path       = strdup(GB_is_fifo(as_path) ? as_path : gb_overwriteName(as_path));
         char *sec_mappath    = NULL;
         bool  dump_to_stdout = strchr(savetype, 'S');
-        FILE *out            = dump_to_stdout ? stdout : fopen(sec_path, "w");
+        FILE *out            = dump_to_stdout ? stdout : ARB_zfopen(sec_path, "w", ZFILE_UNCOMPRESSED, error); // @@@ pass-in compression type via param 'savetype'
 
-        if (!out) error = GB_IO_error("saving", sec_path);
+        if (!out) {
+            gb_assert(error);
+            error = GBS_global_string("While saving database '%s': %s", sec_path, error);
+        }
         else {
             const int org_security_level    = security_level;
             const int org_transaction_level = get_transaction_level();
@@ -979,8 +982,16 @@ GB_ERROR GB_MAIN_TYPE::save_as(const char *as_path, const char *savetype) {
                 security_level    = org_security_level;
                 transaction_level = org_transaction_level;
 
-                if (!dump_to_stdout) result |= fclose(out);
-                if (result != 0) error       = GB_IO_error("writing", sec_path);
+                if (result != 0) {
+                    error = GB_IO_error("writing", sec_path);
+                    if (!dump_to_stdout) {
+                        GB_ERROR close_error   = ARB_zfclose(out, sec_path);
+                        if (close_error) error = GBS_global_string("%s\n(close reports: %s)", error, close_error);
+                    }
+                }
+                else {
+                    if (!dump_to_stdout) error = ARB_zfclose(out, sec_path);
+                }
             }
 
             if (!error && seen_corrupt_data) {
@@ -1045,9 +1056,11 @@ GB_ERROR GB_MAIN_TYPE::save_as(const char *as_path, const char *savetype) {
 }
 
 GB_ERROR GB_save_as(GBDATA *gbd, const char *path, const char *savetype) {
-    /* Save whole database
+    /*! Save whole database
      *
-     * savetype
+     * @param gbd database root
+     * @param path filename (if NULL -> use name stored in DB)
+     * @param savetype
      *          'a' ascii
      *          'b' binary
      *          'm' save mapfile (only together with binary)
