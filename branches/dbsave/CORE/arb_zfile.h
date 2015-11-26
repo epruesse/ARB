@@ -27,6 +27,7 @@ enum FileCompressionMode {
     // -------------------- [real compressions]
     ZFILE_GZIP,
     ZFILE_BZIP2,
+    ZFILE_XZ,
     // -------------------- [real compressions]
 
     ZFILE_UNDEFINED,

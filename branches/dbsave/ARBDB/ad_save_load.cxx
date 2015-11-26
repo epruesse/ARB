@@ -916,7 +916,7 @@ static GB_ERROR protect_corruption_error(const char *savepath) {
 }
 
 #if defined(UNIT_TESTS)
-#define TESTED_COMPRESSION_FLAGS "zB"
+#define TESTED_COMPRESSION_FLAGS "zBx"
 #endif
 
 GB_ERROR GB_MAIN_TYPE::save_as(const char *as_path, const char *savetype) {
@@ -942,6 +942,7 @@ GB_ERROR GB_MAIN_TYPE::save_as(const char *as_path, const char *savetype) {
         } supported[] = {
             { 'z', ZFILE_GZIP },
             { 'B', ZFILE_BZIP2 },
+            { 'x', ZFILE_XZ },
             // Please document new flags in GB_save_as() below.
         };
 
@@ -1106,6 +1107,7 @@ GB_ERROR GB_save_as(GBDATA *gbd, const char *path, const char *savetype) {
      *          Extra compression flags:
      *          'z' stream through gzip/pigz
      *          'B' stream through bzip2
+     *          'x' stream through xz
      */
 
     GB_ERROR error = NULL;

@@ -53,6 +53,7 @@ FILE *ARB_zfopen(const char *name, const char *mode, FileCompressionMode cmode, 
 
                 if      (bytes_read>=2 && strncmp(buffer, "\x1f\x8b",    2) == 0) cmode = ZFILE_GZIP;
                 else if (bytes_read>=2 && strncmp(buffer, "BZ",          2) == 0) cmode = ZFILE_BZIP2;
+                else if (bytes_read>=5 && strncmp(buffer, "\xfd" "7zXZ", 5) == 0) cmode = ZFILE_XZ;
                 else {
                     cmode = ZFILE_UNCOMPRESSED;
                 }
@@ -76,6 +77,7 @@ FILE *ARB_zfopen(const char *name, const char *mode, FileCompressionMode cmode, 
                     break;
                 }
                 case ZFILE_BZIP2: compressor = "bzip2"; break;
+                case ZFILE_XZ:    compressor = "xz";    break;
 
                 default:
                     error = GBS_global_string("Invalid compression mode (%i)", int(cmode));
