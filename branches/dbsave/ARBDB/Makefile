@@ -326,6 +326,7 @@ ad_save_load.o: gb_storage.h
 ad_save_load.o: gb_tune.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/arb_core.h
+ad_save_load.o: $(ARBHOME)/INCLUDE/arb_defs.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/arb_diff.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/arb_error.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/arb_file.h

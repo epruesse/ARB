@@ -15,6 +15,7 @@
 #include <arb_file.h>
 #include <arb_diff.h>
 #include <arb_zfile.h>
+#include <arb_defs.h>
 
 #include "gb_key.h"
 #include "gb_map.h"
@@ -929,14 +930,37 @@ GB_ERROR GB_MAIN_TYPE::save_as(const char *as_path, const char *savetype) {
         else error                         = check_saveable(as_path, savetype);
     }
 
+    FileCompressionMode compressMode = ZFILE_UNCOMPRESSED;
     if (!error) {
-        char *mappath        = NULL;
+        struct {
+            char                flag;
+            FileCompressionMode mode;
+        } supported[] = {
+            { 'z', ZFILE_GZIP },
+            { 'B', ZFILE_BZIP2 },
+        };
+        for (size_t comp = 0; !error && comp<ARRAY_ELEMS(supported); ++comp) {
+            if (strchr(savetype, supported[comp].flag)) {
+                if (compressMode == ZFILE_UNCOMPRESSED) {
+                    compressMode = supported[comp].mode;
+                }
+                else {
+                    error = "Multiple compression modes specified";
+                }
+            }
+        }
+    }
+
+    if (!error) {
+
         // unless saving to a fifo, we append ~ to the file name we write to,
         // and move that file if and when everything has gone well
-        char *sec_path       = strdup(GB_is_fifo(as_path) ? as_path : gb_overwriteName(as_path));
+        char *sec_path = strdup(GB_is_fifo(as_path) ? as_path : gb_overwriteName(as_path));
+
+        char *mappath        = NULL;
         char *sec_mappath    = NULL;
         bool  dump_to_stdout = strchr(savetype, 'S');
-        FILE *out            = dump_to_stdout ? stdout : ARB_zfopen(sec_path, "w", ZFILE_UNCOMPRESSED, error); // @@@ pass-in compression type via param 'savetype'
+        FILE *out            = dump_to_stdout ? stdout : ARB_zfopen(sec_path, "w", compressMode, error);
 
         if (!out) {
             gb_assert(error);
@@ -1064,8 +1088,13 @@ GB_ERROR GB_save_as(GBDATA *gbd, const char *path, const char *savetype) {
      *          'a' ascii
      *          'b' binary
      *          'm' save mapfile (only together with binary)
+     *
      *          'f' force saving even in disabled path to a different directory (out of order save)
-     *          'S' save to stdout (for debugging)
+     *          'S' save to stdout (used in arb_2_ascii when saving to stdout; also useful for debugging)
+     *
+     *          Extra compression flags:
+     *          'z' stream through gzip/pigz
+     *          'B' stream through bzip2
      */
 
     GB_ERROR error = NULL;
@@ -1314,7 +1343,7 @@ static GB_ERROR modify_db(GBDATA *gb_main) {
 
 // #define TEST_AUTO_UPDATE // uncomment to auto-update binary and quicksave testfiles (needed once after changing ascii testfile or modify_db())
 
-#define TEST_loadsave_CLEANUP() TEST_EXPECT_ZERO(system("rm -f [ab]2[ab]*.* master.* slave.* renamed.* fast.* fast2a.* TEST_loadsave.ARF"))
+#define TEST_loadsave_CLEANUP() TEST_EXPECT_ZERO(system("rm -f [abr]2[ab]*.* master.* slave.* renamed.* fast.* fast2a.* TEST_loadsave.ARF"))
 
 void TEST_SLOW_loadsave() {
     GB_shell shell;
@@ -1348,6 +1377,34 @@ void TEST_SLOW_loadsave() {
     SAVE_AND_COMPARE(gb_asc, "a2b.arb", "b", bin_db);
     SAVE_AND_COMPARE(gb_bin, "b2a.arb", "a", asc_db);
     SAVE_AND_COMPARE(gb_bin, "b2b.arb", "b", bin_db);
+
+    // test extra database stream compression
+    const char *compFlag = "zB";
+    for (int c = 0; compFlag[c]; ++c) {
+        for (char dbtype = 'a'; dbtype<='b'; ++dbtype) {
+            TEST_ANNOTATE(GBS_global_string("dbtype=%c compFlag=%c", dbtype, compFlag[c]));
+            char *zipd_db = GBS_global_string_copy("a2%c_%c.arb", dbtype, compFlag[c]);
+
+            char savetype[] = "??";
+            savetype[0]     = dbtype;
+            savetype[1]     = compFlag[c];
+
+            TEST_EXPECT_NO_ERROR(GB_save_as(gb_asc, zipd_db, savetype));
+
+            // reopen saved database, save again + compare
+            {
+                GBDATA *gb_reloaded = GB_open(zipd_db, "rw");
+                TEST_REJECT_NULL(gb_reloaded); // reading compressed database failed
+
+                SAVE_AND_COMPARE(gb_reloaded, "r2b.arb", "b", bin_db); // check binary content
+                SAVE_AND_COMPARE(gb_reloaded, "r2a.arb", "a", asc_db); // check ascii content
+
+                GB_close(gb_reloaded);
+            }
+
+            free(zipd_db);
+        }
+    }
 
 #if (MEMORY_TEST == 0)
     {
@@ -1445,7 +1502,8 @@ void TEST_SLOW_loadsave() {
 
         // test various error conditions:
 
-        TEST_EXPECT_ERROR_CONTAINS(GB_save_as(gb_b2b, "", "b"), "specify a savename"); // empty name
+        TEST_EXPECT_ERROR_CONTAINS(GB_save_as(gb_b2b, "",        "b"),   "specify a savename"); // empty name
+        TEST_EXPECT_ERROR_CONTAINS(GB_save_as(gb_b2b, "b2b.arb", "bzB"), "Multiple compression modes");
 
         TEST_EXPECT_NO_ERROR(GB_set_mode_of_file(mod_db, 0444)); // write-protect
         TEST_EXPECT_ERROR_CONTAINS(GB_save_as(gb_b2b, mod_db, "b"), "already exists and is write protected"); // try to overwrite write-protected DB
