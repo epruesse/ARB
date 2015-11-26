@@ -51,8 +51,8 @@ FILE *ARB_zfopen(const char *name, const char *mode, FileCompressionMode cmode, 
                 fclose(fp);
                 fp = NULL;
 
-                if      (bytes_read>=2 && strncmp(buffer, "\x1f\x8b", 2) == 0) cmode = ZFILE_GZIP;
-                else if (bytes_read>=2 && strncmp(buffer, "BZ",       2) == 0) cmode = ZFILE_BZIP2;
+                if      (bytes_read>=2 && strncmp(buffer, "\x1f\x8b",    2) == 0) cmode = ZFILE_GZIP;
+                else if (bytes_read>=2 && strncmp(buffer, "BZ",          2) == 0) cmode = ZFILE_BZIP2;
                 else {
                     cmode = ZFILE_UNCOMPRESSED;
                 }

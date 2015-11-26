@@ -915,6 +915,10 @@ static GB_ERROR protect_corruption_error(const char *savepath) {
     return error;
 }
 
+#if defined(UNIT_TESTS)
+#define TESTED_COMPRESSION_FLAGS "zB"
+#endif
+
 GB_ERROR GB_MAIN_TYPE::save_as(const char *as_path, const char *savetype) {
     /*! @see GB_save_as() */
     GB_ERROR error = 0;
@@ -938,7 +942,11 @@ GB_ERROR GB_MAIN_TYPE::save_as(const char *as_path, const char *savetype) {
         } supported[] = {
             { 'z', ZFILE_GZIP },
             { 'B', ZFILE_BZIP2 },
+            // Please document new flags in GB_save_as() below.
         };
+
+        STATIC_ASSERT(ARRAY_ELEMS(supported) == ZFILE_REAL_CMODES); // (after adding a new FileCompressionMode it should be supported here)
+
         for (size_t comp = 0; !error && comp<ARRAY_ELEMS(supported); ++comp) {
             if (strchr(savetype, supported[comp].flag)) {
                 if (compressMode == ZFILE_UNCOMPRESSED) {
@@ -948,6 +956,9 @@ GB_ERROR GB_MAIN_TYPE::save_as(const char *as_path, const char *savetype) {
                     error = "Multiple compression modes specified";
                 }
             }
+#if defined(UNIT_TESTS)
+            gb_assert(strchr(TESTED_COMPRESSION_FLAGS, supported[comp].flag)); // flag gets not tested -> add to TESTED_COMPRESSION_FLAGS
+#endif
         }
     }
 
@@ -1379,7 +1390,7 @@ void TEST_SLOW_loadsave() {
     SAVE_AND_COMPARE(gb_bin, "b2b.arb", "b", bin_db);
 
     // test extra database stream compression
-    const char *compFlag = "zB";
+    const char *compFlag = TESTED_COMPRESSION_FLAGS;
     for (int c = 0; compFlag[c]; ++c) {
         for (char dbtype = 'a'; dbtype<='b'; ++dbtype) {
             TEST_ANNOTATE(GBS_global_string("dbtype=%c compFlag=%c", dbtype, compFlag[c]));

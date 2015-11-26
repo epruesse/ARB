@@ -24,13 +24,16 @@ enum FileCompressionMode {
 
     ZFILE_UNCOMPRESSED,
 
+    // -------------------- [real compressions]
     ZFILE_GZIP,
     ZFILE_BZIP2,
+    // -------------------- [real compressions]
 
     ZFILE_UNDEFINED,
 #if defined(USE_BROKEN_COMPRESSION)
     ZFILE_BROKEN, // a broken pipe
 #endif
+    ZFILE_REAL_CMODES = ZFILE_UNDEFINED-ZFILE_UNCOMPRESSED-1, // number of supported modes
 };
 
 FILE     *ARB_zfopen(const char *name, const char *mode, FileCompressionMode cmode, GB_ERROR& error);
