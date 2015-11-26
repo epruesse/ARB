@@ -1006,6 +1006,18 @@ inline bool is_binary_db_id(int id) {
         || (id == GBTUM_MAGIC_REVERSED);
 }
 
+static GB_ERROR init_tmp_branch(GBDATA *gb_main) {
+    GB_ERROR  error   = NULL;
+    GBDATA   *gb_tmp  = GB_search(gb_main, "tmp", GB_CREATE_CONTAINER);
+    if (gb_tmp) {
+        error = GB_set_temporary(gb_tmp);
+    }
+    else {
+        error = GB_await_error();
+    }
+    return error;
+}
+
 static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) {
     /*! open an ARB database
      *
@@ -1329,8 +1341,12 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
             }
             error = gb_load_key_data_and_dictionaries(Main);
             if (!error) error = gb_resort_system_folder_to_top(Main->root_container);
-            // @@@ handle error 
+            if (!error) error = init_tmp_branch(gbc);
+
             GB_commit_transaction(gbc);
+
+            // "handle" error
+            if (error) GBK_terminatef("PANIC in GB_login: %s", error);
         }
         Main->security_level = 0;
         gbl_install_standard_commands(gbc);
