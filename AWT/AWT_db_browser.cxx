@@ -802,6 +802,7 @@ static void selected_node_modified_cb(GBDATA *gb_node, GB_CB_TYPE cb_type) {
         static bool avoid_recursion = false;
         if (!avoid_recursion) {
             LocallyModify<bool> flag(avoid_recursion, true);
+            GlobalStringBuffers *old_buffers = GBS_store_global_buffers();
 
             AW_root *aw_root   = AW_root::SINGLETON;
             AW_awar *awar_path = aw_root->awar_no_error(AWAR_DBB_PATH);
@@ -828,6 +829,7 @@ static void selected_node_modified_cb(GBDATA *gb_node, GB_CB_TYPE cb_type) {
                     awar_path->touch();
                 }
             }
+            GBS_restore_global_buffers(old_buffers);
         }
     }
 }
@@ -1092,12 +1094,8 @@ AW_window *DB_browser::get_window(AW_root *aw_root) {
         aws->init(aw_root, "DB_BROWSER", "ARB database browser");
         aws->load_xfig("dbbrowser.fig");
 
-        aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
+        aws->at("close"); aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
-
-        aws->callback(makeHelpCallback("db_browser.hlp"));
-        aws->at("help");
-        aws->create_button("HELP", "HELP", "H");
 
         aws->at("db");
         update_DB_selector();
@@ -1161,7 +1159,7 @@ static void callallcallbacks(AW_window *aww, int mode) {
 void AWT_create_debug_menu(AW_window *awmm) {
     awmm->create_menu("4debugz", "z", AWM_ALL);
 
-    awmm->insert_menu_topic("-db_browser", "Browse loaded database(s)", "B", "db_browser.hlp", AWM_ALL, create_db_browser);
+    awmm->insert_menu_topic(awmm->local_id("-db_browser"), "Browse loaded database(s)", "B", NULL, AWM_ALL, create_db_browser);
 
     awmm->sep______________();
     {

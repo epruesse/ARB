@@ -8,7 +8,7 @@ $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .cxx.o:
-	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE) $<
 
 clean:
 	rm -f $(OBJECTS) *.a
@@ -93,6 +93,7 @@ ui_species.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+ui_species.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/awtc_next_neighbours.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/cb.h
@@ -107,7 +108,7 @@ ui_species.o: $(ARBHOME)/INCLUDE/gccver.h
 ui_species.o: $(ARBHOME)/INCLUDE/item_sel_list.h
 ui_species.o: $(ARBHOME)/INCLUDE/items.h
 ui_species.o: $(ARBHOME)/INCLUDE/pos_range.h
-ui_species.o: $(ARBHOME)/INCLUDE/probe_design.hxx
+ui_species.o: $(ARBHOME)/INCLUDE/probe_gui.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/PT_global_defs.h
 ui_species.o: $(ARBHOME)/INCLUDE/smartptr.h
 ui_species.o: $(ARBHOME)/INCLUDE/static_assert.h

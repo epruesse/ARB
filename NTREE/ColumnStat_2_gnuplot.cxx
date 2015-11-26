@@ -35,9 +35,6 @@
 #define AWAR_CS2GP_GNUPLOT_OVERLAY_PREFIX  AWAR_CS2GP "/gnuplot_overlay_prefix"
 #define AWAR_CS2GP_GNUPLOT_OVERLAY_POSTFIX AWAR_CS2GP "/gnuplot_overlay_postfix"
 #define AWAR_CS2GP_FILTER_NAME             AWAR_CS2GP "/ap_filter/name"
-#define AWAR_CS2GP_FILTER_ALIGNMENT        AWAR_CS2GP "/ap_filter/alignment"
-#define AWAR_CS2GP_FILTER_FILTER           AWAR_CS2GP "/ap_filter/filter"
-
 
 static GB_ERROR split_stat_filename(const char *fname, char **dirPtr, char **name_prefixPtr, char **name_postfixPtr) {
     // 'fname' is sth like 'directory/prefix.sth_gnu'
@@ -334,19 +331,31 @@ public:
     }
 };
 
-static void colstat_2_gnuplot_cb(AW_window *aww, AW_CL cl_column_stat, AW_CL cl_mode) {
-    // cl_mode = 0 -> write file
-    // cl_mode = 1 -> write file and run gnuplot
-    // cl_mode = 2 -> delete all files with same prefix
+enum PlotMode {
+    PLOT,          // write file
+    PLOT_AND_VIEW, // write file and run gnuplot
+    PLOT_CLEANUP,  // delete all files with same prefix
+};
 
+struct PlotParam {
+    ColumnStat       *colstat;
+    adfiltercbstruct *filterdef;
+
+    PlotParam(ColumnStat *colstat_, adfiltercbstruct *filterdef_)
+        : colstat(colstat_),
+          filterdef(filterdef_)
+    {}
+};
+
+static void colstat_2_gnuplot_cb(AW_window *aww, PlotParam *param, PlotMode mode) {
     GB_transaction  ta(GLOBAL.gb_main);
-    ColumnStat     *column_stat = (ColumnStat *)cl_column_stat;
-    GB_ERROR        error       = 0;
-    int             mode        = int(cl_mode);
+    GB_ERROR        error       = NULL;
+    ColumnStat     *column_stat = param->colstat;
+    AW_root        *awr         = aww->get_root();
 
-    if (mode != 2) {
-        char *filterstring     = aww->get_root()->awar(AWAR_CS2GP_FILTER_FILTER)->read_string();
-        char *alignment_name   = aww->get_root()->awar(AWAR_CS2GP_FILTER_ALIGNMENT)->read_string();
+    if (mode == PLOT || mode == PLOT_AND_VIEW) {
+        char *filterstring     = awr->awar(param->filterdef->def_filter)->read_string();
+        char *alignment_name   = awr->awar(param->filterdef->def_alignment)->read_string();
         long  alignment_length = GBT_get_alignment_len(GLOBAL.gb_main, alignment_name);
 
         if (alignment_length<0) {
@@ -356,24 +365,24 @@ static void colstat_2_gnuplot_cb(AW_window *aww, AW_CL cl_column_stat, AW_CL cl_
         else {
             AP_filter filter(filterstring, "0", alignment_length);
 
-            free(alignment_name);
-            free(filterstring);
-
             error = column_stat->calculate(&filter);
 
             if (!error && !column_stat->get_length()) error = "Please select column statistic";
         }
+
+        free(alignment_name);
+        free(filterstring);
     }
 
     if (!error) {
-        char *fname = aww->get_root()->awar(AWAR_CS2GP_FILENAME)->read_string();
+        char *fname = awr->awar(AWAR_CS2GP_FILENAME)->read_string();
 
         if (!strchr(fname, '/')) freeset(fname, GBS_global_string_copy("./%s", fname));
         if (strlen(fname) < 1) error = "Please enter file name";
 
-        if (mode == 2) {        // delete overlay files
+        if (mode == PLOT_CLEANUP) { // delete overlay files
             if (!error) {
-                char *found_files = get_overlay_files(aww->get_root(), fname, error);
+                char *found_files = get_overlay_files(awr, fname, error);
 
                 if (found_files) {
                     for (char *name = strtok(found_files, "*"); name; name = strtok(0, "*")) {
@@ -381,7 +390,7 @@ static void colstat_2_gnuplot_cb(AW_window *aww, AW_CL cl_column_stat, AW_CL cl_
                         if (unlink(name) != 0) printf("Can't delete '%s'\n", name);
                     }
                     free(found_files);
-                    aww->get_root()->awar(AWAR_CS2GP_DIRECTORY)->touch(); // reload file selection box
+                    awr->awar(AWAR_CS2GP_DIRECTORY)->touch(); // reload file selection box
                 }
             }
         }
@@ -395,8 +404,8 @@ static void colstat_2_gnuplot_cb(AW_window *aww, AW_CL cl_column_stat, AW_CL cl_
             nt_assert(out || error);
 
             if (!error) {
-                char   *type       = aww->get_root()->awar(AWAR_CS2GP_SUFFIX)->read_string();
-                long    smoothSize = aww->get_root()->awar(AWAR_CS2GP_SMOOTH_VALUES)->read_int();  // 1 = discrete values
+                char   *type       = awr->awar(AWAR_CS2GP_SUFFIX)->read_string();
+                long    smoothSize = awr->awar(AWAR_CS2GP_SMOOTH_VALUES)->read_int();  // 1 = discrete values
                 size_t  columns    = column_stat->get_length();
 
                 enum {
@@ -518,17 +527,17 @@ static void colstat_2_gnuplot_cb(AW_window *aww, AW_CL cl_column_stat, AW_CL cl_
             }
 
             if (!error) {
-                aww->get_root()->awar(AWAR_CS2GP_DIRECTORY)->touch(); // reload file selection box
+                awr->awar(AWAR_CS2GP_DIRECTORY)->touch(); // reload file selection box
 
-                if (mode == 1) { // run gnuplot ?
+                if (mode == PLOT_AND_VIEW) { // run gnuplot?
                     char *command_file;
                     char *command_name = GB_unique_filename("arb", "gnuplot");
 
                     out             = GB_fopen_tempfile(command_name, "wt", &command_file);
                     if (!out) error = GB_await_error();
                     else {
-                        char *smooth      = aww->get_root()->awar(AWAR_CS2GP_SMOOTH_GNUPLOT)->read_string();
-                        char *found_files = get_overlay_files(aww->get_root(), fname, error);
+                        char *smooth      = awr->awar(AWAR_CS2GP_SMOOTH_GNUPLOT)->read_string();
+                        char *found_files = get_overlay_files(awr, fname, error);
 
                         fprintf(out, "set samples 1000\n");
 
@@ -550,15 +559,9 @@ static void colstat_2_gnuplot_cb(AW_window *aww, AW_CL cl_column_stat, AW_CL cl_
                         fclose(out);
                         out = 0;
 
-                        if (mode == 1) {
-                            char *script = GBS_global_string_copy("gnuplot %s && rm -f %s", command_file, command_file);
-                            GB_xcmd(script, true, true);
-                            free(script);
-                        }
-                        else {
-                            nt_assert(mode == 2);
-                            GB_unlink_or_warn(command_file, &error);
-                        }
+                        char *script = GBS_global_string_copy("gnuplot %s && rm -f %s", command_file, command_file);
+                        GB_xcmd(script, true, true);
+                        free(script);
                         free(smooth);
                     }
                     free(command_file);
@@ -572,12 +575,12 @@ static void colstat_2_gnuplot_cb(AW_window *aww, AW_CL cl_column_stat, AW_CL cl_
     if (error) aw_message(error);
 }
 
-static void colstat_ali_changed_cb(AW_root *root) {
+static void colstat_ali_changed_cb(AW_root *root, AW_awar *awar_ali) {
     if (GLOBAL.gb_main) {
-        long smooth_max = GBT_get_alignment_len(GLOBAL.gb_main, root->awar(AWAR_CS2GP_FILTER_ALIGNMENT)->read_char_pntr());
+        long smooth_max = GBT_get_alignment_len(GLOBAL.gb_main, awar_ali->read_char_pntr());
         if (smooth_max<0) { // ali not found
             GB_clear_error();
-            smooth_max = 1; // min=max -> do not limit
+            smooth_max = INT_MAX;
         }
         root->awar(AWAR_CS2GP_SMOOTH_VALUES)->set_minmax(1, smooth_max);
     }
@@ -586,9 +589,10 @@ static void colstat_ali_changed_cb(AW_root *root) {
 AW_window *NT_create_colstat_2_gnuplot_window(AW_root *root) {
     GB_transaction ta(GLOBAL.gb_main);
 
-    AW_awar          *awar_default_alignment = root->awar_string(AWAR_DEFAULT_ALIGNMENT, "", GLOBAL.gb_main);
-    ColumnStat       *column_stat            = new ColumnStat(GLOBAL.gb_main, root, AWAR_CS2GP_NAME, awar_default_alignment);
-    AW_window_simple *aws                    = new AW_window_simple;
+    AW_awar *awar_default_alignment = root->awar_string(AWAR_DEFAULT_ALIGNMENT, "", GLOBAL.gb_main);
+
+    ColumnStat       *column_stat = new ColumnStat(GLOBAL.gb_main, root, AWAR_CS2GP_NAME, awar_default_alignment);
+    AW_window_simple *aws         = new AW_window_simple;
 
     aws->init(root, "EXPORT_CSP_TO_GNUPLOT", "Export Column statistic to GnuPlot");
     aws->load_xfig("cpro/csp_2_gnuplot.fig");
@@ -598,16 +602,10 @@ AW_window *NT_create_colstat_2_gnuplot_window(AW_root *root) {
     root->awar_int(AWAR_CS2GP_GNUPLOT_OVERLAY_PREFIX);
     root->awar_string(AWAR_CS2GP_SMOOTH_GNUPLOT);
 
-    root->awar_string(AWAR_CS2GP_FILTER_NAME);
-    root->awar_string(AWAR_CS2GP_FILTER_FILTER);
-    AW_awar *awar_ali = root->awar_string(AWAR_CS2GP_FILTER_ALIGNMENT);
-    awar_ali->map(AWAR_DEFAULT_ALIGNMENT);  // use current alignment for filter
-    awar_ali->add_callback(colstat_ali_changed_cb);
-    awar_ali->touch();
-
     AW_create_fileselection_awars(root, AWAR_CS2GP, "", ".gc_gnu", "noname.gc_gnu");
 
-    aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
+    aws->at("close");
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help"); aws->callback(makeHelpCallback("csp_2_gnuplot.hlp"));
@@ -626,7 +624,14 @@ AW_window *NT_create_colstat_2_gnuplot_window(AW_root *root) {
     plotTypeList->insert_default("<select one>", "");
     plotTypeList->update();
 
+    awt_create_filter_awars(root, AW_ROOT_DEFAULT, AWAR_CS2GP_FILTER_NAME, AWAR_DEFAULT_ALIGNMENT);
     adfiltercbstruct *filter = awt_create_select_filter(root, GLOBAL.gb_main, AWAR_CS2GP_FILTER_NAME);
+    {
+        AW_awar *awar_ali = root->awar(filter->def_alignment);
+        awar_ali->add_callback(makeRootCallback(colstat_ali_changed_cb, awar_ali));
+        awar_ali->touch();
+    }
+
     aws->at("ap_filter");
     aws->callback(makeCreateWindowCallback(awt_create_select_filter_win, filter));
     aws->create_button("SELECT_FILTER", AWAR_CS2GP_FILTER_NAME);
@@ -645,12 +650,14 @@ AW_window *NT_create_colstat_2_gnuplot_window(AW_root *root) {
     aws->auto_space(10, 10);
     aws->button_length(13);
 
+    PlotParam *param = new PlotParam(column_stat, filter); // bound to CB, dont free
+
     aws->at("save");
-    aws->callback(colstat_2_gnuplot_cb, (AW_CL)column_stat, (AW_CL)0);
+    aws->callback(makeWindowCallback(colstat_2_gnuplot_cb, param, PLOT));
     aws->create_button("SAVE", "Save");
 
     aws->highlight();
-    aws->callback(colstat_2_gnuplot_cb, (AW_CL)column_stat, (AW_CL)1);
+    aws->callback(makeWindowCallback(colstat_2_gnuplot_cb, param, PLOT_AND_VIEW));
     aws->create_button("SAVE_AND_VIEW", "Save & View");
 
     aws->at("overlay1");
@@ -662,10 +669,10 @@ AW_window *NT_create_colstat_2_gnuplot_window(AW_root *root) {
     aws->create_toggle(AWAR_CS2GP_GNUPLOT_OVERLAY_POSTFIX);
 
     aws->at("del_overlays");
-    aws->callback(colstat_2_gnuplot_cb, (AW_CL)column_stat, (AW_CL)2);
+    aws->callback(makeWindowCallback(colstat_2_gnuplot_cb, param, PLOT_CLEANUP));
     aws->create_autosize_button("DEL_OVERLAYS", "Delete currently overlayed files", "D", 2);
 
-    return (AW_window *)aws;
+    return aws;
 }
 
 

@@ -19,7 +19,7 @@
 
 #if defined(DUMP_COMMUNICATION)
 
-static void aisc_dump_hex(const char *title, const char *data, int datasize) {
+inline void aisc_dump_hex(const char *title, const char *data, int datasize) {
     const unsigned char *udata = (const unsigned char *)data;
     int d;
 
@@ -30,23 +30,23 @@ static void aisc_dump_hex(const char *title, const char *data, int datasize) {
     fprintf(stderr, "\n");
 }
 
-static void aisc_dump_int(const char *where, const char *varname, int var) {
+inline void aisc_dump_int(const char *where, const char *varname, int var) {
     fprintf(stderr, "AISC_DUMP: %s: int    %s=%i ", where, varname, var);
     aisc_dump_hex("Hex: ", (const char*)&var, sizeof(var));
 }
-static void aisc_dump_long(const char *where, const char *varname, long var) {
+inline void aisc_dump_long(const char *where, const char *varname, long var) {
     fprintf(stderr, "AISC_DUMP: %s: long   %s=%li ", where, varname, var);
     aisc_dump_hex("Hex: ", (const char*)&var, sizeof(var));
 }
-static void aisc_dump_double(const char *where, const char *varname, double var) {
+inline void aisc_dump_double(const char *where, const char *varname, double var) {
     fprintf(stderr, "AISC_DUMP: %s: double %s=%f ", where, varname, (float)var);
     aisc_dump_hex("Hex: ", (const char*)&var, sizeof(var));
 }
-static void aisc_dump_charPtr(const char *where, const char *varname, const char *var) {
+inline void aisc_dump_charPtr(const char *where, const char *varname, const char *var) {
     fprintf(stderr, "AISC_DUMP: %s: cPtr   %s='%s' ", where, varname, var);
     aisc_dump_hex("Hex: ", var, strlen(var)+1);
 }
-static void aisc_dump_voidPtr2(const char *where, const char *varname, void *var) {
+inline void aisc_dump_voidPtr2(const char *where, const char *varname, void *var) {
     fprintf(stderr, "AISC_DUMP: %s: ptr    %s=%p\n", where, varname, var);
 }
 

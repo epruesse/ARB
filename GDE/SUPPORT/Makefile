@@ -1,6 +1,6 @@
 .SUFFIXES: .o .c .depend
 
-OBJECT =  CAP2.o Restriction.o Zuk_to_gen.o count.o findall.o lsadt.o \
+OBJECT =  Restriction.o Zuk_to_gen.o count.o findall.o lsadt.o \
 	sho_helix.o varpos.o
 
 BINARIES=$(OBJECT:%.o=$(ARBHOME)/bin/%)

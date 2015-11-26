@@ -11,7 +11,7 @@ SUB	sp_sort_phyl.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Sort Species According Database Entries
 
-OCCURRENCE	ARB_NT/Species/Sort Species According Database Entries
+OCCURRENCE	ARB_NT/Species/Sort Species/According to Database Entries
 
 DESCRIPTION	Arranges the species entries according to species associated
 		field entries. Up to three fields can be specified in a

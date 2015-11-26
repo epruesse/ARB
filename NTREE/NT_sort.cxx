@@ -15,7 +15,7 @@
 #include <arb_progress.h>
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
-#include <arbdbt.h>
+#include <TreeNode.h>
 #include <arb_sort.h>
 
 #define NT_RESORT_FILTER (1<<GB_STRING)|(1<<GB_INT)|(1<<GB_FLOAT)
@@ -93,7 +93,7 @@ static int resort_data_by_customOrder(const void *v1, const void *v2, void *cd_s
 static GBDATA **gb_resort_data_list;
 static long    gb_resort_data_count;
 
-static void NT_resort_data_base_by_tree(GBT_TREE *tree, GBDATA *gb_species_data) {
+static void NT_resort_data_base_by_tree(TreeNode *tree, GBDATA *gb_species_data) {
     if (tree) {
         if (tree->is_leaf) {
             if (tree->gb_node) {
@@ -101,14 +101,14 @@ static void NT_resort_data_base_by_tree(GBT_TREE *tree, GBDATA *gb_species_data)
             }
         }
         else {
-            NT_resort_data_base_by_tree(tree->leftson, gb_species_data);
-            NT_resort_data_base_by_tree(tree->rightson, gb_species_data);
+            NT_resort_data_base_by_tree(tree->get_leftson(), gb_species_data);
+            NT_resort_data_base_by_tree(tree->get_rightson(), gb_species_data);
         }
     }
 }
 
 
-static GB_ERROR NT_resort_data_base(GBT_TREE *tree, const customCriterion *sortBy) {
+static GB_ERROR NT_resort_data_base(TreeNode *tree, const customCriterion *sortBy) {
     nt_assert(contradicted(tree, sortBy));
 
     GB_ERROR error = GB_begin_transaction(GLOBAL.gb_main);
@@ -133,10 +133,10 @@ static GB_ERROR NT_resort_data_base(GBT_TREE *tree, const customCriterion *sortB
     return GB_end_transaction(GLOBAL.gb_main, error);
 }
 
-void NT_resort_data_by_phylogeny(AW_window *, AW_CL cl_ntw, AW_CL) {
+void NT_resort_data_by_phylogeny(AW_window*, AWT_canvas *ntw) {
     arb_progress  progress("Sorting data");
     GB_ERROR      error = 0;
-    GBT_TREE     *tree  = NT_get_tree_root_of_canvas((AWT_canvas*)cl_ntw);
+    TreeNode     *tree  = NT_get_tree_root_of_canvas(ntw);
 
     if (!tree)  error = "Please select/build a tree first";
     if (!error) error = NT_resort_data_base(tree, NULL);
@@ -180,8 +180,8 @@ AW_window *NT_create_resort_window(AW_root *awr) {
     aws->init(awr, "SORT_DATABASE", "SORT DATABASE");
     aws->load_xfig("nt_sort.fig");
 
-    aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("close");
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->callback(makeHelpCallback("sp_sort_fld.hlp"));
@@ -197,7 +197,7 @@ AW_window *NT_create_resort_window(AW_root *awr) {
     aws->at("rev3"); aws->label("Reverse"); aws->create_toggle(AWAR_TREE_REV3);
 
     aws->at("go");
-    aws->callback((AW_CB0)NT_resort_data_by_user_criteria);
+    aws->callback(NT_resort_data_by_user_criteria);
     aws->create_button("GO", "GO", "G");
 
     return aws;

@@ -6,18 +6,21 @@
 #endif
 
 class AW_device_Xm : public AW_device {
-    bool line_impl(int gc, const AW::LineVector& Line, AW_bitset filteri);
-    bool text_impl(int gc, const char *str, const AW::Position& pos, AW_pos alignment, AW_bitset filteri, long opt_strlen);
-    bool box_impl(int gc, bool filled, const AW::Rectangle& rect, AW_bitset filteri);
-    bool circle_impl(int gc, bool filled, const AW::Position& center, const AW::Vector& radius, AW_bitset filteri);
-    bool arc_impl(int gc, bool filled, const AW::Position& center, const AW::Vector& radius, int start_degrees, int arc_degrees, AW_bitset filter);
-    bool filled_area_impl(int gc, int npos, const AW::Position *pos, AW_bitset filteri) {
-        return generic_filled_area(gc, npos, pos, filteri);
-    }
-    bool invisible_impl(const AW::Position& pos, AW_bitset filteri) { return generic_invisible(pos, filteri); }
+    bool line_impl(int gc, const AW::LineVector& Line, AW_bitset filteri) OVERRIDE;
+    bool text_impl(int gc, const char *str, const AW::Position& pos, AW_pos alignment, AW_bitset filteri, long opt_strlen) OVERRIDE;
+    bool box_impl(int gc, AW::FillStyle filled, const AW::Rectangle& rect, AW_bitset filteri) OVERRIDE;
+    bool circle_impl(int gc, AW::FillStyle filled, const AW::Position& center, const AW::Vector& radius, AW_bitset filteri) OVERRIDE;
+    bool arc_impl(int gc, AW::FillStyle filled, const AW::Position& center, const AW::Vector& radius, int start_degrees, int arc_degrees, AW_bitset filter) OVERRIDE;
+    bool polygon_impl(int gc, AW::FillStyle filled, int npos, const AW::Position *pos, AW_bitset filteri) OVERRIDE;
+    bool invisible_impl(const AW::Position& pos, AW_bitset filteri) OVERRIDE { return generic_invisible(pos, filteri); }
 
     void specific_reset() {}
+
+    enum Fill_Style { FS_EMPTY, FS_GREY, FS_SOLID };
     
+    AW_device_Xm::Fill_Style setFillstyleForGreylevel(int gc, AW::FillStyle filled);
+    void resetFillstyleForGreylevel(int gc);
+
 public:
     AW_device_Xm(AW_common *commoni)
         : AW_device(commoni)

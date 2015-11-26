@@ -47,28 +47,25 @@ int Complement::calc_complement(int base) {
 // overloaded functions to avoid problems with type-punning:
 inline void aisc_link(dll_public *dll, PT_tprobes *tprobe)   { aisc_link(reinterpret_cast<dllpublic_ext*>(dll), reinterpret_cast<dllheader_ext*>(tprobe)); }
 
-extern "C" {
-    int pt_init_bond_matrix(PT_local *THIS)
-    {
-        THIS->bond[0].val  = 0.0;
-        THIS->bond[1].val  = 0.0;
-        THIS->bond[2].val  = 0.5;
-        THIS->bond[3].val  = 1.1;
-        THIS->bond[4].val  = 0.0;
-        THIS->bond[5].val  = 0.0;
-        THIS->bond[6].val  = 1.5;
-        THIS->bond[7].val  = 0.0;
-        THIS->bond[8].val  = 0.5;
-        THIS->bond[9].val  = 1.5;
-        THIS->bond[10].val = 0.4;
-        THIS->bond[11].val = 0.9;
-        THIS->bond[12].val = 1.1;
-        THIS->bond[13].val = 0.0;
-        THIS->bond[14].val = 0.9;
-        THIS->bond[15].val = 0.0;
+int pt_init_bond_matrix(PT_local *THIS) {
+    THIS->bond[0].val  = 0.0;
+    THIS->bond[1].val  = 0.0;
+    THIS->bond[2].val  = 0.5;
+    THIS->bond[3].val  = 1.1;
+    THIS->bond[4].val  = 0.0;
+    THIS->bond[5].val  = 0.0;
+    THIS->bond[6].val  = 1.5;
+    THIS->bond[7].val  = 0.0;
+    THIS->bond[8].val  = 0.5;
+    THIS->bond[9].val  = 1.5;
+    THIS->bond[10].val = 0.4;
+    THIS->bond[11].val = 0.9;
+    THIS->bond[12].val = 1.1;
+    THIS->bond[13].val = 0.0;
+    THIS->bond[14].val = 0.9;
+    THIS->bond[15].val = 0.0;
 
-        return 0;
-    }
+    return 0;
 }
 
 struct dt_bondssum {
@@ -163,14 +160,15 @@ class MatchingOligo {
         pt_assert(!dangling());
     }
 
-    void optimal_bind_rest(const Splits& splits, const double *max_bond) { // @@@ slow -> optimize
+    void optimal_bind_rest(const Splits& splits) { // @@@ slow -> optimize
         pt_assert(dangling());
         while (dangling()) {
             char   pc       = dangling_char();
-            double strength = splits.check(pc, pc);
-            double bondmax  = max_bond[safeCharIndex(pc)];
-
+            double strength = splits.check(pc, pc); // @@@ always 0.0?
+            UNCOVERED();
             pt_assert(strength >= 0.0);
+
+            double bondmax = splits.get_max_bond(pc);
 
             matched++;
             linkage.dt        += strength;
@@ -204,15 +202,27 @@ public:
         return oligo.at(matched);
     }
 
-    MatchingOligo bind_against(char c, const Splits& splits, const double *max_bond) const {
-        pt_assert(c != PT_QU);
+    MatchingOligo bind_against(char c, const Splits& splits) const {
+        pt_assert(is_std_base_or_N(c));
 
-        char   pc       = dangling_char();
-        double strength = splits.check(pc, c);
+        char pc = dangling_char();
+        double strength;
+
+        if (c == PT_N) {
+            // we are checking outgroup-matches here => assume strongest possible bind versus N
+            strength = -100.0;
+            for (int base = PT_A; base < PT_BASES; ++base) {
+                strength = std::max(strength, splits.check(pc, base));
+            }
+            pt_assert(strength>-100.0);
+        }
+        else {
+            strength = splits.check(pc, c);
+        }
 
         return strength<0.0
             ? MatchingOligo(*this, strength)
-            : MatchingOligo(*this, strength, max_bond[safeCharIndex(pc)]);
+            : MatchingOligo(*this, strength, splits.get_max_bond(pc));
     }
 
     MatchingOligo dont_bind_rest() const {
@@ -242,9 +252,9 @@ public:
         return pos;
     }
 
-    bool centigrade_pos_out_of_reach(const PT_tprobes *tprobe, const PT_pdc *const pdc, const Splits& splits, const double *max_bond) const {
+    bool centigrade_pos_out_of_reach(const PT_tprobes *tprobe, const PT_pdc *const pdc, const Splits& splits) const {
         MatchingOligo optimum(*this);
-        optimum.optimal_bind_rest(splits, max_bond);
+        optimum.optimal_bind_rest(splits);
 
         if (!optimum.domainSeen()) return true; // no domain -> no centigrade position
 
@@ -382,13 +392,6 @@ static void tprobes_sumup_perc_and_calc_quality(PT_pdc *pdc) {
 
         tprobe->quality = ((double)tprobe->groupsize * i) + 1000.0/(1000.0 + tprobe->perc[i]);
     }
-}
-
-static double ptnd_check_max_bond(const PT_local *locs, char base) {
-    //! check the bond val for a probe
-
-    int complement = get_complement(base);
-    return locs->bond[(complement-(int)PT_A)*4 + base-(int)PT_A].val;
 }
 
 static char hitgroup_idx2char(int idx) {
@@ -811,12 +814,15 @@ static size_t tprobes_calculate_bonds(PT_local *locs) {
 
     PT_pdc *pdc   = locs->pdc;
     size_t  count = 0;
+
+    MaxBond mbond(locs->bond);
+
     for (PT_tprobes *tprobe = pdc->tprobes; tprobe; ) {
         PT_tprobes *tprobe_next = tprobe->next;
         tprobe->seq_len = strlen(tprobe->sequence);
         double sbond = 0.0;
         for (int i=0; i<tprobe->seq_len; i++) {
-            sbond += ptnd_check_max_bond(locs, tprobe->sequence[i]);
+            sbond += mbond.get_max_bond(tprobe->sequence[i]);
         }
         tprobe->sum_bonds = sbond;
 
@@ -862,7 +868,6 @@ class OutgroupMatcher : virtual Noncopyable {
     const PT_pdc *const pdc;
 
     Splits splits;
-    double max_bonds[PT_BASES];                // @@@ move functionality into Splits
 
     PT_tprobes    *currTprobe;
     CentigradePos  result;
@@ -933,7 +938,7 @@ class OutgroupMatcher : virtual Noncopyable {
     }
 
     bool might_reach_centigrade_pos(const MatchingOligo& oligo) const {
-        return !oligo.centigrade_pos_out_of_reach(currTprobe, pdc, splits, max_bonds);
+        return !oligo.centigrade_pos_out_of_reach(currTprobe, pdc, splits);
     }
 
     void bind_rest(const MatchingOligo& oligo, const ReadableDataLoc& loc, const int height) {
@@ -945,7 +950,7 @@ class OutgroupMatcher : virtual Noncopyable {
         pt_assert(loc.get_pid().outside_group());     // otherwise we are not interested in the result
 
         if (loc[height]) {
-            MatchingOligo more = oligo.bind_against(loc[height], splits, max_bonds);
+            MatchingOligo more = oligo.bind_against(loc[height], splits);
             pt_assert(more.domainSeen()); // implied by oligo.domainSeen()
             if (more.dangling()) {
                 if (might_reach_centigrade_pos(more)) {
@@ -986,10 +991,10 @@ class OutgroupMatcher : virtual Noncopyable {
                             announce_possible_match(all, ptdotson);
                         }
 
-                        for (int i = PT_A; i<PT_BASES; ++i) {
+                        for (int i = PT_N; i<PT_BASES; ++i) {
                             POS_TREE2 *ptson = PT_read_son(pt, (PT_base)i);
                             if (ptson) {
-                                bind_rest(oligo.bind_against(i, splits, max_bonds), ptson, height+1);
+                                bind_rest(oligo.bind_against(i, splits), ptson, height+1);
                             }
                         }
                         break;
@@ -1019,8 +1024,8 @@ class OutgroupMatcher : virtual Noncopyable {
         pt_assert(might_reach_centigrade_pos(oligo));             // otherwise ReadableDataLoc is constructed w/o need (very expensive!)
         pt_assert(loc.get_pid().outside_group());                 // otherwise we are not interested in the result
 
-        if (is_std_base(loc[height])) { // do not try to bind domain versus dot or N
-            MatchingOligo more = oligo.bind_against(loc[height], splits, max_bonds);
+        if (is_std_base_or_N(loc[height])) { // do not try to bind domain versus dot
+            MatchingOligo more = oligo.bind_against(loc[height], splits);
             if (more.dangling()) {
                 if (might_reach_centigrade_pos(more)) {
                     if      (more.domainSeen())     bind_rest       (more, loc, height+1);
@@ -1053,7 +1058,7 @@ class OutgroupMatcher : virtual Noncopyable {
                     for (int i = PT_A; i<PT_BASES; ++i) {
                         POS_TREE2 *ptson = PT_read_son(pt, (PT_base)i);
                         if (ptson) {
-                            MatchingOligo sonOligo = oligo.bind_against(i, splits, max_bonds);
+                            MatchingOligo sonOligo = oligo.bind_against(i, splits);
 
                             if      (sonOligo.domainSeen())     bind_rest       (sonOligo, ptson, height+1);
                             else if (sonOligo.domainPossible()) bind_till_domain(sonOligo, ptson, height+1);
@@ -1084,11 +1089,7 @@ public:
           splits(locs_),
           currTprobe(NULL),
           only_bind_behind_dot(false)
-    {
-        for (int i = PT_QU; i<PT_BASES; ++i) {
-            max_bonds[i] = ptnd_check_max_bond(locs_, i);
-        }
-    }
+    {}
 
     void calculate_outgroup_matches(PT_tprobes& tprobe) {
         LocallyModify<PT_tprobes*> assign_tprobe(currTprobe, &tprobe);

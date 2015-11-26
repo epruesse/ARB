@@ -55,6 +55,18 @@ sub main() {
     push @childs, $pid;
   }
 
+  # ----------------------------------------
+  # create custom dependency gifs:
+  my $custom_gifbase = "$dest/custom";
+  # my $custom_libs    = "SL/ITEMS/ITEMS.a SL/DB_QUERY/DB_QUERY.a SL/DB_UI/DB_UI.a";
+  my $custom_libs    = "arb_edit4 arb_ntree";
+
+  execute("SOURCE_TOOLS/needed_libs.pl -G ${custom_gifbase}_both.gif        -U -B -S $custom_libs");
+  execute("SOURCE_TOOLS/needed_libs.pl -G ${custom_gifbase}_inheritents.gif -U -I -S $custom_libs");
+  execute("SOURCE_TOOLS/needed_libs.pl -G ${custom_gifbase}_depends.gif     -U    -S $custom_libs");
+  execute("SOURCE_TOOLS/needed_libs.pl -G ${custom_gifbase}_reduced.gif     -U -n -S $custom_libs");
+  # ----------------------------------------
+
   print "Waiting for childs...\n";
   foreach (@childs) {
     waitpid($_, 0);

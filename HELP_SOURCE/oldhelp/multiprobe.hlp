@@ -18,11 +18,11 @@ DESCRIPTION	Finds an optimal probe-triple given a set of probes.
 		Often a group of species cannot be detected by a single
 		oligo-nucleic probe. So several ( normally 3) probes are
 		combined to get a better result. Each probe is labeled with
-		a unique color (red, green and blue (and mixes of these)).
+		a unique color (see LINK{multiproberesults.hlp}).
 
 NOTES           WHAT DOES MULTI PROBE DO NOT
 
-                     It does not generate new probes !
+                     It does not generate new probes!
 
                 WHAT DOES IT DO
 

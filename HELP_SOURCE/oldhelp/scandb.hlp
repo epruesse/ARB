@@ -11,8 +11,8 @@ UP	sp_info.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Scan Database for all Fields
 
-OCCURRENCE	ARB_NT/Species|Genes|Experiments/Info/FIELDS/Show all hidden fields
-                ARB_NT/Species|Genes|Experiments/Info/FIELDS/Refresh fields
+OCCURRENCE	<any information window>/FIELDS/Show all hidden fields
+                <any information window>/FIELDS/Refresh fields
 
 DESCRIPTION     Each function scans the database to detect all existing fields.
 

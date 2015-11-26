@@ -13,7 +13,9 @@ TITLE		Hiding genes
 OCCURRENCE	ARB_NT/ARB_GENE_MAP/Hide
 
 DESCRIPTION	You can hide genes. 
-		Hidden genes will not be displayed in ARB_GENE_MAP.
+
+		Hidden genes will normally not be displayed in ARB_GENE_MAP.
+		You may change that behavior in LINK{gen_options.hlp}.		
 
 NOTES		None	
 

@@ -17,6 +17,8 @@ XML_LOCATION=Xml
 HTML_LOCATION=../lib/help_html
 HLP_DEST=../lib/help
 HELP_INDEX_NAME = help_index
+DOTMAP=./help_map.dot
+GIFMAP=./help_map.gif
 
 # needed tools:
 TOOL_OBJECTS = \
@@ -108,7 +110,9 @@ DTD=arb_help.dtd
 $(XML) : $(XML_DEPEND) Makefile $(QUIETLY)
 
 $(HELP_INDEX_XML): $(OLD_HELP_ALL) $(XML) ./generate_index.pl Makefile
-	./generate_index.pl $(HELP_INDEX_NAME).xml $(XML_LOCATION) > $@
+	./generate_index.pl $(XML_LOCATION) $(HELP_INDEX_NAME).xml $(DOTMAP) > $@
+	-dot -Tgif -o$(GIFMAP) $(DOTMAP)
+	rm $(DOTMAP)
 
 xml : $(XML) $(HELP_INDEX_XML)
 
@@ -190,11 +194,13 @@ XSLTPROC_ARGS=--nonet --nomkdir --stringparam xml_location "$(XML_LOCATION)"
 
 INTERDEPENDS=.depends
 INTERDEPENDS_SOURCE=$(XML)
-XML2DEPENDS=./xml_2_depends.sh
+XML2DEPENDS=./xml_2_depends.pl
 
 $(INTERDEPENDS): $(INTERDEPENDS_SOURCE) $(XML2DEPENDS) Makefile $(STYLE_DEPENDS)
-	@( ( echo "$(INTERDEPENDS_SOURCE)" | $(XML2DEPENDS) $(XSLTPROC) $(STYLE_DEPENDS) $(XSLTPROC_ARGS) >$@ ) 2>interdep.err && rm interdep.err ) || \
-		(cat interdep.err; false)
+	@( ( echo "$(INTERDEPENDS_SOURCE)" | $(XML2DEPENDS) $(XSLTPROC) $(STYLE_DEPENDS) $(XSLTPROC_ARGS) >$@ ) 2>interdep.err && \
+	   ( $(XML2DEPENDS) CHECK $@ ) 2>>interdep.err && \
+	   rm interdep.err ) || \
+         (cat interdep.err; false)
 
 interdepends: $(INTERDEPENDS)
 
@@ -252,10 +258,10 @@ $(XML_DEPEND) : arb_help2xml.cxx
 	touch $(XML_DEPEND)
 
 %.o: %.cxx
-	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE) $<
 
 $(HELP2XML): arb_help2xml.o $(LIBS) $(use_ARB_main)
-	$(LINK_EXECUTABLE) $@ $(use_ARB_main) $< $(LIBS) $(LIBPATH) $(CORE_LIB) $(EXECLIBS)
+	$(LINK_EXECUTABLE) $@ $(use_ARB_main) $< $(LIBS) $(LIBPATH) $(EXECLIBS) $(CORE_LIB) 
 
 
 DEPENDS = $(TOOL_OBJECTS:.o=.depend)
@@ -279,6 +285,7 @@ arb_help2xml.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arb_help2xml.o: $(ARBHOME)/INCLUDE/arb_core.h
 arb_help2xml.o: $(ARBHOME)/INCLUDE/arb_defs.h
 arb_help2xml.o: $(ARBHOME)/INCLUDE/arb_diff.h
+arb_help2xml.o: $(ARBHOME)/INCLUDE/arb_msg.h
 arb_help2xml.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_help2xml.o: $(ARBHOME)/INCLUDE/attributes.h
 arb_help2xml.o: $(ARBHOME)/INCLUDE/cxxforward.h

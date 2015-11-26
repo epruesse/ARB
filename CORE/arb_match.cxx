@@ -136,7 +136,7 @@ const char *GBS_regmatch(const char *str, const char *regExpr, size_t *matchlen,
     /* searches 'str' for first occurrence of 'regExpr'
      * 'regExpr' has to be in format "/expr/[i]", where 'expr' is a POSIX extended regular expression
      *
-     * for regexpression format see http://dev.mikro.biologie.tu-muenchen.de/help_nightly/reg.html#Syntax_of_POSIX_extended_regular_expressions_as_used_in_ARB
+     * for regexpression format see http://help.arb-home.de/reg.html#Syntax_of_POSIX_extended_regular_expressions_as_used_in_ARB
      *
      * returns
      * - pointer to start of first match in 'str' and

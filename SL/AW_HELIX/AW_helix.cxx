@@ -18,6 +18,7 @@
 #include <aw_device.hxx>
 #include <arbdbt.h>
 #include <cctype>
+#include <awt_config_manager.hxx>
 
 #define HELIX_AWAR_ENABLE          "Helix/enable"
 #define HELIX_AWAR_SYMBOL_TEMPLATE "Helix/symbols/%s"
@@ -138,12 +139,12 @@ int AW_helix::show_helix(void *devicei, int gc1, const char *sequence, AW_pos x,
     return device->text_overlay(gc1, sequence, 0, AW::Position(x, y), 0.0,  filter, (AW_CL)this, 1.0, 1.0, BI_show_helix_on_device);
 }
 
-static void helix_pairs_changed_cb(AW_window *aww, AW_CL changed, AW_CL cb) {
+static void helix_pairs_changed_cb(AW_window *aww, int changed_idx, const WindowCallback *refreshCallback) {
     static bool recursion = false;
 
     if (!recursion) {
         AW_root *aw_root   = aww->get_root();
-        AW_awar *awar_pair = aw_root->awar(helix_pair_awar(changed));
+        AW_awar *awar_pair = aw_root->awar(helix_pair_awar(changed_idx));
         char    *pairdef   = awar_pair->read_string();
 
         {
@@ -156,7 +157,7 @@ static void helix_pairs_changed_cb(AW_window *aww, AW_CL changed, AW_CL cb) {
                 pairdef[i+1] = right;
 
                 for (int j = 0; helix_awars[j].awar; j++) {
-                    if (j != changed) {
+                    if (j != changed_idx) {
                         AW_awar *awar_pair2 = aw_root->awar(helix_pair_awar(j));
                         char    *pd2        = awar_pair2->read_string();
                         int      dst        = 0;
@@ -192,13 +193,27 @@ static void helix_pairs_changed_cb(AW_window *aww, AW_CL changed, AW_CL cb) {
             }
             awar_pair->write_string(pairdef); // write back uppercase version
         }
-        ((void (*)())cb)();
+        (*refreshCallback)(aww);
 
         free(pairdef);
     }
 }
 
-AW_window *create_helix_props_window(AW_root *awr, void (*cb)(AW_window*)) {
+void setup_helix_config(AWT_config_definition& cdef) {
+    cdef.add(HELIX_AWAR_ENABLE, "enable");
+    
+    for (int j=0; helix_awars[j].awar; j++) {
+        int i = helix_awars[j].pair_type;
+
+        const char *name = helix_awars[j].awar;
+        if (i != HELIX_DEFAULT && i != HELIX_NO_MATCH) {
+            cdef.add(helix_pair_awar(j), name);
+        }
+        cdef.add(helix_symbol_awar(j), GBS_global_string("%s_symbol", name));
+    }
+}
+
+AW_window *create_helix_props_window(AW_root *awr, const WindowCallback *refreshCallback) {
     static AW_window_simple *aws = 0;
     if (!aws) {
         aws = new AW_window_simple;
@@ -209,8 +224,11 @@ AW_window *create_helix_props_window(AW_root *awr, void (*cb)(AW_window*)) {
 
         aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
+
         aws->callback(makeHelpCallback("helixsym.hlp"));
         aws->create_button("HELP", "HELP", "H");
+
+        AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "helix", makeConfigSetupCallback(setup_helix_config));
 
         aws->at_newline();
 
@@ -218,7 +236,7 @@ AW_window *create_helix_props_window(AW_root *awr, void (*cb)(AW_window*)) {
         aws->label_length(max_awar_len);
 
         aws->label("Show helix?");
-        aws->callback(makeWindowCallback(cb));
+        aws->callback(*refreshCallback);
         aws->create_toggle(HELIX_AWAR_ENABLE);
 
         aws->at_newline();
@@ -231,7 +249,7 @@ AW_window *create_helix_props_window(AW_root *awr, void (*cb)(AW_window*)) {
 
             if (i != HELIX_DEFAULT && i != HELIX_NO_MATCH) {
                 aws->label(helix_awars[j].awar);
-                aws->callback(helix_pairs_changed_cb, j, (AW_CL)cb);
+                aws->callback(makeWindowCallback(helix_pairs_changed_cb, j, refreshCallback));
                 aws->create_input_field(helix_pair_awar(j), 20);
 
                 if (j == 0) ex = aws->get_at_xposition();
@@ -242,7 +260,7 @@ AW_window *create_helix_props_window(AW_root *awr, void (*cb)(AW_window*)) {
                 aws->at_x(ex);
             }
 
-            aws->callback(makeWindowCallback(cb));
+            aws->callback(*refreshCallback);
             aws->create_input_field(helix_symbol_awar(j), 3);
             aws->at_newline();
         }

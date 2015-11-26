@@ -97,12 +97,12 @@ AW_window *AW_create_namesadmin_window(AW_root *root, GBDATA *gb_main) {
 
     aws->load_xfig("awtc/names_admin.fig");
 
-    aws->callback(makeHelpCallback("namesadmin.hlp"));
     aws->at("help");
+    aws->callback(makeHelpCallback("namesadmin.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
-    aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("close");
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->button_length(30);

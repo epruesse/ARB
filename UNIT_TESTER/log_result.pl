@@ -16,6 +16,8 @@ sub log_summary($) {
   my $line;
  LINE:  while (defined ($line=<LOG>)) {
     if ($line =~ $reg_summary) {
+      my $summary = undef;
+      my $failure = 0;
       my $testCount = $1;
       if ($testCount==0) {
         ; # looks like all tests in this module have been skipped
@@ -37,11 +39,12 @@ sub log_summary($) {
             if ($passed eq 'ALL') { $passed = $testCount; }
           }
         }
-        print "- $module ($passed/$testCount)\n";
+        $summary = "- $module ($passed/$testCount)";
+        if ($passed != $testCount) { $failure = 1; }
       }
 
       close(LOG);
-      return;
+      return ($summary,$failure);
     }
     elsif ($line =~ $reg_interrupted) {
       $interrupted = 1;
@@ -74,7 +77,7 @@ sub log_summary($) {
   if ($interrupted==1) { $msg = 'interrupted; deadlock?'; }
   if ($sanitizer==1) { $msg = 'aborted by AddressSanitizer'; }
 
-  print "- $module ($msg$extraMsg)\n";
+  return ("- $module ($msg$extraMsg)",1);
 }
 
 sub main() {
@@ -83,7 +86,15 @@ sub main() {
     die "Usage: log_result.pl unittest.log";
   }
   else {
-    log_summary($ARGV[0]);
+    my ($summary,$failure) = log_summary($ARGV[0]);
+    if (defined $summary) {
+      if ($failure==1) {
+        print sprintf("%-35s <- FAILED\n", $summary);
+      }
+      else {
+        print $summary."\n";
+      }
+    }
   }
 }
 main();

@@ -35,13 +35,13 @@ void nt_mode_event(UNFIXED, AWT_canvas *ntw, AWT_COMMAND_MODE mode) {
         case AWT_MODE_INFO:   text = MODE_TEXT_1BUTTON("INFO",   "click for info");                                      break;
         case AWT_MODE_WWW:    text = MODE_TEXT_1BUTTON("WEB",    "Launch node dependent URL (see <Properties/WWW...>)"); break;
 
-        case AWT_MODE_SWAP:       text = MODE_TEXT_2BUTTONS("SWAP",         "swap child branches",        "flip whole subtree");          break;
-        case AWT_MODE_MARK:       text = MODE_TEXT_2BUTTONS("MARK",         "mark subtree",               "unmark subtree");              break;
-        case AWT_MODE_GROUP:      text = MODE_TEXT_2BUTTONS("GROUP",        "fold/unfold group",          "create/rename/destroy group"); break;
-        case AWT_MODE_NNI:        text = MODE_TEXT_2BUTTONS("OPTI(NNI)",    "subtree",                    "whole tree");                  break;
-        case AWT_MODE_KERNINGHAN: text = MODE_TEXT_2BUTTONS("OPTI(KL)",     "subtree",                    "whole tree");                  break;
-        case AWT_MODE_OPTIMIZE:   text = MODE_TEXT_2BUTTONS("OPTI(NNI&KL)", "subtree",                    "whole tree");                  break;
-        case AWT_MODE_SETROOT:    text = MODE_TEXT_2BUTTONS("REROOT",       "set root to clicked branch", "search optimal root");         break;
+        case AWT_MODE_SWAP:       text= MODE_TEXT_2BUTTONS("SWAP",         "swap child branches",        "flip whole subtree");          break;
+        case AWT_MODE_MARK:       text= MODE_TEXT_2BUTTONS("MARK",         "mark subtree",               "unmark subtree");              break;
+        case AWT_MODE_GROUP:      text= MODE_TEXT_2BUTTONS("GROUP",        "fold/unfold group",          "create/rename/destroy group"); break;
+        case AWT_MODE_NNI:        text= MODE_TEXT_2BUTTONS("OPTI(NNI)",    "once",                       "repeated");                    break;
+        case AWT_MODE_KERNINGHAN: text= MODE_TEXT_2BUTTONS("OPTI(KL)",     "once",                       "repeated");                    break;
+        case AWT_MODE_OPTIMIZE:   text= MODE_TEXT_2BUTTONS("OPTI(NNI&KL)", "once",                       "repeated");                    break;
+        case AWT_MODE_SETROOT:    text= MODE_TEXT_2BUTTONS("REROOT",       "set root to clicked branch", "search optimal root");         break;
 
         case AWT_MODE_ROTATE: text = MODE_TEXT_1BUTTON_KEYS("ROTATE", "drag branch to rotate",         KEYINFO_ABORT_AND_RESET); break;
         case AWT_MODE_SPREAD: text = MODE_TEXT_1BUTTON_KEYS("SPREAD", "drag branch to spread subtree", KEYINFO_ABORT_AND_RESET); break;
@@ -330,7 +330,7 @@ void NT_insert_mark_submenus(AW_window_menu_modes *awm, AWT_canvas *ntw, int ins
 }
 
 static void save_changed_tree(AWT_canvas *ntw) {
-    GB_ERROR error = AWT_TREE(ntw)->save(ntw->gb_main, 0, 0, 0);
+    GB_ERROR error = AWT_TREE(ntw)->save(ntw->gb_main, NULL);
     if (error) aw_message(error);
     ntw->zoom_reset_and_refresh();
 }
@@ -415,7 +415,7 @@ void NT_insert_collapse_submenu(AW_window_menu_modes *awm, AWT_canvas *ntw) {
 // ------------------------
 //      tree sorting :
 
-GB_ERROR NT_with_displayed_tree_do(AWT_canvas *ntw, bool (*displayed_tree_cb)(RootedTree *tree, GB_ERROR& error)) {
+GB_ERROR NT_with_displayed_tree_do(AWT_canvas *ntw, bool (*displayed_tree_cb)(TreeNode *tree, GB_ERROR& error)) {
     // 'displayed_tree_cb' has to return true if tree was changed and needs to be saved
 
     GB_transaction ta(ntw->gb_main);
@@ -460,12 +460,12 @@ void NT_remove_leafs(UNFIXED, AWT_canvas *ntw, AWT_RemoveType mode) {
     GB_transaction ta(ntw->gb_main);
 
     AWT_TREE(ntw)->check_update(ntw->gb_main);
-    AP_tree *tree_root = AWT_TREE(ntw)->get_root_node();
-    if (tree_root) {
-        AWT_TREE(ntw)->tree_static->remove_leafs(mode);
+    AP_tree *root_node = AWT_TREE(ntw)->get_root_node();
+    if (root_node) {
+        AWT_TREE(ntw)->get_tree_root()->remove_leafs(mode);
 
-        tree_root = AWT_TREE(ntw)->get_root_node(); // root might have changed -> get again
-        if (tree_root) tree_root->compute_tree();
+        root_node = AWT_TREE(ntw)->get_root_node(); // root might have changed -> get again
+        if (root_node) root_node->compute_tree();
         save_changed_tree(ntw);
     }
     else {
@@ -478,10 +478,10 @@ void NT_remove_bootstrap(UNFIXED, AWT_canvas *ntw) { // delete all bootstrap val
 
     AWT_TREE(ntw)->check_update(ntw->gb_main);
 
-    AP_tree *tree_root = AWT_TREE(ntw)->get_root_node();
-    if (tree_root) {
-        tree_root->remove_bootstrap();
-        tree_root->compute_tree();
+    AP_tree *root_node = AWT_TREE(ntw)->get_root_node();
+    if (root_node) {
+        root_node->remove_bootstrap();
+        root_node->compute_tree();
         save_changed_tree(ntw);
     }
     else {
@@ -493,10 +493,10 @@ void NT_toggle_bootstrap100(UNFIXED, AWT_canvas *ntw) { // toggle 100% bootstrap
 
     AWT_TREE(ntw)->check_update(ntw->gb_main);
 
-    AP_tree *tree_root = AWT_TREE(ntw)->get_root_node();
-    if (tree_root) {
-        tree_root->toggle_bootstrap100();
-        tree_root->compute_tree();
+    AP_tree *root_node = AWT_TREE(ntw)->get_root_node();
+    if (root_node) {
+        root_node->toggle_bootstrap100();
+        root_node->compute_tree();
         save_changed_tree(ntw);
     }
     else {
@@ -508,10 +508,10 @@ void NT_reset_branchlengths(UNFIXED, AWT_canvas *ntw) { // set all branchlengths
     GB_transaction ta(ntw->gb_main);
     AWT_TREE(ntw)->check_update(ntw->gb_main);
 
-    AP_tree *tree_root = AWT_TREE(ntw)->get_root_node();
-    if (tree_root) {
-        tree_root->reset_branchlengths();
-        tree_root->compute_tree();
+    AP_tree *root_node = AWT_TREE(ntw)->get_root_node();
+    if (root_node) {
+        root_node->reset_branchlengths();
+        root_node->compute_tree();
         save_changed_tree(ntw);
     }
     else {
@@ -519,11 +519,11 @@ void NT_reset_branchlengths(UNFIXED, AWT_canvas *ntw) { // set all branchlengths
     }
 }
 
-void NT_multifurcate_tree(AWT_canvas *ntw, const RootedTree::multifurc_limits& below) {
+void NT_multifurcate_tree(AWT_canvas *ntw, const TreeNode::multifurc_limits& below) {
     GB_transaction ta(ntw->gb_main);
     AWT_TREE(ntw)->check_update(ntw->gb_main);
 
-    RootedTree *tree = AWT_TREE(ntw)->get_root_node();
+    TreeNode *tree = AWT_TREE(ntw)->get_root_node();
     if (tree) {
         tree->multifurcate_whole_tree(below);
         save_changed_tree(ntw);
@@ -538,12 +538,12 @@ void NT_move_boot_branch(UNFIXED, AWT_canvas *ntw, int direction) { // copy bran
 
     AWT_TREE(ntw)->check_update(ntw->gb_main);
 
-    AP_tree *tree_root = AWT_TREE(ntw)->get_root_node();
-    if (tree_root) {
-        if (direction == 0) tree_root->bootstrap2branchlen();
-        else                tree_root->branchlen2bootstrap();
+    AP_tree *root_node = AWT_TREE(ntw)->get_root_node();
+    if (root_node) {
+        if (direction == 0) root_node->bootstrap2branchlen();
+        else                root_node->branchlen2bootstrap();
 
-        tree_root->compute_tree();
+        root_node->compute_tree();
         save_changed_tree(ntw);
 
         char *adviceText = GBS_global_string_copy("Please note, that you just overwrote your existing %s.",
@@ -562,10 +562,10 @@ void NT_scale_tree(UNFIXED, AWT_canvas *ntw) { // scale branchlengths
         double factor = atof(answer);
         GB_transaction ta(ntw->gb_main);
 
-        AP_tree *tree_root = AWT_TREE(ntw)->get_root_node();
-        if (tree_root) {
-            tree_root->scale_branchlengths(factor);
-            tree_root->compute_tree();
+        AP_tree *root_node = AWT_TREE(ntw)->get_root_node();
+        if (root_node) {
+            root_node->scale_branchlengths(factor);
+            root_node->compute_tree();
             save_changed_tree(ntw);
         }
         else {
@@ -590,7 +590,7 @@ static bool make_node_visible(AWT_canvas *ntw, AP_tree *node) {
     }
     if (changed) {
         AWT_TREE(ntw)->get_root_node()->compute_tree();
-        GB_ERROR error = AWT_TREE(ntw)->save(ntw->gb_main, 0, 0, 0);
+        GB_ERROR error = AWT_TREE(ntw)->save(ntw->gb_main, NULL);
         if (error) {
             aw_message(error);
             return false;
@@ -767,7 +767,7 @@ inline const char *plural(int val) {
 void NT_reload_tree_event(AW_root *awr, AWT_canvas *ntw, bool expose) {
     GB_push_transaction(ntw->gb_main);
     char     *tree_name = awr->awar(ntw->user_awar)->read_string();
-    GB_ERROR  error     = ntw->gfx->load(ntw->gb_main, tree_name, 0, 0);
+    GB_ERROR  error     = ntw->gfx->load(ntw->gb_main, tree_name);
     if (error) {
         aw_message(error);
     }
@@ -800,6 +800,15 @@ void TREE_recompute_cb(UNFIXED, AWT_canvas *ntw) {
     AWT_graphic_tree *gt = DOWNCAST(AWT_graphic_tree*, ntw->gfx);
     gt->get_root_node()->compute_tree();
     AWT_expose_cb(NULL, ntw);
+}
+
+void TREE_GC_changed_cb(GcChange whatChanged, AWT_canvas *ntw) {
+    if (whatChanged == GC_COLOR_GROUP_USE_CHANGED) {
+        TREE_recompute_cb(NULL, ntw);
+    }
+    else {
+        AWT_GC_changed_cb(whatChanged, ntw);
+    }
 }
 
 void NT_reinit_treetype(UNFIXED, AWT_canvas *ntw) {

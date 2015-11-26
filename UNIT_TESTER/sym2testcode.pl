@@ -102,7 +102,8 @@ sub parse($) {
   eval {
   LINE: while (defined ($line = <IN>)) {
       $lineNr++;
-      if ($line =~ /^(([0-9a-f]|\s)+) (.+?) (.*)\n/o) {
+      chomp($line);
+      if ($line =~ /^(([0-9a-f]|\s)+) (.+?) (.*)$/o) {
         my ($type,$rest) = ($3,$4);
         my $symbol;
         my $location = undef;
@@ -155,7 +156,9 @@ sub parse($) {
           }
         }
       }
-      else {
+      elsif (($line ne "\n") and ($line ne '') and
+             not ($line =~ /^[A-Za-z0-9_]+\.o:$/) and
+             not ($line =~ /\([A-Za-z0-9_]+\.o\):$/)) {
         die "can't parse line '$line'\n";
       }
     }

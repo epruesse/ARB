@@ -492,7 +492,7 @@ void PrimerDesign::matchSequenceAgainstPrimerTrees()
     printf("root2 : [C %p, G %p, A %p, TU %p]\n", root2->child[0], root2->child[1], root2->child[2], root2->child[3]);
 #endif
 
-    arb_progress progress(seqLength);
+    arb_progress progress(seqLength*2);
 
     progress.subtitle("match possible primers vs. seq. (forward)");
 

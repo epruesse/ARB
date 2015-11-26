@@ -14,7 +14,6 @@
 #include "di_foundclusters.hxx"
 #include "di_awars.hxx"
 
-#include <AP_filter.hxx>
 #include <AP_seq_protein.hxx>
 #include <AP_seq_dna.hxx>
 
@@ -301,14 +300,25 @@ static void sort_order_changed_cb(AW_root *aw_root) {
 class GroupTree;
 typedef map<string, GroupTree*> Species2Tip;
 
+struct GroupTreeRoot : public ARB_seqtree_root {
+    GroupTreeRoot(AliView *aliView, AP_sequence *seqTempl, bool add_delete_callbacks);
+    ~GroupTreeRoot() OVERRIDE { predelete(); }
+    inline TreeNode *makeNode() const OVERRIDE;
+    inline void destroyNode(TreeNode *node) const OVERRIDE;
+};
+
 class GroupTree : public ARB_countedTree {
     unsigned leaf_count;   // total number of leafs in subtree
     unsigned tagged_count; // tagged leafs
 
     void update_tag_counters();
+    unsigned get_leaf_count() const OVERRIDE { return leaf_count; }
+protected:
+    ~GroupTree() OVERRIDE {}
+    friend class GroupTreeRoot;
 public:
 
-    explicit GroupTree(ARB_seqtree_root *root)
+    explicit GroupTree(GroupTreeRoot *root)
         : ARB_countedTree(root),
           leaf_count(0),
           tagged_count(0)
@@ -322,7 +332,6 @@ public:
 
     void map_species2tip(Species2Tip& mapping);
 
-    unsigned get_leaf_count() const OVERRIDE { return leaf_count; }
     unsigned update_leaf_counters();
 
     void tag_leaf() {
@@ -336,11 +345,12 @@ public:
     double tagged_rate() const { return double(get_tagged_count())/get_leaf_count(); }
 };
 
-struct GroupTreeNodeFactory : public RootedTreeNodeFactory {
-    virtual RootedTree *makeNode(TreeRoot *root) const {
-        return new GroupTree(DOWNCAST(ARB_seqtree_root*, root));
-    }
-};
+GroupTreeRoot::GroupTreeRoot(AliView *aliView, AP_sequence *seqTempl, bool add_delete_callbacks)
+    : ARB_seqtree_root(aliView, seqTempl, add_delete_callbacks)
+{}
+inline TreeNode *GroupTreeRoot::makeNode() const { return new GroupTree(const_cast<GroupTreeRoot*>(this)); }
+inline void GroupTreeRoot::destroyNode(TreeNode *node) const { delete DOWNCAST(GroupTree*,node); }
+
 
 unsigned GroupTree::update_leaf_counters() {
     if (is_leaf) leaf_count = 1;
@@ -407,27 +417,33 @@ struct GroupChanges {
 // ---------------------
 //      GroupBuilder
 
-typedef map<GroupTree*, ClusterPtr> Group2Cluster;
-
 class GroupBuilder : virtual Noncopyable {
-    GBDATA           *gb_main;
-    string            tree_name;
-    ARB_seqtree_root *tree_root;
-    Group_Action      action;                       // create or delete ?
-    Species2Tip       species2tip;                  // map speciesName -> leaf
-    ARB_ERROR         error;
-    ClusterPtr        bad_cluster;                  // error occurred here (is set)
-    Group_Existing    existing;
-    unsigned          existing_count;               // counts existing groups
-    Group_NotFound    notfound;
-    double            matchRatio;                   // needed identity of subtree and cluster
-    double            maxDist;                      // max. Distance used for calculation
-    string            cluster_prefix;               // prefix for cluster name
-    string            cluster_suffix_def;           // suffix-definition for cluster name
-    GroupChanges      changes;                      // count tree modifications
-    bool              del_match_prefixes;           // only delete groups, where prefix matches
+    GBDATA         *gb_main;
+    string          tree_name;
+    GroupTreeRoot  *tree_root;
+    Group_Action    action;              // create or delete ?
+    Species2Tip     species2tip;         // map speciesName -> leaf
+    ARB_ERROR       error;
+    ClusterPtr      bad_cluster;         // error occurred here (is set)
+    Group_Existing  existing;
+    unsigned        existing_count;      // counts existing groups
+    Group_NotFound  notfound;
+    double          matchRatio;          // needed identity of subtree and cluster
+    double          maxDist;             // max. Distance used for calculation
+    string          cluster_prefix;      // prefix for cluster name
+    string          cluster_suffix_def;  // suffix-definition for cluster name
+    GroupChanges    changes;             // count tree modifications
+    bool            del_match_prefixes;  // only delete groups, where prefix matches
 
     GroupTree *find_group_position(GroupTree *subtree, unsigned cluster_size);
+    double get_max_distance() const { return maxDist; }
+    void load_tree();
+
+    DEFINE_DOWNCAST_ACCESSORS(GroupTree, get_root_node, tree_root->get_root_node());
+
+    bool shall_delete_group(const char *name) const {
+        return !del_match_prefixes || matches_current_prefix(name);
+    }
 
 public:
     GroupBuilder(GBDATA *gb_main_, Group_Action action_)
@@ -448,20 +464,12 @@ public:
         cluster_prefix     = awr->awar(AWAR_CLUSTER_GROUP_PREFIX)->read_char_pntr();
         cluster_suffix_def = awr->awar(AWAR_CLUSTER_GROUP_SUFFIX)->read_char_pntr();
     }
-    ~GroupBuilder() {
-        delete tree_root;
-    }
+    ~GroupBuilder() { delete tree_root; }
 
     ARB_ERROR get_error() const { return error; }
     ClusterPtr get_bad_cluster() const { return bad_cluster; }
-    Group_Existing with_existing() const { return existing; }
-    unsigned get_existing_count() const { return existing_count; }
-    double get_max_distance() const { return maxDist; }
 
     ARB_ERROR save_modified_tree();
-    void      load_tree();
-
-    DEFINE_DOWNCAST_ACCESSORS(GroupTree, get_root_node, tree_root->get_root_node());
 
     GroupTree *find_best_matching_subtree(ClusterPtr cluster);
     void update_group(ClusterPtr cluster); // create or delete group for cluster
@@ -470,16 +478,12 @@ public:
     bool matches_current_prefix(const char *groupname) const {
         return strstr(groupname, cluster_prefix.c_str()) == groupname;
     }
-
-    bool shall_delete_group(const char *name) const {
-        return !del_match_prefixes || matches_current_prefix(name);
-    }
 };
 
 void GroupBuilder::load_tree() {
     di_assert(!tree_root);
 
-    tree_root = new ARB_seqtree_root(new AliView(gb_main), new GroupTreeNodeFactory, NULL, false);
+    tree_root = new GroupTreeRoot(new AliView(gb_main), NULL, false);
     error     = tree_root->loadFromDB(tree_name.c_str());
 
     if (error) {
@@ -530,13 +534,13 @@ GroupTree *GroupBuilder::find_group_position(GroupTree *subtree, unsigned cluste
 
 class HasntCurrentClusterPrefix : public ARB_tree_predicate {
     const GroupBuilder& builder;
-public:
-    HasntCurrentClusterPrefix(const GroupBuilder& builder_) : builder(builder_) {}
     bool selects(const ARB_seqtree& tree) const OVERRIDE {
         const char *groupname        = tree.get_group_name();
         bool        hasClusterPrefix = groupname && builder.matches_current_prefix(groupname);
         return !hasClusterPrefix;
     }
+public:
+    HasntCurrentClusterPrefix(const GroupBuilder& builder_) : builder(builder_) {}
 };
 
 string concatenate_name_parts(const list<string>& namepart) {
@@ -547,7 +551,7 @@ string concatenate_name_parts(const list<string>& namepart) {
     return concat.erase(0, 1);
 }
 
-struct UseTreeRoot : public ARB_tree_predicate {
+class UseTreeRoot : public ARB_tree_predicate {
     bool selects(const ARB_seqtree& tree) const OVERRIDE { return tree.is_root_node(); }
 };
 
@@ -815,8 +819,9 @@ static void popup_group_clusters_window(AW_window *aw_clusterList) {
 
         aws->auto_space(10, 10);
 
-        aws->callback((AW_CB0)AW_POPDOWN);
+        aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
+
         aws->callback(makeHelpCallback("cluster_group.hlp"));
         aws->create_button("HELP", "HELP");
 

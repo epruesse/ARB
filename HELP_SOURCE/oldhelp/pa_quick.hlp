@@ -40,14 +40,11 @@ SECTION         Full length vs partial sequence data
 
                 One common effect of doing so, is that partial sequences often group together
                 although they obviously are not (parts of) near relatives, just because they
-                share the same or similar alignment regions.
-                When the amount of missing data (in one seq.; compared to FLS) is greater
-                than the length of the shared alignment region, the partial sequences will
-                prefer to group together.
+                do not share (enough) alignment regions.
 
                 To avoid that problem
                  - do not use partial sequence data (recommended) or
-                 - (if you really have to) you should declare and handle partial sequence
+                 - (if you really have to) declare and handle partial sequence
                    data as such, by using LINK{pa_partial.hlp}.
 
 
@@ -64,7 +61,7 @@ SECTION         Tree degeneration
                 the worse your topology will get.
 
                 Probably you may want to optimize your tree from time
-                to time, e.g. using LINK{pa_optimizer.hlp}.
+                to time. See LINK{pa_optimizer.hlp} for howto.
 
 
 SECTION         Insertion order 
@@ -76,10 +73,12 @@ SECTION         Insertion order
                 This function sorts the species (added in each batch of species) by the number
                 of base positions (bp) remaining after filtering. Species with more bp get
                 inserted before species with less bp - as their position in the tree will be
-                determined stronger (there is no strict order for species with same amount of bp).
+                stronger determined.
+
+                Note: there is no strict order for species with same amount of bp.
 
 
-NOTES		The current parsimony value (number of base changes needed) is
+NOTES		The current parsimony value (see LINK{pa_value.hlp}) is
 		displayed after the 'Current Par' prompt in the upper part of
 		the 'ARB_PARSIMONY' window and the 'Message' window (pops up
 		while calculating).

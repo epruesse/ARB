@@ -38,6 +38,8 @@ enum AW_GCM_AREA {
     AW_GCM_WINDOW_AREA
 };
 
+DECLARE_CBTYPE_FVV_AND_BUILDERS(GcChangedCallback, void, GcChange); // generates makeGcChangedCallback
+
 /* creates some GC pairs: one for normal operation,
                     the other for drag mode
         eg.
@@ -54,12 +56,12 @@ enum AW_GCM_AREA {
             When the GCs are modified the 'changecb' is called
 */
 
-AW_gc_manager AW_manage_GC(AW_window             *aww,
-                           const char            *gc_base_name,
-                           AW_device             *device, int base_gc, int base_drag, AW_GCM_AREA area,
-                           const WindowCallback&  changecb,
-                           bool                   define_color_groups,
-                           const char            *default_background_color,
+AW_gc_manager AW_manage_GC(AW_window                *aww,
+                           const char               *gc_base_name,
+                           AW_device                *device, int base_gc, int base_drag, AW_GCM_AREA area,
+                           const GcChangedCallback&  changecb,
+                           bool                      define_color_groups,
+                           const char               *default_background_color,
                            ...) __ATTR__SENTINEL;
 
 

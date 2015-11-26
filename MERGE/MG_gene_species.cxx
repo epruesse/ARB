@@ -487,7 +487,7 @@ static void init_gene_species_xfer_fields_config(AWT_config_definition& cdef) {
     cdef.add(AWAR_MERGE_GENE_SPECIES_FIELDS_DEFS, "fields");
     cdef.add(AWAR_MERGE_GENE_SPECIES_FIELDS_SAVE, "defs");
 }
-static char *store_gene_species_xfer_fields(AW_CL, AW_CL) {
+static char *store_gene_species_xfer_fields() {
     AW_root *aw_root = AW_root::SINGLETON;
     {
         char *existing_definitions = aw_root->awar(AWAR_MERGE_GENE_SPECIES_FIELDS_DEFS)->read_string();
@@ -507,7 +507,9 @@ static char *store_gene_species_xfer_fields(AW_CL, AW_CL) {
     init_gene_species_xfer_fields_config(sub_cdef);
     return sub_cdef.read();
 }
-static void load_gene_species_xfer_fields(const char *stored_string, AW_CL cl_geneSpecFieldList, AW_CL) {
+
+static void load_or_reset_gene_species_xfer_fields(const char *stored_string, AW_selection_list *geneSpecFieldList) {
+    // if stored_string==NULL -> reset
     AW_root *aw_root = AW_root::SINGLETON;
 
     aw_root->awar(AWAR_MERGE_GENE_SPECIES_CURRENT_FIELD)->write_string(""); // de-select
@@ -516,7 +518,12 @@ static void load_gene_species_xfer_fields(const char *stored_string, AW_CL cl_ge
     {
         AWT_config_definition sub_cdef;
         init_gene_species_xfer_fields_config(sub_cdef);
-        sub_cdef.write(stored_string);
+        if (stored_string) {
+            sub_cdef.write(stored_string);
+        }
+        else {
+            sub_cdef.reset();
+        }
     }
 
     {
@@ -531,8 +538,7 @@ static void load_gene_species_xfer_fields(const char *stored_string, AW_CL cl_ge
         free(existing_definitions);
     }
 
-    // refresh mask :
-    MG_update_selection_list_on_field_transfers(aw_root, (AW_selection_list*)cl_geneSpecFieldList);
+    MG_update_selection_list_on_field_transfers(aw_root, geneSpecFieldList); // refresh mask
 }
 
 AW_window *MG_gene_species_create_field_transfer_def_window(AW_root *aw_root) {
@@ -584,7 +590,8 @@ AW_window *MG_gene_species_create_field_transfer_def_window(AW_root *aw_root) {
 
     aws->at("save");
     AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "gene_species_field_xfer",
-                              store_gene_species_xfer_fields, load_gene_species_xfer_fields, (AW_CL)geneSpecFieldList, 0);
+                              makeStoreConfigCallback(store_gene_species_xfer_fields),
+                              makeRestoreConfigCallback(load_or_reset_gene_species_xfer_fields, geneSpecFieldList));
 
     // add callbacks for this window :
     aw_root->awar(AWAR_MERGE_GENE_SPECIES_FIELDS_DEFS)->add_callback(makeRootCallback(MG_update_selection_list_on_field_transfers, geneSpecFieldList));

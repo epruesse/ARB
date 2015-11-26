@@ -3,7 +3,7 @@
 # Installs tools and libraries needed to run, compile or develop ARB on Ubuntu.
 #
 # Tested with:
-#       * Ubuntu 10.04 (Lucid Lynx)
+#       * Ubuntu 12.04 (Precise Pangolin)
 #
 # [ May as well work with other ubuntu flavors or debian.
 #   Please report working tests and/or send needed changes to devel@arb-home.de
@@ -40,8 +40,9 @@ else
                 gnuplot \
                 gv \
                 libmotif4 \
-                xfig \
+                libxerces-c28 \
                 transfig \
+                xfig \
                 xterm \
 
 #                treetool 
@@ -61,6 +62,7 @@ else
                 libx11-dev \
                 libxaw7-dev \
                 libxext-dev \
+                libxerces-c2-dev \
                 libxml2-utils \
                 libxpm-dev \
                 libxt-dev \
@@ -118,7 +120,7 @@ else
             echo "Packages provided by ARB developers: `cat $ARB_PACKAGES | wc -w`"
             listwords `cat $ARB_PACKAGES`
             DISTRIB=`cat /etc/lsb-release | grep DISTRIB_CODENAME | perl -npe 's/^.*=//'`
-            SOURCE="deb http://dev.mikro.biologie.tu-muenchen.de/debian $DISTRIB non-free"
+            SOURCE="deb http://dev.arb-home.de/debian $DISTRIB non-free"
             echo '-------------------- [apt start]'
             apt-get install \
                 `cat $ARB_PACKAGES` \

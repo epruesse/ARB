@@ -92,24 +92,6 @@ void AW_window::destroyCreateWindowCallback(CreateWindowCallback *windowMaker) {
 }
 
 
-void AW_POPUP(AW_window */*window*/, AW_CL callback, AW_CL callback_data) { // @@@ obsolete (when #432 is done)
-    typedef AW_window* (*popup_cb_t)(AW_root*, AW_CL);
-    typedef std::map<std::pair<popup_cb_t,AW_CL>, AW_window*> window_map;
-
-    static window_map windows; // previously popped up windows
-
-    std::pair<popup_cb_t, AW_CL> popup((popup_cb_t)callback, callback_data);
-
-    if (windows.find(popup) == windows.end()) {
-        AW_window *made = popup.first(AW_root::SINGLETON, popup.second);
-        if (!made) { NOWINWARN(); return; }
-
-        windows[popup] = made;
-    }
-
-    windows[popup]->activate();
-}
-
 void AW_window::label(const char *_label) {
     freedup(_at->label_for_inputfield, _label);
 }
@@ -157,6 +139,79 @@ void AW_window::d_callback(const WindowCallback& wcb) {
      */
     _d_callback = new AW_cb(this, wcb);
 }
+
+// -------------------------------------------------------------
+//      code used by scalers (common between motif and gtk)
+
+static float apply_ScalerType(float val, AW_ScalerType scalerType, bool inverse) {
+    float res = 0.0;
+
+    aw_assert(val>=0.0 && val<=1.0);
+
+    switch (scalerType) {
+        case AW_SCALER_LINEAR:
+            res = val;
+            break;
+
+        case AW_SCALER_EXP_LOWER:
+            if (inverse) res = pow(val, 1/3.0);
+            else         res = pow(val, 3.0);
+            break;
+
+        case AW_SCALER_EXP_UPPER:
+            res = 1.0-apply_ScalerType(1.0-val, AW_SCALER_EXP_LOWER, inverse);
+            break;
+
+        case AW_SCALER_EXP_BORDER:
+            inverse = !inverse;
+            // fall-through
+        case AW_SCALER_EXP_CENTER: {
+            AW_ScalerType subType = inverse ? AW_SCALER_EXP_UPPER : AW_SCALER_EXP_LOWER;
+            if      (val>0.5) res = (1+apply_ScalerType(2*val-1, subType, false))/2;
+            else if (val<0.5) res = (1-apply_ScalerType(1-2*val, subType, false))/2;
+            else              res = val;
+            break;
+        }
+    }
+
+    aw_assert(res>=0.0 && res<=1.0);
+
+    return res;
+}
+
+float AW_ScalerTransformer::scaler2awar(float scaler, AW_awar *awar) {
+    float amin        = awar->get_min();
+    float amax        = awar->get_max();
+    float modScaleRel = apply_ScalerType(scaler, type, false);
+    float aval        = amin + modScaleRel*(amax-amin);
+
+    return aval;
+}
+
+float AW_ScalerTransformer::awar2scaler(AW_awar *awar) {
+    float amin = awar->get_min();
+    float amax = awar->get_max();
+
+    float awarRel = 0.0;
+    switch (awar->variable_type) {
+        case AW_FLOAT:
+            awarRel = (awar->read_float()-amin) / (amax-amin);
+            break;
+
+        case AW_INT:
+            awarRel = (awar->read_int()-amin) / (amax-amin);
+            break;
+
+        default:
+            GBK_terminatef("Unsupported awar type %i in calculate_scaler_value", int(awar->variable_type));
+            break;
+    }
+
+    aw_assert(awarRel>=0.0 && awarRel<=1.0);
+
+    return apply_ScalerType(awarRel, type, true);
+}
+
 
 // ----------------------------------------------------------------------
 // force-diff-sync 7284637824 (remove after merging back to trunk)
@@ -451,14 +506,12 @@ void AW_window::all_menus_created() const { // this is called by AW_window::show
 // ----------------------------------------------------------------------
 
 void AW_window::draw_line(int x1, int y1, int x2, int y2, int width, bool resize) {
-    AW_xfig *xfig = (AW_xfig*)xfig_data;
-    aw_assert(xfig);
-    // forgot to call load_xfig ?
+    aw_assert(xfig_data); // forgot to call load_xfig ?
 
-    xfig->add_line(x1, y1, x2, y2, width);
+    xfig_data->add_line(x1, y1, x2, y2, width);
 
-    _at->max_x_size = std::max(_at->max_x_size, xfig->maxx - xfig->minx);
-    _at->max_y_size = std::max(_at->max_y_size, xfig->maxy - xfig->miny);
+    _at->max_x_size = std::max(_at->max_x_size, xfig_data->maxx - xfig_data->minx);
+    _at->max_y_size = std::max(_at->max_y_size, xfig_data->maxy - xfig_data->miny);
 
     if (resize) {
         recalc_size_atShow(AW_RESIZE_ANY);
@@ -468,23 +521,21 @@ void AW_window::draw_line(int x1, int y1, int x2, int y2, int width, bool resize
     }
 }
 
-AW_device_click *AW_window::get_click_device(AW_area area, int mousex, int mousey, int max_distance) { 
+AW_device_click *AW_window::get_click_device(AW_area area, int mousex, int mousey, int max_distance) {
     AW_area_management *aram         = MAP_ARAM(area);
     AW_device_click    *click_device = NULL;
 
     if (aram) {
         click_device = aram->get_click_device();
-        click_device->init_click(mousex, mousey, max_distance, AW_ALL_DEVICES);
+        click_device->init_click(AW::Position(mousex, mousey), max_distance, AW_ALL_DEVICES);
     }
     return click_device;
 }
 
 AW_device *AW_window::get_device(AW_area area) { // @@@ rename to get_screen_device
-    AW_area_management *aram   = MAP_ARAM(area);
-    AW_device_Xm       *device = NULL;
-
-    if (aram) device = aram->get_screen_device();
-    return device;
+    AW_area_management *aram = MAP_ARAM(area);
+    arb_assert(aram);
+    return aram->get_screen_device();
 }
 
 void AW_window::get_event(AW_event *eventi) const {
@@ -492,23 +543,19 @@ void AW_window::get_event(AW_event *eventi) const {
 }
 
 AW_device_print *AW_window::get_print_device(AW_area area) {
-    AW_area_management *aram         = MAP_ARAM(area);
-    AW_device_print    *print_device = NULL;
-
-    if (aram) print_device = aram->get_print_device();
-    return print_device;
+    AW_area_management *aram = MAP_ARAM(area);
+    return aram ? aram->get_print_device() : NULL;
 }
 
 AW_device_size *AW_window::get_size_device(AW_area area) {
-    AW_area_management *aram        = MAP_ARAM(area);
-    AW_device_size     *size_device = NULL;
+    AW_area_management *aram = MAP_ARAM(area);
+    if (!aram) return NULL;
 
-    if (aram) {
-        size_device = aram->get_size_device();
+    AW_device_size *size_device = aram->get_size_device();
+    if (size_device) {
         size_device->restart_tracking();
         size_device->reset(); // @@@ hm
     }
-
     return size_device;
 }
 
@@ -527,7 +574,7 @@ void AW_window::insert_help_topic(const char *labeli,
     current_mscope     = tmp;
 #endif
 
-    // create one help-sub-menu-point
+    // insert one help-sub-menu-entry
     button = XtVaCreateManagedWidget("", xmPushButtonWidgetClass,
                                      p_w->help_pull_down,
                                      RES_CONVERT(XmNlabelString, labeli),
@@ -539,9 +586,9 @@ void AW_window::insert_help_topic(const char *labeli,
     root->make_sensitive(button, mask);
 }
 
-void AW_window::insert_menu_topic(const char *topic_id, const char *labeli,
+void AW_window::insert_menu_topic(const char *topic_id, const char *labeltext,
                                   const char *mnemonic, const char *helpText,
-                                  AW_active mask, const WindowCallback& cb) {
+                                  AW_active mask, const WindowCallback& wcb) {
     aw_assert(legal_mask(mask));
     Widget button;
 
@@ -552,14 +599,15 @@ void AW_window::insert_menu_topic(const char *topic_id, const char *labeli,
 #endif // DUMP_MENU_LIST
 
 #ifdef CHECK_DUPLICATED_MNEMONICS
-    test_duplicate_mnemonics(labeli, mnemonic);
+    test_duplicate_mnemonics(labeltext, mnemonic);
 #endif
 
-    if (mnemonic && *mnemonic && strchr(labeli, mnemonic[0])) {
+    Label topiclabel(labeltext, this);
+    if (mnemonic && *mnemonic && strchr(labeltext, mnemonic[0])) {
         // create one sub-menu-point
         button = XtVaCreateManagedWidget("", xmPushButtonWidgetClass,
                                          p_w->menu_bar[p_w->menu_deep],
-                                         RES_LABEL_CONVERT(labeli),
+                                         RES_LABEL_CONVERT(topiclabel),
                                          RES_CONVERT(XmNmnemonic, mnemonic),
                                          XmNbackground, _at->background_color, NULL);
     }
@@ -567,13 +615,13 @@ void AW_window::insert_menu_topic(const char *topic_id, const char *labeli,
         button = XtVaCreateManagedWidget("",
                                          xmPushButtonWidgetClass,
                                          p_w->menu_bar[p_w->menu_deep],
-                                         RES_LABEL_CONVERT(labeli),
+                                         RES_LABEL_CONVERT(topiclabel),
                                          XmNbackground, _at->background_color,
                                          NULL);
     }
 
-    AW_label_in_awar_list(this, button, labeli);
-    AW_cb *cbs = new AW_cb(this, cb, helpText);
+    AW_label_in_awar_list(this, button, labeltext);
+    AW_cb *cbs = new AW_cb(this, wcb, helpText);
     XtAddCallback(button, XmNactivateCallback,
                   (XtCallbackProc) AW_server_callback,
                   (XtPointer) cbs);
@@ -581,7 +629,7 @@ void AW_window::insert_menu_topic(const char *topic_id, const char *labeli,
 #if defined(DEVEL_RALF) // wanted version
     aw_assert(topic_id);
 #else // !defined(DEVEL_RALF)
-    if (!topic_id) topic_id = labeli;
+    if (!topic_id) topic_id = labeltext;
 #endif
     cbs->id = strdup(topic_id);
     root->define_remote_command(cbs);
@@ -662,13 +710,18 @@ static void AW_xfigCB_info_area(AW_window *aww, AW_xfig *xfig) {
     xfig->print(device);
 }
 
+void AW_window::get_font_size(int& width, int& height) {
+    width  = get_root()->font_width;
+    height = get_root()->font_height;
+}
+
 // ----------------------------------------------------------------------
 // force-diff-sync 264782364273 (remove after merging back to trunk)
 // ----------------------------------------------------------------------
 
-void AW_window::load_xfig(const char *file, bool resize) {
-    int width  = get_root()->font_width;
-    int height = get_root()->font_height;
+void AW_window::load_xfig(const char *file, bool resize /*= true*/) {
+    int width, height;
+    get_font_size(width, height);
 
     if (file)   xfig_data = new AW_xfig(file, width, height);
     else        xfig_data = new AW_xfig(width, height); // create an empty xfig
@@ -734,7 +787,7 @@ void AW_window::set_focus_callback(const WindowCallback& wcb) {
     if (!focus_cb) {
         XtAddEventHandler(MIDDLE_WIDGET, EnterWindowMask, FALSE, AW_focusCB, (XtPointer) this);
     }
-    if (!focus_cb || !focus_cb->contains((AW_CB)wcb.callee())) {
+    if (!focus_cb || !focus_cb->contains((AnyWinCB)wcb.callee())) {
         focus_cb = new AW_cb(this, wcb, 0, focus_cb);
     }
 }
@@ -938,10 +991,10 @@ void AW_window::create_window_variables() {
 
     get_root()->awar_int(window_local_awarname("horizontal_page_increment"), 50)->add_callback(hor_src);
     get_root()->awar_int(window_local_awarname("vertical_page_increment"),   50)->add_callback(ver_src);
-    get_root()->awar_int(window_local_awarname("scroll_delay_horizontal"),   20)->add_callback(hor_src);
-    get_root()->awar_int(window_local_awarname("scroll_delay_vertical"),     20)->add_callback(ver_src);
     get_root()->awar_int(window_local_awarname("scroll_width_horizontal"),    9)->add_callback(hor_src);
     get_root()->awar_int(window_local_awarname("scroll_width_vertical"),     20)->add_callback(ver_src);
+    get_root()->awar_int(window_local_awarname("scroll_delay_horizontal"),   20)->add_callback(hor_src);
+    get_root()->awar_int(window_local_awarname("scroll_delay_vertical"),     20)->add_callback(ver_src);
 }
 
 void AW_window::set_vertical_scrollbar_position(int position){
@@ -1017,7 +1070,6 @@ void AW_window::set_horizontal_change_callback(const WindowCallback& wcb) {
 
 
 void AW_window::set_window_size(int width, int height) {
-    // only used from GDE once (@@@ looks like a hack -- delete?)
     XtVaSetValues(p_w->shell, XmNwidth, (int)width, XmNheight, (int)height, NULL);
 }
 
@@ -1030,10 +1082,8 @@ void AW_window::set_window_title(const char *title){
     freedup(window_name, title);
 }
 
-const char *AW_window::get_window_title() const {
-    char *title;
-    XtVaGetValues(p_w->shell, XmNtitle, &title, NULL);
-    return title;
+const char* AW_window::get_window_title() const {
+    return window_name;
 }
 
 void AW_window::shadow_width(int shadow_thickness) {
@@ -1057,19 +1107,37 @@ void AW_window::window_fit() {
 }
 
 AW_window::AW_window()
+    : recalc_size_at_show(AW_KEEP_SIZE),
+      recalc_pos_at_show(AW_KEEP_POS),
+      hide_cb(NULL),
+      expose_callback_added(false),
+      focus_cb(NULL),
+      xfig_data(NULL),
+      _at(new AW_at),
+      left_indent_of_horizontal_scrollbar(0),
+      top_indent_of_vertical_scrollbar(0),
+      root(NULL),
+      click_time(0),
+      color_table_size(0),
+      color_table(NULL),
+      number_of_timed_title_changes(0),
+      p_w(new AW_window_Motif),
+      _callback(NULL),
+      _d_callback(NULL),
+      window_name(NULL),
+      window_defaults_name(NULL),
+      window_is_shown(false),
+      slider_pos_vertical(0),
+      slider_pos_horizontal(0),
+      main_drag_gc(0),
+      picture(new AW_screen_area)
 {
-    memset((char *)this, 0, sizeof(AW_window)); // @@@ may conflict with vtable - fix
-    p_w = new AW_window_Motif;
-    _at = new AW_at; // Note to valgrinders : the whole AW_window memory management suffers because Windows are NEVER deleted
-    picture = new AW_screen_area;
     reset_scrolled_picture_size();
-    slider_pos_vertical = 0;
-    slider_pos_horizontal = 0;
 }
 
 AW_window::~AW_window() {
-    delete p_w;
     delete picture;
+    delete p_w;
 }
 
 #if defined(DEBUG)
@@ -1138,13 +1206,14 @@ AW_window_simple_menu::~AW_window_simple_menu() {}
 AW_window_message::AW_window_message() {}
 AW_window_message::~AW_window_message() {}
 
+#define LAYOUT_AWAR_ROOT "window/windows"
 #define BUFSIZE 256
 static char aw_size_awar_name_buffer[BUFSIZE];
 static const char *aw_size_awar_name(AW_window *aww, const char *sub_entry) {
 #if defined(DEBUG)
     int size =
 #endif // DEBUG
-            sprintf(aw_size_awar_name_buffer, "window/windows/%s/%s",
+            sprintf(aw_size_awar_name_buffer, LAYOUT_AWAR_ROOT "/%s/%s",
                     aww->window_defaults_name, sub_entry);
 #if defined(DEBUG)
     aw_assert(size < BUFSIZE);
@@ -1187,6 +1256,18 @@ void AW_window::get_pos_from_awars(int& posx, int& posy) {
     posy = get_root()->awar(aw_awar_name_posy(this))->read_int();
 }
 
+void AW_window::reset_geometry_awars() {
+    AW_root *awr = get_root();
+
+    ASSERT_NO_ERROR(awr->awar(aw_awar_name_posx(this))  ->reset_to_default());
+    ASSERT_NO_ERROR(awr->awar(aw_awar_name_posy(this))  ->reset_to_default());
+    ASSERT_NO_ERROR(awr->awar(aw_awar_name_width(this)) ->reset_to_default());
+    ASSERT_NO_ERROR(awr->awar(aw_awar_name_height(this))->reset_to_default());
+
+    recalc_pos_atShow(AW_REPOS_TO_MOUSE_ONCE);
+    recalc_size_atShow(AW_RESIZE_ANY);
+}
+
 #undef aw_awar_name_posx
 #undef aw_awar_name_posy
 #undef aw_awar_name_width
@@ -1215,15 +1296,81 @@ static void aw_onExpose_calc_WM_offsets(AW_window *aww) {
     }
     else if (!motif->knows_WM_offset()) {
         int oposx, oposy; aww->get_pos_from_awars(oposx, oposy);
+
         // calculate offset
-        motif->WM_top_offset  = posy-oposy;
-        motif->WM_left_offset = posx-oposx;
+        int left = posx-oposx;
+        int top  = posy-oposy;
+
+        if (top == 0 || left == 0)  { // invalid frame size
+            if (motif->WM_left_offset == 0) {
+                motif->WM_left_offset = 1; // hack: unused yet, use as flag to avoid endless repeats
+#if defined(DEBUG)
+                fprintf(stderr, "aw_onExpose_calc_WM_offsets: failed to detect framesize (shift window 1 pixel and retry)\n");
+#endif
+                oposx = oposx>10 ? oposx-1 : oposx+1;
+                oposy = oposy>10 ? oposy-1 : oposy+1;
+
+                aww->set_window_frame_pos(oposx, oposy);
+                aww->store_pos_in_awars(oposx, oposy);
+
+                aww->get_root()->add_timed_callback(500, makeTimedCallback(aw_calc_WM_offsets_delayed, aww));
+                return;
+            }
+            else {
+                // use maximum seen frame size
+                top  = AW_window_Motif::WM_max_top_offset;
+                left = AW_window_Motif::WM_max_left_offset;
+
+                if (top == 0 || left == 0) { // still invalid -> retry later
+                    aww->get_root()->add_timed_callback(10000, makeTimedCallback(aw_calc_WM_offsets_delayed, aww));
+                    return;
+                }
+            }
+        }
+        motif->WM_top_offset  = top;
+        motif->WM_left_offset = left;
+
+        // remember maximum seen offsets
+        AW_window_Motif::WM_max_top_offset  = std::max(AW_window_Motif::WM_max_top_offset,  motif->WM_top_offset);
+        AW_window_Motif::WM_max_left_offset = std::max(AW_window_Motif::WM_max_left_offset, motif->WM_left_offset);
+
+#if defined(DEBUG)
+            fprintf(stderr, "WM_top_offset=%i WM_left_offset=%i (pos from awar: %i/%i, content-pos: %i/%i)\n",
+                    motif->WM_top_offset, motif->WM_left_offset,
+                    oposx, oposy, posx, posy);
+#endif
     }
 }
 
-AW_root_Motif::AW_root_Motif() {
-    memset((char*)this, 0, sizeof(*this));
-}
+AW_root_Motif::AW_root_Motif()
+    : last_widget(0),
+      display(NULL),
+      context(0),
+      toplevel_widget(0),
+      main_widget(0),
+      main_aww(NULL),
+      message_shell(0),
+      foreground(0),
+      background(0),
+      fontlist(0),
+      option_menu_list(NULL),
+      last_option_menu(NULL),
+      current_option_menu(NULL),
+      toggle_field_list(NULL),
+      last_toggle_field(NULL),
+      selection_list(NULL),
+      last_selection_list(NULL),
+      screen_depth(0),
+      color_table(NULL),
+      colormap(0),
+      help_active(0),
+      clock_cursor(0),
+      question_cursor(0),
+      old_cursor_display(NULL),
+      old_cursor_window(0),
+      no_exit(false),
+      action_hash(NULL)
+{}
 
 AW_root_Motif::~AW_root_Motif() {
     GBS_free_hash(action_hash);
@@ -1275,33 +1422,27 @@ void AW_server_callback(Widget /*wgt*/, XtPointer aw_cb_struct, XtPointer /*call
 
     if (root->is_tracking()) root->track_action(cbs->id);
 
-    if (cbs->contains(AW_POPUP)) {
-        cbs->run_callbacks();
+    p_global->set_cursor(XtDisplay(p_global->toplevel_widget),
+                         XtWindow(p_aww(cbs->aw)->shell),
+                         p_global->clock_cursor);
+    cbs->run_callbacks();
+
+    XEvent event; // destroy all old events !!!
+    while (XCheckMaskEvent(XtDisplay(p_global->toplevel_widget),
+                           ButtonPressMask|ButtonReleaseMask|ButtonMotionMask|
+                           KeyPressMask|KeyReleaseMask|PointerMotionMask, &event)) {
+    }
+
+    if (p_global->help_active) {
+        p_global->set_cursor(XtDisplay(p_global->toplevel_widget),
+                             XtWindow(p_aww(cbs->aw)->shell),
+                             p_global->question_cursor);
     }
     else {
         p_global->set_cursor(XtDisplay(p_global->toplevel_widget),
-                XtWindow(p_aww(cbs->aw)->shell),
-                p_global->clock_cursor);
-        cbs->run_callbacks();
-
-        XEvent event; // destroy all old events !!!
-        while (XCheckMaskEvent(XtDisplay(p_global->toplevel_widget),
-        ButtonPressMask|ButtonReleaseMask|ButtonMotionMask|
-        KeyPressMask|KeyReleaseMask|PointerMotionMask, &event)) {
-        }
-
-        if (p_global->help_active) {
-            p_global->set_cursor(XtDisplay(p_global->toplevel_widget),
-                    XtWindow(p_aww(cbs->aw)->shell),
-                    p_global->question_cursor);
-        }
-        else {
-            p_global->set_cursor(XtDisplay(p_global->toplevel_widget),
-                    XtWindow(p_aww(cbs->aw)->shell),
-                    0);
-        }
+                             XtWindow(p_aww(cbs->aw)->shell),
+                             0);
     }
-
 }
 
 // ----------------------------------------------------------------------
@@ -1329,16 +1470,11 @@ void AW_window::recalc_size_atShow(enum AW_SizeRecalc sr) {
 //      focus
 
 
-static void AW_root_focusCB(Widget /*wgt*/, XtPointer awrp, XEvent*, Boolean*) {
-    AW_root *aw_root = (AW_root *)awrp;
-    AW_root_cblist::call(aw_root->focus_callback_list, aw_root);
-}
-
 void AW_window::run_focus_callback() {
     if (focus_cb) focus_cb->run_callbacks();
 }
 
-bool AW_window::is_focus_callback(void (*f)(AW_window*, AW_CL, AW_CL)) {
+bool AW_window::is_focus_callback(AnyWinCB f) {
     return focus_cb && focus_cb->contains(f);
 }
 
@@ -1366,13 +1502,13 @@ void AW_area_management::set_expose_callback(AW_window *aww, const WindowCallbac
     expose_cb = new AW_cb(aww, cb, 0, expose_cb);
 }
 
-bool AW_area_management::is_expose_callback(AW_window * /* aww */, void (*f)(AW_window*, AW_CL, AW_CL)) {
+bool AW_area_management::is_expose_callback(AnyWinCB f) {
     return expose_cb && expose_cb->contains(f);
 }
 
-bool AW_window::is_expose_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL)) {
+bool AW_window::is_expose_callback(AW_area area, AnyWinCB f) {
     AW_area_management *aram = MAP_ARAM(area);
-    return aram && aram->is_expose_callback(this, f);
+    return aram && aram->is_expose_callback(f);
 }
 
 void AW_window::force_expose() {
@@ -1389,13 +1525,13 @@ void AW_window::force_expose() {
 //      resize
 
 
-bool AW_area_management::is_resize_callback(AW_window * /* aww */, void (*f)(AW_window*, AW_CL, AW_CL)) {
+bool AW_area_management::is_resize_callback(AnyWinCB f) {
     return resize_cb && resize_cb->contains(f);
 }
 
-bool AW_window::is_resize_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL)) {
+bool AW_window::is_resize_callback(AW_area area, AnyWinCB f) {
     AW_area_management *aram = MAP_ARAM(area);
-    return aram && aram->is_resize_callback(this, f);
+    return aram && aram->is_resize_callback(f);
 }
 
 void AW_window::set_window_frame_pos(int x, int y) {
@@ -1535,8 +1671,8 @@ static void aw_update_window_geometry_awars(AW_window *aww) {
                   NULL);
 
     if (motif->knows_WM_offset()) {
-        posy -= motif->WM_top_offset;
         posx -= motif->WM_left_offset;
+        posy -= motif->WM_top_offset;
 
         if (posx<0) posx = 0;
         if (posy<0) posy = 0;
@@ -1545,7 +1681,7 @@ static void aw_update_window_geometry_awars(AW_window *aww) {
     }
 #if defined(DEBUG)
     else {
-        fprintf(stderr, " WM_offsets unknown. Did not update awars!\n");
+        fprintf(stderr, "Warning: WM_offsets unknown => did not update awars for window '%s'\n", aww->get_window_title());
     }
 #endif
     aww->store_size_in_awars(width, height);
@@ -1560,9 +1696,13 @@ void AW_window::show() {
         was_shown       = false;
     }
 
+    int  width, height; // w/o window frame
     if (recalc_size_at_show != AW_KEEP_SIZE) {
         if (recalc_size_at_show == AW_RESIZE_DEFAULT) {
+            // window ignores user-size (even if changed inside current session).
+            // used for question boxes, user masks, ...
             window_fit();
+            get_window_size(width, height);
         }
         else {
             aw_assert(recalc_size_at_show == AW_RESIZE_USER);
@@ -1574,78 +1714,113 @@ void AW_window::show() {
             if (user_width <min_width)  user_width  = min_width;
             if (user_height<min_height) user_height = min_height;
 
-            set_window_size(user_width, user_height);
+            set_window_size(user_width, user_height); // restores user size
+
+            width  = user_width;
+            height = user_height;
+
+#if defined(DEBUG)
+            if (!was_shown) { // first popup
+                // warn about too big default size
+#define LOWEST_SUPPORTED_SCREEN_X 1280
+#define LOWEST_SUPPORTED_SCREEN_Y 800
+
+                if (min_width>LOWEST_SUPPORTED_SCREEN_X || min_height>LOWEST_SUPPORTED_SCREEN_Y) {
+                    fprintf(stderr,
+                            "Warning: Window '%s' won't fit on %ix%i (win=%ix%i)\n",
+                            get_window_title(),
+                            LOWEST_SUPPORTED_SCREEN_X, LOWEST_SUPPORTED_SCREEN_Y,
+                            min_width, min_height);
+#if defined(DEVEL_RALF)
+                    aw_assert(0);
+#endif
+                }
+            }
+#endif
         }
+        store_size_in_awars(width, height);
         recalc_size_at_show = AW_KEEP_SIZE;
+    }
+    else {
+        get_window_size(width, height);
     }
 
     {
         int  posx, posy;
-        bool setPos = false;
+        int  swidth, sheight; get_screen_size(swidth, sheight);
+        bool posIsFrame = false;
 
         switch (recalc_pos_at_show) {
             case AW_REPOS_TO_MOUSE_ONCE:
                 recalc_pos_at_show = AW_KEEP_POS;
                 // fallthrough
             case AW_REPOS_TO_MOUSE: {
-                int mx, my; if (!get_mouse_pos(mx, my)) goto FALLBACK_CENTER;
-                int width, height; get_window_size(width, height);
-                {
-                    int wx, wy; get_window_content_pos(wx, wy);
-                    if (wx || wy) {
-                        if (p_w->knows_WM_offset()) {
-                            wx -= p_w->WM_left_offset;
-                            wy -= p_w->WM_top_offset; // @@@ values of wx/wy never used
+                int mx, my;
+                if (!get_mouse_pos(mx, my)) goto FALLBACK_CENTER;
 
-                            // add size of window decoration
-                            width  += p_w->WM_left_offset;
-                            height += p_w->WM_top_offset;
-                        }
-                    }
-                }
-
-                setPos = true;
                 posx   = mx-width/2;
                 posy   = my-height/2;
-
-                // avoid windows outside of screen
-                {
-                    int swidth, sheight; get_screen_size(swidth, sheight);
-                    int maxx = swidth-width;
-                    int maxy = sheight-height;
-
-                    if (posx>maxx) posx = maxx;
-                    if (posy>maxy) posy = maxy;
-
-                    if (posx<0) posx = 0;
-                    if (posy<0) posy = 0;
-                }
-
                 break;
             }
-            case AW_REPOS_TO_CENTER: {
-                  FALLBACK_CENTER :
-                int width, height; get_window_size(width, height);
-                int swidth, sheight; get_screen_size(swidth, sheight);
-
-                setPos = true;
+            case AW_REPOS_TO_CENTER:
+            FALLBACK_CENTER:
                 posx   = (swidth-width)/2;
                 posy   = (sheight-height)/4;
                 break;
-            }
 
             case AW_KEEP_POS:
                 if (was_shown) {
                     // user might have moved the window -> store (new) positions
                     aw_update_window_geometry_awars(this);
                 }
+                get_pos_from_awars(posx, posy);
+                get_size_from_awars(width, height);
+                posIsFrame = true;
                 break;
         }
 
-        if (setPos) store_pos_in_awars(posx, posy);
-        else get_pos_from_awars(posx, posy);
+        int frameWidth, frameHeight;
+        if (p_w->knows_WM_offset()) {
+            frameWidth  = p_w->WM_left_offset;
+            frameHeight = p_w->WM_top_offset;
+        }
+        else {
+            // estimate
+            frameWidth  = AW_window_Motif::WM_max_left_offset + 1;
+            frameHeight = AW_window_Motif::WM_max_top_offset  + 1;
+        }
 
-        set_window_frame_pos(posx, posy); // always set pos
+        if (!posIsFrame) {
+            posx       -= frameWidth;
+            posy       -= frameHeight;
+            posIsFrame  = true;
+        }
+
+        // avoid windows outside of screen (or too near to screen-edges)
+        {
+            int maxx = swidth  - 2*frameWidth           - width;
+            int maxy = sheight - frameWidth-frameHeight - height; // assumes lower border-width == frameWidth
+
+            if (posx>maxx) posx = maxx;
+            if (posy>maxy) posy = maxy;
+
+            if (p_w->knows_WM_offset()) {
+                if (posx<0) posx = 0;
+                if (posy<0) posy = 0;
+            }
+            else {
+                // workaround a bug leading to wrong WM-offsets (occurs when window-content is placed at screen-border)
+                // shift window away from border
+                if (posx<frameWidth)  posx = frameWidth;
+                if (posy<frameHeight) posy = frameHeight;
+            }
+        }
+
+        aw_assert(implicated(p_w->knows_WM_offset(), posIsFrame));
+
+        // store position and position window
+        store_pos_in_awars(posx, posy);
+        set_window_frame_pos(posx, posy);
     }
 
     XtPopup(p_w->shell, XtGrabNone);
@@ -1680,7 +1855,7 @@ void AW_window::hide_or_notify(const char *error) {
 // force-diff-sync 9287423467632 (remove after merging back to trunk)
 // ----------------------------------------------------------------------
 
-void AW_window::on_hide(AW_CB0 call_on_hide) {
+void AW_window::on_hide(WindowCallbackSimple call_on_hide) {
     hide_cb = call_on_hide;
 }
 
@@ -1888,7 +2063,7 @@ void AW_area_management::create_devices(AW_window *aww, AW_area ar) {
     common = new AW_common_Xm(XtDisplay(area), XtWindow(area), p_global->color_table, aww->color_table, aww->color_table_size, aww, ar);
 }
 
-AW_color_idx AW_window::alloc_named_data_color(int colnum, char *colorname) {
+AW_color_idx AW_window::alloc_named_data_color(int colnum, const char *colorname) {
     if (!color_table_size) {
         color_table_size = AW_STD_COLOR_IDX_MAX + colnum;
         color_table      = (AW_rgb*)malloc(sizeof(AW_rgb) *color_table_size);
@@ -1962,46 +2137,30 @@ void aw_insert_default_help_entries(AW_window *aww) {
     aww->insert_help_topic("ARB help",        "A", "arb.hlp",  AWM_ALL, makeHelpCallback("arb.hlp"));
 }
 
-const char *aw_str_2_label(const char *str, AW_window *aww) {
-    aw_assert(str);
-
-    static const char *last_label = 0;
-    static const char *last_str   = 0;
-    static AW_window  *last_aww   = 0;
-
-    const char *label;
-    if (str == last_str && aww == last_aww) { // reuse result ?
-        label = last_label;
+inline char *strdup_getlen(const char *str, int& len) {
+    len = strlen(str);
+    return GB_strduplen(str, len);
+}
+Label::Label(const char *labeltext, AW_window *aww) {
+    imageref = AW_IS_IMAGEREF(labeltext);
+    if (imageref) {
+        label = strdup_getlen(AW_get_pixmapPath(labeltext+1), len);
     }
     else {
-        if (str[0] == '#') {
-            label = AW_get_pixmapPath(str+1);
+        AW_awar *is_awar = aww->get_root()->label_is_awar(labeltext);
+
+        if (is_awar) { // for labels displaying awar values, insert dummy text here
+            len = aww->get_at().length_of_buttons - 2;
+            if (len < 1) len = 1;
+
+            label = (char*)malloc(len+1);
+            memset(label, 'y', len);
+            label[len] = 0;
         }
         else {
-            AW_awar *is_awar = aww->get_root()->label_is_awar(str);
-
-            if (is_awar) { // for labels displaying awar values, insert dummy text here
-                int wanted_len = aww->get_at().length_of_buttons - 2;
-                if (wanted_len < 1) wanted_len = 1;
-
-                char *labelbuf       = GB_give_buffer(wanted_len+1);
-                memset(labelbuf, 'y', wanted_len);
-                labelbuf[wanted_len] = 0;
-
-                label = labelbuf;
-            }
-            else {
-                label = str;
-            }
+            label = strdup_getlen(labeltext, len);
         }
-
-        // store results locally, cause aw_str_2_label is nearly always called twice with same arguments
-        // (see RES_LABEL_CONVERT)
-        last_label = label;
-        last_str   = str;
-        last_aww   = aww;
     }
-    return label;
 }
 
 void AW_label_in_awar_list(AW_window *aww, Widget widget, const char *str) {
@@ -2026,9 +2185,35 @@ static long aw_loop_get_window_geometry(const char *, long val, void *) {
     aw_update_window_geometry_awars((AW_window *)val);
     return val;
 }
-
 void aw_update_all_window_geometry_awars(AW_root *awr) {
     GBS_hash_do_loop(awr->hash_for_windows, aw_loop_get_window_geometry, NULL);
+}
+
+static long aw_loop_forget_window_geometry(const char *, long val, void *) {
+    ((AW_window*)val)->reset_geometry_awars();
+    return val;
+}
+void AW_forget_all_window_geometry(AW_window *aww) {
+    AW_root *awr = aww->get_root();
+    GBS_hash_do_loop(awr->hash_for_windows, aw_loop_forget_window_geometry, NULL); // reset geometry for used windows
+
+    // reset geometry in stored, unused windows
+    GBDATA         *gb_props = awr->check_properties(NULL);
+    GB_transaction  ta(gb_props);
+    GBDATA         *gb_win   = GB_search(gb_props, LAYOUT_AWAR_ROOT, GB_FIND);
+    if (gb_win) {
+        for (GBDATA *gbw = GB_child(gb_win); gbw; ) {
+            const char *key     = GB_read_key_pntr(gbw);
+            long        usedWin = GBS_read_hash(awr->hash_for_windows, key);
+            GBDATA     *gbnext  = GB_nextChild(gbw);
+
+            if (!usedWin) {
+                GB_ERROR error = GB_delete(gbw);
+                aw_message_if(error);
+            }
+            gbw = gbnext;
+        }
+    }
 }
 
 static const char *existingPixmap(const char *icon_relpath, const char *name) {
@@ -2147,7 +2332,6 @@ Widget aw_create_shell(AW_window *aww, bool allow_resize, bool allow_close, int 
             shell = XtCreatePopupShell("transient", transientShellWidgetClass, father, args.list(), args.size());
         }
     }
-    XtAddEventHandler(shell, EnterWindowMask, FALSE, AW_root_focusCB, (XtPointer) aww->get_root());
 
     if (!p_global->main_widget) {
         p_global->main_widget = shell;
@@ -2324,28 +2508,28 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *w
                                     XmNy, 0,
                                     NULL);
     p_w->areas[AW_INFO_AREA] =
-        new AW_area_management(root, form2, XtVaCreateManagedWidget("info_area",
-                                                                    xmDrawingAreaWidgetClass,
-                                                                    form2,
-                                                                    XmNheight, 0,
-                                                                    XmNbottomAttachment, XmATTACH_NONE,
-                                                                    XmNtopAttachment, XmATTACH_FORM,
-                                                                    XmNleftAttachment, XmATTACH_FORM,
-                                                                    XmNrightAttachment, XmATTACH_FORM,
-                                                                    XmNmarginHeight, 2,
-                                                                    XmNmarginWidth, 2,
-                                                                    NULL));
+        new AW_area_management(form2, XtVaCreateManagedWidget("info_area",
+                                                              xmDrawingAreaWidgetClass,
+                                                              form2,
+                                                              XmNheight, 0,
+                                                              XmNbottomAttachment, XmATTACH_NONE,
+                                                              XmNtopAttachment, XmATTACH_FORM,
+                                                              XmNleftAttachment, XmATTACH_FORM,
+                                                              XmNrightAttachment, XmATTACH_FORM,
+                                                              XmNmarginHeight, 2,
+                                                              XmNmarginWidth, 2,
+                                                              NULL));
 
     p_w->areas[AW_BOTTOM_AREA] =
-        new AW_area_management(root, form2, XtVaCreateManagedWidget("bottom_area",
-                                                                    xmDrawingAreaWidgetClass,
-                                                                    form2,
-                                                                    XmNheight, 0,
-                                                                    XmNbottomAttachment, XmATTACH_FORM,
-                                                                    XmNtopAttachment, XmATTACH_NONE,
-                                                                    XmNleftAttachment, XmATTACH_FORM,
-                                                                    XmNrightAttachment, XmATTACH_FORM,
-                                                                    NULL));
+        new AW_area_management(form2, XtVaCreateManagedWidget("bottom_area",
+                                                              xmDrawingAreaWidgetClass,
+                                                              form2,
+                                                              XmNheight, 0,
+                                                              XmNbottomAttachment, XmATTACH_FORM,
+                                                              XmNtopAttachment, XmATTACH_NONE,
+                                                              XmNleftAttachment, XmATTACH_FORM,
+                                                              XmNrightAttachment, XmATTACH_FORM,
+                                                              NULL));
 
     p_w->scroll_bar_horizontal = XtVaCreateManagedWidget("scroll_bar_horizontal",
                                                          xmScrollBarWidgetClass,
@@ -2402,12 +2586,12 @@ void AW_window_menu_modes::init(AW_root *root_in, const char *wid, const char *w
                                          NULL);
 
     p_w->areas[AW_MIDDLE_AREA] =
-        new AW_area_management(root, p_w->frame, XtVaCreateManagedWidget("draw area",
-                                                                         xmDrawingAreaWidgetClass,
-                                                                         p_w->frame,
-                                                                         XmNmarginHeight, 0,
-                                                                         XmNmarginWidth, 0,
-                                                                         NULL));
+        new AW_area_management(p_w->frame, XtVaCreateManagedWidget("draw area",
+                                                                   xmDrawingAreaWidgetClass,
+                                                                   p_w->frame,
+                                                                   XmNmarginHeight, 0,
+                                                                   XmNmarginWidth, 0,
+                                                                   NULL));
 
     XmMainWindowSetAreas(main_window, p_w->menu_bar[0], (Widget) NULL, (Widget) NULL, (Widget) NULL, form1);
 
@@ -2521,28 +2705,28 @@ void AW_window_menu::init(AW_root *root_in, const char *wid, const char *windown
                                     XmNy, 0,
                                     NULL);
     p_w->areas[AW_INFO_AREA] =
-        new AW_area_management(root, form2, XtVaCreateManagedWidget("info_area",
-                                                                    xmDrawingAreaWidgetClass,
-                                                                    form2,
-                                                                    XmNheight, 0,
-                                                                    XmNbottomAttachment, XmATTACH_NONE,
-                                                                    XmNtopAttachment, XmATTACH_FORM,
-                                                                    XmNleftAttachment, XmATTACH_FORM,
-                                                                    XmNrightAttachment, XmATTACH_FORM,
-                                                                    XmNmarginHeight, 2,
-                                                                    XmNmarginWidth, 2,
-                                                                    NULL));
+        new AW_area_management(form2, XtVaCreateManagedWidget("info_area",
+                                                              xmDrawingAreaWidgetClass,
+                                                              form2,
+                                                              XmNheight, 0,
+                                                              XmNbottomAttachment, XmATTACH_NONE,
+                                                              XmNtopAttachment, XmATTACH_FORM,
+                                                              XmNleftAttachment, XmATTACH_FORM,
+                                                              XmNrightAttachment, XmATTACH_FORM,
+                                                              XmNmarginHeight, 2,
+                                                              XmNmarginWidth, 2,
+                                                              NULL));
 
     p_w->areas[AW_BOTTOM_AREA] =
-        new AW_area_management(root, form2, XtVaCreateManagedWidget("bottom_area",
-                                                                    xmDrawingAreaWidgetClass,
-                                                                    form2,
-                                                                    XmNheight, 0,
-                                                                    XmNbottomAttachment, XmATTACH_FORM,
-                                                                    XmNtopAttachment, XmATTACH_NONE,
-                                                                    XmNleftAttachment, XmATTACH_FORM,
-                                                                    XmNrightAttachment, XmATTACH_FORM,
-                                                                    NULL));
+        new AW_area_management(form2, XtVaCreateManagedWidget("bottom_area",
+                                                              xmDrawingAreaWidgetClass,
+                                                              form2,
+                                                              XmNheight, 0,
+                                                              XmNbottomAttachment, XmATTACH_FORM,
+                                                              XmNtopAttachment, XmATTACH_NONE,
+                                                              XmNleftAttachment, XmATTACH_FORM,
+                                                              XmNrightAttachment, XmATTACH_FORM,
+                                                              NULL));
 
     p_w->scroll_bar_horizontal = XtVaCreateManagedWidget("scroll_bar_horizontal",
                                                          xmScrollBarWidgetClass,
@@ -2599,12 +2783,12 @@ void AW_window_menu::init(AW_root *root_in, const char *wid, const char *windown
                                          NULL);
 
     p_w->areas[AW_MIDDLE_AREA] =
-        new AW_area_management(root, p_w->frame, XtVaCreateManagedWidget("draw area",
-                                                                         xmDrawingAreaWidgetClass,
-                                                                         p_w->frame,
-                                                                         XmNmarginHeight, 0,
-                                                                         XmNmarginWidth, 0,
-                                                                         NULL));
+        new AW_area_management(p_w->frame, XtVaCreateManagedWidget("draw area",
+                                                                   xmDrawingAreaWidgetClass,
+                                                                   p_w->frame,
+                                                                   XmNmarginHeight, 0,
+                                                                   XmNmarginWidth, 0,
+                                                                   NULL));
 
     XmMainWindowSetAreas(main_window, p_w->menu_bar[0], (Widget) NULL,
                          (Widget) NULL, (Widget) NULL, form1);
@@ -2636,16 +2820,17 @@ void AW_window_simple::init(AW_root *root_in, const char *wid, const char *windo
             p_w->shell,
             NULL);
 
-    p_w->areas[AW_INFO_AREA] = new AW_area_management(root, form1, XtVaCreateManagedWidget("info_area",
-                    xmDrawingAreaWidgetClass,
-                    form1,
-                    XmNbottomAttachment, XmATTACH_FORM,
-                    XmNtopAttachment, XmATTACH_FORM,
-                    XmNleftAttachment, XmATTACH_FORM,
-                    XmNrightAttachment, XmATTACH_FORM,
-                    XmNmarginHeight, 2,
-                    XmNmarginWidth, 2,
-                    NULL));
+    p_w->areas[AW_INFO_AREA] =
+        new AW_area_management(form1, XtVaCreateManagedWidget("info_area",
+                                                              xmDrawingAreaWidgetClass,
+                                                              form1,
+                                                              XmNbottomAttachment, XmATTACH_FORM,
+                                                              XmNtopAttachment, XmATTACH_FORM,
+                                                              XmNleftAttachment, XmATTACH_FORM,
+                                                              XmNrightAttachment, XmATTACH_FORM,
+                                                              XmNmarginHeight, 2,
+                                                              XmNmarginWidth, 2,
+                                                              NULL));
 
     aw_realize_widget(this);
     create_devices();
@@ -2712,16 +2897,16 @@ void AW_window_simple_menu::init(AW_root *root_in, const char *wid, const char *
                                     NULL);
 
     p_w->areas[AW_INFO_AREA] =
-        new AW_area_management(root, form1, XtVaCreateManagedWidget("info_area",
-                                                                    xmDrawingAreaWidgetClass,
-                                                                    form1,
-                                                                    XmNbottomAttachment, XmATTACH_FORM,
-                                                                    XmNtopAttachment, XmATTACH_FORM,
-                                                                    XmNleftAttachment, XmATTACH_FORM,
-                                                                    XmNrightAttachment, XmATTACH_FORM,
-                                                                    XmNmarginHeight, 2,
-                                                                    XmNmarginWidth, 2,
-                                                                    NULL));
+        new AW_area_management(form1, XtVaCreateManagedWidget("info_area",
+                                                              xmDrawingAreaWidgetClass,
+                                                              form1,
+                                                              XmNbottomAttachment, XmATTACH_FORM,
+                                                              XmNtopAttachment, XmATTACH_FORM,
+                                                              XmNleftAttachment, XmATTACH_FORM,
+                                                              XmNrightAttachment, XmATTACH_FORM,
+                                                              XmNmarginHeight, 2,
+                                                              XmNmarginWidth, 2,
+                                                              NULL));
 
     aw_realize_widget(this);
 
@@ -2729,7 +2914,7 @@ void AW_window_simple_menu::init(AW_root *root_in, const char *wid, const char *
     create_devices();
 }
 
-void AW_window_message::init(AW_root *root_in, const char *windowname, bool allow_close) {
+void AW_window_message::init(AW_root *root_in, const char *wid, const char *windowname, bool allow_close) {
     root = root_in; // for macro
 
     int width  = 100;
@@ -2737,8 +2922,8 @@ void AW_window_message::init(AW_root *root_in, const char *windowname, bool allo
     int posx   = 50;
     int posy   = 50;
 
-    window_name = strdup(windowname);
-    window_defaults_name = GBS_string_2_key(window_name);
+    window_name          = strdup(windowname);
+    window_defaults_name = strdup(wid);
 
     // create shell for message box
     p_w->shell = aw_create_shell(this, true, allow_close, width, height, posx, posy);
@@ -2747,17 +2932,23 @@ void AW_window_message::init(AW_root *root_in, const char *windowname, bool allo
     XtVaSetValues(p_w->shell, XmNmwmFunctions, MWM_FUNC_MOVE | MWM_FUNC_CLOSE,
             NULL);
 
-    p_w->areas[AW_INFO_AREA] = new AW_area_management(root, p_w->shell, XtVaCreateManagedWidget("info_area",
-                    xmDrawingAreaWidgetClass,
-                    p_w->shell,
-                    XmNheight, 0,
-                    XmNbottomAttachment, XmATTACH_NONE,
-                    XmNtopAttachment, XmATTACH_FORM,
-                    XmNleftAttachment, XmATTACH_FORM,
-                    XmNrightAttachment, XmATTACH_FORM,
-                    NULL));
+    p_w->areas[AW_INFO_AREA] =
+        new AW_area_management(p_w->shell, XtVaCreateManagedWidget("info_area",
+                                                                   xmDrawingAreaWidgetClass,
+                                                                   p_w->shell,
+                                                                   XmNheight, 0,
+                                                                   XmNbottomAttachment, XmATTACH_NONE,
+                                                                   XmNtopAttachment, XmATTACH_FORM,
+                                                                   XmNleftAttachment, XmATTACH_FORM,
+                                                                   XmNrightAttachment, XmATTACH_FORM,
+                                                                   NULL));
 
     aw_realize_widget(this);
+}
+void AW_window_message::init(AW_root *root_in, const char *windowname, bool allow_close) {
+    char *wid = GBS_string_2_key(windowname);
+    init(root_in, wid, windowname, allow_close);
+    free(wid);
 }
 
 void AW_window::set_focus_policy(bool follow_mouse) {
@@ -2776,8 +2967,8 @@ void AW_window::select_mode(int mode) {
     XtVaSetValues(widget, XmNbackground, p_global->foreground, NULL);
 }
 
-static void aw_mode_callback(AW_window *aww, long mode, AW_cb *cbs) {
-    aww->select_mode((int)mode);
+static void aw_mode_callback(AW_window *aww, short mode, AW_cb *cbs) {
+    aww->select_mode(mode);
     cbs->run_callbacks();
 }
 
@@ -2806,7 +2997,7 @@ int AW_window::create_mode(const char *pixmap, const char *helpText, AW_active m
     XtVaGetValues(button, XmNforeground, &p_global->foreground, NULL);
 
     AW_cb *cbs = new AW_cb(this, cb, 0);
-    AW_cb *cb2 = new AW_cb(this, (AW_CB)aw_mode_callback, (AW_CL)p_w->number_of_modes, (AW_CL)cbs, helpText, cbs);
+    AW_cb *cb2 = new AW_cb(this, makeWindowCallback(aw_mode_callback, p_w->number_of_modes, cbs), helpText, cbs);
     XtAddCallback(button, XmNactivateCallback,
     (XtCallbackProc) AW_server_callback,
     (XtPointer) cb2);
@@ -2831,11 +3022,10 @@ int AW_window::create_mode(const char *pixmap, const char *helpText, AW_active m
     return p_w->number_of_modes;
 }
 
-AW_area_management::AW_area_management(AW_root *awr, Widget formi, Widget widget) {
+AW_area_management::AW_area_management(Widget formi, Widget widget) {
     memset((char *)this, 0, sizeof(AW_area_management));
     form = formi;
     area = widget;
-    XtAddEventHandler(area, EnterWindowMask, FALSE, AW_root_focusCB, (XtPointer)awr);
 }
 
 AW_device_Xm *AW_area_management::get_screen_device() {
@@ -3167,6 +3357,34 @@ AW_toggle_field_struct::AW_toggle_field_struct(int toggle_field_numberi,
     correct_for_at_center_intern = correct;
 }
 
-AW_window_Motif::AW_window_Motif() {
-    memset((char*)this, 0, sizeof(AW_window_Motif));
+AW_window_Motif::AW_window_Motif()
+    : shell(0),
+      scroll_bar_vertical(0),
+      scroll_bar_horizontal(0),
+      menu_deep(0),
+      help_pull_down(0),
+      mode_area(0),
+      number_of_modes(0),
+      modes_f_callbacks(NULL),
+      modes_widgets(NULL),
+      selected_mode(0),
+      popup_cb(NULL),
+      frame(0),
+      toggle_field(0),
+      toggle_label(0),
+      toggle_field_var_name(NULL),
+      toggle_field_var_type(AW_NONE),
+      keymodifier(AW_KEYMODE_NONE),
+      WM_top_offset(0),
+      WM_left_offset(0)
+{
+    for (int i = 0; i<AW_MAX_MENU_DEEP; ++i) {
+        menu_bar[i] = 0;
+    }
+    for (int i = 0; i<AW_MAX_AREA; ++i) {
+        areas[i] = NULL;
+    }
 }
+
+int AW_window_Motif::WM_max_top_offset  = 0;
+int AW_window_Motif::WM_max_left_offset = 0;

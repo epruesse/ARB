@@ -1569,7 +1569,7 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
             aws->auto_space(x_spacing, y_spacing);
             aws->at_newline();
 
-            aws->callback((AW_CB0)AW_POPDOWN);                  aws->create_button(ID.fromKey("CLOSE"), "CLOSE", "C");
+            aws->callback(AW_POPDOWN);                          aws->create_button(ID.fromKey("CLOSE"), "CLOSE", "C");
             aws->callback(makeHelpCallback("input_mask.hlp"));  aws->create_button(ID.fromKey("HELP"),  "HELP",  "H");
 
             if (edit_reload) {
@@ -2211,7 +2211,7 @@ static GB_ERROR openMaskWindowByType(int mask_id, awt_item_type type) {
     GB_ERROR         error      = 0;
 
     if (registered == registeredTypes.end()) error = GBS_global_string("Type '%s' not registered (yet)", awt_itemtype_names[type]);
-    else registered->second.getOpenCb()(registered->second.getWindow(), (AW_CL)mask_id, (AW_CL)0);
+    else registered->second.getOpenCb()(registered->second.getWindow(), mask_id, NULL);
 
     return error;
 }

@@ -1,7 +1,7 @@
 #Please insert up references in the next lines (line starts with keyword UP)
 UP	arb.hlp
 UP	glossary.hlp
-UP	saveas.hlp
+UP	save.hlp
 UP	arb_intro.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
@@ -30,8 +30,8 @@ DESCRIPTION	Reads foreign data(base) formats, creates a new ARB database,
 		imported from single or multiple files.
 
 		Type a source file name to the 'Enter file name of foreign
-                database' subwindow. Use * and ? as multiple and single
-                character wild carts to load a set of files, respectively.
+                database' subwindow. Use '*' and '?' as multiple and single
+                character wildcards to load a set of files, respectively.
                 Alternatively you may select a file from the directories and
                 files subwindow.
 

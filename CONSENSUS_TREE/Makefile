@@ -6,7 +6,7 @@ $(MAIN): $(OBJS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJS)
 
 .cxx.o:
-	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE) $<
 clean:
 	rm -f $(OBJS) *.a
 
@@ -52,10 +52,10 @@ CT_ctree.o: $(ARBHOME)/INCLUDE/cxxforward.h
 CT_ctree.o: $(ARBHOME)/INCLUDE/downcast.h
 CT_ctree.o: $(ARBHOME)/INCLUDE/dupstr.h
 CT_ctree.o: $(ARBHOME)/INCLUDE/gccver.h
-CT_ctree.o: $(ARBHOME)/INCLUDE/RootedTree.h
 CT_ctree.o: $(ARBHOME)/INCLUDE/smartptr.h
 CT_ctree.o: $(ARBHOME)/INCLUDE/static_assert.h
 CT_ctree.o: $(ARBHOME)/INCLUDE/test_global.h
+CT_ctree.o: $(ARBHOME)/INCLUDE/TreeNode.h
 
 CT_dtree.o: CT_ctree.hxx
 CT_dtree.o: CT_def.hxx
@@ -80,10 +80,10 @@ CT_dtree.o: $(ARBHOME)/INCLUDE/cxxforward.h
 CT_dtree.o: $(ARBHOME)/INCLUDE/downcast.h
 CT_dtree.o: $(ARBHOME)/INCLUDE/dupstr.h
 CT_dtree.o: $(ARBHOME)/INCLUDE/gccver.h
-CT_dtree.o: $(ARBHOME)/INCLUDE/RootedTree.h
 CT_dtree.o: $(ARBHOME)/INCLUDE/smartptr.h
 CT_dtree.o: $(ARBHOME)/INCLUDE/static_assert.h
 CT_dtree.o: $(ARBHOME)/INCLUDE/test_global.h
+CT_dtree.o: $(ARBHOME)/INCLUDE/TreeNode.h
 
 CT_hash.o: CT_ctree.hxx
 CT_hash.o: CT_def.hxx
@@ -110,10 +110,10 @@ CT_hash.o: $(ARBHOME)/INCLUDE/cxxforward.h
 CT_hash.o: $(ARBHOME)/INCLUDE/downcast.h
 CT_hash.o: $(ARBHOME)/INCLUDE/dupstr.h
 CT_hash.o: $(ARBHOME)/INCLUDE/gccver.h
-CT_hash.o: $(ARBHOME)/INCLUDE/RootedTree.h
 CT_hash.o: $(ARBHOME)/INCLUDE/smartptr.h
 CT_hash.o: $(ARBHOME)/INCLUDE/static_assert.h
 CT_hash.o: $(ARBHOME)/INCLUDE/test_global.h
+CT_hash.o: $(ARBHOME)/INCLUDE/TreeNode.h
 
 CT_ntree.o: CT_def.hxx
 CT_ntree.o: CT_mem.hxx
@@ -188,7 +188,7 @@ CT_rbtree.o: $(ARBHOME)/INCLUDE/cxxforward.h
 CT_rbtree.o: $(ARBHOME)/INCLUDE/downcast.h
 CT_rbtree.o: $(ARBHOME)/INCLUDE/dupstr.h
 CT_rbtree.o: $(ARBHOME)/INCLUDE/gccver.h
-CT_rbtree.o: $(ARBHOME)/INCLUDE/RootedTree.h
 CT_rbtree.o: $(ARBHOME)/INCLUDE/smartptr.h
 CT_rbtree.o: $(ARBHOME)/INCLUDE/static_assert.h
 CT_rbtree.o: $(ARBHOME)/INCLUDE/test_global.h
+CT_rbtree.o: $(ARBHOME)/INCLUDE/TreeNode.h

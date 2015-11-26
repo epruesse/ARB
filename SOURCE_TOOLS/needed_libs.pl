@@ -41,7 +41,6 @@ sub fullpath($) {
 # --------------------------------------------------------------------------------
 
 my $LINK_STATIC = $ENV{LINK_STATIC};
-defined $LINK_STATIC || die "Environmentvariable 'LINK_STATIC' is not defined";
 # LINK_STATIC==1 (used on OSX) ->
 # - shared ARB-libraries (e.g. lib/libWINDOW.so) are created/linked statically (as lib/libWINDOW.a)
 # - in contrast to "normal" static libs
@@ -50,6 +49,7 @@ defined $LINK_STATIC || die "Environmentvariable 'LINK_STATIC' is not defined";
 
 sub fixFileSuffix($) {
   my ($file) = @_;
+  defined $LINK_STATIC || die "Environmentvariable 'LINK_STATIC' is not defined";
   if ($LINK_STATIC==1) { # true on OSX
     $file =~ s/\.so/\.a/; # correct lib-suffix
   }

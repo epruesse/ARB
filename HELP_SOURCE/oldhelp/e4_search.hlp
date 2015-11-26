@@ -8,11 +8,24 @@ UP	glossary.hlp
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		Search
+TITLE		Search and highlight sequence patterns
 
-OCCURRENCE	ARB_EDIT4/Edit/Search
+OCCURRENCE	ARB_EDIT4/View/Search
+                ARB_EDIT4/<extended top area>/<search fields and buttons>
 
-DESCRIPTION	Search
+DESCRIPTION	ARB_EDIT4 supports searching and highlighting sequence patterns.
+
+                It supports 9 different pattern types, which will each be displayed
+                in it's own color. Pattern types are e.g. "User1", "Probe",
+                "Primer (global)", ...
+
+                Basic controls for each search pattern are available in the
+                extended top-area of ARB_EDIT4 (to extend the top-area click the
+                'MORE' button): there you may jump to the next/previous occurrence of
+                each pattern type, toggle pattern type display and open the detailed
+                search parameter dialog for each pattern type.
+
+SECTION         Detailed search parameters (one window for each pattern type)
 
 		Search patterns
 
@@ -30,25 +43,24 @@ DESCRIPTION	Search
 
                 Mark species with matches
 
-                        Marks all species which match one of the current search patterns.
-                        Does not unmark rest on species.
+                        Marks all species that match any of the current search patterns
+                        (does not change marks of any other species).
 
 		Last/Next
 
 			Jumps to the last/next occurrence of any of the given patterns.
-			You can repeat your last search by pressing CTRL-S.
+			You can repeat your last search by pressing <CTRL-S> while focus
+                        is inside sequence view.
 
-		Show ?
+                        In the extended top-area of ARB_EDIT4 there are global NEXT/LAST
+                        buttons. They jump to the next match of ANY of all 9 pattern types.
+
+		Show?
 
 			If checked, the found parts are shown in different
 			background colors (defined at Properties/Data Search)
 
-			If the different search patterns overlap, they are shown
-			in the following order:
-
-				User (shown above all others)
-				Probe
-				Primer (shown below all other)
+                        See NOTES below for overlap priority.
 
 		Open folded?
 
@@ -105,7 +117,29 @@ DESCRIPTION	Search
 			Defines the minimum and maximum allowed number of
 			non-matching base characters.
 
-NOTES		Found patterns hide possibly activated column statistics.
+SECTION         Store/restore search patterns
+
+                There are two ways to store/restore search patterns:
+
+                      * using the LINK{prop_configs.hlp} icon
+                      * using the SAVE and LOAD buttons
+
+                The latter is obsoleted and is only supported for compatibility.
+
+                Both store/restore all search parameters described above and
+                both provide the possibility to exchange the search parameters between
+                databases/users by saving/loading them to/from files and to move
+                search parameters between different pattern types.
+
+NOTES		Highlighted search patterns are drawn on top of
+                other conditions determining background color (see LINK{e4_background_priority.hlp}).
+
+                If the results from different pattern types overlap, patterns are
+                prioritized as listed in the 'View/Search' submenu,
+                i.e. "User1" is painted above "Primer (global)" and hence parts of
+                the latter may be invisible.
+
+                The hits may also be highlighted in ARB_SECEDIT (see LINK{sec_display.hlp}).
 
 EXAMPLES	None
 

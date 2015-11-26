@@ -110,6 +110,7 @@ my %used_extensions = map { $_ => 1; } ( # matches part behind last '.' in filen
                                         'txt', 'doc', 'ps', 'pdf',
                                         'tgz', 'gz',
                                         'svg', 'png',
+                                        'xpc',
                                        );
 
 my %skipped_extensions = map { $_ => 1; } ( # matches part behind last '.' in filename
@@ -229,6 +230,7 @@ my @skipped_when_matchesFull = (
                                 qr/^\.\/bin\//o,
                                 qr/^\.\/GDE\/CORE\/functions.h$/o,
                                 qr/^\.\/GDE\/PHYML[^\/]+\/phyml\/(configure|config.h.in)$/o,
+                                qr/\/HELP_SOURCE\/help_map\.gif$/o,
                                 qr/^\.\/lib\/ARB\.pm$/o,
                                 qr/^\.\/lib\/arb_tcp\.dat$/o,
                                 qr/^\.\/lib\/gde\/.*\.menu$/o,
@@ -264,6 +266,7 @@ my @forced_when_matchesFull = (
 # files that are even packed when generated and not in VC
 my @pack_fullGenerated = (
                           qr/\/TEMPLATES\/svn_revision\.h$/o,
+                          qr/\/lib\/revision_info\.txt$/o,
                          );
 
 # ------------------------------------------------------------

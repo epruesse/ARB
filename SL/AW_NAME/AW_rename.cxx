@@ -370,6 +370,7 @@ GB_ERROR AWTC_recreate_name(GBDATA *gb_species) {
     GBDATA       *gb_main = GB_get_root(gb_species);
     arb_progress  progress("Recreating species ID");
     GB_ERROR      error   = name_server.connect(gb_main);
+
     if (!error) {
         const char *add_field = AW_get_nameserver_addid(gb_main);
         char       *ali_name  = GBT_get_default_alignment(gb_main);
@@ -462,7 +463,7 @@ GB_ERROR AWTC_pars_names(GBDATA *gb_main, bool *isWarningPtr) {
     // rename species according to name_server
     // 'isWarning' is set to true, in case of duplicates-warning
 
-    arb_progress gen_progress("Generating new names", 2);
+    arb_progress gen_progress("Generating new shortnames (IDs)");
     GB_ERROR     err       = name_server.connect(gb_main);
     bool         isWarning = false;
 
@@ -475,8 +476,8 @@ GB_ERROR AWTC_pars_names(GBDATA *gb_main, bool *isWarningPtr) {
             GB_ERROR  warning  = 0;
 
             if (spcount) {
-                arb_progress progress("Renaming species", spcount);
-                const char *add_field = AW_get_nameserver_addid(gb_main);
+                arb_progress  progress("Renaming species", spcount);
+                const char   *add_field = AW_get_nameserver_addid(gb_main);
 
                 for (GBDATA *gb_species = GBT_first_species(gb_main);
                      gb_species && !err;
@@ -567,12 +568,12 @@ AW_window *AWTC_create_rename_window(AW_root *root, GBDATA *gb_main) {
 
     aws->load_xfig("awtc/autoren.fig");
 
-    aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("close");
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback(makeHelpCallback("sp_rename.hlp"));
     aws->at("help");
+    aws->callback(makeHelpCallback("sp_rename.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
     aws->at("go");

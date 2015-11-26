@@ -23,13 +23,15 @@
 #include <aw_root.hxx>
 
 #include <arb_progress.h>
-#include <arbdbt.h>
+#include <TreeNode.h>
 #include <arb_global_defs.h>
+#include <awt_config_manager.hxx>
 
 // --------------------------------------------------------------------------------
 
 #define AWAR_SQ_PERM "seq_quality/"     // saved in properties
 #define AWAR_SQ_TEMP "tmp/seq_quality/" // not saved in properties
+
 #define AWAR_SQ_WEIGHT_BASES     AWAR_SQ_PERM "weight_bases"
 #define AWAR_SQ_WEIGHT_DEVIATION AWAR_SQ_PERM "weight_deviation"
 #define AWAR_SQ_WEIGHT_HELIX     AWAR_SQ_PERM "weight_helix"
@@ -37,41 +39,34 @@
 #define AWAR_SQ_WEIGHT_IUPAC     AWAR_SQ_PERM "weight_iupac"
 #define AWAR_SQ_WEIGHT_GC        AWAR_SQ_PERM "weight_gc"
 
-#define AWAR_SQ_MARK_ONLY_FLAG  AWAR_SQ_PERM "mark_only_flag"
-#define AWAR_SQ_MARK_FLAG  AWAR_SQ_PERM "mark_flag"
-#define AWAR_SQ_MARK_BELOW AWAR_SQ_PERM "mark_below"
-#define AWAR_SQ_REEVALUATE AWAR_SQ_PERM "reevaluate"
+#define AWAR_SQ_MARK_ONLY_FLAG AWAR_SQ_PERM "mark_only_flag"
+#define AWAR_SQ_MARK_FLAG      AWAR_SQ_PERM "mark_flag"
+#define AWAR_SQ_MARK_BELOW     AWAR_SQ_PERM "mark_below"
+#define AWAR_SQ_REEVALUATE     AWAR_SQ_PERM "reevaluate"
+#define AWAR_SQ_FILTER_NAME    AWAR_SQ_TEMP "filter/name"
 
-#define AWAR_FILTER_PREFIX  AWAR_SQ_TEMP "filter/"
-#define AWAR_FILTER_NAME    AWAR_FILTER_PREFIX "name"
-#define AWAR_FILTER_FILTER  AWAR_FILTER_PREFIX "filter"
-#define AWAR_FILTER_ALI     AWAR_FILTER_PREFIX "alignment"
-
-void SQ_create_awars(AW_root * aw_root, AW_default aw_def) {
-    aw_root->awar_int(AWAR_SQ_WEIGHT_BASES, 5, aw_def);
+void SQ_create_awars(AW_root *aw_root, AW_default aw_def) {
+    aw_root->awar_int(AWAR_SQ_WEIGHT_BASES,     5,  aw_def);
     aw_root->awar_int(AWAR_SQ_WEIGHT_DEVIATION, 15, aw_def);
-    aw_root->awar_int(AWAR_SQ_WEIGHT_HELIX, 15, aw_def);
+    aw_root->awar_int(AWAR_SQ_WEIGHT_HELIX,     15, aw_def);
     aw_root->awar_int(AWAR_SQ_WEIGHT_CONSENSUS, 50, aw_def);
-    aw_root->awar_int(AWAR_SQ_WEIGHT_IUPAC, 5, aw_def);
-    aw_root->awar_int(AWAR_SQ_WEIGHT_GC, 10, aw_def);
-    aw_root->awar_int(AWAR_SQ_MARK_ONLY_FLAG, 0, aw_def);
-    aw_root->awar_int(AWAR_SQ_MARK_FLAG, 1, aw_def);
-    aw_root->awar_int(AWAR_SQ_MARK_BELOW, 40, aw_def);
-    aw_root->awar_int(AWAR_SQ_REEVALUATE, 0, aw_def);
-    aw_root->awar_string(AWAR_FILTER_NAME, "none", aw_def);
-    aw_root->awar_string(AWAR_FILTER_FILTER, "", aw_def);
-    AW_awar *awar_ali = aw_root->awar_string(AWAR_FILTER_ALI, "", aw_def);
-    awar_ali->map(AWAR_DEFAULT_ALIGNMENT);
+    aw_root->awar_int(AWAR_SQ_WEIGHT_IUPAC,     5,  aw_def);
+    aw_root->awar_int(AWAR_SQ_WEIGHT_GC,        10, aw_def);
+    aw_root->awar_int(AWAR_SQ_MARK_ONLY_FLAG,   0,  aw_def);
+    aw_root->awar_int(AWAR_SQ_MARK_FLAG,        1,  aw_def);
+    aw_root->awar_int(AWAR_SQ_MARK_BELOW,       40, aw_def);
+    aw_root->awar_int(AWAR_SQ_REEVALUATE,       0,  aw_def);
+
+    awt_create_filter_awars(aw_root, aw_def, AWAR_SQ_FILTER_NAME, AWAR_DEFAULT_ALIGNMENT);
 }
 
 // --------------------------------------------------------------------------------
 
 
-static void sq_calc_seq_quality_cb(AW_window * aww, AW_CL res_from_awt_create_select_filter, AW_CL cl_gb_main) {
-    GBDATA   *gb_main     = (GBDATA*)cl_gb_main;
+static void sq_calc_seq_quality_cb(AW_window * aww, adfiltercbstruct *acbs, GBDATA *gb_main) {
     AW_root  *aw_root     = aww->get_root();
     GB_ERROR  error       = 0;
-    GBT_TREE *tree        = 0;
+    TreeNode *tree        = 0;
     bool      marked_only = (aw_root->awar(AWAR_SQ_MARK_ONLY_FLAG)->read_int() > 0);
 
     arb_progress main_progress("Calculating sequence quality");
@@ -83,7 +78,7 @@ static void sq_calc_seq_quality_cb(AW_window * aww, AW_CL res_from_awt_create_se
             error = GB_push_transaction(gb_main);
 
             if (!error) {
-                tree = GBT_read_tree(gb_main, treename, GBT_TREE_NodeFactory());
+                tree = GBT_read_tree(gb_main, treename, new SimpleRoot);
                 if (!tree) error = GB_await_error();
                 else {
                     error = GBT_link_tree(tree, gb_main, false, NULL, NULL);
@@ -121,7 +116,7 @@ static void sq_calc_seq_quality_cb(AW_window * aww, AW_CL res_from_awt_create_se
         int reevaluate = aw_root->awar(AWAR_SQ_REEVALUATE)->read_int();
 
         // Load and use Sequence-Filter
-        AP_filter *filter = awt_get_filter((adfiltercbstruct*)res_from_awt_create_select_filter);
+        AP_filter *filter = awt_get_filter(acbs);
         error             = awt_invalid_filter(filter);
 
         /*
@@ -198,13 +193,29 @@ static void sq_calc_seq_quality_cb(AW_window * aww, AW_CL res_from_awt_create_se
     if (error) aw_message(error);
 
     SQ_clear_group_dictionary();
-    delete tree;
+    UNCOVERED();
+    destroy(tree);
 }
 
-static void sq_remove_quality_entries_cb(AW_window *, AW_CL cl_gb_main) {
-    GBDATA *gb_main = (GBDATA*)cl_gb_main;
-    SQ_remove_quality_entries(gb_main);
+static void sq_remove_quality_entries_cb(AW_window*, GBDATA *gb_main) {
+    GB_ERROR error = SQ_remove_quality_entries(gb_main);
+    aw_message_if(error);
 }
+
+static AWT_config_mapping_def seq_quality_config_mapping[] = {
+    { AWAR_SQ_WEIGHT_BASES,     "wbases" },
+    { AWAR_SQ_WEIGHT_DEVIATION, "wdeviation" },
+    { AWAR_SQ_WEIGHT_HELIX,     "whelix" },
+    { AWAR_SQ_WEIGHT_CONSENSUS, "wconsens" },
+    { AWAR_SQ_WEIGHT_IUPAC,     "wiupac" },
+    { AWAR_SQ_WEIGHT_GC,        "wgc" },
+    { AWAR_SQ_MARK_ONLY_FLAG,   "onlymarked" },
+    { AWAR_SQ_MARK_FLAG,        "markbad" },
+    { AWAR_SQ_MARK_BELOW,       "markbelow" },
+    { AWAR_SQ_REEVALUATE,       "reeval" },
+
+    { 0, 0 }
+};
 
 AW_window *SQ_create_seq_quality_window(AW_root *aw_root, GBDATA *gb_main) {
     // create window for sequence quality calculation (called only once)
@@ -215,7 +226,7 @@ AW_window *SQ_create_seq_quality_window(AW_root *aw_root, GBDATA *gb_main) {
     aws->load_xfig("seq_quality.fig");
 
     aws->at("close");
-    aws->callback((AW_CB0) AW_POPDOWN);
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
@@ -253,22 +264,25 @@ AW_window *SQ_create_seq_quality_window(AW_root *aw_root, GBDATA *gb_main) {
     awt_create_TREE_selection_list(gb_main, aws, AWAR_TREE, true);
 
     aws->at("filter");
-    adfiltercbstruct *adfilter = awt_create_select_filter(aws->get_root(), gb_main, AWAR_FILTER_NAME);
+    adfiltercbstruct *adfilter = awt_create_select_filter(aws->get_root(), gb_main, AWAR_SQ_FILTER_NAME);
     aws->callback(makeCreateWindowCallback(awt_create_select_filter_win, adfilter));
-    aws->create_button("SELECT_FILTER", AWAR_FILTER_NAME);
+    aws->create_button("SELECT_FILTER", AWAR_SQ_FILTER_NAME);
 
     aws->at("go");
-    aws->callback(sq_calc_seq_quality_cb, (AW_CL)adfilter, (AW_CL)gb_main);
+    aws->callback(makeWindowCallback(sq_calc_seq_quality_cb, adfilter, gb_main));
     aws->highlight();
     aws->create_button("GO", "GO", "G");
 
-    aws->at("remove");
-    aws->callback(sq_remove_quality_entries_cb, (AW_CL)gb_main);
-    aws->create_button("Remove", "Remove", "R");
+    aws->at("config");
+    AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "seq_quality", seq_quality_config_mapping);
 
     aws->at("reevaluate");
     aws->label("Re-Evaluate only");
     aws->create_toggle(AWAR_SQ_REEVALUATE);
+
+    aws->at("remove");
+    aws->callback(makeWindowCallback(sq_remove_quality_entries_cb, gb_main));
+    aws->create_button("Remove", "Remove", "R");
 
     return aws;
 }

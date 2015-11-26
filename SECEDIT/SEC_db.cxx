@@ -39,12 +39,7 @@ struct SEC_dbcb {
     void call() const { (instance->*member_fun)(this); }
 };
 
-static void awar_cb(AW_root *, AW_CL cl_db_cb, AW_CL) {
-    SEC_dbcb *cb = (SEC_dbcb*)cl_db_cb;
-    cb->call();
-}
-
-static void db_callback(GBDATA *, const SEC_dbcb *cb) {
+static void sec_dbcb(UNFIXED, const SEC_dbcb *cb) {
     cb->call();
 }
 
@@ -58,13 +53,13 @@ SEC_seq_data::SEC_seq_data(GBDATA *gb_item, const char *aliname, const SEC_dbcb 
     len       = GB_read_string_count(gb_data);
     Data      = GB_read_string(gb_data);
 
-    if (gb_name) GB_add_callback(gb_name, GB_CB_CHANGED_OR_DELETED, makeDatabaseCallback(db_callback, change_cb));
-    if (gb_data) GB_add_callback(gb_data, GB_CB_CHANGED_OR_DELETED, makeDatabaseCallback(db_callback, change_cb));
+    if (gb_name) GB_add_callback(gb_name, GB_CB_CHANGED_OR_DELETED, makeDatabaseCallback(sec_dbcb, change_cb));
+    if (gb_data) GB_add_callback(gb_data, GB_CB_CHANGED_OR_DELETED, makeDatabaseCallback(sec_dbcb, change_cb));
 }
 
 SEC_seq_data::~SEC_seq_data() {
-    if (gb_name) GB_remove_callback(gb_name, GB_CB_CHANGED_OR_DELETED, makeDatabaseCallback(db_callback, change_cb));
-    if (gb_data) GB_remove_callback(gb_data, GB_CB_CHANGED_OR_DELETED, makeDatabaseCallback(db_callback, change_cb));
+    if (gb_name) GB_remove_callback(gb_name, GB_CB_CHANGED_OR_DELETED, makeDatabaseCallback(sec_dbcb, change_cb));
+    if (gb_data) GB_remove_callback(gb_data, GB_CB_CHANGED_OR_DELETED, makeDatabaseCallback(sec_dbcb, change_cb));
     free(Data);
 }
 
@@ -144,10 +139,7 @@ GB_ERROR SEC_bond_def::update(AW_root *aw_root, const char *changed_awar_name)
     return error;
 }
 
-static void pair_def_changed_cb(AW_root *aw_root, AW_CL cl_db, AW_CL cl_awar_name) {
-    SEC_db_interface *db        = (SEC_db_interface*)cl_db;
-    const char       *awar_name = (const char *)cl_awar_name;
-
+static void pair_def_changed_cb(AW_root *aw_root, SEC_db_interface *db, const char *awar_name) {
     GB_ERROR err = db->bonds()->update(aw_root, awar_name);
     if (err) aw_message(err);
     db->canvas()->refresh();
@@ -158,11 +150,11 @@ static void bind_bonddef_awars(SEC_db_interface *db) {
 
     for (int i = 0; i<PAIR_TYPES; ++i) {
         PairDefinition& pd = pairdef[i];
-        aw_root->awar(pd.awar_pairs)->add_callback(pair_def_changed_cb, (AW_CL)db, (AW_CL)pd.awar_pairs);
-        aw_root->awar(pd.awar_pairchar)->add_callback(pair_def_changed_cb, (AW_CL)db, 0);
+        aw_root->awar(pd.awar_pairs)   ->add_callback(makeRootCallback(pair_def_changed_cb, db, pd.awar_pairs));
+        aw_root->awar(pd.awar_pairchar)->add_callback(makeRootCallback(pair_def_changed_cb, db, (const char *)NULL));
     }
 
-    pair_def_changed_cb(aw_root, (AW_CL)db, 0);
+    pair_def_changed_cb(aw_root, db, NULL);
 }
 
 // --------------------------------------------------------------------------------
@@ -355,8 +347,9 @@ static const char *refresh_awars[] = {
 };
 
 void SEC_db_interface::bind_awars(const char **awars, SEC_dbcb *cb) {
+    RootCallback awarcb = makeRootCallback(sec_dbcb, cb);
     for (int i = 0; awars[i]; ++i) {
-        aw_root->awar(awars[i])->add_callback(awar_cb, (AW_CL)cb, 0);
+        aw_root->awar(awars[i])->add_callback(awarcb);
     }
 }
 
@@ -372,9 +365,9 @@ static void create_awars(AW_root *aw_root, AW_default def) {
         free(dir);
     }
 
-    aw_root->awar_float(AWAR_SECEDIT_DIST_BETW_STRANDS, 1, def)->set_minmax(0.001, 1000);
-    aw_root->awar_int(AWAR_SECEDIT_SKELETON_THICKNESS, 1, def)->set_minmax(1, 100);
-    aw_root->awar_int(AWAR_SECEDIT_BOND_THICKNESS, 1, def)->set_minmax(1, 100);
+    aw_root->awar_float(AWAR_SECEDIT_DIST_BETW_STRANDS,  1, def)->set_minmax(0.01, 40);
+    aw_root->awar_int  (AWAR_SECEDIT_SKELETON_THICKNESS, 1, def)->set_minmax(1,    10);
+    aw_root->awar_int  (AWAR_SECEDIT_BOND_THICKNESS,     1, def)->set_minmax(1,    10);
 
 #if defined(DEBUG)
     aw_root->awar_int(AWAR_SECEDIT_SHOW_DEBUG,        0,                def);
@@ -436,8 +429,8 @@ SEC_db_interface::SEC_db_interface(SEC_graphic *Gfx, AWT_canvas *Scr, ED4_plugin
     cursorpos_cb      = new SEC_dbcb(this, &SEC_db_interface::cursor_changed);
     alilen_changed_cb = new SEC_dbcb(this, &SEC_db_interface::alilen_changed);
 
-    aw_root->awar_string(AWAR_SPECIES_NAME, "", gb_main)->add_callback(awar_cb, (AW_CL)sequence_cb, 0);
-    aw_root->awar_string(AWAR_CURSOR_POSITION, "", gb_main)->add_callback(awar_cb, (AW_CL)cursorpos_cb, 0);
+    aw_root->awar_string(AWAR_SPECIES_NAME,    "", gb_main)->add_callback(makeRootCallback(sec_dbcb, sequence_cb));
+    aw_root->awar_string(AWAR_CURSOR_POSITION, "", gb_main)->add_callback(makeRootCallback(sec_dbcb, cursorpos_cb));
 
     bind_awars(update_pos_awars, updatepos_cb);
     bind_awars(relayout_awars, relayout_cb);
@@ -449,7 +442,7 @@ SEC_db_interface::SEC_db_interface(SEC_graphic *Gfx, AWT_canvas *Scr, ED4_plugin
         GBDATA *gb_alignment     = GBT_get_alignment(gb_main, aliname);
         GBDATA *gb_alignment_len = GB_search(gb_alignment, "alignment_len", GB_FIND);
         sec_assert(gb_alignment_len);
-        GB_add_callback(gb_alignment_len, GB_CB_CHANGED, makeDatabaseCallback(db_callback, alilen_changed_cb));
+        GB_add_callback(gb_alignment_len, GB_CB_CHANGED, makeDatabaseCallback(sec_dbcb, alilen_changed_cb));
     }
 
     sequence_cb->call();

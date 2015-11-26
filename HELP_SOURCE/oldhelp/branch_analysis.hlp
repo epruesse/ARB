@@ -49,8 +49,8 @@ SECTION         Using the PSD to compare trees
                 the branchlengths of (a copy of) one of the trees. For example the PSDs
                 might be
 
-                 - PSDr = PSD(tree_raxml)    =  0.002219
-                 - PSDp = PSD(tree_arbpars)  =  0.118483
+                 - PSDr = PSD(tree_raxml) = 0.002219
+                 - PSDp = PSD(tree_arbpars) = 0.118483
 
                 Now you may scale the branchlengths of tree_arbpars by factor 0.01873 (=PSDr/PSDp) or those
                 of tree_raxml by factor 53.39 (==PSDp/PSDr) to ease comparison of the two trees.

@@ -37,12 +37,12 @@ static void create_filter_text()
     filter_text = (char **) calloc(FILTER_MODES, sizeof (char *));
     for (int i=0; i<FILTER_MODES; i++) filter_text[i] = new char[100];
 
-    strcpy(filter_text[DONT_COUNT],           "don't count (ignore)                              ");
-    strcpy(filter_text[SKIP_COLUMN_IF_MAX],   "if occurs most often => forget whole column       ");
-    strcpy(filter_text[SKIP_COLUMN_IF_OCCUR], "if occurs => forget whole column                  ");
-    strcpy(filter_text[COUNT_DONT_USE_MAX],   "count, but do NOT use as maximum                  ");
-    strcpy(filter_text[TREAT_AS_UPPERCASE],   "treat as uppercase character                      ");
-    strcpy(filter_text[TREAT_AS_REGULAR],     "treat as regular character                        ");
+    strcpy(filter_text[DONT_COUNT],           "don't count (ignore)                       ");
+    strcpy(filter_text[SKIP_COLUMN_IF_MAX],   "if occurs most often => forget whole column");
+    strcpy(filter_text[SKIP_COLUMN_IF_OCCUR], "if occurs => forget whole column           ");
+    strcpy(filter_text[COUNT_DONT_USE_MAX],   "count, but do NOT use as maximum           ");
+    strcpy(filter_text[TREAT_AS_UPPERCASE],   "treat as uppercase character               ");
+    strcpy(filter_text[TREAT_AS_REGULAR],     "treat as regular character                 ");
 }
 
 static bool valid_alignment_selected(AW_root *aw_root, GBDATA *gb_main) {
@@ -104,17 +104,29 @@ __ATTR__NORETURN static void ph_exit(AW_window *aw_window, PH_root *ph_root) {
 
 
 void expose_cb() {
-    if (PH_display::ph_display->displayed()!=NONE) {
+    if (PH_display::ph_display && PH_display::ph_display->displayed()!=NONE) {
         PH_display::ph_display->clear_window();
         PH_display::ph_display->display();
     }
 }
 
-
 static void resize_cb() {
     if (PH_display::ph_display) {
         PH_display::ph_display->resized();
         PH_display::ph_display->display();
+    }
+}
+
+static void gc_changed_cb(GcChange whatChanged) {
+    switch (whatChanged) {
+        case GC_COLOR_GROUP_USE_CHANGED:
+            ph_assert(0); // not used atm -> fall-through
+        case GC_COLOR_CHANGED:
+            expose_cb();
+            break;
+        case GC_FONT_CHANGED:
+            resize_cb();
+            break;
     }
 }
 
@@ -422,11 +434,13 @@ static AW_window *create_phyl_main_window(AW_root *aw_root, PH_root *ph_root) {
 
     // create menus and menu inserts with callbacks
 
+    const GcChangedCallback gcChangedCb = makeGcChangedCallback(gc_changed_cb);
+
     AW_gc_manager gcmiddle = AW_manage_GC(awm,
                                           awm->get_window_id(),
                                           awm->get_device(AW_MIDDLE_AREA),
                                           PH_GC_0, PH_GC_0_DRAG, AW_GCM_DATA_AREA,
-                                          makeWindowCallback(resize_cb),
+                                          gcChangedCb,
                                           false, // no color groups
                                           "#CC9AF8",
                                           "#SEQUENCE$#000000",
@@ -437,7 +451,7 @@ static AW_window *create_phyl_main_window(AW_root *aw_root, PH_root *ph_root) {
                  awm->get_window_id(),
                  awm->get_device(AW_BOTTOM_AREA),
                  PH_GC_0, PH_GC_0_DRAG, AW_GCM_WINDOW_AREA,
-                 makeWindowCallback(resize_cb),
+                 gcChangedCb,
                  false, // no color groups
                  "pink",
                  "#FOOTER",
@@ -466,8 +480,10 @@ static AW_window *create_phyl_main_window(AW_root *aw_root, PH_root *ph_root) {
 
     // Properties menu
     awm->create_menu("Properties", "P");
-    awm->insert_menu_topic("props_menu", "Frame settings ...",   "F", "props_frame.hlp",   AWM_ALL, AW_preset_window);
-    awm->insert_menu_topic("props_data", "Colors and Fonts ...", "C", "ph_props_data.hlp", AWM_ALL, makeCreateWindowCallback(AW_create_gc_window, gcmiddle));
+#if defined(ARB_MOTIF)
+    awm->insert_menu_topic("props_menu", "Frame settings ...",   "F", "props_frame.hlp", AWM_ALL, AW_preset_window);
+#endif
+    awm->insert_menu_topic("props_data", "Colors and Fonts ...", "C", "color_props.hlp", AWM_ALL, makeCreateWindowCallback(AW_create_gc_window, gcmiddle));
     awm->sep______________();
     AW_insert_common_property_menu_entries(awm);
     awm->sep______________();
@@ -483,6 +499,9 @@ static AW_window *create_phyl_main_window(AW_root *aw_root, PH_root *ph_root) {
     awm->button_length(0);
     awm->help_text("quit.hlp");
     awm->create_button("QUIT", "QUIT");
+#if defined(ARB_GTK)
+    awm->set_close_action("QUIT");
+#endif
 
     awm->callback(makeHelpCallback("phylo.hlp"));
     awm->button_length(0);
@@ -518,6 +537,10 @@ static AW_window *create_select_alignment_window(AW_root *aw_root, AW_window *ma
 
     aws->callback(makeWindowCallback(ph_exit, ph_root));
     aws->create_button("ABORT", "Abort", "D");
+
+#if defined(ARB_GTK)
+    aws->set_close_action("ABORT");
+#endif
 
     return aws;
 }

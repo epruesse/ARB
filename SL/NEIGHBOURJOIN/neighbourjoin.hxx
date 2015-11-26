@@ -15,7 +15,7 @@
 #include <arbdb_base.h>
 #endif
 
-GBT_TREE *neighbourjoining(const char *const *names, const AP_smatrix& smatrix);
+TreeNode *neighbourjoining(const char *const *names, const AP_smatrix& smatrix, TreeRoot *troot);
 
 #else
 #error neighbourjoin.hxx included twice

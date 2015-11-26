@@ -103,7 +103,7 @@ Note: The BSD flavor of sed provided with OS X will not work with ARB.  You need
   
         or check out from svn
   
-    % svn co http://svn.mikro.biologie.tu-muenchen.de/readonly/branches/stable_5.0 ARB
+    % svn co http://vc.arb-home.de/readonly/branches/stable ARB
   
   Create and edit config.makefile like this:
         

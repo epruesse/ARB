@@ -27,7 +27,7 @@ $(LIB_SHARED): $(OBJECTS)
 	$(LINK_SHARED_LIB) $(LIB_SHARED) $(OBJECTS)
 
 .cxx.o:
-	$(A_CXX) $(shared_cflags) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(shared_cflags) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE) $<
 
 .cxx.genh:
 	../AISC_MKPTPS/aisc_mkpt -P -G -w $(subst .genh,.h,$@) $< > $@
@@ -148,8 +148,12 @@ arb_msg.o: arb_core.h
 arb_msg.o: arb_handlers.h
 arb_msg.o: arb_msg.h
 arb_msg.o: arb_msg_fwd.h
+arb_msg.o: arb_strarray.h
+arb_msg.o: arb_strbuf.h
 arb_msg.o: arb_string.h
+arb_msg.o: FileContent.h
 arb_msg.o: $(ARBHOME)/INCLUDE/arb_backtrace.h
+arb_msg.o: $(ARBHOME)/INCLUDE/arb_defs.h
 arb_msg.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_msg.o: $(ARBHOME)/INCLUDE/attributes.h
 arb_msg.o: $(ARBHOME)/INCLUDE/cxxforward.h
@@ -157,6 +161,7 @@ arb_msg.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_msg.o: $(ARBHOME)/INCLUDE/gccver.h
 arb_msg.o: $(ARBHOME)/INCLUDE/smartptr.h
 arb_msg.o: $(ARBHOME)/INCLUDE/test_global.h
+arb_msg.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 arb_pattern.o: arb_assert.h
 arb_pattern.o: arb_core.h
@@ -201,7 +206,13 @@ arb_signal.o: $(ARBHOME)/INCLUDE/test_global.h
 arb_signal.o: $(ARBHOME)/INCLUDE/test_unit.h
 arb_signal.o: $(ARBHOME)/INCLUDE/valgrind.h
 
+arb_sort.o: arb_assert.h
+arb_sort.o: arb_core.h
 arb_sort.o: arb_sort.h
+arb_sort.o: $(ARBHOME)/INCLUDE/attributes.h
+arb_sort.o: $(ARBHOME)/INCLUDE/dupstr.h
+arb_sort.o: $(ARBHOME)/INCLUDE/gccver.h
+arb_sort.o: $(ARBHOME)/INCLUDE/test_global.h
 
 arb_strarray.o: arb_assert.h
 arb_strarray.o: arb_core.h

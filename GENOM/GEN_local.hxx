@@ -63,6 +63,7 @@
 // --------------------------------------------------------------------------------
 
 const char *GEN_window_local_awar_name(const char *awar_name, int window_nr);
+int         GEN_find_windowNr_for(class GEN_graphic *gg);
 
 struct GEN_create_map_param {
     GBDATA *gb_main;
@@ -71,6 +72,8 @@ struct GEN_create_map_param {
 };
 
 GB_ERROR GEN_mark_organism_or_corresponding_organism(GBDATA *gb_species, int *client_data);
+
+void GEN_refresh_all_windows();
 
 // --------------------------------------------------------------------------------
 

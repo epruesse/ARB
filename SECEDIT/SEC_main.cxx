@@ -26,6 +26,7 @@
 #include <mode_text.h>
 
 #include <arb_file.h>
+#include <awt_config_manager.hxx>
 
 #ifndef sec_assert // happens in NDEBUG mode
 #define sec_assert(cond) arb_assert(cond)
@@ -166,24 +167,17 @@ void SEC_root::position_cursor(bool toCenter, bool evenIfVisible) {
     }
 }
 
-static void SEC_toggle_cb(AW_window *, AW_CL cl_secroot, AW_CL) {
-    SEC_root               *root = (SEC_root*)cl_secroot;
-    const SEC_db_interface *db   = root->get_db();
-
+static void SEC_toggle_cb(AW_window*, const SEC_db_interface *db) {
     GB_ERROR error = db->structure()->next();
     if (error) aw_message(error);
     db->canvas()->refresh();
 }
 
-static void SEC_center_cb(AW_window *, AW_CL cl_secroot, AW_CL) {
-    SEC_root *root = (SEC_root*)cl_secroot;
+static void SEC_center_cb(AW_window *, SEC_root *root) {
     root->position_cursor(true, true);
 }
 
-static void SEC_fit_window_cb(AW_window * /* aw */, AW_CL cl_secroot, AW_CL) {
-    SEC_root               *root = (SEC_root*)cl_secroot;
-    const SEC_db_interface *db   = root->get_db();
-
+static void SEC_fit_window_cb(AW_window*, const SEC_db_interface *db) {
     db->graphic()->request_update(SEC_UPDATE_ZOOM_RESET);
     db->canvas()->refresh();
 }
@@ -218,10 +212,7 @@ static void sec_mode_event(AW_window *aws, SEC_root *sec_root, AWT_COMMAND_MODE 
     scr->refresh();
 }
 
-static void SEC_undo_cb(AW_window *, AW_CL cl_db, AW_CL cl_undo_type) {
-    SEC_db_interface *db        = (SEC_db_interface*)cl_db;
-    GB_UNDO_TYPE      undo_type = (GB_UNDO_TYPE)cl_undo_type;
-
+static void SEC_undo_cb(AW_window *, const SEC_db_interface *db, GB_UNDO_TYPE undo_type) {
     GBDATA   *gb_main = db->gbmain();
     GB_ERROR  error   = GB_undo(gb_main, undo_type);
     if (error) {
@@ -241,46 +232,50 @@ static void SEC_undo_cb(AW_window *, AW_CL cl_db, AW_CL cl_undo_type) {
 #define ASS_EOS   "[end of structure]"
 #define ASS_EOF   "[end of " ASS "]"
 
-static void export_structure_to_file(AW_window *, AW_CL cl_db)
-{
-    SEC_db_interface *db       = (SEC_db_interface*)cl_db;
-    AW_root          *aw_root  = db->awroot();
-    char             *filename = aw_root->awar(AWAR_SECEDIT_SAVEDIR"/file_name")->read_string();
-    FILE             *out      = fopen(filename, "wt");
-    GB_ERROR          error    = 0;
+static void export_structure_to_file(AW_window *, const SEC_db_interface *db) {
+    GB_ERROR  error    = 0;
+    SEC_root *sec_root = db->secroot();
 
-    if (out) {
-        SEC_root *sec_root = db->secroot();
-
-        fputs(ASS_START, out); fputc('\n', out);
-
-        char *strct = sec_root->buildStructureString();
-        fputs(strct, out);
-        delete [] strct;
-
-        fputs(ASS_EOS, out); fputc('\n', out);
-
-        const XString& xstr     = sec_root->get_xString();
-        const char    *x_string = xstr.get_x_string();
-
-        sec_assert(xstr.get_x_string_length() == strlen(x_string));
-
-        char *foldInfo = SEC_xstring_to_foldedHelixList(x_string, xstr.get_x_string_length(), sec_root->get_helixDef(), error);
-        if (foldInfo) {
-            fprintf(out, "foldedHelices=%s\n", foldInfo);
-            free(foldInfo);
-        }
-
-        fputs(ASS_EOF, out); fputc('\n', out);
-        fclose(out);
-
-        if (error) GB_unlink_or_warn(filename, &error);
+    if (!sec_root->get_root_loop()) {
+        error = "Please select a species (to display structure once) before saving";
     }
     else {
-        error = GB_export_errorf("Can't write secondary structure to '%s'", filename);
-    }
+        AW_root *aw_root  = db->awroot();
+        char    *filename = aw_root->awar(AWAR_SECEDIT_SAVEDIR"/file_name")->read_string();
+        FILE    *out      = fopen(filename, "wt");
 
-    free(filename);
+        if (out) {
+
+            fputs(ASS_START, out); fputc('\n', out);
+
+            char *strct = sec_root->buildStructureString();
+            fputs(strct, out);
+            delete [] strct;
+
+            fputs(ASS_EOS, out); fputc('\n', out);
+
+            const XString& xstr     = sec_root->get_xString();
+            const char    *x_string = xstr.get_x_string();
+
+            sec_assert(xstr.get_x_string_length() == strlen(x_string));
+
+            char *foldInfo = SEC_xstring_to_foldedHelixList(x_string, xstr.get_x_string_length(), sec_root->get_helixDef(), error);
+            if (foldInfo) {
+                fprintf(out, "foldedHelices=%s\n", foldInfo);
+                free(foldInfo);
+            }
+
+            fputs(ASS_EOF, out); fputc('\n', out);
+            fclose(out);
+
+            if (error) GB_unlink_or_warn(filename, &error);
+        }
+        else {
+            error = GB_export_errorf("Can't write secondary structure to '%s'", filename);
+        }
+
+        free(filename);
+    }
     if (error) aw_message(error);
 }
 
@@ -326,10 +321,9 @@ static GB_ERROR expectToken(LineReader& file, const char *token, string& content
     return error;
 }
 
-static void import_structure_from_file(AW_window *, AW_CL cl_db) {
-    GB_ERROR          error = 0;
-    SEC_db_interface *db    = (SEC_db_interface*)cl_db;
-    SEC_root         *root  = db->secroot();
+static void import_structure_from_file(AW_window *, const SEC_db_interface *db) {
+    GB_ERROR  error = 0;
+    SEC_root *root  = db->secroot();
 
     if (!root->has_xString()) {
         error = "Please select a species in EDIT4";
@@ -408,8 +402,7 @@ static void import_structure_from_file(AW_window *, AW_CL cl_db) {
 #undef ASS_EOS
 #undef ASS_EOF
 
-static AW_window *SEC_importExport(AW_root *root, int export_to_file, SEC_db_interface *db)
-{
+static AW_window *SEC_importExport(AW_root *root, bool export_to_file, const SEC_db_interface *db) {
     AW_window_simple *aws = new AW_window_simple;
 
     if (export_to_file) aws->init(root, "export_secondary_structure", "Export secondary structure to ...");
@@ -418,7 +411,7 @@ static AW_window *SEC_importExport(AW_root *root, int export_to_file, SEC_db_int
     aws->load_xfig("sec_imexport.fig");
 
     aws->at("close");
-    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
@@ -429,22 +422,18 @@ static AW_window *SEC_importExport(AW_root *root, int export_to_file, SEC_db_int
 
     aws->at("save");
     if (export_to_file) {
-        aws->callback(export_structure_to_file, (AW_CL)db);
+        aws->callback(makeWindowCallback(export_structure_to_file, db));
         aws->create_button("EXPORT", "EXPORT", "E");
     }
     else {
-        aws->callback(import_structure_from_file, (AW_CL)db);
+        aws->callback(makeWindowCallback(import_structure_from_file, db));
         aws->create_button("IMPORT", "IMPORT", "I");
     }
 
     return aws;
 }
 
-static AW_window *SEC_import(AW_root *root, AW_CL cl_db) { return SEC_importExport(root, 0, (SEC_db_interface*)cl_db); }
-static AW_window *SEC_export(AW_root *root, AW_CL cl_db) { return SEC_importExport(root, 1, (SEC_db_interface*)cl_db); }
-
-static void SEC_rename_structure(AW_window *, AW_CL cl_db, AW_CL) {
-    SEC_db_interface      *db        = (SEC_db_interface*)cl_db;
+static void SEC_rename_structure(AW_window*, const SEC_db_interface *db) {
     SEC_structure_toggler *structure = db->structure();
 
     char *new_name = aw_input("Rename structure", "New name", structure->name());
@@ -455,8 +444,7 @@ static void SEC_rename_structure(AW_window *, AW_CL cl_db, AW_CL) {
     }
 }
 
-static void SEC_new_structure(AW_window *, AW_CL cl_db, AW_CL) {
-    SEC_db_interface      *db        = (SEC_db_interface*)cl_db;
+static void SEC_new_structure(AW_window*, const SEC_db_interface *db) {
     SEC_structure_toggler *structure = db->structure();
 
     if (!structure) {
@@ -473,7 +461,7 @@ static void SEC_new_structure(AW_window *, AW_CL cl_db, AW_CL) {
             error = structure->copyTo("Default");
             if (!error) {
                 db->secroot()->create_default_bone();
-                db->graphic()->save(0, 0, 0, 0);
+                db->graphic()->save(NULL, NULL);
                 done = true;
             }
             break;
@@ -490,12 +478,11 @@ static void SEC_new_structure(AW_window *, AW_CL cl_db, AW_CL) {
     if (done) {
         db->graphic()->request_update(SEC_UPDATE_ZOOM_RESET);
         db->canvas()->refresh();
-        SEC_rename_structure(0, cl_db, 0);
+        SEC_rename_structure(0, db);
     }
 }
 
-static void SEC_delete_structure(AW_window *, AW_CL cl_db, AW_CL) {
-    SEC_db_interface      *db        = (SEC_db_interface*)cl_db;
+static void SEC_delete_structure(AW_window*, const SEC_db_interface *db) {
     SEC_structure_toggler *structure = db->structure();
 
     if (structure->getCount()>1) {
@@ -510,12 +497,18 @@ static void SEC_delete_structure(AW_window *, AW_CL cl_db, AW_CL) {
     }
 }
 
-static void SEC_sync_colors(AW_window *aww, AW_CL cl_mode, AW_CL) {
+enum SyncColors {
+    COLOR_SYNC_SEARCH = 1,
+    COLOR_SYNC_RANGE  = 2,
+    COLOR_SYNC_REST   = 4,
+
+    COLOR_SYNC_ALL = (COLOR_SYNC_SEARCH|COLOR_SYNC_RANGE|COLOR_SYNC_REST),
+};
+
+static void SEC_sync_colors(AW_window *aww, SyncColors which) {
     // overwrites color settings with those from EDIT4
 
-    int mode = (int)cl_mode;
-
-    if (mode & 1) { // search string colors
+    if (which & COLOR_SYNC_SEARCH) {
         AW_copy_GCs(aww->get_root(), "ARB_EDIT4", "ARB_SECEDIT", false,
                     "User1",   "User2",   "Probe",
                     "Primerl", "Primerr", "Primerg",
@@ -523,7 +516,7 @@ static void SEC_sync_colors(AW_window *aww, AW_CL cl_mode, AW_CL) {
                     "MISMATCHES",
                     NULL);
     }
-    if (mode & 2) { // range colors
+    if (which & COLOR_SYNC_RANGE) {
         AW_copy_GCs(aww->get_root(), "ARB_EDIT4", "ARB_SECEDIT", false,
                     "RANGE_0", "RANGE_1", "RANGE_2",
                     "RANGE_3", "RANGE_4", "RANGE_5",
@@ -531,7 +524,7 @@ static void SEC_sync_colors(AW_window *aww, AW_CL cl_mode, AW_CL) {
                     "RANGE_9",
                     NULL);
     }
-    if (mode & 4) { // other colors
+    if (which & COLOR_SYNC_REST) {
         AW_copy_GCs(aww->get_root(), "ARB_EDIT4", "ARB_SECEDIT", false,
                     "CURSOR",
                     NULL);
@@ -544,8 +537,8 @@ static AW_window *SEC_create_bonddef_window(AW_root *awr) {
     aws->init(awr, "SEC_BONDDEF", "Bond definitions");
     aws->load_xfig("sec_bonddef.fig");
 
-    aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("close");
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->callback(makeHelpCallback("sec_bonddef.hlp"));
@@ -560,7 +553,7 @@ static AW_window *SEC_create_bonddef_window(AW_root *awr) {
 
 #define INSERT_PAIR_FIELDS(label, pairname)                             \
     aws->at_x(x_label);                                                 \
-    aws->create_button("", label);                                      \
+    aws->create_button(NULL, label);                                    \
     aws->at_x(x_pairs);                                                 \
     aws->create_input_field(AWAR_SECEDIT_##pairname##_PAIRS, 30);       \
     aws->at_x(x_chars);                                                 \
@@ -569,23 +562,59 @@ static AW_window *SEC_create_bonddef_window(AW_root *awr) {
 
     INSERT_PAIR_FIELDS("Strong pairs", STRONG);
     INSERT_PAIR_FIELDS("Normal pairs", NORMAL);
-    INSERT_PAIR_FIELDS("Weak pairs", WEAK);
-    INSERT_PAIR_FIELDS("No pairs", NO);
-    INSERT_PAIR_FIELDS("User pairs", USER);
+    INSERT_PAIR_FIELDS("Weak pairs",   WEAK);
+    INSERT_PAIR_FIELDS("No pairs",     NO);
+    INSERT_PAIR_FIELDS("User pairs",   USER);
 
 #undef INSERT_PAIR_FIELDS
 
     return aws;
 }
 
+#define INSERT_PAIR_MAPPING(pairname)                              \
+    { AWAR_SECEDIT_##pairname##_PAIRS, "pairs_" #pairname },       \
+    { AWAR_SECEDIT_##pairname##_PAIR_CHAR, "char_" #pairname }
+
+static AWT_config_mapping_def secedit_display_config_mapping[] = {
+    { AWAR_SECEDIT_HIDE_BASES,        "hidebases" },
+    { AWAR_SECEDIT_DIST_BETW_STRANDS, "stranddist" },
+    { AWAR_SECEDIT_SHOW_BONDS,        "showbonds" },
+
+    INSERT_PAIR_MAPPING(STRONG),
+    INSERT_PAIR_MAPPING(NORMAL),
+    INSERT_PAIR_MAPPING(WEAK),
+    INSERT_PAIR_MAPPING(NO),
+    INSERT_PAIR_MAPPING(USER),
+
+    { AWAR_SECEDIT_BOND_THICKNESS,     "bondthickness" },
+    { AWAR_SECEDIT_SHOW_CURPOS,        "showposition" },
+    { AWAR_SECEDIT_SHOW_HELIX_NRS,     "showhelixnrs" },
+    { AWAR_SECEDIT_SHOW_ECOLI_POS,     "showecolipos" },
+    { AWAR_SECEDIT_DISPLAY_SEARCH,     "showsearch" },
+    { AWAR_SECEDIT_DISPLAY_SAI,        "showsai" },
+    { AWAR_SECEDIT_DISPPOS_BINDING,    "disppos_helix" },
+    { AWAR_SECEDIT_DISPPOS_ECOLI,      "disppos_ecoli" },
+    { AWAR_SECEDIT_SHOW_STR_SKELETON,  "skeleton" },
+    { AWAR_SECEDIT_SKELETON_THICKNESS, "skeleton_thickness" },
+
+    { 0, 0 }
+};
+
+#undef INSERT_PAIR_MAPPING
+
 static AW_window *SEC_create_display_window(AW_root *awr) {
     AW_window_simple *aws = new AW_window_simple;
+
+    const int SCALED_TEXT_COLUMNS = 7;
+    const int SCALER_WIDTH        = 200;
+
+    aws->auto_space(5, 5);
 
     aws->init(awr, "SEC_DISPLAY_OPTS", "Display options");
     aws->load_xfig("sec_display.fig");
 
-    aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("close");
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->callback(makeHelpCallback("sec_display.hlp"));
@@ -600,7 +629,7 @@ static AW_window *SEC_create_display_window(AW_root *awr) {
 
     aws->at("strand_dist");
     aws->label("Distance between strands   :");
-    aws->create_input_field(AWAR_SECEDIT_DIST_BETW_STRANDS);
+    aws->create_input_field_with_scaler(AWAR_SECEDIT_DIST_BETW_STRANDS, SCALED_TEXT_COLUMNS, SCALER_WIDTH, AW_SCALER_EXP_LOWER);
 
     aws->at("bonds");
     aws->label("Display bonds");
@@ -611,12 +640,12 @@ static AW_window *SEC_create_display_window(AW_root *awr) {
     aws->update_option_menu();
 
     aws->at("bonddef");
-    aws->callback(AW_POPUP, (AW_CL)SEC_create_bonddef_window, 0);
+    aws->callback(makeCreateWindowCallback(SEC_create_bonddef_window));
     aws->create_button("sec_bonddef", "Define", 0);
 
     aws->at("bondThickness");
     aws->label("Bond thickness             :");
-    aws->create_input_field(AWAR_SECEDIT_BOND_THICKNESS);
+    aws->create_input_field_with_scaler(AWAR_SECEDIT_BOND_THICKNESS, SCALED_TEXT_COLUMNS, SCALER_WIDTH, AW_SCALER_EXP_LOWER);
 
     // ----------------------------------------
 
@@ -663,13 +692,16 @@ static AW_window *SEC_create_display_window(AW_root *awr) {
 
     aws->at("skelThickness");
     aws->label("Skeleton thickness         :");
-    aws->create_input_field(AWAR_SECEDIT_SKELETON_THICKNESS);
+    aws->create_input_field_with_scaler(AWAR_SECEDIT_SKELETON_THICKNESS, SCALED_TEXT_COLUMNS, SCALER_WIDTH, AW_SCALER_EXP_LOWER);
 
 #ifdef DEBUG
     aws->at("show_debug");
     aws->label("Show debug info:");
     aws->create_toggle(AWAR_SECEDIT_SHOW_DEBUG);
 #endif
+
+    aws->at("config");
+    AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "secedit_display", secedit_display_config_mapping);
 
     return aws;
 }
@@ -681,6 +713,10 @@ static AW_window *SEC_create_display_window(AW_root *awr) {
 static void SEC_exit(GBDATA *, void *cl_sec_root) {
     SEC_root *sec_root = static_cast<SEC_root*>(cl_sec_root);
     delete sec_root;
+}
+
+static AW_window *SEC_create_gc_window(AW_root *awr, AW_gc_manager gcman) {
+    return AW_create_gc_window_named(awr, gcman, "SEC_PROPS_GC", "SECEDIT colors and fonts");
 }
 
 AW_window *start_SECEDIT_plugin(ED4_plugin_host& host) {
@@ -705,28 +741,28 @@ AW_window *start_SECEDIT_plugin(ED4_plugin_host& host) {
 
     awm->create_menu("File", "F", AWM_ALL);
 
-    awm->insert_menu_topic("secedit_new", "New structure", "N", 0, AWM_ALL, SEC_new_structure, (AW_CL)db, 0);
-    awm->insert_menu_topic("secedit_rename", "Rename structure", "R", 0, AWM_ALL, SEC_rename_structure, (AW_CL)db, 0);
-    awm->insert_menu_topic("secedit_delete", "Delete structure", "D", 0, AWM_ALL, SEC_delete_structure, (AW_CL)db, 0);
+    awm->insert_menu_topic("secedit_new",    "New structure",    "N", 0, AWM_ALL, makeWindowCallback(SEC_new_structure,    db));
+    awm->insert_menu_topic("secedit_rename", "Rename structure", "R", 0, AWM_ALL, makeWindowCallback(SEC_rename_structure, db));
+    awm->insert_menu_topic("secedit_delete", "Delete structure", "D", 0, AWM_ALL, makeWindowCallback(SEC_delete_structure, db));
     awm->sep______________();
-    awm->insert_menu_topic("secedit_import", "Load structure", "L", "secedit_imexport.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_import, (AW_CL)db);
-    awm->insert_menu_topic("secedit_export", "Save structure", "S", "secedit_imexport.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_export, (AW_CL)db);
+    awm->insert_menu_topic("secedit_import", "Load structure", "L", "secedit_imexport.hlp", AWM_ALL, makeCreateWindowCallback(SEC_importExport, false, db));
+    awm->insert_menu_topic("secedit_export", "Save structure", "S", "secedit_imexport.hlp", AWM_ALL, makeCreateWindowCallback(SEC_importExport, true, db));
     awm->sep______________();
-    awm->insert_menu_topic("secStruct2xfig", "Export Structure to XFIG", "X", "sec_layout.hlp",  AWM_ALL, makeWindowCallback(AWT_popup_sec_export_window, scr));
-    awm->insert_menu_topic("print_secedit",  "Print Structure",          "P", "secedit2prt.hlp", AWM_ALL, makeWindowCallback(AWT_popup_print_window, scr));
+    awm->insert_menu_topic("secStruct2xfig", "Export structure to XFIG", "X", "tree2file.hlp", AWM_ALL, makeWindowCallback(AWT_popup_sec_export_window, scr));
+    awm->insert_menu_topic("print_secedit",  "Print Structure",          "P", "tree2prt.hlp",  AWM_ALL, makeWindowCallback(AWT_popup_print_window,      scr));
     awm->sep______________();
 
-    awm->insert_menu_topic("close", "Close", "C", "quit.hlp", AWM_ALL, (AW_CB)AW_POPDOWN, 0, 0);
+    awm->insert_menu_topic("close", "Close", "C", "quit.hlp", AWM_ALL, AW_POPDOWN);
 
     awm->create_menu("Properties", "P", AWM_ALL);
-    awm->insert_menu_topic("sec_display", "Display options", "D", "sec_display.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_create_display_window, 0);
+    awm->insert_menu_topic("sec_display", "Display options", "D", "sec_display.hlp", AWM_ALL, SEC_create_display_window);
     awm->sep______________();
-    awm->insert_menu_topic("props_secedit", "Change Colors and Fonts", "C", "secedit_props_data.hlp", AWM_ALL, makeCreateWindowCallback(AW_create_gc_window, scr->gc_manager));
+    awm->insert_menu_topic("props_secedit", "Change Colors and Fonts", "C", "color_props.hlp", AWM_ALL, makeCreateWindowCallback(SEC_create_gc_window, scr->gc_manager));
     awm->sep______________();
-    awm->insert_menu_topic("sync_search_colors", "Sync search colors with EDIT4", "s", "sync_colors.hlp", AWM_ALL, SEC_sync_colors, (AW_CL)1, 0);
-    awm->insert_menu_topic("sync_range_colors",  "Sync range colors with EDIT4",  "r", "sync_colors.hlp", AWM_ALL, SEC_sync_colors, (AW_CL)2, 0);
-    awm->insert_menu_topic("sync_other_colors",  "Sync other colors with EDIT4",  "o", "sync_colors.hlp", AWM_ALL, SEC_sync_colors, (AW_CL)4, 0);
-    awm->insert_menu_topic("sync_all_colors",    "Sync all colors with EDIT4",    "a", "sync_colors.hlp", AWM_ALL, SEC_sync_colors, (AW_CL)(1|2|4), 0);
+    awm->insert_menu_topic("sync_search_colors", "Sync search colors with EDIT4", "s", "sync_colors.hlp", AWM_ALL, makeWindowCallback(SEC_sync_colors, COLOR_SYNC_SEARCH));
+    awm->insert_menu_topic("sync_range_colors",  "Sync range colors with EDIT4",  "r", "sync_colors.hlp", AWM_ALL, makeWindowCallback(SEC_sync_colors, COLOR_SYNC_RANGE));
+    awm->insert_menu_topic("sync_other_colors",  "Sync other colors with EDIT4",  "o", "sync_colors.hlp", AWM_ALL, makeWindowCallback(SEC_sync_colors, COLOR_SYNC_REST));
+    awm->insert_menu_topic("sync_all_colors",    "Sync all colors with EDIT4",    "a", "sync_colors.hlp", AWM_ALL, makeWindowCallback(SEC_sync_colors, COLOR_SYNC_ALL));
     awm->sep______________();
     awm->insert_menu_topic("sec_save_props",    "How to save properties",   "p", "savedef.hlp", AWM_ALL, makeHelpCallback("sec_props.hlp"));
 
@@ -745,30 +781,30 @@ AW_window *start_SECEDIT_plugin(ED4_plugin_host& host) {
 
     awm->button_length(0);
     awm->help_text("quit.hlp");
-    awm->callback((AW_CB0)AW_POPDOWN);
+    awm->callback(AW_POPDOWN);
     awm->create_button("Close", "#quit.xpm"); // use quit button, cause users regard secedit as separate program
 
     awm->callback(AW_help_entry_pressed);
     awm->help_text("arb_secedit.hlp");
     awm->create_button("HELP", "#help.xpm");
 
-    awm->callback(SEC_undo_cb, (AW_CL)db, (AW_CL)GB_UNDO_UNDO);
+    awm->callback(makeWindowCallback(SEC_undo_cb, db, GB_UNDO_UNDO));
     awm->help_text("undo.hlp");
     awm->create_button("Undo", "#undo.xpm");
 
-    awm->callback(SEC_undo_cb, (AW_CL)db, (AW_CL)GB_UNDO_REDO);
+    awm->callback(makeWindowCallback(SEC_undo_cb, db, GB_UNDO_REDO));
     awm->help_text("undo.hlp");
     awm->create_button("Redo", "#redo.xpm");
 
-    awm->callback(SEC_toggle_cb, (AW_CL)root, 0);
+    awm->callback(makeWindowCallback(SEC_toggle_cb, db));
     awm->help_text("sec_main.hlp");
     awm->create_button("Toggle", "Toggle");
 
-    awm->callback(SEC_center_cb, (AW_CL)root, 0);
+    awm->callback(makeWindowCallback(SEC_center_cb, root));
     awm->help_text("sec_main.hlp");
     awm->create_button("Center", "Center");
 
-    awm->callback((AW_CB)SEC_fit_window_cb, (AW_CL)root, 0);
+    awm->callback(makeWindowCallback(SEC_fit_window_cb, db));
     awm->help_text("sec_main.hlp");
     awm->create_button("fitWindow", "Fit");
 

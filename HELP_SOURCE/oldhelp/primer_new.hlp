@@ -17,9 +17,9 @@ DESCRIPTION     Searches for primer pairs
                 within the given physical and biological ranges
 
                        1. select a species (ARB_NT <INFO button>)
-                       2. choose ARB_NT/Etc/Primer Design...
-                       3. specify searchparameters
-                       4. mark a result, it will be displayed in ARB_EDIT4
+                       2. open 'PRIMER DESIGN' window
+                       3. specify search parameters
+                       4. press 'GO' (will open LINK{primer_result.hlp}).
 
                 INIT FROM SPECIES/GENE
 

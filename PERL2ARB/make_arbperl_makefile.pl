@@ -9,6 +9,7 @@ my $version_from = 'ARB.pm';
 my $inc          = '-I../INCLUDE';
 
 my $compiler = $ENV{'A_CXX'};
+my $execlibs = $ENV{'EXECLIBS'};
 
 my $libs;
 {
@@ -25,7 +26,7 @@ my $libs;
     if (($_ ne '') and (-d $_)) { $libs .= ' -L'.$_; }
   }
   $libs =~ s/^\s+//;
-  $libs .= ' -lCORE -lARBDB -lstdc++';
+  $libs .= ' -lCORE -lARBDB -lstdc++ '.$execlibs.' ';
 }
 
 my $args = scalar(@ARGV);
@@ -42,7 +43,8 @@ WriteMakefile(
               'VERSION_FROM' => $version_from,
               'CC'           => $compiler,
               'CCFLAGS'      => $cflags,
-              'LD'           => $compiler.' '.$lflags,
+              'LD'           => $compiler,
+              'LDDLFLAGS'    => $lflags,
               'DEFINE'       => '',
               'INC'          => $inc,
               'LIBS'         => $libs,

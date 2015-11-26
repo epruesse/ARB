@@ -70,7 +70,7 @@ char *GB_strndup(const char *start, int len) {
     return GB_strpartdup(start, start+len-1);
 }
 
-const char *GB_date_string() {
+inline tm *get_current_time() {
     timeval  date;
     tm      *p;
 
@@ -84,12 +84,33 @@ const char *GB_date_string() {
     p = localtime(&date.tv_sec);
 #endif // DARWIN
 
+    return p;
+}
+
+const char *GB_date_string() {
+    tm   *p        = get_current_time();
     char *readable = asctime(p); // points to a static buffer
     char *cr       = strchr(readable, '\n');
     arb_assert(cr);
-    cr[0]          = 0;         // cut of \n
+    cr[0]          = 0;          // cut of \n
 
     return readable;
+}
+
+const char *GB_dateTime_suffix() {
+    /*! returns "YYYYMMDD_HHMMSS" */
+    const  unsigned  SUFFIXLEN = 8+1+6;
+    static char      buffer[SUFFIXLEN+1];
+    tm              *p         = get_current_time();
+
+#if defined(ASSERTION_USED)
+    size_t printed =
+#endif
+        strftime(buffer, SUFFIXLEN+1, "%Y%m%d_%H%M%S", p);
+    arb_assert(printed == SUFFIXLEN);
+    buffer[SUFFIXLEN] = 0;
+
+    return buffer;
 }
 
 // --------------------------------------------------------------------------------
@@ -443,6 +464,8 @@ void TEST_MyEnum_loop() {
     }
     TEST_EXPECT_EQUAL(loops_performed, 3);
 }
+
+TEST_PUBLISH(TEST_MyEnum_loop);
 
 #endif // UNIT_TESTS
 

@@ -12,6 +12,8 @@ TITLE		Sort Tree Topology
 
 OCCURRENCE	ARB_NT/Tree/Beautify tree/...
 
+		ARB_PARSIMONY/Tree/Beautify tree
+
 DESCRIPTION	Arranges branches and groups according to the size of each 
 		subtree. If the size doesn't differ at a furcation, subtrees
 		will be sorted alphabethically. This ensures the sorting is stable.
@@ -39,6 +41,10 @@ NOTES		This facilitates the comparison of tree topologies resulting
 		from different treeing approaches.
 
                 See also LINK{resortbyother.hlp}.
+
+		In ARB_PARSIMONY you cannot select the beautification method: it will
+		always sort bigger branches to top. This will also happen automatically
+                after LINK{pa_optimizer.hlp}.
 
 EXAMPLES	None
 

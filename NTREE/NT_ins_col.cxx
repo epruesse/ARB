@@ -19,6 +19,7 @@
 #include <aw_msg.hxx>
 #include <awt_sel_boxes.hxx>
 #include <arb_defs.h>
+#include <awt_config_manager.hxx>
 
 #define AWAR_INSDEL     "insdel/"
 #define TMP_AWAR_INSDEL "tmp/" AWAR_INSDEL
@@ -27,13 +28,13 @@
 #define AWAR_INSDEL_DELETABLE AWAR_INSDEL "characters"
 #define AWAR_INSDEL_RANGE     AWAR_INSDEL "range"
 #define AWAR_INSDEL_SAI       AWAR_INSDEL "sainame"
-#define AWAR_INSDEL_CONTAINS  AWAR_INSDEL "contains"
+#define AWAR_INSDEL_CONTAINS  AWAR_INSDEL "contain"
 #define AWAR_INSDEL_SAI_CHARS AWAR_INSDEL "saichars"
-#define AWAR_INSDEL_AFFECTED  AWAR_INSDEL "affected"
+#define AWAR_INSDEL_AFFECTED  TMP_AWAR_INSDEL "affected"
 #define AWAR_INSDEL_WHAT      TMP_AWAR_INSDEL "what"
 #define AWAR_INSDEL_DIRECTION AWAR_INSDEL "direction"
 
-enum SaiContains { CONTAINS, DOESNT_CONTAIN };
+enum SaiContains { DOESNT_CONTAIN, CONTAINS };
 enum InsdelMode { INSERT, DELETE };
 
 class StaticData {
@@ -115,10 +116,15 @@ static GB_ERROR update_RangeList(AW_root *root, GBDATA *gb_main) {
                 SaiContains  contains = SaiContains(root->awar(AWAR_INSDEL_CONTAINS)->read_int());
 
                 SELECTED.set_ranges(build_RangeList_from_string(data, chars, contains == DOESNT_CONTAIN));
-                range_count_update_cb(root);
             }
         }
     }
+    if (error) {
+        SELECTED.set_ranges(RangeList());
+        if (!saiName[0]) error = NULL; // do not show "Could not find extended with name ''"
+    }
+    range_count_update_cb(root);
+
     return error;
 }
 
@@ -144,10 +150,9 @@ void create_insertDeleteColumn_variables(AW_root *root, AW_default props) {
     update_RangeList(root, GLOBAL.gb_main);
 }
 
-static void insdel_event(AW_window *aws, AW_CL cl_insdelmode) {
-    GBDATA     *gb_main = GLOBAL.gb_main;
-    InsdelMode  mode    = InsdelMode(cl_insdelmode);
-    AW_root    *root    = aws->get_root();
+static void insdel_event(AW_window *aws, InsdelMode mode) {
+    GBDATA  *gb_main = GLOBAL.gb_main;
+    AW_root *root    = aws->get_root();
 
     long  pos       = bio2info(root->awar(AWAR_CURSOR_POSITION)->read_int());
     long  nchar     = root->awar(AWAR_INSDEL_AMOUNT)->read_int();
@@ -163,14 +168,13 @@ static void insdel_event(AW_window *aws, AW_CL cl_insdelmode) {
     GB_end_transaction_show_error(gb_main, error, aw_message);
 }
 
-static void insdel_sai_event(AW_window *aws, AW_CL cl_insdelmode) {
+static void insdel_sai_event(AW_window *aws, InsdelMode mode) {
     GBDATA   *gb_main = GLOBAL.gb_main;
     GB_ERROR  error   = GB_begin_transaction(GLOBAL.gb_main);
     if (!error) error = SELECTED.track_ali(gb_main);
 
     if (!error) {
-        InsdelMode  mode = InsdelMode(cl_insdelmode);
-        AW_root    *root = aws->get_root();
+        AW_root *root = aws->get_root();
 
         switch (mode) {
             case INSERT: {
@@ -204,8 +208,8 @@ AW_window *create_insertDeleteColumn_window(AW_root *root) {
         aws->load_xfig("insdel.fig");
         aws->button_length(8);
 
-        aws->callback((AW_CB0)AW_POPDOWN);
         aws->at("close");
+        aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
 
         aws->callback(makeHelpCallback("insdel.hlp"));
@@ -229,11 +233,37 @@ AW_window *create_insertDeleteColumn_window(AW_root *root) {
         aws->auto_space(10, 0);
 
         aws->at("actions");
-        aws->callback(insdel_event, (AW_CL)INSERT); aws->create_button("INSERT", "INSERT", "I");
-        aws->callback(insdel_event, (AW_CL)DELETE); aws->create_button("DELETE", "DELETE", "D");
+        aws->callback(makeWindowCallback(insdel_event, INSERT)); aws->create_button("INSERT", "INSERT", "I");
+        aws->callback(makeWindowCallback(insdel_event, DELETE)); aws->create_button("DELETE", "DELETE", "D");
     }
     return aws;
 }
+
+static AWT_config_mapping_def insdel_by_SAI_config_def[] = {
+    { AWAR_INSDEL_RANGE,     "range" },
+    { AWAR_INSDEL_SAI,       "sai" },
+    { AWAR_INSDEL_CONTAINS,  "contain" },
+    { AWAR_INSDEL_SAI_CHARS, "chars" },
+    { AWAR_INSDEL_DELETABLE, "deletable" },
+    { AWAR_INSDEL_AMOUNT,    "amount" },
+    { AWAR_INSDEL_DIRECTION, "direction" },
+
+    { 0, 0 },
+};
+
+static AWT_predefined_config insdel_by_SAI_predef_config[] = {
+    {
+        "*gaps_by_variability",
+        "Use to insert 2 gaps next to all\ncolumns with high variability",
+        "amount='2';chars='123';contain='1';direction='1';range='1';sai='POS_VAR_BY_PARSIMONY'",
+    },
+    {
+        "*erase_columns_without_data",
+        "selects all columns where \nMAX_FREQUENCY contains '='",
+        "chars='=';contain='1';deletable='-.';range='1';sai='MAX_FREQUENCY'",
+    },
+    { 0, 0, 0 },
+};
 
 AW_window *create_insertDeleteBySAI_window(AW_root *root, GBDATA *gb_main) {
     static AW_window_simple *aws = 0;
@@ -245,13 +275,16 @@ AW_window *create_insertDeleteBySAI_window(AW_root *root, GBDATA *gb_main) {
         aws->load_xfig("insdel_sai.fig");
         aws->button_length(8);
 
-        aws->callback((AW_CB0)AW_POPDOWN);
         aws->at("close");
+        aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
 
         aws->callback(makeHelpCallback("insdel_sai.hlp"));
         aws->at("help");
         aws->create_button("HELP", "HELP", "H");
+
+        aws->at("config");
+        AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "insdel_by_sai", insdel_by_SAI_config_def, NULL, insdel_by_SAI_predef_config);
 
         aws->at("select");
         aws->create_option_menu(AWAR_INSDEL_RANGE, true);
@@ -281,14 +314,14 @@ AW_window *create_insertDeleteBySAI_window(AW_root *root, GBDATA *gb_main) {
         aws->button_length(7);
 
         aws->at("delete");
-        aws->callback(insdel_sai_event, (AW_CL)DELETE);
+        aws->callback(makeWindowCallback(insdel_sai_event, DELETE));
         aws->create_button("DELETE", "DELETE", "D");
 
         aws->at("deletable");
         aws->create_input_field(AWAR_INSDEL_DELETABLE, 7);
 
         aws->at("insert");
-        aws->callback(insdel_sai_event, (AW_CL)INSERT);
+        aws->callback(makeWindowCallback(insdel_sai_event, INSERT));
         aws->create_button("INSERT", "INSERT", "I");
 
         aws->at("amount");
@@ -300,6 +333,7 @@ AW_window *create_insertDeleteBySAI_window(AW_root *root, GBDATA *gb_main) {
         aws->insert_option("behind",      "b", BEHIND);
         aws->update_option_menu();
 
+        // add window text which depends on AWAR_INSDEL_RANGE
         aws->button_length(15);
         aws->at("what0"); aws->create_button(0, AWAR_INSDEL_WHAT);
         aws->at("what1"); aws->create_button(0, AWAR_INSDEL_WHAT);

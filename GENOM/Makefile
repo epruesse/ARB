@@ -16,10 +16,10 @@ $(MAIN): $(CPP_OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
 
 .cxx.o:
-	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE) $<
 
 .c.o:
-	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE)
+	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE) $<
 
 clean:
 	rm -f $(CPP_OBJECTS) *.a
@@ -188,7 +188,6 @@ GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-GEN_graphic.o: $(ARBHOME)/INCLUDE/awt_attributes.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/cb.h
 GEN_graphic.o: $(ARBHOME)/INCLUDE/cb_base.h

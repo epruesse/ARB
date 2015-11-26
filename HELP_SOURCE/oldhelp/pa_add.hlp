@@ -16,22 +16,20 @@ OCCURRENCE	ARB_PARSIMONY/Tree/Add Species to Tree/Add Marked Species + Local Opt
 
 DESCRIPTION     The functions work like their counterparts described in LINK{pa_quick.hlp}.
 
-                Additionally after each insertion a
-                local tree optimization (NNI, see LINK{mode_nni.hlp}) takes place.
+                Additionally after all species have been inserted, a LINK{pa_locopti.hlp} takes place.
+                This optimization operates on all branches to subtrees containing marked species
+                and does not stop at folded groups - regardless
+                which settings are selected in LINK{pa_optimizer.hlp}.
 
-                That local optimization will not avoid the need for global tree
-                optimization (see LINK{pa_optimizer.hlp}).
+WARNINGS        That local optimization will not avoid the need for global tree
+                optimization (see LINK{pa_globopti.hlp}).
+
                 Using this function for a bigger number of species (or repeatedly using it), will
                 cause your tree to degenerate (see section 'Tree degeneration' in LINK{pa_quick.hlp}
                 for more information. What is said there also applies here, the effects are just less worse here).
 
-NOTES		The current parsimony value (number of base changes needed) is
-		displayed after the 'Current Par' prompt in the upper part of
-		the 'ARB_PARSIMONY' window and the 'Message' window (pops up
-		while calculating).
+NOTES		None
 
 EXAMPLES	None
-
-WARNINGS	No global optimization is performed
 
 BUGS		No bugs known

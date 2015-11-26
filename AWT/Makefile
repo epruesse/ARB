@@ -20,7 +20,7 @@ $(LIB_SHARED): $(OBJECTS)
 	$(LINK_SHARED_LIB) $(LIB_SHARED) $(OBJECTS)
 
 .cxx.o:
-	$(A_CXX) $(shared_cflags) $(cflags) $(cxxflags) -c $<  $(CXX_INCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(shared_cflags) $(cflags) $(cxxflags) -c $<  $(CXX_INCLUDES) $(POST_COMPILE) $<
 
 clean:
 	rm -f $(OBJECTS) *.a *.so
@@ -72,25 +72,6 @@ AWT_asciiprint.o: $(ARBHOME)/INCLUDE/smartptr.h
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/static_assert.h
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/test_global.h
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/ttypes.h
-
-AWT_attributes.o: awt_attributes.hxx
-AWT_attributes.o: $(ARBHOME)/INCLUDE/ad_prot.h
-AWT_attributes.o: $(ARBHOME)/INCLUDE/arb_assert.h
-AWT_attributes.o: $(ARBHOME)/INCLUDE/arb_core.h
-AWT_attributes.o: $(ARBHOME)/INCLUDE/arb_error.h
-AWT_attributes.o: $(ARBHOME)/INCLUDE/arb_msg.h
-AWT_attributes.o: $(ARBHOME)/INCLUDE/arb_string.h
-AWT_attributes.o: $(ARBHOME)/INCLUDE/arbdb.h
-AWT_attributes.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-AWT_attributes.o: $(ARBHOME)/INCLUDE/arbtools.h
-AWT_attributes.o: $(ARBHOME)/INCLUDE/attributes.h
-AWT_attributes.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-AWT_attributes.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
-AWT_attributes.o: $(ARBHOME)/INCLUDE/cxxforward.h
-AWT_attributes.o: $(ARBHOME)/INCLUDE/dupstr.h
-AWT_attributes.o: $(ARBHOME)/INCLUDE/gccver.h
-AWT_attributes.o: $(ARBHOME)/INCLUDE/smartptr.h
-AWT_attributes.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AWT_canio.o: awt_canvas.hxx
 AWT_canio.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -174,6 +155,7 @@ AWT_config_manager.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/arb_defs.h
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/arb_error.h
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AWT_config_manager.o: $(ARBHOME)/INCLUDE/arb_str.h
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/arb_string.h
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -306,6 +288,7 @@ AWT_input_mask.o: $(ARBHOME)/INCLUDE/static_assert.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/test_global.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/ttypes.h
 
+AWT_map_key.o: awt_config_manager.hxx
 AWT_map_key.o: awt_map_key.hxx
 AWT_map_key.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_map_key.o: $(ARBHOME)/INCLUDE/arb_core.h
@@ -329,6 +312,26 @@ AWT_map_key.o: $(ARBHOME)/INCLUDE/smartptr.h
 AWT_map_key.o: $(ARBHOME)/INCLUDE/static_assert.h
 AWT_map_key.o: $(ARBHOME)/INCLUDE/test_global.h
 AWT_map_key.o: $(ARBHOME)/INCLUDE/ttypes.h
+
+AWT_misc.o: awt_misc.hxx
+AWT_misc.o: $(ARBHOME)/INCLUDE/arb_assert.h
+AWT_misc.o: $(ARBHOME)/INCLUDE/arb_core.h
+AWT_misc.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+AWT_misc.o: $(ARBHOME)/INCLUDE/arbtools.h
+AWT_misc.o: $(ARBHOME)/INCLUDE/attributes.h
+AWT_misc.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+AWT_misc.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+AWT_misc.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+AWT_misc.o: $(ARBHOME)/INCLUDE/cb.h
+AWT_misc.o: $(ARBHOME)/INCLUDE/cb_base.h
+AWT_misc.o: $(ARBHOME)/INCLUDE/cbtypes.h
+AWT_misc.o: $(ARBHOME)/INCLUDE/cxxforward.h
+AWT_misc.o: $(ARBHOME)/INCLUDE/dupstr.h
+AWT_misc.o: $(ARBHOME)/INCLUDE/gccver.h
+AWT_misc.o: $(ARBHOME)/INCLUDE/smartptr.h
+AWT_misc.o: $(ARBHOME)/INCLUDE/static_assert.h
+AWT_misc.o: $(ARBHOME)/INCLUDE/test_global.h
+AWT_misc.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 AWT_modules.o: awt_modules.hxx
 AWT_modules.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -398,38 +401,6 @@ AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/smartptr.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/static_assert.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/test_global.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/ttypes.h
-
-AWT_seq_colors.o: awt.hxx
-AWT_seq_colors.o: awt_seq_colors.hxx
-AWT_seq_colors.o: $(ARBHOME)/INCLUDE/ad_prot.h
-AWT_seq_colors.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-AWT_seq_colors.o: $(ARBHOME)/INCLUDE/arb_assert.h
-AWT_seq_colors.o: $(ARBHOME)/INCLUDE/arb_core.h
-AWT_seq_colors.o: $(ARBHOME)/INCLUDE/arb_error.h
-AWT_seq_colors.o: $(ARBHOME)/INCLUDE/arb_msg.h
-AWT_seq_colors.o: $(ARBHOME)/INCLUDE/arb_string.h
-AWT_seq_colors.o: $(ARBHOME)/INCLUDE/arbdb.h
-AWT_seq_colors.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-AWT_seq_colors.o: $(ARBHOME)/INCLUDE/arbdbt.h
-AWT_seq_colors.o: $(ARBHOME)/INCLUDE/arbtools.h
-AWT_seq_colors.o: $(ARBHOME)/INCLUDE/attributes.h
-AWT_seq_colors.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
-AWT_seq_colors.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-AWT_seq_colors.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-AWT_seq_colors.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
-AWT_seq_colors.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-AWT_seq_colors.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-AWT_seq_colors.o: $(ARBHOME)/INCLUDE/cb.h
-AWT_seq_colors.o: $(ARBHOME)/INCLUDE/cb_base.h
-AWT_seq_colors.o: $(ARBHOME)/INCLUDE/cbtypes.h
-AWT_seq_colors.o: $(ARBHOME)/INCLUDE/cxxforward.h
-AWT_seq_colors.o: $(ARBHOME)/INCLUDE/downcast.h
-AWT_seq_colors.o: $(ARBHOME)/INCLUDE/dupstr.h
-AWT_seq_colors.o: $(ARBHOME)/INCLUDE/gccver.h
-AWT_seq_colors.o: $(ARBHOME)/INCLUDE/smartptr.h
-AWT_seq_colors.o: $(ARBHOME)/INCLUDE/static_assert.h
-AWT_seq_colors.o: $(ARBHOME)/INCLUDE/test_global.h
-AWT_seq_colors.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 AWT_TreeAwars.o: awt_TreeAwars.hxx
 AWT_TreeAwars.o: $(ARBHOME)/INCLUDE/ad_cb.h

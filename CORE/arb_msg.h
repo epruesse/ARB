@@ -24,6 +24,8 @@
 #define RETURN_ERROR(err)  arb_assert(!GB_have_error()); return (err)
 
 
+GlobalStringBuffers *GBS_store_global_buffers(void);
+void GBS_restore_global_buffers(GlobalStringBuffers *saved);
 const char *GBS_vglobal_string(const char *templat, va_list parg) __ATTR__VFORMAT(1);
 char *GBS_vglobal_string_copy(const char *templat, va_list parg) __ATTR__VFORMAT(1);
 const char *GBS_global_string_to_buffer(char *buffer, size_t bufsize, const char *templat, ...) __ATTR__FORMAT(3);
@@ -59,6 +61,8 @@ void GB_information(const char *message);
 void GB_informationf(const char *templat, ...) __ATTR__FORMAT(1);
 void GBS_reuse_buffer(const char *global_buffer);
 GB_ERROR GBK_system(const char *system_command) __ATTR__USERESULT;
+char *GBK_singlequote(const char *arg);
+char *GBK_doublequote(const char *arg);
 
 #else
 #error arb_msg.h included twice

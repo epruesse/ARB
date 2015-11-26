@@ -10,10 +10,11 @@ UP      gene_info.hlp
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE           Rename Species/Gene
+TITLE           Rename Species/Gene/Experiment
 
-OCCURRENCE      ARB_NT/Species/Info/SPECIES/Rename
-                ARB_NT/Genes/Info/SPECIES/Rename
+OCCURRENCE      ARB_NT/Species/Species information/SPECIES/Rename
+                ARB_NT/Genome/Gene information/GENE/Rename
+                ARB_NT/Genome/Experiment/Experiment information/EXPERIMENT/Rename
 
 DESCRIPTION     Renames a 'species/gene' (see LINK{glossary.hlp}) entry.
 

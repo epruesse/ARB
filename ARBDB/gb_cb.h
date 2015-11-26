@@ -67,7 +67,7 @@ struct CallbackList {
     listtype callbacks;
 
 #if defined(ASSERTION_USED)
-    bool contains_unremoved_callback(const cbtype& like) const;
+    bool contains_unremoved_callback(const CB& like) const;
 #endif
 
     bool empty() const { return callbacks.empty(); }
@@ -79,6 +79,28 @@ struct CallbackList {
 
     const CB *get_tail() const { return empty() ? NULL : &callbacks.back(); }
 
+    template <typename PRED>
+    void remove_callbacks_that(PRED shallRemove) {
+        bool prev_running = false;
+
+        for (itertype cb = callbacks.begin(); cb != callbacks.end(); ) {
+            bool this_running = cb->running;
+
+            if (shallRemove(*cb)) {
+                if (prev_running || this_running) {
+                    cb->spec.mark_for_removal();
+                    ++cb;
+                }
+                else {
+                    cb = callbacks.erase(cb);
+                }
+            }
+            else {
+                ++cb;
+            }
+            prev_running = this_running;
+        }
+    }
 };
 
 struct gb_callback {

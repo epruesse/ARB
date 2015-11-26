@@ -174,7 +174,7 @@ PT_server
   You may define a special directory as the pt_server files location.
   This prevents any loss of data installing a new version of
   ARB.
-  To minimize the use of ressources in a workstation cluster
+  To minimize the use of resources in a workstation cluster
   only one pt_server for each database is started on a user defined
   host. The first user starts the pt_server, and all other users
   can connect to it.

@@ -5,8 +5,9 @@ use warnings;
 
 # create/update build info into
 #     ../TEMPLATES/arb_build.h
-# and
 #     ../TEMPLATES/svn_revision.h
+# and
+#     ../lib/revision_info.txt
 
 # --------------------------------------------------------------------------------
 
@@ -25,6 +26,7 @@ if ((not -d $ARBHOME) or (not -f $ARBHOME.'/arb_LICENSE.txt')) {
 
 my $TEMPLATES    = $ARBHOME.'/TEMPLATES';       if (not -d $TEMPLATES)    { die "no such directory '$TEMPLATES'"; }
 my $SOURCE_TOOLS = $ARBHOME.'/SOURCE_TOOLS';    if (not -d $SOURCE_TOOLS) { die "no such directory '$SOURCE_TOOLS'"; }
+my $lib          = $ARBHOME.'/lib';             if (not -d $lib)          { die "no such directory '$lib'"; }
 my $mv_if_diff   = $SOURCE_TOOLS.'/mv_if_diff'; if (not -x $mv_if_diff)   { die "no such script '$mv_if_diff'"; }
 
 # upgrade version?
@@ -105,11 +107,11 @@ sub guessSvnBranchInsideJenkins() {
     if ($url eq '') { $url = undef; }
     else {
       my $suffix = undef;
-      if ($url =~ /^(http:\/\/svn\.mikro\.biologie\.tu-muenchen\.de\/svn)\//o) {
+      if ($url =~ /^(http:\/\/vc\.arb-home\.de\/(svn|readonly))\//o) {
         $suffix = $';
         $root = $1;
       }
-      elsif ($url =~ /^(svn\+ssh:\/\/.*svn\.arb-home\.de\/svn\/ARB)\//o) {
+      elsif ($url =~ /^(svn\+ssh:\/\/.*vc\.arb-home\.de\/home\/vc\/repos\/ARB)\//o) {
         $suffix = $';
         $root = $1;
       }
@@ -140,6 +142,11 @@ sub getRevision() {
   if (not defined $revision) { die "Failed to detect revision number"; }
   if (defined $jrevision) {
     if ($jrevision ne $revision) {
+      if ($revision =~ /M/) {
+        print "------------------------------------------------------------ [svn diff]\n";
+        system('cd $ARBHOME;svn diff');
+        print "------------------------------------------------------------\n";
+      }
       die "Conflicting revision numbers (jrevision='$jrevision', revision='$revision')";
     }
   }
@@ -265,6 +272,7 @@ sub hash2file(\%$) {
 
 my $arb_build_h    = $TEMPLATES.'/arb_build.h';
 my $svn_revision_h = $TEMPLATES.'/svn_revision.h';
+my $revision_info  = $lib.'/revision_info.txt';
 
 my $in_SVN = (-d $ARBHOME.'/.svn');
 
@@ -474,3 +482,9 @@ my @arb_build = (
 
 update($arb_build_h,@arb_build);
 
+
+my @revision_info = (
+                     $revision.'@'.$branch,
+                    );
+
+update($revision_info,@revision_info);

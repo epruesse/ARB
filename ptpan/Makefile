@@ -9,7 +9,7 @@ $(MAIN): $(OBJECTS) Makefile
 $(OBJECTS): Makefile
 
 .cxx.o:
-	$(A_CXX) $(cflags) $(cxxflags) -c $<  $(CXX_INCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) -c $<  $(CXX_INCLUDES) $(POST_COMPILE) $<
 
 proto:
 	@echo Nothing to do for proto here  

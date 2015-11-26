@@ -59,6 +59,7 @@ public:
 };
 
 typedef int (*sellist_cmp_fun)(const char *disp1, const char *disp2);
+typedef void (*sellist_update_cb)(AW_selection_list *, AW_CL);
 
 class AW_selection_list : virtual Noncopyable {
     AW_selection_list_entry *get_entry_at(int index) const;
@@ -66,8 +67,11 @@ class AW_selection_list : virtual Noncopyable {
     char             *variable_name;
     AW_VARIABLE_TYPE  variable_type;
 
+    sellist_update_cb update_cb;
+    AW_CL             cl_update;
+
 public:
-    AW_selection_list(const char *variable_namei, int variable_typei, Widget select_list_widgeti);
+    AW_selection_list(const char *variable_name_, int variable_type_, Widget select_list_widget_);
     ~AW_selection_list();
 
     Widget select_list_widget;
@@ -94,9 +98,11 @@ public:
     void insert_default(const char *displayed, GBDATA *pointer);
 
     void init_from_array(const CharPtrArray& entries, const char *default_displayed, const char *default_value);
-    
+
     void update();
     void refresh();
+
+    void set_update_callback(sellist_update_cb ucb, AW_CL cl_user);
 
     void sort(bool backward, bool case_sensitive); // uses displayed value!
     void sortCustom(sellist_cmp_fun cmp);          // uses displayed value!

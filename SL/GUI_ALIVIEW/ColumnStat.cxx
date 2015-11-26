@@ -36,8 +36,7 @@ void ColumnStat::refresh_sai_selection_list() {
     if (saisel) saisel->refresh();
 }
 
-static void refresh_columnstat_selection(AW_root *, AW_CL cl_column_stat) {
-    ColumnStat *column_stat = (ColumnStat *)cl_column_stat;
+static void refresh_columnstat_selection(AW_root*, ColumnStat *column_stat) {
     column_stat->refresh_sai_selection_list();
 }
 
@@ -65,8 +64,8 @@ ColumnStat::ColumnStat(GBDATA *gb_maini, AW_root *awri, const char *awar_templat
     awr->awar_int(awar_smooth);
     awr->awar_int(awar_enable_helix, 1);
 
-    awr->awar(awar_alignment)->add_callback(refresh_columnstat_selection, (AW_CL)this);
-    refresh_sai_selection_list();                       // same as refresh_columnstat_selection(this)
+    awr->awar(awar_alignment)->add_callback(makeRootCallback(refresh_columnstat_selection, this));
+    refresh_sai_selection_list(); // same as refresh_columnstat_selection(this)
 }
 
 void ColumnStat::forget() {
@@ -97,9 +96,10 @@ GB_ERROR ColumnStat::calculate(AP_filter *filter) {
     forget(); // delete previously calculated stats
 
     GB_transaction ta(gb_main);
-    GB_ERROR       error            = 0;
+    GB_ERROR       error            = filter ? filter->is_invalid() : NULL;
     size_t         alignment_length = 0;
-    {
+
+    if (!error) {
         long alignment_length_l = GBT_get_alignment_len(gb_main, alignment_name);
         if (alignment_length_l <= 1) {
             error = GBS_global_string("Unknown size for alignment '%s'", alignment_name);
@@ -324,10 +324,8 @@ void ColumnStat::print() {
     }
 }
 
-static char *filter_columnstat_SAIs(GBDATA *gb_extended, AW_CL cl_column_stat) {
-    // return NULL for non-columnstat SAIs
-    ColumnStat *column_stat = (ColumnStat*)cl_column_stat;
-
+static char *filter_columnstat_SAIs(GBDATA *gb_extended, ColumnStat *column_stat) {
+    // returns NULL for non-columnstat SAIs
     char *result = NULL;
     if (column_stat->has_valid_alignment()) {
         GBDATA *gb_type = GB_search(gb_extended, column_stat->get_type_path(), GB_FIND);
@@ -352,7 +350,7 @@ static char *filter_columnstat_SAIs(GBDATA *gb_extended, AW_CL cl_column_stat) {
 
 void ColumnStat::create_sai_selection_list(AW_window *aww) {
     GB_transaction ta(gb_main);
-    saisel = awt_create_SAI_selection_list(gb_main, aww, awar_name, true, filter_columnstat_SAIs, (AW_CL)this);
+    saisel = awt_create_SAI_selection_list(gb_main, aww, awar_name, true, makeSaiSelectionlistFilterCallback(filter_columnstat_SAIs, this));
 }
 
 void COLSTAT_create_selection_list(AW_window *aws, ColumnStat *column_stat) {
@@ -365,7 +363,8 @@ AW_window *COLSTAT_create_selection_window(AW_root *aw_root, ColumnStat *column_
     aws->init(aw_root, "SELECT_CSP", "Select Column Statistic");
     aws->load_xfig("awt/col_statistic.fig");
 
-    aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
+    aws->at("close");
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help"); aws->callback(makeHelpCallback("awt_csp.hlp"));

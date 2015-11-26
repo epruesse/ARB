@@ -14,13 +14,12 @@
 #ifndef ARBDB_BASE_H
 #include <arbdb_base.h>
 #endif
+#ifndef AW_BASE_HXX
+#include <aw_base.hxx>
+#endif
 
-class AW_window;
-class AW_root;
 class AW_selection_list;
 class AP_filter;
-
-typedef long AW_CL;
 
 struct adfiltercbstruct {
     AW_window *aw_filt;
@@ -47,6 +46,7 @@ struct adfiltercbstruct {
 
 };
 
+void awt_create_filter_awars(AW_root *aw_root, AW_default aw_def, const char *awar_filtername, const char *awar_mapto_alignment);
 adfiltercbstruct *awt_create_select_filter(AW_root *aw_root, GBDATA *gb_main, const char *def_name);
 void awt_set_awar_to_valid_filter_good_for_tree_methods(GBDATA *gb_main, AW_root *awr, const char *awar_name);
 

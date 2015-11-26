@@ -37,14 +37,21 @@ double GB_log_fak(int n) {
 // ----------------------------------
 //      random number generation
 
-static int randomSeeded = 0;
+static int      randomSeeded = 0;
+static unsigned usedSeed     = 0;
+
+void GB_random_seed(unsigned seed) {
+    /*! normally you should not use GB_random_seed.
+     * Use it only to reproduce some result (e.g. in unittests)
+     */
+    usedSeed     = seed;
+    srand(seed);
+    randomSeeded = 1;
+}
 
 int GB_random(int range) {
     // produces a random number in range [0 .. range-1]
-    if (!randomSeeded) {
-        srand(time(0));
-        randomSeeded = 1;
-    }
+    if (!randomSeeded) GB_random_seed(time(0));
 
 #if defined(DEBUG)
     if (range>RAND_MAX) {

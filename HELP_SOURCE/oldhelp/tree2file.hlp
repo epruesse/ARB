@@ -18,7 +18,7 @@ SUB     pars.hlp
 TITLE           Export to xfig
 
 OCCURRENCE      ARB_NT/Tree/Export tree to Xfig
-                ARB_SECEDIT/File/Export structure to Xfig
+                ARB_SECEDIT/File/Export structure to XFIG
 
 DESCRIPTION     Exports a ONE page screenshot of the displayed tree to a
                 file. 

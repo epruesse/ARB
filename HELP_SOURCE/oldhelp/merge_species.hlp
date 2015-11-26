@@ -10,8 +10,8 @@ UP	glossary.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Merge Similar Species
 
-OCCURRENCE	ARB_NT/Species/Merge Species/Merge Similar Species
-                ARB_NT/Sequence/Concatenate sequences/alignments
+OCCURRENCE	ARB_NT/Species/Merge Species/Create merged species from similar species
+                ARB_NT/Sequence/Concatenate Sequences/Alignments/MERGE SIMILAR SPECIES
 
 DESCRIPTION
 
@@ -27,9 +27,49 @@ DESCRIPTION
             - Specify the new field name to which the "number of merged
               species" information is to be stored (e.g., merged_species).
 
-            - Press MERGE SIMILAR SPECIES to start.
+            - Press "Merge similar species ..." to start.
 
-NOTES		There's a second function to merge species: see LINK{species_join.hlp}
+SECTION     Merge and concatenate
+
+            From LINK{concatenate.hlp} you can access a special flavor of the
+            "Merge similar species" function, that will also concatenate the
+            selected alignments.
+
+            That version is useful after merging species of two (or more) independent
+            databases, that contain different genes of the same organisms.
+
+            After merging you'll end up with data like:
+
+                  name           "SpecExe1"
+                  full_name      "Species exemplares"
+                  ali_5s/data    "--AC--GU--"
+
+                  name           "SpecAlt1"
+                  full_name      "Species alternatio"
+                  ali_5s/data    "--AU-GGC--"
+
+                  name           "SpecExe2"
+                  full_name      "Species exemplares"
+                  ali_16s/data   "----U-A---G-C-----"
+
+                  name           "SpecAlt2"
+                  full_name      "Species alternatio"
+                  ali_16s/data   "----G-A---UUC-----"
+
+
+            Using merge and concatenate with 'full_name' as similarity criterion,
+            you can generate data like
+
+                  name                 "SpecExe3"
+                  full_name            "Species exemplares"
+                  ali_5s_and_16s/data   "--AC--GU--XXX----U-A---G-C-----"
+
+                  name                 "SpecAlt3"
+                  full_name            "Species alternatio"
+                  ali_5s_and_16s/data   "--AU-GGC--XXX----G-A---UUC-----"
+
+
+NOTES		There's a second (older) function to merge species: see LINK{species_join.hlp}
 
 EXAMPLES	None
 

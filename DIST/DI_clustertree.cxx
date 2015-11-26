@@ -24,7 +24,7 @@ typedef std::set<LeafRelation> SortedPairValues; // iterator runs from small to 
 
 
 ClusterTreeRoot::ClusterTreeRoot(AliView *aliview, AP_sequence *seqTemplate_, AP_FLOAT maxDistance_, size_t minClusterSize_)
-    : ARB_seqtree_root(aliview, new ClusterTreeNodeFactory, seqTemplate_, false),
+    : ARB_seqtree_root(aliview, seqTemplate_, false),
       maxDistance(maxDistance_),
       minClusterSize(minClusterSize_)
 {}
@@ -49,8 +49,7 @@ static void collectStats(ClusterTree *node, ClusterStats *stats) {
         default: break;
     }
     if (node->is_leaf) {
-        AP_sequence *seq = node->get_seq();
-        if (seq->got_sequence()) stats->loadedSequences++;
+        stats->loadedSequences += node->hasSequence();
     }
     else {
         collectStats(node->get_leftson(), stats);
@@ -85,7 +84,8 @@ GB_ERROR ClusterTreeRoot::find_clusters() {
     if (error) {
         // avoid further access after error
         change_root(root, NULL);
-        delete root;
+        UNCOVERED();
+        destroy(root);
     }
     else {
 #if defined(DEBUG)
@@ -116,18 +116,6 @@ GB_ERROR ClusterTreeRoot::find_clusters() {
 
 // --------------------
 //      ClusterTree
-
-ClusterTree *ClusterTree::get_cluster(size_t num) {
-    cl_assert(num < get_cluster_count());
-
-    if (num == 0) return this;
-
-    ClusterTree *lson = get_leftson();
-    if (lson->get_cluster_count() <= num) {
-        return get_rightson()->get_cluster(num - lson->get_cluster_count());
-    }
-    return lson->get_cluster(num);
-}
 
 void ClusterTree::init_tree() {
     cl_assert(state == CS_UNKNOWN);

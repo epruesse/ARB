@@ -10,10 +10,10 @@ $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .cxx.o:
-	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE) $<
 
 .c.o:
-	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE)
+	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE) $<
 
 clean:
 	rm -f $(OBJECTS) *.a
@@ -58,4 +58,5 @@ TreeWrite.o: $(ARBHOME)/INCLUDE/nds.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/smartptr.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/static_assert.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/test_global.h
+TreeWrite.o: $(ARBHOME)/INCLUDE/TreeNode.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/xml.hxx

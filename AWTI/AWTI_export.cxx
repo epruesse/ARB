@@ -30,22 +30,16 @@
 #define AWAR_EXPORT_MULTIPLE_FILES "tmp/export/multiple_files"
 #define AWAR_EXPORT_MARKED         "export/marked"
 #define AWAR_EXPORT_COMPRESS       "export/compress"
-#define AWAR_EXPORT_FILTER_PREFIX  "export/filter"
-#define AWAR_EXPORT_FILTER_NAME    AWAR_EXPORT_FILTER_PREFIX "/name"
-#define AWAR_EXPORT_FILTER_FILTER  AWAR_EXPORT_FILTER_PREFIX "/filter"
-#define AWAR_EXPORT_FILTER_ALI     AWAR_EXPORT_FILTER_PREFIX "/alignment"
+#define AWAR_EXPORT_FILTER_NAME    "tmp/export/filter/name"
 #define AWAR_EXPORT_CUTSTOP        "export/cutstop"
 
 #define awti_assert(cond) arb_assert(cond)
 
-static void export_go_cb(AW_window *aww, AW_CL cl_gb_main, AW_CL res_from_awt_create_select_filter) {
+static void export_go_cb(AW_window *aww, GBDATA *gb_main, adfiltercbstruct *acbs) {
     awti_assert(!GB_have_error());
 
-    GBDATA           *gb_main = (GBDATA*)cl_gb_main;
-    GB_transaction    ta(gb_main);
-    adfiltercbstruct *acbs    = (adfiltercbstruct*)res_from_awt_create_select_filter;
-
-    arb_progress progress("Exporting data");
+    GB_transaction ta(gb_main);
+    arb_progress   progress("Exporting data");
 
     AW_root  *awr            = aww->get_root();
     char     *formname       = awr->awar(AWAR_EXPORT_FORM"/file_name")->read_string();
@@ -92,10 +86,8 @@ static void create_export_awars(AW_root *awr, AW_default def) {
 
     awr->awar_int(AWAR_EXPORT_MARKED, 1, def); // marked only
     awr->awar_int(AWAR_EXPORT_COMPRESS, 1, def); // vertical gaps
-    awr->awar_string(AWAR_EXPORT_FILTER_NAME, "none", def); // no default filter
-    awr->awar_string(AWAR_EXPORT_FILTER_FILTER, "", def);
-    AW_awar *awar_ali = awr->awar_string(AWAR_EXPORT_FILTER_ALI, "", def);
-    awar_ali->map(AWAR_DEFAULT_ALIGNMENT);
+
+    awt_create_filter_awars(awr, def, AWAR_EXPORT_FILTER_NAME, AWAR_DEFAULT_ALIGNMENT);
 
     awr->awar_int(AWAR_EXPORT_CUTSTOP, 0, def); // don't cut stop-codon
 }
@@ -212,7 +204,7 @@ AW_window *create_AWTC_export_window(AW_root *awr, GBDATA *gb_main)
 
     aws->at("go");
     aws->highlight();
-    aws->callback(export_go_cb, (AW_CL)gb_main, (AW_CL)filtercd);
+    aws->callback(makeWindowCallback(export_go_cb, gb_main, filtercd));
     aws->create_button("GO", "GO", "G");
 
     return aws;

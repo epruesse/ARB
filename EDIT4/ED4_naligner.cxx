@@ -152,15 +152,14 @@ void create_naligner_variables(AW_root *root, AW_default db1) {
     root->awar_int  ("naligner/det/ic", 5,   db1);
 }
 
-static AW_window *create_expert_naligner_window(AW_root *root)
-{
+static AW_window *create_expert_naligner_window(AW_root *root) {
     const       int     mwidth = 5;
     AW_window_simple *aws = new AW_window_simple;
     aws->init(root, "ALIGNER_V2_EXPERT2", "ALIGNER V2.0 EXPERT 2");
     aws->load_xfig("ed_al_ex.fig");
 
     aws->at("close");
-    aws->callback     ((AW_CB0)AW_POPDOWN);
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("minw"); aws->create_input_field("naligner/minw", mwidth);
@@ -175,7 +174,7 @@ static AW_window *create_expert_naligner_window(AW_root *root)
     return (AW_window *)aws;
 }
 
-static AW_window *create_special_naligner_window(AW_root *root, AW_CL /*cd2*/) {
+static AW_window *create_special_naligner_window(AW_root *root) {
     AW_window_simple *aws    = new AW_window_simple;
     const       int   mwidth = 3;
 
@@ -185,7 +184,7 @@ static AW_window *create_special_naligner_window(AW_root *root, AW_CL /*cd2*/) {
     aws->label_length(22);
 
     aws->at("close");
-    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("minr"); aws->create_input_field("naligner/minf", 6);
@@ -215,13 +214,13 @@ static AW_window *create_special_naligner_window(AW_root *root, AW_CL /*cd2*/) {
     aws->at("igap"); aws->create_input_field("naligner/igap_panelty", 4);
 
     aws->at("expert");
-    aws->callback((AW_CB1)AW_POPUP, (AW_CL)create_expert_naligner_window);
+    aws->callback(create_expert_naligner_window);
     aws->create_button("EXPERT_OPTIONS", "EXPERT2", "E");
 
     return (AW_window *)aws;
 }
 
-AW_window *create_naligner_window(AW_root *root, AW_CL /*cd2*/) {
+AW_window *create_naligner_window(AW_root *root) {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(root, "ALIGNER_V2", "ALIGNER V2.0");
     aws->load_xfig("awt/align.fig");
@@ -230,7 +229,7 @@ AW_window *create_naligner_window(AW_root *root, AW_CL /*cd2*/) {
     aws->button_length(10);
 
     aws->at("close");
-    aws->callback     ((AW_CB0)AW_POPDOWN);
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "O");
 
     aws->at("help");
@@ -238,12 +237,12 @@ AW_window *create_naligner_window(AW_root *root, AW_CL /*cd2*/) {
     aws->create_button("HELP", "HELP");
 
     aws->at("align");
-    aws->callback     (aed_start_naligning);
+    aws->callback(aed_start_naligning);
     aws->highlight();
     aws->create_button("GO", "GO", "G");
 
     aws->at("expert");
-    aws->callback     ((AW_CB1)AW_POPUP, (AW_CL)create_special_naligner_window);
+    aws->callback(create_special_naligner_window);
     aws->create_button("OPTIONS", "PARAMETERS", "E");
 
     aws->at("what");

@@ -128,13 +128,13 @@ int ARB_main(int argc, char ** argv) {
     }
 
     if (aisc_nput(link, PT_LOCS, locs,
-                  LOCS_MATCH_REVERSED,       reversed,
-                  LOCS_MATCH_COMPLEMENT,     complement,
-                  LOCS_MATCH_MAX_HITS,       max_hits,
-                  LOCS_MATCH_SORT_BY,        sort_by,
-                  LOCS_MATCH_N_ACCEPT,       n_accept,
-                  LOCS_MATCH_N_LIMIT,        n_limit,
-                  LOCS_MATCH_MAX_MISMATCHES, max_mismatches,
+                  LOCS_MATCH_REVERSED,       (long)reversed,
+                  LOCS_MATCH_COMPLEMENT,     (long)complement,
+                  LOCS_MATCH_MAX_HITS,       (long)max_hits,
+                  LOCS_MATCH_SORT_BY,        (long)sort_by,
+                  LOCS_MATCH_N_ACCEPT,       (long)n_accept,
+                  LOCS_MATCH_N_LIMIT,        (long)n_limit,
+                  LOCS_MATCH_MAX_MISMATCHES, (long)max_mismatches,
                   LOCS_SEARCHMATCH,          sequence,
                   NULL)) {
         cerr << "Connection to PT server lost" << endl;

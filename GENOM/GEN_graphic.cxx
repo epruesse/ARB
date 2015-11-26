@@ -16,7 +16,6 @@
 #include <arbdbt.h>
 #include <aw_awar.hxx>
 #include <aw_preset.hxx>
-#include <awt_attributes.hxx>
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
 
@@ -50,7 +49,7 @@ AW_gc_manager GEN_graphic::init_devices(AW_window *aww, AW_device *device, AWT_c
                                             scr->get_gc_base_name(),
                                             device,
                                             GEN_GC_FIRST_FONT, GEN_GC_MAX, AW_GCM_DATA_AREA,
-                                            makeWindowCallback(AWT_resize_cb, scr),
+                                            makeGcChangedCallback(AWT_GC_changed_cb, scr),
                                             true, // define color groups
                                             "#55C0AA",
                                             "Default$#5555ff",
@@ -80,10 +79,6 @@ int GEN_graphic::check_update(GBDATA *) {
     int do_zoom_reset = want_zoom_reset;
     want_zoom_reset   = false;
     return do_zoom_reset;
-}
-
-void GEN_graphic::info(AW_device */*device*/, AW_pos /*x*/, AW_pos /*y*/, AW_clicked_line */*cl*/, AW_clicked_text */*ct*/) {
-    aw_message("INFO MESSAGE");
 }
 
 void GEN_graphic::handle_command(AW_device *, AWT_graphic_event& event) {
@@ -165,7 +160,7 @@ inline bool getDrawGcs(GEN_iterator& gene, PaintWhat what, const string& curr_ge
             draw    = (what == PAINT_MARKED);
         }
         else {
-            int color_group = AWT_gene_get_dominant_color(gb_gene);
+            int color_group = AW_find_active_color_group(gb_gene);
 
             if (color_group) {
                 draw_gc = text_gc = GEN_GC_FIRST_COLOR_GROUP+color_group-1;
@@ -346,8 +341,8 @@ void GEN_root::paint(AW_device *device) {
     }
 }
 
-void GEN_graphic::delete_gen_root(AWT_canvas *scr) {
-    callback_installer(false, scr, this);
+void GEN_graphic::delete_gen_root(AWT_canvas *scr, bool just_forget_callbacks) {
+    callback_installer(just_forget_callbacks ? FORGET_CBS : REMOVE_CBS, scr, this);
     delete gen_root;
     gen_root = 0;
 }
@@ -358,10 +353,18 @@ void GEN_graphic::reinit_gen_root(AWT_canvas *scr, bool force_reinit) {
 
     if (gen_root) {
         if (force_reinit || (gen_root->OrganismName() != string(organism_name))) {
+            bool just_forget_callbacks = false;
             if (gen_root->OrganismName().length() == 0) {
                 want_zoom_reset = true; // no organism was displayed before
             }
-            delete_gen_root(scr);
+            else {
+                GB_transaction ta(gb_main);
+                if (!GEN_find_organism(gb_main, gen_root->OrganismName().c_str())) {
+                    just_forget_callbacks = true; // genome already deleted -> just clean up callback table
+                    want_zoom_reset       = true; // invalid (=none) organism was displayed before
+                }
+            }
+            delete_gen_root(scr, just_forget_callbacks);
         }
         if (gen_root && gen_root->GeneName() != string(gene_name)) {
             gen_root->set_GeneName(gene_name);
@@ -370,7 +373,7 @@ void GEN_graphic::reinit_gen_root(AWT_canvas *scr, bool force_reinit) {
 
     if (!gen_root) {
         gen_root = new GEN_root(organism_name, gene_name, gb_main, aw_root, this);
-        callback_installer(true, scr, this);
+        callback_installer(INSTALL_CBS, scr, this);
     }
 
     free(organism_name);

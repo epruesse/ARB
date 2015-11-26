@@ -28,6 +28,7 @@ struct gb_project;
 struct gb_Key;
 struct gb_server_data;
 struct gb_hierarchy_callback_list;
+class  gb_hierarchy_location;
 
 // --------------------------------------------------------------------------------
 
@@ -73,17 +74,8 @@ struct gb_cache : virtual Noncopyable {
     GB_HASH *reuse_sum;  // key = DB_path, value = how often entries were reused
 #endif
 
-    gb_cache() {
-        memset(this, 0, sizeof(*this));
-        init();
-    }
-    ~gb_cache() {
-        destroy();
-    }
-
-private:
-    void init();
-    void destroy();
+    gb_cache();
+    ~gb_cache();
 };
 
 // --------------------------------------------------------------------------------
@@ -93,9 +85,9 @@ private:
 #define ALLOWED_DATES 256
 
 class GB_MAIN_TYPE : virtual Noncopyable {
-    inline GB_ERROR start_transaction();
+    inline GB_ERROR start_transaction() __ATTR__USERESULT;
     GB_ERROR check_quick_save() const;
-    GB_ERROR initial_client_transaction();
+    GB_ERROR initial_client_transaction() __ATTR__USERESULT;
 
     int transaction_level;
     int aborted_transaction;
@@ -108,7 +100,8 @@ class GB_MAIN_TYPE : virtual Noncopyable {
 
         callback_group() : hierarchy_cbs(NULL) {}
 
-        inline void add_hcb(GBDATA *gb_representative, const TypedDatabaseCallback& dbcb);
+        inline void add_hcb(const gb_hierarchy_location& loc, const TypedDatabaseCallback& dbcb);
+        inline void remove_hcb(const gb_hierarchy_location& loc, const TypedDatabaseCallback& dbcb);
         inline void forget_hcbs();
 
         void trigger(GBDATA *gbd, GB_CB_TYPE type, gb_callback_list *dataCBs);
@@ -139,6 +132,7 @@ public:
     gb_Key  *keys;
     GB_HASH *key_2_index_hash;
     long     key_clock;                             // trans. nr. of last change
+    bool     mapped;                                // true -> loaded via mapfile
 
     unsigned int last_updated;
     long         last_saved_time;
@@ -188,18 +182,18 @@ public:
 
     GBDATA *gb_main() const { return (GBDATA*)root_container; }
 
-    GB_ERROR login_remote(const char *db_path, const char *opent);
+    GB_ERROR login_remote(const char *db_path, const char *opent) __ATTR__USERESULT;
 
-    inline GB_ERROR begin_transaction();
-    inline GB_ERROR commit_transaction();
-    inline GB_ERROR abort_transaction();
+    inline GB_ERROR begin_transaction() __ATTR__USERESULT;
+    inline GB_ERROR commit_transaction() __ATTR__USERESULT;
+    inline GB_ERROR abort_transaction() __ATTR__USERESULT;
 
-    inline GB_ERROR push_transaction();
-    inline GB_ERROR pop_transaction();
+    inline GB_ERROR push_transaction() __ATTR__USERESULT;
+    inline GB_ERROR pop_transaction() __ATTR__USERESULT;
 
     inline GB_ERROR no_transaction();
 
-    __ATTR__USERESULT GB_ERROR send_update_to_server(GBDATA *gbd);
+    __ATTR__USERESULT GB_ERROR send_update_to_server(GBDATA *gbd) __ATTR__USERESULT;
 
     GB_ERROR save_quick(const char *refpath);
 
@@ -218,7 +212,8 @@ public:
     bool has_pending_change_callback() const { return changeCBs.pending.pending(); }
     bool has_pending_delete_callback() const { return deleteCBs.pending.pending(); }
 
-    GB_ERROR add_hierarchy_cb(GBDATA *gbd, const TypedDatabaseCallback& dbcb);
+    GB_ERROR add_hierarchy_cb(const gb_hierarchy_location& loc, const TypedDatabaseCallback& dbcb);
+    GB_ERROR remove_hierarchy_cb(const gb_hierarchy_location& loc, const TypedDatabaseCallback& dbcb);
     void forget_hierarchy_cbs();
 
     inline void trigger_change_callbacks(GBDATA *gbd, GB_CB_TYPE type);
@@ -228,7 +223,4 @@ public:
 #else
 #error gb_main.h included twice
 #endif // GB_MAIN_H
-
-
-
 

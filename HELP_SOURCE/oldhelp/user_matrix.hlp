@@ -19,8 +19,8 @@ DESCRIPTION	Allows the user to define distances between different bases.
 		to 1.0 and 2.0.
 
 NOTE		Before the algorithm starts, all matrix values will be 
-		multiplied by a factor, so that the average matrix value
-		(except the diagonal) gets a value of one !!!
+		multiplied by a factor, such that the average matrix value
+		(except the diagonal) is approximately 1.0!
 
 		To save a user matrix use <Properties/Save Properties> menu
 		item.

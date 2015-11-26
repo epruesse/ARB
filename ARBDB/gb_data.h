@@ -148,13 +148,18 @@ struct GBDATA {
     bool is_entry() const { return !is_container(); }
 
     GBENTRY *as_entry() const {
-        gb_strict_assert(!this || is_entry());
+        gb_assert(this); // use GBDATA::as_entry() instead
+        gb_strict_assert(is_entry());
         return (GBENTRY*)this;
     }
     GBCONTAINER *as_container() const {
-        gb_strict_assert(!this || is_container());
+        gb_assert(this); // use GBDATA::as_container() instead
+        gb_strict_assert(is_container());
         return (GBCONTAINER*)this;
     }
+
+    static GBCONTAINER *as_container(GBDATA *gbd) { return gbd ? gbd->as_container() : NULL; }
+    static GBENTRY     *as_entry    (GBDATA *gbd) { return gbd ? gbd->as_entry()     : NULL; }
 
     // meant to be used in client interface (i.e. on any GBDATA* passed from outside)
     GBENTRY *expect_entry() const {
@@ -304,7 +309,7 @@ inline GB_MAIN_TYPE *GB_MAIN_NO_FATHER(GBDATA *gbd) {
 // ---------------------------------------------------------
 //      strictly-aliased forwarders for some functions:
 
-inline GB_ERROR gb_commit_transaction_local_rek(GBCONTAINER*& gbc, long mode, int *pson_created) {
+inline __ATTR__USERESULT GB_ERROR gb_commit_transaction_local_rek(GBCONTAINER*& gbc, long mode, int *pson_created) {
     return gb_commit_transaction_local_rek(StrictlyAliased_BasePtrRef<GBCONTAINER,GBDATA>(gbc).forward(), mode, pson_created);
 }
 
