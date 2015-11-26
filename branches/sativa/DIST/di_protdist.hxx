@@ -35,8 +35,9 @@ class AP_smatrix;
 class di_protdist : virtual Noncopyable {
     static double pameigs[20];
     static double pamprobs[20][20];
-    di_codetype   whichcode;
-    di_cattype    whichcat;
+
+    di_codetype whichcode;
+    di_cattype  whichcat;
 
     long spp;                   // number of species
     long chars;                 // number of characters
@@ -65,8 +66,6 @@ class di_protdist : virtual Noncopyable {
     // Local variables for makedists, propagated globally for c version:
     double p, dp, d2p;
 
-
-    void cats(di_cattype wcat);
     void maketrans();
     void code();
     void transition();

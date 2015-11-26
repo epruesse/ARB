@@ -300,7 +300,7 @@ bool MP_aborted(int gen_cnt, double avg_fit, double min_fit, double max_fit, arb
 }
 
 
-void MP_compute(AW_window *, AW_CL cl_gb_main) {
+void MP_compute(AW_window*, GBDATA *gb_main) {
     AW_root         *aw_root = mp_main->get_aw_root();
     AW_window       *aww2;
     int              i       = 0;
@@ -309,7 +309,6 @@ void MP_compute(AW_window *, AW_CL cl_gb_main) {
     char           **probe_field;
     int             *single_mismatch;
     ProbeValuation  *p_eval  = NULL;
-    GBDATA          *gb_main = (GBDATA*)cl_gb_main;
 
     MO_Liste::set_gb_main(gb_main);
 
@@ -417,10 +416,7 @@ void MP_new_sequence(AW_window *aww) {
 void MP_cache_sonden(AW_window *) { new_pt_server = true; }
 void MP_cache_sonden2(AW_root *) { new_pt_server = true; }
 
-void MP_show_probes_in_tree_move(AW_window *aww, AW_CL cl_backward, AW_CL cl_result_probes_list) {
-    bool               backward           = bool(cl_backward);
-    AW_selection_list *resultProbesList = (AW_selection_list*)cl_result_probes_list;
-
+void MP_show_probes_in_tree_move(AW_window *aww, bool backward, AW_selection_list *resultProbesList) {
     resultProbesList->move_selection(backward ? -1 : 1);
     MP_show_probes_in_tree(aww);
 }
@@ -651,7 +647,7 @@ void MP_mark_probes_in_tree(AW_window *aww) {
     MP_normal_colors_in_tree(aww);
 }
 
-void MP_Comment(AW_window *, AW_CL cl_com) {
+void MP_Comment(AW_window *, const char *new_comment) {
     // Comment fuer Auswahl eintragen
 
     AW_root *awr       = mp_main->get_aw_root();
@@ -662,12 +658,9 @@ void MP_Comment(AW_window *, AW_CL cl_com) {
         char *new_list_string;
         {
             char       *edited_comment = NULL;
-            const char *comment        = NULL;
+            const char *comment        = new_comment;
 
-            if (cl_com) {
-                comment = (char*)cl_com;
-            }
-            else {
+            if (!comment) {
                 edited_comment = awr->awar(MP_AWAR_RESULTPROBESCOMMENT)->read_string();
                 for (int i = 0; edited_comment[i]; ++i) { // remove all '#' from new comment
                     if (edited_comment[i] == SEPARATOR[0]) {

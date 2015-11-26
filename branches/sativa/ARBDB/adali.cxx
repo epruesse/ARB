@@ -934,14 +934,14 @@ void TEST_alignment() {
             ConstStrArray names;
             GBT_get_alignment_names(names, gb_main);
             {
-                char *joined = GBT_join_names(names, '*');
+                char *joined = GBT_join_strings(names, '*');
                 TEST_EXPECT_EQUAL(joined, "ali_tuf_pro*ali_tuf_dna");
                 free(joined);
             }
 
             for (int i = 0; names[i]; ++i) {
                 long len = GBT_get_alignment_len(gb_main, names[i]);
-                TEST_EXPECT_EQUAL(len, !i ? 473 : 1426);
+                TEST_EXPECT_EQUAL(len, !i ? 487 : 1462);
 
                 char *type_name = GBT_get_alignment_type_string(gb_main, names[i]);
                 TEST_EXPECT_EQUAL(type_name, !i ? "ami" : "dna");

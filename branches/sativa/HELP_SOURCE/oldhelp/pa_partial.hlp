@@ -1,11 +1,11 @@
 #Please insert up references in the next lines (line starts with keyword UP)
 UP	arb.hlp
 UP	glossary.hlp
-UP	pa_quick.hlp
-UP	pa_add.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
 SUB	partial_sequences.hlp
+SUB	pa_quick.hlp
+SUB	pa_add.hlp
 
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
@@ -20,14 +20,12 @@ DESCRIPTION     Use this to add sequences with partial sequence data into an exi
                 The branchlengths of the added partial sequences represent the
                 number of (weighted) mutations against the full sequence.
 
-                Only the overlapping part of both sequences is taken into account,
-                i.e. missing data beyond sequence ends will not be considered as
-                deletions.
+                Only the overlapping part of both sequences is taken into account and
+                the distance to the FLS will be weighted by the length of the overlap.
 
-                Thus the attraction between different partial sequences (which share
-                the same alignment ranges, but have different data in these ranges) will
-                not occur (as it does when using LINK{pa_quick.hlp}; see there for more
-                information about partial vs full-length sequences).
+                Different partial sequences will never attract each other, simply because
+                they are not considered as 'possible neighbours' (see also section about
+                partials in LINK{pa_quick.hlp}).
 
                 As for non-partial sequences, when using a filter only the unfiltered
                 positions will be taken into account to calculate the number of mutations.
@@ -46,10 +44,14 @@ DESCRIPTION     Use this to add sequences with partial sequence data into an exi
                 meaningless or misleading.
 
 NOTES		Adding species using this function marks them as "partial sequence" if
-                they have no 'ARB_partial' entry yet. Otherwise insertion is aborted.
-
-                All species already in tree are marked as "full sequence" if
                 they have no 'ARB_partial' entry yet.
+                If they were already marked as FLS, the insertion is aborted with an error.
+
+                All species already in tree, when calling this function, will be marked
+                as FLS, if they have no 'ARB_partial' entry yet.
+
+                Species with partial sequences have the field "ARB_partial" set to 1, species
+                with FLS have the field "ARB_partial" set to 0.
 
 EXAMPLES	None
 

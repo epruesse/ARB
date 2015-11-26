@@ -101,14 +101,18 @@ void AW_edit(const char *path, aw_fileChanged_cb callback, AW_window *aww, GBDAT
         if (!arb_notify) error = GB_await_error();
         else {
             char *arb_message = GBS_global_string_copy("arb_message \"Could not start editor '%s'\"", editor);
+            char *quotedFile  = GBK_singlequote(cb_data->fpath);
 
-            command = GBS_global_string_copy("((%s '%s' || %s); %s)&", editor, cb_data->fpath, arb_message, arb_notify);
+            command = GBS_global_string_copy("((%s %s || %s); %s)&", editor, quotedFile, arb_message, arb_notify);
+            free(quotedFile);
             free(arb_message);
             free(arb_notify);
         }
     }
     else {
-        command = GBS_global_string_copy("%s '%s' &", editor, fpath);
+        char *quotedFile  = GBK_singlequote(fpath);
+        command = GBS_global_string_copy("%s %s &", editor, quotedFile);
+        free(quotedFile);
     }
 
     if (command) {

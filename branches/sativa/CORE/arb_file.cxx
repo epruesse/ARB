@@ -85,6 +85,12 @@ bool GB_is_link(const char *path) {
     return lstat(path, &stt) == 0 && S_ISLNK(stt.st_mode);
 }
 
+bool GB_is_fifo(const char *path) {
+    if (!path) return false;
+    struct stat stt;
+    return stat(path, &stt) == 0 && S_ISFIFO(stt.st_mode);
+}
+
 bool GB_is_executablefile(const char *path) {
     struct stat stt;
     bool        executable = false;
@@ -216,7 +222,33 @@ GB_ERROR GB_symlink(const char *target, const char *link) {
 }
 
 GB_ERROR GB_set_mode_of_file(const char *path, long mode) {
-    if (chmod(path, (int)mode)) return GBS_global_string("Cannot change mode of '%s'", path);
+    /*
+      Patch from Alan McCulloch:
+
+      get user, group,other read, write and execute
+      permissions and if these are the same in the
+      existing and requested modes of the file ,
+      don't chmod (gets around "Cannot set mode" errors
+      which will happen if user does not own file)
+
+      This assumes that the requested permission change is not
+      outside the mask S_IRWXU | S_IRWXG | S_IRWXO - if it is, then
+      the requested change will not be made
+    */
+
+    int permissions_mask = S_IRWXU | S_IRWXG | S_IRWXO ;
+    struct stat sb;
+
+
+    if (stat(path, &sb) == -1) {
+        return GBS_global_string("Cannot get existing mode of '%s'", path);
+    }
+
+    if (((int)sb.st_mode & permissions_mask) == ((int)mode & permissions_mask)) {
+        return 0;
+    }
+
+    if (chmod(path, (int)mode)) return GB_IO_error("changing mode of", path);
     return 0;
 }
 

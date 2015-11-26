@@ -476,8 +476,10 @@ static char *an_get_short(AN_shorts *IF_ASSERTION_USED(shorts), dll_public *pare
         aisc_main->touched = 1;
     }
     else {
-        printf("ARB_name_server: Failed to make a short-name for '%s'\n", full);
         result = "ZZZ";
+#if defined(DEBUG)
+        printf("ARB_name_server: Failed to find a unique short prefix for word '%s' (using '%s')\n", full, result);
+#endif
     }
 
     free(full3);
@@ -700,6 +702,7 @@ aisc_string get_short(const AN_local *locs) {
                 : strdup(first_advice);
 
             na_assert(first_short);
+
             if (first_short[0] == 0) { // empty?
                 freedup(first_short, "ZZZ");
             }
@@ -761,14 +764,18 @@ aisc_string get_short(const AN_local *locs) {
             if (!nameModHash) nameModHash = GBS_create_hash(100, GB_IGNORE_CASE);
 
             char *test_short_dup = strdup(test_short);
-            long  count          = GBS_read_hash(nameModHash, test_short);
-            if (count<2) count   = 2; // first name modification uses number 2
+
+            long count    = 2; // start numbering with 'SomName2' (not 'SomName1')
+            test_short[7] = 0; // store, max. 7 chars in nameModHash (at least one digit is used)
+            count         = std::max(count, GBS_read_hash(nameModHash, test_short));
+
+            const long NUMBERS = 100000;
 
             int  printOffset = both_len;
             bool foundUnused = false;
 
-            // first create alternate name with digits only
-            {
+            // first attempt to create alternate name using 1-5 digits at the end of the name
+            if (count<NUMBERS) {
                 int digLimit[6] = { 0, 9, 99, 999, 9999, 99999 };
                 for (int digits = 1; !foundUnused && digits <= 5; ++digits) {
                     int maxOffset = 8-digits;
@@ -777,6 +784,10 @@ aisc_string get_short(const AN_local *locs) {
                     if (printOffset>maxOffset) printOffset = maxOffset;
 
                     char *printAt = test_short+printOffset;
+                    if (digits>1) {
+                        printAt[0] = 0;
+                        count      = std::max(count, GBS_read_hash(nameModHash, test_short)); // check shorter prefix
+                    }
 
                     for (; !foundUnused && count <= limit; ++count) {
                         IF_ASSERTION_USED(int printed =) sprintf(printAt, "%li", count);
@@ -785,24 +796,33 @@ aisc_string get_short(const AN_local *locs) {
                     }
                 }
             }
+            else {
+                test_short[3] = 0;
+                count         = std::max(count, GBS_read_hash(nameModHash, test_short)); // check prefix with len==3
+            }
 
-            // if no unused name found, create one with alpha-chars
+            const long base36_limit5 = 60466176;      //    60466176 = 36^5 (while using 3-letter-prefix)
+            const int64_t base36_limit7 = 78364164096LL;   // 78364164096 = 36^7 (while using 1-letter-prefix)
+
+            bool store_in_nameModHash = true;
+
+            // if no unused name found, create one with mixed alphanumeric-chars (last 5 characters of the name)
             if (!foundUnused) {
                 strcpy(test_short, test_short_dup);
 
-                long        count2  = count-100000; // 100000 numbers were used above
+                long        count2  = count-NUMBERS; // 100000 numbers were used above
                 char       *printAt = test_short+3;
                 const char *base36  = "0123456789abcdefghijklmnopqrstuvwxyz";
 
                 printAt[5] = 0;
 
-                for (; !foundUnused && count2<16796160; ++count2) { // 16796160 = 36^4*10
+                for (; !foundUnused && count2<base36_limit5; ++count2) {
                     // now print count2 converted to base 36
 
-                    int c = count2;
+                    long c = count2;
                     for (int pos = 0; pos<5; ++pos) {
-                        int nextc = c/36;
-                        int rest  = c-36*nextc;
+                        long nextc = c/36;
+                        int  rest  = c-36*nextc;
 
                         printAt[4-pos] = base36[rest];
                         c              = nextc;
@@ -813,14 +833,80 @@ aisc_string get_short(const AN_local *locs) {
                     if (!lookup_an_revers(aisc_main, test_short)) foundUnused = true; // name does not exist
                 }
 
-                count = count2+100000;
+                if (!foundUnused) {
+                    // loop over ALL possible short-name (=1-letter-prefix + 7-letter-alnum-suffix)
+                    na_assert(count2>base36_limit5);
+                    store_in_nameModHash = false; // is directly stored for each 1-letter-prefix
+
+                    // @@@ try original starting character first?
+
+                    for (int pc = 'a'; pc<='z' && !foundUnused;  ++pc) {
+                        char key[2] = { char(pc), 0 };
+
+                        int64_t count3 = GBS_read_hash(nameModHash, key);
+
+                        test_short[0] = pc;
+                        printAt       = test_short+1;
+
+                        for (; !foundUnused && count3<base36_limit7; ++count3) {
+                            // now print count3 converted to base 36
+
+                            int64_t c = count3;
+                            for (int pos = 0; pos<7; ++pos) {
+                                int64_t nextc = c/36;
+                                int     rest  = c-36*nextc;
+
+                                printAt[6-pos] = base36[rest];
+                                c              = nextc;
+
+                                na_assert(pos != 6 || c == 0);
+                            }
+
+                            if (!lookup_an_revers(aisc_main, test_short)) foundUnused = true; // name does not exist
+                        }
+
+                        GBS_write_hash(nameModHash, key, count3);
+                    }
+
+                    if (!foundUnused) {
+                        const int64_t names_limit = 26*base36_limit7;
+                        GBK_terminatef("Fatal error: reached short-name-limit ("
+#if defined(ARB_64)
+                                       "%li"
+#else // !defined(ARB_64)
+                                       "%lli"
+#endif
+                                       ")", names_limit);
+                    }
+                }
+                count = count2+NUMBERS;
             }
 
             na_assert(foundUnused);
-            GBS_write_hash(nameModHash, test_short_dup, count);
-            GBS_optimize_hash(nameModHash);
+
+            if (store_in_nameModHash) {
+                test_short_dup[7] = 0;
+                GBS_write_hash(nameModHash, test_short_dup, count);
+                if (count>9) {
+                    test_short_dup[6] = 0;
+                    GBS_write_hash(nameModHash, test_short_dup, count);
+                    if (count>99) {
+                        test_short_dup[5] = 0;
+                        GBS_write_hash(nameModHash, test_short_dup, count);
+                        if (count>999) {
+                            test_short_dup[4] = 0;
+                            GBS_write_hash(nameModHash, test_short_dup, count);
+                            if (count>9999) {
+                                test_short_dup[3] = 0;
+                                GBS_write_hash(nameModHash, test_short_dup, count);
+                            }
+                        }
+                    }
+                }
+            }
 
             free(test_short_dup);
+            GBS_optimize_hash(nameModHash);
         }
 
         assert_alnum(test_short);

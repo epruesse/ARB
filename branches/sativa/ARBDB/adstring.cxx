@@ -519,9 +519,8 @@ size_t GBS_shorten_repeated_data(char *data) {
 //      helper function for tagged fields
 
 static GB_ERROR g_bs_add_value_tag_to_hash(GBDATA *gb_main, GB_HASH *hash, char *tag, char *value, const char *rtag, const char *srt, const char *aci, GBDATA *gbd) {
-    char    *p;
-    GB_HASH *sh;
-    char    *to_free = 0;
+    char *to_free = NULL;
+
     if (rtag && strcmp(tag, rtag) == 0) {
         if (srt) {
             value = to_free = GBS_string_eval(value, srt, gbd);
@@ -532,18 +531,21 @@ static GB_ERROR g_bs_add_value_tag_to_hash(GBDATA *gb_main, GB_HASH *hash, char 
         if (!value) return GB_await_error();
     }
 
-    p=value; while ((p = strchr(p, '['))) *p =   '{'; // replace all '[' by '{'
-    p=value; while ((p = strchr(p, ']'))) *p =   '}'; // replace all ']' by '}'
+    {
+        char *p;
+        p = value; while ((p = strchr(p, '['))) *p =   '{'; // replace all '[' by '{'
+        p = value; while ((p = strchr(p, ']'))) *p =   '}'; // replace all ']' by '}'
+    }
 
-    sh = (GB_HASH *)GBS_read_hash(hash, value);
+    GB_HASH *sh = (GB_HASH *)GBS_read_hash(hash, value);
     if (!sh) {
-        sh = GBS_create_hash(10, GB_IGNORE_CASE); // Tags are case independent
+        sh = GBS_create_hash(10, GB_IGNORE_CASE);        // Tags are case independent
         GBS_write_hash(hash, value, (long)sh);
     }
 
     GBS_write_hash(sh, tag, 1);
-    if (to_free) free(to_free);
-    return 0;
+    free(to_free);
+    return NULL;
 }
 
 
@@ -582,7 +584,7 @@ static GB_ERROR g_bs_convert_string_to_tagged_hash(GB_HASH *hash, char *s, char 
         for (t = strtok(ts, ","); t; t = strtok(0, ",")) {
             if (del && strcmp(t, del) == 0) continue; // test, whether to delete
             if (sa[0] == 0) continue;
-            error = g_bs_add_value_tag_to_hash(gb_main, hash, t, sa, rtag, srt, aci, gbd); // tag found, use  tag
+            error = g_bs_add_value_tag_to_hash(gb_main, hash, t, sa, rtag, srt, aci, gbd); // tag found, use tag
             if (error) break;
         }
         s = se;
@@ -600,20 +602,19 @@ static long g_bs_merge_tags(const char *tag, long val, void *cd_sub_result) {
 }
 
 static long g_bs_read_tagged_hash(const char *value, long subhash, void *cd_g_bs_collect_tags_hash) {
-    char          *str;
-    static int     counter    = 0;
-    GBS_strstruct *sub_result = GBS_stropen(100);
+    static int counter = 0;
 
+    GBS_strstruct *sub_result = GBS_stropen(100);
     GBS_hash_do_sorted_loop((GB_HASH *)subhash, g_bs_merge_tags, GBS_HCF_sortedByKey, sub_result);
     GBS_intcat(sub_result, counter++); // create a unique number
 
-    str = GBS_strclose(sub_result);
+    char *str = GBS_strclose(sub_result);
 
     GB_HASH *g_bs_collect_tags_hash = (GB_HASH*)cd_g_bs_collect_tags_hash;
     GBS_write_hash(g_bs_collect_tags_hash, str, (long)strdup(value)); // send output to new hash for sorting
 
     free(str);
-    return 0;
+    return subhash;
 }
 
 static long g_bs_read_final_hash(const char *tag, long value, void *cd_merge_result) {
@@ -665,19 +666,18 @@ char *GBS_merge_tagged_strings(const char *s1, const char *tag1, const char *rep
     char     *str2   = strdup(s2);
     char     *t1     = GBS_string_2_key(tag1);
     char     *t2     = GBS_string_2_key(tag2);
-    char     *result = 0;
-    GB_ERROR  error  = 0;
     GB_HASH  *hash   = GBS_create_hash(16, GB_MIND_CASE);
 
-    if (!strlen(s1)) replace2 = 0;
-    if (!strlen(s2)) replace1 = 0;
+    if (!s1[0]) replace2 = NULL;
+    if (!s2[0]) replace1 = NULL;
 
-    if (replace1 && replace1[0] == 0) replace1 = 0;
-    if (replace2 && replace2[0] == 0) replace2 = 0;
+    if (replace1 && !replace1[0]) replace1 = NULL;
+    if (replace2 && !replace2[0]) replace2 = NULL;
 
-    error              = g_bs_convert_string_to_tagged_hash(hash, str1, t1, replace1, 0, 0, 0, 0, 0);
-    if (!error) error  = g_bs_convert_string_to_tagged_hash(hash, str2, t2, replace2, 0, 0, 0, 0, 0);
+    GB_ERROR error    = g_bs_convert_string_to_tagged_hash(hash, str1, t1, replace1, 0, 0, 0, 0, 0);
+    if (!error) error = g_bs_convert_string_to_tagged_hash(hash, str2, t2, replace2, 0, 0, 0, 0, 0);
 
+    char *result = NULL;
     if (!error) {
         result = g_bs_get_string_of_tag_hash(hash);
     }
@@ -1202,6 +1202,50 @@ void TEST_DB_key_generation() {
     TEST_STRING2KEY("a", "a_");                                                          // too short
     TEST_STRING2KEY("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", // too long
                     "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+}
+
+#define TEST_MERGE_TAGGED(t1,t2,r1,r2,s1,s2,expected) do {               \
+        char *result = GBS_merge_tagged_strings(s1, t1, r1, s2, t2, r2); \
+        TEST_EXPECT_EQUAL(result, expected);                             \
+        free(result);                                                    \
+    } while(0)
+
+#define TEST_MERGE_TAGGED__BROKEN(t1,t2,r1,r2,s1,s2,expected,got) do {   \
+        char *result = GBS_merge_tagged_strings(s1, t1, r1, s2, t2, r2); \
+        TEST_EXPECT_EQUAL__BROKEN(result, expected, got);                \
+        free(result);                                                    \
+    } while(0)
+
+void TEST_merge_tagged_strings() {
+    // merge two fields:
+    TEST_MERGE_TAGGED("S",   "D",   "", "", "source", "dest", " [D_] dest [S_] source");   // @@@ elim leading space?
+    TEST_MERGE_TAGGED("SRC", "DST", "", 0,  "source", "dest", " [DST] dest [SRC] source");
+    TEST_MERGE_TAGGED("SRC", "DST", 0,  "", "source", "dest", " [DST] dest [SRC] source");
+    TEST_MERGE_TAGGED("SRC", "DST", 0,  0,  "sth",    "sth",  " [DST,SRC] sth");
+
+    // update fields:
+    TEST_MERGE_TAGGED("SRC", "DST", 0, "SRC", "newsource", " [DST] dest [SRC] source", " [DST] dest [SRC] newsource");
+    TEST_MERGE_TAGGED("SRC", "DST", 0, "SRC", "newsource", " [DST,SRC] sth",           " [DST] sth [SRC] newsource");
+    TEST_MERGE_TAGGED("SRC", "DST", 0, "SRC", "sth",       " [DST] sth [SRC] source",  " [DST,SRC] sth");
+
+    // append (opposed to update this keeps old entries with same tag; useless?)
+    TEST_MERGE_TAGGED("SRC", "DST", 0, 0, "newsource", "[DST] dest [SRC] source", " [DST] dest [SRC] newsource [SRC] source");
+    TEST_MERGE_TAGGED("SRC", "DST", 0, 0, "newsource", "[DST,SRC] sth",           " [DST,SRC] sth [SRC] newsource");
+    TEST_MERGE_TAGGED("SRC", "DST", 0, 0, "sth",       "[DST] sth [SRC] source",  " [DST,SRC] sth [SRC] source");
+
+    // merge three fields:
+    TEST_MERGE_TAGGED("OTH", "DST", 0, 0, "oth",    " [DST] dest [SRC] source", " [DST] dest [OTH] oth [SRC] source");
+    TEST_MERGE_TAGGED("OTH", "DST", 0, 0, "oth",    " [DST,SRC] sth",           " [DST,SRC] sth [OTH] oth");
+    TEST_MERGE_TAGGED("OTH", "DST", 0, 0, "sth",    " [DST,SRC] sth",           " [DST,OTH,SRC] sth");
+    TEST_MERGE_TAGGED("OTH", "DST", 0, 0, "dest",   " [DST] dest [SRC] source", " [DST,OTH] dest [SRC] source");
+    TEST_MERGE_TAGGED("OTH", "DST", 0, 0, "source", " [DST] dest [SRC] source", " [DST] dest [OTH,SRC] source");
+
+    // same tests as in section above, but vv
+    TEST_MERGE_TAGGED("DST", "OTH", 0, 0, " [DST] dest [SRC] source", "oth",    " [DST] dest [OTH] oth [SRC] source");
+    TEST_MERGE_TAGGED("DST", "OTH", 0, 0, " [DST,SRC] sth",           "oth",    " [DST,SRC] sth [OTH] oth");
+    TEST_MERGE_TAGGED("DST", "OTH", 0, 0, " [DST,SRC] sth",           "sth",    " [DST,OTH,SRC] sth");
+    TEST_MERGE_TAGGED("DST", "OTH", 0, 0, " [DST] dest [SRC] source", "dest",   " [DST,OTH] dest [SRC] source");
+    TEST_MERGE_TAGGED("DST", "OTH", 0, 0, " [DST] dest [SRC] source", "source", " [DST] dest [OTH,SRC] source");
 }
 
 void TEST_date_stamping() {

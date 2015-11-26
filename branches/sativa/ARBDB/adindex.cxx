@@ -223,7 +223,7 @@ NOT4PERL void GB_dump_indices(GBDATA *gbd) { // used for debugging
                     fprintf(stderr,
                             "* Index %i for key=%s (%i), entries=%li, %s\n",
                             index_count,
-                            Main->keys[ifs->key].key,
+                            quark2key(Main, ifs->key),
                             ifs->key,
                             ifs->nr_of_elements,
                             ifs->case_sens == GB_MIND_CASE
@@ -519,7 +519,7 @@ static GB_ERROR g_b_undo(GBDATA *gb_main, g_b_undo_header *uh) { // goes to head
 }
 
 static GB_CSTR g_b_read_undo_key_pntr(GB_MAIN_TYPE *Main, g_b_undo_entry *ue) {
-    return Main->keys[ue->d.gs.key].key;
+    return quark2key(Main, ue->d.gs.key);
 }
 
 static char *g_b_undo_info(GB_MAIN_TYPE *Main, g_b_undo_header *uh) {
@@ -800,6 +800,7 @@ GB_ERROR GB_undo(GBDATA *gb_main, GB_UNDO_TYPE type) { // goes to header: __ATTR
 
 char *GB_undo_info(GBDATA *gb_main, GB_UNDO_TYPE type) {
     // get some information about the next undo
+    // returns NULL in case of exported error
 
     GB_MAIN_TYPE *Main = GB_MAIN(gb_main);
     if (Main->is_client()) {
@@ -809,8 +810,7 @@ char *GB_undo_info(GBDATA *gb_main, GB_UNDO_TYPE type) {
             case GB_UNDO_REDO:
                 return gbcmc_send_undo_info_commands(gb_main, _GBCMC_UNDOCOM_INFO_REDO);
             default:
-                GB_internal_error("unknown undo type in GB_undo");
-                GB_export_error("Internal UNDO error");
+                GB_export_error("GB_undo_info: unknown undo type specified");
                 return 0;
         }
     }
@@ -1025,7 +1025,7 @@ void TEST_GB_undo__basic() {
     TEST_EXPECT_NULL(  GB_undo(main, GB_UNDO_UNDO)                           );
 
     //////////// THIS IS WHERE UNDO FAILS //////////////////
-    TEST_EXPECT_EQUAL__BROKEN( GB_read_pntr(GB_find(main, "test", SEARCH_CHILD)), str, NULL);
+    TEST_EXPECT_EQUAL__BROKEN( GB_read_pntr(GB_find(main, "test", SEARCH_CHILD)), str, (char*)NULL);
     GB_close(main);
     return; // remainder will fail now
 

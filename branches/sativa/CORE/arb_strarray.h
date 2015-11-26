@@ -97,6 +97,7 @@ public:
         std::swap(str[i1], str[i2]);
         arb_assert(ok());
     }
+    void move(int from, int to);
 
     void remove(int i) {
         arb_assert(ok());
@@ -108,6 +109,10 @@ public:
         }
         elems--;
         arb_assert(ok());
+    }
+    void safe_remove(int i) {
+        //! like remove, but does NOOP if index out of bounds
+        if (elem_index(i)) remove(i);
     }
 
     void resize(int newsize) {
@@ -128,6 +133,8 @@ public:
         sort(compare, client_data);
         uniq(compare, client_data);
     }
+
+    int index_of(const char *search_for) const;
 };
 
 class StrArray : public CharPtrArray {
@@ -149,6 +156,14 @@ public:
         str[i+1] = NULL; // sentinel
         elems++;
         arb_assert(ok());
+    }
+    void put_before(int insert_before, char *elem) { // tranfers ownership of elem!
+        // insert a new 'name' before position 'insert_before'
+        // if 'insert_before' == -1 (or bigger than array size) -> append at end
+        put(elem);
+        if (insert_before<int(size())) {
+            move(-1, insert_before);
+        }
     }
 
     char *replace(int i, char *elem) { // transfers ownership (in both directions!)
@@ -189,6 +204,14 @@ public:
         elems++;
         arb_assert(ok());
     }
+    void put_before(int insert_before, const char *elem) {
+        // insert a new 'name' before position 'insert_before'
+        // if 'insert_before' == -1 (or bigger than array size) -> append at end
+        put(elem);
+        if (insert_before<int(size())) {
+            move(-1, insert_before);
+        }
+    }
 
     const char *replace(int i, const char *elem) {
         arb_assert(elem_index(i));
@@ -197,6 +220,7 @@ public:
         arb_assert(ok());
         return old;
     }
+
 };
 
 
@@ -214,11 +238,7 @@ inline void GBT_split_string(ConstStrArray& dest, const char *namelist, char sep
     // cppcheck-suppress memleak (GBT_splitNdestroy_string takes ownership of 'dup')
 }
 
-char *GBT_join_names(const CharPtrArray& names, char separator);
-int   GBT_names_index_of(const CharPtrArray& names, const char *search_for);
-void  GBT_names_erase(CharPtrArray& names, int index);
-void  GBT_names_add(ConstStrArray& names, int insert_before, const char *name);
-void  GBT_names_move(CharPtrArray& names, int old_index, int new_index);
+char *GBT_join_strings(const CharPtrArray& strings, char separator);
 
 #else
 #error arb_strarray.h included twice

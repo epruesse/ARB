@@ -4,9 +4,9 @@ OBJECTS = servercntrl.o
 $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(@) $(OBJECTS)
 .c.o:
-	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE)
+	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE) $<
 .cxx.o:
-	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE) $<
 
 proto:
 	../AISC_MKPTPS/aisc_mkpt -P -w servercntrl.h $(OBJECTS:.o=.cxx) >servercntrl.h.tmp

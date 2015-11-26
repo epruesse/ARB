@@ -67,7 +67,6 @@ typedef const char *AW_label;       // label for buttons menus etc
 const char *AW_get_pixmapPath(const char *pixmapName);
 
 void AW_POPDOWN(AW_window *);
-void AW_POPUP(AW_window*, AW_CL, AW_CL) __ATTR__DEPRECATED_TODO("directly pass CreateWindowCallback");
 
 enum AW_event_type {
     AW_Keyboard_Press   = 1,
@@ -99,6 +98,17 @@ struct AW_event {
     // fields valid for type == AW_Keyboard
     AW_key_code keycode;            // which key type was pressed
     char        character;          // the c character
+
+    AW_event()
+        : type(AW_event_type(0)),
+          time(0),
+          keymodifier(AW_KEYMODE_NONE),
+          button(AW_BUTTON_NONE),
+          x(0),
+          y(0),
+          keycode(AW_KEY_NONE),
+          character(0)
+    {}
 };
 
 void AW_help_popup(AW_window *aw, const char *help_file);
@@ -111,6 +121,7 @@ void AW_normal_cursor(AW_root *);
 void AW_openURL(AW_root *aw_root, const char *url);
 
 typedef void (*AW_cb_struct_guard)();
+typedef WindowCallbackSimple AnyWinCB; // used to check whether function is contained in callback-list (does not check parameters!) 
 
 class AW_cb : virtual Noncopyable {
     WindowCallback cb;
@@ -128,13 +139,6 @@ public:
     char       *id;
 
     // real public section:
-    AW_cb(AW_window  *awi,
-          AW_CB       g,
-          AW_CL       cd1i       = 0,
-          AW_CL       cd2i       = 0,
-          const char *help_texti = 0,
-          AW_cb      *next       = 0);
-
     AW_cb(AW_window             *awi,
           const WindowCallback&  wcb,
           const char            *help_texti = 0,
@@ -146,7 +150,7 @@ public:
     }
 
     void run_callbacks();                           // runs the whole list
-    bool contains(AW_CB g);                         // test if contained in list
+    bool contains(AnyWinCB g);                      // test if contained in list
     bool is_equal(const AW_cb& other) const;
 
     int compare(const AW_cb& other) const { return cb<other.cb ? -1 : (other.cb<cb ? 1 : 0); }
@@ -225,12 +229,29 @@ enum AW_PosRecalc {
     AW_REPOS_TO_MOUSE_ONCE = 3,                     // like AW_REPOS_TO_MOUSE, but only done once!
 };
 
+enum AW_ScalerType {
+    AW_SCALER_LINEAR,
+    AW_SCALER_EXP_LOWER,  // fine-tuned at lower border, big steps at upper border
+    AW_SCALER_EXP_UPPER,  // fine-tuned at upper border, big steps at lower border
+    AW_SCALER_EXP_CENTER, // fine-tuned at center, big steps at borders
+    AW_SCALER_EXP_BORDER, // fine-tuned at borders, big steps at center
+};
+
+class AW_ScalerTransformer {
+    AW_ScalerType type;
+public:
+    AW_ScalerTransformer(AW_ScalerType type_) : type(type_) {}
+
+    float scaler2awar(float scaler, AW_awar *awar); // [0..1] -> awar-range
+    float awar2scaler(AW_awar *awar); // returns [0..1]
+};
+
 class AW_window : virtual Noncopyable {
     AW_SizeRecalc recalc_size_at_show;
     AW_PosRecalc  recalc_pos_at_show;
 
-    AW_CB0 hide_cb;
-    bool expose_callback_added;
+    WindowCallbackSimple hide_cb;
+    bool                 expose_callback_added;
 
     AW_cb *focus_cb;
 
@@ -295,7 +316,7 @@ public:
     AW_PosRecalc get_recalc_pos_atShow() const;
 
     void allow_delete_window(bool allow_close);
-    void on_hide(AW_CB0 call_on_hide);
+    void on_hide(WindowCallbackSimple call_on_hide);
 
 
 #if defined(ARB_MOTIF)
@@ -308,6 +329,7 @@ public:
     void update_toggle(Widget widget, const char *var_value, AW_CL cd);
     void update_input_field(Widget widget, const char *var_value);
     void update_text_field(Widget widget, const char *var_value);
+    void update_scaler(Widget widget, AW_awar *awar, AW_ScalerType scalerType);
 
     void  create_invisible(int columns);
     void *_create_option_entry(AW_VARIABLE_TYPE type, const char *name, const char *mnemonic, const char *name_of_color);
@@ -316,7 +338,7 @@ public:
     void  increment_at_commands(int width, int height);
 
 
-    AW_color_idx alloc_named_data_color(int colnum, char *colorname);
+    AW_color_idx alloc_named_data_color(int colnum, const char *colorname);
 
     // special for EDIT4
     void _get_area_size(AW_area area, AW_screen_area *square);
@@ -366,15 +388,15 @@ public:
 
     void set_popup_callback(const WindowCallback& wcb);
     void set_focus_callback(const WindowCallback& wcb);
-    bool is_focus_callback(void (*f)(AW_window*, AW_CL, AW_CL));
+    bool is_focus_callback(AnyWinCB f);
 
     void set_expose_callback(AW_area area, const WindowCallback& wcb);
     void set_resize_callback(AW_area area, const WindowCallback& wcb);
 
 private:
     // motif relicts:
-    void set_expose_callback(AW_area area, AW_CB0 cb) { set_expose_callback(area, makeWindowCallback(cb)); }
-    void set_resize_callback(AW_area area, AW_CB0 cb) { set_resize_callback(area, makeWindowCallback(cb)); }
+    void set_expose_callback(AW_area area, WindowCallbackSimple cb) { set_expose_callback(area, makeWindowCallback(cb)); }
+    void set_resize_callback(AW_area area, WindowCallbackSimple cb) { set_resize_callback(area, makeWindowCallback(cb)); }
 public:
 
     void set_input_callback(AW_area area, const WindowCallback& wcb);
@@ -382,11 +404,8 @@ public:
 
     void set_double_click_callback(AW_area area, const WindowCallback& wcb);
 
-    bool is_expose_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL));
-    bool is_resize_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL));
-    bool is_input_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL));
-    bool is_motion_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL));
-    bool is_double_click_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL));
+    bool is_expose_callback(AW_area area, AnyWinCB f);
+    bool is_resize_callback(AW_area area, AnyWinCB f);
 
     void get_event(AW_event *eventi) const;       // In an event callback get the events info
 
@@ -399,26 +418,43 @@ public:
     AW_device_print *get_print_device(AW_area area);
 
     // ************** Create the menu buttons *********
-    void create_menu(AW_label name, const char *mnemonic, AW_active mask = AWM_ALL);
-    void insert_sub_menu(AW_label name, const char *mnemonic, AW_active mask = AWM_ALL);
 
-    void insert_menu_topic(const char *id, const char *name, const char *mnemonic, const char *help_text_, AW_active mask, const WindowCallback& cb);
+    /**
+     * Creates a new top level menu.
+     * @param name     Name of the menu.
+     * @param mnemonic Shortcut (optional)
+     * @param mask     Experts only?
+     */
+    void create_menu(const char *name, const char *mnemonic, AW_active mask = AWM_ALL);
+
+    /**
+     * Insert a sub menu into the last created menu.
+     * @param name     Name of the sub menu.
+     * @param mnemonic Shortcut (optional)
+     * @param mask     Experts only?
+     */
+    void insert_sub_menu(const char *name, const char *mnemonic, AW_active mask = AWM_ALL);
+
+    /**
+     * Insert a menu item into the last created menu or sub menu.
+     * @param id           Unique id (for macros)
+     * @param name         Name of the item.
+     * @param mnemonic     Shortcut (optional)
+     * @param help_text_   Name of helpfile (optional)
+     * @param mask         Experts only?
+     * @param wcb Callback that should be called when the item is activated.
+     */
+    void insert_menu_topic(const char *id, const char *name, const char *mnemonic, const char *help_text_, AW_active mask, const WindowCallback& wcb);
 
     void insert_menu_topic(const char *id, const char *name, const char *mnemonic, const char *help_text_, AW_active mask, const CreateWindowCallback& cwcb) { insert_menu_topic(id, name, mnemonic, help_text_, mask, makeWindowPopper(cwcb)); }
     void insert_menu_topic(const char *id, const char *name, const char *mnemonic, const char *help_text_, AW_active mask, WindowCallbackSimple cb)          { insert_menu_topic(id, name, mnemonic, help_text_, mask, makeWindowCallback(cb)); }
     void insert_menu_topic(const char *id, const char *name, const char *mnemonic, const char *help_text_, AW_active mask, CreateWindowCallbackSimple cb)    { insert_menu_topic(id, name, mnemonic, help_text_, mask, makeCreateWindowCallback(cb)); }
 
-    void insert_menu_topic(const char *id, const char *name, const char *mnemonic, const char *help_text_, AW_active mask, AW_CB cb, AW_CL cd1, AW_CL cd2) __ATTR__DEPRECATED_TODO("pass WindowCallback") { insert_menu_topic(id, name, mnemonic, help_text_, mask, makeWindowCallback(cb, cd1, cd2)); }
-    void insert_menu_topic(const char *id, const char *name, const char *mnemonic, const char *help_text_, AW_active mask, AW_CB1 cb, AW_CL cd1) __ATTR__DEPRECATED_TODO("pass WindowCallback") { insert_menu_topic(id, name, mnemonic, help_text_, mask, makeWindowCallback(cb, cd1)); }
-
     void sep______________();
     void close_sub_menu();
 
     void insert_help_topic(const char *labeli, const char *mnemonic, const char *helpText, AW_active mask, const WindowCallback& cb);
-    void insert_help_topic(const char *labeli, const char *mnemonic, const char *helpText, AW_active mask, AW_CB0 cb) { insert_help_topic(labeli, mnemonic, helpText, mask, makeWindowCallback(cb)); }
-    void insert_help_topic(const char *labeli, const char *mnemonic, const char *helpText, AW_active mask, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) __ATTR__DEPRECATED_TODO("pass WindowCallback") {
-        insert_help_topic(labeli, mnemonic, helpText, mask, makeWindowCallback(f, cd1, cd2));
-    }
+    void insert_help_topic(const char *labeli, const char *mnemonic, const char *helpText, AW_active mask, WindowCallbackSimple cb) { insert_help_topic(labeli, mnemonic, helpText, mask, makeWindowCallback(cb)); }
 
     // ************** Create modes on the left side ******************
     int create_mode(const char *pixmap, const char *help_text_, AW_active mask, const WindowCallback& cb);
@@ -465,10 +501,15 @@ public:
     void store_pos_in_awars(int xpos, int ypos);
     void get_pos_from_awars(int& xpos, int& ypos);
 
+#if defined(ARB_MOTIF)
+    void reset_geometry_awars();
+#endif
+
     // *****************
     void get_screen_size(int& width, int& height);
     bool get_mouse_pos(int& x, int& y);
     void set_focus_policy(bool follow_mouse);
+    void get_font_size(int& w, int& h);
 #endif
     
     // ************** ********************************************************************  *********
@@ -547,9 +588,6 @@ public:
     void callback(CreateWindowCallbackSimple cb)    { callback(makeCreateWindowCallback(cb)); }
     void callback(WindowCallbackSimple cb)          { callback(makeWindowCallback(cb)); }
 
-    void callback(void (*f)(AW_window*, AW_CL), AW_CL cd1) __ATTR__DEPRECATED_TODO("pass WindowCallback") { callback(makeWindowCallback(f, cd1)); }
-    void callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) __ATTR__DEPRECATED_TODO("pass WindowCallback") { callback(makeWindowCallback(f, cd1, cd2)); }
-
     void d_callback(const WindowCallback& cb); // secondary callback (called for 'double click into selection list' and 'text field hit ENTER')
 
     // *** create the buttons ********
@@ -563,9 +601,9 @@ public:
     void create_toggle(const char *awar_name, const char *nobitmap, const char *yesbitmap, int buttonWidth = 0);
     void create_text_toggle(const char *var_name, const char *noText, const char *yesText, int buttonWidth = 0);
 
-    void create_input_field(const char *awar_name, int columns = 0);   // One line textfield
-    void create_text_field(const char *awar_name, int columns = 20, int rows = 4);   // Multi line textfield
-    // with scrollbars
+    void create_input_field(const char *awar_name, int columns = 0);                 // One line textfield
+    void create_text_field(const char *awar_name, int columns = 20, int rows = 4);   // Multi line textfield with scrollbars
+    void create_input_field_with_scaler(const char *awar_name, int textcolumns = 4, int scaler_length = 250, AW_ScalerType scalerType = AW_SCALER_LINEAR);
 
 
     // ***** option_menu is a menu where only one selection is visible at a time
@@ -657,7 +695,8 @@ private:
 public:
     AW_window_message();
     ~AW_window_message();
-    void init(AW_root *root, const char *windowname, bool allow_close);
+    void init(AW_root *root_in, const char *wid, const char *windowname, bool allow_close);
+    void init(AW_root *root_in, const char *windowname, bool allow_close); // auto-generates window id from title
 };
 
 typedef struct aw_gc_manager *AW_gc_manager;

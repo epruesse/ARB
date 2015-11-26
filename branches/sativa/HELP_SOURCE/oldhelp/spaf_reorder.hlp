@@ -11,8 +11,7 @@ UP	sp_info.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Reorder Fields
 
-OCCURRENCE	ARB_NT/Species/Info/FIELDS/Reorder fields
-                ARB_NT/Genes/Info/FIELDS/Reorder fields
+OCCURRENCE	<any information window>/FIELDS/Reorder fields
 
 DESCRIPTION	Allows to change the order of the fields within the
                 'DATABASE FIELDS' subwindow of the 'SPECIES/GENE INFORMATION'

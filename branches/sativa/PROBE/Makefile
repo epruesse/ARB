@@ -1,12 +1,31 @@
 .SUFFIXES: .o .cxx .depend
 
 OBJECTS = $(subst .cxx,.o,$(wildcard *.cxx))
+SERVERLIB=../PROBE_COM/server.a
 
-$(MAIN): $(OBJECTS) 
-	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
+# ---------------------------------------- allow misaligned data access in PROBE
+PROBE_CFLAGS := $(cflags)
+ifeq ('$(USE_GCC_50_OR_HIGHER)', 'yes')
+ ifneq ('$(SANITIZE)', '0')
+  PROBE_CFLAGS := $(cflags) -fno-sanitize=alignment
+ endif
+endif
+# ---------------------------------------- 
+
+$(MAIN): $(OBJECTS) $(SERVERLIB)
+# $(SERVERLIB) and $(MAIN) reference each other
+# unpack all objects from $(SERVERLIB) and ar them together with local objects
+	mkdir -p serverlib
+	cd serverlib;ar x ../$(SERVERLIB)
+	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS) serverlib/*.o
+	rm serverlib/*.o
+ifeq ($(DARWIN),1)
+	-rm serverlib/__.*
+endif
+	rmdir serverlib
 
 .cxx.o:
-	$(A_CXX) $(cflags) $(cxxflags) -c $<  $(CXX_INCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(PROBE_CFLAGS) $(cxxflags) -c $<  $(CXX_INCLUDES) $(POST_COMPILE) $<
 
 proto:
 	../AISC_MKPTPS/aisc_mkpt -P -G -E -w pt_prototypes.h $(OBJECTS:.o=.cxx) probe_tree.h >pt_prototypes.h.tmp

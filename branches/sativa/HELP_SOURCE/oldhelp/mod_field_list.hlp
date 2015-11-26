@@ -9,10 +9,11 @@ SUB	tags.hlp
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		MODIFY FIELDS OF LISTED SPECIES/GENES
+TITLE		Modify fields of listed
 
-OCCURRENCE	ARB_NT/Species/Search/More Functions/Modify fields of listed
-		ARB_NT/Genes/Search/More Functions/Modify fields of listed
+OCCURRENCE	ARB_NT/Species/Search and Query/More Functions/Modify fields of listed
+		ARB_NT/Genome/Search and query/More Functions/Modify fields of listed
+		ARB_NT/Genome/Experiment/Search and query/More Functions/Modify fields of listed
 		ARB_NT/Tree/NDS
 
 DESCRIPTION	Finds and replaces substrings within fields/tagged subfields of

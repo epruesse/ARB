@@ -64,7 +64,7 @@ static void toggle_detailed_column_stat(ED4_sequence_terminal *seq_term, bool fo
     }
 }
 
-inline ARB_ERROR forget_cached_column_stat(ED4_base *base) {
+static ARB_ERROR forget_cached_column_stat(ED4_base *base) {
     if (base->is_sequence_terminal()) {
         ED4_sequence_terminal *seqTerm = base->to_sequence_terminal();
         toggle_detailed_column_stat(seqTerm, true);
@@ -83,7 +83,7 @@ static void col_stat_activated(AW_window *) {
     set_col_stat_activated_and_refresh(true);
 }
 
-static void configureColumnStat(bool forceConfig, AW_CB0 post_config_cb, AW_window *cb_win) {
+static void configureColumnStat(bool forceConfig, WindowCallbackSimple post_config_cb, AW_window *cb_win) {
     STAT_set_postcalc_callback(ED4_ROOT->st_ml, post_config_cb, cb_win);
 
     static AW_window *aw_config = NULL;
@@ -95,16 +95,16 @@ static void configureColumnStat(bool forceConfig, AW_CB0 post_config_cb, AW_wind
     if (do_config) aw_config->activate();
 }
 
-void ED4_activate_col_stat(AW_window *aww, AW_CL, AW_CL) {
+void ED4_activate_col_stat(AW_window *aww) {
     if (!ED4_ROOT->column_stat_activated || !ED4_ROOT->column_stat_initialized) {
         if (ED4_ROOT->column_stat_initialized) {
             // re-initialize column-stat! first cleanup old column stat data
-            ED4_ROOT->main_manager->route_down_hierarchy(forget_cached_column_stat).expect_no_error();
+            ED4_ROOT->main_manager->route_down_hierarchy(makeED4_route_cb(forget_cached_column_stat)).expect_no_error();
         }
         configureColumnStat(true, col_stat_activated, aww);
     }
 }
-void ED4_disable_col_stat(AW_window *, AW_CL, AW_CL) {
+void ED4_disable_col_stat(AW_window *) {
     if (ED4_ROOT->column_stat_initialized && ED4_ROOT->column_stat_activated) {
         set_col_stat_activated_and_refresh(false);
     }
@@ -112,7 +112,7 @@ void ED4_disable_col_stat(AW_window *, AW_CL, AW_CL) {
 
 static void show_detailed_column_stats_activated(AW_window *aww) {
     ED4_ROOT->column_stat_initialized = true;
-    ED4_toggle_detailed_column_stats(aww, 0, 0);
+    ED4_toggle_detailed_column_stats(aww);
 }
 
 double ED4_columnStat_terminal::threshold = -1;
@@ -124,7 +124,7 @@ void ED4_columnStat_terminal::set_threshold(double aThreshold) {
     e4_assert(threshold_is_set());
 }
 
-void ED4_set_col_stat_threshold(AW_window *, AW_CL, AW_CL) {
+void ED4_set_col_stat_threshold() {
     double default_threshold = 90.0;
     if (ED4_columnStat_terminal::threshold_is_set()) {
         default_threshold = ED4_columnStat_terminal::get_threshold();
@@ -147,9 +147,9 @@ void ED4_set_col_stat_threshold(AW_window *, AW_CL, AW_CL) {
     }
 }
 
-void ED4_toggle_detailed_column_stats(AW_window *aww, AW_CL, AW_CL) {
+void ED4_toggle_detailed_column_stats(AW_window *aww) {
     while (!ED4_columnStat_terminal::threshold_is_set()) {
-        ED4_set_col_stat_threshold(aww, 0, 0);
+        ED4_set_col_stat_threshold();
     }
 
     ED4_LocalWinContext  uses(aww);

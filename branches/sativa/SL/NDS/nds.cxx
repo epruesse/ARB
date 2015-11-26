@@ -17,7 +17,7 @@
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
 #include <aw_select.hxx>
-#include <arbdbt.h>
+#include <TreeNode.h>
 #include <items.h>
 #include <arb_msg_fwd.h>
 
@@ -29,7 +29,8 @@
 
 #define NDS_COUNT (NDS_PER_PAGE*NDS_PAGES)    // overall number of NDS definitions
 
-#define AWAR_NDS_PAGE "tmp/viewkeys/page"
+#define AWAR_NDS_USE_ALL "arb_presets/all"
+#define AWAR_NDS_PAGE    "arb_presets/page"
 
 #if defined(DEBUG)
 #define NDS_STRING_SIZE 200
@@ -153,7 +154,7 @@ static void map_viewkeys(AW_root *aw_root, /*AW_default*/ GBDATA *awdef, GBDATA 
     AW_awar     *awar_selected_page = 0;
 
     if (!initialized) {
-        awar_selected_page = aw_root->awar_int(AWAR_NDS_PAGE, 0);
+        awar_selected_page = aw_root->awar_int(AWAR_NDS_PAGE, 0, gb_main);
         awar_selected_page->add_callback(makeRootCallback(map_viewkeys, awdef, gb_main)); // bind to self
         initialized = true;
     }
@@ -183,7 +184,7 @@ static void map_viewkeys(AW_root *aw_root, /*AW_default*/ GBDATA *awdef, GBDATA 
     }
 }
 
-void create_nds_vars(AW_root *aw_root, AW_default awdef, GBDATA *gb_main) {
+void create_nds_vars(AW_root *aw_root, AW_default awdef, GBDATA *gb_main, bool force_reinit) {
     GB_push_transaction(gb_main);
 
     GBDATA *gb_viewkey     = 0;
@@ -192,7 +193,16 @@ void create_nds_vars(AW_root *aw_root, AW_default awdef, GBDATA *gb_main) {
     for (int i = 0; i<NDS_COUNT; ++i) {
         gb_viewkey = !gb_viewkey ? GB_entry(gb_arb_presets, "viewkey") : GB_nextEntry(gb_viewkey);
 
-        if (!gb_viewkey) gb_viewkey = GB_create_container(gb_arb_presets, "viewkey");
+        if (!gb_viewkey) {
+            gb_viewkey = GB_create_container(gb_arb_presets, "viewkey");
+        }
+        else if (force_reinit) {
+            for (GBDATA *gb_child = GB_child(gb_viewkey); gb_child; ) {
+                GBDATA *gb_next_child = GB_nextChild(gb_child);
+                GB_delete(gb_child);
+                gb_child = gb_next_child;
+            }
+        }
 
         {
             int  group             = 0;
@@ -202,7 +212,7 @@ void create_nds_vars(AW_root *aw_root, AW_default awdef, GBDATA *gb_main) {
 
             GBDATA *gb_key_text = GB_entry(gb_viewkey, "key_text");
             if (!gb_key_text) {
-                gb_key_text        = GB_create(gb_viewkey, "key_text", GB_STRING);
+                gb_key_text = GB_create(gb_viewkey, "key_text", GB_STRING);
                 const char *wanted = "";
                 switch (i) {
                     case 0: wanted = "name"; default_len = 12; leaf = 1; break;
@@ -262,6 +272,8 @@ void create_nds_vars(AW_root *aw_root, AW_default awdef, GBDATA *gb_main) {
     }
 
     aw_root->awar_string(AWAR_KEY_SELECT, "", awdef);
+    aw_root->awar_int(AWAR_NDS_USE_ALL, 1, gb_main);
+
     GB_pop_transaction(gb_main);
 
     map_viewkeys(aw_root, awdef, gb_main); // call once
@@ -330,106 +342,114 @@ static void nds_init_config(AWT_config_definition& cdef) {
     }
 }
 
-static char *nds_store_config(AW_CL, AW_CL) {
+static char *nds_store_config() {
     AWT_config_definition cdef;
     nds_init_config(cdef);
     return cdef.read();
 }
 
-static void nds_restore_config(const char *stored, AW_CL, AW_CL) {
+static void nds_restore_config(const char *stored, GBDATA *gb_main) {
+    // if stored == NULL -> reset
+
     AWT_config_definition cdef;
     nds_init_config(cdef);
 
-    AWT_config parsedCfg(stored);
-    if (parsedCfg.has_entry("inherit0")) {
-        aw_message("Converting stored config to new NDS format -- consider saving it again.");
-        // Note: The conversion applied here is also done in create_nds_vars()
+    if (stored) { // restore
+        AWT_config parsedCfg(stored);
+        if (parsedCfg.has_entry("inherit0")) {
+            aw_message("Converting stored config to new NDS format -- consider saving it again.");
+            // Note: The conversion applied here is also done in create_nds_vars()
 
-        GB_ERROR error = 0;
+            GB_ERROR error = 0;
 
-        for (int i = 0; !error && i<NDS_COUNT; ++i) {
-            bool was_group_name = false;
-            {
-                const char *key_text_key = GBS_global_string("key_text%i", i);
-                const char *key_text     = parsedCfg.get_entry(key_text_key);
-                if (strcmp(key_text, "group_name") == 0) {
-                    was_group_name = true;
-                    parsedCfg.set_entry(key_text_key, "");
+            for (int i = 0; !error && i<NDS_COUNT; ++i) {
+                bool was_group_name = false;
+                {
+                    const char *key_text_key = GBS_global_string("key_text%i", i);
+                    const char *key_text     = parsedCfg.get_entry(key_text_key);
+                    if (strcmp(key_text, "group_name") == 0) {
+                        was_group_name = true;
+                        parsedCfg.set_entry(key_text_key, "");
+                    }
                 }
-            }
 
-            bool leaf    = false;
-            bool group   = false;
-            int  inherit = 0;
+                bool leaf    = false;
+                bool group   = false;
+                int  inherit = 0;
 
-            {
-                const char *inherit_key   = GBS_global_string("inherit%i", i);
-                const char *inherit_value = parsedCfg.get_entry(inherit_key);
+                {
+                    const char *inherit_key   = GBS_global_string("inherit%i", i);
+                    const char *inherit_value = parsedCfg.get_entry(inherit_key);
 
-                if (inherit_value) {
-                    inherit = atoi(inherit_value);
-                    parsedCfg.delete_entry(inherit_key);
+                    if (inherit_value) {
+                        inherit = atoi(inherit_value);
+                        parsedCfg.delete_entry(inherit_key);
+                    }
+                    else {
+                        error = GB_export_errorf("Expected entry '%s' in saved config", inherit_key);
+                    }
+                }
+
+                if (was_group_name) {
+                    if (!error) {
+                        leaf  = inherit;
+                        group = true;
+
+                        char       *aci_key = GBS_global_string_copy("pars%i", i);
+                        const char *aci     = parsedCfg.get_entry(aci_key);
+                        char       *new_aci = 0;
+
+                        if      (aci[0] == 0)   { new_aci = strdup("taxonomy(1)"); }
+                        else if (aci[0] == '|') { new_aci = GBS_global_string_copy("taxonomy(1)%s", aci); }
+                        else                    { new_aci = GBS_global_string_copy("taxonomy(1)|%s", aci); }
+
+                        parsedCfg.set_entry(aci_key, new_aci);
+
+                        free(new_aci);
+                        free(aci_key);
+                    }
                 }
                 else {
-                    error = GB_export_errorf("Expected entry '%s' in saved config", inherit_key);
+                    leaf = true;
+                }
+
+                if (!error) {
+                    const char *flag1_key   = GBS_global_string("active%i", i);
+                    const char *flag1_value = parsedCfg.get_entry(flag1_key);
+                    if (flag1_value) {
+                        int flag1 = atoi(flag1_value);
+                        if (flag1 == 0) { leaf = group = false; }
+                        parsedCfg.delete_entry(flag1_key);
+                    }
+                    else {
+                        error = GB_export_errorf("Expected entry '%s' in saved config", flag1_key);
+                    }
+                }
+
+                if (!error) {
+                    const char *leaf_key  = GBS_global_string("leaf%i", i);
+                    parsedCfg.set_entry(leaf_key, GBS_global_string("%i", int(leaf)));
+                    const char *group_key = GBS_global_string("group%i", i);
+                    parsedCfg.set_entry(group_key, GBS_global_string("%i", int(group)));
                 }
             }
 
-            if (was_group_name) {
-                if (!error) {
-                    leaf  = inherit;
-                    group = true;
-
-                    char       *aci_key = GBS_global_string_copy("pars%i", i);
-                    const char *aci     = parsedCfg.get_entry(aci_key);
-                    char       *new_aci = 0;
-
-                    if      (aci[0] == 0)   { new_aci = strdup("taxonomy(1)"); }
-                    else if (aci[0] == '|') { new_aci = GBS_global_string_copy("taxonomy(1)%s", aci); }
-                    else                    { new_aci = GBS_global_string_copy("taxonomy(1)|%s", aci); }
-
-                    parsedCfg.set_entry(aci_key, new_aci);
-
-                    free(new_aci);
-                    free(aci_key);
-                }
+            if (!error) {
+                char *converted_cfg_str = parsedCfg.config_string();
+                cdef.write(converted_cfg_str);
+                free(converted_cfg_str);
             }
             else {
-                leaf = true;
+                aw_message(error);
             }
-
-            if (!error) {
-                const char *flag1_key   = GBS_global_string("active%i", i);
-                const char *flag1_value = parsedCfg.get_entry(flag1_key);
-                if (flag1_value) {
-                    int flag1 = atoi(flag1_value);
-                    if (flag1 == 0) { leaf = group = false; }
-                    parsedCfg.delete_entry(flag1_key);
-                }
-                else {
-                    error = GB_export_errorf("Expected entry '%s' in saved config", flag1_key);
-                }
-            }
-
-            if (!error) {
-                const char *leaf_key  = GBS_global_string("leaf%i", i);
-                parsedCfg.set_entry(leaf_key, GBS_global_string("%i", int(leaf)));
-                const char *group_key = GBS_global_string("group%i", i);
-                parsedCfg.set_entry(group_key, GBS_global_string("%i", int(group)));
-            }
-        }
-
-        if (!error) {
-            char *converted_cfg_str = parsedCfg.config_string();
-            cdef.write(converted_cfg_str);
-            free(converted_cfg_str);
         }
         else {
-            aw_message(error);
+            cdef.write(stored);
         }
     }
-    else {
-        cdef.write(stored);
+    else { // reset to factory defaults
+        cdef.reset(); // AWAR values are just empty here
+        create_nds_vars(AW_root::SINGLETON, AW_ROOT_DEFAULT, gb_main, true); // => reinit NDS
     }
 }
 
@@ -457,7 +477,14 @@ AW_window *AWT_create_nds_window(AW_root *aw_root, GBDATA *gb_main) {
         }
         aws->update_option_menu();
 
-        AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "nds", nds_store_config, nds_restore_config, 0, 0);
+        aws->at("use");
+        aws->create_option_menu(AWAR_NDS_USE_ALL, true);
+        aws->insert_default_option("Use all entries",          "", 1);
+        aws->insert_option        ("Only use visible entries", "", 0);
+        aws->update_option_menu();
+
+        aws->at("config");
+        AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "nds", makeStoreConfigCallback(nds_store_config), makeRestoreConfigCallback(nds_restore_config, gb_main));
 
         // --------------------
 
@@ -553,32 +580,41 @@ AW_window *AWT_create_nds_window(AW_root *aw_root, GBDATA *gb_main) {
 
 
 void make_node_text_init(GBDATA *gb_main) {
-    GBDATA *gbz, *gbe;
-    int     count;
-
     if (!awt_nds_ms) awt_nds_ms = (NodeTextBuilder *) GB_calloc(sizeof(NodeTextBuilder), 1);
 
-    GBDATA *gb_arb_presets = GB_search(gb_main, "arb_presets", GB_CREATE_CONTAINER);
-    count                  = 0;
+    GBDATA *gb_arb_presets    = GB_search(gb_main, "arb_presets", GB_CREATE_CONTAINER);
+    bool    only_visible_page = false;
+    int     page              = 0;
+    {
+        int all = *GBT_readOrCreate_int(gb_arb_presets, "all", 1);
+        if (!all) {
+            page              = *GBT_readOrCreate_int(gb_arb_presets, "page", 0);
+            only_visible_page = true;
+        }
+    }
 
-    for (gbz = GB_entry(gb_arb_presets, "viewkey"); gbz; gbz  = GB_nextEntry(gbz)) {
-        // toggle set ?
-        bool at_leaf  = *GBT_read_int(gbz, "leaf");
-        bool at_group = *GBT_read_int(gbz, "group");
+    int count = 0;
+    int idx   = 0;
+    for (GBDATA *gbz = GB_entry(gb_arb_presets, "viewkey"); gbz; gbz = GB_nextEntry(gbz), ++idx) {
+        bool use = !only_visible_page || (idx/NDS_PER_PAGE) == page;
+        if (use) {
+            // wanted NDS entry?
+            bool at_leaf  = *GBT_read_int(gbz, "leaf");
+            bool at_group = *GBT_read_int(gbz, "group");
 
+            if (at_leaf || at_group) {
+                freeset(awt_nds_ms->dkeys[count], GB_read_string(GB_entry(gbz, "key_text")));
 
-        if (at_leaf || at_group) {
-            freeset(awt_nds_ms->dkeys[count], GB_read_string(GB_entry(gbz, "key_text")));
+                awt_nds_ms->rek[count]      = (GB_first_non_key_char(awt_nds_ms->dkeys[count]) != 0);
+                awt_nds_ms->lengths[count]  = *GBT_read_int(gbz, "len1");
+                awt_nds_ms->at_leaf[count]  = at_leaf;
+                awt_nds_ms->at_group[count] = at_group;
 
-            awt_nds_ms->rek[count]      = (GB_first_non_key_char(awt_nds_ms->dkeys[count]) != 0);
-            awt_nds_ms->lengths[count]  = *GBT_read_int(gbz, "len1");
-            awt_nds_ms->at_leaf[count]  = at_leaf;
-            awt_nds_ms->at_group[count] = at_group;
-
-            gbe = GB_entry(gbz, "pars");
-            freenull(awt_nds_ms->parsing[count]);
-            if (gbe && GB_read_string_count(gbe)>1) awt_nds_ms->parsing[count] = GB_read_string(gbe);
-            count++;
+                GBDATA *gbe = GB_entry(gbz, "pars");
+                freenull(awt_nds_ms->parsing[count]);
+                if (gbe && GB_read_string_count(gbe)>1) awt_nds_ms->parsing[count] = GB_read_string(gbe);
+                count++;
+            }
         }
     }
     awt_nds_ms->show_errors = 10;
@@ -591,7 +627,7 @@ static char *quoted_if_containing_separator(const char *text, char separator) {
     return GBS_global_string_copy("\"%s\"", text);
 }
 
-const char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, NDS_Type mode, GBT_TREE *species, const char *tree_name) {
+const char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, NDS_Type mode, TreeNode *species, const char *tree_name) {
     awt_nds_ms->init_buffer();
 
     if (!gbd) {

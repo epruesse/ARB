@@ -4,30 +4,25 @@ UP	glossary.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
 SUB	color.hlp
-SUB	markcolor.hlp
+SUB	colorize.hlp
 SUB	tree_group.hlp
 
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		Colorize listed species
+TITLE		Colorize listed items
 
-OCCURRENCE	Species/Search&Query/More Functions/Set color of listed species
-                Genes/Search&Query/More Functions/Set color of listed genes
-                Organism/Search&Query/More Functions/Set color of listed organisms
+OCCURRENCE	ARB_NT/Species/Search and Query/More Functions/Set color of listed species
+                ARB_NT/Genome/Search and query/More Functions/Set color of listed genes
+                ARB_NT/Genome/Experiment/Search and query/More Functions/Set color of listed experiments
 
-DESCRIPTION     Sets an internal color flag ('ARB_color') for the currently listed items
-                (species, genes, organisms).
+DESCRIPTION     Sets the internal color flag ('ARB_color') of the currently listed items
+                (e.g. species, genes, ...) to the selected color group, when you press the
+                'Set color ...'-button.
 
-                If items are colored, they will be displayed colorized (i.e. in tree view,
-                in gene map, in editor, etc.
+NOTES           See LINK{color.hlp} for details about using color groups.
 
-NOTES		You can change the colors of the different color groups in the main color properties.
-                There are buttons named 'Edit color groups' (i.e. in
-                ARB_NTREE/Properties/Tree: Colors and fonts).
-
-                You might want to change the names of the different color groups to
-                something more meaningful.
+                Another possibility to colorize items is LINK{colorize.hlp}.
 
 EXAMPLES	None
 

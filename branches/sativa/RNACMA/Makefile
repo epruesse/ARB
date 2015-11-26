@@ -14,6 +14,7 @@ cma_cxxflags:= $(subst -Weffc++,,$(cma_cxxflags))
 cma_cxxflags:= $(subst -Wctor-dtor-privacy,,$(cma_cxxflags))
 cma_cxxflags:= $(subst -Wlogical-op,,$(cma_cxxflags))
 cma_cxxflags:= $(subst -Wunused-local-typedefs,,$(cma_cxxflags))
+cma_cxxflags:= $(cma_cxxflags) -Wno-deprecated-declarations
 cma_cflags:= $(subst -Wshadow,,$(cma_cflags))
 cma_cflags+= -Wno-unused-local-typedefs# this is included in -Wall
 endif
@@ -30,13 +31,13 @@ warn:
 ifeq ($(SUPPRESS_WARNINGS),1)
 	@echo "------------------------------------------------------------------------------------------"
 	@echo "Please note: Several compiler warnings have been disabled in RNACMA"
-	@echo "(namely -Weffc++, -Wctor-dtor-privacy, -Wlogical-op, -Wshadow, -Wunused-local-typedefs)"
-	@echo "to avoid Eigen spams here"
+	@echo "(namely -Weffc++, -Wctor-dtor-privacy, -Wlogical-op, -Wshadow, -Wunused-local-typedefs,"
+	@echo "  -Wdeprecated-declarations) to avoid Eigen spams here"
 	@echo "------------------------------------------------------------------------------------------"
 endif
 
 .cxx.o: warn
-	$(A_CXX) $(cma_cflags) $(cma_cxxflags) -c $<  $(CXX_INCLUDES)  $(POST_COMPILE)
+	$(A_CXX) $(cma_cflags) $(cma_cxxflags) -c $<  $(CXX_INCLUDES)  $(POST_COMPILE) $<
 
 
 $(CPP_OBJECTS) : Makefile

@@ -241,24 +241,13 @@ class DisplayFormat : virtual Noncopyable {
 
     mutable char *format_string;
 
-    static int calc_digits(long val) {
-        int digits;
-        if (val>0) digits      = log10(val)+1;
-        else if (val<0) digits = calc_digits(-val);
-        else digits            = 1;
-
-        cl_assert(digits>0);
-        
-        return digits;
-    }
-
     static char *make_format(size_t val) {
         int digits = calc_digits(val);
         return GBS_global_string_copy("%%%izu", digits);
     }
 
     static void calc_float_format(AP_FLOAT val, int& all, int& afterdot) {
-        int digits   = calc_digits(long(val));
+        int digits   = calc_signed_digits(long(val));
         afterdot = digits <=3 ? 5-digits-1 : 0;
         cl_assert(afterdot >= 0);
         all = digits+(afterdot ? (afterdot+1) : 0);

@@ -701,7 +701,7 @@ void gb_install_command_table(GBDATA *gb_main, struct GBL_command_table *table, 
         GBS_write_hash(Main->command_hash, table->command_identifier, (long)table->function);
     }
 
-    gb_assert((GBS_hash_count_elems(Main->command_hash)+1) == table_size);
+    gb_assert((GBS_hash_elements(Main->command_hash)+1) == table_size);
 }
 
 static char *gbs_search_second_x(const char *str) {
@@ -1260,11 +1260,26 @@ void TEST_GB_command_interpreter() {
         TEST_CI_ERROR_CONTAINS("acgt", "format(numleft)", "Unknown Parameter 'numleft' in command 'format'");
 
         // format_sequence
-        TEST_CI("acgt", "format_sequence(firsttab=5,tab=5,width=1,numleft=1)",
-                "1    a\n"
-                "2    c\n"
-                "3    g\n"
-                "4    t");
+        TEST_CI_ERROR_CONTAINS("acgt", "format_sequence(numright=5, numleft)", "You may only specify 'numleft' OR 'numright',  not both");
+
+        TEST_CI("acgtacgtacgtacg", "format_sequence(firsttab=5,tab=5,width=4,numleft=1)",
+                "1    acgt\n"
+                "5    acgt\n"
+                "9    acgt\n"
+                "13   acg");
+
+        TEST_CI("acgtacgtacgtacg", "format_sequence(firsttab=5,tab=5,width=4,numright=9)", // test EMBL sequence formatting
+                "     acgt         4\n"
+                "     acgt         8\n"
+                "     acgt        12\n"
+                "     acg         15");
+
+        TEST_CI("acgtacgtacgtac", "format_sequence(firsttab=5,tab=5,width=4,gap=2,numright=-1)", // autodetect width for 'numright'
+                "     ac gt  4\n"
+                "     ac gt  8\n"
+                "     ac gt 12\n"
+                "     ac    14");
+
         TEST_CI("acgt", "format_sequence(firsttab=0,tab=0,width=2,gap=1)",
                 "a c\n"
                 "g t");
@@ -1275,7 +1290,9 @@ void TEST_GB_command_interpreter() {
 
         TEST_CI_ERROR_CONTAINS("acgt", "format_sequence(nl=c)",     "Unknown Parameter 'nl=c' in command 'format_sequence'");
         TEST_CI_ERROR_CONTAINS("acgt", "format_sequence(forcenl=)", "Unknown Parameter 'forcenl=' in command 'format_sequence'");
-        // TEST_CI_ERROR_CONTAINS("acgt", "format(width=0)", "should_raise_some_error"); // @@@ crashes
+
+        TEST_CI_ERROR_CONTAINS("acgt", "format(width=0)",          "Illegal zero width");
+        TEST_CI_ERROR_CONTAINS("acgt", "format_sequence(width=0)", "Illegal zero width");
 
         // remove + keep
         TEST_CI_NOOP("acgtacgt",         "remove(-.)");

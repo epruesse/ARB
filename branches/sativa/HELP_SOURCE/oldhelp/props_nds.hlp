@@ -70,6 +70,23 @@ DESCRIPTION	Extracts data from the database entries of every species and
                         LINK{reg.hlp}) is displayed in the 'ACI SRT PROGRAM' subwindow.
                         The displayed strings can be modified by typing to the subwindows.
 
+SECTION		Sets of entries
+
+		NDS configuration is done using 10 visible entries. 
+		Using the 'Entries XX - YY' button
+		you can select which entry subset (of the overall 60 available entries) is shown in this window.
+		
+		For the resulting display information, you can use the next button to choose whether to
+
+			1. Use all entries (=default for backwards compatibility) or
+			2. Only use visible entries (recommended use)
+
+		If you choose 1., any activated entry (out of 1-60) is used to create the resulting display information.
+		Switching between entry subsets has no effect on result.
+
+		If you choose 2., only the entries currently displayed in the NDS window are used to 
+		create the resulting display information. You may use the 'Entries ...' button
+                to quickly switch between different display setups.
 
 NOTES		Strings generated using 'SRT' or 'ACI' and displayed at the
 		nodes are not stored in the database. You can use
@@ -80,7 +97,13 @@ NOTES		Strings generated using 'SRT' or 'ACI' and displayed at the
 
 EXAMPLES	None
 
-WARNINGS	None
+WARNINGS	The NDS setup is stored in the loaded ARB database.
+
+                You can use the config-manager to store/restore the currently edited 10 entries
+                into/from a named config. These configs will be stored in your account when
+                you save properties.
+                Such stored configs can be used to copy the NDS (e.g. from 'Entries 1-10' to 'Entries 11-20'
+                or from one ARB database to another).
 
 BUGS		None
 

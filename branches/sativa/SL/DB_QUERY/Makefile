@@ -8,7 +8,7 @@ $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .cxx.o:
-	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE) $<
 
 clean:
 	rm -f $(OBJECTS) *.a
@@ -34,6 +34,7 @@ db_query.o: db_query.h
 db_query.o: db_query_local.h
 db_query.o: $(ARBHOME)/INCLUDE/ad_cb.h
 db_query.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
+db_query.o: $(ARBHOME)/INCLUDE/ad_colorset.h
 db_query.o: $(ARBHOME)/INCLUDE/ad_prot.h
 db_query.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 db_query.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -44,6 +45,7 @@ db_query.o: $(ARBHOME)/INCLUDE/arb_msg.h
 db_query.o: $(ARBHOME)/INCLUDE/arb_progress.h
 db_query.o: $(ARBHOME)/INCLUDE/arb_sort.h
 db_query.o: $(ARBHOME)/INCLUDE/arb_str.h
+db_query.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 db_query.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 db_query.o: $(ARBHOME)/INCLUDE/arb_string.h
 db_query.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -69,6 +71,7 @@ db_query.o: $(ARBHOME)/INCLUDE/cb.h
 db_query.o: $(ARBHOME)/INCLUDE/cb_base.h
 db_query.o: $(ARBHOME)/INCLUDE/cbtypes.h
 db_query.o: $(ARBHOME)/INCLUDE/cxxforward.h
+db_query.o: $(ARBHOME)/INCLUDE/dbui.h
 db_query.o: $(ARBHOME)/INCLUDE/downcast.h
 db_query.o: $(ARBHOME)/INCLUDE/dupstr.h
 db_query.o: $(ARBHOME)/INCLUDE/gccver.h

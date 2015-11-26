@@ -1356,12 +1356,12 @@ static void emit(Word *wlist, Word *plist, long startline) {
 static void getdecl(FILE *f, const char *header) {
     // parse all function declarations and print to STDOUT
 
-    Word *wlist  = NULL;
+    Word *wlist                 = NULL;
     char  buf[80];
     int   sawsomething;
     long  startline;                                // line where declaration started
     int   oktoprint;
-    int   header_printed = 0;
+    int   header_printed        = 0;
 
     current_file = strdup(header);
 
@@ -1370,6 +1370,9 @@ static void getdecl(FILE *f, const char *header) {
 
     word_free(wlist);
     wlist = word_alloc("");
+
+    bool seen_static_or_inline = false;
+    bool seen__ATTR            = false;
 
     sawsomething  = 0;
     oktoprint     = 1;
@@ -1430,28 +1433,12 @@ static void getdecl(FILE *f, const char *header) {
             DEBUG_PRINT(buf);
             DEBUG_PRINT("'\n");
 
-            bool seen_static_or_inline = false;
-
-            while (!seen_static_or_inline) {
-                if (getsym(buf, f)<0) {
-                    DEBUG_PRINT("EOF in getdecl loop (behind prefix __ATTR__)\n");
-                    goto end;
-                }
-                if (strcmp(buf, "static") == 0 || strcmp(buf, "inline") == 0) {
-                    seen_static_or_inline = true;
-                }
-                else {
-                    DEBUG_PRINT("read over (behind prefix __ATTR__): '");
-                    DEBUG_PRINT(buf);
-                    DEBUG_PRINT("'\n");
-                }
-            }
+            seen__ATTR = true;
         }
 
-        if (oktoprint) {
-            if (strcmp(buf, "static") == 0 || strcmp(buf, "inline") == 0) {
-                oktoprint = 0;
-            }
+        if (strcmp(buf, "static") == 0 || strcmp(buf, "inline") == 0) {
+            seen_static_or_inline = true;
+            oktoprint = 0;
         }
 
 
@@ -1477,9 +1464,14 @@ static void getdecl(FILE *f, const char *header) {
                     if (w->string[0]==':' && w->string[1]==0) oktoprint = 0; // do not emit prototypes for member functions
                 }
 
-                if (oktoprint && !wantPrototypeFor(w->string)) { 
+                if (oktoprint && !wantPrototypeFor(w->string)) {
                     oktoprint = 0;                  // => do not emit prototype
                 }
+            }
+
+            if (seen__ATTR && oktoprint) {
+                DEBUG_PRINT("attempt to emit seen__ATTR (suppressed)");
+                oktoprint = 0;
             }
 
             if (oktoprint) {

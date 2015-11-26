@@ -11,11 +11,11 @@ SUB	translate_dna_2_pro.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Extract genes to gene-species
 
-OCCURRENCE      ARB_NT/Genes/Extract marked genes to alignment
-                ARB_GENE_MAP/Genes/Extract marked genes to alignment
+OCCURRENCE      ARB_NT/Genome/Extract marked genes/...
+                ARB_GENE_MAP/Genome/Extract marked genes/...
 
 DESCRIPTION	For every marked gene this command creates a so called
-		'gene-species'.
+		'gene-species' (see LINK{gene_species.hlp}).
 
 		Just enter the name of the alignment you like to create or
 		to add species to.

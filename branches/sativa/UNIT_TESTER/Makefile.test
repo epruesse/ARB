@@ -121,10 +121,10 @@ $(TEST_CODE) : $(SYMLIST) $(SYM2TESTCODE) Makefile.test Makefile.setup.local
 	../SOURCE_TOOLS/mv_if_diff $@.tmp $@
 
 $(TEST_OBJ) : $(TEST_CODE) $(INCLUDES)
-	$(A_CXX) $(cflags) $(cxxflags) -c $< -o $@ -I. $(POST_COMPILE) 
+	$(A_CXX) $(cflags) $(cxxflags) -c $< -o $@ -I. $(POST_COMPILE) $< 
 
 $(TEST_EXE) : $(TEST_OBJ) $(UNIT_TESTER_LIB) $(LINKDEPS)
-	$(LINK_EXECUTABLE) $@ $< $(UNIT_TESTER_LIB) -L../lib $(LINKLIST) $(EXECLIBS)
+	$(LINK_EXECUTABLE) $@ $< $(EXECLIBS) $(UNIT_TESTER_LIB) -L../lib $(LINKLIST)
 
 dump:
 	@echo "$(SEP) dump $(UNITLIBNAME)"
@@ -205,7 +205,9 @@ TOOLDIR=../bin
 $(DESTDIR)/test_TOOLS_arb_test_o.done : \
 	$(TOOLDIR)/arb_export_tree \
 	$(TOOLDIR)/arb_export_rates \
+	$(TOOLDIR)/arb_export_sequences \
 	$(TOOLDIR)/arb_probe \
+	$(TOOLDIR)/arb_probe_match \
 	$(TOOLDIR)/arb_dnarates \
 
 # force tests affected by changed pt-server:
@@ -213,6 +215,10 @@ $(DESTDIR)/test_MULTI_PROBE_MULTI_PROBE_a.done : $(TOOLDIR)/arb_pt_server
 $(DESTDIR)/test_AWTC_AWTC_a.done : $(TOOLDIR)/arb_pt_server
 $(DESTDIR)/test_TOOLS_arb_probe_o.done : $(TOOLDIR)/arb_pt_server
 $(DESTDIR)/test_TOOLS_arb_test_o.done : $(TOOLDIR)/arb_pt_server
+
+# help test depends on xslt processing
+XSLTDIR=../HELP_SOURCE
+$(DESTDIR)/test_HELP_SOURCE_arb_help2xml_o.done : $(XSLTDIR)/to_help.xsl $(XSLTDIR)/to_html.xsl
 
 endif
 

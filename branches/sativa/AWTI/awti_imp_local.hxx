@@ -27,12 +27,18 @@
 
 #define awti_assert(cond) arb_assert(cond)
 
-#define AWAR_FILE_BASE      "tmp/import/pattern"
-#define AWAR_FILE           AWAR_FILE_BASE"/file_name"
-#define AWAR_FORM           "tmp/import/form"
-#define AWAR_ALI            "tmp/import/alignment"
-#define AWAR_ALI_TYPE       "tmp/import/alignment_type"
-#define AWAR_ALI_PROTECTION "tmp/import/alignment_protection"
+// more awars defined at awti_import.hxx@AWAR_IMPORT
+#define AWAR_IMPORT_FILEBASE AWAR_IMPORT_TMP_PREFIX "pattern"
+#define AWAR_IMPORT_FILENAME AWAR_IMPORT_FILEBASE "/file_name"
+
+#define AWAR_IMPORT_FORMATBASE   AWAR_IMPORT_TMP_PREFIX "form"
+#define AWAR_IMPORT_FORMATNAME   AWAR_IMPORT_FORMATBASE "/file_name"
+#define AWAR_IMPORT_FORMATFILTER AWAR_IMPORT_FORMATBASE "/filter"
+#define AWAR_IMPORT_FORMATDIR    AWAR_IMPORT_FORMATBASE "/directory"
+
+#define AWAR_IMPORT_ALI            AWAR_IMPORT_TMP_PREFIX "alignment"
+#define AWAR_IMPORT_ALI_TYPE       AWAR_IMPORT_TMP_PREFIX "alignment_type"
+#define AWAR_IMPORT_ALI_PROTECTION AWAR_IMPORT_TMP_PREFIX "alignment_protection"
 
 #define AWTI_IMPORT_CHECK_BUFFER_SIZE 10000
 

@@ -9,7 +9,7 @@ SUB	gene_search.hlp
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		What are Marked Genes ?
+TITLE		What are Marked Genes?
 
 DESCRIPTION	All genes have a flag which can be set to FALSE or TRUE.
 		All genes with the flag set to TRUE are called marked
@@ -20,13 +20,13 @@ NOTES		None
 
 EXAMPLES	Mark one known gene:
 
-			1. Search for the Gene: <ARB_NT/Genes/Search>
+			1. Search for the Gene using LINK{gene_search.hlp}
 			2. Select the gene
 			3. Mark it
 
 		Mark a list of genes:
 
-			1. Search for the gene: <ARB_NT/Genes/search>
+			1. Search for the genes using LINK{gene_search.hlp}
 			2. Press <Mark Listed/Unmark Rest>
 
 WARNINGS	Be careful: The marked genes can be spread over several

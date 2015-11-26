@@ -90,6 +90,7 @@ struct AW_var_target {
 };
 
 void aw_update_all_window_geometry_awars(AW_root *awr);
+void AW_forget_all_window_geometry(AW_window *aww);
 
 #else
 #error aw_nawar.hxx included twice

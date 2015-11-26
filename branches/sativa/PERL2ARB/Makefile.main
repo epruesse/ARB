@@ -97,13 +97,13 @@ PERL_GCC:=$(shell perl -e 'print "$$^V\n";')___$(COMPILER_VERSION)
 WONT_COMPILE_CXX11:=$(findstring $(PERL_GCC),$(PERL_GCC_INCOMPAT))
 
 ifneq ('$(WONT_COMPILE_CXX11)','')
-	hacked_cflags:=$(subst -std=gnu++11,,$(cross_cflags))
+	hacked_cflags:=$(subst -std=gnu++11,,$(cflags4perl))
 else
-	hacked_cflags:=$(cross_cflags)
+	hacked_cflags:=$(cflags4perl)
 endif
 
-used_cflags:=$(subst -Weffc++,,$(hacked_cflags)) -Wno-literal-suffix $(CXX_INCLUDES)
-used_lflags:=$(cross_lflags)
+used_cflags:=$(subst -Weffc++,,$(hacked_cflags)) -Wno-literal-suffix -Wno-unused-parameter $(CXX_INCLUDES)
+used_lflags:=$(lflags4perl)
 
 MAKE_MAKEFILE=make_arbperl_makefile.pl
 

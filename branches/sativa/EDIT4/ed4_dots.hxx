@@ -17,7 +17,7 @@
 #endif
 
 void ED4_create_dot_missing_bases_awars(AW_root *aw_root, AW_default aw_def);
-void ED4_popup_dot_missing_bases_window(AW_window *editor_window, AW_CL, AW_CL);
+void ED4_popup_dot_missing_bases_window(AW_window *editor_window);
 
 #else
 #error ed4_dots.hxx included twice

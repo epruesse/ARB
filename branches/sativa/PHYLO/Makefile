@@ -8,7 +8,7 @@ $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .cxx.o:
-	$(A_CXX) $(cflags) $(cxxflags) -c $<  $(CXX_INCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) -c $<  $(CXX_INCLUDES) $(POST_COMPILE) $<
 
 clean:
 	rm -f $(OBJECTS) *.a
@@ -123,6 +123,7 @@ PH_filt.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+PH_filt.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/cb.h
 PH_filt.o: $(ARBHOME)/INCLUDE/cb_base.h
 PH_filt.o: $(ARBHOME)/INCLUDE/cbtypes.h

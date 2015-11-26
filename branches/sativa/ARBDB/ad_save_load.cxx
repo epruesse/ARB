@@ -159,7 +159,7 @@ static GB_ERROR gb_create_reference(const char *master) {
     if (out) {
         fprintf(out, "***** The following files may be a link to %s ********\n", fullmaster);
         fclose(out);
-        error = GB_set_mode_of_file(fullref, 00666);
+        error = GB_failedTo_error("create reference file", NULL, GB_set_mode_of_file(fullref, 00666));
     }
     else {
         error = GBS_global_string("Cannot create reference file '%s'\n"
@@ -181,7 +181,7 @@ static GB_ERROR gb_add_reference(const char *master, const char *changes) {
     if (out) {
         fprintf(out, "%s\n", fullchanges);
         fclose(out);
-        error = GB_set_mode_of_file(fullref, 00666);
+        error = GB_failedTo_error("append to reference files", NULL, GB_set_mode_of_file(fullref, 00666));
     }
     else {
         error = GBS_global_string("Cannot add your file '%s'\n"
@@ -413,14 +413,15 @@ static GB_BUFFER gb_bin_2_ascii(GBENTRY *gbe) {
 
 #define GB_PUT_OUT(c, out) do { if (c>=10) c+='A'-10; else c += '0'; putc(c, out); } while (0)
 
-static void gb_write_rek(FILE *out, GBCONTAINER *gbc, long deep, long big_hunk) {
+static void gb_write_rek(FILE *out, GBCONTAINER *gbc, long deep) {
     // used by ASCII database save
     long     i;
     char    *s;
     char     c;
     GBDATA  *gb;
     GB_CSTR  strng;
-    char    *key;
+
+    const char *key;
 
     for (gb = GB_child(gbc); gb; gb = GB_nextChild(gb)) {
         if (gb->flags.temporary) continue;
@@ -450,7 +451,7 @@ static void gb_write_rek(FILE *out, GBCONTAINER *gbc, long deep, long big_hunk) 
 
         if (gb->is_container()) {
             fprintf(out, "%%%c (%%\n", GB_read_flag(gb) ? '$' : '%');
-            gb_write_rek(out, gb->as_container(), deep+1, big_hunk);
+            gb_write_rek(out, gb->as_container(), deep+1);
             for (i=deep+1; i--;) putc('\t', out);
             fprintf(out, "%%) /*%s*/\n\n", GB_KEY(gb));
         }
@@ -730,9 +731,10 @@ static int gb_write_bin(FILE *out, GBCONTAINER *gbc, uint32_t version) {
     fwrite("keys", 4, 1, out);
 
     for (long i=1; i<Main->keycnt; i++) {
-        if (Main->keys[i].nref>0) {
-            gb_put_number(Main->keys[i].nref, out);
-            fprintf(out, "%s", Main->keys[i].key);
+        gb_Key &KEY = Main->keys[i];
+        if (KEY.nref>0) {
+            gb_put_number(KEY.nref, out);
+            fputs(KEY.key, out);
         }
         else {
             putc(0, out);       // 0 nref
@@ -929,7 +931,9 @@ GB_ERROR GB_MAIN_TYPE::save_as(const char *as_path, const char *savetype) {
 
     if (!error) {
         char *mappath        = NULL;
-        char *sec_path       = strdup(gb_overwriteName(as_path));
+	// unless saving to a fifo, we append ~ to the file name we write to,
+	// and move that file if and when everything has gone well
+        char *sec_path       = strdup(GB_is_fifo(as_path) ? as_path : gb_overwriteName(as_path));
         char *sec_mappath    = NULL;
         bool  dump_to_stdout = strchr(savetype, 'S');
         FILE *out            = dump_to_stdout ? stdout : fopen(sec_path, "w");
@@ -956,7 +960,7 @@ GB_ERROR GB_MAIN_TYPE::save_as(const char *as_path, const char *savetype) {
 
                 if (saveASCII) {
                     fprintf(out, "/*ARBDB ASCII*/\n");
-                    gb_write_rek(out, root_container, 0, 1);
+                    gb_write_rek(out, root_container, 0);
                     freedup(qs.quick_save_disabled, "Database saved in ASCII mode");
                     if (deleteQuickAllowed) error = gb_remove_all_but_main(this, as_path);
                 }
@@ -994,9 +998,14 @@ GB_ERROR GB_MAIN_TYPE::save_as(const char *as_path, const char *savetype) {
                     GB_unlink_or_warn(sec_path, NULL);
                 }
                 else {
-                    bool unlinkMapfiles       = false;
-                    error                     = GB_rename_file(sec_path, as_path);
-                    if (error) unlinkMapfiles = true;
+                    bool unlinkMapfiles = false;
+                    if (strcmp(sec_path, as_path) != 0) {
+		        error = GB_rename_file(sec_path, as_path);
+                    }
+		    
+                    if (error) {
+                        unlinkMapfiles = true;
+                    }
                     else if (sec_mappath) {
                         error             = GB_rename_file(sec_mappath, mappath);
                         if (!error) error = GB_set_mode_of_file(mappath, GB_mode_of_file(as_path)); // set mapfile to same mode ...
@@ -1123,7 +1132,7 @@ GB_ERROR GB_MAIN_TYPE::save_quick_as(const char *as_path) {
                     GB_ERROR sm_error = GB_set_mode_of_file(org_master, mode & ~(S_IWUSR | S_IWGRP | S_IWOTH));
                     if (sm_error) {
                         GB_warningf("%s\n"
-                                    "Ask your admin to remove write permissions from that master file.\n"
+                                    "Ask the owner to remove write permissions from that master file.\n"
                                     "NEVER delete or change it, otherwise your quicksaves will be rendered useless!", 
                                     sm_error);
                     }
@@ -1141,11 +1150,13 @@ GB_ERROR GB_MAIN_TYPE::save_quick_as(const char *as_path) {
                 if (!error) {
                     if ((uid_t)GB_getuid_of_file(full_path_of_source) != getuid()) {
                         GB_warningf("**** WARNING ******\n"
-                                    "   You now using a file '%s'\n"
-                                    "   which is owned by another user\n"
-                                    "   Please ask him not to delete this file\n"
-                                    "   If you don't trust him, don't save changes but\n"
-                                    "   the WHOLE database", full_path_of_source);
+                                    "   You are using the file '%s' \n"
+                                    "   as reference for your saved changes.\n"
+                                    "   That file is owned by ANOTHER USER.\n"
+                                    "   If that user deletes or overwrites that file, your saved\n"
+                                    "   changes will get useless (=they will be lost)!\n"
+                                    "   You should only 'save changes as' if you understand what that means.\n"
+                                    "   Otherwise use 'Save whole database as' NOW!", full_path_of_source);
                     }
 
                     GB_ERROR warning = gb_add_reference(full_path_of_source, as_path);

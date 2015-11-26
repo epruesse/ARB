@@ -71,6 +71,12 @@ inline void realloc_unleaked(T*& ptr, size_t new_size) {
 // helper to use char as array index:
 inline unsigned char safeCharIndex(char c) { return static_cast<unsigned char>(c); }
 
+struct charpLess { // sort type for set<char*> / map<char*, ...>
+    bool operator()(const char *n1, const char *n2) const {
+        return strcmp(n1, n2)<0;
+    }
+};
+
 #else
 #error dupstr.h included twice
 #endif // DUPSTR_H

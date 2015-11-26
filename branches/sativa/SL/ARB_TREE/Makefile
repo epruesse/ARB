@@ -10,10 +10,10 @@ $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .cxx.o:
-	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE) $<
 
 .c.o:
-	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE)
+	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE) $<
 
 clean:
 	rm -f $(OBJECTS) *.a
@@ -60,8 +60,8 @@ ARB_Tree.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ARB_Tree.o: $(ARBHOME)/INCLUDE/downcast.h
 ARB_Tree.o: $(ARBHOME)/INCLUDE/dupstr.h
 ARB_Tree.o: $(ARBHOME)/INCLUDE/gccver.h
-ARB_Tree.o: $(ARBHOME)/INCLUDE/RootedTree.h
 ARB_Tree.o: $(ARBHOME)/INCLUDE/smartptr.h
 ARB_Tree.o: $(ARBHOME)/INCLUDE/static_assert.h
 ARB_Tree.o: $(ARBHOME)/INCLUDE/test_global.h
+ARB_Tree.o: $(ARBHOME)/INCLUDE/TreeNode.h
 ARB_Tree.o: $(ARBHOME)/INCLUDE/ttypes.h

@@ -71,7 +71,7 @@ static char *ReplaceArgs(AW_root *awr, char *Action, GmenuItem *gmenuitem, int n
     char       *textvalue  = 0;
     const char *labelvalue = 0;
 
-    GmenuItemArg& currArg = gmenuitem->arg[number];
+    const GmenuItemArg& currArg = gmenuitem->arg[number];
 
     const char *symbol = currArg.symbol;
     int         type   = currArg.type;
@@ -213,15 +213,23 @@ static void GDE_freesequ(NA_Sequence *sequ) {
     }
 }
 
-NA_Alignment::NA_Alignment(GBDATA *gb_main_) {
-    memset(this, 0, sizeof(*this));
-
-    gb_main = gb_main_;
-    {
-        GB_transaction ta(gb_main);
-        alignment_name = GBT_get_default_alignment(gb_main);
-        alignment_type = GBT_get_alignment_type(gb_main, alignment_name);
-    }
+NA_Alignment::NA_Alignment(GBDATA *gb_main_)
+    : id(NULL),
+      description(NULL),
+      authority(NULL),
+      numelements(0),
+      maxnumelements(0),
+      maxlen(0),
+      rel_offset(0),
+      element(NULL),
+      numgroups(0),
+      group(NULL),
+      format(0),
+      gb_main(gb_main_)
+{
+    GB_transaction ta(gb_main);
+    alignment_name = GBT_get_default_alignment(gb_main);
+    alignment_type = GBT_get_alignment_type(gb_main, alignment_name);
 }
 
 NA_Alignment::~NA_Alignment() {
@@ -579,7 +587,7 @@ static char *preCreateTempfile(const char *name) {
     return fullname;
 }
 
-void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
+void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem) {
     gde_assert(!GB_have_error());
 
     AW_root   *aw_root      = aw->get_root();
@@ -680,7 +688,7 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
         for(int j=0; j<current_item->numoutputs; j++) Action = ReplaceFile(Action, current_item->output[j]);
 
         if (Find(Action, "$FILTER") == true) {
-            char *filter_name = AWT_get_combined_filter_name(aw_root, "gde");
+            char *filter_name = AWT_get_combined_filter_name(aw_root, AWAR_PREFIX_GDE_TEMP);
             Action            = ReplaceString(Action, "$FILTER", filter_name);
             free(filter_name);
         }

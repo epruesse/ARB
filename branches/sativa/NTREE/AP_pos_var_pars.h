@@ -40,20 +40,20 @@ class AP_pos_var : virtual Noncopyable {
     long           char_2_transition[256]; // a->1 c->2 g->4 ...
     long           char_2_transversion[256]; // y->1 r->2
 
-    long  getsize(GBT_TREE *tree); // size of tree
+    long  getsize(TreeNode *tree); // size of tree
     long  ali_len;              // max len of alignment
     long  is_dna;
     char *ali_name;
     char *tree_name;
 
-    const char *parsimony(GBT_TREE *tree, GB_UINT4 *bases = 0, GB_UINT4 *ltbases = 0);
+    const char *parsimony(TreeNode *tree, GB_UINT4 *bases = 0, GB_UINT4 *ltbases = 0);
 
 public:
 
     AP_pos_var(GBDATA *gb_main, char *ali_name, long ali_len, int isdna, char *tree_name);
     ~AP_pos_var();
 
-    GB_ERROR retrieve(GBT_TREE *tree);
+    GB_ERROR retrieve(TreeNode *tree);
     GB_ERROR delete_old_sai(const char *sai_name);
     GB_ERROR save_sai(const char *sai_name);
 };

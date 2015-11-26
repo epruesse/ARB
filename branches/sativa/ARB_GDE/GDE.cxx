@@ -14,6 +14,7 @@
 #include <arb_str.h>
 
 #include <cmath>
+#include <awt_config_manager.hxx>
 
 // AISC_MKPT_PROMOTE:#ifndef GDE_MENU_H
 // AISC_MKPT_PROMOTE:#include "GDE_menu.h"
@@ -28,13 +29,16 @@ static char GDEBLANK[] = "\0";
 
 #define SLIDERWIDTH 5           // input field width for numbers
 
+#define AWAR_GDE_ALIGNMENT   AWAR_PREFIX_GDE_TEMP "/alignment"
+#define AWAR_GDE_FILTER_NAME AWAR_PREFIX_GDE_TEMP "/filter/name"
+
 struct gde_iteminfo {
     GmenuItem *item;
     int        idx;
     gde_iteminfo(GmenuItem *item_, int idx_) : item(item_), idx(idx_) {}
 };
 
-static void GDE_showhelp_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /* cd */) {
+static void GDE_showhelp_cb(AW_window *aw, GmenuItem *gmenuitem) {
     if (gmenuitem->help) {
         AW_help_popup(aw, gmenuitem->help);
     }
@@ -57,20 +61,17 @@ static char *GDE_makeawarname_in(GmenuItem *gmenuitem, long i, const char *awar_
     return name;
 }
 
-char *GDE_makeawarname(GmenuItem *gmenuitem, long i) { return GDE_makeawarname_in(gmenuitem, i, "gde"); }
-char *GDE_maketmpawarname(GmenuItem *gmenuitem, long i) { return GDE_makeawarname_in(gmenuitem, i, "tmp/gde"); }
+char *GDE_makeawarname   (GmenuItem *gmenuitem, long i) { return GDE_makeawarname_in(gmenuitem, i, AWAR_PREFIX_GDE); }
+char *GDE_maketmpawarname(GmenuItem *gmenuitem, long i) { return GDE_makeawarname_in(gmenuitem, i, AWAR_PREFIX_GDE_TEMP); }
 
-static void GDE_slide_awar_int_cb(AW_window *aws, AW_CL cl_awar_name, AW_CL cd_diff)
-{
-    int      diff = (int)cd_diff;
-    AW_awar *awar = aws->get_root()->awar((const char *)cl_awar_name);
-
+static void GDE_slide_awar_int_cb(AW_window *aws, const char *awar_name, int diff) {
+    AW_awar *awar = aws->get_root()->awar(awar_name);
     awar->write_int(awar->read_int()+diff);
 }
-static void GDE_slide_awar_float_cb(AW_window *aws, AW_CL cl_awar_name, AW_CL cd_diff)
-{
-    double   diff    = *(double*)(char*)/*avoid aliasing problems*/cd_diff; 
-    AW_awar *awar    = aws->get_root()->awar((const char *)cl_awar_name);
+
+static void GDE_slide_awar_float_cb(AW_window *aws, const char *awar_name, int millidiff) {
+    AW_awar *awar    = aws->get_root()->awar(awar_name);
+    double   diff    = millidiff/1000.0;
     double   new_val = awar->read_float()+diff;
 
     if (fabs(new_val) < 0.0001) new_val = 0.0;
@@ -87,18 +88,18 @@ static void GDE_create_infieldwithpm(AW_window *aws, char *newawar, long width) 
     if (aws->get_root()->awar(newawar)->get_type() == AW_INT) {
         aws->button_length(3);
         char *awar = strdup(newawar);
-        aws->callback(GDE_slide_awar_int_cb, (AW_CL)awar, -1); aws->create_button(0, "-", "-");
-        aws->callback(GDE_slide_awar_int_cb, (AW_CL)awar, + 1); aws->create_button(0, "+", "+");
+        aws->callback(makeWindowCallback(GDE_slide_awar_int_cb, awar, -1)); aws->create_button(0, "-", "-");
+        aws->callback(makeWindowCallback(GDE_slide_awar_int_cb, awar, +1)); aws->create_button(0, "+", "+");
     }
     else if (aws->get_root()->awar(newawar)->get_type() == AW_FLOAT) {
         aws->button_length(3);
         char *awar = strdup(newawar);
-        aws->callback(GDE_slide_awar_float_cb, (AW_CL)awar, (AW_CL)new double(-0.1)); aws->create_button(0, "-", "-");
-        aws->callback(GDE_slide_awar_float_cb, (AW_CL)awar, (AW_CL)new double(+0.1)); aws->create_button(0, "+", "+");
+        aws->callback(makeWindowCallback(GDE_slide_awar_float_cb, awar, -100)); aws->create_button(0, "-", "-");
+        aws->callback(makeWindowCallback(GDE_slide_awar_float_cb, awar, +100)); aws->create_button(0, "+", "+");
     }
 }
 
-static char *gde_filter_weights(GBDATA *gb_sai, AW_CL) {
+static char *gde_filter_weights(GBDATA *gb_sai) {
     char   *ali_name = GBT_get_default_alignment(GB_get_root(gb_sai));
     GBDATA *gb_ali   = GB_entry(gb_sai, ali_name);
     char   *result   = 0;
@@ -135,7 +136,7 @@ static AW_window *GDE_create_filename_browser_window(AW_root *aw_root, const cha
     aws->load_xfig("sel_box.fig");
 
     aws->at("close");
-    aws->callback((AW_CB0) AW_POPDOWN);
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     AW_create_standard_fileselection(aws, awar_prefix);
@@ -143,23 +144,48 @@ static AW_window *GDE_create_filename_browser_window(AW_root *aw_root, const cha
     return aws;
 }
 
-static void GDE_popup_filename_browser(AW_window *aw, AW_CL cl_iteminfo, AW_CL cl_title) {
-    gde_iteminfo *info         = (gde_iteminfo*)cl_iteminfo;
-    GmenuItem    *gmenuitem    = info->item;
-    int           idx          = info->idx;
-    char         *base_awar    = GDE_maketmpawarname(gmenuitem, idx);
+static void GDE_popup_filename_browser(AW_window *aw, gde_iteminfo *info, const char *title) {
+    GmenuItem *gmenuitem = info->item;
+    int        idx       = info->idx;
+    char      *base_awar = GDE_maketmpawarname(gmenuitem, idx);
 
     static GB_HASH *popup_hash  = NULL;
     if (!popup_hash) popup_hash = GBS_create_hash(20, GB_MIND_CASE);
 
     AW_window *aw_browser = (AW_window*)GBS_read_hash(popup_hash, base_awar);
     if (!aw_browser) {
-        const char *title = (const char *)cl_title;
         aw_browser        = GDE_create_filename_browser_window(aw->get_root(), base_awar, title);
         GBS_write_hash(popup_hash, base_awar, (long)aw_browser);
     }
     aw_browser->activate();
     free(base_awar);
+}
+
+inline bool shall_store_in_config(const GmenuItemArg& itemarg) {
+    return itemarg.type != FILE_SELECTOR;
+}
+inline bool want_config_manager(GmenuItem *gmenuitem) {
+    for (int i=0; i<gmenuitem->numargs; i++) {
+        const GmenuItemArg& itemarg = gmenuitem->arg[i];
+        if (shall_store_in_config(itemarg)) return true;
+    }
+    return false;
+}
+static void setup_gde_config_def(AWT_config_definition& cdef, GmenuItem *gmenuitem) {
+    for (int i=0; i<gmenuitem->numargs; i++) {
+        const GmenuItemArg& itemarg = gmenuitem->arg[i];
+        if (shall_store_in_config(itemarg)) {
+            char *awar = GDE_makeawarname(gmenuitem, i);
+
+            gde_assert(awar);
+            gde_assert(itemarg.symbol);
+
+            if (awar) {
+                cdef.add(awar, itemarg.symbol);
+                free(awar);
+            }
+        }
+    }
 }
 
 static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
@@ -192,17 +218,21 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
         aws->auto_space(0, 10);
 
         aws->at("help");
-        aws->callback((AW_CB2)GDE_showhelp_cb, (AW_CL)gmenuitem, 0);
+        aws->callback(makeWindowCallback(GDE_showhelp_cb, gmenuitem));
         aws->create_button("GDE_HELP", "HELP", "H");
 
         aws->at("start");
-        aws->callback((AW_CB2)GDE_startaction_cb, (AW_CL)gmenuitem, 0);
+        aws->callback(makeWindowCallback(GDE_startaction_cb, gmenuitem));
         aws->create_button("GO", "GO", "O");
 
         aws->at("cancel");
-        aws->callback((AW_CB0)AW_POPDOWN);
+        aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
 
+        if (want_config_manager(gmenuitem)) {
+            aws->at("config");
+            AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, aws->window_defaults_name, makeConfigSetupCallback(setup_gde_config_def, gmenuitem));
+        }
 
         if (gmenuitem->numinputs>0) {
             switch (db_access.window_type) {
@@ -214,8 +244,8 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
 
                         aws->at("which_species");
                         aws->create_toggle_field(AWAR_GDE_SPECIES);
-                        aws->insert_toggle("all", "a", 0);
-                        aws->insert_default_toggle("marked",   "m", 1);
+                        aws->insert_toggle        ("all",    "a", 0);
+                        aws->insert_default_toggle("marked", "m", 1);
                         aws->update_toggle_field();
 
                         if (seqtype != 'N') {
@@ -227,26 +257,26 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
                     break;
                 }
                 case GDE_WINDOWTYPE_EDIT4:
-                    aws->at("topk"); aws->create_toggle("gde/top_area_kons");
-                    aws->at("middlek"); aws->create_toggle("gde/middle_area_kons");
-                    aws->at("topr"); aws->create_toggle("gde/top_area_remark");
-                    aws->at("middler"); aws->create_toggle("gde/middle_area_remark");
-                    aws->at("top"); aws->create_toggle("gde/top_area");
-                    aws->at("topsai"); aws->create_toggle("gde/top_area_sai");
-                    aws->at("toph"); aws->create_toggle("gde/top_area_helix");
-                    aws->at("middle"); aws->create_toggle("gde/middle_area");
+                    aws->at("topk");      aws->create_toggle("gde/top_area_kons");
+                    aws->at("middlek");   aws->create_toggle("gde/middle_area_kons");
+                    aws->at("topr");      aws->create_toggle("gde/top_area_remark");
+                    aws->at("middler");   aws->create_toggle("gde/middle_area_remark");
+                    aws->at("top");       aws->create_toggle("gde/top_area");
+                    aws->at("topsai");    aws->create_toggle("gde/top_area_sai");
+                    aws->at("toph");      aws->create_toggle("gde/top_area_helix");
+                    aws->at("middle");    aws->create_toggle("gde/middle_area");
                     aws->at("middlesai"); aws->create_toggle("gde/middle_area_sai");
-                    aws->at("middleh"); aws->create_toggle("gde/middle_area_helix");
+                    aws->at("middleh");   aws->create_toggle("gde/middle_area_helix");
                     break;
             }
 
             if (seqtype != '-') {
                 aws->at("compression");
                 aws->create_option_menu(AWAR_GDE_COMPRESSION, true);
-                aws->insert_option("none", "n", COMPRESS_NONE);
-                aws->insert_option("vertical gaps", "v", COMPRESS_VERTICAL_GAPS);
+                aws->insert_option        ("none",             "n", COMPRESS_NONE);
+                aws->insert_option        ("vertical gaps",    "v", COMPRESS_VERTICAL_GAPS);
                 aws->insert_default_option("columns w/o info", "i", COMPRESS_NONINFO_COLUMNS);
-                aws->insert_option("all gaps", "g", COMPRESS_ALL);
+                aws->insert_option        ("all gaps",         "g", COMPRESS_ALL);
                 aws->update_option_menu();
 
                 aws->button_length(12);
@@ -266,8 +296,7 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
 
 
         int labellength = 1;
-        long i;
-        for (i=0; i<gmenuitem->numargs; i++) {
+        for (int i=0; i<gmenuitem->numargs; i++) {
             if (!(gmenuitem->arg[i].label)) gmenuitem->arg[i].label = GDEBLANK;
 
             const char *label    = gmenuitem->arg[i].label;
@@ -291,14 +320,16 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
         aws->label_length(labellength);
         aws->auto_space(0, 0);
 
-        for (i=0; i<gmenuitem->numargs; i++) {
-            GmenuItemArg itemarg = gmenuitem->arg[i];
+        for (int i=0; i<gmenuitem->numargs; i++) {
+            const GmenuItemArg& itemarg = gmenuitem->arg[i];
 
             if (itemarg.type==SLIDER) {
-                char *newawar=GDE_makeawarname(gmenuitem, i);
+                char *newawar = GDE_makeawarname(gmenuitem, i);
+
                 if (int(itemarg.fvalue) == itemarg.fvalue &&
-                     int(itemarg.min) == itemarg.min &&
-                     int(itemarg.max) == itemarg.max) {
+                    int(itemarg.min) == itemarg.min &&
+                    int(itemarg.max) == itemarg.max)
+                {
                     aw_root->awar_int(newawar, (long)itemarg.fvalue, AW_ROOT_DEFAULT);
                 }
                 else {
@@ -382,15 +413,15 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
                 aws->label(itemarg.label);
                 aws->sens_mask(itemarg.active_mask);
                 aws->create_input_field(name_awar, 40);
-                aws->callback(GDE_popup_filename_browser, (AW_CL)new gde_iteminfo(gmenuitem, i), (AW_CL)strdup(itemarg.label));
+                aws->callback(makeWindowCallback(GDE_popup_filename_browser, new gde_iteminfo(gmenuitem, i), strdup(itemarg.label)));
                 aws->create_button("", "Browse");
 
                 free(name_awar);
                 free(base_awar);
             }
             else if (itemarg.type==CHOICE_TREE) {
-                char *defopt=itemarg.textvalue;
-                char *newawar=GDE_makeawarname(gmenuitem, i);
+                char *defopt  = itemarg.textvalue;
+                char *newawar = GDE_makeawarname(gmenuitem, i);
                 aw_root->awar_string(newawar, defopt, AW_ROOT_DEFAULT);
                 aws->sens_mask(itemarg.active_mask);
                 if (itemarg.label[0]) aws->create_button(NULL, itemarg.label);
@@ -398,8 +429,8 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
                 free(newawar);
             }
             else if (itemarg.type==CHOICE_SAI) {
-                char *defopt=itemarg.textvalue;
-                char *newawar=GDE_makeawarname(gmenuitem, i);
+                char *defopt  = itemarg.textvalue;
+                char *newawar = GDE_makeawarname(gmenuitem, i);
                 aw_root->awar_string(newawar, defopt, AW_ROOT_DEFAULT);
                 aws->sens_mask(itemarg.active_mask);
                 if (itemarg.label[0]) aws->create_button(NULL, itemarg.label);
@@ -413,7 +444,7 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
                 aw_root->awar_string(newawar, defopt, AW_ROOT_DEFAULT);
                 aws->sens_mask(itemarg.active_mask);
                 if (itemarg.label[0]) aws->create_button(NULL, itemarg.label);
-                AW_DB_selection *saisel = awt_create_SAI_selection_list(db_access.gb_main, aws, newawar, true, gde_filter_weights);
+                AW_DB_selection *saisel = awt_create_SAI_selection_list(db_access.gb_main, aws, newawar, true, makeSaiSelectionlistFilterCallback(gde_filter_weights));
                 free(newawar);
                 aw_root->awar(AWAR_GDE_ALIGNMENT)->add_callback(makeRootCallback(refresh_weights_sellist_cb, saisel));
             }
@@ -463,12 +494,14 @@ void GDE_load_menu(AW_window *awm, AW_active /*mask*/, const char *menulabel) {
 
         long num_items = menu[nmenu].numitems;
         for (long nitem=0; nitem<num_items; nitem++) {
-            GmenuItem *menuitem=&menu[nmenu].item[nitem];
+            GmenuItem *menuitem = &menu[nmenu].item[nitem];
             gde_assert(!menuitem->help || ARB_strBeginsWith(menuitem->help, "agde_"));
-            hotkey[0] = menuitem->meta;
-            awm->insert_menu_topic(menuitem->label, menuitem->label, hotkey,
-                                   menuitem->help, menuitem->active_mask,
-                                   AW_POPUP, (AW_CL)GDE_menuitem_cb, (AW_CL)menuitem);
+            hotkey[0]           = menuitem->meta;
+
+            if (!menuitem->popup) {
+                menuitem->popup = new WindowCallback(AW_window::makeWindowPopper(makeCreateWindowCallback(GDE_menuitem_cb, menuitem)));
+            }
+            awm->insert_menu_topic(menuitem->label, menuitem->label, hotkey, menuitem->help, menuitem->active_mask, *menuitem->popup);
         }
 
         if (!menulabel) {
@@ -481,16 +514,14 @@ void GDE_load_menu(AW_window *awm, AW_active /*mask*/, const char *menulabel) {
     }
 }
 
-struct gde_database_access db_access = { NULL, NULL, GDE_WINDOWTYPE_DEFAULT, 0, NULL};
+struct gde_database_access db_access = { NULL, NULL, GDE_WINDOWTYPE_DEFAULT, NULL};
 
-GB_ERROR GDE_init(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main, GDE_get_sequences_cb get_sequences, GDE_format_alignment_cb format_ali, gde_window_type window_type, AW_CL client_data) {
+GB_ERROR GDE_init(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main, GDE_get_sequences_cb get_sequences, GDE_format_alignment_cb format_ali, gde_window_type window_type) {
     db_access.get_sequences = get_sequences;
     db_access.format_ali    = format_ali;
     db_access.window_type   = window_type;
-    db_access.client_data   = client_data;
     db_access.gb_main       = gb_main;
 
-    aw_root->awar_string(AWAR_GDE_ALIGNMENT, "", aw_def);
 
     switch (db_access.window_type) {
         case GDE_WINDOWTYPE_EDIT4:
@@ -512,19 +543,15 @@ GB_ERROR GDE_init(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main, GDE_get_
             break;
     }
 
-    aw_root->awar_string(AWAR_DEFAULT_ALIGNMENT, "", db_access.gb_main);
-    
-    aw_root->awar_string(AWAR_GDE_FILTER_NAME,      "", aw_def);
-    aw_root->awar_string(AWAR_GDE_FILTER_FILTER,    "", aw_def);
-    aw_root->awar_string(AWAR_GDE_FILTER_ALIGNMENT, "", aw_def);
+    AW_awar *awar_defali = aw_root->awar_string(AWAR_DEFAULT_ALIGNMENT, "", db_access.gb_main);
+    aw_root->awar_string(AWAR_GDE_ALIGNMENT, "", aw_def)->map(awar_defali);
+
+    awt_create_filter_awars(aw_root, aw_def, AWAR_GDE_FILTER_NAME, AWAR_GDE_ALIGNMENT);
 
     aw_root->awar_int(AWAR_GDE_CUTOFF_STOPCODON, 0, aw_def);
     aw_root->awar_int(AWAR_GDE_SPECIES,          1, aw_def);
 
     aw_root->awar_int(AWAR_GDE_COMPRESSION, COMPRESS_NONINFO_COLUMNS, aw_def);
-
-    aw_root->awar(AWAR_GDE_ALIGNMENT)->map(AWAR_DEFAULT_ALIGNMENT);
-    aw_root->awar(AWAR_GDE_FILTER_ALIGNMENT)->map(AWAR_DEFAULT_ALIGNMENT);
 
     return LoadMenus();
 }

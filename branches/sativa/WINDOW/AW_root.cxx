@@ -26,11 +26,6 @@
 
 AW_root *AW_root::SINGLETON = NULL;
 
-void AW_system(AW_window *aww, const char *command, const char *auto_help_file) {
-    if (auto_help_file) AW_help_popup(aww, auto_help_file);
-    aw_message_if(GBK_system(command));
-}
-
 void AW_clock_cursor(AW_root *awr) {
     awr->prvt->set_cursor(0, 0, awr->prvt->clock_cursor);
 }
@@ -98,15 +93,18 @@ static void destroy_AW_root() {
 }
 
 
-bool AW_root::is_focus_callback(AW_RCB fcb) const { // eliminated in gtk-branch
-    return focus_callback_list && focus_callback_list->contains(makeRootCallback(fcb, AW_CL(0), AW_CL(0)));
-}
-
-AW_root::AW_root(const char *propertyFile, const char *program, bool no_exit, UserActionTracker *user_tracker, int */*argc*/, char ***/*argv*/) {
+AW_root::AW_root(const char *propertyFile, const char *program, bool no_exit, UserActionTracker *user_tracker, int */*argc*/, char ***/*argv*/)
+    : tracker(user_tracker),
+      changer_of_variable(0),
+      focus_follows_mouse(false),
+      number_of_toggle_fields(0),
+      number_of_option_menus(0),
+      disable_callbacks(false),
+      current_modal_window(NULL),
+      active_windows(0)
+{
     aw_assert(!AW_root::SINGLETON);                 // only one instance allowed
     AW_root::SINGLETON = this;
-
-    memset((char *)this, 0, sizeof(AW_root));
 
     prvt = new AW_root_Motif;
 
@@ -119,11 +117,29 @@ AW_root::AW_root(const char *propertyFile, const char *program, bool no_exit, Us
 }
 
 #if defined(UNIT_TESTS)
-AW_root::AW_root(const char *propertyFile) {
+AW_root::AW_root(const char *propertyFile)
+    : button_sens_list(NULL),
+      tracker(NULL),
+      prvt(NULL),
+      value_changed(false),
+      changer_of_variable(0),
+      y_correction_for_input_labels(0),
+      global_mask(0),
+      focus_follows_mouse(false),
+      number_of_toggle_fields(0),
+      number_of_option_menus(0),
+      program_name(NULL),
+      disable_callbacks(false),
+      current_modal_window(NULL),
+      active_windows(0),
+      font_width(0),
+      font_height(0),
+      font_ascent(0),
+      color_mode(AW_MONO_COLOR)
+{
     aw_assert(!AW_root::SINGLETON);                 // only one instance allowed
     AW_root::SINGLETON = this;
 
-    memset((char *)this, 0, sizeof(AW_root));
     init_variables(load_properties(propertyFile));
     atexit(destroy_AW_root); // do not call this before opening properties DB!
 }
@@ -148,7 +164,7 @@ AW_awar *AW_root::label_is_awar(const char *label) {
 }
 
 void AW_root::define_remote_command(AW_cb *cbs) {
-    if (cbs->contains(AW_CB(AW_POPDOWN))) {
+    if (cbs->contains(AnyWinCB(AW_POPDOWN))) {
         aw_assert(!cbs->get_cd1() && !cbs->get_cd2()); // popdown takes no parameters (please pass ", 0, 0"!)
     }
 
@@ -343,10 +359,8 @@ void AW_root::init_root(const char *programname, bool no_exit) {
 }
 
 AW_root::~AW_root() {
-    delete tracker; tracker = NULL;
-
-    AW_root_cblist::clear(focus_callback_list);
-    delete button_sens_list;    button_sens_list = NULL;
+    delete tracker;          tracker = NULL;
+    delete button_sens_list; button_sens_list = NULL;
 
     exit_root();
     exit_variables();
@@ -512,7 +526,7 @@ AW_awar *AW_root::awar_int(const char *var_name, long default_value, AW_default 
     return vs;
 }
 
-AW_awar *AW_root::awar_pointer(const char *var_name, void *default_value, AW_default default_file) {
+AW_awar *AW_root::awar_pointer(const char *var_name, GBDATA *default_value, AW_default default_file) {
     AW_awar *vs = awar_no_error(var_name);
     if (!vs) {
         default_file = check_properties(default_file);

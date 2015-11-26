@@ -37,7 +37,7 @@ AW_gc_manager SEC_graphic::init_devices(AW_window *aww, AW_device *device, AWT_c
                      SEC_GC_LOOP,
                      SEC_GC_MAX,
                      AW_GCM_DATA_AREA,
-                     makeWindowCallback(AWT_expose_cb, scr),
+                     makeGcChangedCallback(AWT_GC_changed_cb, scr),
                      false,
                      "#A1A1A1",
                      "LOOP$#247900",
@@ -241,240 +241,226 @@ GB_ERROR SEC_graphic::handleKey(AW_event_type event, AW_key_mod key_modifier, AW
     return error;
 }
 
-GB_ERROR SEC_graphic::handleMouse(AW_device *device, AW_event_type event, int button, AWT_COMMAND_MODE cmd, const Position& world, SEC_base *elem, int abspos) {
+GB_ERROR SEC_graphic::handleMouse(AW_device *device, AW_event_type event, int button, AWT_COMMAND_MODE cmd, const Position& world, SEC_base * const elem, int abspos) {
     GB_ERROR error = 0;
+
+    sec_assert(elem); // always contains the element targetted by the initial button-down
 
     // ------------------------------------------
     //      handle element dependent actions
 
-    if (elem) {
-        static Position start;      // click position on mouse down
+    static Position start;      // click position on mouse down
 
-        Position fixpoint = elem->get_fixpoint(); // of strand or loop
+    Position fixpoint = elem->get_fixpoint(); // of strand or loop
 
-        SEC_loop  *loop  = 0;
-        SEC_helix *helix = 0;
+    SEC_loop  *loop  = 0;
+    SEC_helix *helix = 0;
 
-        if (elem->getType() == SEC_HELIX) helix = static_cast<SEC_helix*>(elem);
-        else {
-            sec_assert(elem->getType() == SEC_LOOP);
-            loop = static_cast<SEC_loop*>(elem);
-        }
+    if (elem->getType() == SEC_HELIX) {
+        helix = static_cast<SEC_helix*>(elem);
+    }
+    else {
+        sec_assert(elem->getType() == SEC_LOOP);
+        loop = static_cast<SEC_loop*>(elem);
+    }
 
-        if (event == AW_Mouse_Press) start = world; // store start position
+    if (event == AW_Mouse_Press) start = world; // store start position
 
-        switch (cmd) {
-            case AWT_MODE_STRETCH: { // change constraints with mouse
-                static double start_size; // helix/loop size at start click
+    switch (cmd) {
+        case AWT_MODE_STRETCH: { // change constraints with mouse
+            static double start_size; // helix/loop size at start click
 
-                switch (event) {
-                    case AW_Mouse_Press:
-                        if (button == AW_BUTTON_LEFT) {
-                            start_size = elem->drawnSize();
-                            sec_root->set_show_constraints(elem->getType());
-                            exports.refresh = 1;
-                        }
-                        else { // right button -> reset constraints
-                            elem->setConstraints(0, 0);
-                            elem->sizeChanged();
-                            exports.refresh = 1;
-                            exports.save    = 1;
-                        }
-                        break;
-
-                    case AW_Mouse_Drag:
-                        if (button == AW_BUTTON_LEFT) {
-                            double dfix1 = Distance(fixpoint, start);
-                            double dfix2 = Distance(fixpoint, world);
-
-                            if (dfix1>0 && dfix2>0) {
-                                double factor   = dfix2/dfix1;
-                                double new_size = start_size*factor;
-
-                                elem->setDrawnSize(new_size);
-                                elem->sizeChanged();
-
-                                exports.refresh            = 1;
-                            }
-                        }
-                        break;
-
-                    case AW_Mouse_Release:
-                        sec_root->set_show_constraints(SEC_ANY_TYPE);
-                        exports.save = 1;
-                        break;
-
-                    default: sec_assert(0); break;
-                }
-                break;
-            }
-            case AWT_MODE_EDIT:  // edit constraints
-                if (button==AW_BUTTON_LEFT && event==AW_Mouse_Press) {
-                    error = change_constraints(elem);
-                    if (!error) {
+            switch (event) {
+                case AW_Mouse_Press:
+                    if (button == AW_BUTTON_LEFT) {
+                        start_size = elem->drawnSize();
+                        sec_root->set_show_constraints(elem->getType());
+                        exports.refresh = 1;
+                    }
+                    else { // right button -> reset constraints
+                        elem->setConstraints(0, 0);
                         elem->sizeChanged();
                         exports.save = 1;
                     }
-                }
-                break;
+                    break;
 
-            case AWT_MODE_ROTATE: { // rotate branches/loops
-                if (event == AW_Mouse_Release) {
+                case AW_Mouse_Drag:
+                    if (button == AW_BUTTON_LEFT) {
+                        double dfix1 = Distance(fixpoint, start);
+                        double dfix2 = Distance(fixpoint, world);
+
+                        if (dfix1>0 && dfix2>0) {
+                            double factor   = dfix2/dfix1;
+                            double new_size = start_size*factor;
+
+                            elem->setDrawnSize(new_size);
+                            elem->sizeChanged();
+
+                            exports.refresh = 1;
+                        }
+                    }
+                    break;
+
+                case AW_Mouse_Release:
+                    sec_root->set_show_constraints(SEC_ANY_TYPE);
+                    exports.save = 1;
+                    break;
+
+                default: sec_assert(0); break;
+            }
+            break;
+        }
+        case AWT_MODE_EDIT:  // edit constraints
+            if (button==AW_BUTTON_LEFT && event==AW_Mouse_Press) {
+                error = change_constraints(elem);
+                if (!error) {
+                    elem->sizeChanged();
                     exports.save = 1;
                 }
-                else {
-                    static Angle startClick; // angle between fixpoint (of loop or helix) and first-click
-                    static bool  rotateSubStructure; // whether to rotate the substructure below
-                    static vector<Angle> old; // old angles
+            }
+            break;
 
-                    if (loop && loop->is_root_loop()) fixpoint = loop->get_center();
+        case AWT_MODE_ROTATE: { // rotate branches/loops
+            if (event == AW_Mouse_Release) {
+                exports.save = 1;
+            }
+            else {
+                static Angle startClick; // angle between fixpoint (of loop or helix) and first-click
+                static bool  rotateSubStructure; // whether to rotate the substructure below
+                static vector<Angle> old; // old angles
 
-                    Angle fix2world(fixpoint, world);
+                if (loop && loop->is_root_loop()) fixpoint = loop->get_center();
 
-                    if (event == AW_Mouse_Press) {
-                        startClick = fix2world;
-                        old.clear();
-                        rotateSubStructure = (button == AW_BUTTON_LEFT);
+                Angle fix2world(fixpoint, world);
 
-                        if (loop) {
-                            old.push_back(loop->get_abs_angle());
-                            if (!rotateSubStructure) {
-                                for (SEC_strand_iterator strand(loop); strand; ++strand) {
-                                    if (strand->isRootsideFixpoint()) {
-                                        old.push_back(strand->get_helix()->get_abs_angle());
-                                    }
+                if (event == AW_Mouse_Press) {
+                    startClick = fix2world;
+                    old.clear();
+                    rotateSubStructure = (button == AW_BUTTON_LEFT);
+
+                    if (loop) {
+                        old.push_back(loop->get_abs_angle());
+                        if (!rotateSubStructure) {
+                            for (SEC_strand_iterator strand(loop); strand; ++strand) {
+                                if (strand->isRootsideFixpoint()) {
+                                    old.push_back(strand->get_helix()->get_abs_angle());
                                 }
                             }
-                        }
-                        else {
-                            old.push_back(helix->get_abs_angle());
-                            old.push_back(helix->outsideLoop()->get_abs_angle());
                         }
                     }
                     else {
-                        sec_assert(event == AW_Mouse_Drag);
-                        Angle diff = fix2world-startClick;
+                        old.push_back(helix->get_abs_angle());
+                        old.push_back(helix->outsideLoop()->get_abs_angle());
+                    }
+                }
+                else {
+                    sec_assert(event == AW_Mouse_Drag);
+                    Angle diff = fix2world-startClick;
 
-                        if (loop) {
-                            loop->set_abs_angle(old[0]+diff);
-                            if (!rotateSubStructure) {
-                                int idx = 1;
-                                for (SEC_strand_iterator strand(loop); strand; ++strand) {
-                                    if (strand->isRootsideFixpoint()) {
-                                        strand->get_helix()->set_abs_angle(old[idx++]);
-                                    }
+                    if (loop) {
+                        loop->set_abs_angle(old[0]+diff);
+                        if (!rotateSubStructure) {
+                            int idx = 1;
+                            for (SEC_strand_iterator strand(loop); strand; ++strand) {
+                                if (strand->isRootsideFixpoint()) {
+                                    strand->get_helix()->set_abs_angle(old[idx++]);
                                 }
                             }
                         }
-                        else {
-                            helix->set_abs_angle(old[0]+diff);
-                            if (!rotateSubStructure) helix->outsideLoop()->set_abs_angle(old[1]);
-                        }
-
-                        exports.refresh = 1;
-                        elem->orientationChanged();
                     }
+                    else {
+                        helix->set_abs_angle(old[0]+diff);
+                        if (!rotateSubStructure) helix->outsideLoop()->set_abs_angle(old[1]);
+                    }
+
+                    exports.refresh = 1;
+                    elem->orientationChanged();
                 }
-                break;
             }
+            break;
+        }
 
-            case AWT_MODE_SETROOT:  // set-root-mode / reset angles
-                if (event == AW_Mouse_Press) {
-                    if (button == AW_BUTTON_LEFT) { // set root
-                        if (loop) {
-                            sec_root->set_root(loop);
-                            exports.save = 1;
-                        }
-                        else error = "Please click on a loop to change the root";
-                    }
-                    else { // reset angles
-                        sec_assert(button == AW_BUTTON_RIGHT);
-                        elem->reset_angles();
-                        elem->orientationChanged();
+        case AWT_MODE_SETROOT:  // set-root-mode / reset angles
+            if (event == AW_Mouse_Press) {
+                if (button == AW_BUTTON_LEFT) { // set root
+                    if (loop) {
+                        sec_root->set_root(loop);
                         exports.save = 1;
                     }
+                    else error = "Please click on a loop to change the root";
                 }
-                break;
+                else { // reset angles
+                    sec_assert(button == AW_BUTTON_RIGHT);
+                    elem->reset_angles();
+                    elem->orientationChanged();
+                    exports.save = 1;
+                }
+            }
+            break;
 
-            case AWT_MODE_FOLD: { // fold/unfold helix
-                if (event == AW_Mouse_Press) {
-                    if (button == AW_BUTTON_LEFT) { // fold helix
-                        if (loop) {
-                            const char *helix_nr = sec_root->helixNrAt(abspos);
-                            if (helix_nr) {
-                                const size_t *p = sec_root->getHelixPositions(helix_nr);
-                                error           = sec_root->split_loop(p[0], p[1]+1, p[2], p[3]+1);
+        case AWT_MODE_FOLD: { // fold/unfold helix
+            if (event == AW_Mouse_Press) {
+                if (button == AW_BUTTON_LEFT) { // fold helix
+                    if (loop) {
+                        const char *helix_nr = sec_root->helixNrAt(abspos);
+                        if (helix_nr) {
+                            const size_t *p = sec_root->getHelixPositions(helix_nr);
+                            error           = sec_root->split_loop(p[0], p[1]+1, p[2], p[3]+1);
 
-                                if (!error) {
-                                    sec_root->nail_position(abspos);
-                                    exports.save = 1;
-                                }
-                            }
-                            else {
-                                error = GBS_global_string("No helix to fold at position %i", abspos);
-                            }
-                        }
-                        else {
-                            error = "Click on a loop region to fold a helix";
-                        }
-                    }
-                    else { // unfold helix
-                        sec_assert(button == AW_BUTTON_RIGHT);
-                        if (helix) {
-                            error = sec_root->unsplit_loop(helix->strandToRoot());
                             if (!error) {
                                 sec_root->nail_position(abspos);
                                 exports.save = 1;
                             }
                         }
                         else {
-                            error = "Right click on a helix to remove it";
+                            error = GBS_global_string("No helix to fold at position %i", abspos);
                         }
-                    }
-                }
-                break;
-            }
-            case AWT_MODE_CURSOR:
-            case AWT_MODE_PINFO:
-                elem = 0; // handle element-independent
-                break;
-            default: sec_assert(0); break;
-        }
-    }
-
-    // ---------------------------------------
-    //      action independent of element
-
-    if (!elem) {
-        switch (cmd) {
-            case AWT_MODE_CURSOR: // set cursor in ARB_EDIT4
-                if (event == AW_Mouse_Press) {
-                    if (abspos >= 0 && size_t(abspos) < sec_root->max_index()) {
-                        // sequence position in AWAR_SET_CURSOR_POSITION is starting with 0!
-                        aw_root->awar_int(AWAR_SET_CURSOR_POSITION)->write_int(abspos);
-                    }
-                }
-                break;
-
-            case AWT_MODE_PINFO: // display search pattern
-                if (event == AW_Mouse_Press) {
-                    if (button == AW_BUTTON_LEFT) {
-                        if (abspos >= 0 && size_t(abspos) < sec_root->max_index()) {
-                            sec_root->paintSearchPatternStrings(device, abspos, world.xpos()+1, world.ypos());
-                        }
-                        // don't refresh here!
                     }
                     else {
-                        sec_assert(button == AW_BUTTON_RIGHT);
-                        exports.refresh = 1; // simply refresh to remove drawn patterns
+                        error = "Click on a loop region to fold a helix";
                     }
                 }
-                break;
-
-            default:
-                break;
+                else { // unfold helix
+                    sec_assert(button == AW_BUTTON_RIGHT);
+                    if (helix) {
+                        error = sec_root->unsplit_loop(helix->strandToRoot());
+                        if (!error) {
+                            sec_root->nail_position(abspos);
+                            exports.save = 1;
+                        }
+                    }
+                    else {
+                        error = "Right click on a helix to remove it";
+                    }
+                }
+            }
+            break;
         }
-        return 0; // no error
+
+        case AWT_MODE_CURSOR: // set cursor in ARB_EDIT4
+            drag_target_detection(true);
+            if (abspos >= 0 && size_t(abspos) < sec_root->max_index()) {
+                // sequence position in AWAR_SET_CURSOR_POSITION is starting with 0!
+                aw_root->awar_int(AWAR_SET_CURSOR_POSITION)->write_int(abspos);
+            }
+            break;
+
+        case AWT_MODE_PINFO: // display search pattern
+            if (event == AW_Mouse_Press) {
+                if (button == AW_BUTTON_LEFT) {
+                    if (abspos >= 0 && size_t(abspos) < sec_root->max_index()) {
+                        sec_root->paintSearchPatternStrings(device, abspos, world.xpos()+1, world.ypos());
+                    }
+                    // don't refresh here!
+                }
+                else {
+                    sec_assert(button == AW_BUTTON_RIGHT);
+                    exports.refresh = 1; // simply refresh to remove drawn patterns
+                }
+            }
+            break;
+
+        default: sec_assert(0); break;
     }
 
     if (exports.save == 1) exports.refresh = 1;
@@ -490,14 +476,34 @@ void SEC_graphic::handle_command(AW_device *device, AWT_graphic_event& event) {
     }
     else {
         if (event.button() != AW_BUTTON_MIDDLE && event.cmd() != AWT_MODE_ZOOM) { // don't handle scroll + zoom
-            const AW_clicked_element *clicked = event.best_click();
-            if (clicked) {
-                SEC_base *elem   = reinterpret_cast<SEC_base*>(clicked->cd1());
-                int       abspos = clicked->cd2();
+            static SEC_base *elem   = NULL;
+            static int       abspos = -1;
 
-                Position world = device->rtransform(event.position());
-                error = handleMouse(device, event.type(), event.button(), event.cmd(), world, elem, abspos);
+            bool updateClicked = false;
+
+            if (event.type() == AW_Mouse_Press) updateClicked = true; // initial button-down
+            else if (event.cmd() == AWT_MODE_CURSOR) { // special modes which act identical in click/drag/release
+                updateClicked = true;
             }
+
+            if (updateClicked) {
+                // store information about clicked SEC_base
+                const AW_clicked_element *clicked = event.best_click();
+                if (clicked) {
+                    elem   = reinterpret_cast<SEC_base*>(clicked->cd1());
+                    abspos = clicked->cd2();
+                }
+                else {
+                    elem   = NULL;
+                }
+            }
+
+            if (elem) {
+                Position world = device->rtransform(event.position());
+                error          = handleMouse(device, event.type(), event.button(), event.cmd(), world, elem, abspos);
+            }
+
+            if (event.type() == AW_Mouse_Release) elem = NULL; // forget last clicked SEC_base
         }
     }
 
@@ -535,7 +541,7 @@ static void SEC_structure_changed_cb(GBDATA *gb_seq, SEC_graphic *gfx, GB_CB_TYP
     }
 }
 
-GB_ERROR SEC_graphic::load(GBDATA *, const char *, AW_CL, AW_CL) {
+GB_ERROR SEC_graphic::load(GBDATA *, const char *) {
     //! (Re-)Load secondary structure from database
 
     sec_assert(sec_root->get_db()->canDisplay()); // need a sequence loaded (to fix bugs in versions < 3)
@@ -666,7 +672,7 @@ GB_ERROR SEC_graphic::load(GBDATA *, const char *, AW_CL, AW_CL) {
     return err;
 }
 
-GB_ERROR SEC_graphic::save(GBDATA *, const char *, AW_CL, AW_CL) {
+GB_ERROR SEC_graphic::save(GBDATA *, const char *) {
     //! Save secondary structure to database
 
     if (!gb_struct) return 0;   // not loaded, so don't save
@@ -726,7 +732,7 @@ int SEC_graphic::check_update(GBDATA *) {
 
     if (db && db->canDisplay()) {
         if (update_requested & SEC_UPDATE_RELOAD) {
-            GB_ERROR error   = load(0, 0, 0, 0); // sets change_flag
+            GB_ERROR error   = load(NULL, NULL); // sets change_flag
             if (error) {
                 error = ta.close(error);
                 aw_message(error);
@@ -793,10 +799,6 @@ void SEC_graphic::show(AW_device *device) {
         device->text(SEC_GC_ECOLI, textToDisplay, 0, 0, 0, AW_SCREEN, 0);
         sec_root->set_last_drawed_cursor_position(LineVector(Origin, ZeroVector));
     }
-}
-
-void SEC_graphic::info(AW_device */*device*/, AW_pos /*x*/, AW_pos /*y*/, AW_clicked_line */*cl*/, AW_clicked_text */*ct*/) {
-    aw_message("INFO MESSAGE");
 }
 
 

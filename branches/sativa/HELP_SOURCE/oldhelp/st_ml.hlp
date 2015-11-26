@@ -10,32 +10,41 @@ UP	glossary.hlp
 
 TITLE		Column Statistic (Prototype)
 
-OCCURRENCE	ARB EDITOR
+OCCURRENCE	ARB_EDIT4/View/Activate column statistics
+                ARB_EDIT4/View/Disable column statistics
+                ARB_EDIT4/View/Toggle detailed Col.-Stat.
+                ARB_EDIT4/View/Set threshold for D.c.s.
 
-DESCRIPTION	Highlites unlikely bases in an alignment using the maximum
+DESCRIPTION	Highlights unlikely bases in an alignment using the maximum
 		likelihood technique.
-		As soon as the go button is pressed, the selected tree (by
-		ARB_NT) and all marked sequences are read. Then the relative
+
+		As soon as the go button is pressed, the tree selected in ARB_NT
+                and all marked sequences are read. Then the relative
 		likelihood for each base is calculated and transformed to
 		a number between 0 and 9. This number is translated into a color,
 		using the colors 'RANGE 0 ... RANGE 9'. The higher the number,
 		the more unlikely a particular base.
+
 		You may improve the output by selecting a valid column statistic,
 		which holds information about column dependent rates and base
 		frequencies.
 
-NOTES		The colors are not set correctly. Please set different 'CS' colors
-		<Props:Sequences: Colors and Fonts> and save them.
-		Without a powerfull computer only a small number of sequences can
-		be viewed.
-		The program assumes that your tree is correct.
+NOTES           To change the colors used for column statistics,
+                edit "RANGE 0" up to "RANGE 9" in LINK{color_props.hlp}.
+
+		All sequences that should be analyzed, have to be marked and
+		have to be members of the tree currently shown in the ARB main window!
+		The program assumes that your tree has good quality - if it does
+                not, results may be quite useless.
+
+                See also LINK{e4_background_priority.hlp}.
 
 WARNINGS	This is only a prototype, don't expect something perfect.
-		All sequences which should be analyzed should be marked and
-		in the tree shown by ARB_NT !!!!!
 
-BUGS		The colors are not set correctly by default.
-		The program can only be started once.
+		Without a powerful computer only a small number of sequences can
+		be viewed.
+
+BUGS		The program can only be started once.
 
 SECTION         Detailed column statistic
 

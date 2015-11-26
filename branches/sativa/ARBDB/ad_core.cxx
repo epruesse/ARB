@@ -277,6 +277,7 @@ GB_MAIN_TYPE::GB_MAIN_TYPE(const char *db_path)
       keys(NULL),
       key_2_index_hash(GBS_create_hash(ALLOWED_KEYS, GB_MIND_CASE)),
       key_clock(0),
+      mapped(false),
       last_updated(0),
       last_saved_time(0),
       last_saved_transaction(0),
@@ -361,7 +362,7 @@ GBENTRY *gb_make_entry(GBCONTAINER *father, const char *key, long index_pos, GBQ
 
     if (!keyq) keyq = gb_find_or_create_quark(Main, key);
 
-    long     gbm_index = GB_QUARK_2_GBMINDEX(Main, keyq);
+    long     gbm_index = quark2gbmindex(Main, keyq);
     GBENTRY *gbe       = (GBENTRY*)gbm_get_mem(sizeof(GBENTRY), gbm_index);
 
     GB_GBM_INDEX(gbe) = gbm_index;
@@ -423,7 +424,7 @@ GBCONTAINER *gb_make_container(GBCONTAINER * father, const char *key, long index
         GB_MAIN_TYPE *Main = GBCONTAINER_MAIN(father);
 
         if (!keyq) keyq   = gb_find_or_create_NULL_quark(Main, key);
-        long gbm_index    = GB_QUARK_2_GBMINDEX(Main, keyq);
+        long gbm_index    = quark2gbmindex(Main, keyq);
         gbc               = (GBCONTAINER *)gbm_get_mem(sizeof(GBCONTAINER), gbm_index);
         GB_GBM_INDEX(gbc) = gbm_index;
 
@@ -523,7 +524,7 @@ void gb_delete_entry(GBDATA*& gbd) {
 }
 
 static void gb_delete_main_entry(GBCONTAINER*& gb_main) {
-    GBQUARK sys_quark = gb_find_existing_quark(GB_MAIN(gb_main), GB_SYSTEM_FOLDER);
+    GBQUARK sys_quark = key2quark(GB_MAIN(gb_main), GB_SYSTEM_FOLDER);
 
     // Note: sys_quark may be 0 (happens when destroying client db which never established a connection).
     // In this case no system folder/quark has been created (and we do no longer try to create it)
@@ -720,7 +721,7 @@ void gb_create_key_array(GB_MAIN_TYPE *Main, int index) {
     gb_assert(index<Main->sizeofkeys);
 }
 
-long gb_create_key(GB_MAIN_TYPE *Main, const char *s, bool create_gb_key) {
+long gb_create_key(GB_MAIN_TYPE *Main, const char *key, bool create_gb_key) {
     long index;
     if (Main->first_free_key) {
         index = Main->first_free_key;
@@ -732,17 +733,24 @@ long gb_create_key(GB_MAIN_TYPE *Main, const char *s, bool create_gb_key) {
         gb_create_key_array(Main, (int)index+1);
     }
     if (Main->is_client()) {
-        long test_index = gbcmc_key_alloc(Main->gb_main(), s);
+        long test_index = gbcmc_key_alloc(Main->gb_main(), key);
         if (test_index != index) {
-            GBK_terminatef("Database corrupt (allocating quark '%s' in server failed)", s);
+            if (test_index == 0) { // comm error
+                GBK_terminatef("Allocating quark for '%s' failed (Reason: %s)", key, GB_await_error());
+            }
+            else {
+                GBK_terminatef("Database corrupt (allocating quark '%s' in server failed)", key);
+            }
         }
     }
     Main->keys[index].nref = 0;
 
-    if (s) {
-        Main->keys[index].key = strdup(s);
-        GBS_write_hash(Main->key_2_index_hash, s, index);
-        gb_assert(GBS_hash_count_elems(Main->key_2_index_hash) <= ALLOWED_KEYS);
+    if (key) {
+        if (!key[0]) GBK_terminate("Attempt to allocate empty key");
+
+        Main->keys[index].key = strdup(key);
+        GBS_write_hash(Main->key_2_index_hash, key, index);
+        gb_assert(GBS_hash_elements(Main->key_2_index_hash) <= ALLOWED_KEYS);
         if (Main->gb_key_data && create_gb_key) {
             gb_load_single_key_data(Main->gb_main(), (GBQUARK)index);
             // Warning: starts a big recursion
@@ -827,6 +835,8 @@ void gb_abort_transaction_local_rek(GBDATA*& gbd) {
 }
 
 GB_ERROR gb_commit_transaction_local_rek(GBDATA*& gbd, long mode, int *pson_created) {
+    // goes to header: __ATTR__USERESULT
+
     /* commit created / delete deleted
      *   mode   0   local     = server    or
      *              begin trans in client or

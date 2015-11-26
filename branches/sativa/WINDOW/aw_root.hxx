@@ -108,16 +108,13 @@ public:
     AW_active      global_mask;
     bool           focus_follows_mouse;
     GB_HASH       *hash_table_for_variables;
-    bool           variable_set_by_toggle_field;
     int            number_of_toggle_fields;
     int            number_of_option_menus;
     char          *program_name;
+    bool           disable_callbacks;
+    AW_window     *current_modal_window;
+    int            active_windows;
 
-    bool            disable_callbacks;
-    AW_window      *current_modal_window;
-    AW_root_cblist *focus_callback_list;
-
-    int  active_windows;
     void window_show();         // a window is set to screen
     void window_hide(AW_window *aww);
 
@@ -148,8 +145,6 @@ public:
     void add_timed_callback(int ms, const TimedCallback& tcb);
     void add_timed_callback_never_disabled(int ms, const TimedCallback& tcb);
 
-    bool is_focus_callback(AW_RCB fcb) const;
-
     AW_awar *awar(const char *awar);
     AW_awar *awar_no_error(const char *awar);
 
@@ -158,7 +153,7 @@ public:
     AW_awar *awar_string (const char *var_name, const char *default_value = "", AW_default default_file = AW_ROOT_DEFAULT);
     AW_awar *awar_int    (const char *var_name, long default_value = 0,         AW_default default_file = AW_ROOT_DEFAULT);
     AW_awar *awar_float  (const char *var_name, float default_value = 0.0,      AW_default default_file = AW_ROOT_DEFAULT);
-    AW_awar *awar_pointer(const char *var_name, void *default_value = NULL,     AW_default default_file = AW_ROOT_DEFAULT);
+    AW_awar *awar_pointer(const char *var_name, GBDATA *default_value = NULL,   AW_default default_file = AW_ROOT_DEFAULT);
 
     AW_awar *label_is_awar(const char *label); // returns awar, if label refers to one (used by buttons, etc.)
 
@@ -207,8 +202,6 @@ __ATTR__USERESULT_TODO inline GB_ERROR ARB_init_global_awars(AW_root *aw_root, A
 }
 
 inline AW_default get_AW_ROOT_DEFAULT() { return AW_root::SINGLETON->check_properties(NULL); }
-
-void AW_system(AW_window *aww, const char *command, const char *auto_help_file);
 
 #else
 #error aw_root.hxx included twice

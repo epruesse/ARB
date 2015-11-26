@@ -31,7 +31,7 @@
 #include <dupstr.h>
 #endif
 
-#if defined(_GLIBCXX_STRING)
+#if defined(_GLIBCXX_STRING) || defined(_LIBCPP_STRING)
 #define TESTS_KNOW_STRING
 #endif
 #ifdef ARBDB_BASE_H
@@ -1040,12 +1040,12 @@ namespace arb_test {
     inline match_expectation reported_error_contains(const char *error, const char *part) { return error ? that(error).does_contain(part) : that(error).does_differ_from_NULL(); }
 };
 
-#define TEST_EXPECT_ERROR_CONTAINS(call,part)         TEST_EXPECTATION        (reported_error_contains(call, part))
-#define TEST_EXPECT_ERROR_CONTAINS__BROKEN(call,part) TEST_EXPECTATION__BROKEN(reported_error_contains(call, part))
-#define TEST_EXPECT_ANY_ERROR(call)                   TEST_EXPECTATION        (reports_error(call))
-#define TEST_EXPECT_ANY_ERROR__BROKEN(call)           TEST_EXPECTATION__BROKEN(reports_error(call))
-#define TEST_EXPECT_NO_ERROR(call)                    TEST_EXPECTATION        (doesnt_report_error(call))
-#define TEST_EXPECT_NO_ERROR__BROKEN(call)            TEST_EXPECTATION__BROKEN(doesnt_report_error(call))
+#define TEST_EXPECT_ERROR_CONTAINS(call,part)         TEST_EXPECTATION               (reported_error_contains(call, part))
+#define TEST_EXPECT_ERROR_CONTAINS__BROKEN(call,part) TEST_EXPECTATION__BROKEN_SIMPLE(reported_error_contains(call, part))
+#define TEST_EXPECT_ANY_ERROR(call)                   TEST_EXPECTATION               (reports_error(call))
+#define TEST_EXPECT_ANY_ERROR__BROKEN(call)           TEST_EXPECTATION__BROKEN_SIMPLE(reports_error(call))
+#define TEST_EXPECT_NO_ERROR(call)                    TEST_EXPECTATION               (doesnt_report_error(call))
+#define TEST_EXPECT_NO_ERROR__BROKEN(call)            TEST_EXPECTATION__BROKEN_SIMPLE(doesnt_report_error(call))
 
 // --------------------------------------------------------------------------------
 
@@ -1237,6 +1237,10 @@ namespace arb_test {
 #define TEST_REJECT(cond)         TEST_EXPECTATION(that(cond).is_equal_to(false))
 #define TEST_REJECT__BROKEN(cond) TEST_EXPECTATION__BROKEN_SIMPLE(that(cond).is_equal_to(false))
 
+// test class Validity:
+#define TEST_VALIDITY(valid)             TEST_EXPECT_NULL((valid).why_not())
+#define TEST_VALIDITY__BROKEN(valid,why) TEST_EXPECT_NULL__BROKEN((valid).why_not(),why)
+
 // --------------------------------------------------------------------------------
 // the following macros only work when
 // - tested module depends on ARBDB and
@@ -1309,11 +1313,11 @@ namespace arb_test {
 
 // --------------------------------------------------------------------------------
 
-#ifdef ARBDBT_H
+#ifdef TREENODE_H
 
 namespace arb_test {
-    inline match_expectation expect_newick_equals(NewickFormat format, const GBT_TREE *tree, const char *expected_newick) {
-        char              *newick   = GBT_tree_2_newick(tree, format);
+    inline match_expectation expect_newick_equals(NewickFormat format, const TreeNode *tree, const char *expected_newick) {
+        char              *newick   = GBT_tree_2_newick(tree, format, false);
         match_expectation  expected = that(newick).is_equal_to(expected_newick);
         free(newick);
         return expected;
@@ -1321,12 +1325,12 @@ namespace arb_test {
     inline match_expectation saved_newick_equals(NewickFormat format, GBDATA *gb_main, const char *treename, const char *expected_newick) {
         expectation_group  expected;
         GB_transaction     ta(gb_main);
-        GBT_TREE          *tree = GBT_read_tree(gb_main, treename, GBT_TREE_NodeFactory());
+        TreeNode          *tree = GBT_read_tree(gb_main, treename, new SimpleRoot);
 
         expected.add(that(tree).does_differ_from_NULL());
         if (tree) {
             expected.add(expect_newick_equals(format, tree, expected_newick));
-            delete tree;
+            destroy(tree);
         }
         return all().ofgroup(expected);
     }
@@ -1340,13 +1344,13 @@ namespace arb_test {
 
 #else
 
-#define WARN_MISS_ARBDBT() need_include__arbdbt_h__BEFORE__test_unit_h
+#define WARN_MISS_ADTREE() need_include__TreeNode_h__BEFORE__test_unit_h
 
-#define TEST_EXPECT_NEWICK(format,tree,expected_newick)         WARN_MISS_ARBDBT()
-#define TEST_EXPECT_NEWICK__BROKEN(format,tree,expected_newick) WARN_MISS_ARBDBT()
+#define TEST_EXPECT_NEWICK(format,tree,expected_newick)         WARN_MISS_ADTREE()
+#define TEST_EXPECT_NEWICK__BROKEN(format,tree,expected_newick) WARN_MISS_ADTREE()
 
-#define TEST_EXPECT_SAVED_NEWICK(format,gb_main,treename,expected_newick)         WARN_MISS_ARBDBT()
-#define TEST_EXPECT_SAVED_NEWICK__BROKEN(format,gb_main,treename,expected_newick) WARN_MISS_ARBDBT()
+#define TEST_EXPECT_SAVED_NEWICK(format,gb_main,treename,expected_newick)         WARN_MISS_ADTREE()
+#define TEST_EXPECT_SAVED_NEWICK__BROKEN(format,gb_main,treename,expected_newick) WARN_MISS_ADTREE()
 
 #endif
 

@@ -331,8 +331,7 @@ int ReadArbdb2(NA_Alignment& dataset, AP_filter *filter, GapCompression compress
     long     maxalignlen;
     long     numberspecies = 0;
 
-    char *error = db_access.get_sequences(db_access.client_data,
-                                          the_species, the_names, the_sequences,
+    char *error = db_access.get_sequences(the_species, the_names, the_sequences,
                                           numberspecies, maxalignlen);
 
     gde_assert(contradicted(the_species, the_names));

@@ -45,8 +45,8 @@ menu:Align
 menumeta:A
 #include <align.genmenu>
 
-menu:User
-menumeta:U
+menu:Network
+menumeta:N
 #include <start_arb.genmenu>
 
 menu:SAI
@@ -66,11 +66,11 @@ menu:Phylogeny max. parsimony
 menumeta:p
 #include <phylip_pars.genmenu>
 
-menu:Phylogeny max. Likelyhood EXP
+menu:Phylogeny max. Likelihood EXP
 menumeta:X
 #include <fastdnaml.genmenu>
 
-menu:Phylogeny max. Likelyhood
+menu:Phylogeny max. Likelihood
 menumeta:L
 #define RAXML_DNA
 #include <raxml.genmenu>
@@ -90,4 +90,9 @@ menu:Phylogeny (Other)
 menumeta:O
 #include <puzzle.genmenu>
 #include <desoete.genmenu>
+
+// custom menu 'User' is loaded into 'Tools'-menu 
+// (has no members by default; meant to be used from custom .menu definitions)
+menu:User
+menumeta:U
 

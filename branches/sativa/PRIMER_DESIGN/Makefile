@@ -19,7 +19,7 @@ $(MAIN): $(CPP_OBJECTS)
 	$(LINK_EXECUTABLE) $@ PRD_main.o $(MAIN) $(EXECLIBS)
 
 .cxx.o:
-	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE) $<
 
 clean:
 	rm -f $(CPP_OBJECTS) *.a

@@ -3,11 +3,7 @@
 .SUFFIXES: .o .c .cxx .depend
 
 C_OBJECTS = 
-CPP_OBJECTS = \
-	AP_seq_dna.o \
-	AP_seq_protein.o \
-	AP_seq_simple_pro.o \
-	AP_sequence.o \
+CPP_OBJECTS = $(subst .cxx,.o,$(wildcard *.cxx))
 
 OBJECTS=$(C_OBJECTS) $(CPP_OBJECTS)
 
@@ -15,10 +11,10 @@ $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .cxx.o:
-	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE) $<
 
 .c.o:
-	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE)
+	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE) $<
 
 clean:
 	rm -f $(OBJECTS) *.a
@@ -40,7 +36,6 @@ depend.init:
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl (from SL)
 
-AP_seq_dna.o: AP_parsimony_defaults.hxx
 AP_seq_dna.o: AP_seq_dna.hxx
 AP_seq_dna.o: AP_sequence.hxx
 AP_seq_dna.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -64,12 +59,11 @@ AP_seq_dna.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AP_seq_dna.o: $(ARBHOME)/INCLUDE/downcast.h
 AP_seq_dna.o: $(ARBHOME)/INCLUDE/dupstr.h
 AP_seq_dna.o: $(ARBHOME)/INCLUDE/gccver.h
-AP_seq_dna.o: $(ARBHOME)/INCLUDE/RootedTree.h
 AP_seq_dna.o: $(ARBHOME)/INCLUDE/smartptr.h
 AP_seq_dna.o: $(ARBHOME)/INCLUDE/static_assert.h
 AP_seq_dna.o: $(ARBHOME)/INCLUDE/test_global.h
+AP_seq_dna.o: $(ARBHOME)/INCLUDE/TreeNode.h
 
-AP_seq_protein.o: AP_parsimony_defaults.hxx
 AP_seq_protein.o: AP_seq_protein.hxx
 AP_seq_protein.o: AP_sequence.hxx
 AP_seq_protein.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -93,10 +87,10 @@ AP_seq_protein.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AP_seq_protein.o: $(ARBHOME)/INCLUDE/downcast.h
 AP_seq_protein.o: $(ARBHOME)/INCLUDE/dupstr.h
 AP_seq_protein.o: $(ARBHOME)/INCLUDE/gccver.h
-AP_seq_protein.o: $(ARBHOME)/INCLUDE/RootedTree.h
 AP_seq_protein.o: $(ARBHOME)/INCLUDE/smartptr.h
 AP_seq_protein.o: $(ARBHOME)/INCLUDE/static_assert.h
 AP_seq_protein.o: $(ARBHOME)/INCLUDE/test_global.h
+AP_seq_protein.o: $(ARBHOME)/INCLUDE/TreeNode.h
 
 AP_seq_simple_pro.o: AP_seq_simple_pro.hxx
 AP_seq_simple_pro.o: AP_sequence.hxx
@@ -120,10 +114,10 @@ AP_seq_simple_pro.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AP_seq_simple_pro.o: $(ARBHOME)/INCLUDE/downcast.h
 AP_seq_simple_pro.o: $(ARBHOME)/INCLUDE/dupstr.h
 AP_seq_simple_pro.o: $(ARBHOME)/INCLUDE/gccver.h
-AP_seq_simple_pro.o: $(ARBHOME)/INCLUDE/RootedTree.h
 AP_seq_simple_pro.o: $(ARBHOME)/INCLUDE/smartptr.h
 AP_seq_simple_pro.o: $(ARBHOME)/INCLUDE/static_assert.h
 AP_seq_simple_pro.o: $(ARBHOME)/INCLUDE/test_global.h
+AP_seq_simple_pro.o: $(ARBHOME)/INCLUDE/TreeNode.h
 
 AP_sequence.o: AP_sequence.hxx
 AP_sequence.o: $(ARBHOME)/INCLUDE/ad_prot.h

@@ -358,21 +358,25 @@ __ATTR__USERESULT static ARB_ERROR start_pt_server(const char *socket_name, cons
             if (update_reason) {
                 printf("- updating postree (Reason: %s)\n", update_reason);
 
+                char *quotedDatabaseArg = GBK_singlequote(GBS_global_string("-D%s", arbdb_name));
+
                 // run build_clean
-                char *cmd = GBS_global_string_copy("%s -build_clean -D%s", exename, arbdb_name);
+                char *cmd = GBS_global_string_copy("%s -build_clean %s", exename, quotedDatabaseArg);
                 make_valgrinded_call(cmd);
                 error           = GBK_system(cmd);
                 free(cmd);
 
                 // run build
                 if (!error) {
-                    cmd = GBS_global_string_copy("%s -build -D%s", exename, arbdb_name);
+                    cmd   = GBS_global_string_copy("%s -build %s", exename, quotedDatabaseArg);
                     make_valgrinded_call(cmd);
-                    error           = GBK_system(cmd);
+                    error = GBK_system(cmd);
                     free(cmd);
                 }
 
                 if (error) error = GBS_global_string("Failed to update postree (Reason: %s)", error.deliver());
+
+                free(quotedDatabaseArg);
             }
         }
         if (!error) {

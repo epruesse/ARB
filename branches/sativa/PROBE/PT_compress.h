@@ -179,6 +179,7 @@ public:
     }
 
     size_t get_size() const { return size; }
+    size_t get_allowed_size() const { return max_input_length; }
     const char *get_seq() const { return reinterpret_cast<const char *>(compressed); }
     const unsigned *get_offsets() const { return base_offset; }
 };

@@ -17,7 +17,6 @@
 #include <items.h>
 #include <GEN.hxx>
 #include <EXP.hxx>
-#include <aw_color_groups.hxx>
 #include <aw_msg.hxx>
 #include <arb_progress.h>
 #include <aw_question.hxx>
@@ -29,6 +28,7 @@
 #include <set>
 #include <string>
 #include <vector>
+#include <ad_colorset.h>
 
 using namespace std;
 
@@ -983,7 +983,7 @@ static GB_ERROR remove_dup_colors(GBDATA *gb_item, ItemSelector& IF_DEBUG(sel)) 
     // Databases out there may contain multiple 'ARB_color' entries.
     // Due to some already fixed bug - maybe introduced in r5309 and fixed in r5825
 
-    GBDATA   *gb_color = GB_entry(gb_item, AW_COLOR_GROUP_ENTRY);
+    GBDATA   *gb_color = GB_entry(gb_item, GB_COLORGROUP_ENTRY);
     GB_ERROR  error    = NULL;
 
 #if defined(DEBUG)
@@ -1006,7 +1006,7 @@ static GB_ERROR remove_dup_colors(GBDATA *gb_item, ItemSelector& IF_DEBUG(sel)) 
 
 #if defined(DEBUG)
     if (del_count) fprintf(stderr,
-                           "- deleted %i duplicated '" AW_COLOR_GROUP_ENTRY "' from %s '%s'\n",
+                           "- deleted %i duplicated '" GB_COLORGROUP_ENTRY "' from %s '%s'\n",
                            del_count,
                            sel.item_name,
                            sel.generate_item_id(GB_get_root(gb_item), gb_item));
@@ -1042,10 +1042,9 @@ GB_ERROR NT_repair_DB(GBDATA *gb_main) {
     return err;
 }
 
-void NT_rerepair_DB(AW_window*, AW_CL cl_gbmain, AW_CL) {
+void NT_rerepair_DB(AW_window*, GBDATA *gb_main) {
     // re-perform all DB checks
-    GBDATA   *gb_main = reinterpret_cast<GBDATA*>(cl_gbmain);
-    GB_ERROR  err     = 0;
+    GB_ERROR err = 0;
     {
         CheckedConsistencies check(gb_main);
         err = check.forgetDoneChecks();

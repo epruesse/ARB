@@ -69,6 +69,11 @@ NOT4PERL void GB_dump(GBDATA *gbd);
 NOT4PERL void GB_dump_no_limit(GBDATA *gbd);
 GB_ERROR GB_fix_database(GBDATA *gb_main);
 
+/* ad_cb.cxx */
+GBDATA *GB_get_gb_main_during_cb(void);
+NOT4PERL const void *GB_read_old_value(void);
+long GB_read_old_size(void);
+
 /* ad_load.cxx */
 void GB_set_verbose(void);
 void GB_set_next_main_idx(long idx);
@@ -115,6 +120,7 @@ char *GB_find_latest_file(const char *dir, const char *mask);
 char *GB_lib_file(bool warn_when_not_found, const char *libprefix, const char *filename);
 char *GB_property_file(bool warn_when_not_found, const char *filename);
 void GBS_read_dir(StrArray& names, const char *dir, const char *mask);
+const char *GB_get_arb_revision_tag(void);
 
 /* adhash.cxx */
 GB_HASH *GBS_create_hash(long estimated_elements, GB_CASE case_sens);
@@ -129,7 +135,7 @@ long GBS_incr_hash(GB_HASH *hs, const char *key);
 void GBS_free_hash(GB_HASH *hs);
 void GBS_hash_do_loop(GB_HASH *hs, gb_hash_loop_type func, void *client_data);
 void GBS_hash_do_const_loop(const GB_HASH *hs, gb_hash_const_loop_type func, void *client_data);
-size_t GBS_hash_count_elems(const GB_HASH *hs);
+size_t GBS_hash_elements(const GB_HASH *hs);
 const char *GBS_hash_next_element_that(const GB_HASH *hs, const char *last_key, bool (*condition)(const char *key, long val, void *cd), void *cd);
 void GBS_hash_do_sorted_loop(GB_HASH *hs, gb_hash_loop_type func, gbs_hash_compare_function sorter, void *client_data);
 int GBS_HCF_sortedByKey(const char *k0, long dummy_1x, const char *k1, long dummy_2x);
@@ -181,6 +187,7 @@ char *GBS_string_eval(const char *insource, const char *icommand, GBDATA *gb_con
 
 /* admath.cxx */
 double GB_log_fak(int n);
+void GB_random_seed(unsigned seed);
 int GB_random(int range);
 
 /* adoptimize.cxx */
@@ -395,21 +402,19 @@ GB_ERROR GB_commit_transaction(GBDATA *gbd);
 GB_ERROR GB_end_transaction(GBDATA *gbd, GB_ERROR error);
 void GB_end_transaction_show_error(GBDATA *gbd, GB_ERROR error, void (*error_handler)(GB_ERROR));
 int GB_get_transaction_level(GBDATA *gbd);
-GBDATA *GB_get_gb_main_during_cb(void);
-NOT4PERL const void *GB_read_old_value(void);
-long GB_read_old_size(void);
 GB_ERROR GB_release(GBDATA *gbd);
 int GB_nsons(GBDATA *gbd);
 void GB_disable_quicksave(GBDATA *gbd, const char *reason);
 GB_ERROR GB_resort_data_base(GBDATA *gb_main, GBDATA **new_order_list, long listsize);
 bool GB_user_flag(GBDATA *gbd, unsigned char user_bit);
-void GB_set_user_flag(GBDATA *gbd, unsigned char user_bit);
+void GB_raise_user_flag(GBDATA *gbd, unsigned char user_bit);
 void GB_clear_user_flag(GBDATA *gbd, unsigned char user_bit);
+void GB_write_user_flag(GBDATA *gbd, unsigned char user_bit, bool state);
 void GB_write_flag(GBDATA *gbd, long flag);
 int GB_read_flag(GBDATA *gbd);
 void GB_touch(GBDATA *gbd);
 char GB_type_2_char(GB_TYPES type);
-GB_ERROR GB_print_debug_information(void *, GBDATA *gb_main);
+void GB_print_debug_information(struct Unfixed_cb_parameter *, GBDATA *gb_main);
 int GB_info(GBDATA *gbd);
 long GB_number_of_subentries(GBDATA *gbd);
 

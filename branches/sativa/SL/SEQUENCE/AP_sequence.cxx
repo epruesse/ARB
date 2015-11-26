@@ -11,7 +11,7 @@
 #include "AP_sequence.hxx"
 #include <arbdbt.h>
 
-long AP_sequence::global_combineCount;
+long AP_sequence::global_combineCount = 0;
 
 AP_sequence::AP_sequence(const AliView *aliview)
     : cached_wbc(-1.0)

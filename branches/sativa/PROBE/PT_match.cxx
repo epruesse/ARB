@@ -24,58 +24,6 @@
 // overloaded functions to avoid problems with type-punning:
 inline void aisc_link(dll_public *dll, PT_probematch *match)   { aisc_link(reinterpret_cast<dllpublic_ext*>(dll), reinterpret_cast<dllheader_ext*>(match)); }
 
-class MismatchWeights {
-    const PT_bond *bonds;
-    double weight[PT_BASES][PT_BASES];
-
-    double get_simple_wmismatch(char probe, char seq) {
-        pt_assert(is_std_base(probe));
-        pt_assert(is_std_base(seq));
-
-        int complement = get_complement(probe);
-
-        int rowIdx = (complement-int(PT_A))*4;
-        int maxIdx = rowIdx + probe-(int)PT_A;
-        int newIdx = rowIdx + seq-(int)PT_A;
-
-        pt_assert(maxIdx >= 0 && maxIdx < 16);
-        pt_assert(newIdx >= 0 && newIdx < 16);
-
-        double max_bind = bonds[maxIdx].val;
-        double new_bind = bonds[newIdx].val;
-
-        return (max_bind - new_bind);
-    }
-
-    void init() {
-        for (int probe = PT_A; probe < PT_BASES; ++probe) {
-            double sum = 0.0;
-            for (int seq = PT_A; seq < PT_BASES; ++seq) {
-                sum += weight[probe][seq] = get_simple_wmismatch(probe, seq);
-            }
-            weight[probe][PT_N] = sum/4.0;
-        }
-        for (int seq = PT_N; seq < PT_BASES; ++seq) {
-            double sum = 0.0;
-            for (int probe = PT_A; probe < PT_BASES; ++probe) {
-                sum += weight[probe][seq];
-            }
-            weight[PT_N][seq] = sum/4.0;
-        }
-
-        for (int i = PT_N; i<PT_BASES; ++i) {
-            weight[PT_QU][i] = weight[PT_N][i];
-            weight[i][PT_QU] = weight[i][PT_N];
-        }
-        weight[PT_QU][PT_QU] = weight[PT_N][PT_N];
-    }
-
-public:
-    MismatchWeights(const PT_bond *bonds_) : bonds(bonds_) { init(); }
-    double get(int probe, int seq) const { return weight[probe][seq]; }
-};
-
-
 class MatchRequest;
 class Mismatches {
     MatchRequest& req;
@@ -163,7 +111,7 @@ void MatchRequest::init_accepted_N_mismatches(int ignored_Nmismatches, int when_
 
     accepted_N_mismatches[0] = 0;
     int mm;
-    for (mm = 1; mm<when_less_than_Nmismatches; ++mm) {
+    for (mm = 1; mm<when_less_than_Nmismatches; ++mm) { // LOOP_VECTORIZED
         accepted_N_mismatches[mm] = mm>ignored_Nmismatches ? mm-ignored_Nmismatches : 0;
     }
     pt_assert(mm <= (max_ambig+1));
@@ -402,7 +350,7 @@ static void pt_build_pos_to_weight(PT_MATCH_TYPE type, const char *sequence) {
     int slen = strlen(sequence);
     psg.pos_to_weight = new double[slen+1];
     int p;
-    for (p=0; p<slen; p++) {
+    for (p=0; p<slen; p++) { // LOOP_VECTORIZED=4 (no idea why this is instantiated 4 times. inline would cause 2)
         if (type == PT_MATCH_TYPE_WEIGHTED_PLUS_POS) {
             psg.pos_to_weight[p] = calc_position_wmis(p, slen, 0.3, 1.0);
         }
@@ -435,13 +383,13 @@ int probe_match(PT_local *locs, aisc_string probestring) {
     }
 #endif // DEBUG
 
-    int probe_len = strlen(probestring);
+    int  probe_len = strlen(probestring);
+    bool failed    = false;
     if (probe_len<MIN_PROBE_LENGTH) {
         pt_export_error(locs, GBS_global_string("Min. probe length is %i", MIN_PROBE_LENGTH));
-        return 0;
+        failed = true;
     }
-
-    {
+    else {
         int max_poss_mismatches = probe_len/2;
         pt_assert(max_poss_mismatches>0);
         if (locs->pm_max > max_poss_mismatches) {
@@ -449,38 +397,40 @@ int probe_match(PT_local *locs, aisc_string probestring) {
                                                     max_poss_mismatches,
                                                     max_poss_mismatches == 1 ? "" : "es",
                                                     probe_len));
-            return 0;
+            failed = true;
         }
     }
 
-    if (locs->pm_complement) {
-        complement_probe(probestring, probe_len);
+    if (!failed) {
+        if (locs->pm_complement) {
+            complement_probe(probestring, probe_len);
+        }
+        psg.reversed = 0;
+
+        freedup(locs->pm_sequence, probestring);
+        psg.main_probe = locs->pm_sequence;
+
+        pt_build_pos_to_weight((PT_MATCH_TYPE)locs->sort_by, probestring);
+
+        MatchRequest req(*locs, probe_len);
+
+        pt_assert(req.allowed_mismatches() >= 0); // till [8011] value<0 was used to trigger "new match" (feature unused)
+        Mismatches mismatch(req);
+        req.collect_hits_for(probestring, psg.TREE_ROOT2(), mismatch, 0);
+
+        if (locs->pm_reversed) {
+            psg.reversed  = 1;
+            char *rev_pro = create_reversed_probe(probestring, probe_len);
+            complement_probe(rev_pro, probe_len);
+            freeset(locs->pm_csequence, psg.main_probe = strdup(rev_pro));
+
+            Mismatches rev_mismatch(req);
+            req.collect_hits_for(rev_pro, psg.TREE_ROOT2(), rev_mismatch, 0);
+            free(rev_pro);
+        }
+        pt_sort_match_list(locs);
+        splits_for_match_overlay[locs] = Splits(locs);
     }
-    psg.reversed = 0;
-
-    freedup(locs->pm_sequence, probestring);
-    psg.main_probe = locs->pm_sequence;
-
-    pt_build_pos_to_weight((PT_MATCH_TYPE)locs->sort_by, probestring);
-
-    MatchRequest req(*locs, probe_len);
-
-    pt_assert(req.allowed_mismatches() >= 0); // till [8011] value<0 was used to trigger "new match" (feature unused)
-    Mismatches mismatch(req);
-    req.collect_hits_for(probestring, psg.TREE_ROOT2(), mismatch, 0);
-
-    if (locs->pm_reversed) {
-        psg.reversed  = 1;
-        char *rev_pro = create_reversed_probe(probestring, probe_len);
-        complement_probe(rev_pro, probe_len);
-        freeset(locs->pm_csequence, psg.main_probe = strdup(rev_pro));
-
-        Mismatches rev_mismatch(req);
-        req.collect_hits_for(rev_pro, psg.TREE_ROOT2(), rev_mismatch, 0);
-        free(rev_pro);
-    }
-    pt_sort_match_list(locs);
-    splits_for_match_overlay[locs] = Splits(locs);
     free(probestring);
 
     return 0;
@@ -612,7 +562,7 @@ const char *get_match_overlay(const PT_probematch *ml) {
                     int r = base_2_readable(ts);
                     if (is_std_base(ps) && is_std_base(ts)) {
                         double h = splits.check(ml->sequence[pr_pos], ts);
-                        if (h>=0.0) r = tolower(r);
+                        if (h>=0.0) r = tolower(r); // if mismatch does not split probe into two domains -> show as lowercase
                     }
                     pref[pr_pos] = r;
                 }

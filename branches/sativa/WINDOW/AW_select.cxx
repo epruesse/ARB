@@ -28,16 +28,17 @@ __ATTR__NORETURN inline void selection_type_mismatch(const char *triedType) { ty
 //      AW_selection_list
 
 
-AW_selection_list::AW_selection_list(const char *variable_namei, int variable_typei, Widget select_list_widgeti) {
-    // @@@ fix initialization
-    memset((char *)this, 0, sizeof(AW_selection_list));
-    variable_name          = nulldup(variable_namei);
-    variable_type          = (AW_VARIABLE_TYPE)variable_typei;
-    select_list_widget     = select_list_widgeti;
-    list_table             = NULL;
-    last_of_list_table     = NULL;
-    default_select         = NULL;
-}
+AW_selection_list::AW_selection_list(const char *variable_name_, int variable_type_, Widget select_list_widget_)
+    : variable_name(nulldup(variable_name_)),
+      variable_type(AW_VARIABLE_TYPE(variable_type_)),
+      update_cb(NULL),
+      cl_update(0),
+      select_list_widget(select_list_widget_),
+      list_table(NULL),
+      last_of_list_table(NULL),
+      default_select(NULL),
+      next(NULL)
+{}
 
 AW_selection_list::~AW_selection_list() {
     clear();
@@ -83,6 +84,15 @@ void AW_selection_list::update() {
 
     for (size_t i=0; i<count; i++) XmStringFree(strtab[i]);
     delete [] strtab;
+
+    if (update_cb) update_cb(this, cl_update);
+}
+
+void AW_selection_list::set_update_callback(sellist_update_cb ucb, AW_CL cl_user) {
+    aw_assert(!update_cb || !ucb); // overwrite allowed only with NULL!
+
+    update_cb = ucb;
+    cl_update = cl_user;
 }
 
 void AW_selection_list::refresh() {
@@ -649,7 +659,7 @@ GBDATA *AW_DB_selection::get_gb_main() {
 #define TEST_LIST_CONTENT(list,values,expected) do {    \
         StrArray a;                                     \
         (list).to_array(a, values);                     \
-        char *str = GBT_join_names(a, ';');             \
+        char *str = GBT_join_strings(a, ';');           \
         TEST_EXPECT_EQUAL(str, expected);               \
         free(str);                                      \
     } while(0)

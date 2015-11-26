@@ -99,10 +99,9 @@ static struct gbb_Cluster
 } gbb_cluster[GBB_CLUSTERS+1];
 
 
-NOT4PERL void *GB_calloc(unsigned int nelem, unsigned int elsize)
-{
-    size_t size = nelem*elsize;
-    void *mem = malloc(size);
+NOT4PERL void *GB_calloc(unsigned int nelem, unsigned int elsize) {
+    size_t  size = nelem*elsize;
+    void   *mem  = malloc(size);
 
     if (mem) {
         memset(mem, 0, size);

@@ -9,7 +9,6 @@ ARCHS = \
 #SAX_LIBRARY_NAME    = -lxerces-c
 
 #SUB_CFLAGS=$(cflags) $(SAX_INCLUDES) -DXML_USE_PTHREADS
-#SUB_LFLAGS=$(lflags) $(SAX_LIB_SEARCH_PATH) $(SAX_LIBRARY_NAME)
 
 include $(ARBHOME)/SOURCE_TOOLS/export2sub
 

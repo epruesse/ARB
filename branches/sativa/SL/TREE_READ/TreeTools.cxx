@@ -9,19 +9,20 @@
 // ============================================================ //
 
 #include "TreeRead.h"
+#include <TreeNode.h>
 
-void TREE_scale(GBT_TREE *tree, double length_scale, double bootstrap_scale) { // @@@ make a member of GBT_TREE?
+void TREE_scale(TreeNode *tree, double length_scale, double bootstrap_scale) {
     if (tree->leftson) {
         if (is_marked_as_default_len(tree->leftlen)) tree->leftlen  = DEFAULT_BRANCH_LENGTH;
         else                                         tree->leftlen *= length_scale;
 
-        TREE_scale(tree->leftson, length_scale, bootstrap_scale);
+        TREE_scale(tree->get_leftson(), length_scale, bootstrap_scale);
     }
     if (tree->rightson) {
         if (is_marked_as_default_len(tree->rightlen)) tree->rightlen  = DEFAULT_BRANCH_LENGTH;
         else                                          tree->rightlen *= length_scale;
 
-        TREE_scale(tree->rightson, length_scale, bootstrap_scale);
+        TREE_scale(tree->get_rightson(), length_scale, bootstrap_scale);
     }
 
     double bootstrap;
