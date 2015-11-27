@@ -86,6 +86,7 @@ GB_ERROR GB_save(GBDATA *gb, const char *path, const char *savetype);
 GB_ERROR GB_create_parent_directory(const char *path);
 GB_ERROR GB_create_directory(const char *path);
 GB_ERROR GB_save_in_arbprop(GBDATA *gb, const char *path, const char *savetype);
+const char *GB_get_supported_compression_flags(bool verboose);
 GB_ERROR GB_save_as(GBDATA *gbd, const char *path, const char *savetype);
 GB_ERROR GB_delete_database(GB_CSTR filename);
 GB_ERROR GB_save_quick_as(GBDATA *gbd, const char *path);

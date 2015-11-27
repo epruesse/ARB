@@ -85,6 +85,7 @@ void TEST_SLOW_ascii_2_bin_2_ascii() {
     const char *ascii      = "bin2ascii.arb";
     const char *binary     = "ascii2bin.arb";
     const char *binary_2ND = "ascii2bin2.arb";
+    const char *binary_3RD = "ascii2bin3.arb";
 
     // test that errors from _each_ part of a piped command propagate correctly:
     const char *failing_piped_cmds[] = {
@@ -95,6 +96,8 @@ void TEST_SLOW_ascii_2_bin_2_ascii() {
     for (unsigned c = 0; c<ARRAY_ELEMS(failing_piped_cmds); ++c) {
         TEST_EXPECT_ERROR_CONTAINS(RUN_TOOL(checkedPipeCommand(failing_piped_cmds[c])), "System call failed");
     }
+
+    TEST_RUN_TOOL("arb_2_ascii --help"); // checks proper documentation of available compression flags (in GB_get_supported_compression_flags)
 
     // test conversion file -> file
     TEST_RUN_TOOL(GBS_global_string("arb_2_bin   %s %s", ascii_ORG, binary));
@@ -110,11 +113,24 @@ void TEST_SLOW_ascii_2_bin_2_ascii() {
     TEST_RUN_TOOL(GBS_global_string("arb_2_ascii %s %s", binary_2ND, ascii));
     TEST_EXPECT_FILES_EQUAL(ascii, ascii_ORG);
 
+
+    // test same using compression (gzip and bzip2)
+    TEST_RUN_TOOL(checkedPipeCommand(GBS_global_string("arb_2_ascii -Cz %s - | arb_2_bin -CB - %s", binary, binary_3RD)));
+    // TEST_EXPECT_FILES_EQUAL(binary, binary_2ND); // can't compare binary files (they contain undefined bytes)
+    // instead convert back to ascii and compare result with original
+    TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(ascii));
+    TEST_RUN_TOOL(GBS_global_string("arb_2_ascii %s %s", binary_3RD, ascii));
+    TEST_EXPECT_FILES_EQUAL(ascii, ascii_ORG);
+
+    TEST_EXPECT_ERROR_CONTAINS(RUN_TOOL("arb_2_ascii -cq"), "System call failed"); // "Unknown compression flag 'q'"
+
     TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(ascii));
     TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(binary));
     TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(binary_2ND));
+    TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(binary_3RD));
     TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink("ascii2bin.ARF"));
     TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink("ascii2bin2.ARF"));
+    TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink("ascii2bin3.ARF"));
 }
 
 void TEST_arb_primer() {

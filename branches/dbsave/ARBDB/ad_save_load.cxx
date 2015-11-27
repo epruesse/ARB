@@ -16,6 +16,7 @@
 #include <arb_diff.h>
 #include <arb_zfile.h>
 #include <arb_defs.h>
+#include <arb_strbuf.h>
 
 #include "gb_key.h"
 #include "gb_map.h"
@@ -915,9 +916,26 @@ static GB_ERROR protect_corruption_error(const char *savepath) {
     return error;
 }
 
-#if defined(UNIT_TESTS)
-#define TESTED_COMPRESSION_FLAGS "zBx"
-#endif
+#define SUPPORTED_COMPRESSION_FLAGS "zBx"
+
+const char *GB_get_supported_compression_flags(bool verboose) {
+    if (verboose) {
+        GBS_strstruct doc(50);
+        for (int f = 0; SUPPORTED_COMPRESSION_FLAGS[f]; ++f) {
+            if (f) doc.cat(", ");
+            switch (SUPPORTED_COMPRESSION_FLAGS[f]) {
+                case 'z': doc.cat("z=gzip"); break;
+                case 'B': doc.cat("B=bzip2"); break;
+                case 'x': doc.cat("x=xz"); break;
+                default:
+                    gb_assert(0); // undocumented flag
+                    break;
+            }
+        }
+        return GBS_static_string(doc.get_data());
+    }
+    return SUPPORTED_COMPRESSION_FLAGS;
+}
 
 GB_ERROR GB_MAIN_TYPE::save_as(const char *as_path, const char *savetype) {
     /*! @see GB_save_as() */
@@ -957,9 +975,7 @@ GB_ERROR GB_MAIN_TYPE::save_as(const char *as_path, const char *savetype) {
                     error = "Multiple compression modes specified";
                 }
             }
-#if defined(UNIT_TESTS)
-            gb_assert(strchr(TESTED_COMPRESSION_FLAGS, supported[comp].flag)); // flag gets not tested -> add to TESTED_COMPRESSION_FLAGS
-#endif
+            gb_assert(strchr(SUPPORTED_COMPRESSION_FLAGS, supported[comp].flag)); // flag gets not tested -> add to SUPPORTED_COMPRESSION_FLAGS
         }
     }
 
@@ -1392,7 +1408,7 @@ void TEST_SLOW_loadsave() {
     SAVE_AND_COMPARE(gb_bin, "b2b.arb", "b", bin_db);
 
     // test extra database stream compression
-    const char *compFlag = TESTED_COMPRESSION_FLAGS;
+    const char *compFlag = SUPPORTED_COMPRESSION_FLAGS;
 
     int successful_compressed_saves = 0;
     for (int c = 0; compFlag[c]; ++c) {

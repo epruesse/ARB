@@ -331,6 +331,7 @@ ad_save_load.o: $(ARBHOME)/INCLUDE/arb_diff.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/arb_error.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/arb_file.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/arb_msg.h
+ad_save_load.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/arb_string.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/arb_zfile.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/arbtools.h
