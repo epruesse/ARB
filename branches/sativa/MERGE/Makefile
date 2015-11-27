@@ -267,6 +267,7 @@ MG_main.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/awt.hxx
+MG_main.o: $(ARBHOME)/INCLUDE/awt_misc.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/cb.h
 MG_main.o: $(ARBHOME)/INCLUDE/cb_base.h
 MG_main.o: $(ARBHOME)/INCLUDE/cbtypes.h

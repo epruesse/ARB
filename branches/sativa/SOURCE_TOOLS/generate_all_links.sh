@@ -258,6 +258,7 @@ symlink_file ../CORE/arb_sort.h INCLUDE/arb_sort.h &&
 symlink_file ../CORE/arb_strarray.h INCLUDE/arb_strarray.h &&
 symlink_file ../CORE/arb_strbuf.h INCLUDE/arb_strbuf.h &&
 symlink_file ../CORE/arb_string.h INCLUDE/arb_string.h &&
+symlink_file ../CORE/arb_zfile.h INCLUDE/arb_zfile.h &&
 symlink_file ../CORE/BufferedFileReader.h INCLUDE/BufferedFileReader.h &&
 symlink_file ../CORE/MultiFileReader.h INCLUDE/MultiFileReader.h &&
 symlink_file ../CORE/FileContent.h INCLUDE/FileContent.h &&

@@ -1289,6 +1289,7 @@ graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aisc_global.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/arb_assert.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/arb_core.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/arb_error.h
+graph_aligner_gui.o: $(ARBHOME)/INCLUDE/arb_misc.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/arb_msg.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/arb_string.h

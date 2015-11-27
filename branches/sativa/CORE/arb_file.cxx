@@ -91,6 +91,12 @@ bool GB_is_fifo(const char *path) {
     return stat(path, &stt) == 0 && S_ISFIFO(stt.st_mode);
 }
 
+bool GB_is_fifo(FILE *fp) {
+    if (!fp) return false;
+    struct stat stt;
+    return fstat(fileno(fp), &stt) == 0 && S_ISFIFO(stt.st_mode);
+}
+
 bool GB_is_executablefile(const char *path) {
     struct stat stt;
     bool        executable = false;
