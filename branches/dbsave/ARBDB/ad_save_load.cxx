@@ -924,6 +924,7 @@ const char *GB_get_supported_compression_flags(bool verboose) {
         for (int f = 0; SUPPORTED_COMPRESSION_FLAGS[f]; ++f) {
             if (f) doc.cat(", ");
             switch (SUPPORTED_COMPRESSION_FLAGS[f]) {
+                // Note: before changing produced format, see callers (esp. AWT_insert_DBcompression_selector)
                 case 'z': doc.cat("z=gzip"); break;
                 case 'B': doc.cat("B=bzip2"); break;
                 case 'x': doc.cat("x=xz"); break;
