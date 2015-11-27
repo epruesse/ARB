@@ -6,7 +6,7 @@
 # Purpose: Adapter script for SATIVA taxonomy validation pipeline           #
 #                                                                           #
 # Author: Alexey Kozlov (alexey.kozlov@h-its.org)                           # 
-#         2014 HITS gGmbH / Exelixis Lab                                    #
+#         2015 HITS gGmbH / Exelixis Lab                                    #
 #         http://h-its.org  http://www.exelixis-lab.org/                    #
 #                                                                           #
 #############################################################################
@@ -66,13 +66,15 @@ sub exportTaxonomy($$$$$\@) {
            }     
            my $tax = BIO::read_string($gb_species, $tax_field);
            $tax || expectError('read_string '.$tax_field);
-           my $species_name = BIO::read_string($gb_species, $sp_field);
            my $lineage = $tax;
            if (substr($lineage, -1) eq ';') {
              chop($lineage);
            }
-           if (defined $species_name) {
-             $lineage = $lineage.";".$species_name;
+           if ($sp_field) {
+             my $species_name = BIO::read_string($gb_species, $sp_field);
+             if (defined $species_name) {
+               $lineage = $lineage.";".$species_name;
+             }
            }
            
            print TAXFILE $acc_no."\t".$lineage."\n";
@@ -131,8 +133,8 @@ sub cpu_get_cores() {
     return $cores;
 }
 
-sub runPythonPipeline($$$$$) {
-  my ($seq_file,$tax_file,$dup_rank_names,$wrong_rank_count,$rank_test) = @_;
+sub runPythonPipeline($$$$$$$$$) {
+  my ($seq_file,$tax_file,$tax_code,$raxml_method,$num_reps,$conf_cutoff,$rand_seed,$rank_test,$verbose) = @_;
 
   my $refjson_file = 'arb_export.json';
   my $cfg_file = $sativa_home.'/epac.cfg.sativa';
@@ -146,23 +148,14 @@ sub runPythonPipeline($$$$$) {
 
   my $stime = time;
 
-  my $trainer_cmd = $sativa_home.'/epa_trainer.py';
-  system($trainer_cmd, '-t', $tax_file, '-s', $seq_file, '-r', $refjson_file, '-c', $cfg_file, '-T', $cores, '-no-hmmer', 
-    '-dup-rank-names', $dup_rank_names, '-wrong-rank-count', $wrong_rank_count, '-tmpdir', $tmpdir, '-C');
-    
-  $trainer_time = time - $stime;
+  my $sativa_cmd = $sativa_home.'/sativa.py';
+  my @args = ($sativa_cmd, '-t', $tax_file, '-s', $seq_file, '-c', $cfg_file, '-T', $cores, '-tmpdir', $tmpdir, 
+               '-N', $num_reps, '-x', $tax_code, '-m', $raxml_method, '-p', $rand_seed);
+  if ($rank_test == 1) { push(@args, "-ranktest"); }
+  if ($verbose == 1) { push(@args, "-v"); }
+  system(@args);
 
-  if (-e $refjson_file) {
-      $stime = time;
-      my $checker_cmd = $sativa_home.'/find_mislabels.py';
-      my @args = ($checker_cmd, '-r', $refjson_file, '-c', $cfg_file, '-T', $cores, '-v', '-tmpdir', $tmpdir);
-      if ($rank_test == 1) { push(@args, "-ranktest"); }
-      system(@args);
-      $mislabels_time = time - $stime;
-  }
-  else {
-      die "There was a problem running SATIVA (see messages above). Exiting..."
-  }
+#  $trainer_time = time - $stime;
 }
 
 # ------------------------------------------------------------
@@ -256,7 +249,7 @@ sub die_usage($) {
   my ($err) = @_;
   print "Purpose: Run SATIVA taxonomy validation pipeline\n";
   print "and import results back into ARB\n";
-  print "Usage: arb_sativa.pl [--marked-only] [--mark-misplaced] [--rank-test] tax_field [species_field]\n";
+  print "Usage: arb_sativa.pl [--marked-only] [--mark-misplaced] [--rank-test] tax_field tax_code num_reps raxml_method conf_cutoff rand_seed verbose species_field\n";
   print "       tax_field         Field contatining full (original) taxonomic path (lineage)\n";
   print "       species_field     Field containing species name\n";
   print "       --marked-only     Process only species that are marked in ARB (default: process all)\n";
@@ -272,25 +265,30 @@ sub main() {
 
   my $tax_file      = 'sativa_in.tax';
   my $seq_file      = 'sativa_in.phy';
-  my $res_file      = 'result.mis';
+  my $res_file      = 'sativa_in.mis';
 
   my $marked_only = 0;
   my $mark_misplaced = 0;
   my $rank_test = 0;
+  my $verbose = 0;
 
   while (substr($ARGV[0],0,2) eq '--') {
     my $arg = shift @ARGV;
     if ($arg eq '--marked-only') { $marked_only = 1; }
     elsif ($arg eq '--mark-misplaced') { $mark_misplaced = 1; }
     elsif ($arg eq '--rank-test') { $rank_test = 1; }
+    elsif ($arg eq '--verbose') { $verbose = 1; }
     else { die_usage("Unknown switch '$arg'"); }
     $args--;
   }
 
   my $tax_field  = shift @ARGV;
+  my $tax_code = shift @ARGV;
+  my $num_reps = shift @ARGV;
+  my $raxml_method = shift @ARGV;
+  my $conf_cutoff = shift @ARGV;
+  my $rand_seed = shift @ARGV;
   my $species_field = shift @ARGV;
-  my $dup_rank_names = shift @ARGV;
-  my $wrong_rank_count = shift @ARGV;
   
   my $field_suffix = $tax_field;
   $field_suffix =~ s/^tax\_//g;
@@ -302,12 +300,12 @@ sub main() {
 
   exportTaxonomy($seq_file,$tax_file,$tax_field,$species_field,$marked_only,@marklist);
 
-  runPythonPipeline($seq_file,$tax_file,$dup_rank_names,$wrong_rank_count,$rank_test);
+  runPythonPipeline($seq_file,$tax_file,$tax_code,$num_reps,$raxml_method,$conf_cutoff,$rand_seed,$rank_test,$verbose);
 
   importResults($res_file,$marked_only,$mark_misplaced,$field_suffix);
   
   my $total_time = time - $start_time;
-  print "Elapsed time: $total_time s (trainer: $trainer_time s, find_mislabels: $mislabels_time s)\n\n";
+#  print "Elapsed time: $total_time s (trainer: $trainer_time s, find_mislabels: $mislabels_time s)\n\n";
   
   print "Done!\n\n";
 }

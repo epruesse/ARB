@@ -1,14 +1,181 @@
 #!/usr/bin/env python
 
-#from epac.ete2 import Tree
+import sys
+import re
+from string import maketrans
 from ete2 import Tree
+
+class TaxCode:
+    UNI_TAX_RANKS = {
+         1: ("Domain", "d__"),
+         2: ("Kingdom", "k__"),
+         3: ("Subkingdom", "a__"),
+         4: ("Phylum", "p__"),
+         5: ("Subphylum", "a__"),
+         6: ("Class", "c__"),
+         7: ("Subclass", "x__"),
+         8: ("Superorder", "e__"),
+         9: ("Order", "o__"),
+         10: ("Suborder", "h__"),
+         11: ("Infraorder", "i__"),
+         12: ("Superfamily", "j__"),
+         13: ("Epifamily", "l__"),
+         14: ("Family", "f__"), 
+         15: ("Subfamily", "m__"),
+         16: ("Infrafamily", "n__"),
+         17: ("Tribe", "t__"),
+         18: ("Subtribe", "u__"),
+         19: ("Infratribe", "v__"), 
+         20: ("Genus", "g__"),
+         21: ("Species", "s__"),
+         22: ("Subspecies", "b__"),
+         23: ("Strain", "r__"),
+         24: ("Isolate", "q__")
+        }        
+    UNI_TAX_LEVELS = len(UNI_TAX_RANKS)
+    
+    # ranks of the standard 7-levels taxonomy
+    # kingdom, phylum, class, order, family, genus, species
+    STD_RANKS = [2, 4, 6, 9, 14, 20, 21]
+    
+    BAC_TAX_CODE = {
+         2: ((), ("bacteria", "archaea")),   # kingdom
+         4: ((), ()),                        # phylum
+         6: ((), ()),                        # class
+         7: (("idae"), ()),                  # subclass
+         9: (("ales"), ()),                  # order
+         10: (("ineae"), ()),                 # suborder
+         14: (("aceae"), ()),                # family
+         15: (("oideae"), ()),               # subfamily
+         20: ((), ()),                       # genus
+         21: ((), ()),                       # species
+         22: ((), ()),                       # subspecies
+         23: ((), ()),                       # strain
+         24: ((), ())                        # isolate
+    }
+
+    BOT_TAX_CODE = {
+         1: ((), ("eukaryota")),                                # domain
+         2: ((), ("plantae", "algae", "fungi")),                # kingdom
+         3: ((), ("dikarya")),                                  # subkingdom
+         4: (("phyta", "phycota", "mycota"), ()),               # phylum
+         5: (("phytina", "phycotina", "mycotina"), ()),         # subphylum
+         6: (("opsida", "phyceae", "mycetes"), ()),             # class
+         7: (("idae", "phycidae", "mycetidae"), ()),            # subclass
+         8: (("anae"), ()),                                     # superorder
+         9: (("ales"), ()),                                     # order
+         10: (("ineae"), ()),                                   # suborder
+         11: (("aria"), ()),                                    # infraorder
+         12: (("acea"), ()),                                    # superfamily
+         14: (("aceae"), ()),                                   # family
+         15: (("oideae"), ()),                                  # subfamily
+         17: (("eae"), ()),                                     # tribe
+         18: (("inae"), ()),                                    # subtribe
+         20: ((), ()),                                          # genus
+         21: ((), ()),                                          # species
+         22: ((), ()),                                          # subspecies
+         23: ((), ()),                                          # specimen
+         24: ((), ())                                           # isolate
+    }
+
+    ZOO_TAX_CODE = {
+         1: ((), ("eukaryota")),                                              # domain
+         2: ((), ("animalia")),                                               # kingdom
+         4: ((), ("chordata", "arthropoda", "mollusca", "nematoda")),         # phylum
+         5: ((), ("vertebrata", "myriapoda", "crustacea", "hexapoda")),       # subphylum
+         6: ((), ("mammalia", "aves", "reptilia", "amphibia", "insecta")),    # class
+         7: ((), ()),                                                         # subclass
+         8: ((), ()),                                                         # superorder
+         9: ((), ()),                                                         # order
+         10: ((), ()),                                                         # suborder
+         11: ((), ()),                                                         # infraorder
+         12: (("oidea"), ()),                                                 # superfamily
+         13: (("oidae"), ()),                                                 # epifamily
+         14: (("idae"), ()),                                                  # family
+         15: (("inae"), ()),                                                  # subfamily
+         16: (("odd"), ()),                                                   # infrafamily
+         17: (("ini"), ()),                                                   # tribe
+         18: (("ina"), ()),                                                   # subtribe
+         19: (("ad", "iti"), ()),                                             # infratribe
+         20: ((), ()),                                                        # genus
+         21: ((), ()),                                                        # species
+         22: ((), ()),                                                        # subspecies
+         23: ((), ()),                                                        # specimen
+         24: ((), ())                                                         # isolate
+    }
+    
+    VIR_TAX_CODE = {
+         2: ((), ("viruses")),      # kingdom
+         6: ((), ()),               # class
+         7: (("idae"), ()),         # subclass
+         9: (("virales"), ()),      # order
+         14: (("viridae"), ()),     # family
+         15: (("virinae"), ()),     # subfamily
+         20: (("virus"), ()),       # genus
+         21: ((" virus"), ()),      # species
+         23: ((), ()),              # strain
+         24: ((), ())               # isolate
+    }
+    
+    TAX_CODE_MAP = {
+        "bac": BAC_TAX_CODE,
+        "bot": BOT_TAX_CODE,
+        "zoo": ZOO_TAX_CODE,
+        "vir": VIR_TAX_CODE
+    }
+
+    def __init__(self, tax_code_name):
+        self.tax_code = TaxCode.TAX_CODE_MAP.get(tax_code_name.lower(), None)
+        if not self.tax_code:
+            print "ERROR: Unknown taxonomic code: %s" % tax_code_name
+            sys.exit()
+        
+    @staticmethod    
+    def rank_level_name(uni_rank_level):
+        return TaxCode.UNI_TAX_RANKS.get(uni_rank_level, ("Unknown", "?__"))
+                            
+    def guess_rank_level(self, ranks, rank_level):
+        rank_name = re.sub("[\W_]+", "", ranks[rank_level].lower())
+        
+        sorted_tax_levels = sorted(self.tax_code.keys())
+        
+        real_level = 0
+
+        # first, try to guess rank level based on its name or name suffix
+        for lvl in sorted_tax_levels:
+          (suffix, exact_match) = self.tax_code[lvl]
+          if rank_name.endswith(suffix) or rank_name in exact_match:
+            real_level = lvl
+            break
+            
+        # if name-based identification failed, try to derive rank level from its parent
+        if real_level == 0:
+            if rank_level == 0:    # kingdom
+                real_level = 2
+            else:
+                parent_level = self.guess_rank_level(ranks, rank_level-1)
+                if parent_level == 0:
+                    return 0
+                idx = sorted_tax_levels.index(parent_level)
+                for i in range(idx+1, len(sorted_tax_levels)):
+                  lvl = sorted_tax_levels[i]
+                  suffix = self.tax_code[lvl][0]
+                  if lvl in TaxCode.STD_RANKS:
+                    real_level = lvl
+                    break
+                             
+        return real_level
+         
+    def guess_rank_level_name(self, ranks, rank_level):
+        real_level = self.guess_rank_level(ranks, rank_level)
+        return TaxCode.rank_level_name(real_level)
+
 
 class Taxonomy:
     EMPTY_RANK = "-"
     RANK_UID_DELIM = "@@"
     
-    def __init__(self):
-        tree_nodes = []
+    RANK_PLACEHOLDERS = ["k__", "p__", "c__", "o__", "f__", "g__", "s__"]    
 
     @staticmethod    
     def lineage_str(ranks):
@@ -17,14 +184,17 @@ class Taxonomy:
     @staticmethod    
     def lowest_assigned_rank_level(ranks):
         rank_level = len(ranks)-1
-        while ranks[rank_level] == Taxonomy.EMPTY_RANK:
+        while rank_level >= 0 and ranks[rank_level] == Taxonomy.EMPTY_RANK:
             rank_level -= 1
         return rank_level
 
     @staticmethod    
     def lowest_assigned_rank(ranks):
         rank_level = Taxonomy.lowest_assigned_rank_level(ranks)
-        return ranks[rank_level]
+        if rank_level >= 0:
+            return ranks[rank_level]
+        else:
+            return None
         
     @staticmethod    
     def get_rank_uid(ranks, rank_level=-1):
@@ -39,62 +209,28 @@ class Taxonomy:
             return ranks + [Taxonomy.EMPTY_RANK] * (min_lvls - len(ranks))
         else:
             return ranks
+            
+    @staticmethod    
+    def rank_uid_to_lineage_str(rank_uid, min_lvls=0):
+        ranks = Taxonomy.split_rank_uid(rank_uid, min_lvls)
+        return Taxonomy.lineage_str(ranks)
 
-    def get_seq_ranks(self, seq_id):
-        return []
-
-    def seq_count(self):
-        return 0
-
-    def max_rank_level(self):
-        return 0
-
-    def items(self):
-        return 0
-
-class GGTaxonomyFile(Taxonomy):
-    rank_placeholders = ["k__", "p__", "c__", "o__", "f__", "g__", "s__"]    
-    
-    @staticmethod
-    def strip_prefix(ranks):
-        new_ranks = ['']*len(ranks);
-        for i in range(len(ranks)):
-            if ranks[i].startswith(GGTaxonomyFile.rank_placeholders[i]):
-                plen = len(GGTaxonomyFile.rank_placeholders[i])
-                new_ranks[i] = ranks[i][plen:]
-            else:
-                new_ranks[i] = ranks[i]
-        return new_ranks
-
-    @staticmethod
-    def add_prefix(ranks):
-        new_ranks = ['']*len(ranks);
-        for i in range(len(ranks)):
-            new_ranks[i] = GGTaxonomyFile.add_rank_prefix(ranks[i], i)
-        return new_ranks
-
-    @staticmethod
-    def add_rank_prefix(rank_name, rank_level):
-        prefix = GGTaxonomyFile.rank_placeholders[rank_level]
-        if rank_name.startswith(prefix):
-            return rank_name
-        else:
-            return prefix + rank_name
-
-
-    @staticmethod
-    def lineage_str(ranks, strip_prefix=False):
-        if strip_prefix:
-            ranks = GGTaxonomyFile.strip_prefix(ranks)
-        return Taxonomy.lineage_str(ranks);
-
-
-    def __init__(self, tax_fname, prefix=""):
-        self.tax_fname = tax_fname        
+    def __init__(self, prefix="", tax_fname="", tax_map=None):
         self.prefix = prefix
-        self.seq_ranks_map = {}
+        
+        tree_nodes = []
         self.common_ranks = set([])
-        self.load_taxonomy()
+        self.seq_ranks_map = {}
+        self.rank_seqs_map = {}
+        self.corr_seq_ids = {}
+        self.uncorr_rank_ids = {}
+        if tax_map:
+            for sid, ranks in tax_map.iteritems():
+                self.seq_ranks_map[sid] = ranks
+                rank_id = Taxonomy.get_rank_uid(ranks)
+                self.rank_seqs_map[rank_id] = self.rank_seqs_map.get(rank_id, []) + [sid]
+        elif tax_fname:
+            self.load_taxonomy(tax_fname)
 
     def get_common_ranks(self):
         allranks = list(self.seq_ranks_map.items())
@@ -112,35 +248,6 @@ class GGTaxonomyFile(Taxonomy):
     def seq_count(self):
         return len(self.seq_ranks_map)
 
-    # zero-based! 
-    def max_rank_level(self):
-        return 6   # level of species in standard 7-level taxonomy
-    
-    def rank_level_name(self, rank_level):
-        return { 0: "Kingdom",
-                 1: "Phylum",
-                 2: "Class",
-                 3: "Order",
-                 4: "Family",
-                 5: "Genus",
-                 6: "Species"
-                }[rank_level]
-
-    def get_seq_ranks(self, seq_id):
-        return self.seq_ranks_map[seq_id]
-
-    def lineage_str(self, seq_id, use_placeholders=False):
-        ranks = list(self.seq_ranks_map[seq_id])
-        if use_placeholders:        
-            for i in range(len(ranks)):
-                if ranks[i] == Taxonomy.EMPTY_RANK:
-                    ranks[i] = GGTaxonomyFile.rank_placeholders[i]
-        return Taxonomy.lineage_str(ranks)
-
-    def lowest_assigned_rank_level(self, seq_id):
-        ranks = self.seq_ranks_map[seq_id]
-        return Taxonomy.lowest_assigned_rank_level(ranks)
-
     def items(self):
         return self.seq_ranks_map.items()
         
@@ -151,31 +258,116 @@ class GGTaxonomyFile(Taxonomy):
         return self.seq_ranks_map
 
     def remove_seq(self, seqid):
+        rank_id = self.seq_rank_id(seqid)
+        self.rank_seqs_map[rank_id].remove(seq_id)
         del self.seq_ranks_map[seqid]
 
-    def make_binomial_name(self, ranks):
-        last_rank = len(ranks)-1
-        if ranks[last_rank] != Taxonomy.EMPTY_RANK:
-            genus_name = ranks[last_rank-1][3:]
-            sp_name = ranks[last_rank][3:]
-            prefix = ranks[last_rank][:3]
-            if not sp_name.startswith(genus_name):
-                ranks[last_rank] = prefix + genus_name + "_" + sp_name
+    def rename_seq(self, old_seqid, new_seqid):
+        rank_id = self.seq_rank_id(old_seqid)
+        self.rank_seqs_map[rank_id].remove(old_seqid)
+        self.rank_seqs_map[rank_id].append(new_seqid)
+        self.seq_ranks_map[new_seqid] = self.seq_ranks_map[old_seqid]
+        del self.seq_ranks_map[old_seqid]
+        
+    def get_seq_ranks(self, seq_id):
+        if not seq_id.startswith(self.prefix):
+            seq_id = self.prefix + seq_id
+        seq_id = self.corr_seq_ids.get(seq_id, seq_id)
+        return self.seq_ranks_map[seq_id]
+        
+    def seq_lineage_str(self, seq_id):
+        ranks = list(self.get_seq_ranks(seq_id))
+        return Taxonomy.lineage_str(ranks)        
 
-    def normalize_rank_name(self, rank, rank_name):
-        invalid_chars = ['(', ')', ',', ';', ':']
-        for ch in invalid_chars:
-            rank_name = rank_name.replace(ch, "_")
-#        rank_prefix = self.rank_placeholders[rank] if rank < 7 else ""
-#        if not rank_name.startswith(rank_prefix):
-#            rank_name = rank_prefix + rank_name
-        return rank_name
+    def seq_rank_id(self, seq_id):
+        ranks = list(self.get_seq_ranks(seq_id))
+        return Taxonomy.get_rank_uid(ranks)        
+
+    def get_rank_seqs(self, rank_id):
+        return self.rank_seqs_map.get(rank_id, [])
+
+    def get_rank_seq_count(self, rank_id):
+        return len(self.rank_seqs_map.get(rank_id, []))
+        
+    def get_uncorr_rank_id(self, rank_id):
+        return self.uncorr_rank_ids.get(rank_id, rank_id)
+        
+    def merge_ranks(self, rank_ids, name_prefix="__TAXCLUSTER__"):
+        if len(rank_ids) < 2:
+            return None
+        
+        all_sid = []
+        for rank_id in rank_ids:
+            all_sid += self.get_rank_seqs(rank_id)
+            del self.rank_seqs_map[rank_id]
+        
+        first_taxon = Taxonomy.split_rank_uid(rank_ids[0])
+        merge_lvl = Taxonomy.lowest_assigned_rank_level(first_taxon)
+        new_name = name_prefix + first_taxon[merge_lvl]
+        new_rank = first_taxon[:merge_lvl] + [new_name]
+        new_rank_id = Taxonomy.get_rank_uid(new_rank)
+
+        self.rank_seqs_map[new_rank_id] = all_sid
+
+        for sid in all_sid:
+            self.seq_ranks_map[sid] = new_rank
+            
+        return new_rank_id
+
+    def load_taxonomy(self, tax_fname):
+        with open(tax_fname) as fin:
+            for line in fin:
+                line = line.strip()
+                toks = line.split("\t")
+                sid = self.prefix + toks[0]
+                ranks_str = toks[1]
+                ranks = ranks_str.split(";")
+                for i in range(len(ranks)):
+                    rank_name = ranks[i].strip()
+    #                if rank_name in GGTaxonomyFile.rank_placeholders:
+    #                    rank_name = Taxonomy.EMPTY_RANK
+                    ranks[i] = rank_name
+                rank_id = Taxonomy.get_rank_uid(ranks)
+                    
+                self.seq_ranks_map[sid] = ranks 
+                self.rank_seqs_map[rank_id] = self.rank_seqs_map.get(rank_id, []) + [sid]
 
     def normalize_rank_names(self):
+        invalid_chars = "[](),;:'"
+        sub_chars = "_" * len(invalid_chars)
+        trantab = maketrans(invalid_chars, sub_chars)
+        corr_ranks = {}
         for sid, ranks in self.seq_ranks_map.iteritems():
-            for i in range(1, len(ranks)):
-                ranks[i] = self.normalize_rank_name(i, ranks[i])
-#            self.make_binomial_name(ranks);
+            old_rank_id = Taxonomy.get_rank_uid(ranks)
+            for i in range(len(ranks)):
+                if ranks[i] in corr_ranks:
+                    ranks[i] = corr_ranks[ranks[i]]
+                else:
+                    new_rank_name = ranks[i].translate(trantab);
+                    if new_rank_name != ranks[i]:
+                        corr_ranks[ranks[i]] = new_rank_name
+                        ranks[i] = new_rank_name
+
+            new_rank_id = Taxonomy.get_rank_uid(ranks)
+            if new_rank_id != old_rank_id and old_rank_id in self.rank_seqs_map:
+                self.rank_seqs_map[new_rank_id] = self.rank_seqs_map[old_rank_id]
+                del self.rank_seqs_map[old_rank_id]
+                self.uncorr_rank_ids[new_rank_id] = old_rank_id
+                
+        return corr_ranks
+        
+    def normalize_seq_ids(self):
+        invalid_chars = "[](),;:' "
+        sub_chars = "_" * len(invalid_chars)
+        trantab = maketrans(invalid_chars, sub_chars)
+        self.corr_seq_ids = {}
+        for old_sid in self.seq_ranks_map.iterkeys():
+            new_sid = old_sid.translate(trantab);
+            if new_sid != old_sid:
+                self.rename_seq(old_sid, new_sid)
+                self.corr_seq_ids[old_sid] = new_sid
+                
+        return self.corr_seq_ids
 
     def close_taxonomy_gaps(self):
         for sid, ranks in self.seq_ranks_map.iteritems():
@@ -187,28 +379,6 @@ class GGTaxonomyFile(Taxonomy):
                 elif last_rank:
                     gap_count += 1
                     ranks[i] = "parent%d_" % gap_count + last_rank
-            
-    def load_taxonomy(self):
-        fin = open(self.tax_fname)
-        for line in fin:
-            line = line.strip()
-            toks = line.split("\t")
-            sid = self.prefix + toks[0]
-            ranks_str = toks[1]
-            ranks = ranks_str.split(";")
-            for i in range(len(ranks)):
-                rank_name = ranks[i].strip()
-                if rank_name in GGTaxonomyFile.rank_placeholders:
-                    rank_name = Taxonomy.EMPTY_RANK
-                ranks[i] = rank_name
-                
-            if len(ranks) < 7:
-                ranks += [Taxonomy.EMPTY_RANK] * (7 - len(ranks))
-#                print "WARNING: sequence " + sid + " has incomplete taxonomic annotation. Missing ranks were considered empty (%s)" % Taxonomy.EMPTY_RANK 
-
-            self.seq_ranks_map[sid] = ranks     
-
-        fin.close()
 
     def check_for_duplicates(self, autofix=False):
         parent_map = {}
@@ -335,9 +505,6 @@ class TaxTreeBuilder:
 
     def build(self, min_rank=0, max_seqs_per_leaf=1e9, clades_to_include=[], clades_to_ignore=[]):
 
-        if self.config.verbose:
-            print "Number of nodes: %d" % self.taxonomy.seq_count()
-        
         t0 = Tree()
         t0.add_feature("name", TaxTreeBuilder.ROOT_LABEL)
         self.tree_nodes[TaxTreeBuilder.ROOT_LABEL] = t0;
@@ -346,7 +513,6 @@ class TaxTreeBuilder:
         added = 0
         seq_ids = []
         # sequences are leafs of the tree, so they always have the lowest taxonomy level (e.g. "species"+1)        
-        tax_seq_level = self.taxonomy.max_rank_level() + 1
         for sid, ranks in self.taxonomy.iteritems():
             k += 1
             if self.config.verbose and k % 1000 == 0:
@@ -379,17 +545,18 @@ class TaxTreeBuilder:
             if not clade_is_ok:
                 continue
 
-            parent_level = tax_seq_level - 1            
+            tax_seq_level = len(ranks)
+            parent_level = tax_seq_level - 1
             while ranks[parent_level] == Taxonomy.EMPTY_RANK:
                 parent_level -= 1
             parent_name = Taxonomy.get_rank_uid(ranks, parent_level)
             if parent_name in self.tree_nodes:
                 parent_node = self.tree_nodes[parent_name]
-                # filter by max number of seqs (threshold depends from rank level, 
-                # i.e. for genus there can be more seqs than for species)
-                max_seq_per_rank = max_seqs_per_leaf * (tax_seq_level - parent_level)                
-                if parent_name in self.leaf_count and self.leaf_count[parent_name] >= max_seq_per_rank:
-                    continue
+#                max_seq_per_rank = max_seqs_per_leaf * (tax_seq_level - parent_level)                
+                if parent_level == tax_seq_level - 1:
+                    max_seq_per_rank = max_seqs_per_leaf # * (tax_seq_level - parent_level)                
+                    if parent_name in self.leaf_count and self.leaf_count[parent_name] >= max_seq_per_rank:
+                        continue
 
             self.leaf_count[parent_name] = self.leaf_count.get(parent_name, 0) + 1
 
@@ -398,8 +565,7 @@ class TaxTreeBuilder:
             seq_ids += [sid]
             added += 1
 
-        if self.config.verbose:
-            print "Total nodes in resulting tree: ", added
+        self.config.log.debug("Total nodes in resulting tree: %d", added)
         
         if self.config.debug:
             reftax_fname = self.config.tmp_fname("%NAME%_mf_unpruned.tre")
@@ -407,7 +573,3 @@ class TaxTreeBuilder:
 
         self.prune_unifu_nodes(t0)
         return t0, seq_ids
-  
-if __name__ == "__main__":
-    gt = GGTaxonomyFile("/home/zhangje/GIT/EPA-classifier/example/training_tax.txt")
-    print gt.get_common_ranks()

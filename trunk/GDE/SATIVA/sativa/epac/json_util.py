@@ -4,8 +4,9 @@ import os
 import json
 import operator
 import base64
-from epac.ete2 import Tree, SeqGroup
 from subprocess import call
+from ete2 import Tree, SeqGroup
+from taxonomy_util import TaxCode
 
 class EpaJsonParser:
     """This class parses the RAxML-EPA json output file"""
@@ -37,118 +38,92 @@ class RefJsonChecker:
         else:
             self.jdata = jdata
     
-    def valid(self, ver = "1.1"):
+    def check_field(self, fname, ftype, fvals=None, fopt=False):
+        if fname in self.jdata:
+            field = self.jdata[fname]
+            if isinstance(field, ftype):
+                if not fvals or field in fvals:
+                    return True
+                else:
+                    self.error = "Invalid value of field '%s': %s" % fname, repr(field)
+                    return False
+            else:
+              self.error = "Field '%s' has a wrong type: %s (expected: %s)" % fname, type(field).__name__, ftype.__name__
+              return False
+        else:
+            if fopt:
+                return True
+            else:
+                self.error = "Field not found: %s" % fname
+                return False
+    
+    def validate(self, ver = "1.6"):
         nver = float(ver)
-
-        #tree
-        if "tree" in self.jdata:
-            tree = self.jdata["tree"]
-            if not isinstance(tree, unicode):
-                print("Tree is")
-                print(type(tree).__name__)
-                return False
-        else:
-            return False
         
-        #raxmltree
-        if "raxmltree" in self.jdata:
-            tree = self.jdata["raxmltree"]
-            if not isinstance(tree, unicode):
-                return False
-        else:
-            return False
-            
-        #rate:
-        if "rate" in self.jdata:
-            rate = self.jdata["rate"]
-            if not isinstance(rate, float):
-                return False
-        else:
-            return False
-            
-        #node_height
-        if "node_height" in self.jdata:
-            node_height = self.jdata["node_height"]
-            if not isinstance(node_height, dict):
-                return False
-        else:
-            return False
-            
-        #taxonomy
-        if "taxonomy" in self.jdata:
-            taxonomy = self.jdata["taxonomy"]
-            if not isinstance(taxonomy, dict):
-                return False
-        else:
-            return False
+        self.error = None
 
-        #origin_taxonomy
-        if "origin_taxonomy" in self.jdata:
-            origin_taxonomy = self.jdata["origin_taxonomy"]
-            if not isinstance(origin_taxonomy, dict):
-                return False
-        else:
-            return False
-
-        #sequences
-        if "sequences" in self.jdata:
-            sequences = self.jdata["sequences"]
-            if not isinstance(sequences, list):
-                return False
-        else:
-            return False
-            
-        #hmm_profile
-        if "hmm_profile" in self.jdata:
-            hmm_profile = self.jdata["hmm_profile"]
-            if not isinstance(hmm_profile, list):
-                return False
-        elif nver < 1.1:
-            return False
-
-        #binary_model
-        if "binary_model" in self.jdata:
-            model_str = self.jdata["binary_model"]
-            if not isinstance(model_str, unicode):
-                return False
-        else:
-            return False
-
+        valid = self.check_field("tree", unicode) \
+                and self.check_field("raxmltree", unicode) \
+                and self.check_field("rate", float) \
+                and self.check_field("node_height", dict) \
+                and self.check_field("origin_taxonomy", dict) \
+                and self.check_field("sequences", list) \
+                and self.check_field("binary_model", unicode) \
+                and self.check_field("hmm_profile", list, fopt=True) 
+                
+        # check v1.1 fields, if needed
         if nver >= 1.1:
-            #ratehet_model
-            if "ratehet_model" in self.jdata:
-                ratehet_str = self.jdata["ratehet_model"]
-                if not isinstance(ratehet_str, unicode):
-                    return False
-                elif ratehet_str not in ["GTRGAMMA", "GTRCAT"]:
-                    return False
-            else:
-                return False
+            valid = valid and \
+                    self.check_field("ratehet_model", unicode)  # ["GTRGAMMA", "GTRCAT"]
 
+        # check v1.2 fields, if needed
         if nver >= 1.2:
-            if "tax_tree" in self.jdata:
-                tree = self.jdata["tax_tree"]
-                if not isinstance(tree, unicode):
-                    print("Tree is")
-                    print(type(tree).__name__)
-                    return False
-            else:
-                return False
+            valid = valid and \
+                    self.check_field("tax_tree", unicode)
+
+        # check v1.3 fields, if needed
+        if nver >= 1.3:
+            valid = valid and \
+                    self.check_field("taxcode", unicode, TaxCode.TAX_CODE_MAP)
         
-        return True
+        # check v1.4 fields, if needed
+        if nver >= 1.4:
+            valid = valid \
+                    and self.check_field("corr_seqid_map", dict) \
+                    and self.check_field("corr_ranks_map", dict)
+
+        # check v1.5 fields, if needed
+        if nver >= 1.5:
+            valid = valid \
+                    and self.check_field("merged_ranks_map", dict)
+
+        # "taxonomy" field has been renamed and its format was changed in v1.6
+        if nver >= 1.6:
+            valid = valid \
+                    and self.check_field("branch_tax_map", dict)
+        else:
+            valid = valid \
+                    and self.check_field("taxonomy", dict)
+
+        return (valid, self.error)
 
 class RefJsonParser:
     """This class parses the EPA Classifier reference json file"""
-    def __init__(self, jsonfin, ver = "1.1"):
+    def __init__(self, jsonfin):
         self.jdata = json.load(open(jsonfin))
-        self.version = ver
+        self.version = self.jdata["version"]
+        self.nversion = float(self.version)
+        self.corr_seqid = None
+        self.corr_ranks = None
+        self.corr_seqid_reverse = None
         
     def validate(self):
         jc = RefJsonChecker(jdata = self.jdata)
-        if not jc.valid(self.version):
-            print("Invalid reference database format")
-            sys.exit()
+        return jc.validate(self.version)
     
+    def get_version(self):
+        return self.version
+
     def get_rate(self):
         return self.jdata["rate"]
     
@@ -180,8 +155,17 @@ class RefJsonParser:
         t = Tree(self.jdata["outgroup"], format=9)
         return t
 
-    def get_bid_tanomomy_map(self):
-        return self.jdata["taxonomy"]
+    def get_branch_tax_map(self):
+        if self.nversion >= 1.6:
+            return self.jdata["branch_tax_map"]
+        else:
+            return None
+
+    def get_taxonomy(self):
+        if self.nversion < 1.6:
+            return self.jdata["taxonomy"]
+        else:
+            return None
 
     def get_origin_taxonomy(self):
         return self.jdata["origin_taxonomy"]
@@ -239,6 +223,30 @@ class RefJsonParser:
         else:
             return False
 
+    def get_taxcode(self):
+        return self.jdata["taxcode"]
+        
+    def get_corr_seqid_map(self):
+        if "corr_seqid_map" in self.jdata:
+            self.corr_seqid = self.jdata["corr_seqid_map"]
+        else:
+            self.corr_seqid = {}
+        return self.corr_seqid
+
+    def get_corr_ranks_map(self):
+        if "corr_ranks_map" in self.jdata:
+            self.corr_ranks = self.jdata["corr_ranks_map"]
+        else:
+            self.corr_ranks = {}
+        return self.corr_ranks
+
+    def get_merged_ranks_map(self):
+        if "merged_ranks_map" in self.jdata:
+            self.merged_ranks = self.jdata["merged_ranks_map"]
+        else:
+            self.merged_ranks = {}
+        return self.merged_ranks
+
     def get_metadata(self):
         return self.jdata["metadata"]
         
@@ -247,6 +255,26 @@ class RefJsonParser:
             return json.dumps(self.jdata[field_name], indent=4, separators=(',', ': ')).strip("\"")
         else:
             return None
+            
+    def get_uncorr_seqid(self, new_seqid):
+        if not self.corr_seqid:
+            self.get_corr_seqid_map()
+        return self.corr_seqid.get(new_seqid, new_seqid)
+        
+    def get_corr_seqid(self, old_seqid):
+        if not self.corr_seqid_reverse:
+            if not self.corr_seqid:
+                self.get_corr_seqid_map()
+            self.corr_seqid_reverse = dict((reversed(item) for item in self.corr_seqid.items()))
+        return self.corr_seqid_reverse.get(old_seqid, old_seqid)
+
+    def get_uncorr_ranks(self, ranks):
+        if not self.corr_ranks:
+            self.get_corr_ranks_map()
+        uncorr_ranks = list(ranks)
+        for i in range(len(ranks)):
+            uncorr_ranks[i] = self.corr_ranks.get(ranks[i], ranks[i])
+        return uncorr_ranks        
                 
 class RefJsonBuilder:
     """This class builds the EPA Classifier reference json file"""
@@ -255,11 +283,11 @@ class RefJsonBuilder:
             self.jdata = old_json.jdata
         else:
             self.jdata = {}
-            self.jdata["version"] = "1.2"
+            self.jdata["version"] = "1.6"
 #            self.jdata["author"] = "Jiajie Zhang"
         
-    def set_taxonomy(self, bid_ranks_map):
-        self.jdata["taxonomy"] = bid_ranks_map
+    def set_branch_tax_map(self, bid_ranks_map):
+        self.jdata["branch_tax_map"] = bid_ranks_map
 
     def set_origin_taxonomy(self, orig_tax_map):
         self.jdata["origin_taxonomy"] = orig_tax_map
@@ -298,6 +326,18 @@ class RefJsonBuilder:
 
     def set_pattern_compression(self, value):
         self.jdata["pattern_compression"] = value
+
+    def set_taxcode(self, value):
+        self.jdata["taxcode"] = value
+
+    def set_corr_seqid_map(self, seqid_map):
+        self.jdata["corr_seqid_map"] = seqid_map
+
+    def set_corr_ranks_map(self, ranks_map):
+        self.jdata["corr_ranks_map"] = ranks_map
+
+    def set_merged_ranks_map(self, merged_ranks_map):
+        self.jdata["merged_ranks_map"] = merged_ranks_map
 
     def set_metadata(self, metadata):    
         self.jdata["metadata"] = metadata
