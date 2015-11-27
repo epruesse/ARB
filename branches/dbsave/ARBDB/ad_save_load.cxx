@@ -1393,6 +1393,8 @@ void TEST_SLOW_loadsave() {
 
     // test extra database stream compression
     const char *compFlag = TESTED_COMPRESSION_FLAGS;
+
+    int successful_compressed_saves = 0;
     for (int c = 0; compFlag[c]; ++c) {
         for (char dbtype = 'a'; dbtype<='b'; ++dbtype) {
             TEST_ANNOTATE(GBS_global_string("dbtype=%c compFlag=%c", dbtype, compFlag[c]));
@@ -1402,22 +1404,31 @@ void TEST_SLOW_loadsave() {
             savetype[0]     = dbtype;
             savetype[1]     = compFlag[c];
 
-            TEST_EXPECT_NO_ERROR(GB_save_as(gb_asc, zipd_db, savetype));
+            GB_ERROR error = GB_save_as(gb_asc, zipd_db, savetype);
+            if (error && strstr(error, "failed with exitcode=127")) {
+                fprintf(stderr, "Assuming compression utility for flag '%c' is not installed\n", compFlag[c]);
+            }
+            else {
+                TEST_EXPECT_NO_ERROR(error);
 
-            // reopen saved database, save again + compare
-            {
-                GBDATA *gb_reloaded = GB_open(zipd_db, "rw");
-                TEST_REJECT_NULL(gb_reloaded); // reading compressed database failed
+                // reopen saved database, save again + compare
+                {
+                    GBDATA *gb_reloaded = GB_open(zipd_db, "rw");
+                    TEST_REJECT_NULL(gb_reloaded); // reading compressed database failed
 
-                SAVE_AND_COMPARE(gb_reloaded, "r2b.arb", "b", bin_db); // check binary content
-                SAVE_AND_COMPARE(gb_reloaded, "r2a.arb", "a", asc_db); // check ascii content
+                    SAVE_AND_COMPARE(gb_reloaded, "r2b.arb", "b", bin_db); // check binary content
+                    SAVE_AND_COMPARE(gb_reloaded, "r2a.arb", "a", asc_db); // check ascii content
 
-                GB_close(gb_reloaded);
+                    GB_close(gb_reloaded);
+                }
+                successful_compressed_saves++;
             }
 
             free(zipd_db);
         }
     }
+
+    TEST_EXPECT(successful_compressed_saves>=2); // at least gzip and bzip2 should be installed
 
 #if (MEMORY_TEST == 0)
     {
