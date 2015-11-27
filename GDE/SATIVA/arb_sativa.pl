@@ -150,7 +150,7 @@ sub runPythonPipeline($$$$$$$$$) {
 
   my $sativa_cmd = $sativa_home.'/sativa.py';
   my @args = ($sativa_cmd, '-t', $tax_file, '-s', $seq_file, '-c', $cfg_file, '-T', $cores, '-tmpdir', $tmpdir, 
-               '-N', $num_reps, '-x', $tax_code, '-m', $raxml_method, '-p', $rand_seed);
+               '-N', $num_reps, '-x', $tax_code, '-m', $raxml_method, '-p', $rand_seed, '-C', $conf_cutoff);
   if ($rank_test == 1) { push(@args, "-ranktest"); }
   if ($verbose == 1) { push(@args, "-v"); }
   system(@args);
