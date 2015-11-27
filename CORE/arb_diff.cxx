@@ -353,7 +353,7 @@ size_t ARB_test_mem_equal(const unsigned char *buf1, const unsigned char *buf2, 
 
         const size_t DUMP       = 7;
         size_t       y1         = x >= DUMP ? x-DUMP : 0;
-        size_t       y2         = (x+DUMP)>common ? common : (x+DUMP);
+        size_t       y2         = (x+2*DUMP)>common ? common : (x+2*DUMP);
         size_t       blockstart = blockStartAddress+equal_bytes-x;
 
         for (size_t y = y1; y <= y2; y++) {
@@ -361,7 +361,7 @@ size_t ARB_test_mem_equal(const unsigned char *buf1, const unsigned char *buf2, 
             arb_test::print_pair(buf1[y], buf2[y]);
             fputc(' ', stderr);
             arb_test::print_hex_pair(buf1[y], buf2[y]);
-            if (x == y) fputs("                     <- diff", stderr);
+            if (buf1[y] != buf2[y]) fputs("                     <- diff", stderr);
             fputc('\n', stderr);
         }
         if (y2 == common) {

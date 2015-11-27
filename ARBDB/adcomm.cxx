@@ -188,7 +188,8 @@ GB_ERROR GB_MAIN_TYPE::panic_save(const char *db_panic) {
     const int org_transaction_level = transaction_level;
 
     transaction_level = 0;
-    GB_ERROR error    = save_as(db_panic, "a");
+    GB_ERROR error    = save_as(db_panic, "az"); // attempt zipped first
+    if (error) error  = save_as(db_panic, "a");  // fallback to plain ascii on failure
     transaction_level = org_transaction_level;
 
     return error;

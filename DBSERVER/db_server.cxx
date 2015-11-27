@@ -106,7 +106,7 @@ static void react_to_command(GBDATA *gb_main) {
                 }
 
                 if (!error) {
-                    if (param[0]) error = GB_save(gb_main, param, savemode);
+                    if (param[0]) error = GB_save(gb_main, param, savemode); // @@@ support compression here?
                     else error          = "No savename specified";
                 }
 

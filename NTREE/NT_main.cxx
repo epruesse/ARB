@@ -207,6 +207,9 @@ static ARB_ERROR load_and_startup_main_window(AW_root *aw_root, const char *auto
     return error;
 }
 
+#define AWAR_DB_FILTER    AWAR_DBBASE "/filter"
+#define AWAR_DB_DIRECTORY AWAR_DBBASE "/directory"
+
 static void nt_delete_database(AW_window *aww) {
     AW_root *aw_root   = aww->get_root();
     char    *db_server = aw_root->awar(AWAR_DB_PATH)->read_string();
@@ -260,7 +263,7 @@ static void nt_intro_start_existing(AW_window *aw_intro) {
 
 static void nt_intro_start_merge(AW_window *aw_intro) {
     AW_root    *aw_root    = aw_intro->get_root();
-    const char *dir        = aw_root->awar("tmp/nt/arbdb/directory")->read_char_pntr();
+    const char *dir        = aw_root->awar(AWAR_DB_DIRECTORY)->read_char_pntr();
     char       *merge_args = GBS_global_string_copy("'%s' '%s'", dir, dir);
 
     NT_restart(aw_root, merge_args); //  call arb_ntree as merge-tool on exit
@@ -291,7 +294,7 @@ static AW_window *nt_create_intro_window(AW_root *awr) {
     aws->callback(makeHelpCallback("arb_intro.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
-    AW_create_standard_fileselection(aws, "tmp/nt/arbdb");
+    AW_create_standard_fileselection(aws, AWAR_DBBASE);
 
     aws->button_length(0);
 
@@ -343,7 +346,7 @@ static void AWAR_DB_PATH_changed_cb(AW_root *awr) {
 
         if (lslash) {               // update value of directory
             lslash[0] = 0;
-            awr->awar(AWAR_DB"directory")->write_string(value);
+            awr->awar(AWAR_DB_DIRECTORY)->write_string(value);
             lslash[0] = '/';
         }
 
@@ -844,8 +847,7 @@ static void startup_gui(NtreeCommandLine& cl, ARB_ERROR& error) {
 
     AW_root* aw_root = GLOBAL.aw_root;
 
-    AW_create_fileselection_awars(aw_root, AWAR_DB, "", ".arb", "noname.arb");
-    aw_root->awar_string(AWAR_DB_TYPE, "b");
+    AW_create_fileselection_awars(aw_root, AWAR_DBBASE, "", ".arb", "noname.arb");
     aw_root->awar_string(AWAR_DB_NAME, "noname.arb");
     aw_root->awar(AWAR_DB_PATH)->add_callback(AWAR_DB_PATH_changed_cb);
 
@@ -914,7 +916,7 @@ static void startup_gui(NtreeCommandLine& cl, ARB_ERROR& error) {
                     }
                 }
                 else if (mode == BROWSE) {
-                    aw_root->awar(AWAR_DB"directory")->write_string(browser_startdir);
+                    aw_root->awar(AWAR_DB_DIRECTORY)->write_string(browser_startdir);
                     char *latest = GB_find_latest_file(browser_startdir, "/\\.(arb|a[0-9]{2})$/");
                     if (latest) {
                         int l = strlen(latest);

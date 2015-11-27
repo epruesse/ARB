@@ -136,6 +136,7 @@ arb_mem.o: $(ARBHOME)/INCLUDE/gccver.h
 
 arb_misc.o: arb_assert.h
 arb_misc.o: arb_core.h
+arb_misc.o: arb_file.h
 arb_misc.o: arb_misc.h
 arb_misc.o: arb_msg.h
 arb_misc.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -250,6 +251,20 @@ arb_string.o: $(ARBHOME)/INCLUDE/gccver.h
 arb_string.o: $(ARBHOME)/INCLUDE/Keeper.h
 arb_string.o: $(ARBHOME)/INCLUDE/test_global.h
 arb_string.o: $(ARBHOME)/INCLUDE/test_unit.h
+
+arb_zfile.o: arb_assert.h
+arb_zfile.o: arb_core.h
+arb_zfile.o: arb_file.h
+arb_zfile.o: arb_misc.h
+arb_zfile.o: arb_msg.h
+arb_zfile.o: arb_zfile.h
+arb_zfile.o: $(ARBHOME)/INCLUDE/arbtools.h
+arb_zfile.o: $(ARBHOME)/INCLUDE/attributes.h
+arb_zfile.o: $(ARBHOME)/INCLUDE/cxxforward.h
+arb_zfile.o: $(ARBHOME)/INCLUDE/dupstr.h
+arb_zfile.o: $(ARBHOME)/INCLUDE/gccver.h
+arb_zfile.o: $(ARBHOME)/INCLUDE/test_global.h
+arb_zfile.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 BufferedFileReader.o: arb_assert.h
 BufferedFileReader.o: arb_core.h

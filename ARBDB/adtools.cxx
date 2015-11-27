@@ -198,11 +198,15 @@ static void new_gbt_message_created_cb(GBDATA *gb_pending_messages) {
     }
 }
 
+inline GBDATA *find_or_create_error_container(GBDATA *gb_main) {
+    return GB_search(gb_main, ERROR_CONTAINER_PATH, GB_CREATE_CONTAINER);
+}
+
 void GBT_install_message_handler(GBDATA *gb_main) {
     GBDATA *gb_pending_messages;
 
     GB_push_transaction(gb_main);
-    gb_pending_messages = GB_search(gb_main, ERROR_CONTAINER_PATH, GB_CREATE_CONTAINER);
+    gb_pending_messages = find_or_create_error_container(gb_main);
     gb_assert(gb_pending_messages);
     GB_add_callback(gb_pending_messages, GB_CB_SON_CREATED, makeDatabaseCallback(new_gbt_message_created_cb));
     GB_pop_transaction(gb_main);
@@ -226,7 +230,7 @@ void GBT_message(GBDATA *gb_main, const char *msg) {
     GB_ERROR error = GB_push_transaction(gb_main);
 
     if (!error) {
-        GBDATA *gb_pending_messages = GB_search(gb_main, ERROR_CONTAINER_PATH, GB_CREATE_CONTAINER);
+        GBDATA *gb_pending_messages = find_or_create_error_container(gb_main);
         GBDATA *gb_msg              = gb_pending_messages ? GB_create(gb_pending_messages, "msg", GB_STRING) : 0;
 
         if (!gb_msg) error = GB_await_error();
@@ -506,9 +510,11 @@ static GBDATA *GB_test_link_follower(GBDATA *gb_main, GBDATA */*gb_link*/, const
 //      save & load
 
 GBDATA *GBT_open(const char *path, const char *opent) {
-    /*! Open a database,
-     *  create an index for species and extended names (server only!) and
-     *  disable saving in the PT_SERVER directory.
+    /*! Open a database (as GB_open does)
+     *  Additionally:
+     *  - disable saving in the PT_SERVER directory,
+     *  - create an index for species and extended names (server only!),
+     *  - install table link followers (maybe obsolete)
      *
      * @param path filename of the DB
      * @param opent see GB_login()
@@ -536,11 +542,6 @@ GBDATA *GBT_open(const char *path, const char *opent) {
                     }
                 }
             }
-            if (!error) {
-                GBDATA *gb_tmp = GB_search(gbd, "tmp", GB_CREATE_CONTAINER);
-                if (gb_tmp) error = GB_set_temporary(gb_tmp);
-            }
-
             if (!error) {
                 {
                     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
