@@ -116,13 +116,13 @@ void TEST_SLOW_ascii_2_bin_2_ascii() {
 
     // test same using compression (gzip and bzip2)
     TEST_RUN_TOOL(checkedPipeCommand(GBS_global_string("arb_2_ascii -Cz %s - | arb_2_bin -CB - %s", binary, binary_3RD)));
-    // TEST_EXPECT_FILES_EQUAL(binary, binary_2ND); // can't compare binary files (they contain undefined bytes)
+    // TEST_EXPECT_FILES_EQUAL(binary, binary_2ND); // can't compare binary files (binary_3RD differs (keys?))
     // instead convert back to ascii and compare result with original
     TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(ascii));
     TEST_RUN_TOOL(GBS_global_string("arb_2_ascii %s %s", binary_3RD, ascii));
     TEST_EXPECT_FILES_EQUAL(ascii, ascii_ORG);
 
-    TEST_EXPECT_ERROR_CONTAINS(RUN_TOOL("arb_2_ascii -cq"), "System call failed"); // "Unknown compression flag 'q'"
+    TEST_EXPECT_ERROR_CONTAINS(RUN_TOOL("arb_2_ascii -Cq -"), "System call failed"); // "Unknown compression flag 'q'"
 
     TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(ascii));
     TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(binary));
