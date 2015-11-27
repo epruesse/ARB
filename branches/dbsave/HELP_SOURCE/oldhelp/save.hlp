@@ -37,6 +37,10 @@ DESCRIPTION	To save the entire database, choose 'Save whole database as ...'
                           if a database is extra-compressed and automatically selects the correct
                           decompressor.
 
+                          Note: you may rename an extra-compressed .arb file into .arb.gz or .arb.bz2 before
+                                giving it away to a pre-arb-6.0 user. He will be able to open it using
+                                an archive manager and extract the contained .arb manually.
+
 SECTION         Quicksaving
 
                 You may also save only the changes done to the database,
