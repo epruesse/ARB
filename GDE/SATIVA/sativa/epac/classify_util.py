@@ -1,17 +1,22 @@
 #! /usr/bin/env python
-from epac.taxonomy_util import Taxonomy
-from epac.erlang import erlang
+from taxonomy_util import Taxonomy
+from erlang import erlang
 import math
 
 class TaxTreeHelper:
-    def __init__(self, tax_map, cfg):
+    def __init__(self, cfg, tax_map, tax_tree=None):
         self.origin_taxonomy = tax_map
         self.cfg = cfg
         self.outgroup = None
         self.mf_rooted_tree = None
         self.bf_rooted_tree = None
-        self.tax_tree = None
+        self.tax_tree = tax_tree
         self.bid_taxonomy_map = None
+        self.ranks_set = set()
+        if tax_tree:
+            self.init_taxnode_map()
+        else:
+            self.name2taxnode = {}
     
     def set_mf_rooted_tree(self, rt):
         self.mf_rooted_tree = rt
@@ -26,17 +31,25 @@ class TaxTreeHelper:
     def get_outgroup(self):
         return self.outgroup
 
+    def set_outgroup(self, outgr):
+        self.outgroup = outgr
+
     def get_tax_tree(self):
         if not self.tax_tree:
             self.label_bf_tree_with_ranks()
         return self.tax_tree
     
-    def get_bid_taxonomy_map(self):
+    def get_bid_taxonomy_map(self, rebuild=False):
         self.get_tax_tree()
-        if not self.bid_taxonomy_map:
+        if not self.bid_taxonomy_map or rebuild:
             self.build_bid_taxonomy_map()
         return self.bid_taxonomy_map
-    
+
+    def init_taxnode_map(self):
+        self.name2taxnode = {}
+        for leaf in self.tax_tree.iter_leaves():
+            self.name2taxnode[leaf.name] = leaf
+        
     def save_outgroup(self):
         rt = self.mf_rooted_tree
         
@@ -106,50 +119,76 @@ class TaxTreeHelper:
                 while rank_level >= 0 and lchild.ranks[rank_level] != rchild.ranks[rank_level]:
                     rank_level -= 1
                 node.add_feature("rank_level", rank_level)
-                node_ranks = [Taxonomy.EMPTY_RANK] * 7
+                node_ranks = [Taxonomy.EMPTY_RANK] * max(len(lchild.ranks),len(rchild.ranks)) 
                 if rank_level >= 0:
                     node_ranks[0:rank_level+1] = lchild.ranks[0:rank_level+1]
                     node.name = lchild.ranks[rank_level]
                 else:
                     node.name = "Undefined"
-                    if hasattr(node, "B") and self.cfg.verbose:
-                        print "INFO: no taxonomic annotation for branch %s (reason: children belong to different kingdoms)" % node.B
-
+                    if hasattr(node, "B"):
+                        self.cfg.log.debug("INFO: empty taxonomic annotation for branch %s (child nodes have no common ranks)", node.B)
+                
                 node.add_feature("ranks", node_ranks)
-        
+
         self.tax_tree = self.bf_rooted_tree
+        self.init_taxnode_map()
 
     def build_bid_taxonomy_map(self):
         self.bid_taxonomy_map = {}
+        self.ranks_set = set([])
         for node in self.tax_tree.traverse("postorder"):
-            if not node.is_root() and hasattr(node, "B"):                
-                parent = node.up                
-                self.bid_taxonomy_map[node.B] = parent.ranks
-#                bid_taxonomy_map[node.B] = node.ranks
+            if not node.is_root() and hasattr(node, "B"):
+                parent = node.up
+                branch_rdiff = Taxonomy.lowest_assigned_rank_level(node.ranks) - Taxonomy.lowest_assigned_rank_level(parent.ranks)
+                branch_rank_id = Taxonomy.get_rank_uid(node.ranks)
+                branch_len = node.dist
+                self.bid_taxonomy_map[node.B] = (branch_rank_id, branch_rdiff, branch_len)
+                self.ranks_set.add(branch_rank_id)
+#                if self.cfg.debug:
+#                  print node.ranks, parent.ranks, branch_diff
 
+    def get_seq_ranks_from_tree(self, seq_name):
+        if seq_name not in self.name2taxnode:
+            errmsg = "FATAL ERROR: Sequence %s is not found in the taxonomic tree!" % seq_name
+            self.cfg.exit_fatal_error(errmsg)
+
+        seq_node = self.name2taxnode[seq_name]
+        ranks = Taxonomy.split_rank_uid(seq_node.up.name)
+        return ranks
+
+    def strip_missing_ranks(self, ranks):
+        rank_level = len(ranks)
+        while not Taxonomy.get_rank_uid(ranks[0:rank_level]) in self.ranks_set and rank_level > 0:
+            rank_level -= 1
+        
+        return ranks[0:rank_level]   
     
 class TaxClassifyHelper:
-    def __init__(self, cfg, bid_taxonomy_map, brlen_pv = 0., sp_rate = 0., node_height = []):
+    def __init__(self, cfg, bid_taxonomy_map, sp_rate = 0., node_height = []):
         self.cfg = cfg
         self.bid_taxonomy_map = bid_taxonomy_map
-        self.brlen_pv = brlen_pv
         self.sp_rate = sp_rate
         self.node_height = node_height
         self.erlang = erlang()
+        # hardcoded for now
+        self.parent_lhw_coeff = 0.49
 
-    def classify_seq(self, edges, method = "1", minlw = 0.):
+    def classify_seq(self, edges, minlw = None):
+        if not minlw:
+            minlw = self.cfg.min_lhw
+
+        edges = self.erlang_filter(edges)
         if len(edges) > 0:
-            edges = self.erlang_filter(edges)
-            if method == "1":
+            if self.cfg.taxassign_method == "1":
                 ranks, lws = self.assign_taxonomy_maxsum(edges, minlw)
             else:
                 ranks, lws = self.assign_taxonomy_maxlh(edges)
             return ranks, lws
         else:
-            return None, None      
+            return [], []      
             
     def erlang_filter(self, edges):
-        if self.brlen_pv == 0.:
+        if self.cfg.brlen_pv == 0.:
             return edges
             
         newedges = []
@@ -157,8 +196,10 @@ class TaxClassifyHelper:
             edge_nr = str(edge[0])
             pendant_length = edge[4]
             pv = self.erlang.one_tail_test(rate = self.sp_rate, k = int(self.node_height[edge_nr]), x = pendant_length)
-            if pv >= self.brlen_pv:
+            if pv >= self.cfg.brlen_pv:
                 newedges.append(edge)
+#            else:
+#                self.cfg.log.debug("Edge ignored: [%s, %f], p = %.12f", edge_nr, pendant_length, pv)
         
         if len(newedges) == 0:
             return newedges
@@ -175,15 +216,35 @@ class TaxClassifyHelper:
             edge[2] = math.exp(lh - max_lh) / sum_lh
 
         return newedges
+
+    # "all or none" filter: return empty set iff *all* brlens are below the threshold
+    def erlang_filter2(self, edges):
+        if self.cfg.brlen_pv == 0.:
+            return edges
+            
+        for edge in edges:
+            edge_nr = str(edge[0])
+            pendant_length = edge[4]
+            pv = self.erlang.one_tail_test(rate = self.sp_rate, k = int(self.node_height[edge_nr]), x = pendant_length)
+            if pv >= self.cfg.brlen_pv:
+                return edges
+                
+        return []
      
+    def get_branch_ranks(self, br_id):
+        br_rec = self.bid_taxonomy_map[br_id]
+        br_rank_id = br_rec[0]
+        ranks = Taxonomy.split_rank_uid(br_rank_id)            
+        return ranks
+    
     def assign_taxonomy_maxlh(self, edges):
         #Calculate the sum of likelihood weight for each rank
         taxonmy_sumlw_map = {}
         for edge in edges:
             edge_nr = str(edge[0])
             lw = edge[2]
-            taxonomy = self.bid_taxonomy_map[edge_nr]
-            for rank in taxonomy:
+            taxranks = self.get_branch_ranks(edge_nr)            
+            for rank in taxranks:
                 if rank == "-":
                     taxonmy_sumlw_map[rank] = -1
                 elif rank in taxonmy_sumlw_map:
@@ -196,7 +257,7 @@ class TaxClassifyHelper:
         ml_edge = edges[0]
         edge_nr = str(ml_edge[0])
         maxlw = ml_edge[2]
-        ml_ranks = self.bid_taxonomy_map[edge_nr]
+        ml_ranks = self.get_branch_ranks(edge_nr)
         ml_ranks_copy = []
         for rk in ml_ranks:
             ml_ranks_copy.append(rk)
@@ -210,7 +271,7 @@ class TaxClassifyHelper:
             if rank == "-" and cnt > 0 :                
                 for edge in edges[1:]:
                     edge_nr = str(edge[0])
-                    taxonomy = self.bid_taxonomy_map[edge_nr]
+                    taxonomy = self.get_branch_ranks(edge_nr)
                     newrank = taxonomy[cnt]
                     newlw = taxonmy_sumlw_map[newrank]
                     higherrank_old = ml_ranks[cnt -1]
@@ -232,7 +293,6 @@ class TaxClassifyHelper:
         # "total" rank  = own rank + own rank of all children (for G1: G1 or G1 S1 or G1 S2)
         rw_own = {}
         rw_total = {}
-        rb = {}
         
         ranks = [Taxonomy.EMPTY_RANK]
         
@@ -240,28 +300,36 @@ class TaxClassifyHelper:
             br_id = str(edge[0])
             lweight = edge[2]
             lowest_rank = None
+            lowest_rank_lvl = None
 
             if lweight == 0.:
                 continue
-            
+
             # accumulate weight for the current sequence                
-            ranks = self.bid_taxonomy_map[br_id]
+            br_rank_id, rdiff, brlen = self.bid_taxonomy_map[br_id]
+            ranks = Taxonomy.split_rank_uid(br_rank_id)
             for i in range(len(ranks)):
                 rank = ranks[i]
                 rank_id = Taxonomy.get_rank_uid(ranks, i)
                 if rank != Taxonomy.EMPTY_RANK:
                     rw_total[rank_id] = rw_total.get(rank_id, 0) + lweight
+                    lowest_rank_lvl = i
                     lowest_rank = rank_id
-                    if not rank_id in rb:
-                        rb[rank_id] = br_id
                 else:
                     break
 
             if lowest_rank:
-                rw_own[lowest_rank] = rw_own.get(lowest_rank, 0) + lweight
-                rb[lowest_rank] = br_id
-            elif self.cfg.verbose:
-                print "WARNING: no annotation for branch ", br_id
+                if rdiff > 0:
+                  # if ranks of 'upper' and 'lower' adjacent nodes of a branch are non-equal, split LHW among them
+                  parent_rank = Taxonomy.get_rank_uid(ranks, lowest_rank_lvl - rdiff)
+                  rw_own[lowest_rank] = rw_own.get(lowest_rank, 0) + lweight * (1 - self.parent_lhw_coeff)
+                  rw_own[parent_rank] = rw_own.get(parent_rank, 0) + lweight * self.parent_lhw_coeff
+                  # correct total rank for the lowest level
+                  rw_total[lowest_rank] = rw_total.get(lowest_rank, 0) - lweight * self.parent_lhw_coeff
+                else:
+                  rw_own[lowest_rank] = rw_own.get(lowest_rank, 0) + lweight
+#            else:
+#                self.cfg.log.debug("WARNING: no annotation for branch %s", br_id)
             
         # if all branches have empty ranks only, just return this placement
         if len(rw_total) == 0:
@@ -270,17 +338,16 @@ class TaxClassifyHelper:
         # we assign the sequence to a rank, which has the max "own" weight AND 
         # whose "total" weight is greater than a confidence threshold
         max_rw = 0.
-        s_r = None
+        ass_rank_id = None
         for r in rw_own.iterkeys():
             if rw_own[r] > max_rw and rw_total[r] >= minlw:
-                s_r = r
+                ass_rank_id = r
                 max_rw = rw_own[r] 
-        if not s_r:
-            s_r = max(rw_total.iterkeys(), key=(lambda key: rw_total[key]))
+        if not ass_rank_id:
+            ass_rank_id = max(rw_total.iterkeys(), key=(lambda key: rw_total[key]))
 
-        a_br_id = rb[s_r]
-        a_ranks = self.bid_taxonomy_map[a_br_id]
-
+        a_ranks = Taxonomy.split_rank_uid(ass_rank_id)
+        
         # "total" weight is considered as confidence value for now
         a_conf = [0.] * len(a_ranks)
         for i in range(len(a_conf)):

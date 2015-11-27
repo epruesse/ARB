@@ -499,16 +499,23 @@ AWT_map_key.o: $(ARBHOME)/INCLUDE/test_global.h
 AWT_map_key.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 AWT_misc.o: awt_misc.hxx
+AWT_misc.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWT_misc.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_misc.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_misc.o: $(ARBHOME)/INCLUDE/arb_defs.h
 AWT_misc.o: $(ARBHOME)/INCLUDE/arb_error.h
+AWT_misc.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AWT_misc.o: $(ARBHOME)/INCLUDE/arb_strarray.h
+AWT_misc.o: $(ARBHOME)/INCLUDE/arb_string.h
+AWT_misc.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_misc.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_misc.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_misc.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_misc.o: $(ARBHOME)/INCLUDE/aw_action.hxx
+AWT_misc.o: $(ARBHOME)/INCLUDE/aw_advice.hxx
 AWT_misc.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 AWT_misc.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
+AWT_misc.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 AWT_misc.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWT_misc.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 AWT_misc.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx

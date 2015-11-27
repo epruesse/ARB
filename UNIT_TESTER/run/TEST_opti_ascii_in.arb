@@ -1405,13 +1405,3 @@ colorsets		%% (%
 
 	%) /*colorsets*/
 
-tmp			%% (%
-	message			%% (%
-		pending			%% (%
-			%) /*pending*/
-
-		%) /*message*/
-
-	trees_have_order		%i 1
-	%) /*tmp*/
-

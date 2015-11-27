@@ -375,15 +375,10 @@ GB_ERROR GB_textprint(const char *path) {
 
 // --------------------------------------------------------------------------------
 
-static GB_CSTR getenv_ignore_empty(GB_CSTR envvar) {
-    GB_CSTR result = getenv(envvar);
-    return (result && result[0]) ? result : 0;
-}
-
 static GB_CSTR GB_getenvPATH() {
     static const char *path = 0;
     if (!path) {
-        path = getenv_ignore_empty("PATH");
+        path = ARB_getenv_ignore_empty("PATH");
         if (!path) {
             path = GBS_eval_env("/bin:/usr/bin:$(ARBHOME)/bin");
             GB_informationf("Your PATH variable is empty - using '%s' as search path.", path);
@@ -402,27 +397,6 @@ static GB_CSTR GB_getenvPATH() {
 // --------------------------------------------------------------------------------
 // Functions to find an executable
 
-char *GB_executable(GB_CSTR exe_name) {
-    GB_CSTR     path   = GB_getenvPATH();
-    char       *buffer = GB_give_buffer(strlen(path)+1+strlen(exe_name)+1);
-    const char *start  = path;
-    int         found  = 0;
-
-    while (!found && start) {
-        const char *colon = strchr(start, ':');
-        int         len   = colon ? (colon-start) : (int)strlen(start);
-
-        memcpy(buffer, start, len);
-        buffer[len] = '/';
-        strcpy(buffer+len+1, exe_name);
-
-        found = GB_is_executablefile(buffer);
-        start = colon ? colon+1 : 0;
-    }
-
-    return found ? strdup(buffer) : 0;
-}
-
 static char *GB_find_executable(GB_CSTR description_of_executable, ...) {
     // goes to header: __ATTR__SENTINEL
     /* search the path for an executable with any of the given names (...)
@@ -435,7 +409,7 @@ static char *GB_find_executable(GB_CSTR description_of_executable, ...) {
     va_list  args;
 
     va_start(args, description_of_executable);
-    while (!found && (name = va_arg(args, GB_CSTR)) != 0) found = GB_executable(name);
+    while (!found && (name = va_arg(args, GB_CSTR)) != 0) found = ARB_executable(name, GB_getenvPATH());
     va_end(args);
 
     if (!found) { // none of the executables has been found
@@ -477,10 +451,10 @@ static char *getenv_executable(GB_CSTR envvar) {
     //  - not defining an executable (warns about that)
 
     char       *result   = 0;
-    const char *exe_name = getenv_ignore_empty(envvar);
+    const char *exe_name = ARB_getenv_ignore_empty(envvar);
 
     if (exe_name) {
-        result = GB_executable(exe_name);
+        result = ARB_executable(exe_name, GB_getenvPATH());
         if (!result) {
             GB_warningf("Environment variable '%s' contains '%s' (which is not an executable)", envvar, exe_name);
         }
@@ -496,7 +470,7 @@ static char *getenv_existing_directory(GB_CSTR envvar) {
     // - does not point to a directory (warns about that)
 
     char       *result   = 0;
-    const char *dir_name = getenv_ignore_empty(envvar);
+    const char *dir_name = ARB_getenv_ignore_empty(envvar);
 
     if (dir_name) {
         if (GB_is_directory(dir_name)) {
@@ -520,7 +494,7 @@ static void GB_setenv(const char *var, const char *value) {
 static GB_CSTR GB_getenvARB_XTERM() {
     static const char *xterm = 0;
     if (!xterm) {
-        xterm = getenv_ignore_empty("ARB_XTERM"); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARB_XTERM
+        xterm = ARB_getenv_ignore_empty("ARB_XTERM"); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARB_XTERM
         if (!xterm) xterm = "xterm -sl 1000 -sb -geometry 120x50";
     }
     return xterm;
@@ -529,7 +503,7 @@ static GB_CSTR GB_getenvARB_XTERM() {
 static GB_CSTR GB_getenvARB_XCMD() {
     static const char *xcmd = 0;
     if (!xcmd) {
-        xcmd = getenv_ignore_empty("ARB_XCMD"); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARB_XCMD
+        xcmd = ARB_getenv_ignore_empty("ARB_XCMD"); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARB_XCMD
         if (!xcmd) {
             const char *xterm = GB_getenvARB_XTERM();
             gb_assert(xterm);
@@ -542,10 +516,10 @@ static GB_CSTR GB_getenvARB_XCMD() {
 GB_CSTR GB_getenvUSER() {
     static const char *user = 0;
     if (!user) {
-        user = getenv_ignore_empty("USER");
-        if (!user) user = getenv_ignore_empty("LOGNAME");
+        user = ARB_getenv_ignore_empty("USER");
+        if (!user) user = ARB_getenv_ignore_empty("LOGNAME");
         if (!user) {
-            user = getenv_ignore_empty("HOME");
+            user = ARB_getenv_ignore_empty("HOME");
             if (user && strrchr(user, '/')) user = strrchr(user, '/')+1;
         }
         if (!user) {
@@ -715,7 +689,7 @@ GB_CSTR GB_getenv(const char *env) {
         if (strcmp(env, "USER") == 0) return GB_getenvUSER();
     }
 
-    return getenv_ignore_empty(env);
+    return ARB_getenv_ignore_empty(env);
 }
 
 struct export_environment {
@@ -1400,7 +1374,7 @@ void TEST_paths() {
         TEST_EXPECT_IS_CANONICAL(nosuchpath_in_arbhome);
         TEST_EXPECT_IS_CANONICAL(file_in_nosuchpath);
 
-        TEST_EXPECT_IS_CANONICAL("/tmp"); // existing (most likely)
+        TEST_EXPECT_IS_CANONICAL("/sbin"); // existing (most likely)
         TEST_EXPECT_IS_CANONICAL("/tmp/arbtest.fig");
         TEST_EXPECT_IS_CANONICAL("/arbtest.fig"); // not existing (most likely)
 
