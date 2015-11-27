@@ -1,7 +1,7 @@
 menu:Print
 
 item:[experimental] Validate taxonomy (SATIVA)
-itemmethod: (mkdir -p ~/.arb_tmp/sativa_$$; cd ~/.arb_tmp/sativa_$$ ; arb_convert_aln --arb-notify -GenBank TmpInputFile -phylip sativa_in.phy; ${ARB_XCMD} bash -x -c @@LD_LIBRARY_PATH="${ARB_LIBRARY_PATH:-/usr/arb/lib}";export LD_LIBRARY_PATH; arb_sativa.pl $MARKEDONLY $MARKMIS $RANKTEST $TAXFIELD $SPECIESFIELD $DUPRANKS $BADRANKS; arb_wait@@; cd ~/.arb_tmp; rm -rf sativa_$$) & 
+itemmethod: (mkdir -p ~/.arb_tmp/sativa_$$; cd ~/.arb_tmp/sativa_$$ ; arb_convert_aln --arb-notify -GenBank TmpInputFile -phylip sativa_in.phy; ${ARB_XCMD} bash -x -c @@LD_LIBRARY_PATH="${ARB_LIBRARY_PATH:-/usr/arb/lib}";export LD_LIBRARY_PATH; arb_sativa.pl $MARKEDONLY $MARKMIS $RANKTEST $VERBOSE $TAXFIELD $TAXCODE $METHOD $NUMREPS $CUTOFF $RANDSEED $SPECIESFIELD; arb_wait@@; cd ~/.arb_tmp; rm -rf sativa_$$) & 
 seqtype:*
 itemmeta:v
 itemhelp:sativa.help
@@ -40,18 +40,55 @@ arglabel:Species name field
 argtype:text
 argtext:full_name
 
-arg:DUPRANKS
-arglabel:Action for non-unique rank names
+arg:TAXCODE
+arglabel:Taxonomic code
 argtype:choice_menu
-argchoice:Ignore:ignore
-#argchoice:Auto-rename:autofix
-argchoice:Report and exit:abort
-argchoice:Skip sequences:skip
+argchoice:Bacteriological:bac
+argchoice:Botanical:bot
+argchoice:Zoological:zoo
+argchoice:Virological:vir
 
-arg:BADRANKS
-arglabel:Action for redundant ranks (subclass, suborder etc.)
+arg:METHOD
+arglabel:Reference tree: inference method
 argtype:choice_menu
-argchoice:Ignore:ignore
-#argchoice:"Best guess" fix:autofix
-argchoice:Report and exit:abort
-argchoice:Skip sequences:skip
+argchoice:Thorough (standard RAxML):thorough
+argchoice:Fast (RAxML "-D" option):fast
+argchoice:Ultrafast (RAxML "-f e" option):ultrafast
+
+arg:NUMREPS
+arglabel:Reference tree: number of RAxML searches
+argtype:text
+argtext:1
+
+arg:CUTOFF
+arglabel:Confidence cut-off
+argtype:text
+argtext:0.51
+
+arg:RANDSEED
+arglabel:Random seed
+argtype:text
+argtext:12345
+
+arg:VERBOSE
+arglabel:Verbose output
+argtype:choice_menu
+argchoice:No:
+argchoice:Yes:--verbose
+
+
+#arg:DUPRANKS
+#arglabel:Action for non-unique rank names
+#argtype:choice_menu
+#argchoice:Ignore:ignore
+##argchoice:Auto-rename:autofix
+#argchoice:Report and exit:abort
+#argchoice:Skip sequences:skip
+
+#arg:BADRANKS
+#arglabel:Action for redundant ranks (subclass, suborder etc.)
+#argtype:choice_menu
+#argchoice:Ignore:ignore
+##argchoice:"Best guess" fix:autofix
+#argchoice:Report and exit:abort
+#argchoice:Skip sequences:skip
