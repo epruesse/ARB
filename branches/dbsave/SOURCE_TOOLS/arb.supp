@@ -1,0 +1,18 @@
+#
+# This is a valgrind suppression file that should be used when using valgrind with arb.
+#
+# Contains common errors
+# - motif specific errors should go into arb_motif.supp
+# - gtk   specific errors should go into arb_gtk.supp
+#
+# see also arb_valgrind@suppressions
+# see also LeakSanitizer suppressions in arb.leaksan.supp
+
+{
+   arb: leaks loaded xfig-data with AW_window
+   Memcheck:Leak
+   ...
+   fun:_ZN9AW_window9load_xfigEPKcb
+   ...
+}
+
