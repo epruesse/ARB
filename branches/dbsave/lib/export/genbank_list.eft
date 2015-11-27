@@ -1,6 +1,0 @@
-SUFFIX          alpha
-
-#HEAD "*(|date); Automatically exported data from ARB"
-
-BEGIN
-*(name|tab(11)) *(full_name|tab(40)) *(acc:?*=(ACC ?1*1))
