@@ -68,11 +68,33 @@ inline GB_ERROR valgrinded_system(const char *cmdline) {
 #define TEST_RUN_TOOL(cmdline)                TEST_EXPECT_NO_ERROR(RUN_TOOL(cmdline))
 #define TEST_RUN_TOOL_NEVER_VALGRIND(cmdline) TEST_EXPECT_NO_ERROR(RUN_TOOL_NEVER_VALGRIND(cmdline))
 
+static const char *checkedPipeCommand(const char *pipeCommand) {
+#if defined(ASSERTION_USED)
+    const char *pipe = strchr(pipeCommand, '|');
+    gb_assert(pipe && strchr(pipe+1, '|') == 0); // only works for _exactly one_ pipe symbol
+#endif
+
+    char       *quotedCommand = GBK_singlequote(GBS_global_string("%s;exit $((${PIPESTATUS[0]} | ${PIPESTATUS[1]}))", pipeCommand));
+    const char *checked_cmd   = GBS_global_string("bash -c %s", quotedCommand);
+    free(quotedCommand);
+    return checked_cmd;
+}
+
 void TEST_SLOW_ascii_2_bin_2_ascii() {
     const char *ascii_ORG  = "TEST_loadsave_ascii.arb";
     const char *ascii      = "bin2ascii.arb";
     const char *binary     = "ascii2bin.arb";
     const char *binary_2ND = "ascii2bin2.arb";
+
+    // test that errors from _each_ part of a piped command propagate correctly:
+    const char *failing_piped_cmds[] = {
+        "arb_weirdo | wc -l",      // first command fails
+        "echo hello | arb_weirdo", // second command fails
+        "arb_weirdo | arb_weirdo", // both commands fail
+    };
+    for (unsigned c = 0; c<ARRAY_ELEMS(failing_piped_cmds); ++c) {
+        TEST_EXPECT_ERROR_CONTAINS(RUN_TOOL(checkedPipeCommand(failing_piped_cmds[c])), "System call failed");
+    }
 
     // test conversion file -> file
     TEST_RUN_TOOL(GBS_global_string("arb_2_bin   %s %s", ascii_ORG, binary));
@@ -81,10 +103,8 @@ void TEST_SLOW_ascii_2_bin_2_ascii() {
     TEST_EXPECT_FILES_EQUAL(ascii, ascii_ORG);
 
     // test conversion (bin->ascii->bin) via stream (this tests 'arb_repair')
-    TEST_RUN_TOOL(GBS_global_string("arb_2_ascii %s - | arb_2_bin - %s", binary, binary_2ND));
-
-    // TEST_EXPECT_FILES_EQUAL(binary, binary_2ND); // can't compare binary files (they contain undefined bytes)
-
+    TEST_RUN_TOOL(checkedPipeCommand(GBS_global_string("arb_2_ascii %s - | arb_2_bin - %s", binary, binary_2ND)));
+    // TEST_EXPECT_FILES_EQUAL(binary, binary_2ND); // can't compare binary files (binary_2ND differs (keys?))
     // instead convert back to ascii and compare result with original
     TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(ascii));
     TEST_RUN_TOOL(GBS_global_string("arb_2_ascii %s %s", binary_2ND, ascii));
