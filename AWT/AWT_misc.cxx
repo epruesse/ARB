@@ -10,13 +10,14 @@
 
 #include "awt_misc.hxx"
 
+#include <arb_strarray.h>
+
+#include <arbdb.h>
+
 #include <aw_root.hxx>
 #include <aw_window.hxx>
 #include <aw_awar.hxx>
 #include <aw_advice.hxx>
-
-#include <arb_strarray.h>
-#include <arbdb.h>
 
 AW_window *AWT_create_IUPAC_info_window(AW_root *aw_root) {
     // Open window showing IUPAC tables
