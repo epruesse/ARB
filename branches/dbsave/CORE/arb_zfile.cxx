@@ -215,40 +215,55 @@ void TEST_compressed_io() {
         TEST_EXPECT_NO_ERROR(ARB_zfclose(in, inText));
     }
 
+    int successful_compressions = 0;
+
     for (FileCompressionMode cmode = FileCompressionMode(ZFILE_AUTODETECT+1);
          cmode != ZFILE_UNDEFINED;
          cmode  = FileCompressionMode(cmode+1))
     {
         TEST_ANNOTATE(GBS_global_string("cmode=%i", int(cmode)));
 
+        bool compressed_save_failed = false;
         {
             GB_ERROR  error = NULL;
             FILE     *out   = ARB_zfopen(outFile, "w", cmode, error);
 
-            TEST_REJECT(error);
+            TEST_EXPECT_NO_ERROR(error);
             TEST_REJECT_NULL(out);
 
             TEST_EXPECT_DIFFERENT(EOF, fputs(testText, out));
-            TEST_EXPECT_NO_ERROR(ARB_zfclose(out, outFile));
+
+            error = ARB_zfclose(out, outFile);
+            if (error && strstr(error, "failed with exitcode=127") && cmode != ZFILE_UNCOMPRESSED) {
+                // assume compression utility is not installed
+                compressed_save_failed = true;
+            }
+            else {
+                TEST_EXPECT_NO_ERROR(error);
+            }
         }
 
-        for (int detect = 0; detect<=1; ++detect) {
-            TEST_ANNOTATE(GBS_global_string("cmode=%i detect=%i", int(cmode), detect));
+        if (!compressed_save_failed) {
+            for (int detect = 0; detect<=1; ++detect) {
+                TEST_ANNOTATE(GBS_global_string("cmode=%i detect=%i", int(cmode), detect));
 
-            GB_ERROR  error = NULL;
-            FILE     *in    = ARB_zfopen(outFile, "r", detect ? ZFILE_AUTODETECT : cmode, error);
+                GB_ERROR  error = NULL;
+                FILE     *in    = ARB_zfopen(outFile, "r", detect ? ZFILE_AUTODETECT : cmode, error);
 
-            TEST_REJECT(error);
-            TEST_REJECT_NULL(in);
+                TEST_REJECT(error);
+                TEST_REJECT_NULL(in);
 
-            size_t  bytes_read;
-            char   *content = fileContent(in, bytes_read);
-            TEST_EXPECT_NO_ERROR(ARB_zfclose(in, outFile));
-            TEST_EXPECT_EQUAL(content, testText); // if this fails for detect==1 -> detection does not work
-            free(content);
+                size_t  bytes_read;
+                char   *content = fileContent(in, bytes_read);
+                TEST_EXPECT_NO_ERROR(ARB_zfclose(in, outFile));
+                TEST_EXPECT_EQUAL(content, testText); // if this fails for detect==1 -> detection does not work
+                free(content);
+            }
+            successful_compressions++;
         }
     }
 
+    TEST_EXPECT(successful_compressions>=3); // at least ZFILE_UNCOMPRESSED, ZFILE_GZIP and ZFILE_BZIP should succeed
 
     free(testText);
     TEST_EXPECT_DIFFERENT(GB_unlink(outFile), -1);
