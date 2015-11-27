@@ -5,6 +5,8 @@ import sys
 import glob
 import shutil
 import datetime
+import random
+import re
 from subprocess import call,STDOUT
 from json_util import EpaJsonParser
 
@@ -30,12 +32,14 @@ class FileUtils:
 class RaxmlWrapper:
 
     def __init__(self, config): 
-        self.config = config
+        self.cfg = config
+        if config.rand_seed:
+            random.seed(config.rand_seed)
     
     def make_raxml_fname(self, stem, job_name, absolute=True):
         fname = "RAxML_" + stem + "." + job_name
         if absolute:
-            return self.config.raxml_outdir + fname
+            return os.path.join(self.cfg.raxml_outdir, fname)
         else:
             return fname            
 
@@ -52,17 +56,22 @@ class RaxmlWrapper:
 
     def reduce_alignment(self, align_fname, job_name="reduce"):
         reduced_fname = align_fname + ".reduced"
-        FileUtils.remove_if_exists(reduced_fname)
-        raxml_params = ["-f", "c", "-s", align_fname]
-        raxml_params += ["--no-dup-check"]
-        self.run(job_name, raxml_params)
-        self.cleanup(job_name)
-        if os.path.isfile(reduced_fname):
+        # we don't have to do anything in restart mode
+        if self.cfg.restart and os.path.isfile(reduced_fname):
             return reduced_fname
         else:
-            return align_fname
+            FileUtils.remove_if_exists(reduced_fname)
+            raxml_params = ["-f", "c", "-s", align_fname]
+            raxml_params += ["--no-dup-check"]
+            self.run(job_name, raxml_params)
+            self.cleanup(job_name)
+            if os.path.isfile(reduced_fname):
+                return reduced_fname
+            else:
+                return align_fname
 
-    def run_epa(self, job_name, align_fname, reftree_fname, optmod_fname="", silent=True, mode="epa", subtree_fname=None):
+    def run_epa(self, job_name, align_fname, reftree_fname, optmod_fname="", silent=True, mode="epa", subtree_fname=None,\
+    lhw_acc_threshold=0.999):
         raxml_params = ["-s", align_fname, "-t", reftree_fname]
         # assume that by the time we call EPA reference has been cleaned already (e.g. with previous reduce_alignment call)
         raxml_params += ["--no-seq-check"]
@@ -78,14 +87,16 @@ class RaxmlWrapper:
         else:
             print "ERROR: Invalid RAxML-EPA running mode: %s" % mode
             sys.exit()
+            
+        raxml_params += ["--epa-accumulated-threshold", str(lhw_acc_threshold)]
 
-        if self.config.epa_use_heuristic in ["TRUE", "YES", "1"]:
-            raxml_params += ["-G", str(self.config.epa_heur_rate)]            
+        if self.cfg.epa_use_heuristic in ["TRUE", "YES", "1"]:
+            raxml_params += ["-G", str(self.cfg.epa_heur_rate)]            
 
-        if self.config.epa_load_optmod and optmod_fname:
+        if self.cfg.epa_load_optmod and optmod_fname:
             if os.path.isfile(optmod_fname):
                 raxml_params += ["-R", optmod_fname]
-                if self.config.raxml_model == "GTRCAT" and not self.config.compress_patterns:
+                if self.cfg.raxml_model == "GTRCAT" and not self.cfg.compress_patterns:
                     raxml_params +=  ["-H"]
             else:
                 print "WARNING: Binary model file not found: %s" % optmod_fname
@@ -119,27 +130,39 @@ class RaxmlWrapper:
         else:        
             return jp
 
-    def run(self, job_name, params, silent=True):
-        if self.config.raxml_model == "AUTO":
+    def run(self, job_name, params, silent=True, chkpoint_fname=None):
+        if self.cfg.raxml_model == "AUTO":
             print "ERROR: you should have called EpacConfig.resolve_auto_settings() in your script!\n"
             sys.exit()
 
         self.cleanup(job_name)
         
-        params += ["-m", self.config.raxml_model, "-n", job_name]
-        params += ["--no-bfgs"]
+        lparams  = []
+        lparams += params
+        lparams += ["-m", self.cfg.raxml_model, "-n", job_name]
+        lparams += ["--no-bfgs"]
+        
+        if self.cfg.verbose:
+            lparams += ["--verbose"]
+        
+        if not "-p" in lparams:
+            seed = random.randint(1, 32000)
+            lparams += ["-p", str(seed)]
+            
+        if chkpoint_fname:
+            lparams += ["-Z", chkpoint_fname]
 
-        if self.config.run_on_cluster:
-            self.run_cluster(params)
+        if self.cfg.run_on_cluster:
+            self.run_cluster(lparams)
             return;        
 
-        if self.config.raxml_remote_call:
-            call_str = ["ssh", self.config.raxml_remote_host]
+        if self.cfg.raxml_remote_call:
+            call_str = ["ssh", self.cfg.raxml_remote_host]
         else:
             call_str = []
-        call_str += self.config.raxml_cmd + params
+        call_str += self.cfg.raxml_cmd + lparams
         if silent:        
-            print ' '.join(call_str) + "\n"
+            self.cfg.log.debug(' '.join(call_str) + "\n")
             out_fname = self.make_raxml_fname("output", job_name)
             with open(out_fname, "w") as fout:
                 call(call_str, stdout=fout, stderr=STDOUT)
@@ -147,29 +170,81 @@ class RaxmlWrapper:
             call(call_str)
 
         return ' '.join(call_str)
+        
+    def run_multiple(self, job_name, params, repnum, silent=True):    
+        best_lh = float("-inf")
+        best_jobname = None
+        check_old_jobs = self.cfg.restart
+        
+        for i in range(repnum):
+            call_raxml = True
+            chkpoint_fname = None
 
+            rep_jobname = "%s.%d" % (job_name, i)
+            
+            if check_old_jobs:
+                # in resume mode, we have to check where we have stopped before 
+                next_jobname = "%s.%d" % (job_name, i+1)
+                next_info = self.info_fname(next_jobname)
+                # if RAxML_info file for the next job exists, current job has had finished -> skip it
+                if os.path.isfile(next_info):
+                    call_raxml = False
+                else:
+                    # use RAxML checkpoints if there are any
+                    old_chkpoint_fname = self.checkpoint_fname(rep_jobname)
+                    if not os.path.isfile(old_chkpoint_fname):
+                        old_chkpoint_fname = self.bkup_checkpoint_fname(rep_jobname)
+                        if not os.path.isfile(old_chkpoint_fname):
+                            old_chkpoint_fname = None
+
+                    FileUtils.remove_if_exists(next_info)
+                    if old_chkpoint_fname:
+                        chkpoint_fname = self.checkpoint_fname("last_chkpoint")
+                        shutil.move(old_chkpoint_fname, chkpoint_fname)
+                    
+                    # this was the last RAxML run from previous SATIVA invocation -> proceed without checks from now on
+                    check_old_jobs = False
+                  
+            if call_raxml:
+                invoc_str = self.run(rep_jobname, params, silent, chkpoint_fname)
+            lh = self.get_tree_lh(rep_jobname)
+            if lh > best_lh:
+                best_lh = lh
+                best_jobname = rep_jobname
+            self.cfg.log.debug("Tree %d GAMMA-based logLH: %f\n" % (i, lh))
+        
+        best_fname = self.info_fname(best_jobname)
+        dst_fname = self.info_fname(job_name)
+        shutil.copy(best_fname, dst_fname)
+
+        best_fname = self.result_fname(best_jobname)
+        dst_fname = self.result_fname(job_name)
+        shutil.copy(best_fname, dst_fname)
+        
+        return invoc_str
+        
     def run_cluster(self, params):
-        if self.config.raxml_remote_call:
-            qsub_call_str = ["ssh", self.config.raxml_remote_host]
+        if self.cfg.raxml_remote_call:
+            qsub_call_str = ["ssh", self.cfg.raxml_remote_host]
         else:
             qsub_call_str = []
         
-        raxml_call_cmd = self.config.raxml_cmd + params        
+        raxml_call_cmd = self.cfg.raxml_cmd + params        
         for i in range(len(raxml_call_cmd)):
             if isinstance(raxml_call_cmd[i], basestring):
-                raxml_call_cmd[i] = FileUtils.rebase(raxml_call_cmd[i], self.config.epac_home, self.config.cluster_epac_home)
+                raxml_call_cmd[i] = FileUtils.rebase(raxml_call_cmd[i], self.cfg.epac_home, self.cfg.cluster_epac_home)
         raxml_call_str = ' '.join(raxml_call_cmd)
                 
-        script_fname = self.config.tmp_fname("%NAME%_sub.sh")
+        script_fname = self.cfg.tmp_fname("%NAME%_sub.sh")
         FileUtils.remove_if_exists(script_fname)
-        shutil.copy(self.config.cluster_qsub_script, script_fname)
+        shutil.copy(self.cfg.cluster_qsub_script, script_fname)
         qsub_job_name = "epa"        
         with open(script_fname, "a") as fout:
             fout.write("#$ -N %s\n" % qsub_job_name)
             fout.write("\n")            
             fout.write(raxml_call_str + "\n")
 
-        cluster_script_fname = FileUtils.rebase(script_fname, self.config.epac_home, self.config.cluster_epac_home)
+        cluster_script_fname = FileUtils.rebase(script_fname, self.cfg.epac_home, self.cfg.cluster_epac_home)
         qsub_call_str += ["qsub", "-sync", "y", cluster_script_fname]
 
         print raxml_call_str + "\n"
@@ -177,12 +252,52 @@ class RaxmlWrapper:
 #        sys.exit()
 
         call(qsub_call_str)
-        if not self.config.debug:
+        if not self.cfg.debug:
             FileUtils.remove_if_exists(script_fname)
-
+            
+    def get_tree_lh(self, job_name):
+        info_fname = self.info_fname(job_name)
+        with open(info_fname, "r") as info_file:
+            info_str = info_file.read()
+        
+        lh_patterns = ["Final GAMMA-based Score of best tree ",
+                       "Final GAMMA  likelihood: ",
+                       "GAMMA-based likelihood ",
+                       "CAT-based likelihood "]
+        m = None
+        for pat in lh_patterns:
+            m = re.search('(?<=%s)[0-9.\-]+' % pat, info_str)
+            if m:
+                lh = float(m.group(0))
+                return lh
+                
+        return None
+        
+    def get_invocation_str(self, job_name):
+        info_fname = self.info_fname(job_name)
+        with open(info_fname, "r") as info_file:
+            info_str = info_file.read()
+        
+        pattern = "RAxML was called as follows:\n\n"
+        
+        m = re.search('(?<=%s).*' % pattern, info_str)
+        if m:
+            return m.group(0)
+        else:
+            return ""
+    
     def result_fname(self, job_name):
         return self.make_raxml_fname("result", job_name)
     
+    def info_fname(self, job_name):
+        return self.make_raxml_fname("info", job_name)
+
+    def checkpoint_fname(self, job_name):
+        return self.make_raxml_fname("binaryCheckpoint", job_name)
+
+    def bkup_checkpoint_fname(self, job_name):
+        return self.make_raxml_fname("binaryCheckpointBackup", job_name)
+
     def result_exists(self, job_name):
         if os.path.isfile(self.result_fname(job_name)):
             return True
@@ -211,3 +326,17 @@ class RaxmlWrapper:
         src_fname = self.make_raxml_fname("labelledTree", job_name)
         shutil.copy(src_fname, dst_fname)
 
+    def copy_epa_jplace(self, job_name, dst_fname, mode="epa", move=False):
+        if mode == "l1o_seq":
+            result_file_stem = "leaveOneOutResults"
+        elif mode == "l1o_subtree":
+            result_file_stem = "subtreePlacement"
+        elif mode == "epa":
+            result_file_stem = "portableTree"
+        else:
+            return
+        src_fname = self.make_raxml_fname(result_file_stem, job_name) + ".jplace"
+        if move:
+            shutil.move(src_fname, dst_fname)
+        else:
+            shutil.copy(src_fname, dst_fname)
