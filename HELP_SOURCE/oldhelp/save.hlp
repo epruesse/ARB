@@ -20,6 +20,29 @@ OCCURRENCE      ARB_NT/File/Quicksave changes
 DESCRIPTION	To save the entire database, choose 'Save whole database as ...'
 		from the 'File' menu of the 'ARB_NT' window.
 
+		Select or enter the filename as which your database should be saved.
+		
+		Select the database type:
+
+			* Binary (recommended, reasonable sequence compression)
+			* Binary+Fastload (uses a huge file to speedup loading database into ARB; whether there
+                          really is some speedup depends on your system and machine, try it out)
+                        * Ascii (human-readable; extra HUGE)
+
+                Select extra compression:
+
+                        * None (compatible with arb 6.0.x and older)
+                        * otherwise ARB uses the selected command line compressor (like gzip, bzip2, xz)
+                          to compress the database during save. When loading a database, arb detects
+                          if a database is extra-compressed and automatically selects the correct
+                          decompressor.
+
+                          Note: you may rename an extra-compressed .arb file into .arb.gz or .arb.bz2 before
+                                giving it away to a pre-arb-6.0 user. He will be able to open it using
+                                an archive manager and extract the contained .arb manually.
+
+SECTION         Quicksaving
+
                 You may also save only the changes done to the database,
 		using 'Quicksave changes' or 'Quicksave changes as' (accessible
                 via the DB name button in the ARB_NT top area).

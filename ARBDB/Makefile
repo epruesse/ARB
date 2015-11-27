@@ -291,8 +291,10 @@ ad_load.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ad_load.o: $(ARBHOME)/INCLUDE/arb_progress.h
 ad_load.o: $(ARBHOME)/INCLUDE/arb_str.h
 ad_load.o: $(ARBHOME)/INCLUDE/arb_string.h
+ad_load.o: $(ARBHOME)/INCLUDE/arb_zfile.h
 ad_load.o: $(ARBHOME)/INCLUDE/arbtools.h
 ad_load.o: $(ARBHOME)/INCLUDE/attributes.h
+ad_load.o: $(ARBHOME)/INCLUDE/BufferedFileReader.h
 ad_load.o: $(ARBHOME)/INCLUDE/cb.h
 ad_load.o: $(ARBHOME)/INCLUDE/cb_base.h
 ad_load.o: $(ARBHOME)/INCLUDE/cbtypes.h
@@ -303,6 +305,7 @@ ad_load.o: $(ARBHOME)/INCLUDE/gccver.h
 ad_load.o: $(ARBHOME)/INCLUDE/smartptr.h
 ad_load.o: $(ARBHOME)/INCLUDE/static_assert.h
 ad_load.o: $(ARBHOME)/INCLUDE/test_global.h
+ad_load.o: $(ARBHOME)/INCLUDE/test_unit.h
 ad_load.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 ad_save_load.o: ad_io_inline.h
@@ -323,11 +326,14 @@ ad_save_load.o: gb_storage.h
 ad_save_load.o: gb_tune.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/arb_core.h
+ad_save_load.o: $(ARBHOME)/INCLUDE/arb_defs.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/arb_diff.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/arb_error.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/arb_file.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/arb_msg.h
+ad_save_load.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/arb_string.h
+ad_save_load.o: $(ARBHOME)/INCLUDE/arb_zfile.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/arbtools.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/attributes.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/cb.h

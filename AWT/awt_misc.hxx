@@ -17,6 +17,9 @@
 
 AW_window *AWT_create_IUPAC_info_window(AW_root *aw_root);
 
+void AWT_insert_DBsaveType_selector(AW_window *aww, const char *awar_name);
+void AWT_insert_DBcompression_selector(AW_window *aww, const char *awar_name);
+
 #else
 #error awt_misc.hxx included twice
 #endif // AWT_MISC_HXX

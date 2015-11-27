@@ -11,15 +11,6 @@ presets			%% (%
 
 	%) /*presets*/
 
-tmp			%% (%
-	message			%% (%
-		pending			%% (%
-			%) /*pending*/
-
-		%) /*message*/
-
-	%) /*tmp*/
-
 species_data		%% (%
 	species			%% (%
 		name		:7600	"MetMazei"
