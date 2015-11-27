@@ -845,7 +845,6 @@ static void startup_gui(NtreeCommandLine& cl, ARB_ERROR& error) {
     AW_root* aw_root = GLOBAL.aw_root;
 
     AW_create_fileselection_awars(aw_root, AWAR_DB, "", ".arb", "noname.arb");
-    aw_root->awar_string(AWAR_DB_TYPE, "b");
     aw_root->awar_string(AWAR_DB_NAME, "noname.arb");
     aw_root->awar(AWAR_DB_PATH)->add_callback(AWAR_DB_PATH_changed_cb);
 

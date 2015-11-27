@@ -33,6 +33,7 @@
 #include <awt_sel_boxes.hxx>
 #include <awt_www.hxx>
 #include <awt_TreeAwars.hxx>
+#include <awt_misc.hxx>
 #include <nds.h>
 
 #include <db_query.h>
@@ -385,17 +386,23 @@ static void NT_save_quick_as_cb(AW_window *aww) {
 
     free(filename);
 }
+
+#define AWAR_DB_TYPE        AWAR_DB "type"        // created by AWT_insert_DBsaveType_selector
+#define AWAR_DB_COMPRESSION AWAR_DB "compression" // created by AWT_insert_DBcompression_selector
+
 static void NT_save_as_cb(AW_window *aww) {
-    AW_root *awr      = aww->get_root();
-    char    *filename = awr->awar(AWAR_DB_PATH)->read_string();
-    char    *filetype = awr->awar(AWAR_DB_TYPE)->read_string();
+    AW_root    *awr      = aww->get_root();
+    char       *filename = awr->awar(AWAR_DB_PATH)->read_string();
+    const char *atype    = awr->awar(AWAR_DB_TYPE)->read_char_pntr();
+    const char *ctype    = awr->awar(AWAR_DB_COMPRESSION)->read_char_pntr();
+    char       *savetype = GBS_global_string_copy("%s%s", atype, ctype);
 
     awr->dont_save_awars_with_default_value(GLOBAL.gb_main);
-    GB_ERROR error = GB_save(GLOBAL.gb_main, filename, filetype);
+    GB_ERROR error = GB_save(GLOBAL.gb_main, filename, savetype);
     if (!error) AW_refresh_fileselection(awr, "tmp/nt/arbdb");
     aww->hide_or_notify(error);
 
-    free(filetype);
+    free(savetype);
     free(filename);
 }
 
@@ -419,7 +426,8 @@ static AW_window *NT_create_save_quick_as_window(AW_root *aw_root, const char *b
         aws->at("comment");
         aws->create_text_field(AWAR_DB_COMMENT);
 
-        aws->at("save"); aws->callback(NT_save_quick_as_cb);
+        aws->at("save");
+        aws->callback(NT_save_quick_as_cb);
         aws->create_button("SAVE", "SAVE", "S");
     }
     return aws;
@@ -502,26 +510,25 @@ static AW_window *NT_create_save_as(AW_root *aw_root, const char *base_name)
     aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback(makeHelpCallback("save.hlp"));
     aws->at("help");
+    aws->callback(makeHelpCallback("save.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
     AW_create_standard_fileselection(aws, base_name);
 
     aws->at("type");
-    aws->label("Type ");
-    aws->create_option_menu(AWAR_DB_TYPE, true);
-    aws->insert_option("Binary", "B", "b");
-    aws->insert_option("Bin (with FastLoad File)", "f", "bm");
-    aws->insert_default_option("Ascii", "A", "a");
-    aws->update_option_menu();
+    AWT_insert_DBsaveType_selector(aws, AWAR_DB_TYPE);
+
+    aws->at("compression");
+    AWT_insert_DBcompression_selector(aws, AWAR_DB_COMPRESSION);
 
     aws->at("optimize");
     aws->callback(NT_create_database_optimization_window);
     aws->help_text("optimize.hlp");
     aws->create_autosize_button("OPTIMIZE", "Optimize database compression");
 
-    aws->at("save"); aws->callback(NT_save_as_cb);
+    aws->at("save");
+    aws->callback(NT_save_as_cb);
     aws->create_button("SAVE", "SAVE", "S");
 
     aws->at("comment");
