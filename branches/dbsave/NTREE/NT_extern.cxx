@@ -373,7 +373,7 @@ static void NT_save_quick_cb(AW_window *aww) {
     GB_ERROR error = GB_save_quick(GLOBAL.gb_main, filename);
     free( filename);
     if (error) aw_message(error);
-    else       AW_refresh_fileselection(awr, "tmp/nt/arbdb");
+    else       AW_refresh_fileselection(awr, AWAR_DBBASE);
 }
 
 
@@ -381,14 +381,15 @@ static void NT_save_quick_as_cb(AW_window *aww) {
     AW_root  *awr      = aww->get_root();
     char     *filename = awr->awar(AWAR_DB_PATH)->read_string();
     GB_ERROR  error    = GB_save_quick_as(GLOBAL.gb_main, filename);
-    if (!error) AW_refresh_fileselection(awr, "tmp/nt/arbdb");
+    if (!error) AW_refresh_fileselection(awr, AWAR_DBBASE);
     aww->hide_or_notify(error);
 
     free(filename);
 }
 
-#define AWAR_DB_TYPE        AWAR_DB "type"        // created by AWT_insert_DBsaveType_selector
-#define AWAR_DB_COMPRESSION AWAR_DB "compression" // created by AWT_insert_DBcompression_selector
+#define AWAR_DB_TYPE          AWAR_DBBASE "/type"      // created by AWT_insert_DBsaveType_selector
+#define AWAR_DB_COMPRESSION   AWAR_DBBASE "/compression" // created by AWT_insert_DBcompression_selector
+#define AWAR_DB_OPTI_TREENAME AWAR_DBBASE "/optimize_tree_name"
 
 static void NT_save_as_cb(AW_window *aww) {
     AW_root    *awr      = aww->get_root();
@@ -399,7 +400,7 @@ static void NT_save_as_cb(AW_window *aww) {
 
     awr->dont_save_awars_with_default_value(GLOBAL.gb_main);
     GB_ERROR error = GB_save(GLOBAL.gb_main, filename, savetype);
-    if (!error) AW_refresh_fileselection(awr, "tmp/nt/arbdb");
+    if (!error) AW_refresh_fileselection(awr, AWAR_DBBASE);
     aww->hide_or_notify(error);
 
     free(savetype);
@@ -449,7 +450,7 @@ static void NT_database_optimization(AW_window *aww) {
         error = GB_end_transaction(GLOBAL.gb_main, error);
 
         if (!error) {
-            char *tree_name = aww->get_root()->awar("tmp/nt/arbdb/optimize_tree_name")->read_string();
+            char *tree_name = aww->get_root()->awar(AWAR_DB_OPTI_TREENAME)->read_string();
             for (int i = 0; ali_names[i]; ++i) {
                 error = GBT_compress_sequence_tree2(GLOBAL.gb_main, tree_name, ali_names[i]);
                 ali_progress.inc_and_check_user_abort(error);
@@ -474,14 +475,14 @@ static AW_window *NT_create_database_optimization_window(AW_root *aw_root) {
     GB_transaction ta(GLOBAL.gb_main);
 
     const char *largest_tree = GBT_name_of_largest_tree(GLOBAL.gb_main);
-    aw_root->awar_string("tmp/nt/arbdb/optimize_tree_name", largest_tree);
+    aw_root->awar_string(AWAR_DB_OPTI_TREENAME, largest_tree);
 
     aws = new AW_window_simple;
     aws->init(aw_root, "OPTIMIZE_DATABASE", "Optimize database compression");
     aws->load_xfig("optimize.fig");
 
     aws->at("trees");
-    awt_create_TREE_selection_list(GLOBAL.gb_main, aws, "tmp/nt/arbdb/optimize_tree_name", true);
+    awt_create_TREE_selection_list(GLOBAL.gb_main, aws, AWAR_DB_OPTI_TREENAME, true);
 
     aws->at("close");
     aws->callback(AW_POPDOWN);
@@ -1035,7 +1036,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone, AWT_canvas **re
         awm->create_menu("File", "F", AWM_ALL);
         {
             awm->insert_menu_topic("save_changes", "Quicksave changes",          "s", "save.hlp",      AWM_ALL, NT_save_quick_cb);
-            awm->insert_menu_topic("save_all_as",  "Save whole database as ...", "w", "save.hlp",      AWM_ALL, makeCreateWindowCallback(NT_create_save_as, "tmp/nt/arbdb"));
+            awm->insert_menu_topic("save_all_as",  "Save whole database as ...", "w", "save.hlp",      AWM_ALL, makeCreateWindowCallback(NT_create_save_as, AWAR_DBBASE));
             if (allow_new_window) {
                 awm->sep______________();
                 awm->insert_menu_topic("new_window", "New window (same database)", "N", "newwindow.hlp", AWM_ALL, makeCreateWindowCallback(popup_new_main_window, clone+1, (AWT_canvas**)NULL));
@@ -1499,7 +1500,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone, AWT_canvas **re
     awm->help_text("save.hlp");
     awm->create_button("SAVE", "#save.xpm");
 
-    awm->callback(makeCreateWindowCallback(NT_create_save_as, "tmp/nt/arbdb"));
+    awm->callback(makeCreateWindowCallback(NT_create_save_as, AWAR_DBBASE));
     awm->help_text("save.hlp");
     awm->create_button("SAVE_AS", "#saveAs.xpm");
 
@@ -1521,7 +1522,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone, AWT_canvas **re
     awm->at(db_pathx, first_liney);
     // size of DB-name button is determined by buttons below:
     awm->at_set_to(false, false, db_pathx2-db_pathx-1, second_liney-first_liney+1);
-    awm->callback(makeCreateWindowCallback(NT_create_save_quick_as_window, "tmp/nt/arbdb"));
+    awm->callback(makeCreateWindowCallback(NT_create_save_quick_as_window, AWAR_DBBASE));
     awm->help_text("save.hlp");
     awm->create_button("QUICK_SAVE_AS", AWAR_DB_NAME);
 
