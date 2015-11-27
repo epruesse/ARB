@@ -25,6 +25,8 @@ long GB_mode_of_file(const char *path);
 long GB_mode_of_link(const char *path);
 bool GB_is_regularfile(const char *path);
 bool GB_is_link(const char *path);
+bool GB_is_fifo(const char *path);
+bool GB_is_fifo(FILE *fp);
 bool GB_is_executablefile(const char *path);
 bool GB_is_privatefile(const char *path, bool read_private);
 bool GB_is_writeablefile(const char *filename);

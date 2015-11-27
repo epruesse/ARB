@@ -417,9 +417,10 @@ static unsigned autorefresh_helpfile(AW_root *awr) {
                 unsigned long editLastChanged = GB_time_of_file(edited_help_file);
 
                 if (editLastChanged>helpfile_edited_stamp) {
-                    GBK_system("cd $ARBHOME; make help");
+                    GB_ERROR error = GBK_system("cd $ARBHOME; make help");
+                    if (error) aw_message(error);
                     helpfile_edited_stamp = editLastChanged;
-                    callAgainIn           = 10;
+                    callAgainIn = 10;
                 }
             }
 

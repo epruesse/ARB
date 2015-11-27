@@ -1,11 +1,9 @@
 #ifndef AW_AWAR_DEFS_HXX
 #define AW_AWAR_DEFS_HXX
 
-#define AWAR_DB        "tmp/nt/arbdb/"
-#define AWAR_DB_PATH   AWAR_DB "file_name"
-#define AWAR_DB_TYPE   AWAR_DB "type"
-#define AWAR_DB_FILTER AWAR_DB "filter"
-#define AWAR_DB_NAME   AWAR_DB_PATH "_without_path" //  awar is automatically updated when AWAR_DB_PATH changes
+#define AWAR_DBBASE    "tmp/nt/arbdb"
+#define AWAR_DB_PATH   AWAR_DBBASE "/file_name"
+#define AWAR_DB_NAME   AWAR_DB_PATH "_without_path"     //  awar is automatically updated when AWAR_DB_PATH changes
 
 #define AWAR_DEFAULT_ALIGNMENT "presets/use" // has to match ../ARBDB/arbdb.h@GB_DEFAULT_ALIGNMENT
 
