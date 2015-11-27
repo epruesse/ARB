@@ -11,6 +11,7 @@
 
 #include "arb_misc.h"
 #include "arb_msg.h"
+#include "arb_file.h"
 #include <arb_assert.h>
 
 // AISC_MKPT_PROMOTE:#ifndef _GLIBCXX_CSTDLIB
@@ -59,4 +60,32 @@ const char *GBS_readable_timediff(size_t seconds) {
 
     return buffer;
 }
+
+const char *ARB_getenv_ignore_empty(const char *envvar) {
+    const char *result = getenv(envvar);
+    return (result && result[0]) ? result : 0;
+}
+
+char *ARB_executable(const char *exe_name, const char *path) {
+    char       *buffer = (char*)malloc(strlen(path)+1+strlen(exe_name)+1);
+    const char *start  = path;
+    int         found  = 0;
+
+    while (!found && start) {
+        const char *colon = strchr(start, ':');
+        int         len   = colon ? (colon-start) : (int)strlen(start);
+
+        memcpy(buffer, start, len);
+        buffer[len] = '/';
+        strcpy(buffer+len+1, exe_name);
+
+        found = GB_is_executablefile(buffer);
+        start = colon ? colon+1 : 0;
+    }
+
+    char *executable = found ? strdup(buffer) : 0;
+    free(buffer);
+    return executable;
+}
+
 

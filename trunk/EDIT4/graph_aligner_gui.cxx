@@ -26,6 +26,7 @@
 #include <client.h>
 #include <arbdbt.h>
 #include <arb_strbuf.h>
+#include <arb_misc.h>
 
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -121,7 +122,7 @@ void create_sina_variables(AW_root *root, AW_default db1) {
 
 AW_active sina_mask(AW_root *root) {
     const char *sinaName    = root->awar(GA_AWAR_CMD)->read_char_pntr();
-    char       *sina        = GB_executable(sinaName);
+    char       *sina        = ARB_executable(sinaName, GB_getenv("PATH"));
     const char *fail_reason = 0;
 
     if (sina) {
