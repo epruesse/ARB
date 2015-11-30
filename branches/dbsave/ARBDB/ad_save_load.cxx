@@ -416,36 +416,33 @@ static GB_BUFFER gb_bin_2_ascii(GBENTRY *gbe) {
 
 #define GB_PUT_OUT(c, out) do { if (c>=10) c+='A'-10; else c += '0'; putc(c, out); } while (0)
 
-static void gb_write_rek(FILE *out, GBCONTAINER *gbc, long deep) {
+static void gb_write_rek(FILE *out, GBCONTAINER *gbc, int indent) {
     // used by ASCII database save
-    long     i;
-    char    *s;
-    char     c;
-    GBDATA  *gb;
-    GB_CSTR  strng;
 
-    const char *key;
-
-    for (gb = GB_child(gbc); gb; gb = GB_nextChild(gb)) {
+    for (GBDATA *gb = GB_child(gbc); gb; gb = GB_nextChild(gb)) {
         if (gb->flags.temporary) continue;
-        key = GB_KEY(gb);
-        if (!strcmp(key, GB_SYSTEM_FOLDER)) continue;   // do not save system folder
-        for (i=deep; i--;) putc('\t', out);
-        fprintf(out, "%s\t", key);
-        if ((int)strlen(key) < 8) {
-            putc('\t', out);
+
+        {
+            const char *key = GB_KEY(gb);
+            if (!strcmp(key, GB_SYSTEM_FOLDER)) continue;   // do not save system folder
+
+            for (int i=indent; i--;) putc('\t', out);
+            fprintf(out, "%s\t", key);
+            if ((int)strlen(key) < 8) {
+                putc('\t', out);
+            }
         }
+
         if (gb->flags.security_delete ||
-                gb->flags.security_write ||
-                gb->flags.security_read ||
-                gb->flags2.last_updated) {
+            gb->flags.security_write ||
+            gb->flags.security_read ||
+            gb->flags2.last_updated)
+        {
             putc(':', out);
-            c = gb->flags.security_delete;
-            GB_PUT_OUT(c, out);
-            c = gb->flags.security_write;
-            GB_PUT_OUT(c, out);
-            c = gb->flags.security_read;
-            GB_PUT_OUT(c, out);
+            char c;
+            c= gb->flags.security_delete; GB_PUT_OUT(c, out);
+            c= gb->flags.security_write;  GB_PUT_OUT(c, out);
+            c= gb->flags.security_read;   GB_PUT_OUT(c, out);
             fprintf(out, "%u\t", gb->flags2.last_updated);
         }
         else {
@@ -454,15 +451,15 @@ static void gb_write_rek(FILE *out, GBCONTAINER *gbc, long deep) {
 
         if (gb->is_container()) {
             fprintf(out, "%%%c (%%\n", GB_read_flag(gb) ? '$' : '%');
-            gb_write_rek(out, gb->as_container(), deep+1);
-            for (i=deep+1; i--;) putc('\t', out);
+            gb_write_rek(out, gb->as_container(), indent+1);
+            for (int i=indent+1; i--;) putc('\t', out);
             fprintf(out, "%%) /*%s*/\n\n", GB_KEY(gb));
         }
         else {
             GBENTRY *gbe = gb->as_entry();
             switch (gbe->type()) {
-                case GB_STRING:
-                    strng = GB_read_char_pntr(gbe);
+                case GB_STRING: {
+                    GB_CSTR strng = GB_read_char_pntr(gbe);
                     if (!strng) {
                         strng = "<entry was broken - replaced during ASCIIsave/arb_repair>";
                         GB_warningf("- replaced broken DB entry %s (data lost)\n", GB_get_db_path(gbe));
@@ -475,8 +472,9 @@ static void gb_write_rek(FILE *out, GBCONTAINER *gbc, long deep) {
                     GBS_fwrite_string(strng, out);
                     putc('\n', out);
                     break;
-                case GB_LINK:
-                    strng = GB_read_link_pntr(gbe);
+                }
+                case GB_LINK: {
+                    GB_CSTR strng = GB_read_link_pntr(gbe);
                     if (*strng == '%') {
                         putc('%', out);
                         putc('l', out);
@@ -485,6 +483,7 @@ static void gb_write_rek(FILE *out, GBCONTAINER *gbc, long deep) {
                     GBS_fwrite_string(strng, out);
                     putc('\n', out);
                     break;
+                }
                 case GB_INT:
                     fprintf(out, "%%i %li\n", GB_read_int(gbe));
                     break;
@@ -495,18 +494,21 @@ static void gb_write_rek(FILE *out, GBCONTAINER *gbc, long deep) {
                     fprintf(out, "%%I\t\"%s\"\n",
                             GB_read_bits_pntr(gbe, '-', '+'));
                     break;
-                case GB_BYTES:
-                    s = gb_bin_2_ascii(gbe);
+                case GB_BYTES: {
+                    const char *s = gb_bin_2_ascii(gbe);
                     fprintf(out, "%%Y\t%s\n", s);
                     break;
-                case GB_INTS:
-                    s = gb_bin_2_ascii(gbe);
+                }
+                case GB_INTS: {
+                    const char *s = gb_bin_2_ascii(gbe);
                     fprintf(out, "%%N\t%s\n", s);
                     break;
-                case GB_FLOATS:
-                    s = gb_bin_2_ascii(gbe);
+                }
+                case GB_FLOATS: {
+                    const char *s = gb_bin_2_ascii(gbe);
                     fprintf(out, "%%F\t%s\n", s);
                     break;
+                }
                 case GB_DB:
                     gb_assert(0);
                     break;
