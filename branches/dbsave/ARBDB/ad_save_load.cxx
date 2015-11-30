@@ -946,13 +946,13 @@ class ArbDBWriter : virtual Noncopyable {
 
     FILE *out;
     bool  saveASCII;
+    bool  saveMapfile;
 
     char       *given_path;
     const char *as_path;
     char       *sec_path;
     char       *mappath;
     char       *sec_mappath;
-    char       *savetype;
 
     int org_security_level;
     int org_transaction_level;
@@ -968,11 +968,11 @@ public:
           error(NULL),
           out(NULL),
           saveASCII(false),
+          saveMapfile(false),
           given_path(NULL),
           sec_path(NULL),
           mappath(NULL),
           sec_mappath(NULL),
-          savetype(NULL),
           org_security_level(Main->security_level),
           org_transaction_level(Main->get_transaction_level()),
           finishCalled(false),
@@ -984,21 +984,19 @@ public:
     ~ArbDBWriter() {
         gb_assert(finishCalled); // you have to call finishSave()! (even in error-case)
 
-        free(savetype);
         free(sec_mappath);
         free(mappath);
         free(sec_path);
         free(given_path);
     }
 
-    GB_ERROR startSaveAs(const char *given_path_, const char *savetype_) {
+    GB_ERROR startSaveAs(const char *given_path_, const char *savetype) {
         gb_assert(!error);
 
         given_path = nulldup(given_path_);
         as_path    = given_path;
-        savetype   = strdup(savetype_);
 
-        if (strchr(savetype, 'a')) saveASCII      = true;
+        if (strchr(savetype, 'a'))      saveASCII = true;
         else if (strchr(savetype, 'b')) saveASCII = false;
         else error                                = GBS_global_string("Invalid savetype '%s' (expected 'a' or 'b')", savetype);
 
@@ -1063,6 +1061,9 @@ public:
                     if (saveASCII) {
                         fprintf(out, "/*ARBDB ASCII*/\n");
                     }
+                    else {
+                        saveMapfile = strchr(savetype, 'm');
+                    }
                 }
             }
         }
@@ -1097,7 +1098,7 @@ public:
             }
             else {
                 mappath = strdup(gb_mapfile_name(as_path));
-                if (strchr(savetype, 'm')) {
+                if (saveMapfile) {
                     // it's necessary to save the mapfile FIRST,
                     // cause this re-orders all GB_CONTAINERs containing NULL-entries in their header
                     sec_mappath = strdup(gb_overwriteName(mappath));
