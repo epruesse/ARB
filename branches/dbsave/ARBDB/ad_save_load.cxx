@@ -2026,49 +2026,57 @@ void TEST_streamed_ascii_save_asUsedBy_silva_pipeline() {
             GB_pop_my_security(gb_main2);
         }
 
-        {
-            ArbDBWriter writer(GB_MAIN(gb_main2));
-            TEST_EXPECT_NO_ERROR(writer.startSaveAs(savename, "a"));
-            TEST_EXPECT_NO_ERROR(writer.saveFromTill(gb_main2, gb_species_data2));
-
-            // @@@ write second test with transaction closed (while calling saveFromTill)
+        for (int saveWhileTransactionOpen = 0; saveWhileTransactionOpen<=1; ++saveWhileTransactionOpen) {
             {
-                GB_transaction ta1(gb_main1);
-                GB_transaction ta2(gb_main2);
+                ArbDBWriter writer(GB_MAIN(gb_main2));
+                TEST_EXPECT_NO_ERROR(writer.startSaveAs(savename, "a"));
+                TEST_EXPECT_NO_ERROR(writer.saveFromTill(gb_main2, gb_species_data2));
 
-                for (GBDATA *gb_species1 = GBT_first_species(gb_main1);
-                     gb_species1;
-                     gb_species1 = GBT_next_species(gb_species1))
                 {
-                    GBDATA *gb_species2 = GB_create_container(gb_species_data2, "species");
-                    if (!gb_species2) {
-                        TEST_EXPECT_NO_ERROR(GB_await_error());
+                    GB_transaction ta1(gb_main1);
+                    GB_transaction ta2(gb_main2);
+
+                    for (GBDATA *gb_species1 = GBT_first_species(gb_main1);
+                         gb_species1;
+                         gb_species1 = GBT_next_species(gb_species1))
+                    {
+                        GBDATA *gb_species2 = GB_create_container(gb_species_data2, "species");
+                        if (!gb_species2) {
+                            TEST_EXPECT_NO_ERROR(GB_await_error());
+                        }
+                        else {
+                            TEST_EXPECT_NO_ERROR(GB_copy_with_protection(gb_species2, gb_species1, true));
+                            GB_write_flag(gb_species2, GB_read_flag(gb_species1)); // copy marked flag
+                        }
+
+                        if (!saveWhileTransactionOpen) GB_commit_transaction(gb_main2);
+                        TEST_EXPECT_NO_ERROR(writer.saveFromTill(gb_species2, gb_species2));
+                        if (!saveWhileTransactionOpen) GB_begin_transaction(gb_main2);
+
+                        GB_push_my_security(gb_main2);
+                        TEST_EXPECT_NO_ERROR(GB_delete(gb_species2));
+                        GB_pop_my_security(gb_main2);
                     }
-                    else {
-                        TEST_EXPECT_NO_ERROR(GB_copy_with_protection(gb_species2, gb_species1, true));
-                        GB_write_flag(gb_species2, GB_read_flag(gb_species1)); // copy marked flag
-                    }
-                    TEST_EXPECT_NO_ERROR(writer.saveFromTill(gb_species2, gb_species2));
-                    GB_push_my_security(gb_main2);
-                    TEST_EXPECT_NO_ERROR(GB_delete(gb_species2));
-                    GB_pop_my_security(gb_main2);
                 }
+
+                TEST_EXPECT_NO_ERROR(writer.saveFromTill(gb_species_data2, gb_main2));
+                TEST_EXPECT_NO_ERROR(writer.finishSave());
             }
 
-            TEST_EXPECT_NO_ERROR(writer.saveFromTill(gb_species_data2, gb_main2));
-            TEST_EXPECT_NO_ERROR(writer.finishSave());
-        }
+            // test file content
+            TEST_EXPECT_TEXTFILES_EQUAL__BROKEN(savename, loadname); // @@@ indentation differs
 
-        // test file content
-        TEST_EXPECT_TEXTFILES_EQUAL__BROKEN(savename, loadname); // @@@ indentation differs
+            // load+save normally + compare (doing so fixes the broken indentation)
+            {
+                GBDATA *gb_reload = GB_open(savename, "rw"); TEST_REJECT_NULL(gb_reload);
+                TEST_EXPECT_NO_ERROR(GB_save_as(gb_reload, reloadedname, "a"));
+                GB_close(gb_reload);
+            }
+            TEST_EXPECT_TEXTFILES_EQUAL(reloadedname, loadname);
 
-        // load+save normally + compare (doing so fixes the broken indentation)
-        {
-            GBDATA *gb_reload = GB_open(savename, "rw"); TEST_REJECT_NULL(gb_reload);
-            TEST_EXPECT_NO_ERROR(GB_save_as(gb_reload, reloadedname, "a"));
-            GB_close(gb_reload);
+            TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(savename));
+            TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(reloadedname));
         }
-        TEST_EXPECT_TEXTFILES_EQUAL(reloadedname, loadname);
 
         GB_close(gb_main2);
         GB_close(gb_main1);
