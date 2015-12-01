@@ -1151,14 +1151,14 @@ private:
     }
 public:
 
-    GB_ERROR saveFromTill(GBDATA *gb_from, GBDATA *gb_till) { // @@@ pass containers
+    GB_ERROR saveFromTill(GBCONTAINER *gb_from, GBCONTAINER *gb_till) {
         Levels org; org.readFrom(Main);
         save.writeTo(Main); // set save transaction-state and security_level
 
         gb_assert(!error);
         if (saveASCII) {
             if (gb_from == gb_till) {
-                writeContainerOrChilds(gb_from->as_container(), NULL, NULL);
+                writeContainerOrChilds(gb_from, NULL, NULL);
             }
             else {
                 bool from_is_ancestor = false;
@@ -1176,10 +1176,10 @@ public:
                 }
 
                 if (from_is_ancestor) {
-                    writeContainerOrChilds(gb_from->as_container(), NULL, gb_till->as_container());
+                    writeContainerOrChilds(gb_from, NULL, gb_till);
                 }
                 else if (till_is_ancestor) {
-                    writeContainerOrChilds(gb_till->as_container(), gb_from->as_container(), NULL);
+                    writeContainerOrChilds(gb_till, gb_from, NULL);
                 }
                 else {
                     error = "Invalid use (gb_from has to be ancestor of gb_till or vv.)";
@@ -1298,6 +1298,59 @@ GB_ERROR GB_MAIN_TYPE::save_as(const char *as_path, const char *savetype) {
     error = dbwriter.finishSave();
     return error;
 }
+
+// AISC_MKPT_PROMOTE:class ArbDBWriter;
+
+GB_ERROR GB_start_streamed_save_as(GBDATA *gbd, const char *path, const char *savetype, ArbDBWriter*& writer) {
+    /*! special save implementation for use in pipelines (e.g. silva)
+     * 'savetype' has contain 'a' (ascii)
+     * 'writer' has to be NULL (object will be constructed and assigned to)
+     *
+     * Actual saving of data is triggered by GB_stream_save_part().
+     * When done with saving part, call GB_finish_stream_save() - even in case of error!
+    */
+    gb_assert(writer == NULL);
+    writer = new ArbDBWriter(GB_MAIN(gbd));
+    return writer->startSaveAs(path, savetype);
+}
+GB_ERROR GB_stream_save_part(ArbDBWriter *writer, GBDATA *from, GBDATA *till) {
+    /*! saves a part of the database.
+     *
+     * save complete database:
+     *     GB_stream_save_part(w, gb_main, gb_main);
+     *
+     * save database in parts:
+     *     GB_stream_save_part(w, gb_main, gb_some_container);
+     *     forall (gb_some_sub_container) {
+     *         // you may create/modify gb_some_sub_container here
+     *         GB_stream_save_part(w, gb_some_sub_container, gb_some_sub_container);
+     *         // you may delete/modify gb_some_sub_container here
+     *     }
+     *     GB_stream_save_part(w, gb_some_container, gb_main);
+     *
+     *     Note: gb_some_sub_container has to be a child of gb_some_container
+     */
+    GB_ERROR error;
+    if (from->is_container() && till->is_container()) {
+        error = writer->saveFromTill(from->as_container(), till->as_container());
+    }
+    else {
+        error = "Invalid use of GB_stream_save_part: need to pass 2 containers";
+    }
+    return error;
+}
+GB_ERROR GB_finish_stream_save(ArbDBWriter*& writer) {
+    /*! complete save-process started with GB_start_streamed_save_as()
+     * Has to be called (even if GB_start_streamed_save_as or GB_stream_save_part has returned an error!)
+     */
+    GB_ERROR error = writer->finishSave();
+
+    delete writer;
+    writer = NULL;
+
+    return error;
+}
+
 
 GB_ERROR GB_save_as(GBDATA *gbd, const char *path, const char *savetype) {
     /*! Save whole database
@@ -2038,9 +2091,9 @@ void TEST_streamed_ascii_save_asUsedBy_silva_pipeline() {
 
         for (int saveWhileTransactionOpen = 0; saveWhileTransactionOpen<=1; ++saveWhileTransactionOpen) {
             {
-                ArbDBWriter writer(GB_MAIN(gb_main2));
-                TEST_EXPECT_NO_ERROR(writer.startSaveAs(savename, "a"));
-                TEST_EXPECT_NO_ERROR(writer.saveFromTill(gb_main2, gb_species_data2));
+                ArbDBWriter *writer = NULL;
+                TEST_EXPECT_NO_ERROR(GB_start_streamed_save_as(gb_main2, savename, "a", writer));
+                TEST_EXPECT_NO_ERROR(GB_stream_save_part(writer, gb_main2, gb_species_data2));
 
                 {
                     GB_transaction ta1(gb_main1);
@@ -2060,7 +2113,7 @@ void TEST_streamed_ascii_save_asUsedBy_silva_pipeline() {
                         }
 
                         if (!saveWhileTransactionOpen) GB_commit_transaction(gb_main2);
-                        TEST_EXPECT_NO_ERROR(writer.saveFromTill(gb_species2, gb_species2));
+                        TEST_EXPECT_NO_ERROR(GB_stream_save_part(writer, gb_species2, gb_species2));
                         if (!saveWhileTransactionOpen) GB_begin_transaction(gb_main2);
 
                         GB_push_my_security(gb_main2);
@@ -2069,8 +2122,8 @@ void TEST_streamed_ascii_save_asUsedBy_silva_pipeline() {
                     }
                 }
 
-                TEST_EXPECT_NO_ERROR(writer.saveFromTill(gb_species_data2, gb_main2));
-                TEST_EXPECT_NO_ERROR(writer.finishSave());
+                TEST_EXPECT_NO_ERROR(GB_stream_save_part(writer, gb_species_data2, gb_main2));
+                TEST_EXPECT_NO_ERROR(GB_finish_stream_save(writer));
             }
 
             // test file content
@@ -2081,8 +2134,6 @@ void TEST_streamed_ascii_save_asUsedBy_silva_pipeline() {
         GB_close(gb_main2);
         GB_close(gb_main1);
     }
-
-    // @@@ remove result file(s)
 }
 
 #endif // UNIT_TESTS
