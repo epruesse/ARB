@@ -1,5 +1,0 @@
-AUTODETECT      "NO AUTODETECTION"
-
-SYSTEM          "perl $ARBHOME/PERL_SCRIPTS/ARBTOOLS/IFTHELP/format_dssp.pl < $< > $>"
-
-NEW_FORMAT      "lib/import/dssp_sequence2.ift2"

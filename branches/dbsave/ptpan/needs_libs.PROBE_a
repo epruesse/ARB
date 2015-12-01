@@ -1,5 +1,0 @@
-# libraries needed to link against ptpan/PROBE.a
-
-#PROBE_COM/server.a
-#SERVERCNTRL/SERVERCNTRL.a
-
