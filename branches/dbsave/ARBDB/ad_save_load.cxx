@@ -1130,12 +1130,23 @@ public:
     }
 
 private:
-    void writeContainerOrChilds(GBCONTAINER *root, GBCONTAINER *from, GBCONTAINER *till) {
-        if (root == Main->root_container) {
-            gb_write_childs(out, root, from, till, 0);
+    void writeContainerOrChilds(GBCONTAINER *top, GBCONTAINER *from, GBCONTAINER *till) {
+        if (top == Main->root_container) {
+            gb_write_childs(out, top, from, till, 0);
         }
         else {
-            gb_write_one_child(out, root, from, till, 0); // @@@ calc indent here!
+            int root_indent = 0;
+            {
+                GBDATA *stepUp = top;
+                while (stepUp != Main->root_container) {
+                    stepUp = stepUp->get_father();
+                    ++root_indent;
+                    gb_assert(stepUp); // fails if 'top' is not member of 'Main'
+                }
+                --root_indent; // use 0 for direct childs of root_container
+            }
+            gb_assert(root_indent>=0);
+            gb_write_one_child(out, top, from, till, root_indent);
         }
     }
 public:
@@ -2003,9 +2014,8 @@ void TEST_SLOW_corruptedEntries_saveProtection() {
 void TEST_streamed_ascii_save_asUsedBy_silva_pipeline() {
     GB_shell shell;
 
-    const char *loadname     = "TEST_loadsave_ascii.arb";
-    const char *savename     = "TEST_streamsaved.arb";
-    const char *reloadedname = "TEST_streamsave_reloaded.arb";
+    const char *loadname = "TEST_loadsave_ascii.arb";
+    const char *savename = "TEST_streamsaved.arb";
 
     {
         GBDATA *gb_main1 = GB_open(loadname, "r");  TEST_REJECT_NULL(gb_main1);
@@ -2064,18 +2074,8 @@ void TEST_streamed_ascii_save_asUsedBy_silva_pipeline() {
             }
 
             // test file content
-            TEST_EXPECT_TEXTFILES_EQUAL__BROKEN(savename, loadname); // @@@ indentation differs
-
-            // load+save normally + compare (doing so fixes the broken indentation)
-            {
-                GBDATA *gb_reload = GB_open(savename, "rw"); TEST_REJECT_NULL(gb_reload);
-                TEST_EXPECT_NO_ERROR(GB_save_as(gb_reload, reloadedname, "a"));
-                GB_close(gb_reload);
-            }
-            TEST_EXPECT_TEXTFILES_EQUAL(reloadedname, loadname);
-
+            TEST_EXPECT_TEXTFILES_EQUAL(savename, loadname);
             TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(savename));
-            TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(reloadedname));
         }
 
         GB_close(gb_main2);
