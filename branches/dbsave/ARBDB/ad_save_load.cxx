@@ -416,23 +416,28 @@ static GB_BUFFER gb_bin_2_ascii(GBENTRY *gbe) {
 
 #define GB_PUT_OUT(c, out) do { if (c>=10) c+='A'-10; else c += '0'; putc(c, out); } while (0)
 
-static void gb_write_rek(FILE *out, GBCONTAINER *gbc, int indent) {
-    // used by ASCII database save
+static bool gb_write_childs(FILE *out, GBCONTAINER *gbc, GBCONTAINER*& gb_writeFrom, GBCONTAINER *gb_writeTill, int indent);
 
-    for (GBDATA *gb = GB_child(gbc); gb; gb = GB_nextChild(gb)) {
-        if (gb->flags.temporary) continue;
+static bool gb_write_one_child(FILE *out, GBDATA *gb, GBCONTAINER*& gb_writeFrom, GBCONTAINER *gb_writeTill, int indent) {
+    /*! parameters same as for gb_write_childs()
+     * The differences between both functions are:
+     * - gb_write_one_child can be called for entries and writes container tags if called with a container
+     * - gb_write_childs can only be called with containers and does NOT write enclosing container tags
+     */
+    {
+        const char *key = GB_KEY(gb);
+        if (!strcmp(key, GB_SYSTEM_FOLDER)) return true;   // do not save system folder
 
-        {
-            const char *key = GB_KEY(gb);
-            if (!strcmp(key, GB_SYSTEM_FOLDER)) continue;   // do not save system folder
-
+        if (!gb_writeFrom) {
             for (int i=indent; i--;) putc('\t', out);
             fprintf(out, "%s\t", key);
             if ((int)strlen(key) < 8) {
                 putc('\t', out);
             }
         }
+    }
 
+    if (!gb_writeFrom) {
         if (gb->flags.security_delete ||
             gb->flags.security_write ||
             gb->flags.security_read ||
@@ -448,82 +453,115 @@ static void gb_write_rek(FILE *out, GBCONTAINER *gbc, int indent) {
         else {
             putc('\t', out);
         }
+    }
 
-        if (gb->is_container()) {
+    if (gb->is_container()) {
+        if (!gb_writeFrom) {
             fprintf(out, "%%%c (%%\n", GB_read_flag(gb) ? '$' : '%');
-            gb_write_rek(out, gb->as_container(), indent+1);
+            bool closeTags = gb_write_childs(out, gb->as_container(), gb_writeFrom, gb_writeTill, indent+1);
+            if (!closeTags) return false;
+        }
+        if (gb_writeFrom && gb_writeFrom == gb->as_container()) gb_writeFrom = NULL;
+        if (gb_writeTill && gb_writeTill == gb->as_container()) {
+            return false;
+        }
+        if (!gb_writeFrom) {
             for (int i=indent+1; i--;) putc('\t', out);
             fprintf(out, "%%) /*%s*/\n\n", GB_KEY(gb));
         }
-        else {
-            GBENTRY *gbe = gb->as_entry();
-            switch (gbe->type()) {
-                case GB_STRING: {
-                    GB_CSTR strng = GB_read_char_pntr(gbe);
-                    if (!strng) {
-                        strng = "<entry was broken - replaced during ASCIIsave/arb_repair>";
-                        GB_warningf("- replaced broken DB entry %s (data lost)\n", GB_get_db_path(gbe));
-                    }
-                    if (*strng == '%') {
-                        putc('%', out);
-                        putc('s', out);
-                        putc('\t', out);
-                    }
-                    GBS_fwrite_string(strng, out);
-                    putc('\n', out);
-                    break;
+    }
+    else {
+        GBENTRY *gbe = gb->as_entry();
+        switch (gbe->type()) {
+            case GB_STRING: {
+                GB_CSTR strng = GB_read_char_pntr(gbe);
+                if (!strng) {
+                    strng = "<entry was broken - replaced during ASCIIsave/arb_repair>";
+                    GB_warningf("- replaced broken DB entry %s (data lost)\n", GB_get_db_path(gbe));
                 }
-                case GB_LINK: {
-                    GB_CSTR strng = GB_read_link_pntr(gbe);
-                    if (*strng == '%') {
-                        putc('%', out);
-                        putc('l', out);
-                        putc('\t', out);
-                    }
-                    GBS_fwrite_string(strng, out);
-                    putc('\n', out);
-                    break;
+                if (*strng == '%') {
+                    putc('%', out);
+                    putc('s', out);
+                    putc('\t', out);
                 }
-                case GB_INT:
-                    fprintf(out, "%%i %li\n", GB_read_int(gbe));
-                    break;
-                case GB_FLOAT:
-                    fprintf(out, "%%f %g\n", GB_read_float(gbe));
-                    break;
-                case GB_BITS:
-                    fprintf(out, "%%I\t\"%s\"\n",
-                            GB_read_bits_pntr(gbe, '-', '+'));
-                    break;
-                case GB_BYTES: {
-                    const char *s = gb_bin_2_ascii(gbe);
-                    fprintf(out, "%%Y\t%s\n", s);
-                    break;
-                }
-                case GB_INTS: {
-                    const char *s = gb_bin_2_ascii(gbe);
-                    fprintf(out, "%%N\t%s\n", s);
-                    break;
-                }
-                case GB_FLOATS: {
-                    const char *s = gb_bin_2_ascii(gbe);
-                    fprintf(out, "%%F\t%s\n", s);
-                    break;
-                }
-                case GB_DB:
-                    gb_assert(0);
-                    break;
-                case GB_BYTE:
-                    fprintf(out, "%%y %i\n", GB_read_byte(gbe));
-                    break;
-                default:
-                    fprintf(stderr,
-                            "ARBDB ERROR Key \'%s\' is of unknown type\n",
-                            GB_KEY(gbe));
-                    fprintf(out, "%%%% (%% %%) /* unknown type */\n");
-                    break;
+                GBS_fwrite_string(strng, out);
+                putc('\n', out);
+                break;
             }
+            case GB_LINK: {
+                GB_CSTR strng = GB_read_link_pntr(gbe);
+                if (*strng == '%') {
+                    putc('%', out);
+                    putc('l', out);
+                    putc('\t', out);
+                }
+                GBS_fwrite_string(strng, out);
+                putc('\n', out);
+                break;
+            }
+            case GB_INT:
+                fprintf(out, "%%i %li\n", GB_read_int(gbe));
+                break;
+            case GB_FLOAT:
+                fprintf(out, "%%f %g\n", GB_read_float(gbe));
+                break;
+            case GB_BITS:
+                fprintf(out, "%%I\t\"%s\"\n",
+                        GB_read_bits_pntr(gbe, '-', '+'));
+                break;
+            case GB_BYTES: {
+                const char *s = gb_bin_2_ascii(gbe);
+                fprintf(out, "%%Y\t%s\n", s);
+                break;
+            }
+            case GB_INTS: {
+                const char *s = gb_bin_2_ascii(gbe);
+                fprintf(out, "%%N\t%s\n", s);
+                break;
+            }
+            case GB_FLOATS: {
+                const char *s = gb_bin_2_ascii(gbe);
+                fprintf(out, "%%F\t%s\n", s);
+                break;
+            }
+            case GB_DB:
+                gb_assert(0);
+                break;
+            case GB_BYTE:
+                fprintf(out, "%%y %i\n", GB_read_byte(gbe));
+                break;
+            default:
+                fprintf(stderr,
+                        "ARBDB ERROR Key \'%s\' is of unknown type\n",
+                        GB_KEY(gbe));
+                fprintf(out, "%%%% (%% %%) /* unknown type */\n");
+                break;
         }
     }
+    return true;
+}
+
+static bool gb_write_childs(FILE *out, GBCONTAINER *gbc, GBCONTAINER*& gb_writeFrom, GBCONTAINER *gb_writeTill, int indent) {
+    /*! write database entries to stream (used by ASCII database save)
+     * @param out           output stream
+     * @param gbc           container to write (including all subentries if gb_writeFrom and gb_writeTill are NULL).
+     * @param gb_writeFrom  != NULL -> assume opening tag of container gb_writeFrom and all its subentries have already been written.
+     *                                 Save closing tag and all following containers.
+     * @param gb_writeTill  != NULL -> write till opening tag of container gb_writeTill
+     * @param indent        indentation for container gbc
+     * @return true if closing containers shall be written
+     */
+
+    gb_assert(gb_writeFrom == NULL || gb_writeTill == NULL); // not supported (yet)
+
+    for (GBDATA *gb = GB_child(gbc); gb; gb = GB_nextChild(gb)) {
+        if (gb->flags.temporary) continue;
+
+        bool closeTags = gb_write_one_child(out, gb, gb_writeFrom, gb_writeTill, indent);
+        if (!closeTags) return false;
+    }
+
+    return true;
 }
 
 // -------------------------
@@ -956,8 +994,28 @@ class ArbDBWriter : virtual Noncopyable {
     char       *mappath;
     char       *sec_mappath;
 
-    int org_security_level;
-    int org_transaction_level;
+    struct Levels {
+        int security;
+        int transaction;
+
+        void readFrom(GB_MAIN_TYPE *main) {
+            security    = main->security_level;
+            transaction = main->get_transaction_level();
+        }
+        void writeTo(GB_MAIN_TYPE *main) {
+            main->security_level       = security;
+            if (main->transaction_level>0) {
+                GB_commit_transaction(main->root_container);
+            }
+            if (transaction) {
+                GB_begin_transaction(main->root_container);
+            }
+            gb_assert(main->transaction_level == transaction || main->transaction_level == -1);
+        }
+
+    };
+
+    Levels save; // wanted levels during save (i.e. inside saveFromTill/finishSave)
 
     bool finishCalled; // @@@ replace by state-enum
     bool dump_to_stdout;
@@ -975,8 +1033,6 @@ public:
           sec_path(NULL),
           mappath(NULL),
           sec_mappath(NULL),
-          org_security_level(Main->security_level),
-          org_transaction_level(Main->get_transaction_level()),
           finishCalled(false),
           dump_to_stdout(false),
           outOfOrderSave(false),
@@ -1035,6 +1091,11 @@ public:
             }
         }
 
+        if (!error && Main->transaction_level>1) {
+            error = "Save only allowed with transaction_level <= 1";
+        }
+
+        save.readFrom(Main); // values for error case
         if (!error) {
             // unless saving to a fifo, we append ~ to the file name we write to,
             // and move that file if and when everything has gone well
@@ -1047,14 +1108,9 @@ public:
                 error = GBS_global_string("While saving database '%s': %s", sec_path, error);
             }
             else {
-                if (!org_transaction_level) Main->transaction_level = 1;
-                else {
-                    if (org_transaction_level> 0) {
-                        GB_commit_transaction(Main->root_container);
-                        GB_begin_transaction(Main->root_container);
-                    }
-                }
-                Main->security_level    = 7;
+                save.security    = 7;
+                save.transaction = 1;
+
                 seen_corrupt_data = false;
 
                 outOfOrderSave     = strchr(savetype, 'f');
@@ -1072,24 +1128,66 @@ public:
 
         return error;
     }
-    GB_ERROR saveFromTill(GBDATA *gb_from, GBDATA *gb_till) {
+
+private:
+    void writeContainerOrChilds(GBCONTAINER *root, GBCONTAINER *from, GBCONTAINER *till) {
+        if (root == Main->root_container) {
+            gb_write_childs(out, root, from, till, 0);
+        }
+        else {
+            gb_write_one_child(out, root, from, till, 0); // @@@ calc indent here!
+        }
+    }
+public:
+
+    GB_ERROR saveFromTill(GBDATA *gb_from, GBDATA *gb_till) { // @@@ pass containers
+        Levels org; org.readFrom(Main);
+        save.writeTo(Main); // set save transaction-state and security_level
+
         gb_assert(!error);
         if (saveASCII) {
             if (gb_from == gb_till) {
-                gb_write_rek(out, Main->root_container, 0);
+                writeContainerOrChilds(gb_from->as_container(), NULL, NULL);
             }
             else {
-                gb_assert(0); // @@@ impl
+                bool from_is_ancestor = false;
+                bool till_is_ancestor = false;
+
+                GBDATA *gb_from_ancestor = GB_get_father(gb_from);
+                GBDATA *gb_till_ancestor = GB_get_father(gb_till);
+
+                while (gb_from_ancestor || gb_till_ancestor) {
+                    if (gb_from_ancestor && gb_from_ancestor == gb_till) till_is_ancestor = true;
+                    if (gb_till_ancestor && gb_till_ancestor == gb_from) from_is_ancestor = true;
+
+                    if (gb_from_ancestor) gb_from_ancestor = GB_get_father(gb_from_ancestor);
+                    if (gb_till_ancestor) gb_till_ancestor = GB_get_father(gb_till_ancestor);
+                }
+
+                if (from_is_ancestor) {
+                    writeContainerOrChilds(gb_from->as_container(), NULL, gb_till->as_container());
+                }
+                else if (till_is_ancestor) {
+                    writeContainerOrChilds(gb_till->as_container(), gb_from->as_container(), NULL);
+                }
+                else {
+                    error = "Invalid use (gb_from has to be ancestor of gb_till or vv.)";
+                }
             }
         }
         else { // save binary (performed in finishSave)
-            gb_assert(gb_from == gb_till);
-            gb_assert(gb_from == Main->root_container);
-
+            if (gb_from != Main->root_container || gb_till != Main->root_container) {
+                error = "streamed saving only supported for ascii database format";
+            }
         }
+
+        org.writeTo(Main); // restore original transaction-state and security_level
         return error;
     }
     GB_ERROR finishSave() {
+        Levels org; org.readFrom(Main);
+        save.writeTo(Main); // set save transaction-state and security_level
+
         finishCalled = true;
 
         if (out) {
@@ -1110,8 +1208,7 @@ public:
                 if (!error) result |= gb_write_bin(out, Main->root_container, 1);
             }
 
-            Main->security_level    = org_security_level;
-            Main->transaction_level = org_transaction_level;
+            // org.writeTo(Main); // Note: was originally done here
 
             if (result != 0) {
                 error = GB_IO_error("writing", sec_path);
@@ -1178,6 +1275,7 @@ public:
             }
         }
 
+        org.writeTo(Main); // restore original transaction-state and security_level
         return error;
     }
 };
@@ -1898,6 +1996,85 @@ void TEST_SLOW_corruptedEntries_saveProtection() {
         name = name_NORMAL; // restart with normal names
     }
 }
-TEST_PUBLISH(TEST_SLOW_corruptedEntries_saveProtection);
+
+// @@@ move code into other module (to avoid extra include and to test w/o knowing ArbDBWriter)
+#include "arbdbt.h"
+
+void TEST_streamed_ascii_save_asUsedBy_silva_pipeline() {
+    GB_shell shell;
+
+    const char *loadname     = "TEST_loadsave_ascii.arb";
+    const char *savename     = "TEST_streamsaved.arb";
+    const char *reloadedname = "TEST_streamsave_reloaded.arb";
+
+    {
+        GBDATA *gb_main1 = GB_open(loadname, "r");  TEST_REJECT_NULL(gb_main1);
+        GBDATA *gb_main2 = GB_open(loadname, "rw"); TEST_REJECT_NULL(gb_main2);
+
+        // delete all species from DB2
+        GBDATA *gb_species_data2 = NULL;
+        {
+            GB_transaction ta(gb_main2);
+            GB_push_my_security(gb_main2);
+            gb_species_data2 = GBT_get_species_data(gb_main2);
+            for (GBDATA *gb_species = GBT_first_species_rel_species_data(gb_species_data2);
+                 gb_species;
+                 gb_species = GBT_next_species(gb_species))
+            {
+                TEST_EXPECT_NO_ERROR(GB_delete(gb_species));
+            }
+            GB_pop_my_security(gb_main2);
+        }
+
+        {
+            ArbDBWriter writer(GB_MAIN(gb_main2));
+            TEST_EXPECT_NO_ERROR(writer.startSaveAs(savename, "a"));
+            TEST_EXPECT_NO_ERROR(writer.saveFromTill(gb_main2, gb_species_data2));
+
+            // @@@ write second test with transaction closed (while calling saveFromTill)
+            {
+                GB_transaction ta1(gb_main1);
+                GB_transaction ta2(gb_main2);
+
+                for (GBDATA *gb_species1 = GBT_first_species(gb_main1);
+                     gb_species1;
+                     gb_species1 = GBT_next_species(gb_species1))
+                {
+                    GBDATA *gb_species2 = GB_create_container(gb_species_data2, "species");
+                    if (!gb_species2) {
+                        TEST_EXPECT_NO_ERROR(GB_await_error());
+                    }
+                    else {
+                        TEST_EXPECT_NO_ERROR(GB_copy_with_protection(gb_species2, gb_species1, true));
+                        GB_write_flag(gb_species2, GB_read_flag(gb_species1)); // copy marked flag
+                    }
+                    TEST_EXPECT_NO_ERROR(writer.saveFromTill(gb_species2, gb_species2));
+                    GB_push_my_security(gb_main2);
+                    TEST_EXPECT_NO_ERROR(GB_delete(gb_species2));
+                    GB_pop_my_security(gb_main2);
+                }
+            }
+
+            TEST_EXPECT_NO_ERROR(writer.saveFromTill(gb_species_data2, gb_main2));
+            TEST_EXPECT_NO_ERROR(writer.finishSave());
+        }
+
+        // test file content
+        TEST_EXPECT_TEXTFILES_EQUAL__BROKEN(savename, loadname); // @@@ indentation differs
+
+        // load+save normally + compare (doing so fixes the broken indentation)
+        {
+            GBDATA *gb_reload = GB_open(savename, "rw"); TEST_REJECT_NULL(gb_reload);
+            TEST_EXPECT_NO_ERROR(GB_save_as(gb_reload, reloadedname, "a"));
+            GB_close(gb_reload);
+        }
+        TEST_EXPECT_TEXTFILES_EQUAL(reloadedname, loadname);
+
+        GB_close(gb_main2);
+        GB_close(gb_main1);
+    }
+
+    // @@@ remove result file(s)
+}
 
 #endif // UNIT_TESTS
