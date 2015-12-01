@@ -310,10 +310,8 @@ ad_load.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 ad_save_load.o: ad_io_inline.h
 ad_save_load.o: ad_prot.h
-ad_save_load.o: ad_t_prot.h
 ad_save_load.o: arbdb.h
 ad_save_load.o: arbdb_base.h
-ad_save_load.o: arbdbt.h
 ad_save_load.o: gb_cb.h
 ad_save_load.o: gb_data.h
 ad_save_load.o: gb_header.h
@@ -342,7 +340,6 @@ ad_save_load.o: $(ARBHOME)/INCLUDE/cb.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/cb_base.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/cbtypes.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/cxxforward.h
-ad_save_load.o: $(ARBHOME)/INCLUDE/downcast.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/dupstr.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/gccver.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/smartptr.h
