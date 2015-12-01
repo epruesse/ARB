@@ -110,6 +110,8 @@ class GB_MAIN_TYPE : virtual Noncopyable {
     callback_group changeCBs; // all but GB_CB_DELETE
     callback_group deleteCBs; // GB_CB_DELETE
 
+    friend class ArbDBWriter;
+
 public:
 
     gbcmc_comm     *c_link;
