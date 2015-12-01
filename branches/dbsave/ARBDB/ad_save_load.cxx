@@ -1144,7 +1144,7 @@ private:
         else {
             int root_indent = 0;
             {
-                GBDATA *stepUp = top;
+                GBCONTAINER *stepUp = top;
                 while (stepUp != Main->root_container) {
                     stepUp = stepUp->get_father();
                     ++root_indent;
@@ -1173,15 +1173,15 @@ public:
                 bool from_is_ancestor = false;
                 bool till_is_ancestor = false;
 
-                GBDATA *gb_from_ancestor = GB_get_father(gb_from);
-                GBDATA *gb_till_ancestor = GB_get_father(gb_till);
+                GBCONTAINER *gb_from_ancestor = gb_from->get_father();
+                GBCONTAINER *gb_till_ancestor = gb_till->get_father();
 
                 while (gb_from_ancestor || gb_till_ancestor) {
                     if (gb_from_ancestor && gb_from_ancestor == gb_till) till_is_ancestor = true;
                     if (gb_till_ancestor && gb_till_ancestor == gb_from) from_is_ancestor = true;
 
-                    if (gb_from_ancestor) gb_from_ancestor = GB_get_father(gb_from_ancestor);
-                    if (gb_till_ancestor) gb_till_ancestor = GB_get_father(gb_till_ancestor);
+                    if (gb_from_ancestor) gb_from_ancestor = gb_from_ancestor->get_father();
+                    if (gb_till_ancestor) gb_till_ancestor = gb_till_ancestor->get_father();
                 }
 
                 if (from_is_ancestor) {
