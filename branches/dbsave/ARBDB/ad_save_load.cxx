@@ -1017,7 +1017,12 @@ class ArbDBWriter : virtual Noncopyable {
 
     Levels save; // wanted levels during save (i.e. inside saveFromTill/finishSave)
 
-    bool finishCalled; // @@@ replace by state-enum
+    enum {
+        CONSTRUCTED,
+        STARTED,
+        FINISHED,
+    } state;
+
     bool dump_to_stdout;
     bool outOfOrderSave;
     bool deleteQuickAllowed;
@@ -1033,14 +1038,14 @@ public:
           sec_path(NULL),
           mappath(NULL),
           sec_mappath(NULL),
-          finishCalled(false),
+          state(CONSTRUCTED),
           dump_to_stdout(false),
           outOfOrderSave(false),
           deleteQuickAllowed(false)
     {
     }
     ~ArbDBWriter() {
-        gb_assert(finishCalled); // you have to call finishSave()! (even in error-case)
+        gb_assert(state == FINISHED); // you have to call finishSave()! (even in error-case)
 
         free(sec_mappath);
         free(mappath);
@@ -1050,6 +1055,8 @@ public:
 
     GB_ERROR startSaveAs(const char *given_path_, const char *savetype) {
         gb_assert(!error);
+        gb_assert(state == CONSTRUCTED);
+        state = STARTED;
 
         given_path = nulldup(given_path_);
         as_path    = given_path;
@@ -1152,10 +1159,12 @@ private:
 public:
 
     GB_ERROR saveFromTill(GBCONTAINER *gb_from, GBCONTAINER *gb_till) {
+        gb_assert(!error);
+        gb_assert(state == STARTED);
+
         Levels org; org.readFrom(Main);
         save.writeTo(Main); // set save transaction-state and security_level
 
-        gb_assert(!error);
         if (saveASCII) {
             if (gb_from == gb_till) {
                 writeContainerOrChilds(gb_from, NULL, NULL);
@@ -1196,10 +1205,11 @@ public:
         return error;
     }
     GB_ERROR finishSave() {
+        gb_assert(state == STARTED);
+        state = FINISHED;
+
         Levels org; org.readFrom(Main);
         save.writeTo(Main); // set save transaction-state and security_level
-
-        finishCalled = true;
 
         if (out) {
             int result = 0;
