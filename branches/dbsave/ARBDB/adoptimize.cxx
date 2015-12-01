@@ -2742,6 +2742,30 @@ void TEST_streamed_ascii_save_asUsedBy_silva_pipeline() {
             TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(savename));
         }
 
+        // test some error cases:
+        {
+            // 1. stream binary (not supported)
+            ArbDBWriter *writer = NULL;
+            TEST_EXPECT_NO_ERROR(GB_start_streamed_save_as(gb_main2, savename, "b", writer));
+            TEST_EXPECT_ERROR_CONTAINS(GB_stream_save_part(writer, gb_main2, gb_species_data2), "only supported for ascii");
+            GB_finish_stream_save(writer);
+            TEST_EXPECT(!GB_is_regularfile(savename)); // no partial file remains
+
+            // 2. invalid use of GB_stream_save_part (not ancestors)
+            TEST_EXPECT_NO_ERROR(GB_start_streamed_save_as(gb_main2, savename, "a", writer));
+            TEST_EXPECT_NO_ERROR(GB_stream_save_part(writer, gb_main2, gb_species_data2));
+            GBDATA *gb_extended_data2;
+            {
+                GB_transaction ta(gb_main2);
+                gb_extended_data2 = GBT_get_SAI_data(gb_main2);
+            }
+            TEST_EXPECT_ERROR_CONTAINS(GB_stream_save_part(writer, gb_species_data2, gb_extended_data2), "has to be an ancestor");
+            GB_finish_stream_save(writer);
+            TEST_EXPECT(!GB_is_regularfile(savename)); // no partial file remains
+
+        }
+        // TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(savename));
+
         GB_close(gb_main2);
         GB_close(gb_main1);
     }

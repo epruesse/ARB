@@ -1191,7 +1191,7 @@ public:
                     writeContainerOrChilds(gb_till, gb_from, NULL);
                 }
                 else {
-                    error = "Invalid use (gb_from has to be ancestor of gb_till or vv.)";
+                    error = "Invalid use (one container has to be an ancestor of the other)";
                 }
             }
         }
@@ -1213,25 +1213,27 @@ public:
 
         if (out) {
             int result = 0;
-            if (saveASCII) {
-                freedup(Main->qs.quick_save_disabled, "Database saved in ASCII mode");
-                if (deleteQuickAllowed) error = gb_remove_all_but_main(Main, as_path);
-            }
-            else {
-                mappath = strdup(gb_mapfile_name(as_path));
-                if (saveMapfile) {
-                    // it's necessary to save the mapfile FIRST,
-                    // cause this re-orders all GB_CONTAINERs containing NULL-entries in their header
-                    sec_mappath = strdup(gb_overwriteName(mappath));
-                    error       = gb_save_mapfile(Main, sec_mappath);
+            if (!error) {
+                if (saveASCII) {
+                    freedup(Main->qs.quick_save_disabled, "Database saved in ASCII mode");
+                    if (deleteQuickAllowed) error = gb_remove_all_but_main(Main, as_path);
                 }
-                else GB_unlink_or_warn(mappath, &error); // delete old mapfile
-                if (!error) result |= gb_write_bin(out, Main->root_container, 1);
+                else {
+                    mappath = strdup(gb_mapfile_name(as_path));
+                    if (saveMapfile) {
+                        // it's necessary to save the mapfile FIRST,
+                        // cause this re-orders all GB_CONTAINERs containing NULL-entries in their header
+                        sec_mappath       = strdup(gb_overwriteName(mappath));
+                        if (!error) error = gb_save_mapfile(Main, sec_mappath);
+                    }
+                    else GB_unlink_or_warn(mappath, &error); // delete old mapfile
+                    if (!error) result |= gb_write_bin(out, Main->root_container, 1);
+                }
             }
 
             // org.writeTo(Main); // Note: was originally done here
 
-            if (result != 0) {
+            if (result != 0 && !error) {
                 error = GB_IO_error("writing", sec_path);
                 if (!dump_to_stdout) {
                     GB_ERROR close_error   = ARB_zfclose(out, sec_path);
@@ -1239,7 +1241,10 @@ public:
                 }
             }
             else {
-                if (!dump_to_stdout) error = ARB_zfclose(out, sec_path);
+                if (!dump_to_stdout) {
+                    GB_ERROR close_error = ARB_zfclose(out, sec_path);
+                    if (!error) error    = close_error;
+                }
             }
 
             if (!error && seen_corrupt_data) {
