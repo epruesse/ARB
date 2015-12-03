@@ -328,10 +328,7 @@ GB_ERROR arb_look_and_kill_server(int magic_number, const char *arb_tcp_env) {
             aisc_close(glservercntrl.link, glservercntrl.com);
             glservercntrl.link = 0;
 
-            const char *command = GBS_global_string("%s -kill -T%s &", server, tcp_id);
-            if (system(command) != 0) {
-                error = GBS_global_string("Failed to execute '%s'", command);
-            }
+            error = GBK_system(GBS_global_string("%s -kill -T%s &", server, tcp_id));
         }
         else {
             error = "Server is not running";

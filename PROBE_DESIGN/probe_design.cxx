@@ -2000,11 +2000,8 @@ static void pd_export_pt_server(AW_window *aww, GBDATA *gb_main) {
                         progress.subtitle("Preparing DB for gene PT server");
                         GBS_add_ptserver_logentry("Preparing DB for gene PT server");
                         char *command = GBS_global_string_copy("$ARBHOME/bin/arb_gene_probe %s %s", temp_server_name, file);
-                        printf("Executing '%s'\n", command);
-                        int result = system(command);
-                        if (result != 0) {
-                            error = GBS_global_string("Couldn't convert database for gene pt server (arb_gene_probe failed, see console for reason)");
-                        }
+                        error = GBK_system(command);
+                        if (error) error = GBS_global_string("Couldn't convert database for gene pt server\n(Reason: %s)", error);
                         free(command);
                     }
                     free(temp_server_name);
