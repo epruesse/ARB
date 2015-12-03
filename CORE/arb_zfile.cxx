@@ -173,8 +173,10 @@ GB_ERROR ARB_zfclose(FILE *fp) {
     GB_ERROR error = NULL;
     if (res != 0) {
         int exited   = WIFEXITED(res);
-        int signaled = WIFSIGNALED(res);
         int status   = WEXITSTATUS(res);
+#if defined(DEBUG)
+        int signaled = WIFSIGNALED(res);
+#endif
 
         if (exited) {
             if (status) {
