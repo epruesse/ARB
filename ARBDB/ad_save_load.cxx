@@ -1236,13 +1236,13 @@ public:
             if (result != 0 && !error) {
                 error = GB_IO_error("writing", sec_path);
                 if (!dump_to_stdout) {
-                    GB_ERROR close_error   = ARB_zfclose(out, sec_path);
+                    GB_ERROR close_error   = ARB_zfclose(out);
                     if (close_error) error = GBS_global_string("%s\n(close reports: %s)", error, close_error);
                 }
             }
             else {
                 if (!dump_to_stdout) {
-                    GB_ERROR close_error = ARB_zfclose(out, sec_path);
+                    GB_ERROR close_error = ARB_zfclose(out);
                     if (!error) error    = close_error;
                 }
             }

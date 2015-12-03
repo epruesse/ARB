@@ -38,7 +38,7 @@ enum FileCompressionMode {
 };
 
 FILE     *ARB_zfopen(const char *name, const char *mode, FileCompressionMode cmode, GB_ERROR& error, bool hideStderr);
-GB_ERROR  ARB_zfclose(FILE *fp, const char *filename);
+GB_ERROR  ARB_zfclose(FILE *fp);
 
 #else
 #error arb_zfile.h included twice
