@@ -256,13 +256,10 @@ int ARB_main(int argc, char *argv[]) {
     if (error) {
         fprintf(stderr, "Error in arb_export_rates: %s\n", error);
         if (use_arb_message) {
-            char *escaped = strdup(error);
-            for (int i = 0; escaped[i]; ++i) if (escaped[i] == '\"') escaped[i] = '\'';
-
-            char *command = GBS_global_string_copy("arb_message \"Error: %s (in arb_export_rates)\"", escaped);
-            if (system(command) != 0) fprintf(stderr, "ERROR running '%s'\n", command);
-            free(command);
-            free(escaped);
+            char     *quotedErrorMsg = GBK_singlequote(GBS_global_string("Error in arb_export_rates: %s", error));
+            GB_ERROR  msgerror       = GBK_system(GBS_global_string("arb_message %s &", quotedErrorMsg));    // send async to avoid deadlock
+            if (msgerror) fprintf(stderr, "Error: %s\n", msgerror);
+            free(quotedErrorMsg);
         }
         return EXIT_FAILURE;
     }
