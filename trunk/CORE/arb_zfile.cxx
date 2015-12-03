@@ -14,7 +14,30 @@
 #include "arb_misc.h"
 #include "arb_assert.h"
 
+#include <string>
+#include <map>
+
 using namespace std;
+
+class zinfo {
+    // info stored for each sucessfully opened file
+    // to support proper error message on close.
+    bool   writing; // false -> reading
+    string filename;
+    string pipe_cmd;
+public:
+    zinfo() {}
+    zinfo(bool writing_, const char *filename_, const char *pipe_cmd_)
+        : writing(writing_),
+          filename(filename_),
+          pipe_cmd(pipe_cmd_)
+    {}
+
+    bool isOutputPipe() const { return writing; }
+    const char *get_filename() const { return filename.c_str(); }
+    const char *get_pipecmd() const { return pipe_cmd.c_str(); }
+};
+static map<FILE*,zinfo> zfile_info;
 
 FILE *ARB_zfopen(const char *name, const char *mode, FileCompressionMode cmode, GB_ERROR& error) {
     arb_assert(!error);
@@ -64,6 +87,9 @@ FILE *ARB_zfopen(const char *name, const char *mode, FileCompressionMode cmode, 
     if (cmode == ZFILE_UNCOMPRESSED) {
         fp             = fopen(name, mode);
         if (!fp) error = GB_IO_error("opening", name);
+        else {
+            zfile_info[fp] = zinfo(forOutput, name, "");
+        }
     }
     else {
         if (!error) {
@@ -111,6 +137,11 @@ FILE *ARB_zfopen(const char *name, const char *mode, FileCompressionMode cmode, 
                     fp             = popen(pipeCmd, impl_b_mode);
                     if (!fp) error = GB_IO_error("reading from pipe", pipeCmd);
                 }
+
+                if (!error) {
+                    zfile_info[fp] = zinfo(forOutput, name, pipeCmd);
+                }
+
                 free(impl_b_mode);
                 free(pipeCmd);
             }
@@ -122,9 +153,12 @@ FILE *ARB_zfopen(const char *name, const char *mode, FileCompressionMode cmode, 
     return fp;
 }
 
-GB_ERROR ARB_zfclose(FILE *fp, const char *filename) {
-    bool fifo = GB_is_fifo(fp);
-    int  res;
+GB_ERROR ARB_zfclose(FILE *fp, const char *filename) { // @@@ filename may be eliminated (is also stored in zinfo)
+    bool  fifo = GB_is_fifo(fp);
+    zinfo info = zfile_info[fp];
+    zfile_info.erase(fp);
+
+    int res;
     if (fifo) {
         res = pclose(fp);
     }
@@ -141,7 +175,14 @@ GB_ERROR ARB_zfclose(FILE *fp, const char *filename) {
         if (exited) {
             if (status) {
                 if (fifo) {
-                    error = GBS_global_string("pipe writing to '%s' failed with exitcode=%i (broken pipe?)", filename, status); // @@@ show pipe-command here
+                    error = GBS_global_string("pipe %s\n"
+                                              " file='%s'\n"
+                                              " using cmd='%s'\n"
+                                              " failed with exitcode=%i (broken pipe? corrupted archive?)\n",
+                                              info.isOutputPipe() ? "writing to" : "reading from",
+                                              filename,
+                                              info.get_pipecmd(),
+                                              status);
                 }
             }
         }
