@@ -37,7 +37,7 @@ enum FileCompressionMode {
     ZFILE_REAL_CMODES = ZFILE_UNDEFINED-ZFILE_UNCOMPRESSED-1, // number of supported modes
 };
 
-FILE     *ARB_zfopen(const char *name, const char *mode, FileCompressionMode cmode, GB_ERROR& error);
+FILE     *ARB_zfopen(const char *name, const char *mode, FileCompressionMode cmode, GB_ERROR& error, bool hideStderr);
 GB_ERROR  ARB_zfclose(FILE *fp, const char *filename);
 
 #else

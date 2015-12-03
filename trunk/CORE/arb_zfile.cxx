@@ -39,7 +39,7 @@ public:
 };
 static map<FILE*,zinfo> zfile_info;
 
-FILE *ARB_zfopen(const char *name, const char *mode, FileCompressionMode cmode, GB_ERROR& error) {
+FILE *ARB_zfopen(const char *name, const char *mode, FileCompressionMode cmode, GB_ERROR& error, bool hideStderr) {
     arb_assert(!error);
 
     if (strchr(mode, 'a')) {
@@ -120,6 +120,10 @@ FILE *ARB_zfopen(const char *name, const char *mode, FileCompressionMode cmode, 
                 char *pipeCmd = forOutput
                     ? GBS_global_string_copy("%s > %s", compressor, name)
                     : GBS_global_string_copy("%s %s < %s", compressor, decompress_flag, name);
+
+                if (hideStderr) {
+                    freeset(pipeCmd, GBS_global_string_copy("( %s 2>/dev/null )", pipeCmd));
+                }
 
                 // remove 'b' from mode (pipes are binary by default)
                 char *impl_b_mode = strdup(mode);
@@ -210,19 +214,19 @@ static char *fileContent(FILE *in, size_t& bytes_read) {
     return buffer;
 }
 
-#define TEST_EXPECT_ZFOPEN_FAILS(name,mode,cmode,errpart) do{     \
-        GB_ERROR  error = NULL;                                   \
-        FILE     *fp    = ARB_zfopen(name, mode, cmode, error);   \
-                                                                  \
-        if (fp) {                                                 \
-            TEST_EXPECT_NULL(error);                              \
-            error = ARB_zfclose(fp, name);                        \
-        }                                                         \
-        else {                                                    \
-            TEST_EXPECT_NULL(fp);                                 \
-        }                                                         \
-        TEST_REJECT_NULL(error);                                  \
-        TEST_EXPECT_CONTAINS(error, errpart);                     \
+#define TEST_EXPECT_ZFOPEN_FAILS(name,mode,cmode,errpart) do{           \
+        GB_ERROR  error = NULL;                                         \
+        FILE     *fp    = ARB_zfopen(name, mode, cmode, error, false);  \
+                                                                        \
+        if (fp) {                                                       \
+            TEST_EXPECT_NULL(error);                                    \
+            error = ARB_zfclose(fp, name);                              \
+        }                                                               \
+        else {                                                          \
+            TEST_EXPECT_NULL(fp);                                       \
+        }                                                               \
+        TEST_REJECT_NULL(error);                                        \
+        TEST_EXPECT_CONTAINS(error, errpart);                           \
     }while(0)
 
 void TEST_compressed_io() {
@@ -245,7 +249,7 @@ void TEST_compressed_io() {
     const size_t  TEST_TEXT_SIZE = 428;
     {
         GB_ERROR  error = NULL;
-        FILE     *in    = ARB_zfopen(inText, "r", ZFILE_UNCOMPRESSED, error);
+        FILE     *in    = ARB_zfopen(inText, "r", ZFILE_UNCOMPRESSED, error, false);
         TEST_EXPECT_NULL(error);
         TEST_REJECT_NULL(in);
 
@@ -267,7 +271,7 @@ void TEST_compressed_io() {
         bool compressed_save_failed = false;
         {
             GB_ERROR  error = NULL;
-            FILE     *out   = ARB_zfopen(outFile, "w", cmode, error);
+            FILE     *out   = ARB_zfopen(outFile, "w", cmode, error, false);
 
             TEST_EXPECT_NO_ERROR(error);
             TEST_REJECT_NULL(out);
@@ -289,7 +293,7 @@ void TEST_compressed_io() {
                 TEST_ANNOTATE(GBS_global_string("cmode=%i detect=%i", int(cmode), detect));
 
                 GB_ERROR  error = NULL;
-                FILE     *in    = ARB_zfopen(outFile, "r", detect ? ZFILE_AUTODETECT : cmode, error);
+                FILE     *in    = ARB_zfopen(outFile, "r", detect ? ZFILE_AUTODETECT : cmode, error, false);
 
                 TEST_REJECT(error);
                 TEST_REJECT_NULL(in);

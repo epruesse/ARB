@@ -1108,7 +1108,7 @@ public:
             // and move that file if and when everything has gone well
             sec_path       = strdup(GB_is_fifo(as_path) ? as_path : gb_overwriteName(as_path));
             dump_to_stdout = strchr(savetype, 'S');
-            out            = dump_to_stdout ? stdout : ARB_zfopen(sec_path, "w", compressMode, error);
+            out            = dump_to_stdout ? stdout : ARB_zfopen(sec_path, "w", compressMode, error, false);
 
             if (!out) {
                 gb_assert(error);
