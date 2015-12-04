@@ -1,0 +1,72 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+UP 	arb_secedit.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		ARB_SECEDIT modes
+
+OCCURRENCE	ARB_SECEDIT/mode buttons
+
+DESCRIPTION	ZOOM MODE       Mode to zoom the displayed secondary structure.
+
+			See LINK{mode_pzoom.hlp} on how to zoom.
+
+		HELIX MODE	Mode to build and destroy helix regions.
+
+			Left mouse button converts the clicked loop region
+			into a helix region (if possible).
+
+			Right mouse button removes the clicked helix region.
+
+                        Hint: If you display SAI: HELIX it's easy to detect the helix
+                              regions.
+
+		SET ROOT MODE
+
+			Left click on a loop which should be the fixpoint of your
+			secondary structure.
+                        The root loop will not move if you create or remove helix
+                        region nor if you rotate branches of the secondary structure.
+                        
+                        Right click onto a loop or helix to reset the angles between it and
+                        its neighbours.
+
+		ROTATE MODE 
+
+                        Left click onto a helix or loop to rotate it (and its complete
+                        substructure).
+
+                        Use right click to rotate w/o rotating the substructure.
+
+		STRETCH MODE    
+
+			Left click and drag a helix or loop to stretch or compress its size.
+
+                        Right click to remove size constraints.
+
+                CONSTRAINT MODE 
+
+                        Left click on a helix or loop and edit its size constraints manually.
+
+                SET CURSOR MODE 
+
+                        Left click on a base character to set the cursor position in the
+                        primary structure editor.
+
+                PROBE INFO MODE
+
+                        Left click on 
+
+NOTES		None
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known

@@ -1,0 +1,19 @@
+AUTODETECT      "{\nname*"
+                #Global settings:
+KEYWIDTH        4
+FILETAG         GDE
+
+BEGIN           "{\n*"
+
+MATCH           "name *"
+                WRITE "name"
+
+MATCH           "sequence-ID *"
+                WRITE "acc"
+
+SEQUENCEAFTER "sequence"
+SEQUENCESRT     "\"="
+SEQUENCEEND     "\""
+CREATE_ACC_FROM_SEQUENCE
+# DONT_GEN_NAMES
+END             "}"

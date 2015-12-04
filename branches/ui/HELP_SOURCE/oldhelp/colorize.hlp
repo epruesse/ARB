@@ -1,0 +1,37 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+SUB	mark.hlp
+SUB	color.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Colorizing marked items / Marking colored items
+
+OCCURRENCE	ARB_NT/Species/Colors ...
+                ARB_NT/Genome/Colors ...
+                ARB_NT/Genome/Organims/Colors ...
+                ARB_NT/Genome/Experiments/Colors ...
+
+DESCRIPTION     Allows to colorize marked items and to mark colorized items.
+
+                First select which color group should be targeted on the right side.
+
+                Then select an action by clicking onto one of the action buttons on
+                the left side. Available actions are:
+
+                 * assign marked to color group
+                 * mark/unmark/invert all members of a color group
+
+                To save colorsets, use LINK{color_loadsave.hlp}.
+
+NOTES		See also LINK{color.hlp} 
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known

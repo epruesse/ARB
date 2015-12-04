@@ -1,0 +1,58 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+UP	di_clusters.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Cluster groups
+
+OCCURRENCE	ARB_DIST/Detect clusters/Cluster groups
+
+DESCRIPTION     Choose whether you like to create (or delete) groups for all 'listed clusters' or
+                for the currently 'selected cluster' only.
+
+                Specify the wanted identity between cluster and the subtree, where the group will
+                be created. If you just calculated clusters (for the tree currently selected in the
+                ARB_DIST main window) the identity will always be 100%.
+                Specifying a lower identity value, allows to apply groups to a different tree.
+
+                Click on 'create groups' to create groups for affected clusters.
+
+                It might happen, that your tree already contains groups, where this function
+                likes to insert new ones. In this case you can choose to either
+
+                      - abort (the default)
+                      - skip
+                      - overwrite with generated name or
+                      - overwrite and append original group name.
+
+                You can specify a name prefix for the generated group names.
+
+                The rest of the name is generated from the 'Name suffix' specification.
+                This specification may contain normal text and the following codes:
+
+                     %p            position in upgroup (which don't start with cluster prefix)
+                     %P            position in upgroup
+                     %t            position in tree
+                     %d            mean distance of cluster
+                     %D            max allowed distance (as set in input field)
+                     %o            "..%_of" (only occurs when applying to different tree topology)
+                     %e            existing group-name
+                     %%            %
+
+                Click on 'delete groups' to erase groups existing at cluster subtrees. You can select
+                to remove all groups or only groups matching the name prefix.
+
+NOTES		This function always affects the tree currently selected in the ARB_DIST main window.
+
+EXAMPLES	None
+
+WARNINGS	Be careful when using 'overwrite' without appending original names.
+                It will destroy existing groups.
+
+BUGS		No bugs known
