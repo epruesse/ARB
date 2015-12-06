@@ -440,6 +440,10 @@ static AW_window *create_tree_import_window(AW_root *root)
     aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
+    aws->at("help");
+    aws->callback(makeHelpCallback("tr_import.hlp"));
+    aws->create_button("HELP", "HELP", "H");
+
     aws->at("format");
     aws->label("Tree Format");
     aws->create_option_menu(AWAR_TREE_IMPORT "/filter", false);
@@ -703,32 +707,39 @@ void popup_tree_admin_window(AW_root *aw_root) {
         static TreeAdmin::Spec spec(GLOBAL.gb_main, AWAR_TREE_NAME);
 
         aws->at("delete");
+        aws->help_text("treeadm.hlp");
         aws->callback(makeWindowCallback(TreeAdmin::delete_tree_cb, &spec));
         aws->create_button("DELETE", "Delete", "D");
 
         aws->at("rename");
+        aws->help_text("treeadm.hlp");
         aws->callback(makeCreateWindowCallback(TreeAdmin::create_rename_window, &spec));
         aws->create_button("RENAME", "Rename", "R");
 
         aws->at("copy");
+        aws->help_text("treeadm.hlp");
         aws->callback(makeCreateWindowCallback(TreeAdmin::create_copy_window, &spec));
         aws->create_button("COPY", "Copy", "C");
 
-        aws->at("move");
-        aws->callback(create_tree_cmp_window);
-        aws->create_button("MOVE_NODE_INFO", "Move node info", "C");
-
         aws->at("cmp");
+        aws->help_text("tree_diff.hlp");
         aws->callback(create_tree_diff_window);
         aws->sens_mask(AWM_EXP);
         aws->create_button("CMP_TOPOLOGY", "Compare topology", "T");
         aws->sens_mask(AWM_ALL);
 
+        aws->at("move");
+        aws->help_text("tree_cmp.hlp");
+        aws->callback(create_tree_cmp_window);
+        aws->create_button("MOVE_NODE_INFO", "Move node info", "C");
+
         aws->at("export");
+        aws->help_text("tr_export.hlp");
         aws->callback(create_tree_export_window);
         aws->create_button("EXPORT", "Export", "E");
 
         aws->at("import");
+        aws->help_text("tr_import.hlp");
         aws->callback(create_tree_import_window);
         aws->create_button("IMPORT", "Import", "I");
 
