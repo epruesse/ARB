@@ -1290,7 +1290,7 @@ void create_probe_design_variables(AW_root *root, AW_default props, AW_default d
     root->awar_int(AWAR_PD_MATCH_WRITE2TMP,  0, props);
     root->awar_int(AWAR_PD_MATCH_COMPLEMENT, 0, props);
 
-    root->awar_int   (AWAR_MAX_MISMATCHES, 0, db)->set_min(0);
+    root->awar_int   (AWAR_MAX_MISMATCHES, 0, db)->set_minmax(0, 200);
     root->awar_string(AWAR_TARGET_STRING,  0, db);
 
     root->awar_string(AWAR_PD_MATCH_NHITS,      "[none]", props);
@@ -1770,8 +1770,9 @@ AW_window *create_probe_match_window(AW_root *root, GBDATA *gb_main) {
         aws = new AW_window_simple;
 
         aws->init(root, "PROBE_MATCH", "PROBE MATCH");
-
         aws->load_xfig("pd_match.fig");
+
+        aws->auto_space(5, 5);
 
         aws->at("close");
         aws->callback(AW_POPDOWN);
@@ -1816,7 +1817,7 @@ AW_window *create_probe_match_window(AW_root *root, GBDATA *gb_main) {
         aws->create_toggle(AWAR_PD_MATCH_SORTBY);
 
         aws->at("mismatches");
-        aws->create_input_field(AWAR_MAX_MISMATCHES);
+        aws->create_input_field_with_scaler(AWAR_MAX_MISMATCHES, 5, 200, AW_SCALER_EXP_LOWER);
 
         aws->at("tmp");
         aws->create_toggle(AWAR_PD_MATCH_WRITE2TMP);
