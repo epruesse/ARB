@@ -27,7 +27,8 @@ int   num_menus = 0;
 
 static char GDEBLANK[] = "\0";
 
-#define SLIDERWIDTH 5           // input field width for numbers
+#define SLIDERFIELDWIDTH 5      // width of numeric input fields with slider
+#define SLIDERWIDTH      200    // with of the slider itself
 
 #define AWAR_GDE_ALIGNMENT   AWAR_PREFIX_GDE_TEMP "/alignment"
 #define AWAR_GDE_FILTER_NAME AWAR_PREFIX_GDE_TEMP "/filter/name"
@@ -63,41 +64,6 @@ static char *GDE_makeawarname_in(GmenuItem *gmenuitem, long i, const char *awar_
 
 char *GDE_makeawarname   (GmenuItem *gmenuitem, long i) { return GDE_makeawarname_in(gmenuitem, i, AWAR_PREFIX_GDE); }
 char *GDE_maketmpawarname(GmenuItem *gmenuitem, long i) { return GDE_makeawarname_in(gmenuitem, i, AWAR_PREFIX_GDE_TEMP); }
-
-static void GDE_slide_awar_int_cb(AW_window *aws, const char *awar_name, int diff) {
-    AW_awar *awar = aws->get_root()->awar(awar_name);
-    awar->write_int(awar->read_int()+diff);
-}
-
-static void GDE_slide_awar_float_cb(AW_window *aws, const char *awar_name, int millidiff) {
-    AW_awar *awar    = aws->get_root()->awar(awar_name);
-    double   diff    = millidiff/1000.0;
-    double   new_val = awar->read_float()+diff;
-
-    if (fabs(new_val) < 0.0001) new_val = 0.0;
-    awar->write_float(new_val);
-
-    // do it again (otherwise internal awar-range correction sometimes leads to 1+eXX values)
-    new_val = awar->read_float();
-    if (fabs(new_val) < 0.0001) new_val = 0.0;
-    awar->write_float(new_val);
-}
-
-static void GDE_create_infieldwithpm(AW_window *aws, char *newawar, long width) {
-    aws->create_input_field(newawar, (int)width);
-    if (aws->get_root()->awar(newawar)->get_type() == AW_INT) {
-        aws->button_length(3);
-        char *awar = strdup(newawar);
-        aws->callback(makeWindowCallback(GDE_slide_awar_int_cb, awar, -1)); aws->create_button(0, "-", "-");
-        aws->callback(makeWindowCallback(GDE_slide_awar_int_cb, awar, +1)); aws->create_button(0, "+", "+");
-    }
-    else if (aws->get_root()->awar(newawar)->get_type() == AW_FLOAT) {
-        aws->button_length(3);
-        char *awar = strdup(newawar);
-        aws->callback(makeWindowCallback(GDE_slide_awar_float_cb, awar, -100)); aws->create_button(0, "-", "-");
-        aws->callback(makeWindowCallback(GDE_slide_awar_float_cb, awar, +100)); aws->create_button(0, "+", "+");
-    }
-}
 
 static char *gde_filter_weights(GBDATA *gb_sai) {
     char   *ali_name = GBT_get_default_alignment(GB_get_root(gb_sai));
@@ -324,23 +290,24 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
             const GmenuItemArg& itemarg = gmenuitem->arg[i];
 
             if (itemarg.type==SLIDER) {
-                char *newawar = GDE_makeawarname(gmenuitem, i);
+                char    *awarName = GDE_makeawarname(gmenuitem, i);
+                AW_awar *awar     = NULL;
 
                 if (int(itemarg.fvalue) == itemarg.fvalue &&
                     int(itemarg.min) == itemarg.min &&
                     int(itemarg.max) == itemarg.max)
                 {
-                    aw_root->awar_int(newawar, (long)itemarg.fvalue, AW_ROOT_DEFAULT);
+                    awar = aw_root->awar_int(awarName, (long)itemarg.fvalue, AW_ROOT_DEFAULT);
                 }
                 else {
-                    aw_root->awar_float(newawar, itemarg.fvalue, AW_ROOT_DEFAULT);
+                    awar = aw_root->awar_float(awarName, itemarg.fvalue, AW_ROOT_DEFAULT);
                 }
-                aw_root->awar(newawar)->set_minmax(itemarg.min, itemarg.max);
+                awar->set_minmax(itemarg.min, itemarg.max);
+
                 aws->label(itemarg.label);
                 aws->sens_mask(itemarg.active_mask);
-                GDE_create_infieldwithpm(aws, newawar, SLIDERWIDTH);
-                // maybe bound checking //
-                free(newawar);
+                aws->create_input_field_with_scaler(awarName, SLIDERFIELDWIDTH, SLIDERWIDTH, AW_SCALER_LINEAR);
+                free(awarName);
             }
             else if (itemarg.type==CHOOSER) {
                 char    *defopt           = itemarg.choice[0].method;
