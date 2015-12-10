@@ -138,13 +138,13 @@ void BranchWindow::create_awars(AW_root *aw_root) {
     awar_info = aw_root->awar_string(local_awar_name(AWAR_BRANCH_ANALYSIS_TMP, "info"), "<No analysis performed yet>");
     aw_root->awar(ntw->user_awar)->add_callback(makeRootCallback(tree_changed_cb, this));
 
-    aw_root->awar_float(AWAR_BA_MIN_REL_DIFF, 75);
-    aw_root->awar_float(AWAR_BA_MIN_ABS_DIFF, 0.01);
+    aw_root->awar_float(AWAR_BA_MIN_REL_DIFF, 75)->set_minmax(0, 100);
+    aw_root->awar_float(AWAR_BA_MIN_ABS_DIFF, 0.01)->set_minmax(0, 20);
 
-    aw_root->awar_int(AWAR_BA_MIN_DEPTH, 0);
-    aw_root->awar_float(AWAR_BA_MIN_ROOTDIST, 0.9);
+    aw_root->awar_int(AWAR_BA_MIN_DEPTH, 0)->set_minmax(0, 50);
+    aw_root->awar_float(AWAR_BA_MIN_ROOTDIST, 0.9)->set_minmax(0, 20);
 
-    aw_root->awar_float(AWAR_BA_DEGENERATION, 30);
+    aw_root->awar_float(AWAR_BA_DEGENERATION, 30)->set_minmax(0, 100);
 }
 
 static AWT_config_mapping_def branch_analysis_config_mapping[] = {
@@ -162,6 +162,8 @@ void BranchWindow::create_window(AW_root *aw_root) {
 
     aws->init(aw_root, GBS_global_string("BRANCH_ANALYSIS_%s", suffix), "Branch analysis");
     aws->load_xfig("ad_branch.fig");
+
+    aws->auto_space(5, 5);
 
     aws->at("close");
     aws->callback(AW_POPDOWN);
@@ -187,28 +189,29 @@ void BranchWindow::create_window(AW_root *aw_root) {
     aws->callback(makeWindowCallback(unmark_branches_cb, this));
     aws->create_button("UNMARK", "Unmark all species");
 
-    const int WIDTH = 10;
+    const int FIELDWIDTH  = 10;
+    const int SCALERWIDTH = 200;
 
     aws->at("mark_long");
     aws->callback(makeWindowCallback(mark_long_branches_cb, this));
     aws->create_button("MARK_LONG", "Mark long branches");
 
-    aws->at("min_rel"); aws->create_input_field(AWAR_BA_MIN_REL_DIFF, WIDTH);
-    aws->at("min_abs"); aws->create_input_field(AWAR_BA_MIN_ABS_DIFF, WIDTH);
+    aws->at("min_rel"); aws->create_input_field_with_scaler(AWAR_BA_MIN_REL_DIFF, FIELDWIDTH, SCALERWIDTH, AW_SCALER_LINEAR);
+    aws->at("min_abs"); aws->create_input_field_with_scaler(AWAR_BA_MIN_ABS_DIFF, FIELDWIDTH, SCALERWIDTH, AW_SCALER_EXP_LOWER);
 
 
     aws->at("mark_deep");
     aws->callback(makeWindowCallback(mark_deep_leafs_cb, this));
     aws->create_button("MARK_DEEP", "Mark deep leafs");
 
-    aws->at("tree_depth");   aws->create_input_field(AWAR_BA_MIN_DEPTH, WIDTH);
-    aws->at("branch_depth"); aws->create_input_field(AWAR_BA_MIN_ROOTDIST, WIDTH);
+    aws->at("tree_depth");   aws->create_input_field_with_scaler(AWAR_BA_MIN_DEPTH, FIELDWIDTH, SCALERWIDTH, AW_SCALER_LINEAR);
+    aws->at("branch_depth"); aws->create_input_field_with_scaler(AWAR_BA_MIN_ROOTDIST, FIELDWIDTH, SCALERWIDTH, AW_SCALER_LINEAR);
 
     aws->at("mark_degen");
     aws->callback(makeWindowCallback(mark_degenerated_branches_cb, this));
     aws->create_button("MARK_DEGENERATED", "Mark degenerated branches");
 
-    aws->at("degen"); aws->create_input_field(AWAR_BA_DEGENERATION, WIDTH);
+    aws->at("degen"); aws->create_input_field_with_scaler(AWAR_BA_DEGENERATION, FIELDWIDTH, SCALERWIDTH, AW_SCALER_LINEAR);
 
     aws->at("config");
     AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "branch_analysis", branch_analysis_config_mapping);
