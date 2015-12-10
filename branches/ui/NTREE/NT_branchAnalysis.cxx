@@ -26,6 +26,8 @@
 #define AWAR_BA_MIN_ROOTDIST AWAR_BRANCH_ANALYSIS "/min_rootdist"
 #define AWAR_BA_DEGENERATION AWAR_BRANCH_ANALYSIS "/degeneration"
 
+#define AWAR_BA_AUTOMARK_FORMAT AWAR_BRANCH_ANALYSIS_TMP "/auto_%s"
+
 // AISC_MKPT_PROMOTE:class AWT_canvas;
 
 class BranchWindow : virtual Noncopyable {
@@ -43,6 +45,8 @@ class BranchWindow : virtual Noncopyable {
 
     void create_awars(AW_root *aw_root);
     void create_window(AW_root *aw_root);
+
+    const char *automark_awarname() const { return GBS_global_string(AWAR_BA_AUTOMARK_FORMAT, suffix); }
 
 public:
     BranchWindow(AW_root *aw_root, AWT_canvas *ntw_)
@@ -80,6 +84,9 @@ private:
 public:
     void set_info(const char *msg) const { awar_info->write_string(msg); }
     void unmark_all() const { NT_mark_all_cb(NULL, get_canvas(), 0); }
+
+    AW_awar *automark_awar() const { return get_awroot()->awar(automark_awarname()); }
+    bool has_automark_set() const { return automark_awar()->read_int(); }
 
     void markDegeneratedBranches() {
         if (have_tree()) {
@@ -124,6 +131,8 @@ public:
     }
 };
 
+static BranchWindow *existingBranchWindow[MAX_NT_WINDOWS] = { MAX_NT_WINDOWS_NULLINIT };
+
 // --------------------------------------------------------------------------------
 
 static void mark_long_branches_cb       (AW_window*, BranchWindow *bw) { bw->markLongBranches(); }
@@ -134,17 +143,55 @@ static void distance_analysis_cb        (AW_window*, BranchWindow *bw) { bw->ana
 
 static void tree_changed_cb             (AW_root*,   BranchWindow *bw) { bw->set_info("<tree has changed>"); }
 
+static BranchWindow *findAutomarkingBranchWindow() {
+    for (int w = 0; w<MAX_NT_WINDOWS; ++w) {
+        BranchWindow *bw = existingBranchWindow[w];
+        if (bw && bw->has_automark_set()) {
+            return bw;
+        }
+    }
+    return NULL;
+}
+
+static void mark_long_branches_automark_cb() {
+    BranchWindow *bw = findAutomarkingBranchWindow();
+    if (bw) bw->markLongBranches();
+}
+static void mark_deep_leafs_automark_cb() {
+    BranchWindow *bw = findAutomarkingBranchWindow();
+    if (bw) bw->markDeepLeafs();
+}
+static void mark_degenerated_branches_automark_cb() {
+    BranchWindow *bw = findAutomarkingBranchWindow();
+    if (bw) bw->markDegeneratedBranches();
+}
+
+static void automark_changed_cb(AW_root *, BranchWindow *bw) {
+    static bool avoid_recursion = false;
+    if (!avoid_recursion) {
+        AW_awar *awar_automark = bw->automark_awar();
+        if (awar_automark->read_int()) { // just activated
+            LocallyModify<bool> avoid(avoid_recursion, true);
+
+            awar_automark->write_int(0);
+            BranchWindow *prev_active = findAutomarkingBranchWindow();
+            if (prev_active) prev_active->automark_awar()->write_int(0);
+            awar_automark->write_int(1);
+        }
+    }
+}
+
 void BranchWindow::create_awars(AW_root *aw_root) {
     awar_info = aw_root->awar_string(local_awar_name(AWAR_BRANCH_ANALYSIS_TMP, "info"), "<No analysis performed yet>");
     aw_root->awar(ntw->user_awar)->add_callback(makeRootCallback(tree_changed_cb, this));
 
-    aw_root->awar_float(AWAR_BA_MIN_REL_DIFF, 75)->set_minmax(0, 100);
-    aw_root->awar_float(AWAR_BA_MIN_ABS_DIFF, 0.01)->set_minmax(0, 20);
+    aw_root->awar_float(AWAR_BA_MIN_REL_DIFF, 75)->set_minmax(0, 100)->add_callback(makeRootCallback(mark_long_branches_automark_cb));
+    aw_root->awar_float(AWAR_BA_MIN_ABS_DIFF, 0.01)->set_minmax(0, 20)->add_callback(makeRootCallback(mark_long_branches_automark_cb));
 
-    aw_root->awar_int(AWAR_BA_MIN_DEPTH, 0)->set_minmax(0, 50);
-    aw_root->awar_float(AWAR_BA_MIN_ROOTDIST, 0.9)->set_minmax(0, 20);
+    aw_root->awar_int(AWAR_BA_MIN_DEPTH, 0)->set_minmax(0, 50)->add_callback(makeRootCallback(mark_deep_leafs_automark_cb));
+    aw_root->awar_float(AWAR_BA_MIN_ROOTDIST, 0.9)->set_minmax(0, 20)->add_callback(makeRootCallback(mark_deep_leafs_automark_cb));
 
-    aw_root->awar_float(AWAR_BA_DEGENERATION, 30)->set_minmax(0, 100);
+    aw_root->awar_float(AWAR_BA_DEGENERATION, 30)->set_minmax(0, 100)->add_callback(makeRootCallback(mark_degenerated_branches_automark_cb));
 }
 
 static AWT_config_mapping_def branch_analysis_config_mapping[] = {
@@ -172,6 +219,12 @@ void BranchWindow::create_window(AW_root *aw_root) {
     aws->at("help");
     aws->callback(makeHelpCallback("branch_analysis.hlp"));
     aws->create_button("HELP", "HELP", "H");
+
+    AW_awar *awar_automark = aw_root->awar_int(automark_awarname(), 0);
+    aws->at("auto");
+    aws->label("Auto mark?");
+    aws->create_toggle(awar_automark->awar_name);
+    awar_automark->add_callback(makeRootCallback(automark_changed_cb, this));
 
     aws->at("sel");
     aws->create_button(0, ntw->user_awar, 0, "+");
@@ -218,13 +271,11 @@ void BranchWindow::create_window(AW_root *aw_root) {
 }
 
 AW_window *NT_create_branch_analysis_window(AW_root *aw_root, AWT_canvas *ntw) {
-    static BranchWindow *bw[MAX_NT_WINDOWS] = { MAX_NT_WINDOWS_NULLINIT };
-
     int ntw_id = NT_get_canvas_id(ntw);
-    if (!bw[ntw_id]) {
-        bw[ntw_id] = new BranchWindow(aw_root, ntw);
+    if (!existingBranchWindow[ntw_id]) {
+        existingBranchWindow[ntw_id] = new BranchWindow(aw_root, ntw);
     }
-    nt_assert(bw[ntw_id]);
-    return bw[ntw_id]->get_window();
+    nt_assert(existingBranchWindow[ntw_id]);
+    return existingBranchWindow[ntw_id]->get_window();
 }
 
