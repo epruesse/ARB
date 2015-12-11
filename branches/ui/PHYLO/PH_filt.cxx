@@ -337,13 +337,19 @@ float *PH_filter::calculate_column_homology() {
 
 
 
-void PH_create_filter_variables(AW_root *aw_root, AW_default default_file)
-{
+void PH_create_filter_variables(AW_root *aw_root, AW_default default_file, GBDATA *gb_main) {
     // filter awars
-    aw_root->awar_int(AWAR_PHYLO_FILTER_STARTCOL, 0,     default_file);
-    aw_root->awar_int(AWAR_PHYLO_FILTER_STOPCOL,  99999, default_file);
-    aw_root->awar_int(AWAR_PHYLO_FILTER_MINHOM,   0,     default_file);
-    aw_root->awar_int(AWAR_PHYLO_FILTER_MAXHOM,   100,   default_file);
+    long alilength;
+    {
+        GB_transaction ta(gb_main);
+        char *aliname = GBT_get_default_alignment(gb_main);
+        alilength     = GBT_get_alignment_len(gb_main, aliname);
+        free(aliname);
+    }
+    aw_root->awar_int(AWAR_PHYLO_FILTER_STARTCOL, 0,     default_file)->set_minmax(0, alilength-1);
+    aw_root->awar_int(AWAR_PHYLO_FILTER_STOPCOL,  99999, default_file)->set_minmax(0, alilength-1);
+    aw_root->awar_int(AWAR_PHYLO_FILTER_MINHOM,   0,     default_file)->set_minmax(0, 100);
+    aw_root->awar_int(AWAR_PHYLO_FILTER_MAXHOM,   100,   default_file)->set_minmax(0, 100);
 
     aw_root->awar_int(AWAR_PHYLO_FILTER_POINT, DONT_COUNT, default_file); // '.' in column
     aw_root->awar_int(AWAR_PHYLO_FILTER_MINUS, DONT_COUNT, default_file); // '-' in column
@@ -393,17 +399,20 @@ AW_window *PH_create_filter_window(AW_root *aw_root) {
     aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
+    const int SCALERWIDTH = 200;
+    aws->auto_space(5, 5);
+
     aws->at("startcol");
-    aws->create_input_field(AWAR_PHYLO_FILTER_STARTCOL, 6);
+    aws->create_input_field_with_scaler(AWAR_PHYLO_FILTER_STARTCOL, 6, SCALERWIDTH);
 
     aws->at("stopcol");
-    aws->create_input_field(AWAR_PHYLO_FILTER_STOPCOL, 6);
+    aws->create_input_field_with_scaler(AWAR_PHYLO_FILTER_STOPCOL, 6, SCALERWIDTH);
 
     aws->at("minhom");
-    aws->create_input_field(AWAR_PHYLO_FILTER_MINHOM, 3);
+    aws->create_input_field_with_scaler(AWAR_PHYLO_FILTER_MINHOM, 3, SCALERWIDTH);
 
     aws->at("maxhom");
-    aws->create_input_field(AWAR_PHYLO_FILTER_MAXHOM, 3);
+    aws->create_input_field_with_scaler(AWAR_PHYLO_FILTER_MAXHOM, 3, SCALERWIDTH);
 
     aws->label_length(20);
 

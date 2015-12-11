@@ -57,7 +57,7 @@ enum {
     PH_GC_0_DRAG
 };
 
-void       PH_create_filter_variables(AW_root *aw_root, AW_default aw_def);
+void       PH_create_filter_variables(AW_root *aw_root, AW_default default_file, GBDATA *gb_main);
 AW_window *PH_create_filter_window(AW_root *aw_root);
 
 enum display_type {
