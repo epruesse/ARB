@@ -1,9 +1,0 @@
-# HM May 2009
-#
-# Exports sequences from ARB to fasta-format with
-# name, sequence length, sequence type, and acc in header
-
-SUFFIX          fasta
-BEGIN
->*(name)          *(|export_sequence|len(.-)) bp          *(|sequence_type)          *(acc)
-*(|export_sequence|format_sequence(firsttab=0;tab=0;width=50))
