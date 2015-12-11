@@ -32,11 +32,6 @@
 #define AWAR_PHYLO_ALIGNMENT     "tmp/phyl/alignment"
 #define AWAR_PHYLO_FILTER_FILTER "phyl/filter/filter"
 
-#define AWAR_PHYLO_MATRIX_POINT "phyl/matrix/point"
-#define AWAR_PHYLO_MATRIX_MINUS "phyl/matrix/minus"
-#define AWAR_PHYLO_MATRIX_REST  "phyl/matrix/rest"
-#define AWAR_PHYLO_MATRIX_LOWER "phyl/matrix/lower"
-
 #define AWAR_PHYLO_FILTER_STARTCOL "phyl/filter/startcol"
 #define AWAR_PHYLO_FILTER_STOPCOL  "phyl/filter/stopcol"
 #define AWAR_PHYLO_FILTER_MINHOM   "phyl/filter/minhom"
@@ -149,8 +144,6 @@ public:
 };
 
 
-struct elem;
-
 class PHDATA : virtual Noncopyable {
     // connection to database
     // pointers to all elements and important values of the database
@@ -162,8 +155,6 @@ class PHDATA : virtual Noncopyable {
         GBDATA       *gb_species_data_ptr;
         PHENTRY      *next;
         PHENTRY      *prev;
-        int           group_members; // >0: this elem is grouphead
-        elem         *first_member;  // !=NULL: elem is grouphead
         bool          selected;
 
         PHENTRY()
@@ -173,8 +164,6 @@ class PHDATA : virtual Noncopyable {
               gb_species_data_ptr(NULL),
               next(NULL),
               prev(NULL),
-              group_members(0),
-              first_member(NULL),
               selected(false)
         {}
 
@@ -189,18 +178,18 @@ class PHDATA : virtual Noncopyable {
     AW_root *aw_root; // only link
     PH_root *ph_root; // only link
 
+    PHENTRY *entries;
+
 public:
     GBDATA *get_gb_main() { return ph_root->get_gb_main(); }
 
     char *use;               // @@@ elim (PH_root has same field)
 
-    PHENTRY       *entries;
     PHENTRY      **hash_elements;
     unsigned int   nentries;                        // total number of entries
 
     static PHDATA *ROOT;                            // 'global' pointer
 
-    AP_smatrix *distance_table;                     // weights between different characters
     AP_smatrix *matrix;                             // calculated matrix
     float      *markerline;
 
@@ -209,11 +198,10 @@ public:
           seq_len(0),
           aw_root(aw_root_),
           ph_root(ph_root_),
-          use(NULL),
           entries(NULL),
+          use(NULL),
           hash_elements(NULL),
           nentries(0),
-          distance_table(NULL),
           matrix(NULL),
           markerline(NULL)
     {}
@@ -222,13 +210,10 @@ public:
         delete matrix;
     }
 
-    char     *load(char*& use);  // open database and get pointers to it
-    char     *unload();
-    GB_ERROR  save(char *filename);
-    void      print();
-    GB_ERROR  calculate_matrix(const char *cancel, double alpha, PH_TRANSFORMATION transformation);
-    long get_seq_len() { return seq_len; };
+    char *load(char*& use); // open database and get pointers to it
+    char *unload();
 
+    long get_seq_len() { return seq_len; }
 };
 
 #else
