@@ -20,32 +20,33 @@
 extern char **filter_text;
 
 class PH_display {
-    AW_device *device;                   // device to draw in
-    AW_pos screen_width;                 // dimensions of main screen
-    AW_pos screen_height;
-    long cell_width;                     // width and height of one cell
-    long cell_height;
-    long cell_offset;                    // don't write on base line of cell
-    long horiz_page_start;               // number of first element in this page
-    long vert_page_start;
-    long vert_last_view_start;           // last value of scrollbars
-    long horiz_last_view_start;
-    long total_cells_horiz;
-    long total_cells_vert;
-    display_type display_what;
-    long horiz_page_size;                // page size in cells (how many cells per page,
-    long vert_page_size;                 // vertical and horizontal)
-    long off_dx;                         // offset values for devic.shift_dx(y)
-    long off_dy;
+    AW_device    *device;                // device to draw in
+    AW_pos        screen_width;          // dimensions of main screen
+    AW_pos        screen_height;
+    long          cell_width;            // width and height of one cell
+    long          cell_height;
+    long          cell_offset;           // don't write on base line of cell
+    long          horiz_page_start;      // number of first element in this page
+    long          vert_page_start;
+    long          vert_last_view_start;  // last value of scrollbars
+    long          horiz_last_view_start;
+    long          total_cells_vert;
+    display_type  display_what;
+    long          horiz_page_size;       // page size in cells (how many cells per page,
+    long          vert_page_size;        // vertical and horizontal)
+    long          off_dx;                // offset values for devic.shift_dx(y)
+    long          off_dy;
 
     void set_scrollbar_steps(AW_window *, long, long, long, long);
 
 public:
     PH_display();                   // constructor
     static PH_display *ph_display;
-    void initialize(display_type);
-    void display();                      // display data (according to display type: matrix ...)
+
+    void initialize_display(display_type);
+    void display();                      // display data (according to display_type)
     display_type displayed() { return display_what; };
+
     void clear_window() { if (device) device->clear(-1); };
     void resized();                      // call after resize main window
     void monitor_vertical_scroll_cb(AW_window *);    // vertical and horizontal

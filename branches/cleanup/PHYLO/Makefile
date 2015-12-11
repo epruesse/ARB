@@ -35,7 +35,6 @@ PH_data.o: phwin.hxx
 PH_data.o: phylo.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PH_data.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-PH_data.o: $(ARBHOME)/INCLUDE/AP_matrix.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PH_data.o: $(ARBHOME)/INCLUDE/arb_core.h
 PH_data.o: $(ARBHOME)/INCLUDE/arb_error.h
@@ -69,7 +68,6 @@ PH_display.o: PH_filter.hxx
 PH_display.o: phwin.hxx
 PH_display.o: phylo.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/ad_prot.h
-PH_display.o: $(ARBHOME)/INCLUDE/AP_matrix.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PH_display.o: $(ARBHOME)/INCLUDE/arb_core.h
 PH_display.o: $(ARBHOME)/INCLUDE/arb_error.h
@@ -104,7 +102,6 @@ PH_filt.o: phwin.hxx
 PH_filt.o: phylo.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PH_filt.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-PH_filt.o: $(ARBHOME)/INCLUDE/AP_matrix.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PH_filt.o: $(ARBHOME)/INCLUDE/arb_core.h
 PH_filt.o: $(ARBHOME)/INCLUDE/arb_error.h
@@ -142,7 +139,6 @@ PH_main.o: phwin.hxx
 PH_main.o: phylo.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PH_main.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-PH_main.o: $(ARBHOME)/INCLUDE/AP_matrix.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PH_main.o: $(ARBHOME)/INCLUDE/arb_core.h
 PH_main.o: $(ARBHOME)/INCLUDE/arb_error.h
@@ -183,7 +179,6 @@ PH_root.o: PH_filter.hxx
 PH_root.o: phylo.hxx
 PH_root.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PH_root.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-PH_root.o: $(ARBHOME)/INCLUDE/AP_matrix.hxx
 PH_root.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PH_root.o: $(ARBHOME)/INCLUDE/arb_core.h
 PH_root.o: $(ARBHOME)/INCLUDE/arb_error.h

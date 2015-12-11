@@ -14,9 +14,6 @@
 #ifndef PH_FILTER_HXX
 #include "PH_filter.hxx"
 #endif
-#ifndef AP_MATRIX_HXX
-#include <AP_matrix.hxx>
-#endif
 #ifndef AW_BASE_HXX
 #include <aw_base.hxx>
 #endif
@@ -57,61 +54,19 @@ enum {
 
 #define PH_DB_CACHE_SIZE    2000000
 
-#define AP_F_LOADED    ((AW_active)1)
-#define AP_F_NLOADED   ((AW_active)2)
-#define AP_F_SEQUENCES ((AW_active)4)
-#define AP_F_MATRIX    ((AW_active)8)
-#define AP_F_TREE      ((AW_active)16)
-#define AP_F_ALL       ((AW_active)-1)
-
-#define PH_CORRECTION_BANDELT_STRING "bandelt"
-
-#define NIL 0
-
-// matrix definitions
-#define PH_TRANSFORMATION_JUKES_CANTOR_STRING        "J+C"
-#define PH_TRANSFORMATION_KIMURA_STRING              "KIMURA"
-#define PH_TRANSFORMATION_TAJIMA_NEI_STRING          "T+N"
-#define PH_TRANSFORMATION_TAJIMA_NEI_PAIRWISE_STRING "T+N-P"
-#define PH_TRANSFORMATION_BANDELT_STRING             "B"
-#define PH_TRANSFORMATION_BANDELT_JC_STRING          "B+J+C"
-#define PH_TRANSFORMATION_BANDELT2_STRING            "B2"
-#define PH_TRANSFORMATION_BANDELT2_JC_STRING         "B2+J+C"
-
-enum PH_CORRECTION {
-    PH_CORRECTION_NONE,
-    PH_CORRECTION_BANDELT
-};
-
-
 enum {
     PH_GC_0,
     PH_GC_1,
     PH_GC_0_DRAG
 };
 
-// make awars :
-void PH_create_filter_variables(AW_root *aw_root, AW_default aw_def);
-
+void       PH_create_filter_variables(AW_root *aw_root, AW_default aw_def);
 AW_window *PH_create_filter_window(AW_root *aw_root);
 
-
-
-enum display_type { NONE, species_dpy, filter_dpy, matrix_dpy, tree_dpy };
-
-
-typedef double AP_FLOAT;
-
-enum PH_TRANSFORMATION {
-    PH_TRANSFORMATION_NONE,
-    PH_TRANSFORMATION_JUKES_CANTOR,
-    PH_TRANSFORMATION_KIMURA,
-    PH_TRANSFORMATION_TAJIMA_NEI,
-    PH_TRANSFORMATION_TAJIMA_NEI_PAIRWISE,
-    PH_TRANSFORMATION_BANDELT,
-    PH_TRANSFORMATION_BANDELT_JC,
-    PH_TRANSFORMATION_BANDELT2,
-    PH_TRANSFORMATION_BANDELT2_JC
+enum display_type {
+    DISP_NONE,    // initial
+    DISP_SPECIES, // after startup, filter not calculated yet
+    DISP_FILTER,  // after filter has been calculated
 };
 
 // ---------------------------
@@ -190,7 +145,6 @@ public:
 
     static PHDATA *ROOT;                            // 'global' pointer
 
-    AP_smatrix *matrix;                             // calculated matrix
     float      *markerline;
 
     PHDATA(AW_root *aw_root_, PH_root *ph_root_)
@@ -202,12 +156,10 @@ public:
           use(NULL),
           hash_elements(NULL),
           nentries(0),
-          matrix(NULL),
           markerline(NULL)
     {}
     ~PHDATA() {
         unload();
-        delete matrix;
     }
 
     char *load(char*& use); // open database and get pointers to it

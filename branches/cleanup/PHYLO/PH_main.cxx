@@ -104,7 +104,7 @@ __ATTR__NORETURN static void ph_exit(AW_window *aw_window, PH_root *ph_root) {
 
 
 void expose_cb() {
-    if (PH_display::ph_display && PH_display::ph_display->displayed()!=NONE) {
+    if (PH_display::ph_display && PH_display::ph_display->displayed()!=DISP_NONE) {
         PH_display::ph_display->clear_window();
         PH_display::ph_display->display();
     }
