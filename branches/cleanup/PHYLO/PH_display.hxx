@@ -54,8 +54,7 @@ public:
 };
 
 
-class PH_display_status
-{
+class PH_display_status {
     AW_device *device;
     short font_width;
     short font_height;

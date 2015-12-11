@@ -106,7 +106,6 @@ class PHDATA : virtual Noncopyable {
         GBDATA       *gb_species_data_ptr;
         PHENTRY      *next;
         PHENTRY      *prev;
-        bool          selected;
 
         PHENTRY()
             : key(0),
@@ -114,8 +113,7 @@ class PHDATA : virtual Noncopyable {
               full_name(NULL),
               gb_species_data_ptr(NULL),
               next(NULL),
-              prev(NULL),
-              selected(false)
+              prev(NULL)
         {}
 
         ~PHENTRY() {
