@@ -8,14 +8,10 @@
 //                                                               //
 // ============================================================= //
 
-#include "phwin.hxx"
 #include "phylo.hxx"
 #include <arbdbt.h>
-#include <aw_awar.hxx>
-#include <arb_progress.h>
-#include <aw_root.hxx>
 
-char *PHDATA::unload() {
+char *PHDATA::unload() { // @@@ never called (PHDATA never destructed)
     PHENTRY *phentry;
 
     freenull(use);

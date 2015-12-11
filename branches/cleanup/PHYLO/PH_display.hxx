@@ -72,18 +72,17 @@ public:
     void newline() { x_pos = 0; y_pos+=(y_pos>=max_y) ? 0.0 : 1.0; }
     AW_pos get_size(char c) { return ((c=='x') ? max_x : max_y); }
     void set_cursor(AW_pos x, AW_pos y) { x_pos = (x<=max_x) ? x : x_pos; y_pos=(y<=max_y) ? y : y_pos; }
+
     void move_x(AW_pos d) { x_pos += (x_pos+d<=max_x) ? d : 0; }
-    void move_y(AW_pos d) { y_pos+=(y_pos+d<=max_y) ? d : 0; }
     void set_cursor_x(AW_pos x) { x_pos = x; }
-    void set_cursor_y(AW_pos y) { y_pos = y; }
-    AW_pos get_cursor_pos(char c) { return ((c=='x') ? x_pos : y_pos); }
+
     void set_tab() { tab_pos = x_pos; }
     AW_pos get_tab() { return tab_pos; }
 
     void write(const char *);   // text to write
     void writePadded(const char *, size_t len);   // write text padded
     void write(long);           // converts long
-    void write(double);         // float to text
+
     void clear();
 };
 

@@ -354,14 +354,6 @@ void PH_display_status::write(long numl)
     write(buf);
 }
 
-void PH_display_status::write(AW_pos numA)
-{
-    char buf[20];
-
-    sprintf(buf, "%3.3G", numA);
-    write(buf);
-}
-
 void PH_display_status::clear() {
     device->clear(-1);
 }

@@ -17,9 +17,6 @@
 #ifndef AW_BASE_HXX
 #include <aw_base.hxx>
 #endif
-#ifndef ARBDB_BASE_H
-#include <arbdb_base.h>
-#endif
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
 #endif
@@ -95,7 +92,6 @@ public:
 
     GB_ERROR open(const char *db_server);
     GBDATA *get_gb_main() const { ph_assert(gb_main); return gb_main; }
-    const char *get_aliname() const { return use; }
 };
 
 
@@ -135,6 +131,8 @@ class PHDATA : virtual Noncopyable {
 
     PHENTRY *entries;
 
+    char *unload();
+
 public:
     GBDATA *get_gb_main() { return ph_root->get_gb_main(); }
 
@@ -163,7 +161,6 @@ public:
     }
 
     char *load(char*& use); // open database and get pointers to it
-    char *unload();
 
     long get_seq_len() { return seq_len; }
 };

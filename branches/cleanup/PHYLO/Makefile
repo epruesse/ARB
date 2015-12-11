@@ -31,7 +31,6 @@ depend.init:
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl (from main)
 
 PH_data.o: PH_filter.hxx
-PH_data.o: phwin.hxx
 PH_data.o: phylo.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PH_data.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
@@ -39,21 +38,13 @@ PH_data.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PH_data.o: $(ARBHOME)/INCLUDE/arb_core.h
 PH_data.o: $(ARBHOME)/INCLUDE/arb_error.h
 PH_data.o: $(ARBHOME)/INCLUDE/arb_msg.h
-PH_data.o: $(ARBHOME)/INCLUDE/arb_progress.h
 PH_data.o: $(ARBHOME)/INCLUDE/arb_string.h
 PH_data.o: $(ARBHOME)/INCLUDE/arbdb.h
 PH_data.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 PH_data.o: $(ARBHOME)/INCLUDE/arbdbt.h
 PH_data.o: $(ARBHOME)/INCLUDE/arbtools.h
 PH_data.o: $(ARBHOME)/INCLUDE/attributes.h
-PH_data.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-PH_data.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-PH_data.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-PH_data.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-PH_data.o: $(ARBHOME)/INCLUDE/cb.h
-PH_data.o: $(ARBHOME)/INCLUDE/cb_base.h
-PH_data.o: $(ARBHOME)/INCLUDE/cbtypes.h
 PH_data.o: $(ARBHOME)/INCLUDE/cxxforward.h
 PH_data.o: $(ARBHOME)/INCLUDE/downcast.h
 PH_data.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -61,7 +52,6 @@ PH_data.o: $(ARBHOME)/INCLUDE/gccver.h
 PH_data.o: $(ARBHOME)/INCLUDE/smartptr.h
 PH_data.o: $(ARBHOME)/INCLUDE/static_assert.h
 PH_data.o: $(ARBHOME)/INCLUDE/test_global.h
-PH_data.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 PH_display.o: PH_display.hxx
 PH_display.o: PH_filter.hxx

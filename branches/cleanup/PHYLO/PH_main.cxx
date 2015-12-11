@@ -21,15 +21,11 @@
 #include <arbdbt.h>
 #include <arb_strarray.h>
 
-#include <iostream>
 #include <macros.hxx>
 #include <aw_question.hxx>
 
-using namespace std;
-
 AW_HEADER_MAIN
 
-GBDATA *GLOBAL_gb_main; // global gb_main for arb_phylo
 char **filter_text;
 
 static void create_filter_text()

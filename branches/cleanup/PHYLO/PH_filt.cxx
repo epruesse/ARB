@@ -28,35 +28,6 @@ PH_filter::PH_filter()
     memset ((char *)this, 0, sizeof(PH_filter));
 }
 
-char *PH_filter::init(char *ifilter, char *zerobases, long size) {
-    delete [] filter;
-    filter = new char[size];
-    filter_len = size;
-    real_len = 0;
-    for (int i = 0; i < size; i++) {
-        if (zerobases) {
-            if (strchr(zerobases, ifilter[i])) {
-                filter[i] = 0;
-                real_len++;
-            }
-            else {
-                filter[i] = 1;
-            }
-        }
-        else {
-            if (ifilter[i]) {
-                filter[i] = 0;
-                real_len++;
-            }
-            else {
-                filter[i] = 1;
-            }
-        }
-    }
-    update = PH_timer();
-    return 0;
-}
-
 char *PH_filter::init(long size) {
     delete [] filter;
     filter = new char[size];
