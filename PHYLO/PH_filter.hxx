@@ -28,18 +28,21 @@ enum {
     OPT_COUNT = 8,
 };
 
-struct PH_filter : virtual Noncopyable {
-    char *filter;                                   // 0 1
+class PH_filter : virtual Noncopyable {
+    char *filter;         // 0 1
     long  filter_len;
-    long  real_len;                                 // how many 1
+    long  real_len;       // how many 1
     long  update;
-    long *options_vector;                           // options used to calculate current filter
+    long *options_vector; // options used to calculate current filter
 
-    char *init(char *filter, char *zerobases, long size);
-    char *init(long size);
+public:
+
 
     PH_filter();
     ~PH_filter();
+
+    char *init(long size);
+
     float *calculate_column_homology();
 };
 

@@ -21,15 +21,11 @@
 #include <arbdbt.h>
 #include <arb_strarray.h>
 
-#include <iostream>
 #include <macros.hxx>
 #include <aw_question.hxx>
 
-using namespace std;
-
 AW_HEADER_MAIN
 
-GBDATA *GLOBAL_gb_main; // global gb_main for arb_phylo
 char **filter_text;
 
 static void create_filter_text()
@@ -104,7 +100,7 @@ __ATTR__NORETURN static void ph_exit(AW_window *aw_window, PH_root *ph_root) {
 
 
 void expose_cb() {
-    if (PH_display::ph_display && PH_display::ph_display->displayed()!=NONE) {
+    if (PH_display::ph_display && PH_display::ph_display->displayed()!=DISP_NONE) {
         PH_display::ph_display->clear_window();
         PH_display::ph_display->display();
     }
