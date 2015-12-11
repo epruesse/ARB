@@ -28,35 +28,6 @@ PH_filter::PH_filter()
     memset ((char *)this, 0, sizeof(PH_filter));
 }
 
-char *PH_filter::init(char *ifilter, char *zerobases, long size) {
-    delete [] filter;
-    filter = new char[size];
-    filter_len = size;
-    real_len = 0;
-    for (int i = 0; i < size; i++) {
-        if (zerobases) {
-            if (strchr(zerobases, ifilter[i])) {
-                filter[i] = 0;
-                real_len++;
-            }
-            else {
-                filter[i] = 1;
-            }
-        }
-        else {
-            if (ifilter[i]) {
-                filter[i] = 0;
-                real_len++;
-            }
-            else {
-                filter[i] = 1;
-            }
-        }
-    }
-    update = PH_timer();
-    return 0;
-}
-
 char *PH_filter::init(long size) {
     delete [] filter;
     filter = new char[size];
@@ -379,12 +350,6 @@ void PH_create_filter_variables(AW_root *aw_root, AW_default default_file)
     aw_root->awar_int(AWAR_PHYLO_FILTER_REST,  DONT_COUNT, default_file); // 'MNY....' in column
     aw_root->awar_int(AWAR_PHYLO_FILTER_LOWER, DONT_COUNT, default_file); // 'acgtu' in column
 
-    // matrix awars (das gehoert in ein anderes file norbert !!!)
-    aw_root->awar_int(AWAR_PHYLO_MATRIX_POINT, DONT_COUNT, default_file); // '.' in column
-    aw_root->awar_int(AWAR_PHYLO_MATRIX_MINUS, DONT_COUNT, default_file); // '-' in column
-    aw_root->awar_int(AWAR_PHYLO_MATRIX_REST,  DONT_COUNT, default_file); // 'MNY....' in column
-    aw_root->awar_int(AWAR_PHYLO_MATRIX_LOWER, DONT_COUNT, default_file); // 'acgtu' in column
-
     RootCallback display_status = makeRootCallback(display_status_cb);
     aw_root->awar(AWAR_PHYLO_FILTER_STARTCOL)->add_callback(display_status);
     aw_root->awar(AWAR_PHYLO_FILTER_STOPCOL) ->add_callback(display_status);
@@ -403,12 +368,6 @@ void PH_create_filter_variables(AW_root *aw_root, AW_default default_file)
     aw_root->awar(AWAR_PHYLO_FILTER_MINUS)->add_callback(display_status);
     aw_root->awar(AWAR_PHYLO_FILTER_REST) ->add_callback(display_status);
     aw_root->awar(AWAR_PHYLO_FILTER_LOWER)->add_callback(display_status);
-
-    aw_root->awar(AWAR_PHYLO_MATRIX_POINT)->add_callback(display_status);
-    aw_root->awar(AWAR_PHYLO_MATRIX_MINUS)->add_callback(display_status);
-    aw_root->awar(AWAR_PHYLO_MATRIX_REST) ->add_callback(display_status);
-    aw_root->awar(AWAR_PHYLO_MATRIX_LOWER)->add_callback(display_status);
-
 }
 
 static AWT_config_mapping_def phyl_filter_config_mapping[] = {
