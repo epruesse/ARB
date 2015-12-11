@@ -1,0 +1,34 @@
+ARB-Input-Mask
+# This is a simple user-mask example.
+
+# What to edit
+@ITEMTYPE=Species
+
+# Title of the user-mask-window
+@TITLE=Expert mask
+
+# Spacing in window
+@X_SPACING=5
+@Y_SPACING=3
+
+# Show edit/reload button
+@EDIT=1
+
+
+# ---------------------------
+# The definition of the mask:
+
+@MASK_BEGIN
+
+    TEXT("Switch to..") CHANGEMASK("Test","test.mask")
+
+    TEXT("You are editing") SELF()
+
+    NEW_SECTION()
+
+    TEXTFIELD("Expert name", "expert/name", 30)
+    NUMFIELD( "Rating     ", "expert/rating", 3, 1, 10)
+
+
+
+@MASK_END

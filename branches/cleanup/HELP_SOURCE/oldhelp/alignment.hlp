@@ -1,0 +1,29 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+SUB	nt_align_select.hlp
+SUB	ad_align.hlp
+SUB	pfold.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		What is an Alignment?
+
+DESCRIPTION	Different alignments assigned to the same species (eg. sequences
+		of different genes) can be stored in one database.
+		The name of the currently accessible alignment (ali_*) is shown
+		in the 3rd broad rectangular button in the top area of the
+ 		ARB_NT window.
+
+		The sequences themselves are not stored in the 'ali_*' field of
+		a species, but in the subfield 'data' of 'ali_*'
+		'ali_*' is a container field: it holds no data
+		except other data fields (like a directory in a file system).
+
+NOTE            There is a special alignment called 'ali_genom' which is used
+                for full genome databases.
+                It's called an alignment because it fits into our database structure,
+                but it should NOT contain any gaps.

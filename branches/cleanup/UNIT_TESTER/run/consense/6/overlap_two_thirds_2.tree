@@ -1,0 +1,33 @@
+[[created as copy of 'tree_disjunct_source']
+5 other species removed
+branchlengths calculated using ARB_PARS
+Tue Sep  3 13:53:43 2013: tree_overlap_two_thirds_2 saved to /home/ralf/ARB-bilbo/ARB.tree.separate/UNIT_TESTER/run/consense/6/overlap_two_thirds_2.tree
+]
+(
+  (
+    (
+      (
+        (
+          DewArch4:0.01431,
+          NoName00:0.00883
+        ):0.06518,
+        DewArch2:0.08832
+      ):0.00289,
+      DewArcha:0.07162
+    ):0.01680,
+    EbiProk2:0.07458
+  ):0.35782,
+  (
+    (
+      (
+        (
+          EbiProk4:0.08749,
+          EbiProk5:0.06222
+        ):0.01306,
+        DewBact4:0.07883
+      ):0.04380,
+      EbiProk3:0.08963
+    ):0.01168,
+    DewBacte:0.08941
+  ):0.35782
+);
