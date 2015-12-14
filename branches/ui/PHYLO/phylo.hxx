@@ -30,9 +30,9 @@
 #define AWAR_PHYLO_FILTER_STOPCOL  "phyl/filter/stopcol"
 #define AWAR_PHYLO_FILTER_MINHOM   "phyl/filter/minhom"
 #define AWAR_PHYLO_FILTER_MAXHOM   "phyl/filter/maxhom"
-#define AWAR_PHYLO_FILTER_POINT    "phyl/filter/point"
+#define AWAR_PHYLO_FILTER_DOT      "phyl/filter/point"
 #define AWAR_PHYLO_FILTER_MINUS    "phyl/filter/minus"
-#define AWAR_PHYLO_FILTER_REST     "phyl/filter/rest"
+#define AWAR_PHYLO_FILTER_AMBIG    "phyl/filter/rest"
 #define AWAR_PHYLO_FILTER_LOWER    "phyl/filter/lower"
 
 #define AWAR_PHYLO_MARKERLINENAME "tmp/phylo/markerlinename"

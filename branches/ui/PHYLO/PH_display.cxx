@@ -399,7 +399,7 @@ void display_status_cb() {
                 phds.newline();
 
                 phds.writePadded("'.':", LABEL_LEN);
-                phds.write(filter_text[aw_root->awar(AWAR_PHYLO_FILTER_POINT)->read_int()]);
+                phds.write(filter_text[aw_root->awar(AWAR_PHYLO_FILTER_DOT)->read_int()]);
                 phds.newline();
 
                 phds.writePadded("'-':", LABEL_LEN);
@@ -407,7 +407,7 @@ void display_status_cb() {
                 phds.newline();
 
                 phds.writePadded("ambiguity codes:", LABEL_LEN);
-                phds.write(filter_text[aw_root->awar(AWAR_PHYLO_FILTER_REST)->read_int()]);
+                phds.write(filter_text[aw_root->awar(AWAR_PHYLO_FILTER_AMBIG)->read_int()]);
                 phds.newline();
 
                 phds.writePadded("lowercase chars:", LABEL_LEN);

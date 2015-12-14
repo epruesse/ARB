@@ -110,9 +110,9 @@ float *PH_filter::calculate_column_homology() {
     const long minhom   = aw_root->awar(AWAR_PHYLO_FILTER_MINHOM)->read_int();
     const long maxhom   = aw_root->awar(AWAR_PHYLO_FILTER_MAXHOM)->read_int();
 
-    const FilterMode filter_dot   = FilterMode(aw_root->awar(AWAR_PHYLO_FILTER_POINT)->read_int()); // '.' in column // @@@ rename awar def (point->dot)
+    const FilterMode filter_dot   = FilterMode(aw_root->awar(AWAR_PHYLO_FILTER_DOT)  ->read_int()); // '.' in column
     const FilterMode filter_minus = FilterMode(aw_root->awar(AWAR_PHYLO_FILTER_MINUS)->read_int()); // '-' in column
-    const FilterMode filter_ambig = FilterMode(aw_root->awar(AWAR_PHYLO_FILTER_REST)->read_int());  // 'MNY....' in column // @@@ rename awar def (rest->ambig)
+    const FilterMode filter_ambig = FilterMode(aw_root->awar(AWAR_PHYLO_FILTER_AMBIG)->read_int()); // 'MNY....' in column
     const FilterMode filter_lower = FilterMode(aw_root->awar(AWAR_PHYLO_FILTER_LOWER)->read_int()); // 'acgtu' in column
 
     delete_when_max[0] = '\0';
@@ -388,9 +388,9 @@ void PH_create_filter_variables(AW_root *aw_root, AW_default default_file, GBDAT
 
     RootCallback display_status = makeRootCallback(display_status_cb);
 
-    aw_root->awar_int(AWAR_PHYLO_FILTER_POINT, DONT_COUNT, default_file)->add_callback(display_status); // '.' in column
+    aw_root->awar_int(AWAR_PHYLO_FILTER_DOT,   DONT_COUNT, default_file)->add_callback(display_status); // '.' in column
     aw_root->awar_int(AWAR_PHYLO_FILTER_MINUS, DONT_COUNT, default_file)->add_callback(display_status); // '-' in column
-    aw_root->awar_int(AWAR_PHYLO_FILTER_REST,  DONT_COUNT, default_file)->add_callback(display_status); // 'MNY....' in column
+    aw_root->awar_int(AWAR_PHYLO_FILTER_AMBIG, DONT_COUNT, default_file)->add_callback(display_status); // 'MNY....' in column
     aw_root->awar_int(AWAR_PHYLO_FILTER_LOWER, DONT_COUNT, default_file)->add_callback(display_status); // 'acgtu' in column
 }
 
@@ -399,9 +399,9 @@ static AWT_config_mapping_def phyl_filter_config_mapping[] = {
     { AWAR_PHYLO_FILTER_STOPCOL,  "stopcol" },
     { AWAR_PHYLO_FILTER_MINHOM,   "minhom" },
     { AWAR_PHYLO_FILTER_MAXHOM,   "maxhom" },
-    { AWAR_PHYLO_FILTER_POINT,    "filtdot" },
+    { AWAR_PHYLO_FILTER_DOT,      "filtdot" },
     { AWAR_PHYLO_FILTER_MINUS,    "filtminus" },
-    { AWAR_PHYLO_FILTER_REST,     "filtambig" },
+    { AWAR_PHYLO_FILTER_AMBIG,    "filtambig" },
     { AWAR_PHYLO_FILTER_LOWER,    "filtlower" },
 
     { 0, 0 }
@@ -436,7 +436,7 @@ AW_window *PH_create_filter_window(AW_root *aw_root) {
 
     aws->at("point_opts");
     aws->label("'.'");
-    aws->create_option_menu(AWAR_PHYLO_FILTER_POINT, true);
+    aws->create_option_menu(AWAR_PHYLO_FILTER_DOT, true);
     aws->insert_option(filter_text[DONT_COUNT],           "0", DONT_COUNT);
     aws->insert_option(filter_text[SKIP_COLUMN_IF_MAX],   "0", SKIP_COLUMN_IF_MAX);
     aws->insert_option(filter_text[SKIP_COLUMN_IF_OCCUR], "0", SKIP_COLUMN_IF_OCCUR);
@@ -454,7 +454,7 @@ AW_window *PH_create_filter_window(AW_root *aw_root) {
 
     aws->at("rest_opts");
     aws->label("ambiguity codes");
-    aws->create_option_menu(AWAR_PHYLO_FILTER_REST, true);
+    aws->create_option_menu(AWAR_PHYLO_FILTER_AMBIG, true);
     aws->insert_option(filter_text[DONT_COUNT],           "0", DONT_COUNT);
     aws->insert_option(filter_text[SKIP_COLUMN_IF_MAX],   "0", SKIP_COLUMN_IF_MAX);
     aws->insert_option(filter_text[SKIP_COLUMN_IF_OCCUR], "0", SKIP_COLUMN_IF_OCCUR);
