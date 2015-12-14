@@ -102,25 +102,22 @@ float *PH_filter::calculate_column_homology() {
 
     // initialize variables
     free(mline);
-    delete options_vector;
     mline = (float *) calloc((int) PHDATA::ROOT->get_seq_len(), sizeof(float));
 
-    options_vector = (long *) calloc(8, sizeof(long));
 
-    options_vector[OPT_START_COL]    = aw_root->awar(AWAR_PHYLO_FILTER_STARTCOL)->read_int();
-    options_vector[OPT_STOP_COL]     = aw_root->awar(AWAR_PHYLO_FILTER_STOPCOL)->read_int();
-    options_vector[OPT_MIN_HOM]      = aw_root->awar(AWAR_PHYLO_FILTER_MINHOM)->read_int();
-    options_vector[OPT_MAX_HOM]      = aw_root->awar(AWAR_PHYLO_FILTER_MAXHOM)->read_int();
-    options_vector[OPT_FILTER_POINT] = aw_root->awar(AWAR_PHYLO_FILTER_POINT)->read_int(); // '.' in column
-    options_vector[OPT_FILTER_MINUS] = aw_root->awar(AWAR_PHYLO_FILTER_MINUS)->read_int(); // '-' in column
-    options_vector[OPT_FILTER_AMBIG] = aw_root->awar(AWAR_PHYLO_FILTER_REST)->read_int(); // 'MNY....' in column
-    options_vector[OPT_FILTER_LOWER] = aw_root->awar(AWAR_PHYLO_FILTER_LOWER)->read_int(); // 'acgtu' in column
+    const long startcol = aw_root->awar(AWAR_PHYLO_FILTER_STARTCOL)->read_int();
+    const long stopcol  = aw_root->awar(AWAR_PHYLO_FILTER_STOPCOL)->read_int();
+    const long minhom   = aw_root->awar(AWAR_PHYLO_FILTER_MINHOM)->read_int();
+    const long maxhom   = aw_root->awar(AWAR_PHYLO_FILTER_MAXHOM)->read_int();
+
+    const long filter_dot   = aw_root->awar(AWAR_PHYLO_FILTER_POINT)->read_int(); // '.' in column
+    const long filter_minus = aw_root->awar(AWAR_PHYLO_FILTER_MINUS)->read_int(); // '-' in column
+    const long filter_ambig = aw_root->awar(AWAR_PHYLO_FILTER_REST)->read_int();  // 'MNY....' in column
+    const long filter_lower = aw_root->awar(AWAR_PHYLO_FILTER_LOWER)->read_int(); // 'acgtu' in column
 
     delete_when_max[0] = '\0';
 
-    long startcol = options_vector[OPT_START_COL];
-    long stopcol  = options_vector[OPT_STOP_COL];
-    long len      = stopcol - startcol;
+    long len = stopcol - startcol;
 
     // chars_counted[column][index] counts the occurrences of single characters per column
     // index = num_all_chars   -> count chars which act as column stopper ( = forget whole column if char occurs)
@@ -154,7 +151,7 @@ float *PH_filter::calculate_column_homology() {
 
     // set mappings according to options
     // be careful the elements of rest and low are mapped to 'X' and 'a'
-    switch (options_vector[OPT_FILTER_POINT]) {     // '.' in column
+    switch (filter_dot) {     // '.' in column
         case DONT_COUNT:
             mask[(unsigned char)'.'] = false;
             break;
@@ -176,7 +173,7 @@ float *PH_filter::calculate_column_homology() {
         default: ph_assert(0); break;  // illegal value!
     }
 
-    switch (options_vector[OPT_FILTER_MINUS]) {     // '-' in column
+    switch (filter_minus) {     // '-' in column
         case DONT_COUNT:
             mask[(unsigned char)'-'] = false;
             break;
@@ -199,7 +196,7 @@ float *PH_filter::calculate_column_homology() {
     }
     // 'MNY....' in column
     bool mapRestToX = false;
-    switch (options_vector[OPT_FILTER_AMBIG]) // all rest characters counted to 'X' (see below)
+    switch (filter_ambig) // all rest characters counted to 'X' (see below)
     {
         case DONT_COUNT:
             for (i=0; rest_chars[i]; i++) mask[(unsigned char)rest_chars[i]] = false;
@@ -236,7 +233,7 @@ float *PH_filter::calculate_column_homology() {
         }
     }
 
-    switch (options_vector[OPT_FILTER_LOWER]) { // 'acgtu' in column
+    switch (filter_lower) { // 'acgtu' in column
         case DONT_COUNT:
             for (i=0; low_chars[i]; i++) mask[(unsigned char)low_chars[i]] = false;
             break;
@@ -320,10 +317,11 @@ float *PH_filter::calculate_column_homology() {
     free(chars_counted);
 
     if (!error) {
-        char *filt=(char *)calloc((int) PHDATA::ROOT->get_seq_len()+1, sizeof(char));
-        for (i=0; i<PHDATA::ROOT->get_seq_len(); i++)
-            filt[i]=((options_vector[OPT_MIN_HOM]<=mline[i])&&(options_vector[OPT_MAX_HOM]>=mline[i])) ? '1' : '0';
-        filt[i]='\0';
+        char *filt  = (char *)calloc((int) PHDATA::ROOT->get_seq_len()+1, sizeof(char));
+        for (i=0; i<PHDATA::ROOT->get_seq_len(); i++) {
+            filt[i] = minhom<=mline[i] && maxhom>=mline[i]  ? '1' : '0';
+        }
+        filt[i] = '\0';
         aw_root->awar(AWAR_PHYLO_FILTER_FILTER)->write_string(filt);
         free(filt);
 
