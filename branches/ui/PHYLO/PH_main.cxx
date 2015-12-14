@@ -26,20 +26,14 @@
 
 AW_HEADER_MAIN
 
-char **filter_text;
-
-static void create_filter_text()
-{
-    filter_text = (char **) calloc(FILTER_MODES, sizeof (char *));
-    for (int i=0; i<FILTER_MODES; i++) filter_text[i] = new char[100];
-
-    strcpy(filter_text[DONT_COUNT],           "don't count (ignore)                       ");
-    strcpy(filter_text[SKIP_COLUMN_IF_MAX],   "if occurs most often => forget whole column");
-    strcpy(filter_text[SKIP_COLUMN_IF_OCCUR], "if occurs => forget whole column           ");
-    strcpy(filter_text[COUNT_DONT_USE_MAX],   "count, but do NOT use as maximum           ");
-    strcpy(filter_text[TREAT_AS_UPPERCASE],   "treat as uppercase character               ");
-    strcpy(filter_text[TREAT_AS_REGULAR],     "treat as regular character                 ");
-}
+const char *filter_text[FILTER_MODES] = {
+    "don't count (ignore)                       ", // DONT_COUNT
+    "if occurs most often => forget whole column", // SKIP_COLUMN_IF_MAX
+    "if occurs => forget whole column           ", // SKIP_COLUMN_IF_OCCUR
+    "count, but do NOT use as maximum           ", // COUNT_DONT_USE_MAX
+    "treat as uppercase character               ", // TREAT_AS_UPPERCASE
+    "treat as regular character                 ", // TREAT_AS_REGULAR
+};
 
 static bool valid_alignment_selected(AW_root *aw_root, GBDATA *gb_main) {
     GB_transaction  ta(gb_main);
@@ -593,8 +587,6 @@ int ARB_main(int argc, char *argv[]) {
 #if defined(DEBUG)
             AWT_announce_db_to_browser(gb_main, GBS_global_string("ARB-database (%s)", db_server));
 #endif // DEBUG
-
-            create_filter_text();
 
             // create main window :
 

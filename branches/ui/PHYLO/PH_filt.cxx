@@ -110,10 +110,10 @@ float *PH_filter::calculate_column_homology() {
     const long minhom   = aw_root->awar(AWAR_PHYLO_FILTER_MINHOM)->read_int();
     const long maxhom   = aw_root->awar(AWAR_PHYLO_FILTER_MAXHOM)->read_int();
 
-    const long filter_dot   = aw_root->awar(AWAR_PHYLO_FILTER_POINT)->read_int(); // '.' in column
-    const long filter_minus = aw_root->awar(AWAR_PHYLO_FILTER_MINUS)->read_int(); // '-' in column
-    const long filter_ambig = aw_root->awar(AWAR_PHYLO_FILTER_REST)->read_int();  // 'MNY....' in column
-    const long filter_lower = aw_root->awar(AWAR_PHYLO_FILTER_LOWER)->read_int(); // 'acgtu' in column
+    const FilterMode filter_dot   = FilterMode(aw_root->awar(AWAR_PHYLO_FILTER_POINT)->read_int()); // '.' in column // @@@ rename awar def (point->dot)
+    const FilterMode filter_minus = FilterMode(aw_root->awar(AWAR_PHYLO_FILTER_MINUS)->read_int()); // '-' in column
+    const FilterMode filter_ambig = FilterMode(aw_root->awar(AWAR_PHYLO_FILTER_REST)->read_int());  // 'MNY....' in column // @@@ rename awar def (rest->ambig)
+    const FilterMode filter_lower = FilterMode(aw_root->awar(AWAR_PHYLO_FILTER_LOWER)->read_int()); // 'acgtu' in column
 
     delete_when_max[0] = '\0';
 
@@ -170,7 +170,9 @@ float *PH_filter::calculate_column_homology() {
             // but use character ( true in mask )
             break;
 
-        default: ph_assert(0); break;  // illegal value!
+        case TREAT_AS_UPPERCASE:
+        case TREAT_AS_REGULAR:
+            ph_assert(0); break;  // illegal value!
     }
 
     switch (filter_minus) {     // '-' in column
@@ -192,7 +194,9 @@ float *PH_filter::calculate_column_homology() {
             // but use character ( true in mask )
             break;
 
-        default: ph_assert(0); break;  // illegal value!
+        case TREAT_AS_UPPERCASE:
+        case TREAT_AS_REGULAR:
+            ph_assert(0); break;  // illegal value!
     }
     // 'MNY....' in column
     bool mapRestToX = false;
@@ -223,7 +227,8 @@ float *PH_filter::calculate_column_homology() {
             // lowercase rest chars are handled together with normal lowercase chars (see below)
             break;
 
-        default: ph_assert(0); break;  // illegal value!
+        case TREAT_AS_UPPERCASE:
+            ph_assert(0); break;  // illegal value!
     }
 
     if (mapRestToX) {
@@ -259,7 +264,8 @@ float *PH_filter::calculate_column_homology() {
             for (i=0; low_rest_chars[i]; i++) reference_table[(unsigned char)low_rest_chars[i]] = reference_table[toupper(low_rest_chars[i])];
             break;
 
-        default: ph_assert(0); break;  // illegal value!
+        case TREAT_AS_REGULAR:
+            ph_assert(0); break;  // illegal value!
     }
 
     GB_ERROR error = NULL;

@@ -37,16 +37,18 @@
 
 #define AWAR_PHYLO_MARKERLINENAME "tmp/phylo/markerlinename"
 
-enum {
-    DONT_COUNT           = 0,
-    SKIP_COLUMN_IF_MAX   = 1,
-    SKIP_COLUMN_IF_OCCUR = 2,
-    COUNT_DONT_USE_MAX   = 3,
-    TREAT_AS_UPPERCASE   = 4,
-    TREAT_AS_REGULAR     = 5,
+enum FilterMode {
+    DONT_COUNT,
+    SKIP_COLUMN_IF_MAX,
+    SKIP_COLUMN_IF_OCCUR,
+    COUNT_DONT_USE_MAX,
+    TREAT_AS_UPPERCASE,
+    TREAT_AS_REGULAR,
 
-    FILTER_MODES, // has to be last!
+    // Note: enum values are saved in properties (do not modify w/o need!)
+    // update on changes: PH_main.cxx@filter_text
 };
+const int FILTER_MODES = TREAT_AS_REGULAR+1;
 
 
 #define PH_DB_CACHE_SIZE    2000000
