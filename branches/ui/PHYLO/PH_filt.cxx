@@ -335,7 +335,35 @@ float *PH_filter::calculate_column_homology() {
     }
 }
 
+static void display_status_and_expose_cb() {
+    display_status_cb();
+    expose_cb();
+}
 
+static void correct_startstop_cb(AW_root *aw_root, bool start_changed) {
+    AW_awar *awar_startcol = aw_root->awar(AWAR_PHYLO_FILTER_STARTCOL);
+    AW_awar *awar_stopcol  = aw_root->awar(AWAR_PHYLO_FILTER_STOPCOL);
+
+    int startcol = awar_startcol->read_int();
+    int stopcol  = awar_stopcol->read_int();
+
+    if (startcol>stopcol) {
+        if (start_changed) awar_stopcol ->write_int(startcol);
+        else               awar_startcol->write_int(stopcol);
+    }
+}
+static void correct_minmaxhom_cb(AW_root *aw_root, bool min_changed) {
+    AW_awar *awar_minhom = aw_root->awar(AWAR_PHYLO_FILTER_MINHOM);
+    AW_awar *awar_maxhom = aw_root->awar(AWAR_PHYLO_FILTER_MAXHOM);
+
+    int minhom = awar_minhom->read_int();
+    int maxhom = awar_maxhom->read_int();
+
+    if (minhom>maxhom) {
+        if (min_changed) awar_maxhom->write_int(minhom);
+        else             awar_minhom->write_int(maxhom);
+    }
+}
 
 void PH_create_filter_variables(AW_root *aw_root, AW_default default_file, GBDATA *gb_main) {
     // filter awars
@@ -346,34 +374,20 @@ void PH_create_filter_variables(AW_root *aw_root, AW_default default_file, GBDAT
         alilength     = GBT_get_alignment_len(gb_main, aliname);
         free(aliname);
     }
-    aw_root->awar_int(AWAR_PHYLO_FILTER_STARTCOL, 0,     default_file)->set_minmax(0, alilength-1);
-    aw_root->awar_int(AWAR_PHYLO_FILTER_STOPCOL,  99999, default_file)->set_minmax(0, alilength-1);
-    aw_root->awar_int(AWAR_PHYLO_FILTER_MINHOM,   0,     default_file)->set_minmax(0, 100);
-    aw_root->awar_int(AWAR_PHYLO_FILTER_MAXHOM,   100,   default_file)->set_minmax(0, 100);
 
-    aw_root->awar_int(AWAR_PHYLO_FILTER_POINT, DONT_COUNT, default_file); // '.' in column
-    aw_root->awar_int(AWAR_PHYLO_FILTER_MINUS, DONT_COUNT, default_file); // '-' in column
-    aw_root->awar_int(AWAR_PHYLO_FILTER_REST,  DONT_COUNT, default_file); // 'MNY....' in column
-    aw_root->awar_int(AWAR_PHYLO_FILTER_LOWER, DONT_COUNT, default_file); // 'acgtu' in column
+    RootCallback display_status_and_expose = makeRootCallback(display_status_and_expose_cb);
+
+    aw_root->awar_int(AWAR_PHYLO_FILTER_STARTCOL, 0,           default_file)->set_minmax(0, alilength-1)->add_callback(display_status_and_expose)->add_callback(makeRootCallback(correct_startstop_cb, true));
+    aw_root->awar_int(AWAR_PHYLO_FILTER_STOPCOL,  alilength-1, default_file)->set_minmax(0, alilength-1)->add_callback(display_status_and_expose)->add_callback(makeRootCallback(correct_startstop_cb, false));
+    aw_root->awar_int(AWAR_PHYLO_FILTER_MINHOM,   0,           default_file)->set_minmax(0, 100)        ->add_callback(display_status_and_expose)->add_callback(makeRootCallback(correct_minmaxhom_cb, true));
+    aw_root->awar_int(AWAR_PHYLO_FILTER_MAXHOM,   100,         default_file)->set_minmax(0, 100)        ->add_callback(display_status_and_expose)->add_callback(makeRootCallback(correct_minmaxhom_cb, false));
 
     RootCallback display_status = makeRootCallback(display_status_cb);
-    aw_root->awar(AWAR_PHYLO_FILTER_STARTCOL)->add_callback(display_status);
-    aw_root->awar(AWAR_PHYLO_FILTER_STOPCOL) ->add_callback(display_status);
-    aw_root->awar(AWAR_PHYLO_FILTER_MINHOM)  ->add_callback(display_status);
-    aw_root->awar(AWAR_PHYLO_FILTER_MAXHOM)  ->add_callback(display_status);
 
-    {
-        RootCallback expose = makeRootCallback(expose_cb);
-        aw_root->awar(AWAR_PHYLO_FILTER_STARTCOL)->add_callback(expose);
-        aw_root->awar(AWAR_PHYLO_FILTER_STOPCOL) ->add_callback(expose);
-        aw_root->awar(AWAR_PHYLO_FILTER_MINHOM)  ->add_callback(expose);
-        aw_root->awar(AWAR_PHYLO_FILTER_MAXHOM)  ->add_callback(expose);
-    }
-
-    aw_root->awar(AWAR_PHYLO_FILTER_POINT)->add_callback(display_status);
-    aw_root->awar(AWAR_PHYLO_FILTER_MINUS)->add_callback(display_status);
-    aw_root->awar(AWAR_PHYLO_FILTER_REST) ->add_callback(display_status);
-    aw_root->awar(AWAR_PHYLO_FILTER_LOWER)->add_callback(display_status);
+    aw_root->awar_int(AWAR_PHYLO_FILTER_POINT, DONT_COUNT, default_file)->add_callback(display_status); // '.' in column
+    aw_root->awar_int(AWAR_PHYLO_FILTER_MINUS, DONT_COUNT, default_file)->add_callback(display_status); // '-' in column
+    aw_root->awar_int(AWAR_PHYLO_FILTER_REST,  DONT_COUNT, default_file)->add_callback(display_status); // 'MNY....' in column
+    aw_root->awar_int(AWAR_PHYLO_FILTER_LOWER, DONT_COUNT, default_file)->add_callback(display_status); // 'acgtu' in column
 }
 
 static AWT_config_mapping_def phyl_filter_config_mapping[] = {
