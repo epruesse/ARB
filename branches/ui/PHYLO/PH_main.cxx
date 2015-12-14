@@ -58,7 +58,7 @@ static void startup_sequence_cb(AW_window *alisel_window, AW_window *main_window
         phd->load(use);
         phd->ROOT = phd;
 
-        long len = PHDATA::ROOT->get_seq_len();
+        long len = PHDATA::ROOT->get_seq_len(); // @@@ off by one?
         aw_root->awar(AWAR_PHYLO_FILTER_STOPCOL)->write_int(len);
         aw_root->awar(AWAR_PHYLO_FILTER_STARTCOL)->set_minmax(0, len);
         aw_root->awar(AWAR_PHYLO_FILTER_STOPCOL)->set_minmax(0, len);
@@ -462,7 +462,7 @@ static AW_window *create_phyl_main_window(AW_root *aw_root, PH_root *ph_root) {
 
     // Calculate menu
     awm->create_menu("Calculate", "C");
-    awm->insert_menu_topic("calc_column_filter", "Column Filter", "F", "no help", AWM_ALL, makeWindowCallback(ph_view_filter_cb));
+    awm->insert_menu_topic("calc_column_filter", "Column Filter", "F", "no help", AWM_ALL, makeWindowCallback(ph_calc_filter_cb));
 
     // Config menu
     awm->create_menu("Config", "o");

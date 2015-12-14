@@ -339,7 +339,10 @@ float *PH_filter::calculate_column_homology() {
     }
 }
 
-static void display_status_and_expose_cb() {
+static void update_on_config_change_cb(AW_root *aw_root) {
+    if (aw_root->awar(AWAR_PHYLO_FILTER_AUTOCALC)->read_int()) {
+        ph_calc_filter_cb();
+    }
     display_status_cb();
     expose_cb();
 }
@@ -379,19 +382,19 @@ void PH_create_filter_variables(AW_root *aw_root, AW_default default_file, GBDAT
         free(aliname);
     }
 
-    RootCallback display_status_and_expose = makeRootCallback(display_status_and_expose_cb);
+    RootCallback update_on_config_change = makeRootCallback(update_on_config_change_cb);
 
-    aw_root->awar_int(AWAR_PHYLO_FILTER_STARTCOL, 0,           default_file)->set_minmax(0, alilength-1)->add_callback(display_status_and_expose)->add_callback(makeRootCallback(correct_startstop_cb, true));
-    aw_root->awar_int(AWAR_PHYLO_FILTER_STOPCOL,  alilength-1, default_file)->set_minmax(0, alilength-1)->add_callback(display_status_and_expose)->add_callback(makeRootCallback(correct_startstop_cb, false));
-    aw_root->awar_int(AWAR_PHYLO_FILTER_MINHOM,   0,           default_file)->set_minmax(0, 100)        ->add_callback(display_status_and_expose)->add_callback(makeRootCallback(correct_minmaxhom_cb, true));
-    aw_root->awar_int(AWAR_PHYLO_FILTER_MAXHOM,   100,         default_file)->set_minmax(0, 100)        ->add_callback(display_status_and_expose)->add_callback(makeRootCallback(correct_minmaxhom_cb, false));
+    aw_root->awar_int(AWAR_PHYLO_FILTER_STARTCOL, 0,           default_file)->set_minmax(0, alilength-1)->add_callback(update_on_config_change)->add_callback(makeRootCallback(correct_startstop_cb, true));
+    aw_root->awar_int(AWAR_PHYLO_FILTER_STOPCOL,  alilength-1, default_file)->set_minmax(0, alilength-1)->add_callback(update_on_config_change)->add_callback(makeRootCallback(correct_startstop_cb, false));
+    aw_root->awar_int(AWAR_PHYLO_FILTER_MINHOM,   0,           default_file)->set_minmax(0, 100)        ->add_callback(update_on_config_change)->add_callback(makeRootCallback(correct_minmaxhom_cb, true));
+    aw_root->awar_int(AWAR_PHYLO_FILTER_MAXHOM,   100,         default_file)->set_minmax(0, 100)        ->add_callback(update_on_config_change)->add_callback(makeRootCallback(correct_minmaxhom_cb, false));
 
-    RootCallback display_status = makeRootCallback(display_status_cb);
+    aw_root->awar_int(AWAR_PHYLO_FILTER_DOT,   DONT_COUNT, default_file)->add_callback(update_on_config_change); // '.' in column
+    aw_root->awar_int(AWAR_PHYLO_FILTER_MINUS, DONT_COUNT, default_file)->add_callback(update_on_config_change); // '-' in column
+    aw_root->awar_int(AWAR_PHYLO_FILTER_AMBIG, DONT_COUNT, default_file)->add_callback(update_on_config_change); // 'MNY....' in column
+    aw_root->awar_int(AWAR_PHYLO_FILTER_LOWER, DONT_COUNT, default_file)->add_callback(update_on_config_change); // 'acgtu' in column
 
-    aw_root->awar_int(AWAR_PHYLO_FILTER_DOT,   DONT_COUNT, default_file)->add_callback(display_status); // '.' in column
-    aw_root->awar_int(AWAR_PHYLO_FILTER_MINUS, DONT_COUNT, default_file)->add_callback(display_status); // '-' in column
-    aw_root->awar_int(AWAR_PHYLO_FILTER_AMBIG, DONT_COUNT, default_file)->add_callback(display_status); // 'MNY....' in column
-    aw_root->awar_int(AWAR_PHYLO_FILTER_LOWER, DONT_COUNT, default_file)->add_callback(display_status); // 'acgtu' in column
+    aw_root->awar_int(AWAR_PHYLO_FILTER_AUTOCALC, 0, default_file)->add_callback(update_on_config_change); // auto-recalculate?
 }
 
 static AWT_config_mapping_def phyl_filter_config_mapping[] = {
@@ -474,6 +477,10 @@ AW_window *PH_create_filter_window(AW_root *aw_root) {
 
     aws->at("config");
     AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "phylfilter", phyl_filter_config_mapping);
+
+    aws->at("auto");
+    aws->label("Auto recalculate?");
+    aws->create_toggle(AWAR_PHYLO_FILTER_AUTOCALC);
 
     return aws;
 }

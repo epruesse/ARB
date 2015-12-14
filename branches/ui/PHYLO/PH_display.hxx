@@ -87,7 +87,7 @@ public:
 
 
 void ph_view_species_cb();
-void ph_view_filter_cb();
+void ph_calc_filter_cb();
 GB_ERROR ph_check_initialized();
 
 #else

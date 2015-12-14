@@ -34,6 +34,7 @@
 #define AWAR_PHYLO_FILTER_MINUS    "phyl/filter/minus"
 #define AWAR_PHYLO_FILTER_AMBIG    "phyl/filter/rest"
 #define AWAR_PHYLO_FILTER_LOWER    "phyl/filter/lower"
+#define AWAR_PHYLO_FILTER_AUTOCALC "phyl/filter/autocalc"
 
 #define AWAR_PHYLO_MARKERLINENAME "tmp/phylo/markerlinename"
 
