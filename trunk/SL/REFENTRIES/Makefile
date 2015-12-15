@@ -52,6 +52,7 @@ refentries.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+refentries.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 refentries.o: $(ARBHOME)/INCLUDE/cb.h
 refentries.o: $(ARBHOME)/INCLUDE/cb_base.h
 refentries.o: $(ARBHOME)/INCLUDE/cbtypes.h
