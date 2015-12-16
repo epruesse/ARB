@@ -621,6 +621,11 @@ static AWT_config_mapping_def matrixConfigMapping[] = {
     { 0, 0 }
 };
 
+static AWT_predefined_config predefinedMatrixConfig[] = {
+    { "*compact", "Compact matrix view\n- use with fontsize=8\n- use without correction only (hides leading digits)", "namechars_left='10';namechars_top='3';paddingx='-3';paddingy='-2';precision='2';showzero='0'" },
+    { 0, 0, 0 }
+};
+
 static AW_window *create_matrix_settings_window(AW_root *awr) {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(awr, "MATRIX_SETTINGS", "Matrix settings");
@@ -636,7 +641,7 @@ static AW_window *create_matrix_settings_window(AW_root *awr) {
     aws->callback(makeHelpCallback("matrix_settings.hlp"));
     aws->create_button("HELP", "HELP");
 
-    AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "matrix_settings", matrixConfigMapping);
+    AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "matrix_settings", matrixConfigMapping, NULL, predefinedMatrixConfig);
 
     aws->label_length(21);
 
