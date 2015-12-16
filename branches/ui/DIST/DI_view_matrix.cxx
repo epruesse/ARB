@@ -590,27 +590,6 @@ static void di_view_set_distances(AW_root *awr, int setmax, MatrixDisplay *disp)
     }
 }
 
-static void di_change_dist(AW_window *aww, int mode) {
-    AW_root *awr = aww->get_root();
-
-    di_assert(mode>=0 && mode<=3);
-
-    const char *awar_name;
-    if (mode<2) { // change min
-        awar_name = AWAR_DIST_MIN_DIST;
-    }
-    else { // change max
-        awar_name = AWAR_DIST_MAX_DIST;
-    }
-
-    double dist = awr->awar(awar_name)->read_float();
-    double increment = 0.01;
-
-    if (mode%2) increment = -increment; // decrement value
-    dist += increment;
-    if (!(dist<0)) awr->awar(awar_name)->write_float(dist);
-}
-
 static void di_bind_dist_awars(AW_root *aw_root, MatrixDisplay *disp) {
     aw_root->awar_float(AWAR_DIST_MIN_DIST)->add_callback(makeRootCallback(di_view_set_distances, 0, disp));
     aw_root->awar_float(AWAR_DIST_MAX_DIST)->add_callback(makeRootCallback(di_view_set_distances, 1, disp));
@@ -720,42 +699,15 @@ AW_window *DI_create_view_matrix_window(AW_root *awr, MatrixDisplay *disp, save_
     awm->insert_menu_topic("matrix_colors",   "Colors and Fonts ...",       "C", "color_props.hlp",     AWM_ALL, makeCreateWindowCallback(AW_create_gc_window, gc_manager));
     awm->insert_menu_topic("save_props",      "Save Properties (dist.arb)", "P", "savedef.hlp",         AWM_ALL, AW_save_properties);
 
-    int x, y;
-    awm->get_at_position(&x, &y);
-    awm->button_length(3);
+#define FIELD_SIZE  7
+#define SCALER_SIZE 200
 
-#define FIELD_XSIZE 160
-#define BUTTON_XSIZE 25
+    awm->auto_space(5, 5);
 
-    awm->label("Dist min:");
-    awm->create_input_field(AWAR_DIST_MIN_DIST, 7);
-    x += FIELD_XSIZE;
+    awm->label("Dist min:"); awm->create_input_field_with_scaler(AWAR_DIST_MIN_DIST, FIELD_SIZE, SCALER_SIZE, AW_SCALER_EXP_LOWER);
+    awm->label("Dist max:"); awm->create_input_field_with_scaler(AWAR_DIST_MAX_DIST, FIELD_SIZE, SCALER_SIZE, AW_SCALER_EXP_LOWER);
 
-    awm->at_x(x);
-    awm->callback(makeWindowCallback(di_change_dist, 0));
-    awm->create_button("PLUS_MIN", "+");
-    x += BUTTON_XSIZE;
-
-    awm->at_x(x);
-    awm->callback(makeWindowCallback(di_change_dist, 1));
-    awm->create_button("MINUS_MIN", "-");
-    x += BUTTON_XSIZE;
-
-    awm->at_x(x);
-    awm->label("Dist max:");
-    awm->create_input_field(AWAR_DIST_MAX_DIST, 7);
-    x += FIELD_XSIZE;
-
-    awm->at_x(x);
-    awm->callback(makeWindowCallback(di_change_dist, 2));
-    awm->create_button("PLUS_MAX", "+");
-    x += BUTTON_XSIZE;
-
-    awm->at_x(x);
-    awm->callback(makeWindowCallback(di_change_dist, 3));
-    awm->create_button("MINUS_MAX", "-");
-
-    awm->set_info_area_height(40);
+    awm->set_info_area_height(35);
 
     di_view_set_distances(awm->get_root(), 2, disp);
 
