@@ -70,6 +70,7 @@ Major changes for next release:
    * possibility to restore factory defaults
    * added comment field for configurations
    * added them throughout arb (#647)
+ - added slide controls throughout arb (#656)
  - colorsets were invalidated by generating new IDs (#660). fixed.
  - updated/added external tools:
    - added alternate RAxML (DNA only; version 8.0.26)

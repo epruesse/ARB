@@ -33,7 +33,9 @@ class MatrixDisplay {
 
     int cell_width;               // width and height of one cell
     int cell_height;
-    int cell_padd;                // space between cells
+
+    int cell_paddx;               // padding between cells
+    int cell_paddy;
 
     bool leadZero;                // show leading zero
     int  digits;                  // digits after '.'
@@ -101,7 +103,8 @@ public:
           screen_height(0),
           cell_width(0),
           cell_height(0),
-          cell_padd(0),
+          cell_paddx(0),
+          cell_paddy(0),
           leadZero(false),
           digits(0),
           horiz_page_start(0),

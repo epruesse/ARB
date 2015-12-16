@@ -41,8 +41,8 @@ PARAMETERS
             * Autocorrelated rates across sites. The marginal rate distribution
               is gamma, but adjacent sites have correlated rates.
             * A proportion of the sites are invariable.
-            * A proportion of the sites are invariable while the rate for
-              the remaining sites are drawn from a gamma distribution.
+            * Mixed invariable/gamma: A proportion of the sites are invariable while
+              the rates for the remaining sites are drawn from a gamma distribution.
     
     Number of rate categories for the gamma distribution
 

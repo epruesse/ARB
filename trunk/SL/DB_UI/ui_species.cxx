@@ -1183,8 +1183,19 @@ static void awtc_move_hits(AW_window *aww) {
     free(current_species);
 }
 
-static void nn_do_autosearch_cb(AW_root *) {
+static bool autosearch_triggered = false;
+static unsigned nn_perform_delayed_autosearch_cb(AW_root *awr) {
     awtc_nn_search(NULL);
+    autosearch_triggered = false;
+    return 0;
+}
+static void nn_trigger_delayed_autosearch_cb(AW_root *awr) {
+    // automatic search is triggered delayed to make sure
+    // dependencies between involved awars have propagated.
+    if (!autosearch_triggered) { // ignore multiple triggers (happens when multiple awars change, e.g. when loading config)
+        autosearch_triggered = true;
+        awr->add_timed_callback(200, makeTimedCallback(nn_perform_delayed_autosearch_cb));
+    }
 }
 
 static void nn_auto_search_changed_cb(AW_root *awr) {
@@ -1192,10 +1203,21 @@ static void nn_auto_search_changed_cb(AW_root *awr) {
 
     AW_awar *awar_sel_species = awr->awar(AWAR_SPECIES_NAME);
     if (auto_search) {
-        awar_sel_species->add_callback(nn_do_autosearch_cb);
+        awar_sel_species->add_callback(nn_trigger_delayed_autosearch_cb);
+        nn_trigger_delayed_autosearch_cb(awr);
     }
     else {
-        awar_sel_species->remove_callback(nn_do_autosearch_cb);
+        awar_sel_species->remove_callback(nn_trigger_delayed_autosearch_cb);
+    }
+}
+
+static AW_window *nn_of_sel_win = NULL;
+static void nn_searchRel_awar_changed_cb(AW_root *awr) {
+    int auto_search = awr->awar(AWAR_NN_SELECTED_AUTO_SEARCH)->read_int();
+    if (auto_search &&
+        nn_of_sel_win && nn_of_sel_win->is_shown()) // do not trigger if window is not shown
+    {
+        nn_trigger_delayed_autosearch_cb(awr);
     }
 }
 
@@ -1203,13 +1225,15 @@ static void create_next_neighbours_vars(AW_root *aw_root) {
     static bool created = false;
 
     if (!created) {
-        aw_root->awar_int(AWAR_PROBE_ADMIN_PT_SERVER);
-        aw_root->awar_int(AWAR_NN_COMPLEMENT,  FF_FORWARD);
+        RootCallback searchRel_awar_changed_cb = makeRootCallback(nn_searchRel_awar_changed_cb);
 
-        aw_root->awar_string(AWAR_NN_RANGE_START, "");
-        aw_root->awar_string(AWAR_NN_RANGE_END,   "");
-        aw_root->awar_int   (AWAR_NN_MAX_HITS,    10);
-        aw_root->awar_float (AWAR_NN_MIN_SCORE,   80);
+        aw_root->awar_int(AWAR_PROBE_ADMIN_PT_SERVER)->add_callback(searchRel_awar_changed_cb);
+        aw_root->awar_int(AWAR_NN_COMPLEMENT,  FF_FORWARD)->add_callback(searchRel_awar_changed_cb);
+
+        aw_root->awar_string(AWAR_NN_RANGE_START, "")->add_callback(searchRel_awar_changed_cb);
+        aw_root->awar_string(AWAR_NN_RANGE_END,   "")->add_callback(searchRel_awar_changed_cb);
+        aw_root->awar_int   (AWAR_NN_MAX_HITS,    10)->set_minmax(1, 1000)->add_callback(searchRel_awar_changed_cb);;
+        aw_root->awar_float (AWAR_NN_MIN_SCORE,   80)->set_minmax(0, 200)->add_callback(searchRel_awar_changed_cb);;
         
         aw_root->awar_int(AWAR_NN_SELECTED_HIT_COUNT,   0);
         aw_root->awar_int(AWAR_NN_SELECTED_AUTO_SEARCH, 0)->add_callback(nn_auto_search_changed_cb);
@@ -1218,7 +1242,7 @@ static void create_next_neighbours_vars(AW_root *aw_root) {
         aw_root->awar_string(AWAR_NN_LISTED_DEST_FIELD,     "tmp");
         aw_root->awar_int   (AWAR_NN_LISTED_SCORED_ENTRIES, 1);
 
-        AWTC_create_common_next_neighbour_vars(aw_root);
+        AWTC_create_common_next_neighbour_vars(aw_root, searchRel_awar_changed_cb);
 
         created = true;
     }
@@ -1258,9 +1282,11 @@ static void create_common_next_neighbour_fields(AW_window *aws, bool for_listed)
     aws->at("pt_server");
     awt_create_PTSERVER_selection_button(aws, AWAR_PROBE_ADMIN_PT_SERVER);
 
-    AWTC_create_common_next_neighbour_fields(aws);
+    const int SCALER_LENGTH = 200;
 
     aws->auto_space(5, 5);
+    AWTC_create_common_next_neighbour_fields(aws, SCALER_LENGTH);
+
     
     aws->at("range");
     aws->create_input_field(AWAR_NN_RANGE_START, 6);
@@ -1278,10 +1304,10 @@ static void create_common_next_neighbour_fields(AW_window *aws, bool for_listed)
     aws->update_option_menu();
 
     aws->at("results");
-    aws->create_input_field(AWAR_NN_MAX_HITS, 3);
+    aws->create_input_field_with_scaler(AWAR_NN_MAX_HITS, 5, SCALER_LENGTH, AW_SCALER_EXP_LOWER);
 
     aws->at("min_score");
-    aws->create_input_field(AWAR_NN_MIN_SCORE, 6);
+    aws->create_input_field_with_scaler(AWAR_NN_MIN_SCORE, 5, SCALER_LENGTH, AW_SCALER_LINEAR);
 
     aws->at("config");
     AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "next_neighbours", makeConfigSetupCallback(setup_next_neighbour_config, for_listed));
@@ -1355,7 +1381,7 @@ static AW_window *create_next_neighbours_selected_window(AW_root *aw_root, DbQue
         aws->create_button("SEARCH", "Search");
 
         aws->at("auto_go");
-        aws->label("Auto on selection change");
+        aws->label("Auto search on change");
         aws->create_toggle(AWAR_NN_SELECTED_AUTO_SEARCH);
         
         aws->at("mark");
@@ -1370,6 +1396,7 @@ static AW_window *create_next_neighbours_selected_window(AW_root *aw_root, DbQue
         aws->callback(awtc_move_hits);
         aws->create_autosize_button("MOVE_TO_HITLIST", "Move to hitlist");
 
+        nn_of_sel_win = aws; // store current window (to disable auto search when this window was popped down)
     }
     return aws;
 }
