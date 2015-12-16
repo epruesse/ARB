@@ -22,7 +22,8 @@
 #include <awt_config_manager.hxx>
 
 #define AWAR_MATRIX                "matrix/"
-#define AWAR_MATRIX_PADDING        AWAR_MATRIX "padding"
+#define AWAR_MATRIX_PADDINGX       AWAR_MATRIX "paddingx"
+#define AWAR_MATRIX_PADDINGY       AWAR_MATRIX "paddingy"
 #define AWAR_MATRIX_SHOWZERO       AWAR_MATRIX "show_zero"
 #define AWAR_MATRIX_DIGITS         AWAR_MATRIX "show_digits"
 #define AWAR_MATRIX_NAMECHARS_TOP  AWAR_MATRIX "namechars_top"
@@ -90,31 +91,33 @@ void MatrixDisplay::setup() {
                 cell_height = std::max(cell_height, int(lim.height));
             }
         }
-        // ensure cell-dimensions are > 0
-        AW_awar *pad_awar = awr->awar(AWAR_MATRIX_PADDING);
-        cell_padd         = pad_awar->read_int();
 
-        if (cell_padd<0) {
-            bool update = false;
-            if (-cell_padd >= cell_width) {
-                cell_padd = -cell_width+1;
-                update    = true;
+        {
+            // ensure cell-dimensions are > 0
+            AW_awar *pad_awarx = awr->awar(AWAR_MATRIX_PADDINGX);
+            AW_awar *pad_awary = awr->awar(AWAR_MATRIX_PADDINGY);
+
+            cell_paddx = pad_awarx->read_int();
+            cell_paddy = pad_awary->read_int();
+
+            if (cell_paddx<0 && -cell_paddx >= cell_width) {
+                cell_paddx = -cell_width+1;
+                pad_awarx->write_int(cell_paddx);
             }
-            if (-cell_padd >= cell_height) {
-                cell_padd = -cell_height+1;
-                update    = true;
+            if (cell_paddy<0 && -cell_paddy >= cell_height) {
+                cell_paddy = -cell_height+1;
+                pad_awary->write_int(cell_paddy);
             }
-            if (update) pad_awar->write_int(cell_padd);
         }
 
-        cell_width  += cell_padd;
-        cell_height += cell_padd;
+        cell_width  += cell_paddx;
+        cell_height += cell_paddy;
     }
 
     {
         const AW_font_limits& lim = device->get_font_limits(DI_G_NAMES, 0);
  
-        off_dx = awr->awar(AWAR_MATRIX_NAMECHARS_LEFT)->read_int() * lim.width + 1 + cell_padd;
+        off_dx = awr->awar(AWAR_MATRIX_NAMECHARS_LEFT)->read_int() * lim.width + 1 + cell_paddx;
         off_dy = lim.height + cell_height; // off_dy corresponds to "lower" y of cell
     }
 
@@ -351,12 +354,12 @@ void MatrixDisplay::draw() {
                 AW_click_cd cd(device, CLICK_SET_MINMAX, val2*MINMAX_GRANULARITY+1);
 
                 if (val2>=min_view_dist && val2<=max_view_dist) { // display ruler
-                    int maxw = cell_width-cell_padd;
+                    int maxw = cell_width-cell_paddx;
 
-                    int h = cell_height - cell_padd-1;
+                    int h = cell_height - cell_paddy-1;
 
                     int hbox, hruler;
-                    if (cell_padd >= 0) {
+                    if (cell_paddy >= 0) {
                         hbox   = h*2/3;
                         hruler = h-hbox;
                     }
@@ -379,7 +382,7 @@ void MatrixDisplay::draw() {
                         device->text(DI_G_STANDARD, "???", cellx, celly);
                     }
 
-                    if (hruler) { // do not paint ruler if cell_padd is negative
+                    if (hruler) { // do not paint ruler if cell_paddy is negative
                         double v;
                         int    cnt;
                         int    maxx = x2+maxw-1;
@@ -427,7 +430,7 @@ void MatrixDisplay::draw() {
 
     // highlight selected species (vertically)
     if (sel_x_pos != -1) {
-        AW_pos linex1 = sel_x_pos*cell_width - cell_padd/2-1;
+        AW_pos linex1 = sel_x_pos*cell_width - cell_paddx/2-1;
         AW_pos linex2 = linex1+cell_width;
         AW_pos height = area.height();
         device->line(DI_G_STANDARD, linex1, 0, linex1, height);
@@ -450,7 +453,7 @@ void MatrixDisplay::draw() {
 
     // highlight selected species (horizontally)
     if (sel_y_pos != -1) {
-        AW_pos liney2 = sel_y_pos*cell_height + cell_padd/2+1;
+        AW_pos liney2 = sel_y_pos*cell_height + cell_paddy/2+1;
         AW_pos liney1 = liney2-cell_height;
         AW_pos width  = area.width();
         device->line(DI_G_STANDARD, 0, liney1, width, liney1);
@@ -600,14 +603,16 @@ static void create_matrix_awars(AW_root *awr, MatrixDisplay *disp) {
     RootCallback reinit_needed_cb = makeRootCallback(reinit_needed, disp);
 
     awr->awar_int(AWAR_MATRIX_SHOWZERO,       1)                      ->add_callback(reinit_needed_cb);
-    awr->awar_int(AWAR_MATRIX_PADDING,        4) ->set_minmax(-10, 10)->add_callback(reinit_needed_cb);
+    awr->awar_int(AWAR_MATRIX_PADDINGX,       4) ->set_minmax(-10, 10)->add_callback(reinit_needed_cb);
+    awr->awar_int(AWAR_MATRIX_PADDINGY,       4) ->set_minmax(-10, 10)->add_callback(reinit_needed_cb);
     awr->awar_int(AWAR_MATRIX_DIGITS,         4) ->set_minmax(0, 10)  ->add_callback(reinit_needed_cb);
     awr->awar_int(AWAR_MATRIX_NAMECHARS_TOP,  8) ->set_minmax(0, 10)  ->add_callback(reinit_needed_cb);
     awr->awar_int(AWAR_MATRIX_NAMECHARS_LEFT, 10)->set_minmax(0, 10)  ->add_callback(reinit_needed_cb);
 }
 
 static AWT_config_mapping_def matrixConfigMapping[] = {
-    { AWAR_MATRIX_PADDING,        "padding" },
+    { AWAR_MATRIX_PADDINGX,       "paddingx" },
+    { AWAR_MATRIX_PADDINGY,       "paddingy" },
     { AWAR_MATRIX_SHOWZERO,       "showzero" },
     { AWAR_MATRIX_DIGITS,         "precision" },
     { AWAR_MATRIX_NAMECHARS_TOP,  "namechars_top" },
@@ -636,8 +641,12 @@ static AW_window *create_matrix_settings_window(AW_root *awr) {
     aws->label_length(21);
 
     aws->at_newline();
-    aws->label("Padding (pixels)");
-    aws->create_input_field_with_scaler(AWAR_MATRIX_PADDING, FIELDWIDTH, SCALERWIDTH);
+    aws->label("X-padding (pixels)");
+    aws->create_input_field_with_scaler(AWAR_MATRIX_PADDINGX, FIELDWIDTH, SCALERWIDTH);
+
+    aws->at_newline();
+    aws->label("Y-padding (pixels)");
+    aws->create_input_field_with_scaler(AWAR_MATRIX_PADDINGY, FIELDWIDTH, SCALERWIDTH);
 
     aws->at_newline();
     aws->label("Show leading zero");
