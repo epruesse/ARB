@@ -19,6 +19,7 @@
 #include <awt_canvas.hxx>
 
 #include <arb_algo.h>
+#include <awt_config_manager.hxx>
 
 #define AWAR_MATRIX                "matrix/"
 #define AWAR_MATRIX_PADDING        AWAR_MATRIX "padding"
@@ -605,6 +606,16 @@ static void create_matrix_awars(AW_root *awr, MatrixDisplay *disp) {
     awr->awar_int(AWAR_MATRIX_NAMECHARS_LEFT, 10)->set_minmax(0, 10)  ->add_callback(reinit_needed_cb);
 }
 
+static AWT_config_mapping_def matrixConfigMapping[] = {
+    { AWAR_MATRIX_PADDING,        "padding" },
+    { AWAR_MATRIX_SHOWZERO,       "showzero" },
+    { AWAR_MATRIX_DIGITS,         "precision" },
+    { AWAR_MATRIX_NAMECHARS_TOP,  "namechars_top" },
+    { AWAR_MATRIX_NAMECHARS_LEFT, "namechars_left" },
+
+    { 0, 0 }
+};
+
 static AW_window *create_matrix_settings_window(AW_root *awr) {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(awr, "MATRIX_SETTINGS", "Matrix settings");
@@ -619,6 +630,8 @@ static AW_window *create_matrix_settings_window(AW_root *awr) {
 
     aws->callback(makeHelpCallback("matrix_settings.hlp"));
     aws->create_button("HELP", "HELP");
+
+    AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "matrix_settings", matrixConfigMapping);
 
     aws->label_length(21);
 
