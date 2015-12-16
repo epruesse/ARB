@@ -673,7 +673,7 @@ AW_window *DI_create_view_matrix_window(AW_root *awr, MatrixDisplay *disp, save_
     create_matrix_awars(awr, disp);
     
     AW_window_menu *awm = new AW_window_menu;
-    awm->init(awr, "SHOW_MATRIX", "ARB_SHOW_MATRIX", 800, 600);
+    awm->init(awr, "SHOW_MATRIX", "ARB distance matrix", 800, 600);
 
     disp->device = awm->get_device(AW_MIDDLE_AREA);
     disp->awm    = awm;
@@ -716,9 +716,10 @@ AW_window *DI_create_view_matrix_window(AW_root *awr, MatrixDisplay *disp, save_
     awm->insert_menu_topic("show_dist_100",     "Whole range   [ 0-100% ]", "0", 0, AWM_ALL, makeWindowCallback(di_view_set_max_dist, 100));
 
     awm->create_menu("Properties", "P");
-    awm->insert_menu_topic("matrix_settings", "Settings ...",         "S", "matrix_settings.hlp", AWM_ALL, create_matrix_settings_window);
-    awm->insert_menu_topic("matrix_colors",   "Colors and Fonts ...", "C", "color_props.hlp", AWM_ALL, makeCreateWindowCallback(AW_create_gc_window, gc_manager));
-    
+    awm->insert_menu_topic("matrix_settings", "Settings ...",               "S", "matrix_settings.hlp", AWM_ALL, create_matrix_settings_window);
+    awm->insert_menu_topic("matrix_colors",   "Colors and Fonts ...",       "C", "color_props.hlp",     AWM_ALL, makeCreateWindowCallback(AW_create_gc_window, gc_manager));
+    awm->insert_menu_topic("save_props",      "Save Properties (dist.arb)", "P", "savedef.hlp",         AWM_ALL, AW_save_properties);
+
     int x, y;
     awm->get_at_position(&x, &y);
     awm->button_length(3);
