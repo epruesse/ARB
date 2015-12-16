@@ -598,16 +598,19 @@ static void di_bind_dist_awars(AW_root *aw_root, MatrixDisplay *disp) {
 static void create_matrix_awars(AW_root *awr, MatrixDisplay *disp) {
     RootCallback reinit_needed_cb = makeRootCallback(reinit_needed, disp);
 
-    awr->awar_int(AWAR_MATRIX_PADDING,        4) ->add_callback(reinit_needed_cb);
-    awr->awar_int(AWAR_MATRIX_SHOWZERO,       1) ->add_callback(reinit_needed_cb);
-    awr->awar_int(AWAR_MATRIX_DIGITS,         4) ->add_callback(reinit_needed_cb);
-    awr->awar_int(AWAR_MATRIX_NAMECHARS_TOP,  8) ->add_callback(reinit_needed_cb);
-    awr->awar_int(AWAR_MATRIX_NAMECHARS_LEFT, 10)->add_callback(reinit_needed_cb);
+    awr->awar_int(AWAR_MATRIX_SHOWZERO,       1)                      ->add_callback(reinit_needed_cb);
+    awr->awar_int(AWAR_MATRIX_PADDING,        4) ->set_minmax(-10, 10)->add_callback(reinit_needed_cb);
+    awr->awar_int(AWAR_MATRIX_DIGITS,         4) ->set_minmax(0, 10)  ->add_callback(reinit_needed_cb);
+    awr->awar_int(AWAR_MATRIX_NAMECHARS_TOP,  8) ->set_minmax(0, 10)  ->add_callback(reinit_needed_cb);
+    awr->awar_int(AWAR_MATRIX_NAMECHARS_LEFT, 10)->set_minmax(0, 10)  ->add_callback(reinit_needed_cb);
 }
 
 static AW_window *create_matrix_settings_window(AW_root *awr) {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(awr, "MATRIX_SETTINGS", "Matrix settings");
+
+    const int FIELDWIDTH = 3;
+    const int SCALERWIDTH = 200;
 
     aws->auto_space(10, 10);
 
@@ -621,7 +624,7 @@ static AW_window *create_matrix_settings_window(AW_root *awr) {
 
     aws->at_newline();
     aws->label("Padding (pixels)");
-    aws->create_input_field(AWAR_MATRIX_PADDING, 3);
+    aws->create_input_field_with_scaler(AWAR_MATRIX_PADDING, FIELDWIDTH, SCALERWIDTH);
 
     aws->at_newline();
     aws->label("Show leading zero");
@@ -629,15 +632,15 @@ static AW_window *create_matrix_settings_window(AW_root *awr) {
 
     aws->at_newline();
     aws->label("Precision (digits)");
-    aws->create_input_field(AWAR_MATRIX_DIGITS, 2);
+    aws->create_input_field_with_scaler(AWAR_MATRIX_DIGITS, FIELDWIDTH, SCALERWIDTH);
 
     aws->at_newline();
     aws->label("Min. namechars (top)");
-    aws->create_input_field(AWAR_MATRIX_NAMECHARS_TOP, 3);
+    aws->create_input_field_with_scaler(AWAR_MATRIX_NAMECHARS_TOP, FIELDWIDTH, SCALERWIDTH);
 
     aws->at_newline();
     aws->label("Min. namechars (left)");
-    aws->create_input_field(AWAR_MATRIX_NAMECHARS_LEFT, 3);
+    aws->create_input_field_with_scaler(AWAR_MATRIX_NAMECHARS_LEFT, FIELDWIDTH, SCALERWIDTH);
 
     aws->window_fit();
     return aws;
