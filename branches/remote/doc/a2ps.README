@@ -1,0 +1,85 @@
+This is version 4.3 of a2ps, a program to format an ascii file for
+printing on a postscript printer. As the copyright indicates, this
+distribution can be freely redistributed.
+
+Initial version was a shell program written by evan@csli (Evan
+Kirshenbaum). It was very slow and contained many bugs. A new
+version was written in C for improve speed execution and portability.
+Many new features and improvements have been added since this first
+version. Many contributions (changes, fixes, ideas) were done by a2ps
+users in order to improve it. Current version is 4.3 and is quite
+different from early versions.
+
+Some notes on the distribution:
+
+    Installation is done by modifying and executing Makefile included
+    in this distribution. You must give a value to the following variable:
+    - compiler  compiler name, actually one of BSD, SYSV.
+                Turbo C and Microsoft C are considered Ansi C compilers
+                (don't define the variable compiler in this case).
+
+    You could also give your own values to following variables:
+    a) Default physical page dimension. Dimensions must be real constants,
+       specifying inch values.
+       - HEIGHT  sheet height
+       - WIDTH   sheet width
+       Default values correspond to A4 format (11.64 x 8.27). In USA, you use
+       use in general 11.0 x 8.5.
+    b) Total lateral (left+right) or vertical (top+bottom) margins. It must
+       be also a real constant, specifying inches (by default 1.2).
+       - MARGIN
+    c) Directory separator (by default '/')
+       - DIR_SEP char
+    d) A boolean to choice if you want to automatically emit a print command.
+       You have to "define" to any value the LPR_PRINT preprocessing variable
+       in this case.       
+    e) Name of print command and options to pass to this command. They
+       must be strings.
+       - LPR_COMMAND
+       - LPR_OPT
+    f) Options to pass to the lpr command to print one or two-sided pages.
+       - TWOSIDED
+       - ONESIDED
+       Be careful with quotes to set these values, they must be strings.
+       If these variables are not defined, a2ps will consider that only
+       one-sided pages can be printed, ignoring s1 and s2 options.
+    g) A boolean to choice if you want to print by default two-sided pages.
+       - TWOSIDED_DFLT
+
+
+    a2ps has been successfully ported to Unix 4.3BSD, Unix SystemV and
+    MSDOS.
+
+
+The a2ps distribution consists of the following files:
+
+        README          This message
+        Makefile
+        a2ps.c          a2ps source
+        a2ps.1          a troff manual (man file)
+
+Decide where you want to keep these files and move it there.
+Edit "Makefile" and change the definition of compiler name.
+To make a2ps do:
+
+    make a2ps
+
+To install it, do:
+
+    make install
+
+Format the manual entry using
+
+    nroff -man a2ps.1
+
+
+Please send problems and feedback to:
+
+    M.Santana@frgu.bull.fr
+
+    Miguel SANTANA
+    Unite mixte Bull-Imag
+    2, Av. Vignate
+    Z.I. Mayencin
+    38610 Gieres
+    France

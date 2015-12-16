@@ -1,0 +1,5 @@
+# libraries needed to link arb_db_server
+
+DBSERVER/DBSERVER.a
+
+
