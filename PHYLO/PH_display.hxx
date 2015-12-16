@@ -17,7 +17,7 @@
 
 #define SPECIES_NAME_LEN 10    // only for displaying speciesnames
 
-extern char **filter_text;
+extern const char *filter_text[];
 
 class PH_display {
     AW_device    *device;                // device to draw in
@@ -87,7 +87,7 @@ public:
 
 
 void ph_view_species_cb();
-void ph_view_filter_cb();
+void ph_calc_filter_cb();
 GB_ERROR ph_check_initialized();
 
 #else

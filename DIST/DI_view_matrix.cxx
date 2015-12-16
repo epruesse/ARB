@@ -19,9 +19,11 @@
 #include <awt_canvas.hxx>
 
 #include <arb_algo.h>
+#include <awt_config_manager.hxx>
 
 #define AWAR_MATRIX                "matrix/"
-#define AWAR_MATRIX_PADDING        AWAR_MATRIX "padding"
+#define AWAR_MATRIX_PADDINGX       AWAR_MATRIX "paddingx"
+#define AWAR_MATRIX_PADDINGY       AWAR_MATRIX "paddingy"
 #define AWAR_MATRIX_SHOWZERO       AWAR_MATRIX "show_zero"
 #define AWAR_MATRIX_DIGITS         AWAR_MATRIX "show_digits"
 #define AWAR_MATRIX_NAMECHARS_TOP  AWAR_MATRIX "namechars_top"
@@ -89,31 +91,33 @@ void MatrixDisplay::setup() {
                 cell_height = std::max(cell_height, int(lim.height));
             }
         }
-        // ensure cell-dimensions are > 0
-        AW_awar *pad_awar = awr->awar(AWAR_MATRIX_PADDING);
-        cell_padd         = pad_awar->read_int();
 
-        if (cell_padd<0) {
-            bool update = false;
-            if (-cell_padd >= cell_width) {
-                cell_padd = -cell_width+1;
-                update    = true;
+        {
+            // ensure cell-dimensions are > 0
+            AW_awar *pad_awarx = awr->awar(AWAR_MATRIX_PADDINGX);
+            AW_awar *pad_awary = awr->awar(AWAR_MATRIX_PADDINGY);
+
+            cell_paddx = pad_awarx->read_int();
+            cell_paddy = pad_awary->read_int();
+
+            if (cell_paddx<0 && -cell_paddx >= cell_width) {
+                cell_paddx = -cell_width+1;
+                pad_awarx->write_int(cell_paddx);
             }
-            if (-cell_padd >= cell_height) {
-                cell_padd = -cell_height+1;
-                update    = true;
+            if (cell_paddy<0 && -cell_paddy >= cell_height) {
+                cell_paddy = -cell_height+1;
+                pad_awary->write_int(cell_paddy);
             }
-            if (update) pad_awar->write_int(cell_padd);
         }
 
-        cell_width  += cell_padd;
-        cell_height += cell_padd;
+        cell_width  += cell_paddx;
+        cell_height += cell_paddy;
     }
 
     {
         const AW_font_limits& lim = device->get_font_limits(DI_G_NAMES, 0);
  
-        off_dx = awr->awar(AWAR_MATRIX_NAMECHARS_LEFT)->read_int() * lim.width + 1 + cell_padd;
+        off_dx = awr->awar(AWAR_MATRIX_NAMECHARS_LEFT)->read_int() * lim.width + 1 + cell_paddx;
         off_dy = lim.height + cell_height; // off_dy corresponds to "lower" y of cell
     }
 
@@ -350,12 +354,12 @@ void MatrixDisplay::draw() {
                 AW_click_cd cd(device, CLICK_SET_MINMAX, val2*MINMAX_GRANULARITY+1);
 
                 if (val2>=min_view_dist && val2<=max_view_dist) { // display ruler
-                    int maxw = cell_width-cell_padd;
+                    int maxw = cell_width-cell_paddx;
 
-                    int h = cell_height - cell_padd-1;
+                    int h = cell_height - cell_paddy-1;
 
                     int hbox, hruler;
-                    if (cell_padd >= 0) {
+                    if (cell_paddy >= 0) {
                         hbox   = h*2/3;
                         hruler = h-hbox;
                     }
@@ -378,7 +382,7 @@ void MatrixDisplay::draw() {
                         device->text(DI_G_STANDARD, "???", cellx, celly);
                     }
 
-                    if (hruler) { // do not paint ruler if cell_padd is negative
+                    if (hruler) { // do not paint ruler if cell_paddy is negative
                         double v;
                         int    cnt;
                         int    maxx = x2+maxw-1;
@@ -426,7 +430,7 @@ void MatrixDisplay::draw() {
 
     // highlight selected species (vertically)
     if (sel_x_pos != -1) {
-        AW_pos linex1 = sel_x_pos*cell_width - cell_padd/2-1;
+        AW_pos linex1 = sel_x_pos*cell_width - cell_paddx/2-1;
         AW_pos linex2 = linex1+cell_width;
         AW_pos height = area.height();
         device->line(DI_G_STANDARD, linex1, 0, linex1, height);
@@ -449,7 +453,7 @@ void MatrixDisplay::draw() {
 
     // highlight selected species (horizontally)
     if (sel_y_pos != -1) {
-        AW_pos liney2 = sel_y_pos*cell_height + cell_padd/2+1;
+        AW_pos liney2 = sel_y_pos*cell_height + cell_paddy/2+1;
         AW_pos liney1 = liney2-cell_height;
         AW_pos width  = area.width();
         device->line(DI_G_STANDARD, 0, liney1, width, liney1);
@@ -590,27 +594,6 @@ static void di_view_set_distances(AW_root *awr, int setmax, MatrixDisplay *disp)
     }
 }
 
-static void di_change_dist(AW_window *aww, int mode) {
-    AW_root *awr = aww->get_root();
-
-    di_assert(mode>=0 && mode<=3);
-
-    const char *awar_name;
-    if (mode<2) { // change min
-        awar_name = AWAR_DIST_MIN_DIST;
-    }
-    else { // change max
-        awar_name = AWAR_DIST_MAX_DIST;
-    }
-
-    double dist = awr->awar(awar_name)->read_float();
-    double increment = 0.01;
-
-    if (mode%2) increment = -increment; // decrement value
-    dist += increment;
-    if (!(dist<0)) awr->awar(awar_name)->write_float(dist);
-}
-
 static void di_bind_dist_awars(AW_root *aw_root, MatrixDisplay *disp) {
     aw_root->awar_float(AWAR_DIST_MIN_DIST)->add_callback(makeRootCallback(di_view_set_distances, 0, disp));
     aw_root->awar_float(AWAR_DIST_MAX_DIST)->add_callback(makeRootCallback(di_view_set_distances, 1, disp));
@@ -619,16 +602,36 @@ static void di_bind_dist_awars(AW_root *aw_root, MatrixDisplay *disp) {
 static void create_matrix_awars(AW_root *awr, MatrixDisplay *disp) {
     RootCallback reinit_needed_cb = makeRootCallback(reinit_needed, disp);
 
-    awr->awar_int(AWAR_MATRIX_PADDING,        4) ->add_callback(reinit_needed_cb);
-    awr->awar_int(AWAR_MATRIX_SHOWZERO,       1) ->add_callback(reinit_needed_cb);
-    awr->awar_int(AWAR_MATRIX_DIGITS,         4) ->add_callback(reinit_needed_cb);
-    awr->awar_int(AWAR_MATRIX_NAMECHARS_TOP,  8) ->add_callback(reinit_needed_cb);
-    awr->awar_int(AWAR_MATRIX_NAMECHARS_LEFT, 10)->add_callback(reinit_needed_cb);
+    awr->awar_int(AWAR_MATRIX_SHOWZERO,       1)                      ->add_callback(reinit_needed_cb);
+    awr->awar_int(AWAR_MATRIX_PADDINGX,       4) ->set_minmax(-10, 10)->add_callback(reinit_needed_cb);
+    awr->awar_int(AWAR_MATRIX_PADDINGY,       4) ->set_minmax(-10, 10)->add_callback(reinit_needed_cb);
+    awr->awar_int(AWAR_MATRIX_DIGITS,         4) ->set_minmax(0, 10)  ->add_callback(reinit_needed_cb);
+    awr->awar_int(AWAR_MATRIX_NAMECHARS_TOP,  8) ->set_minmax(0, 10)  ->add_callback(reinit_needed_cb);
+    awr->awar_int(AWAR_MATRIX_NAMECHARS_LEFT, 10)->set_minmax(0, 10)  ->add_callback(reinit_needed_cb);
 }
+
+static AWT_config_mapping_def matrixConfigMapping[] = {
+    { AWAR_MATRIX_PADDINGX,       "paddingx" },
+    { AWAR_MATRIX_PADDINGY,       "paddingy" },
+    { AWAR_MATRIX_SHOWZERO,       "showzero" },
+    { AWAR_MATRIX_DIGITS,         "precision" },
+    { AWAR_MATRIX_NAMECHARS_TOP,  "namechars_top" },
+    { AWAR_MATRIX_NAMECHARS_LEFT, "namechars_left" },
+
+    { 0, 0 }
+};
+
+static AWT_predefined_config predefinedMatrixConfig[] = {
+    { "*compact", "Compact matrix view\n- use with fontsize=8\n- use without correction only (hides leading digits)", "namechars_left='10';namechars_top='3';paddingx='-3';paddingy='-2';precision='2';showzero='0'" },
+    { 0, 0, 0 }
+};
 
 static AW_window *create_matrix_settings_window(AW_root *awr) {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(awr, "MATRIX_SETTINGS", "Matrix settings");
+
+    const int FIELDWIDTH = 3;
+    const int SCALERWIDTH = 200;
 
     aws->auto_space(10, 10);
 
@@ -638,11 +641,17 @@ static AW_window *create_matrix_settings_window(AW_root *awr) {
     aws->callback(makeHelpCallback("matrix_settings.hlp"));
     aws->create_button("HELP", "HELP");
 
+    AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "matrix_settings", matrixConfigMapping, NULL, predefinedMatrixConfig);
+
     aws->label_length(21);
 
     aws->at_newline();
-    aws->label("Padding (pixels)");
-    aws->create_input_field(AWAR_MATRIX_PADDING, 3);
+    aws->label("X-padding (pixels)");
+    aws->create_input_field_with_scaler(AWAR_MATRIX_PADDINGX, FIELDWIDTH, SCALERWIDTH);
+
+    aws->at_newline();
+    aws->label("Y-padding (pixels)");
+    aws->create_input_field_with_scaler(AWAR_MATRIX_PADDINGY, FIELDWIDTH, SCALERWIDTH);
 
     aws->at_newline();
     aws->label("Show leading zero");
@@ -650,15 +659,15 @@ static AW_window *create_matrix_settings_window(AW_root *awr) {
 
     aws->at_newline();
     aws->label("Precision (digits)");
-    aws->create_input_field(AWAR_MATRIX_DIGITS, 2);
+    aws->create_input_field_with_scaler(AWAR_MATRIX_DIGITS, FIELDWIDTH, SCALERWIDTH);
 
     aws->at_newline();
     aws->label("Min. namechars (top)");
-    aws->create_input_field(AWAR_MATRIX_NAMECHARS_TOP, 3);
+    aws->create_input_field_with_scaler(AWAR_MATRIX_NAMECHARS_TOP, FIELDWIDTH, SCALERWIDTH);
 
     aws->at_newline();
     aws->label("Min. namechars (left)");
-    aws->create_input_field(AWAR_MATRIX_NAMECHARS_LEFT, 3);
+    aws->create_input_field_with_scaler(AWAR_MATRIX_NAMECHARS_LEFT, FIELDWIDTH, SCALERWIDTH);
 
     aws->window_fit();
     return aws;
@@ -673,7 +682,7 @@ AW_window *DI_create_view_matrix_window(AW_root *awr, MatrixDisplay *disp, save_
     create_matrix_awars(awr, disp);
     
     AW_window_menu *awm = new AW_window_menu;
-    awm->init(awr, "SHOW_MATRIX", "ARB_SHOW_MATRIX", 800, 600);
+    awm->init(awr, "SHOW_MATRIX", "ARB distance matrix", 800, 600);
 
     disp->device = awm->get_device(AW_MIDDLE_AREA);
     disp->awm    = awm;
@@ -716,45 +725,19 @@ AW_window *DI_create_view_matrix_window(AW_root *awr, MatrixDisplay *disp, save_
     awm->insert_menu_topic("show_dist_100",     "Whole range   [ 0-100% ]", "0", 0, AWM_ALL, makeWindowCallback(di_view_set_max_dist, 100));
 
     awm->create_menu("Properties", "P");
-    awm->insert_menu_topic("matrix_settings", "Settings ...",         "S", "matrix_settings.hlp", AWM_ALL, create_matrix_settings_window);
-    awm->insert_menu_topic("matrix_colors",   "Colors and Fonts ...", "C", "color_props.hlp", AWM_ALL, makeCreateWindowCallback(AW_create_gc_window, gc_manager));
-    
-    int x, y;
-    awm->get_at_position(&x, &y);
-    awm->button_length(3);
+    awm->insert_menu_topic("matrix_settings", "Settings ...",               "S", "matrix_settings.hlp", AWM_ALL, create_matrix_settings_window);
+    awm->insert_menu_topic("matrix_colors",   "Colors and Fonts ...",       "C", "color_props.hlp",     AWM_ALL, makeCreateWindowCallback(AW_create_gc_window, gc_manager));
+    awm->insert_menu_topic("save_props",      "Save Properties (dist.arb)", "P", "savedef.hlp",         AWM_ALL, AW_save_properties);
 
-#define FIELD_XSIZE 160
-#define BUTTON_XSIZE 25
+#define FIELD_SIZE  7
+#define SCALER_SIZE 200
 
-    awm->label("Dist min:");
-    awm->create_input_field(AWAR_DIST_MIN_DIST, 7);
-    x += FIELD_XSIZE;
+    awm->auto_space(5, 5);
 
-    awm->at_x(x);
-    awm->callback(makeWindowCallback(di_change_dist, 0));
-    awm->create_button("PLUS_MIN", "+");
-    x += BUTTON_XSIZE;
+    awm->label("Dist min:"); awm->create_input_field_with_scaler(AWAR_DIST_MIN_DIST, FIELD_SIZE, SCALER_SIZE, AW_SCALER_EXP_LOWER);
+    awm->label("Dist max:"); awm->create_input_field_with_scaler(AWAR_DIST_MAX_DIST, FIELD_SIZE, SCALER_SIZE, AW_SCALER_EXP_LOWER);
 
-    awm->at_x(x);
-    awm->callback(makeWindowCallback(di_change_dist, 1));
-    awm->create_button("MINUS_MIN", "-");
-    x += BUTTON_XSIZE;
-
-    awm->at_x(x);
-    awm->label("Dist max:");
-    awm->create_input_field(AWAR_DIST_MAX_DIST, 7);
-    x += FIELD_XSIZE;
-
-    awm->at_x(x);
-    awm->callback(makeWindowCallback(di_change_dist, 2));
-    awm->create_button("PLUS_MAX", "+");
-    x += BUTTON_XSIZE;
-
-    awm->at_x(x);
-    awm->callback(makeWindowCallback(di_change_dist, 3));
-    awm->create_button("MINUS_MAX", "-");
-
-    awm->set_info_area_height(40);
+    awm->set_info_area_height(35);
 
     di_view_set_distances(awm->get_root(), 2, disp);
 

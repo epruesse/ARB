@@ -43,6 +43,7 @@ AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/attributes.h
+AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_root.hxx

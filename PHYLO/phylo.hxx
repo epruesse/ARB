@@ -30,23 +30,26 @@
 #define AWAR_PHYLO_FILTER_STOPCOL  "phyl/filter/stopcol"
 #define AWAR_PHYLO_FILTER_MINHOM   "phyl/filter/minhom"
 #define AWAR_PHYLO_FILTER_MAXHOM   "phyl/filter/maxhom"
-#define AWAR_PHYLO_FILTER_POINT    "phyl/filter/point"
+#define AWAR_PHYLO_FILTER_DOT      "phyl/filter/point"
 #define AWAR_PHYLO_FILTER_MINUS    "phyl/filter/minus"
-#define AWAR_PHYLO_FILTER_REST     "phyl/filter/rest"
+#define AWAR_PHYLO_FILTER_AMBIG    "phyl/filter/rest"
 #define AWAR_PHYLO_FILTER_LOWER    "phyl/filter/lower"
+#define AWAR_PHYLO_FILTER_AUTOCALC "phyl/filter/autocalc"
 
 #define AWAR_PHYLO_MARKERLINENAME "tmp/phylo/markerlinename"
 
-enum {
-    DONT_COUNT           = 0,
-    SKIP_COLUMN_IF_MAX   = 1,
-    SKIP_COLUMN_IF_OCCUR = 2,
-    COUNT_DONT_USE_MAX   = 3,
-    TREAT_AS_UPPERCASE   = 4,
-    TREAT_AS_REGULAR     = 5,
+enum FilterMode {
+    DONT_COUNT,
+    SKIP_COLUMN_IF_MAX,
+    SKIP_COLUMN_IF_OCCUR,
+    COUNT_DONT_USE_MAX,
+    TREAT_AS_UPPERCASE,
+    TREAT_AS_REGULAR,
 
-    FILTER_MODES, // has to be last!
+    // Note: enum values are saved in properties (do not modify w/o need!)
+    // update on changes: PH_main.cxx@filter_text
 };
+const int FILTER_MODES = TREAT_AS_REGULAR+1;
 
 
 #define PH_DB_CACHE_SIZE    2000000
@@ -57,7 +60,7 @@ enum {
     PH_GC_0_DRAG
 };
 
-void       PH_create_filter_variables(AW_root *aw_root, AW_default aw_def);
+void       PH_create_filter_variables(AW_root *aw_root, AW_default default_file, GBDATA *gb_main);
 AW_window *PH_create_filter_window(AW_root *aw_root);
 
 enum display_type {

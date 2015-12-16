@@ -124,6 +124,11 @@ SECTION         Mark degenerated branches
                   Calculate a new or optimize an existing tree with that subset of species.
                   Then quick-add previously removed species into that tree.
 
+SECTION		Automarking
+
+		If the 'Auto mark?'-toggle is checked, changing any of the parameters will 
+		instantly trigger the execution of the corresponding mark function.
+
 NOTES		To compare the information of two or more trees,
                 open new ARB_NT-window using 'File/New window' and popup their
                 'Branch analysis'-windows.

@@ -31,6 +31,9 @@ void ph_view_species_cb() {
     PH_display::ph_display->display();
     main_win->set_vertical_change_callback(makeWindowCallback(vertical_change_cb));
     main_win->set_horizontal_change_callback(makeWindowCallback(horizontal_change_cb));
+
+    // trigger automatic calculation on startup (if autocalc-toggle was saved as checked)
+    main_win->get_root()->awar(AWAR_PHYLO_FILTER_AUTOCALC)->touch();
 }
 
 GB_ERROR ph_check_initialized() {
@@ -38,7 +41,7 @@ GB_ERROR ph_check_initialized() {
     return 0;
 }
 
-void ph_view_filter_cb() {
+void ph_calc_filter_cb() {
     GB_ERROR err = ph_check_initialized();
     if (err) {
         aw_message(err);
@@ -399,7 +402,7 @@ void display_status_cb() {
                 phds.newline();
 
                 phds.writePadded("'.':", LABEL_LEN);
-                phds.write(filter_text[aw_root->awar(AWAR_PHYLO_FILTER_POINT)->read_int()]);
+                phds.write(filter_text[aw_root->awar(AWAR_PHYLO_FILTER_DOT)->read_int()]);
                 phds.newline();
 
                 phds.writePadded("'-':", LABEL_LEN);
@@ -407,7 +410,7 @@ void display_status_cb() {
                 phds.newline();
 
                 phds.writePadded("ambiguity codes:", LABEL_LEN);
-                phds.write(filter_text[aw_root->awar(AWAR_PHYLO_FILTER_REST)->read_int()]);
+                phds.write(filter_text[aw_root->awar(AWAR_PHYLO_FILTER_AMBIG)->read_int()]);
                 phds.newline();
 
                 phds.writePadded("lowercase chars:", LABEL_LEN);
