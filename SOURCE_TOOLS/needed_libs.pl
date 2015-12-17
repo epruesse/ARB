@@ -341,6 +341,9 @@ sub scan_dependsfile_entry($$$) {
     }
     else {
       $line = $env;
+      $line =~ s/\s\s/ /g;
+      $line =~ s/^\s//g;
+      $line =~ s/\s$//g;
     }
   }
 
@@ -716,7 +719,7 @@ sub pushDirsTo($\@\@) {
       push @out, prefix($pathPrefix,$dir.'/'.$name);
     }
     elsif (is_dynamic_lib($dep)) {
-      if ($dep =~ /^lib\/lib([A-Z]+)\.so/) {
+      if ($dep =~ /^lib\/lib([A-Z_]+)\.so/) {
         my $base = $1;
         push @out, prefix($pathPrefix,$base.'/'.$base);
       }
