@@ -23,8 +23,6 @@
 #include <cb.h>
 #endif
 
-class AW_cb;
-
 class AW_helix : public BI_helix {
     long enabled; // draw or not
 
