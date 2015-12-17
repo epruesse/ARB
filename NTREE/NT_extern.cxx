@@ -163,6 +163,9 @@ static void expert_mode_changed_cb(AW_root *aw_root) {
 }
 
 static void NT_toggle_expert_mode(AW_window *aww) { aww->get_root()->awar(AWAR_EXPERT)->toggle_toggle(); }
+#if defined(ARB_MOTIF)
+static void NT_toggle_focus_policy(AW_window *aww) { aww->get_root()->awar(AWAR_AW_FOCUS_FOLLOWS_MOUSE)->toggle_toggle(); }
+#endif
 
 static void nt_create_all_awars(AW_root *awr, AW_default def) {
     // creates awars for all modules reachable from ARB_NT main window

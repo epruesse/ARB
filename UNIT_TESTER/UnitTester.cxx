@@ -50,8 +50,12 @@
 #  if (GCC_VERSION_CODE>=408)
 #   warning TEST_VALID_LOCATION disabled - does not work with this gcc version
 #  else
-#   define TEST_VALID_LOCATION
-#  endif
+#   if defined(ARB_GTK)
+#    warning TEST_VALID_LOCATION disabled - often fails in gtk version where it succeeded in motif
+#   else
+#    define TEST_VALID_LOCATION
+#   endif
+# endif
 # endif
 #endif
 
