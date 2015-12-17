@@ -238,8 +238,8 @@ static inline void move_and_update_rectangle(AW_pos x1, AW_pos y1, AW_pos x2, AW
     AW_pos fy = dy<0 ? y1-dy : y1;
     AW_pos tx = dx>0 ? x1+dx : x1;  // ..to position ..
     AW_pos ty = dy>0 ? y1+dy : y1;
-    int xs = int(x2-x1-ABS(dx));        // ..size
-    int ys = int(y2-y1-ABS(dy));
+    int xs = int(x2-x1-abs(dx));        // ..size
+    int ys = int(y2-y1-abs(dy));
 
     {
         AW_screen_area rect;

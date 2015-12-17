@@ -262,7 +262,7 @@ bool nt_disconnect_from_db(AW_root *aw_root, GBDATA*& gb_main_ref) {
                 secs = GB_last_saved_time(gb_main_ref);
 
 #if defined(DEBUG)
-//                secs =  GB_time_of_day(); // simulate "just saved"
+                secs =  GB_time_of_day(); // simulate "just saved"
 #endif // DEBUG
 
                 const char *quit_buttons = "Quit ARB,Do NOT quit";

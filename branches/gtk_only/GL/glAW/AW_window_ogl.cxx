@@ -103,7 +103,7 @@ void AW_window_menu_modes_opengl::init(AW_root *root_in, const char *wid,
                                          XmNsubMenuId, p_w->help_pull_down, NULL);
     XtVaSetValues(p_w->menu_bar[0], XmNmenuHelpWidget, help_label, NULL);
     // insert help_label to button_list
-    root->register_widget(help_label, AWM_ALL);
+    root->make_sensitive(help_label, AWM_ALL);
 
     form1 = XtVaCreateManagedWidget("form1",
                                      xmFormWidgetClass,
