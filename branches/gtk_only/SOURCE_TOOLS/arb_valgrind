@@ -173,7 +173,7 @@ else
             VG_OPTS="$VG_OPTS --suppressions=$SUPP" # common libc6 errors
         fi
         VG_OPTS="$VG_OPTS --suppressions=${ARBHOME}/SOURCE_TOOLS/arb.supp"        # common arb errors
-        # VG_OPTS="$VG_OPTS --suppressions=${ARBHOME}/SOURCE_TOOLS/arb_motif.supp"  # arb-motif specific
+        # VG_OPTS="$VG_OPTS --suppressions=${ARBHOME}/SOURCE_TOOLS/arb_motif.supp"  # arb-motif specific (ARB_MOTIF)
         VG_OPTS="$VG_OPTS --suppressions=${ARBHOME}/SOURCE_TOOLS/arb_gtk.supp"    # arb-gtk specific (ARB_GTK)
 
         VG_OPTS="$VG_OPTS --gen-suppressions=all" # automatically generate suppressions
