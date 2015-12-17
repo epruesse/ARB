@@ -47,6 +47,7 @@ AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/attributes.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_action.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_area_management.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_assert.hxx
+AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx

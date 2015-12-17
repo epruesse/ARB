@@ -2421,7 +2421,7 @@ void FastAligner_start(AW_window *aw, const AlignDataAccess *data_access) {
     if (data_access->do_refresh) data_access->refresh_display();
 }
 
-
+static void nullcb() { }
 
 void FastAligner_create_variables(AW_root *root, AW_default db1) {
     root->awar_string(FA_AWAR_REFERENCE_NAME, "", db1);
@@ -2477,7 +2477,7 @@ void FastAligner_create_variables(AW_root *root, AW_default db1) {
     root->awar_float(FA_AWAR_GAP_B, 4.0, db1);
     root->awar_float(FA_AWAR_GAP_C, 7.0, db1);
 
-    AWTC_create_common_next_neighbour_vars(root);
+    AWTC_create_common_next_neighbour_vars(root, makeRootCallback(nullcb));
 }
 
 void FastAligner_set_align_current(AW_root *root, AW_default db1) {
@@ -2599,7 +2599,8 @@ static AW_window *create_family_settings_window(AW_root *root) {
         aws->callback(makeHelpCallback("next_neighbours_common.hlp"));
         aws->create_button("HELP", "HELP");
 
-        AWTC_create_common_next_neighbour_fields(aws);
+        aws->auto_space(5, 5);
+        AWTC_create_common_next_neighbour_fields(aws, 200);
     }
 
     return aws;

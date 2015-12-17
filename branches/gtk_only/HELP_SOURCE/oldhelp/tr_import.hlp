@@ -9,7 +9,7 @@ UP      treeadm.hlp
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE           Load a Tree
+TITLE           Load tree from file
 
 OCCURRENCE      ARB_NT/Tree Admin/Import
 
@@ -49,9 +49,9 @@ SECTION FORMAT
 
 EXAMPLES        None
 
-WARNINGS        The ID associated with terminal nodes have to be
+WARNINGS        The IDs associated with terminal nodes have to be
                 consistent with those of the current database!
 
-                Never give your groups numeric names or the ARB Newick enhancement will not work for you.
+                Never give your groups numeric names or the ARB Newick enhancement will not work for you!
 
 BUGS            No bugs known

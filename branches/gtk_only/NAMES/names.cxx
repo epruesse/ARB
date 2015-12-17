@@ -1425,14 +1425,14 @@ int ARB_main(int argc, char *argv[]) {
     }
 
     if (error) {
-        char *message = GBS_global_string_copy("Error in ARB_name_server: %s", error);
-        char *send    = GBS_global_string_copy("arb_message \"%s\" &", message); // send async (otherwise deadlock!)
+        char *fullErrorMsg   = GBS_global_string_copy("Error in ARB_name_server: %s", error);
+        char *quotedErrorMsg = GBK_singlequote(fullErrorMsg);
 
-        fprintf(stderr, "%s\n", message);
-        if (system(send) != 0) fprintf(stderr, "Failed to send error message to ARB\n");
-
-        free(send);
-        free(message);
+        fprintf(stderr, "%s\n", fullErrorMsg);                                     // log error to console
+        error = GBK_system(GBS_global_string("arb_message %s &", quotedErrorMsg)); // send async to avoid deadlock
+        if (error) fprintf(stderr, "Error: %s\n", error);
+        free(quotedErrorMsg);
+        free(fullErrorMsg);
     }
     else if (accept_calls == 0) {
         if (isTimeout) {

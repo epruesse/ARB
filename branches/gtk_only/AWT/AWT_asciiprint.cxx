@@ -308,11 +308,7 @@ static void awt_aps_go(AW_window *aww) {
                     break;
             }
 
-            if (scall) {
-                GB_informationf("executing '%s'", scall);
-                if (system(scall) != 0) error = GBS_global_string("Error while calling '%s'", scall);
-            }
-
+            if (scall) error = GBK_system(scall);
             free(a2ps_call);
         }
         if (error) aw_message(error);
