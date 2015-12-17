@@ -247,8 +247,8 @@ void DI_create_matrix_variables(AW_root *aw_root, AW_default def, AW_default db)
     aw_root->awar_int(AWAR_DIST_MATRIX_AUTO_RECALC, 0, def)->add_callback(auto_calc_changed_cb);
     aw_root->awar_int(AWAR_DIST_MATRIX_AUTO_CALC_TREE, 0, def)->add_callback(auto_calc_changed_cb);
 
-    aw_root->awar_float(AWAR_DIST_MIN_DIST, 0.0);
-    aw_root->awar_float(AWAR_DIST_MAX_DIST, 0.0);
+    aw_root->awar_float(AWAR_DIST_MIN_DIST, 0.0)->set_minmax(0.0, 4.0);
+    aw_root->awar_float(AWAR_DIST_MAX_DIST, 0.0)->set_minmax(0.0, 4.0);
 
     aw_root->awar_string(AWAR_SPECIES_NAME, "", db);
 

@@ -21,29 +21,19 @@
 #include <arbdbt.h>
 #include <arb_strarray.h>
 
-#include <iostream>
 #include <macros.hxx>
 #include <aw_question.hxx>
 
-using namespace std;
-
 AW_HEADER_MAIN
 
-GBDATA *GLOBAL_gb_main; // global gb_main for arb_phylo
-char **filter_text;
-
-static void create_filter_text()
-{
-    filter_text = (char **) calloc(FILTER_MODES, sizeof (char *));
-    for (int i=0; i<FILTER_MODES; i++) filter_text[i] = new char[100];
-
-    strcpy(filter_text[DONT_COUNT],           "don't count (ignore)                       ");
-    strcpy(filter_text[SKIP_COLUMN_IF_MAX],   "if occurs most often => forget whole column");
-    strcpy(filter_text[SKIP_COLUMN_IF_OCCUR], "if occurs => forget whole column           ");
-    strcpy(filter_text[COUNT_DONT_USE_MAX],   "count, but do NOT use as maximum           ");
-    strcpy(filter_text[TREAT_AS_UPPERCASE],   "treat as uppercase character               ");
-    strcpy(filter_text[TREAT_AS_REGULAR],     "treat as regular character                 ");
-}
+const char *filter_text[FILTER_MODES] = {
+    "don't count (ignore)                       ", // DONT_COUNT
+    "if occurs most often => forget whole column", // SKIP_COLUMN_IF_MAX
+    "if occurs => forget whole column           ", // SKIP_COLUMN_IF_OCCUR
+    "count, but do NOT use as maximum           ", // COUNT_DONT_USE_MAX
+    "treat as uppercase character               ", // TREAT_AS_UPPERCASE
+    "treat as regular character                 ", // TREAT_AS_REGULAR
+};
 
 static bool valid_alignment_selected(AW_root *aw_root, GBDATA *gb_main) {
     GB_transaction  ta(gb_main);
@@ -68,7 +58,7 @@ static void startup_sequence_cb(AW_window *alisel_window, AW_window *main_window
         phd->load(use);
         phd->ROOT = phd;
 
-        long len = PHDATA::ROOT->get_seq_len();
+        long len = PHDATA::ROOT->get_seq_len(); // @@@ off by one?
         aw_root->awar(AWAR_PHYLO_FILTER_STOPCOL)->write_int(len);
         aw_root->awar(AWAR_PHYLO_FILTER_STARTCOL)->set_minmax(0, len);
         aw_root->awar(AWAR_PHYLO_FILTER_STOPCOL)->set_minmax(0, len);
@@ -104,7 +94,7 @@ __ATTR__NORETURN static void ph_exit(AW_window *aw_window, PH_root *ph_root) {
 
 
 void expose_cb() {
-    if (PH_display::ph_display && PH_display::ph_display->displayed()!=NONE) {
+    if (PH_display::ph_display && PH_display::ph_display->displayed()!=DISP_NONE) {
         PH_display::ph_display->clear_window();
         PH_display::ph_display->display();
     }
@@ -472,7 +462,7 @@ static AW_window *create_phyl_main_window(AW_root *aw_root, PH_root *ph_root) {
 
     // Calculate menu
     awm->create_menu("Calculate", "C");
-    awm->insert_menu_topic("calc_column_filter", "Column Filter", "F", "no help", AWM_ALL, makeWindowCallback(ph_view_filter_cb));
+    awm->insert_menu_topic("calc_column_filter", "Column Filter", "F", "no help", AWM_ALL, makeWindowCallback(ph_calc_filter_cb));
 
     // Config menu
     awm->create_menu("Config", "o");
@@ -557,10 +547,10 @@ PH_used_windows *PH_used_windows::windowList = 0;
 PH_display *PH_display::ph_display=0;
 PHDATA *PHDATA::ROOT = 0;
 
-static void create_variables(AW_root *aw_root, AW_default def) {
+static void create_variables(AW_root *aw_root, AW_default def, GBDATA *gb_main) {
     aw_root->awar_string(AWAR_PHYLO_ALIGNMENT,     "", def);
     aw_root->awar_string(AWAR_PHYLO_FILTER_FILTER, "", def);
-    PH_create_filter_variables(aw_root, def);
+    PH_create_filter_variables(aw_root, def, gb_main);
 }
 
 int ARB_main(int argc, char *argv[]) {
@@ -588,7 +578,7 @@ int ARB_main(int argc, char *argv[]) {
             GBDATA *gb_main = ph_root->get_gb_main();
 
             // create arb_phylo awars :
-            create_variables(aw_root, AW_ROOT_DEFAULT);
+            create_variables(aw_root, AW_ROOT_DEFAULT, gb_main);
             ARB_init_global_awars(aw_root, AW_ROOT_DEFAULT, gb_main);
 #if defined(DEBUG)
             AWT_create_db_browser_awars(aw_root, AW_ROOT_DEFAULT);
@@ -597,8 +587,6 @@ int ARB_main(int argc, char *argv[]) {
 #if defined(DEBUG)
             AWT_announce_db_to_browser(gb_main, GBS_global_string("ARB-database (%s)", db_server));
 #endif // DEBUG
-
-            create_filter_text();
 
             // create main window :
 

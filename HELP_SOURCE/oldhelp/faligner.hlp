@@ -56,7 +56,7 @@ SECTION         ADJUSTMENTS
                                 You can define the maximum number of relatives.
 
                                 All used relatives and the number of base positions used from each relative,
-                                will be written into the field 'used_rels'.
+                                will be written into the field 'used_rels' (see also LINK{markbyref.hlp}).
 
                                 If you enter '0' in 'Data from range only, plus', relative
                                 search only uses data from the aligned range. If you enter

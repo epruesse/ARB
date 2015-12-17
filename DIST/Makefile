@@ -516,6 +516,7 @@ DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/cb.h
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/cb_base.h
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/cbtypes.h
