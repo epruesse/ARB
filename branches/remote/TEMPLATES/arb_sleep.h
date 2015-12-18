@@ -18,6 +18,9 @@
 #ifndef _GLIBCXX_ALGORITHM
 #include <algorithm>
 #endif
+#ifndef _SYS_TIME_H
+#include <sys/time.h>
+#endif
 
 enum TimeUnit { USEC = 1, MS = 1000, SEC = 1000*MS };
 
@@ -42,6 +45,37 @@ public:
         slowdown();
     }
 };
+
+class ARB_timestamp {
+    // timer which can be asked how much time passed since it was initialized
+    timeval t1;
+
+public:
+    ARB_timestamp() { update(); }
+    void update() { gettimeofday(&t1, NULL); }
+
+    long usec_since() const {
+        timeval t2;
+        gettimeofday(&t2, NULL);
+        return (t2.tv_sec - t1.tv_sec) * SEC + (t2.tv_usec - t1.tv_usec);
+    }
+    long ms_since() const { return usec_since()/MS; }
+    long sec_since() const { return usec_since()/SEC; }
+};
+
+class ARB_timeout {
+    // short timeout
+    ARB_timestamp start;
+    long          amount_usec;
+public:
+    ARB_timeout(int amount, TimeUnit tu)
+        : amount_usec(amount*tu)
+    {}
+    bool passed() const {
+        return start.usec_since()>=amount_usec;
+    }
+};
+
 
 #else
 #error arb_sleep.h included twice
