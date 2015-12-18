@@ -20,17 +20,21 @@
 #include <aw_select.hxx>
 #include <aw_advice.hxx>
 
+#include <arbdbt.h>
+
 #include <arb_str.h>
 #include <arb_strarray.h>
+
+#include <arb_misc.h>
+#include <arb_diff.h>
+#include <arb_file.h>
+#include <arb_sleep.h>
+#include <ad_cb.h>
 
 #include <string>
 #include <vector>
 #include <map>
 #include <algorithm>
-#include <arb_misc.h>
-#include <arb_diff.h>
-#include <arb_file.h>
-#include <ad_cb.h>
 
 // do includes above (otherwise depends depend on DEBUG)
 #if defined(DEBUG)
@@ -1234,6 +1238,40 @@ AW_root *AWT_create_root(const char *properties, const char *program, UserAction
 #endif // DEBUG
     init_Advisor(aw_root);
     return aw_root;
+}
+
+void AWT_trigger_remote_action(UNFIXED, GBDATA *gb_main, const char *remote_action_spec) {
+    /*! trigger one or several action(s) (e.g. menu entries) in remote applications
+     * @param gb_main             database root
+     * @param remote_action_spec  "app:action[;app:action]*"
+     */
+
+    ConstStrArray appAction;
+    GBT_split_string(appAction, remote_action_spec, ";", true);
+
+    GB_ERROR error = NULL;
+    if (appAction.empty()) {
+        error = "No action found";
+    }
+    else {
+        for (unsigned a = 0; a<appAction.size() && !error; ++a) {
+            ConstStrArray cmd;
+            GBT_split_string(cmd, appAction[a], ":", true);
+
+            if (cmd.size() != 2) {
+                error = GBS_global_string("Invalid action '%s'", appAction[a]);
+            }
+            else {
+                const char *app    = cmd[0];
+                const char *action = cmd[1];
+
+                ARB_timeout after(2000, MS);
+                error = GBT_remote_action_with_timeout(gb_main, app, action, &after);
+            }
+        }
+    }
+
+    aw_message_if(error);
 }
 
 // ------------------------
