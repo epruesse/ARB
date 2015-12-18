@@ -1035,6 +1035,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone, AWT_canvas **re
 
         awm->create_menu("File", "F", AWM_ALL);
         {
+            // keep the following entries in sync with ../EDIT4/ED4_root.cxx@common_save_menu_entries
             awm->insert_menu_topic("save_changes", "Quicksave changes",          "s", "save.hlp",      AWM_ALL, NT_save_quick_cb);
             awm->insert_menu_topic("save_all_as",  "Save whole database as ...", "w", "save.hlp",      AWM_ALL, makeCreateWindowCallback(NT_create_save_as, AWAR_DBBASE));
             if (allow_new_window) {
