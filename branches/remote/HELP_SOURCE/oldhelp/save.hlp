@@ -1,13 +1,13 @@
 #Please insert up references in the next lines (line starts with keyword UP)
-UP	arb.hlp
-UP	glossary.hlp
+UP      arb.hlp
+UP      glossary.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
 
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		Save Database
+TITLE           Save Database
 
 OCCURRENCE      ARB_NT/File/Quicksave changes
                 ARB_NT/File/Save whole database as ...
@@ -16,16 +16,18 @@ OCCURRENCE      ARB_NT/File/Quicksave changes
                 ARB_MERGE/Save whole target DB as ...
                 ARB_MERGE/Quick-save changes of target DB
                 ARB_MERGE/File/Save source DB ...
+                ARB_EDIT4/File/Quicksave changes
+                ARB_EDIT4/File/Save whole database as ...
 
-DESCRIPTION	To save the entire database, choose 'Save whole database as ...'
-		from the 'File' menu of the 'ARB_NT' window.
+DESCRIPTION     To save the entire database, choose 'Save whole database as ...'
+                from the 'File' menu of the 'ARB_NT' window.
 
-		Select or enter the filename as which your database should be saved.
-		
-		Select the database type:
+                Select or enter the filename as which your database should be saved.
+                
+                Select the database type:
 
-			* Binary (recommended, reasonable sequence compression)
-			* Binary+Fastload (uses a huge file to speedup loading database into ARB; whether there
+                        * Binary (recommended, reasonable sequence compression)
+                        * Binary+Fastload (uses a huge file to speedup loading database into ARB; whether there
                           really is some speedup depends on your system and machine, try it out)
                         * Ascii (human-readable; extra HUGE)
 
@@ -44,7 +46,7 @@ DESCRIPTION	To save the entire database, choose 'Save whole database as ...'
 SECTION         Quicksaving
 
                 You may also save only the changes done to the database,
-		using 'Quicksave changes' or 'Quicksave changes as' (accessible
+                using 'Quicksave changes' or 'Quicksave changes as' (accessible
                 via the DB name button in the ARB_NT top area).
 
                         'Quicksave changes' saves all changes to the database
@@ -61,13 +63,13 @@ SECTION         Quicksaving
                         All data.aXX are independent and you may delete old changes
                         files without losing data (as long as the latest is unchanged).
 
-		When you start arb you can choose among the different files:
+                When you start arb you can choose among the different files:
 
                          enter 'arb filename.arb' to search and load the latest changes,
 
                          enter 'arb filename.aXX' to load a user-defined version.
 
-NOTES		Loading a specific quick save is also possible from the ARB INTRO window.
+NOTES           Loading a specific quick save is also possible from the ARB INTRO window.
                 To do so, enter '*' as suffix.
 
                 Some database changes would cause huge-size quick-save files.
@@ -79,7 +81,7 @@ NOTES		Loading a specific quick save is also possible from the ARB INTRO window.
                   * for target database (when called via LINK{arb_merge_into.hlp})
                   * for source database (when called via LINK{arb_merge_outof.hlp})
 
-WARNINGS	Using 'Quicksave changes as' is quite special. In that case the original
+WARNINGS        Using 'Quicksave changes as' is quite special. In that case the original
                 database gets locked (i.e. cannot be saved). Don't use that feature if
                 you don't understand what that means.
 
