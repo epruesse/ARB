@@ -599,7 +599,7 @@ inline void append_command_output(GBS_strstruct *out, const char *prefix, const 
     }
 }
 
-static void NT_modify_cb(UNFIXED, AWT_canvas *canvas, AWT_COMMAND_MODE mode) {
+static void NT_infomode_cb(UNFIXED, AWT_canvas *canvas, AWT_COMMAND_MODE mode) {
     DBUI::popup_species_info_window(canvas->awr, canvas->gb_main);
     nt_mode_event(NULL, canvas, mode);
 }
@@ -1037,6 +1037,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone, AWT_canvas **re
 
         awm->create_menu("File", "F", AWM_ALL);
         {
+            // keep the following entries in sync with ../EDIT4/ED4_root.cxx@common_save_menu_entries
             awm->insert_menu_topic("save_changes", "Quicksave changes",          "s", "save.hlp",      AWM_ALL, NT_save_quick_cb);
             awm->insert_menu_topic("save_all_as",  "Save whole database as ...", "w", "save.hlp",      AWM_ALL, makeCreateWindowCallback(NT_create_save_as, AWAR_DBBASE));
             if (allow_new_window) {
@@ -1436,9 +1437,8 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone, AWT_canvas **re
     awm->create_mode("mode_zoom.xpm",   "mode_pzoom.hlp",  AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_ZOOM));
     awm->create_mode("mode_lzoom.xpm",  "mode_lzoom.hlp",  AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_LZOOM));
 
-
-    awm->create_mode("mode_info.xpm", "mode_info.hlp", AWM_ALL, makeWindowCallback(NT_modify_cb,  ntw, AWT_MODE_INFO));
-    awm->create_mode("mode_www.xpm",  "mode_www.hlp",  AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_WWW));
+    awm->create_mode("mode_info.xpm", "mode_info.hlp", AWM_ALL, makeWindowCallback(NT_infomode_cb, ntw, AWT_MODE_INFO));
+    awm->create_mode("mode_www.xpm",  "mode_www.hlp",  AWM_ALL, makeWindowCallback(nt_mode_event,  ntw, AWT_MODE_WWW));
 
     // topology-modification-modes
     awm->create_mode("mode_setroot.xpm",   "mode_setroot.hlp", AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_SETROOT));

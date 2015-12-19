@@ -1340,7 +1340,8 @@ struct ED4_terminal : public ED4_base { // derived from a Noncopyable
 enum ED4_species_mode {
     ED4_SM_MOVE,
     ED4_SM_KILL,
-    ED4_SM_MARK
+    ED4_SM_MARK,
+    ED4_SM_INFO // same functionality as AWT_MODE_INFO
 };
 
 class ED4_reference_terminals : virtual Noncopyable {
