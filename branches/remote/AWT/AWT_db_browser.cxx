@@ -1266,7 +1266,7 @@ void AWT_trigger_remote_action(UNFIXED, GBDATA *gb_main, const char *remote_acti
                 const char *action = cmd[1];
 
                 ARB_timeout after(2000, MS);
-                error = GBT_remote_action_with_timeout(gb_main, app, action, &after);
+                error = GBT_remote_action_with_timeout(gb_main, app, action, &after, false);
             }
         }
     }
