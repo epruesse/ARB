@@ -1202,6 +1202,9 @@ static void modes_cb(AW_window*, ED4_species_mode smode) {
     for (ED4_window *win = ED4_ROOT->first_window; win; win = win->next) {
         win->aww->select_mode(smode);
     }
+    if (smode == ED4_SM_INFO) {
+        AWT_trigger_remote_action(NULL, GLOBAL_gb_main, "ARB_NT:species_info");
+    }
 }
 
 void ED4_no_dangerous_modes() {
@@ -1868,6 +1871,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->create_mode("edit/arrow.xpm", "e4_mode.hlp", AWM_ALL, makeWindowCallback(modes_cb, ED4_SM_MOVE));
     awmm->create_mode("edit/kill.xpm",  "e4_mode.hlp", AWM_ALL, makeWindowCallback(modes_cb, ED4_SM_KILL));
     awmm->create_mode("edit/mark.xpm",  "e4_mode.hlp", AWM_ALL, makeWindowCallback(modes_cb, ED4_SM_MARK));
+    awmm->create_mode("mode_info.xpm",  "e4_mode.hlp", AWM_ALL, makeWindowCallback(modes_cb, ED4_SM_INFO));
 
     FastAligner_create_variables(awmm->get_root(), props_db);
 

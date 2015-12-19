@@ -29,6 +29,7 @@ OCCURRENCE      ARB_NT/<INFO> button (top area; showing the short name of the se
                 ARB_NT/Species/Species Information
                 ARB_NT/Species/Search (click into result list)
                 ARB_NT/Info mode button (in the button bar on the left side)
+                ARB_EDIT4/Info mode button
 
 DESCRIPTION     Displays species information stored within the 'fields' (see
                 LINK{glossary.hlp}).
