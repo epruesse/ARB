@@ -1202,6 +1202,9 @@ static void modes_cb(AW_window*, ED4_species_mode smode) {
     for (ED4_window *win = ED4_ROOT->first_window; win; win = win->next) {
         win->aww->select_mode(smode);
     }
+    if (smode == ED4_SM_INFO) {
+        AWT_trigger_remote_action(NULL, GLOBAL_gb_main, "ARB_NT:species_info");
+    }
 }
 
 void ED4_no_dangerous_modes() {
@@ -1383,6 +1386,15 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->insert_menu_topic(awmm->local_id("load_config"),    "Load configuration ...",    "L", "species_configs_saveload.hlp", AWM_ALL, ED4_create_loadConfiguration_window);
     awmm->insert_menu_topic("reload_config",                  "Reload configuration",      "R", "species_configs_saveload.hlp", AWM_ALL, ED4_reloadConfiguration);
     insert_macro_menu_entry(awmm, true);
+    awmm->sep______________();
+    // keep the following entries in sync with ../NTREE/NT_extern.cxx@common_save_menu_entries
+    awmm->insert_menu_topic("save_changes", "Quicksave changes",          "s", "save.hlp", AWM_ALL, makeWindowCallback(AWT_trigger_remote_action, GLOBAL_gb_main, "ARB_NT:save_changes"));
+    awmm->insert_menu_topic("save_all_as",  "Save whole database as ...", "w", "save.hlp", AWM_ALL, makeWindowCallback(AWT_trigger_remote_action, GLOBAL_gb_main, "ARB_NT:save_all_as"));
+#if defined(DEBUG)
+    awmm->sep______________();
+    awmm->insert_menu_topic("deb1", "[DEBUG] remote: invalid app", "", NULL, AWM_ALL, makeWindowCallback(AWT_trigger_remote_action, GLOBAL_gb_main, "ARB_NTREE:aljdlaisjdlad"));
+    awmm->insert_menu_topic("deb2", "[DEBUG] remote: invalid cmd", "", NULL, AWM_ALL, makeWindowCallback(AWT_trigger_remote_action, GLOBAL_gb_main, "ARB_NT:aljdlaisjdlad"));
+#endif
     awmm->sep______________();
     GDE_load_menu(awmm, AWM_ALL, "Print");
     awmm->sep______________();
@@ -1859,6 +1871,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->create_mode("edit/arrow.xpm", "e4_mode.hlp", AWM_ALL, makeWindowCallback(modes_cb, ED4_SM_MOVE));
     awmm->create_mode("edit/kill.xpm",  "e4_mode.hlp", AWM_ALL, makeWindowCallback(modes_cb, ED4_SM_KILL));
     awmm->create_mode("edit/mark.xpm",  "e4_mode.hlp", AWM_ALL, makeWindowCallback(modes_cb, ED4_SM_MARK));
+    awmm->create_mode("mode_info.xpm",  "e4_mode.hlp", AWM_ALL, makeWindowCallback(modes_cb, ED4_SM_INFO));
 
     FastAligner_create_variables(awmm->get_root(), props_db);
 

@@ -1,16 +1,16 @@
 #Please insert up references in the next lines (line starts with keyword UP)
-UP	arb.hlp
-UP	glossary.hlp
+UP      arb.hlp
+UP      glossary.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
-#SUB	subtopic.hlp
+#SUB    subtopic.hlp
 
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		ARB_EDIT4 mode buttons
+TITLE           ARB_EDIT4 mode buttons
 
-OCCURRENCE	ARB_EDIT4/<buttons at left border>
+OCCURRENCE      ARB_EDIT4/<buttons at left border>
 
 DESCRIPTION     The mode buttons provide different interaction modes with the sequence display:
 
@@ -40,13 +40,19 @@ DESCRIPTION     The mode buttons provide different interaction modes with the se
                      Allows to toggle whether a species is marked by clicking on the species name
                      (at the left side of the sequence area).
 
+
+                INFO MODE
+
+                     Opens the species info window (see LINK{sp_info.hlp}).
+
+
 NOTES           To store the changes applied in MOVE or KILL MODE,
                 you may save a named configuration (see LINK{species_configs_saveload.hlp}).
 
                 The KILL MODE will auto-deactivate (e.g. if you click into a sequence) to avoid accidental deletes.
 
-EXAMPLES	None
+EXAMPLES        None
 
-WARNINGS	None
+WARNINGS        None
 
-BUGS		No bugs known
+BUGS            No bugs known

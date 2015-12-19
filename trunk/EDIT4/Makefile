@@ -1026,6 +1026,7 @@ ED4_terminal.o: ed4_ProteinViewer.hxx
 ED4_terminal.o: ed4_search.hxx
 ED4_terminal.o: ed4_seq_colors.hxx
 ED4_terminal.o: $(ARBHOME)/INCLUDE/ad_prot.h
+ED4_terminal.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ED4_terminal.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ED4_terminal.o: $(ARBHOME)/INCLUDE/arb_core.h
 ED4_terminal.o: $(ARBHOME)/INCLUDE/arb_error.h
@@ -1033,9 +1034,11 @@ ED4_terminal.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ED4_terminal.o: $(ARBHOME)/INCLUDE/arb_string.h
 ED4_terminal.o: $(ARBHOME)/INCLUDE/arbdb.h
 ED4_terminal.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+ED4_terminal.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ED4_terminal.o: $(ARBHOME)/INCLUDE/arbtools.h
 ED4_terminal.o: $(ARBHOME)/INCLUDE/attributes.h
 ED4_terminal.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
+ED4_terminal.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 ED4_terminal.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_terminal.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_terminal.o: $(ARBHOME)/INCLUDE/aw_device.hxx

@@ -17,6 +17,9 @@
 #ifndef ARBDB_BASE_H
 #include <arbdb_base.h>
 #endif
+#ifndef CB_BASE_H
+#include <cb_base.h>
+#endif
 
 
 #define awt_assert(cond) arb_assert(cond)
@@ -78,6 +81,8 @@ AW_root *AWT_create_root(const char *properties, const char *program, UserAction
 
 void AWT_install_cb_guards();
 void AWT_install_postcb_cb(AW_postcb_cb postcb_cb);
+
+void AWT_trigger_remote_action(UNFIXED, GBDATA *gb_main, const char *remote_action_spec);
 
 #else
 #error awt.hxx included twice
