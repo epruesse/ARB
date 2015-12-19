@@ -30,6 +30,7 @@ OCCURRENCE      ARB_NT/<INFO> button (top area; showing the short name of the se
                 ARB_NT/Species/Search (click into result list)
                 ARB_NT/Info mode button (in the button bar on the left side)
                 ARB_EDIT4/Info mode button
+                ARB_PARSIMONY/Info mode button
 
 DESCRIPTION     Displays species information stored within the 'fields' (see
                 LINK{glossary.hlp}).
@@ -53,8 +54,8 @@ NOTES           The 'SEARCH & QUERY' window can be displayed by pressing the <SE
                 window (ARB_NT/Protection) equal to or higher than that
                 assigned to the selected 'field'
 
-		LINK{copyNpaste.hlp} can be used in the 'Edit box' subwindow. 
-		This provides is easy way to manually export/import (sequence) data.
+                LINK{copyNpaste.hlp} can be used in the 'Edit box' subwindow.
+                This provides is easy way to manually export/import (sequence) data.
 
 SECTION         Locking information window to a specific species
 
