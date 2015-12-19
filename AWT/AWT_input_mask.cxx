@@ -671,6 +671,11 @@ inline GB_ERROR decode_escapes(string& s) {
     return 0;
 }
 
+static string check_data_path(const string& path, GB_ERROR& error) {
+    if (!error) error = GB_check_hkey(path.c_str());
+    return path;
+}
+
 static string scan_string_parameter(const string& line, size_t& scan_pos, GB_ERROR& error, bool allow_escaped = false) {
     string result;
     size_t open_quote = next_non_white(line, scan_pos);
@@ -1223,7 +1228,7 @@ static void parse_CMD_RADIO(string& line, size_t& scan_pos, GB_ERROR& error, con
     int            edit_position    = -1;
 
     label                        = scan_string_parameter(line, scan_pos, error);
-    if (!error) data_path        = scan_string_parameter(line, scan_pos, error);
+    if (!error) data_path        = check_data_path(scan_string_parameter(line, scan_pos, error), error);
     if (!error) default_position = scan_long_parameter(line, scan_pos, error);
     if (!error) {
         orientation = scan_flag_parameter(line, scan_pos, error, "HVXY");
@@ -1642,7 +1647,7 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
                                     string label, data_path;
                                     long   width          = -1;
                                     label                 = scan_string_parameter(line, scan_pos, error);
-                                    if (!error) data_path = scan_string_parameter(line, scan_pos, error);
+                                    if (!error) data_path = check_data_path(scan_string_parameter(line, scan_pos, error), error);
                                     if (!error) width     = scan_long_parameter(line, scan_pos, error, MIN_TEXTFIELD_SIZE, MAX_TEXTFIELD_SIZE);
                                     check_last_parameter(error, command);
 
@@ -1656,7 +1661,7 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
                                     long max = LONG_MAX;
 
                                     label                 = scan_string_parameter(line, scan_pos, error);
-                                    if (!error) data_path = scan_string_parameter(line, scan_pos, error);
+                                    if (!error) data_path = check_data_path(scan_string_parameter(line, scan_pos, error), error);
                                     if (!error) width     = scan_long_parameter(line, scan_pos, error, MIN_TEXTFIELD_SIZE, MAX_TEXTFIELD_SIZE);
                                     if (!was_last_parameter) {
                                         if (!error) min = scan_optional_parameter(line, scan_pos, error, LONG_MIN);
@@ -1670,7 +1675,7 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
                                     string label, data_path;
                                     bool   checked        = false;
                                     label                 = scan_string_parameter(line, scan_pos, error);
-                                    if (!error) data_path = scan_string_parameter(line, scan_pos, error);
+                                    if (!error) data_path = check_data_path(scan_string_parameter(line, scan_pos, error), error);
                                     if (!error) checked   = scan_bool_parameter(line, scan_pos, error);
                                     check_last_parameter(error, command);
 
