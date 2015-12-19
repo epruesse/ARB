@@ -25,6 +25,7 @@ Major changes for next release:
    * fixed 'RESTORE' (crashed after deleting species from tree; #528)
    * corrected handling of dots ('.') while combining anchestor sequences
    * fixed a bunch of internal bugs (#620, #627, ...)
+   * added species-info
  - DNA realigner
    * several unjustified failures will no longer happen (fixes #419 and most likely #145)
      - correctly re-syncs after 'X' (if possible at all)
@@ -56,6 +57,7 @@ Major changes for next release:
      - added sliders to consensus definition windows
      - user defined consensus settings exchangable between both consensus setups
      - fixed and updated documentation
+   * added species-info + database save
  - SAI: MAX_FREQUENCY
    * considers IUPAC ambiguity codes proportionally
    * amino acids: if MAX_FREQUENCY is below 10% SAI now shows '1' (prev. it did show '0', i.e. 100%)
