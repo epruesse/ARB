@@ -25,10 +25,12 @@ DESCRIPTION	Inserts or deletes columns in the current alignment.
 		Specify the characters to be deleted by typing in the 'Delete
 		Only' window
 
-NOTES		@@@ Beachte SAIS
+NOTES		None
 
-EXAMPLES	@@@ Delete Example mit Fehlern
+EXAMPLES	None
 
 WARNINGS	None
 
-BUGS		@@@ Enden im Editor u.U. nicht sichtbar 
+BUGS		None
+
+
