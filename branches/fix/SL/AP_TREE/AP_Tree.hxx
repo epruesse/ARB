@@ -167,14 +167,14 @@ struct AP_tree_members {
 public: // @@@ make members private
     unsigned int grouped : 1;   // indicates a folded group
     unsigned int hidden : 1;    // not shown (because an anchestor is a folded group)
-    unsigned int has_marked_children : 1; // at least one child is marked
     unsigned int callback_exists : 1;
     unsigned int gc : 6;        // color
 
     char left_linewidth; // @@@ it's stupid to store linewidth IN FATHER (also wastes space)
     char right_linewidth;
 
-    unsigned leaf_sum;   // number of leaf children of this node
+    unsigned leaf_sum;   // number of leafs below this node
+    unsigned mark_sum;   // number of marked leafs below this node
     unsigned view_sum;   // virtual size of node for display ( isgrouped?sqrt(leaf_sum):leaf_sum )
 
     float max_tree_depth; // max length of path; for drawing triangles
@@ -206,10 +206,10 @@ public: // @@@ make members private
 
         grouped             = 0;
         hidden              = 0;
-        has_marked_children = 0;
         callback_exists     = 0;
         gc                  = 0;
         leaf_sum            = 0;
+        mark_sum            = 0;
         view_sum            = 0;
         max_tree_depth      = 0;
         min_tree_depth      = 0;

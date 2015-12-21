@@ -609,8 +609,8 @@ bool AP_tree::has_correct_mark_flags() const {
     const AP_tree_members& left  = get_leftson()->gr;
     const AP_tree_members& right = get_rightson()->gr;
 
-    bool wanted_has_marked = left.has_marked_children || right.has_marked_children;
-    return gr.has_marked_children == wanted_has_marked;
+    unsigned wanted_mark_sum = left.mark_sum + right.mark_sum;
+    return gr.mark_sum == wanted_mark_sum;
 }
 #endif
 
@@ -626,7 +626,7 @@ void AP_tree::update_subtree_information() {
 
         bool is_marked = gb_node && GB_read_flag(gb_node);
 
-        gr.has_marked_children = is_marked;
+        gr.mark_sum = int(is_marked);
 
         // colors:
         if (gb_node) {
@@ -665,7 +665,7 @@ void AP_tree::update_subtree_information() {
             gr.min_tree_depth = std::min(leftlen+left.min_tree_depth, rightlen+right.min_tree_depth);
             gr.max_tree_depth = std::max(leftlen+left.max_tree_depth, rightlen+right.max_tree_depth);
 
-            gr.has_marked_children = left.has_marked_children || right.has_marked_children;
+            gr.mark_sum = left.mark_sum + right.mark_sum;
 
             // colors:
             if (left.gc == right.gc) gr.gc = left.gc;

@@ -567,7 +567,7 @@ void AP_tree_nlen::swap_assymetric(AP_TREE_SIDE mode) {
             edge2->relink(this, nephew);
             edge1->relink(oldBrother, movedSon);
 
-            if (nephew->gr.has_marked_children != movedSon->gr.has_marked_children) {
+            if (nephew->gr.mark_sum != movedSon->gr.mark_sum) {
                 get_brother()->recalc_marked_from_sons();
                 this->recalc_marked_from_sons_and_forward_upwards();
             }
@@ -606,7 +606,7 @@ void AP_tree_nlen::swap_assymetric(AP_TREE_SIDE mode) {
         edge2->relink(this, oldBrother);
         edge1->relink(get_father(), movedSon);
 
-        if (oldBrother->gr.has_marked_children != movedSon->gr.has_marked_children) {
+        if (oldBrother->gr.mark_sum != movedSon->gr.mark_sum) {
             recalc_marked_from_sons_and_forward_upwards(); // father is done implicit
         }
     }
@@ -911,7 +911,7 @@ bool AP_tree_nlen::rememberState(AP_STACK_MODE mode, Level frame_level) {
     }
 
     if ((mode & (STRUCTURE|SEQUENCE)) && !(store->mode & (STRUCTURE|SEQUENCE))) {
-        store->had_marked = gr.has_marked_children;
+        store->mark_sum = gr.mark_sum;
     }
     if ((mode & STRUCTURE) && !(store->mode & STRUCTURE)) {
         store->father   = get_father();
@@ -954,7 +954,7 @@ void NodeState::move_info_to(NodeState& target, AP_STACK_MODE what) {
     ap_assert((target.mode&what) == NOTHING); // target shall not already contain 'what' is moved
 
     if ((what & (STRUCTURE|SEQUENCE)) && !(target.mode & (STRUCTURE|SEQUENCE))) {
-        target.had_marked = had_marked;
+        target.mark_sum = mark_sum;
     }
     if (what & STRUCTURE) {
         target.father     = father;
@@ -989,7 +989,7 @@ void AP_tree_nlen::restore_structure(const NodeState& state) {
     set_tree_root(state.root);
     gb_node  = state.gb_node;
 
-    gr.has_marked_children = state.had_marked;
+    gr.mark_sum = state.mark_sum;
 
     for (int e=0; e<3; e++) {
         edge[e]  = state.edge[e];
@@ -1002,9 +1002,9 @@ void AP_tree_nlen::restore_structure(const NodeState& state) {
 }
 void AP_tree_nlen::restore_sequence(NodeState& state) {
     replace_seq(state.sequence);
-    state.sequence         = NULL;
-    mutation_rate          = state.mutation_rate;
-    gr.has_marked_children = state.had_marked;
+    state.sequence = NULL;
+    mutation_rate  = state.mutation_rate;
+    gr.mark_sum    = state.mark_sum;
 }
 void AP_tree_nlen::restore_sequence_nondestructive(const NodeState& state) {
     replace_seq(state.sequence ? state.sequence->dup() : NULL);
