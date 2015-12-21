@@ -3097,6 +3097,10 @@ AW_window *TREE_create_settings_window(AW_root *aw_root) {
         aws->create_toggle(AWAR_DTREE_SHOW_BRACKETS);
         aws->at_newline();
 
+        aws->label("Grey Level of Groups%");
+        aws->create_input_field_with_scaler(AWAR_DTREE_GREY_LEVEL, 4, SCALER_WIDTH);
+        aws->at_newline();
+
         aws->label("Show bootstrap circles");
         aws->create_toggle(AWAR_DTREE_SHOW_CIRCLE);
         aws->at_newline();
@@ -3115,10 +3119,6 @@ AW_window *TREE_create_settings_window(AW_root *aw_root) {
 
         aws->label("Boostrap radius limit");
         aws->create_input_field_with_scaler(AWAR_DTREE_CIRCLE_MAX_SIZE, 4, SCALER_WIDTH);
-        aws->at_newline();
-
-        aws->label("Grey Level of Groups%");
-        aws->create_input_field_with_scaler(AWAR_DTREE_GREY_LEVEL, 4, SCALER_WIDTH);
         aws->at_newline();
 
         const int PAD_SCALER_WIDTH = SCALER_WIDTH-39;
