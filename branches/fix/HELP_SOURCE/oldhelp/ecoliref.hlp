@@ -1,0 +1,40 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP      arb.hlp
+UP      glossary.hlp
+UP      arb_edit4.hlp
+UP      extended.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+SUB     e4_get_species.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE           E. coli Reference
+
+OCCURRENCE      ARB_EDIT4/Edit/Reload Ecoli sequence
+
+DESCRIPTION     The SAI entry 'ECOLI' is used by the editor and other
+                programs to detect and display the current cursor position
+                with respect to the homologous position within the
+                E. coli sequence.
+
+                If you have no SAI 'ECOLI' yet this creates one:
+
+                 * Search your ecoli sequence and select it.
+                 * Go to species information window and
+                   * press SPECIES/COPY to create a copy of the selected species
+                     This will create a species with ID 'xxx0' or similar, where 'xxx' is
+                     the ID of your selected species.
+                   * select the 'name' field and change it to 'ECOLI'
+                   * press 'SPECIES/Convert to SAI' 
+
+NOTES           After inserting or deleting gaps in the whole alignment (ARB_NT/
+                Sequence/Insert/Delete column) the reference SAI has to be
+                reloaded by this function.
+
+                You may as well choose any other sequence as reference sequence.
+
+                See LINK{ed4_nds.hlp} to change the default name 'Ecoli'.
+
+BUGS            No bugs known

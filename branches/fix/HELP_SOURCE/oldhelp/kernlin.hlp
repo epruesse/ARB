@@ -1,0 +1,76 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Kernigham Lin (K.L.) properties
+
+OCCURRENCE	ARB_PARSIMONY/Properties/Optimizer settings (KL)
+                ARB_PARSIMONY/Tree/Tree Optimization/Settings
+
+DESCRIPTION     Provides parameters for the K.L. optimization as used
+                in global optimization (see LINK{pa_globopti.hlp}).
+
+                The following parameters are available:
+
+                - Maximum recursion depth (default 15)
+
+                  Specifies how far the optimizer walks from each starting branch.
+
+                - Increase recursion depth (default 4)
+
+                  Whenever a better topology is found, the 'Maximum recursion depth' is incremented
+                  by this value.
+
+                - static path reduction (default: enabled, 8, 6, 6, 6, 6)
+                - dynamic path reduction (default: enabled, 100, 6, 150)
+
+SECTION         Path reduction
+
+                At each branch the topology can be modified into 2 different topologies (as described in LINK{nni.hlp}).
+
+                From the modified start branch the optimizer follows all 4 adjacent branches and modifies
+                each of them (twice). From each modified adjacent branch the optimizer follows the 3 not yet visited adjacent branches
+                and modifies these. This is repeated until the 'Maximum recursion depth' is reached.
+
+                When walking along 15 branches this results in ~ 1.3 * 10^12 possible modifications, far
+                too much to test them all.
+                These possible modifications are called "paths" here.
+
+                To reduce the number of paths to follow, two path reductions are available and active by default:
+
+                * static path reduction
+
+                  Statically defines how many paths are tested at which depth. At depth=1 the number of allowed paths
+                  may be 1 to 8, for greater depths if may be 1 to 6.
+
+                  The optimizer always follows the best modifications (according to the LINK{pa_value.hlp}).
+
+                  For depths beyond 5, the static path reduction is hardcoded as 1.
+
+                * dynamic path reduction
+
+                  Dynamically defines a limit how strong intermediate modifications may worsen the tree.
+
+                  The 'start costs' and 'maximum costs' are specified as absolute degradation of the parsimony value.
+
+                Both path reductions may be used either together or separately.
+
+                Without any path reduction a complete recursion through all possible topologies is performed.
+                When doing so, a good starting value for 'Maximum recursion depth' is 8.
+
+NOTES		You may interrupt the tree optimization at any time w/o loosing the so far improved topology.
+
+                To save custom property sets, use the configuration icon in the LINK{pa_optimizer.hlp} window.
+                It will also save the setting made in this window.
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known
