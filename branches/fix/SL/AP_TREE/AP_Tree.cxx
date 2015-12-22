@@ -12,12 +12,13 @@
 
 #include <AP_filter.hxx>
 #include <aw_msg.hxx>
+#include <arb_progress.h>
+#include <ad_cb.h>
 
 #include <math.h>
 #include <map>
 #include <climits>
-#include <arb_progress.h>
-#include <ad_cb.h>
+#include <algorithm>
 
 using namespace std;
 
@@ -614,6 +615,8 @@ bool AP_tree::has_correct_mark_flags() const {
 }
 #endif
 
+const group_scaling *AP_tree::group_scaling_ptr = NULL; // =reference to AWT_graphic_tree::groupScale
+
 void AP_tree::update_subtree_information() {
     gr.hidden = get_father() ? (get_father()->gr.hidden || get_father()->gr.grouped) : 0;
 
@@ -657,9 +660,17 @@ void AP_tree::update_subtree_information() {
             AP_tree_members& right = get_rightson()->gr;
 
             gr.leaf_sum = left.leaf_sum + right.leaf_sum;
-            gr.view_sum = left.view_sum + right.view_sum;
             if (gr.grouped) {
-                gr.view_sum = (int)pow((double)(gr.leaf_sum - GROUPED_SUM + 9), .33);
+                ap_assert(group_scaling_ptr);
+
+                const unsigned MIN_GROUP_SIZE = 2U;
+                unsigned       squared_size   = unsigned(pow(double(gr.leaf_sum), group_scaling_ptr->pow)  * group_scaling_ptr->linear);
+
+                gr.view_sum = std::max(squared_size, MIN_GROUP_SIZE);
+                gr.view_sum = std::min(gr.leaf_sum, gr.view_sum); // folded group will never use more space than unfolded
+            }
+            else {
+                gr.view_sum = left.view_sum + right.view_sum;
             }
 
             gr.min_tree_depth = std::min(leftlen+left.min_tree_depth, rightlen+right.min_tree_depth);

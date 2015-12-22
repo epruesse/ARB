@@ -73,13 +73,18 @@ Major changes for next release:
    * added comment field for configurations
    * added them throughout arb (#647)
  - added slide controls throughout arb (#656)
+ - tree (display) options:
+   * fine grained scaling
+   * improved auto-jump
+   * add threshold for visible support values
+   * group shading
+   * all options are now also supported by ARB_PARSIMONY
  - colorsets were invalidated by generating new IDs (#660). fixed.
  - updated/added external tools:
    - added alternate RAxML (DNA only; version 8.0.26)
  - updated integrated documentation
 
 Minor changes
- - add threshold for visible support values (default 50% support)
  - corrected EMBL export filter (numbers at seq.data)
  - NDS optionally uses only visible definitions
 
@@ -168,7 +173,7 @@ Major changes for arb-6.0 (4 Jun 2014):
    - fixed tree key-bindings (mark, fold, ...)
    - improved several tree-commands (move, rotate, spread, length, width)
  - added a branch analysis tool
-   - groups several functions previously availiable via menuitems (e.g. mark long branches, etc.)
+   - groups several functions previously available via menuitems (e.g. mark long branches, etc.)
    - added leaf-distance analysis
  - other tree functionality
    - treelist sortable now

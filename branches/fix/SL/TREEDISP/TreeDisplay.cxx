@@ -1854,6 +1854,7 @@ GB_ERROR AWT_graphic_tree::load(GBDATA *, const char *name) {
             else {
                 displayed_root = get_root_node();
 
+                AP_tree::set_group_downscale(&groupScale);
                 get_root_node()->compute_tree();
                 if (display_markers) display_markers->flush_cache();
 
@@ -2797,6 +2798,8 @@ void AWT_graphic_tree::read_tree_settings() {
     group_greylevel        = aw_root->awar(AWAR_DTREE_GREY_LEVEL)->read_int() * 0.01;
     baselinewidth          = aw_root->awar(AWAR_DTREE_BASELINEWIDTH)->read_int();
     show_brackets          = aw_root->awar(AWAR_DTREE_SHOW_BRACKETS)->read_int();
+    groupScale.pow         = aw_root->awar(AWAR_DTREE_GROUP_DOWNSCALE)->read_float();
+    groupScale.linear      = aw_root->awar(AWAR_DTREE_GROUP_SCALE)->read_float();
     show_circle            = aw_root->awar(AWAR_DTREE_SHOW_CIRCLE)->read_int();
     circle_zoom_factor     = aw_root->awar(AWAR_DTREE_CIRCLE_ZOOM)->read_float();
     circle_max_size        = aw_root->awar(AWAR_DTREE_CIRCLE_MAX_SIZE)->read_float();
@@ -2961,8 +2964,10 @@ static void markerThresholdChanged_cb(AW_root *root, bool partChanged) {
 }
 
 void TREE_create_awars(AW_root *aw_root, AW_default db) {
-    aw_root->awar_int(AWAR_DTREE_BASELINEWIDTH, 1)  ->set_minmax(1,    10);
-    aw_root->awar_float(AWAR_DTREE_VERICAL_DIST,  1.0)->set_minmax(0.01, 30);
+    aw_root->awar_int  (AWAR_DTREE_BASELINEWIDTH,   1)  ->set_minmax (1,    10);
+    aw_root->awar_float(AWAR_DTREE_VERICAL_DIST,    1.0)->set_minmax (0.01, 30);
+    aw_root->awar_float(AWAR_DTREE_GROUP_DOWNSCALE, 0.33)->set_minmax(0.0,  1.0);
+    aw_root->awar_float(AWAR_DTREE_GROUP_SCALE,     1.0)->set_minmax (0.01, 10.0);
 
     aw_root->awar_int(AWAR_DTREE_AUTO_JUMP,      AP_JUMP_KEEP_VISIBLE);
     aw_root->awar_int(AWAR_DTREE_AUTO_JUMP_TREE, AP_JUMP_FORCE_VCENTER);
@@ -2990,6 +2995,13 @@ void TREE_create_awars(AW_root *aw_root, AW_default db) {
     aw_root->awar_int(AWAR_TREE_REFRESH, 0, db);
 }
 
+static void TREE_recompute_and_resize_cb(UNFIXED, AWT_canvas *ntw) {
+    AWT_graphic_tree *gt = DOWNCAST(AWT_graphic_tree*, ntw->gfx);
+    gt->read_tree_settings(); // update settings for group-scaling
+    gt->get_root_node()->compute_tree();
+    AWT_resize_cb(NULL, ntw);
+}
+
 void TREE_install_update_callbacks(AWT_canvas *ntw) {
     // install all callbacks needed to make the tree-display update properly
 
@@ -3012,7 +3024,12 @@ void TREE_install_update_callbacks(AWT_canvas *ntw) {
     awr->awar(AWAR_DTREE_DENDRO_ZOOM_TEXT)->add_callback(reinit_treetype_cb);
     awr->awar(AWAR_DTREE_DENDRO_XPAD)     ->add_callback(reinit_treetype_cb);
 
-    awr->awar(AWAR_DTREE_VERICAL_DIST)->add_callback(makeRootCallback(AWT_resize_cb, ntw));
+    RootCallback resize_cb = makeRootCallback(AWT_resize_cb, ntw);
+    awr->awar(AWAR_DTREE_VERICAL_DIST)->add_callback(resize_cb);
+
+    RootCallback recompute_and_resize_cb = makeRootCallback(TREE_recompute_and_resize_cb, ntw);
+    awr->awar(AWAR_DTREE_GROUP_SCALE) ->add_callback(recompute_and_resize_cb);
+    awr->awar(AWAR_DTREE_GROUP_DOWNSCALE)->add_callback(recompute_and_resize_cb);
 
     // global refresh trigger (used where a refresh is/was missing)
     awr->awar(AWAR_TREE_REFRESH)->add_callback(expose_cb);
@@ -3045,6 +3062,8 @@ void TREE_insert_jump_option_menu(AW_window *aws, const char *label, const char 
 static AWT_config_mapping_def tree_setting_config_mapping[] = {
     { AWAR_DTREE_BASELINEWIDTH,    "line_width" },
     { AWAR_DTREE_VERICAL_DIST,     "vert_dist" },
+    { AWAR_DTREE_GROUP_DOWNSCALE,  "group_downscale" },
+    { AWAR_DTREE_GROUP_SCALE,      "group_scale" },
     { AWAR_DTREE_AUTO_JUMP,        "auto_jump" },
     { AWAR_DTREE_AUTO_JUMP_TREE,   "auto_jump_tree" },
     { AWAR_DTREE_SHOW_CIRCLE,      "show_circle" },
@@ -3077,17 +3096,13 @@ AW_window *TREE_create_settings_window(AW_root *aw_root) {
         aws->create_button("HELP", "HELP", "H");
 
         aws->at("button");
-        aws->auto_space(10, 10);
+        aws->auto_space(5, 5);
         aws->label_length(30);
 
         const int SCALER_WIDTH = 250;
 
         aws->label("Base line width");
         aws->create_input_field_with_scaler(AWAR_DTREE_BASELINEWIDTH, 4, SCALER_WIDTH);
-        aws->at_newline();
-
-        aws->label("Relative vertical distance");
-        aws->create_input_field_with_scaler(AWAR_DTREE_VERICAL_DIST, 4, SCALER_WIDTH, AW_SCALER_EXP_LOWER);
         aws->at_newline();
 
         TREE_insert_jump_option_menu(aws, "On species change", AWAR_DTREE_AUTO_JUMP);
@@ -3097,7 +3112,19 @@ AW_window *TREE_create_settings_window(AW_root *aw_root) {
         aws->create_toggle(AWAR_DTREE_SHOW_BRACKETS);
         aws->at_newline();
 
-        aws->label("Grey Level of Groups%");
+        aws->label("Vertical distance");
+        aws->create_input_field_with_scaler(AWAR_DTREE_VERICAL_DIST, 4, SCALER_WIDTH, AW_SCALER_EXP_LOWER);
+        aws->at_newline();
+
+        aws->label("Vertical group scaling");
+        aws->create_input_field_with_scaler(AWAR_DTREE_GROUP_SCALE, 4, SCALER_WIDTH);
+        aws->at_newline();
+
+        aws->label("'Biggroup' scaling");
+        aws->create_input_field_with_scaler(AWAR_DTREE_GROUP_DOWNSCALE, 4, SCALER_WIDTH);
+        aws->at_newline();
+
+        aws->label("Greylevel of groups (%)");
         aws->create_input_field_with_scaler(AWAR_DTREE_GREY_LEVEL, 4, SCALER_WIDTH);
         aws->at_newline();
 
@@ -3289,16 +3316,20 @@ class fake_AWT_graphic_tree : public AWT_graphic_tree {
 
     virtual void read_tree_settings() OVERRIDE {
         scaled_branch_distance = 1.0; // not final value!
+
         // var_mode is in range [0..3]
         // it is used to vary tree settings such that many different combinations get tested
-        group_greylevel        = 20*.01;
-        baselinewidth          = (var_mode == 3)+1;
-        show_brackets          = (var_mode != 2);
-        show_circle            = var_mode%3;
-        use_ellipse            = var_mode%2;
-        circle_zoom_factor     = 1.3;
-        circle_max_size        = 1.5;
-        bootstrap_min          = 0;
+
+        groupScale.pow     = .33;
+        groupScale.linear  = 1.0;
+        group_greylevel    = 20*.01;
+        baselinewidth      = (var_mode == 3)+1;
+        show_brackets      = (var_mode != 2);
+        show_circle        = var_mode%3;
+        use_ellipse        = var_mode%2;
+        circle_zoom_factor = 1.3;
+        circle_max_size    = 1.5;
+        bootstrap_min      = 0;
     }
 
 public:

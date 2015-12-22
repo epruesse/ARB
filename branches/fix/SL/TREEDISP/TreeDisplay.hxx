@@ -29,6 +29,8 @@
 
 #define AWAR_DTREE_BASELINEWIDTH   "awt/dtree/baselinewidth"
 #define AWAR_DTREE_VERICAL_DIST    "awt/dtree/verticaldist"
+#define AWAR_DTREE_GROUP_DOWNSCALE "awt/dtree/downscaling"
+#define AWAR_DTREE_GROUP_SCALE     "awt/dtree/groupscaling"
 #define AWAR_DTREE_AUTO_JUMP       "awt/dtree/autojump"
 #define AWAR_DTREE_AUTO_JUMP_TREE  "awt/dtree/autojump_tree"
 #define AWAR_DTREE_SHOW_CIRCLE     "awt/dtree/show_circle"
@@ -234,7 +236,9 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
     double irs_tree_ruler_scale_factor;
 
     AWT_scaled_font_limits scaled_font;
-    double                 scaled_branch_distance; // vertical distance between branches (may be extra-scaled in options)
+
+    double        scaled_branch_distance; // vertical distance between branches (may be extra-scaled in options)
+    group_scaling groupScale; // scaling for folded groups
 
     AW_grey_level group_greylevel;
     AW_grey_level marker_greylevel;
@@ -316,7 +320,7 @@ public:
     AW_root              *aw_root;
     AP_tree_display_type  tree_sort;
     AP_tree              *displayed_root; // root node of shown (sub-)tree; differs from real root if tree is zoomed logically
-    GBDATA       *gb_main;
+    GBDATA               *gb_main;
 
     // *********** public section
 

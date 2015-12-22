@@ -312,7 +312,7 @@ AW_gc_manager AWT_graphic_parsimony::init_devices(AW_window *aww, AW_device *dev
         AW_manage_GC(aww,
                      ntw->get_gc_base_name(),
                      device, AWT_GC_CURSOR, AWT_GC_MAX, /* AWT_GC_CURSOR+7, */ AW_GCM_DATA_AREA,
-                     makeGcChangedCallback(TREE_GC_changed_cb, ntw), // TREE_recompute_cb
+                     makeGcChangedCallback(TREE_GC_changed_cb, ntw),
                      true,      // uses color groups
                      "#AAAA55",
 
