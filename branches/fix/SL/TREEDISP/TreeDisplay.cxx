@@ -2337,20 +2337,32 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
             limits.x_right = x2;
 
             if (at->gb_node && (disp_device->get_filter() & group_text_filter)) {
-                const char *data     = make_node_text_nds(this->gb_main, at->gb_node, NDS_OUTPUT_LEAFTEXT, at, tree_static->get_tree_name());
-                size_t      data_len = strlen(data);
-
                 LineVector worldBracket = disp_device->transform(bracket.right_edge());
                 LineVector clippedWorldBracket;
                 bool       visible      = disp_device->clip(worldBracket, clippedWorldBracket);
                 if (visible) {
+                    const char *gname     = make_node_text_nds(this->gb_main, at->gb_node, NDS_OUTPUT_LEAFTEXT, at, tree_static->get_tree_name());
+                    size_t      gname_len = strlen(gname);
+
+                    const char *gcount     = GBS_global_string("(%u)", at->gr.leaf_sum);
+                    size_t      gcount_len = strlen(gcount);
+
                     LineVector clippedBracket = disp_device->rtransform(clippedWorldBracket);
 
-                    Position textPos = clippedBracket.centroid()+Vector(half_text_ascent, half_text_ascent);
-                    disp_device->text(at->gr.gc, data, textPos, 0.0, group_text_filter, data_len); // GROUPPAINT: unfolded group (dendrogram) @@@ print counter
+                    Position namePos = clippedBracket.centroid()+Vector(half_text_ascent, -0.2*half_text_ascent); // originally y-offset was half_text_ascent (w/o counter shown) 
+                    disp_device->text(at->gr.gc, gname, namePos, 0.0, group_text_filter, gname_len); // GROUPPAINT: unfolded group (dendrogram)
 
-                    double textsize = disp_device->get_string_size(at->gr.gc, data, data_len) * unscale;
-                    limits.x_right  = textPos.xpos()+textsize;
+                    Position countPos = clippedBracket.centroid()+Vector(half_text_ascent, 2.2*half_text_ascent);
+                    disp_device->text(at->gr.gc, gcount, countPos, 0.0, group_text_filter, gcount_len); // GROUPPAINT: unfolded group counter (dendrogram)
+
+                    double textsize;
+                    if (gname_len>=gcount_len) {
+                        textsize = disp_device->get_string_size(at->gr.gc, gname, gname_len) * unscale;
+                    }
+                    else {
+                        textsize = disp_device->get_string_size(at->gr.gc, gcount, gcount_len) * unscale;
+                    }
+                    limits.x_right = namePos.xpos()+textsize;
                 }
             }
         }
