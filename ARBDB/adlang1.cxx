@@ -105,7 +105,7 @@ static int gbl_param_bit(const char *param_name, int def, const char *help_text,
 #define GBL_PARAM_TYPE(type, var, param_name, def, help_text) type  var = gbl_param_##type(param_name, def, help_text, &params, &var)
 #define GBL_STRUCT_PARAM_TYPE(type, strct, member, param_name, def, help_text) strct.member = gbl_param_##type(param_name, def, help_text, &params, &strct.member)
 
-// use PARAM_IF for parameters whose existance depends on condition 
+// use PARAM_IF for parameters whose existence depends on condition 
 #define PARAM_IF(cond,param) ((cond) ? (param) : NULL)
 
 #define GBL_PARAM_INT(var,    param_name, def, help_text) GBL_PARAM_TYPE(int,    var, param_name, def, help_text)
