@@ -2349,7 +2349,7 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
 
                     LineVector clippedBracket = disp_device->rtransform(clippedWorldBracket);
 
-                    Position namePos = clippedBracket.centroid()+Vector(half_text_ascent, -0.2*half_text_ascent); // originally y-offset was half_text_ascent (w/o counter shown) 
+                    Position namePos = clippedBracket.centroid()+Vector(half_text_ascent, -0.2*half_text_ascent); // originally y-offset was half_text_ascent (w/o counter shown)
                     disp_device->text(at->gr.gc, gname, namePos, 0.0, group_text_filter, gname_len); // GROUPPAINT: unfolded group (dendrogram)
 
                     Position countPos = clippedBracket.centroid()+Vector(half_text_ascent, 2.2*half_text_ascent);
@@ -2457,7 +2457,9 @@ void AWT_graphic_tree::show_radial_tree(AP_tree *at, const AW::Position& base, c
             Position textpos = calc_text_coordinates_near_tip(disp_device, at->gr.gc, corner[1], toText, alignment);
 
             // insert text (e.g. name of group)
-            const char *data = make_node_text_nds(this->gb_main, at->gb_node, NDS_OUTPUT_LEAFTEXT, at, tree_static->get_tree_name());
+            const char *data = GBS_global_string("%s (%u)",
+                                                 make_node_text_nds(this->gb_main, at->gb_node, NDS_OUTPUT_LEAFTEXT, at, tree_static->get_tree_name()),
+                                                 at->gr.leaf_sum);
             disp_device->text(at->gr.gc, data, // GROUPPAINT: folded group (radial tree); @@@ want species count here as well
                               textpos,
                               alignment,
