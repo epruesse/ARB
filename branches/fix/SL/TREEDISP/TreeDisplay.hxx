@@ -208,6 +208,19 @@ public:
     int size() const { return numMarkers; }
 };
 
+struct GroupInfo {
+    const char *name;
+    const char *count;
+    unsigned    name_len;
+    unsigned    count_len;
+};
+
+enum GroupInfoMode {
+    GI_COMBINED,             // only sets GroupInfo::name (will contain "name (count)" or only "name" if counters disabled)
+    GI_SEPARATED,            // set GroupInfo::name and GroupInfo::count (to "name" and "count")
+    GI_SEPARATED_PARENTIZED, // like GI_SEPARATED, but GroupInfo::count will be "(count)"
+};
+
 class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
     char         *species_name;
     AW::Position  cursor;
@@ -275,6 +288,8 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
     void drawMarkerNames(AW::Position& Pen);
 
     void pixel_box(int gc, const AW::Position& pos, int pixel_width, AW::FillStyle filled);
+
+    const GroupInfo& get_group_info(AP_tree *at, GroupInfoMode mode) const;
 
 public:
     void filled_box(int gc, const AW::Position& pos, int pixel_width) { pixel_box(gc, pos, pixel_width, AW::FillStyle::SOLID); }

@@ -2270,20 +2270,23 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
 
         limits.x_right = n0.xpos();
 
-        if (at->gb_node && (disp_device->get_filter() & group_text_filter)) {
-            const char *data     = make_node_text_nds(this->gb_main, at->gb_node, NDS_OUTPUT_LEAFTEXT, at, tree_static->get_tree_name());
-            size_t      data_len = strlen(data);
+        if (disp_device->get_filter() & group_text_filter) {
+            const GroupInfo& info = get_group_info(at, GI_SEPARATED);
 
-            Position textPos = n0+text_offset;
-            disp_device->text(at->gr.gc, data, textPos, 0.0, group_text_filter, data_len); // GROUPPAINT: folded group name (dendrogram)
+            if (info.name) {
+                Position textPos = n0+text_offset;
+                disp_device->text(at->gr.gc, info.name, textPos, 0.0, group_text_filter, info.name_len); // GROUPPAINT: folded group name (dendrogram)
 
-            double textsize = disp_device->get_string_size(at->gr.gc, data, data_len) * disp_device->get_unscale();
-            limits.x_right  = textPos.xpos()+textsize;
+                double textsize = disp_device->get_string_size(at->gr.gc, info.name, info.name_len) * disp_device->get_unscale();
+                limits.x_right  = textPos.xpos()+textsize;
+            }
+
+            if (info.count) {
+                Position    countPos = s0+text_offset;
+                const char *count    = GBS_global_string(" %s", info.count); // @@@ correctly calculate x-offset and directly print info->count
+                disp_device->text(at->gr.gc, count, countPos, 0.0, group_text_filter, info.count_len+1); // GROUPPAINT: folded group member count (dendrogram)
+            }
         }
-
-        Position    countPos = s0+text_offset;
-        const char *count    = GBS_global_string(" %u", at->gr.leaf_sum);
-        disp_device->text(at->gr.gc, count, countPos, 0.0, group_text_filter); // GROUPPAINT: folded group member count (dendrogram)
 
         limits.y_top    = s0.ypos();
         limits.y_bot    = s1.ypos();
@@ -2336,33 +2339,35 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
 
             limits.x_right = x2;
 
-            if (at->gb_node && (disp_device->get_filter() & group_text_filter)) {
+            if (disp_device->get_filter() & group_text_filter) {
                 LineVector worldBracket = disp_device->transform(bracket.right_edge());
                 LineVector clippedWorldBracket;
-                bool       visible      = disp_device->clip(worldBracket, clippedWorldBracket);
+
+                bool visible = disp_device->clip(worldBracket, clippedWorldBracket);
                 if (visible) {
-                    const char *gname     = make_node_text_nds(this->gb_main, at->gb_node, NDS_OUTPUT_LEAFTEXT, at, tree_static->get_tree_name());
-                    size_t      gname_len = strlen(gname);
+                    const GroupInfo& info = get_group_info(at, GI_SEPARATED_PARENTIZED);
 
-                    const char *gcount     = GBS_global_string("(%u)", at->gr.leaf_sum);
-                    size_t      gcount_len = strlen(gcount);
+                    if (info.name || info.count) {
+                        LineVector clippedBracket = disp_device->rtransform(clippedWorldBracket);
 
-                    LineVector clippedBracket = disp_device->rtransform(clippedWorldBracket);
+                        if (info.name) {
+                            Position namePos = clippedBracket.centroid()+Vector(half_text_ascent, -0.2*half_text_ascent); // originally y-offset was half_text_ascent (w/o counter shown)
+                            disp_device->text(at->gr.gc, info.name, namePos, 0.0, group_text_filter, info.name_len);      // GROUPPAINT: unfolded group (dendrogram)
+                            if (info.name_len>=info.count_len) {
+                                double textsize = disp_device->get_string_size(at->gr.gc, info.name, info.name_len) * unscale;
+                                limits.x_right  = namePos.xpos() + textsize;
+                            }
+                        }
 
-                    Position namePos = clippedBracket.centroid()+Vector(half_text_ascent, -0.2*half_text_ascent); // originally y-offset was half_text_ascent (w/o counter shown)
-                    disp_device->text(at->gr.gc, gname, namePos, 0.0, group_text_filter, gname_len); // GROUPPAINT: unfolded group (dendrogram)
-
-                    Position countPos = clippedBracket.centroid()+Vector(half_text_ascent, 2.2*half_text_ascent);
-                    disp_device->text(at->gr.gc, gcount, countPos, 0.0, group_text_filter, gcount_len); // GROUPPAINT: unfolded group counter (dendrogram)
-
-                    double textsize;
-                    if (gname_len>=gcount_len) {
-                        textsize = disp_device->get_string_size(at->gr.gc, gname, gname_len) * unscale;
+                        if (info.count) {
+                            Position countPos = clippedBracket.centroid()+Vector(half_text_ascent, 2.2*half_text_ascent);
+                            disp_device->text(at->gr.gc, info.count, countPos, 0.0, group_text_filter, info.count_len); // GROUPPAINT: unfolded group counter (dendrogram)
+                            if (info.count_len>info.name_len) {
+                                double textsize = disp_device->get_string_size(at->gr.gc, info.count, info.count_len) * unscale;
+                                limits.x_right  = countPos.xpos() + textsize;
+                            }
+                        }
                     }
-                    else {
-                        textsize = disp_device->get_string_size(at->gr.gc, gcount, gcount_len) * unscale;
-                    }
-                    limits.x_right = namePos.xpos()+textsize;
                 }
             }
         }
@@ -2449,21 +2454,22 @@ void AWT_graphic_tree::show_radial_tree(AP_tree *at, const AW::Position& base, c
         disp_device->set_grey_level(at->gr.gc, group_greylevel);
         disp_device->polygon(at->gr.gc, AW::FillStyle::SHADED_WITH_BORDER, 3, corner, line_filter);
 
-        if (at->gb_node && (disp_device->get_filter() & group_text_filter)) {
-            Angle toText = orientation;
-            toText.rotate90deg();
+        if (disp_device->get_filter() & group_text_filter) {
+            const GroupInfo& info = get_group_info(at, GI_COMBINED);
+            if (info.name) {
+                Angle toText = orientation;
+                toText.rotate90deg();
 
-            AW_pos   alignment;
-            Position textpos = calc_text_coordinates_near_tip(disp_device, at->gr.gc, corner[1], toText, alignment);
+                AW_pos   alignment;
+                Position textpos = calc_text_coordinates_near_tip(disp_device, at->gr.gc, corner[1], toText, alignment);
 
-            // insert text (e.g. name of group)
-            const char *data = GBS_global_string("%s (%u)",
-                                                 make_node_text_nds(this->gb_main, at->gb_node, NDS_OUTPUT_LEAFTEXT, at, tree_static->get_tree_name()),
-                                                 at->gr.leaf_sum);
-            disp_device->text(at->gr.gc, data, // GROUPPAINT: folded group (radial tree); @@@ want species count here as well
-                              textpos,
-                              alignment,
-                              group_text_filter);
+                disp_device->text(at->gr.gc, // GROUPPAINT: folded group (radial tree)
+                                  info.name,
+                                  textpos,
+                                  alignment,
+                                  group_text_filter,
+                                  info.name_len);
+            }
         }
     }
     else { // draw subtrees
@@ -2946,6 +2952,37 @@ void AWT_graphic_tree::show(AW_device *device) {
     }
 
     disp_device = NULL;
+}
+
+const GroupInfo& AWT_graphic_tree::get_group_info(AP_tree *at, GroupInfoMode mode) const {
+    static GroupInfo info = { 0, 0, 0, 0 };
+
+    info.name = NULL;
+    if (at->gb_node) {
+        if (at->father) {
+            info.name = make_node_text_nds(gb_main, at->gb_node, NDS_OUTPUT_LEAFTEXT, at, tree_static->get_tree_name());
+        }
+        else { // root-node -> use tree-name
+            info.name = tree_static->get_tree_name();
+        }
+        if (!info.name[0]) info.name = NULL;
+    }
+    info.name_len = info.name ? strlen(info.name) : 0;
+
+    if (mode == GI_COMBINED && info.name != NULL) {
+        info.name     = GBS_global_string("%s (%u)", info.name, at->gr.leaf_sum);
+        info.name_len = strlen(info.name);
+
+        info.count     = NULL;
+        info.count_len = 0;
+    }
+    else {
+        const char *format = mode == GI_SEPARATED ? "%u" : "(%u)"; // Note: GI_COMBINED w/o name used parentized format
+        info.count         = GBS_global_string(format, at->gr.leaf_sum);
+        info.count_len     = strlen(info.count);
+    }
+
+    return info;
 }
 
 AWT_graphic_tree *NT_generate_tree(AW_root *root, GBDATA *gb_main, AD_map_viewer_cb map_viewer_cb) {
