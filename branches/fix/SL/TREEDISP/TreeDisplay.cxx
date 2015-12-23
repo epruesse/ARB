@@ -2275,7 +2275,7 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
             size_t      data_len = strlen(data);
 
             Position textPos = n0+text_offset;
-            disp_device->text(at->gr.gc, data, textPos, 0.0, group_text_filter, data_len);
+            disp_device->text(at->gr.gc, data, textPos, 0.0, group_text_filter, data_len); // GROUPPAINT: folded group name (dendrogram)
 
             double textsize = disp_device->get_string_size(at->gr.gc, data, data_len) * disp_device->get_unscale();
             limits.x_right  = textPos.xpos()+textsize;
@@ -2283,7 +2283,7 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
 
         Position    countPos = s0+text_offset;
         const char *count    = GBS_global_string(" %u", at->gr.leaf_sum);
-        disp_device->text(at->gr.gc, count, countPos, 0.0, group_text_filter);
+        disp_device->text(at->gr.gc, count, countPos, 0.0, group_text_filter); // GROUPPAINT: folded group member count (dendrogram)
 
         limits.y_top    = s0.ypos();
         limits.y_bot    = s1.ypos();
@@ -2347,7 +2347,7 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
                     LineVector clippedBracket = disp_device->rtransform(clippedWorldBracket);
 
                     Position textPos = clippedBracket.centroid()+Vector(half_text_ascent, half_text_ascent);
-                    disp_device->text(at->gr.gc, data, textPos, 0.0, group_text_filter, data_len);
+                    disp_device->text(at->gr.gc, data, textPos, 0.0, group_text_filter, data_len); // GROUPPAINT: unfolded group (dendrogram) @@@ print counter
 
                     double textsize = disp_device->get_string_size(at->gr.gc, data, data_len) * unscale;
                     limits.x_right  = textPos.xpos()+textsize;
@@ -2446,7 +2446,7 @@ void AWT_graphic_tree::show_radial_tree(AP_tree *at, const AW::Position& base, c
 
             // insert text (e.g. name of group)
             const char *data = make_node_text_nds(this->gb_main, at->gb_node, NDS_OUTPUT_LEAFTEXT, at, tree_static->get_tree_name());
-            disp_device->text(at->gr.gc, data,
+            disp_device->text(at->gr.gc, data, // GROUPPAINT: folded group (radial tree); @@@ want species count here as well
                               textpos,
                               alignment,
                               group_text_filter);

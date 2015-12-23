@@ -156,13 +156,13 @@ AW_pos AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, AW_pos x_offset) {
             Position box_rcenter = gbox.right_edge().centroid();
 
             if (group_name) { //  a node name should be displayed
-                disp_device->text(gc, group_name, box_rcenter+IRS.adjust_text);
+                disp_device->text(gc, group_name, box_rcenter+IRS.adjust_text); // GROUPPAINT: folded group name (IRS)
             }
 
             {
                 Position    box_lcenter  = gbox.left_edge().centroid();
                 const char *groupcounter = GBS_global_string("%u", node->gr.leaf_sum);
-                disp_device->text(gc, groupcounter, box_lcenter+IRS.adjust_text);
+                disp_device->text(gc, groupcounter, box_lcenter+IRS.adjust_text); // GROUPPAINT: folded group counter (IRS)
             }
 
             IRS.draw_top_separator_once(disp_device);
@@ -200,7 +200,7 @@ AW_pos AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, AW_pos x_offset) {
         disp_device->line(gc, x_offset-IRS.onePixel, group_y1, x_offset+frame_width, group_y1); // opened-group-frame
 
         const char *groupinfo = GBS_global_string("%s (%u)", group_name, node->gr.leaf_sum);
-        disp_device->text(node->gr.gc, groupinfo, x_offset-IRS.onePixel + IRS.gap, group_y1 + 2*IRS.adjust_text.y() + IRS.gap);
+        disp_device->text(node->gr.gc, groupinfo, x_offset-IRS.onePixel + IRS.gap, group_y1 + 2*IRS.adjust_text.y() + IRS.gap); // GROUPPAINT: unfolded group+counter (IRS)
     }
 
     // draw subtrees
