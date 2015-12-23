@@ -156,8 +156,13 @@ AW_pos AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, AW_pos x_offset) {
             Position box_rcenter = gbox.right_edge().centroid();
 
             if (group_name) { //  a node name should be displayed
-                const char *groupinfo = GBS_global_string("%s (%u)", group_name, node->gr.leaf_sum);
-                disp_device->text(gc, groupinfo, box_rcenter+IRS.adjust_text);
+                disp_device->text(gc, group_name, box_rcenter+IRS.adjust_text);
+            }
+
+            {
+                Position    box_lcenter  = gbox.left_edge().centroid();
+                const char *groupcounter = GBS_global_string("%u", node->gr.leaf_sum);
+                disp_device->text(gc, groupcounter, box_lcenter+IRS.adjust_text);
             }
 
             IRS.draw_top_separator_once(disp_device);
