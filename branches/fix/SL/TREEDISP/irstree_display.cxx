@@ -108,10 +108,10 @@ AW_pos AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, AW_pos x_offset) {
     AW_pos frame_width = NAN;
     AW_pos group_y1    = NAN;
 
-    if (node->gb_node) {
+    if (node->is_named_group()) {
         frame_width = node->gr.max_tree_depth * IRS.x_scale;
 
-        if (node->gb_node && node->gr.grouped) { // folded group
+        if (node->gr.grouped) { // folded group
             AW_pos y_center;
 
             AW_pos frame_height = node->gr.view_sum * IRS.step_y;
@@ -209,7 +209,7 @@ AW_pos AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, AW_pos x_offset) {
     AW_pos right_x = x_offset + IRS.x_scale * node->rightlen;
     AW_pos right_y = paint_irs_sub_tree(node->get_rightson(), right_x);
 
-    if (node->gb_node) IRS.group_closed++;
+    if (node->is_named_group()) IRS.group_closed++;
 
     // draw structure
     if (left_y > IRS.min_y) {
@@ -246,7 +246,7 @@ AW_pos AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, AW_pos x_offset) {
     set_line_attributes_for(node->get_rightson());
     disp_device->line(node->get_rightson()->gr.gc, x_offset, y_center, x_offset, right_y);
 
-    if (node->gb_node) { // close unfolded group brackets and draw tipbox
+    if (node->is_named_group()) { // close unfolded group brackets and draw tipbox
         IRS.y  += IRS.halfstep_y+IRS.gap;
 
         int gc = AWT_GC_GROUPS;

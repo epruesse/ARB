@@ -2960,6 +2960,7 @@ const GroupInfo& AWT_graphic_tree::get_group_info(AP_tree *at, GroupInfoMode mod
     info.name = NULL;
     if (at->gb_node) {
         if (at->father) {
+            td_assert(at->name); // otherwise called for non-group!
             info.name = make_node_text_nds(gb_main, at->gb_node, NDS_OUTPUT_LEAFTEXT, at, tree_static->get_tree_name());
         }
         else { // root-node -> use tree-name
