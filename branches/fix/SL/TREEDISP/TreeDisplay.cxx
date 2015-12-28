@@ -1789,6 +1789,7 @@ AWT_graphic_tree::AWT_graphic_tree(AW_root *aw_root_, GBDATA *gb_main_, AD_map_v
     gb_main          = gb_main_;
     cmd_data         = NULL;
     nds_show_all     = true;
+    group_count_mode = GCM_MEMBERS;
     map_viewer_cb    = map_viewer_cb_;
     display_markers  = NULL;
 }
@@ -2817,6 +2818,7 @@ void AWT_graphic_tree::read_tree_settings() {
     scaled_branch_distance = aw_root->awar(AWAR_DTREE_VERICAL_DIST)->read_float(); // not final value!
     group_greylevel        = aw_root->awar(AWAR_DTREE_GREY_LEVEL)->read_int() * 0.01;
     baselinewidth          = aw_root->awar(AWAR_DTREE_BASELINEWIDTH)->read_int();
+    group_count_mode       = GroupCountMode(aw_root->awar(AWAR_DTREE_GROUPCOUNTMODE)->read_int());
     show_brackets          = aw_root->awar(AWAR_DTREE_SHOW_BRACKETS)->read_int();
     groupScale.pow         = aw_root->awar(AWAR_DTREE_GROUP_DOWNSCALE)->read_float();
     groupScale.linear      = aw_root->awar(AWAR_DTREE_GROUP_SCALE)->read_float();
@@ -2954,6 +2956,22 @@ void AWT_graphic_tree::show(AW_device *device) {
     disp_device = NULL;
 }
 
+inline unsigned percentMarked(const AP_tree_members& gr) {
+    double   percent = double(gr.mark_sum)/gr.leaf_sum;
+    unsigned pc      = unsigned(percent*100.0+0.5);
+
+    if (pc == 0) {
+        td_assert(gr.mark_sum>0); // otherwise function should not be called
+        pc = 1; // do not show '0%' for range ]0.0 .. 0.05[
+    }
+    else if (pc == 100) {
+        if (gr.mark_sum<gr.leaf_sum) {
+            pc = 99; // do not show '100%' for range [0.95 ... 1.0[
+        }
+    }
+    return pc;
+}
+
 const GroupInfo& AWT_graphic_tree::get_group_info(AP_tree *at, GroupInfoMode mode) const {
     static GroupInfo info = { 0, 0, 0, 0 };
 
@@ -2970,17 +2988,66 @@ const GroupInfo& AWT_graphic_tree::get_group_info(AP_tree *at, GroupInfoMode mod
     }
     info.name_len = info.name ? strlen(info.name) : 0;
 
-    if (mode == GI_COMBINED && info.name != NULL) {
-        info.name     = GBS_global_string("%s (%u)", info.name, at->gr.leaf_sum);
-        info.name_len = strlen(info.name);
+    static char countBuf[50];
+    countBuf[0] = 0;
 
+    GroupCountMode count_mode = group_count_mode;
+
+    if (!at->gr.mark_sum) { // do not display zero marked
+        switch (count_mode) {
+            case GCM_NONE:
+            case GCM_MEMBERS: break; // unchanged
+
+            case GCM_PERCENT:
+            case GCM_MARKED: count_mode = GCM_NONE; break; // completely skip
+
+            case GCM_BOTH:
+            case GCM_BOTH_PC: count_mode = GCM_MEMBERS; break; // fallback to members-only
+        }
+    }
+
+    switch (count_mode) {
+        case GCM_NONE:    break;
+        case GCM_MEMBERS: sprintf(countBuf, "%u",      at->gr.leaf_sum);                        break;
+        case GCM_MARKED:  sprintf(countBuf, "%u",      at->gr.mark_sum);                        break;
+        case GCM_BOTH:    sprintf(countBuf, "%u/%u",   at->gr.mark_sum, at->gr.leaf_sum);       break;
+        case GCM_PERCENT: sprintf(countBuf, "%u%%",    percentMarked(at->gr));                  break;
+        case GCM_BOTH_PC: sprintf(countBuf, "%u%%/%u", percentMarked(at->gr), at->gr.leaf_sum); break;
+    }
+
+    if (countBuf[0]) {
+        info.count     = countBuf;
+        info.count_len = strlen(info.count);
+
+        bool parentize = mode != GI_SEPARATED;
+        if (parentize) {
+            memmove(countBuf+1, countBuf, info.count_len);
+            countBuf[0] = '(';
+            strcpy(countBuf+info.count_len+1, ")");
+            info.count_len += 2;
+        }
+    }
+    else {
         info.count     = NULL;
         info.count_len = 0;
     }
-    else {
-        const char *format = mode == GI_SEPARATED ? "%u" : "(%u)"; // Note: GI_COMBINED w/o name used parentized format
-        info.count         = GBS_global_string(format, at->gr.leaf_sum);
-        info.count_len     = strlen(info.count);
+
+    if (mode == GI_COMBINED) {
+        if (info.name) {
+            if (info.count) {
+                info.name      = GBS_global_string("%s %s", info.name, info.count);
+                info.name_len += info.count_len+1;
+
+                info.count     = NULL;
+                info.count_len = 0;
+            }
+        }
+        else {
+            if (info.count) {
+                std::swap(info.name, info.count);
+                std::swap(info.name_len, info.count_len);
+            }
+        }
     }
 
     return info;
@@ -3023,6 +3090,8 @@ void TREE_create_awars(AW_root *aw_root, AW_default db) {
 
     aw_root->awar_int(AWAR_DTREE_AUTO_JUMP,      AP_JUMP_KEEP_VISIBLE);
     aw_root->awar_int(AWAR_DTREE_AUTO_JUMP_TREE, AP_JUMP_FORCE_VCENTER);
+
+    aw_root->awar_int(AWAR_DTREE_GROUPCOUNTMODE, GCM_MEMBERS);
 
     aw_root->awar_int(AWAR_DTREE_SHOW_BRACKETS, 1);
     aw_root->awar_int(AWAR_DTREE_SHOW_CIRCLE,   0);
@@ -3069,6 +3138,7 @@ void TREE_install_update_callbacks(AWT_canvas *ntw) {
     awr->awar(AWAR_DTREE_USE_ELLIPSE)    ->add_callback(expose_cb);
     awr->awar(AWAR_DTREE_BOOTSTRAP_MIN)  ->add_callback(expose_cb);
     awr->awar(AWAR_DTREE_GREY_LEVEL)     ->add_callback(expose_cb);
+    awr->awar(AWAR_DTREE_GROUPCOUNTMODE) ->add_callback(expose_cb);
 
     RootCallback reinit_treetype_cb = makeRootCallback(NT_reinit_treetype, ntw);
     awr->awar(AWAR_DTREE_RADIAL_ZOOM_TEXT)->add_callback(reinit_treetype_cb);
@@ -3129,6 +3199,7 @@ static AWT_config_mapping_def tree_setting_config_mapping[] = {
     { AWAR_DTREE_RADIAL_ZOOM_TEXT, "radial_zoomtext" },
     { AWAR_DTREE_RADIAL_XPAD,      "radial_xpadding" },
     { AWAR_DTREE_BOOTSTRAP_MIN,    "bootstrap_min" },
+    { AWAR_DTREE_GROUPCOUNTMODE,   "group_countmode" },
     { 0, 0 }
 };
 
@@ -3178,6 +3249,17 @@ AW_window *TREE_create_settings_window(AW_root *aw_root) {
 
         aws->label("Greylevel of groups (%)");
         aws->create_input_field_with_scaler(AWAR_DTREE_GREY_LEVEL, 4, SCALER_WIDTH);
+        aws->at_newline();
+
+        aws->label("Show group counter");
+        aws->create_option_menu(AWAR_DTREE_GROUPCOUNTMODE, true);
+        aws->insert_default_option("None",            "N", GCM_NONE);
+        aws->insert_option        ("Members",         "M", GCM_MEMBERS);
+        aws->insert_option        ("Marked",          "a", GCM_MARKED);
+        aws->insert_option        ("Marked/Members",  "b", GCM_BOTH);
+        aws->insert_option        ("%Marked",         "%", GCM_PERCENT);
+        aws->insert_option        ("%Marked/Members", "e", GCM_BOTH_PC);
+        aws->update_option_menu();
         aws->at_newline();
 
         aws->label("Show bootstrap circles");
@@ -3364,7 +3446,7 @@ struct fake_AW_common : public AW_common {
 };
 
 class fake_AWT_graphic_tree : public AWT_graphic_tree {
-    int var_mode;
+    int var_mode; // current range: [0..3]
 
     virtual void read_tree_settings() OVERRIDE {
         scaled_branch_distance = 1.0; // not final value!
@@ -3382,6 +3464,13 @@ class fake_AWT_graphic_tree : public AWT_graphic_tree {
         circle_zoom_factor = 1.3;
         circle_max_size    = 1.5;
         bootstrap_min      = 0;
+
+        switch (var_mode) {
+            case 0: group_count_mode = GCM_MEMBERS; break;
+            case 1: group_count_mode = GCM_NONE;  break;
+            case 2: group_count_mode = (tree_sort%2) ? GCM_MARKED : GCM_PERCENT;  break;
+            case 3: group_count_mode = (tree_sort%2) ? GCM_BOTH   : GCM_BOTH_PC;  break;
+        }
     }
 
 public:

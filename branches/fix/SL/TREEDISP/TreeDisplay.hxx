@@ -39,6 +39,7 @@
 #define AWAR_DTREE_CIRCLE_MAX_SIZE "awt/dtree/max_size"
 #define AWAR_DTREE_USE_ELLIPSE     "awt/dtree/ellipse"
 #define AWAR_DTREE_GREY_LEVEL      "awt/dtree/greylevel"
+#define AWAR_DTREE_GROUPCOUNTMODE  "awt/dtree/groupcountmode"
 #define AWAR_DTREE_BOOTSTRAP_MIN   "awt/dtree/bootstrap/inner/min"
 
 #define AWAR_DTREE_RADIAL_ZOOM_TEXT "awt/dtree/radial/zoomtext"
@@ -221,6 +222,15 @@ enum GroupInfoMode {
     GI_SEPARATED_PARENTIZED, // like GI_SEPARATED, but GroupInfo::count will be "(count)"
 };
 
+enum GroupCountMode {
+    GCM_NONE,    // do not show group count
+    GCM_MEMBERS, // show number of group members
+    GCM_MARKED,  // show number of marked group members (show nothing if none marked)
+    GCM_BOTH,    // show "marked/members" (or "members" if none marked)
+    GCM_PERCENT, // show percent of marked group members (show nothing if none marked)
+    GCM_BOTH_PC, // show "percent/members" (or "members" if none marked)
+};
+
 class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
     char         *species_name;
     AW::Position  cursor;
@@ -263,6 +273,8 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
     const AW_bitset ruler_filter, root_filter, marker_filter;
 
     bool nds_show_all;
+
+    GroupCountMode group_count_mode;
 
     MarkerDisplay *display_markers;
     struct {

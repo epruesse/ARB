@@ -44,6 +44,9 @@ DESCRIPTION     Various tree display settings are available:
 
                 - 'Greplevel of groups (%)' defines the shading used for folded groups.
 
+                - 'Show group counter' specifies whether a counter shall be displayed for groups
+                  and which specific counter type to use (Note: zero marks are always skipped).
+
                 - 'Show bootstrap circles' toggles the display of bootstrap circles (only
                   available if the tree contains bootstrap values).
 

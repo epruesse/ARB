@@ -78,6 +78,7 @@ Major changes for next release:
    * improved auto-jump
    * add threshold for visible support values
    * group shading
+   * group counters (customizable)
    * all options are now also supported by ARB_PARSIMONY
  - colorsets were invalidated by generating new IDs (#660). fixed.
  - updated/added external tools:
