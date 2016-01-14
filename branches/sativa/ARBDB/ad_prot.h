@@ -87,6 +87,12 @@ GB_ERROR GB_create_parent_directory(const char *path);
 GB_ERROR GB_create_directory(const char *path);
 GB_ERROR GB_save_in_arbprop(GBDATA *gb, const char *path, const char *savetype);
 const char *GB_get_supported_compression_flags(bool verboose);
+
+class ArbDBWriter;
+
+GB_ERROR GB_start_streamed_save_as(GBDATA *gbd, const char *path, const char *savetype, ArbDBWriter*& writer);
+GB_ERROR GB_stream_save_part(ArbDBWriter *writer, GBDATA *from, GBDATA *till);
+GB_ERROR GB_finish_stream_save(ArbDBWriter*& writer);
 GB_ERROR GB_save_as(GBDATA *gbd, const char *path, const char *savetype);
 GB_ERROR GB_delete_database(GB_CSTR filename);
 GB_ERROR GB_save_quick_as(GBDATA *gbd, const char *path);

@@ -45,7 +45,7 @@ SECTION         PARAMETERS
                         Sets a lower limit for the relative or absolute score. Relatives
                         with lower score are NOT written into the DB field.
 
-NOTES		None
+NOTES		You may use the generated database entries to mark species (see LINK{markbyref.hlp}).
 
 EXAMPLES	None
 

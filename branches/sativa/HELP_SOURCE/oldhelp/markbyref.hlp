@@ -16,7 +16,7 @@ DESCRIPTION     Allows to mark all species referred to in the content of a field
 
                 Select whether to check all or marked species.
 
-                Enter name of field containing references.
+                Enter the name of a field containing references.
 
                       A reference is a single species ID ('name') or a
                       comma-, semicolon- or space-separated list of species IDs.
@@ -29,14 +29,21 @@ DESCRIPTION     Allows to mark all species referred to in the content of a field
                 the field content. The result must be a reference or
                 reference-list (see above).
 
-                The default ACI is '/[0-9.]+[%]*://'. This works with
-                several common references (like 'used_rels' from fast-aligner or
-                relatives written by 'Search next relatives')
+                The default ACI is '/[0-9.]+[%]*://'. This works with the information
+                written by LINK{next_neighbours_listed.hlp} if score information has been added.
+                For the 'used_rels' field written by the fast-aligner (see LINK{faligner.hlp}) you
+                might use '/:[0-9]+//'.
 
-                    Below the ACI there are 3 lines showing
-                        - the selected species
-                        - the content of its field
-                        - the result after processing it through the ACI
+                Predefined configurations for these two use-cases are available using the
+                config manager button.
+
+                Below the ACI there are 3 lines showing
+                    - the selected species
+                    - the content of the specified field
+                    - the result after processing it through the ACI
+
+                Use the result line to check whether the specified ACI does generate a valid
+                ID or list of IDs.
 
                 Choose whether
                        - to abort if an unknown reference is found or

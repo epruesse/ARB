@@ -561,6 +561,39 @@ static void save_cb(AW_window *, AWT_configuration *config) {
     aw_message_if(error);
 }
 
+#if defined(DEBUG)
+
+static string esc(const string& str) {
+    // escape C string
+    char   *escaped = GBS_string_eval(str.c_str(), "\\n=\\\\n:\\t=\\\\t:\"=\\\\\"", NULL);
+    string  result(escaped);
+    free(escaped);
+    return result;
+}
+
+static void dump_cb(AW_window *aww, AWT_configuration *config) {
+    // dump code ready to insert into AWT_predefined_config
+    string   cfgName = config->get_awar_value(CURRENT_CFG);
+    GB_ERROR error   = NULL;
+
+    if (cfgName.empty()) error = "Please select config to dump";
+    else {
+        string comment = esc(config->get_awar_value(VISIBLE_COMMENT));
+        string confStr = esc(config->get_config(cfgName));
+
+        cfgName         = esc(cfgName);
+        const char *cfg = cfgName.c_str();
+
+        fprintf(stderr, "    { \"*%s\", \"%s\", \"%s\" },\n",
+                cfg[0] == '*' ? cfg+1 : cfg,
+                comment.c_str(),
+                confStr.c_str());
+    }
+    aw_message_if(error);
+}
+#endif
+
+
 void AWT_configuration::update_field_selection_list() {
     if (field_selection) {
         string  cfgName      = get_awar_value(CURRENT_CFG);
@@ -843,6 +876,9 @@ static AW_window *create_config_manager_window(AW_root *, AWT_configuration *con
         { save_cb,    "SAVE",    "Save",              "v" },
         { reset_cb,   "RESET",   "Factory\ndefaults", "F" },
         { edit_cb,    "EDIT",    "Edit",              "E" },
+#if defined(DEBUG)
+        { dump_cb,    "DUMP",    "dump\npredef",  "U" },
+#endif
     };
     const int buttons = ARRAY_ELEMS(butDef);
     for (int b = 0; b<buttons; ++b) {

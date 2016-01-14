@@ -43,7 +43,8 @@ DESCRIPTION	In this release, 'ARB Parsimony' cannot be used to reconstruct
 
 		- Press the <GO> button to display the 'ARB_PARSIMONY' window.
 
-NOTES		None
+NOTES		ARB Parsimony will modify the given tree. It might be a good idea to 
+		create a copy of your tree before you start doing so (see LINK{treeadm.hlp}).
 
 EXAMPLES	None
 

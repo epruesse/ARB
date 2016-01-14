@@ -1,6 +1,7 @@
 #Please insert up references in the next lines (line starts with keyword UP)
 UP      arb.hlp
 UP      glossary.hlp
+UP      treeadm.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
 #SUB    subtopic.hlp
@@ -8,9 +9,9 @@ UP      glossary.hlp
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE           Export Tree to File
+TITLE           Export tree to file
 
-OCCURRENCE      ARB_NT/Tree/Copy\Delete\Export\Import/EXPORT
+OCCURRENCE      ARB_NT/Tree admin/Export
 
 DESCRIPTION     Writes a tree to file in Newick format
 

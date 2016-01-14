@@ -591,18 +591,13 @@ __ATTR__USERESULT static ARB_ERROR run_command(const char *exename, const char *
 
     if (error) msg = strdup(error.preserve());
     if (msg) {
-        puts(msg);
-        GBS_add_ptserver_logentry(msg);
+        puts(msg);                      // log to console ..
+        GBS_add_ptserver_logentry(msg); // .. and logfile
 
-        char *quoted_msg = GBS_string_eval(msg, ":'=\"", 0);
-        pt_assert(quoted_msg);
-        char *msg_command = GBS_global_string_copy("arb_message '%s' &", quoted_msg);
-
-        if (system(msg_command) != 0) fprintf(stderr, "Failed to run '%s'\n", msg_command);
-
-        free(msg_command);
-        free(quoted_msg);
-
+        char     *quotedErrorMsg = GBK_singlequote(GBS_global_string("arb_pt_server: %s", msg));
+        GB_ERROR  msgerror       = GBK_system(GBS_global_string("arb_message %s &", quotedErrorMsg));    // send async to avoid deadlock
+        if (msgerror) fprintf(stderr, "Error: %s\n", msgerror);
+        free(quotedErrorMsg);
         free(msg);
     }
 
