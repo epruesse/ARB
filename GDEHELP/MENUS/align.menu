@@ -64,7 +64,7 @@ itemmethod:(GOTO_LOCAL_DIR; \
 
 arg:MAXITERS
 argtype:text
-arglabel:Maximum number of iterations to run(Use 2 for large datasets)
+arglabel:Maximum number of iterations to run\n(use 2 for large datasets)
 argtext:16
 
 //arg:ANCHORS
@@ -158,8 +158,10 @@ argchoice:200PAM / K=2:--kimura 200
 
 
 arg:OFFSET
-argtype:text
-arglabel:Offset value [0..1]\n(Use Values >0.1 for closely related sequences)
+argtype:slider
+argmin:0.0
+argmax:1.0
+arglabel:Offset value [0..1]\n(use values >0.1 for closely related sequences)
 argtext:0.5
 
 

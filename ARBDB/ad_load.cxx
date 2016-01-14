@@ -281,7 +281,7 @@ struct BufferedPipeReader : public BufferedFileReader {
 
     GB_ERROR close() {
         FILE*&   pipe  = get_fp();
-        GB_ERROR error = ARB_zfclose(pipe, getFilename().c_str());
+        GB_ERROR error = ARB_zfclose(pipe);
         pipe           = NULL;
         return error;
     }
@@ -292,40 +292,15 @@ struct BufferedPipeReader : public BufferedFileReader {
     }
 };
 
-static GB_ERROR gb_read_ascii(const char *path, GBCONTAINER *gbc) {
-    /* This loads an ACSII database
-     * if path           == "-" -> read from stdin
-     */
-    FILE     *in          = 0;
-    GB_ERROR  error       = 0;
-    bool      from_stdin  = strcmp(path, "-") == 0;
+static GB_ERROR gb_read_ascii_beyond_header(FILE *in, const char *path, GBCONTAINER *gbc) {
+    // This loads an ASCII database (header line has already been read!)
+    GB_ERROR           error = 0;
+    BufferedPipeReader r(path, in);
 
-    if (from_stdin) {
-        in = stdin;
-    }
-    else {
-        in = ARB_zfopen(path, "rb", ZFILE_AUTODETECT, error);
-        if (!in) {
-            gb_assert(error);
-            error = GBS_global_string("Can't open '%s' (Reason: %s)", path, error);
-        }
-    }
+    GB_search(gbc, GB_SYSTEM_FOLDER, GB_CREATE_CONTAINER); // Switch to Version 3
+    error = gb_parse_ascii(r, gbc);
+    r.dont_close();                                        // done by caller
 
-    if (!error) {
-        BufferedPipeReader r(path, in);
-
-        GB_search(gbc, GB_SYSTEM_FOLDER, GB_CREATE_CONTAINER); // Switch to Version 3
-
-        error = gb_parse_ascii(r, gbc);
-
-        if (from_stdin) {
-            r.dont_close();
-        }
-        else {
-            GB_ERROR cl_error = r.close();
-            if (!error) error = cl_error;
-        }
-    }
     return error;
 }
 
@@ -1005,6 +980,28 @@ inline bool is_binary_db_id(int id) {
         || (id == GBTUM_MAGIC_NUMBER)
         || (id == GBTUM_MAGIC_REVERSED);
 }
+inline bool has_ascii_db_id(uint32_t bin_id, FILE *in) {
+    // assumes the first 4 bytes of the input have been read (into 'bin_id').
+    // will read enough bytes to check for valid ascii-header.
+    // returns true if file has an arb-ascii-database-header.
+    const int ASC_HEADER_SIZE = 15;
+    char      buffer[ASC_HEADER_SIZE+1];
+
+    size_t read_bytes = fread(buffer+4, 1, ASC_HEADER_SIZE-4, in); // 4 bytes have already been read as binary ID
+    if (read_bytes == (ASC_HEADER_SIZE-4)) {
+        buffer[ASC_HEADER_SIZE] = 0;
+
+        const char *ascii_header = "/*ARBDB ASCII*/";
+        uint32_t   *ui_buffer    = (uint32_t*)buffer;
+
+        *ui_buffer = bin_id; // insert these 4 bytes
+        if (strcmp(buffer, ascii_header) == 0) return true;
+
+        *ui_buffer = reverse_byteorder(bin_id); // insert them reversed
+        if (strcmp(buffer, ascii_header) == 0) return true;
+    }
+    return false;
+}
 
 static GB_ERROR init_tmp_branch(GBDATA *gb_main) {
     GB_ERROR  error   = NULL;
@@ -1165,7 +1162,7 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
                 GB_begin_transaction(gbc);
                 Main->clock      = 0; // start clock
 
-                FILE *input = read_from_stdin ? stdin : ARB_zfopen(path, "rb", ZFILE_AUTODETECT, error);
+                FILE *input = read_from_stdin ? stdin : ARB_zfopen(path, "rb", ZFILE_AUTODETECT, error, false);
                 if (!input && ignoreMissingMaster) {
                     error = NULL; // @@@ maybe need to inspect error message here
                     goto load_quick_save_file_only;
@@ -1212,7 +1209,7 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
                     }
                     time_of_main_file = GB_time_of_file(path);
 
-                    i = (input != stdin) ? gb_read_in_uint32(input, 0) : 0;
+                    i = gb_read_in_uint32(input, 0);
 
                     if (is_binary_db_id(i)) {
                         {
@@ -1221,7 +1218,7 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
                             progress.done();
                         }
                         gbc   = Main->root_container;
-                        error = ARB_zfclose(input, path);
+                        error = ARB_zfclose(input);
 
                         if (i) {
                             if (Main->allow_corrupt_file_recovery) {
@@ -1306,10 +1303,20 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
                         Main->qs.last_index = loadedQuickIndex; // determines which # will be saved next
                     }
                     else {
-                        if (input != stdin) ARB_zfclose(input, path);
-                        error = gb_read_ascii(path, gbc);
-                        GB_disable_quicksave(gbc, "Sorry, I cannot save differences to ascii files\n"
-                                             "  Save whole database in binary mode first");
+                        if (has_ascii_db_id(i, input)) {
+                            error = gb_read_ascii_beyond_header(input, path, gbc);
+                            if (input != stdin) {
+                                GB_ERROR close_error = ARB_zfclose(input);
+                                if (!error) error    = close_error;
+                            }
+                            GB_disable_quicksave(gbc,
+                                                 "Sorry, I cannot save differences to ascii files\n"
+                                                 "  Save whole database in binary mode first");
+                        }
+                        else {
+                            error = "input file is not an arb database file";
+                        }
+
                     }
                 }
             }
@@ -1376,7 +1383,7 @@ GB_ERROR GBT_check_arb_file(const char *name) { // goes to header: __ATTR__USERE
     GB_ERROR error = NULL;
     if (!strchr(name, ':'))  { // don't check remote DB
         if (GB_is_regularfile(name)) {
-            FILE *in = ARB_zfopen(name, "rb", ZFILE_AUTODETECT, error);
+            FILE *in = ARB_zfopen(name, "rb", ZFILE_AUTODETECT, error, true); // suppress stderr (to hide "broken pipe" errors from decompressors)
             if (!in) {
                 gb_assert(error);
                 error = GBS_global_string("Cannot read file '%s' (Reason: %s)", name, error);
@@ -1385,26 +1392,11 @@ GB_ERROR GBT_check_arb_file(const char *name) { // goes to header: __ATTR__USERE
                 uint32_t i = gb_read_in_uint32(in, 0);
 
                 if (!is_binary_db_id(i)) {
-                    const int ASC_HEADER_SIZE = 15;
-                    char      buffer[ASC_HEADER_SIZE+1];
-
-                    size_t read_bytes = fread(buffer+4, 1, ASC_HEADER_SIZE-4, in); // 4 bytes have already been read as binary ID
-                    if (read_bytes == (ASC_HEADER_SIZE-4)) {
-                        buffer[ASC_HEADER_SIZE] = 0;
-
-                        const char *ascii_header = "/*ARBDB ASCII*/";
-                        uint32_t   *ui_buffer    = (uint32_t*)buffer;
-
-                        *ui_buffer = i; // insert these 4 bytes
-                        if (strcmp(buffer, ascii_header) != 0) {
-                            *ui_buffer = reverse_byteorder(i); // insert them reversed
-                            if (strcmp(buffer, ascii_header) != 0) {
-                                error = GBS_global_string("'%s' is not an arb file", name);
-                            }
-                        }
+                    if (!has_ascii_db_id(i, in)) {
+                        error = GBS_global_string("'%s' is not an arb file", name);
                     }
                 }
-                ARB_zfclose(in, name); // Note: error ignored here (will report broken pipe from decompressor)
+                ARB_zfclose(in); // Note: error ignored here (will report broken pipe from decompressor)
             }
         }
         else {

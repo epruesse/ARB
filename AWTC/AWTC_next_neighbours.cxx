@@ -15,6 +15,7 @@
 #include <client.h>
 #include <aw_window.hxx>
 #include <aw_root.hxx>
+#include <aw_awar.hxx>
 #include <arbdbt.h>
 #include <arb_strbuf.h>
 
@@ -296,30 +297,47 @@ const char *PT_FamilyFinder::results2string() {
     RETURN_LOCAL_ALLOC(GBS_strclose(out));
 }
 
-void AWTC_create_common_next_neighbour_vars(AW_root *aw_root) {
+static void adjustOligolenAndMismatches(AW_root *aw_root, bool oligolen_changed) {
+    AW_awar *awar_oligolen   = aw_root->awar(AWAR_NN_OLIGO_LEN);
+    AW_awar *awar_mismatches = aw_root->awar(AWAR_NN_MISMATCHES);
+
+    int oligolen   = awar_oligolen->read_int();
+    int mismatches = awar_mismatches->read_int();
+
+    if (oligolen<=mismatches) { // =unwanted state
+        if (oligolen_changed) {
+            awar_mismatches->write_int(oligolen-1);
+        }
+        else {
+            awar_oligolen->write_int(mismatches+1);
+        }
+    }
+}
+
+void AWTC_create_common_next_neighbour_vars(AW_root *aw_root, const RootCallback& awar_changed_cb) {
     static bool created = false;
     if (!created) {
-        aw_root->awar_int(AWAR_NN_OLIGO_LEN,   12);
-        aw_root->awar_int(AWAR_NN_MISMATCHES,  0);
-        aw_root->awar_int(AWAR_NN_FAST_MODE,   0);
-        aw_root->awar_int(AWAR_NN_REL_MATCHES, 1);
-        aw_root->awar_int(AWAR_NN_REL_SCALING, RSS_BOTH_MIN);
+        aw_root->awar_int(AWAR_NN_OLIGO_LEN,  12)->set_minmax(1, 200)->add_callback(makeRootCallback(adjustOligolenAndMismatches, true))->add_callback(awar_changed_cb);
+        aw_root->awar_int(AWAR_NN_MISMATCHES,  0)->set_minmax(0,  50)->add_callback(makeRootCallback(adjustOligolenAndMismatches, false))->add_callback(awar_changed_cb);
+        aw_root->awar_int(AWAR_NN_FAST_MODE,   0)->add_callback(awar_changed_cb);
+        aw_root->awar_int(AWAR_NN_REL_MATCHES, 1)->add_callback(awar_changed_cb);
+        aw_root->awar_int(AWAR_NN_REL_SCALING, RSS_BOTH_MIN)->add_callback(awar_changed_cb);
 
         created = true;
     }
 }
 
-void AWTC_create_common_next_neighbour_fields(AW_window *aws) {
+void AWTC_create_common_next_neighbour_fields(AW_window *aws, int scaler_length) {
     // used in several figs:
     // - ad_spec_nn.fig
     // - ad_spec_nnm.fig
     // - faligner/family_settings.fig
 
     aws->at("oligo_len");
-    aws->create_input_field(AWAR_NN_OLIGO_LEN, 3);
+    aws->create_input_field_with_scaler(AWAR_NN_OLIGO_LEN, 3, scaler_length, AW_SCALER_EXP_LOWER);
 
     aws->at("mismatches");
-    aws->create_input_field(AWAR_NN_MISMATCHES, 3);
+    aws->create_input_field_with_scaler(AWAR_NN_MISMATCHES, 3, scaler_length, AW_SCALER_EXP_LOWER);
 
     aws->at("mode");
     aws->create_option_menu(AWAR_NN_FAST_MODE, true);

@@ -573,23 +573,25 @@ GBDATA *GBT_open(const char *path, const char *opent) {
  * - BIO::remote_read_awar      (use of GBT_remote_read_awar)
  */
 
-static GBDATA *wait_for_dbentry(GBDATA *gb_main, const char *entry) {
-    MacroTalkSleep increasing;
-    GBDATA *gbd;
-    while (1) {
-        GB_begin_transaction(gb_main);
-        gbd = GB_search(gb_main, entry, GB_FIND);
-        GB_commit_transaction(gb_main);
-        if (gbd) break;
-        increasing.sleep();
-    }
-    return gbd;
-}
+static GBDATA *wait_for_dbentry(GBDATA *gb_main, const char *entry, const ARB_timeout *timeout, bool verbose) {
+    // if 'timeout' != NULL -> abort and return NULL if timeout has passed (otherwise wait forever)
 
-static GBDATA *wait_for_dbentry_verboose(GBDATA *gb_main, const char *entry) {
-    GB_warningf("[waiting for DBENTRY '%s']", entry); // only prints onto console (ARB_NT is blocked as long as start_remote_command_for_application blocks)
-    GBDATA *gbd = wait_for_dbentry(gb_main, entry);
-    GB_warningf("[found DBENTRY '%s']", entry);
+    if (verbose) GB_warningf("[waiting for DBENTRY '%s']", entry);
+    GBDATA *gbd;
+    {
+        ARB_timestamp  start;
+        MacroTalkSleep increasing;
+
+        while (1) {
+            GB_begin_transaction(gb_main);
+            gbd = GB_search(gb_main, entry, GB_FIND);
+            GB_commit_transaction(gb_main);
+            if (gbd) break;
+            if (timeout && timeout->passed()) break;
+            increasing.sleep();
+        }
+    }
+    if (gbd && verbose) GB_warningf("[found DBENTRY '%s']", entry);
     return gbd;
 }
 
@@ -612,6 +614,7 @@ static GB_ERROR gbt_wait_for_remote_action(GBDATA *gb_main, GBDATA *gb_action, c
         error = GB_end_transaction(gb_main, error);
     }
 
+    if (error && !error[0]) return NULL; // empty error means ok
     return error; // may be error or result
 }
 
@@ -698,13 +701,14 @@ GB_ERROR GB_clear_macro_error(GBDATA *gb_main) {
     return error;
 }
 
-static GB_ERROR start_remote_command_for_application(GBDATA *gb_main, const remote_awars& remote) {
+static GB_ERROR start_remote_command_for_application(GBDATA *gb_main, const remote_awars& remote, const ARB_timeout *timeout, bool verbose) {
     // Called before any remote command will be written to DB.
     // Application specific initialization is done here.
+    //
+    // if 'timeout' != NULL -> abort with error if timeout has passed (otherwise wait forever)
 
-    mark_as_macro_executor(gb_main, true);
-
-    bool wait_for_app = false;
+    ARB_timestamp start;
+    bool          wait_for_app = false;
 
     GB_ERROR error    = GB_begin_transaction(gb_main);
     if (!error) error = GB_get_macro_error(gb_main);
@@ -733,7 +737,7 @@ static GB_ERROR start_remote_command_for_application(GBDATA *gb_main, const remo
 
         IF_DUMP_HANDSHAKE(fprintf(stderr, "AUTH_HANDSHAKE [waiting for %s]\n", remote.authAck()));
 
-        GBDATA *gb_authAck = wait_for_dbentry_verboose(gb_main, remote.authAck());
+        GBDATA *gb_authAck = wait_for_dbentry(gb_main, remote.authAck(), timeout, verbose);
         if (gb_authAck) {
             error = GB_begin_transaction(gb_main);
             if (!error) {
@@ -766,7 +770,12 @@ static GB_ERROR start_remote_command_for_application(GBDATA *gb_main, const remo
             error = GB_end_transaction(gb_main, error);
         }
         else {
-            gb_assert(0); // happens when?
+            // happens after timeout (handled by next if-clause)
+        }
+
+        if (timeout && timeout->passed()) {
+            wait_for_app = false;
+            error        = "remote application did not answer (within timeout)";
         }
 
         if (wait_for_app) {
@@ -777,14 +786,15 @@ static GB_ERROR start_remote_command_for_application(GBDATA *gb_main, const remo
     return error;
 }
 
-GB_ERROR GBT_remote_action(GBDATA *gb_main, const char *application, const char *action_name) {
-    // needs to be public (needed by perl-macros)
+NOT4PERL GB_ERROR GBT_remote_action_with_timeout(GBDATA *gb_main, const char *application, const char *action_name, const class ARB_timeout *timeout, bool verbose) {
+    // if timeout_ms > 0 -> abort with error if application does not answer (e.g. is not running)
+    // Note: opposed to GBT_remote_action, this function may NOT be called directly by perl-macros
 
     remote_awars remote(application);
-    GB_ERROR     error = start_remote_command_for_application(gb_main, remote);
+    GB_ERROR     error = start_remote_command_for_application(gb_main, remote, timeout, verbose);
 
     if (!error) {
-        GBDATA *gb_action = wait_for_dbentry(gb_main, remote.action());
+        GBDATA *gb_action = wait_for_dbentry(gb_main, remote.action(), NULL, false);
         error             = GB_begin_transaction(gb_main);
         if (!error) error = GB_write_string(gb_action, action_name); // write command
         error             = GB_end_transaction(gb_main, error);
@@ -793,14 +803,22 @@ GB_ERROR GBT_remote_action(GBDATA *gb_main, const char *application, const char 
     return error;
 }
 
+GB_ERROR GBT_remote_action(GBDATA *gb_main, const char *application, const char *action_name) {
+    // needs to be public (used exclusively(!) by perl-macros)
+    mark_as_macro_executor(gb_main, true);
+    return GBT_remote_action_with_timeout(gb_main, application, action_name, 0, true);
+}
+
 GB_ERROR GBT_remote_awar(GBDATA *gb_main, const char *application, const char *awar_name, const char *value) {
-    // needs to be public (needed by perl-macros)
+    // needs to be public (used exclusively(!) by perl-macros)
+
+    mark_as_macro_executor(gb_main, true);
 
     remote_awars remote(application);
-    GB_ERROR     error = start_remote_command_for_application(gb_main, remote);
+    GB_ERROR     error = start_remote_command_for_application(gb_main, remote, 0, true);
 
     if (!error) {
-        GBDATA *gb_awar   = wait_for_dbentry(gb_main, remote.awar());
+        GBDATA *gb_awar   = wait_for_dbentry(gb_main, remote.awar(), 0, false);
         error             = GB_begin_transaction(gb_main);
         if (!error) error = GB_write_string(gb_awar, awar_name);
         if (!error) error = GBT_write_string(gb_main, remote.value(), value);
@@ -811,13 +829,15 @@ GB_ERROR GBT_remote_awar(GBDATA *gb_main, const char *application, const char *a
 }
 
 GB_ERROR GBT_remote_read_awar(GBDATA *gb_main, const char *application, const char *awar_name) {
-    // needs to be public (needed by perl-macros)
+    // needs to be public (used exclusively(!) by perl-macros)
+
+    mark_as_macro_executor(gb_main, true);
 
     remote_awars remote(application);
-    GB_ERROR     error = start_remote_command_for_application(gb_main, remote);
+    GB_ERROR     error = start_remote_command_for_application(gb_main, remote, 0, true);
 
     if (!error) {
-        GBDATA *gb_awar   = wait_for_dbentry(gb_main, remote.awar());
+        GBDATA *gb_awar   = wait_for_dbentry(gb_main, remote.awar(), 0, false);
         error             = GB_begin_transaction(gb_main);
         if (!error) error = GB_write_string(gb_awar, awar_name);
         if (!error) error = GBT_write_string(gb_main, remote.action(), "AWAR_REMOTE_READ");

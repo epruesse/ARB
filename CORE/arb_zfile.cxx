@@ -14,9 +14,32 @@
 #include "arb_misc.h"
 #include "arb_assert.h"
 
+#include <string>
+#include <map>
+
 using namespace std;
 
-FILE *ARB_zfopen(const char *name, const char *mode, FileCompressionMode cmode, GB_ERROR& error) {
+class zinfo {
+    // info stored for each sucessfully opened file
+    // to support proper error message on close.
+    bool   writing; // false -> reading
+    string filename;
+    string pipe_cmd;
+public:
+    zinfo() {}
+    zinfo(bool writing_, const char *filename_, const char *pipe_cmd_)
+        : writing(writing_),
+          filename(filename_),
+          pipe_cmd(pipe_cmd_)
+    {}
+
+    bool isOutputPipe() const { return writing; }
+    const char *get_filename() const { return filename.c_str(); }
+    const char *get_pipecmd() const { return pipe_cmd.c_str(); }
+};
+static map<FILE*,zinfo> zfile_info;
+
+FILE *ARB_zfopen(const char *name, const char *mode, FileCompressionMode cmode, GB_ERROR& error, bool hideStderr) {
     arb_assert(!error);
 
     if (strchr(mode, 'a')) {
@@ -64,6 +87,9 @@ FILE *ARB_zfopen(const char *name, const char *mode, FileCompressionMode cmode, 
     if (cmode == ZFILE_UNCOMPRESSED) {
         fp             = fopen(name, mode);
         if (!fp) error = GB_IO_error("opening", name);
+        else {
+            zfile_info[fp] = zinfo(forOutput, name, "");
+        }
     }
     else {
         if (!error) {
@@ -95,6 +121,10 @@ FILE *ARB_zfopen(const char *name, const char *mode, FileCompressionMode cmode, 
                     ? GBS_global_string_copy("%s > %s", compressor, name)
                     : GBS_global_string_copy("%s %s < %s", compressor, decompress_flag, name);
 
+                if (hideStderr) {
+                    freeset(pipeCmd, GBS_global_string_copy("( %s 2>/dev/null )", pipeCmd));
+                }
+
                 // remove 'b' from mode (pipes are binary by default)
                 char *impl_b_mode = strdup(mode);
                 while (1) {
@@ -111,6 +141,11 @@ FILE *ARB_zfopen(const char *name, const char *mode, FileCompressionMode cmode, 
                     fp             = popen(pipeCmd, impl_b_mode);
                     if (!fp) error = GB_IO_error("reading from pipe", pipeCmd);
                 }
+
+                if (!error) {
+                    zfile_info[fp] = zinfo(forOutput, name, pipeCmd);
+                }
+
                 free(impl_b_mode);
                 free(pipeCmd);
             }
@@ -122,9 +157,12 @@ FILE *ARB_zfopen(const char *name, const char *mode, FileCompressionMode cmode, 
     return fp;
 }
 
-GB_ERROR ARB_zfclose(FILE *fp, const char *filename) {
-    bool fifo = GB_is_fifo(fp);
-    int  res;
+GB_ERROR ARB_zfclose(FILE *fp) {
+    bool  fifo = GB_is_fifo(fp);
+    zinfo info = zfile_info[fp];
+    zfile_info.erase(fp);
+
+    int res;
     if (fifo) {
         res = pclose(fp);
     }
@@ -135,17 +173,26 @@ GB_ERROR ARB_zfclose(FILE *fp, const char *filename) {
     GB_ERROR error = NULL;
     if (res != 0) {
         int exited   = WIFEXITED(res);
-        int signaled = WIFSIGNALED(res);
         int status   = WEXITSTATUS(res);
+#if defined(DEBUG)
+        int signaled = WIFSIGNALED(res);
+#endif
 
         if (exited) {
             if (status) {
                 if (fifo) {
-                    error = GBS_global_string("pipe writing to '%s' failed with exitcode=%i (broken pipe?)", filename, status); // @@@ show pipe-command here
+                    error = GBS_global_string("pipe %s\n"
+                                              " file='%s'\n"
+                                              " using cmd='%s'\n"
+                                              " failed with exitcode=%i (broken pipe? corrupted archive?)\n",
+                                              info.isOutputPipe() ? "writing to" : "reading from",
+                                              info.get_filename(),
+                                              info.get_pipecmd(),
+                                              status);
                 }
             }
         }
-        if (!error) error = GB_IO_error("closing", filename);
+        if (!error) error = GB_IO_error("closing", info.get_filename());
 #if defined(DEBUG)
         error = GBS_global_string("%s (res=%i, exited=%i, signaled=%i, status=%i)", error, res, exited, signaled, status);
 #endif
@@ -169,19 +216,19 @@ static char *fileContent(FILE *in, size_t& bytes_read) {
     return buffer;
 }
 
-#define TEST_EXPECT_ZFOPEN_FAILS(name,mode,cmode,errpart) do{     \
-        GB_ERROR  error = NULL;                                   \
-        FILE     *fp    = ARB_zfopen(name, mode, cmode, error);   \
-                                                                  \
-        if (fp) {                                                 \
-            TEST_EXPECT_NULL(error);                              \
-            error = ARB_zfclose(fp, name);                        \
-        }                                                         \
-        else {                                                    \
-            TEST_EXPECT_NULL(fp);                                 \
-        }                                                         \
-        TEST_REJECT_NULL(error);                                  \
-        TEST_EXPECT_CONTAINS(error, errpart);                     \
+#define TEST_EXPECT_ZFOPEN_FAILS(name,mode,cmode,errpart) do{           \
+        GB_ERROR  error = NULL;                                         \
+        FILE     *fp    = ARB_zfopen(name, mode, cmode, error, false);  \
+                                                                        \
+        if (fp) {                                                       \
+            TEST_EXPECT_NULL(error);                                    \
+            error = ARB_zfclose(fp);                                    \
+        }                                                               \
+        else {                                                          \
+            TEST_EXPECT_NULL(fp);                                       \
+        }                                                               \
+        TEST_REJECT_NULL(error);                                        \
+        TEST_EXPECT_CONTAINS(error, errpart);                           \
     }while(0)
 
 void TEST_compressed_io() {
@@ -204,7 +251,7 @@ void TEST_compressed_io() {
     const size_t  TEST_TEXT_SIZE = 428;
     {
         GB_ERROR  error = NULL;
-        FILE     *in    = ARB_zfopen(inText, "r", ZFILE_UNCOMPRESSED, error);
+        FILE     *in    = ARB_zfopen(inText, "r", ZFILE_UNCOMPRESSED, error, false);
         TEST_EXPECT_NULL(error);
         TEST_REJECT_NULL(in);
 
@@ -212,7 +259,7 @@ void TEST_compressed_io() {
         testText = fileContent(in, bytes_read);
         TEST_EXPECT_EQUAL(bytes_read, TEST_TEXT_SIZE);
 
-        TEST_EXPECT_NO_ERROR(ARB_zfclose(in, inText));
+        TEST_EXPECT_NO_ERROR(ARB_zfclose(in));
     }
 
     int successful_compressions = 0;
@@ -226,14 +273,14 @@ void TEST_compressed_io() {
         bool compressed_save_failed = false;
         {
             GB_ERROR  error = NULL;
-            FILE     *out   = ARB_zfopen(outFile, "w", cmode, error);
+            FILE     *out   = ARB_zfopen(outFile, "w", cmode, error, false);
 
             TEST_EXPECT_NO_ERROR(error);
             TEST_REJECT_NULL(out);
 
             TEST_EXPECT_DIFFERENT(EOF, fputs(testText, out));
 
-            error = ARB_zfclose(out, outFile);
+            error = ARB_zfclose(out);
             if (error && strstr(error, "failed with exitcode=127") && cmode != ZFILE_UNCOMPRESSED) {
                 // assume compression utility is not installed
                 compressed_save_failed = true;
@@ -248,14 +295,14 @@ void TEST_compressed_io() {
                 TEST_ANNOTATE(GBS_global_string("cmode=%i detect=%i", int(cmode), detect));
 
                 GB_ERROR  error = NULL;
-                FILE     *in    = ARB_zfopen(outFile, "r", detect ? ZFILE_AUTODETECT : cmode, error);
+                FILE     *in    = ARB_zfopen(outFile, "r", detect ? ZFILE_AUTODETECT : cmode, error, false);
 
                 TEST_REJECT(error);
                 TEST_REJECT_NULL(in);
 
                 size_t  bytes_read;
                 char   *content = fileContent(in, bytes_read);
-                TEST_EXPECT_NO_ERROR(ARB_zfclose(in, outFile));
+                TEST_EXPECT_NO_ERROR(ARB_zfclose(in));
                 TEST_EXPECT_EQUAL(content, testText); // if this fails for detect==1 -> detection does not work
                 free(content);
             }

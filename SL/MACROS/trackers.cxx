@@ -316,8 +316,13 @@ void ClientActionTracker::bind_callbacks(bool install) {
 
 
 void ClientActionTracker::track_action(const char *action_id) {
-    ma_assert(strchr(action_id, '*') == 0);
-    send_client_action(GBS_global_string("ACTION*%s", action_id));
+    if (!action_id) {
+        warn_unrecordable("anonymous GUI element");
+    }
+    else {
+        ma_assert(strchr(action_id, '*') == 0);
+        send_client_action(GBS_global_string("ACTION*%s", action_id));
+    }
 }
 
 void ClientActionTracker::track_awar_change(AW_awar *awar) {

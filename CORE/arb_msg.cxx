@@ -519,7 +519,7 @@ GB_ERROR GBK_system(const char *system_command) {
         }
 
         error = GBS_global_string("%s\n"
-                                  "System call was '%s'%s",
+                                  "System call was `%s`%s",
                                   error, system_command,
                                   res == -1 ? "" : "\n(Note: console window may contain additional information)");
     }

@@ -10,6 +10,7 @@
 #include "defs.h"
 #include "fun.h"
 #include "global.h"
+#include <arb_msg.h>
 
 Convaln_exception *Convaln_exception::thrown = NULL;
 
@@ -273,14 +274,10 @@ int ARB_main(int argc, char *argv[]) {
     catch (Convaln_exception& err) {
         fprintf(stderr, "ERROR(%d): %s\n", err.get_code(), err.get_msg());
         if (use_arb_message) {
-            char *escaped = strdup(err.get_msg());
-            for (int i = 0; escaped[i]; ++i) if (escaped[i] == '\"') escaped[i] = '\'';
-
-            char *command        = strf("arb_message \"Error: %s (in arb_convert_aln; code=%d)\"", escaped, err.get_code());
-            if (system(command) != 0) fprintf(stderr, "ERROR running '%s'\n", command);
-            free(command);
-
-            free(escaped);
+            char     *quotedErrorMsg = GBK_singlequote(GBS_global_string("Error: %s (in arb_convert_aln; code=%d)", err.get_msg(), err.get_code()));
+            GB_ERROR  error          = GBK_system(GBS_global_string("arb_message %s &", quotedErrorMsg)); // send async to avoid deadlock
+            if (error) fprintf(stderr, "Error: %s\n", error);
+            free(quotedErrorMsg);
         }
         exitcode = EXIT_FAILURE;
     }

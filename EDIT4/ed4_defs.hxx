@@ -62,8 +62,13 @@ extern bool         DRAW;
 
 // globally used defines and flags
 
-#define INFINITE    -1
-#define SLIDER_OFFSET   5
+#define INFINITE -1
+
+#if defined(ARB_MOTIF)
+#define SLIDER_OFFSET 5
+#else // ARB_GTK
+#define SLIDER_OFFSET 0
+#endif
 
 // these are recommended for accessing ED4_extension:
 #define X_POS       0

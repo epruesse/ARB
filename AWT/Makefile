@@ -187,6 +187,7 @@ AWT_db_browser.o: awt_hexdump.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/ad_cb.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/ad_prot.h
+AWT_db_browser.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_diff.h
@@ -194,12 +195,14 @@ AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_error.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_file.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_misc.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_sleep.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_str.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_string.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+AWT_db_browser.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_advice.hxx
@@ -215,6 +218,7 @@ AWT_db_browser.o: $(ARBHOME)/INCLUDE/cb.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/cb_base.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/cxxforward.h
+AWT_db_browser.o: $(ARBHOME)/INCLUDE/downcast.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/gccver.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/smartptr.h

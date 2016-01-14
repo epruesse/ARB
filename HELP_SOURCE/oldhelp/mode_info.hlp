@@ -1,49 +1,49 @@
 #Please insert up references in the next lines (line starts with keyword UP)
-UP	arb.hlp
-UP	glossary.hlp
-UP	mode.hlp
+UP      arb.hlp
+UP      glossary.hlp
+UP      mode.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
-SUB	sp_info.hlp
+SUB     sp_info.hlp
 
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		INFO MODE
+TITLE           INFO MODE
 
-OCCURRENCE	ARB_NT: <INFO> button in the left column
-		F6 on the keyboard
+OCCURRENCE      ARB_NT and ARB_PARSIMONY: <INFO> button in the left column
+                F6 on the keyboard
 
 
-DESCRIPTION	The 'INFO MODE' allows you to show or modify information assigned to terminal or 
-		internal nodes (i.e. species or groups of species).
+DESCRIPTION     The 'INFO MODE' allows you to show or modify information assigned to terminal or 
+                internal nodes (i.e. species or groups of species).
 
-		Press the <INFO> button of the 'ARB_NT' window or 
-		the 'F6' key on the keyboard to activate the 'INFO
-		MODE'. In the latter case, the cursor has to be placed
-		within the tree display area. The 'SPECIES INFORMATION'
-		window is displayed.	
+                Press the <INFO> button of the 'ARB_NT' window or
+                the 'F6' key on the keyboard to activate the 'INFO
+                MODE'. In the latter case, the cursor has to be placed
+                within the tree display area. The 'SPECIES INFORMATION'
+                window is displayed.
 
-		Select a species or an existing group:
+                Select a species or an existing group:
 
-			Move the cursor to the respective node and
-			press the left mouse button. The corresponding
+                        Move the cursor to the respective node and
+                        press the left mouse button. The corresponding
                         information is displayed within the 'SPECIES INFORMATION'
-			window.
+                        window.
 
-		Create and select a group:
+                Create and select a group:
 
-			Move the cursor to any corner or edge of the triangle
-			(radial tree) or rectangle (dendrogram) representing
-			the desired group and press the right mouse button.
-			The corresponding information is displayed within the
-			'SPECIES INFORMATION' window.
+                        Move the cursor to any corner or edge of the triangle
+                        (radial tree) or rectangle (dendrogram) representing
+                        the desired group and press the right mouse button.
+                        The corresponding information is displayed within the
+                        'SPECIES INFORMATION' window.
 
 
-NOTES		The selected node is indicated by an open square.
+NOTES           The selected node is indicated by an open square.
 
-EXAMPLES	None
+EXAMPLES        None
 
-WARNINGS	None
+WARNINGS        None
 
-BUGS		No bugs known
+BUGS            No bugs known
