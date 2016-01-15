@@ -1,7 +1,7 @@
 menu:Print
 
 item:[experimental] Validate taxonomy (SATIVA)
-itemmethod: (mkdir -p ~/.arb_tmp/sativa_$$; cd ~/.arb_tmp/sativa_$$ ; arb_convert_aln --arb-notify -GenBank TmpInputFile -phylip sativa_in.phy; ${ARB_XCMD} bash -x -c @@LD_LIBRARY_PATH="${ARB_LIBRARY_PATH:-/usr/arb/lib}";export LD_LIBRARY_PATH; arb_sativa.pl $MARKEDONLY $MARKMIS $RANKTEST $VERBOSE $TAXFIELD $TAXCODE $METHOD $NUMREPS $CUTOFF $RANDSEED $SPECIESFIELD; arb_wait@@; cd ~/.arb_tmp; rm -rf sativa_$$) & 
+itemmethod: (mkdir -p ~/.arb_tmp/sativa_$$; cd ~/.arb_tmp/sativa_$$ ; arb_convert_aln --arb-notify -GenBank TmpInputFile -phylip sativa_in.phy; ${ARB_XCMD} bash -x -c @@LD_LIBRARY_PATH="${ARB_LIBRARY_PATH:-/usr/arb/lib}";export LD_LIBRARY_PATH; arb_sativa.pl $MARKEDONLY $MARKMIS $RANKTEST $VERBOSE $TAXFIELD $TAXCODE $METHOD $NUMREPS $CUTOFF $RANDSEED $CORES $SPECIESFIELD; arb_wait@@; cd ~/.arb_tmp; rm -rf sativa_$$) & 
 seqtype:*
 itemmeta:v
 itemhelp:sativa.help
@@ -36,7 +36,7 @@ argtype:text
 argtext:tax_slv
 
 arg:SPECIESFIELD
-arglabel:Species name field
+arglabel:Species name field (empty=ignore species)
 argtype:text
 argtext:full_name
 
@@ -69,6 +69,11 @@ arg:RANDSEED
 arglabel:Random seed
 argtype:text
 argtext:12345
+
+arg:CORES
+arglabel:Number of threads to use (0=auto)
+argtype:text
+argtext:0
 
 arg:VERBOSE
 arglabel:Verbose output
