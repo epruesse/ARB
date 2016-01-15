@@ -133,14 +133,14 @@ sub cpu_get_cores() {
     return $cores;
 }
 
-sub runPythonPipeline($$$$$$$$$) {
-  my ($seq_file,$tax_file,$tax_code,$raxml_method,$num_reps,$conf_cutoff,$rand_seed,$rank_test,$verbose) = @_;
+sub runPythonPipeline($$$$$$$$$$) {
+  my ($seq_file,$tax_file,$tax_code,$raxml_method,$num_reps,$conf_cutoff,$rand_seed,$rank_test,$verbose,$cores) = @_;
 
   my $refjson_file = 'arb_export.json';
   my $cfg_file = $sativa_home.'/epac.cfg.sativa';
 
   # auto-configure RAxML
-  my $cores = cpu_get_cores();
+  if ($cores == 0) { $cores = cpu_get_cores(); }
 
   my $bindir = $ENV{'ARBHOME'}."/bin";
   my $tmpdir = `pwd`;
@@ -249,7 +249,7 @@ sub die_usage($) {
   my ($err) = @_;
   print "Purpose: Run SATIVA taxonomy validation pipeline\n";
   print "and import results back into ARB\n";
-  print "Usage: arb_sativa.pl [--marked-only] [--mark-misplaced] [--rank-test] tax_field tax_code num_reps raxml_method conf_cutoff rand_seed verbose species_field\n";
+  print "Usage: arb_sativa.pl [--marked-only] [--mark-misplaced] [--rank-test] [--verbose] tax_field tax_code num_reps raxml_method conf_cutoff rand_seed cores species_field\n";
   print "       tax_field         Field contatining full (original) taxonomic path (lineage)\n";
   print "       species_field     Field containing species name\n";
   print "       --marked-only     Process only species that are marked in ARB (default: process all)\n";
@@ -288,6 +288,7 @@ sub main() {
   my $raxml_method = shift @ARGV;
   my $conf_cutoff = shift @ARGV;
   my $rand_seed = shift @ARGV;
+  my $cores = shift @ARGV;
   my $species_field = shift @ARGV;
   
   my $field_suffix = $tax_field;
@@ -300,7 +301,7 @@ sub main() {
 
   exportTaxonomy($seq_file,$tax_file,$tax_field,$species_field,$marked_only,@marklist);
 
-  runPythonPipeline($seq_file,$tax_file,$tax_code,$num_reps,$raxml_method,$conf_cutoff,$rand_seed,$rank_test,$verbose);
+  runPythonPipeline($seq_file,$tax_file,$tax_code,$num_reps,$raxml_method,$conf_cutoff,$rand_seed,$rank_test,$verbose,$cores);
 
   importResults($res_file,$marked_only,$mark_misplaced,$field_suffix);
   
