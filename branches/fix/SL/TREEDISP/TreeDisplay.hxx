@@ -40,6 +40,7 @@
 #define AWAR_DTREE_USE_ELLIPSE     "awt/dtree/ellipse"
 #define AWAR_DTREE_GREY_LEVEL      "awt/dtree/greylevel"
 #define AWAR_DTREE_GROUPCOUNTMODE  "awt/dtree/groupcountmode"
+#define AWAR_DTREE_GROUPINFOPOS    "awt/dtree/groupinfopos"
 #define AWAR_DTREE_BOOTSTRAP_MIN   "awt/dtree/bootstrap/inner/min"
 
 #define AWAR_DTREE_RADIAL_ZOOM_TEXT "awt/dtree/radial/zoomtext"
@@ -222,9 +223,15 @@ enum GroupInfoMode {
     GI_SEPARATED_PARENTIZED, // like GI_SEPARATED, but GroupInfo::count will be "(count)"
 };
 
+enum GroupInfoPosition {
+    GIP_SEPARATED, // name attached, count overlayed             (=old hardcoded default for AP_TREE_NORMAL and AP_TREE_IRS)
+    GIP_ATTACHED,  // "name (count)" attached "next to" group    (=old hardcoded default for AP_TREE_RADIAL)
+    GIP_OVERLAYED, // "name (count)" overlayed with group polygon
+};
+
 enum GroupCountMode {
-    GCM_NONE,    // do not show group count
-    GCM_MEMBERS, // show number of group members
+    GCM_NONE,    // do not show group count         (=old hardcoded default for AP_TREE_RADIAL)
+    GCM_MEMBERS, // show number of group members    (=old hardcoded default for AP_TREE_NORMAL and AP_TREE_IRS)
     GCM_MARKED,  // show number of marked group members (show nothing if none marked)
     GCM_BOTH,    // show "marked/members" (or "members" if none marked)
     GCM_PERCENT, // show percent of marked group members (show nothing if none marked)
@@ -274,7 +281,8 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
 
     bool nds_show_all;
 
-    GroupCountMode group_count_mode;
+    GroupInfoPosition group_info_pos;
+    GroupCountMode    group_count_mode;
 
     MarkerDisplay *display_markers;
     struct {
@@ -301,7 +309,7 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
 
     void pixel_box(int gc, const AW::Position& pos, int pixel_width, AW::FillStyle filled);
 
-    const GroupInfo& get_group_info(AP_tree *at, GroupInfoMode mode) const;
+    const GroupInfo& get_group_info(AP_tree *at, GroupInfoMode mode, bool swap = false) const;
 
 public:
     void filled_box(int gc, const AW::Position& pos, int pixel_width) { pixel_box(gc, pos, pixel_width, AW::FillStyle::SOLID); }

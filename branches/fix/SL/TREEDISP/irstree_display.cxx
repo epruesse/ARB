@@ -148,7 +148,7 @@ AW_pos AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, AW_pos x_offset) {
 
                 Position box_rcenter = gbox.right_edge().centroid();
 
-                const GroupInfo& info = get_group_info(node, GI_SEPARATED);
+                const GroupInfo& info = get_group_info(node, group_info_pos == GIP_SEPARATED ? GI_SEPARATED : GI_COMBINED, group_info_pos == GIP_OVERLAYED);
                 if (info.name) { //  a node name should be displayed
                     disp_device->text(gc, info.name, box_rcenter+IRS.adjust_text, 0.0, AW_ALL_DEVICES_UNSCALED, info.name_len); // GROUPPAINT: folded group name (IRS)
                 }
@@ -193,6 +193,8 @@ AW_pos AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, AW_pos x_offset) {
         disp_device->line(gc, x_offset-IRS.onePixel, group_y1, x_offset+frame_width, group_y1); // opened-group-frame
 
         const GroupInfo& info = get_group_info(node, GI_COMBINED);
+
+        td_assert(info.name); // if fails -> maybe skip whole headerline
         disp_device->text(node->gr.gc,  // GROUPPAINT: unfolded group+counter (IRS)
                           info.name,
                           x_offset-IRS.onePixel + IRS.gap,

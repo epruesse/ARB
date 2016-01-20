@@ -1789,6 +1789,7 @@ AWT_graphic_tree::AWT_graphic_tree(AW_root *aw_root_, GBDATA *gb_main_, AD_map_v
     gb_main          = gb_main_;
     cmd_data         = NULL;
     nds_show_all     = true;
+    group_info_pos   = GIP_SEPARATED;
     group_count_mode = GCM_MEMBERS;
     map_viewer_cb    = map_viewer_cb_;
     display_markers  = NULL;
@@ -2272,7 +2273,7 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
         limits.x_right = n0.xpos();
 
         if (disp_device->get_filter() & group_text_filter) {
-            const GroupInfo& info = get_group_info(at, GI_SEPARATED);
+            const GroupInfo& info = get_group_info(at, group_info_pos == GIP_SEPARATED ? GI_SEPARATED : GI_COMBINED, group_info_pos == GIP_OVERLAYED);
 
             if (info.name) {
                 Position textPos = n0+text_offset;
@@ -2456,7 +2457,7 @@ void AWT_graphic_tree::show_radial_tree(AP_tree *at, const AW::Position& base, c
         disp_device->polygon(at->gr.gc, AW::FillStyle::SHADED_WITH_BORDER, 3, corner, line_filter);
 
         if (disp_device->get_filter() & group_text_filter) {
-            const GroupInfo& info = get_group_info(at, GI_COMBINED);
+            const GroupInfo& info = get_group_info(at, group_info_pos == GIP_SEPARATED ? GI_SEPARATED : GI_COMBINED, group_info_pos == GIP_OVERLAYED);
             if (info.name) {
                 Angle toText = orientation;
                 toText.rotate90deg();
@@ -2470,6 +2471,19 @@ void AWT_graphic_tree::show_radial_tree(AP_tree *at, const AW::Position& base, c
                                   alignment,
                                   group_text_filter,
                                   info.name_len);
+            }
+            if (info.count) {
+                Vector v01 = corner[1]-corner[0];
+                Vector v02 = corner[2]-corner[0];
+
+                Position incircleCenter = corner[0] + (v01*v02.length() + v02*v01.length()) / (v01.length()+v02.length()+Distance(v01.endpoint(), v02.endpoint()));
+
+                disp_device->text(at->gr.gc, // GROUPPAINT: folded group counter (radial tree)
+                                  info.count,
+                                  incircleCenter,
+                                  0.5,
+                                  group_text_filter,
+                                  info.count_len);
             }
         }
     }
@@ -2819,6 +2833,7 @@ void AWT_graphic_tree::read_tree_settings() {
     group_greylevel        = aw_root->awar(AWAR_DTREE_GREY_LEVEL)->read_int() * 0.01;
     baselinewidth          = aw_root->awar(AWAR_DTREE_BASELINEWIDTH)->read_int();
     group_count_mode       = GroupCountMode(aw_root->awar(AWAR_DTREE_GROUPCOUNTMODE)->read_int());
+    group_info_pos         = GroupInfoPosition(aw_root->awar(AWAR_DTREE_GROUPINFOPOS)->read_int());
     show_brackets          = aw_root->awar(AWAR_DTREE_SHOW_BRACKETS)->read_int();
     groupScale.pow         = aw_root->awar(AWAR_DTREE_GROUP_DOWNSCALE)->read_float();
     groupScale.linear      = aw_root->awar(AWAR_DTREE_GROUP_SCALE)->read_float();
@@ -2972,7 +2987,7 @@ inline unsigned percentMarked(const AP_tree_members& gr) {
     return pc;
 }
 
-const GroupInfo& AWT_graphic_tree::get_group_info(AP_tree *at, GroupInfoMode mode) const {
+const GroupInfo& AWT_graphic_tree::get_group_info(AP_tree *at, GroupInfoMode mode, bool swap) const {
     static GroupInfo info = { 0, 0, 0, 0 };
 
     info.name = NULL;
@@ -3042,12 +3057,14 @@ const GroupInfo& AWT_graphic_tree::get_group_info(AP_tree *at, GroupInfoMode mod
                 info.count_len = 0;
             }
         }
-        else {
-            if (info.count) {
-                std::swap(info.name, info.count);
-                std::swap(info.name_len, info.count_len);
-            }
+        else if (info.count) {
+            swap = !swap;
         }
+    }
+
+    if (swap) {
+        std::swap(info.name, info.count);
+        std::swap(info.name_len, info.count_len);
     }
 
     return info;
@@ -3092,6 +3109,7 @@ void TREE_create_awars(AW_root *aw_root, AW_default db) {
     aw_root->awar_int(AWAR_DTREE_AUTO_JUMP_TREE, AP_JUMP_FORCE_VCENTER);
 
     aw_root->awar_int(AWAR_DTREE_GROUPCOUNTMODE, GCM_MEMBERS);
+    aw_root->awar_int(AWAR_DTREE_GROUPINFOPOS,   GIP_SEPARATED);
 
     aw_root->awar_int(AWAR_DTREE_SHOW_BRACKETS, 1);
     aw_root->awar_int(AWAR_DTREE_SHOW_CIRCLE,   0);
@@ -3139,6 +3157,7 @@ void TREE_install_update_callbacks(AWT_canvas *ntw) {
     awr->awar(AWAR_DTREE_BOOTSTRAP_MIN)  ->add_callback(expose_cb);
     awr->awar(AWAR_DTREE_GREY_LEVEL)     ->add_callback(expose_cb);
     awr->awar(AWAR_DTREE_GROUPCOUNTMODE) ->add_callback(expose_cb);
+    awr->awar(AWAR_DTREE_GROUPINFOPOS)   ->add_callback(expose_cb);
 
     RootCallback reinit_treetype_cb = makeRootCallback(NT_reinit_treetype, ntw);
     awr->awar(AWAR_DTREE_RADIAL_ZOOM_TEXT)->add_callback(reinit_treetype_cb);
@@ -3200,6 +3219,7 @@ static AWT_config_mapping_def tree_setting_config_mapping[] = {
     { AWAR_DTREE_RADIAL_XPAD,      "radial_xpadding" },
     { AWAR_DTREE_BOOTSTRAP_MIN,    "bootstrap_min" },
     { AWAR_DTREE_GROUPCOUNTMODE,   "group_countmode" },
+    { AWAR_DTREE_GROUPINFOPOS,     "group_infopos" },
     { 0, 0 }
 };
 
@@ -3259,6 +3279,14 @@ AW_window *TREE_create_settings_window(AW_root *aw_root) {
         aws->insert_option        ("Marked/Members",  "b", GCM_BOTH);
         aws->insert_option        ("%Marked",         "%", GCM_PERCENT);
         aws->insert_option        ("%Marked/Members", "e", GCM_BOTH_PC);
+        aws->update_option_menu();
+        aws->at_newline();
+
+        aws->label("Group counter position");
+        aws->create_option_menu(AWAR_DTREE_GROUPINFOPOS, true);
+        aws->insert_default_option("Attached",  "A", GIP_ATTACHED);
+        aws->insert_option        ("Overlayed", "O", GIP_OVERLAYED);
+        aws->insert_option        ("Separated", "a", GIP_SEPARATED);
         aws->update_option_menu();
         aws->at_newline();
 
@@ -3464,6 +3492,12 @@ class fake_AWT_graphic_tree : public AWT_graphic_tree {
         circle_zoom_factor = 1.3;
         circle_max_size    = 1.5;
         bootstrap_min      = 0;
+
+        group_info_pos = GIP_SEPARATED;
+        switch (var_mode) {
+            case 2: group_info_pos = GIP_ATTACHED;  break;
+            case 3: group_info_pos = GIP_OVERLAYED; break;
+        }
 
         switch (var_mode) {
             case 0: group_count_mode = GCM_MEMBERS; break;

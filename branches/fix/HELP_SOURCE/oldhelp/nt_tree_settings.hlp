@@ -47,6 +47,8 @@ DESCRIPTION     Various tree display settings are available:
                 - 'Show group counter' specifies whether a counter shall be displayed for groups
                   and which specific counter type to use (Note: zero marks are always skipped).
 
+                - 'Group counter position' specifies where the group counter is shown.
+
                 - 'Show bootstrap circles' toggles the display of bootstrap circles (only
                   available if the tree contains bootstrap values).
 
@@ -65,11 +67,17 @@ DESCRIPTION     Various tree display settings are available:
                 - 'Grey Level of Groups%' (for printing/Xfig only)
 
                 - Text zoom/pad
+
                   Select toggle to consider text for default zoom (otherwise only tree-structure is considered).
                   Add extra padding in pixel (= amount of extra space for text; may be negative)
 
-NOTES		The line width of individual branches can be changed
-		independently using the 'LINE WIDTH MODE'.
+NOTES           The line width of individual branches can be changed
+                independently using the 'LINE WIDTH MODE'.
+
+                To copy tree settings from ARB main window to the ARB parsimony
+                window, use the config manager (see LINK{prop_configs.hlp}):
+                save the config to a file from the source window and
+                restore it from that file in the target window.
 
 EXAMPLES	None
 
