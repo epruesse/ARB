@@ -150,11 +150,11 @@ AW_pos AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, AW_pos x_offset) {
 
                 const GroupInfo& info = get_group_info(node, group_info_pos == GIP_SEPARATED ? GI_SEPARATED : GI_COMBINED, group_info_pos == GIP_OVERLAYED);
                 if (info.name) { //  a node name should be displayed
-                    disp_device->text(gc, info.name, box_rcenter+IRS.adjust_text, 0.0, AW_ALL_DEVICES_UNSCALED, info.name_len); // GROUPPAINT: folded group name (IRS)
+                    disp_device->text(gc, info.name, box_rcenter+IRS.adjust_text, 0.0, AW_ALL_DEVICES_UNSCALED, info.name_len);
                 }
                 if (info.count) {
-                    Position    box_lcenter  = gbox.left_edge().centroid();
-                    disp_device->text(gc, info.count, box_lcenter+IRS.adjust_text, 0.0, AW_ALL_DEVICES_UNSCALED, info.count_len); // GROUPPAINT: folded group counter (IRS)
+                    Position box_lcenter = gbox.left_edge().centroid();
+                    disp_device->text(gc, info.count, box_lcenter+IRS.adjust_text, 0.0, AW_ALL_DEVICES_UNSCALED, info.count_len);
                 }
 
                 IRS.draw_top_separator_once(disp_device);
@@ -195,7 +195,7 @@ AW_pos AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, AW_pos x_offset) {
         const GroupInfo& info = get_group_info(node, GI_COMBINED);
 
         td_assert(info.name); // if fails -> maybe skip whole headerline
-        disp_device->text(node->gr.gc,  // GROUPPAINT: unfolded group+counter (IRS)
+        disp_device->text(node->gr.gc,
                           info.name,
                           x_offset-IRS.onePixel + IRS.gap,
                           group_y1 + 2*IRS.adjust_text.y() + IRS.gap,

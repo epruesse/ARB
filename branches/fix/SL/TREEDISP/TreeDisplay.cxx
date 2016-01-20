@@ -2277,7 +2277,7 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
 
             if (info.name) {
                 Position textPos = n0+text_offset;
-                disp_device->text(at->gr.gc, info.name, textPos, 0.0, group_text_filter, info.name_len); // GROUPPAINT: folded group name (dendrogram)
+                disp_device->text(at->gr.gc, info.name, textPos, 0.0, group_text_filter, info.name_len);
 
                 double textsize = disp_device->get_string_size(at->gr.gc, info.name, info.name_len) * disp_device->get_unscale();
                 limits.x_right  = textPos.xpos()+textsize;
@@ -2285,7 +2285,7 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
 
             if (info.count) {
                 Position countPos   = s0+text_offset;
-                disp_device->text(at->gr.gc, info.count, countPos, 0.0, group_text_filter, info.count_len); // GROUPPAINT: folded group member count (dendrogram)
+                disp_device->text(at->gr.gc, info.count, countPos, 0.0, group_text_filter, info.count_len);
             }
         }
 
@@ -2353,7 +2353,7 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
 
                         if (info.name) {
                             Position namePos = clippedBracket.centroid()+Vector(half_text_ascent, -0.2*half_text_ascent); // originally y-offset was half_text_ascent (w/o counter shown)
-                            disp_device->text(at->gr.gc, info.name, namePos, 0.0, group_text_filter, info.name_len);      // GROUPPAINT: unfolded group (dendrogram)
+                            disp_device->text(at->gr.gc, info.name, namePos, 0.0, group_text_filter, info.name_len);
                             if (info.name_len>=info.count_len) {
                                 double textsize = disp_device->get_string_size(at->gr.gc, info.name, info.name_len) * unscale;
                                 limits.x_right  = namePos.xpos() + textsize;
@@ -2362,7 +2362,7 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
 
                         if (info.count) {
                             Position countPos = clippedBracket.centroid()+Vector(half_text_ascent, 2.2*half_text_ascent);
-                            disp_device->text(at->gr.gc, info.count, countPos, 0.0, group_text_filter, info.count_len); // GROUPPAINT: unfolded group counter (dendrogram)
+                            disp_device->text(at->gr.gc, info.count, countPos, 0.0, group_text_filter, info.count_len);
                             if (info.count_len>info.name_len) {
                                 double textsize = disp_device->get_string_size(at->gr.gc, info.count, info.count_len) * unscale;
                                 limits.x_right  = countPos.xpos() + textsize;
@@ -2464,7 +2464,7 @@ void AWT_graphic_tree::show_radial_tree(AP_tree *at, const AW::Position& base, c
                 AW_pos   alignment;
                 Position textpos = calc_text_coordinates_near_tip(disp_device, at->gr.gc, corner[1], toText, alignment);
 
-                disp_device->text(at->gr.gc, // GROUPPAINT: folded group (radial tree)
+                disp_device->text(at->gr.gc,
                                   info.name,
                                   textpos,
                                   alignment,
@@ -2477,7 +2477,7 @@ void AWT_graphic_tree::show_radial_tree(AP_tree *at, const AW::Position& base, c
 
                 Position incircleCenter = corner[0] + (v01*v02.length() + v02*v01.length()) / (v01.length()+v02.length()+Distance(v01.endpoint(), v02.endpoint()));
 
-                disp_device->text(at->gr.gc, // GROUPPAINT: folded group counter (radial tree)
+                disp_device->text(at->gr.gc,
                                   info.count,
                                   incircleCenter,
                                   0.5,
