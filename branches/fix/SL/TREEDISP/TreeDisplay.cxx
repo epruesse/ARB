@@ -2265,15 +2265,15 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
         disp_device->set_grey_level(at->gr.gc, group_greylevel);
         disp_device->polygon(at->gr.gc, AW::FillStyle::SHADED_WITH_BORDER, 4, group, line_filter);
 
-        const AW_font_limits& charLimits  = disp_device->get_font_limits(at->gr.gc, 'A');
-        double                text_ascent = charLimits.ascent * disp_device->get_unscale();
-
-        Vector text_offset = 0.5 * Vector(text_ascent, text_ascent+box_height);
-
         limits.x_right = n0.xpos();
 
         if (disp_device->get_filter() & group_text_filter) {
-            const GroupInfo& info = get_group_info(at, group_info_pos == GIP_SEPARATED ? GI_SEPARATED : GI_COMBINED, group_info_pos == GIP_OVERLAYED);
+            const GroupInfo&      info       = get_group_info(at, group_info_pos == GIP_SEPARATED ? GI_SEPARATED : GI_COMBINED, group_info_pos == GIP_OVERLAYED);
+            const AW_font_limits& charLimits = disp_device->get_font_limits(at->gr.gc, 'A');
+
+            double text_ascent = charLimits.ascent * disp_device->get_unscale();
+            double char_width  = charLimits.width * disp_device->get_unscale();
+            Vector text_offset = Vector(char_width, 0.5*(text_ascent+box_height));
 
             if (info.name) {
                 Position textPos = n0+text_offset;
@@ -2284,9 +2284,8 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
             }
 
             if (info.count) {
-                Position    countPos = s0+text_offset;
-                const char *count    = GBS_global_string(" %s", info.count); // @@@ correctly calculate x-offset and directly print info->count
-                disp_device->text(at->gr.gc, count, countPos, 0.0, group_text_filter, info.count_len+1); // GROUPPAINT: folded group member count (dendrogram)
+                Position countPos   = s0+text_offset;
+                disp_device->text(at->gr.gc, info.count, countPos, 0.0, group_text_filter, info.count_len); // GROUPPAINT: folded group member count (dendrogram)
             }
         }
 
