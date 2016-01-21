@@ -1,0 +1,166 @@
+================================================================================
+To install a precompiled ARB
+================================================================================
+
+1. download the needed files from our homepage http://www.arb-home.de/
+   and save them into a directory of your choice (i.e. ~/arb-install/ )
+
+   Files needed: 'arb-*.tgz' and 'arb_install.sh'
+                 (see arb_README.txt for details on different versions)
+
+2. get root
+3. run arb_install.sh and follow the instructions
+4. Install packages needed by ARB:
+
+--------------------------------------------------------------------------------
+4a. If you're using Ubuntu please refer to:
+
+  * the detailed list of packets to install for ARB:    arb_UBUNTU.txt
+  * the package-install-script for ubuntu:              SH/arb_installubuntu4arb.sh
+
+--------------------------------------------------------------------------------
+4b. If you're using debian please install one of the centos versions
+
+You may also want to use 
+  * the package-install-script for ubuntu:              SH/arb_installubuntu4arb.sh
+(Note: add 'contrib non-free' behind 'main' in /etc/apt/sources.list)
+
+--------------------------------------------------------------------------------
+4c. Otherwise use your package manager to install the
+    software that is needed to run ARB:
+
+- (open)motif
+- bash
+- libpng
+- xterm
+- libxerces-c2
+
+Only needed for Open GL version:
+
+- OPENGL
+- libGLEW -- Open GL extensions library (see subdirectory lib/addlibs)
+
+
+Software that is useful together with ARB:
+
+- gnuplot
+- ghostview (gv)
+- xfig (+ fig2dev to print from xfig)
+- perl5
+- treetool
+
+--------------------------------------------------------------------------------
+Libraries needed to run 32-bit ARB on 64-bit machine:
+(checked on OpenSuSE 10.2)
+
+- openmotif-libs-32bit
+
+--------------------------------------------------------------------------------
+If you get errors about missing libraries when calling arb, have a look if there
+are different versions of the missing libraries in /usr/lib and create a link
+there.
+
+Most likely you'll be missing libXm.so.4, so the following example describes
+how to solve the problem for that library:
+
+    # as superuser:
+    cd /usr/lib
+    ln -s libXm.so.4 libXm.so.3
+
+
+================================================================================
+To build ARB from source
+================================================================================
+
+1. download the needed files from our homepage http://www.arb-home.de/
+   and save them into a directory of your choice (i.e. ~/arb-build/ )
+
+   Files needed: 'arbsrc*.tgz'
+
+2. Unpack the source
+
+   e.g.
+        tar -zxvf arbsrc.tgz
+
+3. Goto source dir
+
+   e.g.
+        cd arbsrc_6213
+
+4. Set up compile environment
+
+   if you're using bash:
+
+      export ARBHOME=`pwd`
+      export PATH=$ARBHOME/bin:$PATH
+      export LD_LIBRARY_PATH=$ARBHOME/lib:$LD_LIBRARY_PATH
+
+5. Now either
+
+   a. run
+
+        make all
+
+      to compile arb. On a multiprocessor machine you may want to call
+
+        make -j5 all
+
+      or similar (where the number should be the number of processors + 1).
+
+      This will fail on first call telling you to edit config.Makefile.
+      Open that file in your editor and check whether the default values
+      suit your system and needs.
+
+      If you like to activate openGL features set OPENGL to 1
+      (needs additional libraries).
+
+      When done, again call one of the make commands mentioned above.
+
+      If compilation fails, have a look at the packages needed for compilation
+      below. For ubuntu/debian there is a script for automated package
+      installation in
+
+             SH/arb_installubuntu4arb.sh
+
+      Once compilation succeeds, call
+
+        arb
+
+      to run arb in compilation directory.
+
+   b. run
+
+        make tarfile
+        ./arb_install.sh
+
+      to install arb for all users
+
+   and follow the instructions there.
+
+
+Additional software that is needed to compile ARB:
+--------------------------------------------------
+
+- expat, xmllint, xsltproc [needed for target 'help' only]
+- openmotif, openmotif-devel
+- xaw???
+- libtiff-devel
+- lynx
+
+Additional software that is needed to compile open gl parts:
+------------------------------------------------------------
+- mesa
+- mesa-devel
+- mesaglw (opensuse)
+- mesaglw-devel (opensuse)
+- libGLw-devel (SuSE 13.x)
+- libpng
+- libglew
+- glew-devel (opensuse)
+- freeglut
+- freeglut-devel
+----------------------------------------------------------------------
+If we forgot something (or if your OS needs something special)
+please notify us (devel@arb-home.de). We will mention it here..
+----------------------------------------------------------------------
+

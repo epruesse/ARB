@@ -1,0 +1,21 @@
+[[created as copy of 'tree_disjunct_source']
+Kept upper subtree
+[created as copy of 'tree_disjunct1']
+[created as copy of 'tree_overlap2_source']
+
+DewBact4 deleted
+Wed Dec 18 10:22:58 2013: tree_overlap2_3 saved to /home/ralf/ARB-bilbo/ARB.tree.473.beautifyConsTree/UNIT_TESTER/run/consense/8/overlap2_3.tree
+]
+(((DewBact3:0.05099,
+DewBact5:0.02497
+):0.03519,
+(EbiProk4:0.08063,
+EbiProk5:0.05481
+):0.01546
+):0.02688,
+((DewBact2:0.02784,
+DewBacte:0.02655
+):0.04567,
+EbiProk3:0.07157
+):0.02688
+);

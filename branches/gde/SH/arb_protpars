@@ -1,0 +1,50 @@
+#!/bin/bash -x
+
+if [ -z "$6" ]; then
+    echo "Usage: arb_protpars bootstrap geneticcode viewreport randomize threshold_pars interactive"
+else
+    BOOTSTRAP=$1
+    CODE=$2
+    REPORT=$3
+    RANDOMIZE=$4
+    THRESHOLD_PARS=$5
+    INTERACTIVE=$6
+
+    FLAGS="c $CODE"
+
+    if [ "$RANDOMIZE" = "1" ]; then
+        RANDOMSEED=$(($RANDOM|1)) # a odd number
+        FLAGS="$FLAGS j $RANDOMSEED 1"
+    fi
+
+    if [ \! "$THRESHOLD_PARS" = "0" ]; then
+        FLAGS="$FLAGS t $THRESHOLD_PARS"
+    fi
+
+    if [ "$BOOTSTRAP" = "0" ]; then
+        if [ "$INTERACTIVE" = "0" ]; then
+            arb_echo $FLAGS y | protpars
+        else
+            (arb_echo $FLAGS ; cat -) | ( protpars ; echo "Press RETURN to continue.." )
+        fi
+        echo >arb_read_tree_args
+        WHAT=protpars
+    else
+        arb_bootstrap $BOOTSTRAP protpars $FLAGS
+        WHAT=arb_bootstrap/protpars/consense
+    fi
+
+    if [ -f outfile ]; then
+        if [ -s outfile ]; then
+            if [ "$REPORT" = "1" ]; then
+                arb_textedit outfile &
+            fi
+        else
+            arb_message "$WHAT: Error: generated 'outfile' is empty"
+            false
+        fi
+    else
+        arb_message "$WHAT: Error: 'outfile' has not been generated"
+        false
+    fi
+fi

@@ -1,0 +1,76 @@
+AUTODETECT      "*\nseq:*"
+FILETAG         "DEW"
+
+KEYWIDTH        4
+
+BEGIN           "acc*"
+                #Now all lines are prepended by a number
+
+MATCH           "acc:*"
+                SRT " =:,= :NoAccn="
+                ACI "extract_words("0123456789",4.0)"
+                WRITE "acc"
+
+MATCH           "seq:*"
+                WRITE "full_name"
+
+MATCH           "seq:*"
+                TAG             "DEW"
+                WRITE "db_name"
+
+MATCH           "src:*"
+                SRT "NoData="
+                TAG             "DEW"
+                APPEND "source"
+
+MATCH           "str:*"
+                SRT "NoData="
+                TAG             "DEW"
+                APPEND "strain"
+
+MATCH           "ta?:*"
+                SRT "NoData="
+                TAG             "DEW"
+                APPEND "tax"
+
+MATCH           "aut:*"
+                SRT "NoData=:?*=?1*1"
+                TAG             "DEW"
+                APPEND "author"
+
+MATCH           "ttl:*"
+                SRT "Unpublished=:?*=?1*1"
+                TAG             "DEW"
+                APPEND "title"
+
+MATCH           "jou:*"
+                SRT "Unpublished=:?*=?1*1"
+                TAG             "DEW"
+                APPEND "journal"
+
+MATCH           "vol:*"
+                SRT "0=:?*=vol ?1*1"
+                TAG             "DEW"
+                APPEND "journal"
+
+MATCH           "pgs:*"
+                SRT "NoData=:?*=pgs ?1*1"
+                TAG             "DEW"
+                APPEND "journal"
+
+MATCH           "dat:*"
+                SRT "NoData=:?*=date ?1*1"
+                TAG             "DEW"
+                APPEND "journal"
+
+MATCH           "mty:*"
+                TAG             "DEW"
+                WRITE "gene"
+
+
+SEQUENCEAFTER   "seq:*"
+SEQUENCEACI     "remove(" [](){}^*")|srt(o=.)"
+SEQUENCEEND     "//"
+CREATE_ACC_FROM_SEQUENCE
+
+END             "//"

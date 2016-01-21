@@ -1,0 +1,51 @@
+<!-- ==================================================================== -->
+<!--                                                                      -->
+<!--   File      : arb_seq_export.dtd                                     -->
+<!--   Purpose   : DTD for ARB sequence export                            -->
+<!--                                                                      -->
+<!-- Coded by Ralf Westram (coder@reallysoft.de) in July 2002             -->
+<!-- Copyright Department of Microbiology (Technical University Munich)   -->
+<!--                                                                      -->
+<!-- Visit our web site at: http://www.arb-home.de/                       -->
+<!--                                                                      -->
+<!-- ==================================================================== -->
+<!--                                                                      -->
+<!--  Please note: This file is just a templete for you to create         -->
+<!--               your own DTD according to your database contents       -->
+<!--                                                                      -->
+<!-- ==================================================================== -->
+
+<!ELEMENT ARB_SEQ_EXPORT (SPECIES)* >
+<!ATTLIST ARB_SEQ_EXPORT database CDATA #IMPLIED> <!--name of ARB database sequences were exported from-->
+<!ATTLIST ARB_SEQ_EXPORT export_date CDATA #IMPLIED>
+
+<!--1. elements with name attribute-->
+
+<!ELEMENT SPECIES ANY >
+<!ATTLIST SPECIES name ID #REQUIRED> <!--name should always be treated as ID because ARB does the same-->
+
+<!ELEMENT ALIGNMENT (DATA,REMARK?) >
+<!ATTLIST ALIGNMENT name CDATA #REQUIRED>
+
+<!ELEMENT DATA (#PCDATA) > <!--the sequence data-->
+<!ELEMENT REMARK (#PCDATA) > <!--sequence remarks-->
+
+<!-- 2. simple text elements-->
+<!-- 2.1 'Standard' elements-->
+
+<!ELEMENT FULL_NAME (#PCDATA) >
+<!ELEMENT ACC (#PCDATA) >
+<!ELEMENT ARB_COLOR (#PCDATA) >
+
+<!-- 2.2 Other common elements-->
+
+<!ELEMENT BER_ID (#PCDATA) >
+<!ELEMENT BER_DATE (#PCDATA) >
+<!ELEMENT BER_DE (#PCDATA) >
+<!ELEMENT BER_FULL_NAME (#PCDATA) >
+<!ELEMENT BER_TAX (#PCDATA) >
+<!ELEMENT BER_AUTHOR (#PCDATA) >
+<!ELEMENT BER_TITLE (#PCDATA) >
+<!ELEMENT BER_JOURNAL (#PCDATA) >
+<!ELEMENT BER_AC (#PCDATA) >
+

@@ -1,0 +1,199 @@
+#!/bin/bash -u
+
+# set -x
+
+# error message function
+err () {
+	echo "`basename $0`: $@" 1>&2
+	exit 1
+}
+
+# find the installation path for this ARB (the ARBHOME)
+get_arbhome() {
+    # save cwd
+    pushd . >/dev/null
+    # full path of this script, but may be symlinked
+    me="${BASH_SOURCE[0]}"
+    # while me is symlink
+    while [ -h "$me" ]; do 
+        # change to directory where symlink "$me" resides
+        cd "$(dirname "$me")"
+        # set $me to whatever $me links to
+        me="$(readlink "$(basename "$me")")"
+    done
+    # me isn't a symlink, so the directory it resides in
+    # must be the actual $ARBHOME/SH
+    cd "$(dirname "$me")"
+    # in $ARBHOME now
+    cd ..
+    echo -n "$PWD"
+    # restore old cwd
+    popd >/dev/null
+}
+
+# Add to the path variable named by $1 the component $2.  $3 must be
+# "append" or "prepend" to indicate where the component is added.
+addpath () {
+    eval value=\"\$\{$1:-\}\"
+    case "$value" in
+	*:$2:*|*:$2|$2:*|$2)
+	    result="$value"
+	    ;;
+	"")
+	    result="$2"
+	    ;;
+	*)
+	    case "$3" in
+		p*)
+		    result="$2:${value}"
+		    ;;
+		*)
+		    result="${value}:$2"
+		    ;;
+	    esac
+    esac
+    eval $1=$result
+    unset result value
+}
+
+# convenience routine which appends a string to a path.
+append () {
+    addpath "$1" "$2" append
+}
+
+# convenience routine which prepends a string to a path.
+prepend () {
+    addpath "$1" "$2" prepend
+}
+
+if [ -z ${HOME:-} ]; then
+    HOME=~
+fi
+export HOME
+
+if [ -z ${DISPLAY:-} ]; then
+    DISPLAY=:0
+fi
+export DISPLAY
+
+# get absolute path to directory where this script resides
+# (avoid use of readlink as it is missing on OSX)
+ARBHOME_OF_SCRIPT="$(get_arbhome)"
+ARB_SH="$ARBHOME_OF_SCRIPT/SH"
+ARB_SCRIPT="$ARB_SH/arb"
+
+export ARB_SH ARB_SCRIPT ARBHOME_OF_SCRIPT
+
+if [ -n "${ARBHOME:-}" -a "${ARBHOME:-}" != "$ARBHOME_OF_SCRIPT" ]; then
+    echo "Ignoring set ARBHOME '$ARBHOME' (overridden by explicit call of '$0')"
+fi
+
+# use ARBHOME defined by location of script (comment out for old behavior)
+ARBHOME=$ARBHOME_OF_SCRIPT
+
+echo "Using ARBHOME='$ARBHOME'"
+
+prepend PATH			$ARBHOME/bin
+prepend LD_LIBRARY_PATH		$ARBHOME/lib
+append  LD_LIBRARY_PATH		/usr/dt/lib
+append  LD_LIBRARY_PATH		/usr/openwin/lib
+append  LD_LIBRARY_PATH		$ARBHOME/lib/addlibs
+prepend SHLIB_PATH		$ARBHOME/lib
+append  SHLIB_PATH		$ARBHOME/lib/addlibs
+append  PYTHONPATH      $ARBHOME/lib/python2.6
+append  PERl5LIB        $ARBHOME/lib/perl5  
+
+# environment variables that this shell script sets/changes:
+export LD_LIBRARY_PATH MANPATH PATH ARBHOME SHLIB_PATH 
+export PYTHONPATH PERL5LIB
+
+# global envs:
+
+export PWD HOME USER
+
+if [ -x $ARBHOME/bin/ghostview ] ; then
+  GS_LIB="$ARBHOME/DEPOT/ghostscript"
+  export GS_LIB
+fi
+
+ARB_PID="$$"; export ARB_PID
+
+if [ -z ${ARB_PROP:-} ]; then
+    ARB_PROP=${HOME}/.arb_prop
+fi
+echo "Using properties from $ARB_PROP"
+if [ ! -d ${ARB_PROP} ] ; then
+  echo "Directory ${ARB_PROP} not found - creating ..."
+  mkdir ${ARB_PROP}
+fi
+export ARB_PROP
+
+ARB_LOCAL_PTS=${HOME}/.arb_pts
+if [ ! -d ${ARB_LOCAL_PTS} ] ; then
+  echo "Directory ${ARB_LOCAL_PTS} not found - creating ..."
+  mkdir ${ARB_LOCAL_PTS}
+fi
+
+if [ -z ${ARBMACROHOME:-} ] ; then
+  ARBMACROHOME="${ARB_PROP}/macros";
+fi
+if [ ! -d ${ARBMACROHOME} ] ; then
+  echo "Directory $ARBMACROHOME not found - creating ..."
+  mkdir ${ARBMACROHOME}
+fi
+export ARBMACROHOME
+
+if [ -z ${ARBMACRO:-} ] ; then
+  ARBMACRO="$ARBHOME/lib/macros"
+fi
+if [ ! -d ${ARBMACRO} ] ; then
+  echo "Directory $ARBMACRO not found - creating ..."
+  mkdir ${ARBMACRO}
+fi
+export ARBMACRO
+
+# set default command-tool used by ARB
+ARB_XTERM=${ARB_XTERM:-xterm -sl 1000 -sb -geometry 120x50}
+export ARB_XTERM
+ARB_XCMD=${ARB_XCMD:-$ARB_XTERM -e}
+export ARB_XCMD
+
+# save LD_LIBRARY_PATH
+ARB_LIBRARY_PATH="${LD_LIBRARY_PATH}"
+export ARB_LIBRARY_PATH
+
+case "${1:-}" in
+  help|-h|--help)
+    arb_ntree --help
+    echo ""
+    echo ""
+    echo "arb - script to start arb"
+    echo "Usage:"
+    echo "       arb                  # startup arb intro window"
+    echo "       arb [ntargs]         # start arb with arguments"
+    echo "       arb shell            # startup arb environment, but do not run arb"
+    echo "       arb help             # show help"
+    echo "       arb trace [ntargs]   # trace arb (to detect errors)"
+    echo ""
+    echo "ntargs are any argument allowed to arb_ntree (see above)"
+    echo ""
+    echo ""
+  ;;
+  shell)
+    echo "Opening an ARB shell"
+    if [ -n "$SHELL" ]; then
+        $SHELL
+    else
+        bash -i
+    fi
+    echo "ARB shell terminates"
+  ;;
+  trace)
+    shift
+    arb_launcher $ARBHOME/SH/arb_trace "$@"
+  ;;
+  *)
+    echo "Please wait while the program ARB is starting ....."
+    arb_launcher arb_ntree "$@"
+esac
+
