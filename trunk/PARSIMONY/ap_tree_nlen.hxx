@@ -163,9 +163,9 @@ public:
     bool recalc_marked_from_sons() {
         // return true if changed
         if (is_leaf) return false;
-        bool marked_childs = get_leftson()->gr.has_marked_children || get_rightson()->gr.has_marked_children;
-        if (marked_childs == gr.has_marked_children) return false;
-        gr.has_marked_children = marked_childs;
+        unsigned marked_childs = get_leftson()->gr.mark_sum + get_rightson()->gr.mark_sum;
+        if (marked_childs == gr.mark_sum) return false;
+        gr.mark_sum = marked_childs;
         return true;
     }
 
@@ -326,8 +326,8 @@ public:
     bool next_to_folded_group() const { return node[0]->gr.grouped || node[1]->gr.grouped; }
     bool has_marked() const { // true if subtree contains marked species
         return is_root_edge()
-            ? node[0]->gr.has_marked_children || node[1]->gr.has_marked_children
-            : sonNode()->gr.has_marked_children;
+            ? node[0]->gr.mark_sum+node[1]->gr.mark_sum
+            : sonNode()->gr.mark_sum;
     }
 
     // encapsulated AP_tree_nlen methods:
