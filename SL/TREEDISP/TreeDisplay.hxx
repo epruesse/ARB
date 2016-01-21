@@ -29,6 +29,8 @@
 
 #define AWAR_DTREE_BASELINEWIDTH   "awt/dtree/baselinewidth"
 #define AWAR_DTREE_VERICAL_DIST    "awt/dtree/verticaldist"
+#define AWAR_DTREE_GROUP_DOWNSCALE "awt/dtree/downscaling"
+#define AWAR_DTREE_GROUP_SCALE     "awt/dtree/groupscaling"
 #define AWAR_DTREE_AUTO_JUMP       "awt/dtree/autojump"
 #define AWAR_DTREE_AUTO_JUMP_TREE  "awt/dtree/autojump_tree"
 #define AWAR_DTREE_SHOW_CIRCLE     "awt/dtree/show_circle"
@@ -37,6 +39,8 @@
 #define AWAR_DTREE_CIRCLE_MAX_SIZE "awt/dtree/max_size"
 #define AWAR_DTREE_USE_ELLIPSE     "awt/dtree/ellipse"
 #define AWAR_DTREE_GREY_LEVEL      "awt/dtree/greylevel"
+#define AWAR_DTREE_GROUPCOUNTMODE  "awt/dtree/groupcountmode"
+#define AWAR_DTREE_GROUPINFOPOS    "awt/dtree/groupinfopos"
 #define AWAR_DTREE_BOOTSTRAP_MIN   "awt/dtree/bootstrap/inner/min"
 
 #define AWAR_DTREE_RADIAL_ZOOM_TEXT "awt/dtree/radial/zoomtext"
@@ -206,6 +210,34 @@ public:
     int size() const { return numMarkers; }
 };
 
+struct GroupInfo {
+    const char *name;
+    const char *count;
+    unsigned    name_len;
+    unsigned    count_len;
+};
+
+enum GroupInfoMode {
+    GI_COMBINED,             // only sets GroupInfo::name (will contain "name (count)" or only "name" if counters disabled)
+    GI_SEPARATED,            // set GroupInfo::name and GroupInfo::count (to "name" and "count")
+    GI_SEPARATED_PARENTIZED, // like GI_SEPARATED, but GroupInfo::count will be "(count)"
+};
+
+enum GroupInfoPosition {
+    GIP_SEPARATED, // name attached, count overlayed             (=old hardcoded default for AP_TREE_NORMAL and AP_TREE_IRS)
+    GIP_ATTACHED,  // "name (count)" attached "next to" group    (=old hardcoded default for AP_TREE_RADIAL)
+    GIP_OVERLAYED, // "name (count)" overlayed with group polygon
+};
+
+enum GroupCountMode {
+    GCM_NONE,    // do not show group count         (=old hardcoded default for AP_TREE_RADIAL)
+    GCM_MEMBERS, // show number of group members    (=old hardcoded default for AP_TREE_NORMAL and AP_TREE_IRS)
+    GCM_MARKED,  // show number of marked group members (show nothing if none marked)
+    GCM_BOTH,    // show "marked/members" (or "members" if none marked)
+    GCM_PERCENT, // show percent of marked group members (show nothing if none marked)
+    GCM_BOTH_PC, // show "percent/members" (or "members" if none marked)
+};
+
 class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
     char         *species_name;
     AW::Position  cursor;
@@ -234,7 +266,9 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
     double irs_tree_ruler_scale_factor;
 
     AWT_scaled_font_limits scaled_font;
-    double                 scaled_branch_distance; // vertical distance between branches (may be extra-scaled in options)
+
+    double        scaled_branch_distance; // vertical distance between branches (may be extra-scaled in options)
+    group_scaling groupScale; // scaling for folded groups
 
     AW_grey_level group_greylevel;
     AW_grey_level marker_greylevel;
@@ -246,6 +280,9 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
     const AW_bitset ruler_filter, root_filter, marker_filter;
 
     bool nds_show_all;
+
+    GroupInfoPosition group_info_pos;
+    GroupCountMode    group_count_mode;
 
     MarkerDisplay *display_markers;
     struct {
@@ -271,6 +308,8 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
     void drawMarkerNames(AW::Position& Pen);
 
     void pixel_box(int gc, const AW::Position& pos, int pixel_width, AW::FillStyle filled);
+
+    const GroupInfo& get_group_info(AP_tree *at, GroupInfoMode mode, bool swap = false) const;
 
 public:
     void filled_box(int gc, const AW::Position& pos, int pixel_width) { pixel_box(gc, pos, pixel_width, AW::FillStyle::SOLID); }
@@ -316,7 +355,7 @@ public:
     AW_root              *aw_root;
     AP_tree_display_type  tree_sort;
     AP_tree              *displayed_root; // root node of shown (sub-)tree; differs from real root if tree is zoomed logically
-    GBDATA       *gb_main;
+    GBDATA               *gb_main;
 
     // *********** public section
 

@@ -105,80 +105,78 @@ AW_pos AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, AW_pos x_offset) {
         return IRS.y;
     }
 
-    const char *group_name  = NULL;
-    AW_pos      frame_width = -1;
+    AW_pos frame_width = NAN;
+    AW_pos group_y1    = NAN;
 
-    if (node->gb_node) {
-        if (!node->father) { // root node - don't try to get taxonomy
-            group_name = tree_static->get_tree_name();
-        }
-        else {
-            group_name = make_node_text_nds(gb_main, node->gb_node, NDS_OUTPUT_LEAFTEXT, node, tree_static->get_tree_name());
-        }
+    if (node->is_named_group()) {
         frame_width = node->gr.max_tree_depth * IRS.x_scale;
-    }
 
-    if (node->gr.grouped) { // folded group
-        AW_pos y_center;
+        if (node->gr.grouped) { // folded group
+            AW_pos y_center;
 
-        AW_pos frame_height = node->gr.view_sum * IRS.step_y;
-        AW_pos frame_y1     = IRS.y+IRS.halfstep_y+IRS.gap;
-        AW_pos frame_y2     = frame_y1 + frame_height;
+            AW_pos frame_height = node->gr.view_sum * IRS.step_y;
+            AW_pos frame_y1     = IRS.y+IRS.halfstep_y+IRS.gap;
+            AW_pos frame_y2     = frame_y1 + frame_height;
 
-        if (frame_y2 >= IRS.min_y) {
-            if (frame_y1 < IRS.min_y) { // shift folded groups into the folding area (disappears when completely inside)
-                frame_y1  = IRS.min_y;
-                IRS.min_y += IRS.halfstep_y+IRS.gap;
+            if (frame_y2 >= IRS.min_y) {
+                if (frame_y1 < IRS.min_y) { // shift folded groups into the folding area (disappears when completely inside)
+                    frame_y1  = IRS.min_y;
+                    IRS.min_y += IRS.halfstep_y+IRS.gap;
+                }
+
+                AW_pos    visible_frame_height = frame_y2-frame_y1;
+                Rectangle frame(Position(x_offset, frame_y1), Vector(frame_width, visible_frame_height));
+
+                // draw group frame (unclosed on right hand):
+                AW_click_cd cd(disp_device, (AW_CL)node);
+
+                int gc = AWT_GC_GROUPS;
+                disp_device->set_line_attributes(gc, 1, AW_SOLID);
+                disp_device->line(gc, frame.upper_edge());
+                disp_device->line(gc, frame.left_edge());
+                disp_device->line(gc, frame.lower_edge());
+
+                gc = node->gr.gc;
+                set_line_attributes_for(node);
+                filled_box(gc, frame.upper_left_corner(), TIP_BOX_SIZE);
+
+                Vector    frame2box(IRS.gap, IRS.gap);
+                Rectangle gbox(frame.upper_left_corner()+frame2box, Vector(frame.width()*.5, frame.height()-2*IRS.gap));
+
+                disp_device->set_grey_level(gc, group_greylevel);
+                disp_device->box(gc, AW::FillStyle::SHADED_WITH_BORDER, gbox);
+
+                Position box_rcenter = gbox.right_edge().centroid();
+
+                const GroupInfo& info = get_group_info(node, group_info_pos == GIP_SEPARATED ? GI_SEPARATED : GI_COMBINED, group_info_pos == GIP_OVERLAYED);
+                if (info.name) { //  a node name should be displayed
+                    disp_device->text(gc, info.name, box_rcenter+IRS.adjust_text, 0.0, AW_ALL_DEVICES_UNSCALED, info.name_len);
+                }
+                if (info.count) {
+                    Position box_lcenter = gbox.left_edge().centroid();
+                    disp_device->text(gc, info.count, box_lcenter+IRS.adjust_text, 0.0, AW_ALL_DEVICES_UNSCALED, info.count_len);
+                }
+
+                IRS.draw_top_separator_once(disp_device);
+
+                IRS.y    += frame_height + 2*IRS.gap;
+                y_center  = box_rcenter.ypos();
             }
+            else {
+                IRS.y    += frame_height + 2*IRS.gap;
+                y_center  = IRS.min_y;
 
-            AW_pos    visible_frame_height = frame_y2-frame_y1;
-            Rectangle frame(Position(x_offset, frame_y1), Vector(frame_width, visible_frame_height));
-
-            // draw group frame (unclosed on right hand):
-            AW_click_cd cd(disp_device, (AW_CL)node);
-
-            int gc = AWT_GC_GROUPS;
-            disp_device->set_line_attributes(gc, 1, AW_SOLID);
-            disp_device->line(gc, frame.upper_edge());
-            disp_device->line(gc, frame.left_edge());
-            disp_device->line(gc, frame.lower_edge());
-
-            gc = node->gr.gc;
-            set_line_attributes_for(node);
-            filled_box(gc, frame.upper_left_corner(), TIP_BOX_SIZE);
-
-            Vector    frame2box(IRS.gap, IRS.gap);
-            Rectangle gbox(frame.upper_left_corner()+frame2box, Vector(frame.width()*.5, frame.height()-2*IRS.gap));
-
-            disp_device->set_grey_level(gc, group_greylevel);
-            disp_device->box(gc, AW::FillStyle::SHADED_WITH_BORDER, gbox);
-
-            Position box_rcenter = gbox.right_edge().centroid();
-
-            if (group_name) { //  a node name should be displayed
-                const char *groupinfo = GBS_global_string("%s (%u)", group_name, node->gr.leaf_sum);
-                disp_device->text(gc, groupinfo, box_rcenter+IRS.adjust_text);
+                if (IRS.y > IRS.min_y) {
+                    IRS.y = IRS.min_y;
+                }
             }
-
-            IRS.draw_top_separator_once(disp_device);
-
-            IRS.y    += frame_height + 2*IRS.gap;
-            y_center  = box_rcenter.ypos();
+            return y_center;
         }
-        else {
-            IRS.y    += frame_height + 2*IRS.gap;
-            y_center  = IRS.min_y;
 
-            if (IRS.y > IRS.min_y) {
-                IRS.y = IRS.min_y;
-            }
-        }
-        return y_center;
-    }
+        // -----------------------------------
+        //      otherwise: unfolded group
 
-    AW_pos group_y1 = IRS.y;
-
-    if (group_name != NULL) { // unfolded group
+        group_y1 = IRS.y;
         if (group_y1 >= IRS.min_y) {
             IRS.draw_top_separator_once(disp_device);
             group_y1 = IRS.y + IRS.halfstep_y+IRS.gap;
@@ -194,8 +192,16 @@ AW_pos AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, AW_pos x_offset) {
         disp_device->set_line_attributes(gc, 1, AW_DOTTED);
         disp_device->line(gc, x_offset-IRS.onePixel, group_y1, x_offset+frame_width, group_y1); // opened-group-frame
 
-        const char *groupinfo = GBS_global_string("%s (%u)", group_name, node->gr.leaf_sum);
-        disp_device->text(node->gr.gc, groupinfo, x_offset-IRS.onePixel + IRS.gap, group_y1 + 2*IRS.adjust_text.y() + IRS.gap);
+        const GroupInfo& info = get_group_info(node, GI_COMBINED);
+
+        td_assert(info.name); // if fails -> maybe skip whole headerline
+        disp_device->text(node->gr.gc,
+                          info.name,
+                          x_offset-IRS.onePixel + IRS.gap,
+                          group_y1 + 2*IRS.adjust_text.y() + IRS.gap,
+                          0.0,
+                          AW_ALL_DEVICES_UNSCALED,
+                          info.name_len);
     }
 
     // draw subtrees
@@ -205,7 +211,7 @@ AW_pos AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, AW_pos x_offset) {
     AW_pos right_x = x_offset + IRS.x_scale * node->rightlen;
     AW_pos right_y = paint_irs_sub_tree(node->get_rightson(), right_x);
 
-    if (group_name != NULL) IRS.group_closed++;
+    if (node->is_named_group()) IRS.group_closed++;
 
     // draw structure
     if (left_y > IRS.min_y) {
@@ -242,7 +248,7 @@ AW_pos AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, AW_pos x_offset) {
     set_line_attributes_for(node->get_rightson());
     disp_device->line(node->get_rightson()->gr.gc, x_offset, y_center, x_offset, right_y);
 
-    if (group_name != NULL) { // close unfolded group brackets and draw tipbox
+    if (node->is_named_group()) { // close unfolded group brackets and draw tipbox
         IRS.y  += IRS.halfstep_y+IRS.gap;
 
         int gc = AWT_GC_GROUPS;

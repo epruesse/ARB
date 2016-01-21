@@ -18,8 +18,6 @@
 #define AP_F_TREE      ((AW_active)16)
 #define AP_F_ALL       ((AW_active)-1)
 
-#define GROUPED_SUM 2   // min. no of species in a group which should be drawn as box
-
 #ifndef ARB_TREE_HXX
 #include <ARB_Tree.hxx>
 #endif
@@ -167,14 +165,14 @@ struct AP_tree_members {
 public: // @@@ make members private
     unsigned int grouped : 1;   // indicates a folded group
     unsigned int hidden : 1;    // not shown (because an anchestor is a folded group)
-    unsigned int has_marked_children : 1; // at least one child is marked
     unsigned int callback_exists : 1;
     unsigned int gc : 6;        // color
 
     char left_linewidth; // @@@ it's stupid to store linewidth IN FATHER (also wastes space)
     char right_linewidth;
 
-    unsigned leaf_sum;   // number of leaf children of this node
+    unsigned leaf_sum;   // number of leafs below this node
+    unsigned mark_sum;   // number of marked leafs below this node
     unsigned view_sum;   // virtual size of node for display ( isgrouped?sqrt(leaf_sum):leaf_sum )
 
     float max_tree_depth; // max length of path; for drawing triangles
@@ -206,10 +204,10 @@ public: // @@@ make members private
 
         grouped             = 0;
         hidden              = 0;
-        has_marked_children = 0;
         callback_exists     = 0;
         gc                  = 0;
         leaf_sum            = 0;
+        mark_sum            = 0;
         view_sum            = 0;
         max_tree_depth      = 0;
         min_tree_depth      = 0;
@@ -226,7 +224,14 @@ public: // @@@ make members private
     }
 };
 
+struct group_scaling {
+    double linear; // linear factor applied to group size
+    double pow;    // downscaling for big groups (0=all groups same size; 1=unfolded size)
+};
+
 class AP_tree : public ARB_seqtree {
+    static const group_scaling *group_scaling_ptr;
+
 public: // @@@ fix public members
     AP_tree_members gr;
 
@@ -343,6 +348,8 @@ public:
     void reset_subtree_angles();
     void reset_subtree_linewidths();
     void reset_subtree_layout();
+
+    static void set_group_downscale(const group_scaling *scaling) { group_scaling_ptr = scaling; }
 
     bool hasName(const char *Name) const { return Name && name && Name[0] == name[0] && strcmp(Name, name) == 0; }
 

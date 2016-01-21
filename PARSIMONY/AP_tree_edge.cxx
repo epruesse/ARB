@@ -767,7 +767,7 @@ void TEST_edgeChain() {
 
 void TEST_tree_flags_needed_by_EdgeChain() {
     // EdgeChain depends on correctly set marked flags in AP_tree
-    // (i.e. on gr.has_marked_children)
+    // (i.e. on gr.mark_sum)
     //
     // These flags get destroyed by tree operations
     // -> chains created after tree modifications are wrong
@@ -820,7 +820,8 @@ void TEST_tree_flags_needed_by_EdgeChain() {
         CurCitre_grandfather->set_root(); // grandfather has 1 marked child
         TEST_EXPECT(rootNode()->has_correct_mark_flags());
 
-        env.pop(); TEST_EXPECT(rootNode()->has_correct_mark_flags());
+        env.pop();
+        TEST_EXPECT(rootNode()->has_correct_mark_flags());
     }
 
     // test moving nodes/subtrees

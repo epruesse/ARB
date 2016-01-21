@@ -12,12 +12,13 @@
 
 #include <AP_filter.hxx>
 #include <aw_msg.hxx>
+#include <arb_progress.h>
+#include <ad_cb.h>
 
 #include <math.h>
 #include <map>
 #include <climits>
-#include <arb_progress.h>
-#include <ad_cb.h>
+#include <algorithm>
 
 using namespace std;
 
@@ -609,10 +610,12 @@ bool AP_tree::has_correct_mark_flags() const {
     const AP_tree_members& left  = get_leftson()->gr;
     const AP_tree_members& right = get_rightson()->gr;
 
-    bool wanted_has_marked = left.has_marked_children || right.has_marked_children;
-    return gr.has_marked_children == wanted_has_marked;
+    unsigned wanted_mark_sum = left.mark_sum + right.mark_sum;
+    return gr.mark_sum == wanted_mark_sum;
 }
 #endif
+
+const group_scaling *AP_tree::group_scaling_ptr = NULL; // =reference to AWT_graphic_tree::groupScale
 
 void AP_tree::update_subtree_information() {
     gr.hidden = get_father() ? (get_father()->gr.hidden || get_father()->gr.grouped) : 0;
@@ -626,7 +629,7 @@ void AP_tree::update_subtree_information() {
 
         bool is_marked = gb_node && GB_read_flag(gb_node);
 
-        gr.has_marked_children = is_marked;
+        gr.mark_sum = int(is_marked);
 
         // colors:
         if (gb_node) {
@@ -657,15 +660,23 @@ void AP_tree::update_subtree_information() {
             AP_tree_members& right = get_rightson()->gr;
 
             gr.leaf_sum = left.leaf_sum + right.leaf_sum;
-            gr.view_sum = left.view_sum + right.view_sum;
             if (gr.grouped) {
-                gr.view_sum = (int)pow((double)(gr.leaf_sum - GROUPED_SUM + 9), .33);
+                ap_assert(group_scaling_ptr);
+
+                const unsigned MIN_GROUP_SIZE = 2U;
+                unsigned       squared_size   = unsigned(pow(double(gr.leaf_sum), group_scaling_ptr->pow)  * group_scaling_ptr->linear);
+
+                gr.view_sum = std::max(squared_size, MIN_GROUP_SIZE);
+                gr.view_sum = std::min(gr.leaf_sum, gr.view_sum); // folded group will never use more space than unfolded
+            }
+            else {
+                gr.view_sum = left.view_sum + right.view_sum;
             }
 
             gr.min_tree_depth = std::min(leftlen+left.min_tree_depth, rightlen+right.min_tree_depth);
             gr.max_tree_depth = std::max(leftlen+left.max_tree_depth, rightlen+right.max_tree_depth);
 
-            gr.has_marked_children = left.has_marked_children || right.has_marked_children;
+            gr.mark_sum = left.mark_sum + right.mark_sum;
 
             // colors:
             if (left.gc == right.gc) gr.gc = left.gc;
