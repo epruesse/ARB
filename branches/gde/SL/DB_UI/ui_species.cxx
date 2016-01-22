@@ -604,8 +604,8 @@ AW_window *DBUI::create_fields_reorder_window(AW_root *root, BoundItemSel *bound
         aws->callback(makeHelpCallback(HELPFILE));
         aws->create_button("HELP", "Help", "H");
 
-        Itemfield_Selection *sel1 = create_selection_list_on_itemfields(bound_selector->gb_main, aws, AWAR_FIELD_REORDER_SOURCE, true, selector, FIELD_FILTER_NDS, SF_STANDARD, "source", 0, 20, 10, NULL);
-        Itemfield_Selection *sel2 = create_selection_list_on_itemfields(bound_selector->gb_main, aws, AWAR_FIELD_REORDER_DEST,   true, selector, FIELD_FILTER_NDS, SF_STANDARD, "dest",   0, 20, 10, NULL);
+        Itemfield_Selection *sel1 = create_selection_list_on_itemfields(bound_selector->gb_main, aws, AWAR_FIELD_REORDER_SOURCE, true, selector, FIELD_UNFILTERED, SF_STANDARD, "source", 0, 20, 10, NULL);
+        Itemfield_Selection *sel2 = create_selection_list_on_itemfields(bound_selector->gb_main, aws, AWAR_FIELD_REORDER_DEST,   true, selector, FIELD_UNFILTERED, SF_STANDARD, "dest",   0, 20, 10, NULL);
 
         aws->button_length(8);
 
@@ -731,7 +731,7 @@ AW_window *DBUI::create_field_delete_window(AW_root *root, BoundItemSel *bound_s
         aws->at("help"); aws->callback(makeHelpCallback("spaf_delete.hlp"));
         aws->create_button("HELP", "Help", "H");
 
-        Itemfield_Selection *item_sel = create_selection_list_on_itemfields(bound_selector->gb_main, aws, AWAR_FIELD_DELETE, true, selector, -1, SF_HIDDEN, "source", 0, 20, 10, NULL);
+        Itemfield_Selection *item_sel = create_selection_list_on_itemfields(bound_selector->gb_main, aws, AWAR_FIELD_DELETE, true, selector, FIELD_UNFILTERED, SF_HIDDEN, "source", 0, 20, 10, NULL);
 
         aws->button_length(13);
         aws->at("hide");
@@ -859,7 +859,7 @@ static AW_window *create_field_convert_window(AW_root *root, BoundItemSel *bound
     aws->create_button("HELP", "Help", "H");
 
     aws->callback(makeWindowCallback(field_convert_update_typesel_cb, bound_selector));
-    create_selection_list_on_itemfields(bound_selector->gb_main, aws, AWAR_FIELD_CONVERT_SOURCE, true, selector, -1, SF_HIDDEN, "source", 0, 40, 20, NULL);
+    create_selection_list_on_itemfields(bound_selector->gb_main, aws, AWAR_FIELD_CONVERT_SOURCE, true, selector, FIELD_FILTER_STRING_READABLE, SF_HIDDEN, "source", 0, 40, 20, NULL);
 
     aws->at("typesel");
     aws->create_toggle_field(AWAR_FIELD_CONVERT_TYPE, NULL, "F");

@@ -351,7 +351,7 @@ AW_window *NT_create_compare_taxonomy_window(AW_root *aw_root, AWT_canvas *ntw) 
     aws->at("levels");
     aws->create_input_field(AWAR_TREE_COMPARE_MIN_TAX_LEVELS, 3);
 
-    create_selection_list_on_itemfields(ntw->gb_main, aws, AWAR_TREE_COMPARE_WRITE_FIELD, true, SPECIES_get_selector(), 1<<GB_INT, SF_STANDARD, "field", NULL, 20, 30, "choose_field");
+    create_selection_list_on_itemfields(ntw->gb_main, aws, AWAR_TREE_COMPARE_WRITE_FIELD, true, SPECIES_get_selector(), 1<<GB_INT, SF_STANDARD, "field", NULL, 20, 30, "choose_field"); // @@@ use FIELD_FILTER_INT_WRITEABLE? needs code fix
 
     aws->at("left");
     awt_create_TREE_selection_list(ntw->gb_main, aws, AWAR_TREE_COMPARE_LEFT, true);

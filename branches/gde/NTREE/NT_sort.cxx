@@ -18,7 +18,7 @@
 #include <TreeNode.h>
 #include <arb_sort.h>
 
-#define NT_RESORT_FILTER (1<<GB_STRING)|(1<<GB_INT)|(1<<GB_FLOAT)
+#define FIELD_FILTER_RESORT (1<<GB_STRING)|(1<<GB_INT)|(1<<GB_FLOAT) // field types supported by cmpByKey()
 
 #define CUSTOM_CRITERIA 3
 
@@ -188,9 +188,9 @@ AW_window *NT_create_resort_window(AW_root *awr) {
     aws->at("help");
     aws->create_button("HELP", "HELP", "H");
 
-    create_selection_list_on_itemfields(GLOBAL.gb_main, aws, AWAR_TREE_SORT1, true, SPECIES_get_selector(), NT_RESORT_FILTER, SF_STANDARD, "key1", 0, 20, 10, NULL);
-    create_selection_list_on_itemfields(GLOBAL.gb_main, aws, AWAR_TREE_SORT2, true, SPECIES_get_selector(), NT_RESORT_FILTER, SF_STANDARD, "key2", 0, 20, 10, NULL);
-    create_selection_list_on_itemfields(GLOBAL.gb_main, aws, AWAR_TREE_SORT3, true, SPECIES_get_selector(), NT_RESORT_FILTER, SF_STANDARD, "key3", 0, 20, 10, NULL);
+    create_selection_list_on_itemfields(GLOBAL.gb_main, aws, AWAR_TREE_SORT1, true, SPECIES_get_selector(), FIELD_FILTER_RESORT, SF_STANDARD, "key1", 0, 20, 10, NULL);
+    create_selection_list_on_itemfields(GLOBAL.gb_main, aws, AWAR_TREE_SORT2, true, SPECIES_get_selector(), FIELD_FILTER_RESORT, SF_STANDARD, "key2", 0, 20, 10, NULL);
+    create_selection_list_on_itemfields(GLOBAL.gb_main, aws, AWAR_TREE_SORT3, true, SPECIES_get_selector(), FIELD_FILTER_RESORT, SF_STANDARD, "key3", 0, 20, 10, NULL);
 
     aws->at("rev1"); aws->label("Reverse"); aws->create_toggle(AWAR_TREE_REV1);
     aws->at("rev2"); aws->label("Reverse"); aws->create_toggle(AWAR_TREE_REV2);

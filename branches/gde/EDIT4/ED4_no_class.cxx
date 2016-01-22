@@ -899,18 +899,19 @@ static void createGroupFromSelected(GB_CSTR group_name, GB_CSTR field_name, GB_C
         multi_species_manager->children->append_member(new_group_manager);
         new_group_manager->parent = (ED4_manager *) multi_species_manager;
     }
-    
+
     ED4_multi_species_manager *new_multi_species_manager = new_group_manager->get_multi_species_manager();
+    bool lookingForNoContent = field_content==0 || field_content[0]==0;
 
     ED4_selected_elem *list_elem = ED4_ROOT->selected_objects->head();
     while (list_elem) {
         ED4_base *object = list_elem->elem()->object;
         object = object->get_parent(ED4_L_SPECIES);
-        int move_object = 1;
 
+        bool move_object = true;
         if (object->is_consensus_manager()) {
             object = object->get_parent(ED4_L_GROUP);
-            if (field_name) move_object = 0; // don't move groups if moving by field_name
+            if (field_name) move_object = false; // don't move groups if moving by field_name
         }
         else {
             e4_assert(object->is_species_manager());
@@ -918,19 +919,13 @@ static void createGroupFromSelected(GB_CSTR group_name, GB_CSTR field_name, GB_C
                 GBDATA *gb_species = object->get_species_pointer();
                 GBDATA *gb_field = GB_search(gb_species, field_name, GB_FIND);
 
+                move_object = lookingForNoContent;
                 if (gb_field) { // field was found
-                    GB_TYPES type = GB_read_type(gb_field);
-                    if (type==GB_STRING) {
-                        char *found_content = GB_read_as_string(gb_field);
+                    char *found_content = GB_read_as_string(gb_field);
+                    if (found_content) {
                         move_object = strncmp(found_content, field_content, SIGNIFICANT_FIELD_CHARS)==0;
                         free(found_content);
                     }
-                    else {
-                        e4_assert(0); // field has to be string field
-                    }
-                }
-                else { // field was NOT found
-                    move_object = field_content==0 || field_content[0]==0; // move object if we search for no content
                 }
             }
         }
@@ -1006,11 +1001,9 @@ static void group_species(int use_field, AW_window *use_as_main_window) {
                     }
 
                     if (gb_field) {
-                        GB_TYPES type = GB_read_type(gb_field);
-
-                        if (type==GB_STRING) {
-                            char   *field_content     = GB_read_as_string(gb_field);
-                            size_t  field_content_len = strlen(field_content);
+                        char *field_content = GB_read_as_string(gb_field);
+                        if (field_content) {
+                            size_t field_content_len = strlen(field_content);
 
                             foundField = 1;
                             if (field_content_len>SIGNIFICANT_FIELD_CHARS) {
@@ -1035,7 +1028,7 @@ static void group_species(int use_field, AW_window *use_as_main_window) {
                             free(field_content);
                         }
                         else {
-                            error = "You have to use a string type field";
+                            error = "Incompatible field type";
                         }
                     }
                     else {
@@ -1082,7 +1075,7 @@ static AW_window *create_group_species_by_field_window(AW_root *aw_root, AW_wind
     aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    create_selection_list_on_itemfields(GLOBAL_gb_main, aws, AWAR_FIELD_CHOSEN, true, SPECIES_get_selector(), -1, SF_STANDARD, "source", 0, 20, 10, NULL);
+    create_selection_list_on_itemfields(GLOBAL_gb_main, aws, AWAR_FIELD_CHOSEN, true, SPECIES_get_selector(), FIELD_FILTER_STRING_READABLE, SF_STANDARD, "source", 0, 20, 10, NULL);
 
     return aws;
 }

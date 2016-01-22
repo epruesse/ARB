@@ -108,7 +108,8 @@ Itemfield_Selection *create_selection_list_on_itemfields(GBDATA         *gb_main
      * 'fallback2default'       whether awar value shall be reset to default (see create_option_menu/create_selection_list)
      * 'selector'               describes the item type, for which fields are shown
      * 'type_filter'            is a bitstring which controls what types are shown in the selection list
-     *                          (e.g '1<<GB_INT || 1 <<GB_STRING' enables ints and strings) // @@@ mention predefined type_filters
+     *                          (e.g '1<<GB_INT || 1 <<GB_STRING' enables ints and strings)
+     *                          Several filters are predefined: 'FIELD_FILTER_...', FIELD_UNFILTERED
      * 'field_filter'           controls if pseudo-fields and/or hidden fields are added
      * 'scan_xfig_label'        is the position of the selection box (or selection button)
      * 'rescan_xfig_label'      if not NULL, a 'RESCAN' button is added at that position

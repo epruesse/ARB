@@ -2546,7 +2546,7 @@ static AW_window *create_set_protection_window(AW_root *aw_root, DbQuery *query)
     aws->insert_toggle("6 the truth", "5", 6);
     aws->update_toggle_field();
 
-    create_selection_list_on_itemfields(query->gb_main, aws, query->awar_setkey, true, query->selector, FIELD_FILTER_NDS, SF_STANDARD, "list", 0, 20, 10, NULL);
+    create_selection_list_on_itemfields(query->gb_main, aws, query->awar_setkey, true, query->selector, FIELD_UNFILTERED, SF_STANDARD, "list", 0, 20, 10, NULL);
 
     aws->at("go");
     aws->callback(makeWindowCallback(set_protection_of_queried_cb, query));
