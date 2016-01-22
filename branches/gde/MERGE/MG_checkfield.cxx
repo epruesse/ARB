@@ -324,8 +324,8 @@ AW_window *create_mg_check_fields_window(AW_root *aw_root) {
     aws->at("tag");
     aws->create_input_field(AWAR_ETAG, 6);
 
-    create_selection_list_on_itemfields(GLOBAL_gb_dst, aws, AWAR_SOURCE_FIELD, true, FIELD_FILTER_STRING,        "source", 0, SPECIES_get_selector(), 20, 10, SF_STANDARD, NULL);
-    create_selection_list_on_itemfields(GLOBAL_gb_dst, aws, AWAR_DEST_FIELD,   true, (1<<GB_STRING)|(1<<GB_INT), "dest",   0, SPECIES_get_selector(), 20, 10, SF_STANDARD, NULL);
+    create_selection_list_on_itemfields(GLOBAL_gb_dst, aws, AWAR_SOURCE_FIELD, true, SPECIES_get_selector(), FIELD_FILTER_STRING,        SF_STANDARD, "source", 0, 20, 10, NULL);
+    create_selection_list_on_itemfields(GLOBAL_gb_dst, aws, AWAR_DEST_FIELD,   true, SPECIES_get_selector(), (1<<GB_STRING)|(1<<GB_INT), SF_STANDARD, "dest",   0, 20, 10, NULL); // @@@ create/use field filter alias?
 
 #if defined(WARN_TODO)
 #warning check code above. Maybe one call has to get GLOBAL_gb_src ?

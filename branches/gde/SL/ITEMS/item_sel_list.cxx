@@ -94,25 +94,25 @@ Itemfield_Selection *create_selection_list_on_itemfields(GBDATA         *gb_main
                                                          AW_window      *aws,
                                                          const char     *varname,
                                                          bool            fallback2default,
+                                                         ItemSelector&   selector,
                                                          long            type_filter,
+                                                         SelectedFields  field_filter,
                                                          const char     *scan_xfig_label,
                                                          const char     *rescan_xfig_label,
-                                                         ItemSelector&   selector,
                                                          size_t          columns,
                                                          size_t          visible_rows,
-                                                         SelectedFields  field_filter,
                                                          const char     *popup_button_id) // @@@ button id is not needed - only causes xtra macro command
 {
     /* show fields of a item (e.g. species, SAI, gene)
      * 'varname'                is the awar set by the selection list
      * 'fallback2default'       whether awar value shall be reset to default (see create_option_menu/create_selection_list)
+     * 'selector'               describes the item type, for which fields are shown
      * 'type_filter'            is a bitstring which controls what types are shown in the selection list
-     *                          (e.g '1<<GB_INT || 1 <<GB_STRING' enables ints and strings)
+     *                          (e.g '1<<GB_INT || 1 <<GB_STRING' enables ints and strings) // @@@ mention predefined type_filters
+     * 'field_filter'           controls if pseudo-fields and/or hidden fields are added
      * 'scan_xfig_label'        is the position of the selection box (or selection button)
      * 'rescan_xfig_label'      if not NULL, a 'RESCAN' button is added at that position
-     * 'selector'               describes the item type, for which fields are shown
      * 'columns'/'visible_rows' specify the size of the selection list
-     * 'field_filter'           controls if pseudo-fields and/or hidden fields are added
      * 'popup_button_id'        if not NULL, a button (with this id) is inserted.
      *                          When clicked a popup window containing the selection list opens.
      */

@@ -35,7 +35,7 @@ enum SelectedFields {
 CONSTEXPR long FIELD_FILTER_STRING = (1<<GB_STRING)|(1<<GB_BITS)|(1<<GB_LINK);
 CONSTEXPR long FIELD_FILTER_NDS    = (1<<GB_BYTE)|(1<<GB_INT)|(1<<GB_FLOAT)|FIELD_FILTER_STRING;
 CONSTEXPR long FIELD_FILTER_PARS   = FIELD_FILTER_NDS;
-CONSTEXPR long FIELD_UNFILTERED    = -1L;
+CONSTEXPR long FIELD_UNFILTERED    = -1L; // @@@ replace all -1 args by FIELD_UNFILTERED
 
 class Itemfield_Selection : public AW_DB_selection { // derived from a Noncopyable
     long            type_filter;
@@ -60,13 +60,13 @@ Itemfield_Selection *create_selection_list_on_itemfields(GBDATA         *gb_main
                                                          AW_window      *aws,
                                                          const char     *varname,
                                                          bool            fallback2default,
+                                                         ItemSelector&   selector,
                                                          long            type_filter,
+                                                         SelectedFields  field_filter,
                                                          const char     *scan_xfig_label,
                                                          const char     *rescan_xfig_label,
-                                                         ItemSelector&   selector,
                                                          size_t          columns,
                                                          size_t          visible_rows,
-                                                         SelectedFields  field_filter,
                                                          const char     *popup_button_label);
 
 

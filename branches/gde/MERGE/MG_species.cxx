@@ -391,7 +391,7 @@ static AW_window *MG_create_transfer_fields_window(AW_root *aw_root) {
     aws->label("Append data?");
     aws->create_toggle(AWAR_APPEND);
 
-    create_selection_list_on_itemfields(GLOBAL_gb_src, aws, AWAR_FIELD_SRC, true, FIELD_FILTER_NDS, "scandb", "rescandb", SPECIES_get_selector(), 20, 10, SF_STANDARD, NULL);
+    create_selection_list_on_itemfields(GLOBAL_gb_src, aws, AWAR_FIELD_SRC, true, SPECIES_get_selector(), FIELD_FILTER_NDS, SF_STANDARD, "scandb", "rescandb", 20, 10, NULL);
 
     aws->at("go");
     aws->callback(MG_transfer_fields_cb);
@@ -491,7 +491,7 @@ static AW_window *create_mg_move_fields_window(AW_root *aw_root) {
     aws->callback(makeHelpCallback("mg_xfer_field_of_sel.hlp"));
     aws->create_button("HELP", "HELP");
 
-    create_selection_list_on_itemfields(GLOBAL_gb_src, aws, AWAR_FIELD_SRC, true, FIELD_FILTER_NDS, "scandb", "rescandb", SPECIES_get_selector(), 20, 10, SF_STANDARD, NULL);
+    create_selection_list_on_itemfields(GLOBAL_gb_src, aws, AWAR_FIELD_SRC, true, SPECIES_get_selector(), FIELD_FILTER_NDS, SF_STANDARD, "scandb", "rescandb", 20, 10, NULL);
 
     aws->at("go");
     aws->callback(MG_move_field_cb);
@@ -596,8 +596,8 @@ static AW_window *create_mg_merge_tagged_fields_window(AW_root *aw_root) {
 
     aws->at("del1");    aws->create_input_field(AWAR_TAG_DEL, 5);
 
-    create_selection_list_on_itemfields(GLOBAL_gb_src, aws, AWAR_FIELD_SRC, true, FIELD_FILTER_NDS, "fields1", 0, SPECIES_get_selector(), 20, 10, SF_STANDARD, NULL);
-    create_selection_list_on_itemfields(GLOBAL_gb_dst, aws, AWAR_FIELD_DST, true, FIELD_FILTER_NDS, "fields2", 0, SPECIES_get_selector(), 20, 10, SF_STANDARD, NULL);
+    create_selection_list_on_itemfields(GLOBAL_gb_src, aws, AWAR_FIELD_SRC, true, SPECIES_get_selector(), FIELD_FILTER_NDS, SF_STANDARD, "fields1", 0, 20, 10, NULL);
+    create_selection_list_on_itemfields(GLOBAL_gb_dst, aws, AWAR_FIELD_DST, true, SPECIES_get_selector(), FIELD_FILTER_NDS, SF_STANDARD, "fields2", 0, 20, 10, NULL);
 
     return aws;
 }
