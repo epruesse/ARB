@@ -364,7 +364,7 @@ GB_ERROR GB_write_bits(GBDATA *gbd, const char *bits, long size, const char *c_0
 GB_ERROR GB_write_bytes(GBDATA *gbd, const char *s, long size);
 GB_ERROR GB_write_ints(GBDATA *gbd, const GB_UINT4 *i, long size);
 GB_ERROR GB_write_floats(GBDATA *gbd, const float *f, long size);
-GB_ERROR GB_write_as_string(GBDATA *gbd, const char *val);
+GB_ERROR GB_write_autoconv_string(GBDATA *gbd, const char *val);
 int GB_read_security_write(GBDATA *gbd);
 int GB_read_security_read(GBDATA *gbd);
 int GB_read_security_delete(GBDATA *gbd);
