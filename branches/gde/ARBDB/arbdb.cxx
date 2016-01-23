@@ -1066,6 +1066,9 @@ float *GB_read_floats(GBDATA *gbd) { // @@@ only used in unittest - check usage 
 }
 
 char *GB_read_as_string(GBDATA *gbd) {
+    /*! reads basic db-field types and returns content as text.
+     * @see GB_write_autoconv_string
+     */
     switch (gbd->type()) {
         case GB_STRING: return GB_read_string(gbd);
         case GB_LINK:   return GB_read_link(gbd);
@@ -1074,7 +1077,7 @@ char *GB_read_as_string(GBDATA *gbd) {
         case GB_FLOAT:  return GBS_global_string_copy("%g", GB_read_float(gbd));
         case GB_BITS:   return GB_read_bits(gbd, '0', '1');
             /* Be careful : When adding new types here, you have to make sure that
-             * GB_write_as_string is able to write them back and that this makes sense.
+             * GB_write_autoconv_string is able to write them back and that this makes sense.
              */
         default:    return NULL;
     }
@@ -1402,7 +1405,13 @@ GB_ERROR GB_write_floats(GBDATA *gbd, const float *f, long size)
     return GB_write_pntr(gbd, (char *)f, size*sizeof(float), size);
 }
 
-GB_ERROR GB_write_as_string(GBDATA *gbd, const char *val) {
+GB_ERROR GB_write_autoconv_string(GBDATA *gbd, const char *val) {
+    /*! writes data to database field using automatic conversion.
+     *  Warning: Conversion may cause silent data-loss!
+     *           (e.g. writing "hello" to a numeric db-field results in zero content)
+     *
+     *  Writing back the unmodified(!) result of GB_read_as_string will not cause data loss.
+     */
     switch (gbd->type()) {
         case GB_STRING: return GB_write_string(gbd, val);
         case GB_LINK:   return GB_write_link(gbd, val);
@@ -1410,7 +1419,7 @@ GB_ERROR GB_write_as_string(GBDATA *gbd, const char *val) {
         case GB_INT:    return GB_write_int(gbd, atoi(val));
         case GB_FLOAT:  return GB_write_float(gbd, GB_atof(val));
         case GB_BITS:   return GB_write_bits(gbd, val, strlen(val), "0");
-        default:    return GB_export_errorf("Error: You cannot use GB_write_as_string on this type of entry (%s)", GB_read_key_pntr(gbd));
+        default:    return GB_export_errorf("Error: You cannot use GB_write_autoconv_string on this type of entry (%s)", GB_read_key_pntr(gbd));
     }
 }
 

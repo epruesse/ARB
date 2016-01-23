@@ -174,7 +174,7 @@ static void editfield_value_changed(AW_window*, DbScanner *cbs)
             if (strlen(value)) {
                 GBDATA *gb_new     = GB_search(cbs->gb_user, key_name, (GB_TYPES)GB_read_int(gb_key_type));
                 if (!gb_new) error = GB_await_error();
-                else    error      = GB_write_as_string(gb_new, value);
+                else    error      = GB_write_autoconv_string(gb_new, value);
 
                 cbs->awr->awar(cbs->awarname_current_item)->write_pointer(gb_new); // remap arbdb
             }
@@ -215,7 +215,7 @@ static void editfield_value_changed(AW_window*, DbScanner *cbs)
                         }
 
                         if (gb_exists) error = GBS_global_string("There is already a %s named '%s'", selector.item_name, value);
-                        else error           = GB_write_as_string(gbd, value);
+                        else error           = GB_write_autoconv_string(gbd, value);
                     }
                     else {
                         error = "The 'name' field can't be empty.";
@@ -226,7 +226,7 @@ static void editfield_value_changed(AW_window*, DbScanner *cbs)
             }
             else {
                 if (strlen(value)) {
-                    error = GB_write_as_string(gbd, value);
+                    error = GB_write_autoconv_string(gbd, value);
                 }
                 else {
                     GBDATA *gb_key = GBT_get_changekey(cbs->gb_main, key_name, cbs->selector.change_key_path);

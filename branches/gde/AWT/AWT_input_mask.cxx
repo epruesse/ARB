@@ -428,7 +428,7 @@ void awt_string_handler::awar_changed() {
         GB_TYPES  found_typ = GB_read_type(gbdata);
         if (found_typ != type()) set_type(found_typ); // fix type if different
 
-        error = GB_write_as_string(gbdata, awar2db(content).c_str());
+        error = GB_write_autoconv_string(gbdata, awar2db(content).c_str());
 
         free(content);
     }

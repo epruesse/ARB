@@ -1740,7 +1740,7 @@ static void modify_fields_of_queried_cb(AW_window*, DbQuery *query) {
                                             if (!gb_new) error = GB_await_error();
                                         }
                                         if (!error) {
-                                            error = GB_write_as_string(gb_new, parsed); // <- field is actually written HERE
+                                            error = GB_write_autoconv_string(gb_new, parsed); // <- field is actually written HERE
                                             if (!error && test_conversion_failure) {
                                                 dbq_assert(key_type != GB_STRING);
                                                 char *resulting = GB_read_as_string(gb_new);
@@ -2419,7 +2419,7 @@ static void set_field_of_queried_cb(AW_window*, DbQuery *query, bool append) {
                                 GBS_strcat(strstr, old);
                                 GBS_strcat(strstr, value);
                                 char *v = GBS_strclose(strstr);
-                                error = GB_write_as_string(gb_new, v);
+                                error = GB_write_autoconv_string(gb_new, v);
                                 free(v);
                             }
                             else {
@@ -2429,7 +2429,7 @@ static void set_field_of_queried_cb(AW_window*, DbQuery *query, bool append) {
                             }
                         }
                         else {
-                            error = GB_write_as_string(gb_new, value);
+                            error = GB_write_autoconv_string(gb_new, value);
                         }
                     }
                     else { // if value is NULL -> delete field
@@ -2441,7 +2441,7 @@ static void set_field_of_queried_cb(AW_window*, DbQuery *query, bool append) {
                         gb_new = GB_search(gb_item, key, (GB_TYPES)GB_read_int(gb_key_type));
 
                         if (!gb_new) error = GB_await_error();
-                        else error         = GB_write_as_string(gb_new, value);
+                        else error         = GB_write_autoconv_string(gb_new, value);
                     }
                 }
             }
