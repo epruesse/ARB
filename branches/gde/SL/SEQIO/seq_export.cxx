@@ -788,7 +788,7 @@ void TEST_sequence_export() {
 #if defined(TEST_AUTO_UPDATE)
 #if defined(TEST_AUTO_UPDATE_ONLY_MISSING)
                 if (GB_is_regularfile(expected)) {
-                    TEST_EXPECT_TEXTFILE_DIFFLINES_IGNORE_DATES(expected, outname, 0);
+                    TEST_EXPECT_TEXTFILE_DIFFLINES_IGNORE_DATES(outname, expected, 0);
                 }
                 else
 #else
@@ -797,7 +797,7 @@ void TEST_sequence_export() {
                 }
 #endif
 #else
-                TEST_EXPECT_TEXTFILE_DIFFLINES_IGNORE_DATES(expected, outname, 0);
+                TEST_EXPECT_TEXTFILE_DIFFLINES_IGNORE_DATES(outname, expected, 0);
                 // see ../../UNIT_TESTER/run/impexp
 #endif // TEST_AUTO_UPDATE
                 TEST_EXPECT_ZERO_OR_SHOW_ERRNO(unlink(outname));
