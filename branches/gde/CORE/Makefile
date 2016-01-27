@@ -139,10 +139,13 @@ arb_misc.o: arb_core.h
 arb_misc.o: arb_file.h
 arb_misc.o: arb_misc.h
 arb_misc.o: arb_msg.h
+arb_misc.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_misc.o: $(ARBHOME)/INCLUDE/attributes.h
+arb_misc.o: $(ARBHOME)/INCLUDE/cxxforward.h
 arb_misc.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_misc.o: $(ARBHOME)/INCLUDE/gccver.h
 arb_misc.o: $(ARBHOME)/INCLUDE/test_global.h
+arb_misc.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 arb_msg.o: arb_assert.h
 arb_msg.o: arb_core.h

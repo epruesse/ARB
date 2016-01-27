@@ -18,6 +18,7 @@
 
 #include <rpc/types.h>
 #include <rpc/xdr.h>
+#include <arb_misc.h>
 
 gb_local_data *gb_local = 0;
 
@@ -1074,7 +1075,7 @@ char *GB_read_as_string(GBDATA *gbd) {
         case GB_LINK:   return GB_read_link(gbd);
         case GB_BYTE:   return GBS_global_string_copy("%i", GB_read_byte(gbd));
         case GB_INT:    return GBS_global_string_copy("%li", GB_read_int(gbd));
-        case GB_FLOAT:  return GBS_global_string_copy("%g", GB_read_float(gbd));
+        case GB_FLOAT:  return strdup(ARB_float_2_ascii(GB_read_float(gbd)));
         case GB_BITS:   return GB_read_bits(gbd, '0', '1');
             /* Be careful : When adding new types here, you have to make sure that
              * GB_write_autoconv_string is able to write them back and that this makes sense.
