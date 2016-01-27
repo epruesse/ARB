@@ -147,7 +147,7 @@ static GB_ERROR write_as_int(GBDATA *gbfield, const char *data, bool trimmed, si
 
 static GB_ERROR write_as_float(GBDATA *gbfield, const char *data, bool trimmed) {
     char     *end   = 0;
-    double    d     = strtod(data, &end);
+    float     f     = strtof(data, &end);
     GB_ERROR  error = NULL;
 
     if (end == data || end[0] != 0) {
@@ -161,7 +161,7 @@ static GB_ERROR write_as_float(GBDATA *gbfield, const char *data, bool trimmed) 
         }
     }
     else {
-        error = GB_write_float(gbfield, d);
+        error = GB_write_float(gbfield, f);
         if (error) error = GBS_global_string("write error (%s)", error);
     }
 

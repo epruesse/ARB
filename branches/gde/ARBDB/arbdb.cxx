@@ -742,11 +742,10 @@ GBDATA *GB_read_pointer(GBDATA *gbd) {
     return gbd->as_entry()->info.ptr;
 }
 
-double GB_read_float(GBDATA *gbd) // @@@ change return type to float (that's what's stored in DB)
-{
-    XDR          xdrs;
-    static float f; // @@@ why static?
-    
+float GB_read_float(GBDATA *gbd) {
+    XDR   xdrs;
+    float f;
+
     GB_TEST_READ(gbd, GB_FLOAT, "GB_read_float");
     xdrmem_create(&xdrs, &gbd->as_entry()->info.in.data[0], SIZOFINTERN, XDR_DECODE);
     xdr_float(&xdrs, &f);
@@ -754,7 +753,7 @@ double GB_read_float(GBDATA *gbd) // @@@ change return type to float (that's wha
 
     gb_assert(f == f); // !nan
 
-    return (double)f;
+    return f;
 }
 
 long GB_read_count(GBDATA *gbd) {
@@ -1187,35 +1186,22 @@ GB_ERROR GB_write_pointer(GBDATA *gbd, GBDATA *pointer) {
     return 0;
 }
 
-GB_ERROR GB_write_float(GBDATA *gbd, double f)
-{
+GB_ERROR GB_write_float(GBDATA *gbd, float f) {
     gb_assert(f == f); // !nan
-
-    XDR          xdrs;
-    static float f2;
-
     GB_TEST_WRITE(gbd, GB_FLOAT, "GB_write_float");
 
-#if defined(WARN_TODO)
-#warning call GB_read_float here!
-#endif
-    GB_TEST_READ(gbd, GB_FLOAT, "GB_read_float");
-
-    GBENTRY *gbe = gbd->as_entry();
-    xdrmem_create(&xdrs, &gbe->info.in.data[0], SIZOFINTERN, XDR_DECODE);
-    xdr_float(&xdrs, &f2);
-    xdr_destroy(&xdrs);
-
-    if (f2 != f) {
-        f2 = f;
+    if (GB_read_float(gbd) != f) {
+        GBENTRY *gbe = gbd->as_entry();
         gb_save_extern_data_in_ts(gbe);
+
+        XDR xdrs;
         xdrmem_create(&xdrs, &gbe->info.in.data[0], SIZOFINTERN, XDR_ENCODE);
-        xdr_float(&xdrs, &f2);
+        xdr_float(&xdrs, &f);
         xdr_destroy(&xdrs);
+
         gb_touch_entry(gbe, GB_NORMAL_CHANGE);
         GB_DO_CALLBACKS(gbe);
     }
-    xdr_destroy(&xdrs);
     return 0;
 }
 

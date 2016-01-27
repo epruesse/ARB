@@ -82,12 +82,6 @@ static bool gb_find_value_equal(GBDATA *gb, GB_TYPES type, const char *val, GB_C
             if (i == *(int*)val) equal = true;
             break;
         }
-        case GB_FLOAT: { 
-            GBK_terminate("cant search float by value"); // @@@ search by comparing floats is nonsense - should be removed/replaced/rewritten 
-            double d = GB_read_float(gb);
-            if (d == *(double*)(void*)val) equal = true; // (no aliasing problem here; char* -> double* ok)
-            break;
-        }
         default: {
             const char *err = GBS_global_string("Value search not supported for data type %i (%i)", gb->type(), type);
             GB_internal_error(err);
@@ -607,7 +601,7 @@ GBDATA *GB_searchOrCreate_int(GBDATA *gb_container, const char *fieldpath, long 
     return gb_int;
 }
 
-GBDATA *GB_searchOrCreate_float(GBDATA *gb_container, const char *fieldpath, double default_value) {
+GBDATA *GB_searchOrCreate_float(GBDATA *gb_container, const char *fieldpath, float default_value) {
     gb_assert(!GB_have_error()); // illegal to enter this function when an error is exported!
 
     GBDATA *gb_float = GB_search(gb_container, fieldpath, GB_FIND);

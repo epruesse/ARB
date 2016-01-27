@@ -328,7 +328,7 @@ NOT4PERL long *GBT_read_int(GBDATA *gb_container, const char *fieldpath) {
     return result;
 }
 
-NOT4PERL double *GBT_read_float(GBDATA *gb_container, const char *fieldpath) {
+NOT4PERL float *GBT_read_float(GBDATA *gb_container, const char *fieldpath) {
     /*! similar to GBT_read_string()
      *
      * but
@@ -337,12 +337,12 @@ NOT4PERL double *GBT_read_float(GBDATA *gb_container, const char *fieldpath) {
      */
 
     GBDATA *gbd;
-    double *result = NULL;
+    float  *result = NULL;
 
     GB_push_transaction(gb_container);
     gbd = GB_search(gb_container, fieldpath, GB_FIND);
     if (gbd) {
-        static double result_var;
+        static float result_var;
         result_var = GB_read_float(gbd);
         result     = &result_var;
     }
@@ -401,21 +401,21 @@ NOT4PERL long *GBT_readOrCreate_int(GBDATA *gb_container, const char *fieldpath,
     return result;
 }
 
-NOT4PERL double *GBT_readOrCreate_float(GBDATA *gb_container, const char *fieldpath, double default_value) {
+NOT4PERL float *GBT_readOrCreate_float(GBDATA *gb_container, const char *fieldpath, float default_value) {
     /*! like GBT_read_float(),
      *
      * but if field does not exist, it will be created and initialized with 'default_value'
      */
 
     gb_assert(default_value == default_value); // !nan
-    
+
     GBDATA *gb_float;
-    double *result = NULL;
+    float  *result = NULL;
 
     GB_push_transaction(gb_container);
     gb_float = GB_searchOrCreate_float(gb_container, fieldpath, default_value);
     if (gb_float) {
-        static double result_var;
+        static float result_var;
         result_var = GB_read_float(gb_float);
         result     = &result_var;
     }
@@ -481,7 +481,7 @@ GB_ERROR GBT_write_byte(GBDATA *gb_container, const char *fieldpath, unsigned ch
 }
 
 
-GB_ERROR GBT_write_float(GBDATA *gb_container, const char *fieldpath, double content) {
+GB_ERROR GBT_write_float(GBDATA *gb_container, const char *fieldpath, float content) {
     /*! like GBT_write_string(),
      *
      * but for fields of type GB_FLOAT
