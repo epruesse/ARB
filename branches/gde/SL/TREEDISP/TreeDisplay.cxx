@@ -969,8 +969,8 @@ class DB_scalable {
     //! a DB entry scalable by dragging
     GBDATA   *gbd;
     GB_TYPES  type;
-    double    min;
-    double    max;
+    float     min;
+    float     max;
     int       discretion_factor;
     bool      inversed;
 
@@ -990,8 +990,8 @@ public:
 
     GBDATA *data() { return gbd; }
 
-    double read() {
-        double res = 0.0;
+    float read() {
+        float res = 0.0;
         switch (type) {
             case GB_FLOAT: res = GB_read_float(gbd);        break;
             case GB_INT:   res = GB_read_int(gbd)/INTSCALE; break;
@@ -999,8 +999,8 @@ public:
         }
         return inversed ? -res : res;
     }
-    bool write(double val) {
-        double old = read();
+    bool write(float val) {
+        float old = read();
 
         if (inversed) val = -val;
 
@@ -1021,8 +1021,8 @@ public:
     }
 
     void set_discretion_factor(int df) { discretion_factor = df; }
-    void set_min(double val) { min = (type == GB_INT) ? val*INTSCALE : val; }
-    void set_max(double val) { max = (type == GB_INT) ? val*INTSCALE : val; }
+    void set_min(float val) { min = (type == GB_INT) ? val*INTSCALE : val; }
+    void set_max(float val) { max = (type == GB_INT) ? val*INTSCALE : val; }
     void inverse() { inversed = !inversed; }
 };
 
