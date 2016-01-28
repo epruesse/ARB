@@ -152,8 +152,8 @@ static GB_ERROR AW_MSG_UNMAPPED_AWAR = "Error (unmapped AWAR):\n"
 
 WRITE_SKELETON(write_string, const char*, "%s", GB_write_string) // defines rewrite_string
 WRITE_SKELETON(write_int, long, "%li", GB_write_int) // defines rewrite_int
-WRITE_SKELETON(write_float, double, "%f", GB_write_float) // defines rewrite_float // @@@ change interface
-WRITE_SKELETON(write_as_string, const char*, "%s", GB_write_autoconv_string) // defines rewrite_as_string // @@@ rename -> write_autoconvert_string
+WRITE_SKELETON(write_float, float, "%f", GB_write_float) // defines rewrite_float
+WRITE_SKELETON(write_as_string, const char*, "%s", GB_write_autoconv_string) // defines rewrite_as_string // @@@ rename -> write_autoconvert_string?
 WRITE_SKELETON(write_pointer, GBDATA*, "%p", GB_write_pointer) // defines rewrite_pointer
 
 #undef WRITE_SKELETON
@@ -177,7 +177,7 @@ const char *AW_awar::read_char_pntr() const {
     return GB_read_char_pntr(gb_var);
 }
 
-double AW_awar::read_float() const {
+float AW_awar::read_float() const {
     aw_assert(!deny_read);
     if (!gb_var) return 0.0;
     GB_transaction ta(gb_var);
@@ -220,7 +220,7 @@ GB_ERROR AW_awar::reset_to_default() {
     switch (variable_type) {
         case AW_STRING:  error = write_string (default_value.s); break;
         case AW_INT:     error = write_int    (default_value.l); break;
-        case AW_FLOAT:   error = write_float  (default_value.d); break;
+        case AW_FLOAT:   error = write_float  (default_value.f); break;
         case AW_POINTER: error = write_pointer(default_value.p); break;
         default: aw_assert(0); break;
     }
@@ -288,7 +288,7 @@ static void AW_var_gbdata_callback_delete_intern(GBDATA *gbd, AW_awar *awar) {
 }
 
 AW_awar::AW_awar(AW_VARIABLE_TYPE var_type, const char *var_name,
-                 const char *var_value, double var_double_value,
+                 const char *var_value, float var_float_value,
                  AW_default default_file, AW_root *rooti)
     : callback_list(NULL),
       target_list(NULL),
@@ -336,7 +336,7 @@ AW_awar::AW_awar(AW_VARIABLE_TYPE var_type, const char *var_name,
     switch (var_type) {
         case AW_STRING:  default_value.s = nulldup(var_value); break;
         case AW_INT:     default_value.l = (long)var_value; break;
-        case AW_FLOAT:   default_value.d = var_double_value; break;
+        case AW_FLOAT:   default_value.f = var_float_value; break;
         case AW_POINTER: default_value.p = (GBDATA*)var_value; break;
         default: aw_assert(0); break;
     }
@@ -363,7 +363,7 @@ AW_awar::AW_awar(AW_VARIABLE_TYPE var_type, const char *var_name,
 #if defined(DUMP_AWAR_CHANGES)
                 fprintf(stderr, "creating awar_float '%s' with default value '%f'\n", var_name, default_value.d);
 #endif // DUMP_AWAR_CHANGES
-                GB_write_float(gb_def, default_value.d);
+                GB_write_float(gb_def, default_value.f);
                 break;
 
             case AW_POINTER: {
@@ -699,7 +699,7 @@ void AW_awar::update_tmp_state_during_change() {
         switch (variable_type) {
             case AW_STRING:  has_default_value = ARB_strNULLcmp(GB_read_char_pntr(gb_origin), default_value.s) == 0; break;
             case AW_INT:     has_default_value = GB_read_int(gb_origin)     == default_value.l; break;
-            case AW_FLOAT:   has_default_value = GB_read_float(gb_origin)   == default_value.d; break;
+            case AW_FLOAT:   has_default_value = GB_read_float(gb_origin)   == default_value.f; break;
             case AW_POINTER: has_default_value = GB_read_pointer(gb_origin) == default_value.p; break;
             default: aw_assert(0); GB_warning("Unknown awar type"); break;
         }

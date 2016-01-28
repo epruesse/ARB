@@ -64,7 +64,7 @@ static void write_scalervalue_to_awar(int scalerVal, AW_awar *awar, AW_ScalerTyp
     float scaleRel = scalerVal/double(SCALER_MAX_VALUE-SCALER_MIN_VALUE);
     aw_assert(scaleRel>=0.0 && scaleRel<=1.0);
 
-    double aval = AW_ScalerTransformer(scalerType).scaler2awar(scaleRel, awar);
+    float aval = AW_ScalerTransformer(scalerType).scaler2awar(scaleRel, awar);
 
     switch (awar->variable_type) {
         case AW_FLOAT:
