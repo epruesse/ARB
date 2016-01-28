@@ -253,7 +253,7 @@ static void mg_check_field_cb(AW_window *aww) {
                                     long corrected = 0;
                                     GBS_diff_strings(src_val, dst_val, exclude, ToUpper, correct, &src_positions, &dst_positions, &corrected);
                                     if (corrected) {
-                                        error = GB_write_as_string(gb_dst_field, dst_val);
+                                        error = GB_write_autoconv_string(gb_dst_field, dst_val);
                                         if (!error) GB_write_flag(gb_dst_species, 1);
                                     }
                                 }

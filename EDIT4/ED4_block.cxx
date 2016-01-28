@@ -301,7 +301,7 @@ static GB_ERROR perform_block_operation_on_part_of_sequence(const ED4_block_oper
             delete new_seq_part;
 
             if (!error) {
-                error = GB_write_as_string(gbd, seq);
+                error = GB_write_autoconv_string(gbd, seq);
                 if (!error) term->request_refresh();
             }
         }

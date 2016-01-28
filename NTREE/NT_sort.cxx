@@ -49,10 +49,10 @@ static int cmpByKey(GBDATA *gbd1, GBDATA *gbd2, const customCriterion& by) {
                     break;
                 }
                 case GB_FLOAT: {
-                    double d1 = GB_read_float(gb_field1);
-                    double d2 = GB_read_float(gb_field2);
+                    float f1 = GB_read_float(gb_field1);
+                    float f2 = GB_read_float(gb_field2);
 
-                    cmp = d1<d2 ? -1 : (d1>d2 ? 1 : 0);
+                    cmp = f1<f2 ? -1 : (f1>f2 ? 1 : 0);
                     break;
                 }
                 case GB_INT: {

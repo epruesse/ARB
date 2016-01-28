@@ -8,7 +8,6 @@
 //                                                                 //
 // =============================================================== //
 
-#include <arbdb.h>
 #include <ed4_extern.hxx>
 #include "ed4_class.hxx"
 #include "ed4_awars.hxx"
@@ -18,11 +17,15 @@
 #include "ed4_ProteinViewer.hxx"
 #include "ed4_seq_colors.hxx"
 
+#include <arbdbt.h>
+
 #include <aw_preset.hxx>
 #include <aw_awar.hxx>
+#include <aw_awar_defs.hxx>
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
 #include <aw_question.hxx>
+
 #include <st_window.hxx>
 
 // -----------------------------------
@@ -509,14 +512,17 @@ ED4_returncode ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *aw
         switch (event->button) {
             case AW_BUTTON_LEFT: {
                 if (is_species_name_terminal()) {
-                    if (event->type == AW_Mouse_Press) {
-                        switch (ED4_ROOT->species_mode) {
-                            case ED4_SM_KILL: {
+                    switch (ED4_ROOT->species_mode) {
+                        case ED4_SM_KILL: {
+                            if (event->type == AW_Mouse_Press) {
                                 if (containing_species_manager()->is_selected()) ED4_ROOT->remove_from_selected(this->to_species_name_terminal());
                                 kill_object();
                                 return ED4_R_BREAK;
                             }
-                            case ED4_SM_MOVE: {
+                            break;
+                        }
+                        case ED4_SM_MOVE: {
+                            if (event->type == AW_Mouse_Press) {
                                 dragged_name_terminal = to_species_name_terminal();
                                 pressed_left_button   = true;
 
@@ -528,23 +534,59 @@ ED4_returncode ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *aw
                                     ED4_ROOT->add_to_selected(dragged_name_terminal);
                                     ED4_trigger_instant_refresh();
                                 }
-                                break;
                             }
-                            case ED4_SM_MARK: {
-                                ED4_species_manager *species_man = get_parent(ED4_L_SPECIES)->to_species_manager();
-                                GBDATA *gbd = species_man->get_species_pointer();
+                            break;
+                        }
+                        case ED4_SM_INFO:
+                        case ED4_SM_MARK: {
+                            static ED4_species_manager *prev_clicked_species_man = NULL;
+                            ED4_species_manager        *species_man              = get_parent(ED4_L_SPECIES)->to_species_manager();
 
-                                if (gbd) {
-                                    GB_write_flag(gbd, !GB_read_flag(gbd));
-                                    request_refresh();
-                                    if (ED4_ROOT->alignment_type ==  GB_AT_DNA) PV_RefreshWindow(aww->get_root()); // ProtView: Refreshing orf terminals (@@@ weird)
+                            GBDATA *gbd = species_man->get_species_pointer();
+                            if (gbd) {
+                                bool       acceptClick = false;
+                                static int markHow     = -1;  // -1=invert, 0=unmark, 1=mark
+                                {
+                                    switch (event->type) {
+                                        case AW_Mouse_Press:
+                                            acceptClick = true;
+                                            markHow     = -1;
+                                            break;
+
+                                        case AW_Mouse_Drag:
+                                            acceptClick = prev_clicked_species_man != species_man;
+                                            break;
+
+                                        case AW_Mouse_Release:
+                                            acceptClick = prev_clicked_species_man != species_man;
+                                            prev_clicked_species_man = NULL;
+                                            break;
+                                    }
                                 }
-                                break;
+
+                                if (acceptClick) {
+                                    if (ED4_ROOT->species_mode == ED4_SM_MARK) {
+                                        if (markHow<0) markHow = !GB_read_flag(gbd);
+                                        GB_write_flag(gbd, markHow);
+                                        request_refresh();
+                                        if (ED4_ROOT->alignment_type ==  GB_AT_DNA) PV_RefreshWindow(aww->get_root()); // ProtView: Refreshing orf terminals (@@@ weird place to perform refresh)
+                                    }
+                                    else {
+                                        e4_assert(ED4_ROOT->species_mode == ED4_SM_INFO);
+
+                                        const char *name = GBT_read_name(gbd);
+                                        if (name) {
+                                            const char *awar_select = species_man->inside_SAI_manager() ? AWAR_SAI_NAME : AWAR_SPECIES_NAME;
+                                            ED4_ROOT->aw_root->awar(awar_select)->write_string(name);
+                                        }
+                                    }
+                                    prev_clicked_species_man = species_man;
+                                }
                             }
-                            default: {
-                                e4_assert(0);
-                                break;
+                            else {
+                                prev_clicked_species_man = NULL;
                             }
+                            break;
                         }
                     }
                 }

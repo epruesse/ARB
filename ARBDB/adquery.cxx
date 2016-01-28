@@ -82,12 +82,6 @@ static bool gb_find_value_equal(GBDATA *gb, GB_TYPES type, const char *val, GB_C
             if (i == *(int*)val) equal = true;
             break;
         }
-        case GB_FLOAT: { 
-            GBK_terminate("cant search float by value"); // @@@ search by comparing floats is nonsense - should be removed/replaced/rewritten 
-            double d = GB_read_float(gb);
-            if (d == *(double*)(void*)val) equal = true; // (no aliasing problem here; char* -> double* ok)
-            break;
-        }
         default: {
             const char *err = GBS_global_string("Value search not supported for data type %i (%i)", gb->type(), type);
             GB_internal_error(err);
@@ -607,7 +601,7 @@ GBDATA *GB_searchOrCreate_int(GBDATA *gb_container, const char *fieldpath, long 
     return gb_int;
 }
 
-GBDATA *GB_searchOrCreate_float(GBDATA *gb_container, const char *fieldpath, double default_value) {
+GBDATA *GB_searchOrCreate_float(GBDATA *gb_container, const char *fieldpath, float default_value) {
     gb_assert(!GB_have_error()); // illegal to enter this function when an error is exported!
 
     GBDATA *gb_float = GB_search(gb_container, fieldpath, GB_FIND);
@@ -1701,7 +1695,7 @@ void TEST_DB_search() {
 
             TEST_EXPECT_EQUAL  (GB_read_char_pntr(GB_searchOrCreate_string(db.gb_cont_misc, "sub1/str",    "blub")), "blub");
             TEST_EXPECT_EQUAL  (GB_read_int      (GB_searchOrCreate_int   (db.gb_cont_misc, "sub2/int",    2012)),   2012);
-            TEST_EXPECT_SIMILAR(GB_read_float    (GB_searchOrCreate_float (db.gb_cont_misc, "sub3/float", 3.1415)), 3.1415, 0.0001);
+            TEST_EXPECT_SIMILAR(GB_read_float    (GB_searchOrCreate_float (db.gb_cont_misc, "sub3/float", 3.1415)), 3.1415, 0.00001);
 
             TEST_EXPECT_NORESULT__ERROREXPORTED_CONTAINS(GB_searchOrCreate_float (db.gb_cont_misc, "int",   0.815), "has wrong type");
             TEST_EXPECT_NORESULT__ERROREXPORTED_CONTAINS(GB_searchOrCreate_float (db.gb_cont_misc, "str",   0.815), "has wrong type");

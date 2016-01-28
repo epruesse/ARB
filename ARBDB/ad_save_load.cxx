@@ -22,6 +22,7 @@
 #include "gb_map.h"
 #include "gb_load.h"
 #include "ad_io_inline.h"
+#include <arb_misc.h>
 
 GB_MAIN_TYPE *gb_main_array[GB_MAIN_ARRAY_SIZE];
 
@@ -503,7 +504,7 @@ static bool gb_write_one_child(FILE *out, GBDATA *gb, GBCONTAINER*& gb_writeFrom
                 fprintf(out, "%%i %li\n", GB_read_int(gbe));
                 break;
             case GB_FLOAT:
-                fprintf(out, "%%f %g\n", GB_read_float(gbe));
+                fprintf(out, "%%f %s\n", ARB_float_2_ascii(GB_read_float(gbe)));
                 break;
             case GB_BITS:
                 fprintf(out, "%%I\t\"%s\"\n",

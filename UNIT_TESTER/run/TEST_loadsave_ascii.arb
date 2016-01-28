@@ -12,7 +12,15 @@ species_data		%% (%
 		seqcheck		"ARB_C2C11C55"
 		AL			"nov97"
 		ARB_color		%i 2
-		float_test		%f 3.14159
+		float_test		%f 3.141592
+		float_test		%f 3.141592e-02
+		float_test		%f 314.159210
+		float_test		%f 3.141592e-05
+		float_test		%f 3.141592e+05
+		float_test		%f 3.141592e-10
+		float_test		%f 3.141592e+10
+		float_test		%f 3.141592e-35
+		float_test		%f 3.141592e+35
 		bits_test		%I	"--------++++-+--+-+----+----+-+-"
 		%) /*species*/
 

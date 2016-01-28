@@ -18,6 +18,7 @@
 
 #include <rpc/types.h>
 #include <rpc/xdr.h>
+#include <arb_misc.h>
 
 gb_local_data *gb_local = 0;
 
@@ -158,27 +159,29 @@ inline GB_ERROR error_with_dbentry(const char *action, GBDATA *gbd, GB_ERROR err
     } while (0)
 
 
-static GB_ERROR GB_safe_atof(const char *str, double *res) {
-    GB_ERROR  error = NULL;
-    char     *end;
-    *res            = strtod(str, &end);
+static GB_ERROR GB_safe_atof(const char *str, float *res) {
+    GB_ERROR error = NULL;
+
+    char *end;
+    *res = strtof(str, &end);
+
     if (end == str || end[0] != 0) {
         if (!str[0]) {
             *res = 0.0;
         }
         else {
-            error = GBS_global_string("cannot convert '%s' to double", str);
+            error = GBS_global_string("cannot convert '%s' to float", str);
         }
     }
     return error;
 }
 
-double GB_atof(const char *str) {
-    // convert ASCII to double
-    double   res = 0;
+float GB_atof(const char *str) {
+    // convert ASCII to float
+    float    res = 0;
     GB_ERROR err = GB_safe_atof(str, &res);
     if (err) {
-        // expected double in 'str'- better use GB_safe_atof()
+        // expected float in 'str'- better use GB_safe_atof()
         GBK_terminatef("GB_safe_atof(\"%s\", ..) returns error: %s", str, err);
     }
     return res;
@@ -741,11 +744,10 @@ GBDATA *GB_read_pointer(GBDATA *gbd) {
     return gbd->as_entry()->info.ptr;
 }
 
-double GB_read_float(GBDATA *gbd) // @@@ change return type to float (that's what's stored in DB)
-{
-    XDR          xdrs;
-    static float f; // @@@ why static?
-    
+float GB_read_float(GBDATA *gbd) {
+    XDR   xdrs;
+    float f;
+
     GB_TEST_READ(gbd, GB_FLOAT, "GB_read_float");
     xdrmem_create(&xdrs, &gbd->as_entry()->info.in.data[0], SIZOFINTERN, XDR_DECODE);
     xdr_float(&xdrs, &f);
@@ -753,7 +755,7 @@ double GB_read_float(GBDATA *gbd) // @@@ change return type to float (that's wha
 
     gb_assert(f == f); // !nan
 
-    return (double)f;
+    return f;
 }
 
 long GB_read_count(GBDATA *gbd) {
@@ -1066,15 +1068,18 @@ float *GB_read_floats(GBDATA *gbd) { // @@@ only used in unittest - check usage 
 }
 
 char *GB_read_as_string(GBDATA *gbd) {
+    /*! reads basic db-field types and returns content as text.
+     * @see GB_write_autoconv_string
+     */
     switch (gbd->type()) {
         case GB_STRING: return GB_read_string(gbd);
         case GB_LINK:   return GB_read_link(gbd);
         case GB_BYTE:   return GBS_global_string_copy("%i", GB_read_byte(gbd));
         case GB_INT:    return GBS_global_string_copy("%li", GB_read_int(gbd));
-        case GB_FLOAT:  return GBS_global_string_copy("%g", GB_read_float(gbd));
+        case GB_FLOAT:  return strdup(ARB_float_2_ascii(GB_read_float(gbd)));
         case GB_BITS:   return GB_read_bits(gbd, '0', '1');
             /* Be careful : When adding new types here, you have to make sure that
-             * GB_write_as_string is able to write them back and that this makes sense.
+             * GB_write_autoconv_string is able to write them back and that this makes sense.
              */
         default:    return NULL;
     }
@@ -1183,35 +1188,22 @@ GB_ERROR GB_write_pointer(GBDATA *gbd, GBDATA *pointer) {
     return 0;
 }
 
-GB_ERROR GB_write_float(GBDATA *gbd, double f)
-{
+GB_ERROR GB_write_float(GBDATA *gbd, float f) {
     gb_assert(f == f); // !nan
-
-    XDR          xdrs;
-    static float f2;
-
     GB_TEST_WRITE(gbd, GB_FLOAT, "GB_write_float");
 
-#if defined(WARN_TODO)
-#warning call GB_read_float here!
-#endif
-    GB_TEST_READ(gbd, GB_FLOAT, "GB_read_float");
-
-    GBENTRY *gbe = gbd->as_entry();
-    xdrmem_create(&xdrs, &gbe->info.in.data[0], SIZOFINTERN, XDR_DECODE);
-    xdr_float(&xdrs, &f2);
-    xdr_destroy(&xdrs);
-
-    if (f2 != f) {
-        f2 = f;
+    if (GB_read_float(gbd) != f) {
+        GBENTRY *gbe = gbd->as_entry();
         gb_save_extern_data_in_ts(gbe);
+
+        XDR xdrs;
         xdrmem_create(&xdrs, &gbe->info.in.data[0], SIZOFINTERN, XDR_ENCODE);
-        xdr_float(&xdrs, &f2);
+        xdr_float(&xdrs, &f);
         xdr_destroy(&xdrs);
+
         gb_touch_entry(gbe, GB_NORMAL_CHANGE);
         GB_DO_CALLBACKS(gbe);
     }
-    xdr_destroy(&xdrs);
     return 0;
 }
 
@@ -1402,7 +1394,13 @@ GB_ERROR GB_write_floats(GBDATA *gbd, const float *f, long size)
     return GB_write_pntr(gbd, (char *)f, size*sizeof(float), size);
 }
 
-GB_ERROR GB_write_as_string(GBDATA *gbd, const char *val) {
+GB_ERROR GB_write_autoconv_string(GBDATA *gbd, const char *val) {
+    /*! writes data to database field using automatic conversion.
+     *  Warning: Conversion may cause silent data-loss!
+     *           (e.g. writing "hello" to a numeric db-field results in zero content)
+     *
+     *  Writing back the unmodified(!) result of GB_read_as_string will not cause data loss.
+     */
     switch (gbd->type()) {
         case GB_STRING: return GB_write_string(gbd, val);
         case GB_LINK:   return GB_write_link(gbd, val);
@@ -1410,7 +1408,7 @@ GB_ERROR GB_write_as_string(GBDATA *gbd, const char *val) {
         case GB_INT:    return GB_write_int(gbd, atoi(val));
         case GB_FLOAT:  return GB_write_float(gbd, GB_atof(val));
         case GB_BITS:   return GB_write_bits(gbd, val, strlen(val), "0");
-        default:    return GB_export_errorf("Error: You cannot use GB_write_as_string on this type of entry (%s)", GB_read_key_pntr(gbd));
+        default:    return GB_export_errorf("Error: You cannot use GB_write_autoconv_string on this type of entry (%s)", GB_read_key_pntr(gbd));
     }
 }
 

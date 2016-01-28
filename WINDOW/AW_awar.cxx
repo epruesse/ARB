@@ -562,7 +562,7 @@ GB_ERROR AW_awar_string::write_string(const char *para, bool do_touch) {
     aw_assert(!deny_write);
     if (!gb_var) return AW_MSG_UNMAPPED_AWAR;
     GB_transaction ta(gb_var);
-    GB_ERROR error = GB_write_as_string(gb_var, para);
+    GB_ERROR error = GB_write_autoconv_string(gb_var, para); // @@@ GB_write_string should do here
     if (!error) update_tmp_state(has_default_value());
     if (do_touch) GB_touch(gb_var);
     return error;
