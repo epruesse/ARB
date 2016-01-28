@@ -477,26 +477,23 @@ static GB_ERROR XML_recursive(GBDATA *gbd) {
     }
 
     if (descend) {
-        switch (GB_read_type(gbd)) {
-            case GB_DB: {
-                for (GBDATA *gb_child = GB_child(gbd); gb_child && !error; gb_child = GB_nextChild(gb_child)) {
-                    const char *sub_key_name = GB_read_key_pntr(gb_child);
+        if (GB_read_type(gbd) == GB_DB) {
+            for (GBDATA *gb_child = GB_child(gbd); gb_child && !error; gb_child = GB_nextChild(gb_child)) {
+                const char *sub_key_name = GB_read_key_pntr(gb_child);
 
-                    if (strcmp(sub_key_name, "name") != 0) { // do not recurse for "name" (is handled above)
-                        error = XML_recursive(gb_child);
-                    }
+                if (strcmp(sub_key_name, "name") != 0) { // do not recurse for "name" (is handled above)
+                    error = XML_recursive(gb_child);
                 }
-                break;
             }
-            default: {
-                char *content = GB_read_as_string(gbd);
-                if (content) {
-                    XML_Text text(content);
-                    free(content);
-                }
-                else {
-                    tag->add_attribute("error", "unsavable");
-                }
+        }
+        else {
+            char *content = GB_read_as_string(gbd);
+            if (content) {
+                XML_Text text(content);
+                free(content);
+            }
+            else {
+                tag->add_attribute("error", "unsavable");
             }
         }
     }
@@ -736,7 +733,7 @@ GB_ERROR SEQIO_export_by_format(GBDATA *gb_main, int marked_only, AP_filter *fil
 // uncomment to auto-update exported files
 // (needed once after changing database or export formats)
 // #define TEST_AUTO_UPDATE
-#define TEST_AUTO_UPDATE_ONLY_MISSING // do auto-update only if file is missing 
+#define TEST_AUTO_UPDATE_ONLY_MISSING // do auto-update only if file is missing
 
 #define TEST_EXPORT_FORMAT(filename,load_complete_form)                 \
     do {                                                                \
@@ -791,7 +788,7 @@ void TEST_sequence_export() {
 #if defined(TEST_AUTO_UPDATE)
 #if defined(TEST_AUTO_UPDATE_ONLY_MISSING)
                 if (GB_is_regularfile(expected)) {
-                    TEST_EXPECT_TEXTFILE_DIFFLINES_IGNORE_DATES(expected, outname, 0);
+                    TEST_EXPECT_TEXTFILE_DIFFLINES_IGNORE_DATES(outname, expected, 0);
                 }
                 else
 #else
@@ -800,7 +797,7 @@ void TEST_sequence_export() {
                 }
 #endif
 #else
-                TEST_EXPECT_TEXTFILE_DIFFLINES_IGNORE_DATES(expected, outname, 0);
+                TEST_EXPECT_TEXTFILE_DIFFLINES_IGNORE_DATES(outname, expected, 0);
                 // see ../../UNIT_TESTER/run/impexp
 #endif // TEST_AUTO_UPDATE
                 TEST_EXPECT_ZERO_OR_SHOW_ERRNO(unlink(outname));

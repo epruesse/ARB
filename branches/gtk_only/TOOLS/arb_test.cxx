@@ -103,7 +103,7 @@ void TEST_SLOW_ascii_2_bin_2_ascii() {
     TEST_RUN_TOOL(GBS_global_string("arb_2_bin   %s %s", ascii_ORG, binary));
     TEST_RUN_TOOL(GBS_global_string("arb_2_ascii %s %s", binary, ascii));
 
-    TEST_EXPECT_FILES_EQUAL(ascii, ascii_ORG);
+    TEST_EXPECT_TEXTFILES_EQUAL(ascii, ascii_ORG);
 
     // test conversion (bin->ascii->bin) via stream (this tests 'arb_repair')
     TEST_RUN_TOOL(checkedPipeCommand(GBS_global_string("arb_2_ascii %s - | arb_2_bin - %s", binary, binary_2ND)));

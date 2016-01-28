@@ -1042,7 +1042,7 @@ static void awtc_nn_search_all_listed(AW_window *aww) {
                     if (value) {
                         GBDATA *gb_dest = GB_search(gb_species, dest_field, dest_type);
 
-                        error = GB_write_as_string(gb_dest, GBS_mempntr(value));
+                        error = GB_write_autoconv_string(gb_dest, GBS_mempntr(value));
                         GBS_strforget(value);
                     }
                     else {

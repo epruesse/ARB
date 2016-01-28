@@ -969,8 +969,8 @@ class DB_scalable {
     //! a DB entry scalable by dragging
     GBDATA   *gbd;
     GB_TYPES  type;
-    double    min;
-    double    max;
+    float     min;
+    float     max;
     int       discretion_factor;
     bool      inversed;
 
@@ -990,8 +990,8 @@ public:
 
     GBDATA *data() { return gbd; }
 
-    double read() {
-        double res = 0.0;
+    float read() {
+        float res = 0.0;
         switch (type) {
             case GB_FLOAT: res = GB_read_float(gbd);        break;
             case GB_INT:   res = GB_read_int(gbd)/INTSCALE; break;
@@ -999,8 +999,8 @@ public:
         }
         return inversed ? -res : res;
     }
-    bool write(double val) {
-        double old = read();
+    bool write(float val) {
+        float old = read();
 
         if (inversed) val = -val;
 
@@ -1021,8 +1021,8 @@ public:
     }
 
     void set_discretion_factor(int df) { discretion_factor = df; }
-    void set_min(double val) { min = (type == GB_INT) ? val*INTSCALE : val; }
-    void set_max(double val) { max = (type == GB_INT) ? val*INTSCALE : val; }
+    void set_min(float val) { min = (type == GB_INT) ? val*INTSCALE : val; }
+    void set_max(float val) { max = (type == GB_INT) ? val*INTSCALE : val; }
     void inverse() { inversed = !inversed; }
 };
 
@@ -1789,6 +1789,8 @@ AWT_graphic_tree::AWT_graphic_tree(AW_root *aw_root_, GBDATA *gb_main_, AD_map_v
     gb_main          = gb_main_;
     cmd_data         = NULL;
     nds_show_all     = true;
+    group_info_pos   = GIP_SEPARATED;
+    group_count_mode = GCM_MEMBERS;
     map_viewer_cb    = map_viewer_cb_;
     display_markers  = NULL;
 }
@@ -1854,6 +1856,7 @@ GB_ERROR AWT_graphic_tree::load(GBDATA *, const char *name) {
             else {
                 displayed_root = get_root_node();
 
+                AP_tree::set_group_downscale(&groupScale);
                 get_root_node()->compute_tree();
                 if (display_markers) display_markers->flush_cache();
 
@@ -2262,27 +2265,29 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
         disp_device->set_grey_level(at->gr.gc, group_greylevel);
         disp_device->polygon(at->gr.gc, AW::FillStyle::SHADED_WITH_BORDER, 4, group, line_filter);
 
-        const AW_font_limits& charLimits  = disp_device->get_font_limits(at->gr.gc, 'A');
-        double                text_ascent = charLimits.ascent * disp_device->get_unscale();
-
-        Vector text_offset = 0.5 * Vector(text_ascent, text_ascent+box_height);
-
         limits.x_right = n0.xpos();
 
-        if (at->gb_node && (disp_device->get_filter() & group_text_filter)) {
-            const char *data     = make_node_text_nds(this->gb_main, at->gb_node, NDS_OUTPUT_LEAFTEXT, at, tree_static->get_tree_name());
-            size_t      data_len = strlen(data);
+        if (disp_device->get_filter() & group_text_filter) {
+            const GroupInfo&      info       = get_group_info(at, group_info_pos == GIP_SEPARATED ? GI_SEPARATED : GI_COMBINED, group_info_pos == GIP_OVERLAYED);
+            const AW_font_limits& charLimits = disp_device->get_font_limits(at->gr.gc, 'A');
 
-            Position textPos = n0+text_offset;
-            disp_device->text(at->gr.gc, data, textPos, 0.0, group_text_filter, data_len);
+            double text_ascent = charLimits.ascent * disp_device->get_unscale();
+            double char_width  = charLimits.width * disp_device->get_unscale();
+            Vector text_offset = Vector(char_width, 0.5*(text_ascent+box_height));
 
-            double textsize = disp_device->get_string_size(at->gr.gc, data, data_len) * disp_device->get_unscale();
-            limits.x_right  = textPos.xpos()+textsize;
+            if (info.name) {
+                Position textPos = n0+text_offset;
+                disp_device->text(at->gr.gc, info.name, textPos, 0.0, group_text_filter, info.name_len);
+
+                double textsize = disp_device->get_string_size(at->gr.gc, info.name, info.name_len) * disp_device->get_unscale();
+                limits.x_right  = textPos.xpos()+textsize;
+            }
+
+            if (info.count) {
+                Position countPos   = s0+text_offset;
+                disp_device->text(at->gr.gc, info.count, countPos, 0.0, group_text_filter, info.count_len);
+            }
         }
-
-        Position    countPos = s0+text_offset;
-        const char *count    = GBS_global_string(" %u", at->gr.leaf_sum);
-        disp_device->text(at->gr.gc, count, countPos, 0.0, group_text_filter);
 
         limits.y_top    = s0.ypos();
         limits.y_bot    = s1.ypos();
@@ -2335,21 +2340,35 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
 
             limits.x_right = x2;
 
-            if (at->gb_node && (disp_device->get_filter() & group_text_filter)) {
-                const char *data     = make_node_text_nds(this->gb_main, at->gb_node, NDS_OUTPUT_LEAFTEXT, at, tree_static->get_tree_name());
-                size_t      data_len = strlen(data);
-
+            if (disp_device->get_filter() & group_text_filter) {
                 LineVector worldBracket = disp_device->transform(bracket.right_edge());
                 LineVector clippedWorldBracket;
-                bool       visible      = disp_device->clip(worldBracket, clippedWorldBracket);
+
+                bool visible = disp_device->clip(worldBracket, clippedWorldBracket);
                 if (visible) {
-                    LineVector clippedBracket = disp_device->rtransform(clippedWorldBracket);
+                    const GroupInfo& info = get_group_info(at, GI_SEPARATED_PARENTIZED);
 
-                    Position textPos = clippedBracket.centroid()+Vector(half_text_ascent, half_text_ascent);
-                    disp_device->text(at->gr.gc, data, textPos, 0.0, group_text_filter, data_len);
+                    if (info.name || info.count) {
+                        LineVector clippedBracket = disp_device->rtransform(clippedWorldBracket);
 
-                    double textsize = disp_device->get_string_size(at->gr.gc, data, data_len) * unscale;
-                    limits.x_right  = textPos.xpos()+textsize;
+                        if (info.name) {
+                            Position namePos = clippedBracket.centroid()+Vector(half_text_ascent, -0.2*half_text_ascent); // originally y-offset was half_text_ascent (w/o counter shown)
+                            disp_device->text(at->gr.gc, info.name, namePos, 0.0, group_text_filter, info.name_len);
+                            if (info.name_len>=info.count_len) {
+                                double textsize = disp_device->get_string_size(at->gr.gc, info.name, info.name_len) * unscale;
+                                limits.x_right  = namePos.xpos() + textsize;
+                            }
+                        }
+
+                        if (info.count) {
+                            Position countPos = clippedBracket.centroid()+Vector(half_text_ascent, 2.2*half_text_ascent);
+                            disp_device->text(at->gr.gc, info.count, countPos, 0.0, group_text_filter, info.count_len);
+                            if (info.count_len>info.name_len) {
+                                double textsize = disp_device->get_string_size(at->gr.gc, info.count, info.count_len) * unscale;
+                                limits.x_right  = countPos.xpos() + textsize;
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -2436,19 +2455,35 @@ void AWT_graphic_tree::show_radial_tree(AP_tree *at, const AW::Position& base, c
         disp_device->set_grey_level(at->gr.gc, group_greylevel);
         disp_device->polygon(at->gr.gc, AW::FillStyle::SHADED_WITH_BORDER, 3, corner, line_filter);
 
-        if (at->gb_node && (disp_device->get_filter() & group_text_filter)) {
-            Angle toText = orientation;
-            toText.rotate90deg();
+        if (disp_device->get_filter() & group_text_filter) {
+            const GroupInfo& info = get_group_info(at, group_info_pos == GIP_SEPARATED ? GI_SEPARATED : GI_COMBINED, group_info_pos == GIP_OVERLAYED);
+            if (info.name) {
+                Angle toText = orientation;
+                toText.rotate90deg();
 
-            AW_pos   alignment;
-            Position textpos = calc_text_coordinates_near_tip(disp_device, at->gr.gc, corner[1], toText, alignment);
+                AW_pos   alignment;
+                Position textpos = calc_text_coordinates_near_tip(disp_device, at->gr.gc, corner[1], toText, alignment);
 
-            // insert text (e.g. name of group)
-            const char *data = make_node_text_nds(this->gb_main, at->gb_node, NDS_OUTPUT_LEAFTEXT, at, tree_static->get_tree_name());
-            disp_device->text(at->gr.gc, data,
-                              textpos,
-                              alignment,
-                              group_text_filter);
+                disp_device->text(at->gr.gc,
+                                  info.name,
+                                  textpos,
+                                  alignment,
+                                  group_text_filter,
+                                  info.name_len);
+            }
+            if (info.count) {
+                Vector v01 = corner[1]-corner[0];
+                Vector v02 = corner[2]-corner[0];
+
+                Position incircleCenter = corner[0] + (v01*v02.length() + v02*v01.length()) / (v01.length()+v02.length()+Distance(v01.endpoint(), v02.endpoint()));
+
+                disp_device->text(at->gr.gc,
+                                  info.count,
+                                  incircleCenter,
+                                  0.5,
+                                  group_text_filter,
+                                  info.count_len);
+            }
         }
     }
     else { // draw subtrees
@@ -2796,7 +2831,11 @@ void AWT_graphic_tree::read_tree_settings() {
     scaled_branch_distance = aw_root->awar(AWAR_DTREE_VERICAL_DIST)->read_float(); // not final value!
     group_greylevel        = aw_root->awar(AWAR_DTREE_GREY_LEVEL)->read_int() * 0.01;
     baselinewidth          = aw_root->awar(AWAR_DTREE_BASELINEWIDTH)->read_int();
+    group_count_mode       = GroupCountMode(aw_root->awar(AWAR_DTREE_GROUPCOUNTMODE)->read_int());
+    group_info_pos         = GroupInfoPosition(aw_root->awar(AWAR_DTREE_GROUPINFOPOS)->read_int());
     show_brackets          = aw_root->awar(AWAR_DTREE_SHOW_BRACKETS)->read_int();
+    groupScale.pow         = aw_root->awar(AWAR_DTREE_GROUP_DOWNSCALE)->read_float();
+    groupScale.linear      = aw_root->awar(AWAR_DTREE_GROUP_SCALE)->read_float();
     show_circle            = aw_root->awar(AWAR_DTREE_SHOW_CIRCLE)->read_int();
     circle_zoom_factor     = aw_root->awar(AWAR_DTREE_CIRCLE_ZOOM)->read_float();
     circle_max_size        = aw_root->awar(AWAR_DTREE_CIRCLE_MAX_SIZE)->read_float();
@@ -2931,6 +2970,105 @@ void AWT_graphic_tree::show(AW_device *device) {
     disp_device = NULL;
 }
 
+inline unsigned percentMarked(const AP_tree_members& gr) {
+    double   percent = double(gr.mark_sum)/gr.leaf_sum;
+    unsigned pc      = unsigned(percent*100.0+0.5);
+
+    if (pc == 0) {
+        td_assert(gr.mark_sum>0); // otherwise function should not be called
+        pc = 1; // do not show '0%' for range ]0.0 .. 0.05[
+    }
+    else if (pc == 100) {
+        if (gr.mark_sum<gr.leaf_sum) {
+            pc = 99; // do not show '100%' for range [0.95 ... 1.0[
+        }
+    }
+    return pc;
+}
+
+const GroupInfo& AWT_graphic_tree::get_group_info(AP_tree *at, GroupInfoMode mode, bool swap) const {
+    static GroupInfo info = { 0, 0, 0, 0 };
+
+    info.name = NULL;
+    if (at->gb_node) {
+        if (at->father) {
+            td_assert(at->name); // otherwise called for non-group!
+            info.name = make_node_text_nds(gb_main, at->gb_node, NDS_OUTPUT_LEAFTEXT, at, tree_static->get_tree_name());
+        }
+        else { // root-node -> use tree-name
+            info.name = tree_static->get_tree_name();
+        }
+        if (!info.name[0]) info.name = NULL;
+    }
+    info.name_len = info.name ? strlen(info.name) : 0;
+
+    static char countBuf[50];
+    countBuf[0] = 0;
+
+    GroupCountMode count_mode = group_count_mode;
+
+    if (!at->gr.mark_sum) { // do not display zero marked
+        switch (count_mode) {
+            case GCM_NONE:
+            case GCM_MEMBERS: break; // unchanged
+
+            case GCM_PERCENT:
+            case GCM_MARKED: count_mode = GCM_NONE; break; // completely skip
+
+            case GCM_BOTH:
+            case GCM_BOTH_PC: count_mode = GCM_MEMBERS; break; // fallback to members-only
+        }
+    }
+
+    switch (count_mode) {
+        case GCM_NONE:    break;
+        case GCM_MEMBERS: sprintf(countBuf, "%u",      at->gr.leaf_sum);                        break;
+        case GCM_MARKED:  sprintf(countBuf, "%u",      at->gr.mark_sum);                        break;
+        case GCM_BOTH:    sprintf(countBuf, "%u/%u",   at->gr.mark_sum, at->gr.leaf_sum);       break;
+        case GCM_PERCENT: sprintf(countBuf, "%u%%",    percentMarked(at->gr));                  break;
+        case GCM_BOTH_PC: sprintf(countBuf, "%u%%/%u", percentMarked(at->gr), at->gr.leaf_sum); break;
+    }
+
+    if (countBuf[0]) {
+        info.count     = countBuf;
+        info.count_len = strlen(info.count);
+
+        bool parentize = mode != GI_SEPARATED;
+        if (parentize) {
+            memmove(countBuf+1, countBuf, info.count_len);
+            countBuf[0] = '(';
+            strcpy(countBuf+info.count_len+1, ")");
+            info.count_len += 2;
+        }
+    }
+    else {
+        info.count     = NULL;
+        info.count_len = 0;
+    }
+
+    if (mode == GI_COMBINED) {
+        if (info.name) {
+            if (info.count) {
+                info.name      = GBS_global_string("%s %s", info.name, info.count);
+                info.name_len += info.count_len+1;
+
+                info.count     = NULL;
+                info.count_len = 0;
+            }
+        }
+        else if (info.count) {
+            swap = !swap;
+        }
+    }
+
+    if (swap) {
+        std::swap(info.name, info.count);
+        std::swap(info.name_len, info.count_len);
+    }
+
+    return info;
+}
+
 AWT_graphic_tree *NT_generate_tree(AW_root *root, GBDATA *gb_main, AD_map_viewer_cb map_viewer_cb) {
     AWT_graphic_tree *apdt = new AWT_graphic_tree(root, gb_main, map_viewer_cb);
     apdt->init(new AliView(gb_main), NULL, true, false); // tree w/o sequence data
@@ -2961,11 +3099,16 @@ static void markerThresholdChanged_cb(AW_root *root, bool partChanged) {
 }
 
 void TREE_create_awars(AW_root *aw_root, AW_default db) {
-    aw_root->awar_int(AWAR_DTREE_BASELINEWIDTH, 1)  ->set_minmax(1,    10);
-    aw_root->awar_float(AWAR_DTREE_VERICAL_DIST,  1.0)->set_minmax(0.01, 30);
+    aw_root->awar_int  (AWAR_DTREE_BASELINEWIDTH,   1)  ->set_minmax (1,    10);
+    aw_root->awar_float(AWAR_DTREE_VERICAL_DIST,    1.0)->set_minmax (0.01, 30);
+    aw_root->awar_float(AWAR_DTREE_GROUP_DOWNSCALE, 0.33)->set_minmax(0.0,  1.0);
+    aw_root->awar_float(AWAR_DTREE_GROUP_SCALE,     1.0)->set_minmax (0.01, 10.0);
 
     aw_root->awar_int(AWAR_DTREE_AUTO_JUMP,      AP_JUMP_KEEP_VISIBLE);
     aw_root->awar_int(AWAR_DTREE_AUTO_JUMP_TREE, AP_JUMP_FORCE_VCENTER);
+
+    aw_root->awar_int(AWAR_DTREE_GROUPCOUNTMODE, GCM_MEMBERS);
+    aw_root->awar_int(AWAR_DTREE_GROUPINFOPOS,   GIP_SEPARATED);
 
     aw_root->awar_int(AWAR_DTREE_SHOW_BRACKETS, 1);
     aw_root->awar_int(AWAR_DTREE_SHOW_CIRCLE,   0);
@@ -2990,6 +3133,13 @@ void TREE_create_awars(AW_root *aw_root, AW_default db) {
     aw_root->awar_int(AWAR_TREE_REFRESH, 0, db);
 }
 
+static void TREE_recompute_and_resize_cb(UNFIXED, AWT_canvas *ntw) {
+    AWT_graphic_tree *gt = DOWNCAST(AWT_graphic_tree*, ntw->gfx);
+    gt->read_tree_settings(); // update settings for group-scaling
+    gt->get_root_node()->compute_tree();
+    AWT_resize_cb(NULL, ntw);
+}
+
 void TREE_install_update_callbacks(AWT_canvas *ntw) {
     // install all callbacks needed to make the tree-display update properly
 
@@ -3005,6 +3155,8 @@ void TREE_install_update_callbacks(AWT_canvas *ntw) {
     awr->awar(AWAR_DTREE_USE_ELLIPSE)    ->add_callback(expose_cb);
     awr->awar(AWAR_DTREE_BOOTSTRAP_MIN)  ->add_callback(expose_cb);
     awr->awar(AWAR_DTREE_GREY_LEVEL)     ->add_callback(expose_cb);
+    awr->awar(AWAR_DTREE_GROUPCOUNTMODE) ->add_callback(expose_cb);
+    awr->awar(AWAR_DTREE_GROUPINFOPOS)   ->add_callback(expose_cb);
 
     RootCallback reinit_treetype_cb = makeRootCallback(NT_reinit_treetype, ntw);
     awr->awar(AWAR_DTREE_RADIAL_ZOOM_TEXT)->add_callback(reinit_treetype_cb);
@@ -3012,7 +3164,12 @@ void TREE_install_update_callbacks(AWT_canvas *ntw) {
     awr->awar(AWAR_DTREE_DENDRO_ZOOM_TEXT)->add_callback(reinit_treetype_cb);
     awr->awar(AWAR_DTREE_DENDRO_XPAD)     ->add_callback(reinit_treetype_cb);
 
-    awr->awar(AWAR_DTREE_VERICAL_DIST)->add_callback(makeRootCallback(AWT_resize_cb, ntw));
+    RootCallback resize_cb = makeRootCallback(AWT_resize_cb, ntw);
+    awr->awar(AWAR_DTREE_VERICAL_DIST)->add_callback(resize_cb);
+
+    RootCallback recompute_and_resize_cb = makeRootCallback(TREE_recompute_and_resize_cb, ntw);
+    awr->awar(AWAR_DTREE_GROUP_SCALE) ->add_callback(recompute_and_resize_cb);
+    awr->awar(AWAR_DTREE_GROUP_DOWNSCALE)->add_callback(recompute_and_resize_cb);
 
     // global refresh trigger (used where a refresh is/was missing)
     awr->awar(AWAR_TREE_REFRESH)->add_callback(expose_cb);
@@ -3045,6 +3202,8 @@ void TREE_insert_jump_option_menu(AW_window *aws, const char *label, const char 
 static AWT_config_mapping_def tree_setting_config_mapping[] = {
     { AWAR_DTREE_BASELINEWIDTH,    "line_width" },
     { AWAR_DTREE_VERICAL_DIST,     "vert_dist" },
+    { AWAR_DTREE_GROUP_DOWNSCALE,  "group_downscale" },
+    { AWAR_DTREE_GROUP_SCALE,      "group_scale" },
     { AWAR_DTREE_AUTO_JUMP,        "auto_jump" },
     { AWAR_DTREE_AUTO_JUMP_TREE,   "auto_jump_tree" },
     { AWAR_DTREE_SHOW_CIRCLE,      "show_circle" },
@@ -3058,6 +3217,8 @@ static AWT_config_mapping_def tree_setting_config_mapping[] = {
     { AWAR_DTREE_RADIAL_ZOOM_TEXT, "radial_zoomtext" },
     { AWAR_DTREE_RADIAL_XPAD,      "radial_xpadding" },
     { AWAR_DTREE_BOOTSTRAP_MIN,    "bootstrap_min" },
+    { AWAR_DTREE_GROUPCOUNTMODE,   "group_countmode" },
+    { AWAR_DTREE_GROUPINFOPOS,     "group_infopos" },
     { 0, 0 }
 };
 
@@ -3077,7 +3238,7 @@ AW_window *TREE_create_settings_window(AW_root *aw_root) {
         aws->create_button("HELP", "HELP", "H");
 
         aws->at("button");
-        aws->auto_space(10, 10);
+        aws->auto_space(5, 5);
         aws->label_length(30);
 
         const int SCALER_WIDTH = 250;
@@ -3086,15 +3247,46 @@ AW_window *TREE_create_settings_window(AW_root *aw_root) {
         aws->create_input_field_with_scaler(AWAR_DTREE_BASELINEWIDTH, 4, SCALER_WIDTH);
         aws->at_newline();
 
-        aws->label("Relative vertical distance");
-        aws->create_input_field_with_scaler(AWAR_DTREE_VERICAL_DIST, 4, SCALER_WIDTH, AW_SCALER_EXP_LOWER);
-        aws->at_newline();
-
         TREE_insert_jump_option_menu(aws, "On species change", AWAR_DTREE_AUTO_JUMP);
         TREE_insert_jump_option_menu(aws, "On tree change",    AWAR_DTREE_AUTO_JUMP_TREE);
 
         aws->label("Show group brackets");
         aws->create_toggle(AWAR_DTREE_SHOW_BRACKETS);
+        aws->at_newline();
+
+        aws->label("Vertical distance");
+        aws->create_input_field_with_scaler(AWAR_DTREE_VERICAL_DIST, 4, SCALER_WIDTH, AW_SCALER_EXP_LOWER);
+        aws->at_newline();
+
+        aws->label("Vertical group scaling");
+        aws->create_input_field_with_scaler(AWAR_DTREE_GROUP_SCALE, 4, SCALER_WIDTH);
+        aws->at_newline();
+
+        aws->label("'Biggroup' scaling");
+        aws->create_input_field_with_scaler(AWAR_DTREE_GROUP_DOWNSCALE, 4, SCALER_WIDTH);
+        aws->at_newline();
+
+        aws->label("Greylevel of groups (%)");
+        aws->create_input_field_with_scaler(AWAR_DTREE_GREY_LEVEL, 4, SCALER_WIDTH);
+        aws->at_newline();
+
+        aws->label("Show group counter");
+        aws->create_option_menu(AWAR_DTREE_GROUPCOUNTMODE, true);
+        aws->insert_default_option("None",            "N", GCM_NONE);
+        aws->insert_option        ("Members",         "M", GCM_MEMBERS);
+        aws->insert_option        ("Marked",          "a", GCM_MARKED);
+        aws->insert_option        ("Marked/Members",  "b", GCM_BOTH);
+        aws->insert_option        ("%Marked",         "%", GCM_PERCENT);
+        aws->insert_option        ("%Marked/Members", "e", GCM_BOTH_PC);
+        aws->update_option_menu();
+        aws->at_newline();
+
+        aws->label("Group counter position");
+        aws->create_option_menu(AWAR_DTREE_GROUPINFOPOS, true);
+        aws->insert_default_option("Attached",  "A", GIP_ATTACHED);
+        aws->insert_option        ("Overlayed", "O", GIP_OVERLAYED);
+        aws->insert_option        ("Separated", "a", GIP_SEPARATED);
+        aws->update_option_menu();
         aws->at_newline();
 
         aws->label("Show bootstrap circles");
@@ -3115,10 +3307,6 @@ AW_window *TREE_create_settings_window(AW_root *aw_root) {
 
         aws->label("Boostrap radius limit");
         aws->create_input_field_with_scaler(AWAR_DTREE_CIRCLE_MAX_SIZE, 4, SCALER_WIDTH);
-        aws->at_newline();
-
-        aws->label("Grey Level of Groups%");
-        aws->create_input_field_with_scaler(AWAR_DTREE_GREY_LEVEL, 4, SCALER_WIDTH);
         aws->at_newline();
 
         const int PAD_SCALER_WIDTH = SCALER_WIDTH-39;
@@ -3196,20 +3384,37 @@ AW_window *TREE_create_marker_settings_window(AW_root *root) {
 static void fake_AD_map_viewer_cb(GBDATA *, AD_MAP_VIEWER_TYPE) {}
 
 class fake_AWT_graphic_tree : public AWT_graphic_tree {
-    int var_mode;
+    int var_mode; // current range: [0..3]
 
     virtual void read_tree_settings() OVERRIDE {
         scaled_branch_distance = 1.0; // not final value!
+
         // var_mode is in range [0..3]
         // it is used to vary tree settings such that many different combinations get tested
-        group_greylevel        = 20*.01;
-        baselinewidth          = (var_mode == 3)+1;
-        show_brackets          = (var_mode != 2);
-        show_circle            = var_mode%3;
-        use_ellipse            = var_mode%2;
-        circle_zoom_factor     = 1.3;
-        circle_max_size        = 1.5;
-        bootstrap_min          = 0;
+
+        groupScale.pow     = .33;
+        groupScale.linear  = 1.0;
+        group_greylevel    = 20*.01;
+        baselinewidth      = (var_mode == 3)+1;
+        show_brackets      = (var_mode != 2);
+        show_circle        = var_mode%3;
+        use_ellipse        = var_mode%2;
+        circle_zoom_factor = 1.3;
+        circle_max_size    = 1.5;
+        bootstrap_min      = 0;
+
+        group_info_pos = GIP_SEPARATED;
+        switch (var_mode) {
+            case 2: group_info_pos = GIP_ATTACHED;  break;
+            case 3: group_info_pos = GIP_OVERLAYED; break;
+        }
+
+        switch (var_mode) {
+            case 0: group_count_mode = GCM_MEMBERS; break;
+            case 1: group_count_mode = GCM_NONE;  break;
+            case 2: group_count_mode = (tree_sort%2) ? GCM_MARKED : GCM_PERCENT;  break;
+            case 3: group_count_mode = (tree_sort%2) ? GCM_BOTH   : GCM_BOTH_PC;  break;
+        }
     }
 
 public:

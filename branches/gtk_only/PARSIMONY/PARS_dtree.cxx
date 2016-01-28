@@ -312,7 +312,7 @@ AW_gc_manager AWT_graphic_parsimony::init_devices(AW_window *aww, AW_device *dev
         AW_manage_GC(aww,
                      ntw->get_gc_base_name(),
                      device, AWT_GC_CURSOR, AWT_GC_MAX, /* AWT_GC_CURSOR+7, */ AW_GCM_DATA_AREA,
-                     makeGcChangedCallback(TREE_GC_changed_cb, ntw), // TREE_recompute_cb
+                     makeGcChangedCallback(TREE_GC_changed_cb, ntw),
                      true,      // uses color groups
                      "#AAAA55",
 
@@ -485,10 +485,10 @@ void TEST_basic_tree_modifications() {
         {
             AP_tree_members& root_info = root->gr;
 
-            TEST_EXPECT_EQUAL(root_info.grouped,             0);
-            TEST_EXPECT_EQUAL(root_info.hidden,              0);
-            TEST_EXPECT_EQUAL(root_info.has_marked_children, 1);
-            TEST_EXPECT_EQUAL(root_info.leaf_sum,            15);
+            TEST_EXPECT_EQUAL(root_info.grouped,  0);
+            TEST_EXPECT_EQUAL(root_info.hidden,   0);
+            TEST_EXPECT_EQUAL(root_info.mark_sum, 6);
+            TEST_EXPECT_EQUAL(root_info.leaf_sum, 15);
 
             TEST_EXPECT_SIMILAR(root_info.max_tree_depth, 1.624975, 0.000001);
             TEST_EXPECT_SIMILAR(root_info.min_tree_depth, 0.341681, 0.000001);
@@ -496,7 +496,7 @@ void TEST_basic_tree_modifications() {
             GB_transaction ta(env.gbmain());
             GBT_mark_all(env.gbmain(), 0); // unmark all species
             root->compute_tree();
-            TEST_EXPECT_EQUAL(root_info.has_marked_children, 0);
+            TEST_EXPECT_EQUAL(root_info.mark_sum, 0);
         }
 
 

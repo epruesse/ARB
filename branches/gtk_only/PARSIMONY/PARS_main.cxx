@@ -1211,6 +1211,11 @@ void LowDataCheck::count(AP_tree_nlen *node) {
     }
 }
 
+static void PARS_infomode_cb(UNFIXED, AWT_canvas *canvas, AWT_COMMAND_MODE mode) {
+    AWT_trigger_remote_action(NULL, canvas->gb_main, "ARB_NT:species_info");
+    nt_mode_event(NULL, canvas, mode);
+}
+
 static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PARS_commands *cmds) {
     AW_root *awr     = aw_parent->get_root();
     GBDATA  *gb_main = ap_main->get_gb_main();
@@ -1405,8 +1410,8 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
     awm->create_mode("mode_zoom.xpm",   "mode_pzoom.hlp",  AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_ZOOM));
     awm->create_mode("mode_lzoom.xpm",  "mode_lzoom.hlp",  AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_LZOOM));
 
+    awm->create_mode("mode_info.xpm",   "mode_info.hlp",   AWM_ALL, makeWindowCallback(PARS_infomode_cb, ntw, AWT_MODE_INFO));
     // reserve mode-locations (to put the modes below at the same position as in ARB_NT)
-    awm->create_mode("mode_empty.xpm", "mode.hlp", AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_EMPTY));
     awm->create_mode("mode_empty.xpm", "mode.hlp", AWM_ALL, makeWindowCallback(nt_mode_event, ntw, AWT_MODE_EMPTY));
 
     // topology-modification-modes
@@ -2808,13 +2813,13 @@ void TEST_node_edge_resources() {
 #define STATE_STACK_SIZE sizeof(StateStack) // 8 (Cxx11) or 16 (older C++); maybe 4/8 in 32bit
 
 #if defined(ARB_64)
-    TEST_EXPECT_EQUAL(sizeof(AP_tree_nlen), 168 + STATE_STACK_SIZE);
-    TEST_EXPECT_EQUAL(sizeof(AP_tree), 120);
+    TEST_EXPECT_EQUAL(sizeof(AP_tree_nlen), 176 + STATE_STACK_SIZE);
+    TEST_EXPECT_EQUAL(sizeof(AP_tree), 128);
     TEST_EXPECT_EQUAL(sizeof(ARB_seqtree), 88);
     TEST_EXPECT_EQUAL(sizeof(TreeNode), 80);
 #else // !defined(ARB_64)
-    TEST_EXPECT_EQUAL(sizeof(AP_tree_nlen), 108 + STATE_STACK_SIZE);
-    TEST_EXPECT_EQUAL(sizeof(AP_tree), 80);
+    TEST_EXPECT_EQUAL(sizeof(AP_tree_nlen), 112 + STATE_STACK_SIZE);
+    TEST_EXPECT_EQUAL(sizeof(AP_tree), 84);
     TEST_EXPECT_EQUAL(sizeof(ARB_seqtree), 48);
     TEST_EXPECT_EQUAL(sizeof(TreeNode), 44);
 #endif
