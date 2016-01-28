@@ -84,7 +84,7 @@ public:
     }
 
     virtual AW_choice *add_choice(AW_action&, int) OVERRIDE;
-    virtual AW_choice *add_choice(AW_action&, double) OVERRIDE;
+    virtual AW_choice *add_choice(AW_action&, float) OVERRIDE;
     virtual AW_choice *add_choice(AW_action&, const char*) OVERRIDE;
 
     AW_awar *add_callback(const RootCallback& cb) OVERRIDE;
@@ -104,15 +104,15 @@ public:
     virtual const char *read_char_pntr() const    OVERRIDE;
     virtual char       *read_as_string() const    OVERRIDE;
     virtual long        read_int() const          OVERRIDE;
-    virtual double      read_float() const        OVERRIDE;
-    virtual double      read_as_float() const     OVERRIDE;
+    virtual float       read_float() const        OVERRIDE;
+    virtual float       read_as_float() const     OVERRIDE;
     virtual GBDATA     *read_pointer() const      OVERRIDE;
     virtual bool        read_as_bool() const      OVERRIDE;
 
     virtual GB_ERROR write_string(const char *aw_string, bool touch = false) OVERRIDE;
     virtual GB_ERROR write_as_string(const char *aw_string, bool touch = false) OVERRIDE;
     virtual GB_ERROR write_int(long aw_int, bool touch = false) OVERRIDE;
-    virtual GB_ERROR write_float(double aw_double, bool touch = false) OVERRIDE;
+    virtual GB_ERROR write_float(float aw_float, bool touch = false) OVERRIDE;
     virtual GB_ERROR write_pointer(GBDATA *aw_pointer, bool touch = false) OVERRIDE;
     virtual GB_ERROR write_as_bool(bool b, bool touch = false) OVERRIDE;
 
@@ -146,13 +146,13 @@ public:
     
     GB_ERROR  write_as_string(const char* para, bool touch=false) OVERRIDE;
     GB_ERROR  write_int(long para, bool touch=false) OVERRIDE;
-    GB_ERROR  write_float(double para, bool touch=false) OVERRIDE;
+    GB_ERROR  write_float(float para, bool touch=false) OVERRIDE;
     GB_ERROR  write_as_bool(bool b, bool touch=false) OVERRIDE;
 
     bool      has_default_value() const OVERRIDE;
     long      read_int() const OVERRIDE;
     char*     read_as_string() const OVERRIDE;
-    double    read_as_float() const OVERRIDE { return read_int(); };
+    float     read_as_float() const OVERRIDE { return read_int(); };
     bool      read_as_bool() const OVERRIDE;
     AW_awar*  add_target_var(long *pint) OVERRIDE;
     GB_ERROR  toggle_toggle() OVERRIDE;
@@ -160,15 +160,15 @@ public:
 };
 
 class AW_awar_float : public AW_awar_impl {
-    double min_value;
-    double max_value;
-    double default_value;
-    double value;
+    float min_value;
+    float max_value;
+    float default_value;
+    float value;
     std::vector<float*> target_variables;
     void     remove_all_target_vars() OVERRIDE;
     bool      has_default_value() const OVERRIDE;
 public:
-    AW_awar_float(const char *var_name, double var_value, AW_default default_file, AW_root *root);
+    AW_awar_float(const char *var_name, float var_value, AW_default default_file, AW_root *root);
     ~AW_awar_float();
     GB_TYPES get_type() const OVERRIDE { return GB_FLOAT; }
     const char* get_type_name() const { return "AW_awar_float"; }
@@ -176,13 +176,13 @@ public:
     AW_awar*    set_minmax(float min, float max) OVERRIDE;
     float       get_min() const OVERRIDE;
     float       get_max() const OVERRIDE;
-    AW_choice  *add_choice(AW_action&, double) OVERRIDE;
+    AW_choice  *add_choice(AW_action&, float) OVERRIDE;
 
     GB_ERROR    write_as_string(const char* para, bool touch=false) OVERRIDE;
-    GB_ERROR    write_float(double para, bool touch=false) OVERRIDE;
+    GB_ERROR    write_float(float para, bool touch=false) OVERRIDE;
     GB_ERROR    write_as_bool(bool b, bool touch=false) OVERRIDE;
-    double      read_float() const OVERRIDE;
-    double      read_as_float() const OVERRIDE { return read_float(); }
+    float       read_float() const OVERRIDE;
+    float       read_as_float() const OVERRIDE { return read_float(); }
     char*       read_as_string() const OVERRIDE;
     bool        read_as_bool() const OVERRIDE;
     AW_awar*    add_target_var(float *pfloat) OVERRIDE;

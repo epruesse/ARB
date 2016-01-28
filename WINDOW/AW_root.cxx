@@ -420,7 +420,7 @@ AW_awar *AW_root::awar_float(const char *var_name, float default_value, AW_defau
     AW_awar *vs = awar_no_error(var_name);
     if (!vs) {
         default_file = check_properties(default_file);
-        vs           = new AW_awar_float(var_name, (double)default_value, default_file, this);
+        vs           = new AW_awar_float(var_name, default_value, default_file, this);
         prvt->awar_hash[var_name] = vs;
     }
     return vs;

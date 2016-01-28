@@ -698,7 +698,7 @@ static unsigned aw_status_timer_listen_event(AW_root *awr)
                     }
 
                     awr->awar(AWAR_STATUS_ELAPSED)->write_string(buffer);
-                    awr->awar(AWAR_STATUS_GAUGE)->write_float(double(gaugeValue) / AW_GAUGE_GRANULARITY);//divide by 100 to get
+                    awr->awar(AWAR_STATUS_GAUGE)->write_float(float(gaugeValue) / AW_GAUGE_GRANULARITY); //divide by 100 to get
 
 #if defined(TRACE_STATUS)
                     fprintf(stderr, "gauge=%i\n", gaugeValue); fflush(stdout);

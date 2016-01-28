@@ -136,8 +136,8 @@ public:
     void insert_default(const char *displayed, const char *value);
     void insert(const char *displayed, int32_t value);
     void insert_default(const char *displayed, int32_t value);
-    void insert(const char *displayed, double value);
-    void insert_default(const char *displayed, double value);
+    void insert(const char *displayed, float value);
+    void insert_default(const char *displayed, float value);
     void insert(const char *displayed, GBDATA *pointer);
     void insert_default(const char *displayed, GBDATA *pointer);
 

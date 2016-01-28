@@ -7,7 +7,7 @@ AW_choice::AW_choice(AW_choice_list* li, AW_action& act, int32_t val)
       value(val)
 {}
 
-AW_choice::AW_choice(AW_choice_list* li, AW_action& act, double val) 
+AW_choice::AW_choice(AW_choice_list* li, AW_action& act, float val)
     : AW_action(act),
       list(li),
       value(val)
@@ -80,7 +80,7 @@ AW_choice* AW_choice_list::add_choice(AW_action& act, int32_t val) {
     return &choices.back();
 }
 
-AW_choice* AW_choice_list::add_choice(AW_action& act, double val) {
+AW_choice* AW_choice_list::add_choice(AW_action& act, float val) {
     choices.push_back(AW_choice(this, act, val));
     return &choices.back();
 }

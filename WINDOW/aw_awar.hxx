@@ -76,7 +76,7 @@ public:
     virtual void unbind(GObject* obj) = 0;
 
     virtual AW_choice* add_choice(AW_action&, int)         = 0;
-    virtual AW_choice* add_choice(AW_action&, double)      = 0;
+    virtual AW_choice* add_choice(AW_action&, float)       = 0;
     virtual AW_choice* add_choice(AW_action&, const char*) = 0;
 
     virtual void update_choices() = 0;
@@ -117,21 +117,20 @@ public:
     virtual const char *read_char_pntr() const    = 0;
     virtual char       *read_as_string() const    = 0;
     virtual long        read_int() const          = 0;
-    virtual double      read_float() const        = 0;
-    virtual double      read_as_float() const     = 0;
+    virtual float       read_float() const        = 0;
+    virtual float       read_as_float() const     = 0;
     virtual GBDATA     *read_pointer() const      = 0;
     virtual bool        read_as_bool() const      = 0;
 
     void get(char **p_string) const { freeset(*p_string, read_string()); } // deletes existing targets !!!
     void get(long *p_int) const { *p_int = (long)read_int(); }
-    void get(double *p_double) const { *p_double = read_float(); }
     void get(float *p_float) const { *p_float = read_float(); }
 
     // write access
     virtual GB_ERROR write_string(const char *aw_string, bool touch = false) = 0;
     virtual GB_ERROR write_as_string(const char *aw_string, bool touch = false) = 0;
     virtual GB_ERROR write_int(long aw_int, bool touch = false) = 0;
-    virtual GB_ERROR write_float(double aw_double, bool touch = false) = 0;
+    virtual GB_ERROR write_float(float aw_float, bool touch = false) = 0;
     virtual GB_ERROR write_pointer(GBDATA *aw_pointer, bool touch = false) = 0;
     virtual GB_ERROR write_as_bool(bool b, bool touch = false) = 0;
     GB_ERROR write_as(char *aw_value) { return write_as_string(aw_value); }
@@ -140,7 +139,7 @@ public:
     GB_ERROR rewrite_string(const char *aw_string) { return write_string(aw_string, true);}
     GB_ERROR rewrite_as_string(const char *aw_string) { return write_as_string(aw_string, true); }
     GB_ERROR rewrite_int(long aw_int) { return write_int(aw_int, true); }
-    GB_ERROR rewrite_float(double aw_double) { return write_float(aw_double, true); }
+    GB_ERROR rewrite_float(float aw_float) { return write_float(aw_float, true); }
     GB_ERROR rewrite_pointer(GBDATA *aw_pointer) { return write_pointer(aw_pointer, true); }
 
     GB_ERROR rewrite_as(char *aw_value) { return rewrite_as_string(aw_value); };
