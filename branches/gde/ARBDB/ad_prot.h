@@ -315,7 +315,7 @@ char *GBS_ptserver_id_to_choice(int i, int showBuild);
 
 /* arbdb.cxx */
 const char *GB_get_type_name(GBDATA *gbd);
-double GB_atof(const char *str);
+float GB_atof(const char *str);
 GB_BUFFER GB_give_buffer(size_t size);
 GB_BUFFER GB_increase_buffer(size_t size);
 NOT4PERL int GB_give_buffer_size(void);

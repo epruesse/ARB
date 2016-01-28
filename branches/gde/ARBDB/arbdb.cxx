@@ -159,27 +159,29 @@ inline GB_ERROR error_with_dbentry(const char *action, GBDATA *gbd, GB_ERROR err
     } while (0)
 
 
-static GB_ERROR GB_safe_atof(const char *str, double *res) {
-    GB_ERROR  error = NULL;
-    char     *end;
-    *res            = strtod(str, &end);
+static GB_ERROR GB_safe_atof(const char *str, float *res) {
+    GB_ERROR error = NULL;
+
+    char *end;
+    *res = strtof(str, &end);
+
     if (end == str || end[0] != 0) {
         if (!str[0]) {
             *res = 0.0;
         }
         else {
-            error = GBS_global_string("cannot convert '%s' to double", str);
+            error = GBS_global_string("cannot convert '%s' to float", str);
         }
     }
     return error;
 }
 
-double GB_atof(const char *str) {
-    // convert ASCII to double
-    double   res = 0;
+float GB_atof(const char *str) {
+    // convert ASCII to float
+    float    res = 0;
     GB_ERROR err = GB_safe_atof(str, &res);
     if (err) {
-        // expected double in 'str'- better use GB_safe_atof()
+        // expected float in 'str'- better use GB_safe_atof()
         GBK_terminatef("GB_safe_atof(\"%s\", ..) returns error: %s", str, err);
     }
     return res;
