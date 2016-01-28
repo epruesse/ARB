@@ -1226,6 +1226,7 @@ adTest.o: gb_tune.h
 adTest.o: $(ARBHOME)/INCLUDE/arb_assert.h
 adTest.o: $(ARBHOME)/INCLUDE/arb_core.h
 adTest.o: $(ARBHOME)/INCLUDE/arb_error.h
+adTest.o: $(ARBHOME)/INCLUDE/arb_misc.h
 adTest.o: $(ARBHOME)/INCLUDE/arb_msg.h
 adTest.o: $(ARBHOME)/INCLUDE/arb_string.h
 adTest.o: $(ARBHOME)/INCLUDE/arbtools.h

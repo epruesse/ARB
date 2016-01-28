@@ -9,6 +9,7 @@
 // =============================================================== //
 
 #include "gb_key.h"
+#include <arb_misc.h>
 
 const char *GB_get_db_path(GBDATA *gbd) {
     GBDATA *gb_father = GB_FATHER(gbd);
@@ -98,7 +99,7 @@ static void dump_internal(GBDATA *gbd, int *lines_allowed) {
         else {
             switch (gbd->type()) {
                 case GB_INT:    { content = GBS_global_string("%li", GB_read_int(gbd)); break; }
-                case GB_FLOAT:  { content = GBS_global_string("%f", GB_read_float(gbd)); break; }
+                case GB_FLOAT:  { content = ARB_float_2_ascii(GB_read_float(gbd)); break; }
                 case GB_BYTE:   { content = GBS_global_string("%i", GB_read_byte(gbd)); break; }
                 case GB_STRING: { content = GB_read_char_pntr(gbd); content_len = GB_read_count(gbd); break; }
                 case GB_LINK:   { content = GBS_global_string("link to %p", GB_follow_link(gbd)); break; }

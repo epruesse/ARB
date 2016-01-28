@@ -152,7 +152,7 @@ static GB_ERROR AW_MSG_UNMAPPED_AWAR = "Error (unmapped AWAR):\n"
 
 WRITE_SKELETON(write_string, const char*, "%s", GB_write_string) // defines rewrite_string
 WRITE_SKELETON(write_int, long, "%li", GB_write_int) // defines rewrite_int
-WRITE_SKELETON(write_float, double, "%f", GB_write_float) // defines rewrite_float
+WRITE_SKELETON(write_float, double, "%f", GB_write_float) // defines rewrite_float // @@@ change interface
 WRITE_SKELETON(write_as_string, const char*, "%s", GB_write_autoconv_string) // defines rewrite_as_string // @@@ rename -> write_autoconvert_string
 WRITE_SKELETON(write_pointer, GBDATA*, "%p", GB_write_pointer) // defines rewrite_pointer
 
