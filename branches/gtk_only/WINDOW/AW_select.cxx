@@ -511,11 +511,11 @@ void AW_selection_list::insert_default(const char *displayed, int32_t value) {
     replace_default(make_entry(displayed, value, GB_INT));
 }
 
-void AW_selection_list::insert(const char *displayed, double value) {
+void AW_selection_list::insert(const char *displayed, float value) {
     append(make_entry(displayed, value, GB_FLOAT));
 }
 
-void AW_selection_list::insert_default(const char *displayed, double value) {
+void AW_selection_list::insert_default(const char *displayed, float value) {
     replace_default(make_entry(displayed, value, GB_FLOAT));
 }
 

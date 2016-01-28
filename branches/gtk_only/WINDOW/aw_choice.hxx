@@ -16,7 +16,7 @@ private:
     AW_scalar       value;
     
     explicit AW_choice(AW_choice_list*, AW_action&, int32_t);
-    explicit AW_choice(AW_choice_list*, AW_action&, double);
+    explicit AW_choice(AW_choice_list*, AW_action&, float);
     explicit AW_choice(AW_choice_list*, AW_action&, const char*);
 
     friend class AW_choice_list;
@@ -43,6 +43,6 @@ public:
 
     void update();
     AW_choice* add_choice(AW_action&, int32_t);
-    AW_choice* add_choice(AW_action&, double);
+    AW_choice* add_choice(AW_action&, float);
     AW_choice* add_choice(AW_action&, const char*);
 };

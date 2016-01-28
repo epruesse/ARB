@@ -62,7 +62,7 @@ GB_ERROR AW_awar_impl::write_string(const char *, bool) {
 GB_ERROR AW_awar_impl::write_int(long, bool) {
     return AWAR_WRITE_ACCESS_FAILED;
 }
-GB_ERROR AW_awar_impl::write_float(double, bool) {
+GB_ERROR AW_awar_impl::write_float(float, bool) {
     return AWAR_WRITE_ACCESS_FAILED;
 }
 GB_ERROR AW_awar_impl::write_pointer(GBDATA *, bool) {
@@ -79,11 +79,11 @@ const char *AW_awar_impl::read_char_pntr() const {
     AWAR_READ_ACCESS_FAILED;
     return NULL; //is never reached, only exists to avoid compiler warning
 }
-double AW_awar_impl::read_float() const {
+float AW_awar_impl::read_float() const {
     AWAR_READ_ACCESS_FAILED;
     return 0.0f;//is never reached, only exists to avoid compiler warning
 }
-double AW_awar_impl::read_as_float() const {
+float AW_awar_impl::read_as_float() const {
     AWAR_READ_ACCESS_FAILED;
     return 0.0f; //is never reached, only exists to avoid compiler warning
 }
@@ -153,7 +153,7 @@ AW_choice* AW_awar_impl::add_choice(AW_action&, int) {
     AWAR_CHOICE_FAILURE;
     return NULL;
 }
-AW_choice* AW_awar_impl::add_choice(AW_action&, double) {
+AW_choice* AW_awar_impl::add_choice(AW_action&, float) {
     AWAR_CHOICE_FAILURE;
     return NULL;
 }
@@ -314,7 +314,7 @@ GB_ERROR AW_awar_int::write_int(long para, bool do_touch) {
     return error;
 }
 
-GB_ERROR AW_awar_int::write_float(double para, bool do_touch) {
+GB_ERROR AW_awar_int::write_float(float para, bool do_touch) {
     return write_int(para, do_touch);
 }
 
@@ -368,7 +368,7 @@ GB_ERROR AW_awar_int::reset_to_default() {
 
 // --------------------------------------------------------------------------------
 
-AW_awar_float::AW_awar_float(const char *var_name, double var_value, AW_default default_file, AW_root *) 
+AW_awar_float::AW_awar_float(const char *var_name, float var_value, AW_default default_file, AW_root *) 
   : AW_awar_impl(var_name),
     min_value(0.), max_value(0.),
     default_value(var_value),
@@ -393,6 +393,7 @@ void AW_awar_float::do_update() {
     float fl = read_float();
 
     if (min_value != max_value) {
+        // @@@ using AWAR_EPS here seems strange to me -> try without!
         if (fl < min_value) fl = min_value + AWAR_EPS;
         if (fl > max_value) fl = max_value - AWAR_EPS;
         if (fl != value) {
@@ -408,7 +409,7 @@ void AW_awar_float::do_update() {
     }
 }
 
-AW_choice* AW_awar_float::add_choice(AW_action& act, double val) {
+AW_choice* AW_awar_float::add_choice(AW_action& act, float val) {
     return choices.add_choice(act, val);
 }
 
@@ -438,7 +439,7 @@ float AW_awar_float::get_max() const {
         return max_value;
 }
 
-GB_ERROR AW_awar_float::write_float(double para, bool do_touch) {
+GB_ERROR AW_awar_float::write_float(float para, bool do_touch) {
     aw_assert(!deny_write);
     if (!gb_var) return AW_MSG_UNMAPPED_AWAR;
     GB_transaction ta(gb_var);
@@ -456,7 +457,7 @@ bool AW_awar_float::has_default_value() const {
     return read_float() == default_value;
 }
 
-double AW_awar_float::read_float() const {
+float AW_awar_float::read_float() const {
     aw_assert(!deny_read);
     if (!gb_var) return 0.0;
     GB_transaction ta(gb_var);
