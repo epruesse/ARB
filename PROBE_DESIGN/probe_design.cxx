@@ -2210,7 +2210,7 @@ static void create_probe_group_result_sel_box(AW_root *aw_root, AW_window *aws, 
         if (pg_group) {
             for (; pg_group; pg_group=GB_nextChild(pg_group), ++i) {
 
-                double fitness=-1, quality=-1, min_targets=-1;
+                float fitness=-1, quality=-1, min_targets=-1;
                 int mishit=-1, probelength=-1, birth=-1;
                 int member_count = 0;
                 int probe_count = 0;

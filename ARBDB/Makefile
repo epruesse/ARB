@@ -330,6 +330,7 @@ ad_save_load.o: $(ARBHOME)/INCLUDE/arb_defs.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/arb_diff.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/arb_error.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/arb_file.h
+ad_save_load.o: $(ARBHOME)/INCLUDE/arb_misc.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -1225,6 +1226,7 @@ adTest.o: gb_tune.h
 adTest.o: $(ARBHOME)/INCLUDE/arb_assert.h
 adTest.o: $(ARBHOME)/INCLUDE/arb_core.h
 adTest.o: $(ARBHOME)/INCLUDE/arb_error.h
+adTest.o: $(ARBHOME)/INCLUDE/arb_misc.h
 adTest.o: $(ARBHOME)/INCLUDE/arb_msg.h
 adTest.o: $(ARBHOME)/INCLUDE/arb_string.h
 adTest.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -1335,6 +1337,7 @@ arbdb.o: gb_tune.h
 arbdb.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arbdb.o: $(ARBHOME)/INCLUDE/arb_core.h
 arbdb.o: $(ARBHOME)/INCLUDE/arb_error.h
+arbdb.o: $(ARBHOME)/INCLUDE/arb_misc.h
 arbdb.o: $(ARBHOME)/INCLUDE/arb_msg.h
 arbdb.o: $(ARBHOME)/INCLUDE/arb_string.h
 arbdb.o: $(ARBHOME)/INCLUDE/arbtools.h

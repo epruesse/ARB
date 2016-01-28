@@ -603,7 +603,7 @@ static void write_entry(GBDATA *gb_main, GBDATA *gbd, const char *key, const cha
                 GB_write_int(gbk, atoi(str));
                 break;
             case GB_FLOAT:
-                GB_write_float(gbk, atof(str));
+                GB_write_float(gbk, GB_atof(str));
                 break;
             default:
                 awti_assert(0);

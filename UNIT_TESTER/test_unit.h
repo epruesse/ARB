@@ -1274,6 +1274,8 @@ namespace arb_test {
 #define TEST_COPY_FILE(src, dst) TEST_EXPECT_ZERO(system(GBS_global_string("cp '%s' '%s'", src, dst)))
 #define TEST_DUMP_FILE(src, dst) TEST_EXPECT(system(GBS_global_string("hexdump -C '%s' > '%s'", src, dst)) == 0)
 
+// Note: parameter order convention for the following calls is: 'createdresultfile, expectedresultfile, ...'
+
 #define TEST_EXPECT_TEXTFILE_DIFFLINES(f1,f2,diff)         TEST_EXPECT(arb_test::textfiles_have_difflines(f1,f2, diff))
 #define TEST_EXPECT_TEXTFILE_DIFFLINES__BROKEN(f1,f2,diff) TEST_EXPECT__BROKEN(arb_test::textfiles_have_difflines(f1,f2, diff))
 
