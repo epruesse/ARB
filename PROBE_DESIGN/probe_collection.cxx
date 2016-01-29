@@ -579,6 +579,7 @@ ArbProbe::ArbProbe(const ArbProbe& rCopy)
     // Note that we do a copy of Name and Sequence via c_str() because std:string
     // shares internal buffers between strings if using a copy constructor and
     // this can potentially result in memory corrupting if the owner string is deleted
+    // (REFCOUNT_HACK)
     nameAndSequence(rCopy.Name.c_str(), rCopy.Sequence.c_str());
 }
 
@@ -596,7 +597,7 @@ void ArbProbe::writeXML(FILE *hFile, const char *pPrefix) const {
 
 // ----------------------------------------------------------------------------
 
-void ArbProbe::nameAndSequence(const char *pName, const char *pSequence) {
+void ArbProbe::nameAndSequence(const char *pName, const char *pSequence) { // REFCOUNT_HACK
     if (pName != 0) {
         Name = pName;
     }
@@ -685,6 +686,7 @@ ArbProbeCollection::ArbProbeCollection(const char *pName)
     // Note that we do a copy of Name via c_str() because std:string shares
     // internal buffers between strings if using a copy constructor and this can
     // potentially result in memory corrupting if the owner string is deleted
+    // (REFCOUNT_HACK)
     name(pName);
 
     HasChanged = false;
@@ -1101,7 +1103,7 @@ bool ArbProbeCollection::clear() {
 
 // ----------------------------------------------------------------------------
 
-void ArbProbeCollection::name(const char *pName) {
+void ArbProbeCollection::name(const char *pName) { // REFCOUNT_HACK
     if (pName != 0) {
         Name = pName;
     }

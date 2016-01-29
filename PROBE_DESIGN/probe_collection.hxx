@@ -87,6 +87,11 @@ public:
 // ----------------------------------------------------------------------------
 // class ArbRefCount
 // ----------------------------------------------------------------------------
+
+// WARNING: code uses manual reference counting (most likely not 100% correct)
+// @@@ consider using SmartPtr<myclass> instead of deriving myclass from ArbRefCount
+// see also: comments about errors supposed in std::string (grep for REFCOUNT_HACK)
+
 class ArbRefCount {
     mutable int RefCount;
 
