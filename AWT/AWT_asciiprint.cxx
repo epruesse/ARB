@@ -67,8 +67,8 @@ static void awt_aps_calc_pages_needed(AW_root *awr) {
     double xy_ratio = awt_aps_get_xy_ratio(awr);
     int default_cpp = int(default_lpp * xy_ratio);
 
-    awr->awar(AWAR_APRINT_DX)->write_float(double(x)/default_cpp);
-    awr->awar(AWAR_APRINT_DY)->write_float(double(y)/default_lpp);
+    awr->awar(AWAR_APRINT_DX)->write_float(float(x)/default_cpp);
+    awr->awar(AWAR_APRINT_DY)->write_float(float(y)/default_lpp);
     x += default_cpp-1;
     y += default_lpp-1;
     x /= default_cpp;
