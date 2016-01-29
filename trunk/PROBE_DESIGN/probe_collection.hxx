@@ -41,27 +41,6 @@
 #include <sys/stat.h>
 #endif
 
-//  ----------------------------------------------------------------------------
-//  Map of Int by Int
-//  ----------------------------------------------------------------------------
-typedef std::pair<const int, int>                   ArbIntIntPair;
-typedef std::map<int, int>                          ArbIntByIntMap;
-typedef std::map<int, int>::iterator                ArbIntByIntMapIter;
-typedef std::map<int, int>::const_iterator          ArbIntByIntMapConstIter;
-typedef std::map<int, int>::reverse_iterator        ArbIntByIntMapRIter;
-typedef std::map<int, int>::const_reverse_iterator  ArbIntByIntMapConstRIter;
-
-
-//  ----------------------------------------------------------------------------
-//  List of std::string objects
-//  ----------------------------------------------------------------------------
-typedef std::list<std::string>                          ArbStringList;
-typedef std::list<std::string>::iterator                ArbStringListIter;
-typedef std::list<std::string>::const_iterator          ArbStringListConstIter;
-typedef std::list<std::string>::reverse_iterator        ArbStringListRIter;
-typedef std::list<std::string>::const_reverse_iterator  ArbStringListConstRIter;
-
-
 // ----------------------------------------------------------------------------
 // struct ArbCachedString
 // ----------------------------------------------------------------------------
@@ -208,23 +187,9 @@ public:
 //  ----------------------------------------------------------------------------
 //  List of ArbProbe* objects
 //  ----------------------------------------------------------------------------
-typedef std::list<ArbProbe*>                          ArbProbePtrList;
-typedef std::list<ArbProbe*>::iterator                ArbProbePtrListIter;
-typedef std::list<ArbProbe*>::const_iterator          ArbProbePtrListConstIter;
-typedef std::list<ArbProbe*>::reverse_iterator        ArbProbePtrListRIter;
-typedef std::list<ArbProbe*>::const_reverse_iterator  ArbProbePtrListConstRIter;
-
-
-//  ----------------------------------------------------------------------------
-//  Map of ArbProbe* objects by string
-//  ----------------------------------------------------------------------------
-typedef std::pair<const std::string, ArbProbe*>                   ArbProbePtrStringPair;
-typedef std::map<std::string, ArbProbe*>                          ArbProbePtrByStringMap;
-typedef std::map<std::string, ArbProbe*>::iterator                ArbProbePtrByStringMapIter;
-typedef std::map<std::string, ArbProbe*>::const_iterator          ArbProbePtrByStringMapConstIter;
-typedef std::map<std::string, ArbProbe*>::reverse_iterator        ArbProbePtrByStringMapRIter;
-typedef std::map<std::string, ArbProbe*>::const_reverse_iterator  ArbProbePtrByStringMapConstRIter;
-
+typedef std::list<ArbProbe*>            ArbProbePtrList;
+typedef ArbProbePtrList::iterator       ArbProbePtrListIter;
+typedef ArbProbePtrList::const_iterator ArbProbePtrListConstIter;
 
 // ----------------------------------------------------------------------------
 // class ArbProbeCollection
@@ -305,58 +270,29 @@ public:
 };
 
 //  ----------------------------------------------------------------------------
-//  List of ArbMatchResult objects
-//  ----------------------------------------------------------------------------
-typedef std::list<ArbMatchResult>                           ArbMatchResultList;
-typedef std::list<ArbMatchResult>::iterator                 ArbMatchResultListIter;
-typedef std::list<ArbMatchResult>::const_iterator           ArbMatchResultListConstIter;
-typedef std::list<ArbMatchResult>::reverse_iterator         ArbMatchResultListRIter;
-typedef std::list<ArbMatchResult>::const_reverse_iterator   ArbMatchResultListConstRIter;
-
-
-//  ----------------------------------------------------------------------------
-//  Map of ArbMatchResult* by string
-//  ----------------------------------------------------------------------------
-typedef std::pair<const std::string, ArbMatchResult*>                   ArbMatchResultPtrStringPair;
-typedef std::map<std::string, ArbMatchResult*>                          ArbMatchResultPtrByStringMap;
-typedef std::map<std::string, ArbMatchResult*>::iterator                ArbMatchResultPtrByStringMapIter;
-typedef std::map<std::string, ArbMatchResult*>::const_iterator          ArbMatchResultPtrByStringMapConstIter;
-typedef std::map<std::string, ArbMatchResult*>::reverse_iterator        ArbMatchResultPtrByStringMapRIter;
-typedef std::map<std::string, ArbMatchResult*>::const_reverse_iterator  ArbMatchResultPtrByStringMapConstRIter;
-
-
-//  ----------------------------------------------------------------------------
 //  multimap of ArbMatchResult* by string
 //  ----------------------------------------------------------------------------
-typedef std::multimap<std::string, ArbMatchResult*>                         ArbMatchResultPtrByStringMultiMap;
-typedef std::multimap<std::string, ArbMatchResult*>::iterator               ArbMatchResultPtrByStringMultiMapIter;
-typedef std::multimap<std::string, ArbMatchResult*>::const_iterator         ArbMatchResultPtrByStringMultiMapConstIter;
-typedef std::multimap<std::string, ArbMatchResult*>::reverse_iterator       ArbMatchResultPtrByStringMultiMapRIter;
-typedef std::multimap<std::string, ArbMatchResult*>::const_reverse_iterator ArbMatchResultPtrByStringMultiMapConstRIter;
 
+typedef std::multimap<std::string, ArbMatchResult*>       ArbMatchResultPtrByStringMultiMap;
+typedef ArbMatchResultPtrByStringMultiMap::iterator       ArbMatchResultPtrByStringMultiMapIter;
+typedef ArbMatchResultPtrByStringMultiMap::const_iterator ArbMatchResultPtrByStringMultiMapConstIter;
 
 //  ----------------------------------------------------------------------------
 //  multimap of ArbMatchResult* by double
 //  ----------------------------------------------------------------------------
 //  We use this as a means of results sorting by match weight
 //  ----------------------------------------------------------------------------
-typedef std::pair<const double, ArbMatchResult*>                       ArbMatchResultPtrDoublePair;
-typedef std::multimap<double, ArbMatchResult*>                         ArbMatchResultPtrByDoubleMultiMap;
-typedef std::multimap<double, ArbMatchResult*>::iterator               ArbMatchResultPtrByDoubleMultiMapIter;
-typedef std::multimap<double, ArbMatchResult*>::const_iterator         ArbMatchResultPtrByDoubleMultiMapConstIter;
-typedef std::multimap<double, ArbMatchResult*>::reverse_iterator       ArbMatchResultPtrByDoubleMultiMapRIter;
-typedef std::multimap<double, ArbMatchResult*>::const_reverse_iterator ArbMatchResultPtrByDoubleMultiMapConstRIter;
+
+typedef std::multimap<double, ArbMatchResult*>      ArbMatchResultPtrByDoubleMultiMap;
+typedef ArbMatchResultPtrByDoubleMultiMap::iterator ArbMatchResultPtrByDoubleMultiMapIter;
 
 
 //  ----------------------------------------------------------------------------
 //  List of strings
 //  ----------------------------------------------------------------------------
-typedef std::list<std::string>                          ArbStringList;
-typedef std::list<std::string>::iterator                ArbStringListIter;
-typedef std::list<std::string>::const_iterator          ArbStringListConstIter;
-typedef std::list<std::string>::reverse_iterator        ArbStringListRIter;
-typedef std::list<std::string>::const_reverse_iterator  ArbStringListConstRIter;
 
+typedef std::list<std::string>                 ArbStringList;
+typedef std::list<std::string>::const_iterator ArbStringListConstIter;
 
 // ----------------------------------------------------------------------------
 // class ArbMatchResultSet

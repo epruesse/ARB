@@ -21,12 +21,12 @@
 #include <arbdbt.h>
 #include <algorithm>
 
-
 using namespace xercesc;
-
 
 const size_t ArbMIN_PROBE_LENGTH = 6;
 
+typedef std::pair<const std::string, ArbMatchResult*> ArbMatchResultPtrStringPair;
+typedef std::pair<const double,      ArbMatchResult*> ArbMatchResultPtrDoublePair;
 
 // ----------------------------------------------------------------------------
 // Provide access to global objects
@@ -1443,7 +1443,7 @@ bool ArbMatchResultSet::isMatched(const ArbStringList& rCladeList,
 bool ArbMatchResultSet::isMatched(const std::string& rName, double dThreshold) const {
     bool bMatched = false;
 
-    ArbMatchResultPtrByStringMapConstIter Iter = ResultMap.find(rName);
+    ArbMatchResultPtrByStringMultiMapConstIter Iter = ResultMap.find(rName);
 
     if (Iter != ResultMap.end()) {
         const ArbMatchResult *pResult = (*Iter).second;
@@ -1474,7 +1474,7 @@ bool ArbMatchResultSet::addComment(const char *pComment) {
 // ----------------------------------------------------------------------------
 
 void ArbMatchResultSet::findMaximumWeight(double& dMaximumWeight) const {
-    ArbMatchResultPtrByStringMapConstIter Iter;
+    ArbMatchResultPtrByStringMultiMapConstIter Iter;
 
     for (Iter = ResultMap.begin() ; Iter != ResultMap.end() ; ++Iter) {
         const ArbMatchResult *pResult = (*Iter).second;
@@ -1488,7 +1488,7 @@ void ArbMatchResultSet::findMaximumWeight(double& dMaximumWeight) const {
 // ----------------------------------------------------------------------------
 
 void ArbMatchResultSet::enumerateResults(ArbMatchResultPtrByDoubleMultiMap& rMap, int nMaxFullName) {
-    ArbMatchResultPtrByStringMapIter Iter;
+    ArbMatchResultPtrByStringMultiMapIter Iter;
 
     for (Iter = ResultMap.begin() ; Iter != ResultMap.end() ; ++Iter) {
         ArbMatchResult *pResult = (*Iter).second;
