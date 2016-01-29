@@ -286,7 +286,7 @@ static void sina_start(AW_window *window, const AlignDataAccess *data_access) {
                     GBS_strcat(cl, " --fs-kmer-len "); GBS_intcat(cl,   root->awar(GA_AWAR_KMER_LEN)->read_int());
                     GBS_strcat(cl, " --fs-kmer-mm ");  GBS_intcat(cl,   root->awar(GA_AWAR_KMER_MM)->read_int());
                     GBS_strcat(cl, " --fs-min-len ");  GBS_intcat(cl,   root->awar(GA_AWAR_MIN_LEN)->read_int());
-                    GBS_strcat(cl, " --fs-weight ");   GBS_intcat(cl,   root->awar(GA_AWAR_WEIGHT)->read_float());
+                    GBS_strcat(cl, " --fs-weight ");   GBS_intcat(cl,   root->awar(GA_AWAR_WEIGHT)->read_float()); // @@@ possible type conflict?
                     GBS_strcat(cl, " --pen-gap ");     GBS_floatcat(cl, root->awar(GA_AWAR_GAP_PEN)->read_float());
                     GBS_strcat(cl, " --pen-gapext ");  GBS_floatcat(cl, root->awar(GA_AWAR_GAP_EXT)->read_float());
                     GBS_strcat(cl, " --match-score "); GBS_floatcat(cl, root->awar(GA_AWAR_MATCH_SCORE)->read_float());

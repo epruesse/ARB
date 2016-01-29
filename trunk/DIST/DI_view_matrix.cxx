@@ -287,7 +287,7 @@ static void input_cb(AW_window *aww, MatrixDisplay *disp) {
                     }
 
                     if (awar_bound) {
-                        double val = double(clicked->cd2())/MINMAX_GRANULARITY;
+                        float val = float(clicked->cd2())/MINMAX_GRANULARITY;
                         awar_bound->write_float(val);
                     }
                 }
@@ -564,8 +564,8 @@ static void di_view_set_max_dist(AW_window *aww, int max_dist) {
 
 static void di_view_set_distances(AW_root *awr, int setmax, MatrixDisplay *disp) {
     // cl_dmatrix: 0 -> set min and fix max, 1 -> set max and fix min, 2 -> set both
-    double max_dist = awr->awar(AWAR_DIST_MAX_DIST)->read_float();
-    double min_dist = awr->awar(AWAR_DIST_MIN_DIST)->read_float();
+    float max_dist = awr->awar(AWAR_DIST_MAX_DIST)->read_float();
+    float min_dist = awr->awar(AWAR_DIST_MIN_DIST)->read_float();
 
     {
         LocallyModify<bool> flag(update_display_on_dist_change, false);

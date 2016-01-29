@@ -151,7 +151,7 @@ static void calculate_clusters(AW_window *aww) {
                     ? (AP_sequence*)new AP_sequence_protein(aliview)
                     : new AP_sequence_parsimony(aliview);
 
-                AP_FLOAT maxDistance    = aw_root->awar(AWAR_CLUSTER_MAXDIST)->read_float();
+                float    maxDistance    = aw_root->awar(AWAR_CLUSTER_MAXDIST)->read_float();
                 unsigned minClusterSize = aw_root->awar(AWAR_CLUSTER_MINSIZE)->read_int();
 
                 tree = new ClusterTreeRoot(aliview, seq, maxDistance/100, minClusterSize);
@@ -342,7 +342,7 @@ public:
     unsigned get_tagged_count() const { return tagged_count; }
     void clear_tags();
 
-    double tagged_rate() const { return double(get_tagged_count())/get_leaf_count(); }
+    float tagged_rate() const { return float(get_tagged_count())/get_leaf_count(); }
 };
 
 GroupTreeRoot::GroupTreeRoot(AliView *aliView, AP_sequence *seqTempl, bool add_delete_callbacks)
@@ -428,15 +428,15 @@ class GroupBuilder : virtual Noncopyable {
     Group_Existing  existing;
     unsigned        existing_count;      // counts existing groups
     Group_NotFound  notfound;
-    double          matchRatio;          // needed identity of subtree and cluster
-    double          maxDist;             // max. Distance used for calculation
+    float           matchRatio;          // needed identity of subtree and cluster
+    float           maxDist;             // max. Distance used for calculation
     string          cluster_prefix;      // prefix for cluster name
     string          cluster_suffix_def;  // suffix-definition for cluster name
     GroupChanges    changes;             // count tree modifications
     bool            del_match_prefixes;  // only delete groups, where prefix matches
 
     GroupTree *find_group_position(GroupTree *subtree, unsigned cluster_size);
-    double get_max_distance() const { return maxDist; }
+    float get_max_distance() const { return maxDist; }
     void load_tree();
 
     DEFINE_DOWNCAST_ACCESSORS(GroupTree, get_root_node, tree_root->get_root_node());

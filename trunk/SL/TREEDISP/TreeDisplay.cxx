@@ -3083,8 +3083,8 @@ static void markerThresholdChanged_cb(AW_root *root, bool partChanged) {
         AW_awar *awar_marked     = root->awar(AWAR_DTREE_GROUP_MARKED_THRESHOLD);
         AW_awar *awar_partMarked = root->awar(AWAR_DTREE_GROUP_PARTIALLY_MARKED_THRESHOLD);
 
-        double marked     = awar_marked->read_float();
-        double partMarked = awar_partMarked->read_float();
+        float marked     = awar_marked->read_float();
+        float partMarked = awar_partMarked->read_float();
 
         if (partMarked>marked) { // unwanted state
             if (partChanged) {
