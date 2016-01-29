@@ -47,11 +47,8 @@
 // This structure is a descriptor for a string cache on file by ArbStringCache
 // ----------------------------------------------------------------------------
 struct ArbCachedString {
-    fpos_t  Pos;
-    int     Len;
-
-    fpos_t pos() const { return Pos; }
-    int    len() const { return Len; }
+    fpos_t Pos;
+    int    Len;
 };
 
 // ----------------------------------------------------------------------------
@@ -119,10 +116,9 @@ public:
 // the weighting applied to a match.
 // ----------------------------------------------------------------------------
 class ArbProbeMatchWeighting : public ArbRefCount {
-private:
-    double                  PenaltyMatrix[4][4];
-    double                  Width;
-    double                  Bias;
+    double PenaltyMatrix[4][4];
+    double Width;
+    double Bias;
 
 protected:
     int                     toIndex(char nC) const;
@@ -162,10 +158,9 @@ public:
 // specificity feature in Arb.
 // ----------------------------------------------------------------------------
 class ArbProbe : public ArbRefCount {
-private:
-    std::string             Name;
-    std::string             Sequence;
-    std::string             DisplayName;
+    std::string Name;
+    std::string Sequence;
+    std::string DisplayName;
 
 public:
     ArbProbe();
@@ -198,11 +193,10 @@ typedef ArbProbePtrList::const_iterator ArbProbePtrListConstIter;
 // matching with specificity feature in Arb.
 // ----------------------------------------------------------------------------
 class ArbProbeCollection : public ArbRefCount {
-private:
-    std::string                     Name;
-    ArbProbePtrList                 ProbeList;
-    ArbProbeMatchWeighting          MatchWeighting;
-    mutable bool                    HasChanged;
+    std::string            Name;
+    ArbProbePtrList        ProbeList;
+    ArbProbeMatchWeighting MatchWeighting;
+    mutable bool           HasChanged;
 
 protected:
     void flush();
@@ -243,7 +237,6 @@ public:
 // class ArbMatchResult
 // ----------------------------------------------------------------------------
 class ArbMatchResult : public ArbRefCount {
-private:
     const ArbProbe  *Probe;
     ArbCachedString  CachedResultA;
     ArbCachedString  CachedResultB;
@@ -389,7 +382,6 @@ typedef bool (*ArbMatchResultsEnumCallback)(void *pContext, const char *pResult,
 // class ArbMatchResultsManager
 // ----------------------------------------------------------------------------
 class ArbMatchResultsManager {
-private:
     ArbMatchResultPtrByStringMultiMap ResultsMap;
     ArbMatchResultSetByStringMap      ResultSetMap;
     double                            MaximumWeight;

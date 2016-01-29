@@ -156,7 +156,7 @@ bool ArbStringCache::loadString(std::string& rString, const ArbCachedString& rCa
         (rCachedString.Len > 0) &&
         allocReadBuffer(rCachedString.Len))
     {
-        fpos_t nPos = rCachedString.pos();
+        fpos_t nPos = rCachedString.Pos;
         fsetpos(ReadCacheFile, &nPos);
 
         size_t read = fread(ReadBuffer, sizeof(char), rCachedString.Len, ReadCacheFile);
