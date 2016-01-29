@@ -65,7 +65,7 @@ class AW_awar : virtual Noncopyable {
 
     union {
         char   *s;
-        double  d;
+        float   f;
         long    l;
         GBDATA *p;
     } default_value;
@@ -122,7 +122,7 @@ public:
     void update_target(AW_var_target*pntr);
     void update_targets();
 
-    AW_awar(AW_VARIABLE_TYPE var_type, const char *var_name, const char *var_value, double var_double_value, AW_default default_file, AW_root *root);
+    AW_awar(AW_VARIABLE_TYPE var_type, const char *var_name, const char *var_value, float var_float_value, AW_default default_file, AW_root *root);
     ~AW_awar();
 
     void tie_widget(AW_CL cd1, Widget widget, AW_widget_type type, AW_window *aww);
@@ -157,7 +157,6 @@ public:
 
     void get(char **p_string)  { freeset(*p_string, read_string()); } // deletes existing targets !!!
     void get(long *p_int)      { *p_int = (long)read_int(); }
-    void get(double *p_double) { *p_double = read_float(); }
     void get(float *p_float)   { *p_float = read_float(); }
 
     AW_VARIABLE_TYPE get_type() const;
@@ -166,13 +165,13 @@ public:
     const char *read_char_pntr() const;
     char       *read_as_string() const;
     long        read_int() const;
-    double      read_float() const;
+    float       read_float() const;
     GBDATA     *read_pointer() const;
 
     GB_ERROR write_string(const char *aw_string);
     GB_ERROR write_as_string(const char *aw_string);
     GB_ERROR write_int(long aw_int);
-    GB_ERROR write_float(double aw_double);
+    GB_ERROR write_float(float aw_float);
     GB_ERROR write_pointer(GBDATA *aw_pointer);
 
     GB_ERROR write_as(char *aw_value) { return write_as_string(aw_value); };
@@ -181,7 +180,7 @@ public:
     GB_ERROR rewrite_string(const char *aw_string);
     GB_ERROR rewrite_as_string(const char *aw_string);
     GB_ERROR rewrite_int(long aw_int);
-    GB_ERROR rewrite_float(double aw_double);
+    GB_ERROR rewrite_float(float aw_float);
     GB_ERROR rewrite_pointer(GBDATA *aw_pointer);
 
     GB_ERROR rewrite_as(char *aw_value) { return rewrite_as_string(aw_value); };

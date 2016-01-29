@@ -72,18 +72,18 @@ enum PrintDest {
 
 enum LengthUnit { INCH, MM };
 
-static const double mm_per_inch = 25.4;
-inline double inch2mm(double inches) { return inches*mm_per_inch; }
-inline double mm2inch(double mms) { return mms/mm_per_inch; }
+static const float mm_per_inch = 25.4;
+inline float inch2mm(float inches) { return inches*mm_per_inch; }
+inline float mm2inch(float mms) { return mms/mm_per_inch; }
 
 class PaperFormat {
     const char *description;
     const char *fig2dev_val;
     LengthUnit  unit;
-    double      shortSide, longSide;
+    float      shortSide, longSide;
 
 public:
-    PaperFormat(const char *name, LengthUnit lu, double shortSide_, double longSide_)
+    PaperFormat(const char *name, LengthUnit lu, float shortSide_, float longSide_)
         : description(name),
           fig2dev_val(name),
           unit(lu),
@@ -92,7 +92,7 @@ public:
     {
         awt_assert(shortSide<longSide);
     }
-    PaperFormat(const char *aname, const char *fname, LengthUnit lu, double shortSide_, double longSide_)
+    PaperFormat(const char *aname, const char *fname, LengthUnit lu, float shortSide_, float longSide_)
         : description(aname),
           fig2dev_val(fname),
           unit(lu),
@@ -102,8 +102,8 @@ public:
         awt_assert(shortSide<longSide);
     }
 
-    double short_inch() const { return unit == INCH ? shortSide : mm2inch(shortSide); }
-    double long_inch() const { return unit == INCH ? longSide : mm2inch(longSide); }
+    float short_inch() const { return unit == INCH ? shortSide : mm2inch(shortSide); }
+    float long_inch()  const { return unit == INCH ? longSide : mm2inch(longSide); }
 
     const char *get_description() const { return description; }
     const char *get_fig2dev_val() const { return fig2dev_val; }
@@ -166,9 +166,9 @@ static Rectangle get_drawsize(AWT_canvas *scr, bool draw_all) {
     return drawsize;
 }
 
-static Rectangle add_border_to_drawsize(const Rectangle& drawsize, double border_percent) {
-    double borderratio     = border_percent*.01;
-    double draw2bordersize = -borderratio/(borderratio-1.0);
+static Rectangle add_border_to_drawsize(const Rectangle& drawsize, float border_percent) {
+    float  borderratio     = border_percent*.01;
+    float  draw2bordersize = -borderratio/(borderratio-1.0);
     Vector bordersize      = drawsize.diagonal() * (draw2bordersize*0.5);
 
     return Rectangle(drawsize.upper_left_corner()-bordersize,
@@ -178,22 +178,22 @@ static Rectangle add_border_to_drawsize(const Rectangle& drawsize, double border
 static void awt_print_tree_check_size(UNFIXED, AWT_canvas *scr) {
     AW_root   *awr         = scr->awr;
     long       draw_all    = awr->awar(AWAR_CANIO_CLIP)->read_int();
-    double     border      = awr->awar(AWAR_CANIO_BORDERSIZE)->read_float();
+    float      border      = awr->awar(AWAR_CANIO_BORDERSIZE)->read_float();
     Rectangle  drawsize    = get_drawsize(scr, draw_all);
     Rectangle  with_border = add_border_to_drawsize(drawsize, border);
 
-    awr->awar(AWAR_CANIO_GFX_SX)->write_float((with_border.width())/DPI_SCREEN);
-    awr->awar(AWAR_CANIO_GFX_SY)->write_float((with_border.height())/DPI_SCREEN);
+    awr->awar(AWAR_CANIO_GFX_SX)->write_float(with_border.width()/DPI_SCREEN);
+    awr->awar(AWAR_CANIO_GFX_SY)->write_float(with_border.height()/DPI_SCREEN);
 }
 
-inline int xy2pages(double sx, double sy) {
+inline int xy2pages(float sx, float sy) {
     return (int(sx+0.99)*int(sy+0.99));
 }
 
 static bool allow_page_size_check_cb = true;
 static bool allow_overlap_toggled_cb = true;
 
-inline void set_paper_size_xy(AW_root *awr, double px, double py) {
+inline void set_paper_size_xy(AW_root *awr, float px, float py) {
     // modify papersize but perform only one callback
 
     bool old_allow           = allow_page_size_check_cb;
@@ -210,13 +210,13 @@ static void overlap_toggled_cb(AW_root *awr) {
     }
 }
 
-static long calc_mag_from_psize(AW_root *awr, double papersize, double gfxsize, double wantedpages, bool use_x) {
-    bool   wantOverlap = awr->awar(AWAR_CANIO_OVERLAP_WANTED)->read_int();
-    double usableSize = 0;
+static long calc_mag_from_psize(AW_root *awr, float papersize, float gfxsize, float wantedpages, bool use_x) {
+    bool  wantOverlap = awr->awar(AWAR_CANIO_OVERLAP_WANTED)->read_int();
+    float usableSize  = 0;
 
     if (wantOverlap && wantedpages>1) {
-        double overlapPercent = awr->awar(AWAR_CANIO_OVERLAP_PERCENT)->read_float();
-        double usableRatio    = (100.0-overlapPercent)/100.0;
+        float overlapPercent = awr->awar(AWAR_CANIO_OVERLAP_PERCENT)->read_float();
+        float usableRatio    = (100.0-overlapPercent)/100.0;
 
         // See also fig2devbug in page_size_check_cb() 
         bool fig2devbug = !use_x && awr->awar(AWAR_CANIO_F2DBUG)->read_int();
@@ -244,10 +244,10 @@ static void set_mag_from_psize(AW_root *awr, bool use_x) {
     const char *gfxsize_name     = use_x ? AWAR_CANIO_GFX_SX : AWAR_CANIO_GFX_SY;
     const char *wantedpages_name = use_x ? AWAR_CANIO_PAGE_SX : AWAR_CANIO_PAGE_SY;
 
-    double   papersize   = awr->awar(papersize_name)->read_float();
-    double   gfxsize     = awr->awar(gfxsize_name)->read_float();
-    double   wantedpages = awr->awar(wantedpages_name)->read_float();
-    long     mag         = calc_mag_from_psize(awr, papersize, gfxsize, wantedpages, use_x);
+    float papersize   = awr->awar(papersize_name)->read_float();
+    float gfxsize     = awr->awar(gfxsize_name)->read_float();
+    float wantedpages = awr->awar(wantedpages_name)->read_float();
+    long  mag         = calc_mag_from_psize(awr, papersize, gfxsize, wantedpages, use_x);
 
     awr->awar(AWAR_CANIO_MAGNIFICATION)->write_int(mag);
 }
@@ -275,14 +275,14 @@ static void fit_pages(AW_root *awr, int wanted_pages, bool allow_orientation_cha
             const char *awar_name = xy == 0 ? AWAR_CANIO_PAGE_SX : AWAR_CANIO_PAGE_SY;
 
             for (int pcount = 1; pcount <= wanted_pages; pcount++) {
-                double zoom = pcount*1.0;
+                float zoom = pcount*1.0;
                 awr->awar(awar_name)->write_float(zoom); // set zoom (x or y)
 
                 set_mag_from_psize(awr, xy == 0);
 
-                double sx            = awr->awar(AWAR_CANIO_PAGE_SX)->read_float();
-                double sy            = awr->awar(AWAR_CANIO_PAGE_SY)->read_float();
-                int    pages         = xy2pages(sx, sy);
+                float sx    = awr->awar(AWAR_CANIO_PAGE_SX)->read_float();
+                float sy    = awr->awar(AWAR_CANIO_PAGE_SY)->read_float();
+                int   pages = xy2pages(sx, sy);
 
                 if (pages>wanted_pages) break; // pcount-loop
 
@@ -327,8 +327,8 @@ static void page_size_check_cb(AW_root *awr) {
     bool lockpages    = awr->awar(AWAR_CANIO_PAGELOCK)->read_int();
     int  locked_pages = awr->awar(AWAR_CANIO_PAGES)->read_int();
 
-    double px = awr->awar(AWAR_CANIO_PAPER_SX)->read_float(); // paper-size
-    double py = awr->awar(AWAR_CANIO_PAPER_SY)->read_float();
+    float px = awr->awar(AWAR_CANIO_PAPER_SX)->read_float(); // paper-size
+    float py = awr->awar(AWAR_CANIO_PAPER_SY)->read_float();
 
     if (landscape != (px>py)) {
         set_paper_size_xy(awr, py, px); // recalls this function
@@ -337,29 +337,29 @@ static void page_size_check_cb(AW_root *awr) {
 
     long magnification = awr->awar(AWAR_CANIO_MAGNIFICATION)->read_int();
     
-    double gx = awr->awar(AWAR_CANIO_GFX_SX)->read_float(); // graphic size
-    double gy = awr->awar(AWAR_CANIO_GFX_SY)->read_float();
+    float gx = awr->awar(AWAR_CANIO_GFX_SX)->read_float(); // graphic size
+    float gy = awr->awar(AWAR_CANIO_GFX_SY)->read_float();
 
     // output size
-    double ox = (gx*magnification)/100; // resulting size of output in inches
-    double oy = (gy*magnification)/100;
+    float ox = (gx*magnification)/100; // resulting size of output in inches
+    float oy = (gy*magnification)/100;
     awr->awar(AWAR_CANIO_OUT_SX)->write_float(ox);
     awr->awar(AWAR_CANIO_OUT_SY)->write_float(oy);
 
     bool wantOverlap = awr->awar(AWAR_CANIO_OVERLAP_WANTED)->read_int();
     bool useOverlap  = awr->awar(AWAR_CANIO_OVERLAP)->read_int();
 
-    double sx = 0.0; // resulting pages
-    double sy = 0.0;
+    float sx = 0.0; // resulting pages
+    float sy = 0.0;
 
     bool fits_on_one_page = (ox <= px && oy <= py);
 
     if (wantOverlap && !fits_on_one_page) {
-        double overlapPercent = awr->awar(AWAR_CANIO_OVERLAP_PERCENT)->read_float();
-        double pageRatio      = (100.0-overlapPercent)/100.0;
+        float overlapPercent = awr->awar(AWAR_CANIO_OVERLAP_PERCENT)->read_float();
+        float pageRatio      = (100.0-overlapPercent)/100.0;
 
-        double rpx = px*pageRatio; // usable page-size (due to overlap)
-        double rpy = py*pageRatio;
+        float rpx = px*pageRatio; // usable page-size (due to overlap)
+        float rpy = py*pageRatio;
 
         while (ox>px) { ox -= rpx; sx += 1.0; }
         sx += ox/px;
@@ -415,7 +415,7 @@ static void paper_changed_cb(AW_root *awr) {
     int                paper     = awr->awar(AWAR_CANIO_PAPER)->read_int();
     const PaperFormat& format    = knownPaperFormat[paper];
     bool               landscape = awr->awar(AWAR_CANIO_LANDSCAPE)->read_int();
-    double             useable   = awr->awar(AWAR_CANIO_PAPER_USABLE)->read_float()/100.0;
+    float              useable   = awr->awar(AWAR_CANIO_PAPER_USABLE)->read_float()/100.0;
 
     if (landscape) {
         set_paper_size_xy(awr, useable*format.long_inch(), useable*format.short_inch());
@@ -542,7 +542,7 @@ static void create_print_awars(AW_root *awr, AWT_canvas *scr) {
 
 // --------------------------------------------------------------------------------
 
-static GB_ERROR canvas_to_xfig(AWT_canvas *scr, const char *xfig_name, bool add_invisibles, double border) {
+static GB_ERROR canvas_to_xfig(AWT_canvas *scr, const char *xfig_name, bool add_invisibles, float border) {
     // if 'add_invisibles' is true => print 2 invisible dots to make fig2dev center correctly
 
     GB_transaction  ta(scr->gb_main);
@@ -694,8 +694,8 @@ static void canvas_to_printer(AW_window *aww, AWT_canvas *scr) {
 
         if (!xfig) error = GB_await_error();
         if (!error) {
-            double border = awr->awar(AWAR_CANIO_BORDERSIZE)->read_float();
-            error         = canvas_to_xfig(scr, xfig, true, border);
+            float border = awr->awar(AWAR_CANIO_BORDERSIZE)->read_float();
+            error        = canvas_to_xfig(scr, xfig, true, border);
         }
 
         if (!error) {

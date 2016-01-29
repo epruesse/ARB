@@ -964,8 +964,8 @@ __ATTR__USERESULT static GB_ERROR di_calculate_matrix(AW_root *aw_root, const We
 
 static void di_mark_by_distance(AW_window *aww, WeightedFilter *weighted_filter) {
     AW_root *aw_root    = aww->get_root();
-    double   lowerBound = aw_root->awar(AWAR_DIST_MIN_DIST)->read_float();
-    double   upperBound = aw_root->awar(AWAR_DIST_MAX_DIST)->read_float();
+    float    lowerBound = aw_root->awar(AWAR_DIST_MIN_DIST)->read_float();
+    float    upperBound = aw_root->awar(AWAR_DIST_MAX_DIST)->read_float();
 
     GB_ERROR error = 0;
     if (lowerBound >= upperBound) {
