@@ -1057,9 +1057,9 @@ void NT_create_multifurcate_tree_awars(AW_root *aw_root, AW_default props) {
 static void multifurcation_cb(UNFIXED, AWT_canvas *ntw) {
     AW_root *aw_root = ntw->aww->get_root();
 
-    double below_bootstrap = 101.0;
-    double below_length    = 1000000.0;
-    bool   applyAtLeafs    = aw_root->awar(AWAR_MFURC_CONSIDER_TERMINALS)->read_int();
+    float below_bootstrap = 101.0;
+    float below_length    = 1000000.0;
+    bool  applyAtLeafs    = aw_root->awar(AWAR_MFURC_CONSIDER_TERMINALS)->read_int();
 
     if (aw_root->awar(AWAR_MFURC_CONSIDER_BOOTSTRAP)->read_int()) below_bootstrap = aw_root->awar(AWAR_MFURC_BOOTSTRAP_LIMIT)->read_float();
     if (aw_root->awar(AWAR_MFURC_CONSIDER_LENGTH)   ->read_int()) below_length    = aw_root->awar(AWAR_MFURC_LENGTH_LIMIT)   ->read_float();

@@ -91,7 +91,7 @@ public:
     void markDegeneratedBranches() {
         if (have_tree()) {
             GB_transaction ta(get_gbmain());
-            double         degeneration_factor = awar(AWAR_BA_DEGENERATION)->read_float();
+            float          degeneration_factor = awar(AWAR_BA_DEGENERATION)->read_float();
 
             unmark_all();
             set_info(get_tree()->mark_degenerated_branches(degeneration_factor));
@@ -102,8 +102,8 @@ public:
         if (have_tree()) {
             GB_transaction ta(get_gbmain());
 
-            int    min_depth    = awar(AWAR_BA_MIN_DEPTH)->read_int();
-            double min_rootdist = awar(AWAR_BA_MIN_ROOTDIST)->read_float();
+            int   min_depth    = awar(AWAR_BA_MIN_DEPTH)->read_int();
+            float min_rootdist = awar(AWAR_BA_MIN_ROOTDIST)->read_float();
 
             unmark_all();
             set_info(get_tree()->mark_deep_leafs(min_depth, min_rootdist));
