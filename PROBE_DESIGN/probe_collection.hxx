@@ -71,22 +71,9 @@ struct ArbCachedString {
     fpos_t  Pos;
     int     Len;
 
-    fpos_t  pos() const;
-    int     len() const;
+    fpos_t pos() const { return Pos; }
+    int    len() const { return Len; }
 };
-
-// ----------------------------------------------------------------------------
-
-inline fpos_t ArbCachedString::pos() const {
-    return (Pos);
-}
-
-// ----------------------------------------------------------------------------
-
-inline int ArbCachedString::len() const {
-    return (Len);
-}
-
 
 // ----------------------------------------------------------------------------
 // class ArbStringCache
@@ -128,55 +115,23 @@ class ArbRefCount {
     mutable int RefCount;
 
 public:
-    ArbRefCount();
-    ArbRefCount(const ArbRefCount& rCopy);
-    virtual ~ArbRefCount();
+    ArbRefCount() : RefCount(1) {}
+    ArbRefCount(const ArbRefCount&) :  RefCount(1) {}
+    virtual ~ArbRefCount() {}
 
-    void        lock() const;
-    bool        unlock() const;
-    void        free() const;
-};
-
-// ----------------------------------------------------------------------------
-
-inline ArbRefCount::ArbRefCount() {
-    RefCount = 1;
-}
-
-// ----------------------------------------------------------------------------
-
-inline ArbRefCount::ArbRefCount(const ArbRefCount&) {
-    RefCount = 1;
-}
-
-// ----------------------------------------------------------------------------
-
-inline ArbRefCount::~ArbRefCount() {
-    // Do nothing
-}
-
-// ----------------------------------------------------------------------------
-
-inline void ArbRefCount::lock() const {
-    RefCount++;
-}
-
-// ----------------------------------------------------------------------------
-
-inline bool ArbRefCount::unlock() const {
-    RefCount--;
-
-    return (RefCount == 0);
-}
-
-// ----------------------------------------------------------------------------
-
-inline void ArbRefCount::free() const {
-    if (unlock()) {
-        delete this;
+    void lock() const {
+        RefCount++;
     }
-}
-
+    bool unlock() const {
+        RefCount--;
+        return (RefCount == 0);
+    }
+    void free() const {
+        if (unlock()) {
+            delete this;
+        }
+    }
+};
 
 // ----------------------------------------------------------------------------
 // class ArbProbeMatchWeighting
@@ -210,7 +165,9 @@ public:
     void initialise(const double aValues[16], double dWidth, double dBias);
     bool initialise(const char *pCSValues, const char *pCSWidth, const char *pCSBias);
 
-    void setParameters(const double aValues[16], double dWidth, double dBias);
+    void setParameters(const double aValues[16], double dWidth, double dBias) {
+        initialise(aValues, dWidth, dBias);
+    }
     void getParameters(double aValues[16], double& dWidth, double& dBias) const;
 
     void writeXML(FILE *hFile, const char *pPrefix) const;
@@ -218,13 +175,6 @@ public:
     double matchWeight(const char *pSequenceA, const char *pSequenceB) const;
     double matchWeightResult(const char *pProbeSequence, const char *pMatchResult) const;
 };
-
-// ----------------------------------------------------------------------------
-
-inline void ArbProbeMatchWeighting::setParameters(const double aValues[16], double dWidth, double dBias) {
-    initialise(aValues, dWidth, dBias);
-}
-
 
 // ----------------------------------------------------------------------------
 // class ArbProbe
@@ -248,31 +198,12 @@ public:
 
     void nameAndSequence(const char* pName, const char* pSequence);
 
-    const std::string& name() const;
-    const std::string& sequence() const;
-    const std::string& displayName() const;
+    const std::string& name()        const { return Name; }
+    const std::string& sequence()    const { return Sequence; }
+    const std::string& displayName() const { return DisplayName; }
 
     int allowedMismatches() const;
 };
-
-// ----------------------------------------------------------------------------
-
-inline const std::string& ArbProbe::name() const {
-    return (Name);
-}
-
-// ----------------------------------------------------------------------------
-
-inline const std::string& ArbProbe::sequence() const {
-    return (Sequence);
-}
-
-// ----------------------------------------------------------------------------
-
-inline const std::string& ArbProbe::displayName() const {
-    return (DisplayName);
-}
-
 
 //  ----------------------------------------------------------------------------
 //  List of ArbProbe* objects
@@ -326,8 +257,8 @@ public:
     void setParameters(const double aValues[16], double dWidth, double dBias);
     void getParameters(double aValues[16], double& dWidth, double& dBias) const;
 
-    const ArbProbePtrList&        probeList() const;
-    const ArbProbeMatchWeighting& matchWeighting() const;
+    const ArbProbePtrList&        probeList()      const { return ProbeList; }
+    const ArbProbeMatchWeighting& matchWeighting() const { return MatchWeighting; }
 
     const ArbProbe *find(const char *pSequence) const;
 
@@ -337,42 +268,11 @@ public:
     bool clear();
 
     void               name(const char *pName);
-    const std::string& name() const;
+    const std::string& name() const { return Name; }
 
-    bool hasChanged() const;
-    bool hasProbes() const;
+    bool hasChanged() const { return HasChanged; }
+    bool hasProbes()  const { return ProbeList.size() > 0; }
 };
-
-// ----------------------------------------------------------------------------
-
-inline const ArbProbePtrList& ArbProbeCollection::probeList() const {
-    return (ProbeList);
-}
-
-// ----------------------------------------------------------------------------
-
-inline const ArbProbeMatchWeighting& ArbProbeCollection::matchWeighting() const {
-    return (MatchWeighting);
-}
-
-// ----------------------------------------------------------------------------
-
-inline const std::string& ArbProbeCollection::name() const {
-    return (Name);
-}
-
-// ----------------------------------------------------------------------------
-
-inline bool ArbProbeCollection::hasChanged() const {
-    return (HasChanged);
-}
-
-// ----------------------------------------------------------------------------
-
-inline bool ArbProbeCollection::hasProbes() const {
-    return (ProbeList.size() > 0);
-}
-
 
 // ----------------------------------------------------------------------------
 // class ArbMatchResult
@@ -397,37 +297,12 @@ public:
     static void addedHeadline(std::string& rHeadline);
     void        weightAndResult(std::string& rDest) const;
     void        result(std::string& sResult) const;
-    double      weight() const;
+    double      weight() const { return Weight; }
 
-    void padding(int nPadding) const;
-    void index(int nIndex) const;
-    int  index() const;
+    void padding(int nPadding) const { Padding = nPadding; }
+    void index(int nIndex) const { Index = nIndex; }
+    int  index() const { return Index; }
 };
-
-// ----------------------------------------------------------------------------
-
-inline double ArbMatchResult::weight() const {
-    return (Weight);
-}
-
-// ----------------------------------------------------------------------------
-
-inline void ArbMatchResult::padding(int nPadding) const {
-    Padding = nPadding;
-}
-
-// ----------------------------------------------------------------------------
-
-inline void ArbMatchResult::index(int nIndex) const {
-    Index = nIndex;
-}
-
-// ----------------------------------------------------------------------------
-
-inline int ArbMatchResult::index() const {
-    return (Index);
-}
-
 
 //  ----------------------------------------------------------------------------
 //  List of ArbMatchResult objects
@@ -518,7 +393,7 @@ public:
 
     void findMaximumWeight(double& dMaximumWeight) const;
 
-    const ArbMatchResultPtrByStringMultiMap&  resultMap() const;
+    const ArbMatchResultPtrByStringMultiMap&  resultMap() const { return ResultMap; }
 
     bool isMatched(const ArbStringList& rCladeList,
                    bool&  bPartialMatch,
@@ -527,75 +402,27 @@ public:
                    double dCladePartiallyMarkedThreshold) const;
 
     bool isMatched(const std::string& rName, double dThreshold) const;
-    const ArbStringList& commentList() const;
+    const ArbStringList& commentList() const { return CommentList; }
 
-    bool hasResults() const;
+    bool hasResults() const {
+        return (Probe != 0) && (ResultMap.size() > 0);
+    }
 
-    const ArbProbe *probe() const;
+    const ArbProbe *probe() const { return Probe; }
 
-    void headline(const char *pHeadline, int nEndFullName);
-    const std::string& headline() const;
-
-    int endFullName() const;
+    void headline(const char *pHeadline, int nEndFullName) {
+        if (pHeadline != 0) {
+            Headline    = pHeadline;
+            EndFullName = nEndFullName;
+        }
+    }
+    const std::string& headline() const { return Headline; }
+    int endFullName() const { return EndFullName; }
 
     void enumerateResults(ArbMatchResultPtrByDoubleMultiMap& rMap, int nMaxFullName);
 
-    int index() const;
+    int index() const { return Index; }
 };
-
-// ----------------------------------------------------------------------------
-
-inline void ArbMatchResultSet::headline(const char *pHeadline, int nEndFullName) {
-    if (pHeadline != 0) {
-        Headline    = pHeadline;
-        EndFullName = nEndFullName;
-    }
-}
-
-// ----------------------------------------------------------------------------
-
-inline const std::string& ArbMatchResultSet::headline() const {
-    return (Headline);
-}
-
-// ----------------------------------------------------------------------------
-
-inline int ArbMatchResultSet::endFullName() const {
-    return (EndFullName);
-}
-
-// ----------------------------------------------------------------------------
-
-inline const ArbMatchResultPtrByStringMultiMap& ArbMatchResultSet::resultMap() const {
-    return (ResultMap);
-}
-
-// ----------------------------------------------------------------------------
-
-inline const ArbStringList& ArbMatchResultSet::commentList() const {
-    return (CommentList);
-}
-
-// ----------------------------------------------------------------------------
-
-inline bool ArbMatchResultSet::hasResults() const {
-    bool bHasResults = ((Probe != 0) && (ResultMap.size() > 0));
-
-    return (bHasResults);
-}
-
-// ----------------------------------------------------------------------------
-
-inline const ArbProbe *ArbMatchResultSet::probe() const {
-    return (Probe);
-}
-
-// ----------------------------------------------------------------------------
-
-inline int ArbMatchResultSet::index() const {
-    return (Index);
-}
-
 
 //  ----------------------------------------------------------------------------
 //  Map of ArbMatchResultSet objects by string
@@ -647,42 +474,18 @@ public:
     const ArbMatchResultSet *findResultSet(const char *pProbeSequence) const;
     void                     updateResults();
 
-    const ArbMatchResultPtrByStringMultiMap& resultsMap() const;
-    const ArbMatchResultSetByStringMap&      resultSetMap() const;
+    const ArbMatchResultPtrByStringMultiMap& resultsMap()   const { return ResultsMap; }
+    const ArbMatchResultSetByStringMap&      resultSetMap() const { return ResultSetMap; }
 
-    double maximumWeight() const;
+    double maximumWeight() const { return MaximumWeight; }
 
     int enumerate_results(ArbMatchResultsEnumCallback pCallback, void *pContext);
 
     const char *resultsFileName() const;
     void openResultsFile() const;
 
-    bool hasResults() const;
+    bool hasResults() const { return ResultSetMap.size() > 0; }
 };
-
-// ----------------------------------------------------------------------------
-
-inline const ArbMatchResultPtrByStringMultiMap& ArbMatchResultsManager::resultsMap() const {
-    return (ResultsMap);
-}
-
-// ----------------------------------------------------------------------------
-
-inline const ArbMatchResultSetByStringMap& ArbMatchResultsManager::resultSetMap() const {
-    return (ResultSetMap);
-}
-
-// ----------------------------------------------------------------------------
-
-inline double ArbMatchResultsManager::maximumWeight() const {
-    return (MaximumWeight);
-}
-
-// ----------------------------------------------------------------------------
-
-inline bool ArbMatchResultsManager::hasResults() const {
-    return (ResultSetMap.size() > 0);
-}
 
 // ----------------------------------------------------------------------------
 
