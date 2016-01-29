@@ -237,10 +237,10 @@ void GEN_root::paint(AW_device *device) {
                 break;
             }
             case GEN_DISPLAY_STYLE_VERTICAL: {
-                double factor_x = aw_root->awar(AWAR_GENMAP_VERTICAL_FACTOR_X)->read_float();
-                double factor_y = aw_root->awar(AWAR_GENMAP_VERTICAL_FACTOR_Y)->read_float();
-                int    arrow_x  = int(factor_x*arrow_size);
-                int    arrow_y  = int(factor_y*arrow_size);
+                float factor_x = aw_root->awar(AWAR_GENMAP_VERTICAL_FACTOR_X)->read_float();
+                float factor_y = aw_root->awar(AWAR_GENMAP_VERTICAL_FACTOR_Y)->read_float();
+                int   arrow_x  = int(factor_x*arrow_size);
+                int   arrow_y  = int(factor_y*arrow_size);
 
                 GEN_iterator curr = gene_set.begin();
                 GEN_iterator end  = gene_set.end();
@@ -268,14 +268,14 @@ void GEN_root::paint(AW_device *device) {
                 break;
             }
             case GEN_DISPLAY_STYLE_BOOK: {
-                int    display_width  = aw_root->awar(AWAR_GENMAP_BOOK_BASES_PER_LINE)->read_int();
-                double width_factor   = aw_root->awar(AWAR_GENMAP_BOOK_WIDTH_FACTOR)->read_float();
-                int    line_height    = aw_root->awar(AWAR_GENMAP_BOOK_LINE_HEIGHT)->read_int();
-                int    line_space     = aw_root->awar(AWAR_GENMAP_BOOK_LINE_SPACE)->read_int();
-                int    height_of_line = line_height+line_space;
-                int    xLeft          = 0;
-                int    xRight         = int(display_width*width_factor+0.5);
-                int    arrowMid       = line_height/2;
+                int   display_width  = aw_root->awar(AWAR_GENMAP_BOOK_BASES_PER_LINE)->read_int();
+                float width_factor   = aw_root->awar(AWAR_GENMAP_BOOK_WIDTH_FACTOR)->read_float();
+                int   line_height    = aw_root->awar(AWAR_GENMAP_BOOK_LINE_HEIGHT)->read_int();
+                int   line_space     = aw_root->awar(AWAR_GENMAP_BOOK_LINE_SPACE)->read_int();
+                int   height_of_line = line_height+line_space;
+                int   xLeft          = 0;
+                int   xRight         = int(display_width*width_factor+0.5);
+                int   arrowMid       = line_height/2;
 
                 GEN_iterator curr = gene_set.begin();
                 GEN_iterator end  = gene_set.end();

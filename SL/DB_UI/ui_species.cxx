@@ -978,15 +978,15 @@ static void awtc_nn_search_all_listed(AW_window *aww) {
         arb_progress progress("Searching next neighbours", max);
         progress.auto_subtitles("Species");
 
-        int     pts            = aw_root->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int();
-        char   *ali_name       = aw_root->awar(AWAR_DEFAULT_ALIGNMENT)->read_string();
-        int     oligo_len      = aw_root->awar(AWAR_NN_OLIGO_LEN)->read_int();
-        int     mismatches     = aw_root->awar(AWAR_NN_MISMATCHES)->read_int();
-        bool    fast_mode      = aw_root->awar(AWAR_NN_FAST_MODE)->read_int();
-        bool    rel_matches    = aw_root->awar(AWAR_NN_REL_MATCHES)->read_int();
-        int     wanted_entries = aw_root->awar(AWAR_NN_MAX_HITS)->read_int();
-        bool    scored_entries = aw_root->awar(AWAR_NN_LISTED_SCORED_ENTRIES)->read_int();
-        double  min_score      = aw_root->awar(AWAR_NN_MIN_SCORE)->read_float();
+        int    pts            = aw_root->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int();
+        char  *ali_name       = aw_root->awar(AWAR_DEFAULT_ALIGNMENT)->read_string();
+        int    oligo_len      = aw_root->awar(AWAR_NN_OLIGO_LEN)->read_int();
+        int    mismatches     = aw_root->awar(AWAR_NN_MISMATCHES)->read_int();
+        bool   fast_mode      = aw_root->awar(AWAR_NN_FAST_MODE)->read_int();
+        bool   rel_matches    = aw_root->awar(AWAR_NN_REL_MATCHES)->read_int();
+        int    wanted_entries = aw_root->awar(AWAR_NN_MAX_HITS)->read_int();
+        bool   scored_entries = aw_root->awar(AWAR_NN_LISTED_SCORED_ENTRIES)->read_int();
+        float  min_score      = aw_root->awar(AWAR_NN_MIN_SCORE)->read_float();
 
         FF_complement        compl_mode  = static_cast<FF_complement>(aw_root->awar(AWAR_NN_COMPLEMENT)->read_int());
         RelativeScoreScaling rel_scaling = static_cast<RelativeScoreScaling>(aw_root->awar(AWAR_NN_REL_SCALING)->read_int());
@@ -1105,12 +1105,12 @@ static void awtc_nn_search(AW_window *) {
         free(sel_species);
     }
 
-    int    pts         = aw_root->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int();
-    int    oligo_len   = aw_root->awar(AWAR_NN_OLIGO_LEN)->read_int();
-    int    mismatches  = aw_root->awar(AWAR_NN_MISMATCHES)->read_int();
-    bool   fast_mode   = aw_root->awar(AWAR_NN_FAST_MODE)->read_int();
-    bool   rel_matches = aw_root->awar(AWAR_NN_REL_MATCHES)->read_int();
-    double min_score   = aw_root->awar(AWAR_NN_MIN_SCORE)->read_float();
+    int   pts         = aw_root->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int();
+    int   oligo_len   = aw_root->awar(AWAR_NN_OLIGO_LEN)->read_int();
+    int   mismatches  = aw_root->awar(AWAR_NN_MISMATCHES)->read_int();
+    bool  fast_mode   = aw_root->awar(AWAR_NN_FAST_MODE)->read_int();
+    bool  rel_matches = aw_root->awar(AWAR_NN_REL_MATCHES)->read_int();
+    float min_score   = aw_root->awar(AWAR_NN_MIN_SCORE)->read_float();
 
     RelativeScoreScaling rel_scaling = static_cast<RelativeScoreScaling>(aw_root->awar(AWAR_NN_REL_SCALING)->read_int());
 

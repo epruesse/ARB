@@ -415,8 +415,8 @@ inline const char *bond_awar_name(int i) {
 }
 
 struct ProbeCommonSettings {
-    double split;
-    double bonds[16];
+    float split;
+    float bonds[16];
 
     explicit ProbeCommonSettings(AW_root *root)
         : split(root->awar(AWAR_PD_COMMON_EXP_SPLIT)->read_float())
@@ -430,7 +430,7 @@ struct ProbeCommonSettings {
 static int probe_common_send_data(const ProbeCommonSettings& commonSettings) {
     // send data common to probe-design AND -match
     if (aisc_put(PD.link, PT_LOCS, PD.locs,
-                 LOCS_SPLIT, commonSettings.split,
+                 LOCS_SPLIT, (double)commonSettings.split,
                  NULL))
         return 1;
 
@@ -1223,8 +1223,8 @@ static void minmax_awar_pair_changed_cb(AW_root *root, bool maxChanged, const ch
         AW_awar *awar_min = root->awar(minAwarName);
         AW_awar *awar_max = root->awar(maxAwarName);
 
-        double currMin = awar_min->read_float();
-        double currMax = awar_max->read_float();
+        float currMin = awar_min->read_float();
+        float currMax = awar_max->read_float();
 
         if (currMin>currMax) { // invalid -> correct
             if (maxChanged) awar_min->write_float(currMax);
@@ -1323,9 +1323,9 @@ void create_probe_design_variables(AW_root *root, AW_default props, AW_default d
 
     root->awar_float(AWAR_PC_MISMATCH_THRESHOLD, 0.0, db)->set_minmax(0, 100); // Note: limits will be modified by probe_match_with_specificity_event
 
-    double default_weights[16] = {0.0};
-    double default_width = 1.0;
-    double default_bias  = 0.0;
+    float default_weights[16] = {0.0};
+    float default_width = 1.0;
+    float default_bias  = 0.0;
 
     ArbProbeCollection& g_probe_collection = get_probe_collection();
     g_probe_collection.getParameters(default_weights, default_width, default_bias);
@@ -2405,15 +2405,15 @@ static void probe_match_with_specificity_edit_event() {
 // ----------------------------------------------------------------------------
 
 class GetMatchesContext { // @@@ merge with ProbeCollDisplay?
-    double mismatchThreshold;
-    int    nProbes;
+    float mismatchThreshold;
+    int   nProbes;
 
     typedef ArbMatchResultPtrByStringMultiMap          MatchMap;
     typedef ArbMatchResultPtrByStringMultiMapConstIter MatchMapIter;
 
     const MatchMap& results;
 public:
-    GetMatchesContext(double misThres, int numProbes)
+    GetMatchesContext(float misThres, int numProbes)
         : mismatchThreshold(misThres),
           nProbes(numProbes),
           results(get_results_manager().resultsMap())
@@ -2834,11 +2834,11 @@ static void load_probe_collection(AW_window *aww, ArbPC_Context *Context, const 
     std::string        sErrorMessage;
 
     if (ProbeCollection.openXML(pFileName, sErrorMessage)) {
-        int     cn;
-        char    buffer[256] = {0};
-        double  weights[16] = {0.0};
-        double  dWidth      = 1.0;
-        double  dBias       = 0.0;
+        int    cn;
+        char   buffer[256] = {0};
+        float  weights[16] = {0.0};
+        float  dWidth      = 1.0;
+        float  dBias       = 0.0;
 
         ArbProbeCollection& g_probe_collection = get_probe_collection();
         g_probe_collection = ProbeCollection;
@@ -2875,12 +2875,14 @@ static void load_probe_collection(AW_window *aww, ArbPC_Context *Context, const 
 // ----------------------------------------------------------------------------
 
 static void probe_collection_update_parameters() {
-    int     cn;
-    char    buffer[256] = {0};
-    double  weights[16] = {0.0};
-    AW_root *root   = AW_root::SINGLETON;
-    double   dWidth = root->awar(AWAR_PC_MATCH_WIDTH)->read_float();
-    double   dBias  = root->awar(AWAR_PC_MATCH_BIAS)->read_float();
+    AW_root *root = AW_root::SINGLETON;
+
+    int cn;
+    char buffer[256] = {0};
+
+    float weights[16] = {0.0};
+    float dWidth = root->awar(AWAR_PC_MATCH_WIDTH)->read_float();
+    float dBias  = root->awar(AWAR_PC_MATCH_BIAS)->read_float();
 
     for (cn = 0; cn < 16 ; cn++) {
         sprintf(buffer, AWAR_PC_MATCH_WEIGHTS"%i", cn);
