@@ -68,10 +68,9 @@ class ArbStringCache : virtual Noncopyable {
     mutable int   ReadBufferLength;
     bool          IsOpen;
 
-protected:
-    void                    open();
-    void                    close();
-    bool                    allocReadBuffer(int nLength) const;
+    void open();
+    void close();
+    bool allocReadBuffer(int nLength) const;
 
 public:
     ArbStringCache();
@@ -125,11 +124,9 @@ class ArbProbeMatchWeighting : public ArbRefCount {
     double Width;
     double Bias;
 
-protected:
-    int                     toIndex(char nC) const;
-    double                  positionalWeight(int nPos, int nLength) const;
-
-    void                    copy(const ArbProbeMatchWeighting& rCopy);
+    int toIndex(char nC) const;
+    double positionalWeight(int nPos, int nLength) const;
+    void copy(const ArbProbeMatchWeighting& rCopy);
 
 public:
     ArbProbeMatchWeighting();
@@ -203,7 +200,6 @@ class ArbProbeCollection : public ArbRefCount {
     ArbProbeMatchWeighting MatchWeighting;
     mutable bool           HasChanged;
 
-protected:
     void flush();
     void copy(const ArbProbePtrList& rList);
 
@@ -303,9 +299,8 @@ class ArbMatchResultSet : public ArbRefCount {
     int                                Index;
     int                                EndFullName;
 
-protected:
-    void                                      flush();
-    void                                      copy(const ArbMatchResultPtrByStringMultiMap& rMap);
+    void flush();
+    void copy(const ArbMatchResultPtrByStringMultiMap& rMap);
 
 public:
     ArbMatchResultSet();
@@ -392,7 +387,6 @@ class ArbMatchResultsManager {
     double                            MaximumWeight;
     std::string                       ResultsFileName;
 
-protected:
     void flush();
     void initFileName();
 
