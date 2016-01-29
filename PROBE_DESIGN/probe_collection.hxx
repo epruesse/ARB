@@ -120,9 +120,9 @@ public:
 // the weighting applied to a match.
 // ----------------------------------------------------------------------------
 class ArbProbeMatchWeighting : public ArbRefCount {
-    double PenaltyMatrix[4][4];
-    double Width;
-    double Bias;
+    float PenaltyMatrix[4][4];
+    float Width;
+    float Bias;
 
     int toIndex(char nC) const;
     double positionalWeight(int nPos, int nLength) const;
@@ -130,22 +130,20 @@ class ArbProbeMatchWeighting : public ArbRefCount {
 
 public:
     ArbProbeMatchWeighting();
-    ArbProbeMatchWeighting(const double aValues[16],
-                           double dWidth,
-                           double dBias);
+    ArbProbeMatchWeighting(const float aValues[16], float dWidth, float dBias);
 
     ArbProbeMatchWeighting(const ArbProbeMatchWeighting& rCopy);
     virtual ~ArbProbeMatchWeighting();
 
     ArbProbeMatchWeighting& operator = (const ArbProbeMatchWeighting& rCopy);
 
-    void initialise(const double aValues[16], double dWidth, double dBias);
+    void initialise(const float aValues[16], float dWidth, float dBias);
     bool initialise(const char *pCSValues, const char *pCSWidth, const char *pCSBias);
 
-    void setParameters(const double aValues[16], double dWidth, double dBias) {
+    void setParameters(const float aValues[16], float dWidth, float dBias) {
         initialise(aValues, dWidth, dBias);
     }
-    void getParameters(double aValues[16], double& dWidth, double& dBias) const;
+    void getParameters(float aValues[16], float& dWidth, float& dBias) const;
 
     void writeXML(FILE *hFile, const char *pPrefix) const;
 
@@ -214,8 +212,8 @@ public:
     bool openXML(const char *pFileAndPath, std::string& rErrorMessage);
     bool saveXML(const char *pFileAndPath) const;
 
-    void setParameters(const double aValues[16], double dWidth, double dBias);
-    void getParameters(double aValues[16], double& dWidth, double& dBias) const;
+    void setParameters(const float aValues[16], float dWidth, float dBias);
+    void getParameters(float aValues[16], float& dWidth, float& dBias) const;
 
     const ArbProbePtrList&        probeList()      const { return ProbeList; }
     const ArbProbeMatchWeighting& matchWeighting() const { return MatchWeighting; }

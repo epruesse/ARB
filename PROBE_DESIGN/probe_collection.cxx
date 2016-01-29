@@ -253,22 +253,22 @@ ArbProbeMatchWeighting::ArbProbeMatchWeighting()
     : ArbRefCount(),
       PenaltyMatrix()
 {
-    double aDefaultValues[16] = {
+    float aDefaultValues[16] = {
         0.0, 1.0, 1.0, 1.0,
         1.0, 0.0, 1.0, 1.0,
         1.0, 1.0, 0.0, 1.0,
         1.0, 1.0, 1.0, 0.0
     };
 
-    double dWidth = 1.0;
-    double dBias  = 0.0;
+    float dWidth = 1.0;
+    float dBias  = 0.0;
 
     initialise(aDefaultValues, dWidth, dBias);
 }
 
 // ----------------------------------------------------------------------------
 
-ArbProbeMatchWeighting::ArbProbeMatchWeighting(const double aValues[16], double dWidth, double dBias)
+ArbProbeMatchWeighting::ArbProbeMatchWeighting(const float aValues[16], float dWidth, float dBias)
     : ArbRefCount(),
       PenaltyMatrix()
 {
@@ -302,7 +302,7 @@ ArbProbeMatchWeighting& ArbProbeMatchWeighting::operator = (const ArbProbeMatchW
 
 // ----------------------------------------------------------------------------
 
-void ArbProbeMatchWeighting::initialise(const double aValues[16], double dWidth, double dBias) {
+void ArbProbeMatchWeighting::initialise(const float aValues[16], float dWidth, float dBias) {
     Width = dWidth;
     Bias  = dBias;
 
@@ -326,9 +326,9 @@ bool ArbProbeMatchWeighting::initialise(const char *pCSValues, const char *pCSWi
         (pCSWidth  != 0) &&
         (pCSBias   != 0))
     {
-        double dWidth = 0;
-        double dBias  = 0;
-        double aValues[16] = {
+        float dWidth = 0;
+        float dBias  = 0;
+        float aValues[16] = {
             0.0, 1.0, 1.0, 1.0,
             1.0, 0.0, 1.0, 1.0,
             1.0, 1.0, 0.0, 1.0,
@@ -336,17 +336,17 @@ bool ArbProbeMatchWeighting::initialise(const char *pCSValues, const char *pCSWi
         };
 
         int nItems = ::sscanf(pCSValues,
-                              "%lg%lg%lg%lg"
-                              "%lg%lg%lg%lg"
-                              "%lg%lg%lg%lg"
-                              "%lg%lg%lg%lg",
+                              "%f%f%f%f"
+                              "%f%f%f%f"
+                              "%f%f%f%f"
+                              "%f%f%f%f",
                               aValues,      aValues + 1,  aValues + 2,  aValues + 3,
                               aValues + 4,  aValues + 5,  aValues + 6,  aValues + 7,
                               aValues + 8,  aValues + 9,  aValues + 10, aValues + 11,
                               aValues + 12, aValues + 13, aValues + 14, aValues + 15);
 
-        nItems += ::sscanf(pCSWidth, "%lg", &dWidth);
-        nItems += ::sscanf(pCSBias, "%lg", &dBias);
+        nItems += ::sscanf(pCSWidth, "%f", &dWidth);
+        nItems += ::sscanf(pCSBias, "%f", &dBias);
 
         if (nItems == (16 + 2)) {
             initialise(aValues, dWidth, dBias);
@@ -360,10 +360,7 @@ bool ArbProbeMatchWeighting::initialise(const char *pCSValues, const char *pCSWi
 
 // ----------------------------------------------------------------------------
 
-void ArbProbeMatchWeighting::getParameters(double aValues[16],
-        double& dWidth,
-        double& dBias) const
-{
+void ArbProbeMatchWeighting::getParameters(float aValues[16], float& dWidth, float& dBias) const {
     int cz = 0;
 
     for (int cx = 0 ; cx < 4 ; cx++) {
@@ -986,7 +983,7 @@ bool ArbProbeCollection::saveXML(const char *pFileAndPath) const {
 
 // ----------------------------------------------------------------------------
 
-void ArbProbeCollection::setParameters(const double aValues[16], double dWidth, double dBias) {
+void ArbProbeCollection::setParameters(const float aValues[16], float dWidth, float dBias) {
     MatchWeighting.setParameters(aValues, dWidth, dBias);
 
     HasChanged = true;
@@ -994,7 +991,7 @@ void ArbProbeCollection::setParameters(const double aValues[16], double dWidth, 
 
 // ----------------------------------------------------------------------------
 
-void ArbProbeCollection::getParameters(double aValues[16], double& dWidth, double& dBias) const {
+void ArbProbeCollection::getParameters(float aValues[16], float& dWidth, float& dBias) const {
     MatchWeighting.getParameters(aValues, dWidth, dBias);
 }
 
