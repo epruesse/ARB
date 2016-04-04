@@ -68,6 +68,7 @@ item_sel_list.o: $(ARBHOME)/INCLUDE/ad_prot.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/arb_assert.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/arb_core.h
+item_sel_list.o: $(ARBHOME)/INCLUDE/arb_defs.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/arb_error.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/arb_global_defs.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/arb_msg.h
@@ -92,6 +93,7 @@ item_sel_list.o: $(ARBHOME)/INCLUDE/gccver.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/smartptr.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/static_assert.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/test_global.h
+item_sel_list.o: $(ARBHOME)/INCLUDE/test_unit.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 itemtools.o: items.h
