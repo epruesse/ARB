@@ -131,7 +131,6 @@ query_spec::query_spec(ItemSelector& selector_)
       where_pos_fig(0),
       by_pos_fig(0),
       qbox_pos_fig(0),
-      rescan_pos_fig(0),
       key_pos_fig(0),
       query_pos_fig(0),
       result_pos_fig(0),
@@ -2323,7 +2322,7 @@ static AW_window *create_modify_fields_window(AW_root *aw_root, DbQuery *query) 
     aws->at("create");  aws->create_toggle(query->awar_createDestField);
     aws->at("accept");  aws->create_toggle(query->awar_acceptConvError);
 
-    create_selection_list_on_itemfields(query->gb_main, aws, query->awar_parskey, false, query->selector, FIELD_FILTER_PARS, SF_STANDARD, "field", 0, 20, 10, NULL);
+    create_selection_list_on_itemfields(query->gb_main, aws, query->awar_parskey, false, query->selector, FIELD_FILTER_PARS, SF_STANDARD, "field", 20, 10, NULL);
 
     aws->at("go");
     aws->callback(makeWindowCallback(modify_fields_of_queried_cb, query));
@@ -2467,7 +2466,7 @@ static AW_window *create_writeFieldOfListed_window(AW_root *aw_root, DbQuery *qu
     aws->callback(makeHelpCallback("write_field_list.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
-    create_selection_list_on_itemfields(query->gb_main, aws, query->awar_setkey, true, query->selector, FIELD_FILTER_NDS, SF_STANDARD, "box", 0, 20, 10, NULL);
+    create_selection_list_on_itemfields(query->gb_main, aws, query->awar_setkey, true, query->selector, FIELD_FILTER_NDS, SF_STANDARD, "box", 20, 10, NULL);
     aws->at("create");
     aws->callback(makeWindowCallback(set_field_of_queried_cb, query, false));
     aws->create_button("SET_SINGLE_FIELD_OF_LISTED", "WRITE");
@@ -2546,7 +2545,7 @@ static AW_window *create_set_protection_window(AW_root *aw_root, DbQuery *query)
     aws->insert_toggle("6 the truth", "5", 6);
     aws->update_toggle_field();
 
-    create_selection_list_on_itemfields(query->gb_main, aws, query->awar_setkey, true, query->selector, FIELD_UNFILTERED, SF_STANDARD, "list", 0, 20, 10, NULL);
+    create_selection_list_on_itemfields(query->gb_main, aws, query->awar_setkey, true, query->selector, FIELD_UNFILTERED, SF_STANDARD, "list", 20, 10, NULL);
 
     aws->at("go");
     aws->callback(makeWindowCallback(set_protection_of_queried_cb, query));
@@ -2783,7 +2782,7 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
 
             {
                 char *button_id      = GBS_global_string_copy("field_sel_%s_%i", query_id, key);
-                query->fieldsel[key] = create_selection_list_on_itemfields(gb_main, aws, query->awar_keys[key], true, awtqs->get_queried_itemtype(), FIELD_FILTER_NDS, SF_PSEUDO, 0, awtqs->rescan_pos_fig, 22, 20, button_id);
+                query->fieldsel[key] = create_selection_list_on_itemfields(gb_main, aws, query->awar_keys[key], true, awtqs->get_queried_itemtype(), FIELD_FILTER_NDS, SF_PSEUDO, 0, 22, 20, button_id);
                 free(button_id);
             }
 

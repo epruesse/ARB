@@ -247,7 +247,6 @@ AW_window *EXP_create_experiment_query_window(AW_root *aw_root, GBDATA *gb_main)
         awtqs.where_pos_fig       = "where3";
         awtqs.by_pos_fig          = "by3";
         awtqs.qbox_pos_fig        = "qbox";
-        awtqs.rescan_pos_fig      = 0;
         awtqs.key_pos_fig         = 0;
         awtqs.query_pos_fig       = "content";
         awtqs.result_pos_fig      = "result";

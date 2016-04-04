@@ -391,7 +391,7 @@ static AW_window *MG_create_transfer_fields_window(AW_root *aw_root) {
     aws->label("Append data?");
     aws->create_toggle(AWAR_APPEND);
 
-    create_selection_list_on_itemfields(GLOBAL_gb_src, aws, AWAR_FIELD_SRC, true, SPECIES_get_selector(), FIELD_FILTER_NDS, SF_STANDARD, "scandb", "rescandb", 20, 10, NULL);
+    create_selection_list_on_itemfields(GLOBAL_gb_src, aws, AWAR_FIELD_SRC, true, SPECIES_get_selector(), FIELD_FILTER_NDS, SF_STANDARD, "scandb", 20, 10, NULL);
 
     aws->at("go");
     aws->callback(MG_transfer_fields_cb);
@@ -491,7 +491,7 @@ static AW_window *create_mg_move_fields_window(AW_root *aw_root) {
     aws->callback(makeHelpCallback("mg_xfer_field_of_sel.hlp"));
     aws->create_button("HELP", "HELP");
 
-    create_selection_list_on_itemfields(GLOBAL_gb_src, aws, AWAR_FIELD_SRC, true, SPECIES_get_selector(), FIELD_FILTER_NDS, SF_STANDARD, "scandb", "rescandb", 20, 10, NULL);
+    create_selection_list_on_itemfields(GLOBAL_gb_src, aws, AWAR_FIELD_SRC, true, SPECIES_get_selector(), FIELD_FILTER_NDS, SF_STANDARD, "scandb", 20, 10, NULL);
 
     aws->at("go");
     aws->callback(MG_move_field_cb);
@@ -596,8 +596,8 @@ static AW_window *create_mg_merge_tagged_fields_window(AW_root *aw_root) {
 
     aws->at("del1");    aws->create_input_field(AWAR_TAG_DEL, 5);
 
-    create_selection_list_on_itemfields(GLOBAL_gb_src, aws, AWAR_FIELD_SRC, true, SPECIES_get_selector(), FIELD_FILTER_NDS, SF_STANDARD, "fields1", 0, 20, 10, NULL);
-    create_selection_list_on_itemfields(GLOBAL_gb_dst, aws, AWAR_FIELD_DST, true, SPECIES_get_selector(), FIELD_FILTER_NDS, SF_STANDARD, "fields2", 0, 20, 10, NULL);
+    create_selection_list_on_itemfields(GLOBAL_gb_src, aws, AWAR_FIELD_SRC, true, SPECIES_get_selector(), FIELD_FILTER_NDS, SF_STANDARD, "fields1", 20, 10, NULL);
+    create_selection_list_on_itemfields(GLOBAL_gb_dst, aws, AWAR_FIELD_DST, true, SPECIES_get_selector(), FIELD_FILTER_NDS, SF_STANDARD, "fields2", 20, 10, NULL);
 
     return aws;
 }
@@ -904,7 +904,6 @@ AW_window *MG_create_merge_species_window(AW_root *awr, bool dst_is_new) {
         awtqs.ere_pos_fig            = "ere1";
         awtqs.by_pos_fig             = "by1";
         awtqs.qbox_pos_fig           = "qbox1";
-        awtqs.rescan_pos_fig         = "rescan1";
         awtqs.key_pos_fig            = 0;
         awtqs.query_pos_fig          = "content1";
         awtqs.result_pos_fig         = "result1";
@@ -937,7 +936,6 @@ AW_window *MG_create_merge_species_window(AW_root *awr, bool dst_is_new) {
         awtqs.ere_pos_fig            = "ere2";
         awtqs.by_pos_fig             = "by2";
         awtqs.qbox_pos_fig           = "qbox2";
-        awtqs.rescan_pos_fig         = "rescan2";
         awtqs.key_pos_fig            = 0;
         awtqs.query_pos_fig          = "content2";
         awtqs.result_pos_fig         = "result2";
