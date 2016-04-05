@@ -127,9 +127,11 @@ Itemfield_Selection *create_selection_list_on_itemfields(GBDATA         *gb_main
     if (scan_xfig_label) aws->at(scan_xfig_label);
 
     if (popup_button_id) {
+        int old_button_length = aws->get_button_length();
+
 #ifdef ARB_GTK
         aws->button_length(columns);
-        sellist = aws->create_option_menu(varname, fallback2default);
+        sellist                    = aws->create_option_menu(varname, fallback2default);
 #else // ARB_MOTIF
         // create HIDDEN popup window containing the selection list
         AW_window *win_for_sellist = aws;
@@ -158,7 +160,7 @@ Itemfield_Selection *create_selection_list_on_itemfields(GBDATA         *gb_main
         aws->callback(makeCreateWindowCallback(existing_window_creator, win_for_sellist)); 
         aws->create_button(popup_button_id, varname);
 #endif
-
+        aws->button_length(old_button_length);
     }
     else { // otherwise just insert the selection list at point
         sellist = aws->create_selection_list(varname, columns, visible_rows, fallback2default);
