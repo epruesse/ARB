@@ -1054,7 +1054,7 @@ static void group_species(int use_field, AW_window *use_as_main_window) {
     GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
 }
 
-static void group_species2_cb(AW_window*, AW_window *use_as_main_window, AW_window *window_to_hide) {
+static void group_species_by_field_content(AW_window*, AW_window *use_as_main_window, AW_window *window_to_hide) {
     group_species(1, use_as_main_window);
     window_to_hide->hide();
 }
@@ -1062,20 +1062,25 @@ static void group_species2_cb(AW_window*, AW_window *use_as_main_window, AW_wind
 static AW_window *create_group_species_by_field_window(AW_root *aw_root, AW_window *use_as_main_window) {
     AW_window_simple *aws = new AW_window_simple;
 
-    aws->init(aw_root, "CREATE_GROUP_USING_FIELD", "Create group using field");
-    aws->load_xfig("edit4/choose_field.fig");
-
-    aws->button_length(20);
-    aws->at("doit");
-    aws->callback(makeWindowCallback(group_species2_cb, use_as_main_window, static_cast<AW_window*>(aws)));
-    aws->create_button("USE_FIELD", "Use selected field", "");
+    aws->init(aw_root, "CREATE_GROUP_USING_FIELD_CONTENT", "Create groups using field");
+    aws->auto_space(10, 10);
 
     aws->button_length(10);
-    aws->at("close");
+    aws->at_newline();
+
     aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    create_selection_list_on_itemfields(GLOBAL_gb_main, aws, AWAR_FIELD_CHOSEN, true, SPECIES_get_selector(), FIELD_FILTER_STRING_READABLE, SF_STANDARD, "source", 20, 10, NULL);
+    aws->callback(makeHelpCallback("group_by_field.hlp"));
+    aws->create_button("HELP", "HELP", "H");
+
+    aws->at_newline();
+    aws->label("Use content of field");
+    create_selection_list_on_itemfields(GLOBAL_gb_main, aws, AWAR_FIELD_CHOSEN, true, SPECIES_get_selector(), FIELD_FILTER_STRING_READABLE, SF_STANDARD, NULL, 20, 10, "sel_field");
+
+    aws->at_newline();
+    aws->callback(makeWindowCallback(group_species_by_field_content, use_as_main_window, static_cast<AW_window*>(aws)));
+    aws->create_autosize_button("USE_FIELD", "Group selected species by content", "");
 
     return aws;
 }
