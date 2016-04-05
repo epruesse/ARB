@@ -50,8 +50,8 @@ static int gbs_cmp_strings(char *str1, char *str2, int *tab) { // returns 0 if s
 }
 
 
-static char *GBS_diff_strings(char *str1, char * &str2, char *exclude, long ToUpper, long correct,
-                       char **res1, char **res2, long *corrrected) {
+static char *MG_diff_strings(char *str1, char * &str2, char *exclude, bool ToUpper, bool correct,
+                             char **res1, char **res2, bool& corrrected) {
 
     char  buffer1[256];
     char  buffer2[256];
@@ -92,19 +92,18 @@ static char *GBS_diff_strings(char *str1, char * &str2, char *exclude, long ToUp
                 {
                     int c = s2[-1];
                     s2[-1] = s1[-1];
-                    if (toupper(c1) == toupper(c2) ||
-                        !gbs_cmp_strings(s1, s2, &tab[0])) {
-                        *corrrected = 1;
+                    if (toupper(c1) == toupper(c2) || !gbs_cmp_strings(s1, s2, &tab[0])) {
+                        corrrected = true;
                         continue;
                     }
-                    s2[-1] = c;
+                    s2[-1]  = c;
                 }
 
                 // check insertion in s2
                 if (!gbs_cmp_strings(s1-1, s2, &tab[0])) {
                     s2[-1] = gapchar;
                     do { c2 = *(s2++); } while (tab[c2] < 0); // eat s2
-                    *corrrected = 1;
+                    corrrected = true;
                     continue;
                 }
                 // check deletion in s2
@@ -121,7 +120,7 @@ static char *GBS_diff_strings(char *str1, char * &str2, char *exclude, long ToUp
                         delete str2;
                         str2 = GBS_strclose(str);
                         s2 = str2+pos+1;
-                        *corrrected = 1;
+                        corrrected = true;
                         continue;
                     }
                     int side=1; // 0 = left   1= right
@@ -131,10 +130,14 @@ static char *GBS_diff_strings(char *str1, char * &str2, char *exclude, long ToUp
                                 tab[(unsigned char)toinspos[-1]] < 0) toinspos--;
                     }
                     toinspos[0] = toins;
-                    *corrrected = 1;
+                    corrrected = true;
                     do { c1 = *(s1++); } while (tab[c1] < 0); // eat s1
                     continue;
                 }
+
+                // one correction rejected -> don't try further
+                corrrected = false;
+                correct    = false;
             }
             if (count >= 0) {
                 sprintf(dest1, "%ti ", s1-str1-1);
@@ -181,14 +184,15 @@ int mg_count_queried(GBDATA *gb_main) {
 }
 
 static void mg_check_field_cb(AW_window *aww) {
-    AW_root  *root    = aww->get_root();
-    GB_ERROR  error   = 0;
-    char     *source  = root->awar(AWAR_SOURCE_FIELD)->read_string();
-    char     *dest    = root->awar(AWAR_DEST_FIELD)->read_string();
-    char     *exclude = root->awar(AWAR_EXCLUDE)->read_string();
-    long      ToUpper = root->awar(AWAR_TOUPPER)->read_int();
-    long      correct = root->awar(AWAR_CORRECT)->read_int();
-    char     *tag     = root->awar(AWAR_ETAG)->read_string();
+    AW_root  *root         = aww->get_root();
+    GB_ERROR  error        = 0;
+    char     *source       = root->awar(AWAR_SOURCE_FIELD)->read_string();
+    char     *dest         = root->awar(AWAR_DEST_FIELD)->read_string();
+    char     *exclude      = root->awar(AWAR_EXCLUDE)->read_string();
+    bool      ToUpper      = root->awar(AWAR_TOUPPER)->read_int();
+    bool      correct      = root->awar(AWAR_CORRECT)->read_int();
+    char     *tag          = root->awar(AWAR_ETAG)->read_string();
+    int       correctCount = 0;
 
     if (source[0] == 0) {
         error = "Please select a source field";
@@ -220,6 +224,7 @@ static void mg_check_field_cb(AW_window *aww) {
                 if (gbd) error = GB_delete(gbd);
             }
 
+            bool seenQueried    = false;
             for (gb_src_species = GBT_first_species_rel_species_data(gb_src_species_data);
                  gb_src_species && !error;
                  gb_src_species = GBT_next_species(gb_src_species))
@@ -231,8 +236,9 @@ static void mg_check_field_cb(AW_window *aww) {
 
                 if (!error) {
                     if (IS_QUERIED_SPECIES(gb_src_species)) {
+                        seenQueried = true;
                         const char *src_name = GBT_read_name(gb_src_species);
-                        gb_dst_species    = GB_find_string(gb_dst_species_data, "name", src_name, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
+                        gb_dst_species       = GB_find_string(gb_dst_species_data, "name", src_name, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
                         if (!gb_dst_species) {
                             aw_message(GBS_global_string("WARNING: Species %s not found in target DB", src_name));
                         }
@@ -250,11 +256,14 @@ static void mg_check_field_cb(AW_window *aww) {
                                 char *dst_positions = 0;
 
                                 if (src_val && dst_val) {
-                                    long corrected = 0;
-                                    GBS_diff_strings(src_val, dst_val, exclude, ToUpper, correct, &src_positions, &dst_positions, &corrected);
+                                    bool corrected = false;
+                                    MG_diff_strings(src_val, dst_val, exclude, ToUpper, correct, &src_positions, &dst_positions, corrected);
                                     if (corrected) {
                                         error = GB_write_autoconv_string(gb_dst_field, dst_val);
-                                        if (!error) GB_write_flag(gb_dst_species, 1);
+                                        if (!error) {
+                                            GB_write_flag(gb_dst_species, 1);
+                                            correctCount++;
+                                        }
                                     }
                                 }
                                 else {
@@ -279,11 +288,23 @@ static void mg_check_field_cb(AW_window *aww) {
                 }
             }
 
+            if (!seenQueried && !error) {
+                error = "Empty hitlist in source database (nothing to do)";
+            }
+
             error = GB_end_transaction(GLOBAL_gb_src, error);
             error = GB_end_transaction(GLOBAL_gb_dst, error);
         }
     }
-    if (error) aw_message(error);
+
+    if (error) {
+        aw_message(error);
+    }
+    else if (correctCount) {
+        aw_message(GBS_global_string("Corrected field content of %i species\n"
+                                     "(species %s been marked in target database).",
+                                     correctCount, correctCount == 1 ? "has" : "have"));
+    }
 
     free(tag);
     free(exclude);
@@ -324,8 +345,8 @@ AW_window *create_mg_check_fields_window(AW_root *aw_root) {
     aws->at("tag");
     aws->create_input_field(AWAR_ETAG, 6);
 
-    create_selection_list_on_itemfields(GLOBAL_gb_dst, aws, AWAR_SOURCE_FIELD, true, SPECIES_get_selector(), FIELD_FILTER_STRING_READABLE, SF_STANDARD, "source", 20, 10, NULL);
-    create_selection_list_on_itemfields(GLOBAL_gb_dst, aws, AWAR_DEST_FIELD,   true, SPECIES_get_selector(), FIELD_FILTER_STRING_READABLE, SF_STANDARD, "dest",   20, 10, NULL);
+    create_selection_list_on_itemfields(GLOBAL_gb_dst, aws, AWAR_SOURCE_FIELD, true, SPECIES_get_selector(), FIELD_FILTER_STRING_READABLE, SF_STANDARD, "source", 20, 10, NULL); // @@@ change->button
+    create_selection_list_on_itemfields(GLOBAL_gb_dst, aws, AWAR_DEST_FIELD,   true, SPECIES_get_selector(), FIELD_FILTER_STRING_READABLE, SF_STANDARD, "dest",   20, 10, NULL); // @@@ change->button
 
 #if defined(WARN_TODO)
 #warning check code above. Maybe one call has to get GLOBAL_gb_src ?
