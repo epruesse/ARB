@@ -19,6 +19,7 @@
 
 #include <arbdbt.h>
 #include <arb_strbuf.h>
+#include <arb_global_defs.h>
 
 #include <cctype>
 
@@ -194,12 +195,8 @@ static void mg_check_field_cb(AW_window *aww) {
     char     *tag          = root->awar(AWAR_ETAG)->read_string();
     int       correctCount = 0;
 
-    if (source[0] == 0) {
-        error = "Please select a source field";
-    }
-    else if (dest[0] == 0) {
-        error = "Please select a dest field";
-    }
+    if      (strcmp(source, NO_FIELD_SELECTED) == 0) error = "Please select a source field";
+    else if (strcmp(dest,   NO_FIELD_SELECTED) == 0) error = "Please select a dest field";
     else {
         error = GB_begin_transaction(GLOBAL_gb_src);
 
@@ -314,7 +311,7 @@ static void mg_check_field_cb(AW_window *aww) {
 
 
 AW_window *create_mg_check_fields_window(AW_root *aw_root) {
-    aw_root->awar_string(AWAR_SOURCE_FIELD);
+    aw_root->awar_string(AWAR_SOURCE_FIELD, NO_FIELD_SELECTED);
     aw_root->awar_string(AWAR_DEST_FIELD, "tmp", AW_ROOT_DEFAULT);
     aw_root->awar_string(AWAR_EXCLUDE, ".-", AW_ROOT_DEFAULT);
     aw_root->awar_string(AWAR_ETAG, "");
@@ -322,7 +319,7 @@ AW_window *create_mg_check_fields_window(AW_root *aw_root) {
     aw_root->awar_int(AWAR_CORRECT);
 
     AW_window_simple *aws = new AW_window_simple;
-    aws->init(aw_root, "MERGE_COMPARE_FIELDS", "COMPARE DATABASE FIELDS");
+    aws->init(aw_root, "MERGE_COMPARE_FIELD", "COMPARE DATABASE FIELD");
     aws->load_xfig("merge/seqcheck.fig");
 
     aws->callback(AW_POPDOWN);
@@ -345,13 +342,8 @@ AW_window *create_mg_check_fields_window(AW_root *aw_root) {
     aws->at("tag");
     aws->create_input_field(AWAR_ETAG, 6);
 
-    create_selection_list_on_itemfields(GLOBAL_gb_dst, aws, AWAR_SOURCE_FIELD, true, SPECIES_get_selector(), FIELD_FILTER_STRING_READABLE, SF_STANDARD, "source", 20, 10, NULL); // @@@ change->button
-    create_selection_list_on_itemfields(GLOBAL_gb_dst, aws, AWAR_DEST_FIELD,   true, SPECIES_get_selector(), FIELD_FILTER_STRING_READABLE, SF_STANDARD, "dest",   20, 10, NULL); // @@@ change->button
-
-#if defined(WARN_TODO)
-#warning check code above. Maybe one call has to get GLOBAL_gb_src ?
-#endif
-
+    create_selection_list_on_itemfields(GLOBAL_gb_dst, aws, AWAR_SOURCE_FIELD, true, SPECIES_get_selector(), FIELD_FILTER_STRING_READABLE,  SF_STANDARD, "source", 20, 10, "compare_field");
+    create_selection_list_on_itemfields(GLOBAL_gb_dst, aws, AWAR_DEST_FIELD,   true, SPECIES_get_selector(), FIELD_FILTER_STRING_WRITEABLE, SF_STANDARD, "dest",   20, 10, "target_field");
 
     aws->at("go");
     aws->highlight();
