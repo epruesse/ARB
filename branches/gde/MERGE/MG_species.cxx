@@ -22,6 +22,7 @@
 #include <aw_question.hxx>
 #include <arb_str.h>
 #include <arb_strbuf.h>
+#include <arb_global_defs.h>
 
 #define AWAR_SPECIES_SRC AWAR_MERGE_TMP_SRC "name"
 #define AWAR_FIELD_SRC   AWAR_MERGE_TMP_SRC "field"
@@ -273,7 +274,7 @@ static void MG_transfer_fields_cb(AW_window *aww) {
     long      append = aww->get_root()->awar(AWAR_APPEND)->read_int();
     GB_ERROR  error  = 0;
 
-    if (field[0] == 0) {
+    if (strcmp(field, NO_FIELD_SELECTED) == 0) {
         error = "Please select a field you want to transfer";
     }
     else if (strcmp(field, "name") == 0) {
@@ -374,7 +375,7 @@ static AW_window *MG_create_transfer_fields_window(AW_root *aw_root) {
     GB_transaction    ta(GLOBAL_gb_src);
     AW_window_simple *aws = new AW_window_simple;
 
-    aws->init(aw_root, "MERGE_TRANSFER_FIELD", "TRANSFER FIELD");
+    aws->init(aw_root, "MERGE_XFER_FIELD_OF_LISTED", "Transfer field of listed");
     aws->load_xfig("merge/mg_transfield.fig");
 
     aws->button_length(10);
@@ -384,14 +385,14 @@ static AW_window *MG_create_transfer_fields_window(AW_root *aw_root) {
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
-    aws->callback(makeHelpCallback("mg_xfer_field_of_sel.hlp"));
+    aws->callback(makeHelpCallback("mg_xfer_field_of_listed.hlp"));
     aws->create_button("HELP", "HELP");
 
     aws->at("append");
     aws->label("Append data?");
     aws->create_toggle(AWAR_APPEND);
 
-    create_selection_list_on_itemfields(GLOBAL_gb_src, aws, AWAR_FIELD_SRC, true, SPECIES_get_selector(), FIELD_FILTER_NDS, SF_STANDARD, "scandb", 20, 10, NULL);
+    create_selection_list_on_itemfields(GLOBAL_gb_src, aws, AWAR_FIELD_SRC, true, SPECIES_get_selector(), FIELD_FILTER_NDS, SF_STANDARD, "scandb", 20, 10, "sel_field");
 
     aws->at("go");
     aws->callback(MG_transfer_fields_cb);
@@ -400,21 +401,21 @@ static AW_window *MG_create_transfer_fields_window(AW_root *aw_root) {
     return aws;
 }
 
-static void MG_move_field_cb(AW_window *aww) {
+static void MG_transfer_single_field_cb(AW_window *aww) {
     if (MG_copy_and_check_alignments() != 0) return;
 
     AW_root  *aw_root = aww->get_root();
     char     *field   = aww->get_root()->awar(AWAR_FIELD_SRC)->read_string();
     GB_ERROR  error   = 0;
 
-    if (field[0] == 0) {
+    if (strcmp(field, NO_FIELD_SELECTED) == 0) {
         error = "Please select a field to transfer";
     }
     else if (strcmp(field, "name") == 0) {
         error = "You are not allowed to transfer the 'name' field";
     }
     else {
-        arb_progress progress("Cross Move field");
+        arb_progress progress("Cross copy field");
         error             = GB_begin_transaction(GLOBAL_gb_src);
         if (!error) error = GB_begin_transaction(GLOBAL_gb_dst);
 
@@ -437,7 +438,7 @@ static void MG_move_field_cb(AW_window *aww) {
 
             if (!error) {
                 GBDATA *gb_src_field = GB_search(gb_src_species, field, GB_FIND);
-                if (!gb_src_field) error = GBS_global_string("Species 1 has no field '%s'", field);
+                if (!gb_src_field) error = GBS_global_string("Source species has no field '%s'", field);
 
                 if (!error) {
                     GB_TYPES  src_type     = GB_read_type(gb_src_field);
@@ -475,13 +476,13 @@ static void MG_move_field_cb(AW_window *aww) {
     free(field);
 }
 
-static AW_window *create_mg_move_fields_window(AW_root *aw_root) {
+static AW_window *create_mg_transfer_single_field_window(AW_root *aw_root) {
     GB_transaction ta(GLOBAL_gb_src);
 
     AW_window_simple *aws = new AW_window_simple;
-    aws->init(aw_root, "MERGE_CROSS_MOVE_FIELD", "CROSS MOVE FIELD");
-    aws->load_xfig("merge/mg_movefield.fig");
-    aws->button_length(13);
+    aws->init(aw_root, "MERGE_XFER_SINGLE_FIELD", "Transfer field of selected");
+    aws->load_xfig("merge/mg_transfield.fig");
+    aws->button_length(10);
 
     aws->callback(AW_POPDOWN);
     aws->at("close");
@@ -491,10 +492,10 @@ static AW_window *create_mg_move_fields_window(AW_root *aw_root) {
     aws->callback(makeHelpCallback("mg_xfer_field_of_sel.hlp"));
     aws->create_button("HELP", "HELP");
 
-    create_selection_list_on_itemfields(GLOBAL_gb_src, aws, AWAR_FIELD_SRC, true, SPECIES_get_selector(), FIELD_FILTER_NDS, SF_STANDARD, "scandb", 20, 10, NULL);
+    create_selection_list_on_itemfields(GLOBAL_gb_src, aws, AWAR_FIELD_SRC, true, SPECIES_get_selector(), FIELD_FILTER_NDS, SF_STANDARD, "scandb", 20, 10, "sel_field");
 
     aws->at("go");
-    aws->callback(MG_move_field_cb);
+    aws->callback(MG_transfer_single_field_cb);
     aws->create_button("GO", "GO");
 
     return aws;
@@ -575,7 +576,7 @@ static AW_window *create_mg_merge_tagged_fields_window(AW_root *aw_root) {
     aw_root->awar_string(AWAR_TAG_DEL, "S*");
 
     aws = new AW_window_simple;
-    aws->init(aw_root, "MERGE_TAGGED_FIELDS", "Merge tagged field");
+    aws->init(aw_root, "MERGE_TAGGED_FIELD", "Merge tagged field");
     aws->load_xfig("merge/mg_mergetaggedfield.fig");
     aws->button_length(13);
 
@@ -596,8 +597,8 @@ static AW_window *create_mg_merge_tagged_fields_window(AW_root *aw_root) {
 
     aws->at("del1");    aws->create_input_field(AWAR_TAG_DEL, 5);
 
-    create_selection_list_on_itemfields(GLOBAL_gb_src, aws, AWAR_FIELD_SRC, true, SPECIES_get_selector(), FIELD_FILTER_NDS, SF_STANDARD, "fields1", 20, 10, NULL);
-    create_selection_list_on_itemfields(GLOBAL_gb_dst, aws, AWAR_FIELD_DST, true, SPECIES_get_selector(), FIELD_FILTER_NDS, SF_STANDARD, "fields2", 20, 10, NULL);
+    create_selection_list_on_itemfields(GLOBAL_gb_src, aws, AWAR_FIELD_SRC, true, SPECIES_get_selector(), FIELD_FILTER_NDS, SF_STANDARD, "fields1", 20, 10, "source_field");
+    create_selection_list_on_itemfields(GLOBAL_gb_dst, aws, AWAR_FIELD_DST, true, SPECIES_get_selector(), FIELD_FILTER_NDS, SF_STANDARD, "fields2", 20, 10, "target_field");
 
     return aws;
 }
@@ -1009,9 +1010,9 @@ AW_window *MG_create_merge_species_window(AW_root *awr, bool dst_is_new) {
     aws->create_button("HELP_MERGE", "#merge/icon.xpm");
 
     aws->create_menu("Source->Target", "g");
-    aws->insert_menu_topic("compare_field_of_listed",            "Compare a field of listed species ...",  "C", "checkfield.hlp",           AWM_ALL, create_mg_check_fields_window);
-    aws->insert_menu_topic("move_field_of_selected",             "Transfer field of selected species ...", "M", "mg_xfer_field_of_sel.hlp", AWM_ALL, create_mg_move_fields_window);
-    aws->insert_menu_topic("merge_field_of_listed_to_new_field", "Merge tagged field ...",                 "D", "mergetaggedfield.hlp",     AWM_ALL, create_mg_merge_tagged_fields_window);
+    aws->insert_menu_topic("compare_field_of_listed",            "Compare a field of listed species ...",         "C", "checkfield.hlp",           AWM_ALL, create_mg_check_fields_window);
+    aws->insert_menu_topic("move_field_of_selected",             "Transfer single field of selected species ...", "M", "mg_xfer_field_of_sel.hlp", AWM_ALL, create_mg_transfer_single_field_window);
+    aws->insert_menu_topic("merge_field_of_listed_to_new_field", "Merge tagged field ...",                        "D", "mergetaggedfield.hlp",     AWM_ALL, create_mg_merge_tagged_fields_window);
     aws->sep______________();
     aws->insert_menu_topic("def_gene_species_field_xfer", "Define field transfer for gene-species", "g", "gene_species_field_transfer.hlp", AWM_ALL, MG_gene_species_create_field_transfer_def_window);
 

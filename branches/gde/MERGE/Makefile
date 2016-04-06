@@ -362,6 +362,7 @@ MG_species.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 MG_species.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MG_species.o: $(ARBHOME)/INCLUDE/arb_core.h
 MG_species.o: $(ARBHOME)/INCLUDE/arb_error.h
+MG_species.o: $(ARBHOME)/INCLUDE/arb_global_defs.h
 MG_species.o: $(ARBHOME)/INCLUDE/arb_msg.h
 MG_species.o: $(ARBHOME)/INCLUDE/arb_progress.h
 MG_species.o: $(ARBHOME)/INCLUDE/arb_str.h
