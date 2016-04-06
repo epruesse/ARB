@@ -17,6 +17,7 @@
 #include <aw_root.hxx>
 #include <TreeNode.h>
 #include <arb_sort.h>
+#include <arb_global_defs.h>
 
 #define FIELD_FILTER_RESORT (1<<GB_STRING)|(1<<GB_INT)|(1<<GB_FLOAT) // field types supported by cmpByKey()
 
@@ -143,13 +144,13 @@ void NT_resort_data_by_phylogeny(AW_window*, AWT_canvas *ntw) {
     if (error) aw_message(error);
 }
 
-#define AWAR_TREE_SORT1 "ad_tree/sort_1"
-#define AWAR_TREE_SORT2 "ad_tree/sort_2"
-#define AWAR_TREE_SORT3 "ad_tree/sort_3"
+#define AWAR_TREE_SORT1 "db_sort/sort_1"
+#define AWAR_TREE_SORT2 "db_sort/sort_2"
+#define AWAR_TREE_SORT3 "db_sort/sort_3"
 
-#define AWAR_TREE_REV1 "ad_tree/rev1"
-#define AWAR_TREE_REV2 "ad_tree/rev2"
-#define AWAR_TREE_REV3 "ad_tree/rev3"
+#define AWAR_TREE_REV1 "db_sort/rev1"
+#define AWAR_TREE_REV2 "db_sort/rev2"
+#define AWAR_TREE_REV3 "db_sort/rev3"
 
 static void NT_resort_data_by_user_criteria(AW_window *aw) {
     arb_progress progress("Sorting data");
@@ -166,9 +167,9 @@ static void NT_resort_data_by_user_criteria(AW_window *aw) {
 }
 
 void NT_create_resort_awars(AW_root *awr, AW_default aw_def) {
-    awr->awar_string(AWAR_TREE_SORT1, "name",      aw_def);
-    awr->awar_string(AWAR_TREE_SORT2, "full_name", aw_def);
-    awr->awar_string(AWAR_TREE_SORT3, "",          aw_def);
+    awr->awar_string(AWAR_TREE_SORT1, "name",            aw_def);
+    awr->awar_string(AWAR_TREE_SORT2, "full_name",       aw_def);
+    awr->awar_string(AWAR_TREE_SORT3, NO_FIELD_SELECTED, aw_def);
 
     awr->awar_int(AWAR_TREE_REV1, 0, aw_def);
     awr->awar_int(AWAR_TREE_REV2, 0, aw_def);
@@ -177,7 +178,7 @@ void NT_create_resort_awars(AW_root *awr, AW_default aw_def) {
 
 AW_window *NT_create_resort_window(AW_root *awr) {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init(awr, "SORT_DATABASE", "SORT DATABASE");
+    aws->init(awr, "SORT_DB_ENTRIES", "SORT DATABASE");
     aws->load_xfig("nt_sort.fig");
 
     aws->at("close");
@@ -188,9 +189,9 @@ AW_window *NT_create_resort_window(AW_root *awr) {
     aws->at("help");
     aws->create_button("HELP", "HELP", "H");
 
-    create_selection_list_on_itemfields(GLOBAL.gb_main, aws, AWAR_TREE_SORT1, true, SPECIES_get_selector(), FIELD_FILTER_RESORT, SF_STANDARD, "key1", 20, 10, NULL);
-    create_selection_list_on_itemfields(GLOBAL.gb_main, aws, AWAR_TREE_SORT2, true, SPECIES_get_selector(), FIELD_FILTER_RESORT, SF_STANDARD, "key2", 20, 10, NULL);
-    create_selection_list_on_itemfields(GLOBAL.gb_main, aws, AWAR_TREE_SORT3, true, SPECIES_get_selector(), FIELD_FILTER_RESORT, SF_STANDARD, "key3", 20, 10, NULL);
+    create_selection_list_on_itemfields(GLOBAL.gb_main, aws, AWAR_TREE_SORT1, true, SPECIES_get_selector(), FIELD_FILTER_RESORT, SF_STANDARD, "key1", 20, 10, "sel_k1");
+    create_selection_list_on_itemfields(GLOBAL.gb_main, aws, AWAR_TREE_SORT2, true, SPECIES_get_selector(), FIELD_FILTER_RESORT, SF_STANDARD, "key2", 20, 10, "sel_k2");
+    create_selection_list_on_itemfields(GLOBAL.gb_main, aws, AWAR_TREE_SORT3, true, SPECIES_get_selector(), FIELD_FILTER_RESORT, SF_STANDARD, "key3", 20, 10, "sel_k3");
 
     aws->at("rev1"); aws->label("Reverse"); aws->create_toggle(AWAR_TREE_REV1);
     aws->at("rev2"); aws->label("Reverse"); aws->create_toggle(AWAR_TREE_REV2);

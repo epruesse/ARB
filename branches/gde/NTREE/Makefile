@@ -857,6 +857,7 @@ NT_sort.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 NT_sort.o: $(ARBHOME)/INCLUDE/arb_assert.h
 NT_sort.o: $(ARBHOME)/INCLUDE/arb_core.h
 NT_sort.o: $(ARBHOME)/INCLUDE/arb_error.h
+NT_sort.o: $(ARBHOME)/INCLUDE/arb_global_defs.h
 NT_sort.o: $(ARBHOME)/INCLUDE/arb_msg.h
 NT_sort.o: $(ARBHOME)/INCLUDE/arb_progress.h
 NT_sort.o: $(ARBHOME)/INCLUDE/arb_sort.h

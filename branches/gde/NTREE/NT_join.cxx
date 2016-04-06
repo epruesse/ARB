@@ -147,7 +147,7 @@ AW_window *NT_create_species_join_window(AW_root *root) {
         root->awar_string(AWAR_SPECIES_JOIN_SEP2, "#", AW_ROOT_DEFAULT);
 
         aws = new AW_window_simple;
-        aws->init(root, "JOIN_SPECIES", "JOIN SPECIES");
+        aws->init(root, "SPECIES_JOIN", "JOIN SPECIES");
         aws->load_xfig("join_species.fig");
 
         aws->at("close");
@@ -168,7 +168,7 @@ AW_window *NT_create_species_join_window(AW_root *root) {
         aws->help_text("species_join.hlp");
         aws->create_button("GO", "GO", "G");
 
-        create_selection_list_on_itemfields(GLOBAL.gb_main, aws, AWAR_SPECIES_JOIN_FIELD, true, SPECIES_get_selector(), FIELD_FILTER_NDS, SF_STANDARD, "field", 20, 10, NULL);
+        create_selection_list_on_itemfields(GLOBAL.gb_main, aws, AWAR_SPECIES_JOIN_FIELD, true, SPECIES_get_selector(), FIELD_FILTER_NDS, SF_STANDARD, "field", 20, 10, "sel_field");
     }
     return aws;
 }
