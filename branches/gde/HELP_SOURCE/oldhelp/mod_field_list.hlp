@@ -21,6 +21,23 @@ DESCRIPTION	Finds and replaces substrings within fields/tagged subfields of
 		fields of all listed species/genes can be modified either
 		individually or	globally.
 
+SECTION Target field
+
+		Select the target field to modify by pressing the button in the upper part of the window.
+
+		Target field related options:
+                * 'Create missing target fields' with type=STRING if checked. Bail out with error otherwise.
+                * 'Accept conversion errors':
+                  - if checked, accepts modifications like writing "hello" to a numeric field (which will be written as '0')
+                  - otherwise arb will abort with an error in such cases (Note that writing "4711" to numeric fields will work w/o error)
+
+SECTION Expert options
+
+                * 'Use Tags' allows to tag entries or modify only tagged parts of entries. See LINK{tags.hlp} for details.
+                * 'Double Pars' causes the result of the 'Command' to be interpreted and executed as command once again (special; in doubt don't use)
+
+SECTION Command
+
 		Three different languages can be used to modify an entry:
 
 		SRT:	indicated by a leading ':' character
@@ -54,16 +71,16 @@ DESCRIPTION	Finds and replaces substrings within fields/tagged subfields of
 
                      Read LINK{aci.hlp} for more information.
 
-SECTION Options
+SECTION		Predefined commands
 
-                * 'Use Tags' allows to tag entries or modify only tagged parts of entries. See LINK{tags.hlp} for details.
-                * 'Double Pars' causes the result of the 'Command' to be interpreted and executed as command once again (special; in doubt don't use)
-                * 'Create missing target fields' with type=STRING if checked. Bail out with error otherwise.
-                * 'Accept conversion errors':
-                  - if checked, accepts modifications like writing "hello" to a numeric field (which will be written as '0')
-                  - otherwise arb will abort with an error in such cases (Note that writing "4711" to numeric fields will work w/o error)
+		Clicking on one of the predefined commands in the list at the bottom 
+		of the window 
+ 	 	 * will set the content of the 'Command' field and
+		 * may change the selected target field (!!!)
 
-NOTES		You may add new commands by editing one of the files:
+SECTION		Defining custom commands
+
+		You may add new commands by editing one of the files:
 
 			$ARBHOME/lib/sellists/mod_fields.sellst
 
@@ -119,7 +136,7 @@ EXAMPLES	':p?r=p?1w'	 replaces 	par to paw
 
 NOTE		Undo does work.
 
-WARNINGS	Be careful if search or replace string contain
+WARNINGS	Be careful if search or replace string contains
 		special characters (such as ':').
 
 BUGS		No bugs known

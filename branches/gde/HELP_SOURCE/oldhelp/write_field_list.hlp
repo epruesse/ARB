@@ -27,20 +27,20 @@ NOTES           A protection level has to be selected from the Protection
 EXAMPLES
 
                 1. Write a date of sequence modification (03.27.95) to the
-                fields 'date' of all listed species and replace
-                former entries of these fields:
+                field 'date' of all listed species (overwriting
+                former entries of this field):
 
-                        Select 'Field' by pressing:     'date'
-                        Type 'Text or integer':         '03.27.95'
-                        Press:                          'WRITE'
+                        Select 'Field':   'date'
+                        Type 'value':     '03.27.95'
+                        Press:            'WRITE'
 
-                2. Add the initials of the modifying person (OS) to the
+                2. Add the initials of the modifying person (e.g. "MP") to the
                    entries stored in the fields 'date' of all listed
                    species:
 
-                        Select 'Field' by pressing:     'date'
-                        Type 'Text or integer':         'OS'
-                        Press:                          'APPEND'
+                        Select 'Field':    'date'
+                        Type 'value':      'MP'
+                        Press:             'APPEND'
 
 
 WARNINGS        Except for the 'name' field (the identifier), there are no different protection

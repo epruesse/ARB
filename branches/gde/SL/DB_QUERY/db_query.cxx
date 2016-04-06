@@ -36,6 +36,7 @@
 #include <Keeper.h>
 #include <dbui.h>
 #include <ad_colorset.h>
+#include <arb_global_defs.h>
 
 using namespace std;
 using namespace QUERY;
@@ -1598,7 +1599,7 @@ static void modify_fields_of_queried_cb(AW_window*, DbQuery *query) {
     bool create_missing_field_as_string = aw_root->awar(query->awar_createDestField)->read_int();
     bool allow_conversion_failure       = aw_root->awar(query->awar_acceptConvError)->read_int();
 
-    if (!strcmp(key, "name")) {
+    if (strcmp(key, "name") == 0) {
         bool abort = false;
         switch (selector.type) {
             case QUERY_ITEM_SPECIES: {
@@ -1636,7 +1637,9 @@ static void modify_fields_of_queried_cb(AW_window*, DbQuery *query) {
         }
         if (abort) error = "aborted by user";
     }
-    else if (!strlen(key)) error = "Please select a valid key";
+    else if (strcmp(key, NO_FIELD_SELECTED) == 0) {
+        error = "Please select a target field.";
+    }
 
     char *command = aw_root->awar(query->awar_parsvalue)->read_string();
     if (!error && !strlen(command)) {
@@ -2322,7 +2325,7 @@ static AW_window *create_modify_fields_window(AW_root *aw_root, DbQuery *query) 
     aws->at("create");  aws->create_toggle(query->awar_createDestField);
     aws->at("accept");  aws->create_toggle(query->awar_acceptConvError);
 
-    create_selection_list_on_itemfields(query->gb_main, aws, query->awar_parskey, false, query->selector, FIELD_FILTER_PARS, SF_STANDARD, "field", 20, 10, NULL);
+    create_selection_list_on_itemfields(query->gb_main, aws, query->awar_parskey, false, query->selector, FIELD_FILTER_PARS, SF_STANDARD, "field", 20, 10, "dest_field");
 
     aws->at("go");
     aws->callback(makeWindowCallback(modify_fields_of_queried_cb, query));
@@ -2375,6 +2378,9 @@ static void set_field_of_queried_cb(AW_window*, DbQuery *query, bool append) {
 
     if (strcmp(key, "name") == 0) {
         error = "You cannot set the name field";
+    }
+    else if (strcmp(key, NO_FIELD_SELECTED) == 0) {
+        error = "Please select a target field.";
     }
 
     char *value = aw_root->awar(query->awar_setvalue)->read_string();
@@ -2455,7 +2461,7 @@ static void set_field_of_queried_cb(AW_window*, DbQuery *query, bool append) {
 
 static AW_window *create_writeFieldOfListed_window(AW_root *aw_root, DbQuery *query) {
     AW_window_simple *aws = new AW_window_simple;
-    init_itemType_specific_window(aw_root, aws, query->selector, "SET_DATABASE_FIELD_OF_LISTED", "Write field of listed %s", true);
+    init_itemType_specific_window(aw_root, aws, query->selector, "WRITE_DB_FIELD_OF_LISTED", "Write field of listed %s", true);
     aws->load_xfig("query/write_fields.fig");
 
     aws->at("close");
@@ -2466,18 +2472,20 @@ static AW_window *create_writeFieldOfListed_window(AW_root *aw_root, DbQuery *qu
     aws->callback(makeHelpCallback("write_field_list.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
-    create_selection_list_on_itemfields(query->gb_main, aws, query->awar_setkey, true, query->selector, FIELD_FILTER_NDS, SF_STANDARD, "box", 20, 10, NULL);
+    create_selection_list_on_itemfields(query->gb_main, aws, query->awar_setkey, true, query->selector, FIELD_FILTER_NDS, SF_STANDARD, "field", 20, 10, "sel_field");
+
     aws->at("create");
     aws->callback(makeWindowCallback(set_field_of_queried_cb, query, false));
     aws->create_button("SET_SINGLE_FIELD_OF_LISTED", "WRITE");
+
     aws->at("do");
     aws->callback(makeWindowCallback(set_field_of_queried_cb, query, true));
     aws->create_button("APPEND_SINGLE_FIELD_OF_LISTED", "APPEND");
 
     aws->at("val");
     aws->create_text_field(query->awar_setvalue, 2, 2);
-    return aws;
 
+    return aws;
 }
 
 static void set_protection_of_queried_cb(AW_window*, DbQuery *query) {
@@ -2545,7 +2553,7 @@ static AW_window *create_set_protection_window(AW_root *aw_root, DbQuery *query)
     aws->insert_toggle("6 the truth", "5", 6);
     aws->update_toggle_field();
 
-    create_selection_list_on_itemfields(query->gb_main, aws, query->awar_setkey, true, query->selector, FIELD_UNFILTERED, SF_STANDARD, "list", 20, 10, NULL);
+    create_selection_list_on_itemfields(query->gb_main, aws, query->awar_setkey, true, query->selector, FIELD_UNFILTERED, SF_STANDARD, "list", 20, 10, NULL); // @@@ keep list-style here
 
     aws->at("go");
     aws->callback(makeWindowCallback(set_protection_of_queried_cb, query));
