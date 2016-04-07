@@ -957,24 +957,18 @@ static void awtc_nn_search_all_listed(AW_window *aww) {
 
     GB_ERROR error     = 0;
     GB_TYPES dest_type = GBT_get_type_of_changekey(gb_main, dest_field, CHANGE_KEY_PATH);
-    if (!dest_type) {
-        error = GB_export_error("Please select a valid field");
+    if (dest_type != GB_STRING) {
+        error = "Please select a valid field";
     }
-
-    if (strcmp(dest_field, "name")==0) {
-        int answer = aw_question(NULL, "CAUTION! This will destroy all name-fields of the listed species.\n",
-                                 "Continue and destroy all name-fields,Abort");
-
-        if (answer==1) {
-            error = GB_export_error("Aborted by user");
-        }
+    else if (strcmp(dest_field, "name") == 0) {
+        error = "Field 'name' cannot be used as target field";
     }
 
     long max = count_queried_items(query, QUERY_ALL_ITEMS);
     if (!max) {
-        error = "No species listed in query";
+        if (!error) error = "No species listed in query";
     }
-    else {
+    if (!error) {
         arb_progress progress("Searching next neighbours", max);
         progress.auto_subtitles("Species");
 
@@ -1041,8 +1035,8 @@ static void awtc_nn_search_all_listed(AW_window *aww) {
 
                     if (value) {
                         GBDATA *gb_dest = GB_search(gb_species, dest_field, dest_type);
-
-                        error = GB_write_autoconv_string(gb_dest, GBS_mempntr(value));
+                        ui_assert(dest_type == GB_STRING);
+                        error = GB_write_string(gb_dest, GBS_mempntr(value));
                         GBS_strforget(value);
                     }
                     else {
@@ -1320,7 +1314,7 @@ static AW_window *create_next_neighbours_listed_window(AW_root *aw_root, DbQuery
         create_next_neighbours_vars(aw_root);
 
         aws = new AW_window_simple;
-        aws->init(aw_root, "SEARCH_NEXT_RELATIVES_OF_LISTED", "Search Next Neighbours of Listed");
+        aws->init(aw_root, "SEARCH_NEXT_NEIGHBOURS_OF_LISTED", "Search Next Neighbours of Listed");
         aws->load_xfig("ad_spec_nnm.fig");
 
         aws->at("close");
@@ -1337,11 +1331,11 @@ static AW_window *create_next_neighbours_listed_window(AW_root *aw_root, DbQuery
         aws->create_toggle(AWAR_NN_LISTED_SCORED_ENTRIES);
         
         aws->at("field");
-        create_selection_list_on_itemfields(query_get_gb_main(query), aws, AWAR_NN_LISTED_DEST_FIELD, true, SPECIES_get_selector(), (1<<GB_INT) | (1<<GB_STRING), SF_STANDARD, "field", 20, 10, NULL); // @@@ create/use field filter alias?
+        create_selection_list_on_itemfields(query_get_gb_main(query), aws, AWAR_NN_LISTED_DEST_FIELD, true, SPECIES_get_selector(), FIELD_FILTER_STRING_WRITEABLE, SF_STANDARD, "field", 20, 10, "target_field");
 
         aws->at("go");
         aws->callback(awtc_nn_search_all_listed);
-        aws->create_autosize_button("WRITE_FIELDS", "Write to field");
+        aws->create_autosize_button("WRITE_FIELDS", "Write to");
     }
     return aws;
 }
