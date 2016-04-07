@@ -20,6 +20,7 @@
 #include <TreeNode.h>
 #include <items.h>
 #include <arb_msg_fwd.h>
+#include <item_sel_list.h>
 
 
 #define nds_assert(cond) arb_assert(cond)
@@ -271,7 +272,6 @@ void create_nds_vars(AW_root *aw_root, AW_default awdef, GBDATA *gb_main, bool f
         }
     }
 
-    aw_root->awar_string(AWAR_KEY_SELECT, "", awdef);
     aw_root->awar_int(AWAR_NDS_USE_ALL, 1, gb_main);
 
     GB_pop_transaction(gb_main);
@@ -497,7 +497,7 @@ AW_window *AWT_create_nds_window(AW_root *aw_root, GBDATA *gb_main) {
 
         aws->at_newline();
 
-        int leafx, groupx, fieldselectx, fieldx, columnx, srtx, srtux;
+        int leafx, groupx, fieldx, columnx, srtx, srtux;
 
         aws->auto_space(10, 0);
 
@@ -510,21 +510,11 @@ AW_window *AWT_create_nds_window(AW_root *aw_root, GBDATA *gb_main) {
             aws->create_toggle(viewkeyAwarName(i, "group"));
 
             {
-                const char *awar_name = strdup(viewkeyAwarName(i, "key_text"));
-
-                aws->button_length(20);
+                const char *awar_name = strdup(viewkeyAwarName(i, "key_text")); // @@@ stuff leak later (when ItemfieldSelectionDef is used)
+                char        buttonID[20];
+                sprintf(buttonID, "SEL_FIELD_%i", i);
                 aws->get_at_position(&fieldx, &dummy);
-                aws->create_input_field(awar_name, 15);
-
-                aws->button_length(0);
-
-                FieldSelectionParam *fsp = new FieldSelectionParam(gb_main, awar_name, false); // awar_name belongs to fsp now
-                aws->callback(makeWindowCallback(popup_select_species_field_window, fsp));     // fsp belongs to callback now
-                aws->get_at_position(&fieldselectx, &dummy);
-
-                char *button_id = GBS_global_string_copy("SELECT_NDS_%i", i+1);
-                aws->create_button(button_id, "N");
-                free(button_id);
+                create_selection_list_on_itemfields(gb_main, aws, awar_name, true, SPECIES_get_selector(), FIELD_FILTER_NDS, SF_STANDARD, NULL, 20, 10, buttonID);
             }
 
             aws->get_at_position(&columnx, &dummy);
@@ -560,9 +550,6 @@ AW_window *AWT_create_nds_window(AW_root *aw_root, GBDATA *gb_main) {
 
         aws->at_x(fieldx);
         aws->create_button(0, "FIELD");
-
-        aws->at_x(fieldselectx);
-        aws->create_button(0, "SEL");
 
         aws->at_x(columnx);
         aws->create_button(0, "WIDTH");
