@@ -398,7 +398,7 @@ void AW_window::create_button(const char *macro_name, const char *button_text,
     GtkWidget *button_label, *button;
     button_label = make_label(button_text, _at->length_of_buttons, mnemonic);
 
-    AW_action *act = action_register(macro_name, true);
+    AW_action *act = action_register(macro_name, macro_name && macro_name[0] != '@');
 
     if (button_text) act->set_label(button_text); // FIXME Mnemonic
 
