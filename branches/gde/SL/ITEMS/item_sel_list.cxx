@@ -93,25 +93,20 @@ void Itemfield_Selection::fill() {
 Itemfield_Selection *create_selection_list_on_itemfields(GBDATA         *gb_main,
                                                          AW_window      *aws,
                                                          const char     *varname,
-                                                         bool            fallback2default,
                                                          ItemSelector&   selector,
                                                          long            type_filter,
                                                          SelectedFields  field_filter,
                                                          const char     *scan_xfig_label,
-                                                         size_t          columns,
-                                                         size_t          visible_rows,
-                                                         const char     *popup_button_id) // @@@ button id is not needed - only causes xtra macro command
+                                                         const char     *popup_button_id)
 {
     /* show fields of a item (e.g. species, SAI, gene)
      * 'varname'                is the awar set by the selection list
-     * 'fallback2default'       whether awar value shall be reset to default (see create_option_menu/create_selection_list)
      * 'selector'               describes the item type, for which fields are shown
      * 'type_filter'            is a bitstring which controls what types are shown in the selection list
      *                          (e.g '1<<GB_INT || 1 <<GB_STRING' enables ints and strings)
      *                          Several filters are predefined: 'FIELD_FILTER_...', FIELD_UNFILTERED
      * 'field_filter'           controls if pseudo-fields and/or hidden fields are added
      * 'scan_xfig_label'        is the position of the selection box (or selection button)
-     * 'columns'/'visible_rows' specify the size of the selection list
      * 'popup_button_id'        if not NULL, a button (with this id) is inserted.
      *                          When clicked a popup window containing the selection list opens.
      */
@@ -126,12 +121,17 @@ Itemfield_Selection *create_selection_list_on_itemfields(GBDATA         *gb_main
 
     if (scan_xfig_label) aws->at(scan_xfig_label);
 
+    const bool FALLBACK2DEFAULT = true; // @@@ autodetect later (existing fields only->true, new fields allowed->false)
+
+    const int COLUMNS = 20;
+    const int ROWS    = 10;
+
     if (popup_button_id) {
         int old_button_length = aws->get_button_length();
 
 #ifdef ARB_GTK
-        aws->button_length(columns);
-        sellist                    = aws->create_option_menu(varname, fallback2default);
+        aws->button_length(COLUMNS);
+        sellist                    = aws->create_option_menu(varname, FALLBACK2DEFAULT);
 #else // ARB_MOTIF
         // create HIDDEN popup window containing the selection list
         AW_window *win_for_sellist = aws;
@@ -143,7 +143,7 @@ Itemfield_Selection *create_selection_list_on_itemfields(GBDATA         *gb_main
             aw_popup->at_newline();
 
             aw_popup->callback(AW_POPDOWN); // @@@ used as SELLIST_CLICK_CB (see #559)
-            sellist = aw_popup->create_selection_list(varname, columns, visible_rows, fallback2default);
+            sellist = aw_popup->create_selection_list(varname, COLUMNS, ROWS, FALLBACK2DEFAULT); // @@@ expect at-to exists -> COLUMNS/ROWS does not matter
 
             aw_popup->at_newline();
             aw_popup->callback(AW_POPDOWN);
@@ -156,14 +156,14 @@ Itemfield_Selection *create_selection_list_on_itemfields(GBDATA         *gb_main
         }
 
         // and bind hidden window popup to button
-        aws->button_length(columns);
+        aws->button_length(COLUMNS); // @@@ use button length set by caller
         aws->callback(makeCreateWindowCallback(existing_window_creator, win_for_sellist)); 
         aws->create_button(popup_button_id, varname);
 #endif
         aws->button_length(old_button_length);
     }
     else { // otherwise just insert the selection list at point
-        sellist = aws->create_selection_list(varname, columns, visible_rows, fallback2default);
+        sellist = aws->create_selection_list(varname, COLUMNS, ROWS, FALLBACK2DEFAULT); // @@@ expect at-to exists -> COLUMNS/ROWS does not matter
     }
 
     Itemfield_Selection *selection = new Itemfield_Selection(sellist, gb_key_data, type_filter, field_filter, selector);

@@ -342,8 +342,8 @@ AW_window *create_mg_check_fields_window(AW_root *aw_root) {
     aws->at("tag");
     aws->create_input_field(AWAR_ETAG, 6);
 
-    create_selection_list_on_itemfields(GLOBAL_gb_dst, aws, AWAR_SOURCE_FIELD, true, SPECIES_get_selector(), FIELD_FILTER_STRING_READABLE,  SF_STANDARD, "source", 20, 10, "compare_field");
-    create_selection_list_on_itemfields(GLOBAL_gb_dst, aws, AWAR_DEST_FIELD,   true, SPECIES_get_selector(), FIELD_FILTER_STRING_WRITEABLE, SF_STANDARD, "dest",   20, 10, "target_field");
+    create_selection_list_on_itemfields(GLOBAL_gb_dst, aws, AWAR_SOURCE_FIELD, SPECIES_get_selector(), FIELD_FILTER_STRING_READABLE,  SF_STANDARD, "source", "compare_field");
+    create_selection_list_on_itemfields(GLOBAL_gb_dst, aws, AWAR_DEST_FIELD,   SPECIES_get_selector(), FIELD_FILTER_STRING_WRITEABLE, SF_STANDARD, "dest",   "target_field");
 
     aws->at("go");
     aws->highlight();

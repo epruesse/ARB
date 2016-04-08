@@ -68,13 +68,10 @@ public:
 Itemfield_Selection *create_selection_list_on_itemfields(GBDATA         *gb_main,
                                                          AW_window      *aws,
                                                          const char     *varname,
-                                                         bool            fallback2default,
                                                          ItemSelector&   selector,
                                                          long            type_filter,
                                                          SelectedFields  field_filter,
                                                          const char     *scan_xfig_label,
-                                                         size_t          columns,
-                                                         size_t          visible_rows,
                                                          const char     *popup_button_label);
 
 
