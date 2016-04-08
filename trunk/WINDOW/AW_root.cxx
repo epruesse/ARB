@@ -168,6 +168,8 @@ void AW_root::define_remote_command(AW_cb *cbs) {
         aw_assert(!cbs->get_cd1() && !cbs->get_cd2()); // popdown takes no parameters (please pass ", 0, 0"!)
     }
 
+    if (cbs->id[0] == '@') return; // ignore callback-ids starting with '@' (aka "unrecorded")
+
     AW_cb *old_cbs = (AW_cb*)GBS_write_hash(prvt->action_hash, cbs->id, (long)cbs);
     if (old_cbs) {
         if (!old_cbs->is_equal(*cbs)) {                  // existing remote command replaced by different callback
