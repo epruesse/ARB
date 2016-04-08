@@ -129,10 +129,13 @@ AW_action* AW_root::action(const char* action_id) {
 AW_action* AW_root::action_register(const char* action_id, const AW_action& _act) {
     AW_action *act = new AW_action(_act);
 
+    // Note: actions starting with '@' are not recorded or registered in motif version
+    //       in gtk they get replaced by unique names, but are still not recorded
+
     if (!action_id) {
         // WORKAROUND for empty action_id (no macro_name supplied)
         action_id = "unnamed";
-    } 
+    }
     act->set_id(action_id);
 
     AW_action *found_act;
