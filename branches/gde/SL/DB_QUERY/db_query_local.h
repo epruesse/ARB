@@ -89,8 +89,7 @@ namespace QUERY {
 
         unsigned long sort_mask;                              // contains several cascading sort criteria (QUERY_SORT_CRITERIA_BITS each)
 
-        AW_selection_list   *hitlist;
-        Itemfield_Selection *fieldsel[QUERY_SEARCHES];
+        AW_selection_list *hitlist;
 
         ItemSelector&  selector;
         int            select_bit;                            // one of 1 2 4 8 .. 128 (one for each query box)

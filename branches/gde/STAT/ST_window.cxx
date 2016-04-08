@@ -277,7 +277,7 @@ AW_window *STAT_create_chimera_check_window(AW_root *root, GBDATA *gb_main) {
         aws->at("sb");
         aws->create_input_field(ST_ML_AWAR_CQ_BUCKET_SIZE);
 
-        create_selection_list_on_itemfields(gb_main, aws, ST_ML_AWAR_CQ_DEST_FIELD, SPECIES_get_selector(), 1 << GB_STRING, SF_STANDARD, "dest", "SELECT_REPORT_FIELD"); // @@@ use FIELD_FILTER_STRING_WRITEABLE?
+        create_itemfield_selection_button(aws, FieldSelDef(ST_ML_AWAR_CQ_DEST_FIELD, gb_main, SPECIES_get_selector(), 1 << GB_STRING), "dest"); // @@@ use FIELD_FILTER_STRING_WRITEABLE? check awar-usage!
 
         aws->at("report");
         {

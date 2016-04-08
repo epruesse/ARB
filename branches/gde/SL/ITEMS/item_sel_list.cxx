@@ -16,12 +16,6 @@
 #include <arbdbt.h>
 #include <arb_global_defs.h>
 
-#if defined(ARB_MOTIF)
-static AW_window *existing_window_creator(AW_root*, AW_window *aw_existing) {
-    return aw_existing;
-}
-#endif
-
 Itemfield_Selection::Itemfield_Selection(AW_selection_list *sellist_,
                                          GBDATA            *gb_key_data,
                                          long               type_filter_,
@@ -90,91 +84,62 @@ void Itemfield_Selection::fill() {
 }
 
 
-Itemfield_Selection *create_selection_list_on_itemfields(GBDATA         *gb_main,
-                                                         AW_window      *aws,
-                                                         const char     *varname,
-                                                         ItemSelector&   selector,
-                                                         long            type_filter,
-                                                         SelectedFields  field_filter,
-                                                         const char     *scan_xfig_label,
-                                                         const char     *popup_button_id)
-{
-    /* show fields of a item (e.g. species, SAI, gene)
-     * 'varname'                is the awar set by the selection list
-     * 'selector'               describes the item type, for which fields are shown
-     * 'type_filter'            is a bitstring which controls what types are shown in the selection list
-     *                          (e.g '1<<GB_INT || 1 <<GB_STRING' enables ints and strings)
-     *                          Several filters are predefined: 'FIELD_FILTER_...', FIELD_UNFILTERED
-     * 'field_filter'           controls if pseudo-fields and/or hidden fields are added
-     * 'scan_xfig_label'        is the position of the selection box (or selection button)
-     * 'popup_button_id'        if not NULL, a button (with this id) is inserted.
-     *                          When clicked a popup window containing the selection list opens.
-     */
-
+Itemfield_Selection *FieldSelDef::build_sel(AW_selection_list *from_sellist) const {
     GBDATA *gb_key_data;
     {
         GB_transaction ta(gb_main);
         gb_key_data = GB_search(gb_main, selector.change_key_path, GB_CREATE_CONTAINER);
     }
+    return new Itemfield_Selection(from_sellist, gb_key_data, type_filter, field_filter, selector);
+}
 
-    AW_selection_list *sellist = 0;
+Itemfield_Selection *create_itemfield_selection_list(AW_window *aws, const FieldSelDef& selDef, const char *at) {
+    if (at) aws->at(at);
 
-    if (scan_xfig_label) aws->at(scan_xfig_label);
+    const bool FALLBACK2DEFAULT = true; // @@@ autodetect later (existing fields only->true, new fields allowed->false)
+    // @@@ expect no new fields allowed (later)
+
+    AW_selection_list   *sellist   = aws->create_selection_list(selDef.get_awarname(), FALLBACK2DEFAULT);
+    Itemfield_Selection *selection = selDef.build_sel(sellist);
+    selection->refresh();
+    return selection;
+}
+
+static AW_window *createFieldSelectionPopup(AW_root *awr, FieldSelDef *selDef) {
+    AW_window_simple *aw_popup = new AW_window_simple;
+
+    aw_popup->init(awr, "SELECT_FIELD", "SELECT A FIELD"); // no need for unique id (nothing macro recorded here)
+    aw_popup->load_xfig("awt/field_sel.fig");
 
     const bool FALLBACK2DEFAULT = true; // @@@ autodetect later (existing fields only->true, new fields allowed->false)
 
-    const int COLUMNS = 20;
-    const int ROWS    = 10;
+    aw_popup->at("sel");
+    aw_popup->callback(AW_POPDOWN); // used as SELLIST_CLICK_CB (see #559); works here because macro recording only tracks awar change here
+    AW_selection_list *sellist = aw_popup->create_selection_list(selDef->get_awarname(), 1, 1, FALLBACK2DEFAULT);
+    selDef->build_sel(sellist)->refresh();
 
-    if (popup_button_id) {
-        int old_button_length = aws->get_button_length();
+    aw_popup->at("close");
+    aw_popup->callback(AW_POPDOWN);
+    aw_popup->create_button("@CLOSE", "CLOSE", "C");
 
-#ifdef ARB_GTK
-        aws->button_length(COLUMNS);
-        sellist                    = aws->create_option_menu(varname, FALLBACK2DEFAULT);
-#else // ARB_MOTIF
-        // create HIDDEN popup window containing the selection list
-        AW_window *win_for_sellist = aws;
-        {
-            AW_window_simple *aw_popup = new AW_window_simple;
-            aw_popup->init(aws->get_root(), "SELECT_FIELD", "SELECT A FIELD");
-            aw_popup->load_xfig("awt/field_sel.fig");
+    aw_popup->recalc_pos_atShow(AW_REPOS_TO_MOUSE); // always popup at current mouse-position (i.e. directly above the button)
+    aw_popup->recalc_size_atShow(AW_RESIZE_USER);   // if user changes the size of any field-selection popup, that size will be used for future popups
 
-            aw_popup->at("sel");
-            aw_popup->callback(AW_POPDOWN); // @@@ used as SELLIST_CLICK_CB (see #559)
-            sellist = aw_popup->create_selection_list(varname, 1, 1, FALLBACK2DEFAULT);
+    delete selDef;
 
-            aw_popup->at("close");
-            aw_popup->callback(AW_POPDOWN);
-            aw_popup->create_button("CLOSE", "CLOSE", "C");
-
-            aw_popup->recalc_pos_atShow(AW_REPOS_TO_MOUSE); // always popup at current mouse-position (i.e. directly above the button)
-            aw_popup->recalc_size_atShow(AW_RESIZE_USER);   // if user changes the size of any field-selection popup, that size will be used for future popups
-
-            win_for_sellist = aw_popup;
-        }
-
-        // and bind hidden window popup to button
-        aws->button_length(COLUMNS); // @@@ use button length set by caller
-        aws->callback(makeCreateWindowCallback(existing_window_creator, win_for_sellist)); 
-        aws->create_button(popup_button_id, varname);
-#endif
-        aws->button_length(old_button_length);
-    }
-    else { // otherwise just insert the selection list at point
-        sellist = aws->create_selection_list(varname, COLUMNS, ROWS, FALLBACK2DEFAULT); // @@@ expect at-to exists -> COLUMNS/ROWS does not matter
-    }
-
-    Itemfield_Selection *selection = new Itemfield_Selection(sellist, gb_key_data, type_filter, field_filter, selector);
-    selection->refresh();
-
-#ifdef ARB_GTK
-    if(popup_button_id) {
-        aws->update_option_menu();
-    }
-#endif
-    return selection;
+    return aw_popup;
 }
+
+void create_itemfield_selection_button(AW_window *aws, const FieldSelDef& selDef, const char *at) {
+    if (at) aws->at(at);
+
+    int old_button_length = aws->get_button_length();
+    aws->button_length(20);
+    aws->callback(makeCreateWindowCallback(createFieldSelectionPopup, new FieldSelDef(selDef)));
+    aws->create_button("@sel_field", selDef.get_awarname());
+    aws->button_length(old_button_length);
+}
+
 
 // --------------------------------------------------------------------------------
 

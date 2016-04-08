@@ -168,7 +168,7 @@ AW_window *NT_create_species_join_window(AW_root *root) {
         aws->help_text("species_join.hlp");
         aws->create_button("GO", "GO", "G");
 
-        create_selection_list_on_itemfields(GLOBAL.gb_main, aws, AWAR_SPECIES_JOIN_FIELD, SPECIES_get_selector(), FIELD_FILTER_NDS, SF_STANDARD, "field", "sel_field");
+        create_itemfield_selection_button(aws, FieldSelDef(AWAR_SPECIES_JOIN_FIELD, GLOBAL.gb_main, SPECIES_get_selector(), FIELD_FILTER_NDS), "field");
     }
     return aws;
 }

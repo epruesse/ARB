@@ -1076,7 +1076,7 @@ static AW_window *create_group_species_by_field_window(AW_root *aw_root, AW_wind
 
     aws->at_newline();
     aws->label("Use content of field");
-    create_selection_list_on_itemfields(GLOBAL_gb_main, aws, AWAR_FIELD_CHOSEN, SPECIES_get_selector(), FIELD_FILTER_STRING_READABLE, SF_STANDARD, NULL, "sel_field");
+    create_itemfield_selection_button(aws, FieldSelDef(AWAR_FIELD_CHOSEN, GLOBAL_gb_main, SPECIES_get_selector(), FIELD_FILTER_STRING_READABLE), NULL);
 
     aws->at_newline();
     aws->callback(makeWindowCallback(group_species_by_field_content, use_as_main_window, static_cast<AW_window*>(aws)));

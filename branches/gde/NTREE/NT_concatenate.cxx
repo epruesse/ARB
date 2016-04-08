@@ -719,7 +719,7 @@ static AW_window *createMergeSimilarSpeciesWindow(AW_root *aw_root, MergeSpecies
     aws->at("field_select");
     aws->auto_space(0, 0);
     aws->callback(AW_POPDOWN);
-    create_selection_list_on_itemfields(GLOBAL.gb_main, aws, AWAR_CON_MERGE_FIELD, SPECIES_get_selector(), FIELD_FILTER_NDS, SF_HIDDEN, "field_select", "sel_merge_field");
+    create_itemfield_selection_button(aws, FieldSelDef(AWAR_CON_MERGE_FIELD, GLOBAL.gb_main, SPECIES_get_selector(), FIELD_FILTER_NDS, SF_HIDDEN), "field_select");
 
     aws->at("store_sp_no");
     aws->label_length(20);

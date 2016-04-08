@@ -509,21 +509,19 @@ AW_window *AWT_create_nds_window(AW_root *aw_root, GBDATA *gb_main) {
             aws->get_at_position(&groupx, &dummy);
             aws->create_toggle(viewkeyAwarName(i, "group"));
 
+            aws->get_at_position(&fieldx, &dummy);
             {
-                const char *awar_name = strdup(viewkeyAwarName(i, "key_text")); // @@@ stuff leak later (when ItemfieldSelectionDef is used)
-                char        buttonID[20];
-                sprintf(buttonID, "SEL_FIELD_%i", i);
-                aws->get_at_position(&fieldx, &dummy);
-                create_selection_list_on_itemfields(gb_main, aws, awar_name, SPECIES_get_selector(), FIELD_FILTER_NDS, SF_STANDARD, NULL, buttonID);
+                const char *awar_name = viewkeyAwarName(i, "key_text");
+                create_itemfield_selection_button(aws, FieldSelDef(awar_name, gb_main, SPECIES_get_selector(), FIELD_FILTER_NDS), NULL);
             }
 
             aws->get_at_position(&columnx, &dummy);
             aws->create_input_field(viewkeyAwarName(i, "len1"), 4);
 
+            aws->get_at_position(&srtx, &dummy);
             {
                 char *awar_name = strdup(viewkeyAwarName(i, "pars"));
 
-                aws->get_at_position(&srtx, &dummy);
                 aws->button_length(0);
                 aws->callback(makeWindowCallback(AWT_popup_select_srtaci_window, awar_name)); // awar_name belongs to cbs now
                 {

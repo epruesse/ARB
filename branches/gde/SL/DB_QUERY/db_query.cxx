@@ -2325,7 +2325,7 @@ static AW_window *create_modify_fields_window(AW_root *aw_root, DbQuery *query) 
     aws->at("create");  aws->create_toggle(query->awar_createDestField);
     aws->at("accept");  aws->create_toggle(query->awar_acceptConvError);
 
-    create_selection_list_on_itemfields(query->gb_main, aws, query->awar_parskey, query->selector, FIELD_FILTER_PARS, SF_STANDARD, "field", "dest_field");
+    create_itemfield_selection_button(aws, FieldSelDef(query->awar_parskey, query->gb_main, query->selector, FIELD_FILTER_PARS), "field");
 
     aws->at("go");
     aws->callback(makeWindowCallback(modify_fields_of_queried_cb, query));
@@ -2472,7 +2472,7 @@ static AW_window *create_writeFieldOfListed_window(AW_root *aw_root, DbQuery *qu
     aws->callback(makeHelpCallback("write_field_list.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
-    create_selection_list_on_itemfields(query->gb_main, aws, query->awar_setkey, query->selector, FIELD_FILTER_NDS, SF_STANDARD, "field", "sel_field");
+    create_itemfield_selection_button(aws, FieldSelDef(query->awar_setkey, query->gb_main, query->selector, FIELD_FILTER_NDS), "field");
 
     aws->at("create");
     aws->callback(makeWindowCallback(set_field_of_queried_cb, query, false));
@@ -2553,7 +2553,7 @@ static AW_window *create_set_protection_window(AW_root *aw_root, DbQuery *query)
     aws->insert_toggle("6 the truth", "5", 6);
     aws->update_toggle_field();
 
-    create_selection_list_on_itemfields(query->gb_main, aws, query->awar_setkey, query->selector, FIELD_UNFILTERED, SF_STANDARD, "list", NULL); // @@@ keep list-style here
+    create_itemfield_selection_list(aws, FieldSelDef(query->awar_setkey, query->gb_main, query->selector, FIELD_UNFILTERED), "list");
 
     aws->at("go");
     aws->callback(makeWindowCallback(set_protection_of_queried_cb, query));
@@ -2604,7 +2604,6 @@ const char *DbQuery::get_tree_name() const {
 
 DbQuery::~DbQuery() {
     for (int s = 0; s<QUERY_SEARCHES; ++s) {
-        delete fieldsel[s];
         free(awar_keys[s]);
         free(awar_queries[s]);
         free(awar_not[s]);
@@ -2701,8 +2700,6 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
             sprintf(buffer, "tmp/dbquery_%s/operator_%i", query_id, key_id);
             query->awar_operator[key_id] = strdup(buffer);
             aw_root->awar_string(query->awar_operator[key_id], "ign", AW_ROOT_DEFAULT);
-
-            query->fieldsel[key_id] = NULL;
         }
         aw_root->awar(query->awar_keys[0])->add_callback(makeRootCallback(first_searchkey_changed_cb, query));
     }
@@ -2788,11 +2785,7 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
             aws->at(xpos_calc[0], ypos+key*KEY_Y_OFFSET);
             aws->restore_at_from(*at_size);
 
-            {
-                char *button_id      = GBS_global_string_copy("field_sel_%s_%i", query_id, key);
-                query->fieldsel[key] = create_selection_list_on_itemfields(gb_main, aws, query->awar_keys[key], awtqs->get_queried_itemtype(), FIELD_FILTER_NDS, SF_PSEUDO, 0, button_id);
-                free(button_id);
-            }
+            create_itemfield_selection_button(aws, FieldSelDef(query->awar_keys[key], gb_main, awtqs->get_queried_itemtype(), FIELD_FILTER_NDS, SF_PSEUDO), NULL);
 
             if (xpos_calc[1] == -1) aws->get_at_position(&xpos_calc[1], &ypos_dummy);
 

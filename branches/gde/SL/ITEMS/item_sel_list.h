@@ -20,6 +20,9 @@
 #ifndef ITEMS_H
 #include "items.h"
 #endif
+#ifndef _GLIBCXX_STRING
+#include <string>
+#endif
 
 #define PSEUDO_FIELD_ANY_FIELD  "[any field]"
 #define PSEUDO_FIELD_ALL_FIELDS "[all fields]"
@@ -65,14 +68,43 @@ public:
     ItemSelector& get_selector() const { return selector; }
 };
 
-Itemfield_Selection *create_selection_list_on_itemfields(GBDATA         *gb_main,
-                                                         AW_window      *aws,
-                                                         const char     *varname,
-                                                         ItemSelector&   selector,
-                                                         long            type_filter,
-                                                         SelectedFields  field_filter,
-                                                         const char     *scan_xfig_label,
-                                                         const char     *popup_button_label);
+class FieldSelDef {
+    std::string     awar_name;
+    GBDATA         *gb_main;
+    ItemSelector&   selector;
+    long            type_filter;
+    SelectedFields  field_filter;
+
+public:
+    FieldSelDef(const char *awar_name_, GBDATA *gb_main_, ItemSelector& selector_, long type_filter_, SelectedFields field_filter_ = SF_STANDARD)
+    /*! parameter collection for itemfield-selections
+     * @param awar_name_           the name of the awar bound to the selection list
+     * @param gb_main_             the database
+     * @param selector_            describes the item type, for which fields are shown
+     * @param type_filter_         is a bitstring which controls what types will be shown in the selection list (several filters are predefined: 'FIELD_FILTER_...', FIELD_UNFILTERED)
+     * @param field_filter_        controls if pseudo-fields and/or hidden fields are added (defaults to SF_STANDARD)
+     */
+        : awar_name(awar_name_),
+          gb_main(gb_main_),
+          selector(selector_),
+          type_filter(type_filter_),
+          field_filter(field_filter_)
+    {}
+    FieldSelDef(const FieldSelDef& other)
+        : awar_name(other.awar_name),
+          gb_main(other.gb_main),
+          selector(other.selector),
+          type_filter(other.type_filter),
+          field_filter(other.field_filter)
+    {}
+    DECLARE_ASSIGNMENT_OPERATOR(FieldSelDef);
+
+    const char *get_awarname() const { return awar_name.c_str(); }
+    Itemfield_Selection *build_sel(AW_selection_list *from_sellist) const;
+};
+
+Itemfield_Selection *create_itemfield_selection_list(  AW_window *aws, const FieldSelDef& selDef, const char *at);
+void                 create_itemfield_selection_button(AW_window *aws, const FieldSelDef& selDef, const char *at);
 
 
 enum RescanMode {
