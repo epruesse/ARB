@@ -23,6 +23,7 @@
                     load a tree from file system
 ********************************************************************************************/
 
+#define MAX_DROPPED_GROUP_WARN 100
 
 // --------------------
 //      TreeReader
@@ -44,6 +45,12 @@ class TreeReader : virtual Noncopyable {
     char *warnings;
 
     TreeRoot *troot;
+
+    struct Count {
+        int dropped_leaf_groups;
+        int dropped_duplicated_groups;
+        Count() : dropped_leaf_groups(0), dropped_duplicated_groups(0) {}
+    } count;
 
     void setError(const char *message);
     void setErrorAt(const char *message);
@@ -389,12 +396,22 @@ void TreeReader::setBranchName_acceptingBootstrap(TreeNode *node, char*& name) {
     if (new_name) {
         if (node->name) {
             if (node->is_leaf) {
-                add_warningf("Dropped group name specified for a single-node-subtree ('%s')\n", new_name);
+                if (count.dropped_leaf_groups<MAX_DROPPED_GROUP_WARN) {
+                    add_warningf("Dropped group name specified for a single-node-subtree ('%s')", new_name);
+                    if (++count.dropped_leaf_groups == MAX_DROPPED_GROUP_WARN) {
+                        add_warning("[Note: further warnings of this type will be suppressed]");
+                    }
+                }
                 freenull(new_name);
             }
             else {
-                add_warningf("Duplicated group name specification detected: dropped inner ('%s'), kept outer group name ('%s')\n",
-                             node->name, new_name);
+                if (count.dropped_duplicated_groups<MAX_DROPPED_GROUP_WARN) {
+                    add_warningf("Duplicated group name specification detected: dropped inner ('%s'), kept outer group name ('%s')",
+                                 node->name, new_name);
+                    if (++count.dropped_duplicated_groups == MAX_DROPPED_GROUP_WARN) {
+                        add_warning("[Note: further warnings of this type will be suppressed]");
+                    }
+                }
                 freeset(node->name, new_name);
             }
         }
