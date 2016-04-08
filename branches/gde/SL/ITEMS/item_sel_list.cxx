@@ -137,20 +137,19 @@ Itemfield_Selection *create_selection_list_on_itemfields(GBDATA         *gb_main
         AW_window *win_for_sellist = aws;
         {
             AW_window_simple *aw_popup = new AW_window_simple;
-            aw_popup->init(aws->get_root(), "SELECT_LIST_ENTRY", "SELECT AN ENTRY");
+            aw_popup->init(aws->get_root(), "SELECT_FIELD", "SELECT A FIELD");
+            aw_popup->load_xfig("awt/field_sel.fig");
 
-            aw_popup->auto_space(10, 10);
-            aw_popup->at_newline();
-
+            aw_popup->at("sel");
             aw_popup->callback(AW_POPDOWN); // @@@ used as SELLIST_CLICK_CB (see #559)
-            sellist = aw_popup->create_selection_list(varname, COLUMNS, ROWS, FALLBACK2DEFAULT); // @@@ expect at-to exists -> COLUMNS/ROWS does not matter
+            sellist = aw_popup->create_selection_list(varname, 1, 1, FALLBACK2DEFAULT);
 
-            aw_popup->at_newline();
+            aw_popup->at("close");
             aw_popup->callback(AW_POPDOWN);
             aw_popup->create_button("CLOSE", "CLOSE", "C");
 
-            aw_popup->window_fit();
-            aw_popup->recalc_pos_atShow(AW_REPOS_TO_MOUSE);
+            aw_popup->recalc_pos_atShow(AW_REPOS_TO_MOUSE); // always popup at current mouse-position (i.e. directly above the button)
+            aw_popup->recalc_size_atShow(AW_RESIZE_USER);   // if user changes the size of any field-selection popup, that size will be used for future popups
 
             win_for_sellist = aw_popup;
         }
