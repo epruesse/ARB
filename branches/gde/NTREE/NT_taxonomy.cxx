@@ -15,11 +15,13 @@
 #include <aw_root.hxx>
 #include <aw_awar.hxx>
 #include <aw_msg.hxx>
+
 #include <awt_sel_boxes.hxx>
 #include <TreeCallbacks.hxx>
-#include <arb_progress.h>
-#include <item_sel_list.h>
 
+#include <arb_progress.h>
+#include <arb_global_defs.h>
+#include <item_sel_list.h>
 
 #include <set>
 #include <map>
@@ -208,6 +210,7 @@ static void mark_action(AW_window *aws, AWT_canvas *ntw, Target target) {
 
         size_t missing   = 0;
         size_t targetted = 0;
+        bool   had_error = false;
 
         if (target == TAX) {
             int min_tax_levels = atoi(aw_root->awar(AWAR_TREE_COMPARE_MIN_TAX_LEVELS)->read_char_pntr());
@@ -221,38 +224,42 @@ static void mark_action(AW_window *aws, AWT_canvas *ntw, Target target) {
                 if (s->second.occursInBothTrees()) commonSpeciesCount++;
             }
 
-            const char *fieldName    = aw_root->awar(AWAR_TREE_COMPARE_WRITE_FIELD)->read_char_pntr();
-            bool        writeToField = fieldName[0];
+            const char *fieldName    = prepare_and_get_selected_itemfield(aw_root, AWAR_TREE_COMPARE_WRITE_FIELD, gb_main, SPECIES_get_selector());
+            bool        writeToField = fieldName;
+            GB_ERROR    error        = GB_have_error() ? GB_await_error() : NULL;
 
-            arb_progress subprogress("Comparing taxonomy info", commonSpeciesCount);
-            GB_ERROR     error = NULL;
+            if (!error) {
+                arb_progress subprogress("Comparing taxonomy info", commonSpeciesCount);
+                for (TwoTreeMap::iterator s = tmap.begin(); s != tmap.end() && !error; ++s) {
+                    const SpeciesInTwoTrees& species = s->second;
 
-            for (TwoTreeMap::iterator s = tmap.begin(); s != tmap.end() && !error; ++s) {
-                const SpeciesInTwoTrees& species = s->second;
-
-                if (species.occursInBothTrees()) {
-                    int taxDiffLevel = species.calcTaxDiffLevel();
-                    if (taxDiffLevel>min_tax_levels) {
-                        ++targetted;
-                        GBDATA *gb_species = GBT_find_species_rel_species_data(gb_species_data, s->first);
-                        if (!gb_species) {
-                            ++missing;
-                        }
-                        else {
-                            switch (action) {
-                                case UNMARK: GB_write_flag(gb_species, 0);                         break;
-                                case MARK:   GB_write_flag(gb_species, 1);                         break;
-                                case INVERT: GB_write_flag(gb_species, !GB_read_flag(gb_species)); break;
+                    if (species.occursInBothTrees()) {
+                        int taxDiffLevel = species.calcTaxDiffLevel();
+                        if (taxDiffLevel>min_tax_levels) {
+                            ++targetted;
+                            GBDATA *gb_species = GBT_find_species_rel_species_data(gb_species_data, s->first);
+                            if (!gb_species) {
+                                ++missing;
                             }
-                            if (writeToField) {
-                                error = GBT_write_int(gb_species, fieldName, taxDiffLevel);
+                            else {
+                                switch (action) {
+                                    case UNMARK: GB_write_flag(gb_species, 0);                         break;
+                                    case MARK:   GB_write_flag(gb_species, 1);                         break;
+                                    case INVERT: GB_write_flag(gb_species, !GB_read_flag(gb_species)); break;
+                                }
+                                if (writeToField) {
+                                    GBDATA *gb_field     = GBT_searchOrCreate_itemfield_according_to_changekey(gb_species, fieldName, SPECIES_get_selector().change_key_path);
+                                    if (!gb_field) error = GB_await_error();
+                                    if (!error) error    = GB_write_lossless_int(gb_field, taxDiffLevel);
+                                }
                             }
                         }
+                        subprogress.inc_and_check_user_abort(error);
                     }
-                    subprogress.inc_and_check_user_abort(error);
                 }
             }
             aw_message_if(error);
+            had_error = error;
         }
         else {
             progress.subtitle("Intersecting tree members");
@@ -297,12 +304,14 @@ static void mark_action(AW_window *aws, AWT_canvas *ntw, Target target) {
             }
         }
 
-        if (!targetted) {
-            aw_message("Warning: no species targetted");
-        }
-        else if (missing) {
-            aw_message(GBS_global_string("Warning: %zu targeted species could not be found\n"
-                                         "(might be caused by zombies in your trees)", missing));
+        if (!had_error) {
+            if (!targetted) {
+                aw_message("Warning: no species targetted");
+            }
+            else if (missing) {
+                aw_message(GBS_global_string("Warning: %zu targeted species could not be found\n"
+                                             "(might be caused by zombies in your trees)", missing));
+            }
         }
 
         destroy(tree_right);
@@ -313,11 +322,11 @@ static void mark_action(AW_window *aws, AWT_canvas *ntw, Target target) {
 void NT_create_compare_taxonomy_awars(AW_root *aw_root, AW_default props) {
     char *currTree = aw_root->awar(AWAR_TREE_NAME)->read_string();
 
-    aw_root->awar_string(AWAR_TREE_COMPARE_LEFT,           currTree, props);
-    aw_root->awar_string(AWAR_TREE_COMPARE_RIGHT,          currTree, props);
-    aw_root->awar_int   (AWAR_TREE_COMPARE_ACTION,         MARK,     props);
-    aw_root->awar_string(AWAR_TREE_COMPARE_MIN_TAX_LEVELS, "0",      props);
-    aw_root->awar_string(AWAR_TREE_COMPARE_WRITE_FIELD,    "",      props);
+    aw_root->awar_string(AWAR_TREE_COMPARE_LEFT,           currTree,          props);
+    aw_root->awar_string(AWAR_TREE_COMPARE_RIGHT,          currTree,          props);
+    aw_root->awar_int   (AWAR_TREE_COMPARE_ACTION,         MARK,              props);
+    aw_root->awar_string(AWAR_TREE_COMPARE_MIN_TAX_LEVELS, "0",               props);
+    aw_root->awar_string(AWAR_TREE_COMPARE_WRITE_FIELD,    NO_FIELD_SELECTED, props);
 
     free(currTree);
 }
@@ -351,7 +360,7 @@ AW_window *NT_create_compare_taxonomy_window(AW_root *aw_root, AWT_canvas *ntw) 
     aws->at("levels");
     aws->create_input_field(AWAR_TREE_COMPARE_MIN_TAX_LEVELS, 3);
 
-    create_itemfield_selection_button(aws, FieldSelDef(AWAR_TREE_COMPARE_WRITE_FIELD, ntw->gb_main, SPECIES_get_selector(), 1<<GB_INT), "field"); // @@@ use FIELD_FILTER_INT_WRITEABLE? needs code fix
+    create_itemfield_selection_button(aws, FieldSelDef(AWAR_TREE_COMPARE_WRITE_FIELD, ntw->gb_main, SPECIES_get_selector(), FIELD_FILTER_INT_WRITEABLE, SF_ALLOW_NEW), "field");
 
     aws->at("left");
     awt_create_TREE_selection_list(ntw->gb_main, aws, AWAR_TREE_COMPARE_LEFT, true);

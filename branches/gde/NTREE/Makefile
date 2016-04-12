@@ -901,6 +901,7 @@ NT_taxonomy.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 NT_taxonomy.o: $(ARBHOME)/INCLUDE/arb_assert.h
 NT_taxonomy.o: $(ARBHOME)/INCLUDE/arb_core.h
 NT_taxonomy.o: $(ARBHOME)/INCLUDE/arb_error.h
+NT_taxonomy.o: $(ARBHOME)/INCLUDE/arb_global_defs.h
 NT_taxonomy.o: $(ARBHOME)/INCLUDE/arb_msg.h
 NT_taxonomy.o: $(ARBHOME)/INCLUDE/arb_progress.h
 NT_taxonomy.o: $(ARBHOME)/INCLUDE/arb_string.h
