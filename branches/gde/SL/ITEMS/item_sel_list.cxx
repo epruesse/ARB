@@ -107,12 +107,20 @@ static struct {
     // keep in sync with ../DB_UI/ui_species.cxx@FIELD_TYPE_DESCRIPTIONS
 };
 
-const char *prepare_and_get_selected_itemfield(AW_root *awr, const char *awar_name, GBDATA *gb_main, const ItemSelector& itemtype) {
+const char *prepare_and_get_selected_itemfield(AW_root *awr, const char *awar_name, GBDATA *gb_main, const ItemSelector& itemtype, const char *description, FailIfField failIf) {
     /*! Reads awar used in create_itemfield_selection_button().
      * If the user selected to create a new itemfield, the changekey is created and
      * the content of the awar is corrected (i.e. ' (new TYPE)' gets removed).
      *
-     * @return name of the itemfield (or NULL: if error -> error is exported, otherwise no field selected)
+     * @param awr             app root
+     * @param awar_name       name of awar used for create_itemfield_selection_button()
+     * @param gb_main         database
+     * @param itemtype        item type
+     * @param description     purpose of field (used for messages, defaults to "target")
+     * @param failIf          toggles various error conditions
+     *
+     * @return name of the itemfield (or NULL: if error -> error is exported, otherwise NO_FIELD_SELECTED)
+     * If (failIf & FIF_NO_FIELD_SELECTED) an error is exported if NO_FIELD_SELECTED
      */
 
     it_assert(!GB_have_error());
@@ -149,16 +157,31 @@ const char *prepare_and_get_selected_itemfield(AW_root *awr, const char *awar_na
         free(type);
     }
 
-    if (!error && value && !value[0]) value = NO_FIELD_SELECTED; // interpret "" as NO_FIELD_SELECTED (compensates past wrong use)
+    if (!error && value) {
+        if (!value[0]) {
+            value = NO_FIELD_SELECTED; // interpret "" as NO_FIELD_SELECTED (compensates past wrong use which may still be present in properties)
+        }
+        else if (strcmp(value, "name") == 0) {
+            error = GBS_global_string("You may not select 'name' as %s field.", description); // protect user from overwriting the species ID
+        }
+    }
+
+    if (!error) {
+        it_assert(value);
+        if (strcmp(value, NO_FIELD_SELECTED) == 0) {
+            if (failIf & FIF_NO_FIELD_SELECTED) {
+                error = GBS_global_string("Please select a %s field", description);
+            }
+            else {
+                value = NULL;
+            }
+        }
+    }
+
     if (error) {
         GB_export_error(error);
         value = NULL;
     }
-    else {
-        it_assert(value);
-        if (strcmp(value, NO_FIELD_SELECTED) == 0) value = NULL;
-    }
-
     return value;
 }
 

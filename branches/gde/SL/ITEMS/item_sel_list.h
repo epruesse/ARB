@@ -107,9 +107,18 @@ public:
     Itemfield_Selection *build_sel(AW_selection_list *from_sellist) const;
 };
 
+enum FailIfField {
+    FIF_NAME_SELECTED     = 1, // fail if 'name' field selected
+    FIF_NO_FIELD_SELECTED = 2, // fail if NO_FIELD_SELECTED
+
+    // use-cases:
+    FIF_STANDARD   = FIF_NAME_SELECTED|FIF_NO_FIELD_SELECTED,
+    FIF_ALLOW_NONE = FIF_STANDARD^FIF_NO_FIELD_SELECTED,
+};
+
 Itemfield_Selection *create_itemfield_selection_list(  AW_window *aws, const FieldSelDef& selDef, const char *at);
 void                 create_itemfield_selection_button(AW_window *aws, const FieldSelDef& selDef, const char *at);
-const char          *prepare_and_get_selected_itemfield(AW_root *awr, const char *awar_name, GBDATA *gb_main, const ItemSelector& itemtype);
+const char          *prepare_and_get_selected_itemfield(AW_root *awr, const char *awar_name, GBDATA *gb_main, const ItemSelector& itemtype, const char *description = "target", FailIfField failIf = FIF_STANDARD);
 
 enum RescanMode {
     RESCAN_REFRESH  = 1, // scan database for unregistered/unused fields and update the field list

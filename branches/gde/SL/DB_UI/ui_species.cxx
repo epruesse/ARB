@@ -953,24 +953,18 @@ static void awtc_nn_search_all_listed(AW_window *aww) {
 
     GB_begin_transaction(gb_main);
 
-    AW_root *aw_root    = aww->get_root();
-    char    *dest_field = aw_root->awar(AWAR_NN_LISTED_DEST_FIELD)->read_string();
+    long        queriedCount = count_queried_items(query, QUERY_ALL_ITEMS);
+    GB_ERROR    error        = queriedCount ? NULL : "No species listed in query";
+    const char *dest_field   = NULL;
+    AW_root    *aw_root      = aww->get_root();
 
-    GB_ERROR error     = 0;
-    GB_TYPES dest_type = GBT_get_type_of_changekey(gb_main, dest_field, CHANGE_KEY_PATH);
-    if (dest_type != GB_STRING) {
-        error = "Please select a valid field";
-    }
-    else if (strcmp(dest_field, "name") == 0) {
-        error = "Field 'name' cannot be used as target field";
-    }
-
-    long max = count_queried_items(query, QUERY_ALL_ITEMS);
-    if (!max) {
-        if (!error) error = "No species listed in query";
-    }
     if (!error) {
-        arb_progress progress("Searching next neighbours", max);
+        dest_field = prepare_and_get_selected_itemfield(aw_root, AWAR_NN_LISTED_DEST_FIELD, gb_main, get_queried_itemtype(query));
+        error = dest_field ? NULL : GB_await_error();
+    }
+
+    if (!error) {
+        arb_progress progress("Searching next neighbours", queriedCount);
         progress.auto_subtitles("Species");
 
         int    pts            = aw_root->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int();
@@ -1035,8 +1029,8 @@ static void awtc_nn_search_all_listed(AW_window *aww) {
                     }
 
                     if (value) {
-                        GBDATA *gb_dest = GB_search(gb_species, dest_field, dest_type);
-                        ui_assert(dest_type == GB_STRING);
+                        ui_assert(GBT_get_type_of_changekey(gb_main, dest_field, CHANGE_KEY_PATH) == GB_STRING);
+                        GBDATA *gb_dest = GB_search(gb_species, dest_field, GB_STRING);
                         error = GB_write_string(gb_dest, GBS_mempntr(value));
                         GBS_strforget(value);
                     }
@@ -1052,7 +1046,6 @@ static void awtc_nn_search_all_listed(AW_window *aww) {
         free(ali_name);
     }
     GB_end_transaction_show_error(gb_main, error, aw_message);
-    free(dest_field);
 }
 
 static void awtc_mark_hits(AW_window *) {
@@ -1332,7 +1325,7 @@ static AW_window *create_next_neighbours_listed_window(AW_root *aw_root, DbQuery
         aws->create_toggle(AWAR_NN_LISTED_SCORED_ENTRIES);
         
         aws->at("field");
-        create_itemfield_selection_button(aws, FieldSelDef(AWAR_NN_LISTED_DEST_FIELD, query_get_gb_main(query), SPECIES_get_selector(), FIELD_FILTER_STRING_WRITEABLE), "field");
+        create_itemfield_selection_button(aws, FieldSelDef(AWAR_NN_LISTED_DEST_FIELD, query_get_gb_main(query), SPECIES_get_selector(), FIELD_FILTER_STRING_WRITEABLE, SF_ALLOW_NEW), "field");
 
         aws->at("go");
         aws->callback(awtc_nn_search_all_listed);

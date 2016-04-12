@@ -224,7 +224,7 @@ static void mark_action(AW_window *aws, AWT_canvas *ntw, Target target) {
                 if (s->second.occursInBothTrees()) commonSpeciesCount++;
             }
 
-            const char *fieldName    = prepare_and_get_selected_itemfield(aw_root, AWAR_TREE_COMPARE_WRITE_FIELD, gb_main, SPECIES_get_selector());
+            const char *fieldName    = prepare_and_get_selected_itemfield(aw_root, AWAR_TREE_COMPARE_WRITE_FIELD, gb_main, SPECIES_get_selector(), "level-change", FIF_ALLOW_NONE);
             bool        writeToField = fieldName;
             GB_ERROR    error        = GB_have_error() ? GB_await_error() : NULL;
 
