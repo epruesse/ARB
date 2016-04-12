@@ -78,8 +78,10 @@ item_sel_list.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/arbdbt.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/arbtools.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/attributes.h
+item_sel_list.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+item_sel_list.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_window.hxx

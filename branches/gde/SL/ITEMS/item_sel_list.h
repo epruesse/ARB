@@ -27,11 +27,12 @@
 #define PSEUDO_FIELD_ANY_FIELD  "[any field]"
 #define PSEUDO_FIELD_ALL_FIELDS "[all fields]"
 
-enum SelectedFields {
-    SF_STANDARD = 0,
-    SF_PSEUDO   = 1,
-    SF_HIDDEN   = 2,
-    // continue with 4, 8
+enum SelectableFields {
+    SF_STANDARD  = 0,  // normal fields
+    SF_PSEUDO    = 1,  // pseudo-fields (see defines above)
+    SF_HIDDEN    = 2,  // fields hidden by user
+    SF_ALLOW_NEW = 4,  // allow on-the-fly creation of new fields
+
     SF_ALL      = ((SF_HIDDEN<<1)-1),
 };
 
@@ -50,9 +51,9 @@ CONSTEXPR long FIELD_FILTER_PARS = FIELD_FILTER_STRING_READABLE; // @@@ used onl
 
 
 class Itemfield_Selection : public AW_DB_selection { // derived from a Noncopyable
-    long            type_filter;
-    SelectedFields  field_filter;
-    ItemSelector&   selector;
+    long             type_filter;
+    SelectableFields field_filter;
+    ItemSelector&    selector;
 
     bool shall_display_type(int key_type) const { return type_filter & (1 << key_type); }
 
@@ -60,7 +61,7 @@ public:
     Itemfield_Selection(AW_selection_list *sellist_,
                         GBDATA            *gb_key_data,
                         long               type_filter_,
-                        SelectedFields     field_filter_,
+                        SelectableFields   field_filter_,
                         ItemSelector&      selector_);
 
     void fill() OVERRIDE;
@@ -69,20 +70,20 @@ public:
 };
 
 class FieldSelDef {
-    std::string     awar_name;
-    GBDATA         *gb_main;
-    ItemSelector&   selector;
-    long            type_filter;
-    SelectedFields  field_filter;
+    std::string       awar_name;
+    GBDATA           *gb_main;
+    ItemSelector&     selector;
+    long              type_filter;
+    SelectableFields  field_filter;
 
 public:
-    FieldSelDef(const char *awar_name_, GBDATA *gb_main_, ItemSelector& selector_, long type_filter_, SelectedFields field_filter_ = SF_STANDARD)
+    FieldSelDef(const char *awar_name_, GBDATA *gb_main_, ItemSelector& selector_, long type_filter_, SelectableFields field_filter_ = SF_STANDARD)
     /*! parameter collection for itemfield-selections
      * @param awar_name_           the name of the awar bound to the selection list
      * @param gb_main_             the database
      * @param selector_            describes the item type, for which fields are shown
      * @param type_filter_         is a bitstring which controls what types will be shown in the selection list (several filters are predefined: 'FIELD_FILTER_...', FIELD_UNFILTERED)
-     * @param field_filter_        controls if pseudo-fields and/or hidden fields are added (defaults to SF_STANDARD)
+     * @param field_filter_        controls if pseudo-fields and/or hidden fields are added and whether new fields are allowed (defaults to SF_STANDARD)
      */
         : awar_name(awar_name_),
           gb_main(gb_main_),
@@ -100,12 +101,15 @@ public:
     DECLARE_ASSIGNMENT_OPERATOR(FieldSelDef);
 
     const char *get_awarname() const { return awar_name.c_str(); }
+    long get_type_filter() const { return type_filter; }
+    bool new_fields_allowed() const { return field_filter & SF_ALLOW_NEW; }
+
     Itemfield_Selection *build_sel(AW_selection_list *from_sellist) const;
 };
 
 Itemfield_Selection *create_itemfield_selection_list(  AW_window *aws, const FieldSelDef& selDef, const char *at);
 void                 create_itemfield_selection_button(AW_window *aws, const FieldSelDef& selDef, const char *at);
-
+const char          *prepare_and_get_selected_itemfield(AW_root *awr, const char *awar_name, GBDATA *gb_main, const ItemSelector& itemtype);
 
 enum RescanMode {
     RESCAN_REFRESH  = 1, // scan database for unregistered/unused fields and update the field list

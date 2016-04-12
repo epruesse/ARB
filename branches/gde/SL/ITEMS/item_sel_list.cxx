@@ -14,12 +14,16 @@
 #include "item_sel_list.h"
 
 #include <arbdbt.h>
+#include <arb_defs.h>
 #include <arb_global_defs.h>
+
+#include <aw_root.hxx>
+#include <aw_awar.hxx>
 
 Itemfield_Selection::Itemfield_Selection(AW_selection_list *sellist_,
                                          GBDATA            *gb_key_data,
                                          long               type_filter_,
-                                         SelectedFields     field_filter_,
+                                         SelectableFields   field_filter_,
                                          ItemSelector&      selector_)
     : AW_DB_selection(sellist_, gb_key_data)
     , type_filter(type_filter_)
@@ -31,11 +35,7 @@ Itemfield_Selection::Itemfield_Selection(AW_selection_list *sellist_,
 
 void Itemfield_Selection::fill() {
     if (field_filter & SF_PSEUDO) {
-#if defined(ARB_GTK)
-        insert_default(PSEUDO_FIELD_ANY_FIELD, PSEUDO_FIELD_ANY_FIELD);
-#else // ARB_MOTIF
-        insert(PSEUDO_FIELD_ANY_FIELD, PSEUDO_FIELD_ANY_FIELD);
-#endif
+        insert(PSEUDO_FIELD_ANY_FIELD,  PSEUDO_FIELD_ANY_FIELD);
         insert(PSEUDO_FIELD_ALL_FIELDS, PSEUDO_FIELD_ALL_FIELDS);
     }
 
@@ -79,7 +79,7 @@ void Itemfield_Selection::fill() {
     }
 
     if (!get_sellist()->get_default_value()) {
-        insert_default("<no field>", NO_FIELD_SELECTED);
+        insert_default((field_filter & SF_ALLOW_NEW) ? "<no or new field>" : "<no field>", NO_FIELD_SELECTED);
     }
 }
 
@@ -93,34 +93,186 @@ Itemfield_Selection *FieldSelDef::build_sel(AW_selection_list *from_sellist) con
     return new Itemfield_Selection(from_sellist, gb_key_data, type_filter, field_filter, selector);
 }
 
-Itemfield_Selection *create_itemfield_selection_list(AW_window *aws, const FieldSelDef& selDef, const char *at) {
-    if (at) aws->at(at);
+const int FIELDNAME_VISIBLE_CHARS = 20;
 
-    const bool FALLBACK2DEFAULT = true; // @@@ autodetect later (existing fields only->true, new fields allowed->false)
-    // @@@ expect no new fields allowed (later)
+static struct {
+    GB_TYPES    type;
+    const char *label;
+    const char *mnemonic;
+    const char *typeName;
+} creatable[] = {
+    { GB_INT,    "Rounded numerical", "R", "INT" },
+    { GB_FLOAT,  "Numerical",         "N", "FLOAT" },
+    { GB_STRING, "Ascii text",        "t", "STRING" }
+    // keep in sync with ../DB_UI/ui_species.cxx@FIELD_TYPE_DESCRIPTIONS
+};
 
-    AW_selection_list   *sellist   = aws->create_selection_list(selDef.get_awarname(), FALLBACK2DEFAULT);
-    Itemfield_Selection *selection = selDef.build_sel(sellist);
-    selection->refresh();
-    return selection;
+const char *prepare_and_get_selected_itemfield(AW_root *awr, const char *awar_name, GBDATA *gb_main, const ItemSelector& itemtype) {
+    /*! Reads awar used in create_itemfield_selection_button().
+     * If the user selected to create a new itemfield, the changekey is created and
+     * the content of the awar is corrected (i.e. ' (new TYPE)' gets removed).
+     *
+     * @return name of the itemfield (or NULL: if error -> error is exported, otherwise no field selected)
+     */
+
+    it_assert(!GB_have_error());
+
+    AW_awar    *awar  = awr->awar(awar_name);
+    const char *value = awar->read_char_pntr();
+    const char *isNew = strstr(value, " (new ");
+    GB_ERROR    error = NULL;
+
+    if (isNew) {
+        char *type  = strdup(isNew+6);
+        char *paren = strchr(type, ')');
+
+        if (!paren) error = GBS_global_string("Invalid awar-content ('%s')", value);
+        else {
+            paren[0]  = 0;
+            int found = -1;
+            for (unsigned i = 0; i<ARRAY_ELEMS(creatable) && found == -1; ++i) {
+                if (strcmp(creatable[i].typeName, type) == 0) found = i;
+            }
+
+            if (found == -1) error = GBS_global_string("Unknown type specified for new field ('%s')", type);
+            else {
+                char *fieldName   = GB_strpartdup(value, isNew-1);
+                error             = GB_check_hkey(fieldName);
+                if (!error) error = GBT_add_new_changekey_to_keypath(gb_main, fieldName, creatable[found].type, itemtype.change_key_path);
+                if (!error) {
+                    awar->write_string(fieldName);
+                    value = awar->read_char_pntr();
+                }
+                free(fieldName);
+            }
+        }
+        free(type);
+    }
+
+    if (!error && value && !value[0]) value = NO_FIELD_SELECTED; // interpret "" as NO_FIELD_SELECTED (compensates past wrong use)
+    if (error) {
+        GB_export_error(error);
+        value = NULL;
+    }
+    else {
+        it_assert(value);
+        if (strcmp(value, NO_FIELD_SELECTED) == 0) value = NULL;
+    }
+
+    return value;
+}
+
+inline const char *newNameAwarname(AW_awar *awar_field) { return GBS_global_string("tmp/%s/new/name", awar_field->awar_name); }
+inline const char *newTypeAwarname(AW_awar *awar_field) { return GBS_global_string("tmp/%s/new/type", awar_field->awar_name); }
+
+static void newFieldDef_changed_cb(AW_root *awr, AW_awar *awar_field, Itemfield_Selection *itemSel) {
+    static bool avoidRecursion = false;
+    if (!avoidRecursion) {
+        LocallyModify<bool> flag(avoidRecursion, true);
+
+        char *newFieldName = awr->awar(newNameAwarname(awar_field))->read_string();
+        if (newFieldName[0]) { // non-empty key
+            GBDATA         *gb_main = itemSel->get_gb_main();
+            GB_transaction  ta(gb_main);
+
+            GB_TYPES type = GBT_get_type_of_changekey(gb_main, newFieldName, itemSel->get_selector().change_key_path);
+            if (type == GB_NONE) { // a new key was specified
+                GB_TYPES selectedType = (GB_TYPES)awr->awar(newTypeAwarname(awar_field))->read_int();
+                for (unsigned i = 0; i<ARRAY_ELEMS(creatable); ++i) {
+                    if (creatable[i].type == selectedType) {
+                        awar_field->write_string(GBS_global_string_copy("%s (new %s)", newFieldName, creatable[i].typeName));
+                        break;
+                    }
+                }
+            }
+            else { // an existing key was specified
+                awar_field->rewrite_string(newFieldName);
+            }
+        }
+        free(newFieldName);
+    }
+    it_assert(!GB_have_error());
+}
+static void selField_changed_cb(AW_root *awr, AW_awar *awar_field, Itemfield_Selection *itemSel) {
+    const char *selected = awar_field->read_char_pntr();
+    if (strcmp(selected, NO_FIELD_SELECTED) != 0) {
+        GBDATA         *gb_main = itemSel->get_gb_main();
+        GB_transaction  ta(gb_main);
+
+        GB_TYPES type = GBT_get_type_of_changekey(gb_main, selected, itemSel->get_selector().change_key_path);
+        if (type != GB_NONE) {
+            awr->awar(newNameAwarname(awar_field))->write_string("");
+            awr->awar(newTypeAwarname(awar_field))->write_int(type);
+        }
+    }
+    it_assert(!GB_have_error());
 }
 
 static AW_window *createFieldSelectionPopup(AW_root *awr, FieldSelDef *selDef) {
-    AW_window_simple *aw_popup = new AW_window_simple;
+    AW_window_simple *aw_popup       = new AW_window_simple;
+    const bool        allowNewFields = selDef->new_fields_allowed();
 
-    aw_popup->init(awr, "SELECT_FIELD", "SELECT A FIELD"); // no need for unique id (nothing macro recorded here)
-    aw_popup->load_xfig("awt/field_sel.fig");
+    // Note: no need for unique ids in this window (nothing will be macro recorded here)
 
-    const bool FALLBACK2DEFAULT = true; // @@@ autodetect later (existing fields only->true, new fields allowed->false)
+    aw_popup->init(awr, "SELECT_FIELD", allowNewFields ? "Select or create new field" : "Select a field");
+    aw_popup->load_xfig(allowNewFields ? "awt/field_sel_new.fig" : "awt/field_sel.fig");
 
     aw_popup->at("sel");
     aw_popup->callback(AW_POPDOWN); // used as SELLIST_CLICK_CB (see #559); works here because macro recording only tracks awar change here
-    AW_selection_list *sellist = aw_popup->create_selection_list(selDef->get_awarname(), 1, 1, FALLBACK2DEFAULT);
-    selDef->build_sel(sellist)->refresh();
+    const bool FALLBACK2DEFAULT = !allowNewFields;
+
+    Itemfield_Selection *itemSel;
+    {
+        AW_selection_list   *sellist = aw_popup->create_selection_list(selDef->get_awarname(), 1, 1, FALLBACK2DEFAULT);
+        itemSel = selDef->build_sel(sellist);
+        itemSel->refresh();
+    }
 
     aw_popup->at("close");
     aw_popup->callback(AW_POPDOWN);
     aw_popup->create_button("@CLOSE", "CLOSE", "C");
+
+    if (allowNewFields) {
+        aw_popup->at("help");
+        aw_popup->callback(makeHelpCallback("field_sel_new.hlp"));
+        aw_popup->create_button("@HELP", "HELP", "H");
+
+        AW_awar *awar_field       = awr->awar(selDef->get_awarname()); // user-awar
+        char    *awarname_newname = strdup(newNameAwarname(awar_field));
+        char    *awarname_newtype = strdup(newTypeAwarname(awar_field));
+        long     allowedTypes     = selDef->get_type_filter();
+
+        int possibleTypes = 0;
+        int firstType     = -1;
+        for (unsigned i = 0; i<ARRAY_ELEMS(creatable); ++i) {
+            if (allowedTypes & (1<<creatable[i].type)) {
+                possibleTypes++;
+                if (firstType == -1) firstType = creatable[i].type;
+            }
+        }
+        it_assert(possibleTypes>0);
+
+        awr->awar_string(awarname_newname, "",        AW_ROOT_DEFAULT)->add_callback(makeRootCallback(newFieldDef_changed_cb, awar_field, itemSel));
+        awr->awar_int   (awarname_newtype, firstType, AW_ROOT_DEFAULT)->add_callback(makeRootCallback(newFieldDef_changed_cb, awar_field, itemSel));
+
+        awar_field->add_callback(makeRootCallback(selField_changed_cb, awar_field, itemSel));
+
+        aw_popup->at("name");
+        aw_popup->create_input_field(awarname_newname, FIELDNAME_VISIBLE_CHARS);
+
+        // show type selector even if only one type selectable (layout purposes)
+        aw_popup->at("type");
+        aw_popup->create_toggle_field(awarname_newtype, NULL, 0);
+        for (unsigned i = 0; i<ARRAY_ELEMS(creatable); ++i) {
+            if (allowedTypes & (1<<creatable[i].type)) {
+                aw_popup->insert_toggle(creatable[i].label, creatable[i].mnemonic, int(creatable[i].type));
+            }
+        }
+        aw_popup->update_toggle_field();
+
+        free(awarname_newtype);
+        free(awarname_newname);
+    }
 
     aw_popup->recalc_pos_atShow(AW_REPOS_TO_MOUSE); // always popup at current mouse-position (i.e. directly above the button)
     aw_popup->recalc_size_atShow(AW_RESIZE_USER);   // if user changes the size of any field-selection popup, that size will be used for future popups
@@ -131,15 +283,50 @@ static AW_window *createFieldSelectionPopup(AW_root *awr, FieldSelDef *selDef) {
 }
 
 void create_itemfield_selection_button(AW_window *aws, const FieldSelDef& selDef, const char *at) {
+    /*! Create a button that pops up a window allowing to select an item-field.
+     * Field may exist or not. Allows to specify type of the new field in the latter case.
+     *
+     * @param aws         parent window
+     * @param selDef      specifies details of field selection
+     * @param at          xfig label (ignored if NULL)
+     *
+     * If a new, not yet existing field is selected, the awar specified by 'selDef' is set
+     * to 'fieldname (new TYPE)'.
+     *
+     * At start of field-writing code:
+     * - use prepare_and_get_selected_itemfield() to create the changekey-info and to correct the fieldname (needed for new fields only).
+     *
+     * For each item written to:
+     * - use GBT_searchOrCreate_itemfield_according_to_changekey() to create the field
+     * - use GB_write_lossless_...() to write its value
+     */
     if (at) aws->at(at);
 
     int old_button_length = aws->get_button_length();
-    aws->button_length(20);
+    aws->button_length(FIELDNAME_VISIBLE_CHARS);
     aws->callback(makeCreateWindowCallback(createFieldSelectionPopup, new FieldSelDef(selDef)));
     aws->create_button("@sel_field", selDef.get_awarname());
     aws->button_length(old_button_length);
 }
 
+Itemfield_Selection *create_itemfield_selection_list(AW_window *aws, const FieldSelDef& selDef, const char *at) {
+    /*! Create a selection list allowing to select an item-field.
+     * Similar to create_itemfield_selection_button().
+     *
+     * Differences:
+     * - returns Itemfield_Selection -> allows to query list of fields (e.g. used in "Reorder fields")
+     * - does not allow to select a new, not yet existing field
+     */
+    if (at) aws->at(at);
+
+    const bool FALLBACK2DEFAULT = true;
+    it_assert(selDef.new_fields_allowed() == false); // to allow creation of new fields -> use create_itemfield_selection_button
+
+    AW_selection_list   *sellist   = aws->create_selection_list(selDef.get_awarname(), FALLBACK2DEFAULT);
+    Itemfield_Selection *selection = selDef.build_sel(sellist);
+    selection->refresh();
+    return selection;
+}
 
 // --------------------------------------------------------------------------------
 
@@ -147,8 +334,6 @@ void create_itemfield_selection_button(AW_window *aws, const FieldSelDef& selDef
 #ifndef TEST_UNIT_H
 #include <test_unit.h>
 #endif
-
-#include <arb_defs.h>
 
 void TEST_lossless_conversion() {
     GB_shell  shell;

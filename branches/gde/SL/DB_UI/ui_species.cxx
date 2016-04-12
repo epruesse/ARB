@@ -793,11 +793,12 @@ AW_window *DBUI::create_field_create_window(AW_root *root, BoundItemSel *bound_s
 
     aws->at("type");
     aws->create_toggle_field(AWAR_FIELD_CREATE_TYPE, "FIELD TYPE", "F");
-    aws->insert_toggle("Ascii Text",        "S", (int)GB_STRING);
+    aws->insert_toggle("Ascii text",        "S", (int)GB_STRING);
     aws->insert_toggle("Link",              "L", (int)GB_LINK);
-    aws->insert_toggle("Rounded Numerical", "N", (int)GB_INT);
+    aws->insert_toggle("Rounded numerical", "N", (int)GB_INT);
     aws->insert_toggle("Numerical",         "R", (int)GB_FLOAT);
-    aws->insert_toggle("MASK = 01 Text",    "0", (int)GB_BITS);
+    aws->insert_toggle("Bitmask (0/1)",     "0", (int)GB_BITS);
+    // keep in sync with ../ITEMS/item_sel_list.cxx@FIELD_TYPE_DESCRIPTIONS
     aws->update_toggle_field();
 
     aws->at("ok");
