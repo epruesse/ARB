@@ -1086,7 +1086,10 @@ char *GB_read_as_string(GBDATA *gbd) {
 }
 
 inline GB_ERROR cannot_use_fun4entry(const char *fun, GBDATA *gb_entry) {
-    return GBS_global_string("Error: Cannot use %s() with a field of type '%s'", fun, GB_read_key_pntr(gb_entry));
+    return GBS_global_string("Error: Cannot use %s() with a field of type %i (field=%s)",
+                             fun,
+                             GB_read_type(gb_entry),
+                             GB_read_key_pntr(gb_entry));
 }
 
 NOT4PERL uint8_t GB_read_lossless_byte(GBDATA *gbd, GB_ERROR& error) {
