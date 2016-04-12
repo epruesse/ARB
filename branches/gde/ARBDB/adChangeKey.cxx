@@ -12,8 +12,8 @@
 #include <arbdbt.h>
 #include "gb_local.h"
 
-// get the container of a species key description
 GBDATA *GBT_get_changekey(GBDATA *gb_main, const char *key, const char *change_key_path) {
+    // get the container of an item key description
 #if defined(WARN_TODO)
 #warning check if search for CHANGEKEY_NAME should be case-sensitive!
 #endif
@@ -31,6 +31,7 @@ GBDATA *GBT_get_changekey(GBDATA *gb_main, const char *key, const char *change_k
 }
 
 GB_TYPES GBT_get_type_of_changekey(GBDATA *gb_main, const char *field_name, const char *change_key_path) {
+    // get the type of an item key
     GB_TYPES  type = GB_NONE;
     GBDATA   *gbd  = GBT_get_changekey(gb_main, field_name, change_key_path);
 
@@ -49,12 +50,36 @@ static GB_ERROR gbt_set_type_of_changekey(GBDATA *gb_main, const char *field_nam
     GBDATA   *gbd   = GBT_get_changekey(gb_main, field_name, change_key_path);
 
     if (!gbd) {
-        error = GBS_global_string("Can't set type of nonexistent changekey " "\"%s\"", field_name);
+        error = GBS_global_string("Can't set type of nonexistent changekey \"%s\"", field_name);
     }
     else {
         error = GBT_write_int(gbd, CHANGEKEY_TYPE, type);
     }
     return error;
+}
+
+GBDATA *GBT_searchOrCreate_itemfield_according_to_changekey(GBDATA *gb_item, const char *field_name, const char *change_key_path) {
+    /*! search or create an item entry.
+     * If the entry exists, the result is identical to GB_search(gb_item, field_name, GB_FIND).
+     * If the entry does not exist, an entry with the type stored in the changekey-table will be created.
+     * @return created itemfield or NULL in case of error (which is exported in that case)
+     */
+
+    gb_assert(!GB_have_error());
+    GBDATA *gb_entry = GB_search(gb_item, field_name, GB_FIND);
+    if (!gb_entry) {
+        GB_clear_error();
+
+        GB_TYPES type = GBT_get_type_of_changekey(GB_get_root(gb_item), field_name, change_key_path);
+        if (type == GB_NONE) {
+            GB_export_errorf("Unknown changekey '%s' (cannot create)", field_name);
+        }
+        else {
+            gb_entry = GB_search(gb_item, field_name, type);
+        }
+    }
+    gb_assert(gb_entry || GB_have_error());
+    return gb_entry;
 }
 
 

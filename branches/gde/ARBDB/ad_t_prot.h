@@ -16,6 +16,7 @@
 /* adChangeKey.cxx */
 GBDATA *GBT_get_changekey(GBDATA *gb_main, const char *key, const char *change_key_path);
 GB_TYPES GBT_get_type_of_changekey(GBDATA *gb_main, const char *field_name, const char *change_key_path);
+GBDATA *GBT_searchOrCreate_itemfield_according_to_changekey(GBDATA *gb_item, const char *field_name, const char *change_key_path);
 GB_ERROR GBT_add_new_changekey_to_keypath(GBDATA *gb_main, const char *name, int type, const char *keypath);
 GB_ERROR GBT_add_new_changekey(GBDATA *gb_main, const char *name, int type);
 GB_ERROR GBT_add_new_gene_changekey(GBDATA *gb_main, const char *name, int type);
