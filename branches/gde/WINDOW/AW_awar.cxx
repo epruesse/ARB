@@ -361,7 +361,7 @@ AW_awar::AW_awar(AW_VARIABLE_TYPE var_type, const char *var_name,
             }
             case AW_FLOAT:
 #if defined(DUMP_AWAR_CHANGES)
-                fprintf(stderr, "creating awar_float '%s' with default value '%f'\n", var_name, default_value.d);
+                fprintf(stderr, "creating awar_float '%s' with default value '%f'\n", var_name, default_value.f);
 #endif // DUMP_AWAR_CHANGES
                 GB_write_float(gb_def, default_value.f);
                 break;
