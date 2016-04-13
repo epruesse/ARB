@@ -67,6 +67,7 @@ public:
     void fill() OVERRIDE;
 
     ItemSelector& get_selector() const { return selector; }
+    long get_type_filter() const { return type_filter; }
 };
 
 class FieldSelDef {

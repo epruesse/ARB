@@ -19,6 +19,7 @@
 
 #include <aw_root.hxx>
 #include <aw_awar.hxx>
+#include <aw_msg.hxx>
 
 Itemfield_Selection::Itemfield_Selection(AW_selection_list *sellist_,
                                          GBDATA            *gb_key_data,
@@ -209,7 +210,14 @@ static void newFieldDef_changed_cb(AW_root *awr, AW_awar *awar_field, Itemfield_
                 }
             }
             else { // an existing key was specified
-                awar_field->rewrite_string(newFieldName);
+                long type_filter = itemSel->get_type_filter();
+                if (type_filter & (1<<type)) {
+                    awar_field->rewrite_string(newFieldName);
+                }
+                else {
+                    awar_field->rewrite_string(NO_FIELD_SELECTED);
+                    aw_message(GBS_global_string("Field '%s' already exists, but has incompatible type", newFieldName));
+                }
             }
         }
         free(newFieldName);
