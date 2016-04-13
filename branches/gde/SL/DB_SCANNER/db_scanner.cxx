@@ -318,9 +318,7 @@ DbScanner *create_db_scanner(GBDATA         *gb_main,
                              const char     *edit_pos_fig,
                              const char     *edit_enable_pos_fig,
                              DB_SCANNERMODE  scannermode,
-                             const char     *rescan_pos_fig,         // DB_VIEWER
                              const char     *mark_pos_fig,
-                             long            type_filter,
                              ItemSelector&   selector)
 {
     /* create an unmapped scanner box and optional some buttons,
@@ -391,13 +389,6 @@ DbScanner *create_db_scanner(GBDATA         *gb_main,
         aws->at(edit_pos_fig);
         aws->callback(makeWindowCallback(editfield_value_changed, cbs));
         aws->create_text_field(cbs->awarname_editfield, 20, 10);
-    }
-
-    //!************* Create the rescan button ***************
-    if (rescan_pos_fig) {
-        aws->at(rescan_pos_fig);
-        aws->callback(makeWindowCallback(cbs->selector.selection_list_rescan_cb, cbs->gb_main, type_filter));
-        aws->create_button("RESCAN_DB", "RESCAN", "R");
     }
 
     scanner_id++;

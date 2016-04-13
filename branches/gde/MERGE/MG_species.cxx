@@ -921,7 +921,7 @@ AW_window *MG_create_merge_species_window(AW_root *awr, bool dst_is_new) {
 
         create_query_box(aws, &awtqs, "db1");
 
-        DbScanner *scanner = create_db_scanner(GLOBAL_gb_src, aws, "box1", 0, 0, 0, DB_SCANNER, 0, 0, FIELD_FILTER_NDS, awtqs.get_queried_itemtype());
+        DbScanner *scanner = create_db_scanner(GLOBAL_gb_src, aws, "box1", 0, 0, 0, DB_SCANNER, 0, awtqs.get_queried_itemtype());
         scanner_src = scanner;
         aws->get_root()->awar(AWAR_SPECIES_SRC)->add_callback(makeRootCallback(MG_map_species, 1));
     }
@@ -953,7 +953,7 @@ AW_window *MG_create_merge_species_window(AW_root *awr, bool dst_is_new) {
 
         create_query_box(aws, &awtqs, "db2");
 
-        DbScanner *scanner = create_db_scanner(GLOBAL_gb_dst, aws, "box2", 0, 0, 0, DB_SCANNER, 0, 0, FIELD_FILTER_NDS, awtqs.get_queried_itemtype());
+        DbScanner *scanner = create_db_scanner(GLOBAL_gb_dst, aws, "box2", 0, 0, 0, DB_SCANNER, 0, awtqs.get_queried_itemtype());
         scanner_dst = scanner;
         aws->get_root()->awar(AWAR_SPECIES_DST)->add_callback(makeRootCallback(MG_map_species, 2));
     }
