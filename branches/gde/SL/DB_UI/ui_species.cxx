@@ -887,8 +887,8 @@ void DBUI::insert_field_admin_menuitems(AW_window *aws, GBDATA *gb_main) {
     aws->insert_menu_topic(aws->local_id("spec_create_field"),   "Create fields ...",      "C", "spaf_create.hlp",  AWM_ALL, makeCreateWindowCallback(create_field_create_window,   bis));
     aws->insert_menu_topic(aws->local_id("spec_convert_field"),  "Convert fields ...",     "t", "spaf_convert.hlp", AWM_EXP, makeCreateWindowCallback(create_field_convert_window,  bis));
     aws->sep______________();
-    aws->insert_menu_topic("spec_unhide_fields",  "Show all hidden fields", "S", "scandb.hlp", AWM_ALL, makeWindowCallback(species_field_selection_list_unhide_all_cb, gb_main, FIELD_FILTER_NDS));
-    aws->insert_menu_topic("spec_refresh_fields", "Refresh fields",         "f", "scandb.hlp", AWM_ALL, makeWindowCallback(species_field_selection_list_update_cb,     gb_main, FIELD_FILTER_NDS));
+    aws->insert_menu_topic("spec_unhide_fields",  "Show all hidden fields", "S", "scandb.hlp", AWM_ALL, makeWindowCallback(species_field_selection_list_unhide_all_cb, gb_main));
+    aws->insert_menu_topic("spec_refresh_fields", "Refresh fields",         "f", "scandb.hlp", AWM_ALL, makeWindowCallback(species_field_selection_list_update_cb,     gb_main));
 }
 
 inline int get_and_fix_range_from_awar(AW_awar *awar) {

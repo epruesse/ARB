@@ -128,17 +128,17 @@ enum RescanMode {
 
 // @@@ generalize (use BoundItemSel)
 
-void species_field_selection_list_rescan(GBDATA *gb_main, long bitfilter, RescanMode mode);
-void gene_field_selection_list_rescan   (GBDATA *gb_main, long bitfilter, RescanMode mode);
+void species_field_selection_list_rescan(GBDATA *gb_main, RescanMode mode);
+void gene_field_selection_list_rescan   (GBDATA *gb_main, RescanMode mode);
 
-void species_field_selection_list_unhide_all_cb(AW_window*, GBDATA *gb_main, long bitfilter);
-void species_field_selection_list_update_cb    (AW_window*, GBDATA *gb_main, long bitfilter);
+void species_field_selection_list_unhide_all_cb(AW_window*, GBDATA *gb_main);
+void species_field_selection_list_update_cb    (AW_window*, GBDATA *gb_main);
 
-void gene_field_selection_list_unhide_all_cb(AW_window*, GBDATA *gb_main, long bitfilter);
-void gene_field_selection_list_update_cb    (AW_window*, GBDATA *gb_main, long bitfilter);
+void gene_field_selection_list_unhide_all_cb(AW_window*, GBDATA *gb_main);
+void gene_field_selection_list_update_cb    (AW_window*, GBDATA *gb_main);
 
-void experiment_field_selection_list_unhide_all_cb(AW_window*, GBDATA *gb_main, long bitfilter);
-void experiment_field_selection_list_update_cb    (AW_window*, GBDATA *gb_main, long bitfilter);
+void experiment_field_selection_list_unhide_all_cb(AW_window*, GBDATA *gb_main);
+void experiment_field_selection_list_update_cb    (AW_window*, GBDATA *gb_main);
 
 #else
 #error item_sel_list.h included twice

@@ -52,7 +52,7 @@ struct MutableItemSelector { // @@@ remove AW_root arguments!
     void (*update_item_awars)(GBDATA* gb_main, AW_root *aw_root, const char *item_name);
     char *(*generate_item_id)(GBDATA *gb_main, GBDATA *gb_item); // @@@ remove parameter 'gb_main'
     GBDATA *(*find_item_by_id)(GBDATA *gb_main, const char *id);
-    void (*selection_list_rescan_cb)(AW_window*, GBDATA *gb_main, long bitfilter);
+    void (*selection_list_rescan_cb)(AW_window*, GBDATA *gb_main);
 
     int item_name_length; // -1 means "unknown" (might be long)
 

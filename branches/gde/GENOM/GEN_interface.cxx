@@ -936,8 +936,8 @@ static void GEN_create_field_items(AW_window *aws, GBDATA *gb_main) {
     aws->insert_menu_topic(aws->local_id("gen_delete_field"),   "Delete/Hide field ...", "D", "spaf_delete.hlp",  AD_F_ALL, makeCreateWindowCallback(DBUI::create_field_delete_window,   bis));
     aws->insert_menu_topic(aws->local_id("gen_create_field"),   "Create fields ...",     "C", "spaf_create.hlp",  AD_F_ALL, makeCreateWindowCallback(DBUI::create_field_create_window,   bis));
     aws->sep______________();
-    aws->insert_menu_topic("gen_unhide_fields",  "Show all hidden fields", "S", "scandb.hlp", AD_F_ALL, makeWindowCallback(gene_field_selection_list_unhide_all_cb, gb_main, FIELD_FILTER_NDS));
-    aws->insert_menu_topic("gen_refresh_fields", "Refresh fields",         "f", "scandb.hlp", AD_F_ALL, makeWindowCallback(gene_field_selection_list_update_cb,     gb_main, FIELD_FILTER_NDS));
+    aws->insert_menu_topic("gen_unhide_fields",  "Show all hidden fields", "S", "scandb.hlp", AD_F_ALL, makeWindowCallback(gene_field_selection_list_unhide_all_cb, gb_main));
+    aws->insert_menu_topic("gen_refresh_fields", "Refresh fields",         "f", "scandb.hlp", AD_F_ALL, makeWindowCallback(gene_field_selection_list_update_cb,     gb_main));
 }
 
 #if defined(WARN_TODO)
