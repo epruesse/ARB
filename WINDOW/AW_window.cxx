@@ -1449,26 +1449,6 @@ void AW_server_callback(Widget /*wgt*/, XtPointer aw_cb_struct, XtPointer /*call
 // force-diff-sync 2964732647236 (remove after merging back to trunk)
 // ----------------------------------------------------------------------
 
-void AW_trigger_window_local_action(AW_window *aws, const char *action_id) {
-    /*! Simulates an action in window 'aws', just as if user clicked the corresponding
-     *  GUI element (e.g. a button).
-     *
-     *  Can e.g. be used to auto-popdown a window after selecting a list entry.
-     *  Using AW_POPDOWN directly as callback of a selection list does not work (see #559)
-     */
-    AW_root    *awr             = aws->get_root();
-    const char *local_action_id = aws->local_id(action_id);
-
-    awr->track_action(local_action_id);
-    AW_cb *cb = awr->search_remote_command(local_action_id);
-    if (cb) {
-        cb->run_callbacks();
-    }
-    else {
-        aw_message(GBS_global_string("Unknown action '%s'", local_action_id));
-    }
-}
-
 void AW_window::recalc_pos_atShow(AW_PosRecalc pr) {
     recalc_pos_at_show = pr;
 }
