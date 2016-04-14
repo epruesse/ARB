@@ -120,8 +120,6 @@ void AW_normal_cursor(AW_root *);
 
 void AW_openURL(AW_root *aw_root, const char *url);
 
-void AW_trigger_window_local_action(AW_window *aws, const char *action_id);
-
 typedef void (*AW_cb_struct_guard)();
 typedef WindowCallbackSimple AnyWinCB; // used to check whether function is contained in callback-list (does not check parameters!) 
 
