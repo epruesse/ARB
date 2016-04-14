@@ -361,19 +361,25 @@ static void update_ptserver_button(AW_root *, AW_awar *awar_ptserver, AW_awar *a
     free(readable_name);
 }
 
+static void auto_popdown_ptserver_selection_cb(AW_root*, AW_window_simple *aw_popup) {
+    aw_popup->hide();
+}
+
 static AW_window *create_PTSERVER_selection_window(AW_root *aw_root, const char *varname) {
     AW_window_simple *aw_popup = new AW_window_simple;
 
     aw_popup->init(aw_root, "SELECT_PT_SERVER", "Select a PT-Server");
     aw_popup->auto_space(10, 10);
 
+    const char *CLOSE_ID = "CLOSE";
+
     aw_popup->at_newline();
-    aw_popup->callback(AW_POPDOWN); // @@@ used as SELLIST_CLICK_CB (see #559)
+    aw_root->awar(varname)->add_callback(makeRootCallback(auto_popdown_ptserver_selection_cb, aw_popup));
     AW_selection_list *sellist = aw_popup->create_selection_list(varname, PT_SERVERNAME_SELLIST_WIDTH, 20, true);
 
     aw_popup->at_newline();
     aw_popup->callback(AW_POPDOWN);
-    aw_popup->create_button("CLOSE", "CLOSE", "C");
+    aw_popup->create_button(CLOSE_ID, "CLOSE", "C");
 
     aw_popup->window_fit();
     aw_popup->recalc_pos_atShow(AW_REPOS_TO_MOUSE);
