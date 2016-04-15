@@ -1389,12 +1389,6 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone, AWT_canvas **re
             }
             awm->close_sub_menu();
 
-            awm->insert_sub_menu("WL specials", "W", AWM_EXP);
-            {
-                awm->insert_menu_topic(awm->local_id("view_probe_group_result"), "View probe group result", "V", "", AWM_EXP, makeCreateWindowCallback(create_probe_group_result_window, ntw));
-            }
-            awm->close_sub_menu();
-
             awm->sep______________();
             awm->insert_menu_topic("xterm", "Start XTERM", "X", 0, AWM_ALL, NT_xterm);
             awm->sep______________();
