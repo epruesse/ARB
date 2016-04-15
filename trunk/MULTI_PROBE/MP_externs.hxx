@@ -22,11 +22,11 @@ void MP_show_probes_in_tree(AW_window *aww);
 void MP_show_probes_in_tree_move(AW_window *aww, bool backward, AW_selection_list *resultProbesList);
 void MP_popup_result_window(AW_window *aww);
 void MP_delete_selected(UNFIXED, AW_selection_list *sellist);
-void MP_result_chosen(AW_window *aww);
+void MP_result_combination_chosen(AW_root *aw_root);
 void MP_close_main(AW_window *aww);
 void MP_group_all_except_marked(AW_window *aww);
 void MP_normal_colors_in_tree(AW_window *aww);
-void MP_selected_chosen(AW_window *aww);
+void MP_selected_chosen(AW_root *aw_root);
 
 bool MP_aborted(int gen_cnt, double avg_fit, double min_fit, double max_fit, arb_progress& progress);
 
