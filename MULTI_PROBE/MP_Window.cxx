@@ -58,7 +58,7 @@ AW_window_simple *MP_Window::create_result_window(AW_root *aw_root) {
         result_window->create_input_field(MP_AWAR_RESULTPROBESCOMMENT);
 
         result_window->at("box");
-        result_window->callback(MP_result_chosen); // @@@ used as SELLIST_CLICK_CB (see #559)
+        aw_root->awar(MP_AWAR_RESULTPROBES)->add_callback(MP_result_combination_chosen);
         result_probes_list = result_window->create_selection_list(MP_AWAR_RESULTPROBES, true);
         result_probes_list->set_file_suffix("mpr");
         result_probes_list->insert_default("", "");
@@ -363,8 +363,9 @@ MP_Window::MP_Window(AW_root *aw_root, GBDATA *gb_main) {
 
     aws->button_length(7);
     aws->at("Selectedprobes");
-    aws->callback(MP_selected_chosen); // @@@ used as SELLIST_CLICK_CB (see #559)
+    aw_root->awar(MP_AWAR_SELECTEDPROBES)->add_callback(MP_selected_chosen);
     selected_list = aws->create_selection_list(MP_AWAR_SELECTEDPROBES, max_seq_col, max_seq_hgt, true);
+
     const StorableSelectionList *storable_selected_list = new StorableSelectionList(TypedSelectionList("prb", selected_list, "probes", "selected_probes"), mp_list2file, mp_file2list);
 
     selected_list->insert_default("", "");
@@ -402,7 +403,7 @@ MP_Window::MP_Window(AW_root *aw_root, GBDATA *gb_main) {
     }
 
     aws->at("Quality");
-    aws->callback(MP_cache_sonden);
+    aws->callback(MP_cache_sonden); // @@@ do not bind callback to option menus (rel. #559) // @@@ search for occurrences arb-wide
     aws->create_option_menu(MP_AWAR_QUALITY, true);
     aws->insert_option("High Priority", "", 5);
     aws->insert_option("       4", "", 4);
