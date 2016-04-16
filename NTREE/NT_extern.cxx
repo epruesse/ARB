@@ -206,7 +206,7 @@ static void nt_create_all_awars(AW_root *awr) {
     create_probe_design_variables(awr, AW_ROOT_DEFAULT, GLOBAL.gb_main);
     create_primer_design_variables(awr, AW_ROOT_DEFAULT, GLOBAL.gb_main);
     create_trees_var(awr, AW_ROOT_DEFAULT);
-    DBUI::create_dbui_awars(awr, AW_ROOT_DEFAULT);
+    DBUI::create_dbui_awars(awr);
     AP_create_consensus_var(awr, AW_ROOT_DEFAULT);
     {
         GB_ERROR gde_err = GDE_init(awr, AW_ROOT_DEFAULT, GLOBAL.gb_main, 0, ARB_format_alignment, GDE_WINDOWTYPE_DEFAULT);

@@ -41,7 +41,7 @@ namespace DBUI {
 
     void insert_field_admin_menuitems(AW_window *aws, GBDATA *gb_main);
 
-    void create_dbui_awars(AW_root *aw_root, AW_default aw_def);
+    void create_dbui_awars(AW_root *aw_root);
 
     void init_info_window(AW_root *aw_root, AW_window_simple_menu *aws, const ItemSelector& itemType, int detach_id);
 
