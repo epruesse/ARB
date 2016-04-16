@@ -119,8 +119,7 @@ AW_window *NT_create_alignment_admin_window(AW_root *root, AW_window *aw_popmedo
     return ALI_create_admin_window(root, ntreeAliAdmin);
 }
 
-AW_window *NT_create_select_alignment_window(AW_root *awr)
-{
+AW_window *NT_create_select_alignment_window(AW_root *awr) {
     static AW_window_simple *aws = 0;
     if (!aws) {
         aws = new AW_window_simple;
@@ -129,8 +128,8 @@ AW_window *NT_create_select_alignment_window(AW_root *awr)
         aws->load_xfig("select_simple.fig");
 
         aws->at("selection");
-        aws->callback(AW_POPDOWN); // @@@ used as SELLIST_CLICK_CB (see #559)
-        awt_create_ALI_selection_list(GLOBAL.gb_main, (AW_window *)aws, AWAR_DEFAULT_ALIGNMENT, "*=");
+        awr->awar(AWAR_DEFAULT_ALIGNMENT)->add_callback(makeRootCallback(awt_auto_popdown_cb, aws));
+        awt_create_ALI_selection_list(GLOBAL.gb_main, aws, AWAR_DEFAULT_ALIGNMENT, "*=");
 
         aws->auto_space(5, 5);
         aws->button_length(6);
