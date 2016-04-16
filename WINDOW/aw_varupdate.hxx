@@ -29,6 +29,16 @@ class VarUpdateInfo : virtual Noncopyable { // used to refresh single items on c
         TS() : sellist(NULL) {}
     } ts;
 
+    void check_unwanted_callback() {
+#if defined(DEVEL_RALF)
+        if (cbs) {
+            fprintf(stderr, "Warning: Unwanted user-callback bound to VarUpdateInfo. Should be rewritten using an awar-callback\n");
+        }
+        // aw_assert(!cbs); // @@@ generally unwanted (see #559)
+        // @@@ if this assertion stops failing -> remove cbs from VarUpdateInfo!
+#endif
+    }
+
 public:
     VarUpdateInfo(AW_window *aw, Widget w, AW_widget_type wtype, AW_awar *a, AW_cb *cbs_)
         : aw_parent(aw),
@@ -37,7 +47,9 @@ public:
           awar(a),
           value(a),
           cbs(cbs_)
-    {}
+    {
+        check_unwanted_callback();
+    }
     template<typename T>
     VarUpdateInfo(AW_window *aw, Widget w, AW_widget_type wtype, AW_awar *a, T t, AW_cb *cbs_)
         : aw_parent(aw),
@@ -46,7 +58,9 @@ public:
           awar(a),
           value(t),
           cbs(cbs_)
-    {}
+    {
+        check_unwanted_callback();
+    }
 
     void change_from_widget(XtPointer call_data);
 

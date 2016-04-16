@@ -173,7 +173,7 @@ void VarUpdateInfo::change_from_widget(XtPointer call_data) {
         aw_message(error);
     }
     else {
-        if (cbs && run_cb) cbs->run_callbacks();
+        if (cbs && run_cb) cbs->run_callbacks(); // @@@ generally unwanted callback (see #559)
         root->value_changed = false;
 
         if (GB_have_error()) aw_message(GB_await_error()); // show error exported by awar-change-callback
@@ -1350,7 +1350,7 @@ AW_selection_list* AW_window::create_selection_list(const char *var_name, int co
 
 
     // user-own callback
-    cbs = _callback;
+    cbs = _callback; // @@@ generally unwanted (see #559)
 
     // callback for enter
     if (vs) {
