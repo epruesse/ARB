@@ -167,15 +167,15 @@ static void NT_toggle_expert_mode(AW_window *aww) { aww->get_root()->awar(AWAR_E
 static void NT_toggle_focus_policy(AW_window *aww) { aww->get_root()->awar(AWAR_AW_FOCUS_FOLLOWS_MOUSE)->toggle_toggle(); }
 #endif
 
-static void nt_create_all_awars(AW_root *awr, AW_default def) {
+static void nt_create_all_awars(AW_root *awr) {
     // creates awars for all modules reachable from ARB_NT main window
 
-    awr->awar_string(AWAR_FOOTER, "", def);
+    awr->awar_string(AWAR_FOOTER, "", AW_ROOT_DEFAULT);
     if (GB_read_clients(GLOBAL.gb_main)>=0) {
         awr->awar_string(AWAR_TREE, "", GLOBAL.gb_main);
     }
     else {
-        awr->awar_string(AWAR_TREE, "", def);
+        awr->awar_string(AWAR_TREE, "", AW_ROOT_DEFAULT);
     }
 
     awr->awar_string(AWAR_SPECIES_NAME, "",     GLOBAL.gb_main);
@@ -188,51 +188,51 @@ static void nt_create_all_awars(AW_root *awr, AW_default def) {
 
     awr->awar_string(AWAR_SAI_COLOR_STR, "", GLOBAL.gb_main); // sai visualization in probe match
 
-    GEN_create_awars(awr, def, GLOBAL.gb_main);
-    EXP_create_awars(awr, def, GLOBAL.gb_main);
+    GEN_create_awars(awr, AW_ROOT_DEFAULT, GLOBAL.gb_main);
+    EXP_create_awars(awr, AW_ROOT_DEFAULT, GLOBAL.gb_main);
 #if defined(DEBUG)
-    AWT_create_db_browser_awars(awr, def);
+    AWT_create_db_browser_awars(awr, AW_ROOT_DEFAULT);
 #endif // DEBUG
 
     AW_create_namesadmin_awars(awr, GLOBAL.gb_main);
 
-    awr->awar_int(AWAR_SECURITY_LEVEL, 0, def);
+    awr->awar_int(AWAR_SECURITY_LEVEL, 0, AW_ROOT_DEFAULT);
     awr->awar(AWAR_SECURITY_LEVEL)->add_callback(nt_changesecurity);
 #if defined(DEBUG) && 0
     awr->awar(AWAR_SECURITY_LEVEL)->write_int(6); // no security for debugging..
 #endif // DEBUG
 
-    create_insertDeleteColumn_variables(awr, def);
-    create_probe_design_variables(awr, def, GLOBAL.gb_main);
-    create_primer_design_variables(awr, def, GLOBAL.gb_main);
-    create_trees_var(awr, def);
-    DBUI::create_dbui_awars(awr, def);
-    AP_create_consensus_var(awr, def);
+    create_insertDeleteColumn_variables(awr, AW_ROOT_DEFAULT);
+    create_probe_design_variables(awr, AW_ROOT_DEFAULT, GLOBAL.gb_main);
+    create_primer_design_variables(awr, AW_ROOT_DEFAULT, GLOBAL.gb_main);
+    create_trees_var(awr, AW_ROOT_DEFAULT);
+    DBUI::create_dbui_awars(awr, AW_ROOT_DEFAULT);
+    AP_create_consensus_var(awr, AW_ROOT_DEFAULT);
     {
-        GB_ERROR gde_err = GDE_init(awr, def, GLOBAL.gb_main, 0, ARB_format_alignment, GDE_WINDOWTYPE_DEFAULT);
+        GB_ERROR gde_err = GDE_init(awr, AW_ROOT_DEFAULT, GLOBAL.gb_main, 0, ARB_format_alignment, GDE_WINDOWTYPE_DEFAULT);
         if (gde_err) GBK_terminatef("Fatal: %s", gde_err);
     }
-    NT_create_transpro_variables(awr, def);
-    NT_create_resort_awars(awr, def);
-    NT_create_compare_taxonomy_awars(awr, def);
+    NT_create_transpro_variables(awr, AW_ROOT_DEFAULT);
+    NT_create_resort_awars(awr, AW_ROOT_DEFAULT);
+    NT_create_compare_taxonomy_awars(awr, AW_ROOT_DEFAULT);
     NT_create_trackAliChanges_Awars(awr, GLOBAL.gb_main);
 
-    NT_create_alignment_vars(awr, def, GLOBAL.gb_main);
-    NT_create_extendeds_vars(awr, def, GLOBAL.gb_main);
-    create_nds_vars(awr, def, GLOBAL.gb_main, false);
-    create_export_nds_awars(awr, def);
+    NT_create_alignment_vars(awr, AW_ROOT_DEFAULT, GLOBAL.gb_main);
+    NT_create_extendeds_vars(awr, AW_ROOT_DEFAULT, GLOBAL.gb_main);
+    create_nds_vars(awr, AW_ROOT_DEFAULT, GLOBAL.gb_main, false);
+    create_export_nds_awars(awr, AW_ROOT_DEFAULT);
     TREE_create_awars(awr, GLOBAL.gb_main);
 
     awr->awar_string(AWAR_ERROR_MESSAGES, "", GLOBAL.gb_main);
     awr->awar_string(AWAR_DB_COMMENT, "<no description>", GLOBAL.gb_main);
 
     AWTC_create_submission_variables(awr, GLOBAL.gb_main);
-    NT_createConcatenationAwars(awr, def, GLOBAL.gb_main);
-    NT_createValidNamesAwars(awr, def); // lothar
-    SQ_create_awars(awr, def);
-    RefEntries::create_refentries_awars(awr, def);
+    NT_createConcatenationAwars(awr, AW_ROOT_DEFAULT, GLOBAL.gb_main);
+    NT_createValidNamesAwars(awr, AW_ROOT_DEFAULT); // lothar
+    SQ_create_awars(awr, AW_ROOT_DEFAULT);
+    RefEntries::create_refentries_awars(awr, AW_ROOT_DEFAULT);
 
-    NT_create_multifurcate_tree_awars(awr, def);
+    NT_create_multifurcate_tree_awars(awr, AW_ROOT_DEFAULT);
 
     GB_ERROR error = ARB_bind_global_awars(GLOBAL.gb_main);
     if (!error) {
@@ -240,7 +240,7 @@ static void nt_create_all_awars(AW_root *awr, AW_default def) {
         awar_expert->add_callback(expert_mode_changed_cb);
         awar_expert->touch();
 
-        awt_create_aww_vars(awr, def);
+        awt_create_aww_vars(awr, AW_ROOT_DEFAULT);
     }
 
     if (error) aw_message(error);
@@ -1681,7 +1681,7 @@ AWT_canvas *NT_create_main_window(AW_root *aw_root) {
     GB_ERROR error = GB_request_undo_type(GLOBAL.gb_main, GB_UNDO_NONE);
     if (error) aw_message(error);
 
-    nt_create_all_awars(aw_root, AW_ROOT_DEFAULT);
+    nt_create_all_awars(aw_root);
 
     AWT_canvas *ntw = NULL;
     AW_window  *aww = popup_new_main_window(aw_root, 0, &ntw);
