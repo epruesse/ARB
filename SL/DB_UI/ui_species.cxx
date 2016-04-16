@@ -835,17 +835,17 @@ static void field_convert_commit_cb(AW_window *aws, BoundItemSel *bound_selector
     GB_end_transaction_show_error(gb_main, error, aw_message);
 }
 
-static void field_convert_update_typesel_cb(AW_window *aws, BoundItemSel *bound_selector) {
+static void field_convert_update_typesel_cb(AW_root *root, BoundItemSel *bound_selector) {
     ItemSelector& selector = bound_selector->selector;
+    int type;
+    {
+        GBDATA         *gb_main = bound_selector->gb_main;
+        GB_transaction  ta(gb_main);
 
-    AW_root *root    = aws->get_root();
-    GBDATA  *gb_main = bound_selector->gb_main;
-
-    GB_push_transaction(gb_main);
-    int type = GBT_get_type_of_changekey(gb_main,
+        type = GBT_get_type_of_changekey(gb_main,
                                          root->awar(itemAwar(AWAR_FIELD_CONVERT_SOURCE_TMPL, selector))->read_char_pntr(),
                                          selector.change_key_path);
-    GB_pop_transaction(gb_main);
+    }
 
     root->awar(itemAwar(AWAR_FIELD_CONVERT_TYPE_TMPL, selector))->write_int(type);
 }
@@ -853,14 +853,13 @@ static void field_convert_update_typesel_cb(AW_window *aws, BoundItemSel *bound_
 static AW_window *create_field_convert_window(AW_root *root, BoundItemSel *bound_selector) {
     ItemSelector& selector = bound_selector->selector;
 
-    init_itemspecific_DBUI_awars(root, selector);
-
     static AW_window_simple *awsa[QUERY_ITEM_TYPES];
     if (awsa[selector.type]) return awsa[selector.type];
 
     AW_window_simple *aws = new AW_window_simple;
     awsa[selector.type]  = aws;
 
+    init_itemspecific_DBUI_awars(root, selector);
     init_itemType_specific_window(root, aws, selector, "CONVERT_FIELD", "Convert %s field");
     aws->load_xfig("ad_conv.fig");
 
@@ -872,8 +871,9 @@ static AW_window *create_field_convert_window(AW_root *root, BoundItemSel *bound
     aws->callback(makeHelpCallback("spaf_convert.hlp"));
     aws->create_button("HELP", "Help", "H");
 
-    aws->callback(makeWindowCallback(field_convert_update_typesel_cb, bound_selector)); // @@@ used as SELLIST_CLICK_CB (see #559)
-    create_selection_list_on_itemfields(bound_selector->gb_main, aws, itemAwar(AWAR_FIELD_CONVERT_SOURCE_TMPL, selector), true, -1, "source", 0, selector, 40, 20, SF_HIDDEN, NULL);
+    const char *awarname_field = itemAwar(AWAR_FIELD_CONVERT_SOURCE_TMPL, selector);
+    root->awar(awarname_field)->add_callback(makeRootCallback(field_convert_update_typesel_cb, bound_selector));
+    create_selection_list_on_itemfields(bound_selector->gb_main, aws, awarname_field, true, -1, "source", 0, selector, 40, 20, SF_HIDDEN, NULL);
 
     aws->at("typesel");
     aws->create_toggle_field(itemAwar(AWAR_FIELD_CONVERT_TYPE_TMPL, selector), NULL, "F");
