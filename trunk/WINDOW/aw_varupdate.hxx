@@ -37,6 +37,11 @@ class VarUpdateInfo : virtual Noncopyable { // used to refresh single items on c
         // aw_assert(!cbs); // @@@ generally unwanted (see #559)
         // @@@ if this assertion stops failing -> remove cbs from VarUpdateInfo!
 #endif
+#if defined(ASSERTION_USED)
+        if (cbs) {
+            aw_assert(widget_type != AW_WIDGET_SELECTION_LIST); // binding callbacks to selection lists is obsolete (see #559)
+        }
+#endif
     }
 
 public:
