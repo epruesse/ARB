@@ -858,7 +858,7 @@ static AW_window *create_field_convert_window(AW_root *root, BoundItemSel *bound
     aws->callback(makeHelpCallback("spaf_convert.hlp"));
     aws->create_button("HELP", "Help", "H");
 
-    aws->callback(makeWindowCallback(field_convert_update_typesel_cb, bound_selector));
+    aws->callback(makeWindowCallback(field_convert_update_typesel_cb, bound_selector)); // @@@ used as SELLIST_CLICK_CB (see #559)
     create_selection_list_on_itemfields(bound_selector->gb_main, aws, AWAR_FIELD_CONVERT_SOURCE, true, -1, "source", 0, selector, 40, 20, SF_HIDDEN, NULL);
 
     aws->at("typesel");

@@ -367,13 +367,13 @@ DbScanner *create_db_scanner(GBDATA         *gb_main,
     //!************* Create the enable edit selector ***************
     if (edit_enable_pos_fig) {
         aws->at(edit_enable_pos_fig);
-        aws->callback(makeWindowCallback(remap_edit_box, cbs));
+        aws->callback(makeWindowCallback(remap_edit_box, cbs)); // @@@ used as TOGGLE_CLICK_CB (see #559)
         aws->create_toggle(cbs->awarname_edit_enabled);
     }
 
     if (mark_pos_fig) {
         aws->at(mark_pos_fig);
-        aws->callback(makeWindowCallback(toggle_marked_cb, cbs));
+        aws->callback(makeWindowCallback(toggle_marked_cb, cbs)); // @@@ used as TOGGLE_CLICK_CB (see #559)
         aws->create_toggle(cbs->awarname_mark);
     }
 
@@ -389,7 +389,7 @@ DbScanner *create_db_scanner(GBDATA         *gb_main,
         aw_root->awar_string(cbs->awarname_editfield, "", AW_ROOT_DEFAULT);
 
         aws->at(edit_pos_fig);
-        aws->callback(makeWindowCallback(editfield_value_changed, cbs));
+        aws->callback(makeWindowCallback(editfield_value_changed, cbs)); // @@@ used as TEXTFIELD_CB (see #559);
         aws->create_text_field(cbs->awarname_editfield, 20, 10);
     }
 

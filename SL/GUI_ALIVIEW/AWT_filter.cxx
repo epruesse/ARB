@@ -391,7 +391,7 @@ AW_window *awt_create_select_filter_win(AW_root *aw_root, adfiltercbstruct *acbs
         aws->create_button(acbs->def_2name, acbs->def_2name);
 
         aws->at("zero");
-        aws->callback(makeWindowCallback(awt_create_select_filter_window_aw_cb, acbs));
+        aws->callback(makeWindowCallback(awt_create_select_filter_window_aw_cb, acbs)); // @@@ used as INPUTFIELD_CB (see #559)
         aws->create_input_field(acbs->def_cancel, 10);
 
         aws->at("sequence");
