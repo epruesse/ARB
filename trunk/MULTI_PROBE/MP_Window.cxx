@@ -403,7 +403,7 @@ MP_Window::MP_Window(AW_root *aw_root, GBDATA *gb_main) {
     }
 
     aws->at("Quality");
-    aws->callback(MP_cache_sonden); // @@@ do not bind callback to option menus (rel. #559) // @@@ search for occurrences arb-wide
+    aws->callback(MP_cache_sonden); // @@@ used as OPTIONMENU_SELECT_CB (see #559)
     aws->create_option_menu(MP_AWAR_QUALITY, true);
     aws->insert_option("High Priority", "", 5);
     aws->insert_option("       4", "", 4);
@@ -427,7 +427,7 @@ MP_Window::MP_Window(AW_root *aw_root, GBDATA *gb_main) {
 
     aws->at("NoOfProbes");
     aws->create_option_menu(MP_AWAR_NOOFPROBES, true);
-    aws->callback(MP_cache_sonden);
+    aws->callback(MP_cache_sonden); // @@@ used as OPTIONMENU_SELECT_CB (see #559)
     aws->insert_option("Compute  1 probe ", "", 1);
     char str[50];
     for (int i=2; i<=MAXPROBECOMBIS; i++) {
@@ -449,20 +449,20 @@ MP_Window::MP_Window(AW_root *aw_root, GBDATA *gb_main) {
     aws->create_button("OPEN_RESULT_WIN", "Open result window");
 
     aws->at("Komplement");
-    aws->callback(MP_cache_sonden);
+    aws->callback(MP_cache_sonden); // @@@ used as TOGGLE_CLICK_CB (see #559)
     aws->create_toggle(MP_AWAR_COMPLEMENT);
 
     aws->at("WeightedMismatches");
-    aws->callback(MP_cache_sonden);
+    aws->callback(MP_cache_sonden); // @@@ used as TOGGLE_CLICK_CB (see #559)
     aws->create_toggle(MP_AWAR_WEIGHTEDMISMATCHES);
 
     // max non group hits
     aws->at("Border1");
-    aws->callback(MP_cache_sonden);
+    aws->callback(MP_cache_sonden); // @@@ used as TOGGLE_CLICK_CB (see #559)
     aws->create_input_field(MP_AWAR_QUALITYBORDER1, 6);
 
     aws->at("OutsideMismatches");
-    aws->callback(MP_cache_sonden);
+    aws->callback(MP_cache_sonden); // @@@ used as OPTIONMENU_SELECT_CB (see #559)
     aws->create_option_menu(MP_AWAR_OUTSIDEMISMATCHES, true);
     aws->insert_option("3.0", "", (float)3.0);
     aws->insert_option("2.5", "", (float)2.5);
@@ -473,7 +473,7 @@ MP_Window::MP_Window(AW_root *aw_root, GBDATA *gb_main) {
 
     // max mismatches for group
     aws->at("Greyzone");
-    aws->callback(MP_cache_sonden);
+    aws->callback(MP_cache_sonden); // @@@ used as OPTIONMENU_SELECT_CB (see #559)
     aws->create_option_menu(MP_AWAR_GREYZONE, true);
     aws->insert_default_option("0.0", "", (float)0.0);
     for (float lauf=0.1; lauf<(float)1.0; lauf+=0.1) {

@@ -129,7 +129,7 @@ AW_window *NT_create_select_alignment_window(AW_root *awr)
         aws->load_xfig("select_simple.fig");
 
         aws->at("selection");
-        aws->callback(AW_POPDOWN);
+        aws->callback(AW_POPDOWN); // @@@ used as SELLIST_CLICK_CB (see #559)
         awt_create_ALI_selection_list(GLOBAL.gb_main, (AW_window *)aws, AWAR_DEFAULT_ALIGNMENT, "*=");
 
         aws->auto_space(5, 5);
