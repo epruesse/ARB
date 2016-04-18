@@ -458,7 +458,7 @@ MP_Window::MP_Window(AW_root *aw_root, GBDATA *gb_main) {
 
     // max non group hits
     aws->at("Border1");
-    aws->callback(MP_cache_sonden); // @@@ used as TOGGLE_CLICK_CB (see #559)
+    aws->callback(MP_cache_sonden); // @@@ used as INPUTFIELD_CB (see #559)
     aws->create_input_field(MP_AWAR_QUALITYBORDER1, 6);
 
     aws->at("OutsideMismatches");
