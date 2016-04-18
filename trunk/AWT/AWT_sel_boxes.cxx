@@ -331,6 +331,13 @@ void awt_edit_arbtcpdat_cb(AW_window *aww, GBDATA *gb_main) {
     free(filename);
 }
 
+void awt_auto_popdown_cb(AW_root*, AW_window_simple *aw_popup) {
+    /*! auto pops-down a simple selection window when the awar bound
+     * to the selection list gets changed.
+     */
+    aw_popup->hide();
+}
+
 #if defined(ARB_MOTIF)
 static char *readable_pt_servername(int index, int maxlength) {
     char *fullname = GBS_ptserver_id_to_choice(index, 0);
@@ -359,13 +366,6 @@ static void update_ptserver_button(AW_root *, AW_awar *awar_ptserver, AW_awar *a
     char *readable_name = readable_pt_servername(awar_ptserver->read_int(), PT_SERVERNAME_LENGTH);
     awar_buttontext_name->write_string(readable_name);
     free(readable_name);
-}
-
-void awt_auto_popdown_cb(AW_root*, AW_window_simple *aw_popup) {
-    /*! auto pops-down a simple selection window when the awar bound
-     * to the selection list gets changed.
-     */
-    aw_popup->hide();
 }
 
 static AW_window *create_PTSERVER_selection_window(AW_root *aw_root, const char *varname) {
