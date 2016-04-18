@@ -697,14 +697,13 @@ void MP_Comment(AW_window *, const char *new_comment) {
     free(selprobes);
 }
 
-void MP_selected_chosen(AW_window */*aww*/) {
-    AW_root *aw_root  = mp_main->get_aw_root();
-    char    *selected = aw_root->awar(MP_AWAR_SELECTEDPROBES)->read_string();
+void MP_selected_chosen(AW_root *aw_root) { // @@@ move to MP_Window.cxx
+    const char *selected = aw_root->awar(MP_AWAR_SELECTEDPROBES)->read_char_pntr();
     if (selected && selected[0]) {
         char *probe = MP_get_comment(3, selected);
         if (probe) {
             aw_root->awar(MP_AWAR_ECOLIPOS)->write_int(atoi(probe));
-            free(probe);
+            free(probe); // @@@ check/fix ressource handling of probe!
 
             if (probe) {
                 probe = MP_get_comment(1, selected);
@@ -783,15 +782,12 @@ char *MP_get_comment(int which, const char *str) {
     return result;
 }
 
-void MP_result_chosen(AW_window */*aww*/) {
-    AW_root *aw_root = mp_main->get_aw_root();
-    char    *str     = aw_root->awar(MP_AWAR_RESULTPROBES)->read_as_string();
-    char    *new_str;
-
-    new_str = MP_get_comment(1, str);
+void MP_result_combination_chosen(AW_root *aw_root) { // @@@ move to MP_Window.cxx 
+    const char *str     = aw_root->awar(MP_AWAR_RESULTPROBES)->read_char_pntr();
+    char       *new_str = MP_get_comment(1, str);
 
     aw_root->awar(MP_AWAR_RESULTPROBESCOMMENT)->write_string(new_str);
-    free(str);
+
     free(new_str);
 }
 

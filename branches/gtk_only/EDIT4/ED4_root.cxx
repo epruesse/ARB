@@ -1677,23 +1677,23 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->at("helixnrTxt"); awmm->create_button(0, "Helix#");
 
     awmm->at("pos");
-    awmm->callback(makeWindowCallback(ED4_jump_to_cursor_position, current_ed4w()->awar_path_for_cursor, ED4_POS_SEQUENCE));
+    awmm->callback(makeWindowCallback(ED4_jump_to_cursor_position, current_ed4w()->awar_path_for_cursor, ED4_POS_SEQUENCE)); // @@@ used as INPUTFIELD_CB (see #559)
     awmm->create_input_field(current_ed4w()->awar_path_for_cursor, 7);
 
     awmm->at("ecoli");
-    awmm->callback(makeWindowCallback(ED4_jump_to_cursor_position, current_ed4w()->awar_path_for_Ecoli, ED4_POS_ECOLI));
+    awmm->callback(makeWindowCallback(ED4_jump_to_cursor_position, current_ed4w()->awar_path_for_Ecoli, ED4_POS_ECOLI)); // @@@ used as INPUTFIELD_CB (see #559)
     awmm->create_input_field(current_ed4w()->awar_path_for_Ecoli, 6);
 
     awmm->at("base");
-    awmm->callback(makeWindowCallback(ED4_jump_to_cursor_position, current_ed4w()->awar_path_for_basePos, ED4_POS_BASE));
+    awmm->callback(makeWindowCallback(ED4_jump_to_cursor_position, current_ed4w()->awar_path_for_basePos, ED4_POS_BASE)); // @@@ used as INPUTFIELD_CB (see #559)
     awmm->create_input_field(current_ed4w()->awar_path_for_basePos, 6);
 
     awmm->at("iupac");
-    awmm->callback(makeWindowCallback(ED4_set_iupac, current_ed4w()->awar_path_for_IUPAC));
+    awmm->callback(makeWindowCallback(ED4_set_iupac, current_ed4w()->awar_path_for_IUPAC)); // @@@ used as INPUTFIELD_CB (see #559)
     awmm->create_input_field(current_ed4w()->awar_path_for_IUPAC, 4);
 
     awmm->at("helixnr");
-    awmm->callback(makeWindowCallback(ED4_set_helixnr, current_ed4w()->awar_path_for_helixNr));
+    awmm->callback(makeWindowCallback(ED4_set_helixnr, current_ed4w()->awar_path_for_helixNr)); // @@@ used as INPUTFIELD_CB (see #559)
     awmm->create_input_field(current_ed4w()->awar_path_for_helixNr, 5);
 
     // ----------------------------

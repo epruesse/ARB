@@ -331,6 +331,13 @@ void awt_edit_arbtcpdat_cb(AW_window *aww, GBDATA *gb_main) {
     free(filename);
 }
 
+void awt_auto_popdown_cb(AW_root*, AW_window_simple *aw_popup) {
+    /*! auto pops-down a simple selection window when the awar bound
+     * to the selection list gets changed.
+     */
+    aw_popup->hide();
+}
+
 #if defined(ARB_MOTIF)
 static char *readable_pt_servername(int index, int maxlength) {
     char *fullname = GBS_ptserver_id_to_choice(index, 0);
@@ -367,13 +374,15 @@ static AW_window *create_PTSERVER_selection_window(AW_root *aw_root, const char 
     aw_popup->init(aw_root, "SELECT_PT_SERVER", "Select a PT-Server");
     aw_popup->auto_space(10, 10);
 
+    const char *CLOSE_ID = "CLOSE";
+
     aw_popup->at_newline();
-    aw_popup->callback(AW_POPDOWN); // @@@ used as SELLIST_CLICK_CB (see #559)
+    aw_root->awar(varname)->add_callback(makeRootCallback(awt_auto_popdown_cb, aw_popup));
     AW_selection_list *sellist = aw_popup->create_selection_list(varname, PT_SERVERNAME_SELLIST_WIDTH, 20, true);
 
     aw_popup->at_newline();
     aw_popup->callback(AW_POPDOWN);
-    aw_popup->create_button("CLOSE", "CLOSE", "C");
+    aw_popup->create_button(CLOSE_ID, "CLOSE", "C");
 
     aw_popup->window_fit();
     aw_popup->recalc_pos_atShow(AW_REPOS_TO_MOUSE);
