@@ -106,6 +106,11 @@ public:
     bool new_fields_allowed() const { return field_filter & SF_ALLOW_NEW; }
 
     Itemfield_Selection *build_sel(AW_selection_list *from_sellist) const;
+
+#if defined(ASSERTION_USED)
+    FieldSelDef();
+    bool matches4reuse(const FieldSelDef& other);
+#endif
 };
 
 enum FailIfField {

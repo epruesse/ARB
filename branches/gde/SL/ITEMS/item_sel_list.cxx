@@ -22,6 +22,8 @@
 #include <aw_msg.hxx>
 #include <awt_sel_boxes.hxx>
 
+#include <map>
+
 Itemfield_Selection::Itemfield_Selection(AW_selection_list *sellist_,
                                          GBDATA            *gb_key_data,
                                          long               type_filter_,
@@ -270,74 +272,115 @@ static void selField_changed_cb(AW_root *awr, ItemfieldAwarCbData *cbdata) {
     it_assert(!GB_have_error());
 }
 
+#if defined(ASSERTION_USED)
+MutableItemSelector NULL_selector;
+FieldSelDef::FieldSelDef() : selector(NULL_selector) {}
+
+bool FieldSelDef::matches4reuse(const FieldSelDef& other) {
+    return
+        (&selector == &other.selector)     && // shall use identical itemtype,
+        (gb_main == other.gb_main)         && // same database,
+        (type_filter == other.type_filter) && // same type-filter and
+        (field_filter == other.field_filter); // same field-filter.
+}
+#endif
+
 static AW_window *createFieldSelectionPopup(AW_root *awr, FieldSelDef *selDef) {
-    AW_window_simple *aw_popup       = new AW_window_simple;
-    const bool        allowNewFields = selDef->new_fields_allowed();
+    typedef std::map<std::string, AW_window_simple*> AwarToWindowMap;
+    static AwarToWindowMap existingPopups; // only one window per awar (otherwise reuse)
 
-    // Note: no need for unique ids in this window (nothing will be macro recorded here)
+#if defined(ASSERTION_USED)
+    // check compatibility of multiple selections on same awar (does reuse make sense?)
+    typedef std::map<std::string, FieldSelDef> AwarToFieldSelDef;
+    static AwarToFieldSelDef existingDefs;
+#endif
 
-    aw_popup->init(awr, "SELECT_FIELD", allowNewFields ? "Select or create new field" : "Select a field");
-    aw_popup->load_xfig(allowNewFields ? "awt/field_sel_new.fig" : "awt/field_sel.fig");
+    AwarToWindowMap::iterator  found    = existingPopups.find(selDef->get_awarname());
+    AW_window_simple          *aw_popup = NULL;
 
-    aw_popup->at("sel");
-    const bool FALLBACK2DEFAULT = !allowNewFields;
+    if (found != existingPopups.end()) {
+        aw_popup = found->second;
 
-    Itemfield_Selection *itemSel;
-    {
-        AW_selection_list   *sellist = aw_popup->create_selection_list(selDef->get_awarname(), 1, 1, FALLBACK2DEFAULT);
-        itemSel = selDef->build_sel(sellist);
-        itemSel->refresh();
-    }
-
-    aw_popup->at("close");
-    aw_popup->callback(AW_POPDOWN);
-    aw_popup->create_button("@CLOSE", "CLOSE", "C");
-
-    AW_awar *awar_field = awr->awar(selDef->get_awarname()); // user-awar
-    if (allowNewFields) {
-        aw_popup->at("help");
-        aw_popup->callback(makeHelpCallback("field_sel_new.hlp"));
-        aw_popup->create_button("@HELP", "HELP", "H");
-
-        char    *awarname_newname = strdup(newNameAwarname(awar_field));
-        char    *awarname_newtype = strdup(newTypeAwarname(awar_field));
-        long     allowedTypes     = selDef->get_type_filter();
-
-        int possibleTypes = 0;
-        int firstType     = -1;
-        for (unsigned i = 0; i<ARRAY_ELEMS(creatable); ++i) {
-            if (allowedTypes & (1<<creatable[i].type)) {
-                possibleTypes++;
-                if (firstType == -1) firstType = creatable[i].type;
-            }
-        }
-        it_assert(possibleTypes>0);
-
-        ItemfieldAwarCbData * const cbdata = new ItemfieldAwarCbData(awar_field, itemSel, aw_popup); // never freed (bound to callbacks)
-
-        awr->awar_string(awarname_newname, "",        AW_ROOT_DEFAULT)->add_callback(makeRootCallback(newFieldDef_changed_cb, cbdata));
-        awr->awar_int   (awarname_newtype, firstType, AW_ROOT_DEFAULT)->add_callback(makeRootCallback(newFieldDef_changed_cb, cbdata));
-
-        awar_field->add_callback(makeRootCallback(selField_changed_cb, cbdata));
-
-        aw_popup->at("name");
-        aw_popup->create_input_field(awarname_newname, FIELDNAME_VISIBLE_CHARS);
-
-        // show type selector even if only one type selectable (layout purposes)
-        aw_popup->at("type");
-        aw_popup->create_toggle_field(awarname_newtype, NULL, 0);
-        for (unsigned i = 0; i<ARRAY_ELEMS(creatable); ++i) {
-            if (allowedTypes & (1<<creatable[i].type)) {
-                aw_popup->insert_toggle(creatable[i].label, creatable[i].mnemonic, int(creatable[i].type));
-            }
-        }
-        aw_popup->update_toggle_field();
-
-        free(awarname_newtype);
-        free(awarname_newname);
+#if defined(ASSERTION_USED)
+        AwarToFieldSelDef::iterator prevDef = existingDefs.find(selDef->get_awarname());
+        it_assert(prevDef != existingDefs.end());
+        it_assert(selDef->matches4reuse(prevDef->second)); // to use multiple selection popups on same awar, you need to use similar parameters
+                                                           // (otherwise the user might outsmart your restrictions by using the other field-selector)
+#endif
     }
     else {
-        awar_field->add_callback(makeRootCallback(awt_auto_popdown_cb, aw_popup));
+        aw_popup = new AW_window_simple;
+
+        const bool allowNewFields = selDef->new_fields_allowed();
+
+        aw_popup->init(awr, "SELECT_FIELD", allowNewFields ? "Select or create new field" : "Select a field");
+        aw_popup->load_xfig(allowNewFields ? "awt/field_sel_new.fig" : "awt/field_sel.fig");
+
+        aw_popup->at("sel");
+        const bool FALLBACK2DEFAULT = !allowNewFields;
+
+        Itemfield_Selection *itemSel;
+        {
+            AW_selection_list   *sellist = aw_popup->create_selection_list(selDef->get_awarname(), 1, 1, FALLBACK2DEFAULT);
+            itemSel = selDef->build_sel(sellist);
+            itemSel->refresh();
+        }
+
+        aw_popup->at("close");
+        aw_popup->callback(AW_POPDOWN);
+        aw_popup->create_button("CLOSE", "CLOSE", "C");
+
+        AW_awar *awar_field = awr->awar(selDef->get_awarname()); // user-awar
+        if (allowNewFields) {
+            aw_popup->at("help");
+            aw_popup->callback(makeHelpCallback("field_sel_new.hlp"));
+            aw_popup->create_button("HELP", "HELP", "H");
+
+            char    *awarname_newname = strdup(newNameAwarname(awar_field));
+            char    *awarname_newtype = strdup(newTypeAwarname(awar_field));
+            long     allowedTypes     = selDef->get_type_filter();
+
+            int possibleTypes = 0;
+            int firstType     = -1;
+            for (unsigned i = 0; i<ARRAY_ELEMS(creatable); ++i) {
+                if (allowedTypes & (1<<creatable[i].type)) {
+                    possibleTypes++;
+                    if (firstType == -1) firstType = creatable[i].type;
+                }
+            }
+            it_assert(possibleTypes>0);
+
+            ItemfieldAwarCbData * const cbdata = new ItemfieldAwarCbData(awar_field, itemSel, aw_popup); // never freed (bound to callbacks)
+
+            awr->awar_string(awarname_newname, "",        AW_ROOT_DEFAULT)->add_callback(makeRootCallback(newFieldDef_changed_cb, cbdata));
+            awr->awar_int   (awarname_newtype, firstType, AW_ROOT_DEFAULT)->add_callback(makeRootCallback(newFieldDef_changed_cb, cbdata));
+
+            awar_field->add_callback(makeRootCallback(selField_changed_cb, cbdata));
+
+            aw_popup->at("name");
+            aw_popup->create_input_field(awarname_newname, FIELDNAME_VISIBLE_CHARS);
+
+            // show type selector even if only one type selectable (layout- and informative-purposes)
+            aw_popup->at("type");
+            aw_popup->create_toggle_field(awarname_newtype, NULL, 0);
+            for (unsigned i = 0; i<ARRAY_ELEMS(creatable); ++i) {
+                if (allowedTypes & (1<<creatable[i].type)) {
+                    aw_popup->insert_toggle(creatable[i].label, creatable[i].mnemonic, int(creatable[i].type));
+                }
+            }
+            aw_popup->update_toggle_field();
+
+            free(awarname_newtype);
+            free(awarname_newname);
+        }
+        else {
+            awar_field->add_callback(makeRootCallback(awt_auto_popdown_cb, aw_popup));
+        }
+
+        existingPopups[selDef->get_awarname()] = aw_popup;
+#if defined(ASSERTION_USED)
+        existingDefs[selDef->get_awarname()] = FieldSelDef(*selDef);
+#endif
     }
 
     aw_popup->recalc_pos_atShow(AW_REPOS_TO_MOUSE); // always popup at current mouse-position (i.e. directly above the button)
@@ -371,7 +414,11 @@ void create_itemfield_selection_button(AW_window *aws, const FieldSelDef& selDef
     int old_button_length = aws->get_button_length();
     aws->button_length(FIELDNAME_VISIBLE_CHARS);
     aws->callback(makeCreateWindowCallback(createFieldSelectionPopup, new FieldSelDef(selDef)));
-    aws->create_button("@sel_field", selDef.get_awarname());
+
+    char *id = GBS_string_eval(selDef.get_awarname(), "/=_", NULL);
+    aws->create_button(GBS_global_string("select_%s", id), selDef.get_awarname());
+    free(id);
+
     aws->button_length(old_button_length);
 }
 
