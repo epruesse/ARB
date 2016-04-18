@@ -20,6 +20,7 @@
 #include <aw_root.hxx>
 #include <aw_awar.hxx>
 #include <aw_msg.hxx>
+#include <awt_sel_boxes.hxx>
 
 Itemfield_Selection::Itemfield_Selection(AW_selection_list *sellist_,
                                          GBDATA            *gb_key_data,
@@ -82,10 +83,6 @@ void Itemfield_Selection::fill() {
     if (!get_sellist()->get_default_value()) {
         insert_default((field_filter & SF_ALLOW_NEW) ? "<no or new field>" : "<no field>", NO_FIELD_SELECTED);
     }
-}
-
-static void auto_popdown_itemfield_selection_cb(AW_root*, AW_window_simple *aw_popup) { // @@@ unused
-    aw_popup->hide();
 }
 
 Itemfield_Selection *FieldSelDef::build_sel(AW_selection_list *from_sellist) const {
@@ -192,15 +189,37 @@ const char *prepare_and_get_selected_itemfield(AW_root *awr, const char *awar_na
 inline const char *newNameAwarname(AW_awar *awar_field) { return GBS_global_string("tmp/%s/new/name", awar_field->awar_name); }
 inline const char *newTypeAwarname(AW_awar *awar_field) { return GBS_global_string("tmp/%s/new/type", awar_field->awar_name); }
 
-static void newFieldDef_changed_cb(AW_root *awr, AW_awar *awar_field, Itemfield_Selection *itemSel) {
-    static bool avoidRecursion = false;
-    if (!avoidRecursion) {
-        LocallyModify<bool> flag(avoidRecursion, true);
+class ItemfieldAwarCbData {
+    AW_awar             *awar_field;
+    Itemfield_Selection *itemSel;
+    AW_window_simple    *aw_popup;
 
-        char *newFieldName = awr->awar(newNameAwarname(awar_field))->read_string();
+public:
+    ItemfieldAwarCbData(AW_awar *awar_field_, Itemfield_Selection *itemSel_, AW_window_simple *aw_popup_)
+        : awar_field(awar_field_),
+          itemSel(itemSel_),
+          aw_popup(aw_popup_),
+          inAwarCallback(false)
+    {}
+
+    AW_awar *get_field_awar() const { return awar_field; }
+    Itemfield_Selection *get_selection() const { return itemSel; }
+    void hide_window() const { aw_popup->hide(); }
+
+    bool inAwarCallback;
+};
+
+
+static void newFieldDef_changed_cb(AW_root *awr, ItemfieldAwarCbData *cbdata) {
+    if (!cbdata->inAwarCallback) {
+        LocallyModify<bool> flag(cbdata->inAwarCallback, true);
+
+        AW_awar *awar_field   = cbdata->get_field_awar();
+        char    *newFieldName = awr->awar(newNameAwarname(awar_field))->read_string();
         if (newFieldName[0]) { // non-empty key
-            GBDATA         *gb_main = itemSel->get_gb_main();
-            GB_transaction  ta(gb_main);
+            Itemfield_Selection *itemSel = cbdata->get_selection();
+            GBDATA              *gb_main = itemSel->get_gb_main();
+            GB_transaction       ta(gb_main);
 
             GB_TYPES type = GBT_get_type_of_changekey(gb_main, newFieldName, itemSel->get_selector().change_key_path);
             if (type == GB_NONE) { // a new key was specified
@@ -227,16 +246,25 @@ static void newFieldDef_changed_cb(AW_root *awr, AW_awar *awar_field, Itemfield_
     }
     it_assert(!GB_have_error());
 }
-static void selField_changed_cb(AW_root *awr, AW_awar *awar_field, Itemfield_Selection *itemSel) {
-    const char *selected = awar_field->read_char_pntr();
-    if (strcmp(selected, NO_FIELD_SELECTED) != 0) {
-        GBDATA         *gb_main = itemSel->get_gb_main();
-        GB_transaction  ta(gb_main);
 
-        GB_TYPES type = GBT_get_type_of_changekey(gb_main, selected, itemSel->get_selector().change_key_path);
-        if (type != GB_NONE) {
-            awr->awar(newNameAwarname(awar_field))->write_string("");
-            awr->awar(newTypeAwarname(awar_field))->write_int(type);
+static void selField_changed_cb(AW_root *awr, ItemfieldAwarCbData *cbdata) {
+    AW_awar    *awar_field  = cbdata->get_field_awar();
+    const char *selected    = awar_field->read_char_pntr();
+    if (strcmp(selected, NO_FIELD_SELECTED) != 0) {
+        if (!cbdata->inAwarCallback) {
+            LocallyModify<bool> avoidRecursion(cbdata->inAwarCallback, true);
+
+            Itemfield_Selection *itemSel = cbdata->get_selection();
+            GBDATA              *gb_main = itemSel->get_gb_main();
+            GB_transaction       ta(gb_main);
+
+            GB_TYPES type = GBT_get_type_of_changekey(gb_main, selected, itemSel->get_selector().change_key_path);
+            if (type != GB_NONE) {
+                awr->awar(newNameAwarname(awar_field))->write_string("");
+                awr->awar(newTypeAwarname(awar_field))->write_int(type);
+
+                cbdata->hide_window();
+            }
         }
     }
     it_assert(!GB_have_error());
@@ -252,7 +280,6 @@ static AW_window *createFieldSelectionPopup(AW_root *awr, FieldSelDef *selDef) {
     aw_popup->load_xfig(allowNewFields ? "awt/field_sel_new.fig" : "awt/field_sel.fig");
 
     aw_popup->at("sel");
-    aw_popup->callback(AW_POPDOWN); // used as SELLIST_CLICK_CB (see #559); works here because macro recording only tracks awar change here // @@@ fails assertion
     const bool FALLBACK2DEFAULT = !allowNewFields;
 
     Itemfield_Selection *itemSel;
@@ -266,12 +293,12 @@ static AW_window *createFieldSelectionPopup(AW_root *awr, FieldSelDef *selDef) {
     aw_popup->callback(AW_POPDOWN);
     aw_popup->create_button("@CLOSE", "CLOSE", "C");
 
+    AW_awar *awar_field = awr->awar(selDef->get_awarname()); // user-awar
     if (allowNewFields) {
         aw_popup->at("help");
         aw_popup->callback(makeHelpCallback("field_sel_new.hlp"));
         aw_popup->create_button("@HELP", "HELP", "H");
 
-        AW_awar *awar_field       = awr->awar(selDef->get_awarname()); // user-awar
         char    *awarname_newname = strdup(newNameAwarname(awar_field));
         char    *awarname_newtype = strdup(newTypeAwarname(awar_field));
         long     allowedTypes     = selDef->get_type_filter();
@@ -286,10 +313,12 @@ static AW_window *createFieldSelectionPopup(AW_root *awr, FieldSelDef *selDef) {
         }
         it_assert(possibleTypes>0);
 
-        awr->awar_string(awarname_newname, "",        AW_ROOT_DEFAULT)->add_callback(makeRootCallback(newFieldDef_changed_cb, awar_field, itemSel));
-        awr->awar_int   (awarname_newtype, firstType, AW_ROOT_DEFAULT)->add_callback(makeRootCallback(newFieldDef_changed_cb, awar_field, itemSel));
+        ItemfieldAwarCbData * const cbdata = new ItemfieldAwarCbData(awar_field, itemSel, aw_popup); // never freed (bound to callbacks)
 
-        awar_field->add_callback(makeRootCallback(selField_changed_cb, awar_field, itemSel));
+        awr->awar_string(awarname_newname, "",        AW_ROOT_DEFAULT)->add_callback(makeRootCallback(newFieldDef_changed_cb, cbdata));
+        awr->awar_int   (awarname_newtype, firstType, AW_ROOT_DEFAULT)->add_callback(makeRootCallback(newFieldDef_changed_cb, cbdata));
+
+        awar_field->add_callback(makeRootCallback(selField_changed_cb, cbdata));
 
         aw_popup->at("name");
         aw_popup->create_input_field(awarname_newname, FIELDNAME_VISIBLE_CHARS);
@@ -306,6 +335,9 @@ static AW_window *createFieldSelectionPopup(AW_root *awr, FieldSelDef *selDef) {
 
         free(awarname_newtype);
         free(awarname_newname);
+    }
+    else {
+        awar_field->add_callback(makeRootCallback(awt_auto_popdown_cb, aw_popup));
     }
 
     aw_popup->recalc_pos_atShow(AW_REPOS_TO_MOUSE); // always popup at current mouse-position (i.e. directly above the button)

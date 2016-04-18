@@ -86,6 +86,7 @@ item_sel_list.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+item_sel_list.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/cb.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/cb_base.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/cbtypes.h
