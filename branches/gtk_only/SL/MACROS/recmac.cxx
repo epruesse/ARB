@@ -158,9 +158,6 @@ void RecordingMacro::track_action(const char *action_id) {
     else if (action_id[0] == '$') { // actions starting with '$' are interpreted as "unrecordable"
         warn_unrecordable(GBS_global_string("unrecordable action '%s'", action_id));
     }
-    else if (action_id[0] == '@') { // actions starting with '@' are interpreted as "do not record"
-        // no warning will be shown (e.g. useful when plain awar-tracking does the job)
-    }
     else if (strcmp(action_id, stop_action_name) != 0) { // silently ignore stop-recording button press
         write_action(application_id, action_id);
     }
