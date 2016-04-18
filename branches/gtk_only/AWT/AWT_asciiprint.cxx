@@ -455,11 +455,11 @@ void AWT_create_ascii_print_window(AW_root *awr, const char *text_to_print, cons
         aws->create_button(0, AWAR_APRINT_PAGES);
 
         aws->at("dcol");
-        aws->callback(awt_aps_set_magnification_to_fit_xpage);
+        aws->callback(awt_aps_set_magnification_to_fit_xpage); // @@@ used as INPUTFIELD_CB (see #559)
         aws->create_input_field(AWAR_APRINT_DX, 4);
 
         aws->at("drows");
-        aws->callback(awt_aps_set_magnification_to_fit_ypage);
+        aws->callback(awt_aps_set_magnification_to_fit_ypage); // @@@ used as INPUTFIELD_CB (see #559)
         aws->create_input_field(AWAR_APRINT_DY, 4);
 
 
