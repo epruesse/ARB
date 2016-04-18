@@ -202,7 +202,7 @@ AW_window *MG_create_merge_names_window(AW_root *awr) {
 
     aws->at("override");
     aws->label("Override (even more dangerous! see HELP)");
-    aws->callback(override_toggle_cb);
+    aws->callback(override_toggle_cb); // @@@ used as TOGGLE_CLICK_CB (see #559)
     aws->create_toggle(AWAR_OVERRIDE);
 
     aws->at("match");
