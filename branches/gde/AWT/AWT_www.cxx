@@ -213,7 +213,7 @@ AW_window *AWT_create_www_window(AW_root *aw_root, GBDATA *gb_main) {
     for (i=0; i<WWW_COUNT; i++) {
         char buf[256];
         sprintf(buf, AWAR_WWW_SELECT_TEMPLATE, i);
-        aws->callback(makeWindowCallback(awt_www_select_change, i));
+        aws->callback(makeWindowCallback(awt_www_select_change, i)); // @@@ used as TOGGLE_CLICK_CB (see #559)
         aws->create_toggle(buf);
 
         sprintf(buf, AWAR_WWW_DESC_TEMPLATE, i);

@@ -252,7 +252,7 @@ void SQ_GroupData_RNA::SQ_add_sequence(const char *sequence) {
             break;
         default:
             fprintf(stderr, "Illegal character '%c'", sequence[i]);
-            seq_assert(0);
+            // seq_assert(0);
             // unhandled character
             break;
         }

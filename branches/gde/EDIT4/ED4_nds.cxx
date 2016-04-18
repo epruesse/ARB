@@ -146,7 +146,7 @@ AW_window *ED4_create_nds_window(AW_root *root) {
     for (int i=0; i<NDS_COUNT; ++i) {
         char buf[256];
         sprintf(buf, ED4_AWAR_NDS_SELECT_TEMPLATE, i);
-        aws->callback(makeWindowCallback(ed4_nds_select_change, i));
+        aws->callback(makeWindowCallback(ed4_nds_select_change, i)); // @@@ used as TOGGLE_CLICK_CB (see #559)
         aws->create_toggle(buf);
 
         aws->get_at_position(&description_x, &dummy);

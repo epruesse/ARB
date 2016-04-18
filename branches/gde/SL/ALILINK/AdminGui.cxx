@@ -265,8 +265,8 @@ AW_window *ALI_create_admin_window(AW_root *root, AliAdmin *admin) {
         // alignment settings
         aws->at("aligned");
         aws->create_option_menu(admin->aligned_name(), true);
-        aws->callback(makeWindowCallback(ali_checklen_cb, admin)); aws->insert_default_option("not formatted", "n", 0);
-        aws->callback(makeWindowCallback(ali_format_cb, admin));   aws->insert_option("formatted", "j", 1);
+        aws->callback(makeWindowCallback(ali_checklen_cb, admin)); aws->insert_default_option("not formatted", "n", 0); // @@@ used as OPTIONMENU_SELECT_CB (see #559)
+        aws->callback(makeWindowCallback(ali_format_cb, admin));   aws->insert_option("formatted", "j", 1); // @@@ used as OPTIONMENU_SELECT_CB (see #559)
         aws->update_option_menu();
 
         aws->at("len");
@@ -281,7 +281,7 @@ AW_window *ALI_create_admin_window(AW_root *root, AliAdmin *admin) {
         aws->update_option_menu();
 
         aws->at("security");
-        aws->callback(makeWindowCallback(ali_checklen_cb, admin));
+        aws->callback(makeWindowCallback(ali_checklen_cb, admin)); // @@@ used as OPTIONMENU_SELECT_CB (see #559)
         aws->create_option_menu(admin->security_name(), true);
         aws->insert_option("0", "0", 0);
         aws->insert_option("1", "1", 1);
@@ -293,7 +293,7 @@ AW_window *ALI_create_admin_window(AW_root *root, AliAdmin *admin) {
         aws->update_option_menu();
 
         aws->at("auto_format");
-        aws->callback(makeWindowCallback(never_auto_format_ali_genom_cb, admin));
+        aws->callback(makeWindowCallback(never_auto_format_ali_genom_cb, admin)); // @@@ used as OPTIONMENU_SELECT_CB (see #559)
         aws->create_option_menu(admin->auto_name(), true);
         aws->insert_default_option("ask", "a", 0);
         aws->insert_option("always", "", 1);

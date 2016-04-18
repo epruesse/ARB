@@ -76,6 +76,8 @@ void             awt_popup_SAI_selection_list(AW_window *aww, const char *awar_n
 
 AW_DB_selection *awt_create_CONFIG_selection_list(GBDATA *gb_main, AW_window *aws, const char *varname, bool fallback2default);
 
+void awt_auto_popdown_cb(AW_root*, AW_window_simple *aw_popup);
+
 // ---------------------------
 //      related functions
 

@@ -236,7 +236,7 @@ AW_window *create_helix_props_window(AW_root *awr, const WindowCallback *refresh
         aws->label_length(max_awar_len);
 
         aws->label("Show helix?");
-        aws->callback(*refreshCallback);
+        aws->callback(*refreshCallback); // @@@ used as TOGGLE_CLICK_CB (see #559)
         aws->create_toggle(HELIX_AWAR_ENABLE);
 
         aws->at_newline();
@@ -249,7 +249,7 @@ AW_window *create_helix_props_window(AW_root *awr, const WindowCallback *refresh
 
             if (i != HELIX_DEFAULT && i != HELIX_NO_MATCH) {
                 aws->label(helix_awars[j].awar);
-                aws->callback(makeWindowCallback(helix_pairs_changed_cb, j, refreshCallback));
+                aws->callback(makeWindowCallback(helix_pairs_changed_cb, j, refreshCallback)); // @@@ used as INPUTFIELD_CB (see #559)
                 aws->create_input_field(helix_pair_awar(j), 20);
 
                 if (j == 0) ex = aws->get_at_xposition();
@@ -260,7 +260,7 @@ AW_window *create_helix_props_window(AW_root *awr, const WindowCallback *refresh
                 aws->at_x(ex);
             }
 
-            aws->callback(*refreshCallback);
+            aws->callback(*refreshCallback); // @@@ used as INPUTFIELD_CB (see #559)
             aws->create_input_field(helix_symbol_awar(j), 3);
             aws->at_newline();
         }

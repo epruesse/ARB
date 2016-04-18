@@ -37,20 +37,18 @@ using namespace QUERY;
 #define ui_assert(cond) arb_assert(cond)
 
 #define AWAR_SPECIES_DEST "tmp/adspec/dest"
-#define AWAR_SPECIES_INFO "tmp/adspec/info"
-#define AWAR_SPECIES_KEY  "tmp/adspec/key"
 
-#define AWAR_FIELD_REORDER_SOURCE "tmp/ad_reorder/source"
-#define AWAR_FIELD_REORDER_DEST   "tmp/ad_reorder/dest"
-#define AWAR_FIELD_REORDER_ORDER  "tmp/ad_reorder/order"
+// awars shared between different itemtypes:
+#define AWAR_FIELD_REORDER_ORDER "tmp/adreorder/order"
 
-#define AWAR_FIELD_CREATE_NAME "tmp/adfield/name"
-#define AWAR_FIELD_CREATE_TYPE "tmp/adfield/type"
-#define AWAR_FIELD_DELETE      "tmp/adfield/source"
-
-#define AWAR_FIELD_CONVERT_SOURCE "tmp/adconvert/source"
-#define AWAR_FIELD_CONVERT_NAME   "tmp/adconvert/name"
-#define AWAR_FIELD_CONVERT_TYPE   "tmp/adconvert/type"
+// separate awars for different itemtypes:
+#define AWAR_FIELD_REORDER_SOURCE_TMPL "tmp/adreorder/%s/source"
+#define AWAR_FIELD_REORDER_DEST_TMPL   "tmp/adreorder/%s/dest"
+#define AWAR_FIELD_CREATE_NAME_TMPL    "tmp/adfield/%s/name"
+#define AWAR_FIELD_CREATE_TYPE_TMPL    "tmp/adfield/%s/type"
+#define AWAR_FIELD_DELETE_TMPL         "tmp/adfield/%s/source"
+#define AWAR_FIELD_CONVERT_SOURCE_TMPL "tmp/adconvert/%s/source"
+#define AWAR_FIELD_CONVERT_TYPE_TMPL   "tmp/adconvert/%s/type"
 
 // next neighbours of listed and selected:
 // more defined in ../../AWTC/awtc_next_neighbours.hxx@AWAR_NN_BASE
@@ -82,19 +80,28 @@ enum ReorderMode {
     REVERSE_ORDER,
 };
 
-void DBUI::create_dbui_awars(AW_root *aw_root, AW_default aw_def) {
-    aw_root->awar_string(AWAR_SPECIES_DEST,         "",          aw_def);
-    aw_root->awar_string(AWAR_SPECIES_INFO,         "",          aw_def);
-    aw_root->awar_string(AWAR_SPECIES_KEY,          "",          aw_def);
-    aw_root->awar_string(AWAR_FIELD_REORDER_SOURCE, "",          aw_def);
-    aw_root->awar_string(AWAR_FIELD_REORDER_DEST,   "",          aw_def);
-    aw_root->awar_int   (AWAR_FIELD_REORDER_ORDER,  ORDER_ALPHA, aw_def);
-    aw_root->awar_string(AWAR_FIELD_CREATE_NAME,    "",          aw_def);
-    aw_root->awar_int   (AWAR_FIELD_CREATE_TYPE,    GB_STRING,   aw_def);
-    aw_root->awar_string(AWAR_FIELD_DELETE,         "",          aw_def);
-    aw_root->awar_string(AWAR_FIELD_CONVERT_SOURCE, "",          aw_def);
-    aw_root->awar_int   (AWAR_FIELD_CONVERT_TYPE,   GB_STRING,   aw_def);
-    aw_root->awar_string(AWAR_FIELD_CONVERT_NAME,   "",          aw_def);
+void DBUI::create_dbui_awars(AW_root *aw_root) {
+    aw_root->awar_string(AWAR_SPECIES_DEST,        "",          AW_ROOT_DEFAULT);
+    aw_root->awar_int   (AWAR_FIELD_REORDER_ORDER, ORDER_ALPHA, AW_ROOT_DEFAULT);
+}
+
+inline const char *itemAwar(const char *name_template, ItemSelector& itype) {
+    return GBS_global_string(name_template, itype.item_name);
+}
+static void init_itemspecific_DBUI_awars(AW_root *aw_root, ItemSelector& itype) {
+    static bool initialized[QUERY_ITEM_TYPES] = { false };
+
+    if (!initialized[itype.type]) {
+        aw_root->awar_string(itemAwar(AWAR_FIELD_REORDER_SOURCE_TMPL, itype), "",          AW_ROOT_DEFAULT);
+        aw_root->awar_string(itemAwar(AWAR_FIELD_REORDER_DEST_TMPL,   itype), "",          AW_ROOT_DEFAULT);
+        aw_root->awar_string(itemAwar(AWAR_FIELD_CREATE_NAME_TMPL,    itype), "",          AW_ROOT_DEFAULT);
+        aw_root->awar_int   (itemAwar(AWAR_FIELD_CREATE_TYPE_TMPL,    itype), GB_STRING,   AW_ROOT_DEFAULT);
+        aw_root->awar_string(itemAwar(AWAR_FIELD_DELETE_TMPL,         itype), "",          AW_ROOT_DEFAULT);
+        aw_root->awar_string(itemAwar(AWAR_FIELD_CONVERT_SOURCE_TMPL, itype), "",          AW_ROOT_DEFAULT);
+        aw_root->awar_int   (itemAwar(AWAR_FIELD_CONVERT_TYPE_TMPL,   itype), GB_STRING,   AW_ROOT_DEFAULT);
+
+        initialized[itype.type] = true;
+    }
 }
 
 static void move_species_to_extended(AW_window *aww, GBDATA *gb_main) {
@@ -485,7 +492,7 @@ arb_progress *KeySorter::sort_progress  = NULL;
 static void reorder_keys(AW_window *aws, ReorderMode mode, Itemfield_Selection *sel_left, Itemfield_Selection *sel_right) {
     ItemSelector& selector = sel_left->get_selector();
     ui_assert(&selector == &sel_right->get_selector());
-    
+
     int left_index  = sel_left->get_sellist()->get_index_of_selected();
     int right_index = sel_right->get_sellist()->get_index_of_selected();
 
@@ -494,10 +501,12 @@ static void reorder_keys(AW_window *aws, ReorderMode mode, Itemfield_Selection *
     GBDATA  *gb_main = sel_left->get_gb_main();
     AW_root *awr     = aws->get_root();
     
+    init_itemspecific_DBUI_awars(awr, selector);
+
     GB_begin_transaction(gb_main);
 
-    GBDATA *gb_left_field  = GBT_get_changekey(gb_main, awr->awar(AWAR_FIELD_REORDER_SOURCE)->read_char_pntr(), selector.change_key_path);
-    GBDATA *gb_right_field = GBT_get_changekey(gb_main, awr->awar(AWAR_FIELD_REORDER_DEST)->read_char_pntr(), selector.change_key_path);
+    GBDATA *gb_left_field  = GBT_get_changekey(gb_main, awr->awar(itemAwar(AWAR_FIELD_REORDER_SOURCE_TMPL, selector))->read_char_pntr(), selector.change_key_path);
+    GBDATA *gb_right_field = GBT_get_changekey(gb_main, awr->awar(itemAwar(AWAR_FIELD_REORDER_DEST_TMPL, selector))->read_char_pntr(), selector.change_key_path);
 
     if (!gb_left_field || !gb_right_field || gb_left_field == gb_right_field) {
         warning = "Please select different fields in both list";
@@ -553,7 +562,7 @@ static void reorder_up_down(AW_window *aws, Itemfield_Selection *sel_right, int 
     ItemSelector& selector   = sel_right->get_selector();
     int           list_index = sel_right->get_sellist()->get_index_of_selected();
 
-    const char *field_name = aws->get_root()->awar(AWAR_FIELD_REORDER_DEST)->read_char_pntr();
+    const char *field_name = aws->get_root()->awar(itemAwar(AWAR_FIELD_REORDER_DEST_TMPL, selector))->read_char_pntr();
     GBDATA     *gb_field   = GBT_get_changekey(gb_main, field_name, selector.change_key_path);
     GB_ERROR    warning    = 0;
 
@@ -592,6 +601,7 @@ AW_window *DBUI::create_fields_reorder_window(AW_root *root, BoundItemSel *bound
         AW_window_simple *aws = new AW_window_simple;
         awsa[selector.type]  = aws;
 
+        init_itemspecific_DBUI_awars(root, selector);
         init_itemType_specific_window(root, aws, selector, "REORDER_FIELDS", "Reorder %s fields");
         aws->load_xfig("ad_kreo.fig");
 
@@ -604,8 +614,8 @@ AW_window *DBUI::create_fields_reorder_window(AW_root *root, BoundItemSel *bound
         aws->callback(makeHelpCallback(HELPFILE));
         aws->create_button("HELP", "Help", "H");
 
-        Itemfield_Selection *sel1 = create_itemfield_selection_list(aws, FieldSelDef(AWAR_FIELD_REORDER_SOURCE, bound_selector->gb_main, selector, FIELD_UNFILTERED), "source");
-        Itemfield_Selection *sel2 = create_itemfield_selection_list(aws, FieldSelDef(AWAR_FIELD_REORDER_DEST,   bound_selector->gb_main, selector, FIELD_UNFILTERED), "dest");
+        Itemfield_Selection *sel1 = create_itemfield_selection_list(aws, FieldSelDef(itemAwar(AWAR_FIELD_REORDER_SOURCE_TMPL, selector), bound_selector->gb_main, selector, FIELD_UNFILTERED), "source");
+        Itemfield_Selection *sel2 = create_itemfield_selection_list(aws, FieldSelDef(itemAwar(AWAR_FIELD_REORDER_DEST_TMPL,   selector), bound_selector->gb_main, selector, FIELD_UNFILTERED), "dest");
 
         aws->button_length(8);
 
@@ -659,8 +669,8 @@ static void hide_field_cb(AW_window *aws, Itemfield_Selection *item_sel, int hid
     GB_ERROR  error   = GB_begin_transaction(gb_main);
 
     if (!error) {
-        char          *source    = aws->get_root()->awar(AWAR_FIELD_DELETE)->read_string();
         ItemSelector&  selector  = item_sel->get_selector();
+        char          *source    = aws->get_root()->awar(itemAwar(AWAR_FIELD_DELETE_TMPL, selector))->read_string();
         GBDATA        *gb_source = GBT_get_changekey(gb_main, source, selector.change_key_path);
 
         if (!gb_source) error = "Please select the field you want to (un)hide";
@@ -677,8 +687,8 @@ static void field_delete_cb(AW_window *aws, Itemfield_Selection *item_sel) {
     GB_ERROR  error   = GB_begin_transaction(gb_main);
 
     if (!error) {
-        char              *source     = aws->get_root()->awar(AWAR_FIELD_DELETE)->read_string();
         ItemSelector&      selector   = item_sel->get_selector();
+        char              *source     = aws->get_root()->awar(itemAwar(AWAR_FIELD_DELETE_TMPL, selector))->read_string();
         AW_selection_list *sellist    = item_sel->get_sellist();
         int                curr_index = sellist->get_index_of_selected();
         GBDATA            *gb_source  = GBT_get_changekey(gb_main, source, selector.change_key_path);
@@ -731,7 +741,7 @@ AW_window *DBUI::create_field_delete_window(AW_root *root, BoundItemSel *bound_s
         aws->at("help"); aws->callback(makeHelpCallback("spaf_delete.hlp"));
         aws->create_button("HELP", "Help", "H");
 
-        Itemfield_Selection *item_sel = create_itemfield_selection_list(aws, FieldSelDef(AWAR_FIELD_DELETE, bound_selector->gb_main, selector, FIELD_UNFILTERED, SF_HIDDEN), "source");
+        Itemfield_Selection *item_sel = create_itemfield_selection_list(aws, FieldSelDef(itemAwar(AWAR_FIELD_DELETE_TMPL, selector), bound_selector->gb_main, selector, FIELD_UNFILTERED, SF_HIDDEN), "source");
 
         aws->button_length(13);
         aws->at("hide");
@@ -754,7 +764,7 @@ static void field_create_cb(AW_window *aws, BoundItemSel *bound_selector) {
     ItemSelector& selector = bound_selector->selector;
 
     GB_push_transaction(bound_selector->gb_main);
-    char     *name   = aws->get_root()->awar(AWAR_FIELD_CREATE_NAME)->read_string();
+    char     *name   = aws->get_root()->awar(itemAwar(AWAR_FIELD_CREATE_NAME_TMPL, selector))->read_string();
     GB_ERROR  error  = GB_check_key(name);
     GB_ERROR  error2 = GB_check_hkey(name);
     if (error && !error2) {
@@ -763,7 +773,7 @@ static void field_create_cb(AW_window *aws, BoundItemSel *bound_selector) {
         error = 0;
     }
 
-    int type = (int)aws->get_root()->awar(AWAR_FIELD_CREATE_TYPE)->read_int();
+    int type = (int)aws->get_root()->awar(itemAwar(AWAR_FIELD_CREATE_TYPE_TMPL, selector))->read_int();
 
     if (!error) error = GBT_add_new_changekey_to_keypath(bound_selector->gb_main, name, type, selector.change_key_path);
     aws->hide_or_notify(error);
@@ -780,6 +790,7 @@ AW_window *DBUI::create_field_create_window(AW_root *root, BoundItemSel *bound_s
     AW_window_simple *aws = new AW_window_simple;
     awsa[selector.type]  = aws;
 
+    init_itemspecific_DBUI_awars(root, selector);
     init_itemType_specific_window(root, aws, selector, "CREATE_FIELD", "Create new %s field");
     aws->load_xfig("ad_fcrea.fig");
 
@@ -789,10 +800,10 @@ AW_window *DBUI::create_field_create_window(AW_root *root, BoundItemSel *bound_s
 
     aws->at("input");
     aws->label("FIELD NAME");
-    aws->create_input_field(AWAR_FIELD_CREATE_NAME, 15);
+    aws->create_input_field(itemAwar(AWAR_FIELD_CREATE_NAME_TMPL, selector), 15);
 
     aws->at("type");
-    aws->create_toggle_field(AWAR_FIELD_CREATE_TYPE, "FIELD TYPE", "F");
+    aws->create_toggle_field(itemAwar(AWAR_FIELD_CREATE_TYPE_TMPL, selector), "FIELD TYPE", "F");
     aws->insert_toggle("Ascii text",        "S", (int)GB_STRING);
     aws->insert_toggle("Link",              "L", (int)GB_LINK);
     aws->insert_toggle("Rounded numerical", "N", (int)GB_INT);
@@ -817,26 +828,27 @@ static void field_convert_commit_cb(AW_window *aws, BoundItemSel *bound_selector
     GBDATA  *gb_main = bound_selector->gb_main;
 
     GB_push_transaction(gb_main);
+    ItemSelector& selector = bound_selector->selector;
     GB_ERROR error = GBT_convert_changekey(gb_main,
-                                           root->awar(AWAR_FIELD_CONVERT_SOURCE)->read_char_pntr(),
-                                           (GB_TYPES)root->awar(AWAR_FIELD_CONVERT_TYPE)->read_int());
+                                           root->awar(itemAwar(AWAR_FIELD_CONVERT_SOURCE_TMPL, selector))->read_char_pntr(),
+                                           (GB_TYPES)root->awar(itemAwar(AWAR_FIELD_CONVERT_TYPE_TMPL, selector))->read_int());
 
     GB_end_transaction_show_error(gb_main, error, aw_message);
 }
 
-static void field_convert_update_typesel_cb(AW_window *aws, BoundItemSel *bound_selector) {
+static void field_convert_update_typesel_cb(AW_root *root, BoundItemSel *bound_selector) {
     ItemSelector& selector = bound_selector->selector;
+    int type;
+    {
+        GBDATA         *gb_main = bound_selector->gb_main;
+        GB_transaction  ta(gb_main);
 
-    AW_root *root    = aws->get_root();
-    GBDATA  *gb_main = bound_selector->gb_main;
-
-    GB_push_transaction(gb_main);
-    int type = GBT_get_type_of_changekey(gb_main,
-                                         root->awar(AWAR_FIELD_CONVERT_SOURCE)->read_char_pntr(),
+        type = GBT_get_type_of_changekey(gb_main,
+                                         root->awar(itemAwar(AWAR_FIELD_CONVERT_SOURCE_TMPL, selector))->read_char_pntr(),
                                          selector.change_key_path);
-    GB_pop_transaction(gb_main);
+    }
 
-    root->awar(AWAR_FIELD_CONVERT_TYPE)->write_int(type);
+    root->awar(itemAwar(AWAR_FIELD_CONVERT_TYPE_TMPL, selector))->write_int(type);
 }
 
 static AW_window *create_field_convert_window(AW_root *root, BoundItemSel *bound_selector) {
@@ -848,6 +860,7 @@ static AW_window *create_field_convert_window(AW_root *root, BoundItemSel *bound
     AW_window_simple *aws = new AW_window_simple;
     awsa[selector.type]  = aws;
 
+    init_itemspecific_DBUI_awars(root, selector);
     init_itemType_specific_window(root, aws, selector, "CONVERT_FIELD", "Convert %s field");
     aws->load_xfig("ad_conv.fig");
 
@@ -859,11 +872,12 @@ static AW_window *create_field_convert_window(AW_root *root, BoundItemSel *bound
     aws->callback(makeHelpCallback("spaf_convert.hlp"));
     aws->create_button("HELP", "Help", "H");
 
-    aws->callback(makeWindowCallback(field_convert_update_typesel_cb, bound_selector));
-    create_itemfield_selection_list(aws, FieldSelDef(AWAR_FIELD_CONVERT_SOURCE, bound_selector->gb_main, selector, FIELD_FILTER_STRING_READABLE, SF_HIDDEN), "source");
+    const char *awarname_field = itemAwar(AWAR_FIELD_CONVERT_SOURCE_TMPL, selector);
+    root->awar(awarname_field)->add_callback(makeRootCallback(field_convert_update_typesel_cb, bound_selector));
+    create_itemfield_selection_list(aws, FieldSelDef(awarname_field, bound_selector->gb_main, selector, FIELD_FILTER_STRING_READABLE, SF_HIDDEN), "source");
 
     aws->at("typesel");
-    aws->create_toggle_field(AWAR_FIELD_CONVERT_TYPE, NULL, "F");
+    aws->create_toggle_field(itemAwar(AWAR_FIELD_CONVERT_TYPE_TMPL, selector), NULL, "F");
     aws->insert_toggle("Ascii Text",        "S", (int)GB_STRING);
     aws->insert_toggle("Link",              "L", (int)GB_LINK);
     aws->insert_toggle("Rounded Numerical", "N", (int)GB_INT);

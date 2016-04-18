@@ -84,6 +84,9 @@ void Itemfield_Selection::fill() {
     }
 }
 
+static void auto_popdown_itemfield_selection_cb(AW_root*, AW_window_simple *aw_popup) { // @@@ unused
+    aw_popup->hide();
+}
 
 Itemfield_Selection *FieldSelDef::build_sel(AW_selection_list *from_sellist) const {
     GBDATA *gb_key_data;
@@ -249,7 +252,7 @@ static AW_window *createFieldSelectionPopup(AW_root *awr, FieldSelDef *selDef) {
     aw_popup->load_xfig(allowNewFields ? "awt/field_sel_new.fig" : "awt/field_sel.fig");
 
     aw_popup->at("sel");
-    aw_popup->callback(AW_POPDOWN); // used as SELLIST_CLICK_CB (see #559); works here because macro recording only tracks awar change here
+    aw_popup->callback(AW_POPDOWN); // used as SELLIST_CLICK_CB (see #559); works here because macro recording only tracks awar change here // @@@ fails assertion
     const bool FALLBACK2DEFAULT = !allowNewFields;
 
     Itemfield_Selection *itemSel;
