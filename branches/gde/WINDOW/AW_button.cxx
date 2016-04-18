@@ -475,13 +475,8 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
     if (_callback && ((long)_callback != 1))
     {
         if (macro_name) {
-            if (macro_name[0] == '@') { // will not be recorded and not be inserted into action_hash
-                _callback->id = strdup(macro_name); // -> no need to localize
-            }
-            else {
-                _callback->id = GBS_global_string_copy("%s/%s", this->window_defaults_name, macro_name);
-                get_root()->define_remote_command(_callback);
-            }
+            _callback->id = GBS_global_string_copy("%s/%s", this->window_defaults_name, macro_name);
+            get_root()->define_remote_command(_callback);
         }
         else {
             _callback->id = 0;
