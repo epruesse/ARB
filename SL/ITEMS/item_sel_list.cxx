@@ -16,6 +16,9 @@
 #include <arbdbt.h>
 #include <arb_global_defs.h>
 
+#include <aw_root.hxx>
+#include <aw_awar.hxx>
+
 #if defined(ARB_MOTIF)
 static AW_window *existing_window_creator(AW_root*, AW_window *aw_existing) {
     return aw_existing;
@@ -89,6 +92,9 @@ void Itemfield_Selection::fill() {
     }
 }
 
+static void auto_popdown_itemfield_selection_cb(AW_root*, AW_window_simple *aw_popup) {
+    aw_popup->hide();
+}
 
 Itemfield_Selection *create_selection_list_on_itemfields(GBDATA         *gb_main,
                                                          AW_window      *aws,
@@ -135,13 +141,15 @@ Itemfield_Selection *create_selection_list_on_itemfields(GBDATA         *gb_main
         // create HIDDEN popup window containing the selection list
         AW_window *win_for_sellist = aws;
         {
+            AW_root *awr = aws->get_root();
+
             AW_window_simple *aw_popup = new AW_window_simple;
-            aw_popup->init(aws->get_root(), "SELECT_LIST_ENTRY", "SELECT AN ENTRY");
+            aw_popup->init(awr, "SELECT_LIST_ENTRY", "SELECT AN ENTRY");
 
             aw_popup->auto_space(10, 10);
             aw_popup->at_newline();
 
-            aw_popup->callback(AW_POPDOWN); // @@@ used as SELLIST_CLICK_CB (see #559)
+            awr->awar(varname)->add_callback(makeRootCallback(auto_popdown_itemfield_selection_cb, aw_popup));
             sellist = aw_popup->create_selection_list(varname, columns, visible_rows, fallback2default);
 
             aw_popup->at_newline();

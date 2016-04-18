@@ -526,11 +526,11 @@ AW_window *create_primer_design_window(AW_root *root, GBDATA *gb_main) {
     aws->create_toggle(AWAR_PRIMER_DESIGN_EXPAND_IUPAC);
 
     aws->at("GC_factor");
-    aws->callback(primer_design_event_check_gc_factor);
+    aws->callback(primer_design_event_check_gc_factor); // @@@ used as INPUTFIELD_CB (see #559)
     aws->create_input_field(AWAR_PRIMER_DESIGN_GC_FACTOR, 7);
     
     aws->at("temp_factor");
-    aws->callback(primer_design_event_check_temp_factor);
+    aws->callback(primer_design_event_check_temp_factor); // @@@ used as INPUTFIELD_CB (see #559)
     aws->create_input_field(AWAR_PRIMER_DESIGN_TEMP_FACTOR, 7);
 
     aws->at("config");

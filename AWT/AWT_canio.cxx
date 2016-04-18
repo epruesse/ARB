@@ -968,10 +968,10 @@ void AWT_popup_print_window(AW_window *parent_win, AWT_canvas *scr) {
         //      multiple pages
 
         aws->at("sizex");
-        aws->callback(columns_changed_cb);
+        aws->callback(columns_changed_cb); // @@@ used as INPUTFIELD_CB (see #559)
         aws->create_input_field(AWAR_CANIO_PAGE_SX, 4);
         aws->at("sizey");
-        aws->callback(rows_changed_cb);
+        aws->callback(rows_changed_cb); // @@@ used as INPUTFIELD_CB (see #559)
         aws->create_input_field(AWAR_CANIO_PAGE_SY, 4);
 
         aws->at("best_fit");
