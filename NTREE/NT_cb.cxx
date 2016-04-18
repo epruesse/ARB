@@ -74,6 +74,7 @@ AW_window *NT_create_select_tree_window(AW_root *awr, const char *awar_tree) {
         aws->load_xfig("select_simple.fig");
 
         aws->at("selection");
+        awr->awar(awar_tree)->add_callback(makeRootCallback(awt_auto_popdown_cb, aws));
         awt_create_TREE_selection_list(GLOBAL.gb_main, aws, awar_tree, true);
 
         aws->auto_space(5, 5);
