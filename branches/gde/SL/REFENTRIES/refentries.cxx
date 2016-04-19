@@ -291,7 +291,7 @@ namespace RefEntries {
         aws->at_newline();
         aws->at_set_to(true, false, XOFF, YOFF_IF);
         aws->label("Field containing references");
-        aws->create_input_field(AWAR_MARKBYREF_FIELD, 10);
+        aws->create_input_field(AWAR_MARKBYREF_FIELD, 10); // @@@ use field selection
 
         aws->at_newline();
         aws->label("Ignore if field missing?");
