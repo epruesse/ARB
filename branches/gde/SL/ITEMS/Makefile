@@ -64,6 +64,8 @@ changekey.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 item_sel_list.o: item_sel_list.h
 item_sel_list.o: items.h
+item_sel_list.o: $(ARBHOME)/INCLUDE/ad_cb.h
+item_sel_list.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/ad_prot.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/arb_assert.h

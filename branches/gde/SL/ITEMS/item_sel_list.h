@@ -105,6 +105,8 @@ public:
     long get_type_filter() const { return type_filter; }
     bool new_fields_allowed() const { return field_filter & SF_ALLOW_NEW; }
 
+    GBDATA *get_gb_main() const { return gb_main; }
+
     Itemfield_Selection *build_sel(AW_selection_list *from_sellist) const;
 
 #if defined(ASSERTION_USED)

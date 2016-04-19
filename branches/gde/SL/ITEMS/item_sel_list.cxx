@@ -14,6 +14,8 @@
 #include "item_sel_list.h"
 
 #include <arbdbt.h>
+#include <ad_cb.h>
+
 #include <arb_defs.h>
 #include <arb_global_defs.h>
 
@@ -110,6 +112,24 @@ static struct {
     // keep in sync with ../DB_UI/ui_species.cxx@FIELD_TYPE_DESCRIPTIONS
 };
 
+#define TRIGGER_PREFIX "tmp/trigger/awar/"
+
+static void itemfield_transaction_succeeded(GBDATA *gb_trigger) {
+    // this callback is triggered by prepare_and_get_selected_itemfield()
+    // when a new field is selected (i.e. field-awar contains sth like "xxx (new INT)").
+    // In that case a new changekey is created.
+    //
+    // If the transaction (of the caller) is aborted, the changekey generation is reverted and this callback will not be called.
+    // If the transaction is committed, this callback changes the value of the field-awar to "xxx" (because the field exists now).
+
+    const char *dbpath     = GB_get_db_path(gb_trigger);
+    const char *is_trigger = strstr(dbpath, TRIGGER_PREFIX);
+    it_assert(is_trigger);
+
+    const char *awar_name = is_trigger+strlen(TRIGGER_PREFIX); // suffix of gb_trigger-database-path == awar-name
+    AW_root::SINGLETON->awar(awar_name)->write_string(GB_read_char_pntr(gb_trigger));
+}
+
 const char *prepare_and_get_selected_itemfield(AW_root *awr, const char *awar_name, GBDATA *gb_main, const ItemSelector& itemtype, const char *description, FailIfField failIf) {
     /*! Reads awar used in create_itemfield_selection_button().
      * If the user selected to create a new itemfield, the changekey is created and
@@ -151,8 +171,11 @@ const char *prepare_and_get_selected_itemfield(AW_root *awr, const char *awar_na
                 error             = GB_check_hkey(fieldName);
                 if (!error) error = GBT_add_new_changekey_to_keypath(gb_main, fieldName, creatable[found].type, itemtype.change_key_path);
                 if (!error) {
-                    awar->write_string(fieldName);
-                    value = awar->read_char_pntr();
+                    const char *trigger    = GBS_global_string(TRIGGER_PREFIX "%s", awar_name);
+                    GBDATA     *gb_trigger = GB_search(gb_main, trigger, GB_FIND);
+
+                    if (!error) error = GB_write_string(gb_trigger, fieldName); // trigger awar-update-callback (will only execute if the current TA commits!)
+                    if (!error) value = GB_read_char_pntr(gb_trigger);          // use fieldname w/o type as result
                 }
                 free(fieldName);
             }
@@ -369,6 +392,25 @@ static AW_window *createFieldSelectionPopup(AW_root *awr, FieldSelDef *selDef) {
                 }
             }
             aw_popup->update_toggle_field();
+
+            // install delayed awar-update callback
+            {
+                GBDATA         *gb_main    = selDef->get_gb_main();
+                GB_transaction  ta(gb_main);
+                const char     *trigger    = GBS_global_string(TRIGGER_PREFIX "%s", selDef->get_awarname());
+                GBDATA         *gb_trigger = GB_searchOrCreate_string(gb_main, trigger, "");
+                GB_ERROR        error;
+
+                if (!gb_trigger) {
+                    error = GB_await_error();
+                }
+                else {
+                    error = GB_add_callback(gb_trigger, GB_CB_ALL, makeDatabaseCallback(itemfield_transaction_succeeded));
+                }
+                if (error) {
+                    aw_message(GBS_global_string("Failed to install awar-update-trigger (Reason: %s)", error));
+                }
+            }
 
             free(awarname_newtype);
             free(awarname_newname);
