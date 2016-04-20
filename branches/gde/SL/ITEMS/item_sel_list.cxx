@@ -144,7 +144,7 @@ const char *prepare_and_get_selected_itemfield(AW_root *awr, const char *awar_na
      * @param description     purpose of field (used for messages, defaults to "target")
      * @param failIf          toggles various error conditions
      *
-     * @return name of the itemfield (or NULL: if error -> error is exported, otherwise NO_FIELD_SELECTED)
+     * @return name of the itemfield (or NULL: if error -> error is exported, otherwise it means NO_FIELD_SELECTED)
      * If (failIf & FIF_NO_FIELD_SELECTED) an error is exported if NO_FIELD_SELECTED
      */
 
@@ -277,10 +277,9 @@ static void newFieldDef_changed_cb(AW_root *awr, ItemfieldAwarCbData *cbdata) {
 static void selField_changed_cb(AW_root *awr, ItemfieldAwarCbData *cbdata) {
     AW_awar    *awar_field  = cbdata->get_field_awar();
     const char *selected    = awar_field->read_char_pntr();
-    if (strcmp(selected, NO_FIELD_SELECTED) != 0) {
-        if (!cbdata->inAwarCallback) {
-            LocallyModify<bool> avoidRecursion(cbdata->inAwarCallback, true);
-
+    if (!cbdata->inAwarCallback) {
+        LocallyModify<bool> avoidRecursion(cbdata->inAwarCallback, true);
+        if (strcmp(selected, NO_FIELD_SELECTED) != 0) {
             Itemfield_Selection *itemSel = cbdata->get_selection();
             GBDATA              *gb_main = itemSel->get_gb_main();
             GB_transaction       ta(gb_main);
@@ -290,9 +289,9 @@ static void selField_changed_cb(AW_root *awr, ItemfieldAwarCbData *cbdata) {
                 awr->awar(newNameAwarname(awar_field))->write_string("");
                 awr->awar(newTypeAwarname(awar_field))->write_int(type);
 
-                cbdata->hide_window();
             }
         }
+        cbdata->hide_window();
     }
     it_assert(!GB_have_error());
 }
