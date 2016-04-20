@@ -72,7 +72,7 @@ GBDATA *GBT_searchOrCreate_itemfield_according_to_changekey(GBDATA *gb_item, con
 
         GB_TYPES type = GBT_get_type_of_changekey(GB_get_root(gb_item), field_name, change_key_path);
         if (type == GB_NONE) {
-            GB_export_errorf("Unknown changekey '%s' (cannot create)", field_name);
+            GB_export_errorf("Cannot create field '%s' (no type information available)", field_name);
         }
         else {
             gb_entry = GB_search(gb_item, field_name, type);
