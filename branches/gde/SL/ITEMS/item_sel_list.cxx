@@ -114,7 +114,7 @@ static struct {
 
 #define TRIGGER_PREFIX "tmp/trigger/awar/"
 
-static void itemfield_transaction_succeeded(GBDATA *gb_trigger) {
+static void itemfield_transaction_succeeded(GBDATA *gb_trigger, GB_CB_TYPE cbtype) {
     // this callback is triggered by prepare_and_get_selected_itemfield()
     // when a new field is selected (i.e. field-awar contains sth like "xxx (new INT)").
     // In that case a new changekey is created.
@@ -122,12 +122,14 @@ static void itemfield_transaction_succeeded(GBDATA *gb_trigger) {
     // If the transaction (of the caller) is aborted, the changekey generation is reverted and this callback will not be called.
     // If the transaction is committed, this callback changes the value of the field-awar to "xxx" (because the field exists now).
 
-    const char *dbpath     = GB_get_db_path(gb_trigger);
-    const char *is_trigger = strstr(dbpath, TRIGGER_PREFIX);
-    it_assert(is_trigger);
+    if (cbtype & GB_CB_CHANGED) {
+        const char *dbpath     = GB_get_db_path(gb_trigger);
+        const char *is_trigger = strstr(dbpath, TRIGGER_PREFIX);
+        it_assert(is_trigger);
 
-    const char *awar_name = is_trigger+strlen(TRIGGER_PREFIX); // suffix of gb_trigger-database-path == awar-name
-    AW_root::SINGLETON->awar(awar_name)->write_string(GB_read_char_pntr(gb_trigger));
+        const char *awar_name = is_trigger+strlen(TRIGGER_PREFIX); // suffix of gb_trigger-database-path == awar-name
+        AW_root::SINGLETON->awar(awar_name)->write_string(GB_read_char_pntr(gb_trigger));
+    }
 }
 
 const char *prepare_and_get_selected_itemfield(AW_root *awr, const char *awar_name, GBDATA *gb_main, const ItemSelector& itemtype, const char *description, FailIfField failIf) {
