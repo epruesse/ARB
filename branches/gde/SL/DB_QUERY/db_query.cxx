@@ -2371,39 +2371,20 @@ static AW_window *create_modify_fields_window(AW_root *aw_root, DbQuery *query) 
 
 static void set_field_of_queried_cb(AW_window*, DbQuery *query, bool append) {
     // set fields of listed items
-    ItemSelector&  selector = query->selector;
-    GB_ERROR       error    = 0;
-    AW_root       *aw_root  = query->aws->get_root();
-    char          *key      = aw_root->awar(query->awar_setkey)->read_string();
-
-    if (strcmp(key, "name") == 0) {
-        error = "You cannot set the name field";
-    }
-    else if (strcmp(key, NO_FIELD_SELECTED) == 0) {
-        error = "Please select a target field.";
-    }
+    ItemSelector&  selector   = query->selector;
+    GB_ERROR       error      = NULL;
+    AW_root       *aw_root    = query->aws->get_root();
+    bool           allow_loss = aw_root->awar(query->awar_writelossy)->read_int();
 
     char *value = aw_root->awar(query->awar_setvalue)->read_string();
     if (value[0] == 0) freenull(value);
 
+    size_t value_len = value ? strlen(value) : 0;
+
     GB_begin_transaction(query->gb_main);
 
-    GBDATA *gb_key_type = 0;
-    {
-        GBDATA *gb_key_data     = GB_search(query->gb_main, selector.change_key_path, GB_CREATE_CONTAINER);
-        if (!gb_key_data) error = GB_await_error();
-        else {
-            GBDATA *gb_key_name = GB_find_string(gb_key_data, CHANGEKEY_NAME, key, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
-            if (!gb_key_name) {
-                error = GBS_global_string("The destination field '%s' does not exists", key);
-            }
-            else {
-                gb_key_type = GB_brother(gb_key_name, CHANGEKEY_TYPE);
-                if (!gb_key_type) error = GB_await_error();
-            }
-        }
-    }
-    dbq_assert(gb_key_type || error);
+    const char *key = prepare_and_get_selected_itemfield(aw_root, query->awar_writekey, query->gb_main, selector);
+    if (!key) error = GB_await_error();
 
     for (GBDATA *gb_item_container = selector.get_first_item_container(query->gb_main, aw_root, QUERY_ALL_ITEMS);
          !error && gb_item_container;
@@ -2414,40 +2395,52 @@ static void set_field_of_queried_cb(AW_window*, DbQuery *query, bool append) {
              gb_item = selector.get_next_item(gb_item, QUERY_ALL_ITEMS))
         {
             if (IS_QUERIED(gb_item, query)) {
-                GBDATA *gb_new = GB_search(gb_item, key, GB_FIND);
-                if (gb_new) {
-                    if (value) {
-                        if (append) {
-                            char *old = GB_read_as_string(gb_new);
-                            if (old) {
-                                GBS_strstruct *strstr = GBS_stropen(strlen(old)+strlen(value)+2);
-                                GBS_strcat(strstr, old);
-                                GBS_strcat(strstr, value);
-                                char *v = GBS_strclose(strstr);
-                                error = GB_write_autoconv_string(gb_new, v);
-                                free(v);
-                            }
-                            else {
-                                char *name = GBT_read_string(gb_item, "name");
-                                error = GB_export_errorf("Field '%s' of %s '%s' has incompatible type", key, selector.item_name, name);
-                                free(name);
-                            }
-                        }
-                        else {
-                            error = GB_write_autoconv_string(gb_new, value);
-                        }
+                if (!value) { // empty value -> delete field
+                    if (!append) {
+                        GBDATA *gb_field    = GB_search(gb_item, key, GB_FIND);
+                        if (gb_field) error = GB_delete(gb_field);
                     }
-                    else { // if value is NULL -> delete field
-                        if (!append) error = GB_delete(gb_new);
-                    }
+                    // otherwise "nothing" is appended (=noop)
                 }
                 else {
-                    if (value) { // do not create field if value is NULL
-                        gb_new = GB_search(gb_item, key, (GB_TYPES)GB_read_int(gb_key_type));
+                    GBDATA *gb_field     = GBT_searchOrCreate_itemfield_according_to_changekey(gb_item, key, selector.change_key_path);
+                    if (!gb_field) error = GB_await_error();
+                    else {
+                        const char   *new_content = value;
+                        SmartCharPtr  content;
 
-                        if (!gb_new) error = GB_await_error();
-                        else error         = GB_write_autoconv_string(gb_new, value);
+                        if (append) {
+                            char *old       = GB_read_as_string(gb_field);
+                            if (!old) error = "field has incompatible type";
+                            else {
+                                size_t         old_len = strlen(old);
+                                GBS_strstruct *strstr  = GBS_stropen(old_len+value_len+2);
+
+                                GBS_strncat(strstr, old, old_len);
+                                GBS_strncat(strstr, value, value_len);
+
+                                content     = GBS_strclose(strstr);
+                                new_content = &*content;
+                            }
+                        }
+
+                        error = GB_write_autoconv_string(gb_field, new_content);
+
+                        if (!allow_loss && !error) {
+                            char *result = GB_read_as_string(gb_field);
+                            dbq_assert(result);
+
+                            if (strcmp(new_content, result) != 0) {
+                                error = GBS_global_string("value modified by type conversion\n('%s' -> '%s')", new_content, result);
+                            }
+                            free(result);
+                        }
                     }
+                }
+
+                if (error) { // add name of current item to error
+                    const char *name = GBT_read_char_pntr(gb_item, "name");
+                    error            = GBS_global_string("Error while writing to %s '%s':\n%s", selector.item_name, name, error);
                 }
             }
         }
@@ -2455,7 +2448,6 @@ static void set_field_of_queried_cb(AW_window*, DbQuery *query, bool append) {
 
     GB_end_transaction_show_error(query->gb_main, error, aw_message);
 
-    free(key);
     free(value);
 }
 
@@ -2472,7 +2464,14 @@ static AW_window *create_writeFieldOfListed_window(AW_root *aw_root, DbQuery *qu
     aws->callback(makeHelpCallback("write_field_list.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
-    create_itemfield_selection_button(aws, FieldSelDef(query->awar_setkey, query->gb_main, query->selector, FIELD_FILTER_NDS), "field");
+    create_itemfield_selection_button(aws, FieldSelDef(query->awar_writekey, query->gb_main, query->selector, FIELD_FILTER_STRING_READABLE, SF_ALLOW_NEW), "field");
+
+    aws->at("val");
+    aws->create_text_field(query->awar_setvalue, 2, 2);
+
+    aws->at("lossy");
+    aws->label("Allow lossy conversion?");
+    aws->create_toggle(query->awar_writelossy);
 
     aws->at("create");
     aws->callback(makeWindowCallback(set_field_of_queried_cb, query, false));
@@ -2482,9 +2481,6 @@ static AW_window *create_writeFieldOfListed_window(AW_root *aw_root, DbQuery *qu
     aws->callback(makeWindowCallback(set_field_of_queried_cb, query, true));
     aws->create_button("APPEND_SINGLE_FIELD_OF_LISTED", "APPEND");
 
-    aws->at("val");
-    aws->create_text_field(query->awar_setvalue, 2, 2);
-
     return aws;
 }
 
@@ -2492,38 +2488,45 @@ static void set_protection_of_queried_cb(AW_window*, DbQuery *query) {
     // set protection of listed items
     ItemSelector&  selector = query->selector;
     AW_root       *aw_root  = query->aws->get_root();
-    GB_ERROR       error    = 0;
-    char          *key      = aw_root->awar(query->awar_setkey)->read_string();
+    char          *key      = aw_root->awar(query->awar_protectkey)->read_string();
 
-    GB_begin_transaction(query->gb_main);
-    GBDATA *gb_key_data = GB_search(query->gb_main, selector.change_key_path, GB_CREATE_CONTAINER);
-    GBDATA *gb_key_name = GB_find_string(gb_key_data, CHANGEKEY_NAME, key, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
-    if (!gb_key_name) {
-        error = GBS_global_string("The destination field '%s' does not exists", key);
+    if (strcmp(key, NO_FIELD_SELECTED) == 0) {
+        aw_message("Please select a field for which you want to set the protection");
     }
     else {
-        int         level = aw_root->awar(query->awar_setprotection)->read_int();
-        QUERY_RANGE range = (QUERY_RANGE)aw_root->awar(query->awar_where)->read_int();
+        GB_begin_transaction(query->gb_main);
 
-        for (GBDATA *gb_item_container = selector.get_first_item_container(query->gb_main, aw_root, range);
-             !error && gb_item_container;
-             gb_item_container = selector.get_next_item_container(gb_item_container, range))
-        {
-            for (GBDATA *gb_item = selector.get_first_item(gb_item_container, QUERY_ALL_ITEMS);
-                 !error && gb_item;
-                 gb_item = selector.get_next_item(gb_item, QUERY_ALL_ITEMS))
+        GB_ERROR  error       = 0;
+        GBDATA   *gb_key_data = GB_search(query->gb_main, selector.change_key_path, GB_CREATE_CONTAINER);
+        GBDATA   *gb_key_name = GB_find_string(gb_key_data, CHANGEKEY_NAME, key, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
+
+        if (!gb_key_name) {
+            error = GBS_global_string("The destination field '%s' does not exists", key);
+        }
+        else {
+            int         level = aw_root->awar(query->awar_setprotection)->read_int();
+            QUERY_RANGE range = (QUERY_RANGE)aw_root->awar(query->awar_where)->read_int();
+
+            for (GBDATA *gb_item_container = selector.get_first_item_container(query->gb_main, aw_root, range);
+                 !error && gb_item_container;
+                 gb_item_container = selector.get_next_item_container(gb_item_container, range))
             {
-                if (IS_QUERIED(gb_item, query)) {
-                    GBDATA *gb_new = GB_search(gb_item, key, GB_FIND);
-                    if (gb_new) {
-                        error             = GB_write_security_delete(gb_new, level);
-                        if (!error) error = GB_write_security_write(gb_new, level);
+                for (GBDATA *gb_item = selector.get_first_item(gb_item_container, QUERY_ALL_ITEMS);
+                     !error && gb_item;
+                     gb_item = selector.get_next_item(gb_item, QUERY_ALL_ITEMS))
+                {
+                    if (IS_QUERIED(gb_item, query)) {
+                        GBDATA *gb_new = GB_search(gb_item, key, GB_FIND);
+                        if (gb_new) {
+                            error             = GB_write_security_delete(gb_new, level);
+                            if (!error) error = GB_write_security_write(gb_new, level);
+                        }
                     }
                 }
             }
         }
+        GB_end_transaction_show_error(query->gb_main, error, aw_message);
     }
-    GB_end_transaction_show_error(query->gb_main, error, aw_message);
 
     free(key);
 }
@@ -2553,7 +2556,7 @@ static AW_window *create_set_protection_window(AW_root *aw_root, DbQuery *query)
     aws->insert_toggle("6 the truth", "5", 6);
     aws->update_toggle_field();
 
-    create_itemfield_selection_list(aws, FieldSelDef(query->awar_setkey, query->gb_main, query->selector, FIELD_UNFILTERED), "list");
+    create_itemfield_selection_list(aws, FieldSelDef(query->awar_protectkey, query->gb_main, query->selector, FIELD_UNFILTERED), "list");
 
     aws->at("go");
     aws->callback(makeWindowCallback(set_protection_of_queried_cb, query));
@@ -2612,7 +2615,9 @@ DbQuery::~DbQuery() {
 
     free(species_name);
 
-    free(awar_setkey);
+    free(awar_writekey);
+    free(awar_writelossy);
+    free(awar_protectkey);
     free(awar_setprotection);
     free(awar_setvalue);
 
@@ -2785,7 +2790,7 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
             aws->at(xpos_calc[0], ypos+key*KEY_Y_OFFSET);
             aws->restore_at_from(*at_size);
 
-            create_itemfield_selection_button(aws, FieldSelDef(query->awar_keys[key], gb_main, awtqs->get_queried_itemtype(), FIELD_FILTER_NDS, SF_PSEUDO), NULL);
+            create_itemfield_selection_button(aws, FieldSelDef(query->awar_keys[key], gb_main, awtqs->get_queried_itemtype(), FIELD_FILTER_STRING_READABLE, SF_PSEUDO), NULL);
 
             if (xpos_calc[1] == -1) aws->get_at_position(&xpos_calc[1], &ypos_dummy);
 
@@ -2907,17 +2912,11 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
         free(macro_id);
     }
     if (awtqs->do_set_pos_fig) {
-        sprintf(buffer, "tmp/dbquery_%s/set_key", query_id);
-        query->awar_setkey = strdup(buffer);
-        aw_root->awar_string(query->awar_setkey);
-
-        sprintf(buffer, "tmp/dbquery_%s/set_protection", query_id);
-        query->awar_setprotection = strdup(buffer);
-        aw_root->awar_int(query->awar_setprotection, 4);
-
-        sprintf(buffer, "tmp/dbquery_%s/set_value", query_id);
-        query->awar_setvalue = strdup(buffer);
-        aw_root->awar_string(query->awar_setvalue);
+        query->awar_writekey      = GBS_global_string_copy("tmp/dbquery_%s/write_key",      query_id); aw_root->awar_string(query->awar_writekey);
+        query->awar_writelossy    = GBS_global_string_copy("tmp/dbquery_%s/write_lossy",    query_id); aw_root->awar_int   (query->awar_writelossy);
+        query->awar_protectkey    = GBS_global_string_copy("tmp/dbquery_%s/protect_key",    query_id); aw_root->awar_string(query->awar_protectkey);
+        query->awar_setprotection = GBS_global_string_copy("tmp/dbquery_%s/set_protection", query_id); aw_root->awar_int   (query->awar_setprotection, 4);
+        query->awar_setvalue      = GBS_global_string_copy("tmp/dbquery_%s/set_value",      query_id); aw_root->awar_string(query->awar_setvalue);
 
         aws->at(awtqs->do_set_pos_fig);
         aws->help_text("mod_field_list.hlp");

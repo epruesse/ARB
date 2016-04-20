@@ -1502,7 +1502,11 @@ GB_ERROR GB_write_autoconv_string(GBDATA *gbd, const char *val) {
         case GB_LINK:   return GB_write_link(gbd, val);
         case GB_BYTE:   return GB_write_byte(gbd, atoi(val));
         case GB_INT:    return GB_write_int(gbd, atoi(val));
-        case GB_FLOAT:  return GB_write_float(gbd, GB_atof(val));
+        case GB_FLOAT:  {
+            float f;
+            GB_ERROR error = GB_safe_atof(val, &f);
+            return error ? error : GB_write_float(gbd, f);
+        }
         case GB_BITS:   return GB_write_bits(gbd, val, strlen(val), "0");
         default: return GBS_global_string("Error: You cannot use GB_write_autoconv_string on this type of entry (%s)", GB_read_key_pntr(gbd));
     }

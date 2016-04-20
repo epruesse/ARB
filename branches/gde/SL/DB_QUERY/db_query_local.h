@@ -67,7 +67,10 @@ namespace QUERY {
 
         char *species_name;
 
-        char *awar_setkey;
+        char *awar_writekey;
+        char *awar_writelossy;
+
+        char *awar_protectkey;
         char *awar_setprotection;
         char *awar_setvalue;
 

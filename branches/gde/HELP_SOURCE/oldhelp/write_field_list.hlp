@@ -15,8 +15,13 @@ OCCURRENCE      ARB_NT/Species/Search and Query/Write to fields of Listed
                 ARB_NT/Genome/Search and query/Write to fields of Listed
                 ARB_NT/Genome/Experiment/Search and query/Write to fields of Listed
 
-DESCRIPTION     Writes the same text or integers to the selected fields of
+DESCRIPTION     Writes or appends the same value to the selected field of
                 all listed species/genes.
+
+                If the target field is not a text field, a type conversion
+                takes place. If that conversion results in a different value
+                than the provided one, an error will occur.
+                You may allow lossy conversion by checking the switch.
 
 NOTES           A protection level has to be selected from the Protection
                 menu of the main window (ARB_NT/Protection) equal or higher
