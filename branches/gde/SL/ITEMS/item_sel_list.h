@@ -44,7 +44,8 @@ CONSTEXPR long FIELD_FILTER_FLOAT_WRITEABLE  = (1<<GB_STRING) | (1<<GB_FLOAT);
 
 CONSTEXPR long FIELD_FILTER_STRING_READABLE = (1<<GB_BYTE)|(1<<GB_INT)|(1<<GB_FLOAT)|(1<<GB_STRING)|(1<<GB_BITS)|(1<<GB_LINK); // as supported by GB_read_as_string()
 
-CONSTEXPR long FIELD_UNFILTERED = -1L;
+CONSTEXPR long FIELD_UNFILTERED       = -1L;                             // any field or container
+CONSTEXPR long FIELD_FILTER_ANY_FIELD = (FIELD_UNFILTERED ^ (1<<GB_DB)); // no containers
 
 CONSTEXPR long FIELD_FILTER_NDS  = FIELD_FILTER_STRING_READABLE; // @@@ used too wide-spread (use FIELD_FILTER_STRING_READABLE instead)
 CONSTEXPR long FIELD_FILTER_PARS = FIELD_FILTER_STRING_READABLE; // @@@ used only once (use FIELD_FILTER_STRING_READABLE instead)
