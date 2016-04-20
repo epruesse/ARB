@@ -103,7 +103,7 @@ static void species_rename_join(AW_window *aww) {
     if (!error) {
         GB_HASH *hash = GBS_create_hash(1000, GB_MIND_CASE);
         long     maxs = GBT_count_marked_species(GLOBAL.gb_main);
-        
+
         arb_progress progress("Joining species", maxs);
 
         GBDATA *gb_next = 0;
@@ -115,8 +115,8 @@ static void species_rename_join(AW_window *aww) {
 
             GBDATA *gb_field = GB_entry(gb_species, field);
             if (gb_field) {
-                const char *field_value = GB_read_char_pntr(gb_field);
-                GBDATA     *gb_old      = (GBDATA *)GBS_read_hash(hash, field_value);
+                char   *field_value = GB_read_as_string(gb_field);
+                GBDATA *gb_old      = (GBDATA *)GBS_read_hash(hash, field_value);
 
                 if (!gb_old) {
                     GBS_write_hash(hash, field_value, (long)gb_species);
@@ -125,6 +125,7 @@ static void species_rename_join(AW_window *aww) {
                     error = nt_species_join(gb_old, gb_species, 0, sep, sep2);
                     if (!error) error = GB_delete(gb_species);
                 }
+                free(field_value);
             }
             progress.inc_and_check_user_abort(error);
         }
@@ -168,7 +169,7 @@ AW_window *NT_create_species_join_window(AW_root *root) {
         aws->help_text("species_join.hlp");
         aws->create_button("GO", "GO", "G");
 
-        create_itemfield_selection_button(aws, FieldSelDef(AWAR_SPECIES_JOIN_FIELD, GLOBAL.gb_main, SPECIES_get_selector(), FIELD_FILTER_NDS), "field");
+        create_itemfield_selection_button(aws, FieldSelDef(AWAR_SPECIES_JOIN_FIELD, GLOBAL.gb_main, SPECIES_get_selector(), FIELD_FILTER_STRING_READABLE), "field");
     }
     return aws;
 }

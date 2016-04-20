@@ -573,21 +573,6 @@ static GBDATA *concatenateFieldsCreateNewSpecies(AW_window *, GBDATA *gb_species
     return gb_new_species;
 }
 
-static GB_ERROR checkAndCreateNewField(GBDATA *gb_main, char *new_field_name) {
-    GB_ERROR error    = GB_check_key(new_field_name);
-
-    if (error) return error;
-    else {
-        error = GBT_add_new_changekey(gb_main, new_field_name, GB_STRING);
-        if (error) {
-            bool overwrite = aw_ask_sure("merge_similar_overwrite_field",
-                                         GBS_global_string("\"%s\" field exists! Do you want to overwrite the existing field?", new_field_name));
-            if (!overwrite) return error;
-        }
-    }
-    return 0;
-}
-
 enum MergeSpeciesType {
     MERGE_SPECIES_SIMPLE,
     MERGE_SPECIES_AND_CONCAT_ALI,
@@ -601,77 +586,88 @@ static void mergeSimilarSpecies(AW_window *aws, MergeSpeciesType mergeType, AW_s
     {
         AW_root *aw_root          = aws->get_root();
         char    *merge_field_name = aw_root->awar(AWAR_CON_MERGE_FIELD)->read_string();
-        char    *new_field_name   = aw_root->awar(AWAR_CON_STORE_SIM_SP_NO)->read_string();
 
         SpeciesConcatenateList *scl            = 0; // to build list of similar species
         SpeciesConcatenateList *newSpeciesList = 0;  // new SpeciesConcatenateList
 
         GB_begin_transaction(GLOBAL.gb_main);       // open database for transaction
 
-        error = checkAndCreateNewField(GLOBAL.gb_main, new_field_name);
+        const char *report_field_name = prepare_and_get_selected_itemfield(aw_root, AWAR_CON_STORE_SIM_SP_NO, GLOBAL.gb_main, SPECIES_get_selector(), "report", FIF_NAME_SELECTED);
+        if (!report_field_name && GB_have_error()) error = GB_await_error();
 
-        PersistentNameServerConnection stayAlive;
-        arb_progress progress("Merging similar species", GBT_count_marked_species(GLOBAL.gb_main));
-        progress.auto_subtitles("Species");
+        if (!error && strcmp(merge_field_name, NO_FIELD_SELECTED) == 0) {
+            error = "Please select database field for similarity detection";
+        }
 
-        for (GBDATA * gb_species = GBT_first_marked_species(GLOBAL.gb_main);
-             gb_species && !error;
-             gb_species = GBT_next_marked_species(gb_species))
-        {
-            GBDATA     *gb_species_field = GB_entry(gb_species, merge_field_name);
-            const char *name             = GBT_read_name(gb_species);
+        if (!error) {
+            PersistentNameServerConnection stayAlive;
+            arb_progress progress("Merging similar species", GBT_count_marked_species(GLOBAL.gb_main));
+            progress.auto_subtitles("Species");
 
-            if (!gb_species_field) {
-                // exit if species doesn't have any data in the selected field
-                error = GBS_global_string("Species '%s' does not contain data in selected field '%s'", name, merge_field_name);
-            }
-            else {
-                char *gb_species_field_content = GB_read_string(gb_species_field);
-                int   similar_species          = 0;
+            for (GBDATA * gb_species = GBT_first_marked_species(GLOBAL.gb_main);
+                 gb_species && !error;
+                 gb_species = GBT_next_marked_species(gb_species))
+            {
+                GBDATA     *gb_species_field = GB_entry(gb_species, merge_field_name);
+                const char *name             = GBT_read_name(gb_species);
 
-                for (GBDATA * gb_species_next = GBT_next_marked_species(gb_species);
-                     gb_species_next && !error;
-                     gb_species_next = GBT_next_marked_species(gb_species_next))
-                {
-                    GBDATA     *gb_next_species_field = GB_entry(gb_species_next, merge_field_name);
-                    const char *next_name             = GBT_read_name(gb_species_next);
+                if (!gb_species_field) {
+                    // exit if species doesn't have any data in the selected field
+                    error = GBS_global_string("Species '%s' does not contain data in selected field '%s'", name, merge_field_name);
+                }
+                else {
+                    char *gb_species_field_content = GB_read_as_string(gb_species_field);
+                    int   similar_species          = 0;
 
-                    if (!gb_next_species_field) {
-                        // exit if species doesn't have any data in the selected field
-                        error = GBS_global_string("Species '%s' does not contain data in selected field '%s'", next_name, merge_field_name);
-                    }
-                    else {
-                        char *gb_next_species_field_content = GB_read_string(gb_next_species_field);
+                    for (GBDATA * gb_species_next = GBT_next_marked_species(gb_species);
+                         gb_species_next && !error;
+                         gb_species_next = GBT_next_marked_species(gb_species_next))
+                    {
+                        GBDATA     *gb_next_species_field = GB_entry(gb_species_next, merge_field_name);
+                        const char *next_name             = GBT_read_name(gb_species_next);
 
-                        if (strcmp(gb_species_field_content, gb_next_species_field_content) == 0) {
-                            addSpeciesToConcatenateList(&scl, next_name);
-                            GB_write_flag(gb_species_next, 0);
-                            ++similar_species;
-                            ++progress;
+                        if (!gb_next_species_field) {
+                            // exit if species doesn't have any data in the selected field
+                            error = GBS_global_string("Species '%s' does not contain data in selected field '%s'", next_name, merge_field_name);
                         }
-                        free(gb_next_species_field_content);
-                    }
-                }
+                        else {
+                            char *gb_next_species_field_content = GB_read_as_string(gb_next_species_field);
 
-                if (similar_species > 0 && !error) {
-                    addSpeciesToConcatenateList(&scl, name);
-                    GB_write_flag(gb_species, 0);
-
-                    GBDATA *new_species_created = concatenateFieldsCreateNewSpecies(aws, gb_species, scl);
-
-                    nt_assert(new_species_created);
-                    if (new_species_created) {      // create a list of newly created species
-                        addSpeciesToConcatenateList(&newSpeciesList, GBT_read_name(new_species_created));
+                            if (strcmp(gb_species_field_content, gb_next_species_field_content) == 0) {
+                                addSpeciesToConcatenateList(&scl, next_name);
+                                GB_write_flag(gb_species_next, 0);
+                                ++similar_species;
+                                ++progress;
+                            }
+                            free(gb_next_species_field_content);
+                        }
                     }
 
-                    error = GBT_write_int(new_species_created, new_field_name, ++similar_species);
+                    if (similar_species > 0 && !error) {
+                        ++similar_species; // correct merge counter
+                        addSpeciesToConcatenateList(&scl, name);
+                        GB_write_flag(gb_species, 0);
+
+                        GBDATA *new_species_created = concatenateFieldsCreateNewSpecies(aws, gb_species, scl);
+
+                        nt_assert(new_species_created);
+                        if (new_species_created) {      // create a list of newly created species
+                            addSpeciesToConcatenateList(&newSpeciesList, GBT_read_name(new_species_created));
+                        }
+
+                        if (report_field_name) {
+                            GBDATA *gb_report     = GBT_searchOrCreate_itemfield_according_to_changekey(new_species_created, report_field_name, SPECIES_get_selector().change_key_path);
+                            if (!gb_report) error = GB_await_error();
+                            else    error         = GB_write_lossless_int(gb_report, similar_species);
+                        }
+                    }
+
+                    freeSpeciesConcatenateList(scl); scl = 0;
+                    free(gb_species_field_content);
                 }
 
-                freeSpeciesConcatenateList(scl); scl = 0;
-                free(gb_species_field_content);
+                progress.inc_and_check_user_abort(error);
             }
-
-            progress.inc_and_check_user_abort(error);
         }
 
         if (!error) {
@@ -687,12 +683,13 @@ static void mergeSimilarSpecies(AW_window *aws, MergeSpeciesType mergeType, AW_s
         }
 
         free(merge_field_name);
-        free(new_field_name);
 
         GB_end_transaction_show_error(GLOBAL.gb_main, error, aw_message);
     }
 
     if (mergeType == MERGE_SPECIES_AND_CONCAT_ALI && !error) {
+        // @@@ what happens if merge-process above succeeds and concatenateAlignments below fails?
+        // @@@ i think both steps should be put into ONE transaction!
         concatenateAlignments(aws, selected_alis);
     }
 }
@@ -716,12 +713,8 @@ static AW_window *createMergeSimilarSpeciesWindow(AW_root *aw_root, MergeSpecies
     aws->at("help");
     aws->create_button("HELP", "HELP", "H");
 
-    aws->at("field_select");
-    create_itemfield_selection_button(aws, FieldSelDef(AWAR_CON_MERGE_FIELD, GLOBAL.gb_main, SPECIES_get_selector(), FIELD_FILTER_NDS, SF_HIDDEN), "field_select");
-
-    aws->at("store_sp_no");
-    aws->label_length(20);
-    aws->create_input_field(AWAR_CON_STORE_SIM_SP_NO, 20);
+    create_itemfield_selection_button(aws, FieldSelDef(AWAR_CON_MERGE_FIELD,     GLOBAL.gb_main, SPECIES_get_selector(), FIELD_FILTER_STRING_READABLE, SF_STANDARD),  "field_select");
+    create_itemfield_selection_button(aws, FieldSelDef(AWAR_CON_STORE_SIM_SP_NO, GLOBAL.gb_main, SPECIES_get_selector(), FIELD_FILTER_INT_WRITEABLE,   SF_ALLOW_NEW), "store_sp_no");
 
     {
         const char *buttonText = NULL;
