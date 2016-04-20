@@ -338,7 +338,9 @@ static AW_window *createFieldSelectionPopup(AW_root *awr, FieldSelDef *selDef) {
         const bool allowNewFields = selDef->new_fields_allowed();
 
         aw_popup->init(awr, "SELECT_FIELD", allowNewFields ? "Select or create new field" : "Select a field");
-        aw_popup->load_xfig(allowNewFields ? "awt/field_sel_new.fig" : "awt/field_sel.fig");
+
+        if (allowNewFields) aw_popup->load_xfig("awt/field_sel_new.fig"); // Do not DRY (ressource checker!)
+        else                aw_popup->load_xfig("awt/field_sel.fig");
 
         aw_popup->at("sel");
         const bool FALLBACK2DEFAULT = !allowNewFields;
