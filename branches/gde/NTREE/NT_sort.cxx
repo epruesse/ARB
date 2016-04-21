@@ -26,56 +26,65 @@
 struct customCriterion {
     char *key;
     bool  reverse;
+    bool  is_valid;
 
-    customCriterion() : key(NULL), reverse(false) {}
-    customCriterion(const char *key_, bool reverse_) : key(strdup(key_)), reverse(reverse_) {}
-    customCriterion(const customCriterion& other) : key(strdup(other.key)), reverse(other.reverse) {}
+    void check_valid() {
+        is_valid = key && strcmp(key, NO_FIELD_SELECTED) != 0;
+    }
+
+    customCriterion() : key(NULL), reverse(false) { check_valid(); }
+    customCriterion(const char *key_, bool reverse_) : key(strdup(key_)), reverse(reverse_) { check_valid(); }
+    customCriterion(const customCriterion& other) : key(strdup(other.key)), reverse(other.reverse) { check_valid(); }
     DECLARE_ASSIGNMENT_OPERATOR(customCriterion);
     ~customCriterion() { free(key); }
 };
 
 static int cmpByKey(GBDATA *gbd1, GBDATA *gbd2, const customCriterion& by) {
-    GBDATA *gb_field1 = GB_entry(gbd1, by.key);
-    GBDATA *gb_field2 = GB_entry(gbd2, by.key);
+    int cmp = 0;
+    if (by.is_valid) {
+        GBDATA *gb_field1 = GB_entry(gbd1, by.key);
+        GBDATA *gb_field2 = GB_entry(gbd2, by.key);
 
-    int cmp;
-    if (gb_field1) {
-        if (gb_field2) {
-            switch (GB_read_type(gb_field1)) {
-                case GB_STRING: {
-                    const char *s1 = GB_read_char_pntr(gb_field1);
-                    const char *s2 = GB_read_char_pntr(gb_field2);
+        if (gb_field1) {
+            if (gb_field2) {
+                switch (GB_read_type(gb_field1)) {
+                    case GB_STRING: {
+                        const char *s1 = GB_read_char_pntr(gb_field1);
+                        const char *s2 = GB_read_char_pntr(gb_field2);
 
-                    cmp = strcmp(s1, s2);
-                    break;
+                        cmp = strcmp(s1, s2);
+                        break;
+                    }
+                    case GB_FLOAT: {
+                        float f1 = GB_read_float(gb_field1);
+                        float f2 = GB_read_float(gb_field2);
+
+                        cmp = f1<f2 ? -1 : (f1>f2 ? 1 : 0);
+                        break;
+                    }
+                    case GB_INT: {
+                        int i1 = GB_read_int(gb_field1);
+                        int i2 = GB_read_int(gb_field2);
+
+                        cmp = i1-i2;
+                        break;
+                    }
+                    default:
+                        cmp = 0; // other field type -> no idea how to compare
+                        break;
                 }
-                case GB_FLOAT: {
-                    float f1 = GB_read_float(gb_field1);
-                    float f2 = GB_read_float(gb_field2);
 
-                    cmp = f1<f2 ? -1 : (f1>f2 ? 1 : 0);
-                    break;
-                }
-                case GB_INT: {
-                    int i1 = GB_read_int(gb_field1);
-                    int i2 = GB_read_int(gb_field2);
-
-                    cmp = i1-i2;
-                    break;
-                }
-                default:
-                    cmp = 0; // other field type -> no idea how to compare
-                    break;
+                if (by.reverse) cmp = -cmp;
             }
-
-            if (by.reverse) cmp = -cmp;
+            else cmp = -1;           // existing < missing!
         }
-        else cmp = -1;           // existing < missing!
+        else cmp = gb_field2 ? 1 : 0;
     }
-    else cmp = gb_field2 ? 1 : 0;
-
     return cmp;
 }
+
+static bool customOrderIsStrict = true;
+static bool customDefinesOrder  = false;
 
 static int resort_data_by_customOrder(const void *v1, const void *v2, void *cd_sortBy) {
     GBDATA *gbd1 = (GBDATA*)v1;
@@ -87,6 +96,10 @@ static int resort_data_by_customOrder(const void *v1, const void *v2, void *cd_s
     for (int c = 0; !cmp && c<CUSTOM_CRITERIA; ++c) {
         cmp = cmpByKey(gbd1, gbd2, sortBy[c]);
     }
+
+    if (!cmp) customOrderIsStrict = false;
+    else customDefinesOrder       = true;
+
     return cmp;
 }
 
@@ -109,7 +122,7 @@ static void NT_resort_data_base_by_tree(TreeNode *tree, GBDATA *gb_species_data)
 }
 
 
-static GB_ERROR NT_resort_data_base(TreeNode *tree, const customCriterion *sortBy) {
+static GB_ERROR resort_data_base(TreeNode *tree, const customCriterion *sortBy) {
     nt_assert(contradicted(tree, sortBy));
 
     GB_ERROR error = GB_begin_transaction(GLOBAL.gb_main);
@@ -140,7 +153,7 @@ void NT_resort_data_by_phylogeny(AW_window*, AWT_canvas *ntw) {
     TreeNode     *tree  = NT_get_tree_root_of_canvas(ntw);
 
     if (!tree)  error = "Please select/build a tree first";
-    if (!error) error = NT_resort_data_base(tree, NULL);
+    if (!error) error = resort_data_base(tree, NULL);
     if (error) aw_message(error);
 }
 
@@ -162,7 +175,16 @@ static void NT_resort_data_by_user_criteria(AW_window *aw) {
     sortBy[1] = customCriterion(aw_root->awar(AWAR_TREE_SORT2)->read_char_pntr(), aw_root->awar(AWAR_TREE_REV2)->read_int());
     sortBy[2] = customCriterion(aw_root->awar(AWAR_TREE_SORT3)->read_char_pntr(), aw_root->awar(AWAR_TREE_REV3)->read_int());
 
-    GB_ERROR error = NT_resort_data_base(NULL, sortBy);
+    customOrderIsStrict = true;
+    customDefinesOrder  = false;
+
+    GB_ERROR error = resort_data_base(NULL, sortBy);
+
+    if (!error) {
+        if (!customDefinesOrder) error       = "Warning: No order is defined by the specified fields";
+        else if (!customOrderIsStrict) error = "Note: The specified fields do not define a strict order";
+    }
+
     if (error) aw_message(error);
 }
 
