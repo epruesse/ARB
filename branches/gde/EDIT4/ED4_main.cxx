@@ -39,6 +39,7 @@
 #include <arbdbt.h>
 
 #include <arb_defs.h>
+#include <arb_global_defs.h>
 #include <macros.hxx>
 #include <aw_question.hxx>
 
@@ -291,7 +292,7 @@ static void ed4_create_mainDB_awars(AW_root *root) {
     root->awar_int(AWAR_CURSOR_POSITION_LOCAL, 0, GLOBAL_gb_main);
     root->awar_int(AWAR_SET_CURSOR_POSITION,   1, GLOBAL_gb_main);
 
-    root->awar_string(AWAR_FIELD_CHOSEN, "", GLOBAL_gb_main);
+    root->awar_string(AWAR_FIELD_CHOSEN, NO_FIELD_SELECTED, GLOBAL_gb_main);
 
     root->awar_string(AWAR_SPECIES_NAME, "", GLOBAL_gb_main);
     root->awar_string(AWAR_SAI_NAME,     "", GLOBAL_gb_main);

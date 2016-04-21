@@ -17,27 +17,32 @@
 #include "ed4_list.hxx"
 #include "ed4_seq_colors.hxx"
 
-#include <ad_config.h>
-#include <AW_helix.hxx>
-#include <AW_rename.hxx>
-#include <awt.hxx>
-#include <item_sel_list.h>
-#include <awt_sel_boxes.hxx>
-#include <aw_awars.hxx>
-#include <aw_msg.hxx>
-#include <arb_progress.h>
-#include <aw_root.hxx>
-#include <macros.hxx>
-#include <arb_defs.h>
 #include <iupac.h>
+#include <consensus_config.h>
+#include <item_sel_list.h>
+#include <macros.hxx>
+
+#include <awt.hxx>
+#include <awt_config_manager.hxx>
+#include <awt_misc.hxx>
+#include <awt_sel_boxes.hxx>
+
+#include <aw_awars.hxx>
+#include <AW_helix.hxx>
+#include <aw_msg.hxx>
+#include <AW_rename.hxx>
+#include <aw_root.hxx>
+
+#include <ad_config.h>
+
+#include <arb_defs.h>
+#include <arb_global_defs.h>
+#include <arb_progress.h>
 
 #include <cctype>
 #include <limits.h>
 
 #include <vector>
-#include <awt_config_manager.hxx>
-#include <consensus_config.h>
-#include <awt_misc.hxx>
 
 using namespace std;
 
@@ -981,12 +986,16 @@ static void group_species(bool use_field, AW_window *use_as_main_window) {
         char   *doneContents = strdup(";");
         size_t  doneLen      = 1;
 
-        int tryAgain     = 1;
-        int foundField   = 0;
-        int foundSpecies = 0;
+        bool tryAgain     = true;
+        bool foundField   = false;
+        bool foundSpecies = false;
+
+        if (strcmp(field_name, NO_FIELD_SELECTED) == 0) {
+            error = "Please select a field to use for grouping.";
+        }
 
         while (tryAgain && !error) {
-            tryAgain = 0;
+            tryAgain = false;
             ED4_selected_elem *list_elem = ED4_ROOT->selected_objects->head();
             while (list_elem && !error) {
                 ED4_base *object = list_elem->elem()->object;
@@ -996,7 +1005,7 @@ static void group_species(bool use_field, AW_window *use_as_main_window) {
                     GBDATA *gb_field   = NULL;
 
                     if (gb_species) {
-                        foundSpecies = 1;
+                        foundSpecies = true;
                         gb_field     = GB_search(gb_species, field_name, GB_FIND);
                     }
 
@@ -1005,7 +1014,7 @@ static void group_species(bool use_field, AW_window *use_as_main_window) {
                         if (field_content) {
                             size_t field_content_len = strlen(field_content);
 
-                            foundField = 1;
+                            foundField = true;
                             if (field_content_len>SIGNIFICANT_FIELD_CHARS) {
                                 field_content[SIGNIFICANT_FIELD_CHARS] = 0;
                                 field_content_len                      = SIGNIFICANT_FIELD_CHARS;
@@ -1016,7 +1025,7 @@ static void group_species(bool use_field, AW_window *use_as_main_window) {
 
                             if (strstr(doneContents, with_semi)==0) { // field_content was not used yet
                                 createGroupFromSelected(field_content, field_name, field_content);
-                                tryAgain = 1;
+                                tryAgain = true;
 
                                 int   newlen  = doneLen + field_content_len + 1;
                                 char *newDone = (char*)malloc(newlen+1);
@@ -1039,12 +1048,9 @@ static void group_species(bool use_field, AW_window *use_as_main_window) {
             }
         }
 
-        if (!foundSpecies) {
-            e4_assert(!error);
-            error = "Please select some species in order to insert them into new groups";
-        }
-        else if (!foundField) {
-            error = GBS_global_string("Field not found: '%s'%s", field_name, error ? GBS_global_string(" (Reason: %s)", error) : "");
+        if (!error) {
+            if      (!foundSpecies) error = "Please select some species in order to insert them into new groups";
+            else if (!foundField)   error = GBS_global_string("Field not found: '%s'%s", field_name, error ? GBS_global_string(" (Reason: %s)", error) : "");
         }
 
         free(doneContents);

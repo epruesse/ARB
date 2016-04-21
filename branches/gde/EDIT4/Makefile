@@ -410,6 +410,7 @@ ED4_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ED4_main.o: $(ARBHOME)/INCLUDE/arb_core.h
 ED4_main.o: $(ARBHOME)/INCLUDE/arb_defs.h
 ED4_main.o: $(ARBHOME)/INCLUDE/arb_error.h
+ED4_main.o: $(ARBHOME)/INCLUDE/arb_global_defs.h
 ED4_main.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ED4_main.o: $(ARBHOME)/INCLUDE/arb_string.h
 ED4_main.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -631,6 +632,7 @@ ED4_no_class.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/arb_core.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/arb_defs.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/arb_error.h
+ED4_no_class.o: $(ARBHOME)/INCLUDE/arb_global_defs.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/arb_progress.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/arb_string.h
