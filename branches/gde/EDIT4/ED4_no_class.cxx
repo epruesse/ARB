@@ -958,7 +958,7 @@ static void createGroupFromSelected(GB_CSTR group_name, GB_CSTR field_name, GB_C
     new_multi_species_manager->resize_requested_by_child();
 }
 
-static void group_species(int use_field, AW_window *use_as_main_window) {
+static void group_species(bool use_field, AW_window *use_as_main_window) {
     GB_ERROR error = 0;
     GB_push_transaction(GLOBAL_gb_main);
 
@@ -970,7 +970,7 @@ static void group_species(int use_field, AW_window *use_as_main_window) {
         if (group_name) {
             if (strlen(group_name)>GB_GROUP_NAME_MAX) {
                 group_name[GB_GROUP_NAME_MAX] = 0;
-                aw_message("Truncated too long group name");
+                aw_message("Truncated overlong group name");
             }
             createGroupFromSelected(group_name, 0, 0);
             free(group_name);
@@ -1055,7 +1055,7 @@ static void group_species(int use_field, AW_window *use_as_main_window) {
 }
 
 static void group_species_by_field_content(AW_window*, AW_window *use_as_main_window, AW_window *window_to_hide) {
-    group_species(1, use_as_main_window);
+    group_species(true, use_as_main_window);
     window_to_hide->hide();
 }
 
@@ -1087,7 +1087,7 @@ static AW_window *create_group_species_by_field_window(AW_root *aw_root, AW_wind
 
 void group_species_cb(AW_window *aww, bool use_fields) {
     if (!use_fields) {
-        group_species(0, aww);
+        group_species(false, aww);
     }
     else {
         static AW_window *ask_field_window;
