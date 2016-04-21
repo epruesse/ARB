@@ -176,8 +176,10 @@ const char *prepare_and_get_selected_itemfield(AW_root *awr, const char *awar_na
                     const char *trigger    = GBS_global_string(TRIGGER_PREFIX "%s", awar_name);
                     GBDATA     *gb_trigger = GB_search(gb_main, trigger, GB_FIND);
 
-                    if (!error) error = GB_write_string(gb_trigger, fieldName); // trigger awar-update-callback (will only execute if the current TA commits!)
-                    if (!error) value = GB_read_char_pntr(gb_trigger);          // use fieldname w/o type as result
+                    if (gb_trigger) { // normally exists (despite special use from mg_check_field_cb)
+                        if (!error) error = GB_write_string(gb_trigger, fieldName); // trigger awar-update-callback (will only execute if the current TA commits!)
+                        if (!error) value = GB_read_char_pntr(gb_trigger);          // use fieldname w/o type as result
+                    }
                 }
                 free(fieldName);
             }
