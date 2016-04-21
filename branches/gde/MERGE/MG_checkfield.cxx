@@ -207,7 +207,9 @@ static void mg_check_field_cb(AW_window *aww) {
         char    *org_report_field = NULL;
 
         reportField = awar_report->read_char_pntr();
-        if (strchr(reportField, '(') == 0) { // reportField exists in destination database (was selected from there)
+        if (strchr(reportField, '(') == 0 && // reportField exists in destination database (was selected from there)
+            strcmp(reportField, NO_FIELD_SELECTED) != 0)
+        {
             org_report_field = strdup(reportField);
             // HACK: force NEW field, because it might be absent in source database:
             awar_report->write_string(GBS_global_string("%s (new STRING)", reportField));

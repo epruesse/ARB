@@ -15,12 +15,12 @@ OCCURRENCE      ARB_MERGE/Transfer Species/Source->Target/Compare a field of lis
 
 DESCRIPTION     Compares contents of a field (selected to compare) between same species in 
                 both databases. Information about found differences will be stored in
-                both databases using the selected target field.
+                the selected report field in both databases.
 
                 Only species listed in the left hitlist of the 'TRANSFER SPECIES' window
                 are examined.
 
-                If no differences are detected, the selected target field will be deleted
+                If no differences are detected, the selected report field will be deleted
                 from the species.
 
                 Comparison can be customized by the following parameters:
@@ -34,7 +34,7 @@ DESCRIPTION     Compares contents of a field (selected to compare) between same 
 
                    When specified, the contents of the field are modified before comparison, i.e. the
                    given characters are removed from the contents.
-                   Nevertheless, the position(s) reported in the target field are independant of
+                   Nevertheless, the position(s) written to the report field are independant of
                    ignored characters, i.e. they are absolute (sequence) positions.
 
                  * ignore case
@@ -45,7 +45,7 @@ DESCRIPTION     Compares contents of a field (selected to compare) between same 
                 single(!) insertions, deletions and substitutions in the sequence data of the
                 target database.
                 A minimum amount of 10 matching bases is required between two distinct corrections,
-                otherwise the correction will be canceled (and diff-info will be reported to target field).
+                otherwise the correction will be canceled (and diff-info will be written to report field).
                 Successful corrections are indicated by marking the affected species in the target database.
 
 NOTES           This function has been designed to determine sequence changes between different database(s) (versions).
@@ -53,7 +53,7 @@ NOTES           This function has been designed to determine sequence changes be
 
 EXAMPLES        None
 
-WARNINGS        Be careful: Select only target fields, that don't contain any data.
+WARNINGS        Be careful: Select only report fields, that don't contain any data (it will be deleted)!
 
 BUGS            No bugs known
 
