@@ -203,35 +203,19 @@ static void mg_check_field_cb(AW_window *aww) {
 
     const char *reportField = NULL;
     if (!error) {
-        AW_awar *awar_report      = root->awar(AWAR_REPORT_FIELD);
-        char    *org_report_field = NULL;
-
-        reportField = awar_report->read_char_pntr();
-        if (strchr(reportField, '(') == 0 && // reportField exists in destination database (was selected from there)
-            strcmp(reportField, NO_FIELD_SELECTED) != 0)
-        {
-            org_report_field = strdup(reportField);
-            // HACK: force NEW field, because it might be absent in source database:
-            awar_report->write_string(GBS_global_string("%s (new STRING)", reportField));
+        reportField = prepare_and_get_selected_itemfield(root, AWAR_REPORT_FIELD, GLOBAL_gb_src, SPECIES_get_selector(), "report");
+        if (!reportField) {
+            error = GB_await_error();
         }
-
-        reportField                  = prepare_and_get_selected_itemfield(root, AWAR_REPORT_FIELD, GLOBAL_gb_src, SPECIES_get_selector(), "report");
-        if (reportField) reportField = prepare_and_get_selected_itemfield(root, AWAR_REPORT_FIELD, GLOBAL_gb_dst, SPECIES_get_selector(), "report");
-        if (!reportField) error      = GB_await_error();
-
-        if (!error) {
-            // HACK: reportField may still contain 'xxx (new STRING)' here
-            // (because trigger in prepare_and_get_selected_itemfield may not be active for one or both database)
-
-            if (org_report_field) {
-                awar_report->write_string(org_report_field);
-                reportField = awar_report->read_char_pntr();
+        else {
+            const char *otherdb_reportField = prepare_and_get_selected_itemfield(root, AWAR_REPORT_FIELD, GLOBAL_gb_dst, SPECIES_get_selector(), "report");
+            if (!otherdb_reportField) {
+                error = GB_await_error();
             }
-            mg_assert(reportField);
-            mg_assert(strchr(reportField, ' ') == 0);
+            else {
+                mg_assert(strcmp(reportField, otherdb_reportField) == 0);
+            }
         }
-
-        free(org_report_field);
     }
 
     if (!error) {

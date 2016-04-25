@@ -102,18 +102,16 @@ public:
     {}
     DECLARE_ASSIGNMENT_OPERATOR(FieldSelDef);
 
-    const char *get_awarname() const { return awar_name.c_str(); }
+    const std::string& get_awarname() const { return awar_name; }
     long get_type_filter() const { return type_filter; }
-    bool new_fields_allowed() const { return field_filter & SF_ALLOW_NEW; }
-
+    SelectableFields get_field_filter() const { return field_filter; }
     GBDATA *get_gb_main() const { return gb_main; }
+    ItemSelector& get_itemtype() const { return selector; }
 
+    // for internal use only:
+    bool new_fields_allowed() const { return field_filter & SF_ALLOW_NEW; }
     Itemfield_Selection *build_sel(AW_selection_list *from_sellist) const;
-
-#if defined(ASSERTION_USED)
-    FieldSelDef();
-    bool matches4reuse(const FieldSelDef& other);
-#endif
+    bool matches4reuse(const FieldSelDef& other) const;
 };
 
 enum FailIfField {

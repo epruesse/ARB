@@ -26,6 +26,9 @@
 
 #include <map>
 
+using std::string;
+using std::map;
+
 Itemfield_Selection::Itemfield_Selection(AW_selection_list *sellist_,
                                          GBDATA            *gb_key_data,
                                          long               type_filter_,
@@ -112,30 +115,100 @@ static struct {
     // keep in sync with ../DB_UI/ui_species.cxx@FIELD_TYPE_DESCRIPTIONS
 };
 
-#define TRIGGER_PREFIX "tmp/trigger/awar/"
+class RegFieldSelection;
 
-static void itemfield_transaction_succeeded(GBDATA *gb_trigger, GB_CB_TYPE cbtype) {
-    // this callback is triggered by prepare_and_get_selected_itemfield()
-    // when a new field is selected (i.e. field-awar contains sth like "xxx (new INT)").
-    // In that case a new changekey is created.
-    //
-    // If the transaction (of the caller) is aborted, the changekey generation is reverted and this callback will not be called.
-    // If the transaction is committed, this callback changes the value of the field-awar to "xxx" (because the field exists now).
+typedef map<string, RegFieldSelection> FieldSelectionRegistry;
 
-    if (cbtype & GB_CB_CHANGED) {
-        const char *dbpath     = GB_get_db_path(gb_trigger);
-        const char *is_trigger = strstr(dbpath, TRIGGER_PREFIX);
-        it_assert(is_trigger);
+class RegFieldSelection {
+    FieldSelDef       def;
+    AW_window_simple *aw_popup;
 
-        const char *awar_name = is_trigger+strlen(TRIGGER_PREFIX); // suffix of gb_trigger-database-path == awar-name
-        AW_root::SINGLETON->awar(awar_name)->write_string(GB_read_char_pntr(gb_trigger));
+    static FieldSelectionRegistry registry;
+    static MutableItemSelector    NULL_selector;
+
+public:
+    bool inAwarChange;
+
+    RegFieldSelection() : def("dummy", NULL, NULL_selector, 0) {}
+    RegFieldSelection(const FieldSelDef& def_)
+        : def(def_),
+          aw_popup(NULL),
+          inAwarChange(false)
+    {}
+    RegFieldSelection(const RegFieldSelection& other)
+        : def(other.def),
+          aw_popup(other.aw_popup),
+          inAwarChange(other.inAwarChange)
+    {}
+    DECLARE_ASSIGNMENT_OPERATOR(RegFieldSelection);
+
+    const FieldSelDef& get_def() const { return def; }
+
+    bool new_fields_allowed() const { return def.new_fields_allowed(); }
+
+    const char *get_field_awarname()  const { return def.get_awarname().c_str(); }
+    const char *get_button_awarname() const { return GBS_global_string("tmp/%s/button", get_field_awarname()); }
+    const char *get_type_awarname()   const { return GBS_global_string("%s_type",   get_field_awarname()); }
+
+    void popup_window(AW_root *awr);
+    void popdown() { if (aw_popup) aw_popup->hide(); }
+    void create_window(AW_root *awr);
+    void init_awars(AW_root *awr);
+
+    GB_TYPES get_keytype(const char *fieldName) const {
+        /*! detect type of (defined) key
+         * @param fieldName name of field
+         * @return GB_NONE for undefined key or type of defined key
+        */
+        GB_TYPES        definedType = GB_NONE;
+        GBDATA         *gb_main     = def.get_gb_main();
+        GB_transaction  ta(gb_main);
+        GBDATA         *gb_key      = GBT_get_changekey(gb_main, fieldName, def.get_itemtype().change_key_path);
+
+        if (gb_key) {
+            long *elem_type = GBT_read_int(gb_key, CHANGEKEY_TYPE);
+            if (elem_type) definedType = GB_TYPES(*elem_type);
+        }
+        return definedType;
     }
-}
+
+    GB_TYPES get_selected_type(AW_root *awr) {
+        return GB_TYPES(awr->awar(get_type_awarname())->read_int());
+    }
+    GB_TYPES get_unmated_type() {
+        // if exactly ONE type is allowed -> return that type
+        // return GB_NONE otherwise
+        long allowed = def.get_type_filter();
+
+        for (unsigned i = 0; i<ARRAY_ELEMS(creatable); ++i) {
+            long typeFlag = 1<<creatable[i].type;
+            if (allowed & typeFlag) {
+                if (allowed == typeFlag) return creatable[i].type; // exactly one type allowed
+                break; // multiple types allowed
+            }
+        }
+        return GB_NONE;
+    }
+
+    void update_button_text(AW_root *awr) const;
+
+    // -----------------
+    // static interface:
+    static RegFieldSelection& registrate(AW_root *awr, const FieldSelDef& def);
+    static RegFieldSelection *find(const string& awar_name) {
+        FieldSelectionRegistry::iterator found = registry.find(awar_name);
+        return found == registry.end() ? NULL : &found->second;
+    }
+    static void update_buttons();
+};
+
+FieldSelectionRegistry RegFieldSelection::registry;
+MutableItemSelector    RegFieldSelection::NULL_selector;
 
 const char *prepare_and_get_selected_itemfield(AW_root *awr, const char *awar_name, GBDATA *gb_main, const ItemSelector& itemtype, const char *description, FailIfField failIf) {
     /*! Reads awar used in create_itemfield_selection_button().
-     * If the user selected to create a new itemfield, the changekey is created and
-     * the content of the awar is corrected (i.e. ' (new TYPE)' gets removed).
+     *
+     * If the user selected to create a new itemfield, the changekey is created.
      *
      * @param awr             app root
      * @param awar_name       name of awar used for create_itemfield_selection_button()
@@ -150,61 +223,57 @@ const char *prepare_and_get_selected_itemfield(AW_root *awr, const char *awar_na
 
     it_assert(!GB_have_error());
 
-    AW_awar    *awar  = awr->awar(awar_name);
-    const char *value = awar->read_char_pntr();
-    const char *isNew = strstr(value, " (new ");
-    GB_ERROR    error = NULL;
+    RegFieldSelection *selected = RegFieldSelection::find(awar_name);
+    GB_ERROR           error    = NULL;
+    const char        *value    = NULL;
 
-    if (isNew) {
-        char *type  = strdup(isNew+6);
-        char *paren = strchr(type, ')');
-
-        if (!paren) error = GBS_global_string("Invalid awar-content ('%s')", value);
-        else {
-            paren[0]  = 0;
-            int found = -1;
-            for (unsigned i = 0; i<ARRAY_ELEMS(creatable) && found == -1; ++i) {
-                if (strcmp(creatable[i].typeName, type) == 0) found = i;
-            }
-
-            if (found == -1) error = GBS_global_string("Unknown type specified for new field ('%s')", type);
-            else {
-                char *fieldName   = GB_strpartdup(value, isNew-1);
-                error             = GB_check_hkey(fieldName);
-                if (!error) error = GBT_add_new_changekey_to_keypath(gb_main, fieldName, creatable[found].type, itemtype.change_key_path);
-                if (!error) {
-                    const char *trigger    = GBS_global_string(TRIGGER_PREFIX "%s", awar_name);
-                    GBDATA     *gb_trigger = GB_search(gb_main, trigger, GB_FIND);
-
-                    if (gb_trigger) { // normally exists (despite special use from mg_check_field_cb)
-                        if (!error) error = GB_write_string(gb_trigger, fieldName); // trigger awar-update-callback (will only execute if the current TA commits!)
-                        if (!error) value = GB_read_char_pntr(gb_trigger);          // use fieldname w/o type as result
-                    }
-                }
-                free(fieldName);
-            }
-        }
-        free(type);
+    if (!selected) {
+        error = GBS_global_string("Awar '%s' is not registered as field selection", awar_name);
     }
+    else {
+        AW_awar    *awar_field = awr->awar(selected->get_field_awarname());
+        const char *field      = awar_field->read_char_pntr();
 
-    if (!error && value) {
-        if (!value[0]) {
-            value = NO_FIELD_SELECTED; // interpret "" as NO_FIELD_SELECTED (compensates past wrong use which may still be present in properties)
-        }
-        else if (strcmp(value, "name") == 0) {
-            error = GBS_global_string("You may not select 'name' as %s field.", description); // protect user from overwriting the species ID
-        }
-    }
+        if (!field[0]) field = NO_FIELD_SELECTED;
 
-    if (!error) {
-        it_assert(value);
-        if (strcmp(value, NO_FIELD_SELECTED) == 0) {
+        if (strcmp(field, NO_FIELD_SELECTED) == 0) {
             if (failIf & FIF_NO_FIELD_SELECTED) {
                 error = GBS_global_string("Please select a %s field", description);
             }
-            else {
-                value = NULL;
+        }
+        else if (strcmp(field, "name") == 0 && (failIf & FIF_NAME_SELECTED)) {
+            error = GBS_global_string("You may not select 'name' as %s field.", description); // protect user from overwriting the species ID
+        }
+        else { // an allowed fieldname is selected
+            GB_TYPES type = selected->get_keytype(field);
+
+            if (type == GB_NONE) { // missing field
+                if (selected->new_fields_allowed()) { // allowed to create?
+                    error = GB_check_hkey(field);
+                    if (!error) {
+                        GB_TYPES wantedType = selected->get_selected_type(awr);
+                        if (wantedType == GB_NONE) {
+                            error = GBS_global_string("Please select the datatype for new field '%s'", field);
+                        }
+                        else {
+                            error = GBT_add_new_changekey_to_keypath(gb_main, field, wantedType, itemtype.change_key_path);
+                        }
+                    }
+                }
+                else {
+                    error = GBS_global_string("Selected field '%s' is not defined (logical error)", field); // should not occur!
+                }
             }
+            else { // existing field
+                bool typeAllowed = selected->get_def().get_type_filter() & (1<<type);
+                if (!typeAllowed) {
+                    // There are two known ways this situation can be reached:
+                    // 1. select a new key; create key via search tool using a type not allowed here
+                    // 2. specify a key with disallowed type as new key name
+                    error = GBS_global_string("Selected field '%s' has unwanted type (%i)\nPlease select the %s field again.", field, int(type), description);
+                }
+            }
+            if (!error) value = field;
         }
     }
 
@@ -215,227 +284,228 @@ const char *prepare_and_get_selected_itemfield(AW_root *awr, const char *awar_na
     return value;
 }
 
-inline const char *newNameAwarname(AW_awar *awar_field) { return GBS_global_string("tmp/%s/new/name", awar_field->awar_name); }
-inline const char *newTypeAwarname(AW_awar *awar_field) { return GBS_global_string("tmp/%s/new/type", awar_field->awar_name); }
-
-class ItemfieldAwarCbData {
-    AW_awar             *awar_field;
-    Itemfield_Selection *itemSel;
-    AW_window_simple    *aw_popup;
-
-public:
-    ItemfieldAwarCbData(AW_awar *awar_field_, Itemfield_Selection *itemSel_, AW_window_simple *aw_popup_)
-        : awar_field(awar_field_),
-          itemSel(itemSel_),
-          aw_popup(aw_popup_),
-          inAwarCallback(false)
-    {}
-
-    AW_awar *get_field_awar() const { return awar_field; }
-    Itemfield_Selection *get_selection() const { return itemSel; }
-    void hide_window() const { aw_popup->hide(); }
-
-    bool inAwarCallback;
-};
-
-
-static void newFieldDef_changed_cb(AW_root *awr, ItemfieldAwarCbData *cbdata) {
-    if (!cbdata->inAwarCallback) {
-        LocallyModify<bool> flag(cbdata->inAwarCallback, true);
-
-        AW_awar *awar_field   = cbdata->get_field_awar();
-        char    *newFieldName = awr->awar(newNameAwarname(awar_field))->read_string();
-        if (newFieldName[0]) { // non-empty key
-            Itemfield_Selection *itemSel = cbdata->get_selection();
-            GBDATA              *gb_main = itemSel->get_gb_main();
-            GB_transaction       ta(gb_main);
-
-            GB_TYPES type = GBT_get_type_of_changekey(gb_main, newFieldName, itemSel->get_selector().change_key_path);
-            if (type == GB_NONE) { // a new key was specified
-                GB_TYPES selectedType = (GB_TYPES)awr->awar(newTypeAwarname(awar_field))->read_int();
-                for (unsigned i = 0; i<ARRAY_ELEMS(creatable); ++i) {
-                    if (creatable[i].type == selectedType) {
-                        awar_field->write_string(GBS_global_string_copy("%s (new %s)", newFieldName, creatable[i].typeName));
-                        break;
-                    }
-                }
-            }
-            else { // an existing key was specified
-                long type_filter = itemSel->get_type_filter();
-                if (type_filter & (1<<type)) {
-                    awar_field->rewrite_string(newFieldName);
-                }
-                else {
-                    awar_field->rewrite_string(NO_FIELD_SELECTED);
-                    aw_message(GBS_global_string("Field '%s' already exists, but has incompatible type", newFieldName));
-                }
-            }
-        }
-        free(newFieldName);
-    }
-    it_assert(!GB_have_error());
-}
-
-static void selField_changed_cb(AW_root *awr, ItemfieldAwarCbData *cbdata) {
-    AW_awar    *awar_field  = cbdata->get_field_awar();
-    const char *selected    = awar_field->read_char_pntr();
-    if (!cbdata->inAwarCallback) {
-        LocallyModify<bool> avoidRecursion(cbdata->inAwarCallback, true);
-        if (strcmp(selected, NO_FIELD_SELECTED) != 0) {
-            Itemfield_Selection *itemSel = cbdata->get_selection();
-            GBDATA              *gb_main = itemSel->get_gb_main();
-            GB_transaction       ta(gb_main);
-
-            GB_TYPES type = GBT_get_type_of_changekey(gb_main, selected, itemSel->get_selector().change_key_path);
-            if (type != GB_NONE) {
-                awr->awar(newNameAwarname(awar_field))->write_string("");
-                awr->awar(newTypeAwarname(awar_field))->write_int(type);
-
-            }
-        }
-        cbdata->hide_window();
-    }
-    it_assert(!GB_have_error());
-}
-
-#if defined(ASSERTION_USED)
-MutableItemSelector NULL_selector;
-FieldSelDef::FieldSelDef() : selector(NULL_selector) {}
-
-bool FieldSelDef::matches4reuse(const FieldSelDef& other) {
+bool FieldSelDef::matches4reuse(const FieldSelDef& other) const {
     return
-        (&selector == &other.selector)     && // shall use identical itemtype,
+        (awar_name == other.awar_name)     && // shall use same awar,
+        (&selector == &other.selector)     && // identical itemtype,
         (gb_main == other.gb_main)         && // same database,
         (type_filter == other.type_filter) && // same type-filter and
         (field_filter == other.field_filter); // same field-filter.
 }
-#endif
 
-static AW_window *createFieldSelectionPopup(AW_root *awr, FieldSelDef *selDef) {
-    typedef std::map<std::string, AW_window_simple*> AwarToWindowMap;
-    static AwarToWindowMap existingPopups; // only one window per awar (otherwise reuse)
+void RegFieldSelection::update_button_text(AW_root *awr) const {
+    it_assert(new_fields_allowed());
 
-#if defined(ASSERTION_USED)
-    // check compatibility of multiple selections on same awar (does reuse make sense?)
-    typedef std::map<std::string, FieldSelDef> AwarToFieldSelDef;
-    static AwarToFieldSelDef existingDefs;
-#endif
+    AW_awar    *awar_button = awr->awar(get_button_awarname());
+    const char *fieldName   = awr->awar(get_field_awarname())->read_char_pntr();
 
-    AwarToWindowMap::iterator  found    = existingPopups.find(selDef->get_awarname());
-    AW_window_simple          *aw_popup = NULL;
-
-    if (found != existingPopups.end()) {
-        aw_popup = found->second;
-
-#if defined(ASSERTION_USED)
-        AwarToFieldSelDef::iterator prevDef = existingDefs.find(selDef->get_awarname());
-        it_assert(prevDef != existingDefs.end());
-        it_assert(selDef->matches4reuse(prevDef->second)); // to use multiple selection popups on same awar, you need to use similar parameters
-                                                           // (otherwise the user might outsmart your restrictions by using the other field-selector)
-#endif
+    if (strcmp(fieldName, NO_FIELD_SELECTED) == 0 || !fieldName[0]) {
+        awar_button->write_string("<no field>");
     }
     else {
-        aw_popup = new AW_window_simple;
+        GB_TYPES type   = get_keytype(fieldName);
+        bool     exists = type != GB_NONE;
 
-        const bool allowNewFields = selDef->new_fields_allowed();
-
-        aw_popup->init(awr, "SELECT_FIELD", allowNewFields ? "Select or create new field" : "Select a field");
-
-        if (allowNewFields) aw_popup->load_xfig("awt/field_sel_new.fig"); // Do not DRY (ressource checker!)
-        else                aw_popup->load_xfig("awt/field_sel.fig");
-
-        aw_popup->at("sel");
-        const bool FALLBACK2DEFAULT = !allowNewFields;
-
-        Itemfield_Selection *itemSel;
-        {
-            AW_selection_list   *sellist = aw_popup->create_selection_list(selDef->get_awarname(), 1, 1, FALLBACK2DEFAULT);
-            itemSel = selDef->build_sel(sellist);
-            itemSel->refresh();
+        if (!exists) {
+            type = GB_TYPES(awr->awar(get_type_awarname())->read_int());
         }
 
-        aw_popup->at("close");
-        aw_popup->callback(AW_POPDOWN);
-        aw_popup->create_button("CLOSE", "CLOSE", "C");
+        const char *typeName = NULL;
+        for (unsigned i = 0; i<ARRAY_ELEMS(creatable) && !typeName; ++i) {
+            if (creatable[i].type == type) typeName = creatable[i].typeName;
+        }
 
-        AW_awar *awar_field = awr->awar(selDef->get_awarname()); // user-awar
-        if (allowNewFields) {
-            aw_popup->at("help");
-            aw_popup->callback(makeHelpCallback("field_sel_new.hlp"));
-            aw_popup->create_button("HELP", "HELP", "H");
-
-            char    *awarname_newname = strdup(newNameAwarname(awar_field));
-            char    *awarname_newtype = strdup(newTypeAwarname(awar_field));
-            long     allowedTypes     = selDef->get_type_filter();
-
-            int possibleTypes = 0;
-            int firstType     = -1;
-            for (unsigned i = 0; i<ARRAY_ELEMS(creatable); ++i) {
-                if (allowedTypes & (1<<creatable[i].type)) {
-                    possibleTypes++;
-                    if (firstType == -1) firstType = creatable[i].type;
-                }
-            }
-            it_assert(possibleTypes>0);
-
-            ItemfieldAwarCbData * const cbdata = new ItemfieldAwarCbData(awar_field, itemSel, aw_popup); // never freed (bound to callbacks)
-
-            awr->awar_string(awarname_newname, "",        AW_ROOT_DEFAULT)->add_callback(makeRootCallback(newFieldDef_changed_cb, cbdata));
-            awr->awar_int   (awarname_newtype, firstType, AW_ROOT_DEFAULT)->add_callback(makeRootCallback(newFieldDef_changed_cb, cbdata));
-
-            awar_field->add_callback(makeRootCallback(selField_changed_cb, cbdata));
-
-            aw_popup->at("name");
-            aw_popup->create_input_field(awarname_newname, FIELDNAME_VISIBLE_CHARS);
-
-            // show type selector even if only one type selectable (layout- and informative-purposes)
-            aw_popup->at("type");
-            aw_popup->create_toggle_field(awarname_newtype, NULL, 0);
-            for (unsigned i = 0; i<ARRAY_ELEMS(creatable); ++i) {
-                if (allowedTypes & (1<<creatable[i].type)) {
-                    aw_popup->insert_toggle(creatable[i].label, creatable[i].mnemonic, int(creatable[i].type));
-                }
-            }
-            aw_popup->update_toggle_field();
-
-            // install delayed awar-update callback
-            {
-                GBDATA         *gb_main    = selDef->get_gb_main();
-                GB_transaction  ta(gb_main);
-                const char     *trigger    = GBS_global_string(TRIGGER_PREFIX "%s", selDef->get_awarname());
-                GBDATA         *gb_trigger = GB_searchOrCreate_string(gb_main, trigger, "");
-                GB_ERROR        error;
-
-                if (!gb_trigger) {
-                    error = GB_await_error();
-                }
-                else {
-                    error = GB_add_callback(gb_trigger, GB_CB_ALL, makeDatabaseCallback(itemfield_transaction_succeeded));
-                }
-                if (error) {
-                    aw_message(GBS_global_string("Failed to install awar-update-trigger (Reason: %s)", error));
-                }
-            }
-
-            free(awarname_newtype);
-            free(awarname_newname);
+        if (typeName) {
+            awar_button->write_string(GBS_global_string(exists ? "%s (%s)" : "%s (new %s)", fieldName, typeName));
         }
         else {
-            awar_field->add_callback(makeRootCallback(awt_auto_popdown_cb, aw_popup));
+            awar_button->write_string(GBS_global_string("<typeless> '%s'", fieldName));
+        }
+    }
+}
+
+static void fieldname_changed_cb(AW_root *awr, RegFieldSelection *fsel) {
+    if (!fsel->inAwarChange) {
+        LocallyModify<bool> avoidRecursion(fsel->inAwarChange, true);
+
+        AW_awar  *awar_type = awr->awar(fsel->get_type_awarname());
+        AW_awar  *awar_name = awr->awar(fsel->get_field_awarname());
+        GB_TYPES  defined   = fsel->get_keytype(awar_name->read_char_pntr());
+
+        if (defined) {
+            awar_type->write_int(defined);
+            fsel->popdown();
+        }
+        else {
+            // if allowed type of field is determined -> set it
+            // otherwise set type to 'undefined'
+            GB_TYPES determined = fsel->get_unmated_type();
+            awar_type->write_int(determined);
+#if defined(ARB_MOTIF)
+            // wont be useful in gtk (as awar is updated after each character typed)
+            if (determined != GB_NONE) fsel->popdown();
+#endif
         }
 
-        existingPopups[selDef->get_awarname()] = aw_popup;
-#if defined(ASSERTION_USED)
-        existingDefs[selDef->get_awarname()] = FieldSelDef(*selDef);
-#endif
+        fsel->update_button_text(awr);
+    }
+}
+
+static bool fieldtype_change_warning = true;
+static void fieldtype_changed_cb(AW_root *awr, RegFieldSelection *fsel) {
+    if (!fsel->inAwarChange) {
+        LocallyModify<bool> avoidRecursion(fsel->inAwarChange, true);
+
+        AW_awar  *awar_name = awr->awar(fsel->get_field_awarname());
+        GB_TYPES  defined   = fsel->get_keytype(awar_name->read_char_pntr());
+
+        if (defined != GB_NONE) {
+            AW_awar  *awar_type = awr->awar(fsel->get_type_awarname());
+            GB_TYPES  selected  = GB_TYPES(awar_type->read_int());
+
+            if (selected != defined) {
+                awar_type->write_int(defined);
+                if (fieldtype_change_warning) {
+                    aw_message("You cannot change the type of an existing field");
+                }
+            }
+        }
+
+        fsel->update_button_text(awr);
+    }
+}
+
+void RegFieldSelection::init_awars(AW_root *awr) {
+    if (new_fields_allowed()) {
+        // extra awars needed for popup-style + callbacks
+        awr->awar_string(get_button_awarname(), "?", AW_ROOT_DEFAULT);
+        AW_awar *awar_type = awr->awar_int(get_type_awarname(), GB_NONE, AW_ROOT_DEFAULT);
+        AW_awar *awar_name = awr->awar(get_field_awarname());
+
+        awar_type->add_callback(makeRootCallback(fieldtype_changed_cb, this));
+        awar_name->add_callback(makeRootCallback(fieldname_changed_cb, this));
+
+        LocallyModify<bool> dontWarn(fieldtype_change_warning, false);
+        awar_type->touch(); // refresh button-text (do NOT use awar_name to do that!)
+    }
+}
+
+void RegFieldSelection::update_buttons() {
+    for (FieldSelectionRegistry::const_iterator reg = registry.begin(); reg != registry.end(); ++reg) {
+        const RegFieldSelection& fsel = reg->second;
+        if (fsel.new_fields_allowed()) {
+            fsel.update_button_text(AW_root::SINGLETON);
+        }
+    }
+}
+
+RegFieldSelection& RegFieldSelection::registrate(AW_root *awr, const FieldSelDef& def) {
+    const string&      field_awarname = def.get_awarname();
+    RegFieldSelection *found          = find(field_awarname);
+
+    if (found) {
+        bool compatible = !found->get_def().matches4reuse(def);
+        if (!compatible) {
+            aw_message(GBS_global_string("Incompatible field-selections defined for awar '%s'", field_awarname.c_str()));
+
+            it_assert(0);
+            // to use multiple field selections on the same awar, you need to use similar parameters!
+            // (otherwise the user might outsmart the defined restrictions by using the other field-selector)
+        }
+    }
+    else {
+        registry[field_awarname] = RegFieldSelection(def);
+
+        found = find(field_awarname);
+        found->init_awars(awr);
+
+        GBDATA *gb_main = def.get_gb_main();
+        GB_transaction ta(gb_main);
+        GBDATA *gb_key_data = GB_search(gb_main, def.get_itemtype().change_key_path, GB_FIND);
+        if (gb_key_data) {
+            aw_message_if(GB_ensure_callback(gb_key_data, GB_CB_CHANGED, makeDatabaseCallback(RegFieldSelection::update_buttons)));
+        }
+    }
+    it_assert(found);
+    return *found;
+}
+
+void RegFieldSelection::create_window(AW_root *awr) {
+    it_assert(!aw_popup);
+
+    aw_popup = new AW_window_simple;
+
+    const bool allowNewFields = new_fields_allowed();
+
+    aw_popup->init(awr, "SELECT_FIELD", allowNewFields ? "Select or create new field" : "Select a field");
+
+    if (allowNewFields) aw_popup->load_xfig("awt/field_sel_new.fig"); // Do not DRY (ressource checker!)
+    else                aw_popup->load_xfig("awt/field_sel.fig");
+
+    aw_popup->at("sel");
+    const bool FALLBACK2DEFAULT = !allowNewFields;
+
+    Itemfield_Selection *itemSel;
+    {
+        AW_selection_list   *sellist = aw_popup->create_selection_list(get_field_awarname(), 1, 1, FALLBACK2DEFAULT);
+        itemSel = def.build_sel(sellist);
+        itemSel->refresh();
     }
 
+    aw_popup->at("close");
+    aw_popup->callback(AW_POPDOWN);
+    aw_popup->create_button("CLOSE", "CLOSE", "C");
+
+    AW_awar *awar_field = awr->awar(get_field_awarname()); // user-awar
+    if (allowNewFields) {
+        aw_popup->at("help");
+        aw_popup->callback(makeHelpCallback("field_sel_new.hlp"));
+        aw_popup->create_button("HELP", "HELP", "H");
+
+        long allowedTypes  = def.get_type_filter();
+        int  possibleTypes = 0;
+        int  firstType     = -1;
+        for (unsigned i = 0; i<ARRAY_ELEMS(creatable); ++i) {
+            if (allowedTypes & (1<<creatable[i].type)) {
+                possibleTypes++;
+                if (firstType == -1) firstType = creatable[i].type;
+            }
+        }
+        it_assert(possibleTypes>0);
+
+        aw_popup->at("name");
+        aw_popup->create_input_field(get_field_awarname(), FIELDNAME_VISIBLE_CHARS);
+
+        // show type selector even if only one type selectable (layout- and informative-purposes)
+        aw_popup->at("type");
+        aw_popup->create_toggle_field(get_type_awarname(), NULL, 0);
+        for (unsigned i = 0; i<ARRAY_ELEMS(creatable); ++i) {
+            if (allowedTypes & (1<<creatable[i].type)) {
+                aw_popup->insert_toggle(creatable[i].label, creatable[i].mnemonic, int(creatable[i].type));
+            }
+        }
+        if (get_unmated_type() == GB_NONE) { // type may vary -> allowed it to be undefined
+            aw_popup->insert_toggle("<undefined>", "", GB_NONE);
+        }
+        aw_popup->update_toggle_field();
+    }
+    else {
+        awar_field->add_callback(makeRootCallback(awt_auto_popdown_cb, aw_popup));
+    }
+}
+
+void RegFieldSelection::popup_window(AW_root *awr) {
+    if (!aw_popup) create_window(awr);
+
+    it_assert(aw_popup);
     aw_popup->recalc_pos_atShow(AW_REPOS_TO_MOUSE); // always popup at current mouse-position (i.e. directly above the button)
     aw_popup->recalc_size_atShow(AW_RESIZE_USER);   // if user changes the size of any field-selection popup, that size will be used for future popups
 
-    delete selDef;
+    aw_popup->activate();
+}
 
-    return aw_popup;
+static void popup_field_selection(AW_window *aw_parent, RegFieldSelection *fsel) {
+    fsel->popup_window(aw_parent->get_root());
 }
 
 void create_itemfield_selection_button(AW_window *aws, const FieldSelDef& selDef, const char *at) {
@@ -446,11 +516,8 @@ void create_itemfield_selection_button(AW_window *aws, const FieldSelDef& selDef
      * @param selDef      specifies details of field selection
      * @param at          xfig label (ignored if NULL)
      *
-     * If a new, not yet existing field is selected, the awar specified by 'selDef' is set
-     * to 'fieldname (new TYPE)'.
-     *
      * At start of field-writing code:
-     * - use prepare_and_get_selected_itemfield() to create the changekey-info and to correct the fieldname (needed for new fields only).
+     * - use prepare_and_get_selected_itemfield() to create the changekey-info (needed for new fields only)
      *
      * For each item written to:
      * - use GBT_searchOrCreate_itemfield_according_to_changekey() to create the field
@@ -458,12 +525,14 @@ void create_itemfield_selection_button(AW_window *aws, const FieldSelDef& selDef
      */
     if (at) aws->at(at);
 
+    RegFieldSelection& fsel = RegFieldSelection::registrate(aws->get_root(), selDef);
+
     int old_button_length = aws->get_button_length();
     aws->button_length(FIELDNAME_VISIBLE_CHARS);
-    aws->callback(makeCreateWindowCallback(createFieldSelectionPopup, new FieldSelDef(selDef)));
+    aws->callback(makeWindowCallback(popup_field_selection, &fsel));
 
-    char *id = GBS_string_eval(selDef.get_awarname(), "/=_", NULL);
-    aws->create_button(GBS_global_string("select_%s", id), selDef.get_awarname());
+    char *id = GBS_string_eval(selDef.get_awarname().c_str(), "/=_", NULL);
+    aws->create_button(GBS_global_string("select_%s", id), selDef.new_fields_allowed() ? fsel.get_button_awarname() : fsel.get_field_awarname());
     free(id);
 
     aws->button_length(old_button_length);
@@ -479,10 +548,12 @@ Itemfield_Selection *create_itemfield_selection_list(AW_window *aws, const Field
      */
     if (at) aws->at(at);
 
-    const bool FALLBACK2DEFAULT = true;
+    const bool FALLBACK2DEFAULT            = true;
     it_assert(selDef.new_fields_allowed() == false); // to allow creation of new fields -> use create_itemfield_selection_button
 
-    AW_selection_list   *sellist   = aws->create_selection_list(selDef.get_awarname(), FALLBACK2DEFAULT);
+    RegFieldSelection::registrate(aws->get_root(), selDef); // to avoid that awar is misused for multiple incompatible field-selections
+
+    AW_selection_list   *sellist   = aws->create_selection_list(selDef.get_awarname().c_str(), FALLBACK2DEFAULT);
     Itemfield_Selection *selection = selDef.build_sel(sellist);
     selection->refresh();
     return selection;
