@@ -731,6 +731,7 @@ AW_window *DBUI::create_field_delete_window(AW_root *root, BoundItemSel *bound_s
         AW_window_simple *aws = new AW_window_simple;
         awsa[selector.type]  = aws;
 
+        init_itemspecific_DBUI_awars(root, selector);
         init_itemType_specific_window(root, aws, selector, "DELETE_FIELD", "Delete %s field");
         aws->load_xfig("ad_delof.fig");
         aws->button_length(6);
