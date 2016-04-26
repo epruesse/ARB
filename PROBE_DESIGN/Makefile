@@ -63,6 +63,7 @@ probe_design.o: $(ARBHOME)/INCLUDE/arb_assert.h
 probe_design.o: $(ARBHOME)/INCLUDE/arb_core.h
 probe_design.o: $(ARBHOME)/INCLUDE/arb_error.h
 probe_design.o: $(ARBHOME)/INCLUDE/arb_file.h
+probe_design.o: $(ARBHOME)/INCLUDE/arb_misc.h
 probe_design.o: $(ARBHOME)/INCLUDE/arb_msg.h
 probe_design.o: $(ARBHOME)/INCLUDE/arb_progress.h
 probe_design.o: $(ARBHOME)/INCLUDE/arb_strarray.h

@@ -24,23 +24,26 @@
 #include <iupac.h>
 #include <awt_config_manager.hxx>
 #include <awt_sel_boxes.hxx>
+#include <awt_misc.hxx>
 
 #include <aw_awars.hxx>
 #include <aw_preset.hxx>
 #include <aw_select.hxx>
 #include <aw_msg.hxx>
-#include <arb_progress.h>
 #include <aw_root.hxx>
 #include <aw_question.hxx>
+#include <aw_edit.hxx>
+#include <rootAsWin.h>
+
 #include <adGene.h>
+
+#include <arb_progress.h>
 #include <arb_strbuf.h>
 #include <arb_strarray.h>
 #include <arb_file.h>
-#include <aw_edit.hxx>
+#include <arb_misc.h>
 
 #include "probe_collection.hxx"
-#include <rootAsWin.h>
-#include <awt_misc.hxx>
 
 // general awars
 
@@ -1907,15 +1910,25 @@ static void pd_kill_pt_server(AW_window *aww, bool kill_all) {
     }
 }
 
+static const char *ptserver_directory_info_command(const char *dirname, const char *directory) {
+    return GBS_global_string("echo 'Contents of directory %s:'; echo; (cd \"%s\"; ls -hl); echo; "
+                             "echo 'Available disk space in %s:'; echo; df -h \"%s\"; echo; ",
+                             dirname, directory,
+                             dirname, directory);
+
+}
+
 static void pd_query_pt_server(AW_window *aww) {
     const char *server_tag = GBS_ptserver_tag(aww->get_root()->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int());
 
     GBS_strstruct *strstruct = GBS_stropen(1024);
-    GBS_strcat(strstruct,   "echo Contents of directory ARBHOME/lib/pts:;echo;"
-               "(cd $ARBHOME/lib/pts; ls -l);"
-               "echo; echo Disk space for PT_server files:; echo;"
-               "df $ARBHOME/lib/pts;");
-    GBS_strcat(strstruct, "echo;echo 'Running ARB programs:';");
+    GBS_strcat(strstruct, ptserver_directory_info_command("ARBHOME/lib/pts", "$ARBHOME/lib/pts"));
+
+    const char *ARB_LOCAL_PTS = ARB_getenv_ignore_empty("ARB_LOCAL_PTS");
+    if (ARB_LOCAL_PTS) GBS_strcat(strstruct, ptserver_directory_info_command("ARB_LOCAL_PTS", "$ARB_LOCAL_PTS")); // only defined if called via 'arb'-script
+    else               GBS_strcat(strstruct, ptserver_directory_info_command("HOME/.arb_pts", "${HOME}/.arb_pts"));
+
+    GBS_strcat(strstruct, "echo 'Running ARB programs:'; echo; ");
 
     GB_ERROR error = NULL;
     {
