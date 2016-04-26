@@ -875,37 +875,35 @@ GB_ERROR GB_xcmd(const char *cmd, bool background, bool wait_only_if_error) {
     // if 'background' is true -> run asynchronous
     // if 'wait_only_if_error' is true -> asynchronous does wait for keypress only if cmd fails
 
-    GBS_strstruct *strstruct = GBS_stropen(1024);
-    const char    *xcmd      = GB_getenvARB_XCMD();
+    GBS_strstruct system_call(1024);
 
-    GBS_strcat(strstruct, "(");
-    GBS_strcat(strstruct, xcmd);
-    GBS_strcat(strstruct, " bash -c 'LD_LIBRARY_PATH=\"");
-    GBS_strcat(strstruct, GB_getenv("LD_LIBRARY_PATH"));
-    GBS_strcat(strstruct, "\";export LD_LIBRARY_PATH; (");
-    GBS_strcat(strstruct, cmd);
+    const char *xcmd = GB_getenvARB_XCMD();
+
+    system_call.put('(');
+    system_call.cat(xcmd);
+    system_call.cat(" bash -c 'LD_LIBRARY_PATH=\"");
+    system_call.cat(GB_getenv("LD_LIBRARY_PATH"));
+    system_call.cat("\";export LD_LIBRARY_PATH; (");
+    system_call.cat(cmd);
 
     if (background) {
         if (wait_only_if_error) {
-            GBS_strcat(strstruct, ") || (echo; echo Press RETURN to close Window; read a)' ) &");
+            system_call.cat(") || (echo; echo Press RETURN to close Window; read a)' ) &");
         }
         else {
-            GBS_strcat(strstruct, "; echo; echo Press RETURN to close Window; read a)' ) &");
+            system_call.cat("; echo; echo Press RETURN to close Window; read a)' ) &");
         }
     }
     else {
         if (wait_only_if_error) {
-            GBS_strcat(strstruct, ") || (echo; echo Press RETURN to close Window; read a)' )");
+            system_call.cat(") || (echo; echo Press RETURN to close Window; read a)' )");
         }
         else { // no wait
-            GBS_strcat(strstruct, " )' ) ");
+            system_call.cat(" )' ) ");
         }
     }
 
-    GB_ERROR error = GBK_system(GBS_mempntr(strstruct));
-    GBS_strforget(strstruct);
-
-    return error;
+    return GBK_system(system_call.get_data());
 }
 
 // ---------------------------------------------
