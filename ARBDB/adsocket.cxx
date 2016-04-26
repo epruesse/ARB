@@ -875,33 +875,44 @@ GB_ERROR GB_xcmd(const char *cmd, bool background, bool wait_only_if_error) {
     // if 'background' is true -> run asynchronous
     // if 'wait_only_if_error' is true -> asynchronous does wait for keypress only if cmd fails
 
-    GBS_strstruct system_call(1024);
+    const int     BUFSIZE = 1024;
+    GBS_strstruct system_call(BUFSIZE);
 
     const char *xcmd = GB_getenvARB_XCMD();
 
     system_call.put('(');
     system_call.cat(xcmd);
-    system_call.cat(" bash -c 'LD_LIBRARY_PATH=\"");
-    system_call.cat(GB_getenv("LD_LIBRARY_PATH"));
-    system_call.cat("\";export LD_LIBRARY_PATH; (");
-    system_call.cat(cmd);
 
-    if (background) {
+    {
+        GBS_strstruct bash_command(BUFSIZE);
+
+        bash_command.cat("LD_LIBRARY_PATH=");
+        {
+            char *dquoted_library_path = GBK_doublequote(GB_getenv("LD_LIBRARY_PATH"));
+            system_call.cat(dquoted_library_path);
+            free(dquoted_library_path);
+        }
+        bash_command.cat(";export LD_LIBRARY_PATH; (");
+        bash_command.cat(cmd);
+
+        const char *wait_commands = "echo; echo Press ENTER to close this window; read a";
         if (wait_only_if_error) {
-            system_call.cat(") || (echo; echo Press RETURN to close Window; read a)' ) &");
+            bash_command.cat(") || (");
+            bash_command.cat(wait_commands);
         }
-        else {
-            system_call.cat("; echo; echo Press RETURN to close Window; read a)' ) &");
+        else if (background) {
+            bash_command.cat("; ");
+            bash_command.cat(wait_commands);
         }
+        bash_command.put(')');
+
+        system_call.cat(" bash -c ");
+        char *squoted_bash_command = GBK_singlequote(bash_command.get_data());
+        system_call.cat(squoted_bash_command);
+        free(squoted_bash_command);
     }
-    else {
-        if (wait_only_if_error) {
-            system_call.cat(") || (echo; echo Press RETURN to close Window; read a)' )");
-        }
-        else { // no wait
-            system_call.cat(" )' ) ");
-        }
-    }
+    system_call.cat(" )");
+    if (background) system_call.cat(" &");
 
     return GBK_system(system_call.get_data());
 }
