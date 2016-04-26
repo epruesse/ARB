@@ -33,7 +33,9 @@ DESCRIPTION     Arb is aware of several environment variables:
                     ARB_XTERM
 
                             The call which is needed to create a normal xterm
-                            (default: xterm -sl 1000 -sb -geometry 120x50 )
+                            (default: xterm -sl 1000 -sb -geometry 150x60
+                             Note: until arb-6.0.x geometry defaulted to "120x50")
+
 
                     ARB_XCMD
 

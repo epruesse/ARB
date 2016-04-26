@@ -495,7 +495,7 @@ static GB_CSTR GB_getenvARB_XTERM() {
     static const char *xterm = 0;
     if (!xterm) {
         xterm = ARB_getenv_ignore_empty("ARB_XTERM"); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARB_XTERM
-        if (!xterm) xterm = "xterm -sl 1000 -sb -geometry 120x50";
+        if (!xterm) xterm = "xterm -sl 1000 -sb -geometry 150x60";
     }
     return xterm;
 }
