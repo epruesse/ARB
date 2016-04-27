@@ -10,6 +10,7 @@
 // =============================================================== //
 
 #include <arbdbt.h>
+#include <arb_global_defs.h>
 #include "gb_local.h"
 
 GBDATA *GBT_get_changekey(GBDATA *gb_main, const char *key, const char *change_key_path) {
@@ -205,7 +206,12 @@ GB_ERROR GBT_convert_changekey(GBDATA *gb_main, const char *name, GB_TYPES targe
             if (source_type == target_type) need_convert = false;
         }
         else {
-            error = GBS_global_string("Unknown changekey '%s'", name);
+            if (!name[0] || strcmp(name, NO_FIELD_SELECTED) == 0) {
+                error = "Please select field to convert";
+            }
+            else {
+                error = GBS_global_string("Unknown changekey '%s'", name);
+            }
         }
     }
 
