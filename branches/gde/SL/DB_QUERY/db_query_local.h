@@ -77,7 +77,6 @@ namespace QUERY {
         char *awar_parskey;
         char *awar_parsvalue;
         char *awar_parspredefined;
-        char *awar_createDestField;
         char *awar_acceptConvError;
 
         char *awar_ere;

@@ -47,8 +47,7 @@ CONSTEXPR long FIELD_FILTER_STRING_READABLE = (1<<GB_BYTE)|(1<<GB_INT)|(1<<GB_FL
 CONSTEXPR long FIELD_UNFILTERED       = -1L;                             // any field or container
 CONSTEXPR long FIELD_FILTER_ANY_FIELD = (FIELD_UNFILTERED ^ (1<<GB_DB)); // no containers
 
-CONSTEXPR long FIELD_FILTER_NDS  = FIELD_FILTER_STRING_READABLE;
-CONSTEXPR long FIELD_FILTER_PARS = FIELD_FILTER_STRING_READABLE; // @@@ used only once (use FIELD_FILTER_STRING_READABLE instead)
+CONSTEXPR long FIELD_FILTER_NDS = FIELD_FILTER_STRING_READABLE;
 
 
 class Itemfield_Selection : public AW_DB_selection { // derived from a Noncopyable
