@@ -358,7 +358,7 @@ AW_window *NT_create_compare_taxonomy_window(AW_root *aw_root, AWT_canvas *ntw) 
     aws->at("missright"); aws->callback(makeWindowCallback(mark_action, ntw, MISSING_RIGHT)); aws->create_autosize_button("missright", "species missing in right tree");
 
     aws->at("levels");
-    aws->create_input_field(AWAR_TREE_COMPARE_MIN_TAX_LEVELS, 3);
+    aws->create_input_field(AWAR_TREE_COMPARE_MIN_TAX_LEVELS, 5);
 
     create_itemfield_selection_button(aws, FieldSelDef(AWAR_TREE_COMPARE_WRITE_FIELD, ntw->gb_main, SPECIES_get_selector(), FIELD_FILTER_INT_WRITEABLE, SF_ALLOW_NEW), "field");
 

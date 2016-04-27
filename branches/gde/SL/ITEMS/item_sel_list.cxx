@@ -102,6 +102,7 @@ Itemfield_Selection *FieldSelDef::build_sel(AW_selection_list *from_sellist) con
 }
 
 const int FIELDNAME_VISIBLE_CHARS = 20;
+const int NEWFIELD_EXTRA_SPACE    = 13; // max: " (new STRING)"
 
 static struct {
     GB_TYPES    type;
@@ -322,7 +323,7 @@ void RegFieldSelection::update_button_text(AW_root *awr) const {
             awar_button->write_string(GBS_global_string(exists ? "%s (%s)" : "%s (new %s)", fieldName, typeName));
         }
         else {
-            awar_button->write_string(GBS_global_string("<typeless> '%s'", fieldName));
+            awar_button->write_string(GBS_global_string("<undefined> '%s'", fieldName));
         }
     }
 }
@@ -519,6 +520,9 @@ void create_itemfield_selection_button(AW_window *aws, const FieldSelDef& selDef
      * @param selDef      specifies details of field selection
      * @param at          xfig label (ignored if NULL)
      *
+     * The length of the button is hardcoded and depends on whether new fields are possible or not.
+     * Nevertheless you may override its size by defining an at-label with 'to:'-position in xfig.
+     *
      * At start of field-writing code:
      * - use prepare_and_get_selected_itemfield() to create the changekey-info (needed for new fields only)
      *
@@ -531,7 +535,7 @@ void create_itemfield_selection_button(AW_window *aws, const FieldSelDef& selDef
     RegFieldSelection& fsel = RegFieldSelection::registrate(aws->get_root(), selDef);
 
     int old_button_length = aws->get_button_length();
-    aws->button_length(FIELDNAME_VISIBLE_CHARS);
+    aws->button_length(FIELDNAME_VISIBLE_CHARS+(selDef.new_fields_allowed() ? NEWFIELD_EXTRA_SPACE : 0));
     aws->callback(makeWindowCallback(popup_field_selection, &fsel));
 
     char *id = GBS_string_eval(selDef.get_awarname().c_str(), "/=_", NULL);

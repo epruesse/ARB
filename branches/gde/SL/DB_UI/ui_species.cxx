@@ -1344,7 +1344,8 @@ static AW_window *create_next_neighbours_listed_window(AW_root *aw_root, DbQuery
 
         aws->at("go");
         aws->callback(awtc_nn_search_all_listed);
-        aws->create_autosize_button("WRITE_FIELDS", "Write to");
+        aws->button_length(10);
+        aws->create_button("WRITE_FIELDS", "GO");
     }
     return aws;
 }
