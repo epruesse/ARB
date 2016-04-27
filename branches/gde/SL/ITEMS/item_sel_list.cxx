@@ -215,10 +215,13 @@ const char *prepare_and_get_selected_itemfield(AW_root *awr, const char *awar_na
      * @param gb_main         database
      * @param itemtype        item type
      * @param description     purpose of field (used for messages, defaults to "target")
-     * @param failIf          toggles various error conditions
+     * @param failIf          toggles various error conditions (defaults to FIF_STANDARD)
      *
-     * @return name of the itemfield (or NULL: if error -> error is exported, otherwise it means NO_FIELD_SELECTED)
-     * If (failIf & FIF_NO_FIELD_SELECTED) an error is exported if NO_FIELD_SELECTED
+     * @return name of the itemfield or NULL
+     *
+     * When NULL is returned
+     * - an error IS ALWAYS exported if (failIf&FIF_NO_FIELD_SELECTED), which is included in FIF_STANDARD!
+     * - an error MAY BE    exported otherwise (use GB_have_error() in that case)
      */
 
     it_assert(!GB_have_error());
