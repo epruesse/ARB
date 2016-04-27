@@ -109,9 +109,9 @@ static struct {
     const char *mnemonic;
     const char *typeName;
 } creatable[] = {
-    { GB_INT,    "Rounded numerical", "R", "INT" },
-    { GB_FLOAT,  "Numerical",         "N", "FLOAT" },
-    { GB_STRING, "Ascii text",        "t", "STRING" }
+    { GB_INT,    "Rounded numerical", "i", "INT" },
+    { GB_FLOAT,  "Floating-point n.", "F", "FLOAT" },
+    { GB_STRING, "Ascii text",        "s", "STRING" }
     // keep in sync with ../DB_UI/ui_species.cxx@FIELD_TYPE_DESCRIPTIONS
 };
 

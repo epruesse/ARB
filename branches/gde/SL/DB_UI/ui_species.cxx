@@ -782,6 +782,15 @@ static void field_create_cb(AW_window *aws, BoundItemSel *bound_selector) {
     GB_pop_transaction(bound_selector->gb_main);
 }
 
+inline void insert_fieldtype_toggles(AW_window *aws) {
+    aws->insert_toggle("Ascii text",        "s", (int)GB_STRING);
+    aws->insert_toggle("Rounded numerical", "i", (int)GB_INT);
+    aws->insert_toggle("Floating-point n.", "F", (int)GB_FLOAT);
+    aws->insert_toggle("Bitmask (0/1)",     "B", (int)GB_BITS);
+    aws->insert_toggle("Link",              "L", (int)GB_LINK);
+    // keep in sync with ../ITEMS/item_sel_list.cxx@FIELD_TYPE_DESCRIPTIONS
+}
+
 AW_window *DBUI::create_field_create_window(AW_root *root, BoundItemSel *bound_selector) {
     ItemSelector& selector = bound_selector->selector;
 
@@ -805,12 +814,7 @@ AW_window *DBUI::create_field_create_window(AW_root *root, BoundItemSel *bound_s
 
     aws->at("type");
     aws->create_toggle_field(itemAwar(AWAR_FIELD_CREATE_TYPE_TMPL, selector), "FIELD TYPE", "F");
-    aws->insert_toggle("Ascii text",        "S", (int)GB_STRING);
-    aws->insert_toggle("Link",              "L", (int)GB_LINK);
-    aws->insert_toggle("Rounded numerical", "N", (int)GB_INT);
-    aws->insert_toggle("Numerical",         "R", (int)GB_FLOAT);
-    aws->insert_toggle("Bitmask (0/1)",     "0", (int)GB_BITS);
-    // keep in sync with ../ITEMS/item_sel_list.cxx@FIELD_TYPE_DESCRIPTIONS
+    insert_fieldtype_toggles(aws);
     aws->update_toggle_field();
 
     aws->at("ok");
@@ -875,15 +879,11 @@ static AW_window *create_field_convert_window(AW_root *root, BoundItemSel *bound
 
     const char *awarname_field = itemAwar(AWAR_FIELD_CONVERT_SOURCE_TMPL, selector);
     root->awar(awarname_field)->add_callback(makeRootCallback(field_convert_update_typesel_cb, bound_selector));
-    create_itemfield_selection_list(aws, FieldSelDef(awarname_field, bound_selector->gb_main, selector, FIELD_FILTER_STRING_READABLE, SF_HIDDEN), "source");
+    create_itemfield_selection_list(aws, FieldSelDef(awarname_field, bound_selector->gb_main, selector, FIELD_FILTER_STRING_READABLE), "source");
 
     aws->at("typesel");
     aws->create_toggle_field(itemAwar(AWAR_FIELD_CONVERT_TYPE_TMPL, selector), NULL, "F");
-    aws->insert_toggle("Ascii Text",        "S", (int)GB_STRING);
-    aws->insert_toggle("Link",              "L", (int)GB_LINK);
-    aws->insert_toggle("Rounded Numerical", "N", (int)GB_INT);
-    aws->insert_toggle("Numerical",         "R", (int)GB_FLOAT);
-    aws->insert_toggle("MASK = 01 Text",    "0", (int)GB_BITS);
+    insert_fieldtype_toggles(aws);
     aws->update_toggle_field();
 
     aws->at("convert");
@@ -1187,7 +1187,7 @@ static void awtc_move_hits(AW_window *aww) {
 }
 
 static bool autosearch_triggered = false;
-static unsigned nn_perform_delayed_autosearch_cb(AW_root *awr) {
+static unsigned nn_perform_delayed_autosearch_cb(AW_root*) {
     awtc_nn_search(NULL);
     autosearch_triggered = false;
     return 0;
