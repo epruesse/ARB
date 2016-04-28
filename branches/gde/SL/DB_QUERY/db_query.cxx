@@ -802,6 +802,10 @@ void query_info::initFields(DbQuery *query, int idx, query_operator aqo, AW_root
     }
 
     detect_query_type();
+
+    if (!error && (!key[0] || strcmp(key, NO_FIELD_SELECTED) == 0)) {
+        error = strdup("Please select a field");
+    }
 }
 
 query_info::query_info(DbQuery *query) {
