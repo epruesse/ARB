@@ -606,7 +606,6 @@ static AW_window *create_mg_merge_tagged_fields_window(AW_root *aw_root) {
 
     aws->at("del1");    aws->create_input_field(AWAR_TAG_DEL, 5);
 
-    const long FIELD_FILTER_STRING = (1<<GB_STRING);
     create_itemfield_selection_button(aws, FieldSelDef(AWAR_FIELD_SRC, GLOBAL_gb_src, SPECIES_get_selector(), FIELD_FILTER_STRING, "source-field"), "fields1");
     create_itemfield_selection_button(aws, FieldSelDef(AWAR_FIELD_DST, GLOBAL_gb_dst, SPECIES_get_selector(), FIELD_FILTER_STRING, "target-field"), "fields2");
 
