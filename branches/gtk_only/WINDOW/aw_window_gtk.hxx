@@ -63,7 +63,7 @@ public:
     /**
      * Name of the awar of the current toggle field (radio group). NULL if no open field.
      */
-    const char *toggle_field_awar_name;
+    char *toggle_field_awar_name;
 
     /*
      * The current ComboBox, NULL if none under construction
