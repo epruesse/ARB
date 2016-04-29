@@ -40,6 +40,7 @@ db_query.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 db_query.o: $(ARBHOME)/INCLUDE/arb_assert.h
 db_query.o: $(ARBHOME)/INCLUDE/arb_core.h
 db_query.o: $(ARBHOME)/INCLUDE/arb_error.h
+db_query.o: $(ARBHOME)/INCLUDE/arb_global_defs.h
 db_query.o: $(ARBHOME)/INCLUDE/arb_match.h
 db_query.o: $(ARBHOME)/INCLUDE/arb_msg.h
 db_query.o: $(ARBHOME)/INCLUDE/arb_progress.h

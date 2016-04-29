@@ -67,14 +67,16 @@ namespace QUERY {
 
         char *species_name;
 
-        char *awar_setkey;
+        char *awar_writekey;
+        char *awar_writelossy;
+
+        char *awar_protectkey;
         char *awar_setprotection;
         char *awar_setvalue;
 
         char *awar_parskey;
         char *awar_parsvalue;
         char *awar_parspredefined;
-        char *awar_createDestField;
         char *awar_acceptConvError;
 
         char *awar_ere;
@@ -89,8 +91,7 @@ namespace QUERY {
 
         unsigned long sort_mask;                              // contains several cascading sort criteria (QUERY_SORT_CRITERIA_BITS each)
 
-        AW_selection_list   *hitlist;
-        Itemfield_Selection *fieldsel[QUERY_SEARCHES];
+        AW_selection_list *hitlist;
 
         ItemSelector&  selector;
         int            select_bit;                            // one of 1 2 4 8 .. 128 (one for each query box)

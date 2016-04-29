@@ -413,6 +413,7 @@ adChangeKey.o: gb_prot.h
 adChangeKey.o: $(ARBHOME)/INCLUDE/arb_assert.h
 adChangeKey.o: $(ARBHOME)/INCLUDE/arb_core.h
 adChangeKey.o: $(ARBHOME)/INCLUDE/arb_error.h
+adChangeKey.o: $(ARBHOME)/INCLUDE/arb_global_defs.h
 adChangeKey.o: $(ARBHOME)/INCLUDE/arb_msg.h
 adChangeKey.o: $(ARBHOME)/INCLUDE/arb_string.h
 adChangeKey.o: $(ARBHOME)/INCLUDE/arbtools.h

@@ -79,7 +79,7 @@ public:
             aws->load_xfig("select_simple.fig");
 
             aws->at("selection");
-            aws->callback(AW_POPDOWN);
+            AW_root::SINGLETON->awar(get_awar_name())->add_callback(makeRootCallback(awt_auto_popdown_cb, aws));
             create_list(aws, true);
 
             aws->at("button");

@@ -105,6 +105,7 @@ ST_quality.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ST_quality.o: $(ARBHOME)/INCLUDE/downcast.h
 ST_quality.o: $(ARBHOME)/INCLUDE/dupstr.h
 ST_quality.o: $(ARBHOME)/INCLUDE/gccver.h
+ST_quality.o: $(ARBHOME)/INCLUDE/items.h
 ST_quality.o: $(ARBHOME)/INCLUDE/smartptr.h
 ST_quality.o: $(ARBHOME)/INCLUDE/static_assert.h
 ST_quality.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -118,8 +119,10 @@ ST_window.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ST_window.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ST_window.o: $(ARBHOME)/INCLUDE/arb_core.h
 ST_window.o: $(ARBHOME)/INCLUDE/arb_error.h
+ST_window.o: $(ARBHOME)/INCLUDE/arb_global_defs.h
 ST_window.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ST_window.o: $(ARBHOME)/INCLUDE/arb_progress.h
+ST_window.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 ST_window.o: $(ARBHOME)/INCLUDE/arb_string.h
 ST_window.o: $(ARBHOME)/INCLUDE/arbdb.h
 ST_window.o: $(ARBHOME)/INCLUDE/arbdb_base.h
