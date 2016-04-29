@@ -2206,7 +2206,11 @@ AW_window *QUERY::create_colorize_items_window(AW_root *aw_root, GBDATA *gb_main
 }
 
 static void setup_modify_fields_config(AWT_config_definition& cdef, const DbQuery *query) {
-    cdef.add(query->awar_parskey,         "key"); // @@@ also store type of (new) field in properties
+    const char *typeawar = get_itemfield_type_awarname(query->awar_parskey);
+    dbq_assert(typeawar);
+
+    cdef.add(query->awar_parskey,         "key");
+    cdef.add(typeawar,                    "type");
     cdef.add(query->awar_use_tag,         "usetag");
     cdef.add(query->awar_deftag,          "deftag");
     cdef.add(query->awar_tag,             "modtag");

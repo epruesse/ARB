@@ -206,6 +206,21 @@ public:
 FieldSelectionRegistry RegFieldSelection::registry;
 MutableItemSelector    RegFieldSelection::NULL_selector;
 
+const char *get_itemfield_type_awarname(const char *itemfield_awarname) {
+    /*! returns the corresponding type-awar for an itemfield_awarname.
+     * Only returns an awarname if
+     * - itemfield_awarname was used in create_itemfield_selection_button and
+     * - new fields are allowed there
+     * returns NULL otherwise.
+     */
+
+    RegFieldSelection *registered = RegFieldSelection::find(itemfield_awarname);
+    if (registered && registered->new_fields_allowed()) {
+        return registered->get_type_awarname();
+    }
+    return NULL;
+}
+
 const char *prepare_and_get_selected_itemfield(AW_root *awr, const char *awar_name, GBDATA *gb_main, const ItemSelector& itemtype, FailIfField failIf) {
     /*! Reads awar used in create_itemfield_selection_button().
      *

@@ -131,6 +131,7 @@ enum FailIfField {
 Itemfield_Selection *create_itemfield_selection_list(  AW_window *aws, const FieldSelDef& selDef, const char *at);
 void                 create_itemfield_selection_button(AW_window *aws, const FieldSelDef& selDef, const char *at);
 const char          *prepare_and_get_selected_itemfield(AW_root *awr, const char *awar_name, GBDATA *gb_main, const ItemSelector& itemtype, FailIfField failIf = FIF_STANDARD);
+const char          *get_itemfield_type_awarname(const char *itemfield_awarname);
 
 enum RescanMode {
     RESCAN_REFRESH  = 1, // scan database for unregistered/unused fields and update the field list
