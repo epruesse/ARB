@@ -260,7 +260,7 @@ static AWT_config_mapping_def chimera_config_mapping[] = {
     { ST_ML_AWAR_COLSTAT_NAME,    "colstat" },
     { ST_ML_AWAR_FILTER_NAME,     "filter" },
     { ST_ML_AWAR_CQ_BUCKET_SIZE,  "bucketsize" },
-    { ST_ML_AWAR_CQ_DEST_FIELD,   "destfield" },
+    { ST_ML_AWAR_CQ_DEST_FIELD,   "destfield" }, // no need to store field-type here, because it is always GB_STRING
     { ST_ML_AWAR_CQ_REPORT,       "report" },
     { ST_ML_AWAR_CQ_KEEP_REPORTS, "keepold" },
 
