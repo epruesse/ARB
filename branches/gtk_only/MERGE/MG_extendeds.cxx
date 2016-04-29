@@ -160,12 +160,12 @@ AW_window *MG_create_merge_SAIs_window(AW_root *awr) {
 
     aws->at("ex1");
     awt_create_SAI_selection_list(GLOBAL_gb_src, aws, AWAR_EX_NAME_SRC, true);
-    DbScanner *scanner = create_db_scanner(GLOBAL_gb_src, aws, "info1", 0, 0, 0, DB_SCANNER, 0, 0, 0, SPECIES_get_selector());
+    DbScanner *scanner = create_db_scanner(GLOBAL_gb_src, aws, "info1", 0, 0, 0, DB_SCANNER, 0, SPECIES_get_selector());
     aws->get_root()->awar(AWAR_EX_NAME_SRC)->add_callback(makeRootCallback(MG_map_src_extended, scanner));
 
     aws->at("ex2");
     awt_create_SAI_selection_list(GLOBAL_gb_dst, aws, AWAR_EX_NAME_DST, true);
-    scanner = create_db_scanner(GLOBAL_gb_dst, aws, "info2", 0, 0, 0, DB_SCANNER, 0, 0, 0, SPECIES_get_selector());
+    scanner = create_db_scanner(GLOBAL_gb_dst, aws, "info2", 0, 0, 0, DB_SCANNER, 0, SPECIES_get_selector());
     aws->get_root()->awar(AWAR_EX_NAME_DST)->add_callback(makeRootCallback(MG_map_dst_extended, scanner));
 
     aws->button_length(20);

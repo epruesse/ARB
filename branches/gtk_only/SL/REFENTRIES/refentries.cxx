@@ -12,8 +12,8 @@
 #include "refentries.h"
 
 #include <awt_config_manager.hxx>
+#include <item_sel_list.h>
 
-#include <aw_window.hxx>
 #include <aw_root.hxx>
 #include <aw_awars.hxx>
 #include <aw_msg.hxx>
@@ -274,6 +274,7 @@ namespace RefEntries {
 
         const int XOFF    = -10; // attached to right border
         const int YOFF_IF = 32;  // lineheight of attached input field
+        const int YOFF_SB = 25;  // lineheight of attached selection butoon
         const int YOFF_DF = 18;  // lineheight of attached display field
 
         ItemSelector& itemtype = reh->get_referring_item();
@@ -289,9 +290,9 @@ namespace RefEntries {
         aws->update_option_menu();
 
         aws->at_newline();
-        aws->at_set_to(true, false, XOFF, YOFF_IF);
+        aws->at_set_to(true, false, XOFF, YOFF_SB);
         aws->label("Field containing references");
-        aws->create_input_field(AWAR_MARKBYREF_FIELD, 10);
+        create_itemfield_selection_button(aws, FieldSelDef(AWAR_MARKBYREF_FIELD, reh->get_gbmain(), SPECIES_get_selector(), FIELD_FILTER_STRING, "reference field"), NULL);
 
         aws->at_newline();
         aws->label("Ignore if field missing?");

@@ -360,7 +360,7 @@ AW_window *NT_create_extendeds_window(AW_root *aw_root) {
         aws->at("list");
         awt_create_SAI_selection_list(GLOBAL.gb_main, aws, AWAR_SAI_NAME, true);
 
-        DbScanner *scanner = create_db_scanner(GLOBAL.gb_main, aws, "info", 0, 0, 0, DB_SCANNER, 0, 0, 0, SPECIES_get_selector());
+        DbScanner *scanner = create_db_scanner(GLOBAL.gb_main, aws, "info", 0, 0, 0, DB_SCANNER, 0, SPECIES_get_selector());
         aws->get_root()->awar(AWAR_SAI_NAME)->add_callback(makeRootCallback(map_SAI_to_scanner, scanner));
     }
     aws->show();

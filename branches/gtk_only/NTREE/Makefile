@@ -1249,6 +1249,7 @@ NT_sort.o: $(ARBHOME)/INCLUDE/arb_assert.h
 NT_sort.o: $(ARBHOME)/INCLUDE/arb_core.h
 NT_sort.o: $(ARBHOME)/INCLUDE/arb_defs.h
 NT_sort.o: $(ARBHOME)/INCLUDE/arb_error.h
+NT_sort.o: $(ARBHOME)/INCLUDE/arb_global_defs.h
 NT_sort.o: $(ARBHOME)/INCLUDE/arb_msg.h
 NT_sort.o: $(ARBHOME)/INCLUDE/arb_progress.h
 NT_sort.o: $(ARBHOME)/INCLUDE/arb_sort.h
@@ -1318,6 +1319,7 @@ NT_taxonomy.o: $(ARBHOME)/INCLUDE/arb_assert.h
 NT_taxonomy.o: $(ARBHOME)/INCLUDE/arb_core.h
 NT_taxonomy.o: $(ARBHOME)/INCLUDE/arb_defs.h
 NT_taxonomy.o: $(ARBHOME)/INCLUDE/arb_error.h
+NT_taxonomy.o: $(ARBHOME)/INCLUDE/arb_global_defs.h
 NT_taxonomy.o: $(ARBHOME)/INCLUDE/arb_msg.h
 NT_taxonomy.o: $(ARBHOME)/INCLUDE/arb_progress.h
 NT_taxonomy.o: $(ARBHOME)/INCLUDE/arb_string.h

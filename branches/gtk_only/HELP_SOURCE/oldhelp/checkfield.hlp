@@ -1,25 +1,59 @@
 #Please insert up references in the next lines (line starts with keyword UP)
-UP	arb.hlp
-UP	tags.hlp
-UP	glossary.hlp
+UP      arb.hlp
+UP      tags.hlp
+UP      glossary.hlp
 
-#Please insert subtopic references	(line starts with keyword SUB)
-#SUB	subtopic.hlp
+#Please insert subtopic references      (line starts with keyword SUB)
+#SUB    subtopic.hlp
 
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		Get the differences between two sequences of different databases
+TITLE           Determine sequence changes between different databases
 
-OCCURRENCE	ARB_MERGE/Transfer Species/Compare Sequences of..
+OCCURRENCE      ARB_MERGE/Transfer Species/Source->Target/Compare a field of listed species...
 
-DESCRIPTION	Starts a string compare. @@@@
+DESCRIPTION     Compares contents of a field (selected to compare) between same species in 
+                both databases. Information about found differences will be stored in
+                the selected report field in both databases.
 
-NOTES		None
+                Only species listed in the left hitlist of the 'TRANSFER SPECIES' window
+                are examined.
 
-EXAMPLES	None
+                If no differences are detected, the selected report field will be deleted
+                from the species.
 
-WARNINGS	Be careful,
-		select only destination fields, that don't contain any data
+                Comparison can be customized by the following parameters:
 
-BUGS		No bugs known
+                 * tag/subfield
+
+                   If a tag is specified, only the content belonging to that tag will
+                   be considered for comparison (see LINK{tags.hlp} for information about tagging).
+
+                 * ignore characters
+
+                   When specified, the contents of the field are modified before comparison, i.e. the
+                   given characters are removed from the contents.
+                   Nevertheless, the position(s) written to the report field are independant of
+                   ignored characters, i.e. they are absolute (sequence) positions.
+
+                 * ignore case
+
+                   When checked case differences are ignored.
+
+                If 'Try to correct field in target DB' is checked, ARB will accept and correct
+                single(!) insertions, deletions and substitutions in the sequence data of the
+                target database.
+                A minimum amount of 10 matching bases is required between two distinct corrections,
+                otherwise the correction will be canceled (and diff-info will be written to report field).
+                Successful corrections are indicated by marking the affected species in the target database.
+
+NOTES           This function has been designed to determine sequence changes between different database(s) (versions).
+                Using it for other data fields works.
+
+EXAMPLES        None
+
+WARNINGS        Be careful: Select only report fields, that don't contain any data (it will be deleted)!
+
+BUGS            No bugs known
+

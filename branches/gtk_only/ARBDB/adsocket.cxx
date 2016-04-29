@@ -495,7 +495,7 @@ static GB_CSTR GB_getenvARB_XTERM() {
     static const char *xterm = 0;
     if (!xterm) {
         xterm = ARB_getenv_ignore_empty("ARB_XTERM"); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARB_XTERM
-        if (!xterm) xterm = "xterm -sl 1000 -sb -geometry 120x50";
+        if (!xterm) xterm = "xterm -sl 1000 -sb -geometry 150x60";
     }
     return xterm;
 }
@@ -875,37 +875,46 @@ GB_ERROR GB_xcmd(const char *cmd, bool background, bool wait_only_if_error) {
     // if 'background' is true -> run asynchronous
     // if 'wait_only_if_error' is true -> asynchronous does wait for keypress only if cmd fails
 
-    GBS_strstruct *strstruct = GBS_stropen(1024);
-    const char    *xcmd      = GB_getenvARB_XCMD();
+    const int     BUFSIZE = 1024;
+    GBS_strstruct system_call(BUFSIZE);
 
-    GBS_strcat(strstruct, "(");
-    GBS_strcat(strstruct, xcmd);
-    GBS_strcat(strstruct, " bash -c 'LD_LIBRARY_PATH=\"");
-    GBS_strcat(strstruct, GB_getenv("LD_LIBRARY_PATH"));
-    GBS_strcat(strstruct, "\";export LD_LIBRARY_PATH; (");
-    GBS_strcat(strstruct, cmd);
+    const char *xcmd = GB_getenvARB_XCMD();
 
-    if (background) {
+    system_call.put('(');
+    system_call.cat(xcmd);
+
+    {
+        GBS_strstruct bash_command(BUFSIZE);
+
+        bash_command.cat("LD_LIBRARY_PATH=");
+        {
+            char *dquoted_library_path = GBK_doublequote(GB_getenv("LD_LIBRARY_PATH"));
+            system_call.cat(dquoted_library_path);
+            free(dquoted_library_path);
+        }
+        bash_command.cat(";export LD_LIBRARY_PATH; (");
+        bash_command.cat(cmd);
+
+        const char *wait_commands = "echo; echo Press ENTER to close this window; read a";
         if (wait_only_if_error) {
-            GBS_strcat(strstruct, ") || (echo; echo Press RETURN to close Window; read a)' ) &");
+            bash_command.cat(") || (");
+            bash_command.cat(wait_commands);
         }
-        else {
-            GBS_strcat(strstruct, "; echo; echo Press RETURN to close Window; read a)' ) &");
+        else if (background) {
+            bash_command.cat("; ");
+            bash_command.cat(wait_commands);
         }
-    }
-    else {
-        if (wait_only_if_error) {
-            GBS_strcat(strstruct, ") || (echo; echo Press RETURN to close Window; read a)' )");
-        }
-        else { // no wait
-            GBS_strcat(strstruct, " )' ) ");
-        }
-    }
+        bash_command.put(')');
 
-    GB_ERROR error = GBK_system(GBS_mempntr(strstruct));
-    GBS_strforget(strstruct);
+        system_call.cat(" bash -c ");
+        char *squoted_bash_command = GBK_singlequote(bash_command.get_data());
+        system_call.cat(squoted_bash_command);
+        free(squoted_bash_command);
+    }
+    system_call.cat(" )");
+    if (background) system_call.cat(" &");
 
-    return error;
+    return GBK_system(system_call.get_data());
 }
 
 // ---------------------------------------------
