@@ -32,8 +32,7 @@ enum SelectableFields {
     SF_PSEUDO    = 1,  // pseudo-fields (see defines above)
     SF_HIDDEN    = 2,  // fields hidden by user
     SF_ALLOW_NEW = 4,  // allow on-the-fly creation of new fields
-
-    SF_ALL      = ((SF_HIDDEN<<1)-1),
+    SF_SHOW_TYPE = 8,  // show fieldtype prefix
 };
 
 
@@ -56,7 +55,7 @@ class Itemfield_Selection : public AW_DB_selection { // derived from a Noncopyab
     SelectableFields field_filter;
     ItemSelector&    selector;
 
-    bool shall_display_type(int key_type) const { return type_filter & (1 << key_type); }
+    bool shall_display_type(GB_TYPES key_type) const { return type_filter & (1 << key_type); }
 
 public:
     Itemfield_Selection(AW_selection_list *sellist_,

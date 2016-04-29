@@ -879,7 +879,7 @@ static AW_window *create_field_convert_window(AW_root *root, BoundItemSel *bound
 
     const char *awarname_field = itemAwar(AWAR_FIELD_CONVERT_SOURCE_TMPL, selector);
     root->awar(awarname_field)->add_callback(makeRootCallback(field_convert_update_typesel_cb, bound_selector));
-    create_itemfield_selection_list(aws, FieldSelDef(awarname_field, bound_selector->gb_main, selector, FIELD_FILTER_STRING_READABLE), "source");
+    create_itemfield_selection_list(aws, FieldSelDef(awarname_field, bound_selector->gb_main, selector, FIELD_FILTER_STRING_READABLE, "field", SF_SHOW_TYPE), "source");
 
     aws->at("typesel");
     aws->create_toggle_field(itemAwar(AWAR_FIELD_CONVERT_TYPE_TMPL, selector), NULL, "F");

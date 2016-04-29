@@ -52,9 +52,10 @@ void Itemfield_Selection::fill() {
     GB_transaction  ta(gb_key_data);
 
     for (GBDATA *gb_key = GB_entry(gb_key_data, CHANGEKEY); gb_key; gb_key = GB_nextEntry(gb_key)) {
-        GBDATA *gb_key_type = GB_entry(gb_key, CHANGEKEY_TYPE);
+        GBDATA   *gb_key_type = GB_entry(gb_key, CHANGEKEY_TYPE);
+        GB_TYPES  key_type    = GB_TYPES(GB_read_int(gb_key_type));
 
-        if (shall_display_type(GB_read_int(gb_key_type))) {
+        if (shall_display_type(key_type)) {
             GBDATA *gb_key_name = GB_entry(gb_key, CHANGEKEY_NAME);
 
             if (gb_key_name) {
@@ -82,7 +83,13 @@ void Itemfield_Selection::fill() {
                 }
                 else display = name;
 
-                if (display) insert(display, name);
+
+                if (display) {
+                    if (field_filter & SF_SHOW_TYPE) { // prefix type-char
+                        display = GBS_global_string("%c: %s", GB_type_2_char(key_type), display);
+                    }
+                    insert(display, name);
+                }
             }
         }
     }
