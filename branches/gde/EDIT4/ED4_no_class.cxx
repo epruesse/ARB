@@ -1082,7 +1082,7 @@ static AW_window *create_group_species_by_field_window(AW_root *aw_root, AW_wind
 
     aws->at_newline();
     aws->label("Use content of field");
-    create_itemfield_selection_button(aws, FieldSelDef(AWAR_FIELD_CHOSEN, GLOBAL_gb_main, SPECIES_get_selector(), FIELD_FILTER_STRING_READABLE), NULL);
+    create_itemfield_selection_button(aws, FieldSelDef(AWAR_FIELD_CHOSEN, GLOBAL_gb_main, SPECIES_get_selector(), FIELD_FILTER_STRING_READABLE, "group-field"), NULL);
 
     aws->at_newline();
     aws->callback(makeWindowCallback(group_species_by_field_content, use_as_main_window, static_cast<AW_window*>(aws)));

@@ -690,7 +690,7 @@ static AW_window *createDisplayField_window(AW_root *aw_root, GBDATA *gb_main) {
         aws->callback(makeHelpCallback("displayField.hlp"));
         aws->create_button("HELP", "HELP", "H");
 
-        create_itemfield_selection_button(aws, FieldSelDef(AWAR_SPV_DB_FIELD_NAME, gb_main, SPECIES_get_selector(), FIELD_FILTER_NDS), "dbField");
+        create_itemfield_selection_button(aws, FieldSelDef(AWAR_SPV_DB_FIELD_NAME, gb_main, SPECIES_get_selector(), FIELD_FILTER_NDS, "display-field"), "dbField");
 
         aws->at("aciSelect");
         aws->button_length(12);

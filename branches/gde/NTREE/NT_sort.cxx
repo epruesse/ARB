@@ -211,9 +211,9 @@ AW_window *NT_create_resort_window(AW_root *awr) {
     aws->at("help");
     aws->create_button("HELP", "HELP", "H");
 
-    create_itemfield_selection_button(aws, FieldSelDef(AWAR_TREE_SORT1, GLOBAL.gb_main, SPECIES_get_selector(), FIELD_FILTER_RESORT), "key1");
-    create_itemfield_selection_button(aws, FieldSelDef(AWAR_TREE_SORT2, GLOBAL.gb_main, SPECIES_get_selector(), FIELD_FILTER_RESORT), "key2");
-    create_itemfield_selection_button(aws, FieldSelDef(AWAR_TREE_SORT3, GLOBAL.gb_main, SPECIES_get_selector(), FIELD_FILTER_RESORT), "key3");
+    create_itemfield_selection_button(aws, FieldSelDef(AWAR_TREE_SORT1, GLOBAL.gb_main, SPECIES_get_selector(), FIELD_FILTER_RESORT, "1st sort field"), "key1");
+    create_itemfield_selection_button(aws, FieldSelDef(AWAR_TREE_SORT2, GLOBAL.gb_main, SPECIES_get_selector(), FIELD_FILTER_RESORT, "2nd sort field"), "key2");
+    create_itemfield_selection_button(aws, FieldSelDef(AWAR_TREE_SORT3, GLOBAL.gb_main, SPECIES_get_selector(), FIELD_FILTER_RESORT, "3rd sort field"), "key3");
 
     aws->at("rev1"); aws->label("Reverse"); aws->create_toggle(AWAR_TREE_REV1);
     aws->at("rev2"); aws->label("Reverse"); aws->create_toggle(AWAR_TREE_REV2);

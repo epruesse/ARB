@@ -224,7 +224,7 @@ static void mark_action(AW_window *aws, AWT_canvas *ntw, Target target) {
                 if (s->second.occursInBothTrees()) commonSpeciesCount++;
             }
 
-            const char *fieldName    = prepare_and_get_selected_itemfield(aw_root, AWAR_TREE_COMPARE_WRITE_FIELD, gb_main, SPECIES_get_selector(), "level-change", FIF_ALLOW_NONE);
+            const char *fieldName    = prepare_and_get_selected_itemfield(aw_root, AWAR_TREE_COMPARE_WRITE_FIELD, gb_main, SPECIES_get_selector(), FIF_ALLOW_NONE);
             bool        writeToField = fieldName;
             GB_ERROR    error        = GB_have_error() ? GB_await_error() : NULL;
 
@@ -360,7 +360,7 @@ AW_window *NT_create_compare_taxonomy_window(AW_root *aw_root, AWT_canvas *ntw) 
     aws->at("levels");
     aws->create_input_field(AWAR_TREE_COMPARE_MIN_TAX_LEVELS, 5);
 
-    create_itemfield_selection_button(aws, FieldSelDef(AWAR_TREE_COMPARE_WRITE_FIELD, ntw->gb_main, SPECIES_get_selector(), FIELD_FILTER_INT_WRITEABLE, SF_ALLOW_NEW), "field");
+    create_itemfield_selection_button(aws, FieldSelDef(AWAR_TREE_COMPARE_WRITE_FIELD, ntw->gb_main, SPECIES_get_selector(), FIELD_FILTER_INT_WRITEABLE, "taxdiff-field", SF_ALLOW_NEW), "field");
 
     aws->at("left");
     awt_create_TREE_selection_list(ntw->gb_main, aws, AWAR_TREE_COMPARE_LEFT, true);

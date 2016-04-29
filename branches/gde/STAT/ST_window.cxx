@@ -218,7 +218,7 @@ static void st_check_cb(AW_window *aww, st_check_cb_data *data) {
     bool           keep_old_reports = awr->awar(ST_ML_AWAR_CQ_KEEP_REPORTS)->read_int();
 
     GB_ERROR    error      = NULL;
-    const char *dest_field = prepare_and_get_selected_itemfield(awr, ST_ML_AWAR_CQ_DEST_FIELD, data->gb_main, SPECIES_get_selector(), "report");
+    const char *dest_field = prepare_and_get_selected_itemfield(awr, ST_ML_AWAR_CQ_DEST_FIELD, data->gb_main, SPECIES_get_selector());
     if (!dest_field) error = GB_await_error();
 
     if (!error && !keep_old_reports) {
@@ -307,7 +307,7 @@ AW_window *STAT_create_chimera_check_window(AW_root *root, GBDATA *gb_main) {
         aws->at("sb");
         aws->create_input_field(ST_ML_AWAR_CQ_BUCKET_SIZE);
 
-        create_itemfield_selection_button(aws, FieldSelDef(ST_ML_AWAR_CQ_DEST_FIELD, gb_main, SPECIES_get_selector(), FIELD_FILTER_STRING_WRITEABLE, SF_ALLOW_NEW), "dest");
+        create_itemfield_selection_button(aws, FieldSelDef(ST_ML_AWAR_CQ_DEST_FIELD, gb_main, SPECIES_get_selector(), FIELD_FILTER_STRING_WRITEABLE, "report-field", SF_ALLOW_NEW), "dest");
 
         aws->at("report");
         {

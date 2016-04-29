@@ -203,12 +203,12 @@ static void mg_check_field_cb(AW_window *aww) {
 
     const char *reportField = NULL;
     if (!error) {
-        reportField = prepare_and_get_selected_itemfield(root, AWAR_REPORT_FIELD, GLOBAL_gb_src, SPECIES_get_selector(), "report");
+        reportField = prepare_and_get_selected_itemfield(root, AWAR_REPORT_FIELD, GLOBAL_gb_src, SPECIES_get_selector());
         if (!reportField) {
             error = GB_await_error();
         }
         else {
-            const char *otherdb_reportField = prepare_and_get_selected_itemfield(root, AWAR_REPORT_FIELD, GLOBAL_gb_dst, SPECIES_get_selector(), "report");
+            const char *otherdb_reportField = prepare_and_get_selected_itemfield(root, AWAR_REPORT_FIELD, GLOBAL_gb_dst, SPECIES_get_selector());
             if (!otherdb_reportField) {
                 error = GB_await_error();
             }
@@ -357,7 +357,7 @@ AW_window *create_mg_check_fields_window(AW_root *aw_root) {
     aws->create_input_field(AWAR_ETAG, 6);
 
     create_itemfield_selection_button(aws, FieldSelDef(AWAR_COMPARE_FIELD, GLOBAL_gb_dst, SPECIES_get_selector(), FIELD_FILTER_STRING_READABLE), "source");
-    create_itemfield_selection_button(aws, FieldSelDef(AWAR_REPORT_FIELD,  GLOBAL_gb_dst, SPECIES_get_selector(), FIELD_FILTER_STRING_WRITEABLE, SF_ALLOW_NEW), "dest");
+    create_itemfield_selection_button(aws, FieldSelDef(AWAR_REPORT_FIELD,  GLOBAL_gb_dst, SPECIES_get_selector(), FIELD_FILTER_STRING_WRITEABLE, "report-field", SF_ALLOW_NEW), "dest");
 
     aws->at("go");
     aws->highlight();

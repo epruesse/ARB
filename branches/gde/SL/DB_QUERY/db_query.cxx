@@ -1601,7 +1601,7 @@ static void modify_fields_of_queried_cb(AW_window*, DbQuery *query) {
 
     const char *key;
     if (!error) {
-        key = prepare_and_get_selected_itemfield(aw_root, query->awar_parskey, query->gb_main, selector, "target");
+        key = prepare_and_get_selected_itemfield(aw_root, query->awar_parskey, query->gb_main, selector);
         if (!key) error = GB_await_error();
     }
 
@@ -2242,7 +2242,7 @@ static AW_window *create_modify_fields_window(AW_root *aw_root, DbQuery *query) 
     aws->callback(makeHelpCallback("tags.hlp"));
     aws->create_button("HELP_TAGS", "Help tags", "H");
 
-    create_itemfield_selection_button(aws, FieldSelDef(query->awar_parskey, query->gb_main, query->selector, FIELD_FILTER_STRING_READABLE, SF_ALLOW_NEW), "field");
+    create_itemfield_selection_button(aws, FieldSelDef(query->awar_parskey, query->gb_main, query->selector, FIELD_FILTER_STRING_READABLE, "target field", SF_ALLOW_NEW), "field");
     aws->at("accept");  aws->create_toggle(query->awar_acceptConvError);
 
     // ------------------------
@@ -2389,7 +2389,7 @@ static AW_window *create_writeFieldOfListed_window(AW_root *aw_root, DbQuery *qu
     aws->callback(makeHelpCallback("write_field_list.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
-    create_itemfield_selection_button(aws, FieldSelDef(query->awar_writekey, query->gb_main, query->selector, FIELD_FILTER_STRING_READABLE, SF_ALLOW_NEW), "field");
+    create_itemfield_selection_button(aws, FieldSelDef(query->awar_writekey, query->gb_main, query->selector, FIELD_FILTER_STRING_READABLE, "target field", SF_ALLOW_NEW), "field");
 
     aws->at("val");
     aws->create_text_field(query->awar_setvalue, 2, 2);
@@ -2481,7 +2481,7 @@ static AW_window *create_set_protection_window(AW_root *aw_root, DbQuery *query)
     aws->insert_toggle("6 the truth", "5", 6);
     aws->update_toggle_field();
 
-    create_itemfield_selection_list(aws, FieldSelDef(query->awar_protectkey, query->gb_main, query->selector, FIELD_UNFILTERED), "list");
+    create_itemfield_selection_list(aws, FieldSelDef(query->awar_protectkey, query->gb_main, query->selector, FIELD_UNFILTERED, "field to protect"), "list");
 
     aws->at("go");
     aws->callback(makeWindowCallback(set_protection_of_queried_cb, query));
@@ -2714,7 +2714,7 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
             aws->at(xpos_calc[0], ypos+key*KEY_Y_OFFSET);
             aws->restore_at_from(*at_size);
 
-            create_itemfield_selection_button(aws, FieldSelDef(query->awar_keys[key], gb_main, awtqs->get_queried_itemtype(), FIELD_FILTER_STRING_READABLE, SF_PSEUDO), NULL);
+            create_itemfield_selection_button(aws, FieldSelDef(query->awar_keys[key], gb_main, awtqs->get_queried_itemtype(), FIELD_FILTER_STRING_READABLE, "source field", SF_PSEUDO), NULL);
 
             if (xpos_calc[1] == -1) aws->get_at_position(&xpos_calc[1], &ypos_dummy);
 

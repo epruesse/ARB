@@ -512,7 +512,7 @@ AW_window *AWT_create_nds_window(AW_root *aw_root, GBDATA *gb_main) {
             aws->get_at_position(&fieldx, &dummy);
             {
                 const char *awar_name = viewkeyAwarName(i, "key_text");
-                create_itemfield_selection_button(aws, FieldSelDef(awar_name, gb_main, SPECIES_get_selector(), FIELD_FILTER_NDS), NULL);
+                create_itemfield_selection_button(aws, FieldSelDef(awar_name, gb_main, SPECIES_get_selector(), FIELD_FILTER_NDS, "display-field"), NULL);
             }
 
             aws->get_at_position(&columnx, &dummy);

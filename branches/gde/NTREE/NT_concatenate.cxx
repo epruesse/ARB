@@ -592,7 +592,7 @@ static void mergeSimilarSpecies(AW_window *aws, MergeSpeciesType mergeType, AW_s
 
         GB_begin_transaction(GLOBAL.gb_main);       // open database for transaction
 
-        const char *report_field_name = prepare_and_get_selected_itemfield(aw_root, AWAR_CON_STORE_SIM_SP_NO, GLOBAL.gb_main, SPECIES_get_selector(), "report", FIF_NAME_SELECTED);
+        const char *report_field_name = prepare_and_get_selected_itemfield(aw_root, AWAR_CON_STORE_SIM_SP_NO, GLOBAL.gb_main, SPECIES_get_selector(), FIF_NAME_SELECTED);
         if (!report_field_name && GB_have_error()) error = GB_await_error();
 
         if (!error && strcmp(merge_field_name, NO_FIELD_SELECTED) == 0) {
@@ -713,8 +713,8 @@ static AW_window *createMergeSimilarSpeciesWindow(AW_root *aw_root, MergeSpecies
     aws->at("help");
     aws->create_button("HELP", "HELP", "H");
 
-    create_itemfield_selection_button(aws, FieldSelDef(AWAR_CON_MERGE_FIELD,     GLOBAL.gb_main, SPECIES_get_selector(), FIELD_FILTER_STRING_READABLE, SF_STANDARD),  "field_select");
-    create_itemfield_selection_button(aws, FieldSelDef(AWAR_CON_STORE_SIM_SP_NO, GLOBAL.gb_main, SPECIES_get_selector(), FIELD_FILTER_INT_WRITEABLE,   SF_ALLOW_NEW), "store_sp_no");
+    create_itemfield_selection_button(aws, FieldSelDef(AWAR_CON_MERGE_FIELD,     GLOBAL.gb_main, SPECIES_get_selector(), FIELD_FILTER_STRING_READABLE, "field to compare"),           "field_select");
+    create_itemfield_selection_button(aws, FieldSelDef(AWAR_CON_STORE_SIM_SP_NO, GLOBAL.gb_main, SPECIES_get_selector(), FIELD_FILTER_INT_WRITEABLE,   "report-field", SF_ALLOW_NEW), "store_sp_no");
 
     {
         const char *buttonText = NULL;

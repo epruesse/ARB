@@ -308,7 +308,7 @@ AW_window *GEN_open_nds_window(AW_root *aw_root, GBDATA *gb_main) {
 
             sprintf(buf, "tmp/gene_viewkey_%i/key_text", i);
             aws->get_at_position(&fieldx, &dummy);
-            create_itemfield_selection_button(aws, FieldSelDef(buf, gb_main, GEN_get_selector(), FIELD_FILTER_NDS), NULL);
+            create_itemfield_selection_button(aws, FieldSelDef(buf, gb_main, GEN_get_selector(), FIELD_FILTER_NDS, "display-field"), NULL);
 
             sprintf(buf, "tmp/gene_viewkey_%i/len1", i);
             aws->get_at_position(&columnx, &dummy);

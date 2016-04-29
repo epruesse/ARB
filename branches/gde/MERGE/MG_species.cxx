@@ -393,7 +393,7 @@ static AW_window *MG_create_transfer_fields_window(AW_root *aw_root) {
     aws->label("Append data?");
     aws->create_toggle(AWAR_APPEND);
 
-    create_itemfield_selection_button(aws, FieldSelDef(AWAR_FIELD_SRC, GLOBAL_gb_src, SPECIES_get_selector(), FIELD_FILTER_ANY_FIELD), "scandb");
+    create_itemfield_selection_button(aws, FieldSelDef(AWAR_FIELD_SRC, GLOBAL_gb_src, SPECIES_get_selector(), FIELD_FILTER_ANY_FIELD, "source/target field"), "scandb");
 
     aws->at("go");
     aws->callback(MG_transfer_fields_cb);
@@ -493,7 +493,7 @@ static AW_window *create_mg_transfer_single_field_window(AW_root *aw_root) {
     aws->callback(makeHelpCallback("mg_xfer_field_of_sel.hlp"));
     aws->create_button("HELP", "HELP");
 
-    create_itemfield_selection_button(aws, FieldSelDef(AWAR_FIELD_SRC, GLOBAL_gb_src, SPECIES_get_selector(), FIELD_UNFILTERED), "scandb");
+    create_itemfield_selection_button(aws, FieldSelDef(AWAR_FIELD_SRC, GLOBAL_gb_src, SPECIES_get_selector(), FIELD_UNFILTERED, "source/target field"), "scandb");
 
     aws->at("go");
     aws->callback(MG_transfer_single_field_cb);
@@ -607,8 +607,8 @@ static AW_window *create_mg_merge_tagged_fields_window(AW_root *aw_root) {
     aws->at("del1");    aws->create_input_field(AWAR_TAG_DEL, 5);
 
     const long FIELD_FILTER_STRING = (1<<GB_STRING);
-    create_itemfield_selection_button(aws, FieldSelDef(AWAR_FIELD_SRC, GLOBAL_gb_src, SPECIES_get_selector(), FIELD_FILTER_STRING), "fields1");
-    create_itemfield_selection_button(aws, FieldSelDef(AWAR_FIELD_DST, GLOBAL_gb_dst, SPECIES_get_selector(), FIELD_FILTER_STRING), "fields2");
+    create_itemfield_selection_button(aws, FieldSelDef(AWAR_FIELD_SRC, GLOBAL_gb_src, SPECIES_get_selector(), FIELD_FILTER_STRING, "source-field"), "fields1");
+    create_itemfield_selection_button(aws, FieldSelDef(AWAR_FIELD_DST, GLOBAL_gb_dst, SPECIES_get_selector(), FIELD_FILTER_STRING, "target-field"), "fields2");
 
     return aws;
 }

@@ -72,21 +72,24 @@ public:
 
 class FieldSelDef {
     std::string       awar_name;
+    std::string       purpose;
     GBDATA           *gb_main;
     ItemSelector&     selector;
     long              type_filter;
     SelectableFields  field_filter;
 
 public:
-    FieldSelDef(const char *awar_name_, GBDATA *gb_main_, ItemSelector& selector_, long type_filter_, SelectableFields field_filter_ = SF_STANDARD)
+    FieldSelDef(const char *awar_name_, GBDATA *gb_main_, ItemSelector& selector_, long type_filter_, const char *purpose_ = "field", SelectableFields field_filter_ = SF_STANDARD)
     /*! parameter collection for itemfield-selections
      * @param awar_name_           the name of the awar bound to the selection list
      * @param gb_main_             the database
      * @param selector_            describes the item type, for which fields are shown
      * @param type_filter_         is a bitstring which controls what types will be shown in the selection list (several filters are predefined: 'FIELD_FILTER_...', FIELD_UNFILTERED)
+     * @param purpose_             describes purpose of field (defaults to 'field'; appears in popup-title and error-messages)
      * @param field_filter_        controls if pseudo-fields and/or hidden fields are added and whether new fields are allowed (defaults to SF_STANDARD)
      */
         : awar_name(awar_name_),
+          purpose(purpose_),
           gb_main(gb_main_),
           selector(selector_),
           type_filter(type_filter_),
@@ -94,6 +97,7 @@ public:
     {}
     FieldSelDef(const FieldSelDef& other)
         : awar_name(other.awar_name),
+          purpose(other.purpose),
           gb_main(other.gb_main),
           selector(other.selector),
           type_filter(other.type_filter),
@@ -102,6 +106,7 @@ public:
     DECLARE_ASSIGNMENT_OPERATOR(FieldSelDef);
 
     const std::string& get_awarname() const { return awar_name; }
+    const std::string& get_described_field() const { return purpose; }
     long get_type_filter() const { return type_filter; }
     SelectableFields get_field_filter() const { return field_filter; }
     GBDATA *get_gb_main() const { return gb_main; }
@@ -124,7 +129,7 @@ enum FailIfField {
 
 Itemfield_Selection *create_itemfield_selection_list(  AW_window *aws, const FieldSelDef& selDef, const char *at);
 void                 create_itemfield_selection_button(AW_window *aws, const FieldSelDef& selDef, const char *at);
-const char          *prepare_and_get_selected_itemfield(AW_root *awr, const char *awar_name, GBDATA *gb_main, const ItemSelector& itemtype, const char *description = "target", FailIfField failIf = FIF_STANDARD);
+const char          *prepare_and_get_selected_itemfield(AW_root *awr, const char *awar_name, GBDATA *gb_main, const ItemSelector& itemtype, FailIfField failIf = FIF_STANDARD);
 
 enum RescanMode {
     RESCAN_REFRESH  = 1, // scan database for unregistered/unused fields and update the field list

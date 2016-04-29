@@ -206,7 +206,7 @@ public:
 FieldSelectionRegistry RegFieldSelection::registry;
 MutableItemSelector    RegFieldSelection::NULL_selector;
 
-const char *prepare_and_get_selected_itemfield(AW_root *awr, const char *awar_name, GBDATA *gb_main, const ItemSelector& itemtype, const char *description, FailIfField failIf) {
+const char *prepare_and_get_selected_itemfield(AW_root *awr, const char *awar_name, GBDATA *gb_main, const ItemSelector& itemtype, FailIfField failIf) {
     /*! Reads awar used in create_itemfield_selection_button().
      *
      * If the user selected to create a new itemfield, the changekey is created.
@@ -215,7 +215,6 @@ const char *prepare_and_get_selected_itemfield(AW_root *awr, const char *awar_na
      * @param awar_name       name of awar used for create_itemfield_selection_button()
      * @param gb_main         database
      * @param itemtype        item type
-     * @param description     purpose of field (used for messages, defaults to "target")
      * @param failIf          toggles various error conditions (defaults to FIF_STANDARD)
      *
      * @return name of the itemfield or NULL
@@ -235,18 +234,19 @@ const char *prepare_and_get_selected_itemfield(AW_root *awr, const char *awar_na
         error = GBS_global_string("Awar '%s' is not registered as field selection", awar_name);
     }
     else {
-        AW_awar    *awar_field = awr->awar(selected->get_field_awarname());
-        const char *field      = awar_field->read_char_pntr();
+        AW_awar    *awar_field  = awr->awar(selected->get_field_awarname());
+        const char *field       = awar_field->read_char_pntr();
+        const char *kindOfField = selected->get_def().get_described_field().c_str();
 
         if (!field[0]) field = NO_FIELD_SELECTED;
 
         if (strcmp(field, NO_FIELD_SELECTED) == 0) {
             if (failIf & FIF_NO_FIELD_SELECTED) {
-                error = GBS_global_string("Please select a %s field", description);
+                error = GBS_global_string("Please select a %s", kindOfField);
             }
         }
         else if (strcmp(field, "name") == 0 && (failIf & FIF_NAME_SELECTED)) {
-            error = GBS_global_string("You may not select 'name' as %s field.", description); // protect user from overwriting the species ID
+            error = GBS_global_string("You may not select 'name' as %s.", kindOfField); // protect user from overwriting the species ID
         }
         else { // an allowed fieldname is selected
             GB_TYPES type = selected->get_keytype(field);
@@ -257,7 +257,7 @@ const char *prepare_and_get_selected_itemfield(AW_root *awr, const char *awar_na
                     if (!error) {
                         GB_TYPES wantedType = selected->get_selected_type(awr);
                         if (wantedType == GB_NONE) {
-                            error = GBS_global_string("Please select the datatype for new field '%s'", field);
+                            error = GBS_global_string("Please select the datatype for the new %s '%s'", kindOfField, field);
                         }
                         else {
                             error = GBT_add_new_changekey_to_keypath(gb_main, field, wantedType, itemtype.change_key_path);
@@ -265,7 +265,7 @@ const char *prepare_and_get_selected_itemfield(AW_root *awr, const char *awar_na
                     }
                 }
                 else {
-                    error = GBS_global_string("Selected field '%s' is not defined (logical error)", field); // should not occur!
+                    error = GBS_global_string("Selected %s '%s' is not defined (logical error)", kindOfField, field); // should not occur!
                 }
             }
             else { // existing field
@@ -274,7 +274,7 @@ const char *prepare_and_get_selected_itemfield(AW_root *awr, const char *awar_na
                     // There are two known ways this situation can be reached:
                     // 1. select a new key; create key via search tool using a type not allowed here
                     // 2. specify a key with disallowed type as new key name
-                    error = GBS_global_string("Selected field '%s' has unwanted type (%i)\nPlease select the %s field again.", field, int(type), description);
+                    error = GBS_global_string("Selected field '%s' has unwanted type (%i)\nPlease select the %s again.", field, int(type), kindOfField);
                 }
             }
             if (!error) value = field;
@@ -441,8 +441,11 @@ void RegFieldSelection::create_window(AW_root *awr) {
 
     const bool allowNewFields = new_fields_allowed();
 
-    aw_popup->init(awr, "SELECT_FIELD", allowNewFields ? "Select or create new field" : "Select a field");
-
+    {
+        const char *format = allowNewFields ? "Select or create a new %s" : "Select the %s";
+        const char *title  = GBS_global_string(format, def.get_described_field().c_str());
+        aw_popup->init(awr, "SELECT_FIELD", title);
+    }
     if (allowNewFields) aw_popup->load_xfig("awt/field_sel_new.fig"); // Do not DRY (ressource checker!)
     else                aw_popup->load_xfig("awt/field_sel.fig");
 

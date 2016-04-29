@@ -742,7 +742,7 @@ AW_window *DBUI::create_field_delete_window(AW_root *root, BoundItemSel *bound_s
         aws->at("help"); aws->callback(makeHelpCallback("spaf_delete.hlp"));
         aws->create_button("HELP", "Help", "H");
 
-        Itemfield_Selection *item_sel = create_itemfield_selection_list(aws, FieldSelDef(itemAwar(AWAR_FIELD_DELETE_TMPL, selector), bound_selector->gb_main, selector, FIELD_UNFILTERED, SF_HIDDEN), "source");
+        Itemfield_Selection *item_sel = create_itemfield_selection_list(aws, FieldSelDef(itemAwar(AWAR_FIELD_DELETE_TMPL, selector), bound_selector->gb_main, selector, FIELD_UNFILTERED, "field", SF_HIDDEN), "source");
 
         aws->button_length(13);
         aws->at("hide");
@@ -1340,7 +1340,7 @@ static AW_window *create_next_neighbours_listed_window(AW_root *aw_root, DbQuery
         aws->create_toggle(AWAR_NN_LISTED_SCORED_ENTRIES);
         
         aws->at("field");
-        create_itemfield_selection_button(aws, FieldSelDef(AWAR_NN_LISTED_DEST_FIELD, query_get_gb_main(query), SPECIES_get_selector(), FIELD_FILTER_STRING_WRITEABLE, SF_ALLOW_NEW), "field");
+        create_itemfield_selection_button(aws, FieldSelDef(AWAR_NN_LISTED_DEST_FIELD, query_get_gb_main(query), SPECIES_get_selector(), FIELD_FILTER_STRING_WRITEABLE, "target field", SF_ALLOW_NEW), "field");
 
         aws->at("go");
         aws->callback(awtc_nn_search_all_listed);
