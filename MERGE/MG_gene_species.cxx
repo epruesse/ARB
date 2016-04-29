@@ -561,7 +561,7 @@ AW_window *MG_gene_species_create_field_transfer_def_window(AW_root *aw_root) {
     aws->create_toggle(AWAR_MERGE_GENE_SPECIES_CREATE_FIELDS);
 
     aws->at("src");
-    aws->create_input_field(AWAR_MERGE_GENE_SPECIES_SOURCE);
+    aws->create_input_field(AWAR_MERGE_GENE_SPECIES_SOURCE); // @@@ use field selection (either from organism or from gene); need custom window-popper + intermediate awars here
 
     aws->at("delete");
     aws->callback(MG_delete_selected_field_def);
@@ -578,7 +578,7 @@ AW_window *MG_gene_species_create_field_transfer_def_window(AW_root *aw_root) {
     aws->create_input_field(AWAR_MERGE_GENE_SPECIES_ACI);
 
     aws->at("dest");
-    aws->create_input_field(AWAR_MERGE_GENE_SPECIES_DEST);
+    aws->create_input_field(AWAR_MERGE_GENE_SPECIES_DEST); // @@@ use field selection (with SF_ALLOW_NEW), but create field instantly. Otherwise too complicated.
 
     aws->at("example");
     aws->create_text_field(AWAR_MERGE_GENE_SPECIES_EXAMPLE, 40, 3);

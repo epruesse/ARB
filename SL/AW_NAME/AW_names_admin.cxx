@@ -132,7 +132,7 @@ AW_window *AW_create_namesadmin_window(AW_root *root, GBDATA *gb_main) {
     awar_addid->add_callback(makeRootCallback(addid_changed_cb, gb_main, true));
 
     aws->at("add_field");
-    aws->create_input_field(AWAR_NAMESERVER_ADDID, 20);
+    aws->create_input_field(AWAR_NAMESERVER_ADDID, 20); // (don't use field selection here atm; needs too many changes)
 
     aws->at("status");
     aws->button_length(50);

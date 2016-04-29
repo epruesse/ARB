@@ -1085,6 +1085,100 @@ char *GB_read_as_string(GBDATA *gbd) {
     }
 }
 
+inline GB_ERROR cannot_use_fun4entry(const char *fun, GBDATA *gb_entry) {
+    return GBS_global_string("Error: Cannot use %s() with a field of type %i (field=%s)",
+                             fun,
+                             GB_read_type(gb_entry),
+                             GB_read_key_pntr(gb_entry));
+}
+
+NOT4PERL uint8_t GB_read_lossless_byte(GBDATA *gbd, GB_ERROR& error) {
+    /*! Reads an uint8_t previously written with GB_write_lossless_byte()
+     * @param gbd    the DB field
+     * @param error  result parameter (has to be NULL)
+     * @result is undefined if error != NULL; contains read value otherwise
+     */
+    gb_assert(!error);
+    gb_assert(!GB_have_error());
+    uint8_t result;
+    switch (gbd->type()) {
+        case GB_BYTE:
+            result = GB_read_byte(gbd);
+            break;
+
+        case GB_INT:
+            result = GB_read_int(gbd);
+            break;
+
+        case GB_FLOAT:
+            result = GB_read_float(gbd)+.5;
+            break;
+
+        case GB_STRING:
+            result = atoi(GB_read_char_pntr(gbd));
+            break;
+
+        default:
+            error = cannot_use_fun4entry("GB_read_lossless_byte", gbd);
+            break;
+    }
+
+    if (!error && GB_have_error()) error = GB_await_error();
+    return result;
+}
+NOT4PERL int32_t GB_read_lossless_int(GBDATA *gbd, GB_ERROR& error) {
+    /*! Reads an int32_t previously written with GB_write_lossless_int()
+     * @param gbd    the DB field
+     * @param error  result parameter (has to be NULL)
+     * @result is undefined if error != NULL; contains read value otherwise
+     */
+    gb_assert(!error);
+    gb_assert(!GB_have_error());
+    int32_t result;
+    switch (gbd->type()) {
+        case GB_INT:
+            result = GB_read_int(gbd);
+            break;
+
+        case GB_STRING:
+            result = atoi(GB_read_char_pntr(gbd));
+            break;
+
+        default:
+            error = cannot_use_fun4entry("GB_read_lossless_int", gbd);
+            break;
+    }
+
+    if (!error && GB_have_error()) error = GB_await_error();
+    return result;
+}
+NOT4PERL float GB_read_lossless_float(GBDATA *gbd, GB_ERROR& error) {
+    /*! Reads a float previously written with GB_write_lossless_float()
+     * @param gbd    the DB field
+     * @param error  result parameter (has to be NULL)
+     * @result is undefined if error != NULL; contains read value otherwise
+     */
+    gb_assert(!error);
+    gb_assert(!GB_have_error());
+    float result;
+    switch (gbd->type()) {
+        case GB_FLOAT:
+            result = GB_read_float(gbd);
+            break;
+
+        case GB_STRING:
+            result = GB_atof(GB_read_char_pntr(gbd));
+            break;
+
+        default:
+            error = cannot_use_fun4entry("GB_read_lossless_float", gbd);
+            break;
+    }
+
+    if (!error && GB_have_error()) error = GB_await_error();
+    return result;
+}
+
 // ------------------------------------------------------------
 //      array type access functions (intended for perl use)
 
@@ -1400,15 +1494,86 @@ GB_ERROR GB_write_autoconv_string(GBDATA *gbd, const char *val) {
      *           (e.g. writing "hello" to a numeric db-field results in zero content)
      *
      *  Writing back the unmodified(!) result of GB_read_as_string will not cause data loss.
+     *
+     *  Consider using the GB_write_lossless_...() functions below (and their counterparts GB_read_lossless_...()).
      */
     switch (gbd->type()) {
         case GB_STRING: return GB_write_string(gbd, val);
         case GB_LINK:   return GB_write_link(gbd, val);
         case GB_BYTE:   return GB_write_byte(gbd, atoi(val));
         case GB_INT:    return GB_write_int(gbd, atoi(val));
-        case GB_FLOAT:  return GB_write_float(gbd, GB_atof(val));
+        case GB_FLOAT:  {
+            float f;
+            GB_ERROR error = GB_safe_atof(val, &f);
+            return error ? error : GB_write_float(gbd, f);
+        }
         case GB_BITS:   return GB_write_bits(gbd, val, strlen(val), "0");
-        default:    return GB_export_errorf("Error: You cannot use GB_write_autoconv_string on this type of entry (%s)", GB_read_key_pntr(gbd));
+        default: return GBS_global_string("Error: You cannot use GB_write_autoconv_string on this type of entry (%s)", GB_read_key_pntr(gbd));
+    }
+}
+
+GB_ERROR GB_write_lossless_byte(GBDATA *gbd, uint8_t byte) {
+    /*! Writes an uint8_t to a database field capable to store any value w/o loss.
+     *  @return error otherwise
+     *  The corresponding field filter is FIELD_FILTER_BYTE_WRITEABLE.
+     */
+    switch (gbd->type()) {
+        case GB_BYTE:   return GB_write_byte(gbd, byte);
+        case GB_INT:    return GB_write_int(gbd, byte);
+        case GB_FLOAT:  return GB_write_float(gbd, byte);
+        case GB_STRING: {
+            char buffer[4];
+            sprintf(buffer, "%u", unsigned(byte));
+            return GB_write_string(gbd, buffer);
+        }
+
+        default: return cannot_use_fun4entry("GB_write_lossless_byte", gbd);
+    }
+}
+
+GB_ERROR GB_write_lossless_int(GBDATA *gbd, int32_t i) {
+    /*! Writes an int32_t to a database field capable to store any value w/o loss.
+     *  @return error otherwise
+     *  The corresponding field filter is FIELD_FILTER_INT_WRITEABLE.
+     */
+
+    switch (gbd->type()) {
+        case GB_INT:    return GB_write_int(gbd, i);
+        case GB_STRING: {
+            const int BUFSIZE = 30;
+            char      buffer[BUFSIZE];
+#if defined(ASSERTION_USED)
+            int printed =
+#endif
+                sprintf(buffer, "%i", i);
+            gb_assert(printed<BUFSIZE);
+            return GB_write_string(gbd, buffer);
+        }
+
+        default: return cannot_use_fun4entry("GB_write_lossless_int", gbd);
+    }
+}
+
+GB_ERROR GB_write_lossless_float(GBDATA *gbd, float f) {
+    /*! Writes a float to a database field capable to store any value w/o loss.
+     *  @return error otherwise
+     *  The corresponding field filter is FIELD_FILTER_FLOAT_WRITEABLE.
+     */
+
+    switch (gbd->type()) {
+        case GB_FLOAT:  return GB_write_float(gbd, f);
+        case GB_STRING: {
+            const int BUFSIZE = 30;
+            char      buffer[BUFSIZE];
+#if defined(ASSERTION_USED)
+            int printed =
+#endif
+                sprintf(buffer, "%e", f);
+            gb_assert(printed<BUFSIZE);
+            return GB_write_string(gbd, buffer);
+        }
+
+        default: return cannot_use_fun4entry("GB_write_lossless_float", gbd);
     }
 }
 
@@ -2643,8 +2808,6 @@ void TEST_GB_number_of_subentries() {
         TEST_EXPECT_EQUAL(GB_number_of_subentries(gb_cont), 2);
     }
 
-    // TEST_REJECT(true); // @@@ fail while GB_shell open
-
     GB_close(gb_main);
 }
 
@@ -2660,7 +2823,6 @@ void TEST_POSTCOND_arbdb() {
     TEST_REJECT(error);             // your test finished with an exported error
     TEST_REJECT(unclosed_GB_shell); // your test finished w/o destroying GB_shell
 }
-
 
 #endif // UNIT_TESTS
 

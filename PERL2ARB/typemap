@@ -12,3 +12,5 @@ uint32_t        T_U_LONG
 GB_ULONG        T_U_LONG
 
 GB_BOOL         T_INT
+uint8_t         T_INT
+int32_t         T_INT
