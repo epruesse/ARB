@@ -138,7 +138,7 @@ void AW_window::create_toggle_field(const char *var_name, int orientation /*= 0*
         prvt->toggle_field = gtk_hbox_new(true, 2);
     }
 
-    prvt->toggle_field_awar_name = var_name;
+    prvt->toggle_field_awar_name = strdup(var_name);
 }
 
 
@@ -194,7 +194,7 @@ void AW_window::update_toggle_field() {
     aw_assert(awar);
     if (awar) awar->update_choices();
 
-    prvt->radio_last             = NULL; // end of radio group
-    prvt->toggle_field           = NULL;
-    prvt->toggle_field_awar_name = NULL;
+    prvt->radio_last   = NULL; // end of radio group
+    prvt->toggle_field = NULL;
+    freenull(prvt->toggle_field_awar_name);
 }
