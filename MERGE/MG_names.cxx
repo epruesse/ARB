@@ -165,15 +165,9 @@ static void rename_both_databases(AW_window *aww) {
     }
 }
 
-static void override_toggle_cb(AW_window *aww) {
-    AW_root *aw_root = aww->get_root();
-
-    if (aw_root->awar(AWAR_OVERRIDE)->read_int() == 1) {
-        MG_set_renamed(true, aw_root, "Overridden");
-    }
-    else {
-        MG_set_renamed(false, aw_root, "Not renamed");
-    }
+static void override_toggle_cb(AW_root *aw_root) {
+    bool override = aw_root->awar(AWAR_OVERRIDE)->read_int();
+    MG_set_renamed(override, aw_root, override ? "Overridden" : "Not renamed");
 }
 
 AW_window *MG_create_merge_names_window(AW_root *awr) {
@@ -202,7 +196,7 @@ AW_window *MG_create_merge_names_window(AW_root *awr) {
 
     aws->at("override");
     aws->label("Override (even more dangerous! see HELP)");
-    aws->callback(override_toggle_cb); // @@@ used as TOGGLE_CLICK_CB (see #559)
+    awr->awar(AWAR_OVERRIDE)->add_callback(override_toggle_cb);
     aws->create_toggle(AWAR_OVERRIDE);
 
     aws->at("match");

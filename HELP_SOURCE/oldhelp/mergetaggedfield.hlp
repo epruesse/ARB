@@ -1,21 +1,24 @@
 #Please insert up references in the next lines (line starts with keyword UP)
-UP	arb.hlp
-UP	glossary.hlp
+UP      arb.hlp
+UP      glossary.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
-#SUB	subtopic.hlp
+#SUB    subtopic.hlp
 
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		Merge tagged fields
+TITLE           Merge tagged fields
 
-OCCURRENCE	ARB_MERGE/Transfer species .../Source->Target/Merge tagged field
+OCCURRENCE      ARB_MERGE/Transfer species .../Source->Target/Merge tagged field
 
 DESCRIPTION     Allows to merge the contents of two fields: one from source database, the
                 other from target database.
 
-                The contents will be tagged (with the specified Source- and Targettag).
+                This function will only operate on those species listed in
+                the hitlist of the source database.
+
+                The field contents will be tagged (with the specified Source- and Targettag).
                 If you use e.g. 'DB1' and 'DB2' as tags the merged result will look like:
 
                   Sourcefield   source-content
@@ -32,7 +35,7 @@ DESCRIPTION     Allows to merge the contents of two fields: one from source data
 
                 You may also specify a tag (mask) to be deleted.
 
-NOTES		This feature works as well when merging several databases (more than two).
+NOTES           This feature works as well when merging several databases (more than two).
                 If the target field already contains tags, they will be preserved
                 and the new sourcetag will be added like:
 
@@ -52,8 +55,9 @@ NOTES		This feature works as well when merging several databases (more than two)
 
                 See also LINK{tags.hlp}.
 
-EXAMPLES	None
+EXAMPLES        None
 
-WARNINGS	None
+WARNINGS        None
 
-BUGS		No bugs known
+BUGS            No bugs known
+

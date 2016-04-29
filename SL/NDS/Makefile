@@ -88,6 +88,7 @@ nds.o: $(ARBHOME)/INCLUDE/cxxforward.h
 nds.o: $(ARBHOME)/INCLUDE/downcast.h
 nds.o: $(ARBHOME)/INCLUDE/dupstr.h
 nds.o: $(ARBHOME)/INCLUDE/gccver.h
+nds.o: $(ARBHOME)/INCLUDE/item_sel_list.h
 nds.o: $(ARBHOME)/INCLUDE/items.h
 nds.o: $(ARBHOME)/INCLUDE/smartptr.h
 nds.o: $(ARBHOME)/INCLUDE/static_assert.h

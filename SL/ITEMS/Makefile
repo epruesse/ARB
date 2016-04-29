@@ -92,6 +92,8 @@ changekey.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 item_sel_list.o: item_sel_list.h
 item_sel_list.o: items.h
+item_sel_list.o: $(ARBHOME)/INCLUDE/ad_cb.h
+item_sel_list.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/ad_prot.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -128,6 +130,7 @@ item_sel_list.o: $(ARBHOME)/INCLUDE/aw_gtk_forward_declarations.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_gtk_migration_helpers.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_help.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+item_sel_list.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_rgb.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_root.hxx
@@ -138,6 +141,7 @@ item_sel_list.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_zoomable.hxx
+item_sel_list.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/cb.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/cb_base.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/cbtypes.h
@@ -148,6 +152,7 @@ item_sel_list.o: $(ARBHOME)/INCLUDE/gccver.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/smartptr.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/static_assert.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/test_global.h
+item_sel_list.o: $(ARBHOME)/INCLUDE/test_unit.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 itemtools.o: items.h

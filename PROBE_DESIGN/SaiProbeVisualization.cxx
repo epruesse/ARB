@@ -23,6 +23,7 @@
 
 #include <iostream>
 #include <arb_global_defs.h>
+#include <item_sel_list.h>
 
 
 using namespace std;
@@ -672,7 +673,7 @@ static AW_window *create_colorTranslationTable_window(AW_root *aw_root) { // cre
 }
 
 static AW_window *createDisplayField_window(AW_root *aw_root, GBDATA *gb_main) {
-    // window to select SAI from the existing SAIs in the database
+    // window to select existing species field (simple NDS setup for PROBE/SAI-viewer)
     static AW_window_simple *aws = 0;
     if (!aws) {
         aws = new AW_window_simple;
@@ -689,11 +690,7 @@ static AW_window *createDisplayField_window(AW_root *aw_root, GBDATA *gb_main) {
         aws->callback(makeHelpCallback("displayField.hlp"));
         aws->create_button("HELP", "HELP", "H");
 
-        aws->at("dbField");
-        aws->button_length(20);
-        FieldSelectionParam *fsp = new FieldSelectionParam(gb_main, AWAR_SPV_DB_FIELD_NAME, true);
-        aws->callback(makeWindowCallback(popup_select_species_field_window, fsp)); // fsp belongs to callback now
-        aws->create_button("SELECT_DB_FIELD", AWAR_SPV_DB_FIELD_NAME);
+        create_itemfield_selection_button(aws, FieldSelDef(AWAR_SPV_DB_FIELD_NAME, gb_main, SPECIES_get_selector(), FIELD_FILTER_NDS, "display-field"), "dbField");
 
         aws->at("aciSelect");
         aws->button_length(12);

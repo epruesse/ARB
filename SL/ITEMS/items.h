@@ -52,7 +52,7 @@ struct MutableItemSelector { // @@@ remove AW_root arguments!
     void (*update_item_awars)(GBDATA* gb_main, AW_root *aw_root, const char *item_name);
     char *(*generate_item_id)(GBDATA *gb_main, GBDATA *gb_item); // @@@ remove parameter 'gb_main'
     GBDATA *(*find_item_by_id)(GBDATA *gb_main, const char *id);
-    void (*selection_list_rescan_cb)(AW_window*, GBDATA *gb_main, long bitfilter);
+    void (*selection_list_rescan_cb)(AW_window*, GBDATA *gb_main);
 
     int item_name_length; // -1 means "unknown" (might be long)
 
@@ -75,22 +75,6 @@ struct MutableItemSelector { // @@@ remove AW_root arguments!
 
     void (*trigger_display_refresh)(); // shall be called when displays shall be refreshed (e.g. tree-display for species)
 };
-
-#define AWAR_KEY_SELECT "tmp/viewkeys/key_select"
-
-struct FieldSelectionParam {
-    GBDATA     *gb_main;
-    const char *awar_name;
-    bool        fallback2default;
-
-    FieldSelectionParam(GBDATA *gb_main_, const char *awar_name_, bool fallback2default_)
-        : gb_main(gb_main_),
-          awar_name(awar_name_),
-          fallback2default(fallback2default_)
-    {}
-};
-
-void popup_select_species_field_window(AW_window *aww, FieldSelectionParam *fsp);
 
 struct MutableBoundItemSel {
     GBDATA        *gb_main;

@@ -1116,8 +1116,8 @@ void ArbImporter::go(AW_window *aww) {
         progress.subtitle("Pass 1: Check entries");
 
         // scan for hidden/unknown fields :
-        species_field_selection_list_rescan(gb_import_main, FIELD_FILTER_NDS, RESCAN_REFRESH);
-        if (is_genom_db) gene_field_selection_list_rescan(gb_import_main, FIELD_FILTER_NDS, RESCAN_REFRESH);
+        species_field_selection_list_rescan(gb_import_main, RESCAN_REFRESH);
+        if (is_genom_db) gene_field_selection_list_rescan(gb_import_main, RESCAN_REFRESH);
 
         GBT_mark_all(gb_import_main, 1);
         progress.inc();

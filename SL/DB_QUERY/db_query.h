@@ -50,7 +50,6 @@ namespace QUERY {
         const char *by_pos_fig;                         // fit query don't fit, marked
 
         const char *qbox_pos_fig;                       // key box for queries
-        const char *rescan_pos_fig;                     // rescan label
         const char *key_pos_fig;                        // the key
         const char *query_pos_fig;                      // the query
 

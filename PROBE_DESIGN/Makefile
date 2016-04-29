@@ -64,6 +64,7 @@ probe_design.o: $(ARBHOME)/INCLUDE/arb_core.h
 probe_design.o: $(ARBHOME)/INCLUDE/arb_defs.h
 probe_design.o: $(ARBHOME)/INCLUDE/arb_error.h
 probe_design.o: $(ARBHOME)/INCLUDE/arb_file.h
+probe_design.o: $(ARBHOME)/INCLUDE/arb_misc.h
 probe_design.o: $(ARBHOME)/INCLUDE/arb_msg.h
 probe_design.o: $(ARBHOME)/INCLUDE/arb_progress.h
 probe_design.o: $(ARBHOME)/INCLUDE/arb_strarray.h
@@ -210,6 +211,8 @@ SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_rgb.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
+SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_signal.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
@@ -225,6 +228,7 @@ SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/cxxforward.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/downcast.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/dupstr.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/gccver.h
+SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/item_sel_list.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/items.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/nds.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/smartptr.h

@@ -73,6 +73,8 @@ refentries.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_rgb.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+refentries.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
+refentries.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_signal.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_simple_device.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_stylable.hxx
@@ -87,6 +89,7 @@ refentries.o: $(ARBHOME)/INCLUDE/dbitem_set.h
 refentries.o: $(ARBHOME)/INCLUDE/downcast.h
 refentries.o: $(ARBHOME)/INCLUDE/dupstr.h
 refentries.o: $(ARBHOME)/INCLUDE/gccver.h
+refentries.o: $(ARBHOME)/INCLUDE/item_sel_list.h
 refentries.o: $(ARBHOME)/INCLUDE/items.h
 refentries.o: $(ARBHOME)/INCLUDE/smartptr.h
 refentries.o: $(ARBHOME)/INCLUDE/static_assert.h

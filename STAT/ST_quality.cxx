@@ -21,6 +21,7 @@
 
 #include <cctype>
 #include <cmath>
+#include <items.h>
 
 // --------------------------
 //      LikelihoodRanges
@@ -168,7 +169,7 @@ static GB_ERROR st_ml_add_quality_string_to_species(GBDATA *gb_main, const AP_fi
         ColumnQualityInfo *info = (ColumnQualityInfo *) GBS_read_hash(species_to_info_hash, species_name);
         if (!info) error        = GBS_global_string("Statistic missing for species '%s'", species_name);
         else {
-            GBDATA *gb_dest     = GB_search(gb_species, dest_field, GB_STRING);
+            GBDATA *gb_dest     = GBT_searchOrCreate_itemfield_according_to_changekey(gb_species, dest_field, SPECIES_get_selector().change_key_path);
             if (!gb_dest) error = GB_await_error();
             else {
                 Sampler  t_values; // sample t-values here

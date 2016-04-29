@@ -936,8 +936,8 @@ static void GEN_create_field_items(AW_window *aws, GBDATA *gb_main) {
     aws->insert_menu_topic(aws->local_id("gen_delete_field"),   "Delete/Hide field ...", "D", "spaf_delete.hlp",  AD_F_ALL, makeCreateWindowCallback(DBUI::create_field_delete_window,   bis));
     aws->insert_menu_topic(aws->local_id("gen_create_field"),   "Create fields ...",     "C", "spaf_create.hlp",  AD_F_ALL, makeCreateWindowCallback(DBUI::create_field_create_window,   bis));
     aws->sep______________();
-    aws->insert_menu_topic("gen_unhide_fields",  "Show all hidden fields", "S", "scandb.hlp", AD_F_ALL, makeWindowCallback(gene_field_selection_list_unhide_all_cb, gb_main, FIELD_FILTER_NDS));
-    aws->insert_menu_topic("gen_refresh_fields", "Refresh fields",         "f", "scandb.hlp", AD_F_ALL, makeWindowCallback(gene_field_selection_list_update_cb,     gb_main, FIELD_FILTER_NDS));
+    aws->insert_menu_topic("gen_unhide_fields",  "Show all hidden fields", "S", "scandb.hlp", AD_F_ALL, makeWindowCallback(gene_field_selection_list_unhide_all_cb, gb_main));
+    aws->insert_menu_topic("gen_refresh_fields", "Refresh fields",         "f", "scandb.hlp", AD_F_ALL, makeWindowCallback(gene_field_selection_list_update_cb,     gb_main));
 }
 
 #if defined(WARN_TODO)
@@ -977,7 +977,7 @@ static AW_window *popup_new_gene_window(AW_root *aw_root, GBDATA *gb_main, int d
     aws->callback(makeHelpCallback("gene_info.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
-    DbScanner         *scanner = create_db_scanner(gb_main, aws, "box", 0, "field", "enable", DB_VIEWER, 0, "mark", FIELD_FILTER_NDS, itemType);
+    DbScanner         *scanner = create_db_scanner(gb_main, aws, "box", 0, "field", "enable", DB_VIEWER, "mark", itemType);
     const InfoWindow&  infoWin = InfoWindowRegistry::infowin.registerInfoWindow(aws, scanner, detach_id);
 
     if (infoWin.is_maininfo()) {
@@ -1036,7 +1036,6 @@ AW_window *GEN_create_gene_query_window(AW_root *aw_root, GBDATA *gb_main) {
         awtqs.where_pos_fig       = "where3";
         awtqs.by_pos_fig          = "by3";
         awtqs.qbox_pos_fig        = "qbox";
-        awtqs.rescan_pos_fig      = 0;
         awtqs.key_pos_fig         = 0;
         awtqs.query_pos_fig       = "content";
         awtqs.result_pos_fig      = "result";
