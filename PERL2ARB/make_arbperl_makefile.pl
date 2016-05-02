@@ -18,7 +18,13 @@ my $libs;
   # and make it impossible to build with non-system gcc (e.g. in /opt/gcc-4.7.1/..)
 
   my $LD_LIBRARY_PATH = $ENV{LD_LIBRARY_PATH};
-  if (not defined $LD_LIBRARY_PATH) { die "LD_LIBRARY_PATH is undefined"; }
+  if (not defined $LD_LIBRARY_PATH) {
+    my $ARBBUILD_LIBRARY_PATH = $ENV{ARBBUILD_LIBRARY_PATH};
+    if (not defined $ARBBUILD_LIBRARY_PATH) {
+      die "Neither LD_LIBRARY_PATH nor ARBBUILD_LIBRARY_PATH is defined";
+    }
+    $LD_LIBRARY_PATH = $ARBBUILD_LIBRARY_PATH;
+  }
 
   $libs = '';
   foreach (split /:/,$LD_LIBRARY_PATH) {
