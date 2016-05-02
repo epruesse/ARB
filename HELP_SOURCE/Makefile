@@ -63,8 +63,8 @@ dirs:
 		mkdir -p $(HLP_DEST)
 		mkdir -p $(HLP_DEST)/prompt
 
-		@-ln -s ../arb_help.dtd $(XML_LOCATION)
-		@-ln -s ../../arb_help.dtd $(XML_LOCATION)/prompt
+		@ln -s ../arb_help.dtd $(XML_LOCATION) || true
+		@ln -s ../../arb_help.dtd $(XML_LOCATION)/prompt || true
 
 HELP2XML=$(ARBHOME)/bin/arb_help2xml
 
