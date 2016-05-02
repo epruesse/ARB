@@ -560,15 +560,18 @@ void TEST_naninf() {
     TEST_ISINF(is_inf);
     TEST_ISNORMAL(is_normal);
 
+#if (GCC_PATCHLEVEL_CODE < 50301)
+    // (section leads to compile error with gcc 5.3.1 - suggesting std::isnan and std::isinf)
     // document behavior of math.h macros:
     TEST_ISNAN(isnan);
-#if (GCC_PATCHLEVEL_CODE >= 40403 && GCC_PATCHLEVEL_CODE <= 40407 && defined(DEBUG))
+# if (GCC_PATCHLEVEL_CODE >= 40403 && GCC_PATCHLEVEL_CODE <= 40407 && defined(DEBUG))
     // TEST_ISINF(isinf); // isinf macro is broken (gcc 4.4.3 up to gcc 4.4.7, if compiled with DEBUG)
     TEST_EXPECT__BROKEN(isinf(ninf)); // broken; contradicts http://www.cplusplus.com/reference/cmath/isinf/
-#else
+# else
     TEST_ISINF(isinf);
-#endif
+# endif
     // TEST_ISNORMAL(isnormal); // ok if <math.h> included,  compile error if <cmath> included
+#endif
 
     // check behavior of std-versions:
     TEST_ISNAN(std::isnan);
