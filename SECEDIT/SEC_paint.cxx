@@ -47,7 +47,7 @@ inline bool valid_cb_params(AW_device *device) {
 
 static void paintDebugInfo(AW_device *device, int color, const Position& pos, const char *txt) {
     sec_assert(valid_cb_params(device));
-    device->circle(color, AW::FillStyle::SOLID, pos.xpos(), pos.ypos(), 0.06, 0.06);
+    device->circle(color, true, pos.xpos(), pos.ypos(), 0.06, 0.06);
     device->text(SEC_GC_DEFAULT, txt, pos.xpos(), pos.ypos(), 0, AW_SCREEN, 0);
 }
 static void paintStrandDebugInfo(AW_device *device, int color, SEC_helix_strand *strand) {
@@ -212,7 +212,7 @@ void SEC_root::paintAnnotation(AW_device *device, int gc,
         Rectangle box(note_center+center_corner, -2*center_corner);
 
         device->clear_part(box, -1);
-        device->box(gc, AW::FillStyle::EMPTY, box);
+        device->box(gc, false, box);
     }
 
     device->text(gc, text, textcorner);
@@ -301,7 +301,7 @@ void SEC_root::showSomeAbsolutePositions(AW_device *device) {
         Rectangle showInside(screen.upper_left_corner()+diag3*1.85, diag3);
 
         AW_click_cd cd(device, 0, -1);
-        device->box(SEC_GC_DEFAULT, AW::FillStyle::EMPTY, showInside);
+        device->box(SEC_GC_DEFAULT, false, showInside);
 
         PosMap::const_iterator end = drawnPositions->end();
         for (PosMap::const_iterator pos = drawnPositions->begin(); pos != end; ++pos) {
@@ -359,8 +359,8 @@ void SEC_loop::paint_constraints(AW_device *device) {
     if (minS>0 || maxS>0) {
         AW_click_cd cd(device, self(), abspos);
         
-        if (minS>0) device->circle(SEC_GC_DEFAULT, AW::FillStyle::EMPTY, center, Vector(minS, minS));
-        if (maxS>0) device->circle(SEC_GC_DEFAULT, AW::FillStyle::EMPTY, center, Vector(maxS, maxS));
+        if (minS>0) device->circle(SEC_GC_DEFAULT, false, center, Vector(minS, minS));
+        if (maxS>0) device->circle(SEC_GC_DEFAULT, false, center, Vector(maxS, maxS));
 
         device->text(SEC_GC_DEFAULT, GBS_global_string("%.1f-%.1f", minS, maxS), center+Vector(0, max(minS, maxS)/2), 0.5, AW_ALL_DEVICES_UNSCALED);
     }
@@ -413,12 +413,30 @@ void SEC_root::paintBackgroundColor(AW_device *device, SEC_bgpaint_mode mode, co
         const double& radius1 = get_char_radius(gc1);
         const double& radius2 = get_char_radius(gc2);
 
+        Position s1    = p1;
+        Position s2    = p2;
+        bool     space = false;
+
+        if (displayParams.hide_bases) {
+            space = true; // no base chars -> enough space to paint
+        }
+        else {
+            Vector v12(p1, p2);
+            double vlen = v12.length();
+
+            if ((radius1+radius2) < vlen) { // test if there is enough space between characters
+                s1 = p1 + v12*(radius1/vlen); // skeleton<->base attach-points
+                s2 = p2 - v12*(radius2/vlen);
+                space = true;
+            }
+        }
+
         if (mode & BG_PAINT_FIRST && color1 >= 0) { // paint first circle ?
-            device->circle(color1, AW::FillStyle::SOLID, p1, Vector(radius1, radius1));
+            device->circle(color1, true, p1, Vector(radius1, radius1));
         }
 
         if (mode & BG_PAINT_SECOND && color2 >= 0) { // paint second circle ?
-            device->circle(color2, AW::FillStyle::SOLID, p2, Vector(radius1, radius1));
+            device->circle(color2, true, p2, Vector(radius1, radius1));
         }
 
         if (color1 == color2 && color1 >= 0) { // colors are equal -> paint background between points
@@ -426,35 +444,8 @@ void SEC_root::paintBackgroundColor(AW_device *device, SEC_bgpaint_mode mode, co
             device->line(color1, p1, p2);
         }
 
-        if (displayParams.show_strSkeleton) { // paint skeleton?
-            Position s1    = p1;
-            Position s2    = p2;
-            bool     space = false;
-
-            if (displayParams.hide_bases) {
-                space = true; // no base chars -> enough space to paint
-            }
-            else {
-                Vector v12(p1, p2);
-                double vlen = v12.length();
-
-                // Note: LINE_THICKNESS
-                //       Lines drawn with thickness != 1 differ between motif-version and gtk-version:
-                //       in motif thicker lines are also drawn longer than specified (half thickness on each side)
-#if defined(ARB_MOTIF)
-                const double CORR = skelThickWorld;
-#else // !defined(ARB_MOTIF)
-                const double CORR = 0.0;
-#endif
-
-                if ((radius1+radius2+CORR) < vlen) { // test if there is enough space between characters
-                    s1 = p1 + v12*((radius1+CORR/2)/vlen); // skeleton<->base attach-points
-                    s2 = p2 - v12*((radius2+CORR/2)/vlen);
-                    space = true;
-                }
-            }
-
-            if (space) {
+        if (space) {
+            if (displayParams.show_strSkeleton) { // paint skeleton
                 device->set_line_attributes(skel_gc, displayParams.skeleton_thickness, AW_SOLID);
 #if defined(DEBUG)
                 if (displayParams.show_debug) { s1 = p1; s2 = p2; } // in debug mode always show full skeleton
@@ -546,16 +537,7 @@ void SEC_bond_def::paint(AW_device *device, int GC, char bondChar, const Positio
 
     Position center = centroid(b1, b2);
 
-    Vector aside = toNextBase;
-    {
-        // limit aside-size by strand-distance
-        double aside_len     = aside.length();
-        double max_aside_len = min(aside_len, Vector(b1, b2).length());
-        if (max_aside_len<aside_len) {
-            aside *= max_aside_len/aside_len;
-        }
-    }
-    aside *= 0.22; // max. 22% towards next base position (has to be less than 25%, because 'aside' is added twice for some bondtypes)
+    Vector aside = toNextBase*0.15; // 15% towards next base position
 
     switch (bondChar) {
         case '-':               // single line
@@ -600,8 +582,8 @@ void SEC_bond_def::paint(AW_device *device, int GC, char bondChar, const Positio
             const int OUTSIDE = 15;
 
             Vector vRadius(radius, radius);
-            device->arc(GC, AW::FillStyle::EMPTY, c1, vRadius, deg+180+INSIDE, -(180+INSIDE+OUTSIDE));
-            device->arc(GC, AW::FillStyle::EMPTY, c2, vRadius, deg+INSIDE,     -(180+INSIDE+OUTSIDE));
+            device->arc(GC, false, c1, vRadius, deg+180+INSIDE, -(180+INSIDE+OUTSIDE));
+            device->arc(GC, false, c2, vRadius, deg+INSIDE,     -(180+INSIDE+OUTSIDE));
             break;
         }
 
@@ -621,7 +603,7 @@ void SEC_bond_def::paint(AW_device *device, int GC, char bondChar, const Positio
         case '.': {             // circles
             double radius            = aside.length();
             if (bondChar == 'o') radius *= 2;
-            device->circle(GC, AW::FillStyle::EMPTY, center, Vector(radius, radius));
+            device->circle(GC, false, center, Vector(radius, radius));
             break;
         }
 
@@ -786,11 +768,7 @@ void SEC_helix_strand::paint_strands(AW_device *device, const Vector& strand_vec
         if (disp.show_bonds == SHOW_NHELIX_BONDS || (disp.show_bonds == SHOW_HELIX_BONDS && curr->isPair)) {
             AW_click_cd cd(device, self(), curr->abs[0]);
             db->bonds()->paint(device, base[0], base[1], curr->realpos[0], curr->realpos[1], vnext,
-                               root->get_char_radius(pair2helixGC[curr->isPair])
-#if defined(ARB_MOTIF)
-                               +root->get_bondThickWorld()/2 // see .@LINE_THICKNESS
-#endif
-                               );
+                               root->get_char_radius(pair2helixGC[curr->isPair]));
         }
     }
 }
@@ -827,6 +805,9 @@ void SEC_helix_strand::paint(AW_device *device) {
         }
 
         AW_click_cd cd(device, get_helix()->self(), startAttachAbspos());
+        // AW_CL cd1 = (AW_CL)get_helix()->self();
+        // AW_CL cd2 = (AW_CL)startAttachAbspos();
+
         device->line(SEC_GC_HELIX, strandArrow);
 
         Vector right = strandArrow.line_vector(); // left arrowhead vector
@@ -1019,24 +1000,20 @@ GB_ERROR SEC_root::paint(AW_device *device) {
         // calculate size for background painting
         sec_assert(SEC_GC_FIRST_DATA == 0);
         for (int gc = SEC_GC_FIRST_DATA; gc <= SEC_GC_LAST_DATA; ++gc) {
-            int maxSize = hypotenuse(font_group.get_width(gc), font_group.get_ascent(gc));
-            bg_linewidth[gc] = maxSize*0.75;
+            int maxSize = max(font_group.get_width(gc), font_group.get_ascent(gc));
 
-            maxSize        += 2;                                        // add 2 extra pixels
-            charRadius[gc]  = device->rtransform_size(maxSize) * 0.5;   // was 0.75
+            maxSize += 2; // add 2 extra pixels
+
+            bg_linewidth[gc] = maxSize;
+            charRadius[gc]   = device->rtransform_size(maxSize) * 0.5;  // was 0.75
         }
-
-#if defined(ARB_MOTIF)
-        skelThickWorld = device->rtransform_size(displayParams.skeleton_thickness);
-        bondThickWorld = device->rtransform_size(displayParams.bond_thickness);
-#endif
 
         cacheBackgroundColor();
 
         device->set_line_attributes(SEC_SKELE_HELIX,  displayParams.skeleton_thickness, AW_SOLID);
         device->set_line_attributes(SEC_SKELE_NHELIX, displayParams.skeleton_thickness, AW_SOLID);
-        device->set_line_attributes(SEC_SKELE_LOOP,   displayParams.skeleton_thickness, AW_SOLID);
-        device->set_line_attributes(SEC_GC_BONDS,     displayParams.bond_thickness,     AW_SOLID);
+        device->set_line_attributes(SEC_SKELE_LOOP, displayParams.skeleton_thickness, AW_SOLID);
+        device->set_line_attributes(SEC_GC_BONDS, displayParams.bond_thickness, AW_SOLID);
 
         // mark the rootLoop with a box and print structure number
         {
@@ -1044,6 +1021,8 @@ GB_ERROR SEC_root::paint(AW_device *device) {
             const char      *structId    = db->structure()->name();
 
             AW_click_cd cd(device, rootLoop->self(), -1);
+            // AW_CL cd1 = rootLoop->self();
+            // AW_CL cd2 = -1;
 
             Vector center2corner(-1, -1);
             center2corner.set_length(rootLoop->drawnSize()*0.33);
@@ -1053,7 +1032,7 @@ GB_ERROR SEC_root::paint(AW_device *device) {
 
             Position textPos(loop_center.xpos(), upperleft_corner.ypos());
 
-            device->box(SEC_GC_DEFAULT, AW::FillStyle::EMPTY, upperleft_corner, diagonal, AW_ALL_DEVICES_UNSCALED);
+            device->box(SEC_GC_DEFAULT, false, upperleft_corner, diagonal, AW_ALL_DEVICES_UNSCALED);
             device->text(SEC_GC_DEFAULT, structId, textPos, 0.5, AW_ALL_DEVICES_UNSCALED, 0);
         }
 

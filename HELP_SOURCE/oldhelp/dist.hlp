@@ -18,7 +18,7 @@ SUB	bootstrap.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Neighbour joining
 
-OCCURRENCE	ARB_NT/Tree/Build tree from sequence data/Distance matrix methods/Distance matrix + ARB NJ
+OCCURRENCE	ARB_NT/Tree/Neighbour joining
 
 DESCRIPTION	Reconstructs a tree for all or marked species by first
 		calculating binary distances and subsequently applying the
@@ -39,7 +39,7 @@ DESCRIPTION	Reconstructs a tree for all or marked species by first
                    after the 'Filter' prompt and define an alignment-associated
                    mask which defines alignment positions to include for treeing.
 
-		5. Define Weights: @@@ not implemented
+		5. Define Weights: !!! not implemented !!!
 
 		6. Select rate matrix (only implemented for some corrections; see LINK{user_matrix.hlp})
 
@@ -59,7 +59,7 @@ DESCRIPTION	Reconstructs a tree for all or marked species by first
 		   none:
 
 		   	Differences/Sequence length. May be a good
-		   	choice for short sequences (length < 300).
+		   	choice for short sequences (length < 300 )
 
 		   similarity:
 
@@ -190,9 +190,4 @@ NOTES           Computing time can be estimated using the following formula:
 WARNINGS	Don't try to build a tree with the 'similarity' distance
 		correction selected.
 
-		Distance values calculated without distance correction are strictly inside range [0.0 .. 1.0].
-		Same is true for 'similarity' distance "correction".
-		With distance corrections, the range does vary depending on the correction method.
-
 BUGS		None
-

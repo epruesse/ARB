@@ -106,7 +106,7 @@ static void react_to_command(GBDATA *gb_main) {
                 }
 
                 if (!error) {
-                    if (param[0]) error = GB_save(gb_main, param, savemode); // @@@ support compression here?
+                    if (param[0]) error = GB_save(gb_main, param, savemode);
                     else error          = "No savename specified";
                 }
 
@@ -349,7 +349,7 @@ void TEST_SLOW_dbserver() {
     pid_t child_pid = fork();
     if (child_pid) { // parent ("the client")
         bool down = true;
-        int max_wait = (60*1000)/25; // set timeout to ~60 seconds
+        int max_wait = 2000/50;
         while (down) {
             GB_sleep(25, MS);
             down = server_is_down(tcp);

@@ -1,26 +1,22 @@
-.SUFFIXES: .o .a .cxx .depend .stamp
+.SUFFIXES: .o .a .cxx .depend
 
-SOURCES=$(wildcard *.cxx)
-HEADERS=$(wildcard *.h)
-OBJECTS= $(subst .cxx,.o,$(SOURCES))
-ERROR_CHECKER=./show_error_list.pl
+OBJECTS= $(subst .cxx,.o,$(wildcard *.cxx))
 
-$(MAIN): $(OBJECTS) check_error_codes.stamp
+$(MAIN): $(OBJECTS) check_error_codes
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
-check_error_codes.stamp: $(ERROR_CHECKER) $(SOURCES) $(HEADERS)
-	@$(ERROR_CHECKER) -check
-	@touch $@
+check_error_codes:
+	@./show_error_list.pl -check
 
 .cxx.o:
-	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE) $<
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 proto:
 	../AISC_MKPTPS/aisc_mkpt -P -G -w prototypes.h $(OBJECTS:.o=.cxx) >prototypes.h.tmp
 	../SOURCE_TOOLS/mv_if_diff prototypes.h.tmp prototypes.h
 
 clean:
-	rm -f *.o $(BINARY) *.stamp
+	rm -f *.o $(BINARY)
 
 DEPENDS = $(OBJECTS:.o=.depend)
 depends: $(DEPENDS)
@@ -215,7 +211,6 @@ main.o: prototypes.h
 main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 main.o: $(ARBHOME)/INCLUDE/arb_core.h
 main.o: $(ARBHOME)/INCLUDE/arb_defs.h
-main.o: $(ARBHOME)/INCLUDE/arb_msg.h
 main.o: $(ARBHOME)/INCLUDE/arbtools.h
 main.o: $(ARBHOME)/INCLUDE/attributes.h
 main.o: $(ARBHOME)/INCLUDE/BufferedFileReader.h

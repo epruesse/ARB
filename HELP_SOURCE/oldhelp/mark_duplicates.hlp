@@ -16,7 +16,7 @@ DESCRIPTION     Checks selected tree for duplicate leafs.
 
 		Duplicated species will be marked - all other unmarked.
 
-		If duplicated zombies (see LINK{glossary.hlp}) are found, a warning is shown.
+		If duplicated zombies are found, a warning is shown.
 
 NOTES		None
 

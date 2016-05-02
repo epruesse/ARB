@@ -11,7 +11,7 @@ UP	arb_pars.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Store Tree Topologies
 
-OCCURRENCE	ARB_PARSIMONY <Stack> button
+OCCURRENCE	ARB_NT/Tree/Parsimony <Stack> button
 
 DESCRIPTION	Allows to temporarily store tree topologies.
 

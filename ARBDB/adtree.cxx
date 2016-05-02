@@ -8,6 +8,7 @@
 //                                                                 //
 // =============================================================== //
 
+#include <arbdbt.h>
 #include <arb_progress.h>
 #include "gb_local.h"
 #include <arb_strarray.h>
@@ -17,8 +18,6 @@
 #include <arb_strbuf.h>
 #include <arb_diff.h>
 #include <arb_defs.h>
-#include <arb_match.h>
-#include "TreeNode.h"
 
 #define GBT_PUT_DATA 1
 #define GBT_GET_SIZE 0
@@ -27,10 +26,152 @@ GBDATA *GBT_get_tree_data(GBDATA *gb_main) {
     return GBT_find_or_create(gb_main, "tree_data", 7);
 }
 
+GBT_TREE::bs100_mode GBT_TREE::toggle_bootstrap100(bs100_mode mode) {
+    if (!is_leaf) {
+        if (!is_root_node()) {
+            double bootstrap;
+            switch (parse_bootstrap(bootstrap)) {
+                case REMARK_NONE:
+                case REMARK_OTHER:
+                    switch (mode) {
+                        case BS_UNDECIDED: mode = BS_INSERT;
+                        case BS_INSERT: set_bootstrap(100);
+                        case BS_REMOVE: break;
+                    }
+                    break;
+                case REMARK_BOOTSTRAP:
+                    if (bootstrap >= 99.5) {
+                        switch (mode) {
+                            case BS_UNDECIDED: mode = BS_REMOVE;
+                            case BS_REMOVE: remove_remark();
+                            case BS_INSERT: break;
+                        }
+                    }
+                    break;
+            }
+        }
+
+        mode = get_leftson()->toggle_bootstrap100(mode);
+        mode = get_rightson()->toggle_bootstrap100(mode);
+    }
+    return mode;
+}
+void GBT_TREE::remove_bootstrap() {
+    freenull(remark_branch);
+    if (!is_leaf) {
+        get_leftson()->remove_bootstrap();
+        get_rightson()->remove_bootstrap();
+    }
+}
+void GBT_TREE::reset_branchlengths() {
+    if (!is_leaf) {
+        leftlen = rightlen = DEFAULT_BRANCH_LENGTH;
+
+        get_leftson()->reset_branchlengths();
+        get_rightson()->reset_branchlengths();
+    }
+}
+
+void GBT_TREE::scale_branchlengths(double factor) {
+    if (!is_leaf) {
+        leftlen  *= factor;
+        rightlen *= factor;
+
+        get_leftson()->scale_branchlengths(factor);
+        get_rightson()->scale_branchlengths(factor);
+    }
+}
+
+GBT_LEN GBT_TREE::sum_child_lengths() const {
+    if (is_leaf) return 0.0;
+    return
+        leftlen +
+        rightlen +
+        get_leftson()->sum_child_lengths() +
+        get_rightson()->sum_child_lengths();
+}
+
+void GBT_TREE::bootstrap2branchlen() {
+    //! copy bootstraps to branchlengths
+    if (is_leaf) {
+        set_branchlength_unrooted(DEFAULT_BRANCH_LENGTH);
+    }
+    else {
+        if (father) {
+            double         bootstrap;
+            GBT_RemarkType rtype = parse_bootstrap(bootstrap);
+
+            if (rtype == REMARK_BOOTSTRAP) {
+                double len = bootstrap/100.0;
+                set_branchlength_unrooted(len);
+            }
+            else {
+                set_branchlength_unrooted(1.0); // no bootstrap means "100%"
+            }
+        }
+        get_leftson()->bootstrap2branchlen();
+        get_rightson()->bootstrap2branchlen();
+    }
+}
+
+void GBT_TREE::branchlen2bootstrap() {
+    //! copy branchlengths to bootstraps
+    remove_remark();
+    if (!is_leaf) {
+        if (!is_root_node()) {
+            set_bootstrap(get_branchlength_unrooted()*100.0);
+        }
+        get_leftson()->branchlen2bootstrap();
+        get_rightson()->branchlen2bootstrap();
+    }
+}
+
+GBT_TREE *GBT_TREE::fixDeletedSon() {
+    // fix node after one son has been deleted
+    GBT_TREE *result = NULL;
+
+    if (leftson) {
+        gb_assert(!rightson);
+        result  = leftson;
+        leftson = NULL;
+    }
+    else {
+        gb_assert(!leftson);
+        gb_assert(rightson);
+
+        result   = rightson;
+        rightson = NULL;
+    }
+
+    // now 'result' contains the lasting tree
+    result->father = father;
+
+    if (remark_branch && !result->remark_branch) { // rescue remarks if possible
+        result->remark_branch    = remark_branch;
+        remark_branch = NULL;
+    }
+    if (gb_node && !result->gb_node) { // rescue group if possible
+        result->gb_node = gb_node;
+        gb_node         = NULL;
+    }
+
+    is_leaf = true; // don't try recursive delete
+    delete this;
+
+    return result;
+}
+
+const GBT_TREE *GBT_TREE::ancestor_common_with(const GBT_TREE *other) const {
+    if (this == other) return this;
+    if (is_anchestor_of(other)) return this;
+    if (other->is_anchestor_of(this)) return other;
+    return get_father()->ancestor_common_with(other->get_father());
+}
+
 // ----------------------
 //      remove leafs
 
-TreeNode *GBT_remove_leafs(TreeNode *tree, GBT_TreeRemoveType mode, const GB_HASH *species_hash, int *removed, int *groups_removed) { // @@@ add tests for GBT_remove_leafs()
+GBT_TREE *GBT_remove_leafs(GBT_TREE *tree, GBT_TreeRemoveType mode, const GB_HASH *species_hash, int *removed, int *groups_removed) { // @@@ add tests for GBT_remove_leafs()
     /*! Remove leafs from given 'tree'.
      * @param tree tree from which species will be removed
      * @param mode defines what to remove
@@ -67,20 +208,15 @@ TreeNode *GBT_remove_leafs(TreeNode *tree, GBT_TreeRemoveType mode, const GB_HAS
             }
 
             if (deleteSelf) {
-                gb_assert(!tree->is_root_node());
-
-                TreeRoot *troot = tree->get_tree_root();
-                tree->forget_origin();
-                destroy(tree, troot);
-
+                delete tree;
                 tree = NULL;
                 if (removed) (*removed)++;
             }
         }
     }
     else {
-        tree->leftson  = GBT_remove_leafs(tree->get_leftson(), mode, species_hash, removed, groups_removed);
-        tree->rightson = GBT_remove_leafs(tree->get_rightson(), mode, species_hash, removed, groups_removed);
+        tree->leftson  = GBT_remove_leafs(tree->leftson, mode, species_hash, removed, groups_removed);
+        tree->rightson = GBT_remove_leafs(tree->rightson, mode, species_hash, removed, groups_removed);
 
         if (tree->leftson) {
             if (!tree->rightson) { // right son deleted
@@ -93,12 +229,8 @@ TreeNode *GBT_remove_leafs(TreeNode *tree, GBT_TreeRemoveType mode, const GB_HAS
         }
         else {                  // everything deleted -> delete self
             if (tree->name && groups_removed) (*groups_removed)++;
-
-            TreeRoot *troot  = tree->get_tree_root();
-            if (!tree->is_root_node()) tree->forget_origin();
-            tree->forget_relatives();
-            destroy(tree, troot);
-
+            tree->is_leaf = true;
+            delete tree;
             tree = NULL;
         }
     }
@@ -239,7 +371,7 @@ GB_ERROR GBT_write_group_name(GBDATA *gb_group_name, const char *new_group_name)
     return error;
 }
 
-static GB_ERROR gbt_write_tree_nodes(GBDATA *gb_tree, TreeNode *node, long *startid) {
+static GB_ERROR gbt_write_tree_nodes(GBDATA *gb_tree, GBT_TREE *node, long *startid) {
     // increments '*startid' for each inner node (not for leafs)
 
     GB_ERROR error = NULL;
@@ -281,13 +413,13 @@ static GB_ERROR gbt_write_tree_nodes(GBDATA *gb_tree, TreeNode *node, long *star
         }
 
         (*startid)++;
-        if (!error) error = gbt_write_tree_nodes(gb_tree, node->get_leftson(), startid);
-        if (!error) error = gbt_write_tree_nodes(gb_tree, node->get_rightson(), startid);
+        if (!error) error = gbt_write_tree_nodes(gb_tree, node->leftson, startid);
+        if (!error) error = gbt_write_tree_nodes(gb_tree, node->rightson, startid);
     }
     return error;
 }
 
-static char *gbt_write_tree_rek_new(const TreeNode *node, char *dest, long mode) {
+static char *gbt_write_tree_rek_new(const GBT_TREE *node, char *dest, long mode) {
     {
         const char *c1 = node->get_remark();
         if (c1) {
@@ -335,13 +467,13 @@ static char *gbt_write_tree_rek_new(const TreeNode *node, char *dest, long mode)
         else {
             dest += strlen(buffer)+1;
         }
-        dest = gbt_write_tree_rek_new(node->get_leftson(),  dest, mode);
-        dest = gbt_write_tree_rek_new(node->get_rightson(), dest, mode);
+        dest = gbt_write_tree_rek_new(node->leftson,  dest, mode);
+        dest = gbt_write_tree_rek_new(node->rightson, dest, mode);
         return dest;
     }
 }
 
-static GB_ERROR gbt_write_tree(GBDATA *gb_main, GBDATA *gb_tree, const char *tree_name, TreeNode *tree) {
+static GB_ERROR gbt_write_tree(GBDATA *gb_main, GBDATA *gb_tree, const char *tree_name, GBT_TREE *tree) {
     /*! writes a tree to the database.
      *
      * If tree is loaded by function GBT_read_tree(..) then 'tree_name' should be NULL
@@ -376,7 +508,7 @@ static GB_ERROR gbt_write_tree(GBDATA *gb_main, GBDATA *gb_tree, const char *tre
             // mark all old style tree data for deletion
             GBDATA *gb_node;
             for (gb_node = GB_entry(gb_tree, "node"); gb_node; gb_node = GB_nextEntry(gb_node)) {
-                GB_raise_user_flag(gb_node, GB_USERFLAG_GHOSTNODE); // mark as "possibly unused"
+                GB_set_user_flag(gb_node, GB_USERFLAG_GHOSTNODE); // mark as "possibly unused"
             }
 
             // build tree-string and save to DB
@@ -401,18 +533,16 @@ static GB_ERROR gbt_write_tree(GBDATA *gb_main, GBDATA *gb_tree, const char *tre
             if (!error) error = GBT_write_int(gb_tree, "nnodes", size);
 
             if (!error) {
-                if (!GB_entry(gb_tree, "keep_ghostnodes")) { // see ../PARSIMONY/PARS_main.cxx@keep_ghostnodes
-                    GBDATA *gb_node;
-                    GBDATA *gb_node_next;
+                GBDATA *gb_node;
+                GBDATA *gb_node_next;
 
-                    for (gb_node = GB_entry(gb_tree, "node"); // delete all ghost nodes
-                         gb_node && !error;
-                         gb_node = gb_node_next)
-                    {
-                        GBDATA *gbd = GB_entry(gb_node, "id");
-                        gb_node_next = GB_nextEntry(gb_node);
-                        if (!gbd || GB_user_flag(gb_node, GB_USERFLAG_GHOSTNODE)) error = GB_delete(gb_node);
-                    }
+                for (gb_node = GB_entry(gb_tree, "node"); // delete all ghost nodes
+                     gb_node && !error;
+                     gb_node = gb_node_next)
+                {
+                    GBDATA *gbd = GB_entry(gb_node, "id");
+                    gb_node_next = GB_nextEntry(gb_node);
+                    if (!gbd || GB_user_flag(gb_node, GB_USERFLAG_GHOSTNODE)) error = GB_delete(gb_node);
                 }
             }
         }
@@ -423,10 +553,10 @@ static GB_ERROR gbt_write_tree(GBDATA *gb_main, GBDATA *gb_tree, const char *tre
     return error;
 }
 
-GB_ERROR GBT_write_tree(GBDATA *gb_main, const char *tree_name, TreeNode *tree) {
+GB_ERROR GBT_write_tree(GBDATA *gb_main, const char *tree_name, GBT_TREE *tree) {
     return gbt_write_tree(gb_main, NULL, tree_name, tree);
 }
-GB_ERROR GBT_overwrite_tree(GBDATA *gb_tree, TreeNode *tree) {
+GB_ERROR GBT_overwrite_tree(GBDATA *gb_tree, GBT_TREE *tree) {
     return gbt_write_tree(GB_get_root(gb_tree), gb_tree, NULL, tree);
 }
 
@@ -454,7 +584,7 @@ GB_ERROR GBT_log_to_tree_remark(GBDATA *gb_main, const char *tree_name, const ch
     return GBT_log_to_tree_remark(GBT_find_tree(gb_main, tree_name), log_entry);
 }
 
-GB_ERROR GBT_write_tree_with_remark(GBDATA *gb_main, const char *tree_name, TreeNode *tree, const char *remark) {
+GB_ERROR GBT_write_tree_with_remark(GBDATA *gb_main, const char *tree_name, GBT_TREE *tree, const char *remark) {
     GB_ERROR error              = GBT_write_tree(gb_main, tree_name, tree);
     if (!error && remark) error = GBT_write_tree_remark(gb_main, tree_name, remark);
     return error;
@@ -463,10 +593,10 @@ GB_ERROR GBT_write_tree_with_remark(GBDATA *gb_main, const char *tree_name, Tree
 // ----------------------------
 //      tree read functions
 
-static TreeNode *gbt_read_tree_rek(char **data, long *startid, GBDATA **gb_tree_nodes, const TreeRoot *troot, int size_of_tree, GB_ERROR& error) {
-    TreeNode *node = NULL;
+static GBT_TREE *gbt_read_tree_rek(char **data, long *startid, GBDATA **gb_tree_nodes, const TreeNodeFactory& nodeFactory, int size_of_tree, GB_ERROR& error) {
+    GBT_TREE *node = NULL;
     if (!error) {
-        node = troot->makeNode();
+        node = nodeFactory.makeNode();
 
         char  c = *((*data)++);
         char *p1;
@@ -493,33 +623,13 @@ static TreeNode *gbt_read_tree_rek(char **data, long *startid, GBDATA **gb_tree_
                 GBDATA *gb_group_name = GB_entry(node->gb_node, "group_name");
                 if (gb_group_name) {
                     node->name = GB_read_string(gb_group_name);
-                    if (!node->name || !node->name[0]) {
-                        char   *auto_rename = strdup("<missing groupname>");
-                        GBDATA *gb_main     = GB_get_root(gb_group_name);
-
-                        const char *warn;
-                        if (!node->name) {
-                            warn = GBS_global_string("Unreadable 'group_name' detected (Reason: %s)", GB_await_error());
-                        }
-                        else {
-                            warn = "Empty groupname detected";
-                        }
-                        warn = GBS_global_string("%s\nGroup has been named '%s'", warn, auto_rename);
-                        GBT_message(gb_main, warn);
-
-                        GB_ERROR rename_error = GB_write_string(gb_group_name, auto_rename);
-                        if (rename_error) {
-                            GBT_message(gb_main, GBS_global_string("Failed to name group (Reason: %s)", rename_error));
-                        }
-                        node->name = auto_rename;
-                    }
                 }
             }
             (*startid)++;
-            node->leftson = gbt_read_tree_rek(data, startid, gb_tree_nodes, troot, size_of_tree, error);
+            node->leftson = gbt_read_tree_rek(data, startid, gb_tree_nodes, nodeFactory, size_of_tree, error);
             if (!node->leftson) freenull(node);
             else {
-                node->rightson = gbt_read_tree_rek(data, startid, gb_tree_nodes, troot, size_of_tree, error);
+                node->rightson = gbt_read_tree_rek(data, startid, gb_tree_nodes, nodeFactory, size_of_tree, error);
                 if (!node->rightson) {
                     freenull(node->leftson);
                     freenull(node);
@@ -556,9 +666,9 @@ static TreeNode *gbt_read_tree_rek(char **data, long *startid, GBDATA **gb_tree_
 }
 
 
-static TreeNode *read_tree_and_size_internal(GBDATA *gb_tree, GBDATA *gb_ctree, const TreeRoot *troot, int node_count, GB_ERROR& error) {
+static GBT_TREE *read_tree_and_size_internal(GBDATA *gb_tree, GBDATA *gb_ctree, const TreeNodeFactory& nodeFactory, int node_count, GB_ERROR& error) {
     GBDATA   **gb_tree_nodes;
-    TreeNode  *node = 0;
+    GBT_TREE  *node = 0;
 
     gb_tree_nodes = (GBDATA **)GB_calloc(sizeof(GBDATA *), (size_t)node_count);
     if (gb_tree) {
@@ -585,7 +695,7 @@ static TreeNode *read_tree_and_size_internal(GBDATA *gb_tree, GBDATA *gb_ctree, 
 
         startid[0] = 0;
         fbuf       = cptr[0] = GB_read_string(gb_ctree);
-        node       = gbt_read_tree_rek(cptr, startid, gb_tree_nodes, troot, node_count, error);
+        node       = gbt_read_tree_rek(cptr, startid, gb_tree_nodes, nodeFactory, node_count, error);
         free (fbuf);
     }
 
@@ -595,7 +705,7 @@ static TreeNode *read_tree_and_size_internal(GBDATA *gb_tree, GBDATA *gb_ctree, 
     return node;
 }
 
-TreeNode *GBT_read_tree_and_size(GBDATA *gb_main, const char *tree_name, TreeRoot *troot, int *tree_size) {
+GBT_TREE *GBT_read_tree_and_size(GBDATA *gb_main, const char *tree_name, const TreeNodeFactory& nodeFactory, int *tree_size) {
     /*! Loads a tree from DB into any user defined structure.
      *
      * @param gb_main DB root node
@@ -637,7 +747,7 @@ TreeNode *GBT_read_tree_and_size(GBDATA *gb_main, const char *tree_name, TreeRoo
                             error = "old unsupported tree format";
                         }
                         else { // "new" style tree
-                            TreeNode *tree = read_tree_and_size_internal(gb_tree, gb_ctree, troot, size, error);
+                            GBT_TREE *tree = read_tree_and_size_internal(gb_tree, gb_ctree, nodeFactory, size, error);
                             if (!error) {
                                 gb_assert(tree);
                                 if (tree_size) *tree_size = size; // return size of tree (=leafs-1)
@@ -655,33 +765,32 @@ TreeNode *GBT_read_tree_and_size(GBDATA *gb_main, const char *tree_name, TreeRoo
 
     gb_assert(error);
     GB_export_errorf("Failed to read tree '%s' (Reason: %s)", tree_name, error);
-    troot->delete_by_node();
     return NULL;
 }
 
-TreeNode *GBT_read_tree(GBDATA *gb_main, const char *tree_name, TreeRoot *troot) {
+GBT_TREE *GBT_read_tree(GBDATA *gb_main, const char *tree_name, const TreeNodeFactory& nodeFactory) {
     //! @see GBT_read_tree_and_size()
-    return GBT_read_tree_and_size(gb_main, tree_name, troot, 0);
+    return GBT_read_tree_and_size(gb_main, tree_name, nodeFactory, 0);
 }
 
-size_t GBT_count_leafs(const TreeNode *tree) {
+size_t GBT_count_leafs(const GBT_TREE *tree) {
     if (tree->is_leaf) {
         return 1;
     }
-    return GBT_count_leafs(tree->get_leftson()) + GBT_count_leafs(tree->get_rightson());
+    return GBT_count_leafs(tree->leftson) + GBT_count_leafs(tree->rightson);
 }
 
-static GB_ERROR gbt_invalid_because(const TreeNode *tree, const char *reason) {
-    return GBS_global_string("((TreeNode*)0x%p) %s", tree, reason);
+static GB_ERROR gbt_invalid_because(const GBT_TREE *tree, const char *reason) {
+    return GBS_global_string("((GBT_TREE*)0x%p) %s", tree, reason);
 }
 
-inline bool has_son(const TreeNode *father, const TreeNode *son) {
+inline bool has_son(const GBT_TREE *father, const GBT_TREE *son) {
     return !father->is_leaf && (father->leftson == son || father->rightson == son);
 }
 
-static GB_ERROR gbt_is_invalid(bool is_root, const TreeNode *tree) {
+static GB_ERROR gbt_is_invalid(bool is_root, const GBT_TREE *tree) {
     if (tree->father) {
-        if (!has_son(tree->get_father(), tree)) return gbt_invalid_because(tree, "is not son of its father");
+        if (!has_son(tree->father, tree)) return gbt_invalid_because(tree, "is not son of its father");
     }
     else {
         if (!is_root) return gbt_invalid_because(tree, "has no father (but isn't root)");
@@ -696,13 +805,13 @@ static GB_ERROR gbt_is_invalid(bool is_root, const TreeNode *tree) {
         if (!tree->leftson) return gbt_invalid_because(tree, "is inner node, but has no leftson");
         if (!tree->rightson) return gbt_invalid_because(tree, "is inner node, but has no rightson");
 
-        error             = gbt_is_invalid(false, tree->get_leftson());
-        if (!error) error = gbt_is_invalid(false, tree->get_rightson());
+        error             = gbt_is_invalid(false, tree->leftson);
+        if (!error) error = gbt_is_invalid(false, tree->rightson);
     }
     return error;
 }
 
-GB_ERROR GBT_is_invalid(const TreeNode *tree) {
+GB_ERROR GBT_is_invalid(const GBT_TREE *tree) {
     if (tree->father) return gbt_invalid_because(tree, "is expected to be the root-node, but has father");
     if (tree->is_leaf) return gbt_invalid_because(tree, "is expected to be the root-node, but is a leaf (tree too small)");
     return gbt_is_invalid(true, tree);
@@ -719,7 +828,7 @@ struct link_tree_data {
     int           duplicates;                       // counts duplicates
 };
 
-static GB_ERROR gbt_link_tree_to_hash_rek(TreeNode *tree, link_tree_data *ltd) {
+static GB_ERROR gbt_link_tree_to_hash_rek(GBT_TREE *tree, link_tree_data *ltd) {
     GB_ERROR error = 0;
     if (tree->is_leaf) {
         tree->gb_node = 0;
@@ -737,13 +846,13 @@ static GB_ERROR gbt_link_tree_to_hash_rek(TreeNode *tree, link_tree_data *ltd) {
         if (ltd->progress) ++(*ltd->progress);
     }
     else {
-        error             = gbt_link_tree_to_hash_rek(tree->get_leftson(), ltd);
-        if (!error) error = gbt_link_tree_to_hash_rek(tree->get_rightson(), ltd);
+        error = gbt_link_tree_to_hash_rek(tree->leftson, ltd);
+        if (!error) error = gbt_link_tree_to_hash_rek(tree->rightson, ltd);
     }
     return error;
 }
 
-static GB_ERROR GBT_link_tree_using_species_hash(TreeNode *tree, bool show_status, GB_HASH *species_hash, int *zombies, int *duplicates) {
+static GB_ERROR GBT_link_tree_using_species_hash(GBT_TREE *tree, bool show_status, GB_HASH *species_hash, int *zombies, int *duplicates) {
     GB_ERROR       error;
     link_tree_data ltd;
     long           leafs = 0;
@@ -775,7 +884,7 @@ static GB_ERROR GBT_link_tree_using_species_hash(TreeNode *tree, bool show_statu
     return error;
 }
 
-GB_ERROR GBT_link_tree(TreeNode *tree, GBDATA *gb_main, bool show_status, int *zombies, int *duplicates) {
+GB_ERROR GBT_link_tree(GBT_TREE *tree, GBDATA *gb_main, bool show_status, int *zombies, int *duplicates) {
     /*! Link a given tree to the database. That means that for all tips the member
      * 'gb_node' is set to the database container holding the species data.
      *
@@ -798,18 +907,15 @@ GB_ERROR GBT_link_tree(TreeNode *tree, GBDATA *gb_main, bool show_status, int *z
     return error;
 }
 
-void TreeNode::unlink_from_DB() {
+void GBT_unlink_tree(GBT_TREE *tree) {
     /*! Unlink tree from the database.
      * @see GBT_link_tree()
      */
-    gb_node = 0;
-    if (!is_leaf) {
-        get_leftson()->unlink_from_DB();
-        get_rightson()->unlink_from_DB();
+    tree->gb_node = 0;
+    if (!tree->is_leaf) {
+        GBT_unlink_tree(tree->leftson);
+        GBT_unlink_tree(tree->rightson);
     }
-}
-void GBT_unlink_tree(TreeNode *tree) {
-    tree->unlink_from_DB();
 }
 
 // ----------------------
@@ -1144,17 +1250,17 @@ GB_ERROR GBT_rename_tree(GBDATA *gb_main, const char *source_name, const char *d
     return error;
 }
 
-static GB_CSTR *fill_species_name_array(GB_CSTR *current, const TreeNode *tree) {
+static GB_CSTR *fill_species_name_array(GB_CSTR *current, const GBT_TREE *tree) {
     if (tree->is_leaf) {
         current[0] = tree->name;
         return current+1;
     }
-    current = fill_species_name_array(current, tree->get_leftson());
-    current = fill_species_name_array(current, tree->get_rightson());
+    current = fill_species_name_array(current, tree->leftson);
+    current = fill_species_name_array(current, tree->rightson);
     return current;
 }
 
-GB_CSTR *GBT_get_names_of_species_in_tree(const TreeNode *tree, size_t *count) {
+GB_CSTR *GBT_get_names_of_species_in_tree(const GBT_TREE *tree, size_t *count) {
     /* creates an array of all species names in a tree,
      * The names are not allocated (so they may change as side effect of renaming species) */
 
@@ -1169,18 +1275,16 @@ GB_CSTR *GBT_get_names_of_species_in_tree(const TreeNode *tree, size_t *count) {
     return result;
 }
 
-static void tree2newick(const TreeNode *tree, GBS_strstruct& out, NewickFormat format, int indent) {
+static void tree2newick(const GBT_TREE *tree, GBS_strstruct& out, NewickFormat format) {
     gb_assert(tree);
-    if ((format&nWRAP) && indent>0) { out.put('\n'); out.nput(' ', indent); }
     if (tree->is_leaf) {
         out.cat(tree->name);
     }
     else {
         out.put('(');
-        tree2newick(tree->get_leftson(), out, format, indent+1);
+        tree2newick(tree->leftson, out, format);
         out.put(',');
-        tree2newick(tree->get_rightson(), out, format, indent+1);
-        if ((format&nWRAP) && indent>0) { out.put('\n'); out.nput(' ', indent); }
+        tree2newick(tree->rightson, out, format);
         out.put(')');
 
         if (format & (nGROUP|nREMARK)) {
@@ -1205,27 +1309,11 @@ static void tree2newick(const TreeNode *tree, GBS_strstruct& out, NewickFormat f
     }
 }
 
-char *GBT_tree_2_newick(const TreeNode *tree, NewickFormat format, bool compact) {
+char *GBT_tree_2_newick(const GBT_TREE *tree, NewickFormat format) {
     GBS_strstruct out(1000);
-    if (tree) tree2newick(tree, out, format, 0);
+    if (tree) tree2newick(tree, out, format);
     out.put(';');
-
-    char *result = out.release();
-    if (compact && (format&nWRAP)) {
-        GB_ERROR error = NULL;
-
-        char *compact1 = GBS_regreplace(result, "/[\n ]*[)]/)/", &error);
-        if (compact1) {
-            char *compact2 = GBS_regreplace(compact1, "/[(][\n ]*/(/", &error);
-            if (compact2) freeset(result, compact2);
-            free(compact1);
-        }
-        if (error) {
-            fprintf(stderr, "Error in GBT_tree_2_newick: %s\n", error);
-            gb_assert(!error); // should be impossible; falls back to 'result' if happens
-        }
-    }
-    return result;
+    return out.release();
 }
 
 
@@ -1238,7 +1326,7 @@ static const char *getTreeOrder(GBDATA *gb_main) {
     ConstStrArray names;
     GBT_get_tree_names(names, gb_main, true);
 
-    char *joined         = GBT_join_strings(names, '|');
+    char *joined         = GBT_join_names(names, '|');
     char *size_and_names = GBS_global_string_copy("%zu:%s", names.size(), joined);
     free(joined);
 
@@ -1318,7 +1406,7 @@ void TEST_copy_rename_delete_tree_order() {
             TEST_EXPECT_EQUAL(GBT_tree_info_string(gb_main, "tree_nj_bs", 20), "tree_nj_bs                 (6:0)  PRG=dnadist CORR=none FILTER=none PKG=ARB");
 
             {
-                TreeNode *tree = GBT_read_tree(gb_main, "tree_nj_bs", new SimpleRoot);
+                GBT_TREE *tree = GBT_read_tree(gb_main, "tree_nj_bs", GBT_TREE_NodeFactory());
 
                 TEST_REJECT_NULL(tree);
 
@@ -1334,7 +1422,7 @@ void TEST_copy_rename_delete_tree_order() {
                 TEST_EXPECT_EQUAL(long(species_count), inner_nodes+1);
 
                 {
-                    char *joined = GBT_join_strings(species2, '*');
+                    char *joined = GBT_join_names(species2, '*');
                     TEST_EXPECT_EQUAL(joined, "CloButyr*CloButy2*CorGluta*CorAquat*CurCitre*CytAquat");
                     free(joined);
                 }
@@ -1344,7 +1432,7 @@ void TEST_copy_rename_delete_tree_order() {
                 TEST_EXPECT_NEWICK(nSIMPLE, tree, "(CloButyr,(CloButy2,((CorGluta,(CorAquat,CurCitre)),CytAquat)));");
                 TEST_EXPECT_NEWICK(nSIMPLE, NULL, ";");
 
-                destroy(tree);
+                delete tree;
             }
 
             TEST_EXPECT_EQUAL(GBT_existing_tree(gb_main, "tree_nj_bs"), "tree_nj_bs");
@@ -1482,7 +1570,6 @@ void TEST_copy_rename_delete_tree_order() {
 
     GB_close(gb_main);
 }
-TEST_PUBLISH(TEST_copy_rename_delete_tree_order);
 
 void TEST_tree_remove_leafs() {
     GB_shell  shell;
@@ -1514,9 +1601,8 @@ void TEST_tree_remove_leafs() {
             for (int linked = 0; linked<=1; ++linked) {
                 TEST_ANNOTATE(GBS_global_string("mode=%u linked=%i", mode, linked));
 
-                TreeNode *tree = GBT_read_tree(gb_main, "tree_removal", new SimpleRoot);
-                gb_assert(tree);
-                bool once = mode == 0 && linked == 0;
+                GBT_TREE *tree = GBT_read_tree(gb_main, "tree_removal", GBT_TREE_NodeFactory());
+                bool      once = mode == 0 && linked == 0;
 
                 if (linked) {
                     int zombies    = 0;
@@ -1560,37 +1646,6 @@ void TEST_tree_remove_leafs() {
                             TEST_EXPECT_EQUAL(removedCount, 11);
                             TEST_EXPECT_EQUAL(groupsRemovedCount, 1);
                             TEST_EXPECT_NEWICK(nLENGTH, tree, kept_marked_topo);
-                            {
-                                // just a test for nWRAP NewickFormat (may be removed later)
-                                const char *kept_marked_topo_wrapped =
-                                    "(\n"
-                                    " CurCitre:1.000,\n"
-                                    " (\n"
-                                    "  (\n"
-                                    "   CloButy2:0.009,\n"
-                                    "   CloButyr:0.000\n"
-                                    "  ):0.131,\n"
-                                    "  (\n"
-                                    "   CytAquat:0.711,\n"
-                                    "   (\n"
-                                    "    CorGluta:0.522,\n"
-                                    "    CorAquat:0.103\n"
-                                    "   ):0.207\n"
-                                    "  ):0.162\n"
-                                    " ):0.124);";
-                                TEST_EXPECT_NEWICK(NewickFormat(nLENGTH|nWRAP), tree, kept_marked_topo_wrapped);
-
-                                const char *expected_compacted =
-                                    "(CurCitre:1.000,\n"
-                                    " ((CloButy2:0.009,\n"
-                                    "   CloButyr:0.000):0.131,\n"
-                                    "  (CytAquat:0.711,\n"
-                                    "   (CorGluta:0.522,\n"
-                                    "    CorAquat:0.103):0.207):0.162):0.124);";
-                                char *compacted = GBT_tree_2_newick(tree, NewickFormat(nLENGTH|nWRAP), true);
-                                TEST_EXPECT_EQUAL(compacted, expected_compacted);
-                                free(compacted);
-                            }
                             what_next = GBT_REMOVE_MARKED;
                             break;
                     }
@@ -1640,17 +1695,13 @@ void TEST_tree_remove_leafs() {
                     }
                 }
 
-                if (tree) {
-                    gb_assert(tree->is_root_node());
-                    destroy(tree);
-                }
+                delete tree;
             }
         }
     }
 
     GB_close(gb_main);
 }
-TEST_PUBLISH(TEST_tree_remove_leafs);
 
 
 #endif // UNIT_TESTS

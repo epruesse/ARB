@@ -44,7 +44,7 @@ public:
     virtual int get_available_fontsizes(AW_font font_nr, int *available_sizes) const;
 
     inline AW_common_Xm *get_common() const;
-
+    
     GC get_gc() const { return gc; }
     const XFontStruct *get_xfont() const { return &curfont; }
 };
@@ -54,7 +54,7 @@ class AW_common_Xm: public AW_common { // derived from Noncopyable
     Display *display;
     XID      window_id;
 
-    void install_common_extends_cb(AW_window *aww, AW_area area);
+    void install_common_extends_cb(AW_window *aww, AW_area area); 
 
 public:
     AW_common_Xm(Display   *display_in,

@@ -8,7 +8,7 @@ $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .cxx.o:
-	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE) $<
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(OBJECTS) *.a
@@ -51,10 +51,7 @@ refentries.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-refentries.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
-refentries.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-refentries.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 refentries.o: $(ARBHOME)/INCLUDE/cb.h
 refentries.o: $(ARBHOME)/INCLUDE/cb_base.h
 refentries.o: $(ARBHOME)/INCLUDE/cbtypes.h
@@ -63,7 +60,6 @@ refentries.o: $(ARBHOME)/INCLUDE/dbitem_set.h
 refentries.o: $(ARBHOME)/INCLUDE/downcast.h
 refentries.o: $(ARBHOME)/INCLUDE/dupstr.h
 refentries.o: $(ARBHOME)/INCLUDE/gccver.h
-refentries.o: $(ARBHOME)/INCLUDE/item_sel_list.h
 refentries.o: $(ARBHOME)/INCLUDE/items.h
 refentries.o: $(ARBHOME)/INCLUDE/smartptr.h
 refentries.o: $(ARBHOME)/INCLUDE/static_assert.h

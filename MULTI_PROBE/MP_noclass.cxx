@@ -300,7 +300,7 @@ bool MP_aborted(int gen_cnt, double avg_fit, double min_fit, double max_fit, arb
 }
 
 
-void MP_compute(AW_window*, GBDATA *gb_main) {
+void MP_compute(AW_window *, AW_CL cl_gb_main) {
     AW_root         *aw_root = mp_main->get_aw_root();
     AW_window       *aww2;
     int              i       = 0;
@@ -309,6 +309,7 @@ void MP_compute(AW_window*, GBDATA *gb_main) {
     char           **probe_field;
     int             *single_mismatch;
     ProbeValuation  *p_eval  = NULL;
+    GBDATA          *gb_main = (GBDATA*)cl_gb_main;
 
     MO_Liste::set_gb_main(gb_main);
 
@@ -416,7 +417,10 @@ void MP_new_sequence(AW_window *aww) {
 void MP_cache_sonden(AW_window *) { new_pt_server = true; }
 void MP_cache_sonden2(AW_root *) { new_pt_server = true; }
 
-void MP_show_probes_in_tree_move(AW_window *aww, bool backward, AW_selection_list *resultProbesList) {
+void MP_show_probes_in_tree_move(AW_window *aww, AW_CL cl_backward, AW_CL cl_result_probes_list) {
+    bool               backward           = bool(cl_backward);
+    AW_selection_list *resultProbesList = (AW_selection_list*)cl_result_probes_list;
+
     resultProbesList->move_selection(backward ? -1 : 1);
     MP_show_probes_in_tree(aww);
 }
@@ -647,7 +651,7 @@ void MP_mark_probes_in_tree(AW_window *aww) {
     MP_normal_colors_in_tree(aww);
 }
 
-void MP_Comment(AW_window *, const char *new_comment) {
+void MP_Comment(AW_window *, AW_CL cl_com) {
     // Comment fuer Auswahl eintragen
 
     AW_root *awr       = mp_main->get_aw_root();
@@ -658,9 +662,12 @@ void MP_Comment(AW_window *, const char *new_comment) {
         char *new_list_string;
         {
             char       *edited_comment = NULL;
-            const char *comment        = new_comment;
+            const char *comment        = NULL;
 
-            if (!comment) {
+            if (cl_com) {
+                comment = (char*)cl_com;
+            }
+            else {
                 edited_comment = awr->awar(MP_AWAR_RESULTPROBESCOMMENT)->read_string();
                 for (int i = 0; edited_comment[i]; ++i) { // remove all '#' from new comment
                     if (edited_comment[i] == SEPARATOR[0]) {
@@ -697,13 +704,14 @@ void MP_Comment(AW_window *, const char *new_comment) {
     free(selprobes);
 }
 
-void MP_selected_chosen(AW_root *aw_root) { // @@@ move to MP_Window.cxx
-    const char *selected = aw_root->awar(MP_AWAR_SELECTEDPROBES)->read_char_pntr();
+void MP_selected_chosen(AW_window */*aww*/) {
+    AW_root *aw_root  = mp_main->get_aw_root();
+    char    *selected = aw_root->awar(MP_AWAR_SELECTEDPROBES)->read_string();
     if (selected && selected[0]) {
         char *probe = MP_get_comment(3, selected);
         if (probe) {
             aw_root->awar(MP_AWAR_ECOLIPOS)->write_int(atoi(probe));
-            free(probe); // @@@ check/fix ressource handling of probe!
+            free(probe);
 
             if (probe) {
                 probe = MP_get_comment(1, selected);
@@ -730,7 +738,7 @@ void MP_selected_chosen(AW_root *aw_root) { // @@@ move to MP_Window.cxx
 
 void MP_group_all_except_marked(AW_window * /* aww */) {
     AWT_canvas  *scr = mp_main->get_canvas();
-    NT_expand_marked_cb(0, scr);
+    NT_group_not_marked_cb(0, scr);
 }
 
 void MP_normal_colors_in_tree(AW_window */*aww*/) {
@@ -782,12 +790,15 @@ char *MP_get_comment(int which, const char *str) {
     return result;
 }
 
-void MP_result_combination_chosen(AW_root *aw_root) { // @@@ move to MP_Window.cxx 
-    const char *str     = aw_root->awar(MP_AWAR_RESULTPROBES)->read_char_pntr();
-    char       *new_str = MP_get_comment(1, str);
+void MP_result_chosen(AW_window */*aww*/) {
+    AW_root *aw_root = mp_main->get_aw_root();
+    char    *str     = aw_root->awar(MP_AWAR_RESULTPROBES)->read_as_string();
+    char    *new_str;
+
+    new_str = MP_get_comment(1, str);
 
     aw_root->awar(MP_AWAR_RESULTPROBESCOMMENT)->write_string(new_str);
-
+    free(str);
     free(new_str);
 }
 
@@ -811,18 +822,14 @@ int MP_init_local_com_struct()
 }
 
 const char *MP_probe_pt_look_for_server() {
-    // DRY vs  ../TOOLS/arb_probe.cxx@AP_probe_pt_look_for_server
-    // DRY vs  ../PROBE_DESIGN/probe_design.cxx@PD_probe_pt_look_for_server
     const char *server_tag = GBS_ptserver_tag(mp_gl_awars.ptserver);
     GB_ERROR    error      = arb_look_and_start_server(AISC_MAGIC_NUMBER, server_tag);
 
-    const char *result = NULL;
-    if (!error) {
-        result = GBS_read_arb_tcp(server_tag);
-        if (!result) error = GB_await_error();
+    if (error) {
+        aw_message(error);
+        return 0;
     }
-    if (error) aw_message(error);
-    return result;
+    return GBS_read_arb_tcp(server_tag);
 }
 
 // --------------------------------------------------------------------------------

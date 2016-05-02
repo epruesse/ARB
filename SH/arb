@@ -153,7 +153,7 @@ fi
 export ARBMACRO
 
 # set default command-tool used by ARB
-ARB_XTERM=${ARB_XTERM:-xterm -sl 1000 -sb -geometry 150x60}
+ARB_XTERM=${ARB_XTERM:-xterm -sl 1000 -sb -geometry 120x50}
 export ARB_XTERM
 ARB_XCMD=${ARB_XCMD:-$ARB_XTERM -e}
 export ARB_XCMD

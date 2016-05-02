@@ -12,32 +12,20 @@ OBJECTS=arb_main_cpp.o arb_main_c.o
 ARB_MAIN_DEPENDS=Makefile arb_main.h
 
 arb_main_cpp.o: arb_main.cxx $(ARB_MAIN_DEPENDS) 
-	$(A_CXX) $(cflags) $(cxxflags) -c $< -o $@ $(CXX_INCLUDES) $(POST_COMPILE) $<
+	$(A_CXX) $(cflags) $(cxxflags) -c $< -o $@ $(CXX_INCLUDES) $(POST_COMPILE)
 
 arb_main_c.o: arb_main.c $(ARB_MAIN_DEPENDS) arb_main.cxx
-	$(A_CC) $(cflags) -c $< -o $@ $(CC_INCLUDES) $(POST_COMPILE) $<
+	$(A_CC) $(cflags) -c $< -o $@ $(CC_INCLUDES) $(POST_COMPILE)
 
 mainwrapper: $(OBJECTS)
 
 # --------------------------------------------------------------------------------
 
 clean: 
-	rm -f stamp.* valgrind2grep.lst postcompile.sav $(OBJECTS)
+		rm -f stamp.* valgrind2grep.lst postcompile.sav $(OBJECTS)
 
 valgrind_update:
-	./arb_valgrind update
-
-VECTORIZED_SOURCE=vectorized.source
-
-vectorize_checks:
-	( echo "# [generated] list of source-files for which loop vectorization shall be checked"; \
-	  ( cd $(ARBHOME); \
-	    grep --recursive --files-with-matches "--include=*.c" "--include=*.cxx" LOOP_VECTORIZED . \
-	    | sort \
-	    | $(SED) -e 's/^\.\///' \
-          ) \
-	) > $(VECTORIZED_SOURCE).tmp
-	./mv_if_diff $(VECTORIZED_SOURCE).tmp $(VECTORIZED_SOURCE)
+		./arb_valgrind update
 
 # --------------------------------------------------------------------------------
 

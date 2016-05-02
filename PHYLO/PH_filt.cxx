@@ -16,7 +16,6 @@
 #include <arb_progress.h>
 #include <aw_root.hxx>
 #include <cctype>
-#include <awt_config_manager.hxx>
 
 static long PH_timer() {
     static long time = 0;
@@ -26,6 +25,35 @@ static long PH_timer() {
 PH_filter::PH_filter()
 {
     memset ((char *)this, 0, sizeof(PH_filter));
+}
+
+char *PH_filter::init(char *ifilter, char *zerobases, long size) {
+    delete [] filter;
+    filter = new char[size];
+    filter_len = size;
+    real_len = 0;
+    for (int i = 0; i < size; i++) {
+        if (zerobases) {
+            if (strchr(zerobases, ifilter[i])) {
+                filter[i] = 0;
+                real_len++;
+            }
+            else {
+                filter[i] = 1;
+            }
+        }
+        else {
+            if (ifilter[i]) {
+                filter[i] = 0;
+                real_len++;
+            }
+            else {
+                filter[i] = 1;
+            }
+        }
+    }
+    update = PH_timer();
+    return 0;
 }
 
 char *PH_filter::init(long size) {
@@ -102,22 +130,25 @@ float *PH_filter::calculate_column_homology() {
 
     // initialize variables
     free(mline);
+    delete options_vector;
     mline = (float *) calloc((int) PHDATA::ROOT->get_seq_len(), sizeof(float));
 
+    options_vector = (long *) calloc(8, sizeof(long));
 
-    const long startcol = aw_root->awar(AWAR_PHYLO_FILTER_STARTCOL)->read_int();
-    const long stopcol  = aw_root->awar(AWAR_PHYLO_FILTER_STOPCOL)->read_int();
-    const long minhom   = aw_root->awar(AWAR_PHYLO_FILTER_MINHOM)->read_int();
-    const long maxhom   = aw_root->awar(AWAR_PHYLO_FILTER_MAXHOM)->read_int();
-
-    const FilterMode filter_dot   = FilterMode(aw_root->awar(AWAR_PHYLO_FILTER_DOT)  ->read_int()); // '.' in column
-    const FilterMode filter_minus = FilterMode(aw_root->awar(AWAR_PHYLO_FILTER_MINUS)->read_int()); // '-' in column
-    const FilterMode filter_ambig = FilterMode(aw_root->awar(AWAR_PHYLO_FILTER_AMBIG)->read_int()); // 'MNY....' in column
-    const FilterMode filter_lower = FilterMode(aw_root->awar(AWAR_PHYLO_FILTER_LOWER)->read_int()); // 'acgtu' in column
+    options_vector[OPT_START_COL]    = aw_root->awar(AWAR_PHYLO_FILTER_STARTCOL)->read_int();
+    options_vector[OPT_STOP_COL]     = aw_root->awar(AWAR_PHYLO_FILTER_STOPCOL)->read_int();
+    options_vector[OPT_MIN_HOM]      = aw_root->awar(AWAR_PHYLO_FILTER_MINHOM)->read_int();
+    options_vector[OPT_MAX_HOM]      = aw_root->awar(AWAR_PHYLO_FILTER_MAXHOM)->read_int();
+    options_vector[OPT_FILTER_POINT] = aw_root->awar(AWAR_PHYLO_FILTER_POINT)->read_int(); // '.' in column
+    options_vector[OPT_FILTER_MINUS] = aw_root->awar(AWAR_PHYLO_FILTER_MINUS)->read_int(); // '-' in column
+    options_vector[OPT_FILTER_AMBIG] = aw_root->awar(AWAR_PHYLO_FILTER_REST)->read_int(); // 'MNY....' in column
+    options_vector[OPT_FILTER_LOWER] = aw_root->awar(AWAR_PHYLO_FILTER_LOWER)->read_int(); // 'acgtu' in column
 
     delete_when_max[0] = '\0';
 
-    long len = stopcol - startcol;
+    long startcol = options_vector[OPT_START_COL];
+    long stopcol  = options_vector[OPT_STOP_COL];
+    long len      = stopcol - startcol;
 
     // chars_counted[column][index] counts the occurrences of single characters per column
     // index = num_all_chars   -> count chars which act as column stopper ( = forget whole column if char occurs)
@@ -151,7 +182,7 @@ float *PH_filter::calculate_column_homology() {
 
     // set mappings according to options
     // be careful the elements of rest and low are mapped to 'X' and 'a'
-    switch (filter_dot) {     // '.' in column
+    switch (options_vector[OPT_FILTER_POINT]) {     // '.' in column
         case DONT_COUNT:
             mask[(unsigned char)'.'] = false;
             break;
@@ -170,12 +201,10 @@ float *PH_filter::calculate_column_homology() {
             // but use character ( true in mask )
             break;
 
-        case TREAT_AS_UPPERCASE:
-        case TREAT_AS_REGULAR:
-            ph_assert(0); break;  // illegal value!
+        default: ph_assert(0); break;  // illegal value!
     }
 
-    switch (filter_minus) {     // '-' in column
+    switch (options_vector[OPT_FILTER_MINUS]) {     // '-' in column
         case DONT_COUNT:
             mask[(unsigned char)'-'] = false;
             break;
@@ -194,13 +223,11 @@ float *PH_filter::calculate_column_homology() {
             // but use character ( true in mask )
             break;
 
-        case TREAT_AS_UPPERCASE:
-        case TREAT_AS_REGULAR:
-            ph_assert(0); break;  // illegal value!
+        default: ph_assert(0); break;  // illegal value!
     }
     // 'MNY....' in column
     bool mapRestToX = false;
-    switch (filter_ambig) // all rest characters counted to 'X' (see below)
+    switch (options_vector[OPT_FILTER_AMBIG]) // all rest characters counted to 'X' (see below)
     {
         case DONT_COUNT:
             for (i=0; rest_chars[i]; i++) mask[(unsigned char)rest_chars[i]] = false;
@@ -227,8 +254,7 @@ float *PH_filter::calculate_column_homology() {
             // lowercase rest chars are handled together with normal lowercase chars (see below)
             break;
 
-        case TREAT_AS_UPPERCASE:
-            ph_assert(0); break;  // illegal value!
+        default: ph_assert(0); break;  // illegal value!
     }
 
     if (mapRestToX) {
@@ -238,7 +264,7 @@ float *PH_filter::calculate_column_homology() {
         }
     }
 
-    switch (filter_lower) { // 'acgtu' in column
+    switch (options_vector[OPT_FILTER_LOWER]) { // 'acgtu' in column
         case DONT_COUNT:
             for (i=0; low_chars[i]; i++) mask[(unsigned char)low_chars[i]] = false;
             break;
@@ -264,8 +290,7 @@ float *PH_filter::calculate_column_homology() {
             for (i=0; low_rest_chars[i]; i++) reference_table[(unsigned char)low_rest_chars[i]] = reference_table[toupper(low_rest_chars[i])];
             break;
 
-        case TREAT_AS_REGULAR:
-            ph_assert(0); break;  // illegal value!
+        default: ph_assert(0); break;  // illegal value!
     }
 
     GB_ERROR error = NULL;
@@ -323,11 +348,10 @@ float *PH_filter::calculate_column_homology() {
     free(chars_counted);
 
     if (!error) {
-        char *filt  = (char *)calloc((int) PHDATA::ROOT->get_seq_len()+1, sizeof(char));
-        for (i=0; i<PHDATA::ROOT->get_seq_len(); i++) {
-            filt[i] = minhom<=mline[i] && maxhom>=mline[i]  ? '1' : '0';
-        }
-        filt[i] = '\0';
+        char *filt=(char *)calloc((int) PHDATA::ROOT->get_seq_len()+1, sizeof(char));
+        for (i=0; i<PHDATA::ROOT->get_seq_len(); i++)
+            filt[i]=((options_vector[OPT_MIN_HOM]<=mline[i])&&(options_vector[OPT_MAX_HOM]>=mline[i])) ? '1' : '0';
+        filt[i]='\0';
         aw_root->awar(AWAR_PHYLO_FILTER_FILTER)->write_string(filt);
         free(filt);
 
@@ -339,107 +363,79 @@ float *PH_filter::calculate_column_homology() {
     }
 }
 
-static void update_on_config_change_cb(AW_root *aw_root) {
-    if (aw_root->awar(AWAR_PHYLO_FILTER_AUTOCALC)->read_int()) {
-        ph_calc_filter_cb();
-    }
-    display_status_cb();
-    expose_cb();
-}
 
-static void correct_startstop_cb(AW_root *aw_root, bool start_changed) {
-    AW_awar *awar_startcol = aw_root->awar(AWAR_PHYLO_FILTER_STARTCOL);
-    AW_awar *awar_stopcol  = aw_root->awar(AWAR_PHYLO_FILTER_STOPCOL);
 
-    int startcol = awar_startcol->read_int();
-    int stopcol  = awar_stopcol->read_int();
-
-    if (startcol>stopcol) {
-        if (start_changed) awar_stopcol ->write_int(startcol);
-        else               awar_startcol->write_int(stopcol);
-    }
-}
-static void correct_minmaxhom_cb(AW_root *aw_root, bool min_changed) {
-    AW_awar *awar_minhom = aw_root->awar(AWAR_PHYLO_FILTER_MINHOM);
-    AW_awar *awar_maxhom = aw_root->awar(AWAR_PHYLO_FILTER_MAXHOM);
-
-    int minhom = awar_minhom->read_int();
-    int maxhom = awar_maxhom->read_int();
-
-    if (minhom>maxhom) {
-        if (min_changed) awar_maxhom->write_int(minhom);
-        else             awar_minhom->write_int(maxhom);
-    }
-}
-
-void PH_create_filter_variables(AW_root *aw_root, AW_default default_file, GBDATA *gb_main) {
+void PH_create_filter_variables(AW_root *aw_root, AW_default default_file)
+{
     // filter awars
-    long alilength;
+    aw_root->awar_int(AWAR_PHYLO_FILTER_STARTCOL, 0,     default_file);
+    aw_root->awar_int(AWAR_PHYLO_FILTER_STOPCOL,  99999, default_file);
+    aw_root->awar_int(AWAR_PHYLO_FILTER_MINHOM,   0,     default_file);
+    aw_root->awar_int(AWAR_PHYLO_FILTER_MAXHOM,   100,   default_file);
+
+    aw_root->awar_int(AWAR_PHYLO_FILTER_POINT, DONT_COUNT, default_file); // '.' in column
+    aw_root->awar_int(AWAR_PHYLO_FILTER_MINUS, DONT_COUNT, default_file); // '-' in column
+    aw_root->awar_int(AWAR_PHYLO_FILTER_REST,  DONT_COUNT, default_file); // 'MNY....' in column
+    aw_root->awar_int(AWAR_PHYLO_FILTER_LOWER, DONT_COUNT, default_file); // 'acgtu' in column
+
+    // matrix awars (das gehoert in ein anderes file norbert !!!)
+    aw_root->awar_int(AWAR_PHYLO_MATRIX_POINT, DONT_COUNT, default_file); // '.' in column
+    aw_root->awar_int(AWAR_PHYLO_MATRIX_MINUS, DONT_COUNT, default_file); // '-' in column
+    aw_root->awar_int(AWAR_PHYLO_MATRIX_REST,  DONT_COUNT, default_file); // 'MNY....' in column
+    aw_root->awar_int(AWAR_PHYLO_MATRIX_LOWER, DONT_COUNT, default_file); // 'acgtu' in column
+
+    RootCallback display_status = makeRootCallback(display_status_cb);
+    aw_root->awar(AWAR_PHYLO_FILTER_STARTCOL)->add_callback(display_status);
+    aw_root->awar(AWAR_PHYLO_FILTER_STOPCOL) ->add_callback(display_status);
+    aw_root->awar(AWAR_PHYLO_FILTER_MINHOM)  ->add_callback(display_status);
+    aw_root->awar(AWAR_PHYLO_FILTER_MAXHOM)  ->add_callback(display_status);
+
     {
-        GB_transaction ta(gb_main);
-        char *aliname = GBT_get_default_alignment(gb_main);
-        alilength     = GBT_get_alignment_len(gb_main, aliname);
-        free(aliname);
+        RootCallback expose = makeRootCallback(expose_cb);
+        aw_root->awar(AWAR_PHYLO_FILTER_STARTCOL)->add_callback(expose);
+        aw_root->awar(AWAR_PHYLO_FILTER_STOPCOL) ->add_callback(expose);
+        aw_root->awar(AWAR_PHYLO_FILTER_MINHOM)  ->add_callback(expose);
+        aw_root->awar(AWAR_PHYLO_FILTER_MAXHOM)  ->add_callback(expose);
     }
 
-    RootCallback update_on_config_change = makeRootCallback(update_on_config_change_cb);
+    aw_root->awar(AWAR_PHYLO_FILTER_POINT)->add_callback(display_status);
+    aw_root->awar(AWAR_PHYLO_FILTER_MINUS)->add_callback(display_status);
+    aw_root->awar(AWAR_PHYLO_FILTER_REST) ->add_callback(display_status);
+    aw_root->awar(AWAR_PHYLO_FILTER_LOWER)->add_callback(display_status);
 
-    aw_root->awar_int(AWAR_PHYLO_FILTER_STARTCOL, 0,           default_file)->set_minmax(0, alilength-1)->add_callback(update_on_config_change)->add_callback(makeRootCallback(correct_startstop_cb, true));
-    aw_root->awar_int(AWAR_PHYLO_FILTER_STOPCOL,  alilength-1, default_file)->set_minmax(0, alilength-1)->add_callback(update_on_config_change)->add_callback(makeRootCallback(correct_startstop_cb, false));
-    aw_root->awar_int(AWAR_PHYLO_FILTER_MINHOM,   0,           default_file)->set_minmax(0, 100)        ->add_callback(update_on_config_change)->add_callback(makeRootCallback(correct_minmaxhom_cb, true));
-    aw_root->awar_int(AWAR_PHYLO_FILTER_MAXHOM,   100,         default_file)->set_minmax(0, 100)        ->add_callback(update_on_config_change)->add_callback(makeRootCallback(correct_minmaxhom_cb, false));
+    aw_root->awar(AWAR_PHYLO_MATRIX_POINT)->add_callback(display_status);
+    aw_root->awar(AWAR_PHYLO_MATRIX_MINUS)->add_callback(display_status);
+    aw_root->awar(AWAR_PHYLO_MATRIX_REST) ->add_callback(display_status);
+    aw_root->awar(AWAR_PHYLO_MATRIX_LOWER)->add_callback(display_status);
 
-    aw_root->awar_int(AWAR_PHYLO_FILTER_DOT,   DONT_COUNT, default_file)->add_callback(update_on_config_change); // '.' in column
-    aw_root->awar_int(AWAR_PHYLO_FILTER_MINUS, DONT_COUNT, default_file)->add_callback(update_on_config_change); // '-' in column
-    aw_root->awar_int(AWAR_PHYLO_FILTER_AMBIG, DONT_COUNT, default_file)->add_callback(update_on_config_change); // 'MNY....' in column
-    aw_root->awar_int(AWAR_PHYLO_FILTER_LOWER, DONT_COUNT, default_file)->add_callback(update_on_config_change); // 'acgtu' in column
-
-    aw_root->awar_int(AWAR_PHYLO_FILTER_AUTOCALC, 0, default_file)->add_callback(update_on_config_change); // auto-recalculate?
 }
 
-static AWT_config_mapping_def phyl_filter_config_mapping[] = {
-    { AWAR_PHYLO_FILTER_STARTCOL, "startcol" },
-    { AWAR_PHYLO_FILTER_STOPCOL,  "stopcol" },
-    { AWAR_PHYLO_FILTER_MINHOM,   "minhom" },
-    { AWAR_PHYLO_FILTER_MAXHOM,   "maxhom" },
-    { AWAR_PHYLO_FILTER_DOT,      "filtdot" },
-    { AWAR_PHYLO_FILTER_MINUS,    "filtminus" },
-    { AWAR_PHYLO_FILTER_AMBIG,    "filtambig" },
-    { AWAR_PHYLO_FILTER_LOWER,    "filtlower" },
-
-    { 0, 0 }
-};
-
-AW_window *PH_create_filter_window(AW_root *aw_root) {
+AW_window *PH_create_filter_window(AW_root *aw_root)
+{
     AW_window_simple *aws = new AW_window_simple;
     aws->init(aw_root, "PHYL_FILTER", "PHYL FILTER");
     aws->load_xfig("phylo/filter.fig");
     aws->button_length(10);
 
     aws->at("close");
-    aws->callback(AW_POPDOWN);
+    aws->callback((AW_CB0)AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    const int SCALERWIDTH = 200;
-    aws->auto_space(5, 5);
-
     aws->at("startcol");
-    aws->create_input_field_with_scaler(AWAR_PHYLO_FILTER_STARTCOL, 6, SCALERWIDTH);
+    aws->create_input_field(AWAR_PHYLO_FILTER_STARTCOL, 6);
 
     aws->at("stopcol");
-    aws->create_input_field_with_scaler(AWAR_PHYLO_FILTER_STOPCOL, 6, SCALERWIDTH);
+    aws->create_input_field(AWAR_PHYLO_FILTER_STOPCOL, 6);
 
     aws->at("minhom");
-    aws->create_input_field_with_scaler(AWAR_PHYLO_FILTER_MINHOM, 3, SCALERWIDTH);
+    aws->create_input_field(AWAR_PHYLO_FILTER_MINHOM, 3);
 
     aws->at("maxhom");
-    aws->create_input_field_with_scaler(AWAR_PHYLO_FILTER_MAXHOM, 3, SCALERWIDTH);
-
-    aws->label_length(20);
+    aws->create_input_field(AWAR_PHYLO_FILTER_MAXHOM, 3);
 
     aws->at("point_opts");
     aws->label("'.'");
-    aws->create_option_menu(AWAR_PHYLO_FILTER_DOT, true);
+    aws->create_option_menu(AWAR_PHYLO_FILTER_POINT, true);
     aws->insert_option(filter_text[DONT_COUNT],           "0", DONT_COUNT);
     aws->insert_option(filter_text[SKIP_COLUMN_IF_MAX],   "0", SKIP_COLUMN_IF_MAX);
     aws->insert_option(filter_text[SKIP_COLUMN_IF_OCCUR], "0", SKIP_COLUMN_IF_OCCUR);
@@ -457,7 +453,7 @@ AW_window *PH_create_filter_window(AW_root *aw_root) {
 
     aws->at("rest_opts");
     aws->label("ambiguity codes");
-    aws->create_option_menu(AWAR_PHYLO_FILTER_AMBIG, true);
+    aws->create_option_menu(AWAR_PHYLO_FILTER_REST, true);
     aws->insert_option(filter_text[DONT_COUNT],           "0", DONT_COUNT);
     aws->insert_option(filter_text[SKIP_COLUMN_IF_MAX],   "0", SKIP_COLUMN_IF_MAX);
     aws->insert_option(filter_text[SKIP_COLUMN_IF_OCCUR], "0", SKIP_COLUMN_IF_OCCUR);
@@ -475,13 +471,6 @@ AW_window *PH_create_filter_window(AW_root *aw_root) {
     aws->insert_option(filter_text[TREAT_AS_UPPERCASE],   "0", TREAT_AS_UPPERCASE);
     aws->update_option_menu();
 
-    aws->at("config");
-    AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "phylfilter", phyl_filter_config_mapping);
-
-    aws->at("auto");
-    aws->label("Auto recalculate?");
-    aws->create_toggle(AWAR_PHYLO_FILTER_AUTOCALC);
-
-    return aws;
+    return (AW_window *)aws;
 }
 

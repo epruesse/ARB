@@ -48,10 +48,10 @@ Basic idea:
 				//			type = "STRING"
 		$gb_name = ARB::create($gb_main,"name","STRING");
 				// and store a value in the dbelem
-		$error = ARB::write_string($gb_name,"niels");
+		$error = ARB:write_string($gb_name,"niels");
 			...
 			...
-		ARB::commit_transaction($gb_main);	// everything is ok
+		ARB:commit_transaction($gb_main);	// everything is ok
 		$error = ARB::save($gb_main,"new_db.arb", "a");	// save in ascii format
 
 	***************************** END 1 *********************
@@ -90,10 +90,10 @@ Basic idea:
 		for all persons do {
 			$gb_person = ARB::create_container($gb_main,"person");
 			$gb_name = ARB::create($gb_person,"name","STRING");
-			$error = ARB::write_string($gb_name,"name of p");
+			$error = ARB:write_string($gb_name,"name of p");
 			if ($error) .....
 			$gb_tel = ARB::create($gb_person,"tel", STRING);
-			$error = ARB::write_string($gb_tel,"telnr of person");
+			$error = ARB:write_string($gb_tel,"telnr of person");
 		}
 		commit and save
 
@@ -138,11 +138,11 @@ Searching the database:
 	ARB::search is used, if all keys in a container are unique.
 	example:
 
-	$gb_searched = ARB::search($gb_start,"key1","none");
+	$gb_searched = ARB:search($gb_start,"key1","none");
 		searches in the container $gb_start for an element with
 		the key 'key1'
 
-	$gb_searched = ARB::search($gb_start,"key1/key2","none");
+	$gb_searched = ARB:search($gb_start,"key1/key2","none");
 		searches a container $gb_h with key 'key1' in $gb_start
 		and if found continues searching in $gb_h for an element
 		with key 'key2'
@@ -346,7 +346,7 @@ $val = ARB::read_bits($gb_xxx,char_0,char_1);
 	a '0' will be converted into char_0
 	a '1' into char_1
 
-	eg: ARB::read_bits($gb_xxx, "-", "+" ); returns a '-' '+' string
+	eg: ARB:read_bits($gb_xxx, "-", "+" ); returns a '-' '+' string
 
 
 ************************* write entries *******************

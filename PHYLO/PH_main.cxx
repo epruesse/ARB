@@ -21,19 +21,29 @@
 #include <arbdbt.h>
 #include <arb_strarray.h>
 
+#include <iostream>
 #include <macros.hxx>
 #include <aw_question.hxx>
 
+using namespace std;
+
 AW_HEADER_MAIN
 
-const char *filter_text[FILTER_MODES] = {
-    "don't count (ignore)                       ", // DONT_COUNT
-    "if occurs most often => forget whole column", // SKIP_COLUMN_IF_MAX
-    "if occurs => forget whole column           ", // SKIP_COLUMN_IF_OCCUR
-    "count, but do NOT use as maximum           ", // COUNT_DONT_USE_MAX
-    "treat as uppercase character               ", // TREAT_AS_UPPERCASE
-    "treat as regular character                 ", // TREAT_AS_REGULAR
-};
+GBDATA *GLOBAL_gb_main; // global gb_main for arb_phylo
+char **filter_text;
+
+static void create_filter_text()
+{
+    filter_text = (char **) calloc(FILTER_MODES, sizeof (char *));
+    for (int i=0; i<FILTER_MODES; i++) filter_text[i] = new char[100];
+
+    strcpy(filter_text[DONT_COUNT],           "don't count (ignore)                              ");
+    strcpy(filter_text[SKIP_COLUMN_IF_MAX],   "if occurs most often => forget whole column       ");
+    strcpy(filter_text[SKIP_COLUMN_IF_OCCUR], "if occurs => forget whole column                  ");
+    strcpy(filter_text[COUNT_DONT_USE_MAX],   "count, but do NOT use as maximum                  ");
+    strcpy(filter_text[TREAT_AS_UPPERCASE],   "treat as uppercase character                      ");
+    strcpy(filter_text[TREAT_AS_REGULAR],     "treat as regular character                        ");
+}
 
 static bool valid_alignment_selected(AW_root *aw_root, GBDATA *gb_main) {
     GB_transaction  ta(gb_main);
@@ -58,7 +68,7 @@ static void startup_sequence_cb(AW_window *alisel_window, AW_window *main_window
         phd->load(use);
         phd->ROOT = phd;
 
-        long len = PHDATA::ROOT->get_seq_len(); // @@@ off by one?
+        long len = PHDATA::ROOT->get_seq_len();
         aw_root->awar(AWAR_PHYLO_FILTER_STOPCOL)->write_int(len);
         aw_root->awar(AWAR_PHYLO_FILTER_STARTCOL)->set_minmax(0, len);
         aw_root->awar(AWAR_PHYLO_FILTER_STOPCOL)->set_minmax(0, len);
@@ -94,29 +104,17 @@ __ATTR__NORETURN static void ph_exit(AW_window *aw_window, PH_root *ph_root) {
 
 
 void expose_cb() {
-    if (PH_display::ph_display && PH_display::ph_display->displayed()!=DISP_NONE) {
+    if (PH_display::ph_display->displayed()!=NONE) {
         PH_display::ph_display->clear_window();
         PH_display::ph_display->display();
     }
 }
 
+
 static void resize_cb() {
     if (PH_display::ph_display) {
         PH_display::ph_display->resized();
         PH_display::ph_display->display();
-    }
-}
-
-static void gc_changed_cb(GcChange whatChanged) {
-    switch (whatChanged) {
-        case GC_COLOR_GROUP_USE_CHANGED:
-            ph_assert(0); // not used atm -> fall-through
-        case GC_COLOR_CHANGED:
-            expose_cb();
-            break;
-        case GC_FONT_CHANGED:
-            resize_cb();
-            break;
     }
 }
 
@@ -408,7 +406,7 @@ static AW_window *PH_save_markerline(AW_root *root, PH_root *ph_root, int multi_
     aws->create_input_field(AWAR_PHYLO_MARKERLINENAME);
 
     aws->at("box");
-    awt_create_SAI_selection_list(ph_root->get_gb_main(), aws, AWAR_PHYLO_MARKERLINENAME, false);
+    awt_create_selection_list_on_sai(ph_root->get_gb_main(), aws, AWAR_PHYLO_MARKERLINENAME, false);
 
     aws->at("save");
     if (multi_line) aws->callback(makeWindowCallback(PH_save_ml_multiline_cb, ph_root));
@@ -424,13 +422,11 @@ static AW_window *create_phyl_main_window(AW_root *aw_root, PH_root *ph_root) {
 
     // create menus and menu inserts with callbacks
 
-    const GcChangedCallback gcChangedCb = makeGcChangedCallback(gc_changed_cb);
-
     AW_gc_manager gcmiddle = AW_manage_GC(awm,
                                           awm->get_window_id(),
                                           awm->get_device(AW_MIDDLE_AREA),
                                           PH_GC_0, PH_GC_0_DRAG, AW_GCM_DATA_AREA,
-                                          gcChangedCb,
+                                          makeWindowCallback(resize_cb),
                                           false, // no color groups
                                           "#CC9AF8",
                                           "#SEQUENCE$#000000",
@@ -441,7 +437,7 @@ static AW_window *create_phyl_main_window(AW_root *aw_root, PH_root *ph_root) {
                  awm->get_window_id(),
                  awm->get_device(AW_BOTTOM_AREA),
                  PH_GC_0, PH_GC_0_DRAG, AW_GCM_WINDOW_AREA,
-                 gcChangedCb,
+                 makeWindowCallback(resize_cb),
                  false, // no color groups
                  "pink",
                  "#FOOTER",
@@ -462,7 +458,7 @@ static AW_window *create_phyl_main_window(AW_root *aw_root, PH_root *ph_root) {
 
     // Calculate menu
     awm->create_menu("Calculate", "C");
-    awm->insert_menu_topic("calc_column_filter", "Column Filter", "F", "no help", AWM_ALL, makeWindowCallback(ph_calc_filter_cb));
+    awm->insert_menu_topic("calc_column_filter", "Column Filter", "F", "no help", AWM_ALL, makeWindowCallback(ph_view_filter_cb));
 
     // Config menu
     awm->create_menu("Config", "o");
@@ -470,10 +466,8 @@ static AW_window *create_phyl_main_window(AW_root *aw_root, PH_root *ph_root) {
 
     // Properties menu
     awm->create_menu("Properties", "P");
-#if defined(ARB_MOTIF)
-    awm->insert_menu_topic("props_menu", "Frame settings ...",   "F", "props_frame.hlp", AWM_ALL, AW_preset_window);
-#endif
-    awm->insert_menu_topic("props_data", "Colors and Fonts ...", "C", "color_props.hlp", AWM_ALL, makeCreateWindowCallback(AW_create_gc_window, gcmiddle));
+    awm->insert_menu_topic("props_menu", "Frame settings ...",   "F", "props_frame.hlp",   AWM_ALL, AW_preset_window);
+    awm->insert_menu_topic("props_data", "Colors and Fonts ...", "C", "ph_props_data.hlp", AWM_ALL, makeCreateWindowCallback(AW_create_gc_window, gcmiddle));
     awm->sep______________();
     AW_insert_common_property_menu_entries(awm);
     awm->sep______________();
@@ -489,9 +483,6 @@ static AW_window *create_phyl_main_window(AW_root *aw_root, PH_root *ph_root) {
     awm->button_length(0);
     awm->help_text("quit.hlp");
     awm->create_button("QUIT", "QUIT");
-#if defined(ARB_GTK)
-    awm->set_close_action("QUIT");
-#endif
 
     awm->callback(makeHelpCallback("phylo.hlp"));
     awm->button_length(0);
@@ -517,7 +508,7 @@ static AW_window *create_select_alignment_window(AW_root *aw_root, AW_window *ma
     aws->button_length(10);
 
     aws->at("which_alignment");
-    awt_create_ALI_selection_list(ph_root->get_gb_main(), (AW_window *)aws, AWAR_PHYLO_ALIGNMENT, "*=");
+    awt_create_selection_list_on_alignments(ph_root->get_gb_main(), (AW_window *)aws, AWAR_PHYLO_ALIGNMENT, "*=");
 
     aws->auto_space(10, 10);
 
@@ -527,10 +518,6 @@ static AW_window *create_select_alignment_window(AW_root *aw_root, AW_window *ma
 
     aws->callback(makeWindowCallback(ph_exit, ph_root));
     aws->create_button("ABORT", "Abort", "D");
-
-#if defined(ARB_GTK)
-    aws->set_close_action("ABORT");
-#endif
 
     return aws;
 }
@@ -547,10 +534,10 @@ PH_used_windows *PH_used_windows::windowList = 0;
 PH_display *PH_display::ph_display=0;
 PHDATA *PHDATA::ROOT = 0;
 
-static void create_variables(AW_root *aw_root, AW_default def, GBDATA *gb_main) {
+static void create_variables(AW_root *aw_root, AW_default def) {
     aw_root->awar_string(AWAR_PHYLO_ALIGNMENT,     "", def);
     aw_root->awar_string(AWAR_PHYLO_FILTER_FILTER, "", def);
-    PH_create_filter_variables(aw_root, def, gb_main);
+    PH_create_filter_variables(aw_root, def);
 }
 
 int ARB_main(int argc, char *argv[]) {
@@ -578,7 +565,7 @@ int ARB_main(int argc, char *argv[]) {
             GBDATA *gb_main = ph_root->get_gb_main();
 
             // create arb_phylo awars :
-            create_variables(aw_root, AW_ROOT_DEFAULT, gb_main);
+            create_variables(aw_root, AW_ROOT_DEFAULT);
             ARB_init_global_awars(aw_root, AW_ROOT_DEFAULT, gb_main);
 #if defined(DEBUG)
             AWT_create_db_browser_awars(aw_root, AW_ROOT_DEFAULT);
@@ -587,6 +574,8 @@ int ARB_main(int argc, char *argv[]) {
 #if defined(DEBUG)
             AWT_announce_db_to_browser(gb_main, GBS_global_string("ARB-database (%s)", db_server));
 #endif // DEBUG
+
+            create_filter_text();
 
             // create main window :
 

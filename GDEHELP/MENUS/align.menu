@@ -43,7 +43,6 @@ insave:
 
 out:TmpOutputFile
 outformat:flat
-outaligned:yes
 
 //----------------------------------------------------
 
@@ -64,7 +63,7 @@ itemmethod:(GOTO_LOCAL_DIR; \
 
 arg:MAXITERS
 argtype:text
-arglabel:Maximum number of iterations to run\n(use 2 for large datasets)
+arglabel:Maximum number of iterations to run(Use 2 for large datasets)
 argtext:16
 
 //arg:ANCHORS
@@ -106,7 +105,6 @@ insave:
 
 out:TmpOutputFile
 outformat:flat
-outaligned:yes
 
 //-------------------------------------------------------------------
 
@@ -158,10 +156,8 @@ argchoice:200PAM / K=2:--kimura 200
 
 
 arg:OFFSET
-argtype:slider
-argmin:0.0
-argmax:1.0
-arglabel:Offset value [0..1]\n(use values >0.1 for closely related sequences)
+argtype:text
+arglabel:Offset value [0..1]\n(Use Values >0.1 for closely related sequences)
 argtext:0.5
 
 
@@ -172,7 +168,6 @@ insave:
 
 out:TmpOutputFile
 outformat:flat
-outaligned:yes
 
 //--------------------------------------------------------
 
@@ -194,7 +189,6 @@ insave:
 
 out:TmpOutputFile
 outformat:flat
-outaligned:yes
 
 // --------------------------------------------------------------------------------
 
@@ -229,7 +223,6 @@ insave:
 
 out:TmpOutputFile
 outformat:flat
-outaligned:yes
 
 // --------------------------------------------------------------------------------
 
@@ -329,7 +322,6 @@ insave:
 
 out:TmpOutputFile
 outformat:flat
-outaligned:yes
 
 // --------------------------------------------------------------------------------
 
@@ -420,7 +412,6 @@ insave:
 
 out:TmpOutputFile
 outformat:flat
-outaligned:yes
 
 // --------------------------------------------------------------------------------
 
@@ -528,7 +519,6 @@ insave:
 
 out:TmpOutputFile
 outformat:flat
-outaligned:yes
 
 // --------------------------------------------------------------------------------
 
@@ -629,5 +619,36 @@ insave:
 
 out:TmpOutputFile
 outformat:flat
-outaligned:yes
+
+// --------------------------------------------------------------------------------
+
+item:Assemble Contigs
+itemmeta: g
+seqtype:*
+itemmethod: ( GOTO_LOCAL_DIR; \
+              tr '"%//' '>' <TmpInputFile > tr.out; \
+              CAP2 tr.out $OVERLAP $PMATCH >  TmpOutputFile; \
+              RM_LOCAL_FILES(TmpInputFile tr.out) )
+itemhelp:CAP2.help
+
+arg:OVERLAP
+argtype:slider
+arglabel:Minimum overlap?
+argmin:5
+argmax:100
+argvalue:20
+
+arg:PMATCH
+argtype:slider
+arglabel:Percent match required within overlap
+argmin:25
+argmax:100
+argvalue:90
+
+in:TmpInputFile
+informat:flat
+insave:
+
+out:TmpOutputFile
+outformat:gde
 

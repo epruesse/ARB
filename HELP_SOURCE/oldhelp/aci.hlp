@@ -33,7 +33,7 @@ DESCRIPTION	The command interpreter is a simple interpreter.
 
 		Different commands can be separated by:
 
-                	';'	all(!) commands take all(!) the input streams and
+                	';'	all !!! commands take all !!!  the input streams and
                         	each command generates its own output streams
         		'|'	the output of the left commands are used as the input
                 		of the right.
@@ -215,7 +215,7 @@ SECTION COMMANDLIST
 			tab=#        (10)          left indent (not first line)
 			"nl=chrs"    (" ")         list of characters that specify
                                                    a possibly point of a line break;
-                                                   the line break characters get removed!
+                                                   This character is deleted !
                         "forcenl=chrs" ("\n")      Force a newline at these characters.
 
                     (see also format_sequence below)
@@ -343,7 +343,6 @@ SECTION COMMANDLIST
 			firsttab=#   (10)       first line left indent
 			tab=#        (10)       left indent (not first line)
 			numleft      (NO)       numbers on the left side
-			numright=#   (NO)       numbers on the right side (#=width)
 			gap=#        (10)       insert a gap every # seq. characters.
 
                     (see also 'format' above)

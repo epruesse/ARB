@@ -58,7 +58,7 @@ EXAMPLES	Include only positions which are occupied by a residue within
 		within a particular sequence:
 
 			1. Select the species and convert it to 'SAI'
-                           using LINK{sp_sp_2_ext.hlp}.
+				(ARB_NT/Species/Info/SPECIES/Convert to SAI)
 
 			2. Select the new 'SAI' from the 'Select a Filter'
 				subwindow.

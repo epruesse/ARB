@@ -90,7 +90,7 @@ argchoice:A proportion of the sites are invariable:propinv
 argchoice:No rate variation across sites:equal
 argchoice:Gamma-distributed rates across sites:gamma
 argchoice:Autocorrelated rates across sites:adgamma
-argchoice:Mixed invariable/gamma:invgamma
+argchoice:A proportion of the sites are invariable while the rate for the remaining sites are drawn from a gamma distribution:invgamma
 
 
 arg:NGAMMACAT

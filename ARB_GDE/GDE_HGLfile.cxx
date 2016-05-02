@@ -1,4 +1,6 @@
 #include "GDE_extglob.h"
+#include <ctime>
+#include <algorithm>
 
 static void StripSpecial(char *string) {
     int j, len;
@@ -35,7 +37,9 @@ static void RemoveQuotes(char *string)
 
 }
 
-int WriteGDE(NA_Alignment& aln, char *filename, int method) {
+int WriteGDE(NA_Alignment *aln, char *filename, int method) {
+    if (aln == NULL) return (1);
+
     FILE *file = fopen(filename, "w");
     if (file == NULL)
     {
@@ -43,11 +47,11 @@ int WriteGDE(NA_Alignment& aln, char *filename, int method) {
         return (1);
     }
 
-    for (size_t j=0; j<aln.numelements; j++)
+    for (size_t j=0; j<aln->numelements; j++)
     {
         if (method == ALL)
         {
-            NA_Sequence *this_elem = &(aln.element[j]);
+            NA_Sequence *this_elem = &(aln->element[j]);
             // @@@ code below should be in method of NA_Sequence (far too many 'this_elem->')
             fprintf(file, "{\n");
             if (this_elem->short_name[0])
@@ -90,8 +94,8 @@ int WriteGDE(NA_Alignment& aln, char *filename, int method) {
                 fprintf(file, "creator           \"%s\"\n", this_elem->authority);
             if (this_elem->groupid)
                 fprintf(file, "group-ID          %zu\n", this_elem->groupid);
-            if (this_elem->offset+aln.rel_offset)
-                fprintf(file, "offset            %d\n", this_elem->offset+aln.rel_offset);
+            if (this_elem->offset+aln->rel_offset)
+                fprintf(file, "offset            %d\n", this_elem->offset+aln->rel_offset);
 
             if (this_elem->t_stamp.origin.mm != 0)
                 fprintf(file,

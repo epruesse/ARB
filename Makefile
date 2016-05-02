@@ -28,12 +28,6 @@
 # COVERAGE=0/1/2        compile in gcov support (useful together with UNIT_TESTS=1)
 #                       0=no, 1+2=compile in, 1=show
 # STABS=0/1             force stabs format? (0 = "use default format")
-# SANITIZE=0/#/all      use Sanitizer? (defaults to 0,
-#                                       1=AddressSanitizer+LeakSanitizer,
-#                                       2=UndefinedBehaviorSanitizer,
-#                                       combine bit-values to activate multiple Sanitizers,
-#                                       specify 'all' to activate all)
-# SHOWTODO=0/1          activate TODO-warnings? (defaults to 0, except for ralf)
 #
 # -----------------------------------------------------
 # The ARB source code is aware of the following defines:
@@ -44,7 +38,7 @@
 #                       configurable in config.makefile
 #
 # -----------------------------------------------------
-# Read configuration
+# Read configuration 
 include config.makefile
 
 # set defaults for variables commented out in config.makefile:
@@ -78,9 +72,12 @@ endif
 
 export CC CXX A_CC A_CXX
 
-# unconditionally prepend $(ARBHOME)/lib to LD_LIBRARY_PATH if not found
-ifeq ($(findstring $(ARBHOME)/lib,$(LD_LIBRARY_PATH)),)
-LD_LIBRARY_PATH:=${ARBHOME}/lib:$(LD_LIBRARY_PATH)
+ifeq ($(LD_LIBRARY_PATH),'')
+LD_LIBRARY_PATH:=${ARBHOME}/lib
+endif
+
+ifeq ($(DARWIN),1)
+LD_LIBRARY_PATH:=${ARBHOME}/lib
 endif
 
 # store LD_LIBRARY_PATH to circumvent SIP restrictions:
@@ -100,7 +97,7 @@ ALLOWED_gcc_VERSIONS=\
         4.4.1       4.4.3       4.4.5 4.4.6  4.4.7 \
               4.5.2 \
         4.6.1 4.6.2 4.6.3 4.6.4 \
-        4.7.1 4.7.2 4.7.3 4.7.4 \
+        4.7.1 4.7.2 4.7.3 \
   4.8.0 4.8.1 4.8.2 4.8.3 4.8.4 4.8.5 \
   4.9.0 4.9.1 4.9.2 4.9.3 \
   5.1.0 5.2.0 5.3.0 \
@@ -130,7 +127,7 @@ endif
 
 COMPILER_VERSION_ALLOWED=$(strip $(subst ___,,$(foreach version,$(ALLOWED_COMPILER_VERSIONS),$(findstring ___$(version)___,___$(COMPILER_VERSION)___))))
 
-#---------------------- split gcc version
+#---------------------- split gcc version 
 
 SPLITTED_VERSION:=$(subst ., ,$(COMPILER_VERSION))
 
@@ -139,11 +136,8 @@ USE_GCC_MINOR:=$(word 2,$(SPLITTED_VERSION))
 USE_GCC_PATCHLEVEL:=$(word 3,$(SPLITTED_VERSION))
 
 USE_GCC_452_OR_HIGHER:=
-USE_GCC_46_OR_HIGHER:=
 USE_GCC_47_OR_HIGHER:=
 USE_GCC_48_OR_HIGHER:=
-USE_GCC_49_OR_HIGHER:=
-USE_GCC_50_OR_HIGHER:=
 
 ifeq ($(USE_CLANG),0)
  ifeq ($(USE_GCC_MAJOR),4)
@@ -154,25 +148,18 @@ ifeq ($(USE_CLANG),0)
   else
    ifneq ('$(findstring $(USE_GCC_MINOR),6789)','')
     USE_GCC_452_OR_HIGHER:=yes
-    USE_GCC_46_OR_HIGHER:=yes
     ifneq ($(USE_GCC_MINOR),6)
      USE_GCC_47_OR_HIGHER:=yes
      ifneq ($(USE_GCC_MINOR),7)
       USE_GCC_48_OR_HIGHER:=yes
-       ifneq ($(USE_GCC_MINOR),8)
-        USE_GCC_49_OR_HIGHER:=yes
-       endif
      endif
     endif
    endif
   endif
  else
   USE_GCC_452_OR_HIGHER:=yes
-  USE_GCC_46_OR_HIGHER:=yes
   USE_GCC_47_OR_HIGHER:=yes
   USE_GCC_48_OR_HIGHER:=yes
-  USE_GCC_49_OR_HIGHER:=yes
-  USE_GCC_50_OR_HIGHER:=yes
  endif
 endif
 
@@ -195,9 +182,11 @@ else
 endif
 
 shared_cflags :=# flags for shared lib compilation
+lflags :=# linker flags
 clflags :=# linker flags (when passed through gcc)
 extended_warnings :=# warning flags for C and C++-compiler
 extended_cpp_warnings :=# warning flags for C++-compiler only
+
 
 ifeq ($(DEBUG),0)
 	dflags := -DNDEBUG# defines
@@ -205,11 +194,13 @@ ifeq ($(DEBUG),0)
 		cflags := -O3# compiler flags (C and C++)
 	else
 		cflags := -O4# compiler flags (C and C++)
+		lflags += -O2# linker flags
 		clflags += -Wl,-O2# passthrough linker flags
 	endif
 endif
 
 ifeq ($(DEBIAN),1)
+	lflags += -rpath=/usr/lib/arb/lib -z relro
 	clflags += -Wl,-rpath=/usr/lib/arb/lib -Wl,-z,relro
 endif
 
@@ -218,44 +209,25 @@ ifeq ($(DEBUG),1)
 
 	gdb_common := -g -g3 -ggdb -ggdb3
 
-DBGOPTI:=-O0
-ifeq ('$(USE_GCC_48_OR_HIGHER)','yes')
-DBGOPTI:=-Og
-endif
-
 ifeq ($(STABS),1)
-	cflags := $(DBGOPTI)  $(gdb_common) -gstabs+  # using stabs+ (enable this for bigger debug session: debugs inlines, quick var inspect, BUT valgrind stops working :/)
+	cflags := -O0  $(gdb_common) -gstabs+  # using stabs+ (enable this for bigger debug session: debugs inlines, quick var inspect, BUT valgrind stops working :/)
 else
-	cflags := $(DBGOPTI) $(gdb_common) # (using dwarf - cant debug inlines here, incredible slow on showing variable content)
+	cflags := -O0 $(gdb_common) # (using dwarf - cant debug inlines here, incredible slow on showing variable content)
 endif
 
-#	cflags := $(DBGOPTI) $(gdb_common) -gdwarf-3 # (specify explicit dwarf format)
-#	cflags := $(DBGOPTI) $(gdb_common) -gstabs  # using stabs (same here IIRC)
+#	cflags := -O0 $(gdb_common) -gdwarf-3 # (specify explicit dwarf format)
+#	cflags := -O0  $(gdb_common) -gstabs  # using stabs (same here IIRC)
 #	cflags := -O2 $(gdb_common) # use this for callgrind (force inlining)
 
 ifeq ($(DARWIN),0)
+	lflags += -g
 	clflags += -Wl,-g
-
-# Note:
-# Previously '-Wl,-noinhibit-exec' was added to 'clflags' here,
-# to fix some issues with launchpad binutils (see [12972]).
-# But that change also caused 'undefined symbols' NOT to be reported as errors
-# at link time, producing executables that fail at runtime :/
-
 endif
-
- ifeq ($(DEBUG_GRAPHICS),1)
-	dflags += -DDEBUG_GRAPHICS
- endif
-
-endif # DEBUG only
 
 # control how much you get spammed
 # (please do not change default in SVN, use developer specific setting as below)
 	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl
 #	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl --original# dont modify compiler output
-#	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl --loop-optimization-candi# show candidates for vectorization check
-#	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl --dump-loop-optimization# useful while optimizing code for vectorization
 #	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl --hide-Noncopyable-advices
 #	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl --show-useless-Weff++
 #	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl --no-warnings
@@ -265,31 +237,22 @@ ifeq ($(DEVELOPER),ELMAR)
 	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl --only-first-error
 endif
 
+
 # Enable extra warnings
 	extended_warnings :=
 	extended_cpp_warnings :=
 
-#       C and C++
+#       C and C++ 
 	extended_warnings     += -Wwrite-strings -Wunused -Wno-aggregate-return -Wshadow
 
-#       C++ only
+#       C++ only 
 	extended_cpp_warnings += -Wnon-virtual-dtor -Wreorder -Wpointer-arith -Wdisabled-optimization -Wmissing-format-attribute
 	extended_cpp_warnings += -Wctor-dtor-privacy# < gcc 3
 # 	extended_cpp_warnings += -Wfloat-equal# gcc 3.0
 
 # ------- above only warnings available in 3.0
 
-WEFFC_BROKEN:=0
- ifeq ('$(USE_GCC_47_OR_HIGHER)','yes')
-  ifneq ('$(USE_GCC_48_OR_HIGHER)','yes')
-#  -Weffc++ broken in 4.7.x series
-# gcc 4.7.3 crashes on GenomeImport.cxx when -Weffc++ is active
-# (bug reported https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56923; apparently wont be fixed for 4.7-series)
-# gcc 4.7.4 crashes on DBwriter.cxx when -Weffc++ is active
-   WEFFC_BROKEN:=1
-  endif
- endif
- ifeq ('$(WEFFC_BROKEN)','0')
+ ifneq ('$(COMPILER_VERSION)','4.7.3') # g++ crashes on GenomeImport.cxx when -Weffc++ is active (bug reported)
 	extended_cpp_warnings += -Weffc++# gcc 3.0.1
  endif
 	extended_cpp_warnings += -Wmissing-noreturn# gcc 3.0.2
@@ -297,22 +260,14 @@ WEFFC_BROKEN:=0
 	extended_cpp_warnings += -Winit-self# gcc 3.4.0
 	extended_cpp_warnings += -Wstrict-aliasing# gcc 3.4
 	extended_cpp_warnings += -Wextra# gcc 3.4.0
- ifeq ($(DEBUG),1)
-  ifeq ($(USE_CLANG),0)
-#       turn off -Wmaybe-uninitialized in debug mode (gets activated with -Wextra). too many bogus warnings
-	extended_cpp_warnings += -Wno-maybe-uninitialized
-  endif
- endif
  ifeq ('$(USE_GCC_452_OR_HIGHER)','yes')
 	extended_cpp_warnings += -Wlogical-op# gcc 4.5.2
  endif
- ifeq ('$(USE_GCC_47_OR_HIGHER)','yes')
-#	extended_cpp_warnings += -Wunused-local-typedefs# gcc 4.7 (fails for each STATIC_ASSERT, enable only for Cxx11)
-#	extended_cpp_warnings += -Wzero-as-null-pointer-constant# gcc 4.7 #@@@ activate
+
+ ifeq ($(DEBUG_GRAPHICS),1)
+	dflags += -DDEBUG_GRAPHICS
  endif
- ifeq ('$(USE_GCC_48_OR_HIGHER)','yes')
-	extended_cpp_warnings += -Wunused-local-typedefs# available since gcc 4.7 (but fails for each STATIC_ASSERT, so enable only for Cxx11)
- endif
+endif
 
 #---------------------- turn off clang bogus warnings
 
@@ -331,8 +286,6 @@ ifneq ($(DEVELOPER),ANY) # ANY=default setting (skip all developer specific code
 	dflags += -DDEVEL_$(DEVELOPER)# activate developer/release specific code
 endif
 
-#---------------------- activate TODO warnings?
-
 ifndef SHOWTODO
  ifeq ($(DEVELOPER),RALF)
 	SHOWTODO:=1
@@ -342,71 +295,6 @@ ifndef SHOWTODO
 endif
 ifeq ($(SHOWTODO),1)
 	dflags += -DWARN_TODO# activate "TODO" warnings
-endif
-
-#---------------------- activate Sanitizers?
-
-ASAN_OPTIONS:=handle_segv=0:color=0
-ASAN_OPTIONS+=:detect_leaks=1 # comment-out to disable leak-detection
-ASAN_OPTIONS+=:check_initialization_order=1
-# ASAN_OPTIONS+=:abort_on_error=1
-
-# suppressions: SOURCE_TOOLS/arb.leaksan.supp
-LSAN_OPTIONS:=max_leaks=3:suppressions=$(ARBHOME)/SOURCE_TOOLS/arb.leaksan.supp
-
-
-ifndef SANITIZE
- SANITIZE:=0
-endif
-
-SANITIZE_ADDRESS:=0
-SANITIZE_UNDEFINED:=0
-
-ifneq ($(SANITIZE),0)
- ifeq ($(SANITIZE),all)
-  SANITIZE:=3
- endif
-
- ifeq ($(SANITIZE),1)
-  SANITIZE_ADDRESS:=1
- else
-  ifeq ($(SANITIZE),2)
-   SANITIZE_UNDEFINED:=1
-  else
-   ifeq ($(SANITIZE),3)
-    SANITIZE_ADDRESS:=1
-    SANITIZE_UNDEFINED:=1
-   else
-    $(error Unknown value '$(SANITIZE)' specified for SANITIZE in config.makefile)
-   endif
-  endif
- endif
-endif
-
-ifeq ($(SANITIZE_ADDRESS),1)
- ifneq ('$(USE_GCC_48_OR_HIGHER)','yes')
-  $(info AddressSanitizer not usable with gcc $(COMPILER_VERSION) - disabled)
-  SANITIZE_ADDRESS:=0
- else
-  ifneq ('$(USE_GCC_49_OR_HIGHER)','yes')
-   $(warning note that LeakSanitizer does not work with gcc $(COMPILER_VERSION))
-  endif
- endif
-endif
-
-ifeq ($(SANITIZE_UNDEFINED),1)
- ifneq ('$(USE_GCC_49_OR_HIGHER)','yes')
-  $(info UndefinedBehaviorSanitizer not usable with gcc $(COMPILER_VERSION) - disabled)
-  SANITIZE_UNDEFINED:=0
- endif
-endif
-
-SANITIZE_ANY:=0
-ifeq ($(SANITIZE_ADDRESS),1)
- SANITIZE_ANY:=1
-endif
-ifeq ($(SANITIZE_UNDEFINED),1)
- SANITIZE_ANY:=1
 endif
 
 #---------------------- 32 or 64 bit
@@ -420,7 +308,7 @@ cross_lflags:=
 cross_clflags:=
 
 ifeq ($(ARB_64),1)
-	dflags += -DARB_64 #-fPIC
+	dflags += -DARB_64 #-fPIC 
 	shared_cflags += -fPIC
 
 	ifeq ($(BUILDHOST_64),1)
@@ -443,8 +331,8 @@ else
 #		build 32-bit ARB version on 64-bit host
 		CROSS_LIB:=# empty = autodetect below
 		cross_cflags += -m32
-		cross_lflags += -m32 -m elf_i386
-		cross_clflags += -m32 -Wl,-m32,-m,elf_i386
+		cross_lflags += -m32 -m elf_i386 
+		cross_clflags += -m32 -Wl,-m32,-m,elf_i386 
 	else
 #		build 32-bit ARB version on 32-bit host
 		CROSS_LIB:=/lib
@@ -452,6 +340,7 @@ else
 endif
 
 cflags  += $(cross_cflags)
+lflags  += $(cross_lflags)
 clflags += $(cross_clflags)
 
 ifeq ('$(CROSS_LIB)','')
@@ -511,38 +400,6 @@ ifeq ('$(USE_GCC_48_OR_HIGHER)','yes')
 endif
 #cflags += -save-temps# uncomment to see preprocessor output
 
-#---------------------- various sanitizers
-
-COMMON_SANITIZE_FLAGS:=-ggdb3 -fno-omit-frame-pointer
-
-# activate AddressSanitizer+LeakSanitizer?
-ifeq ($(SANITIZE_ADDRESS),1)
- cflags += $(COMMON_SANITIZE_FLAGS) -fsanitize=address
- dflags += -DLEAKS_SANITIZED
- EXECLIBS += -lasan
-# EXECLIBS += -static-libasan
-endif
-
-# activate UndefinedBehaviorSanitizer?
-ifeq ($(SANITIZE_UNDEFINED),1)
- cflags += $(COMMON_SANITIZE_FLAGS) -fsanitize=undefined
-# uncomment next line to abort on runtime errors (needs 'rebuild')
-#cflags += -fno-sanitize-recover
-# Note: alignment-sanitizer is deactivated for ARBDB and PROBE!
- ifeq ('$(DEBUG)','1')
-  ifeq ($(USE_GCC_MAJOR),4)
-   ifeq ($(USE_GCC_MINOR),9)
-    ifneq ('$(findstring $(USE_GCC_PATCHLEVEL),01)','')
-# workaround https://gcc.gnu.org/bugzilla/show_bug.cgi?id=63531 for 4.9.0 + 4.9.1
-# (problem is fixed in 4.9.2 release)
-     extended_cpp_warnings:=$(subst -Weffc++,,$(extended_cpp_warnings))
-    endif
-   endif
-  endif
- endif
- EXECLIBS += -lubsan
-endif
-
 #---------------------- X11 location
 
 ifeq ($(DARWIN),1)
@@ -566,11 +423,9 @@ else
 	XLIBS:=-L$(XHOME)/$(CROSS_LIB) -lXm -lXpm -lXt -lXext -lX11
 endif
 
-dflags += -DARB_MOTIF
-
 #---------------------- open GL
 
-ifeq ($(OPENGL),1)
+ifeq ($(OPENGL),1) 
 	cflags += -DARB_OPENGL # activate OPENGL code
 	GL     := gl # this is the name of the OPENGL base target
 	GL_LIB_SYS := -lGL -lGLU
@@ -613,10 +468,6 @@ GL_LIBS:=$(GL_LIBS_ARB) $(GL_LIBS_SYS)
 
 TIFFLIBS := -ltiff
 
-#---------------------- XML lib:
-
-XMLLIBS := -lxerces-c
-
 #---------------------- glib:
 
 ARB_NEEDED_GLIB=glib-2.0
@@ -629,7 +480,7 @@ ARB_GLIB_LIBS:=$(strip    $(shell pkg-config --libs   $(ARB_NEEDED_GLIB)))
 SYSLIBS:=
 
 ifeq ($(DARWIN),1)
-	SYSLIBS += -lstdc++ 
+	SYSLIBS += -lstdc++
 else
 	SYSLIBS += -lm $(ARB_GLIB_LIBS)
 endif
@@ -639,6 +490,7 @@ endif
 ifeq ($(TRACESYM),1)
 	ifeq ($(USE_CLANG),0)
 		cflags  += -rdynamic
+		lflags  += --export-dynamic
 		clflags += -rdynamic -Wl,--export-dynamic
 	endif
 endif
@@ -650,54 +502,6 @@ ifeq ($(DARWIN),1)
 else
 	TIME:=/usr/bin/time
 endif
-
-#---------------------- SSE vectorizer
-
-ifeq ($(DEBUG),0)
- ifeq ($(USE_GCC_49_OR_HIGHER),yes)
-  ifeq ($(SANITIZE_ANY),0)
-#	cflags += -fopt-info
-	cflags += -fopt-info-vec
-
-#	Shows reasons for unsuccessful vectorization:
-#	cflags += -fopt-info-vec-missed
-
-	POST_COMPILE += --check-loop-optimization
-  endif
- else
-  ifeq ($(USE_GCC_48_OR_HIGHER),yes)
-# no automatic vectorization-check for gcc<4.9.0
-# -> uncomment the next 2 lines and grep the spam it will produce for 'vectorized.*loops'
-#	cflags += -fopt-info -fopt-info-vec-missed
-#	POST_COMPILE += --original
-  endif
- endif
-endif
-
-#---------------------- stop early on broken flags/compiler combination
-
-ifeq ($(DEBUG),0)
- ifeq ($(SANITIZE_ANY),1)
-  ifeq ('$(COMPILER_VERSION)','4.9.1')
-   $(error compiling DEBUG=0 + SANITIZE!=0 crashes with gcc $(COMPILER_VERSION) (gcc 4.9.2 works))
-  endif
- endif
-endif
-
-#---------------------- differences between linking executables and shared libs:
-
-# executables:
-ifeq ($(DARWIN),1)
-blflags:=$(clflags)
-else
-blflags:=$(clflags) -Wl,--no-undefined
-endif
-
-# shared libraries
-llflags:=$(clflags)
-
-# dont use clflags below
-clflags:=
 
 # -------------------------------------------------------------------------
 #	Don't put any machine/version/etc conditionals below!
@@ -724,26 +528,20 @@ cxxflags += -std=gnu++0x
  endif
 endif
 
-LINK_STATIC_LIB := ar -csq# link static lib
-LINK_EXECUTABLE := $(A_CXX) $(blflags) -o# link executable (c++)
+LINK_STATIC_LIB := ld $(lflags) -r -o# link static lib
+LINK_EXECUTABLE := $(A_CXX) $(clflags) -o# link executable (c++)
 
 ifeq ($(LINK_STATIC),1)
 SHARED_LIB_SUFFIX = a# static lib suffix
 LINK_SHARED_LIB := $(LINK_STATIC_LIB)
 else
 SHARED_LIB_SUFFIX = so# shared lib suffix
-LINK_SHARED_LIB := $(A_CXX) $(llflags) -shared $(GCOVFLAGS) -o# link shared lib
-endif
-
-ifeq ($(DARWIN),1)
-lflags4perl:=
-else
-lflags4perl:=$(cross_lflags) -shared
+LINK_SHARED_LIB := $(A_CXX) $(clflags) -shared $(GCOVFLAGS) -o# link shared lib
 endif
 
 # delete variables unused below
-blflags:=
-llflags:=
+lflags:=
+clflags:=
 
 # other used tools
 MAKEDEPEND_PLAIN = makedepend
@@ -761,7 +559,7 @@ LIBS = $(ARBDB_LIB) $(SYSLIBS)
 
 GUI_LIBS_PREFIX:=
 ifeq ($(DARWIN),1)
-#       this seem to be added at wrong place, since opengl is only needed to link EDIT4
+#       this seem to be added at wrong place, since opengl is only needed to link EDIT4 
         GUI_LIBS_PREFIX:=-framework GLUT -framework OpenGL
 endif
 
@@ -777,7 +575,7 @@ CC_INCLUDES  := -I. -I$(ARBHOME)/INCLUDE $(XINCLUDES) $(ARB_GLIB_INCLUDE)
 CXX_INCLUDES := $(CC_INCLUDES)
 MAKEDEPENDFLAGS := -- -DARB_OPENGL -DUNIT_TESTS -D__cplusplus -I. -Y$(ARBHOME)/INCLUDE
 
-# -------------------------------
+# ------------------------------- 
 #     old PTSERVER or PTPAN?
 
 ifeq ($(PTPAN),1)
@@ -808,16 +606,16 @@ endif
 use_ARB_main=$(ARBHOME)/SOURCE_TOOLS/arb_main_cpp.o
 use_ARB_main_C=$(ARBHOME)/SOURCE_TOOLS/arb_main_c.o
 
-# -----------------------------------------
-#     export variables to submakefiles
+# ----------------------------------------- 
+#     export variables to submakefiles     
 
 include SOURCE_TOOLS/export2sub
 
-# do not define (exported) variables below this point
+# do not define (exported) variables below this point 
 
-# -------------------------
-#     Main arb targets:
-# -------------------------
+# ------------------------- 
+#     Main arb targets:     
+# ------------------------- 
 
 first_target:
 		$(MAKE) checks
@@ -829,8 +627,7 @@ first_target:
 		@echo ''
 		@echo ' clean       - remove generated files ("SUBDIR/SUBDIR.clean" to clean only SUBDIR)'
 		@echo ' rebuild     - clean + all'
-		@echo ' cleanlinked - remove all binaries'
-		@echo ' relink      - cleanlinked + all (=relink all from objects)'
+		@echo ' relink      - remove all binaries and relink them from objects'
 		@echo ''
 		@echo 'Some often used sub targets (make all makes them all):'
 		@echo ''
@@ -860,7 +657,7 @@ endif
 		@echo ' patch       - save svn diff to patchfile'
 		@echo ' source_doc  - create doxygen documentation'
 		@echo ' relocated   - rebuild partly (use when you have relocated ARBHOME)'
-		@echo ' check_res   - check resource usage'
+		@echo ' check_res   - check ressource usage'
 		@echo ' dep_graph   - Build dependency graphs'
 		@echo ' clean_cov   - Clean coverage results'
 		@echo ''
@@ -939,13 +736,6 @@ endif
 
 # ---------------------------------------- check gcc version
 
-COMPILER_BROKEN:=0
-
-# gcc 4.8.0 produces invalid code (see #617)
-ifeq ('$(COMPILER_VERSION_ALLOWED)', '4.8.0')
-COMPILER_BROKEN:=1
-endif
-
 check_same_GCC_VERSION:
 		$(ARBHOME)/SOURCE_TOOLS/check_same_compiler_version.pl $(COMPILER_NAME) $(COMPILER_VERSION_ALLOWED)
 
@@ -960,15 +750,13 @@ ifeq ('$(COMPILER_VERSION_ALLOWED)', '')
 		@echo '    - add your version to ALLOWED_$(COMPILER_NAME)_VERSIONS in the Makefile and try it out or'
 		@echo '    - switch to one of the allowed versions (see arb_README_gcc.txt for installing'
 		@echo '      a different version of gcc)'
-		$(error Unsupported compiler '$(COMPILER_NAME)' version '$(COMPILER_VERSION)')
-else
-ifeq ($(COMPILER_BROKEN),1)
-		$(error $(COMPILER_NAME) version '$(COMPILER_VERSION_ALLOWED)' would build a broken ARB version. Compilation refused)
+		@echo ''
+		@false
 else
 		@echo "  - Supported $(COMPILER_NAME) version '$(COMPILER_VERSION_ALLOWED)' detected - fine!"
 		@echo ''
 		$(MAKE) check_same_GCC_VERSION
-endif
+
 endif
 
 #---------------------- check ARBHOME
@@ -1007,6 +795,7 @@ check_TOOLS:
 		"$(LINK_SHARED_LIB)" \
 		"$(LINK_SHARED_LIB)" \
 
+
 check_ENVIRONMENT : check_PATH check_TOOLS
 		@echo "-------------------- Environment [start]"
 		@echo "ARBHOME='$(ARBHOME)'"
@@ -1026,7 +815,7 @@ force_tab_check:
 
 # ---------------------
 
-check_setup: check_ENVIRONMENT check_DEBUG check_ARB_64 check_DEVELOPER check_GCC_VERSION
+check_setup: check_ENVIRONMENT check_DEBUG check_ARB_64 check_DEVELOPER check_GCC_VERSION 
 		@echo Your setup seems to be ok.
 
 checks: check_setup check_tabs
@@ -1093,11 +882,14 @@ ARCHS = \
 			WINDOW/libWINDOW.a \
 			XML/XML.a \
 
-# -----------------------
-#     library packets
+# ----------------------- 
+#     library packets     
 
-ARCHS_CLIENT_PROBE = PROBE_COM/client.a
-ARCHS_CLIENT_NAMES = NAMES_COM/client.a
+ARCHS_CLIENT_PROBE = PROBE_COM/client.a PROBE_COM/common.a
+ARCHS_CLIENT_NAMES = NAMES_COM/client.a NAMES_COM/common.a
+
+ARCHS_SERVER_PROBE = PROBE_COM/server.a $(ARCHS_CLIENT_PROBE)
+ARCHS_SERVER_NAMES = NAMES_COM/server.a $(ARCHS_CLIENT_NAMES)
 
 ARCHS_MAKEBIN = AISC_MKPTPS/AISC_MKPTPS.a AISC/AISC.a
 
@@ -1113,14 +905,15 @@ ARCHS_SEQUENCE = \
 		SL/PRONUC/PRONUC.a \
 
 ARCHS_TREE = \
-		SL/ARB_TREE/ARB_TREE.a \
-		SL/FILTER/FILTER.a \
 		$(ARCHS_SEQUENCE) \
+		SL/FILTER/FILTER.a \
+		SL/ARB_TREE/ARB_TREE.a \
+		SL/ROOTED_TREE/ROOTED_TREE.a \
 
 # parsimony tree (used by NTREE, PARSIMONY, STAT(->EDIT4), DIST(obsolete!))
 ARCHS_AP_TREE = \
-		SL/AP_TREE/AP_TREE.a \
 		$(ARCHS_TREE) \
+		SL/AP_TREE/AP_TREE.a \
 
 # --------------------------------------------------------------------------------
 # dependencies for linking shared libs
@@ -1131,7 +924,7 @@ link_aw:	aw link_db
 link_awt:	awt link_aw
 
 #***************************************************************************************
-#		Individual_Programs_Section
+#		Individual_Programs_Section 
 #***************************************************************************************
 
 arbmainwrapper:
@@ -1144,25 +937,22 @@ ARCHS_NTREE = \
 		NTREE/NTREE.a \
 		$(ARCHS_AP_TREE) \
 		ARB_GDE/ARB_GDE.a \
-		SL/DB_UI/DB_UI.a \
 		AWTC/AWTC.a \
 		AWTI/AWTI.a \
 		CONSENSUS_TREE/CONSENSUS_TREE.a \
-		GENOM_IMPORT/GENOM_IMPORT.a \
 		GENOM/GENOM.a \
+		GENOM_IMPORT/GENOM_IMPORT.a \
 		MERGE/MERGE.a \
 		MULTI_PROBE/MULTI_PROBE.a \
 		PRIMER_DESIGN/PRIMER_DESIGN.a \
 		PROBE_DESIGN/PROBE_DESIGN.a \
 		SEQ_QUALITY/SEQ_QUALITY.a \
 		SERVERCNTRL/SERVERCNTRL.a \
-		SL/ALILINK/ALILINK.a \
 		SL/AW_NAME/AW_NAME.a \
-		SL/CONSENSUS/CONSENSUS.a \
+		SL/DB_UI/DB_UI.a \
 		SL/DB_SCANNER/DB_SCANNER.a \
 		SL/DB_QUERY/DB_QUERY.a \
 		SL/SEQIO/SEQIO.a \
-		STAT/STAT.a \
 		SL/GUI_ALIVIEW/GUI_ALIVIEW.a \
 		SL/HELIX/HELIX.a \
 		SL/REGEXPR/REGEXPR.a \
@@ -1177,13 +967,14 @@ ARCHS_NTREE = \
 		SL/TREE_ADMIN/TREE_ADMIN.a \
 		SL/TREE_READ/TREE_READ.a \
 		SL/TREE_WRITE/TREE_WRITE.a \
+		STAT/STAT.a \
 		XML/XML.a \
 
 $(NTREE): $(ARCHS_NTREE:.a=.dummy) link_awt
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_NTREE) $(GUI_LIBS) $(use_ARB_main) || ( \
 		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(EXECLIBS) $(ARCHS_NTREE) $(ARCHS_CLIENT_PROBE) $(GUI_LIBS) $(XMLLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(EXECLIBS) $(ARCHS_NTREE) $(ARCHS_CLIENT_PROBE) $(GUI_LIBS) $(XMLLIBS) && \
+		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_NTREE) $(ARCHS_CLIENT_PROBE) $(GUI_LIBS) $(EXECLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_NTREE) $(ARCHS_CLIENT_PROBE) $(GUI_LIBS) $(EXECLIBS) && \
 		echo "$(SEP) Link $@ [done]"; \
 		)
 
@@ -1192,23 +983,22 @@ EDIT4 = bin/arb_edit4
 
 ARCHS_EDIT4 := \
 		EDIT4/EDIT4.a \
+		$(ARCHS_AP_TREE) \
 		ARB_GDE/ARB_GDE.a \
-		SL/FAST_ALIGNER/FAST_ALIGNER.a \
 		AWTC/AWTC.a \
 		ISLAND_HOPPING/ISLAND_HOPPING.a \
 		SECEDIT/SECEDIT.a \
 		SERVERCNTRL/SERVERCNTRL.a \
 		SL/AW_HELIX/AW_HELIX.a \
 		SL/AW_NAME/AW_NAME.a \
-		SL/CONSENSUS/CONSENSUS.a \
+		SL/FAST_ALIGNER/FAST_ALIGNER.a \
 		SL/ITEMS/ITEMS.a \
-		STAT/STAT.a \
 		SL/GUI_ALIVIEW/GUI_ALIVIEW.a \
 		SL/HELIX/HELIX.a \
 		SL/TRANSLATE/TRANSLATE.a \
 		SL/MACROS/MACROS.a \
 		SL/NDS/NDS.a \
-		$(ARCHS_AP_TREE) \
+		STAT/STAT.a \
 		XML/XML.a \
 
 ifeq ($(OPENGL),1)
@@ -1217,11 +1007,11 @@ endif
 
 LIBS_EDIT4 := $(GL_LIBS)
 
-$(EDIT4): $(ARCHS_EDIT4:.a=.dummy) link_awt
+$(EDIT4): $(ARCHS_EDIT4:.a=.dummy) link_awt 
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_EDIT4) $(GUI_LIBS) $(use_ARB_main) || ( \
 		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(EXECLIBS) $(ARCHS_EDIT4) $(ARCHS_CLIENT_NAMES) $(GUI_LIBS) $(LIBS_EDIT4)" ; \
-		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(EXECLIBS) $(ARCHS_EDIT4) $(ARCHS_CLIENT_NAMES) $(GUI_LIBS) $(LIBS_EDIT4) && \
+		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_EDIT4) $(ARCHS_CLIENT_NAMES) $(GUI_LIBS) $(LIBS_EDIT4) $(EXECLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_EDIT4) $(ARCHS_CLIENT_NAMES) $(GUI_LIBS) $(LIBS_EDIT4) $(EXECLIBS) && \
 		echo "$(SEP) Link $@ [done]"; \
 		)
 
@@ -1249,16 +1039,17 @@ ARCHS_WETC = \
 $(WETC): $(ARCHS_WETC:.a=.dummy) link_awt
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_WETC) $(GUI_LIBS) $(use_ARB_main) || ( \
 		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(EXECLIBS) $(ARCHS_WETC) $(GUI_LIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(EXECLIBS) $(ARCHS_WETC) $(GUI_LIBS) && \
+		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_WETC) $(GUI_LIBS) $(EXECLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_WETC) $(GUI_LIBS) $(EXECLIBS) && \
 		echo "$(SEP) Link $@ [done]"; \
 		)
 
 #***********************************	arb_dist **************************************
 DIST = bin/arb_dist
 ARCHS_DIST = \
-		DIST/DIST.a \
+		$(ARCHS_AP_TREE) \
 		CONSENSUS_TREE/CONSENSUS_TREE.a \
+		DIST/DIST.a \
 		EISPACK/EISPACK.a \
 		SERVERCNTRL/SERVERCNTRL.a \
 		SL/GUI_ALIVIEW/GUI_ALIVIEW.a \
@@ -1269,19 +1060,19 @@ ARCHS_DIST = \
 		SL/ITEMS/ITEMS.a \
 		SL/NEIGHBOURJOIN/NEIGHBOURJOIN.a \
 		XML/XML.a \
-		$(ARCHS_AP_TREE) \
 
 $(DIST): $(ARCHS_DIST:.a=.dummy) link_awt
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_DIST) $(GUI_LIBS) $(use_ARB_main) || ( \
 		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(EXECLIBS) $(ARCHS_DIST) $(ARCHS_CLIENT_PROBE) $(GUI_LIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(EXECLIBS) $(ARCHS_DIST) $(ARCHS_CLIENT_PROBE) $(GUI_LIBS) && \
+		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_DIST) $(ARCHS_CLIENT_PROBE) $(GUI_LIBS) $(EXECLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_DIST) $(ARCHS_CLIENT_PROBE) $(GUI_LIBS) $(EXECLIBS) && \
 		echo "$(SEP) Link $@ [done]"; \
 		)
 
 #***********************************	arb_pars **************************************
 PARSIMONY = bin/arb_pars
 ARCHS_PARSIMONY = \
+		$(ARCHS_AP_TREE) \
 		PARSIMONY/PARSIMONY.a \
 		SERVERCNTRL/SERVERCNTRL.a \
 		SL/AW_NAME/AW_NAME.a \
@@ -1293,13 +1084,12 @@ ARCHS_PARSIMONY = \
 		SL/TRANSLATE/TRANSLATE.a \
 		SL/TREEDISP/TREEDISP.a \
 		XML/XML.a \
-		$(ARCHS_AP_TREE) \
 
 $(PARSIMONY): $(ARCHS_PARSIMONY:.a=.dummy) link_awt
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PARSIMONY) $(GUI_LIBS) $(use_ARB_main) || ( \
 		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(EXECLIBS) $(ARCHS_PARSIMONY) $(ARCHS_CLIENT_NAMES) $(GUI_LIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(EXECLIBS) $(ARCHS_PARSIMONY) $(ARCHS_CLIENT_NAMES) $(GUI_LIBS) && \
+		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_PARSIMONY) $(ARCHS_CLIENT_NAMES) $(GUI_LIBS) $(EXECLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_PARSIMONY) $(ARCHS_CLIENT_NAMES) $(GUI_LIBS) $(EXECLIBS) && \
 		echo "$(SEP) Link $@ [done]"; \
 		)
 
@@ -1311,8 +1101,8 @@ ARCHS_CONVERT_ALN =	\
 $(CONVERT_ALN) : $(ARCHS_CONVERT_ALN:.a=.dummy) link_db
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_CONVERT_ALN) $(use_ARB_main) || ( \
 		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(EXECLIBS) $(ARCHS_CONVERT_ALN) $(LIBS)"; \
-		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(EXECLIBS) $(ARCHS_CONVERT_ALN) $(LIBS) && \
+		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_CONVERT_ALN) $(LIBS) $(EXECLIBS)"; \
+		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_CONVERT_ALN) $(LIBS) $(EXECLIBS) && \
 		echo "$(SEP) Link $@ [done]"; \
 		)
 
@@ -1325,8 +1115,8 @@ ARCHS_TREEGEN =	\
 $(TREEGEN) :  $(ARCHS_TREEGEN:.a=.dummy)
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_TREEGEN) $(use_ARB_main_C) || ( \
 		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main_C) $(LIBPATH) $(EXECLIBS) $(ARCHS_TREEGEN)" ; \
-		$(LINK_EXECUTABLE) $@ $(use_ARB_main_C) $(LIBPATH) $(EXECLIBS) $(ARCHS_TREEGEN) && \
+		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main_C) $(LIBPATH) $(ARCHS_TREEGEN) $(EXECLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(use_ARB_main_C) $(LIBPATH) $(ARCHS_TREEGEN) $(EXECLIBS) && \
 		echo "$(SEP) Link $@ [done]"; \
 		)
 
@@ -1340,8 +1130,8 @@ ARCHS_NALIGNER = \
 $(NALIGNER): $(ARCHS_NALIGNER:.a=.dummy) link_db
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_NALIGNER) $(use_ARB_main) || ( \
 		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(EXECLIBS) $(ARCHS_NALIGNER) $(ARCHS_CLIENT_PROBE) $(LIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(EXECLIBS) $(ARCHS_NALIGNER) $(ARCHS_CLIENT_PROBE) $(LIBS) && \
+		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_NALIGNER) $(ARCHS_CLIENT_PROBE) $(LIBS) $(EXECLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_NALIGNER) $(ARCHS_CLIENT_PROBE) $(LIBS) $(EXECLIBS) && \
 		echo "$(SEP) Link $@ [done]"; \
 		)
 
@@ -1351,14 +1141,15 @@ ARCHS_PHYLO = \
 		PHYLO/PHYLO.a \
 		SL/HELIX/HELIX.a \
 		SL/FILTER/FILTER.a \
+		SL/MATRIX/MATRIX.a \
 		SL/MACROS/MACROS.a \
 		XML/XML.a \
 
 $(PHYLO): $(ARCHS_PHYLO:.a=.dummy) link_awt
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PHYLO) $(GUI_LIBS) $(use_ARB_main) || ( \
 		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(EXECLIBS) $(ARCHS_PHYLO) $(GUI_LIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(EXECLIBS) $(ARCHS_PHYLO) $(GUI_LIBS) && \
+		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_PHYLO) $(GUI_LIBS) $(EXECLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_PHYLO) $(GUI_LIBS) $(EXECLIBS) && \
 		echo "$(SEP) Link $@ [done]"; \
 		)
 
@@ -1375,31 +1166,31 @@ ARCHS_DBSERVER = \
 $(DBSERVER): $(ARCHS_DBSERVER:.a=.dummy) link_db
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_DBSERVER) $(ARBDB_LIB) $(use_ARB_main) || ( \
 		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(EXECLIBS) $(ARCHS_DBSERVER) $(ARBDB_LIB) $(ARCHS_CLIENT_PROBE) $(SYSLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(EXECLIBS) $(ARCHS_DBSERVER) $(ARBDB_LIB) $(ARCHS_CLIENT_PROBE) $(SYSLIBS) && \
+		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_DBSERVER) $(ARBDB_LIB) $(ARCHS_CLIENT_PROBE) $(SYSLIBS) $(EXECLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_DBSERVER) $(ARBDB_LIB) $(ARCHS_CLIENT_PROBE) $(SYSLIBS) $(EXECLIBS) && \
 		echo "$(SEP) Link $@ [done]"; \
 		)
 
 #***********************************	arb_pt_server **************************************
 PROBE = bin/arb_pt_server
 ARCHS_PROBE_COMMON = \
-		SL/PTCLEAN/PTCLEAN.a \
 		SERVERCNTRL/SERVERCNTRL.a \
 		SL/HELIX/HELIX.a \
+		SL/PTCLEAN/PTCLEAN.a \
 
 ARCHS_PROBE_LINK = \
-		$(ARCHS_PT_SERVER_LINK) \
 		$(ARCHS_PROBE_COMMON) \
+		$(ARCHS_PT_SERVER_LINK) \
 
 ARCHS_PROBE_DEPEND = \
-		$(ARCHS_PT_SERVER) \
 		$(ARCHS_PROBE_COMMON) \
+		$(ARCHS_PT_SERVER) \
 
-$(PROBE): $(ARCHS_PROBE_DEPEND:.a=.dummy) link_db
-	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PROBE_LINK) $(ARBDB_LIB) $(ARCHS_SERVER_PROBE) config.makefile $(use_ARB_main) || ( \
+$(PROBE): $(ARCHS_PROBE_DEPEND:.a=.dummy) link_db 
+	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PROBE_LINK) $(ARBDB_LIB) $(ARCHS_CLIENT_PROBE) config.makefile $(use_ARB_main) || ( \
 		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(EXECLIBS) $(ARCHS_PROBE_LINK) $(ARCHS_CLIENT_PROBE) $(ARBDB_LIB) $(SYSLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(EXECLIBS) $(ARCHS_PROBE_LINK) $(ARCHS_CLIENT_PROBE) $(ARBDB_LIB) $(SYSLIBS) && \
+		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_PROBE_LINK) $(ARBDB_LIB) $(ARCHS_SERVER_PROBE) $(SYSLIBS) $(EXECLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_PROBE_LINK) $(ARBDB_LIB) $(ARCHS_SERVER_PROBE) $(SYSLIBS) $(EXECLIBS) && \
 		echo "$(SEP) Link $@ [done]"; \
 		)
 
@@ -1412,8 +1203,8 @@ ARCHS_NAMES = \
 $(NAMES): $(ARCHS_NAMES:.a=.dummy) link_db
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_NAMES) $(ARBDB_LIB) $(ARCHS_CLIENT_NAMES) $(use_ARB_main) || ( \
 		echo "$(SEP) Link $@"; \
-		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(EXECLIBS) $(ARCHS_NAMES) $(ARBDB_LIB) $(ARCHS_CLIENT_NAMES) NAMES_COM/server.a $(SYSLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(EXECLIBS) $(ARCHS_NAMES) $(ARBDB_LIB) $(ARCHS_CLIENT_NAMES) NAMES_COM/server.a $(SYSLIBS) && \
+		echo "$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_NAMES) $(ARBDB_LIB) $(ARCHS_CLIENT_NAMES) NAMES_COM/server.a $(SYSLIBS) $(EXECLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(use_ARB_main) $(LIBPATH) $(ARCHS_NAMES) $(ARBDB_LIB) $(ARCHS_CLIENT_NAMES) NAMES_COM/server.a $(SYSLIBS) $(EXECLIBS) && \
 		echo "$(SEP) Link $@ [done]"; \
 		)
 
@@ -1448,12 +1239,12 @@ addlibs:
 	@$(ARBHOME)/SOURCE_TOOLS/mv_if_diff $(@D)/Makefile.2 $(@D)/Makefile # update Makefile if changed
 
 %.proto:
-	@($(MAKE) -C $(@D) \
+	@$(MAKE) -C $(@D) \
 		"AUTODEPENDS=0" \
 		"MAIN=nothing" \
 		"cflags=noCflags" \
 		"cxxflags=noCxxflags" \
-		proto 2>&1 ) | $(ARBHOME)/SOURCE_TOOLS/asan2msg.pl
+		proto
 
 %.clean:
 	@$(MAKE) -C $(@D) \
@@ -1503,7 +1294,7 @@ PROBE_COM/client.dummy:
 	@echo Unwanted request to make target $<
 	false
 
-NAMES_COM/server.dummy:
+NAMES_COM/server.dummy: 
 	@echo Unwanted request to make target $<
 	false
 
@@ -1524,14 +1315,14 @@ CONSENSUS_TREE/CONSENSUS_TREE.dummy:	links_non_perl
 CONVERTALN/CONVERTALN.dummy:		links_non_perl
 DBSERVER/DBSERVER.dummy:		links_non_perl
 DIST/DIST.dummy:			links_non_perl
-EDIT4/EDIT4.dummy:			links_non_perl com
+EDIT4/EDIT4.dummy:			links_non_perl genheaders com
 EISPACK/EISPACK.dummy:			links_non_perl
 GDE/GDE.dummy:				links_non_perl
 GENOM/GENOM.dummy:			links_non_perl
 GENOM_IMPORT/GENOM_IMPORT.dummy:	links_non_perl
 ISLAND_HOPPING/ISLAND_HOPPING.dummy:	links_non_perl
 MERGE/MERGE.dummy:			links_non_perl
-NTREE/NTREE.dummy:			links_non_perl
+NTREE/NTREE.dummy:			links_non_perl genheaders
 PARSIMONY/PARSIMONY.dummy:		links_non_perl
 PHYLO/PHYLO.dummy:			links_non_perl
 PRIMER_DESIGN/PRIMER_DESIGN.dummy:	links_non_perl
@@ -1541,12 +1332,10 @@ RNACMA/RNACMA.dummy:			links_non_perl header_libs
 SECEDIT/SECEDIT.dummy:			links_non_perl
 SEQ_QUALITY/SEQ_QUALITY.dummy:		links_non_perl
 SERVERCNTRL/SERVERCNTRL.dummy:		links_non_perl com
-SL/ALILINK/ALILINK.dummy:		links_non_perl
 SL/ALIVIEW/ALIVIEW.dummy:		links_non_perl
 SL/AP_TREE/AP_TREE.dummy:		links_non_perl
 SL/ARB_TREE/ARB_TREE.dummy:		links_non_perl
 SL/AW_HELIX/AW_HELIX.dummy:		links_non_perl
-SL/CONSENSUS/CONSENSUS.dummy:		links_non_perl
 SL/DB_QUERY/DB_QUERY.dummy:		links_non_perl
 SL/DB_SCANNER/DB_SCANNER.dummy:		links_non_perl
 SL/DB_UI/DB_UI.dummy:			links_non_perl
@@ -1565,6 +1354,7 @@ SL/PRONUC/PRONUC.dummy:			links_non_perl
 SL/PTCLEAN/PTCLEAN.dummy:		links_non_perl link_db
 SL/REFENTRIES/REFENTRIES.dummy:		links_non_perl
 SL/REGEXPR/REGEXPR.dummy:		links_non_perl
+SL/ROOTED_TREE/ROOTED_TREE.dummy:	links_non_perl
 SL/SEQIO/SEQIO.dummy:			links_non_perl
 SL/SEQUENCE/SEQUENCE.dummy:		links_non_perl
 SL/TRANSLATE/TRANSLATE.dummy:		links_non_perl
@@ -1588,16 +1378,12 @@ endif
 UNIT_TESTER/UNIT_TESTER.dummy:		link_db \
 	SERVERCNTRL/SERVERCNTRL.dummy \
 
-# see also TOOLS/Makefile@TOOLSLIBDEPENDS
 TOOLS/TOOLS.dummy : links_non_perl link_db \
-	CONSENSUS_TREE/CONSENSUS_TREE.dummy \
 	SERVERCNTRL/SERVERCNTRL.dummy \
-	SL/FILTER/FILTER.dummy \
-	SL/INSDEL/INSDEL.dummy \
-	SL/REGEXPR/REGEXPR.dummy \
-	SL/SEQIO/SEQIO.dummy \
-	SL/TREE_READ/TREE_READ.dummy \
+	SL/ROOTED_TREE/ROOTED_TREE.dummy \
 	SL/TREE_WRITE/TREE_WRITE.dummy \
+	SL/TREE_READ/TREE_READ.dummy \
+	CONSENSUS_TREE/CONSENSUS_TREE.dummy \
 	XML/XML.dummy \
 
 AWTC/AWTC.dummy :   			com
@@ -1731,7 +1517,7 @@ fa:	SL/FAST_ALIGNER/FAST_ALIGNER.dummy
 
 #********************************************************************************
 
-up_by_remake: depends proto vectorize_checks
+up_by_remake: depends proto
 
 up: up_by_remake tags valgrind_update
 
@@ -1765,7 +1551,7 @@ comdepends: comtools clrdotdepends
 	$(MAKE) PROBE_COM/PROBE_COM.depends NAMES_COM/NAMES_COM.depends
 	$(MAKE) PROBE_COM/server.depends    NAMES_COM/server.depends
 
-depends: genheaders comdepends vectorize_checks
+depends: genheaders comdepends
 	@echo "$(SEP) Updating other dependencies"
 	$(MAKE) $(subst NAMES_COM/server.depends,,$(subst PROBE_COM/server.depends,,$(ARCHS:.a=.depends))) \
 		HELP_SOURCE/HELP_SOURCE.depends \
@@ -1793,11 +1579,6 @@ dependstest6: silent_clean
 	$(MAKE) nt
 dependstest7: silent_clean
 	$(MAKE) all
-# ------------------------------------------------------------
-
-vectorize_checks:
-	$(MAKE) -C SOURCE_TOOLS -r vectorize_checks
-
 # ------------------------------------------------------------
 
 AISC_MKPTPS/AISC_MKPTPS.dummy: links
@@ -1869,7 +1650,7 @@ forcelinks:
 	-rm $(LINKSTAMP)
 	$(MAKE) links
 
-$(LINKSTAMP): SOURCE_TOOLS/generate_all_links.sh genheaders
+$(LINKSTAMP): SOURCE_TOOLS/generate_all_links.sh
 	+SOURCE_TOOLS/generate_all_links.sh
 	touch $(LINKSTAMP)
 
@@ -1929,7 +1710,7 @@ preplib:
 # make 'perl' is a BIG target, so when it has to be made, it has to be started
 # as early as possible to reduce overall compile time. Since 'make' does not
 # provide any priotities, i force it to build all 'perl'-prerequisites early, by
-# adding  artificial dependencies to these prerequisites
+# adding  artificial dependencies to these prerequisites 
 #
 # That behavior is likely to be system-dependent.
 # My goal was only to make it work on my current development system,
@@ -1959,8 +1740,8 @@ realperl: perltools
 		$(TIME) $(MAKE) -C PERL2ARB -r -f Makefile.main \
 			"AUTODEPENDS=1" \
 			"dflags=$(dflags)" \
-			"cflags4perl=$(cflags) $(cxxflags) $(dflags)" \
-			"lflags4perl=$(lflags4perl)" \
+			"cross_cflags=$(cross_cflags) $(cxxflags) $(dflags)" \
+			"cross_lflags=$(cross_lflags)" \
 			"COMPILER_VERSION=$(COMPILER_VERSION)" \
 			all && \
 		$(TEST_PERL_SCRIPTS) && \
@@ -2004,10 +1785,10 @@ cloc:
 	@echo 'External rest:'
 	@$(CLOC) $(CLOCFLAGS) $(CLOCREST) $(CLOCEXT) | $(CLOCFILT)
 
-# ---------------------------------------- check resources
+# ---------------------------------------- check ressources
 
 check_res:
-	$(ARBHOME)/SOURCE_TOOLS/check_resources.pl
+	$(ARBHOME)/SOURCE_TOOLS/check_ressources.pl
 
 # ---------------------------------------- cleaning
 
@@ -2081,8 +1862,7 @@ relocated: links
 	$(MAKE) build
 
 # -----------------------------------
-# some stress tests
-# (helpful to reveal race conditions with -j)
+# some stress tests:
 
 rebuild4ever: rebuild
 	$(MAKE) rebuild4ever
@@ -2096,34 +1876,29 @@ clean4ever: clean
 test4ever: ut
 	$(MAKE) test4ever
 
-perl4ever: clean
+perl4ever: clean 
 	$(MAKE) links
 	$(MAKE) perl
 	$(MAKE) perl4ever
 
-help4ever: clean
-	$(MAKE) help
-	$(MAKE) help4ever
 
 # -----------------------------------
 
 rebuild: clean
 	$(MAKE) all
 
-cleanlinked: bin/bin.clean libclean
-
-relink: cleanlinked
-	$(MAKE) all
+relink: bin/bin.clean libclean
+	$(MAKE) build
 
 tarfile: rebuild
-	$(MAKE) prepare_libdir
+	$(MAKE) prepare_libdir 
 	util/arb_compress
 
 tarfile_quick: build
-	$(MAKE) prepare_libdir
+	$(MAKE) prepare_libdir 
 	util/arb_compress
 
-save: sourcetarfile
+save: sourcetarfile 
 
 patch:
 	SOURCE_TOOLS/arb_create_patch.sh arbPatch
@@ -2163,7 +1938,7 @@ inc_major:
 	touch SOURCE_TOOLS/inc_major.stamp
 	$(MAKE) do_version_update
 
-do_version_update:
+do_version_update: 
 	@echo Incrementing version information
 	$(MAKE) testsave
 	$(MAKE) genheaders # auto upgrades version early
@@ -2237,7 +2012,7 @@ rac_arb_probe:		tools
 rac_arb_read_tree:	tools
 
 # --------------------------------------------------------------------------------
-# unit testing
+# unit testing 
 # @@@ work in progress
 #
 # goal is to automatically test all libraries/executables using TESTED_UNITS_AUTO
@@ -2253,6 +2028,7 @@ TESTED_UNITS_AUTO = $(ARCHS:.a=.test)
 UNITS_WORKING = \
 	$(RNA3D_TEST) \
 	AWTI/AWTI.test \
+	DIST/DIST.test \
 	EISPACK/EISPACK.test \
 	GENOM/GENOM.test \
 	GL/glAW/libglAW.test \
@@ -2274,6 +2050,7 @@ UNITS_WORKING = \
 	SL/DB_SCANNER/DB_SCANNER.test \
 	SL/GUI_ALIVIEW/GUI_ALIVIEW.test \
 	SL/HELIX/HELIX.test \
+	SL/ITEMS/ITEMS.test \
 	SL/LOCATION/LOCATION.test \
 	SL/MATRIX/MATRIX.test \
 	SL/REFENTRIES/REFENTRIES.test \
@@ -2285,6 +2062,7 @@ UNITS_WORKING = \
 	TREEGEN/TREEGEN.test \
 	WETC/WETC.test \
 	XML/XML.test \
+	SL/ROOTED_TREE/ROOTED_TREE.test \
 
 # untestable units
 
@@ -2298,19 +2076,7 @@ UNITS_UNTESTABLE_ATM = \
 # for the moment, put all units containing tests into UNITS_TESTED or UNITS_TESTED_FIRST
 
 UNITS_TESTED_FIRST = \
-	SL/ITEMS/ITEMS.test \
-	SL/CONSENSUS/CONSENSUS.test \
-	DIST/DIST.test \
 	PARSIMONY/PARSIMONY.test \
-	EDIT4/EDIT4.test \
-	NTREE/NTREE.test \
-	MULTI_PROBE/MULTI_PROBE.test \
-
-# plain test-libaries not linked anywhere
-TEST_SANDBOXES = \
-	SL/CB/CB.test \
-
-UNITS_TESTED = \
 	SL/NEIGHBOURJOIN/NEIGHBOURJOIN.test \
 	SL/NDS/NDS.test \
 	ARB_GDE/ARB_GDE.test \
@@ -2325,15 +2091,23 @@ UNITS_TESTED = \
 	TOOLS/arb_probe.test \
 	PERLTOOLS/arb_proto_2_xsub.test \
 	AWTC/AWTC.test \
-	SL/ALILINK/ALILINK.test \
+
+# plain test-libaries not linked anywhere
+TEST_SANDBOXES = \
+	SL/CB/CB.test \
+
+UNITS_TESTED = \
 	SL/TREE_READ/TREE_READ.test \
 	DBSERVER/DBSERVER.test \
 	AWT/libAWT.test \
 	CORE/libCORE.test \
 	SL/INSDEL/INSDEL.test \
 	SL/TREEDISP/TREEDISP.test \
+	NTREE/NTREE.test \
 	AISC_MKPTPS/mkptypes.test \
+	EDIT4/EDIT4.test \
 	MERGE/MERGE.test \
+	MULTI_PROBE/MULTI_PROBE.test \
 	SERVERCNTRL/SERVERCNTRL.test \
 	SL/FAST_ALIGNER/FAST_ALIGNER.test \
 	SL/PRONUC/PRONUC.test \
@@ -2480,7 +2254,7 @@ endif
 CHECKOUT_MODIFIED=0# set to 1 to temporarily skip test for modifications (do not check in if set to 1)
 
 check_svn_does_not_contain_generated:
-ifeq ($(CHECKOUT_MODIFIED),0)
+ifeq ($(CHECKOUT_MODIFIED),0) 
 	@echo "Testing that build does not modify files in SVN"
 	@test 0 = `svn status | wc -l` || ( \
 		echo "The checkout is not/no longer clean:"; \
@@ -2527,17 +2301,6 @@ post_commit_check:
 	$(MAKE) check_svn_state
 
 # --------------------------------------------------------------------------------
-# sanitize arb_ntree; also works for clients (arb_edit4, ...) started from there.
-
-sanitize: all
-	( \
-		export "LSAN_OPTIONS=max_leaks=30:suppressions=$(ARBHOME)/SOURCE_TOOLS/arb.leaksan.supp"; \
-		echo "sake[1]: Entering directory \`$(ARBHOME)'"; \
-		$(ARBHOME)/bin/arb_ntree --execute _logged ~/data/test.arb 2>&1 ; \
-		echo "sake[1]: Leaving directory \`$(ARBHOME)'" \
-	) | $(ARBHOME)/SOURCE_TOOLS/asan2msg.pl
-
-# --------------------------------------------------------------------------------
 
 build: arb
 	$(MAKE) binlink preplib compile_compatibility
@@ -2554,9 +2317,7 @@ ifeq ($(UNIT_TESTS),1)
 	@$(TIMECMD) $(MAKE) run_tests
 endif
 	@echo "$(SEP) $(MAKE) build [done]"
-ifeq ($(DEBUG),1)
 	@$(MAKE) save_test_no_error >/dev/null # just show hints
-endif
 	@cat $(TIMELOG)
 	@rm $(TIMELOG)
 

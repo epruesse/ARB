@@ -85,68 +85,6 @@ NOTES		You can run macros directly on startup by calling arb by
 EXAMPLES	You can find some examples in $ARBHOME/lib/macros (this directory is reachable 
 		in the macro selection box by pressing the ARBMACRO line).
 
-SECTION		Enhanced techniques
-
-                Macros are perl scripts. So if you know perl or have someone @ your lab who does
-                or just feel keen enough, macros can be easily extended to act more sophisticated.
-
-                Some examples:
-
-                     * to create a macro that works with the CURRENTLY SELECTED alignment
-                       - record a macro using an explicit alignment (e.g. 'ali_16s') wherever needed
-                       - edit the recorded macro file:
-                         * above the 1st '# recording started'-line insert the following lines:
-
-                           my $ali_selected = BIO::remote_read_awar($gb_main,'ARB_NT','presets/use');
-                           if ((not defined $ali_selected) or ($ali_selected =~ /\?/)) {
-                             die "Please select a valid alignment";
-                           }
-
-                         * below replace all
-
-                                 occurrences of         with
-                                'ali_16s'               $ali_selected
-
-                           Note the single quotes!
-
-                     * to create a macro that works with two corresponding dna and protein alignments
-                       - record a macro using two explicit alignments (e.g. 'ali_dna' and 'ali_pro') wherever needed
-                       - edit the recorded macro file:
-                         * above the 1st '# recording started'-line insert the following lines:
-
-                           use lib "$ENV{'ARBHOME'}/PERL_SCRIPTS/lib";
-                           use ali_dnapro;
-                           my ($ali_dna,$ali_pro) =  get_dnapro_alignments($gb_main);
-
-                         * below replace all
-
-                                 occurrences of         with
-                                'ali_dna'               $ali_dna
-                                'ali_pro'               $ali_pro
-
-                           Note the single quotes!
-                       - Notes:
-                         * works only if the alignment names contain 'dna' and 'pro' and both
-                           only differ by these terms.
-                         * you may select either the dna or the protein alignment before
-                           running the macro.
-
-                The method used in the first example above also works for other
-                selected things, like
-
-                    * the selected tree using
-
-                          my $tree_selected =  BIO::remote_read_awar($gb_main,'ARB_NT','focus/tree_name');
-
-                    * the selected species using
-
-                          my $species_selected =  BIO::remote_read_awar($gb_main,'ARB_NT','tmp/focus/species_name');
-
-                    * the current cursor position in the editor
-
-                          my $cursor_position =  BIO::remote_read_awar($gb_main,'ARB_NT','tmp/focus/cursor_position');
-
-
 WARNINGS	None
 
 BUGS		None

@@ -11,7 +11,7 @@
 #include "AP_sequence.hxx"
 #include <arbdbt.h>
 
-long AP_sequence::global_combineCount = 0;
+long AP_sequence::global_combineCount;
 
 AP_sequence::AP_sequence(const AliView *aliview)
     : cached_wbc(-1.0)
@@ -28,7 +28,7 @@ GB_ERROR AP_sequence::bind_to_species(GBDATA *gb_species) {
     ap_assert(!gb_sequence); // already bound to species!
     if (!gb_sequence) {
         GB_transaction ta(ali->get_gb_main());
-        gb_sequence = GBT_find_sequence(gb_species, ali->get_aliname());
+        gb_sequence = GBT_read_sequence(gb_species, ali->get_aliname());
         if (!gb_sequence) {
             error = GBS_global_string("Species '%s' has no data in alignment '%s'",
                                       GBT_get_name(gb_species), ali->get_aliname());

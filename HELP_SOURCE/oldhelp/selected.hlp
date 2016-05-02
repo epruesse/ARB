@@ -1,52 +1,44 @@
 #Please insert up references in the next lines (line starts with keyword UP)
-UP      arb.hlp
-UP      glossary.hlp
+UP	arb.hlp
+UP	glossary.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
-#SUB    subtopic.hlp
+#SUB	subtopic.hlp
 
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE           Selected Species and Cursor Position
+TITLE		Selected Species and Cursor Position
 
-OCCURRENCE      ARB_NT
+OCCURRENCE	ARB_NT
                 ARB_EDIT4
-                ARB_PARSIMONY
+                ARB_PARS
 
-DESCRIPTION     An individual species (not an SAI!) can be "selected".
-                That means:
+DESCRIPTION	An individual species (not SAI) can be selected. That means:
 
-                  * the database entries of the selected species get displayed in the LINK{sp_info.hlp} window,
-                  * the name of the selected species will be displayed on the species info button
-                    in the upper right area of the ARB_NT main window,
-                  * the tree display of ARB_NT draws a box as indicator next to the selected species,
-                  * ARB_EDIT4 will jump to the selected species (see LINK{e4_get_species.hlp} for details),
-                    - this allows you e.g. to align the selected species (see LINK{faligner.hlp})
-                  * ARB_SECEDIT will display the selected species (see LINK{arb_secedit.hlp})
-                  * ARB_PARS can insert the selected species into an existing tree (see LINK{pa_quick.hlp})
-                  * it can be used for filter generation (see LINK{sel_fil.hlp})
-                  * LINK{input_mask.hlp} will normally display information from the selected species
+		1.	Its database entries are displayed in the
+			'SPECIES INFORMATION' window <ARB_NT/Species/Info>
 
-                There are several ways to select a species:
+		2.	ARB_PARS can insert the selected species into an
+			existing tree.
 
-                  * in ARB_NT / ARB_PARSIMONY:
-                     * click on a species in the tree display (while in LINK{mode_select.hlp})
-                     * search for species and select a species from the result list (see LINK{sp_search.hlp})
-                     * select a LINK{probematch.hlp}
+		3.	The sequence of the selected species can be aligned
+			<ARB_EDIT4/Edit/Integrated Aligners>.
 
-                  * in ARB_EDIT4:
-                     * place the cursor into a species by clicking into the displayed sequence data
+		4.	It can be used for filter generation.
 
-                  * in ARB_DIST:
-                     * click on a species name in matrix display
-                     * select a detected cluster (see LINK{di_clusters.hlp}) while 'Select representative' is checked
+		The selected species is shown in ARB_NT main window
+                on the species info button in the upper right area. 
 
-                Selecting a species in ARB_EDIT4 by clicking into the sequence data, will also select a
-                global cursor position. This cursor position is displayed in the ARB_EDIT4
-                top area (see LINK{e4.hlp}) and will be used
+	There are several ways to select a species:
 
-                  * as insert/delete position by LINK{insdel.hlp} amd
-                  * as start of ORF by LINK{translate_dna_2_pro.hlp}.
+		1. In ARB_NT
 
+                   Click on a species in the tree.
+
+                   Search for species and select a species from the result list.
+
+		2. In ARB_EDIT4
+
+                   Select a species in the editor.
 

@@ -23,7 +23,7 @@
 
 typedef void * PT_PNTR;
 
-typedef unsigned char  uint_8;  // @@@ use uint8_t, uint16_t, uint32_t, uint64_t here
+typedef unsigned char  uint_8;
 typedef unsigned short uint_16;
 typedef unsigned int   uint_32;
 typedef unsigned long  uint_64;

@@ -13,7 +13,6 @@ SUB	insdel.hlp
 TITLE		Alignment Administration
 
 OCCURRENCE	ARB_NT/Sequence/Admin
-                ARB_MERGE/Check alignments/MODIFY
 
 DESCRIPTION  This module allows handling and modification of 'alignments'
              (see LINK{glossary.hlp}).
@@ -36,17 +35,21 @@ DESCRIPTION  This module allows handling and modification of 'alignments'
                       RENAME:	  Rename an alignment
                       CREATE:	  Create a new alignment (no data)
                       COPY:	  Copy an alignment
+                      SEQ REMARK: Add a remark field to the sequence of the selected SAI
                       CHECK LEN:  Find the longest sequence and set the
                                   'Maximum Seq. Length' displayed in the
-                                  corresponding subwindow
+                                  corresponding subwindow [*]
                       FORMAT:     Append '.' to sequences up to 'Maximum Seq.
-                                  Length'.
+                                  Length'. [*]
 
                 Auto format: Whether to ask, format or skip w/o asking
                              whenever an unformatted alignment is detected.
 
 NOTES		Some functions require setting a protection level equal to or
 		higher than that of the 'alignment'.
+
+		Asterisks indicate functions which are not available with the
+		'ALIGNMENT CONTROL' functions of the 'MERGE TWO DATABASES' tool.
 
                 There is one special alignment called "ali_genom" used for full
                 genome sequences. You can't format that alignment because it is

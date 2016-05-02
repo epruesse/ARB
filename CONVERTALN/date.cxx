@@ -355,8 +355,8 @@ void TEST_BASIC_conv_date() {
     TEST_EXPECT_GENBANK_DATE("Fri 31 13 08:37:14 2010", ERROR_DATE);
 
     TEST_EXPECT_GENBANK_DATE("Tue Feb 28 08:37:14 2011", "28-FEB-2011");
-    TEST_EXPECT_GENBANK_DATE("Tue Feb 29 08:37:14 2011", "29-FEB-2011"); // existence not checked
-    TEST_EXPECT_GENBANK_DATE("Tue Feb 30 08:37:14 2011", ERROR_DATE);    // existence not checked
+    TEST_EXPECT_GENBANK_DATE("Tue Feb 29 08:37:14 2011", "29-FEB-2011"); // existance not checked
+    TEST_EXPECT_GENBANK_DATE("Tue Feb 30 08:37:14 2011", ERROR_DATE); // existance not checked
 
     TEST_EXPECT_DIFFERENT(genbank_date(today_date()), ERROR_DATE);
 

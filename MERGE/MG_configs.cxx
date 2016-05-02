@@ -72,8 +72,8 @@ static AW_window *MG_create_config_rename_window(AW_root *root, int db_nr) {
     }
     aws->load_xfig("ad_al_si.fig");
 
+    aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("close");
-    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("label");
@@ -159,24 +159,23 @@ AW_window *MG_create_merge_configs_window(AW_root *awr) {
 
     AW_window_simple *aws = new AW_window_simple;
 
-    aws->init(awr, "MERGE_CONFIGS", "Merge species selections (=editor configs)");
+    aws->init(awr, "MERGE_CONFIGS", "MERGE CONFIGS");
     aws->load_xfig("merge/configs.fig");
 
     aws->button_length(20);
 
-    aws->at("close");
-    aws->callback(AW_POPDOWN);
+    aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
-    aws->callback(makeHelpCallback("mg_species_configs.hlp"));
+    aws->callback(makeHelpCallback("mg_configs.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
     aws->at("configs1");
-    awt_create_CONFIG_selection_list(GLOBAL_gb_src, aws, AWAR_CONFIG_NAME_SRC, true);
+    awt_create_selection_list_on_configurations(GLOBAL_gb_src, aws, AWAR_CONFIG_NAME_SRC, true);
 
     aws->at("configs2");
-    awt_create_CONFIG_selection_list(GLOBAL_gb_dst, aws, AWAR_CONFIG_NAME_DST, true);
+    awt_create_selection_list_on_configurations(GLOBAL_gb_dst, aws, AWAR_CONFIG_NAME_DST, true);
 
     aws->at("delete1");
     aws->callback(makeWindowCallback(MG_config_delete_cb, 1));
@@ -201,7 +200,7 @@ AW_window *MG_create_merge_configs_window(AW_root *awr) {
     aws->button_length(0);
     aws->shadow_width(1);
     aws->at("icon");
-    aws->callback(makeHelpCallback("mg_species_configs.hlp"));
+    aws->callback(makeHelpCallback("mg_configs.hlp"));
     aws->create_button("HELP_MERGE", "#merge/icon.xpm");
 
     return aws;

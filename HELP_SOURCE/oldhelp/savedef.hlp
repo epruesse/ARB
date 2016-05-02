@@ -10,7 +10,7 @@ UP	glossary.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Save properties
 
-OCCURRENCE	<any properties menu>/Save properties
+OCCURRENCE	In 'Properties' menus
 
 DESCRIPTION	Saves the userdefined setup (colours, fonts, ...) to property files.
                 These files are located in the directory pointed to by the
@@ -25,10 +25,6 @@ NOTES		To reset ARB to it's defaults simply remove one/all *.arb
 
 		You can hand over your properties to another user by giving him
 		your property-files.
-
-                Several windows provide a more fine-grained possibility
-                to exchange settings with other users, using the Save/Load
-                functions for configurations (see LINK{prop_configs.hlp}).
 
 SECTION GENERAL NOTES ABOUT PROPERTIES
 

@@ -13,7 +13,6 @@ export use_ARB_main_C
 export DEBUG
 export OPENGL 
 export RNA3D_LIB 
-export GTK
 
 export MACH
 export DARWIN
@@ -22,7 +21,6 @@ export DEBIAN
 export REDHAT
 
 export CC CXX
-export USE_GCC_46_OR_HIGHER USE_GCC_50_OR_HIGHER
 
 export A_CC  CC_INCLUDES
 export A_CXX CXX_INCLUDES
@@ -34,7 +32,7 @@ export LD_LIBRARY_PATH ARBBUILD_LIBRARY_PATH LIBPATH SYSLIBS
 export XLIBS #XHOME
 export ARB_GLIB_LIBS
 export GL_LIBS_SYS GL_PNGLIBS_SYS
-export TIFFLIBS XMLLIBS
+export TIFFLIBS
 export EXECLIBS
 export LINK_STATIC LINK_EXECUTABLE LINK_STATIC_LIB LINK_SHARED_LIB SHARED_LIB_SUFFIX
 export ARCHS_PT_SERVER_LINK
@@ -48,14 +46,10 @@ export CORE_LIB
 export ARBDB_LIB
 export UNIT_TESTS
 export SHOWTODO
-export SANITIZE
 
 # support for clang static checker
 export CLANG_STATIC_CHECKER
 export CCC_ANALYZER_CPLUSPLUS
-
-# pass down SANITIZER control variables
-export ASAN_OPTIONS LSAN_OPTIONS
 
 # jenkins related
 export SVN_URL

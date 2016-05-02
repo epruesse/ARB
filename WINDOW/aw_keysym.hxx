@@ -11,10 +11,6 @@
 #ifndef AW_KEYSYM_HXX
 #define AW_KEYSYM_HXX
 
-inline bool AW_IS_IMAGEREF(const char* label) { // @@@ move into AW_window.cxx aftermerge
-    //! return true if 'label' is an image reference
-    return label[0] == '#';
-}
 
 enum AW_key_code {
     AW_KEY_NONE,

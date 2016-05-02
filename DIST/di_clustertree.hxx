@@ -18,6 +18,13 @@
 #ifndef AP_SEQUENCE_HXX
 #include <AP_sequence.hxx>
 #endif
+
+#ifndef _GLIBCXX_CLIMITS
+#include <climits>
+#endif
+#ifndef _GLIBCXX_STRING
+#include <string>
+#endif
 #ifndef _GLIBCXX_MAP
 #include <map>
 #endif
@@ -25,6 +32,7 @@
 
 #define cl_assert(cond) arb_assert(cond)
 
+class AP_sequence;
 class ClusterTree;
 class arb_progress;
 
@@ -37,6 +45,8 @@ enum ClusterState {
     CS_SUB_CLUSTER   = 16,                          // like CS_IS_CLUSTER, but father is cluster as well
 };
 
+const float NO_DISTANCE = -1.0;
+
 // ------------------------
 //      ClusterTreeRoot
 
@@ -46,10 +56,7 @@ class ClusterTreeRoot : public ARB_seqtree_root {
 
 public:
     ClusterTreeRoot(AliView *aliview, AP_sequence *seqTemplate_, AP_FLOAT maxDistance_, size_t minClusterSize_);
-    virtual ~ClusterTreeRoot() OVERRIDE { predelete(); }
-
-    inline TreeNode *makeNode() const             OVERRIDE;
-    inline void destroyNode(TreeNode *node) const OVERRIDE;
+    virtual ~ClusterTreeRoot() OVERRIDE {}
 
     DEFINE_DOWNCAST_ACCESSORS(ClusterTree, get_root_node, ARB_seqtree_root::get_root_node());
 
@@ -71,7 +78,9 @@ public:
     {}
 
     const ClusterTree *first() const { return ct1; }
+    ClusterTree *first() { return ct1; }
     const ClusterTree *second() const { return ct2; }
+    ClusterTree *second()  { return ct2; }
 
     bool operator<(const TwoLeafs& other) const {
         return ct1 == other.ct1 ? ct2<other.ct2 : ct1<other.ct1;
@@ -93,6 +102,7 @@ public:
     }
 
     const TwoLeafs& get_pair() const  { return *pair; }
+    AP_FLOAT get_value() const { return value; }
 };
 
 typedef std::map<ClusterTree*, AP_FLOAT> NodeValues;
@@ -128,35 +138,6 @@ class ClusterTree : public ARB_countedTree { // derived from a Noncopyable
     unsigned calculatedDistances;
 #endif // TRACE_DIST_CALC
 
-    unsigned get_depth() const { return depth; }
-    bool knows_seqDists() const { return state & (CS_IS_CLUSTER|CS_SUB_CLUSTER); }
-    unsigned possible_relations() const { return (leaf_count*(leaf_count-1)) / 2; }
-    unsigned known_seqDists() const { return knows_seqDists() ? possible_relations() : 0; }
-
-    const NodeValues *get_branch_depths() {
-        if (!branchDepths) calc_branch_depths();
-        return branchDepths;
-    }
-
-    const LeafRelations *get_branch_dists() {
-        if (!branchDists) calc_branch_dists();
-        return branchDists;
-    }
-
-    AP_FLOAT get_seqDist(const TwoLeafs& pair);
-    const AP_FLOAT *has_seqDist(const TwoLeafs& pair) const;
-    const ClusterTree *commonFatherWith(const ClusterTree *other) const;
-
-    void oblivion(bool forgetDistances); // forget unneeded data
-
-protected:
-    ~ClusterTree() OVERRIDE {
-        delete worstKnownDistance;
-        delete sequenceDists;
-        delete branchDists;
-        delete branchDepths;
-    }
-    friend class ClusterTreeRoot;
 public:
     explicit ClusterTree(ClusterTreeRoot *tree_root_)
         : ARB_countedTree(tree_root_)
@@ -171,29 +152,61 @@ public:
         , worstKnownDistance(NULL)
     {}
 
+    ~ClusterTree() OVERRIDE {
+        delete worstKnownDistance;
+        delete sequenceDists;
+        delete branchDists;
+        delete branchDepths;
+    }
     DEFINE_TREE_ACCESSORS(ClusterTreeRoot, ClusterTree);
 
     unsigned get_cluster_count() const { return clus_count; }
     unsigned get_leaf_count() const OVERRIDE { return leaf_count; }
+    unsigned get_depth() const { return depth; }
 
 #if defined(TRACE_DIST_CALC)
     unsigned get_calculated_distances() const { return calculatedDistances; }
 #endif // TRACE_DIST_CALC
 
+    bool knows_seqDists() const { return state & (CS_IS_CLUSTER|CS_SUB_CLUSTER); }
+
+    unsigned possible_relations() const { return (leaf_count*(leaf_count-1)) / 2; }
+    unsigned known_seqDists() const { return knows_seqDists() ? possible_relations() : 0; }
+
+    ClusterTree *get_cluster(size_t num);           // this allows sequentiell access to clusters
     ClusterState get_state() const { return state; }
 
     void init_tree() OVERRIDE;
     void detect_clusters(arb_progress& progress);
 
+    const NodeValues *get_branch_depths() {
+        if (!branchDepths) calc_branch_depths();
+        return branchDepths;
+    }
+
+    const LeafRelations *get_branch_dists() {
+        if (!branchDists) calc_branch_dists();
+        return branchDists;
+    }
+
     const LeafRelations *get_sequence_dists() const { return sequenceDists; }
 
+    AP_FLOAT get_seqDist(const TwoLeafs& pair);
+    const AP_FLOAT *has_seqDist(const TwoLeafs& pair) const;
+    const ClusterTree *commonFatherWith(const ClusterTree *other) const;
+
     AP_FLOAT get_min_bases() const { return min_bases; }
+
+    void oblivion(bool forgetDistances); // forget unneeded data
 };
 
-inline TreeNode *ClusterTreeRoot::makeNode() const { return new ClusterTree(const_cast<ClusterTreeRoot*>(this)); }
-inline void ClusterTreeRoot::destroyNode(TreeNode *node) const { delete DOWNCAST(ClusterTree*, node); }
+struct ClusterTreeNodeFactory : public RootedTreeNodeFactory {
+    virtual RootedTree *makeNode(TreeRoot *root) const {
+        return new ClusterTree(DOWNCAST(ClusterTreeRoot*, root));
+    }
+};
 
-class UseAnyTree : public ARB_tree_predicate {
+struct UseAnyTree : public ARB_tree_predicate {
     bool selects(const ARB_seqtree&) const OVERRIDE { return true; }
 };
 

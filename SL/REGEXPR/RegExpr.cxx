@@ -136,7 +136,6 @@ void TEST_regexpr() {
     TEST_REGEX_MATCHES("3;1406", "^bla|", true, "");
     TEST_REGEX_MATCHES_SUB1("3;1406", "^[0-9]+;([0-9]+)$", true, "3;1406", "1406");
 }
-TEST_PUBLISH(TEST_regexpr);
 
 #endif // UNIT_TESTS
 

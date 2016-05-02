@@ -17,7 +17,6 @@
 #include "aw_select.hxx"
 
 #include <arb_file.h>
-#include <arb_strarray.h>
 
 #include <sys/stat.h>
 #include <arb_str.h>
@@ -38,14 +37,16 @@ void AW_openURL(AW_root *aw_root, const char *url) {
         char *new_browser = GBS_global_string_copy("%s%s%s", start, url, ka+6);
 
         free(start);
-        freeset(browser, new_browser);
+        free(browser);
+
+        browser = new_browser;
     }
 
-    char     *command = GBS_global_string_copy("(%s)&", browser);
-    GB_ERROR  error   = GBK_system(command);
-    aw_message_if(error);
-
+    char *command = GBS_global_string_copy("(%s)&", browser);
+    printf("Action: '%s'\n", command);
+    if (system(command)) aw_message(GBS_global_string("'%s' failed", command));
     free(command);
+
     free(browser);
 }
 
@@ -193,7 +194,6 @@ static void aw_helpfile_modified_cb(const char *path, bool fileWasChanged, bool 
 }
 #endif
 
-
 static void aw_help_edit_help(AW_window *aww) {
     char *helpfile = get_full_qualified_help_file_name(aww->get_root(), true);
 
@@ -204,7 +204,7 @@ static void aw_help_edit_help(AW_window *aww) {
         const char *base = GB_path_in_ARBHOME("HELP_SOURCE/oldhelp");
 #endif
 
-        const char *copy_cmd = GBS_global_string("cp %s/FORM.hlp %s", base, helpfile); // uses_hlp_res("FORM.hlp"); see ../SOURCE_TOOLS/check_resources.pl@uses_hlp_res
+        const char *copy_cmd = GBS_global_string("cp %s/FORM.hlp %s", base, helpfile); // uses_hlp_res("FORM.hlp"); see ../SOURCE_TOOLS/check_ressources.pl@uses_hlp_res
         aw_message_if(GBK_system(copy_cmd));
     }
 
@@ -216,7 +216,7 @@ static void aw_help_edit_help(AW_window *aww) {
                    "(ask your admin to gain write access)");
     }
 
-    GBDATA *get_globalawars_gbmain(void); // prototype
+    GBDATA *get_globalawars_gbmain();
     GBDATA *gbmain = get_globalawars_gbmain(); // hack -- really need main ARB DB here (properties DB does not work with notifications)
     if (gbmain) {
         AW_edit(helpfile, aw_helpfile_modified_cb, aww, gbmain);
@@ -235,7 +235,7 @@ static void aw_help_edit_help(AW_window *aww) {
     free(helpfile);
 }
 
-static char *aw_ref_to_title(const char *ref) {
+static char *aw_ref_to_title(char *ref) {
     if (!ref) return 0;
 
     if (GBS_string_matches(ref, "*.ps", GB_IGNORE_CASE)) {   // Postscript file
@@ -277,56 +277,20 @@ static void aw_help_select_newest_in_history(AW_root *aw_root) {
     }
 }
 
-static void aw_help_back(AW_window *aww) {
-    AW_root    *aw_root = aww->get_root();
-    const char *history = HELP.history;
+static void aw_help_back(AW_root *aw_root) {
+    char *history = HELP.history;
     if (history) {
-        const char *currHelp = aw_root->awar(AWAR_HELPFILE)->read_char_pntr();
-        if (currHelp[0]) { // if showing some help
-            const char *sep = strchr(history, '#');
-            if (sep) {
-                char *first = GB_strpartdup(history, sep-1);
-                freeset(HELP.history, GBS_global_string_copy("%s#%s", sep+1, first)); // wrap first to end
-                free(first);
-                aw_help_select_newest_in_history(aw_root);
-            }
-        }
-        else { // e.g. inside history
+        const char *sep = strchr(history, '#');
+        if (sep) {
+            char *first = GB_strpartdup(history, sep-1);
+
+            freeset(HELP.history, GBS_global_string_copy("%s#%s", sep+1, first)); // wrap first to end
+            free(first);
             aw_help_select_newest_in_history(aw_root);
         }
     }
 }
-
-static void aw_help_history(AW_window *aww) {
-    ConstStrArray entries;
-    GBT_split_string(entries, HELP.history, '#');
-
-    if (entries.size()) {
-        AW_root    *aw_root  = aww->get_root();
-        const char *currHelp = aw_root->awar(AWAR_HELPFILE)->read_char_pntr();
-
-        if (currHelp[0]) {
-            aw_root->awar(AWAR_HELPFILE)->write_string("");
-
-            HELP.uplinks->clear();
-            HELP.links->clear();
-
-            for (size_t i = 0; i<entries.size(); ++i) {
-                char *title = aw_ref_to_title(entries[i]);
-                HELP.links->insert(title, entries[i]);
-                free(title);
-            }
-
-            HELP.uplinks->insert_default("   ", ""); HELP.uplinks->update();
-            HELP.links  ->insert_default("   ", ""); HELP.links  ->update();
-
-            aw_root->awar(AWAR_HELPTEXT)->write_string("Your previously visited help topics are listed under 'Subtopics'");
-        }
-        else { // e.g. already in HISTORY
-            aw_help_back(aww);
-        }
-    }
-}
+static void aw_help_back(AW_window *aww) { aw_help_back(aww->get_root()); }
 
 static GB_ERROR aw_help_show_external_format(const char *help_file, const char *viewer) {
     // Called to show *.ps or *.pdf in external viewer.
@@ -377,63 +341,11 @@ static GB_ERROR aw_help_show_external_format(const char *help_file, const char *
     return error;
 }
 
-#if defined(DEBUG)
-# define TRACK_HELPFILE
-#endif
-
-#if defined(TRACK_HELPFILE)
-// automatically update helpfile after changes in DEBUG mode
-
-static bool          track_helpfile        = false;
-static unsigned long helpfile_stamp        = 0;
-static unsigned long helpfile_edited_stamp = 0;
-
-const unsigned TRACK_FREQUENCY = 500; // ms
-
-static unsigned autorefresh_helpfile(AW_root *awr) {
-    char     *help_file   = get_full_qualified_help_file_name(awr);
-    unsigned  callAgainIn = TRACK_FREQUENCY;
-
-    if (help_file[0]) {
-        unsigned long lastChanged = GB_time_of_file(help_file);
-
-        if (lastChanged != helpfile_stamp) {
-            awr->awar(AWAR_HELPFILE)->touch(); // reload
-            aw_assert(helpfile_stamp == lastChanged);
-        }
-        else {
-            char *edited_help_file = get_full_qualified_help_file_name(awr, true);
-            if (strcmp(help_file, edited_help_file) != 0) {
-                unsigned long editLastChanged = GB_time_of_file(edited_help_file);
-
-                if (editLastChanged>helpfile_edited_stamp) {
-                    GB_ERROR error = GBK_system("cd $ARBHOME; make help");
-                    if (error) aw_message(error);
-                    helpfile_edited_stamp = editLastChanged;
-                    callAgainIn = 10;
-                }
-            }
-
-            free(edited_help_file);
-        }
-    }
-    free(help_file);
-
-    return callAgainIn;
-}
-
-#endif
-
 static void aw_help_helpfile_changed_cb(AW_root *awr) {
     char *help_file = get_full_qualified_help_file_name(awr);
 
-#if defined(TRACK_HELPFILE)
-    track_helpfile = false;
-#endif
-
     if (!strlen(help_file)) {
-        awr->awar(AWAR_HELPTEXT)->write_string("Select one of the topics from the lists on the left side or\n"
-                                               "press the BACK button above.");
+        awr->awar(AWAR_HELPTEXT)->write_string("no help");
     }
     else if (GBS_string_matches(help_file, "*.ps", GB_IGNORE_CASE)) { // Postscript file
         GB_ERROR error = aw_help_show_external_format(help_file, GB_getenvARB_GS());
@@ -460,11 +372,6 @@ static void aw_help_helpfile_changed_cb(AW_root *awr) {
         else {
             HELP.history = strdup(help_file);
         }
-
-#if defined(TRACK_HELPFILE)
-        track_helpfile = true;
-        helpfile_edited_stamp = helpfile_stamp = GB_time_of_file(help_file);
-#endif
 
         char *helptext = GB_read_file(help_file);
         if (helptext) {
@@ -543,19 +450,13 @@ static void aw_help_search(AW_window *aww) {
         char        *helpfilename = 0;
         static char *last_help; // tempfile containing last search result
 
-        // replace all spaces in 'searchtext' by '.*' (also eliminate multi-spaces)
-        freeset(searchtext, GBS_string_eval(searchtext, "  = : =.*", 0));
-
-        static GB_HASH *searchHash = GBS_create_dynaval_hash(20, GB_MIND_CASE, GBS_dynaval_free);
+        // replace all spaces in 'searchtext' by '.*'
+        freeset(searchtext, GBS_string_eval(searchtext, " =.*", 0));
 
         // grep .hlp for occurrences of 'searchtext'.
         // write filenames of matching files into 'helpfilename'
         {
-            const char *existingSearch = (const char*)GBS_read_hash(searchHash, searchtext);
-            if (existingSearch) {
-                helpfilename = strdup(existingSearch);
-            }
-            else {
+            {
                 char *helpname = GB_unique_filename("arb", "hlp");
                 helpfilename   = GB_create_tempfile(helpname);
                 free(helpname);
@@ -563,16 +464,12 @@ static void aw_help_search(AW_window *aww) {
 
             if (!helpfilename) error = GB_await_error();
             else {
-                char       *quotedSearchExpression = GBK_singlequote(GBS_global_string("^[^#]*%s", searchtext));
-                char       *quotedDocpath          = GBK_singlequote(GB_getenvDOCPATH());
-                const char *gen_help_tmpl          = "cd %s;grep -i %s `find . -name \"*.hlp\"` | arb_sed -e 'sI:.*IIg' -e 'sI^\\./IIg' | sort | uniq > %s";
-                char       *gen_help_cmd           = GBS_global_string_copy(gen_help_tmpl, quotedDocpath, quotedSearchExpression, helpfilename);
+                const char *gen_help_tmpl = "cd %s;grep -i '^[^#]*%s' `find . -name \"*.hlp\"` | arb_sed -e 'sI:.*IIg' -e 'sI^\\./IIg' | sort | uniq > %s";
+                char       *gen_help_cmd  = GBS_global_string_copy(gen_help_tmpl, GB_getenvDOCPATH(), searchtext, helpfilename);
 
                 error = GBK_system(gen_help_cmd);
 
                 free(gen_help_cmd);
-                free(quotedDocpath);
-                free(quotedSearchExpression);
                 GB_remove_on_exit(helpfilename);
             }
         }
@@ -619,7 +516,6 @@ static void aw_help_search(AW_window *aww) {
                     aww->get_root()->awar(AWAR_HELPFILE)->write_string(helpfilename); // display results in aws
                 }
                 free(result);
-                GBS_write_hash(searchHash, searchtext, (long)strdup(helpfilename));
             }
         }
         free(helpfilename);
@@ -630,10 +526,10 @@ static void aw_help_search(AW_window *aww) {
     free(searchtext);
 }
 
-void AW_help_popup(AW_window *, const char *help_file) {
+void AW_help_popup(AW_window *aw, const char *help_file) {
     static AW_window_simple *aws = 0;
 
-    AW_root *awr = AW_root::SINGLETON;
+    AW_root *awr = aw->get_root();
 
     if (!aws) {
         awr->awar_string(AWAR_HELPTEXT,   "", AW_ROOT_DEFAULT);
@@ -645,36 +541,16 @@ void AW_help_popup(AW_window *, const char *help_file) {
         aws->init(awr, "HELP", "HELP WINDOW");
         aws->load_xfig("help.fig");
 
-        aws->button_length(9);
-        aws->auto_space(5, 5);
+        aws->button_length(10);
 
         aws->at("close");
-        aws->callback(AW_POPDOWN);
+        aws->callback((AW_CB0)AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
 
+        aws->at("back");
         aws->callback(aw_help_back);
         aws->create_button("BACK", "BACK", "B");
 
-        aws->callback(aw_help_history);
-        aws->create_button("HISTORY", "HISTORY", "H");
-
-        aws->at("expression");
-#if defined(ARB_MOTIF)
-        aws->d_callback(makeWindowCallback(aw_help_search)); // enable ENTER in searchfield to start search
-#endif
-        aws->create_input_field(AWAR_HELPSEARCH, 40);
-        aws->callback(aw_help_search);
-#if defined(ARB_GTK)
-        aws->highlight(); // enable ENTER to start search
-#endif
-        aws->create_button("SEARCH", "SEARCH", "S");
-
-        aws->at("browse");
-        aws->callback(aw_help_browse);
-        aws->create_button("BROWSE", "BROWSE", "B");
-
-        aws->callback(aw_help_edit_help);
-        aws->create_button("EDIT", "EDIT", "E");
 
         aws->at("super");
         HELP.uplinks = aws->create_selection_list(AWAR_HELPFILE, false);
@@ -690,9 +566,21 @@ void AW_help_popup(AW_window *, const char *help_file) {
         aws->at("text");
         aws->create_text_field(AWAR_HELPTEXT, 3, 3);
 
-#if defined(TRACK_HELPFILE)
-        awr->add_timed_callback(TRACK_FREQUENCY, makeTimedCallback(autorefresh_helpfile));
-#endif
+        aws->at("browse");
+        aws->callback(aw_help_browse);
+        aws->create_button("BROWSE", "BROWSE", "B");
+
+        aws->at("expression");
+        aws->create_input_field(AWAR_HELPSEARCH);
+
+        aws->at("search");
+        aws->callback(aw_help_search);
+        aws->create_button("SEARCH", "SEARCH", "S");
+
+        aws->at("edit");
+        aws->callback(aw_help_edit_help);
+        aws->create_button("EDIT", "EDIT", "E");
+
     }
 
     aw_assert(help_file);

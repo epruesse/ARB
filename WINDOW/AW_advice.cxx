@@ -121,7 +121,7 @@ static void advice_close_cb(AW_window *aww, const char *id, AW_Advice_Type type)
             if (!in_advice) {
                 in_advice = true;
                 AW_advice("You have disabled an advice.\n"
-                          "In order to disable it PERMANENTLY, save properties.", AW_ADVICE_TOGGLE, "Advice disabled", "advice.hlp");
+                          "In order to disable it PERMANENTLY, save properties.", AW_ADVICE_TOGGLE);
                 in_advice = false;
             }
         }
@@ -273,6 +273,5 @@ void TEST_another_AW_root() {
     GB_shell  shell;
     AW_root("min_ascii.arb");
 }
-TEST_PUBLISH(TEST_another_AW_root);
 
 #endif // UNIT_TESTS

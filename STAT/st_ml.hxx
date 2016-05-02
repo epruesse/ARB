@@ -38,6 +38,7 @@ class AW_window;
 
 class AP_tree;
 class AP_tree_root;
+class GBT_TREE;
 class AP_filter;
 class WeightedFilter;
 
@@ -125,8 +126,8 @@ class ST_ML : virtual Noncopyable {
     size_t        first_pos;                        // first..
     size_t        last_pos;                         // .. and last alignment position of current slice
 
-    WindowCallbackSimple  postcalc_cb;
-    AW_window            *cb_window;
+    AW_CB0     postcalc_cb;
+    AW_window *cb_window;
 
     GBDATA *gb_main;
 
@@ -192,12 +193,12 @@ public:
     }
 
     GBDATA *get_gb_main() const { return gb_main; }
-    const TreeNode *get_gbt_tree() const;
+    const GBT_TREE *get_gbt_tree() const;
     size_t count_species_in_tree() const;
 
     AP_tree *find_node_by_name(const char *species_name);
 
-    void set_postcalc_callback(WindowCallbackSimple postcalc_cb_, AW_window *cb_window_) {
+    void set_postcalc_callback(AW_CB0 postcalc_cb_, AW_window *cb_window_) {
         postcalc_cb = postcalc_cb_;
         cb_window   = cb_window_;
     }

@@ -35,10 +35,6 @@
 # define __ATTR__DEPRECATED(reason) __attribute__((deprecated(reason)))
 #endif
 
-#if (GCC_VERSION_CODE >= 409) // gcc 4.9.x or higher
-# define __ATTR__DONT_SANITIZE __attribute__((no_sanitize_address))
-#endif
-
 // ------------------------------------------------------------
 // helper macro to declare attributes for function-pointers
 
@@ -79,9 +75,6 @@
 #endif
 #ifndef __ATTR__DEPRECATED
 # define __ATTR__DEPRECATED(reason)
-#endif
-#ifndef __ATTR__DONT_SANITIZE
-# define __ATTR__DONT_SANITIZE
 #endif
 
 // ------------------------------------------------------------

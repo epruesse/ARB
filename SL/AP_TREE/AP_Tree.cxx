@@ -11,14 +11,14 @@
 #include "AP_Tree.hxx"
 
 #include <AP_filter.hxx>
+#include <awt_attributes.hxx>
 #include <aw_msg.hxx>
-#include <arb_progress.h>
-#include <ad_cb.h>
 
 #include <math.h>
 #include <map>
 #include <climits>
-#include <algorithm>
+#include <arb_progress.h>
+#include <ad_cb.h>
 
 using namespace std;
 
@@ -82,8 +82,8 @@ AP_rates::~AP_rates() { delete [] rates; }
  ************           AP_tree_root                    **********
  *****************************************************************************************/
 
-AP_tree_root::AP_tree_root(AliView *aliView, AP_sequence *seq_proto, bool add_delete_callbacks)
-    : ARB_seqtree_root(aliView, seq_proto, add_delete_callbacks),
+AP_tree_root::AP_tree_root(AliView *aliView, RootedTreeNodeFactory *nodeMaker_, AP_sequence *seq_proto, bool add_delete_callbacks)
+    : ARB_seqtree_root(aliView, nodeMaker_, seq_proto, add_delete_callbacks),
       root_changed_cb(NULL), root_changed_cd(NULL),
       node_deleted_cb(NULL), node_deleted_cd(NULL),
       gb_tree_gone(NULL),
@@ -101,7 +101,7 @@ AP_tree_root::AP_tree_root(AliView *aliView, AP_sequence *seq_proto, bool add_de
 }
 
 AP_tree_root::~AP_tree_root() {
-    predelete();
+    delete get_root_node();
     free(gone_tree_name);
     ap_assert(!get_root_node());
 }
@@ -150,6 +150,14 @@ AP_tree::~AP_tree() {
 
     AP_tree_root *root = get_tree_root();
     if (root) root->inform_about_delete(this);
+}
+
+void AP_tree::clear_branch_flags() {
+    br.clear();
+    if (!is_leaf) {
+        get_leftson()->clear_branch_flags();
+        get_rightson()->clear_branch_flags();
+    }
 }
 
 void AP_tree::initial_insert(AP_tree *new_brother, AP_tree_root *troot) {
@@ -212,14 +220,14 @@ void AP_tree::insert(AP_tree *new_brother) {
     ap_assert(troot); // Note: initial_insert() has to be used to build initial tree
 
     if (!new_tree->father) troot->change_root(new_brother, new_tree);
-    new_tree->set_tree_root(troot);
+    else new_tree->set_tree_root(troot);
     set_tree_root(troot);
 
     ASSERT_VALID_TREE(troot->get_root_node());
 }
 
-void AP_tree_root::change_root(TreeNode *oldroot, TreeNode *newroot) {
-    if (root_changed_cb) { // @@@ better call after calling base::change_root?
+void AP_tree_root::change_root(RootedTree *oldroot, RootedTree *newroot) {
+    if (root_changed_cb) {
         root_changed_cb(root_changed_cd, DOWNCAST(AP_tree*, oldroot), DOWNCAST(AP_tree*, newroot));
     }
     if (!oldroot) {
@@ -254,13 +262,9 @@ void AP_tree_root::set_node_deleted_callback(AP_nodeDelCb cb, void *cd) {
 }
 
 
-AP_tree *AP_tree::REMOVE() {
-    // Remove this + father from tree. Father node will be destroyed.
-    // Caller has to destroy the removed node (if intended).
-    //
-    // Warning: when removing the 2nd to last node from the tree,
-    // the whole tree will be removed.
-    // In that case both leaf nodes remain undestroyed.
+void AP_tree::remove() {
+    // remove this + father from tree
+    // Note: does not delete this or father!
 
     ASSERT_VALID_TREE(this);
     if (father == 0) {
@@ -302,7 +306,6 @@ AP_tree *AP_tree::REMOVE() {
         else {                                      // father is root, make brother the new root
             if (brother->is_leaf) {
                 troot->change_root(fath, NULL);     // erase tree from root
-                brother->unlink_from_father();      // do not automatically delete brother
             }
             else {
                 brother->unlink_from_father();
@@ -319,12 +322,7 @@ AP_tree *AP_tree::REMOVE() {
 
         fath->forget_origin();
         ASSERT_VALID_TREE(fath);
-
-        unlink_from_father();
-        destroy(fath, troot);
-        ASSERT_VALID_TREE(this);
     }
-    return this;
 }
 
 GB_ERROR AP_tree::cantMoveNextTo(AP_tree *new_brother) {
@@ -333,7 +331,6 @@ GB_ERROR AP_tree::cantMoveNextTo(AP_tree *new_brother) {
     if (!father)                                error = "Can't move the root of the tree";
     else if (!new_brother->father)              error = "Can't move to the root of the tree";
     else if (new_brother->father == father)     error = "Already there";
-    else if (new_brother == father)             error = "Already there";
     else if (!father->father)                   error = "Can't move son of root";
     else if (new_brother->is_inside(this))      error = "Can't move a subtree into itself";
 
@@ -341,26 +338,38 @@ GB_ERROR AP_tree::cantMoveNextTo(AP_tree *new_brother) {
 }
 
 void AP_tree::moveNextTo(AP_tree *new_brother, AP_FLOAT rel_pos) {
-    // rel_pos: 0.0 -> branch at father; 1.0 -> branch at brother; 0.5 -> branch at half distance between father and brother
+    // rel_pos == 0.0 -> at father
+    //         == 1.0 -> at brother
 
     ap_assert(father);
-    ap_assert(new_brother);
     ap_assert(new_brother->father);
     ap_assert(new_brother->father != father);       // already there
-    ap_assert(new_brother != father);               // already there
-
     ap_assert(!new_brother->is_inside(this));       // can't move tree into itself
 
     if (father->leftson != this) get_father()->swap_sons();
 
-    AP_tree *new_root = NULL;
-    if (father->father == 0) { // move son of root
-        new_root         = get_brother();
-        new_root->father = 0;
-        ap_assert(!new_root->is_leaf); // a leaf is no valid tree (should be impossible, because new_brother!=brother)
+    if (father->father == 0) {
+        get_brother()->father = 0;
+        get_tree_root()->change_root(get_father(), get_brother());
     }
     else {
-        AP_tree *grandfather = get_father()->get_father();
+        ARB_seqtree *grandfather = get_father()->get_father();
+        if (father == new_brother) {    // just pull branches !!
+            new_brother  = get_brother();
+            if (grandfather->leftson == father) {
+                rel_pos *= grandfather->leftlen / (father->rightlen+grandfather->leftlen);
+            }
+            else {
+                rel_pos *= grandfather->rightlen / (father->rightlen+grandfather->rightlen);
+            }
+        }
+        else if (new_brother->father == father) { // just pull branches !!
+            rel_pos =
+                1.0 + (rel_pos-1.0) * father->rightlen
+                /
+                (father->rightlen + (grandfather->leftson == father ? grandfather->leftlen : grandfather->rightlen));
+        }
+
         if (grandfather->leftson == father) {
             grandfather->leftlen     += father->rightlen;
             grandfather->leftson      = father->rightson;
@@ -373,8 +382,8 @@ void AP_tree::moveNextTo(AP_tree *new_brother, AP_FLOAT rel_pos) {
         }
     }
 
-    AP_tree  *new_tree       = get_father();
-    AP_tree  *brother_father = new_brother->get_father();
+    ARB_seqtree *new_tree          = get_father();
+    ARB_seqtree *brother_father    = new_brother->get_father();
     AP_FLOAT  laenge;
 
     if (brother_father->leftson == new_brother) {
@@ -392,11 +401,107 @@ void AP_tree::moveNextTo(AP_tree *new_brother, AP_FLOAT rel_pos) {
     new_brother->father = new_tree;
     new_tree->rightson  = new_brother;
     new_tree->father    = brother_father;
+}
 
-    if (new_root) {
-        new_tree->get_tree_root()->change_root(new_tree, new_root);
+void AP_tree::swap_assymetric(AP_TREE_SIDE mode) {
+    // mode AP_LEFT exchanges lefts with brother
+    // mode AP_RIGHT exchanges rights with brother
+
+    ap_assert(!is_leaf);                           // cannot swap leafs
+    ap_assert(father);                             // cannot swap root (has no brother)
+    ap_assert(mode == AP_LEFT || mode == AP_RIGHT); // illegal mode
+
+    ARB_seqtree *pntr;
+
+    if (father->father == 0) { // father is root
+        AP_tree *pntr_brother = get_brother();
+        if (!pntr_brother->is_leaf) {
+            if (mode == AP_LEFT) {
+                pntr_brother->leftson->father = this;
+                pntr                          = pntr_brother->get_leftson();
+                pntr_brother->leftson         = leftson;
+                leftson->father               = pntr_brother;
+                leftson                       = pntr;
+            }
+            else {
+                pntr_brother->leftson->father = this;
+                rightson->father              = pntr_brother;
+                pntr                          = pntr_brother->get_leftson();
+                pntr_brother->leftson         = rightson;
+                rightson                      = pntr;
+            }
+        }
+    }
+    else {
+        if (mode == AP_LEFT) { // swap leftson with brother
+            if (father->leftson == this) {
+                father->rightson->father = this;
+                leftson->father          = father;
+                pntr                     = get_father()->get_rightson();
+                AP_FLOAT help_len        = father->rightlen;
+                father->rightlen         = leftlen;
+                leftlen                  = help_len;
+                father->rightson         = leftson;
+                leftson                  = pntr;
+            }
+            else {
+                father->leftson->father = this;
+                leftson->father         = father;
+                pntr                    = get_father()->get_leftson();
+                AP_FLOAT help_len       = father->leftlen;
+                father->leftlen         = leftlen;
+                leftlen                 = help_len;
+                father->leftson         = leftson;
+                leftson                 = pntr;
+            }
+        }
+        else { // swap rightson with brother
+            if (father->leftson == this) {
+                father->rightson->father = this;
+                rightson->father         = father;
+                pntr                     = get_father()->get_rightson();
+                AP_FLOAT help_len        = father->rightlen;
+                father->rightlen         = rightlen;
+                rightlen                 = help_len;
+                father->rightson         = rightson;
+                rightson                 = pntr;
+            }
+            else {
+                father->leftson->father = this;
+                rightson->father        = father;
+                pntr                    = get_father()->get_leftson();
+                AP_FLOAT help_len       = father->leftlen;
+                father->leftson         = rightson;
+                father->leftlen         = rightlen;
+                rightlen                = help_len;
+                rightson                = pntr;
+            }
+        }
     }
 }
+
+void AP_tree::set_root() {
+    if (at_root()) return; // already root
+
+    {
+        AP_tree           *old_brother = 0;
+        AP_branch_members  br1         = br;
+        AP_tree           *pntr;
+
+        for  (pntr = get_father(); pntr->father; pntr = pntr->get_father()) {
+            AP_branch_members br2 = pntr->br;
+            pntr->br              = br1;
+            br1                   = br2;
+            old_brother           = pntr;
+        }
+        if (pntr->leftson == old_brother) {
+            pntr->get_rightson()->br = br1;
+        }
+    }
+
+    ARB_seqtree::set_root();
+}
+
 
 inline int tree_read_byte(GBDATA *tree, const char *key, int init) {
     if (tree) {
@@ -416,7 +521,7 @@ inline float tree_read_float(GBDATA *tree, const char *key, float init) {
 
 
 
-//! moves all node/leaf information from struct TreeNode to AP_tree
+//! moves all node/leaf information from struct GBT_TREE to AP_tree
 void AP_tree::load_node_info() {
     gr.spread          = tree_read_float(gb_node, "spread",          1.0);
     gr.left_angle      = tree_read_float(gb_node, "left_angle",      0.0);
@@ -601,22 +706,6 @@ void AP_tree::update() {
     get_tree_root()->update_timers();
 }
 
-#if defined(ASSERTION_USED) || defined(UNIT_TESTS)
-bool AP_tree::has_correct_mark_flags() const {
-    if (is_leaf) return true;
-    if (!get_leftson() ->has_correct_mark_flags()) return false;
-    if (!get_rightson()->has_correct_mark_flags()) return false;
-
-    const AP_tree_members& left  = get_leftson()->gr;
-    const AP_tree_members& right = get_rightson()->gr;
-
-    unsigned wanted_mark_sum = left.mark_sum + right.mark_sum;
-    return gr.mark_sum == wanted_mark_sum;
-}
-#endif
-
-const group_scaling *AP_tree::group_scaling_ptr = NULL; // =reference to AWT_graphic_tree::groupScale
-
 void AP_tree::update_subtree_information() {
     gr.hidden = get_father() ? (get_father()->gr.hidden || get_father()->gr.grouped) : 0;
 
@@ -629,7 +718,7 @@ void AP_tree::update_subtree_information() {
 
         bool is_marked = gb_node && GB_read_flag(gb_node);
 
-        gr.mark_sum = int(is_marked);
+        gr.has_marked_children = is_marked;
 
         // colors:
         if (gb_node) {
@@ -638,7 +727,7 @@ void AP_tree::update_subtree_information() {
             }
             else {
                 // check for user color
-                long color_group = AW_find_active_color_group(gb_node);
+                long color_group = AWT_species_get_dominant_color(gb_node);
                 if (color_group == 0) {
                     gr.gc = AWT_GC_NSELECTED;
                 }
@@ -660,23 +749,15 @@ void AP_tree::update_subtree_information() {
             AP_tree_members& right = get_rightson()->gr;
 
             gr.leaf_sum = left.leaf_sum + right.leaf_sum;
+            gr.view_sum = left.view_sum + right.view_sum;
             if (gr.grouped) {
-                ap_assert(group_scaling_ptr);
-
-                const unsigned MIN_GROUP_SIZE = 2U;
-                unsigned       squared_size   = unsigned(pow(double(gr.leaf_sum), group_scaling_ptr->pow)  * group_scaling_ptr->linear);
-
-                gr.view_sum = std::max(squared_size, MIN_GROUP_SIZE);
-                gr.view_sum = std::min(gr.leaf_sum, gr.view_sum); // folded group will never use more space than unfolded
-            }
-            else {
-                gr.view_sum = left.view_sum + right.view_sum;
+                gr.view_sum = (int)pow((double)(gr.leaf_sum - GROUPED_SUM + 9), .33);
             }
 
             gr.min_tree_depth = std::min(leftlen+left.min_tree_depth, rightlen+right.min_tree_depth);
             gr.max_tree_depth = std::max(leftlen+left.max_tree_depth, rightlen+right.max_tree_depth);
 
-            gr.mark_sum = left.mark_sum + right.mark_sum;
+            gr.has_marked_children = left.has_marked_children || right.has_marked_children;
 
             // colors:
             if (left.gc == right.gc) gr.gc = left.gc;
@@ -741,7 +822,8 @@ void AP_tree::compute_tree() {
 GB_ERROR AP_tree_root::loadFromDB(const char *name) {
     GB_ERROR error = ARB_seqtree_root::loadFromDB(name);
     if (!error) {
-        get_root_node()->load_subtree_info();
+        AP_tree *rNode = DOWNCAST(AP_tree*, get_root_node());
+        rNode->load_subtree_info();
     }
     update_timers(); // maybe after link() ? // @@@ really do if error?
     return error;
@@ -770,6 +852,10 @@ AP_UPDATE_FLAGS AP_tree::check_update() {
     }
 }
 
+#if defined(WARN_TODO)
+#warning buildLeafList, buildNodeList and buildBranchList should return a AP_tree_list (new class!)
+#endif
+
 void AP_tree::buildLeafList_rek(AP_tree **list, long& num) {
     // builds a list of all species
     if (!is_leaf) {
@@ -793,8 +879,72 @@ void AP_tree::buildLeafList(AP_tree **&list, long &num) {
     ap_assert(count == num);
 }
 
+void AP_tree::buildNodeList_rek(AP_tree **list, long& num) {
+    // builds a list of all inner nodes (w/o root node)
+    if (!is_leaf) {
+        if (father) list[num++] = this;
+        get_leftson()->buildNodeList_rek(list, num);
+        get_rightson()->buildNodeList_rek(list, num);
+    }
+}
+
+void AP_tree::buildNodeList(AP_tree **&list, long &num) {
+    num = this->count_leafs()-1;
+    list = new AP_tree *[num+1];
+    list[num] = 0;
+    num  = 0;
+    buildNodeList_rek(list, num);
+}
+
+void AP_tree::buildBranchList_rek(AP_tree **list, long& num, bool create_terminal_branches, int deep) {
+    // builds a list of all species
+    // (returns pairs of leafs/father and nodes/father)
+
+    if (deep) {
+        if (father && (create_terminal_branches || !is_leaf)) {
+            if (father->father) {
+                list[num++] = this;
+                list[num++] = get_father();
+            }
+            else {                  // root
+                if (father->leftson == this) {
+                    list[num++] = this;
+                    list[num++] = get_brother();
+                }
+            }
+        }
+        if (!is_leaf) {
+            get_leftson() ->buildBranchList_rek(list, num, create_terminal_branches, deep-1);
+            get_rightson()->buildBranchList_rek(list, num, create_terminal_branches, deep-1);
+        }
+    }
+}
+
+void AP_tree::buildBranchList(AP_tree **&list, long &num, bool create_terminal_branches, int deep) {
+    if (deep>=0) {
+        num = 2;
+        for (int i=0; i<deep; i++) num *= 2;
+    }
+    else {
+        num = count_leafs() * (create_terminal_branches ? 2 : 1);
+    }
+
+    ap_assert(num >= 0);
+
+    list = new AP_tree *[num*2+4];
+
+    if (num) {
+        long count = 0;
+
+        buildBranchList_rek(list, count, create_terminal_branches, deep);
+        list[count] = 0;
+        num         = count/2;
+    }
+}
+
+
 long AP_tree_root::remove_leafs(AWT_RemoveType awt_remove_type) {
-    // may remove the complete tree
+    // may remove the complete tree (if awt_remove_type does not contain AWT_REMOVE_BUT_DONT_FREE)
 
     ASSERT_VALID_TREE(get_root_node());
 
@@ -825,8 +975,11 @@ long AP_tree_root::remove_leafs(AWT_RemoveType awt_remove_type) {
         }
 
         if (removeNode) {
-            destroyNode(list[i]->REMOVE());
+            list[i]->remove();
             removed++;
+            if (!(awt_remove_type & AWT_REMOVE_BUT_DONT_FREE)) {
+                delete list[i]->father;
+            }
             if (!get_root_node()) {
                 break; // tree has been deleted
             }
@@ -837,6 +990,39 @@ long AP_tree_root::remove_leafs(AWT_RemoveType awt_remove_type) {
 
     ASSERT_VALID_TREE_OR_NULL(get_root_node());
     return removed;
+}
+
+// ----------------------------------------
+
+AP_tree ** AP_tree::getRandomNodes(int anzahl) {
+    // function returns a random constructed tree
+    // root is tree with species (needed to build a list of species)
+
+    AP_tree **retlist = NULL;
+    if (anzahl) {
+        AP_tree **list; 
+        long      sumnodes;
+        buildNodeList(list, sumnodes);
+
+        if (sumnodes) {
+            retlist = (AP_tree **)calloc(anzahl, sizeof(AP_tree *));
+
+            long count = sumnodes;
+            for (int i=0; i< anzahl; i++) {
+                long num = GB_random(count);
+
+                retlist[i] = list[num]; // export node
+                count--;                // exclude node
+
+                list[num]   = list[count];
+                list[count] = retlist[i];
+
+                if (count == 0) count = sumnodes; // restart it
+            }
+        }
+        delete [] list;
+    }
+    return retlist;
 }
 
 // --------------------------------------------------------------------------------
@@ -1026,7 +1212,7 @@ public:
         int furcs     = nodes-leafs;    // = inner nodes
         int realfurcs = furcs-multifurcs;
 
-        int node_digits = calc_digits(nodes);
+        int node_digits = log10(nodes)+1;
 
         ap_assert(zeroleafs<=leafs);
         ap_assert(zeroedges<=edges);

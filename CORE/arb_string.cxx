@@ -18,7 +18,6 @@
 
 #include <ctime>
 #include <sys/time.h>
-#include <Keeper.h>
 
 char *GB_strduplen(const char *p, unsigned len) {
     // fast replacement for strdup, if len is known
@@ -70,7 +69,7 @@ char *GB_strndup(const char *start, int len) {
     return GB_strpartdup(start, start+len-1);
 }
 
-inline tm *get_current_time() {
+const char *GB_date_string() {
     timeval  date;
     tm      *p;
 
@@ -84,44 +83,12 @@ inline tm *get_current_time() {
     p = localtime(&date.tv_sec);
 #endif // DARWIN
 
-    return p;
-}
-
-const char *GB_date_string() {
-    tm   *p        = get_current_time();
     char *readable = asctime(p); // points to a static buffer
     char *cr       = strchr(readable, '\n');
     arb_assert(cr);
-    cr[0]          = 0;          // cut of \n
+    cr[0]          = 0;         // cut of \n
 
     return readable;
-}
-
-const char *GB_dateTime_suffix() {
-    /*! returns "YYYYMMDD_HHMMSS" */
-    const  unsigned  SUFFIXLEN = 8+1+6;
-    static char      buffer[SUFFIXLEN+1];
-    tm              *p         = get_current_time();
-
-#if defined(ASSERTION_USED)
-    size_t printed =
-#endif
-        strftime(buffer, SUFFIXLEN+1, "%Y%m%d_%H%M%S", p);
-    arb_assert(printed == SUFFIXLEN);
-    buffer[SUFFIXLEN] = 0;
-
-    return buffer;
-}
-
-// --------------------------------------------------------------------------------
-
-const char *GB_keep_string(char *str) {
-    /*! keep an allocated string until program termination
-     * useful to avoid valgrind reporting leaks e.g for callback parameters
-     */
-    static Keeper<char*> stringKeeper;
-    stringKeeper.keep(str);
-    return str;
 }
 
 
@@ -407,7 +374,6 @@ void TEST_user_type_with_expectations() {
                           that(ut2).fulfills(in_same_quadrant, ut3),
                           that(ut3).fulfills(in_same_quadrant, ut4)));
 }
-TEST_PUBLISH(TEST_user_type_with_expectations);
 
 void TEST_similarity() {
     double d1      = 0.7531;
@@ -443,29 +409,6 @@ void TEST_less_equal() {
     TEST_EXPECT_LESS(x, y);
     TEST_EXPECT_IN_RANGE(y, x, z);
 }
-TEST_PUBLISH(TEST_less_equal);
-
-enum MyEnum {
-    MY_UNKNOWN,
-    MY_RNA,
-    MY_DNA,
-    MY_AA,
-};
-
-void TEST_MyEnum_loop() {
-    int loops_performed = 0;
-    const char * const db_name[]=  { NULL, "TEST_trees.arb", "TEST_realign.arb", "TEST_realign.arb", NULL };
-    for (int iat = MY_RNA; iat<=MY_AA; ++iat) {
-        MyEnum at = MyEnum(iat);
-        TEST_EXPECT(at>=1 && at<=3);
-        fprintf(stderr, "at=%i db_name[%i]='%s'\n", at, at, db_name[at]);
-        TEST_REJECT_NULL(db_name[at]);
-        loops_performed++;
-    }
-    TEST_EXPECT_EQUAL(loops_performed, 3);
-}
-
-TEST_PUBLISH(TEST_MyEnum_loop);
 
 #endif // UNIT_TESTS
 

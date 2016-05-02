@@ -393,77 +393,78 @@ int find_family(PT_family *ffinder, bytestring *species) {
 
     if (oligo_len<1) {
         freedup(ffinder->ff_error, "minimum oligo length is 1");
+        return 0;
     }
-    else {
-        int mismatch_nr = ffinder->mis_nr;
-        int complement  = ffinder->complement; // any combination of: 1 = forward, 2 = reverse, 4 = reverse-complement, 8 = complement
 
-        char *sequence     = species->data; // sequence data passed by caller
-        int   sequence_len = probe_compress_sequence(sequence, species->size-1);
+    int mismatch_nr = ffinder->mis_nr;
+    int complement  = ffinder->complement; // any combination of: 1 = forward, 2 = reverse, 4 = reverse-complement, 8 = complement
 
-        bool use_all_oligos = ffinder->only_A_probes == 0;
+    char *sequence     = species->data; // sequence data passed by caller
+    int   sequence_len = probe_compress_sequence(sequence, species->size-1);
 
-        PT_Traversal::restrictMatchesToRegion(ffinder->range_start, ffinder->range_end, oligo_len);
+    bool use_all_oligos = ffinder->only_A_probes == 0;
 
-        FamilyStat famStat(psg.data_count, RelativeScoreScaling(ffinder->rel_scoring));
+    PT_Traversal::restrictMatchesToRegion(ffinder->range_start, ffinder->range_end, oligo_len);
 
-        char *seq[4];
-        int   seq_count = 0;
+    FamilyStat famStat(psg.data_count, RelativeScoreScaling(ffinder->rel_scoring));
 
-        // Note: loop-logic depends on order of ../AWTC/awtc_next_neighbours.hxx@FF_complement_dep
-        for (int cmode = 1; cmode <= 8; cmode *= 2) {
-            switch (cmode) {
-                case FF_FORWARD:
-                    break;
-                case FF_REVERSE:
-                case FF_COMPLEMENT:
-                    reverse_probe(sequence, sequence_len); // build reverse sequence
-                    break;
-                case FF_REVERSE_COMPLEMENT:
-                    complement_probe(sequence, sequence_len); // build complement sequence
-                    break;
-            }
+    char *seq[4];
+    int   seq_count = 0;
 
-            if ((complement&cmode) != 0) {
-                char *s = (char*)malloc(sequence_len+1);
-
-                memcpy(s, sequence, sequence_len);
-                s[sequence_len] = 0;
-
-                seq[seq_count++] = s;
-            }
+    // Note: loop-logic depends on order of ../AWTC/awtc_next_neighbours.hxx@FF_complement_dep
+    for (int cmode = 1; cmode <= 8; cmode *= 2) {
+        switch (cmode) {
+            case FF_FORWARD:
+                break;
+            case FF_REVERSE:
+            case FF_COMPLEMENT:
+                reverse_probe(sequence, sequence_len); // build reverse sequence
+                break;
+            case FF_REVERSE_COMPLEMENT:
+                complement_probe(sequence, sequence_len); // build complement sequence
+                break;
         }
 
-        OligoRegistry occurring_oligos(oligo_len);
+        if ((complement&cmode) != 0) {
+            char *s = (char*)malloc(sequence_len+1);
 
-        for (int s = 0; s<seq_count; s++) {
-            char *last_oligo = seq[s]+sequence_len-oligo_len;
-            for (char *oligo = seq[s]; oligo < last_oligo; ++oligo) {
-                if (use_all_oligos || oligo[0] == PT_A) {
-                    if (!contains_ambiguities(oligo, oligo_len)) {
-                        occurring_oligos.add(oligo);
-                    }
+            memcpy(s, sequence, sequence_len);
+            s[sequence_len] = 0;
+
+            seq[seq_count++] = s;
+        }
+    }
+
+    OligoRegistry occurring_oligos(oligo_len);
+
+    for (int s = 0; s<seq_count; s++) {
+        char *last_oligo = seq[s]+sequence_len-oligo_len;
+        for (char *oligo = seq[s]; oligo < last_oligo; ++oligo) {
+            if (use_all_oligos || oligo[0] == PT_A) {
+                if (!contains_ambiguities(oligo, oligo_len)) {
+                    occurring_oligos.add(oligo);
                 }
             }
         }
-
-        for (OligoIter o = occurring_oligos.begin(); o != occurring_oligos.end(); ++o)  {
-            const char *oligo       = o->first;
-            int         occur_count = o->second;
-
-            famStat.limit_hits_for_next_traversal(occur_count);
-            PT_Traversal(oligo, oligo_len, mismatch_nr, famStat).mark_matching(psg.TREE_ROOT2());
-        }
-
-        famStat.calc_rel_matches(ffinder->pr_len, sequence_len);
-        make_PT_family_list(ffinder, famStat);
-
-        for (int s = 0; s<seq_count; s++) {
-            free(seq[s]);
-        }
-
-        PT_Traversal::unrestrictMatchesToRegion();
     }
+
+    for (OligoIter o = occurring_oligos.begin(); o != occurring_oligos.end(); ++o)  {
+        const char *oligo       = o->first;
+        int         occur_count = o->second;
+
+        famStat.limit_hits_for_next_traversal(occur_count);
+        PT_Traversal(oligo, oligo_len, mismatch_nr, famStat).mark_matching(psg.TREE_ROOT2());
+    }
+
+    famStat.calc_rel_matches(ffinder->pr_len, sequence_len);
+    make_PT_family_list(ffinder, famStat);
+
+    for (int s = 0; s<seq_count; s++) {
+        free(seq[s]);
+    }
+
+    PT_Traversal::unrestrictMatchesToRegion();
+
     free(species->data);
     return 0;
 }

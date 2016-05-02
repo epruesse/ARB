@@ -48,22 +48,6 @@ static GB_shell4perl perl_shell;
 MODULE = ARB PACKAGE = ARB PREFIX = P2A_
 PROTOTYPES: ENABLE
 
-void
-P2A_prepare_to_die()
-
-  PPCODE:
-    GBP_prepare_to_die();
-
-char *
-P2A_delete(gbd)
-    GBDATA *gbd
-
-  CODE:
-    RETVAL = const_cast<char *>(GB_delete(gbd));
-
-  OUTPUT:
-    RETVAL
-
 
 MODULE = ARB PACKAGE = BIO PREFIX = P2AT_
 

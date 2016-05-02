@@ -11,7 +11,7 @@ $(MAIN): $(CPP_OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
 
 .cxx.o:
-	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE) $<
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(CPP_OBJECTS) *.a
@@ -66,10 +66,10 @@ ST_ml.o: $(ARBHOME)/INCLUDE/downcast.h
 ST_ml.o: $(ARBHOME)/INCLUDE/dupstr.h
 ST_ml.o: $(ARBHOME)/INCLUDE/gccver.h
 ST_ml.o: $(ARBHOME)/INCLUDE/gui_aliview.hxx
+ST_ml.o: $(ARBHOME)/INCLUDE/RootedTree.h
 ST_ml.o: $(ARBHOME)/INCLUDE/smartptr.h
 ST_ml.o: $(ARBHOME)/INCLUDE/static_assert.h
 ST_ml.o: $(ARBHOME)/INCLUDE/test_global.h
-ST_ml.o: $(ARBHOME)/INCLUDE/TreeNode.h
 ST_ml.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 ST_quality.o: MostLikelySeq.hxx
@@ -105,7 +105,6 @@ ST_quality.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ST_quality.o: $(ARBHOME)/INCLUDE/downcast.h
 ST_quality.o: $(ARBHOME)/INCLUDE/dupstr.h
 ST_quality.o: $(ARBHOME)/INCLUDE/gccver.h
-ST_quality.o: $(ARBHOME)/INCLUDE/items.h
 ST_quality.o: $(ARBHOME)/INCLUDE/smartptr.h
 ST_quality.o: $(ARBHOME)/INCLUDE/static_assert.h
 ST_quality.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -115,18 +114,13 @@ ST_window.o: st_ml.hxx
 ST_window.o: st_quality.hxx
 ST_window.o: st_window.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/ad_prot.h
-ST_window.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ST_window.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ST_window.o: $(ARBHOME)/INCLUDE/arb_core.h
 ST_window.o: $(ARBHOME)/INCLUDE/arb_error.h
-ST_window.o: $(ARBHOME)/INCLUDE/arb_global_defs.h
 ST_window.o: $(ARBHOME)/INCLUDE/arb_msg.h
-ST_window.o: $(ARBHOME)/INCLUDE/arb_progress.h
-ST_window.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 ST_window.o: $(ARBHOME)/INCLUDE/arb_string.h
 ST_window.o: $(ARBHOME)/INCLUDE/arbdb.h
 ST_window.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-ST_window.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ST_window.o: $(ARBHOME)/INCLUDE/arbtools.h
 ST_window.o: $(ARBHOME)/INCLUDE/attributes.h
 ST_window.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
@@ -139,14 +133,12 @@ ST_window.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-ST_window.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/cb.h
 ST_window.o: $(ARBHOME)/INCLUDE/cb_base.h
 ST_window.o: $(ARBHOME)/INCLUDE/cbtypes.h
 ST_window.o: $(ARBHOME)/INCLUDE/ColumnStat.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/cxxforward.h
-ST_window.o: $(ARBHOME)/INCLUDE/downcast.h
 ST_window.o: $(ARBHOME)/INCLUDE/dupstr.h
 ST_window.o: $(ARBHOME)/INCLUDE/gccver.h
 ST_window.o: $(ARBHOME)/INCLUDE/gui_aliview.hxx

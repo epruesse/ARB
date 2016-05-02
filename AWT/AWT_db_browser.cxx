@@ -20,21 +20,17 @@
 #include <aw_select.hxx>
 #include <aw_advice.hxx>
 
-#include <arbdbt.h>
-
 #include <arb_str.h>
 #include <arb_strarray.h>
-
-#include <arb_misc.h>
-#include <arb_diff.h>
-#include <arb_file.h>
-#include <arb_sleep.h>
-#include <ad_cb.h>
 
 #include <string>
 #include <vector>
 #include <map>
 #include <algorithm>
+#include <arb_misc.h>
+#include <arb_diff.h>
+#include <arb_file.h>
+#include <ad_cb.h>
 
 // do includes above (otherwise depends depend on DEBUG)
 #if defined(DEBUG)
@@ -806,7 +802,6 @@ static void selected_node_modified_cb(GBDATA *gb_node, GB_CB_TYPE cb_type) {
         static bool avoid_recursion = false;
         if (!avoid_recursion) {
             LocallyModify<bool> flag(avoid_recursion, true);
-            GlobalStringBuffers *old_buffers = GBS_store_global_buffers();
 
             AW_root *aw_root   = AW_root::SINGLETON;
             AW_awar *awar_path = aw_root->awar_no_error(AWAR_DBB_PATH);
@@ -833,7 +828,6 @@ static void selected_node_modified_cb(GBDATA *gb_node, GB_CB_TYPE cb_type) {
                     awar_path->touch();
                 }
             }
-            GBS_restore_global_buffers(old_buffers);
         }
     }
 }
@@ -1098,8 +1092,12 @@ AW_window *DB_browser::get_window(AW_root *aw_root) {
         aws->init(aw_root, "DB_BROWSER", "ARB database browser");
         aws->load_xfig("dbbrowser.fig");
 
-        aws->at("close"); aws->callback(AW_POPDOWN);
+        aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
+
+        aws->callback(makeHelpCallback("db_browser.hlp"));
+        aws->at("help");
+        aws->create_button("HELP", "HELP", "H");
 
         aws->at("db");
         update_DB_selector();
@@ -1163,7 +1161,7 @@ static void callallcallbacks(AW_window *aww, int mode) {
 void AWT_create_debug_menu(AW_window *awmm) {
     awmm->create_menu("4debugz", "z", AWM_ALL);
 
-    awmm->insert_menu_topic(awmm->local_id("-db_browser"), "Browse loaded database(s)", "B", NULL, AWM_ALL, create_db_browser);
+    awmm->insert_menu_topic("-db_browser", "Browse loaded database(s)", "B", "db_browser.hlp", AWM_ALL, create_db_browser);
 
     awmm->sep______________();
     {
@@ -1238,40 +1236,6 @@ AW_root *AWT_create_root(const char *properties, const char *program, UserAction
 #endif // DEBUG
     init_Advisor(aw_root);
     return aw_root;
-}
-
-void AWT_trigger_remote_action(UNFIXED, GBDATA *gb_main, const char *remote_action_spec) {
-    /*! trigger one or several action(s) (e.g. menu entries) in remote applications
-     * @param gb_main             database root
-     * @param remote_action_spec  "app:action[;app:action]*"
-     */
-
-    ConstStrArray appAction;
-    GBT_split_string(appAction, remote_action_spec, ";", true);
-
-    GB_ERROR error = NULL;
-    if (appAction.empty()) {
-        error = "No action found";
-    }
-    else {
-        for (unsigned a = 0; a<appAction.size() && !error; ++a) {
-            ConstStrArray cmd;
-            GBT_split_string(cmd, appAction[a], ":", true);
-
-            if (cmd.size() != 2) {
-                error = GBS_global_string("Invalid action '%s'", appAction[a]);
-            }
-            else {
-                const char *app    = cmd[0];
-                const char *action = cmd[1];
-
-                ARB_timeout after(2000, MS);
-                error = GBT_remote_action_with_timeout(gb_main, app, action, &after, false);
-            }
-        }
-    }
-
-    aw_message_if(error);
 }
 
 // ------------------------

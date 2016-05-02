@@ -22,7 +22,7 @@ $(MAIN): $(CPP_OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
 
 .cxx.o:
-	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE) $<
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(CPP_OBJECTS) *.a
@@ -310,7 +310,6 @@ SEC_main.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
-SEC_main.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/BufferedFileReader.h

@@ -85,18 +85,6 @@ bool GB_is_link(const char *path) {
     return lstat(path, &stt) == 0 && S_ISLNK(stt.st_mode);
 }
 
-bool GB_is_fifo(const char *path) {
-    if (!path) return false;
-    struct stat stt;
-    return stat(path, &stt) == 0 && S_ISFIFO(stt.st_mode);
-}
-
-bool GB_is_fifo(FILE *fp) {
-    if (!fp) return false;
-    struct stat stt;
-    return fstat(fileno(fp), &stt) == 0 && S_ISFIFO(stt.st_mode);
-}
-
 bool GB_is_executablefile(const char *path) {
     struct stat stt;
     bool        executable = false;
@@ -371,7 +359,6 @@ void TEST_basic_file_checks() {
         TEST_EXPECT_DIFFERENT(GB_unlink(linkNowhere), -1);
     }
 }
-TEST_PUBLISH(TEST_basic_file_checks);
 
 #endif // UNIT_TESTS
 

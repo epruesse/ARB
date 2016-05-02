@@ -35,10 +35,6 @@
 #define AWAR_CHANGE_DUMP(name, where, format)
 #endif // DEBUG
 
-#if defined(ASSERTION_USED)
-bool AW_awar::deny_read = false;
-bool AW_awar::deny_write = false;
-#endif
 
 struct AW_widget_refresh_cb : virtual Noncopyable {
     AW_widget_refresh_cb(AW_widget_refresh_cb *previous, AW_awar *vs, AW_CL cd1, Widget w, AW_widget_type type, AW_window *awi);
@@ -88,10 +84,6 @@ static void aw_cp_awar_2_widget_cb(AW_root *root, AW_widget_refresh_cb *widgetli
                 break;
             case AW_WIDGET_SELECTION_LIST:
                 ((AW_selection_list *)widgetlist->cd)->refresh();
-                break;
-            case AW_WIDGET_SCALER:
-                widgetlist->aw->update_scaler(widgetlist->widget, widgetlist->awar, (AW_ScalerType)widgetlist->cd);
-                break;
             default:
                 break;
         }
@@ -133,7 +125,6 @@ static GB_ERROR AW_MSG_UNMAPPED_AWAR = "Error (unmapped AWAR):\n"
 
 #define WRITE_BODY(self,format,func)                    \
     if (!gb_var) return AW_MSG_UNMAPPED_AWAR;           \
-    aw_assert(!deny_write);                             \
     GB_transaction ta(gb_var);                          \
     AWAR_CHANGE_DUMP(awar_name, #self, format);         \
     GB_ERROR error = func(gb_var, para);                \
@@ -152,8 +143,8 @@ static GB_ERROR AW_MSG_UNMAPPED_AWAR = "Error (unmapped AWAR):\n"
 
 WRITE_SKELETON(write_string, const char*, "%s", GB_write_string) // defines rewrite_string
 WRITE_SKELETON(write_int, long, "%li", GB_write_int) // defines rewrite_int
-WRITE_SKELETON(write_float, float, "%f", GB_write_float) // defines rewrite_float
-WRITE_SKELETON(write_as_string, const char*, "%s", GB_write_autoconv_string) // defines rewrite_as_string // @@@ rename -> write_autoconvert_string?
+WRITE_SKELETON(write_float, double, "%f", GB_write_float) // defines rewrite_float
+WRITE_SKELETON(write_as_string, const char*, "%s", GB_write_as_string) // defines rewrite_as_string
 WRITE_SKELETON(write_pointer, GBDATA*, "%p", GB_write_pointer) // defines rewrite_pointer
 
 #undef WRITE_SKELETON
@@ -161,15 +152,13 @@ WRITE_SKELETON(write_pointer, GBDATA*, "%p", GB_write_pointer) // defines rewrit
 #undef AWAR_CHANGE_DUMP
 
 
-char *AW_awar::read_as_string() const {
-    aw_assert(!deny_read);
+char *AW_awar::read_as_string() {
     if (!gb_var) return strdup("");
     GB_transaction ta(gb_var);
     return GB_read_as_string(gb_var);
 }
 
-const char *AW_awar::read_char_pntr() const {
-    aw_assert(!deny_read);
+const char *AW_awar::read_char_pntr() {
     aw_assert(variable_type == AW_STRING);
 
     if (!gb_var) return "";
@@ -177,29 +166,25 @@ const char *AW_awar::read_char_pntr() const {
     return GB_read_char_pntr(gb_var);
 }
 
-float AW_awar::read_float() const {
-    aw_assert(!deny_read);
+double AW_awar::read_float() {
     if (!gb_var) return 0.0;
     GB_transaction ta(gb_var);
     return GB_read_float(gb_var);
 }
 
-long AW_awar::read_int() const {
-    aw_assert(!deny_read);
+long AW_awar::read_int() {
     if (!gb_var) return 0;
     GB_transaction ta(gb_var);
     return (long)GB_read_int(gb_var);
 }
 
-GBDATA *AW_awar::read_pointer() const {
-    aw_assert(!deny_read);
+GBDATA *AW_awar::read_pointer() {
     if (!gb_var) return NULL;
     GB_transaction ta(gb_var);
     return GB_read_pointer(gb_var);
 }
 
-char *AW_awar::read_string() const {
-    aw_assert(!deny_read);
+char *AW_awar::read_string() {
     aw_assert(variable_type == AW_STRING);
 
     if (!gb_var) return strdup("");
@@ -208,23 +193,10 @@ char *AW_awar::read_string() const {
 }
 
 void AW_awar::touch() {
-    aw_assert(!deny_write);
     if (gb_var) {
         GB_transaction ta(gb_var);
         GB_touch(gb_var);
     }
-}
-GB_ERROR AW_awar::reset_to_default() {
-    aw_assert(!deny_write);
-    GB_ERROR error = NULL;
-    switch (variable_type) {
-        case AW_STRING:  error = write_string (default_value.s); break;
-        case AW_INT:     error = write_int    (default_value.l); break;
-        case AW_FLOAT:   error = write_float  (default_value.f); break;
-        case AW_POINTER: error = write_pointer(default_value.p); break;
-        default: aw_assert(0); break;
-    }
-    return error;
 }
 
 void AW_awar::untie_all_widgets() {
@@ -288,23 +260,9 @@ static void AW_var_gbdata_callback_delete_intern(GBDATA *gbd, AW_awar *awar) {
 }
 
 AW_awar::AW_awar(AW_VARIABLE_TYPE var_type, const char *var_name,
-                 const char *var_value, float var_float_value,
-                 AW_default default_file, AW_root *rooti)
-    : callback_list(NULL),
-      target_list(NULL),
-      refresh_list(NULL),
-      callback_time_sum(0.0),
-      callback_time_count(0),
-#if defined(DEBUG)
-      is_global(false),
-#endif
-      root(rooti),
-      gb_var(NULL)
-{
-    pp.f.min = 0;
-    pp.f.max = 0;
-    pp.srt   = NULL;
-
+                 const char *var_value, double var_double_value,
+                 AW_default default_file, AW_root *rooti) {
+    memset((char *)this, 0, sizeof(AW_awar));
     GB_transaction ta(default_file);
 
     aw_assert(var_name && var_name[0] != 0);
@@ -314,8 +272,9 @@ AW_awar::AW_awar(AW_VARIABLE_TYPE var_type, const char *var_name,
     aw_assert(!err);
 #endif // DEBUG
 
-    awar_name      = strdup(var_name);
-    GBDATA *gb_def = GB_search(default_file, var_name, GB_FIND);
+    this->awar_name = strdup(var_name);
+    this->root      = rooti;
+    GBDATA *gb_def  = GB_search(default_file, var_name, GB_FIND);
 
     in_tmp_branch = strncmp(var_name, "tmp/", 4) == 0;
 
@@ -336,7 +295,7 @@ AW_awar::AW_awar(AW_VARIABLE_TYPE var_type, const char *var_name,
     switch (var_type) {
         case AW_STRING:  default_value.s = nulldup(var_value); break;
         case AW_INT:     default_value.l = (long)var_value; break;
-        case AW_FLOAT:   default_value.f = var_float_value; break;
+        case AW_FLOAT:   default_value.d = var_double_value; break;
         case AW_POINTER: default_value.p = (GBDATA*)var_value; break;
         default: aw_assert(0); break;
     }
@@ -361,9 +320,9 @@ AW_awar::AW_awar(AW_VARIABLE_TYPE var_type, const char *var_name,
             }
             case AW_FLOAT:
 #if defined(DUMP_AWAR_CHANGES)
-                fprintf(stderr, "creating awar_float '%s' with default value '%f'\n", var_name, default_value.f);
+                fprintf(stderr, "creating awar_float '%s' with default value '%f'\n", var_name, default_value.d);
 #endif // DUMP_AWAR_CHANGES
-                GB_write_float(gb_def, default_value.f);
+                GB_write_float(gb_def, default_value.d);
                 break;
 
             case AW_POINTER: {
@@ -382,8 +341,8 @@ AW_awar::AW_awar(AW_VARIABLE_TYPE var_type, const char *var_name,
         if (error) GB_warningf("AWAR '%s': failed to set temporary on creation (Reason: %s)", var_name, error);
     }
 
-    variable_type = var_type;
-    gb_origin     = gb_def;
+    variable_type   = var_type;
+    this->gb_origin = gb_def;
     this->map(gb_def);
 
     aw_assert(is_valid());
@@ -531,11 +490,7 @@ AW_awar *AW_awar::remove_callback(const RootCallback& rcb) {
 
 AW_awar *AW_awar::set_minmax(float min, float max) {
     if (variable_type == AW_STRING) GBK_terminatef("set_minmax does not apply to string AWAR '%s'", awar_name);
-    if (min>=max) {
-        // 'min>max'  would set impossible limits
-        // 'min==max' would remove limits, which is not allowed!
-        GBK_terminatef("illegal values in set_minmax for AWAR '%s'", awar_name);
-    }
+    if (min>max) GBK_terminatef("illegal values in set_minmax for AWAR '%s'", awar_name);
 
     pp.f.min = min;
     pp.f.max = max;
@@ -600,25 +555,7 @@ AW_awar *AW_awar::unmap() {
 }
 
 void AW_awar::run_callbacks() {
-    if (allowed_to_run_callbacks) {
-        clock_t start = clock();
-
-        AW_root_cblist::call(callback_list, root);
-
-        clock_t end = clock();
-
-        if (start<end) { // ignore overflown
-            double cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-
-            if (callback_time_count>19 && (callback_time_count%2) == 0) {
-                callback_time_count = callback_time_count/2;
-                callback_time_sum   = callback_time_sum/2.0;
-            }
-
-            callback_time_sum += cpu_time_used;
-            callback_time_count++;
-        }
-    }
+    if (allowed_to_run_callbacks) AW_root_cblist::call(callback_list, root);
 }
 
 
@@ -699,7 +636,7 @@ void AW_awar::update_tmp_state_during_change() {
         switch (variable_type) {
             case AW_STRING:  has_default_value = ARB_strNULLcmp(GB_read_char_pntr(gb_origin), default_value.s) == 0; break;
             case AW_INT:     has_default_value = GB_read_int(gb_origin)     == default_value.l; break;
-            case AW_FLOAT:   has_default_value = GB_read_float(gb_origin)   == default_value.f; break;
+            case AW_FLOAT:   has_default_value = GB_read_float(gb_origin)   == default_value.d; break;
             case AW_POINTER: has_default_value = GB_read_pointer(gb_origin) == default_value.p; break;
             default: aw_assert(0); GB_warning("Unknown awar type"); break;
         }
@@ -772,7 +709,6 @@ void TEST_AW_root_cblist() {
     AW_root_cblist::clear(cb_list);
     TEST_EXPECT_CBS_CALLED(cb_list, 0, 0); // list clear - nothing should be called
 }
-TEST_PUBLISH(TEST_AW_root_cblist);
 
 #endif // UNIT_TESTS
 

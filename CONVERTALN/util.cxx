@@ -27,12 +27,9 @@ void throw_error(int error_num, const char *error_message) { // __ATTR__NORETURN
 char *strf(const char *format, ...) { // __ATTR__FORMAT(1)
     va_list parg;
     va_start(parg, format);
-
-    const int BUFSIZE = 1000;
-    char      buffer[BUFSIZE];
-    int       printed = vsprintf(buffer, format, parg);
-    ca_assert(printed <= BUFSIZE);
-
+    char    buffer[LINESIZE];
+    int     printed = vsprintf(buffer, format, parg);
+    ca_assert(printed <= LINESIZE);
     va_end(parg);
 
     return strndup(buffer, printed);

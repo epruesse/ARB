@@ -41,35 +41,6 @@
 
 #define ut_assert(cond) arb_assert(cond)
 
-#if defined(DEVEL_ELMAR)
-#define COLORED_MESSAGES
-#endif
-
-#if defined(DEBUG)
-# if defined(DEVEL_RALF)
-#  if (GCC_VERSION_CODE>=408)
-#   warning TEST_VALID_LOCATION disabled - does not work with this gcc version
-#  else
-#   if defined(ARB_GTK)
-#    warning TEST_VALID_LOCATION disabled - often fails in gtk version where it succeeded in motif
-#   else
-#    define TEST_VALID_LOCATION
-#   endif
-# endif
-# endif
-#endif
-
-#ifdef COLORED_MESSAGES
-
-#define ESC_BOLD      "\033[1m"
-#define ESC_RED       "\033[31m"
-#define ESC_GREEN     "\033[32m"
-#define ESC_YELLOW    "\033[33m"
-#define ESC_RESET_COL "\033[39m"
-#define ESC_RESET_ALL "\033[0m"
-
-#endif
-
 using namespace std;
 
 // --------------------------------------------------------------------------------
@@ -113,43 +84,25 @@ __ATTR__FORMAT(1) static void trace(const char *format, ...) {
     fflush(stdout);
     fflush(stderr);
 
-#if defined(COLORED_MESSAGES)
-    fputs(ESC_BOLD, stderr);
-#endif
     fputs(TRACE_PREFIX, stderr);
     va_start(parg, format);
     vfprintf(stderr, format, parg);
     va_end(parg);
-#if defined(COLORED_MESSAGES)
-    fputs(ESC_RESET_ALL, stderr);
-#endif
     fputc('\n', stderr);
     fflush(stderr);
 }
 
 // --------------------------------------------------------------------------------
 
-#ifdef COLORED_MESSAGES
 static const char *readable_result[] = {
-    ESC_GREEN "OK"           ESC_RESET_COL,
-    ESC_RED   "TRAPPED"      ESC_RESET_COL,
-    ESC_RED   "VIOLATED"     ESC_RESET_COL,
-    ESC_RED   "INTERRUPTED"  ESC_RESET_COL,
-    ESC_RED   "THREW"        ESC_RESET_COL,
-    ESC_RED   "INVALID"      ESC_RESET_COL,
-    ESC_RED   "{unknown}"    ESC_RESET_COL,
+    "OK",
+    "TRAPPED",
+    "VIOLATED",
+    "INTERRUPTED",
+    "THREW",
+    "INVALID",
+    "{unknown}",
 };
-#else
-static const char *readable_result[] = {
-    "OK"           ,
-    "TRAPPED"      ,
-    "VIOLATED"     ,
-    "INTERRUPTED"  ,
-    "THREW"        ,
-    "INVALID"      , // use TEST_PUBLISH to make it valid
-    "{unknown}"    ,
-};
-#endif
 
 // --------------------------------------------------------------------------------
 
@@ -173,22 +126,22 @@ __ATTR__NORETURN static void UNITTEST_sigsegv_handler(int sig) {
                 
                 arb_test::GlobalTestData& test_data = arb_test::test_data();
                 if (!test_data.assertion_failed) { // not caused by assertion
-                    backtrace_cause = "Caught SIGSEGV not caused by assertion";
+                    backtrace_cause = "Catched SIGSEGV not caused by assertion";
                 }
                 break;
             }
             case SIGINT:
                 trap_code = TRAP_INT;
-                backtrace_cause = "Caught SIGINT (deadlock in test function?)";
+                backtrace_cause = "Catched SIGINT (deadlock in test function?)";
                 break;
 
             case SIGTERM:
                 trap_code = TRAP_TERM;
                 if (terminate_was_called) {
-                    backtrace_cause = "Caught SIGTERM, cause std::terminate() has been called in test-code (might be an invalid throw)";
+                    backtrace_cause = "Catched SIGTERM, cause std::terminate() has been called in test-code (might be an invalid throw)";
                 }
                 else {
-                    backtrace_cause = "Caught SIGTERM (deadlock in uninterruptable test function?)";
+                    backtrace_cause = "Catched SIGTERM (deadlock in uninterruptable test function?)";
                 }
                 break;
 
@@ -381,7 +334,7 @@ __ATTR__NORETURN static void deadlockguard(long max_allowed_duration_ms, bool de
         max_allowed_duration_ms += additional;
     }
 
-    const useconds_t aBIT = 50*1000; // 50 microseconds
+    const long aBIT = 50*1000; // �s
 
     fprintf(stderr,
             "[deadlockguard woke up after %li ms]\n"
@@ -419,7 +372,7 @@ UnitTestResult execute_guarded(UnitTest_function fun, long *duration_usec, long 
         deadlockguard(max_allowed_duration_ms, detect_environment_calls);
 #else
 #warning DEADLOCKGUARD has been disabled (not default!)
-        detect_environment_calls = !!detect_environment_calls; // dont warn
+        detect_environment_calls = detect_environment_calls; // dont warn
 #endif
         exit(EXIT_FAILURE);
     }
@@ -527,15 +480,9 @@ bool SimpleTester::perform(size_t which) {
     bool       marked_as_slow = strlen(test.name) >= 10 && memcmp(test.name, "TEST_SLOW_", 10) == 0;
     const long abort_after_ms = marked_as_slow ? MAX_EXEC_MS_SLOW : MAX_EXEC_MS_NORMAL;
 
-#if defined(TEST_VALID_LOCATION)
-    bool invalid = test.location == NULL; // in NDEBUG mode location is always missing
-#else
-    bool invalid = false;
-#endif
-
     long           duration_usec;
-    UnitTestResult result           = invalid ? TEST_INVALID : execute_guarded(fun, &duration_usec, abort_after_ms, true); // <--- call test
-    double         duration_ms_this = invalid ? 0.0 : duration_usec/1000.0;
+    UnitTestResult result           = execute_guarded(fun, &duration_usec, abort_after_ms, true); // <--- call test
+    double         duration_ms_this = duration_usec/1000.0;
 
     duration_ms += duration_ms_this;
 

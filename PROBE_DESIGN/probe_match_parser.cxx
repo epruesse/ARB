@@ -37,7 +37,13 @@ struct column {
 // -------------------------
 //      ProbeMatch_impl
 
-typedef map<const char*, column, charpLess> ColumnMap;
+struct ltstr {
+    bool operator()(const char* s1, const char* s2) const {
+        return strcmp(s1, s2) < 0;
+    }
+};
+
+typedef map<const char*, column, ltstr> ColumnMap;
 
 class ProbeMatch_impl : virtual Noncopyable {
     char      *headline;
@@ -131,7 +137,6 @@ ProbeMatchParser::ProbeMatchParser(const char *probe_target, const char *headlin
 
 ProbeMatchParser::~ProbeMatchParser() {
     free(init_error);
-    delete pimpl;
 }
 
 bool ProbeMatchParser::getColumnRange(const char *columnName, int *startCol, int *endCol) const {

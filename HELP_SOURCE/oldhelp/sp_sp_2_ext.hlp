@@ -11,16 +11,14 @@ UP	extended.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Convert Species to SAI
 
-OCCURRENCE	ARB_NT/Species/Species information/SPECIES/Convert to SAI
+OCCURRENCE	ARB_NT/Species/Info/SPECIES/Convert to SAI
 
 DESCRIPTION	Converts the sequence to a SAI entry.
 
 		Choose the 'Convert to SAI' item from the 'SPECIES' menu.
 
 NOTES		Converting a species entry to a SAI entry allows to use the
-		sequence as a filter for treeing and other procedures.
-
-                See also LINK{ecoliref.hlp}.
+		sequence as a filter for treeing and other procedures.	
 
 EXAMPLES	None
 

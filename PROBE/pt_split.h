@@ -19,81 +19,16 @@
 #include "PT_complement.h"
 #endif
 
-inline double get_bond_val(const PT_bond *bond, int probe, int seq) {
-    pt_assert(is_std_base(probe));
-    pt_assert(is_std_base(seq));
-    int idx = ((probe-int(PT_A))*4) + seq-(int)PT_A;
-    pt_assert(idx >= 0 && idx < 16);
-    return bond[idx].val;
-}
-
-class MaxBond {
-    double max_bond[PT_BASES];
-protected:
-    MaxBond() {}
-public:
-    MaxBond(const PT_bond *bond) {
-        for (int base = PT_A; base < PT_BASES; ++base) {
-            pt_assert(is_std_base(base));
-            max_bond[base] = get_bond_val(bond, get_complement(base), base);
-        }
-    }
-
-    double get_max_bond(int base) const {
-        pt_assert(is_std_base(base));
-        return max_bond[base];
-    }
-};
-
-class MismatchWeights : public MaxBond {
-    double weight[PT_BASES][PT_BASES];
-
-    double get_simple_wmismatch(const PT_bond *bonds, char probe, char seq) {
-        double max_bind = get_max_bond(probe);
-        double new_bind = get_bond_val(bonds, get_complement(probe), seq);
-        return max_bind - new_bind;
-    }
-
-    void init(const PT_bond *bonds) {
-        for (int probe = PT_A; probe < PT_BASES; ++probe) {
-            double sum = 0.0;
-            for (int seq = PT_A; seq < PT_BASES; ++seq) {
-                sum += weight[probe][seq] = get_simple_wmismatch(bonds, probe, seq);
-            }
-            weight[probe][PT_N] = sum/4.0;
-        }
-        for (int seq = PT_N; seq < PT_BASES; ++seq) {  // UNCHECKED_LOOP (doesnt matter)
-            double sum = 0.0;
-            for (int probe = PT_A; probe < PT_BASES; ++probe) {
-                sum += weight[probe][seq];
-            }
-            weight[PT_N][seq] = sum/4.0;
-        }
-
-        for (int i = PT_N; i<PT_BASES; ++i) {
-            weight[PT_QU][i] = weight[PT_N][i];
-            weight[i][PT_QU] = weight[i][PT_N];
-        }
-        weight[PT_QU][PT_QU] = weight[PT_N][PT_N];
-    }
-
-public:
-    MismatchWeights(const PT_bond *bonds) : MaxBond(bonds) { init(bonds); }
-    double get(int probe, int seq) const {
-        pt_assert(is_valid_base(probe) && is_valid_base(seq));
-        return weight[probe][seq];
-    }
-
-};
-
-
-class Splits : public MaxBond {
+class Splits {
     bool valid;
     double split[PT_BASES][PT_BASES];
 
-    double calc_split(const PT_local *locs, char base, char ref) {
-        double max_bind = get_max_bond(base);
-        double new_bind = get_bond_val(locs->bond, get_complement(base), ref);
+    static double calc_split(const PT_local *locs, char base, char ref) {
+        pt_assert(is_valid_base(base) && is_valid_base(ref));
+
+        int    complement = get_complement(base);
+        double max_bind   = locs->bond[(complement-(int)PT_A)*4 + base-(int)PT_A].val;
+        double new_bind   = locs->bond[(complement-(int)PT_A)*4 + ref-(int)PT_A].val;
 
         if (new_bind < locs->split)
             return new_bind-max_bind; // negative values indicate split
@@ -103,9 +38,9 @@ class Splits : public MaxBond {
 
 public:
     Splits() : valid(false) {}
-    Splits(const PT_local *locs) : MaxBond(locs->bond), valid(true) {
-        for (int base = PT_A; base < PT_BASES; ++base) {
-            for (int ref = PT_A; ref < PT_BASES; ++ref) {
+    Splits(const PT_local *locs) : valid(true) {
+        for (int base = PT_QU; base < PT_BASES; ++base) {
+            for (int ref = PT_QU; ref < PT_BASES; ++ref) {
                 split[base][ref] = calc_split(locs, base, ref);
             }
         }
@@ -113,10 +48,7 @@ public:
 
     double check(char base, char ref) const {
         pt_assert(valid);
-
-        pt_assert(is_std_base(base));
-        pt_assert(is_std_base(ref));
-
+        pt_assert(is_valid_base(base) && is_valid_base(ref));
         return split[safeCharIndex(base)][safeCharIndex(ref)];
     }
 };

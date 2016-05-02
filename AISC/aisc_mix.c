@@ -223,9 +223,9 @@ int hash::Index(const char *key) const {
     const char *p = key;
     int         x = 1;
     char        c;
-
+    
     while ((c=*(p++))) {
-        x = (((x & 0x7fff)<<1) | ((x & 0x8000)>>15)) ^ c;
+        x = (x<<1) ^ c;
     }
     x %= size;
     if (x<0) x += size;

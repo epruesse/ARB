@@ -203,7 +203,7 @@ namespace TreeAdmin {
         aws->callback(makeWindowCallback(go_cb, spec));
         aws->create_autosize_button("GO", go_label, "");
 
-        aws->callback(AW_POPDOWN);
+        aws->callback((AW_CB0)AW_POPDOWN);
         aws->create_autosize_button("CLOSE", "Abort", "A");
 
         aws->callback(makeWindowCallback(make_dest_treename_unique_cb, spec));

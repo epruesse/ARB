@@ -8,7 +8,7 @@ $(MAIN): $(CPP_OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
 
 .cxx.o:
-	$(A_CXX) $(cflags) $(cxxflags) -c $<  $(CXX_INCLUDES) $(POST_COMPILE) $<
+	$(A_CXX) $(cflags) $(cxxflags) -c $<  $(CXX_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(CPP_OBJECTS) *.a
@@ -66,11 +66,9 @@ MG_alignment.o: merge.hxx
 MG_alignment.o: mg_merge.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MG_alignment.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-MG_alignment.o: $(ARBHOME)/INCLUDE/AliAdmin.h
 MG_alignment.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MG_alignment.o: $(ARBHOME)/INCLUDE/arb_core.h
 MG_alignment.o: $(ARBHOME)/INCLUDE/arb_error.h
-MG_alignment.o: $(ARBHOME)/INCLUDE/arb_global_defs.h
 MG_alignment.o: $(ARBHOME)/INCLUDE/arb_msg.h
 MG_alignment.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 MG_alignment.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -83,6 +81,7 @@ MG_alignment.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
+MG_alignment.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
@@ -105,7 +104,6 @@ MG_checkfield.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 MG_checkfield.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MG_checkfield.o: $(ARBHOME)/INCLUDE/arb_core.h
 MG_checkfield.o: $(ARBHOME)/INCLUDE/arb_error.h
-MG_checkfield.o: $(ARBHOME)/INCLUDE/arb_global_defs.h
 MG_checkfield.o: $(ARBHOME)/INCLUDE/arb_msg.h
 MG_checkfield.o: $(ARBHOME)/INCLUDE/arb_progress.h
 MG_checkfield.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
@@ -123,6 +121,7 @@ MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+MG_checkfield.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/cb.h
 MG_checkfield.o: $(ARBHOME)/INCLUDE/cb_base.h
 MG_checkfield.o: $(ARBHOME)/INCLUDE/cbtypes.h
@@ -207,6 +206,7 @@ MG_gene_species.o: merge.hxx
 MG_gene_species.o: mg_merge.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MG_gene_species.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+MG_gene_species.o: $(ARBHOME)/INCLUDE/adGene.h
 MG_gene_species.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MG_gene_species.o: $(ARBHOME)/INCLUDE/arb_core.h
 MG_gene_species.o: $(ARBHOME)/INCLUDE/arb_error.h
@@ -268,7 +268,6 @@ MG_main.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/awt.hxx
-MG_main.o: $(ARBHOME)/INCLUDE/awt_misc.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/cb.h
 MG_main.o: $(ARBHOME)/INCLUDE/cb_base.h
 MG_main.o: $(ARBHOME)/INCLUDE/cbtypes.h
@@ -362,7 +361,6 @@ MG_species.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 MG_species.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MG_species.o: $(ARBHOME)/INCLUDE/arb_core.h
 MG_species.o: $(ARBHOME)/INCLUDE/arb_error.h
-MG_species.o: $(ARBHOME)/INCLUDE/arb_global_defs.h
 MG_species.o: $(ARBHOME)/INCLUDE/arb_msg.h
 MG_species.o: $(ARBHOME)/INCLUDE/arb_progress.h
 MG_species.o: $(ARBHOME)/INCLUDE/arb_str.h

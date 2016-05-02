@@ -10,20 +10,16 @@ SUB	color.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Configure color groups
 
-OCCURRENCE	<any properties menu>/Colors and Fonts/Edit color groups
+OCCURRENCE	.../Properties/Colors and Fonts/Edit color groups
 
 DESCRIPTION     This allows to configure the colors and names used for the different
                 color groups.
 
-                Press 'Define names' to specify names of color groups,
-                if you are not happy with default names.
-
-		The toggle 'Use color groups' allows to (de-)activate usage of color groups
-		for the current application.
-
                 See LINK{color_props.hlp} for general help about color configuration.
 
-NOTES		See also LINK{e4_background_priority.hlp}
+                Press 'Define names' to name the color groups.
+
+NOTES		None
 
 EXAMPLES	None
 
