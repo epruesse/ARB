@@ -1,0 +1,5 @@
+
+# libraries needed to link against SL/ROOTED_TREE/ROOTED_TREE.a
+
+lib/libARBDB.so
+

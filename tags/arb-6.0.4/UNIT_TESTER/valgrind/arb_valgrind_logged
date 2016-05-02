@@ -1,0 +1,170 @@
+#!/bin/bash  
+
+BASEDIR=$ARBHOME/UNIT_TESTER/valgrind
+LOGGING_BASE=$BASEDIR/arb_valgrind_logging_
+LOGGED_BASE=$BASEDIR/arb_valgrind_logged_
+
+CALL() {
+    local LOGGING=$LOGGING_BASE$$.log
+    local LOGGED=$LOGGED_BASE$$.log
+    local EXE=$1
+    shift
+    arb_valgrind -e -L $LOGGED.stdout -E $LOGGED.stderr $EXE "$@" > $LOGGING
+    local EXITCODE=$?
+    sleep 2
+    cp $LOGGING $LOGGED
+    rm $LOGGING
+    cat $LOGGED.stdout
+    rm $LOGGED.stdout
+    cat $LOGGED.stderr 1>&2
+    rm $LOGGED.stderr
+    return $EXITCODE
+}
+
+rm_if() {
+    ( test -f $1 && rm $1 ) || true
+}
+
+have_logging() {
+    ls -1 $LOGGING_BASE*.log > /dev/null 2>&1
+    if [ "$?" = "0" ]; then
+        echo "1"
+    else
+        echo "0"
+    fi
+}
+have_logged() {
+    ls -1 $LOGGED_BASE*.log > /dev/null 2>&1
+    if [ "$?" = "0" ]; then
+        echo "1"
+    else
+        echo "0"
+    fi
+}
+
+count_logging() { 
+    if [ `have_logging` == 1 ]; then
+        echo $LOGGING_BASE*.log | wc -w
+    else
+        echo "0"
+    fi
+}
+count_logged() {
+    if [ `have_logged` == 1 ]; then
+        echo $LOGGED_BASE*.log | wc -w
+    else
+        echo "0"
+    fi
+}
+
+remove_flags() {
+    rm_if $BASEDIR/flag.valgrind
+    rm_if $BASEDIR/flag.valgrind.leaks
+    rm_if $BASEDIR/flag.valgrind.reachable
+    rm_if $BASEDIR/flag.valgrind.callseen
+}
+
+INIT() { 
+    if [ `have_logging` == 1 ]; then
+        rm $LOGGING_BASE*.log
+    fi
+    
+    if [ `have_logged` == 1 ]; then
+        rm $LOGGED_BASE*.log
+    fi
+
+    shift
+    local VALGRIND=$1
+    local CHECK_LEAKS=$2
+
+    remove_flags
+    if [ "$VALGRIND" == "E" ]; then
+        touch $BASEDIR/flag.valgrind
+        if [ "$CHECK_LEAKS" == "1" ]; then
+            touch $BASEDIR/flag.valgrind.leaks
+        fi
+        if [ "$CHECK_LEAKS" == "2" ]; then
+            touch $BASEDIR/flag.valgrind.leaks
+            touch $BASEDIR/flag.valgrind.reachable
+        fi
+    fi
+
+    # ls -al $BASEDIR
+}
+
+wait_all_valgrinds_complete() {
+    local WAIT=
+    local COUNT=`count_logging`
+    if [ "$COUNT" != "0" ]; then
+        while [ "$COUNT" != "0" ]; do
+            echo "arb_valgrind_logged sees $COUNT pending logs - waiting until they complete"
+            sleep 1
+            COUNT=`count_logging`
+            WAIT=x$WAIT
+            if [ "$WAIT" == "xxxxxxxxxxxxxxx" ]; then # wait 15 seconds
+                echo "Giving up"
+                false
+                return
+            fi
+        done
+        echo "all logs completed (i.e. all async valgrinds terminated)"
+    fi
+}
+
+dump_and_unlink() {
+    echo "---------- [ valgrind $1 ]"
+    cat $1
+    rm $1
+    echo "---------- [ end $1 ]"
+}
+
+dump_all() {
+    while [ ! -z "$1" ]; do
+        dump_and_unlink $1
+        shift
+    done
+}
+
+dump_all_logged() {
+    local COUNT=`count_logged`
+    if [ "$COUNT" == "0" ]; then
+        echo "Found no logs to dump"
+    else
+        echo "Dumping $COUNT logs:"
+        dump_all $LOGGED_BASE*.log
+    fi
+}
+
+WAIT() {
+    wait_all_valgrinds_complete
+    dump_all_logged
+    remove_flags
+}
+
+usage() {
+    echo "Usage: arb_valgrind_logged INIT"
+    echo "    delete any leftover logs"
+    echo ""
+    echo "Usage: arb_valgrind_logged CALL arb_valgrind-args"
+    echo "    Calls arb_valgrind asynchronously and redirects output into temp. logfile."
+    echo ""
+    echo "Usage: arb_valgrind_logged WAIT"
+    echo "    wait until all async calls terminate (=until all logs complete)"
+    echo "    then dump all logs (synchronously)"
+}
+
+if [ "$1" == "WAIT" ]; then
+    WAIT
+else
+    if [ "$1" == "INIT" ]; then
+        INIT $@
+    else
+        if [ "$1" == "CALL" ]; then
+            shift
+            CALL "$@"
+        else
+            usage
+            false
+        fi
+    fi
+fi
