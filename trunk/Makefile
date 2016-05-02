@@ -1756,9 +1756,9 @@ libdepends:
 genheaders: TEMPLATES/TEMPLATES.dummy
 
 clrdotdepends:
-	-rm PROBE_COM/.depends
-	-rm NAMES_COM/.depends
-	-rm PERL2ARB/.depends
+	rm PROBE_COM/.depends || true
+	rm NAMES_COM/.depends || true
+	rm PERL2ARB/.depends || true
 
 comdepends: comtools clrdotdepends
 	@echo "$(SEP) Partially build com interface"
@@ -2397,7 +2397,7 @@ run_tests: test_base clean_cov
 	$(MAKE) "ARB_PID=UT_$$$$" run_tests_faked_arbpid
 
 cleanup_faked_arbpids:
-	@-rm ~/.arb_tmp/tmp/arb_pids_${USER}_${ARB_PID}_*
+	@rm ~/.arb_tmp/tmp/arb_pids_${USER}_${ARB_PID}_* || true
 
 cleanup_faked_arbpids_and_fail: cleanup_faked_arbpids
 	@false
