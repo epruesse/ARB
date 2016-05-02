@@ -103,10 +103,6 @@ ALLOWED_gcc_VERSIONS=\
   5.1.0 5.2.0 5.3.0 \
 
 
-# supported clang versions:
-ALLOWED_clang_VERSIONS=\
-	4.2.1 \
-
 # ----------------------
 
 COMPILER_INFO:=$(shell SOURCE_TOOLS/arb_compiler_version.pl $(A_CXX))
@@ -123,7 +119,8 @@ ifneq ($(COMPILER_NAME),gcc)
 endif
 
 ifeq ($(USE_CLANG),1)
-ALLOWED_COMPILER_VERSIONS=$(ALLOWED_clang_VERSIONS)
+# accept all clang versions:
+ALLOWED_COMPILER_VERSIONS=$(COMPILER_VERSION)
 else
 ALLOWED_COMPILER_VERSIONS=$(ALLOWED_gcc_VERSIONS)
 endif
@@ -145,33 +142,35 @@ USE_GCC_48_OR_HIGHER:=
 USE_GCC_49_OR_HIGHER:=
 USE_GCC_50_OR_HIGHER:=
 
-ifeq ($(USE_GCC_MAJOR),4)
- ifeq ($(USE_GCC_MINOR),5)
-  ifneq ('$(findstring $(USE_GCC_PATCHLEVEL),23456789)','')
-   USE_GCC_452_OR_HIGHER:=yes
-  endif
- else
-  ifneq ('$(findstring $(USE_GCC_MINOR),6789)','')
-   USE_GCC_452_OR_HIGHER:=yes
-   USE_GCC_46_OR_HIGHER:=yes
-   ifneq ($(USE_GCC_MINOR),6)
-    USE_GCC_47_OR_HIGHER:=yes
-    ifneq ($(USE_GCC_MINOR),7)
-     USE_GCC_48_OR_HIGHER:=yes
-      ifneq ($(USE_GCC_MINOR),8)
-       USE_GCC_49_OR_HIGHER:=yes
-      endif
+ifeq ($(USE_CLANG),0)
+ ifeq ($(USE_GCC_MAJOR),4)
+  ifeq ($(USE_GCC_MINOR),5)
+   ifneq ('$(findstring $(USE_GCC_PATCHLEVEL),23456789)','')
+    USE_GCC_452_OR_HIGHER:=yes
+   endif
+  else
+   ifneq ('$(findstring $(USE_GCC_MINOR),6789)','')
+    USE_GCC_452_OR_HIGHER:=yes
+    USE_GCC_46_OR_HIGHER:=yes
+    ifneq ($(USE_GCC_MINOR),6)
+     USE_GCC_47_OR_HIGHER:=yes
+     ifneq ($(USE_GCC_MINOR),7)
+      USE_GCC_48_OR_HIGHER:=yes
+       ifneq ($(USE_GCC_MINOR),8)
+        USE_GCC_49_OR_HIGHER:=yes
+       endif
+     endif
     endif
    endif
   endif
+ else
+  USE_GCC_452_OR_HIGHER:=yes
+  USE_GCC_46_OR_HIGHER:=yes
+  USE_GCC_47_OR_HIGHER:=yes
+  USE_GCC_48_OR_HIGHER:=yes
+  USE_GCC_49_OR_HIGHER:=yes
+  USE_GCC_50_OR_HIGHER:=yes
  endif
-else
- USE_GCC_452_OR_HIGHER:=yes
- USE_GCC_46_OR_HIGHER:=yes
- USE_GCC_47_OR_HIGHER:=yes
- USE_GCC_48_OR_HIGHER:=yes
- USE_GCC_49_OR_HIGHER:=yes
- USE_GCC_50_OR_HIGHER:=yes
 endif
 
 #---------------------- define special directories for non standard builds
