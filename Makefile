@@ -96,11 +96,11 @@ ALLOWED_gcc_VERSIONS=\
         4.3.1 4.3.2 4.3.3 4.3.4 \
         4.4.1       4.4.3       4.4.5 4.4.6  4.4.7 \
               4.5.2 \
-        4.6.1 4.6.2 4.6.3 \
+        4.6.1 4.6.2 4.6.3 4.6.4 \
         4.7.1 4.7.2 4.7.3 \
   4.8.0 4.8.1 4.8.2 4.8.3 4.8.4 4.8.5 \
   4.9.0 4.9.1 4.9.2 4.9.3 \
-  5.1.0 5.2.0 \
+  5.1.0 5.2.0 5.3.0 \
 
 
 # ----------------------
@@ -741,6 +741,7 @@ check_same_GCC_VERSION:
 
 check_GCC_VERSION:
 		@echo 'Compiler version check:'
+# see .@ALLOWED_gcc_VERSIONS
 ifeq ('$(COMPILER_VERSION_ALLOWED)', '')
 		@echo "  - Your compiler is '$(COMPILER_NAME)' version '$(COMPILER_VERSION)'"
 		@echo '    This version is not in the list of supported $(COMPILER_NAME)-versions:'
