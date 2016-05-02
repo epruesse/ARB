@@ -83,6 +83,9 @@ ifeq ($(findstring $(ARBHOME)/lib,$(LD_LIBRARY_PATH)),)
 LD_LIBRARY_PATH:=${ARBHOME}/lib:$(LD_LIBRARY_PATH)
 endif
 
+# store LD_LIBRARY_PATH to circumvent SIP restrictions:
+ARBBUILD_LIBRARY_PATH:=$(LD_LIBRARY_PATH)
+
 FORCEMASK = umask 002
 NODIR=--no-print-directory
 
