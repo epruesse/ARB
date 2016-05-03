@@ -1,0 +1,183 @@
+item:FastTree2 (nucleotide)
+itemmeta:F
+seqtype:N
+itemmethod:(GOTO_LOCAL_DIR; \
+            arb_sed 's/#/>/' <TmpInputFile | \
+            arb_sed 's/%/>/' | \
+            arb_sed 's/"/>/'| \
+            arb_sed 's/@/>/' | \
+            arb_sed '/^[^>]/ y/./-/' > fasttree_in; \
+            RUN_IN_WINDOW(( ($ARBHOME/bin/FastTree $FAST $MODEL -nt fasttree_in > fasttree_out || STOP_ON_FAILURE(FastTree)) && \
+                           $DISPLAY_FUNC));)&
+
+
+arg:DISPLAY_FUNC
+argtype:choice_menu
+arglabel:What to do with the tree?
+argchoice:Load into ARB ('tree_fasttree_//'):$ARBHOME/bin/arb_read_tree tree_fasttree_$$ fasttree_out "PRG=FastTree$FAST FILTER=$FILTER MODEL=!$MODEL"
+argchoice:Treetool:treetool fasttree_out
+
+
+arg:FAST
+argtype:choice_menu
+arglabel:speed up the neighbor joining phase\n(recommended for >50,000 sequences)
+argchoice:No:
+argchoice:Yes:-fastest
+
+arg:MODEL
+argtype:choice_menu
+arglabel:ML Model
+argchoice:Jukes-Cantor:
+argchoice:GTR:-gtr
+
+
+in:TmpInputFile
+informat:flat
+insave:
+
+//----------------------
+
+#define PREPARE_MRBAYES_INFILE(INFILE) \
+        ( \
+                arb_sed -i '/LABELPOS/d' INFILE     `#MrBayes does not understand the LABELPOS command, therefore it is removed.` && \
+                arb_sed -i '/EQUATE/d' INFILE       `#MrBayes does not support EQUATE macros, remove them.` && \
+                arb_sed -i '/OPTIONS/,/;/d' INFILE  `#MrBayes does not support the OPTIONS block, remove it. (delete everything between OPTIONS and ';')` \
+        )
+
+#define NEXUS2NEWICK(FROM,APPENDTO) ($ARBHOME/bin/arb_nexus2newick.awk FROM >> APPENDTO || STOP_ON_FAILURE(arb_nexus2newick))
+
+item:MrBayes
+itemmeta:B
+seqtype:*
+itemmethod:(GOTO_LOCAL_DIR; \
+            GEN_NEXUS(mrbayes_in) && \
+            PREPARE_MRBAYES_INFILE(mrbayes_in) && \
+            ( \
+                `# append the mrbayes command block to the nexus file`; \
+                COMMAND="begin mrbayes; \
+                         set autoclose=yes nowarn=yes; \
+                         lset nst=$NST rates=$RATES ngammacat=$NGAMMACAT; \
+                         mcmc ngen=$NGEN nchains=$NCHAINS temp=$TEMP samplefreq=$SAMPLEFREQ burninfrac=$BURNINFRAC; \
+                         sump; \
+                         sumt Outputname=mrbayes_out Conformat=simple; \
+                     end;" \
+                && echo $COMMAND >> mrbayes_in; \
+            ) && \
+            RUN_IN_WINDOW(( ($ARBHOME/bin/mb mrbayes_in || STOP_ON_FAILURE(MrBayes)) && \
+                            NEXUS2NEWICK(mrbayes_out.con.tre,mr_bayes_out.newick) && \
+                            $DISPLAY_FUNC));)&
+
+itemhelp:MrBayes.help
+
+arg:DISPLAY_FUNC
+argtype:choice_menu
+arglabel:What to do with the tree?
+argchoice:Load into ARB ('tree_mrBayes_//'):$ARBHOME/bin/arb_read_tree tree_mrbayes_$$ mr_bayes_out.newick "PRG=MrBayes FILTER=$FILTER RATE=$RATES"
+argchoice:Treetool:treetool mr_bayes_out.newick
+
+arg:NST
+argtype:choice_menu
+arglabel:Number of substitution types
+argchoice:6:6
+argchoice:mixed:mixed
+argchoice:1:1
+argchoice:2:2
+
+arg:RATES
+argtype:choice_menu
+arglabel:Model for among-site rate variation
+argchoice:A proportion of the sites are invariable:propinv
+argchoice:No rate variation across sites:equal
+argchoice:Gamma-distributed rates across sites:gamma
+argchoice:Autocorrelated rates across sites:adgamma
+argchoice:A proportion of the sites are invariable while the rate for the remaining sites are drawn from a gamma distribution:invgamma
+
+
+arg:NGAMMACAT
+argtype:text
+arglabel:Number of rate categories for the gamma distribution\n(Range [0 .. n])
+argtext:4
+
+arg:NGEN
+argtype:text
+arglabel:Number of cycles for the MCMC algorithm
+argtext:100000
+
+arg:NCHAINS
+argtype:text
+arglabel:Number of chains
+argtext:4
+
+arg:TEMP
+argtype:text
+arglabel:Temperature parameter for heating the chains
+argtext:0.5
+
+arg:SAMPLEFREQ
+argtype:text
+arglabel:Markov chain sample frequency
+argtext:500
+
+arg:BURNINFRAC
+argtype:text
+arglabel:Fraction of samples that will be discarded\nwhen convergence diagnostics are calculated [0..1]
+argtext:0.25
+
+
+in:TmpInputFile
+informat:genbank
+insave:
+
+//------------------------------------------------------------------------------------------
+
+
+item:MrBayes (custom)
+itemmeta:c
+seqtype:*
+itemmethod:(GOTO_LOCAL_DIR; \
+            GEN_NEXUS(mrbayes_in) && \
+            PREPARE_MRBAYES_INFILE(mrbayes_in) && \
+            ( \
+                `# append the mrbayes command block to the nexus file`; \
+                cat $COMMAND_FILE >> mrbayes_in; \
+            ) && \
+            RUN_IN_WINDOW(( ($ARBHOME/bin/mb mrbayes_in || STOP_ON_FAILURE(MrBayes)) && \
+                            NEXUS2NEWICK(mrbayes_out.con.tre,mr_bayes_out.newick) && \
+                            $DISPLAY_FUNC)))&
+
+itemhelp:MrBayesCustom.help
+
+arg:DISPLAY_FUNC
+argtype:choice_menu
+arglabel:What to do with the tree?
+argchoice:Load into ARB ('tree_mrBayes_//'):$ARBHOME/bin/arb_read_tree tree_mrbayes_$$ mr_bayes_out.newick "PRG=MrBayes(custom) FILTER=$FILTER RATE=$RATES"
+argchoice:Treetool:treetool mr_bayes_out.newick
+
+arg:COMMAND_FILE
+argtype:filename
+arglabel:MrBayes command file
+
+in:TmpInputFile
+informat:genbank
+insave:
+
+//------------------------------------------------------------------------------------------
+
+item:TREEPUZZLE ...
+itemmeta: T
+seqtype:*
+itemmethod:(GOTO_LOCAL_DIR; GEN_PHYLIP(infile) && \
+            RUN_IN_WINDOW(((puzzle || STOP_ON_FAILURE(puzzle)) && $DISPLAY_FUNC));\
+            RM_LOCAL_FILES(TmpInputFile outdist) )&
+itemhelp:treepuzzle.help
+
+arg:DISPLAY_FUNC
+argtype:choice_menu
+arglabel:What to do with the tree?
+argchoice:ARB ('tree_puz_//'):arb_read_tree tree_puz_$$ outtree "PRG=PUZZLE FILTER=$FILTER PKG=strimmer/v. haeseler"
+argchoice:Treetool:treetool outtree
+
+in:TmpInputFile
+informat:genbank
+insave:
+

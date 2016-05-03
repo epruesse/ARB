@@ -1,0 +1,93 @@
+// special conventions:
+//
+// * each external command ('itemmethod') runs in its separate directory under ~/.arb_tmp
+// * if sequences are exported ARB writes them in GenBank format into a tmpfile (e.g. sth like '/tmp/gde3170_0')
+//   In 'itemmethod' every occurrance of 'TmpInputFile' (as specified at entry 'in:') is replaced by the name of that tempfile.
+//   Some macros defined below expect that placeholder, i.e. always use 'TmpInputFile' for 'in:'!
+// * if sequences are (re-)imported, ARB prepares a temporary output-file. itemmethod shall use the placeholder 'TmpOutputFile'
+//   to generate its content. Always use 'TmpOutputFile' for 'out:'.
+//   Do not remove TmpOutputFile using RM_LOCAL_FILES. It is expected and will be removed by ARB_GDE (after command termination).
+// * 'arg:DISPLAY_FUNC' shall be a single command (to be chainable with && in itemmethod)
+
+// GOTO_LOCAL_DIR and RM_LOCAL_FILES need to be used on top-script level
+// (opening sub-shells might change value of $$)
+
+#define GOTO_LOCAL_DIR          mkdir -p ~/.arb_tmp/$$; cd ~/.arb_tmp/$$
+#define RM_LOCAL_FILES(FILES)   GOTO_LOCAL_DIR ; cd .. ; rm -rf $$
+
+#define GENERATE(OUTFILE,FORMAT) arb_convert_aln --arb-notify -GenBank TmpInputFile -FORMAT OUTFILE
+
+#define GEN_PHYLIP(OUTFILE)     GENERATE(OUTFILE,phylip)
+#define GEN_FASTDNAML(OUTFILE)  GENERATE(OUTFILE,fastdnaml)
+#define GEN_NEXUS(OUTFILE)      GENERATE(OUTFILE,NEXUS)
+
+#define RUN_IN_WINDOW(cmd)      ${ARB_XCMD} bash -x -c @@LD_LIBRARY_PATH="${ARB_LIBRARY_PATH:-/usr/arb/lib}";export LD_LIBRARY_PATH; cmd ;arb_wait@@
+// Note: @@ will result in a single quote. see ../ARB_GDE/GDE_ParseMenu.cxx@WHY_USE_DOUBLE_AT
+
+#define STOP_ON_FAILURE(WHAT_FAILED) (arb_message "Error running WHAT_FAILED (inspect console for details)";false) 
+// intended use '( command || STOP_ON_FAILURE(command-description)) && ( dependent-command || STOP_ON_FAILURE(dependent-command-description) && ...)'
+
+#include <warning.genmenu>
+
+menu:Export
+menumeta: E
+#include <export.genmenu>
+
+menu:Print
+menumeta: r
+#include <pretty_print.genmenu>
+
+menu:Import
+menumeta:I
+#include <import.genmenu>
+
+menu:Align
+menumeta:A
+#include <align.genmenu>
+
+menu:User
+menumeta:U
+#include <start_arb.genmenu>
+
+menu:SAI
+menumeta:S
+#include <dnamlrates.genmenu>
+
+menu:Incremental phylogeny
+menumeta:c
+#include <inc_fastdnaml.genmenu>
+
+menu:Phylogeny Distance Matrix
+menumeta:D
+#include <phylip_dist_org.genmenu>
+#include <phylip_dist.genmenu>
+
+menu:Phylogeny max. parsimony
+menumeta:p
+#include <phylip_pars.genmenu>
+
+menu:Phylogeny max. Likelyhood EXP
+menumeta:X
+#include <fastdnaml.genmenu>
+
+menu:Phylogeny max. Likelyhood
+menumeta:L
+#define RAXML_DNA
+#include <raxml.genmenu>
+#undef RAXML_DNA
+#include <raxml.genmenu>
+
+#define PHYML_DNA
+#include <phyml_20130708.genmenu>
+#undef PHYML_DNA
+#include <phyml_20130708.genmenu>
+
+#include <phyml.genmenu>
+
+#include <phylip_ml.genmenu>
+
+menu:Phylogeny (Other)
+menumeta:O
+#include <puzzle.genmenu>
+#include <desoete.genmenu>
+

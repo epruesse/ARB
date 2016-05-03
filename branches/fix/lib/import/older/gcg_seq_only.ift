@@ -1,0 +1,18 @@
+                #Global settings:
+KEYWIDTH        0
+
+BEGIN           "*Type* .."
+
+MATCH           "*Type*"
+                SRT "* *=*1:*.*=*1"
+                WRITE "name"
+
+SEQUENCEAFTER   "*"
+SEQUENCESRT     ""
+SEQUENCECOLUMN  10
+SEQUENCEEND     "//"
+
+# DONT_GEN_NAMES
+CREATE_ACC_FROM_SEQUENCE
+
+END             "//"
