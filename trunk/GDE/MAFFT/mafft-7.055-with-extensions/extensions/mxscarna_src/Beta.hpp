@@ -8,7 +8,7 @@
 using namespace std;
 
 struct Beta {
-  static const int NBASE = 4;// A, C, G, U
+    static const int NBASE = 4;// A, C, G, U
   static const int NBASEG = (NBASE + 1);     // A, C, G, U, Gap
   static const int NBASENG = (NBASE + 2);    // A, C, G, U, N, Gap
   static const int NPBASE = (NBASE * NBASE);
@@ -17,7 +17,7 @@ struct Beta {
   static const int NCODE = 7;
   static const int BASEBIT = 2;
   // static const int BASEMSK = ~(~0 << BASEBIT);
-  static const int BASEMSK = ~(numeric_limits<int>::max() >> BASEBIT << BASEBIT);
+  static const int BASEMSK = ~(INT_MAX >> BASEBIT << BASEBIT);
   enum BaseCode {
     A_CODE       = 0,
     C_CODE       = 1,
