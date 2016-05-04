@@ -17,31 +17,18 @@
 #ifndef AWT_CANVAS_HXX
 #include <awt_canvas.hxx>
 #endif
-#ifndef _GLIBCXX_VECTOR
-#include <vector>
-#endif
-#ifndef _GLIBCXX_MAP
-#include <map>
-#endif
-
 
 #define td_assert(cond) arb_assert(cond)
 
 #define AWAR_DTREE_BASELINEWIDTH   "awt/dtree/baselinewidth"
 #define AWAR_DTREE_VERICAL_DIST    "awt/dtree/verticaldist"
-#define AWAR_DTREE_GROUP_DOWNSCALE "awt/dtree/downscaling"
-#define AWAR_DTREE_GROUP_SCALE     "awt/dtree/groupscaling"
 #define AWAR_DTREE_AUTO_JUMP       "awt/dtree/autojump"
-#define AWAR_DTREE_AUTO_JUMP_TREE  "awt/dtree/autojump_tree"
 #define AWAR_DTREE_SHOW_CIRCLE     "awt/dtree/show_circle"
 #define AWAR_DTREE_SHOW_BRACKETS   "awt/dtree/show_brackets"
 #define AWAR_DTREE_CIRCLE_ZOOM     "awt/dtree/circle_zoom"
 #define AWAR_DTREE_CIRCLE_MAX_SIZE "awt/dtree/max_size"
 #define AWAR_DTREE_USE_ELLIPSE     "awt/dtree/ellipse"
 #define AWAR_DTREE_GREY_LEVEL      "awt/dtree/greylevel"
-#define AWAR_DTREE_GROUPCOUNTMODE  "awt/dtree/groupcountmode"
-#define AWAR_DTREE_GROUPINFOPOS    "awt/dtree/groupinfopos"
-#define AWAR_DTREE_BOOTSTRAP_MIN   "awt/dtree/bootstrap/inner/min"
 
 #define AWAR_DTREE_RADIAL_ZOOM_TEXT "awt/dtree/radial/zoomtext"
 #define AWAR_DTREE_RADIAL_XPAD      "awt/dtree/radial/xpadding"
@@ -49,13 +36,9 @@
 #define AWAR_DTREE_DENDRO_ZOOM_TEXT "awt/dtree/dendro/zoomtext"
 #define AWAR_DTREE_DENDRO_XPAD      "awt/dtree/dendro/xpadding"
 
-#define AWAR_DTREE_GROUP_MARKED_THRESHOLD           "awt/dtree/markers/group_marked_threshold"
-#define AWAR_DTREE_GROUP_PARTIALLY_MARKED_THRESHOLD "awt/dtree/markers/group_partially_marked_threshold"
-#define AWAR_DTREE_MARKER_WIDTH                     "awt/dtree/markers/marker_width"
-#define AWAR_DTREE_PARTIAL_GREYLEVEL                "awt/dtree/markers/partial_greylevel"
+void awt_create_dtree_awars(AW_root *aw_root, AW_default db);
 
-#define NT_BOX_WIDTH      7   // pixel
-#define NT_DIAMOND_RADIUS 5
+#define NT_BOX_WIDTH      7 // pixel
 #define NT_ROOT_WIDTH     9
 #define NT_SELECTED_WIDTH 11
 
@@ -71,19 +54,13 @@ enum AP_tree_display_type {
 };
 
 enum AP_tree_jump_type { // bit-values
-    AP_JUMP_KEEP_VISIBLE  = 1,  // automatically make selected node visible (on changes)
-    AP_JUMP_UNFOLD_GROUPS = 2,  //
-    AP_JUMP_FORCE_VCENTER = 4,  // force vertical centering (even if visible)
-    AP_JUMP_ALLOW_HCENTER = 8,  // force horizontal centering (if vertically centered); only works together with AP_JUMP_FORCE_VCENTER
-    AP_JUMP_FORCE_HCENTER = 16, // force horizontal centering
-    AP_JUMP_BE_VERBOOSE   = 32, // tell why nothing happened etc.
+    AP_JUMP_UNFOLD_GROUPS     = 1,
+    AP_JUMP_CENTER_IF_VISIBLE = 2, // if already visible -> center (normally only done if IRS-mode or selected was invisible)
+    AP_JUMP_BE_VERBOOSE       = 4, // tell why nothing happened etc.
 
     // convenience defs:
-    AP_DONT_JUMP         = 0,
-    AP_JUMP_SMART_CENTER = AP_JUMP_FORCE_VCENTER|AP_JUMP_ALLOW_HCENTER,
-    AP_JUMP_FORCE_CENTER = AP_JUMP_FORCE_VCENTER|AP_JUMP_FORCE_HCENTER,
-
-    AP_JUMP_BY_BUTTON = AP_JUMP_SMART_CENTER|AP_JUMP_UNFOLD_GROUPS|AP_JUMP_BE_VERBOOSE,
+    AP_JUMP_AUTO      = 0,
+    AP_JUMP_BY_BUTTON = AP_JUMP_UNFOLD_GROUPS|AP_JUMP_CENTER_IF_VISIBLE|AP_JUMP_BE_VERBOOSE,
 };
 
 inline bool sort_is_list_style(AP_tree_display_type sort) { return sort == AP_LIST_NDS || sort == AP_LIST_SIMPLE; }
@@ -137,105 +114,10 @@ struct AWT_command_data {
 
 enum CollapseMode {
     COLLAPSE_ALL      = 0,
-    EXPAND_MARKED     = 1,  // do not collapse groups containing marked species
-    COLLAPSE_TERMINAL = 2,  // do not collapse groups with subgroups
+    EXPAND_MARKED     = 1, // do not collapse groups containing marked species
+    COLLAPSE_TERMINAL = 2, // do not collapse groups with subgroups
     EXPAND_ALL        = 4,
-    EXPAND_COLOR      = 8,  // do not collapse groups containing species with color == parameter 'color_group' (or any color if 'color_group' is -1)
-    EXPAND_ZOMBIES    = 16, // do not collapse groups containing zombies
-};
-
-class NodeMarkers {
-    // represents markers at a node (species or group)
-
-    int              nodeSize; // number of species in group (or 1)
-    std::vector<int> mark;     // how often each marker is set in group
-public:
-    NodeMarkers() {} // default for cache
-    explicit NodeMarkers(int numMarks)
-        : nodeSize(0),
-          mark(numMarks, 0)
-    {}
-
-    void incMarker(size_t markerIdx) {
-        td_assert(markerIdx<mark.size());
-        mark[markerIdx]++;
-    }
-    int markerCount(size_t markerIdx) const {
-        td_assert(markerIdx<mark.size());
-        return mark[markerIdx];
-    }
-
-    void incNodeSize() { nodeSize++; }
-    int getNodeSize() const { return nodeSize; }
-
-    double getMarkRate(size_t markerIdx) const { return markerCount(markerIdx) / double(getNodeSize()); }
-
-    void add(const NodeMarkers& other) {
-        size_t size = mark.size();
-        td_assert(size == other.mark.size());
-        for (size_t i = 0; i<size; ++i) {
-            mark[i] += other.mark[i];
-        }
-        nodeSize += other.nodeSize;
-    }
-};
-
-class MarkerDisplay {
-    // defines which markers shall be displayed
-
-    typedef std::map<const AP_tree*,NodeMarkers> GroupMarkerCache;
-
-    GroupMarkerCache cache;
-    int              numMarkers;
-
-public:
-    MarkerDisplay(int numMarkers_)
-        : numMarkers(numMarkers_)
-    {
-        td_assert(numMarkers>0);
-    }
-    virtual ~MarkerDisplay() {}
-
-    virtual const char *get_marker_name(int markerIdx) const                                      = 0;
-    virtual void retrieve_marker_state(const char *speciesName, NodeMarkers& matches)             = 0;
-    virtual void handle_click(int markerIdx, AW_MouseButton button, AWT_graphic_exports& exports) = 0;
-
-    const NodeMarkers *read_cache(const AP_tree *at) const {
-        GroupMarkerCache::const_iterator found = cache.find(at);
-        return found == cache.end() ? NULL : &found->second;
-    }
-    void write_cache(const AP_tree *at, const NodeMarkers& markers) { cache[at] = markers; }
-    void flush_cache() { cache.erase(cache.begin(), cache.end()); }
-
-    int size() const { return numMarkers; }
-};
-
-struct GroupInfo {
-    const char *name;
-    const char *count;
-    unsigned    name_len;
-    unsigned    count_len;
-};
-
-enum GroupInfoMode {
-    GI_COMBINED,             // only sets GroupInfo::name (will contain "name (count)" or only "name" if counters disabled)
-    GI_SEPARATED,            // set GroupInfo::name and GroupInfo::count (to "name" and "count")
-    GI_SEPARATED_PARENTIZED, // like GI_SEPARATED, but GroupInfo::count will be "(count)"
-};
-
-enum GroupInfoPosition {
-    GIP_SEPARATED, // name attached, count overlayed             (=old hardcoded default for AP_TREE_NORMAL and AP_TREE_IRS)
-    GIP_ATTACHED,  // "name (count)" attached "next to" group    (=old hardcoded default for AP_TREE_RADIAL)
-    GIP_OVERLAYED, // "name (count)" overlayed with group polygon
-};
-
-enum GroupCountMode {
-    GCM_NONE,    // do not show group count         (=old hardcoded default for AP_TREE_RADIAL)
-    GCM_MEMBERS, // show number of group members    (=old hardcoded default for AP_TREE_NORMAL and AP_TREE_IRS)
-    GCM_MARKED,  // show number of marked group members (show nothing if none marked)
-    GCM_BOTH,    // show "marked/members" (or "members" if none marked)
-    GCM_PERCENT, // show percent of marked group members (show nothing if none marked)
-    GCM_BOTH_PC, // show "percent/members" (or "members" if none marked)
+    EXPAND_COLOR      = 8, // do not collapse groups containing species with color == parameter 'color_group'
 };
 
 class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
@@ -248,7 +130,6 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
     int    use_ellipse;
     float  circle_zoom_factor;
     float  circle_max_size;
-    int    bootstrap_min;
 
     int zombies; // # of zombies during last load()
     int duplicates; // # of duplicates during last load()
@@ -266,55 +147,42 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
     double irs_tree_ruler_scale_factor;
 
     AWT_scaled_font_limits scaled_font;
+    double                 scaled_branch_distance; // vertical distance between branches (may be extra-scaled in options)
 
-    double        scaled_branch_distance; // vertical distance between branches (may be extra-scaled in options)
-    group_scaling groupScale; // scaling for folded groups
-
-    AW_grey_level group_greylevel;
-    AW_grey_level marker_greylevel;
+    AW_pos grey_level;
 
     AW_device *disp_device; // device for recursive functions
 
     const AW_bitset line_filter, vert_line_filter, mark_filter, group_bracket_filter, bs_circle_filter;
     const AW_bitset leaf_text_filter, group_text_filter, remark_text_filter, other_text_filter;
-    const AW_bitset ruler_filter, root_filter, marker_filter;
+    const AW_bitset ruler_filter, root_filter;
 
     bool nds_show_all;
 
-    GroupInfoPosition group_info_pos;
-    GroupCountMode    group_count_mode;
-
-    MarkerDisplay *display_markers;
-    struct {
-        double marked;
-        double partiallyMarked;
-    } groupThreshold;
-
     AD_map_viewer_cb  map_viewer_cb;
-    AWT_command_data *cmd_data;
+    AWT_command_data  *cmd_data;
 
-    AP_tree_root *tree_static;
+    void scale_text_koordinaten(AW_device *device, int gc, double& x, double& y, double orientation, int flag);
 
     // functions to compute displayinformation
 
     void show_dendrogram(AP_tree *at, AW::Position& pen, DendroSubtreeLimits& limits);
-    void show_radial_tree(AP_tree *at, const AW::Position& base, const AW::Position& tip, const AW::Angle& orientation, const double tree_spread);
+
+    void show_radial_tree(AP_tree *at,
+                          double   x_center,
+                          double   y_center,
+                          double   tree_sprad,
+                          double   tree_orientation,
+                          double   x_root,
+                          double   y_root);
+
     void show_nds_list(GBDATA * gb_main, bool use_nds);
     void show_irs_tree(AP_tree *at, double height);
 
-    void summarizeGroupMarkers(AP_tree *at, NodeMarkers& markers);
-    void drawMarker(const class MarkerPosition& marker, const bool partial, const int midx);
-    void detectAndDrawMarkers(AP_tree *at, double y1, double y2);
-    void drawMarkerNames(AW::Position& Pen);
-
-    void pixel_box(int gc, const AW::Position& pos, int pixel_width, AW::FillStyle filled);
-
-    const GroupInfo& get_group_info(AP_tree *at, GroupInfoMode mode, bool swap = false) const;
-
-public:
-    void filled_box(int gc, const AW::Position& pos, int pixel_width) { pixel_box(gc, pos, pixel_width, AW::FillStyle::SOLID); }
-    void empty_box(int gc, const AW::Position& pos, int pixel_width) { pixel_box(gc, pos, pixel_width, AW::FillStyle::EMPTY); }
-    void diamond(int gc, const AW::Position& pos, int pixel_radius);
+    void box(int gc, const AW::Position& pos, int pixel_width, bool filled);
+    void filled_box(int gc, const AW::Position& pos, int pixel_width) { box(gc, pos, pixel_width, true); }
+    void empty_box(int gc, const AW::Position& pos, int pixel_width) { box(gc, pos, pixel_width, false); }
+    void diamond(int gc, const AW::Position& pos, int pixel_width);
 
     const char *ruler_awar(const char *name);
 
@@ -339,8 +207,6 @@ public:
 
     bool warn_inappropriate_mode(AWT_COMMAND_MODE mode);
 
-    virtual AP_tree_root *create_tree_root(AliView *aliview, AP_sequence *seq_prototype, bool insert_delete_cbs);
-
 protected:
     void store_command_data(AWT_command_data *new_cmd_data) {
         delete cmd_data;
@@ -352,25 +218,27 @@ public:
 
     // *********** read only variables !!!
 
-    AW_root              *aw_root;
+    AW_root      *aw_root;
     AP_tree_display_type  tree_sort;
-    AP_tree              *displayed_root; // root node of shown (sub-)tree; differs from real root if tree is zoomed logically
-    GBDATA               *gb_main;
+    AP_tree      *displayed_root; // root node of shown (sub-)tree; differs from real root if tree is zoomed logically
+    AP_tree_root *tree_static;
+    GBDATA       *gb_main;
 
     // *********** public section
 
     AWT_graphic_tree(AW_root *aw_root, GBDATA *gb_main, AD_map_viewer_cb map_viewer_cb);
     ~AWT_graphic_tree() OVERRIDE;
 
-    AP_tree_root *get_tree_root() { return tree_static; }
     AP_tree *get_root_node() { return tree_static ? tree_static->get_root_node() : NULL; }
     bool is_logically_zoomed() { return displayed_root != get_root_node(); }
 
-    void init(AliView *aliview, AP_sequence *seq_prototype, bool link_to_database_, bool insert_delete_cbs);
+    void init(RootedTreeNodeFactory *nodeMaker_, AliView *aliview, AP_sequence *seq_prototype, bool link_to_database_, bool insert_delete_cbs);
     AW_gc_manager init_devices(AW_window *, AW_device *, AWT_canvas *ntw) OVERRIDE;
 
     void show(AW_device *device) OVERRIDE;
     const AW::Position& get_cursor() const { return cursor; }
+
+    void info(AW_device *device, AW_pos x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct) OVERRIDE;
 
 private:
     void handle_key(AW_device *device, AWT_graphic_event& event);
@@ -393,8 +261,8 @@ public:
     void     reorder_tree(TreeOrder mode);
     GB_ERROR create_group(AP_tree * at) __ATTR__USERESULT;
     void     toggle_group(AP_tree * at);
-    GB_ERROR load(GBDATA *gb_main, const char *name) OVERRIDE __ATTR__USERESULT;
-    GB_ERROR save(GBDATA *gb_main, const char *name) OVERRIDE __ATTR__USERESULT;
+    GB_ERROR load(GBDATA *gb_main, const char *name, AW_CL,  AW_CL) OVERRIDE __ATTR__USERESULT;
+    GB_ERROR save(GBDATA *gb_main, const char *name, AW_CL cd1, AW_CL cd2) OVERRIDE __ATTR__USERESULT;
     int      check_update(GBDATA *gb_main) OVERRIDE;         // reload tree if needed
     void     update(GBDATA *gb_main) OVERRIDE;
     void     set_tree_type(AP_tree_display_type type, AWT_canvas *ntw);
@@ -402,16 +270,6 @@ public:
     double get_irs_tree_ruler_scale_factor() const { return irs_tree_ruler_scale_factor; }
     void show_ruler(AW_device *device, int gc);
     void get_zombies_and_duplicates(int& zomb, int& dups) const { zomb = zombies; dups = duplicates; }
-
-    void hide_marker_display() {
-        delete display_markers;
-        display_markers = NULL;
-    }
-    void set_marker_display(MarkerDisplay *display) { // takes ownership of 'display'
-        hide_marker_display();
-        display_markers = display;
-    }
-    MarkerDisplay *get_marker_display() { return display_markers; }
 
 #if defined(UNIT_TESTS) // UT_DIFF
     friend class fake_AWT_graphic_tree;
@@ -432,10 +290,8 @@ class ClickedTarget {
 
     AP_tree *tree_node;
     GBDATA  *gb_species;
-
-    bool ruler;
-    bool branch;
-    int  markerflag; // = markerindex + 1
+    bool     ruler;
+    bool     branch;
 
     const AW_clicked_element *elem;
 
@@ -444,12 +300,11 @@ class ClickedTarget {
         gb_species = NULL;
         ruler      = false;
         branch     = false;
-        markerflag  = 0;
     }
 
     void identify(AWT_graphic_tree *agt) {
         init();
-        if (elem && elem->does_exist()) {
+        if (elem && elem->exists) {
             const char *what = (const char*)elem->cd2();
 
             if (what) {
@@ -460,9 +315,6 @@ class ClickedTarget {
                 else if (strcmp(what, "ruler") == 0) {
                     ruler = !elem->cd1();
                 }
-                else if (strcmp(what, "flag") == 0) {
-                    markerflag = elem->cd1()+1;
-                }
                 else if (strcmp(what, "branch") == 0) {
                     branch = true; // indicates that a line really IS the branch (opposed to other branch-related lines like e.g. group-brackets)
                 }
@@ -471,7 +323,7 @@ class ClickedTarget {
                 }
             }
 
-            if (!(gb_species || ruler || markerflag)) {
+            if (!(gb_species || ruler)) {
                 tree_node = (AP_tree*)elem->cd1();
                 td_assert(branch || !what);
             }
@@ -497,13 +349,11 @@ public:
     const AW_clicked_element *element() const { return elem; }
     AP_tree *node() const { return tree_node; }
     GBDATA *species() const { return gb_species; }
-    int get_markerindex() const { return markerflag-1; }
 
     bool is_text() const { return elem && elem->is_text(); }
     bool is_line() const { return elem && elem->is_line(); }
     bool is_branch() const { return branch; }
     bool is_ruler() const { return ruler; }
-    bool is_marker() const { return markerflag; }
 
     double get_rel_attach() const {
         // return [0..1] according to exact position where element is dropped
@@ -512,15 +362,8 @@ public:
     }
 };
 
-void       TREE_create_awars(AW_root *aw_root, AW_default db);
-void       TREE_install_update_callbacks(AWT_canvas *ntw);
-void       TREE_insert_jump_option_menu(AW_window *aws, const char *label, const char *awar_name);
-AW_window *TREE_create_settings_window(AW_root *aw_root);
-AW_window *TREE_create_marker_settings_window(AW_root *root);
-
 AWT_graphic_tree *NT_generate_tree(AW_root *root, GBDATA *gb_main, AD_map_viewer_cb map_viewer_cb);
-
-bool TREE_show_branch_remark(AW_device *device, const char *remark_branch, bool is_leaf, const AW::Position& pos, AW_pos alignment, AW_bitset filteri, int bootstrap_min);
+bool AWT_show_branch_remark(AW_device *device, const char *remark_branch, bool is_leaf, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri);
 
 #else
 #error TreeDisplay.hxx included twice

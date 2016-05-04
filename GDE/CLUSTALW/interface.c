@@ -1372,7 +1372,7 @@ void parse_params(Boolean xmenus)
 
 
 /*****************************************************************************/
-/*  Check to see if sequence type is explicitly stated..override ************/
+/*  Check to see if sequence type is explicitely stated..override ************/
 /* the automatic checking (DNA or Protein).   /type=d or /type=p *************/
 /*****************************************************************************/
 	if(settype != -1)

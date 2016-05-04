@@ -17,7 +17,6 @@
 
 #define dbq_assert(cond) arb_assert(cond)
 
-class Itemfield_Selection;
 
 namespace QUERY {
 
@@ -51,58 +50,45 @@ namespace QUERY {
 
     };
 
-    class DbQuery : virtual Noncopyable {
+    class DbQuery {
         AwarName awar_tree_name;
 
     public:
-        AW_window *aws;
-        GBDATA    *gb_main;                                   // the main database (in merge tool: source db in left query; dest db in right query)
-        GBDATA    *gb_ref;                                    // second reference database (only used by merge tool; dest db in left query; source db in right query)
-        bool       expect_hit_in_ref_list;                    // merge-tool: when searching dups in fields: match only if hit exists in other DBs hitlist (true for target-DB-query)
-
-        char *awar_keys[QUERY_SEARCHES];
-        char *awar_queries[QUERY_SEARCHES];
-        char *awar_not[QUERY_SEARCHES];                       // not flags for queries
-        char *awar_operator[QUERY_SEARCHES];                  // not flags for queries
-
-        char *species_name;
-
-        char *awar_writekey;
-        char *awar_writelossy;
-
-        char *awar_protectkey;
-        char *awar_setprotection;
-        char *awar_setvalue;
-
-        char *awar_parskey;
-        char *awar_parsvalue;
-        char *awar_parspredefined;
-        char *awar_acceptConvError;
-
-        char *awar_ere;
-        char *awar_where;
-        char *awar_by;
-        char *awar_use_tag;
-        char *awar_double_pars;
-        char *awar_deftag;
-        char *awar_tag;
-        char *awar_count;
-        char *awar_sort;
-
-        unsigned long sort_mask;                              // contains several cascading sort criteria (QUERY_SORT_CRITERIA_BITS each)
-
+        AW_window         *aws;
+        GBDATA            *gb_main;                           // the main database (in merge tool: source db in left query; dest db in right query)
+        GBDATA            *gb_ref;                            // second reference database (only used by merge tool; dest db in left query; source db in right query)
+        bool               expect_hit_in_ref_list;            // merge-tool: when searching dups in fields: match only if hit exists in other DBs hitlist (true for target-DB-query)
+        AwarName           species_name;
+        AwarName           awar_keys[QUERY_SEARCHES];
+        AwarName           awar_setkey;
+        AwarName           awar_setprotection;
+        AwarName           awar_setvalue;
+        AwarName           awar_parskey;
+        AwarName           awar_parsvalue;
+        AwarName           awar_parspredefined;
+        AwarName           awar_queries[QUERY_SEARCHES];
+        AwarName           awar_not[QUERY_SEARCHES];          // not flags for queries
+        AwarName           awar_operator[QUERY_SEARCHES];     // not flags for queries
+        AwarName           awar_ere;
+        AwarName           awar_where;
+        AwarName           awar_by;
+        AwarName           awar_use_tag;
+        AwarName           awar_double_pars;
+        AwarName           awar_deftag;
+        AwarName           awar_tag;
+        AwarName           awar_count;
+        AwarName           awar_sort;
+        unsigned long      sort_mask;                         // contains several cascading sort criteria (QUERY_SORT_CRITERIA_BITS each)
         AW_selection_list *hitlist;
-
-        ItemSelector&  selector;
-        int            select_bit;                            // one of 1 2 4 8 .. 128 (one for each query box)
-        GB_HASH       *hit_description;                       // key = char* (hit item name), value = char* (description of hit - allocated!)
+        ItemSelector&      selector;
+        int                select_bit;                        // one of 1 2 4 8 .. 128 (one for each query box)
+        GB_HASH           *hit_description;                   // key = char* (hit item name), value = char* (description of hit - allocated!)
 
         DbQuery(ItemSelector& selector_)
             : selector(selector_)
         {
             dbq_assert(&selector);
         }
-        ~DbQuery();
 
         bool is_queried(GBDATA *gb_item) const {
             return GB_user_flag(gb_item, select_bit);
@@ -118,4 +104,5 @@ namespace QUERY {
 #else
 #error db_query_local.h included twice
 #endif // DB_QUERY_LOCAL_H
+
 

@@ -11,7 +11,7 @@ SUB	sp_sort_fld.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Sort Species According to Phylogeny
 
-OCCURRENCE	ARB_NT/Species/Sort Species/According to Phylogeny
+OCCURRENCE	ARB_NT/Species/Sort Species According to Phylogeny
 
 DESCRIPTION	Arranges the species entries in the order of their ranking
 		within the tree currently shown in the tree display area of the

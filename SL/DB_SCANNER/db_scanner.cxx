@@ -82,13 +82,17 @@ struct DbScanner {
     }
 };
 
-static GBDATA *get_mapped_item_and_begin_trans(DbScanner *cbs) {
-    /* return the selected GBDATA pntr
-     * there should be no running transaction; this function will begin a transaction */
+/* return the selected GBDATA pntr the should be no !!! running transaction and
+   this function will begin a transaction */
+
+static GBDATA *get_mapped_item_and_begin_trans(AW_CL arbdb_scanid) {
+    DbScanner *cbs     = (DbScanner *)arbdb_scanid;
+    AW_root         *aw_root = cbs->awr;
+
     cbs->may_be_an_error = false;
     GB_push_transaction(cbs->gb_main);
 
-    GBDATA *gbd = cbs->awr->awar(cbs->awarname_current_item)->read_pointer();
+    GBDATA *gbd = aw_root->awar(cbs->awarname_current_item)->read_pointer();
 
     if (!cbs->gb_user || !gbd || cbs->may_be_an_error) { // something changed in the database
         return NULL;
@@ -105,8 +109,8 @@ static bool inside_scanner_keydata(DbScanner *cbs, GBDATA *gbd) {
     return GB_check_father(gbd, gb_key_data);
 }
 
-static void scanner_delete_selected_field(AW_window*, DbScanner *cbs) {
-    GBDATA *gbd = get_mapped_item_and_begin_trans(cbs);
+static void scanner_delete_selected_field(void *, DbScanner *cbs) {
+    GBDATA *gbd = get_mapped_item_and_begin_trans((AW_CL)cbs);
     if (!gbd) {
         aw_message("Sorry, cannot perform your operation, please redo it");
     }
@@ -143,7 +147,7 @@ static void selected_field_changed_cb(GBDATA *, DbScanner *cbs, GB_CB_TYPE gbtyp
 }
 
 
-static void editfield_value_changed(AW_window*, DbScanner *cbs)
+static void editfield_value_changed(void *, DbScanner *cbs)
 {
     char *value = cbs->awr->awar(cbs->awarname_editfield)->read_string();
     int   vlen  = strlen(value);
@@ -152,7 +156,7 @@ static void editfield_value_changed(AW_window*, DbScanner *cbs)
     value[vlen]     = 0;
 
     // read the value from the window
-    GBDATA   *gbd         = get_mapped_item_and_begin_trans(cbs);
+    GBDATA   *gbd         = get_mapped_item_and_begin_trans((AW_CL)cbs);
     GB_ERROR  error       = 0;
     bool      update_self = false;
 
@@ -174,7 +178,7 @@ static void editfield_value_changed(AW_window*, DbScanner *cbs)
             if (strlen(value)) {
                 GBDATA *gb_new     = GB_search(cbs->gb_user, key_name, (GB_TYPES)GB_read_int(gb_key_type));
                 if (!gb_new) error = GB_await_error();
-                else    error      = GB_write_autoconv_string(gb_new, value);
+                else    error      = GB_write_as_string(gb_new, value);
 
                 cbs->awr->awar(cbs->awarname_current_item)->write_pointer(gb_new); // remap arbdb
             }
@@ -185,8 +189,8 @@ static void editfield_value_changed(AW_window*, DbScanner *cbs)
                 ItemSelector& selector = cbs->selector;
 
                 if (selector.type == QUERY_ITEM_SPECIES) { // species
-                    arb_progress  progress("Manual change of species ID");
-                    char         *name = nulldup(GBT_read_name(cbs->gb_user));
+                    arb_progress progress("Renaming species");
+                    char *name = nulldup(GBT_read_name(cbs->gb_user));
 
                     if (strlen(value)) {
                         GBT_begin_rename_session(cbs->gb_main, 0);
@@ -215,7 +219,7 @@ static void editfield_value_changed(AW_window*, DbScanner *cbs)
                         }
 
                         if (gb_exists) error = GBS_global_string("There is already a %s named '%s'", selector.item_name, value);
-                        else error           = GB_write_autoconv_string(gbd, value);
+                        else error           = GB_write_as_string(gbd, value);
                     }
                     else {
                         error = "The 'name' field can't be empty.";
@@ -226,7 +230,7 @@ static void editfield_value_changed(AW_window*, DbScanner *cbs)
             }
             else {
                 if (strlen(value)) {
-                    error = GB_write_autoconv_string(gbd, value);
+                    error = GB_write_as_string(gbd, value);
                 }
                 else {
                     GBDATA *gb_key = GBT_get_changekey(cbs->gb_main, key_name, cbs->selector.change_key_path);
@@ -268,10 +272,10 @@ static void editfield_value_changed(AW_window*, DbScanner *cbs)
     free(value);
 }
 
-static void toggle_marked_cb(AW_window *aws, DbScanner *cbs) {
+static void toggle_marked_cb(AW_window *aws, DbScanner *cbs, char *awar_name)
+{
     cbs->may_be_an_error = false;
-
-    long flag = aws->get_root()->awar(cbs->awarname_mark)->read_int();
+    long flag = aws->get_root()->awar(awar_name)->read_int();
     GB_push_transaction(cbs->gb_main);
     if ((!cbs->gb_user) || cbs->may_be_an_error) {      // something changed in the database
     }
@@ -281,7 +285,7 @@ static void toggle_marked_cb(AW_window *aws, DbScanner *cbs) {
     GB_pop_transaction(cbs->gb_main);
 }
 
-static void remap_edit_box(UNFIXED, DbScanner *cbs) {
+static void remap_edit_box(GBDATA *, DbScanner *cbs) {
     cbs->may_be_an_error = false;
     GB_push_transaction(cbs->gb_main);
     if (cbs->may_be_an_error) {     // sorry
@@ -318,7 +322,9 @@ DbScanner *create_db_scanner(GBDATA         *gb_main,
                              const char     *edit_pos_fig,
                              const char     *edit_enable_pos_fig,
                              DB_SCANNERMODE  scannermode,
+                             const char     *rescan_pos_fig,         // DB_VIEWER
                              const char     *mark_pos_fig,
+                             long            type_filter,
                              ItemSelector&   selector)
 {
     /* create an unmapped scanner box and optional some buttons,
@@ -358,37 +364,43 @@ DbScanner *create_db_scanner(GBDATA         *gb_main,
     //!************* Create the delete button ***************
     if (delete_pos_fig) {
         aws->at(delete_pos_fig);
-        aws->callback(makeWindowCallback(scanner_delete_selected_field, cbs));
+        aws->callback((AW_CB)scanner_delete_selected_field, (AW_CL)cbs, 0);
         aws->create_button("DELETE_DB_FIELD", "DELETE", "D");
     }
 
     //!************* Create the enable edit selector ***************
     if (edit_enable_pos_fig) {
         aws->at(edit_enable_pos_fig);
-        aws->callback(makeWindowCallback(remap_edit_box, cbs)); // @@@ used as TOGGLE_CLICK_CB (see #559)
+        aws->callback((AW_CB1)remap_edit_box, (AW_CL)cbs);
         aws->create_toggle(cbs->awarname_edit_enabled);
     }
 
     if (mark_pos_fig) {
         aws->at(mark_pos_fig);
-        aws->callback(makeWindowCallback(toggle_marked_cb, cbs)); // @@@ used as TOGGLE_CLICK_CB (see #559)
+        aws->callback((AW_CB)toggle_marked_cb, (AW_CL)cbs, (AW_CL)cbs->awarname_mark);
         aws->create_toggle(cbs->awarname_mark);
     }
 
     cbs->awarname_editfield = 0;
     if (edit_pos_fig) {
-        RootCallback remap_cb = makeRootCallback(remap_edit_box, cbs);
-        aw_root->awar(cbs->awarname_current_item)->add_callback(remap_cb);
+        aw_root->awar(cbs->awarname_current_item)->add_callback((AW_RCB1)remap_edit_box, (AW_CL)cbs);
         if (edit_enable_pos_fig) {
-            aw_root->awar(cbs->awarname_edit_enabled)->add_callback(remap_cb);
+            aw_root->awar(cbs->awarname_edit_enabled)->add_callback((AW_RCB1)remap_edit_box, (AW_CL)cbs);
         }
         sprintf(buffer, "tmp/arbdb_scanner_%i/edit", scanner_id);
         cbs->awarname_editfield = strdup(buffer);
         aw_root->awar_string(cbs->awarname_editfield, "", AW_ROOT_DEFAULT);
 
         aws->at(edit_pos_fig);
-        aws->callback(makeWindowCallback(editfield_value_changed, cbs)); // @@@ used as TEXTFIELD_CB (see #559);
+        aws->callback((AW_CB1)editfield_value_changed, (AW_CL)cbs);
         aws->create_text_field(cbs->awarname_editfield, 20, 10);
+    }
+
+    //!************* Create the rescan button ***************
+    if (rescan_pos_fig) {
+        aws->at(rescan_pos_fig);
+        aws->callback(makeWindowCallback(cbs->selector.selection_list_rescan_cb, cbs->gb_main, type_filter));
+        aws->create_button("RESCAN_DB", "RESCAN", "R");
     }
 
     scanner_id++;
@@ -536,7 +548,7 @@ static void scanner_changed_cb(UNFIXED, DbScanner *cbs, GB_CB_TYPE gbtype) { // 
     }
     if (cbs->gb_user && !cbs->aws->is_shown()) {
         // unmap invisible window
-        // map_db_scanner(cbs,0);
+        // map_db_scanner((AW_CL)cbs,0);
         // recalls this function !!!!
         return;
     }

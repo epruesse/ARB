@@ -111,9 +111,6 @@ class BufferedFileReader : public LineReader { // derived from Noncopyable
 
     bool getLine_intern(string& line) OVERRIDE;
 
-protected:
-    FILE*& get_fp() { return fp; }
-
 public:
     BufferedFileReader(const string& filename_, FILE *in) {
         filename = filename_;

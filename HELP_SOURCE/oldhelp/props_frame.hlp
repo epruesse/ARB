@@ -10,7 +10,7 @@ UP	glossary.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Frame Properties
 
-OCCURRENCE	<any properties menu>/Frame Settings
+OCCURRENCE	ARB_all/Properties/Frame Settings
 
 DESCRIPTION	Setup of the window. Choose the 'Frame Settings' item from the
 		'Properties' menu and select colours and fonts by using the

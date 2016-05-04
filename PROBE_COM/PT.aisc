@@ -159,23 +159,20 @@ PT_family, FAMILYFINDER, 12, (~next relative search~), {
 
 PT_probematch, MATCHLIST,       4,      (~the probe match list~), {
     @TYPE,       @IDENT,            @REF, @ACC, @SAVE,  @KEY,           @KEYC,  @INIT, @DOCU;
-    dllh,        mh,                t, ,  , (~~),         0,  , (~Header~);
-    int,         name,              t, r, , ID,           8,  , (~id of species~);
-    aisc_string, virt_name,         %, r, , NAME,         9,  , (~name of species~);
-    int,         b_pos,             t, r, , POS,          10, , (~pos of probe~);
-    int,         g_pos,             t, r, , GPOS,         11, , (~pos of probe (gene relative)~);
-    int,         rpos,              t, r, , ,             ,   , (~relative pos of probe~);
-    int,         mismatches,        t, r, , MISMATCHES,   12, , (~number of mismatches~);
-    aisc_string, virt_fullname,     %, r, , FULLNAME,     13, , (~fullname of species (or genename if it's a gene pt server)~);
-    double,      wmismatches,       t, r, , WMISMATCHES,  14, , (~number of weighted mismatches~);
-    int,         N_mismatches,      t, r, , N_MISMATCHES, 15, , (~number of 'N' mismatches~);
-    double,      dt,                t, r, , DT,           16, , (~the dt of a probe~);
-    char,        sequence,          l, r, , SEQUENCE,     17, , (~path of probe~);
-    int,         reversed,          t, r, , REVERSED,     18, , (~reversed probe matches~);
-    aisc_string, get_match_overlay, %, r, , OVERLAY,      19, , (~ascii visualization of match~);
-    aisc_string, get_match_acc,     %, r, , FIELD_ACC,    20, , (~get db field acc~);
-    int,         get_match_start,   %, r, , FIELD_START,  21, , (~get db field start~);
-    int,         get_match_stop,    %, r, , FIELD_STOP,   22, , (~get db field stop~);
+    dllh,        mh,                t,    ,     ,       (~~),           0,      ,      (~Header~);
+    int,         name,              t,    r,    ,       ID,             8,      ,      (~id of species~);
+    aisc_string, virt_name,         %,    r,    ,       NAME,           9,      ,      (~name of species~);
+    int,         b_pos,             t,    r,    ,       POS,            10,     ,      (~pos of probe~);
+    int,         g_pos,             t,    r,    ,       GPOS,           11,     ,      (~pos of probe (gene relative)~);
+    int,         rpos,              t,    r,    ,       ,               ,       ,      (~relative pos of probe~);
+    int,         mismatches,        t,    r,    ,       MISMATCHES,     12,     ,      (~number of mismatches~);
+    aisc_string, virt_fullname,     %,    r,    ,       FULLNAME,       13,     ,      (~fullname of species (or genename if it's a gene pt server)~);
+    double,      wmismatches,       t,    r,    ,       WMISMATCHES,    14,     ,      (~number of weighted mismatches~);
+    int,         N_mismatches,      t,    r,    ,       N_MISMATCHES,   15,     ,      (~number of 'N' mismatches~);
+    double,      dt,                t,    r,    ,       DT,             16,     ,      (~the dt of a probe~);
+    char,        sequence,          l,    r,    ,       SEQUENCE,       17,     ,      (~path of probe~);
+    int,         reversed,          t,    r,    ,       REVERSED,       18,     ,      (~reversed probe matches~);
+    aisc_string, get_match_overlay, %,    r,    ,       OVERLAY,        19,     ,      (~ascii visualization of match~);
 };
 
 # used below in MAIN/SPECIESLIST

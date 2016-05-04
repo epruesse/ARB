@@ -9,7 +9,6 @@
 #include <arbdbt.h>
 #include <arb_strbuf.h>
 #include <ad_cb.h>
-#include <arb_str.h>
 
 //! recalc filter
 static void awt_create_select_filter_window_aw_cb(UNFIXED, adfiltercbstruct *cbs) {
@@ -187,45 +186,16 @@ static void awt_create_select_filter_window_gb_cb(UNFIXED, adfiltercbstruct *cbs
     GB_pop_transaction(cbs->gb_main);
 }
 
-void awt_create_filter_awars(AW_root *aw_root, AW_default aw_def, const char *awar_filtername, const char *awar_mapto_alignment) {
-    /*! creates awars needed for filter definition (see awt_create_select_filter())
-     *
-     * created awars: "SOMETHING/name" (as specified in param awar_filtername; type STRING)
-     *                "SOMETHING/filter" (type STRING)
-     *                "SOMETHING/alignment" (type STRING)
-     *
-     * The names of the created awars are available via adfiltercbstruct (after awt_create_select_filter() was called).
-     *
-     * @param aw_root              application root
-     * @param aw_def               database for created awars
-     * @param awar_filtername      name of filtername awar (has to be "SOMETHING/name";
-     *                             awarname should start with "tmp/", saving in properties/db does not work correctly!).
-     * @param awar_mapto_alignment if given, "SOMETHING/alignment" is mapped to this awar
-     */
-
-    ga_assert(ARB_strBeginsWith(awar_filtername, "tmp/")); // see above
-
-    char *awar_filter    = GBS_string_eval(awar_filtername, "/name=/filter",    0);;
-    char *awar_alignment = GBS_string_eval(awar_filtername, "/name=/alignment", 0);;
-
-    aw_root->awar_string(awar_filtername, "none", aw_def);
-    aw_root->awar_string(awar_filter,     "",     aw_def);
-
-    AW_awar *awar_ali = aw_root->awar_string(awar_alignment, "", aw_def);
-    if (awar_mapto_alignment) awar_ali->map(awar_mapto_alignment);
-
-    free(awar_alignment);
-    free(awar_filter);
-}
 
 adfiltercbstruct *awt_create_select_filter(AW_root *aw_root, GBDATA *gb_main, const char *def_name) {
-    /*! Create filter definition (allowing customization and programmatical use of a filter)
+    /*! Create a data structure for filters (needed for awt_create_select_filter_win)
      *
-     * @param aw_root  application root
-     * @param gb_main  DB root node
-     * @param def_name filtername awarname (name has to be "SOMETHING/name"; create using awt_create_filter_awars())
-     * @return the filter definition
-     * @see awt_create_select_filter_win(), awt_get_filter()
+     * @param aw_root application root
+     * @param gb_main DB root node
+     * @param def_name filter name awar (has to exist, name has to be "SOMETHING/name")
+     * awars "SOMETHING/filter" (STRING) and
+     * "SOMETHING/alignment" (STRING) have to exist as well!
+     *
      */
 
     adfiltercbstruct *acbs   = new adfiltercbstruct;
@@ -374,8 +344,7 @@ AW_window *awt_create_select_filter_win(AW_root *aw_root, adfiltercbstruct *acbs
         aws->load_xfig("awt/filter.fig");
         aws->button_length(10);
 
-        aws->at("close");
-        aws->callback(AW_POPDOWN);
+        aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
 
         aws->at("help"); aws->callback(makeHelpCallback("sel_fil.hlp"));
@@ -391,7 +360,7 @@ AW_window *awt_create_select_filter_win(AW_root *aw_root, adfiltercbstruct *acbs
         aws->create_button(acbs->def_2name, acbs->def_2name);
 
         aws->at("zero");
-        aws->callback(makeWindowCallback(awt_create_select_filter_window_aw_cb, acbs)); // @@@ used as INPUTFIELD_CB (see #559)
+        aws->callback(makeWindowCallback(awt_create_select_filter_window_aw_cb, acbs));
         aws->create_input_field(acbs->def_cancel, 10);
 
         aws->at("sequence");

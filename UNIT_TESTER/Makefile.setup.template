@@ -6,18 +6,6 @@ DEADLOCKGUARD=1# install guard to avoid deadlocks (SVN default!)
 
 # also see test_unit.h@ENABLE_CRASH_TESTS
 
-# ---------- slow tests 
-#SKIP_SLOW=15# skip slow tests (run only every SKIP_SLOW minutes)
-SKIP_SLOW=0# always run all tests
-
-# ---------- warnings?
-#WARN_LEVEL=1# enable warnings (recommended)
-WARN_LEVEL=0# disable warnings
-
-# ---------- only changed tests?
-ONLY_CHANGED_TESTS=1# only run changed tests
-#ONLY_CHANGED_TESTS=0# also run unchanged tests
-
 # ---------- Valgrind
 # @@@ valgrind makes tests fail atm
 # (most likely two pt-servers try to start parallel on the same port)
@@ -31,7 +19,7 @@ VALGRIND=# do not valgrind anything
 # also see ../TEMPLATES/ut_valgrinded.h@VALGRIND_ONLY_SOME
 
 # ---------- Leak checking needs VALGRIND!=0
-#CHECK_LEAKS=0# check no leaks
+CHECK_LEAKS=0# check no leaks
 CHECK_LEAKS=1# check definite leaks
 #CHECK_LEAKS=2# check reachable leaks
 # for higher leak resolution edit ../SOURCE_TOOLS/arb_valgrind@resolution
@@ -95,6 +83,14 @@ RESTRICT_LIB=# run all tests
 #RESTRICT_LIB=arb_probe:arb_test:AWTC:PTCLEAN:PROBE:MULTI_PROBE# ptserver related tests
 #RESTRICT_LIB=TREE_READ:CONSENSUS_TREE:arb_consensus_tree:arb_test:TREEDISP:PARSIMONY# tree related tests
 #RESTRICT_LIB=libARBDB:TREE_READ:CONSENSUS_TREE:arb_consensus_tree:arb_test:TREEDISP:PARSIMONY# tree related tests (including tree handling in ARBDB)
+
+# ---------- slow tests 
+SKIP_SLOW=15# skip slow tests (run only every SKIP_SLOW minutes)
+SKIP_SLOW=0# always run all tests
+
+# ---------- warnings?
+WARN_LEVEL=1# enable warnings (recommended)
+#WARN_LEVEL=0# disable warnings 
 
 # ---------- unit tests create a patch each time tests pass ok
 # PATCHES_KEEP_HOURS and PATCHES_MIN_KEPT define when patches are removed again 

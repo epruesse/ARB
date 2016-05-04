@@ -25,14 +25,13 @@
 
 // @@@ rename the functions below
 
-class AW_window_simple;
 class AW_window_simple_menu;
 
 namespace DBUI {
 
-    AW_window *create_fields_reorder_window(AW_root *root, BoundItemSel *bound_selector);
-    AW_window *create_field_delete_window(AW_root *root, BoundItemSel *bound_selector);
-    AW_window *create_field_create_window(AW_root *root, BoundItemSel *bound_selector);
+    AW_window *create_fields_reorder_window(AW_root *root, AW_CL cl_bound_item_selector);
+    AW_window *create_field_delete_window(AW_root *root, AW_CL cl_bound_item_selector);
+    AW_window *create_field_create_window(AW_root *root, AW_CL cl_bound_item_selector);
 
     AW_window *create_species_query_window(AW_root *aw_root, GBDATA *gb_main);
 
@@ -41,7 +40,7 @@ namespace DBUI {
 
     void insert_field_admin_menuitems(AW_window *aws, GBDATA *gb_main);
 
-    void create_dbui_awars(AW_root *aw_root);
+    void create_dbui_awars(AW_root *aw_root, AW_default aw_def);
 
     void init_info_window(AW_root *aw_root, AW_window_simple_menu *aws, const ItemSelector& itemType, int detach_id);
 

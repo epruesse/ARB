@@ -68,69 +68,33 @@ inline GB_ERROR valgrinded_system(const char *cmdline) {
 #define TEST_RUN_TOOL(cmdline)                TEST_EXPECT_NO_ERROR(RUN_TOOL(cmdline))
 #define TEST_RUN_TOOL_NEVER_VALGRIND(cmdline) TEST_EXPECT_NO_ERROR(RUN_TOOL_NEVER_VALGRIND(cmdline))
 
-static const char *checkedPipeCommand(const char *pipeCommand) {
-#if defined(ASSERTION_USED)
-    const char *pipe = strchr(pipeCommand, '|');
-    gb_assert(pipe && strchr(pipe+1, '|') == 0); // only works for _exactly one_ pipe symbol
-#endif
-
-    char       *quotedCommand = GBK_singlequote(GBS_global_string("%s;exit $((${PIPESTATUS[0]} | ${PIPESTATUS[1]}))", pipeCommand));
-    const char *checked_cmd   = GBS_global_string("bash -c %s", quotedCommand);
-    free(quotedCommand);
-    return checked_cmd;
-}
-
 void TEST_SLOW_ascii_2_bin_2_ascii() {
     const char *ascii_ORG  = "TEST_loadsave_ascii.arb";
     const char *ascii      = "bin2ascii.arb";
     const char *binary     = "ascii2bin.arb";
     const char *binary_2ND = "ascii2bin2.arb";
-    const char *binary_3RD = "ascii2bin3.arb";
-
-    // test that errors from _each_ part of a piped command propagate correctly:
-    const char *failing_piped_cmds[] = {
-        "arb_weirdo | wc -l",      // first command fails
-        "echo hello | arb_weirdo", // second command fails
-        "arb_weirdo | arb_weirdo", // both commands fail
-    };
-    for (unsigned c = 0; c<ARRAY_ELEMS(failing_piped_cmds); ++c) {
-        TEST_EXPECT_ERROR_CONTAINS(RUN_TOOL(checkedPipeCommand(failing_piped_cmds[c])), "System call failed");
-    }
-
-    TEST_RUN_TOOL("arb_2_ascii --help"); // checks proper documentation of available compression flags (in GB_get_supported_compression_flags)
 
     // test conversion file -> file
     TEST_RUN_TOOL(GBS_global_string("arb_2_bin   %s %s", ascii_ORG, binary));
     TEST_RUN_TOOL(GBS_global_string("arb_2_ascii %s %s", binary, ascii));
 
-    TEST_EXPECT_TEXTFILES_EQUAL(ascii, ascii_ORG);
+    TEST_EXPECT_FILES_EQUAL(ascii, ascii_ORG);
 
     // test conversion (bin->ascii->bin) via stream (this tests 'arb_repair')
-    TEST_RUN_TOOL(checkedPipeCommand(GBS_global_string("arb_2_ascii %s - | arb_2_bin - %s", binary, binary_2ND)));
-    // TEST_EXPECT_FILES_EQUAL(binary, binary_2ND); // can't compare binary files (binary_2ND differs (keys?))
+    TEST_RUN_TOOL(GBS_global_string("arb_2_ascii %s - | arb_2_bin - %s", binary, binary_2ND));
+
+    // TEST_EXPECT_FILES_EQUAL(binary, binary_2ND); // can't compare binary files (they contain undefined bytes)
+
     // instead convert back to ascii and compare result with original
     TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(ascii));
     TEST_RUN_TOOL(GBS_global_string("arb_2_ascii %s %s", binary_2ND, ascii));
     TEST_EXPECT_FILES_EQUAL(ascii, ascii_ORG);
 
-
-    // test same using compression (gzip and bzip2)
-    TEST_RUN_TOOL(checkedPipeCommand(GBS_global_string("arb_2_ascii -Cz %s - | arb_2_bin -CB - %s", binary, binary_3RD)));
-    // TEST_EXPECT_FILES_EQUAL(binary, binary_2ND); // can't compare binary files (binary_3RD differs (keys?))
-    // instead convert back to ascii and compare result with original
-    TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(ascii));
-    TEST_RUN_TOOL(GBS_global_string("arb_2_ascii %s %s", binary_3RD, ascii));
-    TEST_EXPECT_FILES_EQUAL(ascii, ascii_ORG);
-
-    TEST_EXPECT_ERROR_CONTAINS(RUN_TOOL("arb_2_ascii -Cq -"), "System call failed"); // "Unknown compression flag 'q'"
-
     TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(ascii));
     TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(binary));
     TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(binary_2ND));
-    TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(binary_3RD));
     TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink("ascii2bin.ARF"));
     TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink("ascii2bin2.ARF"));
-    TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink("ascii2bin3.ARF"));
 }
 
 void TEST_arb_primer() {
@@ -225,7 +189,7 @@ void TEST_SLOW_arb_read_tree() {
 
     TEST_EXPECT_NO_ERROR(removeVaryingDateFromTreeRemarks(dbout));
 #if defined(TEST_AUTO_UPDATE_TREE)
-    TEST_COPY_FILE(dbout, dbexpected);
+    system(GBS_global_string("cp %s %s", dbout, dbexpected));
 #else // !defined(TEST_AUTO_UPDATE_TREE)
     TEST_EXPECT_TEXTFILES_EQUAL(dbexpected, dbout);
 #endif
@@ -297,37 +261,6 @@ void TEST_SLOW_arb_probe() {
                        );
 }
 
-void TEST_arb_probe_match() {
-    TEST_SETUP_GLOBAL_ENVIRONMENT("ptserver");
-
-    // this probe-match is also tested with 'arb_probe'. see arb_probe.cxx@TEST_arb_probe_match
-    TEST_STDOUT_EQUALS("arb_probe_match"
-                       " --port :../sockets/pt.socket"
-                       " --n-matches 0"
-                       " --n-match-bound 4"
-                       " --mismatches 3"
-                       " --sequence GAGCGGUCAG",
-
-                       "acc     \t"     "start\t" "stop\t" "pos\t" "mis\t" "wmis\t" "nmis\t" "dt\t" "rev\t" "seq\n"
-                       "ARB_2CA9F764\t" "0\t"     "0\t"    "24\t"  "1\t"   "1.1\t"  "0\t"    "0\t"  "0\t"   "GAUCAAGUC-======A===-AUGGGAGCU\t" "\n"
-                       "ARB_6B04C30A\t" "10\t"    "20\t"   "24\t"  "2\t"   "2.2\t"  "0\t"    "0\t"  "0\t"   "GAUCAAGUC-======A=C=-ACGGGAGCU\t" "\n"
-                       "ARB_4C6C9E8C\t" "20\t"    "170\t"  "67\t"  "3\t"   "2.4\t"  "0\t"    "0\t"  "0\t"   "GGAUUUGUU-=g====CG==-CGGCGGACG\t" "\n"
-                       "ARB_948948A3\t" "0\t"     "0\t"    "81\t"  "3\t"   "2.8\t"  "0\t"    "0\t"  "0\t"   "ACGAGUGGC-=gA===C===-UUGGAAACG\t" "\n"
-                       "ARB_5BEE4C92\t" "0\t"     "0\t"    "85\t"  "3\t"   "3.2\t"  "0\t"    "0\t"  "0\t"   "CGGCGGGAC-=g==CU====-AACCUGCGG\t" "\n"
-                       "ARB_2180C521\t" "0\t"     "0\t"    "24\t"  "3\t"   "3.6\t"  "0\t"    "0\t"  "0\t"   "GAUCAAGUC-======Aa=C-GAUGGAAGC\t" "\n"
-                       "ARB_815E94DB\t" "0\t"     "0\t"    "94\t"  "3\t"   "3.6\t"  "0\t"    "0\t"  "0\t"   "GGACUGCCC-==Aa==A===-CUAAUACCG\t" "\n"
-                       "ARB_948948A3\t" "0\t"     "0\t"    "24\t"  "3\t"   "4\t"    "0\t"    "0\t"  "0\t"   "GAUCAAGUC-==A====a=C-AGGUCUUCG\t" "\n"
-                       "ARB_9E1D1B16\t" "0\t"     "0\t"    "28\t"  "3\t"   "4\t"    "0\t"    "0\t"  "0\t"   "GAUCAAGUC-==A====a=C-GGGAAGGGA\t" "\n"
-                       "ARB_CEB24FD3\t" "0\t"     "0\t"    "24\t"  "3\t"   "4.1\t"  "0\t"    "0\t"  "0\t"   "GAUCAAGUC-=====A=G=A-GUUCCUUCG\t" "\n"
-                       "ARB_4FCDD74F\t" "0\t"     "0\t"    "24\t"  "3\t"   "4.1\t"  "0\t"    "0\t"  "0\t"   ".AUCAAGUC-=====A=G=A-GCUUCUUCG\t" "\n"
-                       "ARB_CF69AC5C\t" "0\t"     "0\t"    "24\t"  "3\t"   "4.1\t"  "0\t"    "0\t"  "0\t"   "GAUCAAGUC-=====A=G=A-GUUCCUUCG\t" "\n"
-                       "ARB_5BEE4C92\t" "0\t"     "0\t"    "24\t"  "3\t"   "4.1\t"  "0\t"    "0\t"  "0\t"   "GAUCAAGUC-=====A=G=A-GUUUCCUUC\t" "\n"
-                       "ARB_815E94DB\t" "0\t"     "0\t"    "156\t" "3\t"   "4.1\t"  "0\t"    "0\t"  "0\t"   "GUAGCCGUU-===GAA====-CGGCUGGAU\t" "\n"
-                       "ARB_1763CF6\t"  "0\t"     "0\t"    "24\t"  "3\t"   "2.4\t"  "3\t"    "0\t"  "0\t"   "GAUCAAGUC-=======...-<more>\t" "\n"
-                       "ARB_ED8B86F\t"  "0\t"     "0\t"    "28\t"  "3\t"   "2.4\t"  "3\t"    "0\t"  "0\t"   "GAUCAAGUC-=======...-<more>\t" "\n"
-        );
-}
-
 #define IN_DB     "tools/dnarates.arb"
 #define OUT_DB    "tools/dnarates_result.arb"
 #define WANTED_DB "tools/dnarates_expected.arb"
@@ -382,7 +315,6 @@ void TEST_arb_export_tree() {
                        ";\n",                                                                    // shall export an empty newick tree
                        "arb_export_tree from '" TREE_DB "': ARB ERROR: Failed to read tree 'tree_nosuch' (Reason: tree not found)\n"); // with error!
 }
-TEST_PUBLISH(TEST_arb_export_tree);
 
 static char *notification_result = NULL;
 static void test_notification_cb(const char *message, void *cd) {
@@ -434,46 +366,6 @@ void TEST_arb_notify() {
 
     EXIT_NOTIFICATION;
 }
-
-// --------------------------------------------------------------------------------
-
-// #define TEST_AUTO_UPDATE_EXP_SEQ // uncomment to auto-update expected sequence exports
-
-#define EXPECTED(file) file ".expected"
-#if defined(TEST_AUTO_UPDATE_EXP_SEQ)
-#define UPDATE_OR_COMPARE(outfile) TEST_COPY_FILE(outfile, EXPECTED(outfile))
-#else // !defined(TEST_AUTO_UPDATE_EXP_SEQ)
-#define UPDATE_OR_COMPARE(outfile) TEST_EXPECT_TEXTFILES_EQUAL(outfile, EXPECTED(outfile))
-#endif
-#define TEST_OUTFILE_EXPECTED(outfile) do{                     \
-        UPDATE_OR_COMPARE(outfile);                            \
-        TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(outfile));    \
-    }while(0)
-
-#define SEQ_DB          "TEST_loadsave.arb"
-#define TEMPLATE_DB     "tools/min_template.arb"
-#define EFT             "../../lib/export/fasta_wide.eft" // ../lib/export/fasta_wide.eft
-#define EXSEQ_EFT       "tools/exseq_via_eft.fasta"
-#define EXSEQ_FASTA     "tools/exseq.fasta"
-#define EXSEQ_ARB       "tools/exseq.arb"
-#define EXSEQ_ARB_ASCII "tools/exseq_ascii.arb"
-#define EXSEQ_RESTRICT  "tools/acc.list"
-
-void TEST_arb_export_sequences() {
-    TEST_RUN_TOOL("arb_export_sequences --source " SEQ_DB " --format FASTA   --dest " EXSEQ_FASTA);
-    TEST_OUTFILE_EXPECTED(EXSEQ_FASTA);
-
-    TEST_RUN_TOOL("arb_export_sequences --source " SEQ_DB " --format " EFT " --dest " EXSEQ_EFT   " --accs " EXSEQ_RESTRICT);
-    TEST_OUTFILE_EXPECTED(EXSEQ_EFT);
-
-    TEST_RUN_TOOL("arb_export_sequences --source " SEQ_DB " --format ARB     --dest " EXSEQ_ARB   " --arb-template " TEMPLATE_DB
-                  " && "
-                  "arb_2_ascii " EXSEQ_ARB " " EXSEQ_ARB_ASCII
-        );
-    TEST_OUTFILE_EXPECTED(EXSEQ_ARB_ASCII);
-    TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(EXSEQ_ARB));
-}
-
 
 #endif // UNIT_TESTS
 

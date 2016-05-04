@@ -428,7 +428,7 @@ void awt_string_handler::awar_changed() {
         GB_TYPES  found_typ = GB_read_type(gbdata);
         if (found_typ != type()) set_type(found_typ); // fix type if different
 
-        error = GB_write_autoconv_string(gbdata, awar2db(content).c_str());
+        error = GB_write_as_string(gbdata, awar2db(content).c_str());
 
         free(content);
     }
@@ -493,7 +493,7 @@ void awt_radio_button::build_widget(AW_window *aws) {
     int                            pos = 0;
 
     for (; b != buttons.end() && v != values.end(); ++b, ++v, ++pos) {
-        void (AW_window::*ins_togg)(const char*, const char*, const char*);
+        void (AW_window::*ins_togg)(AW_label, const char*, const char*);
 
         if (pos == default_position) ins_togg = &AW_window::insert_default_toggle;
         else ins_togg                         = &AW_window::insert_toggle;
@@ -669,11 +669,6 @@ inline GB_ERROR decode_escapes(string& s) {
     s.erase(t, f);
 
     return 0;
-}
-
-static string check_data_path(const string& path, GB_ERROR& error) {
-    if (!error) error = GB_check_hkey(path.c_str());
-    return path;
 }
 
 static string scan_string_parameter(const string& line, size_t& scan_pos, GB_ERROR& error, bool allow_escaped = false) {
@@ -1228,7 +1223,7 @@ static void parse_CMD_RADIO(string& line, size_t& scan_pos, GB_ERROR& error, con
     int            edit_position    = -1;
 
     label                        = scan_string_parameter(line, scan_pos, error);
-    if (!error) data_path        = check_data_path(scan_string_parameter(line, scan_pos, error), error);
+    if (!error) data_path        = scan_string_parameter(line, scan_pos, error);
     if (!error) default_position = scan_long_parameter(line, scan_pos, error);
     if (!error) {
         orientation = scan_flag_parameter(line, scan_pos, error, "HVXY");
@@ -1574,7 +1569,7 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
             aws->auto_space(x_spacing, y_spacing);
             aws->at_newline();
 
-            aws->callback(AW_POPDOWN);                          aws->create_button(ID.fromKey("CLOSE"), "CLOSE", "C");
+            aws->callback((AW_CB0)AW_POPDOWN);                  aws->create_button(ID.fromKey("CLOSE"), "CLOSE", "C");
             aws->callback(makeHelpCallback("input_mask.hlp"));  aws->create_button(ID.fromKey("HELP"),  "HELP",  "H");
 
             if (edit_reload) {
@@ -1647,7 +1642,7 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
                                     string label, data_path;
                                     long   width          = -1;
                                     label                 = scan_string_parameter(line, scan_pos, error);
-                                    if (!error) data_path = check_data_path(scan_string_parameter(line, scan_pos, error), error);
+                                    if (!error) data_path = scan_string_parameter(line, scan_pos, error);
                                     if (!error) width     = scan_long_parameter(line, scan_pos, error, MIN_TEXTFIELD_SIZE, MAX_TEXTFIELD_SIZE);
                                     check_last_parameter(error, command);
 
@@ -1661,7 +1656,7 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
                                     long max = LONG_MAX;
 
                                     label                 = scan_string_parameter(line, scan_pos, error);
-                                    if (!error) data_path = check_data_path(scan_string_parameter(line, scan_pos, error), error);
+                                    if (!error) data_path = scan_string_parameter(line, scan_pos, error);
                                     if (!error) width     = scan_long_parameter(line, scan_pos, error, MIN_TEXTFIELD_SIZE, MAX_TEXTFIELD_SIZE);
                                     if (!was_last_parameter) {
                                         if (!error) min = scan_optional_parameter(line, scan_pos, error, LONG_MIN);
@@ -1675,7 +1670,7 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
                                     string label, data_path;
                                     bool   checked        = false;
                                     label                 = scan_string_parameter(line, scan_pos, error);
-                                    if (!error) data_path = check_data_path(scan_string_parameter(line, scan_pos, error), error);
+                                    if (!error) data_path = scan_string_parameter(line, scan_pos, error);
                                     if (!error) checked   = scan_bool_parameter(line, scan_pos, error);
                                     check_last_parameter(error, command);
 
@@ -2216,7 +2211,7 @@ static GB_ERROR openMaskWindowByType(int mask_id, awt_item_type type) {
     GB_ERROR         error      = 0;
 
     if (registered == registeredTypes.end()) error = GBS_global_string("Type '%s' not registered (yet)", awt_itemtype_names[type]);
-    else registered->second.getOpenCb()(registered->second.getWindow(), mask_id, NULL);
+    else registered->second.getOpenCb()(registered->second.getWindow(), (AW_CL)mask_id, (AW_CL)0);
 
     return error;
 }

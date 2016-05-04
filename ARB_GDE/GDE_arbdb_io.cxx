@@ -1,3 +1,4 @@
+#include "GDE_def.h"
 #include "GDE_proto.h"
 
 #include <aw_msg.hxx>
@@ -14,20 +15,23 @@
 
 typedef unsigned int UINT;
 
-static int Arbdb_get_curelem(NA_Alignment& dataset)
+static int Arbdb_get_curelem(NA_Alignment *dataset)
 {
     int curelem;
-    curelem = dataset.numelements++;
+    curelem = dataset->numelements++;
     if (curelem == 0) {
-        dataset.element = (NA_Sequence *) Calloc(5, sizeof(NA_Sequence));
-        dataset.maxnumelements = 5;
+        dataset->element = (NA_Sequence *) Calloc(5, sizeof(NA_Sequence));
+        dataset->maxnumelements = 5;
     }
-    else if (curelem == dataset.maxnumelements) {
-        dataset.maxnumelements *= 2;
-        dataset.element = (NA_Sequence *) Realloc((char *)dataset.element, dataset.maxnumelements * sizeof(NA_Sequence));
+    else if (curelem == dataset->maxnumelements) {
+        (dataset->maxnumelements) *= 2;
+        dataset->element = (NA_Sequence *) Realloc((char *)dataset->element,
+                                                   dataset->maxnumelements * sizeof(NA_Sequence));
     }
     return curelem;
 }
+
+extern int Default_PROColor_LKUP[], Default_NAColor_LKUP[];
 
 static void set_constant_fields(NA_Sequence *this_elem) {
     this_elem->attr            = DEFAULT_X_ATTR;
@@ -43,7 +47,7 @@ static void AppendNA_and_free(NA_Sequence *this_elem, uchar *& sequfilt) {
     freenull(sequfilt);
 }
 
-__ATTR__USERESULT static int InsertDatainGDE(NA_Alignment&     dataset,
+__ATTR__USERESULT static int InsertDatainGDE(NA_Alignment     *dataset,
                                              GBDATA          **the_species,
                                              unsigned char   **the_names,
                                              unsigned char   **the_sequences,
@@ -99,7 +103,7 @@ __ATTR__USERESULT static int InsertDatainGDE(NA_Alignment&     dataset,
 
         // store (compressed) sequence data in array:
         uchar             **sequfilt = (uchar**)calloc((unsigned int)numberspecies+1, sizeof(uchar*));
-        GB_alignment_type   alitype  = GBT_get_alignment_type(dataset.gb_main, dataset.alignment_name);
+        GB_alignment_type   alitype  = GBT_get_alignment_type(dataset->gb_main, dataset->alignment_name);
 
         if (compress==COMPRESS_ALL) { // compress all gaps and filter positions
             long          len = filter->get_filtered_length();
@@ -238,7 +242,7 @@ __ATTR__USERESULT static int InsertDatainGDE(NA_Alignment&     dataset,
                 if (the_species) {
                     for (gb_species = the_species[number]; gb_species && !error; gb_species = the_species[++number]) {
                         curelem   = Arbdb_get_curelem(dataset);
-                        this_elem = &(dataset.element[curelem]);
+                        this_elem = &(dataset->element[curelem]);
 
                         InitNASeq(this_elem, elementtype_init);
                         this_elem->gb_species = gb_species;
@@ -271,7 +275,7 @@ __ATTR__USERESULT static int InsertDatainGDE(NA_Alignment&     dataset,
 
                     for (species_name=the_names[number]; species_name && !error; species_name=the_names[++number]) {
                         curelem   = Arbdb_get_curelem(dataset);
-                        this_elem = &(dataset.element[curelem]);
+                        this_elem = &(dataset->element[curelem]);
 
                         InitNASeq(this_elem, elementtype_init);
                         this_elem->gb_species = 0;
@@ -300,9 +304,9 @@ __ATTR__USERESULT static int InsertDatainGDE(NA_Alignment&     dataset,
 
                 {
                     unsigned long i;
-                    for (i=0; i<dataset.numelements; i++) {
-                        dataset.maxlen = std::max(dataset.maxlen,
-                                                  dataset.element[i].seqlen+dataset.element[i].offset);
+                    for (i=0; i<dataset->numelements; i++) {
+                        dataset->maxlen = std::max(dataset->maxlen,
+                                                   dataset->element[i].seqlen+dataset->element[i].offset);
                     }
                     for (i=0; i<numberspecies; i++)
                     {
@@ -323,15 +327,18 @@ __ATTR__USERESULT static int InsertDatainGDE(NA_Alignment&     dataset,
 
 }
 
-int ReadArbdb2(NA_Alignment& dataset, AP_filter *filter, GapCompression compress, bool cutoff_stop_codon, TypeInfo typeinfo) {
+int ReadArbdb2(NA_Alignment *dataset, AP_filter *filter, GapCompression compress, bool cutoff_stop_codon, TypeInfo typeinfo) {
     // goes to header: __ATTR__USERESULT
+    dataset->gb_main = db_access.gb_main;
+
     GBDATA **the_species;
     uchar  **the_names;
     uchar  **the_sequences;
     long     maxalignlen;
     long     numberspecies = 0;
 
-    char *error = db_access.get_sequences(the_species, the_names, the_sequences,
+    char *error = db_access.get_sequences(db_access.client_data,
+                                          the_species, the_names, the_sequences,
                                           numberspecies, maxalignlen);
 
     gde_assert(contradicted(the_species, the_names));
@@ -352,10 +359,13 @@ int ReadArbdb2(NA_Alignment& dataset, AP_filter *filter, GapCompression compress
     return res;
 }
 
-int ReadArbdb(NA_Alignment& dataset, bool marked, AP_filter *filter, GapCompression compress, bool cutoff_stop_codon, TypeInfo typeinfo) {
+int ReadArbdb(NA_Alignment *dataset, bool marked, AP_filter *filter, GapCompression compress, bool cutoff_stop_codon, TypeInfo typeinfo) {
     // goes to header: __ATTR__USERESULT
+    dataset->gb_main = db_access.gb_main;
 
-    GBDATA  *gb_species_data = GBT_get_species_data(dataset.gb_main);
+    // Alignment choosen ?
+
+    GBDATA  *gb_species_data = GBT_get_species_data(dataset->gb_main);
     GBDATA **the_species;
     long     numberspecies   = 0;
     long     missingdata     = 0;
@@ -365,7 +375,7 @@ int ReadArbdb(NA_Alignment& dataset, bool marked, AP_filter *filter, GapCompress
     else gb_species        = GBT_first_species_rel_species_data(gb_species_data);
 
     while (gb_species) {
-        if (GBT_find_sequence(gb_species, dataset.alignment_name)) numberspecies++;
+        if (GBT_read_sequence(gb_species, dataset->alignment_name)) numberspecies++;
         else missingdata++;
 
         if (marked) gb_species = GBT_next_marked_species(gb_species);
@@ -373,7 +383,7 @@ int ReadArbdb(NA_Alignment& dataset, bool marked, AP_filter *filter, GapCompress
     }
 
     if (missingdata) {
-        aw_message(GBS_global_string("Skipped %li species which did not contain data in '%s'", missingdata, dataset.alignment_name));
+        aw_message(GBS_global_string("Skipped %li species which did not contain data in '%s'", missingdata, dataset->alignment_name));
     }
 
     the_species   = (GBDATA**)calloc((unsigned int)numberspecies+1, sizeof(GBDATA*));
@@ -383,7 +393,7 @@ int ReadArbdb(NA_Alignment& dataset, bool marked, AP_filter *filter, GapCompress
     else gb_species        = GBT_first_species_rel_species_data(gb_species_data);
 
     while (gb_species) {
-        if (GBT_find_sequence(gb_species, dataset.alignment_name)) {
+        if (GBT_read_sequence(gb_species, dataset->alignment_name)) {
             the_species[numberspecies]=gb_species;
             numberspecies++;
         }
@@ -392,14 +402,14 @@ int ReadArbdb(NA_Alignment& dataset, bool marked, AP_filter *filter, GapCompress
         else gb_species        = GBT_next_species(gb_species);
     }
 
-    long   maxalignlen   = GBT_get_alignment_len(db_access.gb_main, dataset.alignment_name);
+    long   maxalignlen   = GBT_get_alignment_len(db_access.gb_main, dataset->alignment_name);
     char **the_sequences = (char**)calloc((unsigned int)numberspecies+1, sizeof(char*));
 
     for (long i=0; the_species[i]; i++) {
         the_sequences[i] = (char *)malloc((size_t)maxalignlen+1);
         the_sequences[i][maxalignlen] = 0;
         memset(the_sequences[i], '.', (size_t)maxalignlen);
-        const char *data = GB_read_char_pntr(GBT_find_sequence(the_species[i], dataset.alignment_name));
+        const char *data = GB_read_char_pntr(GBT_read_sequence(the_species[i], dataset->alignment_name));
         int size = strlen(data);
         if (size > maxalignlen) size = (int)maxalignlen;
         strncpy_terminate(the_sequences[i], data, size+1);

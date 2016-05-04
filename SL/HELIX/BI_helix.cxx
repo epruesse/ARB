@@ -276,8 +276,8 @@ const char *BI_helix::init(GBDATA *gb_main, const char *alignment_name, const ch
         GBDATA *gb_helix        = 0;
         GBDATA *gb_helix_nr     = 0;
 
-        if (gb_helix_nr_con)    gb_helix_nr = GBT_find_sequence(gb_helix_nr_con, alignment_name);
-        if (gb_helix_con)       gb_helix = GBT_find_sequence(gb_helix_con, alignment_name);
+        if (gb_helix_nr_con)    gb_helix_nr = GBT_read_sequence(gb_helix_nr_con, alignment_name);
+        if (gb_helix_con)       gb_helix = GBT_read_sequence(gb_helix_con, alignment_name);
 
         init(gb_helix_nr, gb_helix, size2);
     }

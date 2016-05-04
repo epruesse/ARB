@@ -1,4 +1,13 @@
 /*ARBDB ASCII*/
+tmp			%% (%
+	message			%% (%
+		pending			%% (%
+			%) /*pending*/
+
+		%) /*message*/
+
+	%) /*tmp*/
+
 species_data	:7000	%% (%
 	species			%$ (%
 		name			"genome00"

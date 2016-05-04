@@ -151,7 +151,7 @@ sub write_entry($$$$$$) {
 
   if (!$error) {
     if (!$gb_field) { die "internal error"; }
-    $error = ARB::write_autoconv_string($gb_field, $field_content);
+    $error = ARB::write_as_string($gb_field, $field_content);
     if ($error) { $error = "Cannot write to '$field_name' ($error)"; }
   }
 

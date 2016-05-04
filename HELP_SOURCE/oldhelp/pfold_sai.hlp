@@ -30,7 +30,8 @@ NOTES
 	
 	The import filter 'dssp_2nd_struct.ift' extracts only the protein
 	secondary structure which is stored as alignment data. SAIs can simply
-	be created from these species using LINK{sp_sp_2_ext.hlp}.
+	be created from these species with 'Species -> Convert to SAI' in the
+	'Species Information' window (see LINK{sp_sp_2_ext.hlp}).
 	
 	Refer to LINK{arb_import.hlp} and especially LINK{dssp_ift.hlp}
 	for detailed information on importing sequences and structures and

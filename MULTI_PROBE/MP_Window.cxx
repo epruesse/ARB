@@ -54,11 +54,11 @@ AW_window_simple *MP_Window::create_result_window(AW_root *aw_root) {
         result_window->create_button("HELP", "HELP");
 
         result_window->at("Comment");
-        result_window->callback(makeWindowCallback(MP_Comment, (const char *)NULL));
+        result_window->callback(MP_Comment, (AW_CL)0);
         result_window->create_input_field(MP_AWAR_RESULTPROBESCOMMENT);
 
         result_window->at("box");
-        aw_root->awar(MP_AWAR_RESULTPROBES)->add_callback(MP_result_combination_chosen);
+        result_window->callback(MP_result_chosen);
         result_probes_list = result_window->create_selection_list(MP_AWAR_RESULTPROBES, true);
         result_probes_list->set_file_suffix("mpr");
         result_probes_list->insert_default("", "");
@@ -83,13 +83,13 @@ AW_window_simple *MP_Window::create_result_window(AW_root *aw_root) {
         result_window->button_length(8);
 
         result_window->at("comment");
-        result_window->callback(makeWindowCallback(MP_Comment, "Bad"));
+        result_window->callback(MP_Comment, (AW_CL) "Bad");
         result_window->create_button("MARK_AS_BAD", "BAD");
 
-        result_window->callback(makeWindowCallback(MP_Comment, "???"));
+        result_window->callback(MP_Comment, (AW_CL) "???");
         result_window->create_button("MARK_AS_GOOD", "???");
 
-        result_window->callback(makeWindowCallback(MP_Comment, "Good"));
+        result_window->callback(MP_Comment, (AW_CL) "Good");
         result_window->create_button("MARK_AS_BEST", "Good");
 
         result_window->at("auto");
@@ -100,11 +100,11 @@ AW_window_simple *MP_Window::create_result_window(AW_root *aw_root) {
         result_window->button_length(3);
 
         result_window->at("ct_back");
-        result_window->callback(makeWindowCallback(MP_show_probes_in_tree_move, true, result_probes_list));
+        result_window->callback(MP_show_probes_in_tree_move, (AW_CL)1, (AW_CL)result_probes_list);
         result_window->create_button("COLOR_TREE_BACKWARD", "#rightleft_small.xpm");
 
         result_window->at("ct_fwd");
-        result_window->callback(makeWindowCallback(MP_show_probes_in_tree_move, false, result_probes_list));
+        result_window->callback(MP_show_probes_in_tree_move, (AW_CL)0, (AW_CL)result_probes_list);
         result_window->create_button("COLOR_TREE_FORWARD", "#leftright_small.xpm");
 
         result_window->button_length(8);
@@ -288,6 +288,29 @@ static GB_ERROR mp_file2list(const CharPtrArray& line, StrArray& display, StrArr
     return error;
 }
 
+void MP_Window::build_pt_server_list() {
+    int     i;
+    char    *choice;
+
+#if defined(WARN_TODO)
+#warning why option_menu ? better use selection list ( awt_create_selection_list_on_pt_servers )
+#endif
+
+    aws->at("PTServer");
+    aws->callback(MP_cache_sonden);
+    aws->create_option_menu(MP_AWAR_PTSERVER, true);
+
+    for (i=0; ; i++) {
+        choice = GBS_ptserver_id_to_choice(i, 1);
+        if (! choice) break;
+
+        aws->insert_option(choice, "", i);
+        delete choice;
+    }
+
+    aws->update_option_menu();
+}
+
 static void track_ali_change_cb(AW_root*, GBDATA *gb_main) {
     GB_transaction     ta(gb_main);
     char              *aliname = GBT_get_default_alignment(gb_main);
@@ -299,7 +322,7 @@ static void track_ali_change_cb(AW_root*, GBDATA *gb_main) {
     free(aliname);
 }
 
-static void MP_collect_probes(AW_window*, awt_collect_mode mode) {
+static void MP_collect_probes(AW_window*, awt_collect_mode mode, AW_CL) {
     switch (mode) {
         case ACM_ADD:
             if (!probelist->default_is_selected()) {
@@ -363,9 +386,8 @@ MP_Window::MP_Window(AW_root *aw_root, GBDATA *gb_main) {
 
     aws->button_length(7);
     aws->at("Selectedprobes");
-    aw_root->awar(MP_AWAR_SELECTEDPROBES)->add_callback(MP_selected_chosen);
+    aws->callback(MP_selected_chosen);
     selected_list = aws->create_selection_list(MP_AWAR_SELECTEDPROBES, max_seq_col, max_seq_hgt, true);
-
     const StorableSelectionList *storable_selected_list = new StorableSelectionList(TypedSelectionList("prb", selected_list, "probes", "selected_probes"), mp_list2file, mp_file2list);
 
     selected_list->insert_default("", "");
@@ -376,7 +398,7 @@ MP_Window::MP_Window(AW_root *aw_root, GBDATA *gb_main) {
     probelist->insert_default("", "");
 
     aws->at("collect");
-    awt_create_collect_buttons(aws, true, MP_collect_probes);
+    awt_create_collect_buttons(aws, true, MP_collect_probes, 0);
     
     aws->auto_space(5, 5);
     aws->button_length(7);
@@ -403,7 +425,7 @@ MP_Window::MP_Window(AW_root *aw_root, GBDATA *gb_main) {
     }
 
     aws->at("Quality");
-    aws->callback(MP_cache_sonden); // @@@ used as OPTIONMENU_SELECT_CB (see #559)
+    aws->callback(MP_cache_sonden);
     aws->create_option_menu(MP_AWAR_QUALITY, true);
     aws->insert_option("High Priority", "", 5);
     aws->insert_option("       4", "", 4);
@@ -422,12 +444,12 @@ MP_Window::MP_Window(AW_root *aw_root, GBDATA *gb_main) {
     //      multi probe parameters
 
     aws->at("PTServer");
-    awt_create_PTSERVER_selection_button(aws, MP_AWAR_PTSERVER);
+    awt_create_selection_list_on_pt_servers(aws, MP_AWAR_PTSERVER, true);
     aw_root->awar(MP_AWAR_PTSERVER)->add_callback(MP_cache_sonden2); // remove cached probes when changing pt-server
 
     aws->at("NoOfProbes");
     aws->create_option_menu(MP_AWAR_NOOFPROBES, true);
-    aws->callback(MP_cache_sonden); // @@@ used as OPTIONMENU_SELECT_CB (see #559)
+    aws->callback(MP_cache_sonden);
     aws->insert_option("Compute  1 probe ", "", 1);
     char str[50];
     for (int i=2; i<=MAXPROBECOMBIS; i++) {
@@ -438,7 +460,7 @@ MP_Window::MP_Window(AW_root *aw_root, GBDATA *gb_main) {
 
     aws->button_length(10);
     aws->at("Compute");
-    aws->callback(makeWindowCallback(MP_compute, gb_main));
+    aws->callback(MP_compute, (AW_CL)gb_main);
     aws->highlight();
     aws->help_text("Compute possible Solutions");
     aws->create_button("GO", "GO");
@@ -449,20 +471,20 @@ MP_Window::MP_Window(AW_root *aw_root, GBDATA *gb_main) {
     aws->create_button("OPEN_RESULT_WIN", "Open result window");
 
     aws->at("Komplement");
-    aws->callback(MP_cache_sonden); // @@@ used as TOGGLE_CLICK_CB (see #559)
+    aws->callback(MP_cache_sonden);
     aws->create_toggle(MP_AWAR_COMPLEMENT);
 
     aws->at("WeightedMismatches");
-    aws->callback(MP_cache_sonden); // @@@ used as TOGGLE_CLICK_CB (see #559)
+    aws->callback(MP_cache_sonden);
     aws->create_toggle(MP_AWAR_WEIGHTEDMISMATCHES);
 
     // max non group hits
     aws->at("Border1");
-    aws->callback(MP_cache_sonden); // @@@ used as INPUTFIELD_CB (see #559)
+    aws->callback(MP_cache_sonden);
     aws->create_input_field(MP_AWAR_QUALITYBORDER1, 6);
 
     aws->at("OutsideMismatches");
-    aws->callback(MP_cache_sonden); // @@@ used as OPTIONMENU_SELECT_CB (see #559)
+    aws->callback(MP_cache_sonden);
     aws->create_option_menu(MP_AWAR_OUTSIDEMISMATCHES, true);
     aws->insert_option("3.0", "", (float)3.0);
     aws->insert_option("2.5", "", (float)2.5);
@@ -473,7 +495,7 @@ MP_Window::MP_Window(AW_root *aw_root, GBDATA *gb_main) {
 
     // max mismatches for group
     aws->at("Greyzone");
-    aws->callback(MP_cache_sonden); // @@@ used as OPTIONMENU_SELECT_CB (see #559)
+    aws->callback(MP_cache_sonden);
     aws->create_option_menu(MP_AWAR_GREYZONE, true);
     aws->insert_default_option("0.0", "", (float)0.0);
     for (float lauf=0.1; lauf<(float)1.0; lauf+=0.1) {
@@ -705,7 +727,7 @@ void TEST_SLOW_design_probes_and_load_result() {
             free(probe);
         }
 
-        saved_design_result = GBT_join_strings(saved_lines, '\n');
+        saved_design_result = GBT_join_names(saved_lines, '\n');
         TEST_EXPECT_EQUAL(saved_design_result, recent_probeDesignSave); // see comment in TEST_LATE_recent_probe_design_result
     }
 

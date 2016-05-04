@@ -9,7 +9,7 @@ $(TARGET) : $(OBJECT)
 	$(A_CC) $(cflags) -o $@ $< -lm
 
 .c.o:
-	$(A_CC) $(cflags) -c -o $@ $< $(CC_INCLUDES) $(POST_COMPILE) $<
+	$(A_CC) $(cflags) -c -o $@ $< $(CC_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(OBJECT) $(TARGET)

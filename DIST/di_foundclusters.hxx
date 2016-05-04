@@ -19,6 +19,10 @@
 #include <smartptr.h>
 #endif
 
+
+#ifndef _GLIBCXX_SET
+#include <set>
+#endif
 #ifndef _GLIBCXX_MAP
 #include <map>
 #endif
@@ -41,6 +45,7 @@ class  ClusterTree;
 class  ARB_tree_predicate;
 struct ARB_countedTree;
 class  AW_selection_list;
+class  AW_window;
 
 // ---------------------
 //      Cluster
@@ -61,12 +66,6 @@ enum ClusterOrder {
 
 class DisplayFormat;
 
-enum ClusterMarkMode { // what to mark (REP=representative)
-    CMM_ALL_BUT_REP = 0,
-    CMM_ALL         = 1,
-    CMM_ONLY_REP    = 2,
-};
-
 class Cluster : virtual Noncopyable {
     double min_dist;                                // min. distance between species inside Cluster
     double max_dist;                                // dito, but max.
@@ -85,30 +84,6 @@ class Cluster : virtual Noncopyable {
 
     static ID unused_id;
 
-    std::string create_description(const ARB_countedTree *ct);
-    void propose_description(const std::string& newDesc) {
-        delete next_desc;
-        next_desc = new std::string(newDesc);
-    }
-
-    bool lessByOrder_forward(const Cluster& other, ClusterOrder sortBy) const {
-        bool less = false;
-        switch (sortBy) {
-            case UNSORTED:              break;
-            case SORT_BY_MEANDIST:      less = mean_dist < other.mean_dist; break;
-            case SORT_BY_MIN_BASES:     less = min_bases < other.min_bases; break;
-            case SORT_BY_CLUSTERSIZE:   less = members.size() < other.members.size(); break;
-            case SORT_BY_TREEPOSITION:  less = rel_tree_pos < other.rel_tree_pos;  break;
-            case SORT_BY_MIN_DIST:      less = min_dist < other.min_dist; break;
-            case SORT_BY_MAX_DIST:      less = max_dist < other.max_dist; break;
-
-            case SORT_REVERSE:
-                cl_assert(0);
-                break;
-        }
-        return less;
-    }
-
 public:
     Cluster(ClusterTree *ct);
     ~Cluster() { delete next_desc; }
@@ -117,16 +92,21 @@ public:
 
     size_t get_member_count() const { return members.size(); }
     void scan_display_widths(DisplayFormat& format) const;
-    const char *get_list_display(const DisplayFormat *format) const; // only valid after calling scan_display_widths
+    const char *get_list_display(const DisplayFormat *format) const;
 
     const DBItemSet& get_members() const { return members; }
 
-    void mark_all_members(ClusterMarkMode mmode) const;
+    void mark_all_members(bool mark_representative) const;
     GBDATA *get_representative() const { return representative; }
 
+    std::string create_description(const ARB_countedTree *ct);
     std::string get_upgroup_info(const ARB_countedTree *ct, const ARB_tree_predicate& keep_group_name);
     double get_mean_distance() const { return mean_dist; }
 
+    void propose_description(const std::string& newDesc) {
+        delete next_desc;
+        next_desc = new std::string(newDesc);
+    }
     void update_description(const ARB_countedTree *ct) {
         propose_description(create_description(ct));
     }
@@ -139,6 +119,25 @@ public:
         next_desc = NULL;
     }
 
+private:
+    bool lessByOrder_forward(const Cluster& other, ClusterOrder sortBy) const {
+        bool less = false;
+        switch (sortBy) {
+            case UNSORTED:              break;
+            case SORT_BY_MEANDIST:      less = mean_dist < other.mean_dist; break;
+            case SORT_BY_MIN_BASES:     less = min_bases < other.min_bases; break;
+            case SORT_BY_CLUSTERSIZE:   less = members.size() < other.members.size(); break;
+            case SORT_BY_TREEPOSITION:  less = rel_tree_pos < other.rel_tree_pos;  break;
+            case SORT_BY_MIN_DIST:      less = min_dist < other.min_dist; break;
+            case SORT_BY_MAX_DIST:      less = max_dist < other.max_dist; break;
+                
+            case SORT_REVERSE:
+                cl_assert(0);
+                break;
+        }
+        return less;
+    }
+public:
     bool lessByOrder(const Cluster& other, ClusterOrder sortBy) const {
         bool less;
         if (sortBy&SORT_REVERSE) {
@@ -166,18 +165,15 @@ enum ClusterSubset {
     SHOWN_CLUSTERS,
 };
 
-class ClustersData : virtual Noncopyable {
+struct ClustersData : virtual Noncopyable {
+    WeightedFilter    &weighted_filter;
+    AW_selection_list *clusterList;
     KnownClusters      known_clusters;              // contains all known clusters
     ClusterIDs         shown;                       // clusters shown in selection list
     ClusterIDs         stored;                      // stored clusters
     ClusterOrder       criteria[2];                 // order of 'shown'
     bool               sort_needed;                 // need to sort 'shown'
 
-public:
-    WeightedFilter    &weighted_filter; // @@@ make private
-    AW_selection_list *clusterList;
-
-private:
     ClusterIDs& get_subset(ClusterSubset subset) {
         if (subset == SHOWN_CLUSTERS) {
             // @@@ sort here if needed
@@ -185,27 +181,17 @@ private:
         }
         return stored;
     }
-    int get_pos(ID id, ClusterSubset subset) {
-        // returns -1 of not member of subset
-        ClusterIDs&     ids   = get_subset(subset);
-        ClusterIDsIter  begin = ids.begin();
-        ClusterIDsIter  end   = ids.end();
-        ClusterIDsIter  found = find(begin, end, id);
-
-        return found == end ? -1 : distance(begin, found);
-    }
-
-public:
     ID idAtPos(int pos, ClusterSubset subset) {
         ClusterIDs& ids = get_subset(subset);
         return size_t(pos)<ids.size() ? ids.at(pos) : 0;
     }
 
+public:
 
     ClustersData(WeightedFilter& weighted_filter_)
-        : sort_needed(true),
-          weighted_filter(weighted_filter_),
-          clusterList(0)
+        : weighted_filter(weighted_filter_)
+        , clusterList(0)
+        , sort_needed(true)
     {
         criteria[0] = SORT_BY_MEANDIST;
         criteria[1] = UNSORTED;
@@ -227,9 +213,19 @@ public:
         return found == known_clusters.end() ? ClusterPtr() : found->second;
     }
 
+    ClusterPtr clusterAtPos(int pos, ClusterSubset subset) { return clusterWithID(idAtPos(pos, subset)); }
     size_t count(ClusterSubset subset) { return get_subset(subset).size(); }
     const ClusterIDs& get_clusterIDs(ClusterSubset subset) { return get_subset(subset); }
 
+    int get_pos(ID id, ClusterSubset subset) {
+        // returns -1 of not member of subset
+        ClusterIDs&     ids   = get_subset(subset);
+        ClusterIDsIter  begin = ids.begin();
+        ClusterIDsIter  end   = ids.end();
+        ClusterIDsIter  found = find(begin, end, id);
+
+        return found == end ? -1 : distance(begin, found);
+    }
     int get_pos(ClusterPtr cluster, ClusterSubset subset) { return get_pos(cluster->get_ID(), subset); }
 
     void add(ClusterPtr clus, ClusterSubset subset);

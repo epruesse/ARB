@@ -170,9 +170,7 @@ static ARB_ERROR pt_init_main_struct(PT_main *, const char *filename) { // __ATT
 
 int server_shutdown(PT_main */*pm*/, aisc_string passwd) {
     // password check
-    bool authorized = strcmp(passwd, "47@#34543df43%&3667gh") == 0;
-    free(passwd);
-    if (!authorized) return 1;
+    if (strcmp(passwd, "47@#34543df43%&3667gh")) return 1;
 
     fflush_all();
     fprintf(stderr, "\nARB_PT_SERVER: received shutdown message\n");
@@ -358,25 +356,21 @@ __ATTR__USERESULT static ARB_ERROR start_pt_server(const char *socket_name, cons
             if (update_reason) {
                 printf("- updating postree (Reason: %s)\n", update_reason);
 
-                char *quotedDatabaseArg = GBK_singlequote(GBS_global_string("-D%s", arbdb_name));
-
                 // run build_clean
-                char *cmd = GBS_global_string_copy("%s -build_clean %s", exename, quotedDatabaseArg);
+                char *cmd = GBS_global_string_copy("%s -build_clean -D%s", exename, arbdb_name);
                 make_valgrinded_call(cmd);
                 error           = GBK_system(cmd);
                 free(cmd);
 
                 // run build
                 if (!error) {
-                    cmd   = GBS_global_string_copy("%s -build %s", exename, quotedDatabaseArg);
+                    cmd = GBS_global_string_copy("%s -build -D%s", exename, arbdb_name);
                     make_valgrinded_call(cmd);
-                    error = GBK_system(cmd);
+                    error           = GBK_system(cmd);
                     free(cmd);
                 }
 
                 if (error) error = GBS_global_string("Failed to update postree (Reason: %s)", error.deliver());
-
-                free(quotedDatabaseArg);
             }
         }
         if (!error) {
@@ -591,13 +585,18 @@ __ATTR__USERESULT static ARB_ERROR run_command(const char *exename, const char *
 
     if (error) msg = strdup(error.preserve());
     if (msg) {
-        puts(msg);                      // log to console ..
-        GBS_add_ptserver_logentry(msg); // .. and logfile
+        puts(msg);
+        GBS_add_ptserver_logentry(msg);
 
-        char     *quotedErrorMsg = GBK_singlequote(GBS_global_string("arb_pt_server: %s", msg));
-        GB_ERROR  msgerror       = GBK_system(GBS_global_string("arb_message %s &", quotedErrorMsg));    // send async to avoid deadlock
-        if (msgerror) fprintf(stderr, "Error: %s\n", msgerror);
-        free(quotedErrorMsg);
+        char *quoted_msg = GBS_string_eval(msg, ":'=\"", 0);
+        pt_assert(quoted_msg);
+        char *msg_command = GBS_global_string_copy("arb_message '%s' &", quoted_msg);
+
+        if (system(msg_command) != 0) fprintf(stderr, "Failed to run '%s'\n", msg_command);
+
+        free(msg_command);
+        free(quoted_msg);
+
         free(msg);
     }
 

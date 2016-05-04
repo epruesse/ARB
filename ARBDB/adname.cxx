@@ -11,7 +11,7 @@
 #include "gb_local.h"
 
 #include <ad_config.h>
-#include "TreeNode.h"
+#include <arbdbt.h>
 
 #include <arb_progress.h>
 #include <arb_strbuf.h>
@@ -20,7 +20,6 @@
 #include <arb_diff.h>
 
 #include <cctype>
-#include "ad_colorset.h"
 
 struct gbt_renamed {
     int     used_by;
@@ -92,12 +91,12 @@ GB_ERROR GBT_rename_species(const char *oldname, const  char *newname, bool igno
         gb_species       = GBT_find_species_rel_species_data(NameSession.gb_species_data, oldname);
 
         if (gb_found_species && gb_species != gb_found_species) {
-            return GBS_global_string("A species named '%s' already exists.", newname);
+            return GB_export_errorf("A species named '%s' already exists.", newname);
         }
     }
 
     if (!gb_species) {
-        return GBS_global_string("Expected that a species named '%s' exists (maybe there are duplicate species, database might be corrupt)", oldname);
+        return GB_export_errorf("Expected that a species named '%s' exists (maybe there are duplicate species, database might be corrupt)", oldname);
     }
 
     gb_name = GB_entry(gb_species, "name");
@@ -134,7 +133,7 @@ GB_ERROR GBT_abort_rename_session() {
 
 static const char *currentTreeName = 0;
 
-static GB_ERROR gbt_rename_tree_rek(TreeNode *tree, int tree_index) {
+static GB_ERROR gbt_rename_tree_rek(GBT_TREE *tree, int tree_index) {
     if (tree) {
         if (tree->is_leaf) {
             if (tree->name) {
@@ -159,19 +158,18 @@ static GB_ERROR gbt_rename_tree_rek(TreeNode *tree, int tree_index) {
             }
         }
         else {
-            gbt_rename_tree_rek(tree->get_leftson(), tree_index);
-            gbt_rename_tree_rek(tree->get_rightson(), tree_index);
+            gbt_rename_tree_rek(tree->leftson, tree_index);
+            gbt_rename_tree_rek(tree->rightson, tree_index);
         }
     }
     return NULL;
 }
 
 GB_ERROR GBT_commit_rename_session() { // goes to header: __ATTR__USERESULT
-    bool         is_genome_db = GEN_is_genome_db(NameSession.gb_main, -1);
-    arb_progress commit_progress("Correcting name references", 3+is_genome_db);
-    GB_ERROR     error        = 0;
-
+    arb_progress commit_progress("Renaming name references", 3);
     commit_progress.allow_title_reuse();
+
+    GB_ERROR error = 0;
 
     // rename species in trees
     {
@@ -180,12 +178,12 @@ GB_ERROR GBT_commit_rename_session() { // goes to header: __ATTR__USERESULT
 
         if (!tree_names.empty()) {
             int          tree_count = tree_names.size();
-            arb_progress progress(GBS_global_string("Correcting names in %i tree%c", tree_count, "s"[tree_count<2]),
+            arb_progress progress(GBS_global_string("Renaming species in %i tree%c", tree_count, "s"[tree_count<2]),
                                   tree_count*3);
 
             for (int count = 0; count<tree_count && !error; ++count) {
                 const char *tname = tree_names[count];
-                TreeNode   *tree  = GBT_read_tree(NameSession.gb_main, tname, new SimpleRoot);
+                GBT_TREE   *tree  = GBT_read_tree(NameSession.gb_main, tname, GBT_TREE_NodeFactory());
                 ++progress;
 
                 if (tree) {
@@ -196,7 +194,7 @@ GB_ERROR GBT_commit_rename_session() { // goes to header: __ATTR__USERESULT
                     ++progress;
 
                     GBT_write_tree(NameSession.gb_main, tname, tree);
-                    destroy(tree);
+                    delete tree;
 
                     progress.inc_and_check_user_abort(error);
                 }
@@ -216,130 +214,72 @@ GB_ERROR GBT_commit_rename_session() { // goes to header: __ATTR__USERESULT
 
         if (!config_names.empty()) {
             int          config_count = config_names.size();
-            arb_progress progress(GBS_global_string("Correcting names in %i config%c", config_count, "s"[config_count<2]), config_count);
+            arb_progress progress(GBS_global_string("Renaming species in %i config%c", config_count, "s"[config_count<2]), config_count);
 
             for (int count = 0; !error && count<config_count; ++count) {
-                GBT_config config(NameSession.gb_main, config_names[count], error);
+                GBT_config *config = GBT_load_configuration_data(NameSession.gb_main, config_names[count], &error);
                 if (!error) {
                     int need_save = 0;
-                    for (int area = 0; !error && area<2; ++area) {
-                        GBT_config_parser   parser(config, area);
+                    int mode;
+
+                    for (mode = 0; !error && mode<2; ++mode) {
+                        char              **configStrPtr = (mode == 0 ? &config->top_area : &config->middle_area);
+                        GBT_config_parser  *parser       = GBT_start_config_parser(*configStrPtr);
+                        GBT_config_item    *item         = GBT_create_config_item();
                         GBS_strstruct      *strstruct    = GBS_stropen(1000);
 
-                        while (1) {
-                            const GBT_config_item& item = parser.nextItem(error);
-                            if (error || item.type == CI_END_OF_CONFIG) break;
-
-                            if (item.type == CI_SPECIES) {
-                                gbt_renamed *rns = (gbt_renamed *)GBS_read_hash(NameSession.renamed_hash, item.name);
+                        error = GBT_parse_next_config_item(parser, item);
+                        while (!error && item->type != CI_END_OF_CONFIG) {
+                            if (item->type == CI_SPECIES) {
+                                gbt_renamed *rns = (gbt_renamed *)GBS_read_hash(NameSession.renamed_hash, item->name);
                                 if (rns) { // species was renamed
-                                    GBT_append_to_config_string(GBT_config_item(CI_SPECIES, rns->data), strstruct);
+                                    freedup(item->name, rns->data);
                                     need_save = 1;
-                                    continue;
                                 }
                             }
                             GBT_append_to_config_string(item, strstruct);
+                            error = GBT_parse_next_config_item(parser, item);
                         }
 
-                        if (!error) {
-                            config.set_definition(area, GBS_strclose(strstruct));
-                        }
+                        if (!error) freeset(*configStrPtr, GBS_strclose(strstruct));
                         else {
                             error = GBS_global_string("Failed to parse configuration '%s' (Reason: %s)", config_names[count], error);
-                            GBS_strforget(strstruct);
                         }
+
+                        GBT_free_config_item(item);
+                        GBT_free_config_parser(parser);
                     }
 
                     if (!error && need_save) {
-                        error = config.save(NameSession.gb_main, config_names[count], false);
+                        error = GBT_save_configuration_data(config, NameSession.gb_main, config_names[count]);
                     }
+                    GBT_free_configuration_data(config);
                 }
                 progress.inc_and_check_user_abort(error);
             }
         }
-        commit_progress.inc_and_check_user_abort(error);
     }
-
-    // rename species in saved colorsets
-    if (!error) {
-        GBDATA *gb_species_colorset_root = GBT_colorset_root(NameSession.gb_main, "species");
-        if (gb_species_colorset_root) {
-            ConstStrArray colorset_names;
-            GBT_get_colorset_names(colorset_names, gb_species_colorset_root);
-
-            int colorset_count = colorset_names.size();
-            if (colorset_count>0) {
-                arb_progress progress(GBS_global_string("Correcting names in %i colorset%c", colorset_count, "s"[colorset_count<2]), colorset_count);
-
-                for (int c = 0; c<colorset_count && !error; ++c) {
-                    GBDATA *gb_colorset     = GBT_find_colorset(gb_species_colorset_root, colorset_names[c]);
-                    if (!gb_colorset) error = GB_await_error();
-                    else {
-                        ConstStrArray colorDefs;
-                        error = GBT_load_colorset(gb_colorset, colorDefs);
-                        if (!error) {
-                            StrArray modifiedDefs;
-                            bool     changed = false;
-
-                            for (int d = colorDefs.size()-1; d>=0; --d) {
-                                const char *def   = colorDefs[d];
-                                const char *equal = strchr(def, '=');
-
-                                if (equal) { // only handle correct entries (do not touch rest)
-                                    if (strcmp(equal+1, "0") == 0) { // unneeded "no color"-entry (see [14094])
-                                        colorDefs.remove(d);
-                                        changed = true;
-                                    }
-                                    else {
-                                        gbt_renamed *rns;
-                                        {
-                                            LocallyModify<char>  tempSplit(const_cast<char*>(equal)[0], 0);
-                                            rns = (gbt_renamed *)GBS_read_hash(NameSession.renamed_hash, def);
-                                        }
-                                        if (rns) { // species was renamed
-                                            char *newDef = GBS_global_string_copy("%s%s", rns->data, equal);
-                                            colorDefs.replace(d, newDef); // replace colorDefs
-                                            modifiedDefs.put(newDef);     // keep heapcopy until colorDefs gets written
-
-                                            changed = true;
-                                        }
-                                    }
-                                }
-                            }
-
-                            if (changed && !error) error = GBT_save_colorset(gb_colorset, colorDefs);
-                        }
-                    }
-                    progress.inc_and_check_user_abort(error);
-                }
-            }
-        }
-        commit_progress.inc_and_check_user_abort(error);
-    }
+    commit_progress.inc_and_check_user_abort(error);
 
     // rename links in pseudo-species
-    if (!error && is_genome_db) {
+    if (!error && GEN_is_genome_db(NameSession.gb_main, -1)) {
+        GBDATA *gb_pseudo;
+        for (gb_pseudo = GEN_first_pseudo_species(NameSession.gb_main);
+             gb_pseudo && !error;
+             gb_pseudo = GEN_next_pseudo_species(gb_pseudo))
         {
-            arb_progress progress("Correcting names of organism references");
-
-            GBDATA *gb_pseudo;
-            for (gb_pseudo = GEN_first_pseudo_species(NameSession.gb_main);
-                 gb_pseudo && !error;
-                 gb_pseudo = GEN_next_pseudo_species(gb_pseudo))
-            {
-                GBDATA *gb_origin_organism = GB_entry(gb_pseudo, "ARB_origin_species");
-                if (gb_origin_organism) {
-                    const char  *origin = GB_read_char_pntr(gb_origin_organism);
-                    gbt_renamed *rns    = (gbt_renamed *)GBS_read_hash(NameSession.renamed_hash, origin);
-                    if (rns) {          // species was renamed
-                        const char *newname = &rns->data[0];
-                        error               = GB_write_string(gb_origin_organism, newname);
-                    }
+            GBDATA *gb_origin_organism = GB_entry(gb_pseudo, "ARB_origin_species");
+            if (gb_origin_organism) {
+                const char  *origin = GB_read_char_pntr(gb_origin_organism);
+                gbt_renamed *rns    = (gbt_renamed *)GBS_read_hash(NameSession.renamed_hash, origin);
+                if (rns) {          // species was renamed
+                    const char *newname = &rns->data[0];
+                    error               = GB_write_string(gb_origin_organism, newname);
                 }
             }
         }
-        commit_progress.inc_and_check_user_abort(error);
     }
+    commit_progress.inc_and_check_user_abort(error);
 
     gbt_free_rename_session_data();
 
@@ -391,7 +331,6 @@ void TEST_SLOW_rename_session() {
     TEST_EXPECT_TEXTFILE_DIFFLINES(outputname, expectedname, 0);
     TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(outputname));
 }
-TEST_PUBLISH(TEST_SLOW_rename_session);
 
 #endif // UNIT_TESTS
 

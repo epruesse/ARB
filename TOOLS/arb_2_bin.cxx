@@ -24,14 +24,12 @@ int ARB_main(int argc, char *argv[]) {
                 "Options: -m            create map file too\n"
                 "         -r            try to repair destroyed database\n"
                 "         -c[tree_xxx]  optimize database using tree_xxx or largest tree\n"
-                "         -C<type>      use extra compression\n"
-                "                       (known <type>s: %s)\n"
                 "\n"
                 "database my be '-' in which case arb_2_bin reads from stdin.\n"
-                "\n",
-                GB_get_supported_compression_flags(true));
+                "\n"
+            );
 
-        if (argc>1 && strcmp(argv[1], "--help") != 0) { error = "Missing arguments"; }
+        if (strcmp(argv[1], "--help") != 0) { error = "Missing arguments"; }
     }
     else {
         char rtype[256];
@@ -51,61 +49,44 @@ int ARB_main(int argc, char *argv[]) {
             *(rtypep++) = 'r';
             *(rtypep++) = 'w';
 
-            while (argv[ci] && argv[ci][0] == '-' && argv[ci][1] != 0 && !error) {
-                if      (!strcmp(argv[ci], "-m")) { ci++; *(wtypep++) = 'm'; }
-                else if (!strcmp(argv[ci], "-r")) { ci++; *(rtypep++) = 'R'; }
-                else if (!strncmp(argv[ci], "-c", 2)) { opt_tree = argv[ci]+2; ci++; }
-                else if (!strncmp(argv[ci], "-i", 2)) { nidx = atoi(argv[ci]+2); ci++; }
-                else if (!strncmp(argv[ci], "-C", 2)) {
-                    char cflag = argv[ci][2]; ci++;
-                    if (strchr(GB_get_supported_compression_flags(false), cflag) == 0) {
-                        error = GBS_global_string("Unknown compression flag '%c'", cflag);
-                    }
-                    else {
-                        *(wtypep++) = cflag;
-                    }
-                }
-                else {
-                    error = GBS_global_string("Unknown argument '%s'", argv[ci]);
-                    break;
-                }
+            while (argv[ci][0] == '-' && argv[ci][1] != 0) {
+                if (!strcmp(argv[ci], "-m")) { ci++; *(wtypep++) = 'm'; }
+                if (!strcmp(argv[ci], "-r")) { ci++; *(rtypep++) = 'R'; }
+                if (!strncmp(argv[ci], "-c", 2)) { opt_tree = argv[ci]+2; ci++; }
+                if (!strncmp(argv[ci], "-i", 2)) { nidx = atoi(argv[ci]+2); ci++; }
             }
         }
 
         const char *in  = argv[ci++];
         const char *out = ci >= argc ? in : argv[ci++];
 
-        if (!error && !in) error = "missing arguments";
-
-        if (!error) {
-            printf("Reading database...\n");
-            GB_shell  shell;
-            GBDATA   *gb_main = GBT_open(in, rtype);
-            if (!gb_main) {
-                error = GB_await_error();
-            }
-            else {
-                if (opt_tree) {
-                    char *ali_name;
-                    {
-                        GB_transaction ta(gb_main);
-                        ali_name = GBT_get_default_alignment(gb_main);
-                    }
-                    if (!strlen(opt_tree)) opt_tree = 0;
-
-                    printf("Optimizing database...\n");
-                    error = GBT_compress_sequence_tree2(gb_main, opt_tree, ali_name);
-                    if (error) error = GBS_global_string("Error during optimize: %s", error);
-                    free(ali_name);
+        printf("Reading database...\n");
+        GB_shell  shell;
+        GBDATA   *gb_main = GBT_open(in, rtype);
+        if (!gb_main) {
+            error = GB_await_error();
+        }
+        else {
+            if (opt_tree) {
+                char *ali_name;
+                {
+                    GB_transaction ta(gb_main);
+                    ali_name = GBT_get_default_alignment(gb_main);
                 }
+                if (!strlen(opt_tree)) opt_tree = 0;
 
-                if (!error) {
-                    GB_set_next_main_idx(nidx);
-                    printf("Saving database...\n");
-                    error = GB_save(gb_main, out, wtype);
-                }
-                GB_close(gb_main);
+                printf("Optimizing database...\n");
+                error = GBT_compress_sequence_tree2(gb_main, opt_tree, ali_name);
+                if (error) error = GBS_global_string("Error during optimize: %s", error);
+                free(ali_name);
             }
+
+            if (!error) {
+                GB_set_next_main_idx(nidx);
+                printf("Saving database...\n");
+                error = GB_save(gb_main, out, wtype);
+            }
+            GB_close(gb_main);
         }
     }
 

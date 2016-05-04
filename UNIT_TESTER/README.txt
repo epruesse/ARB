@@ -72,18 +72,6 @@ How to use ARB unit testing
 
       Set WARN_LEVEL to 0 in Makefile.setup.local to disable warnings.
 
-      Random failures:
-
-             Some tests tend to fail randomly if started from inside jenkins (due to
-             parallel builds), whereas they behave proper and provide safety during
-             normal development. You should disable such tests for jenkins by enclosing
-             the whole test with:
-
-                #if !defined(DEVEL_JENKINS)
-                #endif
-
-             One example for such a test is ../CORE/arb_cs.cxx@TEST_open_socket
-
 
    Missing tests:
 
@@ -173,45 +161,17 @@ How to use ARB unit testing
 
    (see also showCoverageForAll in gcov2msg.pl)
 
-5. Define which tests shall run
+5. Running only some tests
 
-   [look into Makefile.setup.local for examples]
+   Set 'RESTRICT=expr' to '.' to run all tests.
 
-   a. Restrict tests to one or several libraries:
+   Set it to sth else to run only tests for matching source files.
+   This is helpful if you'd like to check test-coverage.
 
-      Set 'RESTRICT_LIB=lib1[:libN]*' to run only tests defined in the
-      specified libraries.
+   Set 'RESTRICT_LIB=lib1:lib2' to test only a few libs.
 
-      Set 'RESTRICT_LIB=' to test all libraries.
 
-   b. Restrict tests to specific modules:
-
-      Set "RESTRICT_MODULE='regexpr'" to run only tests located in
-      matching modules. Use '.' for all modules.
-
-   c. Restrict tests by name:
-
-      Set "RESTRICT_FUN='regexpr'" to run only tests whose function-name
-      matches the regexpr. Use '.' for all tests.
-
-   d. Restrict test frequency:
-
-      Set 'SKIP_SLOW=min' to restrict frequency of "slow tests". Slow tests
-      are all tests named 'TEST_SLOW_.*'. These tests will not run more often
-      than the specified amount of minutes.
-      Set 'SKIP_SLOW=0' to always run all tests (default).
-
-   e. Run unchanged tests:
-
-      By default only changed unit-tests will run. Set 'ONLY_CHANGED_TESTS=0'
-      to force testing unchanged code.
-
-      Tests will re-run if ..
-      - the test code was changed,
-      - any needed library was changed or if
-      - Makefile.setup.local or anything in the UnitTester itself was changed.
-
-      Calling 'make clean' in $ARBHOME will also force all tests to re-run.
+   Slow tests ('TEST_SLOW_...'; see above) will only run every 15 minutes.
 
 
 6. Global test environments

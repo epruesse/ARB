@@ -50,9 +50,6 @@ SECTION Online Sequence Compression
                 Only sequence data is taken into respect while calculating gap positions.
                 It is possible, that parts of a SAI get hidden by using OSC.
 
-		You may use <CTRL-K> to toggle between 'Show all gaps' and 'Hide all gaps'
-		while the focus is inside the sequence view.
-
 SECTION Layout
 
         Sequence-helix spacing: Extra distance between sequence data and helix display (Default=0).

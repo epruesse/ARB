@@ -13,19 +13,12 @@
 
 #include <gui_aliview.hxx>
 #include <ColumnStat.hxx>
-#include <item_sel_list.h>
-
-#include <awt_filter.hxx>
-#include <awt_config_manager.hxx>
 
 #include <aw_awars.hxx>
 #include <aw_root.hxx>
 #include <aw_msg.hxx>
-
-#include <arbdbt.h>
-#include <arb_progress.h>
-#include <arb_global_defs.h>
-#include <arb_strbuf.h>
+#include <item_sel_list.h>
+#include <awt_filter.hxx>
 
 #define ST_ML_AWAR "tmp/st_ml/"
 
@@ -63,7 +56,7 @@ static void st_ok_cb(AW_window *aww, ST_ML *st_ml) {
     free(alignment_name);
 }
 
-void STAT_set_postcalc_callback(ST_ML *st_ml, WindowCallbackSimple postcalc_cb, AW_window *cb_win) {
+void STAT_set_postcalc_callback(ST_ML *st_ml, AW_CB0 postcalc_cb, AW_window *cb_win) {
     st_ml->set_postcalc_callback(postcalc_cb, cb_win);
 }
 
@@ -110,10 +103,6 @@ AW_window *STAT_create_main_window(AW_root *root, ST_ML *st_ml) {
 ST_ML *STAT_create_ST_ML(GBDATA *gb_main) {
     return new ST_ML(gb_main);
 }
-void STAT_destroy_ST_ML(ST_ML*& st_ml) {
-    delete st_ml;
-    st_ml = NULL;
-}
 
 ST_ML_Color *STAT_get_color_string(ST_ML *st_ml, char *species_name, AP_tree *node, int start_ali_pos, int end_ali_pos) {
     return st_ml->get_color_string(species_name, node, start_ali_pos, end_ali_pos);
@@ -140,95 +129,23 @@ struct st_check_cb_data : public Noncopyable {
     }
 };
 
-static GB_ERROR st_remove_entries(AW_root *awr, GBDATA *gb_main, bool verbose) {
-    GB_ERROR error = NULL;
-
-    char *ali_name      = awr->awar(ST_ML_AWAR_FILTER_ALIGNMENT)->read_string();
-    char *dest_field    = awr->awar(ST_ML_AWAR_CQ_DEST_FIELD)->read_string();
-    bool  fieldSelected = strcmp(dest_field, NO_FIELD_SELECTED) != 0;
-
-    int fieldsRemoved    = 0;
-    int qualitiesRemoved = 0;
-
-    {
-        GB_transaction ta(gb_main);
-        long count = GBT_get_species_count(gb_main);
-
-        arb_progress progress("Removing old reports", count);
-        for (GBDATA *gb_species = GBT_first_species(gb_main);
-             gb_species && !error;
-             gb_species = GBT_next_species(gb_species))
-        {
-            if (fieldSelected) {
-                GBDATA *gb_field = GB_entry(gb_species, dest_field);
-                if (gb_field) {
-                    error = GB_delete(gb_field);
-                    if (!error) fieldsRemoved++;
-                }
-            }
-            if (!error) {
-                GBDATA *gb_ali = GB_entry(gb_species, ali_name);
-                if (gb_ali) {
-                    GBDATA *gb_quality = GB_entry(gb_ali, "quality");
-                    if (gb_quality) {
-                        error = GB_delete(gb_quality);
-                        if (!error) qualitiesRemoved++;
-                    }
-                }
-            }
-            progress.inc_and_check_user_abort(error);
-        }
-    }
-
-    if (verbose) {
-        GBS_strstruct note(200);
-        note.cat("Removed ");
-        if (fieldsRemoved>0) {
-            note.nprintf(100, "%i '%s'", fieldsRemoved, dest_field);
-            if (qualitiesRemoved>0) note.cat(" and ");
-        }
-        if (qualitiesRemoved>0) note.nprintf(50, "%i 'quality'", qualitiesRemoved);
-        else if (!fieldsRemoved && !qualitiesRemoved) note.cat("no");
-        note.cat(" entries.");
-        aw_message(note.get_data());
-    }
-
-    free(dest_field);
-    free(ali_name);
-
-    return error;
-}
-
-static void st_remove_entries_cb(AW_window *aww, GBDATA *gb_main) {
-    aw_message_if(st_remove_entries(aww->get_root(), gb_main, true));
-}
-
 static void st_check_cb(AW_window *aww, st_check_cb_data *data) {
-    arb_progress   glob_progress("Chimera check");
     GB_transaction ta(data->gb_main);
 
-    AW_root *awr = aww->get_root();
+    AW_root *r = aww->get_root();
 
-    char *ali_name    = awr->awar(ST_ML_AWAR_FILTER_ALIGNMENT)->read_string();
-    int   bucket_size = awr->awar(ST_ML_AWAR_CQ_BUCKET_SIZE)->read_int();
-    char *tree_name   = awr->awar(AWAR_TREE)->read_string();
-    int   marked_only = awr->awar(ST_ML_AWAR_CQ_MARKED_ONLY)->read_int();
+    char *alignment_name = r->awar(ST_ML_AWAR_FILTER_ALIGNMENT)->read_string();
+    int   bucket_size    = r->awar(ST_ML_AWAR_CQ_BUCKET_SIZE)->read_int();
+    char *tree_name      = r->awar(AWAR_TREE)->read_string();
+    char *dest_field     = r->awar(ST_ML_AWAR_CQ_DEST_FIELD)->read_string();
+    int   marked_only    = r->awar(ST_ML_AWAR_CQ_MARKED_ONLY)->read_int();
 
-    st_report_enum report           = (st_report_enum) awr->awar(ST_ML_AWAR_CQ_REPORT)->read_int();
-    bool           keep_old_reports = awr->awar(ST_ML_AWAR_CQ_KEEP_REPORTS)->read_int();
+    st_report_enum report = (st_report_enum) r->awar(ST_ML_AWAR_CQ_REPORT)->read_int();
 
-    GB_ERROR    error      = NULL;
-    const char *dest_field = prepare_and_get_selected_itemfield(awr, ST_ML_AWAR_CQ_DEST_FIELD, data->gb_main, SPECIES_get_selector());
-    if (!dest_field) error = GB_await_error();
-
-    if (!error && !keep_old_reports) {
-        error = st_remove_entries(awr, data->gb_main, false);
-    }
-    if (!error) {
-        error = st_ml_check_sequence_quality(data->gb_main, tree_name, ali_name, data->colstat, data->filter, bucket_size, marked_only, report, dest_field);
-    }
-
-    free(ali_name);
+    GB_ERROR error = st_ml_check_sequence_quality(data->gb_main, tree_name, alignment_name, data->colstat, data->filter, bucket_size, marked_only, report, dest_field);
+    
+    free(dest_field);
+    free(alignment_name);
     free(tree_name);
 
     error = ta.close(error);
@@ -255,17 +172,9 @@ static void STAT_create_awars(AW_root *root, GBDATA *gb_main) {
     root->awar_string(ST_ML_AWAR_FILTER_ALIGNMENT)->map(AWAR_DEFAULT_ALIGNMENT);
 }
 
-static AWT_config_mapping_def chimera_config_mapping[] = {
-    { ST_ML_AWAR_CQ_MARKED_ONLY,  "marked_only" },
-    { ST_ML_AWAR_COLSTAT_NAME,    "colstat" },
-    { ST_ML_AWAR_FILTER_NAME,     "filter" },
-    { ST_ML_AWAR_CQ_BUCKET_SIZE,  "bucketsize" },
-    { ST_ML_AWAR_CQ_DEST_FIELD,   "destfield" }, // no need to store field-type here, because it is always GB_STRING
-    { ST_ML_AWAR_CQ_REPORT,       "report" },
-    { ST_ML_AWAR_CQ_KEEP_REPORTS, "keepold" },
-
-    { 0, 0 }
-};
+static void st_remove_entries(AW_window */*aww*/) {
+    // @@@ shall remove created all entries (from current alignment)
+}
 
 AW_window *STAT_create_chimera_check_window(AW_root *root, GBDATA *gb_main) {
     static AW_window_simple *aws = 0;
@@ -307,7 +216,7 @@ AW_window *STAT_create_chimera_check_window(AW_root *root, GBDATA *gb_main) {
         aws->at("sb");
         aws->create_input_field(ST_ML_AWAR_CQ_BUCKET_SIZE);
 
-        create_itemfield_selection_button(aws, FieldSelDef(ST_ML_AWAR_CQ_DEST_FIELD, gb_main, SPECIES_get_selector(), FIELD_FILTER_STRING_WRITEABLE, "report-field", SF_ALLOW_NEW), "dest");
+        create_selection_list_on_itemfields(gb_main, aws, ST_ML_AWAR_CQ_DEST_FIELD, true, 1 << GB_STRING, "dest", 0, SPECIES_get_selector(), 20, 10, SF_STANDARD, "SELECT_REPORT_FIELD");
 
         aws->at("report");
         {
@@ -318,20 +227,22 @@ AW_window *STAT_create_chimera_check_window(AW_root *root, GBDATA *gb_main) {
             aws->update_option_menu();
         }
 
-        aws->at("keep");
-        aws->create_toggle(ST_ML_AWAR_CQ_KEEP_REPORTS);
+        {                                           // @@@ not implemented yet
+            aws->sens_mask(AWM_DISABLED);
 
-        aws->at("del");
-        aws->callback(makeWindowCallback(st_remove_entries_cb, gb_main));
-        aws->create_button("DEL_ENTRIES", "Remove them now!", "R");
+            aws->at("keep");
+            aws->create_toggle(ST_ML_AWAR_CQ_KEEP_REPORTS);
 
-        aws->button_length(10);
+            aws->at("del");
+            aws->callback(st_remove_entries);
+            aws->create_button("DEL_ENTRIES", "Remove them now!", "R");
+
+            aws->sens_mask(AWM_ALL);
+        }
+
         aws->at("GO");
         aws->callback(makeWindowCallback(st_check_cb, cb_data));
         aws->create_button("GO", "GO", "G");
-
-        aws->at("config");
-        AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "chimera", chimera_config_mapping);
     }
     return aws;
 }

@@ -22,8 +22,8 @@ DESCRIPTION	Scans PT_SERVER database for the nearest relatives
                 When you press the SEARCH button, the next relatives of the selected species are listed
                 in the Hits-box.
 
-                If you check 'Auto search on change' the search will start everytime the currently
-                selected species or any search-relevant parameter changes.
+                If you check 'Auto on selection change' the search will start everytime the currently
+                selected species changes.
 
                 Then number of species listed there is limited by the number given in
                 the 'Results' field. Enter 0 to get unlimited output.

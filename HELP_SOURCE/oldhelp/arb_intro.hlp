@@ -53,6 +53,6 @@ NOTES		A suffix typed or displayed in the 'Suffix' subwindow is used as
 
 EXAMPLES	None
 
-WARNINGS	The suffix of 'ARB' database files has to be '.arb'!
+WARNINGS	!!! The suffix of 'ARB' database files has to be '.arb'.!!!
 
 BUGS		No bugs known

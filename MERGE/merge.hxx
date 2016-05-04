@@ -25,9 +25,11 @@
 
 #define mg_assert(bed) arb_assert(bed)
 
-#define AWAR_MERGE_SAV "merge/"
-#define AWAR_MERGE_TMP "tmp/" AWAR_MERGE_SAV
+#define AWAR_MERGE_SAV     "merge/"
+#define AWAR_MERGE_SAV_SRC AWAR_MERGE_SAV "src/"
+#define AWAR_MERGE_SAV_DST AWAR_MERGE_SAV "dst/"
 
+#define AWAR_MERGE_TMP     "tmp/" AWAR_MERGE_SAV
 #define AWAR_MERGE_TMP_SRC AWAR_MERGE_TMP "src/"
 #define AWAR_MERGE_TMP_DST AWAR_MERGE_TMP "dst/"
 
@@ -54,6 +56,7 @@ AW_window *create_mg_check_fields_window(AW_root *aw_root);
 void MG_create_config_awar(AW_root *aw_root, AW_default aw_def);
 void MG_create_trees_awar(AW_root *aw_root, AW_default aw_def);
 void MG_create_extendeds_awars(AW_root *aw_root, AW_default aw_def);
+void MG_create_alignment_awars(AW_root *aw_root, AW_default aw_def);
 void MG_create_species_awars(AW_root *aw_root, AW_default aw_def);
 void MG_create_rename_awars(AW_root *aw_root, AW_default aw_def);
 

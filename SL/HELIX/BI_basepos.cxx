@@ -78,7 +78,7 @@ GB_ERROR BI_ecoli_ref::init(GBDATA *gb_main, char *alignment_name, char *ref_nam
         GBDATA *gb_ref_con   = GBT_find_SAI(gb_main, ref_name);
         if (!gb_ref_con) err = GBS_global_string("I cannot find the SAI '%s'", ref_name);
         else {
-            GBDATA *gb_ref   = GBT_find_sequence(gb_ref_con, alignment_name);
+            GBDATA *gb_ref   = GBT_read_sequence(gb_ref_con, alignment_name);
             if (!gb_ref) err = GBS_global_string("Your SAI '%s' has no sequence '%s/data'", ref_name, alignment_name);
             else {
                 const char *data = GB_read_char_pntr(gb_ref);

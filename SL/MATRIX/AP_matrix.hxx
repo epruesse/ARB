@@ -53,41 +53,26 @@ public:
 class AP_matrix : virtual Noncopyable {
     AP_FLOAT **m;
     long       size;
-public:
-    AP_matrix(long si);
-    ~AP_matrix();
-
-    void     set(int i, int j, AP_FLOAT val) { m[i][j] = val; };
-    AP_FLOAT get(int i, int j) { return m[i][j]; };
-
-    long get_size() const { return size; }
-};
-
-class AP_userdef_matrix : public AP_matrix { // derived from Noncopyable
-    char **x_description;                                                         // optional description, strdupped
-    char **y_description;
-    char  *awar_prefix;
+    char     **x_description;                                                     // optional description, strdupped
+    char     **y_description;
 
     void set_desc(char**& which_desc, int idx, const char *desc);
 
 public:
-    AP_userdef_matrix(long si, const char *awar_prefix_)
-        : AP_matrix(si),
-          x_description(NULL),
-          y_description(NULL),
-          awar_prefix(strdup(awar_prefix_))
-    {}
-    ~AP_userdef_matrix();
+    AP_matrix(long si);
+    ~AP_matrix();
 
+    void create_awars(AW_root *awr, const char *awar_prefix);
+    void read_awars(AW_root *awr, const char *awar_prefix);
     void normize();                                                                     // set average non diag element to 1.0 (only for described elements)
+    void create_input_fields(AW_window *aww, const char *awar_prefix);
 
     void set_x_description(int idx, const char *desc) { set_desc(x_description, idx, desc); }
     void set_y_description(int idx, const char *desc) { set_desc(y_description, idx, desc); }
     void set_descriptions(int idx, const char *desc) { set_x_description(idx, desc); set_y_description(idx, desc); }
 
-    void create_awars(AW_root *awr);
-    void update_from_awars(AW_root *awr);
-    void create_input_fields(AW_window *aww);
+    void     set(int i, int j, AP_FLOAT val) { m[i][j] = val; };
+    AP_FLOAT get(int i, int j) { return m[i][j]; };
 };
 
 #else

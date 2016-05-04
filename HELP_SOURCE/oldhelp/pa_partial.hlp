@@ -1,57 +1,29 @@
 #Please insert up references in the next lines (line starts with keyword UP)
 UP	arb.hlp
 UP	glossary.hlp
+UP	pa_quick.hlp
+UP	pa_add.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
 SUB	partial_sequences.hlp
-SUB	pa_quick.hlp
-SUB	pa_add.hlp
 
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Add marked partial species
 
-OCCURRENCE	ARB_PARSIMONY/Tree/Add Species to Tree/Add Marked Partial Species
+OCCURRENCE	ARB_PARRSIMONY/Tree/Add species to tree
 
-DESCRIPTION     Use this to add sequences with partial sequence data into an existing tree.
-                The current tree topology will not be optimized after insertion.
+DESCRIPTION     Use this to add partial sequences into an existing tree.
 
-                The branchlengths of the added partial sequences represent the
-                number of (weighted) mutations against the full sequence.
+NOTES		The branchlengths of the added partial sequences represent the
+                number of mutations against the full sequence.
 
-                Only the overlapping part of both sequences is taken into account and
-                the distance to the FLS will be weighted by the length of the overlap.
+                Adding species using this function marks them as "partial sequence" if
+                they have no 'ARB_partial' entry yet. Otherwise insertion is aborted.
 
-                Different partial sequences will never attract each other, simply because
-                they are not considered as 'possible neighbours' (see also section about
-                partials in LINK{pa_quick.hlp}).
-
-                As for non-partial sequences, when using a filter only the unfiltered
-                positions will be taken into account to calculate the number of mutations.
-
-                The insertion order has no effect on the resulting placement of the
-                partial sequences. For each sequence, the best matching
-                full-length sequence (FLS) is searched and afterwards all partial
-                sequences are placed next to their detected FLS.
-
-                Often partial sequences have equal distances to more than one FLS. This happens
-                whenever two FLS only differ in alignment regions, where the partial sequence has
-                no data. In that case a warning is printed ("Insertion of '<name>' is ambiguous")
-                and one of the ambiguous insertion possibilities is chosen.
-                This is more likely to happen for low amounts of sequence data (i.e. very short sequences).
-                Consider to remove these species from the tree, as their placement might be
-                meaningless or misleading.
-
-NOTES		Adding species using this function marks them as "partial sequence" if
+                All species already in tree are marked as "full sequence" if
                 they have no 'ARB_partial' entry yet.
-                If they were already marked as FLS, the insertion is aborted with an error.
-
-                All species already in tree, when calling this function, will be marked
-                as FLS, if they have no 'ARB_partial' entry yet.
-
-                Species with partial sequences have the field "ARB_partial" set to 1, species
-                with FLS have the field "ARB_partial" set to 0.
 
 EXAMPLES	None
 

@@ -10,7 +10,7 @@ SUB	sel_box.hlp
 #************* Title of helpfile !! and start of real helpfile strunk********
 TITLE		Potential Probe Targets
 
-OCCURRENCE	ARB_NT/Probes/Design Probes/RESULT
+OCCURRENCE	ARB_NT/ETC/Probe Design/PROBE DESIGN/PD RESULT
 
 DESCRIPTION	The 'PD RESULT' window is displayed automatically after
 		finishing the probe target searching or manually by pressing the

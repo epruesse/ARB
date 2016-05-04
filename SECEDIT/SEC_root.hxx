@@ -688,12 +688,6 @@ class SEC_root : virtual Noncopyable {
     short  bg_linewidth[SEC_GC_DATA_COUNT]; // ..linewidth for drawing background (index = gc)
     Vector center_char[SEC_GC_FONT_COUNT]; // correction vector to center the base character at its position (world coordinates)
 
-#if defined(ARB_MOTIF)
-    // see SEC_paint.cxx@LINE_THICKNESS
-    double skelThickWorld; // skeleton_thickness as world-size
-    double bondThickWorld; // bond_thickness as world-size
-#endif
-
     char *bg_color;       // only valid after paint (contains EDIT4 GCs), may be NULL
 
     Vector   *autoscroll;       // if non-zero, scroll canvas before next paint
@@ -854,10 +848,6 @@ public:
 
     // draw a annotation next to a base (only works after paint())
     void paintPosAnnotation(AW_device *device, int gc, size_t absPos, const char *text, bool lineToBase, bool boxText);
-
-#if defined(ARB_MOTIF)
-    double get_bondThickWorld() const { return bondThickWorld; }
-#endif
 };
 
 

@@ -20,11 +20,6 @@ const Vector   AW::ZeroVector(0, 0, 0);
 const double AW::Angle::rad2deg = 180/M_PI;
 const double AW::Angle::deg2rad = M_PI/180;
 
-const Angle AW::Eastwards (  0*Angle::deg2rad);
-const Angle AW::Southwards( 90*Angle::deg2rad);
-const Angle AW::Westwards (180*Angle::deg2rad);
-const Angle AW::Northwards(270*Angle::deg2rad);
-
 void LineVector::standardize() {
     // make diagonal positive (i.e. make it a Vector which contains width and height of a Rectangle)
     // this changes the start position to the upper-left corner
@@ -62,20 +57,6 @@ void Angle::recalcRadian() const {
 void Angle::recalcNormal() const {
     Normal = Vector(std::cos(Radian), std::sin(Radian));
     aw_assert(Normal.is_normalized());
-}
-
-Position Rectangle::nearest_corner(const Position& topos) const {
-    Position nearest = get_corner(0);
-    double   mindist = Distance(nearest, topos);
-    for (int i = 1; i<4; ++i) {
-        Position c    = get_corner(i);
-        double   dist = Distance(c, topos);
-        if (dist<mindist) {
-            mindist = dist;
-            nearest = c;
-        }
-    }
-    return nearest;
 }
 
 // --------------------------------------------------------------------------------
@@ -146,4 +127,3 @@ namespace AW {
         return nearest;
     }
 };
-

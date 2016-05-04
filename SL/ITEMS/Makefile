@@ -8,7 +8,7 @@ $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .cxx.o:
-	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE) $<
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(OBJECTS) *.a
@@ -64,13 +64,10 @@ changekey.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 item_sel_list.o: item_sel_list.h
 item_sel_list.o: items.h
-item_sel_list.o: $(ARBHOME)/INCLUDE/ad_cb.h
-item_sel_list.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/ad_prot.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/arb_assert.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/arb_core.h
-item_sel_list.o: $(ARBHOME)/INCLUDE/arb_defs.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/arb_error.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/arb_global_defs.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/arb_msg.h
@@ -80,15 +77,11 @@ item_sel_list.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/arbdbt.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/arbtools.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/attributes.h
-item_sel_list.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-item_sel_list.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
-item_sel_list.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-item_sel_list.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 item_sel_list.o: $(ARBHOME)/INCLUDE/cb.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/cb_base.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/cbtypes.h
@@ -99,29 +92,7 @@ item_sel_list.o: $(ARBHOME)/INCLUDE/gccver.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/smartptr.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/static_assert.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/test_global.h
-item_sel_list.o: $(ARBHOME)/INCLUDE/test_unit.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/ttypes.h
-
-itemtools.o: items.h
-itemtools.o: $(ARBHOME)/INCLUDE/arb_assert.h
-itemtools.o: $(ARBHOME)/INCLUDE/arb_core.h
-itemtools.o: $(ARBHOME)/INCLUDE/arb_msg.h
-itemtools.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-itemtools.o: $(ARBHOME)/INCLUDE/arbtools.h
-itemtools.o: $(ARBHOME)/INCLUDE/attributes.h
-itemtools.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-itemtools.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-itemtools.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-itemtools.o: $(ARBHOME)/INCLUDE/cb.h
-itemtools.o: $(ARBHOME)/INCLUDE/cb_base.h
-itemtools.o: $(ARBHOME)/INCLUDE/cbtypes.h
-itemtools.o: $(ARBHOME)/INCLUDE/cxxforward.h
-itemtools.o: $(ARBHOME)/INCLUDE/dupstr.h
-itemtools.o: $(ARBHOME)/INCLUDE/gccver.h
-itemtools.o: $(ARBHOME)/INCLUDE/smartptr.h
-itemtools.o: $(ARBHOME)/INCLUDE/static_assert.h
-itemtools.o: $(ARBHOME)/INCLUDE/test_global.h
-itemtools.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 species.o: item_sel_list.h
 species.o: items.h

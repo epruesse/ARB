@@ -13,7 +13,6 @@
 #include "gb_localdata.h"
 
 #include <adGene.h>
-#include "TreeNode.h"
 #include <ad_cb.h>
 
 #include <arb_defs.h>
@@ -22,7 +21,6 @@
 #include <aw_awar_defs.hxx>
 
 #include <cctype>
-#include <cmath>
 #include <algorithm>
 
 // hook for 'export_sequence'
@@ -105,7 +103,7 @@ static int gbl_param_bit(const char *param_name, int def, const char *help_text,
 #define GBL_PARAM_TYPE(type, var, param_name, def, help_text) type  var = gbl_param_##type(param_name, def, help_text, &params, &var)
 #define GBL_STRUCT_PARAM_TYPE(type, strct, member, param_name, def, help_text) strct.member = gbl_param_##type(param_name, def, help_text, &params, &strct.member)
 
-// use PARAM_IF for parameters whose existence depends on condition 
+// use PARAM_IF for parameters whose existance depends on condition 
 #define PARAM_IF(cond,param) ((cond) ? (param) : NULL)
 
 #define GBL_PARAM_INT(var,    param_name, def, help_text) GBL_PARAM_TYPE(int,    var, param_name, def, help_text)
@@ -1394,7 +1392,7 @@ static void free_cached_taxonomy(cached_taxonomy *ct) {
     free(ct);
 }
 
-static void build_taxonomy_rek(TreeNode *node, GB_HASH *tax_hash, const char *parent_group, int *group_counter) {
+static void build_taxonomy_rek(GBT_TREE *node, GB_HASH *tax_hash, const char *parent_group, int *group_counter) {
     if (node->is_leaf) {
         GBDATA *gb_species = node->gb_node;
         if (gb_species) { // not zombie
@@ -1415,13 +1413,13 @@ static void build_taxonomy_rek(TreeNode *node, GB_HASH *tax_hash, const char *pa
             hash_binary_entry = GBS_global_string(">>%p", node->gb_node);
             GBS_write_hash(tax_hash, hash_binary_entry, (long)strdup(hash_entry));
 
-            build_taxonomy_rek(node->get_leftson(), tax_hash, hash_entry, group_counter);
-            build_taxonomy_rek(node->get_rightson(), tax_hash, hash_entry, group_counter);
+            build_taxonomy_rek(node->leftson, tax_hash, hash_entry, group_counter);
+            build_taxonomy_rek(node->rightson, tax_hash, hash_entry, group_counter);
             free(hash_entry);
         }
         else {
-            build_taxonomy_rek(node->get_leftson(), tax_hash, parent_group, group_counter);
-            build_taxonomy_rek(node->get_rightson(), tax_hash, parent_group, group_counter);
+            build_taxonomy_rek(node->leftson, tax_hash, parent_group, group_counter);
+            build_taxonomy_rek(node->rightson, tax_hash, parent_group, group_counter);
         }
     }
 }
@@ -1535,7 +1533,7 @@ static cached_taxonomy *get_cached_taxonomy(GBDATA *gb_main, const char *tree_na
     }
     cached = GBS_read_hash(cached_taxonomies, tree_name);
     if (!cached) {
-        TreeNode *tree    = GBT_read_tree(gb_main, tree_name, new SimpleRoot);
+        GBT_TREE *tree    = GBT_read_tree(gb_main, tree_name, GBT_TREE_NodeFactory());
         if (!tree) *error = GB_await_error();
         else     *error   = GBT_link_tree(tree, gb_main, false, 0, 0);
 
@@ -1588,7 +1586,7 @@ static cached_taxonomy *get_cached_taxonomy(GBDATA *gb_main, const char *tree_na
             }
         }
 
-        destroy(tree);
+        delete tree;
     }
 
     if (!*error) {
@@ -1768,7 +1766,7 @@ static GB_ERROR gbl_sequence(GBL_command_arguments *args) {
 
                 if (!use) error = GB_await_error();
                 else {
-                    GBDATA *gb_seq = GBT_find_sequence(args->get_ref(), use);
+                    GBDATA *gb_seq = GBT_read_sequence(args->get_ref(), use);
 
                     if (gb_seq) PASS_2_OUT(args, GB_read_string(gb_seq));
                     else        COPY_2_OUT(args, ""); // if current alignment does not exist -> return empty string
@@ -1861,9 +1859,8 @@ static GB_ERROR gbl_format_sequence(GBL_command_arguments *args) {
     GBL_PARAM_UINT  (width,    "width=",    50,   "Sequence width (bases only)");
 
     // "format_sequence"-only
-    GBL_PARAM_BIT (numleft,  PARAM_IF(!simple_format, "numleft"),  0,  "Numbers left of sequence");
-    GBL_PARAM_INT (numright, PARAM_IF(!simple_format, "numright="), 0, "Numbers right of sequence (specifies width; -1 -> auto-width)");
-    GBL_PARAM_UINT(gap,      PARAM_IF(!simple_format, "gap="),     10, "Insert ' ' every n sequence characters");
+    GBL_PARAM_BIT (numleft, PARAM_IF(!simple_format, "numleft"), 0,  "Numbers left of sequence");
+    GBL_PARAM_UINT(gap,     PARAM_IF(!simple_format, "gap="),    10, "Insert ' ' every n sequence characters");
 
     // "format"-only
     GBL_PARAM_STRING(nl,      PARAM_IF(simple_format, "nl="),      " ",  "Break line at characters 'str' if wrapping needed");
@@ -1872,23 +1869,15 @@ static GB_ERROR gbl_format_sequence(GBL_command_arguments *args) {
     GBL_TRACE_PARAMS(args);
     GBL_END_PARAMS;
 
-    if (width == 0)               return "Illegal zero width";
-    if (numleft && numright != 0) return "You may only specify 'numleft' OR 'numright',  not both.";
-
     for (ic = 0; ic<args->input.size(); ++ic) {
         {
             const char *src           = args->input.get(ic);
             size_t      data_size     = strlen(src);
             size_t      needed_size;
-            size_t      line_size;
-            int         numright_used = numright;
-
-            if (numright_used<0) {
-                numright_used = calc_digits(data_size);
-            }
 
             {
                 size_t lines;
+                size_t line_size;
 
                 if (simple_format) {
                     lines     = data_size/2 + 1; // worst case
@@ -1898,11 +1887,6 @@ static GB_ERROR gbl_format_sequence(GBL_command_arguments *args) {
                     size_t gapsPerLine = (width-1)/gap;
                     lines              = data_size/width+1;
                     line_size          = tab + width + gapsPerLine + 1;
-
-                    if (numright_used) {
-                        // add space for numright
-                        line_size += numright_used+1; // plus space
-                    }
                 }
 
                 needed_size = lines*line_size + firsttab + 1 + 10;
@@ -1993,9 +1977,8 @@ static GB_ERROR gbl_format_sequence(GBL_command_arguments *args) {
                 }
                 else {
                     // "format_sequence" with gaps and numleft
-                    char       *format        = 0;
-                    const char *src_start     = src;
-                    const char *dst_linestart = dst;
+                    char       *format    = 0;
+                    const char *src_start = src;
 
                     if (numleft) {
                         /* Warning: Be very careful, when you change format strings here!
@@ -2033,25 +2016,8 @@ static GB_ERROR gbl_format_sequence(GBL_command_arguments *args) {
                         dst += take;
                         src += take;
 
-                        if (numright_used) {
-                            if (rest_data) *dst++ = ' ';
-                            else {
-                                // fill in missing spaces for proper alignment of numright
-                                size_t currSize = dst-dst_linestart;
-                                size_t wantSize = line_size-numright_used-1;
-                                if (currSize<wantSize) {
-                                    size_t spaces  = wantSize-currSize;
-                                    memset(dst, ' ', spaces);
-                                    dst           += spaces;
-                                }
-                            }
-                            unsigned int num  = (src-src_start);
-                            dst              += sprintf(dst, "%*u", numright_used, num);
-                        }
-
                         if (rest_data>0) {
                             *dst++ = '\n';
-                            dst_linestart = dst;
                             if (numleft) {
                                 unsigned int num  = (src-src_start)+1; // this goes to the '%u' (see comment above)
                                 dst              += sprintf(dst, format, num);
@@ -2314,7 +2280,7 @@ static char *filter_seq(const char *seq, const char *filter, size_t flen, void *
     if (!flen) flen = strlen(filter);
     size_t mlen     = slen<flen ? slen : flen;
 
-    GBS_strstruct *out = GBS_stropen(mlen+1); // +1 to avoid invalid, zero-length buffer
+    GBS_strstruct *out = GBS_stropen(mlen);
 
     const char *charset;
     int         include;

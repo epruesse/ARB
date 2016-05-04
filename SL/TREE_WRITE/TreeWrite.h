@@ -19,7 +19,7 @@
 #endif
 
 typedef void        (*TREE_make_node_text_init)(GBDATA *gb_main);
-typedef const char *(*TREE_make_node_text)     (GBDATA *gb_main, GBDATA * gbd, enum NDS_Type mode, TreeNode *species, const char *tree_name);
+typedef const char *(*TREE_make_node_text)     (GBDATA *gb_main, GBDATA * gbd, enum NDS_Type mode, GBT_TREE *species, const char *tree_name);
 
 struct TREE_node_text_gen {
     TREE_make_node_text_init init;                  // e.g. make_node_text_init() from AWT
@@ -42,7 +42,7 @@ enum TREE_node_quoting {
 
 GB_ERROR TREE_write_Newick(GBDATA *gb_main, const char *tree_name, const TREE_node_text_gen *node_gen, bool save_branchlengths, bool save_bootstraps, bool save_groupnames, bool pretty, TREE_node_quoting quoteMode, const char *path);
 GB_ERROR TREE_write_XML(GBDATA *gb_main, const char *db_name, const char *tree_name, const TREE_node_text_gen *node_gen, bool skip_folded, const char *path);
-GB_ERROR TREE_export_tree(GBDATA *gb_main, FILE *out, TreeNode *tree, bool triple_root, bool export_branchlens, bool use_double_quotes);
+GB_ERROR TREE_export_tree(GBDATA *gb_main, FILE *out, GBT_TREE *tree, bool triple_root, bool export_branchlens, bool use_double_quotes);
 
 #else
 #error TreeWrite.h included twice

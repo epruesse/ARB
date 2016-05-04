@@ -9,19 +9,13 @@ UP      security.hlp
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE           Write to fields of Listed
+TITLE           WRITE TO FIELDS OF LISTED SPECIES/GENES
 
-OCCURRENCE      ARB_NT/Species/Search and Query/Write to fields of Listed
-                ARB_NT/Genome/Search and query/Write to fields of Listed
-                ARB_NT/Genome/Experiment/Search and query/Write to fields of Listed
+OCCURRENCE      ARB_NT/Species/Search: WRITE TO FIELDS OF LISTED
+                ARB_NT/Genes/Search: WRITE TO FIELDS OF LISTED
 
-DESCRIPTION     Writes or appends the same value to the selected field of
+DESCRIPTION     Writes the same text or integers to the selected fields of
                 all listed species/genes.
-
-                If the target field is not a text field, a type conversion
-                takes place. If that conversion results in a different value
-                than the provided one, an error will occur.
-                You may allow lossy conversion by checking the switch.
 
 NOTES           A protection level has to be selected from the Protection
                 menu of the main window (ARB_NT/Protection) equal or higher
@@ -32,20 +26,20 @@ NOTES           A protection level has to be selected from the Protection
 EXAMPLES
 
                 1. Write a date of sequence modification (03.27.95) to the
-                field 'date' of all listed species (overwriting
-                former entries of this field):
+                fields 'date' of all listed species and replace
+                former entries of these fields:
 
-                        Select 'Field':   'date'
-                        Type 'value':     '03.27.95'
-                        Press:            'WRITE'
+                        Select 'Field' by pressing:     'date'
+                        Type 'Text or integer':         '03.27.95'
+                        Press:                          'WRITE'
 
-                2. Add the initials of the modifying person (e.g. "MP") to the
+                2. Add the initials of the modifying person (OS) to the
                    entries stored in the fields 'date' of all listed
                    species:
 
-                        Select 'Field':    'date'
-                        Type 'value':      'MP'
-                        Press:             'APPEND'
+                        Select 'Field' by pressing:     'date'
+                        Type 'Text or integer':         'OS'
+                        Press:                          'APPEND'
 
 
 WARNINGS        Except for the 'name' field (the identifier), there are no different protection

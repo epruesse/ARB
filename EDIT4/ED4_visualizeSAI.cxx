@@ -4,7 +4,7 @@
 //   Purpose   : Visualize sequence associated information (SAI)   //
 //               in the Editor                                     //
 //                                                                 //
-//   Coded by Yadhu Kumar                                          //
+//   Coded by Yadhu Kumar (yadhu@mikro.biologie.tu-muenchen.de)    //
 //   Institute of Microbiology (Technical University Munich)       //
 //   http://www.arb-home.de/                                       //
 //                                                                 //
@@ -44,6 +44,9 @@
 #define AWAR_SAI_CLR_TRANS_TAB_NEW_NAME "tmp/sai/clr_trans_tab_new_name" // textfield to enter translation table name
 #define AWAR_SAI_CLR                    "tmp/sai/color_0" // the definition of the current translation table (number runs from 0 to 9)
 #define AWAR_SAI_CLR_COUNT              10
+
+#define ED4_VIS_CREATE  1
+#define ED4_VIS_COPY    0
 
 // --------------------------------------------------------------------------------
 
@@ -116,7 +119,7 @@ static bool colorTransTable_exists(AW_root *awr, const char *name) {
     return searchFrom != 0;
 }
 
-static void colorDefChanged_callback(AW_root *awr, int awarNo) {
+static void colorDefChanged_callback(AW_root *awr, AW_CL cl_awarNo) {
     clrDefinitionsChanged = true;
 
     if (!in_colorDefChanged_callback) { // this callback is special, because it may change all other color defs
@@ -138,6 +141,7 @@ static void colorDefChanged_callback(AW_root *awr, int awarNo) {
                         free(awarString_next);
                     }
 
+                    int   awarNo     = (int)cl_awarNo;
                     char *awarString = awr->awar_string(getAwarName(awarNo))->read_string();
                     for (int c=0; awarString[c]; ++c) {
                         charUsed[(unsigned char)awarString[c]] = awarNo;
@@ -310,8 +314,9 @@ static void saiChanged_callback(AW_root *awr) {
     free(saiName);
 }
 
-static void update_ClrTransTabNamesList_cb(AW_root *awr, AW_selection_list *colorTransList) {
-    char *clrTransTabNames = awr->awar(AWAR_SAI_CLR_TRANS_TAB_NAMES)->read_string();
+static void update_ClrTransTabNamesList_cb(AW_root *awr, AW_CL cl_colorTransList) {
+    AW_selection_list *colorTransList   = (AW_selection_list*)cl_colorTransList;
+    char              *clrTransTabNames = awr->awar(AWAR_SAI_CLR_TRANS_TAB_NAMES)->read_string();
 
     colorTransList->clear();
 
@@ -381,7 +386,7 @@ void ED4_createVisualizeSAI_Awars(AW_root *aw_root, AW_default aw_def) {  // ---
 
     for (int i=0; i<10; i++) { // initializing 10 color definition string AWARS
        AW_awar *def_awar = aw_root->awar_string(getAwarName(i), "", aw_def);
-       def_awar->add_callback(makeRootCallback(colorDefChanged_callback, i));
+       def_awar->add_callback(colorDefChanged_callback, (AW_CL)i);
     }
     aw_root->awar(AWAR_SAI_ENABLE)         ->add_callback(setVisualizeSAI_cb);
     aw_root->awar(AWAR_SAI_ALL_SPECIES)    ->add_callback(setVisualizeSAI_options_cb);
@@ -408,50 +413,50 @@ void ED4_createVisualizeSAI_Awars(AW_root *aw_root, AW_default aw_def) {  // ---
     set_autoselect_cb(aw_root);
 }
 
-enum CreationMode {
-    ED4_VIS_CREATE, // creates a new (empty) color translation table
-    ED4_VIS_COPY,   // copies the selected color translation table
-};
+static void createCopyClrTransTable(AW_window *aws, AW_CL cl_mode) {
+    // mode = ED4_VIS_COPY   copies the selected color translation table
+    // mode = ED4_VIS_CREATE creates a new (empty) color translation table
 
-static void createCopyClrTransTable(AW_window *aws, CreationMode mode) {
-    AW_root *aw_root = aws->get_root();
-
-    char *newClrTransTabName = 0;
-    char *clrTabSourceName   = 0;
+    int      mode               = (int)cl_mode;
+    AW_root *aw_root            = aws->get_root();
+    char    *newClrTransTabName = 0;
+    char    *clrTabSourceName   = 0;
 
     switch (mode) {
-        case ED4_VIS_CREATE:
-            newClrTransTabName = GBS_string_2_key(aw_root->awar(AWAR_SAI_CLR_TRANS_TAB_NEW_NAME)->read_char_pntr());
+    case ED4_VIS_CREATE:
+        newClrTransTabName = GBS_string_2_key(aw_root->awar(AWAR_SAI_CLR_TRANS_TAB_NEW_NAME)->read_char_pntr());
 
-            if (strcmp(newClrTransTabName, "__") == 0) { // user entered nothing
-                aw_message("Please enter a translation table name");
-            }
-            else if (colorTransTable_exists(aw_root, newClrTransTabName)) {
-                aw_message(GBS_global_string("Color translation table '%s' already exists.", newClrTransTabName));
-            }
-            else {
-                addOrUpdateTransTable(aw_root, newClrTransTabName, "", true);
-            }
-            break;
+        if (strcmp(newClrTransTabName, "__") == 0) { // user entered nothing
+            aw_message("Please enter a translation table name");
+        }
+        else if (colorTransTable_exists(aw_root, newClrTransTabName)) {
+            aw_message(GBS_global_string("Color translation table '%s' already exists.", newClrTransTabName));
+        }
+        else {
+            addOrUpdateTransTable(aw_root, newClrTransTabName, "", true);
+        }
+        break;
 
-        case ED4_VIS_COPY:
-            newClrTransTabName = GBS_string_2_key(aw_root->awar(AWAR_SAI_CLR_TRANS_TAB_NEW_NAME)->read_char_pntr());
-            clrTabSourceName   = aw_root->awar(AWAR_SAI_CLR_TRANS_TABLE)->read_string();
+    case ED4_VIS_COPY:
+        newClrTransTabName = GBS_string_2_key(aw_root->awar(AWAR_SAI_CLR_TRANS_TAB_NEW_NAME)->read_char_pntr());
+        clrTabSourceName   = aw_root->awar(AWAR_SAI_CLR_TRANS_TABLE)->read_string();
 
-            if (!clrTabSourceName[0]) {
-                aw_message("Please select a valid Color Translation Table to COPY!");
-            }
-            else if (colorTransTable_exists(aw_root, newClrTransTabName)) {
-                aw_message(GBS_global_string("Color Translation Table \"%s\" EXISTS! Please enter a different name.", newClrTransTabName));
-            }
-            else {
-                char *old_def = aw_root->awar(getClrDefAwar(clrTabSourceName))->read_string();
-                addOrUpdateTransTable(aw_root, newClrTransTabName, old_def, true);
-                free(old_def);
-            }
-            break;
+        if (!clrTabSourceName[0]) {
+            aw_message("Please select a valid Color Translation Table to COPY!");
+        }
+        else if (colorTransTable_exists(aw_root, newClrTransTabName)) {
+            aw_message(GBS_global_string("Color Translation Table \"%s\" EXISTS! Please enter a different name.", newClrTransTabName));
+        }
+        else {
+            char *old_def = aw_root->awar(getClrDefAwar(clrTabSourceName))->read_string();
+            addOrUpdateTransTable(aw_root, newClrTransTabName, old_def, true);
+            free(old_def);
+        }
+        break;
+
+    default:
+        break;
     }
-
     free(clrTabSourceName);
     free(newClrTransTabName);
 }
@@ -489,7 +494,7 @@ static AW_selection_list *buildClrTransTabNamesList(AW_window *aws) {
     AW_root           *awr            = aws->get_root();
     AW_selection_list *colorTransList = aws->create_selection_list(AWAR_SAI_CLR_TRANS_TABLE, true);
 
-    update_ClrTransTabNamesList_cb(awr, colorTransList);
+    update_ClrTransTabNamesList_cb(awr, (AW_CL)colorTransList);
 
     return colorTransList;
 }
@@ -596,7 +601,7 @@ static AW_window *create_copyColorTranslationTable_window(AW_root *aw_root) { //
     aws->load_xfig("ad_al_si.fig");
 
     aws->at("close");
-    aws->callback(AW_POPDOWN);
+    aws->callback((AW_CB0)AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("label");
@@ -606,7 +611,7 @@ static AW_window *create_copyColorTranslationTable_window(AW_root *aw_root) { //
     aws->create_input_field(AWAR_SAI_CLR_TRANS_TAB_NEW_NAME, 15);
 
     aws->at("ok");
-    aws->callback(makeWindowCallback(createCopyClrTransTable, ED4_VIS_COPY));
+    aws->callback(createCopyClrTransTable, (AW_CL)ED4_VIS_COPY);
     aws->create_button("GO", "GO", "G");
 
     return (AW_window *)aws;
@@ -618,7 +623,7 @@ static AW_window *create_createColorTranslationTable_window(AW_root *aw_root) { 
     aws->load_xfig("ad_al_si.fig");
 
     aws->at("close");
-    aws->callback(AW_POPDOWN);
+    aws->callback((AW_CB0)AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("label");
@@ -628,7 +633,7 @@ static AW_window *create_createColorTranslationTable_window(AW_root *aw_root) { 
     aws->create_input_field(AWAR_SAI_CLR_TRANS_TAB_NEW_NAME, 15);
 
     aws->at("ok");
-    aws->callback(makeWindowCallback(createCopyClrTransTable, ED4_VIS_CREATE));
+    aws->callback(createCopyClrTransTable, (AW_CL)ED4_VIS_CREATE);
     aws->create_button("GO", "GO", "G");
 
     return (AW_window *)aws;
@@ -690,6 +695,7 @@ static AW_window *create_editColorTranslationTable_window(AW_root *aw_root) { //
 AW_window *ED4_createVisualizeSAI_window(AW_root *aw_root) {
     static AW_window_simple *aws = 0;
     if (!aws) {
+
         aws = new AW_window_simple;
 
         aws->init(aw_root, "VISUALIZE_SAI", "Visualize SAIs");
@@ -700,7 +706,7 @@ AW_window *ED4_createVisualizeSAI_window(AW_root *aw_root) {
         aws->create_button("HELP", "HELP", "H");
 
         aws->at("close");
-        aws->callback(AW_POPDOWN);
+        aws->callback((AW_CB0)AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
 
         aws->at("enable");
@@ -718,19 +724,19 @@ AW_window *ED4_createVisualizeSAI_window(AW_root *aw_root) {
 
         aws->at("edit");
         aws->button_length(10);
-        aws->callback(create_editColorTranslationTable_window);
+        aws->callback(AW_POPUP, (AW_CL)create_editColorTranslationTable_window, 0);
         aws->create_button("EDIT", "EDIT");
 
         aws->at("create");
-        aws->callback(create_createColorTranslationTable_window);
+        aws->callback(AW_POPUP, (AW_CL)create_createColorTranslationTable_window, 0);
         aws->create_button("CREATE", "CREATE");
 
         aws->at("copy");
-        aws->callback(create_copyColorTranslationTable_window);
+        aws->callback(AW_POPUP, (AW_CL)create_copyColorTranslationTable_window, 0);
         aws->create_button("COPY", "COPY");
 
         aws->at("delete");
-        aws->callback(deleteColorTranslationTable);
+        aws->callback((AW_CB1)deleteColorTranslationTable, 0);
         aws->create_button("DELETE", "DELETE");
 
         aws->at("marked");
@@ -740,7 +746,7 @@ AW_window *ED4_createVisualizeSAI_window(AW_root *aw_root) {
         aws->update_toggle_field();
 
         AW_awar *trans_tabs = aw_root->awar(AWAR_SAI_CLR_TRANS_TAB_NAMES);
-        trans_tabs->add_callback(makeRootCallback(update_ClrTransTabNamesList_cb, clrTransTableLst));
+        trans_tabs->add_callback(update_ClrTransTabNamesList_cb, (AW_CL)clrTransTableLst);
         trans_tabs->touch();        // force update
     }
     aws->show();

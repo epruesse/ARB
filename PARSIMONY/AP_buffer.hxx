@@ -11,277 +11,152 @@
 #ifndef AP_BUFFER_HXX
 #define AP_BUFFER_HXX
 
-#ifndef AP_SEQUENCE_HXX
-#include <AP_sequence.hxx>
-#endif
-#ifndef ARB_FORWARD_LIST_H
-#include <arb_forward_list.h>
-#endif
-#ifndef _GLIBCXX_SET
-#include <set>
+#ifndef AP_TREE_HXX
+#include <AP_Tree.hxx>
 #endif
 
-/* AP_STACK        Stack container
+/* AP_STACK        dynamischer Stack fuer void *
+ * AP_LIST         allgemeine doppelt verketteten Liste
  *
- * -- buffers
+ * -- Pufferstrukturen
  *
- * NodeState  holds (partial) state of AP_tree_nlen
+ * AP_tree_buffer  Struktur die im AP_tree gepuffert wird
  *
- * -- used stacks
+ * -- spezielle stacks ( um casts zu vermeiden )
  *
- * StateStack      stack containing NodeState* (each AP_tree_nlen contains one)
- * NodeStack       stack containing AP_tree_nlen* (NodeStack of current frame is member of AP_main)
- * FrameStack      stack containing NodeStacks (member of AP_main, stores previous NodeStack frames)
+ * AP_tree_stack   Stack fuer AP_tree_buffer *
+ * AP_main_stack   Stack fuer AP_tree *
+ * AP_main_list    Liste fuer AP_main_buffer
  */
 
-template <typename ELEM>
-struct AP_STACK : public arb_forward_list<ELEM*> {
-    typedef arb_forward_list<ELEM*>       BASE;
-    typedef typename BASE::iterator       iterator;
-    typedef typename BASE::const_iterator const_iterator;
 
-    void push(ELEM *element) {
-        //! add 'element' to top of stack
-        BASE::push_front(element);
-    }
-    void shift(ELEM *element) {
-        //! add 'element' to bottom of stack
-#if defined(Cxx11)
-        // uses forward_list
-        if (BASE::empty()) {
-            push(element);
-        }
-        else {
-            iterator i = BASE::begin();
-            iterator n = i;
-            while (true) {
-                if (++n == BASE::end()) {
-                    BASE::insert_after(i, element);
-                    break;
-                }
-                i = n;
-            }
-        }
-#else
-        // uses list
-        BASE::push_back(element);
-#endif
-    }
-    ELEM *pop() {
-        if (BASE::empty()) return NULL;
+struct AP_STACK_ELEM {
+    struct AP_STACK_ELEM * next;
+    void *                 node;
+};
 
-        ELEM *result = top();
-        BASE::pop_front();
-        return result;
-    }
+class AP_STACK : virtual Noncopyable { // @@@ make typesafe (use template)
+    struct AP_STACK_ELEM * first;
+    struct AP_STACK_ELEM * pointer;
+    unsigned long          stacksize;
+    unsigned long          max_stacksize;
 
-    ELEM *top() {
-        ap_assert(!BASE::empty());
-        return BASE::front();
-    }
-    const ELEM *top() const {
-        ap_assert(!BASE::empty());
-        return BASE::front();
-    }
+public:
+    AP_STACK();
+    virtual ~AP_STACK();
 
-    size_t count_elements() const {
-#if defined(Cxx11)
-        size_t s = 0;
-        for (const_iterator i = BASE::begin(); i != BASE::end(); ++i) ++s;
-        return s;
-#else // !defined(Cxx11)
-        return BASE::size();
-#endif
-    }
+    void           push(void * element);
+    void          *pop();
+    void           clear();
+    void           get_init();
+    void          *get();
+    void          *get_first();
+    unsigned long  size();
+};
+
+// ----------------
+//      AP_LIST
+
+struct AP_list_elem {
+    AP_list_elem * next;
+    AP_list_elem * prev;
+    void *         node;
+};
+
+class AP_LIST : virtual Noncopyable {
+    unsigned int  list_len;
+    unsigned int  akt;
+    AP_list_elem *first, *last, *pointer;
+
+    AP_list_elem *element(void * elem);
+public:
+    AP_LIST()
+        : list_len(0),
+          akt(0),
+          first(NULL), 
+          last(NULL), 
+          pointer(NULL) 
+    {}
+
+    virtual ~AP_LIST() {}
+
+    int   len();
+    int   is_element(void * node);
+    int   eof();
+    void  insert(void * new_one);
+    void  append(void * new_one);
+    void  remove(void * object);
+    void  push(void *elem);
+    void *pop();
+    void  clear();
 };
 
 // ----------------------------------------------------------------
 //      special buffer-structures for AP_tree and AP_tree_edge
 
-#if defined(DEBUG)
-#define PROVIDE_PRINT
-#endif
+class  AP_tree_edge;                                // defined in ap_tree_nlen.hxx
+struct AP_tree_buffer;
 
-#if defined(PROVIDE_PRINT)
-#include <ostream>
-#endif
+struct AP_tree_edge_data
+{
+    AP_FLOAT parsValue[3];                          // the last three parsimony values (0=lowest 2=highest)
+    int      distance;                              // the distance of the last insertion
+};
 
 
-class AP_tree_edge; // defined in ap_tree_nlen.hxx
+struct AP_tree_buffer {
+    unsigned long  controll;                        // used for internal buffer check
+    unsigned int   count;                           // counts how often the entry is buffered
+    AP_STACK_MODE  mode;
+    AP_sequence   *sequence;
+    AP_FLOAT       mutation_rate;
+    double         leftlen, rightlen;
+    AP_tree       *father;
+    AP_tree       *leftson;
+    AP_tree       *rightson;
+    AP_tree_root  *root;
+    GBDATA        *gb_node;
 
-enum AP_STACK_MODE {
-    NOTHING   = 0, // nothing to buffer in AP_tree node
-    STRUCTURE = 1, // only structure
-    SEQUENCE  = 2, // only sequence
-    BOTH      = 3, // sequence & treestructure is buffered
-    ROOT      = 7  // old root is buffered (includes BOTH)
+    int distance;                                   // distance to border (pushed with STRUCTURE!)
+
+    // data from edges:
+    AP_tree_edge      *edge[3];
+    int                edgeIndex[3];
+    AP_tree_edge_data  edgeData[3];
+
+    void print();
+};
+
+struct AP_tree_stack : public AP_STACK {
+    AP_tree_stack() {}
+    virtual ~AP_tree_stack() OVERRIDE {}
+    void  push(AP_tree_buffer *value) { AP_STACK::push((void *)value); }
+    AP_tree_buffer * pop() { return (AP_tree_buffer *) AP_STACK::pop(); }
+    AP_tree_buffer * get() { return (AP_tree_buffer *) AP_STACK::get(); }
+    AP_tree_buffer * get_first() { return (AP_tree_buffer *) AP_STACK::get_first(); }
+    void print();
 };
 
 class AP_tree_nlen;
-class AP_pars_root;
 
-typedef unsigned long Level;
-
-struct NodeState : virtual Noncopyable { // buffers previous states of AP_tree_nlen
-    Level         frameNr;  // state of AP_tree_nlen::remembered_for_frame at creation time of NodeState
-    AP_STACK_MODE mode;     // what has been stored?
-
-    // only defined if mode & SEQUENCE:
-    AP_sequence  *sequence; // if set -> NodeState is owner!
-    AP_FLOAT      mutation_rate;
-
-    // only defined if mode & STRUCTURE:
-    double        leftlen, rightlen;
-    AP_tree_nlen *father;
-    AP_tree_nlen *leftson;
-    AP_tree_nlen *rightson;
-    AP_pars_root *root;
-    GBDATA       *gb_node;
-    AP_tree_edge *edge[3];
-    int           edgeIndex[3];
-
-    // defined/restored if mode & (SEQUENCE|STRUCTURE): 
-    unsigned mark_sum;
-
-    void move_info_to(NodeState& target, AP_STACK_MODE what);
-
-#if defined(PROVIDE_PRINT)
-    void print(std::ostream& out, int indentLevel = 0) const;
-#endif
-
-    explicit NodeState(Level frame_nr) : frameNr(frame_nr), mode(NOTHING) {}
-    ~NodeState() { if (mode & SEQUENCE) delete sequence; }
-};
-
-struct StateStack : public AP_STACK<NodeState> {
-#if defined(PROVIDE_PRINT)
-    void print(std::ostream& out, int indentLevel = 0) const;
-#endif
-};
-
-class AP_tree_nlen;
-class AP_tree_edge;
-
-#if defined(ASSERTION_USED)
-#define CHECK_ROOT_POPS
-#endif
-
-typedef std::set<AP_tree_nlen*> NodeSet;
-typedef std::set<AP_tree_edge*> EdgeSet;
-
-class ResourceStack {
-    // stores nodes and edges for resource management
-    NodeSet nodes;
-    EdgeSet edges;
+class AP_main_stack : public AP_STACK {
+protected:
+    unsigned long last_user_buffer;
 public:
-    ResourceStack() {}
-    ~ResourceStack() {
-        ap_assert(nodes.empty());
-        ap_assert(edges.empty());
-    }
-
-    void extract_common(ResourceStack& stack1, ResourceStack& stack2);
-
-    void destroy_nodes();
-    void destroy_edges();
-    void forget_nodes();
-    void forget_edges();
-    void move_nodes(ResourceStack& target);
-    void move_edges(ResourceStack& target);
-
-    AP_tree_nlen *put(AP_tree_nlen *node) { nodes.insert(node); return node; }
-    AP_tree_edge *put(AP_tree_edge *edge) { edges.insert(edge); return edge; }
-
-    AP_tree_nlen *getNode() { ap_assert(!nodes.empty()); AP_tree_nlen *result = *nodes.begin(); nodes.erase(nodes.begin()); return result; }
-    AP_tree_edge *getEdge() { ap_assert(!edges.empty()); AP_tree_edge *result = *edges.begin(); edges.erase(edges.begin()); return result; }
-
-    bool has_nodes() const { return !nodes.empty(); }
-    bool has_edges() const { return !edges.empty(); }
-
-    bool has_node(AP_tree_nlen *node) const { return nodes.find(node) != nodes.end(); }
+    friend class AP_main;
+    void push(AP_tree_nlen *value) { AP_STACK::push((void *)value); }
+    AP_tree_nlen *pop() { return (AP_tree_nlen*)AP_STACK::pop(); }
+    AP_tree_nlen *get() { return (AP_tree_nlen*)AP_STACK::get(); }
+    AP_tree_nlen *get_first() { return (AP_tree_nlen*)AP_STACK::get_first(); }
+    void print();
 };
 
-class StackFrameData : virtual Noncopyable {
-    // data local to current stack frame
-    // as well exists for stack frame = 0 (i.e. when nothing has been remember()ed yet)
 
-    ResourceStack created;   // nodes and edges created in the current stack frame
-    ResourceStack destroyed; // same for destroyed
-
-public:
-    bool  root_pushed; // @@@ move into NodeStack
-    StackFrameData() : root_pushed(false) {}
-
-    void revert_resources(StackFrameData *previous);
-    void accept_resources(StackFrameData *previous, ResourceStack *common);
-
-    void extract_common_to(ResourceStack& common) { common.extract_common(created, destroyed); }
-
-    inline AP_tree_nlen *makeNode(AP_pars_root *proot);
-    inline AP_tree_edge *makeEdge(AP_tree_nlen *n1, AP_tree_nlen *n2);
-    inline void destroyNode(AP_tree_nlen *node);
-    inline void destroyEdge(AP_tree_edge *edge);
-};
-
-#if defined(ASSERTION_USED)
-#define CHECK_STACK_RESOURCE_HANDLING
-#endif
-
-class NodeStack : public AP_STACK<AP_tree_nlen> { // derived from Noncopyable
-    StackFrameData *previous;
-#if defined(CHECK_STACK_RESOURCE_HANDLING)
-    enum ResHandled { NO, ACCEPTED, REVERTED } resources_handled;
-#endif
-
-public:
-    explicit NodeStack(StackFrameData*& data)
-        : previous(data)
-#if defined(CHECK_STACK_RESOURCE_HANDLING)
-        , resources_handled(NO)
-#endif
-    {
-        data = NULL; // take ownership
-    }
-    ~NodeStack() {
-        ap_assert(!previous); // forgot to use take_previous_frame_data()
-#if defined(CHECK_STACK_RESOURCE_HANDLING)
-        ap_assert(resources_handled != NO);
-#endif
-    }
-
-    StackFrameData *take_previous_frame_data() {
-        StackFrameData *release = previous;
-        previous = NULL;     // release ownership
-        return release;
-    }
-
-    void revert_resources(StackFrameData *current) {
-#if defined(CHECK_STACK_RESOURCE_HANDLING)
-        ap_assert(resources_handled == NO);
-        resources_handled = REVERTED;
-#endif
-        current->revert_resources(previous);
-    }
-    void accept_resources(StackFrameData *current, ResourceStack *common) {
-#if defined(CHECK_STACK_RESOURCE_HANDLING)
-        ap_assert(resources_handled == NO);
-        resources_handled = ACCEPTED;
-#endif
-        current->accept_resources(previous, common);
-    }
-
-#if defined(CHECK_ROOT_POPS)
-    AP_tree_nlen *root_at_create; // root at creation time of stack
-#endif
-#if defined(PROVIDE_PRINT)
-    void print(std::ostream& out, int indentLevel, Level frameNr) const;
-#endif
-};
-
-struct FrameStack : public AP_STACK<NodeStack> {
-#if defined(PROVIDE_PRINT)
-    void print(std::ostream& out, int indentLevel = 0) const;
-#endif
+struct AP_main_list : public AP_LIST {
+    AP_main_stack * pop() { return  (AP_main_stack *)AP_LIST::pop(); }
+    void push(AP_main_stack * stack) { AP_LIST::push((void *) stack); }
+    void insert(AP_main_stack * stack) { AP_LIST::insert((void *)stack); }
+    void append(AP_main_stack * stack) { AP_LIST::append((void *)stack); }
 };
 
 #else

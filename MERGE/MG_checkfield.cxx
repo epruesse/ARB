@@ -11,6 +11,7 @@
 #include "merge.hxx"
 
 #include <item_sel_list.h>
+#include <awt_sel_boxes.hxx>
 
 #include <aw_awar.hxx>
 #include <aw_root.hxx>
@@ -19,18 +20,17 @@
 
 #include <arbdbt.h>
 #include <arb_strbuf.h>
-#include <arb_global_defs.h>
 
 #include <cctype>
 
 #define AWAR_CHECK AWAR_MERGE_TMP "chk/"
 
-#define AWAR_COMPARE_FIELD AWAR_CHECK "compare"
-#define AWAR_REPORT_FIELD  AWAR_CHECK "report"
-#define AWAR_TOUPPER       AWAR_CHECK "ToUpper"
-#define AWAR_EXCLUDE       AWAR_CHECK "exclude"
-#define AWAR_CORRECT       AWAR_CHECK "correct"
-#define AWAR_ETAG          AWAR_CHECK "tag"
+#define AWAR_SOURCE_FIELD AWAR_CHECK "source"
+#define AWAR_DEST_FIELD   AWAR_CHECK "dest"
+#define AWAR_TOUPPER      AWAR_CHECK "ToUpper"
+#define AWAR_EXCLUDE      AWAR_CHECK "exclude"
+#define AWAR_CORRECT      AWAR_CHECK "correct"
+#define AWAR_ETAG         AWAR_CHECK "tag"
 
 
 static int gbs_cmp_strings(char *str1, char *str2, int *tab) { // returns 0 if strings are equal
@@ -51,8 +51,8 @@ static int gbs_cmp_strings(char *str1, char *str2, int *tab) { // returns 0 if s
 }
 
 
-static char *MG_diff_strings(char *str1, char * &str2, char *exclude, bool ToUpper, bool correct,
-                             char **res1, char **res2, bool& corrrected) {
+static char *GBS_diff_strings(char *str1, char * &str2, char *exclude, long ToUpper, long correct,
+                       char **res1, char **res2, long *corrrected) {
 
     char  buffer1[256];
     char  buffer2[256];
@@ -93,18 +93,19 @@ static char *MG_diff_strings(char *str1, char * &str2, char *exclude, bool ToUpp
                 {
                     int c = s2[-1];
                     s2[-1] = s1[-1];
-                    if (toupper(c1) == toupper(c2) || !gbs_cmp_strings(s1, s2, &tab[0])) {
-                        corrrected = true;
+                    if (toupper(c1) == toupper(c2) ||
+                        !gbs_cmp_strings(s1, s2, &tab[0])) {
+                        *corrrected = 1;
                         continue;
                     }
-                    s2[-1]  = c;
+                    s2[-1] = c;
                 }
 
                 // check insertion in s2
                 if (!gbs_cmp_strings(s1-1, s2, &tab[0])) {
                     s2[-1] = gapchar;
                     do { c2 = *(s2++); } while (tab[c2] < 0); // eat s2
-                    corrrected = true;
+                    *corrrected = 1;
                     continue;
                 }
                 // check deletion in s2
@@ -121,7 +122,7 @@ static char *MG_diff_strings(char *str1, char * &str2, char *exclude, bool ToUpp
                         delete str2;
                         str2 = GBS_strclose(str);
                         s2 = str2+pos+1;
-                        corrrected = true;
+                        *corrrected = 1;
                         continue;
                     }
                     int side=1; // 0 = left   1= right
@@ -131,14 +132,10 @@ static char *MG_diff_strings(char *str1, char * &str2, char *exclude, bool ToUpp
                                 tab[(unsigned char)toinspos[-1]] < 0) toinspos--;
                     }
                     toinspos[0] = toins;
-                    corrrected = true;
+                    *corrrected = 1;
                     do { c1 = *(s1++); } while (tab[c1] < 0); // eat s1
                     continue;
                 }
-
-                // one correction rejected -> don't try further
-                corrrected = false;
-                correct    = false;
             }
             if (count >= 0) {
                 sprintf(dest1, "%ti ", s1-str1-1);
@@ -185,158 +182,130 @@ int mg_count_queried(GBDATA *gb_main) {
 }
 
 static void mg_check_field_cb(AW_window *aww) {
-    AW_root  *root         = aww->get_root();
-    GB_ERROR  error        = NULL;
-    char     *compareField = root->awar(AWAR_COMPARE_FIELD)->read_string();
-    char     *exclude      = root->awar(AWAR_EXCLUDE)->read_string();
-    bool      ToUpper      = root->awar(AWAR_TOUPPER)->read_int();
-    bool      correct      = root->awar(AWAR_CORRECT)->read_int();
-    char     *tag          = root->awar(AWAR_ETAG)->read_string();
-    int       correctCount = 0;
+    AW_root  *root    = aww->get_root();
+    GB_ERROR  error   = 0;
+    char     *source  = root->awar(AWAR_SOURCE_FIELD)->read_string();
+    char     *dest    = root->awar(AWAR_DEST_FIELD)->read_string();
+    char     *exclude = root->awar(AWAR_EXCLUDE)->read_string();
+    long      ToUpper = root->awar(AWAR_TOUPPER)->read_int();
+    long      correct = root->awar(AWAR_CORRECT)->read_int();
+    char     *tag     = root->awar(AWAR_ETAG)->read_string();
 
-    if (strcmp(compareField, NO_FIELD_SELECTED) == 0) {
-        error = "Please select a field to compare";
+    if (source[0] == 0) {
+        error = "Please select a source field";
     }
-
-    if (!error) error = GB_begin_transaction(GLOBAL_gb_src);
-    if (!error) error = GB_begin_transaction(GLOBAL_gb_dst);
-
-    const char *reportField = NULL;
-    if (!error) {
-        reportField = prepare_and_get_selected_itemfield(root, AWAR_REPORT_FIELD, GLOBAL_gb_src, SPECIES_get_selector());
-        if (!reportField) {
-            error = GB_await_error();
-        }
-        else {
-            const char *otherdb_reportField = prepare_and_get_selected_itemfield(root, AWAR_REPORT_FIELD, GLOBAL_gb_dst, SPECIES_get_selector());
-            if (!otherdb_reportField) {
-                error = GB_await_error();
-            }
-            else {
-                mg_assert(strcmp(reportField, otherdb_reportField) == 0);
-            }
-        }
+    else if (dest[0] == 0) {
+        error = "Please select a dest field";
     }
+    else {
+        error = GB_begin_transaction(GLOBAL_gb_src);
 
-    if (!error) {
-        GBDATA *gb_src_species_data = GBT_get_species_data(GLOBAL_gb_src);
-        GBDATA *gb_dst_species_data = GBT_get_species_data(GLOBAL_gb_dst);
+        if (!error) {
+            error = GB_begin_transaction(GLOBAL_gb_dst);
 
-        GBDATA *gb_src_species;
-        GBDATA *gb_dst_species;
+            GBDATA *gb_src_species_data = GBT_get_species_data(GLOBAL_gb_src);
+            GBDATA *gb_dst_species_data = GBT_get_species_data(GLOBAL_gb_dst);
 
-        // First step: count selected species
-        arb_progress progress("Checking fields", mg_count_queried(GLOBAL_gb_src));
+            GBDATA *gb_src_species;
+            GBDATA *gb_dst_species;
 
-        // Delete all 'report' fields in target database
-        for (gb_dst_species = GBT_first_species_rel_species_data(gb_dst_species_data);
-             gb_dst_species && !error;
-             gb_dst_species = GBT_next_species(gb_dst_species))
-        {
-            GBDATA *gbd    = GB_search(gb_dst_species, reportField, GB_FIND);
-            if (gbd) error = GB_delete(gbd);
-        }
+            // First step: count selected species
+            arb_progress progress("Checking fields", mg_count_queried(GLOBAL_gb_src));
 
-        bool seenQueried    = false;
-        for (gb_src_species = GBT_first_species_rel_species_data(gb_src_species_data);
-             gb_src_species && !error;
-             gb_src_species = GBT_next_species(gb_src_species))
-        {
-            { // Delete all 'report' fields in source database
-                GBDATA *gbd    = GB_search(gb_src_species, reportField, GB_FIND);
+            // Delete all 'dest' fields in target database
+            for (gb_dst_species = GBT_first_species_rel_species_data(gb_dst_species_data);
+                 gb_dst_species && !error;
+                 gb_dst_species = GBT_next_species(gb_dst_species))
+            {
+                GBDATA *gbd    = GB_search(gb_dst_species, dest, GB_FIND);
                 if (gbd) error = GB_delete(gbd);
             }
 
-            if (!error) {
-                if (IS_QUERIED_SPECIES(gb_src_species)) {
-                    seenQueried = true;
-                    const char *src_name = GBT_read_name(gb_src_species);
-                    gb_dst_species       = GB_find_string(gb_dst_species_data, "name", src_name, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
-                    if (!gb_dst_species) {
-                        aw_message(GBS_global_string("WARNING: Species %s not found in target DB", src_name));
-                    }
-                    else {
-                        gb_dst_species = GB_get_father(gb_dst_species);
+            for (gb_src_species = GBT_first_species_rel_species_data(gb_src_species_data);
+                 gb_src_species && !error;
+                 gb_src_species = GBT_next_species(gb_src_species))
+            {
+                {
+                    GBDATA *gbd    = GB_search(gb_src_species, dest, GB_FIND);
+                    if (gbd) error = GB_delete(gbd);
+                }
 
-                        GBDATA *gb_src_field = GB_search(gb_src_species, compareField, GB_FIND);
-                        GBDATA *gb_dst_field = GB_search(gb_dst_species, compareField, GB_FIND);
+                if (!error) {
+                    if (IS_QUERIED_SPECIES(gb_src_species)) {
+                        const char *src_name = GBT_read_name(gb_src_species);
+                        gb_dst_species    = GB_find_string(gb_dst_species_data, "name", src_name, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
+                        if (!gb_dst_species) {
+                            aw_message(GBS_global_string("WARNING: Species %s not found in target DB", src_name));
+                        }
+                        else {
+                            gb_dst_species = GB_get_father(gb_dst_species);
 
-                        char *src_val = gb_src_field ? GB_read_as_tagged_string(gb_src_field, tag) : 0;
-                        char *dst_val = gb_dst_field ? GB_read_as_tagged_string(gb_dst_field, tag) : 0;
+                            GBDATA *gb_src_field = GB_search(gb_src_species, source, GB_FIND);
+                            GBDATA *gb_dst_field = GB_search(gb_dst_species, source, GB_FIND);
 
-                        if (src_val || dst_val) {
-                            char *src_positions = 0;
-                            char *dst_positions = 0;
+                            char *src_val = gb_src_field ? GB_read_as_tagged_string(gb_src_field, tag) : 0;
+                            char *dst_val = gb_dst_field ? GB_read_as_tagged_string(gb_dst_field, tag) : 0;
 
-                            if (src_val && dst_val) {
-                                bool corrected = false;
-                                MG_diff_strings(src_val, dst_val, exclude, ToUpper, correct, &src_positions, &dst_positions, corrected);
-                                if (corrected) {
-                                    error = GB_write_autoconv_string(gb_dst_field, dst_val);
-                                    if (!error) {
-                                        GB_write_flag(gb_dst_species, 1);
-                                        correctCount++;
+                            if (src_val || dst_val) {
+                                char *src_positions = 0;
+                                char *dst_positions = 0;
+
+                                if (src_val && dst_val) {
+                                    long corrected = 0;
+                                    GBS_diff_strings(src_val, dst_val, exclude, ToUpper, correct, &src_positions, &dst_positions, &corrected);
+                                    if (corrected) {
+                                        error = GB_write_as_string(gb_dst_field, dst_val);
+                                        if (!error) GB_write_flag(gb_dst_species, 1);
                                     }
                                 }
-                            }
-                            else {
-                                src_positions = GBS_global_string_copy("field missing in %s DB", src_val ? "other" : "this");
-                                dst_positions = GBS_global_string_copy("field missing in %s DB", dst_val ? "other" : "this");
+                                else {
+                                    src_positions = GBS_global_string_copy("field missing in %s DB", src_val ? "other" : "this");
+                                    dst_positions = GBS_global_string_copy("field missing in %s DB", dst_val ? "other" : "this");
+                                }
+
+                                if (src_positions && !error) {
+                                    error             = GBT_write_string(gb_dst_species, dest, dst_positions);
+                                    if (!error) error = GBT_write_string(gb_src_species, dest, src_positions);
+                                }
+
+                                free(dst_positions);
+                                free(src_positions);
                             }
 
-                            if (src_positions && !error) {
-                                error             = GBT_write_string(gb_dst_species, reportField, dst_positions);
-                                if (!error) error = GBT_write_string(gb_src_species, reportField, src_positions);
-                            }
-
-                            free(dst_positions);
-                            free(src_positions);
+                            free(dst_val);
+                            free(src_val);
                         }
-
-                        free(dst_val);
-                        free(src_val);
+                        progress.inc_and_check_user_abort(error);
                     }
-                    progress.inc_and_check_user_abort(error);
                 }
             }
+
+            error = GB_end_transaction(GLOBAL_gb_src, error);
+            error = GB_end_transaction(GLOBAL_gb_dst, error);
         }
-
-        if (!seenQueried && !error) {
-            error = "Empty hitlist in source database (nothing to do)";
-        }
     }
-
-    error = GB_end_transaction(GLOBAL_gb_src, error);
-    error = GB_end_transaction(GLOBAL_gb_dst, error);
-
-    if (error) {
-        aw_message(error);
-    }
-    else if (correctCount) {
-        aw_message(GBS_global_string("Corrected field content of %i species\n"
-                                     "(species %s been marked in target database).",
-                                     correctCount, correctCount == 1 ? "has" : "have"));
-    }
+    if (error) aw_message(error);
 
     free(tag);
     free(exclude);
-    free(compareField);
+    free(dest);
+    free(source);
 }
 
 
 AW_window *create_mg_check_fields_window(AW_root *aw_root) {
-    aw_root->awar_string(AWAR_COMPARE_FIELD, NO_FIELD_SELECTED);
-    aw_root->awar_string(AWAR_REPORT_FIELD, "tmp", AW_ROOT_DEFAULT);
+    aw_root->awar_string(AWAR_SOURCE_FIELD);
+    aw_root->awar_string(AWAR_DEST_FIELD, "tmp", AW_ROOT_DEFAULT);
     aw_root->awar_string(AWAR_EXCLUDE, ".-", AW_ROOT_DEFAULT);
     aw_root->awar_string(AWAR_ETAG, "");
     aw_root->awar_int(AWAR_TOUPPER);
     aw_root->awar_int(AWAR_CORRECT);
 
     AW_window_simple *aws = new AW_window_simple;
-    aws->init(aw_root, "MERGE_COMPARE_FIELD", "COMPARE DATABASE FIELD");
+    aws->init(aw_root, "MERGE_COMPARE_FIELDS", "COMPARE DATABASE FIELDS");
     aws->load_xfig("merge/seqcheck.fig");
 
-    aws->callback(AW_POPDOWN);
+    aws->callback((AW_CB0)AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
@@ -356,8 +325,13 @@ AW_window *create_mg_check_fields_window(AW_root *aw_root) {
     aws->at("tag");
     aws->create_input_field(AWAR_ETAG, 6);
 
-    create_itemfield_selection_button(aws, FieldSelDef(AWAR_COMPARE_FIELD, GLOBAL_gb_dst, SPECIES_get_selector(), FIELD_FILTER_STRING_READABLE), "source");
-    create_itemfield_selection_button(aws, FieldSelDef(AWAR_REPORT_FIELD,  GLOBAL_gb_dst, SPECIES_get_selector(), FIELD_FILTER_STRING_WRITEABLE, "report-field", SF_ALLOW_NEW), "dest");
+    create_selection_list_on_itemfields(GLOBAL_gb_dst, aws, AWAR_SOURCE_FIELD, true, FIELD_FILTER_STRING,        "source", 0, SPECIES_get_selector(), 20, 10, SF_STANDARD, NULL);
+    create_selection_list_on_itemfields(GLOBAL_gb_dst, aws, AWAR_DEST_FIELD,   true, (1<<GB_STRING)|(1<<GB_INT), "dest",   0, SPECIES_get_selector(), 20, 10, SF_STANDARD, NULL);
+
+#if defined(WARN_TODO)
+#warning check code above. Maybe one call has to get GLOBAL_gb_src ?
+#endif
+
 
     aws->at("go");
     aws->highlight();

@@ -15,9 +15,6 @@
 #ifndef AW_BASE_HXX
 #include <aw_base.hxx>
 #endif
-#ifndef ARBTOOLS_H
-#include <arbtools.h>
-#endif
 
 enum awt_reorder_mode {
     ARM_TOP, 
@@ -33,33 +30,11 @@ enum awt_collect_mode {
     ACM_EMPTY, 
 };
 
-namespace UNTYPED {
-    typedef void(*awt_orderfun)  (AW_window *aww, awt_reorder_mode pos,  AW_CL cl_user);
-    typedef void(*awt_collectfun)(AW_window *aww, awt_collect_mode what, AW_CL cl_user);
+typedef void(*awt_orderfun)  (AW_window *aww, awt_reorder_mode pos,  AW_CL cl_user);
+typedef void(*awt_collectfun)(AW_window *aww, awt_collect_mode what, AW_CL cl_user);
 
-    void awt_create_order_buttons(AW_window *aws, awt_orderfun reorder_cb, AW_CL cl_user);
-    void awt_create_collect_buttons(AW_window *aws, bool collect_rightwards, awt_collectfun collect_cb, AW_CL cl_user);
-};
-
-template<typename T>
-inline void awt_create_order_buttons(AW_window *aws, void (*reorder_cb)(AW_window*, awt_reorder_mode, T), T t) {
-    disallow_type<T, AW_CL>::here();
-    UNTYPED::awt_create_order_buttons(aws, (UNTYPED::awt_orderfun)reorder_cb, AW_CL(t));
-}
-inline void awt_create_order_buttons(AW_window *aws, void (*reorder_cb)(AW_window*, awt_reorder_mode)) {
-    UNTYPED::awt_create_order_buttons(aws, (UNTYPED::awt_orderfun)reorder_cb, 0);
-}
-
-
-template<typename T>
-inline void awt_create_collect_buttons(AW_window *aws, bool collect_rightwards, void (*collect_cb)(AW_window*, awt_collect_mode, T), T t) {
-    disallow_type<T, AW_CL>::here();
-    UNTYPED::awt_create_collect_buttons(aws, collect_rightwards, (UNTYPED::awt_collectfun)collect_cb, AW_CL(t));
-}
-inline void awt_create_collect_buttons(AW_window *aws, bool collect_rightwards, void (*collect_cb)(AW_window*, awt_collect_mode)) {
-    UNTYPED::awt_create_collect_buttons(aws, collect_rightwards, (UNTYPED::awt_collectfun)collect_cb, 0);
-}
-
+void awt_create_order_buttons(AW_window *aws, awt_orderfun reorder_cb, AW_CL cl_user);
+void awt_create_collect_buttons(AW_window *aws, bool collect_rightwards, awt_collectfun collect_cb, AW_CL cl_user);
 
 #else
 #error awt_modules.hxx included twice

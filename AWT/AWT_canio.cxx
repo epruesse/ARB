@@ -72,18 +72,18 @@ enum PrintDest {
 
 enum LengthUnit { INCH, MM };
 
-static const float mm_per_inch = 25.4;
-inline float inch2mm(float inches) { return inches*mm_per_inch; }
-inline float mm2inch(float mms) { return mms/mm_per_inch; }
+static const double mm_per_inch = 25.4;
+inline double inch2mm(double inches) { return inches*mm_per_inch; }
+inline double mm2inch(double mms) { return mms/mm_per_inch; }
 
 class PaperFormat {
     const char *description;
     const char *fig2dev_val;
     LengthUnit  unit;
-    float      shortSide, longSide;
+    double      shortSide, longSide;
 
 public:
-    PaperFormat(const char *name, LengthUnit lu, float shortSide_, float longSide_)
+    PaperFormat(const char *name, LengthUnit lu, double shortSide_, double longSide_)
         : description(name),
           fig2dev_val(name),
           unit(lu),
@@ -92,7 +92,7 @@ public:
     {
         awt_assert(shortSide<longSide);
     }
-    PaperFormat(const char *aname, const char *fname, LengthUnit lu, float shortSide_, float longSide_)
+    PaperFormat(const char *aname, const char *fname, LengthUnit lu, double shortSide_, double longSide_)
         : description(aname),
           fig2dev_val(fname),
           unit(lu),
@@ -102,8 +102,8 @@ public:
         awt_assert(shortSide<longSide);
     }
 
-    float short_inch() const { return unit == INCH ? shortSide : mm2inch(shortSide); }
-    float long_inch()  const { return unit == INCH ? longSide : mm2inch(longSide); }
+    double short_inch() const { return unit == INCH ? shortSide : mm2inch(shortSide); }
+    double long_inch() const { return unit == INCH ? longSide : mm2inch(longSide); }
 
     const char *get_description() const { return description; }
     const char *get_fig2dev_val() const { return fig2dev_val; }
@@ -166,34 +166,35 @@ static Rectangle get_drawsize(AWT_canvas *scr, bool draw_all) {
     return drawsize;
 }
 
-static Rectangle add_border_to_drawsize(const Rectangle& drawsize, float border_percent) {
-    float  borderratio     = border_percent*.01;
-    float  draw2bordersize = -borderratio/(borderratio-1.0);
+static Rectangle add_border_to_drawsize(const Rectangle& drawsize, double border_percent) {
+    double borderratio     = border_percent*.01;
+    double draw2bordersize = -borderratio/(borderratio-1.0);
     Vector bordersize      = drawsize.diagonal() * (draw2bordersize*0.5);
 
     return Rectangle(drawsize.upper_left_corner()-bordersize,
                      drawsize.lower_right_corner()+bordersize);
 }
 
-static void awt_print_tree_check_size(UNFIXED, AWT_canvas *scr) {
-    AW_root   *awr         = scr->awr;
-    long       draw_all    = awr->awar(AWAR_CANIO_CLIP)->read_int();
-    float      border      = awr->awar(AWAR_CANIO_BORDERSIZE)->read_float();
-    Rectangle  drawsize    = get_drawsize(scr, draw_all);
-    Rectangle  with_border = add_border_to_drawsize(drawsize, border);
+static void awt_print_tree_check_size(void *, AW_CL cl_canvas) {
+    AWT_canvas *scr         = (AWT_canvas*)cl_canvas;
+    AW_root    *awr         = scr->awr;
+    long        draw_all    = awr->awar(AWAR_CANIO_CLIP)->read_int();
+    double      border      = awr->awar(AWAR_CANIO_BORDERSIZE)->read_float();
+    Rectangle   drawsize    = get_drawsize(scr, draw_all);
+    Rectangle   with_border = add_border_to_drawsize(drawsize, border);
 
-    awr->awar(AWAR_CANIO_GFX_SX)->write_float(with_border.width()/DPI_SCREEN);
-    awr->awar(AWAR_CANIO_GFX_SY)->write_float(with_border.height()/DPI_SCREEN);
+    awr->awar(AWAR_CANIO_GFX_SX)->write_float((with_border.width())/DPI_SCREEN);
+    awr->awar(AWAR_CANIO_GFX_SY)->write_float((with_border.height())/DPI_SCREEN);
 }
 
-inline int xy2pages(float sx, float sy) {
+inline int xy2pages(double sx, double sy) {
     return (int(sx+0.99)*int(sy+0.99));
 }
 
 static bool allow_page_size_check_cb = true;
 static bool allow_overlap_toggled_cb = true;
 
-inline void set_paper_size_xy(AW_root *awr, float px, float py) {
+inline void set_paper_size_xy(AW_root *awr, double px, double py) {
     // modify papersize but perform only one callback
 
     bool old_allow           = allow_page_size_check_cb;
@@ -210,13 +211,13 @@ static void overlap_toggled_cb(AW_root *awr) {
     }
 }
 
-static long calc_mag_from_psize(AW_root *awr, float papersize, float gfxsize, float wantedpages, bool use_x) {
-    bool  wantOverlap = awr->awar(AWAR_CANIO_OVERLAP_WANTED)->read_int();
-    float usableSize  = 0;
+static long calc_mag_from_psize(AW_root *awr, double papersize, double gfxsize, double wantedpages, bool use_x) {
+    bool   wantOverlap = awr->awar(AWAR_CANIO_OVERLAP_WANTED)->read_int();
+    double usableSize = 0;
 
     if (wantOverlap && wantedpages>1) {
-        float overlapPercent = awr->awar(AWAR_CANIO_OVERLAP_PERCENT)->read_float();
-        float usableRatio    = (100.0-overlapPercent)/100.0;
+        double overlapPercent = awr->awar(AWAR_CANIO_OVERLAP_PERCENT)->read_float();
+        double usableRatio    = (100.0-overlapPercent)/100.0;
 
         // See also fig2devbug in page_size_check_cb() 
         bool fig2devbug = !use_x && awr->awar(AWAR_CANIO_F2DBUG)->read_int();
@@ -244,10 +245,10 @@ static void set_mag_from_psize(AW_root *awr, bool use_x) {
     const char *gfxsize_name     = use_x ? AWAR_CANIO_GFX_SX : AWAR_CANIO_GFX_SY;
     const char *wantedpages_name = use_x ? AWAR_CANIO_PAGE_SX : AWAR_CANIO_PAGE_SY;
 
-    float papersize   = awr->awar(papersize_name)->read_float();
-    float gfxsize     = awr->awar(gfxsize_name)->read_float();
-    float wantedpages = awr->awar(wantedpages_name)->read_float();
-    long  mag         = calc_mag_from_psize(awr, papersize, gfxsize, wantedpages, use_x);
+    double   papersize   = awr->awar(papersize_name)->read_float();
+    double   gfxsize     = awr->awar(gfxsize_name)->read_float();
+    double   wantedpages = awr->awar(wantedpages_name)->read_float();
+    long     mag         = calc_mag_from_psize(awr, papersize, gfxsize, wantedpages, use_x);
 
     awr->awar(AWAR_CANIO_MAGNIFICATION)->write_int(mag);
 }
@@ -275,14 +276,14 @@ static void fit_pages(AW_root *awr, int wanted_pages, bool allow_orientation_cha
             const char *awar_name = xy == 0 ? AWAR_CANIO_PAGE_SX : AWAR_CANIO_PAGE_SY;
 
             for (int pcount = 1; pcount <= wanted_pages; pcount++) {
-                float zoom = pcount*1.0;
+                double zoom = pcount*1.0;
                 awr->awar(awar_name)->write_float(zoom); // set zoom (x or y)
 
                 set_mag_from_psize(awr, xy == 0);
 
-                float sx    = awr->awar(AWAR_CANIO_PAGE_SX)->read_float();
-                float sy    = awr->awar(AWAR_CANIO_PAGE_SY)->read_float();
-                int   pages = xy2pages(sx, sy);
+                double sx            = awr->awar(AWAR_CANIO_PAGE_SX)->read_float();
+                double sy            = awr->awar(AWAR_CANIO_PAGE_SY)->read_float();
+                int    pages         = xy2pages(sx, sy);
 
                 if (pages>wanted_pages) break; // pcount-loop
 
@@ -327,8 +328,8 @@ static void page_size_check_cb(AW_root *awr) {
     bool lockpages    = awr->awar(AWAR_CANIO_PAGELOCK)->read_int();
     int  locked_pages = awr->awar(AWAR_CANIO_PAGES)->read_int();
 
-    float px = awr->awar(AWAR_CANIO_PAPER_SX)->read_float(); // paper-size
-    float py = awr->awar(AWAR_CANIO_PAPER_SY)->read_float();
+    double px = awr->awar(AWAR_CANIO_PAPER_SX)->read_float(); // paper-size
+    double py = awr->awar(AWAR_CANIO_PAPER_SY)->read_float();
 
     if (landscape != (px>py)) {
         set_paper_size_xy(awr, py, px); // recalls this function
@@ -337,29 +338,29 @@ static void page_size_check_cb(AW_root *awr) {
 
     long magnification = awr->awar(AWAR_CANIO_MAGNIFICATION)->read_int();
     
-    float gx = awr->awar(AWAR_CANIO_GFX_SX)->read_float(); // graphic size
-    float gy = awr->awar(AWAR_CANIO_GFX_SY)->read_float();
+    double gx = awr->awar(AWAR_CANIO_GFX_SX)->read_float(); // graphic size
+    double gy = awr->awar(AWAR_CANIO_GFX_SY)->read_float();
 
     // output size
-    float ox = (gx*magnification)/100; // resulting size of output in inches
-    float oy = (gy*magnification)/100;
+    double ox = (gx*magnification)/100; // resulting size of output in inches
+    double oy = (gy*magnification)/100;
     awr->awar(AWAR_CANIO_OUT_SX)->write_float(ox);
     awr->awar(AWAR_CANIO_OUT_SY)->write_float(oy);
 
     bool wantOverlap = awr->awar(AWAR_CANIO_OVERLAP_WANTED)->read_int();
     bool useOverlap  = awr->awar(AWAR_CANIO_OVERLAP)->read_int();
 
-    float sx = 0.0; // resulting pages
-    float sy = 0.0;
+    double sx = 0.0; // resulting pages
+    double sy = 0.0;
 
     bool fits_on_one_page = (ox <= px && oy <= py);
 
     if (wantOverlap && !fits_on_one_page) {
-        float overlapPercent = awr->awar(AWAR_CANIO_OVERLAP_PERCENT)->read_float();
-        float pageRatio      = (100.0-overlapPercent)/100.0;
+        double overlapPercent = awr->awar(AWAR_CANIO_OVERLAP_PERCENT)->read_float();
+        double pageRatio      = (100.0-overlapPercent)/100.0;
 
-        float rpx = px*pageRatio; // usable page-size (due to overlap)
-        float rpy = py*pageRatio;
+        double rpx = px*pageRatio; // usable page-size (due to overlap)
+        double rpy = py*pageRatio;
 
         while (ox>px) { ox -= rpx; sx += 1.0; }
         sx += ox/px;
@@ -415,7 +416,7 @@ static void paper_changed_cb(AW_root *awr) {
     int                paper     = awr->awar(AWAR_CANIO_PAPER)->read_int();
     const PaperFormat& format    = knownPaperFormat[paper];
     bool               landscape = awr->awar(AWAR_CANIO_LANDSCAPE)->read_int();
-    float              useable   = awr->awar(AWAR_CANIO_PAPER_USABLE)->read_float()/100.0;
+    double             useable   = awr->awar(AWAR_CANIO_PAPER_USABLE)->read_float()/100.0;
 
     if (landscape) {
         set_paper_size_xy(awr, useable*format.long_inch(), useable*format.short_inch());
@@ -513,11 +514,10 @@ static void create_print_awars(AW_root *awr, AWT_canvas *scr) {
         awr->awar(AWAR_CANIO_PAPER_SX)->set_minmax(0.1, 100);
         awr->awar(AWAR_CANIO_PAPER_SY)->set_minmax(0.1, 100);
 
+        awt_print_tree_check_size(0, (AW_CL)scr);
 
-        RootCallback checkSizeCb = makeRootCallback(awt_print_tree_check_size, scr);
-        checkSizeCb(NULL);
-        awr->awar(AWAR_CANIO_CLIP)      ->add_callback(checkSizeCb);
-        awr->awar(AWAR_CANIO_BORDERSIZE)->add_callback(checkSizeCb);
+        awr->awar(AWAR_CANIO_CLIP)->add_callback((AW_RCB1)awt_print_tree_check_size, (AW_CL)scr);
+        awr->awar(AWAR_CANIO_BORDERSIZE)->add_callback((AW_RCB1)awt_print_tree_check_size, (AW_CL)scr);
 
         { // add callbacks for page recalculation
             const char *checked_awars[] = {
@@ -542,7 +542,7 @@ static void create_print_awars(AW_root *awr, AWT_canvas *scr) {
 
 // --------------------------------------------------------------------------------
 
-static GB_ERROR canvas_to_xfig(AWT_canvas *scr, const char *xfig_name, bool add_invisibles, float border) {
+static GB_ERROR canvas_to_xfig(AWT_canvas *scr, const char *xfig_name, bool add_invisibles, double border) {
     // if 'add_invisibles' is true => print 2 invisible dots to make fig2dev center correctly
 
     GB_transaction  ta(scr->gb_main);
@@ -641,21 +641,19 @@ static void canvas_to_xfig_and_run_xfig(AW_window *aww, AWT_canvas *scr) {
         error = canvas_to_xfig(scr, xfig, true, 0.0);
         if (!error) {
             awr->awar(AWAR_CANIO_FILE_DIR)->touch(); // reload dir to show created xfig
-            char *quotedXfig = GBK_singlequote(xfig);
-
 #if defined(ARB_GTK)
-            error = GBK_system(GBS_global_string("evince %s &", quotedXfig));
+            error = GBK_system(GBS_global_string("evince %s &", xfig));
 #else
-            error = GBK_system(GBS_global_string("xfig %s &", quotedXfig));
+            error = GBK_system(GBS_global_string("xfig %s &", xfig));
 #endif
-            free(quotedXfig);
         }
     }
     if (error) aw_message(error);
     free(xfig);
 }
 
-static void canvas_to_printer(AW_window *aww, AWT_canvas *scr) {
+static void canvas_to_printer(AW_window *aww, AW_CL cl_canvas) {
+    AWT_canvas     *scr       = (AWT_canvas*)cl_canvas;
     GB_transaction  ta(scr->gb_main);
     AW_root        *awr       = aww->get_root();
     GB_ERROR        error     = 0;
@@ -681,7 +679,6 @@ static void canvas_to_printer(AW_window *aww, AWT_canvas *scr) {
     }
 
     if (!error) {
-        char *quotedDest = GBK_singlequote(dest);
         char *xfig;
         {
             char *name = GB_unique_filename("arb_print", "xfig");
@@ -694,8 +691,8 @@ static void canvas_to_printer(AW_window *aww, AWT_canvas *scr) {
 
         if (!xfig) error = GB_await_error();
         if (!error) {
-            float border = awr->awar(AWAR_CANIO_BORDERSIZE)->read_float();
-            error        = canvas_to_xfig(scr, xfig, true, border);
+            double border = awr->awar(AWAR_CANIO_BORDERSIZE)->read_float();
+            error         = canvas_to_xfig(scr, xfig, true, border);
         }
 
         if (!error) {
@@ -722,11 +719,10 @@ static void canvas_to_printer(AW_window *aww, AWT_canvas *scr) {
                 }
                 cmd.nprintf(20, " -m %f", magnification);
                 cmd.cat(landscape ? " -l 0" : " -p 0");              // landscape or portrait
+                cmd.nprintf(30, " -z %s", format.get_fig2dev_val()); // paperformat
 
-                cmd.cat(" -z "); cmd.cat(format.get_fig2dev_val()); // paperformat
-
-                cmd.put(' '); cmd.cat(xfig);       // input
-                cmd.put(' '); cmd.cat(quotedDest); // output
+                cmd.put(' '); cmd.cat(xfig); // input
+                cmd.put(' '); cmd.cat(dest); // output
 
                 error = GBK_system(cmd.get_data());
             }
@@ -766,7 +762,6 @@ static void canvas_to_printer(AW_window *aww, AWT_canvas *scr) {
 #endif
             free(xfig);
         }
-        free(quotedDest);
     }
 
     free(dest);
@@ -792,7 +787,7 @@ void AWT_popup_tree_export_window(AW_window *parent_win, AWT_canvas *scr) {
         aws->init(awr, "EXPORT_TREE_AS_XFIG", "EXPORT TREE TO XFIG");
         aws->load_xfig("awt/export.fig");
 
-        aws->at("close"); aws->callback(AW_POPDOWN);
+        aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
 
         aws->at("help"); aws->callback(makeHelpCallback("tree2file.hlp"));
@@ -839,12 +834,10 @@ void AWT_popup_sec_export_window(AW_window *parent_win, AWT_canvas *scr) {
         aws->init(awr, "EXPORT_TREE_AS_XFIG", "EXPORT STRUCTURE TO XFIG");
         aws->load_xfig("awt/secExport.fig");
 
-        aws->at("close");
-        aws->callback(AW_POPDOWN);
+        aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
 
-        aws->at("help");
-        aws->callback(makeHelpCallback("tree2file.hlp"));
+        aws->at("help"); aws->callback(makeHelpCallback("tree2file.hlp"));
         aws->create_button("HELP", "HELP", "H");
 
         aws->label_length(15);
@@ -861,8 +854,7 @@ void AWT_popup_sec_export_window(AW_window *parent_win, AWT_canvas *scr) {
         aws->label("Export colors");
         aws->create_toggle(AWAR_CANIO_COLOR);
 
-        aws->at("xfig");
-        aws->callback(makeWindowCallback(canvas_to_xfig_and_run_xfig, scr));
+        aws->at("xfig"); aws->callback(makeWindowCallback(canvas_to_xfig_and_run_xfig, scr));
         aws->create_autosize_button("START_XFIG", "EXPORT to XFIG", "X");
     }
 
@@ -872,9 +864,13 @@ void AWT_popup_sec_export_window(AW_window *parent_win, AWT_canvas *scr) {
 static void columns_changed_cb(AW_window *aww) { set_mag_from_psize(aww->get_root(), true); }
 static void rows_changed_cb(AW_window *aww) { set_mag_from_psize(aww->get_root(), false); }
 
-static void fit_pages_cb(AW_window *aww, int wanted_pages) {
+static void fit_pages_cb(AW_window *aww, AW_CL cl_pages) {
     AW_root *awr = aww->get_root();
-    if (wanted_pages<=0) {
+    int      wanted_pages;
+
+    if (cl_pages>0)
+        wanted_pages = cl_pages;
+    else {
         wanted_pages = awr->awar(AWAR_CANIO_PAGES)->read_int();
     }
     fit_pages(awr, wanted_pages, true);
@@ -892,7 +888,7 @@ void AWT_popup_print_window(AW_window *parent_win, AWT_canvas *scr) {
         aws->init(awr, "PRINT_CANVAS", "PRINT GRAPHIC");
         aws->load_xfig("awt/print.fig");
 
-        aws->at("close"); aws->callback(AW_POPDOWN);
+        aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
 
         aws->at("help"); aws->callback(makeHelpCallback("tree2prt.hlp"));
@@ -925,7 +921,7 @@ void AWT_popup_print_window(AW_window *parent_win, AWT_canvas *scr) {
         //      page layout
 
         aws->at("getsize");
-        aws->callback(makeWindowCallback(awt_print_tree_check_size, scr));
+        aws->callback((AW_CB1)awt_print_tree_check_size, (AW_CL)scr);
         aws->create_autosize_button(0, "Get Graphic Size");
 
         aws->button_length(6);
@@ -968,14 +964,14 @@ void AWT_popup_print_window(AW_window *parent_win, AWT_canvas *scr) {
         //      multiple pages
 
         aws->at("sizex");
-        aws->callback(columns_changed_cb); // @@@ used as INPUTFIELD_CB (see #559)
+        aws->callback(columns_changed_cb);
         aws->create_input_field(AWAR_CANIO_PAGE_SX, 4);
         aws->at("sizey");
-        aws->callback(rows_changed_cb); // @@@ used as INPUTFIELD_CB (see #559)
+        aws->callback(rows_changed_cb);
         aws->create_input_field(AWAR_CANIO_PAGE_SY, 4);
 
         aws->at("best_fit");
-        aws->callback(makeWindowCallback(fit_pages_cb, 0));
+        aws->callback(fit_pages_cb, 0);
         aws->create_autosize_button("fit_on", "Fit on");
 
         aws->at("pages");
@@ -991,7 +987,7 @@ void AWT_popup_print_window(AW_window *parent_win, AWT_canvas *scr) {
                 name[1] = '0'+p; // at-label, macro-name and button-text
                 if (aws->at_ifdef(name)) {
                     aws->at(name);
-                    aws->callback(makeWindowCallback(fit_pages_cb, p));
+                    aws->callback(fit_pages_cb, p);
                     aws->create_button(name, name+1);
                 }
             }
@@ -1025,10 +1021,10 @@ void AWT_popup_print_window(AW_window *parent_win, AWT_canvas *scr) {
 
         aws->at("go");
         aws->highlight();
-        aws->callback(makeWindowCallback(canvas_to_printer, scr));
+        aws->callback(canvas_to_printer, (AW_CL)scr);
         aws->create_autosize_button("PRINT", "PRINT", "P");
     }
 
-    awt_print_tree_check_size(NULL, scr);
+    awt_print_tree_check_size(0, (AW_CL)scr);
     aws->activate();
 }

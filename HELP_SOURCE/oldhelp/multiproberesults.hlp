@@ -6,7 +6,7 @@ UP	multiprobe.hlp
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile strunk ********
-TITLE		Multiprobe results
+TITLE		Multiproberesults
 
 
 DESCRIPTION	Shows the best multi-probes. Each multi-probe has a score, the
@@ -16,21 +16,12 @@ DESCRIPTION	Shows the best multi-probes. Each multi-probe has a score, the
 		three default comments)
 
 		The selected multi-probe can be used to set the colors
-		at the tips at the tree. The following colors are used
-
-                   Hit         Colorname     Default
-                   ----------------------------------
-                   none        "None"        black
-                   Probe1      "P1"          red
-                   Probe2      "P2"          green
-                   Probe3      "P3"          blue
-                   Probe1+2    "P7"          yellow
-                   Probe2+3    "P8"          cyan
-                   Probe3+1    "P9"          magenta
-                   Probe1+2+3  "All"         white
+		at the tips at the tree. First probe will be red, the
+		second green, the third blue. If multiple probes hit a
+                species it is displayed in mix-colors of red, green and blue.
 
 NOTE		If you do not see any colors, the colors
-                in 'Properties/Tree colors & fonts' are probably misconfigured.
+                in 'Properties/Tree-Colors' are probably misconfigured.
 
 
 

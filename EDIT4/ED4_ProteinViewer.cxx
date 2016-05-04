@@ -11,12 +11,12 @@
 // =======================================================================================
 
 #include "ed4_ProteinViewer.hxx"
-#include "ed4_seq_colors.hxx"
 #include "ed4_class.hxx"
 
 #include <AP_pro_a_nucs.hxx>
 #include <AP_codon_table.hxx>
 #include <Translate.hxx>
+#include <awt_seq_colors.hxx>
 #include <aw_question.hxx>
 #include <aw_preset.hxx>
 #include <aw_awars.hxx>
@@ -390,11 +390,10 @@ static void PV_WriteTranslatedSequenceToDB(ED4_orf_terminal *aaSeqTerm, const ch
         char *defaultAlignment = GBT_get_default_alignment(GLOBAL_gb_main);
         if (!defaultAlignment) error = GB_await_error();
         else {
-            GBDATA *gb_SeqData = GBT_find_sequence(gb_species, defaultAlignment);
+            GBDATA *gb_SeqData = GBT_read_sequence(gb_species, defaultAlignment);
             if (!gb_SeqData) {
-                error = GB_have_error()
-                    ? GB_await_error()
-                    : GBS_global_string("Species '%s' has no data in alignment '%s'", spName, defaultAlignment);
+                error = GB_get_error();
+                if (!error) error = GBS_global_string("Species '%s' has no data in alignment '%s'", spName, defaultAlignment);
             }
             else {
                 char *str_SeqData       = GB_read_string(gb_SeqData);
@@ -427,7 +426,7 @@ static void PV_WriteTranslatedSequenceToDB(ED4_orf_terminal *aaSeqTerm, const ch
                         if (gb_alignment_exists) {
                             int     skip_sp     = 0;
                             char   *question    = 0;
-                            GBDATA *gb_seq_data = GBT_find_sequence(gb_species, newAlignmentName);
+                            GBDATA *gb_seq_data = GBT_read_sequence(gb_species, newAlignmentName);
                             if (gb_seq_data) {
                                 e4_assert(ASKtoOverWriteData);
                                 question = GBS_global_string_copy("\"%s\" contain data in the alignment \"%s\"!", spName, newAlignmentName);
@@ -521,11 +520,10 @@ static void TranslateGeneToAminoAcidSequence(AW_root * /* root */, ED4_orf_termi
         char *defaultAlignment = GBT_get_default_alignment(GLOBAL_gb_main);
         if (!defaultAlignment) error = GB_await_error();
         else {
-            GBDATA *gb_SeqData = GBT_find_sequence(gb_species, defaultAlignment);
+            GBDATA *gb_SeqData = GBT_read_sequence(gb_species, defaultAlignment);
             if (!gb_SeqData) {
-                error = GB_have_error()
-                    ? GB_await_error()
-                    : GBS_global_string("Species '%s' has no data in alignment '%s'", speciesName, defaultAlignment);
+                error = GB_get_error();
+                if (!error) error = GBS_global_string("Species '%s' has no data in alignment '%s'", speciesName, defaultAlignment);
             }
             else {
                 e4_assert(startPos4Translation>=0 && startPos4Translation<=2);
@@ -704,29 +702,27 @@ void PV_SequenceUpdate_CB(GB_CB_TYPE gbtype) {
     {
         GB_transaction ta(GLOBAL_gb_main);
 
-        for (ED4_window *win = ED4_ROOT->first_window; win; win = win->next) {
-            ED4_cursor& cursor = win->cursor;
-            if (cursor.in_species_seq_terminal()) {
-                ED4_terminal *cursorTerminal = cursor.owner_of_cursor;
-                char         *speciesName    = cursorTerminal->to_sequence_terminal()->species_name;
-                for (int i=0; i<PV_AA_Terminals4Species; i++) {
-                    // get the corresponding orf_terminal skipping sequence_info terminal
-                    // $$$$$ sequence_terminal->sequence_info_terminal->aa_sequence_terminal $$$$$$
-                    cursorTerminal = cursorTerminal->get_next_terminal()->get_next_terminal();
-                    // Make sure it is ORF terminal
-                    if (cursorTerminal->is_orf_terminal()) {
-                        ED4_orf_terminal *orfTerm = cursorTerminal->to_orf_terminal();
-                        // Get the AA sequence flag - says which strand we are in
-                        int   aaStartPos = int(orfTerm->GET_aaStartPos());
-                        int aaStrandType = int(orfTerm->GET_aaStrandType());
-                        // retranslate the genesequence and store it to the orf_terminal
-                        TranslateGeneToAminoAcidSequence(ED4_ROOT->aw_root, orfTerm, speciesName, aaStartPos-1, aaStrandType);
-                    }
+        ED4_cursor *cursor = &current_cursor();
+        if (cursor->in_species_seq_terminal()) {
+            ED4_terminal *cursorTerminal = cursor->owner_of_cursor;
+            char         *speciesName    = cursorTerminal->to_sequence_terminal()->species_name;
+            for (int i=0; i<PV_AA_Terminals4Species; i++) {
+                // get the corresponding orf_terminal skipping sequence_info terminal
+                // $$$$$ sequence_terminal->sequence_info_terminal->aa_sequence_terminal $$$$$$
+                cursorTerminal = cursorTerminal->get_next_terminal()->get_next_terminal();
+                // Make sure it is ORF terminal
+                if (cursorTerminal->is_orf_terminal()) {
+                    ED4_orf_terminal *orfTerm = cursorTerminal->to_orf_terminal();
+                    // Get the AA sequence flag - says which strand we are in
+                    int   aaStartPos = int(orfTerm->GET_aaStartPos());
+                    int aaStrandType = int(orfTerm->GET_aaStrandType());
+                    // retranslate the genesequence and store it to the orf_terminal
+                    TranslateGeneToAminoAcidSequence(ED4_ROOT->aw_root, orfTerm, speciesName, aaStartPos-1, aaStrandType);
                 }
-                // Print missing DB entries
-                PV_PrintMissingDBentryInformation();
-                PV_RefreshWindow(ED4_ROOT->aw_root);
             }
+            // Print missing DB entries
+            PV_PrintMissingDBentryInformation();
+            PV_RefreshWindow(ED4_ROOT->aw_root);
         }
     }
 }
@@ -992,7 +988,7 @@ AW_window *ED4_CreateProteinViewer_window(AW_root *aw_root) {
     aws->create_button("HELP", "#help_text.xpm");
 
     aws->at("close");
-    aws->callback(AW_POPDOWN);
+    aws->callback((AW_CB0)AW_POPDOWN);
     aws->button_length(0);
     aws->create_button("CLOSE", "#close_text.xpm");
 
@@ -1037,7 +1033,7 @@ AW_window *ED4_CreateProteinViewer_window(AW_root *aw_root) {
         aws->update_toggle_field();
 
         aws->at("colMaps");
-        aws->callback(makeCreateWindowCallback(ED4_create_seq_colors_window, ED4_ROOT->sequence_colors));
+        aws->callback(AW_POPUP, (AW_CL)create_seq_colors_window, (AW_CL)ED4_ROOT->sequence_colors);
         aws->button_length(0);
         aws->create_button("COLORMAPS", "#colorMaps.xpm");
 

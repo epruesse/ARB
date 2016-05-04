@@ -82,7 +82,7 @@ static void trackAlignmentChanges(AW_window *aww) {
          gb_species && !error;
          gb_species = GBT_next_species(gb_species))
     {
-        GBDATA *gb_seq = GBT_find_sequence(gb_species, ali);
+        GBDATA *gb_seq = GBT_read_sequence(gb_species, ali);
         if (gb_seq) {
             // has data in wanted alignment
             const char *seq          = GB_read_char_pntr(gb_seq);
@@ -161,7 +161,7 @@ AW_window *NT_create_trackAliChanges_window(AW_root *root) {
     aws->load_xfig("trackali.fig");
 
     aws->at("close");
-    aws->callback(AW_POPDOWN);
+    aws->callback((AW_CB0)AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
@@ -172,7 +172,7 @@ AW_window *NT_create_trackAliChanges_window(AW_root *root) {
     aws->create_input_field(AWAR_TRACK_INITIALS);
 
     aws->at("ali_sel");
-    awt_create_ALI_selection_list(GLOBAL.gb_main, aws, AWAR_TRACK_ALI, "*=");
+    awt_create_selection_list_on_alignments(GLOBAL.gb_main, aws, AWAR_TRACK_ALI, "*=");
 
     aws->at("go");
     aws->callback(trackAlignmentChanges);

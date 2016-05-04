@@ -157,30 +157,6 @@ typedef CallbackData<AW_CL,AW_CL> UntypedCallbackData;
 // ------------------------------
 //      casted callback types
 
-template<typename RT>
-struct Callback_VV { // VV stands for arguments (VARIABLE, VARIABLE)
-    typedef StrictlyTypedCallback<RT,AW_CL,AW_CL,AW_CL> Signature;
-
-private:
-    Signature                     cb;
-    SmartPtr<UntypedCallbackData> cd;
-
-public:
-    Callback_VV(Signature CB, AW_CL P1, AW_CL P2) : cb(CB), cd(new UntypedCallbackData(P1, P2)) {}
-    Callback_VV(Signature CB, UntypedCallbackData::CallbackDataDeallocator dealloc, AW_CL P1, AW_CL P2) : cb(CB), cd(new UntypedCallbackData(P1, P2, dealloc)) {}
-
-    RT operator()() const { return cb(cd->p1, cd->p2, 0); }
-
-    bool operator <  (const Callback_VV& other) const { return cb<other.cb || (cb == other.cb && *cd<*other.cd); }
-    bool operator == (const Callback_VV& other) const { return cb == other.cb && *cd == *other.cd; }
-
-    bool same_function_as(const Callback_VV& other) const { return cb == other.cb; }
-
-    AW_CL callee() const { return cb.get_cb(); } // @@@ only intermediate - remove later
-    AW_CL inspect_CD1() const { return cd->p1; } // @@@ only intermediate - remove later
-    AW_CL inspect_CD2() const { return cd->p2; } // @@@ only intermediate - remove later
-};
-
 template<typename RT, typename FIXED>
 struct Callback_FVV { // FVV stands for arguments (FIXED, VARIABLE, VARIABLE)
     typedef StrictlyTypedCallback<RT,FIXED,AW_CL,AW_CL> Signature;
@@ -273,53 +249,6 @@ public:
 
 #define CONST_PARAM_T(T) typename ConstParamT<T>::Type 
 
-// ------------
-//      VV
-
-#define CBTYPE_VV_BUILDER_P1(BUILDER,CB,RESULT,SIG,P1,P1fun)                                                    \
-    template<typename P1>                                                                                       \
-    inline CB BUILDER(RESULT (*cb)(P1fun), P1 p1) {                                                             \
-        STATIC_ASSERT(CASTABLE_TO_AW_CL(P1));                                                                   \
-        return CB((SIG)cb, CAST_TO_AW_CL(P1,p1), 0);                                                            \
-    }                                                                                                           \
-    template<typename P1>                                                                                       \
-    inline CB BUILDER(RESULT (*cb)(P1fun),                                                                      \
-                      void (*dealloc)(P1), P1 p1) {                                                             \
-        STATIC_ASSERT(CASTABLE_TO_AW_CL(P1));                                                                   \
-        return CB((SIG)cb, (UntypedCallbackData::CallbackDataDeallocator)dealloc, CAST_TO_AW_CL(P1,p1), 0);     \
-    }
-
-#define CBTYPE_VV_BUILDER_P1P2(BUILDER,CB,RESULT,SIG,P1,P2,P1fun,P2fun)                                                 \
-    template<typename P1, typename P2>                                                                                  \
-    inline CB BUILDER(RESULT (*cb)(P1fun, P2fun),                                                                       \
-                      P1 p1, P2 p2) {                                                                                   \
-        STATIC_ASSERT(CASTABLE_TO_AW_CL(P1) && CASTABLE_TO_AW_CL(P2));                                                  \
-        return CB((SIG)cb, CAST_TO_AW_CL(P1,p1), CAST_TO_AW_CL(P2,p2));                                                 \
-    }                                                                                                                   \
-    template<typename P1, typename P2>                                                                                  \
-    inline CB BUILDER(RESULT (*cb)(P1fun, P2fun),                                                                       \
-                      void (*dealloc)(P1,P2), P1 p1, P2 p2) {                                                           \
-        STATIC_ASSERT(CASTABLE_TO_AW_CL(P1) && CASTABLE_TO_AW_CL(P2));                                                  \
-        return CB((SIG)cb, (UntypedCallbackData::CallbackDataDeallocator)dealloc, CAST_TO_AW_CL(P1,p1), CAST_TO_AW_CL(P2,p2)); \
-    }
-
-#define CBTYPE_VV_BUILDER_NP12(BUILDER,CB,RESULT,SIG,P1,P2)                                     \
-    CBTYPE_VV_BUILDER_P1(BUILDER,CB,RESULT,SIG,P1,P1);                                          \
-    CBTYPE_VV_BUILDER_P1(BUILDER,CB,RESULT,SIG,P1,CONST_PARAM_T(P1));                           \
-    CBTYPE_VV_BUILDER_P1P2(BUILDER,CB,RESULT,SIG,P1,P2,P1,P2);                                  \
-    CBTYPE_VV_BUILDER_P1P2(BUILDER,CB,RESULT,SIG,P1,P2,P1,CONST_PARAM_T(P2));                   \
-    CBTYPE_VV_BUILDER_P1P2(BUILDER,CB,RESULT,SIG,P1,P2,CONST_PARAM_T(P1),P2);                   \
-    CBTYPE_VV_BUILDER_P1P2(BUILDER,CB,RESULT,SIG,P1,P2,CONST_PARAM_T(P1),CONST_PARAM_T(P2))
-
-#define CBTYPE_VV_BUILDER_TEMPLATES(BUILDER,CB,RESULT,SIG)      \
-    inline CB BUILDER(RESULT (*cb)()) {                         \
-        return CB((SIG)cb, 0, 0);                               \
-    }                                                           \
-    CBTYPE_VV_BUILDER_NP12(BUILDER,CB,RESULT,SIG,P1,P2)
-
-// -------------
-//      FVV
-
 #define CBTYPE_FVV_BUILDER_NP(BUILDER,CB,RESULT,FIXED,SIG)      \
     inline CB BUILDER(RESULT (*cb)(FIXED)) {                    \
         return CB((SIG)cb, 0, 0);                               \
@@ -381,18 +310,12 @@ public:
         return CB((SIG)cb, (UntypedCallbackData::CallbackDataDeallocator)dealloc, CAST_TO_AW_CL(P,p));  \
     }
 
-// -------------
-//      FFV
-
 #define CBTYPE_FFV_BUILDER_TEMPLATES(BUILDER,CB,RESULT,F1,F2,SIG)          \
     inline CB BUILDER(RESULT (*cb)()) { return CB((SIG)cb, 0); }           \
     inline CB BUILDER(RESULT (*cb)(F1)) { return CB((SIG)cb, 0); }         \
     inline CB BUILDER(RESULT (*cb)(F1,F2)) { return CB((SIG)cb, 0); }      \
     CBTYPE_FVV_BUILDER_P(BUILDER,CB,RESULT,F1,F2,SIG,P,P);                 \
     CBTYPE_FVV_BUILDER_P(BUILDER,CB,RESULT,F1,F2,SIG,P,CONST_PARAM_T(P))
-
-// -------------
-//      FVF
 
 #define CBTYPE_FVF_BUILDER_P1_F1F2(BUILDER,CB,RESULT,F1,F2,SIG,P1,P1fun)                                        \
     template<typename P1>                                                                                       \
@@ -436,11 +359,6 @@ public:
 
 // declares the callback type (CBTYPE) and the makeCBTYPE() templates needed to ensure
 // typecheck between callback-signature and bound parameters
-
-#define DECLARE_CBTYPE_VV_AND_BUILDERS(CBTYPE,RESULT)           \
-    typedef Callback_VV<RESULT> CBTYPE;                         \
-    CBTYPE_VV_BUILDER_TEMPLATES(make##CBTYPE,CBTYPE,RESULT,     \
-                                CBTYPE::Signature::FuncType)
 
 #define DECLARE_CBTYPE_FVV_AND_BUILDERS(CBTYPE,RESULT,FIXED)            \
     typedef Callback_FVV<RESULT, FIXED> CBTYPE;                         \

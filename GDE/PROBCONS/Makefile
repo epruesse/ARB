@@ -1,23 +1,21 @@
 # Probcons for ARB
 # by Arne Boeckmann (2013)
 
-PROG   = PROBCONS
-TARGET = $(ARBHOME)/bin/probcons
+PROG  = PROBCONS
 
 
 # ARBs standard target
-$(MAIN) : $(TARGET)
+$(MAIN) : probcons.stamp
 
 clean :
 	+cd probcons && make clean
-	rm -f $(TARGET)
+	rm -f $(ARBHOME)/bin/probcons
 	rm -f probcons.stamp
 
-$(TARGET) : probcons.stamp
-	cp -f probcons/probcons $(TARGET)
 
-probcons.stamp:
+probcons.stamp :
 	+cd probcons && make
+	cp -f probcons/probcons $(ARBHOME)/bin/probcons
 	touch probcons.stamp
 
 .PHONY : clean

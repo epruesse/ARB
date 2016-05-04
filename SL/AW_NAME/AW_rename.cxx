@@ -77,51 +77,41 @@ GB_ERROR AW_select_nameserver(GBDATA *gb_main, GBDATA *gb_other_main) {
                 char **fieldNames = (char **)malloc(serverCount*sizeof(*fieldNames));
                 for (int c = 0; c<serverCount; c++) {
                     const char *ipport = GBS_read_arb_tcp(nameservers[c]);
-                    if (!ipport) {
-                        error = GB_await_error();
-                        fieldNames[c] = NULL;
-                    }
-                    else {
-                        fieldNames[c] = nulldup(GBS_scan_arb_tcp_param(ipport, "-f"));      // may return 0
+                    fieldNames[c]      = nulldup(GBS_scan_arb_tcp_param(ipport, "-f")); // may return 0
 
-                        // parameter -f contains default value (e.g. '-fstart=1')
-                        if (fieldNames[c]) {
-                            char *equal = strchr(fieldNames[c], '=');
-                            if (equal) equal[0] = 0;
-                        }
+                    // parameter -f contains default value (e.g. '-fstart=1')
+                    if (fieldNames[c]) {
+                        char *equal = strchr(fieldNames[c], '=');
+                        if (equal) equal[0] = 0;
                     }
                 }
 
-                if (!error) {
-                    if (serverCount == 1) { // exactly 1 server defined -> don't ask
-                        error = set_addid(gb_main, fieldNames[0]);
+                if (serverCount == 1) { // exactly 1 server defined -> don't ask
+                    error = set_addid(gb_main, fieldNames[0]);
+                }
+                else { // let the user select which nameserver to use
+                    int         len     = serverCount; // commas+0term
+                    const char *nofield = "None (only 'acc')";
+
+                    for (int c = 0; c<serverCount; c++) {
+                        if (fieldNames[c]) len += strlen(fieldNames[c]);
+                        else len += strlen(nofield);
                     }
-                    else { // let the user select which nameserver to use
-                        aw_assert(serverCount>1);
 
-                        int         len     = serverCount; // commas+0term
-                        const char *nofield = "None (only 'acc')";
-
-                        for (int c = 0; c<serverCount; c++) {
-                            if (fieldNames[c]) len += strlen(fieldNames[c]);
-                            else len += strlen(nofield);
-                        }
-
-                        char *buttons = (char*)malloc(len);
-                        buttons[0]    = 0;
-                        for (int c = 0; c<serverCount; c++) {
-                            if (c) strcat(buttons, ",");
-                            strcat(buttons, fieldNames[c] ? fieldNames[c] : nofield);
-                        }
-
-                        int answer = aw_question("nameserv_select",
-                                                 "Select if and which additional DB field you want to use",
-                                                 buttons, false, "namesadmin.hlp");
-
-                        error = set_addid(gb_main, fieldNames[answer]);
-
-                        free(buttons);
+                    char *buttons = (char*)malloc(len);
+                    buttons[0]    = 0;
+                    for (int c = 0; c<serverCount; c++) {
+                        if (c) strcat(buttons, ",");
+                        strcat(buttons, fieldNames[c] ? fieldNames[c] : nofield);
                     }
+
+                    int answer = aw_question("nameserv_select",
+                                             "Select if and which additional DB field you want to use",
+                                             buttons, false, "namesadmin.hlp");
+
+                    error = set_addid(gb_main, fieldNames[answer]);
+
+                    free(buttons);
                 }
 
                 for (int c = 0; c<serverCount; c++) free(fieldNames[c]);
@@ -207,8 +197,6 @@ public:
     }
 
     GB_ERROR connect(GBDATA *gb_main) {
-        aw_assert(!GB_have_error());
-
         arb_progress::show_comment("Connecting to name server");
 
         GB_ERROR err = 0;
@@ -267,7 +255,6 @@ public:
                 err = reconnect(gb_main);
             }
         }
-        aw_assert(!GB_have_error());
         return err;
     }
 
@@ -312,7 +299,8 @@ PersistentNameServerConnection::~PersistentNameServerConnection() {
 // --------------------------------------------------------------------------------
 
 GB_ERROR AW_test_nameserver(GBDATA *gb_main) {
-    return name_server.connect(gb_main);
+    GB_ERROR err = name_server.connect(gb_main);
+    return err;
 }
 
 // --------------------------------------------------------------------------------
@@ -370,7 +358,6 @@ GB_ERROR AWTC_recreate_name(GBDATA *gb_species) {
     GBDATA       *gb_main = GB_get_root(gb_species);
     arb_progress  progress("Recreating species ID");
     GB_ERROR      error   = name_server.connect(gb_main);
-
     if (!error) {
         const char *add_field = AW_get_nameserver_addid(gb_main);
         char       *ali_name  = GBT_get_default_alignment(gb_main);
@@ -463,7 +450,7 @@ GB_ERROR AWTC_pars_names(GBDATA *gb_main, bool *isWarningPtr) {
     // rename species according to name_server
     // 'isWarning' is set to true, in case of duplicates-warning
 
-    arb_progress gen_progress("Generating new shortnames (IDs)");
+    arb_progress gen_progress("Generating new names", 2);
     GB_ERROR     err       = name_server.connect(gb_main);
     bool         isWarning = false;
 
@@ -476,8 +463,8 @@ GB_ERROR AWTC_pars_names(GBDATA *gb_main, bool *isWarningPtr) {
             GB_ERROR  warning  = 0;
 
             if (spcount) {
-                arb_progress  progress("Renaming species", spcount);
-                const char   *add_field = AW_get_nameserver_addid(gb_main);
+                arb_progress progress("Renaming species", spcount);
+                const char *add_field = AW_get_nameserver_addid(gb_main);
 
                 for (GBDATA *gb_species = GBT_first_species(gb_main);
                      gb_species && !err;
@@ -568,12 +555,12 @@ AW_window *AWTC_create_rename_window(AW_root *root, GBDATA *gb_main) {
 
     aws->load_xfig("awtc/autoren.fig");
 
+    aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("close");
-    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->at("help");
     aws->callback(makeHelpCallback("sp_rename.hlp"));
+    aws->at("help");
     aws->create_button("HELP", "HELP", "H");
 
     aws->at("go");

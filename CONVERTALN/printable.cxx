@@ -47,38 +47,33 @@ void to_printable(const FormattedFile& in, const char *outf) {
 
     int total_seq = ali.get_count();
     int maxsize   = ali.get_max_len();
+    int base_nums[total_seq];
+    for (int i = 0; i<total_seq; ++i) base_nums[i] = 0;
 
-    ca_assert(implicated(total_seq == 0, maxsize == -1));
+    int current = 0;
+    while (maxsize > current) {
+        for (int indi = 0; indi < total_seq; indi++) {
+            const Seq&  seq        = ali.get(indi);
+            int         length     = seq.get_len();
+            const char *sequence   = seq.get_seq();
+            int         base_count = 0;
+            for (int index = 0; index < PRTLENGTH && (current + index) < length; index++)
+                if (!is_gapchar(sequence[index + current]))
+                    base_count++;
 
-    if (total_seq>0) {
-        int base_nums[total_seq];
-        for (int i = 0; i<total_seq; ++i) base_nums[i] = 0;
+            // check if the first char is base or not
+            int   start;
+            if (current < length && !is_gapchar(sequence[current]))
+                start = base_nums[indi] + 1;
+            else
+                start = base_nums[indi];
 
-        int current = 0;
-        while (maxsize > current) {
-            for (int indi = 0; indi < total_seq; indi++) {
-                const Seq&  seq        = ali.get(indi);
-                int         length     = seq.get_len();
-                const char *sequence   = seq.get_seq();
-                int         base_count = 0;
-                for (int index = 0; index < PRTLENGTH && (current + index) < length; index++)
-                    if (!is_gapchar(sequence[index + current]))
-                        base_count++;
-
-                // check if the first char is base or not
-                int   start;
-                if (current < length && !is_gapchar(sequence[current]))
-                    start = base_nums[indi] + 1;
-                else
-                    start = base_nums[indi];
-
-                printable_print_line(seq.get_id(), seq.get_seq(), current, start, write);
-                base_nums[indi] += base_count;
-            }
-            current += PRTLENGTH;
-            if (maxsize > current)
-                write.out("\n\n");
+            printable_print_line(seq.get_id(), seq.get_seq(), current, start, write);
+            base_nums[indi] += base_count;
         }
+        current += PRTLENGTH;
+        if (maxsize > current)
+            write.out("\n\n");
     }
 
     write.seq_done(ali.get_count());

@@ -157,7 +157,7 @@ public:
 
     Counted(T *p) : counter(0), pointer(p) {
         DUMP_SMART_PTRS_DO(fprintf(stderr, "pointer %p now controlled by Counted\n", getPointer()));
-        tpl_assert(p); // if you like to assign NULL, consider using SmartPtr::assign or SmartPtr::SetNull
+        tpl_assert(p); // if you like to assign NULL, consider using SmartPtr::assign
     }
 #ifdef DEBUG
     ~Counted() {

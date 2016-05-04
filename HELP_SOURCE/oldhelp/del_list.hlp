@@ -10,11 +10,10 @@ UP	arb_ntree.hlp
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		Delete Listed
+TITLE		DELETE LISTED SPECIES/GENES
 
-OCCURRENCE	ARB_NT/Species/Search and Query/Delete Listed
-		ARB_NT/Genome/Search and query/Delete Listed
-		ARB_NT/Genome/Experiment/Search and query/Delete Listed
+OCCURRENCE	ARB_NT/Species/Search: DELETE LISTED 
+		ARB_NT/Genes/Search: DELETE LISTED 
 
 DESCRIPTION	Deletes all database entries (sequence and additional
 		information stored within fields) assigned to the

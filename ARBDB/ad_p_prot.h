@@ -24,7 +24,6 @@ const char *GBP_GB_CASE_2_charPtr(GB_CASE sensitivity);
 GB_CASE GBP_charPtr_2_GB_CASE(const char *sensitivity);
 const char *GBP_GB_alignment_type_2_charPtr(GB_alignment_type ali_type);
 GB_alignment_type GBP_charPtr_2_GB_alignment_type(const char *ali_type);
-void GBP_prepare_to_die(void);
 
 #else
 #error ad_p_prot.h included twice

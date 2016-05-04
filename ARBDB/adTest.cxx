@@ -9,14 +9,13 @@
 // =============================================================== //
 
 #include "gb_key.h"
-#include <arb_misc.h>
 
 const char *GB_get_db_path(GBDATA *gbd) {
     GBDATA *gb_father = GB_FATHER(gbd);
 
     if (gb_father) {
         const char *father_path = GB_get_db_path(gb_father);
-        const char *key         = GB_KEY(gbd);
+        char       *key         = GB_KEY(gbd);
         RETURN_LOCAL_ALLOC(GBS_global_string_copy("%s/%s", father_path, key ? key : "<gbmain>"));
     }
     return "";
@@ -99,7 +98,7 @@ static void dump_internal(GBDATA *gbd, int *lines_allowed) {
         else {
             switch (gbd->type()) {
                 case GB_INT:    { content = GBS_global_string("%li", GB_read_int(gbd)); break; }
-                case GB_FLOAT:  { content = ARB_float_2_ascii(GB_read_float(gbd)); break; }
+                case GB_FLOAT:  { content = GBS_global_string("%f", (float)GB_read_float(gbd)); break; }
                 case GB_BYTE:   { content = GBS_global_string("%i", GB_read_byte(gbd)); break; }
                 case GB_STRING: { content = GB_read_char_pntr(gbd); content_len = GB_read_count(gbd); break; }
                 case GB_LINK:   { content = GBS_global_string("link to %p", GB_follow_link(gbd)); break; }
@@ -216,7 +215,7 @@ static GB_ERROR gb_fix_recursive(GBDATA *gbd) {
 
             gb_assert(keyq != 0);
             {
-                long gbm_index    = quark2gbmindex(Main, keyq);
+                long gbm_index    = GB_QUARK_2_GBMINDEX(Main, keyq);
                 GB_GBM_INDEX(gbd) = gbm_index;      // set new index
 
                 // @@@ FIXME: above command has no effect

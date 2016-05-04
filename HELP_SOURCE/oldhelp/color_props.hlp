@@ -10,7 +10,7 @@ UP	glossary.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Color properties
 
-OCCURRENCE	<any properties menu>/Colors and fonts
+OCCURRENCE	many places
 
 DESCRIPTION     This is a generic window that allows you to configure
                 the display colors of the current application.
@@ -34,17 +34,7 @@ DESCRIPTION     This is a generic window that allows you to configure
 
 NOTES		See 'xcolors' for color names.
 
-EXAMPLES	When called from ARB_NT, this window allows to define colours and fonts
-                for the tree display area.
-
-                    Different colours and fonts can be used to indicate marked and
-                    unmarked species as well as branches or groups containing
-                    marked and unmarked species.
-
-                When called from ARB_EDIT4, this window allows to define colours and fonts
-                for the sequence display area.
-
-                    See also LINK{e4_background_priority.hlp}
+EXAMPLES	None
 
 WARNINGS	None
 

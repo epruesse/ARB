@@ -43,7 +43,7 @@ SPECIES: while ($gb_species) {
   last SPECIES if not $gb_species;
 
   my $name = BIO::read_name($gb_species);
-  my $gb_sequence = BIO::find_sequence($gb_species, $current_alignment);
+  my $gb_sequence = BIO::read_sequence($gb_species, $current_alignment);
 
   if ($gb_sequence) {
     my $sequence = ARB::read_string($gb_sequence);

@@ -57,7 +57,6 @@ NOTES       If SAIs are to be visualized in Secondary Structure Editor window, o
             select SAI, define CTT and check ENABLE VISUALIZATION check box in Primary
             structure editor window using VISUALIZE SAI function (under VIEW menu in
             PRIMARY EDITOR).
-            Additionally SAI visualization has to be enabled in LINK{sec_display.hlp}.
             
             In order to retain the settings of CTT and associated SAIs, one should save
             the properties by going to PROPERTIES->SAVE PROPERTIES menu in primary
@@ -65,8 +64,6 @@ NOTES       If SAIs are to be visualized in Secondary Structure Editor window, o
             (.arb_prop/edit4.arb) and deleting or modifying this file will lose all the
             information about CTT definitions used for visualization of SAIs for future
             sessions.
-
-	    See also LINK{e4_background_priority.hlp}.
 
 EXAMPLES	None
 

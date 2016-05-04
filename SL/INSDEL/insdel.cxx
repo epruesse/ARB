@@ -887,8 +887,6 @@ void TEST_AliData() {
     TEST_FAILS_INSIDE_VALGRIND(TEST_EXPECT_CODE_ASSERTION_FAILS(illegal_alidata_composition)); // composing different unitsizes shall fail
 }
 
-TEST_PUBLISH(TEST_AliData);
-
 #endif // UNIT_TESTS
 
 // --------------------------------------------------------------------------------
@@ -1794,7 +1792,7 @@ static ARB_ERROR add_some_SAIs(GBDATA *gb_main, const char *ali_name) {
     return error;
 }
 
-static void test_insert_delete_DB() {
+void TEST_insert_delete_DB() {
     GB_shell    shell;
     ARB_ERROR   error;
     const char *ali_name = "ali_mini";
@@ -2108,9 +2106,6 @@ static void test_insert_delete_DB() {
     GB_close(gb_main);
     TEST_EXPECT_NO_ERROR(error.deliver());
 }
-void TEST_insert_delete_DB() {
-    test_insert_delete_DB(); // wrap test code in subroutine (otherwise nm 2.24 fails to provide source-location, even if TEST_PUBLISH is used)
-}
 
 void TEST_insert_delete_DB_using_SAI() {
     GB_shell    shell;
@@ -2232,7 +2227,6 @@ void TEST_insert_delete_DB_using_SAI() {
     GB_close(gb_main);
     TEST_EXPECT_NO_ERROR(error.deliver());
 }
-TEST_PUBLISH(TEST_insert_delete_DB_using_SAI);
 
 #endif // UNIT_TESTS
 

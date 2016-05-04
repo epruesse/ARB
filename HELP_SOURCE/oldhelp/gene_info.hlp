@@ -17,20 +17,18 @@ SUB     gen_create.hlp
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE           Gene information
+TITLE           GENE INFORMATION
 
 OCCURRENCE      ARB_GENEMAP/<INFO> button (on the left side)
-                ARB_NT/Genome/Gene information
-                ARB_NT/Genome/Search and Query/Info
-                ARB_GENEMAP/Genome/Gene information
-                ARB_GENEMAP/Genome/Search and Query/Info
+                ARB_NT/Genes/Info
+                ARB_NT/Genes/Search
+                ARB_GENEMAP/Genes/Info
+                ARB_GENEMAP/Genes/Search
 
 DESCRIPTION     Displays gene information stored within the 'fields' (see LINK{glossary.hlp}).
-
                 The particular 'gene' (see LINK{glossary.hlp})
                 can be 'marked' or 'unmarked' (see LINK{glossary.hlp})
                 by pressing the checkbox after the 'Marked?' prompt.
-
                 Editing of 'field' entries is enabled or prevented by
                 pressing the 'Edit enabled?' checkbox.
 
@@ -46,8 +44,11 @@ NOTES           The 'SEARCH & QUERY' window can be displayed by pressing the <SE
                 window (ARB_NT/Protection) equal to or higher than that
                 assigned to the selected 'field'
 
-		LINK{copyNpaste.hlp} can be used in the 'Edit box' subwindow. 
-		This provides is easy way to manually export/import data.
+                Cut and paste of the window system can be used in the 'Edit
+                box' subwindow. This provides is an easy way to export/import
+                data.
+                Use the left mouse button to mark (cut is done automatically).
+                Then use the middle mouse button to paste.
 
                 When you open this window it will always show the information of
                 the current species. That means if you select another species (in ARB_NT or in the editor)

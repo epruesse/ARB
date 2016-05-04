@@ -45,7 +45,6 @@ else
                 libmotif-common \
                 libxerces-c3.1 \
                 transfig \
-                xfig \
                 xterm \
 
 #                treetool 

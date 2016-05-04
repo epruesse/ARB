@@ -261,9 +261,10 @@ GB_HASH *GBS_create_hash(long estimated_elements, GB_CASE case_sens) {
      * @param case_sens GB_IGNORE_CASE or GB_MIND_CASE
      * Uses linked lists to avoid collisions.
      */
+    GB_HASH *hs;
     long     size = hash_size(estimated_elements);
-    GB_HASH *hs   = (GB_HASH*)GB_calloc(sizeof(*hs), 1);
 
+    hs            = (GB_HASH*)GB_calloc(sizeof(*hs), 1);
     hs->size      = size;
     hs->nelem     = 0;
     hs->case_sens = case_sens;
@@ -576,8 +577,28 @@ void GBS_hash_do_const_loop(const GB_HASH *hs, gb_hash_const_loop_type func, voi
     }
 }
 
-size_t GBS_hash_elements(const GB_HASH *hs) {
-    return hs->nelem;
+#if defined(WARN_TODO)
+#warning rename GBS_hash_count_elems -> GBS_hash_elements
+#endif
+
+size_t GBS_hash_count_elems(const GB_HASH *hs) {
+#if defined(DEBUG)
+    // @@@ old code, just left here to ensure hs->nelem is correct --ralf Mar/2010
+    size_t count = 0;
+    size_t hsize = hs->size;
+    for (size_t i = 0; i<hsize; ++i) {
+        gbs_hash_entry *e;
+        for (e=hs->entries[i]; e; e=e->next) {
+            if (e->val) ++count;
+        }
+    }
+
+    gb_assert(count == hs->nelem);
+#else    
+    size_t count = hs->nelem;
+#endif // DEBUG
+
+    return count;
 }
 
 const char *GBS_hash_next_element_that(const GB_HASH *hs, const char *last_key, bool (*condition)(const char *key, long val, void *cd), void *cd) {
@@ -875,8 +896,8 @@ static long erase_from_hash(const char *key, long val, void *cl_fromHash) {
 }
 
 static bool hashes_are_equal(GB_HASH *h1, GB_HASH *h2) {
-    size_t count1 = GBS_hash_elements(h1);
-    size_t count2 = GBS_hash_elements(h2);
+    size_t count1 = GBS_hash_count_elems(h1);
+    size_t count2 = GBS_hash_count_elems(h2);
 
     bool equal = (count1 == count2);
     if (equal) {
@@ -885,7 +906,7 @@ static bool hashes_are_equal(GB_HASH *h1, GB_HASH *h2) {
         GBS_hash_do_loop(h1, insert_into_hash, copy);
         GBS_hash_do_loop(h2, erase_from_hash, copy);
 
-        equal = (GBS_hash_elements(copy) == 0);
+        equal = (GBS_hash_count_elems(copy) == 0);
         GBS_free_hash(copy);
     }
     return equal;
@@ -944,15 +965,15 @@ void TEST_GBS_write_hash() {
         GB_HASH *hash = TEST.get_hash(case_sens);
 
         GBS_write_hash(hash, "foo", 1);
-        TEST_EXPECT_EQUAL(GBS_hash_elements(hash), 1);
+        TEST_EXPECT_EQUAL(GBS_hash_count_elems(hash), 1);
         TEST_EXPECT_EQUAL(GBS_read_hash(hash, "foo"), 1);
 
         GBS_write_hash(hash, "foo", 2);
-        TEST_EXPECT_EQUAL(GBS_hash_elements(hash), 1);
+        TEST_EXPECT_EQUAL(GBS_hash_count_elems(hash), 1);
         TEST_EXPECT_EQUAL(GBS_read_hash(hash, "foo"), 2);
         
         GBS_write_hash(hash, "foo", 0);
-        TEST_EXPECT_ZERO(GBS_hash_elements(hash));
+        TEST_EXPECT_ZERO(GBS_hash_count_elems(hash));
         TEST_EXPECT_ZERO(GBS_read_hash(hash, "foo"));
 
         GBS_write_hash(hash, "foo", 1);
@@ -961,7 +982,7 @@ void TEST_GBS_write_hash() {
         GBS_write_hash(hash, "bar", 2);
 
         if (case_sens) {
-            TEST_EXPECT_EQUAL(GBS_hash_elements(hash), 4);
+            TEST_EXPECT_EQUAL(GBS_hash_count_elems(hash), 4);
 
             TEST_EXPECT_EQUAL(GBS_read_hash(hash, "foo"), 1);
             TEST_EXPECT_EQUAL(GBS_read_hash(hash, "FOO"), 2);
@@ -971,7 +992,7 @@ void TEST_GBS_write_hash() {
             TEST_EXPECT_EQUAL(test_hash_count_value(hash, 2), 2);
         }
         else {
-            TEST_EXPECT_EQUAL(GBS_hash_elements(hash), 2);
+            TEST_EXPECT_EQUAL(GBS_hash_count_elems(hash), 2);
 
             TEST_EXPECT_EQUAL(GBS_read_hash(hash, "foo"), 2);
             TEST_EXPECT_EQUAL(GBS_read_hash(hash, "FOO"), 2);

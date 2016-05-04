@@ -454,12 +454,9 @@ static void freeTreeNode(nodeptr p) {
 }
 
 static void freeTree(tree *tr) {
-    int leafs = tr->mxtips;
-    int nodes = leafs_2_nodes(leafs, ROOTED);
+    for (int i = 1; i <= tr->mxtips; i++) freeTreeNode(tr->nodep[i]);
 
-    for (int i = 1; i <= leafs; i++) freeTreeNode(tr->nodep[i]);
-
-    for (int i = leafs+1; i <= nodes; i++) {
+    for (int i = tr->mxtips+1; i <= 2*(tr->mxtips)-2; i++) {
         nodeptr p = tr->nodep[i];
         if (p) {
             nodeptr q = p->next;
@@ -1757,10 +1754,6 @@ static bool writeToArb() {
     if (error) {
         fprintf(stderr, "Error in arb_dnarates: %s\n", error);
     }
-
-    free(cats);
-    free(rates);
-
     return !error;
 }
 
@@ -1980,7 +1973,7 @@ int ARB_main(int argc, char *argv[]) {
             if (!anerror && dbsavename) saveArb(dbsavename);
         }
         closeArb();
-        freeTree(tr);
+        if (!anerror) freeTree(tr);
     }
 
     if (wantSTDIN(inputname)) fclose(infile);

@@ -248,8 +248,8 @@ void AWT_canvas::zoom(AW_device *device, bool zoomIn, const Rectangle& wanted_pa
     if ((rect.r-rect.l)<EPS) rect.r = rect.l+1;
     if ((rect.b-rect.t)<EPS) rect.b = rect.t+1;
 
-    AW_pos max_trans_to_fit = 0;
-
+    AW_pos max_trans_to_fit;
+    
     switch (zoom_mode) {
         case AWT_ZOOM_BOTH:
             trans_to_fit     = max((rect.r-rect.l)/wanted.width(), (rect.b-rect.t)/wanted.height());
@@ -278,7 +278,7 @@ void AWT_canvas::zoom(AW_device *device, bool zoomIn, const Rectangle& wanted_pa
 }
 
 inline void nt_draw_zoom_box(AW_device *device, int gc, AW_pos x1, AW_pos y1, AW_pos x2, AW_pos y2) {
-    device->box(gc, AW::FillStyle::EMPTY, x1, y1, x2-x1, y2-y1);
+    device->box(gc, false, x1, y1, x2-x1, y2-y1);
 }
 inline void nt_draw_zoom_box(AW_device *device, AWT_canvas *scr) {
     nt_draw_zoom_box(device, scr->drag_gc,
@@ -340,19 +340,6 @@ void AWT_canvas::refresh() {
 void AWT_resize_cb(UNFIXED, AWT_canvas *scr) {
     scr->zoom_reset();
     AWT_expose_cb(NULL, scr);
-}
-
-void AWT_GC_changed_cb(GcChange whatChanged, AWT_canvas *scr) {
-    // standard callback which may be passed to AW_manage_GC
-    switch (whatChanged) {
-        case GC_COLOR_CHANGED:
-        case GC_COLOR_GROUP_USE_CHANGED:
-            AWT_expose_cb(NULL, scr);
-            break;
-        case GC_FONT_CHANGED:
-            AWT_resize_cb(NULL, scr);
-            break;
-    }
 }
 
 static void canvas_focus_cb(AW_window *, AWT_canvas *scr) {
@@ -437,10 +424,10 @@ void AWT_graphic::postevent_handler(GBDATA *gb_main) {
     // handle AWT_graphic_exports
 
     if (exports.save) {
-        GB_ERROR error = save(gb_main, NULL);
+        GB_ERROR error = save(gb_main, 0, 0, 0);
         if (error) {
             aw_message(error);
-            load(gb_main, NULL);
+            load(gb_main, 0, 0, 0);
         }
         exports.structure_change = 1;
     }
@@ -493,13 +480,10 @@ static void input_event(AW_window *aww, AWT_canvas *scr) {
         scr->init_device(device);
 
         scr->gfx->show(click_device);
-        if (event.type == AW_Mouse_Press) {
-            scr->gfx->drag_target_detection(false);
-            // drag_target_detection is off by default.
-            // it should be activated in handle_command (by all modes that need it)
-        }
+        click_device->get_clicked_line(&scr->clicked_line);
+        click_device->get_clicked_text(&scr->clicked_text);
 
-        AWT_graphic_event gevent(scr->mode, event, false, click_device);
+        AWT_graphic_event gevent(scr->mode, event, false, &scr->clicked_line, &scr->clicked_text);
         scr->gfx->handle_command(device, gevent);
 
         scr->postevent_handler();
@@ -592,30 +576,38 @@ static void motion_event(AW_window *aww, AWT_canvas *scr) {
         scr->scroll(-dx*3, -dy*3);
     }
     else {
+        bool run_command = true;
+
         if (event.button == AW_BUTTON_LEFT || event.button == AW_BUTTON_RIGHT) {
-            if (scr->mode == AWT_MODE_ZOOM) {
-                if (scr->gfx->exports.zoom_mode != AWT_ZOOM_NEVER) {
+            switch (scr->mode) {
+                case AWT_MODE_ZOOM:
                     nt_draw_zoom_box(device, scr);
                     scr->set_dragEndpoint(event.x, event.y);
                     nt_draw_zoom_box(device, scr);
-                }
-            }
-            else {
-                AW_device_click *click_device = NULL;
+                    run_command = false;
+                    break;
 
-                if (scr->gfx->wants_drag_target()) {
-                    // drag/drop-target is only updated if requested via AWT_graphic::drag_target_detection
-                    click_device = aww->get_click_device(AW_MIDDLE_AREA, event.x, event.y, AWT_CATCH);
+                case AWT_MODE_MOVE: {
+                    scr->init_device(device);
+                    AW_device_click *click_device = aww->get_click_device(AW_MIDDLE_AREA, event.x, event.y, AWT_CATCH);
                     click_device->set_filter(AW_CLICK_DROP);
-
                     scr->init_device(click_device);
                     scr->gfx->show(click_device);
+                    click_device->get_clicked_line(&scr->clicked_line);
+                    click_device->get_clicked_text(&scr->clicked_text);
+                    run_command  = true;
+                    break;
                 }
-
-                scr->init_device(device);
-                AWT_graphic_event gevent(scr->mode, event, true, click_device);
-                scr->gfx->handle_command(device, gevent);
+                default:
+                    break;
             }
+        }
+
+        if (run_command) {
+            scr->init_device(device);
+
+            AWT_graphic_event gevent(scr->mode, event, true, &scr->clicked_line, &scr->clicked_text);
+            scr->gfx->handle_command(device, gevent);
         }
     }
 
@@ -749,11 +741,11 @@ AWT_canvas::AWT_canvas(GBDATA *gb_maini, AW_window *awwi, const char *gc_base_na
 // --------------------------
 //      AWT_nonDB_graphic
 
-GB_ERROR AWT_nonDB_graphic::load(GBDATA *, const char *) {
+GB_ERROR AWT_nonDB_graphic::load(GBDATA *, const char *, AW_CL, AW_CL) {
     return "AWT_nonDB_graphic cannot be loaded";
 }
 
-GB_ERROR AWT_nonDB_graphic::save(GBDATA *, const char *) {
+GB_ERROR AWT_nonDB_graphic::save(GBDATA *, const char *, AW_CL, AW_CL) {
     return "AWT_nonDB_graphic cannot be saved";
 }
 
@@ -769,5 +761,47 @@ void AWT_nonDB_graphic::update(GBDATA *) {
 #endif // DEBUG
 }
 
+const AW_clicked_element *AWT_graphic_event::best_click(ClickPreference prefer) {
+    // returns the element with lower distance (to mouse-click- or key-"click"-position).
+    // or NULL (if no element was found inside catch-distance)
+
+    const AW_clicked_element *bestClick = 0;
+
+    if (M_cl->exists) {
+        if (M_ct->exists) {
+            switch (prefer) {
+                case PREFER_NEARER:
+                    if (M_cl->distance < M_ct->distance) {
+                        bestClick = M_cl;
+                    }
+                    else {
+                        bestClick = M_ct;
+                    }
+                    break;
+
+                case PREFER_LINE: bestClick = M_cl; break;
+                case PREFER_TEXT: bestClick = M_ct; break;
+            }
+        }
+        else {
+            bestClick = M_cl;
+        }
+    }
+    else if (M_ct->exists) {
+        bestClick = M_ct;
+    }
+
+#if defined(DEBUG) && 0
+    if (bestClick) {
+        const char *type = bestClick == M_cl ? "line" : "text";
+        printf("best click catches '%s' (distance=%i)\n", type, bestClick->distance);
+    }
+    else {
+        printf("click catched nothing\n");
+    }
+#endif
+
+    return bestClick;
+}
 
 
