@@ -16,7 +16,8 @@ struct Beta {
   static const int NPBASENG = (NBASENG * NBASENG);
   static const int NCODE = 7;
   static const int BASEBIT = 2;
-  static const int BASEMSK = ~(~0 << BASEBIT);
+  // static const int BASEMSK = ~(~0 << BASEBIT);
+  static const int BASEMSK = ~(numeric_limits<int>::max() >> BASEBIT << BASEBIT);
   enum BaseCode {
     A_CODE       = 0,
     C_CODE       = 1,
