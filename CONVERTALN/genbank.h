@@ -15,26 +15,26 @@ struct GenbankRef {
     char *journal;
     char *standard;
 
-    GenbankRef() {
-        ref      = no_content();
-        author   = no_content();
-        title    = no_content();
-        journal  = no_content();
-        standard = no_content();
-    }
-    GenbankRef(const GenbankRef& other) {
-        freedup(ref, other.ref);
-        freedup(author, other.author);
-        freedup(title, other.title);
-        freedup(journal, other.journal);
-        freedup(standard, other.standard);
-    }
+    GenbankRef()
+        : ref(no_content()),
+          author(no_content()),
+          title(no_content()),
+          journal(no_content()),
+          standard(no_content())
+    {}
+    GenbankRef(const GenbankRef& other)
+        : ref(strdup(other.ref)),
+          author(strdup(other.author)),
+          title(strdup(other.title)),
+          journal(strdup(other.journal)),
+          standard(strdup(other.standard))
+    {}
     ~GenbankRef() {
-        freenull(ref);
-        freenull(author);
-        freenull(title);
-        freenull(journal);
-        freenull(standard);
+        free(standard);
+        free(journal);
+        free(title);
+        free(author);
+        free(ref);
     }
     DECLARE_ASSIGNMENT_OPERATOR(GenbankRef);
 };

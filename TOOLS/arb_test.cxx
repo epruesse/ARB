@@ -265,9 +265,16 @@ void TEST_SLOW_arb_probe() {
 #define OUT_DB    "tools/dnarates_result.arb"
 #define WANTED_DB "tools/dnarates_expected.arb"
 
+// #define TEST_AUTO_UPDATE_SAI // uncomment to auto-update expected SAI
+
 void TEST_SLOW_arb_dna_rates() {
     TEST_STDOUT_CONTAINS("arb_dnarates tools/dnarates.inp " IN_DB " " OUT_DB, "\nWriting 'POS_VAR_BY_ML_1'\n");
-    TEST_EXPECT_FILES_EQUAL(OUT_DB, WANTED_DB);
+
+#if defined(TEST_AUTO_UPDATE_SAI)
+    TEST_COPY_FILE(OUT_DB, WANTED_DB);
+#else // !defined(TEST_AUTO_UPDATE_SAI)
+    TEST_EXPECT_TEXTFILES_EQUAL(WANTED_DB, OUT_DB);
+#endif
     TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(OUT_DB));
 }
 

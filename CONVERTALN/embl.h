@@ -14,23 +14,23 @@ struct Emblref {
     char *journal;
     char *processing;
 
-    Emblref() {
-        author     = strdup("");
-        journal    = strdup("");
-        title      = strdup("");
-        processing = strdup("");
-    }
+    Emblref()
+        : author(strdup("")),
+          title(strdup("")),
+          journal(strdup("")),
+          processing(strdup(""))
+    {}
+    Emblref(const Emblref& other)
+        : author(strdup(other.author)),
+          title(strdup(other.title)),
+          journal(strdup(other.journal)),
+          processing(strdup(other.processing))
+    {}
     ~Emblref() {
-        freenull(author);
-        freenull(journal);
-        freenull(title);
-        freenull(processing);
-    }
-    Emblref(const Emblref& other) {
-        freedup(author, other.author);
-        freedup(journal, other.journal);
-        freedup(title, other.title);
-        freedup(processing, other.processing);
+        free(processing);
+        free(journal);
+        free(title);
+        free(author);
     }
     DECLARE_ASSIGNMENT_OPERATOR(Emblref);
 };

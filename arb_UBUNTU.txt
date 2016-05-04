@@ -1,11 +1,9 @@
 
-ARB requirements on Ubuntu 10.04
+ARB requirements on Ubuntu 16.04
 --------------------------------
 
-[Note:]
-You may use the provided install script, e.g.
+Note: You may use the provided install script, e.g. as follows
     sudo SH/arb_installubuntu4arb.sh
-
 
 
 1) Package dependencies for running precompiled ARB
@@ -14,7 +12,7 @@ You may use the provided install script, e.g.
 
      - gnuplot
      - gv
-     - libmotif3 (Ubuntu 12.04: libmotif4)
+     - libmotif-common
      - xfig
      - transfig
      - xterm
@@ -31,9 +29,10 @@ You may use the provided install script, e.g.
 
      - packets mentioned under 1a)
      - g++
+     - libglib2.0-dev
      - libmotif-dev
      - libreadline-dev
-     - libtiff4-dev
+     - libtiff5-dev
      - libx11-dev
      - libxaw7-dev
      - libxext-dev
@@ -41,12 +40,14 @@ You may use the provided install script, e.g.
      - libxpm-dev
      - libxt-dev
      - lynx
-     - time
      - x11proto-print-dev
      - xsltproc
      - xutils-dev
 
  2b) OPENGL version
+
+     *** Currently not supported! ***
+     *** The following won't work ***
 
      Add the following repository to your packet manager:
 
