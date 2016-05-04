@@ -1,0 +1,94 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP      arb.hlp
+UP      glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB    subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE           Multifurcate tree
+
+OCCURRENCE      ARB_NT/Tree/Modify branches/Multifurcate
+
+DESCRIPTION     Trees constructed by treeing algorithms often suggest a precision
+                which does in fact not exist in reality. To make it impossible to draw wrong
+                conclusions from your tree, you might consider to multifurcate specific
+                branches, especially such with low bootstrap values.
+
+                In the 'Multifurcate tree' window you can restrict which branches shall be
+                multifurcated by specifying lower limits for
+                  * bootstrap and/or
+                  * branchlength.
+
+                All branches below the specified and selected limits will be multifurcated,
+                i.e. their length will be set to zero and their bootstrap value (if any) will be
+                removed by clicking on the 'Multifurcate' button.
+
+                This is only applied to terminal (i.e. leaf) branches, if 'Also apply to
+                terminal branches' is checked.
+
+                The algorithm does not change the sum of the branchlengths of the tree (which is
+                a measure for the phylogenetic distance between all tree members).
+                To achieve that the algorithm distributes the former branchlength of each removed
+                branch to its directly adjacent neighbour branches.
+
+                Removing the branch C from this example tree
+
+                            B
+                         +----
+                      A  |
+                     ----+       D
+                         |    +----
+                         +----|
+                            C +----
+                                 E
+
+                will result in a multifurcated tree
+
+                             b
+                          +-----
+                      a   |
+                     -----+  d
+                          +-----
+                          |
+                          +-----
+                             e
+
+
+                with modified branchlengths, where
+
+                     SUM(a,b,d,e) = SUM(A,B,C,D,E)
+
+                The distribution is performed proportionally to the length of the target branches
+                of the distribution, i.e. longer branches receive more of the distributed
+                length than shorter branches.
+
+                Branches with zero branchlength are never changed, as they already represent (and
+                will remain) multifurcations. Instead the length is distributed to the next
+                adjacent branches beyond the multifurcation. This is true for existing and for
+                just created multifurcations.
+
+                The distribution simultaneously takes place at all affected branches,
+                always considering the former branchlengths for calculating the proportion
+                and avoiding summarizing effects at repeatedly affected branches (i.e. at branches
+                with multiple removed neighbour branches)
+
+NOTES           The sum of all branchlengths in a tree modified with 'Multifurcate tree' will
+                remain constant (disregarding possible numerical problems and the abnormal case that
+                ALL branches get multifurcated).
+
+                See LINK{branch_analysis.hlp} on HOWTO calculate the sum of all
+                branchlengths of a tree.
+
+EXAMPLES        To see how the distribution works for single branches, display a small tree
+                with only a few species, select the MULTIFURCATE MODE (see LINK{mode_length.hlp})
+                and drag some branches to scale their length.
+
+WARNINGS        Selecting none of the limits will remove the lengths from all branches and the sum
+                of branchlengths of the tree will change to zero. This
+                option makes no sense at all and is only provided for your relief in case you're
+                fed up with topologies and feel the urgent need to easily get rid of one of them.
+
+BUGS            No bugs known

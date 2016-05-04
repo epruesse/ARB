@@ -1,0 +1,7 @@
+# [generated] list of source-files for which loop vectorization shall be checked
+DIST/DI_matr.cxx
+DIST/DI_protdist.cxx
+PROBE/PT_debug.cxx
+PROBE/PT_match.cxx
+SL/CONSENSUS/chartable.cxx
+SL/SEQUENCE/AP_seq_dna.cxx

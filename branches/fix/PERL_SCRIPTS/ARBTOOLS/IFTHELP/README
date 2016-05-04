@@ -1,0 +1,8 @@
+
+
+Scripts in this directory
+
+ * are used from import filters
+   e.g. ../../../lib/import/genbank_multi.ift@genbank_gen_long_features
+ * are not linked in $ARBHOME/bin
+   see ../../../bin/Makefile@IFTHELP

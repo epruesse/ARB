@@ -1,0 +1,44 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	bonds.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Probe match (Expert)
+
+OCCURRENCE	ARB_NT/Probes/Match Probes/EXPERT
+
+DESCRIPTION     See LINK{bonds.hlp} for upper area.
+
+                Define how many N-matches are accepted:
+
+                       'Accepted N-matches' defines the amount of N-matches that
+                       are accepted wothout causing a mismatch.
+
+                       'N-match limit' defines an upper limit for N-matches. Whenever
+                       that limit is reached inside one probe, all N-matches count as
+                       mismatches.
+
+                Define max. results:
+
+                       The number of hits is limited to 1 million by default.
+
+                       This is just there to protect you from waiting several
+                       hours for match results, just because your settings were
+                       too lax.
+
+                       Changing it to 0 disables the limitation.
+
+NOTES		An N-Match is caused either by Ns in the matched probe or
+                by Ns in the hit target region.
+
+EXAMPLES	None
+
+WARNINGS	Specifying high values for N-matches and then matching a probe containing
+                many Ns, may keep your machine busy for days. Use with care.
+
+BUGS		No bugs known
