@@ -889,7 +889,7 @@ GB_ERROR GB_xcmd(const char *cmd, bool background, bool wait_only_if_error) {
         bash_command.cat("LD_LIBRARY_PATH=");
         {
             char *dquoted_library_path = GBK_doublequote(GB_getenv("LD_LIBRARY_PATH"));
-            system_call.cat(dquoted_library_path);
+            bash_command.cat(dquoted_library_path);
             free(dquoted_library_path);
         }
         bash_command.cat(";export LD_LIBRARY_PATH; (");
