@@ -1,0 +1,118 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Searching
+
+OCCURRENCE	ARB_NT/Species/Search and Query
+                ARB_NT/Genome/Search and Query
+
+DESCRIPTION     This describes the search feature in ARB.
+                When we talk about 'items' below, we mean e.g. 'species', 'genes', etc., depending
+                which search tool you are currently using.
+
+SECTION SEARCH FIELD
+
+                Each search expression applies either
+
+                     - to a specific item field (e.g. 'full_name') or 
+                     - if you select the '[any field]' pseudo search field,
+                       all direct database subentries of the item are searched for the expression.
+                       This does NOT work for subcontainers (i.e. 'ali16s/data' is not searched).
+
+SECTION SEARCH EXPRESSION
+
+               - Each expression tries to match the complete field content,
+                 i.e. searching for 'test' will match only fields which 
+                 exactly contain 'test' (not 'my test' or 'testing').
+
+               - If you search for '' (empty expression), all fields w/o data, i.e. all
+                 non-existing fields will be found.
+
+               - if you want to match all fields that contain some substring
+                 then use wildcards:
+
+                      - '*'
+
+                                will match any number of characters (including no characters).
+
+                      - '?'
+
+                                will match exactly one character
+
+                      If the whole search expression is '*', then it is handled like '?*' (which
+                      means 'at least one character'). So searching for '*' will report all
+                      existing fields.
+
+                      Examples:
+
+                        '*pseu*'        matches all fields with the substring 'pseu'
+                        'pyrococcus*'   matches all fields starting with 'pyrococcus'
+                        '*bact*ther*'   matches all fields with the substring 'bact' followed by 'ther'
+                                        (there may be many characters in-between or none, i.e. it as
+                                        well matches 'bactther')
+
+               - if the first character is '<' or '>' and the rest is a number,
+                 then a numerical comparison is done:
+
+                        - '<7'
+
+                          matches all fields containing a number smaller than 7
+
+                        - '>10'
+
+                          matches all fields containing a number greater than 10
+
+                        Be careful:
+
+                           Negating '<7' does NOT only match numbers greater or equal to seven. It as
+                           well finds all non-numeric contents. Use something like '>6.999' instead.
+
+               - if the first character is '/' then the following regular expression is used
+                 for the query (see LINK{reg.hlp}).
+
+               - if the first character is '|' then the following ACI expression is evaluated
+                 and the query hits, if the evaluation is not "0".
+                 See LINK{aci.hlp}.
+
+               - if the query string is completely empty, it hits if the selected field does
+                 not exist.
+
+SECTION SORTING RESULTS
+
+                Search results are displayed unsorted by default. You can sort them, by selecting
+                a different order with the sort radio button.
+                The available sort criteria are
+
+                    unsorted       display items like they are stored in database
+                    by value       sort by content of first query field
+                    by id          sort by unique item id (e.g. 'name' for species)
+                    by parent      sort by globally unique id of parent item (e.g. 'name' of organism for genes)
+                    by marked      sort marked before unmarked items
+                    by hit         sort by (and display) hit description (the hit description tells you
+                                   why an item was hit by query)
+                    reverse        reverts previously selected sort order
+
+                ARB remembers and uses all the sort criteria you apply.
+
+                Example: Selecting 'by id' will sort the items by their id (e.g. 'name'). If you
+                select 'by value' afterwards, ARB will sort items by the content of the first query
+                field - if the contents of some items are equal, it will still sort them by name.
+
+NOTES		Wildcarded or exact search always searches case insensitive.
+                Regular expression search always searches case sensitive.
+
+EXAMPLES	see LINK{sp_search.hlp}
+
+WARNINGS	Using ACI is a bit tricky here, cause you cannot see what happens.
+                Using 'trace(1)' somewhere in the ACI expression starts to print an
+                ACI trace to the console. Don't forget to use 'trace(0)' afterwards,
+                otherwise that may slow down ARB.
+
+BUGS		No bugs known

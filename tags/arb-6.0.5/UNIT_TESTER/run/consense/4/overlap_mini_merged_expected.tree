@@ -1,0 +1,49 @@
+[Sun Apr 13 12:58:49 2014: ARB consensus tree build from 3 trees:
+ - consense/4/disjunct_0.tree (13.3%; 2/15)
+ - consense/4/disjunct_1.tree (53.3%; 8/15)
+ - consense/4/disjunct_2.tree (46.7%; 7/15)
+Sun Apr 13 12:58:49 2014: tree_overlap_mini_merged saved to consense/4/overlap_mini_merged.tree
+]
+(
+  (
+    (
+      DewArch3:0.07761,
+      (
+        DewArch4:0.37249,
+        NoName00:0.01261
+      )33:0.04936
+    )33:0.02020,
+    (
+      DewArch2:0.06831,
+      (
+        DewArcha:0.05453,
+        (
+          EbiProk2:0.06546,
+          EbiProka:0.07227
+        )33:0.01663
+      )33:0.01245
+    )0:0.02020
+  )0:0.50000,
+  (
+    (
+      EbiProk3:0.07157,
+      (
+        DewBact2:0.02784,
+        DewBacte:0.38068
+      )33:0.04567
+    )33:0.05375,
+    (
+      (
+        EbiProk4:0.08063,
+        EbiProk5:0.05481
+      )33:0.01546,
+      (
+        DewBact5:0.02497,
+        (
+          DewBact3:0.02732,
+          DewBact4:0.01332
+        )33:0.02367
+      )33:0.03519
+    )0:0.05375
+  )0:0.50000
+);

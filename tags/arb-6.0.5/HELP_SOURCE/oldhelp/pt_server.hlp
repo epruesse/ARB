@@ -1,0 +1,127 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP      arb.hlp
+UP      glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+
+SUB     probeadmin.hlp
+SUB     probematch.hlp
+SUB     probedesign.hlp
+SUB     multiprobe.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile strunk ********
+TITLE           PT_SERVER: What Why and How
+
+OCCURRENCE      <ARB_NT/ETC/probe*>
+                <ARB_EDIT4/Edit/aligners>
+
+DESCRIPTION     Probe design, probe matching, and searching the nearest relatives require a
+                lot of database searching.
+                Simply scanning the whole database for a specific target
+                takes several tens of seconds. Probe design and searching for
+                nearest relatives start thousands of search
+                operations. Waiting several weeks to get a result from the computer
+                makes every user hate the program, so better algorithms have
+                to be developed.
+
+        The basic ARB SEARCH ALGORITHM:
+
+        - When any (calling) program wants to scan a database, it does not do the job itself
+          but calls a special SEARCH_PATTERNS_IN_A_BIG_DATABASE_PROGRAM.
+
+              We named this program PT_SERVER ('Prefix tree server' or
+              synonymously 'Positional tree server'). The PT_SERVER searches for patterns
+              in special database files and sends all matches back to the calling program.
+
+        - Different databases have different PT_SERVERs.
+          You must choose a PT_SERVER to match the database you wish to search.
+          The file $ARBHOME/lib/arb_tcp.dat defines all possible choices.
+
+        - If there is no PT_SERVER running, one is automatically started.
+          A PT_SERVER does not scan the database of the calling program, but the database in $ARBHOME/lib/pts/*.arb.
+
+                  That means:
+
+                    If you have just entered a new sequence this sequence
+                    will not be found by the the nearest-relative search.
+
+                         This is normally very useful, as you only want to use old
+                         sequences as a reference in the aligning process.
+
+                    For generating probes it isn't useful, because new sequences have to
+                    be added to the PT_SERVER before designing or matching probes.
+                    Remember: By adding 1 new sequence to the database, any previously validated
+                    probe may become invalid.
+
+                          Re-build your PT-server frequently and re-evaluate any probes
+                          you've made before.
+
+
+        Creating a new PT_SERVER template:
+
+        - Edit the file $ARBHOME/lib/arb_tcp.dat using <ARB_NTREE/Probes/PT_SERVER Admin/CREATE TEMPLATE>
+
+          Note: Make a copy of your changes because a new ARB installation may reinstall and overwrite your changed $ARBHOME/lib/arb_tcp.dat.
+
+        - Restart arb
+
+        Create a database for an existing template:
+
+        - Start ARB with the database you want to send to the PT_SERVER.
+        - Open the PT_SERVER ADMIN Window <ARB_NTREE/Probes/PT_SERVER Admin>.
+        - Select a template
+        - Press <BUILD SERVER>: ARB will save the DB into $ARBHOME/lib/pts/name.arb
+        - Wait
+
+                ARB generates an index file $ARBHOME/lib/pts/name.arb.pt
+
+                If any '*.arb' file in $ARBHOME/lib/pts is newer than the
+                corresponding '*.arb.pt' ( == prefix tree) file the
+                '*.arb.pt' file will be updated as soon as the
+                PT_SERVER is started.
+
+        Updating a server:
+
+                 see 'Create a database for an existing template'.
+
+NOTES      Once started a PT_SERVER never stops. The only ways to stop a
+           PT_SERVER are:
+
+                        - SOFT KILL (everybody) (only idle PT_SERVERS):
+
+                                - <ARB_NTREE/Probes/PT_SERVER Admin/KILL SERVER>
+
+                        - HARD KILL (supervisor) (all servers):
+
+                                - become superuser
+                                - enter 'ps -auxww |grep pt_server' at any shell
+                                - enter 'kill -9 PID'
+                                  ( to get help enter 'man kill' or 'man ps' )
+
+
+           WHY DOESN'T ARB USE BLAST ?
+
+                The basic idea of blast is to create a finite automaton for all
+                search patterns and do the database search only once.
+                If someone wants to start a fuzzy search ( allowing mismatches)
+                the size of this automata increases exponentially.
+
+                        For example:
+                        Three mismatches in a 20-base pattern would yield
+                        about 100,000 states in the automaton per search
+                        pattern. If probe design creates 1000 search
+                        patterns, and every state needs 10 bytes of
+                        computer memory, the search operation will require
+                        1 gigabyte RAM.
+
+
+        You will need a lot of swap space to run multiple PT_SERVER.
+
+WARNINGS        Do not modify any databases in $ARBHOME/lib/pts/ except
+                by the <PT_SERVER Admin> tools.
+                The reason is to keep the write protections of those files
+                consistent.
+
+BUGS            Sometimes some bugs

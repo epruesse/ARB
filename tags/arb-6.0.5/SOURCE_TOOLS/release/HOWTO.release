@@ -1,0 +1,93 @@
+
+HOWTO release ARB
+=================
+
+Overview:
+
+1. 'trunk' versioning
+2. Create initial release candidate (rc1)
+3. Create subsequent release candidates (rc2,..)
+4. Create release
+5. Hotfixes for release
+
+--------------------------------------------------------------------------------
+
+1. 'trunk' versioning
+
+        To check trunk version look into ../version_info
+        or call
+                make show_version
+
+        'trunk' shall always contain the release version number planned for the NEXT release.
+
+        Example1:
+                last release was arb-5.5
+                trunk should already contain arb-5.6 (or arb-6.0, whatever is planned)
+
+        Example2:
+                last release was arb-5.5
+                last rc was arb-6.0-rc1
+                trunk should already contain arb-6.1
+
+        Intention is to have a explicit feature freeze whenever a rc is branched.
+
+        To increment the version number,
+        - change into trunk WC
+        - svn update
+        - make inc_minor or inc_major
+        - in ../../arb_CHANGES.txt
+          - add missing changes
+          - update version info
+        - commit changes
+
+
+2. Create initial release candidate (rc1)
+
+        - change into trunk WC and update to revision wanted for rc
+        - make sure the version number in trunk is already correct (see 1.)
+          To show it call
+                make show_version
+        - make sure arb_CHANGES.txt is up-to-date (i.e. lists changes for version-to-release)
+        - to make sure you are at HEAD call
+                svn update
+        - to branch the rc1 call
+                SOURCE_TOOLS/release/release_tool.pl branch_rc1
+
+
+3. Create subsequent release candidates (rc2,..)
+
+        Note: Subsequent release candidates are meant for bugfixes only!
+
+        - change into 'rc' WC
+        - to increment rc number call
+                make inc_candi
+        - merge all bugfixes from trunk (or apply them in branch 'rc' and merge them back to trunk)
+        - commit changes and let a jenkins build pass (job 'ARB-rc'; builds automatically)
+        - to make sure you are at HEAD call
+                svn update
+        - call
+                SOURCE_TOOLS/release/release_tool.pl tag_rc
+
+
+4. Create release
+
+        Note: Release should be a copy at the latest rc
+
+        - change into 'rc' WC
+        - to make sure you are at HEAD call
+                svn update
+        - to branch the release call
+                SOURCE_TOOLS/release/release_tool.pl branch_stable
+
+
+5. Hotfixes for release
+
+        - change into 'stable' WC
+        - to increment the release patchlevel call
+                make inc_patch
+        - merge all hotfixes from trunk (or apply them in branch 'stable' and merge them back to trunk)
+        - commit changes and let a jenkins build pass (job 'ARB-stable'; builds automatically)
+        - to make sure you are at HEAD call
+                svn update
+        - call
+                SOURCE_TOOLS/release/release_tool.pl tag_stable
