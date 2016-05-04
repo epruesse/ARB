@@ -1,9 +1,0 @@
-# libraries needed to link arb_pt_server
-
-#PROBE/PROBE.a
-#ptpan/PROBE.a
-
-$(ARCHS_PT_SERVER_LINK)
-
-
-

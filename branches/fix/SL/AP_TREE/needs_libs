@@ -1,5 +1,0 @@
-# libraries needed to link against SL/AP_TREE/AP_TREE.a
-
-lib/libAWT.so
-SL/ARB_TREE/ARB_TREE.a
-
