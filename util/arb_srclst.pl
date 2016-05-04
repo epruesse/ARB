@@ -261,6 +261,7 @@ my @forced_when_matchesFull = (
                                qr/\/PROBE_WEB\/SERVER\/.*\.jar$/o,
                                qr/\/GDE\/PHYML[^\/]+\/phyml\/.*\.log$/o,
                                qr/\/UNIT_TESTER\/run\/.*\.list$/o,
+                               qr/\/HEADERLIBS\/.*\.patch$/o,
                               );
 
 # files that are even packed when generated and not in VC
