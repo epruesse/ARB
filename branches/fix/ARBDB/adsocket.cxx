@@ -1171,7 +1171,7 @@ GB_CSTR GB_concat_path(GB_CSTR anypath_left, GB_CSTR anypath_right) {
         if (anypath_right[0] == '/') {
             result = GB_concat_path(anypath_left, anypath_right+1);
         }
-        else if (anypath_left) {
+        else if (anypath_left && anypath_left[0]) {
             if (anypath_left[strlen(anypath_left)-1] == '/') {
                 result = GBS_global_string_to_buffer(use_other_path_buf(), sizeof(path_buf[0]), "%s%s", anypath_left, anypath_right);
             }

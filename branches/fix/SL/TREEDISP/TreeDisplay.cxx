@@ -2737,7 +2737,7 @@ struct fake_AW_common : public AW_common {
     fake_AW_common()
         : AW_common(fcolors, dcolors, dcolors_count)
     {
-        for (int gc = 0; gc < dcolors_count; ++gc) { // gcs used in this example
+        for (int gc = 0; gc < dcolors_count-AW_STD_COLOR_IDX_MAX; ++gc) { // gcs used in this example
             new_gc(gc);
             AW_GC *gcm = map_mod_gc(gc);
             gcm->set_line_attributes(1, AW_SOLID);
