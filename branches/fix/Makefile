@@ -209,9 +209,9 @@ ifeq ($(DEBUG),0)
 	else
 		clflags += -Wl,-O2# passthrough linker flags
 #	------- standard optimization: 
-		cflags := -O4# compiler flags (C and C++)
+		cflags := -O3# compiler flags (C and C++)
 #	------- test changed optimization (DISABLE_VECTORIZE_CHECK for -O2 or lower):
-#		cflags := -O3# do not commit uncommented!
+#		cflags := -O2# do not commit uncommented!
 #		DISABLE_VECTORIZE_CHECK:=1
 	endif
 endif
@@ -663,6 +663,12 @@ else
 endif
 
 #---------------------- SSE vectorizer
+
+ifeq ('$(COMPILER_VERSION)','6.1.0')
+# see http://bugs.arb-home.de/ticket/700
+	cflags += -fno-tree-loop-vectorize
+	DISABLE_VECTORIZE_CHECK:=1
+endif
 
 ifeq ($(DEBUG),0)
  ifeq ($(USE_GCC_49_OR_HIGHER),yes)
