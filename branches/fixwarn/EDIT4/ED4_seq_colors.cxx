@@ -290,7 +290,7 @@ void ED4_reference::reset_gap_table() {
 void ED4_reference::set_gap_handling(bool mindgaptype, const char *gaptypes) {
     reset_gap_table();
     if (!mindgaptype) { // treat all gaps as "equal"
-        for (int i; gaptypes[i]; ++i) {
+        for (int i = 0; gaptypes[i]; ++i) {
             is_gap[safeCharIndex(gaptypes[i])] = true;
         }
     }

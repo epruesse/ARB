@@ -315,13 +315,13 @@ static void hsv2rgb(int h, int s, int v, int& r, int& b, int& g) {
 
     switch (hi) {
         case 0:
-        case 6: r = v; g = t; b = p; break;
-        case 1: r = q; g = v; b = p; break;
-        case 2: r = p; g = v; b = t; break;
-        case 3: r = p; g = q; b = v; break;
-        case 4: r = t; g = p; b = v; break;
-        case 5: r = v; g = p; b = q; break;
-        default: aw_assert(0); break;
+        case 6: r  = v; g = t; b = p; break;
+        case 1: r  = q; g = v; b = p; break;
+        case 2: r  = p; g = v; b = t; break;
+        case 3: r  = p; g = q; b = v; break;
+        case 4: r  = t; g = p; b = v; break;
+        case 5: r  = v; g = p; b = q; break;
+        default: r = g = b = 0; aw_assert(0); break;
     }
 
 
