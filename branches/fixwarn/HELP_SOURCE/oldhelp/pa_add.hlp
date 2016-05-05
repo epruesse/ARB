@@ -1,0 +1,35 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Add species with local optimization
+
+OCCURRENCE	ARB_PARSIMONY/Tree/Add Species to Tree/Add Marked Species + Local Optimization (NNI)
+                ARB_PARSIMONY/Tree/Add Species to Tree/Add Selected Species + Local Optimization (NNI)
+                ARB_PARSIMONY/Tree/Add Species to Tree/Remove & Add Marked + Local Optimization (NNI)
+
+DESCRIPTION     The functions work like their counterparts described in LINK{pa_quick.hlp}.
+
+                Additionally after all species have been inserted, a LINK{pa_locopti.hlp} takes place.
+                This optimization operates on all branches to subtrees containing marked species
+                and does not stop at folded groups - regardless
+                which settings are selected in LINK{pa_optimizer.hlp}.
+
+WARNINGS        That local optimization will not avoid the need for global tree
+                optimization (see LINK{pa_globopti.hlp}).
+
+                Using this function for a bigger number of species (or repeatedly using it), will
+                cause your tree to degenerate (see section 'Tree degeneration' in LINK{pa_quick.hlp}
+                for more information. What is said there also applies here, the effects are just less worse here).
+
+NOTES		None
+
+EXAMPLES	None
+
+BUGS		No bugs known

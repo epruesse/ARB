@@ -1,0 +1,14 @@
+#!/usr/bin/perl -w
+use lib "$ENV{'ARBHOME'}/lib/";
+use ARB;
+
+$gb_main = ARB::open(":","r");
+if (! $gb_main ) {
+    $error = ARB::await_error();
+    print ("Error: $error\n");
+    exit 0;
+}
+
+BIO::remote_action($gb_main,"ARB_NT","probe_match");
+BIO::remote_action($gb_main,"ARB_NT","probe_design");
+ARB::close($gb_main);

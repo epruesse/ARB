@@ -1,0 +1,24 @@
+
+DIRECTORIES
+
+                bin             binaries: arb programs and external tools
+
+                SH              /bin/sh commands
+
+                GDEHELP         GDE help Files and menus
+
+                lib             Shared libraries
+                lib/pts         The PT_server files
+                lib/nas         The name server files
+                lib/pictures    All xfig window layouts
+                lib/pixmaps     All pixmaps
+                lib/arb_prop    Default properties
+                lib/submit      submission forms
+                lib/help        ARB help files
+                lib/help_html   HTML version of ARB help
+
+
+IMPORTANT FILES
+
+                lib/arb_tcp.dat description of all socket id's                  
+                bin/arb         main start script

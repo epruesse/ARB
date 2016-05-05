@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE ARB_SEQ_EXPORT SYSTEM 'arb_seq_export.dtd' [
+  <!ENTITY nbsp "&#160;">
+  <!ENTITY acute "&#180;">
+  <!ENTITY eacute "&#233;">
+  <!ENTITY apostr "&#39;">
+  <!ENTITY semi "&#59;">
+]>
+
+ <!--There is a basic version of ARB_seq_export.dtd in $ARBHOME/lib/dtd
+but you might need to expand it by yourself,
+because the ARB-database may contain any kind of fields.-->
+<ARB_SEQ_EXPORT database="DBname" export_date="Wed Jan 27 11:38:34 2016">
+ <species name="MetMazei">
+  <ALIGNMENT name="16s">
+   <data>.....................AUUCUGGUU-----GA--U-CC-U-G-CCAG-AG-GU-U-AC-U-GC--U-AU-C--G-GU-GUUC--GC---C-U--AAGCCA-U-GC-G-AGU-CAU-A-UGU---------A---------------..............</data>
+  </ALIGNMENT>
+  <acc>X69874</acc>
+  <full_name>Methanosarcina mazei</full_name>
+  <tax> [DEW] Archaea|Euryarchaeota|Methanomicrobium group [EBI] Prokaryota; Bacteria; Mendosicutes; Archaeobacteria;|Methanomicrobiales; Methanosarcinaceae.</tax>
+  <seqcheck>ARB_C2C11C55</seqcheck>
+  <AL>nov97</AL>
+  <ARB_color>2</ARB_color>
+  <float_test>3.141592</float_test>
+  <float_test>3.141592e-02</float_test>
+  <float_test>314.159210</float_test>
+  <float_test>3.141592e-05</float_test>
+  <float_test>3.141592e+05</float_test>
+  <float_test>3.141592e-10</float_test>
+  <float_test>3.141592e+10</float_test>
+  <float_test>3.141592e-35</float_test>
+  <float_test>3.141592e+35</float_test>
+  <bits_test>00000000111101001010000100001010</bits_test>
+ </species>
+</ARB_SEQ_EXPORT>

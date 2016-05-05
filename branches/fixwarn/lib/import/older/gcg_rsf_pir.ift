@@ -1,0 +1,75 @@
+AUTODETECT      "!!RICH_SEQUENCE*"
+
+                #Global settings:
+#KEYWIDTH       3
+FILETAG                         "GCG_PIR"
+
+BEGIN           "comments*"
+
+MATCH           "  C;Accession: *"
+                ACI             "extract_words("0123456789",4.0)"
+                WRITE           "acc"
+
+MATCH           "  C;Species: *"
+                SRT             "* *=*2"        
+                WRITE           "full_name"
+
+MATCH           "  C;Species: *"
+                SRT             "* *=*2"
+                TAG             "GCG_PIR"
+                APPEND          "db_name"
+
+MATCH           "  C;Date: *"
+                SRT             "* *=*2"
+                TAG             "GCG_PIR"
+                APPEND          "date"
+
+MATCH           "  R;*"
+                SRT             "R;*=*"
+                TAG             "GCG_PIR"
+                APPEND          "author"
+
+MATCH           "  R;*\n*"
+                TAG             "GCG_PIR"
+                APPEND          "journal"
+
+MATCH           "  P1;*"
+                SRT             "P1;*=*"
+                TAG             "GCG_PIR"
+                WRITE           "description"
+
+MATCH           "  A;Title: *"
+                SRT             "* *=*2"
+                TAG             "GCG_PIR"
+                APPEND          "title"
+
+MATCH           "  A;Cross-references: *"
+                SRT             "* *=*2"
+                TAG             "GCG_PIR"
+                APPEND          "cross_ref"
+
+MATCH           "  A;Experimental source: *"
+                SRT             "* *=*2"
+                TAG             "GCG_PIR"
+                APPEND          "strain"
+
+MATCH           "  C;Superfamily: *"
+                SRT             "* *=*2"
+                APPEND          "gene_prod"
+
+MATCH           "  C;Keywords: *"
+                SRT             "* *=*2"
+                TAG             "GCG_PIR"
+                APPEND          "keywords"
+
+SEQUENCEAFTER   "sequence*"
+SEQUENCESRT     "*Check*..*=*3"
+SEQUENCEACI     "remove("0123456789 /")"
+SEQUENCECOLUMN  0
+SEQUENCEEND     "}"
+CREATE_ACC_FROM_SEQUENCE
+
+END             "}"
+
+
+

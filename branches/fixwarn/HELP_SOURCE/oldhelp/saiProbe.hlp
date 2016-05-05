@@ -1,0 +1,52 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE          Visualization of Sequence Associated Information (SAI) of Probe Match Results.
+
+OCCURRENCE     ARB_NT/Probes/Match Probes/Match SAI
+
+DESCRIPTION
+
+    This window aides Visualization of Sequence Associated Information (SAIs) of the
+    Potential Probe Targets that were designed (PROBE DESIGN TOOL) and matched using PROBE
+    MATCH TOOL.
+
+    Steps to be followed to VISUALIZE SAIs for the Potential Probe Targets:
+
+          1. Select SAI to be visualized from the Select SAI Menu. (Properties/Select SAI)
+
+          2. Define Desired Colors (COLOR 0 to COLOR 9) for the respective CHARACTERS /
+          NUMBERS in the selected SAI to paint as background of the Probe Targets
+          list. (Properties/Define Color Translations)
+
+          3. Values or Characters contained in the SAIs selected can also be displayed
+          below each Probe Targets by selecting the 'DISPLAY SAI' check box
+          in 'Color Translation Table' window.
+
+          4. Once the desired SAI is selected and the respective color translation is
+          defined, the SAI is painted as the background of the probe targets in the
+          defined color ranges with respect to SAIs.
+    
+    One can change the COLOR RANGE by going to 'Properties/Set Colors and Fonts' menu.
+
+NOTES
+
+    Color Translation Definitions defined for various SAIs can be saved by clicking SAVE
+    button in DEFINE COLOR TRANSLATION window. (Press STORE to save the definitions and
+    press RESTORE to restore the saved definitions).
+
+    To save the Color Translation Definitions permanently Go to ARB_NT window and save
+    PROPERTIES under PROPERTIES MENU.
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known

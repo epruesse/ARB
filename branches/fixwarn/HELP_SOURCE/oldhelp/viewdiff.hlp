@@ -1,0 +1,54 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		View differences to selected
+
+OCCURRENCE	ARB_EDIT4/View/View differences ...
+
+DESCRIPTION     Select a species, SAI or group consensus by clicking into its sequence data.
+
+                Then check 'Selected' or press 'SET' to restrict the sequence display
+                of all other sequences (i.e. all but the selected sequence) to
+                show only the differences to the selected sequence (aka reference sequence).
+
+		Checking 'Follow cursor' will instantly set a new reference sequence,
+		as soon as you set the cursor into a new sequence.
+
+                To revert display to standard mode, select 'None'.
+
+                Key bindings:
+
+                    * CTRL-D: toggles "View differences" mode
+                    * CTRL-R: sets reference sequence to the cursor terminal (this only
+                      works if "View differences" mode is active, otherwise CTRL-R sets
+                      the aligner reference species; see LINK{faligner.hlp})
+
+                You may define the character used for positions where the displayed
+                sequence does NOT differ from the reference sequence.
+                Default is to display a space, other recommended values
+                are '|' (esp. w/o helix display and smaller seq-spacing),
+                '_', '~', ':' or single quotes.
+
+                If 'Mind case?' is checked, characters only differing in case are displayed as
+                differences.
+
+		If 'Mind gap type?' is checked, different gaps are displayed as "differences".
+		What is regarded as "gap" may be defined in the text field behind the toggle.
+
+NOTES		Useful to manually correct alignments.
+
+		The IUPAC field in the top area can be used to guess the sequence 
+		data at cursor position.
+
+EXAMPLES	None
+
+WARNINGS	Editing works as usual, even if you do not see what you edit.
+
+BUGS		No bugs known

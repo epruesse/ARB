@@ -1,0 +1,89 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP      arb.hlp
+UP      glossary.hlp
+UP      treeadm.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB    subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE           Export tree to file
+
+OCCURRENCE      ARB_NT/Tree admin/Export
+
+DESCRIPTION     Writes a tree to file in Newick format
+
+                Press the 'EXPORT' button to display the 'TREE SAVE' window.
+
+                Select a tree file from the 'Directories and Files' subwindow or
+                type the file name to the 'FILE NAME' subwindow.
+
+        NEWICK TREE FORMAT
+
+               Nodetype
+
+                      Species ID
+
+                              This is the traditional format using species IDs as leaf names.
+
+                      NDS
+
+                              (Export only!) This uses the current NDS tree settings as leaf names.
+
+               Save branch lengths
+
+                    if marked, branchlengths are written to the tree file.
+
+               Save bootstraps
+
+                    if marked, bootstraps are written to the tree file.
+
+               Save groupnames
+
+                    if marked, groupnames (taxonomy) are written to the tree file.
+
+               Name quoting
+
+                    choose whether and how to quote names for leafs and/or groups.
+                    Quoting names may be necessary to ensure other software is able
+                    to read the generated tree files.
+
+               Replace problem chars
+
+                    if checked, problematic characters in names will be replaced (currently "()[]:;," plus
+                    used quote, if any)
+
+        ARB_XML TREE FORMAT
+
+                Simple XML Format (can't load yet)
+
+                Hide folded groups
+
+                     If checked, folded groups will be exported as terminal node. Otherwise
+                     group contents will be written into tree file.
+
+
+NOTES           If you select both 'Save groupnames' and 'Save bootstraps', other programs may be
+                unable to load the tree or at least unable to interpret the bootstrap values correctly.
+
+                If a suffix is displayed in or typed to the 'SUFFIX' subwindow,
+                only the corresponding file names will be displayed.
+                The suffix is automatically appended to the file name typed
+                to the 'FILE NAME' subwindow.
+
+                The different export types cause the suffix to change:
+
+                    - '.tree' for normal newick
+                    - '.ntree' for newick using NDS
+                    - '.xml' for xml 
+
+
+WARNINGS        Tree data written with the 'NDS' option cannot be
+                reimported to the database without data loss!
+
+                It's possible to reload such a tree, but it's leafs
+                will not be linked to the correct species.
+
+BUGS            No bugs known
