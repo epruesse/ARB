@@ -200,13 +200,19 @@ clflags :=# linker flags (when passed through gcc)
 extended_warnings :=# warning flags for C and C++-compiler
 extended_cpp_warnings :=# warning flags for C++-compiler only
 
+DISABLE_VECTORIZE_CHECK:=0
+
 ifeq ($(DEBUG),0)
 	dflags := -DNDEBUG# defines
 	ifeq ($(USE_CLANG),1)
 		cflags := -O3# compiler flags (C and C++)
 	else
-		cflags := -O4# compiler flags (C and C++)
 		clflags += -Wl,-O2# passthrough linker flags
+#	------- standard optimization: 
+		cflags := -O4# compiler flags (C and C++)
+#	------- test changed optimization (DISABLE_VECTORIZE_CHECK for -O2 or lower):
+#		cflags := -O3# do not commit uncommented!
+#		DISABLE_VECTORIZE_CHECK:=1
 	endif
 endif
 
@@ -408,6 +414,10 @@ ifeq ($(SANITIZE_ADDRESS),1)
 endif
 ifeq ($(SANITIZE_UNDEFINED),1)
  SANITIZE_ANY:=1
+endif
+
+ifeq ($(SANITIZE_ANY),1)
+ DISABLE_VECTORIZE_CHECK:=1
 endif
 
 #---------------------- 32 or 64 bit
@@ -656,7 +666,7 @@ endif
 
 ifeq ($(DEBUG),0)
  ifeq ($(USE_GCC_49_OR_HIGHER),yes)
-  ifeq ($(SANITIZE_ANY),0)
+  ifeq ($(DISABLE_VECTORIZE_CHECK),0)
 #	cflags += -fopt-info
 	cflags += -fopt-info-vec
 
