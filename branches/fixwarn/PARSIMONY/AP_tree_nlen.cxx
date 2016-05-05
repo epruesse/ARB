@@ -298,7 +298,7 @@ Validity AP_tree_nlen::sequence_state_valid() const {
 }
 
 Validity AP_tree_nlen::is_valid() const {
-    ap_assert(this);
+    ap_assert(knownNonNull(this));
 
     Validity valid   = AP_tree::is_valid();
     if (valid) valid = has_valid_edges();

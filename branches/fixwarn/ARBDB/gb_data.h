@@ -137,7 +137,7 @@ struct GBDATA {
     // ----------------------------------------
 
     GB_TYPES type() const {
-        gb_assert(this);
+        gb_assert(knownNonNull(this));
         return GB_TYPES(flags.type);
     }
 
@@ -148,12 +148,12 @@ struct GBDATA {
     bool is_entry() const { return !is_container(); }
 
     GBENTRY *as_entry() const {
-        gb_assert(this); // use GBDATA::as_entry() instead
+        gb_assert(knownNonNull(this)); // use GBDATA::as_entry() instead
         gb_strict_assert(is_entry());
         return (GBENTRY*)this;
     }
     GBCONTAINER *as_container() const {
-        gb_assert(this); // use GBDATA::as_container() instead
+        gb_assert(knownNonNull(this)); // use GBDATA::as_container() instead
         gb_strict_assert(is_container());
         return (GBCONTAINER*)this;
     }
