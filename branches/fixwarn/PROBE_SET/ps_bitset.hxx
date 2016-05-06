@@ -303,14 +303,22 @@ bool PS_BitSet::load(PS_FileBuffer *_file, const long _fill_index = -1) {
 
 
 bool PS_BitSet_Fast::Get(const long _index) {
-    if (_index >= capacity) printf("PS_BitSet_Fast::get( %li ) exceeds capacity %li\n", _index, capacity);
+    if (_index >= capacity) {
+        printf("PS_BitSet_Fast::get( %li ) exceeds capacity %li\n", _index, capacity);
+        ps_assert(0);
+        return false;
+    }
     if (_index > max_index) max_index = _index;
     return (((data[_index/8] >> (_index % 8)) & 1) == 1);
 }
 
 
 bool PS_BitSet_Fast::Set(const long _index, const bool _value) {
-    if (_index >= capacity) printf("PS_BitSet_Fast::set( %li,%1i ) exceeds capacity %li\n", _index, _value, capacity);
+    if (_index >= capacity) {
+        printf("PS_BitSet_Fast::set( %li,%1i ) exceeds capacity %li\n", _index, _value, capacity);
+        ps_assert(0);
+        return false;
+    }
     bool previous_value = (((data[_index/8] >> (_index % 8)) & 1) == 1);
     if (_value) {
         data[_index/8] |= 1 << (_index % 8);
@@ -324,7 +332,11 @@ bool PS_BitSet_Fast::Set(const long _index, const bool _value) {
 
 
 void PS_BitSet_Fast::setTrue(const long _index) {
-    if (_index >= capacity) printf("PS_BitSet_Fast::setTrue( %li ) exceeds capacity %li\n", _index, capacity);
+    if (_index >= capacity) {
+        printf("PS_BitSet_Fast::setTrue( %li ) exceeds capacity %li\n", _index, capacity);
+        ps_assert(0);
+        return;
+    }
     data[_index/8] |= 1 << (_index % 8);
     if (_index > max_index) max_index = _index;
 }

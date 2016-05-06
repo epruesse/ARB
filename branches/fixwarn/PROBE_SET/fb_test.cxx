@@ -68,7 +68,8 @@ static void runtests(FILE *out, const char *outputfile) {
         PS_BitMap_Counted *map2 = new PS_BitMap_Counted(fb1);
         map2->print();
 
-        map2->setTrue(5, 8);
+        // map2->setTrue(5, 8); // exceeds capacity
+        map2->setTrue(5, 7);
         map2->print();
         map2->recalcCounters();
         map2->print();
@@ -102,7 +103,7 @@ static void runtests(FILE *out, const char *outputfile) {
     {
         PS_FileBuffer *fb2 = new PS_FileBuffer(outputfile, true);
         char *data = (char *)malloc(1024);
-        fb2->get(data, 4096);
+        // fb2->get(data, 4096);
         fb2->get(data, 100);
 
         free(data);
@@ -126,7 +127,21 @@ int ARB_main(int , char *[]) {
 #include <arb_file.h>
 
 void TEST_probeset_basics() {
-    // TEST_REJECT(true);
+    const char *textout = "tools/probeset.out";
+    const char *dataout = "tools/probeset.data";
+
+    GB_unlink(dataout);
+
+    FILE *out = fopen(textout, "wt");
+    if (!out) {
+        TEST_EXPECT_NO_ERROR(GB_IO_error("writing", textout));
+    }
+    runtests(out, dataout);
+    fclose(out);
+
+
+    // TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(textout));
+    // TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(dataout));
 }
 
 #endif // UNIT_TESTS

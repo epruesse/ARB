@@ -614,6 +614,11 @@ bool PS_BitMap_Counted::do_reserve(const long _capacity, const bool _init_sets) 
             if (data[i] == 0) return false;                      // check success
         }
     }
+    else {
+        for (long i = capacity; i < _capacity; ++i) {
+            data[i] = NULL;
+        }
+    }
     //
     // initialize new counts-arrays
     //
