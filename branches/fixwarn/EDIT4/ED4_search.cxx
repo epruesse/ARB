@@ -196,16 +196,7 @@ SearchTreeNode::~SearchTreeNode()
 }
 
 
-SearchTreeNode *SearchTreeNode::insert_unified_pattern(GB_CSTR pattern, GB_CSTR pattern_comment)
-{
-    if (!this) {
-        if (pattern[0]) {
-            return new SearchTreeNode(pattern, pattern_comment);
-        }
-
-        return &FOUND;
-    }
-
+SearchTreeNode *SearchTreeNode::insert_unified_pattern(GB_CSTR pattern, GB_CSTR pattern_comment) {
     if (this==&FOUND) {
         if (pattern[0]) {
             SearchTreeNode *neu = new SearchTreeNode(pattern, pattern_comment);
