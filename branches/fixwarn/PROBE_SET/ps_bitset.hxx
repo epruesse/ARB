@@ -42,7 +42,7 @@ public:
             void invert();
             void x_or(const PS_BitSet *_other_set);
 
-            void print(const bool _header, const long _fill_index);
+            void print(FILE *out, const bool _header, const long _fill_index);
             bool save(PS_FileBuffer *_file);
             bool load(PS_FileBuffer *_file, const long _fill_index);
 
@@ -252,15 +252,15 @@ void PS_BitSet::x_or(const PS_BitSet *_other_set) {
 }
 
 
-void PS_BitSet::print(const bool _header = true, const long _fill_index = -1) {
-    if (_header) printf("PS_BitSet: bias(%1i) max_index(%6li) capacity(%6li) ", bias, max_index, capacity);
+void PS_BitSet::print(FILE *out, const bool _header = true, const long _fill_index = -1) {
+    if (_header) fprintf(out, "PS_BitSet: bias(%1i) max_index(%6li) capacity(%6li) ", bias, max_index, capacity);
     for (long i = 0; i <= max_index; ++i) {
-        printf(Get(i) ? "+" : "_");
+        fprintf(out, Get(i) ? "+" : "_"); // @@@ use fputc
     }
     for (long i = max_index+1; i <= _fill_index; ++i) {
-        printf(".");
+        fprintf(out, "."); // @@@ use fputc
     }
-    printf(" %li\n", max_index);
+    fprintf(out, " %li\n", max_index);
 }
 
 

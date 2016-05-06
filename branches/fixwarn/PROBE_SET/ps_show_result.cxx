@@ -56,7 +56,7 @@ int main(int argc,   char *argv[]) {
     }
     printf("\nloading preset bitmap\n");
     PS_BitMap_Counted *map = new PS_BitMap_Counted(file);
-    map->print();
+    map->print(stdout);
     delete map;
 
     return 0;

@@ -26,7 +26,7 @@ static void runtests(FILE *out, const char *outputfile) {
         x->setTrue(10);
         x->setTrue(11);
         x->setTrue(14);
-        x->print(true, 20);
+        x->print(out, true, 20);
         PS_BitSet::IndexSet indices;
         x->getTrueIndices(indices);
         fprintf(out, " true  indices (%2zu) : ", indices.size());
@@ -60,19 +60,19 @@ static void runtests(FILE *out, const char *outputfile) {
             map->set(i, 0, true);
             map->set(9, i, true);
         }
-        map->print();
+        map->print(out);
 
         PS_FileBuffer *fb1 = new PS_FileBuffer(outputfile, PS_FileBuffer::WRITEONLY);
         map->save(fb1);
         fb1->reinit(outputfile, PS_FileBuffer::READONLY);
         PS_BitMap_Counted *map2 = new PS_BitMap_Counted(fb1);
-        map2->print();
+        map2->print(out);
 
         // map2->setTrue(5, 8); // exceeds capacity
         map2->setTrue(5, 7);
-        map2->print();
+        map2->print(out);
         map2->recalcCounters();
-        map2->print();
+        map2->print(out);
 
         delete map;
         delete map2;
@@ -139,6 +139,7 @@ void TEST_probeset_basics() {
     runtests(out, dataout);
     fclose(out);
 
+    // ../UNIT_TESTER/logs/fb_test.test.log
 
     // TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(textout));
     // TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(dataout));
