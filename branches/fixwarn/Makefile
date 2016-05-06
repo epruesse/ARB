@@ -2309,12 +2309,12 @@ UNITS_NEED_FIX = \
 	ptpan/PROBE.test \
 
 UNITS_UNTESTABLE_ATM = \
-	PROBE_SET/PROBE_SET.test \
 	XML_IMPORT/XML_IMPORT.test \
 
 # for the moment, put all units containing tests into UNITS_TESTED or UNITS_TESTED_FIRST
 
 UNITS_TESTED_FIRST = \
+	PROBE_SET/fb_test.test \
 	SL/ITEMS/ITEMS.test \
 	SL/CONSENSUS/CONSENSUS.test \
 	DIST/DIST.test \

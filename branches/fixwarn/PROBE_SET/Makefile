@@ -32,7 +32,7 @@ SHARED_OBJECTS = ps_node.o ps_filebuffer.o ps_database.o ps_tools.o
 # --------------------------------------------------------------------------------
 
 FB_TEST_OBJECTS = fb_test.o
-$(ARBHOME)/PROBE_SET/bin/fb_test : $(SHARED_OBJECTS) $(FB_TEST_OBJECTS)
+$(ARBHOME)/PROBE_SET/bin/fb_test : $(SHARED_OBJECTS) $(FB_TEST_OBJECTS) $(use_ARB_main)
 	$(LINK_EXECUTABLE) $@ $^ $(LIBS)
 
 PS_CONVERT_OBJECTS = ps_convert_db.o
@@ -120,6 +120,8 @@ fb_test.o: ps_filebuffer.hxx
 fb_test.o: ps_node.hxx
 fb_test.o: $(ARBHOME)/INCLUDE/arb_assert.h
 fb_test.o: $(ARBHOME)/INCLUDE/arb_core.h
+fb_test.o: $(ARBHOME)/INCLUDE/arb_file.h
+fb_test.o: $(ARBHOME)/INCLUDE/arb_msg.h
 fb_test.o: $(ARBHOME)/INCLUDE/arbtools.h
 fb_test.o: $(ARBHOME)/INCLUDE/attributes.h
 fb_test.o: $(ARBHOME)/INCLUDE/cxxforward.h
@@ -127,6 +129,7 @@ fb_test.o: $(ARBHOME)/INCLUDE/dupstr.h
 fb_test.o: $(ARBHOME)/INCLUDE/gccver.h
 fb_test.o: $(ARBHOME)/INCLUDE/smartptr.h
 fb_test.o: $(ARBHOME)/INCLUDE/test_global.h
+fb_test.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 ps_arb2asciipaths.o: ps_assert.hxx
 ps_arb2asciipaths.o: ps_defs.hxx

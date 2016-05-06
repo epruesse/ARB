@@ -18,20 +18,23 @@ include Makefile.setup.include
 RELUNITDIR=../$(UNITDIR)
 FULLUNITDIR=$(ARBHOME)/$(UNITDIR)
 
-SHAREDLIBS=\
+# Note: whitespace is important for the following tests!
+
+SHAREDLIBS= \
 	CORE \
 	ARBDB \
 	AWT \
 	WINDOW \
 
-EXEOBJDIRS=\
+EXEOBJDIRS= \
 	TOOLS \
 	PERLTOOLS \
 	HELP_SOURCE \
 	AISC_MKPTPS \
+	PROBE_SET \
 
-ISSHAREDLIB=$(findstring $(UNITDIR),$(SHAREDLIBS))
-ISEXEOBJECT=$(findstring $(UNITDIR),$(EXEOBJDIRS))
+ISSHAREDLIB=$(findstring  $(UNITDIR) , $(SHAREDLIBS) )
+ISEXEOBJECT=$(findstring  $(UNITDIR) , $(EXEOBJDIRS) )
 
 ifneq ($(ISSHAREDLIB),)
 	UNITLIB=$(UNITLIBNAME).$(SHARED_LIB_SUFFIX)
