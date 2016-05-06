@@ -118,13 +118,16 @@ int ARB_main(int , char *[]) {
 
 // --------------------------------------------------------------------------------
 
+#include <arb_msg.h>
+#include <arb_file.h>
+#include <arb_diff.h>
+
 #ifdef UNIT_TESTS
 #ifndef TEST_UNIT_H
 #include <test_unit.h>
 #endif
 
-#include <arb_msg.h>
-#include <arb_file.h>
+// #define TEST_AUTO_UPDATE // uncomment to update expected results
 
 void TEST_probeset_basics() {
     const char *textout = "tools/probeset.out";
@@ -139,10 +142,19 @@ void TEST_probeset_basics() {
     runtests(out, dataout);
     fclose(out);
 
-    // ../UNIT_TESTER/logs/fb_test.test.log
+    const char *textout_expected = "tools/probeset.out.expected";
+    const char *dataout_expected = "tools/probeset.data.expected";
 
-    // TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(textout));
-    // TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(dataout));
+#if defined(TEST_AUTO_UPDATE)
+    TEST_COPY_FILE(textout, textout_expected);
+    TEST_COPY_FILE(dataout, dataout_expected);
+#else // !defined(TEST_AUTO_UPDATE)
+    TEST_EXPECT_TEXTFILES_EQUAL(textout, textout_expected);
+    TEST_EXPECT_FILES_EQUAL(dataout, dataout_expected);
+#endif
+
+    TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(textout));
+    TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(dataout));
 }
 
 #endif // UNIT_TESTS

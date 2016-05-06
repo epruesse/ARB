@@ -120,6 +120,7 @@ fb_test.o: ps_filebuffer.hxx
 fb_test.o: ps_node.hxx
 fb_test.o: $(ARBHOME)/INCLUDE/arb_assert.h
 fb_test.o: $(ARBHOME)/INCLUDE/arb_core.h
+fb_test.o: $(ARBHOME)/INCLUDE/arb_diff.h
 fb_test.o: $(ARBHOME)/INCLUDE/arb_file.h
 fb_test.o: $(ARBHOME)/INCLUDE/arb_msg.h
 fb_test.o: $(ARBHOME)/INCLUDE/arbtools.h
