@@ -222,49 +222,6 @@ static int hex2dez(char c) {
     if (c>='a' && c<='f') return c-'a'+10;
     return -1;
 }
-static void aw_incdec_color(AW_window *aww, const char *action) {
-    // action is sth like "r+" "b-" "g++" "r--"
-    AW_awar *awar  = aww->get_root()->awar(aw_glob_font_awar_name);
-    char    *color = awar->read_string();
-    bool     err   = true;
-
-    fprintf(stderr, "current color is '%s'\n", color);
-
-    if (color[0]=='#') {
-        int len = strlen(color);
-        if (len==4 || len==7) {
-            len = (len-1)/3; // len of one color channel (1 or 2)
-            aw_assert(len==1 || len==2);
-
-            int diff = action[2]==action[1] ? 7 : 1;
-
-            int channel[3];
-            for (int c=0; c<3; ++c) {
-                if (len==2) channel[c] = hex2dez(color[c*len+1])*16+hex2dez(color[c*len+2]);
-                else        channel[c] = hex2dez(color[c*len+1])*16;
-            }
-
-            int rgb;
-            for (rgb=0; rgb<3; ++rgb) {
-                if (action[0]=="rgb"[rgb] || action[0]=='a') {
-                    if (action[1]=='+') { channel[rgb] += diff; if (channel[rgb]>255) channel[rgb]=255; }
-                    else                { channel[rgb] -= diff; if (channel[rgb]<0)   channel[rgb]=0; }
-                }
-            }
-
-            sprintf(color, "#%2.2X%2.2X%2.2X", channel[0], channel[1], channel[2]);
-
-            err = false;
-            awar->write_string(color);
-        }
-    }
-
-    if (err) {
-        aw_message("Only color values in #rgb- or #rrggbb-style \n"
-                   "can be modified by these buttons. \n"
-                   "Choose a color below and try again.");
-    }
-}
 
 #define AWAR_GLOBAL_COLOR_NAME "tmp/aw/color_label"
 
