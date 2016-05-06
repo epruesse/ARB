@@ -17,6 +17,9 @@
 #include <sys/times.h>
 
 static void runtests(FILE *out, const char *outputfile) {
+    // output gets logged by unittest
+    // expected result is in ../UNIT_TESTER/run/tools/probeset.out.expected
+
     {
         PS_BitSet_Fast *x = new PS_BitSet_Fast(false, 20);
         x->setTrue(0);
@@ -27,28 +30,39 @@ static void runtests(FILE *out, const char *outputfile) {
         x->setTrue(11);
         x->setTrue(14);
         x->print(out, true, 20);
+
+        fprintf(out, "true index count = %li\n", x->getCountOfTrues());
+
         PS_BitSet::IndexSet indices;
+
         x->getTrueIndices(indices);
         fprintf(out, " true  indices (%2zu) : ", indices.size());
         for (PS_BitSet::IndexSet::iterator i=indices.begin(); i != indices.end(); ++i) {
             fprintf(out, " %4li", *i);
         }
+        fputc('\n', out);
+
         x->getTrueIndices(indices, 15);
-        fprintf(out, "\n true  indices (%2zu) : ", indices.size());
+        fprintf(out, " true  indices (%2zu) : ", indices.size());
         for (PS_BitSet::IndexSet::iterator i=indices.begin(); i != indices.end(); ++i) {
             fprintf(out, " %4li", *i);
         }
+        fputc('\n', out);
+
         x->getFalseIndices(indices);
-        fprintf(out, "\n false indices (%2zu) : ", indices.size());
+        fprintf(out, " false indices (%2zu) : ", indices.size());
         for (PS_BitSet::IndexSet::iterator i=indices.begin(); i != indices.end(); ++i) {
             fprintf(out, " %4li", *i);
         }
+        fputc('\n', out);
+
         x->getFalseIndices(indices, 15);
-        fprintf(out, "\n false indices (%2zu) : ", indices.size());
+        fprintf(out, " false indices (%2zu) : ", indices.size());
         for (PS_BitSet::IndexSet::iterator i=indices.begin(); i != indices.end(); ++i) {
             fprintf(out, " %4li", *i);
         }
-        fprintf(out, "\n");
+        fputc('\n', out);
+
         delete x;
     }
 
