@@ -101,17 +101,15 @@ long PS_BitSet::getFalseIndices(PS_BitSet::IndexSet &_index_set, const long _fil
     // get indices of falses from bitset up to max_index
     long index      = 0;
     long byte_index = 0;
-    while (true) {
-        unsigned char byte  = data[byte_index++];       // get a data byte
-        if (!(byte &   1)) _index_set.insert(index); if (index++ >= max_index) break;
-        if (!(byte &   2)) _index_set.insert(index); if (index++ >= max_index) break;
-        if (!(byte &   4)) _index_set.insert(index); if (index++ >= max_index) break;
-        if (!(byte &   8)) _index_set.insert(index); if (index++ >= max_index) break;
-        if (!(byte &  16)) _index_set.insert(index); if (index++ >= max_index) break;
-        if (!(byte &  32)) _index_set.insert(index); if (index++ >= max_index) break;
-        if (!(byte &  64)) _index_set.insert(index); if (index++ >= max_index) break;
-        if (!(byte & 128)) _index_set.insert(index); if (index++ >= max_index) break;
+    while (index<=max_index) {
+        unsigned char byte = data[byte_index++];                                      // get a data byte
+        for (int i = 0; i<8 && index<=max_index; ++i) {
+            if (!(byte&1)) _index_set.insert(index);
+            ++index;
+            byte >>= 1;
+        }
     }
+    ps_assert(index == max_index+1);
     // append indices [max_index+1 .. _fill_index] if bias is set to false
     if (!bias) {
         for (; (index <= _fill_index); ++index) {
@@ -127,17 +125,15 @@ long PS_BitSet::getTrueIndices(PS_BitSet::IndexSet &_index_set, const long _fill
     // get indices of trues from bitset up to max_index
     long index      = 0;
     long byte_index = 0;
-    while (true) {
+    while (index<=max_index) {
         unsigned char byte  = data[byte_index++];       // get a data byte
-        if (byte &   1) _index_set.insert(index); if (index++ >= max_index) break;
-        if (byte &   2) _index_set.insert(index); if (index++ >= max_index) break;
-        if (byte &   4) _index_set.insert(index); if (index++ >= max_index) break;
-        if (byte &   8) _index_set.insert(index); if (index++ >= max_index) break;
-        if (byte &  16) _index_set.insert(index); if (index++ >= max_index) break;
-        if (byte &  32) _index_set.insert(index); if (index++ >= max_index) break;
-        if (byte &  64) _index_set.insert(index); if (index++ >= max_index) break;
-        if (byte & 128) _index_set.insert(index); if (index++ >= max_index) break;
+        for (int i = 0; i<8 && index<=max_index; ++i) {
+            if (byte&1) _index_set.insert(index);
+            ++index;
+            byte >>= 1;
+        }
     }
+    ps_assert(index == max_index+1);
     // append indices [max_index+1 .. _max_index] if bias is set to true
     if (bias) {
         for (; (index <= _fill_index); ++index) {
@@ -153,17 +149,15 @@ long PS_BitSet::getCountOfTrues(const long _fill_index) {
     // get indices of trues from bitset up to max_index
     long index      = 0;
     long byte_index = 0;
-    while (true) {
+    while (index<=max_index) {
         unsigned char byte  = data[byte_index++];       // get a data byte
-        if (byte &   1) ++count; if (index++ >= max_index) break;
-        if (byte &   2) ++count; if (index++ >= max_index) break;
-        if (byte &   4) ++count; if (index++ >= max_index) break;
-        if (byte &   8) ++count; if (index++ >= max_index) break;
-        if (byte &  16) ++count; if (index++ >= max_index) break;
-        if (byte &  32) ++count; if (index++ >= max_index) break;
-        if (byte &  64) ++count; if (index++ >= max_index) break;
-        if (byte & 128) ++count; if (index++ >= max_index) break;
+        for (int i = 0; i<8 && index<=max_index; ++i) {
+            if (byte&1) ++count;
+            ++index;
+            byte >>= 1;
+        }
     }
+    ps_assert(index == max_index+1);
     // append indices [max_index+1 .. _max_index] if bias is set to true
     if (bias && (_fill_index > max_index)) {
         count += _fill_index-max_index + 1;
