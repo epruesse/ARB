@@ -255,10 +255,10 @@ void PS_BitSet::x_or(const PS_BitSet *_other_set) {
 void PS_BitSet::print(FILE *out, const bool _header = true, const long _fill_index = -1) {
     if (_header) fprintf(out, "PS_BitSet: bias(%1i) max_index(%6li) capacity(%6li) ", bias, max_index, capacity);
     for (long i = 0; i <= max_index; ++i) {
-        fprintf(out, Get(i) ? "+" : "_"); // @@@ use fputc
+        fputc(Get(i) ? '+' : '_', out);
     }
     for (long i = max_index+1; i <= _fill_index; ++i) {
-        fprintf(out, "."); // @@@ use fputc
+        fputc('.', out);
     }
     fprintf(out, " %li\n", max_index);
 }

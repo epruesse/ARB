@@ -201,14 +201,14 @@ public:
         if (probes) {
             for (PS_ProbeSetCIter i=probes->begin(); i!=probes->end(); ++i) {
                 PS_printProbe(*i);
-                printf(" ");
+                fputc(' ', stdout);
             }
         }
         printf("] C[");
         for (PS_NodeMapIterator i=children.begin(); i!=children.end(); ++i) {
             i->second->print();
         }
-        printf("]");
+        fputc(']', stdout);
     }
 
     void printOnlyMe() const {
@@ -216,7 +216,7 @@ public:
         if (probes) {
             for (PS_ProbeSetCIter i=probes->begin(); i!=probes->end(); ++i) {
                 PS_printProbe(*i);
-                printf(" ");
+                fputc(' ', stdout);
             }
         }
         printf("] C[ %zu ]", children.size());
