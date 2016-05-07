@@ -567,20 +567,20 @@ AP_FLOAT AP_tree_edge::nni_mutPerSite(AP_FLOAT pars_one, AP_BL_MODE mode, Mutati
         : pars_one; // and in this case it has been reverted
 }
 
-ostream& operator<<(ostream& out, const AP_tree_edge& e)
+ostream& operator<<(ostream& out, const AP_tree_edge *e)
 {
     static int notTooDeep;
 
     out << ' ';
 
-    if (notTooDeep || &e==NULL) {
-        out << e;
+    if (notTooDeep || e==NULL) {
+        out << ((void*)e);
     }
     else {
         notTooDeep = 1;
-        out << "AP_tree_edge(" << e
-            << ", node[0]=" << *(e.node[0])
-            << ", node[1]=" << *(e.node[1])
+        out << "AP_tree_edge(" << ((void*)e)
+            << ", node[0]=" << e->node[0]
+            << ", node[1]=" << e->node[1]
             << ")";
         notTooDeep = 0; // cppcheck-suppress redundantAssignment
     }

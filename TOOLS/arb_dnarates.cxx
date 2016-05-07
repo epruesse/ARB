@@ -784,7 +784,9 @@ static void empiricalfreqs(tree *tr) {
 static void getinput(tree *tr, FILE *INFILE) {
     getnums(INFILE);                      if (anerror) return;
     getoptions(INFILE);                   if (anerror) return;
-    if (!freqsfrom) getbasefreqs(INFILE); if (anerror) return;
+    if (!freqsfrom) {
+        getbasefreqs(INFILE);             if (anerror) return;
+    }
     getyspace();                          if (anerror) return;
     setuptree(tr, numsp);                 if (anerror) return;
     getdata(tr, INFILE);                  if (anerror) return;
@@ -1351,7 +1353,9 @@ static void treeReadLen(tree *tr, FILE *INFILE) {
     treeFlushLen(INFILE);                 if (anerror)  return;
     treeNeedCh(';', "at end of", INFILE); if (anerror)  return;
 
-    if (tr->rooted)  uprootTree(tr, p->next->next);  if (anerror)  return;
+    if (tr->rooted)  {
+        uprootTree(tr, p->next->next);    if (anerror)  return;
+    }
     tr->start = p->next->next->back;  // This is start used by treeString
 
     initrav(tr->start);

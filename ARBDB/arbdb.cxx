@@ -1119,7 +1119,8 @@ NOT4PERL uint8_t GB_read_lossless_byte(GBDATA *gbd, GB_ERROR& error) {
             break;
 
         default:
-            error = cannot_use_fun4entry("GB_read_lossless_byte", gbd);
+            error  = cannot_use_fun4entry("GB_read_lossless_byte", gbd);
+            result = 0;
             break;
     }
 
@@ -1145,7 +1146,8 @@ NOT4PERL int32_t GB_read_lossless_int(GBDATA *gbd, GB_ERROR& error) {
             break;
 
         default:
-            error = cannot_use_fun4entry("GB_read_lossless_int", gbd);
+            error  = cannot_use_fun4entry("GB_read_lossless_int", gbd);
+            result = 0;
             break;
     }
 
@@ -1171,7 +1173,8 @@ NOT4PERL float GB_read_lossless_float(GBDATA *gbd, GB_ERROR& error) {
             break;
 
         default:
-            error = cannot_use_fun4entry("GB_read_lossless_float", gbd);
+            error  = cannot_use_fun4entry("GB_read_lossless_float", gbd);
+            result = 0;
             break;
     }
 

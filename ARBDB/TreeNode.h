@@ -261,13 +261,13 @@ protected:
         free(remark_branch);
     }
     void destroy()  {
-        rt_assert(this);
+        rt_assert(knownNonNull(this));
         TreeRoot *myRoot = get_tree_root();
         rt_assert(myRoot); // if this fails, you need to use destroy(TreeRoot*), i.e. destroy(TreeNode*, TreeRoot*)
         myRoot->destroyNode(this);
     }
     void destroy(TreeRoot *viaRoot) {
-        rt_assert(this);
+        rt_assert(knownNonNull(this));
 #if defined(ASSERTION_USED)
         TreeRoot *myRoot = get_tree_root();
         rt_assert(!myRoot || myRoot == viaRoot);

@@ -316,7 +316,7 @@ public:
 
     void insertAs(ED4_folding_line*& ptr) {
         ED4_folding_line *other = ptr;
-        e4_assert(this);
+        e4_assert(knownNonNull(this));
         ptr = other ? other->insert(this) : this;
     }
 
@@ -1076,38 +1076,38 @@ public:
 
     // use the following functions to test which derived class we have
 
-    int is_terminal()               const { e4_assert(this); return spec.static_prop & ED4_P_IS_TERMINAL; }
+    int is_terminal()               const { e4_assert(knownNonNull(this)); return spec.static_prop & ED4_P_IS_TERMINAL; }
 
-    int is_text_terminal()          const { e4_assert(this); return spec.level & (ED4_L_SPECIES_NAME|ED4_L_SEQUENCE_INFO|ED4_L_SEQUENCE_STRING|ED4_L_PURE_TEXT|ED4_L_COL_STAT); }
+    int is_text_terminal()          const { e4_assert(knownNonNull(this)); return spec.level & (ED4_L_SPECIES_NAME|ED4_L_SEQUENCE_INFO|ED4_L_SEQUENCE_STRING|ED4_L_PURE_TEXT|ED4_L_COL_STAT); }
 
-    int is_species_name_terminal()  const { e4_assert(this); return spec.level & ED4_L_SPECIES_NAME; }
+    int is_species_name_terminal()  const { e4_assert(knownNonNull(this)); return spec.level & ED4_L_SPECIES_NAME; }
 
-    int is_sequence_info_terminal() const { e4_assert(this); return spec.level & ED4_L_SEQUENCE_INFO; }
-    int is_sequence_terminal()      const { e4_assert(this); return spec.level & ED4_L_SEQUENCE_STRING; }
-    int is_orf_terminal()           const { e4_assert(this); return spec.level & ED4_L_ORF; }
+    int is_sequence_info_terminal() const { e4_assert(knownNonNull(this)); return spec.level & ED4_L_SEQUENCE_INFO; }
+    int is_sequence_terminal()      const { e4_assert(knownNonNull(this)); return spec.level & ED4_L_SEQUENCE_STRING; }
+    int is_orf_terminal()           const { e4_assert(knownNonNull(this)); return spec.level & ED4_L_ORF; }
 
-    int is_pure_text_terminal()     const { e4_assert(this); return spec.level & ED4_L_PURE_TEXT; }
-    int is_columnStat_terminal()    const { e4_assert(this); return spec.level & ED4_L_COL_STAT; }
+    int is_pure_text_terminal()     const { e4_assert(knownNonNull(this)); return spec.level & ED4_L_PURE_TEXT; }
+    int is_columnStat_terminal()    const { e4_assert(knownNonNull(this)); return spec.level & ED4_L_COL_STAT; }
 
-    int is_bracket_terminal()       const { e4_assert(this); return spec.level & ED4_L_BRACKET; }
-    int is_spacer_terminal()        const { e4_assert(this); return spec.level & ED4_L_SPACER; }
-    int is_line_terminal()          const { e4_assert(this); return spec.level & ED4_L_LINE; }
+    int is_bracket_terminal()       const { e4_assert(knownNonNull(this)); return spec.level & ED4_L_BRACKET; }
+    int is_spacer_terminal()        const { e4_assert(knownNonNull(this)); return spec.level & ED4_L_SPACER; }
+    int is_line_terminal()          const { e4_assert(knownNonNull(this)); return spec.level & ED4_L_LINE; }
 
-    int is_manager()                const { e4_assert(this); return spec.static_prop & ED4_P_IS_MANAGER; }
+    int is_manager()                const { e4_assert(knownNonNull(this)); return spec.static_prop & ED4_P_IS_MANAGER; }
 
-    int is_sequence_manager()       const { e4_assert(this); return spec.level & ED4_L_SEQUENCE; }
-    int is_multi_name_manager()     const { e4_assert(this); return spec.level & ED4_L_MULTI_NAME; }
-    int is_name_manager()           const { e4_assert(this); return spec.level & ED4_L_NAME_MANAGER; }
-    int is_multi_species_manager()  const { e4_assert(this); return spec.level & ED4_L_MULTI_SPECIES; }
-    int is_multi_sequence_manager() const { e4_assert(this); return spec.level & ED4_L_MULTI_SEQUENCE; }
-    int is_device_manager()         const { e4_assert(this); return spec.level & ED4_L_DEVICE; }
+    int is_sequence_manager()       const { e4_assert(knownNonNull(this)); return spec.level & ED4_L_SEQUENCE; }
+    int is_multi_name_manager()     const { e4_assert(knownNonNull(this)); return spec.level & ED4_L_MULTI_NAME; }
+    int is_name_manager()           const { e4_assert(knownNonNull(this)); return spec.level & ED4_L_NAME_MANAGER; }
+    int is_multi_species_manager()  const { e4_assert(knownNonNull(this)); return spec.level & ED4_L_MULTI_SPECIES; }
+    int is_multi_sequence_manager() const { e4_assert(knownNonNull(this)); return spec.level & ED4_L_MULTI_SEQUENCE; }
+    int is_device_manager()         const { e4_assert(knownNonNull(this)); return spec.level & ED4_L_DEVICE; }
 
-    int is_group_manager()          const { e4_assert(this); return spec.level & ED4_L_GROUP; }
-    int is_root_group_manager()     const { e4_assert(this); return spec.level & ED4_L_ROOTGROUP; }
-    int is_abstract_group_manager() const { e4_assert(this); return spec.level & (ED4_L_GROUP|ED4_L_ROOTGROUP); }
+    int is_group_manager()          const { e4_assert(knownNonNull(this)); return spec.level & ED4_L_GROUP; }
+    int is_root_group_manager()     const { e4_assert(knownNonNull(this)); return spec.level & ED4_L_ROOTGROUP; }
+    int is_abstract_group_manager() const { e4_assert(knownNonNull(this)); return spec.level & (ED4_L_GROUP|ED4_L_ROOTGROUP); }
     
-    int is_species_manager()        const { e4_assert(this); return spec.level & ED4_L_SPECIES; }
-    int is_area_manager()           const { e4_assert(this); return spec.level & ED4_L_AREA; }
+    int is_species_manager()        const { e4_assert(knownNonNull(this)); return spec.level & ED4_L_SPECIES; }
+    int is_area_manager()           const { e4_assert(knownNonNull(this)); return spec.level & ED4_L_AREA; }
 
     // use the following functions to cast ED4_base to derived classes:
 

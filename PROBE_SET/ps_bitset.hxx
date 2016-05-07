@@ -42,7 +42,7 @@ public:
             void invert();
             void x_or(const PS_BitSet *_other_set);
 
-            void print(const bool _header, const long _fill_index);
+            void print(FILE *out, const bool _header, const long _fill_index);
             bool save(PS_FileBuffer *_file);
             bool load(PS_FileBuffer *_file, const long _fill_index);
 
@@ -101,17 +101,15 @@ long PS_BitSet::getFalseIndices(PS_BitSet::IndexSet &_index_set, const long _fil
     // get indices of falses from bitset up to max_index
     long index      = 0;
     long byte_index = 0;
-    while (true) {
-        unsigned char byte  = data[byte_index++];       // get a data byte
-        if (!(byte &   1)) _index_set.insert(index); if (index++ >= max_index) break;
-        if (!(byte &   2)) _index_set.insert(index); if (index++ >= max_index) break;
-        if (!(byte &   4)) _index_set.insert(index); if (index++ >= max_index) break;
-        if (!(byte &   8)) _index_set.insert(index); if (index++ >= max_index) break;
-        if (!(byte &  16)) _index_set.insert(index); if (index++ >= max_index) break;
-        if (!(byte &  32)) _index_set.insert(index); if (index++ >= max_index) break;
-        if (!(byte &  64)) _index_set.insert(index); if (index++ >= max_index) break;
-        if (!(byte & 128)) _index_set.insert(index); if (index++ >= max_index) break;
+    while (index<=max_index) {
+        unsigned char byte = data[byte_index++];                                      // get a data byte
+        for (int i = 0; i<8 && index<=max_index; ++i) {
+            if (!(byte&1)) _index_set.insert(index);
+            ++index;
+            byte >>= 1;
+        }
     }
+    ps_assert(index == max_index+1);
     // append indices [max_index+1 .. _fill_index] if bias is set to false
     if (!bias) {
         for (; (index <= _fill_index); ++index) {
@@ -127,17 +125,15 @@ long PS_BitSet::getTrueIndices(PS_BitSet::IndexSet &_index_set, const long _fill
     // get indices of trues from bitset up to max_index
     long index      = 0;
     long byte_index = 0;
-    while (true) {
+    while (index<=max_index) {
         unsigned char byte  = data[byte_index++];       // get a data byte
-        if (byte &   1) _index_set.insert(index); if (index++ >= max_index) break;
-        if (byte &   2) _index_set.insert(index); if (index++ >= max_index) break;
-        if (byte &   4) _index_set.insert(index); if (index++ >= max_index) break;
-        if (byte &   8) _index_set.insert(index); if (index++ >= max_index) break;
-        if (byte &  16) _index_set.insert(index); if (index++ >= max_index) break;
-        if (byte &  32) _index_set.insert(index); if (index++ >= max_index) break;
-        if (byte &  64) _index_set.insert(index); if (index++ >= max_index) break;
-        if (byte & 128) _index_set.insert(index); if (index++ >= max_index) break;
+        for (int i = 0; i<8 && index<=max_index; ++i) {
+            if (byte&1) _index_set.insert(index);
+            ++index;
+            byte >>= 1;
+        }
     }
+    ps_assert(index == max_index+1);
     // append indices [max_index+1 .. _max_index] if bias is set to true
     if (bias) {
         for (; (index <= _fill_index); ++index) {
@@ -153,17 +149,15 @@ long PS_BitSet::getCountOfTrues(const long _fill_index) {
     // get indices of trues from bitset up to max_index
     long index      = 0;
     long byte_index = 0;
-    while (true) {
+    while (index<=max_index) {
         unsigned char byte  = data[byte_index++];       // get a data byte
-        if (byte &   1) ++count; if (index++ >= max_index) break;
-        if (byte &   2) ++count; if (index++ >= max_index) break;
-        if (byte &   4) ++count; if (index++ >= max_index) break;
-        if (byte &   8) ++count; if (index++ >= max_index) break;
-        if (byte &  16) ++count; if (index++ >= max_index) break;
-        if (byte &  32) ++count; if (index++ >= max_index) break;
-        if (byte &  64) ++count; if (index++ >= max_index) break;
-        if (byte & 128) ++count; if (index++ >= max_index) break;
+        for (int i = 0; i<8 && index<=max_index; ++i) {
+            if (byte&1) ++count;
+            ++index;
+            byte >>= 1;
+        }
     }
+    ps_assert(index == max_index+1);
     // append indices [max_index+1 .. _max_index] if bias is set to true
     if (bias && (_fill_index > max_index)) {
         count += _fill_index-max_index + 1;
@@ -252,15 +246,15 @@ void PS_BitSet::x_or(const PS_BitSet *_other_set) {
 }
 
 
-void PS_BitSet::print(const bool _header = true, const long _fill_index = -1) {
-    if (_header) printf("PS_BitSet: bias(%1i) max_index(%6li) capacity(%6li) ", bias, max_index, capacity);
+void PS_BitSet::print(FILE *out, const bool _header = true, const long _fill_index = -1) {
+    if (_header) fprintf(out, "PS_BitSet: bias(%1i) max_index(%6li) capacity(%6li) ", bias, max_index, capacity);
     for (long i = 0; i <= max_index; ++i) {
-        printf(Get(i) ? "+" : "_");
+        fputc(Get(i) ? '+' : '_', out);
     }
     for (long i = max_index+1; i <= _fill_index; ++i) {
-        printf(".");
+        fputc('.', out);
     }
-    printf(" %li\n", max_index);
+    fprintf(out, " %li\n", max_index);
 }
 
 
@@ -303,14 +297,22 @@ bool PS_BitSet::load(PS_FileBuffer *_file, const long _fill_index = -1) {
 
 
 bool PS_BitSet_Fast::Get(const long _index) {
-    if (_index >= capacity) printf("PS_BitSet_Fast::get( %li ) exceeds capacity %li\n", _index, capacity);
+    if (_index >= capacity) {
+        printf("PS_BitSet_Fast::get( %li ) exceeds capacity %li\n", _index, capacity);
+        ps_assert(0);
+        return false;
+    }
     if (_index > max_index) max_index = _index;
     return (((data[_index/8] >> (_index % 8)) & 1) == 1);
 }
 
 
 bool PS_BitSet_Fast::Set(const long _index, const bool _value) {
-    if (_index >= capacity) printf("PS_BitSet_Fast::set( %li,%1i ) exceeds capacity %li\n", _index, _value, capacity);
+    if (_index >= capacity) {
+        printf("PS_BitSet_Fast::set( %li,%1i ) exceeds capacity %li\n", _index, _value, capacity);
+        ps_assert(0);
+        return false;
+    }
     bool previous_value = (((data[_index/8] >> (_index % 8)) & 1) == 1);
     if (_value) {
         data[_index/8] |= 1 << (_index % 8);
@@ -324,7 +326,11 @@ bool PS_BitSet_Fast::Set(const long _index, const bool _value) {
 
 
 void PS_BitSet_Fast::setTrue(const long _index) {
-    if (_index >= capacity) printf("PS_BitSet_Fast::setTrue( %li ) exceeds capacity %li\n", _index, capacity);
+    if (_index >= capacity) {
+        printf("PS_BitSet_Fast::setTrue( %li ) exceeds capacity %li\n", _index, capacity);
+        ps_assert(0);
+        return;
+    }
     data[_index/8] |= 1 << (_index % 8);
     if (_index > max_index) max_index = _index;
 }
