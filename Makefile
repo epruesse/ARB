@@ -83,6 +83,9 @@ ifeq ($(findstring $(ARBHOME)/lib,$(LD_LIBRARY_PATH)),)
 LD_LIBRARY_PATH:=${ARBHOME}/lib:$(LD_LIBRARY_PATH)
 endif
 
+# store LD_LIBRARY_PATH to circumvent SIP restrictions:
+ARBBUILD_LIBRARY_PATH:=$(LD_LIBRARY_PATH)
+
 FORCEMASK = umask 002
 NODIR=--no-print-directory
 
@@ -100,12 +103,9 @@ ALLOWED_gcc_VERSIONS=\
         4.7.1 4.7.2 4.7.3 4.7.4 \
   4.8.0 4.8.1 4.8.2 4.8.3 4.8.4 4.8.5 \
   4.9.0 4.9.1 4.9.2 4.9.3 \
-  5.1.0 5.2.0 5.3.0 \
+  5.1.0 5.2.0 5.3.0 5.3.1 \
+  6.1.0 \
 
-
-# supported clang versions:
-ALLOWED_clang_VERSIONS=\
-	4.2.1 \
 
 # ----------------------
 
@@ -123,7 +123,8 @@ ifneq ($(COMPILER_NAME),gcc)
 endif
 
 ifeq ($(USE_CLANG),1)
-ALLOWED_COMPILER_VERSIONS=$(ALLOWED_clang_VERSIONS)
+# accept all clang versions:
+ALLOWED_COMPILER_VERSIONS=$(COMPILER_VERSION)
 else
 ALLOWED_COMPILER_VERSIONS=$(ALLOWED_gcc_VERSIONS)
 endif
@@ -145,33 +146,35 @@ USE_GCC_48_OR_HIGHER:=
 USE_GCC_49_OR_HIGHER:=
 USE_GCC_50_OR_HIGHER:=
 
-ifeq ($(USE_GCC_MAJOR),4)
- ifeq ($(USE_GCC_MINOR),5)
-  ifneq ('$(findstring $(USE_GCC_PATCHLEVEL),23456789)','')
-   USE_GCC_452_OR_HIGHER:=yes
-  endif
- else
-  ifneq ('$(findstring $(USE_GCC_MINOR),6789)','')
-   USE_GCC_452_OR_HIGHER:=yes
-   USE_GCC_46_OR_HIGHER:=yes
-   ifneq ($(USE_GCC_MINOR),6)
-    USE_GCC_47_OR_HIGHER:=yes
-    ifneq ($(USE_GCC_MINOR),7)
-     USE_GCC_48_OR_HIGHER:=yes
-      ifneq ($(USE_GCC_MINOR),8)
-       USE_GCC_49_OR_HIGHER:=yes
-      endif
+ifeq ($(USE_CLANG),0)
+ ifeq ($(USE_GCC_MAJOR),4)
+  ifeq ($(USE_GCC_MINOR),5)
+   ifneq ('$(findstring $(USE_GCC_PATCHLEVEL),23456789)','')
+    USE_GCC_452_OR_HIGHER:=yes
+   endif
+  else
+   ifneq ('$(findstring $(USE_GCC_MINOR),6789)','')
+    USE_GCC_452_OR_HIGHER:=yes
+    USE_GCC_46_OR_HIGHER:=yes
+    ifneq ($(USE_GCC_MINOR),6)
+     USE_GCC_47_OR_HIGHER:=yes
+     ifneq ($(USE_GCC_MINOR),7)
+      USE_GCC_48_OR_HIGHER:=yes
+       ifneq ($(USE_GCC_MINOR),8)
+        USE_GCC_49_OR_HIGHER:=yes
+       endif
+     endif
     endif
    endif
   endif
+ else
+  USE_GCC_452_OR_HIGHER:=yes
+  USE_GCC_46_OR_HIGHER:=yes
+  USE_GCC_47_OR_HIGHER:=yes
+  USE_GCC_48_OR_HIGHER:=yes
+  USE_GCC_49_OR_HIGHER:=yes
+  USE_GCC_50_OR_HIGHER:=yes
  endif
-else
- USE_GCC_452_OR_HIGHER:=yes
- USE_GCC_46_OR_HIGHER:=yes
- USE_GCC_47_OR_HIGHER:=yes
- USE_GCC_48_OR_HIGHER:=yes
- USE_GCC_49_OR_HIGHER:=yes
- USE_GCC_50_OR_HIGHER:=yes
 endif
 
 #---------------------- define special directories for non standard builds
@@ -197,13 +200,19 @@ clflags :=# linker flags (when passed through gcc)
 extended_warnings :=# warning flags for C and C++-compiler
 extended_cpp_warnings :=# warning flags for C++-compiler only
 
+DISABLE_VECTORIZE_CHECK:=0
+
 ifeq ($(DEBUG),0)
 	dflags := -DNDEBUG# defines
 	ifeq ($(USE_CLANG),1)
 		cflags := -O3# compiler flags (C and C++)
 	else
-		cflags := -O4# compiler flags (C and C++)
 		clflags += -Wl,-O2# passthrough linker flags
+#	------- standard optimization: 
+		cflags := -O3# compiler flags (C and C++)
+#	------- test changed optimization (DISABLE_VECTORIZE_CHECK for -O2 or lower):
+#		cflags := -O2# do not commit uncommented!
+#		DISABLE_VECTORIZE_CHECK:=1
 	endif
 endif
 
@@ -405,6 +414,10 @@ ifeq ($(SANITIZE_ADDRESS),1)
 endif
 ifeq ($(SANITIZE_UNDEFINED),1)
  SANITIZE_ANY:=1
+endif
+
+ifeq ($(SANITIZE_ANY),1)
+ DISABLE_VECTORIZE_CHECK:=1
 endif
 
 #---------------------- 32 or 64 bit
@@ -651,9 +664,15 @@ endif
 
 #---------------------- SSE vectorizer
 
+ifeq ('$(COMPILER_VERSION)','6.1.0')
+# see http://bugs.arb-home.de/ticket/700
+	cflags += -fno-tree-loop-vectorize
+	DISABLE_VECTORIZE_CHECK:=1
+endif
+
 ifeq ($(DEBUG),0)
  ifeq ($(USE_GCC_49_OR_HIGHER),yes)
-  ifeq ($(SANITIZE_ANY),0)
+  ifeq ($(DISABLE_VECTORIZE_CHECK),0)
 #	cflags += -fopt-info
 	cflags += -fopt-info-vec
 
@@ -1754,9 +1773,9 @@ libdepends:
 genheaders: TEMPLATES/TEMPLATES.dummy
 
 clrdotdepends:
-	-rm PROBE_COM/.depends
-	-rm NAMES_COM/.depends
-	-rm PERL2ARB/.depends
+	rm PROBE_COM/.depends || true
+	rm NAMES_COM/.depends || true
+	rm PERL2ARB/.depends || true
 
 comdepends: comtools clrdotdepends
 	@echo "$(SEP) Partially build com interface"
@@ -2284,12 +2303,12 @@ UNITS_NEED_FIX = \
 	ptpan/PROBE.test \
 
 UNITS_UNTESTABLE_ATM = \
-	PROBE_SET/PROBE_SET.test \
 	XML_IMPORT/XML_IMPORT.test \
 
 # for the moment, put all units containing tests into UNITS_TESTED or UNITS_TESTED_FIRST
 
 UNITS_TESTED_FIRST = \
+	PROBE_SET/fb_test.test \
 	SL/ITEMS/ITEMS.test \
 	SL/CONSENSUS/CONSENSUS.test \
 	DIST/DIST.test \
@@ -2389,7 +2408,7 @@ run_tests: test_base clean_cov
 	$(MAKE) "ARB_PID=UT_$$$$" run_tests_faked_arbpid
 
 cleanup_faked_arbpids:
-	@-rm ~/.arb_tmp/tmp/arb_pids_${USER}_${ARB_PID}_*
+	@rm ~/.arb_tmp/tmp/arb_pids_${USER}_${ARB_PID}_* || true
 
 cleanup_faked_arbpids_and_fail: cleanup_faked_arbpids
 	@false

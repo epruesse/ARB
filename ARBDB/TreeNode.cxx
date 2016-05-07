@@ -38,7 +38,7 @@ void TreeRoot::change_root(TreeNode *oldroot, TreeNode *newroot) {
 #if defined(PROVIDE_TREE_STRUCTURE_TESTS)
 
 Validity TreeNode::is_valid() const {
-    rt_assert(this);
+    rt_assert(knownNonNull(this));
     Validity valid;
 
     TreeRoot *troot = get_tree_root();

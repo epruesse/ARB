@@ -69,7 +69,7 @@ $(TARGET_SO) : $(ARB_SO)
 	cp $< $@
 
 $(ARB_SO) : $(XS_DEPENDS) depends.stamp
-	-rm $(ARB_SO)
+	rm $(ARB_SO) || true
 	@echo "Used perl version: `perl -v | grep 'This is perl'`"
 	@echo "-------- calling MakeMaker-Makefile"
 	( $(PMAKE) $@ || (echo "------ failed[1].. retry once"; $(PMAKE) $@))
@@ -119,7 +119,7 @@ Makefile.PL : $(MAKE_MAKEFILE)
 	) > $@
 
 ARB.xs : $(ARB_PROTO_2_XSUB) proto.h ARB.default.xs perlmain_source.c typemap
-	-@test -f $@ && chmod a+w $@
+	@(test -f $@ && chmod a+w $@) || true
 	$(ARB_PROTO_2_XSUB) proto.h ARB.default.xs typemap >$@
 	@test -f $@ && chmod a-w $@
 

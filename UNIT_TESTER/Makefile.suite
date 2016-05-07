@@ -77,7 +77,7 @@ unskip:
 
 init:
 	@echo "$(SEP) Running unit tests"
-	@-rm $(JUNIT_LOG)
+	@rm $(JUNIT_LOG) || true
 #ifeq ($(VALGRIND_EXTERNAL),E)
 	./valgrind/arb_valgrind_logged INIT "$(VALGRIND_EXTERNAL)" $(CHECK_LEAKS)
 #endif

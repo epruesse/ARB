@@ -3,7 +3,10 @@
 # Installs tools and libraries needed to run, compile or develop ARB on Ubuntu.
 #
 # Tested with:
-#       * Ubuntu 12.04 (Precise Pangolin)
+#       * Ubuntu 16.04 (Xenial Xerus)
+#
+# Previous version of this script is available at
+# http://bugs.arb-home.de/export/14409/trunk/SH/arb_installubuntu4arb.sh
 #
 # [ May as well work with other ubuntu flavors or debian.
 #   Please report working tests and/or send needed changes to devel@arb-home.de
@@ -39,7 +42,7 @@ else
             echo \
                 gnuplot \
                 gv \
-                libxerces-c28 \
+                libxerces-c3.1 \
                 transfig \
                 xfig \
                 xterm \
@@ -57,10 +60,10 @@ else
                 libglib2.0-dev \
                 libgtk2.0-dev \
                 libreadline-dev \
-                libtiff4-dev \
+                libtiff5-dev \
                 libx11-dev \
                 libxext-dev \
-                libxerces-c2-dev \
+                libxerces-c-dev \
                 libxml2-utils \
                 lynx \
                 xsltproc \
@@ -69,15 +72,15 @@ else
         elif [ "$2" == "compile_noOpenGL" ]; then
             $0 echo arb_noOpenGL
             $0 echo compile_common
-            
+
         elif [ "$2" == "compile_OpenGL" ]; then  # @@@ when opengl compile works, update dependencies below 
             $0 echo arb_OpenGL
             $0 echo compile_common
             echo \
                 freeglut3-dev \
-                libglew1.5-dev \
+                libglew-dev \
                 libpng12-dev \
-                
+
             echo \
                 libglw-mesa-arb \
                 >> $ARB_PACKAGES
@@ -87,7 +90,7 @@ else
             echo \
                 valgrind \
                 pixmap \
-                ctags \
+                exuberant-ctags \
 
         elif [ "$2" == "devdox" ]; then
             $0 echo develop

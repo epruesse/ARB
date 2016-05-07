@@ -33,7 +33,7 @@ You may also want to use
 - bash
 - libpng
 - xterm
-- libxerces-c2
+- libxerces-c3.1
 
 Only needed for Open GL version:
 

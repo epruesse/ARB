@@ -56,39 +56,39 @@ void AP_tree_nlen::copy(AP_tree_nlen *tree) {
     }
 }
 
-ostream& operator<<(ostream& out, const AP_tree_nlen& node) {
+ostream& operator<<(ostream& out, const AP_tree_nlen *node) {
     out << ' ';
 
-    if (&node==NULL) {
+    if (node==NULL) {
         out << "NULL";
     }
-    if (node.is_leaf) {
-        out << ((void *)&node) << '(' << node.name << ')';
+    if (node->is_leaf) {
+        out << ((void *)node) << '(' << node->name << ')';
     }
     else {
         static int notTooDeep;
 
         if (notTooDeep) {
-            out << ((void *)&node);
-            if (!node.father) out << " (ROOT)";
+            out << ((void *)node);
+            if (!node->father) out << " (ROOT)";
         }
         else {
             notTooDeep = 1;
 
-            out << "NODE(" << ((void *)&node);
+            out << "NODE(" << ((void *)node);
 
-            if (!node.father) {
+            if (!node->father) {
                 out << " (ROOT)";
             }
             else {
-                out << ", father=" << node.father;
+                out << ", father=" << node->father;
             }
 
-            out << ", leftson=" << node.leftson
-                << ", rightson=" << node.rightson
-                << ", edge[0]=" << *(node.edge[0])
-                << ", edge[1]=" << *(node.edge[1])
-                << ", edge[2]=" << *(node.edge[2])
+            out << ", leftson=" << node->leftson
+                << ", rightson=" << node->rightson
+                << ", edge[0]=" << node->edge[0]
+                << ", edge[1]=" << node->edge[1]
+                << ", edge[2]=" << node->edge[2]
                 << ")";
 
             notTooDeep = 0;
@@ -298,7 +298,7 @@ Validity AP_tree_nlen::sequence_state_valid() const {
 }
 
 Validity AP_tree_nlen::is_valid() const {
-    ap_assert(this);
+    ap_assert(knownNonNull(this));
 
     Validity valid   = AP_tree::is_valid();
     if (valid) valid = has_valid_edges();
