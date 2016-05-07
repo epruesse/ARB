@@ -318,6 +318,14 @@ template <typename T> inline void dont_warn_unused_result(T) {}
 #define ASSERT_FALSE(boolExpr) ASSERT_RESULT(bool, false, boolExpr)
 
 // ------------------------------------------------------------
+
+#if defined(ASSERTION_USED)
+inline bool knownNonNull(const void *nonnull) { // use to suppress -Wnonnull-compare (only allowed in assertions)
+    return nonnull != NULL;
+}
+#endif
+
+// ------------------------------------------------------------
 // UNCOVERED is used to document/test missing test coverage
 // see ../INCLUDE/test_global.h@UNCOVERED
 

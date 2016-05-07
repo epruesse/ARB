@@ -24,14 +24,18 @@
 #   if (__cplusplus == 201103L)
 #    define ARB_ENABLE_Cxx11_FEATURES
 #   else
-#    error Unknown C++ standard defined in __cplusplus
+#    if (__cplusplus == 201402L)
+#     define ARB_ENABLE_Cxx11_FEATURES
+// #     define ARB_ENABLE_Cxx14_FEATURES // not needed yet
+#    else
+#     error Unknown C++ standard defined in __cplusplus
+#    endif
 #   endif
 #  endif
 # endif
 #else
 # warning C compilation includes cxxforward.h
 #endif
-
 
 #ifdef ARB_ENABLE_Cxx11_FEATURES
 

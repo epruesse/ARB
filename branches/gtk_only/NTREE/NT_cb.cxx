@@ -152,7 +152,7 @@ void NT_system_cb(AW_window *, const char *command) {
     aw_message_if(GBK_system(command));
 }
 void NT_xterm(AW_window*) {
-    GB_xterm();
+    aw_message_if(GB_xterm());
 }
 void NT_system_in_xterm_cb(AW_window*, const char *command) {
     GB_ERROR error = GB_xcmd(command, true, true);

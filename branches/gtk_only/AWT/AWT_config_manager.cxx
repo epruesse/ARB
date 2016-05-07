@@ -571,7 +571,7 @@ static string esc(const string& str) {
     return result;
 }
 
-static void dump_cb(AW_window *aww, AWT_configuration *config) {
+static void dump_cb(AW_window *, AWT_configuration *config) {
     // dump code ready to insert into AWT_predefined_config
     string   cfgName = config->get_awar_value(CURRENT_CFG);
     GB_ERROR error   = NULL;
