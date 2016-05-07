@@ -154,15 +154,25 @@ void AW_at::at(int x, int y) {
     at_y(y);
 }
 
+inline int force_valid_at_offset(int xy) {
+    // Placing widgets at negative offsets is used in arb-motif.
+    // In gtk doing so, lets widgets just disappear. Workaround: set offset to zero
+    return xy<0 ? 0 : xy;
+}
+
 void AW_at::at_x(int x) {
+    x = force_valid_at_offset(x);
+
     if (x_for_next_button > max_x_size) max_x_size = x_for_next_button;
-    x_for_next_button = x;
+    x_for_next_button                              = x;
     if (x_for_next_button > max_x_size) max_x_size = x_for_next_button;
 }
 
 void AW_at::at_y(int y) {
+    y = force_valid_at_offset(y);
+
     if (y_for_next_button + biggest_height_of_buttons > max_y_size)
-        max_y_size = y_for_next_button + biggest_height_of_buttons;
+        max_y_size            = y_for_next_button + biggest_height_of_buttons;
     biggest_height_of_buttons = biggest_height_of_buttons + y_for_next_button - y;
     if (biggest_height_of_buttons<0) {
         biggest_height_of_buttons = 0;
