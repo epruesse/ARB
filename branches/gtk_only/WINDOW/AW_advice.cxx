@@ -167,8 +167,8 @@ void AW_advice(const char *message, AW_Advice_Type type, const char *title, cons
         AW_awar *understood = advice_root->awar(AWAR_ADVICE_UNDERSTOOD);
         understood->write_int(0);
 
+        aw_assert(implicated(!corresponding_help, (type & AW_ADVICE_HELP) == 0));
         if (corresponding_help) type = AW_Advice_Type(type|AW_ADVICE_HELP);
-        else aw_assert((type & AW_ADVICE_HELP) == 0);
 
         AW_window_simple *aws = new AW_window_simple; // do not delete (ARB will crash) -- maybe reuse window for all advices?
 

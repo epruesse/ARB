@@ -66,9 +66,11 @@ static bool equal(const char* a, const char* b) {
     return a == b || (a != NULL && b != NULL && strcmp(a,b) == 0);
 }
 
+#if defined(DEBUG)
 static void show_equal(const char* n, const char* a, const char* b) {
     if (!equal(a,b)) printf(" %s %s != %s\n", n, a, b);
 }
+#endif
 
 bool AW_element::operator==(const AW_element& o) const {
     bool res = 
