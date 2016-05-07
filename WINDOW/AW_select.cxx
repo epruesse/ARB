@@ -107,9 +107,9 @@ void AW_selection_list::bind_widget(GtkWidget *widget_) {
     widget = widget_;
     aw_return_if_fail(widget != NULL);
 
-    GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
+    GtkCellRenderer *renderer    = gtk_cell_renderer_text_new();
+    GtkCellLayout   *cell_layout = NULL;
 
-    GtkCellLayout *cell_layout;
     if (GTK_IS_TREE_VIEW(widget)) {
         gtk_tree_view_set_model(GTK_TREE_VIEW(widget), get_model());
         cell_layout = GTK_CELL_LAYOUT(gtk_tree_view_column_new());
@@ -132,10 +132,12 @@ void AW_selection_list::bind_widget(GtkWidget *widget_) {
         cell_layout = GTK_CELL_LAYOUT(widget);
         //connect changed signal
         change_cb_id = g_signal_connect(G_OBJECT(widget), "changed", 
-                                      G_CALLBACK(aw_selection_list_widget_changed), 
-                                      (gpointer) this);
-        
+                                        G_CALLBACK(aw_selection_list_widget_changed),
+                                        (gpointer) this);
+
     }
+
+    aw_assert(cell_layout);
     gtk_cell_layout_pack_start(cell_layout, renderer, true);
     // map column 0 to attribute "text" of the renderer
     gtk_cell_layout_add_attribute(cell_layout, renderer, "text", 0);

@@ -1577,8 +1577,8 @@ void AW_window::set_close_action(const char* act_name) {
     bool got_action = have_local || have_global;
     aw_warn_if_fail(got_action);
     if (got_action) {
-        bool ambiguous_action = have_local && have_global;
 #if defined(DEBUG)
+        bool ambiguous_action = have_local && have_global;
         aw_warn_if_fail(!ambiguous_action); // possibly wrong behavior; resolve in client code
 #endif
         set_close_action(have_local ? have_local : have_global);
