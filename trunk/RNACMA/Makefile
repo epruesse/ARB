@@ -14,7 +14,7 @@ cma_cxxflags:= $(subst -Weffc++,,$(cma_cxxflags))
 cma_cxxflags:= $(subst -Wctor-dtor-privacy,,$(cma_cxxflags))
 cma_cxxflags:= $(subst -Wlogical-op,,$(cma_cxxflags))
 cma_cxxflags:= $(subst -Wunused-local-typedefs,,$(cma_cxxflags))
-cma_cxxflags:= $(cma_cxxflags) -Wno-deprecated-declarations
+cma_cxxflags:= $(cma_cxxflags) -Wno-deprecated-declarations -Wno-ignored-attributes
 cma_cflags:= $(subst -Wshadow,,$(cma_cflags))
 cma_cflags+= -Wno-unused-local-typedefs# this is included in -Wall
 endif
@@ -32,7 +32,7 @@ ifeq ($(SUPPRESS_WARNINGS),1)
 	@echo "------------------------------------------------------------------------------------------"
 	@echo "Please note: Several compiler warnings have been disabled in RNACMA"
 	@echo "(namely -Weffc++, -Wctor-dtor-privacy, -Wlogical-op, -Wshadow, -Wunused-local-typedefs,"
-	@echo "  -Wdeprecated-declarations) to avoid Eigen spams here"
+	@echo "  -Wdeprecated-declarations -Wignored-attributes) to avoid Eigen spams here"
 	@echo "------------------------------------------------------------------------------------------"
 endif
 

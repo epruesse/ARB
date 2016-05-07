@@ -247,7 +247,7 @@ public:
 
 
     friend      class AP_tree_edge;
-    friend      std::ostream& operator<<(std::ostream&, const AP_tree_nlen&);
+    friend      std::ostream& operator<<(std::ostream&, const AP_tree_nlen*);
 };
 
 #if defined(ASSERTION_USED) || defined(UNIT_TESTS)
@@ -285,7 +285,7 @@ class AP_tree_edge : virtual Noncopyable {
     friend class AP_tree_nlen;
     friend class EdgeChain;
 
-    friend std::ostream& operator<<(std::ostream&, const AP_tree_edge&);
+    friend std::ostream& operator<<(std::ostream&, const AP_tree_edge*);
     friend AP_tree_edge *StackFrameData::makeEdge(AP_tree_nlen *n1, AP_tree_nlen *n2); // allowed to relink edge
     friend void          AP_main::destroyEdge(AP_tree_edge *edge);                     // allowed to delete edge
     friend void          ResourceStack::destroy_edges();                               // allowed to delete edge
@@ -348,7 +348,7 @@ public:
     void set_visited(bool vis) { kl_visited = vis; }
 };
 
-std::ostream& operator<<(std::ostream&, const AP_tree_edge&);
+std::ostream& operator<<(std::ostream&, const AP_tree_edge*);
 
 class EdgeChain : virtual Noncopyable {
     AP_tree_edge *start;  // start edge

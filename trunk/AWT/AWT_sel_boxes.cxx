@@ -449,7 +449,7 @@ struct AWT_configuration_selection : public AW_DB_selection {
         GB_ERROR   error;
         GBT_config cfg(get_gb_main(), name, error);
 
-        int count;
+        int count = 0;
         if (!error) {
             const char *cmt = cfg.get_comment();
             comment         = cmt ? cmt : "";

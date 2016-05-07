@@ -331,7 +331,10 @@ static void PS_find_probe_for_sets(const PS_NodePtr& _ps_node, PS_CandidatePtr _
     //
     if ((id >= __MIN_SETS_ID) && has_probes && !_candidate_parent->alreadyUsedNode(_ps_node)) {
         ++__PROBES_COUNTER;
-        if (__VERBOSE && (__PROBES_COUNTER % 100 == 0)) printf("%8lup %8luc\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b", __PROBES_COUNTER, __CANDIDATES_COUNTER); fflush(stdout);
+        if (__VERBOSE && (__PROBES_COUNTER % 100 == 0)) {
+            printf("%8lup %8luc\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b", __PROBES_COUNTER, __CANDIDATES_COUNTER);
+            fflush(stdout);
+        }
         // make intersections of __PATH with __SOURCE_ID_SET and __TARGET_ID_SET
         float distance_to_perfect_match;
         if (PS_test_sets_on_path(distance_to_perfect_match)) {
@@ -342,7 +345,10 @@ static void PS_find_probe_for_sets(const PS_NodePtr& _ps_node, PS_CandidatePtr _
             if (status > 0) {
                 if (status == 2) {
                     ++__CANDIDATES_COUNTER;
-                    if (__VERBOSE) printf("%8lup %8luc\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b", __PROBES_COUNTER, __CANDIDATES_COUNTER); fflush(stdout);
+                    if (__VERBOSE) {
+                        printf("%8lup %8luc\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b", __PROBES_COUNTER, __CANDIDATES_COUNTER);
+                        fflush(stdout);
+                    }
                 }
                 fflush(stdout);
             }

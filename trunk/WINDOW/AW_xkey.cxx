@@ -183,8 +183,8 @@ void aw_uninstall_xkeys() {
     }
     free(generatedKeymaps); generatedKeymaps = NULL;
 
-    if (awxkeymap_xkey_2_key_hash) GBS_free_numhash(awxkeymap_xkey_2_key_hash); awxkeymap_xkey_2_key_hash  = NULL;
-    if (awxkeymap_string_2_key_hash) GBS_free_hash(awxkeymap_string_2_key_hash); awxkeymap_string_2_key_hash = NULL;
+    if (awxkeymap_xkey_2_key_hash)   { GBS_free_numhash(awxkeymap_xkey_2_key_hash);   awxkeymap_xkey_2_key_hash   = NULL; }
+    if (awxkeymap_string_2_key_hash) { GBS_free_hash   (awxkeymap_string_2_key_hash); awxkeymap_string_2_key_hash = NULL; }
 }
 
 #if defined(DEBUG)
