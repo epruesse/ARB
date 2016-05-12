@@ -426,17 +426,19 @@ static AW_window *create_phyl_main_window(AW_root *aw_root, PH_root *ph_root) {
 
     const GcChangedCallback gcChangedCb = makeGcChangedCallback(gc_changed_cb);
 
-    AW_gc_manager gcmiddle = AW_manage_GC(awm,
-                                          awm->get_window_id(),
-                                          awm->get_device(AW_MIDDLE_AREA),
-                                          PH_GC_0, PH_GC_0_DRAG, AW_GCM_DATA_AREA,
-                                          gcChangedCb,
-                                          false, // no color groups
-                                          "#CC9AF8",
-                                          "#SEQUENCE$#000000",
-                                          "#MARKER$#FF0000",
-                                          "NOT_MARKER$#A270C0",
-                                          NULL);
+    AW_gc_manager *gcmiddle =
+        AW_manage_GC(awm,
+                     awm->get_window_id(),
+                     awm->get_device(AW_MIDDLE_AREA),
+                     PH_GC_0, PH_GC_0_DRAG, AW_GCM_DATA_AREA,
+                     gcChangedCb,
+                     false, // no color groups
+                     "#CC9AF8",
+                     "#SEQUENCE$#000000",
+                     "#MARKER$#FF0000",
+                     "NOT_MARKER$#A270C0",
+                     NULL);
+
     AW_manage_GC(awm,
                  awm->get_window_id(),
                  awm->get_device(AW_BOTTOM_AREA),

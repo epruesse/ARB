@@ -89,7 +89,6 @@ struct AW_MGC_cb_struct : virtual Noncopyable { // one for each canvas
     {}
 };
 
-class aw_gc_manager;
 struct AW_MGC_awar_cb_struct {  // one for each awar
     struct AW_MGC_cb_struct      *cbs;
     const char                   *fontbasename;
@@ -97,36 +96,36 @@ struct AW_MGC_awar_cb_struct {  // one for each awar
     short                         gc;
     short                         gc_drag;
     short                         colorindex;
-    aw_gc_manager                *gcmgr;
+    AW_gc_manager                *gcmgr;
     AW_window                    *gc_def_window;
     struct AW_MGC_awar_cb_struct *next;
 };
 
 
-class aw_gc_manager {
+class AW_gc_manager {
     const char            *field;
     const char            *default_value;
     AW_option_menu_struct *font_size_handle; // the option menu to define the font size of the GC
     AW_MGC_awar_cb_struct *font_change_cb_parameter;
-    aw_gc_manager         *next;
+    AW_gc_manager         *next;
 
 public:
-    aw_gc_manager(const char *field_, const char *default_value_)
-        : field(field_)
-        , default_value(default_value_)
-        , font_size_handle(0)
-        , next(0)
+    AW_gc_manager(const char *field_, const char *default_value_)
+        : field(field_),
+          default_value(default_value_),
+          font_size_handle(0),
+          next(0)
     {}
 
-    void enqueue(aw_gc_manager *next_) {
+    void enqueue(AW_gc_manager *next_) {
         aw_assert(!next);
         next = next_;
     }
 
     const char *get_field() const { return field; }
     const char *get_default_value() const { return default_value; }
-    const aw_gc_manager *get_next() const { return next; }
-    aw_gc_manager *get_next() { return next; }
+    const AW_gc_manager *get_next() const { return next; }
+    AW_gc_manager *get_next() { return next; }
 
     void set_font_size_handle(AW_option_menu_struct *oms) { font_size_handle = oms; }
     AW_option_menu_struct *get_font_size_handle() const { return font_size_handle; }
@@ -665,16 +664,16 @@ public:
 // force-diff-sync 265873246583745 (remove after merging back to trunk)
 // ----------------------------------------------------------------------
 
-AW_gc_manager AW_manage_GC(AW_window                *aww,
-                           const char               *gc_base_name,
-                           AW_device                *device,
-                           int                       base_gc,
-                           int                       base_drag,
-                           AW_GCM_AREA               area,
-                           const GcChangedCallback&  changecb,
-                           bool                      define_color_groups,
-                           const char               *default_background_color,
-                           ...)
+AW_gc_manager *AW_manage_GC(AW_window                *aww,
+                            const char               *gc_base_name,
+                            AW_device                *device,
+                            int                       base_gc,
+                            int                       base_drag,
+                            AW_GCM_AREA               area,
+                            const GcChangedCallback&  changecb,
+                            bool                      define_color_groups,
+                            const char               *default_background_color,
+                            ...)
 {
     /*!
      * creates some GCs
@@ -727,7 +726,7 @@ AW_gc_manager AW_manage_GC(AW_window                *aww,
     va_start(parg, default_background_color);
     const char *id;
 
-    struct aw_gc_manager *gcmgrlast = 0, *gcmgr2=0, *gcmgrfirst=0;
+    AW_gc_manager *gcmgrlast = 0, *gcmgr2=0, *gcmgrfirst=0;
 
     int col = AW_WINDOW_BG;
     if (area == AW_GCM_DATA_AREA) {
@@ -736,7 +735,7 @@ AW_gc_manager AW_manage_GC(AW_window                *aww,
     bool first = true;
 
     aww->main_drag_gc = base_drag;
-    gcmgrfirst = gcmgrlast = new aw_gc_manager(mcbs->window_awar_name, 0);
+    gcmgrfirst = gcmgrlast = new AW_gc_manager(mcbs->window_awar_name, 0);
 
     const char *last_font_base_name = "default";
 
@@ -775,7 +774,7 @@ AW_gc_manager AW_manage_GC(AW_window                *aww,
                                 close[0] = 0;
                                 color++;
 
-                                aw_gc_manager *known = gcmgrfirst;
+                                AW_gc_manager *known = gcmgrfirst;
                                 aw_assert(known);
                                 while (known) {
                                     if (strcmp(known->get_field(), color) == 0) { // found referred gc
@@ -795,7 +794,7 @@ AW_gc_manager AW_manage_GC(AW_window                *aww,
 
                 if (!default_color) default_color = first ? "white" : "black";
 
-                gcmgr2 = new aw_gc_manager(strdup(id_copy), strdup(default_color));
+                gcmgr2 = new AW_gc_manager(strdup(id_copy), strdup(default_color));
 
                 gcmgrlast->enqueue(gcmgr2);
                 gcmgrlast = gcmgr2;
@@ -877,7 +876,7 @@ AW_gc_manager AW_manage_GC(AW_window                *aww,
 
     va_end(parg);
 
-    return (AW_gc_manager)gcmgrfirst;
+    return gcmgrfirst;
 }
 
 void AW_init_color_group_defaults(const char *for_program) {
@@ -981,7 +980,7 @@ AW_window *AW_preset_window(AW_root *root) {
 
 
 
-static bool aw_insert_gcs(AW_root *aw_root, AW_window_simple *aws, aw_gc_manager *gcmgr, bool insert_color_groups) {
+static bool aw_insert_gcs(AW_root *aw_root, AW_window_simple *aws, AW_gc_manager *gcmgr, bool insert_color_groups) {
     // returns true if GCs starting with COLOR_GROUP_PREFIX were found
 
     bool        has_color_groups = false;
@@ -1077,11 +1076,11 @@ static bool aw_insert_gcs(AW_root *aw_root, AW_window_simple *aws, aw_gc_manager
 
 struct attached_window {
     AW_window_simple *aws;
-    AW_gc_manager     attached_to;
+    AW_gc_manager    *attached_to;
     attached_window  *next;
 };
 
-static void AW_create_gc_color_groups_name_window(AW_window *, AW_root *aw_root, aw_gc_manager *gcmgr) {
+static void AW_create_gc_color_groups_name_window(AW_window *, AW_root *aw_root, AW_gc_manager *gcmgr) {
     static struct attached_window *head = 0;
 
     // search for attached window:
@@ -1128,7 +1127,7 @@ static void AW_create_gc_color_groups_name_window(AW_window *, AW_root *aw_root,
     aws->activate();
 }
 
-static void AW_create_gc_color_groups_window(AW_window *, AW_root *aw_root, aw_gc_manager *gcmgr) {
+static void AW_create_gc_color_groups_window(AW_window *, AW_root *aw_root, AW_gc_manager *gcmgr) {
     aw_assert(color_groups_initialized);
 
     static struct attached_window *head = 0;
@@ -1187,20 +1186,18 @@ static void AW_create_gc_color_groups_window(AW_window *, AW_root *aw_root, aw_g
 }
 
 
-AW_window *AW_create_gc_window(AW_root *aw_root, AW_gc_manager id_par) {
-    return AW_create_gc_window_named(aw_root, id_par, "PROPS_GC", "Colors and Fonts");
+AW_window *AW_create_gc_window(AW_root *aw_root, AW_gc_manager *gcman) {
+    return AW_create_gc_window_named(aw_root, gcman, "PROPS_GC", "Colors and Fonts");
 }
 
-AW_window *AW_create_gc_window_named(AW_root *aw_root, AW_gc_manager id_par, const char *wid, const char *windowname) {
+AW_window *AW_create_gc_window_named(AW_root *aw_root, AW_gc_manager *gcman, const char *wid, const char *windowname) {
     // same as AW_create_gc_window, but uses different window id and name
     // (use if if there are two or more color def windows in one application,
     // otherwise they save the same window properties)
 
-    AW_window_simple * aws = new AW_window_simple;
+    AW_window_simple *aws = new AW_window_simple;
 
     aws->init(aw_root, wid, windowname);
-
-    aw_gc_manager *gcmgr = (aw_gc_manager *)id_par;
 
     aws->at(10, 10);
     aws->auto_space(5, 5);
@@ -1213,10 +1210,10 @@ AW_window *AW_create_gc_window_named(AW_root *aw_root, AW_gc_manager id_par, con
 
     aws->at_newline();
 
-    bool has_color_groups = aw_insert_gcs(aw_root, aws, gcmgr, false);
+    bool has_color_groups = aw_insert_gcs(aw_root, aws, gcman, false);
 
     if (has_color_groups) {
-        aws->callback(makeWindowCallback(AW_create_gc_color_groups_window, aw_root, id_par));
+        aws->callback(makeWindowCallback(AW_create_gc_color_groups_window, aw_root, gcman));
         aws->create_autosize_button("EDIT_COLOR_GROUP", "Edit color groups", "E");
         aws->at_newline();
     }

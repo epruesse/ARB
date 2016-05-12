@@ -697,7 +697,7 @@ AW_window *DI_create_view_matrix_window(AW_root *awr, MatrixDisplay *disp, save_
     awm->set_input_callback (AW_MIDDLE_AREA, makeWindowCallback(input_cb,         disp));
     awm->set_motion_callback(AW_MIDDLE_AREA, makeWindowCallback(motion_cb,        disp));
 
-    AW_gc_manager gc_manager =
+    AW_gc_manager *gc_manager =
         AW_manage_GC(awm,
                      awm->get_window_id(),
                      disp->device, DI_G_STANDARD, DI_G_LAST, AW_GCM_DATA_AREA,

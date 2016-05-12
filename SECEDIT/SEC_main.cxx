@@ -715,7 +715,7 @@ static void SEC_exit(GBDATA *, void *cl_sec_root) {
     delete sec_root;
 }
 
-static AW_window *SEC_create_gc_window(AW_root *awr, AW_gc_manager gcman) {
+static AW_window *SEC_create_gc_window(AW_root *awr, AW_gc_manager *gcman) {
     return AW_create_gc_window_named(awr, gcman, "SEC_PROPS_GC", "SECEDIT colors and fonts");
 }
 

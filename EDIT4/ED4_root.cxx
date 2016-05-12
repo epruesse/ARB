@@ -1262,8 +1262,8 @@ static void ED4_save_properties(AW_window *aw, int mode) {
     AW_save_specific_properties(aw, ED4_propertyName(mode));
 }
 
-void ED4_popup_gc_window(AW_window *awp, AW_gc_manager gcman) {
-    typedef std::map<AW_gc_manager, AW_window*> gcwin;
+void ED4_popup_gc_window(AW_window *awp, AW_gc_manager *gcman) {
+    typedef std::map<AW_gc_manager*, AW_window*> gcwin;
     static gcwin win;
 
     gcwin::iterator found = win.find(gcman);
@@ -1367,7 +1367,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
 
     // since the gc-managers of all EDIT4-windows point to the same window properties,
     // changing fonts and colors is always done on first gc-manager
-    static AW_gc_manager first_gc_manager = 0;
+    static AW_gc_manager *first_gc_manager = 0;
     if (!first_gc_manager) first_gc_manager = gc_manager;
 
     // --------------

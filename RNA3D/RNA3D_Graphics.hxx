@@ -58,7 +58,7 @@ struct RNA3D_Graphics : public AWT_nonDB_graphic, virtual Noncopyable {
     RNA3D_Graphics(AW_root *aw_root, GBDATA *gb_main);
     virtual ~RNA3D_Graphics() OVERRIDE;
 
-    AW_gc_manager init_devices(AW_window *, AW_device *, AWT_canvas *scr) OVERRIDE;
+    AW_gc_manager *init_devices(AW_window *, AW_device *, AWT_canvas *scr) OVERRIDE;
 
     void show(AW_device *device) OVERRIDE;
     void paint(AW_device *device);
