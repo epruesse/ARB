@@ -367,7 +367,7 @@ public:
     bool is_logically_zoomed() { return displayed_root != get_root_node(); }
 
     void init(AliView *aliview, AP_sequence *seq_prototype, bool link_to_database_, bool insert_delete_cbs);
-    AW_gc_manager init_devices(AW_window *, AW_device *, AWT_canvas *ntw) OVERRIDE;
+    AW_gc_manager *init_devices(AW_window *, AW_device *, AWT_canvas *ntw) OVERRIDE;
 
     void show(AW_device *device) OVERRIDE;
     const AW::Position& get_cursor() const { return cursor; }

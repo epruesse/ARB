@@ -45,8 +45,8 @@ static const char *getAwarName(int awarNo) {
     return buf;
 }
 
-AW_gc_manager SAI_graphic::init_devices(AW_window *aww, AW_device *device, AWT_canvas *scr) {
-    AW_gc_manager gc_manager =
+AW_gc_manager *SAI_graphic::init_devices(AW_window *aww, AW_device *device, AWT_canvas *scr) {
+    AW_gc_manager *gc_manager =
         AW_manage_GC(aww,
                      scr->get_gc_base_name(),
                      device,
@@ -708,7 +708,7 @@ static AW_window *createDisplayField_window(AW_root *aw_root, GBDATA *gb_main) {
     return aws;
 }
 
-static AW_window *createSaiColorWindow(AW_root *aw_root, AW_gc_manager gc_manager) {
+static AW_window *createSaiColorWindow(AW_root *aw_root, AW_gc_manager *gc_manager) {
     return AW_create_gc_window_named(aw_root, gc_manager, "GC_PROPS_SAI", "Probe/SAI Colors and Fonts");
 }
 

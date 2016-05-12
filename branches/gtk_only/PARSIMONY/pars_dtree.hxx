@@ -23,7 +23,7 @@ class AP_pars_root;
 class AWT_graphic_parsimony : public AWT_graphic_tree, virtual Noncopyable {
     ArbParsimony& parsimony;
 
-    AW_gc_manager init_devices(AW_window *, AW_device *, AWT_canvas *ntw) OVERRIDE;
+    AW_gc_manager *init_devices(AW_window *, AW_device *, AWT_canvas *ntw) OVERRIDE;
 
     void show(AW_device *device) OVERRIDE;
 
