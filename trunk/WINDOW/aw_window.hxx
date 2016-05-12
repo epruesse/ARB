@@ -699,8 +699,7 @@ public:
     void init(AW_root *root_in, const char *windowname, bool allow_close); // auto-generates window id from title
 };
 
-typedef struct aw_gc_manager *AW_gc_manager;
-
+class AW_gc_manager;
 
 #else
 #error aw_window.hxx included twice

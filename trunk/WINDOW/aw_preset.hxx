@@ -56,23 +56,23 @@ DECLARE_CBTYPE_FVV_AND_BUILDERS(GcChangedCallback, void, GcChange); // generates
             When the GCs are modified the 'changecb' is called
 */
 
-AW_gc_manager AW_manage_GC(AW_window                *aww,
-                           const char               *gc_base_name,
-                           AW_device                *device, int base_gc, int base_drag, AW_GCM_AREA area,
-                           const GcChangedCallback&  changecb,
-                           bool                      define_color_groups,
-                           const char               *default_background_color,
-                           ...) __ATTR__SENTINEL;
+AW_gc_manager *AW_manage_GC(AW_window                *aww,
+                            const char               *gc_base_name,
+                            AW_device                *device, int base_gc, int base_drag, AW_GCM_AREA area,
+                            const GcChangedCallback&  changecb,
+                            bool                      define_color_groups,
+                            const char               *default_background_color,
+                            ...) __ATTR__SENTINEL;
 
 
 
 
-AW_window *AW_create_gc_window(AW_root *aw_root, AW_gc_manager id); // opens the properties Window
+AW_window *AW_create_gc_window(AW_root *aw_root, AW_gc_manager *gcman); // opens the properties Window
 
 // same as AW_create_gc_window, but uses different window id and name
 // (use if if there are two or more color def windows in one application,
 // otherwise they save the same window properties)
-AW_window *AW_create_gc_window_named(AW_root * aw_root, AW_gc_manager id_par, const char *wid, const char *windowname);
+AW_window *AW_create_gc_window_named(AW_root * aw_root, AW_gc_manager *gcman_par, const char *wid, const char *windowname);
 
 void AW_copy_GCs(AW_root *aw_root, const char *source_window, const char *dest_window, bool has_font_info, const char *id0, ...) __ATTR__SENTINEL;
 

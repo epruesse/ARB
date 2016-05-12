@@ -218,7 +218,7 @@ public:
     virtual void show(AW_device *device) = 0;
 
     /* init gcs, if any gc is changed you may call AWT_expose_cb(NULL, scr); or AWT_resize_cb(NULL, scr); */
-    virtual AW_gc_manager init_devices(AW_window *, AW_device *, AWT_canvas *scr) = 0;
+    virtual AW_gc_manager *init_devices(AW_window *, AW_device *, AWT_canvas *scr) = 0;
 
     virtual void handle_command(AW_device *device, AWT_graphic_event& event) = 0;
     virtual void update_structure()                                          = 0; // called when exports.structure_change == 1
@@ -291,8 +291,8 @@ public:
     AW_root     *awr;
     AWT_graphic *gfx;
 
-    AW_gc_manager gc_manager;
-    int           drag_gc;
+    AW_gc_manager *gc_manager;
+    int            drag_gc;
 
     AWT_COMMAND_MODE mode;
 
