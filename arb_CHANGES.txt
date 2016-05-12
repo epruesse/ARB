@@ -89,6 +89,18 @@ Minor changes
  - corrected EMBL export filter (numbers at seq.data)
  - NDS optionally uses only visible definitions
 
+Fixes for arb-6.0.5 (4 May 2016):
+
+ - fixes for ubuntu 16.04 build
+
+Fixes for arb-6.0.4 (2 May 2016):
+
+ - fixes for OSX build (SIP, accepted compilers)
+
+Fixes for arb-6.0.3 (19 Nov 2015):
+
+ - fixes permission problems when multiple users share databases or ptservers (thx to Alan McCulloch)
+
 Fixes for arb-6.0.2 (8 Aug 2014):
 
  - compile issues on Snow Leopard (OSX 10.6)
@@ -106,7 +118,6 @@ Fixes for arb-6.0.1 (22 Jul 2014):
    - preview failed (showed empty postscript file)
    - print to file now always saves in user home
  - raxml (import tree with bootstrap values)
-
 
 Major changes for arb-6.0 (4 Jun 2014):
 
