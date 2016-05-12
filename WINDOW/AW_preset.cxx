@@ -81,7 +81,7 @@ static const char *ARB_EDIT4_color_group[AW_COLOR_GROUPS+1] = {
     0
 };
 
-class _AW_gc_manager : virtual Noncopyable {
+class AW_gc_manager : virtual Noncopyable {
     const char         *gc_base_name;
     AW_device          *device;
     int                 drag_gc_offset;
@@ -115,8 +115,8 @@ class _AW_gc_manager : virtual Noncopyable {
 public:
     static const char **color_group_defaults;
 
-    _AW_gc_manager(const char* name, AW_device* device, int drag_gc_offset);
-    ~_AW_gc_manager() {
+    AW_gc_manager(const char* name, AW_device* device, int drag_gc_offset);
+    ~AW_gc_manager() {
         delete changed_cb;
     }
 
@@ -136,21 +136,21 @@ public:
     }
 };
 
-const char **_AW_gc_manager::color_group_defaults = ARB_NTREE_color_group;
+const char **AW_gc_manager::color_group_defaults = ARB_NTREE_color_group;
 
 
-static void aw_update_gc_color(AW_root*, _AW_gc_manager* mgr, int gc) {
+static void aw_update_gc_color(AW_root*, AW_gc_manager *mgr, int gc) {
     mgr->update_gc_color(gc);
 }
-static void aw_update_gc_font(AW_root*, _AW_gc_manager* mgr, int gc) {
+static void aw_update_gc_font(AW_root*, AW_gc_manager *mgr, int gc) {
     mgr->update_gc_font(gc);
 }
 
-static void aw_update_aa_setting(AW_root*, _AW_gc_manager* mgr) {
+static void aw_update_aa_setting(AW_root*, AW_gc_manager *mgr) {
     mgr->update_aa_setting();
 }
 
-_AW_gc_manager::_AW_gc_manager(const char* name, AW_device* device_, int drag_gc_offset_)
+AW_gc_manager::AW_gc_manager(const char* name, AW_device* device_, int drag_gc_offset_)
     : gc_base_name(name),
       device(device_),
       drag_gc_offset(drag_gc_offset_),
@@ -161,7 +161,7 @@ _AW_gc_manager::_AW_gc_manager(const char* name, AW_device* device_, int drag_gc
 }
 
 
-void _AW_gc_manager::add_gc(const char* gc_description, bool is_color_group=false) {
+void AW_gc_manager::add_gc(const char* gc_description, bool is_color_group=false) {
     int gc      = GCs.size() - 1; // -1 is background
     int gc_drag = GCs.size() + drag_gc_offset - 1;
 
@@ -261,7 +261,7 @@ void _AW_gc_manager::add_gc(const char* gc_description, bool is_color_group=fals
     free(default_color);
 }
 
-void _AW_gc_manager::update_gc_color(int gc) {
+void AW_gc_manager::update_gc_color(int gc) {
     aw_assert(gc >= -1 && gc < (int)GCs.size() - 1);
     const char* color = GCs[gc+1].awar_color->read_char_pntr();
     device->set_foreground_color(gc, color);
@@ -272,7 +272,7 @@ void _AW_gc_manager::update_gc_color(int gc) {
     device->queue_draw();
 }
 
-void _AW_gc_manager::update_gc_font(int gc) {
+void AW_gc_manager::update_gc_font(int gc) {
     aw_assert(gc >= -1 && gc < (int)GCs.size() - 1);
     device->set_font(gc, GCs[gc+1].awar_font->read_char_pntr());
     if (gc != -1) {
@@ -282,14 +282,14 @@ void _AW_gc_manager::update_gc_font(int gc) {
     device->queue_draw();
 }
 
-void _AW_gc_manager::update_aa_setting() {
+void AW_gc_manager::update_aa_setting() {
     AW_antialias aa = (AW_antialias) AW_root::SINGLETON->awar(_aa_awar_name(gc_base_name))->read_int();
     device->get_common()->set_default_aa(aa);
     trigger_changed_cb(GC_FONT_CHANGED); // @@@ no idea whether a resize is really necessary here
     device->queue_draw();
 }
 
-static void color_group_use_changed_cb(AW_root *, _AW_gc_manager *gcmgr) {
+static void color_group_use_changed_cb(AW_root *, AW_gc_manager *gcmgr) {
     gcmgr->trigger_changed_cb(GC_COLOR_GROUP_USE_CHANGED);
 }
 
@@ -328,16 +328,16 @@ void AW_copy_GCs(AW_root *aw_root, const char *source_window, const char *dest_w
 // force-diff-sync 265873246583745 (remove after merging back to trunk)
 // ----------------------------------------------------------------------
 
-AW_gc_manager AW_manage_GC(AW_window                *aww,
-                           const char               *gc_base_name,
-                           AW_device                *device,
-                           int                       base_gc,
-                           int                       base_drag,
-                           AW_GCM_AREA               /*area*/, // remove AFTERMERGE
-                           const GcChangedCallback&  changecb,
-                           bool                      define_color_groups,
-                           const char               *default_background_color,
-                           ...)
+AW_gc_manager *AW_manage_GC(AW_window                *aww,
+                            const char               *gc_base_name,
+                            AW_device                *device,
+                            int                       base_gc,
+                            int                       base_drag,
+                            AW_GCM_AREA               /*area*/, // remove AFTERMERGE
+                            const GcChangedCallback&  changecb,
+                            bool                      define_color_groups,
+                            const char               *default_background_color,
+                            ...)
 {
     /*!
      * creates some GC pairs: one for normal operation,
@@ -379,7 +379,7 @@ AW_gc_manager AW_manage_GC(AW_window                *aww,
 
     AW_root *aw_root = AW_root::SINGLETON;
 
-    AW_gc_manager gcmgr = new _AW_gc_manager(gc_base_name, device, base_drag);
+    AW_gc_manager *gcmgr = new AW_gc_manager(gc_base_name, device, base_drag);
 
     if (aww) aww->main_drag_gc = base_drag;
 
@@ -401,7 +401,7 @@ AW_gc_manager AW_manage_GC(AW_window                *aww,
             aw_root->awar_string(_colorgroupname_awarname(i), _colorgroup_name(i));
         }
 
-        const char **color_group_gc_default = _AW_gc_manager::color_group_defaults;
+        const char **color_group_gc_default = AW_gc_manager::color_group_defaults;
         while (*color_group_gc_default) {
             gcmgr->add_gc(*color_group_gc_default++, true);
         }
@@ -415,7 +415,7 @@ AW_gc_manager AW_manage_GC(AW_window                *aww,
 void AW_init_color_group_defaults(const char *for_program) {
     if (!for_program) return;
     if (!strcmp(for_program, "arb_edit4")) {
-        _AW_gc_manager::color_group_defaults = ARB_EDIT4_color_group;
+        AW_gc_manager::color_group_defaults = ARB_EDIT4_color_group;
     }
 }
 
@@ -445,7 +445,7 @@ char *AW_get_color_group_name(AW_root *awr, int color_group) {
     return awr->awar(_colorgroupname_awarname(color_group))->read_string();
 }
 
-void _AW_gc_manager::create_gc_buttons(AW_window *aww) {
+void AW_gc_manager::create_gc_buttons(AW_window *aww) {
     int color_group_no = 0;
     aww->label_length(23);
 
@@ -495,16 +495,16 @@ void _AW_gc_manager::create_gc_buttons(AW_window *aww) {
 }
 
 
-AW_window *AW_create_gc_window(AW_root *aw_root, AW_gc_manager id_par) {
-    return AW_create_gc_window_named(aw_root, id_par, "PROPS_GC", "Colors and Fonts");
+AW_window *AW_create_gc_window(AW_root *aw_root, AW_gc_manager *gcman) {
+    return AW_create_gc_window_named(aw_root, gcman, "PROPS_GC", "Colors and Fonts");
 }
 
-AW_window *AW_create_gc_window_named(AW_root *aw_root, AW_gc_manager id_par, const char *wid, const char *windowname) {
+AW_window *AW_create_gc_window_named(AW_root *aw_root, AW_gc_manager *gcman, const char *wid, const char *windowname) {
     // same as AW_create_gc_window, but uses different window id and name
     // (use if if there are two or more color def windows in one application,
     // otherwise they save the same window properties)
 
-    AW_window_simple * aws = new AW_window_simple;
+    AW_window_simple *aws = new AW_window_simple;
 
     aws->init(aw_root, wid, windowname);
 
@@ -519,7 +519,7 @@ AW_window *AW_create_gc_window_named(AW_root *aw_root, AW_gc_manager id_par, con
 
     aws->at_newline();
 
-    id_par->create_gc_buttons(aws);
+    gcman->create_gc_buttons(aws);
 
     aws->window_fit();
     return aws;

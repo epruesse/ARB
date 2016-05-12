@@ -581,6 +581,5 @@ public:
     void init(AW_root *root, const char *wid, const char *windowname);
 };
 
-typedef class _AW_gc_manager* AW_gc_manager;
-
+class AW_gc_manager;
 

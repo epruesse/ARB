@@ -76,7 +76,7 @@ public:
     void set_display_style(GEN_DisplayStyle type);
     GEN_DisplayStyle get_display_style() const { return style; }
 
-    AW_gc_manager init_devices(AW_window *, AW_device *, AWT_canvas *scr) OVERRIDE;
+    AW_gc_manager *init_devices(AW_window *, AW_device *, AWT_canvas *scr) OVERRIDE;
 
     virtual void show(AW_device *device) OVERRIDE;
 

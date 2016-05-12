@@ -1436,7 +1436,7 @@ public:
     GB_alignment_type        alignment_type;
     ED4_reference           *reference;
     ED4_seq_colors          *sequence_colors;
-    AW_gc_manager            gc_manager;
+    AW_gc_manager           *gc_manager;
     ST_ML                   *st_ml;
     AW_helix                *helix;
     int                      helix_spacing;
@@ -2245,7 +2245,7 @@ void ED4_finish_and_show_notFoundMessage();
 
 const AlignDataAccess *ED4_get_aligner_data_access();
 
-void ED4_popup_gc_window(AW_window *awp, AW_gc_manager gcman);
+void ED4_popup_gc_window(AW_window *awp, AW_gc_manager *gcman);
 void ED4_no_dangerous_modes();
 
 void       group_species_cb(AW_window *aww, bool use_fields);
