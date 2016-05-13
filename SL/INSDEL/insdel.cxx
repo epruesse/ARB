@@ -1177,6 +1177,55 @@ inline GB_CSTR alidata2buffer(const AliData& data) { // @@@ DRY vs copying code 
 
 // --------------------------------------------------------------------------------
 
+class EditedTerminal;
+
+class LazyAliData : public AliData, public SizeAwarable, virtual Noncopyable {
+    // internally transforms into SpecificAliData as soon as somebody tries to access the data.
+    // (implements lazy loading of sequence data, esp. useful when applying AliFormatCommand; see #702)
+
+    TerminalType       term_type;
+    EditedTerminal&    terminal;
+    mutable AliDataPtr loaded; // always is TypedAliData<T>
+
+    AliDataPtr loaded_data() const {
+        if (loaded.isNull()) load_data();
+        return loaded;
+    }
+
+public:
+    LazyAliData(const SizeAwarable& oversizable, size_t size_, TerminalType term_type_, EditedTerminal& terminal_)
+        : AliData(size_),
+          SizeAwarable(oversizable),
+          term_type(term_type_),
+          terminal(terminal_)
+    {}
+
+    size_t unitsize() const OVERRIDE {
+        // Note: information also known by EditedTerminal (only depends on data-type)
+        // No need to load data (doesnt harm atm as data is always used for more atm)
+        return loaded_data()->unitsize();
+    }
+    bool has_slice() const OVERRIDE {
+        id_assert(loaded_data()->has_slice() == false); // TypedAliData<T> never has_slice()!
+        return false;
+    }
+
+    int operate_on_mem(void *mem, size_t start, size_t count, memop op) const OVERRIDE { return loaded_data()->operate_on_mem(mem, start, count, op); }
+    int cmp_data(size_t start, const AliData& other, size_t ostart, size_t count) const OVERRIDE { return loaded_data()->cmp_data(start, other, ostart, count); }
+
+    UnitPtr unit_left_of(size_t pos) const OVERRIDE { return loaded_data()->unit_left_of(pos); }
+    UnitPtr unit_right_of(size_t pos) const OVERRIDE { return loaded_data()->unit_right_of(pos); }
+
+    AliDataPtr create_gap(size_t gapsize, const UnitPair& gapinfo) const OVERRIDE { return loaded_data()->create_gap(gapsize, gapinfo); }
+    __ATTR__NORETURN AliDataPtr slice_down(size_t /*start*/, size_t /*count*/) const OVERRIDE {
+        GBK_terminate("logic error: slice_down called for explicit LazyAliData");
+    }
+
+    void load_data() const; // has to be public to be a friend of EditedTerminal
+};
+
+// --------------------------------------------------------------------------------
+
 class EditedTerminal : virtual Noncopyable {
     GBDATA     *gb_data;
     GB_TYPES    type;
@@ -1212,17 +1261,7 @@ class EditedTerminal : virtual Noncopyable {
         return prefers_dots ? '.' : '-';
     }
 
-public:
-    EditedTerminal(GBDATA *gb_data_, GB_TYPES type_, const char *item_name_, size_t size_, TerminalType term_type, const Alignment& ali, const Deletable& deletable_)
-        : gb_data(gb_data_),
-          type(type_),
-          item_name(item_name_),
-          deletable(deletable_),
-          error(NULL)
-    {
-        SizeAwarable oversizable(does_allow_oversize(term_type), ali.get_len());
-
-        // @@@ DRY cases
+    AliDataPtr load_data(const SizeAwarable& oversizable, size_t size_, TerminalType term_type) {
         switch(type) {
             case GB_STRING: {
                 const char *s = GB_read_char_pntr(gb_data);
@@ -1266,6 +1305,21 @@ public:
         }
 
         id_assert(implicated(!error, size_ == data->elems()));
+        return data;
+    }
+
+    friend void LazyAliData::load_data() const;
+
+public:
+    EditedTerminal(GBDATA *gb_data_, GB_TYPES type_, const char *item_name_, size_t size_, TerminalType term_type, const Alignment& ali, const Deletable& deletable_)
+        : gb_data(gb_data_),
+          type(type_),
+          item_name(item_name_),
+          deletable(deletable_),
+          error(NULL)
+    {
+        SizeAwarable oversizable(does_allow_oversize(term_type), ali.get_len());
+        data = new LazyAliData(oversizable, size_, term_type, *this);
     }
 
     GB_ERROR apply(const AliEditCommand& cmd, bool& did_modify) {
@@ -1297,6 +1351,10 @@ public:
         return error;
     }
 };
+
+void LazyAliData::load_data() const {
+    loaded = terminal.load_data(*this, elems(), term_type);
+}
 
 GB_ERROR AliEditor::apply_to_terminal(GBDATA *gb_data, TerminalType term_type, const char *item_name, const Alignment& ali) const {
     GB_TYPES gbtype  = GB_read_type(gb_data);
