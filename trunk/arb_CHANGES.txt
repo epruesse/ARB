@@ -84,6 +84,7 @@ Major changes for next release:
  - updated/added external tools:
    - added alternate RAxML (DNA only; version 8.0.26)
  - updated integrated documentation
+ - fix performance of "format sequences" (broken in arb-6.0.x series; #702)
 
 Minor changes
  - corrected EMBL export filter (numbers at seq.data)
