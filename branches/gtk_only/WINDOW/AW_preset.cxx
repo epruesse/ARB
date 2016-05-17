@@ -242,14 +242,22 @@ void AW_gc_manager::add_gc(const char* gc_description, bool is_color_group=false
     }
 
     if (default_color[0] == '{') {
-        default_color[strlen(default_color)-1]='\0';
+        // use current value of an already defined color as default for current color:
+        // (e.g. used in SECEDIT)
+        default_color[strlen(default_color)-1] = '\0';
+
+        const char *default_colorlabel = default_color+1;
+        bool        found              = false;
+
         for (std::vector<gc_desc>::iterator it = GCs.begin(); it != GCs.end(); ++it) {
-            if (strcmp(it->colorlabel, default_color) == 0) { // @@@ compare colorlabel with color? weird!
-                free(default_color);
-                default_color = it->awar_color->read_string();
+            if (strcmp(it->colorlabel, default_colorlabel) == 0) {
+                freeset(default_color, it->awar_color->read_string());
+                found = true;
                 break;
             }
         }
+
+        aw_assert(found); // unknown default color
     }
     gcd.key = GBS_string_2_key(gcd.colorlabel);
 
@@ -497,7 +505,7 @@ void AW_gc_manager::create_gc_buttons(AW_window *aww) {
 
         if (it->has_color) {
             aww->create_color_button(it->awar_color->get_name(), NULL);
-            }
+        }
         if (it->has_font) {
             aww->create_font_button(it->awar_font->get_name(), NULL);
         }
