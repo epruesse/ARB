@@ -10,44 +10,47 @@
 
 #include <aw_color_groups.hxx>
 #include "aw_preset.hxx"
+
 #include "aw_gtk_migration_helpers.hxx"
+#include "aw_assert.hxx"
+
 #include "aw_root.hxx"
 #include "aw_awar.hxx"
 #include "aw_device.hxx"
 #include "aw_advice.hxx"
 #include "aw_question.hxx"
 #include "aw_msg.hxx"
-#include "aw_assert.hxx"
+
 #include <arbdbt.h>
 #include <ad_colorset.h>
 
 #define AWAR_COLOR_GROUPS_PREFIX  "color_groups"
 #define AWAR_COLOR_GROUPS_USE     AWAR_COLOR_GROUPS_PREFIX "/use" // int : whether to use the colors in display or not
+#define GC_AWARNAME_PREFIX_TPL    "GCS/%s/MANAGE_GCS/%s"
 
 CONSTEXPR_RETURN inline bool valid_color_group(int color_group) {
     return color_group>0 && color_group<=AW_COLOR_GROUPS;
 }
 
-static const char* _gc_awar_name(const char* tpl, const char* window, const char* colname) {
-    char*       key = GBS_string_2_key(colname);
-    const char* res = GBS_global_string(tpl, window, key);
-    free(key);
-    return res;
-}    
-static const char* _color_awarname(const char* window, const char* colname) {
-    return _gc_awar_name("GCS/%s/MANAGE_GCS/%s/colorname", window, colname);
+static const char* gc_awarname(const char* tpl, const char* window, const char* colname) {
+    aw_assert(GB_check_key(colname) == NULL); // colname has to be a key
+
+    static SmartCharPtr awar_name;
+    awar_name = GBS_global_string_copy(tpl, window, colname);
+    return &*awar_name;
 }
-static const char* _font_awarname(const char* window, const char* colname) {
-    return _gc_awar_name("GCS/%s/MANAGE_GCS/%s/fontname", window, colname);
-}
-static const char* _colorgroupname_awarname(int color_group) {
+
+static const char* color_awarname(const char* window, const char* colname) { return gc_awarname("GCS/%s/MANAGE_GCS/%s/colorname", window, colname); }
+static const char* font_awarname (const char* window, const char* colname) { return gc_awarname("GCS/%s/MANAGE_GCS/%s/fontname",  window, colname); }
+
+static const char *colorgroupname_awarname(int color_group) {
     if (!valid_color_group(color_group)) return NULL;
     return GBS_global_string(AWAR_COLOR_GROUPS_PREFIX "/name%i", color_group);
 }
-static const char* _colorgroup_name(int color_group) {
+static const char* default_colorgroup_name(int color_group) {
     return GBS_global_string(AW_COLOR_GROUP_PREFIX "%i", color_group);
 }
-static const char* _aa_awar_name(const char* window) {
+static const char* aa_awarname(const char* window) {
     return GBS_global_string("GCS/%s/AA_SETTING", window);
 }
 
@@ -81,33 +84,40 @@ static const char *ARB_EDIT4_color_group[AW_COLOR_GROUPS+1] = {
     0
 };
 
+// ----------------------------------------------------------------------
+// force-diff-sync 274874929311 (remove after merging back to trunk)
+// ----------------------------------------------------------------------
+
 class AW_gc_manager : virtual Noncopyable {
     const char         *gc_base_name;
     AW_device          *device;
     int                 drag_gc_offset;
 
     struct gc_desc {
-        char    *label;       // label to appear next to chooser
+        char    *colorlabel;  // label to appear next to chooser
+        char    *key;         // key (build from colorlabel)
         AW_awar *awar_color;  // awar to hold color description
         AW_awar *awar_font;   // awar to hold font description
-        
-        bool    hidden;       // do not show in color config
-        bool    has_font;     // show font selector
-        bool    has_color;    // show color selector
-        bool    fixed_width_font; // only allow fixed width fonts
-        bool    same_line;    // no line break after this
-        bool    is_color_group; 
+
+        bool hidden;              // do not show in color config
+        bool has_font;            // show font selector
+        bool has_color;           // show color selector
+        bool fixed_width_font;    // only allow fixed width fonts
+        bool same_line;           // no line break after this
+        bool is_color_group;
+
         gc_desc() :
-            label(NULL), 
+            colorlabel(NULL),
+            key(NULL),
             awar_color(NULL),
             awar_font(NULL),
-            hidden(false), 
+            hidden(false),
             has_font(true), has_color(true),
             fixed_width_font(false),
             same_line(false), is_color_group(false)
         {}
     };
-    
+
     std::vector<gc_desc>  GCs;
 
     GcChangedCallback *changed_cb;
@@ -156,7 +166,7 @@ AW_gc_manager::AW_gc_manager(const char* name, AW_device* device_, int drag_gc_o
       drag_gc_offset(drag_gc_offset_),
       changed_cb(NULL)
 {
-    AW_root::SINGLETON->awar_int(_aa_awar_name(name), AW_AA_NONE)
+    AW_root::SINGLETON->awar_int(aa_awarname(name), AW_AA_NONE)
         ->add_callback(makeRootCallback(aw_update_aa_setting, this));
 }
 
@@ -223,32 +233,34 @@ void AW_gc_manager::add_gc(const char* gc_description, bool is_color_group=false
     char *default_color;
     const char *split = strchr(gc_description, '$');
     if (split) { // have color spec
-        gcd.label = strndup(gc_description, split-gc_description);
-        default_color = strdup(split+1);
+        gcd.colorlabel = strndup(gc_description, split-gc_description);
+        default_color  = strdup(split+1);
     }
     else {
-        gcd.label = strdup(gc_description);
-        default_color = strdup("black");
+        gcd.colorlabel = strdup(gc_description);
+        default_color  = strdup("black");
     }
 
     if (default_color[0] == '{') {
         default_color[strlen(default_color)-1]='\0';
         for (std::vector<gc_desc>::iterator it = GCs.begin(); it != GCs.end(); ++it) {
-            if (strcmp(it->label, default_color) == 0) {
+            if (strcmp(it->colorlabel, default_color) == 0) { // @@@ compare colorlabel with color? weird!
                 free(default_color);
                 default_color = it->awar_color->read_string();
                 break;
             }
         }
     }
-    gcd.awar_color = AW_root::SINGLETON->awar_string(_color_awarname(gc_base_name, gcd.label), default_color);
+    gcd.key = GBS_string_2_key(gcd.colorlabel);
+
+    gcd.awar_color = AW_root::SINGLETON->awar_string(color_awarname(gc_base_name, gcd.key), default_color);
     gcd.awar_color->add_callback(makeRootCallback(aw_update_gc_color, this, gc));
     aw_update_gc_color(NULL, this, gc);
 
     if (gc != -1) { // no font for background
         if (gcd.has_font) {
             const char *default_font = gcd.fixed_width_font ? "monospace 10" : "sans 10";
-            gcd.awar_font = AW_root::SINGLETON->awar_string(_font_awarname(gc_base_name, gcd.label), default_font);
+            gcd.awar_font = AW_root::SINGLETON->awar_string(font_awarname(gc_base_name, gcd.key), default_font);
         }
         else {
             // font is same as previous font -> copy awar reference
@@ -283,7 +295,7 @@ void AW_gc_manager::update_gc_font(int gc) {
 }
 
 void AW_gc_manager::update_aa_setting() {
-    AW_antialias aa = (AW_antialias) AW_root::SINGLETON->awar(_aa_awar_name(gc_base_name))->read_int();
+    AW_antialias aa = (AW_antialias) AW_root::SINGLETON->awar(aa_awarname(gc_base_name))->read_int();
     device->get_common()->set_default_aa(aa);
     trigger_changed_cb(GC_FONT_CHANGED); // @@@ no idea whether a resize is really necessary here
     device->queue_draw();
@@ -309,13 +321,13 @@ void AW_copy_GCs(AW_root *aw_root, const char *source_window, const char *dest_w
 
     const char *id = id0;
     while (id) {
-        char *value = aw_root->awar(_color_awarname(source_window, id))->read_string();
-        aw_root->awar(_color_awarname(dest_window, id))->write_string(value);
+        char *value = aw_root->awar(color_awarname(source_window, id))->read_string();
+        aw_root->awar(color_awarname(dest_window, id))->write_string(value);
         free(value);
 
         if (has_font_info) {
-            int ivalue = aw_root->awar(_font_awarname(source_window, id))->read_int();
-            aw_root->awar(_font_awarname(dest_window, id))->write_int(ivalue);
+            int ivalue = aw_root->awar(font_awarname(source_window, id))->read_int();
+            aw_root->awar(font_awarname(dest_window, id))->write_int(ivalue);
         }
 
         id = va_arg(parg, const char*); // another argument ?
@@ -398,7 +410,7 @@ AW_gc_manager *AW_manage_GC(AW_window                *aww,
     aw_root->awar_int(AWAR_COLOR_GROUPS_USE, 1)->add_callback(makeRootCallback(color_group_use_changed_cb, gcmgr));
     if (define_color_groups) {
         for (int i = 1; i <= AW_COLOR_GROUPS; ++i) {
-            aw_root->awar_string(_colorgroupname_awarname(i), _colorgroup_name(i));
+            aw_root->awar_string(colorgroupname_awarname(i), default_colorgroup_name(i));
         }
 
         const char **color_group_gc_default = AW_gc_manager::color_group_defaults;
@@ -442,7 +454,7 @@ long AW_find_active_color_group(GBDATA *gb_item) {
 
 char *AW_get_color_group_name(AW_root *awr, int color_group) {
     aw_assert(valid_color_group(color_group));
-    return awr->awar(_colorgroupname_awarname(color_group))->read_string();
+    return awr->awar(colorgroupname_awarname(color_group))->read_string();
 }
 
 void AW_gc_manager::create_gc_buttons(AW_window *aww) {
@@ -450,7 +462,7 @@ void AW_gc_manager::create_gc_buttons(AW_window *aww) {
     aww->label_length(23);
 
     aww->label("Anti-Aliasing");
-    aww->create_option_menu(_aa_awar_name(gc_base_name), true);
+    aww->create_option_menu(aa_awarname(gc_base_name), true);
     aww->insert_option("System Default", "", AW_AA_DEFAULT);
     aww->insert_option("Disabled", "", AW_AA_NONE);
     aww->insert_option("Greyscale", "", AW_AA_GRAY);
@@ -476,15 +488,16 @@ void AW_gc_manager::create_gc_buttons(AW_window *aww) {
             aw_assert(color_group_no < 1000);
             sprintf(buf, "%i:", color_group_no);
             aww->label(buf);
-            aww->create_input_field(_colorgroupname_awarname(color_group_no), 20);
+            aww->create_input_field(colorgroupname_awarname(color_group_no), 20);
 
-        } else {
-            aww->label(it->label);
+        }
+        else {
+            aww->label(it->colorlabel);
         }
 
         if (it->has_color) {
             aww->create_color_button(it->awar_color->get_name(), NULL);
-        }
+            }
         if (it->has_font) {
             aww->create_font_button(it->awar_font->get_name(), NULL);
         }
