@@ -21,10 +21,6 @@
 #include <cb.h>
 #endif
 
-#define AWP_COLORNAME_TEMPLATE "GCS/%s/MANAGE_GCS/%s/colorname"
-#define AWP_FONTNAME_TEMPLATE "GCS/%s/MANAGE_GCS/%s/font"
-#define AWP_FONTSIZE_TEMPLATE "GCS/%s/MANAGE_GCS/%s/size"
-
 void AW_save_properties(AW_window *aw);   // use this if you're unsure
 void AW_save_specific_properties(AW_window *aw, const char *filename);
 
