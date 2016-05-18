@@ -44,8 +44,8 @@ struct IRS_data {
     void draw_top_separator_once(AW_device *device) {
         if (draw_separator) {
             if (!is_size_device) {
-                device->set_line_attributes(AWT_GC_GROUPS, 4, AW_SOLID);
-                device->line(AWT_GC_GROUPS, fold_x1, min_y, fold_x2, min_y, sep_filter);
+                device->set_line_attributes(AWT_GC_IRS_GROUP_BOX, 4, AW_SOLID);
+                device->line(AWT_GC_IRS_GROUP_BOX, fold_x1, min_y, fold_x2, min_y, sep_filter);
             }
             draw_separator = false;
         }
@@ -130,13 +130,15 @@ AW_pos AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, AW_pos x_offset) {
                 // draw group frame (unclosed on right hand):
                 AW_click_cd cd(disp_device, (AW_CL)node);
 
-                int gc = AWT_GC_GROUPS;
-                disp_device->set_line_attributes(gc, 1, AW_SOLID);
-                disp_device->line(gc, frame.upper_edge());
-                disp_device->line(gc, frame.left_edge());
-                disp_device->line(gc, frame.lower_edge());
+                {
+                    const int gc = AWT_GC_IRS_GROUP_BOX;
+                    disp_device->set_line_attributes(gc, 1, AW_SOLID);
+                    disp_device->line(gc, frame.upper_edge());
+                    disp_device->line(gc, frame.left_edge());
+                    disp_device->line(gc, frame.lower_edge());
+                }
 
-                gc = node->gr.gc;
+                const int gc = node->gr.gc;
                 set_line_attributes_for(node);
                 filled_box(gc, frame.upper_left_corner(), TIP_BOX_SIZE);
 
@@ -187,7 +189,7 @@ AW_pos AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, AW_pos x_offset) {
         }
         IRS.y += IRS.openGroupExtra;
 
-        int         gc = AWT_GC_GROUPS;
+        const int   gc = AWT_GC_IRS_GROUP_BOX;
         AW_click_cd cd(disp_device, (AW_CL)node);
         disp_device->set_line_attributes(gc, 1, AW_DOTTED);
         disp_device->line(gc, x_offset-IRS.onePixel, group_y1, x_offset+frame_width, group_y1); // opened-group-frame
@@ -251,12 +253,14 @@ AW_pos AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, AW_pos x_offset) {
     if (node->is_named_group()) { // close unfolded group brackets and draw tipbox
         IRS.y  += IRS.halfstep_y+IRS.gap;
 
-        int gc = AWT_GC_GROUPS;
-        disp_device->set_line_attributes(gc, 1, AW_DOTTED);
-        disp_device->line(gc, x_offset-IRS.onePixel, IRS.y, x_offset+frame_width, IRS.y); // opened-group-frame
-        disp_device->line(gc, x_offset-IRS.onePixel, group_y1, x_offset-IRS.onePixel,  IRS.y); // opened-group-frame
+        {
+            const int gc = AWT_GC_IRS_GROUP_BOX;
+            disp_device->set_line_attributes(gc, 1, AW_DOTTED);
+            disp_device->line(gc, x_offset-IRS.onePixel, IRS.y, x_offset+frame_width, IRS.y); // opened-group-frame
+            disp_device->line(gc, x_offset-IRS.onePixel, group_y1, x_offset-IRS.onePixel,  IRS.y); // opened-group-frame
+        }
         
-        gc = node->gr.gc;
+        const int gc = node->gr.gc;
         set_line_attributes_for(node);
         filled_box(gc, Position(x_offset-IRS.onePixel, group_y1), TIP_BOX_SIZE);
     }
