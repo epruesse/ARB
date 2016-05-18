@@ -84,7 +84,7 @@ AW_gc_manager *AWT_graphic_tree::init_devices(AW_window *aww, AW_device *device,
                      "Cursor$white",
                      "Branch remarks$#b6ffb6",
                      "+-Bootstrap$#53d3ff",    "-B.(limited)$white",
-                     "-GROUP_BRACKETS$#000",
+                     "-IRS group box$#000",
                      "Marked$#ffe560",
                      "Some marked$#bb8833",
                      "Not marked$#622300",
@@ -3390,7 +3390,7 @@ static AW_rgb colors_def[] = {
     0xa3b3cf, // AWT_GC_BRANCH_REMARK
     0x53d3ff, // AWT_GC_BOOTSTRAP
     0x808080, // AWT_GC_BOOTSTRAP_LIMITED
-    0x000000, // AWT_GC_GROUPS
+    0x000000, // AWT_GC_IRS_GROUP_BOX
     0xf0c000, // AWT_GC_SELECTED
     0xbb8833, // AWT_GC_UNDIFF
     0x622300, // AWT_GC_NSELECTED
@@ -3587,8 +3587,8 @@ public:
         print_device->set_offset(offset/(zoom*zoom)); // dont really understand this, but it does the right shift
 
         test_show_tree(print_device);
-        print_device->box(AWT_GC_CURSOR, AW::FillStyle::EMPTY, drawn_world);
-        print_device->box(AWT_GC_GROUPS, AW::FillStyle::EMPTY, drawn_text_world);
+        print_device->box(AWT_GC_CURSOR,        AW::FillStyle::EMPTY, drawn_world);
+        print_device->box(AWT_GC_IRS_GROUP_BOX, AW::FillStyle::EMPTY, drawn_text_world);
     }
 };
 
