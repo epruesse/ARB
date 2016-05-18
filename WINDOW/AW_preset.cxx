@@ -88,35 +88,35 @@ static const char *ARB_EDIT4_color_group[AW_COLOR_GROUPS+1] = {
 // force-diff-sync 274874929311 (remove after merging back to trunk)
 // ----------------------------------------------------------------------
 
+struct gc_desc {
+    char    *colorlabel;  // label to appear next to chooser
+    char    *key;         // key (build from colorlabel)
+    AW_awar *awar_color;  // awar to hold color description // @@@ redundant. Will not exists for all GCs (future plan)
+    AW_awar *awar_font;   // awar to hold font description  // @@@ redundant. does not exist for all GCs
+
+    bool hidden;              // do not show in color config
+    bool has_font;            // show font selector
+    bool has_color;           // show color selector
+    bool fixed_width_font;    // only allow fixed width fonts
+    bool same_line;           // no line break after this
+    bool is_color_group;
+
+    gc_desc() :
+        colorlabel(NULL),
+        key(NULL),
+        awar_color(NULL),
+        awar_font(NULL),
+        hidden(false),
+        has_font(true), has_color(true),
+        fixed_width_font(false),
+        same_line(false), is_color_group(false)
+    {}
+};
+
 class AW_gc_manager : virtual Noncopyable {
     const char         *gc_base_name;
     AW_device          *device;
     int                 drag_gc_offset;
-
-    struct gc_desc {
-        char    *colorlabel;  // label to appear next to chooser
-        char    *key;         // key (build from colorlabel)
-        AW_awar *awar_color;  // awar to hold color description
-        AW_awar *awar_font;   // awar to hold font description
-
-        bool hidden;              // do not show in color config
-        bool has_font;            // show font selector
-        bool has_color;           // show color selector
-        bool fixed_width_font;    // only allow fixed width fonts
-        bool same_line;           // no line break after this
-        bool is_color_group;
-
-        gc_desc() :
-            colorlabel(NULL),
-            key(NULL),
-            awar_color(NULL),
-            awar_font(NULL),
-            hidden(false),
-            has_font(true), has_color(true),
-            fixed_width_font(false),
-            same_line(false), is_color_group(false)
-        {}
-    };
 
     std::vector<gc_desc>  GCs;
 
@@ -148,14 +148,46 @@ public:
 
 const char **AW_gc_manager::color_group_defaults = ARB_NTREE_color_group;
 
+// ---------------------------
+//      GC awar callbacks
 
-static void aw_update_gc_color(AW_root*, AW_gc_manager *mgr, int gc) {
-    mgr->update_gc_color(gc);
+void AW_gc_manager::update_gc_font(int gc) {
+    aw_assert(gc >= -1 && gc < (int)GCs.size() - 1);
+    device->set_font(gc, GCs[gc+1].awar_font->read_char_pntr());
+    if (gc != -1) {
+        device->set_font(drag_gc_offset + gc, GCs[gc+1].awar_font->read_char_pntr());
+    }
+    trigger_changed_cb(GC_FONT_CHANGED);
+    device->queue_draw();
 }
-static void aw_update_gc_font(AW_root*, AW_gc_manager *mgr, int gc) {
+static void gc_fontOrSize_changed_cb(AW_root*, AW_gc_manager *mgr, int gc) {
     mgr->update_gc_font(gc);
 }
 
+void AW_gc_manager::update_gc_color(int gc) {
+    aw_assert(gc >= -1 && gc < (int)GCs.size() - 1);
+    const char* color = GCs[gc+1].awar_color->read_char_pntr();
+    device->set_foreground_color(gc, color);
+    if (gc != -1) {
+        device->set_foreground_color(drag_gc_offset + gc, color);
+    }
+    trigger_changed_cb(GC_COLOR_CHANGED);
+    device->queue_draw();
+}
+static void gc_color_changed_cb(AW_root*, AW_gc_manager *mgr, int gc) {
+    mgr->update_gc_color(gc);
+}
+
+static void color_group_use_changed_cb(AW_root *, AW_gc_manager *gcmgr) {
+    gcmgr->trigger_changed_cb(GC_COLOR_GROUP_USE_CHANGED);
+}
+
+void AW_gc_manager::update_aa_setting() {
+    AW_antialias aa = (AW_antialias) AW_root::SINGLETON->awar(aa_awarname(gc_base_name))->read_int();
+    device->get_common()->set_default_aa(aa);
+    trigger_changed_cb(GC_FONT_CHANGED); // @@@ no idea whether a resize is really necessary here
+    device->queue_draw();
+}
 static void aw_update_aa_setting(AW_root*, AW_gc_manager *mgr) {
     mgr->update_aa_setting();
 }
@@ -169,7 +201,6 @@ AW_gc_manager::AW_gc_manager(const char* name, AW_device* device_, int drag_gc_o
     AW_root::SINGLETON->awar_int(aa_awarname(name), AW_AA_NONE)
         ->add_callback(makeRootCallback(aw_update_aa_setting, this));
 }
-
 
 void AW_gc_manager::add_gc(const char* gc_description, bool is_color_group=false) {
     int gc      = GCs.size() - 1; // -1 is background
@@ -262,8 +293,8 @@ void AW_gc_manager::add_gc(const char* gc_description, bool is_color_group=false
     gcd.key = GBS_string_2_key(gcd.colorlabel);
 
     gcd.awar_color = AW_root::SINGLETON->awar_string(color_awarname(gc_base_name, gcd.key), default_color);
-    gcd.awar_color->add_callback(makeRootCallback(aw_update_gc_color, this, gc));
-    aw_update_gc_color(NULL, this, gc);
+    gcd.awar_color->add_callback(makeRootCallback(gc_color_changed_cb, this, gc));
+    gc_color_changed_cb(NULL, this, gc);
 
     if (gc != -1) { // no font for background
         if (gcd.has_font) {
@@ -274,43 +305,11 @@ void AW_gc_manager::add_gc(const char* gc_description, bool is_color_group=false
             // font is same as previous font -> copy awar reference
             gcd.awar_font = GCs[GCs.size() - 2].awar_font;
         }
-        gcd.awar_font->add_callback(makeRootCallback(aw_update_gc_font, this, gc));
-        aw_update_gc_font(NULL, this, gc);
+        gcd.awar_font->add_callback(makeRootCallback(gc_fontOrSize_changed_cb, this, gc));
+        gc_fontOrSize_changed_cb(NULL, this, gc);
     }
     
     free(default_color);
-}
-
-void AW_gc_manager::update_gc_color(int gc) {
-    aw_assert(gc >= -1 && gc < (int)GCs.size() - 1);
-    const char* color = GCs[gc+1].awar_color->read_char_pntr();
-    device->set_foreground_color(gc, color);
-    if (gc != -1) {
-        device->set_foreground_color(drag_gc_offset + gc, color);
-    }
-    trigger_changed_cb(GC_COLOR_CHANGED);
-    device->queue_draw();
-}
-
-void AW_gc_manager::update_gc_font(int gc) {
-    aw_assert(gc >= -1 && gc < (int)GCs.size() - 1);
-    device->set_font(gc, GCs[gc+1].awar_font->read_char_pntr());
-    if (gc != -1) {
-        device->set_font(drag_gc_offset + gc, GCs[gc+1].awar_font->read_char_pntr());
-    }
-    trigger_changed_cb(GC_FONT_CHANGED);
-    device->queue_draw();
-}
-
-void AW_gc_manager::update_aa_setting() {
-    AW_antialias aa = (AW_antialias) AW_root::SINGLETON->awar(aa_awarname(gc_base_name))->read_int();
-    device->get_common()->set_default_aa(aa);
-    trigger_changed_cb(GC_FONT_CHANGED); // @@@ no idea whether a resize is really necessary here
-    device->queue_draw();
-}
-
-static void color_group_use_changed_cb(AW_root *, AW_gc_manager *gcmgr) {
-    gcmgr->trigger_changed_cb(GC_COLOR_GROUP_USE_CHANGED);
 }
 
 // ----------------------------------------------------------------------
