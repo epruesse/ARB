@@ -31,6 +31,8 @@
 #define AWAR_COLOR_GROUPS_USE     AWAR_COLOR_GROUPS_PREFIX "/use" // int : whether to use the colors in display or not
 #define GC_AWARNAME_PREFIX_TPL    "GCS/%s/MANAGE_GCS/%s"
 
+static void aw_create_color_chooser_window(AW_window *aww, const char *awar_name, const char *color_description);
+
 CONSTEXPR_RETURN inline bool valid_color_group(int color_group) {
     return color_group>0 && color_group<=AW_COLOR_GROUPS;
 }
@@ -82,16 +84,19 @@ static const char *ARB_EDIT4_color_group[AW_COLOR_GROUPS+1] = {
     0
 };
 
+// ---------------------------------------------
+// @@@ refactor away the following structs
+
 struct AW_MGC_cb_struct : virtual Noncopyable { // one for each canvas // @@@ move into AW_gc_manager
     AW_window         *aw;
     GcChangedCallback  cb;
 
     void call(GcChange whatChanged) { cb(whatChanged); }
 
-    char      *window_awar_name;
+    char      *window_awar_name; // @@@ rename -> gc_manager_name
     AW_device *device;
 
-    struct AW_MGC_awar_cb_struct *next_drag;
+    struct AW_MGC_awar_cb_struct *next_drag; // @@@ rename -> next_acbs
 
     AW_MGC_cb_struct(AW_window *aw_, const char *gc_base_name, const GcChangedCallback& wcb)
         : aw(aw_),
@@ -104,9 +109,9 @@ struct AW_MGC_cb_struct : virtual Noncopyable { // one for each canvas // @@@ mo
 
 struct AW_MGC_awar_cb_struct {  // one for each awar // @@@ eliminate, move all needed data into gc_desc
     struct AW_MGC_cb_struct      *cbs;
-    const char                   *fontbasename;
-    const char                   *colorbasename;
-    short                         gc;
+    const char                   *fontbasename; // contains same as colorbasename if GC defines font (otherwise contains name of last GC which defined a font)
+    const char                   *colorbasename; // @@@ rename -> gc_name (should be a key)
+    short                         gc; // @@@ should be directly passed to callback
     short                         gc_drag;
     short                         colorindex;
     AW_gc_manager                *gcmgr;
@@ -114,13 +119,15 @@ struct AW_MGC_awar_cb_struct {  // one for each awar // @@@ eliminate, move all 
     struct AW_MGC_awar_cb_struct *next;
 };
 
-
 // ----------------------------------------------------------------------
 // force-diff-sync 274874929311 (remove after merging back to trunk)
 // ----------------------------------------------------------------------
 
+struct gc_desc {
+};
+
 class AW_gc_manager {
-    const char            *field;
+    const char            *field; // @@@ ???
     const char            *default_value;
     AW_option_menu_struct *font_size_handle; // the option menu to define the font size of the GC
     AW_MGC_awar_cb_struct *font_change_cb_parameter;
@@ -200,307 +207,99 @@ static void aw_init_font_sizes(AW_root *awr, AW_MGC_awar_cb_struct *cbs, bool fi
         add_font_sizes_to_option_menu(aww, found_sizes, available_sizes);
     }
 }
-static void aw_font_changed_cb(AW_root *awr, AW_MGC_awar_cb_struct *cbs) {
-    aw_init_font_sizes(awr, cbs, false);
-}
-
-static void aw_message_reload(AW_root *) {
-    aw_message("Sorry, to activate new colors:\n"
-                "   save properties\n"
-                "   and restart application");
-}
-static void AW_preset_create_font_chooser(AW_window *aws, const char *awar, const char *label, bool message_reload) {
-    if (message_reload) aws->get_root()->awar(awar)->add_callback(aw_message_reload);
-
-    aws->label(label);
-    aws->create_option_menu(awar, true);
-    aws->insert_option        ("5x8",   "5", "5x8");
-    aws->insert_option        ("6x10",   "6", "6x10");
-    aws->insert_option        ("7x13",   "7", "7x13");
-    aws->insert_option        ("7x13bold",   "7", "7x13bold");
-    aws->insert_option        ("8x13",   "8", "8x13");
-    aws->insert_option        ("8x13bold",   "8", "8x13bold");
-    aws->insert_option        ("9x15",   "9", "9x15");
-    aws->insert_option        ("9x15bold",   "9", "9x15bold");
-    aws->insert_option        ("helvetica-12",   "9", "helvetica-12");
-    aws->insert_option        ("helvetica-bold-12",   "9", "helvetica-bold-12");
-    aws->insert_option        ("helvetica-13",   "9", "helvetica-13");
-    aws->insert_option        ("helvetica-bold-13",   "9", "helvetica-bold-13");
-    aws->insert_default_option("other", "o", "");
-    aws->update_option_menu();
-}
-
-static char *aw_glob_font_awar_name = 0;
-
-static int hex2dez(char c) {
-    if (c>='0' && c<='9') return c-'0';
-    if (c>='A' && c<='F') return c-'A'+10;
-    if (c>='a' && c<='f') return c-'a'+10;
-    return -1;
-}
-
-#define AWAR_GLOBAL_COLOR_NAME "tmp/aw/color_label"
-
-#define AWAR_CV_R "tmp/aw/color_r"
-#define AWAR_CV_G "tmp/aw/color_g"
-#define AWAR_CV_B "tmp/aw/color_b"
-#define AWAR_CV_H "tmp/aw/color_h"
-#define AWAR_CV_S "tmp/aw/color_s"
-#define AWAR_CV_V "tmp/aw/color_v"
-
-static void rgb2hsv(int r, int b, int g, int& h, int& s, int& v) {
-    float R = r/256.0;
-    float G = g/256.0;
-    float B = b/256.0;
-
-    float min = std::min(std::min(R, B), G);
-    float max = std::max(std::max(R, B), G);
-
-    if (min == max) {
-        h = 0;
-    }
-    else {
-        float H = 60.0;
-
-        if      (max == R) { H *= 0 + (G-B)/(max-min); }
-        else if (max == G) { H *= 2 + (B-R)/(max-min); }
-        else               { H *= 4 + (R-G)/(max-min); }
-
-        if (H<0) H += 360;
-        h = int(H/360.0*256);
-    }
-
-    s = max ? (max-min)/max*256 : 0;
-    v = max*256;
-}
-
-static void hsv2rgb(int h, int s, int v, int& r, int& b, int& g) {
-    float H = h/256.0*360;
-    float S = s/256.0;
-    float V = v/256.0;
-
-    int   hi = int(H/60);
-    float f  = H/60-hi;
-
-    float p = 256*V*(1-S);
-    float q = 256*V*(1-S*f);
-    float t = 256*V*(1-S*(1-f));
-
-    switch (hi) {
-        case 0:
-        case 6: r  = v; g = t; b = p; break;
-        case 1: r  = q; g = v; b = p; break;
-        case 2: r  = p; g = v; b = t; break;
-        case 3: r  = p; g = q; b = v; break;
-        case 4: r  = t; g = p; b = v; break;
-        case 5: r  = v; g = p; b = q; break;
-        default: r = g = b = 0; aw_assert(0); break;
-    }
-
-
-}
-
-static bool ignore_color_value_change      = false;
-static bool color_value_change_was_ignored = false;
-
-static void aw_set_rgb_sliders(AW_root *awr, int r, int g, int b) {
-    color_value_change_was_ignored = false;
-    {
-        LocallyModify<bool> delayUpdate(ignore_color_value_change, true);
-        awr->awar(AWAR_CV_R)->write_int(r);
-        awr->awar(AWAR_CV_G)->write_int(g);
-        awr->awar(AWAR_CV_B)->write_int(b);
-    }
-    if (color_value_change_was_ignored) awr->awar(AWAR_CV_B)->touch();
-}
-
-static void aw_set_sliders_from_color(AW_root *awr) {
-    const char *color = awr->awar(aw_glob_font_awar_name)->read_char_pntr();
-
-    int r = 0;
-    int g = 0;
-    int b = 0;
-
-    if (color[0] == '#') {
-        int len = strlen(color+1);
-        if (len == 6) {
-            r = hex2dez(color[1])*16+hex2dez(color[2]);
-            g = hex2dez(color[3])*16+hex2dez(color[4]);
-            b = hex2dez(color[5])*16+hex2dez(color[6]);
-        }
-        else if (len == 3) {
-            r = hex2dez(color[1]); r = r*16+r;
-            g = hex2dez(color[2]); g = g*16+g;
-            b = hex2dez(color[3]); b = b*16+b;
-        }
-    }
-    aw_set_rgb_sliders(awr, r, g, b);
-}
-
-inline void aw_set_color(AW_root *awr, const char *color_name) {
-    awr->awar(aw_glob_font_awar_name)->write_string(color_name);
-    aw_set_sliders_from_color(awr);
-}
-static void aw_set_color(AW_window *aww, const char *color_name) {
-    aw_set_color(aww->get_root(), color_name);
-}
-
-static void color_value_changed_cb(AW_root *awr, bool hsv_changed) {
-    if (ignore_color_value_change) {
-        color_value_change_was_ignored = true;
-    }
-    else {
-        LocallyModify<bool> noRecursion(ignore_color_value_change, true);
-
-        if (hsv_changed) {
-            int h = awr->awar(AWAR_CV_H)->read_int();
-            int s = awr->awar(AWAR_CV_S)->read_int();
-            int v = awr->awar(AWAR_CV_V)->read_int();
-
-            int r, g, b;
-            hsv2rgb(h, s, v, r, g, b);
-
-            {
-                char color_name[10];
-                sprintf(color_name, "#%2.2X%2.2X%2.2X", r, g, b);
-                aw_set_color(awr, color_name);
-            }
-
-            awr->awar(AWAR_CV_R)->write_int(r);
-            awr->awar(AWAR_CV_G)->write_int(g);
-            awr->awar(AWAR_CV_B)->write_int(b);
-        }
-        else {
-            int r = awr->awar(AWAR_CV_R)->read_int();
-            int g = awr->awar(AWAR_CV_G)->read_int();
-            int b = awr->awar(AWAR_CV_B)->read_int();
-
-            {
-                char color_name[10];
-                sprintf(color_name, "#%2.2X%2.2X%2.2X", r, g, b);
-                aw_set_color(awr, color_name);
-            }
-
-            int h, s, v;
-            rgb2hsv(r, g, b, h, s, v);
-
-            awr->awar(AWAR_CV_H)->write_int(h);
-            awr->awar(AWAR_CV_S)->write_int(s);
-            awr->awar(AWAR_CV_V)->write_int(v);
-        }
-    }
-}
-
-static void aw_create_color_awars(AW_root *awr) {
-    awr->awar_string(AWAR_GLOBAL_COLOR_NAME);
-    static const char *colorValueAwars[] = {
-        AWAR_CV_R, AWAR_CV_H,
-        AWAR_CV_G, AWAR_CV_S,
-        AWAR_CV_B, AWAR_CV_V,
-    };
-
-    for (int cv = 0; cv<6; ++cv) {
-        awr->awar_int(colorValueAwars[cv])
-            ->set_minmax(0, 255)
-            ->add_callback(makeRootCallback(color_value_changed_cb, bool(cv%2)));
-    }
-}
-
-static void aw_create_color_chooser_window(AW_window *aww, const char *awar_name, const char *label_name) {
-    AW_root *awr = aww->get_root();
-    static AW_window_simple *aws = 0;
-    if (!aws) {
-        aw_create_color_awars(awr);
-
-        aws = new AW_window_simple;
-        aws->init(awr, "COLORS", "COLORS");
-
-        int x1 = 10;
-        int y1 = 10;
-
-        aws->at(x1, y1);
-        aws->auto_space(3, 3);
-        aws->callback(AW_POPDOWN);
-        aws->create_button("CLOSE", "CLOSE", "C");
-
-        aws->button_length(20);
-        aws->create_button(NULL, AWAR_GLOBAL_COLOR_NAME, "A");
-
-        aws->at_newline();
-
-        int x2, y2;
-        aws->get_at_position(&x2, &y2);
-        y2 += 3;
-
-        struct ColorValue {
-            const char *label;
-            const char *awar;
-        } colorValue[] = {
-            { "R", AWAR_CV_R }, { "H", AWAR_CV_H },
-            { "G", AWAR_CV_G }, { "S", AWAR_CV_S },
-            { "B", AWAR_CV_B }, { "V", AWAR_CV_V },
-        };
-
-        for (int row = 0; row<3; ++row) {
-            aws->at(x1, y1+(row+1)*(y2-y1));
-            const ColorValue *vc = &colorValue[row*2];
-            aws->label(vc->label);
-            aws->create_input_field_with_scaler(vc->awar, 4, 256, AW_SCALER_LINEAR);
-            ++vc;
-            aws->label(vc->label);
-            aws->create_input_field_with_scaler(vc->awar, 4, 256, AW_SCALER_LINEAR);
-        }
-
-        aws->button_length(2);
-        aws->at_newline();
-
-        for (int red = 0; red <= 255; red += 255/4) {
-            for (int green = 0; green <= 255; green += 255/4) {
-                for (int blue = 0; blue <= 255; blue += 255/4) {
-                    if (red != green || green != blue) {
-                        char color_name[10];
-                        sprintf(color_name, "#%2.2X%2.2X%2.2X", red, green, blue);
-                        aws->callback(makeWindowCallback(aw_set_color, strdup(color_name)));
-                        aws->create_button(color_name, "=", 0, color_name);
-                    }
-                }
-            }
-            aws->at_newline();
-        }
-        const float STEP = 255.0/23;
-        for (float greyF = 0.0; greyF < 256; greyF += STEP) { // grey buttons (including black+white)
-            char color_name[10];
-            int  grey = int(greyF+0.5);
-            sprintf(color_name, "#%2.2X%2.2X%2.2X", grey, grey, grey);
-            aws->callback(makeWindowCallback(aw_set_color, strdup(color_name)));
-            aws->create_button(color_name, "=", 0, color_name);
-        }
-        aws->at_newline();
-
-        aws->window_fit();
-    }
-    awr->awar(AWAR_GLOBAL_COLOR_NAME)->write_string(label_name);
-    freedup(aw_glob_font_awar_name, awar_name);
-    aw_set_sliders_from_color(awr);
-    aws->activate();
-}
-static void AW_preset_create_color_chooser(AW_window *aws, const char *awar_name, const char *label, bool message_reload, bool show_label)
-{
-    if (message_reload) aws->get_root()->awar(awar_name)->add_callback(aw_message_reload);
-    if (show_label) {
-        aw_assert(label);
-        aws->label(label);
-    }
-    aws->callback(makeWindowCallback(aw_create_color_chooser_window, strdup(awar_name), strdup(label)));
-    char *color     = aws->get_root()->awar(awar_name)->read_string();
-    char *button_id = GBS_global_string_copy("sel_color[%s]", awar_name);
-    aws->create_button(button_id, " ", 0, color);
-    free(button_id);
-    free(color);
-}
 
 //      motif only (end)
 // --------------------------
+
+
+// ---------------------------
+//      GC awar callbacks
+
+static void gc_font_changed_cb(AW_root *awr, AW_MGC_awar_cb_struct *cbs) {
+    aw_init_font_sizes(awr, cbs, false);
+}
+
+static void gc_fontOrSize_changed_cb(AW_root *awr, AW_MGC_awar_cb_struct *cbs, int mode) {
+    static int dont_recurse = 0;
+
+    if (dont_recurse == 0) {
+        ++dont_recurse;
+        // mode == -1 -> no callback
+
+        int      font           = awr->awar(fontname_awarname(cbs->cbs->window_awar_name, cbs->fontbasename))->read_int();
+        AW_awar *awar_font_size = awr->awar(fontsize_awarname(cbs->cbs->window_awar_name, cbs->fontbasename));
+        int      size           = awar_font_size->read_int();
+
+        int found_font_size;
+        cbs->cbs->device->set_font(cbs->gc, font, size, &found_font_size);
+        cbs->cbs->device->set_font(cbs->gc_drag, font, size, 0);
+        if (found_font_size != -1 && found_font_size != size) {
+            // correct awar value if exact fontsize wasn't found
+            awar_font_size->write_int(found_font_size);
+        }
+
+        if (mode != -1) {
+            cbs->cbs->call(GC_FONT_CHANGED);
+        }
+        --dont_recurse;
+    }
+}
+
+static void gc_color_changed_cb(AW_root *root, AW_MGC_awar_cb_struct *cbs, int mode) {
+    char         *colorname = root->awar(color_awarname(cbs->cbs->window_awar_name, cbs->colorbasename))->read_string();
+    AW_color_idx  color     = (AW_color_idx)cbs->colorindex;
+
+    cbs->cbs->aw->alloc_named_data_color(color, colorname);
+    if (color != AW_DATA_BG) {
+        cbs->cbs->device->set_foreground_color(cbs->gc, color);
+        cbs->cbs->device->set_foreground_color(cbs->gc_drag, color);
+    }
+    else {
+        struct AW_MGC_awar_cb_struct *acbs;
+        for (acbs = cbs->cbs->next_drag; acbs; acbs=acbs->next) {
+            cbs->cbs->device->set_foreground_color(acbs->gc_drag, (AW_color_idx)acbs->colorindex);
+        }
+    }
+    if (mode != -1) {
+        cbs->cbs->call(GC_COLOR_CHANGED);
+    }
+    free(colorname);
+}
+
+// ----------------------
+//      color groups
+
+static void AW_color_group_name_changed_cb(AW_root *) {
+    AW_advice("To activate the new names for color groups you have to\n"
+              "save properties and restart the program.",
+              AW_ADVICE_TOGGLE, "Color group name has been changed", 0);
+}
+
+static bool         color_groups_initialized = false;
+static bool         use_color_groups         = false;
+static const char **color_group_gc_defaults  = 0;
+
+static void color_group_use_changed_cb(AW_root *awr, const GcChangedCallback *gc_changed_cb) {
+    use_color_groups = awr->awar(AWAR_COLOR_GROUPS_USE)->read_int();
+    (*gc_changed_cb)(GC_COLOR_GROUP_USE_CHANGED);
+}
+
+static void AW_init_color_groups(AW_root *awr, AW_default def, const GcChangedCallback& gccb) {
+    if (!color_groups_initialized) {
+        AW_awar                   *useAwar    = awr->awar_int(AWAR_COLOR_GROUPS_USE, 1, def);
+        GcChangedCallback * const  changed_cb = new GcChangedCallback(gccb); // bound to cb
+
+        use_color_groups = useAwar->read_int();
+        useAwar->add_callback(makeRootCallback(color_group_use_changed_cb, changed_cb));
+
+        char name_buf[AW_COLOR_GROUP_NAME_LEN+1];
+        for (int i = 1; i <= AW_COLOR_GROUPS; ++i) {
+            sprintf(name_buf, "color_group_%i", i);
+            awr->awar_string(colorgroupname_awarname(i), name_buf, def)->add_callback(AW_color_group_name_changed_cb);
+        }
+        color_groups_initialized = true;
+    }
+}
 
 // ----------------------------------------------------------------------
 // force-diff-sync 931274892174 (remove after merging back to trunk)
@@ -532,86 +331,6 @@ void AW_copy_GCs(AW_root *aw_root, const char *source_window, const char *dest_w
     }
 
     va_end(parg);
-}
-
-static bool         color_groups_initialized = false;
-static bool         use_color_groups         = false;
-static const char **color_group_gc_defaults  = 0;
-
-
-static void aw_gc_changed_cb(AW_root *awr, AW_MGC_awar_cb_struct *cbs, int mode) {
-    static int dont_recurse = 0;
-
-    if (dont_recurse == 0) {
-        ++dont_recurse;
-        // mode == -1 -> no callback
-
-        int      font           = awr->awar(fontname_awarname(cbs->cbs->window_awar_name, cbs->fontbasename))->read_int();
-        AW_awar *awar_font_size = awr->awar(fontsize_awarname(cbs->cbs->window_awar_name, cbs->fontbasename));
-        int      size           = awar_font_size->read_int();
-
-        int found_font_size;
-        cbs->cbs->device->set_font(cbs->gc, font, size, &found_font_size);
-        cbs->cbs->device->set_font(cbs->gc_drag, font, size, 0);
-        if (found_font_size != -1 && found_font_size != size) {
-            // correct awar value if exact fontsize wasn't found
-            awar_font_size->write_int(found_font_size);
-        }
-
-        if (mode != -1) {
-            cbs->cbs->call(GC_FONT_CHANGED);
-        }
-        --dont_recurse;
-    }
-}
-
-static void aw_gc_color_changed_cb(AW_root *root, AW_MGC_awar_cb_struct *cbs, int mode) {
-    char         *colorname = root->awar(color_awarname(cbs->cbs->window_awar_name, cbs->colorbasename))->read_string();
-    AW_color_idx  color     = (AW_color_idx)cbs->colorindex;
-
-    cbs->cbs->aw->alloc_named_data_color(color, colorname);
-    if (color != AW_DATA_BG) {
-        cbs->cbs->device->set_foreground_color(cbs->gc, color);
-        cbs->cbs->device->set_foreground_color(cbs->gc_drag, color);
-    }
-    else {
-        struct AW_MGC_awar_cb_struct *acbs;
-        for (acbs = cbs->cbs->next_drag; acbs; acbs=acbs->next) {
-            cbs->cbs->device->set_foreground_color(acbs->gc_drag, (AW_color_idx)acbs->colorindex);
-        }
-    }
-    if (mode != -1) {
-        cbs->cbs->call(GC_COLOR_CHANGED);
-    }
-    free(colorname);
-}
-
-static void AW_color_group_usage_changed_cb(AW_root *awr, const GcChangedCallback *gc_changed_cb) {
-    use_color_groups = awr->awar(AWAR_COLOR_GROUPS_USE)->read_int();
-    (*gc_changed_cb)(GC_COLOR_GROUP_USE_CHANGED);
-}
-
-static void AW_color_group_name_changed_cb(AW_root *) {
-    AW_advice("To activate the new names for color groups you have to\n"
-              "save properties and restart the program.",
-              AW_ADVICE_TOGGLE, "Color group name has been changed", 0);
-}
-
-static void AW_init_color_groups(AW_root *awr, AW_default def, const GcChangedCallback& gccb) {
-    if (!color_groups_initialized) {
-        AW_awar                   *useAwar    = awr->awar_int(AWAR_COLOR_GROUPS_USE, 1, def);
-        GcChangedCallback * const  changed_cb = new GcChangedCallback(gccb); // bound to cb
-
-        use_color_groups = useAwar->read_int();
-        useAwar->add_callback(makeRootCallback(AW_color_group_usage_changed_cb, changed_cb));
-
-        char name_buf[AW_COLOR_GROUP_NAME_LEN+1];
-        for (int i = 1; i <= AW_COLOR_GROUPS; ++i) {
-            sprintf(name_buf, "color_group_%i", i);
-            awr->awar_string(colorgroupname_awarname(i), name_buf, def)->add_callback(AW_color_group_name_changed_cb);
-        }
-        color_groups_initialized = true;
-    }
 }
 
 struct gc_props {
@@ -838,28 +557,28 @@ AW_gc_manager *AW_manage_GC(AW_window                *aww,
             acbs->colorindex = col;
 
             aw_root->awar_string(color_awarname(mcbs->window_awar_name, acbs->colorbasename), gcmgr2->get_default_value(), aw_def)
-                ->add_callback(makeRootCallback(aw_gc_color_changed_cb, acbs, 0));
+                ->add_callback(makeRootCallback(gc_color_changed_cb, acbs, 0));
 
-            aw_gc_color_changed_cb(aw_root, acbs, -1);
+            gc_color_changed_cb(aw_root, acbs, -1);
 
             acbs->fontbasename  = gcp.select_font ? acbs->colorbasename : last_font_base_name;
             last_font_base_name = acbs->fontbasename;
 
             {
-                AW_awar *font_awar      = aw_root->awar_int(fontname_awarname(mcbs->window_awar_name, acbs->fontbasename), def_font,     aw_def);
+                AW_awar *font_name_awar = aw_root->awar_int(fontname_awarname(mcbs->window_awar_name, acbs->fontbasename), def_font,     aw_def);
                 AW_awar *font_size_awar = aw_root->awar_int(fontsize_awarname(mcbs->window_awar_name, acbs->fontbasename), DEF_FONTSIZE, aw_def);
 
                 if (gcp.select_font) {
-                    font_awar->add_callback(makeRootCallback(aw_font_changed_cb, acbs));
+                    font_name_awar->add_callback(makeRootCallback(gc_font_changed_cb, acbs));
                     gcmgr2->set_font_change_parameter(acbs);
                 }
 
-                font_awar->add_callback(makeRootCallback(aw_gc_changed_cb, acbs, 0));
-                font_size_awar->add_callback(makeRootCallback(aw_gc_changed_cb, acbs, 0));
+                font_name_awar->add_callback(makeRootCallback(gc_fontOrSize_changed_cb, acbs, 0));
+                font_size_awar->add_callback(makeRootCallback(gc_fontOrSize_changed_cb, acbs, 0));
             }
 
             if (!first) {
-                aw_gc_changed_cb(aw_root, acbs, -1);
+                gc_fontOrSize_changed_cb(aw_root, acbs, -1);
                 base_gc++;
                 base_drag++;
             }
@@ -919,68 +638,17 @@ char *AW_get_color_group_name(AW_root *awr, int color_group) {
     return awr->awar(colorgroupname_awarname(color_group))->read_string();
 }
 
-AW_window *AW_preset_window(AW_root *root) {
-    AW_window_simple *aws = new AW_window_simple;
-    const int   tabstop = 400;
-    aws->init(root, "PROPS_FRAME", "WINDOW_PROPERTIES");
+static void create_color_button(AW_window *aws, const char *awar_name, const char *color_description) {
+    aws->callback(makeWindowCallback(aw_create_color_chooser_window, strdup(awar_name), strdup(color_description)));
 
-    aws->label_length(25);
-    aws->button_length(20);
+    char *color     = aws->get_root()->awar(awar_name)->read_string();
+    char *button_id = GBS_global_string_copy("sel_color[%s]", awar_name);
 
-    aws->at           (10, 10);
-    aws->auto_space(10, 10);
+    aws->create_button(button_id, " ", 0, color);
 
-    aws->callback     (AW_POPDOWN);
-    aws->create_button("CLOSE", "CLOSE", "C");
-
-    aws->callback(makeHelpCallback("props_frame.hlp"));
-    aws->create_button("HELP", "HELP", "H");
-
-    aws->at_newline();
-
-    AW_preset_create_font_chooser(aws, "window/font", "Main Menu Font", 1);
-    aws->at_x(tabstop);
-    aws->create_input_field("window/font", 12);
-
-    aws->at_newline();
-
-    aws->button_length(10);
-    AW_preset_create_color_chooser(aws, "window/background", "Application Background", true, true);
-    aws->at_x(tabstop);
-    aws->create_input_field("window/background", 12);
-
-    aws->at_newline();
-
-    AW_preset_create_color_chooser(aws, "window/foreground", "Application Foreground", true, true);
-    aws->at_x(tabstop);
-    aws->create_input_field("window/foreground", 12);
-
-    aws->at_newline();
-
-    AW_preset_create_color_chooser(aws, "window/color_1", "Color 1", true, true);
-    aws->at_x(tabstop);
-    aws->create_input_field("window/color_1", 12);
-
-    aws->at_newline();
-
-    AW_preset_create_color_chooser(aws, "window/color_2", "Color 2", true, true);
-    aws->at_x(tabstop);
-    aws->create_input_field("window/color_2", 12);
-
-    aws->at_newline();
-
-    AW_preset_create_color_chooser(aws, "window/color_3", "Color 3", true, true);
-
-    aws->at_x(tabstop);
-    aws->create_input_field("window/color_3", 12);
-
-    aws->at_newline();
-
-    aws->window_fit();
-    return (AW_window *)aws;
+    free(button_id);
+    free(color);
 }
-
-
 
 static bool aw_insert_gcs(AW_root *aw_root, AW_window_simple *aws, AW_gc_manager *gcmgr, bool insert_color_groups) {
     // returns true if GCs starting with COLOR_GROUP_PREFIX were found
@@ -1024,7 +692,7 @@ static bool aw_insert_gcs(AW_root *aw_root, AW_window_simple *aws, AW_gc_manager
                 const char *awar_name = color_awarname(window_awar_name, fontbasename);
                 if (gcp.select_color) {
                     aws->button_length(5);
-                    AW_preset_create_color_chooser(aws, awar_name, id, false, false);
+                    create_color_button(aws, awar_name, id);
                 }
                 aws->create_input_field(awar_name, 7);
             }
@@ -1252,4 +920,355 @@ void AW_save_specific_properties(AW_window *aw, const char *filename) {  // spec
 void AW_save_properties(AW_window *aw) {
     AW_save_specific_properties(aw, NULL);
 }
+
+// ------------------------------
+//      motif color selector
+
+#define AWAR_GLOBAL_COLOR_NAME "tmp/aw/color_label"
+
+#define AWAR_CV_R "tmp/aw/color_r" // rgb..
+#define AWAR_CV_G "tmp/aw/color_g"
+#define AWAR_CV_B "tmp/aw/color_b"
+#define AWAR_CV_H "tmp/aw/color_h" // hsv..
+#define AWAR_CV_S "tmp/aw/color_s"
+#define AWAR_CV_V "tmp/aw/color_v"
+
+static void rgb2hsv(int r, int b, int g, int& h, int& s, int& v) {
+    float R = r/256.0;
+    float G = g/256.0;
+    float B = b/256.0;
+
+    float min = std::min(std::min(R, B), G);
+    float max = std::max(std::max(R, B), G);
+
+    if (min == max) {
+        h = 0;
+    }
+    else {
+        float H = 60.0;
+
+        if      (max == R) { H *= 0 + (G-B)/(max-min); }
+        else if (max == G) { H *= 2 + (B-R)/(max-min); }
+        else               { H *= 4 + (R-G)/(max-min); }
+
+        if (H<0) H += 360;
+        h = int(H/360.0*256);
+    }
+
+    s = max ? (max-min)/max*256 : 0;
+    v = max*256;
+}
+
+static void hsv2rgb(int h, int s, int v, int& r, int& b, int& g) {
+    float H = h/256.0*360;
+    float S = s/256.0;
+    float V = v/256.0;
+
+    int   hi = int(H/60);
+    float f  = H/60-hi;
+
+    float p = 256*V*(1-S);
+    float q = 256*V*(1-S*f);
+    float t = 256*V*(1-S*(1-f));
+
+    switch (hi) {
+        case 0:
+        case 6: r  = v; g = t; b = p; break;
+        case 1: r  = q; g = v; b = p; break;
+        case 2: r  = p; g = v; b = t; break;
+        case 3: r  = p; g = q; b = v; break;
+        case 4: r  = t; g = p; b = v; break;
+        case 5: r  = v; g = p; b = q; break;
+        default: r = g = b = 0; aw_assert(0); break;
+    }
+}
+
+static char *aw_glob_font_awar_name         = 0; // @@@ weird name?
+static bool  ignore_color_value_change      = false;
+static bool  color_value_change_was_ignored = false;
+
+static void aw_set_rgb_sliders(AW_root *awr, int r, int g, int b) {
+    color_value_change_was_ignored = false;
+    {
+        LocallyModify<bool> delayUpdate(ignore_color_value_change, true);
+        awr->awar(AWAR_CV_R)->write_int(r);
+        awr->awar(AWAR_CV_G)->write_int(g);
+        awr->awar(AWAR_CV_B)->write_int(b);
+    }
+    if (color_value_change_was_ignored) awr->awar(AWAR_CV_B)->touch();
+}
+
+static int hex2dec(char c) {
+    if (c>='0' && c<='9') return c-'0';
+    if (c>='A' && c<='F') return c-'A'+10;
+    if (c>='a' && c<='f') return c-'a'+10;
+    return -1;
+}
+static void aw_set_sliders_from_color(AW_root *awr) {
+    const char *color = awr->awar(aw_glob_font_awar_name)->read_char_pntr();
+
+    int r = 0;
+    int g = 0;
+    int b = 0;
+
+    if (color[0] == '#') {
+        int len = strlen(color+1);
+        if (len == 6) {
+            r = hex2dec(color[1])*16+hex2dec(color[2]);
+            g = hex2dec(color[3])*16+hex2dec(color[4]);
+            b = hex2dec(color[5])*16+hex2dec(color[6]);
+        }
+        else if (len == 3) {
+            r = hex2dec(color[1]); r = r*16+r;
+            g = hex2dec(color[2]); g = g*16+g;
+            b = hex2dec(color[3]); b = b*16+b;
+        }
+    }
+    aw_set_rgb_sliders(awr, r, g, b);
+}
+
+inline void aw_set_color(AW_root *awr, const char *color_name) {
+    awr->awar(aw_glob_font_awar_name)->write_string(color_name);
+    aw_set_sliders_from_color(awr);
+}
+static void aw_set_color(AW_window *aww, const char *color_name) {
+    aw_set_color(aww->get_root(), color_name);
+}
+
+static void colorslider_changed_cb(AW_root *awr, bool hsv_changed) {
+    if (ignore_color_value_change) {
+        color_value_change_was_ignored = true;
+    }
+    else {
+        LocallyModify<bool> noRecursion(ignore_color_value_change, true);
+
+        if (hsv_changed) {
+            int h = awr->awar(AWAR_CV_H)->read_int();
+            int s = awr->awar(AWAR_CV_S)->read_int();
+            int v = awr->awar(AWAR_CV_V)->read_int();
+
+            int r, g, b;
+            hsv2rgb(h, s, v, r, g, b);
+
+            {
+                char color_name[10];
+                sprintf(color_name, "#%2.2X%2.2X%2.2X", r, g, b);
+                aw_set_color(awr, color_name);
+            }
+
+            awr->awar(AWAR_CV_R)->write_int(r);
+            awr->awar(AWAR_CV_G)->write_int(g);
+            awr->awar(AWAR_CV_B)->write_int(b);
+        }
+        else {
+            int r = awr->awar(AWAR_CV_R)->read_int();
+            int g = awr->awar(AWAR_CV_G)->read_int();
+            int b = awr->awar(AWAR_CV_B)->read_int();
+
+            {
+                char color_name[10];
+                sprintf(color_name, "#%2.2X%2.2X%2.2X", r, g, b);
+                aw_set_color(awr, color_name);
+            }
+
+            int h, s, v;
+            rgb2hsv(r, g, b, h, s, v);
+
+            awr->awar(AWAR_CV_H)->write_int(h);
+            awr->awar(AWAR_CV_S)->write_int(s);
+            awr->awar(AWAR_CV_V)->write_int(v);
+        }
+    }
+}
+static void aw_create_colorslider_awars(AW_root *awr) {
+    awr->awar_string(AWAR_GLOBAL_COLOR_NAME);
+    static const char *colorValueAwars[] = {
+        AWAR_CV_R, AWAR_CV_H,
+        AWAR_CV_G, AWAR_CV_S,
+        AWAR_CV_B, AWAR_CV_V,
+    };
+
+    for (int cv = 0; cv<6; ++cv) {
+        awr->awar_int(colorValueAwars[cv])
+            ->set_minmax(0, 255)
+            ->add_callback(makeRootCallback(colorslider_changed_cb, bool(cv%2)));
+    }
+}
+static void aw_create_color_chooser_window(AW_window *aww, const char *awar_name, const char *color_description) {
+    AW_root *awr = aww->get_root();
+    static AW_window_simple *aws = 0;
+    if (!aws) {
+        aw_create_colorslider_awars(awr);
+
+        aws = new AW_window_simple;
+        aws->init(awr, "COLORS", "COLORS");
+
+        int x1 = 10;
+        int y1 = 10;
+
+        aws->at(x1, y1);
+        aws->auto_space(3, 3);
+        aws->callback(AW_POPDOWN);
+        aws->create_button("CLOSE", "CLOSE", "C");
+
+        aws->button_length(20);
+        aws->create_button(NULL, AWAR_GLOBAL_COLOR_NAME, "A");
+
+        aws->at_newline();
+
+        int x2, y2;
+        aws->get_at_position(&x2, &y2);
+        y2 += 3;
+
+        struct ColorValue {
+            const char *label;
+            const char *awar;
+        } colorValue[] = {
+            { "R", AWAR_CV_R }, { "H", AWAR_CV_H },
+            { "G", AWAR_CV_G }, { "S", AWAR_CV_S },
+            { "B", AWAR_CV_B }, { "V", AWAR_CV_V },
+        };
+
+        for (int row = 0; row<3; ++row) {
+            aws->at(x1, y1+(row+1)*(y2-y1));
+            const ColorValue *vc = &colorValue[row*2];
+            aws->label(vc->label);
+            aws->create_input_field_with_scaler(vc->awar, 4, 256, AW_SCALER_LINEAR);
+            ++vc;
+            aws->label(vc->label);
+            aws->create_input_field_with_scaler(vc->awar, 4, 256, AW_SCALER_LINEAR);
+        }
+
+        aws->button_length(2);
+        aws->at_newline();
+
+        for (int red = 0; red <= 255; red += 255/4) {
+            for (int green = 0; green <= 255; green += 255/4) {
+                for (int blue = 0; blue <= 255; blue += 255/4) {
+                    if (red != green || green != blue) {
+                        char color_name[10];
+                        sprintf(color_name, "#%2.2X%2.2X%2.2X", red, green, blue);
+                        aws->callback(makeWindowCallback(aw_set_color, strdup(color_name)));
+                        aws->create_button(color_name, "=", 0, color_name);
+                    }
+                }
+            }
+            aws->at_newline();
+        }
+        const float STEP = 255.0/23;
+        for (float greyF = 0.0; greyF < 256; greyF += STEP) { // grey buttons (including black+white)
+            char color_name[10];
+            int  grey = int(greyF+0.5);
+            sprintf(color_name, "#%2.2X%2.2X%2.2X", grey, grey, grey);
+            aws->callback(makeWindowCallback(aw_set_color, strdup(color_name)));
+            aws->create_button(color_name, "=", 0, color_name);
+        }
+        aws->at_newline();
+
+        aws->window_fit();
+    }
+    awr->awar(AWAR_GLOBAL_COLOR_NAME)->write_string(color_description);
+    freedup(aw_glob_font_awar_name, awar_name);
+    aw_set_sliders_from_color(awr);
+    aws->activate();
+}
+
+// -----------------------------------
+//      frame colors (motif only)
+
+static void aw_message_reload(AW_root *) {
+    aw_message("Sorry, to activate new colors:\n"
+                "   save properties\n"
+                "   and restart application");
+}
+
+static void AW_preset_create_font_chooser(AW_window *aws, const char *awar, const char *label, bool message_reload) {
+    if (message_reload) aws->get_root()->awar(awar)->add_callback(aw_message_reload);
+
+    aws->label(label);
+    aws->create_option_menu(awar, true);
+
+    aws->insert_option("5x8",               "5", "5x8");
+    aws->insert_option("6x10",              "6", "6x10");
+    aws->insert_option("7x13",              "7", "7x13");
+    aws->insert_option("7x13bold",          "7", "7x13bold");
+    aws->insert_option("8x13",              "8", "8x13");
+    aws->insert_option("8x13bold",          "8", "8x13bold");
+    aws->insert_option("9x15",              "9", "9x15");
+    aws->insert_option("9x15bold",          "9", "9x15bold");
+    aws->insert_option("helvetica-12",      "9", "helvetica-12");
+    aws->insert_option("helvetica-bold-12", "9", "helvetica-bold-12");
+    aws->insert_option("helvetica-13",      "9", "helvetica-13");
+    aws->insert_option("helvetica-bold-13", "9", "helvetica-bold-13");
+
+    aws->insert_default_option("other", "o", "");
+    aws->update_option_menu();
+}
+static void AW_preset_create_color_button(AW_window *aws, const char *awar_name, const char *label) {
+    aws->get_root()->awar(awar_name)->add_callback(aw_message_reload);
+    aws->label(label);
+    create_color_button(aws, awar_name, label);
+}
+
+AW_window *AW_preset_window(AW_root *root) {
+    AW_window_simple *aws = new AW_window_simple;
+    const int   tabstop = 400;
+    aws->init(root, "PROPS_FRAME", "WINDOW_PROPERTIES");
+
+    aws->label_length(25);
+    aws->button_length(20);
+
+    aws->at           (10, 10);
+    aws->auto_space(10, 10);
+
+    aws->callback     (AW_POPDOWN);
+    aws->create_button("CLOSE", "CLOSE", "C");
+
+    aws->callback(makeHelpCallback("props_frame.hlp"));
+    aws->create_button("HELP", "HELP", "H");
+
+    aws->at_newline();
+
+    AW_preset_create_font_chooser(aws, "window/font", "Main Menu Font", 1);
+    aws->at_x(tabstop);
+    aws->create_input_field("window/font", 12);
+
+    aws->at_newline();
+
+    aws->button_length(10);
+    AW_preset_create_color_button(aws, "window/background", "Application Background");
+    aws->at_x(tabstop);
+    aws->create_input_field("window/background", 12);
+
+    aws->at_newline();
+
+    AW_preset_create_color_button(aws, "window/foreground", "Application Foreground");
+    aws->at_x(tabstop);
+    aws->create_input_field("window/foreground", 12);
+
+    aws->at_newline();
+
+    AW_preset_create_color_button(aws, "window/color_1", "Color 1");
+    aws->at_x(tabstop);
+    aws->create_input_field("window/color_1", 12);
+
+    aws->at_newline();
+
+    AW_preset_create_color_button(aws, "window/color_2", "Color 2");
+    aws->at_x(tabstop);
+    aws->create_input_field("window/color_2", 12);
+
+    aws->at_newline();
+
+    AW_preset_create_color_button(aws, "window/color_3", "Color 3");
+
+    aws->at_x(tabstop);
+    aws->create_input_field("window/color_3", 12);
+
+    aws->at_newline();
+
+    aws->window_fit();
+    return (AW_window *)aws;
+}
+
 
