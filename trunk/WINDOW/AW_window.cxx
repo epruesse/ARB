@@ -42,9 +42,11 @@
 #include <Xm/ScrollBar.h>
 #include <Xm/MwmUtil.h>
 
-#include <cctype>
 #include "aw_question.hxx"
+
+#include <cctype>
 #include <map>
+#include <string>
 
 void AW_POPDOWN(AW_window *window){
     window->hide();
@@ -307,17 +309,19 @@ static const char *possible_mnemonics(const char *used_mnemonics, bool top_level
 }
 
 class MnemonicScope : virtual Noncopyable {
-    char          *name; // of menu or window
-    char          *used; // mnemonics (all upper case)
+    typedef std::map<char,std::string> Char2Topic;
+
+    std::string    name;      // of menu or window
     MnemonicScope *parent;
     StrArray       requested; // topics lacking sufficient mnemonic
+    Char2Topic     accepted;  // accepted mnemonics (key = uppercase hotkey, value=topic)
 
     void print_at_menu(FILE *out) {
         if (parent) {
             parent->print_at_menu(out);
             fputc('|', out);
         }
-        fputs(name, out);
+        fputs(name.c_str(), out);
     }
     void print_at_location(FILE *out, const char *topic) {
         fputs(" (", out);
@@ -326,15 +330,28 @@ class MnemonicScope : virtual Noncopyable {
     }
 
     void requestPossibilities(const char *topic_name) {
-        // will be shows delayed (when menu closes)
-        requested.put(strdup(topic_name));
+        // will be shown delayed (when menu closes)
+        if (requested.index_of(topic_name) == -1) { // avoid duplicates
+            requested.put(strdup(topic_name));
+        }
     }
 
     void showRequestedPossibilities() {
-        for (int i = 0; requested[i]; ++i) {
+        unsigned  size = accepted.size();
+        char     *used = new char[size+1];
+
+        int i = 0;
+        for (Char2Topic::iterator a = accepted.begin(); a != accepted.end(); ++a) {
+            used[i++] = a->first;
+        }
+        used[size] = 0;
+
+        for (i = 0; requested[i]; ++i) {
             const char *possible = possible_mnemonics(used, !parent, requested[i]);
             fprintf(stderr, "Warning: Possible mnemonics for '%s': '%s'\n", requested[i], possible);
         }
+
+        delete [] used;
     }
 
     void warn_mnemonic(const char *topic_name, const char *mnemonic, const char *warning) {
@@ -345,15 +362,12 @@ class MnemonicScope : virtual Noncopyable {
 public:
 
     MnemonicScope(const char *name_, MnemonicScope *parent_)
-        : name(strdup(name_)),
-          used(strdup("")),
+        : name(name_),
           parent(parent_)
     {}
 
     ~MnemonicScope() {
         showRequestedPossibilities();
-        free(name);
-        free(used);
     }
 
     void add(const char *topic_name, const char *mnemonic);
@@ -388,12 +402,15 @@ void MnemonicScope::add(const char *topic_name, const char *mnemonic) {
             char  HOTKEY     = toupper(mnemonic[0]); // store hotkeys case-less (case does not matter when pressing the hotkey)
 
             if (strchr(TOPIC_NAME, HOTKEY)) {  // occurs in menu text
-                if (strchr(used, HOTKEY)) {
+                Char2Topic::iterator found = accepted.find(HOTKEY);
+
+                if (found != accepted.end()) {
                     warn_mnemonic(topic_name, mnemonic, "is used multiple times");
                     requestPossibilities(topic_name);
+                    requestPossibilities(found->second.c_str()); // show possibilities for accepted duplicate
                 }
                 else {
-                    freeset(used, GBS_global_string_copy("%s%c", used, HOTKEY));
+                    accepted[HOTKEY] = topic_name;
 
                     if (!strchr(topic_name, mnemonic[0])) {
                         char *warning = GBS_global_string_copy("has wrong case, use '%c'", HOTKEY == mnemonic[0] ? tolower(HOTKEY) : HOTKEY);
