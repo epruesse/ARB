@@ -202,44 +202,70 @@ float AW_ScalerTransformer::awar2scaler(AW_awar *awar) {
 // force-diff-sync 7284637824 (remove after merging back to trunk)
 // ----------------------------------------------------------------------
 
+inline unsigned count_occurrences(const char *text, char c, unsigned& textlen) {
+    unsigned found = 0;
+    unsigned i;
+    for (i = 0; text[i]; ++i) {
+        found += (text[i] == c);
+    }
+    textlen = i;
+    return found;
+}
+
 char* aw_convert_mnemonic(const char* text, const char* mnemonic) {
-    /*!
-     * Converts ARB type mnemonics into GTK style mnemoics.
+    /*! Converts ARB type mnemonics into GTK style mnemonics.
      * @param  text     the label text
-     * @param  mnemonic the mnemonic character
-     * @return copy of @param text with a _ inserted before the first
-     *         occurance of @param mnemonic. MUST BE FREED.
+     * @param  mnemonic the mnemonic character (only first char is used!)
+     * @return heapcopy of @param text with
+     *         - an "_" inserted before the first occurrence of @param mnemonic,
+     *         - or " (_x)" appended if 'x' doesnt occur.
+     *         - any existing '_' are changed into '__' to avoid interpretation as mnemonic trigger.
      */
-    char *rval = (char*) malloc(strlen(text)
-                                + 1 // \0 terminator
-                                + 1 // _ character
-                                + 4 // " (x)"
-                                );
+
+    aw_assert(!AW_IS_IMAGEREF(text)); // has to be handled by caller!
+
+    bool     got_mnemonic = mnemonic && mnemonic[0];
+    unsigned textlen;
+    unsigned underscores  = count_occurrences(text, '_', textlen);
+    unsigned pos          = got_mnemonic ? strcspn(text, mnemonic) : textlen;   // pos of mnemonic
+
+    bool text_contains_mnemonic = (pos != textlen);
+
+    unsigned allocsize =
+        textlen
+        + 1                         // \0 terminator
+        + (text_contains_mnemonic
+           ? 1                      // "_" prefixed to found mnemonic
+           : (got_mnemonic ? 5 : 0) // " (_x)" or nothing appended
+            )
+        + underscores;              // "_" -> "__"
+
+    char *rval = (char*)malloc(allocsize);
     aw_return_val_if_fail(rval, NULL);
-    strcpy(rval, text);
+    aw_return_val_if_fail(pos <= textlen, rval); // paranoia check
 
-    if (AW_IS_IMAGEREF(text) || !mnemonic || mnemonic[0]=='\0') {
-        return rval;
-    }
-
-    size_t pos = strcspn(text, mnemonic);
-    aw_return_val_if_fail(pos <= strlen(text), rval); // paranoia check
-
-    bool text_contains_mnemonic = (pos != strlen(text));
 #if defined(DEVEL_RALF)
-    aw_warn_if_fail(text_contains_mnemonic);
-#endif
-    if (text_contains_mnemonic) {
-        rval[pos]='_';
-        strcpy(rval + pos + 1, text + pos);
-    } else {
-        rval[pos++] = ' ';
-        rval[pos++] = '(';
-        rval[pos++] = '_';
-        rval[pos++] = mnemonic[0];
-        rval[pos++] = ')';
-        rval[pos++] = '\0';
+    if (!text_contains_mnemonic && got_mnemonic) {
+        fprintf(stderr, "Warning: bad mnemonic '%s' (not found in '%s')\n", mnemonic, text);
     }
+#endif
+
+    unsigned o = 0;
+    for (unsigned i = 0; i<textlen; ++i) {
+        char c = text[i];
+        if (c == '_' || i == pos) rval[o++] = '_'; // escape existing underscores OR trigger existing mnemonic
+        rval[o++] = c;
+    }
+    if (!text_contains_mnemonic && got_mnemonic) {
+        rval[o++] = ' ';
+        rval[o++] = '(';
+        rval[o++] = '_';
+        rval[o++] = mnemonic[0];
+        rval[o++] = ')';
+    }
+    rval[o++] = '\0';
+
+    aw_assert(o == allocsize);
 
     return rval;
 }
@@ -268,10 +294,11 @@ GtkWidget* AW_window::make_label(const char* label_text, short label_len, const 
             char *label_w_mnemonic = aw_convert_mnemonic(label_text, mnemonic);        
             widget = gtk_label_new_with_mnemonic(label_w_mnemonic);
             free(label_w_mnemonic);
-        } else {
-            widget = gtk_label_new_with_mnemonic(label_text);
         }
-    
+        else {
+            widget = gtk_label_new(label_text); // do NOT interpret mnemonics here!
+        }
+
         if (label_len) {
             gtk_label_set_width_chars(GTK_LABEL(widget), label_len);
         }
