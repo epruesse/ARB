@@ -123,7 +123,7 @@ char *GBT_join_strings(const CharPtrArray& strings, char separator) {
 int CharPtrArray::index_of(const char *search_for) const {
     // return index of 'search_for' or -1 if not found or given
     int index = -1;
-    if (search_for) {
+    if (search_for && allocated) {
         for (int i = 0; str[i]; ++i) {
             if (strcmp(str[i], search_for) == 0) {
                 index = i;
@@ -163,6 +163,7 @@ void TEST_StrArray() {
     StrArray array;
 
     TEST_EXPECT(array.empty());
+    TEST_EXPECT_EQUAL(array.index_of("whatever"), -1);
     TEST_EXPECT_EQUAL(array.size(), 0);
     TEST_EXPECT_NULL(array[0]);
 
@@ -252,6 +253,9 @@ void TEST_GBT_split_join_names() {
 
 void TEST_StrArray_index_of() {
     ConstStrArray names;
+
+    TEST_EXPECT_EQUAL(names.index_of("a"), -1);
+
     GBT_split_string(names, "**a**b*c*", '*');
 
     TEST_EXPECT_EQUAL(names.index_of("a"), 2);
