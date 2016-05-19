@@ -1351,7 +1351,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone, AWT_canvas **re
 
         if (!clone) {
             awm->insert_menu_topic("print_tree",  "Print tree",          "P", "tree2prt.hlp",  AWM_ALL, makeWindowCallback(AWT_popup_print_window, ntw));
-            awm->insert_menu_topic("tree_2_xfig", "Export tree to XFIG", "X", "tree2file.hlp", AWM_ALL, makeWindowCallback(AWT_popup_tree_export_window, ntw));
+            awm->insert_menu_topic("tree_2_xfig", "Export tree to XFIG", "F", "tree2file.hlp", AWM_ALL, makeWindowCallback(AWT_popup_tree_export_window, ntw));
             awm->sep______________();
         }
 
@@ -1404,7 +1404,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone, AWT_canvas **re
 #endif
             awm->insert_menu_topic(awm->local_id("props_tree2"), "Tree options",                "o", "nt_tree_settings.hlp", AWM_ALL, TREE_create_settings_window);
             awm->insert_menu_topic("props_tree",                 "Tree colors & fonts",         "c", "color_props.hlp",      AWM_ALL, makeCreateWindowCallback(AW_create_gc_window, ntw->gc_manager));
-            awm->insert_menu_topic("props_www",                  "Search world wide web (WWW)", "W", "props_www.hlp",        AWM_ALL, makeCreateWindowCallback(AWT_create_www_window, GLOBAL.gb_main));
+            awm->insert_menu_topic("props_www",                  "Search world wide web (WWW)", "b", "props_www.hlp",        AWM_ALL, makeCreateWindowCallback(AWT_create_www_window, GLOBAL.gb_main));
             awm->sep______________();
             awm->insert_menu_topic("!toggle_expert", "Toggle expert mode",         "x", 0, AWM_ALL, NT_toggle_expert_mode);
 #if defined(ARB_MOTIF)

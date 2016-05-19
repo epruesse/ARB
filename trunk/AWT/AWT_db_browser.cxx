@@ -1192,7 +1192,7 @@ void AWT_create_debug_menu(AW_window *awmm) {
 
 }
 
-#if 0
+#if 1
 void AWT_check_action_ids(AW_root *, const char *) {
 }
 #else
