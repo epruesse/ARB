@@ -84,7 +84,7 @@ AW_gc_manager *AWT_graphic_tree::init_devices(AW_window *aww, AW_device *device,
                      "Cursor$white",
                      "Branch remarks$#b6ffb6",
                      "+-Bootstrap$#53d3ff",    "-B.(limited)$white",
-                     "-GROUP_BRACKETS$#000",
+                     "-IRS group box$#000",
                      "Marked$#ffe560",
                      "Some marked$#bb8833",
                      "Not marked$#622300",
@@ -3501,8 +3501,8 @@ public:
         TEST_EXPECT_NO_ERROR(print_device->open(file));
 
         test_show_tree(print_device);
-        print_device->box(AWT_GC_CURSOR, AW::FillStyle::EMPTY, drawn_world);
-        print_device->box(AWT_GC_GROUPS, AW::FillStyle::EMPTY, drawn_text_world);
+        print_device->box(AWT_GC_CURSOR,        AW::FillStyle::EMPTY, drawn_world);
+        print_device->box(AWT_GC_IRS_GROUP_BOX, AW::FillStyle::EMPTY, drawn_text_world);
 
         print_device->close();
     }

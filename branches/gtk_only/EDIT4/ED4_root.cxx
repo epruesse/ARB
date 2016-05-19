@@ -1379,7 +1379,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
 
     awmm->create_menu("File", "F", AWM_ALL);
 
-    awmm->insert_menu_topic("new_win", "New Editor Window", "W", 0, AWM_ALL, ED4_new_editor_window);
+    awmm->insert_menu_topic("new_win", "New Editor Window", "N", 0, AWM_ALL, ED4_new_editor_window);
     awmm->sep______________();
     awmm->insert_menu_topic("save_config",                    "Save configuration",        "S", "species_configs_saveload.hlp", AWM_ALL, makeWindowCallback(ED4_saveConfiguration, false));
     awmm->insert_menu_topic(awmm->local_id("save_config_as"), "Save configuration as ...", "a", "species_configs_saveload.hlp", AWM_ALL, ED4_create_saveConfigurationAs_window);
@@ -1388,12 +1388,12 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     insert_macro_menu_entry(awmm, true);
     awmm->sep______________();
     // keep the following entries in sync with ../NTREE/NT_extern.cxx@common_save_menu_entries
-    awmm->insert_menu_topic("save_changes", "Quicksave changes",          "s", "save.hlp", AWM_ALL, makeWindowCallback(AWT_trigger_remote_action, GLOBAL_gb_main, "ARB_NT:save_changes"));
+    awmm->insert_menu_topic("save_changes", "Quicksave changes",          "c", "save.hlp", AWM_ALL, makeWindowCallback(AWT_trigger_remote_action, GLOBAL_gb_main, "ARB_NT:save_changes"));
     awmm->insert_menu_topic("save_all_as",  "Save whole database as ...", "w", "save.hlp", AWM_ALL, makeWindowCallback(AWT_trigger_remote_action, GLOBAL_gb_main, "ARB_NT:save_all_as"));
 #if defined(DEBUG)
     awmm->sep______________();
-    awmm->insert_menu_topic("deb1", "[DEBUG] remote: invalid app", "", NULL, AWM_ALL, makeWindowCallback(AWT_trigger_remote_action, GLOBAL_gb_main, "ARB_NTREE:aljdlaisjdlad"));
-    awmm->insert_menu_topic("deb2", "[DEBUG] remote: invalid cmd", "", NULL, AWM_ALL, makeWindowCallback(AWT_trigger_remote_action, GLOBAL_gb_main, "ARB_NT:aljdlaisjdlad"));
+    awmm->insert_menu_topic("deb1", "[DEBUG] remote: invalid app", "D", NULL, AWM_ALL, makeWindowCallback(AWT_trigger_remote_action, GLOBAL_gb_main, "ARB_NTREE:aljdlaisjdlad"));
+    awmm->insert_menu_topic("deb2", "[DEBUG] remote: invalid cmd", "E", NULL, AWM_ALL, makeWindowCallback(AWT_trigger_remote_action, GLOBAL_gb_main, "ARB_NT:aljdlaisjdlad"));
 #endif
     awmm->sep______________();
     GDE_load_menu(awmm, AWM_ALL, "Print");
@@ -1420,7 +1420,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->insert_menu_topic("refresh",                  "Refresh [Ctrl-L]",           "f", 0,                    AWM_ALL, makeWindowCallback(ED4_request_full_refresh));
     awmm->insert_menu_topic("load_current",             "Load current species [GET]", "G", "e4_get_species.hlp", AWM_ALL, makeWindowCallback(ED4_get_and_jump_to_current));
     awmm->insert_menu_topic("load_marked",              "Load marked species",        "m", "e4_get_species.hlp", AWM_ALL, makeWindowCallback(ED4_get_marked_from_menu));
-    awmm->insert_menu_topic(awmm->local_id("load_SAI"), "Load SAI ...",               "S", "e4_get_species.hlp", AWM_ALL, ED4_create_loadSAI_window);
+    awmm->insert_menu_topic(awmm->local_id("load_SAI"), "Load SAI ...",               "L", "e4_get_species.hlp", AWM_ALL, ED4_create_loadSAI_window);
     awmm->sep______________();
     awmm->insert_menu_topic("refresh_ecoli",       "Reload Ecoli sequence",        "E", "ecoliref.hlp", AWM_ALL, makeWindowCallback(reload_ecoli_cb));
     awmm->insert_menu_topic("refresh_helix",       "Reload Helix",                 "H", "helix.hlp",    AWM_ALL, makeWindowCallback(reload_helix_cb));
@@ -1507,7 +1507,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->insert_menu_topic("change_cursor",             "Change cursor type",   "t", 0,              AWM_ALL, ED4_change_cursor);
     awmm->insert_menu_topic(awmm->local_id("view_diff"), "View differences ...", "V", "viewdiff.hlp", AWM_ALL, ED4_create_viewDifferences_window);
     awmm->sep______________();
-    awmm->insert_menu_topic("enable_col_stat",  "Activate column statistics", "v", "st_ml.hlp", AWM_EXP, ED4_activate_col_stat);
+    awmm->insert_menu_topic("enable_col_stat",  "Activate column statistics", "A", "st_ml.hlp", AWM_EXP, ED4_activate_col_stat);
     awmm->insert_menu_topic("disable_col_stat", "Disable column statistics",  "i", "st_ml.hlp", AWM_EXP, ED4_disable_col_stat);
     awmm->insert_menu_topic("detail_col_stat",  "Toggle detailed Col.-Stat.", "C", "st_ml.hlp", AWM_EXP, ED4_toggle_detailed_column_stats);
     awmm->insert_menu_topic("dcs_threshold",    "Set threshold for D.c.s.",   "f", "st_ml.hlp", AWM_EXP, makeWindowCallback(ED4_set_col_stat_threshold));
