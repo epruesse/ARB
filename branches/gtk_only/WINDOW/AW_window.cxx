@@ -1095,10 +1095,7 @@ void AW_window::insert_help_topic(const char *labeli,
 
 #ifdef CHECK_DUPLICATED_MNEMONICS
     if (!current_mscope) init_duplicate_mnemonic(window_name);
-    MnemonicScope *tmp = current_mscope;
-    current_mscope     = help_mscope;
-    test_duplicate_mnemonics(labeli, mnemonic);
-    current_mscope     = tmp;
+    LocallyModify<MnemonicScope*> inject(current_mscope, help_mscope);
 #endif
 
     // insert one help-sub-menu-entry
