@@ -360,7 +360,7 @@ static void insert_color_collapse_submenu(AW_window_menu_modes *awm, AWT_canvas 
 
     td_assert(ntree_canvas != 0);
 
-    awm->insert_sub_menu("Expand color ...", "c");
+    awm->insert_sub_menu("Expand color ...", "o");
 
     char        label_buf[MAXLABEL+1];
     char        entry_buf[MAXENTRY+1];
