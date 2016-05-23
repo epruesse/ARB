@@ -55,7 +55,7 @@ refentries.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_common.hxx
-refentries.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
+refentries.o: $(ARBHOME)/INCLUDE/aw_common_impl.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 refentries.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx

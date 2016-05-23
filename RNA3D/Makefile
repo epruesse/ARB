@@ -53,7 +53,7 @@ RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/aw_common.hxx
-RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
+RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/aw_common_impl.hxx
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
@@ -119,7 +119,7 @@ RNA3D_Interface.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/aw_common.hxx
-RNA3D_Interface.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
+RNA3D_Interface.o: $(ARBHOME)/INCLUDE/aw_common_impl.hxx
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
@@ -180,7 +180,7 @@ RNA3D_Main.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/aw_common.hxx
-RNA3D_Main.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
+RNA3D_Main.o: $(ARBHOME)/INCLUDE/aw_common_impl.hxx
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
@@ -246,7 +246,7 @@ RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/aw_common.hxx
-RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
+RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/aw_common_impl.hxx
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
@@ -308,7 +308,7 @@ RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/aw_common.hxx
-RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
+RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/aw_common_impl.hxx
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
@@ -370,7 +370,7 @@ RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/aw_common.hxx
-RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
+RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/aw_common_impl.hxx
 RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
@@ -435,7 +435,7 @@ RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/aw_common.hxx
-RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
+RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/aw_common_impl.hxx
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx

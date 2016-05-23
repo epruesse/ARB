@@ -76,7 +76,7 @@ PH_display.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_common.hxx
-PH_display.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
+PH_display.o: $(ARBHOME)/INCLUDE/aw_common_impl.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
@@ -137,7 +137,7 @@ PH_filt.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_common.hxx
-PH_filt.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
+PH_filt.o: $(ARBHOME)/INCLUDE/aw_common_impl.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
@@ -198,7 +198,7 @@ PH_main.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_common.hxx
-PH_main.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
+PH_main.o: $(ARBHOME)/INCLUDE/aw_common_impl.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx

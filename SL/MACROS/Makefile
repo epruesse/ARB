@@ -57,7 +57,7 @@ dbserver.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 dbserver.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 dbserver.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 dbserver.o: $(ARBHOME)/INCLUDE/aw_common.hxx
-dbserver.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
+dbserver.o: $(ARBHOME)/INCLUDE/aw_common_impl.hxx
 dbserver.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 dbserver.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 dbserver.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
@@ -119,7 +119,7 @@ macro_gui.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 macro_gui.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 macro_gui.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 macro_gui.o: $(ARBHOME)/INCLUDE/aw_common.hxx
-macro_gui.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
+macro_gui.o: $(ARBHOME)/INCLUDE/aw_common_impl.hxx
 macro_gui.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 macro_gui.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 macro_gui.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx

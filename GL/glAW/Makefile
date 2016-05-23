@@ -59,7 +59,7 @@ AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_common.hxx
-AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
+AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_common_impl.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx

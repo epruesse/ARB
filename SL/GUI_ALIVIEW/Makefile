@@ -69,7 +69,7 @@ AWT_filter.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_common.hxx
-AWT_filter.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
+AWT_filter.o: $(ARBHOME)/INCLUDE/aw_common_impl.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
@@ -131,7 +131,7 @@ ColumnStat.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/aw_common.hxx
-ColumnStat.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
+ColumnStat.o: $(ARBHOME)/INCLUDE/aw_common_impl.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx

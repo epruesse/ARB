@@ -53,7 +53,7 @@ nds.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 nds.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 nds.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 nds.o: $(ARBHOME)/INCLUDE/aw_common.hxx
-nds.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
+nds.o: $(ARBHOME)/INCLUDE/aw_common_impl.hxx
 nds.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 nds.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 nds.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx

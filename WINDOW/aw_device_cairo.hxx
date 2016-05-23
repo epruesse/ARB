@@ -11,7 +11,7 @@
 
 #pragma once
 
-#include "aw_common_gtk.hxx"
+#include "aw_common_impl.hxx"
 
 typedef struct _cairo cairo_t;
 typedef struct _PangoLayout pango_layout_t;

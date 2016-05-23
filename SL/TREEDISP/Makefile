@@ -69,7 +69,7 @@ irstree_display.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_common.hxx
-irstree_display.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
+irstree_display.o: $(ARBHOME)/INCLUDE/aw_common_impl.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
@@ -137,7 +137,7 @@ TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_common.hxx
-TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
+TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_common_impl.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
@@ -211,7 +211,7 @@ TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_common.hxx
-TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
+TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_common_impl.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx

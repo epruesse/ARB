@@ -62,7 +62,7 @@ AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_common.hxx
-AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
+AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_common_impl.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
@@ -126,7 +126,7 @@ AW_rename.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_common.hxx
-AW_rename.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
+AW_rename.o: $(ARBHOME)/INCLUDE/aw_common_impl.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx

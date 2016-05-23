@@ -349,7 +349,7 @@ symlink_file ../WINDOW/aw_cb_struct.hxx INCLUDE/aw_cb_struct.hxx &&
 symlink_file ../WINDOW/aw_clipable.hxx INCLUDE/aw_clipable.hxx  &&
 symlink_file ../WINDOW/aw_color_groups.hxx INCLUDE/aw_color_groups.hxx &&
 symlink_file ../WINDOW/aw_common.hxx INCLUDE/aw_common.hxx &&
-symlink_file ../WINDOW/aw_common_gtk.hxx INCLUDE/aw_common_gtk.hxx &&
+symlink_file ../WINDOW/aw_common_impl.hxx INCLUDE/aw_common_impl.hxx &&
 symlink_file ../WINDOW/aw_device.hxx INCLUDE/aw_device.hxx &&
 symlink_file ../WINDOW/aw_device_click.hxx INCLUDE/aw_device_click.hxx &&
 symlink_file ../WINDOW/aw_device_cairo.hxx INCLUDE/aw_device_cairo.hxx &&

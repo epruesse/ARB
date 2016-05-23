@@ -83,7 +83,7 @@ fast_aligner.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_common.hxx
-fast_aligner.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
+fast_aligner.o: $(ARBHOME)/INCLUDE/aw_common_impl.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx

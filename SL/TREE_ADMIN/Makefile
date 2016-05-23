@@ -54,7 +54,7 @@ TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_common.hxx
-TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
+TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_common_impl.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 TreeAdmin.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
