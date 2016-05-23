@@ -54,7 +54,7 @@ info_window.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 info_window.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 info_window.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 info_window.o: $(ARBHOME)/INCLUDE/aw_common.hxx
-info_window.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
+info_window.o: $(ARBHOME)/INCLUDE/aw_common_impl.hxx
 info_window.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 info_window.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 info_window.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
@@ -118,7 +118,7 @@ ui_species.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/aw_common.hxx
-ui_species.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
+ui_species.o: $(ARBHOME)/INCLUDE/aw_common_impl.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx

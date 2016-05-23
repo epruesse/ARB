@@ -52,7 +52,7 @@ AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_common.hxx
-AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
+AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_common_impl.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
@@ -119,7 +119,7 @@ AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_common.hxx
-AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
+AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_common_impl.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx

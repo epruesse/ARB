@@ -14,7 +14,7 @@
 #include "aw_gtk_migration_helpers.hxx"
 #include "gdk/gdk.h"
 #include "gtk/gtk.h"
-#include "aw_common_gtk.hxx"
+#include "aw_common_impl.hxx"
 #include "aw_device_gtk.hxx"
 #include "aw_root.hxx"
 #include "aw_device_size.hxx"

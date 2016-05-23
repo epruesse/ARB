@@ -87,7 +87,7 @@ probe_design.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_common.hxx
-probe_design.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
+probe_design.o: $(ARBHOME)/INCLUDE/aw_common_impl.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
@@ -192,7 +192,7 @@ SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_common.hxx
-SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
+SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_common_impl.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx

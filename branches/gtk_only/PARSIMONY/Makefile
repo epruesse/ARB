@@ -60,7 +60,7 @@ AP_buffer.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 AP_buffer.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 AP_buffer.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 AP_buffer.o: $(ARBHOME)/INCLUDE/aw_common.hxx
-AP_buffer.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
+AP_buffer.o: $(ARBHOME)/INCLUDE/aw_common_impl.hxx
 AP_buffer.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AP_buffer.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 AP_buffer.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
@@ -129,7 +129,7 @@ AP_main.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/aw_common.hxx
-AP_main.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
+AP_main.o: $(ARBHOME)/INCLUDE/aw_common_impl.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
@@ -204,7 +204,7 @@ AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_common.hxx
-AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
+AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_common_impl.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
@@ -275,7 +275,7 @@ AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_common.hxx
-AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
+AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_common_impl.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
@@ -353,7 +353,7 @@ PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_common.hxx
-PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
+PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_common_impl.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
@@ -415,7 +415,7 @@ PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_common.hxx
-PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
+PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_common_impl.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
@@ -496,7 +496,7 @@ PARS_main.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/aw_common.hxx
-PARS_main.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
+PARS_main.o: $(ARBHOME)/INCLUDE/aw_common_impl.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx

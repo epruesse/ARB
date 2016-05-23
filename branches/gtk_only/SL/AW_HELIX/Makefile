@@ -57,7 +57,7 @@ AW_helix.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_common.hxx
-AW_helix.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
+AW_helix.o: $(ARBHOME)/INCLUDE/aw_common_impl.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx

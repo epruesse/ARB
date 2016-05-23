@@ -1,16 +1,16 @@
 // ============================================================= //
 //                                                               //
-//   File      : AW_common_gtk.cxx                                    //
+//   File      : AW_common_gtk.cxx                               //
 //   Purpose   :                                                 //
 //                                                               //
-//   Coded by Arne Boeckmann aboeckma@mpi-bremen.de on Aug 9, 2012   //
+//   Coded by Arne Boeckmann aboeckma@mpi-bremen.de Aug 2012     //
 //   Institute of Microbiology (Technical University Munich)     //
 //   http://www.arb-home.de/                                     //
 //                                                               //
 // ============================================================= //
 
 
-#include "aw_common_gtk.hxx"
+#include "aw_common_impl.hxx"
 #include "aw_gtk_migration_helpers.hxx"
 #include "aw_window.hxx"
 #include <gdk/gdk.h>

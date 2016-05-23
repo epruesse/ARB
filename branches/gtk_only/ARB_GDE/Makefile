@@ -74,7 +74,7 @@ GDE.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_common.hxx
-GDE.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
+GDE.o: $(ARBHOME)/INCLUDE/aw_common_impl.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
@@ -179,7 +179,7 @@ GDE_event.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_common.hxx
-GDE_event.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
+GDE_event.o: $(ARBHOME)/INCLUDE/aw_common_impl.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
@@ -336,7 +336,7 @@ GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/aw_common.hxx
-GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
+GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/aw_common_impl.hxx
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx

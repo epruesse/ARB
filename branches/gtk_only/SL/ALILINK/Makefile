@@ -52,7 +52,7 @@ AdminGui.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AdminGui.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 AdminGui.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 AdminGui.o: $(ARBHOME)/INCLUDE/aw_common.hxx
-AdminGui.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
+AdminGui.o: $(ARBHOME)/INCLUDE/aw_common_impl.hxx
 AdminGui.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AdminGui.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 AdminGui.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
@@ -110,7 +110,7 @@ AliAdmin.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AliAdmin.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 AliAdmin.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 AliAdmin.o: $(ARBHOME)/INCLUDE/aw_common.hxx
-AliAdmin.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
+AliAdmin.o: $(ARBHOME)/INCLUDE/aw_common_impl.hxx
 AliAdmin.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AliAdmin.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 AliAdmin.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx

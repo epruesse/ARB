@@ -63,7 +63,7 @@ AWT_asciiprint.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/aw_common.hxx
-AWT_asciiprint.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
+AWT_asciiprint.o: $(ARBHOME)/INCLUDE/aw_common_impl.hxx
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
@@ -124,7 +124,7 @@ AWT_canio.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWT_canio.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 AWT_canio.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 AWT_canio.o: $(ARBHOME)/INCLUDE/aw_common.hxx
-AWT_canio.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
+AWT_canio.o: $(ARBHOME)/INCLUDE/aw_common_impl.hxx
 AWT_canio.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AWT_canio.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 AWT_canio.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
@@ -182,7 +182,7 @@ AWT_canvas.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWT_canvas.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 AWT_canvas.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 AWT_canvas.o: $(ARBHOME)/INCLUDE/aw_common.hxx
-AWT_canvas.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
+AWT_canvas.o: $(ARBHOME)/INCLUDE/aw_common_impl.hxx
 AWT_canvas.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AWT_canvas.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 AWT_canvas.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
@@ -241,7 +241,7 @@ AWT_config_manager.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/aw_common.hxx
-AWT_config_manager.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
+AWT_config_manager.o: $(ARBHOME)/INCLUDE/aw_common_impl.hxx
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
@@ -312,7 +312,7 @@ AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_common.hxx
-AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
+AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_common_impl.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
@@ -408,7 +408,7 @@ AWT_input_mask.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/aw_common.hxx
-AWT_input_mask.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
+AWT_input_mask.o: $(ARBHOME)/INCLUDE/aw_common_impl.hxx
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
@@ -467,7 +467,7 @@ AWT_map_key.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWT_map_key.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 AWT_map_key.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 AWT_map_key.o: $(ARBHOME)/INCLUDE/aw_common.hxx
-AWT_map_key.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
+AWT_map_key.o: $(ARBHOME)/INCLUDE/aw_common_impl.hxx
 AWT_map_key.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AWT_map_key.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 AWT_map_key.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
@@ -523,7 +523,7 @@ AWT_misc.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWT_misc.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 AWT_misc.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 AWT_misc.o: $(ARBHOME)/INCLUDE/aw_common.hxx
-AWT_misc.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
+AWT_misc.o: $(ARBHOME)/INCLUDE/aw_common_impl.hxx
 AWT_misc.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AWT_misc.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 AWT_misc.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
@@ -572,7 +572,7 @@ AWT_modules.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWT_modules.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 AWT_modules.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 AWT_modules.o: $(ARBHOME)/INCLUDE/aw_common.hxx
-AWT_modules.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
+AWT_modules.o: $(ARBHOME)/INCLUDE/aw_common_impl.hxx
 AWT_modules.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AWT_modules.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 AWT_modules.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
@@ -639,7 +639,7 @@ AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_common.hxx
-AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
+AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_common_impl.hxx
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
@@ -744,7 +744,7 @@ AWT_www.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWT_www.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 AWT_www.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
 AWT_www.o: $(ARBHOME)/INCLUDE/aw_common.hxx
-AWT_www.o: $(ARBHOME)/INCLUDE/aw_common_gtk.hxx
+AWT_www.o: $(ARBHOME)/INCLUDE/aw_common_impl.hxx
 AWT_www.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AWT_www.o: $(ARBHOME)/INCLUDE/aw_device_cairo.hxx
 AWT_www.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
