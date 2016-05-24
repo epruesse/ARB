@@ -433,19 +433,19 @@ static AW_window *create_phyl_main_window(AW_root *aw_root, PH_root *ph_root) {
                      PH_GC_SEQUENCE, PH_GC_DRAG, AW_GCM_DATA_AREA,
                      gcChangedCb,
                      false, // no color groups
-                     "#CC9AF8",
+                     "#C4B6D0",
                      "#SEQUENCE$#000000",
-                     "#MARKER$#FF0000",
+                     "#MARKER$#E0F570",
                      "NOT_MARKER$#A270C0",
                      NULL);
 
     AW_manage_GC(awm,
-                 awm->get_window_id(),
+                 "ARB_PHYLO_BOTTOM",
                  awm->get_device(AW_BOTTOM_AREA),
                  PH_GC_BOTTOM_TEXT, PH_GC_BOTTOM_DRAG, AW_GCM_WINDOW_AREA,
                  gcChangedCb,
                  false, // no color groups
-                 "pink",
+                 "lightgrey",
                  "#FOOTER",
                  NULL);
 
