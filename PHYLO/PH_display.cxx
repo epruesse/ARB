@@ -169,20 +169,21 @@ void PH_display::display()       // draw area
         case DISP_NONE:
             break;
 
+ // @@@ DRY code (first section of DISP_SPECIES vs DISP_FILTER)
         case DISP_SPECIES: {
             device->shift(AW::Vector(off_dx, off_dy));
             ypos      = 0;
             long ymax = std::min(vert_page_start+vert_page_size, total_cells_vert);
             for (y=vert_page_start; y<ymax; y++) {
                 // species names
-                device->text(0, PHDATA::ROOT->hash_elements[y]->name, -off_dx, ypos*cell_height-cell_offset);
+                device->text(PH_GC_SEQUENCE, PHDATA::ROOT->hash_elements[y]->name, -off_dx, ypos*cell_height-cell_offset);
 
                 // alignment
                 GBDATA     *gb_seq_data = PHDATA::ROOT->hash_elements[y]->gb_species_data_ptr;
                 const char *seq_data    = GB_read_char_pntr(gb_seq_data);
                 long        seq_len     = GB_read_count(gb_seq_data);
 
-                device->text(0, (horiz_page_start >= seq_len) ? "" : (seq_data+horiz_page_start), 0, ypos*cell_height-cell_offset);
+                device->text(PH_GC_SEQUENCE, (horiz_page_start >= seq_len) ? "" : (seq_data+horiz_page_start), 0, ypos*cell_height-cell_offset);
                 ypos++;
             }
             device->shift(-AW::Vector(off_dx, off_dy));
@@ -194,14 +195,14 @@ void PH_display::display()       // draw area
             long ymax = std::min(vert_page_start+vert_page_size, total_cells_vert);
             for (y=vert_page_start; y<ymax; y++) {
                 // species names
-                device->text(0, PHDATA::ROOT->hash_elements[y]->name, -off_dx, ypos*cell_height-cell_offset);
+                device->text(PH_GC_SEQUENCE, PHDATA::ROOT->hash_elements[y]->name, -off_dx, ypos*cell_height-cell_offset);
 
                 // alignment
                 GBDATA     *gb_seq_data = PHDATA::ROOT->hash_elements[y]->gb_species_data_ptr;
                 const char *seq_data    = GB_read_char_pntr(gb_seq_data);
                 long        seq_len     = GB_read_count(gb_seq_data);
 
-                device->text(0, (horiz_page_start >= seq_len) ? "" : (seq_data+horiz_page_start), 0, ypos*cell_height-cell_offset);
+                device->text(PH_GC_SEQUENCE, (horiz_page_start >= seq_len) ? "" : (seq_data+horiz_page_start), 0, ypos*cell_height-cell_offset);
                 ypos++;
             }
             xpos=0;
@@ -215,20 +216,20 @@ void PH_display::display()       // draw area
             stopcol  = main_win->get_root()->awar(AWAR_PHYLO_FILTER_STOPCOL)->read_int();
 
             for (x = horiz_page_start; x < horiz_page_start + horiz_page_size; x++) {
-                int             gc = 1;
-                float       ml = markerline[x];
+                int   gc = PH_GC_MARKER;
+                float ml = markerline[x];
+
                 if (x < startcol || x>stopcol) {
-                    gc = 2;
+                    gc = PH_GC_NOT_MARKER;
                 }
                 if (markerline[x] >= 0.0) {
-                    if (ml < minhom ||
-                            ml > maxhom) {
-                        gc = 2;
+                    if (ml < minhom || ml > maxhom) {
+                        gc = PH_GC_NOT_MARKER;
                     }
                     sprintf(buf, "%3.0f", ml);
                 }
                 else {
-                    gc = 2;
+                    gc = PH_GC_NOT_MARKER;
                     sprintf(buf, "XXX");
                 }
 
@@ -339,13 +340,13 @@ PH_display_status::PH_display_status(AW_device *awd) {
 
 void PH_display_status::write(const char *text)
 {
-    device->text(0, text, x_pos*font_width, y_pos*font_height);
+    device->text(PH_GC_BOTTOM_TEXT, text, x_pos*font_width, y_pos*font_height);
     x_pos+=strlen(text);
 }
 
 void PH_display_status::writePadded(const char *text, size_t len)
 {
-    device->text(0, text, x_pos*font_width, y_pos*font_height);
+    device->text(PH_GC_BOTTOM_TEXT, text, x_pos*font_width, y_pos*font_height);
     x_pos += len;
 }
 
@@ -381,8 +382,8 @@ void display_status_cb() {
             case DISP_FILTER:
             case DISP_SPECIES:
                 phds.set_origin();
-                phds.set_cursor((phds.get_size('x')/2)-10, 0);
-                phds.write("STATUS REPORT FILTER");
+                phds.set_cursor(0, 0);
+                phds.write("FILTER STATUS REPORT:");
                 phds.newline();
 
                 phds.writePadded("Start at column:", LABEL_LEN);
