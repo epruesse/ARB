@@ -55,9 +55,15 @@ const int FILTER_MODES = TREAT_AS_REGULAR+1;
 #define PH_DB_CACHE_SIZE    2000000
 
 enum {
-    PH_GC_0,
-    PH_GC_1,
-    PH_GC_0_DRAG
+    PH_GC_SEQUENCE,
+    PH_GC_MARKER,
+    PH_GC_NOT_MARKER,
+    PH_GC_DRAG
+};
+
+enum {
+    PH_GC_BOTTOM_TEXT,
+    PH_GC_BOTTOM_DRAG
 };
 
 void       PH_create_filter_variables(AW_root *aw_root, AW_default default_file, GBDATA *gb_main);
