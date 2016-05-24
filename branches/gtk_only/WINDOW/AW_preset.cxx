@@ -130,6 +130,8 @@ public:
         delete changed_cb;
     }
 
+    int size() const { return GCs.size(); }
+
     void add_gc(const char* gc_desc, bool is_color_group);
     void update_gc_color(int gc);
     void update_gc_font(int gc);
@@ -396,6 +398,10 @@ AW_gc_manager *AW_manage_GC(AW_window                *aww,
     aw_assert(base_gc == 0);
     // @@@ assert that aww->window_defaults_name is equal to gc_base_name?
 
+#if defined(ASSERTION_USED)
+    int base_drag_given = base_drag;
+#endif
+
     AW_root *aw_root = AW_root::SINGLETON;
 
     AW_gc_manager *gcmgr = new AW_gc_manager(gc_base_name, device, base_drag);
@@ -427,6 +433,7 @@ AW_gc_manager *AW_manage_GC(AW_window                *aww,
     }
 
     gcmgr->set_changed_cb(changecb);
+    aw_assert(base_gc+(gcmgr->size()-1) == base_drag_given); // parameter 'base_drag' has wrong value!
 
     return gcmgr;
 }
