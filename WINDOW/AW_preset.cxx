@@ -436,6 +436,10 @@ AW_gc_manager *AW_manage_GC(AW_window                *aww,
     aw_assert(base_gc == 0);
     // @@@ assert that aww->window_defaults_name is equal to gc_base_name?
 
+#if defined(ASSERTION_USED)
+    int base_drag_given = base_drag;
+#endif
+
     AW_root *aw_root = aww->get_root();
 
     AW_MGC_cb_struct *mcbs = new AW_MGC_cb_struct(aww, gc_base_name, changecb);
@@ -596,6 +600,7 @@ AW_gc_manager *AW_manage_GC(AW_window                *aww,
     }
 
     va_end(parg);
+    aw_assert(base_gc == base_drag_given); // parameter 'base_drag' has wrong value!
 
     return gcmgrfirst;
 }
