@@ -162,51 +162,30 @@ void PH_display::display()       // draw area
     float *markerline = PHDATA::ROOT->markerline;
 
     if (!device) return;
-    
+
     GB_transaction ta(PHDATA::ROOT->get_gb_main());
     // be careful: text origin is lower left
-    switch (display_what) {
-        case DISP_NONE:
-            break;
+    if (display_what != DISP_NONE) {
+        device->shift(AW::Vector(off_dx, off_dy));
+        ypos      = 0;
+        long ymax = std::min(vert_page_start+vert_page_size, total_cells_vert);
+        for (y=vert_page_start; y<ymax; y++) {
+            // species names
+            device->text(PH_GC_SEQUENCE, PHDATA::ROOT->hash_elements[y]->name, -off_dx, ypos*cell_height-cell_offset);
 
- // @@@ DRY code (first section of DISP_SPECIES vs DISP_FILTER)
-        case DISP_SPECIES: {
-            device->shift(AW::Vector(off_dx, off_dy));
-            ypos      = 0;
-            long ymax = std::min(vert_page_start+vert_page_size, total_cells_vert);
-            for (y=vert_page_start; y<ymax; y++) {
-                // species names
-                device->text(PH_GC_SEQUENCE, PHDATA::ROOT->hash_elements[y]->name, -off_dx, ypos*cell_height-cell_offset);
+            // alignment
+            GBDATA     *gb_seq_data = PHDATA::ROOT->hash_elements[y]->gb_species_data_ptr;
+            const char *seq_data    = GB_read_char_pntr(gb_seq_data);
+            long        seq_len     = GB_read_count(gb_seq_data);
 
-                // alignment
-                GBDATA     *gb_seq_data = PHDATA::ROOT->hash_elements[y]->gb_species_data_ptr;
-                const char *seq_data    = GB_read_char_pntr(gb_seq_data);
-                long        seq_len     = GB_read_count(gb_seq_data);
-
-                device->text(PH_GC_SEQUENCE, (horiz_page_start >= seq_len) ? "" : (seq_data+horiz_page_start), 0, ypos*cell_height-cell_offset);
-                ypos++;
-            }
-            device->shift(-AW::Vector(off_dx, off_dy));
-            break;
+            device->text(PH_GC_SEQUENCE, (horiz_page_start >= seq_len) ? "" : (seq_data+horiz_page_start), 0, ypos*cell_height-cell_offset);
+            ypos++;
         }
-        case DISP_FILTER: {
-            device->shift(AW::Vector(off_dx, off_dy));
-            ypos=0;
-            long ymax = std::min(vert_page_start+vert_page_size, total_cells_vert);
-            for (y=vert_page_start; y<ymax; y++) {
-                // species names
-                device->text(PH_GC_SEQUENCE, PHDATA::ROOT->hash_elements[y]->name, -off_dx, ypos*cell_height-cell_offset);
 
-                // alignment
-                GBDATA     *gb_seq_data = PHDATA::ROOT->hash_elements[y]->gb_species_data_ptr;
-                const char *seq_data    = GB_read_char_pntr(gb_seq_data);
-                long        seq_len     = GB_read_count(gb_seq_data);
-
-                device->text(PH_GC_SEQUENCE, (horiz_page_start >= seq_len) ? "" : (seq_data+horiz_page_start), 0, ypos*cell_height-cell_offset);
-                ypos++;
-            }
-            xpos=0;
-            cbuf[0]='\0'; cbuf[1]='\0';
+        if (display_what == DISP_FILTER) {
+            xpos    = 0;
+            cbuf[0] = '\0';
+            cbuf[1] = '\0';
 
             const AW_font_limits& lim = device->get_font_limits(0, 0);
 
@@ -239,9 +218,8 @@ void PH_display::display()       // draw area
                 }
                 xpos++;
             }
-            device->shift(-AW::Vector(off_dx, off_dy));
-            break;
         }
+        device->shift(-AW::Vector(off_dx, off_dy));
     }
 }
 
