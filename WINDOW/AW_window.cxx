@@ -1143,10 +1143,9 @@ AW_window::AW_window()
       _d_callback(NULL),
       window_name(NULL),
       window_defaults_name(NULL),
-      window_is_shown(false),
       slider_pos_vertical(0),
       slider_pos_horizontal(0),
-      main_drag_gc(0),
+      window_is_shown(false),
       picture(new AW_screen_area)
 {
     reset_scrolled_picture_size();

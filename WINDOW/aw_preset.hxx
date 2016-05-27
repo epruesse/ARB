@@ -61,8 +61,6 @@ AW_gc_manager *AW_manage_GC(AW_window                *aww,
                             ...) __ATTR__SENTINEL;
 
 
-
-
 AW_window *AW_create_gc_window(AW_root *aw_root, AW_gc_manager *gcman); // opens the properties Window
 
 // same as AW_create_gc_window, but uses different window id and name
@@ -70,6 +68,7 @@ AW_window *AW_create_gc_window(AW_root *aw_root, AW_gc_manager *gcman); // opens
 // otherwise they save the same window properties)
 AW_window *AW_create_gc_window_named(AW_root * aw_root, AW_gc_manager *gcman_par, const char *wid, const char *windowname);
 
+int AW_get_drag_gc(AW_gc_manager *gcman);
 void AW_copy_GCs(AW_root *aw_root, const char *source_window, const char *dest_window, bool has_font_info, const char *id0, ...) __ATTR__SENTINEL;
 
 #else

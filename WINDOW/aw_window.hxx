@@ -356,8 +356,6 @@ public:
 
     bool window_is_shown;
 
-    int main_drag_gc; // @@@ eliminate (only used to forward drag-gc from AW_gc_manager to AWT_canvas)
-
     AW_screen_area *picture;      // the result of tell scrolled picture size
 
     // --------------------------------
