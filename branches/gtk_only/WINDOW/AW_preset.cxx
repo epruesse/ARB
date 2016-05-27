@@ -90,26 +90,27 @@ struct gc_desc {
     // - used to populate color config windows and
     // - in change-callbacks
 
+    bool unused; // true -> not a GC (just reserves the GC number)
+
+    // other data of 'this' is undefined if 'unused == true':
+
     char    *colorlabel;  // label to appear next to chooser
     char    *key;         // key (normally build from colorlabel)
     AW_awar *awar_color;  // awar to hold color description // @@@ redundant. Will not exists for all GCs (future plan)
     AW_awar *awar_font;   // awar to hold font description  // @@@ redundant. does not exist for all GCs
 
-    bool hidden;              // do not show in color config
     bool has_font;            // show font selector
-    bool has_color;           // show color selector
     bool fixed_width_font;    // only allow fixed width fonts
     bool same_line;           // no line break after this
     bool is_color_group;
 
     gc_desc() :
+        unused(false),
         colorlabel(NULL),
         key(NULL),
         awar_color(NULL),
         awar_font(NULL),
-        hidden(false),
         has_font(true),
-        has_color(true),
         fixed_width_font(false),
         same_line(false),
         is_color_group(false)
@@ -120,13 +121,8 @@ private:
         switch (c) {
             case '#': fixed_width_font = true; break;
             case '+': same_line        = true; break;
-
-            case '=': has_color        = false; break;
-            case '-': {
-                if (has_font) has_font = false;
-                else          hidden   = true; // two '-' means 'hidden'
-                break;
-            }
+            case '-': has_font         = false; break;
+            case '!': unused           = true; break; // (eg. used in arb_pars)
 
             default : return false;
         }
@@ -134,7 +130,6 @@ private:
     }
 
     void correct() {
-        if (!has_font && !has_color) hidden    = true;  // hide GC if it defines neither font nor color
         if (same_line && has_font)   same_line = false; // GC needs full line if defining both color and font
     }
 public:
@@ -394,8 +389,7 @@ AW_gc_manager *AW_manage_GC(AW_window                *aww,
      *                             optionsSTRING   name of GC and AWAR
      *                             options:        #   fixed fonts only
      *                                             -   no fonts
-     *                                             --  completely hide GC
-     *                                             =   no color selector
+     *                                             !   unused GC (only reserves a GC number; used eg. in arb_pars to sync GCs with arb_ntree)
      *                                             +   append next in same line
      *
      *                                             $color at end of string    => define default color value
@@ -528,7 +522,7 @@ void AW_gc_manager::create_gc_buttons(AW_window *aws, bool for_colorgroups) {
     const int STD_LABEL_LEN = 15;
 
     for (; gcd != GCs.end(); ++gcd, ++idx) { // @@@ loop over idx
-        if (gcd->hidden) continue;
+        if (gcd->unused) continue;
         if (gcd->is_color_group != for_colorgroups) continue;
 
         if (for_colorgroups) {
@@ -544,10 +538,8 @@ void AW_gc_manager::create_gc_buttons(AW_window *aws, bool for_colorgroups) {
             aws->label(gcd->colorlabel);
         }
 
-        if (gcd->has_color)  {
-            // length of color button cannot be modified (diff to motif version)
-            aws->create_color_button(gcd->awar_color->get_name(), NULL);
-        }
+        // length of color button cannot be modified (diff to motif version)
+        aws->create_color_button(gcd->awar_color->get_name(), NULL);
         if (gcd->has_font)   {
             // length of font button cannot be modified (diff to motif version)
             aws->create_font_button(gcd->awar_font ->get_name(), NULL);
