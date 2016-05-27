@@ -224,16 +224,18 @@ public:
     //      The read only section
 
     AW_event event;             //! holds information about the most recent event
+
     char *window_name;          //! window title
     char *window_defaults_name; //! window id
 
-    long int slider_pos_vertical;                 //! current position of the vertical slider 
-    long int slider_pos_horizontal;               //! current position of the horizontal slider 
+    long int slider_pos_vertical;   //! current position of the vertical slider
+    long int slider_pos_horizontal; //! current position of the horizontal slider
+
     int left_indent_of_horizontal_scrollbar; //! unscrolled part of screen area
     int top_indent_of_vertical_scrollbar;    //! unscrolled part of screen area
     AW_screen_area *picture;                 //! size of scrollable
 
-    int main_drag_gc;
+    int main_drag_gc; // @@@ eliminate (only used to forward drag-gc from AW_gc_manager to AWT_canvas)
 
     // --------------------------------
     //      The real public section
