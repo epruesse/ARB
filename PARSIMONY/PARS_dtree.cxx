@@ -306,7 +306,7 @@ void ArbParsimony::generate_tree(WeightedFilter *pars_weighted_filter) {
 }
 
 AW_gc_manager *AWT_graphic_parsimony::init_devices(AW_window *aww, AW_device *device, AWT_canvas* ntw) {
-    AW_init_color_group_defaults("arb_pars");
+    AW_init_color_group_defaults("arb_ntree");
 
     AW_gc_manager *gc_manager =
         AW_manage_GC(aww,
@@ -324,18 +324,18 @@ AW_gc_manager *AWT_graphic_parsimony::init_devices(AW_window *aww, AW_device *de
                      "Cursor$#FFFFFF",
                      "Branch remarks$#DBE994",
                      "+-Bootstrap$#DBE994",    "-B.(limited)$white",
-                     "--unused$#ff0000",
+                     "!unused",
                      "Marked$#FFFF00",
                      "Some marked$#eeee88",
                      "Not marked$black",
                      "Zombies etc.$#cc5924",
 
-                     "--unused", "--unused", // these reserve the numbers which are used for probe colors in ARB_NTREE
-                                             // (this is necessary because ARB_PARS and ARB_NTREE use the same tree painting routines)
-                     "--unused", "--unused", "--unused",
-                     "--unused", "--unused", "--unused",
-                     "--unused", "--unused", "--unused",
-                     "--unused", "--unused", "--unused",
+                     "!unused", "!unused", // these reserve the numbers which are used for probe colors in ARB_NTREE
+                                           // (this is necessary because ARB_PARS and ARB_NTREE use the same tree painting routines)
+                     "!unused", "!unused", "!unused",
+                     "!unused", "!unused", "!unused",
+                     "!unused", "!unused", "!unused",
+                     "!unused", "!unused", "!unused",
 
                      NULL);
     return gc_manager;
