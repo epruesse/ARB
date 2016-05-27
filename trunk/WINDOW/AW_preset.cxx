@@ -99,6 +99,10 @@ struct gc_desc {
     // - used to populate color config windows and
     // - in change-callbacks
 
+    bool unused; // true -> not a GC (just reserves the GC number)
+
+    // other data of 'this' is undefined if 'unused == true':
+
     char    *colorlabel;  // label to appear next to chooser
     char    *key;         // key (normally build from colorlabel)
     AW_awar *awar_color;  // awar to hold color description // @@@ redundant. Will not exists for all GCs (future plan)
@@ -106,23 +110,20 @@ struct gc_desc {
     AW_awar *awar_fontsize;   // awar to hold fontsize description  // @@@ redundant. does not exist for all GCs
     AW_awar *awar_fontinfo;   // awar to hold text displayed on font-button  // @@@ redundant. does not exist for all GCs
 
-    bool hidden;              // do not show in color config
     bool has_font;            // show font selector
-    bool has_color;           // show color selector
     bool fixed_width_font;    // only allow fixed width fonts
     bool same_line;           // no line break after this
     bool is_color_group;
 
     gc_desc() :
+        unused(false),
         colorlabel(NULL),
         key(NULL),
         awar_color(NULL),
         awar_fontname(NULL),
         awar_fontsize(NULL),
         awar_fontinfo(NULL),
-        hidden(false),
         has_font(true),
-        has_color(true),
         fixed_width_font(false),
         same_line(false),
         is_color_group(false)
@@ -133,13 +134,8 @@ private:
         switch (c) {
             case '#': fixed_width_font = true; break;
             case '+': same_line        = true; break;
-
-            case '=': has_color        = false; break;
-            case '-': {
-                if (has_font) has_font = false;
-                else          hidden   = true; // two '-' means 'hidden'
-                break;
-            }
+            case '-': has_font         = false; break;
+            case '!': unused           = true; break; // (eg. used in arb_pars)
 
             default : return false;
         }
@@ -147,7 +143,6 @@ private:
     }
 
     void correct() {
-        if (!has_font && !has_color) hidden    = true;  // hide GC if it defines neither font nor color
         if (same_line && has_font)   same_line = false; // GC needs full line if defining both color and font
     }
 public:
@@ -460,8 +455,7 @@ AW_gc_manager *AW_manage_GC(AW_window                *aww,
      *                             optionsSTRING   name of GC and AWAR
      *                             options:        #   fixed fonts only
      *                                             -   no fonts
-     *                                             --  completely hide GC
-     *                                             =   no color selector
+     *                                             !   unused GC (only reserves a GC number; used eg. in arb_pars to sync GCs with arb_ntree)
      *                                             +   append next in same line
      *
      *                                             $color at end of string    => define default color value
@@ -621,7 +615,7 @@ void AW_gc_manager::create_gc_buttons(AW_window *aws, bool for_colorgroups) {
     // => color+font has ~same length as 2 colors (does not work for color groups and does not work at all in gtk)
 
     for (; gcd != GCs.end(); ++gcd, ++idx) { // @@@ loop over idx
-        if (gcd->hidden) continue;
+        if (gcd->unused) continue;
         if (gcd->is_color_group != for_colorgroups) continue;
 
         if (for_colorgroups) {
@@ -637,10 +631,8 @@ void AW_gc_manager::create_gc_buttons(AW_window *aws, bool for_colorgroups) {
             aws->label(gcd->colorlabel);
         }
 
-        if (gcd->has_color)  {
-            aws->button_length(COLOR_BUTTON_LEN);
-            create_color_button(aws, gcd->awar_color->awar_name, gcd->colorlabel);
-        }
+        aws->button_length(COLOR_BUTTON_LEN);
+        create_color_button(aws, gcd->awar_color->awar_name, gcd->colorlabel);
         if (gcd->has_font)   {
             aws->button_length(FONT_BUTTON_LEN);
             create_font_button(aws, this, idx);
