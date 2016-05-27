@@ -350,11 +350,13 @@ public:
 
     char *window_name;          //! window title
     char *window_defaults_name; //! window id
-    bool  window_is_shown;
 
-    int slider_pos_vertical;
-    int slider_pos_horizontal;
-    int main_drag_gc;
+    int slider_pos_vertical;   //! current position of the vertical slider
+    int slider_pos_horizontal; //! current position of the horizontal slider
+
+    bool window_is_shown;
+
+    int main_drag_gc; // @@@ eliminate (only used to forward drag-gc from AW_gc_manager to AWT_canvas)
 
     AW_screen_area *picture;      // the result of tell scrolled picture size
 
