@@ -235,8 +235,6 @@ public:
     int top_indent_of_vertical_scrollbar;    //! unscrolled part of screen area
     AW_screen_area *picture;                 //! size of scrollable
 
-    int main_drag_gc; // @@@ eliminate (only used to forward drag-gc from AW_gc_manager to AWT_canvas)
-
     // --------------------------------
     //      The real public section
 

@@ -169,7 +169,7 @@ public:
 class AW_gc_manager : virtual Noncopyable {
     const char *gc_base_name;
     AW_device  *device;
-    int         drag_gc_offset;
+    int         drag_gc_offset; // = drag_gc (as used by clients)
 
     int first_colorgroup_idx; // index into 'GCs' or -1 (if no color groups defined)
 
@@ -212,6 +212,7 @@ public:
         aw_assert(valid_idx(idx));
         return GCs[idx];
     }
+    int get_drag_gc() const { return drag_gc_offset; }
 
     void add_gc(const char* gc_desc, bool is_color_group);
     void update_gc_color(int gc);
@@ -412,8 +413,6 @@ AW_gc_manager *AW_manage_GC(AW_window                *aww,
     AW_root *aw_root = AW_root::SINGLETON;
 
     AW_gc_manager *gcmgr = new AW_gc_manager(gc_base_name, device, base_drag);
-
-    aww->main_drag_gc = base_drag;
 
     char background[50];
     sprintf(background, "-background$%s", default_background_color);
@@ -639,6 +638,9 @@ AW_window *AW_create_gc_window(AW_root *aw_root, AW_gc_manager *gcman) {
     return AW_create_gc_window_named(aw_root, gcman, "COLOR_DEF", "Colors and Fonts");
 }
 
+int AW_get_drag_gc(AW_gc_manager *gcman) {
+    return gcman->get_drag_gc();
+}
 
 #if defined(UNIT_TESTS)
 void fake_AW_init_color_groups() {

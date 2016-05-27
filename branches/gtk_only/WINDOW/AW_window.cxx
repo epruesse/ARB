@@ -1506,8 +1506,7 @@ AW_window::AW_window()
     slider_pos_horizontal(0),
     left_indent_of_horizontal_scrollbar(0),
     top_indent_of_vertical_scrollbar(0),
-    picture(new AW_screen_area),
-    main_drag_gc(0)
+    picture(new AW_screen_area)
 {
     aw_assert(AW_root::SINGLETON); // must have AW_root
   
