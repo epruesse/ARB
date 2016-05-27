@@ -709,7 +709,7 @@ static AW_window *createDisplayField_window(AW_root *aw_root, GBDATA *gb_main) {
 }
 
 static AW_window *createSaiColorWindow(AW_root *aw_root, AW_gc_manager *gc_manager) {
-    return AW_create_gc_window_named(aw_root, gc_manager, "GC_PROPS_SAI", "Probe/SAI Colors and Fonts");
+    return AW_create_gc_window_named(aw_root, gc_manager, "SAI_COLOR_DEF", "Probe/SAI Colors and Fonts");
 }
 
 AW_window *createSaiProbeMatchWindow(AW_root *awr, GBDATA *gb_main) {

@@ -612,7 +612,7 @@ static AW_window *CreateChangeMolecule_window(AW_root *aw_root) {
 }
 
 static AW_window *CreateRNA3DGcWindow(AW_root *awr, AW_gc_manager *gcman) {
-    return AW_create_gc_window_named(awr, gcman, "RNA3D_PROPS_GC", "RNA3D colors and fonts");
+    return AW_create_gc_window_named(awr, gcman, "RNA3D_COLOR_DEF", "RNA3D colors and fonts");
 }
 
 AW_window *CreateRNA3DMainWindow(AW_root *awr, GBDATA *gb_main, ED4_plugin_host& host) {
