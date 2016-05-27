@@ -198,6 +198,7 @@ AWT_canvas.o: $(ARBHOME)/INCLUDE/aw_help.hxx
 AWT_canvas.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWT_canvas.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 AWT_canvas.o: $(ARBHOME)/INCLUDE/aw_position.hxx
+AWT_canvas.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 AWT_canvas.o: $(ARBHOME)/INCLUDE/aw_rgb.hxx
 AWT_canvas.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_canvas.o: $(ARBHOME)/INCLUDE/aw_signal.hxx
