@@ -225,6 +225,8 @@ public:
 
     bool wants_drag_target() const { return detect_drag_target; }
     void drag_target_detection(bool detect) { detect_drag_target = detect; }
+
+    int get_drag_gc() const { return drag_gc; }
 };
 
 class AWT_nonDB_graphic : public AWT_graphic { // @@@ check AWT_nonDB_graphic
@@ -292,7 +294,6 @@ public:
     AWT_graphic *gfx;
 
     AW_gc_manager *gc_manager;
-    int            drag_gc;
 
     AWT_COMMAND_MODE mode;
 

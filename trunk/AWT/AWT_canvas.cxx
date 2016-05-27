@@ -13,6 +13,8 @@
 
 #include <aw_root.hxx>
 #include <aw_msg.hxx>
+#include <aw_preset.hxx>
+
 #include <arbdbt.h>
 
 #include <algorithm>
@@ -281,7 +283,8 @@ inline void nt_draw_zoom_box(AW_device *device, int gc, AW_pos x1, AW_pos y1, AW
     device->box(gc, AW::FillStyle::EMPTY, x1, y1, x2-x1, y2-y1);
 }
 inline void nt_draw_zoom_box(AW_device *device, AWT_canvas *scr) {
-    nt_draw_zoom_box(device, scr->drag_gc,
+    nt_draw_zoom_box(device,
+                     scr->gfx->get_drag_gc(),
                      scr->zoom_drag_sx, scr->zoom_drag_sy,
                      scr->zoom_drag_ex, scr->zoom_drag_ey);
 }
@@ -729,10 +732,9 @@ AWT_canvas::AWT_canvas(GBDATA *gb_maini, AW_window *awwi, const char *gc_base_na
     , awr(aww->get_root())
     , gfx(awd)
     , gc_manager(gfx->init_devices(aww, aww->get_device(AW_MIDDLE_AREA), this))
-    , drag_gc(aww->main_drag_gc)
     , mode(AWT_MODE_NONE)
 {
-    gfx->drag_gc   = drag_gc;
+    gfx->drag_gc   = AW_get_drag_gc(gc_manager);
 
     AWT_resize_cb(NULL, this);
 

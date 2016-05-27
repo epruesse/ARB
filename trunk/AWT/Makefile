@@ -132,6 +132,7 @@ AWT_canvas.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 AWT_canvas.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWT_canvas.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 AWT_canvas.o: $(ARBHOME)/INCLUDE/aw_position.hxx
+AWT_canvas.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 AWT_canvas.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_canvas.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_canvas.o: $(ARBHOME)/INCLUDE/cb.h
