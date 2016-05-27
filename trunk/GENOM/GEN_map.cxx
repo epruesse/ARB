@@ -599,7 +599,7 @@ static AW_window *GEN_create_options_window(AW_root *awr) {
 static AW_window *GEN_create_gc_window(AW_root *awr, AW_gc_manager *gcman) {
     // only create one gc window for all genemap views
     static AW_window *awgc = NULL;
-    if (!awgc) awgc        = AW_create_gc_window_named(awr, gcman, "GENMAP_PROPS_GC", "Genemap colors and fonts"); // use named gc window (otherwise clashes with ARB_NTREE gc window)
+    if (!awgc) awgc        = AW_create_gc_window_named(awr, gcman, "GENMAP_COLOR_DEF", "Genemap colors and fonts"); // use named gc window (otherwise clashes with ARB_NTREE gc window)
     return awgc;
 }
 

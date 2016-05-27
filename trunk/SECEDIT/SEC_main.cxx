@@ -716,7 +716,7 @@ static void SEC_exit(GBDATA *, void *cl_sec_root) {
 }
 
 static AW_window *SEC_create_gc_window(AW_root *awr, AW_gc_manager *gcman) {
-    return AW_create_gc_window_named(awr, gcman, "SEC_PROPS_GC", "SECEDIT colors and fonts");
+    return AW_create_gc_window_named(awr, gcman, "SECEDIT_COLOR_DEF", "SECEDIT colors and fonts");
 }
 
 AW_window *start_SECEDIT_plugin(ED4_plugin_host& host) {
