@@ -235,15 +235,15 @@ static void RefreshCanvas(AW_root *awr) {
 static void SynchronizeColorsWithEditor(AW_window *aww) {
     // overwrites color settings with those from EDIT4
 
-    AW_copy_GCs(aww->get_root(), "ARB_EDIT4", "RNA3D", false,
-                "User1",   "User2",   "Probe",
-                "Primerl", "Primerr", "Primerg",
-                "Sigl",    "Sigr",    "Sigg",
-                "RANGE_0", "RANGE_1", "RANGE_2",
-                "RANGE_3", "RANGE_4", "RANGE_5",
-                "RANGE_6", "RANGE_7", "RANGE_8",
-                "RANGE_9",
-                NULL);
+    AW_copy_GC_colors(aww->get_root(), "ARB_EDIT4", "RNA3D",
+                      "User1",   "User2",   "Probe",
+                      "Primerl", "Primerr", "Primerg",
+                      "Sigl",    "Sigr",    "Sigg",
+                      "RANGE_0", "RANGE_1", "RANGE_2",
+                      "RANGE_3", "RANGE_4", "RANGE_5",
+                      "RANGE_6", "RANGE_7", "RANGE_8",
+                      "RANGE_9",
+                      NULL);
 }
 
 static void Change3DMolecule_CB(AW_root *awr) {

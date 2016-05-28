@@ -463,27 +463,24 @@ AW_gc_manager *AW_manage_GC(AW_window                *aww,
     return gcmgr;
 }
 
-void AW_copy_GCs(AW_root *aw_root, const char *source_window, const char *dest_window, bool has_font_info, const char *id0, ...) {
-    // read the values of the specified GCs from 'source_window'
-    // and write the values into same-named GCs of 'dest_window'
+void AW_copy_GC_colors(AW_root *aw_root, const char *source_gcman, const char *dest_gcman, const char *id0, ...) {
+    // read the color values of the specified GCs from 'source_gcman'
+    // and write the values into same-named GCs of 'dest_gcman'.
     //
-    // 'id0' is the first of a list of color ids
-    // a NULL pointer has to be given behind the last color!
+    // 'id0' is the first of a list of color ids.
+    // Notes:
+    // - a NULL sentinel has to be passed after the last color
+    // - the ids (may) differ from the descriptions passed to AW_manage_GC (ids are keys!)
 
     va_list parg;
     va_start(parg, id0);
 
     const char *id = id0;
     while (id) {
-        const char *value = aw_root->awar(color_awarname(source_window, id))->read_char_pntr();
-        aw_root->awar(color_awarname(dest_window, id))->write_string(value);
+        const char *value = aw_root->awar(color_awarname(source_gcman, id))->read_char_pntr();
+        aw_root->awar(color_awarname(dest_gcman, id))->write_string(value);
 
-        if (has_font_info) {
-            int ivalue = aw_root->awar(font_awarname(source_window, id))->read_int();
-            aw_root->awar(font_awarname(dest_window, id))->write_int(ivalue);
-        }
-
-        id = va_arg(parg, const char*); // another argument ?
+        id = va_arg(parg, const char*); // another argument?
     }
 
     va_end(parg);
