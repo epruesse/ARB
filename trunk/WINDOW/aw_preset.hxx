@@ -69,7 +69,7 @@ AW_window *AW_create_gc_window(AW_root *aw_root, AW_gc_manager *gcman); // opens
 AW_window *AW_create_gc_window_named(AW_root * aw_root, AW_gc_manager *gcman_par, const char *wid, const char *windowname);
 
 int AW_get_drag_gc(AW_gc_manager *gcman);
-void AW_copy_GCs(AW_root *aw_root, const char *source_window, const char *dest_window, bool has_font_info, const char *id0, ...) __ATTR__SENTINEL;
+void AW_copy_GC_colors(AW_root *aw_root, const char *source_gcman, const char *dest_gcman, const char *id0, ...) __ATTR__SENTINEL;
 
 #else
 #error aw_preset.hxx included twice

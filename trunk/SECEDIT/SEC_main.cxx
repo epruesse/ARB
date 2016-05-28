@@ -509,25 +509,25 @@ static void SEC_sync_colors(AW_window *aww, SyncColors which) {
     // overwrites color settings with those from EDIT4
 
     if (which & COLOR_SYNC_SEARCH) {
-        AW_copy_GCs(aww->get_root(), "ARB_EDIT4", "ARB_SECEDIT", false,
-                    "User1",   "User2",   "Probe",
-                    "Primerl", "Primerr", "Primerg",
-                    "Sigl",    "Sigr",    "Sigg",
-                    "MISMATCHES",
-                    NULL);
+        AW_copy_GC_colors(aww->get_root(), "ARB_EDIT4", "ARB_SECEDIT",
+                          "User1",   "User2",   "Probe",
+                          "Primerl", "Primerr", "Primerg",
+                          "Sigl",    "Sigr",    "Sigg",
+                          "MISMATCHES",
+                          NULL);
     }
     if (which & COLOR_SYNC_RANGE) {
-        AW_copy_GCs(aww->get_root(), "ARB_EDIT4", "ARB_SECEDIT", false,
-                    "RANGE_0", "RANGE_1", "RANGE_2",
-                    "RANGE_3", "RANGE_4", "RANGE_5",
-                    "RANGE_6", "RANGE_7", "RANGE_8",
-                    "RANGE_9",
-                    NULL);
+        AW_copy_GC_colors(aww->get_root(), "ARB_EDIT4", "ARB_SECEDIT",
+                          "RANGE_0", "RANGE_1", "RANGE_2",
+                          "RANGE_3", "RANGE_4", "RANGE_5",
+                          "RANGE_6", "RANGE_7", "RANGE_8",
+                          "RANGE_9",
+                          NULL);
     }
     if (which & COLOR_SYNC_REST) {
-        AW_copy_GCs(aww->get_root(), "ARB_EDIT4", "ARB_SECEDIT", false,
-                    "CURSOR",
-                    NULL);
+        AW_copy_GC_colors(aww->get_root(), "ARB_EDIT4", "ARB_SECEDIT",
+                          "CURSOR",
+                          NULL);
     }
 }
 
