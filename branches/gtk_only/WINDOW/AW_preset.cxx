@@ -94,22 +94,17 @@ struct gc_desc {
 
     // other data of 'this' is undefined if 'unused == true':
 
-    char    *colorlabel;  // label to appear next to chooser
-    char    *key;         // key (normally build from colorlabel)
-    AW_awar *awar_color;  // awar to hold color description // @@@ redundant. Will not exists for all GCs (future plan)
-    AW_awar *awar_font;   // awar to hold font description  // @@@ redundant. does not exist for all GCs
-
-    bool has_font;            // show font selector
-    bool fixed_width_font;    // only allow fixed width fonts
-    bool same_line;           // no line break after this
-    bool is_color_group;
+    char *colorlabel;       // label to appear next to chooser
+    char *key;              // key (normally build from colorlabel)
+    bool  has_font;         // show font selector
+    bool  fixed_width_font; // only allow fixed width fonts
+    bool  same_line;        // no line break after this
+    bool  is_color_group;
 
     gc_desc() :
         unused(false),
         colorlabel(NULL),
         key(NULL),
-        awar_color(NULL),
-        awar_font(NULL),
         has_font(true),
         fixed_width_font(false),
         same_line(false),
@@ -199,6 +194,8 @@ public:
         delete changed_cb;
     }
 
+    void init_all_fonts() const;
+
     const char *get_base_name() const { return gc_base_name; }
     bool has_color_groups() const { return first_colorgroup_idx != -1; }
     int size() const { return GCs.size(); }
@@ -210,8 +207,8 @@ public:
     int get_drag_gc() const { return drag_gc_offset; }
 
     void add_gc(const char* gc_desc, bool is_color_group);
-    void update_gc_color(int gc);
-    void update_gc_font(int gc);
+    void update_gc_color(int gc) const;
+    void update_gc_font(int gc) const;
     void update_aa_setting();
 
     void create_gc_buttons(AW_window *aww, bool for_colorgroups);
@@ -232,16 +229,31 @@ bool         AW_gc_manager::use_color_groups     = false;
 // ---------------------------
 //      GC awar callbacks
 
-void AW_gc_manager::update_gc_font(int gc) {
+void AW_gc_manager::update_gc_font(int gc) const {
     aw_assert(valid_gc(gc));
     aw_assert(gc != -1); // background has no font
 
-    const gc_desc& gcd = GCs[GC2IDX(gc)];
+    int            idx  = GC2IDX(gc);
+    const gc_desc& gcd0 = GCs[idx];
 
-    const char *font = gcd.awar_font->read_char_pntr();
+    AW_awar *awar_font = AW_root::SINGLETON->awar(font_awarname(gc_base_name, gcd0.key));
+
+    const char *font = awar_font->read_char_pntr();
 
     device->set_font(gc,                  font);
     device->set_font(gc + drag_gc_offset, font);
+
+    // set font of all following GCs which do NOT define a font themselves
+    for (int i = idx+1; i<int(GCs.size()); ++i) {
+        const gc_desc& gcd = GCs[i];
+        if (!gcd.unused) { // just skip over unused
+            if (gcd.has_font) break; // abort if GC defines its own font
+
+            gc = IDX2GC(i);
+            device->set_font(gc,                font);
+            device->set_font(gc+drag_gc_offset, font);
+        }
+    }
 
     trigger_changed_cb(GC_FONT_CHANGED);
 }
@@ -249,10 +261,10 @@ static void gc_fontOrSize_changed_cb(AW_root*, AW_gc_manager *mgr, int gc) {
     mgr->update_gc_font(gc);
 }
 
-void AW_gc_manager::update_gc_color(int gc) {
+void AW_gc_manager::update_gc_color(int gc) const {
     aw_assert(valid_gc(gc));
 
-    const char *color = GCs[GC2IDX(gc)].awar_color->read_char_pntr();
+    const char *color = AW_root::SINGLETON->awar(color_awarname(gc_base_name, GCs[GC2IDX(gc)].key))->read_char_pntr();
 
     device->set_foreground_color(gc, color);
     if (gc != -1) {
@@ -319,7 +331,7 @@ void AW_gc_manager::add_gc(const char* gc_description, bool is_color_group) {
 
         for (std::vector<gc_desc>::iterator g = GCs.begin(); g != GCs.end(); ++g) {
             if (strcmp(g->colorlabel, referenced_colorlabel) == 0) {
-                default_color = g->awar_color->read_char_pntr();
+                default_color = AW_root::SINGLETON->awar(color_awarname(gc_base_name, g->key))->read_char_pntr();
                 found         = true;
                 break;
             }
@@ -329,25 +341,25 @@ void AW_gc_manager::add_gc(const char* gc_description, bool is_color_group) {
         free(referenced_colorlabel);
     }
 
-    gcd.awar_color = AW_root::SINGLETON->awar_string(color_awarname(gc_base_name, gcd.key), default_color);
-    gcd.awar_color->add_callback(makeRootCallback(gc_color_changed_cb, this, gc));
+    AW_root::SINGLETON->awar_string(color_awarname(gc_base_name, gcd.key), default_color)
+        ->add_callback(makeRootCallback(gc_color_changed_cb, this, gc));
     gc_color_changed_cb(NULL, this, gc);
 
     if (!is_background) { // no font for background
         if (gcd.has_font) {
             const char *default_font = gcd.fixed_width_font ? "monospace 10" : "sans 10";
 
-            gcd.awar_font = AW_root::SINGLETON->awar_string(font_awarname(gc_base_name, gcd.key), default_font);
+            AW_root::SINGLETON->awar_string(font_awarname(gc_base_name, gcd.key), default_font)->add_callback(makeRootCallback(gc_fontOrSize_changed_cb, this, gc));
         }
-        else {
-            // font is same as previous font -> copy awar reference
-            int prev_idx = GC2IDX(gc-1);
-            aw_assert(valid_idx(prev_idx));
-
-            gcd.awar_font = GCs[prev_idx].awar_font;
+        // Note: fonts are not initialized here. This is done in init_all_fonts() after all GCs have been defined.
+    }
+}
+void AW_gc_manager::init_all_fonts() const {
+    // initialize fonts of all defined GCs:
+    for (int idx = 0; idx<int(GCs.size()); ++idx) {
+        if (GCs[idx].has_font) {
+            update_gc_font(IDX2GC(idx));
         }
-        gcd.awar_font->add_callback(makeRootCallback(gc_fontOrSize_changed_cb, this, gc));
-        gc_fontOrSize_changed_cb(NULL, this, gc);
     }
 }
 
@@ -438,6 +450,8 @@ AW_gc_manager *AW_manage_GC(AW_window                *aww,
         }
     }
 
+    gcmgr->init_all_fonts();
+
     // anti-aliasing settings:
     aw_root->awar_int(aa_awarname(gc_base_name), AW_AA_NONE)->add_callback(makeRootCallback(aw_update_aa_setting, gcmgr));
     aw_update_aa_setting(aw_root, gcmgr);
@@ -517,7 +531,7 @@ void AW_gc_manager::create_gc_buttons(AW_window *aws, bool for_colorgroups) {
     if (for_colorgroups) {
         advance(gcd, first_colorgroup_idx);
         idx += first_colorgroup_idx;
-        }
+    }
 
     const int STD_LABEL_LEN = 15;
 
@@ -532,21 +546,21 @@ void AW_gc_manager::create_gc_buttons(AW_window *aws, bool for_colorgroups) {
             aws->label_length(3);
             aws->label(buf);
             aws->create_input_field(colorgroupname_awarname(color_group_no), 20);
-    }
+        }
         else {
             aws->label_length(STD_LABEL_LEN);
             aws->label(gcd->colorlabel);
         }
 
         // length of color button cannot be modified (diff to motif version)
-        aws->create_color_button(gcd->awar_color->get_name(), NULL);
+        aws->create_color_button(color_awarname(gc_base_name, gcd->key), NULL);
         if (gcd->has_font)   {
             // length of font button cannot be modified (diff to motif version)
-            aws->create_font_button(gcd->awar_font ->get_name(), NULL);
-    }
+            aws->create_font_button(font_awarname(gc_base_name, gcd->key), NULL);
+        }
         if (!gcd->same_line) aws->at_newline();
-}
     }
+}
 
 static void AW_create_gc_color_groups_window(AW_window *, AW_root *aw_root, AW_gc_manager *gcmgr) {
     aw_assert(AW_gc_manager::color_groups_initialized());
