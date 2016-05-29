@@ -319,23 +319,19 @@ AW_gc_manager *AWT_graphic_parsimony::init_devices(AW_window *aww, AW_device *de
                      // Important note :
                      // Many gc indices are shared between ABR_NTREE and ARB_PARSIMONY
                      // e.g. the tree drawing routines use same gc's for drawing both trees
-                     // (check AWT_dtree.cxx AWT_graphic_tree::init_devices)
+                     // (keep in sync with ../SL/TREEDISP/TreeDisplay.cxx@init_devices)
 
                      "Cursor$#FFFFFF",
                      "Branch remarks$#DBE994",
                      "+-Bootstrap$#DBE994",    "-B.(limited)$white",
-                     "!unused",
+                     "!1", // reserve GC-number used for "IRS group box" in arb_ntree
                      "Marked$#FFFF00",
                      "Some marked$#eeee88",
                      "Not marked$black",
                      "Zombies etc.$#cc5924",
 
-                     "!unused", "!unused", // these reserve the numbers which are used for probe colors in ARB_NTREE
-                                           // (this is necessary because ARB_PARS and ARB_NTREE use the same tree painting routines)
-                     "!unused", "!unused", "!unused",
-                     "!unused", "!unused", "!unused",
-                     "!unused", "!unused", "!unused",
-                     "!unused", "!unused", "!unused",
+                     "!14", // reserve 14 GC-numbers which are used for probe colors in ARB_NTREE
+                            // (namely 'None', 'All' and 'P1' up to 'P12')
 
                      NULL);
     return gc_manager;
