@@ -77,6 +77,7 @@ AW_gc_manager *AWT_graphic_tree::init_devices(AW_window *aww, AW_device *device,
                      // Many gc indices are shared between ABR_NTREE and ARB_PARSIMONY
                      // e.g. the tree drawing routines use same gc's for drawing both trees
                      // (check PARS_dtree.cxx AWT_graphic_parsimony::init_devices)
+                     // (keep in sync with ../../PARSIMONY/PARS_dtree.cxx@init_devices)
 
                      // Note: in radial tree display, branches with lower gc(-index) are drawn AFTER branches
                      //       with higher gc(-index), i.e. marked branches are drawn on top of unmarked branches.
