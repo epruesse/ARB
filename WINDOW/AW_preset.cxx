@@ -187,7 +187,7 @@ class AW_gc_manager : virtual Noncopyable {
 
     std::vector<gc_desc> GCs;
 
-    GcChangedCallback *changed_cb; // @@@ use a null-cb
+    GcChangedCallback changed_cb;
 
 #if defined(ASSERTION_USED)
     bool valid_idx(int idx) const { return idx>=0 && idx<int(GCs.size()); }
@@ -201,6 +201,7 @@ class AW_gc_manager : virtual Noncopyable {
         aw_assert(valid_gc(gc));
         return AW_color_idx(colorindex_base+gc+1);
     }
+    static void ignore_change_cb(GcChange) {}
 public:
     static const char **color_group_defaults;
     static bool         use_color_groups;
@@ -215,12 +216,8 @@ public:
           first_colorgroup_idx(NO_INDEX),
           aww(aww_),
           colorindex_base(colorindex_base_),
-          changed_cb(NULL)
+          changed_cb(makeGcChangedCallback(ignore_change_cb))
     {}
-
-    ~AW_gc_manager() {
-        delete changed_cb;
-    }
 
     void init_all_fonts() const;
 
@@ -247,13 +244,8 @@ public:
 
     void create_gc_buttons(AW_window *aww, bool for_colorgroups);
 
-    void set_changed_cb(const GcChangedCallback& ccb) {
-        aw_assert(!changed_cb);
-        changed_cb = new GcChangedCallback(ccb);
-    }
-    void trigger_changed_cb(GcChange whatChanged) const {
-        if (changed_cb) (*changed_cb)(whatChanged);
-    }
+    void set_changed_cb(const GcChangedCallback& ccb) { changed_cb = ccb; }
+    void trigger_changed_cb(GcChange whatChanged) const { changed_cb(whatChanged); }
 };
 
 const char **AW_gc_manager::color_group_defaults = NULL;
