@@ -101,26 +101,33 @@ const int GC_INVALID    = -2;
 
 const int NO_INDEX = -1;
 
+enum gc_type {
+    GC_TYPE_NORMAL,
+    GC_TYPE_GROUP,
+};
+
 struct gc_desc {
     // data for one GC
     // - used to populate color config windows and
     // - in change-callbacks
 
-    int    gc;               // -1 = background; [0..n-1] for normal GCs (where n=AW_gc_manager::drag_gc_offset)
-    string colorlabel;       // label to appear next to chooser
-    string key;              // key (normally build from colorlabel)
-    bool   has_font;         // show font selector
-    bool   fixed_width_font; // only allow fixed width fonts
-    bool   same_line;        // no line break after this
-    bool   is_color_group;   // @@@ replace by a type-enum
+    int     gc;              // -1 = background; [0..n-1] for normal GCs (where n=AW_gc_manager::drag_gc_offset)
+    string  colorlabel;      // label to appear next to chooser
+    string  key;             // key (normally build from colorlabel)
+    bool    has_font;        // show font selector
+    bool    fixed_width_font; // only allow fixed width fonts
+    bool    same_line;       // no line break after this
+    gc_type type;
 
-    gc_desc() :
-        gc(GC_INVALID),
+    gc_desc(int gc_, gc_type type_) :
+        gc(gc_),
         has_font(true),
         fixed_width_font(false),
         same_line(false),
-        is_color_group(false)
+        type(type_)
     {}
+
+    bool is_color_group() const { return type == GC_TYPE_GROUP; }
 
 private:
     bool parse_char(char c) {
@@ -361,10 +368,8 @@ void AW_gc_manager::add_gc(const char* gc_description, int& gc, bool is_color_gr
         first_colorgroup_idx = idx;
     }
 
-    GCs.push_back(gc_desc());
-    gc_desc &gcd       = GCs.back();
-    gcd.is_color_group = is_color_group;
-    gcd.gc             = gc;
+    GCs.push_back(gc_desc(gc, is_color_group ? GC_TYPE_GROUP : GC_TYPE_NORMAL));
+    gc_desc &gcd = GCs.back();
 
     bool is_background = gc == GC_BACKGROUND;
     bool alloc_gc      = !is_background || colorindex_base != AW_DATA_BG;
@@ -631,7 +636,7 @@ void AW_gc_manager::create_gc_buttons(AW_window *aws, bool for_colorgroups) {
     // => color+font has ~same length as 2 colors (does not work for color groups and does not work at all in gtk)
 
     for (; gcd != GCs.end(); ++gcd, ++idx) { // @@@ loop over idx
-        if (gcd->is_color_group != for_colorgroups) continue;
+        if (gcd->is_color_group() != for_colorgroups) continue;
 
         if (for_colorgroups) {
             int color_group_no = idx-first_colorgroup_idx+1;
