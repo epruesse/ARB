@@ -96,6 +96,10 @@ static const char *ARB_EDIT4_color_group[AW_COLOR_GROUPS+1] = {
     0
 };
 
+const int GC_BACKGROUND = -1;
+const int GC_INVALID    = -2;
+
+const int NO_INDEX = -1;
 
 struct gc_desc {
     // data for one GC
@@ -111,7 +115,7 @@ struct gc_desc {
     bool   is_color_group;   // @@@ replace by a type-enum
 
     gc_desc() :
-        gc(-2), // invalid value
+        gc(GC_INVALID),
         has_font(true),
         fixed_width_font(false),
         same_line(false),
@@ -169,7 +173,7 @@ class AW_gc_manager : virtual Noncopyable {
     AW_device  *device;
     int         drag_gc_offset; // = drag_gc (as used by clients)
 
-    int first_colorgroup_idx; // index into 'GCs' or -1 (if no color groups defined)
+    int first_colorgroup_idx; // index into 'GCs' or NO_INDEX (if no color groups defined)
 
     AW_window *aww;             // motif only (colors get allocated in window)
     int        colorindex_base; // motif-only (colorindex of background-color)
@@ -182,7 +186,7 @@ class AW_gc_manager : virtual Noncopyable {
     bool valid_idx(int idx) const { return idx>=0 && idx<int(GCs.size()); }
     bool valid_gc(int gc) const {
         // does not test gc is really valid, just tests whether it is completely out-of-bounds
-        return gc>=-1 && gc <= GCs.back().gc;
+        return gc>=GC_BACKGROUND && gc <= GCs.back().gc;
     }
 #endif
 
@@ -201,7 +205,7 @@ public:
         : gc_base_name(name),
           device(device_),
           drag_gc_offset(drag_gc_offset_),
-          first_colorgroup_idx(-1),
+          first_colorgroup_idx(NO_INDEX),
           aww(aww_),
           colorindex_base(colorindex_base_),
           changed_cb(NULL)
@@ -221,7 +225,7 @@ public:
 #endif
 
     const char *get_base_name() const { return gc_base_name; }
-    bool has_color_groups() const { return first_colorgroup_idx != -1; }
+    bool has_color_groups() const { return first_colorgroup_idx != NO_INDEX; }
     int size() const { return GCs.size(); }
 
     const gc_desc& get_gc_desc(int idx) const {
@@ -259,7 +263,7 @@ void AW_gc_manager::update_gc_font(int idx) const {
     LocallyModify<bool> flag(avoid_recursion, true);
 
     const gc_desc& gcd0 = GCs[idx];
-    aw_assert(gcd0.gc != -1); // background has no font
+    aw_assert(gcd0.gc != GC_BACKGROUND); // background has no font
 
     AW_awar *awar_fontname = AW_root::SINGLETON->awar(fontname_awarname(gc_base_name, gcd0.key));
     AW_awar *awar_fontsize = AW_root::SINGLETON->awar(fontsize_awarname(gc_base_name, gcd0.key));
@@ -304,7 +308,7 @@ void AW_gc_manager::update_gc_color(int idx) const {
     AW_color_idx colorIdx = colorindex(gcd.gc);
     aww->alloc_named_data_color(colorIdx, color);
 
-    if (gcd.gc == -1 && colorIdx == AW_DATA_BG) {
+    if (gcd.gc == GC_BACKGROUND && colorIdx == AW_DATA_BG) {
         // if background color changes, all drag-gc colors need to be updated
         // (did not understand why, just refactored existing code --ralf)
 
@@ -317,7 +321,7 @@ void AW_gc_manager::update_gc_color(int idx) const {
     else {
         int gc = gcd.gc;
 
-        if (gc == -1) gc = 0; // special case: background color of bottom-area (only used by arb_phylo)
+        if (gc == GC_BACKGROUND) gc = 0; // special case: background color of bottom-area (only used by arb_phylo)
 
         device->set_foreground_color(gc,                  colorIdx);
         device->set_foreground_color(gc + drag_gc_offset, colorIdx);
@@ -353,7 +357,7 @@ void AW_gc_manager::add_gc(const char* gc_description, int& gc, bool is_color_gr
     }
 
     int idx = int(GCs.size()); // index position where new GC will be added
-    if (is_color_group && first_colorgroup_idx == -1) {
+    if (is_color_group && first_colorgroup_idx == NO_INDEX) {
         first_colorgroup_idx = idx;
     }
 
@@ -362,7 +366,7 @@ void AW_gc_manager::add_gc(const char* gc_description, int& gc, bool is_color_gr
     gcd.is_color_group = is_color_group;
     gcd.gc             = gc;
 
-    bool is_background = gc == -1;
+    bool is_background = gc == GC_BACKGROUND;
     bool alloc_gc      = !is_background || colorindex_base != AW_DATA_BG;
     if (alloc_gc)
     {
@@ -489,7 +493,7 @@ AW_gc_manager *AW_manage_GC(AW_window                *aww,
     int            colidx_base = area == AW_GCM_DATA_AREA ? AW_DATA_BG : AW_WINDOW_BG;
     AW_gc_manager *gcmgr       = new AW_gc_manager(gc_base_name, device, base_drag, aww, colidx_base);
 
-    int  gc = -1; // gets incremented by add_gc
+    int  gc = GC_BACKGROUND; // gets incremented by add_gc
     char background[50];
     sprintf(background, "-background$%s", default_background_color);
     gcmgr->add_gc(background, gc, false);
