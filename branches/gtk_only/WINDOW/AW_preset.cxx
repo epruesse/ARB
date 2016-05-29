@@ -92,10 +92,6 @@ struct gc_desc {
     // - used to populate color config windows and
     // - in change-callbacks
 
-    bool unused; // true -> not a GC (just reserves the GC number) // @@@ elim
-
-    // other data of 'this' is undefined if 'unused == true':
-
     int    gc;               // -1 = background; [0..n-1] for normal GCs (where n=AW_gc_manager::drag_gc_offset)
     string colorlabel;       // label to appear next to chooser
     string key;              // key (normally build from colorlabel)
@@ -105,7 +101,6 @@ struct gc_desc {
     bool   is_color_group;   // @@@ replace by a type-enum
 
     gc_desc() :
-        unused(false),
         gc(-2), // invalid value
         has_font(true),
         fixed_width_font(false),
@@ -119,8 +114,6 @@ private:
             case '#': fixed_width_font = true; break;
             case '+': same_line        = true; break;
             case '-': has_font         = false; break;
-            case '!': unused           = true; break; // (eg. used in arb_pars)
-
             default : return false;
         }
         return true;
@@ -249,12 +242,10 @@ void AW_gc_manager::update_gc_font(int idx) const {
     // set font of all following GCs which do NOT define a font themselves
     for (int i = idx+1; i<int(GCs.size()); ++i) {
         const gc_desc& gcd = GCs[i];
-        if (!gcd.unused) { // just skip over unused
-            if (gcd.has_font) break; // abort if GC defines its own font
+        if (gcd.has_font) break; // abort if GC defines its own font
 
-            device->set_font(gcd.gc,                font);
-            device->set_font(gcd.gc+drag_gc_offset, font);
-        }
+        device->set_font(gcd.gc,                font);
+        device->set_font(gcd.gc+drag_gc_offset, font);
     }
 
     trigger_changed_cb(GC_FONT_CHANGED);
@@ -297,16 +288,18 @@ static void aw_update_aa_setting(AW_root*, AW_gc_manager *mgr) {
 //      add GCs
 
 void AW_gc_manager::add_gc(const char* gc_description, int& gc, bool is_color_group) {
+    if (gc_description[0] == '!') { // just reserve one or several GCs (eg. done in arb_pars)
+        int amount = atoi(gc_description+1);
+        aw_assert(amount>=1);
+
+        gc += amount;
+        return;
+    }
+
     int idx = int(GCs.size()); // index position where new GC will be added
-
-    aw_assert(gc == (idx-1)); // @@@ just for refactoring; will get invalid later
-    int gc_drag = gc + drag_gc_offset;
-
     if (is_color_group && first_colorgroup_idx == -1) {
         first_colorgroup_idx = idx;
     }
-
-    // @@@ first parse gc_description, then add to array!
 
     GCs.push_back(gc_desc());
     gc_desc &gcd       = GCs.back();
@@ -319,6 +312,7 @@ void AW_gc_manager::add_gc(const char* gc_description, int& gc, bool is_color_gr
         device->set_line_attributes(gc, 1, AW_SOLID);
         device->set_function(gc, AW_COPY);
 
+        int gc_drag = gc + drag_gc_offset;
         device->new_gc(gc_drag);
         device->set_line_attributes(gc_drag, 1, AW_SOLID);
         device->set_function(gc_drag, AW_XOR);
@@ -471,7 +465,6 @@ AW_gc_manager *AW_manage_GC(AW_window                *aww,
     // installing changed callback here avoids that it gets triggered by initializing GCs
     gcmgr->set_changed_cb(changecb);
     aw_assert(gc == base_drag_given); // parameter 'base_drag' has wrong value!
-    aw_assert(base_gc+(gcmgr->size()-1) == base_drag_given); // parameter 'base_drag' has wrong value!
 
     return gcmgr;
 }
@@ -546,7 +539,6 @@ void AW_gc_manager::create_gc_buttons(AW_window *aws, bool for_colorgroups) {
     const int STD_LABEL_LEN = 15;
 
     for (; gcd != GCs.end(); ++gcd, ++idx) { // @@@ loop over idx
-        if (gcd->unused) continue;
         if (gcd->is_color_group != for_colorgroups) continue;
 
         if (for_colorgroups) {
