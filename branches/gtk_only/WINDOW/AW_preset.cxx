@@ -86,27 +86,38 @@ static const char *ARB_EDIT4_color_group[AW_COLOR_GROUPS+1] = {
     0
 };
 
+const int GC_BACKGROUND = -1;
+const int GC_INVALID    = -2;
+
+const int NO_INDEX = -1;
+
+enum gc_type {
+    GC_TYPE_NORMAL,
+    GC_TYPE_GROUP,
+};
 
 struct gc_desc {
     // data for one GC
     // - used to populate color config windows and
     // - in change-callbacks
 
-    int    gc;               // -1 = background; [0..n-1] for normal GCs (where n=AW_gc_manager::drag_gc_offset)
-    string colorlabel;       // label to appear next to chooser
-    string key;              // key (normally build from colorlabel)
-    bool   has_font;         // show font selector
-    bool   fixed_width_font; // only allow fixed width fonts
-    bool   same_line;        // no line break after this
-    bool   is_color_group;   // @@@ replace by a type-enum
+    int     gc;              // -1 = background; [0..n-1] for normal GCs (where n=AW_gc_manager::drag_gc_offset)
+    string  colorlabel;      // label to appear next to chooser
+    string  key;             // key (normally build from colorlabel)
+    bool    has_font;        // show font selector
+    bool    fixed_width_font; // only allow fixed width fonts
+    bool    same_line;       // no line break after this
+    gc_type type;
 
-    gc_desc() :
-        gc(-2), // invalid value
+    gc_desc(int gc_, gc_type type_) :
+        gc(gc_),
         has_font(true),
         fixed_width_font(false),
         same_line(false),
-        is_color_group(false)
+        type(type_)
     {}
+
+    bool is_color_group() const { return type == GC_TYPE_GROUP; }
 
 private:
     bool parse_char(char c) {
@@ -159,20 +170,21 @@ class AW_gc_manager : virtual Noncopyable {
     AW_device  *device;
     int         drag_gc_offset; // = drag_gc (as used by clients)
 
-    int first_colorgroup_idx; // index into 'GCs' or -1 (if no color groups defined)
+    int first_colorgroup_idx; // index into 'GCs' or NO_INDEX (if no color groups defined)
 
     std::vector<gc_desc> GCs;
 
-    GcChangedCallback *changed_cb; // @@@ use a null-cb
+    GcChangedCallback changed_cb;
 
 #if defined(ASSERTION_USED)
     bool valid_idx(int idx) const { return idx>=0 && idx<int(GCs.size()); }
     bool valid_gc(int gc) const {
         // does not test gc is really valid, just tests whether it is completely out-of-bounds
-        return gc>=-1 && gc <= GCs.back().gc;
+        return gc>=GC_BACKGROUND && gc <= GCs.back().gc;
     }
 #endif
 
+    static void ignore_change_cb(GcChange) {}
 public:
     static const char **color_group_defaults;
     static bool         use_color_groups;
@@ -183,18 +195,14 @@ public:
         : gc_base_name(name),
           device(device_),
           drag_gc_offset(drag_gc_offset_),
-          first_colorgroup_idx(-1),
-          changed_cb(NULL)
+          first_colorgroup_idx(NO_INDEX),
+          changed_cb(makeGcChangedCallback(ignore_change_cb))
     {}
-
-    ~AW_gc_manager() {
-        delete changed_cb;
-    }
 
     void init_all_fonts() const;
 
     const char *get_base_name() const { return gc_base_name; }
-    bool has_color_groups() const { return first_colorgroup_idx != -1; }
+    bool has_color_groups() const { return first_colorgroup_idx != NO_INDEX; }
     int size() const { return GCs.size(); }
 
     const gc_desc& get_gc_desc(int idx) const {
@@ -210,12 +218,9 @@ public:
 
     void create_gc_buttons(AW_window *aww, bool for_colorgroups);
 
-    void set_changed_cb(const GcChangedCallback& ccb) {
-        aw_assert(!changed_cb);
-        changed_cb = new GcChangedCallback(ccb);
-    }
+    void set_changed_cb(const GcChangedCallback& ccb) { changed_cb = ccb; }
     void trigger_changed_cb(GcChange whatChanged) const {
-        if (changed_cb) (*changed_cb)(whatChanged);
+        changed_cb(whatChanged);
         device->queue_draw();
     }
 };
@@ -230,7 +235,7 @@ void AW_gc_manager::update_gc_font(int idx) const {
     aw_assert(valid_idx(idx));
 
     const gc_desc& gcd0 = GCs[idx];
-    aw_assert(gcd0.gc != -1); // background has no font
+    aw_assert(gcd0.gc != GC_BACKGROUND); // background has no font
 
     AW_awar *awar_font = AW_root::SINGLETON->awar(font_awarname(gc_base_name, gcd0.key));
 
@@ -261,7 +266,7 @@ void AW_gc_manager::update_gc_color(int idx) const {
     const char     *color = AW_root::SINGLETON->awar(color_awarname(gc_base_name, gcd.key))->read_char_pntr();
 
     device->set_foreground_color(gcd.gc, color);
-    if (gcd.gc != -1) {
+    if (gcd.gc != GC_BACKGROUND) {
         device->set_foreground_color(gcd.gc + drag_gc_offset, color);
     }
     trigger_changed_cb(GC_COLOR_CHANGED);
@@ -297,16 +302,14 @@ void AW_gc_manager::add_gc(const char* gc_description, int& gc, bool is_color_gr
     }
 
     int idx = int(GCs.size()); // index position where new GC will be added
-    if (is_color_group && first_colorgroup_idx == -1) {
+    if (is_color_group && first_colorgroup_idx == NO_INDEX) {
         first_colorgroup_idx = idx;
     }
 
-    GCs.push_back(gc_desc());
-    gc_desc &gcd       = GCs.back();
-    gcd.is_color_group = is_color_group;
-    gcd.gc             = gc;
+    GCs.push_back(gc_desc(gc, is_color_group ? GC_TYPE_GROUP : GC_TYPE_NORMAL));
+    gc_desc &gcd = GCs.back();
 
-    bool is_background = gc == -1;
+    bool is_background = gc == GC_BACKGROUND;
     {
         device->new_gc(gc);
         device->set_line_attributes(gc, 1, AW_SOLID);
@@ -424,7 +427,7 @@ AW_gc_manager *AW_manage_GC(AW_window                *aww,
 
     AW_gc_manager *gcmgr = new AW_gc_manager(gc_base_name, device, base_drag);
 
-    int  gc = -1; // gets incremented by add_gc
+    int  gc = GC_BACKGROUND; // gets incremented by add_gc
     char background[50];
     sprintf(background, "-background$%s", default_background_color);
     gcmgr->add_gc(background, gc, false);
@@ -539,7 +542,7 @@ void AW_gc_manager::create_gc_buttons(AW_window *aws, bool for_colorgroups) {
     const int STD_LABEL_LEN = 15;
 
     for (; gcd != GCs.end(); ++gcd, ++idx) { // @@@ loop over idx
-        if (gcd->is_color_group != for_colorgroups) continue;
+        if (gcd->is_color_group() != for_colorgroups) continue;
 
         if (for_colorgroups) {
             int color_group_no = idx-first_colorgroup_idx+1;
