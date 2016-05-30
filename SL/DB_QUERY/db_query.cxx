@@ -2089,19 +2089,6 @@ static AW_window *create_loadsave_colored_window(AW_root *aw_root, color_save_da
     return aw_loadsave[type];
 }
 
-static const char *color_group_name(int color_group) {
-    static char buf[30];
-
-    if (color_group) {
-        sprintf(buf, "color group %i", color_group);
-    }
-    else {
-        strcpy(buf, "no color group");
-    }
-
-    return buf;
-}
-
 static AW_window *create_colorize_window(AW_root *aw_root, GBDATA *gb_main, DbQuery *query, ItemSelector *sel) {
     // invoked by   'colorize listed'                   (sel   != 0)
     // and          'colorize marked/mark colored'      (query != 0)
@@ -2162,9 +2149,11 @@ static AW_window *create_colorize_window(AW_root *aw_root, GBDATA *gb_main, DbQu
         int color_group;
 
         aws->create_option_menu(AWAR_COLORIZE, true);
-        aws->insert_default_option(color_group_name(0), "none", 0);
+        aws->insert_default_option("No color group", "none", 0);
         for (color_group = 1; color_group <= AW_COLOR_GROUPS; ++color_group) {
-            aws->insert_option(color_group_name(color_group), "", color_group);
+            char *name = AW_get_color_group_name(aw_root, color_group);
+            aws->insert_option(name, "", color_group);
+            free(name);
         }
         aws->update_option_menu();
     }

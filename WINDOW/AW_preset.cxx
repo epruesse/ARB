@@ -275,6 +275,17 @@ static void gc_color_changed_cb(AW_root*, AW_gc_manager *mgr, int idx) {
     mgr->update_gc_color(idx);
 }
 
+static void color_group_name_changed_cb(AW_root *) {
+    static bool warned = false;
+    if (!warned) {
+        AW_advice("Color group names are used at various places of the interface.\n"
+                  "To activate the changed names everywhere, you have to\n"
+                  "save properties and restart the program.",
+                  AW_ADVICE_TOGGLE, "Color group name has been changed", 0);
+        warned = true;
+    }
+}
+
 static void color_group_use_changed_cb(AW_root *awr, AW_gc_manager *gcmgr) {
     AW_gc_manager::use_color_groups = awr->awar(AWAR_COLOR_GROUPS_USE)->read_int();
     gcmgr->trigger_changed_cb(GC_COLOR_GROUP_USE_CHANGED);
@@ -450,7 +461,7 @@ AW_gc_manager *AW_manage_GC(AW_window                *aww,
 
     if (define_color_groups) {
         for (int i = 1; i <= AW_COLOR_GROUPS; ++i) {
-            aw_root->awar_string(colorgroupname_awarname(i), default_colorgroup_name(i));
+            aw_root->awar_string(colorgroupname_awarname(i), default_colorgroup_name(i))->add_callback(color_group_name_changed_cb);
         }
 
         const char **color_group_gc_default = AW_gc_manager::color_group_defaults;
