@@ -218,9 +218,6 @@ public:
     }
 };
 
-const char *AW_font_2_ascii(AW_font font_nr);
-int         AW_font_2_xfig(AW_font font_nr);
-
 bool ARB_global_awars_initialized();
 bool ARB_in_expert_mode(AW_root *awr);
 inline bool ARB_in_novice_mode(AW_root *awr) { return !ARB_in_expert_mode(awr); }
