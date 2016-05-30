@@ -523,6 +523,8 @@ AW_preset.o: aw_advice.hxx
 AW_preset.o: aw_awar.hxx
 AW_preset.o: aw_base.hxx
 AW_preset.o: aw_color_groups.hxx
+AW_preset.o: aw_common.hxx
+AW_preset.o: aw_common_xm.hxx
 AW_preset.o: aw_def.hxx
 AW_preset.o: aw_device.hxx
 AW_preset.o: aw_keysym.hxx
@@ -533,11 +535,13 @@ AW_preset.o: aw_preset.hxx
 AW_preset.o: aw_question.hxx
 AW_preset.o: aw_root.hxx
 AW_preset.o: aw_window.hxx
+AW_preset.o: aw_xfont.hxx
 AW_preset.o: $(ARBHOME)/INCLUDE/ad_colorset.h
 AW_preset.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AW_preset.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AW_preset.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_preset.o: $(ARBHOME)/INCLUDE/arb_core.h
+AW_preset.o: $(ARBHOME)/INCLUDE/arb_defs.h
 AW_preset.o: $(ARBHOME)/INCLUDE/arb_error.h
 AW_preset.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AW_preset.o: $(ARBHOME)/INCLUDE/arb_strarray.h
@@ -561,9 +565,12 @@ AW_preset.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 AW_print.o: aw_base.hxx
 AW_print.o: aw_common.hxx
+AW_print.o: aw_common_xm.hxx
+AW_print.o: aw_def.hxx
 AW_print.o: aw_device.hxx
 AW_print.o: aw_position.hxx
 AW_print.o: aw_root.hxx
+AW_print.o: aw_xfont.hxx
 AW_print.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_print.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_print.o: $(ARBHOME)/INCLUDE/arb_defs.h

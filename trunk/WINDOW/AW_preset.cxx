@@ -23,6 +23,7 @@
 
 #include "aw_def.hxx"
 #include "aw_nawar.hxx"
+#include "aw_xfont.hxx"
 
 #include <arbdbt.h>
 #include <ad_colorset.h>
@@ -290,7 +291,7 @@ void AW_gc_manager::update_gc_font(int idx) const {
         device->set_font(gcd.gc+drag_gc_offset, fname, fsize, 0);
     }
 
-    awar_fontinfo->write_string(GBS_global_string("font %i | %i", fname, fsize)); // @@@ use meaningful font-abbrev
+    awar_fontinfo->write_string(GBS_global_string("%s | %i", AW_get_font_shortname(fname), fsize));
 
     trigger_changed_cb(GC_FONT_CHANGED);
 }
@@ -1055,7 +1056,7 @@ static void aw_create_font_chooser_window(AW_window *aww, AW_gc_manager *gcman, 
             int fonts_inserted = 0;
             for (int font_nr = 0; ; font_nr++) {
                 AW_font     aw_font_nr  = font_nr;
-                const char *font_string = AW_font_2_ascii(aw_font_nr);
+                const char *font_string = AW_get_font_specification(aw_font_nr);
                 if (!font_string) {
                     fprintf(stderr, "[Font detection: tried=%i, found=%i]\n", font_nr, fonts_inserted);
                     break;

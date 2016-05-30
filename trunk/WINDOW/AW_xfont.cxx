@@ -12,7 +12,6 @@
  * This software has been widely modified for usage inside ARB.
  */
 
-#include "aw_common_xm.hxx"
 #include "aw_xfont.hxx"
 #include "aw_root.hxx"
 
@@ -56,77 +55,77 @@ static const char *known_iso_versions[KNOWN_ISO_VERSIONS] = { "ISO8859", "ISO106
 #endif
 
 static struct _xfstruct x_fontinfo[] = {
-    { "-adobe-times-medium-r-*--",                  (xfont*) NULL }, // #0
-    { "-adobe-times-medium-i-*--",                  (xfont*) NULL }, // #1
-    { "-adobe-times-bold-r-*--",                    (xfont*) NULL }, // #2
-    { "-adobe-times-bold-i-*--",                    (xfont*) NULL }, // #3
-    { "-schumacher-clean-medium-r-*--",             (xfont*) NULL },      // closest to Avant-Garde
-    { "-schumacher-clean-medium-i-*--",             (xfont*) NULL }, // #5
-    { "-schumacher-clean-bold-r-*--",               (xfont*) NULL }, // #6
-    { "-schumacher-clean-bold-i-*--",               (xfont*) NULL }, // #7
-    { "-*-urw bookman l-medium-r-*--",              (xfont*) NULL },      // closest to Bookman
-    { "-*-urw bookman l-medium-i-*--",              (xfont*) NULL }, // #9
-    { "-*-urw bookman l-bold-r-*--",                (xfont*) NULL }, // #10
-    { "-*-urw bookman l-bold-i-*--",                (xfont*) NULL }, // #11
-    { "-adobe-courier-medium-r-*--",                (xfont*) NULL }, // #12
-    { "-adobe-courier-medium-o-*--",                (xfont*) NULL }, // #13
-    { "-adobe-courier-bold-r-*--",                  (xfont*) NULL }, // #14
-    { "-adobe-courier-bold-o-*--",                  (xfont*) NULL }, // #15
-    { "-adobe-helvetica-medium-r-*--",              (xfont*) NULL }, // #16
-    { "-adobe-helvetica-medium-o-*--",              (xfont*) NULL }, // #17
-    { "-adobe-helvetica-bold-r-*--",                (xfont*) NULL }, // #18
-    { "-adobe-helvetica-bold-o-*--",                (xfont*) NULL }, // #19
-    { "-*-liberation sans narrow-medium-r-*--",     (xfont*) NULL },      // closest to Helv-nar.
-    { "-*-liberation sans narrow-medium-o-*--",     (xfont*) NULL }, // #21
-    { "-*-liberation sans narrow-bold-r-*--",       (xfont*) NULL }, // #22
-    { "-*-liberation sans narrow-bold-o-*--",       (xfont*) NULL }, // #23
-    { "-adobe-new century schoolbook-medium-r-*--", (xfont*) NULL }, // #24
-    { "-adobe-new century schoolbook-medium-i-*--", (xfont*) NULL }, // #25
-    { "-adobe-new century schoolbook-bold-r-*--",   (xfont*) NULL }, // #26
-    { "-adobe-new century schoolbook-bold-i-*--",   (xfont*) NULL }, // #27
-    { "-*-lucidabright-medium-r-*--",               (xfont*) NULL },      // closest to Palatino
-    { "-*-lucidabright-medium-i-*--",               (xfont*) NULL }, // #29
-    { "-*-lucidabright-demibold-r-*--",             (xfont*) NULL }, // #30
-    { "-*-lucidabright-demibold-i-*--",             (xfont*) NULL }, // #31
-    { "-*-symbol-medium-r-*--",                     (xfont*) NULL }, // #32
-    { "-*-zapfchancery-medium-i-*--",               (xfont*) NULL }, // #33
-    { "-*-zapfdingbats-*-*-*--",                    (xfont*) NULL }, // #34
+    { "-adobe-times-medium-r-*--",                  "Times",         (xfont*) NULL }, // #0
+    { "-adobe-times-medium-i-*--",                  "Times I",       (xfont*) NULL }, // #1
+    { "-adobe-times-bold-r-*--",                    "Times B",       (xfont*) NULL }, // #2
+    { "-adobe-times-bold-i-*--",                    "Times IB",      (xfont*) NULL }, // #3
+    { "-schumacher-clean-medium-r-*--",             "Schumacher",    (xfont*) NULL },      // closest to Avant-Garde
+    { "-schumacher-clean-medium-i-*--",             "Schumacher I",  (xfont*) NULL }, // #5
+    { "-schumacher-clean-bold-r-*--",               "Schumacher B",  (xfont*) NULL }, // #6
+    { "-schumacher-clean-bold-i-*--",               "Schumacher IB", (xfont*) NULL }, // #7
+    { "-*-urw bookman l-medium-r-*--",              "Bookman",       (xfont*) NULL },      // closest to Bookman
+    { "-*-urw bookman l-medium-i-*--",              "Bookman I",     (xfont*) NULL }, // #9
+    { "-*-urw bookman l-bold-r-*--",                "Bookman B",     (xfont*) NULL }, // #10
+    { "-*-urw bookman l-bold-i-*--",                "Bookman IB",    (xfont*) NULL }, // #11
+    { "-adobe-courier-medium-r-*--",                "Courier",       (xfont*) NULL }, // #12
+    { "-adobe-courier-medium-o-*--",                "Courier I",     (xfont*) NULL }, // #13
+    { "-adobe-courier-bold-r-*--",                  "Courier B",     (xfont*) NULL }, // #14
+    { "-adobe-courier-bold-o-*--",                  "Courier IB",    (xfont*) NULL }, // #15
+    { "-adobe-helvetica-medium-r-*--",              "Helvetica",     (xfont*) NULL }, // #16
+    { "-adobe-helvetica-medium-o-*--",              "Helvetica I",   (xfont*) NULL }, // #17
+    { "-adobe-helvetica-bold-r-*--",                "Helvetica B",   (xfont*) NULL }, // #18
+    { "-adobe-helvetica-bold-o-*--",                "Helvetica IB",  (xfont*) NULL }, // #19
+    { "-*-liberation sans narrow-medium-r-*--",     "Liberation",    (xfont*) NULL },      // closest to Helv-nar.
+    { "-*-liberation sans narrow-medium-o-*--",     "Liberation I",  (xfont*) NULL }, // #21
+    { "-*-liberation sans narrow-bold-r-*--",       "Liberation B",  (xfont*) NULL }, // #22
+    { "-*-liberation sans narrow-bold-o-*--",       "Liberation IB", (xfont*) NULL }, // #23
+    { "-adobe-new century schoolbook-medium-r-*--", "Schoolbook",    (xfont*) NULL }, // #24
+    { "-adobe-new century schoolbook-medium-i-*--", "Schoolbook I",  (xfont*) NULL }, // #25
+    { "-adobe-new century schoolbook-bold-r-*--",   "Schoolbook B",  (xfont*) NULL }, // #26
+    { "-adobe-new century schoolbook-bold-i-*--",   "Schoolbook IB", (xfont*) NULL }, // #27
+    { "-*-lucidabright-medium-r-*--",               "LucidaBr",      (xfont*) NULL },      // closest to Palatino
+    { "-*-lucidabright-medium-i-*--",               "LucidaBr I",    (xfont*) NULL }, // #29
+    { "-*-lucidabright-demibold-r-*--",             "LucidaBr B",    (xfont*) NULL }, // #30
+    { "-*-lucidabright-demibold-i-*--",             "LucidaBr IB",   (xfont*) NULL }, // #31
+    { "-*-symbol-medium-r-*--",                     "Symbol",        (xfont*) NULL }, // #32
+    { "-*-zapfchancery-medium-i-*--",               "zapfchancery",  (xfont*) NULL }, // #33
+    { "-*-zapfdingbats-*-*-*--",                    "zapfdingbats",  (xfont*) NULL }, // #34
 
     // below here are fonts not defined in xfig!
     // on export, they will be mapped to xfig fonts
     // (according to ps_fontinfo.xfontnum, i.e. the number behind the postscript fontname below)
     
-    { "-*-lucida-medium-r-*-*-",                    (xfont*) NULL }, // #35
-    { "-*-lucida-medium-i-*-*-",                    (xfont*) NULL }, // #36
-    { "-*-lucida-bold-r-*-*-",                      (xfont*) NULL }, // #37
-    { "-*-lucida-bold-i-*-*-",                      (xfont*) NULL }, // #38
-    { "-*-lucidatypewriter-medium-r-*-*-",          (xfont*) NULL }, // #39
-    { "-*-lucidatypewriter-bold-r-*-*-",            (xfont*) NULL }, // #40
+    { "-*-lucida-medium-r-*-*-",                    "Lucida",        (xfont*) NULL }, // #35
+    { "-*-lucida-medium-i-*-*-",                    "Lucida I",      (xfont*) NULL }, // #36
+    { "-*-lucida-bold-r-*-*-",                      "Lucida B",      (xfont*) NULL }, // #37
+    { "-*-lucida-bold-i-*-*-",                      "Lucida IB",     (xfont*) NULL }, // #38
+    { "-*-lucidatypewriter-medium-r-*-*-",          "Lucida mono",   (xfont*) NULL }, // #39
+    { "-*-lucidatypewriter-bold-r-*-*-",            "Lucida mono B", (xfont*) NULL }, // #40
 
-    { "-*-screen-medium-r-*-*-",                    (xfont*) NULL }, // #41
-    { "-*-screen-bold-r-*-*-",                      (xfont*) NULL }, // #42
-    { "-*-clean-medium-r-*-*-",                     (xfont*) NULL }, // #43
-    { "-*-clean-bold-r-*-*-",                       (xfont*) NULL }, // #44
-    { "-*-terminal-medium-r-*-*-",                  (xfont*) NULL }, // #45
-    { "-*-terminal-bold-r-*-*-",                    (xfont*) NULL }, // #46
+    { "-*-screen-medium-r-*-*-",                    "Screen",        (xfont*) NULL }, // #41
+    { "-*-screen-bold-r-*-*-",                      "Screen B",      (xfont*) NULL }, // #42
+    { "-*-clean-medium-r-*-*-",                     "Clean",         (xfont*) NULL }, // #43
+    { "-*-clean-bold-r-*-*-",                       "Clean B",       (xfont*) NULL }, // #44
+    { "-*-terminal-medium-r-*-*-",                  "Terminal",      (xfont*) NULL }, // #45
+    { "-*-terminal-bold-r-*-*-",                    "Terminal B",    (xfont*) NULL }, // #46
     
-    { "-*-dustismo-medium-r-*-*-",                  (xfont*) NULL }, // #47
-    { "-*-dustismo-bold-r-*-*-",                    (xfont*) NULL }, // #48
-    { "-*-utopia-medium-r-*-*-",                    (xfont*) NULL }, // #49
-    { "-*-utopia-bold-r-*-*-",                      (xfont*) NULL }, // #50
-    { "-*-dejavu sans-medium-r-*-*-",               (xfont*) NULL }, // #51
-    { "-*-dejavu sans-bold-r-*-*-",                 (xfont*) NULL }, // #52
+    { "-*-dustismo-medium-r-*-*-",                  "Dustismo",      (xfont*) NULL }, // #47
+    { "-*-dustismo-bold-r-*-*-",                    "Dustismo B",    (xfont*) NULL }, // #48
+    { "-*-utopia-medium-r-*-*-",                    "Utopia",        (xfont*) NULL }, // #49
+    { "-*-utopia-bold-r-*-*-",                      "Utopia B",      (xfont*) NULL }, // #50
+    { "-*-dejavu sans-medium-r-*-*-",               "Dejavu",        (xfont*) NULL }, // #51
+    { "-*-dejavu sans-bold-r-*-*-",                 "Dejavu B",      (xfont*) NULL }, // #52
     
-    { "-*-fixed-medium-r-*-*-",                     (xfont*) NULL }, // #53
-    { "-*-fixed-bold-r-*-*-",                       (xfont*) NULL }, // #54
-    { "-*-dejavu sans mono-medium-r-*-*-",          (xfont*) NULL }, // #55
-    { "-*-dejavu sans mono-bold-r-*-*-",            (xfont*) NULL }, // #56
-    { "-*-luxi mono-medium-r-*-*-",                 (xfont*) NULL }, // #57
-    { "-*-luxi mono-bold-r-*-*-",                   (xfont*) NULL }, // #58
-    { "-*-nimbus mono l-medium-r-*-*-",             (xfont*) NULL }, // #59
-    { "-*-nimbus mono l-bold-r-*-*-",               (xfont*) NULL }, // #60
-    { "-*-latin modern typewriter-medium-r-*-*-",   (xfont*) NULL }, // #61
-    { "-*-latin modern typewriter-bold-r-*-*-",     (xfont*) NULL }, // #62
+    { "-*-fixed-medium-r-*-*-",                     "Fixed",         (xfont*) NULL }, // #53
+    { "-*-fixed-bold-r-*-*-",                       "Fixed B",       (xfont*) NULL }, // #54
+    { "-*-dejavu sans mono-medium-r-*-*-",          "Dejavu mono",   (xfont*) NULL }, // #55
+    { "-*-dejavu sans mono-bold-r-*-*-",            "Dejavu mono B", (xfont*) NULL }, // #56
+    { "-*-luxi mono-medium-r-*-*-",                 "Luxi mono",     (xfont*) NULL }, // #57
+    { "-*-luxi mono-bold-r-*-*-",                   "Luxi mono B",   (xfont*) NULL }, // #58
+    { "-*-nimbus mono l-medium-r-*-*-",             "Nimbus mono",   (xfont*) NULL }, // #59
+    { "-*-nimbus mono l-bold-r-*-*-",               "Nimbus mono B", (xfont*) NULL }, // #60
+    { "-*-latin modern typewriter-medium-r-*-*-",   "Latin mono",    (xfont*) NULL }, // #61
+    { "-*-latin modern typewriter-bold-r-*-*-",     "Latin mono B",  (xfont*) NULL }, // #62
 };
 
 static struct _fstruct ps_fontinfo[] = {
@@ -208,13 +207,25 @@ static struct _fstruct ps_fontinfo[] = {
 STATIC_ASSERT(ARRAY_ELEMS(x_fontinfo) == AW_NUM_FONTS);
 STATIC_ASSERT(ARRAY_ELEMS(ps_fontinfo) == AW_NUM_FONTS+1);
 
-#if defined(DEBUG)
+#if defined(ASSERTION_USED)
 static void check_ps_fontinfo_valid() {
-    for (int f = 0; f<AW_NUM_FONTS; f++) {
+    // check all fonts do translate into valid xfig fonts:
+    for (int f = 0; f<AW_NUM_FONTS; ++f) {
         int xfig_fontnr                = AW_font_2_xfig(f);
         if (xfig_fontnr<0) xfig_fontnr = -xfig_fontnr;
         aw_assert(xfig_fontnr >= 0);
         aw_assert(xfig_fontnr < AW_NUM_FONTS_XFIG);
+    }
+
+    // check for unique font-specs and unique font-shortnames:
+    for (int f1 = 0; f1<AW_NUM_FONTS; ++f1) {
+        const _xfstruct& x1 = x_fontinfo[f1];
+        for (int f2 = f1+1; f2<AW_NUM_FONTS; ++f2) {
+            const _xfstruct& x2 = x_fontinfo[f2];
+
+            aw_assert(strcmp(x1.templat,     x2.templat)     != 0);
+            aw_assert(strcmp(x1.description, x2.description) != 0);
+        }
     }
 }
 #endif
@@ -280,7 +291,7 @@ void aw_root_init_font(Display *display) {
 
     initialized = true;
 
-#if defined(DEBUG)
+#if defined(ASSERTION_USED)
     check_ps_fontinfo_valid();
 #endif
 
@@ -445,6 +456,8 @@ static void dumpFontInformation(xfont *xf) {
 /* Lookup an X font, "f" corresponding to a Postscript font style that is
  * close in size to "s"
  */
+
+#define DEFAULT (-1)
 
 static bool lookfont(Display *tool_d, int f, int s, int& found_size, bool verboose, bool only_query, PIX_FONT *fontstPtr)
 // returns true if appropriate font is available.
@@ -641,7 +654,7 @@ static char *caps(char *sentence) {
 }
 
 
-const char *AW_font_2_ascii(AW_font font_nr) {
+const char *AW_get_font_specification(AW_font font_nr) {
     //! converts fontnr to string
     //
     // @return 0 if font is not available
@@ -687,6 +700,11 @@ const char *AW_font_2_ascii(AW_font font_nr) {
         readable_fontname = xf.templat;
     }
     return readable_fontname;
+}
+
+const char *AW_get_font_shortname(AW_font font_nr) {
+    aw_assert(font_nr>=0 && font_nr<AW_NUM_FONTS);
+    return x_fontinfo[font_nr].description;
 }
 
 int AW_font_2_xfig(AW_font font_nr) {
