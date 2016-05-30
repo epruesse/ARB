@@ -10,6 +10,7 @@
 
 #include "aw_root.hxx"
 #include "aw_common.hxx"
+#include "aw_xfont.hxx"
 
 #include <arb_msg.h>
 
