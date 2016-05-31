@@ -451,7 +451,7 @@ void AW_gc_manager::add_gc(const char* gc_description, int& gc, bool is_color_gr
 
         for (gc_container::iterator g = GCs.begin(); g != GCs.end(); ++g) {
             if (strcmp(g->colorlabel.c_str(), referenced_colorlabel) == 0) {
-                default_color = AW_root::SINGLETON->awar(color_awarname(gc_base_name, g->key))->read_char_pntr();
+                default_color = AW_root::SINGLETON->awar(color_awarname(gc_base_name, g->key))->read_char_pntr(); // @@@ should use default value (not current value)
                 found         = true;
                 break;
             }
@@ -685,22 +685,16 @@ static void create_font_button(AW_window *aws, const char *gc_base_name, const g
     free(button_id);
 }
 
-const int STD_LABEL_LEN    = 15;
-const int COLOR_BUTTON_LEN = 10;
-const int FONT_BUTTON_LEN  = COLOR_BUTTON_LEN+STD_LABEL_LEN+1;
+static const int STD_LABEL_LEN    = 15;
+static const int COLOR_BUTTON_LEN = 10;
+static const int FONT_BUTTON_LEN  = COLOR_BUTTON_LEN+STD_LABEL_LEN+1;
 // => color+font has ~same length as 2 colors (does not work for color groups and does not work at all in gtk)
 
 void AW_gc_manager::create_gc_buttons(AW_window *aws, bool for_colorgroups) {
-    int idx = 0;
+    for (int idx = for_colorgroups ? first_colorgroup_idx : 0; idx<int(GCs.size()); ++idx) {
+        const gc_desc& gcd = GCs[idx];
 
-    gc_container::iterator gcd = GCs.begin();
-    if (for_colorgroups) {
-        advance(gcd, first_colorgroup_idx);
-        idx += first_colorgroup_idx;
-    }
-
-    for (; gcd != GCs.end(); ++gcd, ++idx) { // @@@ loop over idx
-        if (gcd->is_color_group() != for_colorgroups) continue;
+        if (gcd.is_color_group() != for_colorgroups) continue;
 
         if (for_colorgroups) {
             int color_group_no = idx-first_colorgroup_idx+1;
@@ -712,16 +706,16 @@ void AW_gc_manager::create_gc_buttons(AW_window *aws, bool for_colorgroups) {
         }
         else {
             aws->label_length(STD_LABEL_LEN);
-            aws->label(gcd->colorlabel.c_str());
+            aws->label(gcd.colorlabel.c_str());
         }
 
         aws->button_length(COLOR_BUTTON_LEN);
-        create_color_button(aws, color_awarname(gc_base_name, gcd->key), gcd->colorlabel.c_str());
-        if (gcd->has_font)   {
+        create_color_button(aws, color_awarname(gc_base_name, gcd.key), gcd.colorlabel.c_str());
+        if (gcd.has_font)   {
             aws->button_length(FONT_BUTTON_LEN);
-            create_font_button(aws, gc_base_name, *gcd);
+            create_font_button(aws, gc_base_name, gcd);
         }
-        if (!gcd->same_line) aws->at_newline();
+        if (!gcd.same_line) aws->at_newline();
     }
 }
 
