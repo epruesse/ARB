@@ -30,6 +30,8 @@ using std::string;
 #define AWAR_COLOR_GROUPS_USE    AWAR_COLOR_GROUPS_PREFIX "/use"  // int : whether to use the colors in display or not
 #define GC_AWARNAME_TPL_PREFIX   "GCS/%s/MANAGE_GCS/%s"
 
+#define ALL_FONTS_ID "all_fonts"
+
 CONSTEXPR_RETURN inline bool valid_color_group(int color_group) {
     return color_group>0 && color_group<=AW_COLOR_GROUPS;
 }
@@ -207,6 +209,7 @@ public:
     {}
 
     void init_all_fonts() const;
+    void update_all_fonts() const;
 
     bool has_color_groups() const { return first_colorgroup_idx != NO_INDEX; }
 
@@ -281,6 +284,23 @@ void AW_gc_manager::update_gc_font(int idx) const {
 }
 static void gc_fontOrSize_changed_cb(AW_root*, AW_gc_manager *mgr, int idx) {
     mgr->update_gc_font(idx);
+}
+void AW_gc_manager::update_all_fonts() const {
+    AW_root *awr = AW_root::SINGLETON;
+
+    const char *font = awr->awar(font_awarname(gc_base_name, ALL_FONTS_ID))->read_char_pntr();
+
+    delay_changed_callbacks(true); // temp. disable callbacks
+    for (gc_container::const_iterator g = GCs.begin(); g != GCs.end(); ++g) {
+        if (g->has_font) {
+            // @@@ bug: will update fixed width fonts with variable fonts (fixed-width GCs are broken in gtk anyway)
+            awr->awar(font_awarname(gc_base_name, g->key))->write_string(font);
+        }
+    }
+    delay_changed_callbacks(false);
+}
+static void all_fontsOrSizes_changed_cb(AW_root*, const AW_gc_manager *mgr) {
+    mgr->update_all_fonts();
 }
 
 void AW_gc_manager::update_gc_color(int idx) const {
@@ -359,6 +379,7 @@ void AW_gc_manager::add_gc(const char* gc_description, int& gc, bool is_color_gr
 
     const char *default_color = gcd.parse_decl(gc_description);
 
+    aw_assert(strcmp(gcd.key.c_str(), ALL_FONTS_ID) != 0); // id is reserved
     aw_assert(implicated(gc == 0, gcd.has_font)); // first GC always has to define a font!
 
     if (default_color[0] == '{') {
@@ -398,15 +419,27 @@ void AW_gc_manager::add_gc(const char* gc_description, int& gc, bool is_color_gr
     gc++;
 }
 void AW_gc_manager::init_all_fonts() const {
+    char    *ad_font = NULL;
+    AW_root *awr     = AW_root::SINGLETON;
+
     // initialize fonts of all defined GCs:
     for (int idx = 0; idx<int(GCs.size()); ++idx) {
-        if (GCs[idx].has_font) {
+        const gc_desc& gcd = GCs[idx];
+        if (gcd.has_font) {
             update_gc_font(idx);
+
+            if (ad_font == NULL) {
+                ad_font = awr->awar(font_awarname(gc_base_name, gcd.key))->read_string();
+            }
         }
     }
+
+    // init global font awar (used to set ALL fonts)
+    AW_root::SINGLETON->awar_string(font_awarname(gc_base_name, ALL_FONTS_ID), ad_font)->add_callback(makeRootCallback(all_fontsOrSizes_changed_cb, this));
+    free(ad_font);
 }
 
-AW_gc_manager *AW_manage_GC(AW_window                *aww,
+AW_gc_manager *AW_manage_GC(AW_window                */*aww*/, // remove AFTERMERGE
                             const char               *gc_base_name,
                             AW_device                *device,
                             int                       base_gc,
@@ -431,7 +464,7 @@ AW_gc_manager *AW_manage_GC(AW_window                *aww,
      *
      *  When the GCs are modified the 'changecb' is called
      *
-     * @param aww          base window
+     * @param aww          base window (motif only)
      * @param gc_base_name (usually the window_id, prefixed to awars)
      * @param device       screen device
      * @param base_gc      first gc number @@@REFACTOR: always 0 so far...
@@ -566,6 +599,8 @@ char *AW_get_color_group_name(AW_root *awr, int color_group) {
     return awr->awar(colorgroupname_awarname(color_group))->read_string();
 }
 
+static const int STD_LABEL_LEN = 15;
+
 void AW_gc_manager::create_gc_buttons(AW_window *aws, bool for_colorgroups) {
     int idx = 0;
 
@@ -574,8 +609,6 @@ void AW_gc_manager::create_gc_buttons(AW_window *aws, bool for_colorgroups) {
         advance(gcd, first_colorgroup_idx);
         idx += first_colorgroup_idx;
     }
-
-    const int STD_LABEL_LEN = 15;
 
     for (; gcd != GCs.end(); ++gcd, ++idx) { // @@@ loop over idx
         if (gcd->is_color_group() != for_colorgroups) continue;
@@ -657,7 +690,13 @@ AW_window *AW_create_gc_window_named(AW_root *aw_root, AW_gc_manager *gcman, con
     aws->create_button("HELP", "HELP", "H");
     aws->at_newline();
 
-    aws->label_length(23);
+    // select all fonts:
+    aws->label_length(STD_LABEL_LEN);
+    aws->label("All fonts:");
+    aws->create_font_button(font_awarname(gcman->get_base_name(), ALL_FONTS_ID), NULL);
+    aws->at_newline();
+
+    // anti-aliasing:
     aws->label("Anti-Aliasing");
     aws->create_option_menu(aa_awarname(gcman->get_base_name()), true);
     aws->insert_option("System Default", "", AW_AA_DEFAULT);
