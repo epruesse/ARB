@@ -34,13 +34,15 @@
 
 using std::string;
 
-#define AWAR_COLOR_GROUPS_PREFIX  "color_groups"
-#define AWAR_COLOR_GROUPS_USE     AWAR_COLOR_GROUPS_PREFIX "/use" // int : whether to use the colors in display or not
-#define GC_AWARNAME_TPL_PREFIX    "GCS/%s/MANAGE_GCS/%s"
+#define AWAR_COLOR_GROUPS_PREFIX "color_groups"
+#define AWAR_COLOR_GROUPS_USE    AWAR_COLOR_GROUPS_PREFIX "/use"  // int : whether to use the colors in display or not
+#define GC_AWARNAME_TPL_PREFIX   "GCS/%s/MANAGE_GCS/%s"
+
+#define ALL_FONTS_ID "all_fonts"
 
 // prototypes for motif-only section at bottom of this file:
 static void aw_create_color_chooser_window(AW_window *aww, const char *awar_name, const char *color_description);
-static void aw_create_font_chooser_window(AW_window *aww, AW_gc_manager *gcman, int gc_idx);
+static void aw_create_font_chooser_window(AW_window *aww, const char *gc_base_name, const struct gc_desc *gcd);
 
 CONSTEXPR_RETURN inline bool valid_color_group(int color_group) {
     return color_group>0 && color_group<=AW_COLOR_GROUPS;
@@ -228,8 +230,10 @@ public:
     {}
 
     void init_all_fonts() const;
+    void update_all_fonts(bool sizeChanged) const;
 
     bool has_color_groups() const { return first_colorgroup_idx != NO_INDEX; }
+    bool has_variable_width_font() const;
 
     int size() const { return GCs.size(); }
     const gc_desc& get_gc_desc(int idx) const {
@@ -316,6 +320,32 @@ void AW_gc_manager::update_gc_font(int idx) const {
 }
 static void gc_fontOrSize_changed_cb(AW_root*, AW_gc_manager *mgr, int idx) {
     mgr->update_gc_font(idx);
+}
+inline bool font_has_fixed_width(AW_font aw_font_nr) {
+    return AW_font_2_xfig(aw_font_nr) < 0;
+}
+void AW_gc_manager::update_all_fonts(bool sizeChanged) const {
+    AW_root *awr = AW_root::SINGLETON;
+
+    int fname = awr->awar(fontname_awarname(gc_base_name, ALL_FONTS_ID))->read_int();
+    int fsize = awr->awar(fontsize_awarname(gc_base_name, ALL_FONTS_ID))->read_int();
+
+    delay_changed_callbacks(true); // temp. disable callbacks
+    for (gc_container::const_iterator g = GCs.begin(); g != GCs.end(); ++g) {
+        if (g->has_font) {
+            if (sizeChanged) {
+                awr->awar(fontsize_awarname(gc_base_name, g->key))->write_int(fsize);
+            }
+            else {
+                bool update = !g->fixed_width_font || font_has_fixed_width(fname);
+                if (update) awr->awar(fontname_awarname(gc_base_name, g->key))->write_int(fname);
+            }
+        }
+    }
+    delay_changed_callbacks(false);
+}
+static void all_fontsOrSizes_changed_cb(AW_root*, const AW_gc_manager *mgr, bool sizeChanged) {
+    mgr->update_all_fonts(sizeChanged);
 }
 
 void AW_gc_manager::update_gc_color(int idx) const {
@@ -408,6 +438,7 @@ void AW_gc_manager::add_gc(const char* gc_description, int& gc, bool is_color_gr
 
     const char *default_color = gcd.parse_decl(gc_description);
 
+    aw_assert(strcmp(gcd.key.c_str(), ALL_FONTS_ID) != 0); // id is reserved
     aw_assert(implicated(gc == 0, gcd.has_font)); // first GC always has to define a font!
 
     if (default_color[0] == '{') {
@@ -449,12 +480,33 @@ void AW_gc_manager::add_gc(const char* gc_description, int& gc, bool is_color_gr
     gc++;
 }
 void AW_gc_manager::init_all_fonts() const {
+    int      ad_font = -1;
+    int      ad_size = -1;
+    AW_root *awr     = AW_root::SINGLETON;
+
     // initialize fonts of all defined GCs:
     for (int idx = 0; idx<int(GCs.size()); ++idx) {
-        if (GCs[idx].has_font) {
+        const gc_desc& gcd = GCs[idx];
+        if (gcd.has_font) {
             update_gc_font(idx);
+
+            if (ad_font == -1) {
+                ad_font = awr->awar(fontname_awarname(gc_base_name, gcd.key))->read_int();
+                ad_size = awr->awar(fontsize_awarname(gc_base_name, gcd.key))->read_int();
+            }
         }
     }
+
+    // init global font awars (used to set ALL fonts)
+    AW_root::SINGLETON->awar_int(fontname_awarname(gc_base_name, ALL_FONTS_ID), ad_font)->add_callback(makeRootCallback(all_fontsOrSizes_changed_cb, this, false));
+    AW_root::SINGLETON->awar_int(fontsize_awarname(gc_base_name, ALL_FONTS_ID), ad_size)->add_callback(makeRootCallback(all_fontsOrSizes_changed_cb, this, true));
+}
+
+bool AW_gc_manager::has_variable_width_font() const {
+    for (gc_container::const_iterator g = GCs.begin(); g != GCs.end(); ++g) {
+        if (g->has_font && !g->fixed_width_font) return true;
+    }
+    return false;
 }
 
 AW_gc_manager *AW_manage_GC(AW_window                *aww,
@@ -624,15 +676,19 @@ static void create_color_button(AW_window *aws, const char *awar_name, const cha
     free(button_id);
 }
 
-static void create_font_button(AW_window *aws, AW_gc_manager *gcman, int gc_idx) {
-    const gc_desc&  gcd       = gcman->get_gc_desc(gc_idx);
-    char           *button_id = GBS_global_string_copy("sel_font_%s", gcd.key.c_str());
+static void create_font_button(AW_window *aws, const char *gc_base_name, const gc_desc& gcd) {
+    char *button_id = GBS_global_string_copy("sel_font_%s", gcd.key.c_str());
 
-    aws->callback(makeWindowCallback(aw_create_font_chooser_window, gcman, gc_idx));
-    aws->create_button(button_id, fontinfo_awarname(gcman->get_base_name(), gcd.key), 0);
+    aws->callback(makeWindowCallback(aw_create_font_chooser_window, gc_base_name, &gcd));
+    aws->create_button(button_id, fontinfo_awarname(gc_base_name, gcd.key), 0);
 
     free(button_id);
 }
+
+const int STD_LABEL_LEN    = 15;
+const int COLOR_BUTTON_LEN = 10;
+const int FONT_BUTTON_LEN  = COLOR_BUTTON_LEN+STD_LABEL_LEN+1;
+// => color+font has ~same length as 2 colors (does not work for color groups and does not work at all in gtk)
 
 void AW_gc_manager::create_gc_buttons(AW_window *aws, bool for_colorgroups) {
     int idx = 0;
@@ -642,11 +698,6 @@ void AW_gc_manager::create_gc_buttons(AW_window *aws, bool for_colorgroups) {
         advance(gcd, first_colorgroup_idx);
         idx += first_colorgroup_idx;
     }
-
-    const int STD_LABEL_LEN    = 15;
-    const int COLOR_BUTTON_LEN = 10;
-    const int FONT_BUTTON_LEN  = COLOR_BUTTON_LEN+STD_LABEL_LEN+1;
-    // => color+font has ~same length as 2 colors (does not work for color groups and does not work at all in gtk)
 
     for (; gcd != GCs.end(); ++gcd, ++idx) { // @@@ loop over idx
         if (gcd->is_color_group() != for_colorgroups) continue;
@@ -668,7 +719,7 @@ void AW_gc_manager::create_gc_buttons(AW_window *aws, bool for_colorgroups) {
         create_color_button(aws, color_awarname(gc_base_name, gcd->key), gcd->colorlabel.c_str());
         if (gcd->has_font)   {
             aws->button_length(FONT_BUTTON_LEN);
-            create_font_button(aws, this, idx);
+            create_font_button(aws, gc_base_name, *gcd);
         }
         if (!gcd->same_line) aws->at_newline();
     }
@@ -728,6 +779,23 @@ AW_window *AW_create_gc_window_named(AW_root *aw_root, AW_gc_manager *gcman, con
     aws->callback(makeHelpCallback("color_props.hlp"));
     aws->create_button("HELP", "HELP", "H");
     aws->at_newline();
+
+    // select all fonts:
+    {
+        static gc_desc allFont_fake_desc(-1, GC_TYPE_NORMAL);
+        allFont_fake_desc.colorlabel       = "<all fonts>";
+        allFont_fake_desc.key              = ALL_FONTS_ID;
+        allFont_fake_desc.fixed_width_font = !gcman->has_variable_width_font();
+        aws->callback(makeWindowCallback(aw_create_font_chooser_window, gcman->get_base_name(), &allFont_fake_desc));
+    }
+    aws->label_length(STD_LABEL_LEN);
+    aws->label("All fonts:");
+    aws->button_length(COLOR_BUTTON_LEN);
+    aws->create_button("select_all_fonts", "Select", "s");
+    aws->at_newline();
+
+    // anti-aliasing:
+    // (gtk-only)
 
     gcman->create_gc_buttons(aws, false);
 
@@ -1044,13 +1112,12 @@ static void aw_create_font_chooser_awars(AW_root *awr) {
     awr->awar_int(AWAR_SELECTOR_FONT_SIZE, NO_SIZE)->set_minmax(MIN_FONTSIZE, MAX_FONTSIZE);
 }
 
-static void aw_create_font_chooser_window(AW_window *aww, AW_gc_manager *gcman, int gc_idx) {
-    AW_root        *awr = aww->get_root();
-    const gc_desc&  gcd = gcman->get_gc_desc(gc_idx);
+static void aw_create_font_chooser_window(AW_window *aww, const char *gc_base_name, const gc_desc *gcd) {
+    AW_root *awr = aww->get_root();
 
     static AW_window_simple *aw_fontChoose[2] = { NULL, NULL }; // one for fixed-width font; one general
 
-    bool fixed_width_only = gcd.fixed_width_font;
+    bool fixed_width_only = gcd->fixed_width_font;
 
     AW_window_simple*& aws = aw_fontChoose[fixed_width_only];
     AW_window_simple*& awo = aw_fontChoose[!fixed_width_only];
@@ -1082,7 +1149,7 @@ static void aw_create_font_chooser_window(AW_window *aww, AW_gc_manager *gcman, 
                     break;
                 }
 
-                if (fixed_width_only && AW_font_2_xfig(aw_font_nr) >= 0) continue;
+                if (fixed_width_only && !font_has_fixed_width(aw_font_nr)) continue;
                 aws->insert_option(font_string, 0, font_nr);
                 ++fonts_inserted;
             }
@@ -1100,9 +1167,9 @@ static void aw_create_font_chooser_window(AW_window *aww, AW_gc_manager *gcman, 
         aws->window_fit();
     }
 
-    awr->awar(AWAR_SELECTOR_FONT_LABEL)->write_string(gcd.colorlabel.c_str());
-    awr->awar(AWAR_SELECTOR_FONT_NAME)->map(awr->awar(fontname_awarname(gcman->get_base_name(), gcd.key)));
-    awr->awar(AWAR_SELECTOR_FONT_SIZE)->map(awr->awar(fontsize_awarname(gcman->get_base_name(), gcd.key)));
+    awr->awar(AWAR_SELECTOR_FONT_LABEL)->write_string(gcd->colorlabel.c_str());
+    awr->awar(AWAR_SELECTOR_FONT_NAME)->map(awr->awar(fontname_awarname(gc_base_name, gcd->key)));
+    awr->awar(AWAR_SELECTOR_FONT_SIZE)->map(awr->awar(fontsize_awarname(gc_base_name, gcd->key)));
 
     if (awo) awo->hide(); // both windows use same awars -> hide the other window to avoid chaos
     aws->activate();
