@@ -26,8 +26,12 @@ DESCRIPTION     This is a generic window that allows you to configure
                       - '#rgb' where r/g/b stands for 0..f (hexadecimal values)
                       - '#rrggbb' same as above
 
-                Attached to some of the colors there are font definitions, where you
-                may select the font type and size.
+                Attached to some of the colors there are font selection buttons
+                to configure the font used for this color (and for all following
+                colors that have no font selection button).
+
+                At the top of the window there is a button to set all customizable fonts
+                to the same value.
 
                 This window may contain a button at the bottom, allowing you to define the
                 colors of color groups (see LINK{color_props_groups.hlp}).
