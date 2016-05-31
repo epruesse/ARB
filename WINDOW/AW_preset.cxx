@@ -172,9 +172,14 @@ class AW_gc_manager : virtual Noncopyable {
 
     int first_colorgroup_idx; // index into 'GCs' or NO_INDEX (if no color groups defined)
 
-    std::vector<gc_desc> GCs;
+    typedef std::vector<gc_desc> gc_container;
+    gc_container GCs;
 
     GcChangedCallback changed_cb;
+
+    mutable bool          suppress_changed_cb;  // if true -> collect cb-trigger in 'did_suppress_change'
+    mutable GcChange      did_suppress_change;  // "max" change suppressed so far (will be triggered by delay_changed_callbacks())
+    static const GcChange GC_NOTHING_CHANGED = GcChange(0);
 
 #if defined(ASSERTION_USED)
     bool valid_idx(int idx) const { return idx>=0 && idx<int(GCs.size()); }
@@ -196,19 +201,21 @@ public:
           device(device_),
           drag_gc_offset(drag_gc_offset_),
           first_colorgroup_idx(NO_INDEX),
-          changed_cb(makeGcChangedCallback(ignore_change_cb))
+          changed_cb(makeGcChangedCallback(ignore_change_cb)),
+          suppress_changed_cb(false),
+          did_suppress_change(GC_NOTHING_CHANGED)
     {}
 
     void init_all_fonts() const;
 
-    const char *get_base_name() const { return gc_base_name; }
     bool has_color_groups() const { return first_colorgroup_idx != NO_INDEX; }
-    int size() const { return GCs.size(); }
 
+    int size() const { return GCs.size(); }
     const gc_desc& get_gc_desc(int idx) const {
         aw_assert(valid_idx(idx));
         return GCs[idx];
     }
+    const char *get_base_name() const { return gc_base_name; }
     int get_drag_gc() const { return drag_gc_offset; }
 
     void add_gc(const char* gc_desc, int& gc, bool is_color_group);
@@ -220,8 +227,25 @@ public:
 
     void set_changed_cb(const GcChangedCallback& ccb) { changed_cb = ccb; }
     void trigger_changed_cb(GcChange whatChanged) const {
-        changed_cb(whatChanged);
-        device->queue_draw();
+        if (suppress_changed_cb) {
+            did_suppress_change = GcChange(std::max(whatChanged, did_suppress_change));
+        }
+        else {
+            changed_cb(whatChanged);
+            device->queue_draw();
+        }
+    }
+
+    void delay_changed_callbacks(bool suppress) const {
+        aw_assert(suppress != suppress_changed_cb);
+
+        suppress_changed_cb = suppress;
+        if (suppress) {
+            did_suppress_change = GC_NOTHING_CHANGED;
+        }
+        else if (did_suppress_change>GC_NOTHING_CHANGED) {
+            trigger_changed_cb(did_suppress_change);
+        }
     }
 };
 
@@ -345,7 +369,7 @@ void AW_gc_manager::add_gc(const char* gc_description, int& gc, bool is_color_gr
         char *referenced_colorlabel = GB_strpartdup(default_color+1, close_brace-1);
         bool  found                 = false;
 
-        for (std::vector<gc_desc>::iterator g = GCs.begin(); g != GCs.end(); ++g) {
+        for (gc_container::iterator g = GCs.begin(); g != GCs.end(); ++g) {
             if (strcmp(g->colorlabel.c_str(), referenced_colorlabel) == 0) {
                 default_color = AW_root::SINGLETON->awar(color_awarname(gc_base_name, g->key))->read_char_pntr();
                 found         = true;
@@ -365,7 +389,8 @@ void AW_gc_manager::add_gc(const char* gc_description, int& gc, bool is_color_gr
         if (gcd.has_font) {
             const char *default_font = gcd.fixed_width_font ? "monospace 10" : "sans 10";
 
-            AW_root::SINGLETON->awar_string(font_awarname(gc_base_name, gcd.key), default_font)->add_callback(makeRootCallback(gc_fontOrSize_changed_cb, this, idx));
+            RootCallback fontChange_cb = makeRootCallback(gc_fontOrSize_changed_cb, this, idx);
+            AW_root::SINGLETON->awar_string(font_awarname(gc_base_name, gcd.key), default_font)->add_callback(fontChange_cb);
         }
         // Note: fonts are not initialized here. This is done in init_all_fonts() after all GCs have been defined.
     }
@@ -544,7 +569,7 @@ char *AW_get_color_group_name(AW_root *awr, int color_group) {
 void AW_gc_manager::create_gc_buttons(AW_window *aws, bool for_colorgroups) {
     int idx = 0;
 
-    std::vector<gc_desc>::iterator gcd = GCs.begin();
+    gc_container::iterator gcd = GCs.begin();
     if (for_colorgroups) {
         advance(gcd, first_colorgroup_idx);
         idx += first_colorgroup_idx;
