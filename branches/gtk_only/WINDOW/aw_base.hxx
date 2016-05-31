@@ -50,9 +50,14 @@ enum AW_area {
 };
 
 enum GcChange {
-    GC_COLOR_CHANGED,           // -> normally a refresh should do
+    // value 0 is reserved (used internally in GC-manager)
+
+    GC_COLOR_CHANGED = 1,       // -> normally a refresh should do
     GC_FONT_CHANGED,            // -> display needs a resize
     GC_COLOR_GROUP_USE_CHANGED, // -> might need extra calculations
+
+    // Note: higher values should cover lower values,
+    // i.e. a resize (GC_FONT_CHANGED) always does a refresh (GC_COLOR_CHANGED)
 };
 
 AW_default get_AW_ROOT_DEFAULT();
