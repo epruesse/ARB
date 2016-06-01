@@ -1,0 +1,5 @@
+# libraries needed to link against PROBE_SET/fb_test.o
+
+lib/libCORE.so
+PROBE_SET/ps_filebuffer.o
+

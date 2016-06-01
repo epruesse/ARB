@@ -1,0 +1,50 @@
+[PRG=dnadist CORR=jukes_cantor FILTER=POS_VAR_BY_PARSIMONY PKG=ARB
+[created as copy of 'tree_bootstrap_1000_fixed']
+Thu Aug 22 13:57:39 2013: tree_bootstrap_and_groups saved to trees/bg.tree
+]
+(
+  (
+    (
+      (
+        (
+          AticSea6:0.11121,
+          (
+            RblAerol:0.08485,
+            RblMesop:0.04207
+          )99_group99:0.23783
+        )5:0.01793,
+        (
+          (
+            (
+              DnrShiba:0.07595,
+              RsbElon4:0.05345
+            )71:0.03445,
+            MmbAlkal:0.06859
+          )37:0.01563,
+          (
+            (
+              MabPelag:0.00149,
+              MabSalin:0.00881
+            ):0.09511,
+            PaoMaris:0.09160
+          )62:0.03565
+        )18_group_18_:0.02980
+      )19:0.03601,
+      (
+        OnlGran2:0.05653,
+        RsnAnta2:0.06019
+      )65_77nu_m_b__ered:0.02103
+    )quoted:0.15217,
+    (
+      _MhuCaps:0.19386,
+      ThtNivea:0.22990
+    )no_boot_:0.42708
+  )__bs100:0.06083,
+  (
+    (
+      LbnMarin:0.01900,
+      LbnzAlb4:0.00279
+    )80:0.01600,
+    LbnAlexa:0.03237
+  )666numbered_noboot:0.06083
+)0;

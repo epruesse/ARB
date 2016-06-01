@@ -1,0 +1,156 @@
+# -*-Mode: Makefile;-*-
+#
+# To rebuild PERL2ARB from $ARBHOME call
+# make perl_clean perl
+
+ARB_MAINMAKEFILE=../Makefile
+THIS=Makefile.main
+
+# howto call Makefile.main (this file)
+MAKETHIS=$(MAKE) -f $(THIS)
+
+# howto call generated Makefile
+PMAKE=$(MAKE) "CC=$(A_CXX)" 
+
+LIB=$(ARBHOME)/lib
+ARBDB=$(ARBHOME)/ARBDB
+
+# code in -> ../PERLTOOLS/arb_proto_2_xsub.cxx
+ARB_PROTO_2_XSUB=$(ARBHOME)/bin/arb_proto_2_xsub
+
+HEADERS = \
+	$(ARBDB)/ad_prot.h \
+	$(ARBDB)/ad_t_prot.h \
+
+ifeq ($(DARWIN),1)
+SO:=bundle
+else
+SO:=so
+endif
+
+ARB_SO=blib/arch/auto/ARB/ARB.$(SO)
+
+TARGET_PM=$(LIB)/ARB.pm
+TARGET_SO=$(LIB)/ARB.$(SO)
+
+TARGETS=$(TARGET_PM) $(TARGET_SO)
+
+XS_DEPENDS = Makefile Makefile.main ARB.xs debug.h Makefile.PL
+
+# ------------------------------------------------------------
+# variables for Makefile
+
+MYEXTLIB :=
+PASTHRU_INC :=
+PASTHRU_DEFINE :=
+
+export MYEXTLIB PASTHRU_INC PASTHRU_DEFINE dflags
+export CC CXX A_CC A_CXX 
+
+# ------------------------------------------------------------
+
+ifeq ($(AUTODEPENDS),1)
+all:
+	+test -f .depends || $(MAKETHIS) "AUTODEPENDS=0" .depends
+	+$(MAKETHIS) "AUTODEPENDS=2" all
+else
+all: realall
+endif
+
+realall: perlmain.c $(TARGETS)
+
+perlmain.c: perlmain_source.c
+	cp $< $@
+
+$(TARGET_PM) : ARB.pm
+	cp $< $@
+
+$(TARGET_SO) : $(ARB_SO)
+	cp $< $@
+
+$(ARB_SO) : $(XS_DEPENDS) depends.stamp
+	rm $(ARB_SO) || true
+	@echo "Used perl version: `perl -v | grep 'This is perl'`"
+	@echo "-------- calling MakeMaker-Makefile"
+	( $(PMAKE) $@ || (echo "------ failed[1].. retry once"; $(PMAKE) $@))
+	@echo "-------- post-recreating .depends"
+	+$(MAKETHIS) "DEPENDS=0" .depends
+	+$(MAKETHIS) $@ # recurse
+
+ARB.c : $(XS_DEPENDS)
+	@echo "-------- calling MakeMaker-Makefile (to get depends)"
+	( $(PMAKE) $@ || (echo "------ failed[2].. retry once"; $(PMAKE) $@))
+	@echo "-------- end of MakeMaker-Makefile"
+
+# buildMakefile
+
+# ------------------------------------------------------------
+# hack to compile with gcc 4.7.x and perl 5.10.1
+# (see http://bugs.arb-home.de/changeset/10566 for why)
+
+PERL_GCC_INCOMPAT:= \
+	v5.10.1___4.7.1 \
+	v5.10.1___4.7.3 \
+	v5.10.1___4.7.4 \
+
+PERL_GCC:=$(shell perl -e 'print "$$^V\n";')___$(COMPILER_VERSION)
+WONT_COMPILE_CXX11:=$(findstring $(PERL_GCC),$(PERL_GCC_INCOMPAT))
+
+ifneq ('$(WONT_COMPILE_CXX11)','')
+	hacked_cflags:=$(subst -std=gnu++11,,$(cflags4perl))
+else
+	hacked_cflags:=$(cflags4perl)
+endif
+
+used_cflags:=$(subst -Weffc++,,$(hacked_cflags)) -Wno-literal-suffix -Wno-unused-parameter $(CXX_INCLUDES)
+used_lflags:=$(lflags4perl)
+
+MAKE_MAKEFILE=make_arbperl_makefile.pl
+
+Makefile : $(MAKE_MAKEFILE) typemap Makefile.main $(ARB_MAINMAKEFILE)
+	( PATH=/usr/arb/bin:${PATH}; \
+	  export PATH; \
+	  echo calling perl $(MAKE_MAKEFILE) "$(used_cflags)" "$(used_lflags)"; \
+	  perl $(MAKE_MAKEFILE) "$(used_cflags)" "$(used_lflags)" )
+
+Makefile.PL : $(MAKE_MAKEFILE)
+	( \
+		echo "system('perl $< \"$(used_cflags)\" \"$(used_lflags)\"');" \
+	) > $@
+
+ARB.xs : $(ARB_PROTO_2_XSUB) proto.h ARB.default.xs perlmain_source.c typemap
+	@(test -f $@ && chmod a+w $@) || true
+	$(ARB_PROTO_2_XSUB) proto.h ARB.default.xs typemap >$@
+	@test -f $@ && chmod a-w $@
+
+proto.h : $(HEADERS) $(THIS) depends.stamp
+	cat $(HEADERS) > $@
+
+debug.h : $(THIS)
+	echo "#undef DEBUG" > $@
+	echo "#undef NDEBUG" >> $@
+ifeq ($(DEBUG),1)
+	echo "#define DEBUG" >> $@
+else
+	echo "#define NDEBUG" >> $@
+endif
+
+clean:
+	-test -f Makefile && $(MAKE) clean
+	rm -f Makefile.old proto.h debug.h ARB.c ARB.xs .depends depends.stamp Makefile.PL $(TARGETS)
+	rm -f Makefile
+
+.depends: depends.stamp Makefile.main
+	+test -f ARB.c || $(MAKETHIS) "AUTODEPENDS=0" ARB.c 
+	$(MAKEDEPEND) -f- $(MAKEDEPENDFLAGS) ARB.c 2>/dev/null | \
+		perl -ne 's/ARB.o:/depends.stamp:/g; print $$_;' | \
+		../SOURCE_TOOLS/fix_depends.pl "(from PERL2ARB)" > $@
+
+
+depends.stamp:
+	touch $@
+
+ifeq ($(AUTODEPENDS),2) 
+include .depends
+endif
+

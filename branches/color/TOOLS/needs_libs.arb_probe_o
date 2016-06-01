@@ -1,0 +1,4 @@
+# libraries needed to link against TOOLS/arb_probe.o
+
+SERVERCNTRL/SERVERCNTRL.a
+SL/REGEXPR/REGEXPR.a

@@ -1,0 +1,13 @@
+#define DEL #
+DEL
+DEL     WARNING: this file is created automatically!
+DEL     instead edit ../../GDEHELP/ARB_GDEmenus.source
+DEL     and *.menu in ../../GDEHELP/MENUS/ 
+DEL     and run make in this directory
+DEL
+DEL     To get more information read "GDE2.2_manual_text"
+DEL     I added two new argtypes:
+DEL             argtype:tree    A list of trees in the database
+DEL             argtype:weights A list of conservation profiles in the db
+DEL
+#undef DEL
