@@ -1,10 +1,22 @@
+// ============================================================ //
+//                                                              //
+//   File      : aw_rgb.hxx                                     //
+//   Purpose   :                                                //
+//                                                              //
+//   Coded by Ralf Westram (coder@reallysoft.de) in June 2016   //
+//   http://www.arb-home.de/                                    //
+//                                                              //
+// ============================================================ //
+
 #pragma once
 #include <stdint.h>
 #ifndef CXXFORWARD_H
 #include <cxxforward.h>
 #endif
 
+#if defined(ARB_GTK)
 #define AW_WINDOW_FG AW_rgb()
+#endif
 
 class AW_rgb16 {
     uint16_t R, G, B;
