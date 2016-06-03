@@ -1333,11 +1333,11 @@ void TEST_rgb_hsv_conversion() {
         }
     }
 
-    const int LOOPS    = ARRAY_ELEMS(tested)*ARRAY_ELEMS(tested)*ARRAY_ELEMS(tested);
+    const int LOOPS     = ARRAY_ELEMS(tested)*ARRAY_ELEMS(tested)*ARRAY_ELEMS(tested);
     const int OVERFLOWS = 2790;
 
-    TEST_EXPECT_EQUAL__BROKEN(overflow_count, 0, OVERFLOWS);
-    TEST_EXPECT_EQUAL__BROKEN(inrange_count, LOOPS, LOOPS-OVERFLOWS);
+    TEST_EXPECT_EQUAL__BROKEN(overflow_count, 0,     OVERFLOWS);
+    TEST_EXPECT_EQUAL__BROKEN(inrange_count,  LOOPS, LOOPS-OVERFLOWS);
 
     for (unsigned i = 0; i<ARRAY_ELEMS(tested); ++i) {
         int h = tested[i];
@@ -1375,6 +1375,23 @@ void TEST_rgb_hsv_conversion() {
                 TEST_EXPECT((abs(r-R)+abs(g-G)+abs(b-B)) <= MAXDIFFSUM);
             }
         }
+    }
+
+    // specific conversions (shows wrong 'hue')
+    {
+        int h, s, v;
+        rgb2hsv(0, 0, 58, h, s, v);
+
+        TEST_EXPECT_EQUAL__BROKEN(h, 170, 85); // @@@ wrong (85 =~ 120 deg; should be 240 deg =~ 170)
+        TEST_EXPECT_EQUAL__BROKEN(s, 255, 256); // @@@ should be 255 =~ 100%
+        TEST_EXPECT_EQUAL(v, 58); // =~ 22.7%
+
+        int r, g, b;
+        hsv2rgb(h, s, v, r, g, b);
+
+        TEST_EXPECT_EQUAL(r, 0);
+        TEST_EXPECT_EQUAL(g, 0);
+        TEST_EXPECT_EQUAL(b, 58);
     }
 }
 
