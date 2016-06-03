@@ -41,9 +41,6 @@ enum AW_antialias {
     AW_AA_BEST
 };
 
-
-#define AW_NO_COLOR AW_rgb()
-
 class AW_common : virtual Noncopyable {
     struct Pimpl;
     Pimpl *prvt;

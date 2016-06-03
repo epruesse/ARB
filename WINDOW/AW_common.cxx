@@ -201,7 +201,7 @@ void AW_GC::set_no_char_size(int i) {
  * Sets the combination function for drawing
  */
 void AW_GC::set_function(AW_function mode) {
-    if (conf.function != mode) {
+    if (conf.function != mode) { // @@@ why is this checked?
         conf.function = mode;
     }
 }
@@ -214,7 +214,7 @@ void AW_GC::set_function(AW_function mode) {
  * but alpha looks nicer. 
  */
 void AW_GC::set_grey_level(AW_grey_level grey_level_) {
-    if (conf.grey_level != grey_level_) {
+    if (conf.grey_level != grey_level_) { // @@@ why is this checked?
         conf.grey_level = grey_level_;
     }
 }
@@ -224,7 +224,7 @@ void AW_GC::set_grey_level(AW_grey_level grey_level_) {
  */
 void AW_GC::set_line_attributes(short new_width, AW_linestyle new_style) {
     aw_assert(new_width >= 1);
-    if (new_style != conf.style || new_width != conf.line_width) {
+    if (new_style != conf.style || new_width != conf.line_width) { // @@@ why is this checked?
         conf.line_width = new_width;
         conf.style      = new_style;
     }
@@ -234,7 +234,7 @@ void AW_GC::set_line_attributes(short new_width, AW_linestyle new_style) {
  * Sets the color to draw with
  */
 void AW_GC::set_fg_color(AW_rgb col) {
-    if (conf.color != col) {
+    if (conf.color != col) { // @@@ why is this checked?
         conf.color = col;
     }
 }
