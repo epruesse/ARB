@@ -1267,6 +1267,8 @@ AW_question.o: $(ARBHOME)/INCLUDE/test_global.h
 AW_question.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 AW_rgb.o: aw_rgb.hxx
+AW_rgb.o: $(ARBHOME)/INCLUDE/cxxforward.h
+AW_rgb.o: $(ARBHOME)/INCLUDE/gccver.h
 
 AW_root.o: aw_action.hxx
 AW_root.o: aw_area_management.hxx

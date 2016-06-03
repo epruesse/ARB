@@ -1,5 +1,8 @@
 #pragma once
 #include <stdint.h>
+#ifndef CXXFORWARD_H
+#include <cxxforward.h>
+#endif
 
 #define AW_WINDOW_FG AW_rgb()
 
@@ -7,7 +10,7 @@ class AW_rgb16 {
     uint16_t R, G, B;
 
 public:
-    static const float MAX = 65535.0;
+    static CONSTEXPR float MAX = 65535.0;
 
     AW_rgb16() : R(0), G(0), B(0) {}
     explicit AW_rgb16(const char* name);
