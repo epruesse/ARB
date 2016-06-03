@@ -852,9 +852,9 @@ void AW_save_properties(AW_window *aw) {
 #define AWAR_CV_V "tmp/aw/color_v"
 
 static void rgb2hsv(int r, int g, int b, int& h, int& s, int& v) {
-    float R = r/256.0;
-    float G = g/256.0;
-    float B = b/256.0;
+    float R = r/255.0;
+    float G = g/255.0;
+    float B = b/255.0;
 
     float min = std::min(std::min(R, G), B);
     float max = std::max(std::max(R, G), B);
@@ -873,21 +873,21 @@ static void rgb2hsv(int r, int g, int b, int& h, int& s, int& v) {
         h = int(H/360.0*256);
     }
 
-    s = max ? (max-min)/max*256 : 0;
-    v = max*256;
+    s = max ? (max-min)/max*255 : 0;
+    v = max*255;
 }
 
 static void hsv2rgb(int h, int s, int v, int& r, int& g, int& b) {
     float H = h/256.0*360;
-    float S = s/256.0;
-    float V = v/256.0;
+    float S = s/255.0;
+    float V = v/255.0;
 
     int   hi = int(H/60);
     float f  = H/60-hi;
 
-    float p = 256*V*(1-S);
-    float q = 256*V*(1-S*f);
-    float t = 256*V*(1-S*(1-f));
+    float p = 255*V*(1-S);
+    float q = 255*V*(1-S*f);
+    float t = 255*V*(1-S*(1-f));
 
     switch (hi) {
         case 0: r  = v; g = t; b = p; break; //   0 <= H <  60 (deg)
@@ -1287,9 +1287,6 @@ void TEST_rgb_hsv_conversion() {
         251, 252, 253, 254, 255
     };
 
-    int overflow_count = 0;
-    int inrange_count  = 0;
-
     for (unsigned i = 0; i<ARRAY_ELEMS(tested); ++i) {
         int r = tested[i];
         for (unsigned j = 0; j<ARRAY_ELEMS(tested); ++j) {
@@ -1304,14 +1301,7 @@ void TEST_rgb_hsv_conversion() {
 
                 // check range overflow
                 TEST_EXPECT(h>=0 && h<256);
-                if (s == 256) { // @@@ for some values a range overflow occurs
-                    TEST_EXPECT__BROKEN(s>=0 && s<256);
-                    overflow_count++;
-                }
-                else {
-                    TEST_EXPECT(s>=0 && s<256); // wanted behavior
-                    inrange_count++;
-                }
+                TEST_EXPECT(s>=0 && s<256);
                 TEST_EXPECT(v>=0 && v<256);
 
                 int R, G, B;
@@ -1331,12 +1321,6 @@ void TEST_rgb_hsv_conversion() {
             }
         }
     }
-
-    const int LOOPS     = ARRAY_ELEMS(tested)*ARRAY_ELEMS(tested)*ARRAY_ELEMS(tested);
-    const int OVERFLOWS = 2790;
-
-    TEST_EXPECT_EQUAL__BROKEN(overflow_count, 0,     OVERFLOWS);
-    TEST_EXPECT_EQUAL__BROKEN(inrange_count,  LOOPS, LOOPS-OVERFLOWS);
 
     for (unsigned i = 0; i<ARRAY_ELEMS(tested); ++i) {
         int h = tested[i];
@@ -1382,8 +1366,8 @@ void TEST_rgb_hsv_conversion() {
         rgb2hsv(0, 0, 58, h, s, v);
 
         TEST_EXPECT_EQUAL(h, 170); // =~ 240 deg
-        TEST_EXPECT_EQUAL__BROKEN(s, 255, 256); // @@@ should be 255 =~ 100%
-        TEST_EXPECT_EQUAL(v, 58); // =~ 22.7%
+        TEST_EXPECT_EQUAL(s, 255); // =  100%
+        TEST_EXPECT_EQUAL(v, 58);  // =~ 22.7%
 
         int r, g, b;
         hsv2rgb(h, s, v, r, g, b);
