@@ -174,7 +174,7 @@ void AW_common_gtk::update_cr(cairo_t* cr, int gc, bool use_grey) {
     cairo_set_antialias(cr, make_cairo_antialias(get_default_aa()));
 
     // set color
-    AW_rgb col = awgc->get_fg_color();
+    AW_rgb_normalized col(awgc->get_fg_color());
     if (use_grey) {
         double a = awgc->get_grey_level();
         cairo_set_source_rgba(cr, col.r(), col.g(), col.b(), a);
