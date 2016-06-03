@@ -561,6 +561,7 @@ AW_preset.o: $(ARBHOME)/INCLUDE/gccver.h
 AW_preset.o: $(ARBHOME)/INCLUDE/smartptr.h
 AW_preset.o: $(ARBHOME)/INCLUDE/static_assert.h
 AW_preset.o: $(ARBHOME)/INCLUDE/test_global.h
+AW_preset.o: $(ARBHOME)/INCLUDE/test_unit.h
 AW_preset.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 AW_print.o: aw_base.hxx

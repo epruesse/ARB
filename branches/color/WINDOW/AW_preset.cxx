@@ -1268,3 +1268,105 @@ AW_window *AW_preset_window(AW_root *root) {
 }
 
 
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#ifndef TEST_UNIT_H
+#include <test_unit.h>
+#endif
+
+void TEST_rgb_hsv_conversion() {
+    const int tested[] = {
+        // testing full rgb space takes too long
+        // just test all combinations of these:
+
+        0, 1, 2, 3, 4, 5,
+        58, 59, 60, 61, 62,
+        98, 99, 100, 101, 102,
+        126, 127, 128, 129, 130,
+        178, 179, 180, 181, 182,
+        251, 252, 253, 254, 255
+    };
+
+    for (unsigned i = 0; i<ARRAY_ELEMS(tested); ++i) {
+        int r = tested[i];
+        for (unsigned j = 0; j<ARRAY_ELEMS(tested); ++j) {
+            int g = tested[j];
+            for (unsigned k = 0; k<ARRAY_ELEMS(tested); ++k) {
+                int b = tested[k];
+
+                TEST_ANNOTATE(GBS_global_string("rgb=%i/%i/%i", r, g, b));
+
+                int h, s, v;
+                rgb2hsv(r, g, b, h, s, v);
+
+                // check range overflow
+                TEST_EXPECT(h>=0 && h<256);
+                if (s == 256) { // @@@ for some values a range overflow occurs
+                    TEST_EXPECT__BROKEN(s>=0 && s<256);
+                }
+                else {
+                    TEST_EXPECT(s>=0 && s<256); // wanted behavior
+                }
+                TEST_EXPECT(v>=0 && v<256);
+
+                int R, G, B;
+                hsv2rgb(h, s, v, R, G, B);
+
+                // fprintf(stderr, "rgb=%i/%i/%i hsv=%i/%i/%i RGB=%i/%i/%i\n", r, g, b, h, s, v, R, G, B);
+
+                // check that rgb->hsv->RGB produces a similar color
+                const int MAXDIFF    = 8;
+                const int MAXDIFFSUM = MAXDIFF;
+
+                TEST_EXPECT(abs(r-R) <= MAXDIFF);
+                TEST_EXPECT(abs(g-G) <= MAXDIFF);
+                TEST_EXPECT(abs(b-B) <= MAXDIFF);
+
+                TEST_EXPECT((abs(r-R)+abs(g-G)+abs(b-B)) <= MAXDIFFSUM);
+            }
+        }
+    }
+
+    for (unsigned i = 0; i<ARRAY_ELEMS(tested); ++i) {
+        int h = tested[i];
+        for (unsigned j = 0; j<ARRAY_ELEMS(tested); ++j) {
+            int s = tested[j];
+            for (unsigned k = 0; k<ARRAY_ELEMS(tested); ++k) {
+                int v = tested[k];
+
+                TEST_ANNOTATE(GBS_global_string("hsv=%i/%i/%i", h, s, v));
+
+                int r, g, b;
+                hsv2rgb(h, s, v, r, g, b);
+
+                // check range overflow
+                TEST_EXPECT(r>=0 && r<256);
+                TEST_EXPECT(g>=0 && g<256);
+                TEST_EXPECT(b>=0 && b<256);
+
+                int H, S, V;
+                rgb2hsv(r, g, b, H, S, V);
+
+                int R, G, B;
+                hsv2rgb(H, S, V, R, G, B);
+
+                // fprintf(stderr, "hsv=%i/%i/%i rgb=%i/%i/%i HSV=%i/%i/%i RGB=%i/%i/%i\n", h, s, v, r, g, b, H, S, V, R, G, B);
+
+                // check that hsv->rgb->HSV->RGB produces a similar color (comparing hsv makes no sense)
+                const int MAXDIFF    = 6;
+                const int MAXDIFFSUM = 7;
+
+                TEST_EXPECT(abs(r-R) <= MAXDIFF);
+                TEST_EXPECT(abs(g-G) <= MAXDIFF);
+                TEST_EXPECT(abs(b-B) <= MAXDIFF);
+
+                TEST_EXPECT((abs(r-R)+abs(g-G)+abs(b-B)) <= MAXDIFFSUM);
+            }
+        }
+    }
+}
+
+#endif // UNIT_TESTS
+
+// --------------------------------------------------------------------------------
