@@ -856,8 +856,8 @@ static void rgb2hsv(int r, int g, int b, int& h, int& s, int& v) {
     float G = g/256.0;
     float B = b/256.0;
 
-    float min = std::min(std::min(R, B), G);
-    float max = std::max(std::max(R, B), G);
+    float min = std::min(std::min(R, G), B);
+    float max = std::max(std::max(R, G), B);
 
     if (min == max) {
         h = 0;
@@ -890,13 +890,12 @@ static void hsv2rgb(int h, int s, int v, int& r, int& g, int& b) {
     float t = 256*V*(1-S*(1-f));
 
     switch (hi) {
-        case 0:
-        case 6: r  = v; g = t; b = p; break;
-        case 1: r  = q; g = v; b = p; break;
-        case 2: r  = p; g = v; b = t; break;
-        case 3: r  = p; g = q; b = v; break;
-        case 4: r  = t; g = p; b = v; break;
-        case 5: r  = v; g = p; b = q; break;
+        case 0: r  = v; g = t; b = p; break; //   0 <= H <  60 (deg)
+        case 1: r  = q; g = v; b = p; break; //  60 <= H < 120
+        case 2: r  = p; g = v; b = t; break; // 120 <= H < 180
+        case 3: r  = p; g = q; b = v; break; // 180 <= H < 240
+        case 4: r  = t; g = p; b = v; break; // 240 <= H < 300
+        case 5: r  = v; g = p; b = q; break; // 300 <= H < 360
         default: r = g = b = 0; aw_assert(0); break;
     }
 }
