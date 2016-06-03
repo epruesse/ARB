@@ -851,7 +851,7 @@ void AW_save_properties(AW_window *aw) {
 #define AWAR_CV_S "tmp/aw/color_s"
 #define AWAR_CV_V "tmp/aw/color_v"
 
-static void rgb2hsv(int r, int b, int g, int& h, int& s, int& v) {
+static void rgb2hsv(int r, int g, int b, int& h, int& s, int& v) {
     float R = r/256.0;
     float G = g/256.0;
     float B = b/256.0;
@@ -877,7 +877,7 @@ static void rgb2hsv(int r, int b, int g, int& h, int& s, int& v) {
     v = max*256;
 }
 
-static void hsv2rgb(int h, int s, int v, int& r, int& b, int& g) {
+static void hsv2rgb(int h, int s, int v, int& r, int& g, int& b) {
     float H = h/256.0*360;
     float S = s/256.0;
     float V = v/256.0;
@@ -1382,7 +1382,7 @@ void TEST_rgb_hsv_conversion() {
         int h, s, v;
         rgb2hsv(0, 0, 58, h, s, v);
 
-        TEST_EXPECT_EQUAL__BROKEN(h, 170, 85); // @@@ wrong (85 =~ 120 deg; should be 240 deg =~ 170)
+        TEST_EXPECT_EQUAL(h, 170); // =~ 240 deg
         TEST_EXPECT_EQUAL__BROKEN(s, 255, 256); // @@@ should be 255 =~ 100%
         TEST_EXPECT_EQUAL(v, 58); // =~ 22.7%
 
