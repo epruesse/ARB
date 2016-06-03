@@ -1288,6 +1288,9 @@ void TEST_rgb_hsv_conversion() {
         251, 252, 253, 254, 255
     };
 
+    int overflow_count = 0;
+    int inrange_count  = 0;
+
     for (unsigned i = 0; i<ARRAY_ELEMS(tested); ++i) {
         int r = tested[i];
         for (unsigned j = 0; j<ARRAY_ELEMS(tested); ++j) {
@@ -1304,9 +1307,11 @@ void TEST_rgb_hsv_conversion() {
                 TEST_EXPECT(h>=0 && h<256);
                 if (s == 256) { // @@@ for some values a range overflow occurs
                     TEST_EXPECT__BROKEN(s>=0 && s<256);
+                    overflow_count++;
                 }
                 else {
                     TEST_EXPECT(s>=0 && s<256); // wanted behavior
+                    inrange_count++;
                 }
                 TEST_EXPECT(v>=0 && v<256);
 
@@ -1327,6 +1332,12 @@ void TEST_rgb_hsv_conversion() {
             }
         }
     }
+
+    const int LOOPS    = ARRAY_ELEMS(tested)*ARRAY_ELEMS(tested)*ARRAY_ELEMS(tested);
+    const int OVERFLOWS = 2790;
+
+    TEST_EXPECT_EQUAL__BROKEN(overflow_count, 0, OVERFLOWS);
+    TEST_EXPECT_EQUAL__BROKEN(inrange_count, LOOPS, LOOPS-OVERFLOWS);
 
     for (unsigned i = 0; i<ARRAY_ELEMS(tested); ++i) {
         int h = tested[i];
