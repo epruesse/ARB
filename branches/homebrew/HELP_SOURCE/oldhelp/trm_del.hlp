@@ -1,0 +1,32 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP      arb.hlp
+UP      glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB    subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE           Remove Zombies
+
+OCCURRENCE      ARB_NT/Tree/Remove Zombies
+
+DESCRIPTION     Removes zombie species (see LINK{glossary.hlp}) from the currently displayed tree.
+
+NOTES           Nodes and IDs of species which have been deleted from the 
+                database, e.g. by
+
+                 - LINK{sp_del_mrkd.hlp}
+                 - LINK{del_list.hlp}
+                 - LINK{spa_delete.hlp}
+
+                are maintained in the trees and indicated as deleted by
+                enclosing their name into '<' and '>' (e.g. '<EscColi>')
+                and drawing them in different color (see LINK{color_props.hlp}).
+
+EXAMPLES        None
+
+WARNINGS        None
+
+BUGS            No bugs known

@@ -1,0 +1,13 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+
+use lib "$ENV{'ARBHOME'}/lib/";
+use ARB;
+
+my $gb_main = ARB::open(":","r");
+if (not $gb_main) {
+  my $error = ARB::await_error();
+  die "$error";
+}
+

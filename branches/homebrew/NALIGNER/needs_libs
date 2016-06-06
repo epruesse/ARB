@@ -1,0 +1,5 @@
+# libraries needed to link against NALIGNER/NALIGNER.a
+
+SERVERCNTRL/SERVERCNTRL.a
+SL/HELIX/HELIX.a
+

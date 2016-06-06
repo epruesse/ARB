@@ -1,0 +1,14 @@
+Count nucleotides,                              nuc#|sequence|count("agctuAGCTU")
+Count nucleotides (incl. IUPAC),                nuc#|sequence|count("agctumrwsykvhdbnAGCTUMRWSYKVHDBN")
+Count nucleotides gene,                         nuc_term#|sequence|filter(SAI=termini,include=x)|count("ACGTU")
+Count amino acids,                              aa#|sequence|count("ACDEFGHIKLMNPQRSTVWYacdefghiklmnpqrstvwy")
+Count poison characters (RNA/DNA),              poison#|sequence|len;count("acgtumrwsykvhdbnACGTUMRWSYKVHDBN-.")|minus
+Count poison characters (PRO),                  poison#|sequence|len;count("abcdefghiklmnpqrstvwxyzABCDEFGHIKLMNPQRSTVWXYZ-.*")|minus
+Replace poison characters with gaps (RNA/DNA),  |translate("acgtumrwsykvhdbnACGTUMRWSYKVHDBN-.","acgtumrwsykvhdbnACGTUMRWSYKVHDBN-.","-")
+Replace poison characters with gaps (PRO),      |translate("abcdefghiklmnpqrstvwxyzABCDEFGHIKLMNPQRSTVWXYZ-.*","abcdefghiklmnpqrstvwxyzABCDEFGHIKLMNPQRSTVWXYZ-.*","-")
+start gene,                                     start#|sequence|filter(SAI=5_prime,exclude=x)|count("ACGTUMRWSYKVHDBNacgtumrwsykvhdbn")
+end gene,                                       end#|sequence|filter(SAI=3_prime,exclude=x)|count("ACGTUMRWSYKVHDBNacgtumrwsykvhdbn")
+calculate G+C content,                          GC#|sequence|count("gcGC");count("agctuAGCTU")|"G+C:";per_cent
+calculate G+C content helical parts only,       GCH#|sequence|filter(SAI=HELIX;exclude=.-)|count("gcGC");count("agctuAGCTU")|"GCH=";per_cent;"(";cut(2);")"
+calculate G+C content non helical parts only,   GCN#|sequence|filter(SAI=HELIX;include=.-)|count("gcGC");count("agctuAGCTU")|"GCN=";per_cent;"(";cut(2);")"
+
