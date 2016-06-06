@@ -533,6 +533,7 @@ AW_preset.o: aw_nawar.hxx
 AW_preset.o: aw_position.hxx
 AW_preset.o: aw_preset.hxx
 AW_preset.o: aw_question.hxx
+AW_preset.o: aw_rgb.hxx
 AW_preset.o: aw_root.hxx
 AW_preset.o: aw_window.hxx
 AW_preset.o: aw_xfont.hxx

@@ -24,6 +24,7 @@
 #include "aw_def.hxx"
 #include "aw_nawar.hxx"
 #include "aw_xfont.hxx"
+#include "aw_rgb.hxx"
 
 #include <arbdbt.h>
 #include <ad_colorset.h>
@@ -851,97 +852,83 @@ void AW_save_properties(AW_window *aw) {
 #define AWAR_CV_S "tmp/aw/color_s"
 #define AWAR_CV_V "tmp/aw/color_v"
 
-static void rgb2hsv(int r, int g, int b, int& h, int& s, int& v) {
-    float R = r/255.0;
-    float G = g/255.0;
-    float B = b/255.0;
-
-    float min = std::min(std::min(R, G), B);
-    float max = std::max(std::max(R, G), B);
-
-    if (min == max) {
-        h = 0;
+class AW_hsv {
+    float H, S, V;
+public:
+    AW_hsv(float hue, float saturation, float value) : H(hue), S(saturation), V(value) {
+        aw_assert(H>=0.0 && H<360.0);
+        aw_assert(S>=0.0 && S<=1.0);
+        aw_assert(V>=0.0 && V<=1.0);
     }
-    else {
-        float H = 60.0;
+    AW_hsv(const AW_rgb_normalized& col) {
+        float R = col.r();
+        float G = col.g();
+        float B = col.b();
 
-        if      (max == R) { H *= 0 + (G-B)/(max-min); }
-        else if (max == G) { H *= 2 + (B-R)/(max-min); }
-        else               { H *= 4 + (R-G)/(max-min); }
+        float min = std::min(std::min(R, G), B);
+        float max = std::max(std::max(R, G), B);
 
-        if (H<0) H += 360;
-        h = int(H/360.0*256);
+        if (min == max) {
+            H = 0;
+        }
+        else {
+            H = 60;
+
+            if      (max == R) { H *= 0 + (G-B)/(max-min); }
+            else if (max == G) { H *= 2 + (B-R)/(max-min); }
+            else               { H *= 4 + (R-G)/(max-min); }
+
+            if (H<0) H += 360;
+        }
+
+        S = max ? (max-min)/max : 0;
+        V = max;
+    }
+    AW_hsv(const AW_rgb16& col) { *this = AW_rgb_normalized(col); }
+
+    AW_rgb_normalized rgb() const {
+        int   hi = int(H/60);
+        float f  = H/60-hi;
+
+        float p = V*(1-S);
+        float q = V*(1-S*f);
+        float t = V*(1-S*(1-f));
+
+        switch (hi) {
+            case 0: return AW_rgb_normalized(V, t, p); //   0 <= H <  60 (deg)
+            case 1: return AW_rgb_normalized(q, V, p); //  60 <= H < 120
+            case 2: return AW_rgb_normalized(p, V, t); // 120 <= H < 180
+            case 3: return AW_rgb_normalized(p, q, V); // 180 <= H < 240
+            case 4: return AW_rgb_normalized(t, p, V); // 240 <= H < 300
+            case 5: return AW_rgb_normalized(V, p, q); // 300 <= H < 360
+        }
+        aw_assert(0);
+        return AW_rgb_normalized(0, 0, 0);
     }
 
-    s = max ? (max-min)/max*255 : 0;
-    v = max*255;
-}
-
-static void hsv2rgb(int h, int s, int v, int& r, int& g, int& b) {
-    float H = h/256.0*360;
-    float S = s/255.0;
-    float V = v/255.0;
-
-    int   hi = int(H/60);
-    float f  = H/60-hi;
-
-    float p = 255*V*(1-S);
-    float q = 255*V*(1-S*f);
-    float t = 255*V*(1-S*(1-f));
-
-    switch (hi) {
-        case 0: r  = v; g = t; b = p; break; //   0 <= H <  60 (deg)
-        case 1: r  = q; g = v; b = p; break; //  60 <= H < 120
-        case 2: r  = p; g = v; b = t; break; // 120 <= H < 180
-        case 3: r  = p; g = q; b = v; break; // 180 <= H < 240
-        case 4: r  = t; g = p; b = v; break; // 240 <= H < 300
-        case 5: r  = v; g = p; b = q; break; // 300 <= H < 360
-        default: r = g = b = 0; aw_assert(0); break;
-    }
-}
+    float h() const { return H; }
+    float s() const { return S; }
+    float v() const { return V; }
+};
 
 static char *current_color_awarname         = 0; // name of the currently modified color-awar
 static bool  ignore_color_value_change      = false;
 static bool  color_value_change_was_ignored = false;
 
-static void aw_set_rgb_sliders(AW_root *awr, int r, int g, int b) {
+static void aw_set_rgb_sliders(AW_root *awr, const AW_rgb_normalized& col) {
     color_value_change_was_ignored = false;
     {
         LocallyModify<bool> delayUpdate(ignore_color_value_change, true);
-        awr->awar(AWAR_CV_R)->write_int(r);
-        awr->awar(AWAR_CV_G)->write_int(g);
-        awr->awar(AWAR_CV_B)->write_int(b);
+        awr->awar(AWAR_CV_R)->write_float(col.r());
+        awr->awar(AWAR_CV_G)->write_float(col.g());
+        awr->awar(AWAR_CV_B)->write_float(col.b());
     }
     if (color_value_change_was_ignored) awr->awar(AWAR_CV_B)->touch();
 }
 
-static int hex2dec(char c) {
-    if (c>='0' && c<='9') return c-'0';
-    if (c>='A' && c<='F') return c-'A'+10;
-    if (c>='a' && c<='f') return c-'a'+10;
-    return -1;
-}
 static void aw_set_sliders_from_color(AW_root *awr) {
     const char *color = awr->awar(current_color_awarname)->read_char_pntr();
-
-    int r = 0;
-    int g = 0;
-    int b = 0;
-
-    if (color[0] == '#') {
-        int len = strlen(color+1);
-        if (len == 6) {
-            r = hex2dec(color[1])*16+hex2dec(color[2]);
-            g = hex2dec(color[3])*16+hex2dec(color[4]);
-            b = hex2dec(color[5])*16+hex2dec(color[6]);
-        }
-        else if (len == 3) {
-            r = hex2dec(color[1]); r = r*16+r;
-            g = hex2dec(color[2]); g = g*16+g;
-            b = hex2dec(color[3]); b = b*16+b;
-        }
-    }
-    aw_set_rgb_sliders(awr, r, g, b);
+    aw_set_rgb_sliders(awr, AW_rgb_normalized(color));
 }
 
 inline void aw_set_color(AW_root *awr, const char *color_name) {
@@ -960,40 +947,31 @@ static void colorslider_changed_cb(AW_root *awr, bool hsv_changed) {
         LocallyModify<bool> noRecursion(ignore_color_value_change, true);
 
         if (hsv_changed) {
-            int h = awr->awar(AWAR_CV_H)->read_int();
-            int s = awr->awar(AWAR_CV_S)->read_int();
-            int v = awr->awar(AWAR_CV_V)->read_int();
+            float h = awr->awar(AWAR_CV_H)->read_float();
+            float s = awr->awar(AWAR_CV_S)->read_float();
+            float v = awr->awar(AWAR_CV_V)->read_float();
 
-            int r, g, b;
-            hsv2rgb(h, s, v, r, g, b);
+            if (h>=360.0) h -= 360;
 
-            {
-                char color_name[10];
-                sprintf(color_name, "#%2.2X%2.2X%2.2X", r, g, b);
-                aw_set_color(awr, color_name);
-            }
+            AW_rgb_normalized col(AW_hsv(h, s, v).rgb());
+            aw_set_color(awr, AW_rgb16(col).ascii());
 
-            awr->awar(AWAR_CV_R)->write_int(r);
-            awr->awar(AWAR_CV_G)->write_int(g);
-            awr->awar(AWAR_CV_B)->write_int(b);
+            awr->awar(AWAR_CV_R)->write_float(col.r());
+            awr->awar(AWAR_CV_G)->write_float(col.g());
+            awr->awar(AWAR_CV_B)->write_float(col.b());
         }
         else {
-            int r = awr->awar(AWAR_CV_R)->read_int();
-            int g = awr->awar(AWAR_CV_G)->read_int();
-            int b = awr->awar(AWAR_CV_B)->read_int();
+            AW_rgb_normalized col(awr->awar(AWAR_CV_R)->read_float(),
+                                  awr->awar(AWAR_CV_G)->read_float(),
+                                  awr->awar(AWAR_CV_B)->read_float());
 
-            {
-                char color_name[10];
-                sprintf(color_name, "#%2.2X%2.2X%2.2X", r, g, b);
-                aw_set_color(awr, color_name);
-            }
+            aw_set_color(awr, AW_rgb16(col).ascii());
 
-            int h, s, v;
-            rgb2hsv(r, g, b, h, s, v);
+            AW_hsv hsv(col);
 
-            awr->awar(AWAR_CV_H)->write_int(h);
-            awr->awar(AWAR_CV_S)->write_int(s);
-            awr->awar(AWAR_CV_V)->write_int(v);
+            awr->awar(AWAR_CV_H)->write_float(hsv.h());
+            awr->awar(AWAR_CV_S)->write_float(hsv.s());
+            awr->awar(AWAR_CV_V)->write_float(hsv.v());
         }
     }
 }
@@ -1006,8 +984,8 @@ static void aw_create_colorslider_awars(AW_root *awr) {
     };
 
     for (int cv = 0; cv<6; ++cv) {
-        awr->awar_int(colorValueAwars[cv])
-            ->set_minmax(0, 255)
+        awr->awar_float(colorValueAwars[cv])
+            ->set_minmax(0.0, cv == 1 ? 360.0 : 1.0)
             ->add_callback(makeRootCallback(colorslider_changed_cb, bool(cv%2)));
     }
 }
@@ -1045,37 +1023,44 @@ static void aw_create_color_chooser_window(AW_window *aww, const char *awar_name
             { "B", AWAR_CV_B }, { "V", AWAR_CV_V },
         };
 
+        const int INPUTFIELD_WIDTH = 12;
+        const int SCALERLENGTH     = 320;
+
         for (int row = 0; row<3; ++row) {
             aws->at(x1, y1+(row+1)*(y2-y1));
             const ColorValue *vc = &colorValue[row*2];
             aws->label(vc->label);
-            aws->create_input_field_with_scaler(vc->awar, 4, 256, AW_SCALER_LINEAR);
+            aws->create_input_field_with_scaler(vc->awar, INPUTFIELD_WIDTH, SCALERLENGTH, AW_SCALER_LINEAR);
             ++vc;
             aws->label(vc->label);
-            aws->create_input_field_with_scaler(vc->awar, 4, 256, AW_SCALER_LINEAR);
+            aws->create_input_field_with_scaler(vc->awar, INPUTFIELD_WIDTH, SCALERLENGTH, AW_SCALER_LINEAR);
         }
 
-        aws->button_length(2);
+        aws->button_length(1);
         aws->at_newline();
 
-        for (int red = 0; red <= 255; red += 255/4) {
-            for (int green = 0; green <= 255; green += 255/4) {
-                for (int blue = 0; blue <= 255; blue += 255/4) {
-                    if (red != green || green != blue) {
-                        char color_name[10];
-                        sprintf(color_name, "#%2.2X%2.2X%2.2X", red, green, blue);
-                        aws->callback(makeWindowCallback(aw_set_color, strdup(color_name)));
-                        aws->create_button(color_name, "=", 0, color_name);
-                    }
+        const float SATVAL_INCREMENT = 0.2;
+        const int   HUE_INCREMENT    = 10;
+        const int   COLORS_PER_ROW   = 360/HUE_INCREMENT;
+
+        for (int v = 5; v>=2; --v) {
+            float val = v*SATVAL_INCREMENT;
+            bool  rev = !(v%2);
+            for (int s = rev ? 2 : 5; rev ? s<=5 : s>=2; s = rev ? s+1 : s-1) {
+                float sat = s*SATVAL_INCREMENT;
+                for (int hue = 0; hue<360;  hue += HUE_INCREMENT) {
+                    const char *color_name = AW_rgb16(AW_hsv(hue, sat, val).rgb()).ascii();
+                    aws->callback(makeWindowCallback(aw_set_color, strdup(color_name)));
+                    aws->create_button(color_name, "", 0, color_name);
                 }
+                aws->at_newline();
             }
-            aws->at_newline();
         }
-        const float STEP = 255.0/23;
-        for (float greyF = 0.0; greyF < 256; greyF += STEP) { // grey buttons (including black+white)
-            char color_name[10];
-            int  grey = int(greyF+0.5);
-            sprintf(color_name, "#%2.2X%2.2X%2.2X", grey, grey, grey);
+
+        for (int p = 0; p<COLORS_PER_ROW; ++p) {
+            float       grey       = (1.0 * p) / (COLORS_PER_ROW-1);
+            const char *color_name = AW_rgb16(AW_rgb_normalized(grey, grey, grey)).ascii();
+
             aws->callback(makeWindowCallback(aw_set_color, strdup(color_name)));
             aws->create_button(color_name, "=", 0, color_name);
         }
@@ -1275,16 +1260,18 @@ AW_window *AW_preset_window(AW_root *root) {
 #endif
 
 void TEST_rgb_hsv_conversion() {
+    // Note: more related tests in AW_rgb.cxx@RGB_TESTS
+
     const int tested[] = {
         // testing full rgb space takes too long
         // just test all combinations of these:
 
         0, 1, 2, 3, 4, 5,
         58, 59, 60, 61, 62,
-        98, 99, 100, 101, 102,
-        126, 127, 128, 129, 130,
-        178, 179, 180, 181, 182,
-        251, 252, 253, 254, 255
+        998, 999, 1000, 1001, 1002,
+        32766, 32767, 32768, 32769, 32770,
+        39998, 39999, 40000, 40001, 40002,
+        65531, 65532, 65533, 65534, 65535
     };
 
     for (unsigned i = 0; i<ARRAY_ELEMS(tested); ++i) {
@@ -1296,85 +1283,70 @@ void TEST_rgb_hsv_conversion() {
 
                 TEST_ANNOTATE(GBS_global_string("rgb=%i/%i/%i", r, g, b));
 
-                int h, s, v;
-                rgb2hsv(r, g, b, h, s, v);
+                AW_hsv hsv(AW_rgb16(r, g, b));
 
                 // check range overflow
-                TEST_EXPECT(h>=0 && h<256);
-                TEST_EXPECT(s>=0 && s<256);
-                TEST_EXPECT(v>=0 && v<256);
+                TEST_EXPECT(hsv.h()>=0.0 && hsv.h()<360.0);
+                TEST_EXPECT(hsv.s()>=0.0 && hsv.s()<=1.0);
+                TEST_EXPECT(hsv.v()>=0.0 && hsv.v()<=1.0);
 
-                int R, G, B;
-                hsv2rgb(h, s, v, R, G, B);
+                AW_rgb16 RGB(hsv.rgb());
 
                 // fprintf(stderr, "rgb=%i/%i/%i hsv=%i/%i/%i RGB=%i/%i/%i\n", r, g, b, h, s, v, R, G, B);
 
                 // check that rgb->hsv->RGB produces a similar color
-                const int MAXDIFF    = 8;
-                const int MAXDIFFSUM = MAXDIFF;
+                const int MAXDIFF    = 1; // less than .0015% difference per channel
+                const int MAXDIFFSUM = 2; // less than .003% difference overall
 
-                TEST_EXPECT(abs(r-R) <= MAXDIFF);
-                TEST_EXPECT(abs(g-G) <= MAXDIFF);
-                TEST_EXPECT(abs(b-B) <= MAXDIFF);
+                TEST_EXPECT(abs(r-RGB.r()) <= MAXDIFF);
+                TEST_EXPECT(abs(g-RGB.g()) <= MAXDIFF);
+                TEST_EXPECT(abs(b-RGB.b()) <= MAXDIFF);
 
-                TEST_EXPECT((abs(r-R)+abs(g-G)+abs(b-B)) <= MAXDIFFSUM);
+                TEST_EXPECT((abs(r-RGB.r())+abs(g-RGB.g())+abs(b-RGB.b())) <= MAXDIFFSUM);
             }
         }
     }
 
     for (unsigned i = 0; i<ARRAY_ELEMS(tested); ++i) {
-        int h = tested[i];
+        int h = tested[i]*320/65535;
         for (unsigned j = 0; j<ARRAY_ELEMS(tested); ++j) {
-            int s = tested[j];
+            float s = tested[j]/65535.0;
             for (unsigned k = 0; k<ARRAY_ELEMS(tested); ++k) {
-                int v = tested[k];
+                float v = tested[k]/65535.0;
 
-                TEST_ANNOTATE(GBS_global_string("hsv=%i/%i/%i", h, s, v));
+                TEST_ANNOTATE(GBS_global_string("hsv=%i/%.3f/%.3f", h, s, v));
 
-                int r, g, b;
-                hsv2rgb(h, s, v, r, g, b);
-
-                // check range overflow
-                TEST_EXPECT(r>=0 && r<256);
-                TEST_EXPECT(g>=0 && g<256);
-                TEST_EXPECT(b>=0 && b<256);
-
-                int H, S, V;
-                rgb2hsv(r, g, b, H, S, V);
-
-                int R, G, B;
-                hsv2rgb(H, S, V, R, G, B);
+                AW_rgb16 rgb(AW_hsv(h, s, v).rgb());
+                AW_rgb16 RGB(AW_hsv(rgb).rgb());
 
                 // fprintf(stderr, "hsv=%i/%i/%i rgb=%i/%i/%i HSV=%i/%i/%i RGB=%i/%i/%i\n", h, s, v, r, g, b, H, S, V, R, G, B);
 
                 // check that hsv->rgb->HSV->RGB produces a similar color (comparing hsv makes no sense)
-                const int MAXDIFF    = 6;
-                const int MAXDIFFSUM = 7;
+                const int MAXDIFF    = 1; // less than .0015% difference per channel
+                const int MAXDIFFSUM = 2; // less than .003% difference overall
 
-                TEST_EXPECT(abs(r-R) <= MAXDIFF);
-                TEST_EXPECT(abs(g-G) <= MAXDIFF);
-                TEST_EXPECT(abs(b-B) <= MAXDIFF);
+                TEST_EXPECT(abs(rgb.r()-RGB.r()) <= MAXDIFF);
+                TEST_EXPECT(abs(rgb.g()-RGB.g()) <= MAXDIFF);
+                TEST_EXPECT(abs(rgb.b()-RGB.b()) <= MAXDIFF);
 
-                TEST_EXPECT((abs(r-R)+abs(g-G)+abs(b-B)) <= MAXDIFFSUM);
+                TEST_EXPECT((abs(rgb.r()-RGB.r())+abs(rgb.g()-RGB.g())+abs(rgb.b()-RGB.b())) <= MAXDIFFSUM);
             }
         }
     }
 
-    // specific conversions (shows wrong 'hue')
+    // specific conversion (showed wrong 'hue' and 'saturation' until [14899])
     {
-        int h, s, v;
-        rgb2hsv(0, 0, 58, h, s, v);
+        AW_hsv hsv(AW_rgb16(0, 0, 14906));
 
-        TEST_EXPECT_EQUAL(h, 170); // =~ 240 deg
-        TEST_EXPECT_EQUAL(s, 255); // =  100%
-        TEST_EXPECT_EQUAL(v, 58);  // =~ 22.7%
+        TEST_EXPECT_SIMILAR(hsv.h(), 240.0, 0.001); //= ~ 240 deg
+        TEST_EXPECT_SIMILAR(hsv.s(), 1.0,   0.001); //= 100%
+        TEST_EXPECT_SIMILAR(hsv.v(), 0.227, 0.001); //= ~ 22.7%
 
-        int r, g, b;
-        hsv2rgb(h, s, v, r, g, b);
+        AW_rgb16 rgb(hsv.rgb());
 
-        TEST_EXPECT_EQUAL(r, 0);
-        TEST_EXPECT_EQUAL(g, 0);
-        TEST_EXPECT_EQUAL(b, 58);
+        TEST_EXPECT_EQUAL(rgb.r(), 0);
+        TEST_EXPECT_EQUAL(rgb.g(), 0);
+        TEST_EXPECT_EQUAL(rgb.b(), 14906);
     }
 }
 

@@ -62,6 +62,9 @@ public:
         G(o.g()/AW_rgb16::MAX),
         B(o.b()/AW_rgb16::MAX)
     {}
+    explicit AW_rgb_normalized(const char *colorname) {
+        *this = AW_rgb_normalized(AW_rgb16(colorname));
+    }
 
     float r() const { return R; }
     float g() const { return G; }

@@ -80,6 +80,8 @@ const char *AW_rgb16::ascii() const {
 #define TEST_NORMALIZED_CONVERSION(c) TEST_EXPECT_EQUAL(AW_rgb16(AW_rgb_normalized(AW_rgb16(c))).ascii(), c);
 
 void TEST_rgb() {
+    // Note: more related tests in AW_preset.cxx@RGB_TESTS
+
     // check construction from diff.-length color specifications
     AW_rgb16 orange4("#f80");
     AW_rgb16 orange8("#ff8800");
