@@ -571,7 +571,7 @@ XLIBS     ?= -L$(XHOME)/$(CROSS_LIB)
 ifeq ($(DARWIN),1)
 	XINCLUDES += -I$(OSX_FW)/GLUT.framework/Headers -I$(OSX_FW)/OpenGL.framework/Headers -I$(OSX_SDK)/usr/include/krb5
 
-	XLIBS := lXm -lpng -lz -lXt -lX11 -lXext -lXp -lXmu -lXi
+	XLIBS := -lXm -lpng -lz -lXt -lX11 -lXext -lXp -lXmu -lXi
 	XLIBS += -Wl,-dylib_file,$(OSX_FW_OPENGL)/libGL.dylib:$(OSX_FW_OPENGL)/libGL.dylib
 	XLIBS += -Wl,-dylib_file,$(OSX_FW_OPENGL)/libGLU.dylib:$(OSX_FW_OPENGL)/libGLU.dylib
 else
