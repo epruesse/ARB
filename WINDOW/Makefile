@@ -533,6 +533,7 @@ AW_preset.o: aw_nawar.hxx
 AW_preset.o: aw_position.hxx
 AW_preset.o: aw_preset.hxx
 AW_preset.o: aw_question.hxx
+AW_preset.o: aw_rgb.hxx
 AW_preset.o: aw_root.hxx
 AW_preset.o: aw_window.hxx
 AW_preset.o: aw_xfont.hxx
@@ -561,6 +562,7 @@ AW_preset.o: $(ARBHOME)/INCLUDE/gccver.h
 AW_preset.o: $(ARBHOME)/INCLUDE/smartptr.h
 AW_preset.o: $(ARBHOME)/INCLUDE/static_assert.h
 AW_preset.o: $(ARBHOME)/INCLUDE/test_global.h
+AW_preset.o: $(ARBHOME)/INCLUDE/test_unit.h
 AW_preset.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 AW_print.o: aw_base.hxx
@@ -625,9 +627,33 @@ AW_question.o: $(ARBHOME)/INCLUDE/static_assert.h
 AW_question.o: $(ARBHOME)/INCLUDE/test_global.h
 AW_question.o: $(ARBHOME)/INCLUDE/ttypes.h
 
+AW_rgb.o: aw_base.hxx
+AW_rgb.o: aw_device.hxx
+AW_rgb.o: aw_keysym.hxx
+AW_rgb.o: aw_position.hxx
 AW_rgb.o: aw_rgb.hxx
+AW_rgb.o: aw_root.hxx
+AW_rgb.o: aw_scalar.hxx
+AW_rgb.o: aw_window.hxx
+AW_rgb.o: aw_window_Xm.hxx
+AW_rgb.o: $(ARBHOME)/INCLUDE/arb_assert.h
+AW_rgb.o: $(ARBHOME)/INCLUDE/arb_core.h
+AW_rgb.o: $(ARBHOME)/INCLUDE/arb_error.h
+AW_rgb.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AW_rgb.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+AW_rgb.o: $(ARBHOME)/INCLUDE/arbtools.h
+AW_rgb.o: $(ARBHOME)/INCLUDE/attributes.h
+AW_rgb.o: $(ARBHOME)/INCLUDE/cb.h
+AW_rgb.o: $(ARBHOME)/INCLUDE/cb_base.h
+AW_rgb.o: $(ARBHOME)/INCLUDE/cbtypes.h
 AW_rgb.o: $(ARBHOME)/INCLUDE/cxxforward.h
+AW_rgb.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_rgb.o: $(ARBHOME)/INCLUDE/gccver.h
+AW_rgb.o: $(ARBHOME)/INCLUDE/smartptr.h
+AW_rgb.o: $(ARBHOME)/INCLUDE/static_assert.h
+AW_rgb.o: $(ARBHOME)/INCLUDE/test_global.h
+AW_rgb.o: $(ARBHOME)/INCLUDE/test_unit.h
+AW_rgb.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 AW_root.o: aw_awar.hxx
 AW_root.o: aw_base.hxx
