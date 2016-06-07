@@ -884,7 +884,11 @@ public:
         S = max ? (max-min)/max : 0;
         V = max;
     }
+#if defined(Cxx11)
+    AW_hsv(const AW_rgb16& col) : AW_hsv(AW_rgb_normalized(col)) {}
+#else // !defined(Cxx11)
     AW_hsv(const AW_rgb16& col) { *this = AW_rgb_normalized(col); }
+#endif
 
     AW_rgb_normalized rgb() const {
         int   hi = int(H/60);
