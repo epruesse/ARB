@@ -1,0 +1,26 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+SUB	gene_mark.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Hiding genes
+
+OCCURRENCE	ARB_NT/ARB_GENE_MAP/Hide
+
+DESCRIPTION	You can hide genes. 
+
+		Hidden genes will normally not be displayed in ARB_GENE_MAP.
+		You may change that behavior in LINK{gen_options.hlp}.		
+
+NOTES		None	
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known

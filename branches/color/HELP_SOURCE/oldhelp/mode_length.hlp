@@ -1,0 +1,59 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP      arb.hlp
+UP      glossary.hlp
+UP      mode.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB    subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE           LENGTH and MULTIFURC MODE
+
+OCCURRENCE      ARB_NT <button in the left column>
+
+DESCRIPTION     Both modes described here allow you to increase or reduce the length of
+                terminal and internal branches.
+
+                Click on the eleventh resp. twelfth button in the left column of
+                the 'ARB_NT' window to activate the 'LENGTH MODE' resp. 'MULTIFURC MODE'.
+
+                Change branch length:
+
+                       Click and drag a branch to change its length.
+
+                       If you use the right mouse button, discrete values
+                       will be used for the length.
+
+                Set branch length to zero:
+
+                       Point to a branch with the mouse and hit the key '0' (zero).
+
+SECTION         Differences between LENGTH- and MULTIFURC-MODES
+
+                The LENGTH MODE simply changes the length of the targeted branch.
+
+                The MULTIFURC-MODE changes the length of the targeted branch as well, but
+                also distributes its length-change to its direct (non-zero-length)
+                neighbour-branches.
+                Distribution is based on the same algorithm as LINK{multifurcate.hlp}.
+
+NOTES           To multifurcate explicit single branches, you may as well focus the tree-display,
+		move the mouse pointer to the bootstrap value of the branch to eliminate and then
+		press '0' to actually eliminate the branch.
+
+		Increasing the length of a branch in MULTIFURC-MODE may cause neighbour branches 
+		to become multifurcations. This is irreversible, i.e. reducing the length back 
+		to the original value will not "un-multifurcate" the affected branches.
+
+                In both modes it is possible to set branchlengths to negative values if expert-mode
+                is enabled.
+
+EXAMPLE         None
+
+WARNINGS        In MULTIFURC MODE you may not expect to undo all length distributions, by
+                scaling the branchlength back to the original value it had before a previous
+                scale operation!
+
+BUGS            unknown

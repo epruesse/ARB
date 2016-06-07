@@ -1,0 +1,47 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+UP	pt_server.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+SUB	probe_param.hlp
+SUB	probedesignresult.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile strunk ********
+TITLE		Probe Design
+
+OCCURRENCE	ARB_NT/Probes/Design Probes
+
+
+DESCRIPTION     Searches for potential probe target sites within the sequence
+                entries of the selected 'PT_SERVER' database.
+
+                First mark (a single or a group of) species (see LINK{mark.hlp})
+                for which probe target sites should be designed.
+
+                Configure the parameters (see LINK{probe_param.hlp})
+                and press 'GO' to start the probe design.
+
+NOTES		The 'PT_SERVER' database ('*.arb' and '*.arb.pt') stored in
+		'$ARBHOME/lib/pts' is used for probe target searching
+                (not the current database!).
+
+		The 'PT_SERVER' database has to be up-to-date or result
+                calculated by probe design will be inaccurate (see LINK{probe_param.hlp}).
+
+EXAMPLES	None
+
+
+WARNINGS	Take care that only and all species are marked for which a group
+		specific probe has to be designed! If the displayed tree is used
+		for species marking, consider that species belonging to the
+		specificity group but not contained in this tree will remain
+		unmarked and treated as non-targets.
+
+		Consequently, useful target sites may be not detected.
+		Similarly marked species not related to the target species and
+		not contained in the displayed tree will be treated as targets.
+
+BUGS		No bugs known

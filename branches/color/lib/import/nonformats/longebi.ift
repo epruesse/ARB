@@ -1,0 +1,189 @@
+# Modified by FOG, 27.06.2009
+# mostly synchronized with ebi_silva
+
+KEYWIDTH        5
+FILETAG         "EBI"
+
+BEGIN           "ID*"
+
+# set variables used by feature table 
+SETGLOBAL       t EBI
+SETGLOBAL       u embl
+
+# uncomment next line to tag ALL fields with [EBI]
+# AUTOTAG "EBI"
+
+
+MATCH           "ID *"
+                SRT             "* *=*1"
+                WRITE           "name"
+
+MATCH           "ID *"
+                SRT             "*;*=*1"
+                TAG             "EBI"
+                WRITE           "id"
+
+MATCH           "ID *"
+                SRT             "*; SV *;*=*2"
+                WRITE_INT       "version"
+
+#MATCH           "ID *"
+#                SRT             "*;*;*;*;*;*;* * BP.=*8"
+#                TAG             "EBI"
+#                WRITE           "db_nuc"
+
+MATCH           "AC *"
+                ACI             "extract_words("0123456789",2.0)"
+                WRITE           "acc"
+
+#MATCH           "AC *"
+#                TAG             "EBI"
+#                ACI             "extract_words("0123456789",4.0)"
+#                WRITE           "db_acc"
+
+MATCH           "PR *"
+                SRT             "PR   *=*:*\:*=*2:;="
+                WRITE_INT       "insdc"
+
+MATCH           "DT *Created*"
+                SRT             "DT   *=*:* \(*=*1;"
+#                TAG             "EBI"
+                APPEND          "date"
+
+MATCH           "DT *updated*"
+                SRT             "DT   *=*:* \(*=*1"
+#                TAG             "EBI"
+                APPEND          "date"
+
+MATCH           "DE *"
+                SRT             "DE   *=*:;="
+#                TAG             "EBI"
+                APPEND          "description"
+
+MATCH           "KW *"
+                SRT             "KW   *=*"
+#                TAG             "EBI"
+                APPEND          "keywords"
+
+MATCH           "OS *"
+                SRT             "OS   *=*:* * *=*1 *2"
+                WRITE           "full_name"
+
+MATCH           "OS *"
+                SRT             "OS   *=*"
+                TAG             "EBI"
+                WRITE           "db_name"
+
+MATCH           "OS *."
+                SRT             "OS   *=*:.="
+                WRITE           "tax_embl_name"
+
+#MATCH           "OC *"
+#                SRT             "OC   *=*"
+#                TAG             "EBI"
+#                APPEND          "tax"
+
+MATCH           "OC *"
+                SRT             "OC   *=*"
+                APPEND          "tax_embl"
+
+MATCH           "OG *"
+                SRT             "OG   *=*"
+#                TAG             "EBI"
+                APPEND          "organelle"
+
+MATCH           "RN *"
+                SRT             "RN   *=*:[=:]="
+                SETVAR          x
+                IFNOTSET        x "No RN entry seen"
+#                TAG             "EBI"
+#                APPEND          "num_bib"
+
+MATCH           "RP *"
+                SRT             "RP   *=*:*=[$x]\: *"
+#                TAG             "EBI"
+                APPEND          "nuc_rp"
+
+MATCH           "RC *"
+                SRT             "RC   *=*:*=[$x]\: *"
+                TAG             "EBI"
+                APPEND          "author_com_1"
+
+MATCH           "RX   MEDLINE*"
+                SRT             "*MEDLINE*=*2:;=: =:.="
+#                SRT             "*MEDLINE*=*2:;=: =:.=:*=[$x]\: *"
+                TAG             "EBI"
+                APPEND          "medline_id"
+
+MATCH           "RX   DOI*"
+                SRT             "*DOI*=*2:;=: =:.="
+#                SRT             "*DOI*=*2:;=: =:*=[$x]\: *"
+#                TAG             "EBI"
+                APPEND          "publication_doi"
+
+MATCH           "RX   PUBMED*"
+                SRT             "*PUBMED*=*2:;=: =:.="
+#                SRT             "*PUBMED*=*2:;=: =:.=:*=[$x]\: *"
+#                TAG             "EBI"
+                APPEND          "pubmed_id"
+
+MATCH           "RG *"
+                SRT             "RG   *=*:*=[$x]\: *"
+                TAG             "EBI"
+                APPEND          "refgrp"
+
+MATCH           "RA *"
+                SRT             "RA   *=*:;=:*=[$x]\: *"
+#                TAG             "EBI"
+                APPEND          "author"
+
+MATCH           "RT *"
+                SRT             "RT   *=*:;=:"=:*=[$x]\: *"
+#                TAG             "EBI"
+                APPEND          "title"
+
+MATCH           "RL *)."
+                SRT             "RL   *=*:*=[$x]\: *"
+#                TAG             "EBI"
+                APPEND          "journal"
+
+MATCH           "RL *Submitted*"
+                SRT             "RL   *=*:Submitted=:\(*\)*=*1"
+#                TAG             "EBI"
+                WRITE           "submit_date"
+
+MATCH           "RL *"
+                SRT             "*Submitted*bases.=:*.\n*=*2"
+#                TAG             "EBI"
+                APPEND          "submit_author"
+
+MATCH           "RL  (er)*"
+                SRT             "RL   (er)*=*"
+#                TAG             "EBI"
+                APPEND          "e_pub"
+
+MATCH           "DR *"
+                SRT             "DR   *; *=*1\: *2:;="
+                TAG             "EBI"
+                APPEND          "ref_1"
+
+MATCH           "CC *"
+                SRT             "CC   *=*"
+                TAG             "EBI"
+                APPEND          "author_com_2"
+
+# -----------------------------------------------------------------
+# Feature table (used by longebi.ift and longgenbank.ift!)
+
+INCLUDE         "feature_table.ift"
+
+# ---------------------------------------------------------------
+
+SEQUENCEAFTER   "SQ*"
+SEQUENCESRT     "*Check*..*=*3"
+SEQUENCEACI     "remove("0123456789 /")"
+SEQUENCEEND     "//"
+
+CREATE_ACC_FROM_SEQUENCE
+
+END             "//"

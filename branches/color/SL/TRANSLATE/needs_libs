@@ -1,0 +1,4 @@
+# libraries needed to link against SL/TRANSLATE/TRANSLATE.a
+
+SL/PRONUC/PRONUC.a
+
