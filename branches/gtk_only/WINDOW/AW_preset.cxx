@@ -750,3 +750,173 @@ void AW_save_specific_properties(AW_window *aw, const char *filename) {  // spec
 void AW_save_properties(AW_window *aw) {
     AW_save_specific_properties(aw, NULL);
 }
+
+// --------------------------------
+//      RGB <-> HSV conversion
+
+class AW_hsv {
+    float H, S, V;
+public:
+    AW_hsv(float hue, float saturation, float value) : H(hue), S(saturation), V(value) {
+        aw_assert(H>=0.0 && H<360.0);
+        aw_assert(S>=0.0 && S<=1.0);
+        aw_assert(V>=0.0 && V<=1.0);
+    }
+    AW_hsv(const AW_rgb_normalized& col) {
+        float R = col.r();
+        float G = col.g();
+        float B = col.b();
+
+        float min = std::min(std::min(R, G), B);
+        float max = std::max(std::max(R, G), B);
+
+        if (min == max) {
+            H = 0;
+        }
+        else {
+            H = 60;
+
+            if      (max == R) { H *= 0 + (G-B)/(max-min); }
+            else if (max == G) { H *= 2 + (B-R)/(max-min); }
+            else               { H *= 4 + (R-G)/(max-min); }
+
+            if (H<0) H += 360;
+        }
+
+        S = max ? (max-min)/max : 0;
+        V = max;
+    }
+#if defined(Cxx11)
+    AW_hsv(const AW_rgb16& col) : AW_hsv(AW_rgb_normalized(col)) {}
+#else // !defined(Cxx11)
+    AW_hsv(const AW_rgb16& col) { *this = AW_rgb_normalized(col); }
+#endif
+
+    AW_rgb_normalized rgb() const {
+        int   hi = int(H/60);
+        float f  = H/60-hi;
+
+        float p = V*(1-S);
+        float q = V*(1-S*f);
+        float t = V*(1-S*(1-f));
+
+        switch (hi) {
+            case 0: return AW_rgb_normalized(V, t, p); //   0 <= H <  60 (deg)
+            case 1: return AW_rgb_normalized(q, V, p); //  60 <= H < 120
+            case 2: return AW_rgb_normalized(p, V, t); // 120 <= H < 180
+            case 3: return AW_rgb_normalized(p, q, V); // 180 <= H < 240
+            case 4: return AW_rgb_normalized(t, p, V); // 240 <= H < 300
+            case 5: return AW_rgb_normalized(V, p, q); // 300 <= H < 360
+        }
+        aw_assert(0);
+        return AW_rgb_normalized(0, 0, 0);
+    }
+
+    float h() const { return H; }
+    float s() const { return S; }
+    float v() const { return V; }
+};
+
+
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#ifndef TEST_UNIT_H
+#include <test_unit.h>
+#endif
+
+void TEST_rgb_hsv_conversion() {
+    // Note: more related tests in AW_rgb.cxx@RGB_TESTS
+
+    const int tested[] = {
+        // testing full rgb space takes too long
+        // just test all combinations of these:
+
+        0, 1, 2, 3, 4, 5,
+        58, 59, 60, 61, 62,
+        998, 999, 1000, 1001, 1002,
+        32766, 32767, 32768, 32769, 32770,
+        39998, 39999, 40000, 40001, 40002,
+        65531, 65532, 65533, 65534, 65535
+    };
+
+    for (unsigned i = 0; i<ARRAY_ELEMS(tested); ++i) {
+        int r = tested[i];
+        for (unsigned j = 0; j<ARRAY_ELEMS(tested); ++j) {
+            int g = tested[j];
+            for (unsigned k = 0; k<ARRAY_ELEMS(tested); ++k) {
+                int b = tested[k];
+
+                TEST_ANNOTATE(GBS_global_string("rgb=%i/%i/%i", r, g, b));
+
+                AW_hsv hsv(AW_rgb16(r, g, b));
+
+                // check range overflow
+                TEST_EXPECT(hsv.h()>=0.0 && hsv.h()<360.0);
+                TEST_EXPECT(hsv.s()>=0.0 && hsv.s()<=1.0);
+                TEST_EXPECT(hsv.v()>=0.0 && hsv.v()<=1.0);
+
+                AW_rgb16 RGB(hsv.rgb());
+
+                // fprintf(stderr, "rgb=%i/%i/%i hsv=%i/%i/%i RGB=%i/%i/%i\n", r, g, b, h, s, v, R, G, B);
+
+                // check that rgb->hsv->RGB produces a similar color
+                const int MAXDIFF    = 1; // less than .0015% difference per channel
+                const int MAXDIFFSUM = 2; // less than .003% difference overall
+
+                TEST_EXPECT(abs(r-RGB.r()) <= MAXDIFF);
+                TEST_EXPECT(abs(g-RGB.g()) <= MAXDIFF);
+                TEST_EXPECT(abs(b-RGB.b()) <= MAXDIFF);
+
+                TEST_EXPECT((abs(r-RGB.r())+abs(g-RGB.g())+abs(b-RGB.b())) <= MAXDIFFSUM);
+            }
+        }
+    }
+
+    for (unsigned i = 0; i<ARRAY_ELEMS(tested); ++i) {
+        int h = tested[i]*320/65535;
+        for (unsigned j = 0; j<ARRAY_ELEMS(tested); ++j) {
+            float s = tested[j]/65535.0;
+            for (unsigned k = 0; k<ARRAY_ELEMS(tested); ++k) {
+                float v = tested[k]/65535.0;
+
+                TEST_ANNOTATE(GBS_global_string("hsv=%i/%.3f/%.3f", h, s, v));
+
+                AW_rgb16 rgb(AW_hsv(h, s, v).rgb());
+                AW_rgb16 RGB(AW_hsv(rgb).rgb());
+
+                // fprintf(stderr, "hsv=%i/%i/%i rgb=%i/%i/%i HSV=%i/%i/%i RGB=%i/%i/%i\n", h, s, v, r, g, b, H, S, V, R, G, B);
+
+                // check that hsv->rgb->HSV->RGB produces a similar color (comparing hsv makes no sense)
+                const int MAXDIFF    = 1; // less than .0015% difference per channel
+                const int MAXDIFFSUM = 2; // less than .003% difference overall
+
+                TEST_EXPECT(abs(rgb.r()-RGB.r()) <= MAXDIFF);
+                TEST_EXPECT(abs(rgb.g()-RGB.g()) <= MAXDIFF);
+                TEST_EXPECT(abs(rgb.b()-RGB.b()) <= MAXDIFF);
+
+                TEST_EXPECT((abs(rgb.r()-RGB.r())+abs(rgb.g()-RGB.g())+abs(rgb.b()-RGB.b())) <= MAXDIFFSUM);
+            }
+        }
+    }
+
+    // specific conversion (showed wrong 'hue' and 'saturation' until [14899])
+    {
+        AW_hsv hsv(AW_rgb16(0, 0, 14906));
+
+        TEST_EXPECT_SIMILAR(hsv.h(), 240.0, 0.001); //= ~ 240 deg
+        TEST_EXPECT_SIMILAR(hsv.s(), 1.0,   0.001); //= 100%
+        TEST_EXPECT_SIMILAR(hsv.v(), 0.227, 0.001); //= ~ 22.7%
+
+        AW_rgb16 rgb(hsv.rgb());
+
+        TEST_EXPECT_EQUAL(rgb.r(), 0);
+        TEST_EXPECT_EQUAL(rgb.g(), 0);
+        TEST_EXPECT_EQUAL(rgb.b(), 14906);
+    }
+}
+
+#endif // UNIT_TESTS
+
+// --------------------------------------------------------------------------------
+
