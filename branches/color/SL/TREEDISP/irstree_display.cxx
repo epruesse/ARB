@@ -275,7 +275,7 @@ void AWT_graphic_tree::show_irs_tree(AP_tree *at, double height) {
     IRS.halfstep_y     = IRS.step_y*0.5;
     IRS.x_scale        = 200.0;      // @@@ should not have any effect, since display gets x-scaled. But if it's to low (e.g. 1.0) scaling on zoom-reset does not work
 
-    const AW_font_limits& limits = disp_device->get_font_limits(AWT_GC_SELECTED, 0);
+    const AW_font_limits& limits = disp_device->get_font_limits(AWT_GC_ALL_MARKED, 0);
 
     IRS.adjust_text    = disp_device->rtransform(Vector(NT_BOX_WIDTH, limits.ascent*0.5));
     IRS.onePixel       = disp_device->rtransform_size(1.0);

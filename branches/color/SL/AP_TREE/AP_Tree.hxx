@@ -29,15 +29,15 @@
 #endif
 
 enum {
-    AWT_GC_CURSOR=0,
+    AWT_GC_CURSOR = 0,
     AWT_GC_BRANCH_REMARK,
     AWT_GC_BOOTSTRAP,
     AWT_GC_BOOTSTRAP_LIMITED,
     AWT_GC_IRS_GROUP_BOX,
-    AWT_GC_SELECTED,        // == zero mismatches
-    AWT_GC_UNDIFF,
-    AWT_GC_NSELECTED,       // no hit
-    AWT_GC_ZOMBIES,
+    AWT_GC_ALL_MARKED,
+    AWT_GC_SOME_MARKED,
+    AWT_GC_NONE_MARKED,
+    AWT_GC_ONLY_ZOMBIES,
 
     // for probe coloring
 

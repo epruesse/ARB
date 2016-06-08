@@ -634,13 +634,13 @@ void AP_tree::update_subtree_information() {
         // colors:
         if (gb_node) {
             if (is_marked) {
-                gr.gc = AWT_GC_SELECTED;
+                gr.gc = AWT_GC_ALL_MARKED;
             }
             else {
                 // check for user color
                 long color_group = AW_find_active_color_group(gb_node);
                 if (color_group == 0) {
-                    gr.gc = AWT_GC_NSELECTED;
+                    gr.gc = AWT_GC_NONE_MARKED;
                 }
                 else {
                     gr.gc = AWT_GC_FIRST_COLOR_GROUP+color_group-1;
@@ -648,7 +648,7 @@ void AP_tree::update_subtree_information() {
             }
         }
         else {
-            gr.gc = AWT_GC_ZOMBIES;
+            gr.gc = AWT_GC_ONLY_ZOMBIES;
         }
     }
     else {
@@ -681,17 +681,17 @@ void AP_tree::update_subtree_information() {
             // colors:
             if (left.gc == right.gc) gr.gc = left.gc;
 
-            else if (left.gc == AWT_GC_SELECTED || right.gc == AWT_GC_SELECTED) gr.gc = AWT_GC_UNDIFF;
+            else if (left.gc == AWT_GC_ALL_MARKED || right.gc == AWT_GC_ALL_MARKED) gr.gc = AWT_GC_SOME_MARKED;
 
-            else if (left.gc  == AWT_GC_ZOMBIES) gr.gc = right.gc;
-            else if (right.gc == AWT_GC_ZOMBIES) gr.gc = left.gc;
+            else if (left.gc  == AWT_GC_ONLY_ZOMBIES) gr.gc = right.gc;
+            else if (right.gc == AWT_GC_ONLY_ZOMBIES) gr.gc = left.gc;
 
-            else if (left.gc == AWT_GC_UNDIFF || right.gc == AWT_GC_UNDIFF) gr.gc = AWT_GC_UNDIFF;
+            else if (left.gc == AWT_GC_SOME_MARKED || right.gc == AWT_GC_SOME_MARKED) gr.gc = AWT_GC_SOME_MARKED;
 
             else {
-                ap_assert(left.gc != AWT_GC_SELECTED && right.gc != AWT_GC_SELECTED);
-                ap_assert(left.gc != AWT_GC_UNDIFF   && right.gc != AWT_GC_UNDIFF);
-                gr.gc = AWT_GC_NSELECTED;
+                ap_assert(left.gc != AWT_GC_ALL_MARKED  && right.gc != AWT_GC_ALL_MARKED);
+                ap_assert(left.gc != AWT_GC_SOME_MARKED && right.gc != AWT_GC_SOME_MARKED);
+                gr.gc = AWT_GC_NONE_MARKED;
             }
         }
     }
@@ -703,7 +703,7 @@ unsigned AP_tree::count_leafs() const {
         : get_leftson()->count_leafs() + get_rightson()->count_leafs();
 }
 
-int AP_tree::colorize(GB_HASH *hashptr) {
+int AP_tree::colorize(GB_HASH *hashptr) { // currently only used for multiprobes
     // colorizes the tree according to 'hashptr'
     // hashkey   = species id
     // hashvalue = gc
@@ -717,17 +717,17 @@ int AP_tree::colorize(GB_HASH *hashptr) {
             }
         }
         else {
-            res = AWT_GC_ZOMBIES;
+            res = AWT_GC_ONLY_ZOMBIES;
         }
     }
     else {
         int l = get_leftson()->colorize(hashptr);
         int r = get_rightson()->colorize(hashptr);
 
-        if      (l == r)              res = l;
-        else if (l == AWT_GC_ZOMBIES) res = r;
-        else if (r == AWT_GC_ZOMBIES) res = l;
-        else                          res = AWT_GC_UNDIFF;
+        if      (l == r)                   res = l;
+        else if (l == AWT_GC_ONLY_ZOMBIES) res = r;
+        else if (r == AWT_GC_ONLY_ZOMBIES) res = l;
+        else                               res = AWT_GC_SOME_MARKED;
     }
     gr.gc = res;
     return res;

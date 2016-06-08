@@ -2694,7 +2694,7 @@ void AWT_graphic_tree::show_nds_list(GBDATA *, bool use_nds) {
     AW_pos y_position = scaled_branch_distance;
     AW_pos x_position = NT_SELECTED_WIDTH * disp_device->get_unscale();
 
-    disp_device->text(nds_show_all ? AWT_GC_CURSOR : AWT_GC_SELECTED,
+    disp_device->text(nds_show_all ? AWT_GC_CURSOR : AWT_GC_ALL_MARKED,
                       GBS_global_string("%s of %s species", use_nds ? "NDS List" : "Simple list", nds_show_all ? "all" : "marked"),
                       (AW_pos) x_position, (AW_pos) 0,
                       (AW_pos) 0, other_text_filter);
@@ -2750,12 +2750,12 @@ void AWT_graphic_tree::show_nds_list(GBDATA *, bool use_nds) {
 
             bool is_marked = nds_show_all ? GB_read_flag(gb_species) : true;
             if (is_marked) {
-                disp_device->set_line_attributes(AWT_GC_SELECTED, baselinewidth, AW_SOLID);
-                filled_box(AWT_GC_SELECTED, Position(0, y_position), NT_BOX_WIDTH);
+                disp_device->set_line_attributes(AWT_GC_ALL_MARKED, baselinewidth, AW_SOLID);
+                filled_box(AWT_GC_ALL_MARKED, Position(0, y_position), NT_BOX_WIDTH);
             }
 
-            int gc                            = AWT_GC_NSELECTED;
-            if (nds_show_all && is_marked) gc = AWT_GC_SELECTED;
+            int gc                            = AWT_GC_NONE_MARKED;
+            if (nds_show_all && is_marked) gc = AWT_GC_ALL_MARKED;
             else {
                 int color_group     = AW_find_active_color_group(gb_species);
                 if (color_group) gc = AWT_GC_FIRST_COLOR_GROUP+color_group-1;
@@ -2895,7 +2895,7 @@ void AWT_graphic_tree::show(AW_device *device) {
     disp_device = device;
     disp_device->reset_style();
 
-    const AW_font_limits& charLimits = disp_device->get_font_limits(AWT_GC_SELECTED, 0);
+    const AW_font_limits& charLimits = disp_device->get_font_limits(AWT_GC_ALL_MARKED, 0);
 
     scaled_font.init(charLimits, device->get_unscale());
     scaled_branch_distance *= scaled_font.height;
@@ -3392,10 +3392,10 @@ static AW_rgb colors_def[] = {
     0x53d3ff, // AWT_GC_BOOTSTRAP
     0x808080, // AWT_GC_BOOTSTRAP_LIMITED
     0x000000, // AWT_GC_IRS_GROUP_BOX
-    0xf0c000, // AWT_GC_SELECTED
-    0xbb8833, // AWT_GC_UNDIFF
-    0x622300, // AWT_GC_NSELECTED
-    0x977a0e, // AWT_GC_ZOMBIES
+    0xf0c000, // AWT_GC_ALL_MARKED
+    0xbb8833, // AWT_GC_SOME_MARKED
+    0x622300, // AWT_GC_NONE_MARKED
+    0x977a0e, // AWT_GC_ONLY_ZOMBIES
 
     0x000000, // AWT_GC_BLACK
     0x808080, // AWT_GC_WHITE
