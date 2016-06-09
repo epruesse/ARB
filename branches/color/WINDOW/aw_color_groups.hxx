@@ -19,7 +19,9 @@
 #include <arbdb_base.h>
 #endif
 
-
+// ----------------------
+//      color groups
+//
 // color groups define special colors used to colorize
 // groups of genes or species (or any other items)
 //
@@ -52,6 +54,18 @@ long  AW_find_active_color_group(GBDATA *gbd);
 char *AW_get_color_group_name(AW_root *awr, int color_group);
 
 void AW_init_color_group_defaults(const char *for_program);
+
+// ----------------------
+//      color ranges
+//
+// color ranges provide blended colors (e.g. red .. green or black .. white)
+
+#define AW_RANGE_COLORS 4096 // amount of gcs used for color-ranges (4096 = 64*64 = 16*16*16)
+// #define AW_RANGE_COLORS 16384
+// #define AW_RANGE_COLORS 65536
+// #define AW_RANGE_COLORS 262144
+
+// #define AW_RANGE_COLORS 1048576 // test 1 million gcs (uses several Gb of memory; in arb_ntree and XOrg)
 
 #else
 #error aw_color_groups.hxx included twice
