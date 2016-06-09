@@ -24,6 +24,11 @@
 #include <arbdbt.h>
 #include <ad_colorset.h>
 
+#if defined(DEBUG)
+#include <ctime>
+#endif
+
+
 using std::string;
 
 #define AWAR_COLOR_GROUPS_PREFIX "color_groups"
@@ -96,14 +101,25 @@ const int NO_INDEX = -1;
 enum gc_type {
     GC_TYPE_NORMAL,
     GC_TYPE_GROUP,
+    GC_TYPE_RANGE,
 };
+
+#define RANGE_INDEX_BITS 4
+#define RANGE_INDEX_MASK ((1<<RANGE_INDEX_BITS)-1)
+
+inline int build_range_gc_number(int range_idx, int color_idx) {
+    aw_assert(range_idx == (range_idx & RANGE_INDEX_MASK));
+    return (color_idx << RANGE_INDEX_BITS) | range_idx;
+}
 
 struct gc_desc {
     // data for one GC
     // - used to populate color config windows and
     // - in change-callbacks
 
-    int     gc;              // -1 = background; [0..n-1] for normal GCs (where n=AW_gc_manager::drag_gc_offset)
+    int     gc;              // -1 = background;
+                             // if type!=GC_TYPE_RANGE: [0..n-1] (where n=AW_gc_manager::drag_gc_offset if no gc_ranges defined)
+                             // if type==GC_TYPE_RANGE: contains range- and color-index
     string  colorlabel;      // label to appear next to chooser
     string  key;             // key (normally build from colorlabel)
     bool    has_font;        // show font selector
@@ -119,7 +135,11 @@ struct gc_desc {
         type(type_)
     {}
 
-    bool is_color_group() const { return type == GC_TYPE_GROUP; }
+    bool is_color_group()   const { return type == GC_TYPE_GROUP; }
+    bool belongs_to_range() const { return type == GC_TYPE_RANGE; }
+
+    int get_range_index() const { aw_assert(belongs_to_range()); return gc  & RANGE_INDEX_MASK; }
+    int get_color_index() const { aw_assert(belongs_to_range()); return gc >> RANGE_INDEX_BITS; }
 
 private:
     bool parse_char(char c) {
@@ -167,6 +187,36 @@ public:
     }
 };
 
+// --------------------------------
+//      types for color-ranges
+
+enum gc_range_type {
+    GC_RANGE_INVALID,
+    GC_RANGE_LINEAR,
+};
+
+class gc_range {
+    gc_range_type type;
+
+    int index;       // in range-array of AW_gc_manager
+    int color_count; // number of support colors (ie. customizable colors)
+    int gc_index;    // of first support color in GCs-array of AW_gc_manager
+
+public:
+    gc_range(gc_range_type type_, int index_, int gc_index_) :
+        type(type_),
+        index(index_),
+        color_count(0),
+        gc_index(gc_index_)
+    {}
+
+    void add_color(const string& colordef, AW_gc_manager *gcman);
+    void update_colors(const AW_gc_manager *gcman, int changed_color) const;
+};
+
+// --------------------
+//      GC manager
+
 class AW_gc_manager : virtual Noncopyable {
     const char *gc_base_name;
     AW_device  *device;
@@ -174,8 +224,11 @@ class AW_gc_manager : virtual Noncopyable {
 
     int first_colorgroup_idx; // index into 'GCs' or NO_INDEX (if no color groups defined)
 
-    typedef std::vector<gc_desc> gc_container;
-    gc_container GCs;
+    typedef std::vector<gc_desc>  gc_container;
+    typedef std::vector<gc_range> gc_range_container;
+
+    gc_container       GCs;
+    gc_range_container color_ranges;
 
     GcChangedCallback changed_cb;
 
@@ -187,11 +240,18 @@ class AW_gc_manager : virtual Noncopyable {
     bool valid_idx(int idx) const { return idx>=0 && idx<int(GCs.size()); }
     bool valid_gc(int gc) const {
         // does not test gc is really valid, just tests whether it is completely out-of-bounds
-        return gc>=GC_BACKGROUND && gc <= GCs.back().gc;
+        return gc>=GC_BACKGROUND && gc < drag_gc_offset;
     }
 #endif
 
     static void ignore_change_cb(GcChange) {}
+
+    void allocate_gc(int gc) const;
+
+    void update_gc_color_internal(int gc, const char *color) const;
+    void update_range_colors(const gc_desc& gcd) const;
+    void update_range_font(const char *font) const;
+
 public:
     static const char **color_group_defaults;
     static bool         use_color_groups;
@@ -211,6 +271,10 @@ public:
     void init_all_fonts() const;
     void update_all_fonts() const;
 
+    void init_color_ranges(int& gc) const;
+    bool has_color_range() const { return !color_ranges.empty(); }
+    int first_range_gc() const { return drag_gc_offset - AW_RANGE_COLORS; }
+
     bool has_color_groups() const { return first_colorgroup_idx != NO_INDEX; }
 
     int size() const { return GCs.size(); }
@@ -221,10 +285,17 @@ public:
     const char *get_base_name() const { return gc_base_name; }
     int get_drag_gc() const { return drag_gc_offset; }
 
-    void add_gc(const char* gc_desc, int& gc, bool is_color_group);
+    void add_gc      (const char *gc_description, int& gc, gc_type type);
+    void add_gc_range(const char *gc_description);
+    void reserve_gcs (const char *gc_description, int& gc);
+
     void update_gc_color(int idx) const;
     void update_gc_font(int idx) const;
     void update_aa_setting();
+
+    void update_range_gc_color(int idx, const char *color) const {
+        update_gc_color_internal(first_range_gc()+idx, color);
+    }
 
     void create_gc_buttons(AW_window *aww, bool for_colorgroups);
 
@@ -234,6 +305,9 @@ public:
             did_suppress_change = GcChange(std::max(whatChanged, did_suppress_change));
         }
         else {
+#if defined(DEBUG)
+            fprintf(stderr, "[changed_cb] @ %zu\n", clock());
+#endif
             changed_cb(whatChanged);
             device->queue_draw();
         }
@@ -275,6 +349,10 @@ void AW_gc_manager::update_gc_font(int idx) const {
     for (int i = idx+1; i<int(GCs.size()); ++i) {
         const gc_desc& gcd = GCs[i];
         if (gcd.has_font) break; // abort if GC defines its own font
+        if (gcd.belongs_to_range()) {
+            update_range_font(font);
+            break; // all leftover GCs belong to ranges = > stop here
+        }
 
         device->set_font(gcd.gc,                font);
         device->set_font(gcd.gc+drag_gc_offset, font);
@@ -303,16 +381,81 @@ static void all_fontsOrSizes_changed_cb(AW_root*, const AW_gc_manager *mgr) {
     mgr->update_all_fonts();
 }
 
+void AW_gc_manager::update_gc_color_internal(int gc, const char *color) const {
+    aw_assert(valid_gc(gc));
+
+    device->set_foreground_color(gc, color);
+    if (gc != GC_BACKGROUND) {
+        device->set_foreground_color(gc + drag_gc_offset, color);
+    }
+}
+
+void gc_range::update_colors(const AW_gc_manager *gcman, int changed_color) const {
+    /*! recalculate colors of a range (called after one color changed)
+     * @param gcman             the GC manager
+     * @param changed_color     which color of a range has changed (0 = first, ...). -1 -> unknown => need complete update // @@@ not implemented, always acts like -1 is passed
+     */
+    aw_assert(type == GC_RANGE_LINEAR);
+    aw_assert(color_count == 2);
+
+    const gc_desc& low_gc  = gcman->get_gc_desc(gc_index);
+    const gc_desc& high_gc = gcman->get_gc_desc(gc_index+1);
+
+    const char *basename   = gcman->get_base_name();
+    AW_root    *awr        = AW_root::SINGLETON;
+    const char *low_color  = awr->awar(color_awarname(basename, low_gc.key))->read_char_pntr();
+    const char *high_color = awr->awar(color_awarname(basename, high_gc.key))->read_char_pntr();
+
+    AW_rgb_normalized low(low_color);
+    AW_rgb_normalized high(high_color);
+
+    float rdiff = high.r()-low.r();
+    float gdiff = high.g()-low.g();
+    float bdiff = high.b()-low.b();
+
+    // @@@ try HSV color blending as alternative
+    for (int i = 0; i<AW_RANGE_COLORS; ++i) { // blend colors
+        float factor = i/float(AW_RANGE_COLORS-1);
+
+        AW_rgb_normalized col(low.r()+factor*rdiff,
+                              low.g()+factor*gdiff,
+                              low.b()+factor*bdiff);
+
+        gcman->update_range_gc_color(i, AW_rgb16(col).ascii());
+    }
+}
+void AW_gc_manager::update_range_colors(const gc_desc& gcd) const {
+    int defined_ranges = color_ranges.size();
+    int range_idx      = gcd.get_range_index();
+
+    if (range_idx<defined_ranges) {
+        const gc_range& gcr = color_ranges[range_idx];
+        gcr.update_colors(this, gcd.get_color_index());
+    }
+}
+void AW_gc_manager::update_range_font(const char *font) const {
+    // set font for all GCs belonging to color-range
+    int first_gc = first_range_gc();
+    for (int i = 0; i<AW_RANGE_COLORS; ++i) {
+        int gc = first_gc+i;
+        device->set_font(gc,                font, 0);
+        device->set_font(gc+drag_gc_offset, font, 0);
+    }
+}
+
 void AW_gc_manager::update_gc_color(int idx) const {
     aw_assert(valid_idx(idx));
 
     const gc_desc&  gcd   = GCs[idx];
     const char     *color = AW_root::SINGLETON->awar(color_awarname(gc_base_name, gcd.key))->read_char_pntr();
 
-    device->set_foreground_color(gcd.gc, color);
-    if (gcd.gc != GC_BACKGROUND) {
-        device->set_foreground_color(gcd.gc + drag_gc_offset, color);
+    if (gcd.belongs_to_range()) {
+        update_range_colors(gcd); // @@@ should not happen during startup and only if affected range is the active range
     }
+    else {
+        update_gc_color_internal(gcd.gc, color);
+    }
+
     trigger_changed_cb(GC_COLOR_CHANGED);
 }
 static void gc_color_changed_cb(AW_root*, AW_gc_manager *mgr, int idx) {
@@ -344,43 +487,116 @@ static void aw_update_aa_setting(AW_root*, AW_gc_manager *mgr) {
     mgr->update_aa_setting();
 }
 
-// -----------------
-//      add GCs
+// ----------------------------
+//      define color-ranges
 
-void AW_gc_manager::add_gc(const char* gc_description, int& gc, bool is_color_group) {
-    if (gc_description[0] == '!') { // just reserve one or several GCs (eg. done in arb_pars)
-        int amount = atoi(gc_description+1);
-        aw_assert(amount>=1);
+void gc_range::add_color(const string& colordef, AW_gc_manager *gcman) {
+    int gc = build_range_gc_number(index, color_count);
+    gcman->add_gc(colordef.c_str(), gc, GC_TYPE_RANGE);
+    color_count++;
+}
 
-        gc += amount;
-        return;
+void AW_gc_manager::add_gc_range(const char *gc_description) {
+    GB_ERROR    error = NULL;
+    const char *comma = strchr(gc_description+1, ',');
+    if (!comma) error = "',' expected";
+    else {
+        string      range_name(gc_description+1, comma-gc_description-1);
+        const char *colon = strchr(comma+1, ':');
+        if (!colon) error = "':' expected";
+        else {
+            gc_range_type rtype = GC_RANGE_INVALID;
+            string        range_type(comma+1, colon-comma-1);
+
+            if (range_type == "linear") {
+                rtype = GC_RANGE_LINEAR;
+            }
+
+            if (rtype == GC_RANGE_INVALID) {
+                error = GBS_global_string("invalid range-type '%s'", range_type.c_str());
+            }
+
+            if (!error) {
+                gc_range range(rtype, color_ranges.size(), GCs.size());
+
+                const char *color_start = colon+1;
+                comma                   = strchr(color_start, ',');
+                while (comma) {
+                    range.add_color(string(color_start, comma-color_start), this);
+                    color_start = comma+1;
+                    comma       = strchr(color_start, ',');
+                }
+                range.add_color(string(color_start), this);
+
+                color_ranges.push_back(range); // add to manager
+            }
+        }
     }
 
-    int idx = int(GCs.size()); // index position where new GC will be added
-    if (is_color_group && first_colorgroup_idx == NO_INDEX) {
-        first_colorgroup_idx = idx;
+    if (error) {
+        GBK_terminatef("Failed to parse color range specification '%s'\n(Reason: %s)", gc_description, error);
     }
+}
 
-    GCs.push_back(gc_desc(gc, is_color_group ? GC_TYPE_GROUP : GC_TYPE_NORMAL));
+void AW_gc_manager::init_color_ranges(int& gc) const {
+    if (has_color_range()) {
+        aw_assert(gc == first_range_gc()); // 'drag_gc_offset' is wrong (is passed as 'base_drag' to AW_manage_GC)
+        int last_gc = gc + AW_RANGE_COLORS-1;
+        while (gc<=last_gc) allocate_gc(gc++);
+
+        const gc_range& active_range = color_ranges[0]; // @@@ should use active color-range (atm there is only 1)
+        active_range.update_colors(this, -1); // -1 means full update
+    }
+}
+
+
+// -------------------------
+//      reserve/add GCs
+
+void AW_gc_manager::reserve_gcs(const char *gc_description, int& gc) {
+    aw_assert(gc_description[0] == '!');
+
+    // just reserve one or several GCs (eg. done in arb_pars)
+    int amount = atoi(gc_description+1);
+    aw_assert(amount>=1);
+
+    gc += amount;
+}
+
+void AW_gc_manager::allocate_gc(int gc) const {
+    device->new_gc(gc);
+    device->set_line_attributes(gc, 1, AW_SOLID);
+    device->set_function(gc, AW_COPY);
+
+    int gc_drag = gc + drag_gc_offset;
+    device->new_gc(gc_drag);
+    device->set_line_attributes(gc_drag, 1, AW_SOLID);
+    device->set_function(gc_drag, AW_XOR);
+    device->establish_default(gc_drag);
+}
+
+void AW_gc_manager::add_gc(const char *gc_description, int& gc, gc_type type) {
+    aw_assert(strchr("*!", gc_description[0]) == NULL);
+
+    GCs.push_back(gc_desc(gc, type));
     gc_desc &gcd = GCs.back();
+    int      idx = int(GCs.size()-1); // index position where new GC has been added
+
+    if (gcd.is_color_group() && first_colorgroup_idx == NO_INDEX) {
+        first_colorgroup_idx = idx; // remember index of first color-group
+    }
 
     bool is_background = gc == GC_BACKGROUND;
+    bool alloc_gc      = !gcd.belongs_to_range();
+    if (alloc_gc)
     {
-        device->new_gc(gc);
-        device->set_line_attributes(gc, 1, AW_SOLID);
-        device->set_function(gc, AW_COPY);
-
-        int gc_drag = gc + drag_gc_offset;
-        device->new_gc(gc_drag);
-        device->set_line_attributes(gc_drag, 1, AW_SOLID);
-        device->set_function(gc_drag, AW_XOR);
-        device->establish_default(gc_drag);
+        allocate_gc(gc);
     }
 
     const char *default_color = gcd.parse_decl(gc_description);
 
     aw_assert(strcmp(gcd.key.c_str(), ALL_FONTS_ID) != 0); // id is reserved
-    aw_assert(implicated(gc == 0, gcd.has_font)); // first GC always has to define a font!
+    aw_assert(implicated(gc == 0 && type != GC_TYPE_RANGE, gcd.has_font)); // first GC always has to define a font!
 
     if (default_color[0] == '{') {
         // use current value of an already defined color as default for current color:
@@ -402,12 +618,15 @@ void AW_gc_manager::add_gc(const char* gc_description, int& gc, bool is_color_gr
         free(referenced_colorlabel);
     }
 
+    // @@@ add assertion vs duplicate ids here?
     AW_root::SINGLETON->awar_string(color_awarname(gc_base_name, gcd.key), default_color)
         ->add_callback(makeRootCallback(gc_color_changed_cb, this, idx));
     gc_color_changed_cb(NULL, this, idx);
 
     if (!is_background) { // no font for background
         if (gcd.has_font) {
+            aw_assert(!gcd.belongs_to_range()); // no fonts supported for ranges
+
             const char *default_font = gcd.fixed_width_font ? "monospace 10" : "sans 10";
 
             RootCallback fontChange_cb = makeRootCallback(gc_fontOrSize_changed_cb, this, idx);
@@ -472,21 +691,23 @@ AW_gc_manager *AW_manage_GC(AW_window                */*aww*/, // remove AFTERME
      * @param area         AW_GCM_DATA_AREA or AW_GCM_WINDOW_AREA (motif only)
      * @param changecb     cb if changed
      * @param define_color_groups  true -> add colors for color groups
-     * @param ...                  NULL terminated list of \0 terminated strings:
-     *                             first GC is fixed: '-background'
-     *                             optionsSTRING   name of GC and AWAR
-     *                             options:        #   fixed fonts only
-     *                                             -   no fonts
-     *                                             !   unused GC (only reserves a GC number; used eg. in arb_pars to sync GCs with arb_ntree)
-     *                                             +   append next in same line
+     * @param ...                  NULL terminated list of \0 terminated <definition>s:
      *
-     *                                             $color at end of string    => define default color value
-     *                                             ${GCname} at end of string => use default of previously defined color
+     *   <definition>::= <gcdef>|<reserve>|<rangedef>
+     *   <reserve>   ::= !<num>                                     "reserves <num> gc-numbers; used eg. in arb_pars to sync GCs with arb_ntree"
+     *   <gcdef>     ::= [<option>+]<descript>['$'<default>]        "defines a GC"
+     *   <option>    ::= '#'|'+'|'-'                                "'-'=no font; '#'=only fixed fonts; '+'=append next GC on same line"
+     *   <descript>  ::=                                            "description of GC; shown as label; has to be unique when converted to key"
+     *   <default>   ::= <xcolor>|<gcref>                           "default color of GC"
+     *   <xcolor>    ::=                                            "accepts any valid X-colorname (e.g. 'white', '#c0ff40')"
+     *   <gcref>     ::= '{'<descript>'}'                           "reference to another earlier defined gc"
+     *   <rangedef>  ::= '*'<name>','<type>':'<gcdef>[','<gcdef>]+  "defines a GC-range (with one <gcdef> for each support color)"
+     *   <name>      ::=                                            "description of range"
+     *   <type>      ::= 'linear'|'cyclic'|'planar'|'spatial'       "rangetype; implies number of required support colors: linear=2 cyclic=3 planar=3 spatial=4" // @@@ only linear type with 2 support colors is accepted/implemented yet
      */
 
     aw_assert(default_background_color[0]);
     aw_assert(base_gc == 0);
-    // @@@ assert that aww->window_defaults_name is equal to gc_base_name?
 
 #if defined(ASSERTION_USED)
     int base_drag_given = base_drag;
@@ -499,14 +720,18 @@ AW_gc_manager *AW_manage_GC(AW_window                */*aww*/, // remove AFTERME
     int  gc = GC_BACKGROUND; // gets incremented by add_gc
     char background[50];
     sprintf(background, "-background$%s", default_background_color);
-    gcmgr->add_gc(background, gc, false);
+    gcmgr->add_gc(background, gc, GC_TYPE_NORMAL);
 
     va_list parg;
     va_start(parg, default_background_color);
 
     const char *id;
     while ( (id = va_arg(parg, char*)) ) {
-        gcmgr->add_gc(id, gc, false);
+        switch (id[0]) {
+            case '!': gcmgr->reserve_gcs(id, gc);            break;
+            case '*': gcmgr->add_gc_range(id);               break;
+            default:  gcmgr->add_gc(id, gc, GC_TYPE_NORMAL); break;
+        }
     }
     va_end(parg);
 
@@ -524,10 +749,11 @@ AW_gc_manager *AW_manage_GC(AW_window                */*aww*/, // remove AFTERME
 
         const char **color_group_gc_default = AW_gc_manager::color_group_defaults;
         while (*color_group_gc_default) {
-            gcmgr->add_gc(*color_group_gc_default++, gc, true);
+            gcmgr->add_gc(*color_group_gc_default++, gc, GC_TYPE_GROUP);
         }
     }
 
+    gcmgr->init_color_ranges(gc);
     gcmgr->init_all_fonts();
 
     // anti-aliasing settings:
