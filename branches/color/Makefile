@@ -1186,6 +1186,7 @@ ARCHS_NTREE = \
 		SL/REFENTRIES/REFENTRIES.a \
 		SL/NDS/NDS.a \
 		SL/ITEMS/ITEMS.a \
+		SL/ITEM_SHADER/ITEM_SHADER.a \
 		SL/INSDEL/INSDEL.a \
 		SL/LOCATION/LOCATION.a \
 		SL/MACROS/MACROS.a \
@@ -1573,6 +1574,7 @@ SL/GUI_ALIVIEW/GUI_ALIVIEW.dummy:	links_non_perl
 SL/HELIX/HELIX.dummy:			links_non_perl
 SL/INSDEL/INSDEL.dummy:			links_non_perl
 SL/ITEMS/ITEMS.dummy:			links_non_perl
+SL/ITEM_SHADER/ITEM_SHADER.dummy:	links_non_perl
 SL/LOCATION/LOCATION.dummy:		links_non_perl
 SL/MACROS/MACROS.dummy:			links_non_perl
 SL/MATRIX/MATRIX.dummy:			links_non_perl
@@ -2314,6 +2316,7 @@ UNITS_UNTESTABLE_ATM = \
 # for the moment, put all units containing tests into UNITS_TESTED or UNITS_TESTED_FIRST
 
 UNITS_TESTED_FIRST = \
+	SL/ITEM_SHADER/ITEM_SHADER.test \
 	PROBE_SET/fb_test.test \
 	SL/ITEMS/ITEMS.test \
 	SL/CONSENSUS/CONSENSUS.test \
