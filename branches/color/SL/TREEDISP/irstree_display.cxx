@@ -9,6 +9,7 @@
 // =============================================================== //
 
 #include "TreeDisplay.hxx"
+#include <AP_TreeColors.hxx>
 
 #include <nds.h>
 

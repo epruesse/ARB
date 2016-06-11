@@ -39,6 +39,7 @@
 #include <db_query.h>
 #include <dbui.h>
 
+#include <aw_color_groups.hxx>
 #include <aw_advice.hxx>
 #include <aw_preset.hxx>
 #include <aw_awars.hxx>

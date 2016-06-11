@@ -15,6 +15,7 @@
 #include "ap_tree_nlen.hxx"
 #include "ap_main.hxx"
 
+#include <AP_TreeColors.hxx>
 #include <AP_seq_dna.hxx>
 #include <AP_seq_protein.hxx>
 #include <AP_filter.hxx>

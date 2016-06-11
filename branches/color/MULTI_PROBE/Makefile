@@ -184,6 +184,7 @@ MP_noclass.o: $(ARBHOME)/INCLUDE/aisc_global.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/AliView.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
+MP_noclass.o: $(ARBHOME)/INCLUDE/AP_TreeColors.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/arb_core.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/arb_error.h
@@ -384,15 +385,12 @@ MP_sondentopf.o: SoTl.hxx
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/aisc_global.h
-MP_sondentopf.o: $(ARBHOME)/INCLUDE/AliView.hxx
-MP_sondentopf.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
-MP_sondentopf.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
+MP_sondentopf.o: $(ARBHOME)/INCLUDE/AP_TreeColors.hxx
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/arb_core.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/arb_error.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/arb_msg.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/arb_string.h
-MP_sondentopf.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/arbdb.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -414,7 +412,6 @@ MP_sondentopf.o: $(ARBHOME)/INCLUDE/PT_com.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/smartptr.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/static_assert.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/test_global.h
-MP_sondentopf.o: $(ARBHOME)/INCLUDE/TreeNode.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 MP_Window.o: MP_externs.hxx

@@ -103,7 +103,6 @@ ad_spec.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-ad_spec.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
@@ -202,7 +201,6 @@ ad_trees.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-ad_trees.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_edit.hxx
@@ -384,7 +382,6 @@ NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/arbtools.h
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/attributes.h
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
@@ -560,7 +557,6 @@ NT_edconf.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-NT_edconf.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
@@ -913,7 +909,6 @@ NT_taxonomy.o: $(ARBHOME)/INCLUDE/arbtools.h
 NT_taxonomy.o: $(ARBHOME)/INCLUDE/attributes.h
 NT_taxonomy.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 NT_taxonomy.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-NT_taxonomy.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 NT_taxonomy.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 NT_taxonomy.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 NT_taxonomy.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
@@ -999,7 +994,6 @@ NT_tree_cmp.o: $(ARBHOME)/INCLUDE/arbdbt.h
 NT_tree_cmp.o: $(ARBHOME)/INCLUDE/arbtools.h
 NT_tree_cmp.o: $(ARBHOME)/INCLUDE/attributes.h
 NT_tree_cmp.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-NT_tree_cmp.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 NT_tree_cmp.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 NT_tree_cmp.o: $(ARBHOME)/INCLUDE/cxxforward.h
 NT_tree_cmp.o: $(ARBHOME)/INCLUDE/downcast.h

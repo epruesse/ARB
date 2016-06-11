@@ -11,6 +11,7 @@
 #include "TreeDisplay.hxx"
 #include "TreeCallbacks.hxx"
 
+#include <AP_TreeColors.hxx>
 #include <nds.h>
 
 #include <awt_config_manager.hxx>
@@ -33,10 +34,6 @@
 #include <cfloat>
 #include <ad_colorset.h>
 #include <algorithm>
-
-/*!*************************
-  class AP_tree
-****************************/
 
 #define RULER_LINEWIDTH "ruler/ruler_width" // line width of ruler
 #define RULER_SIZE      "ruler/size"

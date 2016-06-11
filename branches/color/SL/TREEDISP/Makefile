@@ -49,6 +49,7 @@ irstree_display.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 irstree_display.o: $(ARBHOME)/INCLUDE/AliView.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
+irstree_display.o: $(ARBHOME)/INCLUDE/AP_TreeColors.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/arb_assert.h
 irstree_display.o: $(ARBHOME)/INCLUDE/arb_core.h
 irstree_display.o: $(ARBHOME)/INCLUDE/arb_error.h
@@ -139,6 +140,7 @@ TreeDisplay.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/AliView.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
+TreeDisplay.o: $(ARBHOME)/INCLUDE/AP_TreeColors.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/arb_assert.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/arb_core.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/arb_defs.h

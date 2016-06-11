@@ -36,6 +36,8 @@ depend.init:
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl (from SL)
 
 AP_Tree.o: AP_Tree.hxx
+AP_Tree.o: AP_TreeColors.hxx
+AP_Tree.o: AP_TreeShader.hxx
 AP_Tree.o: $(ARBHOME)/INCLUDE/ad_cb.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/ad_prot.h

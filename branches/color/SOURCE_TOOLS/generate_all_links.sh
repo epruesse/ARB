@@ -282,6 +282,8 @@ symlink_file ../SERVERCNTRL/servercntrl.h INCLUDE/servercntrl.h &&
 symlink_file ../SL/ALILINK/AliAdmin.h INCLUDE/AliAdmin.h &&
 symlink_file ../SL/ALIVIEW/AliView.hxx INCLUDE/AliView.hxx &&
 symlink_file ../SL/AP_TREE/AP_Tree.hxx INCLUDE/AP_Tree.hxx &&
+symlink_file ../SL/AP_TREE/AP_TreeShader.hxx INCLUDE/AP_TreeShader.hxx &&
+symlink_file ../SL/AP_TREE/AP_TreeColors.hxx INCLUDE/AP_TreeColors.hxx &&
 symlink_file ../SL/ARB_TREE/ARB_Tree.hxx INCLUDE/ARB_Tree.hxx &&
 symlink_file ../SL/AW_HELIX/AW_helix.hxx INCLUDE/AW_helix.hxx &&
 symlink_file ../SL/AW_NAME/AW_rename.hxx INCLUDE/AW_rename.hxx &&

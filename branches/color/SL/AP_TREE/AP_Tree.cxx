@@ -9,6 +9,7 @@
 // =============================================================== //
 
 #include "AP_Tree.hxx"
+#include "AP_TreeShader.hxx"
 
 #include <AP_filter.hxx>
 #include <aw_msg.hxx>
@@ -615,7 +616,13 @@ bool AP_tree::has_correct_mark_flags() const {
 }
 #endif
 
-const group_scaling *AP_tree::group_scaling_ptr = NULL; // =reference to AWT_graphic_tree::groupScale
+const group_scaling *AP_tree::group_scaling_ptr = NULL;  // =reference to AWT_graphic_tree::groupScale
+AP_TreeShader       *AP_tree::shader            = new AP_TreeShader;
+
+void AP_tree::set_tree_shader(AP_TreeShader *new_shader) {
+    delete shader;
+    shader = new_shader;
+}
 
 void AP_tree::update_subtree_information() {
     gr.hidden = get_father() ? (get_father()->gr.hidden || get_father()->gr.grouped) : 0;
@@ -630,26 +637,7 @@ void AP_tree::update_subtree_information() {
         bool is_marked = gb_node && GB_read_flag(gb_node);
 
         gr.mark_sum = int(is_marked);
-
-        // colors:
-        if (gb_node) {
-            if (is_marked) {
-                gr.gc = AWT_GC_ALL_MARKED;
-            }
-            else {
-                // check for user color
-                long color_group = AW_find_active_color_group(gb_node);
-                if (color_group == 0) {
-                    gr.gc = AWT_GC_NONE_MARKED;
-                }
-                else {
-                    gr.gc = AWT_GC_FIRST_COLOR_GROUP+color_group-1;
-                }
-            }
-        }
-        else {
-            gr.gc = AWT_GC_ONLY_ZOMBIES;
-        }
+        gr.gc       = shader->calc_leaf_GC(gb_node, is_marked);
     }
     else {
         get_leftson()->update_subtree_information();
@@ -677,22 +665,7 @@ void AP_tree::update_subtree_information() {
             gr.max_tree_depth = std::max(leftlen+left.max_tree_depth, rightlen+right.max_tree_depth);
 
             gr.mark_sum = left.mark_sum + right.mark_sum;
-
-            // colors:
-            if (left.gc == right.gc) gr.gc = left.gc;
-
-            else if (left.gc == AWT_GC_ALL_MARKED || right.gc == AWT_GC_ALL_MARKED) gr.gc = AWT_GC_SOME_MARKED;
-
-            else if (left.gc  == AWT_GC_ONLY_ZOMBIES) gr.gc = right.gc;
-            else if (right.gc == AWT_GC_ONLY_ZOMBIES) gr.gc = left.gc;
-
-            else if (left.gc == AWT_GC_SOME_MARKED || right.gc == AWT_GC_SOME_MARKED) gr.gc = AWT_GC_SOME_MARKED;
-
-            else {
-                ap_assert(left.gc != AWT_GC_ALL_MARKED  && right.gc != AWT_GC_ALL_MARKED);
-                ap_assert(left.gc != AWT_GC_SOME_MARKED && right.gc != AWT_GC_SOME_MARKED);
-                gr.gc = AWT_GC_NONE_MARKED;
-            }
+            gr.gc       = shader->calc_inner_GC(left.gc, right.gc);
         }
     }
 }
