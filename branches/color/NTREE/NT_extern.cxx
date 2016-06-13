@@ -1683,6 +1683,7 @@ AWT_canvas *NT_create_main_window(AW_root *aw_root) {
     if (error) aw_message(error);
 
     nt_create_all_awars(aw_root);
+    NT_install_treeShader();
 
     AWT_canvas *ntw = NULL;
     AW_window  *aww = popup_new_main_window(aw_root, 0, &ntw);

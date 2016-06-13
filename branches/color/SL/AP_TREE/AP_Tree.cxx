@@ -616,8 +616,20 @@ bool AP_tree::has_correct_mark_flags() const {
 }
 #endif
 
-const group_scaling *AP_tree::group_scaling_ptr = NULL;  // =reference to AWT_graphic_tree::groupScale
-AP_TreeShader       *AP_tree::shader            = new AP_TreeShader;
+class AP_DefaultTreeShader: public AP_TreeShader {
+    // default tree shader (as used by unit-tests and ARB_PARSIMONY)
+public:
+    AP_DefaultTreeShader() {}
+    void update_settings() OVERRIDE {
+        colorize_marked = true;
+        colorize_groups = AW_color_groups_active();
+        shade_species   = false;
+    }
+};
+
+
+const group_scaling *AP_tree::group_scaling_ptr = NULL; // =reference to AWT_graphic_tree::groupScale
+AP_TreeShader       *AP_tree::shader            = new AP_DefaultTreeShader;
 
 void AP_tree::set_tree_shader(AP_TreeShader *new_shader) {
     delete shader;
@@ -708,6 +720,7 @@ int AP_tree::colorize(GB_HASH *hashptr) { // currently only used for multiprobes
 
 void AP_tree::compute_tree() {
     GB_transaction ta(get_tree_root()->get_gb_main());
+    shader->update_settings();
     update_subtree_information();
 }
 

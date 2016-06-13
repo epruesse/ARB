@@ -23,26 +23,29 @@
 class GBDATA;
 
 class AP_TreeShader {
-
+protected:
+    bool colorize_marked;
+    bool colorize_groups;
+    bool shade_species;
 public:
-    AP_TreeShader() {}
+    AP_TreeShader() :
+        colorize_marked(false),
+        colorize_groups(false),
+        shade_species(false)
+    {}
     virtual ~AP_TreeShader() {}
 
-    int calc_leaf_GC(GBDATA *gb_node, bool is_marked) const {
-        int gc;
+    virtual void update_settings() = 0;
+
+    int calc_leaf_GC(GBDATA *gb_node, bool is_marked) const { // (also used to color NDS-list)
+        int gc = AWT_GC_NONE_MARKED;
         if (gb_node) {
-            if (is_marked) {
+            if (is_marked && colorize_marked) {
                 gc = AWT_GC_ALL_MARKED;
             }
-            else {
-                // check for user color
-                long color_group = AW_color_groups_active() ? GBT_get_color_group(gb_node) : 0;
-                if (color_group == 0) {
-                    gc = AWT_GC_NONE_MARKED;
-                }
-                else {
-                    gc = AWT_GC_FIRST_COLOR_GROUP+color_group-1;
-                }
+            else if (colorize_groups) { // check for user color
+                long color_group = GBT_get_color_group(gb_node);
+                if (color_group) gc = AWT_GC_FIRST_COLOR_GROUP+color_group-1;
             }
         }
         else {
