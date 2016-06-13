@@ -42,18 +42,19 @@
 //
 //  - use
 //       GBT_set_color_group() to set and
-//       AW_find_active_color_group() or GBT_get_color_group() to read
+//       GBT_get_color_group() to read
 //    the color of an item.
+//
+//  - use AW_color_groups_active() to detect whether color groups shall be shown at all.
 
 #define AW_COLOR_GROUP_PREFIX     "color_group_"
 #define AW_COLOR_GROUP_PREFIX_LEN 12
 #define AW_COLOR_GROUP_NAME_LEN   (AW_COLOR_GROUP_PREFIX_LEN+2)
 #define AW_COLOR_GROUPS           12
 
-long  AW_find_active_color_group(GBDATA *gbd);
+void  AW_init_color_group_defaults(const char *for_program);
+bool  AW_color_groups_active();
 char *AW_get_color_group_name(AW_root *awr, int color_group);
-
-void AW_init_color_group_defaults(const char *for_program);
 
 // ----------------------
 //      color ranges

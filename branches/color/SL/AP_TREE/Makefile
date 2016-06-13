@@ -40,6 +40,7 @@ AP_Tree.o: AP_TreeColors.hxx
 AP_Tree.o: AP_TreeShader.hxx
 AP_Tree.o: $(ARBHOME)/INCLUDE/ad_cb.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
+AP_Tree.o: $(ARBHOME)/INCLUDE/ad_colorset.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/AliView.hxx
@@ -50,6 +51,7 @@ AP_Tree.o: $(ARBHOME)/INCLUDE/arb_core.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/arb_error.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/arb_progress.h
+AP_Tree.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/arb_string.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
 AP_Tree.o: $(ARBHOME)/INCLUDE/arbdb.h

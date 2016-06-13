@@ -27,7 +27,6 @@
 #include "aw_rgb.hxx"
 
 #include <arbdbt.h>
-#include <ad_colorset.h>
 
 #include <vector>
 #include <map>
@@ -878,13 +877,10 @@ void AW_init_color_group_defaults(const char *for_program) {
     }
 }
 
-long AW_find_active_color_group(GBDATA *gb_item) {
-    /*! same as GBT_get_color_group() if color groups are active
-     * @param gb_item the item
-     * @return always 0 if color groups are inactive
-     */
+bool AW_color_groups_active() {
+    /*! returns true if color groups are active */
     aw_assert(AW_gc_manager::color_groups_initialized());
-    return AW_gc_manager::use_color_groups ? GBT_get_color_group(gb_item) : 0;
+    return AW_gc_manager::use_color_groups;
 }
 
 char *AW_get_color_group_name(AW_root *awr, int color_group) {

@@ -23,16 +23,15 @@
 #include <aw_question.hxx>
 
 #include <arb_defs.h>
-#include <arb_strarray.h>
 #include <arb_diff.h>
 #include <arb_global_defs.h>
 
 #include <ad_cb.h>
+#include <ad_colorset.h>
 
 #include <unistd.h>
 #include <iostream>
 #include <cfloat>
-#include <ad_colorset.h>
 #include <algorithm>
 
 #define RULER_LINEWIDTH "ruler/ruler_width" // line width of ruler
@@ -2754,7 +2753,7 @@ void AWT_graphic_tree::show_nds_list(GBDATA *, bool use_nds) {
             int gc                            = AWT_GC_NONE_MARKED;
             if (nds_show_all && is_marked) gc = AWT_GC_ALL_MARKED;
             else {
-                int color_group     = AW_find_active_color_group(gb_species);
+                int color_group     = AW_color_groups_active() ? GBT_get_color_group(gb_species) : 0;
                 if (color_group) gc = AWT_GC_FIRST_COLOR_GROUP+color_group-1;
             }
             ListDisplayRow *curr = new ListDisplayRow(gb_main, gb_species, y_position+text_y_offset, gc, *disp_device, use_nds, tree_name);

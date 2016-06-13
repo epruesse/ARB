@@ -14,8 +14,8 @@
 #ifndef AP_TREECOLORS_HXX
 #include <AP_TreeColors.hxx>
 #endif
-#ifndef ARB_ASSERT_H
-#include <arb_assert.h>
+#ifndef AD_COLORSET_H
+#include <ad_colorset.h>
 #endif
 
 #define ap_assert(cond) arb_assert(cond)
@@ -36,7 +36,7 @@ public:
             }
             else {
                 // check for user color
-                long color_group = AW_find_active_color_group(gb_node);
+                long color_group = AW_color_groups_active() ? GBT_get_color_group(gb_node) : 0;
                 if (color_group == 0) {
                     gc = AWT_GC_NONE_MARKED;
                 }
