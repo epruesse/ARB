@@ -279,7 +279,7 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
     const AW_bitset leaf_text_filter, group_text_filter, remark_text_filter, other_text_filter;
     const AW_bitset ruler_filter, root_filter, marker_filter;
 
-    bool nds_show_all;
+    bool nds_only_marked;
 
     GroupInfoPosition group_info_pos;
     GroupCountMode    group_count_mode;

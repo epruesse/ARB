@@ -1719,10 +1719,10 @@ act_like_group :
 void AWT_graphic_tree::set_tree_type(AP_tree_display_type type, AWT_canvas *ntw) {
     if (sort_is_list_style(type)) {
         if (tree_sort == type) { // we are already in wanted view
-            nds_show_all = !nds_show_all; // -> toggle between 'marked' and 'all'
+            nds_only_marked = !nds_only_marked; // -> toggle between 'marked' and 'all'
         }
         else {
-            nds_show_all = true; // default to all
+            nds_only_marked = false; // default to all
         }
     }
     tree_sort = type;
@@ -1785,7 +1785,7 @@ AWT_graphic_tree::AWT_graphic_tree(AW_root *aw_root_, GBDATA *gb_main_, AD_map_v
     aw_root          = aw_root_;
     gb_main          = gb_main_;
     cmd_data         = NULL;
-    nds_show_all     = true;
+    nds_only_marked  = false;
     group_info_pos   = GIP_SEPARATED;
     group_count_mode = GCM_MEMBERS;
     map_viewer_cb    = map_viewer_cb_;
@@ -2690,8 +2690,8 @@ void AWT_graphic_tree::show_nds_list(GBDATA *, bool use_nds) {
     AW_pos y_position = scaled_branch_distance;
     AW_pos x_position = NT_SELECTED_WIDTH * disp_device->get_unscale();
 
-    disp_device->text(nds_show_all ? AWT_GC_CURSOR : AWT_GC_ALL_MARKED,
-                      GBS_global_string("%s of %s species", use_nds ? "NDS List" : "Simple list", nds_show_all ? "all" : "marked"),
+    disp_device->text(nds_only_marked ? AWT_GC_ALL_MARKED : AWT_GC_CURSOR,
+                      GBS_global_string("%s of %s species", use_nds ? "NDS List" : "Simple list", nds_only_marked ? "marked" : "all"),
                       (AW_pos) x_position, (AW_pos) 0,
                       (AW_pos) 0, other_text_filter);
 
@@ -2727,30 +2727,30 @@ void AWT_graphic_tree::show_nds_list(GBDATA *, bool use_nds) {
     size_t species_count = 0;
     size_t max_parts     = 0;
 
-    GBDATA *gb_species = nds_show_all ? GBT_first_species(gb_main) : GBT_first_marked_species(gb_main);
+    GBDATA *gb_species = nds_only_marked ? GBT_first_marked_species(gb_main) : GBT_first_species(gb_main);
     if (gb_species) {
         int skip_over = (y1-y_position)/scaled_branch_distance-2;
         if (skip_over>0) {
-            gb_species  = nds_show_all
-                          ? GB_followingEntry(gb_species, skip_over-1)
-                          : GB_following_marked(gb_species, "species", skip_over-1);
+            gb_species  = nds_only_marked
+                          ? GB_following_marked(gb_species, "species", skip_over-1)
+                          : GB_followingEntry(gb_species, skip_over-1);
             y_position += skip_over*scaled_branch_distance;
         }
     }
 
-    for (; gb_species; gb_species = nds_show_all ? GBT_next_species(gb_species) : GBT_next_marked_species(gb_species)) {
+    for (; gb_species; gb_species = nds_only_marked ? GBT_next_marked_species(gb_species) : GBT_next_species(gb_species)) {
         y_position += scaled_branch_distance;
         if (gb_species == selected_species) cursor = Position(0, y_position);
         if (y_position>y1) {
             if (y_position>y2) break;           // no need to examine rest of species
 
-            bool is_marked = nds_show_all ? GB_read_flag(gb_species) : true; // no need to test if only showing marked
+            bool is_marked = nds_only_marked || GB_read_flag(gb_species);
             if (is_marked) {
                 disp_device->set_line_attributes(AWT_GC_ALL_MARKED, baselinewidth, AW_SOLID);
                 filled_box(AWT_GC_ALL_MARKED, Position(0, y_position), NT_BOX_WIDTH);
             }
 
-            bool colorize_marked = nds_show_all && is_marked; // do not use mark-color if only showing marked
+            bool colorize_marked = is_marked && !nds_only_marked; // do not use mark-color if only showing marked
             int  gc              = AP_tree::get_tree_shader()->calc_leaf_GC(gb_species, colorize_marked);
             ListDisplayRow *curr = new ListDisplayRow(gb_main, gb_species, y_position+text_y_offset, gc, *disp_device, use_nds, tree_name);
             max_parts            = std::max(max_parts, curr->get_part_count());
