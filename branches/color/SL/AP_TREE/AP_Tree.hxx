@@ -312,6 +312,7 @@ public:
 
     static void set_group_downscale(const group_scaling *scaling) { group_scaling_ptr = scaling; }
     static void set_tree_shader(AP_TreeShader *new_shader);
+    static const AP_TreeShader *get_tree_shader() { return shader; }
 
     bool hasName(const char *Name) const { return Name && name && Name[0] == name[0] && strcmp(Name, name) == 0; }
 

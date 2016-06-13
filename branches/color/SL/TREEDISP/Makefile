@@ -141,6 +141,7 @@ TreeDisplay.o: $(ARBHOME)/INCLUDE/AliView.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/AP_TreeColors.hxx
+TreeDisplay.o: $(ARBHOME)/INCLUDE/AP_TreeShader.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/arb_assert.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/arb_core.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/arb_defs.h

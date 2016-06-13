@@ -12,6 +12,7 @@
 #include "TreeCallbacks.hxx"
 
 #include <AP_TreeColors.hxx>
+#include <AP_TreeShader.hxx>
 #include <nds.h>
 
 #include <awt_config_manager.hxx>
@@ -27,7 +28,6 @@
 #include <arb_global_defs.h>
 
 #include <ad_cb.h>
-#include <ad_colorset.h>
 
 #include <unistd.h>
 #include <iostream>
@@ -2744,18 +2744,14 @@ void AWT_graphic_tree::show_nds_list(GBDATA *, bool use_nds) {
         if (y_position>y1) {
             if (y_position>y2) break;           // no need to examine rest of species
 
-            bool is_marked = nds_show_all ? GB_read_flag(gb_species) : true;
+            bool is_marked = nds_show_all ? GB_read_flag(gb_species) : true; // no need to test if only showing marked
             if (is_marked) {
                 disp_device->set_line_attributes(AWT_GC_ALL_MARKED, baselinewidth, AW_SOLID);
                 filled_box(AWT_GC_ALL_MARKED, Position(0, y_position), NT_BOX_WIDTH);
             }
 
-            int gc                            = AWT_GC_NONE_MARKED;
-            if (nds_show_all && is_marked) gc = AWT_GC_ALL_MARKED;
-            else {
-                int color_group     = AW_color_groups_active() ? GBT_get_color_group(gb_species) : 0;
-                if (color_group) gc = AWT_GC_FIRST_COLOR_GROUP+color_group-1;
-            }
+            bool colorize_marked = nds_show_all && is_marked; // do not use mark-color if only showing marked
+            int  gc              = AP_tree::get_tree_shader()->calc_leaf_GC(gb_species, colorize_marked);
             ListDisplayRow *curr = new ListDisplayRow(gb_main, gb_species, y_position+text_y_offset, gc, *disp_device, use_nds, tree_name);
             max_parts            = std::max(max_parts, curr->get_part_count());
             row[species_count++] = curr;
