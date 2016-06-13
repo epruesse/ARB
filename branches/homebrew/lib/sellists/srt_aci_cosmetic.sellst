@@ -1,2 +1,0 @@
-[...]     ! insert first 30 characters in [],                       "[";head(30);"]"
-(...)     ! insert first 30 characters in (),                       "(";head(30);")"
