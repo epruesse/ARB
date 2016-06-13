@@ -8,7 +8,7 @@
 //                                                              //
 // ============================================================ //
 
-#include "ValueTuple.h"
+#include "item_shader.h"
 
 using namespace std;
 
@@ -21,8 +21,8 @@ using namespace std;
 #include <test_unit.h>
 #endif
 
-void TEST_failure() {
-    // TEST_REJECT(true); // let it fail!
+void TEST_shader_values() {
+    // @@@ TDD ShaderValue / concrete ValueTuples
 }
 
 #endif // UNIT_TESTS
