@@ -25,7 +25,7 @@
 menu:Phylogeny max. Likelihood
 
 item:RAxML 8 (DNA)
-itemmethod: ${ARB_XCMD} arb_raxml8.sh -p $PROTOCOL -m $MODEL -s $SEED -b $BOOTSTRAPS -r $REPEATS -nt -t "$THREADS" -f INPUTFILE &
+itemmethod: ${ARB_XCMD} arb_raxml8.sh -p $PROTOCOL -m $MODEL -s $SEED -b $BOOTSTRAPS -r $REPEATS -nt -t "$THREADS" -f INPUTFILE -n $TREENAME $MRETREE &
 itemhelp:raxml8.help
 itemmeta:8
 seqtype:N
@@ -67,6 +67,17 @@ argchoice:100:100
 argchoice:200:200
 argchoice:500:500
 argchoice:1000:1000
+
+arg:TREENAME
+argtype:text
+arglabel:Tree Name
+argtext:raxml
+
+arg:MRETREE
+argtype:choice_menu
+arglabel:Compute Extended Majority Rule Consensus Tree
+argchoice:No:-nomre
+argchoice:Yes:
 
 arg:SEED
 argtype:text
