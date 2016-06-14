@@ -829,7 +829,18 @@ AW_gc_manager *AW_manage_GC(AW_window                *aww,
 
     // installing changed callback here avoids that it gets triggered by initializing GCs
     gcmgr->set_changed_cb(changecb);
-    aw_assert(gc == base_drag_given); // parameter 'base_drag' has wrong value!
+
+#if defined(ASSERTION_USED)
+    if (strcmp(gc_base_name, "ARB_PARSIMONY") == 0) {
+        // ARB_PARSIMONY does not define color-ranges, but uses same GCs as ARB_NTREE
+        // => accept weird 'base_drag_given'
+        aw_assert(gc == (base_drag_given-AW_RANGE_COLORS));
+    }
+    else {
+        aw_assert(gc == base_drag_given); // parameter 'base_drag' has wrong value
+                                          // (has to be next value after last GC or after last color-group-GC)
+    }
+#endif
 
     return gcmgr;
 }

@@ -94,6 +94,9 @@ AW_gc_manager *AWT_graphic_tree::init_devices(AW_window *aww, AW_device *device,
                      "+-P7(1&2,yellow)$#ffff00", "+-P8(2&3,cyan)$#00ffff", "-P9(3&1,magenta)$#ff00ff",
                      "+-P10(lawn)$#c0ff40",      "+-P11(skyblue)$#40c0ff", "-P12(pink)$#f030b0",
 
+                     // color ranges:
+                     "*Linear range,linear:+-lower$#000000,-upper$#ffffff",
+
                      NULL);
 
     return gc_manager;

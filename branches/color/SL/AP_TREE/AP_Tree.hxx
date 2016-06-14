@@ -123,10 +123,10 @@ namespace tree_defaults {
 
 struct AP_tree_members {
 public: // @@@ make members private
-    unsigned int grouped : 1;   // indicates a folded group
-    unsigned int hidden : 1;    // not shown (because an anchestor is a folded group)
+    unsigned int grouped : 1; // indicates a folded group
+    unsigned int hidden : 1;  // not shown (because an anchestor is a folded group)
     unsigned int callback_exists : 1;
-    unsigned int gc : 6;        // color
+    uint32_t gc;              // color
 
     char left_linewidth; // @@@ it's stupid to store linewidth IN FATHER (also wastes space)
     char right_linewidth;
