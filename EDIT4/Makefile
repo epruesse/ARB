@@ -1614,6 +1614,7 @@ ED4_text_terminals.o: ed4_ProteinViewer.hxx
 ED4_text_terminals.o: ed4_search.hxx
 ED4_text_terminals.o: ed4_seq_colors.hxx
 ED4_text_terminals.o: ed4_visualizeSAI.hxx
+ED4_text_terminals.o: $(ARBHOME)/INCLUDE/ad_colorset.h
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -1621,6 +1622,7 @@ ED4_text_terminals.o: $(ARBHOME)/INCLUDE/arb_core.h
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/arb_defs.h
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/arb_error.h
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/arb_msg.h
+ED4_text_terminals.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/arb_string.h
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/arbdb.h
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/arbdb_base.h

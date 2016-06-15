@@ -38,7 +38,6 @@ AW_gc_manager *AW_manage_GC(AW_window                *aww,
                             const char               *gc_base_name,
                             AW_device                *device, int base_gc, int base_drag, AW_GCM_AREA area,
                             const GcChangedCallback&  changecb,
-                            bool                      define_color_groups,
                             const char               *default_background_color,
                             ...) __ATTR__SENTINEL;
 
