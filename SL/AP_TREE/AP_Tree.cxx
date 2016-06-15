@@ -14,6 +14,7 @@
 #include <aw_msg.hxx>
 #include <arb_progress.h>
 #include <ad_cb.h>
+#include <ad_colorset.h>
 
 #include <math.h>
 #include <map>
@@ -638,7 +639,7 @@ void AP_tree::update_subtree_information() {
             }
             else {
                 // check for user color
-                long color_group = AW_find_active_color_group(gb_node);
+                long color_group = AW_color_groups_active() ? GBT_get_color_group(gb_node) : 0;
                 if (color_group == 0) {
                     gr.gc = AWT_GC_NSELECTED;
                 }
