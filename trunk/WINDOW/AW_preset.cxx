@@ -27,7 +27,6 @@
 #include "aw_rgb.hxx"
 
 #include <arbdbt.h>
-#include <ad_colorset.h>
 
 #include <vector>
 #include <map>
@@ -311,6 +310,7 @@ public:
     void add_gc      (const char *gc_description, int& gc, gc_type type);
     void add_gc_range(const char *gc_description);
     void reserve_gcs (const char *gc_description, int& gc);
+    void add_color_groups(int& gc);
 
     void update_gc_color(int idx) const;
     void update_gc_font(int idx) const;
@@ -636,7 +636,8 @@ void AW_gc_manager::allocate_gc(int gc) const {
 }
 
 void AW_gc_manager::add_gc(const char *gc_description, int& gc, gc_type type) {
-    aw_assert(strchr("*!", gc_description[0]) == NULL);
+    aw_assert(strchr("*!&", gc_description[0]) == NULL);
+    aw_assert(implicated(type != GC_TYPE_RANGE, !has_color_range())); // color ranges have to be specified AFTER all other color definition strings (in call to AW_manage_GC)
 
     GCs.push_back(gc_desc(gc, type));
     gc_desc &gcd = GCs.back();
@@ -729,6 +730,18 @@ bool AW_gc_manager::has_variable_width_font() const {
     return false;
 }
 
+void AW_gc_manager::add_color_groups(int& gc) {
+    AW_root *awr = AW_root::SINGLETON;
+    for (int i = 1; i <= AW_COLOR_GROUPS; ++i) {
+        awr->awar_string(colorgroupname_awarname(i), default_colorgroup_name(i))->add_callback(color_group_name_changed_cb);
+    }
+
+    const char **color_group_gc_default = AW_gc_manager::color_group_defaults;
+    while (*color_group_gc_default) {
+        add_gc(*color_group_gc_default++, gc, GC_TYPE_GROUP);
+    }
+}
+
 AW_gc_manager *AW_manage_GC(AW_window                *aww,
                             const char               *gc_base_name,
                             AW_device                *device,
@@ -736,7 +749,6 @@ AW_gc_manager *AW_manage_GC(AW_window                *aww,
                             int                       base_drag,
                             AW_GCM_AREA               area,
                             const GcChangedCallback&  changecb,
-                            bool                      define_color_groups,
                             const char               *default_background_color,
                             ...)
 {
@@ -745,7 +757,7 @@ AW_gc_manager *AW_manage_GC(AW_window                *aww,
      * - one for normal operation,
      * - the other for drag mode
      * eg.
-     *     AW_manage_GC(aww, "ARB_NT", device, 0, 1, AW_GCM_DATA_AREA, my_expose_cb, false, "white","#sequence", NULL);
+     *     AW_manage_GC(aww, "ARB_NT", device, 0, 1, AW_GCM_DATA_AREA, my_expose_cb, "white","#sequence", NULL);
      *     (see implementation for more details on parameter strings)
      *     will create 2 GCs:
      *      GC 0 (normal)
@@ -764,7 +776,7 @@ AW_gc_manager *AW_manage_GC(AW_window                *aww,
      * @param define_color_groups  true -> add colors for color groups
      * @param ...                  NULL terminated list of \0 terminated <definition>s:
      *
-     *   <definition>::= <gcdef>|<reserve>|<rangedef>
+     *   <definition>::= <gcdef>|<reserve>|<rangedef>|<groupdef>
      *   <reserve>   ::= !<num>                                     "reserves <num> gc-numbers; used eg. in arb_pars to sync GCs with arb_ntree"
      *   <gcdef>     ::= [<option>+]<descript>['$'<default>]        "defines a GC"
      *   <option>    ::= '#'|'+'|'-'                                "'-'=no font; '#'=only fixed fonts; '+'=append next GC on same line"
@@ -775,6 +787,7 @@ AW_gc_manager *AW_manage_GC(AW_window                *aww,
      *   <rangedef>  ::= '*'<name>','<type>':'<gcdef>[','<gcdef>]+  "defines a GC-range (with one <gcdef> for each support color)"
      *   <name>      ::=                                            "description of range"
      *   <type>      ::= 'linear'|'cyclic'|'planar'|'spatial'       "rangetype; implies number of required support colors: linear=2 cyclic=3 planar=3 spatial=4" // @@@ only linear type with 2 support colors is accepted/implemented yet
+     *   <groupdef>  ::= '&color_groups'                            "insert color-groups here"
      */
 
     aw_assert(default_background_color[0]);
@@ -797,12 +810,24 @@ AW_gc_manager *AW_manage_GC(AW_window                *aww,
     va_list parg;
     va_start(parg, default_background_color);
 
+    bool defined_color_groups = false;
+
     const char *id;
     while ( (id = va_arg(parg, char*)) ) {
         switch (id[0]) {
-            case '!': gcmgr->reserve_gcs(id, gc);            break;
-            case '*': gcmgr->add_gc_range(id);               break;
-            default:  gcmgr->add_gc(id, gc, GC_TYPE_NORMAL); break;
+            case '!': gcmgr->reserve_gcs(id, gc); break;
+            case '*': gcmgr->add_gc_range(id); break;
+            case '&':
+                if (strcmp(id, "&color_groups") == 0) { // trigger use of color groups
+                    if (!defined_color_groups) {
+                        gcmgr->add_color_groups(gc);
+                        defined_color_groups = true;
+                    }
+                    else aw_assert(0); // color-groups trigger specified twice!
+                }
+                else aw_assert(0); // unknown trigger
+                break;
+            default: gcmgr->add_gc(id, gc, GC_TYPE_NORMAL); break;
         }
     }
     va_end(parg);
@@ -812,17 +837,6 @@ AW_gc_manager *AW_manage_GC(AW_window                *aww,
 
         awar_useGroups->add_callback(makeRootCallback(color_group_use_changed_cb, gcmgr));
         AW_gc_manager::use_color_groups = awar_useGroups->read_int();
-    }
-
-    if (define_color_groups) {
-        for (int i = 1; i <= AW_COLOR_GROUPS; ++i) {
-            aw_root->awar_string(colorgroupname_awarname(i), default_colorgroup_name(i))->add_callback(color_group_name_changed_cb);
-        }
-
-        const char **color_group_gc_default = AW_gc_manager::color_group_defaults;
-        while (*color_group_gc_default) {
-            gcmgr->add_gc(*color_group_gc_default++, gc, GC_TYPE_GROUP);
-        }
     }
 
     gcmgr->init_color_ranges(gc);
@@ -878,13 +892,10 @@ void AW_init_color_group_defaults(const char *for_program) {
     }
 }
 
-long AW_find_active_color_group(GBDATA *gb_item) {
-    /*! same as GBT_get_color_group() if color groups are active
-     * @param gb_item the item
-     * @return always 0 if color groups are inactive
-     */
+bool AW_color_groups_active() {
+    /*! returns true if color groups are active */
     aw_assert(AW_gc_manager::color_groups_initialized());
-    return AW_gc_manager::use_color_groups ? GBT_get_color_group(gb_item) : 0;
+    return AW_gc_manager::use_color_groups;
 }
 
 char *AW_get_color_group_name(AW_root *awr, int color_group) {

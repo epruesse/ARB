@@ -432,7 +432,6 @@ static AW_window *create_phyl_main_window(AW_root *aw_root, PH_root *ph_root) {
                      awm->get_device(AW_MIDDLE_AREA),
                      PH_GC_SEQUENCE, PH_GC_DRAG, AW_GCM_DATA_AREA,
                      gcChangedCb,
-                     false, // no color groups
                      "#C4B6D0",
                      "#SEQUENCE$#000000",
                      "#MARKER$#E0F570",
@@ -444,7 +443,6 @@ static AW_window *create_phyl_main_window(AW_root *aw_root, PH_root *ph_root) {
                  awm->get_device(AW_BOTTOM_AREA),
                  PH_GC_BOTTOM_TEXT, PH_GC_BOTTOM_DRAG, AW_GCM_WINDOW_AREA,
                  gcChangedCb,
-                 false, // no color groups
                  "lightgrey",
                  "#FOOTER",
                  NULL);

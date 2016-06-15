@@ -14,6 +14,8 @@
 #include "GEN_graphic.hxx"
 
 #include <arbdbt.h>
+#include <ad_colorset.h>
+
 #include <aw_awar.hxx>
 #include <aw_preset.hxx>
 #include <aw_msg.hxx>
@@ -52,12 +54,14 @@ AW_gc_manager *GEN_graphic::init_devices(AW_window *aww, AW_device *device, AWT_
                      device,
                      GEN_GC_FIRST_FONT, GEN_GC_MAX, AW_GCM_DATA_AREA,
                      makeGcChangedCallback(AWT_GC_changed_cb, scr),
-                     true, // define color groups
                      "#55C0AA",
                      "Default$#5555ff",
                      "Gene$#000000",
                      "Marked$#ffff00",
                      "Cursor$#ff0000",
+
+                     "&color_groups", // use color groups
+
                      NULL);
 
     return gc_manager;
@@ -163,8 +167,7 @@ inline bool getDrawGcs(GEN_iterator& gene, PaintWhat what, const string& curr_ge
             draw    = (what == PAINT_MARKED);
         }
         else {
-            int color_group = AW_find_active_color_group(gb_gene);
-
+            int color_group = AW_color_groups_active() ? GBT_get_color_group(gb_gene) : 0;
             if (color_group) {
                 draw_gc = text_gc = GEN_GC_FIRST_COLOR_GROUP+color_group-1;
                 draw    = (what == PAINT_COLORED);
