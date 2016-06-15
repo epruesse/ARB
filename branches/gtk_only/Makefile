@@ -18,6 +18,11 @@
 # OPENGL=0/1            whether OPENGL is available
 # GTK=2/3               gtk version to use
 # -----------------------------------------------------
+# cflags for one library may be set from config.makefile by using:
+#
+#     export XML_INCLUDES=$(shell pkg-config --cflags xerces-c)
+#
+# -----------------------------------------------------
 # ARB Makefile and ARB source code are aware of the following defines:
 #
 # $(MACH)               name of the machine (LINUX or DARWIN; see config.makefile)
