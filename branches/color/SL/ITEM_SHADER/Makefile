@@ -45,8 +45,12 @@ item_shader.o: $(ARBHOME)/INCLUDE/test_unit.h
 ValueTuple.o: item_shader.h
 ValueTuple.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ValueTuple.o: $(ARBHOME)/INCLUDE/arb_core.h
+ValueTuple.o: $(ARBHOME)/INCLUDE/arb_msg.h
+ValueTuple.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ValueTuple.o: $(ARBHOME)/INCLUDE/arbtools.h
 ValueTuple.o: $(ARBHOME)/INCLUDE/attributes.h
+ValueTuple.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+ValueTuple.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ValueTuple.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ValueTuple.o: $(ARBHOME)/INCLUDE/dupstr.h
 ValueTuple.o: $(ARBHOME)/INCLUDE/gccver.h
