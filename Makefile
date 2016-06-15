@@ -18,6 +18,13 @@
 # OPENGL=0/1            whether OPENGL is available
 #
 # -----------------------------------------------------
+# Paths for several libraries may be set from config.makefile by using:
+#
+#     export XLIBS=$(shell pkg-config --libs xpm xerces-c)
+#     export XAW_LIBS=$(shell pkg-config --libs xaw7)
+#     export XML_INCLUDES=$(shell pkg-config --cflags xerces-c)
+#
+# -----------------------------------------------------
 # ARB Makefile and ARB source code are aware of the following defines:
 #
 # $(MACH)               name of the machine (LINUX or DARWIN; see config.makefile)
