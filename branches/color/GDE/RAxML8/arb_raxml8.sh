@@ -11,10 +11,16 @@ on_exit() {
 
 # return true if argument is file in path executable by user
 can_run() {
-    which "$1" && test -x `which "$1"`
+    which "$1" &>/dev/null && test -x `which "$1" &>/dev/null`
 }
 
+# called at exit of script (by trap) and on error
+# e.g. if ctrl-c is pressed
 wait_and_exit() {
+    # kill any backgrounded processes
+    if [ -n "`jobs`" ]; then
+        kill `jobs -p`
+    fi
     read -p "Press key to close window"
     exit
 }
@@ -51,13 +57,19 @@ cpu_has_feature() {
             SHOW="sysctl machdep.cpu.features"
             ;;
         Linux)
-            SHOW="grep flags /proc/cpuinfo"
+            SHOW="grep -m1 flags /proc/cpuinfo 2>/dev/null"
             ;;
     esac
-    $SHOW | grep -qi "$1"
+    $SHOW | grep -qi "$1" &>/dev/null
 }
 
 cpu_get_cores() {
+    # honor Torque/PBS num processes (or make sure we follow, if enforced)
+    if [ -n $PBS_NP ]; then
+        echo $PBS_NP
+        return
+    fi
+    # extract physical CPUs from host
     case `uname` in
         Darwin)
             sysctl -n hw.ncpu
@@ -82,7 +94,9 @@ dna_tree_thorough() {
 
     # wait for raxml to complete if we have not enough
     # cores to run bootstrap search at the same time
-    if [ $(($THREADS * 2)) -lt $CORES ]; then
+    if [ $(($THREADS * 2)) -gt $CORES ]; then
+        echo "Not enough cores found ($CORES) to run ML search and BS in"
+        echo "parallel with $THREADS threads. Waiting..."
         wait
     fi
 
@@ -98,13 +112,15 @@ dna_tree_thorough() {
         -z RAxML_bootstrap.BOOTSTRAP \
         -n ML_TREE_WITH_SUPPORT
     # import
-    arb_read_tree tree_raxml RAxML_bipartitions.ML_TREE_WITH_SUPPORT
+    arb_read_tree tree_${TREENAME} RAxML_bipartitions.ML_TREE_WITH_SUPPORT
 
-    # compute extended majority rule consensus
-    $RAXML -J MRE -m $MODEL -z RAxML_bootstrap.BOOTSTRAP -n BOOTSTRAP_CONSENSUS
-   
-    # import
-    arb_read_tree tree_raxml_mre RAxML_MajorityRuleExtendedConsensusTree.BOOTSTRAP_CONSENSUS
+    if [ -n "$MRE" ]; then
+        # compute extended majority rule consensus
+        $RAXML -J MRE -m $MODEL -z RAxML_bootstrap.BOOTSTRAP -n BOOTSTRAP_CONSENSUS
+
+        # import
+        arb_read_tree tree_${TREENAME}_mre RAxML_MajorityRuleExtendedConsensusTree.BOOTSTRAP_CONSENSUS
+    fi
 }
 
 # this is the fast protocol
@@ -115,10 +131,12 @@ dna_tree_quick() {
     # run fast bootstraps
     $RAXML -f a -m $MODEL -p "$SEED" -x "$SEED" -s "$SEQFILE" -N "$BOOTSTRAPS" -n FAST_BS
     # create consensus tree
-    $RAXML -J MRE -m $MODEL -z RAxML_bootstrap.FAST_BS -n FAST_BS_MAJORITY
     # import
-    arb_read_tree tree_raxml RAxML_bipartitions.FAST_BS
-    arb_read_tree tree_raxml_mre RAxML_MajorityRuleExtendedConsensusTree.FAST_BS_MAJORITY
+    arb_read_tree tree_${TREENAME} RAxML_bipartitions.FAST_BS
+    if [ -n "$MRE" ]; then
+        $RAXML -J MRE -m $MODEL -z RAxML_bootstrap.FAST_BS -n FAST_BS_MAJORITY
+        arb_read_tree tree_${TREENAME}_mre RAxML_MajorityRuleExtendedConsensusTree.FAST_BS_MAJORITY
+    fi
 }   
 
 calc_mem_size() {
@@ -134,6 +152,8 @@ aa_tree() {
 
 ###### main #####
 
+MRE=Y
+TREENAME=raxml
 
 while [ -n "$1" ]; do 
   case "$1" in
@@ -156,6 +176,13 @@ while [ -n "$1" ]; do
       -r) # number of tree searches
           NTREES="$2"
           shift
+          ;;
+      -n) # tree name
+          TREENAME="$2"
+          shift
+          ;;
+      -nomre) # don't create mre tree
+          MRE=
           ;;
       -nt) # seqtype dna
           SEQTYPE=N
@@ -211,8 +238,7 @@ fi
 
 # get some numbers
 CORES=`cpu_get_cores`
-BP=`head -n 1 $SEQFILE | cut -c 16-`
-NSEQS=`head -n 1 $SEQFILE | cut -c 1-16`
+read NSEQS BP < <(head -n 1 $SEQFILE)
 
 # warn if model does not match sequence number
 if [ "$MODEL" == "GTRRAMMA" -a $NSEQS -gt 10000 ]; then

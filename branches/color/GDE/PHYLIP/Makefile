@@ -17,7 +17,7 @@ PROGS   =          clique consense contml contrast dnacomp dnadist \
 BIN=$(ARBHOME)/bin
 BINARIES=$(addprefix $(BIN)/,$(PROGS))
 
-DLIBS=$(LIBS) $(XLIBS) -lXaw
+DLIBS=$(LIBS) $(XLIBS) $(XAW_LIBS) -lXaw
 
 
 all: $(BINARIES)
