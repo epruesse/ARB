@@ -66,7 +66,6 @@ AW_gc_manager *AWT_graphic_tree::init_devices(AW_window *aww, AW_device *device,
                      ntw->get_gc_base_name(),
                      device, AWT_GC_CURSOR, AWT_GC_MAX, AW_GCM_DATA_AREA,
                      makeGcChangedCallback(TREE_GC_changed_cb, ntw),
-                     true,      // define color groups
                      "#3be",
 
                      // Important note :
@@ -93,6 +92,8 @@ AW_gc_manager *AWT_graphic_tree::init_devices(AW_window *aww, AW_device *device,
                      "+-P4(orange)$#ffd060",     "+-P5(aqua)$#40ffc0",     "-P6(purple)$#c040ff",
                      "+-P7(1&2,yellow)$#ffff00", "+-P8(2&3,cyan)$#00ffff", "-P9(3&1,magenta)$#ff00ff",
                      "+-P10(lawn)$#c0ff40",      "+-P11(skyblue)$#40c0ff", "-P12(pink)$#f030b0",
+
+                     "&color_groups", // use color groups
 
                      // color ranges:
                      "*Linear range,linear:+-lower$#000000,-upper$#ffffff",

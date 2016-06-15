@@ -54,12 +54,14 @@ AW_gc_manager *GEN_graphic::init_devices(AW_window *aww, AW_device *device, AWT_
                      device,
                      GEN_GC_FIRST_FONT, GEN_GC_MAX, AW_GCM_DATA_AREA,
                      makeGcChangedCallback(AWT_GC_changed_cb, scr),
-                     true, // define color groups
                      "#55C0AA",
                      "Default$#5555ff",
                      "Gene$#000000",
                      "Marked$#ffff00",
                      "Cursor$#ff0000",
+
+                     "&color_groups", // use color groups
+
                      NULL);
 
     return gc_manager;
