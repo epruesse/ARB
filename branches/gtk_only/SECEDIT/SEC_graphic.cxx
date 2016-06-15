@@ -37,7 +37,6 @@ AW_gc_manager *SEC_graphic::init_devices(AW_window *aww, AW_device *device, AWT_
                      SEC_GC_MAX,
                      AW_GCM_DATA_AREA,
                      makeGcChangedCallback(AWT_GC_changed_cb, scr),
-                     false,
                      "#A1A1A1",
                      "LOOP$#247900",
                      "HELIX$#085DAB",

@@ -1206,7 +1206,6 @@ AW_preset.o: aw_simple_device.hxx
 AW_preset.o: aw_stylable.hxx
 AW_preset.o: aw_window.hxx
 AW_preset.o: aw_zoomable.hxx
-AW_preset.o: $(ARBHOME)/INCLUDE/ad_colorset.h
 AW_preset.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AW_preset.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AW_preset.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -1214,7 +1213,6 @@ AW_preset.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_preset.o: $(ARBHOME)/INCLUDE/arb_defs.h
 AW_preset.o: $(ARBHOME)/INCLUDE/arb_error.h
 AW_preset.o: $(ARBHOME)/INCLUDE/arb_msg.h
-AW_preset.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 AW_preset.o: $(ARBHOME)/INCLUDE/arb_string.h
 AW_preset.o: $(ARBHOME)/INCLUDE/arbdb.h
 AW_preset.o: $(ARBHOME)/INCLUDE/arbdb_base.h

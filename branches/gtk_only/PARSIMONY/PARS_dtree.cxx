@@ -313,7 +313,6 @@ AW_gc_manager *AWT_graphic_parsimony::init_devices(AW_window *aww, AW_device *de
                      ntw->get_gc_base_name(),
                      device, AWT_GC_CURSOR, AWT_GC_MAX, /* AWT_GC_CURSOR+7, */ AW_GCM_DATA_AREA,
                      makeGcChangedCallback(TREE_GC_changed_cb, ntw),
-                     true,      // uses color groups
                      "#AAAA55",
 
                      // Important note :
@@ -332,6 +331,8 @@ AW_gc_manager *AWT_graphic_parsimony::init_devices(AW_window *aww, AW_device *de
 
                      "!14", // reserve 14 GC-numbers which are used for probe colors in ARB_NTREE
                             // (namely 'None', 'All' and 'P1' up to 'P12')
+
+                     "&color_groups", // use color groups
 
                      NULL);
     return gc_manager;

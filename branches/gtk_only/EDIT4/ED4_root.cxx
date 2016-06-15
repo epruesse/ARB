@@ -1340,7 +1340,6 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
                               ED4_G_DRAG,
                               AW_GCM_DATA_AREA,
                               makeGcChangedCallback(gc_change_cb), // callback triggering refresh on gc-change
-                              true,                          // use color groups
 
                               "#f8f8f8",
                               "STANDARD$black",              // Standard Color showing sequences
@@ -1362,6 +1361,8 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
 
                               "+-MISMATCHES$#FF9AFF", "-CURSOR$#FF0080",
                               "+-MARKED$#f4f8e0",     "-SELECTED$#FFFF80",
+
+                              "&color_groups", // use color groups
 
                               NULL);
 

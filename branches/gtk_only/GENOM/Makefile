@@ -223,6 +223,7 @@ GEN_graphic.o: GEN.hxx
 GEN_graphic.o: GEN_gene.hxx
 GEN_graphic.o: GEN_graphic.hxx
 GEN_graphic.o: GEN_local.hxx
+GEN_graphic.o: $(ARBHOME)/INCLUDE/ad_colorset.h
 GEN_graphic.o: $(ARBHOME)/INCLUDE/ad_prot.h
 GEN_graphic.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 GEN_graphic.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -230,6 +231,7 @@ GEN_graphic.o: $(ARBHOME)/INCLUDE/arb_core.h
 GEN_graphic.o: $(ARBHOME)/INCLUDE/arb_defs.h
 GEN_graphic.o: $(ARBHOME)/INCLUDE/arb_error.h
 GEN_graphic.o: $(ARBHOME)/INCLUDE/arb_msg.h
+GEN_graphic.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 GEN_graphic.o: $(ARBHOME)/INCLUDE/arb_string.h
 GEN_graphic.o: $(ARBHOME)/INCLUDE/arbdb.h
 GEN_graphic.o: $(ARBHOME)/INCLUDE/arbdb_base.h

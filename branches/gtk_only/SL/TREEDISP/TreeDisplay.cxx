@@ -22,16 +22,15 @@
 #include <aw_question.hxx>
 
 #include <arb_defs.h>
-#include <arb_strarray.h>
 #include <arb_diff.h>
 #include <arb_global_defs.h>
 
 #include <ad_cb.h>
+#include <ad_colorset.h>
 
 #include <unistd.h>
 #include <iostream>
 #include <cfloat>
-#include <ad_colorset.h>
 #include <algorithm>
 
 /*!*************************
@@ -70,7 +69,6 @@ AW_gc_manager *AWT_graphic_tree::init_devices(AW_window *aww, AW_device *device,
                      ntw?ntw->get_gc_base_name():"unit_tester",
                      device, AWT_GC_CURSOR, AWT_GC_MAX, AW_GCM_DATA_AREA,
                      makeGcChangedCallback(TREE_GC_changed_cb, ntw),
-                     true,      // define color groups
                      "#3be",
 
                      // Important note :
@@ -97,6 +95,8 @@ AW_gc_manager *AWT_graphic_tree::init_devices(AW_window *aww, AW_device *device,
                      "+-P4(orange)$#ffd060",     "+-P5(aqua)$#40ffc0",     "-P6(purple)$#c040ff",
                      "+-P7(1&2,yellow)$#ffff00", "+-P8(2&3,cyan)$#00ffff", "-P9(3&1,magenta)$#ff00ff",
                      "+-P10(lawn)$#c0ff40",      "+-P11(skyblue)$#40c0ff", "-P12(pink)$#f030b0",
+
+                    "&color_groups", // use color groups
 
                      NULL);
 
@@ -2757,7 +2757,7 @@ void AWT_graphic_tree::show_nds_list(GBDATA *, bool use_nds) {
             int gc                            = AWT_GC_NSELECTED;
             if (nds_show_all && is_marked) gc = AWT_GC_SELECTED;
             else {
-                int color_group     = AW_find_active_color_group(gb_species);
+                int color_group     = AW_color_groups_active() ? GBT_get_color_group(gb_species) : 0;
                 if (color_group) gc = AWT_GC_FIRST_COLOR_GROUP+color_group-1;
             }
             ListDisplayRow *curr = new ListDisplayRow(gb_main, gb_species, y_position+text_y_offset, gc, *disp_device, use_nds, tree_name);
