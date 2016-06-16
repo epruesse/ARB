@@ -18,6 +18,8 @@
 #include <string>
 #endif
 
+#define is_assert(cond) arb_assert(cond)
+
 class GBDATA;
 
 // --------------------
@@ -91,16 +93,27 @@ typedef SmartPtr<ShaderPlugin> ShaderPluginPtr;
 //      ItemShader
 
 class ItemShader {
+    std::string id;
+
+protected:
+    ShaderPluginPtr active_plugin; // null means: no plugin active
+
 public:
+    ItemShader(const std::string& id_) : id(id_) {}
     virtual ~ItemShader() {}
 
     virtual void register_plugin(ShaderPluginPtr plugin) = 0;
-    virtual bool activate_plugin(const std::string& id)  = 0;            // returns 'true' on success
+    virtual bool activate_plugin(const std::string& id)  = 0; // returns 'true' on success
 
-    virtual bool active() const = 0;
-    virtual bool shades_marked() const = 0; // if true, caller should not use marked-GC
+    const std::string& get_id() const { return id; }
 
-    virtual ShadedValue shade(GBDATA *gb_item) const = 0;
+    bool active() const { return active_plugin.isSet(); }
+    bool shades_marked() const { return active() && active_plugin->shades_marked(); } // if true, caller should not use marked-GC
+
+    ShadedValue shade(GBDATA *gb_item) const {
+        is_assert(active()); // don't call if no shader is active
+        return active() ? active_plugin->shade(gb_item) : ValueTuple::undefined();
+    }
 };
 
 // -----------------------------

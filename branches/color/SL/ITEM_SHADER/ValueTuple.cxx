@@ -12,8 +12,6 @@
 #include <aw_color_groups.hxx>
 #include <arb_msg.h>
 
-#define is_assert(cond) arb_assert(cond)
-
 // --------------------------------------------------------------------------------
 
 #ifdef UNIT_TESTS

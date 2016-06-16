@@ -64,28 +64,16 @@ typedef vector<ShaderPluginPtr> Plugins;
 //      ItemShader_impl
 
 class ItemShader_impl : public ItemShader {
-    string id;
-
     Plugins         plugins;
-    ShaderPluginPtr active_plugin; // @@@ move into abstract class ItemShader
 
     ShaderPluginPtr find_plugin(const std::string& plugin_id) const;
 
 public:
-    ItemShader_impl(const string& id_) : id(id_) {}
-
-    const string& get_id() const { return id; }
+    ItemShader_impl(const string& id_) : ItemShader(id_) {}
 
     void register_plugin(ShaderPluginPtr plugin) OVERRIDE;
     bool activate_plugin(const std::string& plugin_id) OVERRIDE;
 
-    bool shades_marked() const OVERRIDE { return active() && active_plugin->shades_marked(); }
-    bool active() const OVERRIDE { return active_plugin.isSet(); }
-
-    ShadedValue shade(GBDATA *gb_item) const OVERRIDE {
-        is_assert(active()); // don't call if no shader active
-        return active() ? active_plugin->shade(gb_item) : ValueTuple::undefined();
-    }
 };
 
 struct has_id {
