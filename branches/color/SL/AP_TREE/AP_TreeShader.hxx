@@ -17,6 +17,9 @@
 #ifndef AD_COLORSET_H
 #include <ad_colorset.h>
 #endif
+#ifndef ITEM_SHADER_H
+#include <item_shader.h>
+#endif
 
 #define ap_assert(cond) arb_assert(cond)
 
@@ -35,7 +38,12 @@ public:
     {}
     virtual ~AP_TreeShader() {}
 
+    bool does_shade() const { return shade_species; }
+
     virtual void update_settings() = 0;
+    virtual ShadedValue calc_shaded_leaf_GC(GBDATA *gb_node) const = 0;
+    virtual ShadedValue calc_shaded_inner_GC(const ShadedValue& left, float left_ratio, const ShadedValue& right) const = 0;
+    virtual int to_GC(const ShadedValue& val) const = 0;
 
     int calc_leaf_GC(GBDATA *gb_node, bool is_marked) const { // (also used to color NDS-list)
         int gc = AWT_GC_NONE_MARKED;

@@ -180,6 +180,7 @@ TreeDisplay.o: $(ARBHOME)/INCLUDE/cxxforward.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/downcast.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/dupstr.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/gccver.h
+TreeDisplay.o: $(ARBHOME)/INCLUDE/item_shader.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/nds.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/smartptr.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/static_assert.h

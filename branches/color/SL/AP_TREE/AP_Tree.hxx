@@ -223,7 +223,7 @@ private:
     void reset_child_linewidths();
     void reset_child_layout();
 
-    void update_subtree_information();
+    template<class RESULT> RESULT update_subtree_information();
 
 protected:
     ~AP_tree() OVERRIDE;
