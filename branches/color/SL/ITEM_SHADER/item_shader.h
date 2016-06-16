@@ -14,6 +14,9 @@
 #ifndef SMARTPTR_H
 #include <smartptr.h>
 #endif
+#ifndef _GLIBCXX_STRING
+#include <string>
+#endif
 
 class GBDATA;
 
@@ -61,6 +64,29 @@ inline ShadedValue mix(const ShadedValue& val1, float val1_ratio, const ShadedVa
     return val1->mix(val1_ratio, *val2);
 }
 
+// --------------------------
+//      ShaderPlugin
+
+class ShaderPlugin {
+    std::string id;
+    std::string description;
+
+public:
+    ShaderPlugin(const std::string& id_, const std::string& description_) :
+        id(id_),
+        description(description_)
+    {}
+    virtual ~ShaderPlugin() {}
+
+    const std::string& get_id() const { return id; }
+    const std::string& get_description() const { return description; }
+
+    virtual ShadedValue shade(GBDATA *gb_item) const = 0;
+    virtual bool shades_marked() const               = 0; // true if shader-plugin likes to shade marked species
+};
+
+typedef SmartPtr<ShaderPlugin> ShaderPluginPtr;
+
 // --------------------
 //      ItemShader
 
@@ -68,9 +94,13 @@ class ItemShader {
 public:
     virtual ~ItemShader() {}
 
-    virtual ShadedValue shade(GBDATA *gb_item) const                                                  = 0;
-    virtual ShadedValue mix(const ShadedValue& val1, float proportion, const ShadedValue& val2) const = 0;
-    virtual int to_GC(const ShadedValue& val) const                                                   = 0;
+    virtual void register_plugin(ShaderPluginPtr plugin) = 0;
+    virtual bool activate_plugin(const std::string& id)  = 0;            // returns 'true' on success
+
+    virtual bool active() const = 0;
+    virtual bool shades_marked() const = 0; // if true, caller should not use marked-GC
+
+    virtual ShadedValue shade(GBDATA *gb_item) const = 0;
 };
 
 // -----------------------------
