@@ -71,13 +71,31 @@ typedef vector<ShaderPluginPtr> Plugins;
 
 #define AWAR_SELECTED_PLUGIN shader_awar("plugin")
 
+template <typename T> class RefPtr { // @@@ move to arbtools.h later (helps to avoid using Noncopyable)
+    T *ptr;
+public:
+    RefPtr(T *ptr_) : ptr(ptr_) {}
+    RefPtr(const RefPtr<T>& other) : ptr(other.ptr) {}
+    DECLARE_ASSIGNMENT_OPERATOR(RefPtr<T>);
+    ~RefPtr() {}
+
+    operator T*() const { return ptr; }
+
+    const T *operator->() const { return ptr; }
+    T *operator->() { return ptr; }
+
+    const T& operator*() const { return *ptr; }
+    T& operator*() { return *ptr; }
+};
+
 // -------------------------
 //      ItemShader_impl
 
 class ItemShader_impl : public ItemShader {
-    Plugins    plugins;
-    string     help_id;
-    AW_window *aw_cfg; // config window
+    Plugins plugins;
+    string  help_id;
+
+    RefPtr<AW_window> aw_cfg; // config window
 
     ShaderPluginPtr find_plugin(const string& plugin_id) const;
 
