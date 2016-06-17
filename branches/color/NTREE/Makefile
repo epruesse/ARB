@@ -866,8 +866,14 @@ NT_shadeTree.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 NT_shadeTree.o: $(ARBHOME)/INCLUDE/arbdbt.h
 NT_shadeTree.o: $(ARBHOME)/INCLUDE/arbtools.h
 NT_shadeTree.o: $(ARBHOME)/INCLUDE/attributes.h
+NT_shadeTree.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
+NT_shadeTree.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 NT_shadeTree.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 NT_shadeTree.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
+NT_shadeTree.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+NT_shadeTree.o: $(ARBHOME)/INCLUDE/cb.h
+NT_shadeTree.o: $(ARBHOME)/INCLUDE/cb_base.h
+NT_shadeTree.o: $(ARBHOME)/INCLUDE/cbtypes.h
 NT_shadeTree.o: $(ARBHOME)/INCLUDE/cxxforward.h
 NT_shadeTree.o: $(ARBHOME)/INCLUDE/downcast.h
 NT_shadeTree.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -877,6 +883,7 @@ NT_shadeTree.o: $(ARBHOME)/INCLUDE/smartptr.h
 NT_shadeTree.o: $(ARBHOME)/INCLUDE/static_assert.h
 NT_shadeTree.o: $(ARBHOME)/INCLUDE/test_global.h
 NT_shadeTree.o: $(ARBHOME)/INCLUDE/TreeNode.h
+NT_shadeTree.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 NT_sort.o: NT_local.h
 NT_sort.o: NT_local_proto.h

@@ -1,3 +1,3 @@
 # libraries needed to link against SL/ITEM_SHADER/ITEM_SHADER.a
 
-lib/libCORE.so
+lib/libWINDOW.so

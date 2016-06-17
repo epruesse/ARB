@@ -17,6 +17,9 @@
 #ifndef _GLIBCXX_STRING
 #include <string>
 #endif
+#ifndef AW_BASE_HXX
+#include <aw_base.hxx>
+#endif
 
 #define is_assert(cond) arb_assert(cond)
 
@@ -92,20 +95,36 @@ typedef SmartPtr<ShaderPlugin> ShaderPluginPtr;
 // --------------------
 //      ItemShader
 
+#define NO_PLUGIN_SELECTED ""
+
+typedef void (*ReshadeCallback)();
+
 class ItemShader {
     std::string id;
+    std::string description;
 
 protected:
+    ReshadeCallback reshade_cb;
     ShaderPluginPtr active_plugin; // null means: no plugin active
 
 public:
-    ItemShader(const std::string& id_) : id(id_) {}
+    ItemShader(const std::string& id_, const std::string& description_, ReshadeCallback rcb) :
+        id(id_),
+        description(description_),
+        reshade_cb(rcb)
+    {}
     virtual ~ItemShader() {}
 
     virtual void register_plugin(ShaderPluginPtr plugin) = 0;
     virtual bool activate_plugin(const std::string& id)  = 0; // returns 'true' on success
+    bool deactivate_plugin() { return activate_plugin(NO_PLUGIN_SELECTED); }
+    virtual std::string active_plugin_name() const = 0;
+
+    virtual void init() = 0; // call once after register_plugin was called (activates plugin stored in AWAR)
+    virtual void popup_config_window(AW_root *awr) = 0;
 
     const std::string& get_id() const { return id; }
+    const std::string& get_description() const { return description; }
 
     bool active() const { return active_plugin.isSet(); }
     bool shades_marked() const { return active() && active_plugin->shades_marked(); } // if true, caller should not use marked-GC
@@ -119,7 +138,7 @@ public:
 // -----------------------------
 //      ItemShader registry
 
-ItemShader *registerItemShader(const char *unique_id);
+ItemShader *registerItemShader(AW_root *awr, const char *unique_id, const char *description, const char *help_id, ReshadeCallback reshade);
 ItemShader *findItemShader(const char *id);
 void        destroyAllItemShaders();
 

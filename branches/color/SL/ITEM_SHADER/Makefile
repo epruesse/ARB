@@ -31,16 +31,34 @@ depend.init:
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl (from SL)
 
 item_shader.o: item_shader.h
+item_shader.o: $(ARBHOME)/INCLUDE/ad_prot.h
 item_shader.o: $(ARBHOME)/INCLUDE/arb_assert.h
 item_shader.o: $(ARBHOME)/INCLUDE/arb_core.h
+item_shader.o: $(ARBHOME)/INCLUDE/arb_error.h
+item_shader.o: $(ARBHOME)/INCLUDE/arb_msg.h
+item_shader.o: $(ARBHOME)/INCLUDE/arb_string.h
+item_shader.o: $(ARBHOME)/INCLUDE/arbdb.h
+item_shader.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 item_shader.o: $(ARBHOME)/INCLUDE/arbtools.h
 item_shader.o: $(ARBHOME)/INCLUDE/attributes.h
+item_shader.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
+item_shader.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+item_shader.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+item_shader.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+item_shader.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
+item_shader.o: $(ARBHOME)/INCLUDE/aw_select.hxx
+item_shader.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+item_shader.o: $(ARBHOME)/INCLUDE/cb.h
+item_shader.o: $(ARBHOME)/INCLUDE/cb_base.h
+item_shader.o: $(ARBHOME)/INCLUDE/cbtypes.h
 item_shader.o: $(ARBHOME)/INCLUDE/cxxforward.h
 item_shader.o: $(ARBHOME)/INCLUDE/dupstr.h
 item_shader.o: $(ARBHOME)/INCLUDE/gccver.h
 item_shader.o: $(ARBHOME)/INCLUDE/smartptr.h
+item_shader.o: $(ARBHOME)/INCLUDE/static_assert.h
 item_shader.o: $(ARBHOME)/INCLUDE/test_global.h
 item_shader.o: $(ARBHOME)/INCLUDE/test_unit.h
+item_shader.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 ValueTuple.o: item_shader.h
 ValueTuple.o: $(ARBHOME)/INCLUDE/arb_assert.h
