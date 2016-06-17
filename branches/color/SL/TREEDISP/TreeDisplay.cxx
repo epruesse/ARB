@@ -1903,7 +1903,7 @@ GB_ERROR AWT_graphic_tree::save(GBDATA * /* dummy */, const char * /* name */) {
 }
 
 int AWT_graphic_tree::check_update(GBDATA *) {
-    int reset_zoom = false;
+    int reset_zoom = 0;
 
     if (tree_static) {
         AP_tree *tree_root = get_root_node();
@@ -3128,7 +3128,8 @@ void TREE_create_awars(AW_root *aw_root, AW_default db) {
     aw_root->awar_float(AWAR_DTREE_GROUP_MARKED_THRESHOLD,           100.0)->set_minmax(0, 100);
     aw_root->awar_float(AWAR_DTREE_GROUP_PARTIALLY_MARKED_THRESHOLD, 0.0)  ->set_minmax(0, 100);
 
-    aw_root->awar_int(AWAR_TREE_REFRESH, 0, db);
+    aw_root->awar_int(AWAR_TREE_REFRESH,   0, db);
+    aw_root->awar_int(AWAR_TREE_RECOMPUTE, 0, db);
 }
 
 static void TREE_recompute_and_rezoom_cb(UNFIXED, AWT_canvas *ntw) {
@@ -3174,6 +3175,7 @@ void TREE_install_update_callbacks(AWT_canvas *ntw) {
 
     // global refresh trigger (used where a refresh is/was missing)
     awr->awar(AWAR_TREE_REFRESH)->add_callback(expose_cb);
+    awr->awar(AWAR_TREE_RECOMPUTE)->add_callback(recompute_and_rezoom_cb);
 
     // refresh on NDS changes
     GBDATA *gb_arb_presets = GB_search(ntw->gb_main, "arb_presets", GB_CREATE_CONTAINER);
