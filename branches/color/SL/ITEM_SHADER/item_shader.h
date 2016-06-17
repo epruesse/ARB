@@ -88,6 +88,8 @@ public:
 
     virtual ShadedValue shade(GBDATA *gb_item) const = 0;
     virtual bool shades_marked() const               = 0; // true if shader-plugin likes to shade marked species
+    
+    virtual int get_dimension() const = 0; // returns (current) dimension of shader-plugin
 };
 
 typedef SmartPtr<ShaderPlugin> ShaderPluginPtr;

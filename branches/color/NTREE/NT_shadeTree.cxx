@@ -34,6 +34,7 @@ struct RelposShader: public ShaderPlugin {
         // true if shader-plugin likes to shade marked species
         return true; // @@@ fake
     }
+    int get_dimension() const OVERRIDE { return 1; }
 
 };
 

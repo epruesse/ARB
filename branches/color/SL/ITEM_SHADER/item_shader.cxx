@@ -25,6 +25,7 @@ struct DummyPlugin: public ShaderPlugin {
     ShadedValue shade(GBDATA */*gb_item*/) const OVERRIDE { return NULL; }
     bool shades_marked() const OVERRIDE { return false; }
     static void reshade() {}
+    int get_dimension() const OVERRIDE { return 0; }
 };
 
 
@@ -70,6 +71,7 @@ using namespace std;
 typedef vector<ShaderPluginPtr> Plugins;
 
 #define AWAR_SELECTED_PLUGIN shader_awar("plugin")
+#define AWAR_SHOW_DIMENSION  tmp_shader_awar("dimension")
 
 template <typename T> class RefPtr { // @@@ move to arbtools.h later (helps to avoid using Noncopyable)
     T *ptr;
@@ -94,6 +96,7 @@ public:
 class ItemShader_impl : public ItemShader {
     Plugins plugins;
     string  help_id;
+    string  awar_prefix;
 
     RefPtr<AW_window> aw_cfg; // config window
 
@@ -103,6 +106,7 @@ public:
     explicit ItemShader_impl(const string& id_, const string& description_, const string& help_id_, ReshadeCallback rcb) :
         ItemShader(id_, description_, rcb),
         help_id(help_id_),
+        awar_prefix(GBS_global_string("tmp/shader/%s", get_id().c_str())),
         aw_cfg(NULL)
     {}
 
@@ -115,7 +119,10 @@ public:
     }
 
     const char *shader_awar(const char *name) const {
-        return GBS_global_string("shader/%s/%s", get_id().c_str(), name);
+        return GBS_global_string("%s/%s", awar_prefix.c_str()+4, name); // +4 skips 'tmp/'
+    }
+    const char *tmp_shader_awar(const char *name) const {
+        return GBS_global_string("%s/%s", awar_prefix.c_str(), name);
     }
 
     void init_awars(AW_root *awr);
@@ -162,7 +169,14 @@ bool ItemShader_impl::activate_plugin_impl(const string& plugin_id) {
             changed       = true;
         }
     }
-    if (changed) reshade_cb();
+    if (changed) {
+        reshade_cb();
+
+        if (AW_root::SINGLETON) {
+            int dim = active_plugin.isSet() ? active_plugin->get_dimension() : 0;
+            AW_root::SINGLETON->awar(AWAR_SHOW_DIMENSION)->write_int(dim);
+        }
+    }
     return changed;
 }
 bool ItemShader_impl::activate_plugin(const string& plugin_id) {
@@ -197,6 +211,7 @@ void ItemShader_impl::init() {
 
 void ItemShader_impl::init_awars(AW_root *awr) {
     awr->awar_string(AWAR_SELECTED_PLUGIN, NO_PLUGIN_SELECTED)->add_callback(makeRootCallback(selected_plugin_changed_cb, this));
+    awr->awar_int(AWAR_SHOW_DIMENSION, 0);
 }
 
 void ItemShader_impl::popup_config_window(AW_root *awr) {
@@ -227,6 +242,9 @@ void ItemShader_impl::popup_config_window(AW_root *awr) {
             sel->insert(plugged.get_description().c_str(), plugged.get_id().c_str());
         }
         sel->update();
+
+        aws->at("dim");
+        aws->create_button(0, AWAR_SHOW_DIMENSION, 0, "+");
 
         aw_cfg = aws;
     }
