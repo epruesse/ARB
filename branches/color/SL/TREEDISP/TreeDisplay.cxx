@@ -1608,13 +1608,13 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
             switch (event.button()) {
                 case AW_BUTTON_LEFT:
                     if (clicked.node()) {
-                        displayed_root     = clicked.node();
+                        displayed_root = clicked.node();
                         exports.zoom_reset = 1;
                     }
                     break;
                 case AW_BUTTON_RIGHT:
                     if (displayed_root->father) {
-                        displayed_root     = displayed_root->get_father();
+                        displayed_root = displayed_root->get_father();
                         exports.zoom_reset = 1;
                     }
                     break;
@@ -1903,14 +1903,14 @@ GB_ERROR AWT_graphic_tree::save(GBDATA * /* dummy */, const char * /* name */) {
 }
 
 int AWT_graphic_tree::check_update(GBDATA *) {
-    AP_UPDATE_FLAGS flags(AP_UPDATE_OK);
+    int reset_zoom = false;
 
     if (tree_static) {
         AP_tree *tree_root = get_root_node();
         if (tree_root) {
             GB_transaction ta(gb_main);
 
-            flags = tree_root->check_update();
+            AP_UPDATE_FLAGS flags = tree_root->check_update();
             switch (flags) {
                 case AP_UPDATE_OK:
                 case AP_UPDATE_ERROR:
@@ -1929,13 +1929,14 @@ int AWT_graphic_tree::check_update(GBDATA *) {
                     GB_ERROR error = tree_root->relink();
                     if (!error) tree_root->compute_tree();
                     if (error) aw_message(error);
+                    exports.resize = 1;
                     break;
                 }
             }
         }
     }
 
-    return (int)flags;
+    return reset_zoom;
 }
 
 void AWT_graphic_tree::update(GBDATA *) {
@@ -3130,11 +3131,14 @@ void TREE_create_awars(AW_root *aw_root, AW_default db) {
     aw_root->awar_int(AWAR_TREE_REFRESH, 0, db);
 }
 
-static void TREE_recompute_and_resize_cb(UNFIXED, AWT_canvas *ntw) {
+static void TREE_recompute_and_rezoom_cb(UNFIXED, AWT_canvas *ntw) {
     AWT_graphic_tree *gt = DOWNCAST(AWT_graphic_tree*, ntw->gfx);
     gt->read_tree_settings(); // update settings for group-scaling
     gt->get_root_node()->compute_tree();
-    AWT_resize_cb(NULL, ntw);
+    ntw->recalc_size_and_refresh();
+}
+static void TREE_rezoom_cb(UNFIXED, AWT_canvas *ntw) {
+    ntw->recalc_size_and_refresh();
 }
 
 void TREE_install_update_callbacks(AWT_canvas *ntw) {
@@ -3161,12 +3165,12 @@ void TREE_install_update_callbacks(AWT_canvas *ntw) {
     awr->awar(AWAR_DTREE_DENDRO_ZOOM_TEXT)->add_callback(reinit_treetype_cb);
     awr->awar(AWAR_DTREE_DENDRO_XPAD)     ->add_callback(reinit_treetype_cb);
 
-    RootCallback resize_cb = makeRootCallback(AWT_resize_cb, ntw);
-    awr->awar(AWAR_DTREE_VERICAL_DIST)->add_callback(resize_cb);
+    RootCallback rezoom_cb = makeRootCallback(TREE_rezoom_cb, ntw);
+    awr->awar(AWAR_DTREE_VERICAL_DIST)->add_callback(rezoom_cb);
 
-    RootCallback recompute_and_resize_cb = makeRootCallback(TREE_recompute_and_resize_cb, ntw);
-    awr->awar(AWAR_DTREE_GROUP_SCALE) ->add_callback(recompute_and_resize_cb);
-    awr->awar(AWAR_DTREE_GROUP_DOWNSCALE)->add_callback(recompute_and_resize_cb);
+    RootCallback recompute_and_rezoom_cb = makeRootCallback(TREE_recompute_and_rezoom_cb, ntw);
+    awr->awar(AWAR_DTREE_GROUP_SCALE)    ->add_callback(recompute_and_rezoom_cb);
+    awr->awar(AWAR_DTREE_GROUP_DOWNSCALE)->add_callback(recompute_and_rezoom_cb);
 
     // global refresh trigger (used where a refresh is/was missing)
     awr->awar(AWAR_TREE_REFRESH)->add_callback(expose_cb);

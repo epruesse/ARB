@@ -596,7 +596,7 @@ static bool make_node_visible(AWT_canvas *ntw, AP_tree *node) {
             aw_message(error);
             return false;
         }
-        ntw->zoom_reset();
+        ntw->recalc_size(true);
     }
     return true;
 }
@@ -626,7 +626,7 @@ void NT_jump_cb(UNFIXED, AWT_canvas *ntw, AP_tree_jump_type jumpType) {
                     if (found) { // species is invisible because it is outside logically zoomed tree
                         if (jumpType & AP_JUMP_UNFOLD_GROUPS) {
                             gtree->displayed_root = common_ancestor(found, gtree->displayed_root);
-                            ntw->zoom_reset();
+                            ntw->recalc_size(true);
                         }
                         else {
                             if (verboose) msg = GBS_global_string_copy("Species '%s' is outside logical zoomed subtree", name);
@@ -765,7 +765,7 @@ inline const char *plural(int val) {
     return "s"+(val == 1);
 }
 
-void NT_reload_tree_event(AW_root *awr, AWT_canvas *ntw, bool expose) {
+void NT_reload_tree_event(AW_root *awr, AWT_canvas *ntw, bool unzoom_and_expose) {
     GB_push_transaction(ntw->gb_main);
     char     *tree_name = awr->awar(ntw->user_awar)->read_string();
     GB_ERROR  error     = ntw->gfx->load(ntw->gb_main, tree_name);
@@ -790,17 +790,14 @@ void NT_reload_tree_event(AW_root *awr, AWT_canvas *ntw, bool expose) {
         }
     }
     free(tree_name);
-    if (expose) {
-        ntw->zoom_reset();
-        AWT_expose_cb(NULL, ntw);
-    }
+    if (unzoom_and_expose) ntw->zoom_reset_and_refresh();
     GB_pop_transaction(ntw->gb_main);
 }
 
 void TREE_recompute_cb(UNFIXED, AWT_canvas *ntw) {
     AWT_graphic_tree *gt = DOWNCAST(AWT_graphic_tree*, ntw->gfx);
     gt->get_root_node()->compute_tree();
-    AWT_expose_cb(NULL, ntw);
+    ntw->recalc_size_and_refresh();
 }
 
 void TREE_GC_changed_cb(GcChange whatChanged, AWT_canvas *ntw) {
