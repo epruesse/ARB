@@ -30,12 +30,8 @@ struct RelposShader: public ShaderPlugin {
         GBDATA         *gb_relpos = GB_entry(gb_item, "relpos");
         return gb_relpos ? ValueTuple::make(GB_read_float(gb_relpos)) : ValueTuple::undefined();
     }
-    bool shades_marked() const OVERRIDE {
-        // true if shader-plugin likes to shade marked species
-        return true; // @@@ fake
-    }
     int get_dimension() const OVERRIDE { return 1; }
-
+    void init_specific_awars(AW_root *) OVERRIDE {}
 };
 
 #endif
@@ -48,20 +44,25 @@ class NT_TreeShader: public AP_TreeShader, virtual Noncopyable {
     }
 
 public:
-    NT_TreeShader(AW_root *awr) :
-        shader(registerItemShader(awr, "tree", "tree shading", "tree_shading.hlp", NT_TreeShader::reshade))
+    NT_TreeShader(AW_root *awr, GBDATA *gb_main) :
+        shader(registerItemShader(awr,
+                                  BoundItemSel(gb_main, SPECIES_get_selector()),
+                                  "tree",
+                                  "tree shading",
+                                  "tree_shading.hlp",
+                                  NT_TreeShader::reshade))
     {
 #if defined(IMPLEMENT_TEST_SHADER)
         ShaderPluginPtr relpos_shader = new RelposShader;
         shader->register_plugin(relpos_shader);
-        shader->init();
 #endif
     }
     ~NT_TreeShader() OVERRIDE {}
+    void init() OVERRIDE { shader->init(); } // called by AP_tree::set_tree_shader when installed
 
     void update_settings() OVERRIDE {
-        colorize_marked = !shader->shades_marked();
-        colorize_groups = AW_color_groups_active();
+        colorize_marked = shader->overlay_marked();
+        colorize_groups = shader->overlay_color_groups();
         shade_species   = shader->active();
     }
 
@@ -70,8 +71,10 @@ public:
         return mix(left, left_ratio, right);
     }
     int to_GC(const ShadedValue& val) const OVERRIDE {
-        nt_assert(val->is_defined()); // @@@ who should handle undefined values? (test tree with two zombie-brothers)
-        return AWT_GC_FIRST_RANGE_COLOR + val->range_offset(); // @@@ delegate to ItemShader (shader needs to know first range-gc and an "undefined"-gc)
+        if (val->is_defined()) {
+            return AWT_GC_FIRST_RANGE_COLOR + val->range_offset(); // @@@ delegate to ItemShader? (shader needs to know first range-gc and an "undefined"-gc)
+        }
+        return AWT_GC_NONE_MARKED; // @@@ who should handle undefined values? (eg. happens if field-shader defines no (valid) field)
     }
 
     void popup_config() const {
@@ -79,8 +82,8 @@ public:
     }
 };
 
-void NT_install_treeShader(AW_root *awr) {
-    AP_tree::set_tree_shader(new NT_TreeShader(awr));
+void NT_install_treeShader(AW_root *awr, GBDATA *gb_main) {
+    AP_tree::set_tree_shader(new NT_TreeShader(awr, gb_main));
 }
 
 void NT_configure_treeShader() {

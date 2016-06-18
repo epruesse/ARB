@@ -20,6 +20,12 @@
 #ifndef AW_BASE_HXX
 #include <aw_base.hxx>
 #endif
+#ifndef ITEMS_H
+#include <items.h>
+#endif
+#ifndef AW_COLOR_GROUPS_HXX
+#include <aw_color_groups.hxx>
+#endif
 
 #define is_assert(cond) arb_assert(cond)
 
@@ -75,7 +81,9 @@ inline ShadedValue mix(const ShadedValue& val1, float val1_ratio, const ShadedVa
 class ShaderPlugin {
     std::string id;
     std::string description;
+    std::string awar_prefix; // empty means "awars not initialized yet"
 
+    virtual void init_specific_awars(AW_root *awr) = 0;
 public:
     ShaderPlugin(const std::string& id_, const std::string& description_) :
         id(id_),
@@ -86,9 +94,14 @@ public:
     const std::string& get_id() const { return id; }
     const std::string& get_description() const { return description; }
 
+    const char *plugin_awar(const char *name) const;
+    void init_awars(AW_root *awr, const char *awar_prefix_);
+
     virtual ShadedValue shade(GBDATA *gb_item) const = 0;
-    virtual bool shades_marked() const               = 0; // true if shader-plugin likes to shade marked species
     
+    bool overlay_marked() const; // true if shader-plugin currently likes to display marked species in marked color
+    bool overlay_color_groups() const; // true if shader-plugin currently likes to display color groups
+
     virtual int get_dimension() const = 0; // returns (current) dimension of shader-plugin
 };
 
@@ -129,7 +142,8 @@ public:
     const std::string& get_description() const { return description; }
 
     bool active() const { return active_plugin.isSet(); }
-    bool shades_marked() const { return active() && active_plugin->shades_marked(); } // if true, caller should not use marked-GC
+    bool overlay_marked()       const { return !active() || active_plugin->overlay_marked(); }       // if true, caller should use marked-GC
+    bool overlay_color_groups() const { return active() ? active_plugin->overlay_color_groups() : AW_color_groups_active(); } // if true, caller should use color-groups-GCs
 
     ShadedValue shade(GBDATA *gb_item) const {
         is_assert(active()); // don't call if no shader is active
@@ -140,7 +154,7 @@ public:
 // -----------------------------
 //      ItemShader registry
 
-ItemShader *registerItemShader(AW_root *awr, const char *unique_id, const char *description, const char *help_id, ReshadeCallback reshade);
+ItemShader *registerItemShader(AW_root *awr, BoundItemSel& itemtype, const char *unique_id, const char *description, const char *help_id, ReshadeCallback reshade);
 ItemShader *findItemShader(const char *id);
 void        destroyAllItemShaders();
 

@@ -30,6 +30,28 @@ depend.init:
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl (from SL)
 
+field_shader.o: field_shader.h
+field_shader.o: item_shader.h
+field_shader.o: $(ARBHOME)/INCLUDE/arb_assert.h
+field_shader.o: $(ARBHOME)/INCLUDE/arb_core.h
+field_shader.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+field_shader.o: $(ARBHOME)/INCLUDE/arbtools.h
+field_shader.o: $(ARBHOME)/INCLUDE/attributes.h
+field_shader.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+field_shader.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
+field_shader.o: $(ARBHOME)/INCLUDE/cb.h
+field_shader.o: $(ARBHOME)/INCLUDE/cb_base.h
+field_shader.o: $(ARBHOME)/INCLUDE/cbtypes.h
+field_shader.o: $(ARBHOME)/INCLUDE/cxxforward.h
+field_shader.o: $(ARBHOME)/INCLUDE/dupstr.h
+field_shader.o: $(ARBHOME)/INCLUDE/gccver.h
+field_shader.o: $(ARBHOME)/INCLUDE/items.h
+field_shader.o: $(ARBHOME)/INCLUDE/smartptr.h
+field_shader.o: $(ARBHOME)/INCLUDE/static_assert.h
+field_shader.o: $(ARBHOME)/INCLUDE/test_global.h
+field_shader.o: $(ARBHOME)/INCLUDE/ttypes.h
+
+item_shader.o: field_shader.h
 item_shader.o: item_shader.h
 item_shader.o: $(ARBHOME)/INCLUDE/ad_prot.h
 item_shader.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -43,6 +65,7 @@ item_shader.o: $(ARBHOME)/INCLUDE/arbtools.h
 item_shader.o: $(ARBHOME)/INCLUDE/attributes.h
 item_shader.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 item_shader.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+item_shader.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 item_shader.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 item_shader.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 item_shader.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
@@ -54,6 +77,7 @@ item_shader.o: $(ARBHOME)/INCLUDE/cbtypes.h
 item_shader.o: $(ARBHOME)/INCLUDE/cxxforward.h
 item_shader.o: $(ARBHOME)/INCLUDE/dupstr.h
 item_shader.o: $(ARBHOME)/INCLUDE/gccver.h
+item_shader.o: $(ARBHOME)/INCLUDE/items.h
 item_shader.o: $(ARBHOME)/INCLUDE/smartptr.h
 item_shader.o: $(ARBHOME)/INCLUDE/static_assert.h
 item_shader.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -69,9 +93,15 @@ ValueTuple.o: $(ARBHOME)/INCLUDE/arbtools.h
 ValueTuple.o: $(ARBHOME)/INCLUDE/attributes.h
 ValueTuple.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ValueTuple.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
+ValueTuple.o: $(ARBHOME)/INCLUDE/cb.h
+ValueTuple.o: $(ARBHOME)/INCLUDE/cb_base.h
+ValueTuple.o: $(ARBHOME)/INCLUDE/cbtypes.h
 ValueTuple.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ValueTuple.o: $(ARBHOME)/INCLUDE/dupstr.h
 ValueTuple.o: $(ARBHOME)/INCLUDE/gccver.h
+ValueTuple.o: $(ARBHOME)/INCLUDE/items.h
 ValueTuple.o: $(ARBHOME)/INCLUDE/smartptr.h
+ValueTuple.o: $(ARBHOME)/INCLUDE/static_assert.h
 ValueTuple.o: $(ARBHOME)/INCLUDE/test_global.h
 ValueTuple.o: $(ARBHOME)/INCLUDE/test_unit.h
+ValueTuple.o: $(ARBHOME)/INCLUDE/ttypes.h

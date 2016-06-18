@@ -23,16 +23,18 @@
 struct DummyPlugin: public ShaderPlugin {
     DummyPlugin() : ShaderPlugin("dummy", "test crash dummy") {}
     ShadedValue shade(GBDATA */*gb_item*/) const OVERRIDE { return NULL; }
-    bool shades_marked() const OVERRIDE { return false; }
     static void reshade() {}
     int get_dimension() const OVERRIDE { return 0; }
+    void init_specific_awars(AW_root *) OVERRIDE {}
 };
 
 
 void TEST_shader_interface() {
-    const char *SHADY  = "lady";
-    AW_root    *NOROOT = NULL;
-    ItemShader *shader = registerItemShader(NOROOT, SHADY, "undescribed", "", DummyPlugin::reshade);
+    const char   *SHADY    = "lady";
+    AW_root      *NOROOT   = NULL;
+    GBDATA       *NOGBMAIN = (GBDATA*)(&NOROOT);
+    BoundItemSel  sel(NOGBMAIN, SPECIES_get_selector());
+    ItemShader   *shader   = registerItemShader(NOROOT, sel, SHADY, "undescribed", "", DummyPlugin::reshade);
     TEST_REJECT_NULL(shader);
 
     ItemShader *unknown = findItemShader("unknown");
@@ -45,6 +47,7 @@ void TEST_shader_interface() {
     shader->register_plugin(new DummyPlugin);
     TEST_EXPECT(shader->activate_plugin  ("dummy"));        TEST_EXPECT_EQUAL(shader->active_plugin_name(), "dummy");
     TEST_REJECT(shader->activate_plugin  ("unregistered")); TEST_EXPECT_EQUAL(shader->active_plugin_name(), "dummy");
+    TEST_EXPECT(shader->activate_plugin  ("field"));        TEST_EXPECT_EQUAL(shader->active_plugin_name(), "field");
     TEST_EXPECT(shader->deactivate_plugin());               TEST_EXPECT_EQUAL(shader->active_plugin_name(), NO_PLUGIN_SELECTED);
     TEST_REJECT(shader->deactivate_plugin());
 
@@ -57,6 +60,8 @@ void TEST_shader_interface() {
 // --------------------------------------------------------------------------------
 // implementation
 
+#include "field_shader.h"
+
 #include <aw_root.hxx>
 #include <aw_window.hxx>
 #include <aw_awar.hxx>
@@ -66,12 +71,21 @@ void TEST_shader_interface() {
 #include <string>
 #include <algorithm>
 
+
 using namespace std;
 
 typedef vector<ShaderPluginPtr> Plugins;
 
 #define AWAR_SELECTED_PLUGIN shader_awar("plugin")
 #define AWAR_SHOW_DIMENSION  tmp_shader_awar("dimension")
+
+#define AWAR_GUI_RANGE          tmp_shader_awar("range")
+#define AWAR_GUI_OVERLAY_GROUPS tmp_shader_awar("groups")
+#define AWAR_GUI_OVERLAY_MARKED tmp_shader_awar("marked")
+
+#define AWAR_PLUGIN_RANGE          plugin_awar("range")
+#define AWAR_PLUGIN_OVERLAY_GROUPS plugin_awar("groups")
+#define AWAR_PLUGIN_OVERLAY_MARKED plugin_awar("marked")
 
 template <typename T> class RefPtr { // @@@ move to arbtools.h later (helps to avoid using Noncopyable)
     T *ptr;
@@ -90,8 +104,39 @@ public:
     T& operator*() { return *ptr; }
 };
 
+// ----------------------
+//      ShaderPlugin
+
+const char *ShaderPlugin::plugin_awar(const char *name) const {
+    is_assert(!awar_prefix.empty()); // forgot to call init_awars?
+    return GBS_global_string("%s/%s", awar_prefix.c_str(), name);
+}
+
+void ShaderPlugin::init_awars(AW_root *awr, const char *awar_prefix_) {
+    is_assert(awar_prefix.empty()); // called twice?
+    awar_prefix = string(awar_prefix_) + '/' + get_id();
+
+    if (awr) {
+        // common awars for all shader plugins:
+        awr->awar_string(AWAR_PLUGIN_RANGE, ""); // @@@ need to detect good default range
+        awr->awar_int(AWAR_PLUGIN_OVERLAY_GROUPS, 0);
+        awr->awar_int(AWAR_PLUGIN_OVERLAY_MARKED, 0);
+
+        init_specific_awars(awr);
+    }
+}
+
+bool ShaderPlugin::overlay_marked() const {
+    return AW_root::SINGLETON->awar(AWAR_PLUGIN_OVERLAY_MARKED)->read_int();
+}
+bool ShaderPlugin::overlay_color_groups() const {
+    return AW_root::SINGLETON->awar(AWAR_PLUGIN_OVERLAY_GROUPS)->read_int();
+}
+
 // -------------------------
 //      ItemShader_impl
+
+#define SKIP_TMP_PREFIX 4
 
 class ItemShader_impl : public ItemShader {
     Plugins plugins;
@@ -119,7 +164,7 @@ public:
     }
 
     const char *shader_awar(const char *name) const {
-        return GBS_global_string("%s/%s", awar_prefix.c_str()+4, name); // +4 skips 'tmp/'
+        return GBS_global_string("%s/%s", awar_prefix.c_str()+SKIP_TMP_PREFIX, name);
     }
     const char *tmp_shader_awar(const char *name) const {
         return GBS_global_string("%s/%s", awar_prefix.c_str(), name);
@@ -129,6 +174,8 @@ public:
     void init() OVERRIDE;
 
     void popup_config_window(AW_root *awr) OVERRIDE;
+
+    void trigger_reshade_cb() const { reshade_cb(); }
 };
 
 struct has_id {
@@ -152,6 +199,8 @@ ShaderPluginPtr ItemShader_impl::find_plugin(const string& plugin_id) const {
 void ItemShader_impl::register_plugin(ShaderPluginPtr plugin) {
     is_assert(find_plugin(plugin->get_id()).isNull()); // attempt to register two plugins with same name!
     plugins.push_back(plugin);
+
+    plugin->init_awars(AW_root::SINGLETON, awar_prefix.c_str()+SKIP_TMP_PREFIX);
 }
 
 bool ItemShader_impl::activate_plugin_impl(const string& plugin_id) {
@@ -170,12 +219,31 @@ bool ItemShader_impl::activate_plugin_impl(const string& plugin_id) {
         }
     }
     if (changed) {
-        reshade_cb();
+        AW_root *awr = AW_root::SINGLETON;
+        if (awr) {
+            int dim;
 
-        if (AW_root::SINGLETON) {
-            int dim = active_plugin.isSet() ? active_plugin->get_dimension() : 0;
-            AW_root::SINGLETON->awar(AWAR_SHOW_DIMENSION)->write_int(dim);
+            if (active_plugin.isSet()) {
+                dim = active_plugin->get_dimension();
+
+                // map common GUI awars to awars of active plugin:
+                awr->awar(AWAR_GUI_RANGE)      ->map(active_plugin->AWAR_PLUGIN_RANGE);
+                awr->awar(AWAR_GUI_OVERLAY_MARKED)->map(active_plugin->AWAR_PLUGIN_OVERLAY_MARKED);
+                awr->awar(AWAR_GUI_OVERLAY_GROUPS)->map(active_plugin->AWAR_PLUGIN_OVERLAY_GROUPS);
+            }
+            else {
+                dim = 0;
+
+                // unmap GUI awars:
+                awr->awar(AWAR_GUI_RANGE)->unmap();
+                awr->awar(AWAR_GUI_OVERLAY_MARKED)->unmap();
+                awr->awar(AWAR_GUI_OVERLAY_GROUPS)->unmap();
+            }
+
+            awr->awar(AWAR_SHOW_DIMENSION)->write_int(dim);
         }
+
+        reshade_cb();
     }
     return changed;
 }
@@ -201,6 +269,13 @@ static void selected_plugin_changed_cb(AW_root *awr, ItemShader_impl *shader) {
         awar_plugin->write_string(NO_PLUGIN_SELECTED);
     }
 }
+void reshade_callback(AW_root*, ItemShader_impl *shader) {
+    shader->trigger_reshade_cb();
+}
+void global_colorgroup_use_changed_cb(AW_root *awr, ItemShader_impl *shader) {
+    awr->awar(shader->AWAR_GUI_OVERLAY_GROUPS)->write_int(awr->awar(AW_get_color_groups_active_awarname())->read_int());
+}
+
 void ItemShader_impl::init() {
     // initialize ItemShader
     // - activate plugin stored in AWAR
@@ -210,8 +285,17 @@ void ItemShader_impl::init() {
 }
 
 void ItemShader_impl::init_awars(AW_root *awr) {
-    awr->awar_string(AWAR_SELECTED_PLUGIN, NO_PLUGIN_SELECTED)->add_callback(makeRootCallback(selected_plugin_changed_cb, this));
+    RootCallback Reshade_cb       = makeRootCallback(reshade_callback, this);
+    RootCallback PluginChanged_cb = makeRootCallback(selected_plugin_changed_cb, this);
+
+    awr->awar_string(AWAR_SELECTED_PLUGIN, NO_PLUGIN_SELECTED)->add_callback(PluginChanged_cb);
     awr->awar_int(AWAR_SHOW_DIMENSION, 0);
+    awr->awar_string(AWAR_GUI_RANGE, "");
+    awr->awar_int(AWAR_GUI_OVERLAY_GROUPS, 0)->add_callback(Reshade_cb);
+    awr->awar_int(AWAR_GUI_OVERLAY_MARKED, 0)->add_callback(Reshade_cb);
+
+    const char *awarname_global_colorgroups = AW_get_color_groups_active_awarname();
+    awr->awar(awarname_global_colorgroups)->add_callback(makeRootCallback(global_colorgroup_use_changed_cb, this));
 }
 
 void ItemShader_impl::popup_config_window(AW_root *awr) {
@@ -243,6 +327,12 @@ void ItemShader_impl::popup_config_window(AW_root *awr) {
         }
         sel->update();
 
+        aws->at("groups");
+        aws->create_toggle(AWAR_GUI_OVERLAY_GROUPS);
+
+        aws->at("marked");
+        aws->create_toggle(AWAR_GUI_OVERLAY_MARKED);
+
         aws->at("dim");
         aws->create_button(0, AWAR_SHOW_DIMENSION, 0, "+");
 
@@ -258,7 +348,7 @@ typedef vector<ItemShader_impl> Shaders;
 
 static Shaders registered;
 
-ItemShader *registerItemShader(AW_root *awr, const char *unique_id, const char *description, const char *help_id, ReshadeCallback reshade_cb) {
+ItemShader *registerItemShader(AW_root *awr, BoundItemSel& itemtype, const char *unique_id, const char *description, const char *help_id, ReshadeCallback reshade_cb) {
     if (findItemShader(unique_id)) {
         is_assert(0); // duplicate shader id
         return NULL;
@@ -267,6 +357,7 @@ ItemShader *registerItemShader(AW_root *awr, const char *unique_id, const char *
     registered.push_back(ItemShader_impl(unique_id, description, help_id, reshade_cb));
     ItemShader_impl& new_shader = registered.back();
     if (awr) new_shader.init_awars(awr);
+    new_shader.register_plugin(makeItemFieldShader(itemtype));
     return &new_shader;
 }
 
@@ -278,5 +369,4 @@ ItemShader *findItemShader(const char *id) { // @@@ return const shader?
 void destroyAllItemShaders() {
     registered.clear();
 }
-
 

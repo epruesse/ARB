@@ -879,6 +879,7 @@ NT_shadeTree.o: $(ARBHOME)/INCLUDE/downcast.h
 NT_shadeTree.o: $(ARBHOME)/INCLUDE/dupstr.h
 NT_shadeTree.o: $(ARBHOME)/INCLUDE/gccver.h
 NT_shadeTree.o: $(ARBHOME)/INCLUDE/item_shader.h
+NT_shadeTree.o: $(ARBHOME)/INCLUDE/items.h
 NT_shadeTree.o: $(ARBHOME)/INCLUDE/smartptr.h
 NT_shadeTree.o: $(ARBHOME)/INCLUDE/static_assert.h
 NT_shadeTree.o: $(ARBHOME)/INCLUDE/test_global.h

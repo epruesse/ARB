@@ -14,6 +14,12 @@ OCCURRENCE	ARB_NT/Tree/Tree shading...
 
 DESCRIPTION     Allows to select if and how to shade the tree.
 
+                In the 'Overlay' section you can define whether to overlay the
+                tree shading with
+                 - group colors and/or
+                 - marked color.
+                The selection is shader-specific and will override global settings.
+
                 @@@ help stub
 
 NOTES		None

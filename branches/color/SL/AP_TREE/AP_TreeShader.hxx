@@ -37,6 +37,7 @@ public:
         shade_species(false)
     {}
     virtual ~AP_TreeShader() {}
+    virtual void init() = 0; // called by AP_tree::set_tree_shader when installed
 
     bool does_shade() const { return shade_species; }
 

@@ -622,6 +622,7 @@ class AP_DefaultTreeShader: public AP_TreeShader {
     static void default_shader_never_shades() { ap_assert(0); }
 public:
     AP_DefaultTreeShader() {}
+    void init() OVERRIDE {}
     void update_settings() OVERRIDE {
         colorize_marked = true;
         colorize_groups = AW_color_groups_active();
@@ -640,6 +641,7 @@ AP_TreeShader       *AP_tree::shader            = new AP_DefaultTreeShader;
 void AP_tree::set_tree_shader(AP_TreeShader *new_shader) {
     delete shader;
     shader = new_shader;
+    shader->init();
 }
 
 template<>
