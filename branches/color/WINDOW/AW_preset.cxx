@@ -908,6 +908,10 @@ bool AW_color_groups_active() {
     aw_assert(AW_gc_manager::color_groups_initialized());
     return AW_gc_manager::use_color_groups;
 }
+const char *AW_get_color_groups_active_awarname() {
+    aw_assert(AW_gc_manager::color_groups_initialized());
+    return AWAR_COLOR_GROUPS_USE;
+}
 
 char *AW_get_color_group_name(AW_root *awr, int color_group) {
     aw_assert(AW_gc_manager::color_groups_initialized());
