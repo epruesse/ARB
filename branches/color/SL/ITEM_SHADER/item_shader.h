@@ -14,8 +14,8 @@
 #ifndef SMARTPTR_H
 #include <smartptr.h>
 #endif
-#ifndef _GLIBCXX_STRING
-#include <string>
+#ifndef ARB_MSG_H
+#include <arb_msg.h>
 #endif
 #ifndef AW_BASE_HXX
 #include <aw_base.hxx>
@@ -25,6 +25,9 @@
 #endif
 #ifndef AW_COLOR_GROUPS_HXX
 #include <aw_color_groups.hxx>
+#endif
+#ifndef _GLIBCXX_STRING
+#include <string>
 #endif
 
 #define is_assert(cond) arb_assert(cond)
@@ -121,8 +124,19 @@ public:
     const std::string& get_id() const { return id; }
     const std::string& get_description() const { return description; }
 
-    const char *plugin_awar(const char *name) const;
+    inline const char *get_shader_local_id() const;
+
     void init_awars(AW_root *awr, const char *awar_prefix_);
+    const char *plugin_awar(const char *name) const {
+        is_assert(!awar_prefix.empty()); // forgot to call init_awars?
+        return GBS_global_string("%s/%s", awar_prefix.c_str(), name);
+    }
+    const char *dimension_awar(int dim, const char *name) const {
+        is_assert(!awar_prefix.empty()); // forgot to call init_awars?
+        is_assert(dim>=0 && dim<3); // invalid dimension specified
+        return GBS_global_string("%s/%s_%i", awar_prefix.c_str(), name, dim);
+    }
+
 
     virtual ShadedValue shade(GBDATA *gb_item) const = 0;
     
@@ -130,6 +144,9 @@ public:
     bool overlay_color_groups() const; // true if shader-plugin currently likes to display color groups
 
     virtual int get_dimension() const = 0; // returns (current) dimension of shader-plugin
+
+    virtual bool customizable() const    = 0;
+    virtual void customize(AW_root *awr) = 0;
 
     void trigger_reshade_cb() const;
 };
@@ -182,6 +199,10 @@ public:
     void trigger_reshade_cb() const { reshade_cb(); }
 };
 
+inline const char *ShaderPlugin::get_shader_local_id() const {
+    is_assert(plugged_into);
+    return GBS_global_string("%s_%s", plugged_into->get_id().c_str(), get_id().c_str());
+}
 inline void ShaderPlugin::trigger_reshade_cb() const {
     if (plugged_into) plugged_into->trigger_reshade_cb();
 }

@@ -26,6 +26,8 @@ struct DummyPlugin: public ShaderPlugin {
     static void reshade() {}
     int get_dimension() const OVERRIDE { return 0; }
     void init_specific_awars(AW_root *) OVERRIDE {}
+    bool customizable() const OVERRIDE { return false; }
+    void customize(AW_root */*awr*/) OVERRIDE { is_assert(0); }
 };
 
 
@@ -66,6 +68,7 @@ void TEST_shader_interface() {
 #include <aw_window.hxx>
 #include <aw_awar.hxx>
 #include <aw_select.hxx>
+#include <aw_msg.hxx>
 
 #include <vector>
 #include <string>
@@ -89,11 +92,6 @@ typedef vector<ShaderPluginPtr> Plugins;
 
 // ----------------------
 //      ShaderPlugin
-
-const char *ShaderPlugin::plugin_awar(const char *name) const {
-    is_assert(!awar_prefix.empty()); // forgot to call init_awars?
-    return GBS_global_string("%s/%s", awar_prefix.c_str(), name);
-}
 
 void ShaderPlugin::init_awars(AW_root *awr, const char *awar_prefix_) {
     is_assert(awar_prefix.empty()); // called twice?
@@ -157,6 +155,17 @@ public:
     void init() OVERRIDE;
 
     void popup_config_window(AW_root *awr) OVERRIDE;
+    void configure_active_plugin(AW_root *awr) {
+        if (active_plugin.isSet()) {
+            if (active_plugin->customizable()) active_plugin->customize(awr);
+            else aw_message(GBS_global_string("Nothing to configure for '%s'", active_plugin->get_description().c_str()));
+        }
+        else aw_message("Please select a shader");
+    }
+    static void configure_active_plugin_cb(AW_window *aww, ItemShader_impl *shader) {
+        shader->configure_active_plugin(aww->get_root());
+    }
+    static void trigger_reshade_cb(AW_root*,ItemShader_impl *shader) { shader->reshade_cb(); }
 };
 
 struct has_id {
@@ -251,10 +260,7 @@ static void selected_plugin_changed_cb(AW_root *awr, ItemShader_impl *shader) {
         awar_plugin->write_string(NO_PLUGIN_SELECTED);
     }
 }
-void reshade_callback(AW_root*, ItemShader_impl *shader) {
-    shader->trigger_reshade_cb();
-}
-void global_colorgroup_use_changed_cb(AW_root *awr, ItemShader_impl *shader) {
+static void global_colorgroup_use_changed_cb(AW_root *awr, ItemShader_impl *shader) {
     awr->awar(shader->AWAR_GUI_OVERLAY_GROUPS)->write_int(awr->awar(AW_get_color_groups_active_awarname())->read_int());
 }
 
@@ -267,7 +273,7 @@ void ItemShader_impl::init() {
 }
 
 void ItemShader_impl::init_awars(AW_root *awr) {
-    RootCallback Reshade_cb       = makeRootCallback(reshade_callback, this);
+    RootCallback Reshade_cb       = makeRootCallback(ItemShader_impl::trigger_reshade_cb, this);
     RootCallback PluginChanged_cb = makeRootCallback(selected_plugin_changed_cb, this);
 
     awr->awar_string(AWAR_SELECTED_PLUGIN, NO_PLUGIN_SELECTED)->add_callback(PluginChanged_cb);
@@ -308,6 +314,10 @@ void ItemShader_impl::popup_config_window(AW_root *awr) {
             sel->insert(plugged.get_description().c_str(), plugged.get_id().c_str());
         }
         sel->update();
+
+        aws->at("plugin_cfg");
+        aws->callback(makeWindowCallback(ItemShader_impl::configure_active_plugin_cb, this));
+        aws->create_autosize_button("configure", "Configure");
 
         aws->at("groups");
         aws->create_toggle(AWAR_GUI_OVERLAY_GROUPS);

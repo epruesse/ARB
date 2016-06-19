@@ -32,6 +32,8 @@ struct RelposShader: public ShaderPlugin {
     }
     int get_dimension() const OVERRIDE { return 1; }
     void init_specific_awars(AW_root *) OVERRIDE {}
+    bool customizable() const OVERRIDE { return false; }
+    void customize(AW_root */*awr*/) OVERRIDE { nt_assert(0); }
 };
 
 #endif

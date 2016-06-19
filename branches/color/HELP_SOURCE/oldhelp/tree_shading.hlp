@@ -14,11 +14,17 @@ OCCURRENCE	ARB_NT/Tree/Tree shading...
 
 DESCRIPTION     Allows to select if and how to shade the tree.
 
+                In the 'Active shader' section you can select which of the available shaders
+                shall be used. To configure the selected shader press 'Configure'.
+
                 In the 'Overlay' section you can define whether to overlay the
                 tree shading with
+
                  - group colors and/or
                  - marked color.
-                The selection is shader-specific and will override global settings.
+
+                The selected overlay is shader-specific and will override global settings, while the
+                shader is active.
 
                 @@@ help stub
 
