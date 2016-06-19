@@ -31,6 +31,26 @@
 
 class GBDATA;
 
+// ---------------- // @@@ move to arbtools.h later (helps to avoid using Noncopyable)
+//      RefPtr
+
+template <typename T> class RefPtr {
+    T *ptr;
+public:
+    RefPtr(T *ptr_) : ptr(ptr_) {}
+    RefPtr(const RefPtr<T>& other) : ptr(other.ptr) {}
+    DECLARE_ASSIGNMENT_OPERATOR(RefPtr<T>);
+    ~RefPtr() {}
+
+    operator T*() const { return ptr; }
+
+    const T *operator->() const { return ptr; }
+    T *operator->() { return ptr; }
+
+    const T& operator*() const { return *ptr; }
+    T& operator*() { return *ptr; }
+};
+
 // --------------------
 //      ValueTuple
 
@@ -78,7 +98,11 @@ inline ShadedValue mix(const ShadedValue& val1, float val1_ratio, const ShadedVa
 // --------------------------
 //      ShaderPlugin
 
+class ItemShader;
+
 class ShaderPlugin {
+    RefPtr<ItemShader> plugged_into;
+
     std::string id;
     std::string description;
     std::string awar_prefix; // empty means "awars not initialized yet"
@@ -86,10 +110,13 @@ class ShaderPlugin {
     virtual void init_specific_awars(AW_root *awr) = 0;
 public:
     ShaderPlugin(const std::string& id_, const std::string& description_) :
+        plugged_into(NULL),
         id(id_),
         description(description_)
     {}
     virtual ~ShaderPlugin() {}
+
+    void announce_shader(ItemShader *shader) { plugged_into = shader; }
 
     const std::string& get_id() const { return id; }
     const std::string& get_description() const { return description; }
@@ -103,6 +130,8 @@ public:
     bool overlay_color_groups() const; // true if shader-plugin currently likes to display color groups
 
     virtual int get_dimension() const = 0; // returns (current) dimension of shader-plugin
+
+    void trigger_reshade_cb() const;
 };
 
 typedef SmartPtr<ShaderPlugin> ShaderPluginPtr;
@@ -149,7 +178,13 @@ public:
         is_assert(active()); // don't call if no shader is active
         return active() ? active_plugin->shade(gb_item) : ValueTuple::undefined();
     }
+
+    void trigger_reshade_cb() const { reshade_cb(); }
 };
+
+inline void ShaderPlugin::trigger_reshade_cb() const {
+    if (plugged_into) plugged_into->trigger_reshade_cb();
+}
 
 // -----------------------------
 //      ItemShader registry
