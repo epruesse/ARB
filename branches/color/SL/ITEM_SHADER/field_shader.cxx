@@ -32,26 +32,29 @@ class FieldReader {
     }
 
 public:
-    FieldReader(const char *dim0_awarname) :
-        fieldname(AW_root::SINGLETON->awar(dim0_awarname)->read_char_pntr())
+    FieldReader(const char *fieldname_) :
+        fieldname(fieldname_)
     {}
 
     ShadedValue calc_value(GBDATA *gb_item) const {
-        GBDATA *gb_field = GB_entry(gb_item, fieldname);
-        if (!gb_field) return ValueTuple::undefined();
-
-        float val = 0.0;
-        switch (GB_read_type(gb_field)) {
-            case GB_INT: val = GB_read_int(gb_field); break;
-            case GB_FLOAT: val = GB_read_float(gb_field); break;
-            default: {
-                if (!safe_atof(GB_read_as_string(gb_field), val)) {
-                    return ValueTuple::undefined();
+        if (fieldname) {
+            GBDATA *gb_field = GB_entry(gb_item, fieldname);
+            if (gb_field) {
+                float val = 0.0;
+                switch (GB_read_type(gb_field)) {
+                    case GB_INT: val = GB_read_int(gb_field); break;
+                    case GB_FLOAT: val = GB_read_float(gb_field); break;
+                    default: {
+                        if (!safe_atof(GB_read_as_string(gb_field), val)) {
+                            return ValueTuple::undefined();
+                        }
+                        break;
+                    }
                 }
-                break;
+                return ValueTuple::make(val);
             }
         }
-        return ValueTuple::make(val);
+        return ValueTuple::undefined();
     }
 };
 
@@ -61,8 +64,22 @@ class ItemFieldShader: public ShaderPlugin {
 
     mutable SmartPtr<FieldReader> reader;
 
+    const char *get_fieldname(int dim) const {
+        // returns configured fieldname (or NULL)
+        AW_root *awr = AW_root::SINGLETON;
+        if (awr->awar(AWAR_DIM_ACTIVE(dim))->read_int()) {
+            const char *fname = awr->awar(AWAR_FIELD(dim))->read_char_pntr();
+            if (strcmp(fname, NO_FIELD_SELECTED) != 0) {
+                return fname;
+            }
+        }
+        return NULL;
+    }
+
     FieldReader& get_field_reader() const {
-        if (reader.isNull()) reader = new FieldReader(AWAR_FIELD(0));
+        if (reader.isNull()) {
+            reader = new FieldReader(get_fieldname(0));
+        }
         return *reader;
     }
 
@@ -100,9 +117,9 @@ public:
 
 void ItemFieldShader::init_specific_awars(AW_root *awr) {
     for (int dim = 0; dim<get_max_dimension(); ++dim) {
-        awr->awar_int(AWAR_DIM_ACTIVE(dim), dim == 0);
-
         RootCallback FieldSetup_changed_cb = makeRootCallback(ItemFieldShader::setup_changed_cb, this);
+
+        awr->awar_int(AWAR_DIM_ACTIVE(dim), dim == 0)->add_callback(FieldSetup_changed_cb);
         awr->awar_string(AWAR_FIELD(dim), NO_FIELD_SELECTED)->add_callback(FieldSetup_changed_cb);
     }
 }
