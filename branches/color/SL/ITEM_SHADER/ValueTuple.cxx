@@ -82,18 +82,23 @@ class LinearTuple: public ValueTuple {
     float val;
 
 public:
-    LinearTuple(float val_) : val(val_) {}
+    LinearTuple(float val_) : val(val_) {
+        is_assert(!is_nan_or_inf(val));
+    }
     ~LinearTuple() OVERRIDE {}
 
     bool is_defined() const OVERRIDE { return true; }
     ValueTuple *clone() const OVERRIDE { return new LinearTuple(val); }
     int range_offset() const OVERRIDE {
-        return
-            val<=0.0
+        int off =
+            val <= 0.0
             ? 0
-            : (val>=1.0
+            : (val >= 1.0
                ? AW_RANGE_COLORS-1
                : val*AW_RANGE_COLORS+0.5);
+
+        is_assert(off>=0 && off<AW_RANGE_COLORS);
+        return off;
     }
 
 #if defined(UNIT_TESTS)

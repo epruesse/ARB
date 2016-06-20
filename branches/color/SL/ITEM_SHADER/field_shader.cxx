@@ -20,9 +20,14 @@ using namespace std;
 
 #define AWAR_DIM_ACTIVE(dim) dimension_awar(dim, "active")
 #define AWAR_FIELD(dim)      dimension_awar(dim, "field")
+#define AWAR_VALUE_MIN(dim)  dimension_awar(dim, "min")
+#define AWAR_VALUE_MAX(dim)  dimension_awar(dim, "max")
 
 class FieldReader {
     RefPtr<const char> fieldname;
+
+    float min_value, max_value;
+    float factor;
 
     static bool safe_atof(const char *strval, float& res) {
         // returns true if at least some characters have been converted
@@ -31,10 +36,24 @@ class FieldReader {
         return end != strval;
     }
 
+    void calc_factor() {
+        float span = max_value-min_value;
+        factor     = span != 0.0 ? 1.0/span : 1/0.00001;
+    }
 public:
     FieldReader(const char *fieldname_) :
-        fieldname(fieldname_)
-    {}
+        fieldname(fieldname_),
+        min_value(0),
+        max_value(1)
+    {
+        calc_factor();
+    }
+
+    void set_value_range(const float& min_val, const float& max_val) {
+        min_value = min_val;
+        max_value = max_val;
+        calc_factor();
+    }
 
     ShadedValue calc_value(GBDATA *gb_item) const {
         if (fieldname) {
@@ -51,6 +70,7 @@ public:
                         break;
                     }
                 }
+                val = (val-min_value)*factor;
                 return ValueTuple::make(val);
             }
         }
@@ -78,7 +98,12 @@ class ItemFieldShader: public ShaderPlugin {
 
     FieldReader& get_field_reader() const {
         if (reader.isNull()) {
-            reader = new FieldReader(get_fieldname(0));
+            const char *fieldname = get_fieldname(0);
+            reader = new FieldReader(fieldname);
+            if (fieldname) {
+                reader->set_value_range(atof(AW_root::SINGLETON->awar(AWAR_VALUE_MIN(0))->read_char_pntr()),
+                                        atof(AW_root::SINGLETON->awar(AWAR_VALUE_MAX(0))->read_char_pntr()));
+            }
         }
         return *reader;
     }
@@ -121,6 +146,8 @@ void ItemFieldShader::init_specific_awars(AW_root *awr) {
 
         awr->awar_int(AWAR_DIM_ACTIVE(dim), dim == 0)->add_callback(FieldSetup_changed_cb);
         awr->awar_string(AWAR_FIELD(dim), NO_FIELD_SELECTED)->add_callback(FieldSetup_changed_cb);
+        awr->awar_string(AWAR_VALUE_MIN(dim), "0")->add_callback(FieldSetup_changed_cb);
+        awr->awar_string(AWAR_VALUE_MAX(dim), "1")->add_callback(FieldSetup_changed_cb);
     }
 }
 void ItemFieldShader::customize(AW_root *awr) {
@@ -149,6 +176,10 @@ void ItemFieldShader::customize(AW_root *awr) {
 
             FieldSelDef def(AWAR_FIELD(dim), itemtype.gb_main, itemtype.selector, FIELD_FILTER_STRING_READABLE);
             create_itemfield_selection_button(aws, def, NULL);
+
+            const int VALCOL = 8;
+            aws->create_input_field(AWAR_VALUE_MIN(dim), VALCOL);
+            aws->create_input_field(AWAR_VALUE_MAX(dim), VALCOL);
 
             // @@@ add fields defining value-range
             // @@@ add autoscan for value-range

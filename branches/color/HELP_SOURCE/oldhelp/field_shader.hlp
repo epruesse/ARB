@@ -23,9 +23,18 @@ DESCRIPTION     This field shader allows to shade items (eg. species in tree) ac
                 The button behind selects the database field which shall be visualized as color.
                 The database fields normally has to contain a numeric value.
 
-                @@@ currently only values between 0.0 and 1.0 are supported
+                The two inputfields behind the field-selection specify the lower and upper border
+                of the value-range.
 
-		@@@ decribe interface
+                   The value range is mapped to the active color range (@@@ only one atm).
+                   Values outside the value-range are forced into the range, eg. if the specified
+                   value-range is [10 .. 20], then a value of 5 is displayed like 10 and a value
+                   of 25 is displayed like 20.
+
+                   If you flip the borders of value-range the value range (eg. [20 .. 10]) it will be
+                   mapped reverse.
+
+                @@@ decribe interface
 
 NOTES		None
 
