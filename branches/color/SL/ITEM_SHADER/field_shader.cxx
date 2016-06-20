@@ -25,6 +25,7 @@ using namespace std;
 
 class FieldReader {
     RefPtr<const char> fieldname;
+    bool is_hkey; // true if fieldname is hierarchical
 
     float min_value, max_value;
     float factor;
@@ -43,6 +44,7 @@ class FieldReader {
 public:
     FieldReader(const char *fieldname_) :
         fieldname(fieldname_),
+        is_hkey(fieldname && strchr(fieldname, '/')),
         min_value(0),
         max_value(1)
     {
@@ -56,8 +58,11 @@ public:
     }
 
     ShadedValue calc_value(GBDATA *gb_item) const {
-        if (fieldname) {
-            GBDATA *gb_field = GB_entry(gb_item, fieldname);
+        if (fieldname && gb_item) {
+            GBDATA *gb_field = is_hkey
+                ? GB_search(gb_item, fieldname, GB_FIND)
+                : GB_entry(gb_item, fieldname);
+
             if (gb_field) {
                 float val = 0.0;
                 switch (GB_read_type(gb_field)) {
