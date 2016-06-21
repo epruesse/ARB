@@ -1094,7 +1094,7 @@ void TEST_db_callbacks() {
 
 void TEST_hierarchy_callbacks() {
     GB_shell    shell;
-    const char *DBNAME  = "tmp.arb";
+    const char *DBNAME  = "tmp_hier_cb.arb";
 
     for (int pass = 1; pass<=2; ++pass) {
         bool creating = pass == 1;
@@ -1289,16 +1289,14 @@ void TEST_hierarchy_callbacks() {
         TEST_EXPECT_NCHILD_HIER_TRIGGERED(anySonContainer, anySonContainer);
         TEST_EXPECT_TRIGGERS_CHECKED();
 
-        // if (pass == 1) { // @@@ fails in pass 2
-            // trigger delete-callback
-            {
-                GB_initial_transaction ta(gb_main);
-                TEST_EXPECT_NO_ERROR(GB_delete(elimGrandson));
-                TEST_EXPECT_NO_ERROR(ta.close(NULL));
-            }
-            TEST_EXPECT_DELETE_HIER_TRIGGERED(anyGrandson, elimGrandson);
-            TEST_EXPECT_TRIGGERS_CHECKED();
-        // }
+        // trigger delete-callback
+        {
+            GB_initial_transaction ta(gb_main);
+            TEST_EXPECT_NO_ERROR(GB_delete(elimGrandson));
+            TEST_EXPECT_NO_ERROR(ta.close(NULL));
+        }
+        TEST_EXPECT_DELETE_HIER_TRIGGERED(anyGrandson, elimGrandson);
+        TEST_EXPECT_TRIGGERS_CHECKED();
 
         // bind normal (non-hierarchical) callbacks to entries which trigger hierarchical callbacks and ..
         calledWith::timer = 0;
