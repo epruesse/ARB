@@ -21,29 +21,25 @@ DESCRIPTION     Scans PT_SERVER database for the nearest relatives
 
 SECTION         SPECIFIC PARAMETERS
 
-                Target field
-
-                        Specifies the field into which the information about found relatives
-                        is written.
-
                 Results
 
                         Maximum number of relatives written into the DB field.
                         Use 0 (or empty field) for unlimited number of relatives.
 
-                Min.score
-
-                        Only write relatives with a score equal or above the specified score
-                        into the DB field.
-
-                Add score
-
-                        Whether to add score information to the DB field or not.
-
-                Min score
+                Min. Score
 
                         Sets a lower limit for the relative or absolute score. Relatives
                         with lower score are NOT written into the DB field.
+
+                Add score?
+
+                        Whether to add score information to the DB field or not.
+
+                Result field
+
+                        Specifies the field into which the information about found relatives
+                        is written.
+
 
 NOTES           You may use the generated database entries to mark species (see LINK{markbyref.hlp}).
 
