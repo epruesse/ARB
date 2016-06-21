@@ -10,11 +10,18 @@
 
 #include "field_shader.h"
 
-#include <aw_window.hxx>
+#include <item_sel_list.h>
+
 #include <aw_root.hxx>
 #include <aw_awar.hxx>
-#include <item_sel_list.h>
+#include <aw_msg.hxx>
+
+#include <ad_cb_prot.h>
+
 #include <arb_global_defs.h>
+#include <arb_str.h>
+
+#include <set>
 
 using namespace std;
 
@@ -57,6 +64,9 @@ public:
         calc_factor();
     }
 
+    bool can_read() const { return fieldname != 0; }
+    const char *get_fieldname() const { return fieldname; }
+
     ShadedValue calc_value(GBDATA *gb_item) const {
         if (fieldname && gb_item) {
             GBDATA *gb_field = is_hkey
@@ -83,10 +93,15 @@ public:
     }
 };
 
+typedef set<string> FieldSet;
+
 class ItemFieldShader: public ShaderPlugin {
-    BoundItemSel      itemtype;
+    BoundItemSel itemtype;
+    FieldSet     hcbs_installed; // list of currently installed hierarchy callbacks
+
     RefPtr<AW_window> aw_config;
 
+    mutable string                item_dbpath;
     mutable SmartPtr<FieldReader> reader;
 
     const char *get_fieldname(int dim) const {
@@ -101,20 +116,87 @@ class ItemFieldShader: public ShaderPlugin {
         return NULL;
     }
 
-    FieldReader& get_field_reader() const {
-        if (reader.isNull()) {
-            const char *fieldname = get_fieldname(0);
-            reader = new FieldReader(fieldname);
+    FieldReader *make_field_reader(int dim) const {
+        AW_root *awr = AW_root::SINGLETON;
+        if (awr) {
+            const char  *fieldname = get_fieldname(dim);
+            FieldReader *fr        = new FieldReader(fieldname);
             if (fieldname) {
-                reader->set_value_range(atof(AW_root::SINGLETON->awar(AWAR_VALUE_MIN(0))->read_char_pntr()),
-                                        atof(AW_root::SINGLETON->awar(AWAR_VALUE_MAX(0))->read_char_pntr()));
+                fr->set_value_range(atof(awr->awar(AWAR_VALUE_MIN(dim))->read_char_pntr()),
+                                    atof(awr->awar(AWAR_VALUE_MAX(dim))->read_char_pntr()));
             }
+            return fr;
         }
+        return NULL;
+    }
+
+    FieldReader& get_field_reader() const {
+        if (reader.isNull()) reader = make_field_reader(0);
         return *reader;
     }
 
+    bool knows_item_dbpath() const {
+        if (item_dbpath.empty()) {
+            GBDATA *gb_item = itemtype.get_any_item();
+            if (gb_item) {
+                const char *ipath = GB_get_db_path(gb_item);
+                if (ipath) {
+                    const int PREFIXLEN = 9;
+#if defined(ASSERTION_USED)
+                    const char *PREFIX        = "/<gbmain>";
+                    is_assert(ARB_strBeginsWith(ipath, PREFIX));
+                    is_assert(strlen(PREFIX) == PREFIXLEN);
+#endif
+                    item_dbpath = string(ipath+PREFIXLEN);
+                }
+            }
+        }
+        return !item_dbpath.empty();
+    }
+
+    void update_db_callbacks(const FieldSet& wanted) {
+        if (knows_item_dbpath()) {
+            DatabaseCallback dbcb = makeDatabaseCallback(ItemFieldShader::field_updated_in_DB_cb, this);
+
+            GB_ERROR  error   = NULL;
+            GBDATA   *gb_main = itemtype.gb_main;
+
+            GB_transaction ta(gb_main);
+
+            // uninstall unwanted callbacks:
+            for (FieldSet::const_iterator installed = hcbs_installed.begin(); installed != hcbs_installed.end(); ++installed) {
+                if (wanted.find(*installed) == wanted.end()) { // 'installed' is not in 'wanted'
+                    string field_db_path = item_dbpath + '/' + *installed;
+                    error                = GB_remove_hierarchy_callback(gb_main, field_db_path.c_str(), GB_CB_CHANGED_OR_DELETED, dbcb);
+                }
+            }
+            // install missing callbacks:
+            for (FieldSet::const_iterator missing = wanted.begin(); missing != wanted.end(); ++missing) {
+                if (hcbs_installed.find(*missing) == hcbs_installed.end()) { // 'missing' is not in 'hcbs_installed'
+                    string field_db_path = item_dbpath + '/' + *missing;
+                    error                = GB_add_hierarchy_callback(gb_main, field_db_path.c_str(), GB_CB_CHANGED_OR_DELETED, dbcb);
+                }
+            }
+            hcbs_installed = wanted; // store current state
+            aw_message_if(error);
+        }
+    }
+    void add_used_fields(FieldSet& wanted) const {
+        FieldReader *freader = make_field_reader(0);
+        if (freader && freader->can_read()) wanted.insert(freader->get_fieldname());
+        delete freader;
+    }
+    void setup_db_callbacks(bool install) {
+        FieldSet wanted;
+        if (install) add_used_fields(wanted); // otherwise uninstall all
+        update_db_callbacks(wanted);
+    }
+    static void field_updated_in_DB_cb(UNFIXED, const ItemFieldShader *shader) {
+        shader->trigger_reshade_cb();
+    }
+
 public:
-    ItemFieldShader(const BoundItemSel& itemtype_) :
+    explicit ItemFieldShader(const BoundItemSel& itemtype_) :
         ShaderPlugin("field", "Database field shader"),
         itemtype(itemtype_),
         aw_config(NULL)
@@ -136,11 +218,19 @@ public:
     bool customizable() const OVERRIDE { return true; }
     void customize(AW_root *awr) OVERRIDE;
 
-    void setup_changed_cb() const {
+    void activate(bool on) OVERRIDE {
+        // called with true when plugin gets activated, with false when it gets deactivated
+        setup_db_callbacks(on);
+    }
+
+
+    void setup_changed_cb() {
+        setup_db_callbacks(true); // @@@ does this also happen if plugin is NOT ACTIVE? shouldn't!
+
         reader.SetNull();
         trigger_reshade_cb();
     }
-    static void setup_changed_cb(AW_root*, const ItemFieldShader *shader) {
+    static void setup_changed_cb(AW_root*, ItemFieldShader *shader) {
         shader->setup_changed_cb();
     }
 };

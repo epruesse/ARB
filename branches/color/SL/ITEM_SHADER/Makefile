@@ -32,12 +32,14 @@ depend.init:
 
 field_shader.o: field_shader.h
 field_shader.o: item_shader.h
+field_shader.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
 field_shader.o: $(ARBHOME)/INCLUDE/ad_prot.h
 field_shader.o: $(ARBHOME)/INCLUDE/arb_assert.h
 field_shader.o: $(ARBHOME)/INCLUDE/arb_core.h
 field_shader.o: $(ARBHOME)/INCLUDE/arb_error.h
 field_shader.o: $(ARBHOME)/INCLUDE/arb_global_defs.h
 field_shader.o: $(ARBHOME)/INCLUDE/arb_msg.h
+field_shader.o: $(ARBHOME)/INCLUDE/arb_str.h
 field_shader.o: $(ARBHOME)/INCLUDE/arb_string.h
 field_shader.o: $(ARBHOME)/INCLUDE/arbdb.h
 field_shader.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -47,6 +49,7 @@ field_shader.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 field_shader.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 field_shader.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 field_shader.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+field_shader.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 field_shader.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 field_shader.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 field_shader.o: $(ARBHOME)/INCLUDE/aw_select.hxx

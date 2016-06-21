@@ -148,6 +148,8 @@ public:
     virtual bool customizable() const    = 0;
     virtual void customize(AW_root *awr) = 0;
 
+    virtual void activate(bool on) = 0; // called with true when plugin gets activated, with false when it gets deactivated
+
     void trigger_reshade_cb() const;
 };
 

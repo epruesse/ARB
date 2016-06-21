@@ -9,6 +9,7 @@
 // ============================================================ //
 
 #include "item_shader.h"
+#include <arbdb.h>
 
 #define is_assert(cond) arb_assert(cond)
 
@@ -28,33 +29,40 @@ struct DummyPlugin: public ShaderPlugin {
     void init_specific_awars(AW_root *) OVERRIDE {}
     bool customizable() const OVERRIDE { return false; }
     void customize(AW_root */*awr*/) OVERRIDE { is_assert(0); }
+    void activate(bool /*on*/) OVERRIDE {}
 };
 
 
 void TEST_shader_interface() {
-    const char   *SHADY    = "lady";
-    AW_root      *NOROOT   = NULL;
-    GBDATA       *NOGBMAIN = (GBDATA*)(&NOROOT);
-    BoundItemSel  sel(NOGBMAIN, SPECIES_get_selector());
-    ItemShader   *shader   = registerItemShader(NOROOT, sel, SHADY, "undescribed", "", DummyPlugin::reshade);
-    TEST_REJECT_NULL(shader);
+    GB_shell  shell;
+    GBDATA   *gb_main = GB_open("nosuch.arb", "c");
 
-    ItemShader *unknown = findItemShader("unknown");
-    TEST_EXPECT_NULL(unknown);
+    {
+        const char *SHADY  = "lady";
+        AW_root    *NOROOT = NULL;
 
-    ItemShader *found = findItemShader(SHADY);
-    TEST_EXPECT_EQUAL(found, shader);
+        BoundItemSel  sel(gb_main, SPECIES_get_selector());
+        ItemShader   *shader = registerItemShader(NOROOT, sel, SHADY, "undescribed", "", DummyPlugin::reshade);
+        TEST_REJECT_NULL(shader);
 
-    // check shader plugins
-    shader->register_plugin(new DummyPlugin);
-    TEST_EXPECT(shader->activate_plugin  ("dummy"));        TEST_EXPECT_EQUAL(shader->active_plugin_name(), "dummy");
-    TEST_REJECT(shader->activate_plugin  ("unregistered")); TEST_EXPECT_EQUAL(shader->active_plugin_name(), "dummy");
-    TEST_EXPECT(shader->activate_plugin  ("field"));        TEST_EXPECT_EQUAL(shader->active_plugin_name(), "field");
-    TEST_EXPECT(shader->deactivate_plugin());               TEST_EXPECT_EQUAL(shader->active_plugin_name(), NO_PLUGIN_SELECTED);
-    TEST_REJECT(shader->deactivate_plugin());
+        ItemShader *unknown = findItemShader("unknown");
+        TEST_EXPECT_NULL(unknown);
 
-    // clean-up
-    destroyAllItemShaders();
+        ItemShader *found = findItemShader(SHADY);
+        TEST_EXPECT_EQUAL(found, shader);
+
+        // check shader plugins
+        shader->register_plugin(new DummyPlugin);
+        TEST_EXPECT(shader->activate_plugin  ("dummy"));        TEST_EXPECT_EQUAL(shader->active_plugin_name(), "dummy");
+        TEST_REJECT(shader->activate_plugin  ("unregistered")); TEST_EXPECT_EQUAL(shader->active_plugin_name(), "dummy");
+        TEST_EXPECT(shader->activate_plugin  ("field"));        TEST_EXPECT_EQUAL(shader->active_plugin_name(), "field");
+        TEST_EXPECT(shader->deactivate_plugin());               TEST_EXPECT_EQUAL(shader->active_plugin_name(), NO_PLUGIN_SELECTED);
+        TEST_REJECT(shader->deactivate_plugin());
+
+        // clean-up
+        destroyAllItemShaders();
+    }
+    GB_close(gb_main);
 }
 
 #endif // UNIT_TESTS
@@ -195,7 +203,8 @@ void ItemShader_impl::register_plugin(ShaderPluginPtr plugin) {
 }
 
 bool ItemShader_impl::activate_plugin_impl(const string& plugin_id) {
-    bool changed = false;
+    bool            changed    = false;
+    ShaderPluginPtr prevActive = active_plugin;
     if (plugin_id == NO_PLUGIN_SELECTED) {
         if (active_plugin.isSet()) {
             active_plugin.SetNull();
@@ -210,6 +219,9 @@ bool ItemShader_impl::activate_plugin_impl(const string& plugin_id) {
         }
     }
     if (changed) {
+        if (prevActive.isSet()) prevActive->activate(false);
+        if (active_plugin.isSet()) active_plugin->activate(true);
+
         AW_root *awr = AW_root::SINGLETON;
         if (awr) {
             int dim;
@@ -341,6 +353,17 @@ typedef vector<ItemShader_impl> Shaders;
 static Shaders registered;
 
 ItemShader *registerItemShader(AW_root *awr, BoundItemSel& itemtype, const char *unique_id, const char *description, const char *help_id, ReshadeCallback reshade_cb) {
+    /*! create a new ItemShader
+     *
+     * @param awr             the application root
+     * @param itemtype        type of item
+     * @param unique_id       unique ID
+     * @param description     short description (eg. "tree shading")
+     * @param help_id         helpfile
+     * @param reshade_cb      callback which updates the shading + refreshes the display
+     *
+     * (Note: the reshade_cb may be called very often! best is to trigger a temp. DB-awar like AWAR_TREE_RECOMPUTE)
+     */
     if (findItemShader(unique_id)) {
         is_assert(0); // duplicate shader id
         return NULL;
