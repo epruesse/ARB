@@ -87,6 +87,8 @@ struct MutableBoundItemSel {
         it_assert(gb_main);
         it_assert(&selector);
     }
+
+    GBDATA *get_any_item() const;
 };
 
 typedef const MutableBoundItemSel BoundItemSel;
