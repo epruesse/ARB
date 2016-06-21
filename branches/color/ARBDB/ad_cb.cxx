@@ -1423,7 +1423,7 @@ void TEST_hierarchy_callbacks() {
         GB_close(gb_main);
     }
 
-    GB_unlink("tmp.arb");
+    GB_unlink(DBNAME);
 }
 
 #endif // UNIT_TESTS
