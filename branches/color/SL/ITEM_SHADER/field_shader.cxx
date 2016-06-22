@@ -63,10 +63,10 @@ public:
 
     bool may_read() const { return fieldname != 0; } // false -> never will produce value
 
-    const float *calc_value(GBDATA *gb_item) const {
+    float calc_value(GBDATA *gb_item) const {
         /*! reads one field from passed item.
          *
-         * Returns NULL in the following cases:
+         * Returns NAN in the following cases:
          * - 'this' is a null-reader
          * - no item passed
          * - field is missing
@@ -80,23 +80,22 @@ public:
                 : GB_entry(gb_item, fieldname);
 
             if (gb_field) {
-                static float val;
-                val = 0.0;
+                float val = 0.0;
                 switch (GB_read_type(gb_field)) {
                     case GB_INT: val = GB_read_int(gb_field); break;
                     case GB_FLOAT: val = GB_read_float(gb_field); break;
                     default: {
                         if (!safe_atof(GB_read_as_string(gb_field), val)) {
-                            return NULL;
+                            return NAN;
                         }
                         break;
                     }
                 }
                 val = (val-min_value)*factor;
-                return &val;
+                return val;
             }
         }
-        return NULL;
+        return NAN;
     }
 
 };
@@ -123,7 +122,7 @@ public:
     ShadedValue calc_value(GBDATA *gb_item) const {
         switch (dim) {
             case 0: return ValueTuple::undefined();
-            case 1: return ValueTuple::pmake(reader[0].calc_value(gb_item));
+            case 1: return ValueTuple::make(reader[0].calc_value(gb_item));
         }
         is_assert(0); // unsupported dimension
         return ShadedValue();
@@ -347,7 +346,7 @@ ShaderPluginPtr makeItemFieldShader(BoundItemSel& itemtype) {
 
 #include <arbdbt.h>
 
-#define TEST_READER_READS(reader,species,expected) TEST_EXPECT_EQUAL(ValueTuple::pmake((reader).calc_value(species))->inspect(), expected)
+#define TEST_READER_READS(reader,species,expected) TEST_EXPECT_EQUAL(ValueTuple::make((reader).calc_value(species))->inspect(), expected)
 #define TEST_READER_UNDEF(reader,species)          TEST_READER_READS(reader, species, "<undef>")
 #define TEST_MULTI_READS(reader,species,expected)  TEST_EXPECT_EQUAL((reader).calc_value(species)->inspect(), expected)
 #define TEST_MULTI_UNDEF(reader,species)           TEST_MULTI_READS(reader,species, "<undef>")

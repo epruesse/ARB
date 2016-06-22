@@ -82,10 +82,7 @@ public:
 
     // ValueTuple factory:
     static ValueTuple *undefined();
-    static ValueTuple *make(float f); // @@@ add builders for 2 and 3 floats
-    static ValueTuple *pmake(const float *pf) { // @@@ add builders for 2 and 3 floats
-        return pf ? make(*pf) : undefined();
-    }
+    static ValueTuple *make(float f);
 
     // mix interface (main function + reverse visitors):
     virtual ValueTuple *mix(float my_ratio, const ValueTuple& other) const = 0;
