@@ -74,7 +74,7 @@ class FieldSelDef {
     std::string       awar_name;
     std::string       purpose;
     GBDATA           *gb_main;
-    ItemSelector&     selector;
+    ItemSelector&     selector; // @@@ gb_main + selector = BoundItemSel!
     long              type_filter;
     SelectableFields  field_filter;
 
