@@ -94,6 +94,9 @@ void AWT_canvas::init_device(AW_device *device) {
 }
 
 void AWT_canvas::recalc_size(bool adjust_scrollbars) {
+    AW_pos old_width  = worldinfo.r - worldinfo.l;
+    AW_pos old_height = worldinfo.b - worldinfo.t;
+
     GB_transaction  ta(this->gb_main);
     AW_device_size *size_device = aww->get_size_device(AW_MIDDLE_AREA);
 
@@ -109,7 +112,22 @@ void AWT_canvas::recalc_size(bool adjust_scrollbars) {
     size_device->get_size_information(&(this->worldinfo));
     rect = size_device->get_area_size();   // real world size (no offset)
 
-    if (adjust_scrollbars) set_scrollbars();
+    if (adjust_scrollbars) {
+        if (old_width>0) {
+            if (shift_x_to_fit<0) {
+                AW_pos new_width = worldinfo.r - worldinfo.l;
+                shift_x_to_fit *= new_width/old_width;
+            }
+        }
+        if (old_height>0) {
+            if (shift_y_to_fit<0) {
+                AW_pos new_height = worldinfo.b - worldinfo.t;
+                shift_y_to_fit *= new_height/old_height;
+            }
+        }
+
+        set_scrollbars();
+    }
 }
 
 void AWT_canvas::zoom_reset() {
@@ -329,10 +347,6 @@ static void clip_expose(AW_window *aww, AWT_canvas *scr,
     scr->gfx->show(device);
 }
 
-void AWT_expose_cb(UNFIXED, AWT_canvas *scr) {
-    scr->refresh();
-}
-
 void AWT_canvas::refresh() {
     AW_device *device = this->aww->get_device (AW_MIDDLE_AREA);
     device->clear(-1);
@@ -340,9 +354,11 @@ void AWT_canvas::refresh() {
                 this->rect.t, this->rect.b, 0, 0);
 }
 
+void AWT_expose_cb(UNFIXED, AWT_canvas *scr) {
+    scr->refresh();
+}
 void AWT_resize_cb(UNFIXED, AWT_canvas *scr) {
-    scr->zoom_reset();
-    AWT_expose_cb(NULL, scr);
+    scr->zoom_reset_and_refresh();
 }
 
 void AWT_GC_changed_cb(GcChange whatChanged, AWT_canvas *scr) {
@@ -350,10 +366,10 @@ void AWT_GC_changed_cb(GcChange whatChanged, AWT_canvas *scr) {
     switch (whatChanged) {
         case GC_COLOR_CHANGED:
         case GC_COLOR_GROUP_USE_CHANGED:
-            AWT_expose_cb(NULL, scr);
+            scr->refresh();
             break;
         case GC_FONT_CHANGED:
-            AWT_resize_cb(NULL, scr);
+            scr->recalc_size_and_refresh();
             break;
     }
 }
@@ -394,7 +410,7 @@ static bool handleZoomEvent(AWT_canvas *scr, AW_device *device, const AW_event& 
             Rectangle drag(scr->zoom_drag_sx, scr->zoom_drag_sy, scr->zoom_drag_ex, scr->zoom_drag_ey);
 
             scr->zoom(device, zoomIn, drag, screen, percent);
-            AWT_expose_cb(NULL, scr);
+            scr->refresh();
         }
     }
     else if (event.keycode == AW_KEY_ASCII && event.character == '0') { // reset zoom (as promised by MODE_TEXT_STANDARD_ZOOMMODE)
@@ -699,7 +715,6 @@ void AWT_canvas::scroll(int dx, int dy, bool dont_update_scrollbars) {
         // redraw stripes
         this->shift_x_to_fit -= dx/this->trans_to_fit;
         this->shift_y_to_fit -= dy/this->trans_to_fit;
-        AWT_expose_cb(NULL, this);
     }
     this->refresh();
 }
