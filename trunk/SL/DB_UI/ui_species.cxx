@@ -1235,7 +1235,7 @@ static void create_next_neighbours_vars(AW_root *aw_root) {
 
         aw_root->awar_string(AWAR_NN_RANGE_START, "")->add_callback(searchRel_awar_changed_cb);
         aw_root->awar_string(AWAR_NN_RANGE_END,   "")->add_callback(searchRel_awar_changed_cb);
-        aw_root->awar_int   (AWAR_NN_MAX_HITS,    10)->set_minmax(1, 1000)->add_callback(searchRel_awar_changed_cb);;
+        aw_root->awar_int   (AWAR_NN_MAX_HITS,    10)->set_minmax(0, 1000)->add_callback(searchRel_awar_changed_cb);;
         aw_root->awar_float (AWAR_NN_MIN_SCORE,   80)->set_minmax(0, 200)->add_callback(searchRel_awar_changed_cb);;
         
         aw_root->awar_int(AWAR_NN_SELECTED_HIT_COUNT,   0);

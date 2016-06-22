@@ -19,6 +19,10 @@ DESCRIPTION	Scans PT_SERVER database for the nearest relatives
                 See LINK{next_neighbours_common.hlp} for a description of the used algorithm
                 and common parameters.
 
+                See LINK{next_neighbours_listed.hlp} for the description of the parameters
+                    - 'Results'
+                    - 'Min. Score'
+
                 When you press the SEARCH button, the next relatives of the selected species are listed
                 in the Hits-box.
 
