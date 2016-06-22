@@ -48,16 +48,53 @@ void TEST_shaded_values() {
     TEST_EXPECT_EQUAL(half->mix(0.75, *val1)->inspect(), "(0.625)");
 
     // mix LinearTuple with NoTuple:
-    TEST_EXPECT_EQUAL(undef->mix(0.0, *half)->inspect(), "(0.500)");
-    TEST_EXPECT_EQUAL(undef->mix(1.0, *half)->inspect(), "(0.500)");
-    TEST_EXPECT_EQUAL(half->mix(0.1, *undef)->inspect(), "(0.500)");
+    TEST_EXPECT_EQUAL(undef->mix(INFINITY, *half)->inspect(), "(0.500)");
+    TEST_EXPECT_EQUAL(undef->mix(INFINITY, *half)->inspect(), "(0.500)");
+    TEST_EXPECT_EQUAL(half->mix(INFINITY, *undef)->inspect(), "(0.500)");
 
-    // @@@ tdd PlanarTuple
-    // @@@ tdd CubicTuple
-
-    // test NAN
+    // test NAN leads to undefined:
     ShadedValue novalue = ValueTuple::make(NAN);
     TEST_REJECT(novalue->is_defined());
+
+    ShadedValue noValuePair = ValueTuple::make(NAN, NAN);
+    TEST_REJECT(noValuePair->is_defined());
+
+    // PlanarTuple (basic test):
+    ShadedValue pval0 = ValueTuple::make(0, 0);
+    TEST_EXPECT(pval0->is_defined());
+    TEST_EXPECT(pval0->clone()->is_defined());
+    TEST_EXPECT_EQUAL(pval0->inspect(), "(0.000,0.000)");
+    // @@@ test range_offset of pval0
+
+    // PlanarTuple (mixing):
+    ShadedValue px = ValueTuple::make(1, 0);
+    ShadedValue py = ValueTuple::make(0, 1);
+
+    TEST_EXPECT_EQUAL(px->mix(INFINITY, *noValuePair)->inspect(), "(1.000,0.000)");
+    TEST_EXPECT_EQUAL(noValuePair->mix(INFINITY, *px)->inspect(), "(1.000,0.000)");
+    TEST_EXPECT_EQUAL(px->mix(0.5, *py)->inspect(), "(0.500,0.500)");
+
+    // PlanarTuple (partially defined):
+    ShadedValue PonlyX = ValueTuple::make(0.5, NAN);
+    ShadedValue PonlyY = ValueTuple::make(NAN, 0.5);
+
+    TEST_EXPECT(PonlyX->is_defined());
+    TEST_EXPECT(PonlyY->is_defined());
+
+    TEST_EXPECT_EQUAL(PonlyX->inspect(), "(0.500,nan)");
+    TEST_EXPECT_EQUAL(PonlyY->inspect(), "(nan,0.500)");
+
+    TEST_EXPECT_EQUAL(PonlyX->mix(INFINITY, *PonlyY)->inspect(), "(0.500,0.500)"); // mixed without using ratio
+    TEST_EXPECT_EQUAL(PonlyX->mix(0.5, *px)->inspect(), "(0.750,0.000)");
+    TEST_EXPECT_EQUAL(PonlyY->mix(0.5, *py)->inspect(), "(0.000,0.750)");
+    TEST_EXPECT_EQUAL(PonlyX->mix(0.5, *py)->inspect(), "(0.250,1.000)");
+    TEST_EXPECT_EQUAL(PonlyY->mix(0.5, *px)->inspect(), "(1.000,0.250)");
+    TEST_EXPECT_EQUAL(PonlyY->mix(0.25,*px)->inspect(), "(1.000,0.125)"); // ratio only affects y-coord (x-coord is undef in PonlyY!)
+    TEST_EXPECT_EQUAL(PonlyY->mix(0.75,*px)->inspect(), "(1.000,0.375)");
+
+
+
+    // @@@ tdd CubicTuple
 }
 
 #endif // UNIT_TESTS
@@ -79,6 +116,7 @@ public:
 
     // mixer:
     ValueTuple *reverse_mix(float, const LinearTuple& other) const OVERRIDE;
+    ValueTuple *reverse_mix(float, const PlanarTuple& other) const OVERRIDE;
     ValueTuple *mix(float, const ValueTuple& other) const OVERRIDE { return other.clone(); }
 };
 
@@ -114,17 +152,61 @@ public:
 #endif
 
     // mixer:
-    ValueTuple *reverse_mix(float, const NoTuple&) const OVERRIDE { return clone(); }
     ValueTuple *reverse_mix(float other_ratio, const LinearTuple& other) const OVERRIDE {
         return new LinearTuple(other_ratio*other.val + (1-other_ratio)*val);
     }
     ValueTuple *mix(float my_ratio, const ValueTuple& other) const OVERRIDE { return other.reverse_mix(my_ratio, *this); }
 };
 
+inline float mix_floats(float me, float my_ratio, float other) {
+    if (is_nan(me)) return other;
+    if (is_nan(other)) return me;
+    return my_ratio*me + (1-my_ratio)*other;
+}
+
+class PlanarTuple: public ValueTuple {
+    float val1, val2;
+
+public:
+    PlanarTuple(float val1_, float val2_) :
+        val1(val1_),
+        val2(val2_)
+    {
+        is_assert(!is_inf(val1));
+        is_assert(!is_inf(val2));
+        is_assert(!(is_nan(val1) && is_nan(val2))); // both NAN is unwanted
+    }
+    ~PlanarTuple() OVERRIDE {}
+
+    bool is_defined() const OVERRIDE { return true; }
+    ValueTuple *clone() const OVERRIDE { return new PlanarTuple(val1, val2); }
+    int range_offset() const OVERRIDE { // returns int-offset into range [0 .. AW_RANGE_COLORS[
+        is_assert(0); // @@@ impl missing
+        return -1;
+    }
+
+#if defined(UNIT_TESTS)
+    const char *inspect() const OVERRIDE {
+        static SmartCharPtr buf;
+        buf = GBS_global_string_copy("(%.3f,%.3f)", val1, val2);
+        return &*buf;
+    }
+#endif
+
+    // mixer:
+    ValueTuple *reverse_mix(float other_ratio, const PlanarTuple& other) const OVERRIDE {
+        return new PlanarTuple(mix_floats(other.val1, other_ratio, val1),
+                               mix_floats(other.val2, other_ratio, val2));
+    }
+    ValueTuple *mix(float my_ratio, const ValueTuple& other) const OVERRIDE { return other.reverse_mix(my_ratio, *this); }
+};
+
+
 // ---------------------------------
 //      mixer (late definition)
 
 ValueTuple *NoTuple::reverse_mix(float, const LinearTuple& other) const { return other.clone(); }
+ValueTuple *NoTuple::reverse_mix(float, const PlanarTuple& other) const { return other.clone(); }
 
 // -----------------
 //      factory
@@ -135,3 +217,7 @@ ValueTuple *ValueTuple::undefined() {
 ValueTuple *ValueTuple::make(float f) {
     return is_nan(f) ? undefined() : new LinearTuple(f);
 }
+ValueTuple *ValueTuple::make(float f1, float f2) {
+    return (is_nan(f1) && is_nan(f2)) ? undefined() : new PlanarTuple(f1, f2);
+}
+
