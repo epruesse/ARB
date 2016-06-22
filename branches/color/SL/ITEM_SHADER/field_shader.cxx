@@ -61,7 +61,7 @@ public:
         calc_factor();
     }
 
-    bool can_read() const { return fieldname != 0; }
+    bool may_read() const { return fieldname != 0; } // false -> never will produce value
 
     ShadedValue calc_value(GBDATA *gb_item) const { // @@@ return 'float*'?
         if (fieldname && gb_item) {
@@ -305,8 +305,7 @@ void TEST_FieldReader() {
     GBDATA   *gb_main = GB_open("nosuch.arb", "c");
     TEST_REJECT_NULL(gb_main);
 
-    GBDATA *gb_species;
-    GBDATA *gb_species_no_field;
+    GBDATA *gb_species, *gb_species2, *gb_species_outofbounds, *gb_species_no_field;
 
     const char *FIELD_FLOAT  = "float";
     const char *FIELD_INT    = "int";
@@ -314,13 +313,23 @@ void TEST_FieldReader() {
     {
         GB_transaction ta(gb_main);
 
-        gb_species          = GBT_find_or_create_species(gb_main, "test");  TEST_REJECT_NULL(gb_species);
-        gb_species_no_field = GBT_find_or_create_species(gb_main, "empty"); TEST_REJECT_NULL(gb_species_no_field);
+        gb_species             = GBT_find_or_create_species(gb_main, "test");  TEST_REJECT_NULL(gb_species);
+        gb_species2            = GBT_find_or_create_species(gb_main, "other"); TEST_REJECT_NULL(gb_species2);
+        gb_species_no_field    = GBT_find_or_create_species(gb_main, "empty"); TEST_REJECT_NULL(gb_species_no_field);
+        gb_species_outofbounds = GBT_find_or_create_species(gb_main, "outer"); TEST_REJECT_NULL(gb_species_outofbounds);
 
         GBDATA *gb_field;
         gb_field = GB_searchOrCreate_float (gb_species, FIELD_FLOAT,  0.25);        TEST_REJECT_NULL(gb_field);
         gb_field = GB_searchOrCreate_int   (gb_species, FIELD_INT,    50);          TEST_REJECT_NULL(gb_field);
         gb_field = GB_searchOrCreate_string(gb_species, FIELD_STRING, "200 units"); TEST_REJECT_NULL(gb_field);
+
+        gb_field = GB_searchOrCreate_float (gb_species2, FIELD_FLOAT,  0.9);     TEST_REJECT_NULL(gb_field);
+        gb_field = GB_searchOrCreate_int   (gb_species2, FIELD_INT,    99);      TEST_REJECT_NULL(gb_field);
+        gb_field = GB_searchOrCreate_string(gb_species2, FIELD_STRING, "175.9"); TEST_REJECT_NULL(gb_field);
+
+        gb_field = GB_searchOrCreate_float (gb_species_outofbounds, FIELD_FLOAT,  1.5);          TEST_REJECT_NULL(gb_field);
+        gb_field = GB_searchOrCreate_int   (gb_species_outofbounds, FIELD_INT,    9999);         TEST_REJECT_NULL(gb_field);
+        gb_field = GB_searchOrCreate_string(gb_species_outofbounds, FIELD_STRING, "-12345.678"); TEST_REJECT_NULL(gb_field);
     }
 
     FieldReader nullReader;
@@ -328,6 +337,10 @@ void TEST_FieldReader() {
     FieldReader floatReader  (FIELD_FLOAT,  1,   0); // reverse value-range!
     FieldReader intReader    (FIELD_INT,    0,   100);
     FieldReader stringReader (FIELD_STRING, 100, 250);
+
+    TEST_REJECT(nullReader.may_read());
+    TEST_EXPECT(missingReader.may_read());
+    TEST_EXPECT(stringReader.may_read());
 
     {
         GB_transaction ta(gb_main);
@@ -346,10 +359,22 @@ void TEST_FieldReader() {
         TEST_READER_READS(intReader,     gb_species, "(0.500)");
         TEST_READER_READS(stringReader,  gb_species, "(0.667)");
 
-        TEST_READER_UNDEF(floatReader,   gb_species_no_field); // species is missing all fields
+        TEST_READER_READS(floatReader,   gb_species2, "(0.100)");
+        TEST_READER_READS(intReader,     gb_species2, "(0.990)");
+        TEST_READER_READS(stringReader,  gb_species2, "(0.506)"); // 175 would be mid-range, 175.9 is a little bit above
+
+        // if values are outside of value-range -> they are scaled to range-size, but not bounded:
+        TEST_READER_READS(floatReader,   gb_species_outofbounds, "(-0.500)");
+        TEST_READER_READS(intReader,     gb_species_outofbounds, "(99.990)");
+        TEST_READER_READS(stringReader,  gb_species_outofbounds, "(-82.971)");
+
+        TEST_READER_UNDEF(floatReader,   gb_species_no_field); // species is missing all fields -> always undef
         TEST_READER_UNDEF(intReader,     gb_species_no_field);
         TEST_READER_UNDEF(stringReader,  gb_species_no_field);
     }
+
+    // @@@ tdd MultiFieldReader
+
     GB_close(gb_main);
 }
 
