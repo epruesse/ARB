@@ -217,8 +217,7 @@ public:
 
     virtual void show(AW_device *device) = 0;
 
-    /* init gcs, if any gc is changed you may call AWT_expose_cb(NULL, scr); or AWT_resize_cb(NULL, scr); */
-    virtual AW_gc_manager *init_devices(AW_window *, AW_device *, AWT_canvas *scr) = 0;
+    virtual AW_gc_manager *init_devices(AW_window *, AW_device *, AWT_canvas *scr) = 0; /* init gcs, if any gc is changed AWT_GC_changed_cb() is called */
 
     virtual void handle_command(AW_device *device, AWT_graphic_event& event) = 0;
     virtual void update_structure()                                          = 0; // called when exports.structure_change == 1
@@ -306,7 +305,7 @@ public:
 
     void refresh();
 
-    void recalc_size(bool adjust_scrollbars = true);
+    void recalc_size(bool adjust_scrollbars);
     void recalc_size_and_refresh() { recalc_size(true); refresh(); }
 
     void zoom_reset();
