@@ -34,6 +34,7 @@ field_shader.o: field_shader.h
 field_shader.o: item_shader.h
 field_shader.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
 field_shader.o: $(ARBHOME)/INCLUDE/ad_prot.h
+field_shader.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 field_shader.o: $(ARBHOME)/INCLUDE/arb_assert.h
 field_shader.o: $(ARBHOME)/INCLUDE/arb_core.h
 field_shader.o: $(ARBHOME)/INCLUDE/arb_error.h
@@ -43,6 +44,7 @@ field_shader.o: $(ARBHOME)/INCLUDE/arb_str.h
 field_shader.o: $(ARBHOME)/INCLUDE/arb_string.h
 field_shader.o: $(ARBHOME)/INCLUDE/arbdb.h
 field_shader.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+field_shader.o: $(ARBHOME)/INCLUDE/arbdbt.h
 field_shader.o: $(ARBHOME)/INCLUDE/arbtools.h
 field_shader.o: $(ARBHOME)/INCLUDE/attributes.h
 field_shader.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
@@ -58,6 +60,7 @@ field_shader.o: $(ARBHOME)/INCLUDE/cb.h
 field_shader.o: $(ARBHOME)/INCLUDE/cb_base.h
 field_shader.o: $(ARBHOME)/INCLUDE/cbtypes.h
 field_shader.o: $(ARBHOME)/INCLUDE/cxxforward.h
+field_shader.o: $(ARBHOME)/INCLUDE/downcast.h
 field_shader.o: $(ARBHOME)/INCLUDE/dupstr.h
 field_shader.o: $(ARBHOME)/INCLUDE/gccver.h
 field_shader.o: $(ARBHOME)/INCLUDE/item_sel_list.h
@@ -65,6 +68,7 @@ field_shader.o: $(ARBHOME)/INCLUDE/items.h
 field_shader.o: $(ARBHOME)/INCLUDE/smartptr.h
 field_shader.o: $(ARBHOME)/INCLUDE/static_assert.h
 field_shader.o: $(ARBHOME)/INCLUDE/test_global.h
+field_shader.o: $(ARBHOME)/INCLUDE/test_unit.h
 field_shader.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 item_shader.o: field_shader.h

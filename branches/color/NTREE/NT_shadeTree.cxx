@@ -18,7 +18,7 @@
 #define nt_assert(cond) arb_assert(cond)
 
 #if defined(DEVEL_RALF)
-#define IMPLEMENT_TEST_SHADER
+#define IMPLEMENT_TEST_SHADER // @@@ remove the test shader later
 #endif
 
 #if defined(IMPLEMENT_TEST_SHADER)

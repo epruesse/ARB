@@ -49,25 +49,21 @@ class FieldReader {
         factor     = span != 0.0 ? 1.0/span : 1/0.00001;
     }
 public:
-    FieldReader(const char *fieldname_) :
-        fieldname(fieldname_),
-        is_hkey(fieldname && strchr(fieldname, '/')),
-        min_value(0),
-        max_value(1)
-    {
-        calc_factor();
-    }
+    FieldReader() : fieldname(NULL) {}
 
-    void set_value_range(const float& min_val, const float& max_val) {
-        min_value = min_val;
-        max_value = max_val;
+    FieldReader(const char *fieldname_, float minVal, float maxVal) :
+        fieldname(fieldname_),
+        is_hkey(strchr(fieldname, '/')),
+        min_value(minVal),
+        max_value(maxVal)
+    {
+        is_assert(fieldname);
         calc_factor();
     }
 
     bool can_read() const { return fieldname != 0; }
-    const char *get_fieldname() const { return fieldname; }
 
-    ShadedValue calc_value(GBDATA *gb_item) const {
+    ShadedValue calc_value(GBDATA *gb_item) const { // @@@ return 'float*'?
         if (fieldname && gb_item) {
             GBDATA *gb_field = is_hkey
                 ? GB_search(gb_item, fieldname, GB_FIND)
@@ -107,7 +103,7 @@ class ItemFieldShader: public ShaderPlugin {
     const char *get_fieldname(int dim) const {
         // returns configured fieldname (or NULL)
         AW_root *awr = AW_root::SINGLETON;
-        if (awr->awar(AWAR_DIM_ACTIVE(dim))->read_int()) {
+        if (awr && awr->awar(AWAR_DIM_ACTIVE(dim))->read_int()) {
             const char *fname = awr->awar(AWAR_FIELD(dim))->read_char_pntr();
             if (strcmp(fname, NO_FIELD_SELECTED) != 0) {
                 return fname;
@@ -119,15 +115,14 @@ class ItemFieldShader: public ShaderPlugin {
     FieldReader *make_field_reader(int dim) const {
         AW_root *awr = AW_root::SINGLETON;
         if (awr) {
-            const char  *fieldname = get_fieldname(dim);
-            FieldReader *fr        = new FieldReader(fieldname);
-            if (fieldname) {
-                fr->set_value_range(atof(awr->awar(AWAR_VALUE_MIN(dim))->read_char_pntr()),
-                                    atof(awr->awar(AWAR_VALUE_MAX(dim))->read_char_pntr()));
+            const char *fieldname = get_fieldname(dim);
+            if (fieldname)  {
+                float minVal = atof(awr->awar(AWAR_VALUE_MIN(dim))->read_char_pntr());
+                float maxVal = atof(awr->awar(AWAR_VALUE_MAX(dim))->read_char_pntr());
+                return new FieldReader(fieldname, minVal, maxVal);
             }
-            return fr;
         }
-        return NULL;
+        return new FieldReader;
     }
 
     FieldReader& get_field_reader() const {
@@ -182,9 +177,8 @@ class ItemFieldShader: public ShaderPlugin {
         }
     }
     void add_used_fields(FieldSet& wanted) const {
-        FieldReader *freader = make_field_reader(0);
-        if (freader && freader->can_read()) wanted.insert(freader->get_fieldname());
-        delete freader;
+        const char *fname0 = get_fieldname(0);
+        if (fname0) wanted.insert(fname0);
     }
     void setup_db_callbacks(bool install) {
         FieldSet wanted;
@@ -294,3 +288,71 @@ ShaderPluginPtr makeItemFieldShader(BoundItemSel& itemtype) {
     return new ItemFieldShader(itemtype);
 }
 
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#ifndef TEST_UNIT_H
+#include <test_unit.h>
+#endif
+
+#include <arbdbt.h>
+
+#define TEST_READER_READS(reader,species,expected) TEST_EXPECT_EQUAL((reader).calc_value(species)->inspect(), expected)
+#define TEST_READER_UNDEF(reader,species)          TEST_READER_READS(reader, species, "<undef>")
+
+void TEST_FieldReader() {
+    GB_shell  shell;
+    GBDATA   *gb_main = GB_open("nosuch.arb", "c");
+    TEST_REJECT_NULL(gb_main);
+
+    GBDATA *gb_species;
+    GBDATA *gb_species_no_field;
+
+    const char *FIELD_FLOAT  = "float";
+    const char *FIELD_INT    = "int";
+    const char *FIELD_STRING = "string";
+    {
+        GB_transaction ta(gb_main);
+
+        gb_species          = GBT_find_or_create_species(gb_main, "test");  TEST_REJECT_NULL(gb_species);
+        gb_species_no_field = GBT_find_or_create_species(gb_main, "empty"); TEST_REJECT_NULL(gb_species_no_field);
+
+        GBDATA *gb_field;
+        gb_field = GB_searchOrCreate_float (gb_species, FIELD_FLOAT,  0.25);        TEST_REJECT_NULL(gb_field);
+        gb_field = GB_searchOrCreate_int   (gb_species, FIELD_INT,    50);          TEST_REJECT_NULL(gb_field);
+        gb_field = GB_searchOrCreate_string(gb_species, FIELD_STRING, "200 units"); TEST_REJECT_NULL(gb_field);
+    }
+
+    FieldReader nullReader;
+    FieldReader missingReader("missing",    0,   1);
+    FieldReader floatReader  (FIELD_FLOAT,  1,   0); // reverse value-range!
+    FieldReader intReader    (FIELD_INT,    0,   100);
+    FieldReader stringReader (FIELD_STRING, 100, 250);
+
+    {
+        GB_transaction ta(gb_main);
+
+        // expect undef if no species - no matter what reader is used (eg. zombie in tree)
+        TEST_READER_UNDEF(nullReader,    NULL);
+        TEST_READER_UNDEF(missingReader, NULL);
+        TEST_READER_UNDEF(floatReader,   NULL);
+        TEST_READER_UNDEF(intReader,     NULL);
+        TEST_READER_UNDEF(stringReader,  NULL);
+
+        TEST_READER_UNDEF(nullReader,    gb_species); // null reader always undef
+        TEST_READER_UNDEF(missingReader, gb_species); // expect undef if field is missing
+
+        TEST_READER_READS(floatReader,   gb_species, "(0.750)");
+        TEST_READER_READS(intReader,     gb_species, "(0.500)");
+        TEST_READER_READS(stringReader,  gb_species, "(0.667)");
+
+        TEST_READER_UNDEF(floatReader,   gb_species_no_field); // species is missing all fields
+        TEST_READER_UNDEF(intReader,     gb_species_no_field);
+        TEST_READER_UNDEF(stringReader,  gb_species_no_field);
+    }
+    GB_close(gb_main);
+}
+
+#endif // UNIT_TESTS
+
+// --------------------------------------------------------------------------------
