@@ -63,7 +63,17 @@ public:
 
     bool may_read() const { return fieldname != 0; } // false -> never will produce value
 
-    const float *calc_value_WANTED(GBDATA *gb_item) const { // @@@ rename -> calc_value later
+    const float *calc_value(GBDATA *gb_item) const {
+        /*! reads one field from passed item.
+         *
+         * Returns NULL in the following cases:
+         * - 'this' is a null-reader
+         * - no item passed
+         * - field is missing
+         * - STRING field contains no numeric data
+         *
+         * Otherwise the value is scaled (but not limited) to the value range.
+         */
         if (fieldname && gb_item) {
             GBDATA *gb_field = is_hkey
                 ? GB_search(gb_item, fieldname, GB_FIND)
@@ -89,10 +99,6 @@ public:
         return NULL;
     }
 
-    ShadedValue calc_value(GBDATA *gb_item) const { // @@@ eliminate, ShadedValue calculation shall be handled by MultiFieldReader
-        const float *val = calc_value_WANTED(gb_item);
-        return val ? ValueTuple::make(*val) : ValueTuple::undefined();
-    }
 };
 
 class MultiFieldReader {
@@ -117,7 +123,7 @@ public:
     ShadedValue calc_value(GBDATA *gb_item) const {
         switch (dim) {
             case 0: return ValueTuple::undefined();
-            case 1: return reader[0].calc_value(gb_item);
+            case 1: return ValueTuple::pmake(reader[0].calc_value(gb_item));
         }
         is_assert(0); // unsupported dimension
         return ShadedValue();
@@ -341,10 +347,10 @@ ShaderPluginPtr makeItemFieldShader(BoundItemSel& itemtype) {
 
 #include <arbdbt.h>
 
-#define TEST_READER_READS(reader,species,expected) TEST_EXPECT_EQUAL((reader).calc_value(species)->inspect(), expected)
+#define TEST_READER_READS(reader,species,expected) TEST_EXPECT_EQUAL(ValueTuple::pmake((reader).calc_value(species))->inspect(), expected)
 #define TEST_READER_UNDEF(reader,species)          TEST_READER_READS(reader, species, "<undef>")
-#define TEST_MULTI_READS(reader,species,expected)  TEST_READER_READS(reader,species,expected) // just an alias yet
-#define TEST_MULTI_UNDEF(reader,species)           TEST_READER_UNDEF(reader,species)          // just an alias yet
+#define TEST_MULTI_READS(reader,species,expected)  TEST_EXPECT_EQUAL((reader).calc_value(species)->inspect(), expected)
+#define TEST_MULTI_UNDEF(reader,species)           TEST_MULTI_READS(reader,species, "<undef>")
 
 void TEST_FieldReader() {
     GB_shell  shell;

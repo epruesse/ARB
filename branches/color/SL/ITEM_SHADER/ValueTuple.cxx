@@ -54,6 +54,16 @@ void TEST_shaded_values() {
 
     // @@@ tdd PlanarTuple
     // @@@ tdd CubicTuple
+
+    // test pmake
+    ShadedValue Pundef = ValueTuple::pmake(NULL);
+    TEST_REJECT(Pundef->is_defined());
+    TEST_EXPECT_EQUAL(Pundef->inspect(), "<undef>");
+
+    float       f    = 0.75;
+    ShadedValue Pdef = ValueTuple::pmake(&f);
+    TEST_EXPECT(Pdef->is_defined());
+    TEST_EXPECT_EQUAL(Pdef->inspect(), "(0.750)");
 }
 
 #endif // UNIT_TESTS
