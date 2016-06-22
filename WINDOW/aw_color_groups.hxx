@@ -54,6 +54,7 @@
 
 void  AW_init_color_group_defaults(const char *for_program);
 bool  AW_color_groups_active();
+const char *AW_get_color_groups_active_awarname();
 char *AW_get_color_group_name(AW_root *awr, int color_group);
 
 // ----------------------
