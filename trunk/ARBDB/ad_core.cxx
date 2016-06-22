@@ -55,16 +55,24 @@ inline void GB_MAIN_TYPE::trigger_change_callbacks(GBDATA *gbd, GB_CB_TYPE type)
 void GB_MAIN_TYPE::trigger_delete_callbacks(GBDATA *gbd) {
     gb_callback_list *cbl = gbd->get_callbacks();
     if (cbl || deleteCBs.hierarchy_cbs) {
-        gb_assert(gbd->ext);
+        gb_assert(implicated(cbl, gbd->ext)); // gbd->ext may be NULL if gbd has no callback installed
 
-        gbd->ext->callback = NULL;
-        if (!gbd->ext->old && gbd->type() != GB_DB) {
+        if (gbd->ext) {
+            gbd->ext->callback = NULL;
+            if (!gbd->ext->old && gbd->type() != GB_DB) {
+                gb_save_extern_data_in_ts(gbd->as_entry());
+            }
+        }
+        else if (gbd->type() != GB_DB) {
+            gbd->create_extended();
+            // gbd->ext->old always NULL here
             gb_save_extern_data_in_ts(gbd->as_entry());
         }
 
+        gb_assert(implicated(!gbd->ext, gbd->is_container()));
         deleteCBs.trigger(gbd, GB_CB_DELETE, cbl);
 
-        gb_assert(gbd->ext->callback == NULL);
+        gb_assert(implicated(gbd->ext, gbd->ext->callback == NULL));
         delete cbl;
     }
 }

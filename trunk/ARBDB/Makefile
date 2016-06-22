@@ -160,6 +160,7 @@ ad_cb.o: gb_tune.h
 ad_cb.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ad_cb.o: $(ARBHOME)/INCLUDE/arb_core.h
 ad_cb.o: $(ARBHOME)/INCLUDE/arb_error.h
+ad_cb.o: $(ARBHOME)/INCLUDE/arb_file.h
 ad_cb.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ad_cb.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 ad_cb.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
