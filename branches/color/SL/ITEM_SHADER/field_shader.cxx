@@ -63,31 +63,67 @@ public:
 
     bool may_read() const { return fieldname != 0; } // false -> never will produce value
 
-    ShadedValue calc_value(GBDATA *gb_item) const { // @@@ return 'float*'?
+    const float *calc_value_WANTED(GBDATA *gb_item) const { // @@@ rename -> calc_value later
         if (fieldname && gb_item) {
             GBDATA *gb_field = is_hkey
                 ? GB_search(gb_item, fieldname, GB_FIND)
                 : GB_entry(gb_item, fieldname);
 
             if (gb_field) {
-                float val = 0.0;
+                static float val;
+                val = 0.0;
                 switch (GB_read_type(gb_field)) {
                     case GB_INT: val = GB_read_int(gb_field); break;
                     case GB_FLOAT: val = GB_read_float(gb_field); break;
                     default: {
                         if (!safe_atof(GB_read_as_string(gb_field), val)) {
-                            return ValueTuple::undefined();
+                            return NULL;
                         }
                         break;
                     }
                 }
                 val = (val-min_value)*factor;
-                return ValueTuple::make(val);
+                return &val;
             }
         }
-        return ValueTuple::undefined();
+        return NULL;
+    }
+
+    ShadedValue calc_value(GBDATA *gb_item) const { // @@@ eliminate, ShadedValue calculation shall be handled by MultiFieldReader
+        const float *val = calc_value_WANTED(gb_item);
+        return val ? ValueTuple::make(*val) : ValueTuple::undefined();
     }
 };
+
+class MultiFieldReader {
+    FieldReader reader[3];
+    int         dim;
+
+public:
+    MultiFieldReader() :
+        dim(0)
+    {}
+
+    void add_reader(const FieldReader& added) {
+        if (added.may_read()) {
+            is_assert(dim<3); // hardcoded limit
+            reader[dim++] = added;
+        }
+    }
+    int get_dimension() const {
+        return dim;
+    }
+
+    ShadedValue calc_value(GBDATA *gb_item) const {
+        switch (dim) {
+            case 0: return ValueTuple::undefined();
+            case 1: return reader[0].calc_value(gb_item);
+        }
+        is_assert(0); // unsupported dimension
+        return ShadedValue();
+    }
+};
+
 
 typedef set<string> FieldSet;
 
@@ -97,8 +133,8 @@ class ItemFieldShader: public ShaderPlugin {
 
     RefPtr<AW_window> aw_config;
 
-    mutable string                item_dbpath;
-    mutable SmartPtr<FieldReader> reader;
+    mutable string                     item_dbpath;
+    mutable SmartPtr<MultiFieldReader> reader;
 
     const char *get_fieldname(int dim) const {
         // returns configured fieldname (or NULL)
@@ -112,21 +148,29 @@ class ItemFieldShader: public ShaderPlugin {
         return NULL;
     }
 
-    FieldReader *make_field_reader(int dim) const {
+    FieldReader get_dimension_reader(int dim) const {
         AW_root *awr = AW_root::SINGLETON;
         if (awr) {
             const char *fieldname = get_fieldname(dim);
             if (fieldname)  {
                 float minVal = atof(awr->awar(AWAR_VALUE_MIN(dim))->read_char_pntr());
                 float maxVal = atof(awr->awar(AWAR_VALUE_MAX(dim))->read_char_pntr());
-                return new FieldReader(fieldname, minVal, maxVal);
+                return FieldReader(fieldname, minVal, maxVal);
             }
         }
-        return new FieldReader;
+        return FieldReader();
     }
 
-    FieldReader& get_field_reader() const {
-        if (reader.isNull()) reader = make_field_reader(0);
+    MultiFieldReader *make_multi_field_reader() const {
+        MultiFieldReader *multi = new MultiFieldReader;
+        for (int dim = 0; dim<get_max_dimension(); ++dim) {
+            multi->add_reader(get_dimension_reader(dim));
+        }
+        return multi;
+    }
+
+    MultiFieldReader& get_field_reader() const {
+        if (reader.isNull()) reader = make_multi_field_reader();
         return *reader;
     }
 
@@ -299,6 +343,8 @@ ShaderPluginPtr makeItemFieldShader(BoundItemSel& itemtype) {
 
 #define TEST_READER_READS(reader,species,expected) TEST_EXPECT_EQUAL((reader).calc_value(species)->inspect(), expected)
 #define TEST_READER_UNDEF(reader,species)          TEST_READER_READS(reader, species, "<undef>")
+#define TEST_MULTI_READS(reader,species,expected)  TEST_READER_READS(reader,species,expected) // just an alias yet
+#define TEST_MULTI_UNDEF(reader,species)           TEST_READER_UNDEF(reader,species)          // just an alias yet
 
 void TEST_FieldReader() {
     GB_shell  shell;
@@ -373,7 +419,21 @@ void TEST_FieldReader() {
         TEST_READER_UNDEF(stringReader,  gb_species_no_field);
     }
 
-    // @@@ tdd MultiFieldReader
+    // @@@ tdd MultiFieldReader!
+
+    MultiFieldReader multi;        TEST_EXPECT_EQUAL(multi.get_dimension(), 0);
+    multi.add_reader(nullReader);  TEST_EXPECT_EQUAL(multi.get_dimension(), 0);
+    multi.add_reader(floatReader); TEST_EXPECT_EQUAL(multi.get_dimension(), 1);
+
+    {
+        GB_transaction ta(gb_main);
+        
+        // only floatReader added yet -> should behave like floatReader did above:
+        TEST_MULTI_READS(multi, gb_species,             "(0.750)");
+        TEST_MULTI_READS(multi, gb_species2,            "(0.100)");
+        TEST_MULTI_READS(multi, gb_species_outofbounds, "(-0.500)");
+        TEST_MULTI_UNDEF(multi, gb_species_no_field);
+    }
 
     GB_close(gb_main);
 }
