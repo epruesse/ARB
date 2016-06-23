@@ -55,12 +55,26 @@ public:
 
 class AW_rgb_normalized {
     float R, G, B;
+
+    static bool is_normal(const float& f) { return f >= 0.0 && f<=1.0; }
+    static const float& normal(const float& f) { aw_assert(is_normal(f)); return f; }
+
+protected:
+    AW_rgb_normalized(void*, float red, float green, float blue) : // accepts any values
+        R(red),
+        G(green),
+        B(blue)
+    {}
 public:
-    AW_rgb_normalized(float red, float green, float blue) : R(red), G(green), B(blue) {}
+    AW_rgb_normalized(float red, float green, float blue) :
+        R(normal(red)),
+        G(normal(green)),
+        B(normal(blue))
+    {}
     explicit AW_rgb_normalized(const AW_rgb16& o) :
-        R(o.r()/AW_rgb16::MAX),
-        G(o.g()/AW_rgb16::MAX),
-        B(o.b()/AW_rgb16::MAX)
+        R(normal(o.r()/AW_rgb16::MAX)),
+        G(normal(o.g()/AW_rgb16::MAX)),
+        B(normal(o.b()/AW_rgb16::MAX))
     {}
 #if defined(Cxx11)
     explicit AW_rgb_normalized(const char *colorname) : AW_rgb_normalized(AW_rgb16(colorname)) {}
@@ -74,6 +88,44 @@ public:
 };
 
 inline AW_rgb16::AW_rgb16(const AW_rgb_normalized& o) : R(o.r()*MAX), G(o.g()*MAX), B(o.b()*MAX) {}
+
+// ---------------------------
+//      color calculation
+//
+// Note: avoids color overflows (eg. white cannot get any whiter, black cannot get any blacker)
+
+class AW_rgb_diff : private AW_rgb_normalized {
+public:
+    AW_rgb_diff(float red, float green, float blue) : AW_rgb_normalized(NULL, red, green, blue) {}
+
+    float r() const { return AW_rgb_normalized::r(); }
+    float g() const { return AW_rgb_normalized::g(); }
+    float b() const { return AW_rgb_normalized::b(); }
+};
+
+inline AW_rgb_diff operator-(const AW_rgb_normalized& c1, const AW_rgb_normalized& c2) {
+    return AW_rgb_diff(c1.r()-c2.r(),
+                       c1.g()-c2.g(),
+                       c1.b()-c2.b());
+}
+inline AW_rgb_diff operator*(const AW_rgb_diff& d, const float& f) { return AW_rgb_diff(d.r()*f, d.g()*f, d.b()*f); }
+inline AW_rgb_diff operator*(const float& f, const AW_rgb_diff& d) { return d*f; }
+inline AW_rgb_diff operator-(const AW_rgb_diff& d) { return d*-1.0; }
+
+inline float avoid_overflow(float f) { return f<0.0 ? 0.0 : (f>1.0 ? 1.0 : f); }
+
+inline AW_rgb_normalized operator+(const AW_rgb_normalized& col, const AW_rgb_diff& off) {
+    return AW_rgb_normalized(avoid_overflow(col.r()+off.r()),
+                             avoid_overflow(col.g()+off.g()),
+                             avoid_overflow(col.b()+off.b()));
+}
+inline AW_rgb_normalized operator-(const AW_rgb_normalized& col, const AW_rgb_diff& off) { return col + -off; }
+
+// allow to calculate directly with AW_rgb16:
+inline AW_rgb_diff operator-(const AW_rgb16& c1, const AW_rgb16& c2) { return AW_rgb_normalized(c1)-AW_rgb_normalized(c2); }
+inline AW_rgb16 operator+(const AW_rgb16& col, const AW_rgb_diff& off) { return AW_rgb16(AW_rgb_normalized(col)+off); }
+inline AW_rgb16 operator-(const AW_rgb16& col, const AW_rgb_diff& off) { return AW_rgb16(AW_rgb_normalized(col)-off); }
+
 
 #if defined(ARB_MOTIF)
 typedef unsigned long AW_rgb; // =XColor.pixel

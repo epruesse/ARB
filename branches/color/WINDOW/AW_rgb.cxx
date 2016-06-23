@@ -135,6 +135,38 @@ void TEST_rgb() {
 #endif
 }
 
+void TEST_rgb_diff() {
+    AW_rgb16 orange("#f80");
+    AW_rgb16 blue("#004");
+
+    AW_rgb_diff blue2orange = orange - blue;
+    AW_rgb16    calc_orange = blue + blue2orange;
+    TEST_EXPECT(calc_orange == orange);
+
+    AW_rgb_diff orange2blue = -blue2orange;
+    AW_rgb16    calc_blue   = orange + orange2blue;
+    TEST_EXPECT(calc_blue   == blue);
+
+    for (float part = 0.1; part<1.0; part += 0.1) {
+        AW_rgb16 mix1 = orange +     part * orange2blue;
+        AW_rgb16 mix2 = blue   + (1-part) * blue2orange;
+        TEST_EXPECT(mix1 == mix2);
+    }
+
+    // check that color calculation does not overflow:
+    AW_rgb16    black("#000");
+    AW_rgb16    white("#fff");
+    AW_rgb_diff black2white = white-black;
+
+    AW_rgb16 whiter = white + black2white;
+    TEST_EXPECT_EQUAL(whiter.ascii(), "#ffffffffffff");
+    TEST_EXPECT(whiter == white);
+
+    AW_rgb16 blacker = black - black2white;
+    TEST_EXPECT_EQUAL(blacker.ascii(), "#000000000000");
+    TEST_EXPECT(blacker == black);
+}
+
 #endif // UNIT_TESTS
 
 // --------------------------------------------------------------------------------
