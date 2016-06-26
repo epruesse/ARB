@@ -2,13 +2,7 @@
 
 .SUFFIXES: .o .c .cxx .hxx .depend
 
-C_OBJECTS = 
-CPP_OBJECTS = \
-	TreeDisplay.o \
-	irstree_display.o \
-	TreeCallbacks.o \
-
-OBJECTS=$(C_OBJECTS) $(CPP_OBJECTS)
+OBJECTS=$(subst .cxx,.o,$(wildcard *.cxx))
 
 $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
