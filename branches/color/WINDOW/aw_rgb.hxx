@@ -11,14 +11,20 @@
 #ifndef AW_RGB_HXX
 #define AW_RGB_HXX
 
-#ifndef _STDINT_H
-#include <stdint.h>
-#endif
 #ifndef CXXFORWARD_H
 #include <cxxforward.h>
 #endif
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
+#endif
+#ifndef _STDINT_H
+#include <stdint.h>
+#endif
+#ifndef _GLIBCXX_CMATH
+#include <cmath>
+#endif
+#ifndef _GLIBCXX_ALGORITHM
+#include <algorithm>
 #endif
 
 #ifndef aw_assert
@@ -101,6 +107,12 @@ public:
     float r() const { return AW_rgb_normalized::r(); }
     float g() const { return AW_rgb_normalized::g(); }
     float b() const { return AW_rgb_normalized::b(); }
+
+    AW_rgb_diff abs() const {
+        return AW_rgb_diff(fabs(r()),
+                           fabs(g()),
+                           fabs(b()));
+    }
 };
 
 inline AW_rgb_diff operator-(const AW_rgb_normalized& c1, const AW_rgb_normalized& c2) {
@@ -108,10 +120,24 @@ inline AW_rgb_diff operator-(const AW_rgb_normalized& c1, const AW_rgb_normalize
                        c1.g()-c2.g(),
                        c1.b()-c2.b());
 }
+
+// AW_rgb_diff (add, scale, negate)
+inline AW_rgb_diff operator+(const AW_rgb_diff& d1, const AW_rgb_diff& d2) {
+    return AW_rgb_diff(d1.r()+d2.r(),
+                       d1.g()+d2.g(),
+                       d1.b()+d2.b());
+}
 inline AW_rgb_diff operator*(const AW_rgb_diff& d, const float& f) { return AW_rgb_diff(d.r()*f, d.g()*f, d.b()*f); }
 inline AW_rgb_diff operator*(const float& f, const AW_rgb_diff& d) { return d*f; }
 inline AW_rgb_diff operator-(const AW_rgb_diff& d) { return d*-1.0; }
 
+inline AW_rgb_diff max(const AW_rgb_diff& d1, const AW_rgb_diff& d2) {
+    return AW_rgb_diff(std::max(d1.r(), d2.r()),
+                       std::max(d1.g(), d2.g()),
+                       std::max(d1.b(), d2.b()));
+}
+
+// modify color using diff:
 inline float avoid_overflow(float f) { return f<0.0 ? 0.0 : (f>1.0 ? 1.0 : f); }
 
 inline AW_rgb_normalized operator+(const AW_rgb_normalized& col, const AW_rgb_diff& off) {

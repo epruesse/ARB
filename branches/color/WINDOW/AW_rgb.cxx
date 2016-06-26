@@ -74,10 +74,18 @@ const char *AW_rgb16::ascii() const {
 #include <test_unit.h>
 #endif
 
+#include <arb_msg.h>
+
 #define TEST_ASCII_COLOR_CONVERT(i,o) TEST_EXPECT_EQUAL(AW_rgb16(i).ascii(),o)
 #define TEST_ASCII_COLOR_IDENT(c)     TEST_ASCII_COLOR_CONVERT(c,c);
 
 #define TEST_NORMALIZED_CONVERSION(c) TEST_EXPECT_EQUAL(AW_rgb16(AW_rgb_normalized(AW_rgb16(c))).ascii(), c);
+
+#define TEST_NORMALIZED_CONTAINS(col,expected) TEST_EXPECT_EQUAL(GBS_global_string("(%.2f,%.2f,%.2f)",                  \
+                                                                                   (col).r(), (col).g(), (col).b()),    \
+                                                                 expected)
+
+#define TEST_DIFF_CONTAINS(diff,expected) TEST_NORMALIZED_CONTAINS(diff,expected)
 
 void TEST_rgb() {
     // Note: more related tests in AW_preset.cxx@RGB_TESTS
@@ -165,6 +173,47 @@ void TEST_rgb_diff() {
     AW_rgb16 blacker = black - black2white;
     TEST_EXPECT_EQUAL(blacker.ascii(), "#000000000000");
     TEST_EXPECT(blacker == black);
+
+    // summarized diff:
+    AW_rgb16 red("#f00");
+    AW_rgb16 green("#0f0");
+
+    AW_rgb_diff blue2red   = red-blue;
+    AW_rgb_diff blue2green = green-blue;
+
+    TEST_DIFF_CONTAINS(blue2red,   "(1.00,0.00,-0.27)");
+    TEST_DIFF_CONTAINS(blue2green, "(0.00,1.00,-0.27)");
+    TEST_DIFF_CONTAINS(blue2green.abs(), "(0.00,1.00,0.27)");
+
+    {
+        AW_rgb_diff sum        = blue2red       + blue2green;
+        AW_rgb_diff abssum     = blue2red.abs() + blue2green.abs();
+        AW_rgb_diff maxabsdiff = max(blue2red.abs(), blue2green.abs());
+
+        TEST_DIFF_CONTAINS(sum,        "(1.00,1.00,-0.53)");
+        TEST_DIFF_CONTAINS(abssum,     "(1.00,1.00,0.53)");
+        TEST_DIFF_CONTAINS(maxabsdiff, "(1.00,1.00,0.27)");
+    }
+
+    AW_rgb16 magenta("#f0f");
+    AW_rgb16 cyan("#0ff");
+
+    AW_rgb_diff orange2magenta = magenta-orange;
+    AW_rgb_diff orange2cyan    = cyan-orange;
+
+    TEST_DIFF_CONTAINS(orange2magenta, "(0.00,-0.53,1.00)");
+    TEST_DIFF_CONTAINS(orange2cyan,    "(-1.00,0.47,1.00)");
+
+    {
+        AW_rgb_diff sum        = orange2magenta       + orange2cyan;
+        AW_rgb_diff abssum     = orange2magenta.abs() + orange2cyan.abs();
+        AW_rgb_diff maxabsdiff = max(orange2magenta.abs(), orange2cyan.abs());
+
+        TEST_DIFF_CONTAINS(sum,        "(-1.00,-0.07,2.00)");
+        TEST_DIFF_CONTAINS(abssum,     "(1.00,1.00,2.00)");
+        TEST_DIFF_CONTAINS(maxabsdiff, "(1.00,0.53,1.00)");
+    }
+
 }
 
 #endif // UNIT_TESTS
