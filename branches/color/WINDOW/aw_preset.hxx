@@ -14,6 +14,9 @@
 #ifndef AW_WINDOW_HXX
 #include "aw_window.hxx"
 #endif
+#ifndef AW_POSITION_HXX
+#include "aw_position.hxx"
+#endif
 #ifndef ATTRIBUTES_H
 #include <attributes.h>
 #endif
@@ -53,6 +56,9 @@ AW_window *AW_create_gc_window_named(AW_root * aw_root, AW_gc_manager *gcman_par
 
 int AW_get_drag_gc(AW_gc_manager *gcman);
 void AW_copy_GC_colors(AW_root *aw_root, const char *source_gcman, const char *dest_gcman, const char *id0, ...) __ATTR__SENTINEL;
+
+void AW_displayColorRange(AW_device *device, int first_range_gc, AW::Position start, AW_pos xsize, AW_pos ysize);
+
 
 #else
 #error aw_preset.hxx included twice

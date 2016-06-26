@@ -71,6 +71,7 @@ SQ_functions.o: $(ARBHOME)/INCLUDE/arbtools.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/attributes.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+SQ_functions.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/BI_helix.hxx

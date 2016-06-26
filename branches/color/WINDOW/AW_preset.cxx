@@ -39,6 +39,7 @@
 
 using std::string;
 
+#define AWAR_RANGE_OVERLAY       "tmp/GCS/range_overlay"
 #define AWAR_COLOR_GROUPS_PREFIX "color_groups"
 #define AWAR_COLOR_GROUPS_USE    AWAR_COLOR_GROUPS_PREFIX "/use"  // int : whether to use the colors in display or not
 #define GC_AWARNAME_TPL_PREFIX   "GCS/%s/MANAGE_GCS/%s"
@@ -208,6 +209,7 @@ enum gc_range_type {
 };
 
 class gc_range {
+    string        name; // name of range shown in config window
     gc_range_type type;
 
     int index;       // in range-array of AW_gc_manager
@@ -215,7 +217,8 @@ class gc_range {
     int gc_index;    // of first support color in GCs-array of AW_gc_manager
 
 public:
-    gc_range(gc_range_type type_, int index_, int gc_index_) :
+    gc_range(const string& name_, gc_range_type type_, int index_, int gc_index_) :
+        name(name_),
         type(type_),
         index(index_),
         color_count(0),
@@ -226,6 +229,9 @@ public:
     void update_colors(const AW_gc_manager *gcman, int changed_color) const;
 
     AW_rgb_normalized get_color(int idx, const AW_gc_manager *gcman) const;
+
+    const string& get_name() const { return name; }
+    gc_range_type get_type() const { return type; }
 };
 
 // --------------------
@@ -322,7 +328,7 @@ public:
         update_gc_color_internal(first_range_gc()+idx, color);
     }
 
-    void create_gc_buttons(AW_window *aww, bool for_colorgroups);
+    void create_gc_buttons(AW_window *aww, gc_type for_gc_type);
 
     void set_changed_cb(const GcChangedCallback& ccb) { changed_cb = ccb; }
     void trigger_changed_cb(GcChange whatChanged) const {
@@ -575,6 +581,9 @@ static void color_group_use_changed_cb(AW_root *awr, AW_gc_manager *gcmgr) {
     AW_gc_manager::use_color_groups = awr->awar(AWAR_COLOR_GROUPS_USE)->read_int();
     gcmgr->trigger_changed_cb(GC_COLOR_GROUP_USE_CHANGED);
 }
+static void range_overlay_changed_cb(AW_root *, AW_gc_manager *gcmgr) {
+    gcmgr->trigger_changed_cb(GC_COLOR_GROUP_USE_CHANGED);
+}
 
 // ----------------------------
 //      define color-ranges
@@ -605,7 +614,7 @@ void AW_gc_manager::add_gc_range(const char *gc_description) {
             }
 
             if (!error) {
-                gc_range range(rtype, color_ranges.size(), GCs.size());
+                gc_range range(range_name, rtype, color_ranges.size(), GCs.size());
 
                 const char *color_start = colon+1;
                 comma                   = strchr(color_start, ',');
@@ -632,7 +641,7 @@ void AW_gc_manager::init_color_ranges(int& gc) const {
         int last_gc = gc + AW_RANGE_COLORS-1;
         while (gc<=last_gc) allocate_gc(gc++);
 
-        const int USED_RANGE = 0; // @@@ should use active color-range! ARB should remember last active range somehow
+        const unsigned USED_RANGE = 0; // @@@ should use active color-range! ARB should remember last active range somehow
         aw_assert(USED_RANGE<color_ranges.size());
 
         const gc_range& active_range = color_ranges[USED_RANGE];
@@ -870,6 +879,8 @@ AW_gc_manager *AW_manage_GC(AW_window                *aww,
         AW_gc_manager::use_color_groups = awar_useGroups->read_int();
     }
 
+    aw_root->awar_int(AWAR_RANGE_OVERLAY, 0)->add_callback(makeRootCallback(range_overlay_changed_cb, gcmgr));
+
     gcmgr->init_color_ranges(gc);
     gcmgr->init_all_fonts();
 
@@ -974,13 +985,33 @@ static const int COLOR_BUTTON_LEN = 10;
 static const int FONT_BUTTON_LEN  = COLOR_BUTTON_LEN+STD_LABEL_LEN+1;
 // => color+font has ~same length as 2 colors (does not work for color groups and does not work at all in gtk)
 
-void AW_gc_manager::create_gc_buttons(AW_window *aws, bool for_colorgroups) {
-    for (int idx = for_colorgroups ? first_colorgroup_idx : 0; idx<int(GCs.size()); ++idx) {
+void AW_gc_manager::create_gc_buttons(AW_window *aws, gc_type for_gc_type) {
+    for (int idx = 0; idx<int(GCs.size()); ++idx) {
         const gc_desc& gcd = GCs[idx];
 
-        if (gcd.is_color_group() != for_colorgroups) continue;
+        if (gcd.is_color_group())        { if (for_gc_type != GC_TYPE_GROUP) continue; }
+        else if (gcd.belongs_to_range()) { if (for_gc_type != GC_TYPE_RANGE) continue; }
+        else                             { if (for_gc_type != GC_TYPE_NORMAL) continue; }
 
-        if (for_colorgroups) {
+        if (for_gc_type == GC_TYPE_RANGE) {
+            if (gcd.get_color_index() == 0) { // first color of range
+                const gc_range& range = color_ranges[gcd.get_range_index()];
+
+                const char *type_info = NULL;
+                switch (range.get_type()) {
+                    case GC_RANGE_LINEAR: type_info  = "linear 1D range"; break;
+                    case GC_RANGE_PLANAR: type_info  = "planar 2D range"; break;
+                    case GC_RANGE_INVALID: type_info = "invalid range "; aw_assert(0); break;
+                }
+
+                const char *range_headline = GBS_global_string("%s (%s)", range.get_name().c_str(), type_info);
+                aws->button_length(60);
+                aws->create_button(NULL, range_headline, 0, "+");
+                aws->at_newline();
+            }
+        }
+
+        if (for_gc_type == GC_TYPE_GROUP) {
             int color_group_no = idx-first_colorgroup_idx+1;
             char buf[5];
             sprintf(buf, "%2i:", color_group_no); // @@@ shall this short label be stored in gc_desc?
@@ -1003,10 +1034,10 @@ void AW_gc_manager::create_gc_buttons(AW_window *aws, bool for_colorgroups) {
     }
 }
 
+typedef std::map<AW_gc_manager*, AW_window_simple*> GroupWindowRegistry;
+
 static void AW_create_gc_color_groups_window(AW_window *, AW_root *aw_root, AW_gc_manager *gcmgr) {
     aw_assert(AW_gc_manager::color_groups_initialized());
-
-    typedef std::map<AW_gc_manager*, AW_window_simple*> GroupWindowRegistry;
 
     static GroupWindowRegistry     existing_window;
     GroupWindowRegistry::iterator  found = existing_window.find(gcmgr);
@@ -1031,7 +1062,39 @@ static void AW_create_gc_color_groups_window(AW_window *, AW_root *aw_root, AW_g
         aws->create_toggle(AWAR_COLOR_GROUPS_USE);
         aws->at_newline();
 
-        gcmgr->create_gc_buttons(aws, true);
+        gcmgr->create_gc_buttons(aws, GC_TYPE_GROUP);
+
+        aws->window_fit();
+        existing_window[gcmgr] = aws;
+    }
+
+    aws->activate();
+}
+
+static void AW_create_gc_color_range_window(AW_window *, AW_root *aw_root, AW_gc_manager *gcmgr) {
+    static GroupWindowRegistry     existing_window;
+    GroupWindowRegistry::iterator  found = existing_window.find(gcmgr);
+    AW_window_simple              *aws   = found == existing_window.end() ? NULL : found->second;
+
+    if (!aws) {
+        aws = new AW_window_simple;
+
+        aws->init(aw_root, "COLOR_RANGE_EDIT", "Edit color ranges");
+
+        aws->at(10, 10);
+        aws->auto_space(5, 5);
+
+        aws->callback(AW_POPDOWN);
+        aws->create_button("CLOSE", "CLOSE", "C");
+        aws->callback(makeHelpCallback("color_ranges.hlp"));
+        aws->create_button("HELP", "HELP", "H");
+        aws->at_newline();
+
+        aws->label("Overlay active range");
+        aws->create_toggle(AWAR_RANGE_OVERLAY);
+        aws->at_newline();
+
+        gcmgr->create_gc_buttons(aws, GC_TYPE_RANGE);
 
         aws->window_fit();
         existing_window[gcmgr] = aws;
@@ -1075,13 +1138,20 @@ AW_window *AW_create_gc_window_named(AW_root *aw_root, AW_gc_manager *gcman, con
     // anti-aliasing:
     // (gtk-only)
 
-    gcman->create_gc_buttons(aws, false);
+    gcman->create_gc_buttons(aws, GC_TYPE_NORMAL);
 
+    bool groups_or_range = false;
     if (gcman->has_color_groups()) {
         aws->callback(makeWindowCallback(AW_create_gc_color_groups_window, aw_root, gcman));
         aws->create_autosize_button("EDIT_COLOR_GROUP", "Edit color groups", "E");
-        aws->at_newline();
+        groups_or_range = true;
     }
+    if (gcman->has_color_range()) {
+        aws->callback(makeWindowCallback(AW_create_gc_color_range_window, aw_root, gcman));
+        aws->create_autosize_button("EDIT_COLOR_RANGE", "Edit color ranges", "r");
+        groups_or_range = true;
+    }
+    if (groups_or_range) aws->at_newline();
 
     aws->window_fit();
     return aws;
@@ -1093,6 +1163,33 @@ AW_window *AW_create_gc_window(AW_root *aw_root, AW_gc_manager *gcman) {
 int AW_get_drag_gc(AW_gc_manager *gcman) {
     return gcman->get_drag_gc();
 }
+
+void AW_displayColorRange(AW_device *device, int first_range_gc, AW::Position start, AW_pos xsize, AW_pos ysize) {
+    /*! display active color range
+     * @param device          output device
+     * @param first_range_gc  first color range gc
+     * @param start           position of upper left corner
+     * @param xsize           xsize used per color
+     * @param ysize           xsize used per color
+     *
+     * displays AW_PLANAR_COLORS rows and AW_PLANAR_COLORS columns
+     */
+    using namespace AW;
+
+    bool overlay = AW_root::SINGLETON->awar(AWAR_RANGE_OVERLAY)->read_int();
+    if (overlay) {
+        Vector size(xsize, ysize);
+        for (int x = 0; x<AW_PLANAR_COLORS; ++x) {
+            for (int y = 0; y<AW_PLANAR_COLORS; ++y) {
+                int      gc     = first_range_gc + y*AW_PLANAR_COLORS+x;
+                Vector   toCorner(x*xsize, y*ysize);
+                Position corner = start+toCorner;
+                device->box(gc, FillStyle::SOLID, Rectangle(corner, size));
+            }
+        }
+    }
+}
+
 
 #if defined(UNIT_TESTS)
 void fake_AW_init_color_groups() {
