@@ -69,6 +69,9 @@ char *AW_get_color_group_name(AW_root *awr, int color_group);
 
 // #define AW_RANGE_COLORS 1048576 // test 1 million gcs (uses several Gb of memory; in arb_ntree and XOrg)
 
+#define AW_PLANAR_COLORS 64 // color-steps per channel in planar color-range
+#define AW_CUBIC_COLORS  16 // color-steps per channel in cubic color-range
+
 #else
 #error aw_color_groups.hxx included twice
 #endif // AW_COLOR_GROUPS_HXX

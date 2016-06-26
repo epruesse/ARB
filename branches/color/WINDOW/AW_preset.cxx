@@ -204,6 +204,7 @@ public:
 enum gc_range_type {
     GC_RANGE_INVALID,
     GC_RANGE_LINEAR,
+    GC_RANGE_PLANAR,
 };
 
 class gc_range {
@@ -223,6 +224,8 @@ public:
 
     void add_color(const string& colordef, AW_gc_manager *gcman);
     void update_colors(const AW_gc_manager *gcman, int changed_color) const;
+
+    AW_rgb_normalized get_color(int idx, const AW_gc_manager *gcman) const;
 };
 
 // --------------------
@@ -345,6 +348,10 @@ public:
             trigger_changed_cb(did_suppress_change);
         }
     }
+
+    const char *get_current_color(int idx) const {
+        return AW_root::SINGLETON->awar(color_awarname(get_base_name(), get_gc_desc(idx).key))->read_char_pntr();
+    }
 };
 
 const char **AW_gc_manager::color_group_defaults = NULL;
@@ -459,38 +466,60 @@ void AW_gc_manager::update_gc_color_internal(int gc, const char *color) const {
     }
 }
 
-void gc_range::update_colors(const AW_gc_manager *gcman, int changed_color) const {
+AW_rgb_normalized gc_range::get_color(int idx, const AW_gc_manager *gcman) const {
+    aw_assert(idx>=0 && idx<color_count);
+    return AW_rgb_normalized(gcman->get_current_color(gc_index+idx));
+}
+
+STATIC_ASSERT(AW_PLANAR_COLORS*AW_PLANAR_COLORS == AW_RANGE_COLORS); // Note: very strong assertion (could also use less than AW_RANGE_COLORS)
+STATIC_ASSERT(AW_CUBIC_COLORS*AW_CUBIC_COLORS*AW_CUBIC_COLORS == AW_RANGE_COLORS);
+
+void gc_range::update_colors(const AW_gc_manager *gcman, int /*changed_color*/) const {
     /*! recalculate colors of a range (called after one color changed)
      * @param gcman             the GC manager
      * @param changed_color     which color of a range has changed (0 = first, ...). -1 -> unknown => need complete update // @@@ not implemented, always acts like -1 is passed
      */
-    aw_assert(type == GC_RANGE_LINEAR);
-    aw_assert(color_count == 2);
-
-    const gc_desc& low_gc  = gcman->get_gc_desc(gc_index);
-    const gc_desc& high_gc = gcman->get_gc_desc(gc_index+1);
-
-    const char *basename   = gcman->get_base_name();
-    AW_root    *awr        = AW_root::SINGLETON;
-    const char *low_color  = awr->awar(color_awarname(basename, low_gc.key))->read_char_pntr();
-    const char *high_color = awr->awar(color_awarname(basename, high_gc.key))->read_char_pntr();
-
-    AW_rgb_normalized low(low_color);
-    AW_rgb_normalized high(high_color);
-
-    float rdiff = high.r()-low.r();
-    float gdiff = high.g()-low.g();
-    float bdiff = high.b()-low.b();
 
     // @@@ try HSV color blending as alternative
-    for (int i = 0; i<AW_RANGE_COLORS; ++i) { // blend colors
-        float factor = i/float(AW_RANGE_COLORS-1);
 
-        AW_rgb_normalized col(low.r()+factor*rdiff,
-                              low.g()+factor*gdiff,
-                              low.b()+factor*bdiff);
+    if (type == GC_RANGE_LINEAR) {
+        aw_assert(color_count == 2); // currently exactly 2 support-colors are required for linear ranges
 
-        gcman->update_range_gc_color(i, AW_rgb16(col).ascii());
+        AW_rgb_normalized low  = get_color(0, gcman);
+        AW_rgb_normalized high = get_color(1, gcman);
+
+        AW_rgb_diff low2high = high-low;
+        for (int i = 0; i<AW_RANGE_COLORS; ++i) { // blend colors
+            float factor = i/float(AW_RANGE_COLORS-1);
+            gcman->update_range_gc_color(i, AW_rgb16(low + factor*low2high).ascii());
+        }
+    }
+    else if (type == GC_RANGE_PLANAR) {
+        aw_assert(color_count == 3); // currently exactly 3 support-colors are required for planar ranges
+
+        AW_rgb_normalized low  = get_color(0, gcman);
+        AW_rgb_normalized dim1 = get_color(1, gcman);
+        AW_rgb_normalized dim2 = get_color(2, gcman);
+
+        AW_rgb_diff low2dim1 = dim1-low;
+        AW_rgb_diff low2dim2 = dim2-low;
+
+        for (int i1 = 0; i1<AW_PLANAR_COLORS; ++i1) {
+            float       fact1 = i1/float(AW_PLANAR_COLORS-1);
+            AW_rgb_diff diff1 = fact1*low2dim1;
+
+            for (int i2 = 0; i2<AW_PLANAR_COLORS; ++i2) {
+                float       fact2 = i2/float(AW_PLANAR_COLORS-1);
+                AW_rgb_diff diff2 = fact2*low2dim2;
+
+                AW_rgb_normalized mixcol = low + (diff1+diff2);
+
+                gcman->update_range_gc_color(i1*AW_PLANAR_COLORS+i2, AW_rgb16(mixcol).ascii());
+            }
+        }
+    }
+    else {
+        aw_assert(0); // unsupported range-type
     }
 }
 void AW_gc_manager::update_range_colors(const gc_desc& gcd) const {
@@ -568,9 +597,8 @@ void AW_gc_manager::add_gc_range(const char *gc_description) {
             gc_range_type rtype = GC_RANGE_INVALID;
             string        range_type(comma+1, colon-comma-1);
 
-            if (range_type == "linear") {
-                rtype = GC_RANGE_LINEAR;
-            }
+            if      (range_type == "linear") rtype = GC_RANGE_LINEAR;
+            else if (range_type == "planar") rtype = GC_RANGE_PLANAR;
 
             if (rtype == GC_RANGE_INVALID) {
                 error = GBS_global_string("invalid range-type '%s'", range_type.c_str());
@@ -604,7 +632,10 @@ void AW_gc_manager::init_color_ranges(int& gc) const {
         int last_gc = gc + AW_RANGE_COLORS-1;
         while (gc<=last_gc) allocate_gc(gc++);
 
-        const gc_range& active_range = color_ranges[0]; // @@@ should use active color-range (atm there is only 1)
+        const int USED_RANGE = 0; // @@@ should use active color-range! ARB should remember last active range somehow
+        aw_assert(USED_RANGE<color_ranges.size());
+
+        const gc_range& active_range = color_ranges[USED_RANGE];
         active_range.update_colors(this, -1); // -1 means full update
     }
 }
