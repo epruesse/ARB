@@ -300,7 +300,9 @@ class AW_gc_manager : virtual Noncopyable {
 
 public:
     static const char **color_group_defaults;
-    static bool         use_color_groups;
+
+    static bool use_color_groups;
+    static bool show_range_overlay;
 
     static bool color_groups_initialized() { return color_group_defaults != 0; }
 
@@ -385,7 +387,9 @@ public:
 };
 
 const char **AW_gc_manager::color_group_defaults = NULL;
-bool         AW_gc_manager::use_color_groups     = false;
+
+bool AW_gc_manager::use_color_groups   = false;
+bool AW_gc_manager::show_range_overlay = false;
 
 // ---------------------------
 //      GC awar callbacks
@@ -605,7 +609,8 @@ static void color_group_use_changed_cb(AW_root *awr, AW_gc_manager *gcmgr) {
     AW_gc_manager::use_color_groups = awr->awar(AWAR_COLOR_GROUPS_USE)->read_int();
     gcmgr->trigger_changed_cb(GC_COLOR_GROUP_USE_CHANGED);
 }
-static void range_overlay_changed_cb(AW_root *, AW_gc_manager *gcmgr) {
+static void range_overlay_changed_cb(AW_root *awr, AW_gc_manager *gcmgr) {
+    AW_gc_manager::show_range_overlay = awr->awar(AWAR_RANGE_OVERLAY)->read_int();
     gcmgr->trigger_changed_cb(GC_COLOR_GROUP_USE_CHANGED);
 }
 
@@ -1231,8 +1236,7 @@ void AW_displayColorRange(AW_device *device, int first_range_gc, AW::Position st
      */
     using namespace AW;
 
-    bool overlay = AW_root::SINGLETON->awar(AWAR_RANGE_OVERLAY)->read_int();
-    if (overlay) {
+    if (AW_gc_manager::show_range_overlay) {
         Vector size(xsize, ysize);
         for (int x = 0; x<AW_PLANAR_COLORS; ++x) {
             for (int y = 0; y<AW_PLANAR_COLORS; ++y) {
