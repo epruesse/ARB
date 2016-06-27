@@ -123,6 +123,8 @@ public:
         switch (dim) {
             case 0: return ValueTuple::undefined();
             case 1: return ValueTuple::make(reader[0].calc_value(gb_item));
+            case 2: return ValueTuple::make(reader[0].calc_value(gb_item),
+                                            reader[1].calc_value(gb_item));
         }
         is_assert(0); // unsupported dimension
         return ShadedValue();
@@ -251,10 +253,10 @@ public:
 
     int get_dimension() const OVERRIDE {
         // returns (current) dimension of shader-plugin
-        return 1; // @@@ fake
+        return get_field_reader().get_dimension();
     }
     int get_max_dimension() const {
-        return 1; // @@@ shall be 3
+        return 2; // @@@ shall be 3
     }
     void init_specific_awars(AW_root *awr) OVERRIDE;
 
@@ -319,7 +321,6 @@ void ItemFieldShader::customize(AW_root *awr) {
             aws->create_input_field(AWAR_VALUE_MIN(dim), VALCOL);
             aws->create_input_field(AWAR_VALUE_MAX(dim), VALCOL);
 
-            // @@@ add fields defining value-range
             // @@@ add autoscan for value-range
 
             aws->at_newline();

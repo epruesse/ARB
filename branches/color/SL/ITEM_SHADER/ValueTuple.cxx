@@ -101,6 +101,24 @@ void TEST_shaded_values() {
 
 // --------------------------------------------------------------------------------
 
+inline int CHECKED_RANGE_OFFSET(int off) {
+    is_assert(off>=0 && off<AW_RANGE_COLORS);
+    return off;
+}
+
+template<int RANGE_SIZE>
+inline int fixed_range_offset(float val) {
+    int off =
+        val <= 0.0
+        ? 0
+        : (val >= 1.0
+           ? RANGE_SIZE-1
+           : val*RANGE_SIZE);
+
+    is_assert(off>=0 && off<RANGE_SIZE);
+    return off;
+}
+
 class NoTuple: public ValueTuple {
 public:
     NoTuple() {}
@@ -131,17 +149,7 @@ public:
 
     bool is_defined() const OVERRIDE { return true; }
     ValueTuple *clone() const OVERRIDE { return new LinearTuple(val); }
-    int range_offset() const OVERRIDE {
-        int off =
-            val <= 0.0
-            ? 0
-            : (val >= 1.0
-               ? AW_RANGE_COLORS-1
-               : val*AW_RANGE_COLORS+0.5);
-
-        is_assert(off>=0 && off<AW_RANGE_COLORS);
-        return off;
-    }
+    int range_offset() const OVERRIDE { return CHECKED_RANGE_OFFSET(fixed_range_offset<AW_RANGE_COLORS>(val)); }
 
 #if defined(UNIT_TESTS)
     const char *inspect() const OVERRIDE {
@@ -181,8 +189,9 @@ public:
     bool is_defined() const OVERRIDE { return true; }
     ValueTuple *clone() const OVERRIDE { return new PlanarTuple(val1, val2); }
     int range_offset() const OVERRIDE { // returns int-offset into range [0 .. AW_RANGE_COLORS[
-        is_assert(0); // @@@ impl missing
-        return -1;
+        int c1 = is_nan(val1) ? 0 : fixed_range_offset<AW_PLANAR_COLORS>(val1);
+        int c2 = is_nan(val2) ? 0 : fixed_range_offset<AW_PLANAR_COLORS>(val2);
+        return CHECKED_RANGE_OFFSET(c1*AW_PLANAR_COLORS + c2);
     }
 
 #if defined(UNIT_TESTS)
