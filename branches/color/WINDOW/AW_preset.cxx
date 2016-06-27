@@ -27,6 +27,7 @@
 #include "aw_rgb.hxx"
 
 #include <arbdbt.h>
+#include <arb_strarray.h>
 
 #include <vector>
 #include <map>
@@ -124,6 +125,14 @@ inline int build_range_gc_number(int range_idx, int color_idx) {
     return (color_idx << RANGE_INDEX_BITS) | range_idx;
 }
 
+inline string name2ID(const char *name) { // does not test uniqueness!
+    char   *keyCopy = GBS_string_2_key(name);
+    string  id      = keyCopy;
+    free(keyCopy);
+    return id;
+}
+inline string name2ID(const string& name) { return name2ID(name.c_str()); }
+
 struct gc_desc {
     // data for one GC
     // - used to populate color config windows and
@@ -191,9 +200,7 @@ public:
             default_color = "black";
         }
 
-        char *keyCopy = GBS_string_2_key(colorlabel.c_str());
-        key           = keyCopy;
-        free(keyCopy);
+        key = name2ID(colorlabel);
 
         return default_color;
     }
@@ -210,6 +217,7 @@ enum gc_range_type {
 
 class gc_range {
     string        name; // name of range shown in config window
+    string        id;
     gc_range_type type;
 
     int index;       // in range-array of AW_gc_manager
@@ -219,6 +227,7 @@ class gc_range {
 public:
     gc_range(const string& name_, gc_range_type type_, int index_, int gc_index_) :
         name(name_),
+        id(name2ID(name)),
         type(type_),
         index(index_),
         color_count(0),
@@ -231,7 +240,16 @@ public:
     AW_rgb_normalized get_color(int idx, const AW_gc_manager *gcman) const;
 
     const string& get_name() const { return name; }
+    const string& get_id() const { return id; }
     gc_range_type get_type() const { return type; }
+    int get_dimension() const {
+        switch (type) {
+            case GC_RANGE_LINEAR: return 1;
+            case GC_RANGE_PLANAR: return 2;
+            case GC_RANGE_INVALID: aw_assert(0); break;
+        }
+        return 0;
+    }
 };
 
 // --------------------
@@ -252,6 +270,7 @@ class AW_gc_manager : virtual Noncopyable {
 
     gc_container       GCs;
     gc_range_container color_ranges;
+    unsigned           active_range_number; // offset into 'color_ranges'
 
     GcChangedCallback changed_cb;
 
@@ -293,6 +312,7 @@ public:
           first_colorgroup_idx(NO_INDEX),
           aww(aww_),
           colorindex_base(colorindex_base_),
+          active_range_number(0), // @@@ should be initialized to last-used-value at startup
           changed_cb(makeGcChangedCallback(ignore_change_cb)),
           suppress_changed_cb(false),
           did_suppress_change(GC_NOTHING_CHANGED)
@@ -358,6 +378,10 @@ public:
     const char *get_current_color(int idx) const {
         return AW_root::SINGLETON->awar(color_awarname(get_base_name(), get_gc_desc(idx).key))->read_char_pntr();
     }
+
+    void getColorRangeNames(int dimension, ConstStrArray& ids, ConstStrArray& names) const;
+    void activateColorRange(const char *id);
+    const char *getActiveColorRangeID(int *dimension) const;
 };
 
 const char **AW_gc_manager::color_group_defaults = NULL;
@@ -480,7 +504,7 @@ AW_rgb_normalized gc_range::get_color(int idx, const AW_gc_manager *gcman) const
 STATIC_ASSERT(AW_PLANAR_COLORS*AW_PLANAR_COLORS == AW_RANGE_COLORS); // Note: very strong assertion (could also use less than AW_RANGE_COLORS)
 STATIC_ASSERT(AW_CUBIC_COLORS*AW_CUBIC_COLORS*AW_CUBIC_COLORS == AW_RANGE_COLORS);
 
-void gc_range::update_colors(const AW_gc_manager *gcman, int /*changed_color*/) const {
+void gc_range::update_colors(const AW_gc_manager *gcman, int /*changed_color*/) const { // @@@ elim param changed_color?
     /*! recalculate colors of a range (called after one color changed)
      * @param gcman             the GC manager
      * @param changed_color     which color of a range has changed (0 = first, ...). -1 -> unknown => need complete update // @@@ not implemented, always acts like -1 is passed
@@ -641,14 +665,42 @@ void AW_gc_manager::init_color_ranges(int& gc) const {
         int last_gc = gc + AW_RANGE_COLORS-1;
         while (gc<=last_gc) allocate_gc(gc++);
 
-        const unsigned USED_RANGE = 0; // @@@ should use active color-range! ARB should remember last active range somehow
-        aw_assert(USED_RANGE<color_ranges.size());
+        aw_assert(active_range_number<color_ranges.size());
 
-        const gc_range& active_range = color_ranges[USED_RANGE];
+        const gc_range& active_range = color_ranges[active_range_number];
         active_range.update_colors(this, -1); // -1 means full update
     }
 }
+void AW_gc_manager::activateColorRange(const char *id) {
+    unsigned num = 0;
+    for (gc_range_container::const_iterator r = color_ranges.begin(); r != color_ranges.end(); ++r) {
+        const gc_range& range = *r;
+        if (range.get_id() == id) {
+            if (active_range_number != num) { // do not recalculate colors if already active
+                active_range_number = num;
+                range.update_colors(this, -1); // -1 means full update
+            }
+            break;
+        }
+        ++num;
+    }
+}
+const char *AW_gc_manager::getActiveColorRangeID(int *dimension) const {
+    const gc_range& range     = color_ranges[active_range_number];
+    if (dimension) *dimension = range.get_dimension();
+    return range.get_id().c_str();
+}
 
+
+void AW_gc_manager::getColorRangeNames(int dimension, ConstStrArray& ids, ConstStrArray& names) const {
+    for (gc_range_container::const_iterator r = color_ranges.begin(); r != color_ranges.end(); ++r) {
+        const gc_range& range = *r;
+        if (range.get_dimension() == dimension) {
+            ids.put(range.get_id().c_str());
+            names.put(range.get_name().c_str());
+        }
+    }
+}
 
 // -------------------------
 //      reserve/add GCs
@@ -898,6 +950,9 @@ AW_gc_manager *AW_manage_GC(AW_window                *aww,
                                           // (has to be next value after last GC or after last color-group-GC)
     }
 #endif
+
+    // @@@ add check: 1. all range IDs have to be unique 
+    // @@@ add check: 2. all GC IDs have to be unique 
 
     return gcmgr;
 }
@@ -1188,6 +1243,29 @@ void AW_displayColorRange(AW_device *device, int first_range_gc, AW::Position st
             }
         }
     }
+}
+
+void AW_getColorRangeNames(const AW_gc_manager *gcman, int dimension, ConstStrArray& ids, ConstStrArray& names) {
+    /*! retrieve selected color-range IDs
+     * @param gcman      the gc-manager defining the color-ranges
+     * @param dimension  the wanted dimension of the color-ranges
+     * @param ids        array where range-IDs will be stored
+     * @param names      array where corresponding range-names will be stored (same index as 'ids')
+     */
+    ids.clear();
+    names.clear();
+    gcman->getColorRangeNames(dimension, ids, names);
+}
+
+void AW_activateColorRange(AW_gc_manager *gcman, const char *id) {
+    gcman->activateColorRange(id);
+}
+const char *AW_getActiveColorRangeID(AW_gc_manager *gcman, int *dimension) {
+    /*! @return the ID of the active color range
+     * @param gcman      of this gc-manager
+     * @param dimension  if !NULL -> is set to dimension of range
+     */
+    return gcman->getActiveColorRangeID(dimension);
 }
 
 

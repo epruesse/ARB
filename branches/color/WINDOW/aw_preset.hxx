@@ -24,6 +24,8 @@
 #include <cb.h>
 #endif
 
+class ConstStrArray;
+
 void AW_save_properties(AW_window *aw);   // use this if you're unsure
 void AW_save_specific_properties(AW_window *aw, const char *filename);
 
@@ -58,6 +60,9 @@ int AW_get_drag_gc(AW_gc_manager *gcman);
 void AW_copy_GC_colors(AW_root *aw_root, const char *source_gcman, const char *dest_gcman, const char *id0, ...) __ATTR__SENTINEL;
 
 void AW_displayColorRange(AW_device *device, int first_range_gc, AW::Position start, AW_pos xsize, AW_pos ysize);
+void AW_getColorRangeNames(const AW_gc_manager *gcman, int dimension, ConstStrArray& ids, ConstStrArray& names);
+void AW_activateColorRange(AW_gc_manager *gcman, const char *id);
+const char *AW_getActiveColorRangeID(AW_gc_manager *gcman, int *dimension);
 
 
 #else
