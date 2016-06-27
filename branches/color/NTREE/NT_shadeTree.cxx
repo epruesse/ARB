@@ -11,6 +11,8 @@
 #include <AP_TreeShader.hxx>
 #include <AP_Tree.hxx>
 
+#include <awt_canvas.hxx>
+
 #include <aw_root.hxx>
 #include <aw_awar.hxx>
 #include <aw_awar_defs.hxx>
@@ -47,8 +49,9 @@ class NT_TreeShader: public AP_TreeShader, virtual Noncopyable {
     }
 
 public:
-    NT_TreeShader(AW_root *awr, GBDATA *gb_main) :
-        shader(registerItemShader(awr,
+    NT_TreeShader(AWT_canvas *ntw, GBDATA *gb_main) :
+        shader(registerItemShader(ntw->awr,
+                                  ntw->gc_manager,
                                   BoundItemSel(gb_main, SPECIES_get_selector()),
                                   "tree",
                                   "tree shading",
@@ -85,8 +88,8 @@ public:
     }
 };
 
-void NT_install_treeShader(AW_root *awr, GBDATA *gb_main) {
-    AP_tree::set_tree_shader(new NT_TreeShader(awr, gb_main));
+void NT_install_treeShader(AWT_canvas *ntw, GBDATA *gb_main) {
+    AP_tree::set_tree_shader(new NT_TreeShader(ntw, gb_main));
 }
 
 void NT_configure_treeShader() {

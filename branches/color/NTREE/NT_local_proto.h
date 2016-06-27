@@ -82,7 +82,7 @@ AW_window *NT_create_species_join_window(AW_root *root);
 GB_ERROR NT_format_all_alignments(GBDATA *gb_main);
 
 /* NT_shadeTree.cxx */
-void NT_install_treeShader(AW_root *awr, GBDATA *gb_main);
+void NT_install_treeShader(AWT_canvas *ntw, GBDATA *gb_main);
 void NT_configure_treeShader(void);
 
 /* NT_sort.cxx */

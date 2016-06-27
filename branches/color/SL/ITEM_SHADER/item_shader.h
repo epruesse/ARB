@@ -33,6 +33,7 @@
 #define is_assert(cond) arb_assert(cond)
 
 class GBDATA;
+class AW_gc_manager;
 
 // ---------------- // @@@ move to arbtools.h later (helps to avoid using Noncopyable)
 //      RefPtr
@@ -213,7 +214,7 @@ inline void ShaderPlugin::trigger_reshade_cb() const {
 // -----------------------------
 //      ItemShader registry
 
-ItemShader *registerItemShader(AW_root *awr, BoundItemSel& itemtype, const char *unique_id, const char *description, const char *help_id, ReshadeCallback reshade);
+ItemShader *registerItemShader(AW_root *awr, AW_gc_manager *gcman, BoundItemSel& itemtype, const char *unique_id, const char *description, const char *help_id, ReshadeCallback reshade);
 ItemShader *findItemShader(const char *id);
 void        destroyAllItemShaders();
 

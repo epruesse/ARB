@@ -88,6 +88,8 @@ item_shader.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 item_shader.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 item_shader.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 item_shader.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
+item_shader.o: $(ARBHOME)/INCLUDE/aw_position.hxx
+item_shader.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 item_shader.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 item_shader.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 item_shader.o: $(ARBHOME)/INCLUDE/aw_select.hxx

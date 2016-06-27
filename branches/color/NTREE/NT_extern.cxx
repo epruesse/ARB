@@ -1687,7 +1687,7 @@ AWT_canvas *NT_create_main_window(AW_root *aw_root) {
 
     AWT_canvas *ntw = NULL;
     AW_window  *aww = popup_new_main_window(aw_root, 0, &ntw);
-    NT_install_treeShader(aw_root, GLOBAL.gb_main);
+    NT_install_treeShader(ntw, GLOBAL.gb_main);
     aww->show();
 
     error = GB_request_undo_type(GLOBAL.gb_main, GB_UNDO_UNDO);

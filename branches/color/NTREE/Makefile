@@ -870,7 +870,13 @@ NT_shadeTree.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 NT_shadeTree.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 NT_shadeTree.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 NT_shadeTree.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
+NT_shadeTree.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+NT_shadeTree.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
+NT_shadeTree.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+NT_shadeTree.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 NT_shadeTree.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+NT_shadeTree.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+NT_shadeTree.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 NT_shadeTree.o: $(ARBHOME)/INCLUDE/cb.h
 NT_shadeTree.o: $(ARBHOME)/INCLUDE/cb_base.h
 NT_shadeTree.o: $(ARBHOME)/INCLUDE/cbtypes.h

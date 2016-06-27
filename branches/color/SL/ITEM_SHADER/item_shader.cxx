@@ -38,11 +38,12 @@ void TEST_shader_interface() {
     GBDATA   *gb_main = GB_open("nosuch.arb", "c");
 
     {
-        const char *SHADY  = "lady";
-        AW_root    *NOROOT = NULL;
+        const char    *SHADY   = "lady";
+        AW_root       *NOROOT  = NULL;
+        AW_gc_manager *NOGCMAN = NULL;
 
         BoundItemSel  sel(gb_main, SPECIES_get_selector());
-        ItemShader   *shader = registerItemShader(NOROOT, sel, SHADY, "undescribed", "", DummyPlugin::reshade);
+        ItemShader   *shader = registerItemShader(NOROOT, NOGCMAN, sel, SHADY, "undescribed", "", DummyPlugin::reshade);
         TEST_REJECT_NULL(shader);
 
         ItemShader *unknown = findItemShader("unknown");
@@ -75,6 +76,7 @@ void TEST_shader_interface() {
 #include <aw_root.hxx>
 #include <aw_window.hxx>
 #include <aw_awar.hxx>
+#include <aw_preset.hxx>
 #include <aw_select.hxx>
 #include <aw_msg.hxx>
 
@@ -132,15 +134,17 @@ class ItemShader_impl : public ItemShader {
     string  help_id;
     string  awar_prefix;
 
-    RefPtr<AW_window> aw_cfg; // config window
+    RefPtr<AW_gc_manager> gcman;
+    RefPtr<AW_window>     aw_cfg; // config window
 
     ShaderPluginPtr find_plugin(const string& plugin_id) const;
 
 public:
-    explicit ItemShader_impl(const string& id_, const string& description_, const string& help_id_, ReshadeCallback rcb) :
+    ItemShader_impl(AW_gc_manager *gcman_, const string& id_, const string& description_, const string& help_id_, ReshadeCallback rcb) :
         ItemShader(id_, description_, rcb),
         help_id(help_id_),
         awar_prefix(GBS_global_string("tmp/shader/%s", get_id().c_str())),
+        gcman(gcman_),
         aw_cfg(NULL)
     {}
 
@@ -352,10 +356,11 @@ typedef vector<ItemShader_impl> Shaders;
 
 static Shaders registered;
 
-ItemShader *registerItemShader(AW_root *awr, BoundItemSel& itemtype, const char *unique_id, const char *description, const char *help_id, ReshadeCallback reshade_cb) {
+ItemShader *registerItemShader(AW_root *awr, AW_gc_manager *gcman, BoundItemSel& itemtype, const char *unique_id, const char *description, const char *help_id, ReshadeCallback reshade_cb) {
     /*! create a new ItemShader
      *
      * @param awr             the application root
+     * @param gcman           gc-manager used for shading
      * @param itemtype        type of item
      * @param unique_id       unique ID
      * @param description     short description (eg. "tree shading")
@@ -369,7 +374,7 @@ ItemShader *registerItemShader(AW_root *awr, BoundItemSel& itemtype, const char 
         return NULL;
     }
 
-    registered.push_back(ItemShader_impl(unique_id, description, help_id, reshade_cb));
+    registered.push_back(ItemShader_impl(gcman, unique_id, description, help_id, reshade_cb));
     ItemShader_impl& new_shader = registered.back();
     if (awr) new_shader.init_awars(awr);
     new_shader.register_plugin(makeItemFieldShader(itemtype));
