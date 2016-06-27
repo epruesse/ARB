@@ -2920,6 +2920,10 @@ void AWT_graphic_tree::show(AW_device *device) {
         device->line(AWT_GC_CURSOR, p0, cursor);
     }
     else {
+        double   range_display_size  = scaled_branch_distance;
+        bool     allow_range_display = true;
+        Position range_origin        = Origin;
+
         switch (tree_sort) {
             case AP_TREE_NORMAL: {
                 DendroSubtreeLimits limits;
@@ -2937,6 +2941,9 @@ void AWT_graphic_tree::show(AW_device *device) {
             case AP_TREE_RADIAL:
                 empty_box(displayed_root->gr.gc, Origin, NT_ROOT_WIDTH);
                 show_radial_tree(displayed_root, Origin, Origin, Eastwards, 2*M_PI);
+
+                range_display_size  = 3.0/AW_PLANAR_COLORS;
+                range_origin       += Vector(-range_display_size*AW_PLANAR_COLORS/2, -range_display_size*AW_PLANAR_COLORS/2);
                 break;
 
             case AP_TREE_IRS:
@@ -2950,10 +2957,15 @@ void AWT_graphic_tree::show(AW_device *device) {
             case AP_LIST_SIMPLE:    // simple list of names (used at startup only)
                 // don't see why we need to draw ANY tree at startup -> disabled
                 // show_nds_list(gb_main, false);
+                allow_range_display = false;
                 break;
         }
         if (are_distinct(Origin, cursor)) empty_box(AWT_GC_CURSOR, cursor, NT_SELECTED_WIDTH);
         if (sort_is_tree_style(tree_sort)) show_ruler(disp_device, AWT_GC_CURSOR);
+
+        if (allow_range_display) {
+            AW_displayColorRange(disp_device, AWT_GC_FIRST_RANGE_COLOR, range_origin, range_display_size, range_display_size);
+        }
     }
 
     if (cmd_data && Dragged::valid_drag_device(disp_device)) {
