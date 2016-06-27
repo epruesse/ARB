@@ -78,6 +78,7 @@ item_shader.o: $(ARBHOME)/INCLUDE/arb_assert.h
 item_shader.o: $(ARBHOME)/INCLUDE/arb_core.h
 item_shader.o: $(ARBHOME)/INCLUDE/arb_error.h
 item_shader.o: $(ARBHOME)/INCLUDE/arb_msg.h
+item_shader.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 item_shader.o: $(ARBHOME)/INCLUDE/arb_string.h
 item_shader.o: $(ARBHOME)/INCLUDE/arbdb.h
 item_shader.o: $(ARBHOME)/INCLUDE/arbdb_base.h

@@ -105,6 +105,11 @@ inline ShadedValue mix(const ShadedValue& val1, float val1_ratio, const ShadedVa
 
 class ItemShader;
 
+enum ReshadeMode {
+    SIMPLE_RESHADE         = 0,
+    CHECK_DIMENSION_CHANGE = 1,
+};
+
 class ShaderPlugin {
     RefPtr<ItemShader> plugged_into;
 
@@ -152,7 +157,7 @@ public:
 
     virtual void activate(bool on) = 0; // called with true when plugin gets activated, with false when it gets deactivated
 
-    void trigger_reshade_cb() const;
+    void trigger_reshade_cb(ReshadeMode mode) const;
 };
 
 typedef SmartPtr<ShaderPlugin> ShaderPluginPtr;
@@ -188,6 +193,8 @@ public:
     virtual void init() = 0; // call once after register_plugin was called (activates plugin stored in AWAR)
     virtual void popup_config_window(AW_root *awr) = 0;
 
+    virtual void check_dimension_change() const = 0;
+
     const std::string& get_id() const { return id; }
     const std::string& get_description() const { return description; }
 
@@ -200,15 +207,18 @@ public:
         return active() ? active_plugin->shade(gb_item) : ValueTuple::undefined();
     }
 
-    void trigger_reshade_cb() const { reshade_cb(); }
+    void trigger_reshade_cb(ReshadeMode mode) const {
+        if (mode == CHECK_DIMENSION_CHANGE) check_dimension_change();
+        reshade_cb();
+    }
 };
 
 inline const char *ShaderPlugin::get_shader_local_id() const {
     is_assert(plugged_into);
     return GBS_global_string("%s_%s", plugged_into->get_id().c_str(), get_id().c_str());
 }
-inline void ShaderPlugin::trigger_reshade_cb() const {
-    if (plugged_into) plugged_into->trigger_reshade_cb();
+inline void ShaderPlugin::trigger_reshade_cb(ReshadeMode mode) const {
+    if (plugged_into) plugged_into->trigger_reshade_cb(mode);
 }
 
 // -----------------------------

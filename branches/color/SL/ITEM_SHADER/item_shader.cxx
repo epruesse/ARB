@@ -80,6 +80,8 @@ void TEST_shader_interface() {
 #include <aw_select.hxx>
 #include <aw_msg.hxx>
 
+#include <arb_strarray.h>
+
 #include <vector>
 #include <string>
 #include <algorithm>
@@ -166,6 +168,8 @@ public:
     void init_awars(AW_root *awr);
     void init() OVERRIDE;
 
+    void check_dimension_change() const OVERRIDE;
+
     void popup_config_window(AW_root *awr) OVERRIDE;
     void configure_active_plugin(AW_root *awr) {
         if (active_plugin.isSet()) {
@@ -234,9 +238,11 @@ bool ItemShader_impl::activate_plugin_impl(const string& plugin_id) {
                 dim = active_plugin->get_dimension();
 
                 // map common GUI awars to awars of active plugin:
-                awr->awar(AWAR_GUI_RANGE)      ->map(active_plugin->AWAR_PLUGIN_RANGE);
+                awr->awar(AWAR_GUI_RANGE)         ->map(active_plugin->AWAR_PLUGIN_RANGE);
                 awr->awar(AWAR_GUI_OVERLAY_MARKED)->map(active_plugin->AWAR_PLUGIN_OVERLAY_MARKED);
                 awr->awar(AWAR_GUI_OVERLAY_GROUPS)->map(active_plugin->AWAR_PLUGIN_OVERLAY_GROUPS);
+
+                check_dimension_change();
             }
             else {
                 dim = 0;
@@ -265,7 +271,24 @@ bool ItemShader_impl::activate_plugin(const string& plugin_id) {
 
     return (strcmp(awar_plugin->read_char_pntr(), plugin_id.c_str()) == 0);
 }
+void ItemShader_impl::check_dimension_change() const {
+    aw_assert(active_plugin.isSet());
 
+    int wanted_dim = active_plugin->get_dimension();
+    if (wanted_dim>0) {
+        int         range_dim;
+        const char *range_id = AW_getActiveColorRangeID(gcman, &range_dim);
+
+        if (wanted_dim != range_dim) { // active color-range has wrong dimension
+            // auto-select another color-range
+            ConstStrArray ids, names;
+            AW_getColorRangeNames(gcman, wanted_dim, ids, names);
+            aw_assert(!ids.empty()); // no range defined with dimension 'wanted_dim' // @@@ check during ItemShader-setup!
+
+            AW_activateColorRange(gcman, ids[0]);
+        }
+    }
+}
 
 // ------------------------
 //      user-interface
