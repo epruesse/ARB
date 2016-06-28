@@ -18,83 +18,100 @@
 #endif
 
 void TEST_shaded_values() {
-    // NoTuple (basic test):
+    // -------------------------------
+    //      NoTuple (basic test):
+
     ShadedValue undef = ValueTuple::undefined();
     TEST_REJECT(undef->is_defined());
     TEST_REJECT(undef->clone()->is_defined());
     TEST_EXPECT_EQUAL(undef->inspect(), "<undef>");
 
-    // LinearTuple (basic test):
-    ShadedValue val0 = ValueTuple::make(0.0);
-    TEST_EXPECT(val0->is_defined());
-    TEST_EXPECT(val0->clone()->is_defined());
-    TEST_EXPECT_EQUAL(val0->inspect(), "(0.000)");
-    TEST_EXPECT_EQUAL(val0->range_offset(), 0);
+    // -----------------------------------
+    //      LinearTuple (basic test):
 
-    ShadedValue val1 = ValueTuple::make(1.0);
-    TEST_EXPECT_EQUAL(val1->inspect(), "(1.000)");
-    TEST_EXPECT_EQUAL(val1->range_offset(), AW_RANGE_COLORS-1);
+    {
+        ShadedValue val0 = ValueTuple::make(0.0);
+        TEST_EXPECT(val0->is_defined());
+        TEST_EXPECT(val0->clone()->is_defined());
+        TEST_EXPECT_EQUAL(val0->inspect(), "(0.000)");
+        TEST_EXPECT_EQUAL(val0->range_offset(), 0);
 
-    // LinearTuple (mix):
-    ShadedValue half = val0->mix(0.50, *val1);
-    TEST_EXPECT_EQUAL(half->inspect(), "(0.500)");
-    TEST_EXPECT_EQUAL(half->range_offset(), AW_RANGE_COLORS/2);
+        ShadedValue val1 = ValueTuple::make(1.0);
+        TEST_EXPECT_EQUAL(val1->inspect(), "(1.000)");
+        TEST_EXPECT_EQUAL(val1->range_offset(), AW_RANGE_COLORS-1);
 
-    TEST_EXPECT_EQUAL(val0->mix(0.25, *val1)->inspect(), "(0.750)");
-    TEST_EXPECT_EQUAL(val0->mix(0.60, *val1)->inspect(), "(0.400)");
+        // LinearTuple (mix):
+        ShadedValue half = val0->mix(0.50, *val1);
+        TEST_EXPECT_EQUAL(half->inspect(), "(0.500)");
+        TEST_EXPECT_EQUAL(half->range_offset(), AW_RANGE_COLORS/2);
 
-    TEST_EXPECT_EQUAL(half->mix(0.25, *val1)->inspect(), "(0.875)");
-    TEST_EXPECT_EQUAL(half->mix(0.50, *val1)->inspect(), "(0.750)");
-    TEST_EXPECT_EQUAL(half->mix(0.75, *val1)->inspect(), "(0.625)");
+        TEST_EXPECT_EQUAL(val0->mix(0.25, *val1)->inspect(), "(0.750)");
+        TEST_EXPECT_EQUAL(val0->mix(0.60, *val1)->inspect(), "(0.400)");
 
-    // mix LinearTuple with NoTuple:
-    TEST_EXPECT_EQUAL(undef->mix(INFINITY, *half)->inspect(), "(0.500)");
-    TEST_EXPECT_EQUAL(undef->mix(INFINITY, *half)->inspect(), "(0.500)");
-    TEST_EXPECT_EQUAL(half->mix(INFINITY, *undef)->inspect(), "(0.500)");
+        TEST_EXPECT_EQUAL(half->mix(0.25, *val1)->inspect(), "(0.875)");
+        TEST_EXPECT_EQUAL(half->mix(0.50, *val1)->inspect(), "(0.750)");
+        TEST_EXPECT_EQUAL(half->mix(0.75, *val1)->inspect(), "(0.625)");
 
-    // test NAN leads to undefined:
+        // mix LinearTuple with NoTuple:
+        TEST_EXPECT_EQUAL(undef->mix(INFINITY, *half)->inspect(), "(0.500)");
+        TEST_EXPECT_EQUAL(undef->mix(INFINITY, *half)->inspect(), "(0.500)");
+        TEST_EXPECT_EQUAL(half->mix(INFINITY, *undef)->inspect(), "(0.500)");
+    }
+
+    // -----------------------------------
+    //      PlanarTuple (basic test):
+
+    {
+        ShadedValue pval0 = ValueTuple::make(0, 0);
+        TEST_EXPECT(pval0->is_defined());
+        TEST_EXPECT(pval0->clone()->is_defined());
+        TEST_EXPECT_EQUAL(pval0->inspect(), "(0.000,0.000)");
+        TEST_EXPECT_EQUAL(pval0->range_offset(), 0);
+
+        // PlanarTuple (mixing):
+        ShadedValue px = ValueTuple::make(1, 0);
+        ShadedValue py = ValueTuple::make(0, 1);
+
+        TEST_EXPECT_EQUAL(px->mix(INFINITY, *undef)->inspect(), "(1.000,0.000)");
+        TEST_EXPECT_EQUAL(undef->mix(INFINITY, *px)->inspect(), "(1.000,0.000)");
+        TEST_EXPECT_EQUAL(px->mix(0.5, *py)->inspect(), "(0.500,0.500)");
+        TEST_EXPECT_EQUAL(px->range_offset(), AW_PLANAR_COLORS*(AW_PLANAR_COLORS-1));
+        TEST_EXPECT_EQUAL(py->range_offset(), AW_PLANAR_COLORS-1);
+
+        // PlanarTuple (partially defined):
+        ShadedValue PonlyX = ValueTuple::make(0.5, NAN);
+        ShadedValue PonlyY = ValueTuple::make(NAN, 0.5);
+
+        TEST_EXPECT(PonlyX->is_defined());
+        TEST_EXPECT(PonlyY->is_defined());
+
+        TEST_EXPECT_EQUAL(PonlyX->inspect(), "(0.500,nan)");
+        TEST_EXPECT_EQUAL(PonlyY->inspect(), "(nan,0.500)");
+
+        // partly undefined values produce a valid range-offset:
+        TEST_EXPECT_EQUAL(PonlyX->range_offset(), (AW_PLANAR_COLORS*AW_PLANAR_COLORS)/2);
+        TEST_EXPECT_EQUAL(PonlyY->range_offset(), AW_PLANAR_COLORS/2);
+
+        TEST_EXPECT_EQUAL(PonlyX->mix(INFINITY, *PonlyY)->inspect(), "(0.500,0.500)"); // mixed without using ratio
+        TEST_EXPECT_EQUAL(PonlyX->mix(0.5, *px)->inspect(), "(0.750,0.000)");
+        TEST_EXPECT_EQUAL(PonlyY->mix(0.5, *py)->inspect(), "(0.000,0.750)");
+        TEST_EXPECT_EQUAL(PonlyX->mix(0.5, *py)->inspect(), "(0.250,1.000)");
+        TEST_EXPECT_EQUAL(PonlyY->mix(0.5, *px)->inspect(), "(1.000,0.250)");
+        TEST_EXPECT_EQUAL(PonlyY->mix(0.25,*px)->inspect(), "(1.000,0.125)"); // ratio only affects y-coord (x-coord is undef in PonlyY!)
+        TEST_EXPECT_EQUAL(PonlyY->mix(0.75,*px)->inspect(), "(1.000,0.375)");
+    }
+
+    // @@@ tdd SpatialTuple
+
+    // --------------------------------------
+    //      test NAN leads to undefined:
+
     ShadedValue novalue = ValueTuple::make(NAN);
     TEST_REJECT(novalue->is_defined());
 
     ShadedValue noValuePair = ValueTuple::make(NAN, NAN);
     TEST_REJECT(noValuePair->is_defined());
 
-    // PlanarTuple (basic test):
-    ShadedValue pval0 = ValueTuple::make(0, 0);
-    TEST_EXPECT(pval0->is_defined());
-    TEST_EXPECT(pval0->clone()->is_defined());
-    TEST_EXPECT_EQUAL(pval0->inspect(), "(0.000,0.000)");
-    // @@@ test range_offset of pval0
-
-    // PlanarTuple (mixing):
-    ShadedValue px = ValueTuple::make(1, 0);
-    ShadedValue py = ValueTuple::make(0, 1);
-
-    TEST_EXPECT_EQUAL(px->mix(INFINITY, *noValuePair)->inspect(), "(1.000,0.000)");
-    TEST_EXPECT_EQUAL(noValuePair->mix(INFINITY, *px)->inspect(), "(1.000,0.000)");
-    TEST_EXPECT_EQUAL(px->mix(0.5, *py)->inspect(), "(0.500,0.500)");
-
-    // PlanarTuple (partially defined):
-    ShadedValue PonlyX = ValueTuple::make(0.5, NAN);
-    ShadedValue PonlyY = ValueTuple::make(NAN, 0.5);
-
-    TEST_EXPECT(PonlyX->is_defined());
-    TEST_EXPECT(PonlyY->is_defined());
-
-    TEST_EXPECT_EQUAL(PonlyX->inspect(), "(0.500,nan)");
-    TEST_EXPECT_EQUAL(PonlyY->inspect(), "(nan,0.500)");
-
-    TEST_EXPECT_EQUAL(PonlyX->mix(INFINITY, *PonlyY)->inspect(), "(0.500,0.500)"); // mixed without using ratio
-    TEST_EXPECT_EQUAL(PonlyX->mix(0.5, *px)->inspect(), "(0.750,0.000)");
-    TEST_EXPECT_EQUAL(PonlyY->mix(0.5, *py)->inspect(), "(0.000,0.750)");
-    TEST_EXPECT_EQUAL(PonlyX->mix(0.5, *py)->inspect(), "(0.250,1.000)");
-    TEST_EXPECT_EQUAL(PonlyY->mix(0.5, *px)->inspect(), "(1.000,0.250)");
-    TEST_EXPECT_EQUAL(PonlyY->mix(0.25,*px)->inspect(), "(1.000,0.125)"); // ratio only affects y-coord (x-coord is undef in PonlyY!)
-    TEST_EXPECT_EQUAL(PonlyY->mix(0.75,*px)->inspect(), "(1.000,0.375)");
-
-
-
-    // @@@ tdd CubicTuple
 }
 
 #endif // UNIT_TESTS
@@ -182,7 +199,7 @@ public:
     {
         is_assert(!is_inf(val1));
         is_assert(!is_inf(val2));
-        is_assert(!(is_nan(val1) && is_nan(val2))); // both NAN is unwanted
+        is_assert(!(is_nan(val1) && is_nan(val2))); // only NAN is unwanted
     }
     ~PlanarTuple() OVERRIDE {}
 
