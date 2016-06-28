@@ -96,8 +96,11 @@ AW_gc_manager *AWT_graphic_tree::init_devices(AW_window *aww, AW_device *device,
                      "&color_groups", // use color groups
 
                      // color ranges:
-                     "*Linear range,linear:+-lower$#000,-upper$#fff",
-                     "*Planar range,planar:+-off$#000,+-dim1$#f00,-dim2$#00f",
+                     "*Linear,linear:+-lower$#f9f,-upper$#ff9",
+                     "*Planar,planar:+-off$#aaa,-dim1$#f99,"
+                     /*          */ "-dim2$#99f",
+                     "*Spatial,spatial:+-off$#000,-dim1$#f00,"
+                     /*            */ "+-dim2$#0f0,-dim3$#00f",
 
                      NULL);
 

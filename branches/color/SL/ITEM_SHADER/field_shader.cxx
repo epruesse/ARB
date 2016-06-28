@@ -126,6 +126,9 @@ public:
             case 1: return ValueTuple::make(reader[0].calc_value(gb_item));
             case 2: return ValueTuple::make(reader[0].calc_value(gb_item),
                                             reader[1].calc_value(gb_item));
+            case 3: return ValueTuple::make(reader[0].calc_value(gb_item),
+                                            reader[1].calc_value(gb_item),
+                                            reader[2].calc_value(gb_item));
         }
         is_assert(0); // unsupported dimension
         return ShadedValue();
@@ -257,7 +260,7 @@ public:
         return get_field_reader().get_dimension();
     }
     int get_max_dimension() const {
-        return 2; // @@@ shall be 3
+        return 3;
     }
     void init_specific_awars(AW_root *awr) OVERRIDE;
 
