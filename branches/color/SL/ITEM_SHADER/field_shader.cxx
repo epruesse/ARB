@@ -421,15 +421,21 @@ void ItemFieldShader::scan_value_range_cb(int dim) {
         }
 
         if (seen_field) {
-            // decide whether to use float or int limits (@@@ need to improve?)
-            bool use_float = false;
-            if (imax<fmax) { // seen float
-                use_float = true;
-            }
+            // decide whether to use float or int limits
+            bool seen_float = fmin<=fmax;
+            bool seen_int   = imin<=imax;
+            is_assert(seen_float || seen_int);
+
+            bool use_float = seen_float && (!seen_int || imax<fmax);
 
             // @@@ avoid duplicate refresh:
             awr->awar(AWAR_VALUE_MIN(dim))->write_string(make_limit_string(use_float, fmin, imin));
             awr->awar(AWAR_VALUE_MAX(dim))->write_string(make_limit_string(use_float, fmax, imax));
+
+            bool shading_useless = !(use_float ? fmin<fmax : imin<imax);
+            if (shading_useless) {
+                aw_message(GBS_global_string("Using field '%s' for shading is quite useless", fieldname));
+            }
         }
     }
 }
