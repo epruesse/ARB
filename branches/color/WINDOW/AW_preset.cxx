@@ -506,7 +506,7 @@ AW_rgb_normalized gc_range::get_color(int idx, const AW_gc_manager *gcman) const
 }
 
 STATIC_ASSERT(AW_PLANAR_COLORS*AW_PLANAR_COLORS == AW_RANGE_COLORS); // Note: very strong assertion (could also use less than AW_RANGE_COLORS)
-STATIC_ASSERT(AW_CUBIC_COLORS*AW_CUBIC_COLORS*AW_CUBIC_COLORS == AW_RANGE_COLORS);
+STATIC_ASSERT(AW_SPATIAL_COLORS*AW_SPATIAL_COLORS*AW_SPATIAL_COLORS == AW_RANGE_COLORS);
 
 void gc_range::update_colors(const AW_gc_manager *gcman, int /*changed_color*/) const { // @@@ elim param changed_color?
     /*! recalculate colors of a range (called after one color changed)
