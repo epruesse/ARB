@@ -372,7 +372,8 @@ void ItemFieldShader::scan_value_range_cb(int dim) {
         float fmin = numeric_limits<float>::max();
         float fmax = numeric_limits<float>::min();
 
-        bool seen_field = false;
+        bool seen_field      = false;
+        bool is_hierarchical = strchr(fieldname, '/');
 
         GB_transaction ta(itemtype.gb_main);
         for (GBDATA *gb_cont = itemtype.get_first_item_container(NULL, QUERY_ALL_ITEMS);
@@ -383,7 +384,10 @@ void ItemFieldShader::scan_value_range_cb(int dim) {
                  gb_item;
                  gb_item         = itemtype.get_next_item(gb_item, QUERY_ALL_ITEMS))
             {
-                GBDATA *gb_field = GB_entry(gb_item, fieldname);
+                GBDATA *gb_field = is_hierarchical
+                    ? GB_search(gb_item, fieldname, GB_FIND)
+                    : GB_entry(gb_item, fieldname);
+
                 if (gb_field) {
                     seen_field = true;
 
