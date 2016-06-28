@@ -34,6 +34,9 @@ DESCRIPTION     This field shader allows to shade items (eg. species in tree) ac
                    If you flip the borders of value-range the value range (eg. [20 .. 10]) it will be
                    mapped reverse.
 
+                Press the 'SCAN' button to scan all database entries for minimum and maximum occurring
+                values and use them as value-range.
+
                 @@@ decribe interface
 
 NOTES		None

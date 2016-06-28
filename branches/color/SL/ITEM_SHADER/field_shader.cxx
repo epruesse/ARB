@@ -22,6 +22,7 @@
 #include <arb_str.h>
 
 #include <set>
+#include <limits>
 
 using namespace std;
 
@@ -278,6 +279,10 @@ public:
     static void setup_changed_cb(AW_root*, ItemFieldShader *shader) {
         shader->setup_changed_cb();
     }
+
+    void scan_value_range_cb(int dim);
+    static void scan_value_range_cb(AW_window*, ItemFieldShader *shader, int dim) { shader->scan_value_range_cb(dim); }
+
 };
 
 void ItemFieldShader::init_specific_awars(AW_root *awr) {
@@ -290,6 +295,7 @@ void ItemFieldShader::init_specific_awars(AW_root *awr) {
         awr->awar_string(AWAR_VALUE_MAX(dim), "1")->add_callback(FieldSetup_changed_cb);
     }
 }
+
 void ItemFieldShader::customize(AW_root *awr) {
     if (!aw_config) {
         AW_window_simple *aws = new AW_window_simple;
@@ -317,11 +323,12 @@ void ItemFieldShader::customize(AW_root *awr) {
             FieldSelDef def(AWAR_FIELD(dim), itemtype.gb_main, itemtype.selector, FIELD_FILTER_STRING_READABLE);
             create_itemfield_selection_button(aws, def, NULL);
 
-            const int VALCOL = 8;
+            const int VALCOL = 9;
             aws->create_input_field(AWAR_VALUE_MIN(dim), VALCOL);
             aws->create_input_field(AWAR_VALUE_MAX(dim), VALCOL);
 
-            // @@@ add autoscan for value-range
+            aws->callback(makeWindowCallback(scan_value_range_cb, this, dim));
+            aws->create_button(GBS_global_string("SCAN%i", dim), "SCAN", 0);
 
             aws->at_newline();
         }
@@ -329,6 +336,102 @@ void ItemFieldShader::customize(AW_root *awr) {
         aw_config = aws;
     }
     aw_config->activate();
+}
+
+inline const char *make_limit_string(bool use_float, float f, int i) {
+    if (use_float) {
+        // cut off trailing '.0*':
+        char *s = GBS_global_string_copy("%f", f);
+        char *e = strchr(s, 0)-1;
+        while (e>s) {
+            char c = e[0];
+            if (c == '.') {
+                e[0] = 0;
+                break;
+            }
+            if (c != '0') break;
+            *e-- = 0;
+        }
+        const char *cs = GBS_static_string(s);
+        free(s);
+        return cs;
+    }
+    return GBS_global_string("%i", i);
+}
+
+void ItemFieldShader::scan_value_range_cb(int dim) {
+    AW_root    *awr       = AW_root::SINGLETON;
+    const char *fieldname = awr->awar(AWAR_FIELD(dim))->read_char_pntr();
+
+    if (strcmp(fieldname, NO_FIELD_SELECTED) == 0) {
+        aw_message("Select field to scan");
+    }
+    else {
+        int   imin = numeric_limits<int>::max();
+        int   imax = numeric_limits<int>::min();
+        float fmin = numeric_limits<float>::max();
+        float fmax = numeric_limits<float>::min();
+
+        bool seen_field = false;
+
+        GB_transaction ta(itemtype.gb_main);
+        for (GBDATA *gb_cont = itemtype.get_first_item_container(NULL, QUERY_ALL_ITEMS);
+             gb_cont;
+             gb_cont = itemtype.get_next_item_container(gb_cont, QUERY_ALL_ITEMS))
+        {
+            for (GBDATA *gb_item = itemtype.get_first_item(gb_cont, QUERY_ALL_ITEMS);
+                 gb_item;
+                 gb_item         = itemtype.get_next_item(gb_item, QUERY_ALL_ITEMS))
+            {
+                GBDATA *gb_field = GB_entry(gb_item, fieldname);
+                if (gb_field) {
+                    seen_field = true;
+
+                    GB_TYPES field_type = GB_read_type(gb_field);
+
+                    switch (field_type) {
+                        case GB_INT: {
+                            int i = GB_read_int(gb_field);
+                            imin  = min(imin, i);
+                            imax  = max(imax, i);
+                            break;
+                        }
+                        case GB_FLOAT: {
+                            float f = GB_read_float(gb_field);
+                            fmin  = min(fmin, f);
+                            fmax  = max(fmax, f);
+                            break;
+                        }
+                        default: {
+                            const char *s = GB_read_as_string(gb_field);
+
+                            float f = atof(s);
+                            int   i = atoi(s);
+
+                            imin = min(imin, i);
+                            imax = max(imax, i);
+
+                            fmin = min(fmin, f);
+                            fmax = max(fmax, f);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (seen_field) {
+            // decide whether to use float or int limits (@@@ need to improve?)
+            bool use_float = false;
+            if (imax<fmax) { // seen float
+                use_float = true;
+            }
+
+            // @@@ avoid duplicate refresh:
+            awr->awar(AWAR_VALUE_MIN(dim))->write_string(make_limit_string(use_float, fmin, imin));
+            awr->awar(AWAR_VALUE_MAX(dim))->write_string(make_limit_string(use_float, fmax, imax));
+        }
+    }
 }
 
 // ------------------
