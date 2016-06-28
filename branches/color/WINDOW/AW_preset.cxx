@@ -178,7 +178,7 @@ private:
     }
 public:
 
-    const char *parse_decl(const char *decl) {
+    const char *parse_decl(const char *decl, const char *id_prefix) {
         // returns default color
         int offset = 0;
         while (decl[offset]) {
@@ -200,7 +200,7 @@ public:
             default_color = "black";
         }
 
-        key = name2ID(colorlabel);
+        key = string(id_prefix ? id_prefix : "") + name2ID(colorlabel);
 
         return default_color;
     }
@@ -213,6 +213,7 @@ enum gc_range_type {
     GC_RANGE_INVALID,
     GC_RANGE_LINEAR,
     GC_RANGE_PLANAR,
+    GC_RANGE_SPATIAL,
 };
 
 class gc_range {
@@ -244,8 +245,9 @@ public:
     gc_range_type get_type() const { return type; }
     int get_dimension() const {
         switch (type) {
-            case GC_RANGE_LINEAR: return 1;
-            case GC_RANGE_PLANAR: return 2;
+            case GC_RANGE_LINEAR:  return 1;
+            case GC_RANGE_PLANAR:  return 2;
+            case GC_RANGE_SPATIAL: return 3;
             case GC_RANGE_INVALID: aw_assert(0); break;
         }
         return 0;
@@ -338,7 +340,7 @@ public:
     const char *get_base_name() const { return gc_base_name; }
     int get_drag_gc() const { return drag_gc_offset; }
 
-    void add_gc      (const char *gc_description, int& gc, gc_type type);
+    void add_gc      (const char *gc_description, int& gc, gc_type type, const char *id_prefix = NULL);
     void add_gc_range(const char *gc_description);
     void reserve_gcs (const char *gc_description, int& gc);
     void add_color_groups(int& gc);
@@ -552,6 +554,36 @@ void gc_range::update_colors(const AW_gc_manager *gcman, int /*changed_color*/) 
             }
         }
     }
+    else if (type == GC_RANGE_SPATIAL) {
+        aw_assert(color_count == 4); // currently exactly 4 support-colors are required for planar ranges
+
+        AW_rgb_normalized low  = get_color(0, gcman);
+        AW_rgb_normalized dim1 = get_color(1, gcman);
+        AW_rgb_normalized dim2 = get_color(2, gcman);
+        AW_rgb_normalized dim3 = get_color(3, gcman);
+
+        AW_rgb_diff low2dim1 = dim1-low;
+        AW_rgb_diff low2dim2 = dim2-low;
+        AW_rgb_diff low2dim3 = dim3-low;
+
+        for (int i1 = 0; i1<AW_SPATIAL_COLORS; ++i1) {
+            float       fact1 = i1/float(AW_SPATIAL_COLORS-1);
+            AW_rgb_diff diff1 = fact1*low2dim1;
+
+            for (int i2 = 0; i2<AW_SPATIAL_COLORS; ++i2) {
+                float       fact2 = i2/float(AW_SPATIAL_COLORS-1);
+                AW_rgb_diff diff2 = fact2*low2dim2;
+
+                for (int i3 = 0; i3<AW_SPATIAL_COLORS; ++i3) {
+                    float       fact3 = i3/float(AW_SPATIAL_COLORS-1);
+                    AW_rgb_diff diff3 = fact3*low2dim3;
+
+                    AW_rgb_normalized mixcol = low + (diff1+diff2+diff3);
+                    gcman->update_range_gc_color((i1*AW_SPATIAL_COLORS+i2)*AW_SPATIAL_COLORS+i3, AW_rgb16(mixcol).ascii());
+                }
+            }
+        }
+    }
     else {
         aw_assert(0); // unsupported range-type
     }
@@ -619,7 +651,7 @@ static void range_overlay_changed_cb(AW_root *awr, AW_gc_manager *gcmgr) {
 
 void gc_range::add_color(const string& colordef, AW_gc_manager *gcman) {
     int gc = build_range_gc_number(index, color_count);
-    gcman->add_gc(colordef.c_str(), gc, GC_TYPE_RANGE);
+    gcman->add_gc(colordef.c_str(), gc, GC_TYPE_RANGE, get_id().c_str());
     color_count++;
 }
 
@@ -635,8 +667,9 @@ void AW_gc_manager::add_gc_range(const char *gc_description) {
             gc_range_type rtype = GC_RANGE_INVALID;
             string        range_type(comma+1, colon-comma-1);
 
-            if      (range_type == "linear") rtype = GC_RANGE_LINEAR;
-            else if (range_type == "planar") rtype = GC_RANGE_PLANAR;
+            if      (range_type == "linear")  rtype = GC_RANGE_LINEAR;
+            else if (range_type == "planar")  rtype = GC_RANGE_PLANAR;
+            else if (range_type == "spatial") rtype = GC_RANGE_SPATIAL;
 
             if (rtype == GC_RANGE_INVALID) {
                 error = GBS_global_string("invalid range-type '%s'", range_type.c_str());
@@ -732,7 +765,7 @@ void AW_gc_manager::allocate_gc(int gc) const {
     device->establish_default(gc_drag);
 }
 
-void AW_gc_manager::add_gc(const char *gc_description, int& gc, gc_type type) {
+void AW_gc_manager::add_gc(const char *gc_description, int& gc, gc_type type, const char *id_prefix) {
     aw_assert(strchr("*!&", gc_description[0]) == NULL);
     aw_assert(implicated(type != GC_TYPE_RANGE, !has_color_range())); // color ranges have to be specified AFTER all other color definition strings (in call to AW_manage_GC)
 
@@ -751,9 +784,18 @@ void AW_gc_manager::add_gc(const char *gc_description, int& gc, gc_type type) {
         allocate_gc(gc + is_background); // increment only happens for AW_BOTTOM_AREA defining GCs
     }
 
-    const char *default_color = gcd.parse_decl(gc_description);
+    const char *default_color = gcd.parse_decl(gc_description, id_prefix);
 
     aw_assert(strcmp(gcd.key.c_str(), ALL_FONTS_ID) != 0); // id is reserved
+#if defined(ASSERTION_USED)
+    {
+        const string& lastId = gcd.key;
+        for (int i = 0; i<idx; ++i) {
+            const gc_desc& check = GCs[i];
+            aw_assert(check.key != lastId); // duplicate GC-ID!
+        }
+    }
+#endif
     aw_assert(implicated(gc == 0 && type != GC_TYPE_RANGE, gcd.has_font)); // first GC always has to define a font!
 
     if (default_color[0] == '{') {
@@ -883,7 +925,7 @@ AW_gc_manager *AW_manage_GC(AW_window                *aww,
      *   <gcref>     ::= '{'<descript>'}'                           "reference to another earlier defined gc"
      *   <rangedef>  ::= '*'<name>','<type>':'<gcdef>[','<gcdef>]+  "defines a GC-range (with one <gcdef> for each support color)"
      *   <name>      ::=                                            "description of range"
-     *   <type>      ::= 'linear'|'cyclic'|'planar'|'spatial'       "rangetype; implies number of required support colors: linear=2 cyclic=3 planar=3 spatial=4" // @@@ only linear type with 2 support colors is accepted/implemented yet
+     *   <type>      ::= 'linear'|'cyclic'|'planar'|'spatial'       "rangetype; implies number of required support colors: linear=2 cyclic=3 planar=3 spatial=4" // @@@ 'cyclic' type not implemented yet
      *   <groupdef>  ::= '&color_groups'                            "insert color-groups here"
      */
 
@@ -1059,8 +1101,9 @@ void AW_gc_manager::create_gc_buttons(AW_window *aws, gc_type for_gc_type) {
 
                 const char *type_info = NULL;
                 switch (range.get_type()) {
-                    case GC_RANGE_LINEAR: type_info  = "linear 1D range"; break;
-                    case GC_RANGE_PLANAR: type_info  = "planar 2D range"; break;
+                    case GC_RANGE_LINEAR:  type_info  = "linear 1D range"; break;
+                    case GC_RANGE_PLANAR:  type_info  = "planar 2D range"; break;
+                    case GC_RANGE_SPATIAL: type_info  = "spatial 3D range"; break;
                     case GC_RANGE_INVALID: type_info = "invalid range "; aw_assert(0); break;
                 }
 
