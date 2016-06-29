@@ -212,6 +212,7 @@ public:
 enum gc_range_type {
     GC_RANGE_INVALID,
     GC_RANGE_LINEAR,
+    GC_RANGE_CYCLIC,
     GC_RANGE_PLANAR,
     GC_RANGE_SPATIAL,
 };
@@ -245,7 +246,9 @@ public:
     gc_range_type get_type() const { return type; }
     int get_dimension() const {
         switch (type) {
-            case GC_RANGE_LINEAR:  return 1;
+            case GC_RANGE_LINEAR:
+            case GC_RANGE_CYCLIC:  return 1;
+
             case GC_RANGE_PLANAR:  return 2;
             case GC_RANGE_SPATIAL: return 3;
             case GC_RANGE_INVALID: aw_assert(0); break;
@@ -530,6 +533,28 @@ void gc_range::update_colors(const AW_gc_manager *gcman, int /*changed_color*/) 
             gcman->update_range_gc_color(i, AW_rgb16(low + factor*low2high).ascii());
         }
     }
+    else if (type == GC_RANGE_CYCLIC) {
+        aw_assert(color_count >= 3); // less than 3 colors does not make sense for cyclic ranges!
+
+        AW_rgb_normalized low = get_color(0, gcman);
+        int               i1  = 0;
+        for (int part = 0; part<color_count; ++part) {
+            AW_rgb_normalized high     = get_color((part+1)%color_count, gcman);
+            AW_rgb_diff       low2high = high-low;
+
+            int i2 = AW_RANGE_COLORS * (float(part+1)/color_count);
+            aw_assert(implicated((part+1) == color_count, i2 == AW_RANGE_COLORS));
+
+            for (int i = i1; i<i2; ++i) { // blend colors
+                int   o      = i-i1;
+                float factor = o/float(i2-i1-1);
+                gcman->update_range_gc_color(i, AW_rgb16(low + factor*low2high).ascii());
+            }
+
+            low = high;
+            i1  = i2;
+        }
+    }
     else if (type == GC_RANGE_PLANAR) {
         aw_assert(color_count == 3); // currently exactly 3 support-colors are required for planar ranges
 
@@ -670,6 +695,7 @@ void AW_gc_manager::add_gc_range(const char *gc_description) {
             if      (range_type == "linear")  rtype = GC_RANGE_LINEAR;
             else if (range_type == "planar")  rtype = GC_RANGE_PLANAR;
             else if (range_type == "spatial") rtype = GC_RANGE_SPATIAL;
+            else if (range_type == "cyclic")  rtype = GC_RANGE_CYCLIC;
 
             if (rtype == GC_RANGE_INVALID) {
                 error = GBS_global_string("invalid range-type '%s'", range_type.c_str());
@@ -925,7 +951,7 @@ AW_gc_manager *AW_manage_GC(AW_window                *aww,
      *   <gcref>     ::= '{'<descript>'}'                           "reference to another earlier defined gc"
      *   <rangedef>  ::= '*'<name>','<type>':'<gcdef>[','<gcdef>]+  "defines a GC-range (with one <gcdef> for each support color)"
      *   <name>      ::=                                            "description of range"
-     *   <type>      ::= 'linear'|'cyclic'|'planar'|'spatial'       "rangetype; implies number of required support colors: linear=2 cyclic=3 planar=3 spatial=4" // @@@ 'cyclic' type not implemented yet
+     *   <type>      ::= 'linear'|'cyclic'|'planar'|'spatial'       "rangetype; implies number of required support colors: linear=2 cyclic=3-N planar=3 spatial=4"
      *   <groupdef>  ::= '&color_groups'                            "insert color-groups here"
      */
 
@@ -1102,6 +1128,7 @@ void AW_gc_manager::create_gc_buttons(AW_window *aws, gc_type for_gc_type) {
                 const char *type_info = NULL;
                 switch (range.get_type()) {
                     case GC_RANGE_LINEAR:  type_info  = "linear 1D range"; break;
+                    case GC_RANGE_CYCLIC:  type_info  = "cyclic 1D range"; break;
                     case GC_RANGE_PLANAR:  type_info  = "planar 2D range"; break;
                     case GC_RANGE_SPATIAL: type_info  = "spatial 3D range"; break;
                     case GC_RANGE_INVALID: type_info = "invalid range "; aw_assert(0); break;
