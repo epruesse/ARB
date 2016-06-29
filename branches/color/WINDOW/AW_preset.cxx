@@ -1331,9 +1331,9 @@ void AW_getColorRangeNames(const AW_gc_manager *gcman, int dimension, ConstStrAr
     gcman->getColorRangeNames(dimension, ids, names);
 }
 
-void AW_activateColorRange(AW_gc_manager *gcman, const char *id) {
-    gcman->activateColorRange(id);
-}
+int AW_getFirstRangeGC(AW_gc_manager *gcman) { return gcman->first_range_gc(); }
+void AW_activateColorRange(AW_gc_manager *gcman, const char *id) { gcman->activateColorRange(id); }
+
 const char *AW_getActiveColorRangeID(AW_gc_manager *gcman, int *dimension) {
     /*! @return the ID of the active color range
      * @param gcman      of this gc-manager
@@ -1341,7 +1341,6 @@ const char *AW_getActiveColorRangeID(AW_gc_manager *gcman, int *dimension) {
      */
     return gcman->getActiveColorRangeID(dimension);
 }
-
 
 #if defined(UNIT_TESTS)
 void fake_AW_init_color_groups() {

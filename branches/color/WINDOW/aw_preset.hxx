@@ -65,6 +65,7 @@ void AW_displayColorRange(AW_device *device, int first_range_gc, AW::Position st
 void AW_getColorRangeNames(const AW_gc_manager *gcman, int dimension, ConstStrArray& ids, ConstStrArray& names);
 void AW_activateColorRange(AW_gc_manager *gcman, const char *id);
 const char *AW_getActiveColorRangeID(AW_gc_manager *gcman, int *dimension);
+int AW_getFirstRangeGC(AW_gc_manager *gcman);
 
 
 #else
