@@ -1166,7 +1166,7 @@ void AW_gc_manager::create_gc_buttons(AW_window *aws, gc_type for_gc_type) {
 
 typedef std::map<AW_gc_manager*, AW_window_simple*> GroupWindowRegistry;
 
-static void AW_create_gc_color_groups_window(AW_window *, AW_root *aw_root, AW_gc_manager *gcmgr) {
+static void AW_popup_gc_color_groups_window(AW_window *aww, AW_gc_manager *gcmgr) {
     aw_assert(AW_gc_manager::color_groups_initialized());
 
     static GroupWindowRegistry     existing_window;
@@ -1176,7 +1176,7 @@ static void AW_create_gc_color_groups_window(AW_window *, AW_root *aw_root, AW_g
     if (!aws) {
         aws = new AW_window_simple;
 
-        aws->init(aw_root, "COLOR_GROUP_DEF", "Define color groups");
+        aws->init(aww->get_root(), "COLOR_GROUP_DEF", "Define color groups");
 
         aws->at(10, 10);
         aws->auto_space(5, 5);
@@ -1201,7 +1201,7 @@ static void AW_create_gc_color_groups_window(AW_window *, AW_root *aw_root, AW_g
     aws->activate();
 }
 
-static void AW_create_gc_color_range_window(AW_window *, AW_root *aw_root, AW_gc_manager *gcmgr) {
+void AW_popup_gc_color_range_window(AW_window *aww, AW_gc_manager *gcmgr) {
     static GroupWindowRegistry     existing_window;
     GroupWindowRegistry::iterator  found = existing_window.find(gcmgr);
     AW_window_simple              *aws   = found == existing_window.end() ? NULL : found->second;
@@ -1209,7 +1209,7 @@ static void AW_create_gc_color_range_window(AW_window *, AW_root *aw_root, AW_gc
     if (!aws) {
         aws = new AW_window_simple;
 
-        aws->init(aw_root, "COLOR_RANGE_EDIT", "Edit color ranges");
+        aws->init(aww->get_root(), "COLOR_RANGE_EDIT", "Edit color ranges");
 
         aws->at(10, 10);
         aws->auto_space(5, 5);
@@ -1272,12 +1272,12 @@ AW_window *AW_create_gc_window_named(AW_root *aw_root, AW_gc_manager *gcman, con
 
     bool groups_or_range = false;
     if (gcman->has_color_groups()) {
-        aws->callback(makeWindowCallback(AW_create_gc_color_groups_window, aw_root, gcman));
+        aws->callback(makeWindowCallback(AW_popup_gc_color_groups_window, gcman));
         aws->create_autosize_button("EDIT_COLOR_GROUP", "Edit color groups", "E");
         groups_or_range = true;
     }
     if (gcman->has_color_range()) {
-        aws->callback(makeWindowCallback(AW_create_gc_color_range_window, aw_root, gcman));
+        aws->callback(makeWindowCallback(AW_popup_gc_color_range_window, gcman));
         aws->create_autosize_button("EDIT_COLOR_RANGE", "Edit color ranges", "r");
         groups_or_range = true;
     }
