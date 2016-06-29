@@ -59,7 +59,8 @@ public:
                                   "tree",
                                   "tree shading",
                                   "tree_shading.hlp",
-                                  NT_TreeShader::reshade))
+                                  NT_TreeShader::reshade,
+                                  AWT_GC_NONE_MARKED))
     {
 #if defined(IMPLEMENT_TEST_SHADER)
         ShaderPluginPtr relpos_shader = new RelposShader;
@@ -79,12 +80,7 @@ public:
     ShadedValue calc_shaded_inner_GC(const ShadedValue& left, float left_ratio, const ShadedValue& right) const OVERRIDE {
         return mix(left, left_ratio, right);
     }
-    int to_GC(const ShadedValue& val) const OVERRIDE {
-        if (val->is_defined()) {
-            return AWT_GC_FIRST_RANGE_COLOR + val->range_offset(); // @@@ delegate to ItemShader? (shader needs to know first range-gc and an "undefined"-gc)
-        }
-        return AWT_GC_NONE_MARKED; // @@@ who should handle undefined values? (eg. happens if field-shader defines no (valid) field)
-    }
+    int to_GC(const ShadedValue& val) const OVERRIDE { return shader->to_GC(val); }
 
     void popup_config() const {
         shader->popup_config_window(AW_root::SINGLETON);

@@ -43,7 +43,7 @@ void TEST_shader_interface() {
         AW_gc_manager *NOGCMAN = NULL;
 
         BoundItemSel  sel(gb_main, SPECIES_get_selector());
-        ItemShader   *shader = registerItemShader(NOROOT, NOGCMAN, sel, SHADY, "undescribed", "", DummyPlugin::reshade);
+        ItemShader   *shader = registerItemShader(NOROOT, NOGCMAN, sel, SHADY, "undescribed", "", DummyPlugin::reshade, 0);
         TEST_REJECT_NULL(shader);
 
         ItemShader *unknown = findItemShader("unknown");
@@ -145,8 +145,8 @@ class ItemShader_impl : public ItemShader {
     void setup_new_dimension();
 
 public:
-    ItemShader_impl(AW_gc_manager *gcman_, const string& id_, const string& description_, const string& help_id_, ReshadeCallback rcb) :
-        ItemShader(id_, description_, rcb),
+    ItemShader_impl(AW_gc_manager *gcman_, const string& id_, const string& description_, const string& help_id_, ReshadeCallback rcb, int undef_gc) :
+        ItemShader(id_, description_, rcb, undef_gc),
         help_id(help_id_),
         awar_prefix(GBS_global_string("tmp/shader/%s", get_id().c_str())),
         gcman(gcman_),
@@ -354,6 +354,8 @@ void ItemShader_impl::init() {
     // - activate plugin stored in AWAR
 
     is_assert(!plugins.empty()); // you have to register all plugins before calling init
+
+    first_range_gc = AW_getFirstRangeGC(gcman);
     selected_plugin_changed_cb(AW_root::SINGLETON, this);
 }
 
@@ -437,7 +439,7 @@ typedef vector<ItemShader_impl> Shaders;
 
 static Shaders registered;
 
-ItemShader *registerItemShader(AW_root *awr, AW_gc_manager *gcman, BoundItemSel& itemtype, const char *unique_id, const char *description, const char *help_id, ReshadeCallback reshade_cb) {
+ItemShader *registerItemShader(AW_root *awr, AW_gc_manager *gcman, BoundItemSel& itemtype, const char *unique_id, const char *description, const char *help_id, ReshadeCallback reshade_cb, int undef_gc) {
     /*! create a new ItemShader
      *
      * @param awr             the application root
@@ -447,6 +449,7 @@ ItemShader *registerItemShader(AW_root *awr, AW_gc_manager *gcman, BoundItemSel&
      * @param description     short description (eg. "tree shading")
      * @param help_id         helpfile
      * @param reshade_cb      callback which updates the shading + refreshes the display
+     * @param undef_gc        GC reported for undefined ShadedValues
      *
      * (Note: the reshade_cb may be called very often! best is to trigger a temp. DB-awar like AWAR_TREE_RECOMPUTE)
      */
@@ -455,7 +458,7 @@ ItemShader *registerItemShader(AW_root *awr, AW_gc_manager *gcman, BoundItemSel&
         return NULL;
     }
 
-    registered.push_back(ItemShader_impl(gcman, unique_id, description, help_id, reshade_cb));
+    registered.push_back(ItemShader_impl(gcman, unique_id, description, help_id, reshade_cb, undef_gc));
     ItemShader_impl& new_shader = registered.back();
     if (awr) new_shader.init_awars(awr);
     new_shader.register_plugin(makeItemFieldShader(itemtype));

@@ -147,8 +147,8 @@ public:
 
 
     virtual ShadedValue shade(GBDATA *gb_item) const = 0;
-    
-    bool overlay_marked() const; // true if shader-plugin currently likes to display marked species in marked color
+
+    bool overlay_marked() const;       // true if shader-plugin currently likes to display marked species in marked color
     bool overlay_color_groups() const; // true if shader-plugin currently likes to display color groups
 
     virtual int get_dimension() const = 0; // returns (current) dimension of shader-plugin
@@ -175,6 +175,8 @@ class ItemShader {
     std::string     description;
     ReshadeCallback reshade_cb;
 
+    int undefined_gc;
+
     int  reshade_delay_level;
     bool reshade_was_suppressed;
 
@@ -191,14 +193,17 @@ class ItemShader {
 
 protected:
     ShaderPluginPtr active_plugin; // null means: no plugin active
+    int             first_range_gc; // has to be set by init()!
 
 public:
-    ItemShader(const std::string& id_, const std::string& description_, ReshadeCallback rcb) :
+    ItemShader(const std::string& id_, const std::string& description_, ReshadeCallback rcb, int undefined_gc_) :
         id(id_),
         description(description_),
         reshade_cb(rcb),
+        undefined_gc(undefined_gc_),
         reshade_delay_level(0),
-        reshade_was_suppressed(false)
+        reshade_was_suppressed(false),
+        first_range_gc(-1)
     {}
     virtual ~ItemShader() {}
 
@@ -222,6 +227,11 @@ public:
     ShadedValue shade(GBDATA *gb_item) const {
         is_assert(active()); // don't call if no shader is active
         return active() ? active_plugin->shade(gb_item) : ValueTuple::undefined();
+    }
+    int to_GC(const ShadedValue& val) const {
+        is_assert(first_range_gc>0);
+        if (val->is_defined()) return first_range_gc + val->range_offset();
+        return undefined_gc;
     }
 
     void trigger_reshade_callback(ReshadeMode mode) {
@@ -256,7 +266,7 @@ inline void ShaderPlugin::trigger_reshade_cb(ReshadeMode mode) {
 // -----------------------------
 //      ItemShader registry
 
-ItemShader *registerItemShader(AW_root *awr, AW_gc_manager *gcman, BoundItemSel& itemtype, const char *unique_id, const char *description, const char *help_id, ReshadeCallback reshade);
+ItemShader *registerItemShader(AW_root *awr, AW_gc_manager *gcman, BoundItemSel& itemtype, const char *unique_id, const char *description, const char *help_id, ReshadeCallback reshade, int undef_gc);
 ItemShader *findItemShader(const char *id);
 void        destroyAllItemShaders();
 
