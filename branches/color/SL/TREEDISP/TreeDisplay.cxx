@@ -66,7 +66,7 @@ AW_gc_manager *AWT_graphic_tree::init_devices(AW_window *aww, AW_device *device,
                      ntw->get_gc_base_name(),
                      device, AWT_GC_CURSOR, AWT_GC_MAX, AW_GCM_DATA_AREA,
                      makeGcChangedCallback(TREE_GC_changed_cb, ntw),
-                     "#3be",
+                     "#8ce",
 
                      // Important note :
                      // Many gc indices are shared between ABR_NTREE and ARB_PARSIMONY
@@ -78,13 +78,13 @@ AW_gc_manager *AWT_graphic_tree::init_devices(AW_window *aww, AW_device *device,
                      //       with higher gc(-index), i.e. marked branches are drawn on top of unmarked branches.
 
                      "Cursor$white",
-                     "Branch remarks$#b6ffb6",
-                     "+-Bootstrap$#53d3ff",    "-B.(limited)$white",
+                     "Branch remarks$#3d8a99",
+                     "+-Bootstrap$#abe3ff",    "-B.(limited)$#cfe9ff",
                      "-IRS group box$#000",
                      "Marked$#ffe560",
-                     "Some marked$#bb8833",
-                     "Not marked$#622300",
-                     "Zombies etc.$#977a0e",
+                     "Some marked$#d9c45c",
+                     "Not marked$#5d5d5d",
+                     "Zombies etc.$#7aa3cc",
 
                      "+-None (black)$#000000", "-All (white)$#ffffff",
 
@@ -96,11 +96,11 @@ AW_gc_manager *AWT_graphic_tree::init_devices(AW_window *aww, AW_device *device,
                      "&color_groups", // use color groups
 
                      // color ranges:
-                     "*Linear,linear:+-lower$#f9f,-upper$#ff9",
-                     "*Planar,planar:+-off$#aaa,-dim1$#f99,"
-                     /*          */ "-dim2$#99f",
-                     "*Spatial,spatial:+-off$#000,-dim1$#f00,"
-                     /*            */ "+-dim2$#0f0,-dim3$#00f",
+                     "*Linear,linear:+-lower$#a00,-upper$#0a0",
+                     "*Planar,planar:+-off$#000,-dim1$#a00,"
+                     /*          */ "-dim2$#0a0",
+                     "*Spatial,spatial:+-off$#000,-dim1$#a00,"
+                     /*            */ "+-dim2$#0a0,-dim3$#00a",
 
                      NULL);
 
