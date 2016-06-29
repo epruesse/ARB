@@ -240,7 +240,7 @@ class ItemFieldShader: public ShaderPlugin {
         if (install) add_used_fields(wanted); // otherwise uninstall all
         update_db_callbacks(wanted);
     }
-    static void field_updated_in_DB_cb(UNFIXED, const ItemFieldShader *shader) {
+    static void field_updated_in_DB_cb(UNFIXED, ItemFieldShader *shader) {
         shader->trigger_reshade_cb(SIMPLE_RESHADE);
     }
 

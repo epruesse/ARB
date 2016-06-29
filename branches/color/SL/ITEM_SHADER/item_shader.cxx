@@ -168,7 +168,7 @@ public:
     void init_awars(AW_root *awr);
     void init() OVERRIDE;
 
-    void check_dimension_change() const OVERRIDE;
+    void check_dimension_change() OVERRIDE;
 
     void popup_config_window(AW_root *awr) OVERRIDE;
     void configure_active_plugin(AW_root *awr) {
@@ -271,7 +271,7 @@ bool ItemShader_impl::activate_plugin(const string& plugin_id) {
 
     return (strcmp(awar_plugin->read_char_pntr(), plugin_id.c_str()) == 0);
 }
-void ItemShader_impl::check_dimension_change() const {
+void ItemShader_impl::check_dimension_change() {
     aw_assert(active_plugin.isSet());
 
     int wanted_dim = active_plugin->get_dimension();
