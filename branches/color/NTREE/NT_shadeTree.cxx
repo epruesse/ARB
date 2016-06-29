@@ -45,6 +45,9 @@ class NT_TreeShader: public AP_TreeShader, virtual Noncopyable {
     ItemShader *shader; // (owned by registry in ITEM_SHADER)
 
     static void reshade() {
+#if defined(DEBUG)
+        fprintf(stderr, "[NT_TreeShader::reshade] @ %zu\n", clock());
+#endif
         AW_root::SINGLETON->awar(AWAR_TREE_RECOMPUTE)->touch();
     }
 

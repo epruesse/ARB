@@ -181,7 +181,9 @@ public:
     static void configure_active_plugin_cb(AW_window *aww, ItemShader_impl *shader) {
         shader->configure_active_plugin(aww->get_root());
     }
-    static void trigger_reshade_cb(AW_root*,ItemShader_impl *shader) { shader->reshade_cb(); }
+    static void trigger_reshade_cb(AW_root*,ItemShader_impl *shader) {
+        shader->trigger_reshade_callback(SIMPLE_RESHADE);
+    }
 };
 
 struct has_id {
@@ -230,6 +232,8 @@ bool ItemShader_impl::activate_plugin_impl(const string& plugin_id) {
         if (prevActive.isSet()) prevActive->activate(false);
         if (active_plugin.isSet()) active_plugin->activate(true);
 
+        DelayReshade here(this);
+
         AW_root *awr = AW_root::SINGLETON;
         if (awr) {
             int dim;
@@ -255,8 +259,7 @@ bool ItemShader_impl::activate_plugin_impl(const string& plugin_id) {
 
             awr->awar(AWAR_SHOW_DIMENSION)->write_int(dim);
         }
-
-        reshade_cb();
+        trigger_reshade_callback(SIMPLE_RESHADE);
     }
     return changed;
 }

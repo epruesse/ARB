@@ -171,18 +171,34 @@ typedef SmartPtr<ShaderPlugin> ShaderPluginPtr;
 typedef void (*ReshadeCallback)();
 
 class ItemShader {
-    std::string id;
-    std::string description;
+    std::string     id;
+    std::string     description;
+    ReshadeCallback reshade_cb;
+
+    int  reshade_delay_level;
+    bool reshade_was_suppressed;
+
+    void delay_reshade_callbacks(bool suppress) {
+        reshade_delay_level += suppress ? 1 : -1;
+        is_assert(reshade_delay_level>=0);
+
+        if (!reshade_delay_level) { // switched off delay
+            if (reshade_was_suppressed) reshade_cb();
+        }
+        reshade_was_suppressed = false;
+    }
+    friend class DelayReshade;
 
 protected:
-    ReshadeCallback reshade_cb;
     ShaderPluginPtr active_plugin; // null means: no plugin active
 
 public:
     ItemShader(const std::string& id_, const std::string& description_, ReshadeCallback rcb) :
         id(id_),
         description(description_),
-        reshade_cb(rcb)
+        reshade_cb(rcb),
+        reshade_delay_level(0),
+        reshade_was_suppressed(false)
     {}
     virtual ~ItemShader() {}
 
@@ -208,9 +224,24 @@ public:
         return active() ? active_plugin->shade(gb_item) : ValueTuple::undefined();
     }
 
-    void trigger_reshade_cb(ReshadeMode mode) {
+    void trigger_reshade_callback(ReshadeMode mode) {
         if (mode == CHECK_DIMENSION_CHANGE) check_dimension_change();
-        reshade_cb();
+
+        if (reshade_delay_level) reshade_was_suppressed = true;
+        else                     reshade_cb();
+    }
+};
+
+class DelayReshade : virtual Noncopyable {
+    ItemShader *shader;
+public:
+    DelayReshade(ItemShader *shader_) :
+        shader(shader_)
+    {
+        shader->delay_reshade_callbacks(true);
+    }
+    ~DelayReshade() {
+        shader->delay_reshade_callbacks(false);
     }
 };
 
@@ -219,7 +250,7 @@ inline const char *ShaderPlugin::get_shader_local_id() const {
     return GBS_global_string("%s_%s", plugged_into->get_id().c_str(), get_id().c_str());
 }
 inline void ShaderPlugin::trigger_reshade_cb(ReshadeMode mode) {
-    if (plugged_into) plugged_into->trigger_reshade_cb(mode);
+    if (plugged_into) plugged_into->trigger_reshade_callback(mode);
 }
 
 // -----------------------------
