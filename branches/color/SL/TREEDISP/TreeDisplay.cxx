@@ -97,6 +97,9 @@ AW_gc_manager *AWT_graphic_tree::init_devices(AW_window *aww, AW_device *device,
 
                      // color ranges:
                      "*Linear,linear:+-lower$#a00,-upper$#0a0",
+                     "*Rainbow,cyclic:+-col1$#a00,-col2$#990,"
+                     /*           */ "+-col3$#0a0,-col4$#0aa,"
+                     /*           */ "+-col5$#00a,-col6$#b0b",
                      "*Planar,planar:+-off$#000,-dim1$#a00,"
                      /*          */ "-dim2$#0a0",
                      "*Spatial,spatial:+-off$#000,-dim1$#a00,"

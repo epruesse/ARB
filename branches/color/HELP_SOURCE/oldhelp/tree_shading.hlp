@@ -17,6 +17,13 @@ DESCRIPTION     Allows to select if and how to shade the tree.
                 In the 'Active shader' section you can select which of the available shaders
                 shall be used. To configure the selected shader press 'Configure'.
 
+                In the 'Active color range' section you can select which color-range
+                to use for the selected shader. The available color-ranges depend on
+                the (current) dimension of the shader and is displayed below.
+
+                    The 'Color setup' button pops-up the color-range setup window,
+                    where you may configure the colors of all defined color-ranges.
+
                 In the 'Overlay' section you can define whether to overlay the
                 tree shading with
 

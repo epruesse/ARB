@@ -136,10 +136,13 @@ class ItemShader_impl : public ItemShader {
     string  help_id;
     string  awar_prefix;
 
-    RefPtr<AW_gc_manager> gcman;
-    RefPtr<AW_window>     aw_cfg; // config window
+    RefPtr<AW_gc_manager>         gcman;
+    RefPtr<AW_window>             aw_cfg;            // config window
+    RefPtr<AW_option_menu_struct> range_option_menu; // color-range selector in config window
 
     ShaderPluginPtr find_plugin(const string& plugin_id) const;
+
+    void setup_new_dimension();
 
 public:
     ItemShader_impl(AW_gc_manager *gcman_, const string& id_, const string& description_, const string& help_id_, ReshadeCallback rcb) :
@@ -147,7 +150,8 @@ public:
         help_id(help_id_),
         awar_prefix(GBS_global_string("tmp/shader/%s", get_id().c_str())),
         gcman(gcman_),
-        aw_cfg(NULL)
+        aw_cfg(NULL),
+        range_option_menu(NULL)
     {}
 
     void register_plugin(ShaderPluginPtr plugin) OVERRIDE;
@@ -171,6 +175,9 @@ public:
     void check_dimension_change() OVERRIDE;
 
     void popup_config_window(AW_root *awr) OVERRIDE;
+
+    static void trigger_reshade_cb(AW_root*,ItemShader_impl *shader) { shader->trigger_reshade_callback(SIMPLE_RESHADE); }
+
     void configure_active_plugin(AW_root *awr) {
         if (active_plugin.isSet()) {
             if (active_plugin->customizable()) active_plugin->customize(awr);
@@ -178,12 +185,24 @@ public:
         }
         else aw_message("Please select a shader");
     }
-    static void configure_active_plugin_cb(AW_window *aww, ItemShader_impl *shader) {
-        shader->configure_active_plugin(aww->get_root());
+    static void configure_active_plugin_cb(AW_window *aww, ItemShader_impl *shader) { shader->configure_active_plugin(aww->get_root()); }
+
+    void selected_plugin_changed_cb(AW_root *awr) {
+        AW_awar *awar_plugin = awr->awar(AWAR_SELECTED_PLUGIN);
+        if (!activate_plugin_impl(awar_plugin->read_char_pntr())) {
+            awar_plugin->write_string(NO_PLUGIN_SELECTED);
+        }
     }
-    static void trigger_reshade_cb(AW_root*,ItemShader_impl *shader) {
-        shader->trigger_reshade_callback(SIMPLE_RESHADE);
+    static void selected_plugin_changed_cb(AW_root *awr, ItemShader_impl *shader) { shader->selected_plugin_changed_cb(awr); }
+
+    void selected_range_changed_cb(AW_root *awr) {
+        AW_activateColorRange(gcman, awr->awar(AWAR_GUI_RANGE)->read_char_pntr());
+        trigger_reshade_callback(SIMPLE_RESHADE);
     }
+    static void selected_range_changed_cb(AW_root *awr, ItemShader_impl *shader) { shader->selected_range_changed_cb(awr); }
+
+    void configure_colors_cb(AW_window *aww) { AW_popup_gc_color_range_window(aww, gcman); }
+    static void configure_colors_cb(AW_window *aww, ItemShader_impl *shader) { shader->configure_colors_cb(aww); }
 };
 
 struct has_id {
@@ -236,28 +255,20 @@ bool ItemShader_impl::activate_plugin_impl(const string& plugin_id) {
 
         AW_root *awr = AW_root::SINGLETON;
         if (awr) {
-            int dim;
-
             if (active_plugin.isSet()) {
-                dim = active_plugin->get_dimension();
-
                 // map common GUI awars to awars of active plugin:
                 awr->awar(AWAR_GUI_RANGE)         ->map(active_plugin->AWAR_PLUGIN_RANGE);
                 awr->awar(AWAR_GUI_OVERLAY_MARKED)->map(active_plugin->AWAR_PLUGIN_OVERLAY_MARKED);
                 awr->awar(AWAR_GUI_OVERLAY_GROUPS)->map(active_plugin->AWAR_PLUGIN_OVERLAY_GROUPS);
-
                 check_dimension_change();
             }
             else {
-                dim = 0;
-
                 // unmap GUI awars:
                 awr->awar(AWAR_GUI_RANGE)->unmap();
                 awr->awar(AWAR_GUI_OVERLAY_MARKED)->unmap();
                 awr->awar(AWAR_GUI_OVERLAY_GROUPS)->unmap();
+                setup_new_dimension();
             }
-
-            awr->awar(AWAR_SHOW_DIMENSION)->write_int(dim);
         }
         trigger_reshade_callback(SIMPLE_RESHADE);
     }
@@ -274,21 +285,59 @@ bool ItemShader_impl::activate_plugin(const string& plugin_id) {
 
     return (strcmp(awar_plugin->read_char_pntr(), plugin_id.c_str()) == 0);
 }
+void ItemShader_impl::setup_new_dimension() {
+    AW_root *awr = AW_root::SINGLETON;
+    int      dim = active_plugin.isSet() ? active_plugin->get_dimension() : 0;
+
+    AW_awar *awar_range = awr->awar(AWAR_GUI_RANGE);
+
+    if (dim>0) {
+        // auto-select another color-range (if selected does not match dimension)
+
+        ConstStrArray ids, names;
+        AW_getColorRangeNames(gcman, dim, ids, names);
+        aw_assert(!ids.empty()); // no range defined with dimension 'dim' // @@@ check during ItemShader-setup!
+
+        const char *selected_range_id  = awar_range->read_char_pntr();
+        bool        seen_selected      = false;
+
+        if (aw_cfg) aw_cfg->clear_option_menu(range_option_menu);
+        for (unsigned i = 0; i<ids.size(); ++i) {
+            if (aw_cfg) aw_cfg->insert_option(names[i], "", ids[i]);
+            if (!seen_selected && strcmp(selected_range_id, ids[i]) == 0) { // check if awar-value exists
+                seen_selected = true;
+            }
+        }
+        if (aw_cfg) aw_cfg->update_option_menu();
+
+        if (!seen_selected) selected_range_id = ids[0]; // autoselect first color-range
+
+        awar_range->write_string(selected_range_id);
+        AW_activateColorRange(gcman, selected_range_id);
+    }
+    else {
+        if (aw_cfg) {
+            aw_cfg->clear_option_menu(range_option_menu);
+            aw_cfg->insert_option("<none>", "", "");
+            aw_cfg->update_option_menu();
+        }
+        awar_range->write_string("");
+    }
+
+    awr->awar(AWAR_SHOW_DIMENSION)->write_int(dim);
+}
 void ItemShader_impl::check_dimension_change() {
     aw_assert(active_plugin.isSet());
 
     int wanted_dim = active_plugin->get_dimension();
     if (wanted_dim>0) {
         int         range_dim;
-        const char *range_id = AW_getActiveColorRangeID(gcman, &range_dim);
+        /*const char *range_id = */ AW_getActiveColorRangeID(gcman, &range_dim);
 
-        if (wanted_dim != range_dim) { // active color-range has wrong dimension
-            // auto-select another color-range
-            ConstStrArray ids, names;
-            AW_getColorRangeNames(gcman, wanted_dim, ids, names);
-            aw_assert(!ids.empty()); // no range defined with dimension 'wanted_dim' // @@@ check during ItemShader-setup!
+        int awar_dim = AW_root::SINGLETON->awar(AWAR_SHOW_DIMENSION)->read_int();
 
-            AW_activateColorRange(gcman, ids[0]);
+        if (wanted_dim != range_dim || wanted_dim != awar_dim) { // active color-range has wrong dimension (or config window needs update)
+            setup_new_dimension();
         }
     }
 }
@@ -296,12 +345,6 @@ void ItemShader_impl::check_dimension_change() {
 // ------------------------
 //      user-interface
 
-static void selected_plugin_changed_cb(AW_root *awr, ItemShader_impl *shader) {
-    AW_awar *awar_plugin = awr->awar(shader->AWAR_SELECTED_PLUGIN);
-    if (!shader->activate_plugin_impl(awar_plugin->read_char_pntr())) {
-        awar_plugin->write_string(NO_PLUGIN_SELECTED);
-    }
-}
 static void global_colorgroup_use_changed_cb(AW_root *awr, ItemShader_impl *shader) {
     awr->awar(shader->AWAR_GUI_OVERLAY_GROUPS)->write_int(awr->awar(AW_get_color_groups_active_awarname())->read_int());
 }
@@ -316,11 +359,12 @@ void ItemShader_impl::init() {
 
 void ItemShader_impl::init_awars(AW_root *awr) {
     RootCallback Reshade_cb       = makeRootCallback(ItemShader_impl::trigger_reshade_cb, this);
-    RootCallback PluginChanged_cb = makeRootCallback(selected_plugin_changed_cb, this);
+    RootCallback PluginChanged_cb = makeRootCallback(ItemShader_impl::selected_plugin_changed_cb, this);
+    RootCallback RangeChanged_cb  = makeRootCallback(ItemShader_impl::selected_range_changed_cb, this);
 
     awr->awar_string(AWAR_SELECTED_PLUGIN, NO_PLUGIN_SELECTED)->add_callback(PluginChanged_cb);
-    awr->awar_int(AWAR_SHOW_DIMENSION, 0);
-    awr->awar_string(AWAR_GUI_RANGE, "");
+    awr->awar_int(AWAR_SHOW_DIMENSION, -1);
+    awr->awar_string(AWAR_GUI_RANGE, "")->add_callback(RangeChanged_cb);
     awr->awar_int(AWAR_GUI_OVERLAY_GROUPS, 0)->add_callback(Reshade_cb);
     awr->awar_int(AWAR_GUI_OVERLAY_MARKED, 0)->add_callback(Reshade_cb);
 
@@ -361,6 +405,15 @@ void ItemShader_impl::popup_config_window(AW_root *awr) {
         aws->callback(makeWindowCallback(ItemShader_impl::configure_active_plugin_cb, this));
         aws->create_autosize_button("configure", "Configure");
 
+        aws->at("range");
+        range_option_menu = aws->create_option_menu(AWAR_GUI_RANGE, false);
+        aws->insert_option("<none>", "", "");
+        aws->update_option_menu();
+
+        aws->at("color_cfg");
+        aws->callback(makeWindowCallback(ItemShader_impl::configure_colors_cb, this));
+        aws->create_autosize_button("color_cfg", "Color setup");
+
         aws->at("groups");
         aws->create_toggle(AWAR_GUI_OVERLAY_GROUPS);
 
@@ -371,6 +424,8 @@ void ItemShader_impl::popup_config_window(AW_root *awr) {
         aws->create_button(0, AWAR_SHOW_DIMENSION, 0, "+");
 
         aw_cfg = aws;
+
+        setup_new_dimension();
     }
     aw_cfg->activate();
 }
