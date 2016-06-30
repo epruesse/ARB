@@ -43,7 +43,9 @@ using std::string;
 #define AWAR_RANGE_OVERLAY       "tmp/GCS/range_overlay"
 #define AWAR_COLOR_GROUPS_PREFIX "color_groups"
 #define AWAR_COLOR_GROUPS_USE    AWAR_COLOR_GROUPS_PREFIX "/use"  // int : whether to use the colors in display or not
-#define GC_AWARNAME_TPL_PREFIX   "GCS/%s/MANAGE_GCS/%s"
+
+#define ATPL_GCMAN_LOCAL "GCS/%s"                          // awar prefix for awars local to gc-manager
+#define ATPL_GC_LOCAL    ATPL_GCMAN_LOCAL "/MANAGE_GCS/%s" // awar prefix for awars local to a single gc
 
 #define ALL_FONTS_ID "all_fonts"
 
@@ -63,16 +65,16 @@ static const char* gc_awarname(const char *tpl, const char *gcman_id, const stri
     return &*awar_name;
 }
 
-static const char* color_awarname   (const char* gcman_id, const string& colname) { return gc_awarname(GC_AWARNAME_TPL_PREFIX "/colorname", gcman_id, colname); }
-static const char* fontname_awarname(const char* gcman_id, const string& colname) { return gc_awarname(GC_AWARNAME_TPL_PREFIX "/font",      gcman_id, colname); }
-static const char* fontsize_awarname(const char* gcman_id, const string& colname) { return gc_awarname(GC_AWARNAME_TPL_PREFIX "/size",      gcman_id, colname); }
-static const char* fontinfo_awarname(const char* gcman_id, const string& colname) { return gc_awarname(GC_AWARNAME_TPL_PREFIX "/info",      gcman_id, colname); }
+inline const char* color_awarname   (const char* gcman_id, const string& colname) { return gc_awarname(ATPL_GC_LOCAL "/colorname", gcman_id, colname); }
+inline const char* fontname_awarname(const char* gcman_id, const string& colname) { return gc_awarname(ATPL_GC_LOCAL "/font",      gcman_id, colname); }
+inline const char* fontsize_awarname(const char* gcman_id, const string& colname) { return gc_awarname(ATPL_GC_LOCAL "/size",      gcman_id, colname); }
+inline const char* fontinfo_awarname(const char* gcman_id, const string& colname) { return gc_awarname(ATPL_GC_LOCAL "/info",      gcman_id, colname); }
 
-static const char *colorgroupname_awarname(int color_group) {
+inline const char *colorgroupname_awarname(int color_group) {
     if (!valid_color_group(color_group)) return NULL;
     return GBS_global_string(AWAR_COLOR_GROUPS_PREFIX "/name%i", color_group);
 }
-static const char* default_colorgroup_name(int color_group) {
+inline const char* default_colorgroup_name(int color_group) {
     return GBS_global_string(AW_COLOR_GROUP_PREFIX "%i", color_group);
 }
 
