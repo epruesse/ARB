@@ -40,7 +40,7 @@
 
 using std::string;
 
-#define AWAR_RANGE_OVERLAY       "tmp/GCS/range_overlay"
+#define AWAR_RANGE_OVERLAY       "tmp/GCS/range/overlay"          // global toggle (used for all gc-managers!)
 #define AWAR_COLOR_GROUPS_PREFIX "color_groups"
 #define AWAR_COLOR_GROUPS_USE    AWAR_COLOR_GROUPS_PREFIX "/use"  // int : whether to use the colors in display or not
 
@@ -57,12 +57,19 @@ CONSTEXPR_RETURN inline bool valid_color_group(int color_group) {
     return color_group>0 && color_group<=AW_COLOR_GROUPS;
 }
 
-static const char* gc_awarname(const char *tpl, const char *gcman_id, const string& colname) {
-    aw_assert(GB_check_key(colname.c_str()) == NULL); // colname has to be a key
+inline const char* gcman_specific_awarname(const char *tpl, const char *gcman_id, const char *localpart) {
+    aw_assert(GB_check_key(gcman_id)   == NULL); // has to be a key
+    aw_assert(GB_check_hkey(localpart) == NULL); // has to be a key or hierarchical key
 
     static SmartCharPtr awar_name;
-    awar_name = GBS_global_string_copy(tpl, gcman_id, colname.c_str());
+    awar_name = GBS_global_string_copy(tpl, gcman_id, localpart);
     return &*awar_name;
+}
+inline const char* gc_awarname(const char *tpl, const char *gcman_id, const string& colname) {
+    return gcman_specific_awarname(tpl, gcman_id, colname.c_str());
+}
+inline const char* gcman_awarname(const char* gcman_id, const char *localpart) {
+    return gcman_specific_awarname(ATPL_GCMAN_LOCAL "/%s", gcman_id, localpart);
 }
 
 inline const char* color_awarname   (const char* gcman_id, const string& colname) { return gc_awarname(ATPL_GC_LOCAL "/colorname", gcman_id, colname); }
@@ -321,7 +328,7 @@ public:
           first_colorgroup_idx(NO_INDEX),
           aww(aww_),
           colorindex_base(colorindex_base_),
-          active_range_number(0), // @@@ should be initialized to last-used-value at startup
+          active_range_number(-1), // => will be initialized from init_color_ranges
           changed_cb(makeGcChangedCallback(ignore_change_cb)),
           suppress_changed_cb(false),
           did_suppress_change(GC_NOTHING_CHANGED)
@@ -330,7 +337,7 @@ public:
     void init_all_fonts() const;
     void update_all_fonts(bool sizeChanged) const;
 
-    void init_color_ranges(int& gc) const;
+    void init_color_ranges(int& gc);
     bool has_color_range() const { return !color_ranges.empty(); }
     int first_range_gc() const { return drag_gc_offset - AW_RANGE_COLORS; }
 
@@ -391,6 +398,9 @@ public:
     void getColorRangeNames(int dimension, ConstStrArray& ids, ConstStrArray& names) const;
     void activateColorRange(const char *id);
     const char *getActiveColorRangeID(int *dimension) const;
+
+    const char *awarname_active_range() const { return gcman_awarname(get_base_name(), "range/active"); }
+    void active_range_changed_cb(AW_root *awr);
 };
 
 const char **AW_gc_manager::color_group_defaults = NULL;
@@ -725,30 +735,40 @@ void AW_gc_manager::add_gc_range(const char *gc_description) {
     }
 }
 
-void AW_gc_manager::init_color_ranges(int& gc) const {
+void AW_gc_manager::active_range_changed_cb(AW_root *awr) {
+    // read AWAR (awarname_active_range), compare with 'active_range_number', if differs = > update colors
+    // (triggered by AWAR)
+
+    unsigned wanted_range_number = awr->awar(awarname_active_range())->read_int();
+    if (wanted_range_number != active_range_number) {
+        aw_assert(wanted_range_number<color_ranges.size());
+
+        active_range_number = wanted_range_number;
+        const gc_range& active_range = color_ranges[active_range_number];
+        active_range.update_colors(this, -1); // -1 means full update
+    }
+}
+static void active_range_changed_cb(AW_root *awr, AW_gc_manager *gcman) { gcman->active_range_changed_cb(awr); }
+
+void AW_gc_manager::init_color_ranges(int& gc) {
     if (has_color_range()) {
         aw_assert(gc == first_range_gc()); // 'drag_gc_offset' is wrong (is passed as 'base_drag' to AW_manage_GC)
         int last_gc = gc + AW_RANGE_COLORS-1;
         while (gc<=last_gc) allocate_gc(gc++);
 
-        aw_assert(active_range_number<color_ranges.size());
-
-        const gc_range& active_range = color_ranges[active_range_number];
-        active_range.update_colors(this, -1); // -1 means full update
+        active_range_changed_cb(AW_root::SINGLETON); // either initializes default-range (=0) or the range-in-use when saving props
     }
 }
 void AW_gc_manager::activateColorRange(const char *id) {
-    unsigned num = 0;
+    unsigned wanted_range_number = 0;
     for (gc_range_container::const_iterator r = color_ranges.begin(); r != color_ranges.end(); ++r) {
         const gc_range& range = *r;
         if (range.get_id() == id) {
-            if (active_range_number != num) { // do not recalculate colors if already active
-                active_range_number = num;
-                range.update_colors(this, -1); // -1 means full update
-            }
+            aw_assert(wanted_range_number<color_ranges.size());
+            AW_root::SINGLETON->awar(awarname_active_range())->write_int(wanted_range_number); // => will update color range of all identical gc-managers
             break;
         }
-        ++num;
+        ++wanted_range_number;
     }
 }
 const char *AW_gc_manager::getActiveColorRangeID(int *dimension) const {
@@ -1007,6 +1027,7 @@ AW_gc_manager *AW_manage_GC(AW_window                *aww,
     }
 
     aw_root->awar_int(AWAR_RANGE_OVERLAY, 0)->add_callback(makeRootCallback(range_overlay_changed_cb, gcmgr));
+    aw_root->awar_int(gcmgr->awarname_active_range(), 0)->add_callback(makeRootCallback(active_range_changed_cb, gcmgr));
 
     gcmgr->init_color_ranges(gc);
     gcmgr->init_all_fonts();
