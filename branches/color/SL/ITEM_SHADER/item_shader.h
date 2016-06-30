@@ -158,7 +158,7 @@ public:
 
     virtual void activate(bool on) = 0; // called with true when plugin gets activated, with false when it gets deactivated
 
-    void trigger_reshade_cb(ReshadeMode mode);
+    void trigger_reshade_if_active_cb(ReshadeMode mode);
 };
 
 typedef SmartPtr<ShaderPlugin> ShaderPluginPtr;
@@ -212,6 +212,10 @@ public:
     bool deactivate_plugin() { return activate_plugin(NO_PLUGIN_SELECTED); }
     virtual std::string active_plugin_name() const = 0;
 
+    bool is_active_plugin(const ShaderPlugin& plugin) const {
+        return active_plugin_name() == plugin.get_id();
+    }
+
     virtual void init() = 0; // call once after register_plugin was called (activates plugin stored in AWAR)
     virtual void popup_config_window(AW_root *awr) = 0;
 
@@ -259,8 +263,10 @@ inline const char *ShaderPlugin::get_shader_local_id() const {
     is_assert(plugged_into);
     return GBS_global_string("%s_%s", plugged_into->get_id().c_str(), get_id().c_str());
 }
-inline void ShaderPlugin::trigger_reshade_cb(ReshadeMode mode) {
-    if (plugged_into) plugged_into->trigger_reshade_callback(mode);
+inline void ShaderPlugin::trigger_reshade_if_active_cb(ReshadeMode mode) {
+    if (plugged_into && plugged_into->is_active_plugin(*this)) {
+        plugged_into->trigger_reshade_callback(mode);
+    }
 }
 
 // -----------------------------

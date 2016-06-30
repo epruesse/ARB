@@ -241,7 +241,7 @@ class ItemFieldShader: public ShaderPlugin {
         update_db_callbacks(wanted);
     }
     static void field_updated_in_DB_cb(UNFIXED, ItemFieldShader *shader) {
-        shader->trigger_reshade_cb(SIMPLE_RESHADE);
+        shader->trigger_reshade_if_active_cb(SIMPLE_RESHADE);
     }
 
 public:
@@ -277,7 +277,7 @@ public:
         setup_db_callbacks(true); // @@@ does this also happen if plugin is NOT ACTIVE? shouldn't!
 
         reader.SetNull();
-        trigger_reshade_cb(CHECK_DIMENSION_CHANGE);
+        trigger_reshade_if_active_cb(CHECK_DIMENSION_CHANGE);
     }
     static void setup_changed_cb(AW_root*, ItemFieldShader *shader) {
         shader->setup_changed_cb();
