@@ -177,10 +177,10 @@ class ItemShader {
 
     int undefined_gc;
 
-    int  reshade_delay_level;
-    bool reshade_was_suppressed;
+    mutable int  reshade_delay_level;
+    mutable bool reshade_was_suppressed;
 
-    void delay_reshade_callbacks(bool suppress) {
+    void delay_reshade_callbacks(bool suppress) const {
         reshade_delay_level += suppress ? 1 : -1;
         is_assert(reshade_delay_level>=0);
 
@@ -247,9 +247,9 @@ public:
 };
 
 class DelayReshade : virtual Noncopyable {
-    ItemShader *shader;
+    const ItemShader *shader;
 public:
-    DelayReshade(ItemShader *shader_) :
+    DelayReshade(const ItemShader *shader_) :
         shader(shader_)
     {
         shader->delay_reshade_callbacks(true);
