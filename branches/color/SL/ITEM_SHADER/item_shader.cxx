@@ -94,13 +94,21 @@ typedef vector<ShaderPluginPtr> Plugins;
 #define AWAR_SELECTED_PLUGIN shader_awar("plugin")
 #define AWAR_SHOW_DIMENSION  tmp_shader_awar("dimension")
 
-#define AWAR_GUI_RANGE          tmp_shader_awar("range")
-#define AWAR_GUI_OVERLAY_GROUPS tmp_shader_awar("groups")
-#define AWAR_GUI_OVERLAY_MARKED tmp_shader_awar("marked")
+#define AWAR_GUI_RANGE           tmp_shader_awar("range")
+#define AWAR_GUI_OVERLAY_GROUPS  tmp_shader_awar("groups")
+#define AWAR_GUI_OVERLAY_MARKED  tmp_shader_awar("marked")
+#define AWAR_GUI_PHASE_FREQ      tmp_shader_awar("phase")
+#define AWAR_GUI_PHASE_ALTER     tmp_shader_awar("alternate")
+#define AWAR_GUI_PHASE_PRESHIFT  tmp_shader_awar("preshift")
+#define AWAR_GUI_PHASE_POSTSHIFT tmp_shader_awar("postshift")
 
-#define AWAR_PLUGIN_RANGE          plugin_awar("range")
-#define AWAR_PLUGIN_OVERLAY_GROUPS plugin_awar("groups")
-#define AWAR_PLUGIN_OVERLAY_MARKED plugin_awar("marked")
+#define AWAR_PLUGIN_RANGE           plugin_awar("range")
+#define AWAR_PLUGIN_OVERLAY_GROUPS  plugin_awar("groups")
+#define AWAR_PLUGIN_OVERLAY_MARKED  plugin_awar("marked")
+#define AWAR_PLUGIN_PHASE_FREQ      plugin_awar("phase")
+#define AWAR_PLUGIN_PHASE_ALTER     plugin_awar("alternate")
+#define AWAR_PLUGIN_PHASE_PRESHIFT  plugin_awar("preshift")
+#define AWAR_PLUGIN_PHASE_POSTSHIFT plugin_awar("postshift")
 
 // ----------------------
 //      ShaderPlugin
@@ -111,9 +119,13 @@ void ShaderPlugin::init_awars(AW_root *awr, const char *awar_prefix_) {
 
     if (awr) {
         // common awars for all shader plugins:
-        awr->awar_string(AWAR_PLUGIN_RANGE, ""); // @@@ need to detect good default range
-        awr->awar_int(AWAR_PLUGIN_OVERLAY_GROUPS, 0);
-        awr->awar_int(AWAR_PLUGIN_OVERLAY_MARKED, 0);
+        awr->awar_string(AWAR_PLUGIN_RANGE,           "");  // => will use first available color-range (for dimension reported by actual plugin)
+        awr->awar_int   (AWAR_PLUGIN_OVERLAY_GROUPS,  0);
+        awr->awar_int   (AWAR_PLUGIN_OVERLAY_MARKED,  0);
+        awr->awar_float (AWAR_PLUGIN_PHASE_FREQ,      1.0);
+        awr->awar_int   (AWAR_PLUGIN_PHASE_ALTER,     0);
+        awr->awar_float (AWAR_PLUGIN_PHASE_PRESHIFT,  0.0);
+        awr->awar_float (AWAR_PLUGIN_PHASE_POSTSHIFT, 0.0);
 
         init_specific_awars(awr);
     }
@@ -203,6 +215,24 @@ public:
 
     void configure_colors_cb(AW_window *aww) { AW_popup_gc_color_range_window(aww, gcman); }
     static void configure_colors_cb(AW_window *aww, ItemShader_impl *shader) { shader->configure_colors_cb(aww); }
+
+    void phase_changed_cb(AW_root *awr) {
+        phaser = Phaser(awr->awar(AWAR_GUI_PHASE_FREQ)->read_float(),
+                        awr->awar(AWAR_GUI_PHASE_ALTER)->read_int(),
+                        awr->awar(AWAR_GUI_PHASE_PRESHIFT)->read_float(),
+                        awr->awar(AWAR_GUI_PHASE_POSTSHIFT)->read_float());
+        trigger_reshade_callback(SIMPLE_RESHADE);
+    }
+    static void phase_changed_cb(AW_root *awr, ItemShader_impl *shader) { shader->phase_changed_cb(awr); }
+
+    void reset_phasing_cb(AW_root *awr) const {
+        DelayReshade here(this);
+        awr->awar(AWAR_GUI_PHASE_FREQ)->reset_to_default();
+        awr->awar(AWAR_GUI_PHASE_ALTER)->reset_to_default();
+        awr->awar(AWAR_GUI_PHASE_PRESHIFT)->reset_to_default();
+        awr->awar(AWAR_GUI_PHASE_POSTSHIFT)->reset_to_default();
+    }
+    static void reset_phasing_cb(AW_window *aww, const ItemShader_impl *shader) { shader->reset_phasing_cb(aww->get_root()); }
 };
 
 struct has_id {
@@ -257,16 +287,24 @@ bool ItemShader_impl::activate_plugin_impl(const string& plugin_id) {
         if (awr) {
             if (active_plugin.isSet()) {
                 // map common GUI awars to awars of active plugin:
-                awr->awar(AWAR_GUI_RANGE)         ->map(active_plugin->AWAR_PLUGIN_RANGE);
-                awr->awar(AWAR_GUI_OVERLAY_MARKED)->map(active_plugin->AWAR_PLUGIN_OVERLAY_MARKED);
-                awr->awar(AWAR_GUI_OVERLAY_GROUPS)->map(active_plugin->AWAR_PLUGIN_OVERLAY_GROUPS);
+                awr->awar(AWAR_GUI_RANGE)          ->map(active_plugin->AWAR_PLUGIN_RANGE);
+                awr->awar(AWAR_GUI_OVERLAY_MARKED) ->map(active_plugin->AWAR_PLUGIN_OVERLAY_MARKED);
+                awr->awar(AWAR_GUI_OVERLAY_GROUPS) ->map(active_plugin->AWAR_PLUGIN_OVERLAY_GROUPS);
+                awr->awar(AWAR_GUI_PHASE_FREQ)     ->map(active_plugin->AWAR_PLUGIN_PHASE_FREQ);
+                awr->awar(AWAR_GUI_PHASE_ALTER)    ->map(active_plugin->AWAR_PLUGIN_PHASE_ALTER);
+                awr->awar(AWAR_GUI_PHASE_PRESHIFT) ->map(active_plugin->AWAR_PLUGIN_PHASE_PRESHIFT);
+                awr->awar(AWAR_GUI_PHASE_POSTSHIFT)->map(active_plugin->AWAR_PLUGIN_PHASE_POSTSHIFT);
                 check_dimension_change();
             }
             else {
                 // unmap GUI awars:
-                awr->awar(AWAR_GUI_RANGE)->unmap();
-                awr->awar(AWAR_GUI_OVERLAY_MARKED)->unmap();
-                awr->awar(AWAR_GUI_OVERLAY_GROUPS)->unmap();
+                awr->awar(AWAR_GUI_RANGE)          ->unmap();
+                awr->awar(AWAR_GUI_OVERLAY_MARKED) ->unmap();
+                awr->awar(AWAR_GUI_OVERLAY_GROUPS) ->unmap();
+                awr->awar(AWAR_GUI_PHASE_FREQ)     ->unmap();
+                awr->awar(AWAR_GUI_PHASE_ALTER)    ->unmap();
+                awr->awar(AWAR_GUI_PHASE_PRESHIFT) ->unmap();
+                awr->awar(AWAR_GUI_PHASE_POSTSHIFT)->unmap();
                 setup_new_dimension();
             }
         }
@@ -361,14 +399,19 @@ void ItemShader_impl::init() {
 
 void ItemShader_impl::init_awars(AW_root *awr) {
     RootCallback Reshade_cb       = makeRootCallback(ItemShader_impl::trigger_reshade_cb, this);
+    RootCallback PhaseChanged_cb  = makeRootCallback(ItemShader_impl::phase_changed_cb, this);
     RootCallback PluginChanged_cb = makeRootCallback(ItemShader_impl::selected_plugin_changed_cb, this);
     RootCallback RangeChanged_cb  = makeRootCallback(ItemShader_impl::selected_range_changed_cb, this);
 
-    awr->awar_string(AWAR_SELECTED_PLUGIN, NO_PLUGIN_SELECTED)->add_callback(PluginChanged_cb);
-    awr->awar_int(AWAR_SHOW_DIMENSION, -1);
-    awr->awar_string(AWAR_GUI_RANGE, "")->add_callback(RangeChanged_cb);
-    awr->awar_int(AWAR_GUI_OVERLAY_GROUPS, 0)->add_callback(Reshade_cb);
-    awr->awar_int(AWAR_GUI_OVERLAY_MARKED, 0)->add_callback(Reshade_cb);
+    awr->awar_string(AWAR_SELECTED_PLUGIN,     NO_PLUGIN_SELECTED)->add_callback(PluginChanged_cb);
+    awr->awar_int   (AWAR_SHOW_DIMENSION,      -1);
+    awr->awar_string(AWAR_GUI_RANGE,           "") ->add_callback(RangeChanged_cb);
+    awr->awar_int   (AWAR_GUI_OVERLAY_GROUPS,  0)  ->add_callback(Reshade_cb);
+    awr->awar_int   (AWAR_GUI_OVERLAY_MARKED,  0)  ->add_callback(Reshade_cb);
+    awr->awar_float (AWAR_GUI_PHASE_FREQ,      1.0)->set_minmax(0.01, 100.0)->add_callback(PhaseChanged_cb);
+    awr->awar_float (AWAR_GUI_PHASE_PRESHIFT,  0.0)->set_minmax(0.0,    1.0)->add_callback(PhaseChanged_cb);
+    awr->awar_float (AWAR_GUI_PHASE_POSTSHIFT, 0.0)->set_minmax(0.0,    1.0)->add_callback(PhaseChanged_cb);
+    awr->awar_int   (AWAR_GUI_PHASE_ALTER,     0)  ->add_callback(PhaseChanged_cb);
 
     const char *awarname_global_colorgroups = AW_get_color_groups_active_awarname();
     awr->awar(awarname_global_colorgroups)->add_callback(makeRootCallback(global_colorgroup_use_changed_cb, this));
@@ -422,8 +465,25 @@ void ItemShader_impl::popup_config_window(AW_root *awr) {
         aws->at("marked");
         aws->create_toggle(AWAR_GUI_OVERLAY_MARKED);
 
+        aws->auto_space(5,5);
+        const int FIELDSIZE    = 12;
+        const int SCALERLENGTH = 400;
+
+        aws->at("alt");
+        aws->create_toggle(AWAR_GUI_PHASE_ALTER);
+
         aws->at("dim");
         aws->create_button(0, AWAR_SHOW_DIMENSION, 0, "+");
+
+        aws->at("reset");
+        aws->callback(makeWindowCallback(ItemShader_impl::reset_phasing_cb, this));
+        aws->create_button("reset", "RESET", "R");
+
+        aws->at("freq");      aws->create_input_field_with_scaler(AWAR_GUI_PHASE_FREQ,      FIELDSIZE, SCALERLENGTH, AW_SCALER_EXP_LOWER);
+        aws->at("preshift");  aws->create_input_field_with_scaler(AWAR_GUI_PHASE_PRESHIFT,  FIELDSIZE, SCALERLENGTH, AW_SCALER_LINEAR);
+        aws->at("postshift"); aws->create_input_field_with_scaler(AWAR_GUI_PHASE_POSTSHIFT, FIELDSIZE, SCALERLENGTH, AW_SCALER_LINEAR);
+
+        aws->window_fit();
 
         aw_cfg = aws;
 
@@ -449,7 +509,7 @@ ItemShader *registerItemShader(AW_root *awr, AW_gc_manager *gcman, BoundItemSel&
      * @param description     short description (eg. "tree shading")
      * @param help_id         helpfile
      * @param reshade_cb      callback which updates the shading + refreshes the display
-     * @param undef_gc        GC reported for undefined ShadedValues
+     * @param undef_gc        GC reported for undefined ShadedValue
      *
      * (Note: the reshade_cb may be called very often! best is to trigger a temp. DB-awar like AWAR_TREE_RECOMPUTE)
      */
