@@ -55,6 +55,72 @@ public:
     T& operator*() { return *ptr; }
 };
 
+// ----------------
+//      Phaser
+
+class Phaser {
+    float frequency; // 1.0 => [0.0 .. 1.0] gets mapped to whole color range;
+                     // 2.0 => [0.0 .. 0.5] and [0.5 .. 1.0] each gets mapped to whole color range
+
+    float preshift;  // allowed values [0.0 .. 1.0]; applied BEFORE frequency mapping
+    float postshift; // allowed values [0.0 .. 1.0]; applied AFTER  frequency mapping
+
+    bool alternate;  // if frequency>1.0 => use alternate mapping direction
+
+    static inline bool CONSTEXPR_RETURN is_normalized(const float& f) {
+        return f>=0.0 && f<=1.0;
+    }
+
+    static inline float CONSTEXPR_RETURN shift_and_wrap(const float& val, const float& shift, float wrapto) {
+        return shift>val ? val-shift+wrapto : val-shift;
+    }
+
+public:
+    Phaser() : frequency(1.0), preshift(0.0), postshift(0.0), alternate(false) {} // does "nothing"
+    Phaser(float frequency_, bool alternate_, float preshift_, float postshift_) :
+        frequency(frequency_),
+        preshift(preshift_),
+        postshift(postshift_),
+        alternate(alternate_)
+    {
+        is_assert(is_normalized(preshift));
+        is_assert(is_normalized(postshift));
+    }
+
+    float rephase(float f) const {
+        is_assert(f>=0.0 && f<=1.0);
+
+        const float preshifted(shift_and_wrap(f, preshift, 1.0));
+        const float blow(preshifted*frequency);
+
+        int   phase(blow);
+        float rest(blow-phase);
+        if (rest <= 0.0 && phase>0) {
+            rest  = 1.0;
+            phase--;
+        }
+
+        rest += postshift;
+        if (rest>1.0) {
+            rest -= 1.0;
+            phase++;
+        }
+        is_assert(is_normalized(rest));
+
+        const bool  do_alter(alternate && (phase&1));
+        const float altered(do_alter ? 1.0-rest : rest);
+
+#if defined(DEBUG) && 0
+        fprintf(stderr,
+                "f=%f preshifted=%f blow=%f postshifted=%f phase=%i rest=%f do_alter=%i altered=%f\n",
+                f, preshifted, blow, postshifted, phase, rest, do_alter, altered);
+#endif
+
+        is_assert(is_normalized(altered));
+        return altered;
+    }
+};
+
 // --------------------
 //      ValueTuple
 
@@ -75,7 +141,7 @@ public:
 
     virtual bool is_defined() const   = 0;
     virtual ValueTuple *clone() const = 0;
-    virtual int range_offset() const  = 0; // returns int-offset into range [0 .. AW_RANGE_COLORS[
+    virtual int range_offset(const Phaser&) const  = 0; // returns int-offset into range [0 .. AW_RANGE_COLORS[
 
 #if defined(UNIT_TESTS)
     virtual const char *inspect() const = 0;
@@ -192,8 +258,9 @@ class ItemShader {
     friend class DelayReshade;
 
 protected:
-    ShaderPluginPtr active_plugin; // null means: no plugin active
+    ShaderPluginPtr active_plugin;  // null means: no plugin active
     int             first_range_gc; // has to be set by init()!
+    Phaser          phaser;
 
 public:
     ItemShader(const std::string& id_, const std::string& description_, ReshadeCallback rcb, int undefined_gc_) :
@@ -234,7 +301,9 @@ public:
     }
     int to_GC(const ShadedValue& val) const {
         is_assert(first_range_gc>0);
-        if (val->is_defined()) return first_range_gc + val->range_offset();
+        if (val->is_defined()) {
+            return first_range_gc + val->range_offset(phaser);
+        }
         return undefined_gc;
     }
 

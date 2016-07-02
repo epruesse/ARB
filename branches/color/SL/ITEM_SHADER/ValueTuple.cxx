@@ -34,16 +34,13 @@ void TEST_shaded_values() {
         TEST_EXPECT(val0->is_defined());
         TEST_EXPECT(val0->clone()->is_defined());
         TEST_EXPECT_EQUAL(val0->inspect(), "(0.000)");
-        TEST_EXPECT_EQUAL(val0->range_offset(), 0);
 
         ShadedValue val1 = ValueTuple::make(1.0);
         TEST_EXPECT_EQUAL(val1->inspect(), "(1.000)");
-        TEST_EXPECT_EQUAL(val1->range_offset(), AW_RANGE_COLORS-1);
 
         // LinearTuple (mix):
         ShadedValue half = val0->mix(0.50, *val1);
         TEST_EXPECT_EQUAL(half->inspect(), "(0.500)");
-        TEST_EXPECT_EQUAL(half->range_offset(), AW_RANGE_COLORS/2);
 
         TEST_EXPECT_EQUAL(val0->mix(0.25, *val1)->inspect(), "(0.750)");
         TEST_EXPECT_EQUAL(val0->mix(0.60, *val1)->inspect(), "(0.400)");
@@ -66,7 +63,6 @@ void TEST_shaded_values() {
         TEST_EXPECT(pval0->is_defined());
         TEST_EXPECT(pval0->clone()->is_defined());
         TEST_EXPECT_EQUAL(pval0->inspect(), "(0.000,0.000)");
-        TEST_EXPECT_EQUAL(pval0->range_offset(), 0);
 
         // PlanarTuple (mixing):
         ShadedValue px = ValueTuple::make(1, 0);
@@ -75,9 +71,6 @@ void TEST_shaded_values() {
         TEST_EXPECT_EQUAL(px->mix(INFINITY, *undef)->inspect(), "(1.000,0.000)");
         TEST_EXPECT_EQUAL(undef->mix(INFINITY, *px)->inspect(), "(1.000,0.000)");
         TEST_EXPECT_EQUAL(px->mix(0.5, *py)->inspect(), "(0.500,0.500)");
-
-        TEST_EXPECT_EQUAL(px->range_offset(), (AW_PLANAR_COLORS-1)*AW_PLANAR_COLORS);
-        TEST_EXPECT_EQUAL(py->range_offset(),  AW_PLANAR_COLORS-1);
 
         // PlanarTuple (partially defined):
         ShadedValue PonlyX = ValueTuple::make(0.5, NAN);
@@ -88,10 +81,6 @@ void TEST_shaded_values() {
 
         TEST_EXPECT_EQUAL(PonlyX->inspect(), "(0.500,nan)");
         TEST_EXPECT_EQUAL(PonlyY->inspect(), "(nan,0.500)");
-
-        // partly undefined values produce a valid range-offset:
-        TEST_EXPECT_EQUAL(PonlyX->range_offset(), (AW_PLANAR_COLORS*AW_PLANAR_COLORS)/2);
-        TEST_EXPECT_EQUAL(PonlyY->range_offset(), AW_PLANAR_COLORS/2);
 
         TEST_EXPECT_EQUAL(PonlyX->mix(INFINITY, *PonlyY)->inspect(), "(0.500,0.500)"); // mixed without using ratio
         TEST_EXPECT_EQUAL(PonlyX->mix(0.5, *px)->inspect(), "(0.750,0.000)");
@@ -110,7 +99,6 @@ void TEST_shaded_values() {
         TEST_EXPECT(sval0->is_defined());
         TEST_EXPECT(sval0->clone()->is_defined());
         TEST_EXPECT_EQUAL(sval0->inspect(), "(0.000,0.000,0.000)");
-        TEST_EXPECT_EQUAL(sval0->range_offset(), 0);
 
         // SpatialTuple (mixing):
         ShadedValue px = ValueTuple::make(1, 0, 0);
@@ -121,10 +109,6 @@ void TEST_shaded_values() {
         TEST_EXPECT_EQUAL(undef->mix(INFINITY, *px)->inspect(), "(1.000,0.000,0.000)");
         TEST_EXPECT_EQUAL(px->mix(0.5, *py)->inspect(), "(0.500,0.500,0.000)");
         TEST_EXPECT_EQUAL(px->mix(0.5, *py)->mix(2/3.0, *pz)->inspect(), "(0.333,0.333,0.333)");
-
-        TEST_EXPECT_EQUAL(px->range_offset(), (AW_SPATIAL_COLORS-1)*AW_SPATIAL_COLORS*AW_SPATIAL_COLORS);
-        TEST_EXPECT_EQUAL(py->range_offset(), (AW_SPATIAL_COLORS-1)*AW_SPATIAL_COLORS);
-        TEST_EXPECT_EQUAL(pz->range_offset(),  AW_SPATIAL_COLORS-1);
 
         // SpatialTuple (partially defined):
         ShadedValue PonlyX = ValueTuple::make(0.5, NAN, NAN);
@@ -138,11 +122,6 @@ void TEST_shaded_values() {
         TEST_EXPECT_EQUAL(PonlyX->inspect(), "(0.500,nan,nan)");
         TEST_EXPECT_EQUAL(PonlyY->inspect(), "(nan,0.500,nan)");
         TEST_EXPECT_EQUAL(PonlyZ->inspect(), "(nan,nan,0.500)");
-
-        // partly undefined values produce a valid range-offset:
-        TEST_EXPECT_EQUAL(PonlyX->range_offset(), (AW_SPATIAL_COLORS*AW_SPATIAL_COLORS*AW_SPATIAL_COLORS)/2);
-        TEST_EXPECT_EQUAL(PonlyY->range_offset(), (AW_SPATIAL_COLORS*AW_SPATIAL_COLORS)/2);
-        TEST_EXPECT_EQUAL(PonlyZ->range_offset(), AW_SPATIAL_COLORS/2);
 
         ShadedValue pxy = PonlyX->mix(INFINITY, *PonlyY); // mixed without using ratio
         ShadedValue pyz = PonlyY->mix(INFINITY, *PonlyZ);
@@ -190,6 +169,144 @@ void TEST_shaded_values() {
     TEST_REJECT(noValueTriple->is_defined());
 }
 
+void TEST_value_color_mapping() {
+    // tests mapping from ShadedValue into range_offset (with different phasing)
+
+    const float NOSHIFT = 0.0;
+
+    Phaser dontPhase;
+
+    Phaser halfPhase           (0.5, false, NOSHIFT, NOSHIFT);
+    Phaser halfPhasePreShiftPos(0.5, false, +0.25,   NOSHIFT);
+    Phaser halfPhasePreShiftNeg(0.5, false, +0.75,   NOSHIFT); // +75% should act like -25%
+    Phaser halfPhasePstShiftPos(0.5, false, NOSHIFT, +0.25);
+    Phaser halfPhasePstShiftNeg(0.5, false, NOSHIFT, +0.75);
+
+    Phaser twoPhase (2.0, false, NOSHIFT, NOSHIFT);
+    Phaser alt3Phase(3.0, true,  NOSHIFT, NOSHIFT);
+    Phaser alt4Phase(4.0, true,  NOSHIFT, NOSHIFT);
+
+    {
+        ShadedValue val0 = ValueTuple::make(0.0);
+        ShadedValue half = ValueTuple::make(0.5);
+        ShadedValue val1 = ValueTuple::make(1.0);
+
+        TEST_EXPECT_EQUAL(val0->range_offset(dontPhase),            0);
+        TEST_EXPECT_EQUAL(val0->range_offset(halfPhase),            0);
+        TEST_EXPECT_EQUAL(val0->range_offset(halfPhasePreShiftPos), AW_RANGE_COLORS*3/8);
+        TEST_EXPECT_EQUAL(val0->range_offset(halfPhasePreShiftNeg), AW_RANGE_COLORS*1/8);
+        TEST_EXPECT_EQUAL(val0->range_offset(halfPhasePstShiftPos), AW_RANGE_COLORS*1/4);
+        TEST_EXPECT_EQUAL(val0->range_offset(halfPhasePstShiftNeg), AW_RANGE_COLORS*3/4);
+
+        TEST_EXPECT_EQUAL(val1->range_offset(dontPhase),            AW_RANGE_COLORS-1);
+        TEST_EXPECT_EQUAL(val1->range_offset(halfPhase),            AW_RANGE_COLORS/2);
+        TEST_EXPECT_EQUAL(val1->range_offset(halfPhasePreShiftPos), AW_RANGE_COLORS*3/8);
+        TEST_EXPECT_EQUAL(val1->range_offset(halfPhasePreShiftNeg), AW_RANGE_COLORS*1/8);
+        TEST_EXPECT_EQUAL(val1->range_offset(halfPhasePstShiftPos), AW_RANGE_COLORS*3/4);
+        TEST_EXPECT_EQUAL(val1->range_offset(halfPhasePstShiftNeg), AW_RANGE_COLORS*1/4);
+
+        TEST_EXPECT_EQUAL(half->range_offset(dontPhase),            AW_RANGE_COLORS/2);
+        TEST_EXPECT_EQUAL(half->range_offset(twoPhase),             AW_RANGE_COLORS-1);
+        TEST_EXPECT_EQUAL(half->range_offset(alt3Phase),            AW_RANGE_COLORS/2);
+        TEST_EXPECT_EQUAL(half->range_offset(alt4Phase),            0);
+        TEST_EXPECT_EQUAL(half->range_offset(halfPhase),            AW_RANGE_COLORS/4);
+        TEST_EXPECT_EQUAL(half->range_offset(halfPhasePreShiftPos), AW_RANGE_COLORS*1/8);
+        TEST_EXPECT_EQUAL(half->range_offset(halfPhasePreShiftNeg), AW_RANGE_COLORS*3/8);
+        TEST_EXPECT_EQUAL(half->range_offset(halfPhasePstShiftPos), AW_RANGE_COLORS*2/4);
+        TEST_EXPECT_EQUAL(half->range_offset(halfPhasePstShiftNeg), AW_RANGE_COLORS*4/4 - 1);
+    }
+
+#define PQS(c)                    (AW_PLANAR_COLORS*(c)/4)
+#define PLANAR_QUARTER_SHIFT(x,y) (PQS(x)*AW_PLANAR_COLORS + PQS(y))
+
+#if 0
+    // document results of PLANAR_QUARTER_SHIFT:
+#define DOCQS(x,y,res) TEST_EXPECT_EQUAL(PLANAR_QUARTER_SHIFT(x,y), res)
+
+    DOCQS(0,0,0);  DOCQS(1,0,1024); DOCQS(2,0,2048); DOCQS(3,0,3072); DOCQS(4,0,4096);
+    DOCQS(0,1,16); DOCQS(1,1,1040); DOCQS(2,1,2064); DOCQS(3,1,3088); DOCQS(4,1,4112);
+    DOCQS(0,2,32); DOCQS(1,2,1056); DOCQS(2,2,2080); DOCQS(3,2,3104); DOCQS(4,2,4128);
+    DOCQS(0,3,48); DOCQS(1,3,1072); DOCQS(2,3,2096); DOCQS(3,3,3120); DOCQS(4,3,4144);
+    DOCQS(0,4,64); DOCQS(1,4,1088); DOCQS(2,4,2112); DOCQS(3,4,3136); DOCQS(4,4,4160);
+
+#endif
+
+    {
+        ShadedValue pval0  = ValueTuple::make(0, 0);
+        ShadedValue px     = ValueTuple::make(1, 0);
+        ShadedValue py     = ValueTuple::make(0, 1);
+        ShadedValue PonlyX = ValueTuple::make(0.5, NAN);
+        ShadedValue PonlyY = ValueTuple::make(NAN, 0.5);
+
+        TEST_EXPECT_EQUAL(pval0->range_offset(dontPhase), 0);
+        TEST_EXPECT_EQUAL(pval0->range_offset(twoPhase),  0);
+        TEST_EXPECT_EQUAL(pval0->range_offset(alt3Phase), 0);
+        TEST_EXPECT_EQUAL(pval0->range_offset(alt4Phase), 0);
+
+        TEST_EXPECT_EQUAL(px->range_offset(dontPhase), (AW_PLANAR_COLORS-1)*AW_PLANAR_COLORS);
+        TEST_EXPECT_EQUAL(py->range_offset(dontPhase),  AW_PLANAR_COLORS-1);
+
+        // partly undefined values produce a valid range-offset:
+        TEST_EXPECT_EQUAL(PonlyX->range_offset(dontPhase), (AW_PLANAR_COLORS*AW_PLANAR_COLORS)/2);
+        TEST_EXPECT_EQUAL(PonlyY->range_offset(dontPhase), AW_PLANAR_COLORS/2);
+
+        // test 2-dim-phase-scale and -shift:
+        TEST_EXPECT_EQUAL(px->range_offset(twoPhase),             PLANAR_QUARTER_SHIFT(4, 0)  - AW_PLANAR_COLORS); // -1*AW_PLANAR_COLORS due to limited range!
+        TEST_EXPECT_EQUAL(px->range_offset(halfPhase),            PLANAR_QUARTER_SHIFT(2, 0));
+        TEST_EXPECT_EQUAL(px->range_offset(halfPhasePreShiftPos), PLANAR_QUARTER_SHIFT(3, 3)/2);
+        TEST_EXPECT_EQUAL(px->range_offset(halfPhasePreShiftNeg), PLANAR_QUARTER_SHIFT(1, 1)/2);
+        TEST_EXPECT_EQUAL(px->range_offset(halfPhasePstShiftPos), PLANAR_QUARTER_SHIFT(3, 1));
+        TEST_EXPECT_EQUAL(px->range_offset(halfPhasePstShiftNeg), PLANAR_QUARTER_SHIFT(1, 3));
+
+        TEST_EXPECT_EQUAL(py->range_offset(twoPhase),             PLANAR_QUARTER_SHIFT(0, 4)  - 1); // -1 due to limited range!
+        TEST_EXPECT_EQUAL(py->range_offset(halfPhase),            PLANAR_QUARTER_SHIFT(0, 2));
+        TEST_EXPECT_EQUAL(py->range_offset(halfPhasePreShiftPos), PLANAR_QUARTER_SHIFT(3, 3)/2);
+        TEST_EXPECT_EQUAL(py->range_offset(halfPhasePreShiftNeg), PLANAR_QUARTER_SHIFT(1, 1)/2);
+        TEST_EXPECT_EQUAL(py->range_offset(halfPhasePstShiftPos), PLANAR_QUARTER_SHIFT(1, 3));
+        TEST_EXPECT_EQUAL(py->range_offset(halfPhasePstShiftNeg), PLANAR_QUARTER_SHIFT(3, 1));
+
+        // test 2-dim-phase-scale and -shift (nan-content):
+        TEST_EXPECT_EQUAL(PonlyX->range_offset(twoPhase),             PLANAR_QUARTER_SHIFT(4,-4)); // = PLANAR_QUARTER_SHIFT(4, 0) - AW_PLANAR_COLORS
+        TEST_EXPECT_EQUAL(PonlyX->range_offset(halfPhase),            PLANAR_QUARTER_SHIFT(1, 0));
+        TEST_EXPECT_EQUAL(PonlyX->range_offset(halfPhasePreShiftPos), PLANAR_QUARTER_SHIFT(1, 0)/2);
+        TEST_EXPECT_EQUAL(PonlyX->range_offset(halfPhasePreShiftNeg), PLANAR_QUARTER_SHIFT(3, 0)/2);
+        TEST_EXPECT_EQUAL(PonlyX->range_offset(halfPhasePstShiftPos), PLANAR_QUARTER_SHIFT(2, 0));
+        TEST_EXPECT_EQUAL(PonlyX->range_offset(halfPhasePstShiftNeg), PLANAR_QUARTER_SHIFT(4,-4));
+
+        TEST_EXPECT_EQUAL(PonlyY->range_offset(twoPhase),             PLANAR_QUARTER_SHIFT(0, 4) - 1);
+        TEST_EXPECT_EQUAL(PonlyY->range_offset(halfPhase),            PLANAR_QUARTER_SHIFT(0, 1));
+        TEST_EXPECT_EQUAL(PonlyY->range_offset(halfPhasePreShiftPos), PLANAR_QUARTER_SHIFT(0, 1)/2);
+        TEST_EXPECT_EQUAL(PonlyY->range_offset(halfPhasePreShiftNeg), PLANAR_QUARTER_SHIFT(0, 3)/2);
+        TEST_EXPECT_EQUAL(PonlyY->range_offset(halfPhasePstShiftPos), PLANAR_QUARTER_SHIFT(0, 2));
+        TEST_EXPECT_EQUAL(PonlyY->range_offset(halfPhasePstShiftNeg), PLANAR_QUARTER_SHIFT(0, 4) - 1);
+    }
+
+    {
+        ShadedValue sval0 = ValueTuple::make(0, 0, 0);
+
+        ShadedValue px = ValueTuple::make(1, 0, 0);
+        ShadedValue py = ValueTuple::make(0, 1, 0);
+        ShadedValue pz = ValueTuple::make(0, 0, 1);
+
+        ShadedValue PonlyX = ValueTuple::make(0.5, NAN, NAN);
+        ShadedValue PonlyY = ValueTuple::make(NAN, 0.5, NAN);
+        ShadedValue PonlyZ = ValueTuple::make(NAN, NAN, 0.5);
+
+        TEST_EXPECT_EQUAL(sval0->range_offset(dontPhase), 0);
+
+        TEST_EXPECT_EQUAL(px->range_offset(dontPhase), (AW_SPATIAL_COLORS-1)*AW_SPATIAL_COLORS*AW_SPATIAL_COLORS);
+        TEST_EXPECT_EQUAL(py->range_offset(dontPhase), (AW_SPATIAL_COLORS-1)*AW_SPATIAL_COLORS);
+        TEST_EXPECT_EQUAL(pz->range_offset(dontPhase),  AW_SPATIAL_COLORS-1);
+
+        // partly undefined values produce a valid range-offset:
+        TEST_EXPECT_EQUAL(PonlyX->range_offset(dontPhase), (AW_SPATIAL_COLORS*AW_SPATIAL_COLORS*AW_SPATIAL_COLORS)/2);
+        TEST_EXPECT_EQUAL(PonlyY->range_offset(dontPhase), (AW_SPATIAL_COLORS*AW_SPATIAL_COLORS)/2);
+        TEST_EXPECT_EQUAL(PonlyZ->range_offset(dontPhase), AW_SPATIAL_COLORS/2);
+
+        // skipping tests for phasing SpatialTuple (hardly can understand test-results for PlanarTuple)
+    }
+}
+
 #endif // UNIT_TESTS
 
 // --------------------------------------------------------------------------------
@@ -219,7 +336,7 @@ public:
 
     bool is_defined() const OVERRIDE { return false; }
     ValueTuple *clone() const OVERRIDE { return new NoTuple; }
-    int range_offset() const OVERRIDE { is_assert(0); return -9999999; } // defines no range offset
+    int range_offset(const Phaser&) const OVERRIDE { is_assert(0); return -9999999; } // defines no range offset
 
 #if defined(UNIT_TESTS)
     const char *inspect() const OVERRIDE { return "<undef>"; }
@@ -243,7 +360,7 @@ public:
 
     bool is_defined() const OVERRIDE { return true; }
     ValueTuple *clone() const OVERRIDE { return new LinearTuple(val); }
-    int range_offset() const OVERRIDE { return CHECKED_RANGE_OFFSET(fixed_range_offset<AW_RANGE_COLORS>(val)); }
+    int range_offset(const Phaser& phaser) const OVERRIDE { return CHECKED_RANGE_OFFSET(fixed_range_offset<AW_RANGE_COLORS>(phaser.rephase(val))); }
 
 #if defined(UNIT_TESTS)
     const char *inspect() const OVERRIDE {
@@ -282,9 +399,9 @@ public:
 
     bool is_defined() const OVERRIDE { return true; }
     ValueTuple *clone() const OVERRIDE { return new PlanarTuple(val1, val2); }
-    int range_offset() const OVERRIDE { // returns int-offset into range [0 .. AW_RANGE_COLORS[
-        int c1 = is_nan(val1) ? 0 : fixed_range_offset<AW_PLANAR_COLORS>(val1);
-        int c2 = is_nan(val2) ? 0 : fixed_range_offset<AW_PLANAR_COLORS>(val2);
+    int range_offset(const Phaser& phaser) const OVERRIDE { // returns int-offset into range [0 .. AW_RANGE_COLORS[
+        int c1 = is_nan(val1) ? 0 : fixed_range_offset<AW_PLANAR_COLORS>(phaser.rephase(val1));
+        int c2 = is_nan(val2) ? 0 : fixed_range_offset<AW_PLANAR_COLORS>(phaser.rephase(val2));
         return CHECKED_RANGE_OFFSET(c1*AW_PLANAR_COLORS + c2);
     }
 
@@ -322,10 +439,10 @@ public:
 
     bool is_defined() const OVERRIDE { return true; }
     ValueTuple *clone() const OVERRIDE { return new SpatialTuple(val1, val2, val3); }
-    int range_offset() const OVERRIDE { // returns int-offset into range [0 .. AW_RANGE_COLORS[
-        int c1 = is_nan(val1) ? 0 : fixed_range_offset<AW_SPATIAL_COLORS>(val1);
-        int c2 = is_nan(val2) ? 0 : fixed_range_offset<AW_SPATIAL_COLORS>(val2);
-        int c3 = is_nan(val3) ? 0 : fixed_range_offset<AW_SPATIAL_COLORS>(val3);
+    int range_offset(const Phaser& phaser) const OVERRIDE { // returns int-offset into range [0 .. AW_RANGE_COLORS[
+        int c1 = is_nan(val1) ? 0 : fixed_range_offset<AW_SPATIAL_COLORS>(phaser.rephase(val1));
+        int c2 = is_nan(val2) ? 0 : fixed_range_offset<AW_SPATIAL_COLORS>(phaser.rephase(val2));
+        int c3 = is_nan(val3) ? 0 : fixed_range_offset<AW_SPATIAL_COLORS>(phaser.rephase(val3));
         return CHECKED_RANGE_OFFSET((c1*AW_SPATIAL_COLORS + c2)*AW_SPATIAL_COLORS + c3);
     }
 
