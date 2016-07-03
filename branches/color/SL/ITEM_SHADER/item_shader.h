@@ -67,27 +67,17 @@ class Phaser {
 
     bool alternate;  // if frequency>1.0 => use alternate mapping direction
 
+    float result_lower_bound; // = result of rephase(0.0)
+    float result_upper_bound; // = result of rephase(1.0)
+
     static inline bool CONSTEXPR_RETURN is_normalized(const float& f) {
         return f>=0.0 && f<=1.0;
     }
-
     static inline float CONSTEXPR_RETURN shift_and_wrap(const float& val, const float& shift, float wrapto) {
         return shift>val ? val-shift+wrapto : val-shift;
     }
 
-public:
-    Phaser() : frequency(1.0), preshift(0.0), postshift(0.0), alternate(false) {} // does "nothing"
-    Phaser(float frequency_, bool alternate_, float preshift_, float postshift_) :
-        frequency(frequency_),
-        preshift(preshift_),
-        postshift(postshift_),
-        alternate(alternate_)
-    {
-        is_assert(is_normalized(preshift));
-        is_assert(is_normalized(postshift));
-    }
-
-    float rephase(float f) const {
+    float rephase_inbound(float f) const {
         is_assert(f>=0.0 && f<=1.0);
 
         const float preshifted(shift_and_wrap(f, preshift, 1.0));
@@ -118,6 +108,42 @@ public:
 
         is_assert(is_normalized(altered));
         return altered;
+    }
+
+    void calc_bound_results() {
+        result_lower_bound = rephase_inbound(0.0);
+        result_upper_bound = rephase_inbound(1.0);
+    }
+
+public:
+    Phaser() :  // this Phaser does "nothing"
+        frequency(1.0),
+        preshift(0.0),
+        postshift(0.0),
+        alternate(false),
+        result_lower_bound(0.0),
+        result_upper_bound(1.0)
+    {}
+
+    Phaser(float frequency_, bool alternate_, float preshift_, float postshift_) :
+        frequency(frequency_),
+        preshift(preshift_),
+        postshift(postshift_),
+        alternate(alternate_)
+    {
+        is_assert(is_normalized(preshift));
+        is_assert(is_normalized(postshift));
+
+        calc_bound_results();
+    }
+
+    float rephase(float f) const {
+        return
+            f<=0.0
+            ? result_lower_bound
+            : (f>=1.0
+               ? result_upper_bound
+               : rephase_inbound(f));
     }
 };
 

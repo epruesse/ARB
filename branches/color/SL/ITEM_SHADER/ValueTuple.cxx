@@ -318,13 +318,8 @@ inline int CHECKED_RANGE_OFFSET(int off) {
 
 template<int RANGE_SIZE>
 inline int fixed_range_offset(float val) {
-    int off =
-        val <= 0.0
-        ? 0
-        : (val >= 1.0
-           ? RANGE_SIZE-1
-           : val*RANGE_SIZE);
-
+    is_assert(val>=0.0 && val<=1.0); // val is output of Phaser
+    int off = val>=1.0 ? RANGE_SIZE-1 : val*RANGE_SIZE;
     is_assert(off>=0 && off<RANGE_SIZE);
     return off;
 }
@@ -360,7 +355,9 @@ public:
 
     bool is_defined() const OVERRIDE { return true; }
     ValueTuple *clone() const OVERRIDE { return new LinearTuple(val); }
-    int range_offset(const Phaser& phaser) const OVERRIDE { return CHECKED_RANGE_OFFSET(fixed_range_offset<AW_RANGE_COLORS>(phaser.rephase(val))); }
+    int range_offset(const Phaser& phaser) const OVERRIDE {  // returns int-offset into range [0 .. AW_RANGE_COLORS[
+        return CHECKED_RANGE_OFFSET(fixed_range_offset<AW_RANGE_COLORS>(phaser.rephase(val)));
+    }
 
 #if defined(UNIT_TESTS)
     const char *inspect() const OVERRIDE {
