@@ -324,6 +324,36 @@ inline int fixed_range_offset(float val) {
     return off;
 }
 
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#ifndef TEST_UNIT_H
+#include <test_unit.h>
+#endif
+
+void TEST_range_mapping() {
+    TEST_EXPECT_EQUAL(fixed_range_offset<4>(1.00), 3);
+    TEST_EXPECT_EQUAL(fixed_range_offset<4>(0.75), 3);
+    TEST_EXPECT_EQUAL(fixed_range_offset<4>(0.74), 2);
+    TEST_EXPECT_EQUAL(fixed_range_offset<4>(0.50), 2);
+    TEST_EXPECT_EQUAL(fixed_range_offset<4>(0.49), 1);
+    TEST_EXPECT_EQUAL(fixed_range_offset<4>(0.25), 1);
+    TEST_EXPECT_EQUAL(fixed_range_offset<4>(0.24), 0);
+    TEST_EXPECT_EQUAL(fixed_range_offset<4>(0.00), 0);
+
+    TEST_EXPECT_EQUAL(fixed_range_offset<3>(1.0),  2);
+    TEST_EXPECT_EQUAL(fixed_range_offset<3>(0.67), 2);
+    TEST_EXPECT_EQUAL(fixed_range_offset<3>(0.66), 1);
+    TEST_EXPECT_EQUAL(fixed_range_offset<3>(0.34), 1);
+    TEST_EXPECT_EQUAL(fixed_range_offset<3>(0.33), 0);
+    TEST_EXPECT_EQUAL(fixed_range_offset<3>(0.0),  0);
+}
+
+#endif // UNIT_TESTS
+
+// --------------------------------------------------------------------------------
+
+
 class NoTuple: public ValueTuple {
 public:
     NoTuple() {}
