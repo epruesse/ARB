@@ -8,12 +8,14 @@ SUB	tree_shading.hlp
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		Item database field shader
+TITLE           Database field shader
 
-OCCURRENCE	ARB_NT/Tree/Tree shading...
+OCCURRENCE      ARB_NT/Tree/Tree shading/...
+
+                Select 'Database field shader' and press 'Configure'.
 
 DESCRIPTION     This field shader allows to shade items (eg. species in tree) according
-		to one or more database entries.
+                to one or more database entries.
 
                 Each row in this window configures one dimension.
                 Each dimension defines one color-channel.
@@ -26,20 +28,18 @@ DESCRIPTION     This field shader allows to shade items (eg. species in tree) ac
                 The two inputfields behind the field-selection specify the lower and upper border
                 of the value-range.
 
-                   The value range is mapped to the active color range (@@@ only one atm).
+                   Press the 'SCAN' button to scan all database entries for minimum and maximum
+                   occurring values and use them as value-range.
+
+                   The value range is mapped to the active color range which can be selected
+                   in the shader setup window.
+
                    Values outside the value-range are forced into the range, eg. if the specified
                    value-range is [10 .. 20], then a value of 5 is displayed like 10 and a value
                    of 25 is displayed like 20.
 
-                   If you flip the borders of value-range the value range (eg. [20 .. 10]) it will be
-                   mapped reverse.
-
-                Press the 'SCAN' button to scan all database entries for minimum and maximum occurring
-                values and use them as value-range.
-
-                @@@ decribe interface
-
-NOTES		None
+NOTES           If you exchange the borders of the value range (eg. [20 .. 10]) it will be
+                mapped reverse.
 
 EXAMPLES	None
 

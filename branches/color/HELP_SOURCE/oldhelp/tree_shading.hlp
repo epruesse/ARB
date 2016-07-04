@@ -8,9 +8,9 @@ SUB	color.hlp
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		Tree shading
+TITLE           Tree shading
 
-OCCURRENCE	ARB_NT/Tree/Tree shading...
+OCCURRENCE      ARB_NT/Tree/Tree shading...
 
 DESCRIPTION     Allows to select if and how to shade the tree.
 
@@ -35,9 +35,6 @@ SECTION         Overlay
 
                     - group colors and/or
                     - marked color.
-
-                    The selected overlay is shader-specific and will override global settings, while the
-                    shader is active.
 
 SECTION         Value phasing
 
@@ -78,7 +75,8 @@ SECTION         Value phasing
                             If you select a cyclic color-range (eg. the 'Rainbow' range) you might
                             want to try frequencies > 1 without checking 'Alternate?'.
 
-NOTES		None
+NOTES           The settings described above are shader-specific (ie. each shaders remembers these
+                settings and restores them when the shader is selected again).
 
 EXAMPLES	None
 
