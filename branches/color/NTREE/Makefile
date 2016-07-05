@@ -176,6 +176,7 @@ ad_trees.o: ad_trees.h
 ad_trees.o: NT_local.h
 ad_trees.o: NT_local_proto.h
 ad_trees.o: NT_tree_cmp.h
+ad_trees.o: tree_position.h
 ad_trees.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ad_trees.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ad_trees.o: $(ARBHOME)/INCLUDE/AliView.hxx
