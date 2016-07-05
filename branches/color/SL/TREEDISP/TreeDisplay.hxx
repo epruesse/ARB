@@ -238,6 +238,9 @@ enum GroupCountMode {
     GCM_BOTH_PC, // show "percent/members" (or "members" if none marked)
 };
 
+class AWT_graphic_tree;
+DECLARE_CBTYPE_FVV_AND_BUILDERS(GraphicTreeCallback, void, AWT_graphic_tree*); // generates makeGraphicTreeCallback
+
 class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
     char         *species_name;
     AW::Position  cursor;
@@ -294,6 +297,8 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
     AWT_command_data *cmd_data;
 
     AP_tree_root *tree_static;
+
+    GraphicTreeCallback tree_changed_cb;
 
     // functions to compute displayinformation
 
@@ -364,6 +369,7 @@ public:
 
     AP_tree_root *get_tree_root() { return tree_static; }
     AP_tree *get_root_node() { return tree_static ? tree_static->get_root_node() : NULL; }
+    const AP_tree *get_root_node() const { return tree_static ? tree_static->get_root_node() : NULL; }
     bool is_logically_zoomed() { return displayed_root != get_root_node(); }
 
     void init(AliView *aliview, AP_sequence *seq_prototype, bool link_to_database_, bool insert_delete_cbs);
@@ -412,6 +418,9 @@ public:
         display_markers = display;
     }
     MarkerDisplay *get_marker_display() { return display_markers; }
+
+    void install_tree_changed_callback(const GraphicTreeCallback& gtcb);
+    void uninstall_tree_changed_callback();
 
 #if defined(UNIT_TESTS) // UT_DIFF
     friend class fake_AWT_graphic_tree;

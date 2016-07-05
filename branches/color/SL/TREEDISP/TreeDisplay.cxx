@@ -1769,6 +1769,9 @@ void AWT_graphic_tree::set_tree_type(AP_tree_display_type type, AWT_canvas *ntw)
     exports.resize = 1;
 }
 
+static void tree_change_ignore_cb(AWT_graphic_tree*) {}
+static GraphicTreeCallback treeChangeIgnore_cb = makeGraphicTreeCallback(tree_change_ignore_cb);
+
 AWT_graphic_tree::AWT_graphic_tree(AW_root *aw_root_, GBDATA *gb_main_, AD_map_viewer_cb map_viewer_cb_)
     : AWT_graphic(),
       line_filter         (AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_PRINTER|AW_SIZE),
@@ -1782,7 +1785,8 @@ AWT_graphic_tree::AWT_graphic_tree(AW_root *aw_root_, GBDATA *gb_main_, AD_map_v
       other_text_filter   (AW_SCREEN|AW_PRINTER|AW_SIZE_UNSCALED),
       ruler_filter        (AW_SCREEN|AW_CLICK|AW_PRINTER),          // appropriate size-filter added manually in code
       root_filter         (AW_SCREEN|AW_PRINTER_EXT),
-      marker_filter       (AW_SCREEN|AW_CLICK|AW_PRINTER_EXT|AW_SIZE_UNSCALED)
+      marker_filter       (AW_SCREEN|AW_CLICK|AW_PRINTER_EXT|AW_SIZE_UNSCALED),
+      tree_changed_cb(treeChangeIgnore_cb)
 {
     td_assert(gb_main_);
 
@@ -1874,6 +1878,7 @@ GB_ERROR AWT_graphic_tree::load(GBDATA *, const char *name) {
         }
     }
 
+    tree_changed_cb(this);
     return error;
 }
 
@@ -1906,6 +1911,7 @@ GB_ERROR AWT_graphic_tree::save(GBDATA * /* dummy */, const char * /* name */) {
             tree_static->gb_tree_gone = 0; // do not delete twice
         }
     }
+    tree_changed_cb(this);
     return error;
 }
 
@@ -3084,6 +3090,15 @@ const GroupInfo& AWT_graphic_tree::get_group_info(AP_tree *at, GroupInfoMode mod
     }
 
     return info;
+}
+
+void AWT_graphic_tree::install_tree_changed_callback(const GraphicTreeCallback& gtcb) {
+    td_assert(tree_changed_cb == treeChangeIgnore_cb);
+    tree_changed_cb = gtcb;
+}
+void AWT_graphic_tree::uninstall_tree_changed_callback() {
+    td_assert(!(tree_changed_cb == treeChangeIgnore_cb));
+    tree_changed_cb = treeChangeIgnore_cb;
 }
 
 AWT_graphic_tree *NT_generate_tree(AW_root *root, GBDATA *gb_main, AD_map_viewer_cb map_viewer_cb) {
