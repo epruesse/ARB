@@ -237,11 +237,10 @@ public:
         return GBS_global_string("%s/%s_%i", awar_prefix.c_str(), name, dim);
     }
 
-
-    virtual ShadedValue shade(GBDATA *gb_item) const = 0;
-
     bool overlay_marked() const;       // true if shader-plugin currently likes to display marked species in marked color
     bool overlay_color_groups() const; // true if shader-plugin currently likes to display color groups
+
+    virtual ShadedValue shade(GBDATA *gb_item) const = 0;
 
     virtual int get_dimension() const = 0; // returns (current) dimension of shader-plugin
 
