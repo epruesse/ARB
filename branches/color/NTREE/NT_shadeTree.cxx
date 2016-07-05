@@ -83,13 +83,17 @@ public:
 
     void activate(bool on) OVERRIDE;
 
-    void tree_changed_cb(AWT_graphic_tree *IF_ASSERTION_USED(by)) {
-        nt_assert(by == agt);
+#if defined(ASSERTION_USED)
+    bool is_linked_with(AWT_graphic_tree *linkedWith) { return linkedWith == agt; }
+#endif
+
+    void tree_changed_cb() {
         pos.SetNull();
         trigger_reshade_if_active_cb(SIMPLE_RESHADE); // forces reshade of "other" tree-canvas
     }
     static void tree_changed_cb(AWT_graphic_tree *IF_ASSERTION_USED(by), TopologyShader *shader) {
-        shader->tree_changed_cb(IF_ASSERTION_USED(by));
+        nt_assert(shader->is_linked_with(by));
+        shader->tree_changed_cb();
     }
 };
 
