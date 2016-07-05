@@ -21,28 +21,6 @@
 
 #define nt_assert(cond) arb_assert(cond)
 
-#if defined(DEVEL_RALF)
-#define IMPLEMENT_TEST_SHADER // @@@ remove the test shader later
-#endif
-
-#if defined(IMPLEMENT_TEST_SHADER)
-struct RelposShader: public ShaderPlugin {
-    RelposShader() : ShaderPlugin("relpos", "Demo-'relpos'-Shader") {}
-
-    ShadedValue shade(GBDATA *gb_item) const OVERRIDE {
-        GB_transaction  ta(gb_item);
-        GBDATA         *gb_relpos = GB_entry(gb_item, "relpos");
-        return gb_relpos ? ValueTuple::make(GB_read_float(gb_relpos)) : ValueTuple::undefined();
-    }
-    int get_dimension() const OVERRIDE { return 1; }
-    void init_specific_awars(AW_root *) OVERRIDE {}
-    bool customizable() const OVERRIDE { return false; }
-    void customize(AW_root */*awr*/) OVERRIDE { nt_assert(0); }
-    void activate(bool /*on*/) OVERRIDE {}
-};
-
-#endif
-
 // ------------------------
 //      TopologyShader
 
@@ -134,14 +112,8 @@ public:
                                   NT_TreeShader::reshade,
                                   AWT_GC_NONE_MARKED))
     {
-#if defined(IMPLEMENT_TEST_SHADER)
-        ShaderPluginPtr relpos_shader = new RelposShader;
-        shader->register_plugin(relpos_shader);
-#endif
-
-        AWT_graphic_tree *agt = DOWNCAST(AWT_graphic_tree*, ntw->gfx);
-
-        ShaderPluginPtr topo_shader = new TopologyShader(agt);
+        AWT_graphic_tree *agt         = DOWNCAST(AWT_graphic_tree*, ntw->gfx);
+        ShaderPluginPtr   topo_shader = new TopologyShader(agt);
         shader->register_plugin(topo_shader);
     }
     ~NT_TreeShader() OVERRIDE {}
