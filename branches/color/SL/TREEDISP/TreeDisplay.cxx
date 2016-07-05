@@ -3167,10 +3167,13 @@ void TREE_create_awars(AW_root *aw_root, AW_default db) {
 }
 
 static void TREE_recompute_and_rezoom_cb(UNFIXED, AWT_canvas *ntw) {
-    AWT_graphic_tree *gt = DOWNCAST(AWT_graphic_tree*, ntw->gfx);
-    gt->read_tree_settings(); // update settings for group-scaling
-    gt->get_root_node()->compute_tree();
-    ntw->recalc_size_and_refresh();
+    AWT_graphic_tree *gt   = DOWNCAST(AWT_graphic_tree*, ntw->gfx);
+    AP_tree          *root = gt->get_root_node();
+    if (root) {
+        gt->read_tree_settings(); // update settings for group-scaling
+        root->compute_tree();
+        ntw->recalc_size_and_refresh();
+    }
 }
 static void TREE_rezoom_cb(UNFIXED, AWT_canvas *ntw) {
     ntw->recalc_size_and_refresh();
