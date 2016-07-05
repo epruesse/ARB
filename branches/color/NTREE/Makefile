@@ -847,6 +847,9 @@ NT_main.o: $(ARBHOME)/INCLUDE/svn_revision.h
 NT_main.o: $(ARBHOME)/INCLUDE/test_global.h
 NT_main.o: $(ARBHOME)/INCLUDE/ttypes.h
 
+NT_shadeTree.o: NT_local.h
+NT_shadeTree.o: NT_local_proto.h
+NT_shadeTree.o: tree_position.h
 NT_shadeTree.o: $(ARBHOME)/INCLUDE/ad_colorset.h
 NT_shadeTree.o: $(ARBHOME)/INCLUDE/ad_prot.h
 NT_shadeTree.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
@@ -890,6 +893,7 @@ NT_shadeTree.o: $(ARBHOME)/INCLUDE/items.h
 NT_shadeTree.o: $(ARBHOME)/INCLUDE/smartptr.h
 NT_shadeTree.o: $(ARBHOME)/INCLUDE/static_assert.h
 NT_shadeTree.o: $(ARBHOME)/INCLUDE/test_global.h
+NT_shadeTree.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx
 NT_shadeTree.o: $(ARBHOME)/INCLUDE/TreeNode.h
 NT_shadeTree.o: $(ARBHOME)/INCLUDE/ttypes.h
 

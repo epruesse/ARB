@@ -8,8 +8,10 @@
 //                                                              //
 // ============================================================ //
 
+#include "tree_position.h"
+
+#include <TreeDisplay.hxx>
 #include <AP_TreeShader.hxx>
-#include <AP_Tree.hxx>
 
 #include <awt_canvas.hxx>
 
@@ -41,6 +43,72 @@ struct RelposShader: public ShaderPlugin {
 
 #endif
 
+// ------------------------
+//      TopologyShader
+
+typedef SmartPtr<TreePositionLookup> TreePositionLookupPtr;
+
+class TopologyShader: public ShaderPlugin {
+    RefPtr<AWT_graphic_tree> agt;
+    mutable TreePositionLookupPtr pos;
+
+    void init_specific_awars(AW_root*) OVERRIDE {}
+
+    void update_pos_lookup() const {
+        pos = new TreePositionLookup(agt->get_root_node());
+    }
+
+public:
+    TopologyShader(AWT_graphic_tree *agt_) :
+        ShaderPlugin("topology", "Topology shader"),
+        agt(agt_)
+    {}
+
+    ShadedValue shade(GBDATA *gb_item) const OVERRIDE {
+        if (gb_item) {
+            if (pos.isNull()) update_pos_lookup();
+
+            const char *name = GBT_read_name(gb_item);
+            if (name) {
+                TreeRelativePosition relpos = pos->relative(name);
+                if (relpos.is_known()) return ValueTuple::make(relpos.value());
+            }
+        }
+        return ValueTuple::undefined();
+    }
+
+    int get_dimension() const OVERRIDE { return 1; }
+    bool customizable() const OVERRIDE { return false; }
+    void customize(AW_root *) OVERRIDE { nt_assert(0); }
+
+    void activate(bool on) OVERRIDE;
+
+    void tree_changed_cb(AWT_graphic_tree *IF_ASSERTION_USED(by)) {
+        nt_assert(by == agt);
+        pos.SetNull();
+        trigger_reshade_if_active_cb(SIMPLE_RESHADE); // forces reshade of "other" tree-canvas
+    }
+    static void tree_changed_cb(AWT_graphic_tree *IF_ASSERTION_USED(by), TopologyShader *shader) {
+        shader->tree_changed_cb(IF_ASSERTION_USED(by));
+    }
+};
+
+void TopologyShader::activate(bool on) {
+    // called with true when plugin gets activated, with false when it gets deactivated
+
+    if (on) {
+        pos.SetNull(); // invalidate cached positions
+        GraphicTreeCallback gtcb = makeGraphicTreeCallback(TopologyShader::tree_changed_cb, this);
+        agt->install_tree_changed_callback(gtcb);
+    }
+    else {
+        agt->uninstall_tree_changed_callback();
+    }
+}
+
+// -----------------------
+//      NT_TreeShader
+
 class NT_TreeShader: public AP_TreeShader, virtual Noncopyable {
     ItemShader *shader; // (owned by registry in ITEM_SHADER)
 
@@ -66,6 +134,11 @@ public:
         ShaderPluginPtr relpos_shader = new RelposShader;
         shader->register_plugin(relpos_shader);
 #endif
+
+        AWT_graphic_tree *agt = DOWNCAST(AWT_graphic_tree*, ntw->gfx);
+
+        ShaderPluginPtr topo_shader = new TopologyShader(agt);
+        shader->register_plugin(topo_shader);
     }
     ~NT_TreeShader() OVERRIDE {}
     void init() OVERRIDE { shader->init(); } // called by AP_tree::set_tree_shader when installed
@@ -87,6 +160,9 @@ public:
     }
 };
 
+// ----------------------------
+//      external interface
+
 void NT_install_treeShader(AWT_canvas *ntw, GBDATA *gb_main) {
     AP_tree::set_tree_shader(new NT_TreeShader(ntw, gb_main));
 }
@@ -94,7 +170,9 @@ void NT_install_treeShader(AWT_canvas *ntw, GBDATA *gb_main) {
 void NT_configure_treeShader() {
     const AP_TreeShader *tshader = AP_tree::get_tree_shader();
     nt_assert(tshader);
-    if (tshader) static_cast<const NT_TreeShader*>(tshader)->popup_config();
+    if (tshader) DOWNCAST(const NT_TreeShader*, tshader)->popup_config();
+
 }
+
 
 

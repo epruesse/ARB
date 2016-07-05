@@ -72,7 +72,7 @@ class TreePositionLookup {
     }
 public:
     explicit TreePositionLookup(const TreeNode *tree) {
-        fillFromTree(tree);
+        if (tree) fillFromTree(tree);
     }
 
     TreeRelativePosition relative(const char *name) const {
