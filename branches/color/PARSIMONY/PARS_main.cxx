@@ -895,7 +895,7 @@ static void NT_bootstrap(AW_window *, AWT_canvas *ntw, bool limit_only) {
     rootEdge()->nni_rec(ANY_EDGE, mode, NULL, true);
     AWT_graphic_tree *agt = AWT_TREE(ntw);
     agt->reorder_tree(BIG_BRANCHES_TO_TOP);
-    agt->set_logical_zoom_to(agt->get_root_node());
+    agt->set_logical_root_to(agt->get_root_node());
     pars_saveNrefresh_changed_tree(ntw);
 }
 

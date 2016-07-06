@@ -440,7 +440,7 @@ void NT_reset_lzoom_cb(UNFIXED, AWT_canvas *ntw) {
     GB_transaction    ta(ntw->gb_main);
     AWT_graphic_tree *agt = AWT_TREE(ntw);
     agt->check_update(ntw->gb_main);
-    agt->set_logical_zoom_to(agt->get_root_node());
+    agt->set_logical_root_to(agt->get_root_node());
     ntw->zoom_reset_and_refresh();
 }
 
@@ -626,7 +626,7 @@ void NT_jump_cb(UNFIXED, AWT_canvas *ntw, AP_tree_jump_type jumpType) {
                     found = gtree->get_root_node()->findLeafNamed(name);
                     if (found) { // species is invisible because it is outside logically zoomed tree
                         if (jumpType & AP_JUMP_UNFOLD_GROUPS) {
-                            gtree->set_logical_zoom_to(common_ancestor(found, gtree->get_logical_root()));
+                            gtree->set_logical_root_to(common_ancestor(found, gtree->get_logical_root()));
                             ntw->recalc_size(true);
                         }
                         else {

@@ -396,17 +396,17 @@ static void show_bootstrap_circle(AW_device *device, const char *bootstrap, doub
 static void AWT_graphic_tree_root_changed(void *cd, AP_tree *old, AP_tree *newroot) {
     AWT_graphic_tree *agt = (AWT_graphic_tree*)cd;
     if (agt->get_logical_root() == old || agt->get_logical_root()->is_inside(old)) {
-        agt->set_logical_zoom_to(newroot);
+        agt->set_logical_root_to(newroot);
     }
 }
 
 static void AWT_graphic_tree_node_deleted(void *cd, AP_tree *del) {
     AWT_graphic_tree *agt = (AWT_graphic_tree*)cd;
     if (agt->get_logical_root() == del) {
-        agt->set_logical_zoom_to(agt->get_root_node());
+        agt->set_logical_root_to(agt->get_root_node());
     }
     if (agt->get_root_node() == del) {
-        agt->set_logical_zoom_to(0);
+        agt->set_logical_root_to(0);
     }
 }
 void AWT_graphic_tree::toggle_group(AP_tree * at) {
