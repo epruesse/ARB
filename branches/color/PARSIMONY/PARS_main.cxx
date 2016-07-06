@@ -893,8 +893,9 @@ static void NT_bootstrap(AW_window *, AWT_canvas *ntw, bool limit_only) {
     AP_BL_MODE   mode = AP_BL_MODE((limit_only ? AP_BL_BOOTSTRAP_LIMIT : AP_BL_BOOTSTRAP_ESTIMATE)|AP_BL_BL_ONLY);
 
     rootEdge()->nni_rec(ANY_EDGE, mode, NULL, true);
-    AWT_TREE(ntw)->reorder_tree(BIG_BRANCHES_TO_TOP);
-    AWT_TREE(ntw)->displayed_root = AWT_TREE(ntw)->get_root_node();
+    AWT_graphic_tree *agt = AWT_TREE(ntw);
+    agt->reorder_tree(BIG_BRANCHES_TO_TOP);
+    agt->set_logical_zoom_to(agt->get_root_node());
     pars_saveNrefresh_changed_tree(ntw);
 }
 

@@ -39,7 +39,7 @@ static void AWT_graphic_parsimony_root_changed(void *cd, AP_tree *old, AP_tree *
     AWT_graphic_tree *agt = (AWT_graphic_tree*)cd;
     UNCOVERED();
 
-    if (old == agt->displayed_root) agt->displayed_root = newroot;
+    if (old == agt->get_logical_root()) agt->set_logical_zoom_to(newroot);
 }
 
 static AliView *pars_generate_aliview(WeightedFilter *pars_weighted_filter) {
