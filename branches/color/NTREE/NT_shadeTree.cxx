@@ -33,7 +33,7 @@ class TopologyShader: public ShaderPlugin {
     void init_specific_awars(AW_root*) OVERRIDE {}
 
     void update_pos_lookup() const {
-        pos = new TreePositionLookup(agt->get_root_node());
+        pos = new TreePositionLookup(agt->get_logical_root());
     }
 
 public:

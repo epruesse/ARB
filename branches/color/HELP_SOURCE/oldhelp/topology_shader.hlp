@@ -39,9 +39,11 @@ DESCRIPTION     This shader uses the tree currently displayed in the main
                     Then use either of the phase-shift sliders to shift the shading.
                   * to detect global topology differences, decrease the phasing frequency.
 
-
 NOTES           Whenever the tree in the main tree display changes, the shading is instantly
                 updated and refreshed in all tree displays.
+
+                You can use the logical zoom-mode in the main tree display while the
+                topology shader is active, to shade only the zoomed part of the tree.
 
 EXAMPLES        The range allowed for the phasing frequency is [0.01 .. 100].
                 The number of colors available for shading is currently limited to 4096.
