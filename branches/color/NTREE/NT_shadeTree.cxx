@@ -56,8 +56,8 @@ public:
     }
 
     int get_dimension() const OVERRIDE { return 1; }
-    bool customizable() const OVERRIDE { return false; }
-    void customize(AW_root *) OVERRIDE { nt_assert(0); }
+    bool customizable() const OVERRIDE { return true; }
+    void customize(AW_root *) OVERRIDE { AW_help_popup(NULL, "topology_shader.hlp"); }
 
     void activate(bool on) OVERRIDE;
 
