@@ -362,6 +362,34 @@ inline const char *make_limit_string(bool use_float, float f, int i) {
     return GBS_global_string("%i", i);
 }
 
+template<typename T>
+class LimitTracker {
+    T min, max;
+
+public:
+    LimitTracker() :
+        min(numeric_limits<T>::max()),
+        max(numeric_limits<T>::min())
+    {}
+
+    void track(T val) {
+        min = std::min(min, val);
+        max = std::max(max, val);
+    }
+    void track(const char *str);
+
+    bool seen() const { return min <= max; }
+    bool is_single_value() const { return !(min<max); }
+
+    T get_min() const { return min; }
+    T get_max() const { return max; }
+
+};
+
+template<> void LimitTracker<int>  ::track(const char *str) { track(atoi(str)); }
+template<> void LimitTracker<float>::track(const char *str) { track(atof(str)); }
+
+
 void ItemFieldShader::scan_value_range_cb(int dim) {
     AW_root    *awr       = AW_root::SINGLETON;
     const char *fieldname = awr->awar(AWAR_FIELD(dim))->read_char_pntr();
@@ -370,10 +398,8 @@ void ItemFieldShader::scan_value_range_cb(int dim) {
         aw_message("Select field to scan");
     }
     else {
-        int   imin = numeric_limits<int>::max();
-        int   imax = numeric_limits<int>::min();
-        float fmin = numeric_limits<float>::max();
-        float fmax = numeric_limits<float>::min();
+        LimitTracker<int>   ilimit;
+        LimitTracker<float> flimit;
 
         bool seen_field      = false;
         bool is_hierarchical = strchr(fieldname, '/');
@@ -399,27 +425,19 @@ void ItemFieldShader::scan_value_range_cb(int dim) {
                     switch (field_type) {
                         case GB_INT: {
                             int i = GB_read_int(gb_field);
-                            imin  = min(imin, i);
-                            imax  = max(imax, i);
+                            ilimit.track(i);
                             break;
                         }
                         case GB_FLOAT: {
                             float f = GB_read_float(gb_field);
-                            fmin  = min(fmin, f);
-                            fmax  = max(fmax, f);
+                            flimit.track(f);
                             break;
                         }
                         default: {
-                            const char *s = GB_read_as_string(gb_field);
-
-                            float f = atof(s);
-                            int   i = atoi(s);
-
-                            imin = min(imin, i);
-                            imax = max(imax, i);
-
-                            fmin = min(fmin, f);
-                            fmax = max(fmax, f);
+                            char *s = GB_read_as_string(gb_field);
+                            ilimit.track(s);
+                            flimit.track(s);
+                            free(s);
                             break;
                         }
                     }
@@ -429,17 +447,17 @@ void ItemFieldShader::scan_value_range_cb(int dim) {
 
         if (seen_field) {
             // decide whether to use float or int limits
-            bool seen_float = fmin<=fmax;
-            bool seen_int   = imin<=imax;
+            bool seen_float = flimit.seen();
+            bool seen_int   = ilimit.seen();
             is_assert(seen_float || seen_int);
 
-            bool use_float = seen_float && (!seen_int || imax<fmax);
+            bool use_float = seen_float && (!seen_int || ilimit.get_max()<flimit.get_max());
 
             // @@@ avoid duplicate refresh:
-            awr->awar(AWAR_VALUE_MIN(dim))->write_string(make_limit_string(use_float, fmin, imin));
-            awr->awar(AWAR_VALUE_MAX(dim))->write_string(make_limit_string(use_float, fmax, imax));
+            awr->awar(AWAR_VALUE_MIN(dim))->write_string(make_limit_string(use_float, flimit.get_min(), ilimit.get_min()));
+            awr->awar(AWAR_VALUE_MAX(dim))->write_string(make_limit_string(use_float, flimit.get_max(), ilimit.get_max()));
 
-            bool shading_useless = !(use_float ? fmin<fmax : imin<imax);
+            bool shading_useless = use_float ? flimit.is_single_value() : ilimit.is_single_value();
             if (shading_useless) {
                 aw_message(GBS_global_string("Using field '%s' for shading is quite useless", fieldname));
             }
