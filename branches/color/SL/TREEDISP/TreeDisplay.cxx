@@ -627,7 +627,7 @@ void AWT_graphic_tree::handle_key(AW_device *device, AWT_graphic_event& event) {
             // - KEYINFO_RESET (AWT_MODE_LZOOM)
 
             if (event.cmd() == AWT_MODE_LZOOM) {
-                displayed_root     = displayed_root->get_root_node();
+                set_logical_root_to(get_root_node());
                 exports.zoom_reset = 1;
             }
             else if (pointed.is_ruler()) {
@@ -1615,13 +1615,13 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
             switch (event.button()) {
                 case AW_BUTTON_LEFT:
                     if (clicked.node()) {
-                        displayed_root = clicked.node();
+                        set_logical_root_to(clicked.node());
                         exports.zoom_reset = 1;
                     }
                     break;
                 case AW_BUTTON_RIGHT:
                     if (displayed_root->father) {
-                        displayed_root = displayed_root->get_father();
+                        set_logical_root_to(displayed_root->get_father());
                         exports.zoom_reset = 1;
                     }
                     break;
@@ -3093,6 +3093,11 @@ const GroupInfo& AWT_graphic_tree::get_group_info(AP_tree *at, GroupInfoMode mod
 }
 
 void AWT_graphic_tree::install_tree_changed_callback(const GraphicTreeCallback& gtcb) {
+    /*! install a callback called whenever
+     *  - topology changes (either by DB-change or by GUI command),
+     *  - logical zoom changes or
+     *  - a different tree gets displayed.
+     */
     td_assert(tree_changed_cb == treeChangeIgnore_cb);
     tree_changed_cb = gtcb;
 }

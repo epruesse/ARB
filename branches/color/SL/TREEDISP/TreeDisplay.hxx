@@ -376,7 +376,10 @@ public:
     const AP_tree *get_logical_root() const { return displayed_root; }
 
     bool is_logically_zoomed() { return displayed_root != get_root_node(); }
-    void set_logical_root_to(AP_tree *node) { displayed_root = node; }
+    void set_logical_root_to(AP_tree *node) {
+        displayed_root = node;
+        tree_changed_cb(this);
+    }
 
     void init(AliView *aliview, AP_sequence *seq_prototype, bool link_to_database_, bool insert_delete_cbs);
     AW_gc_manager *init_devices(AW_window *, AW_device *, AWT_canvas *ntw) OVERRIDE;
