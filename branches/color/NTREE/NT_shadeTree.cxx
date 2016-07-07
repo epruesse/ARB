@@ -107,7 +107,7 @@ public:
                                   ntw->gc_manager,
                                   BoundItemSel(gb_main, SPECIES_get_selector()),
                                   "tree",
-                                  "tree shading",
+                                  "Tree shading",
                                   "tree_shading.hlp",
                                   NT_TreeShader::reshade,
                                   AWT_GC_NONE_MARKED))

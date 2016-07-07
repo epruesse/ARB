@@ -216,7 +216,12 @@ public:
         plugged_into(NULL),
         id(id_),
         description(description_)
-    {}
+    {
+        /*! construct a shader plugin
+         * @param id_           a unique id
+         * @param description_  description of plugin (ia. used as title of config window)
+         */
+    }
     virtual ~ShaderPlugin() {}
 
     void announce_shader(ItemShader *shader) { plugged_into = shader; }

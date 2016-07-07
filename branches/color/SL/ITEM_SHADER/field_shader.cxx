@@ -334,9 +334,8 @@ void ItemFieldShader::customize(AW_root *awr) {
     if (!aw_config) {
         AW_window_simple *aws = new AW_window_simple;
         {
-            string wid   = GBS_global_string("%s_cfg", get_shader_local_id());
-            string title = GBS_global_string("Configure %s", get_description().c_str());
-            aws->init(awr, wid.c_str(), title.c_str());
+            string wid = GBS_global_string("%s_cfg", get_shader_local_id());
+            aws->init(awr, wid.c_str(), get_description().c_str());
         }
 
         aws->auto_space(5, 5);

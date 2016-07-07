@@ -421,9 +421,8 @@ void ItemShader_impl::popup_config_window(AW_root *awr) {
     if (!aw_cfg) {
         AW_window_simple *aws = new AW_window_simple;
         {
-            string wid   = GBS_global_string("shader_cfg_%s", get_id().c_str());
-            string title = GBS_global_string("Configure %s", get_description().c_str());
-            aws->init(awr, wid.c_str(), title.c_str());
+            string wid = GBS_global_string("shader_cfg_%s", get_id().c_str());
+            aws->init(awr, wid.c_str(), get_description().c_str());
         }
         aws->load_xfig("item_shader_cfg.fig");
 
@@ -506,7 +505,7 @@ ItemShader *registerItemShader(AW_root *awr, AW_gc_manager *gcman, BoundItemSel&
      * @param gcman           gc-manager used for shading
      * @param itemtype        type of item
      * @param unique_id       unique ID
-     * @param description     short description (eg. "tree shading")
+     * @param description     short description used ia. as title of config window (eg. "Tree shading")
      * @param help_id         helpfile
      * @param reshade_cb      callback which updates the shading + refreshes the display
      * @param undef_gc        GC reported for undefined ShadedValue
