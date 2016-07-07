@@ -35,28 +35,32 @@ SECTION         ADJUSTMENTS
                                 this option is set to align the current species and
                                 the aligner gets called.
 
-		Reference
+                Reference
 
                                 The aligner needs a sequence as reference.
-				You can either select a fixed species, the
-				consensus of the group containing the species
-				or the next relative(s) found by the selected
-				PT-Server.
+                                You can either
 
-                                If you choose a fixed species, you may press the 'COPY' button
+                                    * select a fixed species by name,
+                                    * the consensus of the group containing the aligned species or
+                                    * the next relative(s) found by the selected PT-Server.
+
+                                If you choose 'Species by name', you may press the 'COPY' button
                                 to copy the name of the 'Current Species' to the 'Reference' species.
                                 Alternatively you may use CTRL-R while the focus is inside the sequence view
                                 (Note: CTRL-R does not work, if LINK{viewdiff.hlp} is active).
 
-				If you choose 'Auto search by pt_server', the
-				aligner will use the next relative(s) as reference.
-				If the nearest relative has gaps where the sequence
-				to align has bases, the aligner will use the 2nd nearest
-				relative or if that one has gaps too, the 3rd nearest, etc.
-                                You can define the maximum number of relatives.
+                                If you choose 'Auto search by pt_server', the
+                                aligner will use the next relative(s) as reference.
 
-                                All used relatives and the number of base positions used from each relative,
-                                will be written into the field 'used_rels' (see also LINK{markbyref.hlp}).
+                                 * Please read section about 'Protein alignment with pt_server' below.
+
+                                 * If the nearest relative has gaps where the sequence
+                                   to align has bases, the aligner will use the 2nd nearest
+                                   relative or if that one has gaps too, the 3rd nearest, etc.
+                                   You can define the maximum number of relatives considered.
+
+                                 * All used relatives and the number of base positions used from each relative,
+                                   will be written into the field 'used_rels' (see also LINK{markbyref.hlp}).
 
                                 If you enter '0' in 'Data from range only, plus', relative
                                 search only uses data from the aligned range. If you enter
@@ -118,6 +122,19 @@ SECTION         ADJUSTMENTS
                                     '~' for matching, but not equal bases (A aligned to G, C aligned to T or U)
 
                                     '#' for mismatching positions
+
+SECTION         Protein alignment with pt_server
+
+                If you want to align protein sequences and use a PT-Server (to detect
+                the next relative for each sequence),
+                you need to
+
+                     * have two alignments in your database (a protein alignment and a
+                       corresponding DNA alignment). ARB has functions to synchronize these
+                       alignments (see LINK{realign_dna.hlp} and LINK{translate_dna_2_pro.hlp}),
+                     * build a pt_server based on the DNA-alignment,
+                       select that pt_server in the aligner window and
+                     * specify the name of the DNA-alignment in the 'Alignment' field.
 
 NOTES	 	This aligner knows about and uses all extended base characters
 		(ACGTUMRWSYKVHDN) for the alignment.
