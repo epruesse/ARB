@@ -20,6 +20,7 @@
 
 #include <arb_global_defs.h>
 #include <arb_str.h>
+#include <arb_defs.h>
 
 #include <set>
 #include <limits>
@@ -28,11 +29,14 @@ using namespace std;
 
 #define AWAR_DIM_ACTIVE(dim) dimension_awar(dim, "active")
 #define AWAR_FIELD(dim)      dimension_awar(dim, "field")
+#define AWAR_ACI(dim)        dimension_awar(dim, "aci")
 #define AWAR_VALUE_MIN(dim)  dimension_awar(dim, "min")
 #define AWAR_VALUE_MAX(dim)  dimension_awar(dim, "max")
 
 class FieldReader {
     RefPtr<const char> fieldname;
+    RefPtr<const char> aci; // if NULL -> no (=empty) ACI
+
     bool is_hkey; // true if fieldname is hierarchical
 
     float min_value, max_value;
@@ -50,10 +54,11 @@ class FieldReader {
         factor     = span != 0.0 ? 1.0/span : 1/0.00001;
     }
 public:
-    FieldReader() : fieldname(NULL) {}
+    FieldReader() : fieldname(NULL), aci(NULL) {}
 
-    FieldReader(const char *fieldname_, float minVal, float maxVal) :
+    FieldReader(const char *fieldname_, const char *aci_, float minVal, float maxVal) :
         fieldname(fieldname_),
+        aci(aci_),
         is_hkey(strchr(fieldname, '/')),
         min_value(minVal),
         max_value(maxVal)
@@ -82,14 +87,25 @@ public:
 
             if (gb_field) {
                 float val = 0.0;
-                switch (GB_read_type(gb_field)) {
-                    case GB_INT: val = GB_read_int(gb_field); break;
-                    case GB_FLOAT: val = GB_read_float(gb_field); break;
-                    default: {
-                        if (!safe_atof(GB_read_as_string(gb_field), val)) {
-                            return NAN;
+
+                if (aci) {
+                    char *content   = GB_read_as_string(gb_field);
+                    char *applied   = GB_command_interpreter(GB_get_root(gb_item), content, aci, gb_item, NULL);
+                    bool  converted = safe_atof(applied, val);
+                    free(content);
+                    free(applied);
+                    if (!converted) return NAN;
+                }
+                else {
+                    switch (GB_read_type(gb_field)) {
+                        case GB_INT: val = GB_read_int(gb_field); break;
+                        case GB_FLOAT: val = GB_read_float(gb_field); break;
+                        default: {
+                            if (!safe_atof(GB_read_as_string(gb_field), val)) {
+                                return NAN;
+                            }
+                            break;
                         }
-                        break;
                     }
                 }
                 val = (val-min_value)*factor;
@@ -159,6 +175,20 @@ class ItemFieldShader: public ShaderPlugin {
         return NULL;
     }
 
+    static bool is_ACI(const char *aci) {
+        return aci[0];
+    }
+
+    const char *get_ACI(int dim) const {
+        // returns configured ACI (or NULL)
+        AW_root *awr = AW_root::SINGLETON;
+        if (awr && awr->awar(AWAR_DIM_ACTIVE(dim))->read_int()) {
+            const char *aci = awr->awar(AWAR_ACI(dim))->read_char_pntr();
+            if (is_ACI(aci)) return aci;
+        }
+        return NULL;
+    }
+
     FieldReader get_dimension_reader(int dim) const {
         AW_root *awr = AW_root::SINGLETON;
         if (awr) {
@@ -166,7 +196,7 @@ class ItemFieldShader: public ShaderPlugin {
             if (fieldname)  {
                 float minVal = atof(awr->awar(AWAR_VALUE_MIN(dim))->read_char_pntr());
                 float maxVal = atof(awr->awar(AWAR_VALUE_MAX(dim))->read_char_pntr());
-                return FieldReader(fieldname, minVal, maxVal);
+                return FieldReader(fieldname, get_ACI(dim), minVal, maxVal);
             }
         }
         return FieldReader();
@@ -292,10 +322,11 @@ void ItemFieldShader::init_specific_awars(AW_root *awr) {
     for (int dim = 0; dim<get_max_dimension(); ++dim) {
         RootCallback FieldSetup_changed_cb = makeRootCallback(ItemFieldShader::setup_changed_cb, this);
 
-        awr->awar_int(AWAR_DIM_ACTIVE(dim), dim == 0)->add_callback(FieldSetup_changed_cb);
+        awr->awar_int(AWAR_DIM_ACTIVE(dim), dim == 0)       ->add_callback(FieldSetup_changed_cb);
         awr->awar_string(AWAR_FIELD(dim), NO_FIELD_SELECTED)->add_callback(FieldSetup_changed_cb);
-        awr->awar_string(AWAR_VALUE_MIN(dim), "0")->add_callback(FieldSetup_changed_cb);
-        awr->awar_string(AWAR_VALUE_MAX(dim), "1")->add_callback(FieldSetup_changed_cb);
+        awr->awar_string(AWAR_ACI(dim), "")                 ->add_callback(FieldSetup_changed_cb);
+        awr->awar_string(AWAR_VALUE_MIN(dim), "0")          ->add_callback(FieldSetup_changed_cb);
+        awr->awar_string(AWAR_VALUE_MAX(dim), "1")          ->add_callback(FieldSetup_changed_cb);
     }
 }
 
@@ -309,8 +340,9 @@ void ItemFieldShader::customize(AW_root *awr) {
         }
 
         aws->auto_space(5, 5);
-
         aws->button_length(8);
+
+        int y0 = aws->get_at_yposition();
 
         aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "O");
@@ -320,20 +352,41 @@ void ItemFieldShader::customize(AW_root *awr) {
 
         aws->at_newline();
 
+        int y = aws->get_at_yposition();                // header-position
+        const char *header[] = { "Use", "Field", "ACI", "min", "max", };
+        const int HCOUNT = ARRAY_ELEMS(header);
+
+        int x[HCOUNT];
+        x[0] = aws->get_at_xposition();
+
+        aws->at_y(y+(y-y0));
+
         for (int dim = 0; dim<get_max_dimension(); ++dim) {
             aws->create_toggle(AWAR_DIM_ACTIVE(dim));
 
+            int h = 1;
+            if (!dim) x[h++] = aws->get_at_xposition();
             FieldSelDef def(AWAR_FIELD(dim), itemtype.gb_main, itemtype.selector, FIELD_FILTER_STRING_READABLE);
             create_itemfield_selection_button(aws, def, NULL);
 
+            if (!dim) x[h++] = aws->get_at_xposition();
+            aws->create_input_field(AWAR_ACI(dim), 30);
+
             const int VALCOL = 9;
+            if (!dim) x[h++] = aws->get_at_xposition();
             aws->create_input_field(AWAR_VALUE_MIN(dim), VALCOL);
+            if (!dim) x[h++] = aws->get_at_xposition();
             aws->create_input_field(AWAR_VALUE_MAX(dim), VALCOL);
 
             aws->callback(makeWindowCallback(scan_value_range_cb, this, dim));
             aws->create_button(GBS_global_string("SCAN%i", dim), "SCAN", 0);
 
             aws->at_newline();
+        }
+
+        for (int h = 0; h<HCOUNT; ++h) {
+            aws->at(x[h], y);
+            aws->create_button(NULL, header[h], 0);
         }
 
         aw_config = aws;
@@ -393,9 +446,12 @@ template<> void LimitTracker<float>::track(const char *str) { track(atof(str)); 
 void ItemFieldShader::scan_value_range_cb(int dim) {
     AW_root    *awr       = AW_root::SINGLETON;
     const char *fieldname = awr->awar(AWAR_FIELD(dim))->read_char_pntr();
+    const char *aci       = awr->awar(AWAR_ACI(dim))->read_char_pntr();
+    bool        have_aci  = is_ACI(aci);
+    GB_ERROR    error     = NULL;
 
     if (strcmp(fieldname, NO_FIELD_SELECTED) == 0) {
-        aw_message("Select field to scan");
+        error = "Select field to scan";
     }
     else {
         LimitTracker<int>   ilimit;
@@ -406,11 +462,11 @@ void ItemFieldShader::scan_value_range_cb(int dim) {
 
         GB_transaction ta(itemtype.gb_main);
         for (GBDATA *gb_cont = itemtype.get_first_item_container(NULL, QUERY_ALL_ITEMS);
-             gb_cont;
+             gb_cont && !error;
              gb_cont = itemtype.get_next_item_container(gb_cont, QUERY_ALL_ITEMS))
         {
             for (GBDATA *gb_item = itemtype.get_first_item(gb_cont, QUERY_ALL_ITEMS);
-                 gb_item;
+                 gb_item && !error;
                  gb_item         = itemtype.get_next_item(gb_item, QUERY_ALL_ITEMS))
             {
                 GBDATA *gb_field = is_hierarchical
@@ -420,27 +476,45 @@ void ItemFieldShader::scan_value_range_cb(int dim) {
                 if (gb_field) {
                     seen_field = true;
 
-                    GB_TYPES field_type = GB_read_type(gb_field);
+                    if (have_aci) {
+                        char *content = GB_read_as_string(gb_field);
+                        char *applied = GB_command_interpreter(itemtype.gb_main, content, aci, gb_item, NULL);
 
-                    switch (field_type) {
-                        case GB_INT: {
-                            int i = GB_read_int(gb_field);
-                            ilimit.track(i);
-                            break;
+                        if (!applied) {
+                            error = GB_await_error();
                         }
-                        case GB_FLOAT: {
-                            float f = GB_read_float(gb_field);
-                            flimit.track(f);
-                            break;
+                        else {
+                            ilimit.track(applied);
+                            flimit.track(applied);
+                            free(applied);
                         }
-                        default: {
-                            char *s = GB_read_as_string(gb_field);
-                            ilimit.track(s);
-                            flimit.track(s);
-                            free(s);
-                            break;
+                        free(content);
+                    }
+                    else {
+                        GB_TYPES field_type = GB_read_type(gb_field);
+                        switch (field_type) {
+                            case GB_INT: {
+                                int i = GB_read_int(gb_field);
+                                ilimit.track(i);
+                                break;
+                            }
+                            case GB_FLOAT: {
+                                float f = GB_read_float(gb_field);
+                                flimit.track(f);
+                                break;
+                            }
+                            default: {
+                                char *s = GB_read_as_string(gb_field);
+                                ilimit.track(s);
+                                flimit.track(s);
+                                free(s);
+                                break;
+                            }
                         }
                     }
+                }
+                else if (GB_have_error()) {
+                    error = GB_await_error();
                 }
             }
         }
@@ -459,10 +533,11 @@ void ItemFieldShader::scan_value_range_cb(int dim) {
 
             bool shading_useless = use_float ? flimit.is_single_value() : ilimit.is_single_value();
             if (shading_useless) {
-                aw_message(GBS_global_string("Using field '%s' for shading is quite useless", fieldname));
+                error = GBS_global_string("Using field '%s' for shading is quite useless", fieldname);
             }
         }
     }
+    aw_message_if(error);
 }
 
 // ------------------
@@ -519,14 +594,17 @@ void TEST_FieldReader() {
     }
 
     FieldReader nullReader;
-    FieldReader missingReader("missing",    0,   1);
-    FieldReader floatReader  (FIELD_FLOAT,  1,   0); // reverse value-range!
-    FieldReader intReader    (FIELD_INT,    0,   100);
-    FieldReader stringReader (FIELD_STRING, 100, 250);
+    FieldReader missingReader("missing",    NULL, 0,   1);
+    FieldReader floatReader  (FIELD_FLOAT,  NULL, 1,   0); // reverse value-range!
+    FieldReader intReader    (FIELD_INT,    NULL, 0,   100);
+    FieldReader stringReader (FIELD_STRING, NULL, 100, 250);
+
+    FieldReader aciReader(FIELD_STRING, "|contains(unit)", 0, 1);
 
     TEST_REJECT(nullReader.may_read());
     TEST_EXPECT(missingReader.may_read());
     TEST_EXPECT(stringReader.may_read());
+    TEST_EXPECT(aciReader.may_read());
 
     {
         GB_transaction ta(gb_main);
@@ -537,6 +615,7 @@ void TEST_FieldReader() {
         TEST_READER_UNDEF(floatReader,   NULL);
         TEST_READER_UNDEF(intReader,     NULL);
         TEST_READER_UNDEF(stringReader,  NULL);
+        TEST_READER_UNDEF(aciReader,     NULL);
 
         TEST_READER_UNDEF(nullReader,    gb_species); // null reader always undef
         TEST_READER_UNDEF(missingReader, gb_species); // expect undef if field is missing
@@ -544,19 +623,23 @@ void TEST_FieldReader() {
         TEST_READER_READS(floatReader,   gb_species, "(0.750)");
         TEST_READER_READS(intReader,     gb_species, "(0.500)");
         TEST_READER_READS(stringReader,  gb_species, "(0.667)");
+        TEST_READER_READS(aciReader,     gb_species, "(5.000)"); // = position
 
         TEST_READER_READS(floatReader,   gb_species2, "(0.100)");
         TEST_READER_READS(intReader,     gb_species2, "(0.990)");
         TEST_READER_READS(stringReader,  gb_species2, "(0.506)"); // 175 would be mid-range, 175.9 is a little bit above
+        TEST_READER_READS(aciReader,     gb_species2, "(0.000)");
 
         // if values are outside of value-range -> they are scaled to range-size, but not bounded:
         TEST_READER_READS(floatReader,   gb_species_outofbounds, "(-0.500)");
         TEST_READER_READS(intReader,     gb_species_outofbounds, "(99.990)");
         TEST_READER_READS(stringReader,  gb_species_outofbounds, "(-82.971)");
+        TEST_READER_READS(aciReader,     gb_species_outofbounds, "(0.000)");
 
         TEST_READER_UNDEF(floatReader,   gb_species_no_field); // species is missing all fields -> always undef
         TEST_READER_UNDEF(intReader,     gb_species_no_field);
         TEST_READER_UNDEF(stringReader,  gb_species_no_field);
+        TEST_READER_UNDEF(aciReader,     gb_species_no_field);
     }
 
     // @@@ tdd MultiFieldReader!

@@ -37,6 +37,7 @@ field_shader.o: $(ARBHOME)/INCLUDE/ad_prot.h
 field_shader.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 field_shader.o: $(ARBHOME)/INCLUDE/arb_assert.h
 field_shader.o: $(ARBHOME)/INCLUDE/arb_core.h
+field_shader.o: $(ARBHOME)/INCLUDE/arb_defs.h
 field_shader.o: $(ARBHOME)/INCLUDE/arb_error.h
 field_shader.o: $(ARBHOME)/INCLUDE/arb_global_defs.h
 field_shader.o: $(ARBHOME)/INCLUDE/arb_msg.h

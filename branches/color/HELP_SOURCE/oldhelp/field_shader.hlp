@@ -1,9 +1,10 @@
 #Please insert up references in the next lines (line starts with keyword UP)
-UP	arb.hlp
-UP	glossary.hlp
+UP      arb.hlp
+UP      glossary.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
-SUB	tree_shading.hlp
+SUB     tree_shading.hlp
+SUB     aci.hlp
 
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
@@ -25,11 +26,14 @@ DESCRIPTION     This field shader allows to shade items (eg. species in tree) ac
                 The button behind selects the database field which shall be visualized as color.
                 The database fields normally has to contain a numeric value.
 
+                The next input field allows to specify an ACI command. It will be applied to the
+                content of the database field and the result will be interpreted as numeric value.
+
                 The two inputfields behind the field-selection specify the lower and upper border
                 of the value-range.
 
-                   Press the 'SCAN' button to scan all database entries for minimum and maximum
-                   occurring values and use them as value-range.
+                   Press the 'SCAN' button to scan all database entries (+apply ACI)
+                   for minimum and maximum occurring values and use them as value-range.
 
                    The value range is mapped to the active color range which can be selected
                    in the shader setup window.
@@ -41,8 +45,8 @@ DESCRIPTION     This field shader allows to shade items (eg. species in tree) ac
 NOTES           If you exchange the borders of the value range (eg. [20 .. 10]) it will be
                 mapped reverse.
 
-EXAMPLES	None
+EXAMPLES        None
 
-WARNINGS	None
+WARNINGS        None
 
-BUGS		No bugs known
+BUGS            No bugs known
