@@ -932,7 +932,7 @@ void AW_gc_manager::add_color_groups(int& gc) {
 AW_gc_manager *AW_manage_GC(AW_window                *aww,
                             const char               *gc_base_name,
                             AW_device                *device,
-                            int                       base_gc,
+                            int                       base_gc, // @@@ unused (in motif+gtk) -> remove!
                             int                       base_drag,
                             AW_GCM_AREA               area,
                             const GcChangedCallback&  changecb,
@@ -1006,13 +1006,13 @@ AW_gc_manager *AW_manage_GC(AW_window                *aww,
             case '*': gcmgr->add_gc_range(id); break;
             case '&':
                 if (strcmp(id, "&color_groups") == 0) { // trigger use of color groups
+                    aw_assert(!defined_color_groups); // color-groups trigger specified twice!
                     if (!defined_color_groups) {
                         gcmgr->add_color_groups(gc);
                         defined_color_groups = true;
                     }
-                    else aw_assert(0); // color-groups trigger specified twice!
                 }
-                else aw_assert(0); // unknown trigger
+                else { aw_assert(0); } // unknown trigger
                 break;
             default: gcmgr->add_gc(id, gc, GC_TYPE_NORMAL); break;
         }
