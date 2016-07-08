@@ -24,6 +24,7 @@
 #endif
 
 struct AWT_config_mapping;
+class  AWT_config_definition;
 
 struct AWT_config_mapping_def {
     const char *awar_name;
@@ -49,9 +50,12 @@ class AWT_config : virtual Noncopyable {
     AWT_config_mapping *mapping;
     GB_ERROR           parse_error; // set by AWT_config(const char *)
 
+    void init_from_awars(const AWT_config_mapping *cfgname_2_awar);
+
 public:
     AWT_config(const char *config_string);
     AWT_config(const AWT_config_mapping *cfgname_2_awar); // internal use (reads current awar values)
+    AWT_config(const AWT_config_definition *cfg_def);     // internal use (reads current awar values)
     ~AWT_config();
 
     GB_ERROR parseError() const { return parse_error; }
@@ -87,6 +91,8 @@ public:
     char *read() const;                          // awars -> config string (heap copy)
     void write(const char *config_string) const; // config string -> awars (use to restore a saved configuration)
     void reset() const;                          // reset awars to defaults
+
+    const AWT_config_mapping *get_mapping() const { return config_mapping; }
 };
 
 // ----------------------------------------
