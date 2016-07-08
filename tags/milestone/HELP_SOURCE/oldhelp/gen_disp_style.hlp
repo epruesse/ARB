@@ -1,0 +1,27 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Genemap display types
+
+OCCURRENCE	ARB Gene Map/<display type buttons in top-area>
+
+DESCRIPTION     ARB Gene Map supports three displays styles:
+
+                  * Radial style
+                  * Book style
+                  * Vertical style
+
+NOTES		Display options for each style can be customized using LINK{gen_options.hlp}.
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known

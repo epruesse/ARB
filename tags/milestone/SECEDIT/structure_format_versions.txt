@@ -1,0 +1,24 @@
+
+ ---------------------------------------------------------- 
+     Some notes on different structure format versions:     
+ ---------------------------------------------------------- 
+
+* Since version 3 a VERSION entry is present
+
+* Root loop angle:
+  * version 1 had none
+  * version 2 had one and it pointed to the first segment
+  * version 3 has none (angle of root-loop is always handled as absolute angle)
+
+* order of SEGMENTs and STRANDs in LOOPS:
+  * normal loops always start and end with a SEGMENT
+  * root-loop:
+    * version 1+2 ended with a strand
+    * version 3 starts with a strand (the fixpoint strand)
+
+* angles
+  * version 1 only DELTA
+  * version 2 had DELTA and DELTA_IN (loop->strand-angle (rootside) and reverse strand<-loop-angle (outside))
+  * version 3 has REL entries in STRAND _and_ LOOP. These angles are relative to angle of father element.
+
+
