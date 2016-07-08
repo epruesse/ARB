@@ -29,6 +29,8 @@ struct DummyPlugin: public ShaderPlugin {
     void init_specific_awars(AW_root *) OVERRIDE {}
     bool customizable() const OVERRIDE { return false; }
     void customize(AW_root */*awr*/) OVERRIDE { is_assert(0); }
+    char *store_config() const OVERRIDE { return NULL; }
+    void load_or_reset_config(const char *) OVERRIDE {}
     void activate(bool /*on*/) OVERRIDE {}
 };
 
@@ -72,6 +74,8 @@ void TEST_shader_interface() {
 // implementation
 
 #include "field_shader.h"
+
+#include <awt_config_manager.hxx>
 
 #include <aw_root.hxx>
 #include <aw_window.hxx>
@@ -155,6 +159,7 @@ class ItemShader_impl : public ItemShader {
     ShaderPluginPtr find_plugin(const string& plugin_id) const;
 
     void setup_new_dimension();
+    void init_config_definition(AWT_config_definition& cdef, bool add_selected_plugin) const;
 
 public:
     ItemShader_impl(AW_gc_manager *gcman_, const string& id_, const string& description_, const string& help_id_, ReshadeCallback rcb, int undef_gc) :
@@ -233,6 +238,12 @@ public:
         awr->awar(AWAR_GUI_PHASE_POSTSHIFT)->reset_to_default();
     }
     static void reset_phasing_cb(AW_window *aww, const ItemShader_impl *shader) { shader->reset_phasing_cb(aww->get_root()); }
+
+    char *store_config_cb() const;
+    void  load_or_reset_config_cb(const char *cfgstr);
+
+    static char *store_config_cb(ItemShader_impl *shader) { return shader->store_config_cb(); }
+    static void load_or_reset_config_cb(const char *cfgstr, ItemShader_impl *shader) { return shader->load_or_reset_config_cb(cfgstr); }
 };
 
 struct has_id {
@@ -323,6 +334,10 @@ bool ItemShader_impl::activate_plugin(const string& plugin_id) {
 
     return (strcmp(awar_plugin->read_char_pntr(), plugin_id.c_str()) == 0);
 }
+
+// --------------------------
+//      dimension change
+
 void ItemShader_impl::setup_new_dimension() {
     AW_root *awr = AW_root::SINGLETON;
     int      dim = active_plugin.isSet() ? active_plugin->get_dimension() : 0;
@@ -378,6 +393,88 @@ void ItemShader_impl::check_dimension_change() {
             setup_new_dimension();
         }
     }
+}
+
+// ---------------------------------------
+//      store / restore shader config
+
+void ItemShader_impl::init_config_definition(AWT_config_definition& cdef, bool add_selected_plugin) const {
+    if (add_selected_plugin) cdef.add(AWAR_SELECTED_PLUGIN, "plugin");
+
+    cdef.add(AWAR_GUI_RANGE,           "range");
+    cdef.add(AWAR_GUI_OVERLAY_GROUPS,  "overlay_groups");
+    cdef.add(AWAR_GUI_OVERLAY_MARKED,  "overlay_marked");
+    cdef.add(AWAR_GUI_PHASE_FREQ,      "phase_frequency");
+    cdef.add(AWAR_GUI_PHASE_ALTER,     "phase_alternate");
+    cdef.add(AWAR_GUI_PHASE_PRESHIFT,  "phase_preshift");
+    cdef.add(AWAR_GUI_PHASE_POSTSHIFT, "phase_postshift");
+}
+
+char *ItemShader_impl::store_config_cb() const {
+    char     *cfgstr = NULL;
+    GB_ERROR  error  = NULL;
+
+    AWT_config_definition cdef;
+    init_config_definition(cdef, true);
+    {
+        AWT_config cfg(&cdef);
+        error = cfg.parseError();
+
+        if (!error) {
+            if (active_plugin.isSet()) {
+                char *plugin_setup = active_plugin->store_config();
+                if (plugin_setup) {
+                    cfg.set_entry("plugin_setup", plugin_setup);
+                    free(plugin_setup);
+                }
+            }
+            cfgstr = cfg.config_string();
+        }
+    }
+
+    aw_message_if(error);
+
+    return cfgstr ? cfgstr : strdup("");
+}
+
+void ItemShader_impl::load_or_reset_config_cb(const char *stored) {
+    GB_ERROR error = NULL;
+
+    AWT_config_definition cdef;
+    init_config_definition(cdef, stored);
+
+    if (stored) {
+        AWT_config cfg(stored);
+        error = cfg.parseError();
+
+        if (!error) {
+            char *plugin_setup = nulldup(cfg.get_entry("plugin_setup"));
+            cfg.delete_entry("plugin_setup"); // avoids wrong error message about unsupported entry 'plugin_setup'
+
+            const char      *saved_pluginname = cfg.get_entry("plugin");
+            ShaderPluginPtr  targetPlugin     = saved_pluginname ? find_plugin(saved_pluginname) : active_plugin;
+
+            {
+                DelayReshade here(this);
+                if (plugin_setup) {
+                    if (targetPlugin.isSet()) {
+                        targetPlugin->load_or_reset_config(plugin_setup);
+                    }
+                    else {
+                        error = "Failed to restore plugin-specific settings (unknown plugin)";
+                    }
+                }
+                cfg.write_to_awars(cdef.get_mapping(), true);
+            }
+            free(plugin_setup);
+        }
+    }
+    else { // reset
+        DelayReshade here(this);
+        if (active_plugin.isSet()) active_plugin->load_or_reset_config(NULL); // reset selected plugin-config first
+        cdef.reset();                                                         // will NOT touch selected plugin (ie. its only a partial restore)
+    }
+    aw_message_if(error);
 }
 
 // ------------------------
@@ -481,6 +578,11 @@ void ItemShader_impl::popup_config_window(AW_root *awr) {
         aws->at("freq");      aws->create_input_field_with_scaler(AWAR_GUI_PHASE_FREQ,      FIELDSIZE, SCALERLENGTH, AW_SCALER_EXP_LOWER);
         aws->at("preshift");  aws->create_input_field_with_scaler(AWAR_GUI_PHASE_PRESHIFT,  FIELDSIZE, SCALERLENGTH, AW_SCALER_LINEAR);
         aws->at("postshift"); aws->create_input_field_with_scaler(AWAR_GUI_PHASE_POSTSHIFT, FIELDSIZE, SCALERLENGTH, AW_SCALER_LINEAR);
+
+        aws->at("cfg");
+        AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, get_id().c_str(),
+                                  makeStoreConfigCallback(ItemShader_impl::store_config_cb, this),
+                                  makeRestoreConfigCallback(ItemShader_impl::load_or_reset_config_cb, this));
 
         aws->window_fit();
 

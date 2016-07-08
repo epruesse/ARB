@@ -252,6 +252,9 @@ public:
     virtual bool customizable() const    = 0;
     virtual void customize(AW_root *awr) = 0;
 
+    virtual char *store_config() const  = 0;
+    virtual void load_or_reset_config(const char *cfgstr) = 0;
+
     virtual void activate(bool on) = 0; // called with true when plugin gets activated, with false when it gets deactivated
 
     void trigger_reshade_if_active_cb(ReshadeMode mode);

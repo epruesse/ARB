@@ -11,6 +11,7 @@
 #include "field_shader.h"
 
 #include <item_sel_list.h>
+#include <awt_config_manager.hxx>
 
 #include <aw_root.hxx>
 #include <aw_awar.hxx>
@@ -274,6 +275,8 @@ class ItemFieldShader: public ShaderPlugin {
         shader->trigger_reshade_if_active_cb(SIMPLE_RESHADE);
     }
 
+    void init_config_definition(AWT_config_definition& cdef) const;
+
 public:
     explicit ItemFieldShader(const BoundItemSel& itemtype_) :
         ShaderPlugin("field", "Database field shader"),
@@ -296,6 +299,9 @@ public:
 
     bool customizable() const OVERRIDE { return true; }
     void customize(AW_root *awr) OVERRIDE;
+
+    char *store_config() const OVERRIDE;
+    void load_or_reset_config(const char *cfgstr) OVERRIDE;
 
     void activate(bool on) OVERRIDE {
         // called with true when plugin gets activated, with false when it gets deactivated
@@ -328,6 +334,30 @@ void ItemFieldShader::init_specific_awars(AW_root *awr) {
         awr->awar_string(AWAR_VALUE_MIN(dim), "0")          ->add_callback(FieldSetup_changed_cb);
         awr->awar_string(AWAR_VALUE_MAX(dim), "1")          ->add_callback(FieldSetup_changed_cb);
     }
+}
+
+void ItemFieldShader::init_config_definition(AWT_config_definition& cdef) const {
+    for (int dim = 0; dim<get_max_dimension(); ++dim) {
+        cdef.add(AWAR_DIM_ACTIVE(dim), "active", dim);
+        cdef.add(AWAR_FIELD     (dim), "field",  dim);
+        cdef.add(AWAR_ACI       (dim), "aci",    dim);
+        cdef.add(AWAR_VALUE_MIN (dim), "min",    dim);
+        cdef.add(AWAR_VALUE_MAX (dim), "max",    dim);
+    }
+}
+
+char *ItemFieldShader::store_config() const {
+    AWT_config_definition cdef;
+    init_config_definition(cdef);
+    return cdef.read();
+}
+
+void ItemFieldShader::load_or_reset_config(const char *cfgstr) {
+    AWT_config_definition cdef;
+    init_config_definition(cdef);
+
+    if (cfgstr) cdef.write(cfgstr);
+    else cdef.reset();
 }
 
 void ItemFieldShader::customize(AW_root *awr) {

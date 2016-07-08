@@ -57,6 +57,7 @@ field_shader.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 field_shader.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 field_shader.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 field_shader.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+field_shader.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 field_shader.o: $(ARBHOME)/INCLUDE/cb.h
 field_shader.o: $(ARBHOME)/INCLUDE/cb_base.h
 field_shader.o: $(ARBHOME)/INCLUDE/cbtypes.h
@@ -96,6 +97,7 @@ item_shader.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 item_shader.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 item_shader.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 item_shader.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+item_shader.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 item_shader.o: $(ARBHOME)/INCLUDE/cb.h
 item_shader.o: $(ARBHOME)/INCLUDE/cb_base.h
 item_shader.o: $(ARBHOME)/INCLUDE/cbtypes.h

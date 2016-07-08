@@ -59,6 +59,9 @@ public:
     bool customizable() const OVERRIDE { return true; }
     void customize(AW_root *) OVERRIDE { AW_help_popup(NULL, "topology_shader.hlp"); }
 
+    char *store_config() const OVERRIDE { return NULL; }
+    void load_or_reset_config(const char *) OVERRIDE {}
+
     void activate(bool on) OVERRIDE;
 
 #if defined(ASSERTION_USED)
