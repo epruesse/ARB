@@ -281,9 +281,16 @@ class ItemShader {
         is_assert(reshade_delay_level>=0);
 
         if (!reshade_delay_level) { // switched off delay
-            if (reshade_was_suppressed) reshade_cb();
+            if (reshade_was_suppressed) {
+                reshade_cb();
+                reshade_was_suppressed = false;
+            }
         }
-        reshade_was_suppressed = false;
+
+#if defined(ASSERTION_USED)
+        bool start_of_delay = reshade_delay_level == 1 && suppress;
+        is_assert(implicated(start_of_delay, !reshade_was_suppressed));
+#endif
     }
     friend class DelayReshade;
 
