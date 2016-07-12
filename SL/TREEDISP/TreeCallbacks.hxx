@@ -31,7 +31,7 @@ void NT_move_boot_branch(UNFIXED, AWT_canvas *ntw, int direction);
 void NT_scale_tree(UNFIXED, AWT_canvas *ntw);
 void NT_jump_cb(UNFIXED, AWT_canvas *ntw, AP_tree_jump_type jumpType);
 void TREE_auto_jump_cb(UNFIXED, AWT_canvas *ntw, bool tree_change);
-void NT_reload_tree_event(AW_root *awr, AWT_canvas *ntw, bool expose);
+void NT_reload_tree_event(AW_root *awr, AWT_canvas *ntw, bool unzoom_and_expose);
 void TREE_recompute_cb(UNFIXED, AWT_canvas *ntw);
 void TREE_GC_changed_cb(GcChange whatChanged, AWT_canvas *ntw);
 void NT_reinit_treetype(UNFIXED, AWT_canvas *ntw);

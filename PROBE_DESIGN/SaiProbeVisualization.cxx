@@ -723,7 +723,7 @@ AW_window *createSaiProbeMatchWindow(AW_root *awr, GBDATA *gb_main) {
     SAI_graphic *saiProbeGraphic = new SAI_graphic(awr, gb_main);
     AWT_canvas  *scr             = new AWT_canvas(gb_main, awm, awm->get_window_id(), saiProbeGraphic, AWAR_TARGET_STRING);
 
-    scr->recalc_size();
+    scr->recalc_size(true);
 
     awm->insert_help_topic("How to Visualize SAI`s ?", "V", "saiProbe.hlp", AWM_ALL, makeHelpCallback("saiProbe.hlp"));
 

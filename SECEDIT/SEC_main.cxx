@@ -732,7 +732,7 @@ AW_window *start_SECEDIT_plugin(ED4_plugin_host& host) {
     AWT_canvas *scr = new AWT_canvas(gb_main, awm, awm->get_window_id(), gfx, AWAR_SPECIES_NAME);
     root->init(gfx, scr, host);
 
-    scr->recalc_size();
+    scr->recalc_size(true);
     scr->set_mode(AWT_MODE_ZOOM); // Default-Mode
 
     const SEC_db_interface *db = root->get_db();
