@@ -1257,7 +1257,7 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
     {
         GB_ERROR error = 0;
         arb_progress progress("loading tree");
-        NT_reload_tree_event(awr, ntw, 0);             // load tree (but do not expose - first zombies need to be removed)
+        NT_reload_tree_event(awr, ntw, false);             // load tree (but do not expose - first zombies need to be removed)
         if (!global_tree()->get_root_node()) {
             error = "Failed to load the selected tree";
         }
