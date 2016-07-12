@@ -1938,6 +1938,7 @@ static char *detectProperties() {
 
 ED4_root::ED4_root(int* argc, char*** argv)
     : most_recently_used_window(0),
+      cons_param(NULL),
       db_name(detectProperties()),
       aw_root(AWT_create_root(db_name, "ARB_EDIT4", need_macro_ability(), argc, argv)),
       props_db(AW_ROOT_DEFAULT),
