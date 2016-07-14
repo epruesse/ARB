@@ -164,8 +164,10 @@ void AW_selection_list::update_from_widget() {
     gtk_tree_path_free(path);
 
     if (!get_entry_at(selected_index, true)) {
-        if (!default_select) GBK_terminate("no default specified for selection list");
-        default_select->value.write_to(awar);
+        if (select_default_on_unknown_awar_value) {
+            if (!default_select) GBK_terminate("no default specified for selection list");
+            default_select->value.write_to(awar);
+        }
     }
     else {
         get_entry_at(selected_index, true)->value.write_to(awar);
@@ -240,13 +242,13 @@ void AW_selection_list::refresh() {
     }
 
     if (i == NO_ENTRY_MATCHED_AWAR_VALUE) {
-        if (default_select) { // the awar value does not match any entry, not even the default entry
-            if (select_default_on_unknown_awar_value) { // optional fallback to default value
-                select_default();
+        if (select_default_on_unknown_awar_value) {
+            if (default_select) { // the awar value does not match any entry, not even the default entry
+                select_default(); // set awar to default value
             }
-        }
-        else {
-            GBK_terminatef("Selection list '%s' has no default selection", awar->get_name());
+            else {
+                GBK_terminatef("Selection list '%s' has no default selection", awar->get_name());
+            }
         }
     }
     else {
