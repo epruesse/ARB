@@ -1428,7 +1428,7 @@ void AW_server_callback(Widget /*wgt*/, XtPointer aw_cb_struct, XtPointer /*call
                                (GBS_string_matches(cbs->help_text, "*.hlp", GB_IGNORE_CASE)) ||
                                (GBS_string_matches(cbs->help_text, "*.help", GB_IGNORE_CASE))))
         {
-            AW_help_popup(cbs->aw, cbs->help_text);
+            AW_help_popup(NULL, cbs->help_text);
         }
         else {
             aw_message("Sorry no help available");
