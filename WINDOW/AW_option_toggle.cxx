@@ -30,11 +30,12 @@ AW_selection_list *AW_window::create_option_menu(const char *awar_name, bool fal
     slist->bind_widget(combo_box);
 
     prvt->combo_box = combo_box;
-    prvt->selection_list = slist;
+    prvt->selection_list = slist; // define as current (for subsequent inserts)
     return slist;
 }
 
 void AW_window::clear_option_menu(AW_selection_list *sel) {
+    prvt->selection_list = sel; // define as current (for subsequent inserts)
     sel->clear();
 }
 
@@ -45,8 +46,10 @@ void AW_window::clear_option_menu(AW_selection_list *sel) {
 template <class T>
 void AW_window::insert_option_internal(const char *option_name, const char */*mnemonic*/,
                                        T           var_value,
-                                       bool default_option) {
-    aw_return_if_fail(prvt->selection_list != NULL); //current option menu has to be set
+                                       bool default_option)
+{
+    aw_assert(prvt->selection_list != NULL); // "current" option menu has to be set (insert-functions may only be used between create_option_menu/clear_option_menu and update_option_menu)
+
     //aw_return_if_fail(prvt->selection_list->variable_type == AW_TypeCheck::getVarType(var_value)); //type missmatch
     FIXME("check for distinct per-option callbacks");
     FIXME("setting sensitivity of option menu entries not implemented");

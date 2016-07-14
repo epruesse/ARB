@@ -51,7 +51,11 @@ public:
     GtkRadioButton *radio_last;
 
     /**
-     * The current selection list 
+     * The current selection list
+     *
+     * warning: may have different semantics compared to motif version:
+     * - motif uses 2 variables here ('current_option_menu' and 'selection_list')
+     * - option_menus and "real" selection_lists may interfere in gtk where they dont in motif (quiet unlikely)
      */
     AW_selection_list *selection_list;
 
