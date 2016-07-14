@@ -14,12 +14,17 @@
 #ifndef AW_WINDOW_HXX
 #include "aw_window.hxx"
 #endif
+#ifndef AW_POSITION_HXX
+#include "aw_position.hxx"
+#endif
 #ifndef ATTRIBUTES_H
 #include <attributes.h>
 #endif
 #ifndef CB_H
 #include <cb.h>
 #endif
+
+class ConstStrArray;
 
 void AW_save_properties(AW_window *aw);   // use this if you're unsure
 void AW_save_specific_properties(AW_window *aw, const char *filename);
@@ -49,10 +54,19 @@ AW_window *AW_create_gc_window(AW_root *aw_root, AW_gc_manager *gcman); // opens
 // same as AW_create_gc_window, but uses different window id and name
 // (use if if there are two or more color def windows in one application,
 // otherwise they save the same window properties)
-AW_window *AW_create_gc_window_named(AW_root * aw_root, AW_gc_manager *gcman_par, const char *wid, const char *windowname);
+AW_window *AW_create_gc_window_named(AW_root *aw_root, AW_gc_manager *gcman_par, const char *wid, const char *windowname);
+
+void AW_popup_gc_color_range_window(AW_window *aww, AW_gc_manager *gcmgr);
 
 int AW_get_drag_gc(AW_gc_manager *gcman);
 void AW_copy_GC_colors(AW_root *aw_root, const char *source_gcman, const char *dest_gcman, const char *id0, ...) __ATTR__SENTINEL;
+
+void AW_displayColorRange(AW_device *device, int first_range_gc, AW::Position start, AW_pos xsize, AW_pos ysize);
+void AW_getColorRangeNames(const AW_gc_manager *gcman, int dimension, ConstStrArray& ids, ConstStrArray& names);
+void AW_activateColorRange(AW_gc_manager *gcman, const char *id);
+const char *AW_getActiveColorRangeID(AW_gc_manager *gcman, int *dimension);
+int AW_getFirstRangeGC(AW_gc_manager *gcman);
+
 
 #else
 #error aw_preset.hxx included twice
