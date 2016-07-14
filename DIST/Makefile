@@ -158,8 +158,6 @@ DI_compress_matrix.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/arbdbt.h
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/arbtools.h
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/attributes.h
-DI_compress_matrix.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-DI_compress_matrix.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/cxxforward.h
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/downcast.h
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -337,7 +335,6 @@ DI_matr.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
-DI_matr.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_common_impl.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_device.hxx
@@ -410,8 +407,6 @@ DI_protdist.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 DI_protdist.o: $(ARBHOME)/INCLUDE/arbdbt.h
 DI_protdist.o: $(ARBHOME)/INCLUDE/arbtools.h
 DI_protdist.o: $(ARBHOME)/INCLUDE/attributes.h
-DI_protdist.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-DI_protdist.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 DI_protdist.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 DI_protdist.o: $(ARBHOME)/INCLUDE/cxxforward.h
 DI_protdist.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -444,7 +439,6 @@ DI_save_matr.o: $(ARBHOME)/INCLUDE/arbdbt.h
 DI_save_matr.o: $(ARBHOME)/INCLUDE/arbtools.h
 DI_save_matr.o: $(ARBHOME)/INCLUDE/attributes.h
 DI_save_matr.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-DI_save_matr.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 DI_save_matr.o: $(ARBHOME)/INCLUDE/cxxforward.h
 DI_save_matr.o: $(ARBHOME)/INCLUDE/downcast.h
 DI_save_matr.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -489,7 +483,6 @@ DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
-DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_common_impl.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_device.hxx
@@ -551,8 +544,6 @@ distanalyse.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 distanalyse.o: $(ARBHOME)/INCLUDE/arbdbt.h
 distanalyse.o: $(ARBHOME)/INCLUDE/arbtools.h
 distanalyse.o: $(ARBHOME)/INCLUDE/attributes.h
-distanalyse.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-distanalyse.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 distanalyse.o: $(ARBHOME)/INCLUDE/cxxforward.h
 distanalyse.o: $(ARBHOME)/INCLUDE/downcast.h
 distanalyse.o: $(ARBHOME)/INCLUDE/dupstr.h

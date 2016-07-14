@@ -178,7 +178,7 @@ struct ARB_tree_predicate {
 
 class ARB_countedTree : public ARB_seqtree {
 protected:
-    ~ARB_countedTree() {}
+    ~ARB_countedTree() OVERRIDE {}
 public:
     explicit ARB_countedTree(ARB_seqtree_root *tree_root_)
         : ARB_seqtree(tree_root_)

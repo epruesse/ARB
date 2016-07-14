@@ -85,7 +85,6 @@ probe_design.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_cb_struct.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_clipable.hxx
-probe_design.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_common.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_common_impl.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_device.hxx

@@ -20,6 +20,7 @@
 #include <TreeCallbacks.hxx>
 #include <client.h>
 #include <servercntrl.h>
+#include <AP_TreeColors.hxx>
 
 #include <ctime>
 
