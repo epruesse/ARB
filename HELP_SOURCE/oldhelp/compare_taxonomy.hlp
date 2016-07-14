@@ -8,9 +8,9 @@ SUB	tree_cmp.hlp
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		Compare taxonomy
+TITLE           Compare taxonomy
 
-OCCURRENCE	ARB_NT/Tree/Compare taxonomy
+OCCURRENCE      ARB_NT/Tree/Compare taxonomy
 
 DESCRIPTION     This module helps to detect differences in taxonomy classification
                 defined by two trees.
@@ -18,7 +18,7 @@ DESCRIPTION     This module helps to detect differences in taxonomy classificati
                 The main feature of this module is triggered by the 'species with
                 taxonomy changed' button. It searches all species that are included in
                 both selected trees, checks if the taxonomy information differs between both trees
-                and target those species, that differ by more than the specified number of
+                and targets those species, that differ by more than the specified number of
                 levels (see also examples below).
 
                 Use the toggle at the left side to choose whether the targeted species
@@ -30,14 +30,13 @@ DESCRIPTION     This module helps to detect differences in taxonomy classificati
                   * target species only included in one of the selected trees
                   * target all species
 
-NOTES		Optionally the difference-level between classifications defined by left
-                and right tree can be written into a db-field of each targeted species
-                (field has to be of type 'Rounded numerical' and needs to be created
-                prior using it here; see LINK{spaf_create.hlp}).
+NOTES           Optionally the difference-level between classifications defined by left
+                and right tree can be written into a db-field of each targeted species.
 
-                To write the difference level to ALL species that exist in both
-                selected trees, enter "-1" as minimum difference level,
-
+                 * to write the difference level to ALL species that exist in both
+                   selected trees, enter "-1" as minimum difference level.
+                 * if you're working on taxonomy, it may be useful to visualize the
+                   difference level using the LINK{field_shader.hlp}.
 
 SECTION         Examples for difference between classifications:
 

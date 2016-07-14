@@ -15,6 +15,7 @@
 #include "ap_tree_nlen.hxx"
 #include "ap_main.hxx"
 
+#include <AP_TreeColors.hxx>
 #include <AP_seq_dna.hxx>
 #include <AP_seq_protein.hxx>
 #include <AP_filter.hxx>
@@ -38,7 +39,7 @@ static void AWT_graphic_parsimony_root_changed(void *cd, AP_tree *old, AP_tree *
     AWT_graphic_tree *agt = (AWT_graphic_tree*)cd;
     UNCOVERED();
 
-    if (old == agt->displayed_root) agt->displayed_root = newroot;
+    if (old == agt->get_logical_root()) agt->set_logical_root_to(newroot);
 }
 
 static AliView *pars_generate_aliview(WeightedFilter *pars_weighted_filter) {

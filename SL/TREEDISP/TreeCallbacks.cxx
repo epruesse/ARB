@@ -10,6 +10,7 @@
 
 #include "TreeCallbacks.hxx"
 
+#include <aw_color_groups.hxx>
 #include <aw_awars.hxx>
 #include <aw_advice.hxx>
 #include <aw_msg.hxx>
@@ -436,9 +437,10 @@ void NT_resort_tree_cb(UNFIXED, AWT_canvas *ntw, TreeOrder order) {
 }
 
 void NT_reset_lzoom_cb(UNFIXED, AWT_canvas *ntw) {
-    GB_transaction ta(ntw->gb_main);
-    AWT_TREE(ntw)->check_update(ntw->gb_main);
-    AWT_TREE(ntw)->displayed_root = AWT_TREE(ntw)->get_root_node();
+    GB_transaction    ta(ntw->gb_main);
+    AWT_graphic_tree *agt = AWT_TREE(ntw);
+    agt->check_update(ntw->gb_main);
+    agt->set_logical_root_to(agt->get_root_node());
     ntw->zoom_reset_and_refresh();
 }
 
@@ -618,13 +620,13 @@ void NT_jump_cb(UNFIXED, AWT_canvas *ntw, AP_tree_jump_type jumpType) {
         bool     is_tree = sort_is_tree_style(gtree->tree_sort);
 
         if (is_tree) {
-            if (gtree && gtree->displayed_root) {
-                found = gtree->displayed_root->findLeafNamed(name);
+            if (gtree && gtree->get_logical_root()) {
+                found = gtree->get_logical_root()->findLeafNamed(name);
                 if (!found && gtree->is_logically_zoomed()) {
                     found = gtree->get_root_node()->findLeafNamed(name);
                     if (found) { // species is invisible because it is outside logically zoomed tree
                         if (jumpType & AP_JUMP_UNFOLD_GROUPS) {
-                            gtree->displayed_root = common_ancestor(found, gtree->displayed_root);
+                            gtree->set_logical_root_to(common_ancestor(found, gtree->get_logical_root()));
                             ntw->recalc_size(true);
                         }
                         else {

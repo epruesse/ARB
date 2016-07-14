@@ -8,7 +8,7 @@
 //                                                                 //
 // =============================================================== //
 
-#include "NT_local.h"
+#include "tree_position.h"
 #include "ad_trees.h"
 #include "NT_tree_cmp.h"
 
@@ -862,46 +862,16 @@ AW_window *NT_create_consense_window(AW_root *aw_root) {
     return aws;
 }
 
-class PosInfo {
-    // describes relative position of a given subtree in a tree
-
-    double relpos_sum; // sum of all involved relative positions
-    size_t count;      // amount of positions involved
-
-    PosInfo() : relpos_sum(0), count(0) {} // = no position
-public:
-
-    static PosInfo unknown() { return PosInfo(); }
-
-    explicit PosInfo(double relpos_sum_) // create leaf-info
-        : relpos_sum(relpos_sum_),
-          count(1)
-    {}
-    PosInfo(const PosInfo& p1, const PosInfo& p2)
-        : relpos_sum(p1.relpos_sum + p2.relpos_sum),
-          count(p1.count + p2.count)
-    {}
-
-    bool is_known() const { return count; }
-    double value() const {
-        nt_assert(is_known());
-        return relpos_sum / count;
-    }
-    int compare(const PosInfo &right) const {
-        return double_cmp(value(), right.value());
-    }
-};
-
 class CombinedPosInfo {
     // combines relative positions of a subtree in 2 trees (source- and target-tree).
     // provides compare operations for SortByTopo
 
-    PosInfo source; // in source tree ("ordering tree")
-    PosInfo target; // in target tree ("modified tree")
+    TreeRelativePosition source; // in source tree ("ordering tree")
+    TreeRelativePosition target; // in target tree ("modified tree")
 
 public:
 
-    CombinedPosInfo(const PosInfo& s, const PosInfo& t)
+    CombinedPosInfo(const TreeRelativePosition& s, const TreeRelativePosition& t)
         : source(s),
           target(t)
     {
@@ -923,40 +893,9 @@ public:
     }
 };
 
-
-class SpeciesPosition {
-    // provides relative position of species inside a tree
-
-    typedef std::map<std::string, unsigned> PosMap;
-    PosMap spos;
-
-    void fillFromTree(const TreeNode *node) {
-        if (node->is_leaf) {
-            size_t pos       = spos.size();
-            spos[node->name] = pos;
-        }
-        else {
-            fillFromTree(node->get_leftson());
-            fillFromTree(node->get_rightson());
-        }
-    }
-public:
-    explicit SpeciesPosition(const TreeNode *tree) {
-        fillFromTree(tree);
-    }
-
-    PosInfo relative(const char *name) const {
-        /*! returns PosInfo of species 'name' inside tree.
-         */
-        PosMap::const_iterator found = spos.find(name);
-        return (found == spos.end()) ? PosInfo::unknown() : PosInfo(found->second/double(spos.size()-1));
-    }
-};
-
-
 class SortByTopo : virtual Noncopyable {
-    SpeciesPosition        source_pos; // in ordering topology
-    const SpeciesPosition *target_pos; // in target topology (used where source_pos does not provide order)
+    TreePositionLookup        source_pos; // in ordering topology
+    const TreePositionLookup *target_pos; // in target topology (used where source_pos does not provide order)
 
     CombinedPosInfo reorder_subtree_rec(TreeNode *node) { // similar to ../ARBDB/TreeNode.cxx@reorder_subtree
         static const char *smallest_leafname; // has to be set to the alphabetically smallest name (when function exits)
@@ -992,12 +931,12 @@ public:
     {}
 
 #if defined(UNIT_TESTS)
-    PosInfo sourcePos(const char *name) { return source_pos.relative(name); }
+    TreeRelativePosition sourcePos(const char *name) { return source_pos.relative(name); }
 #endif
 
     void reorder_subtree(TreeNode *tree) {
-        SpeciesPosition tpos(tree);
-        LocallyModify<const SpeciesPosition*> provide(target_pos, &tpos);
+        TreePositionLookup tpos(tree);
+        LocallyModify<const TreePositionLookup*> provide(target_pos, &tpos);
         reorder_subtree_rec(tree);
     }
 };

@@ -9,12 +9,12 @@
 // =============================================================== //
 
 #include "AP_Tree.hxx"
+#include "AP_TreeShader.hxx"
 
 #include <AP_filter.hxx>
 #include <aw_msg.hxx>
 #include <arb_progress.h>
 #include <ad_cb.h>
-#include <ad_colorset.h>
 
 #include <math.h>
 #include <map>
@@ -616,9 +616,37 @@ bool AP_tree::has_correct_mark_flags() const {
 }
 #endif
 
-const group_scaling *AP_tree::group_scaling_ptr = NULL; // =reference to AWT_graphic_tree::groupScale
+class AP_DefaultTreeShader: public AP_TreeShader {
+    // default tree shader (as used by unit-tests and ARB_PARSIMONY)
 
-void AP_tree::update_subtree_information() {
+    static void default_shader_never_shades() { ap_assert(0); }
+public:
+    AP_DefaultTreeShader() {}
+    void init() OVERRIDE {}
+    void update_settings() OVERRIDE {
+        colorize_marked = true;
+        colorize_groups = AW_color_groups_active();
+        shade_species   = false;
+    }
+
+    ShadedValue calc_shaded_leaf_GC(GBDATA */*gb_node*/) const OVERRIDE { default_shader_never_shades(); return NULL; }
+    ShadedValue calc_shaded_inner_GC(const ShadedValue& /*left*/, float /*left_ratio*/, const ShadedValue& /*right*/) const OVERRIDE { default_shader_never_shades(); return NULL; }
+    int to_GC(const ShadedValue& /*val*/) const OVERRIDE { default_shader_never_shades(); return -1; }
+};
+
+
+const group_scaling *AP_tree::group_scaling_ptr = NULL; // =reference to AWT_graphic_tree::groupScale
+AP_TreeShader       *AP_tree::shader            = new AP_DefaultTreeShader;
+
+void AP_tree::set_tree_shader(AP_TreeShader *new_shader) {
+    delete shader;
+    shader = new_shader;
+    shader->init();
+}
+
+template<>
+ShadedValue AP_tree::update_subtree_information() {
+    ShadedValue val;
     gr.hidden = get_father() ? (get_father()->gr.hidden || get_father()->gr.grouped) : 0;
 
     if (is_leaf) {
@@ -632,29 +660,17 @@ void AP_tree::update_subtree_information() {
 
         gr.mark_sum = int(is_marked);
 
-        // colors:
-        if (gb_node) {
-            if (is_marked) {
-                gr.gc = AWT_GC_SELECTED;
+        gr.gc = shader->calc_leaf_GC(gb_node, is_marked);
+        if (shader->does_shade()) {
+            val = shader->calc_shaded_leaf_GC(gb_node);
+            if (gr.gc == AWT_GC_NONE_MARKED) {
+                gr.gc = shader->to_GC(val);
             }
-            else {
-                // check for user color
-                long color_group = AW_color_groups_active() ? GBT_get_color_group(gb_node) : 0;
-                if (color_group == 0) {
-                    gr.gc = AWT_GC_NSELECTED;
-                }
-                else {
-                    gr.gc = AWT_GC_FIRST_COLOR_GROUP+color_group-1;
-                }
-            }
-        }
-        else {
-            gr.gc = AWT_GC_ZOMBIES;
         }
     }
     else {
-        get_leftson()->update_subtree_information();
-        get_rightson()->update_subtree_information();
+        ShadedValue leftVal  = get_leftson()->update_subtree_information<ShadedValue>();
+        ShadedValue rightVal = get_rightson()->update_subtree_information<ShadedValue>();
 
         {
             AP_tree_members& left  = get_leftson()->gr;
@@ -679,23 +695,18 @@ void AP_tree::update_subtree_information() {
 
             gr.mark_sum = left.mark_sum + right.mark_sum;
 
-            // colors:
-            if (left.gc == right.gc) gr.gc = left.gc;
-
-            else if (left.gc == AWT_GC_SELECTED || right.gc == AWT_GC_SELECTED) gr.gc = AWT_GC_UNDIFF;
-
-            else if (left.gc  == AWT_GC_ZOMBIES) gr.gc = right.gc;
-            else if (right.gc == AWT_GC_ZOMBIES) gr.gc = left.gc;
-
-            else if (left.gc == AWT_GC_UNDIFF || right.gc == AWT_GC_UNDIFF) gr.gc = AWT_GC_UNDIFF;
-
-            else {
-                ap_assert(left.gc != AWT_GC_SELECTED && right.gc != AWT_GC_SELECTED);
-                ap_assert(left.gc != AWT_GC_UNDIFF   && right.gc != AWT_GC_UNDIFF);
-                gr.gc = AWT_GC_NSELECTED;
+            gr.gc = shader->calc_inner_GC(left.gc, right.gc);
+            if (shader->does_shade()) {
+                float left_weight = left.leaf_sum / float(gr.leaf_sum);
+                val               = shader->calc_shaded_inner_GC(leftVal, left_weight, rightVal);
+                if (gr.gc == AWT_GC_NONE_MARKED) {
+                    gr.gc = shader->to_GC(val);
+                }
             }
         }
     }
+    ap_assert(implicated(shader->does_shade(), val.isSet())); // expect we have shaded value (if shading is performed)
+    return val;
 }
 
 unsigned AP_tree::count_leafs() const {
@@ -704,7 +715,7 @@ unsigned AP_tree::count_leafs() const {
         : get_leftson()->count_leafs() + get_rightson()->count_leafs();
 }
 
-int AP_tree::colorize(GB_HASH *hashptr) {
+int AP_tree::colorize(GB_HASH *hashptr) { // currently only used for multiprobes
     // colorizes the tree according to 'hashptr'
     // hashkey   = species id
     // hashvalue = gc
@@ -718,17 +729,17 @@ int AP_tree::colorize(GB_HASH *hashptr) {
             }
         }
         else {
-            res = AWT_GC_ZOMBIES;
+            res = AWT_GC_ONLY_ZOMBIES;
         }
     }
     else {
         int l = get_leftson()->colorize(hashptr);
         int r = get_rightson()->colorize(hashptr);
 
-        if      (l == r)              res = l;
-        else if (l == AWT_GC_ZOMBIES) res = r;
-        else if (r == AWT_GC_ZOMBIES) res = l;
-        else                          res = AWT_GC_UNDIFF;
+        if      (l == r)                   res = l;
+        else if (l == AWT_GC_ONLY_ZOMBIES) res = r;
+        else if (r == AWT_GC_ONLY_ZOMBIES) res = l;
+        else                               res = AWT_GC_SOME_MARKED;
     }
     gr.gc = res;
     return res;
@@ -736,7 +747,8 @@ int AP_tree::colorize(GB_HASH *hashptr) {
 
 void AP_tree::compute_tree() {
     GB_transaction ta(get_tree_root()->get_gb_main());
-    update_subtree_information();
+    shader->update_settings();
+    update_subtree_information<ShadedValue>();
 }
 
 GB_ERROR AP_tree_root::loadFromDB(const char *name) {

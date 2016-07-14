@@ -102,6 +102,28 @@ item_sel_list.o: $(ARBHOME)/INCLUDE/test_global.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/test_unit.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/ttypes.h
 
+items.o: items.h
+items.o: $(ARBHOME)/INCLUDE/ad_prot.h
+items.o: $(ARBHOME)/INCLUDE/arb_assert.h
+items.o: $(ARBHOME)/INCLUDE/arb_core.h
+items.o: $(ARBHOME)/INCLUDE/arb_error.h
+items.o: $(ARBHOME)/INCLUDE/arb_msg.h
+items.o: $(ARBHOME)/INCLUDE/arb_string.h
+items.o: $(ARBHOME)/INCLUDE/arbdb.h
+items.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+items.o: $(ARBHOME)/INCLUDE/arbtools.h
+items.o: $(ARBHOME)/INCLUDE/attributes.h
+items.o: $(ARBHOME)/INCLUDE/cb.h
+items.o: $(ARBHOME)/INCLUDE/cb_base.h
+items.o: $(ARBHOME)/INCLUDE/cbtypes.h
+items.o: $(ARBHOME)/INCLUDE/cxxforward.h
+items.o: $(ARBHOME)/INCLUDE/dupstr.h
+items.o: $(ARBHOME)/INCLUDE/gccver.h
+items.o: $(ARBHOME)/INCLUDE/smartptr.h
+items.o: $(ARBHOME)/INCLUDE/static_assert.h
+items.o: $(ARBHOME)/INCLUDE/test_global.h
+items.o: $(ARBHOME)/INCLUDE/ttypes.h
+
 itemtools.o: items.h
 itemtools.o: $(ARBHOME)/INCLUDE/arb_assert.h
 itemtools.o: $(ARBHOME)/INCLUDE/arb_core.h

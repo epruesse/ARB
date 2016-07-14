@@ -87,6 +87,14 @@ struct MutableBoundItemSel {
         it_assert(gb_main);
         it_assert(&selector);
     }
+
+    GBDATA *get_any_item() const;
+
+    GBDATA *get_first_item_container(AW_root *awr, QUERY_RANGE range) const { return selector.get_first_item_container(gb_main, awr, range); }
+    GBDATA *get_next_item_container(GBDATA *gb_cont, QUERY_RANGE range) const { return selector.get_next_item_container(gb_cont, range); }
+
+    GBDATA *get_first_item(GBDATA *gb_cont, QUERY_RANGE range) const { return selector.get_first_item(gb_cont, range); }
+    GBDATA *get_next_item(GBDATA *gb_item, QUERY_RANGE range) const { return selector.get_next_item(gb_item, range); }
 };
 
 typedef const MutableBoundItemSel BoundItemSel;

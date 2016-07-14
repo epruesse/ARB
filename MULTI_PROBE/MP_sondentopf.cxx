@@ -11,8 +11,9 @@
 #include "MultiProbe.hxx"
 #include "MP_probe.hxx"
 
-#include <AP_Tree.hxx>                              // needed for GCs
+#include <AP_TreeColors.hxx>
 #include <aw_msg.hxx>
+#include <arbdbt.h>
 
 #include <cmath>
 
