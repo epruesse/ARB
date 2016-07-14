@@ -74,10 +74,18 @@ const char *AW_rgb16::ascii() const {
 #include <test_unit.h>
 #endif
 
+#include <arb_msg.h>
+
 #define TEST_ASCII_COLOR_CONVERT(i,o) TEST_EXPECT_EQUAL(AW_rgb16(i).ascii(),o)
 #define TEST_ASCII_COLOR_IDENT(c)     TEST_ASCII_COLOR_CONVERT(c,c);
 
 #define TEST_NORMALIZED_CONVERSION(c) TEST_EXPECT_EQUAL(AW_rgb16(AW_rgb_normalized(AW_rgb16(c))).ascii(), c);
+
+#define TEST_NORMALIZED_CONTAINS(col,expected) TEST_EXPECT_EQUAL(GBS_global_string("(%.2f,%.2f,%.2f)",                  \
+                                                                                   (col).r(), (col).g(), (col).b()),    \
+                                                                 expected)
+
+#define TEST_DIFF_CONTAINS(diff,expected) TEST_NORMALIZED_CONTAINS(diff,expected)
 
 void TEST_rgb() {
     // Note: more related tests in AW_preset.cxx@RGB_TESTS
@@ -133,6 +141,79 @@ void TEST_rgb() {
     TEST_EXPECT_EQUAL(AW_rgb16("white").ascii(), "#ffffffffffff");
     TEST_EXPECT_EQUAL(AW_rgb16("black").ascii(), "#000000000000");
 #endif
+}
+
+void TEST_rgb_diff() {
+    AW_rgb16 orange("#f80");
+    AW_rgb16 blue("#004");
+
+    AW_rgb_diff blue2orange = orange - blue;
+    AW_rgb16    calc_orange = blue + blue2orange;
+    TEST_EXPECT(calc_orange == orange);
+
+    AW_rgb_diff orange2blue = -blue2orange;
+    AW_rgb16    calc_blue   = orange + orange2blue;
+    TEST_EXPECT(calc_blue   == blue);
+
+    for (float part = 0.1; part<1.0; part += 0.1) {
+        AW_rgb16 mix1 = orange +     part * orange2blue;
+        AW_rgb16 mix2 = blue   + (1-part) * blue2orange;
+        TEST_EXPECT(mix1 == mix2);
+    }
+
+    // check that color calculation does not overflow:
+    AW_rgb16    black("#000");
+    AW_rgb16    white("#fff");
+    AW_rgb_diff black2white = white-black;
+
+    AW_rgb16 whiter = white + black2white;
+    TEST_EXPECT_EQUAL(whiter.ascii(), "#ffffffffffff");
+    TEST_EXPECT(whiter == white);
+
+    AW_rgb16 blacker = black - black2white;
+    TEST_EXPECT_EQUAL(blacker.ascii(), "#000000000000");
+    TEST_EXPECT(blacker == black);
+
+    // summarized diff:
+    AW_rgb16 red("#f00");
+    AW_rgb16 green("#0f0");
+
+    AW_rgb_diff blue2red   = red-blue;
+    AW_rgb_diff blue2green = green-blue;
+
+    TEST_DIFF_CONTAINS(blue2red,   "(1.00,0.00,-0.27)");
+    TEST_DIFF_CONTAINS(blue2green, "(0.00,1.00,-0.27)");
+    TEST_DIFF_CONTAINS(blue2green.abs(), "(0.00,1.00,0.27)");
+
+    {
+        AW_rgb_diff sum        = blue2red       + blue2green;
+        AW_rgb_diff abssum     = blue2red.abs() + blue2green.abs();
+        AW_rgb_diff maxabsdiff = max(blue2red.abs(), blue2green.abs());
+
+        TEST_DIFF_CONTAINS(sum,        "(1.00,1.00,-0.53)");
+        TEST_DIFF_CONTAINS(abssum,     "(1.00,1.00,0.53)");
+        TEST_DIFF_CONTAINS(maxabsdiff, "(1.00,1.00,0.27)");
+    }
+
+    AW_rgb16 magenta("#f0f");
+    AW_rgb16 cyan("#0ff");
+
+    AW_rgb_diff orange2magenta = magenta-orange;
+    AW_rgb_diff orange2cyan    = cyan-orange;
+
+    TEST_DIFF_CONTAINS(orange2magenta, "(0.00,-0.53,1.00)");
+    TEST_DIFF_CONTAINS(orange2cyan,    "(-1.00,0.47,1.00)");
+
+    {
+        AW_rgb_diff sum        = orange2magenta       + orange2cyan;
+        AW_rgb_diff abssum     = orange2magenta.abs() + orange2cyan.abs();
+        AW_rgb_diff maxabsdiff = max(orange2magenta.abs(), orange2cyan.abs());
+
+        TEST_DIFF_CONTAINS(sum,        "(-1.00,-0.07,2.00)");
+        TEST_DIFF_CONTAINS(abssum,     "(1.00,1.00,2.00)");
+        TEST_DIFF_CONTAINS(maxabsdiff, "(1.00,0.53,1.00)");
+    }
+
 }
 
 #endif // UNIT_TESTS
