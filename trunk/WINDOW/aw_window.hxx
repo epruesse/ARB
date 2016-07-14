@@ -111,7 +111,7 @@ struct AW_event {
     {}
 };
 
-void AW_help_popup(AW_window *aw, const char *help_file);
+void AW_help_popup(UNFIXED, const char *help_file);
 inline WindowCallback makeHelpCallback(const char *helpfile) { return makeWindowCallback(AW_help_popup, helpfile); }
 
 void AW_help_entry_pressed(AW_window *);
