@@ -2,13 +2,7 @@
 
 .SUFFIXES: .o .c .cxx .hxx .depend
 
-C_OBJECTS = 
-CPP_OBJECTS = \
-	TreeDisplay.o \
-	irstree_display.o \
-	TreeCallbacks.o \
-
-OBJECTS=$(C_OBJECTS) $(CPP_OBJECTS)
+OBJECTS=$(subst .cxx,.o,$(wildcard *.cxx))
 
 $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
@@ -49,6 +43,7 @@ irstree_display.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 irstree_display.o: $(ARBHOME)/INCLUDE/AliView.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
+irstree_display.o: $(ARBHOME)/INCLUDE/AP_TreeColors.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/arb_assert.h
 irstree_display.o: $(ARBHOME)/INCLUDE/arb_core.h
 irstree_display.o: $(ARBHOME)/INCLUDE/arb_defs.h
@@ -185,6 +180,8 @@ TreeDisplay.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/AliView.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
+TreeDisplay.o: $(ARBHOME)/INCLUDE/AP_TreeColors.hxx
+TreeDisplay.o: $(ARBHOME)/INCLUDE/AP_TreeShader.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/arb_assert.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/arb_core.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/arb_defs.h
@@ -245,6 +242,8 @@ TreeDisplay.o: $(ARBHOME)/INCLUDE/cxxforward.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/downcast.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/dupstr.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/gccver.h
+TreeDisplay.o: $(ARBHOME)/INCLUDE/item_shader.h
+TreeDisplay.o: $(ARBHOME)/INCLUDE/items.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/nds.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/smartptr.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/static_assert.h

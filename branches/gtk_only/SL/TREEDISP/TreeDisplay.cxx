@@ -11,6 +11,8 @@
 #include "TreeDisplay.hxx"
 #include "TreeCallbacks.hxx"
 
+#include <AP_TreeColors.hxx>
+#include <AP_TreeShader.hxx>
 #include <nds.h>
 
 #include <awt_config_manager.hxx>
@@ -26,16 +28,11 @@
 #include <arb_global_defs.h>
 
 #include <ad_cb.h>
-#include <ad_colorset.h>
 
 #include <unistd.h>
 #include <iostream>
 #include <cfloat>
 #include <algorithm>
-
-/*!*************************
-  class AP_tree
-****************************/
 
 #define RULER_LINEWIDTH "ruler/ruler_width" // line width of ruler
 #define RULER_SIZE      "ruler/size"
@@ -69,7 +66,7 @@ AW_gc_manager *AWT_graphic_tree::init_devices(AW_window *aww, AW_device *device,
                      ntw?ntw->get_gc_base_name():"unit_tester",
                      device, AWT_GC_CURSOR, AWT_GC_MAX, AW_GCM_DATA_AREA,
                      makeGcChangedCallback(TREE_GC_changed_cb, ntw),
-                     "#3be",
+                     "#8ce",
 
                      // Important note :
                      // Many gc indices are shared between ABR_NTREE and ARB_PARSIMONY
@@ -81,13 +78,13 @@ AW_gc_manager *AWT_graphic_tree::init_devices(AW_window *aww, AW_device *device,
                      //       with higher gc(-index), i.e. marked branches are drawn on top of unmarked branches.
 
                      "Cursor$white",
-                     "Branch remarks$#b6ffb6",
-                     "+-Bootstrap$#53d3ff",    "-B.(limited)$white",
+                     "Branch remarks$#3d8a99",
+                     "+-Bootstrap$#abe3ff",    "-B.(limited)$#cfe9ff",
                      "-IRS group box$#000",
                      "Marked$#ffe560",
-                     "Some marked$#bb8833",
-                     "Not marked$#622300",
-                     "Zombies etc.$#977a0e",
+                     "Some marked$#d9c45c",
+                     "Not marked$#5d5d5d",
+                     "Zombies etc.$#7aa3cc",
 
                      "+-None (black)$#000000", "-All (white)$#ffffff",
 
@@ -96,7 +93,17 @@ AW_gc_manager *AWT_graphic_tree::init_devices(AW_window *aww, AW_device *device,
                      "+-P7(1&2,yellow)$#ffff00", "+-P8(2&3,cyan)$#00ffff", "-P9(3&1,magenta)$#ff00ff",
                      "+-P10(lawn)$#c0ff40",      "+-P11(skyblue)$#40c0ff", "-P12(pink)$#f030b0",
 
-                    "&color_groups", // use color groups
+                     "&color_groups", // use color groups
+
+                     // color ranges:
+                     "*Linear,linear:+-lower$#a00,-upper$#0a0",
+                     "*Rainbow,cyclic:+-col1$#a00,-col2$#990,"
+                     /*           */ "+-col3$#0a0,-col4$#0aa,"
+                     /*           */ "+-col5$#00a,-col6$#b0b",
+                     "*Planar,planar:+-off$#000,-dim1$#a00,"
+                     /*          */ "-dim2$#0a0",
+                     "*Spatial,spatial:+-off$#000,-dim1$#a00,"
+                     /*            */ "+-dim2$#0a0,-dim3$#00a",
 
                      NULL);
 
@@ -388,18 +395,18 @@ static void show_bootstrap_circle(AW_device *device, const char *bootstrap, doub
 
 static void AWT_graphic_tree_root_changed(void *cd, AP_tree *old, AP_tree *newroot) {
     AWT_graphic_tree *agt = (AWT_graphic_tree*)cd;
-    if (agt->displayed_root == old || agt->displayed_root->is_inside(old)) {
-        agt->displayed_root = newroot;
+    if (agt->get_logical_root() == old || agt->get_logical_root()->is_inside(old)) {
+        agt->set_logical_root_to(newroot);
     }
 }
 
 static void AWT_graphic_tree_node_deleted(void *cd, AP_tree *del) {
     AWT_graphic_tree *agt = (AWT_graphic_tree*)cd;
-    if (agt->displayed_root == del) {
-        agt->displayed_root = agt->get_root_node();
+    if (agt->get_logical_root() == del) {
+        agt->set_logical_root_to(agt->get_root_node());
     }
     if (agt->get_root_node() == del) {
-        agt->displayed_root = 0;
+        agt->set_logical_root_to(0);
     }
 }
 void AWT_graphic_tree::toggle_group(AP_tree * at) {
@@ -620,7 +627,7 @@ void AWT_graphic_tree::handle_key(AW_device *device, AWT_graphic_event& event) {
             // - KEYINFO_RESET (AWT_MODE_LZOOM)
 
             if (event.cmd() == AWT_MODE_LZOOM) {
-                displayed_root     = displayed_root->get_root_node();
+                set_logical_root_to(get_root_node());
                 exports.zoom_reset = 1;
             }
             else if (pointed.is_ruler()) {
@@ -1608,13 +1615,13 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
             switch (event.button()) {
                 case AW_BUTTON_LEFT:
                     if (clicked.node()) {
-                        displayed_root = clicked.node();
+                        set_logical_root_to(clicked.node());
                         exports.zoom_reset = 1;
                     }
                     break;
                 case AW_BUTTON_RIGHT:
                     if (displayed_root->father) {
-                        displayed_root = displayed_root->get_father();
+                        set_logical_root_to(displayed_root->get_father());
                         exports.zoom_reset = 1;
                     }
                     break;
@@ -1723,10 +1730,10 @@ act_like_group :
 void AWT_graphic_tree::set_tree_type(AP_tree_display_type type, AWT_canvas *ntw) {
     if (sort_is_list_style(type)) {
         if (tree_sort == type) { // we are already in wanted view
-            nds_show_all = !nds_show_all; // -> toggle between 'marked' and 'all'
+            nds_only_marked = !nds_only_marked; // -> toggle between 'marked' and 'all'
         }
         else {
-            nds_show_all = true; // default to all
+            nds_only_marked = false; // default to all
         }
     }
     tree_sort = type;
@@ -1762,6 +1769,9 @@ void AWT_graphic_tree::set_tree_type(AP_tree_display_type type, AWT_canvas *ntw)
     exports.resize = 1;
 }
 
+static void tree_change_ignore_cb(AWT_graphic_tree*) {}
+static GraphicTreeCallback treeChangeIgnore_cb = makeGraphicTreeCallback(tree_change_ignore_cb);
+
 AWT_graphic_tree::AWT_graphic_tree(AW_root *aw_root_, GBDATA *gb_main_, AD_map_viewer_cb map_viewer_cb_)
     : AWT_graphic(),
       line_filter         (AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_PRINTER|AW_SIZE),
@@ -1775,7 +1785,8 @@ AWT_graphic_tree::AWT_graphic_tree(AW_root *aw_root_, GBDATA *gb_main_, AD_map_v
       other_text_filter   (AW_SCREEN|AW_PRINTER|AW_SIZE_UNSCALED),
       ruler_filter        (AW_SCREEN|AW_CLICK|AW_PRINTER),          // appropriate size-filter added manually in code
       root_filter         (AW_SCREEN|AW_PRINTER_EXT),
-      marker_filter       (AW_SCREEN|AW_CLICK|AW_PRINTER_EXT|AW_SIZE_UNSCALED)
+      marker_filter       (AW_SCREEN|AW_CLICK|AW_PRINTER_EXT|AW_SIZE_UNSCALED),
+      tree_changed_cb(treeChangeIgnore_cb)
 {
     td_assert(gb_main_);
 
@@ -1789,7 +1800,7 @@ AWT_graphic_tree::AWT_graphic_tree(AW_root *aw_root_, GBDATA *gb_main_, AD_map_v
     aw_root          = aw_root_;
     gb_main          = gb_main_;
     cmd_data         = NULL;
-    nds_show_all     = true;
+    nds_only_marked  = false;
     group_info_pos   = GIP_SEPARATED;
     group_count_mode = GCM_MEMBERS;
     map_viewer_cb    = map_viewer_cb_;
@@ -1867,6 +1878,7 @@ GB_ERROR AWT_graphic_tree::load(GBDATA *, const char *name) {
         }
     }
 
+    tree_changed_cb(this);
     return error;
 }
 
@@ -1899,6 +1911,7 @@ GB_ERROR AWT_graphic_tree::save(GBDATA * /* dummy */, const char * /* name */) {
             tree_static->gb_tree_gone = 0; // do not delete twice
         }
     }
+    tree_changed_cb(this);
     return error;
 }
 
@@ -2695,8 +2708,8 @@ void AWT_graphic_tree::show_nds_list(GBDATA *, bool use_nds) {
     AW_pos y_position = scaled_branch_distance;
     AW_pos x_position = NT_SELECTED_WIDTH * disp_device->get_unscale();
 
-    disp_device->text(nds_show_all ? AWT_GC_CURSOR : AWT_GC_SELECTED,
-                      GBS_global_string("%s of %s species", use_nds ? "NDS List" : "Simple list", nds_show_all ? "all" : "marked"),
+    disp_device->text(nds_only_marked ? AWT_GC_ALL_MARKED : AWT_GC_CURSOR,
+                      GBS_global_string("%s of %s species", use_nds ? "NDS List" : "Simple list", nds_only_marked ? "marked" : "all"),
                       (AW_pos) x_position, (AW_pos) 0,
                       (AW_pos) 0, other_text_filter);
 
@@ -2732,35 +2745,31 @@ void AWT_graphic_tree::show_nds_list(GBDATA *, bool use_nds) {
     size_t species_count = 0;
     size_t max_parts     = 0;
 
-    GBDATA *gb_species = nds_show_all ? GBT_first_species(gb_main) : GBT_first_marked_species(gb_main);
+    GBDATA *gb_species = nds_only_marked ? GBT_first_marked_species(gb_main) : GBT_first_species(gb_main);
     if (gb_species) {
         int skip_over = (y1-y_position)/scaled_branch_distance-2;
         if (skip_over>0) {
-            gb_species  = nds_show_all
-                          ? GB_followingEntry(gb_species, skip_over-1)
-                          : GB_following_marked(gb_species, "species", skip_over-1);
+            gb_species  = nds_only_marked
+                          ? GB_following_marked(gb_species, "species", skip_over-1)
+                          : GB_followingEntry(gb_species, skip_over-1);
             y_position += skip_over*scaled_branch_distance;
         }
     }
 
-    for (; gb_species; gb_species = nds_show_all ? GBT_next_species(gb_species) : GBT_next_marked_species(gb_species)) {
+    for (; gb_species; gb_species = nds_only_marked ? GBT_next_marked_species(gb_species) : GBT_next_species(gb_species)) {
         y_position += scaled_branch_distance;
         if (gb_species == selected_species) cursor = Position(0, y_position);
         if (y_position>y1) {
             if (y_position>y2) break;           // no need to examine rest of species
 
-            bool is_marked = nds_show_all ? GB_read_flag(gb_species) : true;
+            bool is_marked = nds_only_marked || GB_read_flag(gb_species);
             if (is_marked) {
-                disp_device->set_line_attributes(AWT_GC_SELECTED, baselinewidth, AW_SOLID);
-                filled_box(AWT_GC_SELECTED, Position(0, y_position), NT_BOX_WIDTH);
+                disp_device->set_line_attributes(AWT_GC_ALL_MARKED, baselinewidth, AW_SOLID);
+                filled_box(AWT_GC_ALL_MARKED, Position(0, y_position), NT_BOX_WIDTH);
             }
 
-            int gc                            = AWT_GC_NSELECTED;
-            if (nds_show_all && is_marked) gc = AWT_GC_SELECTED;
-            else {
-                int color_group     = AW_color_groups_active() ? GBT_get_color_group(gb_species) : 0;
-                if (color_group) gc = AWT_GC_FIRST_COLOR_GROUP+color_group-1;
-            }
+            bool colorize_marked = is_marked && !nds_only_marked; // do not use mark-color if only showing marked
+            int  gc              = AP_tree::get_tree_shader()->calc_leaf_GC(gb_species, colorize_marked);
             ListDisplayRow *curr = new ListDisplayRow(gb_main, gb_species, y_position+text_y_offset, gc, *disp_device, use_nds, tree_name);
             max_parts            = std::max(max_parts, curr->get_part_count());
             row[species_count++] = curr;
@@ -2896,7 +2905,7 @@ void AWT_graphic_tree::show(AW_device *device) {
     disp_device = device;
     disp_device->reset_style();
 
-    const AW_font_limits& charLimits = disp_device->get_font_limits(AWT_GC_SELECTED, 0);
+    const AW_font_limits& charLimits = disp_device->get_font_limits(AWT_GC_ALL_MARKED, 0);
 
     scaled_font.init(charLimits, device->get_unscale());
     scaled_branch_distance *= scaled_font.height;
@@ -2924,6 +2933,10 @@ void AWT_graphic_tree::show(AW_device *device) {
         device->line(AWT_GC_CURSOR, p0, cursor);
     }
     else {
+        double   range_display_size  = scaled_branch_distance;
+        bool     allow_range_display = true;
+        Position range_origin        = Origin;
+
         switch (tree_sort) {
             case AP_TREE_NORMAL: {
                 DendroSubtreeLimits limits;
@@ -2941,6 +2954,9 @@ void AWT_graphic_tree::show(AW_device *device) {
             case AP_TREE_RADIAL:
                 empty_box(displayed_root->gr.gc, Origin, NT_ROOT_WIDTH);
                 show_radial_tree(displayed_root, Origin, Origin, Eastwards, 2*M_PI);
+
+                range_display_size  = 3.0/AW_PLANAR_COLORS;
+                range_origin       += Vector(-range_display_size*AW_PLANAR_COLORS/2, -range_display_size*AW_PLANAR_COLORS/2);
                 break;
 
             case AP_TREE_IRS:
@@ -2954,10 +2970,15 @@ void AWT_graphic_tree::show(AW_device *device) {
             case AP_LIST_SIMPLE:    // simple list of names (used at startup only)
                 // don't see why we need to draw ANY tree at startup -> disabled
                 // show_nds_list(gb_main, false);
+                allow_range_display = false;
                 break;
         }
         if (are_distinct(Origin, cursor)) empty_box(AWT_GC_CURSOR, cursor, NT_SELECTED_WIDTH);
         if (sort_is_tree_style(tree_sort)) show_ruler(disp_device, AWT_GC_CURSOR);
+
+        if (allow_range_display) {
+            AW_displayColorRange(disp_device, AWT_GC_FIRST_RANGE_COLOR, range_origin, range_display_size, range_display_size);
+        }
     }
 
     if (cmd_data && Dragged::valid_drag_device(disp_device)) {
@@ -3071,6 +3092,20 @@ const GroupInfo& AWT_graphic_tree::get_group_info(AP_tree *at, GroupInfoMode mod
     return info;
 }
 
+void AWT_graphic_tree::install_tree_changed_callback(const GraphicTreeCallback& gtcb) {
+    /*! install a callback called whenever
+     *  - topology changes (either by DB-change or by GUI command),
+     *  - logical zoom changes or
+     *  - a different tree gets displayed.
+     */
+    td_assert(tree_changed_cb == treeChangeIgnore_cb);
+    tree_changed_cb = gtcb;
+}
+void AWT_graphic_tree::uninstall_tree_changed_callback() {
+    td_assert(!(tree_changed_cb == treeChangeIgnore_cb));
+    tree_changed_cb = treeChangeIgnore_cb;
+}
+
 AWT_graphic_tree *NT_generate_tree(AW_root *root, GBDATA *gb_main, AD_map_viewer_cb map_viewer_cb) {
     AWT_graphic_tree *apdt = new AWT_graphic_tree(root, gb_main, map_viewer_cb);
     apdt->init(new AliView(gb_main), NULL, true, false); // tree w/o sequence data
@@ -3137,10 +3172,13 @@ void TREE_create_awars(AW_root *aw_root, AW_default db) {
 }
 
 static void TREE_recompute_and_rezoom_cb(UNFIXED, AWT_canvas *ntw) {
-    AWT_graphic_tree *gt = DOWNCAST(AWT_graphic_tree*, ntw->gfx);
-    gt->read_tree_settings(); // update settings for group-scaling
-    gt->get_root_node()->compute_tree();
-    ntw->recalc_size_and_refresh();
+    AWT_graphic_tree *gt   = DOWNCAST(AWT_graphic_tree*, ntw->gfx);
+    AP_tree          *root = gt->get_root_node();
+    if (root) {
+        gt->read_tree_settings(); // update settings for group-scaling
+        root->compute_tree();
+        ntw->recalc_size_and_refresh();
+    }
 }
 static void TREE_rezoom_cb(UNFIXED, AWT_canvas *ntw) {
     ntw->recalc_size_and_refresh();

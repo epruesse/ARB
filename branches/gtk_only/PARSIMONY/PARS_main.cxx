@@ -893,8 +893,9 @@ static void NT_bootstrap(AW_window *, AWT_canvas *ntw, bool limit_only) {
     AP_BL_MODE   mode = AP_BL_MODE((limit_only ? AP_BL_BOOTSTRAP_LIMIT : AP_BL_BOOTSTRAP_ESTIMATE)|AP_BL_BL_ONLY);
 
     rootEdge()->nni_rec(ANY_EDGE, mode, NULL, true);
-    AWT_TREE(ntw)->reorder_tree(BIG_BRANCHES_TO_TOP);
-    AWT_TREE(ntw)->displayed_root = AWT_TREE(ntw)->get_root_node();
+    AWT_graphic_tree *agt = AWT_TREE(ntw);
+    agt->reorder_tree(BIG_BRANCHES_TO_TOP);
+    agt->set_logical_root_to(agt->get_root_node());
     pars_saveNrefresh_changed_tree(ntw);
 }
 
@@ -2813,8 +2814,8 @@ void TEST_node_edge_resources() {
 #define STATE_STACK_SIZE sizeof(StateStack) // 8 (Cxx11) or 16 (older C++); maybe 4/8 in 32bit
 
 #if defined(ARB_64)
-    TEST_EXPECT_EQUAL(sizeof(AP_tree_nlen), 176 + STATE_STACK_SIZE);
-    TEST_EXPECT_EQUAL(sizeof(AP_tree), 128);
+    TEST_EXPECT_EQUAL(sizeof(AP_tree_nlen), 184 + STATE_STACK_SIZE);
+    TEST_EXPECT_EQUAL(sizeof(AP_tree), 136);
     TEST_EXPECT_EQUAL(sizeof(ARB_seqtree), 88);
     TEST_EXPECT_EQUAL(sizeof(TreeNode), 80);
 #else // !defined(ARB_64)

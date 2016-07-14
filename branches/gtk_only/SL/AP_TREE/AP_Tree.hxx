@@ -24,47 +24,6 @@
 #ifndef AP_SEQUENCE_HXX
 #include <AP_sequence.hxx>
 #endif
-#ifndef AW_COLOR_GROUPS_HXX
-#include <aw_color_groups.hxx>
-#endif
-
-enum {
-    AWT_GC_CURSOR=0,
-    AWT_GC_BRANCH_REMARK,
-    AWT_GC_BOOTSTRAP,
-    AWT_GC_BOOTSTRAP_LIMITED,
-    AWT_GC_IRS_GROUP_BOX,
-    AWT_GC_SELECTED,        // == zero mismatches
-    AWT_GC_UNDIFF,
-    AWT_GC_NSELECTED,       // no hit
-    AWT_GC_ZOMBIES,
-
-    // for probe coloring
-
-    AWT_GC_BLACK,
-    AWT_GC_WHITE,
-
-    AWT_GC_RED,
-    AWT_GC_GREEN,
-    AWT_GC_BLUE,
-
-    AWT_GC_ORANGE,     // red+yellow // #FFD206
-    AWT_GC_AQUAMARIN,  // green+cyan
-    AWT_GC_PURPLE,     // blue+magenta
-
-    AWT_GC_YELLOW,     // red+green
-    AWT_GC_CYAN,       // green+blue
-    AWT_GC_MAGENTA,    // blue+red
-
-    AWT_GC_LAWNGREEN, // green+yellow
-    AWT_GC_SKYBLUE,    // blue+cyan
-    AWT_GC_PINK,       // red+magenta
-
-    // end probe coloring
-
-    AWT_GC_FIRST_COLOR_GROUP,
-    AWT_GC_MAX = AWT_GC_FIRST_COLOR_GROUP+AW_COLOR_GROUPS
-};
 
 enum AP_UPDATE_FLAGS {
     AP_UPDATE_OK       = 0,
@@ -103,6 +62,7 @@ struct AP_rates : virtual Noncopyable {
 //      AP_tree_root
 
 class AP_tree;
+class AP_TreeShader;
 
 typedef void (*AP_rootChangedCb)(void *cd, AP_tree *old, AP_tree *newroot);
 typedef void (*AP_nodeDelCb)(void *cd, AP_tree *del);
@@ -163,10 +123,10 @@ namespace tree_defaults {
 
 struct AP_tree_members {
 public: // @@@ make members private
-    unsigned int grouped : 1;   // indicates a folded group
-    unsigned int hidden : 1;    // not shown (because an anchestor is a folded group)
+    unsigned int grouped : 1; // indicates a folded group
+    unsigned int hidden : 1;  // not shown (because an anchestor is a folded group)
     unsigned int callback_exists : 1;
-    unsigned int gc : 6;        // color
+    uint32_t gc;              // color
 
     char left_linewidth; // @@@ it's stupid to store linewidth IN FATHER (also wastes space)
     char right_linewidth;
@@ -231,6 +191,7 @@ struct group_scaling {
 
 class AP_tree : public ARB_seqtree {
     static const group_scaling *group_scaling_ptr;
+    static AP_TreeShader       *shader;
 
 public: // @@@ fix public members
     AP_tree_members gr;
@@ -262,7 +223,7 @@ private:
     void reset_child_linewidths();
     void reset_child_layout();
 
-    void update_subtree_information();
+    template<class RESULT> RESULT update_subtree_information();
 
 protected:
     ~AP_tree() OVERRIDE;
@@ -350,6 +311,8 @@ public:
     void reset_subtree_layout();
 
     static void set_group_downscale(const group_scaling *scaling) { group_scaling_ptr = scaling; }
+    static void set_tree_shader(AP_TreeShader *new_shader);
+    static const AP_TreeShader *get_tree_shader() { return shader; }
 
     bool hasName(const char *Name) const { return Name && name && Name[0] == name[0] && strcmp(Name, name) == 0; }
 

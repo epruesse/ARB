@@ -36,6 +36,8 @@ depend.init:
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl (from SL)
 
 AP_Tree.o: AP_Tree.hxx
+AP_Tree.o: AP_TreeColors.hxx
+AP_Tree.o: AP_TreeShader.hxx
 AP_Tree.o: $(ARBHOME)/INCLUDE/ad_cb.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/ad_colorset.h
@@ -67,6 +69,8 @@ AP_Tree.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/downcast.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/dupstr.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/gccver.h
+AP_Tree.o: $(ARBHOME)/INCLUDE/item_shader.h
+AP_Tree.o: $(ARBHOME)/INCLUDE/items.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/smartptr.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/static_assert.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/test_global.h

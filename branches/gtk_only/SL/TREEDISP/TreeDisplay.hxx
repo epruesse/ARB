@@ -238,6 +238,9 @@ enum GroupCountMode {
     GCM_BOTH_PC, // show "percent/members" (or "members" if none marked)
 };
 
+class AWT_graphic_tree;
+DECLARE_CBTYPE_FVV_AND_BUILDERS(GraphicTreeCallback, void, AWT_graphic_tree*); // generates makeGraphicTreeCallback
+
 class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
     char         *species_name;
     AW::Position  cursor;
@@ -279,7 +282,7 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
     const AW_bitset leaf_text_filter, group_text_filter, remark_text_filter, other_text_filter;
     const AW_bitset ruler_filter, root_filter, marker_filter;
 
-    bool nds_show_all;
+    bool nds_only_marked;
 
     GroupInfoPosition group_info_pos;
     GroupCountMode    group_count_mode;
@@ -294,6 +297,9 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
     AWT_command_data *cmd_data;
 
     AP_tree_root *tree_static;
+    AP_tree      *displayed_root; // root node of shown (sub-)tree; differs from real root if tree is zoomed logically
+
+    GraphicTreeCallback tree_changed_cb;
 
     // functions to compute displayinformation
 
@@ -354,7 +360,6 @@ public:
 
     AW_root              *aw_root;
     AP_tree_display_type  tree_sort;
-    AP_tree              *displayed_root; // root node of shown (sub-)tree; differs from real root if tree is zoomed logically
     GBDATA               *gb_main;
 
     // *********** public section
@@ -363,8 +368,18 @@ public:
     ~AWT_graphic_tree() OVERRIDE;
 
     AP_tree_root *get_tree_root() { return tree_static; }
-    AP_tree *get_root_node() { return tree_static ? tree_static->get_root_node() : NULL; }
+
+    AP_tree       *get_root_node()       { return tree_static ? tree_static->get_root_node() : NULL; }
+    const AP_tree *get_root_node() const { return const_cast<AWT_graphic_tree*>(this)->get_root_node(); }
+
+    AP_tree       *get_logical_root()       { return displayed_root; }
+    const AP_tree *get_logical_root() const { return displayed_root; }
+
     bool is_logically_zoomed() { return displayed_root != get_root_node(); }
+    void set_logical_root_to(AP_tree *node) {
+        displayed_root = node;
+        tree_changed_cb(this);
+    }
 
     void init(AliView *aliview, AP_sequence *seq_prototype, bool link_to_database_, bool insert_delete_cbs);
     AW_gc_manager *init_devices(AW_window *, AW_device *, AWT_canvas *ntw) OVERRIDE;
@@ -412,6 +427,9 @@ public:
         display_markers = display;
     }
     MarkerDisplay *get_marker_display() { return display_markers; }
+
+    void install_tree_changed_callback(const GraphicTreeCallback& gtcb);
+    void uninstall_tree_changed_callback();
 
 #if defined(UNIT_TESTS) // UT_DIFF
     friend class fake_AWT_graphic_tree;

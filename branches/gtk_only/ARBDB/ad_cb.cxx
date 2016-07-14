@@ -450,6 +450,7 @@ GB_ERROR GB_ensure_callback(GBDATA *gbd, GB_CB_TYPE type, const DatabaseCallback
 #ifdef UNIT_TESTS
 
 #include <string> // needed b4 test_unit.h!
+#include <arb_file.h>
 
 #ifndef TEST_UNIT_H
 #include <test_unit.h>
@@ -1092,323 +1093,337 @@ void TEST_db_callbacks() {
 }
 
 void TEST_hierarchy_callbacks() {
-    GB_shell  shell;
-    GBDATA   *gb_main = GB_open("new.arb", "c");
+    GB_shell    shell;
+    const char *DBNAME  = "tmp_hier_cb.arb";
 
-    // create some data
-    GB_begin_transaction(gb_main);
+    for (int pass = 1; pass<=2; ++pass) {
+        bool creating = pass == 1;
+        TEST_ANNOTATE(GBS_global_string("%s database", creating ? "created" : "reloaded"));
 
-    GBDATA *cont_top1 = GB_create_container(gb_main, "cont_top"); TEST_REJECT_NULL(cont_top1);
-    GBDATA *cont_top2 = GB_create_container(gb_main, "cont_top"); TEST_REJECT_NULL(cont_top2);
+        GBDATA *gb_main = pass == 1 ? GB_open(DBNAME, "cw") : GB_open(DBNAME, "r");
+        TEST_REJECT_NULL(gb_main);
 
-    GBDATA *cont_son11 = GB_create_container(cont_top1, "cont_son"); TEST_REJECT_NULL(cont_son11);
-    GBDATA *cont_son21 = GB_create_container(cont_top2, "cont_son"); TEST_REJECT_NULL(cont_son21);
-    GBDATA *cont_son22 = GB_create_container(cont_top2, "cont_son"); TEST_REJECT_NULL(cont_son22);
+        // create some data
+        GB_begin_transaction(gb_main);
 
-    GBDATA *top1 = GB_create(gb_main, "top", GB_STRING); TEST_REJECT_NULL(top1);
-    GBDATA *top2 = GB_create(gb_main, "top", GB_STRING); TEST_REJECT_NULL(top2);
+        GBDATA *cont_top1 = creating ? GB_create_container(gb_main, "cont_top") : GB_entry(gb_main, "cont_top"); TEST_REJECT_NULL(cont_top1);
+        GBDATA *cont_top2 = creating ? GB_create_container(gb_main, "cont_top") : GB_nextEntry(cont_top1);       TEST_REJECT_NULL(cont_top2);
 
-    GBDATA *son11 = GB_create(cont_top1, "son", GB_INT); TEST_REJECT_NULL(son11);
-    GBDATA *son12 = GB_create(cont_top1, "son", GB_INT); TEST_REJECT_NULL(son12);
-    GBDATA *son21 = GB_create(cont_top2, "son", GB_INT); TEST_REJECT_NULL(son21);
+        GBDATA *cont_son11 = creating ? GB_create_container(cont_top1, "cont_son") : GB_entry(cont_top1, "cont_son"); TEST_REJECT_NULL(cont_son11);
+        GBDATA *cont_son21 = creating ? GB_create_container(cont_top2, "cont_son") : GB_entry(cont_top2, "cont_son"); TEST_REJECT_NULL(cont_son21);
+        GBDATA *cont_son22 = creating ? GB_create_container(cont_top2, "cont_son") : GB_nextEntry(cont_son21);        TEST_REJECT_NULL(cont_son22);
 
-    GBDATA *grandson111 = GB_create(cont_son11, "grandson", GB_STRING); TEST_REJECT_NULL(grandson111);
-    GBDATA *grandson112 = GB_create(cont_son11, "grandson", GB_STRING); TEST_REJECT_NULL(grandson112);
-    GBDATA *grandson211 = GB_create(cont_son21, "grandson", GB_STRING); TEST_REJECT_NULL(grandson211);
-    GBDATA *grandson221 = GB_create(cont_son22, "grandson", GB_STRING); TEST_REJECT_NULL(grandson221);
-    GBDATA *grandson222 = GB_create(cont_son22, "grandson", GB_STRING); TEST_REJECT_NULL(grandson222);
+        GBDATA *top1 = creating ? GB_create(gb_main, "top", GB_STRING) : GB_entry(gb_main, "top"); TEST_REJECT_NULL(top1);
+        GBDATA *top2 = creating ? GB_create(gb_main, "top", GB_STRING) : GB_nextEntry(top1);       TEST_REJECT_NULL(top2);
 
-    // create some entries at uncommon locations (compared to entries created above)
-    GBDATA *ctop_top = GB_create          (cont_top2, "top", GB_STRING);      TEST_REJECT_NULL(ctop_top);
-    GBDATA *top_son  = GB_create          (gb_main,   "son", GB_INT);         TEST_REJECT_NULL(top_son);
-    GBDATA *cson     = GB_create_container(gb_main,   "cont_son");            TEST_REJECT_NULL(cson);
-    GBDATA *cson_gs  = GB_create          (cson,      "grandson", GB_STRING); TEST_REJECT_NULL(cson_gs);
+        GBDATA *son11 = creating ? GB_create(cont_top1, "son", GB_INT) : GB_entry(cont_top1, "son"); TEST_REJECT_NULL(son11);
+        GBDATA *son12 = creating ? GB_create(cont_top1, "son", GB_INT) : GB_nextEntry(son11);        TEST_REJECT_NULL(son12);
+        GBDATA *son21 = creating ? GB_create(cont_top2, "son", GB_INT) : GB_entry(cont_top2, "son"); TEST_REJECT_NULL(son21);
 
-    GB_commit_transaction(gb_main);
+        GBDATA *grandson111 = creating ? GB_create(cont_son11, "grandson", GB_STRING) : GB_entry(cont_son11, "grandson"); TEST_REJECT_NULL(grandson111);
+        GBDATA *grandson112 = creating ? GB_create(cont_son11, "grandson", GB_STRING) : GB_nextEntry(grandson111);        TEST_REJECT_NULL(grandson112);
+        GBDATA *grandson211 = creating ? GB_create(cont_son21, "grandson", GB_STRING) : GB_entry(cont_son21, "grandson"); TEST_REJECT_NULL(grandson211);
+        GBDATA *grandson221 = creating ? GB_create(cont_son22, "grandson", GB_STRING) : GB_entry(cont_son22, "grandson"); TEST_REJECT_NULL(grandson221);
+        GBDATA *grandson222 = creating ? GB_create(cont_son22, "grandson", GB_STRING) : GB_nextEntry(grandson221);        TEST_REJECT_NULL(grandson222);
 
-    // test gb_hierarchy_location
-    {
-        GB_transaction ta(gb_main);
+        // create some entries at uncommon hierarchy locations (compared to entries created above)
+        GBDATA *ctop_top = creating ? GB_create          (cont_top2, "top", GB_STRING)      : GB_entry(cont_top2, "top");      TEST_REJECT_NULL(ctop_top);
+        GBDATA *top_son  = creating ? GB_create          (gb_main,   "son", GB_INT)         : GB_entry(gb_main,   "son");      TEST_REJECT_NULL(top_son);
+        GBDATA *cson     = creating ? GB_create_container(gb_main,   "cont_son")            : GB_entry(gb_main,   "cont_son"); TEST_REJECT_NULL(cson);
+        GBDATA *cson_gs  = creating ? GB_create          (cson,      "grandson", GB_STRING) : GB_entry(cson,      "grandson"); TEST_REJECT_NULL(cson_gs);
 
-        gb_hierarchy_location loc_top(top1);
-        gb_hierarchy_location loc_son(son11);
-        gb_hierarchy_location loc_grandson(grandson222);
+        GB_commit_transaction(gb_main);
 
-        TEST_EXPECT(loc_top.matches(top1));
-        TEST_EXPECT(loc_top.matches(top2));
-        TEST_EXPECT(!loc_top.matches(cont_top1));
-        TEST_EXPECT(!loc_top.matches(son12));
-        TEST_EXPECT(!loc_top.matches(cont_son22));
-        TEST_EXPECT(!loc_top.matches(ctop_top));
-
-        TEST_EXPECT(loc_son.matches(son11));
-        TEST_EXPECT(loc_son.matches(son21));
-        TEST_EXPECT(!loc_son.matches(top1));
-        TEST_EXPECT(!loc_son.matches(grandson111));
-        TEST_EXPECT(!loc_son.matches(cont_son22));
-        TEST_EXPECT(!loc_son.matches(top_son));
-
-        TEST_EXPECT(loc_grandson.matches(grandson222));
-        TEST_EXPECT(loc_grandson.matches(grandson111));
-        TEST_EXPECT(!loc_grandson.matches(son11));
-        TEST_EXPECT(!loc_grandson.matches(top1));
-        TEST_EXPECT(!loc_grandson.matches(cont_son22));
-        TEST_EXPECT(!loc_grandson.matches(cson_gs));
-        TEST_EXPECT(!loc_grandson.matches(gb_main)); // nothing matches gb_main
-
-        gb_hierarchy_location loc_ctop_top(ctop_top);
-        TEST_EXPECT(loc_ctop_top.matches(ctop_top));
-        TEST_EXPECT(!loc_ctop_top.matches(top1));
-
-        gb_hierarchy_location loc_top_son(top_son);
-        TEST_EXPECT(loc_top_son.matches(top_son));
-        TEST_EXPECT(!loc_top_son.matches(son11));
-        TEST_EXPECT(!loc_top_son.matches(gb_main)); // nothing matches gb_main
-
-        gb_hierarchy_location loc_gs(cson_gs);
-        TEST_EXPECT(loc_gs.matches(cson_gs));
-        TEST_EXPECT(!loc_gs.matches(grandson211));
-
-        gb_hierarchy_location loc_root(gb_main);
-        TEST_REJECT(loc_root.is_valid()); // deny binding hierarchy callback to gb_main
-        TEST_EXPECT(!loc_root.matches(gb_main)); // nothing matches gb_main
-        TEST_EXPECT(!loc_root.matches(cont_top1)); // nothing matches an invalid location
-
-        // test location from/to path
-        {
-            char *path_grandson = loc_grandson.get_db_path(gb_main);
-            TEST_EXPECT_EQUAL(path_grandson, "/cont_top/cont_son/grandson");
-
-            gb_hierarchy_location loc_grandson2(gb_main, path_grandson);
-            TEST_EXPECT(loc_grandson2.is_valid());
-            TEST_EXPECT(loc_grandson == loc_grandson2);
-
-            char *path_grandson2 = loc_grandson2.get_db_path(gb_main);
-            TEST_EXPECT_EQUAL(path_grandson, path_grandson2);
-
-            free(path_grandson2);
-            free(path_grandson);
-        }
-
-        gb_hierarchy_location loc_invalid(gb_main, "");
-        TEST_REJECT(loc_invalid.is_valid());
-        TEST_REJECT(loc_invalid == loc_invalid); // invalid locations equal nothing
-
-        TEST_EXPECT(gb_hierarchy_location(gb_main, "/grandson/cont_top/son").is_valid()); // non-existing path with existing keys is valid
-        TEST_EXPECT(gb_hierarchy_location(gb_main, "/no/such/path").is_valid());          // non-existing keys generate key-quarks on-the-fly
-        TEST_EXPECT(gb_hierarchy_location(gb_main, "/grandson/missing/son").is_valid());  // non-existing keys generate key-quarks on-the-fly
-
-        // test some pathological locations:
-        TEST_REJECT(gb_hierarchy_location(gb_main, "/")    .is_valid());
-        TEST_REJECT(gb_hierarchy_location(gb_main, "//")   .is_valid());
-        TEST_REJECT(gb_hierarchy_location(gb_main, "  /  ").is_valid());
-        TEST_REJECT(gb_hierarchy_location(gb_main, NULL)   .is_valid());
-    }
-
-    // instanciate callback_trace data and install hierarchy callbacks
-    GBDATA *anySon = son11;
-
-    GBDATA *anySonContainer     = cont_son11;
-    GBDATA *anotherSonContainer = cont_son22;
-
-    GBDATA *anyGrandson     = grandson221;
-    GBDATA *anotherGrandson = grandson112;
-    GBDATA *elimGrandson    = grandson222;
-    GBDATA *elimGrandson2   = grandson111;
-    GBDATA *newGrandson     = NULL;
-
-    ct_registry trace_registry;
-    callback_trace HIERARCHY_TRACECONSTRUCT(anyElem,changed); // no CB added yet
-    INIT_CHANGED_HIERARCHY_CALLBACK(anyGrandson);
-    INIT_DELETED_HIERARCHY_CALLBACK(anyGrandson);
-    INIT_NWCHILD_HIERARCHY_CALLBACK(anySonContainer);
-
-    TEST_EXPECT_TRIGGERS_CHECKED();
-
-    // trigger change-callback using same DB entry
-    TRIGGER_CHANGE(anyGrandson);
-    TEST_EXPECT_CHANGE_HIER_TRIGGERED(anyGrandson, anyGrandson);
-    TEST_EXPECT_TRIGGERS_CHECKED();
-
-    // trigger change-callback using another DB entry (same hierarchy)
-    TRIGGER_CHANGE(anotherGrandson);
-    TEST_EXPECT_CHANGE_HIER_TRIGGERED(anyGrandson, anotherGrandson);
-    TEST_EXPECT_TRIGGERS_CHECKED();
-
-    // check nothing is triggered by an element at different hierarchy
-    TRIGGER_CHANGE(anySon);
-    TEST_EXPECT_TRIGGERS_CHECKED();
-
-    // trigger change-callback using both DB entries (in two TAs)
-    TRIGGER_CHANGE(anyGrandson);
-    TRIGGER_CHANGE(anotherGrandson);
-    TEST_EXPECT_CHANGE_HIER_TRIGGERED(anyGrandson, anyGrandson);
-    TEST_EXPECT_CHANGE_HIER_TRIGGERED(anyGrandson, anotherGrandson);
-    TEST_EXPECT_TRIGGERS_CHECKED();
-
-    // trigger change-callback using both DB entries (in one TA)
-    TRIGGER_2_CHANGES(anyGrandson, anotherGrandson);
-    TEST_EXPECT_CHANGE_HIER_TRIGGERED(anyGrandson, anyGrandson);
-    TEST_EXPECT_CHANGE_HIER_TRIGGERED(anyGrandson, anotherGrandson);
-    TEST_EXPECT_TRIGGERS_CHECKED();
-
-    // trigger son-created-callback
-    {
-        GB_initial_transaction ta(gb_main);
-        if (ta.ok()) {
-            GBDATA *someson = GB_create(anySonContainer, "someson", GB_STRING); TEST_REJECT_NULL(someson);
-        }
-        TEST_EXPECT_NO_ERROR(ta.close(NULL));
-    }
-    TEST_EXPECT_NCHILD_HIER_TRIGGERED(anySonContainer, anySonContainer);
-    TEST_EXPECT_TRIGGERS_CHECKED();
-
-    // trigger 2 son-created-callbacks (for 2 containers) and one change-callback (for a newly created son)
-    {
-        GB_initial_transaction ta(gb_main);
-        if (ta.ok()) {
-            newGrandson     = GB_create(anotherSonContainer, "grandson", GB_STRING); TEST_REJECT_NULL(newGrandson);
-            GBDATA *someson = GB_create(anySonContainer,     "someson",  GB_STRING); TEST_REJECT_NULL(someson);
-        }
-        TEST_EXPECT_NO_ERROR(ta.close(NULL));
-    }
-    TEST_EXPECT_CHANGE_HIER_TRIGGERED(anyGrandson, newGrandson);
-    TEST_EXPECT_NCHILD_HIER_TRIGGERED(anySonContainer, anotherSonContainer);
-    TEST_EXPECT_NCHILD_HIER_TRIGGERED(anySonContainer, anySonContainer);
-    TEST_EXPECT_TRIGGERS_CHECKED();
-
-    // trigger delete-callback
-    {
-        GB_initial_transaction ta(gb_main);
-        TEST_EXPECT_NO_ERROR(GB_delete(elimGrandson));
-        TEST_EXPECT_NO_ERROR(ta.close(NULL));
-    }
-    TEST_EXPECT_DELETE_HIER_TRIGGERED(anyGrandson, elimGrandson);
-    TEST_EXPECT_TRIGGERS_CHECKED();
-
-    // bind normal (non-hierarchical) callbacks to entries which trigger hierarchical callbacks and ..
-    calledWith::timer = 0;
-    GB_begin_transaction(gb_main);
-
-    INIT_CHANGED_CALLBACK(anotherGrandson);
-    INIT_DELETED_CALLBACK(elimGrandson2);
-
-    GB_commit_transaction(gb_main);
-
-    TEST_EXPECT_TRIGGERS_CHECKED();
-
-    {
-        GB_initial_transaction ta(gb_main);
-        if (ta.ok()) {
-            GB_touch(anotherGrandson);
-            GB_touch(elimGrandson2);
-            TEST_EXPECT_NO_ERROR(GB_delete(elimGrandson2));
-        }
-    }
-
-    // .. test call-order (delete before change, hierarchical before normal):
-    TEST_EXPECT_DELETE_TRIGGERED_AT(traceHier_anyGrandson_deleted, elimGrandson2,   1);
-    TEST_EXPECT_DELETE_TRIGGERED_AT(trace_elimGrandson2_deleted,   elimGrandson2,   2);
-    TEST_EXPECT_CHANGE_TRIGGERED_AT(traceHier_anyGrandson_changed, anotherGrandson, 3);
-    TEST_EXPECT_CHANGE_TRIGGERED_AT(trace_anotherGrandson_changed, anotherGrandson, 4);
-
-    TEST_EXPECT_TRIGGERS_CHECKED();
-
-    // test removed hierarchy callbacks stop to trigger
-    REMOVE_CHANGED_HIERARCHY_CALLBACK(anyGrandson);
-    REMOVE_DELETED_HIERARCHY_CALLBACK(anyGrandson);
-    TRIGGER_CHANGE(anyGrandson);
-    {
-        GB_initial_transaction ta(gb_main);
-        if (ta.ok()) TEST_EXPECT_NO_ERROR(GB_delete(anyGrandson));
-    }
-    TEST_EXPECT_TRIGGERS_CHECKED();
-
-    GBDATA *anyElem;
-
-    // bind SAME callback to different hierarchy locations
-    anyElem = top1;  ADD_CHANGED_HIERARCHY_CALLBACK(anyElem); // binds      hierarchy cb to "/top"
-    anyElem = son11; ADD_CHANGED_HIERARCHY_CALLBACK(anyElem); // binds SAME hierarchy cb to "/cont_top/son"
-
-    // - check both trigger independently and together
-    TRIGGER_CHANGE(top1);
-    TEST_EXPECT_CHANGE_HIER_TRIGGERED(anyElem, top1);
-    TEST_EXPECT_TRIGGERS_CHECKED();
-
-    TRIGGER_CHANGE(son11);
-    TEST_EXPECT_CHANGE_HIER_TRIGGERED(anyElem, son11);
-    TEST_EXPECT_TRIGGERS_CHECKED();
-
-    TRIGGER_2_CHANGES(top1, son11);
-    TEST_EXPECT_CHANGE_HIER_TRIGGERED(anyElem, top1);
-    TEST_EXPECT_CHANGE_HIER_TRIGGERED(anyElem, son11);
-    TEST_EXPECT_TRIGGERS_CHECKED();
-
-    // - check removing one does not disable the other
-    anyElem = son11;  REMOVE_CHANGED_HIERARCHY_CALLBACK(anyElem); // remove hierarchy cb from "/cont_top/son"
-
-    TRIGGER_2_CHANGES(top1, son11);
-    // son11 no longer triggers -> ok
-    TEST_EXPECT_CHANGE_HIER_TRIGGERED(anyElem, top1);
-    TEST_EXPECT_TRIGGERS_CHECKED();
-
-    // test add/remove hierarchy cb by path
-    {
-        const char       *locpath = "/cont_top/son";
-        DatabaseCallback  dbcb    = makeDatabaseCallback(some_cb, &HIERARCHY_TRACESTRUCT(anyElem,changed));
-
+        // test gb_hierarchy_location
         {
             GB_transaction ta(gb_main);
-            TEST_EXPECT_NO_ERROR(GB_add_hierarchy_callback(gb_main, locpath, GB_CB_CHANGED, dbcb));
+
+            gb_hierarchy_location loc_top(top1);
+            gb_hierarchy_location loc_son(son11);
+            gb_hierarchy_location loc_grandson(grandson222);
+
+            TEST_EXPECT(loc_top.matches(top1));
+            TEST_EXPECT(loc_top.matches(top2));
+            TEST_EXPECT(!loc_top.matches(cont_top1));
+            TEST_EXPECT(!loc_top.matches(son12));
+            TEST_EXPECT(!loc_top.matches(cont_son22));
+            TEST_EXPECT(!loc_top.matches(ctop_top));
+
+            TEST_EXPECT(loc_son.matches(son11));
+            TEST_EXPECT(loc_son.matches(son21));
+            TEST_EXPECT(!loc_son.matches(top1));
+            TEST_EXPECT(!loc_son.matches(grandson111));
+            TEST_EXPECT(!loc_son.matches(cont_son22));
+            TEST_EXPECT(!loc_son.matches(top_son));
+
+            TEST_EXPECT(loc_grandson.matches(grandson222));
+            TEST_EXPECT(loc_grandson.matches(grandson111));
+            TEST_EXPECT(!loc_grandson.matches(son11));
+            TEST_EXPECT(!loc_grandson.matches(top1));
+            TEST_EXPECT(!loc_grandson.matches(cont_son22));
+            TEST_EXPECT(!loc_grandson.matches(cson_gs));
+            TEST_EXPECT(!loc_grandson.matches(gb_main)); // nothing matches gb_main
+
+            gb_hierarchy_location loc_ctop_top(ctop_top);
+            TEST_EXPECT(loc_ctop_top.matches(ctop_top));
+            TEST_EXPECT(!loc_ctop_top.matches(top1));
+
+            gb_hierarchy_location loc_top_son(top_son);
+            TEST_EXPECT(loc_top_son.matches(top_son));
+            TEST_EXPECT(!loc_top_son.matches(son11));
+            TEST_EXPECT(!loc_top_son.matches(gb_main)); // nothing matches gb_main
+
+            gb_hierarchy_location loc_gs(cson_gs);
+            TEST_EXPECT(loc_gs.matches(cson_gs));
+            TEST_EXPECT(!loc_gs.matches(grandson211));
+
+            gb_hierarchy_location loc_root(gb_main);
+            TEST_REJECT(loc_root.is_valid()); // deny binding hierarchy callback to gb_main
+            TEST_EXPECT(!loc_root.matches(gb_main)); // nothing matches gb_main
+            TEST_EXPECT(!loc_root.matches(cont_top1)); // nothing matches an invalid location
+
+            // test location from/to path
+            {
+                char *path_grandson = loc_grandson.get_db_path(gb_main);
+                TEST_EXPECT_EQUAL(path_grandson, "/cont_top/cont_son/grandson");
+
+                gb_hierarchy_location loc_grandson2(gb_main, path_grandson);
+                TEST_EXPECT(loc_grandson2.is_valid());
+                TEST_EXPECT(loc_grandson == loc_grandson2);
+
+                char *path_grandson2 = loc_grandson2.get_db_path(gb_main);
+                TEST_EXPECT_EQUAL(path_grandson, path_grandson2);
+
+                free(path_grandson2);
+                free(path_grandson);
+            }
+
+            gb_hierarchy_location loc_invalid(gb_main, "");
+            TEST_REJECT(loc_invalid.is_valid());
+            TEST_REJECT(loc_invalid == loc_invalid); // invalid locations equal nothing
+
+            TEST_EXPECT(gb_hierarchy_location(gb_main, "/grandson/cont_top/son").is_valid()); // non-existing path with existing keys is valid
+            TEST_EXPECT(gb_hierarchy_location(gb_main, "/no/such/path").is_valid());          // non-existing keys generate key-quarks on-the-fly
+            TEST_EXPECT(gb_hierarchy_location(gb_main, "/grandson/missing/son").is_valid());  // non-existing keys generate key-quarks on-the-fly
+
+            // test some pathological locations:
+            TEST_REJECT(gb_hierarchy_location(gb_main, "/")    .is_valid());
+            TEST_REJECT(gb_hierarchy_location(gb_main, "//")   .is_valid());
+            TEST_REJECT(gb_hierarchy_location(gb_main, "  /  ").is_valid());
+            TEST_REJECT(gb_hierarchy_location(gb_main, NULL)   .is_valid());
         }
 
-        // now both should trigger again
+        if (pass == 1) {
+            TEST_EXPECT_NO_ERROR(GB_save_as(gb_main, DBNAME, "wb"));
+        }
+
+        // instanciate callback_trace data and install hierarchy callbacks
+        GBDATA *anySon = son11;
+
+        GBDATA *anySonContainer     = cont_son11;
+        GBDATA *anotherSonContainer = cont_son22;
+
+        GBDATA *anyGrandson     = grandson221;
+        GBDATA *anotherGrandson = grandson112;
+        GBDATA *elimGrandson    = grandson222;
+        GBDATA *elimGrandson2   = grandson111;
+        GBDATA *newGrandson     = NULL;
+
+        ct_registry    trace_registry;
+        callback_trace HIERARCHY_TRACECONSTRUCT(anyElem,changed); // no CB added yet
+        INIT_CHANGED_HIERARCHY_CALLBACK(anyGrandson);
+        INIT_DELETED_HIERARCHY_CALLBACK(anyGrandson);
+        INIT_NWCHILD_HIERARCHY_CALLBACK(anySonContainer);
+
+        TEST_EXPECT_TRIGGERS_CHECKED();
+
+        // trigger change-callback using same DB entry
+        TRIGGER_CHANGE(anyGrandson);
+        TEST_EXPECT_CHANGE_HIER_TRIGGERED(anyGrandson, anyGrandson);
+        TEST_EXPECT_TRIGGERS_CHECKED();
+
+        // trigger change-callback using another DB entry (same hierarchy)
+        TRIGGER_CHANGE(anotherGrandson);
+        TEST_EXPECT_CHANGE_HIER_TRIGGERED(anyGrandson, anotherGrandson);
+        TEST_EXPECT_TRIGGERS_CHECKED();
+
+        // check nothing is triggered by an element at different hierarchy
+        TRIGGER_CHANGE(anySon);
+        TEST_EXPECT_TRIGGERS_CHECKED();
+
+        // trigger change-callback using both DB entries (in two TAs)
+        TRIGGER_CHANGE(anyGrandson);
+        TRIGGER_CHANGE(anotherGrandson);
+        TEST_EXPECT_CHANGE_HIER_TRIGGERED(anyGrandson, anyGrandson);
+        TEST_EXPECT_CHANGE_HIER_TRIGGERED(anyGrandson, anotherGrandson);
+        TEST_EXPECT_TRIGGERS_CHECKED();
+
+        // trigger change-callback using both DB entries (in one TA)
+        TRIGGER_2_CHANGES(anyGrandson, anotherGrandson);
+        TEST_EXPECT_CHANGE_HIER_TRIGGERED(anyGrandson, anyGrandson);
+        TEST_EXPECT_CHANGE_HIER_TRIGGERED(anyGrandson, anotherGrandson);
+        TEST_EXPECT_TRIGGERS_CHECKED();
+
+        // trigger son-created-callback
+        {
+            GB_initial_transaction ta(gb_main);
+            if (ta.ok()) {
+                GBDATA *someson = GB_create(anySonContainer, "someson", GB_STRING); TEST_REJECT_NULL(someson);
+            }
+            TEST_EXPECT_NO_ERROR(ta.close(NULL));
+        }
+        TEST_EXPECT_NCHILD_HIER_TRIGGERED(anySonContainer, anySonContainer);
+        TEST_EXPECT_TRIGGERS_CHECKED();
+
+        // trigger 2 son-created-callbacks (for 2 containers) and one change-callback (for a newly created son)
+        {
+            GB_initial_transaction ta(gb_main);
+            if (ta.ok()) {
+                newGrandson     = GB_create(anotherSonContainer, "grandson", GB_STRING); TEST_REJECT_NULL(newGrandson);
+                GBDATA *someson = GB_create(anySonContainer,     "someson",  GB_STRING); TEST_REJECT_NULL(someson);
+            }
+            TEST_EXPECT_NO_ERROR(ta.close(NULL));
+        }
+        TEST_EXPECT_CHANGE_HIER_TRIGGERED(anyGrandson, newGrandson);
+        TEST_EXPECT_NCHILD_HIER_TRIGGERED(anySonContainer, anotherSonContainer);
+        TEST_EXPECT_NCHILD_HIER_TRIGGERED(anySonContainer, anySonContainer);
+        TEST_EXPECT_TRIGGERS_CHECKED();
+
+        // trigger delete-callback
+        {
+            GB_initial_transaction ta(gb_main);
+            TEST_EXPECT_NO_ERROR(GB_delete(elimGrandson));
+            TEST_EXPECT_NO_ERROR(ta.close(NULL));
+        }
+        TEST_EXPECT_DELETE_HIER_TRIGGERED(anyGrandson, elimGrandson);
+        TEST_EXPECT_TRIGGERS_CHECKED();
+
+        // bind normal (non-hierarchical) callbacks to entries which trigger hierarchical callbacks and ..
+        calledWith::timer = 0;
+        GB_begin_transaction(gb_main);
+
+        INIT_CHANGED_CALLBACK(anotherGrandson);
+        INIT_DELETED_CALLBACK(elimGrandson2);
+
+        GB_commit_transaction(gb_main);
+
+        TEST_EXPECT_TRIGGERS_CHECKED();
+
+        {
+            GB_initial_transaction ta(gb_main);
+            if (ta.ok()) {
+                GB_touch(anotherGrandson);
+                GB_touch(elimGrandson2);
+                TEST_EXPECT_NO_ERROR(GB_delete(elimGrandson2));
+            }
+        }
+
+        // .. test call-order (delete before change, hierarchical before normal):
+        TEST_EXPECT_DELETE_TRIGGERED_AT(traceHier_anyGrandson_deleted, elimGrandson2,   1);
+        TEST_EXPECT_DELETE_TRIGGERED_AT(trace_elimGrandson2_deleted,   elimGrandson2,   2);
+        TEST_EXPECT_CHANGE_TRIGGERED_AT(traceHier_anyGrandson_changed, anotherGrandson, 3);
+        TEST_EXPECT_CHANGE_TRIGGERED_AT(trace_anotherGrandson_changed, anotherGrandson, 4);
+
+        TEST_EXPECT_TRIGGERS_CHECKED();
+
+        // test removed hierarchy callbacks stop to trigger
+        REMOVE_CHANGED_HIERARCHY_CALLBACK(anyGrandson);
+        REMOVE_DELETED_HIERARCHY_CALLBACK(anyGrandson);
+        TRIGGER_CHANGE(anyGrandson);
+        {
+            GB_initial_transaction ta(gb_main);
+            if (ta.ok()) TEST_EXPECT_NO_ERROR(GB_delete(anyGrandson));
+        }
+        TEST_EXPECT_TRIGGERS_CHECKED();
+
+        GBDATA *anyElem;
+
+        // bind SAME callback to different hierarchy locations
+        anyElem = top1;  ADD_CHANGED_HIERARCHY_CALLBACK(anyElem); // binds      hierarchy cb to "/top"
+        anyElem = son11; ADD_CHANGED_HIERARCHY_CALLBACK(anyElem); // binds SAME hierarchy cb to "/cont_top/son"
+
+        // - check both trigger independently and together
+        TRIGGER_CHANGE(top1);
+        TEST_EXPECT_CHANGE_HIER_TRIGGERED(anyElem, top1);
+        TEST_EXPECT_TRIGGERS_CHECKED();
+
+        TRIGGER_CHANGE(son11);
+        TEST_EXPECT_CHANGE_HIER_TRIGGERED(anyElem, son11);
+        TEST_EXPECT_TRIGGERS_CHECKED();
+
         TRIGGER_2_CHANGES(top1, son11);
         TEST_EXPECT_CHANGE_HIER_TRIGGERED(anyElem, top1);
         TEST_EXPECT_CHANGE_HIER_TRIGGERED(anyElem, son11);
         TEST_EXPECT_TRIGGERS_CHECKED();
 
-        {
-            GB_transaction ta(gb_main);
-            TEST_EXPECT_NO_ERROR(GB_remove_hierarchy_callback(gb_main, locpath, GB_CB_CHANGED, dbcb));
-        }
+        // - check removing one does not disable the other
+        anyElem = son11;  REMOVE_CHANGED_HIERARCHY_CALLBACK(anyElem); // remove hierarchy cb from "/cont_top/son"
 
         TRIGGER_2_CHANGES(top1, son11);
         // son11 no longer triggers -> ok
         TEST_EXPECT_CHANGE_HIER_TRIGGERED(anyElem, top1);
         TEST_EXPECT_TRIGGERS_CHECKED();
 
-        // check some failing binds
-        const char *invalidPath = "//such";
+        // test add/remove hierarchy cb by path
         {
-            GB_transaction ta(gb_main);
-            TEST_EXPECT_ERROR_CONTAINS(GB_add_hierarchy_callback(gb_main, invalidPath,   GB_CB_CHANGED, dbcb), "invalid hierarchy location");
-            TEST_EXPECT_ERROR_CONTAINS(GB_add_hierarchy_callback(gb_main,                GB_CB_CHANGED, dbcb), "invalid hierarchy location");
+            const char       *locpath = "/cont_top/son";
+            DatabaseCallback  dbcb    = makeDatabaseCallback(some_cb, &HIERARCHY_TRACESTRUCT(anyElem,changed));
+
+            {
+                GB_transaction ta(gb_main);
+                TEST_EXPECT_NO_ERROR(GB_add_hierarchy_callback(gb_main, locpath, GB_CB_CHANGED, dbcb));
+            }
+
+            // now both should trigger again
+            TRIGGER_2_CHANGES(top1, son11);
+            TEST_EXPECT_CHANGE_HIER_TRIGGERED(anyElem, top1);
+            TEST_EXPECT_CHANGE_HIER_TRIGGERED(anyElem, son11);
+            TEST_EXPECT_TRIGGERS_CHECKED();
+
+            {
+                GB_transaction ta(gb_main);
+                TEST_EXPECT_NO_ERROR(GB_remove_hierarchy_callback(gb_main, locpath, GB_CB_CHANGED, dbcb));
+            }
+
+            TRIGGER_2_CHANGES(top1, son11);
+            // son11 no longer triggers -> ok
+            TEST_EXPECT_CHANGE_HIER_TRIGGERED(anyElem, top1);
+            TEST_EXPECT_TRIGGERS_CHECKED();
+
+            // check some failing binds
+            const char *invalidPath = "//such";
+            {
+                GB_transaction ta(gb_main);
+                TEST_EXPECT_ERROR_CONTAINS(GB_add_hierarchy_callback(gb_main, invalidPath,   GB_CB_CHANGED, dbcb), "invalid hierarchy location");
+                TEST_EXPECT_ERROR_CONTAINS(GB_add_hierarchy_callback(gb_main,                GB_CB_CHANGED, dbcb), "invalid hierarchy location");
+            }
+
+            // bind a hierarchy callback to a "not yet existing" path (i.e. path containing yet unused keys),
+            // then create an db-entry at that path and test that callback is trigger
+            const char *unknownPath = "/unknownPath/unknownEntry";
+            {
+                GB_transaction ta(gb_main);
+                TEST_EXPECT_NO_ERROR(GB_add_hierarchy_callback(gb_main, unknownPath, GB_CB_CHANGED, dbcb));
+            }
+            TEST_EXPECT_TRIGGERS_CHECKED();
+
+            GBDATA *gb_unknown;
+            {
+                GB_transaction ta(gb_main);
+                TEST_EXPECT_RESULT__NOERROREXPORTED(gb_unknown = GB_search(gb_main, unknownPath, GB_STRING));
+            }
+            TEST_EXPECT_TRIGGERS_CHECKED(); // creating an entry does not trigger callback (could call a new callback-type)
+
+            TRIGGER_CHANGE(gb_unknown);
+            TEST_EXPECT_CHANGE_HIER_TRIGGERED(anyElem, gb_unknown);
+            TEST_EXPECT_TRIGGERS_CHECKED();
         }
 
-        // bind a hierarchy callback to a "not yet existing" path (i.e. path containing yet unused keys),
-        // then create an db-entry at that path and test that callback is trigger
-        const char *unknownPath = "/unknownPath/unknownEntry";
-        {
-            GB_transaction ta(gb_main);
-            TEST_EXPECT_NO_ERROR(GB_add_hierarchy_callback(gb_main, unknownPath, GB_CB_CHANGED, dbcb));
-        }
-        TEST_EXPECT_TRIGGERS_CHECKED();
-
-        GBDATA *gb_unknown;
-        {
-            GB_transaction ta(gb_main);
-            TEST_EXPECT_RESULT__NOERROREXPORTED(gb_unknown = GB_search(gb_main, unknownPath, GB_STRING));
-        }
-        TEST_EXPECT_TRIGGERS_CHECKED(); // creating an entry does not trigger callback (could call a new callback-type)
-
-        TRIGGER_CHANGE(gb_unknown);
-        TEST_EXPECT_CHANGE_HIER_TRIGGERED(anyElem, gb_unknown);
-        TEST_EXPECT_TRIGGERS_CHECKED();
+        // cleanup
+        GB_close(gb_main);
     }
 
-    // cleanup
-    GB_close(gb_main);
+    GB_unlink(DBNAME);
 }
 
 #endif // UNIT_TESTS

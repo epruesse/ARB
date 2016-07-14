@@ -88,7 +88,7 @@ template<typename T> struct dereference<T*const> {
 };
 
 // ----------------------------------------------
-// DOWNCAST from DERIVED* to BASE*
+// DOWNCAST from BASE* to DERIVED*
 // - uses dynamic_cast in DEBUG mode and checks for failure
 // - uses plain old cast in NDEBUG mode
 
