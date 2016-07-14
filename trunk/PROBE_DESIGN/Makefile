@@ -79,7 +79,6 @@ probe_design.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-probe_design.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_edit.hxx

@@ -55,8 +55,6 @@ ST_ml.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ST_ml.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ST_ml.o: $(ARBHOME)/INCLUDE/arbtools.h
 ST_ml.o: $(ARBHOME)/INCLUDE/attributes.h
-ST_ml.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-ST_ml.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ST_ml.o: $(ARBHOME)/INCLUDE/cb.h
 ST_ml.o: $(ARBHOME)/INCLUDE/cb_base.h
 ST_ml.o: $(ARBHOME)/INCLUDE/cbtypes.h

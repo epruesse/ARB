@@ -7,4 +7,5 @@ Howto add a new library (in a new SUBDIR):
  - add all externally visible headers                                   in ../SOURCE_TOOLS/generate_all_links.sh@ALIVIEW
  - add a stub for (nonexisting) unit tests                              in ../Makefile@UNITS_WORKING
    or activate existing unit tests                                      in ../Makefile@UNITS_TESTED
-
+ - call once:
+   SOURCE_TOOLS/svn_apply_ignores.pl --apply

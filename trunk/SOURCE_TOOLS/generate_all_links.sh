@@ -282,6 +282,8 @@ symlink_file ../SERVERCNTRL/servercntrl.h INCLUDE/servercntrl.h &&
 symlink_file ../SL/ALILINK/AliAdmin.h INCLUDE/AliAdmin.h &&
 symlink_file ../SL/ALIVIEW/AliView.hxx INCLUDE/AliView.hxx &&
 symlink_file ../SL/AP_TREE/AP_Tree.hxx INCLUDE/AP_Tree.hxx &&
+symlink_file ../SL/AP_TREE/AP_TreeShader.hxx INCLUDE/AP_TreeShader.hxx &&
+symlink_file ../SL/AP_TREE/AP_TreeColors.hxx INCLUDE/AP_TreeColors.hxx &&
 symlink_file ../SL/ARB_TREE/ARB_Tree.hxx INCLUDE/ARB_Tree.hxx &&
 symlink_file ../SL/AW_HELIX/AW_helix.hxx INCLUDE/AW_helix.hxx &&
 symlink_file ../SL/AW_NAME/AW_rename.hxx INCLUDE/AW_rename.hxx &&
@@ -308,6 +310,7 @@ symlink_file ../SL/HELIX/BI_helix.hxx INCLUDE/BI_helix.hxx &&
 symlink_file ../SL/INSDEL/insdel.h INCLUDE/insdel.h &&
 symlink_file ../SL/ITEMS/item_sel_list.h INCLUDE/item_sel_list.h &&
 symlink_file ../SL/ITEMS/items.h INCLUDE/items.h &&
+symlink_file ../SL/ITEM_SHADER/item_shader.h INCLUDE/item_shader.h &&
 symlink_file ../SL/LOCATION/Location.h INCLUDE/Location.h &&
 symlink_file ../SL/MACROS/macros.hxx INCLUDE/macros.hxx &&
 symlink_file ../SL/MATRIX/AP_matrix.hxx INCLUDE/AP_matrix.hxx &&

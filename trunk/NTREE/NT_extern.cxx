@@ -39,6 +39,7 @@
 #include <db_query.h>
 #include <dbui.h>
 
+#include <aw_color_groups.hxx>
 #include <aw_advice.hxx>
 #include <aw_preset.hxx>
 #include <aw_awars.hxx>
@@ -1331,6 +1332,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone, AWT_canvas **re
         awm->sep______________();
 
         awm->insert_menu_topic(awm->local_id("compare_taxonomy"), "Compare taxonomy...", "x", "compare_taxonomy.hlp", AWM_ALL, makeCreateWindowCallback(NT_create_compare_taxonomy_window, ntw));
+        awm->insert_menu_topic(awm->local_id("shade"),            "Tree shading...",     "s", "tree_shading.hlp",     AWM_ALL, makeWindowCallback(NT_configure_treeShader));
 
         awm->sep______________();
 
@@ -1685,6 +1687,7 @@ AWT_canvas *NT_create_main_window(AW_root *aw_root) {
 
     AWT_canvas *ntw = NULL;
     AW_window  *aww = popup_new_main_window(aw_root, 0, &ntw);
+    NT_install_treeShader(ntw, GLOBAL.gb_main);
     aww->show();
 
     error = GB_request_undo_type(GLOBAL.gb_main, GB_UNDO_UNDO);
