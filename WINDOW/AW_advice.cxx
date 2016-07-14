@@ -195,7 +195,7 @@ void AW_advice(const char *message, AW_Advice_Type type, const char *title, cons
                            ? GBS_global_string("%s\n\nPlease refer to 'HELP' for more info.", message)
                            : message);
 
-        if (help_pops_up) AW_help_popup(aws, corresponding_help);
+        if (help_pops_up) AW_help_popup(NULL, corresponding_help);
 
         if (type & AW_ADVICE_TOGGLE) {
             aws->label("Do not advice me again");

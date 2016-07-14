@@ -640,7 +640,7 @@ static void aw_help_search(AW_window *aww) {
     free(searchtext);
 }
 
-void AW_help_popup(AW_window *, const char *help_file) {
+void AW_help_popup(UNFIXED, const char *help_file) {
     static AW_window_simple *aws = 0;
 
     AW_root *awr = AW_root::SINGLETON;
