@@ -1298,6 +1298,7 @@ AW_rgb.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_rgb.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_rgb.o: $(ARBHOME)/INCLUDE/arb_defs.h
 AW_rgb.o: $(ARBHOME)/INCLUDE/arb_error.h
+AW_rgb.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AW_rgb.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AW_rgb.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_rgb.o: $(ARBHOME)/INCLUDE/attributes.h
