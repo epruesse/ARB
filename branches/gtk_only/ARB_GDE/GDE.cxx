@@ -39,9 +39,9 @@ struct gde_iteminfo {
     gde_iteminfo(GmenuItem *item_, int idx_) : item(item_), idx(idx_) {}
 };
 
-static void GDE_showhelp_cb(AW_window *aw, GmenuItem *gmenuitem) {
+static void GDE_showhelp_cb(UNFIXED, GmenuItem *gmenuitem) {
     if (gmenuitem->help) {
-        AW_help_popup(aw, gmenuitem->help);
+        AW_help_popup(NULL, gmenuitem->help);
     }
     else {
         aw_message("Sorry - no help available (please report to devel@arb-home.de)");
