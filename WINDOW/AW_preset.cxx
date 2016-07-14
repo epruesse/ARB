@@ -27,6 +27,7 @@
 #include "aw_rgb.hxx"
 
 #include <arbdbt.h>
+#include <arb_strarray.h>
 
 #include <vector>
 #include <map>
@@ -39,6 +40,7 @@
 
 using std::string;
 
+#define AWAR_RANGE_OVERLAY       "tmp/GCS/range/overlay"          // global toggle (used for all gc-managers!)
 #define AWAR_COLOR_GROUPS_PREFIX "color_groups"
 #define AWAR_COLOR_GROUPS_USE    AWAR_COLOR_GROUPS_PREFIX "/use"  // int : whether to use the colors in display or not
 
@@ -55,12 +57,19 @@ CONSTEXPR_RETURN inline bool valid_color_group(int color_group) {
     return color_group>0 && color_group<=AW_COLOR_GROUPS;
 }
 
-static const char* gc_awarname(const char *tpl, const char *gcman_id, const string& colname) {
-    aw_assert(GB_check_key(colname.c_str()) == NULL); // colname has to be a key
+inline const char* gcman_specific_awarname(const char *tpl, const char *gcman_id, const char *localpart) {
+    aw_assert(GB_check_key(gcman_id)   == NULL); // has to be a key
+    aw_assert(GB_check_hkey(localpart) == NULL); // has to be a key or hierarchical key
 
     static SmartCharPtr awar_name;
-    awar_name = GBS_global_string_copy(tpl, gcman_id, colname.c_str());
+    awar_name = GBS_global_string_copy(tpl, gcman_id, localpart);
     return &*awar_name;
+}
+inline const char* gc_awarname(const char *tpl, const char *gcman_id, const string& colname) {
+    return gcman_specific_awarname(tpl, gcman_id, colname.c_str());
+}
+inline const char* gcman_awarname(const char* gcman_id, const char *localpart) {
+    return gcman_specific_awarname(ATPL_GCMAN_LOCAL "/%s", gcman_id, localpart);
 }
 
 inline const char* color_awarname   (const char* gcman_id, const string& colname) { return gc_awarname(ATPL_GC_LOCAL "/colorname", gcman_id, colname); }
@@ -125,6 +134,14 @@ inline int build_range_gc_number(int range_idx, int color_idx) {
     return (color_idx << RANGE_INDEX_BITS) | range_idx;
 }
 
+inline string name2ID(const char *name) { // does not test uniqueness!
+    char   *keyCopy = GBS_string_2_key(name);
+    string  id      = keyCopy;
+    free(keyCopy);
+    return id;
+}
+inline string name2ID(const string& name) { return name2ID(name.c_str()); }
+
 struct gc_desc {
     // data for one GC
     // - used to populate color config windows and
@@ -170,7 +187,7 @@ private:
     }
 public:
 
-    const char *parse_decl(const char *decl) {
+    const char *parse_decl(const char *decl, const char *id_prefix) {
         // returns default color
         int offset = 0;
         while (decl[offset]) {
@@ -192,9 +209,7 @@ public:
             default_color = "black";
         }
 
-        char *keyCopy = GBS_string_2_key(colorlabel.c_str());
-        key           = keyCopy;
-        free(keyCopy);
+        key = string(id_prefix ? id_prefix : "") + name2ID(colorlabel);
 
         return default_color;
     }
@@ -206,9 +221,14 @@ public:
 enum gc_range_type {
     GC_RANGE_INVALID,
     GC_RANGE_LINEAR,
+    GC_RANGE_CYCLIC,
+    GC_RANGE_PLANAR,
+    GC_RANGE_SPATIAL,
 };
 
 class gc_range {
+    string        name; // name of range shown in config window
+    string        id;
     gc_range_type type;
 
     int index;       // in range-array of AW_gc_manager
@@ -216,7 +236,9 @@ class gc_range {
     int gc_index;    // of first support color in GCs-array of AW_gc_manager
 
 public:
-    gc_range(gc_range_type type_, int index_, int gc_index_) :
+    gc_range(const string& name_, gc_range_type type_, int index_, int gc_index_) :
+        name(name_),
+        id(name2ID(name)),
         type(type_),
         index(index_),
         color_count(0),
@@ -225,6 +247,23 @@ public:
 
     void add_color(const string& colordef, AW_gc_manager *gcman);
     void update_colors(const AW_gc_manager *gcman, int changed_color) const;
+
+    AW_rgb_normalized get_color(int idx, const AW_gc_manager *gcman) const;
+
+    const string& get_name() const { return name; }
+    const string& get_id() const { return id; }
+    gc_range_type get_type() const { return type; }
+    int get_dimension() const {
+        switch (type) {
+            case GC_RANGE_LINEAR:
+            case GC_RANGE_CYCLIC:  return 1;
+
+            case GC_RANGE_PLANAR:  return 2;
+            case GC_RANGE_SPATIAL: return 3;
+            case GC_RANGE_INVALID: aw_assert(0); break;
+        }
+        return 0;
+    }
 };
 
 // --------------------
@@ -245,6 +284,7 @@ class AW_gc_manager : virtual Noncopyable {
 
     gc_container       GCs;
     gc_range_container color_ranges;
+    unsigned           active_range_number; // offset into 'color_ranges'
 
     GcChangedCallback changed_cb;
 
@@ -274,7 +314,9 @@ class AW_gc_manager : virtual Noncopyable {
 
 public:
     static const char **color_group_defaults;
-    static bool         use_color_groups;
+
+    static bool use_color_groups;
+    static bool show_range_overlay;
 
     static bool color_groups_initialized() { return color_group_defaults != 0; }
 
@@ -286,6 +328,7 @@ public:
           first_colorgroup_idx(NO_INDEX),
           aww(aww_),
           colorindex_base(colorindex_base_),
+          active_range_number(-1), // => will be initialized from init_color_ranges
           changed_cb(makeGcChangedCallback(ignore_change_cb)),
           suppress_changed_cb(false),
           did_suppress_change(GC_NOTHING_CHANGED)
@@ -294,7 +337,7 @@ public:
     void init_all_fonts() const;
     void update_all_fonts(bool sizeChanged) const;
 
-    void init_color_ranges(int& gc) const;
+    void init_color_ranges(int& gc);
     bool has_color_range() const { return !color_ranges.empty(); }
     int first_range_gc() const { return drag_gc_offset - AW_RANGE_COLORS; }
 
@@ -309,7 +352,7 @@ public:
     const char *get_base_name() const { return gc_base_name; }
     int get_drag_gc() const { return drag_gc_offset; }
 
-    void add_gc      (const char *gc_description, int& gc, gc_type type);
+    void add_gc      (const char *gc_description, int& gc, gc_type type, const char *id_prefix = NULL);
     void add_gc_range(const char *gc_description);
     void reserve_gcs (const char *gc_description, int& gc);
     void add_color_groups(int& gc);
@@ -321,7 +364,7 @@ public:
         update_gc_color_internal(first_range_gc()+idx, color);
     }
 
-    void create_gc_buttons(AW_window *aww, bool for_colorgroups);
+    void create_gc_buttons(AW_window *aww, gc_type for_gc_type);
 
     void set_changed_cb(const GcChangedCallback& ccb) { changed_cb = ccb; }
     void trigger_changed_cb(GcChange whatChanged) const {
@@ -347,10 +390,23 @@ public:
             trigger_changed_cb(did_suppress_change);
         }
     }
+
+    const char *get_current_color(int idx) const {
+        return AW_root::SINGLETON->awar(color_awarname(get_base_name(), get_gc_desc(idx).key))->read_char_pntr();
+    }
+
+    void getColorRangeNames(int dimension, ConstStrArray& ids, ConstStrArray& names) const;
+    void activateColorRange(const char *id);
+    const char *getActiveColorRangeID(int *dimension) const;
+
+    const char *awarname_active_range() const { return gcman_awarname(get_base_name(), "range/active"); }
+    void active_range_changed_cb(AW_root *awr);
 };
 
 const char **AW_gc_manager::color_group_defaults = NULL;
-bool         AW_gc_manager::use_color_groups     = false;
+
+bool AW_gc_manager::use_color_groups   = false;
+bool AW_gc_manager::show_range_overlay = false;
 
 // ---------------------------
 //      GC awar callbacks
@@ -461,38 +517,112 @@ void AW_gc_manager::update_gc_color_internal(int gc, const char *color) const {
     }
 }
 
-void gc_range::update_colors(const AW_gc_manager *gcman, int changed_color) const {
+AW_rgb_normalized gc_range::get_color(int idx, const AW_gc_manager *gcman) const {
+    aw_assert(idx>=0 && idx<color_count);
+    return AW_rgb_normalized(gcman->get_current_color(gc_index+idx));
+}
+
+STATIC_ASSERT(AW_PLANAR_COLORS*AW_PLANAR_COLORS == AW_RANGE_COLORS); // Note: very strong assertion (could also use less than AW_RANGE_COLORS)
+STATIC_ASSERT(AW_SPATIAL_COLORS*AW_SPATIAL_COLORS*AW_SPATIAL_COLORS == AW_RANGE_COLORS);
+
+void gc_range::update_colors(const AW_gc_manager *gcman, int /*changed_color*/) const { // @@@ elim param changed_color?
     /*! recalculate colors of a range (called after one color changed)
      * @param gcman             the GC manager
      * @param changed_color     which color of a range has changed (0 = first, ...). -1 -> unknown => need complete update // @@@ not implemented, always acts like -1 is passed
      */
-    aw_assert(type == GC_RANGE_LINEAR);
-    aw_assert(color_count == 2);
-
-    const gc_desc& low_gc  = gcman->get_gc_desc(gc_index);
-    const gc_desc& high_gc = gcman->get_gc_desc(gc_index+1);
-
-    const char *basename   = gcman->get_base_name();
-    AW_root    *awr        = AW_root::SINGLETON;
-    const char *low_color  = awr->awar(color_awarname(basename, low_gc.key))->read_char_pntr();
-    const char *high_color = awr->awar(color_awarname(basename, high_gc.key))->read_char_pntr();
-
-    AW_rgb_normalized low(low_color);
-    AW_rgb_normalized high(high_color);
-
-    float rdiff = high.r()-low.r();
-    float gdiff = high.g()-low.g();
-    float bdiff = high.b()-low.b();
 
     // @@@ try HSV color blending as alternative
-    for (int i = 0; i<AW_RANGE_COLORS; ++i) { // blend colors
-        float factor = i/float(AW_RANGE_COLORS-1);
 
-        AW_rgb_normalized col(low.r()+factor*rdiff,
-                              low.g()+factor*gdiff,
-                              low.b()+factor*bdiff);
+    if (type == GC_RANGE_LINEAR) {
+        aw_assert(color_count == 2); // currently exactly 2 support-colors are required for linear ranges
 
-        gcman->update_range_gc_color(i, AW_rgb16(col).ascii());
+        AW_rgb_normalized low  = get_color(0, gcman);
+        AW_rgb_normalized high = get_color(1, gcman);
+
+        AW_rgb_diff low2high = high-low;
+        for (int i = 0; i<AW_RANGE_COLORS; ++i) { // blend colors
+            float factor = i/float(AW_RANGE_COLORS-1);
+            gcman->update_range_gc_color(i, AW_rgb16(low + factor*low2high).ascii());
+        }
+    }
+    else if (type == GC_RANGE_CYCLIC) {
+        aw_assert(color_count >= 3); // less than 3 colors does not make sense for cyclic ranges!
+
+        AW_rgb_normalized low = get_color(0, gcman);
+        int               i1  = 0;
+        for (int part = 0; part<color_count; ++part) {
+            AW_rgb_normalized high     = get_color((part+1)%color_count, gcman);
+            AW_rgb_diff       low2high = high-low;
+
+            int i2 = AW_RANGE_COLORS * (float(part+1)/color_count);
+            aw_assert(implicated((part+1) == color_count, i2 == AW_RANGE_COLORS));
+
+            for (int i = i1; i<i2; ++i) { // blend colors
+                int   o      = i-i1;
+                float factor = o/float(i2-i1-1);
+                gcman->update_range_gc_color(i, AW_rgb16(low + factor*low2high).ascii());
+            }
+
+            low = high;
+            i1  = i2;
+        }
+    }
+    else if (type == GC_RANGE_PLANAR) {
+        aw_assert(color_count == 3); // currently exactly 3 support-colors are required for planar ranges
+
+        AW_rgb_normalized low  = get_color(0, gcman);
+        AW_rgb_normalized dim1 = get_color(1, gcman);
+        AW_rgb_normalized dim2 = get_color(2, gcman);
+
+        AW_rgb_diff low2dim1 = dim1-low;
+        AW_rgb_diff low2dim2 = dim2-low;
+
+        for (int i1 = 0; i1<AW_PLANAR_COLORS; ++i1) {
+            float       fact1 = i1/float(AW_PLANAR_COLORS-1);
+            AW_rgb_diff diff1 = fact1*low2dim1;
+
+            for (int i2 = 0; i2<AW_PLANAR_COLORS; ++i2) {
+                float       fact2 = i2/float(AW_PLANAR_COLORS-1);
+                AW_rgb_diff diff2 = fact2*low2dim2;
+
+                AW_rgb_normalized mixcol = low + (diff1+diff2);
+
+                gcman->update_range_gc_color(i1*AW_PLANAR_COLORS+i2, AW_rgb16(mixcol).ascii());
+            }
+        }
+    }
+    else if (type == GC_RANGE_SPATIAL) {
+        aw_assert(color_count == 4); // currently exactly 4 support-colors are required for planar ranges
+
+        AW_rgb_normalized low  = get_color(0, gcman);
+        AW_rgb_normalized dim1 = get_color(1, gcman);
+        AW_rgb_normalized dim2 = get_color(2, gcman);
+        AW_rgb_normalized dim3 = get_color(3, gcman);
+
+        AW_rgb_diff low2dim1 = dim1-low;
+        AW_rgb_diff low2dim2 = dim2-low;
+        AW_rgb_diff low2dim3 = dim3-low;
+
+        for (int i1 = 0; i1<AW_SPATIAL_COLORS; ++i1) {
+            float       fact1 = i1/float(AW_SPATIAL_COLORS-1);
+            AW_rgb_diff diff1 = fact1*low2dim1;
+
+            for (int i2 = 0; i2<AW_SPATIAL_COLORS; ++i2) {
+                float       fact2 = i2/float(AW_SPATIAL_COLORS-1);
+                AW_rgb_diff diff2 = fact2*low2dim2;
+
+                for (int i3 = 0; i3<AW_SPATIAL_COLORS; ++i3) {
+                    float       fact3 = i3/float(AW_SPATIAL_COLORS-1);
+                    AW_rgb_diff diff3 = fact3*low2dim3;
+
+                    AW_rgb_normalized mixcol = low + (diff1+diff2+diff3);
+                    gcman->update_range_gc_color((i1*AW_SPATIAL_COLORS+i2)*AW_SPATIAL_COLORS+i3, AW_rgb16(mixcol).ascii());
+                }
+            }
+        }
+    }
+    else {
+        aw_assert(0); // unsupported range-type
     }
 }
 void AW_gc_manager::update_range_colors(const gc_desc& gcd) const {
@@ -548,13 +678,17 @@ static void color_group_use_changed_cb(AW_root *awr, AW_gc_manager *gcmgr) {
     AW_gc_manager::use_color_groups = awr->awar(AWAR_COLOR_GROUPS_USE)->read_int();
     gcmgr->trigger_changed_cb(GC_COLOR_GROUP_USE_CHANGED);
 }
+static void range_overlay_changed_cb(AW_root *awr, AW_gc_manager *gcmgr) {
+    AW_gc_manager::show_range_overlay = awr->awar(AWAR_RANGE_OVERLAY)->read_int();
+    gcmgr->trigger_changed_cb(GC_COLOR_GROUP_USE_CHANGED);
+}
 
 // ----------------------------
 //      define color-ranges
 
 void gc_range::add_color(const string& colordef, AW_gc_manager *gcman) {
     int gc = build_range_gc_number(index, color_count);
-    gcman->add_gc(colordef.c_str(), gc, GC_TYPE_RANGE);
+    gcman->add_gc(colordef.c_str(), gc, GC_TYPE_RANGE, get_id().c_str());
     color_count++;
 }
 
@@ -570,16 +704,17 @@ void AW_gc_manager::add_gc_range(const char *gc_description) {
             gc_range_type rtype = GC_RANGE_INVALID;
             string        range_type(comma+1, colon-comma-1);
 
-            if (range_type == "linear") {
-                rtype = GC_RANGE_LINEAR;
-            }
+            if      (range_type == "linear")  rtype = GC_RANGE_LINEAR;
+            else if (range_type == "planar")  rtype = GC_RANGE_PLANAR;
+            else if (range_type == "spatial") rtype = GC_RANGE_SPATIAL;
+            else if (range_type == "cyclic")  rtype = GC_RANGE_CYCLIC;
 
             if (rtype == GC_RANGE_INVALID) {
                 error = GBS_global_string("invalid range-type '%s'", range_type.c_str());
             }
 
             if (!error) {
-                gc_range range(rtype, color_ranges.size(), GCs.size());
+                gc_range range(range_name, rtype, color_ranges.size(), GCs.size());
 
                 const char *color_start = colon+1;
                 comma                   = strchr(color_start, ',');
@@ -600,17 +735,58 @@ void AW_gc_manager::add_gc_range(const char *gc_description) {
     }
 }
 
-void AW_gc_manager::init_color_ranges(int& gc) const {
+void AW_gc_manager::active_range_changed_cb(AW_root *awr) {
+    // read AWAR (awarname_active_range), compare with 'active_range_number', if differs = > update colors
+    // (triggered by AWAR)
+
+    unsigned wanted_range_number = awr->awar(awarname_active_range())->read_int();
+    if (wanted_range_number != active_range_number) {
+        aw_assert(wanted_range_number<color_ranges.size());
+
+        active_range_number = wanted_range_number;
+        const gc_range& active_range = color_ranges[active_range_number];
+        active_range.update_colors(this, -1); // -1 means full update
+    }
+}
+static void active_range_changed_cb(AW_root *awr, AW_gc_manager *gcman) { gcman->active_range_changed_cb(awr); }
+
+void AW_gc_manager::init_color_ranges(int& gc) {
     if (has_color_range()) {
         aw_assert(gc == first_range_gc()); // 'drag_gc_offset' is wrong (is passed as 'base_drag' to AW_manage_GC)
         int last_gc = gc + AW_RANGE_COLORS-1;
         while (gc<=last_gc) allocate_gc(gc++);
 
-        const gc_range& active_range = color_ranges[0]; // @@@ should use active color-range (atm there is only 1)
-        active_range.update_colors(this, -1); // -1 means full update
+        active_range_changed_cb(AW_root::SINGLETON); // either initializes default-range (=0) or the range-in-use when saving props
     }
 }
+void AW_gc_manager::activateColorRange(const char *id) {
+    unsigned wanted_range_number = 0;
+    for (gc_range_container::const_iterator r = color_ranges.begin(); r != color_ranges.end(); ++r) {
+        const gc_range& range = *r;
+        if (range.get_id() == id) {
+            aw_assert(wanted_range_number<color_ranges.size());
+            AW_root::SINGLETON->awar(awarname_active_range())->write_int(wanted_range_number); // => will update color range of all identical gc-managers
+            break;
+        }
+        ++wanted_range_number;
+    }
+}
+const char *AW_gc_manager::getActiveColorRangeID(int *dimension) const {
+    const gc_range& range     = color_ranges[active_range_number];
+    if (dimension) *dimension = range.get_dimension();
+    return range.get_id().c_str();
+}
 
+
+void AW_gc_manager::getColorRangeNames(int dimension, ConstStrArray& ids, ConstStrArray& names) const {
+    for (gc_range_container::const_iterator r = color_ranges.begin(); r != color_ranges.end(); ++r) {
+        const gc_range& range = *r;
+        if (range.get_dimension() == dimension) {
+            ids.put(range.get_id().c_str());
+            names.put(range.get_name().c_str());
+        }
+    }
+}
 
 // -------------------------
 //      reserve/add GCs
@@ -637,7 +813,7 @@ void AW_gc_manager::allocate_gc(int gc) const {
     device->establish_default(gc_drag);
 }
 
-void AW_gc_manager::add_gc(const char *gc_description, int& gc, gc_type type) {
+void AW_gc_manager::add_gc(const char *gc_description, int& gc, gc_type type, const char *id_prefix) {
     aw_assert(strchr("*!&", gc_description[0]) == NULL);
     aw_assert(implicated(type != GC_TYPE_RANGE, !has_color_range())); // color ranges have to be specified AFTER all other color definition strings (in call to AW_manage_GC)
 
@@ -656,9 +832,18 @@ void AW_gc_manager::add_gc(const char *gc_description, int& gc, gc_type type) {
         allocate_gc(gc + is_background); // increment only happens for AW_BOTTOM_AREA defining GCs
     }
 
-    const char *default_color = gcd.parse_decl(gc_description);
+    const char *default_color = gcd.parse_decl(gc_description, id_prefix);
 
     aw_assert(strcmp(gcd.key.c_str(), ALL_FONTS_ID) != 0); // id is reserved
+#if defined(ASSERTION_USED)
+    {
+        const string& lastId = gcd.key;
+        for (int i = 0; i<idx; ++i) {
+            const gc_desc& check = GCs[i];
+            aw_assert(check.key != lastId); // duplicate GC-ID!
+        }
+    }
+#endif
     aw_assert(implicated(gc == 0 && type != GC_TYPE_RANGE, gcd.has_font)); // first GC always has to define a font!
 
     if (default_color[0] == '{') {
@@ -747,7 +932,7 @@ void AW_gc_manager::add_color_groups(int& gc) {
 AW_gc_manager *AW_manage_GC(AW_window                *aww,
                             const char               *gc_base_name,
                             AW_device                *device,
-                            int                       base_gc,
+                            int                       base_gc, // @@@ unused (in motif+gtk) -> remove!
                             int                       base_drag,
                             AW_GCM_AREA               area,
                             const GcChangedCallback&  changecb,
@@ -788,7 +973,7 @@ AW_gc_manager *AW_manage_GC(AW_window                *aww,
      *   <gcref>     ::= '{'<descript>'}'                           "reference to another earlier defined gc"
      *   <rangedef>  ::= '*'<name>','<type>':'<gcdef>[','<gcdef>]+  "defines a GC-range (with one <gcdef> for each support color)"
      *   <name>      ::=                                            "description of range"
-     *   <type>      ::= 'linear'|'cyclic'|'planar'|'spatial'       "rangetype; implies number of required support colors: linear=2 cyclic=3 planar=3 spatial=4" // @@@ only linear type with 2 support colors is accepted/implemented yet
+     *   <type>      ::= 'linear'|'cyclic'|'planar'|'spatial'       "rangetype; implies number of required support colors: linear=2 cyclic=3-N planar=3 spatial=4"
      *   <groupdef>  ::= '&color_groups'                            "insert color-groups here"
      */
 
@@ -821,13 +1006,13 @@ AW_gc_manager *AW_manage_GC(AW_window                *aww,
             case '*': gcmgr->add_gc_range(id); break;
             case '&':
                 if (strcmp(id, "&color_groups") == 0) { // trigger use of color groups
+                    aw_assert(!defined_color_groups); // color-groups trigger specified twice!
                     if (!defined_color_groups) {
                         gcmgr->add_color_groups(gc);
                         defined_color_groups = true;
                     }
-                    else aw_assert(0); // color-groups trigger specified twice!
                 }
-                else aw_assert(0); // unknown trigger
+                else { aw_assert(0); } // unknown trigger
                 break;
             default: gcmgr->add_gc(id, gc, GC_TYPE_NORMAL); break;
         }
@@ -841,12 +1026,18 @@ AW_gc_manager *AW_manage_GC(AW_window                *aww,
         AW_gc_manager::use_color_groups = awar_useGroups->read_int();
     }
 
+    aw_root->awar_int(AWAR_RANGE_OVERLAY, 0)->add_callback(makeRootCallback(range_overlay_changed_cb, gcmgr));
+    aw_root->awar_int(gcmgr->awarname_active_range(), 0)->add_callback(makeRootCallback(active_range_changed_cb, gcmgr));
+
     gcmgr->init_color_ranges(gc);
     gcmgr->init_all_fonts();
 
     // installing changed callback here avoids that it gets triggered by initializing GCs
     gcmgr->set_changed_cb(changecb);
     aw_assert(gc == base_drag_given); // parameter 'base_drag' has wrong value!
+
+    // @@@ add check: 1. all range IDs have to be unique 
+    // @@@ add check: 2. all GC IDs have to be unique 
 
     return gcmgr;
 }
@@ -934,13 +1125,35 @@ static const int COLOR_BUTTON_LEN = 10;
 static const int FONT_BUTTON_LEN  = COLOR_BUTTON_LEN+STD_LABEL_LEN+1;
 // => color+font has ~same length as 2 colors (does not work for color groups and does not work at all in gtk)
 
-void AW_gc_manager::create_gc_buttons(AW_window *aws, bool for_colorgroups) {
-    for (int idx = for_colorgroups ? first_colorgroup_idx : 0; idx<int(GCs.size()); ++idx) {
+void AW_gc_manager::create_gc_buttons(AW_window *aws, gc_type for_gc_type) {
+    for (int idx = 0; idx<int(GCs.size()); ++idx) {
         const gc_desc& gcd = GCs[idx];
 
-        if (gcd.is_color_group() != for_colorgroups) continue;
+        if (gcd.is_color_group())        { if (for_gc_type != GC_TYPE_GROUP) continue; }
+        else if (gcd.belongs_to_range()) { if (for_gc_type != GC_TYPE_RANGE) continue; }
+        else                             { if (for_gc_type != GC_TYPE_NORMAL) continue; }
 
-        if (for_colorgroups) {
+        if (for_gc_type == GC_TYPE_RANGE) {
+            if (gcd.get_color_index() == 0) { // first color of range
+                const gc_range& range = color_ranges[gcd.get_range_index()];
+
+                const char *type_info = NULL;
+                switch (range.get_type()) {
+                    case GC_RANGE_LINEAR:  type_info  = "linear 1D range"; break;
+                    case GC_RANGE_CYCLIC:  type_info  = "cyclic 1D range"; break;
+                    case GC_RANGE_PLANAR:  type_info  = "planar 2D range"; break;
+                    case GC_RANGE_SPATIAL: type_info  = "spatial 3D range"; break;
+                    case GC_RANGE_INVALID: type_info = "invalid range "; aw_assert(0); break;
+                }
+
+                const char *range_headline = GBS_global_string("%s (%s)", range.get_name().c_str(), type_info);
+                aws->button_length(60);
+                aws->create_button(NULL, range_headline, 0, "+");
+                aws->at_newline();
+            }
+        }
+
+        if (for_gc_type == GC_TYPE_GROUP) {
             int color_group_no = idx-first_colorgroup_idx+1;
             char buf[5];
             sprintf(buf, "%2i:", color_group_no); // @@@ shall this short label be stored in gc_desc?
@@ -963,10 +1176,10 @@ void AW_gc_manager::create_gc_buttons(AW_window *aws, bool for_colorgroups) {
     }
 }
 
-static void AW_create_gc_color_groups_window(AW_window *, AW_root *aw_root, AW_gc_manager *gcmgr) {
-    aw_assert(AW_gc_manager::color_groups_initialized());
+typedef std::map<AW_gc_manager*, AW_window_simple*> GroupWindowRegistry;
 
-    typedef std::map<AW_gc_manager*, AW_window_simple*> GroupWindowRegistry;
+static void AW_popup_gc_color_groups_window(AW_window *aww, AW_gc_manager *gcmgr) {
+    aw_assert(AW_gc_manager::color_groups_initialized());
 
     static GroupWindowRegistry     existing_window;
     GroupWindowRegistry::iterator  found = existing_window.find(gcmgr);
@@ -975,7 +1188,7 @@ static void AW_create_gc_color_groups_window(AW_window *, AW_root *aw_root, AW_g
     if (!aws) {
         aws = new AW_window_simple;
 
-        aws->init(aw_root, "COLOR_GROUP_DEF", "Define color groups");
+        aws->init(aww->get_root(), "COLOR_GROUP_DEF", "Define color groups");
 
         aws->at(10, 10);
         aws->auto_space(5, 5);
@@ -991,7 +1204,39 @@ static void AW_create_gc_color_groups_window(AW_window *, AW_root *aw_root, AW_g
         aws->create_toggle(AWAR_COLOR_GROUPS_USE);
         aws->at_newline();
 
-        gcmgr->create_gc_buttons(aws, true);
+        gcmgr->create_gc_buttons(aws, GC_TYPE_GROUP);
+
+        aws->window_fit();
+        existing_window[gcmgr] = aws;
+    }
+
+    aws->activate();
+}
+
+void AW_popup_gc_color_range_window(AW_window *aww, AW_gc_manager *gcmgr) {
+    static GroupWindowRegistry     existing_window;
+    GroupWindowRegistry::iterator  found = existing_window.find(gcmgr);
+    AW_window_simple              *aws   = found == existing_window.end() ? NULL : found->second;
+
+    if (!aws) {
+        aws = new AW_window_simple;
+
+        aws->init(aww->get_root(), "COLOR_RANGE_EDIT", "Edit color ranges");
+
+        aws->at(10, 10);
+        aws->auto_space(5, 5);
+
+        aws->callback(AW_POPDOWN);
+        aws->create_button("CLOSE", "CLOSE", "C");
+        aws->callback(makeHelpCallback("color_ranges.hlp"));
+        aws->create_button("HELP", "HELP", "H");
+        aws->at_newline();
+
+        aws->label("Overlay active range");
+        aws->create_toggle(AWAR_RANGE_OVERLAY);
+        aws->at_newline();
+
+        gcmgr->create_gc_buttons(aws, GC_TYPE_RANGE);
 
         aws->window_fit();
         existing_window[gcmgr] = aws;
@@ -1035,13 +1280,20 @@ AW_window *AW_create_gc_window_named(AW_root *aw_root, AW_gc_manager *gcman, con
     // anti-aliasing:
     // (gtk-only)
 
-    gcman->create_gc_buttons(aws, false);
+    gcman->create_gc_buttons(aws, GC_TYPE_NORMAL);
 
+    bool groups_or_range = false;
     if (gcman->has_color_groups()) {
-        aws->callback(makeWindowCallback(AW_create_gc_color_groups_window, aw_root, gcman));
+        aws->callback(makeWindowCallback(AW_popup_gc_color_groups_window, gcman));
         aws->create_autosize_button("EDIT_COLOR_GROUP", "Edit color groups", "E");
-        aws->at_newline();
+        groups_or_range = true;
     }
+    if (gcman->has_color_range()) {
+        aws->callback(makeWindowCallback(AW_popup_gc_color_range_window, gcman));
+        aws->create_autosize_button("EDIT_COLOR_RANGE", "Edit color ranges", "r");
+        groups_or_range = true;
+    }
+    if (groups_or_range) aws->at_newline();
 
     aws->window_fit();
     return aws;
@@ -1052,6 +1304,54 @@ AW_window *AW_create_gc_window(AW_root *aw_root, AW_gc_manager *gcman) {
 
 int AW_get_drag_gc(AW_gc_manager *gcman) {
     return gcman->get_drag_gc();
+}
+
+void AW_displayColorRange(AW_device *device, int first_range_gc, AW::Position start, AW_pos xsize, AW_pos ysize) {
+    /*! display active color range
+     * @param device          output device
+     * @param first_range_gc  first color range gc
+     * @param start           position of upper left corner
+     * @param xsize           xsize used per color
+     * @param ysize           xsize used per color
+     *
+     * displays AW_PLANAR_COLORS rows and AW_PLANAR_COLORS columns
+     */
+    using namespace AW;
+
+    if (AW_gc_manager::show_range_overlay) {
+        Vector size(xsize, ysize);
+        for (int x = 0; x<AW_PLANAR_COLORS; ++x) {
+            for (int y = 0; y<AW_PLANAR_COLORS; ++y) {
+                int      gc     = first_range_gc + y*AW_PLANAR_COLORS+x;
+                Vector   toCorner(x*xsize, y*ysize);
+                Position corner = start+toCorner;
+                device->box(gc, FillStyle::SOLID, Rectangle(corner, size));
+            }
+        }
+    }
+}
+
+void AW_getColorRangeNames(const AW_gc_manager *gcman, int dimension, ConstStrArray& ids, ConstStrArray& names) {
+    /*! retrieve selected color-range IDs
+     * @param gcman      the gc-manager defining the color-ranges
+     * @param dimension  the wanted dimension of the color-ranges
+     * @param ids        array where range-IDs will be stored
+     * @param names      array where corresponding range-names will be stored (same index as 'ids')
+     */
+    ids.clear();
+    names.clear();
+    gcman->getColorRangeNames(dimension, ids, names);
+}
+
+int AW_getFirstRangeGC(AW_gc_manager *gcman) { return gcman->first_range_gc(); }
+void AW_activateColorRange(AW_gc_manager *gcman, const char *id) { gcman->activateColorRange(id); }
+
+const char *AW_getActiveColorRangeID(AW_gc_manager *gcman, int *dimension) {
+    /*! @return the ID of the active color range
+     * @param gcman      of this gc-manager
+     * @param dimension  if !NULL -> is set to dimension of range
+     */
+    return gcman->getActiveColorRangeID(dimension);
 }
 
 #if defined(UNIT_TESTS)

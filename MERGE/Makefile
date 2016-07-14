@@ -262,6 +262,7 @@ MG_main.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
+MG_main.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/AW_rename.hxx

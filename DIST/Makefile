@@ -192,6 +192,7 @@ DI_main.o: $(ARBHOME)/INCLUDE/arbtools.h
 DI_main.o: $(ARBHOME)/INCLUDE/attributes.h
 DI_main.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+DI_main.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
@@ -255,6 +256,7 @@ DI_matr.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
+DI_matr.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_window.hxx
