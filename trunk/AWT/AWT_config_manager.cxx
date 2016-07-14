@@ -981,9 +981,9 @@ struct AWT_config_mapping {
 // -------------------
 //      AWT_config
 
-AWT_config::AWT_config(const char *config_char_ptr)
-    : mapping(new AWT_config_mapping),
-      parse_error(0)
+AWT_config::AWT_config(const char *config_char_ptr) :
+    mapping(new AWT_config_mapping),
+    parse_error(0)
 {
     // parse string in format "key1='value1';key2='value2'"..
     // and put values into a map.
@@ -1028,10 +1028,7 @@ inline void warn_unknown_awar(const string& awar_name) {
     aw_message(GBS_global_string("Warning: unknown awar referenced\n(%s)", awar_name.c_str()));
 }
 
-AWT_config::AWT_config(const AWT_config_mapping *cfgname_2_awar)
-    : mapping(new AWT_config_mapping),
-      parse_error(0)
-{
+void AWT_config::init_from_awars(const AWT_config_mapping *cfgname_2_awar) {
     const config_map&  awarmap  = cfgname_2_awar->cmap;
     config_map&        valuemap = mapping->cmap;
     AW_root           *aw_root  = AW_root::SINGLETON;
@@ -1056,6 +1053,20 @@ AWT_config::AWT_config(const AWT_config_mapping *cfgname_2_awar)
 
     awt_assert((valuemap.size()+skipped) == awarmap.size());
     awt_assert(!parse_error);
+}
+
+AWT_config::AWT_config(const AWT_config_mapping *cfgname_2_awar) :
+    mapping(new AWT_config_mapping),
+    parse_error(0)
+{
+    init_from_awars(cfgname_2_awar);
+}
+
+AWT_config::AWT_config(const AWT_config_definition *cfg_def) :
+    mapping(new AWT_config_mapping),
+    parse_error(0)
+{
+    init_from_awars(cfg_def->get_mapping());
 }
 
 AWT_config::~AWT_config() {
