@@ -700,7 +700,7 @@ AW_window *DI_create_view_matrix_window(AW_root *awr, MatrixDisplay *disp, save_
     AW_gc_manager *gc_manager =
         AW_manage_GC(awm,
                      awm->get_window_id(),
-                     disp->device, DI_G_STANDARD, DI_G_LAST, AW_GCM_DATA_AREA,
+                     disp->device, DI_G_LAST, AW_GCM_DATA_AREA,
                      makeGcChangedCallback(gc_changed_cb, disp),
                      "#D0D0D0",
                      "#Standard$#000000",

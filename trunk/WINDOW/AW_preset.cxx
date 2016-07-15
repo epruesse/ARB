@@ -932,7 +932,6 @@ void AW_gc_manager::add_color_groups(int& gc) {
 AW_gc_manager *AW_manage_GC(AW_window                *aww,
                             const char               *gc_base_name,
                             AW_device                *device,
-                            int                       base_gc, // @@@ unused (in motif+gtk) -> remove!
                             int                       base_drag,
                             AW_GCM_AREA               area,
                             const GcChangedCallback&  changecb,
@@ -956,7 +955,6 @@ AW_gc_manager *AW_manage_GC(AW_window                *aww,
      * @param aww          base window
      * @param gc_base_name (usually the window_id, prefixed to awars)
      * @param device       screen device
-     * @param base_gc      first gc number @@@REFACTOR: always 0 so far...
      * @param base_drag    one after last gc
      * @param area         AW_GCM_DATA_AREA or AW_GCM_WINDOW_AREA (motif only)
      * @param changecb     cb if changed
@@ -978,7 +976,6 @@ AW_gc_manager *AW_manage_GC(AW_window                *aww,
      */
 
     aw_assert(default_background_color[0]);
-    aw_assert(base_gc == 0);
 
 #if defined(ASSERTION_USED)
     int base_drag_given = base_drag;
