@@ -1336,7 +1336,6 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     gc_manager = AW_manage_GC(awmm,
                               "ARB_EDIT4",                   // but all gc-managers use the same colors
                               *device,
-                              ED4_G_STANDARD,                // GC_Standard configuration
                               ED4_G_DRAG,
                               AW_GCM_DATA_AREA,
                               makeGcChangedCallback(gc_change_cb), // callback triggering refresh on gc-change

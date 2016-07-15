@@ -50,7 +50,6 @@ AW_gc_manager *SAI_graphic::init_devices(AW_window *aww, AW_device *device, AWT_
         AW_manage_GC(aww,
                      scr->get_gc_base_name(),
                      device,
-                     SAI_GC_HIGHLIGHT,
                      SAI_GC_MAX,
                      AW_GCM_DATA_AREA,
                      makeGcChangedCallback(AWT_GC_changed_cb, scr),

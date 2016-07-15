@@ -64,7 +64,7 @@ AW_gc_manager *AWT_graphic_tree::init_devices(AW_window *aww, AW_device *device,
     AW_gc_manager *gc_manager =
         AW_manage_GC(aww,
                      ntw?ntw->get_gc_base_name():"unit_tester",
-                     device, AWT_GC_CURSOR, AWT_GC_MAX, AW_GCM_DATA_AREA,
+                     device, AWT_GC_MAX, AW_GCM_DATA_AREA,
                      makeGcChangedCallback(TREE_GC_changed_cb, ntw),
                      "#8ce",
 
