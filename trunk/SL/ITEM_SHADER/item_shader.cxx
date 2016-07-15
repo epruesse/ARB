@@ -458,12 +458,19 @@ void ItemShader_impl::load_or_reset_config_cb(const char *stored) {
                 DelayReshade here(this);
                 if (plugin_setup) {
                     if (targetPlugin.isSet()) {
+                        // restore plugin specific settings
                         targetPlugin->load_or_reset_config(plugin_setup);
                     }
                     else {
                         error = "Failed to restore plugin-specific settings (unknown plugin)";
                     }
                 }
+
+                // activate saved plugin before restoring its settings
+                // (otherwise settings of the previously selected plugin may get modified)
+                if (targetPlugin.isSet()) activate_plugin(targetPlugin->get_id());
+
+                // now restore all settings (into GUI-awars mapped to active config)
                 cfg.write_to_awars(cdef.get_mapping(), true);
             }
             free(plugin_setup);
