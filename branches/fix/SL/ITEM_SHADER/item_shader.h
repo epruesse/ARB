@@ -383,9 +383,9 @@ inline void ShaderPlugin::trigger_reshade_if_active_cb(ReshadeMode mode) {
 // -----------------------------
 //      ItemShader registry
 
-ItemShader *registerItemShader(AW_root *awr, AW_gc_manager *gcman, BoundItemSel& itemtype, const char *unique_id, const char *description, const char *help_id, ReshadeCallback reshade, int undef_gc);
-ItemShader *findItemShader(const char *id);
-void        destroyAllItemShaders();
+ItemShader       *registerItemShader(AW_root *awr, AW_gc_manager *gcman, BoundItemSel& itemtype, const char *unique_id, const char *description, const char *help_id, ReshadeCallback reshade, int undef_gc);
+const ItemShader *findItemShader(const char *id);
+void              destroyAllItemShaders();
 
 #else
 #error item_shader.h included twice
