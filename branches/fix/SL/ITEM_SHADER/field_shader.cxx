@@ -102,9 +102,10 @@ public:
                         case GB_INT: val = GB_read_int(gb_field); break;
                         case GB_FLOAT: val = GB_read_float(gb_field); break;
                         default: {
-                            if (!safe_atof(GB_read_as_string(gb_field), val)) {
-                                return NAN;
-                            }
+                            char *content   = GB_read_as_string(gb_field);
+                            bool  converted = safe_atof(content, val);
+                            free(content);
+                            if (!converted) return NAN;
                             break;
                         }
                     }
