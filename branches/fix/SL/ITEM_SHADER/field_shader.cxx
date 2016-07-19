@@ -223,7 +223,7 @@ class ItemFieldShader: public ShaderPlugin {
             if (gb_item) {
                 const char *ipath = GB_get_db_path(gb_item);
                 if (ipath) {
-                    const int PREFIXLEN = 9;
+                    const unsigned PREFIXLEN = 9;
 #if defined(ASSERTION_USED)
                     const char *PREFIX        = "/<gbmain>";
                     is_assert(ARB_strBeginsWith(ipath, PREFIX));
@@ -671,8 +671,6 @@ void TEST_FieldReader() {
         TEST_READER_UNDEF(stringReader,  gb_species_no_field);
         TEST_READER_UNDEF(aciReader,     gb_species_no_field);
     }
-
-    // @@@ tdd MultiFieldReader!
 
     MultiFieldReader multi;        TEST_EXPECT_EQUAL(multi.get_dimension(), 0);
     multi.add_reader(nullReader);  TEST_EXPECT_EQUAL(multi.get_dimension(), 0);
