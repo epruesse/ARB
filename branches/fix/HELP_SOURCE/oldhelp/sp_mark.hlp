@@ -1,0 +1,51 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+SUB	mark.hlp
+SUB	sp_info.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Marking species
+
+OCCURRENCE	ARB_NT/Species/Mark species/...
+
+DESCRIPTION	Provides several ways to mark species.
+
+                Three general methods are available:
+                         * mark
+                         * unmark
+                         * invert
+
+                Each of these methods can be applied to one of
+                three basic sets, namely
+                     * all species in the database
+                     * all species in the current tree or
+                     * all species NOT in the current tree
+
+                These three sets can be intersected with one of the more specific
+                sets, which are provided by the submenu entries at the bottom of
+                the 'Mark species' menu, namely
+                    * all complete species (see LINK{partial_sequences.hlp}),
+                    * all partial species or
+                    * all species with data in the current alignment.
+
+NOTES		To check the number of marked species
+                - look at the button in the ARB_NT top area displaying the number of marked species or
+                - choose 'Count Marked Species' from the 'Mark species' menu.
+
+                The "current tree" is the tree currently displayed in the main window.
+                When you have multiple ARB_NT windows open (see LINK{newwindow.hlp}), make sure
+                you use the menu of the intended ARB_NT window.
+
+                When using one or two sets (tree, complete, partial or alignment), all species
+                not included in the set (or in both sets) will not be affected.
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known

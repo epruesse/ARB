@@ -1,0 +1,166 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+UP	arb_edit4.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+SUB	islandhopping.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		The integrated aligners
+
+OCCURRENCE	ARB_EDIT4/Edit/Integrated Aligners
+
+DESCRIPTION     Currently there are two integrated aligners:
+
+                          1. Fast Aligner
+
+                          2. Island Hopper (see Subtopic)
+
+                The following adjustments and features should apply to both aligners.
+
+                We did not test everything yet with island hopper, so some of them are broken.
+                Please mail to LINK{devel@arb-home.de} if you find something.
+
+
+SECTION         ADJUSTMENTS
+
+                Align
+
+                                Align current, marked or selected sequences.
+
+                                If you type 'CTRL-A' in the main editor window
+                                this option is set to align the current species and
+                                the aligner gets called.
+
+                Reference
+
+                                The aligner needs a sequence as reference.
+                                You can either
+
+                                    * select a fixed species by name,
+                                    * the consensus of the group containing the aligned species or
+                                    * the next relative(s) found by the selected PT-Server.
+
+                                If you choose 'Species by name', you may press the 'COPY' button
+                                to copy the name of the 'Current Species' to the 'Reference' species.
+                                Alternatively you may use CTRL-R while the focus is inside the sequence view
+                                (Note: CTRL-R does not work, if LINK{viewdiff.hlp} is active).
+
+                                If you choose 'Auto search by pt_server', the
+                                aligner will use the next relative(s) as reference.
+
+                                 * Please read section about 'Protein alignment with pt_server' below.
+
+                                 * If the nearest relative has gaps where the sequence
+                                   to align has bases, the aligner will use the 2nd nearest
+                                   relative or if that one has gaps too, the 3rd nearest, etc.
+                                   You can define the maximum number of relatives considered.
+
+                                 * All used relatives and the number of base positions used from each relative,
+                                   will be written into the field 'used_rels' (see also LINK{markbyref.hlp}).
+
+                                If you enter '0' in 'Data from range only, plus', relative
+                                search only uses data from the aligned range. If you enter
+                                a value different from '0' the used range will be
+                                expanded (positive values) or limited (negative values).
+                                When the input field is empty, the complete sequence will be used.
+
+                                Press 'More settings' to define how relative search works
+                                in detail. See LINK{next_neighbours_common.hlp}
+
+		Range
+
+                                Align only a part of or the whole sequence.
+
+				Several possibilities exist for aligning just a part of the sequence:
+				- select 'Positions around cursor' and specify how many positions shall be 
+				  taken into each direction from the cursor position (Example: If you align 
+				  10 columns around position 100 then columns 90-110 will be aligned).
+				- if you use 'Selected range' the column range of the selected block will 
+				  be used.
+				- if you select 'Multi-Range by SAI', the specified SAI will be interpreted as 
+				  a list of ranges. A list of characters defines what is considered a range.
+				  All ranges will be aligned.
+
+				See also LINK{e4_modsai.hlp} for howto create suitable SAIs.
+
+		Turn check
+
+                                The aligner is able to detect sequences which
+				were entered in the wrong direction. With this
+				switch you can select, if you like the aligner
+				to turn such sequences and if it should ask you.
+
+				NOTE: In two cases turn checking isn't
+				reasonable:
+
+				If you align only a part of a sequence or if you
+				do not search Reference via pt_server. In both
+				cases turn checking will be disabled.
+
+		Report
+
+                                The aligner can generate reports for the aligned
+				sequence and for the reference sequence. These
+				reports can be viewed with EDIT4, if you choose
+				File/Load Configuration/DEFAULT_CONFIGURATION
+
+				The report for the reference sequence (AMI)
+				contains a '>' for every position were the aligner
+				needed an insert in the reference sequence.
+
+				The report for the aligned sequence (ASC) contains
+				the following characters:
+
+                                    '-' for matching positions
+
+                                    '+' for inserts (in aligned sequence and in reference sequence)
+
+                                    '~' for matching, but not equal bases (A aligned to G, C aligned to T or U)
+
+                                    '#' for mismatching positions
+
+SECTION         Protein alignment with pt_server
+
+                If you want to align protein sequences and use a PT-Server (to detect
+                the next relative for each sequence),
+                you need to
+
+                     * have two alignments in your database (a protein alignment and a
+                       corresponding DNA alignment). ARB has functions to synchronize these
+                       alignments (see LINK{realign_dna.hlp} and LINK{translate_dna_2_pro.hlp}),
+                     * build a pt_server based on the DNA-alignment,
+                       select that pt_server in the aligner window and
+                     * specify the name of the DNA-alignment in the 'Alignment' field.
+
+NOTES	 	This aligner knows about and uses all extended base characters
+		(ACGTUMRWSYKVHDN) for the alignment.
+		In other words: M aligned to R costs no penalty.
+
+		The config-manager icon handles the settings in the 'Integrated Aligners' window and those in
+		its subwindows 'Parameters for Island Hopping' and 'Family search parameters'.
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		If you select the menu entry 'remove all aligner entries' ARB_EDIT4
+		crashes in most cases.
+
+		Workaround:
+
+                        1. Close all groups containing species with aligner entries, so that no aligner entries are visible.
+                        2. Remove all aligner entries
+                        3. Reload configuration
+
+
+
+
+
+
+
+
+
