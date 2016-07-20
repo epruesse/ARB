@@ -843,7 +843,11 @@ void AW_gc_manager::add_gc(const char *gc_description, int& gc, gc_type type, co
         }
     }
 #endif
-    aw_assert(implicated(gc == 0 && type != GC_TYPE_RANGE, gcd.has_font)); // first GC always has to define a font!
+
+#if !defined(ARB_OPENGL)
+    // normally the first GC should define a font (wrong for RNA3D)
+    aw_assert(implicated(gc == 0 && type != GC_TYPE_RANGE, gcd.has_font));
+#endif
 
     if (default_color[0] == '{') {
         // use current value of an already defined color as default for current color:
