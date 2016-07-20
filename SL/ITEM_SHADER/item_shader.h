@@ -163,10 +163,12 @@ class ValueTuple {
     ValueTuple *undefined_reverse_mix() const { arb_assert(0); return NULL; }
 
 public:
+    typedef SmartPtr<ValueTuple> ShadedValue;
+
     virtual ~ValueTuple() {}
 
     virtual bool is_defined() const   = 0;
-    virtual ValueTuple *clone() const = 0;
+    virtual ShadedValue clone() const = 0;
     virtual int range_offset(const Phaser&) const  = 0; // returns int-offset into range [0 .. AW_RANGE_COLORS[
 
 #if defined(UNIT_TESTS)
@@ -174,20 +176,20 @@ public:
 #endif
 
     // ValueTuple factory:
-    static ValueTuple *undefined();
-    static ValueTuple *make(float f);
-    static ValueTuple *make(float f1, float f2);
-    static ValueTuple *make(float f1, float f2, float f3);
+    static ShadedValue undefined();
+    static ShadedValue make(float f);
+    static ShadedValue make(float f1, float f2);
+    static ShadedValue make(float f1, float f2, float f3);
 
     // mix interface (main function + reverse visitors):
-    virtual ValueTuple *mix(float my_ratio, const ValueTuple& other) const = 0;
-    virtual ValueTuple *reverse_mix(float /*other_ratio*/, const class NoTuple& /*other*/)      const { return undefined_reverse_mix(); }
-    virtual ValueTuple *reverse_mix(float /*other_ratio*/, const class LinearTuple& /*other*/)  const { return undefined_reverse_mix(); }
-    virtual ValueTuple *reverse_mix(float /*other_ratio*/, const class PlanarTuple& /*other*/)  const { return undefined_reverse_mix(); }
-    virtual ValueTuple *reverse_mix(float /*other_ratio*/, const class SpatialTuple& /*other*/) const { return undefined_reverse_mix(); }
+    virtual ShadedValue mix(float my_ratio, const ValueTuple& other) const = 0;
+    virtual ShadedValue reverse_mix(float /*other_ratio*/, const class NoTuple& /*other*/)      const { return undefined_reverse_mix(); }
+    virtual ShadedValue reverse_mix(float /*other_ratio*/, const class LinearTuple& /*other*/)  const { return undefined_reverse_mix(); }
+    virtual ShadedValue reverse_mix(float /*other_ratio*/, const class PlanarTuple& /*other*/)  const { return undefined_reverse_mix(); }
+    virtual ShadedValue reverse_mix(float /*other_ratio*/, const class SpatialTuple& /*other*/) const { return undefined_reverse_mix(); }
 };
 
-typedef SmartPtr<ValueTuple> ShadedValue;
+typedef ValueTuple::ShadedValue ShadedValue;
 
 inline ShadedValue mix(const ShadedValue& val1, float val1_ratio, const ShadedValue& val2) {
     return val1->mix(val1_ratio, *val2);
@@ -381,9 +383,9 @@ inline void ShaderPlugin::trigger_reshade_if_active_cb(ReshadeMode mode) {
 // -----------------------------
 //      ItemShader registry
 
-ItemShader *registerItemShader(AW_root *awr, AW_gc_manager *gcman, BoundItemSel& itemtype, const char *unique_id, const char *description, const char *help_id, ReshadeCallback reshade, int undef_gc);
-ItemShader *findItemShader(const char *id);
-void        destroyAllItemShaders();
+ItemShader       *registerItemShader(AW_root *awr, AW_gc_manager *gcman, BoundItemSel& itemtype, const char *unique_id, const char *description, const char *help_id, ReshadeCallback reshade, int undef_gc);
+const ItemShader *findItemShader(const char *id);
+void              destroyAllItemShaders();
 
 #else
 #error item_shader.h included twice

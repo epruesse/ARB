@@ -46,7 +46,7 @@
 #include <consensus_config.h>
 #include <chartable.h>
 
-static int CON_insertSequences(GBDATA *gb_main, const char *aliname, long maxalignlen, bool onlymarked, BaseFrequencies& freqs) {
+static int CON_insertSequences(GBDATA *gb_main, const char *aliname, long IF_ASSERTION_USED(maxalignlen), bool onlymarked, BaseFrequencies& freqs) {
     /*! read sequence data and fill into 'freqs'
      * @param gb_main       database
      * @param aliname       name of alignment
