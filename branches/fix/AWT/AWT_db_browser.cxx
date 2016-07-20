@@ -334,7 +334,7 @@ public:
 class DB_browser;
 static DB_browser *get_the_browser(bool autocreate);
 
-class DB_browser {
+class DB_browser : virtual Noncopyable {
     typedef vector<KnownDB>::iterator KnownDBiterator;
 
     vector<KnownDB> known_databases;
@@ -349,8 +349,6 @@ class DB_browser {
 
     void update_DB_selector();
 
-    DB_browser(const DB_browser& other);            // copying not allowed
-    DB_browser& operator = (const DB_browser& other); // assignment not allowed
 public:
     DB_browser() : current_db(0), aww(0), oms(0) {}
 

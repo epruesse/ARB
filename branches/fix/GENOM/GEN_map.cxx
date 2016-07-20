@@ -40,13 +40,11 @@ extern GBDATA *GLOBAL_gb_main;
 // -----------------------
 //      GEN_map_window
 
-class GEN_map_window : public AW_window_menu_modes {
+class GEN_map_window : public AW_window_menu_modes { // derived from a Noncopyable
     int          window_nr;
     GEN_graphic *gen_graphic;
     AWT_canvas  *gen_canvas;
 
-    GEN_map_window(const GEN_map_window& other); // copying not allowed
-    GEN_map_window& operator = (const GEN_map_window& other); // assignment not allowed
 public:
     GEN_map_window(int window_nr_)
         : AW_window_menu_modes()
@@ -69,7 +67,7 @@ public:
 
 DECLARE_CBTYPE_FVV_AND_BUILDERS(GenmapWindowCallback, void, GEN_map_window*); // generates makeGenmapWindowCallback
 
-class GEN_map_manager {
+class GEN_map_manager : virtual Noncopyable {
     static AW_root         *aw_root;
     static GBDATA          *gb_main;
     static GEN_map_manager *the_manager;            // there can be only one!
@@ -77,9 +75,6 @@ class GEN_map_manager {
     int              window_counter;
     GEN_map_window **windows;   // array of managed windows
     int              windows_size; // size of 'windows' array
-
-    GEN_map_manager(const GEN_map_manager& other); // copying not allowed
-    GEN_map_manager& operator = (const GEN_map_manager& other); // assignment not allowed
 
 public:
 
