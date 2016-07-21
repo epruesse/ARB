@@ -41,15 +41,12 @@
 
 namespace {
 
-    class ConfigParser {
+    class ConfigParser : virtual Noncopyable {
         typedef std::map<std::string, std::string> ConfigMap;
 
-        ConfigMap entries;
-        std::string    filename;
-        GB_ERROR  error;
-
-        ConfigParser(const ConfigParser& other); // copying not allowed
-        ConfigParser& operator = (const ConfigParser& other); // assignment not allowed
+        ConfigMap   entries;
+        std::string filename;
+        GB_ERROR    error;
 
         static char *unwhite(char *s) {
             while (s[0] == ' ') ++s;
@@ -140,10 +137,7 @@ namespace {
 
     // --------------------------------------------------------------------------------
 
-    class ConfigBase {
-        ConfigBase(const ConfigBase& other); // copying not allowed
-        ConfigBase& operator = (const ConfigBase& other); // assignment not allowed
-
+    class ConfigBase : virtual Noncopyable {
     protected:
 
         ConfigParser parser;

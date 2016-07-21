@@ -18,27 +18,22 @@
 #ifndef _GLIBCXX_STRING
 #include <string>
 #endif
-
-#if defined(DEBUG)
-#ifndef _GLIBCXX_CSTDIO
-#include <cstdio>
+#ifndef ARBTOOLS_H
+#include <arbtools.h>
 #endif
-#endif // DEBUG
 
 //  --------------------------
 //      class awt_hotkeys
 //  --------------------------
 // this class automatically creates hotkeys from strings
 // use one instance for one set of hotkeys
-class awt_hotkeys {
+class awt_hotkeys : virtual Noncopyable {
 private:
     bool used[26];
     bool USED[26];
     char artificial;
     char current[2];
 
-    awt_hotkeys(const awt_hotkeys& other); // copying not allowed
-    awt_hotkeys& operator=(const awt_hotkeys& other); // assignment not allowed
 public:
     awt_hotkeys() {
         for (int i = 0; i<26; ++i) {

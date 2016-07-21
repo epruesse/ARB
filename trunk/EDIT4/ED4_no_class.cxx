@@ -1225,21 +1225,15 @@ static void ED4_start_editor_on_configuration(AW_window *aww) {
 }
 
 struct cursorpos {
-    ED4_cursor& cursor;
+    RefPtr<ED4_cursor> cursor;
     int screen_rel;
     int seq;
 
     cursorpos(ED4_window *win)
-        : cursor(win->cursor),
-          screen_rel(cursor.get_screen_relative_pos()),
-          seq(cursor.get_sequence_pos())
+        : cursor(&win->cursor),
+          screen_rel(cursor->get_screen_relative_pos()),
+          seq(cursor->get_sequence_pos())
     {}
-    cursorpos(const cursorpos& other)
-        : cursor(other.cursor),
-          screen_rel(other.screen_rel),
-          seq(other.seq)
-    {}
-    DECLARE_ASSIGNMENT_OPERATOR(cursorpos);
 };
 
 
@@ -1258,14 +1252,14 @@ void ED4_compression_changed_cb(AW_root *awr) {
         ED4_ROOT->root_group_man->remap()->set_mode(mode, percent);
         ED4_expose_recalculations();
 
-        for (vector<cursorpos>::const_iterator i = pos.begin(); i != pos.end(); ++i) {
-            ED4_cursor&  cursor = const_cast<ED4_cursor&>(i->cursor);
-            ED4_window  *win    = cursor.window();
+        for (vector<cursorpos>::iterator i = pos.begin(); i != pos.end(); ++i) {
+            ED4_cursor  *cursor = i->cursor;
+            ED4_window  *win    = cursor->window();
 
             win->update_scrolled_rectangle(); // @@@ needed ? 
 
-            cursor.jump_sequence_pos(i->seq, ED4_JUMP_KEEP_POSITION);
-            cursor.set_screen_relative_pos(i->screen_rel);
+            cursor->jump_sequence_pos(i->seq, ED4_JUMP_KEEP_POSITION);
+            cursor->set_screen_relative_pos(i->screen_rel);
         }
 
         ED4_request_full_instant_refresh();

@@ -1154,7 +1154,6 @@ class AliNameAndType {
     string name_, type_;
 public:
     AliNameAndType(const char *ali_name, const char *ali_type) : name_(ali_name), type_(ali_type) {}
-    AliNameAndType(const AliNameAndType& other) : name_(other.name_), type_(other.type_) {}
 
     const char *name() const { return name_.c_str(); }
     const char *type() const { return type_.c_str(); }

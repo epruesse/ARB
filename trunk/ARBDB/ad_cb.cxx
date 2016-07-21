@@ -690,15 +690,13 @@ void TEST_db_callbacks_ta_nota() {
 }
 
 struct calledWith {
-    GBDATA     *gbd;
-    GB_CB_TYPE  type;
-    int         time_called;
+    RefPtr<GBDATA> gbd;
+    GB_CB_TYPE     type;
+    int            time_called;
 
     static int timer;
 
     calledWith(GBDATA *gbd_, GB_CB_TYPE type_) : gbd(gbd_), type(type_), time_called(++timer) {}
-    calledWith(const calledWith& other) : gbd(other.gbd), type(other.type), time_called(other.time_called) {}
-    DECLARE_ASSIGNMENT_OPERATOR(calledWith);
 };
 
 using std::string;
