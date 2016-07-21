@@ -563,9 +563,9 @@ inline bool isGap(char c) { return c == '-' || c == '.'; }
 using std::string;
 
 class FailedAt {
-    string      reason;
-    const char *at_prot; // in aligned protein seq
-    const char *at_dna;  // in compressed seq
+    string             reason;
+    RefPtr<const char> at_prot; // points into aligned protein seq
+    RefPtr<const char> at_dna;  // points into compressed seq
 
     int cmp(const FailedAt& other) const {
         ptrdiff_t d = at_prot - other.at_prot;
@@ -585,12 +585,6 @@ public:
     {
         nt_assert(reason_);
     }
-    FailedAt(const FailedAt& other)
-        : reason(other.reason),
-          at_prot(other.at_prot),
-          at_dna(other.at_dna)
-    {}
-    DECLARE_ASSIGNMENT_OPERATOR(FailedAt);
 
     GB_ERROR why() const { return reason.empty() ? NULL : reason.c_str(); }
     const char *protein_at() const { return at_prot; }
