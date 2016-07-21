@@ -2183,24 +2183,18 @@ awt_item_type AWT_getItemType(const string& itemtype_name) {
 
 class AWT_registered_itemtype {
     // stores information about so-far-used item types
-    AW_window_menu_modes       *awm;                // the main window responsible for opening windows
-    AWT_OpenMaskWindowCallback  open_window_cb;     // callback to open the window
-    GBDATA                     *gb_main;
+    RefPtr<AW_window_menu_modes> awm;               // the main window responsible for opening windows
+    AWT_OpenMaskWindowCallback   open_window_cb;    // callback to open the window
 
 public:
-    AWT_registered_itemtype() : awm(0), open_window_cb(0), gb_main(0) {}
-    AWT_registered_itemtype(AW_window_menu_modes *awm_, AWT_OpenMaskWindowCallback open_window_cb_, GBDATA *gb_main_)
-        : awm(awm_)
-        , open_window_cb(open_window_cb_)
-        , gb_main(gb_main_)
+    AWT_registered_itemtype() :
+        awm(0),
+        open_window_cb(0)
     {}
-    AWT_registered_itemtype(const AWT_registered_itemtype& other)
-        : awm(other.awm),
-          open_window_cb(other.open_window_cb),
-          gb_main(other.gb_main)
+    AWT_registered_itemtype(AW_window_menu_modes *awm_, AWT_OpenMaskWindowCallback open_window_cb_) :
+        awm(awm_),
+        open_window_cb(open_window_cb_)
     {}
-    DECLARE_ASSIGNMENT_OPERATOR(AWT_registered_itemtype);
-    virtual ~AWT_registered_itemtype() {}
 
     AW_window_menu_modes *getWindow() const { return awm; }
     AWT_OpenMaskWindowCallback getOpenCb() const { return open_window_cb; }
@@ -2221,10 +2215,10 @@ static GB_ERROR openMaskWindowByType(int mask_id, awt_item_type type) {
     return error;
 }
 
-static void registerType(awt_item_type type, AW_window_menu_modes *awm, AWT_OpenMaskWindowCallback open_window_cb, GBDATA *gb_main) {
+static void registerType(awt_item_type type, AW_window_menu_modes *awm, AWT_OpenMaskWindowCallback open_window_cb) {
     TypeRegistryIter alreadyRegistered = registeredTypes.find(type);
     if (alreadyRegistered == registeredTypes.end()) {
-        registeredTypes[type] = AWT_registered_itemtype(awm, open_window_cb, gb_main);
+        registeredTypes[type] = AWT_registered_itemtype(awm, open_window_cb);
     }
 #if defined(DEBUG)
     else {
@@ -2462,7 +2456,7 @@ void AWT_create_mask_submenu(AW_window_menu_modes *awm, awt_item_type wanted_ite
                     free(mod_title);
                     free(macroname2key);
                 }
-                registerType(item_type, awm, open_mask_window_cb, gb_main);
+                registerType(item_type, awm, open_mask_window_cb);
             }
             else if (item_type == AWT_IT_UNKNOWN) {
                 aw_message(GBS_global_string("Unknown @ITEMTYPE '%s' in '%s'", descriptor->get_itemtypename(), descriptor->get_internal_maskname()));

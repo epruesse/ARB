@@ -243,10 +243,6 @@ public:
         if (probes) delete probes;
         children.clear();
     }
-
-private:
-    PS_Node() { ps_assert(0); }
-    PS_Node(const PS_Node&); // forbidden
 };
 
 #else

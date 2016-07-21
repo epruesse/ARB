@@ -294,8 +294,8 @@ inline bool operator<(const GEN_positionPtr& A, const GEN_positionPtr& B) {
 }
 
 class PosGene {
-    GBDATA                  *gb_Gene;
-    mutable GEN_positionPtr  pos;
+    RefPtr<GBDATA>          gb_Gene;
+    mutable GEN_positionPtr pos;
 
 public:
     PosGene(GBDATA *gb_gene) : gb_Gene(gb_gene) {
@@ -305,11 +305,6 @@ public:
         }
         pos = pp;
     }
-    PosGene(const PosGene& other)
-        : gb_Gene(other.gb_Gene),
-          pos(other.pos)
-    {}
-    DECLARE_ASSIGNMENT_OPERATOR(PosGene);
 
     const GEN_positionPtr& getPosition() const { return pos; }
 

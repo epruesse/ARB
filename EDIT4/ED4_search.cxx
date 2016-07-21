@@ -297,8 +297,6 @@ class SearchTree : virtual Noncopyable {
     char *unify_pattern(const char *pattern, int *new_len);
     char *unify_sequence(const char *sequence, int len, int *new_len, int **uni2real);
 
-    SearchTree(const SearchTree &); // forbidden
-
 public:
 
     SearchTree(const SearchSettings *s);

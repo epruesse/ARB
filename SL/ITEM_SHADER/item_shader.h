@@ -35,26 +35,6 @@
 class GBDATA;
 class AW_gc_manager;
 
-// ---------------- // @@@ move to arbtools.h later (helps to avoid using Noncopyable)
-//      RefPtr
-
-template <typename T> class RefPtr {
-    T *ptr;
-public:
-    RefPtr(T *ptr_) : ptr(ptr_) {}
-    RefPtr(const RefPtr<T>& other) : ptr(other.ptr) {}
-    DECLARE_ASSIGNMENT_OPERATOR(RefPtr<T>);
-    ~RefPtr() {}
-
-    operator T*() const { return ptr; }
-
-    const T *operator->() const { return ptr; }
-    T *operator->() { return ptr; }
-
-    const T& operator*() const { return *ptr; }
-    T& operator*() { return *ptr; }
-};
-
 // ----------------
 //      Phaser
 

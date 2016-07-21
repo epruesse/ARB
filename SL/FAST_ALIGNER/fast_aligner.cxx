@@ -2868,12 +2868,6 @@ public:
         count_oligos(seq_nogaps);
     }
 
-    OligoCounter(const OligoCounter& other)
-        : oligo_len(other.oligo_len),
-          datasize(other.datasize),
-          occurance(other.occurance)
-    {}
-
     size_t oligo_count(const char *oligo) {
         fa_assert(strlen(oligo) == oligo_len);
         return occurance[oligo];
