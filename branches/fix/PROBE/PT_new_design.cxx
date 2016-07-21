@@ -82,8 +82,6 @@ class Oligo {
 public:
     Oligo() : data(NULL), length(0) {} // empty oligo
     Oligo(const char *data_, int length_) : data(data_), length(length_) {}
-    Oligo(const Oligo& other) : data(other.data), length(other.length) {}
-    DECLARE_ASSIGNMENT_OPERATOR(Oligo);
 
     char at(int offset) const {
         pt_assert(offset >= 0 && offset<length);
