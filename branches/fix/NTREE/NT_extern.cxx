@@ -1129,7 +1129,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone, AWT_canvas **re
 
             awm->sep______________();
 
-            awm->insert_menu_topic("new_names", "Synchronize IDs", "e", "sp_rename.hlp", AWM_ALL, makeCreateWindowCallback(AWTC_create_rename_window, GLOBAL.gb_main));
+            awm->insert_menu_topic("new_names", "Synchronize IDs", "e", "rename.hlp", AWM_ALL, makeCreateWindowCallback(AWTC_create_rename_window, GLOBAL.gb_main));
 
             awm->insert_sub_menu("Valid Names ...", "V", AWM_EXP);
             {

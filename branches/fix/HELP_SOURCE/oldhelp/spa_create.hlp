@@ -18,7 +18,7 @@ DESCRIPTION     Creates a new species.
 
                 Type the full name of the species and press <GO>.
 
-                The ARB name server automatically creates a unique species ID (shortname).
+                The ARB NAMESERVER automatically creates a unique species ID (shortname).
 
 EXAMPLES        None
 

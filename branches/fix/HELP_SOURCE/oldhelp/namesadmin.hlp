@@ -8,7 +8,7 @@ UP      glossary.hlp
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE           NAME_SERVER ADMIN
+TITLE           NAMESERVER ADMIN
 
 OCCURRENCE      ARB_NT/Tools/Name server admin
 
@@ -22,7 +22,7 @@ SECTION         General warning
 
 DESCRIPTION     Delete old names file
 
-                       After using the nameserver for a while, the names database
+                       After using the NAMESERVER for a while, the names database
                        may contain several entries which are used nowhere.
 
                        This happens e.g. if you've changed accession numbers during
@@ -44,19 +44,19 @@ DESCRIPTION     Delete old names file
                        ARB automatically generates accession numbers if they are missing.
                        e.g if you import plain sequence data.
 
-                       Use this to get rid of all nameserver entries using ARB_xxx accession
+                       Use this to get rid of all NAMESERVER entries using ARB_xxx accession
                        numbers.
 
                 After using any of the above functions
 
-                        you should consider to synchronize IDs (see LINK{sp_rename.hlp}) in
+                        you should consider to synchronize IDs (see LINK{rename.hlp}) in
                         all your arb-databases.
 
                 Additional species ID field
 
                        If you have good reasons, why you have to keep several species
                        with identical accession numbers in your databases, you'll normally
-                       get problems with the ARB nameserver, because it handles these species
+                       get problems with the ARB NAMESERVER, because it handles these species
                        as "identical" and gives them IDs like 'HalHalob.2', 'HalHalob.3' etc.
                        to mark them as duplicates.
 
@@ -66,7 +66,7 @@ DESCRIPTION     Delete old names file
                        This setting is database-specific - so you have to set it for each database
                        where it's needed. 
 
-                       For each field you use, a separate name server will be generated.
+                       For each field you use, a separate NAMESERVER will be generated.
                        That means:
 
                        - You have to add a new entry into arb_tcp.dat (except for field 'start'
@@ -78,9 +78,11 @@ DESCRIPTION     Delete old names file
                          Otherwise you'll most likely merge the data of non-equal species, which will
                          corrupt your data!
 
+                       Please also read help for LINK{sp_IDs.hlp}.
+
 NOTES           If you comment out the default ARB_NAME_SERVER entry in arb_tcp.dat, renaming
                 with empty 'Additional species ID field' will lead to an error. Use this to
-                avoid creating databases that use the standard name server with no additional field.
+                avoid creating databases that use the standard NAMESERVER with no additional field.
 
 EXAMPLES        None
 
