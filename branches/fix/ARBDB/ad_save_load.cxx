@@ -478,7 +478,7 @@ static bool gb_write_one_child(FILE *out, GBDATA *gb, GBCONTAINER*& gb_writeFrom
                 GB_CSTR strng = GB_read_char_pntr(gbe);
                 if (!strng) {
                     strng = "<entry was broken - replaced during ASCIIsave/arb_repair>";
-                    GB_warningf("- replaced broken DB entry %s (data lost)\n", GB_get_db_path(gbe));
+                    GB_warningf("- replaced broken DB entry '%s' (data lost)\n", GB_get_db_path(gbe));
                 }
                 if (*strng == '%') {
                     putc('%', out);

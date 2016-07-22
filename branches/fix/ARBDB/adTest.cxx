@@ -13,13 +13,15 @@
 
 const char *GB_get_db_path(GBDATA *gbd) {
     GBDATA *gb_father = GB_FATHER(gbd);
-
     if (gb_father) {
         const char *father_path = GB_get_db_path(gb_father);
-        const char *key         = GB_KEY(gbd);
-        RETURN_LOCAL_ALLOC(GBS_global_string_copy("%s/%s", father_path, key ? key : "<gbmain>"));
+        if (father_path) {
+            const char *key = GB_KEY(gbd);
+            RETURN_LOCAL_ALLOC(GBS_global_string_copy("%s/%s", father_path, key ? key : "<unknown>"));
+        }
+        return ""; // DB-root-node
     }
-    return "";
+    return NULL; // node above DB-root-node
 }
 
 void GB_dump_db_path(GBDATA *gbd) {
@@ -250,9 +252,6 @@ void TEST_DB_path() {
 
 #define ACC_PATH "species_data/species/acc"
 
-#define UNNAMED_MAIN_PREFIX "/<gbmain>/"
-#define NAMED_MAIN_PREFIX   "/main/"
-
     for (int ascii = 0; ascii<=1; ++ascii) {
         TEST_ANNOTATE(GBS_global_string("ascii=%i", ascii));
 
@@ -265,10 +264,9 @@ void TEST_DB_path() {
             GBDATA *gb_acc = GB_search(gb_main, ACC_PATH, GB_STRING);
             TEST_REJECT_NULL(gb_acc);
 
-            TEST_EXPECT_EQUAL(GB_get_db_path(gb_acc),
-                              ascii
-                              ? NAMED_MAIN_PREFIX   ACC_PATH
-                              : UNNAMED_MAIN_PREFIX ACC_PATH);
+            // Ascii- and binary-DBs differ in name of root-node.
+            // Make sure reported DB path does not depend on it:
+            TEST_EXPECT_EQUAL(GB_get_db_path(gb_acc), "/" ACC_PATH);
         }
 
         GB_close(gb_main);
