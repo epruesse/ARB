@@ -238,3 +238,43 @@ GB_ERROR GB_fix_database(GBDATA *gb_main) {
     return GB_end_transaction(gb_main, err);
 }
 
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#ifndef TEST_UNIT_H
+#include <test_unit.h>
+#endif
+
+void TEST_DB_path() {
+    GB_shell shell;
+
+#define ACC_PATH "species_data/species/acc"
+
+#define UNNAMED_MAIN_PREFIX "/<gbmain>/"
+#define NAMED_MAIN_PREFIX   "/main/"
+
+    for (int ascii = 0; ascii<=1; ++ascii) {
+        TEST_ANNOTATE(GBS_global_string("ascii=%i", ascii));
+
+        GBDATA *gb_main = GB_open(ascii ? "TEST_loadsave_ascii.arb" : "TEST_loadsave.arb", "r");
+        TEST_REJECT_NULL(gb_main);
+
+        {
+            GB_transaction ta(gb_main);
+
+            GBDATA *gb_acc = GB_search(gb_main, ACC_PATH, GB_STRING);
+            TEST_REJECT_NULL(gb_acc);
+
+            TEST_EXPECT_EQUAL(GB_get_db_path(gb_acc),
+                              ascii
+                              ? NAMED_MAIN_PREFIX   ACC_PATH
+                              : UNNAMED_MAIN_PREFIX ACC_PATH);
+        }
+
+        GB_close(gb_main);
+    }
+}
+
+#endif // UNIT_TESTS
+
+// --------------------------------------------------------------------------------
