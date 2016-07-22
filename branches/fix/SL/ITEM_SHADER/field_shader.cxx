@@ -222,15 +222,7 @@ class ItemFieldShader: public ShaderPlugin {
             GBDATA *gb_item = itemtype.get_any_item();
             if (gb_item) {
                 const char *ipath = GB_get_db_path(gb_item);
-                if (ipath) {
-                    const unsigned PREFIXLEN = 9;
-#if defined(ASSERTION_USED)
-                    const char *PREFIX        = "/<gbmain>";
-                    is_assert(ARB_strBeginsWith(ipath, PREFIX));
-                    is_assert(strlen(PREFIX) == PREFIXLEN);
-#endif
-                    item_dbpath = string(ipath+PREFIXLEN);
-                }
+                if (ipath) item_dbpath = string(ipath);
             }
         }
         return !item_dbpath.empty();
