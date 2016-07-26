@@ -520,7 +520,7 @@ public:
     }
 };
 
-static bool stralnum(const char *str) {
+static bool contains_non_alphanumeric(const char *str) {
     bool nonalnum = false;
     for (char c = *str++; c; c = *str++) {
         if (!isalnum(c)) {
@@ -528,7 +528,7 @@ static bool stralnum(const char *str) {
             break;
         }
     }
-    return !nonalnum;
+    return nonalnum;
 }
 
 static char *make_alnum(const char *str) {
@@ -557,9 +557,9 @@ static char *make_alpha(const char *str) {
 }
 
 #if defined(DEBUG)
-#define assert_alnum(s) na_assert(stralnum(s))
+#define assert_alphanumeric(s) na_assert(!contains_non_alphanumeric(s))
 #else
-#define assert_alnum(s)
+#define assert_alphanumeric(s)
 #endif // DEBUG
 
 NameInformation::NameInformation(const AN_local *locs) {
@@ -601,9 +601,9 @@ NameInformation::NameInformation(const AN_local *locs) {
 
     freeset(first_name, make_alnum(first_name));
 
-    assert_alnum(parsed_acc);
-    assert_alnum(first_name);
-    assert_alnum(rest_of_name);
+    assert_alphanumeric(parsed_acc);
+    assert_alphanumeric(first_name);
+    assert_alphanumeric(rest_of_name);
 
     UPPERCASE(rest_of_name[0]);
 
@@ -657,7 +657,7 @@ aisc_string get_short(const AN_local *locs) {
     if (an_shorts) {            // we already have a short name
         bool recreate = false;
 
-        if (!stralnum(an_shorts->shrt)) { // contains non-alphanumeric characters
+        if (contains_non_alphanumeric(an_shorts->shrt)) {
             recreate = true;
         }
         else if (strcmp(an_shorts->full_name, default_full_name) == 0 && // fullname in name server is default_full_name
@@ -676,7 +676,7 @@ aisc_string get_short(const AN_local *locs) {
     if (!shrt) { // now there is no short name (or an illegal one)
         char *first_advice=0, *second_advice=0;
 
-        if (locs->advice[0] && !stralnum(locs->advice)) { // bad advice
+        if (locs->advice[0] && contains_non_alphanumeric(locs->advice)) { // bad advice
             locs->advice[0] = 0; // delete it
         }
 
@@ -909,7 +909,7 @@ aisc_string get_short(const AN_local *locs) {
             GBS_optimize_hash(nameModHash);
         }
 
-        assert_alnum(test_short);
+        assert_alphanumeric(test_short);
 
         shrt = strdup(test_short);
         info.add_short(locs, shrt);
@@ -920,7 +920,7 @@ aisc_string get_short(const AN_local *locs) {
         free(second_advice);
     }
 
-    assert_alnum(shrt);
+    assert_alphanumeric(shrt);
     return shrt;
 }
 
@@ -1097,7 +1097,7 @@ static void check_for_illegal_chars(AN_main *main) {
     // first check name parts
     for (AN_shorts *shrt = main->shorts1; shrt;) {
         AN_shorts *next = shrt->next;
-        if (!stralnum(shrt->shrt)) {
+        if (contains_non_alphanumeric(shrt->shrt)) {
             fprintf(stderr, "- Fixing illegal chars in '%s'\n", shrt->shrt);
             an_remove_short(shrt);
             illegal_names++;
@@ -1107,7 +1107,7 @@ static void check_for_illegal_chars(AN_main *main) {
     // then check full short-names
     for (AN_shorts *shrt = main->names; shrt;) {
         AN_shorts *next  = shrt->next;
-        if (!stralnum(shrt->shrt)) {
+        if (contains_non_alphanumeric(shrt->shrt)) {
             fprintf(stderr, "- Fixing illegal chars in '%s'\n", shrt->shrt);
             an_remove_short(shrt);
             illegal_names++;
