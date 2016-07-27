@@ -111,10 +111,8 @@ static const GEN_position *loadPositions4gene(GBDATA *gb_gene) {
     return loaded_position;
 }
 
-void GEN_gene::init(GBDATA *gb_gene_, GEN_root *root_) {
-    gb_gene = gb_gene_;
-    root    = root_;
-    name    = GBT_read_name(gb_gene);
+void GEN_gene::init() {
+    name = GBT_read_name(gb_gene);
 
     GBDATA *gbd = GB_entry(gb_gene, "complement");
     complement  = gbd ? GB_read_byte(gbd) == 1 : false;
@@ -131,17 +129,23 @@ void GEN_gene::load_location(int part, const GEN_position *location) {
     gen_assert(pos1 <= pos2);
 }
 
-GEN_gene::GEN_gene(GBDATA *gb_gene_, GEN_root *root_, const GEN_position *location) {
-    init(gb_gene_, root_);
+GEN_gene::GEN_gene(GBDATA *gb_gene_, GEN_root *root_, const GEN_position *location) :
+    gb_gene(gb_gene_),
+    root(root_)
+{
+    init();
     load_location(1, location);
     nodeInfo = GEN_make_node_text_nds(root->GbMain(), gb_gene, 0);
 }
 
-GEN_gene::GEN_gene(GBDATA *gb_gene_, GEN_root *root_, const GEN_position *location, int partNumber) {
+GEN_gene::GEN_gene(GBDATA *gb_gene_, GEN_root *root_, const GEN_position *location, int partNumber) :
+    gb_gene(gb_gene_),
+    root(root_)
+{
     //  partNumber 1..n which part of a split gene
     //  maxParts   1..n of how many parts consists this gene?
 
-    init(gb_gene_, root_);
+    init();
     load_location(partNumber, location);
 
     {

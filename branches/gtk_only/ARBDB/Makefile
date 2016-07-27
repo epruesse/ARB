@@ -1242,6 +1242,7 @@ adTest.o: $(ARBHOME)/INCLUDE/gccver.h
 adTest.o: $(ARBHOME)/INCLUDE/smartptr.h
 adTest.o: $(ARBHOME)/INCLUDE/static_assert.h
 adTest.o: $(ARBHOME)/INCLUDE/test_global.h
+adTest.o: $(ARBHOME)/INCLUDE/test_unit.h
 adTest.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 adtools.o: ad_cb.h

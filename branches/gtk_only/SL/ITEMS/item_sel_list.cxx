@@ -103,9 +103,9 @@ Itemfield_Selection *FieldSelDef::build_sel(AW_selection_list *from_sellist) con
     GBDATA *gb_key_data;
     {
         GB_transaction ta(gb_main);
-        gb_key_data = GB_search(gb_main, selector.change_key_path, GB_CREATE_CONTAINER);
+        gb_key_data = GB_search(gb_main, selector->change_key_path, GB_CREATE_CONTAINER);
     }
-    return new Itemfield_Selection(from_sellist, gb_key_data, type_filter, field_filter, selector);
+    return new Itemfield_Selection(from_sellist, gb_key_data, type_filter, field_filter, *selector);
 }
 
 const int FIELDNAME_VISIBLE_CHARS = 20;
@@ -128,8 +128,8 @@ class RegFieldSelection;
 typedef map<string, RegFieldSelection> FieldSelectionRegistry;
 
 class RegFieldSelection {
-    FieldSelDef       def;
-    AW_window_simple *aw_popup;
+    FieldSelDef              def;
+    RefPtr<AW_window_simple> aw_popup;
 
     static FieldSelectionRegistry registry;
     static MutableItemSelector    NULL_selector;
@@ -137,18 +137,15 @@ class RegFieldSelection {
 public:
     bool inAwarChange;
 
-    RegFieldSelection() : def("dummy", NULL, NULL_selector, 0) {}
-    RegFieldSelection(const FieldSelDef& def_)
-        : def(def_),
-          aw_popup(NULL),
-          inAwarChange(false)
+    RegFieldSelection() :
+        def("dummy", NULL, NULL_selector, 0),
+        aw_popup(NULL)
     {}
-    RegFieldSelection(const RegFieldSelection& other)
-        : def(other.def),
-          aw_popup(other.aw_popup),
-          inAwarChange(other.inAwarChange)
+    RegFieldSelection(const FieldSelDef& def_) :
+        def(def_),
+        aw_popup(NULL),
+        inAwarChange(false)
     {}
-    DECLARE_ASSIGNMENT_OPERATOR(RegFieldSelection);
 
     const FieldSelDef& get_def() const { return def; }
 
@@ -519,7 +516,7 @@ void RegFieldSelection::create_window(AW_root *awr) {
         aw_popup->update_toggle_field();
     }
     else {
-        awar_field->add_callback(makeRootCallback(awt_auto_popdown_cb, aw_popup));
+        awar_field->add_callback(makeRootCallback(awt_auto_popdown_cb, &*aw_popup));
     }
 }
 

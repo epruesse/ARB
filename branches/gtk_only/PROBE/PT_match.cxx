@@ -36,8 +36,6 @@ class Mismatches {
 public:
 
     Mismatches(MatchRequest& req_) : req(req_), plain(0), ambig(0), weighted(0.0) {}
-    Mismatches(const Mismatches& other) : req(other.req), plain(other.plain), ambig(other.ambig), weighted(other.weighted) {}
-    DECLARE_ASSIGNMENT_OPERATOR(Mismatches);
 
     inline void count_weighted(char probe, char seq, int height);
     void        count_versus(const ReadableDataLoc& loc, const char *probe, int height);

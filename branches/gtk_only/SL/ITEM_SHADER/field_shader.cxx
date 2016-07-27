@@ -102,9 +102,10 @@ public:
                         case GB_INT: val = GB_read_int(gb_field); break;
                         case GB_FLOAT: val = GB_read_float(gb_field); break;
                         default: {
-                            if (!safe_atof(GB_read_as_string(gb_field), val)) {
-                                return NAN;
-                            }
+                            char *content   = GB_read_as_string(gb_field);
+                            bool  converted = safe_atof(content, val);
+                            free(content);
+                            if (!converted) return NAN;
                             break;
                         }
                     }
@@ -221,15 +222,7 @@ class ItemFieldShader: public ShaderPlugin {
             GBDATA *gb_item = itemtype.get_any_item();
             if (gb_item) {
                 const char *ipath = GB_get_db_path(gb_item);
-                if (ipath) {
-                    const int PREFIXLEN = 9;
-#if defined(ASSERTION_USED)
-                    const char *PREFIX        = "/<gbmain>";
-                    is_assert(ARB_strBeginsWith(ipath, PREFIX));
-                    is_assert(strlen(PREFIX) == PREFIXLEN);
-#endif
-                    item_dbpath = string(ipath+PREFIXLEN);
-                }
+                if (ipath) item_dbpath = string(ipath);
             }
         }
         return !item_dbpath.empty();
@@ -670,8 +663,6 @@ void TEST_FieldReader() {
         TEST_READER_UNDEF(stringReader,  gb_species_no_field);
         TEST_READER_UNDEF(aciReader,     gb_species_no_field);
     }
-
-    // @@@ tdd MultiFieldReader!
 
     MultiFieldReader multi;        TEST_EXPECT_EQUAL(multi.get_dimension(), 0);
     multi.add_reader(nullReader);  TEST_EXPECT_EQUAL(multi.get_dimension(), 0);

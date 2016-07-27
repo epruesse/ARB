@@ -2868,12 +2868,6 @@ public:
         count_oligos(seq_nogaps);
     }
 
-    OligoCounter(const OligoCounter& other)
-        : oligo_len(other.oligo_len),
-          datasize(other.datasize),
-          occurance(other.occurance)
-    {}
-
     size_t oligo_count(const char *oligo) {
         fa_assert(strlen(oligo) == oligo_len);
         return occurance[oligo];
@@ -2945,7 +2939,7 @@ public:
           oligo_len(oligo_len_)
     {}
 
-    GB_ERROR searchFamily(const char *sequence, FF_complement compl_mode, int max_results, double min_score) OVERRIDE { // @@@ use min_score
+    GB_ERROR searchFamily(const char *sequence, FF_complement compl_mode, int max_results, double min_score) OVERRIDE {
         // 'sequence' has to contain full sequence or part corresponding to 'range'
 
         TEST_EXPECT_EQUAL(compl_mode, FF_FORWARD); // not fit for other modes
@@ -2997,15 +2991,17 @@ public:
             const OligoCounter& spec_oligo_count = oligos_counted[name];
             size_t              score            = seq_oligo_count.similarity_score(spec_oligo_count);
 
-            FamilyList *newMember = new FamilyList;
+            if (score>=min_score) {
+                FamilyList *newMember = new FamilyList;
 
-            newMember->name        = strdup(name.c_str());
-            newMember->matches     = score;
-            newMember->rel_matches = score/spec_oligo_count.getDataSize();
-            newMember->next        = NULL;
+                newMember->name        = strdup(name.c_str());
+                newMember->matches     = score;
+                newMember->rel_matches = score/spec_oligo_count.getDataSize();
+                newMember->next        = NULL;
 
-            family_list = newMember->insertSortedBy_matches(family_list);
-            results++;
+                family_list = newMember->insertSortedBy_matches(family_list);
+                results++;
+            }
         }
 
         delete [] buffer;

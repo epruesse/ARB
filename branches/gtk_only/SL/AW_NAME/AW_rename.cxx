@@ -137,7 +137,7 @@ GB_ERROR AW_select_nameserver(GBDATA *gb_main, GBDATA *gb_other_main) {
 // ------------------------------------
 //      class NameServerConnection
 
-class NameServerConnection {
+class NameServerConnection : virtual Noncopyable {
     aisc_com   *link;
     T_AN_LOCAL  locs;
     T_AN_MAIN   com;
@@ -155,9 +155,6 @@ class NameServerConnection {
         }
         return 0;
     }
-
-    NameServerConnection(const NameServerConnection& other);
-    NameServerConnection& operator=(const NameServerConnection& /* other */);
 
     GB_ERROR reconnect(GBDATA *gb_main) { // reconnect ignoring consistency
         int old_persistent = persistent;
@@ -573,7 +570,7 @@ AW_window *AWTC_create_rename_window(AW_root *root, GBDATA *gb_main) {
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
-    aws->callback(makeHelpCallback("sp_rename.hlp"));
+    aws->callback(makeHelpCallback("rename.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
     aws->at("go");

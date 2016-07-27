@@ -299,24 +299,19 @@ static GBDATA *GB_search_numbered(GBDATA *gbd, const char *str, GB_TYPES create)
 //      class KnownDB
 
 class KnownDB {
-    GBDATA& gb_main; 
-    string  description;
-    string  current_path;
+    RefPtr<GBDATA> gb_main;
+
+    string description;
+    string current_path;
 
 public:
     KnownDB(GBDATA *gb_main_, const char *description_)
-        : gb_main(*gb_main_)
+        : gb_main(gb_main_)
         , description(description_)
         , current_path("/")
     {}
-    KnownDB(const KnownDB& other)
-        : gb_main(other.gb_main),
-          description(other.description),
-          current_path(other.current_path)
-    {}
-    DECLARE_ASSIGNMENT_OPERATOR(KnownDB);
 
-    const GBDATA *get_db() const { return &gb_main; }
+    const GBDATA *get_db() const { return gb_main; }
     const string& get_description() const { return description; }
 
     const string& get_path() const { return current_path; }
@@ -327,7 +322,7 @@ public:
 class hasDB {
     GBDATA *db;
 public:
-    hasDB(GBDATA *gbm) : db(gbm) {}
+    explicit hasDB(GBDATA *gbm) : db(gbm) {}
     bool operator()(const KnownDB& kdb) { return kdb.get_db() == db; }
 };
 
@@ -337,7 +332,7 @@ public:
 class DB_browser;
 static DB_browser *get_the_browser(bool autocreate);
 
-class DB_browser {
+class DB_browser : virtual Noncopyable {
     typedef vector<KnownDB>::iterator KnownDBiterator;
 
     vector<KnownDB> known_databases;
@@ -352,8 +347,6 @@ class DB_browser {
 
     void update_DB_selector();
 
-    DB_browser(const DB_browser& other);            // copying not allowed
-    DB_browser& operator = (const DB_browser& other); // assignment not allowed
 public:
     DB_browser() : current_db(0), aww(0), oms(0) {}
 

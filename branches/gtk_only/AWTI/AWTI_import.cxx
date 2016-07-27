@@ -1154,7 +1154,6 @@ class AliNameAndType {
     string name_, type_;
 public:
     AliNameAndType(const char *ali_name, const char *ali_type) : name_(ali_name), type_(ali_type) {}
-    AliNameAndType(const AliNameAndType& other) : name_(other.name_), type_(other.type_) {}
 
     const char *name() const { return name_.c_str(); }
     const char *type() const { return type_.c_str(); }
@@ -1281,7 +1280,8 @@ void AWTI_open_import_window(AW_root *awr, const char *defname, bool do_exit, GB
 
     if (!gb_main) {
         // control macros via temporary import DB (if no main DB available)
-        configure_macro_recording(awr, "ARB_IMPORT", importer->gb_import_main); // @@@ use result
+        GB_ERROR error = configure_macro_recording(awr, "ARB_IMPORT", importer->gb_import_main);
+        aw_message_if(error);
     }
     else {
         awti_assert(got_macro_ability(awr));
