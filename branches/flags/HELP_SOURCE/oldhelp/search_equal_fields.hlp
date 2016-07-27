@@ -1,0 +1,51 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+UP	mg_species.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Search entries existing in both databases
+
+OCCURRENCE      ARB_MERGE/Transfer species/Source-DB/Search entries existing in both DBs
+                ARB_MERGE/Transfer species/Source-DB/Search words existing in entries of both DBs
+                ARB_MERGE/Transfer species/Target-DB/Search entries existing in both DBs and listed in the source DB hitlist
+                ARB_MERGE/Transfer species/Target-DB/Search entries existing words existing in entries of DBs and listed in the source DB hitlist
+
+DESCRIPTION     Searches for
+
+                         * entries or
+                         * words in entries
+
+                of the 'Search field' selected in the first query expression.
+
+                When you use these functions from menu 'Source-DB',
+                all species are queried and searched for equal entries (or words in entries).
+                Search is performed only in the field selected for the first query
+                expression of the source DB.
+
+                When you use the functions from menu 'Target-DB', only those species in the target DB
+                are queried and searched for equal entries (or words in entries), for which their
+                corresponding species in the source DB are currently listed in the source DB hitlist .
+                Search is performed only for the field selected for the first query expression of the
+                target DB.
+
+                If you select 'that don't match' in the search&query windows, species are only listed
+                if they have an entry which doesn't exist in other DB.  
+
+NOTES		As a shortcut to search for equal entries, you can enter an empty 'Search string' in
+                the first query (for source or target DB). Searching for marked species is not affected!
+
+                If you need to search for empty fields,
+                   * either use the second query or
+                   * search for '*' and select 'don't match'
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known
