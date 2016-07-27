@@ -520,7 +520,7 @@ public:
     }
 };
 
-static bool stralnum(const char *str) {
+static bool contains_non_alphanumeric(const char *str) {
     bool nonalnum = false;
     for (char c = *str++; c; c = *str++) {
         if (!isalnum(c)) {
@@ -528,7 +528,7 @@ static bool stralnum(const char *str) {
             break;
         }
     }
-    return !nonalnum;
+    return nonalnum;
 }
 
 static char *make_alnum(const char *str) {
@@ -557,9 +557,9 @@ static char *make_alpha(const char *str) {
 }
 
 #if defined(DEBUG)
-#define assert_alnum(s) na_assert(stralnum(s))
+#define assert_alphanumeric(s) na_assert(!contains_non_alphanumeric(s))
 #else
-#define assert_alnum(s)
+#define assert_alphanumeric(s)
 #endif // DEBUG
 
 NameInformation::NameInformation(const AN_local *locs) {
@@ -601,9 +601,9 @@ NameInformation::NameInformation(const AN_local *locs) {
 
     freeset(first_name, make_alnum(first_name));
 
-    assert_alnum(parsed_acc);
-    assert_alnum(first_name);
-    assert_alnum(rest_of_name);
+    assert_alphanumeric(parsed_acc);
+    assert_alphanumeric(first_name);
+    assert_alphanumeric(rest_of_name);
 
     UPPERCASE(rest_of_name[0]);
 
@@ -657,7 +657,7 @@ aisc_string get_short(const AN_local *locs) {
     if (an_shorts) {            // we already have a short name
         bool recreate = false;
 
-        if (!stralnum(an_shorts->shrt)) { // contains non-alphanumeric characters
+        if (contains_non_alphanumeric(an_shorts->shrt)) {
             recreate = true;
         }
         else if (strcmp(an_shorts->full_name, default_full_name) == 0 && // fullname in name server is default_full_name
@@ -676,7 +676,7 @@ aisc_string get_short(const AN_local *locs) {
     if (!shrt) { // now there is no short name (or an illegal one)
         char *first_advice=0, *second_advice=0;
 
-        if (locs->advice[0] && !stralnum(locs->advice)) { // bad advice
+        if (locs->advice[0] && contains_non_alphanumeric(locs->advice)) { // bad advice
             locs->advice[0] = 0; // delete it
         }
 
@@ -909,7 +909,7 @@ aisc_string get_short(const AN_local *locs) {
             GBS_optimize_hash(nameModHash);
         }
 
-        assert_alnum(test_short);
+        assert_alphanumeric(test_short);
 
         shrt = strdup(test_short);
         info.add_short(locs, shrt);
@@ -920,7 +920,7 @@ aisc_string get_short(const AN_local *locs) {
         free(second_advice);
     }
 
-    assert_alnum(shrt);
+    assert_alphanumeric(shrt);
     return shrt;
 }
 
@@ -1097,7 +1097,7 @@ static void check_for_illegal_chars(AN_main *main) {
     // first check name parts
     for (AN_shorts *shrt = main->shorts1; shrt;) {
         AN_shorts *next = shrt->next;
-        if (!stralnum(shrt->shrt)) {
+        if (contains_non_alphanumeric(shrt->shrt)) {
             fprintf(stderr, "- Fixing illegal chars in '%s'\n", shrt->shrt);
             an_remove_short(shrt);
             illegal_names++;
@@ -1107,7 +1107,7 @@ static void check_for_illegal_chars(AN_main *main) {
     // then check full short-names
     for (AN_shorts *shrt = main->names; shrt;) {
         AN_shorts *next  = shrt->next;
-        if (!stralnum(shrt->shrt)) {
+        if (contains_non_alphanumeric(shrt->shrt)) {
             fprintf(stderr, "- Fixing illegal chars in '%s'\n", shrt->shrt);
             an_remove_short(shrt);
             illegal_names++;
@@ -1216,10 +1216,6 @@ static GB_ERROR server_load(AN_main *main)
     return error;
 }
 
-__ATTR__NORETURN static void names_server_shutdown(int exitcode) {
-    aisc_server_shutdown_and_exit(AN_global.server_communication, exitcode); // never returns
-}
-
 int names_server_save() {
     server_save(aisc_main, 0);
     return 0;
@@ -1239,12 +1235,13 @@ int server_shutdown(AN_main */*pm*/, aisc_string passwd) {
 
     // shutdown server
     printf("ARB_name_server: server shutdown by administrator\n");
-    names_server_shutdown(0);   // never returns!
+    aisc_server_shutdown(AN_global.server_communication);
+    exit(EXIT_SUCCESS);
+
     return 0;
 }
 
-static void usage(const char *exeName, const char *err) __ATTR__NORETURN;
-static void usage(const char *exeName, const char *err) {
+static int usage(const char *exeName, const char *err) {
     printf("ARB nameserver v%i\n"
            "Usage: %s command server-parameters\n"
            "command = -boot\n"
@@ -1253,7 +1250,7 @@ static void usage(const char *exeName, const char *err) {
            , SERVER_VERSION, exeName);
     arb_print_server_params();
     if (err) printf("Error: %s\n", err);
-    exit(EXIT_FAILURE);
+    return EXIT_FAILURE;
 }
 
 int ARB_main(int argc, char *argv[]) {
@@ -1265,7 +1262,9 @@ int ARB_main(int argc, char *argv[]) {
     params                 = arb_trace_argv(&argc, (const char **)argv);
     const char *executable = argv[0];
 
-    if (!params->default_file) usage(executable, "Missing default file");
+    if (!params->default_file) {
+        return usage(executable, "Missing default file");
+    }
 
     if (argc==1) { // default command is '-look'
         char flag[]="-look";
@@ -1273,7 +1272,9 @@ int ARB_main(int argc, char *argv[]) {
         argc = 2;
     }
 
-    if (argc!=2) usage(executable, "Too many parameters");
+    if (argc!=2) {
+        return usage(executable, "Too many parameters");
+    }
 
     aisc_main = create_AN_main();
 
@@ -1286,7 +1287,7 @@ int ARB_main(int argc, char *argv[]) {
 
         if (!cname) {
             GB_print_error();
-            exit(EXIT_FAILURE);
+            return EXIT_FAILURE;
         }
         name = strdup(cname);
     }
@@ -1298,7 +1299,7 @@ int ARB_main(int argc, char *argv[]) {
         if (!strcmp(argv[1], "-look")) {
             printf("ARB_name_server: No client - terminating.\n");
             aisc_close(AN_global.cl_link, AN_global.cl_main); AN_global.cl_link = 0;
-            exit(EXIT_SUCCESS);
+            return EXIT_SUCCESS;
         }
 
         printf("There is another active nameserver. I try to kill it..\n");
@@ -1311,13 +1312,13 @@ int ARB_main(int argc, char *argv[]) {
 
     if (error) {
         printf("ARB_name_server: %s\n", error);
-        exit(EXIT_FAILURE);
+        return EXIT_FAILURE;
     }
 
     if (((strcmp(argv[1], "-kill") == 0)) ||
         ((argc==3) && (strcmp(argv[2], "-kill")==0))) {
         printf("ARB_name_server: Now I kill myself!\n");
-        exit(EXIT_SUCCESS);
+        return EXIT_SUCCESS;
     }
     for (i=0, so=0; (i<MAX_TRY) && (!so); i++) {
         so = open_aisc_server(name, NAME_SERVER_SLEEP*1000L, 0);
@@ -1325,7 +1326,7 @@ int ARB_main(int argc, char *argv[]) {
     }
     if (!so) {
         printf("AN_SERVER: Gave up on opening the communication socket!\n");
-        exit(EXIT_FAILURE);
+        return EXIT_FAILURE;
     }
     AN_global.server_communication = so;
 
@@ -1442,5 +1443,8 @@ int ARB_main(int argc, char *argv[]) {
 
     printf("ARB_name_server terminating...\n");
     if (nameModHash) GBS_free_hash(nameModHash);
-    names_server_shutdown(error ? EXIT_FAILURE : EXIT_SUCCESS); // never returns
+    aisc_server_shutdown(AN_global.server_communication);
+    int exitcode = error ? EXIT_FAILURE : EXIT_SUCCESS;
+    printf("Server terminates with code %i.\n", exitcode);
+    return exitcode;
 }

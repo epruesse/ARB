@@ -234,7 +234,7 @@ public:
     {}
 
     void add_color(const string& colordef, AW_gc_manager *gcman);
-    void update_colors(const AW_gc_manager *gcman, int changed_color) const;
+    void update_colors(const AW_gc_manager *gcman) const;
 
     AW_rgb_normalized get_color(int idx, const AW_gc_manager *gcman) const;
 
@@ -456,10 +456,9 @@ AW_rgb_normalized gc_range::get_color(int idx, const AW_gc_manager *gcman) const
 STATIC_ASSERT(AW_PLANAR_COLORS*AW_PLANAR_COLORS == AW_RANGE_COLORS); // Note: very strong assertion (could also use less than AW_RANGE_COLORS)
 STATIC_ASSERT(AW_SPATIAL_COLORS*AW_SPATIAL_COLORS*AW_SPATIAL_COLORS == AW_RANGE_COLORS);
 
-void gc_range::update_colors(const AW_gc_manager *gcman, int /*changed_color*/) const { // @@@ elim param changed_color?
+void gc_range::update_colors(const AW_gc_manager *gcman) const {
     /*! recalculate colors of a range (called after one color changed)
-     * @param gcman             the GC manager
-     * @param changed_color     which color of a range has changed (0 = first, ...). -1 -> unknown => need complete update // @@@ not implemented, always acts like -1 is passed
+     * @param gcman    the GC manager
      */
 
     // @@@ try HSV color blending as alternative
@@ -562,7 +561,7 @@ void AW_gc_manager::update_range_colors(const gc_desc& gcd) const {
 
     if (range_idx<defined_ranges) {
         const gc_range& gcr = color_ranges[range_idx];
-        gcr.update_colors(this, gcd.get_color_index());
+        gcr.update_colors(this);
     }
 }
 void AW_gc_manager::update_range_font(const char *font) const {
@@ -685,7 +684,7 @@ void AW_gc_manager::active_range_changed_cb(AW_root *awr) {
 
         active_range_number = wanted_range_number;
         const gc_range& active_range = color_ranges[active_range_number];
-        active_range.update_colors(this, -1); // -1 means full update
+        active_range.update_colors(this);
     }
 }
 static void active_range_changed_cb(AW_root *awr, AW_gc_manager *gcman) { gcman->active_range_changed_cb(awr); }
@@ -784,7 +783,11 @@ void AW_gc_manager::add_gc(const char *gc_description, int& gc, gc_type type, co
         }
     }
 #endif
-    aw_assert(implicated(gc == 0 && type != GC_TYPE_RANGE, gcd.has_font)); // first GC always has to define a font!
+
+#if !defined(ARB_OPENGL)
+    // normally the first GC should define a font (wrong for RNA3D)
+    aw_assert(implicated(gc == 0 && type != GC_TYPE_RANGE, gcd.has_font));
+#endif
 
     if (default_color[0] == '{') {
         // use current value of an already defined color as default for current color:

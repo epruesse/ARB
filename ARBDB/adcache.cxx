@@ -92,7 +92,6 @@ inline void flush_cache_entry(gb_cache& cache, gb_cache_idx index) {
     cache.firstfree_entry = index;
 
 #if defined(GEN_CACHE_STATS)
-    // const char *dbpath = GB_get_db_path(entry.gbd);
     if (entry.reused) {
         GBS_incr_hash(cache.reused, entry.dbpath);
         GBS_write_hash(cache.reuse_sum, entry.dbpath, GBS_read_hash(cache.reuse_sum, entry.dbpath)+entry.reused);

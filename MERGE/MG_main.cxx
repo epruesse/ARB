@@ -186,7 +186,8 @@ AW_window *MERGE_create_main_window(AW_root *aw_root, bool dst_is_new, void (*ex
             app_id           = "ARB_MERGE";
         }
 
-        configure_macro_recording(aw_root, app_id, gb_main_4_macros); // @@@ use result
+        GB_ERROR error = configure_macro_recording(aw_root, app_id, gb_main_4_macros);
+        aw_message_if(error);
     }
 
     mg_assert(aw_root);

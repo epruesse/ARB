@@ -44,14 +44,14 @@ void TEST_shader_interface() {
         AW_root       *NOROOT  = NULL;
         AW_gc_manager *NOGCMAN = NULL;
 
-        BoundItemSel  sel(gb_main, SPECIES_get_selector());
+        BoundItemSel      sel(gb_main, SPECIES_get_selector());
         ItemShader   *shader = registerItemShader(NOROOT, NOGCMAN, sel, SHADY, "undescribed", "", DummyPlugin::reshade, 0);
         TEST_REJECT_NULL(shader);
 
-        ItemShader *unknown = findItemShader("unknown");
+        const ItemShader *unknown = findItemShader("unknown");
         TEST_EXPECT_NULL(unknown);
 
-        ItemShader *found = findItemShader(SHADY);
+        const ItemShader *found = findItemShader(SHADY);
         TEST_EXPECT_EQUAL(found, shader);
 
         // check shader plugins
@@ -458,12 +458,19 @@ void ItemShader_impl::load_or_reset_config_cb(const char *stored) {
                 DelayReshade here(this);
                 if (plugin_setup) {
                     if (targetPlugin.isSet()) {
+                        // restore plugin specific settings
                         targetPlugin->load_or_reset_config(plugin_setup);
                     }
                     else {
                         error = "Failed to restore plugin-specific settings (unknown plugin)";
                     }
                 }
+
+                // activate saved plugin before restoring its settings
+                // (otherwise settings of the previously selected plugin may get modified)
+                if (targetPlugin.isSet()) activate_plugin(targetPlugin->get_id());
+
+                // now restore all settings (into GUI-awars mapped to active config)
                 cfg.write_to_awars(cdef.get_mapping(), true);
             }
             free(plugin_setup);
@@ -626,7 +633,7 @@ ItemShader *registerItemShader(AW_root *awr, AW_gc_manager *gcman, BoundItemSel&
     return &new_shader;
 }
 
-ItemShader *findItemShader(const char *id) { // @@@ return const shader?
+const ItemShader *findItemShader(const char *id) {
     Shaders::iterator found = find_if(registered.begin(), registered.end(), has_id(id));
     return found == registered.end() ? NULL : &*found;
 }

@@ -220,7 +220,6 @@ AP_weights::AP_weights(const GB_UINT4 *w, size_t wlen, const AP_filter *fil)
 }
 
 AP_weights::AP_weights(const AP_weights& other)
-
     : len(other.len),
       weights(NULL)
 {

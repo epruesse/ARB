@@ -379,6 +379,9 @@ AWT_hexdump.o: $(ARBHOME)/INCLUDE/test_unit.h
 AWT_hexdump.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 AWT_hotkeys.o: awt_hotkeys.hxx
+AWT_hotkeys.o: $(ARBHOME)/INCLUDE/arbtools.h
+AWT_hotkeys.o: $(ARBHOME)/INCLUDE/cxxforward.h
+AWT_hotkeys.o: $(ARBHOME)/INCLUDE/gccver.h
 
 AWT_input_mask.o: awt.hxx
 AWT_input_mask.o: awt_hotkeys.hxx
