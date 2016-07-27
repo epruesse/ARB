@@ -570,7 +570,7 @@ AW_window *AWTC_create_rename_window(AW_root *root, GBDATA *gb_main) {
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
-    aws->callback(makeHelpCallback("sp_rename.hlp"));
+    aws->callback(makeHelpCallback("rename.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
     aws->at("go");

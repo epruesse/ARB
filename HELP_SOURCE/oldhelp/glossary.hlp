@@ -52,7 +52,7 @@ SECTION         What do we mean if we talk about ...
 
                                         Identifier for 'species' entries.
                                         Should be generated automatically using
-                                        the name server.
+                                        the NAMESERVER (see LINK{sp_IDs.hlp}).
 
                               - full_name
 

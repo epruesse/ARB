@@ -874,6 +874,9 @@ first_target:
 ifeq ($(UNIT_TESTS),1)
 		@echo ' ut           - only run tests'
 endif
+ifneq ($(SANITIZE),0)
+		@echo ' sanitize     - all + run arb_ntree with sanitizer (test.arb + execute _logged)'
+endif
 		@echo ' modified     - rebuild files modified in svn checkout (does touch)'
 		@echo ' touch        - touch files modified in svn checkout'
 		@echo ''
