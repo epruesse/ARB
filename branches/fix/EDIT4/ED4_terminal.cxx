@@ -558,8 +558,13 @@ ED4_returncode ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *aw
                                             break;
 
                                         case AW_Mouse_Release:
-                                            acceptClick = prev_clicked_species_man != species_man;
+                                            acceptClick              = prev_clicked_species_man != species_man;
                                             prev_clicked_species_man = NULL;
+                                            break;
+
+                                        case AW_Keyboard_Press:
+                                        case AW_Keyboard_Release:
+                                            e4_assert(0); // impossible
                                             break;
                                     }
                                 }
