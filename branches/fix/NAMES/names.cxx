@@ -1217,7 +1217,9 @@ static GB_ERROR server_load(AN_main *main)
 }
 
 __ATTR__NORETURN static void names_server_shutdown(int exitcode) {
-    aisc_server_shutdown_and_exit(AN_global.server_communication, exitcode); // never returns
+    aisc_server_shutdown(AN_global.server_communication);
+    printf("Server terminates with code %i.\n", exitcode);
+    exit(exitcode);
 }
 
 int names_server_save() {
