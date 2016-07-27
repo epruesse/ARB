@@ -1216,12 +1216,6 @@ static GB_ERROR server_load(AN_main *main)
     return error;
 }
 
-__ATTR__NORETURN static void names_server_shutdown(int exitcode) {
-    aisc_server_shutdown(AN_global.server_communication);
-    printf("Server terminates with code %i.\n", exitcode);
-    exit(exitcode);
-}
-
 int names_server_save() {
     server_save(aisc_main, 0);
     return 0;
@@ -1241,12 +1235,13 @@ int server_shutdown(AN_main */*pm*/, aisc_string passwd) {
 
     // shutdown server
     printf("ARB_name_server: server shutdown by administrator\n");
-    names_server_shutdown(0);   // never returns!
+    aisc_server_shutdown(AN_global.server_communication);
+    exit(EXIT_SUCCESS);
+
     return 0;
 }
 
-static void usage(const char *exeName, const char *err) __ATTR__NORETURN;
-static void usage(const char *exeName, const char *err) {
+static int usage(const char *exeName, const char *err) {
     printf("ARB nameserver v%i\n"
            "Usage: %s command server-parameters\n"
            "command = -boot\n"
@@ -1255,7 +1250,7 @@ static void usage(const char *exeName, const char *err) {
            , SERVER_VERSION, exeName);
     arb_print_server_params();
     if (err) printf("Error: %s\n", err);
-    exit(EXIT_FAILURE);
+    return EXIT_FAILURE;
 }
 
 int ARB_main(int argc, char *argv[]) {
@@ -1267,7 +1262,9 @@ int ARB_main(int argc, char *argv[]) {
     params                 = arb_trace_argv(&argc, (const char **)argv);
     const char *executable = argv[0];
 
-    if (!params->default_file) usage(executable, "Missing default file");
+    if (!params->default_file) {
+        return usage(executable, "Missing default file");
+    }
 
     if (argc==1) { // default command is '-look'
         char flag[]="-look";
@@ -1275,7 +1272,9 @@ int ARB_main(int argc, char *argv[]) {
         argc = 2;
     }
 
-    if (argc!=2) usage(executable, "Too many parameters");
+    if (argc!=2) {
+        return usage(executable, "Too many parameters");
+    }
 
     aisc_main = create_AN_main();
 
@@ -1288,7 +1287,7 @@ int ARB_main(int argc, char *argv[]) {
 
         if (!cname) {
             GB_print_error();
-            exit(EXIT_FAILURE);
+            return EXIT_FAILURE;
         }
         name = strdup(cname);
     }
@@ -1300,7 +1299,7 @@ int ARB_main(int argc, char *argv[]) {
         if (!strcmp(argv[1], "-look")) {
             printf("ARB_name_server: No client - terminating.\n");
             aisc_close(AN_global.cl_link, AN_global.cl_main); AN_global.cl_link = 0;
-            exit(EXIT_SUCCESS);
+            return EXIT_SUCCESS;
         }
 
         printf("There is another active nameserver. I try to kill it..\n");
@@ -1313,13 +1312,13 @@ int ARB_main(int argc, char *argv[]) {
 
     if (error) {
         printf("ARB_name_server: %s\n", error);
-        exit(EXIT_FAILURE);
+        return EXIT_FAILURE;
     }
 
     if (((strcmp(argv[1], "-kill") == 0)) ||
         ((argc==3) && (strcmp(argv[2], "-kill")==0))) {
         printf("ARB_name_server: Now I kill myself!\n");
-        exit(EXIT_SUCCESS);
+        return EXIT_SUCCESS;
     }
     for (i=0, so=0; (i<MAX_TRY) && (!so); i++) {
         so = open_aisc_server(name, NAME_SERVER_SLEEP*1000L, 0);
@@ -1327,7 +1326,7 @@ int ARB_main(int argc, char *argv[]) {
     }
     if (!so) {
         printf("AN_SERVER: Gave up on opening the communication socket!\n");
-        exit(EXIT_FAILURE);
+        return EXIT_FAILURE;
     }
     AN_global.server_communication = so;
 
@@ -1444,5 +1443,8 @@ int ARB_main(int argc, char *argv[]) {
 
     printf("ARB_name_server terminating...\n");
     if (nameModHash) GBS_free_hash(nameModHash);
-    names_server_shutdown(error ? EXIT_FAILURE : EXIT_SUCCESS); // never returns
+    aisc_server_shutdown(AN_global.server_communication);
+    int exitcode = error ? EXIT_FAILURE : EXIT_SUCCESS;
+    printf("Server terminates with code %i.\n", exitcode);
+    return exitcode;
 }
