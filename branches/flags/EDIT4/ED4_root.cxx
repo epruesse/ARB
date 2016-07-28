@@ -576,10 +576,12 @@ ED4_returncode ED4_root::create_hierarchy(const char *area_string_middle, const 
     {
         int col_stat_term_height = 50; // @@@ Hoehe des ColumnStatistics Terminals ausrechnen
 
-        ref_terminals.init(new ED4_sequence_info_terminal("Reference_Sequence_Info_Terminal", /* NULL, */ 250, 0, MAXINFOWIDTH, TERMINALHEIGHT, NULL),
-                           new ED4_sequence_terminal("Reference_Sequence_Terminal", 300, 0, 300, TERMINALHEIGHT, NULL, false),
-                           new ED4_sequence_info_terminal("Reference_ColumnStatistics_Info_Terminal", /* NULL, */ 250, 0, MAXINFOWIDTH, col_stat_term_height, NULL),
-                           new ED4_columnStat_terminal("Reference_ColumnStatistics_Terminal", 300, 0, 300, col_stat_term_height, NULL));
+        ref_terminals.init(
+            new ED4_sequence_info_terminal("Reference_Sequence_Info_Terminal",         250, 0, MAXINFOWIDTH, TERMINALHEIGHT,       NULL),
+            new ED4_sequence_terminal     ("Reference_Sequence_Terminal",              300, 0, 300,          TERMINALHEIGHT,       NULL, false),
+            new ED4_sequence_info_terminal("Reference_ColumnStatistics_Info_Terminal", 250, 0, MAXINFOWIDTH, col_stat_term_height, NULL),
+            new ED4_columnStat_terminal   ("Reference_ColumnStatistics_Terminal",      300, 0, 300,          col_stat_term_height, NULL)
+            );
     }
 
 

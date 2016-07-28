@@ -191,12 +191,13 @@ ED4_returncode EDB_root_bact::search_sequence_data_rek(ED4_multi_sequence_manage
                 seq_manager->set_property(ED4_P_MOVABLE);
                 multi_sequence_manager->children->append_member(seq_manager);
 
-                ED4_sequence_info_terminal *sequence_info_terminal =
-                    new ED4_sequence_info_terminal(key_string, 0, 0, SEQUENCEINFOSIZE, TERMINALHEIGHT, seq_manager);
-                sequence_info_terminal->set_property((ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE));
-                sequence_info_terminal->set_links(ref_sequence_info_terminal, ref_sequence_info_terminal);
-                sequence_info_terminal->set_species_pointer(gb_alignment);
-                seq_manager->children->append_member(sequence_info_terminal);
+                {
+                    ED4_sequence_info_terminal *sequence_info_terminal = new ED4_sequence_info_terminal(key_string, 0, 0, SEQUENCEINFOSIZE, TERMINALHEIGHT, seq_manager);
+                    sequence_info_terminal->set_property((ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE));
+                    sequence_info_terminal->set_links(ref_sequence_info_terminal, ref_sequence_info_terminal);
+                    sequence_info_terminal->set_species_pointer(gb_alignment);
+                    seq_manager->children->append_member(sequence_info_terminal);
+                }
 
                 ED4_text_terminal *text_terminal = 0;
 
