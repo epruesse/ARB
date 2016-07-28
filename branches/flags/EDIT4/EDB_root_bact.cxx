@@ -508,9 +508,6 @@ ED4_returncode EDB_root_bact::create_group_header(ED4_multi_species_manager   *p
                                                   bool                         is_folded,
                                                   ED4_index                    local_count_position)
 {
-    const int height_terminal = TERMINALHEIGHT; // @@@ inline (b4 DRY)
-    const int height_spacer   = SPACERHEIGHT;   // @@@ inline (b4 DRY)
-
     char namebuffer[NAME_BUFFERSIZE];
 
     sprintf(namebuffer, "Group_Manager.%ld", ED4_counter);                              // create new group manager
@@ -538,19 +535,19 @@ ED4_returncode EDB_root_bact::create_group_header(ED4_multi_species_manager   *p
 
     {
         sprintf(namebuffer, "Group_Spacer_Terminal_Beg.%ld", ED4_counter); // Spacer at beginning of group
-        ED4_spacer_terminal *group_spacer_terminal = new ED4_spacer_terminal(namebuffer, false, 0, 0, 10, height_spacer, *multi_species_manager); // For better Overview
+        ED4_spacer_terminal *group_spacer_terminal = new ED4_spacer_terminal(namebuffer, false, 0, 0, 10, SPACERHEIGHT, *multi_species_manager); // For better Overview
         (*multi_species_manager)->children->append_member(group_spacer_terminal);
     }
 
     {
         // @@@ DRY code ; see ED4_base.cxx@Consensus_Manager
         sprintf(namebuffer, "Consensus_Manager.%ld", ED4_counter); // Create competence terminal
-        ED4_species_manager *species_manager = new ED4_species_manager(ED4_SP_CONSENSUS, namebuffer, 0, height_spacer, 0, 0, *multi_species_manager);
+        ED4_species_manager *species_manager = new ED4_species_manager(ED4_SP_CONSENSUS, namebuffer, 0, SPACERHEIGHT, 0, 0, *multi_species_manager);
         species_manager->set_property(ED4_P_MOVABLE);
         (*multi_species_manager)->children->append_member(species_manager);
 
         {
-            ED4_species_name_terminal *species_name_terminal = new ED4_species_name_terminal(groupname, 0, 0, MAXSPECIESWIDTH-(group_depth*BRACKETWIDTH),   height_terminal, species_manager);
+            ED4_species_name_terminal *species_name_terminal = new ED4_species_name_terminal(groupname, 0, 0, MAXSPECIESWIDTH-(group_depth*BRACKETWIDTH), TERMINALHEIGHT, species_manager);
             species_name_terminal->set_property((ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE)); // only some terminals
             species_name_terminal->set_links(NULL, ref_sequence_terminal);
             species_manager->children->append_member(species_name_terminal); // properties
@@ -564,7 +561,7 @@ ED4_returncode EDB_root_bact::create_group_header(ED4_multi_species_manager   *p
             species_manager->children->append_member(sequence_manager);
 
             {
-                ED4_sequence_info_terminal *sequence_info_terminal = new ED4_sequence_info_terminal("CONS", 0, 0, SEQUENCEINFOSIZE, height_terminal, sequence_manager);  // Info fuer Gruppe
+                ED4_sequence_info_terminal *sequence_info_terminal = new ED4_sequence_info_terminal("CONS", 0, 0, SEQUENCEINFOSIZE, TERMINALHEIGHT, sequence_manager);  // Info fuer Gruppe
                 sequence_info_terminal->set_links(ref_sequence_info_terminal, ref_sequence_info_terminal);
                 sequence_info_terminal->set_property((ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE));
                 sequence_manager->children->append_member(sequence_info_terminal);
@@ -575,7 +572,7 @@ ED4_returncode EDB_root_bact::create_group_header(ED4_multi_species_manager   *p
                 int        pixel_length = device->get_string_size(ED4_G_SEQUENCES, "whatever",   0);
 
                 sprintf(namebuffer, "Consensus_Seq_Terminal.%ld", ED4_counter);
-                ED4_sequence_terminal *sequence_terminal = new ED4_consensus_sequence_terminal(namebuffer, SEQUENCEINFOSIZE, 0, pixel_length + 10, height_terminal, sequence_manager);
+                ED4_sequence_terminal *sequence_terminal = new ED4_consensus_sequence_terminal(namebuffer, SEQUENCEINFOSIZE, 0, pixel_length + 10, TERMINALHEIGHT, sequence_manager);
 
                 sequence_terminal->set_property(ED4_P_CURSOR_ALLOWED);
                 sequence_terminal->set_links(ref_sequence_terminal, ref_sequence_terminal);
@@ -584,7 +581,7 @@ ED4_returncode EDB_root_bact::create_group_header(ED4_multi_species_manager   *p
         }
     }
 
-    (*y) += height_terminal + height_spacer;
+    (*y) += TERMINALHEIGHT + SPACERHEIGHT;
 
     return ED4_R_OK;
 }
