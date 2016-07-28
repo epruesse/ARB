@@ -1238,7 +1238,7 @@ public:
 
     // functions referring the consensus
 
-    ED4_returncode      create_group(ED4_group_manager **group_manager, GB_CSTR group_name);
+    ED4_group_manager *create_group(GB_CSTR group_name);
 
     void update_consensus(ED4_manager *old_parent, ED4_manager *new_parent, ED4_base *sequence);
     ED4_returncode rebuild_consensi(ED4_base *start_species, ED4_update_flag update_flag);

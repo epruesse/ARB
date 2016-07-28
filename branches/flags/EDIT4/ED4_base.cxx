@@ -232,23 +232,23 @@ bool ED4_window::completely_shows(int x1, int y1, int x2, int y2) const {
 char *ED4_base::resolve_pointer_to_string_copy(int *) const { return NULL; }
 const char *ED4_base::resolve_pointer_to_char_pntr(int *) const { return NULL; }
 
-ED4_returncode ED4_manager::create_group(ED4_group_manager **group_manager, GB_CSTR group_name) { // @@@ convert group_manager into *& (b4 DRY)
+ED4_group_manager *ED4_manager::create_group(GB_CSTR group_name) {
     // creates group from user menu of AW_Window
 
     char namebuffer[35];
 
     sprintf(namebuffer, "Group_Manager.%ld", ED4_counter); // create new group manager
-    *group_manager = new ED4_group_manager(namebuffer, 0, 0, 0, 0, NULL);
+    ED4_group_manager *group_manager = new ED4_group_manager(namebuffer, 0, 0, 0, 0, NULL);
 
     sprintf(namebuffer, "Bracket_Terminal.%ld", ED4_counter);
-    ED4_bracket_terminal *bracket_terminal = new ED4_bracket_terminal(namebuffer, 0, 0, BRACKETWIDTH, 0, *group_manager);
-    (*group_manager)->children->append_member(bracket_terminal);
+    ED4_bracket_terminal *bracket_terminal = new ED4_bracket_terminal(namebuffer, 0, 0, BRACKETWIDTH, 0, group_manager);
+    group_manager->children->append_member(bracket_terminal);
 
     sprintf(namebuffer, "MultiSpecies_Manager.%ld", ED4_counter); // create new multi_species_manager
-    ED4_multi_species_manager *multi_species_manager = new ED4_multi_species_manager(namebuffer, BRACKETWIDTH, 0, 0, 0, *group_manager);
-    (*group_manager)->children->append_member(multi_species_manager);
+    ED4_multi_species_manager *multi_species_manager = new ED4_multi_species_manager(namebuffer, BRACKETWIDTH, 0, 0, 0, group_manager);
+    group_manager->children->append_member(multi_species_manager);
 
-    (*group_manager)->set_property(ED4_P_MOVABLE);
+    group_manager->set_property(ED4_P_MOVABLE);
     multi_species_manager->set_property(ED4_P_IS_HANDLE);
     bracket_terminal->set_property(ED4_P_IS_HANDLE);
     bracket_terminal->set_links(NULL, multi_species_manager);
@@ -306,7 +306,7 @@ ED4_returncode ED4_manager::create_group(ED4_group_manager **group_manager, GB_C
 
     ED4_counter ++;
 
-    return ED4_R_OK;
+    return group_manager;
 }
 
 void ED4_base::generate_configuration_string(GBS_strstruct& buffer) {
