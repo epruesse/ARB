@@ -171,15 +171,15 @@ void ED4_species_manager::dump(size_t indent) const {
 }
 
 
-#define STANDARD_BASE_DUMP_CODE(mytype) do {      \
+#define STANDARD_BASE_DUMP_CODE(mytype) do {    \
         openDump(indent, #mytype, (void*)this); \
         mytype::dump_my_base(NEXT_INDENT);      \
         closeDump(indent);                      \
     } while (0)
     
-#define STANDARD_LEAF_DUMP_CODE(mytype) do {           \
+#define STANDARD_LEAF_DUMP_CODE(mytype) do {    \
         openDump(indent, #mytype, (void*)this); \
-        mytype::dump_my_base(NEXT_INDENT);        \
+        mytype::dump_my_base(NEXT_INDENT);      \
         closeDump(indent);                      \
     } while (0)
 
@@ -226,10 +226,12 @@ void ED4_objspec::dump(size_t indent) const {
     dumpLevel(NEXT_INDENT, "level",                level);
     dumpLevel(NEXT_INDENT, "allowed_children",     allowed_children);
     dumpLevel(NEXT_INDENT, "used_children",        used_children);
+#if 0
     dumpLevel(NEXT_INDENT, "allowed_descendants",  allowed_descendants);
     dumpLevel(NEXT_INDENT, "possible_descendants", possible_descendants);
     dumpLevel(NEXT_INDENT, "handled_level",        handled_level);
     dumpLevel(NEXT_INDENT, "restriction_level",    restriction_level);
+#endif
     closeDump(indent);
 }
 

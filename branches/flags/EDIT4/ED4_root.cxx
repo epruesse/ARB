@@ -763,6 +763,13 @@ ED4_returncode ED4_root::create_hierarchy(const char *area_string_middle, const 
     ED4_trigger_instant_refresh();
     ED4_finish_and_show_notFoundMessage();
 
+#if defined(DEBUG) && 0
+    // dump created hierarchy:
+    puts("---------------------------------------- [main_manager dump start]");
+    main_manager->dump(1);
+    puts("---------------------------------------- [main_manager dump end]");
+#endif
+
     return ED4_R_OK;
 }
 
