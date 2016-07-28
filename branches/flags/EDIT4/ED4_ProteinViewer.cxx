@@ -734,35 +734,36 @@ void PV_SequenceUpdate_CB(GB_CB_TYPE gbtype) {
 static void PV_AddNewAAseqTerminals(ED4_sequence_terminal *seqTerminal, ED4_species_manager *speciesManager) {
     int  translationMode = 0;
     char namebuffer[BUFFERSIZE];
-    for (int i = 0; i<PV_AA_Terminals4Species; i++)
+
+    for (int i = 0; i<PV_AA_Terminals4Species; i++) {
+        int count = 1;
+        int startPos = 0;
+
+        sprintf(namebuffer, "Sequence_Manager.%ld.%d", ED4_counter, count++);
+        ED4_multi_sequence_manager *multiSeqManager = speciesManager->search_spec_child_rek(ED4_L_MULTI_SEQUENCE)->to_multi_sequence_manager();
+        ED4_sequence_manager *new_SeqManager = new ED4_sequence_manager(namebuffer, 0, 0, 0, 0, multiSeqManager);
+        new_SeqManager->set_property(ED4_P_MOVABLE);
+        multiSeqManager->children->append_member(new_SeqManager);
+
+        if (i<FORWARD_STRANDS)                              sprintf(namebuffer, "F%d ProteinInfo_Term%ld.%d", i+1, ED4_counter, count++);
+        else if ((i-FORWARD_STRANDS)<COMPLEMENTARY_STRANDS) sprintf(namebuffer, "C%dProteinInfo_Term%ld.%d", (i-FORWARD_STRANDS)+1, ED4_counter, count++);
+        else                                                sprintf(namebuffer, "DBProteinInfo_Term%ld.%d", ED4_counter, count++);
+
         {
-            int count = 1;
-            int startPos = 0;
-
-            sprintf(namebuffer, "Sequence_Manager.%ld.%d", ED4_counter, count++);
-            ED4_multi_sequence_manager *multiSeqManager = speciesManager->search_spec_child_rek(ED4_L_MULTI_SEQUENCE)->to_multi_sequence_manager();
-            ED4_sequence_manager         *new_SeqManager = new ED4_sequence_manager(namebuffer, 0, 0, 0, 0, multiSeqManager);
-            new_SeqManager->set_property(ED4_P_MOVABLE);
-            multiSeqManager->children->append_member(new_SeqManager);
-
-            ED4_sequence_info_terminal *new_SeqInfoTerminal = 0;
-            if (i<FORWARD_STRANDS)
-                sprintf(namebuffer, "F%d ProteinInfo_Term%ld.%d", i+1, ED4_counter, count++);
-            else if ((i-FORWARD_STRANDS)<COMPLEMENTARY_STRANDS)
-                sprintf(namebuffer, "C%dProteinInfo_Term%ld.%d", (i-FORWARD_STRANDS)+1, ED4_counter, count++);
-            else
-                sprintf(namebuffer, "DBProteinInfo_Term%ld.%d", ED4_counter, count++);
-            new_SeqInfoTerminal = new ED4_sequence_info_terminal(namebuffer, 0, 0, SEQUENCEINFOSIZE, TERMINALHEIGHT, new_SeqManager);
+            ED4_sequence_info_terminal *new_SeqInfoTerminal = new ED4_sequence_info_terminal(namebuffer, 0, 0, SEQUENCEINFOSIZE, TERMINALHEIGHT, new_SeqManager);
             new_SeqInfoTerminal->set_property((ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE));
-            ED4_sequence_info_terminal *seqInfoTerminal = speciesManager->search_spec_child_rek(ED4_L_SEQUENCE_INFO)->to_sequence_info_terminal();
-            new_SeqInfoTerminal->set_links(seqInfoTerminal, seqInfoTerminal);
-            new_SeqManager->children->append_member(new_SeqInfoTerminal);
 
+            ED4_sequence_info_terminal *seqInfoTerminal = speciesManager->search_spec_child_rek(ED4_L_SEQUENCE_INFO)->to_sequence_info_terminal();
+            new_SeqInfoTerminal->set_links(seqInfoTerminal, seqInfoTerminal); // @@@ shouldn't this be linked to ref-terminals?
+            new_SeqManager->children->append_member(new_SeqInfoTerminal);
+        }
+
+        {
             sprintf(namebuffer, "AA_Sequence_Term%ld.%d", ED4_counter, count++);
             ED4_orf_terminal *AA_SeqTerminal = new ED4_orf_terminal(namebuffer, SEQUENCEINFOSIZE, 0, 0, TERMINALHEIGHT, new_SeqManager);
             AA_SeqTerminal->set_links(seqTerminal, seqTerminal);
 
-            char       *speciesName    = seqTerminal->species_name;
+            char *speciesName = seqTerminal->species_name;
             if (i<FORWARD_STRANDS) {
                 startPos = i;
                 translationMode = FORWARD_STRAND;
@@ -778,11 +779,12 @@ static void PV_AddNewAAseqTerminals(ED4_sequence_terminal *seqTerminal, ED4_spec
             TranslateGeneToAminoAcidSequence(ED4_ROOT->aw_root, AA_SeqTerminal, speciesName, startPos, translationMode);
             AA_SeqTerminal->SET_aaSeqFlags(startPos+1, translationMode);
             new_SeqManager->children->append_member(AA_SeqTerminal);
-
-            ED4_counter++;
-
-            new_SeqManager->request_resize();
         }
+
+        ED4_counter++;
+
+        new_SeqManager->request_resize();
+    }
 }
 
 void PV_AddCorrespondingOrfTerminals(ED4_species_name_terminal *spNameTerm) {
