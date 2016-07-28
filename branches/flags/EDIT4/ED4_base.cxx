@@ -232,10 +232,10 @@ bool ED4_window::completely_shows(int x1, int y1, int x2, int y2) const {
 char *ED4_base::resolve_pointer_to_string_copy(int *) const { return NULL; }
 const char *ED4_base::resolve_pointer_to_char_pntr(int *) const { return NULL; }
 
-ED4_returncode ED4_manager::create_group(ED4_group_manager **group_manager, GB_CSTR group_name) {
+ED4_returncode ED4_manager::create_group(ED4_group_manager **group_manager, GB_CSTR group_name) { // @@@ convert group_manager into *& (b4 DRY)
     // creates group from user menu of AW_Window
 
-    char buffer[35];
+    char buffer[35]; // @@@ rename -> namebuffer (b4 DRY)
 
     sprintf(buffer, "Group_Manager.%ld", ED4_counter);                                                          // create new group manager
     *group_manager = new ED4_group_manager(buffer, 0, 0, 0, 0, NULL);
@@ -260,6 +260,7 @@ ED4_returncode ED4_manager::create_group(ED4_group_manager **group_manager, GB_C
     }
 
     {
+        // @@@ DRY code ; see EDB_root_bact.cxx@Consensus_Manager
         sprintf(buffer, "Consensus_Manager.%ld", ED4_counter);                                                     // Create competence terminal
         ED4_species_manager *species_manager = new ED4_species_manager(ED4_SP_CONSENSUS, buffer, 0, SPACERHEIGHT, 0, 0, multi_species_manager);
         species_manager->set_property(ED4_P_MOVABLE);
@@ -272,23 +273,26 @@ ED4_returncode ED4_manager::create_group(ED4_group_manager **group_manager, GB_C
             species_manager->children->append_member(species_name_terminal);                                                    // properties
         }
 
-        sprintf(buffer, "Consensus_Seq_Manager.%ld", ED4_counter);
-        ED4_sequence_manager *sequence_manager = new ED4_sequence_manager(buffer, MAXSPECIESWIDTH, 0, 0, 0, species_manager);
-        sequence_manager->set_property(ED4_P_MOVABLE);
-        species_manager->children->append_member(sequence_manager);
-
         {
-            ED4_sequence_info_terminal *sequence_info_terminal = new ED4_sequence_info_terminal("DATA", 0, 0, SEQUENCEINFOSIZE, TERMINALHEIGHT, sequence_manager);        // Info fuer Gruppe
-            sequence_info_terminal->set_links(ED4_ROOT->ref_terminals.get_ref_sequence_info(), ED4_ROOT->ref_terminals.get_ref_sequence_info());
-            sequence_info_terminal->set_property((ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE));
-            sequence_manager->children->append_member(sequence_info_terminal);
-        }
+            // @@@ DRY code ; see EDB_root_bact.cxx@Consensus_Seq_Manager
+            sprintf(buffer, "Consensus_Seq_Manager.%ld", ED4_counter);
+            ED4_sequence_manager *sequence_manager = new ED4_sequence_manager(buffer, MAXSPECIESWIDTH, 0, 0, 0, species_manager);
+            sequence_manager->set_property(ED4_P_MOVABLE);
+            species_manager->children->append_member(sequence_manager);
 
-        {
-            ED4_sequence_terminal *sequence_terminal = new ED4_consensus_sequence_terminal("", SEQUENCEINFOSIZE, 0, 0, TERMINALHEIGHT, sequence_manager);
-            sequence_terminal->set_property(ED4_P_CURSOR_ALLOWED);
-            sequence_terminal->set_links(ED4_ROOT->ref_terminals.get_ref_sequence(),   ED4_ROOT->ref_terminals.get_ref_sequence());
-            sequence_manager->children->append_member(sequence_terminal);
+            {
+                ED4_sequence_info_terminal *sequence_info_terminal = new ED4_sequence_info_terminal("DATA", 0, 0, SEQUENCEINFOSIZE, TERMINALHEIGHT, sequence_manager);        // Info fuer Gruppe
+                sequence_info_terminal->set_links(ED4_ROOT->ref_terminals.get_ref_sequence_info(), ED4_ROOT->ref_terminals.get_ref_sequence_info());
+                sequence_info_terminal->set_property((ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE));
+                sequence_manager->children->append_member(sequence_info_terminal);
+            }
+
+            {
+                ED4_sequence_terminal *sequence_terminal = new ED4_consensus_sequence_terminal("", SEQUENCEINFOSIZE, 0, 0, TERMINALHEIGHT, sequence_manager);
+                sequence_terminal->set_property(ED4_P_CURSOR_ALLOWED);
+                sequence_terminal->set_links(ED4_ROOT->ref_terminals.get_ref_sequence(),   ED4_ROOT->ref_terminals.get_ref_sequence());
+                sequence_manager->children->append_member(sequence_terminal);
+            }
         }
     }
 
