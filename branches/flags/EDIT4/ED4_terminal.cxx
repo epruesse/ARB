@@ -1000,24 +1000,39 @@ ED4_pure_text_terminal::ED4_pure_text_terminal(const char *temp_id, AW_pos x, AW
 {
 }
 
+#if defined(DEVEL_RALF) && defined(DEBUG)
+// # define DEBUG_SPACER_TERMINALS 0 // show placeholder-spacers (normally not drawn)
+# define DEBUG_SPACER_TERMINALS 1 // show erasing spacers (normally area gets erased) // @@@ deactivate later
+// # define DEBUG_SPACER_TERMINALS 2 // show all spacers
+#endif
+
 ED4_returncode ED4_spacer_terminal::Show(int /* refresh_all */, int is_cleared) {
-    if (shallDraw) {
-        if (update_info.clear_at_refresh && !is_cleared) {
-            clear_background();
-        }
+#if defined(DEBUG_SPACER_TERMINALS)
+    is_cleared = true; // dont warn
+    draw();
+#else // !DEBUG_SPACER_TERMINALS
+    if (shallDraw || (update_info.clear_at_refresh && !is_cleared)) {
         draw();
     }
+#endif
+
     return ED4_R_OK;
 }
 
 
-ED4_returncode ED4_spacer_terminal::draw() {  
-#if defined(DEBUG) && 0
-    clear_background(ED4_G_FIRST_COLOR_GROUP); // draw colored spacers to make them visible
-#else
-    clear_background(0);
-#endif // DEBUG
-    return (ED4_R_OK);
+ED4_returncode ED4_spacer_terminal::draw() {
+    int gc = 0;
+#if defined(DEBUG_SPACER_TERMINALS)
+    const int GC_COUNT = ED4_G_LAST_COLOR_GROUP - ED4_G_FIRST_COLOR_GROUP + 1;
+    gc                 = ((long(this)/32)%GC_COUNT)+ED4_G_FIRST_COLOR_GROUP; // draw colored spacers to make them visible
+
+    if (DEBUG_SPACER_TERMINALS != 2) {
+        bool highlight     = bool(DEBUG_SPACER_TERMINALS) == shallDraw;
+        if (!highlight) gc = 0;
+    }
+#endif // DEBUG_SPACER_TERMINALS
+    clear_background(gc);
+    return ED4_R_OK;
 }
 
 ED4_spacer_terminal::ED4_spacer_terminal(const char *temp_id, bool shallDraw_, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
