@@ -1002,7 +1002,7 @@ ED4_pure_text_terminal::ED4_pure_text_terminal(const char *temp_id, AW_pos x, AW
 
 #if 0
 // # define DEBUG_SPACER_TERMINALS 0 // show placeholder-spacers (normally not drawn)
-# define DEBUG_SPACER_TERMINALS 1 // show erasing spacers (normally area gets erased) // @@@ deactivate later
+# define DEBUG_SPACER_TERMINALS 1 // show erasing spacers (normally area gets erased)
 // # define DEBUG_SPACER_TERMINALS 2 // show all spacers
 #endif
 

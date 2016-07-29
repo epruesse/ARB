@@ -329,21 +329,20 @@ ED4_returncode  EDB_root_bact::fill_species(ED4_multi_species_manager *multi_spe
                                             int                        group_depth,
                                             arb_progress              *progress)
 {
-#define SHIPSIZE 1024
+    const int MAXNAMELEN = 1024;
 
-    int  lauf = 0;
-    bool word = 0;
+    bool         expect_separator = true;
+    ED4_datamode datamode         = ED4_D_SPECIES;
+    ED4_returncode retCode        = ED4_R_OK;
 
     ED4_index height_of_created_terminals = 0;
+    ED4_index local_count_position        = curr_local_position;
 
-    ED4_datamode datamode  = ED4_D_SPECIES;
-    ED4_returncode retCode = ED4_R_OK;
-
-    char      *ship                 = (char*)GB_calloc(SHIPSIZE, sizeof(*ship)); // @@@ rename -> species_name or similar
-    ED4_index  local_count_position = curr_local_position;
+    char *name = (char*)GB_calloc(MAXNAMELEN, sizeof(*name));
+    int   npos = 0;
 
     do {
-        if (word == 0) { // word is needed for jump over separator
+        if (expect_separator) {
             if (str[(*index)+1] == 'L') {
                 datamode = ED4_D_SPECIES;
             }
@@ -351,7 +350,6 @@ ED4_returncode  EDB_root_bact::fill_species(ED4_multi_species_manager *multi_spe
                 datamode = ED4_D_EXTENDED;
             }
             else {
-
                 const char *entry = str+*index+1;
                 char        tag   = entry[0];
                 const char *sep   = strchr(entry, 1);
@@ -386,33 +384,33 @@ ED4_returncode  EDB_root_bact::fill_species(ED4_multi_species_manager *multi_spe
         }
 
         if (str[*index] != 1) {
-            ship[lauf++] = str[*index];
-            word = 1;
+            name[npos++] = str[*index];
+            expect_separator = false;
             (*index)++;
         }
 
         if (str[*index] == 1 || str[*index] == '\0') {
-            ship[lauf] = '\0'; // speciesname-generation is finished
-            lauf = 0;
+            name[npos] = '\0'; // speciesname-generation finished
+            npos = 0;
 
             if (progress) {
                 progress->inc();
                 if (progress->aborted()) ED4_exit();
             }
 
-            fill_data(multi_species_manager, refterms, ship, y, local_count_position, &height_of_created_terminals, group_depth, datamode);
+            fill_data(multi_species_manager, refterms, name, y, local_count_position, &height_of_created_terminals, group_depth, datamode);
 
             ED4_counter++;
             local_count_position += height_of_created_terminals;
             *length_of_terminals += height_of_created_terminals;
-            word = 0;
+            expect_separator = true;
         }
-    } while (!((str[(*index)] == 1) && (str[(*index)+1] == 'G' || str[(*index)+1]=='E' || str[(*index)+1]=='F'))
-             && (str[*index] != '\0'));
+    }
+    while (!((str[(*index)] == 1) && (str[(*index)+1] == 'G' || str[(*index)+1]=='E' || str[(*index)+1]=='F')) && (str[*index] != '\0'));
 
-    free(ship);
+    free(name);
+
     return retCode;
-#undef SHIPSIZE
 }
 
 ED4_index EDB_root_bact::scan_string(ED4_multi_species_manager *parent,
@@ -424,13 +422,14 @@ ED4_index EDB_root_bact::scan_string(ED4_multi_species_manager *parent,
 {
     ED4_multi_species_manager *multi_species_manager = NULL;
     ED4_bracket_terminal      *bracket_terminal      = NULL;
-    char                       namebuffer[NAME_BUFFERSIZE];
-    char                       groupname[GB_GROUP_NAME_MAX];
-    ED4_index                  y_old                 = 0;
-    ED4_index                  lauf                  = 0;
-    ED4_index                  local_count_position  = 0;
-    ED4_index                  length_of_terminals   = 0;
-    static int                 group_depth           = 0;
+
+    char      namebuffer[NAME_BUFFERSIZE];
+    char      groupname[GB_GROUP_NAME_MAX];
+    ED4_index y_old                = 0;
+    ED4_index local_count_position = 0;
+    ED4_index length_of_terminals  = 0;
+
+    static int group_depth = 0;
 
     if (!parent->parent->is_area_manager()) {       // add 25 if group is not child of; not the first time!
         local_count_position = TERMINALHEIGHT + SPACERHEIGHT;   // a folded group
@@ -450,10 +449,13 @@ ED4_index EDB_root_bact::scan_string(ED4_multi_species_manager *parent,
             group_depth++;
             bool is_folded = str[(*index)+1]=='F';
 
-            for (*index += 2, lauf = 0; str[*index] != 1; (*index)++) {  // Jump over 'G' and Blank to get Groupname
-                groupname[lauf++] = str[*index];
+            {
+                ED4_index gpos = 0;
+                for (*index += 2, gpos = 0; str[*index] != 1; (*index)++) {  // Jump over 'G' and Blank to get Groupname
+                    groupname[gpos++] = str[*index];
+                }
+                groupname[gpos] = '\0';
             }
-            groupname[lauf] = '\0';
 
             create_group_header(parent, refterms, multi_species_manager, bracket_terminal, y, groupname, group_depth, is_folded, local_count_position);
 
