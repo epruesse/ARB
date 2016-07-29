@@ -271,7 +271,7 @@ ED4_group_manager *ED4_manager::create_group(GB_CSTR group_name) {
 
     {
         sprintf(namebuffer, "Group_Spacer_Terminal_Beg.%ld", ED4_counter); // spacer at beginning of group
-        ED4_spacer_terminal *group_spacer_terminal = new ED4_spacer_terminal(namebuffer, true, 0, 0, 10, SPACERHEIGHT, multi_species_manager);
+        ED4_spacer_terminal *group_spacer_terminal = new ED4_spacer_terminal(namebuffer, false, 0, 0, 10, SPACERHEIGHT, multi_species_manager);
         multi_species_manager->children->append_member(group_spacer_terminal);
     }
 
@@ -317,7 +317,7 @@ ED4_group_manager *ED4_manager::create_group(GB_CSTR group_name) {
 
     {
         sprintf(namebuffer, "Group_Spacer_Terminal_End.%ld", ED4_counter); // spacer at end of group
-        ED4_spacer_terminal *group_spacer_terminal = new ED4_spacer_terminal(namebuffer, true, 0, SPACERHEIGHT + TERMINALHEIGHT, 10, SPACERHEIGHT, multi_species_manager);
+        ED4_spacer_terminal *group_spacer_terminal = new ED4_spacer_terminal(namebuffer, false, 0, SPACERHEIGHT + TERMINALHEIGHT, 10, SPACERHEIGHT, multi_species_manager);
         multi_species_manager->children->append_member(group_spacer_terminal);
     }
 

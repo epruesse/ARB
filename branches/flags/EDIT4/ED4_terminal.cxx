@@ -1000,7 +1000,7 @@ ED4_pure_text_terminal::ED4_pure_text_terminal(const char *temp_id, AW_pos x, AW
 {
 }
 
-#if defined(DEVEL_RALF) && defined(DEBUG)
+#if 0
 // # define DEBUG_SPACER_TERMINALS 0 // show placeholder-spacers (normally not drawn)
 # define DEBUG_SPACER_TERMINALS 1 // show erasing spacers (normally area gets erased) // @@@ deactivate later
 // # define DEBUG_SPACER_TERMINALS 2 // show all spacers
@@ -1048,6 +1048,8 @@ ED4_spacer_terminal::ED4_spacer_terminal(const char *temp_id, bool shallDraw_, A
     : ED4_terminal(spacer_terminal_spec, temp_id, x, y, width, height, temp_parent),
       shallDraw(shallDraw_)
 {
+    // 'shallDraw_'==true is only needed in very special cases,
+    // eg. for 'Top_Middle_Spacer' (to remove overlapping relicts from half-displayed species below)
 }
 
 ED4_returncode ED4_line_terminal::draw() {

@@ -606,13 +606,13 @@ ED4_returncode ED4_root::create_hierarchy(const char *area_string_middle, const 
             device_manager->children->append_member(top_area_manager);
             top_area_man = top_area_manager;
 
-            top_spacer_terminal = new ED4_spacer_terminal("Top_Spacer", true, 0, 0, 100, 10, top_area_manager);
+            top_spacer_terminal = new ED4_spacer_terminal("Top_Spacer", false, 0, 0, 100, 10, top_area_manager);
             top_area_manager->children->append_member(top_spacer_terminal);
 
             top_multi_species_manager = new ED4_multi_species_manager("Top_MultiSpecies_Manager", XPOS_MULTIMAN, 0, 0, 0, top_area_manager);
             top_area_manager->children->append_member(top_multi_species_manager);
 
-            top_multi_spacer_terminal_beg = new ED4_spacer_terminal("Top_Multi_Spacer_Terminal_Beg", true, 0, 0, 0, 3, top_multi_species_manager);
+            top_multi_spacer_terminal_beg = new ED4_spacer_terminal("Top_Left_Spacer", false, 0, 0, 0, 3, top_multi_species_manager);
             top_multi_species_manager->children->append_member(top_multi_spacer_terminal_beg);
 
             y += 3;
@@ -633,7 +633,7 @@ ED4_returncode ED4_root::create_hierarchy(const char *area_string_middle, const 
             y += TOP_MID_LINE_HEIGHT;
 
 
-            top_mid_spacer_terminal = new ED4_spacer_terminal("Top_Middle_Spacer", true, 0, y, 880, TOP_MID_SPACER_HEIGHT,   device_manager);
+            top_mid_spacer_terminal = new ED4_spacer_terminal("Top_Middle_Spacer", true, 0, y, 880, TOP_MID_SPACER_HEIGHT, device_manager);
             device_manager->children->append_member(top_mid_spacer_terminal);
 
             // needed to avoid text-clipping problems:
@@ -662,7 +662,7 @@ ED4_returncode ED4_root::create_hierarchy(const char *area_string_middle, const 
             mid_multi_species_manager = new ED4_multi_species_manager("Middle_MultiSpecies_Manager", XPOS_MULTIMAN, 0, 0, 0, middle_area_manager);
             middle_area_manager->children->append_member(mid_multi_species_manager);
 
-            mid_multi_spacer_terminal_beg = new ED4_spacer_terminal("Mid_Multi_Spacer_Terminal_Beg", true, 0, 0, 0, 3, mid_multi_species_manager);
+            mid_multi_spacer_terminal_beg = new ED4_spacer_terminal("Mid_Multi_Spacer_Terminal_Beg", false, 0, 0, 0, 3, mid_multi_species_manager);
             mid_multi_species_manager->children->append_member(mid_multi_spacer_terminal_beg);
 
             y+=3;               // dummy height, to create a dummy layout ( to preserve order of objects )
@@ -678,7 +678,7 @@ ED4_returncode ED4_root::create_hierarchy(const char *area_string_middle, const 
             }
 
             {
-                ED4_spacer_terminal *mid_bot_spacer_terminal = new ED4_spacer_terminal("Middle_Bot_Spacer_Terminal", true, 0, y, 880, 10, device_manager);
+                ED4_spacer_terminal *mid_bot_spacer_terminal = new ED4_spacer_terminal("Middle_Bot_Spacer_Terminal", false, 0, y, 880, 10, device_manager);
                 device_manager->children->append_member(mid_bot_spacer_terminal);
             }
 
@@ -690,7 +690,7 @@ ED4_returncode ED4_root::create_hierarchy(const char *area_string_middle, const 
             device_manager->children->append_member(mid_bot_line_terminal);
             y += 3;
 
-            total_bottom_spacer = new ED4_spacer_terminal("Total_Bottom_Spacer_terminal", true, 0, y, 0, 10000, device_manager);
+            total_bottom_spacer = new ED4_spacer_terminal("Total_Bottom_Spacer_terminal", false, 0, y, 0, 10000, device_manager);
             device_manager->children->append_member(total_bottom_spacer);
             y += 10000;
         }
