@@ -965,7 +965,7 @@ public:
 
     ED4_returncode  clear_background(int color=0);
 
-    void set_links(ED4_base *width_link, ED4_base *height_link);
+    void set_links(ED4_base *width_ref, ED4_base *height_ref);
 
     // functions concerned with special initialization
     void set_property(ED4_properties prop) { dynamic_prop = (ED4_properties) (dynamic_prop | prop); } 

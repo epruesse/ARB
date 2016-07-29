@@ -997,23 +997,22 @@ int ED4_base::adjust_clipping_rectangle() {
     return current_device()->reduceClipBorders(base_area.top(), base_area.bottom(), base_area.left(), base_area.right());
 }
 
-void ED4_base::set_links(ED4_base *new_width, ED4_base *new_height) {
-    // sets links in hierarchy :
-    // width-link sets links between objects on same level
-    // height-link sets links between objects on different levels
+void ED4_base::set_links(ED4_base *width_ref, ED4_base *height_ref) {
+    // links 'this' to (one or two) reference terminal(s)
+    // => 'this' will resize when size of reference changes (maybe more effects?)
 
-    if (new_width) {
+    if (width_ref) {
         if (width_link) width_link->linked_objects->remove_elem(this);
-        width_link = new_width;
-        if (!new_width->linked_objects) new_width->linked_objects = new ED4_base_list;
-        new_width->linked_objects->append_elem(this);
+        width_link = width_ref;
+        if (!width_ref->linked_objects) width_ref->linked_objects = new ED4_base_list;
+        width_ref->linked_objects->append_elem(this);
     }
 
-    if (new_height) {
+    if (height_ref) {
         if (height_link) height_link->linked_objects->remove_elem(this);
-        height_link = new_height;
-        if (!new_height->linked_objects) new_height->linked_objects = new ED4_base_list;
-        new_height->linked_objects->append_elem(this);
+        height_link = height_ref;
+        if (!height_ref->linked_objects) height_ref->linked_objects = new ED4_base_list;
+        height_ref->linked_objects->append_elem(this);
     }
 }
 
