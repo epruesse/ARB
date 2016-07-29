@@ -1238,8 +1238,6 @@ public:
 
     // functions referring the consensus
 
-    ED4_group_manager *create_group(GB_CSTR group_name);
-
     void update_consensus(ED4_manager *old_parent, ED4_manager *new_parent, ED4_base *sequence);
     ED4_returncode rebuild_consensi(ED4_base *start_species, ED4_update_flag update_flag);
 
@@ -2196,8 +2194,31 @@ CONSTEXPR_RETURN inline bool valid(SpeciesCreationMode m) { return m>=CREATE_NEW
 extern ST_ML *st_ml;
 struct AlignDataAccess;
 
-// --------------------------------------------
-//      Prototype functions without a class
+// -------------------------------------------------
+//      factory functions (hierarchy builders):
+
+ED4_multi_species_manager *ED4_new_species_multi_species_manager(); // @@@ use prefix ED4_make
+
+ED4_group_manager *ED4_make_group_manager(GB_CSTR group_name);
+ED4_group_manager *ED4_makePartOf_group_manager(ED4_manager                 *group_parent,
+                                                GB_CSTR                      group_name,
+                                                int                          group_depth,
+                                                bool                         is_folded,
+                                                ED4_index                    local_count_position,
+                                                ED4_sequence_terminal       *ref_sequence_terminal,
+                                                ED4_sequence_info_terminal  *ref_sequence_info_terminal,
+                                                ED4_bracket_terminal*&       bracket_terminal,
+                                                ED4_multi_species_manager*&  multi_species_manager); // internal helper
+
+// -------------------------------------
+//      hierarchy access functions:
+
+ED4_species_name_terminal *ED4_find_species_name_terminal(const char *species_name);
+ED4_species_name_terminal *ED4_find_SAI_name_terminal(const char *sai_name);
+ED4_species_name_terminal *ED4_find_species_or_SAI_name_terminal(const char *species_name);
+
+// --------------------------
+//      other functions:
 
 void ED4_new_editor_window(AW_window *aww);
 void ED4_with_all_edit_windows(void (*cb)(ED4_window *));
@@ -2269,12 +2290,6 @@ void       ED4_compression_changed_cb(AW_root *awr);
 void       ED4_alignment_length_changed(GBDATA *gb_alignment_len, GB_CB_TYPE gbtype);
 
 AW_window *ED4_create_new_seq_window(AW_root *root, SpeciesCreationMode creation_mode);
-
-ED4_species_name_terminal *ED4_find_species_name_terminal(const char *species_name);
-ED4_species_name_terminal *ED4_find_SAI_name_terminal(const char *sai_name);
-ED4_species_name_terminal *ED4_find_species_or_SAI_name_terminal(const char *species_name);
-
-ED4_multi_species_manager *ED4_new_species_multi_species_manager();
 
 void ED4_quit_editor(AW_window *aww);
 void ED4_exit() __ATTR__NORETURN;

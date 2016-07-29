@@ -893,7 +893,7 @@ static void createGroupFromSelected(GB_CSTR group_name, GB_CSTR field_name, GB_C
     // if field_name==0 -> all selected species & subgroups are moved to this new group
     // if field_name!=0 -> all selected species containing field_content in field field_name are moved to this new group
 
-    ED4_group_manager *new_group_manager = ED4_ROOT->main_manager->create_group(group_name);
+    ED4_group_manager *new_group_manager = ED4_make_group_manager(group_name);
 
     {
         ED4_multi_species_manager *multi_species_manager = ED4_ROOT->top_area_man->get_multi_species_manager();

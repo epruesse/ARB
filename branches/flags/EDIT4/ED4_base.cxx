@@ -232,24 +232,18 @@ bool ED4_window::completely_shows(int x1, int y1, int x2, int y2) const {
 char *ED4_base::resolve_pointer_to_string_copy(int *) const { return NULL; }
 const char *ED4_base::resolve_pointer_to_char_pntr(int *) const { return NULL; }
 
-ED4_group_manager *ED4_manager::create_group(GB_CSTR group_name) {
-    // creates group from user menu of AW_Window
-
+ED4_group_manager *ED4_makePartOf_group_manager(ED4_manager                 *group_parent,
+                                                GB_CSTR                      group_name,
+                                                int                          group_depth,
+                                                bool                         is_folded,
+                                                ED4_index                    local_count_position,
+                                                ED4_sequence_terminal       *ref_sequence_terminal, // @@@ pass ED4_reference_terminals instead
+                                                ED4_sequence_info_terminal  *ref_sequence_info_terminal,
+                                                ED4_bracket_terminal*&       bracket_terminal,
+                                                ED4_multi_species_manager*&  multi_species_manager)
+{
     char namebuffer[NAME_BUFFERSIZE];
 
-    ED4_bracket_terminal      *bracket_terminal;
-    ED4_multi_species_manager *multi_species_manager;
-
-    ED4_index    local_count_position = 0;
-    ED4_manager *group_parent         = NULL;
-
-    bool is_folded   = false;
-    int  group_depth = 1;
-
-    ED4_sequence_terminal      *ref_sequence_terminal      = ED4_ROOT->ref_terminals.get_ref_sequence();
-    ED4_sequence_info_terminal *ref_sequence_info_terminal = ED4_ROOT->ref_terminals.get_ref_sequence_info();
-
-    // [common part] @@@ DRY vs EDB_root_bact.cxx@GROUP_CREATION
     sprintf(namebuffer, "Group_Manager.%ld", ED4_counter); // create new group manager
     ED4_group_manager *group_manager = new ED4_group_manager(namebuffer, 0, local_count_position, 0, 0, group_parent);
 
@@ -290,9 +284,7 @@ ED4_group_manager *ED4_manager::create_group(GB_CSTR group_name) {
 
         {
             sprintf(namebuffer, "Consensus_Seq_Manager.%ld", ED4_counter);
-            ED4_sequence_manager *sequence_manager = new ED4_sequence_manager(namebuffer,
-                                                                              MAXSPECIESWIDTH, // @@@ differs from other version (one seems wrong)
-                                                                              0, 0, 0, species_manager);
+            ED4_sequence_manager *sequence_manager = new ED4_sequence_manager(namebuffer, 0, 0, 0, 0, species_manager);
             sequence_manager->set_property(ED4_P_MOVABLE);
             species_manager->children->append_member(sequence_manager);
 
@@ -304,18 +296,40 @@ ED4_group_manager *ED4_manager::create_group(GB_CSTR group_name) {
             }
 
             {
-                ED4_sequence_terminal *sequence_terminal = new ED4_consensus_sequence_terminal("", SEQUENCEINFOSIZE, 0, 0, TERMINALHEIGHT, sequence_manager);
+                sprintf(namebuffer, "Consensus_Seq_Terminal.%ld", ED4_counter);
+                ED4_sequence_terminal *sequence_terminal = new ED4_consensus_sequence_terminal(namebuffer, SEQUENCEINFOSIZE, 0, 0, TERMINALHEIGHT, sequence_manager);
                 sequence_terminal->set_property(ED4_P_CURSOR_ALLOWED);
                 sequence_terminal->set_links(ref_sequence_terminal, ref_sequence_terminal);
                 sequence_manager->children->append_member(sequence_terminal);
             }
         }
     }
-    // [end of common part]
 
-    bracket_terminal->set_links(NULL, multi_species_manager);
+    return group_manager;
+}
 
-    {
+ED4_group_manager *ED4_make_group_manager(GB_CSTR group_name) {
+    // called from user menu
+
+    char namebuffer[35];
+
+    ED4_bracket_terminal      *bracket_terminal;
+    ED4_multi_species_manager *multi_species_manager;
+
+    ED4_index    local_count_position = 0;
+    ED4_manager *group_parent         = NULL;
+
+    bool is_folded   = false;
+    int  group_depth = 1;
+
+    ED4_sequence_terminal      *ref_sequence_terminal      = ED4_ROOT->ref_terminals.get_ref_sequence();
+    ED4_sequence_info_terminal *ref_sequence_info_terminal = ED4_ROOT->ref_terminals.get_ref_sequence_info();
+
+    ED4_group_manager *group_manager = ED4_makePartOf_group_manager(group_parent, group_name, group_depth, is_folded, local_count_position, ref_sequence_terminal, ref_sequence_info_terminal, bracket_terminal, multi_species_manager);
+
+    bracket_terminal->set_links(NULL, multi_species_manager); // @@@ DRY: done in other version by caller (=scan string) 
+
+    { // @@@ DRY vs other version
         sprintf(namebuffer, "Group_Spacer_Terminal_End.%ld", ED4_counter); // spacer at end of group
         ED4_spacer_terminal *group_spacer_terminal = new ED4_spacer_terminal(namebuffer, false, 0, SPACERHEIGHT + TERMINALHEIGHT, 10, SPACERHEIGHT, multi_species_manager);
         multi_species_manager->children->append_member(group_spacer_terminal);
@@ -324,7 +338,7 @@ ED4_group_manager *ED4_manager::create_group(GB_CSTR group_name) {
 
     multi_species_manager->update_requested_by_child();
 
-    ED4_counter ++;
+    ED4_counter++;
 
     return group_manager;
 }
@@ -1078,8 +1092,8 @@ ED4_base::ED4_base(const ED4_objspec& spec_, GB_CSTR temp_id, AW_pos x, AW_pos y
 
     linked_objects = NULL;
 
-    extension.position[X_POS] = x;
-    extension.position[Y_POS] = y;
+    extension.position[X_POS] = x; // @@@ position set here has no effect (will be overwritten by next resize)
+    extension.position[Y_POS] = y; // @@@ => position can be removed from ALL terminal/manager ctors
     ED4_base::touch_world_cache();
     extension.size[WIDTH] = width;
     extension.size[HEIGHT] = height;
