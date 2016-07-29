@@ -1008,8 +1008,17 @@ ED4_pure_text_terminal::ED4_pure_text_terminal(const char *temp_id, AW_pos x, AW
 
 ED4_returncode ED4_spacer_terminal::Show(int /* refresh_all */, int is_cleared) {
 #if defined(DEBUG_SPACER_TERMINALS)
-    is_cleared = true; // dont warn
-    draw();
+    if (DEBUG_SPACER_TERMINALS == 1) {
+        if (shallDraw) {
+            draw();
+        }
+        else if (update_info.clear_at_refresh && !is_cleared) {
+            clear_background(0);
+        }
+    }
+    else {
+        draw();
+    }
 #else // !DEBUG_SPACER_TERMINALS
     if (shallDraw || (update_info.clear_at_refresh && !is_cleared)) {
         draw();
