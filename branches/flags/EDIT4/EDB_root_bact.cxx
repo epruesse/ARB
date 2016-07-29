@@ -497,22 +497,22 @@ ED4_index EDB_root_bact::scan_string(ED4_multi_species_manager  *parent,
     return local_count_position;
 }
 
-ED4_returncode EDB_root_bact::create_group_header(ED4_multi_species_manager   *parent,
+ED4_returncode EDB_root_bact::create_group_header(ED4_multi_species_manager   *group_parent,
                                                   ED4_sequence_info_terminal  *ref_sequence_info_terminal,
                                                   ED4_sequence_terminal       *ref_sequence_terminal,
                                                   ED4_multi_species_manager*&  multi_species_manager,
                                                   ED4_bracket_terminal*&       bracket_terminal,
                                                   ED4_index                   *y,
-                                                  char                        *groupname,
+                                                  char                        *group_name,
                                                   int                          group_depth,
                                                   bool                         is_folded,
                                                   ED4_index                    local_count_position)
 {
     char namebuffer[NAME_BUFFERSIZE];
 
+    // [common part] @@@ DRY vs ED4_base.cxx@GROUP_CREATION
     sprintf(namebuffer, "Group_Manager.%ld", ED4_counter); // create new group manager
-    ED4_group_manager *group_manager = new ED4_group_manager(namebuffer, 0, local_count_position, 0, 0, parent);
-    parent->children->append_member(group_manager);
+    ED4_group_manager *group_manager = new ED4_group_manager(namebuffer, 0, local_count_position, 0, 0, group_parent);
 
     sprintf(namebuffer, "Bracket_Terminal.%ld", ED4_counter);
     bracket_terminal = new ED4_bracket_terminal(namebuffer, 0, 0, BRACKETWIDTH, 0, group_manager);
@@ -522,15 +522,12 @@ ED4_returncode EDB_root_bact::create_group_header(ED4_multi_species_manager   *p
     multi_species_manager = new ED4_multi_species_manager(namebuffer, BRACKETWIDTH, 0, 0, 0, group_manager);
     group_manager->children->append_member(multi_species_manager);
 
-    if (is_folded) { // only set FOLDED-flag if group is folded
-        group_manager->set_property((ED4_properties) (ED4_P_IS_FOLDED | ED4_P_MOVABLE));
-        multi_species_manager->set_property((ED4_properties) (ED4_P_IS_FOLDED | ED4_P_IS_HANDLE));
-        bracket_terminal->set_property((ED4_properties) (ED4_P_IS_FOLDED | ED4_P_IS_HANDLE));
-    }
-    else {
-        group_manager->set_property(ED4_P_MOVABLE);
-        multi_species_manager->set_property(ED4_P_IS_HANDLE);
-        bracket_terminal->set_property(ED4_P_IS_HANDLE);
+    {
+        ED4_properties prop_folded(is_folded ? ED4_P_IS_FOLDED : ED4_P_NO_PROP); // only set FOLDED-flag if group is folded
+
+        group_manager        ->set_property(ED4_properties(prop_folded | ED4_P_MOVABLE));
+        multi_species_manager->set_property(ED4_properties(prop_folded | ED4_P_IS_HANDLE));
+        bracket_terminal     ->set_property(ED4_properties(prop_folded | ED4_P_IS_HANDLE));
     }
 
     {
@@ -540,31 +537,31 @@ ED4_returncode EDB_root_bact::create_group_header(ED4_multi_species_manager   *p
     }
 
     {
-        // @@@ DRY code ; see ED4_base.cxx@Consensus_Manager
         sprintf(namebuffer, "Consensus_Manager.%ld", ED4_counter);
         ED4_species_manager *species_manager = new ED4_species_manager(ED4_SP_CONSENSUS, namebuffer, 0, SPACERHEIGHT, 0, 0, multi_species_manager);
         species_manager->set_property(ED4_P_MOVABLE);
         multi_species_manager->children->append_member(species_manager);
 
         {
-            ED4_species_name_terminal *species_name_terminal = new ED4_species_name_terminal(groupname, 0, 0, MAXSPECIESWIDTH-(group_depth*BRACKETWIDTH), TERMINALHEIGHT, species_manager);
+            ED4_species_name_terminal *species_name_terminal = new ED4_species_name_terminal(group_name, 0, 0, MAXSPECIESWIDTH - group_depth*BRACKETWIDTH, TERMINALHEIGHT, species_manager);
             species_name_terminal->set_property((ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE));
             species_name_terminal->set_links(NULL, ref_sequence_terminal);
             species_manager->children->append_member(species_name_terminal);
         }
 
         {
-            // @@@ DRY code ; see ED4_base.cxx@Consensus_Seq_Manager
             sprintf(namebuffer, "Consensus_Seq_Manager.%ld", ED4_counter);
-            ED4_sequence_manager *sequence_manager = new ED4_sequence_manager(namebuffer, MAXSPECIESWIDTH-(group_depth*BRACKETWIDTH), 0, 0, 0, species_manager);
+            ED4_sequence_manager *sequence_manager = new ED4_sequence_manager(namebuffer,
+                                                                              MAXSPECIESWIDTH - group_depth*BRACKETWIDTH, // @@@ differs from other version (one seems wrong)
+                                                                              0, 0, 0, species_manager);
             sequence_manager->set_property(ED4_P_MOVABLE);
             species_manager->children->append_member(sequence_manager);
 
             {
-                ED4_sequence_info_terminal *sequence_info_terminal = new ED4_sequence_info_terminal("CONS", 0, 0, SEQUENCEINFOSIZE, TERMINALHEIGHT, sequence_manager); // group info
-                sequence_info_terminal->set_links(ref_sequence_info_terminal, ref_sequence_info_terminal);
-                sequence_info_terminal->set_property((ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE));
-                sequence_manager->children->append_member(sequence_info_terminal);
+                ED4_sequence_info_terminal *seq_info_term = new ED4_sequence_info_terminal("CONS", 0, 0, SEQUENCEINFOSIZE, TERMINALHEIGHT, sequence_manager); // group info
+                seq_info_term->set_links(ref_sequence_info_terminal, ref_sequence_info_terminal);
+                seq_info_term->set_property((ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE));
+                sequence_manager->children->append_member(seq_info_term);
             }
 
             {
@@ -572,14 +569,17 @@ ED4_returncode EDB_root_bact::create_group_header(ED4_multi_species_manager   *p
                 int        pixel_length = device->get_string_size(ED4_G_SEQUENCES, "whatever",   0);
 
                 sprintf(namebuffer, "Consensus_Seq_Terminal.%ld", ED4_counter);
-                ED4_sequence_terminal *sequence_terminal = new ED4_consensus_sequence_terminal(namebuffer, SEQUENCEINFOSIZE, 0, pixel_length + 10, TERMINALHEIGHT, sequence_manager);
 
+                ED4_sequence_terminal *sequence_terminal = new ED4_consensus_sequence_terminal(namebuffer, SEQUENCEINFOSIZE, 0, pixel_length + 10, TERMINALHEIGHT, sequence_manager);
                 sequence_terminal->set_property(ED4_P_CURSOR_ALLOWED);
                 sequence_terminal->set_links(ref_sequence_terminal, ref_sequence_terminal);
                 sequence_manager->children->append_member(sequence_terminal);
             }
         }
     }
+    // [end of common part]
+
+    group_parent->children->append_member(group_manager);
 
     (*y) += TERMINALHEIGHT + SPACERHEIGHT;
 
