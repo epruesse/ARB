@@ -28,11 +28,12 @@ static void toggle_detailed_column_stat(ED4_sequence_terminal *seq_term, bool fo
         }
         else { // add
             if (!force_off) {
-                char buffer[35];
-                int count = 1;
-                sprintf(buffer, "Sequence_Manager.%ld.%d", ED4_counter, count++);
+                char namebuffer[NAME_BUFFERSIZE];
+                int  count = 1;
 
-                ED4_sequence_manager *new_seq_man = new ED4_sequence_manager(buffer, 0, 0, 0, 0, multi_seq_man);
+                sprintf(namebuffer, "Sequence_Manager.%ld.%d", ED4_counter, count++);
+
+                ED4_sequence_manager *new_seq_man = new ED4_sequence_manager(namebuffer, 0, 0, 0, 0, multi_seq_man);
                 new_seq_man->set_property(ED4_P_MOVABLE);
                 multi_seq_man->children->append_member(new_seq_man);
 
@@ -51,8 +52,8 @@ static void toggle_detailed_column_stat(ED4_sequence_terminal *seq_term, bool fo
                 new_colStat_info_term->set_links(ref_colStat_info_terminal, ref_colStat_terminal);
                 new_seq_man->children->append_member(new_colStat_info_term);
 
-                sprintf(buffer, "Column_Statistic_Terminal.%ld.%d", ED4_counter, count++);
-                ED4_columnStat_terminal *new_colStat_term = new ED4_columnStat_terminal(buffer, SEQUENCEINFOSIZE, 0, 0, columnStatHeight, new_seq_man);
+                sprintf(namebuffer, "Column_Statistic_Terminal.%ld.%d", ED4_counter, count++);
+                ED4_columnStat_terminal *new_colStat_term = new ED4_columnStat_terminal(namebuffer, SEQUENCEINFOSIZE, 0, 0, columnStatHeight, new_seq_man);
                 new_colStat_term->set_links(ref_colStat_terminal, ref_colStat_terminal);
                 new_seq_man->children->append_member(new_colStat_term);
 

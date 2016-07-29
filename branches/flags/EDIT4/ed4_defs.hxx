@@ -111,6 +111,8 @@ extern bool         DRAW;
 
 #define CHARACTEROFFSET 5       // spacer-width left of text-terminal
 
+#define NAME_BUFFERSIZE 100 // size of buffer used to build terminal/manager IDs
+
 typedef long ED4_index;
 
 #define ED4_SCROLL_OVERLAP 20   // 15 Pixels overlap

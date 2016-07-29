@@ -17,8 +17,6 @@
 #include <arb_strbuf.h>
 #include <ad_config.h>
 
-#define NAME_BUFFERSIZE 100
-
 void EDB_root_bact::calc_no_of_all(const char *string_to_scan, long *group, long *species) {
     *group = 0;
     *species = 0;

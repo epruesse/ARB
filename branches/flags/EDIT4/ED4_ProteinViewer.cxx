@@ -44,8 +44,6 @@ enum {
     PV_ALL
 };
 
-#define BUFFERSIZE            1000
-
 // Global Variables
 extern GBDATA *GLOBAL_gb_main;
 
@@ -733,7 +731,7 @@ void PV_SequenceUpdate_CB(GB_CB_TYPE gbtype) {
 
 static void PV_AddNewAAseqTerminals(ED4_sequence_terminal *seqTerminal, ED4_species_manager *speciesManager) {
     int  translationMode = 0;
-    char namebuffer[BUFFERSIZE];
+    char namebuffer[NAME_BUFFERSIZE];
 
     for (int i = 0; i<PV_AA_Terminals4Species; i++) {
         int count = 1;
@@ -1094,4 +1092,3 @@ AW_window *ED4_CreateProteinViewer_window(AW_root *aw_root) {
     return (AW_window *)aws;
 }
 
-#undef BUFFERSIZE

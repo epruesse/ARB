@@ -235,7 +235,7 @@ const char *ED4_base::resolve_pointer_to_char_pntr(int *) const { return NULL; }
 ED4_group_manager *ED4_manager::create_group(GB_CSTR group_name) {
     // creates group from user menu of AW_Window
 
-    char namebuffer[35];
+    char namebuffer[NAME_BUFFERSIZE];
 
     ED4_bracket_terminal      *bracket_terminal;
     ED4_multi_species_manager *multi_species_manager;
