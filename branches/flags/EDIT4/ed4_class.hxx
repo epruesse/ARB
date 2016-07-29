@@ -1350,10 +1350,10 @@ public:
     void clear();
     void init(ED4_sequence_info_terminal *, ED4_sequence_terminal *, ED4_sequence_info_terminal *, ED4_columnStat_terminal *);
 
-    ED4_sequence_info_terminal *get_ref_sequence_info()    { return ref_sequence_info; }
-    ED4_sequence_terminal      *get_ref_sequence()         { return ref_sequence; }
-    ED4_sequence_info_terminal *get_ref_column_stat_info() { return ref_column_stat_info; }
-    ED4_columnStat_terminal    *get_ref_column_stat()      { return ref_column_stat; }
+    ED4_sequence_terminal      *sequence()         { return ref_sequence; }
+    ED4_sequence_info_terminal *sequence_info()    { return ref_sequence_info; }
+    ED4_columnStat_terminal    *column_stat()      { return ref_column_stat; }
+    ED4_sequence_info_terminal *column_stat_info() { return ref_column_stat_info; }
 
     ED4_reference_terminals()  { null(); }
     ~ED4_reference_terminals() { clear(); }

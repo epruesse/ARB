@@ -116,7 +116,7 @@ ED4_returncode EDB_root_bact::fill_data(ED4_multi_species_manager *multi_species
             sprintf(namebuffer, "Species_Name_Term%ld.%d", ED4_counter, count_two++);
             ED4_species_name_terminal *species_name_terminal = new ED4_species_name_terminal(namebuffer, 0, 0, MAXSPECIESWIDTH-(group_depth*BRACKETWIDTH), terminal_height, name_manager);
             species_name_terminal->set_property((ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE));
-            species_name_terminal->set_links(NULL, refterms.get_ref_sequence());
+            species_name_terminal->set_links(NULL, refterms.sequence());
             species_name_terminal->set_species_pointer(GB_entry(gb_datamode, "name"));
             name_manager->children->append_member(species_name_terminal);
         }
@@ -188,7 +188,7 @@ ED4_returncode EDB_root_bact::search_sequence_data_rek(ED4_multi_sequence_manage
                 {
                     ED4_sequence_info_terminal *sequence_info_terminal = new ED4_sequence_info_terminal(key_string, 0, 0, SEQUENCEINFOSIZE, TERMINALHEIGHT, seq_manager);
                     sequence_info_terminal->set_property((ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE));
-                    sequence_info_terminal->set_both_links(refterms.get_ref_sequence_info());
+                    sequence_info_terminal->set_both_links(refterms.sequence_info());
                     sequence_info_terminal->set_species_pointer(gb_alignment);
                     seq_manager->children->append_member(sequence_info_terminal);
                 }
@@ -231,7 +231,7 @@ ED4_returncode EDB_root_bact::search_sequence_data_rek(ED4_multi_sequence_manage
                 }
 
                 text_terminal->set_property(ED4_P_CURSOR_ALLOWED);
-                text_terminal->set_both_links(refterms.get_ref_sequence());
+                text_terminal->set_both_links(refterms.sequence());
                 seq_manager->children->append_member(text_terminal);
 #if defined(DEBUG)
                 // ensure only 1 terminal is consensus-relevant!
@@ -255,7 +255,7 @@ ED4_returncode EDB_root_bact::search_sequence_data_rek(ED4_multi_sequence_manage
 
                 if (MAXSEQUENCECHARACTERLENGTH < string_length) {
                     MAXSEQUENCECHARACTERLENGTH = string_length;
-                    refterms.get_ref_sequence()->extension.size[WIDTH] = pixel_length;
+                    refterms.sequence()->extension.size[WIDTH] = pixel_length;
                 }
 
                 if (!ED4_ROOT->scroll_links.link_for_hor_slider) {

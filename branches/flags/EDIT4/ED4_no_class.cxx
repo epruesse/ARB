@@ -117,8 +117,8 @@ static ARB_ERROR update_terminal_extension(ED4_base *this_object) {
         else if (this_object->is_line_terminal()) { // thought for line terminals which are direct children of the device manager
             this_object->extension.size[WIDTH] =
                 TREETERMINALSIZE + MAXSPECIESWIDTH +
-                ED4_ROOT->ref_terminals.get_ref_sequence_info()->extension.size[WIDTH] +
-                ED4_ROOT->ref_terminals.get_ref_sequence()->extension.size[WIDTH];
+                ED4_ROOT->ref_terminals.sequence_info()->extension.size[WIDTH] +
+                ED4_ROOT->ref_terminals.sequence()->extension.size[WIDTH];
         }
     }
 
@@ -135,13 +135,13 @@ void ED4_expose_recalculations() {
 #warning below calculations have to be done at startup as well
 #endif
 
-    ED4_ROOT->ref_terminals.get_ref_sequence_info()->extension.size[HEIGHT] = TERMINALHEIGHT;
-    ED4_ROOT->ref_terminals.get_ref_sequence()->extension.size[HEIGHT]      = TERMINALHEIGHT;
-    ED4_ROOT->ref_terminals.get_ref_sequence_info()->extension.size[WIDTH]  = MAXINFOWIDTH;
+    ED4_ROOT->ref_terminals.sequence()->extension.size[HEIGHT]      = TERMINALHEIGHT;
+    ED4_ROOT->ref_terminals.sequence_info()->extension.size[HEIGHT] = TERMINALHEIGHT;
+    ED4_ROOT->ref_terminals.sequence_info()->extension.size[WIDTH]  = MAXINFOWIDTH;
 
     int screenwidth = ED4_ROOT->root_group_man->remap()->shown_sequence_to_screen(MAXSEQUENCECHARACTERLENGTH);
     while (1) {
-        ED4_ROOT->ref_terminals.get_ref_sequence()->extension.size[WIDTH] =
+        ED4_ROOT->ref_terminals.sequence()->extension.size[WIDTH] =
             ED4_ROOT->font_group.get_width(ED4_G_SEQUENCES) *
             (screenwidth+3);
 

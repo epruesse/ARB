@@ -41,20 +41,20 @@ static void toggle_detailed_column_stat(ED4_sequence_terminal *seq_term, bool fo
                 AW_pos font_height      = ED4_ROOT->font_group.get_height(ED4_G_SEQUENCES);
                 AW_pos columnStatHeight = ceil((COLUMN_STAT_ROWS+0.5 /* reserve a bit more space */)*COLUMN_STAT_ROW_HEIGHT(font_height));
 
-                ED4_columnStat_terminal    *ref_colStat_terminal      = ED4_ROOT->ref_terminals.get_ref_column_stat();
-                ED4_sequence_info_terminal *ref_colStat_info_terminal = ED4_ROOT->ref_terminals.get_ref_column_stat_info();
+                ED4_columnStat_terminal    *ref_colStat      = ED4_ROOT->ref_terminals.column_stat();
+                ED4_sequence_info_terminal *ref_colStat_info = ED4_ROOT->ref_terminals.column_stat_info();
 
-                ref_colStat_terminal->extension.size[HEIGHT] = columnStatHeight;
-                ref_colStat_terminal->extension.size[WIDTH]  = pixel_length;
+                ref_colStat->extension.size[HEIGHT] = columnStatHeight;
+                ref_colStat->extension.size[WIDTH]  = pixel_length;
 
                 ED4_sequence_info_terminal *new_colStat_info_term = new ED4_sequence_info_terminal("CStat", 0, 0, SEQUENCEINFOSIZE, columnStatHeight, new_seq_man);
                 new_colStat_info_term->set_property((ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE));
-                new_colStat_info_term->set_links(ref_colStat_info_terminal, ref_colStat_terminal);
+                new_colStat_info_term->set_links(ref_colStat_info, ref_colStat);
                 new_seq_man->children->append_member(new_colStat_info_term);
 
                 sprintf(namebuffer, "Column_Statistic_Terminal.%ld.%d", ED4_counter, count++);
                 ED4_columnStat_terminal *new_colStat_term = new ED4_columnStat_terminal(namebuffer, SEQUENCEINFOSIZE, 0, 0, columnStatHeight, new_seq_man);
-                new_colStat_term->set_both_links(ref_colStat_terminal);
+                new_colStat_term->set_both_links(ref_colStat);
                 new_seq_man->children->append_member(new_colStat_term);
 
                 ED4_counter++;
