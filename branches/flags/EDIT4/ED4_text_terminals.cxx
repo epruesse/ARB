@@ -687,8 +687,8 @@ ED4_returncode ED4_text_terminal::draw() {
     return (ED4_R_OK);
 }
 
-ED4_text_terminal::ED4_text_terminal(const ED4_objspec& spec_, GB_CSTR temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
-    ED4_terminal(spec_, temp_id, x, y, width, height, temp_parent)
+ED4_text_terminal::ED4_text_terminal(const ED4_objspec& spec_, GB_CSTR temp_id, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
+    ED4_terminal(spec_, temp_id, width, height, temp_parent)
 {
 }
 

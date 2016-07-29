@@ -236,7 +236,6 @@ ED4_group_manager *ED4_makePartOf_group_manager(ED4_manager                 *gro
                                                 GB_CSTR                      group_name,
                                                 int                          group_depth,
                                                 bool                         is_folded,
-                                                ED4_index                    local_count_position,
                                                 ED4_reference_terminals&     refterms,
                                                 ED4_bracket_terminal*&       bracket_terminal,
                                                 ED4_multi_species_manager*&  multi_species_manager)
@@ -244,14 +243,14 @@ ED4_group_manager *ED4_makePartOf_group_manager(ED4_manager                 *gro
     char namebuffer[NAME_BUFFERSIZE];
 
     sprintf(namebuffer, "Group_Manager.%ld", ED4_counter); // create new group manager
-    ED4_group_manager *group_manager = new ED4_group_manager(namebuffer, 0, local_count_position, 0, 0, group_parent);
+    ED4_group_manager *group_manager = new ED4_group_manager(namebuffer, 0, 0, group_parent);
 
     sprintf(namebuffer, "Bracket_Terminal.%ld", ED4_counter);
-    bracket_terminal = new ED4_bracket_terminal(namebuffer, 0, 0, BRACKETWIDTH, 0, group_manager);
+    bracket_terminal = new ED4_bracket_terminal(namebuffer, BRACKETWIDTH, 0, group_manager);
     group_manager->children->append_member(bracket_terminal);
 
     sprintf(namebuffer, "MultiSpecies_Manager.%ld", ED4_counter); // create new multi_species_manager
-    multi_species_manager = new ED4_multi_species_manager(namebuffer, BRACKETWIDTH, 0, 0, 0, group_manager);
+    multi_species_manager = new ED4_multi_species_manager(namebuffer, 0, 0, group_manager);
     group_manager->children->append_member(multi_species_manager);
 
     {
@@ -264,18 +263,18 @@ ED4_group_manager *ED4_makePartOf_group_manager(ED4_manager                 *gro
 
     {
         sprintf(namebuffer, "Group_Spacer_Terminal_Beg.%ld", ED4_counter); // spacer at beginning of group
-        ED4_spacer_terminal *group_spacer_terminal = new ED4_spacer_terminal(namebuffer, false, 0, 0, 10, SPACERHEIGHT, multi_species_manager);
+        ED4_spacer_terminal *group_spacer_terminal = new ED4_spacer_terminal(namebuffer, false, 10, SPACERHEIGHT, multi_species_manager);
         multi_species_manager->children->append_member(group_spacer_terminal);
     }
 
     {
         sprintf(namebuffer, "Consensus_Manager.%ld", ED4_counter);
-        ED4_species_manager *species_manager = new ED4_species_manager(ED4_SP_CONSENSUS, namebuffer, 0, SPACERHEIGHT, 0, 0, multi_species_manager);
+        ED4_species_manager *species_manager = new ED4_species_manager(ED4_SP_CONSENSUS, namebuffer, 0, 0, multi_species_manager);
         species_manager->set_property(ED4_P_MOVABLE);
         multi_species_manager->children->append_member(species_manager);
 
         {
-            ED4_species_name_terminal *species_name_terminal = new ED4_species_name_terminal(group_name, 0, 0, MAXSPECIESWIDTH - group_depth*BRACKETWIDTH, TERMINALHEIGHT, species_manager);
+            ED4_species_name_terminal *species_name_terminal = new ED4_species_name_terminal(group_name, MAXSPECIESWIDTH - group_depth*BRACKETWIDTH, TERMINALHEIGHT, species_manager);
             species_name_terminal->set_property((ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE));
             species_name_terminal->set_links(NULL, refterms.sequence());
             species_manager->children->append_member(species_name_terminal);
@@ -283,12 +282,12 @@ ED4_group_manager *ED4_makePartOf_group_manager(ED4_manager                 *gro
 
         {
             sprintf(namebuffer, "Consensus_Seq_Manager.%ld", ED4_counter);
-            ED4_sequence_manager *sequence_manager = new ED4_sequence_manager(namebuffer, 0, 0, 0, 0, species_manager);
+            ED4_sequence_manager *sequence_manager = new ED4_sequence_manager(namebuffer, 0, 0, species_manager);
             sequence_manager->set_property(ED4_P_MOVABLE);
             species_manager->children->append_member(sequence_manager);
 
             {
-                ED4_sequence_info_terminal *seq_info_term = new ED4_sequence_info_terminal("CONS", 0, 0, SEQUENCEINFOSIZE, TERMINALHEIGHT, sequence_manager); // group info
+                ED4_sequence_info_terminal *seq_info_term = new ED4_sequence_info_terminal("CONS", SEQUENCEINFOSIZE, TERMINALHEIGHT, sequence_manager); // group info
                 seq_info_term->set_both_links(refterms.sequence_info());
                 seq_info_term->set_property((ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE));
                 sequence_manager->children->append_member(seq_info_term);
@@ -296,7 +295,7 @@ ED4_group_manager *ED4_makePartOf_group_manager(ED4_manager                 *gro
 
             {
                 sprintf(namebuffer, "Consensus_Seq_Terminal.%ld", ED4_counter);
-                ED4_sequence_terminal *sequence_terminal = new ED4_consensus_sequence_terminal(namebuffer, SEQUENCEINFOSIZE, 0, 0, TERMINALHEIGHT, sequence_manager);
+                ED4_sequence_terminal *sequence_terminal = new ED4_consensus_sequence_terminal(namebuffer, 0, TERMINALHEIGHT, sequence_manager);
                 sequence_terminal->set_property(ED4_P_CURSOR_ALLOWED);
                 sequence_terminal->set_both_links(refterms.sequence());
                 sequence_manager->children->append_member(sequence_terminal);
@@ -315,19 +314,18 @@ ED4_group_manager *ED4_make_group_manager(GB_CSTR group_name) {
     ED4_bracket_terminal      *bracket_terminal;
     ED4_multi_species_manager *multi_species_manager;
 
-    ED4_index    local_count_position = 0;
-    ED4_manager *group_parent         = NULL;
+    ED4_manager *group_parent = NULL;
 
     bool is_folded   = false;
     int  group_depth = 1;
 
-    ED4_group_manager *group_manager = ED4_makePartOf_group_manager(group_parent, group_name, group_depth, is_folded, local_count_position, ED4_ROOT->ref_terminals, bracket_terminal, multi_species_manager);
+    ED4_group_manager *group_manager = ED4_makePartOf_group_manager(group_parent, group_name, group_depth, is_folded, ED4_ROOT->ref_terminals, bracket_terminal, multi_species_manager);
 
     bracket_terminal->set_links(NULL, multi_species_manager); // @@@ DRY: done in other version by caller (=scan string) 
 
     { // @@@ DRY vs other version
         sprintf(namebuffer, "Group_Spacer_Terminal_End.%ld", ED4_counter); // spacer at end of group
-        ED4_spacer_terminal *group_spacer_terminal = new ED4_spacer_terminal(namebuffer, false, 0, SPACERHEIGHT + TERMINALHEIGHT, 10, SPACERHEIGHT, multi_species_manager);
+        ED4_spacer_terminal *group_spacer_terminal = new ED4_spacer_terminal(namebuffer, false, 10, SPACERHEIGHT, multi_species_manager);
         multi_species_manager->children->append_member(group_spacer_terminal);
     }
 
@@ -1073,7 +1071,7 @@ void ED4_base::draw_bb(int color) {
     }
 }
 
-ED4_base::ED4_base(const ED4_objspec& spec_, GB_CSTR temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
+ED4_base::ED4_base(const ED4_objspec& spec_, GB_CSTR temp_id, AW_pos width, AW_pos height, ED4_manager *temp_parent)
     : spec(spec_)
 {
     index = 0;
@@ -1088,15 +1086,18 @@ ED4_base::ED4_base(const ED4_objspec& spec_, GB_CSTR temp_id, AW_pos x, AW_pos y
 
     linked_objects = NULL;
 
-    extension.position[X_POS] = x; // @@@ position set here has no effect (will be overwritten by next resize)
-    extension.position[Y_POS] = y; // @@@ => position can be removed from ALL terminal/manager ctors
-    ED4_base::touch_world_cache();
-    extension.size[WIDTH] = width;
+    extension.position[X_POS] = -1; // position set here has no effect (will be overwritten by next resize)
+    extension.position[Y_POS] = -1;
+
+    ED4_base::touch_world_cache(); // invalidate position
+
+    extension.size[WIDTH]  = width;
     extension.size[HEIGHT] = height;
+
     extension.y_folded = 0;
-    parent = temp_parent;
-    width_link = NULL;
-    height_link = NULL;
+    parent             = temp_parent;
+    width_link         = NULL;
+    height_link        = NULL;
 
     memset((char*)&update_info, 0, sizeof(update_info));
     memset((char*)&flag, 0, sizeof(flag));

@@ -719,8 +719,8 @@ ED4_base* ED4_terminal::search_ID(const char *temp_id) {
     return (NULL);
 }
 
-ED4_terminal::ED4_terminal(const ED4_objspec& spec_, GB_CSTR temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
-    ED4_base(spec_, temp_id, x, y, width, height, temp_parent)
+ED4_terminal::ED4_terminal(const ED4_objspec& spec_, GB_CSTR temp_id, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
+    ED4_base(spec_, temp_id, width, height, temp_parent)
 {
     memset((char*)&tflag, 0, sizeof(tflag));
     curr_timestamp = 0;
@@ -736,8 +736,8 @@ ED4_terminal::~ED4_terminal() {
     }
 }
 
-ED4_tree_terminal::ED4_tree_terminal(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
-    : ED4_terminal(tree_terminal_spec, temp_id, x, y, width, height, temp_parent)
+ED4_tree_terminal::ED4_tree_terminal(const char *temp_id, AW_pos width, AW_pos height, ED4_manager *temp_parent)
+    : ED4_terminal(tree_terminal_spec, temp_id, width, height, temp_parent)
 {
 }
 
@@ -776,8 +776,8 @@ ED4_returncode ED4_tree_terminal::draw() {
     return (ED4_R_OK);
 }
 
-ED4_bracket_terminal::ED4_bracket_terminal(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
-    : ED4_terminal(bracket_terminal_spec, temp_id, x, y, width, height, temp_parent)
+ED4_bracket_terminal::ED4_bracket_terminal(const char *temp_id, AW_pos width, AW_pos height, ED4_manager *temp_parent)
+    : ED4_terminal(bracket_terminal_spec, temp_id, width, height, temp_parent)
 {
 }
 
@@ -853,8 +853,8 @@ ED4_returncode ED4_bracket_terminal::draw() {
     return (ED4_R_OK);
 }
 
-ED4_species_name_terminal::ED4_species_name_terminal(GB_CSTR temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
-    ED4_text_terminal(species_name_terminal_spec, temp_id, x, y, width, height, temp_parent),
+ED4_species_name_terminal::ED4_species_name_terminal(GB_CSTR temp_id, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
+    ED4_text_terminal(species_name_terminal_spec, temp_id, width, height, temp_parent),
     selection_info(NULL),
     dragged(false)
 {
@@ -931,13 +931,13 @@ GB_CSTR ED4_species_name_terminal::get_displayed_text() const
 #undef BUFFERSIZE
 
 
-ED4_sequence_info_terminal::ED4_sequence_info_terminal(const char *temp_id, /* GBDATA *gbd, */ AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
-    : ED4_text_terminal(sequence_info_terminal_spec, temp_id, x, y, width, height, temp_parent)
+ED4_sequence_info_terminal::ED4_sequence_info_terminal(const char *temp_id, AW_pos width, AW_pos height, ED4_manager *temp_parent)
+    : ED4_text_terminal(sequence_info_terminal_spec, temp_id, width, height, temp_parent)
 {
 }
 
-ED4_consensus_sequence_terminal::ED4_consensus_sequence_terminal(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
-    : ED4_sequence_terminal(temp_id, x, y, width, height, temp_parent, false),
+ED4_consensus_sequence_terminal::ED4_consensus_sequence_terminal(const char *temp_id, AW_pos width, AW_pos height, ED4_manager *temp_parent)
+    : ED4_sequence_terminal(temp_id, width, height, temp_parent, false),
       temp_cons_seq(NULL)
 {
     species_name = NULL;
@@ -952,8 +952,8 @@ int ED4_consensus_sequence_terminal::get_length() const {
 }
 
 
-ED4_abstract_sequence_terminal::ED4_abstract_sequence_terminal(const ED4_objspec& spec_, const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
-    : ED4_text_terminal(spec_, temp_id, x, y, width, height, temp_parent)
+ED4_abstract_sequence_terminal::ED4_abstract_sequence_terminal(const ED4_objspec& spec_, const char *temp_id, AW_pos width, AW_pos height, ED4_manager *temp_parent)
+    : ED4_text_terminal(spec_, temp_id, width, height, temp_parent)
 {
     species_name = NULL;
 }
@@ -962,8 +962,8 @@ ED4_abstract_sequence_terminal::~ED4_abstract_sequence_terminal() {
     free(species_name);
 }
 
-ED4_orf_terminal::ED4_orf_terminal(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
-    : ED4_abstract_sequence_terminal(orf_terminal_spec, temp_id, x, y, width, height, temp_parent)
+ED4_orf_terminal::ED4_orf_terminal(const char *temp_id, AW_pos width, AW_pos height, ED4_manager *temp_parent)
+    : ED4_abstract_sequence_terminal(orf_terminal_spec, temp_id, width, height, temp_parent)
 {
     aaSequence   = 0;
     aaSeqLen     = 0;
@@ -983,8 +983,8 @@ ED4_orf_terminal::~ED4_orf_terminal()
     free(aaColor);
 }
 
-ED4_sequence_terminal::ED4_sequence_terminal(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent, bool shall_display_secstruct_info_)
-    : ED4_abstract_sequence_terminal(sequence_terminal_spec, temp_id, x, y, width, height, temp_parent),
+ED4_sequence_terminal::ED4_sequence_terminal(const char *temp_id, AW_pos width, AW_pos height, ED4_manager *temp_parent, bool shall_display_secstruct_info_)
+    : ED4_abstract_sequence_terminal(sequence_terminal_spec, temp_id, width, height, temp_parent),
       shall_display_secstruct_info(shall_display_secstruct_info_)
 {
     st_ml_node = NULL;
@@ -995,8 +995,8 @@ GB_alignment_type ED4_sequence_terminal::GetAliType()
     return ED4_ROOT->alignment_type;
 }
 
-ED4_pure_text_terminal::ED4_pure_text_terminal(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
-    : ED4_text_terminal(pure_text_terminal_spec, temp_id, x, y, width, height, temp_parent)
+ED4_pure_text_terminal::ED4_pure_text_terminal(const char *temp_id, AW_pos width, AW_pos height, ED4_manager *temp_parent)
+    : ED4_text_terminal(pure_text_terminal_spec, temp_id, width, height, temp_parent)
 {
 }
 
@@ -1044,8 +1044,8 @@ ED4_returncode ED4_spacer_terminal::draw() {
     return ED4_R_OK;
 }
 
-ED4_spacer_terminal::ED4_spacer_terminal(const char *temp_id, bool shallDraw_, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
-    : ED4_terminal(spacer_terminal_spec, temp_id, x, y, width, height, temp_parent),
+ED4_spacer_terminal::ED4_spacer_terminal(const char *temp_id, bool shallDraw_, AW_pos width, AW_pos height, ED4_manager *temp_parent)
+    : ED4_terminal(spacer_terminal_spec, temp_id, width, height, temp_parent),
       shallDraw(shallDraw_)
 {
     // 'shallDraw_'==true is only needed in very special cases,
@@ -1083,8 +1083,8 @@ ED4_returncode ED4_line_terminal::Show(int /* refresh_all */, int is_cleared)
 }
 
 
-ED4_line_terminal::ED4_line_terminal(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
-    : ED4_terminal(line_terminal_spec, temp_id, x, y, width, height, temp_parent)
+ED4_line_terminal::ED4_line_terminal(const char *temp_id, AW_pos width, AW_pos height, ED4_manager *temp_parent)
+    : ED4_terminal(line_terminal_spec, temp_id, width, height, temp_parent)
 {
 }
 
@@ -1336,8 +1336,8 @@ int ED4_columnStat_terminal::update_likelihood() {
     return STAT_update_ml_likelihood(ED4_ROOT->st_ml, likelihood, latest_update, 0, seq_term->st_ml_node);
 }
 
-ED4_columnStat_terminal::ED4_columnStat_terminal(GB_CSTR temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
-    ED4_text_terminal(column_stat_terminal_spec, temp_id, x, y, width, height, temp_parent)
+ED4_columnStat_terminal::ED4_columnStat_terminal(GB_CSTR temp_id, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
+    ED4_text_terminal(column_stat_terminal_spec, temp_id, width, height, temp_parent)
 {
     for (int i=0; i<4; i++) likelihood[i] = 0;
     latest_update = 0;
