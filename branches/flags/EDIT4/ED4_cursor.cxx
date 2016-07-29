@@ -598,9 +598,7 @@ static ED4_species_name_terminal *insert_new_species_terminal(GB_CSTR species_na
         int       index = 0;
         ED4_index y     = 0;
         ED4_index lot   = 0;
-        ED4_ROOT->database->fill_species(insert_into_manager,
-                                         ED4_ROOT->ref_terminals.get_ref_sequence_info(), ED4_ROOT->ref_terminals.get_ref_sequence(),
-                                         buffer, &index, &y, 0, &lot, insert_into_manager->calc_group_depth(), NULL);
+        ED4_ROOT->database->fill_species(insert_into_manager, ED4_ROOT->ref_terminals, buffer, &index, &y, 0, &lot, insert_into_manager->calc_group_depth(), NULL);
         free(buffer);
     }
     ED4_finish_and_show_notFoundMessage();
@@ -725,9 +723,7 @@ void ED4_get_marked_from_menu(AW_window *) {
 
                     if ((namelen+2)>buffree) {
                         *bp = 0;
-                        ED4_ROOT->database->fill_species(insert_into_manager,
-                                                         ED4_ROOT->ref_terminals.get_ref_sequence_info(), ED4_ROOT->ref_terminals.get_ref_sequence(),
-                                                         buffer, &index, &y, 0, &lot, group_depth, NULL);
+                        ED4_ROOT->database->fill_species(insert_into_manager, ED4_ROOT->ref_terminals, buffer, &index, &y, 0, &lot, group_depth, NULL);
                         bp = buffer;
                         index = 0;
                     }
@@ -756,9 +752,7 @@ void ED4_get_marked_from_menu(AW_window *) {
 
         if (bp>buffer) {
             *bp++ = 0;
-            ED4_ROOT->database->fill_species(insert_into_manager,
-                                             ED4_ROOT->ref_terminals.get_ref_sequence_info(), ED4_ROOT->ref_terminals.get_ref_sequence(),
-                                             buffer, &index, &y, 0, &lot, group_depth, NULL);
+            ED4_ROOT->database->fill_species(insert_into_manager, ED4_ROOT->ref_terminals, buffer, &index, &y, 0, &lot, group_depth, NULL);
         }
 
         aw_message(GBS_global_string("Loaded %i of %i marked species.", inserted, marked));

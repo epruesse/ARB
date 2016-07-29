@@ -136,6 +136,7 @@ class ED4_multi_sequence_manager;
 class ED4_multi_species_manager;
 class ED4_name_manager;
 class ED4_pure_text_terminal;
+class ED4_reference_terminals;
 class ED4_remap;
 class ED4_root;
 class ED4_root_group_manager;
@@ -180,30 +181,27 @@ struct EDB_root_bact {
                         long *group,                // species gets the number of species in string_to_scan
                         long *species);
 
-    ED4_returncode fill_species(ED4_multi_species_manager  *multi_species_manager,
-                                ED4_sequence_info_terminal *ref_sequence_info_terminal,
-                                ED4_sequence_terminal      *ref_sequence_terminal,
-                                const char                 *str,
-                                int                        *index,
-                                ED4_index                  *y,
-                                ED4_index                   curr_local_position,
-                                ED4_index                  *length_of_terminals,
-                                int                         group_depth,
-                                arb_progress               *progress);
+    ED4_returncode fill_species(ED4_multi_species_manager *multi_species_manager,
+                                ED4_reference_terminals&   refterms,
+                                const char                *str,
+                                int                       *index,
+                                ED4_index                 *y,
+                                ED4_index                  curr_local_position,
+                                ED4_index                 *length_of_terminals,
+                                int                        group_depth,
+                                arb_progress              *progress);
 
-    ED4_returncode fill_data(ED4_multi_species_manager  *multi_species_manager,
-                             ED4_sequence_info_terminal *ref_sequence_info_terminal,
-                             ED4_sequence_terminal      *ref_sequence_terminal,
-                             char                       *string,
-                             ED4_index                  *y,
-                             ED4_index                   curr_local_position,
-                             ED4_index                  *length_of_terminals,
-                             int                         group_depth,
-                             ED4_datamode                datamode); // flag only needed for loading a new configuration
+    ED4_returncode fill_data(ED4_multi_species_manager *multi_species_manager,
+                             ED4_reference_terminals&   refterms,
+                             char                      *string,
+                             ED4_index                 *y,
+                             ED4_index                  curr_local_position,
+                             ED4_index                 *length_of_terminals,
+                             int                        group_depth,
+                             ED4_datamode               datamode);      // flag only needed for loading a new configuration
 
     ED4_returncode search_sequence_data_rek(ED4_multi_sequence_manager *multi_sequence_manager,
-                                            ED4_sequence_info_terminal *ref_sequence_info_terminal,
-                                            ED4_sequence_terminal      *ref_sequence_terminal,
+                                            ED4_reference_terminals&    refterms,
                                             GBDATA                     *gb_datamode,
                                             int                         count_too,
                                             ED4_index                  *seq_coords,
@@ -211,17 +209,15 @@ struct EDB_root_bact {
                                             ED4_alignment               alignment_flag,
                                             bool                        isSAI);
 
-    ED4_index scan_string(ED4_multi_species_manager  *parent,
-                          ED4_sequence_info_terminal *ref_sequence_info_terminal,
-                          ED4_sequence_terminal      *ref_sequence_terminal,
-                          const char                 *str,
-                          int                        *index,
-                          ED4_index                  *y,
-                          arb_progress&               progress);
+    ED4_index scan_string(ED4_multi_species_manager *parent,
+                          ED4_reference_terminals&   refterms,
+                          const char                *str,
+                          int                       *index,
+                          ED4_index                 *y,
+                          arb_progress&              progress);
 
     ED4_returncode create_group_header(ED4_multi_species_manager   *parent,
-                                       ED4_sequence_info_terminal  *ref_sequence_info_terminal,
-                                       ED4_sequence_terminal       *ref_sequence_terminal,
+                                       ED4_reference_terminals&     refterms,
                                        ED4_multi_species_manager*&  multi_species_manager,
                                        ED4_bracket_terminal*&       bracket_terminal,
                                        ED4_index                   *y,
@@ -2199,13 +2195,13 @@ struct AlignDataAccess;
 //      factory functions (hierarchy builders):
 
 ED4_group_manager *ED4_make_group_manager(GB_CSTR group_name);
+
 ED4_group_manager *ED4_makePartOf_group_manager(ED4_manager                 *group_parent,
                                                 GB_CSTR                      group_name,
                                                 int                          group_depth,
                                                 bool                         is_folded,
                                                 ED4_index                    local_count_position,
-                                                ED4_sequence_terminal       *ref_sequence_terminal,
-                                                ED4_sequence_info_terminal  *ref_sequence_info_terminal,
+                                                ED4_reference_terminals&     refterms,
                                                 ED4_bracket_terminal*&       bracket_terminal,
                                                 ED4_multi_species_manager*&  multi_species_manager); // internal helper
 

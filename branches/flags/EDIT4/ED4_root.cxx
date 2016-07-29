@@ -620,8 +620,7 @@ ED4_returncode ED4_root::create_hierarchy(const char *area_string_middle, const 
             reference = new ED4_reference(GLOBAL_gb_main);
 
             int index = 0;
-            database->scan_string(top_multi_species_manager, ref_terminals.get_ref_sequence_info(), ref_terminals.get_ref_sequence(),
-                                  area_string_top, &index, &y, species_progress);
+            database->scan_string(top_multi_species_manager, ref_terminals, area_string_top, &index, &y, species_progress);
             GB_pop_transaction(GLOBAL_gb_main);
 
             const int TOP_MID_LINE_HEIGHT   = 3;
@@ -673,8 +672,7 @@ ED4_returncode ED4_root::create_hierarchy(const char *area_string_middle, const 
             {
                 GB_transaction ta(GLOBAL_gb_main);
                 int index  = 0;
-                database->scan_string(mid_multi_species_manager, ref_terminals.get_ref_sequence_info(), ref_terminals.get_ref_sequence(),
-                                      area_string_middle, &index, &y, species_progress);
+                database->scan_string(mid_multi_species_manager, ref_terminals, area_string_middle, &index, &y, species_progress);
             }
 
             {
