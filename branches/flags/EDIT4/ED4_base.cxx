@@ -290,7 +290,7 @@ ED4_group_manager *ED4_makePartOf_group_manager(ED4_manager                 *gro
 
             {
                 ED4_sequence_info_terminal *seq_info_term = new ED4_sequence_info_terminal("CONS", 0, 0, SEQUENCEINFOSIZE, TERMINALHEIGHT, sequence_manager); // group info
-                seq_info_term->set_links(ref_sequence_info_terminal, ref_sequence_info_terminal);
+                seq_info_term->set_both_links(ref_sequence_info_terminal);
                 seq_info_term->set_property((ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE));
                 sequence_manager->children->append_member(seq_info_term);
             }
@@ -299,7 +299,7 @@ ED4_group_manager *ED4_makePartOf_group_manager(ED4_manager                 *gro
                 sprintf(namebuffer, "Consensus_Seq_Terminal.%ld", ED4_counter);
                 ED4_sequence_terminal *sequence_terminal = new ED4_consensus_sequence_terminal(namebuffer, SEQUENCEINFOSIZE, 0, 0, TERMINALHEIGHT, sequence_manager);
                 sequence_terminal->set_property(ED4_P_CURSOR_ALLOWED);
-                sequence_terminal->set_links(ref_sequence_terminal, ref_sequence_terminal);
+                sequence_terminal->set_both_links(ref_sequence_terminal);
                 sequence_manager->children->append_member(sequence_terminal);
             }
         }
@@ -1000,6 +1000,7 @@ int ED4_base::adjust_clipping_rectangle() {
 void ED4_base::set_links(ED4_base *width_ref, ED4_base *height_ref) {
     // links 'this' to (one or two) reference terminal(s)
     // => 'this' will resize when size of reference changes (maybe more effects?)
+    // (Note: passing NULL means "do not change")
 
     if (width_ref) {
         if (width_link) width_link->linked_objects->remove_elem(this);

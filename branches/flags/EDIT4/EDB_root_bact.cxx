@@ -192,7 +192,7 @@ ED4_returncode EDB_root_bact::search_sequence_data_rek(ED4_multi_sequence_manage
                 {
                     ED4_sequence_info_terminal *sequence_info_terminal = new ED4_sequence_info_terminal(key_string, 0, 0, SEQUENCEINFOSIZE, TERMINALHEIGHT, seq_manager);
                     sequence_info_terminal->set_property((ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE));
-                    sequence_info_terminal->set_links(ref_sequence_info_terminal, ref_sequence_info_terminal);
+                    sequence_info_terminal->set_both_links(ref_sequence_info_terminal);
                     sequence_info_terminal->set_species_pointer(gb_alignment);
                     seq_manager->children->append_member(sequence_info_terminal);
                 }
@@ -235,7 +235,7 @@ ED4_returncode EDB_root_bact::search_sequence_data_rek(ED4_multi_sequence_manage
                 }
 
                 text_terminal->set_property(ED4_P_CURSOR_ALLOWED);
-                text_terminal->set_links(ref_sequence_terminal, ref_sequence_terminal);
+                text_terminal->set_both_links(ref_sequence_terminal);
                 seq_manager->children->append_member(text_terminal);
 #if defined(DEBUG)
                 // ensure only 1 terminal is consensus-relevant!

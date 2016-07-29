@@ -54,7 +54,7 @@ static void toggle_detailed_column_stat(ED4_sequence_terminal *seq_term, bool fo
 
                 sprintf(namebuffer, "Column_Statistic_Terminal.%ld.%d", ED4_counter, count++);
                 ED4_columnStat_terminal *new_colStat_term = new ED4_columnStat_terminal(namebuffer, SEQUENCEINFOSIZE, 0, 0, columnStatHeight, new_seq_man);
-                new_colStat_term->set_links(ref_colStat_terminal, ref_colStat_terminal);
+                new_colStat_term->set_both_links(ref_colStat_terminal);
                 new_seq_man->children->append_member(new_colStat_term);
 
                 ED4_counter++;
