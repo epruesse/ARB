@@ -2197,8 +2197,6 @@ struct AlignDataAccess;
 // -------------------------------------------------
 //      factory functions (hierarchy builders):
 
-ED4_multi_species_manager *ED4_new_species_multi_species_manager(); // @@@ use prefix ED4_make
-
 ED4_group_manager *ED4_make_group_manager(GB_CSTR group_name);
 ED4_group_manager *ED4_makePartOf_group_manager(ED4_manager                 *group_parent,
                                                 GB_CSTR                      group_name,
@@ -2216,6 +2214,8 @@ ED4_group_manager *ED4_makePartOf_group_manager(ED4_manager                 *gro
 ED4_species_name_terminal *ED4_find_species_name_terminal(const char *species_name);
 ED4_species_name_terminal *ED4_find_SAI_name_terminal(const char *sai_name);
 ED4_species_name_terminal *ED4_find_species_or_SAI_name_terminal(const char *species_name);
+
+ED4_multi_species_manager *ED4_find_MoreSequences_manager();
 
 // --------------------------
 //      other functions:

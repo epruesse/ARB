@@ -296,7 +296,7 @@ ED4_returncode ED4_terminal::kill_object() {
     ED4_species_manager *species_manager = get_parent(ED4_L_SPECIES)->to_species_manager();
 
     if (species_manager->is_consensus_manager()) { // kill whole group
-        if (ED4_new_species_multi_species_manager()==species_manager->parent) {
+        if (ED4_find_MoreSequences_manager()==species_manager->parent) {
             aw_message("This group has to exist - deleting it isn't allowed");
             return ED4_R_IMPOSSIBLE;
         }

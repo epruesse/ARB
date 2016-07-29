@@ -559,7 +559,7 @@ static bool multi_species_man_consensus_id_starts_with(ED4_base *base, const cha
     return false;
 }
 
-ED4_multi_species_manager *ED4_new_species_multi_species_manager() {
+ED4_multi_species_manager *ED4_find_MoreSequences_manager() {
     // returns manager into which new species should be inserted
     ED4_base *manager = ED4_ROOT->root_group_man->find_first_that(ED4_L_MULTI_SPECIES, makeED4_basePredicate(multi_species_man_consensus_id_starts_with, "More Sequences"));
     return manager ? manager->to_multi_species_manager() : 0;
@@ -587,7 +587,7 @@ void ED4_finish_and_show_notFoundMessage() {
 }
 
 static ED4_species_name_terminal *insert_new_species_terminal(GB_CSTR species_name, bool is_SAI) {
-    ED4_multi_species_manager *insert_into_manager = ED4_new_species_multi_species_manager();
+    ED4_multi_species_manager *insert_into_manager = ED4_find_MoreSequences_manager();
     ED4_group_manager         *group_man           = insert_into_manager->get_parent(ED4_L_GROUP)->to_group_manager();
 
     ED4_init_notFoundMessage();
@@ -700,7 +700,7 @@ void ED4_get_marked_from_menu(AW_window *) {
         char   *buffer     = new char[BUFFERSIZE+1];
         char   *bp         = buffer;
 
-        ED4_multi_species_manager *insert_into_manager = ED4_new_species_multi_species_manager();
+        ED4_multi_species_manager *insert_into_manager = ED4_find_MoreSequences_manager();
         ED4_group_manager         *group_man           = insert_into_manager->get_parent(ED4_L_GROUP)->to_group_manager();
 
         int        group_depth       = insert_into_manager->calc_group_depth();
