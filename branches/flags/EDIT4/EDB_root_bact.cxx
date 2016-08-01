@@ -410,8 +410,7 @@ void EDB_root_bact::scan_string(ED4_multi_species_manager *parent,
             }
 
             ED4_multi_species_manager *multi_species_manager;
-            ED4_bracket_terminal      *bracket_terminal;
-            ED4_build_group_manager_start(parent, groupname, group_depth, is_folded, refterms, bracket_terminal, multi_species_manager);
+            ED4_build_group_manager_start(parent, groupname, group_depth, is_folded, refterms, multi_species_manager);
 
             ED4_counter++;
             scan_string(multi_species_manager, refterms, str, index, progress);

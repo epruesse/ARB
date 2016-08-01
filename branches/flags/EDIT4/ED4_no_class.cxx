@@ -894,17 +894,13 @@ static void createGroupFromSelected(GB_CSTR group_name, GB_CSTR field_name, GB_C
     // if field_name!=0 -> all selected species containing field_content in field field_name are moved to this new group
 
     ED4_multi_species_manager *top_multi_species_manager = ED4_ROOT->top_area_man->get_multi_species_manager();
-    ED4_group_manager         *new_group_manager;
     ED4_multi_species_manager *group_content_manager;
-    {
-        ED4_bracket_terminal *bracket_terminal;
-        new_group_manager = ED4_build_group_manager_start(top_multi_species_manager, group_name, 1, false, ED4_ROOT->ref_terminals, bracket_terminal, group_content_manager);
-        ED4_build_group_manager_end(group_content_manager);
+    ED4_group_manager         *new_group_manager         = ED4_build_group_manager_start(top_multi_species_manager, group_name, 1, false, ED4_ROOT->ref_terminals, group_content_manager);
+    ED4_build_group_manager_end(group_content_manager);
 
-        group_content_manager->update_requested_by_child();
+    group_content_manager->update_requested_by_child();
 
-        ED4_counter++;
-    }
+    ED4_counter++;
     ED4_base::touch_world_cache();
 
     bool lookingForNoContent = field_content==0 || field_content[0]==0;
@@ -957,7 +953,7 @@ static void createGroupFromSelected(GB_CSTR group_name, GB_CSTR field_name, GB_C
     group_content_manager->invalidate_species_counters();
     
     {
-        ED4_bracket_terminal *bracket = new_group_manager->get_defined_level(ED4_L_BRACKET)->to_bracket_terminal(); // @@@ same as bracket_terminal above
+        ED4_bracket_terminal *bracket = new_group_manager->get_defined_level(ED4_L_BRACKET)->to_bracket_terminal();
         if (bracket) bracket->fold();
     }
 

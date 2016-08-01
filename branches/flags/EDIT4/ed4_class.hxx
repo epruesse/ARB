@@ -2180,7 +2180,6 @@ ED4_group_manager *ED4_build_group_manager_start(ED4_manager                 *gr
                                                  int                          group_depth,
                                                  bool                         is_folded,
                                                  ED4_reference_terminals&     refterms,
-                                                 ED4_bracket_terminal*&       bracket_terminal,
                                                  ED4_multi_species_manager*&  multi_species_manager);
 
 void ED4_build_group_manager_end(ED4_multi_species_manager *multi_species_manager);

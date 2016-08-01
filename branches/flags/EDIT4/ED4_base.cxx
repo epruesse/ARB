@@ -237,7 +237,6 @@ ED4_group_manager *ED4_build_group_manager_start(ED4_manager                 *gr
                                                  int                          group_depth,
                                                  bool                         is_folded,
                                                  ED4_reference_terminals&     refterms,
-                                                 ED4_bracket_terminal*&       bracket_terminal, // @@@ elim from callers?
                                                  ED4_multi_species_manager*&  multi_species_manager)
 {
     char namebuffer[NAME_BUFFERSIZE];
@@ -247,7 +246,7 @@ ED4_group_manager *ED4_build_group_manager_start(ED4_manager                 *gr
     group_parent->children->append_member(group_manager);
 
     sprintf(namebuffer, "Bracket_Terminal.%ld", ED4_counter);
-    bracket_terminal = new ED4_bracket_terminal(namebuffer, BRACKETWIDTH, 0, group_manager);
+    ED4_bracket_terminal *bracket_terminal = new ED4_bracket_terminal(namebuffer, BRACKETWIDTH, 0, group_manager);
     group_manager->children->append_member(bracket_terminal);
 
     sprintf(namebuffer, "MultiSpecies_Manager.%ld", ED4_counter); // create new multi_species_manager
