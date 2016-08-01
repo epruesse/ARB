@@ -216,17 +216,7 @@ struct EDB_root_bact {
                           ED4_index                 *y,
                           arb_progress&              progress);
 
-    ED4_returncode create_group_header(ED4_multi_species_manager   *parent,
-                                       ED4_reference_terminals&     refterms,
-                                       ED4_multi_species_manager*&  multi_species_manager,
-                                       ED4_bracket_terminal*&       bracket_terminal,
-                                       ED4_index                   *y,
-                                       char                        *groupname,
-                                       int                          group_depth,
-                                       bool                         is_folded);
-
     void save_current_config(char *confname);
-
 
     EDB_root_bact() {}
 };
@@ -2192,8 +2182,6 @@ struct AlignDataAccess;
 
 // -------------------------------------------------
 //      factory functions (hierarchy builders):
-
-ED4_group_manager *ED4_make_group_manager(GB_CSTR group_name);
 
 ED4_group_manager *ED4_makePartOf_group_manager(ED4_manager                 *group_parent,
                                                 GB_CSTR                      group_name,

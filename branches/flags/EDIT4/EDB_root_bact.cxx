@@ -457,7 +457,11 @@ ED4_index EDB_root_bact::scan_string(ED4_multi_species_manager *parent,
                 groupname[gpos] = '\0';
             }
 
-            create_group_header(parent, refterms, multi_species_manager, bracket_terminal, y, groupname, group_depth, is_folded);
+            {
+                ED4_group_manager *group_manager = ED4_makePartOf_group_manager(parent, groupname, group_depth, is_folded, refterms, bracket_terminal, multi_species_manager);
+                parent->children->append_member(group_manager);
+                y += TERMINALHEIGHT + SPACERHEIGHT;
+            }
 
             y_old = local_count_position;
             ED4_counter++;
@@ -488,24 +492,6 @@ ED4_index EDB_root_bact::scan_string(ED4_multi_species_manager *parent,
     }
 
     return local_count_position;
-}
-
-ED4_returncode EDB_root_bact::create_group_header(ED4_multi_species_manager   *group_parent,
-                                                  ED4_reference_terminals&     refterms,
-                                                  ED4_multi_species_manager*&  multi_species_manager,
-                                                  ED4_bracket_terminal*&       bracket_terminal,
-                                                  ED4_index                   *y,
-                                                  char                        *group_name,
-                                                  int                          group_depth,
-                                                  bool                         is_folded)
-{
-    ED4_group_manager *group_manager = ED4_makePartOf_group_manager(group_parent, group_name, group_depth, is_folded, refterms, bracket_terminal, multi_species_manager);
-
-    group_parent->children->append_member(group_manager);
-
-    (*y) += TERMINALHEIGHT + SPACERHEIGHT;
-
-    return ED4_R_OK;
 }
 
 void EDB_root_bact::save_current_config(char *confname) { // and save it in database

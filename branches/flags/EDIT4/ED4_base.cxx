@@ -306,37 +306,6 @@ ED4_group_manager *ED4_makePartOf_group_manager(ED4_manager                 *gro
     return group_manager;
 }
 
-ED4_group_manager *ED4_make_group_manager(GB_CSTR group_name) {
-    // called from user menu
-
-    char namebuffer[35];
-
-    ED4_bracket_terminal      *bracket_terminal;
-    ED4_multi_species_manager *multi_species_manager;
-
-    ED4_manager *group_parent = NULL;
-
-    bool is_folded   = false;
-    int  group_depth = 1;
-
-    ED4_group_manager *group_manager = ED4_makePartOf_group_manager(group_parent, group_name, group_depth, is_folded, ED4_ROOT->ref_terminals, bracket_terminal, multi_species_manager);
-
-    bracket_terminal->set_links(NULL, multi_species_manager); // @@@ DRY: done in other version by caller (=scan string) 
-
-    { // @@@ DRY vs other version
-        sprintf(namebuffer, "Group_Spacer_Terminal_End.%ld", ED4_counter); // spacer at end of group
-        ED4_spacer_terminal *group_spacer_terminal = new ED4_spacer_terminal(namebuffer, false, 10, SPACERHEIGHT, multi_species_manager);
-        multi_species_manager->children->append_member(group_spacer_terminal);
-    }
-
-
-    multi_species_manager->update_requested_by_child();
-
-    ED4_counter++;
-
-    return group_manager;
-}
-
 void ED4_base::generate_configuration_string(GBS_strstruct& buffer) {
     const char SEPARATOR = '\1';
     if (is_manager()) {

@@ -893,15 +893,41 @@ static void createGroupFromSelected(GB_CSTR group_name, GB_CSTR field_name, GB_C
     // if field_name==0 -> all selected species & subgroups are moved to this new group
     // if field_name!=0 -> all selected species containing field_content in field field_name are moved to this new group
 
-    ED4_group_manager *new_group_manager = ED4_make_group_manager(group_name);
+    ED4_group_manager *new_group_manager;
+    {
+        char namebuffer[35];
+
+        ED4_bracket_terminal      *bracket_terminal;
+        ED4_multi_species_manager *multi_species_manager;
+
+        ED4_manager *group_parent = NULL; // @@@ use multi_species_manager which is searched below
+
+        bool is_folded   = false;
+        int  group_depth = 1;
+
+        new_group_manager = ED4_makePartOf_group_manager(group_parent, group_name, group_depth, is_folded, ED4_ROOT->ref_terminals, bracket_terminal, multi_species_manager);
+
+        bracket_terminal->set_links(NULL, multi_species_manager); // @@@ DRY: done in other version by caller (=scan string) 
+
+        { // @@@ DRY vs other version
+            sprintf(namebuffer, "Group_Spacer_Terminal_End.%ld", ED4_counter); // spacer at end of group
+            ED4_spacer_terminal *group_spacer_terminal = new ED4_spacer_terminal(namebuffer, false, 10, SPACERHEIGHT, multi_species_manager);
+            multi_species_manager->children->append_member(group_spacer_terminal);
+        }
+
+
+        multi_species_manager->update_requested_by_child();
+
+        ED4_counter++;
+    }
 
     {
         ED4_multi_species_manager *multi_species_manager = ED4_ROOT->top_area_man->get_multi_species_manager();
 
-        new_group_manager->extension.position[Y_POS] = 2;
+        new_group_manager->extension.position[Y_POS] = 2; // @@@ still needed if searched before new_group_manager?
         ED4_base::touch_world_cache();
-        multi_species_manager->children->append_member(new_group_manager);
-        new_group_manager->parent = (ED4_manager *) multi_species_manager;
+        multi_species_manager->children->append_member(new_group_manager); // @@@ DRY
+        new_group_manager->parent = (ED4_manager *) multi_species_manager; // @@@ still needed if searched before new_group_manager?
     }
 
     ED4_multi_species_manager *new_multi_species_manager = new_group_manager->get_multi_species_manager();
