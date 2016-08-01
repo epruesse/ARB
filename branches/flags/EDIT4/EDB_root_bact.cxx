@@ -420,16 +420,8 @@ ED4_index EDB_root_bact::scan_string(ED4_multi_species_manager *parent,
                                      ED4_index                 *y,
                                      arb_progress&              progress)
 {
-    ED4_multi_species_manager *multi_species_manager = NULL;
-    ED4_bracket_terminal      *bracket_terminal      = NULL;
-
-    char      namebuffer[NAME_BUFFERSIZE];
-    char      groupname[GB_GROUP_NAME_MAX];
-    ED4_index y_old                = 0;
-    ED4_index local_count_position = 0; // @@@ rename -> ypos or ysize?
-    ED4_index length_of_terminals  = 0;
-
-    static int group_depth = 0;
+    static int group_depth          = 0;
+    ED4_index  local_count_position = 0; // @@@ rename -> ypos or ysize? or remove completely and let resize handle everything
 
     if (!parent->parent->is_area_manager()) {       // add 25 if group is not child of; not the first time!
         local_count_position = TERMINALHEIGHT + SPACERHEIGHT;   // a folded group
@@ -437,7 +429,7 @@ ED4_index EDB_root_bact::scan_string(ED4_multi_species_manager *parent,
 
     while (str[(*index)] != '\0' && str[(*index)+1] != 'E') { // E =
         if (str[(*index)+1] == 'L' || str[(*index)+1] == 'S') {   // L = species, S = SAI
-            length_of_terminals = 0;
+            ED4_index length_of_terminals = 0;
 
             fill_species(parent, refterms, str, index, y, local_count_position, &length_of_terminals, group_depth, &progress);
 
@@ -449,6 +441,7 @@ ED4_index EDB_root_bact::scan_string(ED4_multi_species_manager *parent,
             group_depth++;
             bool is_folded = str[(*index)+1]=='F';
 
+            char groupname[GB_GROUP_NAME_MAX];
             {
                 ED4_index gpos = 0;
                 for (*index += 2, gpos = 0; str[*index] != 1; (*index)++) {  // Jump over 'G' and Blank to get Groupname
@@ -457,32 +450,24 @@ ED4_index EDB_root_bact::scan_string(ED4_multi_species_manager *parent,
                 groupname[gpos] = '\0';
             }
 
-            {
-                ED4_group_manager *group_manager = ED4_makePartOf_group_manager(parent, groupname, group_depth, is_folded, refterms, bracket_terminal, multi_species_manager);
-                parent->children->append_member(group_manager);
-                y += TERMINALHEIGHT + SPACERHEIGHT;
-            }
+            ED4_multi_species_manager *multi_species_manager;
+            ED4_bracket_terminal      *bracket_terminal;
+            ED4_build_group_manager_start(parent, groupname, group_depth, is_folded, refterms, bracket_terminal, multi_species_manager);
+            (*y) += TERMINALHEIGHT + SPACERHEIGHT;
 
-            y_old = local_count_position;
+            ED4_index y_old = local_count_position;
             ED4_counter++;
 
             local_count_position += scan_string(multi_species_manager, refterms, str, index, y, progress);
-
             local_count_position += SPACERHEIGHT;
 
-            bracket_terminal->extension.size[HEIGHT] = local_count_position - y_old;
-            bracket_terminal->set_links(NULL, multi_species_manager); // @@@ DRY vs other version
+            bracket_terminal->extension.size[HEIGHT] = local_count_position - y_old; // @@@ try to skip (and handle top-down using resize)
 
-            { // @@@ DRY vs other version
-                sprintf(namebuffer, "Group_Spacer_Terminal_End.%ld", ED4_counter);
-                ED4_spacer_terminal *group_spacer_terminal = new ED4_spacer_terminal(namebuffer, false, 10, SPACERHEIGHT, multi_species_manager);
-                multi_species_manager->children->append_member(group_spacer_terminal);
-            }
+            ED4_build_group_manager_end(multi_species_manager);
 
             (*y) += SPACERHEIGHT;
 
-
-            if (is_folded) multi_species_manager->hide_children(); // @@@ could be done inside make-group
+            if (is_folded) multi_species_manager->hide_children();
         }
     }
 

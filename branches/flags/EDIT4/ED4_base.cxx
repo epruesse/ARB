@@ -232,18 +232,19 @@ bool ED4_window::completely_shows(int x1, int y1, int x2, int y2) const {
 char *ED4_base::resolve_pointer_to_string_copy(int *) const { return NULL; }
 const char *ED4_base::resolve_pointer_to_char_pntr(int *) const { return NULL; }
 
-ED4_group_manager *ED4_makePartOf_group_manager(ED4_manager                 *group_parent,
-                                                GB_CSTR                      group_name,
-                                                int                          group_depth,
-                                                bool                         is_folded,
-                                                ED4_reference_terminals&     refterms,
-                                                ED4_bracket_terminal*&       bracket_terminal,
-                                                ED4_multi_species_manager*&  multi_species_manager)
+ED4_group_manager *ED4_build_group_manager_start(ED4_manager                 *group_parent,
+                                                 GB_CSTR                      group_name,
+                                                 int                          group_depth,
+                                                 bool                         is_folded,
+                                                 ED4_reference_terminals&     refterms,
+                                                 ED4_bracket_terminal*&       bracket_terminal, // @@@ elim from callers?
+                                                 ED4_multi_species_manager*&  multi_species_manager)
 {
     char namebuffer[NAME_BUFFERSIZE];
 
     sprintf(namebuffer, "Group_Manager.%ld", ED4_counter); // create new group manager
     ED4_group_manager *group_manager = new ED4_group_manager(namebuffer, 0, 0, group_parent);
+    group_parent->children->append_member(group_manager);
 
     sprintf(namebuffer, "Bracket_Terminal.%ld", ED4_counter);
     bracket_terminal = new ED4_bracket_terminal(namebuffer, BRACKETWIDTH, 0, group_manager);
@@ -303,7 +304,17 @@ ED4_group_manager *ED4_makePartOf_group_manager(ED4_manager                 *gro
         }
     }
 
+    bracket_terminal->set_links(NULL, multi_species_manager);
+
     return group_manager;
+}
+
+void ED4_build_group_manager_end(ED4_multi_species_manager *multi_species_manager) {
+    char namebuffer[NAME_BUFFERSIZE];
+
+    sprintf(namebuffer, "Group_Spacer_Terminal_End.%ld", ED4_counter); // spacer at end of group
+    ED4_spacer_terminal *group_spacer_terminal = new ED4_spacer_terminal(namebuffer, false, 10, SPACERHEIGHT, multi_species_manager);
+    multi_species_manager->children->append_member(group_spacer_terminal);
 }
 
 void ED4_base::generate_configuration_string(GBS_strstruct& buffer) {

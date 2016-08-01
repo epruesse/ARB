@@ -678,7 +678,7 @@ ED4_returncode ED4_root::create_hierarchy(const char *area_string_middle, const 
                 device_manager->children->append_member(mid_bot_spacer_terminal);
             }
 
-            tree_terminal->extension.size[HEIGHT] = y - help;
+            tree_terminal->extension.size[HEIGHT] = y - help; // @@@ if resize is requested for tree_terminal => y will no longer be needed
 
             y += 10; // add top-mid_spacer_terminal height
 

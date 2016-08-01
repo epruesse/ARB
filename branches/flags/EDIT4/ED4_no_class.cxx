@@ -893,44 +893,20 @@ static void createGroupFromSelected(GB_CSTR group_name, GB_CSTR field_name, GB_C
     // if field_name==0 -> all selected species & subgroups are moved to this new group
     // if field_name!=0 -> all selected species containing field_content in field field_name are moved to this new group
 
-    ED4_group_manager *new_group_manager;
+    ED4_multi_species_manager *top_multi_species_manager = ED4_ROOT->top_area_man->get_multi_species_manager();
+    ED4_group_manager         *new_group_manager;
+    ED4_multi_species_manager *group_content_manager;
     {
-        char namebuffer[35];
+        ED4_bracket_terminal *bracket_terminal;
+        new_group_manager = ED4_build_group_manager_start(top_multi_species_manager, group_name, 1, false, ED4_ROOT->ref_terminals, bracket_terminal, group_content_manager);
+        ED4_build_group_manager_end(group_content_manager);
 
-        ED4_bracket_terminal      *bracket_terminal;
-        ED4_multi_species_manager *multi_species_manager;
-
-        ED4_manager *group_parent = NULL; // @@@ use multi_species_manager which is searched below
-
-        bool is_folded   = false;
-        int  group_depth = 1;
-
-        new_group_manager = ED4_makePartOf_group_manager(group_parent, group_name, group_depth, is_folded, ED4_ROOT->ref_terminals, bracket_terminal, multi_species_manager);
-
-        bracket_terminal->set_links(NULL, multi_species_manager); // @@@ DRY: done in other version by caller (=scan string) 
-
-        { // @@@ DRY vs other version
-            sprintf(namebuffer, "Group_Spacer_Terminal_End.%ld", ED4_counter); // spacer at end of group
-            ED4_spacer_terminal *group_spacer_terminal = new ED4_spacer_terminal(namebuffer, false, 10, SPACERHEIGHT, multi_species_manager);
-            multi_species_manager->children->append_member(group_spacer_terminal);
-        }
-
-
-        multi_species_manager->update_requested_by_child();
+        group_content_manager->update_requested_by_child();
 
         ED4_counter++;
     }
+    ED4_base::touch_world_cache();
 
-    {
-        ED4_multi_species_manager *multi_species_manager = ED4_ROOT->top_area_man->get_multi_species_manager();
-
-        new_group_manager->extension.position[Y_POS] = 2; // @@@ still needed if searched before new_group_manager?
-        ED4_base::touch_world_cache();
-        multi_species_manager->children->append_member(new_group_manager); // @@@ DRY
-        new_group_manager->parent = (ED4_manager *) multi_species_manager; // @@@ still needed if searched before new_group_manager?
-    }
-
-    ED4_multi_species_manager *new_multi_species_manager = new_group_manager->get_multi_species_manager();
     bool lookingForNoContent = field_content==0 || field_content[0]==0;
 
     ED4_selected_elem *list_elem = ED4_ROOT->selected_objects->head();
@@ -968,9 +944,9 @@ static void createGroupFromSelected(GB_CSTR group_name, GB_CSTR field_name, GB_C
             }
             
             object->parent->children->remove_member(object);
-            new_multi_species_manager->children->append_member(object);
+            group_content_manager->children->append_member(object);
 
-            object->parent = (ED4_manager *)new_multi_species_manager;
+            object->parent = group_content_manager;
             object->set_width();
         }
 
@@ -978,14 +954,14 @@ static void createGroupFromSelected(GB_CSTR group_name, GB_CSTR field_name, GB_C
     }
 
     new_group_manager->create_consensus(new_group_manager, NULL);
-    new_multi_species_manager->invalidate_species_counters();
+    group_content_manager->invalidate_species_counters();
     
     {
-        ED4_bracket_terminal *bracket = new_group_manager->get_defined_level(ED4_L_BRACKET)->to_bracket_terminal();
+        ED4_bracket_terminal *bracket = new_group_manager->get_defined_level(ED4_L_BRACKET)->to_bracket_terminal(); // @@@ same as bracket_terminal above
         if (bracket) bracket->fold();
     }
 
-    new_multi_species_manager->resize_requested_by_child();
+    group_content_manager->resize_requested_by_child();
 }
 
 static void group_species(bool use_field, AW_window *use_as_main_window) {
