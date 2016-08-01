@@ -1415,8 +1415,8 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     awmm->insert_menu_topic(awmm->local_id("create_species_from_consensus"), "Create new species from consensus", "u", 0, AWM_ALL, makeCreateWindowCallback(ED4_create_new_seq_window, CREATE_FROM_CONSENSUS));
     awmm->insert_menu_topic(awmm->local_id("copy_species"),                  "Copy current species",              "C", 0, AWM_ALL, makeCreateWindowCallback(ED4_create_new_seq_window, COPY_SPECIES));
     awmm->sep______________();
-    awmm->insert_menu_topic("create_group",           "Create new Group",              "G", 0, AWM_ALL, makeWindowCallback(group_species_cb, false));
-    awmm->insert_menu_topic("create_groups_by_field", "Create new groups using Field", "F", 0, AWM_ALL, makeWindowCallback(group_species_cb, true));
+    awmm->insert_menu_topic("create_group",           "Create new Group (from selected)", "G", 0, AWM_ALL, makeWindowCallback(group_species_cb, false));
+    awmm->insert_menu_topic("create_groups_by_field", "Create new groups using Field",    "F", 0, AWM_ALL, makeWindowCallback(group_species_cb, true));
 
     // --------------
     //      Edit
