@@ -315,6 +315,8 @@ ED4_returncode ED4_root::deselect_all()
     main_multi_man = top_area_man->get_multi_species_manager();
     main_multi_man->deselect_all_species_and_SAI();
 
+    ED4_setBlocktype(ED4_BT_NOBLOCK);
+
     return ED4_R_OK;
 }
 
@@ -332,6 +334,7 @@ void ED4_root::remove_from_selected(ED4_species_name_terminal *name_term) { // @
             GBDATA *gbd = name_term->get_species_pointer();
 
             if (gbd) {
+                GB_transaction ta(gbd);
                 printf("removed term '%s'\n", GB_read_char_pntr(gbd));
             }
             else {
@@ -1130,7 +1133,6 @@ static void ED4_menu_select(AW_window *aww, MenuSelectType select) {
         case ED4_MS_NONE: {
             if (ED4_getBlocktype()!=ED4_BT_NOBLOCK) {
                 ED4_ROOT->deselect_all();
-                ED4_setBlocktype(ED4_BT_NOBLOCK);
             }
             break;
         }
