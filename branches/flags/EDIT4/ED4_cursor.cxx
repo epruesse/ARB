@@ -595,10 +595,8 @@ static ED4_species_name_terminal *insert_new_species_terminal(GB_CSTR species_na
         char *buffer = (char*)GB_calloc(strlen(species_name)+3, sizeof(*buffer));
         sprintf(buffer, "-%c%s", is_SAI ? 'S' : 'L', species_name);
 
-        int       index = 0;
-        ED4_index y     = 0;
-        ED4_index lot   = 0;
-        ED4_ROOT->database->fill_species(insert_into_manager, ED4_ROOT->ref_terminals, buffer, &index, &y, 0, &lot, insert_into_manager->calc_group_depth(), NULL);
+        int index = 0;
+        ED4_ROOT->database->fill_species(insert_into_manager, ED4_ROOT->ref_terminals, buffer, &index, insert_into_manager->calc_group_depth(), NULL);
         free(buffer);
     }
     ED4_finish_and_show_notFoundMessage();
@@ -701,12 +699,10 @@ void ED4_get_marked_from_menu(AW_window *) {
         ED4_multi_species_manager *insert_into_manager = ED4_find_MoreSequences_manager();
         ED4_group_manager         *group_man           = insert_into_manager->get_parent(ED4_L_GROUP)->to_group_manager();
 
-        int        group_depth       = insert_into_manager->calc_group_depth();
-        int        index             = 0;
-        ED4_index  y                 = 0;
-        ED4_index  lot               = 0;
-        int        inserted          = 0;
-        char      *default_alignment = GBT_get_default_alignment(GLOBAL_gb_main);
+        int   group_depth       = insert_into_manager->calc_group_depth();
+        int   index             = 0;
+        int   inserted          = 0;
+        char *default_alignment = GBT_get_default_alignment(GLOBAL_gb_main);
 
         arb_progress progress("Loading species", marked);
 
@@ -723,7 +719,7 @@ void ED4_get_marked_from_menu(AW_window *) {
 
                     if ((namelen+2)>buffree) {
                         *bp = 0;
-                        ED4_ROOT->database->fill_species(insert_into_manager, ED4_ROOT->ref_terminals, buffer, &index, &y, 0, &lot, group_depth, NULL);
+                        ED4_ROOT->database->fill_species(insert_into_manager, ED4_ROOT->ref_terminals, buffer, &index, group_depth, NULL);
                         bp = buffer;
                         index = 0;
                     }
@@ -752,7 +748,7 @@ void ED4_get_marked_from_menu(AW_window *) {
 
         if (bp>buffer) {
             *bp++ = 0;
-            ED4_ROOT->database->fill_species(insert_into_manager, ED4_ROOT->ref_terminals, buffer, &index, &y, 0, &lot, group_depth, NULL);
+            ED4_ROOT->database->fill_species(insert_into_manager, ED4_ROOT->ref_terminals, buffer, &index, group_depth, NULL);
         }
 
         aw_message(GBS_global_string("Loaded %i of %i marked species.", inserted, marked));

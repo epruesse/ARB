@@ -590,8 +590,6 @@ ED4_returncode ED4_root::create_hierarchy(const char *area_string_middle, const 
 
     recalc_font_group();
 
-    ED4_index y = 0; // @@@ still useful?
-
     {
         arb_progress species_progress("Loading species", total_no_of_species);
         
@@ -616,12 +614,10 @@ ED4_returncode ED4_root::create_hierarchy(const char *area_string_middle, const 
             top_multi_spacer_terminal_beg = new ED4_spacer_terminal("Top_Left_Spacer", false, 0, 3, top_multi_species_manager);
             top_multi_species_manager->children->append_member(top_multi_spacer_terminal_beg);
 
-            y += 3;
-
             reference = new ED4_reference(GLOBAL_gb_main);
 
             int index = 0;
-            database->scan_string(top_multi_species_manager, ref_terminals, area_string_top, &index, &y, species_progress);
+            database->scan_string(top_multi_species_manager, ref_terminals, area_string_top, &index, species_progress);
             GB_pop_transaction(GLOBAL_gb_main);
 
             const int TOP_MID_LINE_HEIGHT   = 3;
@@ -630,17 +626,12 @@ ED4_returncode ED4_root::create_hierarchy(const char *area_string_middle, const 
             top_mid_line_terminal = new ED4_line_terminal("Top_Mid_Line_Terminal", 0, TOP_MID_LINE_HEIGHT, device_manager);    // width will be set below
             device_manager->children->append_member(top_mid_line_terminal);
 
-            y += TOP_MID_LINE_HEIGHT;
-
-
             top_mid_spacer_terminal = new ED4_spacer_terminal("Top_Middle_Spacer", true, 880, TOP_MID_SPACER_HEIGHT, device_manager);
             device_manager->children->append_member(top_mid_spacer_terminal);
 
             // needed to avoid text-clipping problems:
             main_manager->set_top_middle_spacer_terminal(top_mid_spacer_terminal);
             main_manager->set_top_middle_line_terminal(top_mid_line_terminal);
-
-            y += TOP_MID_SPACER_HEIGHT; // add top-mid_spacer_terminal height
         }
 
         // ********** Middle Area beginning **********
@@ -665,15 +656,12 @@ ED4_returncode ED4_root::create_hierarchy(const char *area_string_middle, const 
             mid_multi_spacer_terminal_beg = new ED4_spacer_terminal("Mid_Multi_Spacer_Terminal_Beg", false, 0, 3, mid_multi_species_manager);
             mid_multi_species_manager->children->append_member(mid_multi_spacer_terminal_beg);
 
-            y+=3;               // dummy height, to create a dummy layout ( to preserve order of objects )
-
             scroll_links.link_for_ver_slider = middle_area_manager;
 
-            ED4_index help = y;
             {
                 GB_transaction ta(GLOBAL_gb_main);
                 int index  = 0;
-                database->scan_string(mid_multi_species_manager, ref_terminals, area_string_middle, &index, &y, species_progress);
+                database->scan_string(mid_multi_species_manager, ref_terminals, area_string_middle, &index, species_progress);
             }
 
             {
@@ -681,17 +669,11 @@ ED4_returncode ED4_root::create_hierarchy(const char *area_string_middle, const 
                 device_manager->children->append_member(mid_bot_spacer_terminal);
             }
 
-            tree_terminal->extension.size[HEIGHT] = y - help; // @@@ if resize is requested for tree_terminal => y will no longer be needed
-
-            y += 10; // add top-mid_spacer_terminal height
-
             mid_bot_line_terminal = new ED4_line_terminal("Mid_Bot_Line_Terminal", 0, 3, device_manager);    // width will be set below
             device_manager->children->append_member(mid_bot_line_terminal);
-            y += 3;
 
             total_bottom_spacer = new ED4_spacer_terminal("Total_Bottom_Spacer_terminal", false, 0, 10000, device_manager);
             device_manager->children->append_member(total_bottom_spacer);
-            y += 10000;
         }
 
         if (scroll_links.link_for_hor_slider) {

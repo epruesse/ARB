@@ -185,18 +185,12 @@ struct EDB_root_bact {
                                 ED4_reference_terminals&   refterms,
                                 const char                *str,
                                 int                       *index,
-                                ED4_index                 *y,
-                                ED4_index                  curr_local_position,
-                                ED4_index                 *length_of_terminals,
                                 int                        group_depth,
                                 arb_progress              *progress);
 
     ED4_returncode fill_data(ED4_multi_species_manager *multi_species_manager,
                              ED4_reference_terminals&   refterms,
-                             char                      *string,
-                             ED4_index                 *y,
-                             ED4_index                  curr_local_position,
-                             ED4_index                 *length_of_terminals,
+                             char                      *str,
                              int                        group_depth,
                              ED4_datamode               datamode);      // flag only needed for loading a new configuration
 
@@ -204,17 +198,15 @@ struct EDB_root_bact {
                                             ED4_reference_terminals&    refterms,
                                             GBDATA                     *gb_datamode,
                                             int                         count_too,
-                                            ED4_index                  *seq_coords,
                                             ED4_index                  *max_seq_terminal_length,
                                             ED4_alignment               alignment_flag,
                                             bool                        isSAI);
 
-    ED4_index scan_string(ED4_multi_species_manager *parent,
-                          ED4_reference_terminals&   refterms,
-                          const char                *str,
-                          int                       *index,
-                          ED4_index                 *y,
-                          arb_progress&              progress);
+    void scan_string(ED4_multi_species_manager *parent,
+                     ED4_reference_terminals&   refterms,
+                     const char                *str,
+                     int                       *index,
+                     arb_progress&              progress);
 
     void save_current_config(char *confname);
 
