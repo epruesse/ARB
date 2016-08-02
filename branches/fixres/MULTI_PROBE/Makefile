@@ -146,6 +146,7 @@ MP_mo_liste.o: $(ARBHOME)/INCLUDE/aisc_global.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/arb_core.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/arb_error.h
+MP_mo_liste.o: $(ARBHOME)/INCLUDE/arb_mem.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/arb_msg.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/arb_string.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -188,6 +189,7 @@ MP_noclass.o: $(ARBHOME)/INCLUDE/AP_TreeColors.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/arb_core.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/arb_error.h
+MP_noclass.o: $(ARBHOME)/INCLUDE/arb_mem.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/arb_msg.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/arb_progress.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -265,6 +267,7 @@ MP_probe.o: $(ARBHOME)/INCLUDE/aisc_global.h
 MP_probe.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MP_probe.o: $(ARBHOME)/INCLUDE/arb_core.h
 MP_probe.o: $(ARBHOME)/INCLUDE/arb_error.h
+MP_probe.o: $(ARBHOME)/INCLUDE/arb_mem.h
 MP_probe.o: $(ARBHOME)/INCLUDE/arb_msg.h
 MP_probe.o: $(ARBHOME)/INCLUDE/arb_progress.h
 MP_probe.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -352,6 +355,7 @@ MP_sonde.o: $(ARBHOME)/INCLUDE/aisc_global.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/arb_core.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/arb_error.h
+MP_sonde.o: $(ARBHOME)/INCLUDE/arb_mem.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/arb_msg.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/arb_string.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -389,6 +393,7 @@ MP_sondentopf.o: $(ARBHOME)/INCLUDE/AP_TreeColors.hxx
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/arb_core.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/arb_error.h
+MP_sondentopf.o: $(ARBHOME)/INCLUDE/arb_mem.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/arb_msg.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/arb_string.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -429,6 +434,7 @@ MP_Window.o: $(ARBHOME)/INCLUDE/arb_core.h
 MP_Window.o: $(ARBHOME)/INCLUDE/arb_defs.h
 MP_Window.o: $(ARBHOME)/INCLUDE/arb_error.h
 MP_Window.o: $(ARBHOME)/INCLUDE/arb_file.h
+MP_Window.o: $(ARBHOME)/INCLUDE/arb_mem.h
 MP_Window.o: $(ARBHOME)/INCLUDE/arb_msg.h
 MP_Window.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 MP_Window.o: $(ARBHOME)/INCLUDE/arb_strbuf.h

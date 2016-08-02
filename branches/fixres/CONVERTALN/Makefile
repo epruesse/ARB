@@ -119,6 +119,7 @@ fconv.o: $(ARBHOME)/INCLUDE/arb_defs.h
 fconv.o: $(ARBHOME)/INCLUDE/arb_diff.h
 fconv.o: $(ARBHOME)/INCLUDE/arb_error.h
 fconv.o: $(ARBHOME)/INCLUDE/arb_file.h
+fconv.o: $(ARBHOME)/INCLUDE/arb_mem.h
 fconv.o: $(ARBHOME)/INCLUDE/arb_msg.h
 fconv.o: $(ARBHOME)/INCLUDE/arb_string.h
 fconv.o: $(ARBHOME)/INCLUDE/arbdb.h

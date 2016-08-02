@@ -64,6 +64,7 @@ fast_aligner.o: $(ARBHOME)/INCLUDE/arb_assert.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/arb_core.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/arb_defs.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/arb_error.h
+fast_aligner.o: $(ARBHOME)/INCLUDE/arb_mem.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/arb_msg.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/arb_progress.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -110,6 +111,7 @@ seq_search.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 seq_search.o: $(ARBHOME)/INCLUDE/arb_assert.h
 seq_search.o: $(ARBHOME)/INCLUDE/arb_core.h
 seq_search.o: $(ARBHOME)/INCLUDE/arb_error.h
+seq_search.o: $(ARBHOME)/INCLUDE/arb_mem.h
 seq_search.o: $(ARBHOME)/INCLUDE/arb_msg.h
 seq_search.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 seq_search.o: $(ARBHOME)/INCLUDE/arb_string.h

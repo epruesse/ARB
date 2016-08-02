@@ -38,6 +38,7 @@ db_scanner.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 db_scanner.o: $(ARBHOME)/INCLUDE/arb_assert.h
 db_scanner.o: $(ARBHOME)/INCLUDE/arb_core.h
 db_scanner.o: $(ARBHOME)/INCLUDE/arb_error.h
+db_scanner.o: $(ARBHOME)/INCLUDE/arb_mem.h
 db_scanner.o: $(ARBHOME)/INCLUDE/arb_msg.h
 db_scanner.o: $(ARBHOME)/INCLUDE/arb_progress.h
 db_scanner.o: $(ARBHOME)/INCLUDE/arb_str.h

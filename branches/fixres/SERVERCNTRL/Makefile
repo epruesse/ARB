@@ -39,6 +39,7 @@ servercntrl.o: $(ARBHOME)/INCLUDE/arb_assert.h
 servercntrl.o: $(ARBHOME)/INCLUDE/arb_core.h
 servercntrl.o: $(ARBHOME)/INCLUDE/arb_error.h
 servercntrl.o: $(ARBHOME)/INCLUDE/arb_file.h
+servercntrl.o: $(ARBHOME)/INCLUDE/arb_mem.h
 servercntrl.o: $(ARBHOME)/INCLUDE/arb_msg.h
 servercntrl.o: $(ARBHOME)/INCLUDE/arb_sleep.h
 servercntrl.o: $(ARBHOME)/INCLUDE/arb_string.h

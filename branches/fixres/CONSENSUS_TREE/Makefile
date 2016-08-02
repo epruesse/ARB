@@ -38,6 +38,7 @@ CT_ctree.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 CT_ctree.o: $(ARBHOME)/INCLUDE/arb_assert.h
 CT_ctree.o: $(ARBHOME)/INCLUDE/arb_core.h
 CT_ctree.o: $(ARBHOME)/INCLUDE/arb_error.h
+CT_ctree.o: $(ARBHOME)/INCLUDE/arb_mem.h
 CT_ctree.o: $(ARBHOME)/INCLUDE/arb_msg.h
 CT_ctree.o: $(ARBHOME)/INCLUDE/arb_progress.h
 CT_ctree.o: $(ARBHOME)/INCLUDE/arb_strarray.h
@@ -67,6 +68,7 @@ CT_dtree.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 CT_dtree.o: $(ARBHOME)/INCLUDE/arb_assert.h
 CT_dtree.o: $(ARBHOME)/INCLUDE/arb_core.h
 CT_dtree.o: $(ARBHOME)/INCLUDE/arb_error.h
+CT_dtree.o: $(ARBHOME)/INCLUDE/arb_mem.h
 CT_dtree.o: $(ARBHOME)/INCLUDE/arb_msg.h
 CT_dtree.o: $(ARBHOME)/INCLUDE/arb_progress.h
 CT_dtree.o: $(ARBHOME)/INCLUDE/arb_strarray.h
@@ -96,6 +98,7 @@ CT_hash.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 CT_hash.o: $(ARBHOME)/INCLUDE/arb_assert.h
 CT_hash.o: $(ARBHOME)/INCLUDE/arb_core.h
 CT_hash.o: $(ARBHOME)/INCLUDE/arb_error.h
+CT_hash.o: $(ARBHOME)/INCLUDE/arb_mem.h
 CT_hash.o: $(ARBHOME)/INCLUDE/arb_msg.h
 CT_hash.o: $(ARBHOME)/INCLUDE/arb_progress.h
 CT_hash.o: $(ARBHOME)/INCLUDE/arb_sort.h
@@ -124,6 +127,7 @@ CT_ntree.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 CT_ntree.o: $(ARBHOME)/INCLUDE/arb_assert.h
 CT_ntree.o: $(ARBHOME)/INCLUDE/arb_core.h
 CT_ntree.o: $(ARBHOME)/INCLUDE/arb_error.h
+CT_ntree.o: $(ARBHOME)/INCLUDE/arb_mem.h
 CT_ntree.o: $(ARBHOME)/INCLUDE/arb_msg.h
 CT_ntree.o: $(ARBHOME)/INCLUDE/arb_string.h
 CT_ntree.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -147,6 +151,7 @@ CT_part.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 CT_part.o: $(ARBHOME)/INCLUDE/arb_assert.h
 CT_part.o: $(ARBHOME)/INCLUDE/arb_core.h
 CT_part.o: $(ARBHOME)/INCLUDE/arb_error.h
+CT_part.o: $(ARBHOME)/INCLUDE/arb_mem.h
 CT_part.o: $(ARBHOME)/INCLUDE/arb_msg.h
 CT_part.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 CT_part.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -174,6 +179,7 @@ CT_rbtree.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 CT_rbtree.o: $(ARBHOME)/INCLUDE/arb_assert.h
 CT_rbtree.o: $(ARBHOME)/INCLUDE/arb_core.h
 CT_rbtree.o: $(ARBHOME)/INCLUDE/arb_error.h
+CT_rbtree.o: $(ARBHOME)/INCLUDE/arb_mem.h
 CT_rbtree.o: $(ARBHOME)/INCLUDE/arb_msg.h
 CT_rbtree.o: $(ARBHOME)/INCLUDE/arb_progress.h
 CT_rbtree.o: $(ARBHOME)/INCLUDE/arb_sort.h
