@@ -10,8 +10,6 @@
 
 #include "AP_filter.hxx"
 #include <arbdb.h>
-#include <arb_mem.h>
-
 
 // ------------------
 //      AP_filter
@@ -205,7 +203,7 @@ AP_weights::AP_weights(const GB_UINT4 *w, size_t wlen, const AP_filter *fil)
     : len(fil->get_filtered_length()),
       weights(NULL)
 {
-    arb_alloc_aligned(weights, len);
+    ARB_alloc_aligned(weights, len);
 
     af_assert(wlen == fil->get_length());
 
@@ -224,7 +222,7 @@ AP_weights::AP_weights(const AP_weights& other)
       weights(NULL)
 {
     if (other.weights != NULL) {
-        arb_alloc_aligned(weights, len);
+        ARB_alloc_aligned(weights, len);
         memcpy(weights, other.weights, len*sizeof(*weights));
     }
 }

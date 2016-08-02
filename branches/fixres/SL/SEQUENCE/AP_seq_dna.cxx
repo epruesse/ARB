@@ -52,7 +52,7 @@ void AP_sequence_parsimony::build_table()
 
 void AP_sequence_parsimony::set(const char *isequence) {
     size_t sequence_len = get_filter()->get_filtered_length();
-    arb_alloc_aligned(seq_pars, sequence_len+1);
+    ARB_alloc_aligned(seq_pars, sequence_len+1);
     memset(seq_pars, AP_DOT, (size_t)sequence_len+1); // init with dots
 
     const uchar *simplify = get_filter()->get_simplify_table();
@@ -175,7 +175,7 @@ AP_FLOAT AP_sequence_parsimony::combine(const AP_sequence * lefts,
 
      size_t sequence_len = get_sequence_length();
     if (seq_pars == NULL) {
-        arb_alloc_aligned(seq_pars, sequence_len + 1);
+        ARB_alloc_aligned(seq_pars, sequence_len + 1);
     }
 
     const char * p1       = left->get_sequence();

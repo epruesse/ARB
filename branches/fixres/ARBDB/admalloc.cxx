@@ -99,44 +99,6 @@ static struct gbb_Cluster
 } gbb_cluster[GBB_CLUSTERS+1];
 
 
-NOT4PERL void *GB_calloc(unsigned int nelem, unsigned int elsize) {
-    size_t  size = nelem*elsize;
-    void   *mem  = malloc(size);
-
-    if (mem) {
-        memset(mem, 0, size);
-    }
-    else {
-        fprintf(stderr, "Panic Error: insufficient memory: tried to get %u*%u bytes\n", nelem, elsize);
-    }
-    return mem;
-}
-
-NOT4PERL void *GB_recalloc(void *ptr, unsigned int oelem, unsigned int nelem, unsigned int elsize)
-{
-    size_t nsize = nelem*elsize;
-    void *mem = malloc(nsize);
-
-    if (mem) {
-        size_t osize = oelem*elsize;
-
-        if (nsize>=osize) {
-            memmove(mem, ptr, osize);
-            if (nsize>osize) {
-                memset(((char*)mem)+osize, 0, nsize-osize);
-            }
-        }
-        else {
-            memmove(mem, ptr, nsize);
-        }
-    }
-    else {
-        fprintf(stderr, "Panic Error: insufficient memory: tried to get %u*%u bytes\n", nelem, elsize);
-    }
-
-    return mem;
-}
-
 #ifdef TRACE_ALLOCS
 
 class AllocLogEntry {

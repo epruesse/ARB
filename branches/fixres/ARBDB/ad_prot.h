@@ -177,8 +177,6 @@ GBDATA *GB_follow_link(GBDATA *gb_link);
 GB_ERROR GB_install_link_follower(GBDATA *gb_main, const char *link_type, GB_Link_Follower link_follower);
 
 /* admalloc.cxx */
-NOT4PERL void *GB_calloc(unsigned int nelem, unsigned int elsize);
-NOT4PERL void *GB_recalloc(void *ptr, unsigned int oelem, unsigned int nelem, unsigned int elsize);
 void GB_memerr(void);
 
 /* admap.cxx */
