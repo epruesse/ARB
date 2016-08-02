@@ -1,0 +1,5 @@
+# libraries needed to link arb_rnacma
+
+RNACMA/RNACMA.a
+
+

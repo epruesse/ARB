@@ -1,0 +1,149 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Search and highlight sequence patterns
+
+OCCURRENCE	ARB_EDIT4/View/Search
+                ARB_EDIT4/<extended top area>/<search fields and buttons>
+
+DESCRIPTION	ARB_EDIT4 supports searching and highlighting sequence patterns.
+
+                It supports 9 different pattern types, which will each be displayed
+                in it's own color. Pattern types are e.g. "User1", "Probe",
+                "Primer (global)", ...
+
+                Basic controls for each search pattern are available in the
+                extended top-area of ARB_EDIT4 (to extend the top-area click the
+                'MORE' button): there you may jump to the next/previous occurrence of
+                each pattern type, toggle pattern type display and open the detailed
+                search parameter dialog for each pattern type.
+
+SECTION         Detailed search parameters (one window for each pattern type)
+
+		Search patterns
+
+			In the text field you can enter multiple search patterns.
+			Different patterns are separated by newlines or commas.
+
+			'?' is treated as single letter wildcard
+
+			'#' is an end-of-line comment
+
+				Text written behind # will not be used for search.
+				Instead this text will be displayed in the message
+				window when you position your cursor on a found
+				pattern.
+
+                Mark species with matches
+
+                        Marks all species that match any of the current search patterns
+                        (does not change marks of any other species).
+
+		Last/Next
+
+			Jumps to the last/next occurrence of any of the given patterns.
+			You can repeat your last search by pressing <CTRL-S> while focus
+                        is inside sequence view.
+
+                        In the extended top-area of ARB_EDIT4 there are global NEXT/LAST
+                        buttons. They jump to the next match of ANY of all 9 pattern types.
+
+		Show?
+
+			If checked, the found parts are shown in different
+			background colors (defined at Properties/Data Search)
+
+                        See NOTES below for overlap priority.
+
+		Open folded?
+
+			If checked, the Last/Next-Button will open folded groups,
+			to jump to the next occurrence. Otherwise search will jump
+			over folded groups.
+
+		Auto jump?
+
+			If checked, the cursor will automatically jump to the
+			nearest occurrence, if you change the search pattern or
+			other search parameters.
+
+		Ignore gaps in sequence?
+
+			If checked, gaps in sequence will be ignored.
+			(ACGU will find A-CG-U, AC---GU, ...)
+
+		Ignore gaps in pattern?
+
+			If checked, gaps in the search pattern will be ignored.
+			(A-CG-U, AC---GU, ... will find ACGU)
+
+		Treat T and U as match?
+
+			If checked, T and U will be treated as equal.
+			(ACGU will find ACGT and vice versa)
+
+		Ignore case?
+
+			If checked, a and A, c and C, ... are treated as
+			equal (aCGu will find ACGU, AcgU, acgu, ...)
+
+		Search for complement?
+
+			If checked, search will go as well for complemented
+			patterns.
+
+		Search for reverse?
+
+			If checked, search will go as well for reversed patterns.
+
+		Exact!
+
+			If checked, search will only go for the given combination
+			of 'complement' and 'reverse'.
+
+			Example: If 'Exact', 'complement' and 'reverse' are checked,
+				 search will go only for complemented AND reversed
+				 patterns.
+
+		Allowed mismatches
+
+			Defines the minimum and maximum allowed number of
+			non-matching base characters.
+
+SECTION         Store/restore search patterns
+
+                There are two ways to store/restore search patterns:
+
+                      * using the LINK{prop_configs.hlp} icon
+                      * using the SAVE and LOAD buttons
+
+                The latter is obsoleted and is only supported for compatibility.
+
+                Both store/restore all search parameters described above and
+                both provide the possibility to exchange the search parameters between
+                databases/users by saving/loading them to/from files and to move
+                search parameters between different pattern types.
+
+NOTES		Highlighted search patterns are drawn on top of
+                other conditions determining background color (see LINK{e4_background_priority.hlp}).
+
+                If the results from different pattern types overlap, patterns are
+                prioritized as listed in the 'View/Search' submenu,
+                i.e. "User1" is painted above "Primer (global)" and hence parts of
+                the latter may be invisible.
+
+                The hits may also be highlighted in ARB_SECEDIT (see LINK{sec_display.hlp}).
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known
+

@@ -1,0 +1,427 @@
+# for variables passed from parent makefile see ../SOURCE_TOOLS/parent_make.txt
+
+.SUFFIXES: .o .cxx .depend
+
+CPP_OBJECTS = \
+	DI_foundclusters.o \
+	DI_clusters.o \
+	DI_clustertree.o \
+	DI_compress_matrix.o \
+	DI_main.o \
+	DI_matr.o \
+	DI_protdist.o \
+	DI_save_matr.o \
+	DI_view_matrix.o \
+	distanalyse.o \
+
+$(MAIN): $(CPP_OBJECTS)
+	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
+.cxx.o:
+	$(A_CXX) $(cflags) $(cxxflags) -c $<  $(CXX_INCLUDES) $(POST_COMPILE) $<
+
+clean:
+	rm -f $(CPP_OBJECTS) *.a
+
+DEPENDS = $(CPP_OBJECTS:.o=.depend)
+depends: $(DEPENDS)
+	@cat $(DEPENDS) | grep -v '^#' >>Makefile
+	@rm $(DEPENDS)
+$(DEPENDS): depend.init
+depend.init:
+	$(MAKEDEPEND) $(MAKEDEPENDFLAGS) 2>/dev/null # remove dependencies
+.c.depend:
+	$(MAKEDEPEND) -f- $(MAKEDEPENDFLAGS) $< 2>/dev/null >$@
+.cxx.depend:
+	$(MAKEDEPEND) -f- $(MAKEDEPENDFLAGS) $< 2>/dev/null >$@
+
+# DO NOT DELETE THIS LINE -- make depend depends on it.
+
+# Do not add dependencies manually - use 'make depend' in $ARBHOME
+# For formatting issues see SOURCE_TOOLS/fix_depends.pl (from main)
+
+DI_clusters.o: di_awars.hxx
+DI_clusters.o: di_clusters.hxx
+DI_clusters.o: di_clustertree.hxx
+DI_clusters.o: di_foundclusters.hxx
+DI_clusters.o: $(ARBHOME)/INCLUDE/ad_prot.h
+DI_clusters.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+DI_clusters.o: $(ARBHOME)/INCLUDE/AliView.hxx
+DI_clusters.o: $(ARBHOME)/INCLUDE/AP_seq_dna.hxx
+DI_clusters.o: $(ARBHOME)/INCLUDE/AP_seq_protein.hxx
+DI_clusters.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
+DI_clusters.o: $(ARBHOME)/INCLUDE/arb_assert.h
+DI_clusters.o: $(ARBHOME)/INCLUDE/arb_core.h
+DI_clusters.o: $(ARBHOME)/INCLUDE/arb_error.h
+DI_clusters.o: $(ARBHOME)/INCLUDE/arb_msg.h
+DI_clusters.o: $(ARBHOME)/INCLUDE/arb_progress.h
+DI_clusters.o: $(ARBHOME)/INCLUDE/arb_string.h
+DI_clusters.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
+DI_clusters.o: $(ARBHOME)/INCLUDE/arbdb.h
+DI_clusters.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+DI_clusters.o: $(ARBHOME)/INCLUDE/arbdbt.h
+DI_clusters.o: $(ARBHOME)/INCLUDE/arbtools.h
+DI_clusters.o: $(ARBHOME)/INCLUDE/attributes.h
+DI_clusters.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
+DI_clusters.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
+DI_clusters.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
+DI_clusters.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+DI_clusters.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+DI_clusters.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
+DI_clusters.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+DI_clusters.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+DI_clusters.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
+DI_clusters.o: $(ARBHOME)/INCLUDE/cb.h
+DI_clusters.o: $(ARBHOME)/INCLUDE/cb_base.h
+DI_clusters.o: $(ARBHOME)/INCLUDE/cbtypes.h
+DI_clusters.o: $(ARBHOME)/INCLUDE/cxxforward.h
+DI_clusters.o: $(ARBHOME)/INCLUDE/dbitem_set.h
+DI_clusters.o: $(ARBHOME)/INCLUDE/downcast.h
+DI_clusters.o: $(ARBHOME)/INCLUDE/dupstr.h
+DI_clusters.o: $(ARBHOME)/INCLUDE/gccver.h
+DI_clusters.o: $(ARBHOME)/INCLUDE/gui_aliview.hxx
+DI_clusters.o: $(ARBHOME)/INCLUDE/smartptr.h
+DI_clusters.o: $(ARBHOME)/INCLUDE/static_assert.h
+DI_clusters.o: $(ARBHOME)/INCLUDE/test_global.h
+DI_clusters.o: $(ARBHOME)/INCLUDE/TreeNode.h
+DI_clusters.o: $(ARBHOME)/INCLUDE/ttypes.h
+
+DI_clustertree.o: di_clustertree.hxx
+DI_clustertree.o: $(ARBHOME)/INCLUDE/ad_prot.h
+DI_clustertree.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+DI_clustertree.o: $(ARBHOME)/INCLUDE/AliView.hxx
+DI_clustertree.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
+DI_clustertree.o: $(ARBHOME)/INCLUDE/arb_assert.h
+DI_clustertree.o: $(ARBHOME)/INCLUDE/arb_core.h
+DI_clustertree.o: $(ARBHOME)/INCLUDE/arb_error.h
+DI_clustertree.o: $(ARBHOME)/INCLUDE/arb_msg.h
+DI_clustertree.o: $(ARBHOME)/INCLUDE/arb_progress.h
+DI_clustertree.o: $(ARBHOME)/INCLUDE/arb_string.h
+DI_clustertree.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
+DI_clustertree.o: $(ARBHOME)/INCLUDE/arbdb.h
+DI_clustertree.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+DI_clustertree.o: $(ARBHOME)/INCLUDE/arbdbt.h
+DI_clustertree.o: $(ARBHOME)/INCLUDE/arbtools.h
+DI_clustertree.o: $(ARBHOME)/INCLUDE/attributes.h
+DI_clustertree.o: $(ARBHOME)/INCLUDE/cxxforward.h
+DI_clustertree.o: $(ARBHOME)/INCLUDE/downcast.h
+DI_clustertree.o: $(ARBHOME)/INCLUDE/dupstr.h
+DI_clustertree.o: $(ARBHOME)/INCLUDE/gccver.h
+DI_clustertree.o: $(ARBHOME)/INCLUDE/smartptr.h
+DI_clustertree.o: $(ARBHOME)/INCLUDE/static_assert.h
+DI_clustertree.o: $(ARBHOME)/INCLUDE/test_global.h
+DI_clustertree.o: $(ARBHOME)/INCLUDE/TreeNode.h
+
+DI_compress_matrix.o: di_matr.hxx
+DI_compress_matrix.o: $(ARBHOME)/INCLUDE/ad_prot.h
+DI_compress_matrix.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+DI_compress_matrix.o: $(ARBHOME)/INCLUDE/AliView.hxx
+DI_compress_matrix.o: $(ARBHOME)/INCLUDE/AP_matrix.hxx
+DI_compress_matrix.o: $(ARBHOME)/INCLUDE/AP_pro_a_nucs.hxx
+DI_compress_matrix.o: $(ARBHOME)/INCLUDE/AP_seq_dna.hxx
+DI_compress_matrix.o: $(ARBHOME)/INCLUDE/AP_seq_simple_pro.hxx
+DI_compress_matrix.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
+DI_compress_matrix.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
+DI_compress_matrix.o: $(ARBHOME)/INCLUDE/arb_assert.h
+DI_compress_matrix.o: $(ARBHOME)/INCLUDE/arb_core.h
+DI_compress_matrix.o: $(ARBHOME)/INCLUDE/arb_error.h
+DI_compress_matrix.o: $(ARBHOME)/INCLUDE/arb_msg.h
+DI_compress_matrix.o: $(ARBHOME)/INCLUDE/arb_string.h
+DI_compress_matrix.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
+DI_compress_matrix.o: $(ARBHOME)/INCLUDE/arbdb.h
+DI_compress_matrix.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+DI_compress_matrix.o: $(ARBHOME)/INCLUDE/arbdbt.h
+DI_compress_matrix.o: $(ARBHOME)/INCLUDE/arbtools.h
+DI_compress_matrix.o: $(ARBHOME)/INCLUDE/attributes.h
+DI_compress_matrix.o: $(ARBHOME)/INCLUDE/cxxforward.h
+DI_compress_matrix.o: $(ARBHOME)/INCLUDE/downcast.h
+DI_compress_matrix.o: $(ARBHOME)/INCLUDE/dupstr.h
+DI_compress_matrix.o: $(ARBHOME)/INCLUDE/gccver.h
+DI_compress_matrix.o: $(ARBHOME)/INCLUDE/smartptr.h
+DI_compress_matrix.o: $(ARBHOME)/INCLUDE/static_assert.h
+DI_compress_matrix.o: $(ARBHOME)/INCLUDE/test_global.h
+DI_compress_matrix.o: $(ARBHOME)/INCLUDE/TreeNode.h
+
+DI_foundclusters.o: di_clustertree.hxx
+DI_foundclusters.o: di_foundclusters.hxx
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/ad_prot.h
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/AliView.hxx
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/arb_assert.h
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/arb_core.h
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/arb_error.h
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/arb_msg.h
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/arb_string.h
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/arbdb.h
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/arbdbt.h
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/arbtools.h
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/attributes.h
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_select.hxx
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/cb.h
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/cb_base.h
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/cbtypes.h
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/cxxforward.h
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/dbitem_set.h
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/downcast.h
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/dupstr.h
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/gccver.h
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/gui_aliview.hxx
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/smartptr.h
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/static_assert.h
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/test_global.h
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/TreeNode.h
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/ttypes.h
+
+DI_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
+DI_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
+DI_main.o: $(ARBHOME)/INCLUDE/arb_core.h
+DI_main.o: $(ARBHOME)/INCLUDE/arb_error.h
+DI_main.o: $(ARBHOME)/INCLUDE/arb_msg.h
+DI_main.o: $(ARBHOME)/INCLUDE/arb_string.h
+DI_main.o: $(ARBHOME)/INCLUDE/arbdb.h
+DI_main.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+DI_main.o: $(ARBHOME)/INCLUDE/arbtools.h
+DI_main.o: $(ARBHOME)/INCLUDE/attributes.h
+DI_main.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+DI_main.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+DI_main.o: $(ARBHOME)/INCLUDE/aw_position.hxx
+DI_main.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
+DI_main.o: $(ARBHOME)/INCLUDE/aw_question.hxx
+DI_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+DI_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+DI_main.o: $(ARBHOME)/INCLUDE/awt.hxx
+DI_main.o: $(ARBHOME)/INCLUDE/awt_TreeAwars.hxx
+DI_main.o: $(ARBHOME)/INCLUDE/cb.h
+DI_main.o: $(ARBHOME)/INCLUDE/cb_base.h
+DI_main.o: $(ARBHOME)/INCLUDE/cbtypes.h
+DI_main.o: $(ARBHOME)/INCLUDE/cxxforward.h
+DI_main.o: $(ARBHOME)/INCLUDE/dupstr.h
+DI_main.o: $(ARBHOME)/INCLUDE/gccver.h
+DI_main.o: $(ARBHOME)/INCLUDE/macros.hxx
+DI_main.o: $(ARBHOME)/INCLUDE/servercntrl.h
+DI_main.o: $(ARBHOME)/INCLUDE/smartptr.h
+DI_main.o: $(ARBHOME)/INCLUDE/static_assert.h
+DI_main.o: $(ARBHOME)/INCLUDE/test_global.h
+DI_main.o: $(ARBHOME)/INCLUDE/ttypes.h
+
+DI_matr.o: di_awars.hxx
+DI_matr.o: di_clusters.hxx
+DI_matr.o: di_matr.hxx
+DI_matr.o: di_protdist.hxx
+DI_matr.o: di_view_matrix.hxx
+DI_matr.o: dist.hxx
+DI_matr.o: $(ARBHOME)/INCLUDE/ad_cb.h
+DI_matr.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
+DI_matr.o: $(ARBHOME)/INCLUDE/ad_prot.h
+DI_matr.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+DI_matr.o: $(ARBHOME)/INCLUDE/AliView.hxx
+DI_matr.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
+DI_matr.o: $(ARBHOME)/INCLUDE/AP_matrix.hxx
+DI_matr.o: $(ARBHOME)/INCLUDE/AP_pro_a_nucs.hxx
+DI_matr.o: $(ARBHOME)/INCLUDE/AP_seq_dna.hxx
+DI_matr.o: $(ARBHOME)/INCLUDE/AP_seq_simple_pro.hxx
+DI_matr.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
+DI_matr.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
+DI_matr.o: $(ARBHOME)/INCLUDE/arb_assert.h
+DI_matr.o: $(ARBHOME)/INCLUDE/arb_core.h
+DI_matr.o: $(ARBHOME)/INCLUDE/arb_defs.h
+DI_matr.o: $(ARBHOME)/INCLUDE/arb_diff.h
+DI_matr.o: $(ARBHOME)/INCLUDE/arb_error.h
+DI_matr.o: $(ARBHOME)/INCLUDE/arb_file.h
+DI_matr.o: $(ARBHOME)/INCLUDE/arb_global_defs.h
+DI_matr.o: $(ARBHOME)/INCLUDE/arb_msg.h
+DI_matr.o: $(ARBHOME)/INCLUDE/arb_progress.h
+DI_matr.o: $(ARBHOME)/INCLUDE/arb_sort.h
+DI_matr.o: $(ARBHOME)/INCLUDE/arb_strarray.h
+DI_matr.o: $(ARBHOME)/INCLUDE/arb_string.h
+DI_matr.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
+DI_matr.o: $(ARBHOME)/INCLUDE/arbdb.h
+DI_matr.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+DI_matr.o: $(ARBHOME)/INCLUDE/arbdbt.h
+DI_matr.o: $(ARBHOME)/INCLUDE/arbtools.h
+DI_matr.o: $(ARBHOME)/INCLUDE/attributes.h
+DI_matr.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
+DI_matr.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
+DI_matr.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
+DI_matr.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+DI_matr.o: $(ARBHOME)/INCLUDE/aw_file.hxx
+DI_matr.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+DI_matr.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
+DI_matr.o: $(ARBHOME)/INCLUDE/aw_position.hxx
+DI_matr.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
+DI_matr.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+DI_matr.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+DI_matr.o: $(ARBHOME)/INCLUDE/awt.hxx
+DI_matr.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
+DI_matr.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
+DI_matr.o: $(ARBHOME)/INCLUDE/awt_TreeAwars.hxx
+DI_matr.o: $(ARBHOME)/INCLUDE/cb.h
+DI_matr.o: $(ARBHOME)/INCLUDE/cb_base.h
+DI_matr.o: $(ARBHOME)/INCLUDE/cbtypes.h
+DI_matr.o: $(ARBHOME)/INCLUDE/ColumnStat.hxx
+DI_matr.o: $(ARBHOME)/INCLUDE/CT_ctree.hxx
+DI_matr.o: $(ARBHOME)/INCLUDE/cxxforward.h
+DI_matr.o: $(ARBHOME)/INCLUDE/downcast.h
+DI_matr.o: $(ARBHOME)/INCLUDE/dupstr.h
+DI_matr.o: $(ARBHOME)/INCLUDE/gccver.h
+DI_matr.o: $(ARBHOME)/INCLUDE/gui_aliview.hxx
+DI_matr.o: $(ARBHOME)/INCLUDE/macros.hxx
+DI_matr.o: $(ARBHOME)/INCLUDE/neighbourjoin.hxx
+DI_matr.o: $(ARBHOME)/INCLUDE/smartptr.h
+DI_matr.o: $(ARBHOME)/INCLUDE/static_assert.h
+DI_matr.o: $(ARBHOME)/INCLUDE/test_global.h
+DI_matr.o: $(ARBHOME)/INCLUDE/test_unit.h
+DI_matr.o: $(ARBHOME)/INCLUDE/TreeNode.h
+DI_matr.o: $(ARBHOME)/INCLUDE/ttypes.h
+
+DI_protdist.o: di_matr.hxx
+DI_protdist.o: di_protdist.hxx
+DI_protdist.o: $(ARBHOME)/INCLUDE/ad_prot.h
+DI_protdist.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+DI_protdist.o: $(ARBHOME)/INCLUDE/AliView.hxx
+DI_protdist.o: $(ARBHOME)/INCLUDE/AP_matrix.hxx
+DI_protdist.o: $(ARBHOME)/INCLUDE/AP_pro_a_nucs.hxx
+DI_protdist.o: $(ARBHOME)/INCLUDE/AP_seq_dna.hxx
+DI_protdist.o: $(ARBHOME)/INCLUDE/AP_seq_simple_pro.hxx
+DI_protdist.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
+DI_protdist.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
+DI_protdist.o: $(ARBHOME)/INCLUDE/arb_assert.h
+DI_protdist.o: $(ARBHOME)/INCLUDE/arb_core.h
+DI_protdist.o: $(ARBHOME)/INCLUDE/arb_error.h
+DI_protdist.o: $(ARBHOME)/INCLUDE/arb_msg.h
+DI_protdist.o: $(ARBHOME)/INCLUDE/arb_progress.h
+DI_protdist.o: $(ARBHOME)/INCLUDE/arb_string.h
+DI_protdist.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
+DI_protdist.o: $(ARBHOME)/INCLUDE/arbdb.h
+DI_protdist.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+DI_protdist.o: $(ARBHOME)/INCLUDE/arbdbt.h
+DI_protdist.o: $(ARBHOME)/INCLUDE/arbtools.h
+DI_protdist.o: $(ARBHOME)/INCLUDE/attributes.h
+DI_protdist.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
+DI_protdist.o: $(ARBHOME)/INCLUDE/cxxforward.h
+DI_protdist.o: $(ARBHOME)/INCLUDE/downcast.h
+DI_protdist.o: $(ARBHOME)/INCLUDE/dupstr.h
+DI_protdist.o: $(ARBHOME)/INCLUDE/gccver.h
+DI_protdist.o: $(ARBHOME)/INCLUDE/smartptr.h
+DI_protdist.o: $(ARBHOME)/INCLUDE/static_assert.h
+DI_protdist.o: $(ARBHOME)/INCLUDE/test_global.h
+DI_protdist.o: $(ARBHOME)/INCLUDE/TreeNode.h
+
+DI_save_matr.o: di_matr.hxx
+DI_save_matr.o: $(ARBHOME)/INCLUDE/ad_prot.h
+DI_save_matr.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+DI_save_matr.o: $(ARBHOME)/INCLUDE/AliView.hxx
+DI_save_matr.o: $(ARBHOME)/INCLUDE/AP_matrix.hxx
+DI_save_matr.o: $(ARBHOME)/INCLUDE/AP_pro_a_nucs.hxx
+DI_save_matr.o: $(ARBHOME)/INCLUDE/AP_seq_dna.hxx
+DI_save_matr.o: $(ARBHOME)/INCLUDE/AP_seq_simple_pro.hxx
+DI_save_matr.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
+DI_save_matr.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
+DI_save_matr.o: $(ARBHOME)/INCLUDE/arb_assert.h
+DI_save_matr.o: $(ARBHOME)/INCLUDE/arb_core.h
+DI_save_matr.o: $(ARBHOME)/INCLUDE/arb_error.h
+DI_save_matr.o: $(ARBHOME)/INCLUDE/arb_msg.h
+DI_save_matr.o: $(ARBHOME)/INCLUDE/arb_string.h
+DI_save_matr.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
+DI_save_matr.o: $(ARBHOME)/INCLUDE/arbdb.h
+DI_save_matr.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+DI_save_matr.o: $(ARBHOME)/INCLUDE/arbdbt.h
+DI_save_matr.o: $(ARBHOME)/INCLUDE/arbtools.h
+DI_save_matr.o: $(ARBHOME)/INCLUDE/attributes.h
+DI_save_matr.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+DI_save_matr.o: $(ARBHOME)/INCLUDE/cxxforward.h
+DI_save_matr.o: $(ARBHOME)/INCLUDE/downcast.h
+DI_save_matr.o: $(ARBHOME)/INCLUDE/dupstr.h
+DI_save_matr.o: $(ARBHOME)/INCLUDE/gccver.h
+DI_save_matr.o: $(ARBHOME)/INCLUDE/nds.h
+DI_save_matr.o: $(ARBHOME)/INCLUDE/smartptr.h
+DI_save_matr.o: $(ARBHOME)/INCLUDE/static_assert.h
+DI_save_matr.o: $(ARBHOME)/INCLUDE/test_global.h
+DI_save_matr.o: $(ARBHOME)/INCLUDE/TreeNode.h
+
+DI_view_matrix.o: di_matr.hxx
+DI_view_matrix.o: di_view_matrix.hxx
+DI_view_matrix.o: dist.hxx
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/ad_prot.h
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/AliView.hxx
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/AP_matrix.hxx
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/AP_pro_a_nucs.hxx
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/AP_seq_dna.hxx
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/AP_seq_simple_pro.hxx
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/arb_algo.h
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/arb_assert.h
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/arb_core.h
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/arb_error.h
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/arb_msg.h
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/arb_string.h
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/arbdb.h
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/arbdbt.h
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/arbtools.h
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/attributes.h
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_awar_defs.hxx
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_position.hxx
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/cb.h
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/cb_base.h
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/cbtypes.h
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/cxxforward.h
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/downcast.h
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/dupstr.h
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/gccver.h
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/smartptr.h
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/static_assert.h
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/test_global.h
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/TreeNode.h
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/ttypes.h
+
+distanalyse.o: di_matr.hxx
+distanalyse.o: $(ARBHOME)/INCLUDE/ad_prot.h
+distanalyse.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+distanalyse.o: $(ARBHOME)/INCLUDE/AliView.hxx
+distanalyse.o: $(ARBHOME)/INCLUDE/AP_matrix.hxx
+distanalyse.o: $(ARBHOME)/INCLUDE/AP_pro_a_nucs.hxx
+distanalyse.o: $(ARBHOME)/INCLUDE/AP_seq_dna.hxx
+distanalyse.o: $(ARBHOME)/INCLUDE/AP_seq_simple_pro.hxx
+distanalyse.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
+distanalyse.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
+distanalyse.o: $(ARBHOME)/INCLUDE/arb_assert.h
+distanalyse.o: $(ARBHOME)/INCLUDE/arb_core.h
+distanalyse.o: $(ARBHOME)/INCLUDE/arb_error.h
+distanalyse.o: $(ARBHOME)/INCLUDE/arb_msg.h
+distanalyse.o: $(ARBHOME)/INCLUDE/arb_string.h
+distanalyse.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
+distanalyse.o: $(ARBHOME)/INCLUDE/arbdb.h
+distanalyse.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+distanalyse.o: $(ARBHOME)/INCLUDE/arbdbt.h
+distanalyse.o: $(ARBHOME)/INCLUDE/arbtools.h
+distanalyse.o: $(ARBHOME)/INCLUDE/attributes.h
+distanalyse.o: $(ARBHOME)/INCLUDE/cxxforward.h
+distanalyse.o: $(ARBHOME)/INCLUDE/downcast.h
+distanalyse.o: $(ARBHOME)/INCLUDE/dupstr.h
+distanalyse.o: $(ARBHOME)/INCLUDE/gccver.h
+distanalyse.o: $(ARBHOME)/INCLUDE/smartptr.h
+distanalyse.o: $(ARBHOME)/INCLUDE/static_assert.h
+distanalyse.o: $(ARBHOME)/INCLUDE/test_global.h
+distanalyse.o: $(ARBHOME)/INCLUDE/TreeNode.h

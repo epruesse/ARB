@@ -1,0 +1,85 @@
+AUTODETECT      "!!RICH_SEQUENCE*"
+                #Global settings:
+KEYWIDTH        14
+FILETAG         rsf
+
+BEGIN           "  LOCUS*"
+
+MATCH           "  LOCUS *"
+                SRT "* *=*1"
+                WRITE "name"
+
+MATCH           "  ACCESSION *"
+                SRT "\"*\"=*1:No information="
+                ACI "extract_words("0123456789",4.0)"
+                WRITE "acc"
+
+MATCH           "  SOURCE *"
+                TAG             "GCG_RSF"
+                APPEND "source"
+
+MATCH           "    ORGANISM *"
+                SRT             "*|*=*1"
+                WRITE "full_name"
+
+MATCH           "    ORGANISM *"
+                SRT             "*|*=*2"
+                TAG             "GCG_RSF"
+                WRITE "tax"
+
+MATCH           "  VERSION *"
+                SRT "*|*=*1"
+                TAG             "GCG_RSF"
+                WRITE "version"
+
+MATCH           "    AUTHORS *"
+                SRT             "No information*="
+                TAG             "GCG_RSF"
+                APPEND "author"
+
+MATCH           "    TITLE *"
+                SRT             "No information*="
+                TAG             "GCG_RSF"
+                APPEND          "title"
+
+MATCH           "    JOURNAL *"
+                SRT             "No information*="
+                TAG             "GCG_RSF"
+                APPEND          "journal"
+
+MATCH           "       source*strain*"
+                SRT             "*/strain\=\"*\"*=*2"
+                WRITE           "strain"
+
+MATCH           "       source*clone*"
+                SRT             "*/clone\=\"*\"*=*2"
+                TAG             "GCG_RSF"
+                WRITE           "clone"
+
+MATCH           "       source*note*"
+                SRT             "*/note\=\"*\"*=*2"
+                TAG             "GCG_RSF"
+                WRITE           "description"
+
+MATCH           "       source*specific_host*"
+                SRT             */specific_host\=\"*\"*=*2"
+                TAG             "GCG_RSF"
+                APPEND          "host"
+
+MATCH           "       source*isolate*"
+                SRT             "*/isolate\=\"*\"*=*2"
+                WRITE           "strain"
+
+MATCH           "  KEYWORDS *"
+                SRT             ";="
+                TAG             "GCG_RSF"
+                APPEND          "keywords"
+
+SEQUENCEAFTER   "sequence*"
+SEQUENCESRT     "*Check*..*=*3"
+SEQUENCEACI     "remove("0123456789 /")"
+SEQUENCEEND     "}"
+CREATE_ACC_FROM_SEQUENCE
+
+END             "}"
+
