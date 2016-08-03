@@ -579,14 +579,16 @@ static TreeNode *read_tree_and_size_internal(GBDATA *gb_tree, GBDATA *gb_ctree, 
         }
     }
     if (!error) {
-        char *cptr[1];
-        long  startid[1];
-        char *fbuf;
-
-        startid[0] = 0;
-        fbuf       = cptr[0] = GB_read_string(gb_ctree);
-        node       = gbt_read_tree_rek(cptr, startid, gb_tree_nodes, troot, node_count, error);
-        free (fbuf);
+        char * const treeString = GB_read_string(gb_ctree);
+        if (!treeString) {
+            error = GB_await_error();
+        }
+        else {
+            char *ts = treeString;
+            long  id = 0;
+            node     = gbt_read_tree_rek(&ts, &id, gb_tree_nodes, troot, node_count, error);
+        }
+        free(treeString);
     }
 
     free(gb_tree_nodes);
