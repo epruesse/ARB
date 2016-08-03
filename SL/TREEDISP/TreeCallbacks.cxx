@@ -797,7 +797,10 @@ void NT_reload_tree_event(AW_root *awr, AWT_canvas *ntw, bool unzoom_and_expose)
 
 void TREE_recompute_cb(UNFIXED, AWT_canvas *ntw) {
     AWT_graphic_tree *gt = DOWNCAST(AWT_graphic_tree*, ntw->gfx);
-    gt->get_root_node()->compute_tree();
+
+    AP_tree *troot = gt->get_root_node();
+    if (troot) troot->compute_tree();
+
     ntw->recalc_size_and_refresh();
 }
 
