@@ -720,7 +720,7 @@ void gb_create_key_array(GB_MAIN_TYPE *Main, int index) {
         else {
             Main->sizeofkeys = 1000;
             if (index>=Main->sizeofkeys) Main->sizeofkeys = index+1;
-            Main->keys = (gb_Key *)GB_calloc(sizeof(gb_Key), (size_t)Main->sizeofkeys);
+            Main->keys = (gb_Key *)ARB_calloc(sizeof(gb_Key), (size_t)Main->sizeofkeys);
         }
         for (int i = Main->keycnt; i < Main->sizeofkeys; i++) {
             Main->keys[i].compression_mask = -1;

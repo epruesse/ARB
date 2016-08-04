@@ -98,8 +98,6 @@ static GB_ERROR CON_export(GBDATA *gb_main, const char *savename, const char *al
     const char *off = "off";
     const char *on  = "on";
 
-    char *buffer = (char *)GB_calloc(2000, sizeof(char));
-
     GBDATA   *gb_extended = GBT_find_or_create_SAI(gb_main, savename);
     GBDATA   *gb_data     = GBT_add_data(gb_extended, align, "data", GB_STRING);
     GB_ERROR  err         = GB_write_string(gb_data, result);
@@ -110,14 +108,19 @@ static GB_ERROR CON_export(GBDATA *gb_main, const char *savename, const char *al
         const char *countgapsstring = BK.countgaps ? on : off;
         const char *simplifystring  = BK.group ? on : off;
 
-        sprintf(buffer, "CON: [species: %s]  [number: %ld]  [count gaps: %s] "
-                "[threshold for gaps: %d]  [simplify: %s] "
-                "[threshold for group: %d]  [upper: %d]  [lower: %d]",
-                allvsmarked, nrofspecies, countgapsstring,
-                BK.gapbound, simplifystring,
-                BK.considbound, BK.upper, BK.lower);
+        {
+            char *buffer = (char *)ARB_calloc(2000, sizeof(char)); // @@@ -> ARB_alloc
+            sprintf(buffer, "CON: [species: %s]  [number: %ld]  [count gaps: %s] "
+                    "[threshold for gaps: %d]  [simplify: %s] "
+                    "[threshold for group: %d]  [upper: %d]  [lower: %d]",
+                    allvsmarked, nrofspecies, countgapsstring,
+                    BK.gapbound, simplifystring,
+                    BK.considbound, BK.upper, BK.lower);
 
-        err = GB_write_string(gb_options, buffer);
+            err = GB_write_string(gb_options, buffer);
+            free(buffer);
+        }
+
         if (!err) {
             GBDATA *gb_names  = GB_search(GB_get_father(gb_options), "_SPECIES", GB_FIND);
             if (gb_names) err = GB_delete(gb_names); // delete old entry
@@ -156,7 +159,6 @@ static GB_ERROR CON_export(GBDATA *gb_main, const char *savename, const char *al
         }
     }
 
-    free(buffer);
     if (err) err = GBS_global_string("Failed to store consensus '%s' (Reason: %s)", savename, err);
     return err;
 }

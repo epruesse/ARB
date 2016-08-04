@@ -3019,10 +3019,10 @@ int AW_window::create_mode(const char *pixmap, const char *helpText, AW_active m
     (XtPointer) cb2);
 
     if (!p_w->modes_f_callbacks) {
-        p_w->modes_f_callbacks = (AW_cb **)GB_calloc(sizeof(AW_cb*), AW_NUMBER_OF_F_KEYS); // valgrinders : never freed because AW_window never is freed
+        p_w->modes_f_callbacks = (AW_cb **)ARB_calloc(sizeof(AW_cb*), AW_NUMBER_OF_F_KEYS); // valgrinders : never freed because AW_window never is freed
     }
     if (!p_w->modes_widgets) {
-        p_w->modes_widgets = (Widget *)GB_calloc(sizeof(Widget), AW_NUMBER_OF_F_KEYS);
+        p_w->modes_widgets = (Widget *)ARB_calloc(sizeof(Widget), AW_NUMBER_OF_F_KEYS);
     }
     if (p_w->number_of_modes<AW_NUMBER_OF_F_KEYS) {
         p_w->modes_f_callbacks[p_w->number_of_modes] = cb2;

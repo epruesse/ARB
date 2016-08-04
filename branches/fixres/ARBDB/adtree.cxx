@@ -382,7 +382,7 @@ static GB_ERROR gbt_write_tree(GBDATA *gb_main, GBDATA *gb_tree, const char *tre
             // build tree-string and save to DB
             {
                 char *t_size = gbt_write_tree_rek_new(tree, 0, GBT_GET_SIZE); // calc size of tree-string
-                char *ctree  = (char *)GB_calloc(sizeof(char), (size_t)(t_size+1)); // allocate buffer for tree-string
+                char *ctree  = (char *)ARB_calloc(sizeof(char), (size_t)(t_size+1)); // allocate buffer for tree-string
 
                 t_size = gbt_write_tree_rek_new(tree, ctree, GBT_PUT_DATA); // write into buffer
                 *(t_size) = 0;
@@ -560,7 +560,7 @@ static TreeNode *read_tree_and_size_internal(GBDATA *gb_tree, GBDATA *gb_ctree, 
     GBDATA   **gb_tree_nodes;
     TreeNode  *node = 0;
 
-    gb_tree_nodes = (GBDATA **)GB_calloc(sizeof(GBDATA *), (size_t)node_count);
+    gb_tree_nodes = (GBDATA **)ARB_calloc(sizeof(GBDATA *), (size_t)node_count);
     if (gb_tree) {
         GBDATA *gb_node;
 
@@ -1159,7 +1159,7 @@ GB_CSTR *GBT_get_names_of_species_in_tree(const TreeNode *tree, size_t *count) {
      * The names are not allocated (so they may change as side effect of renaming species) */
 
     size_t   size   = GBT_count_leafs(tree);
-    GB_CSTR *result = (GB_CSTR *)GB_calloc(sizeof(char *), size + 1);
+    GB_CSTR *result = (GB_CSTR *)ARB_calloc(sizeof(char *), size + 1);
     
     IF_ASSERTION_USED(GB_CSTR *check =) fill_species_name_array(result, tree);
     gb_assert(check - size == result);

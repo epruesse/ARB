@@ -120,17 +120,12 @@ static void calculate_primes_upto() {
     {
         size_t         bits_needed  = CALC_PRIMES_UP_TO/2+1; // only need bits for odd numbers
         size_t         bytes_needed = (bits_needed/8)+1;
-        unsigned char *eratosthenes = (unsigned char *)GB_calloc(bytes_needed, 1); // bit = 1 means "is not a prime"
+        unsigned char *eratosthenes = (unsigned char *)ARB_calloc(bytes_needed, 1); // bit = 1 means "is not a prime"
         size_t         prime_count  = 0;
         size_t         num;
 
         printf("eratosthenes' size = %zu\n", bytes_needed);
         GBK_dump_backtrace(stderr, "calculate_primes_upto");
-
-        if (!eratosthenes) {
-            GB_internal_error("out of memory");
-            return;
-        }
 
         for (num = 3; num <= CALC_PRIMES_UP_TO; num += 2) {
             if (bit_value(eratosthenes, num) == 0) { // is a prime number
@@ -262,12 +257,12 @@ GB_HASH *GBS_create_hash(long estimated_elements, GB_CASE case_sens) {
      * Uses linked lists to avoid collisions.
      */
     long     size = hash_size(estimated_elements);
-    GB_HASH *hs   = (GB_HASH*)GB_calloc(sizeof(*hs), 1);
+    GB_HASH *hs   = (GB_HASH*)ARB_calloc(sizeof(*hs), 1);
 
     hs->size      = size;
     hs->nelem     = 0;
     hs->case_sens = case_sens;
-    hs->entries   = (gbs_hash_entry **)GB_calloc(sizeof(gbs_hash_entry *), size);
+    hs->entries   = (gbs_hash_entry **)ARB_calloc(sizeof(gbs_hash_entry *), size);
     hs->freefun   = NULL;
 
     return hs;
@@ -327,7 +322,7 @@ void GBS_optimize_hash(const GB_HASH *hs) {
 #endif // DEBUG
 
         if (new_size>hs->size) { // avoid overflow
-            gbs_hash_entry **new_entries = (gbs_hash_entry**)GB_calloc(sizeof(*new_entries), new_size);
+            gbs_hash_entry **new_entries = (gbs_hash_entry**)ARB_calloc(sizeof(*new_entries), new_size);
             size_t           pos;
 
             for (pos = 0; pos<hs->size; ++pos) {
@@ -620,7 +615,7 @@ static int wrap_hashCompare4gb_sort(const void *v0, const void *v1, void *sorter
 
 void GBS_hash_do_sorted_loop(GB_HASH *hs, gb_hash_loop_type func, gbs_hash_compare_function sorter, void *client_data) {
     size_t           hsize = hs->size;
-    gbs_hash_entry **mtab  = (gbs_hash_entry **)GB_calloc(sizeof(void *), hs->nelem);
+    gbs_hash_entry **mtab  = (gbs_hash_entry **)ARB_calloc(sizeof(void *), hs->nelem);
     
     size_t j = 0;
     for (size_t i = 0; i < hsize; i++) {
@@ -658,11 +653,11 @@ inline long gbs_numhash_index(long key, long size) {
 
 GB_NUMHASH *GBS_create_numhash(size_t estimated_elements) {
     size_t      size = hash_size(estimated_elements);
-    GB_NUMHASH *hs   = (GB_NUMHASH *)GB_calloc(sizeof(*hs), 1);
+    GB_NUMHASH *hs   = (GB_NUMHASH *)ARB_calloc(sizeof(*hs), 1);
 
     hs->size    = size;
     hs->nelem   = 0;
-    hs->entries = (numhash_entry **)GB_calloc(sizeof(*(hs->entries)), (size_t)size);
+    hs->entries = (numhash_entry **)ARB_calloc(sizeof(*(hs->entries)), (size_t)size);
 
     return hs;
 }
@@ -777,7 +772,7 @@ public:
 
         long found = GBS_read_hash(stat_hash, id);
         if (!found) {
-            gbs_hash_statistic_summary *stat = (gbs_hash_statistic_summary*)GB_calloc(1, sizeof(*stat));
+            gbs_hash_statistic_summary *stat = (gbs_hash_statistic_summary*)ARB_calloc(1, sizeof(*stat));
             stat->init();
             found = (long)stat;
             GBS_write_hash(stat_hash, id, found);
@@ -1035,7 +1030,7 @@ static void test_string_2_hashtab(GB_HASH *hash, char *data) {
         }
         else break;
 
-        str = (char *)GB_calloc(sizeof(char), strlen+1);
+        str = (char *)ARB_calloc(sizeof(char), strlen+1);
         for (dp = p, d = str; (c = *dp);  dp++) {
             if (c==':') {
                 if (dp[1] == ':') {

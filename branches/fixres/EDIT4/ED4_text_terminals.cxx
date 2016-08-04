@@ -218,7 +218,7 @@ ED4_returncode ED4_orf_terminal::draw() {
     if (index_range.end() >= len_of_colored_strings) {
         len_of_colored_strings = index_range.end() + 256;
         if (!colored_strings) {
-            colored_strings = (char **)GB_calloc(sizeof(char *), ED4_G_DRAG);
+            colored_strings = (char **)ARB_calloc(sizeof(char *), ED4_G_DRAG);
         }
         int i;
         for (i=0; i<ED4_G_DRAG; i++) {
@@ -372,7 +372,7 @@ ED4_returncode ED4_sequence_terminal::draw() {
     if (right >= len_of_colored_strings) {
         len_of_colored_strings = right + 256;
         if (!colored_strings) {
-            colored_strings = (char **)GB_calloc(sizeof(char *), ED4_G_DRAG);
+            colored_strings = (char **)ARB_calloc(sizeof(char *), ED4_G_DRAG);
         }
         int i;
         for (i=0; i<ED4_G_DRAG; i++) {

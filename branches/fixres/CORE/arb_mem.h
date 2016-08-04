@@ -54,13 +54,6 @@ inline void *ARB_calloc(size_t nelem, size_t elsize) {
     return mem;
 }
 
-// ------------------------
-//      compat helpers
-
-inline void *GB_calloc(size_t nelem, size_t elsize) { // @@@ inline callers
-    return ARB_calloc(nelem, elsize);
-}
-
 #else
 #error arb_mem.h included twice
 #endif // ARB_MEM_H

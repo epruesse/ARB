@@ -162,9 +162,9 @@ GEN_position *GEN_new_position(int parts, bool joinable) {
         memset(pos->start_pos, 0, data_size);
     }
     else {
-        pos             = (GEN_position*)GB_calloc(1, sizeof(*pos));
+        pos             = (GEN_position*)ARB_calloc(1, sizeof(*pos));
         pos->parts      = parts;
-        pos->start_pos  = (size_t*)GB_calloc(1, data_size);
+        pos->start_pos  = (size_t*)ARB_calloc(1, data_size);
         pos->stop_pos   = pos->start_pos+parts;
         pos->complement = (unsigned char*)(pos->stop_pos+parts);
     }

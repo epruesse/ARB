@@ -298,7 +298,7 @@ void ED4_reference::set_gap_handling(bool mindgaptype, const char *gaptypes) {
 
 void ED4_reference::expand_to_length(int len) {
     if (len>ref_len && is_set()) {
-        char *ref2 = (char *)GB_calloc(sizeof(char), len+1);
+        char *ref2 = (char *)ARB_calloc(sizeof(char), len+1);
 
         if (reference) {
             strcpy(ref2, reference);

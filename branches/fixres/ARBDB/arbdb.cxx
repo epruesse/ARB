@@ -276,7 +276,7 @@ static void alloc_buffer(gb_buffer *buf, size_t size) {
 #if (MEMORY_TEST==1)
     buf->mem  = (char *)malloc(buf->size);
 #else
-    buf->mem  = (char *)GB_calloc(buf->size, 1);
+    buf->mem  = (char *)ARB_calloc(buf->size, 1);
 #endif
 }
 
@@ -2560,7 +2560,7 @@ GB_ERROR gb_resort_system_folder_to_top(GBCONTAINER *gb_main) {
     }
     if (gb_first == gb_system) return 0;
     len = GB_number_of_subentries(gb_main);
-    new_order_list = (GBDATA **)GB_calloc(sizeof(GBDATA *), len);
+    new_order_list = (GBDATA **)ARB_calloc(sizeof(GBDATA *), len);
     new_order_list[0] = gb_system;
     for (i=1; i<len; i++) {
         new_order_list[i] = gb_first;

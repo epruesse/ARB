@@ -56,7 +56,7 @@ char *AP_create_dna_to_ap_bases() {
 long *AWT_translator::create_pro_to_bits() const {
     int i;
     int j;
-    long *table = (long *)GB_calloc(sizeof(long), 256);
+    long *table = (long *)ARB_calloc(sizeof(long), 256);
     for (i = 0;   i < max_aa; i++) {
         j = index_2_spro[i];
         if (j == '.') {

@@ -514,7 +514,7 @@ const char *ED4_getSaiColorString(AW_root *awr, int start, int end) {
     if (seqSize>seqBufferSize) {
         free(saiColors);
         seqBufferSize = seqSize;
-        saiColors =  (char*)GB_calloc(seqBufferSize, sizeof(char));
+        saiColors =  (char*)ARB_calloc(seqBufferSize, sizeof(char));
     }
     else memset(saiColors, 0, sizeof(char)*seqSize);
 

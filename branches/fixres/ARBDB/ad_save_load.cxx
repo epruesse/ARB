@@ -48,7 +48,7 @@ char *gb_findExtension(char *path) {
 inline char *STATIC_BUFFER(SmartCharPtr& strvar, int minlen) {
     gb_assert(minlen > 0);
     if (strvar.isNull() || (strlen(&*strvar) < (size_t)(minlen-1))) {
-        strvar = (char*)GB_calloc(minlen, 1);
+        strvar = (char*)ARB_calloc(minlen, 1);
     }
     return &*strvar;
 }

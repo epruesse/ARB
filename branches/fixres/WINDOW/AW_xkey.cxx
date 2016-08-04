@@ -145,7 +145,7 @@ void aw_install_xkeys(Display *display) {
     aw_assert(generatedKeymaps == 0);               // oops - called twice
     
     generatedKeymaps_count = modfree*MODS;
-    generatedKeymaps       = (awXKeymap*)GB_calloc(generatedKeymaps_count, sizeof(*generatedKeymaps));
+    generatedKeymaps       = (awXKeymap*)ARB_calloc(generatedKeymaps_count, sizeof(*generatedKeymaps));
 
     for (i=0; i<modfree; ++i) {
         const awXKeymap_modfree *mf = awxkeymap_modfree+i;

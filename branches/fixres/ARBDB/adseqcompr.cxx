@@ -79,8 +79,8 @@ struct MasterSequence {
 // --------------------------------------------------------------------------------
 
 static Consensus *g_b_new_Consensus(long len) {
-    Consensus     *gcon = (Consensus *)GB_calloc(sizeof(*gcon), 1);
-    unsigned char *data = (unsigned char *)GB_calloc(sizeof(char)*256, len);
+    Consensus     *gcon = (Consensus *)ARB_calloc(sizeof(*gcon), 1);
+    unsigned char *data = (unsigned char *)ARB_calloc(sizeof(char)*256, len);
 
     gcon->len = len;
 
@@ -146,14 +146,15 @@ static void g_b_Consensus_add(Consensus *gcon, unsigned char *seq, long seq_len)
 
 static char *g_b_Consensus_get_sequence(Consensus *gcon) {
     int pos;
+
     unsigned char *s;
-    unsigned char *max = (unsigned char *)GB_calloc(sizeof(char), gcon->len);
-    int c;
-    char *seq = (char *)GB_calloc(sizeof(char), gcon->len+1);
+
+    unsigned char *max = (unsigned char *)ARB_calloc(sizeof(char), gcon->len);
+    char          *seq = (char *)ARB_calloc(sizeof(char), gcon->len+1);
 
     memset(seq, '@', gcon->len);
 
-    for (c = 1; c<256; c++) { // Find maximum frequency of non run
+    for (int c = 1; c<256; c++) { // Find maximum frequency of non run
         if (!gcon->used[c]) continue;
         s = gcon->con[c];
         for (pos = 0; pos<gcon->len; pos++) {
@@ -659,7 +660,7 @@ static GB_ERROR compress_sequence_tree(GBCONTAINER *gb_main, CompressionTree *tr
                 unsigned long long   sumorg            = 0;
                 unsigned long long   sumold            = 0;
                 unsigned long long   sumnew            = 0;
-                MasterSequence     **masters           = (MasterSequence **)GB_calloc(sizeof(*masters), leafcount);
+                MasterSequence     **masters           = (MasterSequence **)ARB_calloc(sizeof(*masters), leafcount);
                 int                  si;
 
                 {
@@ -684,10 +685,10 @@ static GB_ERROR compress_sequence_tree(GBCONTAINER *gb_main, CompressionTree *tr
                         free(master_data_name);
                     }
                     for (si = 0; si<mastercount; si++) {
-                        masters[si]         = (MasterSequence *)GB_calloc(sizeof(MasterSequence), 1);
+                        masters[si]         = (MasterSequence *)ARB_calloc(sizeof(MasterSequence), 1);
                         masters[si]->gb_mas = gb_create(gb_master_ali, "@master", GB_STRING);
                     }
-                    seqs = (Sequence *)GB_calloc(sizeof(*seqs), leafcount);
+                    seqs = (Sequence *)ARB_calloc(sizeof(*seqs), leafcount);
 
                     if (!error) {
                         arb_progress progress("Building master sequences", mastercount);

@@ -140,7 +140,7 @@ static void g_b_opti_scanGbdByKey(GB_MAIN_TYPE *Main, GBDATA *gbd, O_gbdByKey *g
 static O_gbdByKey *g_b_opti_createGbdByKey(GB_MAIN_TYPE *Main)
 {
     int idx;
-    O_gbdByKey *gbk = (O_gbdByKey *)GB_calloc(Main->keycnt, sizeof(O_gbdByKey));
+    O_gbdByKey *gbk = (O_gbdByKey *)ARB_calloc(Main->keycnt, sizeof(O_gbdByKey));
 
     gbdByKey_cnt = Main->keycnt; // always use gbdByKey_cnt instead of Main->keycnt cause Main->keycnt can change
 
@@ -149,7 +149,7 @@ static O_gbdByKey *g_b_opti_createGbdByKey(GB_MAIN_TYPE *Main)
 
         gb_Key& KEY = Main->keys[idx];
         if (KEY.key && KEY.nref>0) {
-            gbk[idx].gbds  = (GBDATA **) GB_calloc(KEY.nref, sizeof(GBDATA*));
+            gbk[idx].gbds  = (GBDATA **)ARB_calloc(KEY.nref, sizeof(GBDATA*));
         }
         else {
             gbk[idx].gbds = NULL;
@@ -157,7 +157,7 @@ static O_gbdByKey *g_b_opti_createGbdByKey(GB_MAIN_TYPE *Main)
     }
 
     gbk[0].cnt  = 0;
-    gbk[0].gbds = (GBDATA **)GB_calloc(1, sizeof(GBDATA*));
+    gbk[0].gbds = (GBDATA **)ARB_calloc(1, sizeof(GBDATA*));
 
     g_b_opti_scanGbdByKey(Main, Main->gb_main(), gbk);
 

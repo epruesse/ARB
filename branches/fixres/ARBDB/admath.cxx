@@ -25,7 +25,7 @@ double GB_log_fak(int n) {
         int i;
         freenull(res);
         max_n = n + 100;
-        res = (double *)GB_calloc(sizeof(double), max_n);
+        res = (double *)ARB_calloc(sizeof(double), max_n);
         for (i=1; i<max_n; i++) {
             sum += log((double)i);
             res[i] = sum;

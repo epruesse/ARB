@@ -211,7 +211,7 @@ void AP_initialize_codon_tables() {
             if (definite_translation[codon_nr]!='?') { // is definite till now
                 if (definite_translation[codon_nr]!=translation[codon_nr]) { // we found a different translation
                     // create ambiguous_codons:
-                    char *amb = (char*)GB_calloc(AWT_MAX_CODONS+1, sizeof(char));
+                    char *amb = (char*)ARB_calloc(AWT_MAX_CODONS+1, sizeof(char));
                     amb[0] = definite_translation[codon_nr];
                     amb[1] = translation[codon_nr];
 

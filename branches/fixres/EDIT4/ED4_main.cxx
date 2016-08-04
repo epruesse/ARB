@@ -91,12 +91,12 @@ inline void set_and_realloc_gde_array(uchar **&the_names, uchar **&the_sequences
         allocated = new_allocated;
     }
 
-    the_names[numberspecies] = (uchar*)GB_calloc(name_len+1, sizeof(char));
+    the_names[numberspecies] = (uchar*)ARB_calloc(name_len+1, sizeof(char)); // @@@ -> GB_strndup
     memcpy(the_names[numberspecies], name, name_len);
     the_names[numberspecies][name_len] = 0;
     replaceChars((char*)the_names[numberspecies], ' ', '_');
 
-    the_sequences[numberspecies] = (uchar*)GB_calloc(seq_len+1, sizeof(char));
+    the_sequences[numberspecies] = (uchar*)ARB_calloc(seq_len+1, sizeof(char)); // @@@ -> GB_strndup
     memcpy(the_sequences[numberspecies], seq, seq_len);
     the_sequences[numberspecies][seq_len] = 0;
 
@@ -165,7 +165,7 @@ static char *add_area_for_gde(ED4_area_manager *area_man, uchar **&the_names, uc
                                 freenull(seq);
                             }
                             else { // group folded but consensus shown -> add '-' before name
-                                char *new_name = (char*)GB_calloc(name_len+2, sizeof(char));
+                                char *new_name = (char*)ARB_calloc(name_len+2, sizeof(char)); // @@@ -> ARB_alloc
 
                                 sprintf(new_name, "-%s", name);
                                 freeset(name, new_name);
@@ -236,8 +236,8 @@ static char *ED4_create_sequences_for_gde(GBDATA **&the_species, uchar **&the_na
     long allocated = 100;
     the_species    = 0;
 
-    the_names     = (uchar**)GB_calloc(allocated, sizeof(*the_names));
-    the_sequences = (uchar**)GB_calloc(allocated, sizeof(*the_sequences));
+    the_names     = (uchar**)ARB_calloc(allocated, sizeof(*the_names));
+    the_sequences = (uchar**)ARB_calloc(allocated, sizeof(*the_sequences));
 
     char *err = add_area_for_gde(ED4_ROOT->top_area_man, the_names, the_sequences, allocated, numberspecies, maxalign, top, tops, toph, topk, topr);
     if (!err) {

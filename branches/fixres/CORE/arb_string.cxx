@@ -51,7 +51,7 @@ char *GB_strpartdup(const char *start, const char *end) {
             const char *eos = (const char *)memchr(start, 0, len);
 
             if (eos) len = eos-start;
-            result = (char*)malloc(len+1);
+            result = (char*)malloc(len+1); // @@@ ARB_alloc!
             memcpy(result, start, len);
             result[len] = 0;
         }

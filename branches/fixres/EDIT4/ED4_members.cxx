@@ -197,7 +197,7 @@ ED4_returncode ED4_members::append_member(ED4_base *new_member) {
  
     if (index>=size_of_list) { // ensure free element
         ED4_index new_size_of_list = (size_of_list*3)/2;        // resize to 1.5*size_of_list
-        ED4_base **new_member_list = (ED4_base**)GB_calloc(new_size_of_list, sizeof(*new_member_list)); // @@@ use ARB_recalloc
+        ED4_base **new_member_list = (ED4_base**)ARB_calloc(new_size_of_list, sizeof(*new_member_list)); // @@@ use ARB_recalloc
         memcpy(new_member_list, memberList, size_of_list*sizeof(*new_member_list));
 
         freeset(memberList, new_member_list);

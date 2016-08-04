@@ -49,7 +49,7 @@ void GEN_make_node_text_init(GBDATA *gb_main) {
     sf = "flag1";
     sl = "len1";
 
-    if (!gen_nds_ms) gen_nds_ms = (GEN_NodeTextBuilder *) GB_calloc(sizeof(GEN_NodeTextBuilder), 1);
+    if (!gen_nds_ms) gen_nds_ms = (GEN_NodeTextBuilder *)ARB_calloc(sizeof(GEN_NodeTextBuilder), 1);
 
     GBDATA *gb_arb_presets = GB_search(gb_main, "arb_presets", GB_CREATE_CONTAINER);
     count                  = 0;

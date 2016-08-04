@@ -893,7 +893,7 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
                                 if (ED4_is_gap_character(key)) {
                                     if (keymod == AW_KEYMODE_NONE) {
                                         if (!ad_err) {
-                                            char *nstr = (char *)GB_calloc(1, nrepeat+1);
+                                            char *nstr = (char *)ARB_calloc(1, nrepeat+1);
                                             int i;
 
                                             for (i = 0; i< nrepeat; i++) nstr[i] = key;

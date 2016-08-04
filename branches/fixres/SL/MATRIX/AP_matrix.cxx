@@ -72,7 +72,7 @@ AP_matrix::~AP_matrix() {
 //      AP_userdef_matrix
 
 void AP_userdef_matrix::set_desc(char**& which_desc, int idx, const char *desc) {
-    if (!which_desc) which_desc = (char**)GB_calloc(sizeof(char*), get_size());
+    if (!which_desc) which_desc = (char**)ARB_calloc(sizeof(char*), get_size());
     which_desc[idx] = strdup(desc);
 }
 
