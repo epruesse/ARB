@@ -83,12 +83,11 @@ inline void replaceChars(char *s, char o, char n) {
 inline void set_and_realloc_gde_array(uchar **&the_names, uchar **&the_sequences, long &allocated, long &numberspecies, long &maxalign,
                                       const char *name, int name_len, const char *seq, int seq_len)
 {
-    if (allocated==numberspecies)
-    {
+    if (allocated==numberspecies) {
         long new_allocated = (allocated*3)/2;
 
-        the_names = (uchar**)GB_recalloc(the_names, allocated, new_allocated, sizeof(*the_names));
-        the_sequences = (uchar**)GB_recalloc(the_sequences, allocated, new_allocated, sizeof(*the_sequences));
+        ARB_recalloc(the_names, allocated, new_allocated);
+        ARB_recalloc(the_sequences, allocated, new_allocated);
         allocated = new_allocated;
     }
 
@@ -235,8 +234,9 @@ static char *ED4_create_sequences_for_gde(GBDATA **&the_species, uchar **&the_na
     maxalign = 0;
 
     long allocated = 100;
-    the_species = 0;
-    the_names = (uchar**)GB_calloc(allocated, sizeof(*the_names));
+    the_species    = 0;
+
+    the_names     = (uchar**)GB_calloc(allocated, sizeof(*the_names));
     the_sequences = (uchar**)GB_calloc(allocated, sizeof(*the_sequences));
 
     char *err = add_area_for_gde(ED4_ROOT->top_area_man, the_names, the_sequences, allocated, numberspecies, maxalign, top, tops, toph, topk, topr);
@@ -245,8 +245,8 @@ static char *ED4_create_sequences_for_gde(GBDATA **&the_species, uchar **&the_na
     }
 
     if (allocated!=(numberspecies+1)) {
-        the_names = (uchar**)GB_recalloc(the_names, allocated, numberspecies+1, sizeof(*the_names));
-        the_sequences = (uchar**)GB_recalloc(the_sequences, allocated, numberspecies+1, sizeof(*the_sequences));
+        ARB_recalloc(the_names, allocated, numberspecies+1);
+        ARB_recalloc(the_sequences, allocated, numberspecies+1);
     }
 
     return err;

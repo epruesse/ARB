@@ -15,7 +15,7 @@
 
 static char panicBuffer[500] = { 0 };
 
-static void alloc_failure_panic() {
+static __ATTR__NORETURN void alloc_failure_panic() {
     arb_assert(panicBuffer[0]); // sth should have been printed into buffer
 
     fputs("\n--------------------\n", stderr);
@@ -50,19 +50,14 @@ void arb_mem::alloc_aligned(void **tgt, size_t alignment, size_t len) {
     if (error) failed_to_allocate(strerror(error));
 }
 
-void *ARB_recalloc(void *ptr, size_t oelem, size_t nelem, size_t elsize) {
-    size_t  nsize = nelem*elsize;
-    void   *mem   = malloc(nsize);
+void arb_mem::recalloc(void **tgt, size_t oelem, size_t nelem, size_t elsize) {
+    size_t nsize = nelem*elsize;
+
+    void *mem = realloc(*tgt, nsize);
     if (!mem) arb_mem::failed_to_allocate(nelem, elsize);
 
     size_t osize = oelem*elsize;
-    if (nsize>osize) {
-        memmove(mem, ptr, osize);
-        memset(((char*)mem)+osize, 0, nsize-osize);
-    }
-    else {
-        memmove(mem, ptr, nsize);
-    }
-    free(ptr);
-    return mem;
+    if (nsize>osize) memset(((char*)mem)+osize, 0, nsize-osize);
+
+    *tgt = mem;
 }
