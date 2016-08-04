@@ -21,21 +21,30 @@
 
 namespace arb_mem {
     void failed_to_allocate(const char *reason) __ATTR__NORETURN;
-    void failed_to_allocate(unsigned int nelem, unsigned int elsize) __ATTR__NORETURN;
+    void failed_to_allocate(size_t nelem, size_t elsize) __ATTR__NORETURN;
+    void failed_to_allocate(size_t size) __ATTR__NORETURN;
 
-    void alloc_aligned(void **tgt, size_t len);
+    void alloc_aligned(void **tgt, size_t alignment, size_t len);
 };
 
 template<class TYPE>
-inline void ARB_alloc_aligned(TYPE*& tgt, size_t len) {
+inline void ARB_alloc_aligned(TYPE*& tgt, size_t nelems) {
     /*! allocate 16 byte aligned memory (terminates on failure) */
-    arb_mem::alloc_aligned((void**)&tgt, len * sizeof(TYPE));
+    arb_mem::alloc_aligned((void**)&tgt, 16, nelems * sizeof(TYPE));
 }
 
-// @@@ add here: ARB_alloc
+inline void *ARB_alloc(size_t size) {
+    void *mem = malloc(size);
+    if (!mem) arb_mem::failed_to_allocate(size);
+    return mem;
+}
 // @@@ add here: ARB_realloc
 
-void *ARB_calloc(size_t nelem, size_t elsize);
+inline void *ARB_calloc(size_t nelem, size_t elsize) {
+    void *mem = calloc(nelem, elsize);
+    if (!mem) arb_mem::failed_to_allocate(nelem, elsize);
+    return mem;
+}
 void *ARB_recalloc(void *ptr, size_t oelem, size_t nelem, size_t elsize);
 
 // ------------------------

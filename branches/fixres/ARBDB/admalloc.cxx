@@ -273,11 +273,6 @@ struct ARBDB_memory_manager {
 };
 static ARBDB_memory_manager memman;
 
-void GB_memerr()
-{
-    GB_internal_error("memory allocation error - maybe you're out of swap space?");
-}
-
 #ifdef TEST_MEMBLKS
 
 #define TEST() testMemblocks(__FILE__, __LINE__)
@@ -405,10 +400,9 @@ static char *gbm_get_memblk(size_t size) {
                           ? (size_t)size
                           : (size_t)(gbb_cluster[idx].size)) + GBB_HEADER_SIZE;
 
-        block  = (gbb_data *)GB_calloc(1, allocationSize);
-        if (!block) { GB_memerr(); return NULL; }
+        block = (gbb_data *)GB_calloc(1, allocationSize);
 
-        block->size = allocationSize-GBB_HEADER_SIZE;
+        block->size            = allocationSize-GBB_HEADER_SIZE;
         block->allocFromSystem = 1;
 
         gb_assert(block->size>=size);
@@ -450,13 +444,6 @@ static char *gbm_get_memblk(size_t size) {
     return (char*)&(block->content);
 }
 
-inline void *GB_MEMALIGN(size_t alignment, size_t size) {
-    void *mem = NULL;
-    int   err = posix_memalign(&mem, alignment, size);
-    if (err) GBK_terminatef("ARBDB allocation error (errcode=%i)", err);
-    return mem;
-}
-
 void *gbmGetMemImpl(size_t size, long index) {
     if (size < sizeof(gbm_data)) size = sizeof(gbm_data);
     index &= GBM_MAX_INDEX-1;
@@ -486,9 +473,8 @@ void *gbmGetMemImpl(size_t size, long index) {
         }
         else {
             if (ggi->size < nsize) {
-                gbm_table *gts = (gbm_table *)GB_MEMALIGN(GBM_SYSTEM_PAGE_SIZE, GBM_TABLE_SIZE);
-
-                if (!gts) { GB_memerr(); return NULL; }
+                gbm_table *gts;
+                arb_mem::alloc_aligned((void**)(&gts), GBM_SYSTEM_PAGE_SIZE, GBM_TABLE_SIZE);
 
                 memset((char *)gts, 0, GBM_TABLE_SIZE);
                 ggi->gds = &gts->data[0];

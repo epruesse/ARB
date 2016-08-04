@@ -30,21 +30,20 @@ void arb_mem::failed_to_allocate(const char *reason) {
     sprintf(panicBuffer, "Failed to allocate memory: %s", reason);
     GBK_terminate(panicBuffer);
 }
-void arb_mem::failed_to_allocate(unsigned int nelem, unsigned int elsize) {
+void arb_mem::failed_to_allocate(size_t nelem, size_t elsize) {
     alloc_failure_advice();
-    sprintf(panicBuffer, "Failed to allocate memory (tried to get %u*%u bytes)", nelem, elsize);
+    sprintf(panicBuffer, "Failed to allocate memory (tried to get %zu*%zu bytes)", nelem, elsize);
+    GBK_terminate(panicBuffer);
+}
+void arb_mem::failed_to_allocate(size_t size) {
+    alloc_failure_advice();
+    sprintf(panicBuffer, "Failed to allocate memory (tried to get %zu bytes)", size);
     GBK_terminate(panicBuffer);
 }
 
-void arb_mem::alloc_aligned(void** tgt, size_t len) {
-    int error = posix_memalign(tgt, 16, len);
+void arb_mem::alloc_aligned(void **tgt, size_t alignment, size_t len) {
+    int error = posix_memalign(tgt, alignment, len);
     if (error) failed_to_allocate(strerror(error));
-}
-
-void *ARB_calloc(size_t nelem, size_t elsize) { // @@@ move to header?
-    void *mem = calloc(nelem, elsize);
-    if (!mem) arb_mem::failed_to_allocate(nelem, elsize);
-    return mem;
 }
 
 void *ARB_recalloc(void *ptr, size_t oelem, size_t nelem, size_t elsize) {
