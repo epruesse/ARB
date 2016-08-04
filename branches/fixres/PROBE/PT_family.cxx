@@ -425,7 +425,7 @@ int find_family(PT_family *ffinder, bytestring *species) {
             }
 
             if ((complement&cmode) != 0) {
-                char *s = (char*)malloc(sequence_len+1);
+                char *s = (char*)ARB_alloc(sequence_len+1);
 
                 memcpy(s, sequence, sequence_len);
                 s[sequence_len] = 0;

@@ -91,7 +91,7 @@ public:
 
     char *copy() const {
         pt_assert(!done());
-        char *result = (char*)malloc(plen+1);
+        char *result = (char*)ARB_alloc(plen+1);
         memcpy(result, part, plen);
         result[plen] = 0;
         return result;
