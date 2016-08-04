@@ -62,9 +62,8 @@ public:
         : id(strdup(id_)),
           len(len_),
           max(len+1),
-          seq((char*)malloc(max))
+          seq(strndup(seq_, len))
     {
-        memcpy(seq, seq_, len);
         check_valid(seq, len);
     }
     Seq() {
