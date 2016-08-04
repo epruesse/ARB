@@ -754,9 +754,7 @@ GB_ERROR StorableSelectionList::save(const char *filename, long number_of_lines)
 
 
 inline char *string2heapcopy(const string& s) {
-    char *copy = (char*)malloc(s.length()+1);
-    memcpy(copy, s.c_str(), s.length()+1);
-    return copy;
+    return GB_strndup(s.c_str(), s.length());
 }
 
 GB_ERROR StorableSelectionList::load(const char *filemask, bool append) const {

@@ -175,10 +175,7 @@ inline char *strpartdup(const char *str, int c1, int c2) {
     pm_assert(c1 <= c2);
     pm_assert((int)strlen(str) > c2);
 
-    char *buffer = (char*)malloc(len+1);
-    memcpy(buffer, str+c1, len);
-    buffer[len]  = 0;
-    return buffer;
+    return GB_strndup(str+c1, len);
 }
 
 int ParsedProbeMatch::get_position() const {

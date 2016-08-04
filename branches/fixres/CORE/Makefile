@@ -238,6 +238,7 @@ arb_strarray.o: $(ARBHOME)/INCLUDE/test_unit.h
 arb_strbuf.o: arb_assert.h
 arb_strbuf.o: arb_core.h
 arb_strbuf.o: arb_strbuf.h
+arb_strbuf.o: arb_string.h
 arb_strbuf.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_strbuf.o: $(ARBHOME)/INCLUDE/attributes.h
 arb_strbuf.o: $(ARBHOME)/INCLUDE/cxxforward.h

@@ -9,7 +9,7 @@
 // ============================================================= //
 
 #include "arb_strbuf.h"
-
+#include "arb_string.h"
 
 void GBS_strstruct::vnprintf(size_t maxlen, const char *templat, va_list& parg) {
     ensure_mem(maxlen+1);
@@ -69,13 +69,8 @@ GBS_strstruct *GBS_stropen(long init_size) {
 
 char *GBS_strclose(GBS_strstruct *strstr) {
     // returns a char* copy of the memory file
-
-    size_t  length = strstr->get_position();
-    char   *str    = (char*)malloc(length+1);
-
-    memcpy(str, strstr->get_data(), length+1); // copy with 0
+    char *str = GB_strndup(strstr->get_data(), strstr->get_position());
     GBS_strforget(strstr);
-
     return str;
 }
 

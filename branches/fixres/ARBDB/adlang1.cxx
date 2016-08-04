@@ -1162,10 +1162,7 @@ static GB_ERROR gbl_split(GBL_command_arguments *args) {
                     if (split_mode == 2) splitAt += sepLen; // split behind separator
 
                     len  = splitAt-in;
-                    copy = (char*)malloc(len+1);
-
-                    memcpy(copy, in, len);
-                    copy[len] = 0;
+                    copy = GB_strndup(in, len);
 
                     PASS_2_OUT(args, copy);
 

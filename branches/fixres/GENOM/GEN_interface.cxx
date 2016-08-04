@@ -317,9 +317,7 @@ static void GEN_update_GENE_CONTENT(GBDATA *gb_main, AW_root *awr) {
                     const char *seq_data = GB_read_char_pntr(gb_seq);
 
                     long  len    = end_pos-start_pos+1;
-                    char *buffer = (char*)malloc(len+1);
-                    memcpy(buffer, seq_data+start_pos, len);
-                    buffer[len]  = 0;
+                    char *buffer = GB_strndup(seq_data+start_pos, len);
 
                     awar_content->write_string(buffer);
                     clear = false;
