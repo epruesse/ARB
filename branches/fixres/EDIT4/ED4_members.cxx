@@ -187,7 +187,7 @@ ED4_returncode ED4_members::insert_member(ED4_base *new_member) {
 
     owner()->request_resize(); // tell owner about resize
 
-    return (ED4_R_OK);
+    return (ED4_R_OK); // @@@ as soon as this is the only return -> remove result
 }
 
 ED4_returncode ED4_members::append_member(ED4_base *new_member) {
@@ -197,7 +197,7 @@ ED4_returncode ED4_members::append_member(ED4_base *new_member) {
  
     if (index>=size_of_list) { // ensure free element
         ED4_index new_size_of_list = (size_of_list*3)/2;        // resize to 1.5*size_of_list
-        ED4_base **new_member_list = (ED4_base**)GB_calloc(new_size_of_list, sizeof(*new_member_list));
+        ED4_base **new_member_list = (ED4_base**)GB_calloc(new_size_of_list, sizeof(*new_member_list)); // @@@ use ARB_recalloc
         memcpy(new_member_list, memberList, size_of_list*sizeof(*new_member_list));
 
         freeset(memberList, new_member_list);
@@ -225,7 +225,7 @@ ED4_returncode ED4_members::append_member(ED4_base *new_member) {
     owner()->spec.announce_added(new_member->spec.level);
     owner()->request_resize();
 
-    return ED4_R_OK;
+    return ED4_R_OK; // @@@ as soon as this is the only return -> remove result
 }
 
 ED4_returncode ED4_members::remove_member(ED4_base *member_to_del)
@@ -247,7 +247,7 @@ ED4_returncode ED4_members::remove_member(ED4_base *member_to_del)
 
     owner()->request_resize();
 
-    return (ED4_R_OK);
+    return (ED4_R_OK); // @@@ as soon as this is the only return -> remove result
 }
 
 ED4_returncode  ED4_members::shift_list(ED4_index start_index, int length) {
@@ -258,9 +258,9 @@ ED4_returncode  ED4_members::shift_list(ED4_index start_index, int length) {
     if (length>0) { // shift list to the right
         if ((no_of_members + length) >= size_of_list) {   // member_list is full => allocate more memory
             unsigned int   new_alloc_size = (unsigned int) ((size_of_list + length) * 1.3); // calculate new size of member_list for realloc()
-            ED4_base     **tmp_ptr        = (ED4_base **) realloc((char *) memberList, (new_alloc_size * sizeof(ED4_base *))); // try to realloc memory
+            ED4_base     **tmp_ptr        = (ED4_base **) realloc((char *) memberList, (new_alloc_size * sizeof(ED4_base *))); // try to realloc memory // @@@ use ARB_realloc
 
-            if (! tmp_ptr) { // realloc() failed = > try malloc() and copy member_list
+            if (! tmp_ptr) { // realloc() failed = > try malloc() and copy member_list // @@@ weird, elim
                 aw_message("ED4_members::shift_list: realloc problem!");
                 tmp_ptr = (ED4_base **) malloc((new_alloc_size * sizeof(ED4_base *)));
 
@@ -281,7 +281,7 @@ ED4_returncode  ED4_members::shift_list(ED4_index start_index, int length) {
         }
     }
     else if (length<0) { // shift list to the left, thereby not freeing any memory !
-        if ((start_index + length) < 0) {
+        if ((start_index + length) < 0) { // @@@ replace by assertion (or GBK_terminate); remove checks at callers
             aw_message("ED4_members::shift_list: shift is too far to the left!");
             return ED4_R_WARNING;
         }
@@ -292,7 +292,7 @@ ED4_returncode  ED4_members::shift_list(ED4_index start_index, int length) {
         }
     }
 
-    return ED4_R_OK;
+    return ED4_R_OK; // @@@ as soon as this is the only return -> remove result
 }
 
 
