@@ -109,7 +109,7 @@ static GB_ERROR CON_export(GBDATA *gb_main, const char *savename, const char *al
         const char *simplifystring  = BK.group ? on : off;
 
         {
-            char *buffer = (char *)ARB_calloc(2000, sizeof(char)); // @@@ -> ARB_alloc
+            char *buffer = (char *)ARB_alloc(2000);
             sprintf(buffer, "CON: [species: %s]  [number: %ld]  [count gaps: %s] "
                     "[threshold for gaps: %d]  [simplify: %s] "
                     "[threshold for group: %d]  [upper: %d]  [lower: %d]",

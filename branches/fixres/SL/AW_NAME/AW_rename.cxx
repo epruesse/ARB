@@ -441,7 +441,7 @@ char *AWTC_create_numbered_suffix(GB_HASH *species_name_hash, const char *shortn
     char *newshort = 0;
     if (GBS_read_hash(species_name_hash, shortname)) {
         int i;
-        newshort = (char *)ARB_calloc(sizeof(char), strlen(shortname)+20); // @@@ -> ARB_alloc
+        newshort = (char *)ARB_alloc(strlen(shortname)+20);
         for (i = 1; ; i++) {
             sprintf(newshort, "%s.%i", shortname, i);
             if (!GBS_read_hash(species_name_hash, newshort))break;

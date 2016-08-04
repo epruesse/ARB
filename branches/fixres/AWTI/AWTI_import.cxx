@@ -645,7 +645,7 @@ static void write_entry(GBDATA *gb_main, GBDATA *gbd, const char *key, const cha
     char *buf    = (char *)ARB_calloc(sizeof(char), len+2+taglen+1);
 
     if (tag) {
-        char *regexp = (char*)ARB_calloc(sizeof(char), taglen+3); // @@@ -> ARB_alloc
+        char *regexp = (char*)ARB_alloc(taglen+3);
         sprintf(regexp, "*[%s]*", tag);
 
         if (!GBS_string_matches(strin, regexp, GB_IGNORE_CASE)) { // if tag does not exist yet

@@ -165,7 +165,7 @@ static char *add_area_for_gde(ED4_area_manager *area_man, uchar **&the_names, uc
                                 freenull(seq);
                             }
                             else { // group folded but consensus shown -> add '-' before name
-                                char *new_name = (char*)ARB_calloc(name_len+2, sizeof(char)); // @@@ -> ARB_alloc
+                                char *new_name = (char*)ARB_alloc(name_len+2);
 
                                 sprintf(new_name, "-%s", name);
                                 freeset(name, new_name);

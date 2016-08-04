@@ -10,6 +10,7 @@
 // ================================================================ //
 
 #include "arb_string.h"
+#include "arb_mem.h"
 
 #include <arb_assert.h>
 
@@ -51,7 +52,7 @@ char *GB_strpartdup(const char *start, const char *end) {
             const char *eos = (const char *)memchr(start, 0, len);
 
             if (eos) len = eos-start;
-            result = (char*)malloc(len+1); // @@@ ARB_alloc!
+            result = (char*)ARB_alloc(len+1);
             memcpy(result, start, len);
             result[len] = 0;
         }
