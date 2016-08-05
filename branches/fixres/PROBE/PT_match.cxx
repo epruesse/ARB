@@ -675,7 +675,6 @@ static const char *get_match_hinfo_formatted(PT_probematch *ml, const format_pro
 
         static char *result = 0;
         freeset(result, GBS_strclose(memfile));
-
         return result;
     }
     // Else set header of result
@@ -736,8 +735,8 @@ bytestring *match_string(const PT_local *locs) {
         }
     }
 
+    bs.size = GBS_memoffset(memfile)+1;
     bs.data = GBS_strclose(memfile);
-    bs.size = strlen(bs.data)+1;
     return &bs;
 }
 
@@ -774,8 +773,8 @@ bytestring *MP_match_string(const PT_local *locs) {
         GBS_strcat(memfile, buffer1);
         GBS_chrcat(memfile, (char)1);
     }
+    bs.size = GBS_memoffset(memfile)+1;
     bs.data = GBS_strclose(memfile);
-    bs.size = strlen(bs.data)+1;
     return &bs;
 }
 
@@ -803,8 +802,8 @@ bytestring *MP_all_species_string(const PT_local *) {
         GBS_chrcat(memfile, (char)1);
     }
 
+    bs.size = GBS_memoffset(memfile)+1;
     bs.data = GBS_strclose(memfile);
-    bs.size = strlen(bs.data)+1;
     return &bs;
 }
 

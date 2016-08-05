@@ -339,11 +339,11 @@ static GB_ERROR pd_get_the_names(GBDATA *gb_main, bytestring &bs, bytestring &ch
 
     free(use);
 
+    bs.size = GBS_memoffset(names)+1;
     bs.data = GBS_strclose(names);
-    bs.size = strlen(bs.data)+1;
 
+    checksum.size = GBS_memoffset(checksums)+1;
     checksum.data = GBS_strclose(checksums);
-    checksum.size = strlen(checksum.data)+1;
 
     GB_commit_transaction(gb_main);
 
