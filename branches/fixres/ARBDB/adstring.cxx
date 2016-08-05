@@ -1076,7 +1076,7 @@ void TEST_GBS_strstruct() {
         GBS_strnprintf(strstr, 200, "%c%s", ' ', "flutters");
         EXPECT_CONTENT("butterfly flutters");
 
-        free(GBS_strclose(strstr));
+        GBS_strforget(strstr);
     }
     {
         // re-alloc smaller

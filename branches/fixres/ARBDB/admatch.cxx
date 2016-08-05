@@ -625,7 +625,7 @@ char *GBS_string_eval(const char *insource, const char *icommand, GBDATA *gb_con
             max_mwildcard = 0;
 
             if (error) {
-                free(GBS_strclose(strstruct));
+                GBS_strforget(strstruct);
                 free(command);
                 free(in);
                 GB_export_error(error);
