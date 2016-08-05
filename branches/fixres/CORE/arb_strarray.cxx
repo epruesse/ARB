@@ -72,7 +72,6 @@ void GBT_splitNdestroy_string(ConstStrArray& names, char*& namelist, const char 
     while (sep) {
         size_t nonsepcount = strcspn(sep, separator);
         if (nonsepcount || !dropEmptyTokens) {
-            // names.put(GB_strpartdup(sep, sep+nonsepcount-1));
             names.put(sep);
             sep += nonsepcount;
         }
@@ -80,7 +79,6 @@ void GBT_splitNdestroy_string(ConstStrArray& names, char*& namelist, const char 
         sep[0] = 0;
         if (sepcount) {
             if (!dropEmptyTokens) {
-                // for (size_t s = 1; s<sepcount; ++s) names.put(strdup(""));
                 for (size_t s = 1; s<sepcount; ++s) names.put(sep);
             }
             sep += sepcount;
