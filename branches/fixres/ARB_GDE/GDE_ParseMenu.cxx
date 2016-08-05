@@ -190,7 +190,7 @@ static void ParseMenus(LineReader& in) {
                     thismenu->item = (GmenuItem*)ARB_alloc(sizeof(GmenuItem));
                 }
                 else {
-                    ARB_realloc(thismenu->item, curitem, thismenu->numitems);
+                    ARB_realloc(thismenu->item, thismenu->numitems);
                 }
 
                 thisitem = &(thismenu->item[curitem]);

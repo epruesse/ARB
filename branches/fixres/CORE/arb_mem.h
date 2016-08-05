@@ -26,7 +26,7 @@ namespace arb_mem {
 
     void alloc_aligned(void **tgt, size_t alignment, size_t len);
 
-    void re_alloc (void **tgt, size_t oelem, size_t nelem, size_t elsize);
+    void re_alloc (void **tgt, size_t nelem, size_t elsize);
     void re_calloc(void **tgt, size_t oelem, size_t nelem, size_t elsize);
 };
 
@@ -37,11 +37,9 @@ inline void ARB_alloc_aligned(TYPE*& tgt, size_t nelems) {
 }
 
 template<class TYPE>
-inline void ARB_realloc(TYPE*& tgt, size_t oelem, size_t nelem) {
+inline void ARB_realloc(TYPE*& tgt, size_t nelem) {
     /*! reallocate memoryblock to fit 'nelem' entries (terminate on failure) */
-    if (oelem != nelem) {
-        arb_mem::re_alloc((void**)&tgt, oelem, nelem, sizeof(TYPE));
-    }
+    arb_mem::re_alloc((void**)&tgt, nelem, sizeof(TYPE));
 }
 template<class TYPE>
 inline void ARB_recalloc(TYPE*& tgt, size_t oelem, size_t nelem) {
