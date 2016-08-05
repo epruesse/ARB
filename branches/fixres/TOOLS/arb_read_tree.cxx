@@ -259,7 +259,7 @@ int main(int argc, char **argv) {
                     comment_from_treefile,
                 };
 
-                GBS_strstruct *buf   = GBS_stropen(5000);
+                GBS_strstruct *buf   = GBS_stropen(5000); // @@@ use auto-object
                 bool           empty = true;
 
                 for (size_t c = 0; c<ARRAY_ELEMS(comments); c++) {
@@ -270,11 +270,8 @@ int main(int argc, char **argv) {
                     }
                 }
 
-                char *cmt = GBS_strclose(buf);
-
-                error = GBT_write_tree_remark(gb_main, param.tree_name, cmt);
-
-                free(cmt);
+                error = GBT_write_tree_remark(gb_main, param.tree_name, GBS_mempntr(buf));
+                GBS_strforget(buf);
             }
 
             error = GB_end_transaction(gb_main, error);

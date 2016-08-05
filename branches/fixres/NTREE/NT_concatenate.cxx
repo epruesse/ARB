@@ -238,7 +238,7 @@ static void concatenateAlignments(AW_window *aws, AW_selection *selected_alis) {
                      gb_species && !error;
                      gb_species = GBT_next_marked_species(gb_species))
                 {
-                    GBS_strstruct *str_seq       = GBS_stropen(new_alignment_len+1); // create output stream
+                    GBS_strstruct *str_seq       = GBS_stropen(new_alignment_len+1); // create output stream // @@@ rename -> concat_seq; use auto-object
                     int            data_inserted = 0;
 
                     for (size_t a = 0; a<ali_count; ++a) {
@@ -261,12 +261,10 @@ static void concatenateAlignments(AW_window *aws, AW_selection *selected_alis) {
                         error = GBS_global_string("None of the source alignments had data for species '%s'", GBT_read_name(gb_species));
                     }
                     else {
-                        char   *concatenated_ali_seq_data = GBS_strclose(str_seq);
-                        GBDATA *gb_data                   = GBT_add_data(gb_species, new_ali_name, "data", GB_STRING);
-
-                        GB_write_string(gb_data, concatenated_ali_seq_data);
-                        free(concatenated_ali_seq_data);
+                        GBDATA *gb_data = GBT_add_data(gb_species, new_ali_name, "data", GB_STRING);
+                        GB_write_string(gb_data, GBS_mempntr(str_seq));
                     }
+                    GBS_strforget(str_seq);
                     progress.inc_and_check_user_abort(error);
                 }
 

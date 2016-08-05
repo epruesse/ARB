@@ -1921,7 +1921,7 @@ static const char *ptserver_directory_info_command(const char *dirname, const ch
 static void pd_query_pt_server(AW_window *aww) {
     const char *server_tag = GBS_ptserver_tag(aww->get_root()->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int());
 
-    GBS_strstruct *strstruct = GBS_stropen(1024);
+    GBS_strstruct *strstruct = GBS_stropen(1024); // @@@ use auto-object
     GBS_strcat(strstruct, ptserver_directory_info_command("ARBHOME/lib/pts", "$ARBHOME/lib/pts"));
 
     const char *ARB_LOCAL_PTS = ARB_getenv_ignore_empty("ARB_LOCAL_PTS");
@@ -1943,9 +1943,8 @@ static void pd_query_pt_server(AW_window *aww) {
         }
     }
 
-    char *sys         = GBS_strclose(strstruct);
-    if (!error) error = GB_xcmd(sys, true, false);
-    free(sys);
+    if (!error) error = GB_xcmd(GBS_mempntr(strstruct), true, false);
+    GBS_strforget(strstruct);
 
     aw_message_if(error);
 }

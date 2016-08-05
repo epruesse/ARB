@@ -58,7 +58,7 @@ static void awt_create_select_filter_window_aw_cb(UNFIXED, adfiltercbstruct *cbs
 
         char *s, *str;
         long len = GBT_get_alignment_len(cbs->gb_main, use);
-        GBS_strstruct *strstruct = GBS_stropen(5000);
+        GBS_strstruct *strstruct = GBS_stropen(5000); // @@@ use auto-object; rename
         long i; for (i=0; i<len; i++) { // build position line
             if (i%10 == 0) {
                 GBS_chrcat(strstruct, '#');
@@ -110,14 +110,15 @@ static void awt_create_select_filter_window_aw_cb(UNFIXED, adfiltercbstruct *cbs
         }
         GBS_strcat(strstruct, str);
         GBS_chrcat(strstruct, '\n');
-        data = GBS_strclose(strstruct);
+
         aw_root->awar(cbs->def_len)   ->write_int(flen);    // export filter
         aw_root->awar(cbs->def_filter)->write_string(str);  // export filter
-        aw_root->awar(cbs->def_source)->write_string(data); // set display
+        aw_root->awar(cbs->def_source)->write_string(GBS_mempntr(strstruct)); // set display
+
         free(_2filter);
         free(str);
         free(canc);
-        free(data);
+        GBS_strforget(strstruct);
     }
     free(to_free_target);
     free(use);

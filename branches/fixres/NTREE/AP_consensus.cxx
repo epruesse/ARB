@@ -128,7 +128,7 @@ static GB_ERROR CON_export(GBDATA *gb_main, const char *savename, const char *al
 
         if (!err && nrofspecies<20) {
             GBDATA        *gb_species;
-            GBS_strstruct *strstruct = GBS_stropen(1000);
+            GBS_strstruct *strstruct = GBS_stropen(1000); // @@@ rename -> allnames; use auto-object
 
             if (onlymarked) gb_species = GBT_first_marked_species(gb_main);
             else gb_species            = GBT_first_species(gb_main);
@@ -145,9 +145,8 @@ static GB_ERROR CON_export(GBDATA *gb_main, const char *savename, const char *al
                 else gb_species            = GBT_next_species(gb_species);
             }
 
-            char *allnames = GBS_strclose(strstruct);
-            err            = GBT_write_string(GB_get_father(gb_options), "_SPECIES", allnames);
-            free(allnames);
+            err = GBT_write_string(GB_get_father(gb_options), "_SPECIES", GBS_mempntr(strstruct));
+            GBS_strforget(strstruct);
         }
 
         // remove data relicts from "complex consensus" (no longer supported)

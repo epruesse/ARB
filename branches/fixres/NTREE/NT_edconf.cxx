@@ -841,10 +841,10 @@ static GB_ERROR nt_create_configuration(TreeNode *tree, const char *conf_name, i
             GBT_config newcfg;
             {
                 GB_HASH       *used    = GBS_create_hash(GBT_get_species_count(GLOBAL.gb_main), GB_MIND_CASE);
-                GBS_strstruct *topfile = GBS_stropen(1000);
-                GBS_strstruct *topmid  = GBS_stropen(10000);
+                GBS_strstruct *topfile = GBS_stropen(1000); // @@@ use auto-object
+                GBS_strstruct *topmid  = GBS_stropen(10000); // @@@ use auto-object
                 {
-                    GBS_strstruct *middlefile = GBS_stropen(10000);
+                    GBS_strstruct *middlefile = GBS_stropen(10000); // @@@ use auto-object
                     nt_build_sai_string(topfile, topmid);
 
                     if (use_species_aside) {
@@ -863,9 +863,8 @@ static GB_ERROR nt_create_configuration(TreeNode *tree, const char *conf_name, i
                         nt_build_conf_string_rek(used, tree, middlefile, 0, 0, &dummy_1, 0, &dummy_2);
                     }
                     nt_build_conf_marked(used, topmid);
-                    char *mid = GBS_strclose(middlefile);
-                    GBS_strcat(topmid, mid);
-                    free(mid);
+                    GBS_strncat(topmid, GBS_mempntr(middlefile), GBS_memoffset(middlefile));
+                    GBS_strforget(middlefile);
                 }
 
                 newcfg.set_definition(GBT_config::TOP_AREA,    GBS_strclose(topfile));

@@ -575,14 +575,10 @@ void ED4_finish_and_show_notFoundMessage() {
         if (not_found_counter>MAX_SHOWN_MISSING_SPECIES) {
             GBS_strcat(not_found_message, GBS_global_string("(skipped display of %zu more species)\n", not_found_counter-MAX_SHOWN_MISSING_SPECIES));
         }
-        char *out_message = GBS_strclose(not_found_message);
-        aw_message(out_message);
+        aw_message(GBS_mempntr(not_found_message));
         aw_message(GBS_global_string("Couldn't load %zu species:", not_found_counter));
-        free(out_message);
     }
-    else {
-        GBS_strforget(not_found_message);
-    }
+    GBS_strforget(not_found_message);
     not_found_message = 0;
 }
 

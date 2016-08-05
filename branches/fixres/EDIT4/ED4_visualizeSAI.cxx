@@ -159,7 +159,7 @@ static void colorDefChanged_callback(AW_root *awr, int awarNo) {
                 }
 
                 {
-                    GBS_strstruct *clrDefStr = GBS_stropen(500);            // create output stream
+                    GBS_strstruct *clrDefStr = GBS_stropen(500);            // create output stream // @@@ use auto-object
                     for (int i=0; i<10; i++) {
                         awr->awar_string(getAwarName(i))->write_string((char *)s[i]);
 
@@ -169,10 +169,9 @@ static void colorDefChanged_callback(AW_root *awr, int awarNo) {
                         GBS_chrcat(clrDefStr, ';');
                     }
 
-                    char    *colorDef = GBS_strclose(clrDefStr);
                     AW_awar *awar_def = awr->awar_string(getClrDefAwar(clrTabName), "", AW_ROOT_DEFAULT);
-                    awar_def->write_string(colorDef); // writing clr definition to clr trans table awar
-                    free(colorDef);
+                    awar_def->write_string(GBS_mempntr(clrDefStr));
+                    GBS_strforget(clrDefStr);
                 }
             }
             else {
@@ -463,7 +462,7 @@ static void deleteColorTranslationTable(AW_window *aws) {
     if (clrTabName[0]) {
         AW_awar       *awar_tabNames    = aw_root->awar(AWAR_SAI_CLR_TRANS_TAB_NAMES);
         char          *clrTransTabNames = awar_tabNames->read_string();
-        GBS_strstruct *newTransTabName  = GBS_stropen(strlen(clrTransTabNames));
+        GBS_strstruct *newTransTabName  = GBS_stropen(strlen(clrTransTabNames)); // @@@ use auto-object
 
         for (const char *tok = strtok(clrTransTabNames, "\n"); tok; tok = strtok(0, "\n")) {
             if (strcmp(clrTabName, tok) != 0) { // merge all not to delete
@@ -473,10 +472,9 @@ static void deleteColorTranslationTable(AW_window *aws) {
         }
 
         aw_root->awar_string(getClrDefAwar(clrTabName))->write_string("");
-        char *new_name = GBS_strclose(newTransTabName);
-        awar_tabNames->write_string(new_name); // updates selection list
-        free(new_name);
+        awar_tabNames->write_string(GBS_mempntr(newTransTabName)); // updates selection list
 
+        GBS_strforget(newTransTabName);
         free(clrTransTabNames);
     }
     else {
