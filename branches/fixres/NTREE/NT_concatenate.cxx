@@ -238,21 +238,21 @@ static void concatenateAlignments(AW_window *aws, AW_selection *selected_alis) {
                      gb_species && !error;
                      gb_species = GBT_next_marked_species(gb_species))
                 {
-                    GBS_strstruct *str_seq       = GBS_stropen(new_alignment_len+1); // create output stream // @@@ rename -> concat_seq; use auto-object
-                    int            data_inserted = 0;
+                    GBS_strstruct concat_seq(new_alignment_len+1);
+                    int           data_inserted = 0;
 
                     for (size_t a = 0; a<ali_count; ++a) {
-                        if (a) GBS_strcat(str_seq, ali_separator);
+                        if (a) concat_seq.cat(ali_separator);
 
                         GBDATA *gb_seq_data = GBT_find_sequence(gb_species, ali_names[a]);
                         if (gb_seq_data) { // found data
-                            const char *str_data = GB_read_char_pntr(gb_seq_data);
-                            GBS_strcat(str_seq, str_data);
+                            const char *seq_data = GB_read_char_pntr(gb_seq_data);
+                            concat_seq.cat(seq_data);
                             ++found[a];
                             ++data_inserted;
                         }
                         else { // missing data
-                            if (insertGaps) GBS_chrncat(str_seq, '.', ali_length[a]);
+                            if (insertGaps) concat_seq.nput('.', ali_length[a]);
                             ++missing[a];
                         }
                     }
@@ -262,9 +262,8 @@ static void concatenateAlignments(AW_window *aws, AW_selection *selected_alis) {
                     }
                     else {
                         GBDATA *gb_data = GBT_add_data(gb_species, new_ali_name, "data", GB_STRING);
-                        GB_write_string(gb_data, GBS_mempntr(str_seq));
+                        GB_write_string(gb_data, concat_seq.get_data());
                     }
-                    GBS_strforget(str_seq);
                     progress.inc_and_check_user_abort(error);
                 }
 

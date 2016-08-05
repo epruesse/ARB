@@ -58,7 +58,7 @@ static void awt_create_select_filter_window_aw_cb(UNFIXED, adfiltercbstruct *cbs
 
         char *s, *str;
         long len = GBT_get_alignment_len(cbs->gb_main, use);
-        GBS_strstruct *strstruct = GBS_stropen(5000); // @@@ use auto-object; rename
+        GBS_strstruct *strstruct = GBS_stropen(5000);
         long i; for (i=0; i<len; i++) { // build position line
             if (i%10 == 0) {
                 GBS_chrcat(strstruct, '#');

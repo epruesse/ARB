@@ -468,17 +468,16 @@ static void aw_status_kill(AW_window *aws)
 }
 
 static void aw_refresh_tmp_message_display(AW_root *awr) {
-    GBS_strstruct *stru = GBS_stropen(AW_MESSAGE_LINES*60); // guessed size // @@@ rename; use auto-object
+    GBS_strstruct msgs(AW_MESSAGE_LINES*60);
 
     for (int i = AW_MESSAGE_LINES-1; i>=0; i--) {
         if (aw_stg.lines[i]) {
-            GBS_strcat(stru, aw_stg.lines[i]);
-            GBS_chrcat(stru, '\n');
+            msgs.cat(aw_stg.lines[i]);
+            msgs.put('\n');
         }
     };
 
-    awr->awar(AWAR_ERROR_MESSAGES)->write_string(GBS_mempntr(stru));
-    GBS_strforget(stru);
+    awr->awar(AWAR_ERROR_MESSAGES)->write_string(msgs.get_data());
 
     aw_stg.need_refresh      = false;
     aw_stg.last_refresh_time = aw_stg.last_message_time;

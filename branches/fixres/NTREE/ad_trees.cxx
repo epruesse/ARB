@@ -341,7 +341,7 @@ static char *readXmlTree(char *fname) {
     int createTempFile = mkstemp(tempFile);
 
     if (createTempFile) {
-        GBS_strstruct *buf = GBS_stropen(strlen(fname)); // @@@ rename -> pathbuf; use auto-object
+        GBS_strstruct buf(strlen(fname));
 
         // extract path from fname in order to place a copy of dtd file required to validate xml file
         {
@@ -350,8 +350,8 @@ static char *readXmlTree(char *fname) {
                 char *tmp = tok;
                 tok = strtok(0, "/");
                 if (tok) {
-                    GBS_strcat(buf, "/");
-                    GBS_strcat(buf, tmp);
+                    buf.put('/');
+                    buf.cat(tmp);
                 }
             }
             free(tmpFname);
@@ -361,7 +361,7 @@ static char *readXmlTree(char *fname) {
 #if defined(WARN_TODO)
 #warning fix hack
 #endif
-        char *command = GBS_global_string_copy("ln -s %s/lib/dtd/arb_tree.dtd %s/.", GB_getenvARBHOME(), GBS_mempntr(buf));
+        char *command = GBS_global_string_copy("ln -s %s/lib/dtd/arb_tree.dtd %s/.", GB_getenvARBHOME(), buf.get_data());
         GB_xcmd(command, false, true);
 
         // execute xml2newick to convert xml format tree to newick format tree
@@ -369,7 +369,6 @@ static char *readXmlTree(char *fname) {
         GB_xcmd(command, false, true);
 
         free(command);
-        GBS_strforget(buf);
 
         // return newick format tree file
         return strdup(tempFile);

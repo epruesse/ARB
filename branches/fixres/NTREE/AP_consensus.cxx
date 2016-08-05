@@ -127,26 +127,26 @@ static GB_ERROR CON_export(GBDATA *gb_main, const char *savename, const char *al
         }
 
         if (!err && nrofspecies<20) {
-            GBDATA        *gb_species;
-            GBS_strstruct *strstruct = GBS_stropen(1000); // @@@ rename -> allnames; use auto-object
+            GBS_strstruct namelist(1000);
 
-            if (onlymarked) gb_species = GBT_first_marked_species(gb_main);
-            else gb_species            = GBT_first_species(gb_main);
+            GBDATA *gb_species =
+                onlymarked
+                ? GBT_first_marked_species(gb_main)
+                : GBT_first_species(gb_main);
 
             while (gb_species) {
                 if (GBT_find_sequence(gb_species, align)) {
                     GBDATA     *gb_speciesname = GB_search(gb_species, "name", GB_FIND);
                     const char *name           = GB_read_char_pntr(gb_speciesname);
 
-                    GBS_strcat(strstruct, name);
-                    GBS_chrcat(strstruct, ' ');
+                    namelist.cat(name);
+                    namelist.put( ' ');
                 }
                 if (onlymarked) gb_species = GBT_next_marked_species(gb_species);
                 else gb_species            = GBT_next_species(gb_species);
             }
 
-            err = GBT_write_string(GB_get_father(gb_options), "_SPECIES", GBS_mempntr(strstruct));
-            GBS_strforget(strstruct);
+            err = GBT_write_string(GB_get_father(gb_options), "_SPECIES", namelist.get_data());
         }
 
         // remove data relicts from "complex consensus" (no longer supported)

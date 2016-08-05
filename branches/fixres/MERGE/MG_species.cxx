@@ -655,19 +655,18 @@ static GB_ERROR MG_equal_alignments(bool autoselect_equal_alignment_name) {
                 }
 
                 if (!dest) {
-                    GBS_strstruct *str = GBS_stropen(100); // @@@ use auto-object; rename
+                    GBS_strstruct buttonstr(100);
 
                     for (int i=0; i<d; i++) {
-                        GBS_strcat(str, D_alignment_names[i]);
-                        GBS_chrcat(str, ',');
+                        buttonstr.cat(D_alignment_names[i]);
+                        buttonstr.put(',');
                     }
-                    GBS_strcat(str, "ABORT");
+                    buttonstr.cat("ABORT");
 
                     int aliid = aw_question(NULL,
                                             "There are more than one possible alignment targets\n"
                                             "Choose one destination alignment or ABORT",
-                                            GBS_mempntr(str));
-                    GBS_strforget(str);
+                                            buttonstr.get_data());
 
                     if (aliid >= d) {
                         error = "Operation Aborted";
