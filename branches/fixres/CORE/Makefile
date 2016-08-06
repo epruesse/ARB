@@ -133,10 +133,13 @@ arb_mem.o: arb_assert.h
 arb_mem.o: arb_core.h
 arb_mem.o: arb_mem.h
 arb_mem.o: arb_msg.h
+arb_mem.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_mem.o: $(ARBHOME)/INCLUDE/attributes.h
+arb_mem.o: $(ARBHOME)/INCLUDE/cxxforward.h
 arb_mem.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_mem.o: $(ARBHOME)/INCLUDE/gccver.h
 arb_mem.o: $(ARBHOME)/INCLUDE/test_global.h
+arb_mem.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 arb_misc.o: arb_assert.h
 arb_misc.o: arb_core.h

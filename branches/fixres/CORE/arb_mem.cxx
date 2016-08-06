@@ -69,3 +69,65 @@ void arb_mem::re_calloc(void **tgt, size_t oelem, size_t nelem, size_t elsize) {
 
     *tgt = mem;
 }
+
+
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#ifndef TEST_UNIT_H
+#include <test_unit.h>
+#endif
+
+static void alloc_too_much() { ARB_alloc(-1); }
+static void calloc_too_much() { ARB_calloc(-1, 1); }
+static void realloc_too_much() { char *s = 0; ARB_realloc(s, -1); }
+static void recalloc_too_much() { char *s = 0; ARB_recalloc(s, 0, -1); }
+
+static bool mem_is_cleared(const char *mem, size_t size) {
+    for (size_t s = 0; s<size; ++s) {
+        if (mem[s]) return false;
+    }
+    return true;
+}
+
+void TEST_allocators() {
+    const int  SIZE  = 100;
+    const int  SIZE2 = 200;
+    char      *s     = NULL;                   TEST_EXPECT_NULL(s);
+
+    s = (char*)ARB_alloc(0);                   TEST_REJECT_NULL(s); // allocating empty block != NULL
+    freeset(s, (char*)ARB_alloc(SIZE));        TEST_REJECT_NULL(s);
+
+    freenull(s);                               TEST_EXPECT_NULL(s);
+
+    ARB_realloc(s, 0);                         TEST_REJECT_NULL(s);
+    ARB_realloc(s, SIZE);                      TEST_REJECT_NULL(s);
+    // ARB_realloc(s, 0);                         TEST_REJECT_NULL(s); // fails
+
+    freenull(s);                               TEST_EXPECT_NULL(s);
+
+    s = (char*)ARB_calloc(0, 1);               TEST_REJECT_NULL(s);
+    freeset(s, (char*)ARB_calloc(SIZE, 1));    TEST_REJECT_NULL(s); TEST_EXPECT(mem_is_cleared(s, SIZE));
+
+    freenull(s);                               TEST_EXPECT_NULL(s);
+
+    ARB_recalloc(s, 0, 1);                     TEST_REJECT_NULL(s); TEST_EXPECT(mem_is_cleared(s, 1));
+    ARB_recalloc(s, 1, SIZE);                  TEST_REJECT_NULL(s); TEST_EXPECT(mem_is_cleared(s, SIZE));
+    ARB_recalloc(s, SIZE, SIZE2);              TEST_REJECT_NULL(s); TEST_EXPECT(mem_is_cleared(s, SIZE2));
+    ARB_recalloc(s, SIZE2, SIZE);              TEST_REJECT_NULL(s); TEST_EXPECT(mem_is_cleared(s, SIZE));
+    ARB_recalloc(s, SIZE, 1);                  TEST_REJECT_NULL(s); TEST_EXPECT(mem_is_cleared(s, 1));
+    // ARB_recalloc(s, 1, 0);                     TEST_REJECT_NULL(s); // fails
+
+    freenull(s);                               TEST_EXPECT_NULL(s);
+
+    // test out-of-mem = > terminate
+    TEST_EXPECT_SEGFAULT(alloc_too_much);
+    TEST_EXPECT_SEGFAULT(calloc_too_much);
+    TEST_EXPECT_SEGFAULT(realloc_too_much);
+    TEST_EXPECT_SEGFAULT(recalloc_too_much);
+}
+
+#endif // UNIT_TESTS
+
+// --------------------------------------------------------------------------------
+
