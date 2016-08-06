@@ -95,36 +95,38 @@ void TEST_allocators() {
     const int  SIZE2 = 200;
     char      *s     = NULL;                   TEST_EXPECT_NULL(s);
 
-    s = (char*)ARB_alloc(0);                   TEST_REJECT_NULL(s); // allocating empty block != NULL
-    freeset(s, (char*)ARB_alloc(SIZE));        TEST_REJECT_NULL(s);
+    s = (char*)ARB_alloc(0);                   TEST_REJECT_NULL((void*)s); // allocating empty block != NULL
+    freeset(s, (char*)ARB_alloc(SIZE));        TEST_REJECT_NULL((void*)s);
 
     freenull(s);                               TEST_EXPECT_NULL(s);
 
-    ARB_realloc(s, 0);                         TEST_REJECT_NULL(s);
-    ARB_realloc(s, SIZE);                      TEST_REJECT_NULL(s);
+    ARB_realloc(s, 0);                         TEST_REJECT_NULL((void*)s);
+    ARB_realloc(s, SIZE);                      TEST_REJECT_NULL((void*)s);
     // ARB_realloc(s, 0);                         TEST_REJECT_NULL(s); // fails
 
     freenull(s);                               TEST_EXPECT_NULL(s);
 
-    s = (char*)ARB_calloc(0, 1);               TEST_REJECT_NULL(s);
-    freeset(s, (char*)ARB_calloc(SIZE, 1));    TEST_REJECT_NULL(s); TEST_EXPECT(mem_is_cleared(s, SIZE));
+    s = (char*)ARB_calloc(0, 1);               TEST_REJECT_NULL((void*)s);
+    freeset(s, (char*)ARB_calloc(SIZE, 1));    TEST_REJECT_NULL((void*)s); TEST_EXPECT(mem_is_cleared(s, SIZE));
 
     freenull(s);                               TEST_EXPECT_NULL(s);
 
-    ARB_recalloc(s, 0, 1);                     TEST_REJECT_NULL(s); TEST_EXPECT(mem_is_cleared(s, 1));
-    ARB_recalloc(s, 1, SIZE);                  TEST_REJECT_NULL(s); TEST_EXPECT(mem_is_cleared(s, SIZE));
-    ARB_recalloc(s, SIZE, SIZE2);              TEST_REJECT_NULL(s); TEST_EXPECT(mem_is_cleared(s, SIZE2));
-    ARB_recalloc(s, SIZE2, SIZE);              TEST_REJECT_NULL(s); TEST_EXPECT(mem_is_cleared(s, SIZE));
-    ARB_recalloc(s, SIZE, 1);                  TEST_REJECT_NULL(s); TEST_EXPECT(mem_is_cleared(s, 1));
+    ARB_recalloc(s, 0, 1);                     TEST_REJECT_NULL((void*)s); TEST_EXPECT(mem_is_cleared(s, 1));
+    ARB_recalloc(s, 1, SIZE);                  TEST_REJECT_NULL((void*)s); TEST_EXPECT(mem_is_cleared(s, SIZE));
+    ARB_recalloc(s, SIZE, SIZE2);              TEST_REJECT_NULL((void*)s); TEST_EXPECT(mem_is_cleared(s, SIZE2));
+    ARB_recalloc(s, SIZE2, SIZE);              TEST_REJECT_NULL((void*)s); TEST_EXPECT(mem_is_cleared(s, SIZE));
+    ARB_recalloc(s, SIZE, 1);                  TEST_REJECT_NULL((void*)s); TEST_EXPECT(mem_is_cleared(s, 1));
     // ARB_recalloc(s, 1, 0);                     TEST_REJECT_NULL(s); // fails
 
     freenull(s);                               TEST_EXPECT_NULL(s);
 
-    // test out-of-mem = > terminate
+#if !defined(LEAKS_SANITIZED)
+    // test out-of-mem => terminate
     TEST_EXPECT_SEGFAULT(alloc_too_much);
     TEST_EXPECT_SEGFAULT(calloc_too_much);
     TEST_EXPECT_SEGFAULT(realloc_too_much);
     TEST_EXPECT_SEGFAULT(recalloc_too_much);
+#endif
 }
 
 #endif // UNIT_TESTS
