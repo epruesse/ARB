@@ -45,31 +45,6 @@ void arb_mem::failed_to_allocate(size_t size) {
     alloc_failure_panic();
 }
 
-void arb_mem::alloc_aligned(void **tgt, size_t alignment, size_t len) {
-    int error = posix_memalign(tgt, alignment, len);
-    if (error) failed_to_allocate(strerror(error));
-}
-
-void arb_mem::re_alloc(void **tgt, size_t nelem, size_t elsize) {
-    size_t nsize = nelem*elsize;
-
-    void *mem = realloc(*tgt, nsize);
-    if (!mem) arb_mem::failed_to_allocate(nelem, elsize);
-
-    *tgt = mem;
-}
-void arb_mem::re_calloc(void **tgt, size_t oelem, size_t nelem, size_t elsize) {
-    size_t nsize = nelem*elsize;
-
-    void *mem = realloc(*tgt, nsize);
-    if (!mem) arb_mem::failed_to_allocate(nelem, elsize);
-
-    size_t osize = oelem*elsize;
-    if (nsize>osize) memset(((char*)mem)+osize, 0, nsize-osize);
-
-    *tgt = mem;
-}
-
 
 // --------------------------------------------------------------------------------
 

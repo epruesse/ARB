@@ -15,6 +15,9 @@
 #ifndef _GLIBCXX_CSTDLIB
 #include <cstdlib>
 #endif
+#ifndef _GLIBCXX_CSTRING
+#include <cstring>
+#endif
 #ifndef ATTRIBUTES_H
 #include <attributes.h>
 #endif
@@ -24,10 +27,30 @@ namespace arb_mem {
     void failed_to_allocate(size_t nelem, size_t elsize) __ATTR__NORETURN;
     void failed_to_allocate(size_t size) __ATTR__NORETURN;
 
-    void alloc_aligned(void **tgt, size_t alignment, size_t len);
+    inline void alloc_aligned(void **tgt, size_t alignment, size_t len) {
+        int error = posix_memalign(tgt, alignment, len);
+        if (error) failed_to_allocate(strerror(error));
+    }
 
-    void re_alloc (void **tgt, size_t nelem, size_t elsize);
-    void re_calloc(void **tgt, size_t oelem, size_t nelem, size_t elsize);
+    inline void re_alloc(void **tgt, size_t nelem, size_t elsize) {
+        size_t nsize = nelem*elsize;
+
+        void *mem = realloc(*tgt, nsize);
+        if (!mem) arb_mem::failed_to_allocate(nelem, elsize);
+
+        *tgt = mem;
+    }
+    inline void re_calloc(void **tgt, size_t oelem, size_t nelem, size_t elsize) {
+        size_t nsize = nelem*elsize;
+
+        void *mem = realloc(*tgt, nsize);
+        if (!mem) arb_mem::failed_to_allocate(nelem, elsize);
+
+        size_t osize = oelem*elsize;
+        if (nsize>osize) memset(((char*)mem)+osize, 0, nsize-osize);
+
+        *tgt = mem;
+    }
 };
 
 template<class TYPE>
