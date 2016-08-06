@@ -14,17 +14,15 @@
 
 typedef unsigned int UINT;
 
-static int Arbdb_get_curelem(NA_Alignment& dataset)
-{
-    int curelem;
-    curelem = dataset.numelements++;
+int Arbdb_get_curelem(NA_Alignment& dataset) {
+    int curelem = dataset.numelements++;
     if (curelem == 0) {
-        dataset.element = (NA_Sequence *) Calloc(5, sizeof(NA_Sequence));
         dataset.maxnumelements = 5;
+        dataset.element        = (NA_Sequence *)ARB_alloc(dataset.maxnumelements * sizeof(*dataset.element));
     }
     else if (curelem == dataset.maxnumelements) {
         dataset.maxnumelements *= 2;
-        dataset.element = (NA_Sequence *) Realloc((char *)dataset.element, dataset.maxnumelements * sizeof(NA_Sequence));
+        ARB_realloc(dataset.element, dataset.maxnumelements);
     }
     return curelem;
 }
@@ -440,7 +438,7 @@ void putelem(NA_Sequence *a, int b, NA_Base c) {
         a->sequence[b-(a->offset)] = c;
     }
     else {
-        NA_Base *temp = (NA_Base*)Calloc(a->seqmaxlen+a->offset-b, sizeof(NA_Base));
+        NA_Base *temp = (NA_Base*)ARB_calloc(a->seqmaxlen + a->offset - b, sizeof(*temp));
         switch (a->elementtype) {
             // Pad out with gap characters fron the point of insertion to the offset
             case MASK:
@@ -463,7 +461,7 @@ void putelem(NA_Sequence *a, int b, NA_Base c) {
         }
 
         for (int j=0; j<a->seqmaxlen; j++) temp[j+a->offset-b] = a->sequence[j];
-        Cfree((char*)a->sequence);
+        free(a->sequence);
 
         a->sequence     = temp;
         a->seqlen      += (a->offset - b);

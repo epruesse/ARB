@@ -102,8 +102,6 @@ static void ParseMenus(LineReader& in) {
     char head[GBUFSIZ];
     char tail[GBUFSIZ];
 
-    char *resize;
-
     string lineStr;
 
     while (in.getLine(lineStr)) {
