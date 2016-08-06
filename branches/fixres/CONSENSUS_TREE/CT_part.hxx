@@ -20,9 +20,6 @@
 #ifndef CT_DEF_HXX
 #include "CT_def.hxx"
 #endif
-#ifndef CT_MEM_HXX
-#include "CT_mem.hxx"
-#endif
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
 #endif
