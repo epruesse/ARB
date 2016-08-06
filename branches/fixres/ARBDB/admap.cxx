@@ -267,7 +267,7 @@ static long write_IFS(gb_index_files *ifs, FILE *out, long *offset) {
 
         STATIC_ASSERT(ALIGN(sizeof(*ie))==sizeof(*ie));
 
-        iecopy = (GB_REL_IFES *)malloc(iesize);
+        iecopy = (GB_REL_IFES *)ARB_alloc(iesize);
         memcpy(iecopy, ie, iesize);
 
         // write index entries an calc absolute offsets
@@ -353,7 +353,7 @@ static long write_GBDATA(GB_MAIN_TYPE */*Main*/, GBDATA *gbd, GBQUARK quark, FIL
             if (headermemsize) {     // if container is non-empty
                 if (out) {
                     int             valid      = 0; // no of non-temporary items
-                    gb_header_list *headercopy = (gb_header_list*) malloc(headermemsize);
+                    gb_header_list *headercopy = (gb_header_list*)ARB_alloc(headermemsize);
 
                     STATIC_ASSERT(sizeof(*headercopy) == ALIGN(sizeof(*headercopy)));
                     memset(headercopy, 0x0, headermemsize);

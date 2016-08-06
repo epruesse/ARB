@@ -118,6 +118,10 @@ CT_hash.o: $(ARBHOME)/INCLUDE/static_assert.h
 CT_hash.o: $(ARBHOME)/INCLUDE/test_global.h
 CT_hash.o: $(ARBHOME)/INCLUDE/TreeNode.h
 
+CT_mem.o: $(ARBHOME)/INCLUDE/arb_mem.h
+CT_mem.o: $(ARBHOME)/INCLUDE/attributes.h
+CT_mem.o: $(ARBHOME)/INCLUDE/gccver.h
+
 CT_ntree.o: CT_def.hxx
 CT_ntree.o: CT_mem.hxx
 CT_ntree.o: CT_ntree.hxx

@@ -77,7 +77,7 @@ char *GBT_reverseNucSequence(const char *s, int len) {
     return n;
 }
 char *GBT_complementNucSequence(const char *s, int len, char T_or_U) {
-    char *n = (char*)malloc(len+1);
+    char *n = (char*)ARB_alloc(len+1);
     int p;
 
     for (p=0; p<len; p++) {

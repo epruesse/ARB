@@ -534,7 +534,7 @@ static bool contains_non_alphanumeric(const char *str) {
 static char *make_alnum(const char *str) {
     // returns a heap-copy containing all alphanumeric characters of 'str'
 
-    char *newStr = (char*)malloc(strlen(str)+1);
+    char *newStr = (char*)ARB_alloc(strlen(str)+1);
     int   n      = 0;
 
     for (int p = 0; str[p]; ++p) {
@@ -546,7 +546,7 @@ static char *make_alnum(const char *str) {
 static char *make_alpha(const char *str) {
     // returns a heap-copy containing all alpha characters of 'str'
 
-    char *newStr = (char*)malloc(strlen(str)+1);
+    char *newStr = (char*)ARB_alloc(strlen(str)+1);
     int   n      = 0;
 
     for (int p = 0; str[p]; ++p) {

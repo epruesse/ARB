@@ -501,7 +501,7 @@ static void aw_insert_message_in_tmp_message_delayed(const char *message) {
         while (lf) { lf = strchr(lf+1, '\n'); ++count; }
 
         int newsize = strlen(message)+count*indentation+1;
-        copy        = (char*)malloc(newsize);
+        copy        = (char*)ARB_alloc(newsize);
 
         lf       = strchr(message, '\n');
         char *cp = copy;

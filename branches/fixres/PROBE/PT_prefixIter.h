@@ -67,7 +67,7 @@ public:
         : low(low_),
           high(high_),
           len(len_),
-          part((char*)malloc(len ? len : 1))
+          part((char*)ARB_alloc(len ? len : 1))
     {
         reset();
     }
@@ -75,7 +75,7 @@ public:
         : low(other.low),
           high(other.high),
           len(other.len),
-          part((char*)malloc(len ? len : 1)),
+          part((char*)ARB_alloc(len ? len : 1)),
           plen(other.plen)
     {
         memcpy(part, other.part, plen);

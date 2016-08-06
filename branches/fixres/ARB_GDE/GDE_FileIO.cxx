@@ -26,30 +26,19 @@ static void Regroup(NA_Alignment& alignment) {
     }
 }
 
-template <typename T>
-inline T* Terminate_If_OutOfMemory(T *allocated) {
-    if (!allocated) GBK_terminate("Out of memory");
-    return allocated;
-}
-
-char *Calloc(int count, int size) {
+char *Calloc(int count, int size) { // @@@ eliminate
     // More robust memory management routines
-    size *= count;
-    char *temp  = (char *)malloc(size);
-    memset(Terminate_If_OutOfMemory(temp), 0, size);
-    return temp;
+    return (char*)ARB_calloc(count, size);
 }
 
-char *Realloc(char *block, int size) {
-    return Terminate_If_OutOfMemory((char*)realloc(block, size));
+char *Realloc(char *block, int size) { // @@@ eliminate
+    ARB_realloc(block, size);
+    return block;
 }
 
-void Cfree(char *block)
+void Cfree(char *block) // @@@ replace by free
 {
-    if (block)
-    {
-        /* if(cfree(block) == 0)
-          Warning("Error in Cfree..."); */
+    if (block) {
         free(block);
     }
     else

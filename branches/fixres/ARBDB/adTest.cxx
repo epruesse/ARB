@@ -141,7 +141,7 @@ static void dump_internal(GBDATA *gbd, int *lines_allowed) {
             if (lines_allowed) (*lines_allowed)--;
         }
         else {
-            char          *buffer  = (char*)malloc(wrappos+1);
+            char          *buffer  = (char*)ARB_alloc(wrappos+1);
             unsigned long  rest    = content_len;
             const char    *from    = content;
             int            cleared = 0;

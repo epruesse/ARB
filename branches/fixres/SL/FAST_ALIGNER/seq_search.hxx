@@ -21,6 +21,9 @@
 #ifndef AW_MSG_HXX
 #include <aw_msg.hxx>
 #endif
+#ifndef ARB_MEM_H
+#include <arb_mem.h>
+#endif
 #ifndef ATTRIBUTES_H
 #include <attributes.h>
 #endif
@@ -443,7 +446,7 @@ public:
         }
 
         if (showGapsMessages) {
-            char *messi = (char*)malloc(100);
+            char *messi = (char*)ARB_alloc(100);
 
             sprintf(messi, "'%s' needs %li gaps at offset %li.", my_master_name, gaps, offset+1);
             aw_message(messi);

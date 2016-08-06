@@ -55,7 +55,7 @@ class MemBlock : virtual Noncopyable {
     MemBlock *next;
 public:
     MemBlock(int size, MemBlock*& prev)
-        : data((char*)malloc(size)),
+        : data((char*)ARB_alloc(size)),
           next(prev)
     {
         if (!data) GBK_terminate("out of memory");

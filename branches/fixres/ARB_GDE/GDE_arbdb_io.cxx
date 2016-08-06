@@ -186,7 +186,7 @@ __ATTR__USERESULT static int InsertDatainGDE(NA_Alignment&     dataset,
                     int  c;
                     long newcount = 0;
 
-                    sequfilt[i]      = (uchar*)malloc((unsigned int)len+1);
+                    sequfilt[i]      = (uchar*)ARB_alloc((unsigned int)len+1);
                     sequfilt[i][len] = 0;
                     memset(sequfilt[i], '.', len); // Generate empty sequences
 
@@ -396,7 +396,7 @@ int ReadArbdb(NA_Alignment& dataset, bool marked, AP_filter *filter, GapCompress
     char **the_sequences = (char**)calloc((unsigned int)numberspecies+1, sizeof(char*));
 
     for (long i=0; the_species[i]; i++) {
-        the_sequences[i] = (char *)malloc((size_t)maxalignlen+1);
+        the_sequences[i] = (char *)ARB_alloc((size_t)maxalignlen+1);
         the_sequences[i][maxalignlen] = 0;
         memset(the_sequences[i], '.', (size_t)maxalignlen);
         const char *data = GB_read_char_pntr(GBT_find_sequence(the_species[i], dataset.alignment_name));

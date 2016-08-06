@@ -9,10 +9,12 @@
 //                                                                 //
 // =============================================================== //
 
+#include "SEC_abspos.hxx"
+
+#include <arb_mem.h>
+
 #include <cstdlib>
 #include <cstring>
-
-#include "SEC_abspos.hxx"
 
 using namespace std;
 
@@ -27,7 +29,7 @@ XString::XString(size_t ali_length)
     , number_found(0)
 {
     int len = ali_length+1; // need one more (cause 'x's are written behind position)
-    x_string = (char*)malloc((len+1)*sizeof(*x_string));
+    x_string = (char*)ARB_alloc((len+1)*sizeof(*x_string));
     memset(x_string, '.', len);
     x_string[len] = 0;
     set_length(len);
@@ -43,7 +45,7 @@ XString::XString(const char *saved_x_string, size_t saved_length, size_t ali_len
     sec_assert(saved_length == strlen(saved_x_string));
     sec_assert(saved_length == xlen || saved_length == xlen-1);
 
-    x_string = (char*)malloc((xlen+1)*sizeof(*x_string));
+    x_string = (char*)ARB_alloc((xlen+1)*sizeof(*x_string));
     memcpy(x_string, saved_x_string, saved_length+1);
 
     if (saved_length == xlen-1) { // normal case
@@ -75,8 +77,8 @@ void XString::initialize()
         x_count = x;
     }
 
-    if (!abspos)       abspos       = (size_t*)malloc(x_count * sizeof(*abspos));
-    if (!number_found) number_found = (int*)malloc(x_string_len * sizeof(*number_found));
+    if (!abspos)       abspos       = (size_t*)ARB_alloc(x_count * sizeof(*abspos));
+    if (!number_found) number_found = (int*)ARB_alloc(x_string_len * sizeof(*number_found));
 
     // init abspos and number_found :
     {
@@ -130,7 +132,7 @@ const char *XString::get_x_string() const {
     size_t bufsize = x_string_len+1;
 
     if (!copy || copy_alloc<bufsize) {
-        freeset(copy, (char*)malloc(bufsize));
+        freeset(copy, (char*)ARB_alloc(bufsize));
         copy_alloc = bufsize;
     }
 

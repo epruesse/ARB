@@ -49,7 +49,7 @@ inline void ARB_recalloc(TYPE*& tgt, size_t oelem, size_t nelem) {
     }
 }
 
-inline void *ARB_alloc(size_t size) { // @@@ replace all uses of malloc with ARB_alloc
+inline void *ARB_alloc(size_t size) {
     void *mem = malloc(size);
     if (!mem) arb_mem::failed_to_allocate(size);
     return mem;

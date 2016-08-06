@@ -126,11 +126,11 @@ GB_ERROR ArbTcpDat::read(int *versionFound) {
         char   buffer[MAXLINELEN+1];
         char  *lp;
         int    lineNumber = 0;
-        char **tokens     = (char**)malloc(MAXTOKENS*sizeof(*tokens));
+        char **tokens     = (char**)ARB_alloc(MAXTOKENS*sizeof(*tokens));
 
         int    entries_allocated = 30;
         int    entries           = 0;
-        char **entry             = (char**)malloc(entries_allocated*sizeof(*entry));
+        char **entry             = (char**)ARB_alloc(entries_allocated*sizeof(*entry));
 
         if (!tokens || !entry) error = "Out of memory";
 
@@ -169,7 +169,7 @@ GB_ERROR ArbTcpDat::read(int *versionFound) {
                         }
                         allsize++;      // additional zero byte
 
-                        data = (char*)malloc(allsize);
+                        data = (char*)ARB_alloc(allsize);
                         {
                             char *d = data;
                             for (t = 0; t<tokCount; t++) {
@@ -414,7 +414,7 @@ const char * const *GBS_get_arb_tcp_entries(const char *matching) {
         int count = arb_tcp_dat.get_server_count();
 
         if (matchingEntriesSize != count) {
-            freeset(matchingEntries, (const char **)malloc((count+1)*sizeof(*matchingEntries)));
+            freeset(matchingEntries, (const char **)ARB_alloc((count+1)*sizeof(*matchingEntries)));
             matchingEntriesSize = count;
         }
 

@@ -41,7 +41,7 @@ void NT_count_different_chars(AW_window*, GBDATA *gb_main) {
 
         typedef bool letterOccurs[MAXLETTER];
 
-        letterOccurs *occurs = (letterOccurs*)malloc(sizeof(*occurs)*alignment_len);
+        letterOccurs *occurs = (letterOccurs*)ARB_alloc(sizeof(*occurs)*alignment_len);
         for (int i = 0; i<MAXLETTER; ++i) {
             for (int p = 0; p<alignment_len; ++p) {
                 occurs[p][i] = false;
@@ -327,7 +327,7 @@ void TEST_SLOW_count_chars() {
 
         char *longSeq[count];
         for (int c = 0; c<count; ++c) {
-            char *dest = longSeq[c] = (char*)malloc(alilen+1);
+            char *dest = longSeq[c] = (char*)ARB_alloc(alilen+1);
 
             const char *source = data_source[c].data;
             int         len    = strlen(source);

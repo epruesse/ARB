@@ -88,7 +88,7 @@ static void gb_dump_huffmann_tree(gb_compress_tree *t, const char *prefix) {
     }
     else {
         int   len        = strlen(prefix);
-        char *my_prefix  = malloc(len+2);
+        char *my_prefix  = ARB_alloc(len+2);
         strcpy(my_prefix, prefix);
         my_prefix[len+1] = 0;
         my_prefix[len]   = '0';
@@ -101,7 +101,7 @@ static void gb_dump_huffmann_tree(gb_compress_tree *t, const char *prefix) {
 static void gb_dump_huffmann_list(gb_compress_list *bc, const char *prefix) {
     if (bc->command == GB_CD_NODE) {
         int   len        = strlen(prefix);
-        char *my_prefix  = malloc(len+2);
+        char *my_prefix  = ARB_alloc(len+2);
         strcpy(my_prefix, prefix);
         my_prefix[len+1] = 0;
         my_prefix[len]   = '0';

@@ -1028,7 +1028,7 @@ static void group_species(bool use_field, AW_window *use_as_main_window) {
                                 tryAgain = true;
 
                                 int   newlen  = doneLen + field_content_len + 1;
-                                char *newDone = (char*)malloc(newlen+1);
+                                char *newDone = (char*)ARB_alloc(newlen+1);
 
                                 GBS_global_string_to_buffer(newDone, newlen+1, "%s%s;", doneContents, field_content);
                                 freeset(doneContents, newDone);
@@ -1981,7 +1981,7 @@ static void create_new_species(AW_window *, SpeciesCreationMode creation_mode) {
 
                                                         e4_assert(content);
                                                         int add_len = names_len+1+strlen(content);
-                                                        char *whole = (char*)malloc(new_content_len+1+add_len+1);
+                                                        char *whole = (char*)ARB_alloc(new_content_len+1+add_len+1);
                                                         e4_assert(whole);
                                                         char *add = new_content ? whole+sprintf(whole, "%s ", new_content) : whole;
                                                         sl2 = sml;
@@ -2012,7 +2012,7 @@ static void create_new_species(AW_window *, SpeciesCreationMode creation_mode) {
                                         }
 
                                         // mark field as done:
-                                        char *new_doneFields = (char*)malloc(doneLen+fieldLen+1+1);
+                                        char *new_doneFields = (char*)ARB_alloc(doneLen+fieldLen+1+1);
                                         sprintf(new_doneFields, "%s%s;", doneFields, fieldName);
                                         doneLen += fieldLen+1;
                                         freeset(doneFields, new_doneFields);

@@ -876,7 +876,7 @@ static __ATTR__USERESULT GB_ERROR probe_match_event(const ProbeMatchSettings& ma
 
             bool              gene_flag = false;
             ProbeMatchParser *parser    = 0;
-            char             *result    = (char*)malloc(1024);
+            char             *result    = (char*)ARB_alloc(1024);
 
 
             if (hinfo) {
@@ -1032,7 +1032,7 @@ static __ATTR__USERESULT GB_ERROR probe_match_event(const ProbeMatchSettings& ma
                                         error2 = GB_await_error();
                                     }
                                     else {
-                                        char *concatenatedContent = (char *)malloc(strlen(prevContent)+1+strlen(match_info)+1);
+                                        char *concatenatedContent = (char *)ARB_alloc(strlen(prevContent)+1+strlen(match_info)+1);
                                         sprintf(concatenatedContent, "%s\n%s", prevContent, match_info);
                                         error2 = GB_write_string(gb_tmp, concatenatedContent);
                                         free(concatenatedContent);

@@ -396,12 +396,12 @@ char *MG_remap::calc_softmapping(softbaselist& softbases, int start, int end, in
 
     char *result = NULL;
     if (listsize >= wanted_size) {                  // not or just enough space -> plain copy
-        result = (char*)malloc(listsize+1);
+        result = (char*)ARB_alloc(listsize+1);
         *std::copy(softbases.begin(), softbases.end(), result) = 0;
         outlen = listsize;
     }
     else {                                          // otherwise do soft-mapping
-        result = (char*)malloc(wanted_size+1);
+        result = (char*)ARB_alloc(wanted_size+1);
         mg_assert(listsize < wanted_size);
 
         // calculate target positions and detect mapping conflicts

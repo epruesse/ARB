@@ -12,17 +12,20 @@
 #ifndef ARB_STRARRAY_H
 #define ARB_STRARRAY_H
 
-#ifndef _GLIBCXX_CSTDLIB
-#include <cstdlib>
-#endif
 #ifndef ARBTOOLS_H
 #include <arbtools.h>
 #endif
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
 #endif
+#ifndef ARB_MEM_H
+#include "arb_mem.h"
+#endif
 #ifndef _GLIBCXX_ALGORITHM
 #include <algorithm>
+#endif
+#ifndef _GLIBCXX_CSTDLIB
+#include <cstdlib>
 #endif
 
 
@@ -48,9 +51,10 @@ protected:
     void set_space(size_t new_allocated) {
         if (new_allocated != allocated) {
             arb_assert(ok());
-            size_t memsize = new_allocated*sizeof(*str);
-            str = (char**)(str ? realloc(str, memsize) : malloc(memsize));
-            if (new_allocated>allocated) memset(str+allocated, 0, (new_allocated-allocated)*sizeof(*str));
+
+            if (str) ARB_recalloc(str, allocated, new_allocated);
+            else str = (char**)ARB_calloc(new_allocated, sizeof(*str));
+
             allocated = new_allocated;
             arb_assert(ok());
         }

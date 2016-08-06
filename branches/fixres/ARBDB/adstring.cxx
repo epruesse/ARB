@@ -55,7 +55,7 @@ char *GBS_string_2_key(const char *str) // converts any string to a valid key
 }
 
 char *GB_memdup(const char *source, size_t len) {
-    char *dest = (char *)malloc(len);
+    char *dest = (char *)ARB_alloc(len);
     memcpy(dest, source, len);
     return dest;
 }
@@ -203,7 +203,7 @@ char *GBS_escape_string(const char *str, const char *chars_to_escape, char escap
      */
 
     int   len    = strlen(str);
-    char *buffer = (char*)malloc(2*len+1);
+    char *buffer = (char*)ARB_alloc(2*len+1);
     int   j      = 0;
     int   i;
 
@@ -238,7 +238,7 @@ char *GBS_unescape_string(const char *str, const char *escaped_chars, char escap
     //! inverse of GB_escape_string() - for params see there
 
     int   len    = strlen(str);
-    char *buffer = (char*)malloc(len+1);
+    char *buffer = (char*)ARB_alloc(len+1);
     int   j      = 0;
     int   i;
 

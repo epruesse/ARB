@@ -446,7 +446,7 @@ char *AW_window::align_string(const char *label_text, int columns) {
     char       *result = 0;
 
     if (!lf) {
-        result = (char*)malloc(columns+1);
+        result = (char*)ARB_alloc(columns+1);
 
         int len              = strlen(label_text);
         if (len>columns) len = columns;

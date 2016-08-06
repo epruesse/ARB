@@ -463,7 +463,7 @@ static bool parseCommandLine(int argc, const char * const * const argv) {
 
     // copy argv (since parser will remove matched arguments)
     free(pargv);
-    pargv = (const char **)malloc(sizeof(*pargv)*pargc);
+    pargv = (const char **)ARB_alloc(sizeof(*pargv)*pargc);
     for (int i=0; i<pargc; i++) pargv[i] = argv[i];
 
     showhelp   = (pargc <= 1);

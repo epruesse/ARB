@@ -48,6 +48,7 @@ SEC_abspos.o: SEC_abspos.hxx
 SEC_abspos.o: SEC_defs.hxx
 SEC_abspos.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SEC_abspos.o: $(ARBHOME)/INCLUDE/arb_core.h
+SEC_abspos.o: $(ARBHOME)/INCLUDE/arb_mem.h
 SEC_abspos.o: $(ARBHOME)/INCLUDE/arbtools.h
 SEC_abspos.o: $(ARBHOME)/INCLUDE/attributes.h
 SEC_abspos.o: $(ARBHOME)/INCLUDE/cxxforward.h

@@ -23,7 +23,9 @@
 #ifndef SMARTPTR_H
 #include <smartptr.h>
 #endif
-
+#ifndef ARB_MEM_H
+#include <arb_mem.h>
+#endif
 
 #define ca_assert(cond) arb_assert(cond)
 
@@ -97,7 +99,7 @@ inline int str0len(const char *str) {
 }
 
 inline char *strndup(const char *str, int len) {
-    char *result = (char*)malloc(len+1);
+    char *result = (char*)ARB_alloc(len+1);
     memcpy(result, str, len);
     result[len]  = 0;
     return result;
@@ -124,7 +126,7 @@ inline bool has_no_content(const char *field) {
 inline bool has_content(const char *field) { return !has_no_content(field); }
 
 inline char *no_content() {
-    char *nothing = (char*)malloc(2);
+    char *nothing = (char*)ARB_alloc(2);
     nothing[0]    = '\n';
     nothing[1]    = 0;
     return nothing;

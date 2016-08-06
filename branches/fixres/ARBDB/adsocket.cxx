@@ -308,7 +308,7 @@ char *GB_read_file(const char *path) { // consider using class FileContent inste
                 long data_size = GB_size_of_file(epath);
 
                 if (data_size >= 0) {
-                    result = (char*)malloc(data_size+1);
+                    result = (char*)ARB_alloc(data_size+1);
 
                     data_size         = fread(result, 1, data_size, in);
                     result[data_size] = 0;
@@ -757,7 +757,7 @@ static GB_ULONG get_physical_memory() {
 
             do {
                 void **tmp;
-                while ((tmp=(void**)malloc(step_size))) {
+                while ((tmp=(void**)malloc(step_size))) { // do NOT use ARB_alloc here!
                     *tmp        = head;
                     head        = tmp;
                     max_malloc += step_size;

@@ -40,6 +40,7 @@ ClustalV.o: seq_search.hxx
 ClustalV.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ClustalV.o: $(ARBHOME)/INCLUDE/arb_core.h
 ClustalV.o: $(ARBHOME)/INCLUDE/arb_error.h
+ClustalV.o: $(ARBHOME)/INCLUDE/arb_mem.h
 ClustalV.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ClustalV.o: $(ARBHOME)/INCLUDE/arbtools.h
 ClustalV.o: $(ARBHOME)/INCLUDE/attributes.h

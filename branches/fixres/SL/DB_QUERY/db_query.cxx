@@ -423,7 +423,7 @@ void QUERY::DbQuery_update_list(DbQuery *query) {
 
     // create array of hits
     long     count  = count_queried_items(query, range);
-    GBDATA **sorted = static_cast<GBDATA**>(malloc(count*sizeof(*sorted)));
+    GBDATA **sorted = static_cast<GBDATA**>(ARB_alloc(count*sizeof(*sorted)));
     {
         long s = 0;
 

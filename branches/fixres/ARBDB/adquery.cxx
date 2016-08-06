@@ -45,7 +45,7 @@ static const char *GB_get_GBDATA_path(GBDATA *gbd) {
     static char *orgbuffer = NULL;
     char        *buffer;
 
-    if (!orgbuffer) orgbuffer = (char*)malloc(BUFFERSIZE);
+    if (!orgbuffer) orgbuffer = (char*)ARB_alloc(BUFFERSIZE);
     buffer                    = orgbuffer;
 
     build_GBDATA_path(gbd, &buffer);

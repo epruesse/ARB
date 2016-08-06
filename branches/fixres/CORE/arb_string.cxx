@@ -29,7 +29,7 @@ char *GB_strduplen(const char *p, unsigned len) {
         arb_assert(strlen(p) == len);
         // Note: Common reason for failure: a zero-char was manually printed by a GBS_global_string...-function
 
-        neu = (char*)malloc(len+1);
+        neu = (char*)ARB_alloc(len+1);
         memcpy(neu, p, len+1);
         return neu;
     }

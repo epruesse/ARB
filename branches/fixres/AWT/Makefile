@@ -237,6 +237,7 @@ AWT_hexdump.o: awt_hexdump.hxx
 AWT_hexdump.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_hexdump.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_hexdump.o: $(ARBHOME)/INCLUDE/arb_error.h
+AWT_hexdump.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AWT_hexdump.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 AWT_hexdump.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_hexdump.o: $(ARBHOME)/INCLUDE/arbtools.h

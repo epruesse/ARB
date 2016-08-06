@@ -645,7 +645,7 @@ inline T*& copyof(const T* const_data, size_t elemsize, size_t elements) {
 
     size_t memsize = elemsize*elements;
     id_assert(!copy);
-    copy = (T*)malloc(memsize);
+    copy = (T*)ARB_alloc(memsize);
     id_assert(copy);
     memcpy(copy, const_data, memsize);
     return copy;
@@ -658,7 +658,7 @@ inline T*& copyof(const T* const_data, size_t elemsize, size_t elements) {
         size_t  s1 = (d1)->memsize();                           \
         size_t  s2 = (d2)->memsize();                           \
         TEST_EXPECT_EQUAL(s1, s2);                              \
-        void   *copy1 = malloc(s1+s2);                          \
+        void   *copy1 = ARB_alloc(s1+s2);                       \
         void   *copy2 = reinterpret_cast<char*>(copy1)+s1;      \
         (d1)->copyTo(copy1);                                    \
         (d2)->copyTo(copy2);                                    \
@@ -669,7 +669,7 @@ inline T*& copyof(const T* const_data, size_t elemsize, size_t elements) {
 #define TEST_EXPECT_COPY_EQUALS_ARRAY(adp,typedarray,asize) do{ \
         size_t  size    = (adp)->memsize();                     \
         TEST_EXPECT_EQUAL(size, asize);                         \
-        void   *ad_copy = malloc(size);                         \
+        void   *ad_copy = ARB_alloc(size);                      \
         (adp)->copyTo(ad_copy);                                 \
         TEST_EXPECT_MEM_EQUAL(ad_copy, typedarray, size);       \
         free(ad_copy);                                          \
@@ -677,7 +677,7 @@ inline T*& copyof(const T* const_data, size_t elemsize, size_t elements) {
 
 #define TEST_EXPECT_COPY_EQUALS_STRING(adp,str) do{             \
         size_t  size    = (adp)->memsize();                     \
-        char   *ad_copy = (char*)malloc(size+1);                \
+        char   *ad_copy = (char*)ARB_alloc(size+1);             \
         (adp)->copyTo(ad_copy);                                 \
         ad_copy[size]   = 0;                                    \
         TEST_EXPECT_EQUAL(ad_copy, str);                        \
@@ -688,8 +688,8 @@ inline T*& copyof(const T* const_data, size_t elemsize, size_t elements) {
 static void illegal_alidata_composition() {
     const int ELEMS = 5;
 
-    int  *i = (int*)malloc(sizeof(int)*ELEMS);
-    char *c = (char*)malloc(sizeof(char)*ELEMS);
+    int  *i = (int*)ARB_alloc(sizeof(int)*ELEMS);
+    char *c = (char*)ARB_alloc(sizeof(char)*ELEMS);
 
     concat(makeAliData(i, ELEMS, 0), makeAliData(c, ELEMS, '-'));
 }
@@ -699,7 +699,7 @@ template <typename T>
 inline T *makeCopy(AliDataPtr d) {
     TEST_EXPECT_EQUAL(d->unitsize(), sizeof(T));
     size_t  size = d->memsize();
-    T      *copy = (T*)malloc(size);
+    T      *copy = (T*)ARB_alloc(size);
     d->copyTo(copy);
     return copy;
 }
@@ -1161,7 +1161,7 @@ inline char *provide_insDelBuffer(size_t neededSpace) {
     if (insDelBuffer && insDelBuffer_size<neededSpace) free_insDelBuffer();
     if (!insDelBuffer) {
         insDelBuffer_size = neededSpace+10;
-        insDelBuffer      = (char*)malloc(insDelBuffer_size);
+        insDelBuffer      = (char*)ARB_alloc(insDelBuffer_size);
     }
     return insDelBuffer;
 }
@@ -1693,7 +1693,7 @@ static const char *read_item_entry(GBDATA *gb_item, const char *ali_name, const 
     return result;
 }
 static char *ints2string(const GB_UINT4 *ints, size_t count) {
-    char *str = (char*)malloc(count+1);
+    char *str = (char*)ARB_alloc(count+1);
     for (size_t c = 0; c<count; ++c) {
         str[c] = (ints[c]<10) ? ints[c]+'0' : '?';
     }
@@ -1701,14 +1701,14 @@ static char *ints2string(const GB_UINT4 *ints, size_t count) {
     return str;
 }
 static GB_UINT4 *string2ints(const char *str, size_t count) {
-    GB_UINT4 *ints = (GB_UINT4*)malloc(sizeof(GB_UINT4)*count);
+    GB_UINT4 *ints = (GB_UINT4*)ARB_alloc(sizeof(GB_UINT4)*count);
     for (size_t c = 0; c<count; ++c) {
         ints[c] = int(str[c]-'0');
     }
     return ints;
 }
 static char *floats2string(const float *floats, size_t count) {
-    char *str = (char*)malloc(count+1);
+    char *str = (char*)ARB_alloc(count+1);
     for (size_t c = 0; c<count; ++c) {
         str[c] = char(floats[c]*64.0+0.5)+' '+1;
     }
@@ -1716,7 +1716,7 @@ static char *floats2string(const float *floats, size_t count) {
     return str;
 }
 static float *string2floats(const char *str, size_t count) {
-    float *floats = (float*)malloc(sizeof(float)*count);
+    float *floats = (float*)ARB_alloc(sizeof(float)*count);
     for (size_t c = 0; c<count; ++c) {
         floats[c] = float(str[c]-' '-1)/64.0;
     }

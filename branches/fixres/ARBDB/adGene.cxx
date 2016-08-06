@@ -492,7 +492,7 @@ static int cmp_location_parts(const void *v1, const void *v2) {
 void GEN_sortAndMergeLocationParts(GEN_position *location) {
     // Note: makes location partly invalid (only start_pos + stop_pos are valid afterwards)
     int  parts = location->parts;
-    int *idx   = (int*)malloc(parts*sizeof(*idx)); // idx[newpos] = oldpos
+    int *idx   = (int*)ARB_alloc(parts*sizeof(*idx)); // idx[newpos] = oldpos
     int  i, p;
 
     for (p = 0; p<parts; ++p) idx[p] = p;

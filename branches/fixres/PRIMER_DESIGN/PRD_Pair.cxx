@@ -10,6 +10,7 @@
 // =============================================================== //
 
 #include "PRD_Pair.hxx"
+#include <arb_mem.h>
 #include <cstdlib>
 
 using namespace std;
@@ -45,7 +46,7 @@ const char * Pair::get_primers (const char *sequence_)
   }
 
   if (!result) {
-    result     = (char*)malloc(max_result+1);
+    result     = (char*)ARB_alloc(max_result+1);
     result_len = max_result;
   }
 
@@ -74,7 +75,7 @@ const char * Pair::get_result (const char *sequence_,   int max_primer_length, i
   }
 
   if (!result) {
-    result     = (char*)malloc(max_result+1);
+    result     = (char*)ARB_alloc(max_result+1);
     result_len = max_result;
   }
 

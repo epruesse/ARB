@@ -328,7 +328,7 @@ static char *correct_extension(const char *name, const char *newExt) {
     cutExt(noExt, ".ps");
     cutExt(noExt, ".txt");
 
-    char *result = (char*)malloc(strlen(noExt)+strlen(newExt)+1);
+    char *result = (char*)ARB_alloc(strlen(noExt)+strlen(newExt)+1);
     strcpy(result, noExt);
     strcat(result, newExt);
     if (strcmp(name, result) == 0) freenull(result);

@@ -74,7 +74,7 @@ GB_ERROR AW_select_nameserver(GBDATA *gb_main, GBDATA *gb_other_main) {
                 error = GBS_global_string("No nameserver defined.");
             }
             else {
-                char **fieldNames = (char **)malloc(serverCount*sizeof(*fieldNames));
+                char **fieldNames = (char **)ARB_alloc(serverCount*sizeof(*fieldNames));
                 for (int c = 0; c<serverCount; c++) {
                     const char *ipport = GBS_read_arb_tcp(nameservers[c]);
                     if (!ipport) {
@@ -107,7 +107,7 @@ GB_ERROR AW_select_nameserver(GBDATA *gb_main, GBDATA *gb_other_main) {
                             else len += strlen(nofield);
                         }
 
-                        char *buttons = (char*)malloc(len);
+                        char *buttons = (char*)ARB_alloc(len);
                         buttons[0]    = 0;
                         for (int c = 0; c<serverCount; c++) {
                             if (c) strcat(buttons, ",");

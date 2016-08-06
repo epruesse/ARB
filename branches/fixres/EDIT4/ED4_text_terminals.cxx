@@ -222,7 +222,7 @@ ED4_returncode ED4_orf_terminal::draw() {
         }
         int i;
         for (i=0; i<ED4_G_DRAG; i++) {
-            freeset(colored_strings[i], (char *)malloc(sizeof(char) * (len_of_colored_strings+1)));
+            freeset(colored_strings[i], (char *)ARB_alloc(sizeof(char) * (len_of_colored_strings+1)));
             memset(colored_strings[i], ' ', len_of_colored_strings);
             colored_strings[i][len_of_colored_strings] = 0;
         }

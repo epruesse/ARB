@@ -870,7 +870,7 @@ GB_CSTR ED4_species_name_terminal::get_displayed_text() const
     if (!real_name || allocatedSize<(BUFFERSIZE+1)) {
         free(real_name);
         allocatedSize = BUFFERSIZE+1;
-        real_name = (char*)malloc(allocatedSize);
+        real_name = (char*)ARB_alloc(allocatedSize);
     }
     memset(real_name, 0, allocatedSize);
 

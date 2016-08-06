@@ -3,14 +3,10 @@
 #include <cstdlib>
 #include <cstring>
 #include <cstdio>
+#include <arb_mem.h>
 
-void *getmem(size_t size) {
-    void *p = malloc(size);
-    if (!p) {
-        fprintf(stderr, "Error occurred in Module CONSENSUS! Not enough Memory left\n");
-        return 0;
-    }
-
+void *getmem(size_t size) { // @@@ replace by ARB_calloc
+    void *p = ARB_alloc(size);
     memset(p, 0, size);
     return p;
 }

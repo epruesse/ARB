@@ -13,6 +13,7 @@
 #include "arb_msg.h"
 #include "arb_misc.h"
 #include "arb_assert.h"
+#include "arb_mem.h"
 
 #include <string>
 #include <map>
@@ -209,7 +210,7 @@ GB_ERROR ARB_zfclose(FILE *fp) {
 
 static char *fileContent(FILE *in, size_t& bytes_read) {
     const size_t  BUFFERSIZE = 1000;
-    char         *buffer     = (char*)malloc(BUFFERSIZE+1);
+    char         *buffer     = (char*)ARB_alloc(BUFFERSIZE+1);
     bytes_read               = fread(buffer, 1, BUFFERSIZE, in);
     arb_assert(bytes_read<BUFFERSIZE);
     buffer[bytes_read]       = 0;

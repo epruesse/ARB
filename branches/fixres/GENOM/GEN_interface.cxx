@@ -701,7 +701,7 @@ inline SmartCharPtr dupSizedPart(const unsigned char *in, int size) {
     return GB_strpartdup(in2, in2+size-1);
 }
 inline SmartCharPtr dupComplement(const unsigned char *in, int size) {
-    char *dup = (char*)malloc(size+1);
+    char *dup = (char*)ARB_alloc(size+1);
     for (int i = 0; i<size; ++i) {
         dup[i] = in[i] ? '1' : '0';
     }

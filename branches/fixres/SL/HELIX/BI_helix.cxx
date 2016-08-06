@@ -137,7 +137,7 @@ const char *BI_helix::initFromData(const char *helix_nr_in, const char *helix_in
         size_t len          = strlen(helix_in);
         if (len > Size) len = Size;
 
-        char *h = (char *)malloc(Size+1);
+        char *h = (char *)ARB_alloc(Size+1);
         h[Size] = 0;
 
         if (len<Size) memset(h+len, '.', Size-len);
@@ -150,7 +150,7 @@ const char *BI_helix::initFromData(const char *helix_nr_in, const char *helix_in
         size_t len          = strlen(helix_nr_in);
         if (len > Size) len = (int)Size;
 
-        char *h = (char *)malloc((int)Size+1);
+        char *h = (char *)ARB_alloc((int)Size+1);
         h[Size] = 0;
 
         if (len<Size) memset(h+len, '.', (int)(Size-len));
@@ -222,7 +222,7 @@ const char *BI_helix::initFromData(const char *helix_nr_in, const char *helix_in
             GBS_write_hash(hash, ident, (long)stack->next);
 
             if (sident == 0 || strcmp(sident+1, ident) != 0) {
-                sident = (char*)malloc(strlen(ident)+2);
+                sident = (char*)ARB_alloc(strlen(ident)+2);
                 sprintf(sident, "-%s", ident);
 
                 entries[stack->pos].allocated = true;

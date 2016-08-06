@@ -340,7 +340,7 @@ static void splitTokComment(char **tok, char **commentP)
 static char *appendComment(const char *s1, int l1, const char *s2) {
     if (s1) {
         int l2 = strlen(s2);
-        char *s = (char*)malloc(l1+1+l2+1);
+        char *s = (char*)ARB_alloc(l1+1+l2+1);
 
         sprintf(s, "%s %s", s1, s2);
         return s;
@@ -499,12 +499,7 @@ char SearchTree::unify_char(char c, int case_sensitive, int T_equal_U)
 
 char *SearchTree::unify_str(const char *data, int len, ED4_SEARCH_GAPS gaps, int *new_len, int **uni2real)
 {
-    char *p = (char*)malloc(len+1);
-
-    if (!p) {
-        return 0;
-    }
-
+    char *p       = (char*)ARB_alloc(len+1);
     char *pp      = p;
     int   nlen    = 0;
     int   realPos = 0;
@@ -573,33 +568,27 @@ void SearchTree::findMatches(const char *seq, int len, reportMatch report)
 {
     if (root) {
         int new_len;
-        int *uni2real = (int*)malloc(len*sizeof(int));
-        char *uni_seq = uni2real ? unify_sequence(seq, len, &new_len, &uni2real) : NULL;
+        int *uni2real = (int*)ARB_alloc(len*sizeof(int));
+        char *uni_seq = unify_sequence(seq, len, &new_len, &uni2real);
 
-        if (uni_seq) {
-            int off;
-            char *useq = uni_seq;
-            int mismatch_list[MAX_MISMATCHES];
+        int off;
+        char *useq = uni_seq;
+        int mismatch_list[MAX_MISMATCHES];
 
-            for (off=0; off<MAX_MISMATCHES; off++) {
-                mismatch_list[off] = -1;
-            }
-
-            SearchTreeNode::set_report(report, uni2real);
-            SearchTreeNode::set_mismatches(sett->get_min_mismatches(), sett->get_max_mismatches());
-
-            for (off=0; off<new_len; off++, useq++) {
-                SearchTreeNode::set_start_offset(off);
-                root->findMatches(off, useq, new_len-off, 0, mismatch_list);
-            }
-
-            free(uni_seq);
-            free(uni2real);
+        for (off=0; off<MAX_MISMATCHES; off++) {
+            mismatch_list[off] = -1;
         }
-        else {
-            aw_message("Out of swapspace?");
-            if (uni2real) free(uni2real);
+
+        SearchTreeNode::set_report(report, uni2real);
+        SearchTreeNode::set_mismatches(sett->get_min_mismatches(), sett->get_max_mismatches());
+
+        for (off=0; off<new_len; off++, useq++) {
+            SearchTreeNode::set_start_offset(off);
+            root->findMatches(off, useq, new_len-off, 0, mismatch_list);
         }
+
+        free(uni_seq);
+        free(uni2real);
     }
 }
 
@@ -1262,7 +1251,7 @@ void ED4_SearchResults::to_array() {
         arraySize = a_arraySize;
     }
 
-    ED4_SearchPosition **a_array = (ED4_SearchPosition**)malloc(sizeof(ED4_SearchPosition*)*arraySize);
+    ED4_SearchPosition **a_array = (ED4_SearchPosition**)ARB_alloc(sizeof(ED4_SearchPosition*)*arraySize);
 
     pos = first;
     for (int e=0; e<arraySize; e++) {

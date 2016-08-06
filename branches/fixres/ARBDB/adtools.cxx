@@ -72,7 +72,7 @@ struct GB_DbScanner : virtual Noncopyable {
         : result(result_)
     {
         hash_table = GBS_create_hash(1024, GB_MIND_CASE);
-        buffer     = (char*)malloc(GBT_SUM_LEN);
+        buffer     = (char*)ARB_alloc(GBT_SUM_LEN);
         buffer[0]  = 0;
     }
 
@@ -1068,7 +1068,7 @@ char *GB_generate_notification(GBDATA *gb_main,
 
     int       id;
     char     *arb_notify_call = 0;
-    NotifyCb *pending         = (NotifyCb*)malloc(sizeof(*pending));
+    NotifyCb *pending         = (NotifyCb*)ARB_alloc(sizeof(*pending));
 
     pending->cb          = cb;
     pending->client_data = client_data;

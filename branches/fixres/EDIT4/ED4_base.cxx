@@ -1048,7 +1048,7 @@ ED4_base::ED4_base(const ED4_objspec& spec_, GB_CSTR temp_id, AW_pos x, AW_pos y
 
     e4_assert(temp_id);
     if (temp_id) {
-        id = (char*)malloc(strlen(temp_id)+1);
+        id = (char*)ARB_alloc(strlen(temp_id)+1);
         strcpy(id, temp_id);
     }
 

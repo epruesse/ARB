@@ -396,7 +396,7 @@ void aw_root_init_font(Display *display) {
                 }
 
                 if (i < found_fonts && flist[i].s == size) {
-                    xfont *newfont = (xfont *)malloc(sizeof(xfont));
+                    xfont *newfont = (xfont *)ARB_alloc(sizeof(xfont));
 
                     (nf ? nf->next : x_fontinfo[f].xfontlist) = newfont;
                     nf                                        = newfont;
@@ -411,7 +411,7 @@ void aw_root_init_font(Display *display) {
 
             if (!nf) { // no font has been found -> fallback to "fixed 12pt"
                 aw_assert(x_fontinfo[f].xfontlist == 0);
-                xfont *newfont   = (xfont *)malloc(sizeof(xfont));
+                xfont *newfont   = (xfont *)ARB_alloc(sizeof(xfont));
                 x_fontinfo[f].xfontlist = newfont;
 
                 newfont->size    = DEF_FONTSIZE;
@@ -528,7 +528,7 @@ static bool lookfont(Display *tool_d, int f, int s, int& found_size, bool verboo
         }
     }
     else { // SCALABLE; none yet of that size, alloc one and put it in the list
-        newfont = (xfont *) malloc(sizeof(xfont));
+        newfont = (xfont *)ARB_alloc(sizeof(xfont));
         // add it on to the end of the list
 
         nf = oldnf ? oldnf->next : 0; // store successor
