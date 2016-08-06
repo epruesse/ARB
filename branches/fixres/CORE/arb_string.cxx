@@ -32,7 +32,7 @@ inline tm *get_current_time() {
     return p;
 }
 
-const char *GB_date_string() {
+const char *ARB_date_string() {
     tm   *p        = get_current_time();
     char *readable = asctime(p); // points to a static buffer
     char *cr       = strchr(readable, '\n');
@@ -42,7 +42,7 @@ const char *GB_date_string() {
     return readable;
 }
 
-const char *GB_dateTime_suffix() {
+const char *ARB_dateTime_suffix() {
     /*! returns "YYYYMMDD_HHMMSS" */
     const  unsigned  SUFFIXLEN = 8+1+6;
     static char      buffer[SUFFIXLEN+1];
@@ -60,7 +60,7 @@ const char *GB_dateTime_suffix() {
 
 // --------------------------------------------------------------------------------
 
-const char *GB_keep_string(char *str) {
+const char *ARB_keep_string(char *str) {
     /*! keep an allocated string until program termination
      * useful to avoid valgrind reporting leaks e.g for callback parameters
      */

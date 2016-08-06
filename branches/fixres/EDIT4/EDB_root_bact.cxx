@@ -364,7 +364,7 @@ ED4_returncode  EDB_root_bact::fill_species(ED4_multi_species_manager  *multi_sp
 
                 if (sep) {
                     int   len     = sep-entry+1;
-                    char *content = GB_strndup(entry+1, len);
+                    char *content = ARB_strndup(entry+1, len);
                     char *message = GBS_global_string_copy("Unknown or misplaced tag-id '%c' (with content '%s'). Error in configuration-data!\nTrying to continue..", tag, content);
 
                     fprintf(stderr, "ARB_EDIT4: %s\n", message);

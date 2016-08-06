@@ -3093,7 +3093,7 @@ static GBDATA *fake_next_selected() {
 static char *fake_get_consensus(const char*, PosRange range) {
     const char *data = get_aligned_data_of(selection_fake_gb_main, "s1");
     if (range.is_whole()) return strdup(data);
-    return GB_strpartdup(data+range.start(), data+range.end());
+    return ARB_strpartdup(data+range.start(), data+range.end());
 }
 
 static void test_install_fakes(GBDATA *gb_main) {

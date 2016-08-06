@@ -668,7 +668,7 @@ static GB_ERROR standard_file2list(const CharPtrArray& line, StrArray& display, 
 
         const char *comma = strchr(line[i], ',');
         if (comma) {
-            display.put(GB_strpartdup(line[i], comma-1));
+            display.put(ARB_strpartdup(line[i], comma-1));
 
             comma++;
             const char *rest      = comma+strspn(comma, " \t");
@@ -754,7 +754,7 @@ GB_ERROR StorableSelectionList::save(const char *filename, long number_of_lines)
 
 
 inline char *string2heapcopy(const string& s) {
-    return GB_strndup(s.c_str(), s.length());
+    return ARB_strndup(s.c_str(), s.length());
 }
 
 GB_ERROR StorableSelectionList::load(const char *filemask, bool append) const {

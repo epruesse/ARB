@@ -141,7 +141,7 @@ static GB_HASH *an_get_prefix_hash() {
         GB_HASH *hash = GBS_create_hash(elems, GB_IGNORE_CASE);
 
         while (sin) {
-            GBS_write_hash_no_strdup(hash, GB_strndup(sin->shrt, PREFIXLEN), (long)sin);
+            GBS_write_hash_no_strdup(hash, ARB_strndup(sin->shrt, PREFIXLEN), (long)sin);
             sin = sin->next;
         }
 

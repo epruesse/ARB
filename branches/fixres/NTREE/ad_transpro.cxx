@@ -1832,7 +1832,7 @@ void TEST_realign() {
                     const char *dnaseq      = GB_read_char_pntr(gb_TaxOcell_dna);
                     size_t      expextedLen = strlen(E.dna);
                     size_t      seqlen      = strlen(dnaseq);
-                    char       *firstPart   = GB_strndup(dnaseq, expextedLen);
+                    char       *firstPart   = ARB_strndup(dnaseq, expextedLen);
                     size_t      dna_behind;
                     char       *nothing     = unalign(dnaseq+expextedLen, seqlen-expextedLen, dna_behind);
 

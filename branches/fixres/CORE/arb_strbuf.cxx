@@ -69,7 +69,7 @@ GBS_strstruct *GBS_stropen(long init_size) {
 
 char *GBS_strclose(GBS_strstruct *strstr) {
     // returns a char* copy of the memory file
-    char *str = GB_strndup(strstr->get_data(), strstr->get_position());
+    char *str = ARB_strndup(strstr->get_data(), strstr->get_position());
     GBS_strforget(strstr);
     return str;
 }

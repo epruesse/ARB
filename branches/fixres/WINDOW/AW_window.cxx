@@ -2156,7 +2156,7 @@ void aw_insert_default_help_entries(AW_window *aww) {
 
 inline char *strdup_getlen(const char *str, int& len) {
     len = strlen(str);
-    return GB_strduplen(str, len);
+    return ARB_strduplen(str, len);
 }
 Label::Label(const char *labeltext, AW_window *aww) {
     imageref = AW_IS_IMAGEREF(labeltext);

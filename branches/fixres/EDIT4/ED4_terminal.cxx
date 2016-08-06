@@ -115,7 +115,7 @@ static ED4_objspec column_stat_terminal_spec(
 char *ED4_terminal::resolve_pointer_to_string_copy(int *str_len) const {
     int         len;
     const char *s = resolve_pointer_to_char_pntr(&len);
-    char       *t = GB_strduplen(s, len); // space for zero byte is allocated by GB_strduplen
+    char       *t = ARB_strduplen(s, len); // space for zero byte is allocated by ARB_strduplen
 
     if (str_len) *str_len = len;
     return t;
@@ -191,7 +191,7 @@ const char *ED4_terminal::resolve_pointer_to_char_pntr(int *str_len) const
         e4_assert(db_pointer == 0);
 
         int len    = strlen(copy_of);
-        db_pointer = GB_strduplen(copy_of, len);
+        db_pointer = ARB_strduplen(copy_of, len);
 
         if (str_len) *str_len = len;
     }

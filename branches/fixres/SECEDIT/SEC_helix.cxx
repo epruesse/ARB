@@ -102,7 +102,7 @@ char *SEC_foldedHelixList_to_xstring(const char *foldedHelices, size_t xlength, 
         const char *semi = strchr(foldedHelices, ';');
         if (!semi) break;
 
-        char       *taggedHelixNr = GB_strpartdup(foldedHelices, semi-1);
+        char       *taggedHelixNr = ARB_strpartdup(foldedHelices, semi-1);
         const char *helixNr       = 0;
         long        xpos          = -1;
 

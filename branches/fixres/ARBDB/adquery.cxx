@@ -799,7 +799,7 @@ static const char *shortenLongString(const char *str, size_t wanted_len) {
             memcpy(shortened_str, str, wanted_len-4);
         }
         else {
-            freeset(shortened_str, GB_strpartdup(str, str+wanted_len));
+            freeset(shortened_str, ARB_strpartdup(str, str+wanted_len));
             short_len = wanted_len;
         }
         strcpy(shortened_str+wanted_len-4, "[..]");
@@ -1083,7 +1083,7 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
                 err    = 0;
                 const char *matched = GBS_regmatch(str, commands, &matchlen, &err);
 
-                if (matched) result   = GB_strndup(matched, matchlen);
+                if (matched) result   = ARB_strndup(matched, matchlen);
                 else if (!err) result = strdup("");
             }
 

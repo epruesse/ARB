@@ -773,7 +773,7 @@ char *MP_get_comment(int which, const char *str) {
 
     if (numsign) {
         if (which == 1) {
-            result = GB_strpartdup(str, numsign-1);
+            result = ARB_strpartdup(str, numsign-1);
         }
         else {
             result = MP_get_comment(which-1, numsign+1);

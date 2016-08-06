@@ -68,7 +68,7 @@ static char *create_tree_name(const char *savename) {
 
         const char *ldot = strrchr(savename, '.');
 
-        tree_name = ldot ? GB_strpartdup(savename, ldot-1) : strdup(savename);
+        tree_name = ldot ? ARB_strpartdup(savename, ldot-1) : strdup(savename);
         if (tree_name[0] == 0) freedup(tree_name, "tree_consensus");
     }
 

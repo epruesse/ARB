@@ -274,7 +274,7 @@ static GB_ERROR write_sequence_autoinc_alisize(GBDATA *gb_data, long& ali_len, c
 
     if (!error) {
         if (part_len<seq_len) {
-            char *seq_part = GB_strndup(sequence, part_len);
+            char *seq_part = ARB_strndup(sequence, part_len);
             error = GB_write_string(gb_data, seq_part);
             free(seq_part);
         }

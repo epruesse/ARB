@@ -175,7 +175,7 @@ inline char *strpartdup(const char *str, int c1, int c2) {
     pm_assert(c1 <= c2);
     pm_assert((int)strlen(str) > c2);
 
-    return GB_strndup(str+c1, len);
+    return ARB_strndup(str+c1, len);
 }
 
 int ParsedProbeMatch::get_position() const {

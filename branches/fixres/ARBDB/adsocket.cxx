@@ -1239,10 +1239,10 @@ void GB_split_full_path(const char *fullpath, char **res_dir, char **res_fullnam
             if (res_suffix)    *res_suffix    = NULL;
         }
         else {
-            if (res_dir)       *res_dir       = lslash ? GB_strpartdup(fullpath, lslash == fullpath ? lslash : lslash-1) : NULL;
-            if (res_fullname)  *res_fullname  = GB_strpartdup(name_start, terminal-1);
-            if (res_name_only) *res_name_only = GB_strpartdup(name_start, ldot ? ldot-1 : terminal-1);
-            if (res_suffix)    *res_suffix    = ldot ? GB_strpartdup(ldot+1, terminal-1) : NULL;
+            if (res_dir)       *res_dir       = lslash ? ARB_strpartdup(fullpath, lslash == fullpath ? lslash : lslash-1) : NULL;
+            if (res_fullname)  *res_fullname  = ARB_strpartdup(name_start, terminal-1);
+            if (res_name_only) *res_name_only = ARB_strpartdup(name_start, ldot ? ldot-1 : terminal-1);
+            if (res_suffix)    *res_suffix    = ldot ? ARB_strpartdup(ldot+1, terminal-1) : NULL;
         }
     }
     else {

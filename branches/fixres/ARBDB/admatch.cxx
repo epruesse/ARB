@@ -565,7 +565,7 @@ char *GBS_string_eval(const char *insource, const char *icommand, GBDATA *gb_con
                             goto gbs_pars_unsuccessfull;
                         }
                         c = *p;                     // set wildcard // @@@ unused
-                        mwildcard[max_mwildcard++] = GB_strpartdup(source, p-1);
+                        mwildcard[max_mwildcard++] = ARB_strpartdup(source, p-1);
                         source = p + strlen(start_of_wildcard);         // we parsed it
                         *search = what_wild_card;
                         break;

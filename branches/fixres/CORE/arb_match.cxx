@@ -201,8 +201,8 @@ char *GBS_regreplace(const char *str, const char *regReplExpr, GB_ERROR *error) 
             *error = "Missing '/' between search and replace string";
         }
         else {
-            char      *regexpr  = GB_strpartdup(unwrapped_expr, sep-1);
-            char      *replexpr = GB_strpartdup(sep+1, NULL);
+            char      *regexpr  = ARB_strpartdup(unwrapped_expr, sep-1);
+            char      *replexpr = ARB_strpartdup(sep+1, NULL);
             GBS_regex *comreg   = GBS_compile_regexpr(regexpr, case_flag, error);
 
             if (comreg) {

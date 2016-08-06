@@ -409,7 +409,7 @@ static GB_ERROR gbl_mid_streams(const GBL_streams& arg_input, GBL_streams& arg_o
         }
         else {
             gb_assert(s >= 0);
-            res = GB_strpartdup(p+s, p+e);
+            res = ARB_strpartdup(p+s, p+e);
         }
         arg_out.insert(res);
     }
@@ -582,7 +582,7 @@ static GB_ERROR gbl_unquote(GBL_command_arguments *args) {
         int         len = strlen(str);
 
         if (str[0] == '\"' && str[len-1] == '\"') {
-            PASS_2_OUT(args, GB_strpartdup(str+1, str+len-2));
+            PASS_2_OUT(args, ARB_strpartdup(str+1, str+len-2));
         }
         else {
             IN_2_OUT(args, i);
@@ -1162,7 +1162,7 @@ static GB_ERROR gbl_split(GBL_command_arguments *args) {
                     if (split_mode == 2) splitAt += sepLen; // split behind separator
 
                     len  = splitAt-in;
-                    copy = GB_strndup(in, len);
+                    copy = ARB_strndup(in, len);
 
                     PASS_2_OUT(args, copy);
 
@@ -1807,7 +1807,7 @@ static GB_ERROR gbl_export_sequence(GBL_command_arguments *args) {
 
                     gb_assert(error || seq);
 
-                    if (seq) PASS_2_OUT(args, GB_strduplen(seq, len));
+                    if (seq) PASS_2_OUT(args, ARB_strduplen(seq, len));
                 }
                 break;
             }
@@ -2208,7 +2208,7 @@ static GB_ERROR apply_filters(GBL_command_arguments *args, common_filter_params 
                         gb_assert(in);
 
                         flen   = strlen(in);
-                        filter = GB_strduplen(in, flen);
+                        filter = ARB_strduplen(in, flen);
                     }
                 }
                 else {

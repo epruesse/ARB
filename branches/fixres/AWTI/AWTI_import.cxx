@@ -583,7 +583,7 @@ static void write_entry(GBDATA *gb_main, GBDATA *gbd, const char *key, const cha
 
         i++;
         if (str[i]) { // need to cut trailing whitespace?
-            char *copy = GB_strndup(str, i);
+            char *copy = ARB_strndup(str, i);
             write_entry(gb_main, gbd, key, copy, tag, append, type);
             free(copy);
             return;

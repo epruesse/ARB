@@ -224,7 +224,7 @@ static GBDATA *GB_search_numbered(GBDATA *gbd, const char *str, GB_TYPES create)
                     GBDATA *gb_parent = 0;
                     {
                         if (previous_slash) { // found a slash
-                            char *parent_path = GB_strpartdup(str, previous_slash-1);
+                            char *parent_path = ARB_strpartdup(str, previous_slash-1);
 
                             // we are sure parent path does not contain brackets -> search normal
                             if (parent_path[0] == 0) { // that means : root-item is numbered (e.g. '/species_data[7]/...')
@@ -246,7 +246,7 @@ static GBDATA *GB_search_numbered(GBDATA *gbd, const char *str, GB_TYPES create)
                         GBDATA *gb_son = 0;
                         {
                             const char *name_start = previous_slash ? previous_slash+1 : str;
-                            char       *key_name   = GB_strpartdup(name_start, first_bracket-1);
+                            char       *key_name   = ARB_strpartdup(name_start, first_bracket-1);
                             int         c          = 0;
 
                             gb_son = GB_entry(gb_parent, key_name);

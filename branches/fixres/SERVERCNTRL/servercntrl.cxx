@@ -88,7 +88,7 @@ char *createCallOnSocketHost(const char *host, const char *remotePrefix, const c
     char *call = 0;
     if (host && host[0]) {
         const char *hostPort = strchr(host, ':');
-        char       *hostOnly = GB_strpartdup(host, hostPort ? hostPort-1 : 0);
+        char       *hostOnly = ARB_strpartdup(host, hostPort ? hostPort-1 : 0);
 
         if (hostOnly[0] && !GB_host_is_local(hostOnly)) {
             char *quotedRemoteCommand = GBK_singlequote(GBS_global_string("%s%s", remotePrefix, command));

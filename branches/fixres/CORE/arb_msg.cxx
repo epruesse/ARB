@@ -169,7 +169,7 @@ const char *GBS_vglobal_string(const char *templat, va_list parg) {
 char *GBS_vglobal_string_copy(const char *templat, va_list parg) {
     // goes to header: __ATTR__VFORMAT(1)
     const char *gstr = globBuf.vstrf(templat, parg, 1);
-    return GB_strduplen(gstr, last_global_string_size);
+    return ARB_strduplen(gstr, last_global_string_size);
 }
 
 const char *GBS_global_string_to_buffer(char *buffer, size_t bufsize, const char *templat, ...) {

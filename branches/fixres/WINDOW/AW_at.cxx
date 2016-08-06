@@ -456,7 +456,7 @@ char *AW_window::align_string(const char *label_text, int columns) {
         result[columns] = 0;
     }
     else {
-        char *part1    = GB_strpartdup(label_text, lf-1);
+        char *part1    = ARB_strpartdup(label_text, lf-1);
         char *aligned1 = align_string(part1, columns);
         char *aligned2 = align_string(lf+1, columns);
 

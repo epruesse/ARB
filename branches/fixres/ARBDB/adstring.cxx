@@ -283,7 +283,7 @@ char *GBS_eval_env(GB_CSTR p) {
             break;
         }
         else {
-            char *envvar = GB_strpartdup(ka+2, kz-1);
+            char *envvar = ARB_strpartdup(ka+2, kz-1);
             int   len    = ka-p;
 
             if (len) GBS_strncat(out, p, len);
@@ -942,7 +942,7 @@ char *GBS_trim(const char *str) {
     const char *end = strchr(str, 0)-1;
     while (end >= str && strchr(whitespace, end[0])) end--;
 
-    return GB_strpartdup(str, end);
+    return ARB_strpartdup(str, end);
 }
 
 static char *dated_info(const char *info) {

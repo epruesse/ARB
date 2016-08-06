@@ -121,7 +121,7 @@ private:
             const char *matched = GBS_regmatch_compiled(str, reg[i], &matchlen);
 
             if (matched) {
-                char       *prefix = GB_strpartdup(str, matched-1);
+                char       *prefix = ARB_strpartdup(str, matched-1);
                 const char *suffix = matched+matchlen;
 
                 bool do_repl = true;

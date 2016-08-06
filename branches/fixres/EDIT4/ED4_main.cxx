@@ -91,8 +91,8 @@ inline void set_and_realloc_gde_array(uchar **&the_names, uchar **&the_sequences
         allocated = new_allocated;
     }
 
-    the_names[numberspecies]     = (uchar*)GB_strndup(name, name_len);
-    the_sequences[numberspecies] = (uchar*)GB_strndup(seq, seq_len);
+    the_names[numberspecies]     = (uchar*)ARB_strndup(name, name_len);
+    the_sequences[numberspecies] = (uchar*)ARB_strndup(seq, seq_len);
 
     replaceChars((char*)the_names[numberspecies], ' ', '_');
 

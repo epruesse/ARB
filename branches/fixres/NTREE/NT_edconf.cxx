@@ -1266,7 +1266,7 @@ void NT_start_editor_on_tree(AW_window *aww, int use_species_aside, AWT_canvas *
 inline void nt_create_config_after_import(AWT_canvas *ntw) {
     init_config_awars(ntw->awr);
 
-    const char *dated_suffix = GB_dateTime_suffix();
+    const char *dated_suffix = ARB_dateTime_suffix();
     char       *configName   = GBS_global_string_copy("imported_%s", dated_suffix);
 
     // ensure unique config-name

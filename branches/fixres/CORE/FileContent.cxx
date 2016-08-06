@@ -27,7 +27,7 @@ void FileContent::init() {
 
         string line;
         while (buf.getLine(line)) {
-            Lines.put(GB_strndup(line.c_str(), line.length()));
+            Lines.put(ARB_strndup(line.c_str(), line.length()));
         }
     }
 }

@@ -334,7 +334,7 @@ static void pt_sort_match_list(PT_local * locs) {
 }
 char *create_reversed_probe(char *probe, int len) {
     //! reverse order of bases in a probe
-    char *rev_probe = GB_strduplen(probe, len);
+    char *rev_probe = ARB_strduplen(probe, len);
     reverse_probe(rev_probe, len);
     return rev_probe;
 }

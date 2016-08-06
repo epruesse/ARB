@@ -183,7 +183,7 @@ inline char *get_token_and_incr_lineno(const char*& code, const char *separator,
             }
         }
         else {
-            token = GB_strpartdup(code, sep_pos-1);
+            token = ARB_strpartdup(code, sep_pos-1);
 
             const char *behind_sep = sep_pos + strspn(sep_pos, separator); // next non 'separator' char
             if (lineno) {
@@ -531,7 +531,7 @@ class Prototype {
         const char *comma = next_comma_outside_parens(arg_list);
         if (comma) {
             {
-                char *first_param = GB_strpartdup(arg_list, comma-1);
+                char *first_param = ARB_strpartdup(arg_list, comma-1);
                 arguments.push_back(Parameter(first_param));
                 free(first_param);
             }

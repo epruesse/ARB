@@ -1361,7 +1361,7 @@ void create_probe_design_variables(AW_root *root, AW_default props, AW_default d
                 const char *colon = strchr(probe, ':');
 
                 if (colon) {
-                    char       *name = GB_strpartdup(probe, colon-1);
+                    char       *name = ARB_strpartdup(probe, colon-1);
                     const char *seq  = colon+1;
                     g_probe_collection.add(name, seq);
                     free(name);

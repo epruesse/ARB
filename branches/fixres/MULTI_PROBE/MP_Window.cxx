@@ -195,7 +195,7 @@ static GB_ERROR mp_file2list(const CharPtrArray& line, StrArray& display, StrArr
 
                 if (sep[0] == ',') { // old format (saved probe instead of probe-target)
                     size_t  plen   = probe.length();
-                    char   *dprobe = GB_strndup(probe.c_str(), plen);
+                    char   *dprobe = ARB_strndup(probe.c_str(), plen);
 
                     GBT_reverseComplementNucSequence(dprobe, plen, T_or_U);
                     probe = dprobe;
@@ -231,7 +231,7 @@ static GB_ERROR mp_file2list(const CharPtrArray& line, StrArray& display, StrArr
 
                 const char *comma = strchr(line[i], ',');
                 if (comma) {
-                    description = GB_strpartdup(line[i], comma-1);
+                    description = ARB_strpartdup(line[i], comma-1);
 
                     const char *cprobe = comma+1;
                     while (cprobe[0] == ' ') ++cprobe;
@@ -692,7 +692,7 @@ void TEST_SLOW_design_probes_and_load_result() {
                     probe = strdup("");
                 }
                 else {
-                    probe = GB_strndup(lines[i], plen);
+                    probe = ARB_strndup(lines[i], plen);
                 }
             }
 

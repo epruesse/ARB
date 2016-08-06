@@ -955,7 +955,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone, AWT_canvas **re
     const char *awar_tree = NULL;
 
     if (clone) {
-        awar_tree = GB_keep_string(GBS_global_string_copy(AWAR_TREE "_%i", clone));
+        awar_tree = ARB_keep_string(GBS_global_string_copy(AWAR_TREE "_%i", clone));
         sprintf(window_title, "ARB_NT_%i", clone);
     }
     else {

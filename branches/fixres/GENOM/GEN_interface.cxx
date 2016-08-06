@@ -317,7 +317,7 @@ static void GEN_update_GENE_CONTENT(GBDATA *gb_main, AW_root *awr) {
                     const char *seq_data = GB_read_char_pntr(gb_seq);
 
                     long  len    = end_pos-start_pos+1;
-                    char *buffer = GB_strndup(seq_data+start_pos, len);
+                    char *buffer = ARB_strndup(seq_data+start_pos, len);
 
                     awar_content->write_string(buffer);
                     clear = false;
@@ -698,7 +698,7 @@ static SmartCharPtr sizetarray2string(const size_t *array, int size) {
 }
 inline SmartCharPtr dupSizedPart(const unsigned char *in, int size) {
     const char *in2 = reinterpret_cast<const char*>(in);
-    return GB_strpartdup(in2, in2+size-1);
+    return ARB_strpartdup(in2, in2+size-1);
 }
 inline SmartCharPtr dupComplement(const unsigned char *in, int size) {
     char *dup = (char*)ARB_alloc(size+1);

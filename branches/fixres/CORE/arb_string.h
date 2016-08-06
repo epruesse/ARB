@@ -17,9 +17,7 @@ inline char *ARB_strdup(const char *str) {
     return dup;
 }
 
- // @@@ rename prefixes (GB -> ARB)
-
-inline char *GB_strduplen(const char *p, unsigned len) {
+inline char *ARB_strduplen(const char *p, unsigned len) {
     // fast replacement for strdup, if len is known
     if (p) {
         char *neu;
@@ -34,7 +32,7 @@ inline char *GB_strduplen(const char *p, unsigned len) {
     return 0;
 }
 
-inline char *GB_strpartdup(const char *start, const char *end) {
+inline char *ARB_strpartdup(const char *start, const char *end) {
     /* strdup of a part of a string (including 'start' and 'end')
      * 'end' may point behind end of string -> copy only till zero byte
      * if 'end'=('start'-1) -> return ""
@@ -65,14 +63,14 @@ inline char *GB_strpartdup(const char *start, const char *end) {
     return result;
 }
 
-inline char *GB_strndup(const char *start, int len) {
-    return GB_strpartdup(start, start+len-1);
+inline char *ARB_strndup(const char *start, int len) {
+    return ARB_strpartdup(start, start+len-1);
 }
 
 
-const char *GB_date_string(void);
-const char *GB_dateTime_suffix(void);
-const char *GB_keep_string(char *str);
+const char *ARB_date_string(void);
+const char *ARB_dateTime_suffix(void);
+const char *ARB_keep_string(char *str);
 
 #else
 #error arb_string.h included twice

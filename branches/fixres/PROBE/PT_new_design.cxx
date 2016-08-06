@@ -1289,7 +1289,7 @@ public:
 
                 PT_tprobes *tprobe = create_PT_tprobes();
 
-                tprobe->sequence  = GB_strndup(candi.sequence(), probelen);
+                tprobe->sequence  = ARB_strndup(candi.sequence(), probelen);
                 tprobe->temp      = pt_get_temperature(tprobe->sequence);
                 tprobe->groupsize = ingroup_hits;
 
@@ -1387,7 +1387,7 @@ public:
             ++progress;
         }
         for (PT_sequence *seq = pdc->sequences; seq; seq = seq->next) {
-            candidates.generate_for_sequence(pdc, GB_strndup(seq->seq.data, seq->seq.size), seq->seq.size);
+            candidates.generate_for_sequence(pdc, ARB_strndup(seq->seq.data, seq->seq.size), seq->seq.size);
             ++progress;
         }
     }
