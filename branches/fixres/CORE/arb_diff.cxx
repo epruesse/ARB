@@ -20,7 +20,6 @@
 #include "arb_file.h"
 
 #include <arb_str.h>
-#include <arb_assert.h>
 #include <arbtools.h>
 #include <smartptr.h>
 
