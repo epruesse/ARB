@@ -78,10 +78,12 @@ void arb_mem::re_calloc(void **tgt, size_t oelem, size_t nelem, size_t elsize) {
 #include <test_unit.h>
 #endif
 
+#if !defined(LEAKS_SANITIZED)
 static void alloc_too_much() { ARB_alloc(-1); }
 static void calloc_too_much() { ARB_calloc(-1, 1); }
 static void realloc_too_much() { char *s = 0; ARB_realloc(s, -1); }
 static void recalloc_too_much() { char *s = 0; ARB_recalloc(s, 0, -1); }
+#endif
 
 static bool mem_is_cleared(const char *mem, size_t size) {
     for (size_t s = 0; s<size; ++s) {
