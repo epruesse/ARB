@@ -18,7 +18,6 @@
 #include "arb_string.h"
 #include "arb_msg.h"
 #include "arb_file.h"
-#include "arb_mem.h"
 
 #include <arb_str.h>
 #include <arb_assert.h>

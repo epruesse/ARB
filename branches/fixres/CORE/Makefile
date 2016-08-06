@@ -6,7 +6,6 @@ OBJECTS=$(subst .cxx,.o,$(wildcard *.cxx))
 GENERATED_HEADERS= \
 	arb_msg.h \
 	arb_misc.h \
-	arb_string.h \
 	arb_signal.h \
 	arb_file.h \
 	arb_diff.h \

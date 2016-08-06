@@ -282,27 +282,23 @@ static void ParseMenus(LineReader& in) {
 
             else if (strcmp(head, "arg") == 0) {
                 THROW_IF_NO_ITEM();
-                curarg=thisitem->numargs++;
-                if (curarg == 0) resize = (char*)calloc(1, sizeof(GmenuItemArg));
-                else resize = (char *)realloc((char *)thisitem->arg, thisitem->numargs*sizeof(GmenuItemArg));
 
-                memset((char *)resize + (thisitem->numargs-1)*sizeof(GmenuItemArg), 0, sizeof(GmenuItemArg));
+                curarg = thisitem->numargs++;
+                ARB_recalloc(thisitem->arg, curarg, thisitem->numargs);
 
-                (thisitem->arg) = (GmenuItemArg*)resize;
-                thisarg         = &(thisitem->arg[curarg]);
-                thisarg->symbol = (char*)calloc(strlen(temp)+1, sizeof(char));
-                (void)strcpy(thisarg->symbol, temp);
+                thisarg = &(thisitem->arg[curarg]);
 
-                thisarg->type       = 0;
-                thisarg->min        = 0.0;
-                thisarg->max        = 0.0;
-                thisarg->numchoices = 0;
-                thisarg->choice     = NULL;
-                thisarg->textvalue  = NULL;
-                thisarg->ivalue     = 0;
-                thisarg->fvalue     = 0.0;
-                thisarg->label      = 0;
-                thisarg->active_mask= AWM_ALL;
+                thisarg->symbol      = ARB_strdup(temp);
+                thisarg->type        = 0;
+                thisarg->min         = 0.0;
+                thisarg->max         = 0.0;
+                thisarg->numchoices  = 0;
+                thisarg->choice      = NULL;
+                thisarg->textvalue   = NULL;
+                thisarg->ivalue      = 0;
+                thisarg->fvalue      = 0.0;
+                thisarg->label       = 0;
+                thisarg->active_mask = AWM_ALL;
             }
             // argtype: Defines the type of argument (menu,chooser, text, slider)
             else if (strcmp(head, "argtype") == 0) {
@@ -368,18 +364,10 @@ static void ParseMenus(LineReader& in) {
                 splitEntry(temp, head, tail);
 
                 int curchoice = thisarg->numchoices++;
-                if (curchoice == 0) resize = (char*)calloc(1, sizeof(GargChoice));
-                else                resize = (char*)realloc((char *)thisarg->choice, thisarg->numchoices*sizeof(GargChoice));
+                ARB_recalloc(thisarg->choice, curchoice, thisarg->numchoices);
 
-                thisarg->choice = (GargChoice*)resize;
-
-                (thisarg->choice[curchoice].label)  = NULL;
-                (thisarg->choice[curchoice].method) = NULL;
-                (thisarg->choice[curchoice].label)  = (char*)calloc(strlen(head)+1, sizeof(char));
-                (thisarg->choice[curchoice].method) = (char*)calloc(strlen(tail)+1, sizeof(char));
-
-                (void)strcpy(thisarg->choice[curchoice].label, head);
-                (void)strcpy(thisarg->choice[curchoice].method, tail);
+                thisarg->choice[curchoice].label  = ARB_strdup(head);
+                thisarg->choice[curchoice].method = ARB_strdup(tail);
             }
             // argmin: Minimum value for a slider
             else if (strcmp(head, "argmin") == 0) {
@@ -409,15 +397,15 @@ static void ParseMenus(LineReader& in) {
             // in: Input file description
             else if (strcmp(head, "in") == 0) {
                 THROW_IF_NO_ITEM();
-                curinput                  = (thisitem->numinputs)++;
-                if (curinput == 0) resize = (char*)calloc(1, sizeof(GfileFormat));
-                else resize               = (char *)realloc((char *)thisitem->input, (thisitem->numinputs)*sizeof(GfileFormat));
 
-                thisitem->input     = (GfileFormat*)resize;
-                thisinput           = &(thisitem->input)[curinput];
+                curinput = (thisitem->numinputs)++;
+                ARB_recalloc(thisitem->input, curinput, thisitem->numinputs);
+
+                thisinput = &(thisitem->input)[curinput];
+
                 thisinput->save     = false;
                 thisinput->format   = 0;
-                thisinput->symbol   = strdup(temp);
+                thisinput->symbol   = ARB_strdup(temp);
                 thisinput->name     = NULL;
                 thisinput->typeinfo = BASIC_TYPEINFO;
             }
@@ -440,16 +428,15 @@ static void ParseMenus(LineReader& in) {
             // out: Output file description
             else if (strcmp(head, "out") == 0) {
                 THROW_IF_NO_ITEM();
+
                 curoutput = (thisitem->numoutputs)++;
+                ARB_recalloc(thisitem->output, curoutput, thisitem->numoutputs);
 
-                if (curoutput == 0) resize = (char*)calloc(1, sizeof(GfileFormat));
-                else resize               = (char *)realloc((char *)thisitem->output, (thisitem->numoutputs)*sizeof(GfileFormat));
+                thisoutput = &(thisitem->output)[curoutput];
 
-                thisitem->output   = (GfileFormat*)resize;
-                thisoutput         = &(thisitem->output)[curoutput];
                 thisoutput->save   = false;
                 thisoutput->format = 0;
-                thisoutput->symbol = strdup(temp);
+                thisoutput->symbol = ARB_strdup(temp);
                 thisoutput->name   = NULL;
             }
             else if (strcmp(head, "outformat") == 0) {

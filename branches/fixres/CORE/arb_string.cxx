@@ -10,7 +10,6 @@
 // ================================================================ //
 
 #include "arb_string.h"
-#include "arb_mem.h"
 
 #include <arb_assert.h>
 
