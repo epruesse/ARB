@@ -136,7 +136,7 @@ static GB_ERROR arb_prm_read(int /* prmanz */) {
     }
 
     int sp_count = GBT_count_marked_species(aprm.gb_main);
-    aprm.data    = (char **)calloc(sp_count, sizeof(char *));
+    aprm.data    = (char **)ARB_calloc(sp_count, sizeof(*aprm.data));
 
     sp_count = 0;
     for (GBDATA *gb_species = GBT_first_marked_species(aprm.gb_main);
@@ -153,7 +153,7 @@ static GB_ERROR arb_prm_read(int /* prmanz */) {
                     GB_print_error();
                 }
                 else {
-                    char *data             = (char *)calloc(sizeof(char), aprm.al_len+1);
+                    char *data             = (char *)ARB_calloc(aprm.al_len+1, 1);
                     aprm.data[sp_count ++] = data;
                     
                     if (sp_count % 50 == 0) printf("Reading taxa %i\n", sp_count);
@@ -259,9 +259,9 @@ static void arb_prm_primer(int /* prmanz */)
 
     prmlen = aprm.prmlen + ADD_LEN + 1;
 
-    buffer = (char *) calloc(sizeof(char), prmlen + 1);
-    best_primer_cnt = (int *)calloc(prmlen+1, sizeof(int));
-    best_primer_new = (int *)calloc(prmlen+1, sizeof(int));
+    buffer          = (char*)ARB_calloc(prmlen+1, sizeof(*buffer));
+    best_primer_cnt = (int *)ARB_calloc(prmlen+1, sizeof(*best_primer_cnt));
+    best_primer_new = (int *)ARB_calloc(prmlen+1, sizeof(*best_primer_new));
 
     for (pos = 0; pos < aprm.al_len; pos++) {
         prmlen = aprm.prmlen + ADD_LEN;

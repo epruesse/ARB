@@ -305,7 +305,7 @@ static void sort_tprobes_by(PT_pdc *pdc, ProbeSortMode mode) {
     if (pdc->tprobes) {
         int list_len = pdc->tprobes->get_count();
         if (list_len > 1) {
-            PT_tprobes **my_list = (PT_tprobes **)calloc(sizeof(void *), list_len);
+            PT_tprobes **my_list = (PT_tprobes **)ARB_calloc(list_len, sizeof(*my_list));
             {
                 PT_tprobes *tprobe;
                 int         i;

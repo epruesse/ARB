@@ -317,7 +317,7 @@ DI_ENTRY::~DI_ENTRY() {
 DI_MATRIX::DI_MATRIX(const AliView& aliview_)
     : gb_species_data(NULL),
       seq_len(0),
-      entries_mem_size(0),
+      allocated_entries(0),
       aliview(new AliView(aliview_)),
       is_AA(false),
       entries(NULL),
@@ -397,9 +397,9 @@ GB_ERROR DI_MATRIX::load(LoadWhat what, const MatrixOrder& order, bool show_warn
     seq_len          = GBT_get_alignment_len(gb_main, use);
     is_AA            = GBT_is_alignment_protein(gb_main, use);
     gb_species_data  = GBT_get_species_data(gb_main);
-    entries_mem_size = 1000;
 
-    entries = (DI_ENTRY **)calloc(sizeof(DI_ENTRY*), entries_mem_size);
+    allocated_entries = 1000;
+    entries           = (DI_ENTRY **)ARB_calloc(allocated_entries, sizeof(*entries));
 
     nentries = 0;
 
@@ -473,9 +473,9 @@ GB_ERROR DI_MATRIX::load(LoadWhat what, const MatrixOrder& order, bool show_warn
         }
     }
 
-    if (no_of_species>entries_mem_size) {
-        entries_mem_size = no_of_species;
-        realloc_unleaked(entries, sizeof(DI_ENTRY*)*entries_mem_size);
+    if (no_of_species>allocated_entries) {
+        allocated_entries = no_of_species;
+        realloc_unleaked(entries, sizeof(DI_ENTRY*)*allocated_entries);
         if (!entries) return "out of memory";
     }
 
@@ -484,7 +484,7 @@ GB_ERROR DI_MATRIX::load(LoadWhat what, const MatrixOrder& order, bool show_warn
     for (size_t i = 0; i<no_of_species && !error; ++i) {
         DI_ENTRY *phentry = new DI_ENTRY(species_to_load[i]->gbd, this);
         if (phentry->sequence) {    // a species found
-            arb_assert(nentries<entries_mem_size);
+            arb_assert(nentries<allocated_entries);
             entries[nentries++] = phentry;
         }
         else {
@@ -1257,7 +1257,7 @@ static void di_calculate_tree_cb(AW_window *aww, WeightedFilter *weighted_filter
         }
 
         DI_MATRIX  *matr  = GLOBAL_MATRIX.get();
-        char      **names = (char **)calloc(sizeof(char *), (size_t)matr->nentries+2);
+        char      **names = (char **)ARB_calloc((size_t)matr->nentries+2, sizeof(*names));
 
         for (size_t i=0; i<matr->nentries; i++) {
             names[i] = matr->entries[i]->name;

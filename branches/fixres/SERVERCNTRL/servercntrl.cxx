@@ -357,7 +357,7 @@ arb_params *arb_trace_argv(int *argc, const char **argv)
 {
     int s, d;
 
-    arb_params *erg = (arb_params *)calloc(sizeof(arb_params), 1);
+    arb_params *erg = (arb_params *)ARB_calloc(1, sizeof(*erg));
     erg->db_server  = strdup(":");
     erg->job_server = strdup("ARB_JOB_SERVER");
     erg->mgr_server = strdup("ARB_MGR_SERVER");

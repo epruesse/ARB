@@ -319,7 +319,7 @@ AWT_distance_meter::AWT_distance_meter(const AWT_translator *translator) {
     int realmax_aa = translator->RealmaxAA();
 
     for (s = 0; s< max_aa; s++) {
-        dist_[s] = (AWT_PDP *)calloc(sizeof(AWT_PDP), max_aa);
+        dist_[s] = (AWT_PDP *)ARB_calloc(max_aa, sizeof(*dist_[s]));
 
         const arb_r2a_pro_2_nuc *s2str = translator->S2str(translator->Index2Spro(s));
         for (i=0; i<3; i++) {

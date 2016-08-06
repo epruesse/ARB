@@ -99,7 +99,7 @@ PH_NEIGHBOURJOINING::PH_NEIGHBOURJOINING(const AP_smatrix& smatrix) {
     swap_tab  = new long[size];
     for (long i=0; i<swap_size; i++) swap_tab[i] = i;
 
-    net_divergence = (AP_FLOAT *)calloc(sizeof(AP_FLOAT), (size_t)size);
+    net_divergence = (AP_FLOAT *)ARB_calloc(size, sizeof(*net_divergence));
 
     dist_list_size = size;                                  // hope to be the best
     dist_list      = new PH_NEIGHBOUR_DIST[dist_list_size]; // the roots, no elems
@@ -213,7 +213,7 @@ TreeNode *neighbourjoining(const char *const *names, const AP_smatrix& smatrix, 
     // size: size of matrix
 
     PH_NEIGHBOURJOINING   nj(smatrix);
-    TreeNode            **nodes = (TreeNode **)calloc(sizeof(TreeNode *), smatrix.size());
+    TreeNode            **nodes = (TreeNode **)ARB_calloc(smatrix.size(), sizeof(*nodes));
 
     for (size_t i=0; i<smatrix.size(); i++) {
         nodes[i] = troot->makeNode();

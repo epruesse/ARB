@@ -482,12 +482,13 @@ void di_protdist::predict(double /* tt */, long nb1, long  nb2) {
 }
 
 void di_protdist::build_predikt_table(int pos) {
-    int             b1, b2;
+    int    b1, b2;
     double tt = pos_2_tt(pos);
     build_exptteig(tt);
-    akt_slopes = slopes[pos] = (di_paa_matrix *) calloc(sizeof(di_paa_matrix), 1);
-    akt_curves = curves[pos] = (di_paa_matrix *) calloc(sizeof(di_paa_matrix), 1);
-    akt_infs = infs[pos] = (di_bool_matrix *) calloc(sizeof(di_bool_matrix), 1);
+
+    akt_slopes = slopes[pos] = (di_paa_matrix *) ARB_calloc(1, sizeof(*akt_slopes));
+    akt_curves = curves[pos] = (di_paa_matrix *) ARB_calloc(1, sizeof(*akt_curves));
+    akt_infs   = infs[pos]   = (di_bool_matrix *)ARB_calloc(1, sizeof(*akt_infs));
 
     for (b1 = ALA; b1 < DI_MAX_PAA; b1++) {
         for (b2 = ALA; b2 <= b1; b2++) {

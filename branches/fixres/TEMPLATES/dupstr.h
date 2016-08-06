@@ -60,7 +60,7 @@ inline void reassign(char *& dstvar, char *& srcvar) {
 }
 
 template<typename T>
-inline void realloc_unleaked(T*& ptr, size_t new_size) {
+inline void realloc_unleaked(T*& ptr, size_t new_size) { // @@@ replace by ARB_realloc
     T *new_ptr = (T*)realloc(ptr, new_size);
     if (!new_ptr) free(ptr);
     ptr = new_ptr;

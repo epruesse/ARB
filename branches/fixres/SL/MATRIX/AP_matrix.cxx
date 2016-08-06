@@ -28,7 +28,7 @@ AP_smatrix::AP_smatrix(size_t si)
     size_t headsize = Size * sizeof(*m);
     size_t datasize = elements * sizeof(*(m[0]));
 
-    m    = (AP_FLOAT**)calloc(1, headsize+datasize);
+    m    = (AP_FLOAT**)ARB_calloc(headsize+datasize, 1);
     m[0] = (AP_FLOAT*)(((char*)m)+headsize);
 
     for (size_t i=1; i<si; i++) {
@@ -54,9 +54,9 @@ AP_FLOAT AP_smatrix::get_max_value() const { // O(n*2)
 //      AP_matrix
 
 AP_matrix::AP_matrix(long si) {
-    m = (AP_FLOAT **)calloc(sizeof(AP_FLOAT *), (size_t)si);
+    m = (AP_FLOAT **)ARB_calloc(si, sizeof(*m));
     for (long i=0; i<si; i++) {
-        m[i] = (AP_FLOAT *)calloc(sizeof(AP_FLOAT), (size_t)(si));
+        m[i] = (AP_FLOAT *)ARB_calloc(si, sizeof(*m[i]));
     }
     size = si;
 }

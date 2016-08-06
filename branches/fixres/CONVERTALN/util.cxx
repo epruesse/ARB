@@ -81,7 +81,7 @@ void warningf(int warning_num, const char *warning_messagef, ...) { // __ATTR__F
     }
 }
 
-char *Reallocspace(void *block, unsigned int size) {
+char *Reallocspace(void *block, unsigned int size) { // @@@ replace by ARB_realloc
     // Realloc a continue space, expand or shrink the original space.
     char *temp;
 
@@ -91,7 +91,7 @@ char *Reallocspace(void *block, unsigned int size) {
     }
 
     if (block == NULL) {
-        temp = (char *)calloc(1, size);
+        temp = (char *)ARB_calloc(size, 1);
     }
     else {
         temp = (char *)realloc(block, size);

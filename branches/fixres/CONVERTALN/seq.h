@@ -70,8 +70,7 @@ public:
         id  = NULL;
         len = 0;
         max = INITSEQ;
-        seq = (char *)calloc(1, (unsigned)(sizeof(char) * INITSEQ + 1));
-
+        seq = (char *)ARB_calloc(1, INITSEQ+1);
     }
     ~Seq() {
         ca_assert(seq); // otherwise 'this' is useless!

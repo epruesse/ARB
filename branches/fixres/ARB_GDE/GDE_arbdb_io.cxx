@@ -74,7 +74,7 @@ __ATTR__USERESULT static int InsertDatainGDE(NA_Alignment&     dataset,
 
     GB_ERROR error = filter->is_invalid();
     if (!error) {
-        size_t *seqlen=(size_t *)calloc((unsigned int)numberspecies, sizeof(size_t));
+        size_t *seqlen = (size_t *)ARB_calloc((unsigned int)numberspecies, sizeof(size_t));
         // sequences may have different length
         {
             unsigned long i;
@@ -98,7 +98,7 @@ __ATTR__USERESULT static int InsertDatainGDE(NA_Alignment&     dataset,
         }
 
         // store (compressed) sequence data in array:
-        uchar             **sequfilt = (uchar**)calloc((unsigned int)numberspecies+1, sizeof(uchar*));
+        uchar             **sequfilt = (uchar**)ARB_calloc((unsigned int)numberspecies+1, sizeof(*sequfilt));
         GB_alignment_type   alitype  = GBT_get_alignment_type(dataset.gb_main, dataset.alignment_name);
 
         if (compress==COMPRESS_ALL) { // compress all gaps and filter positions
@@ -106,7 +106,7 @@ __ATTR__USERESULT static int InsertDatainGDE(NA_Alignment&     dataset,
             unsigned long i;
 
             for (i=0; i<numberspecies; i++) {
-                sequfilt[i]   = (uchar*)calloc((unsigned int)len+1, sizeof(uchar));
+                sequfilt[i]   = (uchar*)ARB_calloc((unsigned int)len+1, sizeof(*sequfilt[i]));
                 long newcount = 0;
                 for (unsigned long col=0; (col<maxalignlen); col++) {
                     char c = the_sequences[i][col];
@@ -376,7 +376,7 @@ int ReadArbdb(NA_Alignment& dataset, bool marked, AP_filter *filter, GapCompress
         aw_message(GBS_global_string("Skipped %li species which did not contain data in '%s'", missingdata, dataset.alignment_name));
     }
 
-    the_species   = (GBDATA**)calloc((unsigned int)numberspecies+1, sizeof(GBDATA*));
+    the_species   = (GBDATA**)ARB_calloc((unsigned int)numberspecies+1, sizeof(*the_species));
     numberspecies = 0;
 
     if (marked) gb_species = GBT_first_marked_species_rel_species_data(gb_species_data);
@@ -393,7 +393,7 @@ int ReadArbdb(NA_Alignment& dataset, bool marked, AP_filter *filter, GapCompress
     }
 
     long   maxalignlen   = GBT_get_alignment_len(db_access.gb_main, dataset.alignment_name);
-    char **the_sequences = (char**)calloc((unsigned int)numberspecies+1, sizeof(char*));
+    char **the_sequences = (char**)ARB_calloc((unsigned int)numberspecies+1, sizeof(*the_sequences));
 
     for (long i=0; the_species[i]; i++) {
         the_sequences[i] = (char *)ARB_alloc((size_t)maxalignlen+1);

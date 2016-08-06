@@ -368,10 +368,8 @@ int ED4_members::members_ok() const {
 #endif // ASSERTION_USED
 
 ED4_members::ED4_members(ED4_manager *the_owner) {
-    my_owner   = the_owner;
-    memberList = (ED4_base **) calloc(1, sizeof(ED4_base*));
-    if (!memberList) GBK_terminate("out of memory");
-
+    my_owner      = the_owner;
+    memberList    = (ED4_base **)ARB_calloc(1, sizeof(*memberList));
     memberList[0] = NULL;
     no_of_members = 0;
     size_of_list  = 1;

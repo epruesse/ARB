@@ -84,10 +84,10 @@ const char *AP_pos_var::parsimony(TreeNode *tree, GB_UINT4 *bases, GB_UINT4 *tba
         }
     }
     else {
-        GB_UINT4 *ls  = (GB_UINT4 *)calloc(sizeof(GB_UINT4), (int)ali_len);
-        GB_UINT4 *rs  = (GB_UINT4 *)calloc(sizeof(GB_UINT4), (int)ali_len);
-        GB_UINT4 *lts = (GB_UINT4 *)calloc(sizeof(GB_UINT4), (int)ali_len);
-        GB_UINT4 *rts = (GB_UINT4 *)calloc(sizeof(GB_UINT4), (int)ali_len);
+        GB_UINT4 *ls  = (GB_UINT4*)ARB_calloc(ali_len, sizeof(*ls));
+        GB_UINT4 *rs  = (GB_UINT4*)ARB_calloc(ali_len, sizeof(*rs));
+        GB_UINT4 *lts = (GB_UINT4*)ARB_calloc(ali_len, sizeof(*lts));
+        GB_UINT4 *rts = (GB_UINT4*)ARB_calloc(ali_len, sizeof(*rts));
 
         if (!error) error = this->parsimony(tree->get_leftson(), ls, lts);
         if (!error) error = this->parsimony(tree->get_rightson(), rs, rts);
@@ -169,13 +169,13 @@ GB_ERROR AP_pos_var::retrieve(TreeNode *tree) {
         int j;
         if ((j = char_2_freq[i])) {
             if (!frequencies[j]) {
-                frequencies[j] = (GB_UINT4 *)calloc(sizeof(GB_UINT4), (int)ali_len);
+                frequencies[j] = (GB_UINT4*)ARB_calloc(ali_len, sizeof(*frequencies[i]));
             }
         }
     }
 
-    transitions = (GB_UINT4 *)calloc(sizeof(GB_UINT4), (int)ali_len);
-    transversions = (GB_UINT4 *)calloc(sizeof(GB_UINT4), (int)ali_len);
+    transitions   = (GB_UINT4*)ARB_calloc(ali_len, sizeof(*transitions));
+    transversions = (GB_UINT4*)ARB_calloc(ali_len, sizeof(*transversions));
 
     error = this->parsimony(tree);
 
@@ -210,8 +210,8 @@ GB_ERROR AP_pos_var::save_sai(const char *sai_name) {
         }
 
         if (!error) {
-            char *data = (char*)calloc(1, (int)ali_len+1);
-            int  *sum  = (int*)calloc(sizeof(int), (int)ali_len);
+            char *data = (char*)ARB_calloc(ali_len+1, 1);
+            int  *sum  = (int*)ARB_calloc(ali_len, sizeof(*sum));
 
             for (int j=0; j<256 && !error; j++) {                   // get sum of frequencies
                 if (frequencies[j]) {

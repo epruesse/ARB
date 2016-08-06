@@ -487,8 +487,8 @@ char *ArbImporter::read_line(int tab, char *sequencestart, char *sequenceend) {
     const int    BUFSIZE   = 8000;
     const char  *SEPARATOR = "|";   // line separator
 
-    if (!ifo->b1) ifo->b1 = (char*)calloc(BUFSIZE, 1);
-    if (!ifo->b2) ifo->b2 = (char*)calloc(BUFSIZE, 1);
+    if (!ifo->b1) ifo->b1 = (char*)ARB_calloc(BUFSIZE, 1);
+    if (!ifo->b2) ifo->b2 = (char*)ARB_calloc(BUFSIZE, 1);
     if (!in) {
         if (next_file()) {
             if (in_queue) {

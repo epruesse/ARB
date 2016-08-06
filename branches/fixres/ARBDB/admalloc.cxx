@@ -426,7 +426,7 @@ static char *gbm_get_memblk(size_t size) {
 
         if (block->content.magic!=GBB_MAGIC) { imemerr("bad magic number if free block"); return NULL; }
         *blockPtr = block->content.next;
-        memset((char*)&(block->content), 0, size);  // act like calloc()
+        memset((char*)&(block->content), 0, size);  // act like calloc
 
 #ifdef DUMP_MEMBLKS
         printf("using unused block "
