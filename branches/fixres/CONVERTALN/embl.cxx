@@ -412,7 +412,7 @@ static char *etog_journal(const char *eJournal) {
             if (p1) {
                 const char *p2 = strchr(p1+1, ')');
                 if (p2 && strcmp(p2+1, ".\n") == 0) {
-                    new_journal = Reallocspace(new_journal, str0len(eJournal)+1+1);
+                    ARB_realloc(new_journal, str0len(eJournal)+1+1);
 
                     int l1 = colon-eJournal;
                     int l2 = p1-colon-1;

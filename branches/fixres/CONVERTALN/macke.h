@@ -22,7 +22,7 @@ class Macke : public InputFormat { // derived from a Noncopyable
     void add_remark_nocopy(char *rem) {
         if (numofrem >= allocated) {
             allocated = allocated*1.5+10;
-            remarks   = (char**)Reallocspace(remarks, sizeof(*remarks)*allocated);
+            ARB_realloc(remarks, allocated);
         }
         ca_assert(allocated>numofrem);
         remarks[numofrem++] = rem;
