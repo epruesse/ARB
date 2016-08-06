@@ -241,6 +241,7 @@ AW_device.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_device.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_device.o: $(ARBHOME)/INCLUDE/arb_defs.h
 AW_device.o: $(ARBHOME)/INCLUDE/arb_error.h
+AW_device.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AW_device.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AW_device.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AW_device.o: $(ARBHOME)/INCLUDE/arbtools.h

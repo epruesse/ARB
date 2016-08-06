@@ -59,13 +59,6 @@ inline void reassign(char *& dstvar, char *& srcvar) {
     srcvar = NULL;
 }
 
-template<typename T>
-inline void realloc_unleaked(T*& ptr, size_t new_size) { // @@@ replace by ARB_realloc
-    T *new_ptr = (T*)realloc(ptr, new_size);
-    if (!new_ptr) free(ptr);
-    ptr = new_ptr;
-}
-
 #endif // __cplusplus
 
 // helper to use char as array index:

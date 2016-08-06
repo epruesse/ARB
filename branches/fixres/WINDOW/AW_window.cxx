@@ -2087,11 +2087,12 @@ AW_color_idx AW_window::alloc_named_data_color(int colnum, const char *colorname
     }
     else {
         if (colnum>=color_table_size) {
-            long new_size  = colnum+8;
-            realloc_unleaked(color_table, new_size*sizeof(AW_rgb)); // valgrinders : never freed because AW_window never is freed
-            if (!color_table) GBK_terminate("out of memory");
-            for (int i = color_table_size; i<new_size; ++i) color_table[i] = AW_NO_COLOR;
-            color_table_size                                               = new_size;
+            long new_size = colnum+8;
+            ARB_realloc(color_table, new_size);
+            for (int i = color_table_size; i<new_size; ++i) {
+                color_table[i] = AW_NO_COLOR;
+            }
+            color_table_size = new_size;
         }
     }
     XColor xcolor_returned, xcolor_exakt;

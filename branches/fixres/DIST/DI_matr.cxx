@@ -475,8 +475,7 @@ GB_ERROR DI_MATRIX::load(LoadWhat what, const MatrixOrder& order, bool show_warn
 
     if (no_of_species>allocated_entries) {
         allocated_entries = no_of_species;
-        realloc_unleaked(entries, sizeof(DI_ENTRY*)*allocated_entries);
-        if (!entries) return "out of memory";
+        ARB_realloc(entries, allocated_entries);
     }
 
     GB_ERROR     error = NULL;
