@@ -26,6 +26,9 @@
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
 #endif
+#ifndef ARB_MEM_H
+#include <arb_mem.h>
+#endif
 
 
 typedef unsigned int PELEM;
@@ -55,7 +58,7 @@ public:
     PELEM get_cutmask() const { return cutmask; }
 
     PART *create_root() const;
-    PELEM *alloc_mem() const { return (PELEM*)getmem(get_longs()*sizeof(PELEM)); }
+    PELEM *alloc_mem() const { return (PELEM*)ARB_calloc(get_longs(), sizeof(PELEM)); }
 };
 
 class PART {
