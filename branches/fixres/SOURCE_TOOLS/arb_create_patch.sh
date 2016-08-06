@@ -23,7 +23,7 @@ else
             IGNORE_WHITE_PATCH=./latest_iwhite.patch
             WHITE_PATCH=./white.patch
 
-            svn diff > $PATCH
+            svn diff > $PATCH.tmp ; mv $PATCH.tmp $PATCH
             
             if [ -e $PATCH ]; then
                 if [ ! -s $PATCH ]; then
@@ -49,11 +49,14 @@ else
                         rm $PATCH
                         rm -f $INTERDIFF_PATCH
                     else
-                        (   svn diff -x -b > $IGNORE_WHITE_PATCH ; \
-                            interdiff $PATCH $IGNORE_WHITE_PATCH > $WHITE_PATCH ) &
+                        (   svn diff -x -b > $IGNORE_WHITE_PATCH.tmp ; \
+                            mv $IGNORE_WHITE_PATCH.tmp $IGNORE_WHITE_PATCH ; \
+                            interdiff $PATCH $IGNORE_WHITE_PATCH > $WHITE_PATCH.tmp ; \
+                            mv $WHITE_PATCH.tmp $WHITE_PATCH ) &
 
                         if [ $INTER != 0 ]; then
-                            interdiff -w $RECENT_PATCH $PATCH > $INTERDIFF_PATCH
+                            interdiff -w $RECENT_PATCH $PATCH > $INTERDIFF_PATCH.tmp
+                            mv $INTERDIFF_PATCH.tmp $INTERDIFF_PATCH
                         else
                             rm -f $INTERDIFF_PATCH
                         fi
