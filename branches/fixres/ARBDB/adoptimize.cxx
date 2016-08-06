@@ -2275,7 +2275,7 @@ static GB_DICTIONARY *gb_create_dictionary(O_gbdByKey *gbk, long maxmem) {
             word_sum += wordLen;
 #endif
 
-            if (offset-overlap+wordLen > dict->textlen) { // if not enough space allocated -> realloc dictionary string
+            if (offset-overlap+wordLen > dict->textlen) { // if not enough space allocated -> reallocate dictionary string
                 u_str ntext = (u_str)gbm_get_mem(dict->textlen+DICT_STRING_INCR, GBM_DICT_INDEX);
 
                 memcpy(ntext, dict->text, dict->textlen);

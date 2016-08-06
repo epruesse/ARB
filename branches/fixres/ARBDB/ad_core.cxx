@@ -712,16 +712,8 @@ void gb_write_index_key(GBCONTAINER *father, long index, GBQUARK new_index) {
 
 void gb_create_key_array(GB_MAIN_TYPE *Main, int index) {
     if (index >= Main->sizeofkeys) {
-        Main->sizeofkeys = index*3/2+1;
-        if (Main->keys) {
-            Main->keys = (gb_Key *)realloc(Main->keys, sizeof(gb_Key) * (size_t)Main->sizeofkeys);
-            memset((char *)&(Main->keys[Main->keycnt]), 0, sizeof(gb_Key) * (size_t) (Main->sizeofkeys - Main->keycnt));
-        }
-        else {
-            Main->sizeofkeys = 1000;
-            if (index>=Main->sizeofkeys) Main->sizeofkeys = index+1;
-            Main->keys = (gb_Key *)ARB_calloc(sizeof(gb_Key), (size_t)Main->sizeofkeys);
-        }
+        Main->sizeofkeys = Main->keys ? index*3/2+1 : 1000;
+        ARB_recalloc(Main->keys, Main->keycnt, Main->sizeofkeys);
         for (int i = Main->keycnt; i < Main->sizeofkeys; i++) {
             Main->keys[i].compression_mask = -1;
         }

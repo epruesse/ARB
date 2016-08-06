@@ -182,10 +182,7 @@ GB_ERROR ArbTcpDat::read(int *versionFound) {
 
                     if (entries == entries_allocated) {
                         entries_allocated = (int)(entries_allocated*1.5);
-                        char **entry2     = (char**)realloc(entry, entries_allocated*sizeof(*entry));
-
-                        if (!entry2) error = "Out of memory";
-                        else entry = entry2;
+                        ARB_realloc(entry, entries_allocated);
                     }
                     if (!error) {
                         entry[entries++] = data;
@@ -199,17 +196,11 @@ GB_ERROR ArbTcpDat::read(int *versionFound) {
             for (t = 0; t<tokCount; t++) freenull(tokens[t]);
         }
 
-        content = (char**)realloc(entry, (entries+1)*sizeof(*entry));
+        ARB_realloc(entry, entries+1);
 
-        if (!content) {
-            error       = "Out of memory";
-            serverCount = 0;
-            free(entry);
-        }
-        else {
-            content[entries] = 0;
-            serverCount      = entries;
-        }
+        content          = entry;
+        content[entries] = 0;
+        serverCount      = entries;
 
         free(tokens);
         fclose(in);

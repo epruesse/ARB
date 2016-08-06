@@ -54,7 +54,7 @@ GBS_strstruct *GBS_stropen(long init_size) {
         if ((size_t)init_size*10 < strstr->get_buffer_size()) oversized_counter++;
         else oversized_counter = 0;
 
-        if (oversized_counter>10) {                 // was oversized more than 10 times -> realloc
+        if (oversized_counter>10) {                 // was oversized more than 10 times -> allocate smaller block
             size_t dummy;
             free(strstr->release_mem(dummy));
             strstr->alloc_mem(init_size);

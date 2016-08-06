@@ -517,11 +517,9 @@ void gb_local_data::announce_db_open(GB_MAIN_TYPE *Main) {
     gb_assert(Main);
     int idx = open_dbs();
     if (idx >= open_gb_alloc) {
-        int            new_alloc = open_gb_alloc+10;
-        GB_MAIN_TYPE **new_mains = (GB_MAIN_TYPE**)realloc(open_gb_mains, new_alloc*sizeof(*new_mains));
-        memset(new_mains+open_gb_alloc, 0, 10*sizeof(*new_mains));
-        open_gb_alloc            = new_alloc;
-        open_gb_mains            = new_mains;
+        int new_alloc = open_gb_alloc + 10;
+        ARB_recalloc(open_gb_mains, open_gb_alloc, new_alloc);
+        open_gb_alloc = new_alloc;
     }
     open_gb_mains[idx] = Main;
     openedDBs++;

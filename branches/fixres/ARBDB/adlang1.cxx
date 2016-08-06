@@ -2069,14 +2069,7 @@ static GB_ERROR gbl_format_sequence(GBL_command_arguments *args) {
                 { // check for array overflow
                     size_t used_size = dst-result;
                     gb_assert(used_size <= needed_size);
-
-                    char *new_result = (char*)realloc(result, used_size);
-                    if (!new_result) {
-                        error = "Out of memory";
-                    }
-                    else {
-                        result = new_result;
-                    }
+                    ARB_realloc(result, used_size);
                 }
 #endif // DEBUG
             }
