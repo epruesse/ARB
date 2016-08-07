@@ -31,24 +31,6 @@ namespace arb_mem {
         int error = posix_memalign(tgt, alignment, len);
         if (error) failed_to_allocate(strerror(error));
     }
-
-    template<class TYPE>
-    inline void re_alloc(TYPE*& tgt, size_t nelem, size_t elsize) {
-        size_t nsize = nelem*elsize;
-
-        tgt = (TYPE*)realloc(tgt, nsize);
-        if (!tgt) arb_mem::failed_to_allocate(nelem, elsize);
-    }
-    template<class TYPE>
-    inline void re_calloc(TYPE*& tgt, size_t oelem, size_t nelem, size_t elsize) {
-        size_t nsize = nelem*elsize;
-
-        tgt = (TYPE*)realloc(tgt, nsize);
-        if (!tgt) arb_mem::failed_to_allocate(nelem, elsize);
-
-        size_t osize = oelem*elsize;
-        if (nsize>osize) memset(((char*)tgt)+osize, 0, nsize-osize);
-    }
 };
 
 template<class TYPE>
@@ -60,14 +42,14 @@ inline void ARB_alloc_aligned(TYPE*& tgt, size_t nelems) {
 template<class TYPE>
 inline void ARB_realloc(TYPE*& tgt, size_t nelem) {
     /*! reallocate memoryblock to fit 'nelem' entries (terminate on failure) */
-    arb_mem::re_alloc(tgt, nelem, sizeof(TYPE));
+    tgt = (TYPE*)realloc(tgt, nelem*sizeof(TYPE));
+    if (!tgt) arb_mem::failed_to_allocate(nelem, sizeof(TYPE));
 }
 template<class TYPE>
 inline void ARB_recalloc(TYPE*& tgt, size_t oelem, size_t nelem) {
     /*! reallocate memoryblock to fit 'nelem' entries (partially cleared if 'oelem<nelem'; terminate on failure) */
-    if (oelem != nelem) {
-        arb_mem::re_calloc(tgt, oelem, nelem, sizeof(TYPE));
-    }
+    ARB_realloc(tgt, nelem);
+    if (nelem>oelem) memset(tgt+oelem, 0, (nelem-oelem)*sizeof(TYPE));
 }
 
 inline void *ARB_alloc(size_t size) {
