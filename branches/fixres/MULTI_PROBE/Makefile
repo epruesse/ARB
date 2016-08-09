@@ -56,7 +56,9 @@ MP_Generation.o: $(ARBHOME)/INCLUDE/aisc_global.h
 MP_Generation.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MP_Generation.o: $(ARBHOME)/INCLUDE/arb_core.h
 MP_Generation.o: $(ARBHOME)/INCLUDE/arb_error.h
+MP_Generation.o: $(ARBHOME)/INCLUDE/arb_mem.h
 MP_Generation.o: $(ARBHOME)/INCLUDE/arb_progress.h
+MP_Generation.o: $(ARBHOME)/INCLUDE/arb_string.h
 MP_Generation.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 MP_Generation.o: $(ARBHOME)/INCLUDE/arbtools.h
 MP_Generation.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -82,6 +84,8 @@ MP_GenerationDuplicates.o: SoTl.hxx
 MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/aisc_global.h
 MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/arb_core.h
+MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/arb_mem.h
+MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/arb_string.h
 MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/arbtools.h
 MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -110,6 +114,8 @@ MP_main.o: $(ARBHOME)/INCLUDE/aisc_global.h
 MP_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MP_main.o: $(ARBHOME)/INCLUDE/arb_core.h
 MP_main.o: $(ARBHOME)/INCLUDE/arb_error.h
+MP_main.o: $(ARBHOME)/INCLUDE/arb_mem.h
+MP_main.o: $(ARBHOME)/INCLUDE/arb_string.h
 MP_main.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 MP_main.o: $(ARBHOME)/INCLUDE/arbtools.h
 MP_main.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -239,6 +245,8 @@ MP_permute.o: SoTl.hxx
 MP_permute.o: $(ARBHOME)/INCLUDE/aisc_global.h
 MP_permute.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MP_permute.o: $(ARBHOME)/INCLUDE/arb_core.h
+MP_permute.o: $(ARBHOME)/INCLUDE/arb_mem.h
+MP_permute.o: $(ARBHOME)/INCLUDE/arb_string.h
 MP_permute.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 MP_permute.o: $(ARBHOME)/INCLUDE/arbtools.h
 MP_permute.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -302,6 +310,8 @@ MP_probe_combi_statistic.o: SoTl.hxx
 MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/aisc_global.h
 MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/arb_core.h
+MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/arb_mem.h
+MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/arb_string.h
 MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/arbtools.h
 MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -327,6 +337,8 @@ MP_probe_tabs.o: SoTl.hxx
 MP_probe_tabs.o: $(ARBHOME)/INCLUDE/aisc_global.h
 MP_probe_tabs.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MP_probe_tabs.o: $(ARBHOME)/INCLUDE/arb_core.h
+MP_probe_tabs.o: $(ARBHOME)/INCLUDE/arb_mem.h
+MP_probe_tabs.o: $(ARBHOME)/INCLUDE/arb_string.h
 MP_probe_tabs.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 MP_probe_tabs.o: $(ARBHOME)/INCLUDE/arbtools.h
 MP_probe_tabs.o: $(ARBHOME)/INCLUDE/attributes.h

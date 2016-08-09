@@ -10,15 +10,14 @@
 // =============================================================== //
 
 #include "arb_file.h"
-#include <arb_assert.h>
+#include "arb_string.h"
+#include "arb_msg.h"
 
 #include <unistd.h>
 #include <utime.h>
 #include <sys/stat.h>
 #include <cstdio>
 #include <cerrno>
-
-#include "arb_msg.h"
 
 // AISC_MKPT_PROMOTE:#ifndef ARB_CORE_H
 // AISC_MKPT_PROMOTE:#include "arb_core.h"
@@ -266,13 +265,13 @@ char *GB_follow_unix_link(const char *path) {   // returns the real path of a fi
     int len = readlink(path, buffer, 999);
     if (len<0) return 0;
     buffer[len] = 0;
-    if (path[0] == '/') return strdup(buffer);
+    if (path[0] == '/') return ARB_strdup(buffer);
 
-    path2 = strdup(path);
+    path2 = ARB_strdup(path);
     pos = strrchr(path2, '/');
     if (!pos) {
         free(path2);
-        return strdup(buffer);
+        return ARB_strdup(buffer);
     }
     *pos = 0;
     res  = GBS_global_string_copy("%s/%s", path2, buffer);

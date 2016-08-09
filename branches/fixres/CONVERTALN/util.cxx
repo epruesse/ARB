@@ -282,7 +282,7 @@ int parse_key_word(const char *line, char *key, const char *separator) {
 //      FormattedFile
 
 FormattedFile::FormattedFile(const char *Name, Format Type)
-    : name_(strdup(Name)),
+    : name_(ARB_strdup(Name)),
       type_(Type)
 {}
 FormattedFile::~FormattedFile() {

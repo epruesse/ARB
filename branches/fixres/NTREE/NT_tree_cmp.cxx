@@ -231,11 +231,11 @@ GB_ERROR AWT_species_set_root::copy_node_information(FILE *log, bool delete_old_
                     cset->node->name = GB_read_string(gb_name);
                 }
                 else {
-                    cset->node->name = strdup("<gb_node w/o name>");
+                    cset->node->name = ARB_strdup("<gb_node w/o name>");
                 }
             }
 
-            old_group_name = strdup(cset->node->name); // store old_group_name to rename new inserted node
+            old_group_name = ARB_strdup(cset->node->name); // store old_group_name to rename new inserted node
 
             error = GB_delete(cset->node->gb_node);
             if (!error) {

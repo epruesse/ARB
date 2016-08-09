@@ -31,10 +31,10 @@
 AP_pos_var::AP_pos_var(GBDATA *gb_maini, char *ali_namei, long ali_leni, int isdna, char *tree_namei) {
     memset((char  *)this, 0, sizeof(AP_pos_var));
     gb_main   = gb_maini;
-    ali_name  = strdup(ali_namei);
+    ali_name  = ARB_strdup(ali_namei);
     is_dna    = isdna;
     ali_len   = ali_leni;
-    tree_name = strdup(tree_namei);
+    tree_name = ARB_strdup(tree_namei);
     progress  = NULL;
 }
 

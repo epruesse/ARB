@@ -11,13 +11,16 @@
 #ifndef READER_H
 #include "reader.h"
 #endif
+#ifndef ARB_STRING_H
+#include <arb_string.h>
+#endif
 
 class Macke : public InputFormat { // derived from a Noncopyable
     int    numofrem;            // num. of remarks
     char **remarks;             // remarks
     int    allocated;
 
-    char *create_id() const OVERRIDE { return strdup(seqabbr); }
+    char *create_id() const OVERRIDE { return ARB_strdup(seqabbr); }
 
     void add_remark_nocopy(char *rem) {
         if (numofrem >= allocated) {
@@ -65,7 +68,7 @@ public:
     char  *subspecies;          // subspecies
 
     Macke() {
-        seqabbr    = strdup("");
+        seqabbr    = ARB_strdup("");
         name       = no_content();
         atcc       = no_content();
         rna        = no_content();

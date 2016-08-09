@@ -732,10 +732,10 @@ static void probe_design_event(AW_window *aww, GBDATA *gb_main) {
             probe = strpbrk(match_info, "acgtuACGTU");
             if (probe) space = strchr(probe, ' ');
             if (probe && space) {
-                *space = 0; probe = strdup(probe); *space=' ';
+                *space = 0; probe = ARB_strdup(probe); *space=' ';
             }
             else {
-                probe = strdup("");
+                probe = ARB_strdup("");
             }
             PD.resultList->insert(match_info, probe);
             free(probe);

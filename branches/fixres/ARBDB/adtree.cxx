@@ -494,7 +494,7 @@ static TreeNode *gbt_read_tree_rek(char **data, long *startid, GBDATA **gb_tree_
                 if (gb_group_name) {
                     node->name = GB_read_string(gb_group_name);
                     if (!node->name || !node->name[0]) {
-                        char   *auto_rename = strdup("<missing groupname>");
+                        char   *auto_rename = ARB_strdup("<missing groupname>");
                         GBDATA *gb_main     = GB_get_root(gb_group_name);
 
                         const char *warn;
@@ -538,7 +538,7 @@ static TreeNode *gbt_read_tree_rek(char **data, long *startid, GBDATA **gb_tree_
             gb_assert(p1[0] == 1);
 
             *p1        = 0;
-            node->name = strdup(*data);
+            node->name = ARB_strdup(*data);
             *data      = p1+1;
         }
         else {
@@ -1328,7 +1328,7 @@ void TEST_copy_rename_delete_tree_order() {
                 GB_CSTR *species = GBT_get_names_of_species_in_tree(tree, &species_count);
 
                 StrArray species2;
-                for (int i = 0; species[i]; ++i) species2.put(strdup(species[i]));
+                for (int i = 0; species[i]; ++i) species2.put(ARB_strdup(species[i]));
 
                 TEST_EXPECT_EQUAL(species_count, leaf_count);
                 TEST_EXPECT_EQUAL(long(species_count), inner_nodes+1);

@@ -432,7 +432,7 @@ static void set_current_as_diffRef(bool enable) {
     ED4_terminal *refTerm = enable ? detect_current_ref_terminal() : NULL;
     if (!enable || refTerm) { // do not disable, if current terminal has wrong type
         set_diff_reference(refTerm);
-        if (refTerm) last_used_ref_term_name = strdup(refTerm->id);
+        if (refTerm) last_used_ref_term_name = ARB_strdup(refTerm->id);
     }
 }
 

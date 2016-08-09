@@ -84,7 +84,7 @@ static GB_ERROR read_import_format(const char *fullfile, import_format *ifo, boo
                 m->match      = GBS_remove_escape(s2);
                 m->type       = GB_STRING;
 
-                if (ifo->autotag) m->mtag = strdup(ifo->autotag); // will be overwritten by TAG command
+                if (ifo->autotag) m->mtag = ARB_strdup(ifo->autotag); // will be overwritten by TAG command
             }
             else if (MATCH_COMMAND("SRT"))         { reassign(m->srt, s2); }
             else if (MATCH_COMMAND("ACI"))         { reassign(m->aci, s2); }
@@ -191,7 +191,7 @@ static GB_ERROR read_import_format(const char *fullfile, import_format *ifo, boo
 }
 
 GB_ERROR ArbImporter::read_format(const char *file) {
-    char *fullfile = strdup(GB_path_in_ARBHOME(file));
+    char *fullfile = ARB_strdup(GB_path_in_ARBHOME(file));
 
     delete ifo;
     ifo = new import_format;

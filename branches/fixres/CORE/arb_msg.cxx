@@ -10,7 +10,6 @@
 // ================================================================ //
 
 #include <arb_msg_fwd.h>
-#include <arb_assert.h>
 #include <arb_string.h>
 #include <arb_backtrace.h>
 #include <smartptr.h>
@@ -530,7 +529,7 @@ char *GBK_singlequote(const char *arg) {
     /*! Enclose argument in single quotes (like 'arg') for POSIX shell commands.
      */
 
-    if (!arg[0]) return strdup("''");
+    if (!arg[0]) return ARB_strdup("''");
 
     GBS_strstruct  out(500);
     const char    *existing_quote = strchr(arg, '\'');

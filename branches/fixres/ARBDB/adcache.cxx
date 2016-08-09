@@ -284,7 +284,7 @@ char *gb_alloc_cache_index(GBENTRY *gbe, size_t size) {
     
 #if defined(GEN_CACHE_STATS)
     entry.reused     = 0;
-    entry.dbpath     = strdup(GB_get_db_path(gbe));
+    entry.dbpath     = ARB_strdup(GB_get_db_path(gbe));
 #endif                                              // GEN_CACHE_STATS
 
     gbe->cache_index = index;

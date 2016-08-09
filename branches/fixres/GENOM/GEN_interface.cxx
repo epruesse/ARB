@@ -45,7 +45,7 @@ using namespace std;
 // --------------------------------------------------------------------------------
 
 static void GEN_select_gene(GBDATA* /* gb_main */, AW_root *aw_root, const char *item_name) {
-    char *organism  = strdup(item_name);
+    char *organism  = ARB_strdup(item_name);
     char *gene = strchr(organism, '/');
 
     if (gene) {
@@ -69,7 +69,7 @@ static char *gen_get_gene_id(GBDATA * /* gb_main */, GBDATA *gb_gene) {
 }
 
 static GBDATA *gen_find_gene_by_id(GBDATA *gb_main, const char *id) {
-    char   *organism = strdup(id);
+    char   *organism = ARB_strdup(id);
     char   *gene     = strchr(organism, '/');
     GBDATA *result   = 0;
 
@@ -537,7 +537,7 @@ class LocationEditor : virtual Noncopyable { // GLE
 
 public:
     LocationEditor(AW_root *aw_root_, GBDATA *gb_main_, const char *tag_)
-        : tag(strdup(tag_)),
+        : tag(ARB_strdup(tag_)),
           aw_root(aw_root_),
           gb_main(gb_main_), 
           status(NULL),

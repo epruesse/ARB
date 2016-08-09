@@ -157,8 +157,8 @@ static bool test_accept_diff_lines(const char *line1, const char *line2, const d
     if (*line1++ != '-') return false;
     if (*line2++ != '+') return false;
 
-    char *dup1 = strdup(line1);
-    char *dup2 = strdup(line2);
+    char *dup1 = ARB_strdup(line1);
+    char *dup2 = ARB_strdup(line2);
 
     cutEOL(dup1); // side-effect: accepts missing trailing newline
     cutEOL(dup2);

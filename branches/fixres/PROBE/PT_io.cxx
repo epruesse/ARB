@@ -426,7 +426,7 @@ void TEST_CachedPtr() {
             CacheHandle<SmartCharPtr> p[P];
             const char *word[] = { "apple", "orange", "pie", "juice" };
 
-            for (int i = 0; i<P; ++i) p[i].assign(strdup(word[i]), cache);
+            for (int i = 0; i<P; ++i) p[i].assign(ARB_strdup(word[i]), cache);
             TEST_REJECT(p[0].is_cached());
             for (int i = 1; i<P; ++i) TEST_EXPECT_EQUAL(&*p[i].access(cache), word[i]);
 
@@ -436,7 +436,7 @@ void TEST_CachedPtr() {
             cache.resize(cache.size()-1);
             TEST_REJECT(p[1].is_cached()); // invalidated by resize
 
-            for (int i = P-1; i >= 0; --i) p[i].assign(strdup(word[P-1-i]), cache);
+            for (int i = P-1; i >= 0; --i) p[i].assign(ARB_strdup(word[P-1-i]), cache);
 
             for (int i = 0; i<2; ++i) TEST_EXPECT_EQUAL(&*p[i].access(cache), word[P-1-i]);
             for (int i = 2; i<P; ++i) TEST_REJECT(p[i].is_cached());

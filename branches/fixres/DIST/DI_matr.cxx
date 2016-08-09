@@ -304,7 +304,7 @@ DI_ENTRY::DI_ENTRY(const char *name_, DI_MATRIX *phmatrix_)
     : phmatrix(phmatrix_),
       full_name(NULL),
       sequence(NULL),
-      name(strdup(name_)),
+      name(ARB_strdup(name_)),
       group_nr(0)
 {}
 
@@ -1221,7 +1221,7 @@ static void di_calculate_tree_cb(AW_window *aww, WeightedFilter *weighted_filter
                     all_names->reserve(matr->nentries+2);
 
                     for (size_t i=0; i<matr->nentries; i++) {
-                        all_names->put(strdup(matr->entries[i]->name));
+                        all_names->put(ARB_strdup(matr->entries[i]->name));
                     }
                     ctree = new ConsensusTree(*all_names);
                 }

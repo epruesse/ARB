@@ -98,7 +98,7 @@ inline int an_stricmp(const char *s1, const char *s2) {
 
 
 static AN_revers *lookup_an_revers(AN_main *main, const char *shortname) {
-    char      *key        = an_strlwr(strdup(shortname));
+    char      *key        = an_strlwr(ARB_strdup(shortname));
     AN_revers *an_reverse = (AN_revers*)aisc_find_lib(&main->prevers, key);
 
     free(key);
@@ -110,7 +110,7 @@ static AN_shorts *lookup_an_shorts(AN_main *main, const char *identifier) {
     // 'identifier' is either '*acc*add_id' or 'name1*name2*S' (see get_short() for details)
     // 'add_id' is the value of an additional DB field and may be empty.
 
-    char      *key       = an_strlwr(strdup(identifier));
+    char      *key       = an_strlwr(ARB_strdup(identifier));
     AN_shorts *an_shorts = (AN_shorts*)aisc_find_lib(&main->pnames, key);
 
     free(key);
@@ -179,24 +179,24 @@ static void an_add_short(const AN_local */*locs*/, const char *new_name,
         sprintf(full_name, "%s sym", parsed_name);
     }
     else {
-        full_name = strdup(parsed_name);
+        full_name = ARB_strdup(parsed_name);
     }
 
     an_shorts = create_AN_shorts();
     an_revers = create_AN_revers();
 
-    an_shorts->mh.ident  = an_strlwr(strdup(new_name));
-    an_shorts->shrt      = strdup(shrt);
-    an_shorts->full_name = strdup(full_name);
-    an_shorts->acc       = strdup(acc);
-    an_shorts->add_id    = strdup(add_id);
+    an_shorts->mh.ident  = an_strlwr(ARB_strdup(new_name));
+    an_shorts->shrt      = ARB_strdup(shrt);
+    an_shorts->full_name = ARB_strdup(full_name);
+    an_shorts->acc       = ARB_strdup(acc);
+    an_shorts->add_id    = ARB_strdup(add_id);
 
     aisc_link(&aisc_main->pnames, an_shorts);
 
-    an_revers->mh.ident  = an_strlwr(strdup(shrt));
+    an_revers->mh.ident  = an_strlwr(ARB_strdup(shrt));
     an_revers->full_name = full_name;
-    an_revers->acc       = strdup(acc);
-    an_revers->add_id    = strdup(add_id);
+    an_revers->acc       = ARB_strdup(acc);
+    an_revers->add_id    = ARB_strdup(add_id);
 
     aisc_link(&aisc_main->prevers, an_revers);
 
@@ -252,7 +252,7 @@ static char *nas_string_2_name(const char *str) {
 #if defined(DUMP_NAME_CREATION)
     printf("nas_string_2_name('%s') = '%s'\n", org_str, buf);
 #endif // DUMP_NAME_CREATION
-    return strdup(buf);
+    return ARB_strdup(buf);
 }
 
 static char *nas_remove_small_vocals(const char *str) {
@@ -275,7 +275,7 @@ static char *nas_remove_small_vocals(const char *str) {
 #if defined(DUMP_NAME_CREATION)
     printf("nas_remove_small_vocals('%s') = '%s'\n", org_str, buf);
 #endif // DUMP_NAME_CREATION
-    return strdup(buf);
+    return ARB_strdup(buf);
 }
 
 static void an_complete_shrt(char *shrt, const char *rest_of_full) {
@@ -342,10 +342,10 @@ static char *an_get_short(AN_shorts *IF_ASSERTION_USED(shorts), dll_public *pare
     na_assert(full);
     na_assert(shorts == aisc_main->shorts1); // otherwise prefix_hash does not work!
 
-    if (full[0]==0) return strdup("ZZZ");
+    if (full[0]==0) return ARB_strdup("ZZZ");
 
     const char *result = 0;
-    char *full1  = strdup(full);
+    char *full1  = ARB_strdup(full);
     an_autocaps(full1);
 
     char *full2 = nas_string_2_name(full1);
@@ -354,7 +354,7 @@ static char *an_get_short(AN_shorts *IF_ASSERTION_USED(shorts), dll_public *pare
     if (look) {                 // name is already known
         free(full2);
         free(full1);
-        return strdup(look->shrt);
+        return ARB_strdup(look->shrt);
     }
 
     char *full3 = 0;
@@ -469,8 +469,8 @@ static char *an_get_short(AN_shorts *IF_ASSERTION_USED(shorts), dll_public *pare
 #endif    // DUMP_NAME_CREATION
 
         look           = create_AN_shorts();
-        look->mh.ident = strdup(full2);
-        look->shrt     = strdup(result);
+        look->mh.ident = ARB_strdup(full2);
+        look->shrt     = ARB_strdup(result);
         aisc_link((dllpublic_ext*)parent, (dllheader_ext*)look);
 
         aisc_main->touched = 1;
@@ -486,7 +486,7 @@ static char *an_get_short(AN_shorts *IF_ASSERTION_USED(shorts), dll_public *pare
     free(full2);
     free(full1);
 
-    return strdup(result);
+    return ARB_strdup(result);
 }
 
 // --------------------------------------------------------------------------------
@@ -670,7 +670,7 @@ aisc_string get_short(const AN_local *locs) {
             an_shorts = 0;
         }
         else {
-            shrt = strdup(an_shorts->shrt);
+            shrt = ARB_strdup(an_shorts->shrt);
         }
     }
     if (!shrt) { // now there is no short name (or an illegal one)
@@ -683,15 +683,15 @@ aisc_string get_short(const AN_local *locs) {
         if (locs->advice[0]) {
             char *advice = make_alpha(locs->advice);
 
-            first_advice = strdup(advice);
+            first_advice = ARB_strdup(advice);
             if (strlen(advice) > 3) {
-                second_advice = strdup(advice+3);
+                second_advice = ARB_strdup(advice+3);
                 first_advice[3] = 0;
             }
         }
 
-        if (!first_advice) first_advice = strdup("ZZZ");
-        if (!second_advice) second_advice = strdup("ZZZZZ");
+        if (!first_advice) first_advice = ARB_strdup("ZZZ");
+        if (!second_advice) second_advice = ARB_strdup("ZZZZZ");
 
         char *first_short;
         int   first_len;
@@ -699,7 +699,7 @@ aisc_string get_short(const AN_local *locs) {
             const char *first_name = info.get_first_name();
             first_short      = first_name[0]
                 ? an_get_short(aisc_main->shorts1, &(aisc_main->pshorts1), first_name)
-                : strdup(first_advice);
+                : ARB_strdup(first_advice);
 
             na_assert(first_short);
 
@@ -763,7 +763,7 @@ aisc_string get_short(const AN_local *locs) {
         if (lookup_an_revers(aisc_main, test_short)) {
             if (!nameModHash) nameModHash = GBS_create_hash(100, GB_IGNORE_CASE);
 
-            char *test_short_dup = strdup(test_short);
+            char *test_short_dup = ARB_strdup(test_short);
 
             long count    = 2; // start numbering with 'SomName2' (not 'SomName1')
             test_short[7] = 0; // store, max. 7 chars in nameModHash (at least one digit is used)
@@ -911,7 +911,7 @@ aisc_string get_short(const AN_local *locs) {
 
         assert_alphanumeric(test_short);
 
-        shrt = strdup(test_short);
+        shrt = ARB_strdup(test_short);
         info.add_short(locs, shrt);
 
         free(first_short);
@@ -1048,7 +1048,7 @@ static void check_for_case_error(AN_main *main) {
             list<string> idents_to_recreate;
 
             for (AN_shorts *shrt =  main->shorts1; shrt;) {
-                char      *cap_name = strdup(shrt->shrt);
+                char      *cap_name = ARB_strdup(shrt->shrt);
                 an_autocaps(cap_name);
 
                 if (strcmp(cap_name, shrt->shrt) != 0) {
@@ -1072,7 +1072,7 @@ static void check_for_case_error(AN_main *main) {
         // now capitalize all short names
         for (AN_shorts *shrt =  main->names; shrt;) {
             AN_shorts *next     = shrt->next;
-            char      *cap_name = strdup(shrt->shrt);
+            char      *cap_name = ARB_strdup(shrt->shrt);
             an_autocaps(cap_name);
 
             if (strcmp(cap_name, shrt->shrt) != 0) {
@@ -1177,10 +1177,10 @@ static GB_ERROR server_load(AN_main *main)
         long nameCount =  0;
         for (shrt = main->names; shrt; shrt = shrt->next) {
             revers            = create_AN_revers();
-            revers->mh.ident  = an_strlwr(strdup(shrt->shrt));
-            revers->full_name = strdup(shrt->full_name);
-            revers->acc       = strdup(shrt->acc);
-            revers->add_id    = shrt->add_id ? strdup(shrt->add_id) : 0;
+            revers->mh.ident  = an_strlwr(ARB_strdup(shrt->shrt));
+            revers->full_name = ARB_strdup(shrt->full_name);
+            revers->acc       = ARB_strdup(shrt->acc);
+            revers->add_id    = shrt->add_id ? ARB_strdup(shrt->add_id) : 0;
             aisc_link(&main->prevers, revers);
             nameCount++;
         }
@@ -1289,7 +1289,7 @@ int ARB_main(int argc, char *argv[]) {
             GB_print_error();
             return EXIT_FAILURE;
         }
-        name = strdup(cname);
+        name = ARB_strdup(cname);
     }
 
     GB_ERROR error    = NULL;
@@ -1330,7 +1330,7 @@ int ARB_main(int argc, char *argv[]) {
     }
     AN_global.server_communication = so;
 
-    aisc_main->server_file     = strdup(params->default_file);
+    aisc_main->server_file     = ARB_strdup(params->default_file);
     aisc_main->server_filedate = GB_time_of_file(aisc_main->server_file);
 
     error = server_load(aisc_main);
@@ -1357,7 +1357,7 @@ int ARB_main(int argc, char *argv[]) {
                 else {
                     fputs("* using no add. field\n", stdout);
                 }
-                aisc_main->add_field = strdup(field);
+                aisc_main->add_field = ARB_strdup(field);
                 aisc_main->touched   = 1;
             }
             else {

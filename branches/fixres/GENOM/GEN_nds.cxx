@@ -131,7 +131,7 @@ char *GEN_make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode) {
                         free(p2);
 
                         if (!pars) {
-                            pars = strdup("<error>");
+                            pars = ARB_strdup("<error>");
                             if (!gen_nds_ms->errorclip++) {
                                 aw_message(GB_await_error());
                             }
@@ -315,7 +315,7 @@ AW_window *GEN_open_nds_window(AW_root *aw_root, GBDATA *gb_main) {
             aws->create_input_field(buf, 4);
 
             sprintf(buf, "tmp/gene_viewkey_%i/pars", i);
-            const char *inputFieldAwarName = strdup(buf);
+            const char *inputFieldAwarName = ARB_strdup(buf);
 
             aws->get_at_position(&srtx, &dummy);
 

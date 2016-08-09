@@ -178,7 +178,7 @@ inline char *get_token_and_incr_lineno(const char*& code, const char *separator,
                 code  = NULL;
             }
             else {
-                token = strdup(code);
+                token = ARB_strdup(code);
                 code  = NULL;
             }
         }
@@ -992,7 +992,7 @@ int ARB_main(int argc, char **argv)
 // #define TEST_AUTO_UPDATE // uncomment this to update expected results
 
 inline GB_ERROR valgrinded_system(const char *cmdline) {
-    char *cmddup = strdup(cmdline);
+    char *cmddup = ARB_strdup(cmdline);
     make_valgrinded_call(cmddup);
 
     GB_ERROR error = GBK_system(cmddup);

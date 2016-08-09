@@ -12,9 +12,7 @@
 #include "arb_misc.h"
 #include "arb_msg.h"
 #include "arb_file.h"
-#include "arb_mem.h"
-
-#include <arb_assert.h>
+#include "arb_string.h"
 
 #include <cmath>
 
@@ -123,7 +121,7 @@ char *ARB_executable(const char *exe_name, const char *path) {
         start = colon ? colon+1 : 0;
     }
 
-    char *executable = found ? strdup(buffer) : 0;
+    char *executable = found ? ARB_strdup(buffer) : 0;
     free(buffer);
     return executable;
 }

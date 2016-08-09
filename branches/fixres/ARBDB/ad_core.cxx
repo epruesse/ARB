@@ -748,7 +748,7 @@ long gb_create_key(GB_MAIN_TYPE *Main, const char *key, bool create_gb_key) {
     if (key) {
         if (!key[0]) GBK_terminate("Attempt to allocate empty key");
 
-        Main->keys[index].key = strdup(key);
+        Main->keys[index].key = ARB_strdup(key);
         GBS_write_hash(Main->key_2_index_hash, key, index);
         gb_assert(GBS_hash_elements(Main->key_2_index_hash) <= ALLOWED_KEYS);
         if (Main->gb_key_data && create_gb_key) {

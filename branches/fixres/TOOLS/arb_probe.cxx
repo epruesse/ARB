@@ -167,7 +167,7 @@ static char *AP_dump_index_event(ARB_ERROR& error) {
             error = "Connection to PT_SERVER lost (1)";
         }
         else {
-            result = strdup("ok");
+            result = ARB_strdup("ok");
         }
     }
     return result;
@@ -1496,7 +1496,7 @@ static char *extract_locations(const char *probe_design_result) {
             return result.release();
         }
     }
-    return strdup("can't extract");
+    return ARB_strdup("can't extract");
 }
 
 inline const char *next_line(const char *this_line) {

@@ -460,7 +460,7 @@ int ARB_main(int argc, char *argv[]) {
         argc -= 2; argv += 2;
     }
     else { // load default configuration if no command line is given
-        config_name = strdup(DEFAULT_CONFIGURATION);
+        config_name = ARB_strdup(DEFAULT_CONFIGURATION);
         printf("Using '%s'\n", DEFAULT_CONFIGURATION);
     }
 

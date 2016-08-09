@@ -59,8 +59,10 @@ depend.init:
 arb_cs.o: arb_assert.h
 arb_cs.o: arb_core.h
 arb_cs.o: arb_cs.h
+arb_cs.o: arb_mem.h
 arb_cs.o: arb_msg.h
 arb_cs.o: arb_pattern.h
+arb_cs.o: arb_string.h
 arb_cs.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_cs.o: $(ARBHOME)/INCLUDE/attributes.h
 arb_cs.o: $(ARBHOME)/INCLUDE/cxxforward.h
@@ -91,7 +93,9 @@ arb_diff.o: $(ARBHOME)/INCLUDE/test_unit.h
 arb_file.o: arb_assert.h
 arb_file.o: arb_core.h
 arb_file.o: arb_file.h
+arb_file.o: arb_mem.h
 arb_file.o: arb_msg.h
+arb_file.o: arb_string.h
 arb_file.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_file.o: $(ARBHOME)/INCLUDE/attributes.h
 arb_file.o: $(ARBHOME)/INCLUDE/cxxforward.h
@@ -146,6 +150,7 @@ arb_misc.o: arb_file.h
 arb_misc.o: arb_mem.h
 arb_misc.o: arb_misc.h
 arb_misc.o: arb_msg.h
+arb_misc.o: arb_string.h
 arb_misc.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_misc.o: $(ARBHOME)/INCLUDE/attributes.h
 arb_misc.o: $(ARBHOME)/INCLUDE/cxxforward.h
@@ -181,6 +186,7 @@ arb_pattern.o: arb_mem.h
 arb_pattern.o: arb_msg.h
 arb_pattern.o: arb_pattern.h
 arb_pattern.o: arb_strbuf.h
+arb_pattern.o: arb_string.h
 arb_pattern.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_pattern.o: $(ARBHOME)/INCLUDE/attributes.h
 arb_pattern.o: $(ARBHOME)/INCLUDE/cxxforward.h
@@ -274,6 +280,7 @@ arb_zfile.o: arb_file.h
 arb_zfile.o: arb_mem.h
 arb_zfile.o: arb_misc.h
 arb_zfile.o: arb_msg.h
+arb_zfile.o: arb_string.h
 arb_zfile.o: arb_zfile.h
 arb_zfile.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_zfile.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -317,6 +324,7 @@ MultiFileReader.o: arb_core.h
 MultiFileReader.o: arb_mem.h
 MultiFileReader.o: arb_msg.h
 MultiFileReader.o: arb_strarray.h
+MultiFileReader.o: arb_string.h
 MultiFileReader.o: BufferedFileReader.h
 MultiFileReader.o: MultiFileReader.h
 MultiFileReader.o: $(ARBHOME)/INCLUDE/arbtools.h

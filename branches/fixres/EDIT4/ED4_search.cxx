@@ -377,7 +377,7 @@ SearchTree::SearchTree(const SearchSettings *s)
 
 
     {
-        char       *pattern           = strdup(sett->get_pattern());
+        char       *pattern           = ARB_strdup(sett->get_pattern());
         const char *trenner           = "\n,";
         char       *tok               = strtok(pattern, trenner);
         char       *comment;
@@ -774,7 +774,7 @@ void ED4_create_search_awars(AW_root *root)
 
     // awars to save/load search parameters:
     {
-        char *dir = strdup(GB_path_in_arbprop("search_settings"));
+        char *dir = ARB_strdup(GB_path_in_arbprop("search_settings"));
         AW_create_fileselection_awars(root, ED4_SEARCH_SAVE_BASE, dir, ".asp", "noname.asp");
         root->awar(ED4_SEARCH_SAVE_BASE"/directory")->write_string(dir);
         free(dir);
@@ -800,7 +800,7 @@ ED4_SearchPosition::ED4_SearchPosition(const ED4_SearchPosition& other) {
     end_pos = other.end_pos;
     whatsFound = other.whatsFound;
     next = 0;
-    comment = strdup(other.comment);
+    comment = ARB_strdup(other.comment);
     memcpy(mismatch, other.mismatch, sizeof(mismatch[0])*MAX_MISMATCHES);
 }
 
@@ -876,7 +876,7 @@ GB_CSTR ED4_SearchPosition::get_comment() const
     if (lastShownComment && strcmp(lastShownComment, comment)==0) return 0; // do not show comment twice
 
     delete lastShownComment;
-    lastShownComment = strdup(comment);
+    lastShownComment = ARB_strdup(comment);
     return lastShownComment;
 }
 
@@ -1439,7 +1439,7 @@ static char *pattern2str(GB_CSTR p) {
     }
 
     *s1 = 0;
-    return strdup(s);
+    return ARB_strdup(s);
 }
 
 static void str2pattern(char *s) { // works on string

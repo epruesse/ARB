@@ -86,7 +86,7 @@ RB_INFO *ConsensusTree::rbtree(const NT_NODE *tree, TreeRoot *root) {
     if (!nsonp) {                                        // if node is leaf
         int idx = tree->part->index();
 
-        tnode->name    = strdup(get_species_name(idx));
+        tnode->name    = ARB_strdup(get_species_name(idx));
         tnode->is_leaf = true;
     }
     else {

@@ -565,7 +565,7 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , const char *tname, ULONG ARM_size
 
 #if defined(DEBUG)
     {
-        char *related = strdup(tname);
+        char *related = ARB_strdup(tname);
         char *starpos = strstr(related, ".arb.pt");
 
         pt_assert(starpos);

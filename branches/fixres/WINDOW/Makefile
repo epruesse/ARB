@@ -186,7 +186,9 @@ AW_cb_struct.o: aw_window_Xm.hxx
 AW_cb_struct.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_cb_struct.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_cb_struct.o: $(ARBHOME)/INCLUDE/arb_error.h
+AW_cb_struct.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AW_cb_struct.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AW_cb_struct.o: $(ARBHOME)/INCLUDE/arb_string.h
 AW_cb_struct.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AW_cb_struct.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_cb_struct.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -503,7 +505,9 @@ AW_option_toggle.o: aw_xargs.hxx
 AW_option_toggle.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_option_toggle.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_option_toggle.o: $(ARBHOME)/INCLUDE/arb_error.h
+AW_option_toggle.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AW_option_toggle.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AW_option_toggle.o: $(ARBHOME)/INCLUDE/arb_string.h
 AW_option_toggle.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AW_option_toggle.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_option_toggle.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -650,7 +654,9 @@ AW_rgb.o: aw_window_Xm.hxx
 AW_rgb.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_rgb.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_rgb.o: $(ARBHOME)/INCLUDE/arb_error.h
+AW_rgb.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AW_rgb.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AW_rgb.o: $(ARBHOME)/INCLUDE/arb_string.h
 AW_rgb.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AW_rgb.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_rgb.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -749,7 +755,9 @@ aw_scalar.o: aw_base.hxx
 aw_scalar.o: aw_scalar.hxx
 aw_scalar.o: $(ARBHOME)/INCLUDE/arb_assert.h
 aw_scalar.o: $(ARBHOME)/INCLUDE/arb_core.h
+aw_scalar.o: $(ARBHOME)/INCLUDE/arb_mem.h
 aw_scalar.o: $(ARBHOME)/INCLUDE/arb_msg.h
+aw_scalar.o: $(ARBHOME)/INCLUDE/arb_string.h
 aw_scalar.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 aw_scalar.o: $(ARBHOME)/INCLUDE/arbtools.h
 aw_scalar.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -905,7 +913,9 @@ AW_window_Xm_interface.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_window_Xm_interface.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_window_Xm_interface.o: $(ARBHOME)/INCLUDE/arb_defs.h
 AW_window_Xm_interface.o: $(ARBHOME)/INCLUDE/arb_error.h
+AW_window_Xm_interface.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AW_window_Xm_interface.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AW_window_Xm_interface.o: $(ARBHOME)/INCLUDE/arb_string.h
 AW_window_Xm_interface.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AW_window_Xm_interface.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_window_Xm_interface.o: $(ARBHOME)/INCLUDE/attributes.h

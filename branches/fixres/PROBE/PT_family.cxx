@@ -328,7 +328,7 @@ static int make_PT_family_list(PT_family *ffinder, const FamilyStat& famStat) {
         if (ps.get_match_count() != 0) {
             PT_family_list *fl = create_PT_family_list();
 
-            fl->name        = strdup(pid.get_shortname());
+            fl->name        = ARB_strdup(pid.get_shortname());
             fl->matches     = ps.get_match_count();
             fl->rel_matches = ps.get_rel_match_count();
 

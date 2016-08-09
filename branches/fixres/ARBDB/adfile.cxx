@@ -30,7 +30,7 @@ GB_CSTR GB_getcwd() {
 GB_ERROR gb_scan_directory(char *basename, gb_scandir *sd) {
     // goes to header: __ATTR__USERESULT_TODO
     // look for quick saves (basename = yyy/xxx no arb ending !!!!)
-    char        *path        = strdup(basename);
+    char        *path        = ARB_strdup(basename);
     const char  *fulldir     = ".";
     char        *file        = strrchr(path, '/');
     DIR         *dirp;
@@ -136,7 +136,7 @@ char *GB_find_all_files(const char *dir, const char *mask, bool filename_only) {
                             freeset(result, GBS_global_string_copy("%s*%s", result, buffer));
                         }
                         else {
-                            result = strdup(buffer);
+                            result = ARB_strdup(buffer);
                         }
                     }
                 }
@@ -229,12 +229,13 @@ void GBS_read_dir(StrArray& names, const char *dir, const char *mask) {
     gb_assert(dir);             // dir == NULL was allowed before 12/2008, forbidden now!
 
     if (dir[0]) {
-        char *fulldir   = strdup(GB_canonical_path(dir));
+        char *fulldir   = ARB_strdup(GB_canonical_path(dir));
         DIR  *dirstream = opendir(fulldir);
 
         if (!dirstream) {
             if (GB_is_readablefile(fulldir)) { // fixed: returned true for directories before (4/2012)
-                names.put(strdup(fulldir));
+                names.put(fulldir); // transfer ownership
+                fulldir = NULL;
             }
             else {
                 // @@@ does too much voodoo here - fix
@@ -268,7 +269,7 @@ void GBS_read_dir(StrArray& names, const char *dir, const char *mask) {
                         if (GBS_string_matches_regexp(name, matcher)) {
                             const char *full = GB_concat_path(fulldir, name);
                             if (!GB_is_directory(full)) { // skip directories
-                                names.put(strdup(full));
+                                names.put(ARB_strdup(full));
                             }
                         }
                     }
@@ -313,7 +314,7 @@ const char *GB_get_arb_revision_tag() {
 
 static char *remove_path(const char *fullname, void *cl_path) {
     const char *path = (const char *)cl_path;
-    return strdup(fullname+(ARB_strBeginsWith(fullname, path) ? strlen(path) : 0));
+    return ARB_strdup(fullname+(ARB_strBeginsWith(fullname, path) ? strlen(path) : 0));
 }
 
 static void GBT_transform_names(StrArray& dest, const StrArray& source, char *transform(const char *, void *), void *client_data) {
@@ -331,7 +332,7 @@ static void GBT_transform_names(StrArray& dest, const StrArray& source, char *tr
     } while(0)
 
 #define TEST_JOINED_DIR_CONTENT_EQUALS(subdir,mask,expected) do {       \
-        char     *fulldir = strdup(GB_path_in_ARBHOME(subdir));         \
+        char     *fulldir = ARB_strdup(GB_path_in_ARBHOME(subdir));     \
         TEST_JOINED_FULLDIR_CONTENT_EQUALS(fulldir,mask,expected);      \
         free(fulldir);                                                  \
     } while(0)

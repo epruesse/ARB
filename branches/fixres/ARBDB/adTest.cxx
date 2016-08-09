@@ -131,7 +131,7 @@ static void dump_internal(GBDATA *gbd, int *lines_allowed) {
         char     *toFree  = 0;
 
         if (content_len > wrappos) {
-            toFree      = strdup(content);
+            toFree      = ARB_strdup(content);
             content     = toFree;
             content_len = GBS_shorten_repeated_data(toFree);
         }

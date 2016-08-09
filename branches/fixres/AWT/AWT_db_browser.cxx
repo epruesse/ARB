@@ -871,7 +871,7 @@ static void child_changed_cb(AW_root *aw_root) {
                     fullpath = GBS_global_string_copy("/%s", child);
                 }
                 else if (child[0] == 0) {
-                    fullpath = strdup(path);
+                    fullpath = ARB_strdup(path);
                 }
                 else {
                     fullpath = GBS_global_string_copy("%s/%s", path, child);
@@ -1016,7 +1016,7 @@ static void path_changed_cb(AW_root *aw_root) {
             if (found && GB_read_type(found) != GB_DB) { // exists, but is not a container
                 char *lslash = strrchr(path, '/');
                 if (lslash) {
-                    goto_child = strdup(lslash+1);
+                    goto_child = ARB_strdup(lslash+1);
                     lslash[lslash == path] = 0; // truncate at last slash (but keep sole slash)
                     awar_path->write_string(path);
                 }

@@ -83,7 +83,7 @@ class ConfigMarkerDisplay : public MarkerDisplay, virtual Noncopyable {
                 }
             }
 
-            errors.put(strdup(error ? error : ""));
+            errors.put(ARB_strdup(error ? error : ""));
         }
     }
 
@@ -325,7 +325,7 @@ static char *correct_managed_configsets_cb(const char *key, const char *value, A
             modified_value = GBT_join_strings(config, CONFIG_SEPARATOR[0]);
         }
     }
-    return modified_value ? modified_value : strdup(value);
+    return modified_value ? modified_value : ARB_strdup(value);
 }
 static void modify_configurations(const ConfigModifier& mod) {
     for (int canvas_id = 0; canvas_id<MAX_NT_WINDOWS; ++canvas_id) {
@@ -656,7 +656,7 @@ static void nt_build_sai_string(GBS_strstruct *topfile, GBS_strstruct *middlefil
                     char   *gn;
 
                     if (gb_gn)  gn = GB_read_string(gb_gn);
-                    else        gn = strdup("SAI's");
+                    else        gn = ARB_strdup("SAI's");
 
                     char *cn = new char[strlen(gn) + strlen(name) + 2];
                     sprintf(cn, "%s%c%s", gn, 1, name);
@@ -997,7 +997,7 @@ static void selected_config_changed_cb(AW_root *root) {
         awar_comment->map(gb_target_commment);
     }
     else {
-        char *reuse_comment = nonexisting_config ? awar_comment->read_string() : strdup("");
+        char *reuse_comment = nonexisting_config ? awar_comment->read_string() : ARB_strdup("");
         if (awar_comment->is_mapped()) {
             awar_comment->unmap();
         }

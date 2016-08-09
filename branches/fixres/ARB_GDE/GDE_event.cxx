@@ -303,7 +303,7 @@ inline char eatgaps(const char *seq, int& index) {
 }
 
 static char *fix_aligned_data(const char *old_seq, const char *new_seq, GB_alignment_type ali_type) {
-    char *fixed = strdup(new_seq);
+    char *fixed = ARB_strdup(new_seq);
 
     int o = 0;
     int n = 0;
@@ -672,10 +672,10 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem) {
         }
 
         // Create the command line for external the function call
-        char *Action = strdup(current_item->method);
+        char *Action = ARB_strdup(current_item->method);
 
         while (1) {
-            char *oldAction = strdup(Action);
+            char *oldAction = ARB_strdup(Action);
 
             for (int j=0; j<current_item->numargs; j++) Action = ReplaceArgs(aw_root, Action, gmenuitem, j);
             bool changed = strcmp(oldAction, Action) != 0;

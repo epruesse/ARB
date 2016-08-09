@@ -192,7 +192,7 @@ void gb_destroy_indices(GBCONTAINER *gbc) {
 NOT4PERL void GB_dump_indices(GBDATA *gbd) { // used for debugging
     // dump indices of container
 
-    char *db_path = strdup(GB_get_db_path(gbd));
+    char *db_path = ARB_strdup(GB_get_db_path(gbd));
     if (gbd->is_entry()) {
         fprintf(stderr, "'%s' (%s) is no container.\n", db_path, GB_get_type_name(gbd));
     }
@@ -530,7 +530,7 @@ static char *g_b_undo_info(GB_MAIN_TYPE *Main, g_b_undo_header *uh) {
     g_b_undo_entry *ue;
 
     u = uh->stack;
-    if (!u) return strdup("No more undos available");
+    if (!u) return ARB_strdup("No more undos available");
     for (ue=u->entries; ue; ue = ue->next) {
         switch (ue->type) {
             case GB_UNDO_ENTRY_TYPE_CREATED:

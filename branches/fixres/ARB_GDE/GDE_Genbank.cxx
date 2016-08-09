@@ -216,7 +216,7 @@ GB_ERROR ReadGen(char *filename, NA_Alignment& dataset) {
             {
                 if (gencomments == NULL)
                 {
-                    gencomments = strdup(in_line);
+                    gencomments = ARB_strdup(in_line);
                     genclen = strlen(gencomments)+1;
                 }
                 else

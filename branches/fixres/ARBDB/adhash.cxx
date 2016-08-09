@@ -443,7 +443,7 @@ static long write_hash(GB_HASH *hs, char *key, bool copyKey, long val) {
         // create new hash entry
         e       = (gbs_hash_entry *)gbm_get_mem(sizeof(gbs_hash_entry), GBM_HASH_INDEX);
         e->next = hs->entries[i];
-        e->key  = copyKey ? strdup(key) : key;
+        e->key  = copyKey ? ARB_strdup(key) : key;
         e->val  = val;
 
         hs->entries[i] = e;
@@ -481,7 +481,7 @@ long GBS_incr_hash(GB_HASH *hs, const char *key) {
     else {
         e       = (gbs_hash_entry *)gbm_get_mem(sizeof(gbs_hash_entry), GBM_HASH_INDEX);
         e->next = hs->entries[i];
-        e->key  = strdup(key);
+        e->key  = ARB_strdup(key);
         e->val  = result = 1;
 
         hs->entries[i] = e;
@@ -978,11 +978,11 @@ void TEST_GBS_write_hash() {
 
         if (case_sens) {
             TEST_EXPECT_ZERO(GBS_read_hash(hash, "foobar"));
-            GBS_write_hash_no_strdup(hash, strdup("foobar"), 0);
+            GBS_write_hash_no_strdup(hash, ARB_strdup("foobar"), 0);
             TEST_EXPECT_ZERO(GBS_read_hash(hash, "foobar"));
-            GBS_write_hash_no_strdup(hash, strdup("foobar"), 3);
+            GBS_write_hash_no_strdup(hash, ARB_strdup("foobar"), 3);
             TEST_EXPECT_EQUAL(GBS_read_hash(hash, "foobar"), 3);
-            GBS_write_hash_no_strdup(hash, strdup("foobar"), 0);
+            GBS_write_hash_no_strdup(hash, ARB_strdup("foobar"), 0);
             TEST_EXPECT_ZERO(GBS_read_hash(hash, "foobar"));
         }
     }

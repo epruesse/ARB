@@ -46,7 +46,7 @@ static char *GBS_string_2_key_with_exclusions(const char *str, const char *addit
     }
     for (; i<GB_KEY_LEN_MIN; i++) buf[i] = '_';
     buf[i] = 0;
-    return strdup(buf);
+    return ARB_strdup(buf);
 }
 
 char *GBS_string_2_key(const char *str) // converts any string to a valid key
@@ -114,7 +114,7 @@ GB_ERROR GB_check_hkey(const char *key) { // goes to header: __ATTR__USERESULT
         err = GB_check_key(key);
     }
     else {
-        char *key_copy = strdup(key);
+        char *key_copy = ARB_strdup(key);
         char *start    = key_copy;
 
         if (start[0] == '/') ++start;
@@ -160,7 +160,7 @@ char *GBS_remove_escape(char *com)  // \ is the escape character
     char *result, *s, *d;
     int   ch;
 
-    s = d = result = strdup(com);
+    s = d = result = ARB_strdup(com);
     while ((ch = *(s++))) {
         switch (ch) {
             case '\\':
@@ -426,7 +426,7 @@ uint32_t GBS_checksum(const char *seq, int ignore_case, const char *exclude)
 */
 
 char *GBS_extract_words(const char *source, const char *chars, float minlen, bool sort_output) {
-    char           *s         = strdup(source);
+    char           *s         = ARB_strdup(source);
     char          **ps        = (char **)ARB_calloc(sizeof(char *), (strlen(source)>>1) + 1);
     GBS_strstruct  *strstruct = GBS_stropen(1000);
     char           *f         = s;
@@ -611,7 +611,7 @@ static long g_bs_read_tagged_hash(const char *value, long subhash, void *cd_g_bs
     char *str = GBS_strclose(sub_result);
 
     GB_HASH *g_bs_collect_tags_hash = (GB_HASH*)cd_g_bs_collect_tags_hash;
-    GBS_write_hash(g_bs_collect_tags_hash, str, (long)strdup(value)); // send output to new hash for sorting
+    GBS_write_hash(g_bs_collect_tags_hash, str, (long)ARB_strdup(value)); // send output to new hash for sorting
 
     free(str);
     return subhash;
@@ -662,8 +662,8 @@ char *GBS_merge_tagged_strings(const char *s1, const char *tag1, const char *rep
      * if result is NULL, an error has been exported.
      */
 
-    char     *str1   = strdup(s1);
-    char     *str2   = strdup(s2);
+    char     *str1   = ARB_strdup(s1);
+    char     *str2   = ARB_strdup(s2);
     char     *t1     = GBS_string_2_key(tag1);
     char     *t2     = GBS_string_2_key(tag2);
     GB_HASH  *hash   = GBS_create_hash(16, GB_MIND_CASE);
@@ -702,7 +702,7 @@ char *GBS_string_eval_tagged_string(GBDATA *gb_main, const char *s, const char *
      * if result is NULL, an error has been exported.
      */
 
-    char     *str         = strdup(s);
+    char     *str         = ARB_strdup(s);
     char     *default_tag = GBS_string_2_key(dt);
     GB_HASH  *hash        = GBS_create_hash(16, GB_MIND_CASE);
     char     *result      = 0;
@@ -758,7 +758,7 @@ char *GB_read_as_tagged_string(GBDATA *gbd, const char *tagi) {
         }
         for (t = strtok(ts, ","); t; t = strtok(0, ",")) {
             if (strcmp(t, tag) == 0) {
-                s = strdup(sa);
+                s = ARB_strdup(sa);
                 free(buf);
                 goto found;
             }
@@ -957,7 +957,7 @@ static char *dated_info(const char *info) {
         dated_info = GBS_global_string_copy("%s: %s", dstr, info);
     }
     else {
-        dated_info = strdup(info);
+        dated_info = ARB_strdup(info);
     }
     return dated_info;
 }
@@ -1102,7 +1102,7 @@ void TEST_GBS_strstruct() {
 }
 
 #define TEST_SHORTENED_EQUALS(Long,Short) do {  \
-        char *buf = strdup(Long);               \
+        char *buf = ARB_strdup(Long);           \
         GBS_shorten_repeated_data(buf);         \
         TEST_EXPECT_EQUAL(buf, Short);          \
         free(buf);                              \

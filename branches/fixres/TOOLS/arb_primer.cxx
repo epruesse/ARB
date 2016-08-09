@@ -116,10 +116,10 @@ static GB_ERROR arb_prm_menu() {
                 if (fgets(aprm.buffer, PRM_BUFFERSIZE, stdin)) {
                     char *lf      = strchr(aprm.buffer, '\n');
                     if (lf) lf[0] = 0; // remove linefeed from filename
-                    aprm.outname  = strdup(aprm.buffer);
+                    aprm.outname  = ARB_strdup(aprm.buffer);
                 }
                 else {
-                    aprm.outname  = strdup("");
+                    aprm.outname  = ARB_strdup("");
                 }
             }
         }

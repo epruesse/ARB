@@ -320,10 +320,16 @@ ali_pt.o: $(ARBHOME)/INCLUDE/test_global.h
 
 ali_sequence.o: ali_misc.hxx
 ali_sequence.o: ali_sequence.hxx
+ali_sequence.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ali_sequence.o: $(ARBHOME)/INCLUDE/arb_core.h
+ali_sequence.o: $(ARBHOME)/INCLUDE/arb_mem.h
+ali_sequence.o: $(ARBHOME)/INCLUDE/arb_string.h
 ali_sequence.o: $(ARBHOME)/INCLUDE/arbtools.h
 ali_sequence.o: $(ARBHOME)/INCLUDE/attributes.h
 ali_sequence.o: $(ARBHOME)/INCLUDE/cxxforward.h
+ali_sequence.o: $(ARBHOME)/INCLUDE/dupstr.h
 ali_sequence.o: $(ARBHOME)/INCLUDE/gccver.h
+ali_sequence.o: $(ARBHOME)/INCLUDE/test_global.h
 
 ali_solution.o: ali_arbdb.hxx
 ali_solution.o: ali_misc.hxx

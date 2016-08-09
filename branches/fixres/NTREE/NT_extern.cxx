@@ -353,7 +353,7 @@ static void nt_start_2nd_arb(AW_window *aww, bool quit) {
     char    *dir4intro;
     GB_split_full_path(aw_root->awar(AWAR_DB_PATH)->read_char_pntr(), &dir4intro, NULL, NULL, NULL);
     if (!dir4intro) {
-        dir4intro = strdup(".");
+        dir4intro = ARB_strdup(".");
     }
 
     if (quit) {

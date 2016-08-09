@@ -596,7 +596,7 @@ char *MG_remap::remap(const char *sequence) {
 
 static MG_remap *MG_create_remap(GBDATA *gb_left, GBDATA *gb_right, const char *reference_species_names, const char *alignment_name) {
     MG_remap *rem      = new MG_remap;
-    char     *ref_list = strdup(reference_species_names);
+    char     *ref_list = ARB_strdup(reference_species_names);
 
     for (char *tok = strtok(ref_list, " \n,;"); tok; tok = strtok(NULL, " \n,;")) {
         bool    is_SAI           = strncmp(tok, "SAI:", 4) == 0;

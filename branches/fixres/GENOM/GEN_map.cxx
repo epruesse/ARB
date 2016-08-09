@@ -700,7 +700,7 @@ struct EG2PS_data : virtual Noncopyable {
     EG2PS_data(const char *ali_, GBDATA *gb_species_data_, int marked_genes_)
         : progress(marked_genes_), 
           gb_species_data(gb_species_data_), 
-          ali(strdup(ali_)), 
+          ali(ARB_strdup(ali_)),
           existing(gb_species_data, marked_genes_), 
           duplicateSpecies(0), 
           nameProblem(false)
@@ -773,7 +773,7 @@ static void gen_extract_gene_2_pseudoSpecies(GBDATA *gb_species, GBDATA *gb_gene
                 case 0: {   // Overwrite species
                     // @@@ FIXME:  delete species needed here
                     create_new_gene_species = true;
-                    short_name              = strdup(existing_name);
+                    short_name              = ARB_strdup(existing_name);
                     break;
                 }
                 case 1: {     // Insert new alignment or overwrite alignment
@@ -1584,8 +1584,8 @@ AW_window *GEN_create_first_map(AW_root *aw_root, GBDATA *gb_main) {
 
 void GEN_map_window::init(AW_root *awr, GBDATA *gb_main) {
     {
-        char *windowName = (window_nr == 0) ? strdup("ARB Gene Map") : GBS_global_string_copy("ARB Gene Map %i", window_nr);
-        char *windowID   = (window_nr == 0) ? strdup("ARB_GENE_MAP") : GBS_global_string_copy("ARB_GENE_MAP_%i", window_nr);
+        char *windowName = (window_nr == 0) ? ARB_strdup("ARB Gene Map") : GBS_global_string_copy("ARB Gene Map %i", window_nr);
+        char *windowID   = (window_nr == 0) ? ARB_strdup("ARB_GENE_MAP") : GBS_global_string_copy("ARB_GENE_MAP_%i", window_nr);
 
         AW_window_menu_modes::init(awr, windowID, windowName, 200, 200);
 

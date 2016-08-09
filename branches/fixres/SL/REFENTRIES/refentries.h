@@ -16,6 +16,9 @@
 #ifndef ARB_ERROR_H
 #include <arb_error.h>
 #endif
+#ifndef ARB_STRING_H
+#include <arb_string.h>
+#endif
 #ifndef ARBDB_BASE_H
 #include <arbdb_base.h>
 #endif
@@ -47,8 +50,8 @@ namespace RefEntries {
         bool error_if_ref_unknown;
     public:
         RefSelector(const char *field_, const char *aci_, bool error_if_field_missing_, bool error_if_ref_unknown_)
-            : field(strdup(field_)),
-              aci(strdup(aci_)),
+            : field(ARB_strdup(field_)),
+              aci(ARB_strdup(aci_)),
               error_if_field_missing(error_if_field_missing_),
               error_if_ref_unknown(error_if_ref_unknown_)
         {}

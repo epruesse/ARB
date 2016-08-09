@@ -7,6 +7,9 @@
 #ifndef GLOBAL_H
 #include "global.h"
 #endif
+#ifndef ARB_STRING_H
+#include <arb_string.h>
+#endif
 #ifndef _GLIBCXX_CCTYPE
 #include <cctype>
 #endif
@@ -59,7 +62,7 @@ class Seq : virtual Noncopyable {
 
 public:
     Seq(const char *id_, const char *seq_, int len_) :
-        id(strdup(id_)),
+        id(ARB_strdup(id_)),
         len(len_),
         max(len+1),
         seq(strndup(seq_, len))

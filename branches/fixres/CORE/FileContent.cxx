@@ -12,7 +12,6 @@
 #include "FileContent.h"
 #include "BufferedFileReader.h"
 #include "arb_msg.h"
-#include "arb_string.h"
 #include "arb_file.h"
 
 using namespace std;

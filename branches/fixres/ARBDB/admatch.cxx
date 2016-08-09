@@ -71,7 +71,7 @@ GBS_string_matcher *GBS_compile_matcher(const char *search_expr, GB_CASE case_fl
         }
         else {
             matcher->type     = SM_WILDCARDED;
-            matcher->wildexpr = strdup(search_expr);
+            matcher->wildexpr = ARB_strdup(search_expr);
         }
     }
 
@@ -321,7 +321,7 @@ __ATTR__USERESULT_TODO static GB_ERROR gbs_build_replace_string(GBS_strstruct *s
 
                         char *entry = (gb_entry && gb_entry != gb_container)
                             ? GB_read_as_string(gb_entry)
-                            : strdup("");
+                            : ARB_strdup("");
 
                         if (entry) {
                             char *h;
@@ -414,7 +414,7 @@ static char *gbs_compress_command(const char *com) {
     char *result, *s, *d;
     int   ch;
 
-    s = d = result = strdup(com);
+    s = d = result = ARB_strdup(com);
     while ((ch = *(s++))) {
         switch (ch) {
             case '=':   *(d++) = GBS_SET; break;
@@ -503,10 +503,10 @@ char *GBS_string_eval(const char *insource, const char *icommand, GBDATA *gb_con
     GBS_strstruct *strstruct;
     char *command;
 
-    if (!icommand || !icommand[0]) return strdup(insource);
+    if (!icommand || !icommand[0]) return ARB_strdup(insource);
 
     command = gbs_compress_command(icommand);
-    in = strdup(insource);               // copy insource to allow to destroy it
+    in = ARB_strdup(insource);               // copy insource to allow to destroy it
 
     for (doppelpunkt = command; doppelpunkt; doppelpunkt = nextdp) {    // loop over command string
         // in is in , strstruct is out
@@ -536,7 +536,7 @@ char *GBS_string_eval(const char *insource, const char *icommand, GBDATA *gb_con
 
         if ((!*in) && doppelpunkt[0] == GBS_MWILD && doppelpunkt[1] == 0) {     // empty string -> pars myself
             // * matches empty string !!!!
-            mwildcard[max_mwildcard++] = strdup("");
+            mwildcard[max_mwildcard++] = ARB_strdup("");
             gbs_build_replace_string(strstruct, bar, wildcard, max_wildcard, mwildcard, max_mwildcard, gb_container);
             goto gbs_pars_unsuccessfull;    // successfull search
         }
@@ -552,7 +552,7 @@ char *GBS_string_eval(const char *insource, const char *icommand, GBDATA *gb_con
 
                         start_of_wildcard = search;
                         if (!(c = *(search++))) {       // last character is a wildcard -> that was it
-                            mwildcard[max_mwildcard++] = strdup(source);
+                            mwildcard[max_mwildcard++] = ARB_strdup(source);
                             source += strlen(source);
                             goto gbs_pars_successfull;      // successfull search and end wildcard
                         }

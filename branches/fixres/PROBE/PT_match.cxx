@@ -420,7 +420,7 @@ int probe_match(PT_local *locs, aisc_string probestring) {
             psg.reversed  = 1;
             char *rev_pro = create_reversed_probe(probestring, probe_len);
             complement_probe(rev_pro, probe_len);
-            freeset(locs->pm_csequence, psg.main_probe = strdup(rev_pro));
+            freeset(locs->pm_csequence, psg.main_probe = ARB_strdup(rev_pro));
 
             Mismatches rev_mismatch(req);
             req.collect_hits_for(rev_pro, psg.TREE_ROOT2(), rev_mismatch, 0);
@@ -663,7 +663,7 @@ static const char *get_match_hinfo_formatted(PT_probematch *ml, const format_pro
         cat_dashed_left(memfile, "rev", format.rev_width());
 
         if (ml->N_mismatches >= 0) { //
-            char *seq = strdup(ml->sequence);
+            char *seq = ARB_strdup(ml->sequence);
             probe_2_readable(seq, strlen(ml->sequence)); // @@@ maybe wrong if match contains PT_QU (see [9070])
 
             GBS_strcat(memfile, "         '");

@@ -345,7 +345,7 @@ static char *readXmlTree(char *fname) {
 
         // extract path from fname in order to place a copy of dtd file required to validate xml file
         {
-            char *tmpFname = strdup(fname);
+            char *tmpFname = ARB_strdup(fname);
             for (char *tok = strtok(tmpFname, "/"); tok;) {
                 char *tmp = tok;
                 tok = strtok(0, "/");
@@ -371,7 +371,7 @@ static char *readXmlTree(char *fname) {
         free(command);
 
         // return newick format tree file
-        return strdup(tempFile);
+        return ARB_strdup(tempFile);
     }
     else {
         printf("Failed to create Temporary File to Parse xml file!\n");

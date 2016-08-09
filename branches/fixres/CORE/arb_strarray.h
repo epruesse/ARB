@@ -15,11 +15,8 @@
 #ifndef ARBTOOLS_H
 #include <arbtools.h>
 #endif
-#ifndef ARB_ASSERT_H
-#include <arb_assert.h>
-#endif
-#ifndef ARB_MEM_H
-#include "arb_mem.h"
+#ifndef ARB_STRING_H
+#include "arb_string.h"
 #endif
 #ifndef _GLIBCXX_ALGORITHM
 #include <algorithm>
@@ -233,11 +230,11 @@ void GBT_splitNdestroy_string(ConstStrArray& dest, char*& namelist, char separat
 
 inline void GBT_split_string(ConstStrArray& dest, const char *namelist, const char *separator, bool dropEmptyTokens) {
     //! same as GBT_splitNdestroy_string, but w/o destroying namelist
-    char *dup = strdup(namelist);
+    char *dup = ARB_strdup(namelist);
     GBT_splitNdestroy_string(dest, dup, separator, dropEmptyTokens);
 }
 inline void GBT_split_string(ConstStrArray& dest, const char *namelist, char separator) {
-    char *dup = strdup(namelist);
+    char *dup = ARB_strdup(namelist);
     GBT_splitNdestroy_string(dest, dup, separator);
     // cppcheck-suppress memleak (GBT_splitNdestroy_string takes ownership of 'dup')
 }

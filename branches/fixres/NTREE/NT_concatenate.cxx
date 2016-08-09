@@ -63,7 +63,7 @@ void NT_createConcatenationAwars(AW_root *aw_root, AW_default aw_def, GBDATA *gb
                                          "(Reason: %s)", ali_default, GB_await_error()));
         }
     }
-    if (!ali_type) ali_type = strdup("rna");
+    if (!ali_type) ali_type = ARB_strdup("rna");
 
     aw_root->awar_string(AWAR_CON_SEQUENCE_TYPE,       ali_type,         aw_def);
     aw_root->awar_string(AWAR_CON_NEW_ALIGNMENT_NAME,  "ali_concat",     aw_def)->set_srt("ali_*=*:*=ali_*"); // auto-prefix with "ali_"
@@ -305,7 +305,7 @@ static void addSpeciesToConcatenateList(SpeciesConcatenateList **sclp, GB_CSTR s
         SpeciesConcatenateList *scl = new SpeciesConcatenateList;
 
         scl->species      = gb_species;
-        scl->species_name = strdup(species_name);
+        scl->species_name = ARB_strdup(species_name);
         scl->next         = *sclp;
         *sclp             = scl;
     }
@@ -322,7 +322,7 @@ static void freeSpeciesConcatenateList(SpeciesConcatenateList *scl) {
 
 static GB_ERROR checkAndMergeFields(GBDATA *gb_new_species, GB_ERROR error, SpeciesConcatenateList *scl) {
 
-    char *doneFields = strdup(";name;"); // all fields which are already merged
+    char *doneFields = ARB_strdup(";name;"); // all fields which are already merged
     int   doneLen    = strlen(doneFields);
     SpeciesConcatenateList *sl = scl;
     int  sl_length = 0; while (scl) { sl_length++; scl=scl->next; } // counting no. of similar species stored in the list

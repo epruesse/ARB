@@ -212,7 +212,7 @@ static GB_ERROR arb_r2a(GBDATA *gb_main, bool use_entries, bool save_entries, in
                                 int   cn;
                                 int   stop_codons;
                                 int   least_stop_codons = -1;
-                                char* trial_data[3]     = {data, strdup(data), strdup(data)};
+                                char* trial_data[3]     = {data, ARB_strdup(data), ARB_strdup(data)};
 
                                 for (cn = 0 ; cn < 3 ; cn++)
                                 {
@@ -1109,7 +1109,7 @@ struct Data : virtual Noncopyable {
             if (gb_data) {
                 data          = GB_read_string(gb_data);
                 if (data) len = GB_read_string_count(gb_data);
-                else error    = strdup(GB_await_error());
+                else error    = ARB_strdup(GB_await_error());
                 return;
             }
         }

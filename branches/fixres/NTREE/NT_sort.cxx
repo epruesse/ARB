@@ -33,8 +33,8 @@ struct customCriterion {
     }
 
     customCriterion() : key(NULL), reverse(false) { check_valid(); }
-    customCriterion(const char *key_, bool reverse_) : key(strdup(key_)), reverse(reverse_) { check_valid(); }
-    customCriterion(const customCriterion& other) : key(strdup(other.key)), reverse(other.reverse) { check_valid(); }
+    customCriterion(const char *key_, bool reverse_) : key(ARB_strdup(key_)), reverse(reverse_) { check_valid(); }
+    customCriterion(const customCriterion& other) : key(ARB_strdup(other.key)), reverse(other.reverse) { check_valid(); }
     DECLARE_ASSIGNMENT_OPERATOR(customCriterion);
     ~customCriterion() { free(key); }
 };

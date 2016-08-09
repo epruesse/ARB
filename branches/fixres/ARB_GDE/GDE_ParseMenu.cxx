@@ -196,7 +196,7 @@ static void ParseMenus(LineReader& in) {
                 thisitem->numargs    = 0;
                 thisitem->numoutputs = 0;
                 thisitem->numinputs  = 0;
-                thisitem->label      = strdup(temp);
+                thisitem->label      = ARB_strdup(temp);
                 thisitem->method     = NULL;
                 thisitem->input      = NULL;
                 thisitem->output     = NULL;
@@ -473,7 +473,7 @@ GB_ERROR LoadMenus() {
     GB_ERROR error = NULL;
     StrArray files;
     {
-        char *user_menu_dir = strdup(GB_path_in_arbprop("gde"));
+        char *user_menu_dir = ARB_strdup(GB_path_in_arbprop("gde"));
 
         if (!GB_is_directory(user_menu_dir)) {
             error = GB_create_directory(user_menu_dir);

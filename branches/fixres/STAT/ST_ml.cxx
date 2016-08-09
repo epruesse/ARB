@@ -508,7 +508,7 @@ GB_ERROR ST_ML::calc_st_ml(const char *tree_name, const char *alignment_namei,
 
         if (column_stat_error) fprintf(stderr, "Column statistic error: %s (using equal rates/tt-ratio for all columns)\n", column_stat_error);
 
-        alignment_name = strdup(alignment_namei);
+        alignment_name = ARB_strdup(alignment_namei);
         long ali_len   = GBT_get_alignment_len(gb_main, alignment_name);
 
         if (ali_len<0) {

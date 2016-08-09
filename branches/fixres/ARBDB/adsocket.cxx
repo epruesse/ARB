@@ -252,7 +252,7 @@ char *gbcm_read_string(int socket)
         }
     }
     else {
-        key = strdup("");
+        key = ARB_strdup("");
     }
 
     return key;
@@ -474,7 +474,7 @@ static char *getenv_existing_directory(GB_CSTR envvar) {
 
     if (dir_name) {
         if (GB_is_directory(dir_name)) {
-            result = strdup(dir_name);
+            result = ARB_strdup(dir_name);
         }
         else {
             GB_warningf("Environment variable '%s' should contain the path of an existing directory.\n"
@@ -537,7 +537,7 @@ static GB_CSTR GB_getenvHOME() {
         char *home = getenv_existing_directory("HOME");
         if (!home) {
             home = nulldup(GB_getcwd());
-            if (!home) home = strdup(".");
+            if (!home) home = ARB_strdup(".");
             fprintf(stderr, "WARNING: Cannot identify user's home directory: environment variable HOME not set\n"
                     "Using current directory (%s) as home.\n", home);
         }
@@ -565,7 +565,7 @@ GB_CSTR GB_getenvARBMACRO() {
     static const char *am = 0;
     if (!am) {
         am          = getenv_existing_directory("ARBMACRO"); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARBMACRO
-        if (!am) am = strdup(GB_path_in_ARBLIB("macros"));
+        if (!am) am = ARB_strdup(GB_path_in_ARBLIB("macros"));
     }
     return am;
 }
@@ -635,7 +635,7 @@ GB_CSTR GB_getenvDOCPATH() {
     if (!dp) {
         char *res = getenv_existing_directory("ARB_DOC"); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARB_DOC
         if (res) dp = res;
-        else     dp = strdup(GB_path_in_ARBLIB("help"));
+        else     dp = ARB_strdup(GB_path_in_ARBLIB("help"));
     }
     return dp;
 }
@@ -645,7 +645,7 @@ GB_CSTR GB_getenvHTMLDOCPATH() {
     if (!dp) {
         char *res = getenv_existing_directory("ARB_HTMLDOC"); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARB_HTMLDOC
         if (res) dp = res;
-        else     dp = strdup(GB_path_in_ARBLIB("help_html"));
+        else     dp = ARB_strdup(GB_path_in_ARBLIB("help_html"));
     }
     return dp;
 
@@ -1126,7 +1126,7 @@ FILE *GB_fopen_tempfile(const char *filename, const char *fmode, char **res_full
     // - heap-copy of used filename in 'res_fullname' (if res_fullname != NULL)
     // (even if fopen failed)
 
-    char     *file  = strdup(GB_concat_path(GB_PATH_TMP, filename));
+    char     *file  = ARB_strdup(GB_concat_path(GB_PATH_TMP, filename));
     GB_ERROR  error = GB_create_parent_directory(file);
     FILE     *fp    = NULL;
 
@@ -1145,7 +1145,7 @@ FILE *GB_fopen_tempfile(const char *filename, const char *fmode, char **res_full
         }
 
         if (res_fullname) {
-            *res_fullname = file ? strdup(file) : 0;
+            *res_fullname = file ? ARB_strdup(file) : 0;
         }
     }
 
@@ -1233,7 +1233,7 @@ void GB_split_full_path(const char *fullpath, char **res_dir, char **res_fullnam
         gb_assert(terminal > fullpath); // ensure (terminal-1) is a valid character position in path
 
         if (!lslash && fullpath[0] == '.' && (fullpath[1] == 0 || (fullpath[1] == '.' && fullpath[2] == 0))) { // '.' and '..'
-            if (res_dir)       *res_dir       = strdup(fullpath);
+            if (res_dir)       *res_dir       = ARB_strdup(fullpath);
             if (res_fullname)  *res_fullname  = NULL;
             if (res_name_only) *res_name_only = NULL;
             if (res_suffix)    *res_suffix    = NULL;
@@ -1262,18 +1262,18 @@ void GB_split_full_path(const char *fullpath, char **res_dir, char **res_fullnam
 
 #define TEST_EXPECT_IS_CANONICAL(file)                  \
     do {                                                \
-        char *dup = strdup(file);                       \
+        char *dup = ARB_strdup(file);                   \
         TEST_EXPECT_EQUAL(GB_canonical_path(dup), dup); \
         free(dup);                                      \
     } while(0)
 
-#define TEST_EXPECT_CANONICAL_TO(not_cano,cano)                         \
-    do {                                                                \
-        char *arb_not_cano = strdup(GB_concat_path(arbhome, not_cano)); \
-        char *arb_cano     = strdup(GB_concat_path(arbhome, cano));     \
-        TEST_EXPECT_EQUAL(GB_canonical_path(arb_not_cano), arb_cano);   \
-        free(arb_cano);                                                 \
-        free(arb_not_cano);                                             \
+#define TEST_EXPECT_CANONICAL_TO(not_cano,cano)                                 \
+    do {                                                                        \
+        char *arb_not_cano = ARB_strdup(GB_concat_path(arbhome, not_cano));     \
+        char *arb_cano     = ARB_strdup(GB_concat_path(arbhome, cano));         \
+        TEST_EXPECT_EQUAL(GB_canonical_path(arb_not_cano), arb_cano);           \
+        free(arb_cano);                                                         \
+        free(arb_not_cano);                                                     \
     } while (0)
 
 static arb_test::match_expectation path_splits_into(const char *path, const char *Edir, const char *Enameext, const char *Ename, const char *Eext) {
@@ -1366,15 +1366,15 @@ void TEST_paths() {
     TEST_EXPECT_CONTAINS(GB_canonical_path("bla"),   "UNIT_TESTER/run/bla");
 
     {
-        char        *arbhome    = strdup(GB_getenvARBHOME());
+        char        *arbhome    = ARB_strdup(GB_getenvARBHOME());
         const char*  nosuchfile = "nosuchfile";
         const char*  somefile   = "arb_README.txt";
 
-        char *somefile_in_arbhome   = strdup(GB_concat_path(arbhome, somefile));
-        char *nosuchfile_in_arbhome = strdup(GB_concat_path(arbhome, nosuchfile));
-        char *nosuchpath_in_arbhome = strdup(GB_concat_path(arbhome, "nosuchpath"));
-        char *somepath_in_arbhome   = strdup(GB_concat_path(arbhome, "lib"));
-        char *file_in_nosuchpath    = strdup(GB_concat_path(nosuchpath_in_arbhome, "whatever"));
+        char *somefile_in_arbhome   = ARB_strdup(GB_concat_path(arbhome, somefile));
+        char *nosuchfile_in_arbhome = ARB_strdup(GB_concat_path(arbhome, nosuchfile));
+        char *nosuchpath_in_arbhome = ARB_strdup(GB_concat_path(arbhome, "nosuchpath"));
+        char *somepath_in_arbhome   = ARB_strdup(GB_concat_path(arbhome, "lib"));
+        char *file_in_nosuchpath    = ARB_strdup(GB_concat_path(nosuchpath_in_arbhome, "whatever"));
 
         TEST_REJECT(GB_is_directory(nosuchpath_in_arbhome));
 
@@ -1401,7 +1401,7 @@ void TEST_paths() {
         TEST_EXPECT_EQUAL(GB_unfold_path("ARBHOME", somefile), somefile_in_arbhome);
         TEST_EXPECT_EQUAL(GB_unfold_path("ARBHOME", nosuchfile), nosuchfile_in_arbhome);
 
-        char *inhome = strdup(GB_unfold_path("HOME", "whatever"));
+        char *inhome = ARB_strdup(GB_unfold_path("HOME", "whatever"));
         TEST_EXPECT_EQUAL(inhome, GB_canonical_path("~/whatever"));
         free(inhome);
 

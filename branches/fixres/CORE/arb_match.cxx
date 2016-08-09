@@ -14,7 +14,6 @@
 // AISC_MKPT_PROMOTE:#endif
 
 #include "arb_match.h"
-#include "arb_assert.h"
 #include "arb_msg.h"
 #include "arb_string.h"
 #include "arb_strbuf.h"

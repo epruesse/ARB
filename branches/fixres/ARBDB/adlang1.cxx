@@ -44,7 +44,7 @@ int GB_get_ACISRT_trace() { return trace; }
 // export stream
 
 #define PASS_2_OUT(args,s)  (args)->output.insert(s)
-#define COPY_2_OUT(args,s)  PASS_2_OUT(args, strdup(s))
+#define COPY_2_OUT(args,s)  PASS_2_OUT(args, ARB_strdup(s))
 #define IN_2_OUT(args,i)    PASS_2_OUT(args, args->input.get_smart(i))
 #define PARAM_2_OUT(args,i) PASS_2_OUT(args, args->param.get_smart(i))
 
@@ -405,7 +405,7 @@ static GB_ERROR gbl_mid_streams(const GBL_streams& arg_input, GBL_streams& arg_o
 
         char *res;
         if (s >= len || e<s) {
-            res = strdup("");
+            res = ARB_strdup("");
         }
         else {
             gb_assert(s >= 0);
@@ -903,7 +903,7 @@ static GB_ERROR gbl_string_convert(GBL_command_arguments *args) {
     else return GB_export_errorf("Unknown command '%s'", args->command);
 
     for (int i=0; i<args->input.size(); i++) {
-        char *p              = strdup(args->input.get(i));
+        char *p              = ARB_strdup(args->input.get(i));
         bool  last_was_alnum = false;
 
         for (char *pp = p; pp[0]; ++pp) {
@@ -1395,7 +1395,7 @@ static void build_taxonomy_rek(TreeNode *node, GB_HASH *tax_hash, const char *pa
     if (node->is_leaf) {
         GBDATA *gb_species = node->gb_node;
         if (gb_species) { // not zombie
-            GBS_write_hash(tax_hash, GBS_global_string("!%s", GBT_read_name(gb_species)), (long)strdup(parent_group));
+            GBS_write_hash(tax_hash, GBS_global_string("!%s", GBT_read_name(gb_species)), (long)ARB_strdup(parent_group));
         }
     }
     else {
@@ -1407,10 +1407,10 @@ static void build_taxonomy_rek(TreeNode *node, GB_HASH *tax_hash, const char *pa
             gb_assert((*group_counter)<MAX_GROUPS); // overflow - increase GROUP_COUNT_CHARS
 
             hash_entry = GBS_global_string_copy(">%0*x%s", GROUP_COUNT_CHARS, *group_counter, node->name);
-            GBS_write_hash(tax_hash, hash_entry, (long)strdup(parent_group));
+            GBS_write_hash(tax_hash, hash_entry, (long)ARB_strdup(parent_group));
 
             hash_binary_entry = GBS_global_string(">>%p", node->gb_node);
-            GBS_write_hash(tax_hash, hash_binary_entry, (long)strdup(hash_entry));
+            GBS_write_hash(tax_hash, hash_binary_entry, (long)ARB_strdup(hash_entry));
 
             build_taxonomy_rek(node->get_leftson(), tax_hash, hash_entry, group_counter);
             build_taxonomy_rek(node->get_rightson(), tax_hash, hash_entry, group_counter);
@@ -1546,7 +1546,7 @@ static cached_taxonomy *get_cached_taxonomy(GBDATA *gb_main, const char *tree_na
                 long             nodes         = GBT_count_leafs(tree);
                 int              group_counter = 0;
 
-                ct->tree_name = strdup(tree_name);
+                ct->tree_name = ARB_strdup(tree_name);
                 ct->taxonomy  = GBS_create_dynaval_hash(int(nodes), GB_IGNORE_CASE, GBS_dynaval_free);
                 ct->groups    = 0; // counted below
 
@@ -1608,7 +1608,7 @@ static char *get_taxonomy_string(GB_HASH *tax_hash, const char *group_key, int d
     if (found) {
         const char *parent_group_key            = (const char *)found;
         if (strcmp(parent_group_key, "<root>") == 0) { // root reached
-            result = strdup(group_key+(GROUP_COUNT_CHARS+1)); // return own group name
+            result = ARB_strdup(group_key+(GROUP_COUNT_CHARS+1)); // return own group name
         }
         else {
             if (depth>1) {
@@ -1623,7 +1623,7 @@ static char *get_taxonomy_string(GB_HASH *tax_hash, const char *group_key, int d
                 }
             }
             else {
-                result = strdup(group_key+(GROUP_COUNT_CHARS+1)); // return own group name
+                result = ARB_strdup(group_key+(GROUP_COUNT_CHARS+1)); // return own group name
             }
         }
     }
@@ -1720,16 +1720,16 @@ static GB_ERROR gbl_taxonomy(GBL_command_arguments *args) {
 
         if (args->param.size() == 1) {   // only 'depth'
             if (!args->get_tree_name()) {
-                result = strdup("No default tree");
+                result = ARB_strdup("No default tree");
             }
             else {
-                tree_name = strdup(args->get_tree_name());
+                tree_name = ARB_strdup(args->get_tree_name());
                 depth = atoi(args->param.get(0));
                 is_current_tree = true;
             }
         }
         else { // 'tree_name', 'depth'
-            tree_name = strdup(args->param.get(0));
+            tree_name = ARB_strdup(args->param.get(0));
             depth     = atoi(args->param.get(1));
         }
 
@@ -1739,7 +1739,7 @@ static GB_ERROR gbl_taxonomy(GBL_command_arguments *args) {
             }
             if (!error) {
                 const char *taxonomy_string = get_taxonomy(args->get_ref(), tree_name, is_current_tree, depth, &error);
-                if (taxonomy_string) result = strdup(taxonomy_string);
+                if (taxonomy_string) result = ARB_strdup(taxonomy_string);
             }
         }
 
@@ -2006,7 +2006,7 @@ static GB_ERROR gbl_format_sequence(GBL_command_arguments *args) {
                         else {
                             dst += sprintf(dst, "%u ", (unsigned)1);
                         }
-                        format = tab>0 ? GBS_global_string_copy("%%-%iu ", tab-1) : strdup("%u ");
+                        format = tab>0 ? GBS_global_string_copy("%%-%iu ", tab-1) : ARB_strdup("%u ");
                     }
                     else if (firsttab>0) {
                         memset(dst, ' ', firsttab);
@@ -2245,7 +2245,7 @@ static char *calc_diff(const char *seq, const char *filter, size_t /*flen*/, voi
     char         equal_char = param->equalC;
     char         diff_char  = param->diffC;
 
-    char *result = strdup(seq);
+    char *result = ARB_strdup(seq);
     int   p;
 
     for (p = 0; result[p] && filter[p]; ++p) {

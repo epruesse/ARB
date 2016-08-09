@@ -72,8 +72,8 @@ inline GB_ERROR gb_transactable_type(GB_TYPES type, GBDATA *gbd) {
     else {
         GB_TYPES gb_type = gbd->type();
         if (gb_type != type && (type != GB_STRING || gb_type != GB_LINK)) {
-            char *rtype    = strdup(GB_TYPES_2_name(type));
-            char *rgb_type = strdup(GB_TYPES_2_name(gb_type));
+            char *rtype    = ARB_strdup(GB_TYPES_2_name(type));
+            char *rgb_type = ARB_strdup(GB_TYPES_2_name(gb_type));
             
             error = GBS_global_string("type mismatch (want='%s', got='%s') in '%s'", rtype, rgb_type, GB_get_db_path(gbd));
 
@@ -116,7 +116,7 @@ inline GB_ERROR gb_type_readable_from(GB_TYPES type, GBDATA *gbd) {
 
 inline GB_ERROR error_with_dbentry(const char *action, GBDATA *gbd, GB_ERROR error) {
     if (error) {
-        char       *error_copy = strdup(error);
+        char       *error_copy = ARB_strdup(error);
         const char *path       = GB_get_db_path(gbd);
         error                  = GBS_global_string("Can't %s '%s':\n%s", action, path, error_copy);
         free(error_copy);
@@ -1074,7 +1074,7 @@ char *GB_read_as_string(GBDATA *gbd) {
         case GB_LINK:   return GB_read_link(gbd);
         case GB_BYTE:   return GBS_global_string_copy("%i", GB_read_byte(gbd));
         case GB_INT:    return GBS_global_string_copy("%li", GB_read_int(gbd));
-        case GB_FLOAT:  return strdup(ARB_float_2_ascii(GB_read_float(gbd)));
+        case GB_FLOAT:  return ARB_strdup(ARB_float_2_ascii(GB_read_float(gbd)));
         case GB_BITS:   return GB_read_bits(gbd, '0', '1');
             /* Be careful : When adding new types here, you have to make sure that
              * GB_write_autoconv_string is able to write them back and that this makes sense.
@@ -1681,7 +1681,7 @@ bool GB_is_container(GBDATA *gbd) {
 }
 
 char *GB_read_key(GBDATA *gbd) {
-    return strdup(GB_read_key_pntr(gbd));
+    return ARB_strdup(GB_read_key_pntr(gbd));
 }
 
 GB_CSTR GB_read_key_pntr(GBDATA *gbd) {
@@ -2118,7 +2118,7 @@ char* GB_get_subfields(GBDATA *gbd) {
         }
     }
     else {
-        result = strdup(";");
+        result = ARB_strdup(";");
     }
 
     return result;

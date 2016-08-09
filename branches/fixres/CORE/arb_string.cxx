@@ -250,7 +250,7 @@ void TEST_replace_old_TEST_EXPECTS_by_expectations() {
     // test various string-types are matchable (w/o casts)
     {
         const char *car_ccp = "Alfa";
-        char       *car_cp  = strdup("Alfa");
+        char       *car_cp  = ARB_strdup("Alfa");
         string      car_str("Alfa");
 
         TEST_EXPECT_EQUAL(car_ccp, "Alfa");

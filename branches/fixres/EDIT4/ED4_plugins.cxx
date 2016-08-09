@@ -83,12 +83,12 @@ class PlugIn {
 
 public:
     PlugIn(const char *name_, ED4_plugin *start_plugin_)
-        : name(strdup(name_)),
+        : name(ARB_strdup(name_)),
           start_plugin(start_plugin_),
           window(NULL)
     {}
     PlugIn(const PlugIn& other)
-        : name(strdup(other.name)),
+        : name(ARB_strdup(other.name)),
           start_plugin(other.start_plugin),
           window(other.window)
     {}

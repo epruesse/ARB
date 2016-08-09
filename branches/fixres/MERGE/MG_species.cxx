@@ -770,7 +770,7 @@ GB_ERROR MERGE_sequences_simple(AW_root *awr) {
                                 GB_ERROR  warning;          // duplicated species warning (does not apply here)
                                 char     *autoname = AWTC_create_numbered_suffix(D_species_hash, s_name, warning);
 
-                                if (!autoname) autoname = strdup(s_name);
+                                if (!autoname) autoname = ARB_strdup(s_name);
                                 freeset(s_name, aw_input("Species ID", "Enter new species ID", autoname));
                                 free(autoname);
                                 retry = true;

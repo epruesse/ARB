@@ -21,8 +21,8 @@
 #ifndef AW_MSG_HXX
 #include <aw_msg.hxx>
 #endif
-#ifndef ARB_MEM_H
-#include <arb_mem.h>
+#ifndef ARB_STRING_H
+#include <arb_string.h>
 #endif
 #ifndef ATTRIBUTES_H
 #include <attributes.h>
@@ -428,7 +428,7 @@ public:
         unalignedBases   = 0;
         first            = 0;
         last             = 0;
-        my_master_name   = strdup(master_name);
+        my_master_name   = ARB_strdup(master_name);
         showGapsMessages = show_Gaps_Messages;
     }
     ~FastAlignReport() {

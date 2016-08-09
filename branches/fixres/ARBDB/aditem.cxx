@@ -223,7 +223,7 @@ static char *GBT_create_unique_item_identifier(GBDATA *gb_item_container, const 
     char   *unique_id;
 
     if (!gb_item) {
-        unique_id = strdup(default_id); // default_id is unused
+        unique_id = ARB_strdup(default_id); // default_id is unused
     }
     else {
         char   *generated_id  = (char*)ARB_alloc(strlen(default_id)+20);

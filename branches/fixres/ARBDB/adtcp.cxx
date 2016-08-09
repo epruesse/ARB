@@ -147,7 +147,7 @@ GB_ERROR ArbTcpDat::read(int *versionFound) {
             while ((tok = strtok(lp, " \t\n"))) {
                 if (tok[0] == '#') break; // EOL comment -> stop
                 if (tokCount >= MAXTOKENS) { error = "Too many tokens"; break; }
-                tokens[tokCount] = tokCount ? GBS_eval_env(tok) : strdup(tok);
+                tokens[tokCount] = tokCount ? GBS_eval_env(tok) : ARB_strdup(tok);
                 if (!tokens[tokCount]) { error = GB_await_error(); break; }
                 tokCount++;
                 lp = 0;
@@ -467,7 +467,7 @@ char *GBS_ptserver_id_to_choice(int i, int showBuild) {
         else nameOnly = file;       // otherwise show complete file
 
         {
-            char *remote      = strdup(ipPort);
+            char *remote      = ARB_strdup(ipPort);
             char *colon       = strchr(remote, ':');
             if (colon) *colon = 0; // hide port
 

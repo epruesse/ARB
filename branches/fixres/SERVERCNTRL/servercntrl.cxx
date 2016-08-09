@@ -99,7 +99,7 @@ char *createCallOnSocketHost(const char *host, const char *remotePrefix, const c
     }
 
     if (!call) {
-        call = strdup(command);
+        call = ARB_strdup(command);
         make_valgrinded_call(call); // only on local host
     }
 
@@ -243,7 +243,7 @@ GB_ERROR arb_look_and_start_server(long magic_number, const char *arb_tcp_env) {
             }
             else if (GB_size_of_file(file) <= 0) {
                 if (strncmp(arb_tcp_env, "ARB_NAME_SERVER", 15) == 0) {
-                    char *dir       = strdup(file);
+                    char *dir       = ARB_strdup(file);
                     char *lastSlash = strrchr(dir, '/');
 
                     if (lastSlash) {
@@ -358,21 +358,21 @@ arb_params *arb_trace_argv(int *argc, const char **argv)
     int s, d;
 
     arb_params *erg = (arb_params *)ARB_calloc(1, sizeof(*erg));
-    erg->db_server  = strdup(":");
-    erg->job_server = strdup("ARB_JOB_SERVER");
-    erg->mgr_server = strdup("ARB_MGR_SERVER");
-    erg->pt_server  = strdup("ARB_PT_SERVER");
+    erg->db_server  = ARB_strdup(":");
+    erg->job_server = ARB_strdup("ARB_JOB_SERVER");
+    erg->mgr_server = ARB_strdup("ARB_MGR_SERVER");
+    erg->pt_server  = ARB_strdup("ARB_PT_SERVER");
 
     for (s=d=0; s<*argc; s++) {
         if (argv[s][0] == '-') {
             switch (argv[s][1]) {
-                case 's': erg->species_name  = strdup(argv[s]+2); break;
-                case 'e': erg->extended_name = strdup(argv[s]+2); break;
-                case 'a': erg->alignment     = strdup(argv[s]+2); break;
-                case 'd': erg->default_file  = strdup(argv[s]+2); break;
+                case 's': erg->species_name  = ARB_strdup(argv[s]+2); break;
+                case 'e': erg->extended_name = ARB_strdup(argv[s]+2); break;
+                case 'a': erg->alignment     = ARB_strdup(argv[s]+2); break;
+                case 'd': erg->default_file  = ARB_strdup(argv[s]+2); break;
                 case 'f': {
                     char *eq;
-                    erg->field = strdup(argv[s]+2);
+                    erg->field = ARB_strdup(argv[s]+2);
 
                     eq = strchr(erg->field, '=');
                     if (eq) {
@@ -396,7 +396,7 @@ arb_params *arb_trace_argv(int *argc, const char **argv)
                         erg->tcp = GBS_global_string_copy("localhost%s", ipport);
                     }
                     else {
-                        erg->tcp = strdup(ipport);
+                        erg->tcp = ARB_strdup(ipport);
                     }
                     break;
                 }

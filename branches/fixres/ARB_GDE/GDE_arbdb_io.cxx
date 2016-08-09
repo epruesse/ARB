@@ -29,7 +29,7 @@ int Arbdb_get_curelem(NA_Alignment& dataset) {
 
 static void set_constant_fields(NA_Sequence *this_elem) {
     this_elem->attr            = DEFAULT_X_ATTR;
-    this_elem->comments        = strdup("no comments");
+    this_elem->comments        = ARB_strdup("no comments");
     this_elem->comments_maxlen = 1 + (this_elem->comments_len = strlen(this_elem->comments));
     this_elem->rmatrix         = NULL;
     this_elem->tmatrix         = NULL;

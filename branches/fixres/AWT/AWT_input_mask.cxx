@@ -923,12 +923,12 @@ static string scan_identifier(const string& line, size_t& scan_pos, GB_ERROR& er
 inline const char *inputMaskDir(bool local) {
     if (local) {
         static char *local_mask_dir;
-        if (!local_mask_dir) local_mask_dir = strdup(GB_path_in_arbprop("inputMasks"));
+        if (!local_mask_dir) local_mask_dir = ARB_strdup(GB_path_in_arbprop("inputMasks"));
         return local_mask_dir;
     }
 
     static char *global_mask_dir;
-    if (!global_mask_dir) global_mask_dir = strdup(GB_path_in_ARBLIB("inputMasks"));
+    if (!global_mask_dir) global_mask_dir = ARB_strdup(GB_path_in_ARBLIB("inputMasks"));
     return global_mask_dir;
 }
 
@@ -2065,11 +2065,11 @@ void awt_input_mask::link_to(GBDATA *gb_item) {
 
 
 awt_input_mask_descriptor::awt_input_mask_descriptor(const char *title_, const char *maskname_, const char *itemtypename_, bool local, bool hidden_) {
-    title = strdup(title_);
+    title = ARB_strdup(title_);
     internal_maskname    = (char*)ARB_alloc(strlen(maskname_)+2);
     internal_maskname[0] = local ? '0' : '1';
     strcpy(internal_maskname+1, maskname_);
-    itemtypename         = strdup(itemtypename_);
+    itemtypename         = ARB_strdup(itemtypename_);
     local_mask           = local;
     hidden               = hidden_;
 }
@@ -2080,9 +2080,9 @@ awt_input_mask_descriptor::~awt_input_mask_descriptor() {
 }
 
 awt_input_mask_descriptor::awt_input_mask_descriptor(const awt_input_mask_descriptor& other) {
-    title             = strdup(other.title);
-    internal_maskname = strdup(other.internal_maskname);
-    itemtypename      = strdup(other.itemtypename);
+    title             = ARB_strdup(other.title);
+    internal_maskname = ARB_strdup(other.internal_maskname);
+    itemtypename      = ARB_strdup(other.itemtypename);
     local_mask        = other.local_mask;
     hidden            = other.hidden;
 }
@@ -2092,9 +2092,9 @@ awt_input_mask_descriptor& awt_input_mask_descriptor::operator = (const awt_inpu
         free(internal_maskname);
         free(title);
 
-        title             = strdup(other.title);
-        internal_maskname = strdup(other.internal_maskname);
-        itemtypename      = strdup(other.itemtypename);
+        title             = ARB_strdup(other.title);
+        internal_maskname = ARB_strdup(other.internal_maskname);
+        itemtypename      = ARB_strdup(other.itemtypename);
         local_mask        = other.local_mask;
         hidden            = other.hidden;
     }
@@ -2397,7 +2397,7 @@ static char *selectMnemonic(const char *orgTitle, char *availableMnemonics, char
                 if (!prevWasChar || !startOfWord) {
                     if (hadMnemonic(availableMnemonics, c)) {
                         mnemonic = c;
-                        return strdup(orgTitle);
+                        return ARB_strdup(orgTitle);
                     }
                 }
                 prevWasChar = true;
@@ -2418,7 +2418,7 @@ static char *selectMnemonic(const char *orgTitle, char *availableMnemonics, char
     }
 
     mnemonic = 0; // failed
-    return strdup(orgTitle);
+    return ARB_strdup(orgTitle);
 }
 
 void AWT_create_mask_submenu(AW_window_menu_modes *awm, awt_item_type wanted_item_type, AWT_OpenMaskWindowCallback open_mask_window_cb, GBDATA *gb_main) {
@@ -2429,7 +2429,7 @@ void AWT_create_mask_submenu(AW_window_menu_modes *awm, awt_item_type wanted_ite
 
     awm->insert_sub_menu("User Masks", "k");
 
-    char *availableMnemonics = strdup("abcdefghijklmopqrstuvwxyz0123456789"); // 'n' excluded!
+    char *availableMnemonics = ARB_strdup("abcdefghijklmopqrstuvwxyz0123456789"); // 'n' excluded!
 
     for (int scope = 0; scope <= 1; ++scope) {
         bool entries_made = false;

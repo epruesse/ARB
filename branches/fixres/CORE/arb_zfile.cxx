@@ -12,8 +12,7 @@
 #include "arb_file.h"
 #include "arb_msg.h"
 #include "arb_misc.h"
-#include "arb_assert.h"
-#include "arb_mem.h"
+#include "arb_string.h"
 
 #include <string>
 #include <map>
@@ -127,7 +126,7 @@ FILE *ARB_zfopen(const char *name, const char *mode, FileCompressionMode cmode, 
                 }
 
                 // remove 'b' from mode (pipes are binary by default)
-                char *impl_b_mode = strdup(mode);
+                char *impl_b_mode = ARB_strdup(mode);
                 while (1) {
                     char *b = strchr(impl_b_mode, 'b');
                     if (!b) break;

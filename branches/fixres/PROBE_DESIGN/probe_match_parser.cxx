@@ -51,7 +51,7 @@ public:
         , probe_region_offset(-1)
     {
         pm_assert(headline_);
-        headline = strdup(headline_);
+        headline = ARB_strdup(headline_);
 
         for (char *tok_start = strtok(headline, " "); tok_start; tok_start = strtok(0, " ")) {
             char *tok_end = strchr(tok_start, 0)-1;
@@ -67,7 +67,7 @@ public:
             columns[tok_start] = column(tok_start, startPos-2, endPos-2); // -2 because headline is 2 shorter than other lines
         }
 
-        if (columns.empty()) *errPtr = strdup("No columns found");
+        if (columns.empty()) *errPtr = ARB_strdup("No columns found");
     }
 
     ~ProbeMatch_impl() {
@@ -91,10 +91,10 @@ ProbeMatchParser::ProbeMatchParser(const char *probe_target, const char *headlin
     : pimpl(0), init_error(0)
 {
     if (!headline) {
-        init_error = strdup("No headline given");
+        init_error = ARB_strdup("No headline given");
     }
     else if (!probe_target) {
-        init_error = strdup("No probe target given.");
+        init_error = ARB_strdup("No probe target given.");
     }
     else {
         pimpl = new ProbeMatch_impl(headline, &init_error);
@@ -111,7 +111,7 @@ ProbeMatchParser::ProbeMatchParser(const char *probe_target, const char *headlin
             // find that column and
             column *target_found = pimpl->findColumn(probe_target_copy);
             if (!target_found) {
-                char *probe_rev_compl = strdup(probe_target_copy);
+                char *probe_rev_compl = ARB_strdup(probe_target_copy);
                 GBT_reverseComplementNucSequence(probe_rev_compl, strlen(probe_rev_compl), 'U');
                 target_found          = pimpl->findColumn(probe_rev_compl);
                 free(probe_rev_compl);
@@ -160,7 +160,7 @@ int ProbeMatchParser::get_probe_region_offset() const {
 ParsedProbeMatch::ParsedProbeMatch(const char *match_, const ProbeMatchParser& parser_)
     : parser(parser_), match(0), error(0)
 {
-    if (match_) match = strdup(match_);
+    if (match_) match = ARB_strdup(match_);
     else error = "No match given";
 }
 

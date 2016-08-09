@@ -600,7 +600,7 @@ char *get_design_hinfo(const PT_pdc *pdc) {
         char *ecolipos = NULL;
         if (pdc->min_ecolipos == -1) {
             if (pdc->max_ecolipos == -1) {
-                ecolipos = strdup("any");
+                ecolipos = ARB_strdup("any");
             }
             else {
                 ecolipos = GBS_global_string_copy("<= %i", pdc->max_ecolipos);

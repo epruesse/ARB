@@ -346,7 +346,7 @@ static char *readable_pt_servername(int index, int maxlength) {
         printf("awar given to ptserver-selection does not contain a valid index\n");
 #endif
         GB_clear_error();
-        return strdup("-undefined-");
+        return ARB_strdup("-undefined-");
     }
 
     int len = strlen(fullname);
@@ -543,7 +543,7 @@ static char *get_SAI_description(GBDATA *gb_extended) {
         const char *group = GB_read_char_pntr(gb_group);
         return GBS_global_string_copy("[%s] %s", group, name);;
     }
-    return strdup(name);
+    return ARB_strdup(name);
 }
 
 const SaiSelectionlistFilterCallback& awt_std_SAI_filter_cb() {
@@ -647,7 +647,7 @@ static GB_ERROR standard_list2file(const CharPtrArray& display, const CharPtrArr
 
                 const char *val = value[i];
                 if (strcmp(disp, val) == 0) {
-                    line.put(strdup(disp));
+                    line.put(ARB_strdup(disp));
                 }
                 else {
                     char *escaped = GBS_escape_string(val, "\n", '\\');
@@ -676,8 +676,8 @@ static GB_ERROR standard_file2list(const CharPtrArray& line, StrArray& display, 
             value.put(unescaped);
         }
         else {
-            display.put(strdup(line[i]));
-            value.put(strdup(line[i]));
+            display.put(ARB_strdup(line[i]));
+            value.put(ARB_strdup(line[i]));
         }
     }
 
@@ -1134,7 +1134,7 @@ public:
             }
             case ACM_REMOVE: {
                 if (!subset_list->default_is_selected()) {
-                    char *selected     = strdup(subset_list->get_awar_value());
+                    char *selected     = ARB_strdup(subset_list->get_awar_value());
                     int   old_position = subset_list->get_index_of(selected);
 
                     subset_list->delete_element_at(old_position);

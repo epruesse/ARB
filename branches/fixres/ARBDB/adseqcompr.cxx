@@ -842,9 +842,9 @@ static GB_ERROR compress_sequence_tree(GBCONTAINER *gb_main, CompressionTree *tr
                     }
 
                     if (!error) {
-                        char *sizeOrg = strdup(GBS_readable_size(sumorg, "b"));
-                        char *sizeOld = strdup(GBS_readable_size(sumold, "b"));
-                        char *sizeNew = strdup(GBS_readable_size(sumnew, "b"));
+                        char *sizeOrg = ARB_strdup(GBS_readable_size(sumorg, "b"));
+                        char *sizeOld = ARB_strdup(GBS_readable_size(sumold, "b"));
+                        char *sizeNew = ARB_strdup(GBS_readable_size(sumnew, "b"));
 
                         GB_warningf("Alignment '%s':\n"
                                     "    Uncompressed data:   %7s\n"

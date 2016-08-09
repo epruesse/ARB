@@ -1901,7 +1901,7 @@ GB_ERROR gbcm_login(GBCONTAINER *gb_main, const char *loginname) {
         if (!user) {
             user = (gb_user *)ARB_calloc(sizeof(gb_user), 1);
             
-            user->username = strdup(loginname);
+            user->username = ARB_strdup(loginname);
             user->userid   = i;
             user->userbit  = 1<<i;
             user->nusers   = 1;

@@ -53,9 +53,9 @@ GBDATA *GBT_find_or_create(GBDATA *father, const char *key, long delete_level) {
  *       return the same atm. That may change.
  */
 
-char *GBT_get_default_helix   (GBDATA *) { return strdup("HELIX"); }
-char *GBT_get_default_helix_nr(GBDATA *) { return strdup("HELIX_NR"); }
-char *GBT_get_default_ref     (GBDATA *) { return strdup("ECOLI"); }
+char *GBT_get_default_helix   (GBDATA *) { return ARB_strdup("HELIX"); }
+char *GBT_get_default_helix_nr(GBDATA *) { return ARB_strdup("HELIX_NR"); }
+char *GBT_get_default_ref     (GBDATA *) { return ARB_strdup("ECOLI"); }
 
 
 // ----------------
@@ -118,14 +118,14 @@ static long gbs_scan_db_insert(const char *key, long val, void *cd_insert_data) 
     char           *to_insert = 0;
 
     if (!insert->datapath) {
-        to_insert = strdup(key);
+        to_insert = ARB_strdup(key);
     }
     else {
         bool do_insert = ARB_strBeginsWith(key+1, insert->datapath);
         gb_assert(implicated(!do_insert, !ARB_strBeginsWith(insert->datapath, key+1))); // oops - previously inserted also in this case. inspect!
 
-        if (do_insert) {                                         // datapath matches
-            to_insert    = strdup(key+strlen(insert->datapath)); // cut off prefix
+        if (do_insert) { // datapath matches
+            to_insert    = ARB_strdup(key+strlen(insert->datapath)); // cut off prefix
             to_insert[0] = key[0]; // copy type
         }
     }
@@ -864,7 +864,7 @@ static char *fullMacroname(const char *macro_name) {
 
     gb_assert(!GB_have_error());
 
-    if (GB_is_readablefile(macro_name)) return strdup(macro_name);
+    if (GB_is_readablefile(macro_name)) return ARB_strdup(macro_name);
 
     char *in_ARBMACROHOME = find_macro_in(GB_getenvARBMACROHOME(), macro_name);
     char *in_ARBMACRO     = find_macro_in(GB_getenvARBMACRO(),     macro_name);
@@ -1236,8 +1236,8 @@ void TEST_find_macros() {
 
     // unlink test.amc in ARBMACROHOME (from previous run)
     // ../UNIT_TESTER/run/homefake/.arb_prop/macros
-    char *test_amc = strdup(GB_concat_path(GB_getenvARBMACROHOME(), TEST_AMC));
-    char *res_amc  = strdup(GB_concat_path(GB_getenvARBMACROHOME(), RESERVED_AMC));
+    char *test_amc = ARB_strdup(GB_concat_path(GB_getenvARBMACROHOME(), TEST_AMC));
+    char *res_amc  = ARB_strdup(GB_concat_path(GB_getenvARBMACROHOME(), RESERVED_AMC));
 
     TEST_EXPECT_DIFFERENT(GB_unlink(test_amc), -1);
     TEST_EXPECT_DIFFERENT(GB_unlink(res_amc), -1);

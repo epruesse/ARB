@@ -163,8 +163,8 @@ static char *MG_diff_strings(char *str1, char * &str2, char *exclude, bool ToUpp
         dest2 += strlen(dest2);
     }
     if (strlen(buffer1)) {
-        *res1 = strdup(buffer1);
-        *res2 = strdup(buffer2);
+        *res1 = ARB_strdup(buffer1);
+        *res2 = ARB_strdup(buffer2);
     }
     else {
         *res1 = 0;
