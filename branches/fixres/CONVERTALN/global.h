@@ -99,7 +99,7 @@ inline int str0len(const char *str) {
 }
 
 inline char *strndup(const char *str, int len) {
-    char *result = (char*)ARB_alloc(len+1);
+    char *result = ARB_alloc<char>(len+1);
     memcpy(result, str, len);
     result[len]  = 0;
     return result;
@@ -126,7 +126,7 @@ inline bool has_no_content(const char *field) {
 inline bool has_content(const char *field) { return !has_no_content(field); }
 
 inline char *no_content() {
-    char *nothing = (char*)ARB_alloc(2);
+    char *nothing = ARB_alloc<char>(2);
     nothing[0]    = '\n';
     nothing[1]    = 0;
     return nothing;

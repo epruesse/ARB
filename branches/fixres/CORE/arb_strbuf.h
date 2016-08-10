@@ -95,7 +95,7 @@ public:
         arb_assert(blocksize>0);
         arb_assert(!data);
 
-        assign_mem((char*)ARB_alloc(blocksize), blocksize);
+        assign_mem(ARB_alloc<char>(blocksize), blocksize);
     }
     void realloc_mem(size_t newsize) {
         if (!data) alloc_mem(newsize);

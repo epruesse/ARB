@@ -2082,7 +2082,7 @@ void AW_area_management::create_devices(AW_window *aww, AW_area ar) {
 AW_color_idx AW_window::alloc_named_data_color(int colnum, const char *colorname) {
     if (!color_table_size) {
         color_table_size = AW_STD_COLOR_IDX_MAX + colnum;
-        color_table      = (AW_rgb*)ARB_alloc(sizeof(AW_rgb) *color_table_size);
+        ARB_alloc(color_table, color_table_size);
         for (int i = 0; i<color_table_size; ++i) color_table[i] = AW_NO_COLOR;
     }
     else {
@@ -2170,7 +2170,7 @@ Label::Label(const char *labeltext, AW_window *aww) {
             len = aww->get_at().length_of_buttons - 2;
             if (len < 1) len = 1;
 
-            label = (char*)ARB_alloc(len+1);
+            ARB_alloc(label, len+1);
             memset(label, 'y', len);
             label[len] = 0;
         }

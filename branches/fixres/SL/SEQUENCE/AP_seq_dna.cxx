@@ -303,7 +303,7 @@ void AP_sequence_parsimony::partial_match(const AP_sequence* part_, long *overla
 AP_FLOAT AP_sequence_parsimony::count_weighted_bases() const {
     static char *hits = 0;
     if (!hits) {
-        hits = (char*)ARB_alloc(256);
+        ARB_alloc(hits, 256);
         memset(hits, 1, 256); // count ambiguous characters half
 
         hits[AP_A] = 2; // count real characters full

@@ -588,7 +588,7 @@ static ED4_species_name_terminal *insert_new_species_terminal(GB_CSTR species_na
 
     ED4_init_notFoundMessage();
     {
-        char *buffer = (char*)ARB_alloc(strlen(species_name)+3);
+        char *buffer = ARB_alloc<char>(strlen(species_name)+3);
         sprintf(buffer, "-%c%s", is_SAI ? 'S' : 'L', species_name);
 
         int       index = 0;

@@ -154,7 +154,7 @@ GB_ERROR arb_start_server(const char *arb_tcp_env, int do_sleep)
                 plen    = strlen(param);
             }
 
-            serverparams = (char*)ARB_alloc(alllen+1);
+            ARB_alloc(serverparams, alllen+1);
             {
                 char *sp = serverparams;
 

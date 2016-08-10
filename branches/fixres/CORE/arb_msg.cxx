@@ -217,8 +217,8 @@ GB_ERROR GBK_assert_msg(const char *assertion, const char *file, int linenr) {
     const char  *result   = 0;
     int          old_size = last_global_string_size;
 
-    if (!buffer) buffer = (char *)ARB_alloc(BUFSIZE);
-    result              = GBS_global_string_to_buffer(buffer, BUFSIZE, "assertion '%s' failed in %s #%i", assertion, file, linenr);
+    if (!buffer) ARB_alloc(buffer, BUFSIZE);
+    result = GBS_global_string_to_buffer(buffer, BUFSIZE, "assertion '%s' failed in %s #%i", assertion, file, linenr);
 
     last_global_string_size = old_size;
 

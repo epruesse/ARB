@@ -52,17 +52,41 @@ inline void ARB_recalloc(TYPE*& tgt, size_t oelem, size_t nelem) {
     if (nelem>oelem) memset(tgt+oelem, 0, (nelem-oelem)*sizeof(TYPE));
 }
 
-inline void *ARB_alloc(size_t size) {
+__ATTR__DEPRECATED("use ARB_alloc") inline void *ARB_alloc_ELIM(size_t size) {
     void *mem = malloc(size);
     if (!mem) arb_mem::failed_to_allocate(size);
     return mem;
+}
+template<class TYPE>
+inline TYPE *ARB_alloc(size_t nelem) {
+    /*! malloc memory for an array of 'nelem' instances of TYPE (terminates on failure).
+     * @code
+     * int *p = ARB_alloc<int>(7); // allocates space for 7 int
+     * @endcode
+     * @see ARB_alloc
+     */
+
+    TYPE *mem = (TYPE*)malloc(nelem*sizeof(TYPE));
+    if (!mem) arb_mem::failed_to_allocate(nelem, sizeof(TYPE));
+    return mem;
+}
+template<class TYPE>
+inline void ARB_alloc(TYPE*& tgt, size_t nelem) {
+    /*! malloc memory for an array of 'nelem' instances of TYPE and assign its address to 'tgt' (terminates on failure).
+     * @code
+     * int *p;
+     * ARB_alloc(p, 7); // allocates space for 7 int
+     * @endcode
+     * @see ARB_alloc<TYPE>
+     */
+    tgt = ARB_alloc<TYPE>(nelem);
 }
 
 template<class TYPE>
 inline TYPE *ARB_calloc(size_t nelem) {
     /*! calloc memory for an array of 'nelem' instances of TYPE (terminates on failure).
      * @code
-     * int *p = ARB_calloc<int>(7); // allocates space for 7 int
+     * int *p = ARB_calloc<int>(7); // allocates space for 7 int (initializes memory with 0)
      * @endcode
      * @see ARB_calloc
      */
@@ -76,7 +100,7 @@ inline void ARB_calloc(TYPE*& tgt, size_t nelem) {
     /*! calloc memory for an array of 'nelem' instances of TYPE and assign its address to 'tgt' (terminates on failure).
      * @code
      * int *p;
-     * ARB_calloc(p, 7); // allocates space for 7 int
+     * ARB_calloc(p, 7); // allocates space for 7 int (initializes memory with 0)
      * @endcode
      * @see ARB_calloc<TYPE>
      */

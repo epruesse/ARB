@@ -105,7 +105,7 @@ const char *ARB_getenv_ignore_empty(const char *envvar) {
 }
 
 char *ARB_executable(const char *exe_name, const char *path) {
-    char       *buffer = (char*)ARB_alloc(strlen(path)+1+strlen(exe_name)+1);
+    char       *buffer = ARB_alloc<char>(strlen(path)+1+strlen(exe_name)+1);
     const char *start  = path;
     int         found  = 0;
 

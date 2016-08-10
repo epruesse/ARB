@@ -45,8 +45,8 @@ static const char *GB_get_GBDATA_path(GBDATA *gbd) {
     static char *orgbuffer = NULL;
     char        *buffer;
 
-    if (!orgbuffer) orgbuffer = (char*)ARB_alloc(BUFFERSIZE);
-    buffer                    = orgbuffer;
+    if (!orgbuffer) ARB_alloc(orgbuffer, BUFFERSIZE);
+    buffer = orgbuffer;
 
     build_GBDATA_path(gbd, &buffer);
     assert_or_exit((buffer-orgbuffer) < BUFFERSIZE); // buffer overflow

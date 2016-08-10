@@ -25,7 +25,7 @@ inline char *ARB_strduplen(const char *p, unsigned len) {
         arb_assert(strlen(p) == len);
         // Note: Common reason for failure: a zero-char was manually printed by a GBS_global_string...-function
 
-        neu = (char*)ARB_alloc(len+1);
+        ARB_alloc(neu, len+1);
         memcpy(neu, p, len+1);
         return neu;
     }
@@ -48,7 +48,7 @@ inline char *ARB_strpartdup(const char *start, const char *end) {
             const char *eos = (const char *)memchr(start, 0, len);
 
             if (eos) len = eos-start;
-            result = (char*)ARB_alloc(len+1);
+            ARB_alloc(result, len+1);
             memcpy(result, start, len);
             result[len] = 0;
         }

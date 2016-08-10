@@ -175,8 +175,8 @@ static const char *translateSAItoColors(AW_root *awr, GBDATA *gb_main, int start
     if (seqSize > seqBufferSize) {
         free(saiColors);
         seqBufferSize = seqSize;
-        saiColors     = (char*)ARB_alloc(seqBufferSize);
-        saiValues     = (char*)ARB_alloc(seqBufferSize);
+        ARB_alloc(saiColors, seqBufferSize);
+        ARB_alloc(saiValues, seqBufferSize); // @@@ leak?
     }
 
     memset(saiColors, '0'-1, seqSize);

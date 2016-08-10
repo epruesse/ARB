@@ -104,7 +104,7 @@ string LineReader::lineError(const string& msg) const {
 
     if (len>allocated) {
         allocated = len;
-        buffer    = (char*)ARB_alloc(allocated);
+        buffer    = ARB_alloc<char>(allocated);
     }
 
     if (showFilename) {

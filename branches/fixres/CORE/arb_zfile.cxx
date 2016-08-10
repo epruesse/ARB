@@ -209,7 +209,7 @@ GB_ERROR ARB_zfclose(FILE *fp) {
 
 static char *fileContent(FILE *in, size_t& bytes_read) {
     const size_t  BUFFERSIZE = 1000;
-    char         *buffer     = (char*)ARB_alloc(BUFFERSIZE+1);
+    char         *buffer     = ARB_alloc<char>(BUFFERSIZE+1);
     bytes_read               = fread(buffer, 1, BUFFERSIZE, in);
     arb_assert(bytes_read<BUFFERSIZE);
     buffer[bytes_read]       = 0;

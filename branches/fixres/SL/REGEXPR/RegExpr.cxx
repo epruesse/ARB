@@ -58,7 +58,7 @@ void RegExpr::perform_match(const char *str, size_t offset) const {
     delete [] matches; matches = NULL;
 
     size_t      subs      = subexpr_count();
-    regmatch_t *possMatch = (regmatch_t*)ARB_alloc((subs+1) * sizeof(regmatch_t));
+    regmatch_t *possMatch = ARB_alloc<regmatch_t>(subs+1);
     int         eflags    = offset ? REG_NOTBOL : 0;
     int         res       = regexec(&comreg->compiled, str+offset, subs+1, possMatch, eflags);
 

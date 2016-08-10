@@ -39,7 +39,7 @@ GBS_string_matcher *GBS_compile_matcher(const char *search_expr, GB_CASE case_fl
      * or NULL (in which case an error was exported)
      */
 
-    GBS_string_matcher *matcher = (GBS_string_matcher*)ARB_alloc(sizeof(*matcher));
+    GBS_string_matcher *matcher = ARB_alloc<GBS_string_matcher>(1);
     GB_ERROR            error   = 0;
 
     matcher->type      = SM_INVALID;

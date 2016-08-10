@@ -183,7 +183,7 @@ static void ParseMenus(LineReader& in) {
 
                 // Resize the item list for this menu (add one item)
                 if (curitem == 0) {
-                    thismenu->item = (GmenuItem*)ARB_alloc(sizeof(GmenuItem));
+                    ARB_alloc(thismenu->item, 1);
                 }
                 else {
                     ARB_realloc(thismenu->item, thismenu->numitems);

@@ -939,7 +939,7 @@ void RealignAttempt::perform() {
 
 inline char *unalign(const char *data, size_t len, size_t& compressed_len) {
     // removes gaps from sequence
-    char *compressed = (char*)ARB_alloc(len+1);
+    char *compressed = ARB_alloc<char>(len+1);
     compressed_len = 0;
     for (size_t p = 0; p<len && data[p]; ++p) {
         if (!isGap(data[p])) {
@@ -1040,7 +1040,7 @@ public:
             size_t  compressed_len;
             char   *compressed_dest = unalign(dest, dest_len, compressed_len);
 
-            buffer = (char*)ARB_alloc(ali_len+1);
+            ARB_alloc(buffer, ali_len+1);
 
             RealignAttempt attempt(allowed, compressed_dest, compressed_len, source, buffer, ali_len, cutoff_dna);
             FailedAt       failed = attempt.failed();

@@ -2066,7 +2066,7 @@ void awt_input_mask::link_to(GBDATA *gb_item) {
 
 awt_input_mask_descriptor::awt_input_mask_descriptor(const char *title_, const char *maskname_, const char *itemtypename_, bool local, bool hidden_) {
     title = ARB_strdup(title_);
-    internal_maskname    = (char*)ARB_alloc(strlen(maskname_)+2);
+    internal_maskname    = ARB_alloc<char>(strlen(maskname_)+2);
     internal_maskname[0] = local ? '0' : '1';
     strcpy(internal_maskname+1, maskname_);
     itemtypename         = ARB_strdup(itemtypename_);

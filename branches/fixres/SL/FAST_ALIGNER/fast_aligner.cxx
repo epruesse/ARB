@@ -365,7 +365,7 @@ static char *lstr(const char *s, int len) {
 
     if (alloc<(len+1)) {
         if (alloc) free(buffer);
-        buffer = (char*)ARB_alloc(alloc=len+100);
+        ARB_alloc(buffer, alloc=len+100);
     }
 
     memcpy(buffer, s, len);
@@ -1208,7 +1208,7 @@ static ARB_ERROR alignCompactedTo(CompactedSubSequence     *toAlignSequence,
                     // create temp-entry for master containing insert dots:
 
                     int   buflen    = max_seq_length*2;
-                    char *buffer    = (char*)ARB_alloc(buflen+1);
+                    char *buffer    = ARB_alloc<char>(buflen+1);
                     char *afterLast = buffer;
 
                     if (!buffer) {

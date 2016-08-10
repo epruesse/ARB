@@ -267,7 +267,7 @@ bool ARB_textfiles_have_difflines(const char *file1, const char *file2, int expe
 
         if (diffout) {
 #define BUFSIZE 5000
-            char         *buffer = (char*)ARB_alloc(BUFSIZE);
+            char         *buffer = ARB_alloc<char>(BUFSIZE);
             bool          inHunk = false;
             DiffLines     diff_lines;
             difflineMode  mode(special_mode);
@@ -387,8 +387,8 @@ bool ARB_files_are_equal(const char *file1, const char *file2) {
         }
         else {
             const int      BLOCKSIZE   = 4096;
-            unsigned char *buf1        = (unsigned char*)ARB_alloc(BLOCKSIZE);
-            unsigned char *buf2        = (unsigned char*)ARB_alloc(BLOCKSIZE);
+            unsigned char *buf1        = ARB_alloc<unsigned char>(BLOCKSIZE);
+            unsigned char *buf2        = ARB_alloc<unsigned char>(BLOCKSIZE);
             size_t         equal_bytes = 0;
 
             while (!error) {

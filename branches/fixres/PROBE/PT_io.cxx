@@ -94,7 +94,7 @@ char *readable_probe(const char *compressed_probe, size_t len, char T_or_U) {
     uchar *tab = NULL;
 
     if (smart_tab.isNull()) {
-        tab = (uchar *) ARB_alloc(256);
+        ARB_alloc(tab, 256);
         memset(tab, '?', 256);
 
         tab[PT_A]  = 'A';
@@ -111,7 +111,7 @@ char *readable_probe(const char *compressed_probe, size_t len, char T_or_U) {
     tab = &*smart_tab;
     tab[PT_T] = T_or_U;
     
-    char *result = (char*)ARB_alloc(len+1);
+    char *result = ARB_alloc<char>(len+1);
     for (size_t i = 0; i<len; ++i) {
         result[i] = tab[safeCharIndex(compressed_probe[i])];
     }

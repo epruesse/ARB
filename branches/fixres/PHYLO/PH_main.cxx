@@ -266,7 +266,7 @@ static void PH_save_ml_multiline_cb(AW_window *aww, PH_root *ph_root) {
     char     *fname     = aww->get_root()->awar(AWAR_PHYLO_MARKERLINENAME)->read_string();
     int       fname_len = strlen(fname);
     {
-        char *digit_appended = (char*)ARB_alloc(fname_len+2);
+        char *digit_appended = ARB_alloc<char>(fname_len+2);
         memcpy(digit_appended, fname, fname_len);
         strcpy(digit_appended+fname_len, "0");
 

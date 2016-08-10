@@ -63,7 +63,7 @@ public:
 
     uint32_t checksum() const {
         size_t         size   = data.size();
-        unsigned char *buffer = (unsigned char *)ARB_alloc(size);
+        unsigned char *buffer = ARB_alloc<unsigned char>(size);
         for (size_t s = 0; s<size; ++s) buffer[s] = data[s];
         uint32_t cs = GB_checksum((char*)buffer, size, false, NULL);
         free(buffer);

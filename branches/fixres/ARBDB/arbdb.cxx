@@ -258,7 +258,7 @@ int gb_convert_type_2_appendix_size[] = { /* contains the size of the suffix (ak
 
 static void init_buffer(gb_buffer *buf, size_t initial_size) {
     buf->size = initial_size;
-    buf->mem  = buf->size ? (char*)ARB_alloc(buf->size) : NULL;
+    buf->mem  = buf->size ? ARB_alloc<char>(buf->size) : NULL;
 }
 
 static char *check_out_buffer(gb_buffer *buf) {
@@ -274,7 +274,7 @@ static void alloc_buffer(gb_buffer *buf, size_t size) {
     free(buf->mem);
     buf->size = size;
 #if (MEMORY_TEST==1)
-    buf->mem  = (char *)ARB_alloc(buf->size);
+    ARB_alloc(buf->mem, buf->size);
 #else
     ARB_calloc(buf->mem, buf->size);
 #endif
@@ -493,9 +493,10 @@ gb_local_data::gb_local_data()
     init_buffer(&buf2, 4000);
 
     write_bufsize = GBCM_BUFFER;
-    write_buffer  = (char *)ARB_alloc((size_t)write_bufsize);
-    write_ptr     = write_buffer;
-    write_free    = write_bufsize;
+    ARB_alloc(write_buffer, write_bufsize);
+
+    write_ptr  = write_buffer;
+    write_free = write_bufsize;
 
     bituncompress = gb_build_uncompress_tree(GB_BIT_compress_data, 1, 0);
     bitcompress   = gb_build_compress_list(GB_BIT_compress_data, 1, &(bc_size));
@@ -633,7 +634,7 @@ void GB_atclose(GBDATA *gbd, void (*fun)(GBDATA *gb_main, void *client_data), vo
 
     gb_assert(!atclose_cb_exists(Main->close_callbacks, fun)); // each close callback should only exist once
 
-    gb_close_callback_list *gccs = (gb_close_callback_list *)ARB_alloc(sizeof(*gccs));
+    gb_close_callback_list *gccs = ARB_alloc<gb_close_callback_list>(1);
 
     gccs->next        = Main->close_callbacks;
     gccs->cb          = fun;
@@ -2092,7 +2093,7 @@ char* GB_get_subfields(GBDATA *gbd) {
             int keylen = strlen(key);
 
             if (result) {
-                char *neu_result = (char*)ARB_alloc(result_length+keylen+1+1);
+                char *neu_result = ARB_alloc<char>(result_length+keylen+1+1);
 
                 if (neu_result) {
                     char *p = gb_stpcpy(neu_result, result);
@@ -2108,7 +2109,7 @@ char* GB_get_subfields(GBDATA *gbd) {
                 }
             }
             else {
-                result = (char*)ARB_alloc(1+keylen+1+1);
+                ARB_alloc(result, 1+keylen+1+1);
                 result[0] = ';';
                 strcpy(result+1, key);
                 result[keylen+1] = ';';

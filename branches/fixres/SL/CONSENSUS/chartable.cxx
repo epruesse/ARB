@@ -376,9 +376,10 @@ int SepBaseFreq::empty() const
 #endif // ASSERTION_USED
 
 char *BaseFrequencies::build_consensus_string(PosRange r, const ConsensusBuildParams& cbp) const {
-    ExplicitRange  range(r, size());
-    long           entries = range.size();
-    char          *new_buf = (char*)ARB_alloc(entries+1);
+    ExplicitRange range(r, size());
+
+    long  entries = range.size();
+    char *new_buf = ARB_alloc<char>(entries+1);
 
     build_consensus_string_to(new_buf, range, cbp);
     new_buf[entries] = 0;

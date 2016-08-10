@@ -18,7 +18,7 @@ int Arbdb_get_curelem(NA_Alignment& dataset) {
     int curelem = dataset.numelements++;
     if (curelem == 0) {
         dataset.maxnumelements = 5;
-        dataset.element        = (NA_Sequence *)ARB_alloc(dataset.maxnumelements * sizeof(*dataset.element));
+        ARB_alloc(dataset.element, dataset.maxnumelements);
     }
     else if (curelem == dataset.maxnumelements) {
         dataset.maxnumelements *= 2;
@@ -184,7 +184,7 @@ __ATTR__USERESULT static int InsertDatainGDE(NA_Alignment&     dataset,
                     int  c;
                     long newcount = 0;
 
-                    sequfilt[i]      = (uchar*)ARB_alloc((unsigned int)len+1);
+                    ARB_alloc(sequfilt[i], len+1);
                     sequfilt[i][len] = 0;
                     memset(sequfilt[i], '.', len); // Generate empty sequences
 
@@ -394,7 +394,7 @@ int ReadArbdb(NA_Alignment& dataset, bool marked, AP_filter *filter, GapCompress
     char **the_sequences; ARB_calloc(the_sequences, numberspecies+1);
 
     for (long i=0; the_species[i]; i++) {
-        the_sequences[i] = (char *)ARB_alloc((size_t)maxalignlen+1);
+        ARB_alloc(the_sequences[i], maxalignlen+1);
         the_sequences[i][maxalignlen] = 0;
         memset(the_sequences[i], '.', (size_t)maxalignlen);
         const char *data = GB_read_char_pntr(GBT_find_sequence(the_species[i], dataset.alignment_name));

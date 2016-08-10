@@ -96,7 +96,7 @@ char SEC_bond_def::get_bond(char base1, char base2) const
 }
 
 char *SEC_bond_def::get_pair_string(char pair_char) {
-    char *str = (char*)ARB_alloc(5*5*3+1);
+    char *str = ARB_alloc<char>(5*5*3+1);
     char *ins = str;
 
     for (int i = 0; i<SEC_BOND_BASE_CHARS; ++i) {

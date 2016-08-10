@@ -73,7 +73,7 @@ public:
         id(NULL),
         len(0),
         max(INITSEQ),
-        seq((char*)ARB_alloc(INITSEQ))
+        seq(ARB_alloc<char>(INITSEQ))
     {
     }
     ~Seq() {

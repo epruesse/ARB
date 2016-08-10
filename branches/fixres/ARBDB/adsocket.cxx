@@ -308,7 +308,7 @@ char *GB_read_file(const char *path) { // consider using class FileContent inste
                 long data_size = GB_size_of_file(epath);
 
                 if (data_size >= 0) {
-                    result = (char*)ARB_alloc(data_size+1);
+                    result = ARB_alloc<char>(data_size+1);
 
                     data_size         = fread(result, 1, data_size, in);
                     result[data_size] = 0;

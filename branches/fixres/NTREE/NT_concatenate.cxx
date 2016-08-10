@@ -124,7 +124,7 @@ static GB_ERROR create_concatInfo_SAI(GBDATA *gb_main, const char *new_ali_name,
             int new_ali_length = GBT_get_alignment_len(gb_main, new_ali_name);
             int sep_len        = strlen(ali_separator);
 
-            char *info = (char*)ARB_alloc(new_ali_length+1);
+            char *info = ARB_alloc<char>(new_ali_length+1);
             memset(info, '=', new_ali_length);
 
             int offset       = 0;
@@ -431,7 +431,7 @@ static GB_ERROR checkAndMergeFields(GBDATA *gb_new_species, GB_ERROR error, Spec
                                 }
                                 nt_assert(content);
                                 int add_len = names_len+1+strlen(content);
-                                char *whole = (char*)ARB_alloc(new_content_len+1+add_len+1);
+                                char *whole = ARB_alloc<char>(new_content_len+1+add_len+1);
                                 nt_assert(whole);
                                 char *add = new_content ? whole+sprintf(whole, "%s ", new_content) : whole;
                                 sl2 = sl; i = 0;
@@ -459,7 +459,7 @@ static GB_ERROR checkAndMergeFields(GBDATA *gb_new_species, GB_ERROR error, Spec
                 }
 
                 // mark field as done:
-                char *new_doneFields = (char*)ARB_alloc(doneLen+fieldLen+1+1);
+                char *new_doneFields = ARB_alloc<char>(doneLen+fieldLen+1+1);
                 sprintf(new_doneFields, "%s%s;", doneFields, fieldName);
                 doneLen += fieldLen+1;
                 freeset(doneFields, new_doneFields);

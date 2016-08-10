@@ -542,7 +542,7 @@ static char *unEscapeString(const char *escapedString) {
 static char *escapeString(const char *unescapedString) {
     // replaces all '\' and '"' by '\\' and '\"'
     int         len    = strlen(unescapedString);
-    char       *result = (char*)ARB_alloc(2*len+1);
+    char       *result = ARB_alloc<char>(2*len+1);
     char       *to     = result;
     const char *from   = unescapedString;
 
@@ -954,7 +954,7 @@ static GB_ERROR tab(GBL_command_arguments *args, bool pretab) {
         int len = strlen(args->input.get(i));
         if (len >= tab) IN_2_OUT(args, i);
         else {
-            char *p = (char *)ARB_alloc(tab+1);
+            char *p = ARB_alloc<char>(tab+1);
             if (pretab) {
                 int spaces = tab-len;
                 for (int j = 0; j<spaces; ++j) p[j] = ' ';
@@ -982,7 +982,7 @@ static GB_ERROR gbl_crop(GBL_command_arguments *args) {
         while (s[0] && strchr(chars_to_crop, s[0]) != 0) s++; // crop at beg of line
 
         int   len = strlen(s);
-        char *p   = (char*)ARB_alloc(len+1);
+        char *p   = ARB_alloc<char>(len+1);
         strcpy(p, s);
 
         {
@@ -1011,7 +1011,7 @@ static GB_ERROR gbl_cut(GBL_command_arguments *args) {
 }
 static GB_ERROR gbl_drop(GBL_command_arguments *args) {
     GB_ERROR  error   = 0;
-    bool     *dropped = (bool*)ARB_alloc(args->input.size()*sizeof(*dropped));
+    bool     *dropped = ARB_alloc<bool>(args->input.size());
 
     for (int i=0; i<args->input.size(); ++i) dropped[i] = false;
 
@@ -1542,7 +1542,7 @@ static cached_taxonomy *get_cached_taxonomy(GBDATA *gb_main, const char *tree_na
                 *error = GBS_global_string("Can't find tree '%s'", tree_name);
             }
             else {
-                cached_taxonomy *ct            = (cached_taxonomy*)ARB_alloc(sizeof(*ct));
+                cached_taxonomy *ct            = ARB_alloc<cached_taxonomy>(1);
                 long             nodes         = GBT_count_leafs(tree);
                 int              group_counter = 0;
 
@@ -1905,7 +1905,7 @@ static GB_ERROR gbl_format_sequence(GBL_command_arguments *args) {
                 needed_size = lines*line_size + firsttab + 1 + 10;
             }
 
-            char *result = (char*)ARB_alloc(needed_size);
+            char *result = ARB_alloc<char>(needed_size);
             if (!result) {
                 error = GBS_global_string("Out of memory (tried to alloc %zu bytes)", needed_size);
             }

@@ -340,7 +340,7 @@ static void splitTokComment(char **tok, char **commentP)
 static char *appendComment(const char *s1, int l1, const char *s2) {
     if (s1) {
         int l2 = strlen(s2);
-        char *s = (char*)ARB_alloc(l1+1+l2+1);
+        char *s = ARB_alloc<char>(l1+1+l2+1);
 
         sprintf(s, "%s %s", s1, s2);
         return s;
@@ -497,9 +497,8 @@ char SearchTree::unify_char(char c, int case_sensitive, int T_equal_U)
     return c;
 }
 
-char *SearchTree::unify_str(const char *data, int len, ED4_SEARCH_GAPS gaps, int *new_len, int **uni2real)
-{
-    char *p       = (char*)ARB_alloc(len+1);
+char *SearchTree::unify_str(const char *data, int len, ED4_SEARCH_GAPS gaps, int *new_len, int **uni2real) {
+    char *p       = ARB_alloc<char>(len+1);
     char *pp      = p;
     int   nlen    = 0;
     int   realPos = 0;
@@ -568,7 +567,7 @@ void SearchTree::findMatches(const char *seq, int len, reportMatch report)
 {
     if (root) {
         int new_len;
-        int *uni2real = (int*)ARB_alloc(len*sizeof(int));
+        int *uni2real = ARB_alloc<int>(len);
         char *uni_seq = unify_sequence(seq, len, &new_len, &uni2real);
 
         int off;
@@ -1251,7 +1250,7 @@ void ED4_SearchResults::to_array() {
         arraySize = a_arraySize;
     }
 
-    ED4_SearchPosition **a_array = (ED4_SearchPosition**)ARB_alloc(sizeof(ED4_SearchPosition*)*arraySize);
+    ED4_SearchPosition **a_array = ARB_alloc<ED4_SearchPosition*>(arraySize);
 
     pos = first;
     for (int e=0; e<arraySize; e++) {

@@ -1336,7 +1336,7 @@ const char *AP_tree_nlen::fullname() const
 
         if (buffer) free(buffer);
 
-        buffer = (char*)ARB_alloc(len);
+        ARB_alloc(buffer, len);
 
         strcpy(buffer, "[");
         strcat(buffer, lName);

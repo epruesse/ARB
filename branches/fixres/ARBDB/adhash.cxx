@@ -120,7 +120,7 @@ static void calculate_primes_upto() {
     {
         size_t         bits_needed  = CALC_PRIMES_UP_TO/2+1; // only need bits for odd numbers
         size_t         bytes_needed = (bits_needed/8)+1;
-        unsigned char *eratosthenes = (unsigned char *)ARB_calloc_ELIM(bytes_needed, 1); // bit = 1 means "is not a prime"
+        unsigned char *eratosthenes = ARB_calloc<unsigned char>(bytes_needed); // bit = 1 means "is not a prime"
         size_t         prime_count  = 0;
         size_t         num;
 

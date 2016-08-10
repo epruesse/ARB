@@ -32,13 +32,13 @@ inline char *give_buffer(size_t size) {
     if (size<1) size = 1;
     if (bufsize<size) {
         bufsize = size;
-        freeset(buf, (char*)ARB_alloc(bufsize));
+        freeset(buf, ARB_alloc<char>(bufsize));
     }
     return buf;
 }
 
 GBS_regex *GBS_compile_regexpr(const char *regexpr, GB_CASE case_flag, GB_ERROR *error) {
-    GBS_regex *comreg  = (GBS_regex*)ARB_alloc(sizeof(*comreg));
+    GBS_regex *comreg  = ARB_alloc<GBS_regex>(1);
     int        cflags  = REG_EXTENDED|(case_flag == GB_IGNORE_CASE ? REG_ICASE : 0)|REG_NEWLINE;
     int        errcode = regcomp(&comreg->compiled, regexpr, cflags);
 
@@ -96,7 +96,7 @@ const char *GBS_unwrap_regexpr(const char *regexpr_in_slashes, GB_CASE *case_fla
 
             if (len>max_len) {
                 max_len = len*3/2;
-                freeset(result_buffer, (char*)ARB_alloc(max_len+1));
+                freeset(result_buffer, ARB_alloc<char>(max_len+1));
             }
 
             memcpy(result_buffer, regexpr_in_slashes+1, len);

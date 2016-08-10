@@ -385,7 +385,7 @@ public:
         }
 
         if (key_count) {
-            key = (GBDATA**)ARB_alloc(key_count*sizeof(*key));
+            ARB_alloc(key, key_count);
             
             int container_count = 0;
             for (GBDATA *gb_key = GB_child(gb_key_data); gb_key; gb_key = GB_nextChild(gb_key)) {

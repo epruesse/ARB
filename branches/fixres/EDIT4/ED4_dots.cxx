@@ -130,7 +130,7 @@ static void dot_missing_bases(AW_window *aww) {
                     }
                 }
 
-                if (pass == 1) stat.position = (size_t*)ARB_alloc(stat.pos_count * sizeof(*stat.position));
+                if (pass == 1) ARB_alloc(stat.position, stat.pos_count);
             }
             free(consensus);
         }

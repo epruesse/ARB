@@ -379,7 +379,7 @@ void SEC_root::cacheBackgroundColor() {
     int len   = db->length();
     int end   = len-1;
 
-    bg_color = (char*)ARB_alloc(len);
+    ARB_alloc(bg_color, len);
 
     const char *bg_sai    = displayParams.display_sai    ? host().get_SAI_background(start, end)    : 0;
     const char *bg_search = displayParams.display_search ? host().get_search_background(start, end) : 0;

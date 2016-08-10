@@ -74,7 +74,7 @@ GB_ERROR AW_select_nameserver(GBDATA *gb_main, GBDATA *gb_other_main) {
                 error = GBS_global_string("No nameserver defined.");
             }
             else {
-                char **fieldNames = (char **)ARB_alloc(serverCount*sizeof(*fieldNames));
+                char **fieldNames = ARB_alloc<char*>(serverCount);
                 for (int c = 0; c<serverCount; c++) {
                     const char *ipport = GBS_read_arb_tcp(nameservers[c]);
                     if (!ipport) {
@@ -107,7 +107,7 @@ GB_ERROR AW_select_nameserver(GBDATA *gb_main, GBDATA *gb_other_main) {
                             else len += strlen(nofield);
                         }
 
-                        char *buttons = (char*)ARB_alloc(len);
+                        char *buttons = ARB_alloc<char>(len);
                         buttons[0]    = 0;
                         for (int c = 0; c<serverCount; c++) {
                             if (c) strcat(buttons, ",");
@@ -441,7 +441,7 @@ char *AWTC_create_numbered_suffix(GB_HASH *species_name_hash, const char *shortn
     char *newshort = 0;
     if (GBS_read_hash(species_name_hash, shortname)) {
         int i;
-        newshort = (char *)ARB_alloc(strlen(shortname)+20);
+        ARB_alloc(newshort, strlen(shortname)+20);
         for (i = 1; ; i++) {
             sprintf(newshort, "%s.%i", shortname, i);
             if (!GBS_read_hash(species_name_hash, newshort))break;

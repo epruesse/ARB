@@ -275,7 +275,7 @@ char *gb_alloc_cache_index(GBENTRY *gbe, size_t size) {
     entry.next            = 0;
 
     // create data
-    if (!data) data = (char*)ARB_alloc(size);
+    if (!data) ARB_alloc(data, size);
 
     entry.sizeof_data = size;
     entry.data        = data;
