@@ -564,18 +564,18 @@ static void scanGbdByKey(GB_MAIN_TYPE *Main, GBDATA *gbd, gbdByKey *gbk) {
 
 static gbdByKey *createGbdByKey(GB_MAIN_TYPE *Main) {
     int       idx;
-    gbdByKey *gbk = (gbdByKey*)ARB_calloc(Main->keycnt, sizeof(*gbk));
+    gbdByKey *gbk = ARB_calloc<gbdByKey>(Main->keycnt);
 
     for (idx=0; idx<Main->keycnt; idx++) {
         gbk[idx].cnt = 0;
 
         gb_Key& KEY = Main->keys[idx];
         if (KEY.key && KEY.nref>0) {
-            gbk[idx].gbdoff  = (gbdata_offset *)ARB_calloc(KEY.nref, sizeof(*(gbk[idx].gbdoff)));
+            ARB_calloc(gbk[idx].gbdoff, KEY.nref);
         }
     }
 
-    gbk[0].gbdoff = (gbdata_offset *)ARB_calloc(1, sizeof(*(gbk[0].gbdoff))); // @@@ FIXME : this is maybe allocated twice (5 lines above and here), maybe idx == 0 is special ?
+    ARB_calloc(gbk[0].gbdoff, 1); // @@@ FIXME : this is maybe allocated twice (4 lines above and here), maybe idx == 0 is special ?
 
     scanGbdByKey(Main, Main->gb_main(), gbk);
 

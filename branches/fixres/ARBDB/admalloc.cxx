@@ -400,7 +400,7 @@ static char *gbm_get_memblk(size_t size) {
                           ? (size_t)size
                           : (size_t)(gbb_cluster[idx].size)) + GBB_HEADER_SIZE;
 
-        block = (gbb_data *)ARB_calloc(1, allocationSize);
+        block = (gbb_data *)ARB_calloc<char>(allocationSize);
 
         block->size            = allocationSize-GBB_HEADER_SIZE;
         block->allocFromSystem = 1;

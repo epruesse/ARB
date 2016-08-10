@@ -55,7 +55,7 @@ public:
     PELEM get_cutmask() const { return cutmask; }
 
     PART *create_root() const;
-    PELEM *alloc_mem() const { return (PELEM*)ARB_calloc(get_longs(), sizeof(PELEM)); }
+    PELEM *alloc_mem() const { return ARB_calloc<PELEM>(get_longs()); }
 };
 
 class PART {

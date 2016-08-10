@@ -72,7 +72,7 @@ char *PHDATA::load(char*& Use) {
 
     GB_pop_transaction(gb_main);
 
-    hash_elements = (PHENTRY **)ARB_calloc(nentries, sizeof(*hash_elements));
+    ARB_calloc(hash_elements, nentries);
 
     {
         PHENTRY *phentry = entries;

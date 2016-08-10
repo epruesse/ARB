@@ -67,7 +67,7 @@ GB_ERROR gb_load_dictionary_data(GBDATA *gb_main, const char *key, char **dict_d
 }
 
 static GB_DICTIONARY *gb_create_dict(GBDATA *gb_dict) {
-    GB_DICTIONARY *dict = (GB_DICTIONARY *)ARB_calloc(sizeof(GB_DICTIONARY), 1);
+    GB_DICTIONARY *dict = ARB_calloc<GB_DICTIONARY>(1);
 
     long size;
     const char *data = gb_read_dict_data(gb_dict, &size);
@@ -285,7 +285,7 @@ DictData *GB_get_dictionary(GBDATA *gb_main, const char *key) {
     /* return DictData or
      * NULL if no dictionary or error occurred
      */
-    DictData *dd    = (DictData*)ARB_calloc(1, sizeof(*dd));
+    DictData *dd    = ARB_calloc<DictData>(1);
     GB_ERROR  error = gb_load_dictionary_data(gb_main, key, &dd->data, &dd->size);
 
     if (error || !dd->data) {

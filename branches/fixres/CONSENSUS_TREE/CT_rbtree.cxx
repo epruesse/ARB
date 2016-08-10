@@ -77,7 +77,7 @@ RB_INFO *ConsensusTree::rbtree(const NT_NODE *tree, TreeRoot *root) {
     TreeNode *tnode = root->makeNode();
     tnode->father   = NULL;
 
-    RB_INFO *info = (RB_INFO *)ARB_calloc(1, sizeof(*info));
+    RB_INFO *info = ARB_calloc<RB_INFO>(1);
     info->node    = tnode;                             // return-information
     info->percent = int(tree->part->get_weight()*100.0+.5);
     info->len     = tree->part->get_len();
@@ -118,8 +118,8 @@ RB_INFO *ConsensusTree::rbtree(const NT_NODE *tree, TreeRoot *root) {
                     RB_INFO    *sinfo;
 
                     if (multifurc > 2) {
-                        mf    = root->makeNode();
-                        sinfo = (RB_INFO *)ARB_calloc(1, sizeof(*sinfo));
+                        mf = root->makeNode();
+                        ARB_calloc(sinfo, 1);
 
                         mf->father = NULL;
 

@@ -54,11 +54,9 @@ char *AP_create_dna_to_ap_bases() {
 }
 
 long *AWT_translator::create_pro_to_bits() const {
-    int i;
-    int j;
-    long *table = (long *)ARB_calloc(sizeof(long), 256);
-    for (i = 0;   i < max_aa; i++) {
-        j = index_2_spro[i];
+    long *table = ARB_calloc<long>(256);
+    for (int i = 0; i < max_aa; i++) {
+        int j = index_2_spro[i];
         if (j == '.') {
             table[i] = -1;
             continue;
@@ -319,7 +317,7 @@ AWT_distance_meter::AWT_distance_meter(const AWT_translator *translator) {
     int realmax_aa = translator->RealmaxAA();
 
     for (s = 0; s< max_aa; s++) {
-        dist_[s] = (AWT_PDP *)ARB_calloc(max_aa, sizeof(*dist_[s]));
+        ARB_calloc(dist_[s], max_aa);
 
         const arb_r2a_pro_2_nuc *s2str = translator->S2str(translator->Index2Spro(s));
         for (i=0; i<3; i++) {

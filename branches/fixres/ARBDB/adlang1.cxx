@@ -62,7 +62,7 @@ struct gbl_param {
 #define GBL_BEGIN_PARAMS gbl_param *params = 0
 
 static void gbl_new_param(gbl_param **pp, GB_TYPES type, void *vaddr, const char *param_name, const char *help_text) {
-    gbl_param *gblp = (gbl_param *)ARB_calloc(1, sizeof(gbl_param));
+    gbl_param *gblp = ARB_calloc<gbl_param>(1);
 
     gblp->next = *pp;
     *pp         = gblp;
@@ -218,7 +218,7 @@ static GB_ERROR trace_params(const GBL_streams& param, gbl_param *ppara, const c
 
 
             for (para = ppara; para; para = para->next) pcount++;
-            params = (gbl_param **)ARB_calloc(sizeof(void *), pcount);
+            ARB_calloc(params, pcount);
             for (k = 0, para = ppara; para; para = para->next) params[k++] = para;
 
 

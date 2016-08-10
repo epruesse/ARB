@@ -232,8 +232,8 @@ static char *ED4_create_sequences_for_gde(GBDATA **&the_species, uchar **&the_na
     long allocated = 100;
     the_species    = 0;
 
-    the_names     = (uchar**)ARB_calloc(allocated, sizeof(*the_names));
-    the_sequences = (uchar**)ARB_calloc(allocated, sizeof(*the_sequences));
+    ARB_calloc(the_names,     allocated);
+    ARB_calloc(the_sequences, allocated);
 
     char *err = add_area_for_gde(ED4_ROOT->top_area_man, the_names, the_sequences, allocated, numberspecies, maxalign, top, tops, toph, topk, topr);
     if (!err) {

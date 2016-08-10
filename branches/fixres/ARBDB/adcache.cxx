@@ -104,7 +104,7 @@ inline void flush_cache_entry(gb_cache& cache, gb_cache_idx index) {
 }
 
 gb_cache::gb_cache()
-    : entries((gb_cache_entry *)ARB_calloc(sizeof(gb_cache_entry), GB_MAX_CACHED_ENTRIES)),
+    : entries(ARB_calloc<gb_cache_entry>(GB_MAX_CACHED_ENTRIES)),
       firstfree_entry(1),
       newest_entry(0),
       oldest_entry(0),

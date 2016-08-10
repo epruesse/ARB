@@ -342,8 +342,8 @@ int ED4_members::members_ok() const {
 
 ED4_members::ED4_members(ED4_manager *the_owner) {
     my_owner      = the_owner;
-    memberList    = (ED4_base **)ARB_calloc(1, sizeof(*memberList));
-    memberList[0] = NULL;
+    ARB_calloc(memberList, 1);
+    // memberList[0] = NULL;
     no_of_members = 0;
     size_of_list  = 1;
 }

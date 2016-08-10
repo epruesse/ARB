@@ -565,7 +565,7 @@ AW_window *AWT_create_nds_window(AW_root *aw_root, GBDATA *gb_main) {
 
 
 void make_node_text_init(GBDATA *gb_main) {
-    if (!awt_nds_ms) awt_nds_ms = (NodeTextBuilder *)ARB_calloc(sizeof(NodeTextBuilder), 1);
+    if (!awt_nds_ms) ARB_calloc(awt_nds_ms, 1);
 
     GBDATA *gb_arb_presets    = GB_search(gb_main, "arb_presets", GB_CREATE_CONTAINER);
     bool    only_visible_page = false;

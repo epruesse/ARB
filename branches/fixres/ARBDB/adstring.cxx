@@ -427,7 +427,7 @@ uint32_t GBS_checksum(const char *seq, int ignore_case, const char *exclude)
 
 char *GBS_extract_words(const char *source, const char *chars, float minlen, bool sort_output) {
     char           *s         = ARB_strdup(source);
-    char          **ps        = (char **)ARB_calloc(sizeof(char *), (strlen(source)>>1) + 1);
+    char          **ps        = ARB_calloc<char*>((strlen(source)>>1) + 1);
     GBS_strstruct  *strstruct = GBS_stropen(1000);
     char           *f         = s;
     int             count     = 0;

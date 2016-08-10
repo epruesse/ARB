@@ -50,7 +50,7 @@ protected:
             arb_assert(ok());
 
             if (str) ARB_recalloc(str, allocated, new_allocated);
-            else str = (char**)ARB_calloc(new_allocated, sizeof(*str));
+            else     ARB_calloc(str, new_allocated);
 
             allocated = new_allocated;
             arb_assert(ok());

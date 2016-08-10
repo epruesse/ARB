@@ -189,7 +189,7 @@ char *uniqueID() {
     time_t *tp;
     static int cnt = 0;
 
-    tp = (time_t *)ARB_calloc(1, sizeof(*tp));
+    ARB_calloc(tp, 1);
 
     time(tp);
     sprintf(vname, "host:%d:%ld", cnt, *tp);

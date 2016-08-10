@@ -2036,7 +2036,7 @@ static AW_window *create_loadsave_colored_window(AW_root *aw_root, color_save_da
     if (!aw_loadsave) {
         // init data
         aw_root->awar_string(AWAR_COLOR_LOADSAVE_NAME, "", AW_ROOT_DEFAULT);
-        aw_loadsave = (AW_window**)ARB_calloc(QUERY_ITEM_TYPES, sizeof(*aw_loadsave)); // contains loadsave windows for each item type
+        ARB_calloc(aw_loadsave, QUERY_ITEM_TYPES); // contains loadsave windows for each item type
     }
 
     QUERY_ITEM_TYPE type = csd->bsel->selector.type;

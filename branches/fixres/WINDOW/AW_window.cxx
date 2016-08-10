@@ -3015,16 +3015,11 @@ int AW_window::create_mode(const char *pixmap, const char *helpText, AW_active m
 
     AW_cb *cbs = new AW_cb(this, cb, 0);
     AW_cb *cb2 = new AW_cb(this, makeWindowCallback(aw_mode_callback, p_w->number_of_modes, cbs), helpText, cbs);
-    XtAddCallback(button, XmNactivateCallback,
-    (XtCallbackProc) AW_server_callback,
-    (XtPointer) cb2);
+    XtAddCallback(button, XmNactivateCallback, (XtCallbackProc)AW_server_callback, (XtPointer)cb2);
 
-    if (!p_w->modes_f_callbacks) {
-        p_w->modes_f_callbacks = (AW_cb **)ARB_calloc(sizeof(AW_cb*), AW_NUMBER_OF_F_KEYS); // valgrinders : never freed because AW_window never is freed
-    }
-    if (!p_w->modes_widgets) {
-        p_w->modes_widgets = (Widget *)ARB_calloc(sizeof(Widget), AW_NUMBER_OF_F_KEYS);
-    }
+    if (!p_w->modes_f_callbacks) ARB_calloc(p_w->modes_f_callbacks, AW_NUMBER_OF_F_KEYS); // valgrinders : never freed because AW_window never is freed
+    if (!p_w->modes_widgets)     ARB_calloc(p_w->modes_widgets,     AW_NUMBER_OF_F_KEYS);
+
     if (p_w->number_of_modes<AW_NUMBER_OF_F_KEYS) {
         p_w->modes_f_callbacks[p_w->number_of_modes] = cb2;
         p_w->modes_widgets[p_w->number_of_modes] = button;

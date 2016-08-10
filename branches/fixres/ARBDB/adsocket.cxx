@@ -168,7 +168,7 @@ long gbcms_close(gbcmc_comm *link) {
 }
 
 gbcmc_comm *gbcmc_open(const char *path) {
-    gbcmc_comm *link = (gbcmc_comm *)ARB_calloc(sizeof(gbcmc_comm), 1);
+    gbcmc_comm *link = ARB_calloc<gbcmc_comm>(1);
     GB_ERROR    err  = gbcm_open_socket(path, true, &link->socket, &link->unix_name);
 
     if (err) {
@@ -244,7 +244,7 @@ char *gbcm_read_string(int socket)
 
     if (len) {
         if (len>0) {
-            key = (char *)ARB_calloc(sizeof(char), (size_t)len+1);
+            ARB_calloc(key, len+1);
             gbcm_read(socket, key, len);
         }
         else {

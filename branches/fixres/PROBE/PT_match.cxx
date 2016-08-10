@@ -315,7 +315,7 @@ static void pt_sort_match_list(PT_local * locs) {
 
         int list_len = locs->pm->get_count();
         if (list_len > 1) {
-            PT_probematch **my_list = (PT_probematch **)ARB_calloc(list_len, sizeof(*my_list));
+            PT_probematch **my_list; ARB_calloc(my_list, list_len);
             {
                 PT_probematch *match = locs->pm;
                 for (int i=0; match; i++) {
@@ -523,7 +523,7 @@ const char *get_match_overlay(const PT_probematch *ml) {
 
     const int CONTEXT_SIZE = 9;
 
-    char *ref = (char *)ARB_calloc(CONTEXT_SIZE+1+pr_len+1+CONTEXT_SIZE+1, 1);
+    char *ref = ARB_calloc<char>(CONTEXT_SIZE+1+pr_len+1+CONTEXT_SIZE+1);
     memset(ref, '.', CONTEXT_SIZE+1);
 
     SmartCharPtr  seqPtr = psg.data[ml->name].get_dataPtr();

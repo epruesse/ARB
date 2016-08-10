@@ -132,7 +132,7 @@ static GB_ERROR resort_data_base(TreeNode *tree, const customCriterion *sortBy) 
         else {
             if (tree) {
                 gb_resort_data_count = 0;
-                gb_resort_data_list  = (GBDATA **)ARB_calloc(GB_nsons(gb_sd) + 256, sizeof(*gb_resort_data_list));
+                ARB_calloc(gb_resort_data_list, GB_nsons(gb_sd) + 256);
                 NT_resort_data_base_by_tree(tree, gb_sd);
             }
             else {

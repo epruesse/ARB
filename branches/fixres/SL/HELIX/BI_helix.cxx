@@ -161,7 +161,7 @@ const char *BI_helix::initFromData(const char *helix_nr_in, const char *helix_in
     strcpy(ident, "0");
     long pos_scanned_till = -1;
 
-    entries = (BI_helix_entry *)ARB_calloc(sizeof(BI_helix_entry), (size_t)Size);
+    ARB_calloc(entries, Size);
     sident  = 0;
 
     for (pos = 0; pos < Size; pos ++) {

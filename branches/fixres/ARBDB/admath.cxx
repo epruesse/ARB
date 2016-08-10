@@ -22,11 +22,11 @@ double GB_log_fak(int n) {
 
     if (n >= max_n) {
         double sum = 0;
-        int i;
-        freenull(res);
+
         max_n = n + 100;
-        res = (double *)ARB_calloc(sizeof(double), max_n);
-        for (i=1; i<max_n; i++) {
+        freeset(res, ARB_calloc<double>(max_n));
+
+        for (int i=1; i<max_n; i++) {
             sum += log((double)i);
             res[i] = sum;
         }

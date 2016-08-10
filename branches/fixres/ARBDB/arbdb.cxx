@@ -276,7 +276,7 @@ static void alloc_buffer(gb_buffer *buf, size_t size) {
 #if (MEMORY_TEST==1)
     buf->mem  = (char *)ARB_alloc(buf->size);
 #else
-    buf->mem  = (char *)ARB_calloc(buf->size, 1);
+    ARB_calloc(buf->mem, buf->size);
 #endif
 }
 
@@ -2547,27 +2547,32 @@ GB_ERROR GB_resort_data_base(GBDATA *gb_main, GBDATA **new_order_list, long list
 }
 
 GB_ERROR gb_resort_system_folder_to_top(GBCONTAINER *gb_main) {
+    if (GB_read_clients(gb_main)<0) {
+        return 0; // we are not server
+    }
+
     GBDATA *gb_system = GB_entry(gb_main, GB_SYSTEM_FOLDER);
-    GBDATA *gb_first = GB_child(gb_main);
-    GBDATA **new_order_list;
-    GB_ERROR error = 0;
-    int i, len;
-    if (GB_read_clients(gb_main)<0) return 0; // we are not server
     if (!gb_system) {
         return GB_export_error("System databaseentry does not exist");
     }
-    if (gb_first == gb_system) return 0;
-    len = GB_number_of_subentries(gb_main);
-    new_order_list = (GBDATA **)ARB_calloc(sizeof(GBDATA *), len);
-    new_order_list[0] = gb_system;
-    for (i=1; i<len; i++) {
-        new_order_list[i] = gb_first;
-        do {
-            gb_first = GB_nextChild(gb_first);
-        } while (gb_first == gb_system);
+
+    GBDATA *gb_first = GB_child(gb_main);
+    if (gb_first == gb_system) {
+        return 0;
     }
-    error = GB_resort_data_base(gb_main, new_order_list, len);
+
+    int      len            = GB_number_of_subentries(gb_main);
+    GBDATA **new_order_list = ARB_calloc<GBDATA*>(len);
+
+    new_order_list[0] = gb_system;
+    for (int i=1; i<len; i++) {
+        new_order_list[i] = gb_first;
+        do gb_first = GB_nextChild(gb_first); while (gb_first == gb_system);
+    }
+
+    GB_ERROR error = GB_resort_data_base(gb_main, new_order_list, len);
     free(new_order_list);
+
     return error;
 }
 

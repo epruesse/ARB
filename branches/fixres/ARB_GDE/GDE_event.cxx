@@ -109,8 +109,8 @@ static char *ReplaceArgs(AW_root *awr, char *Action, GmenuItem *gmenuitem, int n
         }
     }
 
-    if (textvalue == NULL)  textvalue = (char *)ARB_calloc(1, 1);
-    if (symbol == NULL)     symbol    = "";
+    if (textvalue == NULL)  ARB_calloc(textvalue, 1);
+    if (symbol == NULL)     symbol = "";
 
     set<string>warned_about;
     int conversion_warning = 0;
@@ -136,7 +136,7 @@ static char *ReplaceArgs(AW_root *awr, char *Action, GmenuItem *gmenuitem, int n
             int   repLen = strlen(replaceBy);
             int   symLen = strlen(symbol);
             int   newlen = strlen(Action)-skip-symLen+repLen+1;
-            char *temp   = (char*)ARB_calloc(newlen, 1);
+            char *temp   = ARB_calloc<char>(newlen);
 
             strncat(temp, Action, i-skip);
             strncat(temp, replaceBy, repLen);
@@ -173,8 +173,8 @@ static char *ReplaceFile(char *Action, GfileFormat file)
 
     for (; (i=Find2(Action, symbol)) != -1;)
     {
-        newlen = strlen(Action)-strlen(symbol) + strlen(method)+1;
-        temp = (char *)ARB_calloc(newlen, 1);
+        newlen  = strlen(Action)-strlen(symbol) + strlen(method)+1;
+        ARB_calloc(temp, newlen);
         strncat(temp, Action, i);
         strncat(temp, method, strlen(method));
         strcat(temp, &(Action[i+strlen(symbol)]));
@@ -196,7 +196,7 @@ static char *ReplaceString(char *Action, const char *old, const char *news)
     for (; (i=Find2(Action, symbol)) != -1;)
     {
         newlen = strlen(Action)-strlen(symbol) + strlen(method)+1;
-        temp = (char *)ARB_calloc(newlen, 1);
+        ARB_calloc(temp, newlen);
         strncat(temp, Action, i);
         strncat(temp, method, strlen(method));
         strcat(temp, &(Action[i+strlen(symbol)]));

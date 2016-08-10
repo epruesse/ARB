@@ -249,7 +249,7 @@ public:
         pt_assert(size >= PTM_MIN_SIZE);
 
         if (size > PTM_MAX_SIZE) {
-            return (char *)ARB_calloc(size, 1);
+            return ARB_calloc<char>(size);
         }
 
         int   tab = MemBlockManager::size2idx(size);
@@ -306,7 +306,7 @@ public:
 struct Memory { // plain version allowing to use memory-checker
     void clear() {}
     bool is_clear() const { return true; }
-    void *get(int size) { return ARB_calloc(size, 1); } // @@@ use ARB_alloc and initialize objects instead, then stop cleaning memory in Memory
+    void *get(int size) { return ARB_calloc<char>(size); } // @@@ use ARB_alloc and initialize objects instead, then stop cleaning memory in Memory
     void put(void *block, int) { free(block); }
 };
 

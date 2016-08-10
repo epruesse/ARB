@@ -353,16 +353,15 @@ void arb_print_server_params() {
            );
 }
 
-arb_params *arb_trace_argv(int *argc, const char **argv)
-{
-    int s, d;
+arb_params *arb_trace_argv(int *argc, const char **argv) {
+    arb_params *erg = ARB_calloc<arb_params>(1);
 
-    arb_params *erg = (arb_params *)ARB_calloc(1, sizeof(*erg));
     erg->db_server  = ARB_strdup(":");
     erg->job_server = ARB_strdup("ARB_JOB_SERVER");
     erg->mgr_server = ARB_strdup("ARB_MGR_SERVER");
     erg->pt_server  = ARB_strdup("ARB_PT_SERVER");
 
+    int s, d;
     for (s=d=0; s<*argc; s++) {
         if (argv[s][0] == '-') {
             switch (argv[s][1]) {

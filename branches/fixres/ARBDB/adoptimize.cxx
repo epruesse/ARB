@@ -139,17 +139,16 @@ static void g_b_opti_scanGbdByKey(GB_MAIN_TYPE *Main, GBDATA *gbd, O_gbdByKey *g
 
 static O_gbdByKey *g_b_opti_createGbdByKey(GB_MAIN_TYPE *Main)
 {
-    int idx;
-    O_gbdByKey *gbk = (O_gbdByKey *)ARB_calloc(Main->keycnt, sizeof(O_gbdByKey));
+    O_gbdByKey *gbk = ARB_calloc<O_gbdByKey>(Main->keycnt);
 
     gbdByKey_cnt = Main->keycnt; // always use gbdByKey_cnt instead of Main->keycnt cause Main->keycnt can change
 
-    for (idx=1; idx<gbdByKey_cnt; idx++) {
+    for (int idx=1; idx<gbdByKey_cnt; idx++) {
         gbk[idx].cnt = 0;
 
         gb_Key& KEY = Main->keys[idx];
         if (KEY.key && KEY.nref>0) {
-            gbk[idx].gbds  = (GBDATA **)ARB_calloc(KEY.nref, sizeof(GBDATA*));
+            ARB_calloc(gbk[idx].gbds, KEY.nref);
         }
         else {
             gbk[idx].gbds = NULL;
@@ -157,11 +156,11 @@ static O_gbdByKey *g_b_opti_createGbdByKey(GB_MAIN_TYPE *Main)
     }
 
     gbk[0].cnt  = 0;
-    gbk[0].gbds = (GBDATA **)ARB_calloc(1, sizeof(GBDATA*));
+    ARB_calloc(gbk[0].gbds, 1);
 
     g_b_opti_scanGbdByKey(Main, Main->gb_main(), gbk);
 
-    for (idx=0; idx<gbdByKey_cnt; idx++) {
+    for (int idx=0; idx<gbdByKey_cnt; idx++) {
         if (gbk[idx].cnt != Main->keys[idx].nref && idx)
         {
             printf("idx=%i gbk[idx].cnt=%i Main->keys[idx].nref=%li\n",             // Main->keys[].nref ist falsch

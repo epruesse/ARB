@@ -92,7 +92,7 @@ char AW_helix::get_symbol(char left, char right, BI_PAIR_TYPE pair_type) {
 char *AW_helix::seq_2_helix(char *sequence, char undefsymbol) {
     size_t size2 = strlen(sequence);
     bi_assert(size2<=size()); // if this fails there is a sequence longer than the alignment
-    char *helix = (char *)ARB_calloc(sizeof(char), size()+1);
+    char *helix = ARB_calloc<char>(size()+1);
     size_t i, j;
     for (i=0; i<size2; i++) {
         BI_PAIR_TYPE pairType = pairtype(i);

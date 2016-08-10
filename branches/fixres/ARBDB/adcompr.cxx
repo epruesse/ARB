@@ -208,7 +208,7 @@ gb_compress_list *gb_build_compress_list(const unsigned char *data, long short_f
     }
     *size = maxi;
 
-    gb_compress_list *list = (gb_compress_list *)ARB_calloc(sizeof(gb_compress_list), (size_t)maxi+1);
+    gb_compress_list *list = ARB_calloc<gb_compress_list>(maxi+1);
 
     maxi = 0;
     val = -1;

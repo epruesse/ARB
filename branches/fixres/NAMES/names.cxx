@@ -175,7 +175,7 @@ static void an_add_short(const AN_local */*locs*/, const char *new_name,
     char      *full_name;
 
     if (strlen(parsed_sym)) {
-        full_name = (char *)ARB_calloc(strlen(parsed_name) + strlen(" sym")+1, 1);
+        ARB_calloc(full_name, strlen(parsed_name) + strlen(" sym")+1);
         sprintf(full_name, "%s sym", parsed_name);
     }
     else {
@@ -709,7 +709,7 @@ aisc_string get_short(const AN_local *locs) {
             first_len = strlen(first_short);
         }
 
-        char *second_short = (char*)ARB_calloc(10, 1);
+        char *second_short = ARB_calloc<char>(10);
         int   second_len;
         {
             const char *rest_of_name = info.get_rest_of_name();
@@ -931,7 +931,7 @@ int server_save(AN_main *main, int) {
             printf("Another nameserver changed '%s' - your changes are lost.\n", main->server_file);
         }
         else {
-            char *sec_name = (char *)ARB_calloc(strlen(main->server_file)+2, 1);
+            char *sec_name = ARB_calloc<char>(strlen(main->server_file)+2);
             sprintf(sec_name, "%s%%", main->server_file);
             printf("Saving '%s'..\n", main->server_file);
 

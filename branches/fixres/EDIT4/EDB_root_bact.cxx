@@ -345,7 +345,7 @@ ED4_returncode  EDB_root_bact::fill_species(ED4_multi_species_manager  *multi_sp
     ED4_datamode datamode  = ED4_D_SPECIES;
     ED4_returncode retCode = ED4_R_OK;
 
-    char      *ship                 = (char*)ARB_calloc(SHIPSIZE, sizeof(*ship));
+    char      *ship                 = ARB_calloc<char>(SHIPSIZE);
     ED4_index  local_count_position = curr_local_position;
 
     do {

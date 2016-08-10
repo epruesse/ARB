@@ -28,7 +28,7 @@ AP_smatrix::AP_smatrix(size_t si)
     size_t headsize = Size * sizeof(*m);
     size_t datasize = elements * sizeof(*(m[0]));
 
-    m    = (AP_FLOAT**)ARB_calloc(headsize+datasize, 1);
+    m    = (AP_FLOAT**)ARB_calloc<char>(headsize+datasize);
     m[0] = (AP_FLOAT*)(((char*)m)+headsize);
 
     for (size_t i=1; i<si; i++) {
@@ -54,9 +54,9 @@ AP_FLOAT AP_smatrix::get_max_value() const { // O(n*2)
 //      AP_matrix
 
 AP_matrix::AP_matrix(long si) {
-    m = (AP_FLOAT **)ARB_calloc(si, sizeof(*m));
+    ARB_calloc(m, si);
     for (long i=0; i<si; i++) {
-        m[i] = (AP_FLOAT *)ARB_calloc(si, sizeof(*m[i]));
+        ARB_calloc(m[i], si);
     }
     size = si;
 }
@@ -72,7 +72,7 @@ AP_matrix::~AP_matrix() {
 //      AP_userdef_matrix
 
 void AP_userdef_matrix::set_desc(char**& which_desc, int idx, const char *desc) {
-    if (!which_desc) which_desc = (char**)ARB_calloc(sizeof(char*), get_size());
+    if (!which_desc) ARB_calloc(which_desc, get_size());
     which_desc[idx] = strdup(desc);
 }
 

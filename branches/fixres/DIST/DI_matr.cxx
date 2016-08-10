@@ -399,7 +399,7 @@ GB_ERROR DI_MATRIX::load(LoadWhat what, const MatrixOrder& order, bool show_warn
     gb_species_data  = GBT_get_species_data(gb_main);
 
     allocated_entries = 1000;
-    entries           = (DI_ENTRY **)ARB_calloc(allocated_entries, sizeof(*entries));
+    ARB_calloc(entries, allocated_entries);
 
     nentries = 0;
 
@@ -1256,7 +1256,7 @@ static void di_calculate_tree_cb(AW_window *aww, WeightedFilter *weighted_filter
         }
 
         DI_MATRIX  *matr  = GLOBAL_MATRIX.get();
-        char      **names = (char **)ARB_calloc((size_t)matr->nentries+2, sizeof(*names));
+        char      **names = ARB_calloc<char*>(matr->nentries+2);
 
         for (size_t i=0; i<matr->nentries; i++) {
             names[i] = matr->entries[i]->name;

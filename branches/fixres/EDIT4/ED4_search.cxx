@@ -913,7 +913,7 @@ ED4_SearchResults::ED4_SearchResults()
         }
 
         bufferSize = 100;
-        buffer = (char*)ARB_calloc(bufferSize, sizeof(char));
+        ARB_calloc(buffer, bufferSize);
 
         initialized = 1;
     }
@@ -1153,7 +1153,7 @@ char *ED4_SearchResults::buildColorString(const ED4_sequence_terminal *seq_termi
     if (needed_size>bufferSize) {
         free(buffer);
         bufferSize = needed_size;
-        buffer = (char*)ARB_calloc(bufferSize, sizeof(char));
+        ARB_calloc(buffer, bufferSize);
     }
     else {
         memset(buffer, 0, sizeof(char)*needed_size);

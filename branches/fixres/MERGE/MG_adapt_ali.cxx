@@ -665,7 +665,7 @@ MG_remaps::MG_remaps(GBDATA *gb_left, GBDATA *gb_right, bool enable, const char 
         GBT_get_alignment_names(alignment_names, gb_left);
         for (n_remaps = 0; alignment_names[n_remaps]; n_remaps++) {} // count alignments
 
-        remaps = (MG_remap**)ARB_calloc(sizeof(*remaps), n_remaps);
+        ARB_calloc(remaps, n_remaps);
         for (int i = 0; i<n_remaps; ++i) {
             remaps[i] = MG_create_remap(gb_left, gb_right, reference_species_names, alignment_names[i]);
         }

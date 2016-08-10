@@ -55,7 +55,7 @@ void arb_mem::failed_to_allocate(size_t size) {
 
 #if !defined(LEAKS_SANITIZED)
 static void alloc_too_much() { ARB_alloc(-1); }
-static void calloc_too_much() { ARB_calloc(-1, 1); }
+static void calloc_too_much() { ARB_calloc<char>(-1); }
 static void realloc_too_much() { char *s = 0; ARB_realloc(s, -1); }
 static void recalloc_too_much() { char *s = 0; ARB_recalloc(s, 0, -1); }
 #endif
@@ -83,8 +83,8 @@ void TEST_allocators() {
 
     freenull(s);                               TEST_EXPECT_NULL(s);
 
-    s = (char*)ARB_calloc(0, 1);               TEST_REJECT_NULL((void*)s);
-    freeset(s, (char*)ARB_calloc(SIZE, 1));    TEST_REJECT_NULL((void*)s); TEST_EXPECT(mem_is_cleared(s, SIZE));
+    s = ARB_calloc<char>(0);                   TEST_REJECT_NULL((void*)s);
+    freeset(s, ARB_calloc<char>(SIZE));        TEST_REJECT_NULL((void*)s); TEST_EXPECT(mem_is_cleared(s, SIZE));
 
     freenull(s);                               TEST_EXPECT_NULL(s);
 

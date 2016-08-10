@@ -149,12 +149,10 @@ GB_ERROR ReadGen(char *filename, NA_Alignment& dataset) {
                 {
                     if (in_line[0] != '/')
                     {
-                        if (buflen == 0)
-                        {
+                        if (buflen == 0) {
                             buflen = GBUFSIZ;
-                            buffer = (char*)ARB_calloc(buflen, 1);
+                            ARB_calloc(buffer, buflen);
                         }
-
                         else if (len+strlen(in_line) >= buflen) {
                             size_t new_buflen = buflen+GBUFSIZ;
                             ARB_recalloc(buffer, buflen, new_buflen);

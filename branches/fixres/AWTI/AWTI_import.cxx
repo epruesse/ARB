@@ -487,8 +487,9 @@ char *ArbImporter::read_line(int tab, char *sequencestart, char *sequenceend) {
     const int    BUFSIZE   = 8000;
     const char  *SEPARATOR = "|";   // line separator
 
-    if (!ifo->b1) ifo->b1 = (char*)ARB_calloc(BUFSIZE, 1);
-    if (!ifo->b2) ifo->b2 = (char*)ARB_calloc(BUFSIZE, 1);
+    if (!ifo->b1) ARB_calloc(ifo->b1, BUFSIZE);
+    if (!ifo->b2) ARB_calloc(ifo->b2, BUFSIZE);
+
     if (!in) {
         if (next_file()) {
             if (in_queue) {
@@ -638,7 +639,7 @@ static void write_entry(GBDATA *gb_main, GBDATA *gbd, const char *key, const cha
 
     int   len    = strlen(str) + strlen(strin);
     int   taglen = tag ? (strlen(tag)+2) : 0;
-    char *buf    = (char *)ARB_calloc(sizeof(char), len+2+taglen+1);
+    char *buf    = ARB_calloc<char>(len+2+taglen+1);
 
     if (tag) {
         char *regexp = (char*)ARB_alloc(taglen+3);

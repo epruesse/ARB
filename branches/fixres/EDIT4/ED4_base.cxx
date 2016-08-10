@@ -524,7 +524,7 @@ void ED4_multi_species_manager::update_group_id() {
         e4_assert(has_valid_counters());
         
         const char *cntid = consensus_name_terminal->id;
-        char       *name  = (char*)ARB_calloc(strlen(cntid)+10, sizeof(*name));
+        char       *name  = ARB_calloc<char>(strlen(cntid)+10);
 
         int i;
         for (i=0; cntid[i] && cntid[i] != '(';   i++) {
