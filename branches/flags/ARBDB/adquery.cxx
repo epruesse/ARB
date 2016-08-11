@@ -45,8 +45,8 @@ static const char *GB_get_GBDATA_path(GBDATA *gbd) {
     static char *orgbuffer = NULL;
     char        *buffer;
 
-    if (!orgbuffer) orgbuffer = (char*)malloc(BUFFERSIZE);
-    buffer                    = orgbuffer;
+    if (!orgbuffer) ARB_alloc(orgbuffer, BUFFERSIZE);
+    buffer = orgbuffer;
 
     build_GBDATA_path(gbd, &buffer);
     assert_or_exit((buffer-orgbuffer) < BUFFERSIZE); // buffer overflow
@@ -799,7 +799,7 @@ static const char *shortenLongString(const char *str, size_t wanted_len) {
             memcpy(shortened_str, str, wanted_len-4);
         }
         else {
-            freeset(shortened_str, GB_strpartdup(str, str+wanted_len));
+            freeset(shortened_str, ARB_strpartdup(str, str+wanted_len));
             short_len = wanted_len;
         }
         strcpy(shortened_str+wanted_len-4, "[..]");
@@ -817,7 +817,7 @@ static char *apply_ACI(GBDATA *gb_main, const char *commands, const char *str, G
     GB_MAIN_TYPE *Main    = GB_MAIN(gb_main);
     gb_local->gbl.gb_main = gb_main;
 
-    char *buffer = strdup(commands);
+    char *buffer = ARB_strdup(commands);
 
     // ********************** remove all spaces and tabs *******************
     {
@@ -854,7 +854,7 @@ static char *apply_ACI(GBDATA *gb_main, const char *commands, const char *str, G
 
     GBL_streams orig;
 
-    orig.insert(strdup(str));
+    orig.insert(ARB_strdup(str));
 
     GB_ERROR error = NULL;
     GBL_streams out;
@@ -886,7 +886,7 @@ static char *apply_ACI(GBDATA *gb_main, const char *commands, const char *str, G
                 }
                 *end = 0;
 
-                out.insert(strdup(s1+1));
+                out.insert(ARB_strdup(s1+1));
             }
             else {
                 char *bracket   = strchr(s1, '(');
@@ -919,7 +919,7 @@ static char *apply_ACI(GBDATA *gb_main, const char *commands, const char *str, G
                                     p1[len2] = 0;
                                 }
                             }
-                            in.insert(strdup(p1));
+                            in.insert(ARB_strdup(p1));
                         }
                     }
                 }
@@ -954,7 +954,7 @@ static char *apply_ACI(GBDATA *gb_main, const char *commands, const char *str, G
                         if (!error && trace) dumpStreams("OutputStreams", args.output);
 
                         if (error) {
-                            char *dup_error = strdup(error);
+                            char *dup_error = ARB_strdup(error);
 
 #define MAX_PRINT_LEN 200
 
@@ -963,7 +963,7 @@ static char *apply_ACI(GBDATA *gb_main, const char *commands, const char *str, G
                                 const char *param       = args.param.get(j);
                                 const char *param_short = shortenLongString(param, MAX_PRINT_LEN);
 
-                                if (!paramlist) paramlist = strdup(param_short);
+                                if (!paramlist) paramlist = ARB_strdup(param_short);
                                 else freeset(paramlist, GBS_global_string_copy("%s,%s", paramlist, param_short));
                             }
                             char *inputstreams = 0;
@@ -971,7 +971,7 @@ static char *apply_ACI(GBDATA *gb_main, const char *commands, const char *str, G
                                 const char *input       = args.input.get(j);
                                 const char *input_short = shortenLongString(input, MAX_PRINT_LEN);
 
-                                if (!inputstreams) inputstreams = strdup(input_short);
+                                if (!inputstreams) inputstreams = ARB_strdup(input_short);
                                 else freeset(inputstreams, GBS_global_string_copy("%s;%s", inputstreams, input_short));
                             }
 #undef MAX_PRINT_LEN
@@ -1017,8 +1017,8 @@ static char *apply_ACI(GBDATA *gb_main, const char *commands, const char *str, G
 
 char *GBL_streams::concatenated() const {
     int count = size();
-    if (!count) return strdup("");
-    if (count == 1) return strdup(get(0));
+    if (!count) return ARB_strdup("");
+    if (count == 1) return ARB_strdup(get(0));
 
     GBS_strstruct *strstruct = GBS_stropen(1000);
     for (int i=0; i<count; i++) {
@@ -1065,7 +1065,7 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
     }
 
     if (!commands || !commands[0]) { // empty command -> do not modify string
-        return strdup(str);
+        return ARB_strdup(str);
     }
 
     if (commands[0] == ':') { // ':' -> string parser
@@ -1083,8 +1083,8 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
                 err    = 0;
                 const char *matched = GBS_regmatch(str, commands, &matchlen, &err);
 
-                if (matched) result   = GB_strndup(matched, matchlen);
-                else if (!err) result = strdup("");
+                if (matched) result   = ARB_strndup(matched, matchlen);
+                else if (!err) result = ARB_strdup("");
             }
 
             if (!result && err) result = GBS_global_string_copy("<Error: %s>", err);

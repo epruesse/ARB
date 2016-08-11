@@ -163,7 +163,6 @@ enum ED4_returncode {
     ED4_R_IMPOSSIBLE = 2,
     ED4_R_ERROR      = 4,
     ED4_R_BREAK      = 8,
-    ED4_R_DESASTER   = 16,
     ED4_R_ALL        = 0x7fffffff
 };
 

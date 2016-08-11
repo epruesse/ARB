@@ -259,22 +259,18 @@ int main(int argc, char **argv) {
                     comment_from_treefile,
                 };
 
-                GBS_strstruct *buf   = GBS_stropen(5000);
-                bool           empty = true;
+                GBS_strstruct tree_remark(5000);
+                bool          empty = true;
 
                 for (size_t c = 0; c<ARRAY_ELEMS(comments); c++) {
                     if (comments[c]) {
-                        if (!empty) GBS_chrcat(buf, '\n');
-                        GBS_strcat(buf, comments[c]);
+                        if (!empty) tree_remark.put('\n');
+                        tree_remark.cat(comments[c]);
                         empty = false;
                     }
                 }
 
-                char *cmt = GBS_strclose(buf);
-
-                error = GBT_write_tree_remark(gb_main, param.tree_name, cmt);
-
-                free(cmt);
+                error = GBT_write_tree_remark(gb_main, param.tree_name, tree_remark.get_data());
             }
 
             error = GB_end_transaction(gb_main, error);

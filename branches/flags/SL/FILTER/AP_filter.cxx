@@ -10,8 +10,6 @@
 
 #include "AP_filter.hxx"
 #include <arbdb.h>
-#include <arb_mem.h>
-
 
 // ------------------
 //      AP_filter
@@ -102,7 +100,7 @@ void AP_filter::make_permeable(size_t size) {
 char *AP_filter::to_string() const {
     af_assert(checked_for_validity);
 
-    char *data = (char*)malloc(filter_len+1);
+    char *data = ARB_alloc<char>(filter_len+1);
 
     for (size_t i=0; i<filter_len; ++i) {
         data[i] = "01"[filter_mask[i]];
@@ -181,7 +179,7 @@ char *AP_filter::blowup_string(char *filtered_string, char fillChar) const {
      */
     af_assert(checked_for_validity);
 
-    char   *blownup = (char*)malloc(filter_len+1);
+    char   *blownup = ARB_alloc<char>(filter_len+1);
     size_t  f       = 0;
 
     for (size_t i = 0; i<filter_len; ++i) {
@@ -205,7 +203,7 @@ AP_weights::AP_weights(const GB_UINT4 *w, size_t wlen, const AP_filter *fil)
     : len(fil->get_filtered_length()),
       weights(NULL)
 {
-    arb_alloc_aligned(weights, len);
+    ARB_alloc_aligned(weights, len);
 
     af_assert(wlen == fil->get_length());
 
@@ -224,7 +222,7 @@ AP_weights::AP_weights(const AP_weights& other)
       weights(NULL)
 {
     if (other.weights != NULL) {
-        arb_alloc_aligned(weights, len);
+        ARB_alloc_aligned(weights, len);
         memcpy(weights, other.weights, len*sizeof(*weights));
     }
 }

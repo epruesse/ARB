@@ -175,8 +175,8 @@ static const char *translateSAItoColors(AW_root *awr, GBDATA *gb_main, int start
     if (seqSize > seqBufferSize) {
         free(saiColors);
         seqBufferSize = seqSize;
-        saiColors = (char*)malloc(seqBufferSize);
-        saiValues = (char*)malloc(seqBufferSize);
+        ARB_alloc(saiColors, seqBufferSize);
+        ARB_alloc(saiValues, seqBufferSize); // @@@ leak?
     }
 
     memset(saiColors, '0'-1, seqSize);
@@ -373,7 +373,7 @@ static char *GetDisplayInfo(AW_root *root, GBDATA *gb_main, const char *speciesN
         {
             const char *dbFieldName = root->awar_string(AWAR_SPV_DB_FIELD_NAME)->read_char_pntr();
             if (strcmp(dbFieldName, NO_FIELD_SELECTED) == 0) {
-                field_content = strdup("no field, no content");
+                field_content = ARB_strdup("no field, no content");
             }
             else {
                 GBDATA *gb_field = GB_search(gb_Species, dbFieldName, GB_FIND);
@@ -509,7 +509,7 @@ void SAI_graphic::paint(AW_device *device) {
                 else {
                     const char *probeRegion      = parsed.get_probe_region();
                     sai_assert(probeRegion);
-                    char       *probeRegion_copy = strdup(probeRegion);
+                    char       *probeRegion_copy = ARB_strdup(probeRegion);
 
                     const char *tok_prefix = strtok(probeRegion_copy, "-");
                     const char *tok_infix  = tok_prefix ? strtok(0, "-") : 0;

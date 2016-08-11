@@ -217,12 +217,10 @@ ED4_returncode ED4_orf_terminal::draw() {
 
     if (index_range.end() >= len_of_colored_strings) {
         len_of_colored_strings = index_range.end() + 256;
-        if (!colored_strings) {
-            colored_strings = (char **)GB_calloc(sizeof(char *), ED4_G_DRAG);
-        }
-        int i;
-        for (i=0; i<ED4_G_DRAG; i++) {
-            freeset(colored_strings[i], (char *)malloc(sizeof(char) * (len_of_colored_strings+1)));
+        if (!colored_strings) ARB_calloc(colored_strings, ED4_G_DRAG);
+
+        for (int i=0; i<ED4_G_DRAG; i++) {
+            freeset(colored_strings[i], ARB_alloc<char>(len_of_colored_strings+1));
             memset(colored_strings[i], ' ', len_of_colored_strings);
             colored_strings[i][len_of_colored_strings] = 0;
         }
@@ -371,11 +369,9 @@ ED4_returncode ED4_sequence_terminal::draw() {
 
     if (right >= len_of_colored_strings) {
         len_of_colored_strings = right + 256;
-        if (!colored_strings) {
-            colored_strings = (char **)GB_calloc(sizeof(char *), ED4_G_DRAG);
-        }
-        int i;
-        for (i=0; i<ED4_G_DRAG; i++) {
+        if (!colored_strings) ARB_calloc(colored_strings, ED4_G_DRAG);
+
+        for (int i=0; i<ED4_G_DRAG; i++) {
             freeset(colored_strings[i], (char *)malloc(sizeof(char) * (len_of_colored_strings+1)));
             memset(colored_strings[i], ' ', len_of_colored_strings);
             colored_strings[i][len_of_colored_strings] = 0;

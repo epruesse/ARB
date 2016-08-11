@@ -80,7 +80,7 @@ static GB_ERROR set_protection_level(GB_MAIN_TYPE *Main, GBDATA *gbd, const char
 
         for (i=Main->last_updated; i<=lu; ++i) {
             gb_assert(i<ALLOWED_DATES);
-            Main->dates[i]     = strdup("unknown date");
+            Main->dates[i]     = ARB_strdup("unknown date");
             Main->last_updated = lu+1;
         }
     }
@@ -165,7 +165,7 @@ static GB_ERROR gb_parse_ascii_rek(LineReader& r, GBCONTAINER *gb_parent, const 
                         else {
                             if (type[1] == '%' || type[1] == '$') {   // container
                                 if (line[0] == '(' && line[1] == '%') {
-                                    char        *cont_name = strdup(name);
+                                    char        *cont_name = ARB_strdup(name);
                                     GBCONTAINER *gbc       = gb_make_container(gb_parent, cont_name, -1, 0);
 
                                     char *protection_copy = nulldup(protection);
@@ -315,7 +315,7 @@ static long gb_recover_corrupt_file(GBCONTAINER *gbc, FILE *in, GB_ERROR recover
     static long size = 0;
     if (!GBCONTAINER_MAIN(gbc)->allow_corrupt_file_recovery) {
         if (!recovery_reason) { recovery_reason = GB_await_error(); }
-        char       *reason         = strdup(recovery_reason);
+        char       *reason         = ARB_strdup(recovery_reason);
         const char *located_reason = GBS_global_string("%s (inside '%s')", reason, GB_get_db_path(gbc));
 
         if (loading_quick_save) {
@@ -1049,7 +1049,7 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
     int            ignoreMissingMaster = 0;
     int            loadedQuickIndex    = -1;
     GB_ERROR       error               = 0;
-    char          *path                = strdup(cpath?cpath:"");
+    char          *path                = ARB_strdup(cpath?cpath:"");
     bool           dbCreated           = false;
 
     gb_assert(strchr(opent, 'd') == NULL); // mode 'd' is deprecated. You have to use 'D' and store your defaults inside ARBHOME/lib/arb_default
@@ -1082,7 +1082,7 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
             if (strchr(opent, 'R'))     ignoreMissingMaster = 1;
         }
         else {
-            char *base = strdup(path);
+            char *base = ARB_strdup(path);
             char *ext = gb_findExtension(base);
             {
                 gb_scandir dir;

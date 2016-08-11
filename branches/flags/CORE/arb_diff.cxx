@@ -18,8 +18,8 @@
 #include "arb_string.h"
 #include "arb_msg.h"
 #include "arb_file.h"
+
 #include <arb_str.h>
-#include <arb_assert.h>
 #include <arbtools.h>
 #include <smartptr.h>
 
@@ -121,7 +121,7 @@ private:
             const char *matched = GBS_regmatch_compiled(str, reg[i], &matchlen);
 
             if (matched) {
-                char       *prefix = GB_strpartdup(str, matched-1);
+                char       *prefix = ARB_strpartdup(str, matched-1);
                 const char *suffix = matched+matchlen;
 
                 bool do_repl = true;
@@ -157,8 +157,8 @@ static bool test_accept_diff_lines(const char *line1, const char *line2, const d
     if (*line1++ != '-') return false;
     if (*line2++ != '+') return false;
 
-    char *dup1 = strdup(line1);
-    char *dup2 = strdup(line2);
+    char *dup1 = ARB_strdup(line1);
+    char *dup2 = ARB_strdup(line2);
 
     cutEOL(dup1); // side-effect: accepts missing trailing newline
     cutEOL(dup2);
@@ -267,7 +267,7 @@ bool ARB_textfiles_have_difflines(const char *file1, const char *file2, int expe
 
         if (diffout) {
 #define BUFSIZE 5000
-            char         *buffer = (char*)malloc(BUFSIZE);
+            char         *buffer = ARB_alloc<char>(BUFSIZE);
             bool          inHunk = false;
             DiffLines     diff_lines;
             difflineMode  mode(special_mode);
@@ -387,8 +387,8 @@ bool ARB_files_are_equal(const char *file1, const char *file2) {
         }
         else {
             const int      BLOCKSIZE   = 4096;
-            unsigned char *buf1        = (unsigned char*)malloc(BLOCKSIZE);
-            unsigned char *buf2        = (unsigned char*)malloc(BLOCKSIZE);
+            unsigned char *buf1        = ARB_alloc<unsigned char>(BLOCKSIZE);
+            unsigned char *buf2        = ARB_alloc<unsigned char>(BLOCKSIZE);
             size_t         equal_bytes = 0;
 
             while (!error) {

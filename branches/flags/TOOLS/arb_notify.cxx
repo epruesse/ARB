@@ -27,7 +27,7 @@ int ARB_main(int argc, char *argv[]) {
         fprintf(stderr, "%s: Can't notify (connect to ARB failed)\n", progname);
     }
     else {
-        char       *the_message = strdup(argv[2]);
+        char       *the_message = ARB_strdup(argv[2]);
         const char *idstr       = argv[1];
         int         id          = atoi(idstr);
         GB_ERROR    error       = 0;

@@ -223,10 +223,10 @@ static char *GBT_create_unique_item_identifier(GBDATA *gb_item_container, const 
     char   *unique_id;
 
     if (!gb_item) {
-        unique_id = strdup(default_id); // default_id is unused
+        unique_id = ARB_strdup(default_id); // default_id is unused
     }
     else {
-        char   *generated_id  = (char*)malloc(strlen(default_id)+20);
+        char   *generated_id  = ARB_alloc<char>(strlen(default_id)+20);
         size_t  min_num = 1;
 
 #define GENERATE_ID(num) sprintf(generated_id, "%s%zu", default_id, num);
@@ -458,7 +458,7 @@ GBDATA **GBT_gen_species_array(GBDATA *gb_main, long *pspeccnt)
          gb_species = GBT_next_species(gb_species)) {
         (*pspeccnt) ++;
     }
-    result = (GBDATA **)malloc((size_t)(sizeof(GBDATA *)* (*pspeccnt))); // @@@ fails if no species present
+    ARB_alloc(result, *pspeccnt); // @@@ fails if no species present
     *pspeccnt = 0;
     for (gb_species = GBT_first_species_rel_species_data(gb_species_data);
          gb_species;

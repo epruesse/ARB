@@ -86,21 +86,12 @@ GB_ERROR ReadGen(char *filename, NA_Alignment& dataset) {
                 in_line[strlen(in_line)-1] = '\0';
             if (Find(in_line, "LOCUS"))
             {
-                curelem = dataset.numelements++;
-                if (curelem == 0)
-                {
-                    dataset.element=(NA_Sequence*) Calloc(5, sizeof(NA_Sequence));
-                    dataset.maxnumelements = 5;
-                }
-                else if (curelem==dataset.maxnumelements)
-                {
-                    dataset.maxnumelements *= 2;
-                    dataset.element = (NA_Sequence*) Realloc((char*)dataset.element, dataset.maxnumelements * sizeof(NA_Sequence));
-                }
+                curelem   = Arbdb_get_curelem(dataset);
                 this_elem = &(dataset.element[curelem]);
-                n = sscanf(in_line, "%s %s %s %s %s %s %s %s",
-                           fields[0], fields[1], fields[2], fields[3], fields[4],
-                           fields[5], fields[6], fields[7]);
+                n         = sscanf(in_line, "%s %s %s %s %s %s %s %s",
+                                   fields[0], fields[1], fields[2], fields[3], fields[4],
+                                   fields[5], fields[6], fields[7]);
+
                 if (IS_REALLY_AA)
                 {
                     InitNASeq(this_elem, PROTEIN);
@@ -158,17 +149,14 @@ GB_ERROR ReadGen(char *filename, NA_Alignment& dataset) {
                 {
                     if (in_line[0] != '/')
                     {
-                        if (buflen == 0)
-                        {
+                        if (buflen == 0) {
                             buflen = GBUFSIZ;
-                            buffer = Calloc(sizeof(char), buflen);
+                            ARB_calloc(buffer, buflen);
                         }
-
-                        else if (len+strlen(in_line) >= buflen)
-                        {
-                            buflen += GBUFSIZ;
-                            buffer = Realloc((char*)buffer, sizeof(char)*buflen);
-                            for (size_t j=buflen-GBUFSIZ ; j<buflen; j++) buffer[j] = '\0';
+                        else if (len+strlen(in_line) >= buflen) {
+                            size_t new_buflen = buflen+GBUFSIZ;
+                            ARB_recalloc(buffer, buflen, new_buflen);
+                            buflen            = new_buflen;
                         }
                         // Search for the fist column of data (whitespace-number-whitespace)data
                         if (start_col == -1)
@@ -219,26 +207,26 @@ GB_ERROR ReadGen(char *filename, NA_Alignment& dataset) {
             }
             else if (Find(in_line, "ZZZZZ"))
             {
-                Cfree(gencomments);
+                free(gencomments);
                 genclen = 0;
             }
             else
             {
                 if (gencomments == NULL)
                 {
-                    gencomments = strdup(in_line);
+                    gencomments = ARB_strdup(in_line);
                     genclen = strlen(gencomments)+1;
                 }
                 else
                 {
                     genclen += strlen(in_line)+1;
-                    gencomments = Realloc((char*)gencomments, genclen * sizeof(char));
+                    ARB_realloc(gencomments, genclen);
                     strncat(gencomments, in_line, GBUFSIZ);
                     strncat(gencomments, "\n", GBUFSIZ);
                 }
             }
         }
-        Cfree(buffer);
+        free(buffer);
         fclose(file);
     }
     for (size_t j=0; j<dataset.numelements; j++) {

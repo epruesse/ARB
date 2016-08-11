@@ -535,7 +535,7 @@ void ED4_multi_species_manager::update_group_id() {
         e4_assert(has_valid_counters());
         
         const char *cntid = consensus_name_terminal->id;
-        char       *name  = (char*)GB_calloc(strlen(cntid)+10, sizeof(*name));
+        char       *name  = ARB_calloc<char>(strlen(cntid)+10);
 
         int i;
         for (i=0; cntid[i] && cntid[i] != '(';   i++) {
@@ -1059,7 +1059,7 @@ ED4_base::ED4_base(const ED4_objspec& spec_, GB_CSTR temp_id, AW_pos width, AW_p
 
     e4_assert(temp_id);
     if (temp_id) {
-        id = (char*)malloc(strlen(temp_id)+1);
+        id = ARB_alloc<char>(strlen(temp_id)+1);
         strcpy(id, temp_id);
     }
 

@@ -46,6 +46,7 @@ ARB_Tree.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 ARB_Tree.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ARB_Tree.o: $(ARBHOME)/INCLUDE/arb_core.h
 ARB_Tree.o: $(ARBHOME)/INCLUDE/arb_error.h
+ARB_Tree.o: $(ARBHOME)/INCLUDE/arb_mem.h
 ARB_Tree.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ARB_Tree.o: $(ARBHOME)/INCLUDE/arb_string.h
 ARB_Tree.o: $(ARBHOME)/INCLUDE/arbdb.h

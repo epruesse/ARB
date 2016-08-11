@@ -167,7 +167,7 @@ static char *AP_dump_index_event(ARB_ERROR& error) {
             error = "Connection to PT_SERVER lost (1)";
         }
         else {
-            result = strdup("ok");
+            result = ARB_strdup("ok");
         }
     }
     return result;
@@ -463,7 +463,7 @@ static bool parseCommandLine(int argc, const char * const * const argv) {
 
     // copy argv (since parser will remove matched arguments)
     free(pargv);
-    pargv = (const char **)malloc(sizeof(*pargv)*pargc);
+    ARB_alloc(pargv, pargc);
     for (int i=0; i<pargc; i++) pargv[i] = argv[i];
 
     showhelp   = (pargc <= 1);
@@ -1496,7 +1496,7 @@ static char *extract_locations(const char *probe_design_result) {
             return result.release();
         }
     }
-    return strdup("can't extract");
+    return ARB_strdup("can't extract");
 }
 
 inline const char *next_line(const char *this_line) {

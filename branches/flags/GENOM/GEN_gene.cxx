@@ -175,7 +175,7 @@ GEN_root::GEN_root(const char *organism_name_, const char *gene_name_, GBDATA *g
     GBDATA         *gb_organism = GBT_find_species(gb_main, organism_name.c_str());
 
     if (!gb_organism) {
-        error_reason = strdup("Please select a species.");
+        error_reason = ARB_strdup("Please select a species.");
     }
     else {
         GBDATA *gb_data = GBT_find_sequence(gb_organism, GENOM_ALIGNMENT);

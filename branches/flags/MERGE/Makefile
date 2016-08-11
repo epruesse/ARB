@@ -42,6 +42,7 @@ MG_adapt_ali.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 MG_adapt_ali.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MG_adapt_ali.o: $(ARBHOME)/INCLUDE/arb_core.h
 MG_adapt_ali.o: $(ARBHOME)/INCLUDE/arb_error.h
+MG_adapt_ali.o: $(ARBHOME)/INCLUDE/arb_mem.h
 MG_adapt_ali.o: $(ARBHOME)/INCLUDE/arb_msg.h
 MG_adapt_ali.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 MG_adapt_ali.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
@@ -71,6 +72,7 @@ MG_alignment.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MG_alignment.o: $(ARBHOME)/INCLUDE/arb_core.h
 MG_alignment.o: $(ARBHOME)/INCLUDE/arb_error.h
 MG_alignment.o: $(ARBHOME)/INCLUDE/arb_global_defs.h
+MG_alignment.o: $(ARBHOME)/INCLUDE/arb_mem.h
 MG_alignment.o: $(ARBHOME)/INCLUDE/arb_msg.h
 MG_alignment.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 MG_alignment.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -106,6 +108,7 @@ MG_checkfield.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MG_checkfield.o: $(ARBHOME)/INCLUDE/arb_core.h
 MG_checkfield.o: $(ARBHOME)/INCLUDE/arb_error.h
 MG_checkfield.o: $(ARBHOME)/INCLUDE/arb_global_defs.h
+MG_checkfield.o: $(ARBHOME)/INCLUDE/arb_mem.h
 MG_checkfield.o: $(ARBHOME)/INCLUDE/arb_msg.h
 MG_checkfield.o: $(ARBHOME)/INCLUDE/arb_progress.h
 MG_checkfield.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
@@ -144,6 +147,7 @@ MG_configs.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MG_configs.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MG_configs.o: $(ARBHOME)/INCLUDE/arb_core.h
 MG_configs.o: $(ARBHOME)/INCLUDE/arb_error.h
+MG_configs.o: $(ARBHOME)/INCLUDE/arb_mem.h
 MG_configs.o: $(ARBHOME)/INCLUDE/arb_msg.h
 MG_configs.o: $(ARBHOME)/INCLUDE/arb_string.h
 MG_configs.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -175,6 +179,7 @@ MG_extendeds.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 MG_extendeds.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MG_extendeds.o: $(ARBHOME)/INCLUDE/arb_core.h
 MG_extendeds.o: $(ARBHOME)/INCLUDE/arb_error.h
+MG_extendeds.o: $(ARBHOME)/INCLUDE/arb_mem.h
 MG_extendeds.o: $(ARBHOME)/INCLUDE/arb_msg.h
 MG_extendeds.o: $(ARBHOME)/INCLUDE/arb_string.h
 MG_extendeds.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -210,6 +215,7 @@ MG_gene_species.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 MG_gene_species.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MG_gene_species.o: $(ARBHOME)/INCLUDE/arb_core.h
 MG_gene_species.o: $(ARBHOME)/INCLUDE/arb_error.h
+MG_gene_species.o: $(ARBHOME)/INCLUDE/arb_mem.h
 MG_gene_species.o: $(ARBHOME)/INCLUDE/arb_msg.h
 MG_gene_species.o: $(ARBHOME)/INCLUDE/arb_str.h
 MG_gene_species.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -247,6 +253,7 @@ MG_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MG_main.o: $(ARBHOME)/INCLUDE/arb_core.h
 MG_main.o: $(ARBHOME)/INCLUDE/arb_error.h
 MG_main.o: $(ARBHOME)/INCLUDE/arb_file.h
+MG_main.o: $(ARBHOME)/INCLUDE/arb_mem.h
 MG_main.o: $(ARBHOME)/INCLUDE/arb_msg.h
 MG_main.o: $(ARBHOME)/INCLUDE/arb_progress.h
 MG_main.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -290,6 +297,7 @@ MG_names.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 MG_names.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MG_names.o: $(ARBHOME)/INCLUDE/arb_core.h
 MG_names.o: $(ARBHOME)/INCLUDE/arb_error.h
+MG_names.o: $(ARBHOME)/INCLUDE/arb_mem.h
 MG_names.o: $(ARBHOME)/INCLUDE/arb_msg.h
 MG_names.o: $(ARBHOME)/INCLUDE/arb_progress.h
 MG_names.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -326,6 +334,7 @@ MG_preserves.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MG_preserves.o: $(ARBHOME)/INCLUDE/arb_core.h
 MG_preserves.o: $(ARBHOME)/INCLUDE/arb_error.h
 MG_preserves.o: $(ARBHOME)/INCLUDE/arb_global_defs.h
+MG_preserves.o: $(ARBHOME)/INCLUDE/arb_mem.h
 MG_preserves.o: $(ARBHOME)/INCLUDE/arb_msg.h
 MG_preserves.o: $(ARBHOME)/INCLUDE/arb_progress.h
 MG_preserves.o: $(ARBHOME)/INCLUDE/arb_strarray.h
@@ -364,6 +373,7 @@ MG_species.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MG_species.o: $(ARBHOME)/INCLUDE/arb_core.h
 MG_species.o: $(ARBHOME)/INCLUDE/arb_error.h
 MG_species.o: $(ARBHOME)/INCLUDE/arb_global_defs.h
+MG_species.o: $(ARBHOME)/INCLUDE/arb_mem.h
 MG_species.o: $(ARBHOME)/INCLUDE/arb_msg.h
 MG_species.o: $(ARBHOME)/INCLUDE/arb_progress.h
 MG_species.o: $(ARBHOME)/INCLUDE/arb_str.h
@@ -411,6 +421,7 @@ MG_trees.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MG_trees.o: $(ARBHOME)/INCLUDE/arb_core.h
 MG_trees.o: $(ARBHOME)/INCLUDE/arb_error.h
 MG_trees.o: $(ARBHOME)/INCLUDE/arb_global_defs.h
+MG_trees.o: $(ARBHOME)/INCLUDE/arb_mem.h
 MG_trees.o: $(ARBHOME)/INCLUDE/arb_msg.h
 MG_trees.o: $(ARBHOME)/INCLUDE/arb_string.h
 MG_trees.o: $(ARBHOME)/INCLUDE/arbdb.h

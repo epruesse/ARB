@@ -78,7 +78,7 @@ FileWriter::FileWriter(const char *outname)
     if (!ofp) {
         throw_errorf(2, "can't write output file '%s' (Reason: %s)", outname, strerror(errno));
     }
-    filename = strdup(outname);
+    filename = ARB_strdup(outname);
 }
 FileWriter::~FileWriter() {
     bool fine = is_fine();

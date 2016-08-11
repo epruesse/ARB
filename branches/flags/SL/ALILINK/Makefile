@@ -36,6 +36,7 @@ AdminGui.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AdminGui.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AdminGui.o: $(ARBHOME)/INCLUDE/arb_core.h
 AdminGui.o: $(ARBHOME)/INCLUDE/arb_error.h
+AdminGui.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AdminGui.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AdminGui.o: $(ARBHOME)/INCLUDE/arb_string.h
 AdminGui.o: $(ARBHOME)/INCLUDE/arbdb.h

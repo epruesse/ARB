@@ -340,7 +340,7 @@ static void splitTokComment(char **tok, char **commentP)
 static char *appendComment(const char *s1, int l1, const char *s2) {
     if (s1) {
         int l2 = strlen(s2);
-        char *s = (char*)malloc(l1+1+l2+1);
+        char *s = ARB_alloc<char>(l1+1+l2+1);
 
         sprintf(s, "%s %s", s1, s2);
         return s;
@@ -377,7 +377,7 @@ SearchTree::SearchTree(const SearchSettings *s)
 
 
     {
-        char       *pattern           = strdup(sett->get_pattern());
+        char       *pattern           = ARB_strdup(sett->get_pattern());
         const char *trenner           = "\n,";
         char       *tok               = strtok(pattern, trenner);
         char       *comment;
@@ -497,14 +497,8 @@ char SearchTree::unify_char(char c, int case_sensitive, int T_equal_U)
     return c;
 }
 
-char *SearchTree::unify_str(const char *data, int len, ED4_SEARCH_GAPS gaps, int *new_len, int **uni2real)
-{
-    char *p = (char*)malloc(len+1);
-
-    if (!p) {
-        return 0;
-    }
-
+char *SearchTree::unify_str(const char *data, int len, ED4_SEARCH_GAPS gaps, int *new_len, int **uni2real) {
+    char *p       = ARB_alloc<char>(len+1);
     char *pp      = p;
     int   nlen    = 0;
     int   realPos = 0;
@@ -573,33 +567,27 @@ void SearchTree::findMatches(const char *seq, int len, reportMatch report)
 {
     if (root) {
         int new_len;
-        int *uni2real = (int*)malloc(len*sizeof(int));
-        char *uni_seq = uni2real ? unify_sequence(seq, len, &new_len, &uni2real) : NULL;
+        int *uni2real = ARB_alloc<int>(len);
+        char *uni_seq = unify_sequence(seq, len, &new_len, &uni2real);
 
-        if (uni_seq) {
-            int off;
-            char *useq = uni_seq;
-            int mismatch_list[MAX_MISMATCHES];
+        int off;
+        char *useq = uni_seq;
+        int mismatch_list[MAX_MISMATCHES];
 
-            for (off=0; off<MAX_MISMATCHES; off++) {
-                mismatch_list[off] = -1;
-            }
-
-            SearchTreeNode::set_report(report, uni2real);
-            SearchTreeNode::set_mismatches(sett->get_min_mismatches(), sett->get_max_mismatches());
-
-            for (off=0; off<new_len; off++, useq++) {
-                SearchTreeNode::set_start_offset(off);
-                root->findMatches(off, useq, new_len-off, 0, mismatch_list);
-            }
-
-            free(uni_seq);
-            free(uni2real);
+        for (off=0; off<MAX_MISMATCHES; off++) {
+            mismatch_list[off] = -1;
         }
-        else {
-            aw_message("Out of swapspace?");
-            if (uni2real) free(uni2real);
+
+        SearchTreeNode::set_report(report, uni2real);
+        SearchTreeNode::set_mismatches(sett->get_min_mismatches(), sett->get_max_mismatches());
+
+        for (off=0; off<new_len; off++, useq++) {
+            SearchTreeNode::set_start_offset(off);
+            root->findMatches(off, useq, new_len-off, 0, mismatch_list);
         }
+
+        free(uni_seq);
+        free(uni2real);
     }
 }
 
@@ -785,7 +773,7 @@ void ED4_create_search_awars(AW_root *root)
 
     // awars to save/load search parameters:
     {
-        char *dir = strdup(GB_path_in_arbprop("search_settings"));
+        char *dir = ARB_strdup(GB_path_in_arbprop("search_settings"));
         AW_create_fileselection_awars(root, ED4_SEARCH_SAVE_BASE, dir, ".asp", "noname.asp");
         root->awar(ED4_SEARCH_SAVE_BASE"/directory")->write_string(dir);
         free(dir);
@@ -811,7 +799,7 @@ ED4_SearchPosition::ED4_SearchPosition(const ED4_SearchPosition& other) {
     end_pos = other.end_pos;
     whatsFound = other.whatsFound;
     next = 0;
-    comment = strdup(other.comment);
+    comment = ARB_strdup(other.comment);
     memcpy(mismatch, other.mismatch, sizeof(mismatch[0])*MAX_MISMATCHES);
 }
 
@@ -887,7 +875,7 @@ GB_CSTR ED4_SearchPosition::get_comment() const
     if (lastShownComment && strcmp(lastShownComment, comment)==0) return 0; // do not show comment twice
 
     delete lastShownComment;
-    lastShownComment = strdup(comment);
+    lastShownComment = ARB_strdup(comment);
     return lastShownComment;
 }
 
@@ -924,7 +912,7 @@ ED4_SearchResults::ED4_SearchResults()
         }
 
         bufferSize = 100;
-        buffer = (char*)GB_calloc(bufferSize, sizeof(char));
+        ARB_calloc(buffer, bufferSize);
 
         initialized = 1;
     }
@@ -1164,7 +1152,7 @@ char *ED4_SearchResults::buildColorString(const ED4_sequence_terminal *seq_termi
     if (needed_size>bufferSize) {
         free(buffer);
         bufferSize = needed_size;
-        buffer = (char*)GB_calloc(bufferSize, sizeof(char));
+        ARB_calloc(buffer, bufferSize);
     }
     else {
         memset(buffer, 0, sizeof(char)*needed_size);
@@ -1262,7 +1250,7 @@ void ED4_SearchResults::to_array() {
         arraySize = a_arraySize;
     }
 
-    ED4_SearchPosition **a_array = (ED4_SearchPosition**)malloc(sizeof(ED4_SearchPosition*)*arraySize);
+    ED4_SearchPosition **a_array = ARB_alloc<ED4_SearchPosition*>(arraySize);
 
     pos = first;
     for (int e=0; e<arraySize; e++) {
@@ -1450,7 +1438,7 @@ static char *pattern2str(GB_CSTR p) {
     }
 
     *s1 = 0;
-    return strdup(s);
+    return ARB_strdup(s);
 }
 
 static void str2pattern(char *s) { // works on string

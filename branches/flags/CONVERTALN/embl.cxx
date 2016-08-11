@@ -65,9 +65,9 @@ static void embl_correct_title(Emblref& ref) {
     if (len > 2 && (ref.title[0] != '"' || ref.title[len - 3] != '"')) {
         char *temp = NULL;
         if (ref.title[0] != '"')
-            temp = strdup("\"");
+            temp = ARB_strdup("\"");
         else
-            temp = strdup("");
+            temp = ARB_strdup("");
         Append(temp, ref.title);
         if ((len > 2 && ref.title[len - 3]
              != '"')) {
@@ -369,7 +369,7 @@ static char *etog_author(char *Str) {
     int  indi, indk, len, index;
     char token[TOKENSIZE], *author;
 
-    author = strdup("");
+    author = ARB_strdup("");
     for (indi = index = 0, len = str0len(Str) - 1; indi < len; indi++, index++) {
         if (Str[indi] == ',' || Str[indi] == ';') {
             token[index--] = '\0';
@@ -412,7 +412,7 @@ static char *etog_journal(const char *eJournal) {
             if (p1) {
                 const char *p2 = strchr(p1+1, ')');
                 if (p2 && strcmp(p2+1, ".\n") == 0) {
-                    new_journal = Reallocspace(new_journal, str0len(eJournal)+1+1);
+                    ARB_realloc(new_journal, str0len(eJournal)+1+1);
 
                     int l1 = colon-eJournal;
                     int l2 = p1-colon-1;
@@ -554,7 +554,7 @@ int etom(const Embl& embl, Macke& macke, const Seq& seq) { // __ATTR__USERESULT
 
 #define TEST_EXPECT_ETOG_JOURNAL_PARSES(i,o)              \
     do {                                                  \
-        char *dup = strdup(i);                            \
+        char *dup = ARB_strdup(i);                        \
         char *res = etog_journal(dup);                    \
         TEST_EXPECT_EQUAL(res, o);                        \
         free(res);                                        \

@@ -1541,12 +1541,12 @@ static int string_comparator(const void *v0, const void *v1) {
     return strcmp(*(const char **)v0, *(const char **)v1);
 }
 
-static void MissingArgumentFor(char option) {
+__ATTR__NORETURN static void MissingArgumentFor(char option) {
     char buffer[100];
     sprintf(buffer, "option -%c expects an argument", option);
     Usage(buffer);
 }
-static void UnknownOption(char option) {
+__ATTR__NORETURN static void UnknownOption(char option) {
     char buffer[100];
     sprintf(buffer, "unknown option -%c", option);
     Usage(buffer);
@@ -1779,7 +1779,7 @@ static void Version() {
 
 #include <test_unit.h>
 
-inline const char *test_extract(bool ATTR, const char *str) {
+inline const char *test_extract(const char *str) {
     search__ATTR__ = true;
 
     clear_found_attribute();
@@ -1792,7 +1792,7 @@ inline const char *test_extract(bool ATTR, const char *str) {
     return found__ATTR__;
 }
 
-#define TEST_ATTR_____(comment,extracted) TEST_EXPECT_EQUAL(test_extract(true, comment), extracted)
+#define TEST_ATTR_____(comment,extracted) TEST_EXPECT_EQUAL(test_extract(comment), extracted)
 
 void TEST_attribute_parser() {
     TEST_ATTR_____("",             (const char*)NULL);

@@ -6,7 +6,6 @@ OBJECTS=$(subst .cxx,.o,$(wildcard *.cxx))
 GENERATED_HEADERS= \
 	arb_msg.h \
 	arb_misc.h \
-	arb_string.h \
 	arb_signal.h \
 	arb_file.h \
 	arb_diff.h \
@@ -60,8 +59,10 @@ depend.init:
 arb_cs.o: arb_assert.h
 arb_cs.o: arb_core.h
 arb_cs.o: arb_cs.h
+arb_cs.o: arb_mem.h
 arb_cs.o: arb_msg.h
 arb_cs.o: arb_pattern.h
+arb_cs.o: arb_string.h
 arb_cs.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_cs.o: $(ARBHOME)/INCLUDE/attributes.h
 arb_cs.o: $(ARBHOME)/INCLUDE/cxxforward.h
@@ -76,6 +77,7 @@ arb_diff.o: arb_core.h
 arb_diff.o: arb_diff.h
 arb_diff.o: arb_file.h
 arb_diff.o: arb_match.h
+arb_diff.o: arb_mem.h
 arb_diff.o: arb_msg.h
 arb_diff.o: arb_string.h
 arb_diff.o: $(ARBHOME)/INCLUDE/arb_str.h
@@ -91,7 +93,9 @@ arb_diff.o: $(ARBHOME)/INCLUDE/test_unit.h
 arb_file.o: arb_assert.h
 arb_file.o: arb_core.h
 arb_file.o: arb_file.h
+arb_file.o: arb_mem.h
 arb_file.o: arb_msg.h
+arb_file.o: arb_string.h
 arb_file.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_file.o: $(ARBHOME)/INCLUDE/attributes.h
 arb_file.o: $(ARBHOME)/INCLUDE/cxxforward.h
@@ -117,6 +121,7 @@ arb_handlers.o: $(ARBHOME)/INCLUDE/test_global.h
 arb_match.o: arb_assert.h
 arb_match.o: arb_core.h
 arb_match.o: arb_match.h
+arb_match.o: arb_mem.h
 arb_match.o: arb_msg.h
 arb_match.o: arb_strbuf.h
 arb_match.o: arb_string.h
@@ -127,18 +132,25 @@ arb_match.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_match.o: $(ARBHOME)/INCLUDE/gccver.h
 arb_match.o: $(ARBHOME)/INCLUDE/test_global.h
 
+arb_mem.o: arb_assert.h
 arb_mem.o: arb_core.h
 arb_mem.o: arb_mem.h
 arb_mem.o: arb_msg.h
+arb_mem.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_mem.o: $(ARBHOME)/INCLUDE/attributes.h
+arb_mem.o: $(ARBHOME)/INCLUDE/cxxforward.h
 arb_mem.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_mem.o: $(ARBHOME)/INCLUDE/gccver.h
+arb_mem.o: $(ARBHOME)/INCLUDE/test_global.h
+arb_mem.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 arb_misc.o: arb_assert.h
 arb_misc.o: arb_core.h
 arb_misc.o: arb_file.h
+arb_misc.o: arb_mem.h
 arb_misc.o: arb_misc.h
 arb_misc.o: arb_msg.h
+arb_misc.o: arb_string.h
 arb_misc.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_misc.o: $(ARBHOME)/INCLUDE/attributes.h
 arb_misc.o: $(ARBHOME)/INCLUDE/cxxforward.h
@@ -150,6 +162,7 @@ arb_misc.o: $(ARBHOME)/INCLUDE/test_unit.h
 arb_msg.o: arb_assert.h
 arb_msg.o: arb_core.h
 arb_msg.o: arb_handlers.h
+arb_msg.o: arb_mem.h
 arb_msg.o: arb_msg.h
 arb_msg.o: arb_msg_fwd.h
 arb_msg.o: arb_strarray.h
@@ -169,9 +182,11 @@ arb_msg.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 arb_pattern.o: arb_assert.h
 arb_pattern.o: arb_core.h
+arb_pattern.o: arb_mem.h
 arb_pattern.o: arb_msg.h
 arb_pattern.o: arb_pattern.h
 arb_pattern.o: arb_strbuf.h
+arb_pattern.o: arb_string.h
 arb_pattern.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_pattern.o: $(ARBHOME)/INCLUDE/attributes.h
 arb_pattern.o: $(ARBHOME)/INCLUDE/cxxforward.h
@@ -220,6 +235,7 @@ arb_sort.o: $(ARBHOME)/INCLUDE/test_global.h
 
 arb_strarray.o: arb_assert.h
 arb_strarray.o: arb_core.h
+arb_strarray.o: arb_mem.h
 arb_strarray.o: arb_sort.h
 arb_strarray.o: arb_strarray.h
 arb_strarray.o: arb_strbuf.h
@@ -235,7 +251,9 @@ arb_strarray.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 arb_strbuf.o: arb_assert.h
 arb_strbuf.o: arb_core.h
+arb_strbuf.o: arb_mem.h
 arb_strbuf.o: arb_strbuf.h
+arb_strbuf.o: arb_string.h
 arb_strbuf.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_strbuf.o: $(ARBHOME)/INCLUDE/attributes.h
 arb_strbuf.o: $(ARBHOME)/INCLUDE/cxxforward.h
@@ -245,6 +263,7 @@ arb_strbuf.o: $(ARBHOME)/INCLUDE/test_global.h
 
 arb_string.o: arb_assert.h
 arb_string.o: arb_core.h
+arb_string.o: arb_mem.h
 arb_string.o: arb_string.h
 arb_string.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_string.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -258,8 +277,10 @@ arb_string.o: $(ARBHOME)/INCLUDE/test_unit.h
 arb_zfile.o: arb_assert.h
 arb_zfile.o: arb_core.h
 arb_zfile.o: arb_file.h
+arb_zfile.o: arb_mem.h
 arb_zfile.o: arb_misc.h
 arb_zfile.o: arb_msg.h
+arb_zfile.o: arb_string.h
 arb_zfile.o: arb_zfile.h
 arb_zfile.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_zfile.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -271,6 +292,7 @@ arb_zfile.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 BufferedFileReader.o: arb_assert.h
 BufferedFileReader.o: arb_core.h
+BufferedFileReader.o: arb_mem.h
 BufferedFileReader.o: BufferedFileReader.h
 BufferedFileReader.o: $(ARBHOME)/INCLUDE/arbtools.h
 BufferedFileReader.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -283,6 +305,7 @@ BufferedFileReader.o: $(ARBHOME)/INCLUDE/test_global.h
 FileContent.o: arb_assert.h
 FileContent.o: arb_core.h
 FileContent.o: arb_file.h
+FileContent.o: arb_mem.h
 FileContent.o: arb_msg.h
 FileContent.o: arb_strarray.h
 FileContent.o: arb_string.h
@@ -298,8 +321,10 @@ FileContent.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 MultiFileReader.o: arb_assert.h
 MultiFileReader.o: arb_core.h
+MultiFileReader.o: arb_mem.h
 MultiFileReader.o: arb_msg.h
 MultiFileReader.o: arb_strarray.h
+MultiFileReader.o: arb_string.h
 MultiFileReader.o: BufferedFileReader.h
 MultiFileReader.o: MultiFileReader.h
 MultiFileReader.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -312,6 +337,7 @@ MultiFileReader.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 pos_range.o: arb_assert.h
 pos_range.o: arb_core.h
+pos_range.o: arb_mem.h
 pos_range.o: arb_msg.h
 pos_range.o: pos_range.h
 pos_range.o: $(ARBHOME)/INCLUDE/arbtools.h

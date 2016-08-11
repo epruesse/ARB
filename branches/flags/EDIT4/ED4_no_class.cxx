@@ -980,7 +980,7 @@ static void group_species(bool use_field, AW_window *use_as_main_window) {
     }
     else {
         char   *field_name   = ED4_ROOT->aw_root->awar(AWAR_FIELD_CHOSEN)->read_string();
-        char   *doneContents = strdup(";");
+        char   *doneContents = ARB_strdup(";");
         size_t  doneLen      = 1;
 
         bool tryAgain     = true;
@@ -1025,7 +1025,7 @@ static void group_species(bool use_field, AW_window *use_as_main_window) {
                                 tryAgain = true;
 
                                 int   newlen  = doneLen + field_content_len + 1;
-                                char *newDone = (char*)malloc(newlen+1);
+                                char *newDone = ARB_alloc<char>(newlen+1);
 
                                 GBS_global_string_to_buffer(newDone, newlen+1, "%s%s;", doneContents, field_content);
                                 freeset(doneContents, newDone);
@@ -1579,7 +1579,7 @@ static char *filter_loadable_SAIs(GBDATA *gb_sai) {
         if (gb_data) {
             const char *sai_name = GBT_get_name(gb_sai);
             if (!ED4_find_SAI_name_terminal(sai_name)) { // if not loaded yet
-                return strdup(sai_name);
+                return ARB_strdup(sai_name);
             }
         }
     }
@@ -1682,7 +1682,7 @@ static ARB_ERROR add_species_to_merge_list(ED4_base *base, SpeciesMergeList **sm
                 SpeciesMergeList *sml = new SpeciesMergeList;
 
                 sml->species      = gb_species;
-                sml->species_name = strdup(species_name);
+                sml->species_name = ARB_strdup(species_name);
                 sml->next         = *smlp;
                 *smlp             = sml;
             }
@@ -1849,7 +1849,7 @@ static void create_new_species(AW_window *, SpeciesCreationMode creation_mode) {
                         if (!error) error = createDataFromConsensus(gb_new_species, group_man); // insert consensus as 'data'
 
                         if (!error) {
-                            char             *doneFields = strdup(";name;full_name;"); // all fields which are already merged
+                            char             *doneFields = ARB_strdup(";name;full_name;"); // all fields which are already merged
                             int               doneLen    = strlen(doneFields);
                             SpeciesMergeList *sl         = sml;
                             int               sl_length  = SpeciesMergeListLength(sml);
@@ -1978,7 +1978,7 @@ static void create_new_species(AW_window *, SpeciesCreationMode creation_mode) {
 
                                                         e4_assert(content);
                                                         int add_len = names_len+1+strlen(content);
-                                                        char *whole = (char*)malloc(new_content_len+1+add_len+1);
+                                                        char *whole = ARB_alloc<char>(new_content_len+1+add_len+1);
                                                         e4_assert(whole);
                                                         char *add = new_content ? whole+sprintf(whole, "%s ", new_content) : whole;
                                                         sl2 = sml;
@@ -2009,7 +2009,7 @@ static void create_new_species(AW_window *, SpeciesCreationMode creation_mode) {
                                         }
 
                                         // mark field as done:
-                                        char *new_doneFields = (char*)malloc(doneLen+fieldLen+1+1);
+                                        char *new_doneFields = ARB_alloc<char>(doneLen+fieldLen+1+1);
                                         sprintf(new_doneFields, "%s%s;", doneFields, fieldName);
                                         doneLen += fieldLen+1;
                                         freeset(doneFields, new_doneFields);

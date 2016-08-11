@@ -33,8 +33,8 @@ struct customCriterion {
     }
 
     customCriterion() : key(NULL), reverse(false) { check_valid(); }
-    customCriterion(const char *key_, bool reverse_) : key(strdup(key_)), reverse(reverse_) { check_valid(); }
-    customCriterion(const customCriterion& other) : key(strdup(other.key)), reverse(other.reverse) { check_valid(); }
+    customCriterion(const char *key_, bool reverse_) : key(ARB_strdup(key_)), reverse(reverse_) { check_valid(); }
+    customCriterion(const customCriterion& other) : key(ARB_strdup(other.key)), reverse(other.reverse) { check_valid(); }
     DECLARE_ASSIGNMENT_OPERATOR(customCriterion);
     ~customCriterion() { free(key); }
 };
@@ -132,7 +132,7 @@ static GB_ERROR resort_data_base(TreeNode *tree, const customCriterion *sortBy) 
         else {
             if (tree) {
                 gb_resort_data_count = 0;
-                gb_resort_data_list  = (GBDATA **)calloc(sizeof(GBDATA *), GB_nsons(gb_sd) + 256);
+                ARB_calloc(gb_resort_data_list, GB_nsons(gb_sd) + 256);
                 NT_resort_data_base_by_tree(tree, gb_sd);
             }
             else {

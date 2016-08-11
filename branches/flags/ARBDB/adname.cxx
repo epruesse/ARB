@@ -109,7 +109,7 @@ GB_ERROR GBT_rename_species(const char *oldname, const  char *newname, bool igno
         if (NameSession.old_species_hash) {
             GBS_write_hash(NameSession.old_species_hash, oldname, 0);
         }
-        gbt_renamed *rns = (gbt_renamed *)GB_calloc(strlen(newname) + sizeof (gbt_renamed), sizeof(char));
+        gbt_renamed *rns = (gbt_renamed*)ARB_calloc<char>(strlen(newname)+sizeof(gbt_renamed));
         strcpy(&rns->data[0], newname);
         GBS_write_hash(NameSession.renamed_hash, oldname, (long)rns);
     }
@@ -201,7 +201,10 @@ GB_ERROR GBT_commit_rename_session() { // goes to header: __ATTR__USERESULT
                     progress.inc_and_check_user_abort(error);
                 }
                 else {
-                    GBT_message(NameSession.gb_main, GBS_global_string("Warning: failed to read '%s' (Reason: %s)", tname, GB_await_error()));
+                    GBT_message(NameSession.gb_main, GBS_global_string("Warning: failed to read '%s'\n"
+                                                                       "(Reason: %s)\n"
+                                                                       "Please note that this tree is useless now!",
+                                                                       tname, GB_await_error()));
                     ++progress;
                     ++progress;
                 }

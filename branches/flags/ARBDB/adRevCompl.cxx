@@ -65,15 +65,10 @@ static char GBT_complementNucleotide(char c, char T_or_U) {
 }
 
 char *GBT_reverseNucSequence(const char *s, int len) {
-    char *n = (char*)malloc(len+1);
-    int p;
-
-    if (!n) {
-        GB_memerr();
-        return 0;
-    }
-
+    char *n = ARB_alloc<char>(len+1);
     len--;
+
+    int p;
     for (p=0; len>=0; p++, len--) {
         n[p] = s[len];
     }
@@ -82,7 +77,7 @@ char *GBT_reverseNucSequence(const char *s, int len) {
     return n;
 }
 char *GBT_complementNucSequence(const char *s, int len, char T_or_U) {
-    char *n = (char*)malloc(len+1);
+    char *n = ARB_alloc<char>(len+1);
     int p;
 
     for (p=0; p<len; p++) {

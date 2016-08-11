@@ -655,19 +655,18 @@ static GB_ERROR MG_equal_alignments(bool autoselect_equal_alignment_name) {
                 }
 
                 if (!dest) {
-                    GBS_strstruct *str = GBS_stropen(100);
+                    GBS_strstruct buttonstr(100);
 
                     for (int i=0; i<d; i++) {
-                        GBS_strcat(str, D_alignment_names[i]);
-                        GBS_chrcat(str, ',');
+                        buttonstr.cat(D_alignment_names[i]);
+                        buttonstr.put(',');
                     }
-                    GBS_strcat(str, "ABORT");
+                    buttonstr.cat("ABORT");
 
-                    char *b = GBS_strclose(str);
                     int aliid = aw_question(NULL,
                                             "There are more than one possible alignment targets\n"
-                                            "Choose one destination alignment or ABORT", b);
-                    free(b);
+                                            "Choose one destination alignment or ABORT",
+                                            buttonstr.get_data());
 
                     if (aliid >= d) {
                         error = "Operation Aborted";
@@ -771,7 +770,7 @@ GB_ERROR MERGE_sequences_simple(AW_root *awr) {
                                 GB_ERROR  warning;          // duplicated species warning (does not apply here)
                                 char     *autoname = AWTC_create_numbered_suffix(D_species_hash, s_name, warning);
 
-                                if (!autoname) autoname = strdup(s_name);
+                                if (!autoname) autoname = ARB_strdup(s_name);
                                 freeset(s_name, aw_input("Species ID", "Enter new species ID", autoname));
                                 free(autoname);
                                 retry = true;

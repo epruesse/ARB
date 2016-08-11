@@ -353,7 +353,7 @@ static void nt_start_2nd_arb(AW_window *aww, bool quit) {
     char    *dir4intro;
     GB_split_full_path(aw_root->awar(AWAR_DB_PATH)->read_char_pntr(), &dir4intro, NULL, NULL, NULL);
     if (!dir4intro) {
-        dir4intro = strdup(".");
+        dir4intro = ARB_strdup(".");
     }
 
     if (quit) {
@@ -955,7 +955,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone, AWT_canvas **re
     const char *awar_tree = NULL;
 
     if (clone) {
-        awar_tree = GB_keep_string(GBS_global_string_copy(AWAR_TREE "_%i", clone));
+        awar_tree = ARB_keep_string(GBS_global_string_copy(AWAR_TREE "_%i", clone));
         sprintf(window_title, "ARB_NT_%i", clone);
     }
     else {

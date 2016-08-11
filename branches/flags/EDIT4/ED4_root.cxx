@@ -1298,7 +1298,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     AW_window_menu_modes *awmm = new AW_window_menu_modes;
     {
         int   winNum   = ED4_window::no_of_windows+1;
-        char *winName  = winNum>1 ? GBS_global_string_copy("ARB_EDIT4_%i", winNum) : strdup("ARB_EDIT4");
+        char *winName  = winNum>1 ? GBS_global_string_copy("ARB_EDIT4_%i", winNum) : ARB_strdup("ARB_EDIT4");
         char *winTitle = GBS_global_string_copy("ARB_EDIT4 *%d* [%s]", winNum, alignment_name);
 
         awmm->init(aw_root, winName, winTitle, 800, 450);
@@ -1919,7 +1919,7 @@ static char *detectProperties() {
 
     // if not, use 'mode 2', i.e. "edit4.arb"
     // (no full path, we want to load default from arb_defaults)
-    if (!propname) propname = strdup(ED4_propertyName(2));
+    if (!propname) propname = ARB_strdup(ED4_propertyName(2));
 
     return propname;
 }

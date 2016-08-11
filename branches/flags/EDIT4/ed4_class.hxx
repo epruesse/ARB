@@ -796,19 +796,19 @@ public:
     ED4_base* member(ED4_index i) const { e4_assert(i>=0 && i<size_of_list); return memberList[i]; }
     ED4_index members() const { return no_of_members; }
 
-    ED4_returncode  insert_member(ED4_base *new_member); // only used to move members with mouse
-    ED4_returncode  append_member(ED4_base *new_member);
+    void insert_member(ED4_base *new_member); // only used to move members with mouse
+    void append_member(ED4_base *new_member);
 
     // an array is chosen instead of a linked list, because destructorhandling is more comfortable in various destructors (manager-destructors)
 
-    ED4_returncode  remove_member(ED4_base *member);
-    ED4_index       search_member(ED4_extension *location, ED4_properties prop); // search member
-    ED4_returncode  shift_list(ED4_index start_index, int length);
+    ED4_returncode remove_member(ED4_base *member);
+    ED4_index search_member(ED4_extension *location, ED4_properties prop);       // search member
+    void      shift_list(ED4_index start_index, int length);
     // list has to be shifted because member_list is an array and not a linked list
 
-    ED4_returncode  search_target_species   (ED4_extension *location, ED4_properties prop, ED4_base **found_member, ED4_level return_level);
+    ED4_returncode search_target_species(ED4_extension *location, ED4_properties prop, ED4_base **found_member, ED4_level return_level);
 
-    ED4_returncode  move_member     (ED4_index old_pos, ED4_index new_pos);
+    ED4_returncode move_member(ED4_index old_pos, ED4_index new_pos);
 
 #if defined(IMPLEMENT_DUMP)
     void dump(size_t indent) const;

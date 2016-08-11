@@ -23,7 +23,9 @@
 #ifndef SMARTPTR_H
 #include <smartptr.h>
 #endif
-
+#ifndef ARB_STRING_H
+#include <arb_string.h>
+#endif
 
 #define ca_assert(cond) arb_assert(cond)
 
@@ -40,14 +42,14 @@ class Convaln_exception
 public:
     Convaln_exception(int error_code, const char *error_msg)
         : code(error_code),
-          msg(strdup(error_msg))
+          msg(ARB_strdup(error_msg))
     {
         ca_assert(!thrown); // 2 exceptions at the same time ? very exceptional! :)
         thrown = this;
     }
     Convaln_exception(const Convaln_exception& other)
         : code(other.code),
-          msg(strdup(other.msg))
+          msg(ARB_strdup(other.msg))
     {}
     DECLARE_ASSIGNMENT_OPERATOR(Convaln_exception);
     ~Convaln_exception() {
@@ -97,7 +99,7 @@ inline int str0len(const char *str) {
 }
 
 inline char *strndup(const char *str, int len) {
-    char *result = (char*)malloc(len+1);
+    char *result = ARB_alloc<char>(len+1);
     memcpy(result, str, len);
     result[len]  = 0;
     return result;
@@ -124,7 +126,7 @@ inline bool has_no_content(const char *field) {
 inline bool has_content(const char *field) { return !has_no_content(field); }
 
 inline char *no_content() {
-    char *nothing = (char*)malloc(2);
+    char *nothing = ARB_alloc<char>(2);
     nothing[0]    = '\n';
     nothing[1]    = 0;
     return nothing;
