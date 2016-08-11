@@ -2082,16 +2082,17 @@ void AW_area_management::create_devices(AW_window *aww, AW_area ar) {
 AW_color_idx AW_window::alloc_named_data_color(int colnum, const char *colorname) {
     if (!color_table_size) {
         color_table_size = AW_STD_COLOR_IDX_MAX + colnum;
-        color_table      = (AW_rgb*)malloc(sizeof(AW_rgb) *color_table_size);
+        ARB_alloc(color_table, color_table_size);
         for (int i = 0; i<color_table_size; ++i) color_table[i] = AW_NO_COLOR;
     }
     else {
         if (colnum>=color_table_size) {
-            long new_size  = colnum+8;
-            realloc_unleaked(color_table, new_size*sizeof(AW_rgb)); // valgrinders : never freed because AW_window never is freed
-            if (!color_table) GBK_terminate("out of memory");
-            for (int i = color_table_size; i<new_size; ++i) color_table[i] = AW_NO_COLOR;
-            color_table_size                                               = new_size;
+            long new_size = colnum+8;
+            ARB_realloc(color_table, new_size);
+            for (int i = color_table_size; i<new_size; ++i) {
+                color_table[i] = AW_NO_COLOR;
+            }
+            color_table_size = new_size;
         }
     }
     XColor xcolor_returned, xcolor_exakt;
@@ -2155,7 +2156,7 @@ void aw_insert_default_help_entries(AW_window *aww) {
 
 inline char *strdup_getlen(const char *str, int& len) {
     len = strlen(str);
-    return GB_strduplen(str, len);
+    return ARB_strduplen(str, len);
 }
 Label::Label(const char *labeltext, AW_window *aww) {
     imageref = AW_IS_IMAGEREF(labeltext);
@@ -2169,7 +2170,7 @@ Label::Label(const char *labeltext, AW_window *aww) {
             len = aww->get_at().length_of_buttons - 2;
             if (len < 1) len = 1;
 
-            label = (char*)malloc(len+1);
+            ARB_alloc(label, len+1);
             memset(label, 'y', len);
             label[len] = 0;
         }
@@ -3014,16 +3015,11 @@ int AW_window::create_mode(const char *pixmap, const char *helpText, AW_active m
 
     AW_cb *cbs = new AW_cb(this, cb, 0);
     AW_cb *cb2 = new AW_cb(this, makeWindowCallback(aw_mode_callback, p_w->number_of_modes, cbs), helpText, cbs);
-    XtAddCallback(button, XmNactivateCallback,
-    (XtCallbackProc) AW_server_callback,
-    (XtPointer) cb2);
+    XtAddCallback(button, XmNactivateCallback, (XtCallbackProc)AW_server_callback, (XtPointer)cb2);
 
-    if (!p_w->modes_f_callbacks) {
-        p_w->modes_f_callbacks = (AW_cb **)GB_calloc(sizeof(AW_cb*), AW_NUMBER_OF_F_KEYS); // valgrinders : never freed because AW_window never is freed
-    }
-    if (!p_w->modes_widgets) {
-        p_w->modes_widgets = (Widget *)GB_calloc(sizeof(Widget), AW_NUMBER_OF_F_KEYS);
-    }
+    if (!p_w->modes_f_callbacks) ARB_calloc(p_w->modes_f_callbacks, AW_NUMBER_OF_F_KEYS); // valgrinders : never freed because AW_window never is freed
+    if (!p_w->modes_widgets)     ARB_calloc(p_w->modes_widgets,     AW_NUMBER_OF_F_KEYS);
+
     if (p_w->number_of_modes<AW_NUMBER_OF_F_KEYS) {
         p_w->modes_f_callbacks[p_w->number_of_modes] = cb2;
         p_w->modes_widgets[p_w->number_of_modes] = button;

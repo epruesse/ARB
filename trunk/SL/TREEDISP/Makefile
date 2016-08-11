@@ -47,6 +47,7 @@ irstree_display.o: $(ARBHOME)/INCLUDE/AP_TreeColors.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/arb_assert.h
 irstree_display.o: $(ARBHOME)/INCLUDE/arb_core.h
 irstree_display.o: $(ARBHOME)/INCLUDE/arb_error.h
+irstree_display.o: $(ARBHOME)/INCLUDE/arb_mem.h
 irstree_display.o: $(ARBHOME)/INCLUDE/arb_msg.h
 irstree_display.o: $(ARBHOME)/INCLUDE/arb_string.h
 irstree_display.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
@@ -87,6 +88,7 @@ TreeCallbacks.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/arb_assert.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/arb_core.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/arb_error.h
+TreeCallbacks.o: $(ARBHOME)/INCLUDE/arb_mem.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/arb_msg.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/arb_string.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
@@ -142,6 +144,7 @@ TreeDisplay.o: $(ARBHOME)/INCLUDE/arb_defs.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/arb_diff.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/arb_error.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/arb_global_defs.h
+TreeDisplay.o: $(ARBHOME)/INCLUDE/arb_mem.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/arb_msg.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/arb_string.h

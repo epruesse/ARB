@@ -147,7 +147,7 @@ static void genbank_comments(GenBank& gbk, Reader& reader) {
     // replace keyword with spaces
     // => identical format for 1st and following lines.
     {
-        char *line = strdup(reader.line());
+        char *line = ARB_strdup(reader.line());
         for (int indi = 0; indi < GBINDENT; line[indi++] = ' ') {}
         reader.set_line(line);
         free(line);
@@ -186,12 +186,12 @@ static void genbank_verify_accession(GenBank& gbk) {
     char         *new_acc = NULL;
     const char   *sep     = " \t\n;";
     SmartCharPtr  req_fail;
-    SmartCharPtr  copy    = strdup(gbk.accession);
+    SmartCharPtr  copy    = ARB_strdup(gbk.accession);
     int           count   = 0;
 
     for (char *acc = strtok(&*copy, sep); acc && req_fail.isNull(); acc = strtok(NULL, sep)) {
         count++;
-        if (!isalpha(acc[0])) req_fail = strdup("has to start with a letter");
+        if (!isalpha(acc[0])) req_fail = ARB_strdup("has to start with a letter");
         else {
             for (int i = 0; acc[i]; ++i) {
                 if (!valid_acc_char(acc[i])) {

@@ -298,7 +298,7 @@ void ED4_reference::set_gap_handling(bool mindgaptype, const char *gaptypes) {
 
 void ED4_reference::expand_to_length(int len) {
     if (len>ref_len && is_set()) {
-        char *ref2 = (char *)GB_calloc(sizeof(char), len+1);
+        char *ref2 = ARB_calloc<char>(len+1);
 
         if (reference) {
             strcpy(ref2, reference);
@@ -432,7 +432,7 @@ static void set_current_as_diffRef(bool enable) {
     ED4_terminal *refTerm = enable ? detect_current_ref_terminal() : NULL;
     if (!enable || refTerm) { // do not disable, if current terminal has wrong type
         set_diff_reference(refTerm);
-        if (refTerm) last_used_ref_term_name = strdup(refTerm->id);
+        if (refTerm) last_used_ref_term_name = ARB_strdup(refTerm->id);
     }
 }
 

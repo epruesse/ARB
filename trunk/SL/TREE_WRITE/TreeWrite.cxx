@@ -50,7 +50,7 @@ static void export_tree_label(const char *label, FILE *out, TREE_node_quoting qm
     char *fixed_label;
     {
         size_t label_length = strlen(label);
-        fixed_label         = GB_strduplen(label, label_length);
+        fixed_label         = ARB_strduplen(label, label_length);
 
         if (whole_label_quoted(fixed_label, label_length)) {
             // if whole label is quoted -> remove quotes
@@ -269,7 +269,7 @@ GB_ERROR TREE_write_XML(GBDATA *gb_main, const char *db_name, const char *tree_n
 
                 xml_doc.add_attribute("database", db_name);
                 xml_doc.add_attribute("treename", tree_name);
-                xml_doc.add_attribute("export_date", GB_date_string());
+                xml_doc.add_attribute("export_date", ARB_date_string());
 
                 if (tree_remark) {
                     char *remark = GB_read_string(tree_remark);

@@ -575,14 +575,10 @@ void ED4_finish_and_show_notFoundMessage() {
         if (not_found_counter>MAX_SHOWN_MISSING_SPECIES) {
             GBS_strcat(not_found_message, GBS_global_string("(skipped display of %zu more species)\n", not_found_counter-MAX_SHOWN_MISSING_SPECIES));
         }
-        char *out_message = GBS_strclose(not_found_message);
-        aw_message(out_message);
+        aw_message(GBS_mempntr(not_found_message));
         aw_message(GBS_global_string("Couldn't load %zu species:", not_found_counter));
-        free(out_message);
     }
-    else {
-        GBS_strforget(not_found_message);
-    }
+    GBS_strforget(not_found_message);
     not_found_message = 0;
 }
 
@@ -592,7 +588,7 @@ static ED4_species_name_terminal *insert_new_species_terminal(GB_CSTR species_na
 
     ED4_init_notFoundMessage();
     {
-        char *buffer = (char*)GB_calloc(strlen(species_name)+3, sizeof(*buffer));
+        char *buffer = ARB_alloc<char>(strlen(species_name)+3);
         sprintf(buffer, "-%c%s", is_SAI ? 'S' : 'L', species_name);
 
         int       index = 0;

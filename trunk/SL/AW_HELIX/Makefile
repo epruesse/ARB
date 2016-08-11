@@ -41,6 +41,7 @@ AW_helix.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AW_helix.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_helix.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_helix.o: $(ARBHOME)/INCLUDE/arb_error.h
+AW_helix.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AW_helix.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AW_helix.o: $(ARBHOME)/INCLUDE/arb_string.h
 AW_helix.o: $(ARBHOME)/INCLUDE/arbdb.h

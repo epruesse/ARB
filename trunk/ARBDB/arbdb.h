@@ -174,6 +174,9 @@ struct GB_SizeInfo {
 #include <ad_prot.h>
 
 // to avoid arb-wide changes atm include some headers from CORE lib
+#ifndef ARB_MEM_H
+#include <arb_mem.h>
+#endif
 #ifndef ARB_MSG_H
 #include <arb_msg.h>
 #endif

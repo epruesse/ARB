@@ -68,7 +68,7 @@ static char *create_tree_name(const char *savename) {
 
         const char *ldot = strrchr(savename, '.');
 
-        tree_name = ldot ? GB_strpartdup(savename, ldot-1) : strdup(savename);
+        tree_name = ldot ? ARB_strpartdup(savename, ldot-1) : ARB_strdup(savename);
         if (tree_name[0] == 0) freedup(tree_name, "tree_consensus");
     }
 
@@ -139,7 +139,7 @@ int ARB_main(int argc, char *argv[]) {
             const char *arg = argv[a];
             if (arg[0] == '-') {
                 switch (arg[1]) {
-                    case 'w': savename = strdup(argv[++a]); break;
+                    case 'w': savename = ARB_strdup(argv[++a]); break;
                     default : error = GBS_global_string("Unknown switch '-%c'", arg[1]); break;
                 }
             }

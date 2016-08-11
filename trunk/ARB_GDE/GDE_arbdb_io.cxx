@@ -14,24 +14,22 @@
 
 typedef unsigned int UINT;
 
-static int Arbdb_get_curelem(NA_Alignment& dataset)
-{
-    int curelem;
-    curelem = dataset.numelements++;
+int Arbdb_get_curelem(NA_Alignment& dataset) {
+    int curelem = dataset.numelements++;
     if (curelem == 0) {
-        dataset.element = (NA_Sequence *) Calloc(5, sizeof(NA_Sequence));
         dataset.maxnumelements = 5;
+        ARB_alloc(dataset.element, dataset.maxnumelements);
     }
     else if (curelem == dataset.maxnumelements) {
         dataset.maxnumelements *= 2;
-        dataset.element = (NA_Sequence *) Realloc((char *)dataset.element, dataset.maxnumelements * sizeof(NA_Sequence));
+        ARB_realloc(dataset.element, dataset.maxnumelements);
     }
     return curelem;
 }
 
 static void set_constant_fields(NA_Sequence *this_elem) {
     this_elem->attr            = DEFAULT_X_ATTR;
-    this_elem->comments        = strdup("no comments");
+    this_elem->comments        = ARB_strdup("no comments");
     this_elem->comments_maxlen = 1 + (this_elem->comments_len = strlen(this_elem->comments));
     this_elem->rmatrix         = NULL;
     this_elem->tmatrix         = NULL;
@@ -74,7 +72,7 @@ __ATTR__USERESULT static int InsertDatainGDE(NA_Alignment&     dataset,
 
     GB_ERROR error = filter->is_invalid();
     if (!error) {
-        size_t *seqlen=(size_t *)calloc((unsigned int)numberspecies, sizeof(size_t));
+        size_t *seqlen = ARB_calloc<size_t>(numberspecies);
         // sequences may have different length
         {
             unsigned long i;
@@ -98,7 +96,7 @@ __ATTR__USERESULT static int InsertDatainGDE(NA_Alignment&     dataset,
         }
 
         // store (compressed) sequence data in array:
-        uchar             **sequfilt = (uchar**)calloc((unsigned int)numberspecies+1, sizeof(uchar*));
+        uchar             **sequfilt = ARB_calloc<uchar*>(numberspecies+1);
         GB_alignment_type   alitype  = GBT_get_alignment_type(dataset.gb_main, dataset.alignment_name);
 
         if (compress==COMPRESS_ALL) { // compress all gaps and filter positions
@@ -106,7 +104,7 @@ __ATTR__USERESULT static int InsertDatainGDE(NA_Alignment&     dataset,
             unsigned long i;
 
             for (i=0; i<numberspecies; i++) {
-                sequfilt[i]   = (uchar*)calloc((unsigned int)len+1, sizeof(uchar));
+                ARB_calloc(sequfilt[i], len+1);
                 long newcount = 0;
                 for (unsigned long col=0; (col<maxalignlen); col++) {
                     char c = the_sequences[i][col];
@@ -186,7 +184,7 @@ __ATTR__USERESULT static int InsertDatainGDE(NA_Alignment&     dataset,
                     int  c;
                     long newcount = 0;
 
-                    sequfilt[i]      = (uchar*)malloc((unsigned int)len+1);
+                    ARB_alloc(sequfilt[i], len+1);
                     sequfilt[i][len] = 0;
                     memset(sequfilt[i], '.', len); // Generate empty sequences
 
@@ -376,7 +374,7 @@ int ReadArbdb(NA_Alignment& dataset, bool marked, AP_filter *filter, GapCompress
         aw_message(GBS_global_string("Skipped %li species which did not contain data in '%s'", missingdata, dataset.alignment_name));
     }
 
-    the_species   = (GBDATA**)calloc((unsigned int)numberspecies+1, sizeof(GBDATA*));
+    ARB_calloc(the_species, numberspecies+1);
     numberspecies = 0;
 
     if (marked) gb_species = GBT_first_marked_species_rel_species_data(gb_species_data);
@@ -392,11 +390,11 @@ int ReadArbdb(NA_Alignment& dataset, bool marked, AP_filter *filter, GapCompress
         else gb_species        = GBT_next_species(gb_species);
     }
 
-    long   maxalignlen   = GBT_get_alignment_len(db_access.gb_main, dataset.alignment_name);
-    char **the_sequences = (char**)calloc((unsigned int)numberspecies+1, sizeof(char*));
+    long   maxalignlen = GBT_get_alignment_len(db_access.gb_main, dataset.alignment_name);
+    char **the_sequences; ARB_calloc(the_sequences, numberspecies+1);
 
     for (long i=0; the_species[i]; i++) {
-        the_sequences[i] = (char *)malloc((size_t)maxalignlen+1);
+        ARB_alloc(the_sequences[i], maxalignlen+1);
         the_sequences[i][maxalignlen] = 0;
         memset(the_sequences[i], '.', (size_t)maxalignlen);
         const char *data = GB_read_char_pntr(GBT_find_sequence(the_species[i], dataset.alignment_name));
@@ -440,7 +438,7 @@ void putelem(NA_Sequence *a, int b, NA_Base c) {
         a->sequence[b-(a->offset)] = c;
     }
     else {
-        NA_Base *temp = (NA_Base*)Calloc(a->seqmaxlen+a->offset-b, sizeof(NA_Base));
+        NA_Base *temp = ARB_calloc<NA_Base>(a->seqmaxlen + a->offset - b);
         switch (a->elementtype) {
             // Pad out with gap characters fron the point of insertion to the offset
             case MASK:
@@ -463,7 +461,7 @@ void putelem(NA_Sequence *a, int b, NA_Base c) {
         }
 
         for (int j=0; j<a->seqmaxlen; j++) temp[j+a->offset-b] = a->sequence[j];
-        Cfree((char*)a->sequence);
+        free(a->sequence);
 
         a->sequence     = temp;
         a->seqlen      += (a->offset - b);

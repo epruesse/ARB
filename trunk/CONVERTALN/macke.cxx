@@ -228,7 +228,7 @@ void MackeReader::read_to_start() {
 
 
 MackeReader::MackeReader(const char *inName_)
-    : inName(strdup(inName_)),
+    : inName(ARB_strdup(inName_)),
       seqabbr(dummy),
       dummy(NULL),
       r1(new Reader(inName)),
@@ -247,7 +247,7 @@ MackeReader::~MackeReader() {
     delete *using_reader; *using_reader = NULL;
 
     // avoid that all 3 readers decorate the error
-    if (exc) msg = strdup(exc->get_msg());
+    if (exc) msg = ARB_strdup(exc->get_msg());
     delete r3; r3 = NULL;
     delete r2; r2 = NULL;
     delete r1; r1 = NULL;

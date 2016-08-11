@@ -116,7 +116,7 @@ int PT_find_exProb(PT_exProb *pep, int) {
         if (pep->restart) {
             pep->restart = 0;
 
-            char *probe = (char*)malloc(pep->plength+1);
+            char *probe = ARB_alloc<char>(pep->plength+1);
             memset(probe, 'N', pep->plength);
             probe[pep->plength] = 0; // EOS marker
 

@@ -566,9 +566,9 @@ class SelectedDatabase : virtual Noncopyable {
 public:
     SelectedDatabase(GBDATA*& gb_main_, const char *name_, const char *role_)
         : gb_main(gb_main_),
-          name(strdup(name_)),
+          name(ARB_strdup(name_)),
           type(detectArgType(name)),
-          role(strdup(role_))
+          role(ARB_strdup(role_))
     {
         fix_name();
     }
@@ -832,8 +832,8 @@ static AW_window *startup_merge_prompting_for_nonexplicit_dbs(AW_root *aw_root, 
 
 static void startup_gui(NtreeCommandLine& cl, ARB_ERROR& error) {
     {
-        char *message = strdup(GB_path_in_ARBLIB("message"));
-        char *stamp   = strdup(GB_path_in_arbprop("msgtime"));
+        char *message = ARB_strdup(GB_path_in_ARBLIB("message"));
+        char *stamp   = ARB_strdup(GB_path_in_arbprop("msgtime"));
         if (GB_time_of_file(message)>GB_time_of_file(stamp)) {
             AW_edit(message);
             aw_message_if(GBK_system(GBS_global_string("touch %s", stamp)));
@@ -893,7 +893,7 @@ static void startup_gui(NtreeCommandLine& cl, ARB_ERROR& error) {
         }
         else {
             const char *database         = NULL;
-            char       *browser_startdir = strdup(".");
+            char       *browser_startdir = ARB_strdup(".");
 
             if (cl.free_args() > 0) database = cl.get_arg(0);
 

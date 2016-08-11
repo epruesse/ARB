@@ -224,7 +224,7 @@ static GBDATA *GB_search_numbered(GBDATA *gbd, const char *str, GB_TYPES create)
                     GBDATA *gb_parent = 0;
                     {
                         if (previous_slash) { // found a slash
-                            char *parent_path = GB_strpartdup(str, previous_slash-1);
+                            char *parent_path = ARB_strpartdup(str, previous_slash-1);
 
                             // we are sure parent path does not contain brackets -> search normal
                             if (parent_path[0] == 0) { // that means : root-item is numbered (e.g. '/species_data[7]/...')
@@ -246,7 +246,7 @@ static GBDATA *GB_search_numbered(GBDATA *gbd, const char *str, GB_TYPES create)
                         GBDATA *gb_son = 0;
                         {
                             const char *name_start = previous_slash ? previous_slash+1 : str;
-                            char       *key_name   = GB_strpartdup(name_start, first_bracket-1);
+                            char       *key_name   = ARB_strpartdup(name_start, first_bracket-1);
                             int         c          = 0;
 
                             gb_son = GB_entry(gb_parent, key_name);
@@ -871,7 +871,7 @@ static void child_changed_cb(AW_root *aw_root) {
                     fullpath = GBS_global_string_copy("/%s", child);
                 }
                 else if (child[0] == 0) {
-                    fullpath = strdup(path);
+                    fullpath = ARB_strdup(path);
                 }
                 else {
                     fullpath = GBS_global_string_copy("%s/%s", path, child);
@@ -1016,7 +1016,7 @@ static void path_changed_cb(AW_root *aw_root) {
             if (found && GB_read_type(found) != GB_DB) { // exists, but is not a container
                 char *lslash = strrchr(path, '/');
                 if (lslash) {
-                    goto_child = strdup(lslash+1);
+                    goto_child = ARB_strdup(lslash+1);
                     lslash[lslash == path] = 0; // truncate at last slash (but keep sole slash)
                     awar_path->write_string(path);
                 }

@@ -47,17 +47,29 @@ public:
         void *tmp[MAX_BACKTRACE];
         size = backtrace(tmp, MAX_BACKTRACE);
 
-        size_t wantedFrames = size-skipFramesAtBottom;
+        if (skipFramesAtBottom>=size) skipFramesAtBottom = size-1; // show at least 1 frame
 
-        arb_assert(wantedFrames>0); // skipped more than all frames
+        while (1) {
+            size_t wantedFrames = size-skipFramesAtBottom;
+            arb_assert(wantedFrames>0);
 
-        size_t msize = wantedFrames*sizeof(*array);
+            size_t msize = wantedFrames*sizeof(*array);
+            array        = (void**)malloc(msize); // do NOT use ARB_alloc here
 
-        array = (void**)malloc(msize);
-        // cppcheck-suppress arithOperationsOnVoidPointer (false positive: pointer-arithmetics on void** are completely standard compliant)
-        memcpy(array, tmp+skipFramesAtBottom, msize);
+            if (array) {
+                // cppcheck-suppress arithOperationsOnVoidPointer (false positive: pointer-arithmetics on void** are completely standard compliant)
+                memcpy(array, tmp+skipFramesAtBottom, msize);
+                size = wantedFrames;
+                break;
+            }
 
-        size = wantedFrames;
+            // reduce retrieved frames and retry
+            if (wantedFrames<=1) {
+                fputs("\n\nFATAL ERROR: not enough memory to dump backtrace!\n\n", stderr);
+                break;
+            }
+            skipFramesAtBottom += wantedFrames/2 + 1;
+        }
     }
     ~BackTraceInfo() { free(array); }
 
@@ -67,8 +79,14 @@ public:
 
         if (fprintf(out, "\n-------------------- ARB-backtrace '%s':\n", message) < 0) return false;
         fflush(out);
-        backtrace_symbols_fd(array, size, fileno(out));
-        if (size == MAX_BACKTRACE) fputs("[stack truncated to avoid deadlock]\n", out);
+
+        if (array) {
+            backtrace_symbols_fd(array, size, fileno(out));
+            if (size == MAX_BACKTRACE) fputs("[stack truncated to avoid deadlock]\n", out);
+        }
+        else {
+            fputs("[could not retrieve stack-information]\n", out);
+        }
         fputs("-------------------- End of backtrace\n", out);
         return fflush(out) == 0;
     }

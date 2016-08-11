@@ -33,7 +33,7 @@ inline char *extract_url_host(const char *templ) {
         const char *host_start = url_start+8;
         const char *slash      = strchr(host_start, '/');
 
-        if (slash) return GB_strpartdup(host_start, slash-1);
+        if (slash) return ARB_strpartdup(host_start, slash-1);
     }
     return NULL;
 }

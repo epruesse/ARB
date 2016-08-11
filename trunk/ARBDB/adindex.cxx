@@ -192,7 +192,7 @@ void gb_destroy_indices(GBCONTAINER *gbc) {
 NOT4PERL void GB_dump_indices(GBDATA *gbd) { // used for debugging
     // dump indices of container
 
-    char *db_path = strdup(GB_get_db_path(gbd));
+    char *db_path = ARB_strdup(GB_get_db_path(gbd));
     if (gbd->is_entry()) {
         fprintf(stderr, "'%s' (%s) is no container.\n", db_path, GB_get_type_name(gbd));
     }
@@ -342,10 +342,12 @@ static g_b_undo_entry *new_g_b_undo_entry(g_b_undo_list *u) {
 
 
 void gb_init_undo_stack(GB_MAIN_TYPE *Main) { // @@@ move into GB_MAIN_TYPE-ctor
-    Main->undo = (g_b_undo_mgr *)GB_calloc(sizeof(g_b_undo_mgr), 1);
+    ARB_calloc(Main->undo, 1);
+
     Main->undo->max_size_of_all_undos = GB_MAX_UNDO_SIZE;
-    Main->undo->u = (g_b_undo_header *) GB_calloc(sizeof(g_b_undo_header), 1);
-    Main->undo->r = (g_b_undo_header *) GB_calloc(sizeof(g_b_undo_header), 1);
+
+    ARB_calloc(Main->undo->u, 1);
+    ARB_calloc(Main->undo->r, 1);
 }
 
 static void delete_g_b_undo_entry(g_b_undo_entry *entry) {
@@ -528,7 +530,7 @@ static char *g_b_undo_info(GB_MAIN_TYPE *Main, g_b_undo_header *uh) {
     g_b_undo_entry *ue;
 
     u = uh->stack;
-    if (!u) return strdup("No more undos available");
+    if (!u) return ARB_strdup("No more undos available");
     for (ue=u->entries; ue; ue = ue->next) {
         switch (ue->type) {
             case GB_UNDO_ENTRY_TYPE_CREATED:
@@ -592,7 +594,7 @@ char *gb_set_undo_sync(GBDATA *gb_main) {
     }
     if (uhs)
     {
-        g_b_undo_list *u = (g_b_undo_list *) GB_calloc(sizeof(g_b_undo_list),  1);
+        g_b_undo_list *u = ARB_calloc<g_b_undo_list>(1);
         u->next = uhs->stack;
         u->father = uhs;
         uhs->stack = u;

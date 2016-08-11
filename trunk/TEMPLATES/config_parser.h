@@ -189,7 +189,7 @@ namespace {
         void parseIntRange(const std::string& key, int& low, int& high) {
             const std::string *val = parser.getValue(key, error);
             if (val) {
-                char *range = strdup(val->c_str());
+                char *range = ARB_strdup(val->c_str());
                 char *lhs, *rhs;
 
                 error             = ConfigParser::splitText(range, ',', lhs, rhs);
@@ -244,7 +244,7 @@ namespace {
         void parseDoubleRange(const std::string& key, double& low, double& high) {
             const std::string *val = parser.getValue(key, error);
             if (val) {
-                char *range = strdup(val->c_str());
+                char *range = ARB_strdup(val->c_str());
                 char *lhs, *rhs;
 
                 error             = ConfigParser::splitText(range, ',', lhs, rhs);

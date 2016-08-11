@@ -339,11 +339,11 @@ static GB_ERROR pd_get_the_names(GBDATA *gb_main, bytestring &bs, bytestring &ch
 
     free(use);
 
+    bs.size = GBS_memoffset(names)+1;
     bs.data = GBS_strclose(names);
-    bs.size = strlen(bs.data)+1;
 
+    checksum.size = GBS_memoffset(checksums)+1;
     checksum.data = GBS_strclose(checksums);
-    checksum.size = strlen(checksum.data)+1;
 
     GB_commit_transaction(gb_main);
 
@@ -732,10 +732,10 @@ static void probe_design_event(AW_window *aww, GBDATA *gb_main) {
             probe = strpbrk(match_info, "acgtuACGTU");
             if (probe) space = strchr(probe, ' ');
             if (probe && space) {
-                *space = 0; probe = strdup(probe); *space=' ';
+                *space = 0; probe = ARB_strdup(probe); *space=' ';
             }
             else {
-                probe = strdup("");
+                probe = ARB_strdup("");
             }
             PD.resultList->insert(match_info, probe);
             free(probe);
@@ -876,7 +876,7 @@ static __ATTR__USERESULT GB_ERROR probe_match_event(const ProbeMatchSettings& ma
 
             bool              gene_flag = false;
             ProbeMatchParser *parser    = 0;
-            char             *result    = (char*)malloc(1024);
+            char             *result    = ARB_alloc<char>(1024);
 
 
             if (hinfo) {
@@ -1032,7 +1032,7 @@ static __ATTR__USERESULT GB_ERROR probe_match_event(const ProbeMatchSettings& ma
                                         error2 = GB_await_error();
                                     }
                                     else {
-                                        char *concatenatedContent = (char *)malloc(strlen(prevContent)+1+strlen(match_info)+1);
+                                        char *concatenatedContent = ARB_alloc<char>(strlen(prevContent)+1+strlen(match_info)+1);
                                         sprintf(concatenatedContent, "%s\n%s", prevContent, match_info);
                                         error2 = GB_write_string(gb_tmp, concatenatedContent);
                                         free(concatenatedContent);
@@ -1361,7 +1361,7 @@ void create_probe_design_variables(AW_root *root, AW_default props, AW_default d
                 const char *colon = strchr(probe, ':');
 
                 if (colon) {
-                    char       *name = GB_strpartdup(probe, colon-1);
+                    char       *name = ARB_strpartdup(probe, colon-1);
                     const char *seq  = colon+1;
                     g_probe_collection.add(name, seq);
                     free(name);
@@ -1921,14 +1921,14 @@ static const char *ptserver_directory_info_command(const char *dirname, const ch
 static void pd_query_pt_server(AW_window *aww) {
     const char *server_tag = GBS_ptserver_tag(aww->get_root()->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int());
 
-    GBS_strstruct *strstruct = GBS_stropen(1024);
-    GBS_strcat(strstruct, ptserver_directory_info_command("ARBHOME/lib/pts", "$ARBHOME/lib/pts"));
+    GBS_strstruct query_cmd(1024);
+    query_cmd.cat(ptserver_directory_info_command("ARBHOME/lib/pts", "$ARBHOME/lib/pts"));
 
     const char *ARB_LOCAL_PTS = ARB_getenv_ignore_empty("ARB_LOCAL_PTS");
-    if (ARB_LOCAL_PTS) GBS_strcat(strstruct, ptserver_directory_info_command("ARB_LOCAL_PTS", "$ARB_LOCAL_PTS")); // only defined if called via 'arb'-script
-    else               GBS_strcat(strstruct, ptserver_directory_info_command("HOME/.arb_pts", "${HOME}/.arb_pts"));
+    if (ARB_LOCAL_PTS) query_cmd.cat(ptserver_directory_info_command("ARB_LOCAL_PTS", "$ARB_LOCAL_PTS")); // only defined if called via 'arb'-script
+    else               query_cmd.cat(ptserver_directory_info_command("HOME/.arb_pts", "${HOME}/.arb_pts"));
 
-    GBS_strcat(strstruct, "echo 'Running ARB programs:'; echo; ");
+    query_cmd.cat("echo 'Running ARB programs:'; echo; ");
 
     GB_ERROR error = NULL;
     {
@@ -1938,15 +1938,12 @@ static void pd_query_pt_server(AW_window *aww) {
         }
         else {
             char *arb_who = createCallOnSocketHost(socketid, "$ARBHOME/bin/", "arb_who", WAIT_FOR_TERMINATION, NULL);
-            GBS_strcat(strstruct, arb_who);
+            query_cmd.cat(arb_who);
             free(arb_who);
         }
     }
 
-    char *sys         = GBS_strclose(strstruct);
-    if (!error) error = GB_xcmd(sys, true, false);
-    free(sys);
-
+    if (!error) error = GB_xcmd(query_cmd.get_data(), true, false);
     aw_message_if(error);
 }
 
