@@ -313,7 +313,7 @@ static int aw_status_read_command(int fd, int poll_flag, char*& str, int *gaugeP
         }
         *(p++) = c;
 
-        str = strdup(buffer);
+        str = ARB_strdup(buffer);
     }
     else if (cmd == AW_STATUS_CMD_GAUGE) {
         aw_assert(NULL != gaugePtr);

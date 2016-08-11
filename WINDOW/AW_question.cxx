@@ -159,7 +159,7 @@ void AW_repeated_question::add_help(const char *help_file) {
 int AW_repeated_question::get_answer(const char *unique_id, const char *question, const char *buttons, const char *to_all, bool add_abort)
 {
     if (!buttons_used) {
-        buttons_used = strdup(buttons);
+        buttons_used = ARB_strdup(buttons);
     }
     else {
         // do not use the same instance of AW_repeated_question with different buttons!

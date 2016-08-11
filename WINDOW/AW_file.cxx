@@ -63,7 +63,7 @@ char *AW_extract_directory(const char *path) {
     const char *lslash = strrchr(path, '/');
     if (!lslash) return 0;
 
-    char *result        = strdup(path);
+    char *result        = ARB_strdup(path);
     result[lslash-path] = 0;
 
     return result;
@@ -181,7 +181,7 @@ public:
     File_selection(AW_root *aw_root, const char *awar_prefix, const char *pwd_, DirDisplay disp_dirs, bool allow_wildcards)
         : awr(aw_root),
           filelist(NULL),
-          pwd(strdup(pwd_)),
+          pwd(ARB_strdup(pwd_)),
           pwdx(NULL),
           dirdisp(disp_dirs),
           leave_wildcards(allow_wildcards),
@@ -384,8 +384,8 @@ void File_selection::fill_recursive(const char *fulldir, int skipleft, const cha
         char       *nontruepath = GBS_global_string_copy("%s/%s", fulldir, entry);
         char       *fullname;
 
-        if (strlen(fulldir)) fullname = strdup(GB_concat_full_path(fulldir, entry));
-        else fullname                 = strdup(GB_canonical_path(entry));
+        if (strlen(fulldir)) fullname = ARB_strdup(GB_concat_full_path(fulldir, entry));
+        else fullname                 = ARB_strdup(GB_canonical_path(entry));
 
         if (AW_is_dir(fullname)) {
             if (!(entry[0] == '.' && (!show_hidden || entry[1] == 0 || (entry[1] == '.' && entry[2] == 0)))) { // skip "." and ".." and dotdirs if requested
@@ -410,7 +410,7 @@ void File_selection::fill_recursive(const char *fulldir, int skipleft, const cha
                     struct tm *tms = localtime(&stt.st_mtime);
                     strftime(atime, 255, "%Y/%m/%d %k:%M", tms);
 
-                    char *size     = strdup(GBS_readable_size(stt.st_size, "b"));
+                    char *size     = ARB_strdup(GBS_readable_size(stt.st_size, "b"));
                     char  typechar = AW_is_link(nontruepath) ? 'L' : 'F';
 
                     const char *sel_entry = 0;
@@ -515,11 +515,11 @@ void File_selection::fill() {
         if (dirdisp == MULTI_DIRS) {
             ConstStrArray cdirs;
             GBT_split_string(cdirs, diru, ":", true);
-            for (unsigned i = 0; i<cdirs.size(); ++i) dirs.put(strdup(cdirs[i]));
+            for (unsigned i = 0; i<cdirs.size(); ++i) dirs.put(ARB_strdup(cdirs[i]));
         }
         else {
             if (name[0] == '/' && AW_is_dir(name)) {
-                dirs.put(strdup(name));
+                dirs.put(ARB_strdup(name));
                 name_only = "";
             }
             else {
@@ -684,20 +684,20 @@ void File_selection::filename_changed(bool post_filter_change_HACK) {
 #endif // TRACE_FILEBOX
 
             if (fname[0] == '/' || fname[0] == '~') {
-                newName = strdup(GB_canonical_path(fname));
+                newName = ARB_strdup(GB_canonical_path(fname));
             }
             else {
                 if (dir[0]) {
                     if (dir[0] == '/') {
-                        newName = strdup(GB_concat_full_path(dir, fname));
+                        newName = ARB_strdup(GB_concat_full_path(dir, fname));
                     }
                     else {
                         char *fulldir = 0;
 
                         if (dir[0] == '.') fulldir = AW_unfold_path(pwd, dir);
-                        else fulldir               = strdup(dir);
+                        else fulldir               = ARB_strdup(dir);
 
-                        newName = strdup(GB_concat_full_path(fulldir, fname));
+                        newName = ARB_strdup(GB_concat_full_path(fulldir, fname));
                         free(fulldir);
                     }
                 }
@@ -908,7 +908,7 @@ char *AW_get_selected_fullname(AW_root *awr, const char *awar_prefix) { // @@@ a
             freeset(dir, awar_dir->read_string());
         }
 
-        char *full = strdup(GB_concat_full_path(dir, file));
+        char *full = ARB_strdup(GB_concat_full_path(dir, file));
 
         free(dir);
         free(file);
@@ -957,9 +957,9 @@ void TEST_path_unfolding() {
         GB_install_getenv_hook(old);
     }
 
-    TEST_EXPECT_EQUAL_DUPPED(AW_unfold_path("PWD", "/bin"),                strdup("/bin"));
-    TEST_EXPECT_EQUAL_DUPPED(AW_unfold_path("PWD", "../tests"),            strdup(GB_path_in_ARBHOME("UNIT_TESTER/tests")));
-    TEST_EXPECT_EQUAL_DUPPED(AW_unfold_path("ARB_NONEXISTING_ENVAR", "."), strdup(currDir));
+    TEST_EXPECT_EQUAL_DUPPED(AW_unfold_path("PWD", "/bin"),                ARB_strdup("/bin"));
+    TEST_EXPECT_EQUAL_DUPPED(AW_unfold_path("PWD", "../tests"),            ARB_strdup(GB_path_in_ARBHOME("UNIT_TESTER/tests")));
+    TEST_EXPECT_EQUAL_DUPPED(AW_unfold_path("ARB_NONEXISTING_ENVAR", "."), ARB_strdup(currDir));
 }
 TEST_PUBLISH(TEST_path_unfolding);
 

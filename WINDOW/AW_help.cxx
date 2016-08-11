@@ -70,8 +70,8 @@ static struct {
 
 static char *get_full_qualified_help_file_name(const char *helpfile, bool path_for_edit = false) {
     GB_CSTR   result             = 0;
-    char     *user_doc_path      = strdup(GB_getenvDOCPATH());
-    char     *devel_doc_path     = strdup(GB_path_in_ARBHOME("HELP_SOURCE/oldhelp"));
+    char     *user_doc_path      = ARB_strdup(GB_getenvDOCPATH());
+    char     *devel_doc_path     = ARB_strdup(GB_path_in_ARBHOME("HELP_SOURCE/oldhelp"));
     size_t    user_doc_path_len  = strlen(user_doc_path);
     size_t    devel_doc_path_len = strlen(devel_doc_path);
 
@@ -93,7 +93,7 @@ static char *get_full_qualified_help_file_name(const char *helpfile, bool path_f
         if (rel_path[0]) {
             if (path_for_edit) {
 #if defined(DEBUG)
-                char *gen_doc_path = strdup(GB_path_in_ARBHOME("HELP_SOURCE/genhelp"));
+                char *gen_doc_path = ARB_strdup(GB_path_in_ARBHOME("HELP_SOURCE/genhelp"));
 
                 char *devel_source = GBS_global_string_copy("%s/%s", devel_doc_path, rel_path);
                 char *gen_source   = GBS_global_string_copy("%s/%s", gen_doc_path, rel_path);
@@ -129,7 +129,7 @@ static char *get_full_qualified_help_file_name(const char *helpfile, bool path_f
     free(devel_doc_path);
     free(user_doc_path);
 
-    return strdup(result);
+    return ARB_strdup(result);
 }
 
 static char *get_full_qualified_help_file_name(AW_root *awr, bool path_for_edit = false) {
@@ -141,8 +141,8 @@ static char *get_full_qualified_help_file_name(AW_root *awr, bool path_for_edit 
 
 static char *get_local_help_url(AW_root *awr) {
     char   *helpfile          = get_full_qualified_help_file_name(awr, false);
-    char   *user_doc_path     = strdup(GB_getenvDOCPATH());
-    char   *user_htmldoc_path = strdup(GB_getenvHTMLDOCPATH());
+    char   *user_doc_path     = ARB_strdup(GB_getenvDOCPATH());
+    char   *user_htmldoc_path = ARB_strdup(GB_getenvHTMLDOCPATH());
     size_t  user_doc_path_len = strlen(user_doc_path);
     char   *result            = 0;
 
@@ -270,7 +270,7 @@ static char *aw_ref_to_title(const char *ref) {
     }
 
     if (result==0) {
-        result = strdup(ref);
+        result = ARB_strdup(ref);
     }
 
     return result;
@@ -280,7 +280,7 @@ static void aw_help_select_newest_in_history(AW_root *aw_root) {
     char *history = HELP.history;
     if (history) {
         const char *sep      = strchr(history, '#');
-        char       *lastHelp = sep ? ARB_strpartdup(history, sep-1) : strdup(history);
+        char       *lastHelp = sep ? ARB_strpartdup(history, sep-1) : ARB_strdup(history);
 
         aw_root->awar(AWAR_HELPFILE)->write_string(lastHelp);
         free(lastHelp);
@@ -468,7 +468,7 @@ static void aw_help_helpfile_changed_cb(AW_root *awr) {
             }
         }
         else {
-            HELP.history = strdup(help_file);
+            HELP.history = ARB_strdup(help_file);
         }
 
 #if defined(TRACK_HELPFILE)
@@ -481,7 +481,7 @@ static void aw_help_helpfile_changed_cb(AW_root *awr) {
             char *ptr;
             char *h, *h2, *tok;
 
-            ptr = strdup(helptext);
+            ptr = ARB_strdup(helptext);
             HELP.uplinks->clear();
             h2 = GBS_find_string(ptr, "\nUP", 0);
             while ((h = h2)) {
@@ -495,7 +495,7 @@ static void aw_help_helpfile_changed_cb(AW_root *awr) {
             HELP.uplinks->insert_default("   ", "");
             HELP.uplinks->update();
 
-            ptr = strdup(helptext);
+            ptr = ARB_strdup(helptext);
             HELP.links->clear();
             h2 = GBS_find_string(ptr, "\nSUB", 0);
             while ((h = h2)) {
@@ -563,7 +563,7 @@ static void aw_help_search(AW_window *aww) {
         {
             const char *existingSearch = (const char*)GBS_read_hash(searchHash, searchtext);
             if (existingSearch) {
-                helpfilename = strdup(existingSearch);
+                helpfilename = ARB_strdup(existingSearch);
             }
             else {
                 char *helpname = GB_unique_filename("arb", "hlp");
@@ -629,7 +629,7 @@ static void aw_help_search(AW_window *aww) {
                     aww->get_root()->awar(AWAR_HELPFILE)->write_string(helpfilename); // display results in aws
                 }
                 free(result);
-                GBS_write_hash(searchHash, searchtext, (long)strdup(helpfilename));
+                GBS_write_hash(searchHash, searchtext, (long)ARB_strdup(helpfilename));
             }
         }
         free(helpfilename);

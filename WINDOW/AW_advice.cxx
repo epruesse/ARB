@@ -74,10 +74,10 @@ inline void remove_advice_id(const char* id, AW_awar *var) {
         if (offset >= 0) {
             char *newList = 0;
             if (offset == 0) {
-                newList = strdup(idlist+strlen(id)+1);
+                newList = ARB_strdup(idlist+strlen(id)+1);
             }
             else {
-                newList     = strdup(idlist);
+                newList     = ARB_strdup(idlist);
                 char *idPos = newList+offset;
                 strcpy(idPos, idPos+strlen(id)+1);
             }

@@ -335,7 +335,7 @@ long AW_awar_int::read_int() const {
 
 char *AW_awar_int::read_as_string() const {
     aw_assert(!deny_read);
-    if (!gb_var) return strdup("");
+    if (!gb_var) return ARB_strdup("");
     GB_transaction ta(gb_var);
     return GB_read_as_string(gb_var);
 }
@@ -466,7 +466,7 @@ float AW_awar_float::read_float() const {
 
 char *AW_awar_float::read_as_string() const {
     aw_assert(!deny_read);
-    if (!gb_var) return strdup("");
+    if (!gb_var) return ARB_strdup("");
     GB_transaction ta(gb_var);
     return GB_read_as_string(gb_var);
 }
@@ -575,7 +575,7 @@ bool AW_awar_string::has_default_value() const {
 
 char *AW_awar_string::read_string() const {
     aw_assert(!deny_read);
-    if (!gb_var) return strdup("");
+    if (!gb_var) return ARB_strdup("");
     GB_transaction ta(gb_var);
     return GB_read_string(gb_var);
 }
@@ -589,7 +589,7 @@ const char *AW_awar_string::read_char_pntr() const {
 
 char *AW_awar_string::read_as_string() const {
     aw_assert(!deny_read);
-    if (!gb_var) return strdup("");
+    if (!gb_var) return ARB_strdup("");
     GB_transaction ta(gb_var);
     return GB_read_string(gb_var);
 }
@@ -685,7 +685,7 @@ AW_awar_impl::AW_awar_impl(const char *var_name)
       gb_origin(NULL),
       gb_var(NULL)
 {
-    awar_name = strdup(var_name);
+    awar_name = ARB_strdup(var_name);
 }
 
 AW_awar_impl::~AW_awar_impl() {
@@ -694,7 +694,7 @@ AW_awar_impl::~AW_awar_impl() {
 
 char *AW_awar_impl::read_as_string() const {
     aw_assert(!deny_read);
-    if (!gb_var) return strdup("");
+    if (!gb_var) return ARB_strdup("");
     GB_transaction ta(gb_var);
     return GB_read_as_string(gb_var);
 }
