@@ -1,6 +1,8 @@
 #include "GDE_proto.h"
-#include <limits.h>
+
 #include <aw_msg.hxx>
+
+#include <climits>
 #include <algorithm>
 
 static void Regroup(NA_Alignment& alignment) {
@@ -24,37 +26,6 @@ static void Regroup(NA_Alignment& alignment) {
                 last = j;
             }
     }
-}
-
-template <typename T>
-inline T* Terminate_If_OutOfMemory(T *allocated) {
-    if (!allocated) GBK_terminate("Out of memory");
-    return allocated;
-}
-
-char *Calloc(int count, int size) {
-    // More robust memory management routines
-    size *= count;
-    char *temp  = (char *)malloc(size);
-    memset(Terminate_If_OutOfMemory(temp), 0, size);
-    return temp;
-}
-
-char *Realloc(char *block, int size) {
-    return Terminate_If_OutOfMemory((char*)realloc(block, size));
-}
-
-void Cfree(char *block)
-{
-    if (block)
-    {
-        /* if(cfree(block) == 0)
-          Warning("Error in Cfree..."); */
-        free(block);
-    }
-    else
-        Warning("Error in Cfree, NULL block");
-    return;
 }
 
 static void ReadNA_Flat(char *filename, NA_Alignment& data) {
@@ -88,17 +59,7 @@ static void ReadNA_Flat(char *filename, NA_Alignment& data) {
                     }
                 }
 
-                curelem = data.numelements++;
-                if (curelem == 0)
-                {
-                    data.element=(NA_Sequence*)Calloc(5, sizeof(NA_Sequence));
-                    data.maxnumelements = 5;
-                }
-                else if (curelem==data.maxnumelements)
-                {
-                    data.maxnumelements *= 2;
-                    data.element = (NA_Sequence*)Realloc((char*)data.element, data.maxnumelements*sizeof(NA_Sequence));
-                }
+                curelem = Arbdb_get_curelem(data);
 
                 InitNASeq(&(data.element[curelem]),
                           in_line[0] == '#' ? DNA :
@@ -267,15 +228,9 @@ void LoadData(char *filen, NA_Alignment& dataset) {
 void AppendNA(NA_Base *buffer, int len, NA_Sequence *seq)
 {
     int curlen=0, j;
-    if (seq->seqlen+len >= seq->seqmaxlen)
-    {
-        if (seq->seqlen>0)
-            seq->sequence = (NA_Base*)Realloc((char*)seq->sequence,
-                                              (seq->seqlen + len+GBUFSIZ) * sizeof(NA_Base));
-        else
-            seq->sequence = (NA_Base*)Calloc(1, (seq->seqlen +
-                                                len+GBUFSIZ) * sizeof(NA_Base));
-        seq->seqmaxlen = seq->seqlen + len+GBUFSIZ;
+    if (seq->seqlen+len >= seq->seqmaxlen) {
+        seq->seqmaxlen = seq->seqlen + len + GBUFSIZ;
+        ARB_realloc(seq->sequence, seq->seqmaxlen);
     }
     // seqlen is the length, and the index of the next free base
     curlen = seq->seqlen + seq->offset;

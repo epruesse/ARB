@@ -103,6 +103,7 @@ RNA3D_Interface.o: $(ARBHOME)/INCLUDE/arb_assert.h
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/arb_core.h
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/arb_defs.h
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/arb_error.h
+RNA3D_Interface.o: $(ARBHOME)/INCLUDE/arb_mem.h
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/arb_msg.h
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/arb_string.h
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -167,6 +168,7 @@ RNA3D_Main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/arb_core.h
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/arb_defs.h
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/arb_error.h
+RNA3D_Main.o: $(ARBHOME)/INCLUDE/arb_mem.h
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/arb_msg.h
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/arb_string.h
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -230,6 +232,7 @@ RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/arb_assert.h
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/arb_core.h
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/arb_defs.h
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/arb_error.h
+RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/arb_mem.h
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/arb_msg.h
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/arb_string.h
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -295,6 +298,7 @@ RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/arb_assert.h
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/arb_core.h
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/arb_defs.h
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/arb_error.h
+RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/arb_mem.h
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/arb_msg.h
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/arb_string.h
 RNA3D_OpenGLGraphics.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -356,6 +360,7 @@ RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/arb_assert.h
 RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/arb_core.h
 RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/arb_defs.h
 RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/arb_error.h
+RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/arb_mem.h
 RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/arb_msg.h
 RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/arb_string.h
 RNA3D_Renderer.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -417,6 +422,7 @@ RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/arb_assert.h
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/arb_core.h
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/arb_defs.h
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/arb_error.h
+RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/arb_mem.h
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/arb_msg.h
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/arb_string.h
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -483,6 +489,7 @@ RNA3D_Textures.o: $(ARBHOME)/INCLUDE/ad_prot.h
 RNA3D_Textures.o: $(ARBHOME)/INCLUDE/arb_assert.h
 RNA3D_Textures.o: $(ARBHOME)/INCLUDE/arb_core.h
 RNA3D_Textures.o: $(ARBHOME)/INCLUDE/arb_error.h
+RNA3D_Textures.o: $(ARBHOME)/INCLUDE/arb_mem.h
 RNA3D_Textures.o: $(ARBHOME)/INCLUDE/arb_msg.h
 RNA3D_Textures.o: $(ARBHOME)/INCLUDE/arb_string.h
 RNA3D_Textures.o: $(ARBHOME)/INCLUDE/arbdb.h

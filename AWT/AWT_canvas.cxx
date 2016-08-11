@@ -743,8 +743,8 @@ static void scroll_hor_cb(AW_window *aww, AWT_canvas* scr) {
 
 AWT_canvas::AWT_canvas(GBDATA *gb_maini, AW_window *awwi, const char *gc_base_name_, AWT_graphic *awd, const char *user_awari)
     : consider_text_for_size(true)
-    , gc_base_name(strdup(gc_base_name_))
-    , user_awar(strdup(user_awari))
+    , gc_base_name(ARB_strdup(gc_base_name_))
+    , user_awar(ARB_strdup(user_awari))
     , shift_x_to_fit(0)
     , shift_y_to_fit(0)
     , gb_main(gb_maini)

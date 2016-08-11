@@ -46,6 +46,7 @@ ED4_base.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ED4_base.o: $(ARBHOME)/INCLUDE/arb_core.h
 ED4_base.o: $(ARBHOME)/INCLUDE/arb_defs.h
 ED4_base.o: $(ARBHOME)/INCLUDE/arb_error.h
+ED4_base.o: $(ARBHOME)/INCLUDE/arb_mem.h
 ED4_base.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ED4_base.o: $(ARBHOME)/INCLUDE/arb_progress.h
 ED4_base.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
@@ -119,6 +120,7 @@ ED4_block.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ED4_block.o: $(ARBHOME)/INCLUDE/arb_core.h
 ED4_block.o: $(ARBHOME)/INCLUDE/arb_defs.h
 ED4_block.o: $(ARBHOME)/INCLUDE/arb_error.h
+ED4_block.o: $(ARBHOME)/INCLUDE/arb_mem.h
 ED4_block.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ED4_block.o: $(ARBHOME)/INCLUDE/arb_string.h
 ED4_block.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -251,6 +253,7 @@ ED4_consensus.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ED4_consensus.o: $(ARBHOME)/INCLUDE/arb_core.h
 ED4_consensus.o: $(ARBHOME)/INCLUDE/arb_defs.h
 ED4_consensus.o: $(ARBHOME)/INCLUDE/arb_error.h
+ED4_consensus.o: $(ARBHOME)/INCLUDE/arb_mem.h
 ED4_consensus.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ED4_consensus.o: $(ARBHOME)/INCLUDE/arb_string.h
 ED4_consensus.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -320,6 +323,7 @@ ED4_cursor.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ED4_cursor.o: $(ARBHOME)/INCLUDE/arb_core.h
 ED4_cursor.o: $(ARBHOME)/INCLUDE/arb_defs.h
 ED4_cursor.o: $(ARBHOME)/INCLUDE/arb_error.h
+ED4_cursor.o: $(ARBHOME)/INCLUDE/arb_mem.h
 ED4_cursor.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ED4_cursor.o: $(ARBHOME)/INCLUDE/arb_progress.h
 ED4_cursor.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
@@ -394,6 +398,7 @@ ED4_dots.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ED4_dots.o: $(ARBHOME)/INCLUDE/arb_core.h
 ED4_dots.o: $(ARBHOME)/INCLUDE/arb_defs.h
 ED4_dots.o: $(ARBHOME)/INCLUDE/arb_error.h
+ED4_dots.o: $(ARBHOME)/INCLUDE/arb_mem.h
 ED4_dots.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ED4_dots.o: $(ARBHOME)/INCLUDE/arb_string.h
 ED4_dots.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -459,6 +464,7 @@ ED4_dump.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ED4_dump.o: $(ARBHOME)/INCLUDE/arb_core.h
 ED4_dump.o: $(ARBHOME)/INCLUDE/arb_defs.h
 ED4_dump.o: $(ARBHOME)/INCLUDE/arb_error.h
+ED4_dump.o: $(ARBHOME)/INCLUDE/arb_mem.h
 ED4_dump.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ED4_dump.o: $(ARBHOME)/INCLUDE/arb_string.h
 ED4_dump.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -523,6 +529,7 @@ ED4_edit_string.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/arb_core.h
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/arb_defs.h
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/arb_error.h
+ED4_edit_string.o: $(ARBHOME)/INCLUDE/arb_mem.h
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/arb_string.h
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -607,6 +614,7 @@ ED4_main.o: $(ARBHOME)/INCLUDE/arb_core.h
 ED4_main.o: $(ARBHOME)/INCLUDE/arb_defs.h
 ED4_main.o: $(ARBHOME)/INCLUDE/arb_error.h
 ED4_main.o: $(ARBHOME)/INCLUDE/arb_global_defs.h
+ED4_main.o: $(ARBHOME)/INCLUDE/arb_mem.h
 ED4_main.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ED4_main.o: $(ARBHOME)/INCLUDE/arb_string.h
 ED4_main.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -690,6 +698,7 @@ ED4_manager.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ED4_manager.o: $(ARBHOME)/INCLUDE/arb_core.h
 ED4_manager.o: $(ARBHOME)/INCLUDE/arb_defs.h
 ED4_manager.o: $(ARBHOME)/INCLUDE/arb_error.h
+ED4_manager.o: $(ARBHOME)/INCLUDE/arb_mem.h
 ED4_manager.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ED4_manager.o: $(ARBHOME)/INCLUDE/arb_string.h
 ED4_manager.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -754,6 +763,7 @@ ED4_members.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ED4_members.o: $(ARBHOME)/INCLUDE/arb_core.h
 ED4_members.o: $(ARBHOME)/INCLUDE/arb_defs.h
 ED4_members.o: $(ARBHOME)/INCLUDE/arb_error.h
+ED4_members.o: $(ARBHOME)/INCLUDE/arb_mem.h
 ED4_members.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ED4_members.o: $(ARBHOME)/INCLUDE/arb_string.h
 ED4_members.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -815,6 +825,7 @@ ED4_naligner.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ED4_naligner.o: $(ARBHOME)/INCLUDE/arb_core.h
 ED4_naligner.o: $(ARBHOME)/INCLUDE/arb_defs.h
 ED4_naligner.o: $(ARBHOME)/INCLUDE/arb_error.h
+ED4_naligner.o: $(ARBHOME)/INCLUDE/arb_mem.h
 ED4_naligner.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ED4_naligner.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 ED4_naligner.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -878,6 +889,7 @@ ED4_nds.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ED4_nds.o: $(ARBHOME)/INCLUDE/arb_core.h
 ED4_nds.o: $(ARBHOME)/INCLUDE/arb_defs.h
 ED4_nds.o: $(ARBHOME)/INCLUDE/arb_error.h
+ED4_nds.o: $(ARBHOME)/INCLUDE/arb_mem.h
 ED4_nds.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ED4_nds.o: $(ARBHOME)/INCLUDE/arb_string.h
 ED4_nds.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -951,6 +963,7 @@ ED4_no_class.o: $(ARBHOME)/INCLUDE/arb_core.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/arb_defs.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/arb_error.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/arb_global_defs.h
+ED4_no_class.o: $(ARBHOME)/INCLUDE/arb_mem.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/arb_progress.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -1090,6 +1103,7 @@ ED4_plugins.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ED4_plugins.o: $(ARBHOME)/INCLUDE/arb_core.h
 ED4_plugins.o: $(ARBHOME)/INCLUDE/arb_defs.h
 ED4_plugins.o: $(ARBHOME)/INCLUDE/arb_error.h
+ED4_plugins.o: $(ARBHOME)/INCLUDE/arb_mem.h
 ED4_plugins.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ED4_plugins.o: $(ARBHOME)/INCLUDE/arb_string.h
 ED4_plugins.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -1157,6 +1171,7 @@ ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/arb_core.h
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/arb_defs.h
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/arb_error.h
+ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/arb_mem.h
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/arb_string.h
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -1226,6 +1241,7 @@ ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/arb_core.h
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/arb_defs.h
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/arb_error.h
+ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/arb_mem.h
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/arb_string.h
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -1315,6 +1331,7 @@ ED4_root.o: $(ARBHOME)/INCLUDE/arb_core.h
 ED4_root.o: $(ARBHOME)/INCLUDE/arb_defs.h
 ED4_root.o: $(ARBHOME)/INCLUDE/arb_error.h
 ED4_root.o: $(ARBHOME)/INCLUDE/arb_file.h
+ED4_root.o: $(ARBHOME)/INCLUDE/arb_mem.h
 ED4_root.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ED4_root.o: $(ARBHOME)/INCLUDE/arb_progress.h
 ED4_root.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -1400,6 +1417,7 @@ ED4_search.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ED4_search.o: $(ARBHOME)/INCLUDE/arb_core.h
 ED4_search.o: $(ARBHOME)/INCLUDE/arb_defs.h
 ED4_search.o: $(ARBHOME)/INCLUDE/arb_error.h
+ED4_search.o: $(ARBHOME)/INCLUDE/arb_mem.h
 ED4_search.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ED4_search.o: $(ARBHOME)/INCLUDE/arb_string.h
 ED4_search.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -1471,6 +1489,7 @@ ED4_seq_colors.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ED4_seq_colors.o: $(ARBHOME)/INCLUDE/arb_core.h
 ED4_seq_colors.o: $(ARBHOME)/INCLUDE/arb_defs.h
 ED4_seq_colors.o: $(ARBHOME)/INCLUDE/arb_error.h
+ED4_seq_colors.o: $(ARBHOME)/INCLUDE/arb_mem.h
 ED4_seq_colors.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ED4_seq_colors.o: $(ARBHOME)/INCLUDE/arb_string.h
 ED4_seq_colors.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -1543,6 +1562,7 @@ ED4_terminal.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ED4_terminal.o: $(ARBHOME)/INCLUDE/arb_core.h
 ED4_terminal.o: $(ARBHOME)/INCLUDE/arb_defs.h
 ED4_terminal.o: $(ARBHOME)/INCLUDE/arb_error.h
+ED4_terminal.o: $(ARBHOME)/INCLUDE/arb_mem.h
 ED4_terminal.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ED4_terminal.o: $(ARBHOME)/INCLUDE/arb_string.h
 ED4_terminal.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -1621,6 +1641,7 @@ ED4_text_terminals.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/arb_core.h
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/arb_defs.h
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/arb_error.h
+ED4_text_terminals.o: $(ARBHOME)/INCLUDE/arb_mem.h
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -1749,6 +1770,7 @@ ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/arb_core.h
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/arb_defs.h
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/arb_error.h
+ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/arb_mem.h
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -1823,6 +1845,7 @@ ED4_window.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ED4_window.o: $(ARBHOME)/INCLUDE/arb_core.h
 ED4_window.o: $(ARBHOME)/INCLUDE/arb_defs.h
 ED4_window.o: $(ARBHOME)/INCLUDE/arb_error.h
+ED4_window.o: $(ARBHOME)/INCLUDE/arb_mem.h
 ED4_window.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ED4_window.o: $(ARBHOME)/INCLUDE/arb_string.h
 ED4_window.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -1887,6 +1910,7 @@ EDB_root_bact.o: $(ARBHOME)/INCLUDE/arb_assert.h
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/arb_core.h
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/arb_defs.h
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/arb_error.h
+EDB_root_bact.o: $(ARBHOME)/INCLUDE/arb_mem.h
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/arb_msg.h
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/arb_progress.h
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
@@ -1952,6 +1976,7 @@ graph_aligner_gui.o: $(ARBHOME)/INCLUDE/arb_assert.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/arb_core.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/arb_defs.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/arb_error.h
+graph_aligner_gui.o: $(ARBHOME)/INCLUDE/arb_mem.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/arb_misc.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/arb_msg.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/arb_strbuf.h

@@ -98,7 +98,7 @@ static char *buildAllowedValuesString(known_enum start, enum2string lookup) {
         else allowed = GBS_global_string_copy("'%s'", asString);
     }
 
-    if (!allowed) allowed = strdup("none (this is a bug)");
+    if (!allowed) allowed = ARB_strdup("none (this is a bug)");
 
     return allowed;
 }

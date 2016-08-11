@@ -91,7 +91,7 @@ char *SEC_xstring_to_foldedHelixList(const char *x_string, size_t xlength, const
 
 char *SEC_foldedHelixList_to_xstring(const char *foldedHelices, size_t xlength, const BI_helix *helix, GB_ERROR& error) {
     // example of foldedHelices: '-5;!-5;-8;!-8;-9;!-9;9;!9;8;!8;5;!5;-18;!-18;18;!18;-19a;!-19a;19a;!19a;-21;!-21;-24;!-24;24;!24;21;!21;-27;!-27;27;!27;-31;!-31;-43;!-43;43;!43;-46;!-46;46;!46;31;!31;-50;!-50;50;!50;'
-    char *xstring    = (char*)malloc(xlength+1);
+    char *xstring    = ARB_alloc<char>(xlength+1);
     memset(xstring, '.', xlength);
     xstring[xlength] = 0;
 
@@ -102,7 +102,7 @@ char *SEC_foldedHelixList_to_xstring(const char *foldedHelices, size_t xlength, 
         const char *semi = strchr(foldedHelices, ';');
         if (!semi) break;
 
-        char       *taggedHelixNr = GB_strpartdup(foldedHelices, semi-1);
+        char       *taggedHelixNr = ARB_strpartdup(foldedHelices, semi-1);
         const char *helixNr       = 0;
         long        xpos          = -1;
 
@@ -145,7 +145,7 @@ char *old_decode_xstring_rel_helix(GB_CSTR rel_helix, size_t xlength, const BI_h
     int         rel_pos        = 0;
     size_t      lastpos        = helix->size()-1;
 
-    char *x_buffer    = (char*)malloc(xlength+1);
+    char *x_buffer    = ARB_alloc<char>(xlength+1);
     memset(x_buffer, '.', xlength);
     x_buffer[xlength] = 0;
 

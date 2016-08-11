@@ -42,6 +42,7 @@ AP_matrix.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AP_matrix.o: $(ARBHOME)/INCLUDE/arb_core.h
 AP_matrix.o: $(ARBHOME)/INCLUDE/arb_defs.h
 AP_matrix.o: $(ARBHOME)/INCLUDE/arb_error.h
+AP_matrix.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AP_matrix.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AP_matrix.o: $(ARBHOME)/INCLUDE/arb_string.h
 AP_matrix.o: $(ARBHOME)/INCLUDE/arbdb.h

@@ -82,7 +82,7 @@ static char *MP_get_probes(const char *str) {
         ++result;
         result += strspn(result, " \t"); // skip over whitespace
     }
-    return strdup(result);
+    return ARB_strdup(result);
 }
 
 void MP_gen_quality(AW_root *awr) {
@@ -142,7 +142,7 @@ void MP_modify_selected(AW_root *awr) {
 
         sprintf(temp, "%1d#%1ld#%6d#%s", atoi(com1), mp_gl_awars.no_of_mismatches, atoi(com3), probes);
 
-        l->insert_as_last(strdup(temp));
+        l->insert_as_last(ARB_strdup(temp));
 
         delete probes;
         delete com1;
@@ -473,14 +473,14 @@ void MP_show_probes_in_tree(AW_window */*aww*/) {
         }
         else
         {
-            probe_field[i] = strdup(the_probe);
+            probe_field[i] = ARB_strdup(the_probe);
             how_many_probes ++;
             break;
         }
 
         if (the_probe && the_probe[0])
         {
-            probe_field[i] = strdup(the_probe);
+            probe_field[i] = ARB_strdup(the_probe);
             how_many_probes ++;
         }
     }
@@ -582,13 +582,13 @@ void MP_mark_probes_in_tree(AW_window *aww) {
                 another_probe++;
         }
         else {
-            probe_field[i] = strdup(the_probe);
+            probe_field[i] = ARB_strdup(the_probe);
             how_many_probes ++;
             break;
         }
 
         if (the_probe && the_probe[0]) {
-            probe_field[i] = strdup(the_probe);
+            probe_field[i] = ARB_strdup(the_probe);
             how_many_probes ++;
         }
     }
@@ -773,7 +773,7 @@ char *MP_get_comment(int which, const char *str) {
 
     if (numsign) {
         if (which == 1) {
-            result = GB_strpartdup(str, numsign-1);
+            result = ARB_strpartdup(str, numsign-1);
         }
         else {
             result = MP_get_comment(which-1, numsign+1);
@@ -847,10 +847,10 @@ const char *MP_probe_pt_look_for_server() {
     } while(0)                                    \
 
 void TEST_MP_get_comment_and_probes() {
-    char *probes_only    = strdup("ACGT TGCA ATCG");
-    char *probes_comment = strdup("val1#val2#val3#ACGT TGCA ATCG");
-    char *probes_1 = strdup("one#     \t    ACGT TGCA ATCG");
-    char *probes_2 = strdup("one#two#\tACGT TGCA ATCG");
+    char *probes_only    = ARB_strdup("ACGT TGCA ATCG");
+    char *probes_comment = ARB_strdup("val1#val2#val3#ACGT TGCA ATCG");
+    char *probes_1 = ARB_strdup("one#     \t    ACGT TGCA ATCG");
+    char *probes_2 = ARB_strdup("one#two#\tACGT TGCA ATCG");
 
     MP_GET_PROBES_EQUAL(probes_only,    "ACGT TGCA ATCG");
     MP_GET_PROBES_EQUAL(probes_comment, "ACGT TGCA ATCG");

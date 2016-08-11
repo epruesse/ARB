@@ -17,6 +17,9 @@
 #ifndef _GLIBCXX_CMATH
 #include <cmath>
 #endif
+#ifndef ARB_STRING_H
+#include <arb_string.h>
+#endif
 
 #include "aw_assert.hxx"
 
@@ -36,7 +39,7 @@ private:
 public:
     explicit AW_scalar(int32_t I)     : type(GB_INT)   { value.i = I; }
     explicit AW_scalar(float F)       : type(GB_FLOAT) { value.f = F; }
-    explicit AW_scalar(const char *S) : type(GB_STRING)   { value.s = strdup(S); }
+    explicit AW_scalar(const char *S) : type(GB_STRING)   { value.s = ARB_strdup(S); }
     explicit AW_scalar(GBDATA *P)     : type(GB_POINTER)  { value.p = P; }
     explicit AW_scalar(AW_awar *awar);
 
@@ -44,7 +47,7 @@ public:
         : value(other.value),
           type(other.type)
     {
-        if (type == GB_STRING) value.s = strdup(value.s);
+        if (type == GB_STRING) value.s = ARB_strdup(value.s);
     }
     ~AW_scalar() { if (type == GB_STRING) { free(value.s); } }
 

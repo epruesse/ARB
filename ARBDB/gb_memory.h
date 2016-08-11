@@ -115,16 +115,14 @@ enum ARB_MEMORY_INDEX {
 
 #if (MEMORY_TEST==1)
 
-void *GB_calloc(unsigned int nelem, unsigned int elsize);
-
-inline void *gbm_get_mem(size_t size, long )              { return (char*)GB_calloc(1, size); }
+inline void *gbm_get_mem(size_t size, long )              { return ARB_calloc<char>(size); }
 #if defined(FILL_MEM_ON_FREE)
 inline void gbm_free_mem(void *block, size_t size, long ) { memset(block, FILL_MEM_ON_FREE, size); free(block); }
 #else // !defined(FILL_MEM_ON_FREE)
 inline void gbm_free_mem(void *block, size_t , long )     { free(block); }
 #endif
 
-#else
+#else // MEMORY_TEST==0
 
 void *gbmGetMemImpl(size_t size, long index);
 void gbmFreeMemImpl(void *data, size_t size, long index);
@@ -137,7 +135,7 @@ inline void gbm_free_mem(void *block, size_t size, long index) {
     gbmFreeMemImpl(block, size, index);
 }
 
-#endif
+#endif // MEMORY_TEST
 
 #else
 #error gb_memory.h included twice

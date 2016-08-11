@@ -49,16 +49,16 @@ static GB_ERROR split_stat_filename(const char *fname, char **dirPtr, char **nam
     const char *lslash = strrchr(fname, '/');
     if (!lslash) return GB_export_errorf("'%s' has to contain a '/'", fname);
 
-    char *dir         = strdup(fname);
+    char *dir         = ARB_strdup(fname);
     dir[lslash-fname] = 0; // cut off at last '/'
 
-    char *name_prefix  = strdup(lslash+1);
+    char *name_prefix  = ARB_strdup(lslash+1);
     char *name_postfix = 0;
     char *ldot         = strrchr(name_prefix, '.');
 
     if (ldot) {
         ldot[0]      = 0;
-        name_postfix = strdup(ldot+1);
+        name_postfix = ARB_strdup(ldot+1);
     }
     if (!ldot || name_prefix[0] == 0) freedup(name_prefix, "*"); // no dot or empty name_prefix
     if (!name_postfix || name_postfix[0] == 0) freedup(name_postfix, "*_gnu");
@@ -201,7 +201,7 @@ static const char *makeTitle(const char *fname) {
     if (rslash) rslash++;
     else        rslash = fname;
 
-    char *name = strdup(rslash);
+    char *name = ARB_strdup(rslash);
     char *rdot = strrchr(name, '.');
 
     PlotType pt  = PT_UNKNOWN;

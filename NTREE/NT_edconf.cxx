@@ -83,7 +83,7 @@ class ConfigMarkerDisplay : public MarkerDisplay, virtual Noncopyable {
                 }
             }
 
-            errors.put(strdup(error ? error : ""));
+            errors.put(ARB_strdup(error ? error : ""));
         }
     }
 
@@ -325,7 +325,7 @@ static char *correct_managed_configsets_cb(const char *key, const char *value, A
             modified_value = GBT_join_strings(config, CONFIG_SEPARATOR[0]);
         }
     }
-    return modified_value ? modified_value : strdup(value);
+    return modified_value ? modified_value : ARB_strdup(value);
 }
 static void modify_configurations(const ConfigModifier& mod) {
     for (int canvas_id = 0; canvas_id<MAX_NT_WINDOWS; ++canvas_id) {
@@ -656,7 +656,7 @@ static void nt_build_sai_string(GBS_strstruct *topfile, GBS_strstruct *middlefil
                     char   *gn;
 
                     if (gb_gn)  gn = GB_read_string(gb_gn);
-                    else        gn = strdup("SAI's");
+                    else        gn = ARB_strdup("SAI's");
 
                     char *cn = new char[strlen(gn) + strlen(name) + 2];
                     sprintf(cn, "%s%c%s", gn, 1, name);
@@ -841,18 +841,18 @@ static GB_ERROR nt_create_configuration(TreeNode *tree, const char *conf_name, i
             GBT_config newcfg;
             {
                 GB_HASH       *used    = GBS_create_hash(GBT_get_species_count(GLOBAL.gb_main), GB_MIND_CASE);
-                GBS_strstruct *topfile = GBS_stropen(1000);
-                GBS_strstruct *topmid  = GBS_stropen(10000);
+                GBS_strstruct topfile(1000);
+                GBS_strstruct topmid(10000);
                 {
-                    GBS_strstruct *middlefile = GBS_stropen(10000);
-                    nt_build_sai_string(topfile, topmid);
+                    GBS_strstruct middlefile(10000);
+                    nt_build_sai_string(&topfile, &topmid);
 
                     if (use_species_aside) {
                         Store_species *extra_marked_species = 0;
                         int            auto_mark            = 0;
                         int            marked_at_right;
                     
-                        nt_build_conf_string_rek(used, tree, middlefile, &extra_marked_species, use_species_aside, &auto_mark, use_species_aside, &marked_at_right);
+                        nt_build_conf_string_rek(used, tree, &middlefile, &extra_marked_species, use_species_aside, &auto_mark, use_species_aside, &marked_at_right);
                         if (extra_marked_species) {
                             extra_marked_species->call(unmark_species);
                             delete extra_marked_species;
@@ -860,16 +860,14 @@ static GB_ERROR nt_create_configuration(TreeNode *tree, const char *conf_name, i
                     }
                     else {
                         int dummy_1=0, dummy_2;
-                        nt_build_conf_string_rek(used, tree, middlefile, 0, 0, &dummy_1, 0, &dummy_2);
+                        nt_build_conf_string_rek(used, tree, &middlefile, 0, 0, &dummy_1, 0, &dummy_2);
                     }
-                    nt_build_conf_marked(used, topmid);
-                    char *mid = GBS_strclose(middlefile);
-                    GBS_strcat(topmid, mid);
-                    free(mid);
+                    nt_build_conf_marked(used, &topmid);
+                    topmid.ncat(middlefile.get_data(), middlefile.get_position());
                 }
 
-                newcfg.set_definition(GBT_config::TOP_AREA,    GBS_strclose(topfile));
-                newcfg.set_definition(GBT_config::MIDDLE_AREA, GBS_strclose(topmid));
+                newcfg.set_definition(GBT_config::TOP_AREA,    topfile.release());
+                newcfg.set_definition(GBT_config::MIDDLE_AREA, topmid.release());
 
                 GBS_free_hash(used);
             }
@@ -999,7 +997,7 @@ static void selected_config_changed_cb(AW_root *root) {
         awar_comment->map(gb_target_commment);
     }
     else {
-        char *reuse_comment = nonexisting_config ? awar_comment->read_string() : strdup("");
+        char *reuse_comment = nonexisting_config ? awar_comment->read_string() : ARB_strdup("");
         if (awar_comment->is_mapped()) {
             awar_comment->unmap();
         }
@@ -1268,7 +1266,7 @@ void NT_start_editor_on_tree(AW_window *aww, int use_species_aside, AWT_canvas *
 inline void nt_create_config_after_import(AWT_canvas *ntw) {
     init_config_awars(ntw->awr);
 
-    const char *dated_suffix = GB_dateTime_suffix();
+    const char *dated_suffix = ARB_dateTime_suffix();
     char       *configName   = GBS_global_string_copy("imported_%s", dated_suffix);
 
     // ensure unique config-name

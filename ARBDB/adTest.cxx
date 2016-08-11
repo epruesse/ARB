@@ -131,7 +131,7 @@ static void dump_internal(GBDATA *gbd, int *lines_allowed) {
         char     *toFree  = 0;
 
         if (content_len > wrappos) {
-            toFree      = strdup(content);
+            toFree      = ARB_strdup(content);
             content     = toFree;
             content_len = GBS_shorten_repeated_data(toFree);
         }
@@ -141,7 +141,7 @@ static void dump_internal(GBDATA *gbd, int *lines_allowed) {
             if (lines_allowed) (*lines_allowed)--;
         }
         else {
-            char          *buffer  = (char*)malloc(wrappos+1);
+            char          *buffer  = ARB_alloc<char>(wrappos+1);
             unsigned long  rest    = content_len;
             const char    *from    = content;
             int            cleared = 0;

@@ -1680,8 +1680,8 @@ static bool writeToArb() {
     GB_begin_transaction(gb_main);
 
     long   ali_len = GBT_get_alignment_len(gb_main, alignment_name);
-    char  *cats    = (char *)GB_calloc(ali_len+1, sizeof(char)); // categories
-    float *rates   = (float *)GB_calloc(ali_len, sizeof(float)); // rates to export
+    char  *cats    = ARB_calloc<char>(ali_len+1); // categories
+    float *rates   = ARB_calloc<float>(ali_len); // rates to export
     char   category_string[1024];
 
     // check filter has correct length

@@ -45,6 +45,7 @@ Translate.o: $(ARBHOME)/INCLUDE/AP_pro_a_nucs.hxx
 Translate.o: $(ARBHOME)/INCLUDE/arb_assert.h
 Translate.o: $(ARBHOME)/INCLUDE/arb_core.h
 Translate.o: $(ARBHOME)/INCLUDE/arb_error.h
+Translate.o: $(ARBHOME)/INCLUDE/arb_mem.h
 Translate.o: $(ARBHOME)/INCLUDE/arb_msg.h
 Translate.o: $(ARBHOME)/INCLUDE/arb_string.h
 Translate.o: $(ARBHOME)/INCLUDE/arbdb.h

@@ -499,11 +499,9 @@ static void create_print_awars(AW_root *awr, AWT_canvas *scr) {
         awr->awar_int(AWAR_CANIO_DEST);
 
         {
-            char *print_command;
-            if (getenv("PRINTER")) {
-                print_command = GBS_eval_env("lpr -h -P$(PRINTER)");
-            } else   print_command = strdup("lpr -h");
-
+            char *print_command = getenv("PRINTER")
+                ? GBS_eval_env("lpr -h -P$(PRINTER)")
+                : ARB_strdup("lpr -h");
             awr->awar_string(AWAR_CANIO_PRINTER, print_command, def);
             free(print_command);
         }

@@ -20,7 +20,7 @@ int ARB_main(int argc, char *argv[]) {
     const char *progname = argv[0];
     if (!progname || progname[0] == 0) progname = "arb_message";
 
-    char   *the_message  = strdup(argv[1]);
+    char   *the_message  = ARB_strdup(argv[1]);
     size_t  len          = strlen(the_message);
     char   *unencoded_lf = 0;
     while ((unencoded_lf = strstr(the_message, "\\n")) != 0) {

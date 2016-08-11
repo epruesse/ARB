@@ -45,7 +45,7 @@ using namespace std;
 // --------------------------------------------------------------------------------
 
 static void GEN_select_gene(GBDATA* /* gb_main */, AW_root *aw_root, const char *item_name) {
-    char *organism  = strdup(item_name);
+    char *organism  = ARB_strdup(item_name);
     char *gene = strchr(organism, '/');
 
     if (gene) {
@@ -69,7 +69,7 @@ static char *gen_get_gene_id(GBDATA * /* gb_main */, GBDATA *gb_gene) {
 }
 
 static GBDATA *gen_find_gene_by_id(GBDATA *gb_main, const char *id) {
-    char   *organism = strdup(id);
+    char   *organism = ARB_strdup(id);
     char   *gene     = strchr(organism, '/');
     GBDATA *result   = 0;
 
@@ -317,9 +317,7 @@ static void GEN_update_GENE_CONTENT(GBDATA *gb_main, AW_root *awr) {
                     const char *seq_data = GB_read_char_pntr(gb_seq);
 
                     long  len    = end_pos-start_pos+1;
-                    char *buffer = (char*)malloc(len+1);
-                    memcpy(buffer, seq_data+start_pos, len);
-                    buffer[len]  = 0;
+                    char *buffer = ARB_strndup(seq_data+start_pos, len);
 
                     awar_content->write_string(buffer);
                     clear = false;
@@ -539,7 +537,7 @@ class LocationEditor : virtual Noncopyable { // GLE
 
 public:
     LocationEditor(AW_root *aw_root_, GBDATA *gb_main_, const char *tag_)
-        : tag(strdup(tag_)),
+        : tag(ARB_strdup(tag_)),
           aw_root(aw_root_),
           gb_main(gb_main_), 
           status(NULL),
@@ -700,10 +698,10 @@ static SmartCharPtr sizetarray2string(const size_t *array, int size) {
 }
 inline SmartCharPtr dupSizedPart(const unsigned char *in, int size) {
     const char *in2 = reinterpret_cast<const char*>(in);
-    return GB_strpartdup(in2, in2+size-1);
+    return ARB_strpartdup(in2, in2+size-1);
 }
 inline SmartCharPtr dupComplement(const unsigned char *in, int size) {
-    char *dup = (char*)malloc(size+1);
+    char *dup = ARB_alloc<char>(size+1);
     for (int i = 0; i<size; ++i) {
         dup[i] = in[i] ? '1' : '0';
     }

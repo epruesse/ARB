@@ -589,7 +589,7 @@ __ATTR__USERESULT static ARB_ERROR run_command(const char *exename, const char *
         free(pt_name);
     }
 
-    if (error) msg = strdup(error.preserve());
+    if (error) msg = ARB_strdup(error.preserve());
     if (msg) {
         puts(msg);                      // log to console ..
         GBS_add_ptserver_logentry(msg); // .. and logfile
@@ -628,8 +628,8 @@ int ARB_main(int argc, char *argv[]) {
             exitcode = EXIT_FAILURE;
         }
         else {
-            if (argc==2) command = strdup(argv[1]);
-            else command         = strdup("-boot");
+            if (argc==2) command = ARB_strdup(argv[1]);
+            else command         = ARB_strdup("-boot");
         }
     }
 

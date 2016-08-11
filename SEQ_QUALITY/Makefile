@@ -38,6 +38,7 @@ SQ_ambiguities.o: $(ARBHOME)/INCLUDE/ad_prot.h
 SQ_ambiguities.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SQ_ambiguities.o: $(ARBHOME)/INCLUDE/arb_core.h
 SQ_ambiguities.o: $(ARBHOME)/INCLUDE/arb_error.h
+SQ_ambiguities.o: $(ARBHOME)/INCLUDE/arb_mem.h
 SQ_ambiguities.o: $(ARBHOME)/INCLUDE/arb_msg.h
 SQ_ambiguities.o: $(ARBHOME)/INCLUDE/arb_string.h
 SQ_ambiguities.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -62,6 +63,7 @@ SQ_functions.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/arb_core.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/arb_defs.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/arb_error.h
+SQ_functions.o: $(ARBHOME)/INCLUDE/arb_mem.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/arb_msg.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/arb_progress.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -133,6 +135,7 @@ SQ_main.o: $(ARBHOME)/INCLUDE/arb_core.h
 SQ_main.o: $(ARBHOME)/INCLUDE/arb_defs.h
 SQ_main.o: $(ARBHOME)/INCLUDE/arb_error.h
 SQ_main.o: $(ARBHOME)/INCLUDE/arb_global_defs.h
+SQ_main.o: $(ARBHOME)/INCLUDE/arb_mem.h
 SQ_main.o: $(ARBHOME)/INCLUDE/arb_msg.h
 SQ_main.o: $(ARBHOME)/INCLUDE/arb_progress.h
 SQ_main.o: $(ARBHOME)/INCLUDE/arb_string.h

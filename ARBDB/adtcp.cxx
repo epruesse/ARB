@@ -126,11 +126,11 @@ GB_ERROR ArbTcpDat::read(int *versionFound) {
         char   buffer[MAXLINELEN+1];
         char  *lp;
         int    lineNumber = 0;
-        char **tokens     = (char**)malloc(MAXTOKENS*sizeof(*tokens));
+        char **tokens     = ARB_alloc<char*>(MAXTOKENS);
 
         int    entries_allocated = 30;
         int    entries           = 0;
-        char **entry             = (char**)malloc(entries_allocated*sizeof(*entry));
+        char **entry             = ARB_alloc<char*>(entries_allocated);
 
         if (!tokens || !entry) error = "Out of memory";
 
@@ -147,7 +147,7 @@ GB_ERROR ArbTcpDat::read(int *versionFound) {
             while ((tok = strtok(lp, " \t\n"))) {
                 if (tok[0] == '#') break; // EOL comment -> stop
                 if (tokCount >= MAXTOKENS) { error = "Too many tokens"; break; }
-                tokens[tokCount] = tokCount ? GBS_eval_env(tok) : strdup(tok);
+                tokens[tokCount] = tokCount ? GBS_eval_env(tok) : ARB_strdup(tok);
                 if (!tokens[tokCount]) { error = GB_await_error(); break; }
                 tokCount++;
                 lp = 0;
@@ -169,7 +169,7 @@ GB_ERROR ArbTcpDat::read(int *versionFound) {
                         }
                         allsize++;      // additional zero byte
 
-                        data = (char*)malloc(allsize);
+                        data = ARB_alloc<char>(allsize);
                         {
                             char *d = data;
                             for (t = 0; t<tokCount; t++) {
@@ -182,10 +182,7 @@ GB_ERROR ArbTcpDat::read(int *versionFound) {
 
                     if (entries == entries_allocated) {
                         entries_allocated = (int)(entries_allocated*1.5);
-                        char **entry2     = (char**)realloc(entry, entries_allocated*sizeof(*entry));
-
-                        if (!entry2) error = "Out of memory";
-                        else entry = entry2;
+                        ARB_realloc(entry, entries_allocated);
                     }
                     if (!error) {
                         entry[entries++] = data;
@@ -199,17 +196,11 @@ GB_ERROR ArbTcpDat::read(int *versionFound) {
             for (t = 0; t<tokCount; t++) freenull(tokens[t]);
         }
 
-        content = (char**)realloc(entry, (entries+1)*sizeof(*entry));
+        ARB_realloc(entry, entries+1);
 
-        if (!content) {
-            error       = "Out of memory";
-            serverCount = 0;
-            free(entry);
-        }
-        else {
-            content[entries] = 0;
-            serverCount      = entries;
-        }
+        content          = entry;
+        content[entries] = 0;
+        serverCount      = entries;
 
         free(tokens);
         fclose(in);
@@ -414,7 +405,7 @@ const char * const *GBS_get_arb_tcp_entries(const char *matching) {
         int count = arb_tcp_dat.get_server_count();
 
         if (matchingEntriesSize != count) {
-            freeset(matchingEntries, (const char **)malloc((count+1)*sizeof(*matchingEntries)));
+            freeset(matchingEntries, ARB_alloc<const char*>(count+1));
             matchingEntriesSize = count;
         }
 
@@ -476,7 +467,7 @@ char *GBS_ptserver_id_to_choice(int i, int showBuild) {
         else nameOnly = file;       // otherwise show complete file
 
         {
-            char *remote      = strdup(ipPort);
+            char *remote      = ARB_strdup(ipPort);
             char *colon       = strchr(remote, ':');
             if (colon) *colon = 0; // hide port
 

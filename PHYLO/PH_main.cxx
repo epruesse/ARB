@@ -191,7 +191,7 @@ static GB_ERROR PH_create_ml_multiline_SAI(GB_CSTR sai_name, int nr, GBDATA **gb
             float     *markerline = PHDATA::ROOT->markerline;
             long       len        = PHDATA::ROOT->get_seq_len();
 
-            char *data = (char *)calloc(sizeof(char), (int)len+1);
+            char *data = ARB_calloc<char>(len+1);
             int   cnt  = 0;
 
 
@@ -266,7 +266,7 @@ static void PH_save_ml_multiline_cb(AW_window *aww, PH_root *ph_root) {
     char     *fname     = aww->get_root()->awar(AWAR_PHYLO_MARKERLINENAME)->read_string();
     int       fname_len = strlen(fname);
     {
-        char *digit_appended = (char*)malloc(fname_len+2);
+        char *digit_appended = ARB_alloc<char>(fname_len+2);
         memcpy(digit_appended, fname, fname_len);
         strcpy(digit_appended+fname_len, "0");
 
@@ -345,7 +345,7 @@ static void PH_save_ml_cb(AW_window *aww, PH_root *ph_root) {
         long       startcol   = main_win->get_root()->awar(AWAR_PHYLO_FILTER_STARTCOL)->read_int();
         long       stopcol    = main_win->get_root()->awar(AWAR_PHYLO_FILTER_STOPCOL)->read_int();
         long       len        = PHDATA::ROOT->get_seq_len();
-        char      *bits       = (char *)calloc(sizeof(char), (int)len+1);
+        char      *bits       = ARB_calloc<char>(len+1);
         int        x;
         float     *markerline = PHDATA::ROOT->markerline;
 

@@ -84,7 +84,7 @@ static GB_ERROR read_import_format(const char *fullfile, import_format *ifo, boo
                 m->match      = GBS_remove_escape(s2);
                 m->type       = GB_STRING;
 
-                if (ifo->autotag) m->mtag = strdup(ifo->autotag); // will be overwritten by TAG command
+                if (ifo->autotag) m->mtag = ARB_strdup(ifo->autotag); // will be overwritten by TAG command
             }
             else if (MATCH_COMMAND("SRT"))         { reassign(m->srt, s2); }
             else if (MATCH_COMMAND("ACI"))         { reassign(m->aci, s2); }
@@ -191,7 +191,7 @@ static GB_ERROR read_import_format(const char *fullfile, import_format *ifo, boo
 }
 
 GB_ERROR ArbImporter::read_format(const char *file) {
-    char *fullfile = strdup(GB_path_in_ARBHOME(file));
+    char *fullfile = ARB_strdup(GB_path_in_ARBHOME(file));
 
     delete ifo;
     ifo = new import_format;
@@ -487,8 +487,9 @@ char *ArbImporter::read_line(int tab, char *sequencestart, char *sequenceend) {
     const int    BUFSIZE   = 8000;
     const char  *SEPARATOR = "|";   // line separator
 
-    if (!ifo->b1) ifo->b1 = (char*)calloc(BUFSIZE, 1);
-    if (!ifo->b2) ifo->b2 = (char*)calloc(BUFSIZE, 1);
+    if (!ifo->b1) ARB_calloc(ifo->b1, BUFSIZE);
+    if (!ifo->b2) ARB_calloc(ifo->b2, BUFSIZE);
+
     if (!in) {
         if (next_file()) {
             if (in_queue) {
@@ -583,12 +584,8 @@ static void write_entry(GBDATA *gb_main, GBDATA *gbd, const char *key, const cha
 
         i++;
         if (str[i]) { // need to cut trailing whitespace?
-            char *copy = (char*)malloc(i+1);
-            memcpy(copy, str, i);
-            copy[i]    = 0;
-
+            char *copy = ARB_strndup(str, i);
             write_entry(gb_main, gbd, key, copy, tag, append, type);
-
             free(copy);
             return;
         }
@@ -642,10 +639,10 @@ static void write_entry(GBDATA *gb_main, GBDATA *gbd, const char *key, const cha
 
     int   len    = strlen(str) + strlen(strin);
     int   taglen = tag ? (strlen(tag)+2) : 0;
-    char *buf    = (char *)GB_calloc(sizeof(char), len+2+taglen+1);
+    char *buf    = ARB_calloc<char>(len+2+taglen+1);
 
     if (tag) {
-        char *regexp = (char*)GB_calloc(sizeof(char), taglen+3);
+        char *regexp = ARB_alloc<char>(taglen+3);
         sprintf(regexp, "*[%s]*", tag);
 
         if (!GBS_string_matches(strin, regexp, GB_IGNORE_CASE)) { // if tag does not exist yet

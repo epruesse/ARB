@@ -12,6 +12,8 @@
 // --------------------------------------------------------------------------------
 
 #include "BufferedFileReader.h"
+#include "arb_mem.h"
+
 #include <cstdlib>
 #include <cstring>
 #include <cerrno>
@@ -102,7 +104,7 @@ string LineReader::lineError(const string& msg) const {
 
     if (len>allocated) {
         allocated = len;
-        buffer    = (char*)malloc(allocated);
+        buffer    = ARB_alloc<char>(allocated);
     }
 
     if (showFilename) {

@@ -52,6 +52,7 @@ EXP_interface.o: $(ARBHOME)/INCLUDE/arb_assert.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/arb_core.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/arb_defs.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/arb_error.h
+EXP_interface.o: $(ARBHOME)/INCLUDE/arb_mem.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/arb_msg.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/arb_string.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/arb_unordered_map.h
@@ -122,6 +123,7 @@ EXP_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 EXP_main.o: $(ARBHOME)/INCLUDE/arb_core.h
 EXP_main.o: $(ARBHOME)/INCLUDE/arb_defs.h
 EXP_main.o: $(ARBHOME)/INCLUDE/arb_error.h
+EXP_main.o: $(ARBHOME)/INCLUDE/arb_mem.h
 EXP_main.o: $(ARBHOME)/INCLUDE/arb_msg.h
 EXP_main.o: $(ARBHOME)/INCLUDE/arb_string.h
 EXP_main.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -188,6 +190,7 @@ GEN_gene.o: $(ARBHOME)/INCLUDE/adGene.h
 GEN_gene.o: $(ARBHOME)/INCLUDE/arb_assert.h
 GEN_gene.o: $(ARBHOME)/INCLUDE/arb_core.h
 GEN_gene.o: $(ARBHOME)/INCLUDE/arb_error.h
+GEN_gene.o: $(ARBHOME)/INCLUDE/arb_mem.h
 GEN_gene.o: $(ARBHOME)/INCLUDE/arb_msg.h
 GEN_gene.o: $(ARBHOME)/INCLUDE/arb_string.h
 GEN_gene.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -230,6 +233,7 @@ GEN_graphic.o: $(ARBHOME)/INCLUDE/arb_assert.h
 GEN_graphic.o: $(ARBHOME)/INCLUDE/arb_core.h
 GEN_graphic.o: $(ARBHOME)/INCLUDE/arb_defs.h
 GEN_graphic.o: $(ARBHOME)/INCLUDE/arb_error.h
+GEN_graphic.o: $(ARBHOME)/INCLUDE/arb_mem.h
 GEN_graphic.o: $(ARBHOME)/INCLUDE/arb_msg.h
 GEN_graphic.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 GEN_graphic.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -294,6 +298,7 @@ GEN_interface.o: $(ARBHOME)/INCLUDE/arb_assert.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/arb_core.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/arb_defs.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/arb_error.h
+GEN_interface.o: $(ARBHOME)/INCLUDE/arb_mem.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/arb_msg.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
@@ -375,6 +380,7 @@ GEN_map.o: $(ARBHOME)/INCLUDE/arb_assert.h
 GEN_map.o: $(ARBHOME)/INCLUDE/arb_core.h
 GEN_map.o: $(ARBHOME)/INCLUDE/arb_defs.h
 GEN_map.o: $(ARBHOME)/INCLUDE/arb_error.h
+GEN_map.o: $(ARBHOME)/INCLUDE/arb_mem.h
 GEN_map.o: $(ARBHOME)/INCLUDE/arb_msg.h
 GEN_map.o: $(ARBHOME)/INCLUDE/arb_progress.h
 GEN_map.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -448,6 +454,7 @@ GEN_nds.o: $(ARBHOME)/INCLUDE/arb_assert.h
 GEN_nds.o: $(ARBHOME)/INCLUDE/arb_core.h
 GEN_nds.o: $(ARBHOME)/INCLUDE/arb_defs.h
 GEN_nds.o: $(ARBHOME)/INCLUDE/arb_error.h
+GEN_nds.o: $(ARBHOME)/INCLUDE/arb_mem.h
 GEN_nds.o: $(ARBHOME)/INCLUDE/arb_msg.h
 GEN_nds.o: $(ARBHOME)/INCLUDE/arb_string.h
 GEN_nds.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -511,6 +518,7 @@ GEN_translations.o: $(ARBHOME)/INCLUDE/AP_codon_table.hxx
 GEN_translations.o: $(ARBHOME)/INCLUDE/arb_assert.h
 GEN_translations.o: $(ARBHOME)/INCLUDE/arb_core.h
 GEN_translations.o: $(ARBHOME)/INCLUDE/arb_error.h
+GEN_translations.o: $(ARBHOME)/INCLUDE/arb_mem.h
 GEN_translations.o: $(ARBHOME)/INCLUDE/arb_msg.h
 GEN_translations.o: $(ARBHOME)/INCLUDE/arb_string.h
 GEN_translations.o: $(ARBHOME)/INCLUDE/arbdb.h

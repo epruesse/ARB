@@ -31,10 +31,10 @@
 AP_pos_var::AP_pos_var(GBDATA *gb_maini, char *ali_namei, long ali_leni, int isdna, char *tree_namei) {
     memset((char  *)this, 0, sizeof(AP_pos_var));
     gb_main   = gb_maini;
-    ali_name  = strdup(ali_namei);
+    ali_name  = ARB_strdup(ali_namei);
     is_dna    = isdna;
     ali_len   = ali_leni;
-    tree_name = strdup(tree_namei);
+    tree_name = ARB_strdup(tree_namei);
     progress  = NULL;
 }
 
@@ -84,10 +84,10 @@ const char *AP_pos_var::parsimony(TreeNode *tree, GB_UINT4 *bases, GB_UINT4 *tba
         }
     }
     else {
-        GB_UINT4 *ls  = (GB_UINT4 *)calloc(sizeof(GB_UINT4), (int)ali_len);
-        GB_UINT4 *rs  = (GB_UINT4 *)calloc(sizeof(GB_UINT4), (int)ali_len);
-        GB_UINT4 *lts = (GB_UINT4 *)calloc(sizeof(GB_UINT4), (int)ali_len);
-        GB_UINT4 *rts = (GB_UINT4 *)calloc(sizeof(GB_UINT4), (int)ali_len);
+        GB_UINT4 *ls  = ARB_calloc<GB_UINT4>(ali_len);
+        GB_UINT4 *rs  = ARB_calloc<GB_UINT4>(ali_len);
+        GB_UINT4 *lts = ARB_calloc<GB_UINT4>(ali_len);
+        GB_UINT4 *rts = ARB_calloc<GB_UINT4>(ali_len);
 
         if (!error) error = this->parsimony(tree->get_leftson(), ls, lts);
         if (!error) error = this->parsimony(tree->get_rightson(), rs, rts);
@@ -166,16 +166,12 @@ GB_ERROR AP_pos_var::retrieve(TreeNode *tree) {
     progress = new arb_progress(treesize);
 
     for (int i=0; i<256; i++) {
-        int j;
-        if ((j = char_2_freq[i])) {
-            if (!frequencies[j]) {
-                frequencies[j] = (GB_UINT4 *)calloc(sizeof(GB_UINT4), (int)ali_len);
-            }
-        }
+        int j = char_2_freq[i];
+        if (j && !frequencies[j]) ARB_calloc(frequencies[j], ali_len);
     }
 
-    transitions = (GB_UINT4 *)calloc(sizeof(GB_UINT4), (int)ali_len);
-    transversions = (GB_UINT4 *)calloc(sizeof(GB_UINT4), (int)ali_len);
+    ARB_calloc(transitions,   ali_len);
+    ARB_calloc(transversions, ali_len);
 
     error = this->parsimony(tree);
 
@@ -210,8 +206,8 @@ GB_ERROR AP_pos_var::save_sai(const char *sai_name) {
         }
 
         if (!error) {
-            char *data = (char*)calloc(1, (int)ali_len+1);
-            int  *sum  = (int*)calloc(sizeof(int), (int)ali_len);
+            char *data = ARB_calloc<char>(ali_len+1);
+            int  *sum  = ARB_calloc<int>(ali_len);
 
             for (int j=0; j<256 && !error; j++) {                   // get sum of frequencies
                 if (frequencies[j]) {
