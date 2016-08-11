@@ -12,7 +12,7 @@
 #include "arb_file.h"
 #include "arb_msg.h"
 #include "arb_misc.h"
-#include "arb_assert.h"
+#include "arb_string.h"
 
 #include <string>
 #include <map>
@@ -126,7 +126,7 @@ FILE *ARB_zfopen(const char *name, const char *mode, FileCompressionMode cmode, 
                 }
 
                 // remove 'b' from mode (pipes are binary by default)
-                char *impl_b_mode = strdup(mode);
+                char *impl_b_mode = ARB_strdup(mode);
                 while (1) {
                     char *b = strchr(impl_b_mode, 'b');
                     if (!b) break;
@@ -209,7 +209,7 @@ GB_ERROR ARB_zfclose(FILE *fp) {
 
 static char *fileContent(FILE *in, size_t& bytes_read) {
     const size_t  BUFFERSIZE = 1000;
-    char         *buffer     = (char*)malloc(BUFFERSIZE+1);
+    char         *buffer     = ARB_alloc<char>(BUFFERSIZE+1);
     bytes_read               = fread(buffer, 1, BUFFERSIZE, in);
     arb_assert(bytes_read<BUFFERSIZE);
     buffer[bytes_read]       = 0;

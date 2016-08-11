@@ -40,6 +40,7 @@ AWTI_export.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/arb_defs.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/arb_error.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/arb_file.h
+AWTI_export.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/arb_progress.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/arb_str.h
@@ -108,6 +109,7 @@ AWTI_import.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/arb_defs.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/arb_error.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/arb_file.h
+AWTI_import.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/arb_progress.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/arb_str.h

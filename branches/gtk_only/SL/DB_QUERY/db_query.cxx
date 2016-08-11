@@ -423,7 +423,7 @@ void QUERY::DbQuery_update_list(DbQuery *query) {
 
     // create array of hits
     long     count  = count_queried_items(query, range);
-    GBDATA **sorted = static_cast<GBDATA**>(malloc(count*sizeof(*sorted)));
+    GBDATA **sorted = ARB_alloc<GBDATA*>(count);
     {
         long s = 0;
 
@@ -2036,7 +2036,7 @@ static AW_window *create_loadsave_colored_window(AW_root *aw_root, color_save_da
     if (!aw_loadsave) {
         // init data
         aw_root->awar_string(AWAR_COLOR_LOADSAVE_NAME, "", AW_ROOT_DEFAULT);
-        aw_loadsave = (AW_window**)GB_calloc(QUERY_ITEM_TYPES, sizeof(*aw_loadsave)); // contains loadsave windows for each item type
+        ARB_calloc(aw_loadsave, QUERY_ITEM_TYPES); // contains loadsave windows for each item type
     }
 
     QUERY_ITEM_TYPE type = csd->bsel->selector.type;
@@ -2745,7 +2745,7 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
         aws->d_callback(makeWindowCallback(toggle_flag_cb, query));
 
         {
-            const char *this_awar_name = GB_keep_string(GBS_global_string_copy("tmp/dbquery_%s/select", query_id)); // do not free this cause it's passed to new_selection_made_cb
+            const char *this_awar_name = ARB_keep_string(GBS_global_string_copy("tmp/dbquery_%s/select", query_id)); // do not free this cause it's passed to new_selection_made_cb
             AW_awar    *awar           = aw_root->awar_string(this_awar_name, "", AW_ROOT_DEFAULT);
 
             query->hitlist = aws->create_selection_list(this_awar_name, 5, 5, true);

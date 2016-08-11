@@ -324,11 +324,11 @@ static void cutExt(char *name, const char *removeExt) {
     }
 }
 static char *correct_extension(const char *name, const char *newExt) {
-    char *noExt = strdup(name);
+    char *noExt = ARB_strdup(name);
     cutExt(noExt, ".ps");
     cutExt(noExt, ".txt");
 
-    char *result = (char*)malloc(strlen(noExt)+strlen(newExt)+1);
+    char *result = ARB_alloc<char>(strlen(noExt)+strlen(newExt)+1);
     strcpy(result, noExt);
     strcat(result, newExt);
     if (strcmp(name, result) == 0) freenull(result);
@@ -396,7 +396,7 @@ void AWT_create_ascii_print_window(AW_root *awr, const char *text_to_print, cons
                 print_command = GBS_eval_env("lpr -h -P$(PRINTER)");
             }
             else {
-                print_command = strdup("lpr -h");
+                print_command = ARB_strdup("lpr -h");
             }
 
             awr->awar_string(AWAR_APRINT_PRINTER, print_command);

@@ -37,6 +37,7 @@ nds.o: $(ARBHOME)/INCLUDE/arb_assert.h
 nds.o: $(ARBHOME)/INCLUDE/arb_core.h
 nds.o: $(ARBHOME)/INCLUDE/arb_defs.h
 nds.o: $(ARBHOME)/INCLUDE/arb_error.h
+nds.o: $(ARBHOME)/INCLUDE/arb_mem.h
 nds.o: $(ARBHOME)/INCLUDE/arb_msg.h
 nds.o: $(ARBHOME)/INCLUDE/arb_msg_fwd.h
 nds.o: $(ARBHOME)/INCLUDE/arb_string.h

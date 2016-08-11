@@ -794,7 +794,7 @@ void AW_gc_manager::add_gc(const char *gc_description, int& gc, gc_type type, co
         // (e.g. used in SECEDIT)
         const char *close_brace = strchr(default_color+1, '}');
         aw_assert(close_brace); // missing '}' in reference!
-        char *referenced_colorlabel = GB_strpartdup(default_color+1, close_brace-1);
+        char *referenced_colorlabel = ARB_strpartdup(default_color+1, close_brace-1);
         bool  found                 = false;
 
         for (gc_container::iterator g = GCs.begin(); g != GCs.end(); ++g) {

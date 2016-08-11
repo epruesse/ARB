@@ -48,6 +48,7 @@ SEC_abspos.o: SEC_abspos.hxx
 SEC_abspos.o: SEC_defs.hxx
 SEC_abspos.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SEC_abspos.o: $(ARBHOME)/INCLUDE/arb_core.h
+SEC_abspos.o: $(ARBHOME)/INCLUDE/arb_mem.h
 SEC_abspos.o: $(ARBHOME)/INCLUDE/arbtools.h
 SEC_abspos.o: $(ARBHOME)/INCLUDE/attributes.h
 SEC_abspos.o: $(ARBHOME)/INCLUDE/cxxforward.h
@@ -62,6 +63,7 @@ SEC_bonddef.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 SEC_bonddef.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SEC_bonddef.o: $(ARBHOME)/INCLUDE/arb_core.h
 SEC_bonddef.o: $(ARBHOME)/INCLUDE/arb_error.h
+SEC_bonddef.o: $(ARBHOME)/INCLUDE/arb_mem.h
 SEC_bonddef.o: $(ARBHOME)/INCLUDE/arb_msg.h
 SEC_bonddef.o: $(ARBHOME)/INCLUDE/arb_string.h
 SEC_bonddef.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -98,6 +100,7 @@ SEC_db.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SEC_db.o: $(ARBHOME)/INCLUDE/arb_core.h
 SEC_db.o: $(ARBHOME)/INCLUDE/arb_defs.h
 SEC_db.o: $(ARBHOME)/INCLUDE/arb_error.h
+SEC_db.o: $(ARBHOME)/INCLUDE/arb_mem.h
 SEC_db.o: $(ARBHOME)/INCLUDE/arb_msg.h
 SEC_db.o: $(ARBHOME)/INCLUDE/arb_string.h
 SEC_db.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -175,6 +178,7 @@ SEC_graphic.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SEC_graphic.o: $(ARBHOME)/INCLUDE/arb_core.h
 SEC_graphic.o: $(ARBHOME)/INCLUDE/arb_defs.h
 SEC_graphic.o: $(ARBHOME)/INCLUDE/arb_error.h
+SEC_graphic.o: $(ARBHOME)/INCLUDE/arb_mem.h
 SEC_graphic.o: $(ARBHOME)/INCLUDE/arb_msg.h
 SEC_graphic.o: $(ARBHOME)/INCLUDE/arb_string.h
 SEC_graphic.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -250,6 +254,7 @@ SEC_helix.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SEC_helix.o: $(ARBHOME)/INCLUDE/arb_core.h
 SEC_helix.o: $(ARBHOME)/INCLUDE/arb_defs.h
 SEC_helix.o: $(ARBHOME)/INCLUDE/arb_error.h
+SEC_helix.o: $(ARBHOME)/INCLUDE/arb_mem.h
 SEC_helix.o: $(ARBHOME)/INCLUDE/arb_msg.h
 SEC_helix.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 SEC_helix.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -391,6 +396,7 @@ SEC_main.o: $(ARBHOME)/INCLUDE/arb_core.h
 SEC_main.o: $(ARBHOME)/INCLUDE/arb_defs.h
 SEC_main.o: $(ARBHOME)/INCLUDE/arb_error.h
 SEC_main.o: $(ARBHOME)/INCLUDE/arb_file.h
+SEC_main.o: $(ARBHOME)/INCLUDE/arb_mem.h
 SEC_main.o: $(ARBHOME)/INCLUDE/arb_msg.h
 SEC_main.o: $(ARBHOME)/INCLUDE/arb_string.h
 SEC_main.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -469,6 +475,7 @@ SEC_paint.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SEC_paint.o: $(ARBHOME)/INCLUDE/arb_core.h
 SEC_paint.o: $(ARBHOME)/INCLUDE/arb_defs.h
 SEC_paint.o: $(ARBHOME)/INCLUDE/arb_error.h
+SEC_paint.o: $(ARBHOME)/INCLUDE/arb_mem.h
 SEC_paint.o: $(ARBHOME)/INCLUDE/arb_msg.h
 SEC_paint.o: $(ARBHOME)/INCLUDE/arb_string.h
 SEC_paint.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -666,6 +673,7 @@ SEC_toggle.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SEC_toggle.o: $(ARBHOME)/INCLUDE/arb_core.h
 SEC_toggle.o: $(ARBHOME)/INCLUDE/arb_defs.h
 SEC_toggle.o: $(ARBHOME)/INCLUDE/arb_error.h
+SEC_toggle.o: $(ARBHOME)/INCLUDE/arb_mem.h
 SEC_toggle.o: $(ARBHOME)/INCLUDE/arb_msg.h
 SEC_toggle.o: $(ARBHOME)/INCLUDE/arb_string.h
 SEC_toggle.o: $(ARBHOME)/INCLUDE/arbdb.h

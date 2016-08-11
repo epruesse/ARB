@@ -23,9 +23,6 @@ void GDE_load_menu(AW_window *awm, AW_active dummy_1x, const char *menulabel);
 GB_ERROR GDE_init(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main, GDE_get_sequences_cb get_sequences, GDE_format_alignment_cb format_ali, gde_window_type window_type);
 
 /* GDE_FileIO.cxx */
-char *Calloc(int count, int size);
-char *Realloc(char *block, int size);
-void Cfree(char *block);
 void LoadData(char *filen, NA_Alignment& dataset);
 void AppendNA(NA_Base *buffer, int len, NA_Sequence *seq);
 void Ascii2NA(char *buffer, int len, int matrix[16]);
@@ -55,6 +52,7 @@ void splitEntry(const char *input, char *head, char *tail);
 #include "GDE_extglob.h"
 #endif
 
+int Arbdb_get_curelem(NA_Alignment& dataset);
 int ReadArbdb2(NA_Alignment& dataset, AP_filter *filter, GapCompression compress, bool cutoff_stop_codon, TypeInfo typeinfo) __ATTR__USERESULT;
 int ReadArbdb(NA_Alignment& dataset, bool marked, AP_filter *filter, GapCompression compress, bool cutoff_stop_codon, TypeInfo typeinfo) __ATTR__USERESULT;
 int getelem(NA_Sequence *a, int b);

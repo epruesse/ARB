@@ -12,6 +12,8 @@
 #include "arb_cs.h"
 #include "arb_msg.h"
 #include "arb_pattern.h"
+#include "arb_string.h"
+
 #include <smartptr.h>
 
 #include <unistd.h>
@@ -51,7 +53,7 @@ const char *arb_gethostname() {
     if (hostname.isNull()) {
         char buffer[4096];
         gethostname(buffer, 4095);
-        hostname = strdup(buffer);
+        hostname = ARB_strdup(buffer);
     }
     return &*hostname;
 }
@@ -143,7 +145,7 @@ GB_ERROR arb_open_socket(const char* name, bool do_connect, int *fd, char** file
         }
     } 
     else {
-        char *socket_name = strdup(name);
+        char *socket_name = ARB_strdup(name);
         error = arb_open_tcp_socket(socket_name, do_connect, fd);
         free(socket_name);
         freenull(*filename_out);

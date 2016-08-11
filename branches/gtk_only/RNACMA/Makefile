@@ -70,6 +70,7 @@ AlignedSequenceLoader.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AlignedSequenceLoader.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AlignedSequenceLoader.o: $(ARBHOME)/INCLUDE/arb_core.h
 AlignedSequenceLoader.o: $(ARBHOME)/INCLUDE/arb_error.h
+AlignedSequenceLoader.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AlignedSequenceLoader.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AlignedSequenceLoader.o: $(ARBHOME)/INCLUDE/arb_string.h
 AlignedSequenceLoader.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -94,6 +95,7 @@ Analyser.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 Analyser.o: $(ARBHOME)/INCLUDE/arb_assert.h
 Analyser.o: $(ARBHOME)/INCLUDE/arb_core.h
 Analyser.o: $(ARBHOME)/INCLUDE/arb_error.h
+Analyser.o: $(ARBHOME)/INCLUDE/arb_mem.h
 Analyser.o: $(ARBHOME)/INCLUDE/arb_msg.h
 Analyser.o: $(ARBHOME)/INCLUDE/arb_string.h
 Analyser.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -118,6 +120,7 @@ dbconn.o: $(ARBHOME)/INCLUDE/ad_prot.h
 dbconn.o: $(ARBHOME)/INCLUDE/arb_assert.h
 dbconn.o: $(ARBHOME)/INCLUDE/arb_core.h
 dbconn.o: $(ARBHOME)/INCLUDE/arb_error.h
+dbconn.o: $(ARBHOME)/INCLUDE/arb_mem.h
 dbconn.o: $(ARBHOME)/INCLUDE/arb_msg.h
 dbconn.o: $(ARBHOME)/INCLUDE/arb_string.h
 dbconn.o: $(ARBHOME)/INCLUDE/arbdb.h

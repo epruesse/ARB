@@ -37,6 +37,7 @@ AdminGui.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AdminGui.o: $(ARBHOME)/INCLUDE/arb_core.h
 AdminGui.o: $(ARBHOME)/INCLUDE/arb_defs.h
 AdminGui.o: $(ARBHOME)/INCLUDE/arb_error.h
+AdminGui.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AdminGui.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AdminGui.o: $(ARBHOME)/INCLUDE/arb_string.h
 AdminGui.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -96,6 +97,7 @@ AliAdmin.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AliAdmin.o: $(ARBHOME)/INCLUDE/arb_core.h
 AliAdmin.o: $(ARBHOME)/INCLUDE/arb_defs.h
 AliAdmin.o: $(ARBHOME)/INCLUDE/arb_error.h
+AliAdmin.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AliAdmin.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AliAdmin.o: $(ARBHOME)/INCLUDE/arb_string.h
 AliAdmin.o: $(ARBHOME)/INCLUDE/arbdb.h

@@ -38,6 +38,7 @@ TreeAdmin.o: $(ARBHOME)/INCLUDE/arb_core.h
 TreeAdmin.o: $(ARBHOME)/INCLUDE/arb_defs.h
 TreeAdmin.o: $(ARBHOME)/INCLUDE/arb_error.h
 TreeAdmin.o: $(ARBHOME)/INCLUDE/arb_global_defs.h
+TreeAdmin.o: $(ARBHOME)/INCLUDE/arb_mem.h
 TreeAdmin.o: $(ARBHOME)/INCLUDE/arb_msg.h
 TreeAdmin.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 TreeAdmin.o: $(ARBHOME)/INCLUDE/arb_string.h

@@ -69,6 +69,7 @@ TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_defs.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_diff.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_error.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_file.h
+TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_mem.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_msg.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_simple_assert.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_str.h

@@ -55,8 +55,8 @@ class remote_awars {
     }
 
 public:
-    remote_awars(const char *application)   : app_id(strdup(application))  { init(); }
-    remote_awars(const remote_awars& other) : app_id(strdup(other.app_id)) { init(); }
+    remote_awars(const char *application)   : app_id(ARB_strdup(application))  { init(); }
+    remote_awars(const remote_awars& other) : app_id(ARB_strdup(other.app_id)) { init(); }
     DECLARE_ASSIGNMENT_OPERATOR(remote_awars);
     ~remote_awars() {
         free(app_id);

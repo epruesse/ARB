@@ -90,7 +90,7 @@ GB_ERROR GBT_add_new_changekey_to_keypath(GBDATA *gb_main, const char *name, int
     const char *c      = GB_first_non_key_char(name);
 
     if (c) {
-        char *new_name = strdup(name);
+        char *new_name = ARB_strdup(name);
 
         *(char*)GB_first_non_key_char(new_name) = 0;
 

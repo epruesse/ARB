@@ -99,44 +99,6 @@ static struct gbb_Cluster
 } gbb_cluster[GBB_CLUSTERS+1];
 
 
-NOT4PERL void *GB_calloc(unsigned int nelem, unsigned int elsize) {
-    size_t  size = nelem*elsize;
-    void   *mem  = malloc(size);
-
-    if (mem) {
-        memset(mem, 0, size);
-    }
-    else {
-        fprintf(stderr, "Panic Error: insufficient memory: tried to get %u*%u bytes\n", nelem, elsize);
-    }
-    return mem;
-}
-
-NOT4PERL void *GB_recalloc(void *ptr, unsigned int oelem, unsigned int nelem, unsigned int elsize)
-{
-    size_t nsize = nelem*elsize;
-    void *mem = malloc(nsize);
-
-    if (mem) {
-        size_t osize = oelem*elsize;
-
-        if (nsize>=osize) {
-            memmove(mem, ptr, osize);
-            if (nsize>osize) {
-                memset(((char*)mem)+osize, 0, nsize-osize);
-            }
-        }
-        else {
-            memmove(mem, ptr, nsize);
-        }
-    }
-    else {
-        fprintf(stderr, "Panic Error: insufficient memory: tried to get %u*%u bytes\n", nelem, elsize);
-    }
-
-    return mem;
-}
-
 #ifdef TRACE_ALLOCS
 
 class AllocLogEntry {
@@ -311,11 +273,6 @@ struct ARBDB_memory_manager {
 };
 static ARBDB_memory_manager memman;
 
-void GB_memerr()
-{
-    GB_internal_error("memory allocation error - maybe you're out of swap space?");
-}
-
 #ifdef TEST_MEMBLKS
 
 #define TEST() testMemblocks(__FILE__, __LINE__)
@@ -443,10 +400,9 @@ static char *gbm_get_memblk(size_t size) {
                           ? (size_t)size
                           : (size_t)(gbb_cluster[idx].size)) + GBB_HEADER_SIZE;
 
-        block  = (gbb_data *)GB_calloc(1, allocationSize);
-        if (!block) { GB_memerr(); return NULL; }
+        block = (gbb_data *)ARB_calloc<char>(allocationSize);
 
-        block->size = allocationSize-GBB_HEADER_SIZE;
+        block->size            = allocationSize-GBB_HEADER_SIZE;
         block->allocFromSystem = 1;
 
         gb_assert(block->size>=size);
@@ -470,7 +426,7 @@ static char *gbm_get_memblk(size_t size) {
 
         if (block->content.magic!=GBB_MAGIC) { imemerr("bad magic number if free block"); return NULL; }
         *blockPtr = block->content.next;
-        memset((char*)&(block->content), 0, size);  // act like calloc()
+        memset((char*)&(block->content), 0, size);  // act like calloc
 
 #ifdef DUMP_MEMBLKS
         printf("using unused block "
@@ -486,13 +442,6 @@ static char *gbm_get_memblk(size_t size) {
     TEST();
 
     return (char*)&(block->content);
-}
-
-inline void *GB_MEMALIGN(size_t alignment, size_t size) {
-    void *mem = NULL;
-    int   err = posix_memalign(&mem, alignment, size);
-    if (err) GBK_terminatef("ARBDB allocation error (errcode=%i)", err);
-    return mem;
 }
 
 void *gbmGetMemImpl(size_t size, long index) {
@@ -524,9 +473,8 @@ void *gbmGetMemImpl(size_t size, long index) {
         }
         else {
             if (ggi->size < nsize) {
-                gbm_table *gts = (gbm_table *)GB_MEMALIGN(GBM_SYSTEM_PAGE_SIZE, GBM_TABLE_SIZE);
-
-                if (!gts) { GB_memerr(); return NULL; }
+                gbm_table *gts;
+                arb_mem::alloc_aligned((void**)(&gts), GBM_SYSTEM_PAGE_SIZE, GBM_TABLE_SIZE);
 
                 memset((char *)gts, 0, GBM_TABLE_SIZE);
                 ggi->gds = &gts->data[0];

@@ -599,7 +599,7 @@ static GB_ERROR export_format_single(const char *db_name, const char *formname, 
                     {
                         xml->add_attribute("database", db_name);
                     }
-                    xml->add_attribute("export_date", GB_date_string());
+                    xml->add_attribute("export_date", ARB_date_string());
                     {
                         XML_Comment rem("There is a basic version of ARB_seq_export.dtd in $ARBHOME/lib/dtd\n"
                                         "but you might need to expand it by yourself,\n"

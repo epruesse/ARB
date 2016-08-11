@@ -56,6 +56,7 @@ PRD_Design.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PRD_Design.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PRD_Design.o: $(ARBHOME)/INCLUDE/arb_core.h
 PRD_Design.o: $(ARBHOME)/INCLUDE/arb_error.h
+PRD_Design.o: $(ARBHOME)/INCLUDE/arb_mem.h
 PRD_Design.o: $(ARBHOME)/INCLUDE/arb_msg.h
 PRD_Design.o: $(ARBHOME)/INCLUDE/arb_progress.h
 PRD_Design.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -74,6 +75,7 @@ PRD_Item.o: PRD_Item.hxx
 PRD_Item.o: PRD_SequenceIterator.hxx
 PRD_Item.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PRD_Item.o: $(ARBHOME)/INCLUDE/arb_core.h
+PRD_Item.o: $(ARBHOME)/INCLUDE/arb_mem.h
 PRD_Item.o: $(ARBHOME)/INCLUDE/arbtools.h
 PRD_Item.o: $(ARBHOME)/INCLUDE/attributes.h
 PRD_Item.o: $(ARBHOME)/INCLUDE/cxxforward.h
@@ -97,6 +99,7 @@ PRD_Pair.o: PRD_Item.hxx
 PRD_Pair.o: PRD_Pair.hxx
 PRD_Pair.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PRD_Pair.o: $(ARBHOME)/INCLUDE/arb_core.h
+PRD_Pair.o: $(ARBHOME)/INCLUDE/arb_mem.h
 PRD_Pair.o: $(ARBHOME)/INCLUDE/arbtools.h
 PRD_Pair.o: $(ARBHOME)/INCLUDE/attributes.h
 PRD_Pair.o: $(ARBHOME)/INCLUDE/cxxforward.h
@@ -154,6 +157,7 @@ primer_design.o: $(ARBHOME)/INCLUDE/arb_assert.h
 primer_design.o: $(ARBHOME)/INCLUDE/arb_core.h
 primer_design.o: $(ARBHOME)/INCLUDE/arb_defs.h
 primer_design.o: $(ARBHOME)/INCLUDE/arb_error.h
+primer_design.o: $(ARBHOME)/INCLUDE/arb_mem.h
 primer_design.o: $(ARBHOME)/INCLUDE/arb_msg.h
 primer_design.o: $(ARBHOME)/INCLUDE/arb_progress.h
 primer_design.o: $(ARBHOME)/INCLUDE/arb_string.h

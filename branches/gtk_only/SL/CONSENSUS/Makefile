@@ -35,6 +35,7 @@ chartable.o: consensus.h
 chartable.o: $(ARBHOME)/INCLUDE/arb_assert.h
 chartable.o: $(ARBHOME)/INCLUDE/arb_core.h
 chartable.o: $(ARBHOME)/INCLUDE/arb_defs.h
+chartable.o: $(ARBHOME)/INCLUDE/arb_mem.h
 chartable.o: $(ARBHOME)/INCLUDE/arb_msg.h
 chartable.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 chartable.o: $(ARBHOME)/INCLUDE/arbtools.h

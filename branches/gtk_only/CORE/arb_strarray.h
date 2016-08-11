@@ -12,17 +12,17 @@
 #ifndef ARB_STRARRAY_H
 #define ARB_STRARRAY_H
 
-#ifndef _GLIBCXX_CSTDLIB
-#include <cstdlib>
-#endif
 #ifndef ARBTOOLS_H
 #include <arbtools.h>
 #endif
-#ifndef ARB_ASSERT_H
-#include <arb_assert.h>
+#ifndef ARB_STRING_H
+#include "arb_string.h"
 #endif
 #ifndef _GLIBCXX_ALGORITHM
 #include <algorithm>
+#endif
+#ifndef _GLIBCXX_CSTDLIB
+#include <cstdlib>
 #endif
 
 
@@ -48,9 +48,10 @@ protected:
     void set_space(size_t new_allocated) {
         if (new_allocated != allocated) {
             arb_assert(ok());
-            size_t memsize = new_allocated*sizeof(*str);
-            str = (char**)(str ? realloc(str, memsize) : malloc(memsize));
-            if (new_allocated>allocated) memset(str+allocated, 0, (new_allocated-allocated)*sizeof(*str));
+
+            if (str) ARB_recalloc(str, allocated, new_allocated);
+            else     ARB_calloc(str, new_allocated);
+
             allocated = new_allocated;
             arb_assert(ok());
         }
@@ -229,11 +230,11 @@ void GBT_splitNdestroy_string(ConstStrArray& dest, char*& namelist, char separat
 
 inline void GBT_split_string(ConstStrArray& dest, const char *namelist, const char *separator, bool dropEmptyTokens) {
     //! same as GBT_splitNdestroy_string, but w/o destroying namelist
-    char *dup = strdup(namelist);
+    char *dup = ARB_strdup(namelist);
     GBT_splitNdestroy_string(dest, dup, separator, dropEmptyTokens);
 }
 inline void GBT_split_string(ConstStrArray& dest, const char *namelist, char separator) {
-    char *dup = strdup(namelist);
+    char *dup = ARB_strdup(namelist);
     GBT_splitNdestroy_string(dest, dup, separator);
     // cppcheck-suppress memleak (GBT_splitNdestroy_string takes ownership of 'dup')
 }

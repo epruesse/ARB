@@ -44,7 +44,7 @@ void AW_openURL(AW_root *aw_root, const char *url) {
     char    *browser = aw_root->awar(AWAR_WWW_BROWSER)->read_string();
 
     while ((ka = GBS_find_string(browser, "$(URL)", 0))) {
-        char *start       = GB_strpartdup(browser, ka-1);
+        char *start       = ARB_strpartdup(browser, ka-1);
         char *new_browser = GBS_global_string_copy("%s%s%s", start, url, ka+6);
 
         free(start);
@@ -280,7 +280,7 @@ static void aw_help_select_newest_in_history(AW_root *aw_root) {
     char *history = HELP.history;
     if (history) {
         const char *sep      = strchr(history, '#');
-        char       *lastHelp = sep ? GB_strpartdup(history, sep-1) : strdup(history);
+        char       *lastHelp = sep ? ARB_strpartdup(history, sep-1) : strdup(history);
 
         aw_root->awar(AWAR_HELPFILE)->write_string(lastHelp);
         free(lastHelp);
@@ -295,7 +295,7 @@ static void aw_help_back(AW_window *aww) {
         if (currHelp[0]) { // if showing some help
             const char *sep = strchr(history, '#');
             if (sep) {
-                char *first = GB_strpartdup(history, sep-1);
+                char *first = ARB_strpartdup(history, sep-1);
                 freeset(HELP.history, GBS_global_string_copy("%s#%s", sep+1, first)); // wrap first to end
                 free(first);
                 aw_help_select_newest_in_history(aw_root);

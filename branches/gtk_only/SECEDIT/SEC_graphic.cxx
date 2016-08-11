@@ -658,7 +658,7 @@ GB_ERROR SEC_graphic::load(GBDATA *, const char *) {
         }
     }
     else {
-        load_error = strdup(err);
+        load_error = ARB_strdup(err);
         request_update(SEC_UPDATE_ZOOM_RESET);
     }
 

@@ -2756,6 +2756,9 @@ void AWT_graphic_tree::show_nds_list(GBDATA *, bool use_nds) {
         }
     }
 
+    const AP_TreeShader *shader = AP_tree::get_tree_shader();
+    const_cast<AP_TreeShader*>(shader)->update_settings();
+
     for (; gb_species; gb_species = nds_only_marked ? GBT_next_marked_species(gb_species) : GBT_next_species(gb_species)) {
         y_position += scaled_branch_distance;
         if (gb_species == selected_species) cursor = Position(0, y_position);
@@ -2769,7 +2772,12 @@ void AWT_graphic_tree::show_nds_list(GBDATA *, bool use_nds) {
             }
 
             bool colorize_marked = is_marked && !nds_only_marked; // do not use mark-color if only showing marked
-            int  gc              = AP_tree::get_tree_shader()->calc_leaf_GC(gb_species, colorize_marked);
+
+            int gc = shader->calc_leaf_GC(gb_species, colorize_marked);
+            if (gc == AWT_GC_NONE_MARKED && shader->does_shade()) { // may show shaded color
+                gc = shader->to_GC(shader->calc_shaded_leaf_GC(gb_species));
+            }
+
             ListDisplayRow *curr = new ListDisplayRow(gb_main, gb_species, y_position+text_y_offset, gc, *disp_device, use_nds, tree_name);
             max_parts            = std::max(max_parts, curr->get_part_count());
             row[species_count++] = curr;
@@ -3177,8 +3185,8 @@ static void TREE_recompute_and_rezoom_cb(UNFIXED, AWT_canvas *ntw) {
     if (root) {
         gt->read_tree_settings(); // update settings for group-scaling
         root->compute_tree();
-        ntw->recalc_size_and_refresh();
     }
+    ntw->recalc_size_and_refresh(); // even if root==NULL (aka NDS-list)
 }
 static void TREE_rezoom_cb(UNFIXED, AWT_canvas *ntw) {
     ntw->recalc_size_and_refresh();

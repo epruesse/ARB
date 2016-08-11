@@ -12,7 +12,7 @@ class WrapMode : virtual Noncopyable {
 
 public:
     WrapMode(const char *separators_) : separators(nulldup(separators_)) {}
-    WrapMode(bool allowWrap) : separators(allowWrap ? strdup(WORD_SEP) : NULL) {} // true->wrap words, false->wrapping forbidden
+    WrapMode(bool allowWrap) : separators(allowWrap ? ARB_strdup(WORD_SEP) : NULL) {} // true->wrap words, false->wrapping forbidden
     ~WrapMode() { free(separators); }
 
     void print(Writer& write, const char *first_prefix, const char *other_prefix, const char *content, int max_width) const;

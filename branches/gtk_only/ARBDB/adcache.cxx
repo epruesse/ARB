@@ -104,7 +104,7 @@ inline void flush_cache_entry(gb_cache& cache, gb_cache_idx index) {
 }
 
 gb_cache::gb_cache()
-    : entries((gb_cache_entry *)GB_calloc(sizeof(gb_cache_entry), GB_MAX_CACHED_ENTRIES)),
+    : entries(ARB_calloc<gb_cache_entry>(GB_MAX_CACHED_ENTRIES)),
       firstfree_entry(1),
       newest_entry(0),
       oldest_entry(0),
@@ -275,7 +275,7 @@ char *gb_alloc_cache_index(GBENTRY *gbe, size_t size) {
     entry.next            = 0;
 
     // create data
-    if (!data) data = (char*)malloc(size);
+    if (!data) ARB_alloc(data, size);
 
     entry.sizeof_data = size;
     entry.data        = data;
@@ -284,7 +284,7 @@ char *gb_alloc_cache_index(GBENTRY *gbe, size_t size) {
     
 #if defined(GEN_CACHE_STATS)
     entry.reused     = 0;
-    entry.dbpath     = strdup(GB_get_db_path(gbe));
+    entry.dbpath     = ARB_strdup(GB_get_db_path(gbe));
 #endif                                              // GEN_CACHE_STATS
 
     gbe->cache_index = index;

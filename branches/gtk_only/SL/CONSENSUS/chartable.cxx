@@ -9,10 +9,13 @@
 // ================================================================= //
 
 #include "chartable.h"
+
 #include <arb_msg.h>
+#include <arb_mem.h>
 #include <iupac.h>
-#include <cctype>
 #include <arb_defs.h>
+
+#include <cctype>
 
 #define CONSENSUS_AWAR_SOURCE CAS_INTERNAL // not awar-constructable here
 #include <consensus.h>
@@ -373,9 +376,10 @@ int SepBaseFreq::empty() const
 #endif // ASSERTION_USED
 
 char *BaseFrequencies::build_consensus_string(PosRange r, const ConsensusBuildParams& cbp) const {
-    ExplicitRange  range(r, size());
-    long           entries = range.size();
-    char          *new_buf = (char*)malloc(entries+1);
+    ExplicitRange range(r, size());
+
+    long  entries = range.size();
+    char *new_buf = ARB_alloc<char>(entries+1);
 
     build_consensus_string_to(new_buf, range, cbp);
     new_buf[entries] = 0;

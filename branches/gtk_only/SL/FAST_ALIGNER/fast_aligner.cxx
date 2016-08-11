@@ -365,7 +365,7 @@ static char *lstr(const char *s, int len) {
 
     if (alloc<(len+1)) {
         if (alloc) free(buffer);
-        buffer = (char*)malloc(alloc=len+100);
+        ARB_alloc(buffer, alloc=len+100);
     }
 
     memcpy(buffer, s, len);
@@ -1208,7 +1208,7 @@ static ARB_ERROR alignCompactedTo(CompactedSubSequence     *toAlignSequence,
                     // create temp-entry for master containing insert dots:
 
                     int   buflen    = max_seq_length*2;
-                    char *buffer    = (char*)malloc(buflen+1);
+                    char *buffer    = ARB_alloc<char>(buflen+1);
                     char *afterLast = buffer;
 
                     if (!buffer) {
@@ -3093,7 +3093,7 @@ static GBDATA *fake_next_selected() {
 static char *fake_get_consensus(const char*, PosRange range) {
     const char *data = get_aligned_data_of(selection_fake_gb_main, "s1");
     if (range.is_whole()) return strdup(data);
-    return GB_strpartdup(data+range.start(), data+range.end());
+    return ARB_strpartdup(data+range.start(), data+range.end());
 }
 
 static void test_install_fakes(GBDATA *gb_main) {

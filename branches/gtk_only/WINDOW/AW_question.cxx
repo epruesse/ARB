@@ -172,7 +172,7 @@ int AW_repeated_question::get_answer(const char *unique_id, const char *question
         int     all_len         = strlen(all);
         size_t  but_len         = strlen(buttons);
         size_t  new_buttons_len = but_len*3+1+(add_abort ? 6 : 0)+all_len*3;
-        char   *new_buttons     = (char*)malloc(new_buttons_len);
+        char   *new_buttons     = ARB_alloc<char>(new_buttons_len);
         int     button_count    = 0; // number of buttons in 'buttons'
 
         { // transform "YES,NO"  ->   "YES,YES (to_all),^NO,NO (to_all)" or "YES (to_all),NO (to_all)"

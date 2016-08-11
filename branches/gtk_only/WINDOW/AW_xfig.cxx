@@ -138,7 +138,7 @@ AW_xfig::AW_xfig(const char *filename, int font_width, int font_height) {
 
     GB_ERROR  error  = 0;
     char     *ret;
-    char     *buffer = (char *)calloc(sizeof(char), MAX_XFIG_LENGTH);
+    char     *buffer = ARB_calloc<char>(MAX_XFIG_LENGTH);
     FILE     *file   = 0;
 
     if (filename[0]=='/') { // absolute file ?

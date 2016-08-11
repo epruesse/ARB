@@ -37,7 +37,7 @@ void AP_tree_nlen::copy(AP_tree_nlen *tree) {
     this->gb_node = tree->gb_node;
 
     if (tree->name != NULL) {
-        this->name = strdup(tree->name);
+        this->name = ARB_strdup(tree->name);
     }
     else {
         this->name = NULL;
@@ -1330,13 +1330,13 @@ const char *AP_tree_nlen::fullname() const
 {
     if (!name) {
         static char *buffer;
-        char        *lName = strdup(get_leftson()->fullname());
-        char        *rName = strdup(get_rightson()->fullname());
+        char        *lName = ARB_strdup(get_leftson()->fullname());
+        char        *rName = ARB_strdup(get_rightson()->fullname());
         int          len   = strlen(lName)+strlen(rName)+4;
 
         if (buffer) free(buffer);
 
-        buffer = (char*)malloc(len);
+        ARB_alloc(buffer, len);
 
         strcpy(buffer, "[");
         strcat(buffer, lName);
