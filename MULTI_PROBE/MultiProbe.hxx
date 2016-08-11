@@ -23,8 +23,8 @@
 #ifndef AW_BASE_HXX
 #include <aw_base.hxx>
 #endif
-#ifndef ARB_ASSERT_H
-#include <arb_assert.h>
+#ifndef ARB_STRING_H
+#include <arb_string.h>
 #endif
 
 #define mp_assert(x) arb_assert(x)
@@ -255,7 +255,7 @@ public:
     void        set_Allowed_Mismatch_no(int pos, int no) { Allowed_Mismatch[pos] = no; };
     void        set_Outside_Mismatch_no(int pos, int no) { Outside_Mismatch[pos] = no; };
     void        set_bitkennung(Bitvector* bv);  // Setzt eine Leere Bitkennung der laenge bits
-    void        set_name(char* name) {  kennung = strdup(name); };
+    void        set_name(char* name) {  kennung = ARB_strdup(name); };
     void        set_Hitliste(Hit** hitptr) {     hitliste = hitptr; };
     void        set_length_hitliste(long lhl) { length_hitliste = lhl; };
     void        set_minelem(long min) { minelem = min; };

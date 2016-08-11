@@ -125,10 +125,10 @@ char *DI_MATRIX::compress(TreeNode *tree) {
     }
     free(entries);
 
-    entries = groups;
-    nentries = groupcnt;
-    entries_mem_size = groupcnt;
-    matrix_type = DI_MATRIX_COMPRESSED;
+    entries           = groups;
+    nentries          = groupcnt;
+    allocated_entries = groupcnt;
+    matrix_type       = DI_MATRIX_COMPRESSED;
 
     GBS_free_hash(hash);
     return error;

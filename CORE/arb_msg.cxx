@@ -10,7 +10,6 @@
 // ================================================================ //
 
 #include <arb_msg_fwd.h>
-#include <arb_assert.h>
 #include <arb_string.h>
 #include <arb_backtrace.h>
 #include <smartptr.h>
@@ -169,7 +168,7 @@ const char *GBS_vglobal_string(const char *templat, va_list parg) {
 char *GBS_vglobal_string_copy(const char *templat, va_list parg) {
     // goes to header: __ATTR__VFORMAT(1)
     const char *gstr = globBuf.vstrf(templat, parg, 1);
-    return GB_strduplen(gstr, last_global_string_size);
+    return ARB_strduplen(gstr, last_global_string_size);
 }
 
 const char *GBS_global_string_to_buffer(char *buffer, size_t bufsize, const char *templat, ...) {
@@ -218,8 +217,8 @@ GB_ERROR GBK_assert_msg(const char *assertion, const char *file, int linenr) {
     const char  *result   = 0;
     int          old_size = last_global_string_size;
 
-    if (!buffer) buffer = (char *)malloc(BUFSIZE);
-    result              = GBS_global_string_to_buffer(buffer, BUFSIZE, "assertion '%s' failed in %s #%i", assertion, file, linenr);
+    if (!buffer) ARB_alloc(buffer, BUFSIZE);
+    result = GBS_global_string_to_buffer(buffer, BUFSIZE, "assertion '%s' failed in %s #%i", assertion, file, linenr);
 
     last_global_string_size = old_size;
 
@@ -530,7 +529,7 @@ char *GBK_singlequote(const char *arg) {
     /*! Enclose argument in single quotes (like 'arg') for POSIX shell commands.
      */
 
-    if (!arg[0]) return strdup("''");
+    if (!arg[0]) return ARB_strdup("''");
 
     GBS_strstruct  out(500);
     const char    *existing_quote = strchr(arg, '\'');

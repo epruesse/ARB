@@ -60,6 +60,7 @@ c0x.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 c0x.o: $(ARBHOME)/INCLUDE/arb_assert.h
 c0x.o: $(ARBHOME)/INCLUDE/arb_core.h
 c0x.o: $(ARBHOME)/INCLUDE/arb_error.h
+c0x.o: $(ARBHOME)/INCLUDE/arb_mem.h
 c0x.o: $(ARBHOME)/INCLUDE/arb_msg.h
 c0x.o: $(ARBHOME)/INCLUDE/arb_string.h
 c0x.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -80,6 +81,7 @@ nostd.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 nostd.o: $(ARBHOME)/INCLUDE/arb_assert.h
 nostd.o: $(ARBHOME)/INCLUDE/arb_core.h
 nostd.o: $(ARBHOME)/INCLUDE/arb_error.h
+nostd.o: $(ARBHOME)/INCLUDE/arb_mem.h
 nostd.o: $(ARBHOME)/INCLUDE/arb_msg.h
 nostd.o: $(ARBHOME)/INCLUDE/arb_string.h
 nostd.o: $(ARBHOME)/INCLUDE/arbdb.h

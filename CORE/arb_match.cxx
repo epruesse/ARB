@@ -14,7 +14,6 @@
 // AISC_MKPT_PROMOTE:#endif
 
 #include "arb_match.h"
-#include "arb_assert.h"
 #include "arb_msg.h"
 #include "arb_string.h"
 #include "arb_strbuf.h"
@@ -33,13 +32,13 @@ inline char *give_buffer(size_t size) {
     if (size<1) size = 1;
     if (bufsize<size) {
         bufsize = size;
-        freeset(buf, (char*)malloc(bufsize));
+        freeset(buf, ARB_alloc<char>(bufsize));
     }
     return buf;
 }
 
 GBS_regex *GBS_compile_regexpr(const char *regexpr, GB_CASE case_flag, GB_ERROR *error) {
-    GBS_regex *comreg  = (GBS_regex*)malloc(sizeof(*comreg));
+    GBS_regex *comreg  = ARB_alloc<GBS_regex>(1);
     int        cflags  = REG_EXTENDED|(case_flag == GB_IGNORE_CASE ? REG_ICASE : 0)|REG_NEWLINE;
     int        errcode = regcomp(&comreg->compiled, regexpr, cflags);
 
@@ -97,7 +96,7 @@ const char *GBS_unwrap_regexpr(const char *regexpr_in_slashes, GB_CASE *case_fla
 
             if (len>max_len) {
                 max_len = len*3/2;
-                freeset(result_buffer, (char*)malloc(max_len+1));
+                freeset(result_buffer, ARB_alloc<char>(max_len+1));
             }
 
             memcpy(result_buffer, regexpr_in_slashes+1, len);
@@ -201,8 +200,8 @@ char *GBS_regreplace(const char *str, const char *regReplExpr, GB_ERROR *error) 
             *error = "Missing '/' between search and replace string";
         }
         else {
-            char      *regexpr  = GB_strpartdup(unwrapped_expr, sep-1);
-            char      *replexpr = GB_strpartdup(sep+1, NULL);
+            char      *regexpr  = ARB_strpartdup(unwrapped_expr, sep-1);
+            char      *replexpr = ARB_strpartdup(sep+1, NULL);
             GBS_regex *comreg   = GBS_compile_regexpr(regexpr, case_flag, error);
 
             if (comreg) {

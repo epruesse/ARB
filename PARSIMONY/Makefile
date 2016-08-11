@@ -43,6 +43,7 @@ AP_buffer.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AP_buffer.o: $(ARBHOME)/INCLUDE/arb_core.h
 AP_buffer.o: $(ARBHOME)/INCLUDE/arb_error.h
 AP_buffer.o: $(ARBHOME)/INCLUDE/arb_forward_list.h
+AP_buffer.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AP_buffer.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AP_buffer.o: $(ARBHOME)/INCLUDE/arb_string.h
 AP_buffer.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
@@ -87,6 +88,7 @@ AP_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AP_main.o: $(ARBHOME)/INCLUDE/arb_core.h
 AP_main.o: $(ARBHOME)/INCLUDE/arb_error.h
 AP_main.o: $(ARBHOME)/INCLUDE/arb_forward_list.h
+AP_main.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AP_main.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AP_main.o: $(ARBHOME)/INCLUDE/arb_string.h
 AP_main.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
@@ -137,6 +139,7 @@ AP_tree_edge.o: $(ARBHOME)/INCLUDE/arb_core.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/arb_defs.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/arb_error.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/arb_forward_list.h
+AP_tree_edge.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/arb_progress.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -184,6 +187,7 @@ AP_tree_nlen.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/arb_core.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/arb_error.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/arb_forward_list.h
+AP_tree_nlen.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/arb_string.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
@@ -237,6 +241,7 @@ PARS_dtree.o: $(ARBHOME)/INCLUDE/arb_core.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/arb_diff.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/arb_error.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/arb_forward_list.h
+PARS_dtree.o: $(ARBHOME)/INCLUDE/arb_mem.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/arb_msg.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/arb_progress.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -326,6 +331,7 @@ PARS_main.o: $(ARBHOME)/INCLUDE/arb_diff.h
 PARS_main.o: $(ARBHOME)/INCLUDE/arb_error.h
 PARS_main.o: $(ARBHOME)/INCLUDE/arb_file.h
 PARS_main.o: $(ARBHOME)/INCLUDE/arb_forward_list.h
+PARS_main.o: $(ARBHOME)/INCLUDE/arb_mem.h
 PARS_main.o: $(ARBHOME)/INCLUDE/arb_misc.h
 PARS_main.o: $(ARBHOME)/INCLUDE/arb_msg.h
 PARS_main.o: $(ARBHOME)/INCLUDE/arb_progress.h

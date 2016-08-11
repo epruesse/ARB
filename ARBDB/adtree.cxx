@@ -382,7 +382,7 @@ static GB_ERROR gbt_write_tree(GBDATA *gb_main, GBDATA *gb_tree, const char *tre
             // build tree-string and save to DB
             {
                 char *t_size = gbt_write_tree_rek_new(tree, 0, GBT_GET_SIZE); // calc size of tree-string
-                char *ctree  = (char *)GB_calloc(sizeof(char), (size_t)(t_size+1)); // allocate buffer for tree-string
+                char *ctree  = ARB_calloc<char>(size_t(t_size+1));            // allocate buffer for tree-string
 
                 t_size = gbt_write_tree_rek_new(tree, ctree, GBT_PUT_DATA); // write into buffer
                 *(t_size) = 0;
@@ -494,7 +494,7 @@ static TreeNode *gbt_read_tree_rek(char **data, long *startid, GBDATA **gb_tree_
                 if (gb_group_name) {
                     node->name = GB_read_string(gb_group_name);
                     if (!node->name || !node->name[0]) {
-                        char   *auto_rename = strdup("<missing groupname>");
+                        char   *auto_rename = ARB_strdup("<missing groupname>");
                         GBDATA *gb_main     = GB_get_root(gb_group_name);
 
                         const char *warn;
@@ -538,7 +538,7 @@ static TreeNode *gbt_read_tree_rek(char **data, long *startid, GBDATA **gb_tree_
             gb_assert(p1[0] == 1);
 
             *p1        = 0;
-            node->name = strdup(*data);
+            node->name = ARB_strdup(*data);
             *data      = p1+1;
         }
         else {
@@ -560,7 +560,7 @@ static TreeNode *read_tree_and_size_internal(GBDATA *gb_tree, GBDATA *gb_ctree, 
     GBDATA   **gb_tree_nodes;
     TreeNode  *node = 0;
 
-    gb_tree_nodes = (GBDATA **)GB_calloc(sizeof(GBDATA *), (size_t)node_count);
+    ARB_calloc(gb_tree_nodes, node_count);
     if (gb_tree) {
         GBDATA *gb_node;
 
@@ -1161,7 +1161,7 @@ GB_CSTR *GBT_get_names_of_species_in_tree(const TreeNode *tree, size_t *count) {
      * The names are not allocated (so they may change as side effect of renaming species) */
 
     size_t   size   = GBT_count_leafs(tree);
-    GB_CSTR *result = (GB_CSTR *)GB_calloc(sizeof(char *), size + 1);
+    GB_CSTR *result = ARB_calloc<GB_CSTR>(size + 1);
     
     IF_ASSERTION_USED(GB_CSTR *check =) fill_species_name_array(result, tree);
     gb_assert(check - size == result);
@@ -1330,7 +1330,7 @@ void TEST_copy_rename_delete_tree_order() {
                 GB_CSTR *species = GBT_get_names_of_species_in_tree(tree, &species_count);
 
                 StrArray species2;
-                for (int i = 0; species[i]; ++i) species2.put(strdup(species[i]));
+                for (int i = 0; species[i]; ++i) species2.put(ARB_strdup(species[i]));
 
                 TEST_EXPECT_EQUAL(species_count, leaf_count);
                 TEST_EXPECT_EQUAL(long(species_count), inner_nodes+1);

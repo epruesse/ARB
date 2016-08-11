@@ -490,8 +490,8 @@ inline const unsigned char *nstr(unsigned char *cp, int length) {
 }
 
 inline void dumpMatrix(int x0, int y0, int breite, int hoehe, int mitte_vert) {
-    char *sl = (char*)malloc(hoehe+3);
-    char *ma = (char*)malloc(breite+3);
+    char *sl = ARB_alloc<char>(hoehe+3);
+    char *ma = ARB_alloc<char>(breite+3);
 
     sprintf(ma, "-%s-", nstr(seq_array[1]+x0, breite));
     sprintf(sl, "-%s-", nstr(seq_array[2]+y0, hoehe));

@@ -565,7 +565,7 @@ string GroupBuilder::generate_group_name(ClusterPtr cluster, const GroupTree *gr
         if (old_name) {
             char *original = originalGroupName(old_name);
             if (!original && !matches_current_prefix(old_name)) {
-                original = strdup(old_name); // use existing name as original name
+                original = ARB_strdup(old_name); // use existing name as original name
             }
             if (original) {
                 orgname_suffix = string(" {was:")+original+"}";
@@ -687,7 +687,7 @@ void GroupBuilder::update_group(ClusterPtr cluster) {
                                 if (old_name) changes.overwritten++; else changes.created++;
 
                                 free(old_name);
-                                group_node->name = strdup(new_name.c_str());
+                                group_node->name = ARB_strdup(new_name.c_str());
 
                                 // @@@ DRY that.. it's spread everywhere through libs :(
                                 if (!group_node->gb_node) {

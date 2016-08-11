@@ -12,6 +12,7 @@
 #include "aw_root.hxx"
 #include "aw_common_xm.hxx"
 
+#include <arb_mem.h>
 #include <arb_msg.h>
 
 #if defined(DEBUG)
@@ -427,9 +428,7 @@ AW_GC *AW_common_Xm::create_gc() {
 void AW_GC_set::add_gc(int gi, AW_GC *agc) {
     if (gi >= count) {
         int new_count = gi+10;
-        realloc_unleaked(gcs, sizeof(*gcs)*new_count);
-        if (!gcs) GBK_terminate("out of memory");
-        memset(&gcs[count], 0, sizeof(*gcs)*(new_count-count));
+        ARB_recalloc(gcs, count, new_count);
         count = new_count;
     }
     if (gcs[gi]) delete gcs[gi];

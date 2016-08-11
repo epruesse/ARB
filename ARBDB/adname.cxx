@@ -109,7 +109,7 @@ GB_ERROR GBT_rename_species(const char *oldname, const  char *newname, bool igno
         if (NameSession.old_species_hash) {
             GBS_write_hash(NameSession.old_species_hash, oldname, 0);
         }
-        gbt_renamed *rns = (gbt_renamed *)GB_calloc(strlen(newname) + sizeof (gbt_renamed), sizeof(char));
+        gbt_renamed *rns = (gbt_renamed*)ARB_calloc<char>(strlen(newname)+sizeof(gbt_renamed));
         strcpy(&rns->data[0], newname);
         GBS_write_hash(NameSession.renamed_hash, oldname, (long)rns);
     }

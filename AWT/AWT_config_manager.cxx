@@ -1107,7 +1107,7 @@ char *AWT_config::config_string() const {
             result = result+';'+entry;
         }
     }
-    return strdup(result.c_str());
+    return ARB_strdup(result.c_str());
 }
 void AWT_config::write_to_awars(const AWT_config_mapping *cfgname_2_awar, bool warn) const {
     awt_assert(!parse_error);

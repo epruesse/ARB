@@ -44,7 +44,7 @@ int GB_get_ACISRT_trace() { return trace; }
 // export stream
 
 #define PASS_2_OUT(args,s)  (args)->output.insert(s)
-#define COPY_2_OUT(args,s)  PASS_2_OUT(args, strdup(s))
+#define COPY_2_OUT(args,s)  PASS_2_OUT(args, ARB_strdup(s))
 #define IN_2_OUT(args,i)    PASS_2_OUT(args, args->input.get_smart(i))
 #define PARAM_2_OUT(args,i) PASS_2_OUT(args, args->param.get_smart(i))
 
@@ -62,7 +62,7 @@ struct gbl_param {
 #define GBL_BEGIN_PARAMS gbl_param *params = 0
 
 static void gbl_new_param(gbl_param **pp, GB_TYPES type, void *vaddr, const char *param_name, const char *help_text) {
-    gbl_param *gblp = (gbl_param *)GB_calloc(1, sizeof(gbl_param));
+    gbl_param *gblp = ARB_calloc<gbl_param>(1);
 
     gblp->next = *pp;
     *pp         = gblp;
@@ -218,7 +218,7 @@ static GB_ERROR trace_params(const GBL_streams& param, gbl_param *ppara, const c
 
 
             for (para = ppara; para; para = para->next) pcount++;
-            params = (gbl_param **)GB_calloc(sizeof(void *), pcount);
+            ARB_calloc(params, pcount);
             for (k = 0, para = ppara; para; para = para->next) params[k++] = para;
 
 
@@ -405,11 +405,11 @@ static GB_ERROR gbl_mid_streams(const GBL_streams& arg_input, GBL_streams& arg_o
 
         char *res;
         if (s >= len || e<s) {
-            res = strdup("");
+            res = ARB_strdup("");
         }
         else {
             gb_assert(s >= 0);
-            res = GB_strpartdup(p+s, p+e);
+            res = ARB_strpartdup(p+s, p+e);
         }
         arg_out.insert(res);
     }
@@ -542,7 +542,7 @@ static char *unEscapeString(const char *escapedString) {
 static char *escapeString(const char *unescapedString) {
     // replaces all '\' and '"' by '\\' and '\"'
     int         len    = strlen(unescapedString);
-    char       *result = (char*)malloc(2*len+1);
+    char       *result = ARB_alloc<char>(2*len+1);
     char       *to     = result;
     const char *from   = unescapedString;
 
@@ -582,7 +582,7 @@ static GB_ERROR gbl_unquote(GBL_command_arguments *args) {
         int         len = strlen(str);
 
         if (str[0] == '\"' && str[len-1] == '\"') {
-            PASS_2_OUT(args, GB_strpartdup(str+1, str+len-2));
+            PASS_2_OUT(args, ARB_strpartdup(str+1, str+len-2));
         }
         else {
             IN_2_OUT(args, i);
@@ -903,7 +903,7 @@ static GB_ERROR gbl_string_convert(GBL_command_arguments *args) {
     else return GB_export_errorf("Unknown command '%s'", args->command);
 
     for (int i=0; i<args->input.size(); i++) {
-        char *p              = strdup(args->input.get(i));
+        char *p              = ARB_strdup(args->input.get(i));
         bool  last_was_alnum = false;
 
         for (char *pp = p; pp[0]; ++pp) {
@@ -954,7 +954,7 @@ static GB_ERROR tab(GBL_command_arguments *args, bool pretab) {
         int len = strlen(args->input.get(i));
         if (len >= tab) IN_2_OUT(args, i);
         else {
-            char *p = (char *)malloc(tab+1);
+            char *p = ARB_alloc<char>(tab+1);
             if (pretab) {
                 int spaces = tab-len;
                 for (int j = 0; j<spaces; ++j) p[j] = ' ';
@@ -982,7 +982,7 @@ static GB_ERROR gbl_crop(GBL_command_arguments *args) {
         while (s[0] && strchr(chars_to_crop, s[0]) != 0) s++; // crop at beg of line
 
         int   len = strlen(s);
-        char *p   = (char*)malloc(len+1);
+        char *p   = ARB_alloc<char>(len+1);
         strcpy(p, s);
 
         {
@@ -1011,7 +1011,7 @@ static GB_ERROR gbl_cut(GBL_command_arguments *args) {
 }
 static GB_ERROR gbl_drop(GBL_command_arguments *args) {
     GB_ERROR  error   = 0;
-    bool     *dropped = (bool*)malloc(args->input.size()*sizeof(*dropped));
+    bool     *dropped = ARB_alloc<bool>(args->input.size());
 
     for (int i=0; i<args->input.size(); ++i) dropped[i] = false;
 
@@ -1162,10 +1162,7 @@ static GB_ERROR gbl_split(GBL_command_arguments *args) {
                     if (split_mode == 2) splitAt += sepLen; // split behind separator
 
                     len  = splitAt-in;
-                    copy = (char*)malloc(len+1);
-
-                    memcpy(copy, in, len);
-                    copy[len] = 0;
+                    copy = ARB_strndup(in, len);
 
                     PASS_2_OUT(args, copy);
 
@@ -1398,7 +1395,7 @@ static void build_taxonomy_rek(TreeNode *node, GB_HASH *tax_hash, const char *pa
     if (node->is_leaf) {
         GBDATA *gb_species = node->gb_node;
         if (gb_species) { // not zombie
-            GBS_write_hash(tax_hash, GBS_global_string("!%s", GBT_read_name(gb_species)), (long)strdup(parent_group));
+            GBS_write_hash(tax_hash, GBS_global_string("!%s", GBT_read_name(gb_species)), (long)ARB_strdup(parent_group));
         }
     }
     else {
@@ -1410,10 +1407,10 @@ static void build_taxonomy_rek(TreeNode *node, GB_HASH *tax_hash, const char *pa
             gb_assert((*group_counter)<MAX_GROUPS); // overflow - increase GROUP_COUNT_CHARS
 
             hash_entry = GBS_global_string_copy(">%0*x%s", GROUP_COUNT_CHARS, *group_counter, node->name);
-            GBS_write_hash(tax_hash, hash_entry, (long)strdup(parent_group));
+            GBS_write_hash(tax_hash, hash_entry, (long)ARB_strdup(parent_group));
 
             hash_binary_entry = GBS_global_string(">>%p", node->gb_node);
-            GBS_write_hash(tax_hash, hash_binary_entry, (long)strdup(hash_entry));
+            GBS_write_hash(tax_hash, hash_binary_entry, (long)ARB_strdup(hash_entry));
 
             build_taxonomy_rek(node->get_leftson(), tax_hash, hash_entry, group_counter);
             build_taxonomy_rek(node->get_rightson(), tax_hash, hash_entry, group_counter);
@@ -1545,11 +1542,11 @@ static cached_taxonomy *get_cached_taxonomy(GBDATA *gb_main, const char *tree_na
                 *error = GBS_global_string("Can't find tree '%s'", tree_name);
             }
             else {
-                cached_taxonomy *ct            = (cached_taxonomy*)malloc(sizeof(*ct));
+                cached_taxonomy *ct            = ARB_alloc<cached_taxonomy>(1);
                 long             nodes         = GBT_count_leafs(tree);
                 int              group_counter = 0;
 
-                ct->tree_name = strdup(tree_name);
+                ct->tree_name = ARB_strdup(tree_name);
                 ct->taxonomy  = GBS_create_dynaval_hash(int(nodes), GB_IGNORE_CASE, GBS_dynaval_free);
                 ct->groups    = 0; // counted below
 
@@ -1611,7 +1608,7 @@ static char *get_taxonomy_string(GB_HASH *tax_hash, const char *group_key, int d
     if (found) {
         const char *parent_group_key            = (const char *)found;
         if (strcmp(parent_group_key, "<root>") == 0) { // root reached
-            result = strdup(group_key+(GROUP_COUNT_CHARS+1)); // return own group name
+            result = ARB_strdup(group_key+(GROUP_COUNT_CHARS+1)); // return own group name
         }
         else {
             if (depth>1) {
@@ -1626,7 +1623,7 @@ static char *get_taxonomy_string(GB_HASH *tax_hash, const char *group_key, int d
                 }
             }
             else {
-                result = strdup(group_key+(GROUP_COUNT_CHARS+1)); // return own group name
+                result = ARB_strdup(group_key+(GROUP_COUNT_CHARS+1)); // return own group name
             }
         }
     }
@@ -1723,16 +1720,16 @@ static GB_ERROR gbl_taxonomy(GBL_command_arguments *args) {
 
         if (args->param.size() == 1) {   // only 'depth'
             if (!args->get_tree_name()) {
-                result = strdup("No default tree");
+                result = ARB_strdup("No default tree");
             }
             else {
-                tree_name = strdup(args->get_tree_name());
+                tree_name = ARB_strdup(args->get_tree_name());
                 depth = atoi(args->param.get(0));
                 is_current_tree = true;
             }
         }
         else { // 'tree_name', 'depth'
-            tree_name = strdup(args->param.get(0));
+            tree_name = ARB_strdup(args->param.get(0));
             depth     = atoi(args->param.get(1));
         }
 
@@ -1742,7 +1739,7 @@ static GB_ERROR gbl_taxonomy(GBL_command_arguments *args) {
             }
             if (!error) {
                 const char *taxonomy_string = get_taxonomy(args->get_ref(), tree_name, is_current_tree, depth, &error);
-                if (taxonomy_string) result = strdup(taxonomy_string);
+                if (taxonomy_string) result = ARB_strdup(taxonomy_string);
             }
         }
 
@@ -1810,7 +1807,7 @@ static GB_ERROR gbl_export_sequence(GBL_command_arguments *args) {
 
                     gb_assert(error || seq);
 
-                    if (seq) PASS_2_OUT(args, GB_strduplen(seq, len));
+                    if (seq) PASS_2_OUT(args, ARB_strduplen(seq, len));
                 }
                 break;
             }
@@ -1908,7 +1905,7 @@ static GB_ERROR gbl_format_sequence(GBL_command_arguments *args) {
                 needed_size = lines*line_size + firsttab + 1 + 10;
             }
 
-            char *result = (char*)malloc(needed_size);
+            char *result = ARB_alloc<char>(needed_size);
             if (!result) {
                 error = GBS_global_string("Out of memory (tried to alloc %zu bytes)", needed_size);
             }
@@ -2009,7 +2006,7 @@ static GB_ERROR gbl_format_sequence(GBL_command_arguments *args) {
                         else {
                             dst += sprintf(dst, "%u ", (unsigned)1);
                         }
-                        format = tab>0 ? GBS_global_string_copy("%%-%iu ", tab-1) : strdup("%u ");
+                        format = tab>0 ? GBS_global_string_copy("%%-%iu ", tab-1) : ARB_strdup("%u ");
                     }
                     else if (firsttab>0) {
                         memset(dst, ' ', firsttab);
@@ -2072,14 +2069,7 @@ static GB_ERROR gbl_format_sequence(GBL_command_arguments *args) {
                 { // check for array overflow
                     size_t used_size = dst-result;
                     gb_assert(used_size <= needed_size);
-
-                    char *new_result = (char*)realloc(result, used_size);
-                    if (!new_result) {
-                        error = "Out of memory";
-                    }
-                    else {
-                        result = new_result;
-                    }
+                    ARB_realloc(result, used_size);
                 }
 #endif // DEBUG
             }
@@ -2218,7 +2208,7 @@ static GB_ERROR apply_filters(GBL_command_arguments *args, common_filter_params 
                         gb_assert(in);
 
                         flen   = strlen(in);
-                        filter = GB_strduplen(in, flen);
+                        filter = ARB_strduplen(in, flen);
                     }
                 }
                 else {
@@ -2255,7 +2245,7 @@ static char *calc_diff(const char *seq, const char *filter, size_t /*flen*/, voi
     char         equal_char = param->equalC;
     char         diff_char  = param->diffC;
 
-    char *result = strdup(seq);
+    char *result = ARB_strdup(seq);
     int   p;
 
     for (p = 0; result[p] && filter[p]; ++p) {

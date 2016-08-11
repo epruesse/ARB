@@ -482,20 +482,22 @@ void di_protdist::predict(double /* tt */, long nb1, long  nb2) {
 }
 
 void di_protdist::build_predikt_table(int pos) {
-    int             b1, b2;
     double tt = pos_2_tt(pos);
     build_exptteig(tt);
-    akt_slopes = slopes[pos] = (di_paa_matrix *) calloc(sizeof(di_paa_matrix), 1);
-    akt_curves = curves[pos] = (di_paa_matrix *) calloc(sizeof(di_paa_matrix), 1);
-    akt_infs = infs[pos] = (di_bool_matrix *) calloc(sizeof(di_bool_matrix), 1);
 
-    for (b1 = ALA; b1 < DI_MAX_PAA; b1++) {
-        for (b2 = ALA; b2 <= b1; b2++) {
+    akt_slopes = slopes[pos] = ARB_calloc<di_paa_matrix>(1);
+    akt_curves = curves[pos] = ARB_calloc<di_paa_matrix>(1);
+    akt_infs   = infs[pos]   = ARB_calloc<di_bool_matrix>(1);
+
+    for (int b1 = ALA; b1 < DI_MAX_PAA; b1++) {
+        for (int b2 = ALA; b2 <= b1; b2++) {
             if (b1 != STOP && b1 != DEL && b1 != QUEST && b1 != UNK &&
-                b2 != STOP && b2 != DEL && b2 != QUEST && b2 != UNK) {
-                p = 0.0;
-                dp = 0.0;
+                b2 != STOP && b2 != DEL && b2 != QUEST && b2 != UNK)
+            {
+                p   = 0.0;
+                dp  = 0.0;
                 d2p = 0.0;
+
                 if (b1 != ASX && b1 != GLX && b2 != ASX && b2 != GLX) {
                     predict(tt, b1, b2);
                 }

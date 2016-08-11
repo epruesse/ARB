@@ -37,6 +37,7 @@ changekey.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 changekey.o: $(ARBHOME)/INCLUDE/arb_assert.h
 changekey.o: $(ARBHOME)/INCLUDE/arb_core.h
 changekey.o: $(ARBHOME)/INCLUDE/arb_error.h
+changekey.o: $(ARBHOME)/INCLUDE/arb_mem.h
 changekey.o: $(ARBHOME)/INCLUDE/arb_msg.h
 changekey.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 changekey.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -73,6 +74,7 @@ item_sel_list.o: $(ARBHOME)/INCLUDE/arb_core.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/arb_defs.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/arb_error.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/arb_global_defs.h
+item_sel_list.o: $(ARBHOME)/INCLUDE/arb_mem.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/arb_msg.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/arb_string.h
 item_sel_list.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -107,6 +109,7 @@ items.o: $(ARBHOME)/INCLUDE/ad_prot.h
 items.o: $(ARBHOME)/INCLUDE/arb_assert.h
 items.o: $(ARBHOME)/INCLUDE/arb_core.h
 items.o: $(ARBHOME)/INCLUDE/arb_error.h
+items.o: $(ARBHOME)/INCLUDE/arb_mem.h
 items.o: $(ARBHOME)/INCLUDE/arb_msg.h
 items.o: $(ARBHOME)/INCLUDE/arb_string.h
 items.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -152,6 +155,7 @@ species.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 species.o: $(ARBHOME)/INCLUDE/arb_assert.h
 species.o: $(ARBHOME)/INCLUDE/arb_core.h
 species.o: $(ARBHOME)/INCLUDE/arb_error.h
+species.o: $(ARBHOME)/INCLUDE/arb_mem.h
 species.o: $(ARBHOME)/INCLUDE/arb_msg.h
 species.o: $(ARBHOME)/INCLUDE/arb_string.h
 species.o: $(ARBHOME)/INCLUDE/arbdb.h

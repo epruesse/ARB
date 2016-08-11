@@ -47,6 +47,7 @@ AWT_asciiprint.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/arb_error.h
+AWT_asciiprint.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/arb_string.h
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -81,6 +82,7 @@ AWT_canio.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_canio.o: $(ARBHOME)/INCLUDE/arb_defs.h
 AWT_canio.o: $(ARBHOME)/INCLUDE/arb_error.h
 AWT_canio.o: $(ARBHOME)/INCLUDE/arb_file.h
+AWT_canio.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AWT_canio.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AWT_canio.o: $(ARBHOME)/INCLUDE/arb_progress.h
 AWT_canio.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
@@ -119,6 +121,7 @@ AWT_canvas.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AWT_canvas.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_canvas.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_canvas.o: $(ARBHOME)/INCLUDE/arb_error.h
+AWT_canvas.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AWT_canvas.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AWT_canvas.o: $(ARBHOME)/INCLUDE/arb_string.h
 AWT_canvas.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -155,6 +158,7 @@ AWT_config_manager.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/arb_defs.h
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/arb_error.h
+AWT_config_manager.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/arb_str.h
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/arb_strarray.h
@@ -194,6 +198,7 @@ AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_diff.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_error.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_file.h
+AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_misc.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_sleep.h
@@ -232,6 +237,7 @@ AWT_hexdump.o: awt_hexdump.hxx
 AWT_hexdump.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_hexdump.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_hexdump.o: $(ARBHOME)/INCLUDE/arb_error.h
+AWT_hexdump.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AWT_hexdump.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 AWT_hexdump.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_hexdump.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -268,6 +274,7 @@ AWT_input_mask.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/arb_error.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/arb_file.h
+AWT_input_mask.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/arb_string.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -326,6 +333,7 @@ AWT_misc.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWT_misc.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_misc.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_misc.o: $(ARBHOME)/INCLUDE/arb_error.h
+AWT_misc.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AWT_misc.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AWT_misc.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 AWT_misc.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -383,6 +391,7 @@ AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/arb_error.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/arb_file.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/arb_global_defs.h
+AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
@@ -428,6 +437,7 @@ AWT_TreeAwars.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_TreeAwars.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_TreeAwars.o: $(ARBHOME)/INCLUDE/arb_error.h
 AWT_TreeAwars.o: $(ARBHOME)/INCLUDE/arb_global_defs.h
+AWT_TreeAwars.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AWT_TreeAwars.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AWT_TreeAwars.o: $(ARBHOME)/INCLUDE/arb_string.h
 AWT_TreeAwars.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -459,6 +469,7 @@ AWT_www.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_www.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_www.o: $(ARBHOME)/INCLUDE/arb_defs.h
 AWT_www.o: $(ARBHOME)/INCLUDE/arb_error.h
+AWT_www.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AWT_www.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AWT_www.o: $(ARBHOME)/INCLUDE/arb_str.h
 AWT_www.o: $(ARBHOME)/INCLUDE/arb_string.h

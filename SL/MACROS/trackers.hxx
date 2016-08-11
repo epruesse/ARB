@@ -15,6 +15,9 @@
 #ifndef AW_ROOT_HXX
 #include <aw_root.hxx>
 #endif
+#ifndef ARB_STRING_H
+#include <arb_string.h>
+#endif
 #ifndef MACROS_LOCAL_HXX
 #include "macros_local.hxx"
 #endif
@@ -50,7 +53,7 @@ protected:
 
 public:
     BoundActionTracker(const char *application_id, GBDATA *gb_main)
-        : id(strdup(application_id)),
+        : id(ARB_strdup(application_id)),
           gbmain(gb_main)
     {}
     virtual ~BoundActionTracker() OVERRIDE {

@@ -52,6 +52,7 @@ DI_clusters.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/arb_assert.h
 DI_clusters.o: $(ARBHOME)/INCLUDE/arb_core.h
 DI_clusters.o: $(ARBHOME)/INCLUDE/arb_error.h
+DI_clusters.o: $(ARBHOME)/INCLUDE/arb_mem.h
 DI_clusters.o: $(ARBHOME)/INCLUDE/arb_msg.h
 DI_clusters.o: $(ARBHOME)/INCLUDE/arb_progress.h
 DI_clusters.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -93,6 +94,7 @@ DI_clustertree.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 DI_clustertree.o: $(ARBHOME)/INCLUDE/arb_assert.h
 DI_clustertree.o: $(ARBHOME)/INCLUDE/arb_core.h
 DI_clustertree.o: $(ARBHOME)/INCLUDE/arb_error.h
+DI_clustertree.o: $(ARBHOME)/INCLUDE/arb_mem.h
 DI_clustertree.o: $(ARBHOME)/INCLUDE/arb_msg.h
 DI_clustertree.o: $(ARBHOME)/INCLUDE/arb_progress.h
 DI_clustertree.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -124,6 +126,7 @@ DI_compress_matrix.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/arb_assert.h
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/arb_core.h
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/arb_error.h
+DI_compress_matrix.o: $(ARBHOME)/INCLUDE/arb_mem.h
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/arb_msg.h
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/arb_string.h
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
@@ -150,6 +153,7 @@ DI_foundclusters.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/arb_assert.h
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/arb_core.h
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/arb_error.h
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/arb_mem.h
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/arb_msg.h
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/arb_string.h
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
@@ -182,6 +186,7 @@ DI_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
 DI_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 DI_main.o: $(ARBHOME)/INCLUDE/arb_core.h
 DI_main.o: $(ARBHOME)/INCLUDE/arb_error.h
+DI_main.o: $(ARBHOME)/INCLUDE/arb_mem.h
 DI_main.o: $(ARBHOME)/INCLUDE/arb_msg.h
 DI_main.o: $(ARBHOME)/INCLUDE/arb_string.h
 DI_main.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -235,6 +240,7 @@ DI_matr.o: $(ARBHOME)/INCLUDE/arb_diff.h
 DI_matr.o: $(ARBHOME)/INCLUDE/arb_error.h
 DI_matr.o: $(ARBHOME)/INCLUDE/arb_file.h
 DI_matr.o: $(ARBHOME)/INCLUDE/arb_global_defs.h
+DI_matr.o: $(ARBHOME)/INCLUDE/arb_mem.h
 DI_matr.o: $(ARBHOME)/INCLUDE/arb_msg.h
 DI_matr.o: $(ARBHOME)/INCLUDE/arb_progress.h
 DI_matr.o: $(ARBHOME)/INCLUDE/arb_sort.h
@@ -294,6 +300,7 @@ DI_protdist.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 DI_protdist.o: $(ARBHOME)/INCLUDE/arb_assert.h
 DI_protdist.o: $(ARBHOME)/INCLUDE/arb_core.h
 DI_protdist.o: $(ARBHOME)/INCLUDE/arb_error.h
+DI_protdist.o: $(ARBHOME)/INCLUDE/arb_mem.h
 DI_protdist.o: $(ARBHOME)/INCLUDE/arb_msg.h
 DI_protdist.o: $(ARBHOME)/INCLUDE/arb_progress.h
 DI_protdist.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -326,6 +333,7 @@ DI_save_matr.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 DI_save_matr.o: $(ARBHOME)/INCLUDE/arb_assert.h
 DI_save_matr.o: $(ARBHOME)/INCLUDE/arb_core.h
 DI_save_matr.o: $(ARBHOME)/INCLUDE/arb_error.h
+DI_save_matr.o: $(ARBHOME)/INCLUDE/arb_mem.h
 DI_save_matr.o: $(ARBHOME)/INCLUDE/arb_msg.h
 DI_save_matr.o: $(ARBHOME)/INCLUDE/arb_string.h
 DI_save_matr.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
@@ -361,6 +369,7 @@ DI_view_matrix.o: $(ARBHOME)/INCLUDE/arb_algo.h
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/arb_assert.h
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/arb_core.h
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/arb_error.h
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/arb_mem.h
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/arb_msg.h
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/arb_string.h
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
@@ -409,6 +418,7 @@ distanalyse.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 distanalyse.o: $(ARBHOME)/INCLUDE/arb_assert.h
 distanalyse.o: $(ARBHOME)/INCLUDE/arb_core.h
 distanalyse.o: $(ARBHOME)/INCLUDE/arb_error.h
+distanalyse.o: $(ARBHOME)/INCLUDE/arb_mem.h
 distanalyse.o: $(ARBHOME)/INCLUDE/arb_msg.h
 distanalyse.o: $(ARBHOME)/INCLUDE/arb_string.h
 distanalyse.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx

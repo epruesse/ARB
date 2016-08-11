@@ -658,7 +658,7 @@ public:
             maxlen = (len/olen+1)*nlen;
         }
 
-        char *new_seq  = (char*)GB_calloc(maxlen+1, sizeof(*new_seq));
+        char *new_seq  = ARB_alloc<char>(maxlen+1);
         int   replaced = 0;
         int   o        = 0;
         int   n        = 0;
@@ -744,7 +744,7 @@ public:
     char *operate(const SeqPart& part, int& new_len) const OVERRIDE {
         int         len     = part.length();
         const char *seq     = part.data();
-        char       *new_seq = (char*)GB_calloc(len+1, sizeof(*new_seq));
+        char       *new_seq = ARB_alloc<char>(len+1);
 
         if (to_upper) {
             for (int i=0; i<len; i++) new_seq[i] = toupper(seq[i]);
@@ -752,7 +752,8 @@ public:
         else {
             for (int i=0; i<len; i++) new_seq[i] = tolower(seq[i]);
         }
-        
+        new_seq[len] = 0;
+
         new_len = len;
         return dont_return_unchanged(new_seq, new_len, part);
     }
@@ -799,7 +800,7 @@ public:
     char *operate(const SeqPart& part, int& new_len) const OVERRIDE {
         int         len    = part.length();
         const char *seq    = part.data();
-        char       *result = (char*)GB_calloc(len+1, sizeof(*result));
+        char       *result = ARB_alloc<char>(len+1);
 
         int o = 0;
         int n = 0;
@@ -831,8 +832,9 @@ public:
                     break;
             }
         }
+        result[len] = 0;
+        new_len     = len;
 
-        new_len = len;
         return dont_return_unchanged(result, new_len, part);
     }
 
@@ -851,7 +853,8 @@ class shift_op : public ED4_block_operator {
         }
         else {
             int len       = part.length();
-            result        = (char*)GB_calloc(len+1, sizeof(*result));
+            ARB_alloc(result, len+1);
+            result[len]   = 0;
             new_len       = len;
             result[len-1] = part.right_gap();
             memcpy(result, seq+1, len-1);
@@ -868,9 +871,10 @@ class shift_op : public ED4_block_operator {
             error = "Need a gap at block end for shifting right";
         }
         else {
-            result    = (char*)GB_calloc(len+1, sizeof(*result));
-            new_len   = len;
-            result[0] = part.left_gap();
+            ARB_alloc(result, len+1);
+            result[len] = 0;
+            new_len     = len;
+            result[0]   = part.left_gap();
             memcpy(result+1, seq, len-1);
         }
         return result;

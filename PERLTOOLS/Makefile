@@ -54,6 +54,7 @@ arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arb_core.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arb_diff.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arb_error.h
+arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arb_mem.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arb_msg.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arb_str.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arb_strbuf.h

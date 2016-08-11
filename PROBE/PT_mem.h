@@ -55,7 +55,7 @@ class MemBlock : virtual Noncopyable {
     MemBlock *next;
 public:
     MemBlock(int size, MemBlock*& prev)
-        : data((char*)malloc(size)),
+        : data(ARB_alloc<char>(size)),
           next(prev)
     {
         if (!data) GBK_terminate("out of memory");
@@ -249,8 +249,7 @@ public:
         pt_assert(size >= PTM_MIN_SIZE);
 
         if (size > PTM_MAX_SIZE) {
-            void *ptr = calloc(1, size);
-            return (char *) ptr;
+            return ARB_calloc<char>(size);
         }
 
         int   tab = MemBlockManager::size2idx(size);
@@ -307,7 +306,7 @@ public:
 struct Memory { // plain version allowing to use memory-checker
     void clear() {}
     bool is_clear() const { return true; }
-    void *get(int size) { return calloc(1, size); } // @@@ use malloc and initialize objects instead, then stop cleaning memory in Memory
+    void *get(int size) { return ARB_calloc<char>(size); } // @@@ use ARB_alloc and initialize objects instead, then stop cleaning memory in Memory
     void put(void *block, int) { free(block); }
 };
 

@@ -39,6 +39,7 @@ RegExpr.o: RegExpr.hxx
 RegExpr.o: $(ARBHOME)/INCLUDE/arb_assert.h
 RegExpr.o: $(ARBHOME)/INCLUDE/arb_core.h
 RegExpr.o: $(ARBHOME)/INCLUDE/arb_match.h
+RegExpr.o: $(ARBHOME)/INCLUDE/arb_mem.h
 RegExpr.o: $(ARBHOME)/INCLUDE/arbtools.h
 RegExpr.o: $(ARBHOME)/INCLUDE/attributes.h
 RegExpr.o: $(ARBHOME)/INCLUDE/cxxforward.h

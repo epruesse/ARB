@@ -40,6 +40,7 @@ dbserver.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 dbserver.o: $(ARBHOME)/INCLUDE/arb_assert.h
 dbserver.o: $(ARBHOME)/INCLUDE/arb_core.h
 dbserver.o: $(ARBHOME)/INCLUDE/arb_error.h
+dbserver.o: $(ARBHOME)/INCLUDE/arb_mem.h
 dbserver.o: $(ARBHOME)/INCLUDE/arb_msg.h
 dbserver.o: $(ARBHOME)/INCLUDE/arb_sleep.h
 dbserver.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -77,6 +78,7 @@ macro_gui.o: $(ARBHOME)/INCLUDE/arb_assert.h
 macro_gui.o: $(ARBHOME)/INCLUDE/arb_core.h
 macro_gui.o: $(ARBHOME)/INCLUDE/arb_error.h
 macro_gui.o: $(ARBHOME)/INCLUDE/arb_file.h
+macro_gui.o: $(ARBHOME)/INCLUDE/arb_mem.h
 macro_gui.o: $(ARBHOME)/INCLUDE/arb_msg.h
 macro_gui.o: $(ARBHOME)/INCLUDE/arb_string.h
 macro_gui.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -114,6 +116,7 @@ recmac.o: $(ARBHOME)/INCLUDE/arb_defs.h
 recmac.o: $(ARBHOME)/INCLUDE/arb_diff.h
 recmac.o: $(ARBHOME)/INCLUDE/arb_error.h
 recmac.o: $(ARBHOME)/INCLUDE/arb_file.h
+recmac.o: $(ARBHOME)/INCLUDE/arb_mem.h
 recmac.o: $(ARBHOME)/INCLUDE/arb_msg.h
 recmac.o: $(ARBHOME)/INCLUDE/arb_str.h
 recmac.o: $(ARBHOME)/INCLUDE/arb_strarray.h
@@ -155,6 +158,7 @@ trackers.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 trackers.o: $(ARBHOME)/INCLUDE/arb_assert.h
 trackers.o: $(ARBHOME)/INCLUDE/arb_core.h
 trackers.o: $(ARBHOME)/INCLUDE/arb_error.h
+trackers.o: $(ARBHOME)/INCLUDE/arb_mem.h
 trackers.o: $(ARBHOME)/INCLUDE/arb_msg.h
 trackers.o: $(ARBHOME)/INCLUDE/arb_sleep.h
 trackers.o: $(ARBHOME)/INCLUDE/arb_strarray.h

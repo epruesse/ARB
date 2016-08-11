@@ -192,7 +192,7 @@ static long transform_gbd_to_leaf(const char *key, long val, void *) {
     leaf->forget_origin(); // new leaf is not part of tree yet
 
     leaf->gb_node = gb_node;
-    leaf->name    = strdup(key);
+    leaf->name    = ARB_strdup(key);
     leaf->is_leaf = true;
 
     leaf->set_seq(troot->get_seqTemplate()->dup());

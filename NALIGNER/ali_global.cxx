@@ -121,7 +121,7 @@ void ALI_GLOBAL::init(int *argc, const char *argv[])
             kill = i;
         }
         if (strncmp("-f", argv[i], 2) == 0 && kill == 0) {
-            pt_context.use_specified_family = strdup(argv[i] + 2);
+            pt_context.use_specified_family = ARB_strdup(argv[i] + 2);
             kill = i;
         }
         if (strcmp("-ms", argv[i]) == 0 && kill == 0) {

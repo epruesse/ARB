@@ -341,29 +341,27 @@ static char *readXmlTree(char *fname) {
     int createTempFile = mkstemp(tempFile);
 
     if (createTempFile) {
-        GBS_strstruct *buf = GBS_stropen(strlen(fname));
+        GBS_strstruct buf(strlen(fname));
 
         // extract path from fname in order to place a copy of dtd file required to validate xml file
         {
-            char *tmpFname = strdup(fname);
+            char *tmpFname = ARB_strdup(fname);
             for (char *tok = strtok(tmpFname, "/"); tok;) {
                 char *tmp = tok;
                 tok = strtok(0, "/");
                 if (tok) {
-                    GBS_strcat(buf, "/");
-                    GBS_strcat(buf, tmp);
+                    buf.put('/');
+                    buf.cat(tmp);
                 }
             }
             free(tmpFname);
         }
 
-        char *path = GBS_strclose(buf);
-
         // linking arb_tree.dtd file to the Path from where xml file is loaded
 #if defined(WARN_TODO)
 #warning fix hack
 #endif
-        char *command = GBS_global_string_copy("ln -s %s/lib/dtd/arb_tree.dtd %s/.", GB_getenvARBHOME(), path);
+        char *command = GBS_global_string_copy("ln -s %s/lib/dtd/arb_tree.dtd %s/.", GB_getenvARBHOME(), buf.get_data());
         GB_xcmd(command, false, true);
 
         // execute xml2newick to convert xml format tree to newick format tree
@@ -371,10 +369,9 @@ static char *readXmlTree(char *fname) {
         GB_xcmd(command, false, true);
 
         free(command);
-        free(path);
 
         // return newick format tree file
-        return strdup(tempFile);
+        return ARB_strdup(tempFile);
     }
     else {
         printf("Failed to create Temporary File to Parse xml file!\n");

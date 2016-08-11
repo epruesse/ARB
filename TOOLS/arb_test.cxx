@@ -36,7 +36,7 @@ inline void make_valgrinded_call_from_pipe(char *&command) {
     if (valgrind.wanted) {
         char *pipeSym = strchr(command, '|');
         if (pipeSym) {
-            char *left  = GB_strpartdup(command, pipeSym-1);
+            char *left  = ARB_strpartdup(command, pipeSym-1);
             char *right = strdup(pipeSym+1);
 
             make_valgrinded_call(left);
