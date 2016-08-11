@@ -92,7 +92,7 @@ void AW_dialog::create_buttons(const char* buttons_) {
 
     // create buttons from descriptor string
     int   num_buttons = 0;
-    char *buttons     = strdup(buttons_);
+    char *buttons     = ARB_strdup(buttons_);
     char *saveptr;
     char *button      = strtok_r(buttons, ",", &saveptr);
 

@@ -158,7 +158,7 @@ AW_xfig::AW_xfig(const char *filename, int font_width, int font_height) {
         error = GBS_global_string("Can't locate '%s'", filename);
     }
     else {
-        char *expanded_filename = strdup(buffer);
+        char *expanded_filename = ARB_strdup(buffer);
         int   lineNumber        = 0;
 
         ret = fgets(buffer, MAX_XFIG_LENGTH, file); ++lineNumber;
@@ -425,7 +425,7 @@ AW_xfig::AW_xfig(const char *filename, int font_width, int font_height) {
                                 if (x<minx) minx = x;
                                 if (y<miny) miny = y;
 
-                                xtext->text = strdup(p);
+                                xtext->text = ARB_strdup(p);
                                 xtext->fontsize = fontsize;
                                 xtext->color = color;
                                 xtext->center = align;

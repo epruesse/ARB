@@ -76,7 +76,9 @@ AW_action.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_action.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_action.o: $(ARBHOME)/INCLUDE/arb_defs.h
 AW_action.o: $(ARBHOME)/INCLUDE/arb_error.h
+AW_action.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AW_action.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AW_action.o: $(ARBHOME)/INCLUDE/arb_string.h
 AW_action.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AW_action.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_action.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -808,6 +810,8 @@ AW_element.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_element.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_element.o: $(ARBHOME)/INCLUDE/arb_defs.h
 AW_element.o: $(ARBHOME)/INCLUDE/arb_error.h
+AW_element.o: $(ARBHOME)/INCLUDE/arb_mem.h
+AW_element.o: $(ARBHOME)/INCLUDE/arb_string.h
 AW_element.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AW_element.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_element.o: $(ARBHOME)/INCLUDE/attributes.h

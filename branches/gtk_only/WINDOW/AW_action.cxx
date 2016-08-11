@@ -6,6 +6,7 @@
 #include "aw_msg.hxx"
 
 #include <arb_msg.h>
+#include <arb_string.h>
 
 #include "gtk/gtk.h"
 
@@ -184,7 +185,7 @@ void AW_action::unbind(GtkWidget* widget, const char *sig) {
 
 AW_action_g_signal_binding::AW_action_g_signal_binding(GtkWidget *w, const char* s) 
     : object(G_OBJECT(w)),
-      sig_name(strdup(s)),
+      sig_name(ARB_strdup(s)),
       handler_id(0),
       action(NULL)
 {
@@ -192,7 +193,7 @@ AW_action_g_signal_binding::AW_action_g_signal_binding(GtkWidget *w, const char*
 
 AW_action_g_signal_binding::AW_action_g_signal_binding(const AW_action_g_signal_binding& o) 
     : object(o.object),
-      sig_name(strdup(o.sig_name)),
+      sig_name(ARB_strdup(o.sig_name)),
       handler_id(0),
       action(NULL)
 {
@@ -203,7 +204,7 @@ AW_action_g_signal_binding::operator=(const AW_action_g_signal_binding& o) {
     disconnect();
     object = o.object;
     free((void*)sig_name);
-    sig_name = strdup(o.sig_name);
+    sig_name = ARB_strdup(o.sig_name);
     if (o.action && o.handler_id) {
         connect(o.action);
     }

@@ -141,7 +141,7 @@ void AW_window::create_toggle_field(const char *var_name, int orientation /*= 0*
         prvt->toggle_field = gtk_hbox_new(true, 2);
     }
 
-    prvt->toggle_field_awar_name = strdup(var_name);
+    prvt->toggle_field_awar_name = ARB_strdup(var_name);
 }
 
 

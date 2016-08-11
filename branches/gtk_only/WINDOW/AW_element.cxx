@@ -1,9 +1,11 @@
 #include "aw_element.hxx"
 #include "aw_window.hxx"
+#include <arb_string.h>
+
 /**
  * Constructs an empty, unnamed action.
  */
-AW_element::AW_element() 
+AW_element::AW_element()
     : id(NULL),
       label(NULL),
       icon(NULL),
@@ -110,7 +112,7 @@ void AW_element::set_id(const char* _id) {
         id = NULL;
     }
     if (_id) {
-        id = strdup(_id);
+        id = ARB_strdup(_id);
     }
 }
 
@@ -131,7 +133,7 @@ void AW_element::set_label(const char* _label) {
         label = NULL;
     }
     if (_label) {
-        label = strdup(_label);
+        label = ARB_strdup(_label);
     }
 }
 
@@ -152,7 +154,7 @@ void AW_element::set_icon(const char* _icon) {
         icon = NULL;
     }
     if (_icon) {
-        icon = strdup(_icon);
+        icon = ARB_strdup(_icon);
     }
 }
 
@@ -173,7 +175,7 @@ void AW_element::set_tooltip(const char* _tooltip) {
         tooltip = NULL;
     } 
     if (_tooltip) {
-        tooltip = strdup(_tooltip);
+        tooltip = ARB_strdup(_tooltip);
     }
 }
 
@@ -194,7 +196,7 @@ void AW_element::set_help(const char* _help_entry) {
         help_entry = NULL;
     }
     if (_help_entry) {
-        help_entry = strdup(_help_entry);
+        help_entry = ARB_strdup(_help_entry);
     }
 }
 

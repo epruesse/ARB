@@ -68,7 +68,7 @@ void AW_device::pop_clip_scale() {
     }
 
 #if defined(SHOW_CLIP_STACK_CHANGES)
-    char *state_before_pop = strdup(clipstatestr(this));
+    char *state_before_pop = ARB_strdup(clipstatestr(this));
 #endif // SHOW_CLIP_STACK_CHANGES
 
     AW_zoomable::reset();

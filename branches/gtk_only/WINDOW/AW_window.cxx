@@ -240,8 +240,7 @@ char* aw_convert_mnemonic(const char* text, const char* mnemonic) {
             )
         + underscores;              // "_" -> "__"
 
-    char *rval = (char*)malloc(allocsize);
-    aw_return_val_if_fail(rval, NULL);
+    char *rval = ARB_alloc<char>(allocsize);
     aw_return_val_if_fail(pos <= textlen, rval); // paranoia check
 
 #if defined(DEVEL_RALF)
@@ -872,7 +871,7 @@ class MnemonicScope : virtual Noncopyable {
     void requestPossibilities(const char *topic_name) {
         // will be shown delayed (when menu closes)
         if (requested.index_of(topic_name) == -1) { // avoid duplicates
-            requested.put(strdup(topic_name));
+            requested.put(ARB_strdup(topic_name));
         }
     }
 
@@ -938,7 +937,7 @@ void MnemonicScope::add(const char *topic_name, const char *mnemonic) {
             requestPossibilities(topic_name);
         }
         else {
-            char *TOPIC_NAME = ARB_strupper(strdup(topic_name));
+            char *TOPIC_NAME = ARB_strupper(ARB_strdup(topic_name));
             char  HOTKEY     = toupper(mnemonic[0]); // store hotkeys case-less (case does not matter when pressing the hotkey)
 
             if (strchr(TOPIC_NAME, HOTKEY)) {  // occurs in menu text

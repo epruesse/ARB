@@ -443,8 +443,8 @@ void AW_selection_list::init_from_array(const CharPtrArray& entries, const char 
     aw_assert(default_value);
 
     // use copies (just in case default_* points to a value free'd by clear())
-    char *defaultDispCopy  = strdup(default_displayed);
-    char *defaultValueCopy = strdup(default_value);
+    char *defaultDispCopy  = ARB_strdup(default_displayed);
+    char *defaultValueCopy = ARB_strdup(default_value);
 
     bool defInserted = false;
 
@@ -537,8 +537,8 @@ void AW_selection_list::move_content_to(AW_selection_list *target_list) {
     //! move all entries (despite default entry) to another AW_selection_list
 
     if (default_select) {
-        char *defDisp = strdup(default_select->get_displayed());
-        char *defVal  = strdup(default_select->value.get_string());
+        char *defDisp = ARB_strdup(default_select->get_displayed());
+        char *defVal  = ARB_strdup(default_select->value.get_string());
 
         delete_default();
         move_content_to(target_list);
@@ -664,7 +664,7 @@ void AW_selection_list::to_array(StrArray& array, bool values) {
     array.reserve(size());
 
     for (AW_selection_list_entry *lt = list_table; lt; lt = lt->next) {
-        array.put(strdup(values ? lt->value.get_string() : lt->get_displayed()));
+        array.put(ARB_strdup(values ? lt->value.get_string() : lt->get_displayed()));
     }
     aw_assert(array.size() == size());
 }
