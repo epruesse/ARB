@@ -433,7 +433,7 @@ void EDB_root_bact::save_current_config(char *confname) { // and save it in data
 
     int                 counter        = 0;
     ED4_device_manager *device_manager = ED4_ROOT->get_device_manager();
-    ED4_members        *children       = device_manager->children;
+    ED4_container      *children       = device_manager->children;
 
     for (int i=0; i<children->members(); i++) {
         ED4_base *area = children->member(i);

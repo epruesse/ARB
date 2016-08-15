@@ -130,7 +130,6 @@ class ED4_group_manager;
 class ED4_line_terminal;
 class ED4_main_manager;
 class ED4_manager;
-class ED4_members;
 class ED4_multi_name_manager;
 class ED4_multi_sequence_manager;
 class ED4_multi_species_manager;
@@ -782,10 +781,10 @@ public:
     ~ED4_window();
 };
 
-class ED4_members : virtual Noncopyable {
-    // contains children related functions from members of a manager
+class ED4_container : virtual Noncopyable {
+    // contains children of a manager
 
-    ED4_manager  *my_owner;     // who is controlling this object
+    ED4_manager  *my_owner;     // who is controlling this object // @@@ needed why?
     ED4_base    **memberList;
     ED4_index     no_of_members; // How much members are in the list
     ED4_index     size_of_list;
@@ -818,8 +817,8 @@ public:
     int members_ok() const;
 #endif // ASSERTION_USED
 
-    ED4_members(ED4_manager *the_owner);
-    ~ED4_members();
+    ED4_container(ED4_manager *the_owner);
+    ~ED4_container();
 };
 
 // ----------------------------
@@ -1165,7 +1164,7 @@ DECLARE_CBTYPE_FVV_AND_BUILDERS(ED4_basePredicate, bool, ED4_base*); // generate
 class ED4_manager : public ED4_base { // derived from a Noncopyable
     ED4_cb_list<ED4_manager, ED4_managerCallback> delete_cbs;
 public:
-    ED4_members *children;
+    ED4_container *children;
 
     E4B_AVOID_UNNEEDED_CASTS(manager);
     DECLARE_DUMP_FOR_BASECLASS(ED4_manager, ED4_base);

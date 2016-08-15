@@ -1277,7 +1277,7 @@ ED4_base* ED4_manager::search_ID(const char *temp_id) {
 ED4_manager::ED4_manager(const ED4_objspec& spec_, const char *temp_id, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
     ED4_base(spec_, temp_id, width, height, temp_parent)
 {
-    children = new ED4_members(this);
+    children = new ED4_container(this);
 }
 
 ED4_manager::~ED4_manager() {

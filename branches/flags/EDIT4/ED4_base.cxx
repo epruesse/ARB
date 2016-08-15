@@ -319,7 +319,7 @@ void ED4_build_group_manager_end(ED4_multi_species_manager *multi_species_manage
 void ED4_base::generate_configuration_string(GBS_strstruct& buffer) {
     const char SEPARATOR = '\1';
     if (is_manager()) {
-        ED4_members *childs = to_manager()->children;
+        ED4_container *childs = to_manager()->children;
         if (childs) {
             if (is_group_manager()) {
                 buffer.put(SEPARATOR);
@@ -911,8 +911,8 @@ void ED4_bracket_terminal::fold() {
 
         int consensus_shown = 0;
         if (!(multi_species_manager->children->member(1)->is_consensus_manager())) { // if consensus is not a top = > move to top
-            ED4_members *multi_children    = multi_species_manager->children;
-            ED4_manager *consensus_manager = NULL;
+            ED4_container *multi_children    = multi_species_manager->children;
+            ED4_manager   *consensus_manager = NULL;
 
             int i;
             for (i=0; i<multi_children->members(); i++) { // search for consensus

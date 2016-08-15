@@ -1,6 +1,6 @@
 // =============================================================== //
 //                                                                 //
-//   File      : ED4_members.cxx                                   //
+//   File      : ED4_container.cxx                                 //
 //   Purpose   :                                                   //
 //                                                                 //
 //   Institute of Microbiology (Technical University Munich)       //
@@ -13,7 +13,7 @@
 #include <aw_msg.hxx>
 #include <aw_question.hxx>
 
-ED4_returncode ED4_members::search_target_species(ED4_extension *location,   ED4_properties prop,  ED4_base **found_member, ED4_level return_level)
+ED4_returncode ED4_container::search_target_species(ED4_extension *location, ED4_properties prop, ED4_base **found_member, ED4_level return_level)
 {
     // who's extension falls within the given
     // location thereby considering orientation given by
@@ -153,7 +153,7 @@ ED4_returncode ED4_members::search_target_species(ED4_extension *location,   ED4
     return ED4_R_OK;
 }
 
-void ED4_members::insert_member(ED4_base *new_member) {
+void ED4_container::insert_member(ED4_base *new_member) {
     // inserts a new member into current owners's member array and
     // asks to adjust owner's bounding box
 
@@ -186,7 +186,7 @@ void ED4_members::insert_member(ED4_base *new_member) {
     owner()->request_resize(); // tell owner about resize
 }
 
-void ED4_members::append_member(ED4_base *new_member) {
+void ED4_container::append_member(ED4_base *new_member) {
     ED4_index index = no_of_members;
 
     e4_assert(owner()->spec.allowed_to_contain(new_member->spec.level));
@@ -218,7 +218,7 @@ void ED4_members::append_member(ED4_base *new_member) {
     owner()->request_resize();
 }
 
-ED4_returncode ED4_members::remove_member(ED4_base *member_to_del) {
+ED4_returncode ED4_container::remove_member(ED4_base *member_to_del) {
     if (!member_to_del || (no_of_members <= 0)) {
         return ED4_R_IMPOSSIBLE;
     }
@@ -236,7 +236,7 @@ ED4_returncode ED4_members::remove_member(ED4_base *member_to_del) {
     return ED4_R_OK;
 }
 
-void ED4_members::shift_list(ED4_index start_index, int length) {
+void ED4_container::shift_list(ED4_index start_index, int length) {
     // shifts member_list of current object by |length| positions starting with start_index,
     // if length is positive shift is to the right, allocating new memory if necessary
     // if length is negative shift is to the left (up to position 0) without freeing memory
@@ -267,7 +267,7 @@ void ED4_members::shift_list(ED4_index start_index, int length) {
 }
 
 
-ED4_returncode ED4_members::move_member(ED4_index old_pos, ED4_index new_pos) {
+ED4_returncode ED4_container::move_member(ED4_index old_pos, ED4_index new_pos) {
     if (old_pos>=0 && old_pos<no_of_members && new_pos>=0 && new_pos<no_of_members) {
         if (new_pos!=old_pos) {
             ED4_base *moved_member = memberList[old_pos];
@@ -286,7 +286,7 @@ ED4_returncode ED4_members::move_member(ED4_index old_pos, ED4_index new_pos) {
     return ED4_R_IMPOSSIBLE;
 }
 
-ED4_index ED4_members::search_member(ED4_extension *location, ED4_properties prop)
+ED4_index ED4_container::search_member(ED4_extension *location, ED4_properties prop)
 // searches member_list of current object for a member who's extension falls within the given location
 // thereby considering orientation given by prop (only pos[] is relevant)
 // list has to be ordered in either x- or y- direction, ( binary search algorithm later )
@@ -323,7 +323,7 @@ ED4_index ED4_members::search_member(ED4_extension *location, ED4_properties pro
 }
 
 #ifdef ASSERTION_USED
-int ED4_members::members_ok() const {
+int ED4_container::members_ok() const {
     int m;
     int error = 0;
 
@@ -340,7 +340,7 @@ int ED4_members::members_ok() const {
 }
 #endif // ASSERTION_USED
 
-ED4_members::ED4_members(ED4_manager *the_owner) {
+ED4_container::ED4_container(ED4_manager *the_owner) {
     my_owner      = the_owner;
     ARB_calloc(memberList, 1);
     // memberList[0] = NULL;
@@ -349,7 +349,7 @@ ED4_members::ED4_members(ED4_manager *the_owner) {
 }
 
 
-ED4_members::~ED4_members() {
+ED4_container::~ED4_container() {
     free(memberList);
 }
 

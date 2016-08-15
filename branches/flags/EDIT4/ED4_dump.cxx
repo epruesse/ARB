@@ -131,10 +131,10 @@ void ED4_base::dump_base(size_t indent) const {
 }
 
 // =========================================================================================
-// ED4_members
+// ED4_container
 
-void ED4_members::dump(size_t indent) const {
-    openDump(indent, "ED4_members", (void*)this);
+void ED4_container::dump(size_t indent) const {
+    openDump(indent, "ED4_container", (void*)this);
     for (ED4_index i=0; i<members(); i++) {
         member(i)->dump(NEXT_INDENT);
     }
