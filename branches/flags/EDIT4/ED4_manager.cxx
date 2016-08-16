@@ -668,26 +668,22 @@ ED4_returncode  ED4_manager::move_requested_by_child(ED4_move_info *mi) {
 
 ED4_returncode  ED4_manager::event_sent_by_parent(AW_event *event, AW_window *aww) {
     // handles an input event coming from parent
-    ED4_extension  ext;
-    ED4_index      temp_index;
-    ED4_returncode returncode;
-
-    if (flag.hidden)
+    if (flag.hidden) {
         return ED4_R_BREAK;
+    }
 
+    ED4_extension ext;
     ext.position[X_POS] = event->x;
     ext.position[Y_POS] = event->y;
 
     calc_rel_coords(&ext.position[X_POS], &ext.position[Y_POS]);
 
-    temp_index = search_member(&ext, spec.static_prop); // search child who is competent for the location of given event
-
-    if ((temp_index >= members()) || (temp_index < 0)) {
-        return (ED4_R_IMPOSSIBLE); // no suitable member found
+    ED4_index temp_index = search_member(&ext, spec.static_prop); // search child who is competent for the location of given event
+    if (!existing_index(temp_index)) {
+        return ED4_R_IMPOSSIBLE; // no suitable member found
     }
 
-    returncode = member(temp_index)->event_sent_by_parent(event, aww);
-    return (returncode);
+    return member(temp_index)->event_sent_by_parent(event, aww);
 }
 
 ED4_returncode  ED4_manager::refresh_requested_by_child() {
@@ -749,12 +745,10 @@ bool ED4_manager::calc_bounding_box() {
     AW_pos     max_x      = 0;
     AW_pos     max_y      = 0;
     AW_pos     dummy      = 0;
-    ED4_index  i          = 0;
     bool       bb_changed = false;
-    ED4_base  *child;
 
-    // initialize with first child
-    while ((child = member(i++)) != NULL) { // check all children
+    for (ED4_index i = 0; existing_index(i); ++i) { // check all children
+        ED4_base *child = member(i);
         if (!child->flag.hidden) {
             sum_width  += child->extension.size[WIDTH];
             sum_height += child->extension.size[HEIGHT];
@@ -804,14 +798,12 @@ ED4_returncode ED4_manager::distribute_children() {
     // distributes all children of current object according to current object's properties and
     // justification value; a recalculation of current object's extension will take place if necessary
 
-    ED4_index  current_index;
-    ED4_index  rel_pos        = 0;
-    ED4_index  rel_size       = 0;
-    ED4_index  other_pos      = 0;
-    ED4_index  other_size     = 0;
-    AW_pos     max_rel_size   = 0;
-    AW_pos     max_other_size = 0;
-    ED4_base  *current_child;
+    ED4_index rel_pos        = 0;
+    ED4_index rel_size       = 0;
+    ED4_index other_pos      = 0;
+    ED4_index other_size     = 0;
+    AW_pos    max_rel_size   = 0;
+    AW_pos    max_other_size = 0;
 
     // set extension-indexes rel_pos and rel_size according to properties
     if (spec.static_prop & ED4_P_HORIZONTAL) {
@@ -827,22 +819,22 @@ ED4_returncode ED4_manager::distribute_children() {
         other_size = WIDTH;
     }
 
-    current_index = 0;  // get maximal relevant and other size of children, set children's other position increasingly
-    while ((current_child = member(current_index)) != NULL) {
-        max_rel_size = std::max(int(max_rel_size), int(current_child->extension.size[rel_size]));
-        if (current_child->extension.position[other_pos] != max_other_size) {
-            current_child->extension.position[other_pos] = max_other_size;
+    // get maximal relevant and other size of children, set children's other position increasingly
+    for (ED4_index i = 0; existing_index(i); ++i) {
+        ED4_base *child = member(i); // @@@ rename -> child
+
+        max_rel_size = std::max(int(max_rel_size), int(child->extension.size[rel_size]));
+        if (child->extension.position[other_pos] != max_other_size) {
+            child->extension.position[other_pos] = max_other_size;
             ED4_base::touch_world_cache();
         }
-        max_other_size += current_child->extension.size[other_size];
-        current_index++;
+        max_other_size += child->extension.size[other_size];
     }
 
     // set children's relevant position according to justification value
     // (0.0 means top- or left-justified, 1.0 means bottom- or right-justified)
-    current_index = 0;
-    while ((current_child = member(current_index++)) != NULL) {
-        current_child->extension.position[rel_pos] = 0.0;
+    for (ED4_index i = 0; existing_index(i); ++i) {
+        member(i)->extension.position[rel_pos] = 0.0;
         ED4_base::touch_world_cache();
     }
 
@@ -854,11 +846,8 @@ void ED4_manager::resize_requested_children() {
     if (update_info.resize) { // object wants to resize
         update_info.set_resize(0); // first clear the resize flag (remember it could be set again from somewhere below the hierarchy)
 
-        ED4_index i = 0;
-        while (1) {
-            ED4_base *child = member(i++);
-
-            if (!child) break;
+        for (ED4_index i = 0; existing_index(i); ++i) {
+            ED4_base *child = member(i);
 
             child->update_info.set_resize(1);
             child->resize_requested_children();
@@ -1081,13 +1070,11 @@ ED4_returncode ED4_manager::Show(int refresh_all, int is_cleared) {
             }
         }
 
-    no_visible_child_found :
+      no_visible_child_found :
 
-        ED4_index i = 0;
-
-        while (1) {
-            ED4_base *child = member(i++);
-            if (!child) break;
+        for (ED4_index i = 0; existing_index(i); ++i) {
+            ED4_base *child = member(i);
+            e4_assert(child);
 
             if (!child->flag.hidden && (refresh_all || child->update_info.refresh) && i>=first_visible_child) {
                 AW_pos x, y;
@@ -1245,10 +1232,8 @@ void ED4_manager::request_refresh(int clear) {
 
     if (parent) parent->refresh_requested_by_child();
 
-    ED4_index  current_index = 0;
-    ED4_base  *current_child;
-    while ((current_child = member(current_index++)) != NULL) {
-        current_child->request_refresh(0); // do not trigger clear for childs
+    for (ED4_index i = 0; existing_index(i); ++i) {
+        member(i)->request_refresh(0); // do not trigger clear for childs
     }
 }
 
@@ -1256,12 +1241,10 @@ void ED4_manager::request_refresh(int clear) {
 ED4_base* ED4_manager::search_ID(const char *temp_id) {
     if (strcmp(temp_id, id) == 0) return this; // this object is the sought one
 
-    ED4_index  current_index = 0;
-    ED4_base  *current_child;
-    while ((current_child = member(current_index))) { // search whole memberlist recursively for object with the given id
-        ED4_base *object = current_child->search_ID(temp_id);
+    // search whole memberlist recursively for object with the given id
+    for (ED4_index i = 0; existing_index(i); ++i) {
+        ED4_base *object = member(i)->search_ID(temp_id);
         if (object) return object;
-        current_index++;
     }
 
     return NULL; // no object found
@@ -1274,16 +1257,14 @@ ED4_manager::ED4_manager(const ED4_objspec& spec_, const char *temp_id, AW_pos w
 {}
 
 ED4_manager::~ED4_manager() {
-    ED4_base *current_child;
-
-    while (members() > 0) {
-        current_child = member(0);
-        remove_member(current_child);
-        current_child->parent = NULL;
+    while (members() > 0) { // @@@ weird! simplify!!
+        ED4_base *child = member(0);
+        remove_member(child);
+        child->parent = NULL;
 
         // @@@ use virtual delete below?
-        if (current_child->is_terminal())       delete current_child->to_terminal();
-        else if (current_child->is_manager())   delete current_child->to_manager();
+        if (child->is_terminal())       delete child->to_terminal();
+        else if (child->is_manager())   delete child->to_manager();
     }
 }
 

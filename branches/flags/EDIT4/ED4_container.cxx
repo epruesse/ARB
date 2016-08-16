@@ -21,21 +21,13 @@ ED4_returncode ED4_container::search_target_species(ED4_extension *location, ED4
     // ordered in either x- or y- direction, ( binary
     // search algorithm later ) returns index of found member,
     // -1 if list is empty or no_of_members if search reached end of list
-    ED4_index   current_index = 0,
-        old_index,
-        rel_pos,                                                                // relative position, i.e. on screen, to check
-        rel_size;
-    AW_pos              abs_pos_x = 0,
-        abs_pos_y = 0,
-        abs_pos;                                                                // relative size of object, to check
-    ED4_base    *current_member;
 
 
-    current_member = member(0); // search list
-    if (! current_member) { // there's no list
-        return (ED4_R_IMPOSSIBLE);
+    if (!members()) { // there's no list
+        return ED4_R_IMPOSSIBLE;
     }
 
+    ED4_base *current_member = member(0);
     // case for the device_manager:
     if (current_member->is_area_manager()) {
         current_member->to_area_manager()
@@ -47,25 +39,33 @@ ED4_returncode ED4_container::search_target_species(ED4_extension *location, ED4
         }
     }
 
-    current_member->parent->calc_world_coords(& abs_pos_x, & abs_pos_y);
+    ED4_index rel_pos; // relative position, i.e. on screen, to check
+    ED4_index rel_size;
+    AW_pos    abs_pos; // relative size of object, to check
 
-    if (prop & ED4_P_HORIZONTAL)                                                                // set extension-indexes rel_pos and rel_size according to properties
     {
-        rel_pos = Y_POS;
-        rel_size = HEIGHT;
-        abs_pos = abs_pos_y;
-    }
-    else                                                                                        // i.e. prop & ED4_P_VERTICAL
-    {
-        rel_pos = X_POS;
-        rel_size = WIDTH;
-        abs_pos = abs_pos_x;
+        AW_pos abs_pos_x = 0;
+        AW_pos abs_pos_y = 0;
+        current_member->parent->calc_world_coords(&abs_pos_x, &abs_pos_y);
+
+        // set extension-indexes rel_pos, rel_size and abs_pos according to properties:
+        if (prop & ED4_P_HORIZONTAL) {
+            rel_pos = Y_POS;
+            rel_size = HEIGHT;
+            abs_pos = abs_pos_y;
+        }
+        else { // i.e. prop & ED4_P_VERTICAL
+            rel_pos = X_POS;
+            rel_size = WIDTH;
+            abs_pos = abs_pos_x;
+        }
     }
 
+    ED4_index current_index = 0;
 
-    while (current_member &&
-             (location->position[rel_pos] >= (current_member->extension.position[rel_pos] + abs_pos)) &&        // just as long as possibility exists, to find the object
-             (location->position[rel_pos] >= abs_pos && location->position[rel_pos] <= current_member->parent->extension.size[rel_size] + abs_pos))
+    while (current_member                                                                           &&
+           (location->position[rel_pos] >= (current_member->extension.position[rel_pos] + abs_pos)) && // just as long as possibility exists, to find the object
+           (location->position[rel_pos] >= abs_pos && location->position[rel_pos] <= current_member->parent->extension.size[rel_size] + abs_pos))
     {
         e4_assert(!current_member->is_root_group_manager());
         if (current_member->is_group_manager() &&
@@ -75,21 +75,21 @@ ED4_returncode ED4_container::search_target_species(ED4_extension *location, ED4
         }
         else if (!(current_member->flag.hidden)   &&
                   (location->position[rel_pos] <= (current_member->extension.position[rel_pos] +
-                                                   abs_pos + current_member->extension.size[rel_size])))                        // found a suitable member
+                                                   abs_pos + current_member->extension.size[rel_size]))) // found a suitable member
         {
             if (return_level & ED4_L_MULTI_SPECIES) { // search for drag target
                 if (current_member->is_multi_species_manager()) {
-                    *found_member = current_member;                                     // we have to give back the multi_species_manager for
-                    // insertion
+                    *found_member = current_member; // we have to return the multi_species_manager for insertion
                     current_member->to_multi_species_manager()->search_target_species(location, prop, found_member, return_level);
                 }
-                else if ((current_member->is_spacer_terminal()) && (current_index + 1 == no_of_members)) { // if we have found the last spacer
-                    *found_member = current_member->get_parent(ED4_L_MULTI_SPECIES);                            // in a group we can move the
+                else if ((current_member->is_spacer_terminal()) && (current_index + 1 == no_of_members)) { // if we have found the last spacer in a group
+                    // -> we can move the object behind the group
+                    *found_member = current_member->get_parent(ED4_L_MULTI_SPECIES);
                     if ((*found_member) && !((*found_member)->parent->is_area_manager())) {
                         *found_member = (*found_member)->parent->get_parent(ED4_L_MULTI_SPECIES);
                     }
                 }
-                else if (!(current_member->is_terminal()) || (current_member->is_spacer_terminal())) { // object behind the group
+                else if (!(current_member->is_terminal()) || (current_member->is_spacer_terminal())) {
                     *found_member = current_member->get_parent(ED4_L_MULTI_SPECIES);
                 }
 
@@ -113,14 +113,14 @@ ED4_returncode ED4_container::search_target_species(ED4_extension *location, ED4
 
         }
 
-        current_index++;                                                                // no hit => search on
-        current_member = member(current_index);
+        current_index++; // no hit => continue search
+        current_member = existing_index(current_index) ? member(current_index) : NULL;
 
         if (current_member) { // handle folding groups
-            old_index = current_index;
+            ED4_index old_index = current_index;
             while (current_member && current_member->flag.hidden && current_index!=no_of_members) {
-                current_index ++;
-                current_member = member(current_index);
+                current_index++;
+                current_member = existing_index(current_index) ? member(current_index) : NULL;
             }
 
             if (current_index != old_index) {
@@ -157,11 +157,25 @@ void ED4_container::correct_insert_position(ED4_index& index) {
     // ensure to insert before group_end_spacer
 
     if (index>1                               && // avoid underflow
-        member(index-1)                       &&
+        existing_index(index-1)               &&
         member(index-1)->is_spacer_terminal() &&
         !owner()->is_device_manager())           // only in group_manager
     {
         index--;
+    }
+}
+
+void ED4_container::resize(ED4_index needed_size) {
+    if (needed_size>size_of_list) {
+        e4_assert(needed_size>0);
+#if defined(DEVEL_RALF)
+        ED4_index new_size = needed_size; // @@@ deactivate when running stable for some time!
+#else // !DEVEL_RALF
+        ED4_index new_size = (needed_size*3)/2+2; // @@@ test with new_size == needed_size!
+#endif
+
+        ARB_recalloc(memberList, size_of_list, new_size);
+        size_of_list = new_size;
     }
 }
 
@@ -195,11 +209,8 @@ void ED4_container::append_member(ED4_base *new_member) {
 
     e4_assert(owner()->spec.allowed_to_contain(new_member->spec.level));
 
-    if (index>=size_of_list) { // ensure free element
-        ED4_index new_size_of_list = (size_of_list*3)/2; // resize to 1.5*size_of_list
-
-        ARB_recalloc(memberList, size_of_list, new_size_of_list);
-        size_of_list = new_size_of_list;
+    if (index>=size_of_list) {
+        resize(size_of_list+1); // @@@ skip?
     }
 
     correct_insert_position(index); // insert before end-spacer
@@ -220,8 +231,9 @@ ED4_returncode ED4_container::remove_member(ED4_base *member_to_del) {
     }
 
     ED4_index index = member_to_del->index;
+    e4_assert(member_to_del->parent == this);
 
-    shift_list(index + 1, -1); // shift member list to left, starting at index+1
+    shift_list(index+1, -1); // shift member list to left, starting at index+1
 
     member_to_del->parent = 0; // avoid referencing wrong parent
     no_of_members--;
@@ -243,26 +255,35 @@ void ED4_container::shift_list(ED4_index start_index, int length) {
         long needed_size = no_of_members + length;
 
         e4_assert(start_index<needed_size);
+        resize(needed_size);
 
-        if (needed_size >= size_of_list) {   // member_list is full => allocate more memory
-            unsigned int new_alloc_size = (unsigned int) ((size_of_list + length) * 1.3); // calculate new size of member_list
+        for (ED4_index n = needed_size-1; n > start_index; n--) { // start shifting to the right
+            ED4_index o = n-length;
 
-            ARB_recalloc(memberList, size_of_list, new_alloc_size);
-            size_of_list = new_alloc_size;
-        }
+            e4_assert(valid_index(n));
+            e4_assert(valid_index(o));
 
-        for (ED4_index i = needed_size; i > start_index; i--) { // start shifting to the right
-            memberList[i] = memberList[i - length];
-            if (memberList[i] != NULL) (memberList[i])->index = i;
+            memberList[n] = memberList[o];
+            if (memberList[n]) {
+                memberList[n]->index = n;
+            }
+            memberList[o] = NULL;
         }
     }
     else if (length<0) { // shift list to the left, thereby not freeing any memory !
         e4_assert((start_index + length) >= 0); // invalid shift!
-        e4_assert(start_index<size_of_list);
 
-        for (ED4_index i = (start_index + length); i <= (no_of_members + length); i++) { // start shifting left
-            memberList[i] = memberList[i - length]; // length is negative
-            if (memberList[i] != NULL) (memberList[i])->index = i;
+        for (ED4_index n = start_index + length; n < (no_of_members + length); n++) { // start shifting left
+            ED4_index o = n-length; // Note: length is negative!
+
+            e4_assert(valid_index(n));
+            e4_assert(valid_index(o));
+
+            memberList[n] = memberList[o];
+            if (memberList[n]) {
+                memberList[n]->index = n;
+            }
+            memberList[o] = NULL;
         }
     }
 }

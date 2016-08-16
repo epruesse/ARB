@@ -787,9 +787,15 @@ class ED4_container : virtual Noncopyable {
     ED4_manager  *my_owner;     // who is controlling this object // @@@ elim
     ED4_base    **memberList;
     ED4_index     no_of_members; // How much members are in the list
-    ED4_index     size_of_list;
+    ED4_index     size_of_list;  // allocated size
 
     void correct_insert_position(ED4_index& index);
+    void resize(ED4_index needed_size);
+
+protected:
+
+    bool valid_index(ED4_index idx) const { return idx >= 0 && idx<size_of_list; }
+    bool existing_index(ED4_index idx) const { return idx >= 0 && idx<no_of_members; }
 
 public:
 
