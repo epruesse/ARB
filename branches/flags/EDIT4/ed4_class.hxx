@@ -801,7 +801,10 @@ public:
 
     ED4_manager* owner() const { return my_owner; }
     ED4_base* member(ED4_index i) const { e4_assert(i>=0 && i<size_of_list); return memberList[i]; }
+
     ED4_index members() const { return no_of_members; }
+    bool empty() const { return !members(); }
+    void clear();
 
     void insert_member(ED4_base *new_member); // only used to move members with mouse
     void append_member(ED4_base *new_member);
@@ -1259,7 +1262,7 @@ public:
     }
 
     ED4_manager(const ED4_objspec& spec_, const char *id, AW_pos width, AW_pos height, ED4_manager *parent);
-    virtual ~ED4_manager() OVERRIDE {}
+    virtual ~ED4_manager() OVERRIDE;
 };
 
 struct ED4_terminal : public ED4_base { // derived from a Noncopyable

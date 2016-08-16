@@ -1256,6 +1256,10 @@ ED4_manager::ED4_manager(const ED4_objspec& spec_, const char *temp_id, AW_pos w
     ED4_container(this)
 {}
 
+ED4_manager::~ED4_manager() {
+    ED4_container::clear();
+}
+
 // --------------------------
 //      ED4_main_manager
 
