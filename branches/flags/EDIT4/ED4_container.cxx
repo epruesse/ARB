@@ -125,9 +125,9 @@ ED4_returncode ED4_container::search_target_species(ED4_extension *location, ED4
 
             if (current_index != old_index) {
                 if (current_member &&
-                         !((location->position[rel_pos] >= (current_member->extension.position[rel_pos] + abs_pos)) &&
-                           (location->position[rel_pos] >= abs_pos && location->position[rel_pos] <= current_member->parent->extension.size[rel_size] + abs_pos)) &&
-                         (current_member->is_spacer_terminal()) && (current_index + 1 == no_of_members))
+                    !((location->position[rel_pos] >= (current_member->extension.position[rel_pos] + abs_pos)) &&
+                      (location->position[rel_pos] >= abs_pos && location->position[rel_pos] <= current_member->parent->extension.size[rel_size] + abs_pos)) &&
+                    (current_member->is_spacer_terminal()) && (current_index + 1 == no_of_members))
                 {
                     if (return_level & ED4_L_MULTI_SPECIES)
                         *found_member = current_member->get_parent(ED4_L_MULTI_SPECIES)->parent->get_parent(ED4_L_MULTI_SPECIES);
@@ -153,6 +153,18 @@ ED4_returncode ED4_container::search_target_species(ED4_extension *location, ED4
     return ED4_R_OK;
 }
 
+void ED4_container::correct_insert_position(ED4_index& index) {
+    // ensure to insert before group_end_spacer
+
+    if (index>1                               && // avoid underflow
+        member(index-1)                       &&
+        member(index-1)->is_spacer_terminal() &&
+        !owner()->is_device_manager())           // only in group_manager
+    {
+        index--;
+    }
+}
+
 void ED4_container::insert_member(ED4_base *new_member) {
     // inserts a new member into current owners's member array and
     // asks to adjust owner's bounding box
@@ -160,27 +172,18 @@ void ED4_container::insert_member(ED4_base *new_member) {
     ED4_properties prop = owner()->spec.static_prop; // properties of parent object
 
     ED4_index index;
-    if ((index = search_member(&(new_member->extension), prop)) < 0) {          // search list for a suitable position
-        index = 0;                                                              // list was empty
+    if ((index = search_member(&(new_member->extension), prop)) < 0) { // search list for a suitable position
+        index = 0;                                                     // list was empty
     }
-    else if (index != no_of_members) {                                          // we want to insert new member just behind found position
-        index++;                                                                // if index == no_of_members we reached the end of the list
-    }                                                                           // and index already has the right value
+    else if (index != no_of_members) {                                 // we want to insert new member just behind found position
+        index++;                                                       // if index == no_of_members we reached the end of the list
+    }                                                                  // and index already has the right value
 
-    // @@@ DRY vs .@ENSURE_END_SPACER
-    if (index > 0) { // ensure to insert before group_end_spacer
-        if (member(index-1)) {
-            if (member(index-1)->is_spacer_terminal() && !owner()->is_device_manager()) { // only in group_manager
-                if (index > 1) {
-                    index --;
-                }
-            }
-        }
-    }
+    correct_insert_position(index); // insert before end-spacer
+    shift_list(index, 1);           // shift members if necessary
 
-    shift_list(index, 1); // insert new_member at index after shifting to the right
-
-    memberList[index] = new_member; // insert new member in list in just allocated memory
+    e4_assert(index<size_of_list);
+    memberList[index] = new_member;
     no_of_members ++;
     new_member->index = index;
 
@@ -199,19 +202,10 @@ void ED4_container::append_member(ED4_base *new_member) {
         size_of_list = new_size_of_list;
     }
 
-    // @@@ DRY vs .@ENSURE_END_SPACER
-    if (index>0) { // ensure to insert before group_end_spacer
-        if (member(index-1)) {
-            if (member(index-1)->is_spacer_terminal() && !owner()->is_device_manager()) {
-                if (index>1) {
-                    index--;
-                }
-            }
-        }
-    }
+    correct_insert_position(index); // insert before end-spacer
+    shift_list(index, 1);           // shift members if necessary
 
-    shift_list(index, 1); // shift member if necessary
-
+    e4_assert(index<size_of_list);
     memberList[index] = new_member;
     no_of_members++;
     new_member->index = index;
@@ -240,11 +234,15 @@ ED4_returncode ED4_container::remove_member(ED4_base *member_to_del) {
 
 void ED4_container::shift_list(ED4_index start_index, int length) {
     // shifts member_list of current object by |length| positions starting with start_index,
-    // if length is positive shift is to the right, allocating new memory if necessary
-    // if length is negative shift is to the left (up to position 0) without freeing memory
+    // if length is positive => shift to the right; allocates new memory if necessary
+    // if length is negative => shift to the left (down to position 0); does not resize allocated memory
+
+    e4_assert(length != 0);
 
     if (length>0) { // shift list to the right
         long needed_size = no_of_members + length;
+
+        e4_assert(start_index<needed_size);
 
         if (needed_size >= size_of_list) {   // member_list is full => allocate more memory
             unsigned int new_alloc_size = (unsigned int) ((size_of_list + length) * 1.3); // calculate new size of member_list
@@ -260,6 +258,7 @@ void ED4_container::shift_list(ED4_index start_index, int length) {
     }
     else if (length<0) { // shift list to the left, thereby not freeing any memory !
         e4_assert((start_index + length) >= 0); // invalid shift!
+        e4_assert(start_index<size_of_list);
 
         for (ED4_index i = (start_index + length); i <= (no_of_members + length); i++) { // start shifting left
             memberList[i] = memberList[i - length]; // length is negative

@@ -789,6 +789,8 @@ class ED4_container : virtual Noncopyable {
     ED4_index     no_of_members; // How much members are in the list
     ED4_index     size_of_list;
 
+    void correct_insert_position(ED4_index& index);
+
 public:
 
     ED4_manager* owner() const { return my_owner; }
@@ -2272,6 +2274,4 @@ void ED4_exit() __ATTR__NORETURN;
 #else
 #error ed4_class included twice
 #endif
-
-
 
