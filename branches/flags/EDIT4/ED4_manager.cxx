@@ -821,7 +821,7 @@ ED4_returncode ED4_manager::distribute_children() {
 
     // get maximal relevant and other size of children, set children's other position increasingly
     for (ED4_index i = 0; existing_index(i); ++i) {
-        ED4_base *child = member(i); // @@@ rename -> child
+        ED4_base *child = member(i);
 
         max_rel_size = std::max(int(max_rel_size), int(child->extension.size[rel_size]));
         if (child->extension.position[other_pos] != max_other_size) {
@@ -1255,18 +1255,6 @@ ED4_manager::ED4_manager(const ED4_objspec& spec_, const char *temp_id, AW_pos w
     ED4_base(spec_, temp_id, width, height, temp_parent),
     ED4_container(this)
 {}
-
-ED4_manager::~ED4_manager() {
-    while (members() > 0) { // @@@ weird! simplify!!
-        ED4_base *child = member(0);
-        remove_member(child);
-        child->parent = NULL;
-
-        // @@@ use virtual delete below?
-        if (child->is_terminal())       delete child->to_terminal();
-        else if (child->is_manager())   delete child->to_manager();
-    }
-}
 
 // --------------------------
 //      ED4_main_manager

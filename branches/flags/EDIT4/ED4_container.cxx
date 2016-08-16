@@ -372,6 +372,14 @@ ED4_container::ED4_container(ED4_manager *the_owner) {
 
 
 ED4_container::~ED4_container() {
+    while (members()) {
+        ED4_index  last  = members()-1;
+        ED4_base  *child = member(last);
+
+        remove_member(child);
+        child->parent = NULL;
+        delete child;
+    }
     free(memberList);
 }
 

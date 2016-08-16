@@ -1259,7 +1259,7 @@ public:
     }
 
     ED4_manager(const ED4_objspec& spec_, const char *id, AW_pos width, AW_pos height, ED4_manager *parent);
-    virtual ~ED4_manager() OVERRIDE;
+    virtual ~ED4_manager() OVERRIDE {}
 };
 
 struct ED4_terminal : public ED4_base { // derived from a Noncopyable
