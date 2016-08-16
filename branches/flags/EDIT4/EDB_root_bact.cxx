@@ -433,10 +433,9 @@ void EDB_root_bact::save_current_config(char *confname) { // and save it in data
 
     int                 counter        = 0;
     ED4_device_manager *device_manager = ED4_ROOT->get_device_manager();
-    ED4_container      *children       = device_manager; // @@@ elim variable
 
-    for (int i=0; i<children->members(); i++) {
-        ED4_base *area = children->member(i);
+    for (int i=0; i<device_manager->members(); i++) {
+        ED4_base *area = device_manager->member(i);
         if (area->is_area_manager()) {
             GBS_strstruct area_config(10000);
             area->generate_configuration_string(area_config);

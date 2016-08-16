@@ -617,7 +617,7 @@ void ED4_manager::create_consensus(ED4_abstract_group_manager *upper_group_manag
             }
 #endif
         }
-        else if (child->is_manager()) { // @@@ conditions above can only be true, if this condition is true -> optimize execution order
+        else if (child->is_manager()) {
             child->to_manager()->create_consensus(group_manager_for_child, progress);
         }
     }
@@ -729,7 +729,7 @@ ED4_base *ED4_manager::get_defined_level(ED4_level lev) const {
             return child->to_group_manager()->member(1)->to_multi_species_manager()->get_defined_level(lev);
         }
         else {
-            e4_assert(0); // @@@ this container type is never searched by get_defined_level (wanted behavior?)
+            e4_assert(!child->is_manager());
         }
     }
     return NULL;
@@ -899,19 +899,17 @@ void ED4_bracket_terminal::fold() {
 
         int consensus_shown = 0;
         if (!(multi_species_manager->member(1)->is_consensus_manager())) { // if consensus is not at top => move to top
-            ED4_container *multi_children    = multi_species_manager; // @@@ elim variable
-            ED4_manager   *consensus_manager = NULL;
-
+            ED4_manager *consensus_manager = NULL;
             int i;
-            for (i=0; i<multi_children->members(); i++) { // search for consensus
-                if (multi_children->member(i)->is_consensus_manager()) {
-                    consensus_manager = multi_children->member(i)->to_manager();
+            for (i=0; i<multi_species_manager->members(); i++) { // search for consensus
+                if (multi_species_manager->member(i)->is_consensus_manager()) {
+                    consensus_manager = multi_species_manager->member(i)->to_manager();
                     break;
                 }
             }
 
             if (consensus_manager) {
-                multi_children->move_member(i, 1); // move Consensus to top of list
+                multi_species_manager->move_member(i, 1); // move Consensus to top of list
                 consensus_manager->extension.position[Y_POS] = SPACERHEIGHT;
                 ED4_base::touch_world_cache();
                 consensus_shown = 1;
