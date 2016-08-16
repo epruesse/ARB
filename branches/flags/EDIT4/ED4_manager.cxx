@@ -1225,15 +1225,15 @@ void ED4_manager::Delete() {
     }
 }
 
-void ED4_manager::request_refresh(int clear) {
+void ED4_manager::request_refresh(int clear_at_refresh) {
     // sets refresh flag of current object and its children
     update_info.set_refresh(1);
-    update_info.set_clear_at_refresh(clear);
+    update_info.set_clear_at_refresh(clear_at_refresh);
 
     if (parent) parent->refresh_requested_by_child();
 
     for (ED4_index i = 0; existing_index(i); ++i) {
-        member(i)->request_refresh(0); // do not trigger clear for childs
+        member(i)->request_refresh(0); // clear_at_refresh not needed for childs!
     }
 }
 
