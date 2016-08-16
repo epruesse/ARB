@@ -358,12 +358,15 @@ int ED4_container::members_ok() const {
 }
 #endif // ASSERTION_USED
 
-ED4_container::ED4_container(ED4_manager *the_owner) {
-    my_owner      = the_owner;
+ED4_container::ED4_container(ED4_manager *IF_ASSERTION_USED(the_owner)) {
+#if defined(ASSERTION_USED)
+    my_owner = the_owner;
+#endif
+
     ARB_calloc(memberList, 1);
     // memberList[0] = NULL;
-    no_of_members = 0;
-    size_of_list  = 1;
+    no_of_members    = 0;
+    size_of_list     = 1;
 }
 
 

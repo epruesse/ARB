@@ -784,10 +784,13 @@ public:
 class ED4_container : virtual Noncopyable {
     // contains children of a manager
 
-    ED4_manager  *my_owner;     // who is controlling this object // @@@ elim
-    ED4_base    **memberList;
-    ED4_index     no_of_members; // How much members are in the list
-    ED4_index     size_of_list;  // allocated size
+#if defined(ASSERTION_USED)
+    ED4_manager *my_owner;      // who is controlling this object // @@@ elim
+#endif
+
+    ED4_base  **memberList;
+    ED4_index   no_of_members;   // How much members are in the list
+    ED4_index   size_of_list;    // allocated size
 
     void correct_insert_position(ED4_index& index);
     void resize(ED4_index needed_size);
@@ -799,7 +802,13 @@ protected:
 
 public:
 
-    ED4_manager* owner() const { return my_owner; }
+    ED4_manager *owner() {
+        ED4_manager *man = DOWNCAST(ED4_manager*, this);
+        e4_assert(man == my_owner);
+        return man;
+    }
+    const ED4_manager *owner() const { return const_cast<ED4_container*>(this)->owner(); }
+
     ED4_base* member(ED4_index i) const { e4_assert(i>=0 && i<size_of_list); return memberList[i]; }
 
     ED4_index members() const { return no_of_members; }
@@ -829,7 +838,7 @@ public:
 #endif // ASSERTION_USED
 
     ED4_container(ED4_manager *the_owner); // @@@ remove param
-    ~ED4_container();
+    virtual ~ED4_container();
 };
 
 // ----------------------------
