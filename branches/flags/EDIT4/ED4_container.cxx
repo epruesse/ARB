@@ -40,7 +40,7 @@ ED4_returncode ED4_container::search_target_species(ED4_extension *location, ED4
     if (current_member->is_area_manager()) {
         current_member->to_area_manager()
             ->get_multi_species_manager()
-            ->children->search_target_species(location, prop, found_member, return_level); // there are always the three areas !!!
+            ->search_target_species(location, prop, found_member, return_level); // there are always the three areas !!!
 
         if (*found_member) {
             return ED4_R_OK;
@@ -71,7 +71,7 @@ ED4_returncode ED4_container::search_target_species(ED4_extension *location, ED4
         if (current_member->is_group_manager() &&
             !current_member->flag.hidden &&
             !current_member->is_consensus_manager()) { // search_clicked_member for multi_species_manager in groups
-            current_member->to_group_manager()->children->search_target_species(location, prop, found_member, return_level);
+            current_member->to_group_manager()->search_target_species(location, prop, found_member, return_level);
         }
         else if (!(current_member->flag.hidden)   &&
                   (location->position[rel_pos] <= (current_member->extension.position[rel_pos] +
@@ -81,7 +81,7 @@ ED4_returncode ED4_container::search_target_species(ED4_extension *location, ED4
                 if (current_member->is_multi_species_manager()) {
                     *found_member = current_member;                                     // we have to give back the multi_species_manager for
                     // insertion
-                    current_member->to_multi_species_manager()->children->search_target_species(location, prop, found_member, return_level);
+                    current_member->to_multi_species_manager()->search_target_species(location, prop, found_member, return_level);
                 }
                 else if ((current_member->is_spacer_terminal()) && (current_index + 1 == no_of_members)) { // if we have found the last spacer
                     *found_member = current_member->get_parent(ED4_L_MULTI_SPECIES);                            // in a group we can move the
@@ -97,7 +97,7 @@ ED4_returncode ED4_container::search_target_species(ED4_extension *location, ED4
             else                                                                        // search for drag target line
             {
                 if (current_member->is_multi_species_manager()) {
-                    current_member->to_multi_species_manager()->children->search_target_species(location, prop, found_member, return_level);
+                    current_member->to_multi_species_manager()->search_target_species(location, prop, found_member, return_level);
                 }
                 else if ((current_member->is_spacer_terminal()) && (current_index + 1 == no_of_members)) { // if we have found the last spacer
                     *found_member = current_member->get_parent(ED4_L_MULTI_SPECIES);   // in a group we can move the
@@ -141,7 +141,7 @@ ED4_returncode ED4_container::search_target_species(ED4_extension *location, ED4
             if (current_member->is_area_manager()) {
                 current_member->to_area_manager()
                     ->get_multi_species_manager()
-                    ->children->search_target_species(location, prop, found_member, return_level);      // there are always the three areas !!!
+                    ->search_target_species(location, prop, found_member, return_level);      // there are always the three areas !!!
 
                 if (*found_member) {
                     return ED4_R_OK;
@@ -167,6 +167,7 @@ void ED4_container::insert_member(ED4_base *new_member) {
         index++;                                                                // if index == no_of_members we reached the end of the list
     }                                                                           // and index already has the right value
 
+    // @@@ DRY vs .@ENSURE_END_SPACER
     if (index > 0) { // ensure to insert before group_end_spacer
         if (member(index-1)) {
             if (member(index-1)->is_spacer_terminal() && !owner()->is_device_manager()) { // only in group_manager
@@ -198,6 +199,7 @@ void ED4_container::append_member(ED4_base *new_member) {
         size_of_list = new_size_of_list;
     }
 
+    // @@@ DRY vs .@ENSURE_END_SPACER
     if (index>0) { // ensure to insert before group_end_spacer
         if (member(index-1)) {
             if (member(index-1)->is_spacer_terminal() && !owner()->is_device_manager()) {

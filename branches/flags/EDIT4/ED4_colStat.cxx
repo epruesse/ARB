@@ -35,7 +35,7 @@ static void toggle_detailed_column_stat(ED4_sequence_terminal *seq_term, bool fo
 
                 ED4_sequence_manager *new_seq_man = new ED4_sequence_manager(namebuffer, 0, 0, multi_seq_man);
                 new_seq_man->set_property(ED4_P_MOVABLE);
-                multi_seq_man->children->append_member(new_seq_man);
+                multi_seq_man->append_member(new_seq_man);
 
                 int    pixel_length     = max_seq_terminal_length;
                 AW_pos font_height      = ED4_ROOT->font_group.get_height(ED4_G_SEQUENCES);
@@ -50,12 +50,12 @@ static void toggle_detailed_column_stat(ED4_sequence_terminal *seq_term, bool fo
                 ED4_sequence_info_terminal *new_colStat_info_term = new ED4_sequence_info_terminal("CStat", SEQUENCEINFOSIZE, columnStatHeight, new_seq_man);
                 new_colStat_info_term->set_property((ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE));
                 new_colStat_info_term->set_links(ref_colStat_info, ref_colStat);
-                new_seq_man->children->append_member(new_colStat_info_term);
+                new_seq_man->append_member(new_colStat_info_term);
 
                 sprintf(namebuffer, "Column_Statistic_Terminal.%ld.%d", ED4_counter, count++);
                 ED4_columnStat_terminal *new_colStat_term = new ED4_columnStat_terminal(namebuffer, 0, columnStatHeight, new_seq_man);
                 new_colStat_term->set_both_links(ref_colStat);
-                new_seq_man->children->append_member(new_colStat_term);
+                new_seq_man->append_member(new_colStat_term);
 
                 ED4_counter++;
 

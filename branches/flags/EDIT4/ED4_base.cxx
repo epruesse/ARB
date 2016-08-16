@@ -131,7 +131,7 @@ void ED4_manager::deleted_from_database() {
         ED4_species_manager *species_man = to_species_manager();
         ED4_multi_species_manager *multi_man = species_man->parent->to_multi_species_manager();
 
-        multi_man->children->remove_member(species_man);
+        multi_man->remove_member(species_man);
         GB_push_transaction(GLOBAL_gb_main);
         multi_man->update_consensus(multi_man, 0, species_man);
         multi_man->rebuild_consensi(species_man, ED4_U_UP);
@@ -243,15 +243,15 @@ ED4_group_manager *ED4_build_group_manager_start(ED4_manager                 *gr
 
     sprintf(namebuffer, "Group_Manager.%ld", ED4_counter); // create new group manager
     ED4_group_manager *group_manager = new ED4_group_manager(namebuffer, 0, 0, group_parent);
-    group_parent->children->append_member(group_manager);
+    group_parent->append_member(group_manager);
 
     sprintf(namebuffer, "Bracket_Terminal.%ld", ED4_counter);
     ED4_bracket_terminal *bracket_terminal = new ED4_bracket_terminal(namebuffer, BRACKETWIDTH, 0, group_manager);
-    group_manager->children->append_member(bracket_terminal);
+    group_manager->append_member(bracket_terminal);
 
     sprintf(namebuffer, "MultiSpecies_Manager.%ld", ED4_counter); // create new multi_species_manager
     multi_species_manager = new ED4_multi_species_manager(namebuffer, 0, 0, group_manager);
-    group_manager->children->append_member(multi_species_manager);
+    group_manager->append_member(multi_species_manager);
 
     {
         ED4_properties prop_folded(is_folded ? ED4_P_IS_FOLDED : ED4_P_NO_PROP); // only set FOLDED-flag if group is folded
@@ -264,33 +264,33 @@ ED4_group_manager *ED4_build_group_manager_start(ED4_manager                 *gr
     {
         sprintf(namebuffer, "Group_Spacer_Terminal_Beg.%ld", ED4_counter); // spacer at beginning of group
         ED4_spacer_terminal *group_spacer_terminal = new ED4_spacer_terminal(namebuffer, false, 10, SPACERHEIGHT, multi_species_manager);
-        multi_species_manager->children->append_member(group_spacer_terminal);
+        multi_species_manager->append_member(group_spacer_terminal);
     }
 
     {
         sprintf(namebuffer, "Consensus_Manager.%ld", ED4_counter);
         ED4_species_manager *species_manager = new ED4_species_manager(ED4_SP_CONSENSUS, namebuffer, 0, 0, multi_species_manager);
         species_manager->set_property(ED4_P_MOVABLE);
-        multi_species_manager->children->append_member(species_manager);
+        multi_species_manager->append_member(species_manager);
 
         {
             ED4_species_name_terminal *species_name_terminal = new ED4_species_name_terminal(group_name, MAXSPECIESWIDTH - group_depth*BRACKETWIDTH, TERMINALHEIGHT, species_manager);
             species_name_terminal->set_property((ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE));
             species_name_terminal->set_links(NULL, refterms.sequence());
-            species_manager->children->append_member(species_name_terminal);
+            species_manager->append_member(species_name_terminal);
         }
 
         {
             sprintf(namebuffer, "Consensus_Seq_Manager.%ld", ED4_counter);
             ED4_sequence_manager *sequence_manager = new ED4_sequence_manager(namebuffer, 0, 0, species_manager);
             sequence_manager->set_property(ED4_P_MOVABLE);
-            species_manager->children->append_member(sequence_manager);
+            species_manager->append_member(sequence_manager);
 
             {
                 ED4_sequence_info_terminal *seq_info_term = new ED4_sequence_info_terminal("CONS", SEQUENCEINFOSIZE, TERMINALHEIGHT, sequence_manager); // group info
                 seq_info_term->set_both_links(refterms.sequence_info());
                 seq_info_term->set_property((ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE));
-                sequence_manager->children->append_member(seq_info_term);
+                sequence_manager->append_member(seq_info_term);
             }
 
             {
@@ -298,7 +298,7 @@ ED4_group_manager *ED4_build_group_manager_start(ED4_manager                 *gr
                 ED4_sequence_terminal *sequence_terminal = new ED4_consensus_sequence_terminal(namebuffer, 0, TERMINALHEIGHT, sequence_manager);
                 sequence_terminal->set_property(ED4_P_CURSOR_ALLOWED);
                 sequence_terminal->set_both_links(refterms.sequence());
-                sequence_manager->children->append_member(sequence_terminal);
+                sequence_manager->append_member(sequence_terminal);
             }
         }
     }
@@ -313,36 +313,34 @@ void ED4_build_group_manager_end(ED4_multi_species_manager *multi_species_manage
 
     sprintf(namebuffer, "Group_Spacer_Terminal_End.%ld", ED4_counter); // spacer at end of group
     ED4_spacer_terminal *group_spacer_terminal = new ED4_spacer_terminal(namebuffer, false, 10, SPACERHEIGHT, multi_species_manager);
-    multi_species_manager->children->append_member(group_spacer_terminal);
+    multi_species_manager->append_member(group_spacer_terminal);
 }
 
 void ED4_base::generate_configuration_string(GBS_strstruct& buffer) {
     const char SEPARATOR = '\1';
     if (is_manager()) {
-        ED4_container *childs = to_manager()->children;
-        if (childs) {
-            if (is_group_manager()) {
-                buffer.put(SEPARATOR);
-                buffer.put(dynamic_prop & ED4_P_IS_FOLDED ? 'F' : 'G');
+        ED4_container *container = to_manager();
+        if (is_group_manager()) {
+            buffer.put(SEPARATOR);
+            buffer.put(dynamic_prop & ED4_P_IS_FOLDED ? 'F' : 'G');
 
-                for (int writeConsensus = 1; writeConsensus>=0; --writeConsensus) {
-                    for (int i=0; i<childs->members(); ++i) {
-                        ED4_base *child       = childs->member(i);
-                        bool      isConsensus = child->is_consensus_manager();
+            for (int writeConsensus = 1; writeConsensus>=0; --writeConsensus) {
+                for (int i=0; i<container->members(); ++i) {
+                    ED4_base *child       = container->member(i);
+                    bool      isConsensus = child->is_consensus_manager();
 
-                        if (bool(writeConsensus) == isConsensus) {
-                            child->generate_configuration_string(buffer);
-                        }
+                    if (bool(writeConsensus) == isConsensus) {
+                        child->generate_configuration_string(buffer);
                     }
                 }
-
-                buffer.put(SEPARATOR);
-                buffer.put('E');
             }
-            else {
-                for (int i=0; i<childs->members(); i++) {
-                    childs->member(i)->generate_configuration_string(buffer);
-                }
+
+            buffer.put(SEPARATOR);
+            buffer.put('E');
+        }
+        else {
+            for (int i=0; i<container->members(); i++) {
+                container->member(i)->generate_configuration_string(buffer);
             }
         }
     }
@@ -388,9 +386,9 @@ ARB_ERROR ED4_base::route_down_hierarchy(const ED4_route_cb& cb) {
 
 ARB_ERROR ED4_manager::route_down_hierarchy(const ED4_route_cb& cb) {
     ARB_ERROR error = cb(this);
-    if (children && !error) {
-        for (int i=0; i <children->members() && !error; i++) {
-            error = children->member(i)->route_down_hierarchy(cb);
+    if (!error) {
+        for (int i=0; i<members() && !error; i++) {
+            error = member(i)->route_down_hierarchy(cb);
         }
     }
     return error;
@@ -401,19 +399,17 @@ ED4_base *ED4_manager::find_first_that(ED4_level level, const ED4_basePredicate&
         return this;
     }
 
-    if (children) {
-        for (int i=0; i<children->members(); i++) {
-            ED4_base *child = children->member(i);
+    for (int i=0; i<members(); i++) {
+        ED4_base *child = member(i);
 
-            if (child->is_manager()) {
-                ED4_base *found = child->to_manager()->find_first_that(level, fulfills_predicate);
-                if (found) {
-                    return found;
-                }
+        if (child->is_manager()) {
+            ED4_base *found = child->to_manager()->find_first_that(level, fulfills_predicate);
+            if (found) {
+                return found;
             }
-            else if ((child->spec.level&level) && fulfills_predicate(child)) {
-                return child;
-            }
+        }
+        else if ((child->spec.level&level) && fulfills_predicate(child)) {
+            return child;
         }
     }
 
@@ -436,29 +432,23 @@ ED4_returncode ED4_base::remove_callbacks() // removes callbacks
 }
 
 
-ED4_base *ED4_base::search_spec_child_rek(ED4_level level)   // recursive search for level
-{
-    return spec.level&level ? this : (ED4_base*)NULL;
+ED4_base *ED4_base::search_spec_child_rek(ED4_level level) { // recursive search for level
+    return spec.level&level ? this : NULL;
 }
 
-ED4_base *ED4_manager::search_spec_child_rek(ED4_level level)
-{
+ED4_base *ED4_manager::search_spec_child_rek(ED4_level level) {
     if (spec.level & level) return this;
 
-    if (children) {
-        int i;
-
-        for (i=0; i<children->members(); i++) { // first check children
-            if (children->member(i)->spec.level & level) {
-                return children->member(i);
-            }
+    for (int i=0; i<members(); i++) { // first check children
+        if (member(i)->spec.level & level) {
+            return member(i);
         }
+    }
 
-        for (i=0; i<children->members(); i++) {
-            ED4_base *result = children->member(i)->search_spec_child_rek(level);
-            if (result) {
-                return result;
-            }
+    for (int i=0; i<members(); i++) {
+        ED4_base *result = member(i)->search_spec_child_rek(level);
+        if (result) {
+            return result;
         }
     }
 
@@ -598,8 +588,8 @@ void ED4_manager::create_consensus(ED4_abstract_group_manager *upper_group_manag
         if (progress) progress->inc();
     }
     int i;
-    for (i=0; i<children->members(); i++) {
-        ED4_base *member = children->member(i);
+    for (i=0; i<members(); i++) {
+        ED4_base *member = this->member(i); // @@@ rename local variable
 
         if (member->is_species_manager()) {
             ED4_species_manager *species_manager        = member->to_species_manager();
@@ -646,17 +636,17 @@ const ED4_terminal *ED4_base::get_consensus_relevant_terminal() const {
     const ED4_manager  *manager           = this->to_manager();
     const ED4_terminal *relevant_terminal = 0;
 
-    int members = manager->children->members();
+    int members = manager->members();
 
     for (i=0; !relevant_terminal && i<members; ++i) {
-        ED4_base     *member = manager->children->member(i);
-        relevant_terminal    = member->get_consensus_relevant_terminal();
+        ED4_base *member  = manager->member(i);
+        relevant_terminal = member->get_consensus_relevant_terminal();
     }
 
 #if defined(DEBUG)
     if (relevant_terminal) {
         for (; i<members; ++i) {
-            ED4_base *member = manager->children->member(i);
+            ED4_base *member = manager->member(i);
             e4_assert(!member->get_consensus_relevant_terminal()); // there shall be only 1 consensus relevant terminal, since much code assumes that
         }
     }
@@ -669,8 +659,8 @@ int ED4_multi_species_manager::count_visible_children() // is called by a multi_
 {
     int counter = 0;
 
-    for (int i=0; i<children->members(); i++) {
-        ED4_base *member = children->member(i);
+    for (int i=0; i<members(); i++) {
+        ED4_base *member = this->member(i); // @@@ rename local variable
         if (member->is_species_manager()) {
             counter ++;
         }
@@ -703,7 +693,7 @@ ED4_base *ED4_base::get_parent(ED4_level lev) const
 
 void ED4_base::unlink_from_parent() {
     e4_assert(parent);
-    parent->children->remove_member(this);
+    parent->remove_member(this);
 }
 
 char *ED4_base::get_name_of_species() {
@@ -722,27 +712,27 @@ char *ED4_base::get_name_of_species() {
     return name;
 }
 
-ED4_base *ED4_manager::get_defined_level(ED4_level lev) const
-{
-    int i;
-
-    for (i=0; i<children->members(); i++) { // first make a complete search in myself
-        if (children->member(i)->spec.level & lev) {
-            return children->member(i);
+ED4_base *ED4_manager::get_defined_level(ED4_level lev) const {
+    for (int i=0; i<members(); i++) { // first test direct children ..
+        if (member(i)->spec.level & lev) {
+            return member(i);
         }
     }
 
-    for (i=0; i<children->members(); i++) { // then all groups
-        ED4_base *member = children->member(i);
+    for (int i=0; i<members(); i++) { // .. then all containers
+        ED4_base *member = this->member(i); // @@@ rename local variable
 
         if (member->is_multi_species_manager()) {
             return member->to_multi_species_manager()->get_defined_level(lev);
         }
         else if (member->is_group_manager()) {
-            return member->to_group_manager()->children->member(1)->to_multi_species_manager()->get_defined_level(lev);
+            return member->to_group_manager()->member(1)->to_multi_species_manager()->get_defined_level(lev);
+        }
+        else {
+            e4_assert(0); // @@@ this container type is never searched by get_defined_level (wanted behavior?)
         }
     }
-    return NULL;                                                                // nothing found
+    return NULL;
 }
 
 ED4_returncode ED4_base::set_width() {
@@ -756,19 +746,19 @@ ED4_returncode ED4_base::set_width() {
             ED4_multi_name_manager    *multi_name_manager = species_manager->get_defined_level(ED4_L_MULTI_NAME)->to_multi_name_manager();  // case I'm a species
             ED4_species_name_terminal *consensus_terminal = parent->to_multi_species_manager()->get_consensus_name_terminal();
 
-            for (int i=0; i < multi_name_manager->children->members(); i++) {
-                ED4_name_manager *name_manager = multi_name_manager->children->member(i)->to_name_manager();
-                ED4_base         *nameTerm     = name_manager->children->member(0);
+            for (int i=0; i<multi_name_manager->members(); i++) {
+                ED4_name_manager *name_manager = multi_name_manager->member(i)->to_name_manager();
+                ED4_base         *nameTerm     = name_manager->member(0);
                 int               width        = consensus_terminal ? consensus_terminal->extension.size[WIDTH] : MAXSPECIESWIDTH;
 
                 nameTerm->extension.size[WIDTH] = width;
                 nameTerm->request_resize();
             }
 
-            for (int i=0; i < species_manager->children->members(); i++) { // adjust all managers as far as possible
-                ED4_base *smember = species_manager->children->member(i);
+            for (int i=0; i<species_manager->members(); i++) { // adjust all managers as far as possible
+                ED4_base *smember = species_manager->member(i);
                 if (consensus_terminal) {
-                    ED4_base *kmember = consensus_terminal->parent->children->member(i);
+                    ED4_base *kmember = consensus_terminal->parent->member(i);
                     if (kmember) {
                         smember->extension.position[X_POS] = kmember->extension.position[X_POS];
                         ED4_base::touch_world_cache();
@@ -777,7 +767,7 @@ ED4_returncode ED4_base::set_width() {
                 else { // got no consensus
                     ED4_species_manager *a_species = parent->get_defined_level(ED4_L_SPECIES)->to_species_manager();
                     if (a_species) {
-                        smember->extension.position[X_POS] = a_species->children->member(i)->extension.position[X_POS];
+                        smember->extension.position[X_POS] = a_species->member(i)->extension.position[X_POS];
                         ED4_base::touch_world_cache();
                     }
                 }
@@ -800,13 +790,13 @@ ED4_returncode ED4_base::set_width() {
 
         mark_consensus_terminal->request_resize();
 
-        for (int i=0; i < multi_species_manager->children->members(); i++) {
-            multi_species_manager->children->member(i)->set_width();
+        for (int i=0; i<multi_species_manager->members(); i++) {
+            multi_species_manager->member(i)->set_width();
         }
 
-        for (int i=0; i < group_manager->children->members(); i++) { // for all groups below from us
-            if (group_manager->children->member(i)->is_group_manager()) {
-                group_manager->children->member(i)->set_width();
+        for (int i=0; i < group_manager->members(); i++) { // for all groups below from us
+            if (group_manager->member(i)->is_group_manager()) {
+                group_manager->member(i)->set_width();
             }
         }
     }
@@ -866,8 +856,8 @@ ED4_returncode  ED4_base::event_sent_by_parent(AW_event * /* event */, AW_window
 }
 
 void ED4_manager::hide_children() {
-    for (int i=0; i<children->members(); i++) {
-        ED4_base *member = children->member(i);
+    for (int i=0; i<members(); i++) {
+        ED4_base *member = this->member(i); // @@@ rename local variable
         if (!member->is_spacer_terminal() && !member->is_consensus_manager()) { // don't hide spacer and Consensus
             member->flag.hidden = 1;
         }
@@ -877,18 +867,16 @@ void ED4_manager::hide_children() {
 
 
 void ED4_manager::unhide_children() {
-    if (children) {
-        for (int i=0; i < children->members(); i++) {
-            children->member(i)->flag.hidden = 0; // make child visible
-        }
-        request_resize();
+    for (int i=0; i<members(); i++) {
+        member(i)->flag.hidden = 0; // make child visible
     }
+    request_resize();
 }
 
 void ED4_bracket_terminal::unfold() {
     if (parent) {
-        for (int i=0; i < parent->children->members(); i++) {
-            ED4_base *member = parent->children->member(i);
+        for (int i=0; i<parent->members(); i++) {
+            ED4_base *member = parent->member(i);
 
             if (member->is_multi_species_manager()) {
                 ED4_multi_species_manager *multi_species_manager = member->to_multi_species_manager();
@@ -910,8 +898,8 @@ void ED4_bracket_terminal::fold() {
         ED4_multi_species_manager *multi_species_manager = parent->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
 
         int consensus_shown = 0;
-        if (!(multi_species_manager->children->member(1)->is_consensus_manager())) { // if consensus is not a top = > move to top
-            ED4_container *multi_children    = multi_species_manager->children;
+        if (!(multi_species_manager->member(1)->is_consensus_manager())) { // if consensus is not at top => move to top
+            ED4_container *multi_children    = multi_species_manager; // @@@ elim variable
             ED4_manager   *consensus_manager = NULL;
 
             int i;

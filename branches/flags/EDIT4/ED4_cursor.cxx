@@ -1101,7 +1101,7 @@ static ED4_terminal *get_upper_lower_cursor_pos(ED4_manager *starting_point, ED4
     ED4_terminal *result = 0;
 
     int m      = 0;
-    int last_m = starting_point->children->members()-1;
+    int last_m = starting_point->members()-1;
     int incr   = 1;
 
     if (cursor_move == ED4_C_UP) {
@@ -1110,7 +1110,7 @@ static ED4_terminal *get_upper_lower_cursor_pos(ED4_manager *starting_point, ED4
     }
 
     while (!result) {
-        ED4_base *member = starting_point->children->member(m);
+        ED4_base *member = starting_point->member(m);
 
         if (member->is_manager()) {
             if (!member->flag.hidden) { // step over hidden managers (e.g. folded groups)

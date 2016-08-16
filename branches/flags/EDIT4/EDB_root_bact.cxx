@@ -92,20 +92,20 @@ ED4_returncode EDB_root_bact::fill_data(ED4_multi_species_manager *multi_species
             group_man->table().ignore_me(); // ignore SAI tables (does not work - instead ignore SAIs when calculating consensus)
         }
         species_manager->set_species_pointer(gb_datamode);
-        multi_species_manager->children->append_member(species_manager);
+        multi_species_manager->append_member(species_manager);
 
         sprintf(namebuffer, "MultiName_Manager.%ld.%d", ED4_counter, count_two);
         ED4_multi_name_manager *multi_name_manager = new ED4_multi_name_manager(namebuffer, 0, 0, species_manager);
-        species_manager->children->append_member(multi_name_manager);
+        species_manager->append_member(multi_name_manager);
 
         sprintf(namebuffer, "MultiSeq_Manager.%ld.%d", ED4_counter, count_two++);
         ED4_multi_sequence_manager *multi_sequence_manager = new ED4_multi_sequence_manager(namebuffer, 0, 0, species_manager);
-        species_manager->children->append_member(multi_sequence_manager);
+        species_manager->append_member(multi_sequence_manager);
 
         sprintf(namebuffer, "Name_Manager%ld.%d", ED4_counter, count_two++);
         ED4_name_manager *name_manager = new ED4_name_manager(namebuffer, 0, 0, multi_name_manager);
         name_manager->set_property(ED4_P_MOVABLE); // only Speciesname should be movable
-        multi_name_manager->children->append_member(name_manager);
+        multi_name_manager->append_member(name_manager);
 
         {
             sprintf(namebuffer, "Species_Name_Term%ld.%d", ED4_counter, count_two++);
@@ -113,7 +113,7 @@ ED4_returncode EDB_root_bact::fill_data(ED4_multi_species_manager *multi_species
             species_name_terminal->set_property((ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE));
             species_name_terminal->set_links(NULL, refterms.sequence());
             species_name_terminal->set_species_pointer(GB_entry(gb_datamode, "name"));
-            name_manager->children->append_member(species_name_terminal);
+            name_manager->append_member(species_name_terminal);
         }
 
         search_sequence_data_rek(multi_sequence_manager, refterms, gb_datamode, count_two, &max_seq_terminal_length, ED4_A_DEFAULT, datamode == ED4_D_EXTENDED);
@@ -162,14 +162,14 @@ ED4_returncode EDB_root_bact::search_sequence_data_rek(ED4_multi_sequence_manage
                 sprintf(namebuffer, "Sequence_Manager.%ld.%d", ED4_counter, count_too++);
                 ED4_sequence_manager *seq_manager = new ED4_sequence_manager(namebuffer, 0, 0, multi_sequence_manager);
                 seq_manager->set_property(ED4_P_MOVABLE);
-                multi_sequence_manager->children->append_member(seq_manager);
+                multi_sequence_manager->append_member(seq_manager);
 
                 {
                     ED4_sequence_info_terminal *sequence_info_terminal = new ED4_sequence_info_terminal(key_string, SEQUENCEINFOSIZE, TERMINALHEIGHT, seq_manager);
                     sequence_info_terminal->set_property((ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE));
                     sequence_info_terminal->set_both_links(refterms.sequence_info());
                     sequence_info_terminal->set_species_pointer(gb_alignment);
-                    seq_manager->children->append_member(sequence_info_terminal);
+                    seq_manager->append_member(sequence_info_terminal);
                 }
 
                 ED4_text_terminal *text_terminal = 0;
@@ -211,7 +211,7 @@ ED4_returncode EDB_root_bact::search_sequence_data_rek(ED4_multi_sequence_manage
 
                 text_terminal->set_property(ED4_P_CURSOR_ALLOWED);
                 text_terminal->set_both_links(refterms.sequence());
-                seq_manager->children->append_member(text_terminal);
+                seq_manager->append_member(text_terminal);
 #if defined(DEBUG)
                 // ensure only 1 terminal is consensus-relevant!
                 if (is_data) {
@@ -433,7 +433,7 @@ void EDB_root_bact::save_current_config(char *confname) { // and save it in data
 
     int                 counter        = 0;
     ED4_device_manager *device_manager = ED4_ROOT->get_device_manager();
-    ED4_container      *children       = device_manager->children;
+    ED4_container      *children       = device_manager; // @@@ elim variable
 
     for (int i=0; i<children->members(); i++) {
         ED4_base *area = children->member(i);

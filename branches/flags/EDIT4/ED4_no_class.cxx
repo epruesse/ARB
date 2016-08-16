@@ -939,8 +939,8 @@ static void createGroupFromSelected(GB_CSTR group_name, GB_CSTR field_name, GB_C
                 old_multi->invalidate_species_counters();
             }
             
-            object->parent->children->remove_member(object);
-            group_content_manager->children->append_member(object);
+            object->parent->remove_member(object);
+            group_content_manager->append_member(object);
 
             object->parent = group_content_manager;
             object->set_width();

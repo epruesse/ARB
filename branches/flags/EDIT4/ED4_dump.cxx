@@ -133,7 +133,7 @@ void ED4_base::dump_base(size_t indent) const {
 // =========================================================================================
 // ED4_container
 
-void ED4_container::dump(size_t indent) const {
+void ED4_container::dump_container(size_t indent) const {
     openDump(indent, "ED4_container", (void*)this);
     for (ED4_index i=0; i<members(); i++) {
         member(i)->dump(NEXT_INDENT);
@@ -147,7 +147,7 @@ void ED4_container::dump(size_t indent) const {
 void ED4_manager::dump_base(size_t indent) const {
     openDump(indent, "ED4_manager", (void*)this);
     ED4_base::dump_base(NEXT_INDENT);
-    children->dump(NEXT_INDENT);
+    dump_container(NEXT_INDENT);
     closeDump(indent);
 }
 
@@ -166,7 +166,7 @@ void ED4_species_manager::dump(size_t indent) const {
     openDump(indent, "ED4_species_manager", (void*)this);
     ED4_base::dump_base(NEXT_INDENT);
     print_indented(NEXT_INDENT, GBS_global_string("type                   = %s", readable_ED4_species_type(type)));
-    children->dump(NEXT_INDENT);
+    dump_container(NEXT_INDENT);
     closeDump(indent);
 }
 

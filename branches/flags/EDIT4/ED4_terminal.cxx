@@ -348,7 +348,7 @@ ED4_returncode ED4_terminal::draw_drag_box(AW_pos x, AW_pos y, GB_CSTR text, int
             location.position[X_POS] = 0;
             location.position[Y_POS] = (AW_pos)cursor_y;           // cursor_y is already in world coordinates
 
-            ED4_ROOT->get_device_manager()->children->search_target_species(&location, ED4_P_HORIZONTAL, &drag_target, ED4_L_NO_LEVEL);
+            ED4_ROOT->get_device_manager()->search_target_species(&location, ED4_P_HORIZONTAL, &drag_target, ED4_L_NO_LEVEL);
         }
 
         if (drag_target) {
@@ -486,8 +486,8 @@ ED4_returncode ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *aw
                         {
                             ED4_device_manager *device_manager = ED4_ROOT->get_device_manager();
 
-                            for (int i=0; i<device_manager->children->members(); i++) { // when moving species numbers have to be recalculated
-                                ED4_base *member = device_manager->children->member(i);
+                            for (int i=0; i<device_manager->members(); i++) { // when moving species numbers have to be recalculated
+                                ED4_base *member = device_manager->member(i);
 
                                 if (member->is_area_manager()) {
                                     member->to_area_manager()->get_multi_species_manager()->update_requested_by_child();

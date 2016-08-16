@@ -784,7 +784,7 @@ public:
 class ED4_container : virtual Noncopyable {
     // contains children of a manager
 
-    ED4_manager  *my_owner;     // who is controlling this object // @@@ needed why?
+    ED4_manager  *my_owner;     // who is controlling this object // @@@ elim
     ED4_base    **memberList;
     ED4_index     no_of_members; // How much members are in the list
     ED4_index     size_of_list;
@@ -810,14 +810,14 @@ public:
     ED4_returncode move_member(ED4_index old_pos, ED4_index new_pos);
 
 #if defined(IMPLEMENT_DUMP)
-    void dump(size_t indent) const;
+    void dump_container(size_t indent) const;
 #endif // IMPLEMENT_DUMP
 
 #if defined(ASSERTION_USED)
     int members_ok() const;
 #endif // ASSERTION_USED
 
-    ED4_container(ED4_manager *the_owner);
+    ED4_container(ED4_manager *the_owner); // @@@ remove param
     ~ED4_container();
 };
 
@@ -1161,10 +1161,9 @@ public:
 
 DECLARE_CBTYPE_FVV_AND_BUILDERS(ED4_basePredicate, bool, ED4_base*); // generates makeED4_basePredicate
 
-class ED4_manager : public ED4_base { // derived from a Noncopyable
+class ED4_manager : public ED4_base, public ED4_container { // derived from a Noncopyable
     ED4_cb_list<ED4_manager, ED4_managerCallback> delete_cbs;
 public:
-    ED4_container *children;
 
     E4B_AVOID_UNNEEDED_CASTS(manager);
     DECLARE_DUMP_FOR_BASECLASS(ED4_manager, ED4_base);
@@ -1783,7 +1782,7 @@ public:
     void remove_sequence_changed_cb(const ED4_species_managerCallback& cb) { changed_cbs.remove_cb(cb); }
     void do_callbacks() { changed_cbs.call(this); }
 
-    ED4_species_name_terminal *get_name_terminal() const { return children->member(0)->to_species_name_terminal(); }
+    ED4_species_name_terminal *get_name_terminal() const { return member(0)->to_species_name_terminal(); }
 };
 
 inline ED4_species_manager *ED4_base::containing_species_manager() const {

@@ -741,7 +741,7 @@ static void PV_AddNewAAseqTerminals(ED4_sequence_terminal *seqTerminal, ED4_spec
         ED4_multi_sequence_manager *multiSeqManager = speciesManager->search_spec_child_rek(ED4_L_MULTI_SEQUENCE)->to_multi_sequence_manager();
         ED4_sequence_manager *new_SeqManager = new ED4_sequence_manager(namebuffer, 0, 0, multiSeqManager);
         new_SeqManager->set_property(ED4_P_MOVABLE);
-        multiSeqManager->children->append_member(new_SeqManager);
+        multiSeqManager->append_member(new_SeqManager);
 
         if (i<FORWARD_STRANDS)                              sprintf(namebuffer, "F%d ProteinInfo_Term%ld.%d", i+1, ED4_counter, count++);
         else if ((i-FORWARD_STRANDS)<COMPLEMENTARY_STRANDS) sprintf(namebuffer, "C%dProteinInfo_Term%ld.%d", (i-FORWARD_STRANDS)+1, ED4_counter, count++);
@@ -753,7 +753,7 @@ static void PV_AddNewAAseqTerminals(ED4_sequence_terminal *seqTerminal, ED4_spec
 
             ED4_sequence_info_terminal *seqInfoTerminal = speciesManager->search_spec_child_rek(ED4_L_SEQUENCE_INFO)->to_sequence_info_terminal();
             new_SeqInfoTerminal->set_both_links(seqInfoTerminal);
-            new_SeqManager->children->append_member(new_SeqInfoTerminal);
+            new_SeqManager->append_member(new_SeqInfoTerminal);
         }
 
         {
@@ -776,7 +776,7 @@ static void PV_AddNewAAseqTerminals(ED4_sequence_terminal *seqTerminal, ED4_spec
             }
             TranslateGeneToAminoAcidSequence(ED4_ROOT->aw_root, AA_SeqTerminal, speciesName, startPos, translationMode);
             AA_SeqTerminal->SET_aaSeqFlags(startPos+1, translationMode);
-            new_SeqManager->children->append_member(AA_SeqTerminal);
+            new_SeqManager->append_member(AA_SeqTerminal);
         }
 
         ED4_counter++;
