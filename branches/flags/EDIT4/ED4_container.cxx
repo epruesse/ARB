@@ -209,10 +209,6 @@ void ED4_container::append_member(ED4_base *new_member) {
 
     e4_assert(owner()->spec.allowed_to_contain(new_member->spec.level));
 
-    if (index>=size_of_list) {
-        resize(size_of_list+1); // @@@ skip?
-    }
-
     correct_insert_position(index); // insert before end-spacer
     shift_list(index, 1);           // shift members if necessary
 
