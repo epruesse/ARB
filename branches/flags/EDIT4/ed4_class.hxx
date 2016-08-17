@@ -784,16 +784,14 @@ public:
 class ED4_container : virtual Noncopyable {
     // contains children of a manager
 
-#if defined(ASSERTION_USED)
-    ED4_manager *my_owner;      // who is controlling this object // @@@ elim
-#endif
-
     ED4_base  **memberList;
     ED4_index   no_of_members;   // How much members are in the list
     ED4_index   size_of_list;    // allocated size
 
     void correct_insert_position(ED4_index& index);
     void resize(ED4_index needed_size);
+
+    void shift_list(ED4_index start_index, int length);
 
 protected:
 
@@ -802,11 +800,7 @@ protected:
 
 public:
 
-    ED4_manager *owner() {
-        ED4_manager *man = DOWNCAST(ED4_manager*, this);
-        e4_assert(man == my_owner);
-        return man;
-    }
+    ED4_manager *owner() { return DOWNCAST(ED4_manager*, this); }
     const ED4_manager *owner() const { return const_cast<ED4_container*>(this)->owner(); }
 
     ED4_base* member(ED4_index i) const { e4_assert(i>=0 && i<size_of_list); return memberList[i]; }
@@ -822,8 +816,6 @@ public:
 
     ED4_returncode remove_member(ED4_base *member);
     ED4_index search_member(ED4_extension *location, ED4_properties prop);       // search member
-    void      shift_list(ED4_index start_index, int length);
-    // list has to be shifted because member_list is an array and not a linked list
 
     ED4_returncode search_target_species(ED4_extension *location, ED4_properties prop, ED4_base **found_member, ED4_level return_level);
 
@@ -834,10 +826,10 @@ public:
 #endif // IMPLEMENT_DUMP
 
 #if defined(ASSERTION_USED)
-    int members_ok() const;
+    bool members_ok() const;
 #endif // ASSERTION_USED
 
-    ED4_container(ED4_manager *the_owner); // @@@ remove param
+    ED4_container();
     virtual ~ED4_container();
 };
 

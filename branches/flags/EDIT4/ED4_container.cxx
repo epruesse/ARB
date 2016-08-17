@@ -341,16 +341,14 @@ ED4_index ED4_container::search_member(ED4_extension *location, ED4_properties p
 }
 
 #ifdef ASSERTION_USED
-int ED4_container::members_ok() const {
-    int m;
-    int error = 0;
-
-    for (m=0; m<no_of_members; m++) {
+bool ED4_container::members_ok() const {
+    bool error = false;
+    for (int m=0; m<no_of_members; m++) {
         ED4_base *base = memberList[m];
 
         if (base->index!=m) {
             printf("Member %i has illegal index %li\n", m, base->index);
-            error = 1;
+            error = true;
         }
     }
 
@@ -358,15 +356,11 @@ int ED4_container::members_ok() const {
 }
 #endif // ASSERTION_USED
 
-ED4_container::ED4_container(ED4_manager *IF_ASSERTION_USED(the_owner)) {
-#if defined(ASSERTION_USED)
-    my_owner = the_owner;
-#endif
-
-    ARB_calloc(memberList, 1);
-    // memberList[0] = NULL;
-    no_of_members    = 0;
-    size_of_list     = 1;
+ED4_container::ED4_container() :
+    no_of_members(0),
+    size_of_list(1)
+{
+    ARB_calloc(memberList, size_of_list);
 }
 
 
