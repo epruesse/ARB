@@ -208,7 +208,7 @@ class AW_DB_selection : public AW_selection { // derived from a Noncopyable
     GBDATA *gbd;                                    // root container of data displayed in selection list
 public:
     AW_DB_selection(AW_selection_list *sellist_, GBDATA *gbd_);
-    virtual ~AW_DB_selection() OVERRIDE;
+    ~AW_DB_selection() OVERRIDE;
     
     GBDATA *get_gbd() { return gbd; }
     GBDATA *get_gb_main();

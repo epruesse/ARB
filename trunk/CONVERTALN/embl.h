@@ -67,7 +67,7 @@ public:
         keywords    = no_content();
         dr          = no_content();
     }
-    virtual ~Embl() OVERRIDE {
+    ~Embl() OVERRIDE {
         freenull(ID);
         freenull(dateu);
         freenull(datec);

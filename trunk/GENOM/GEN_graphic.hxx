@@ -69,7 +69,7 @@ protected:
 
 public:
     GEN_graphic(AW_root *aw_root, GBDATA *gb_main, GEN_graphic_cb_installer callback_installer_, int window_nr_);
-    virtual ~GEN_graphic() OVERRIDE;
+    ~GEN_graphic() OVERRIDE;
 
     void reinit_gen_root(AWT_canvas *scr, bool force_reinit);
 
@@ -78,10 +78,10 @@ public:
 
     AW_gc_manager *init_devices(AW_window *, AW_device *, AWT_canvas *scr) OVERRIDE;
 
-    virtual void show(AW_device *device) OVERRIDE;
+    void show(AW_device *device) OVERRIDE;
 
     void handle_command(AW_device *device, AWT_graphic_event& event) OVERRIDE;
-    virtual int check_update(GBDATA *gbdummy) OVERRIDE;
+    int check_update(GBDATA *gbdummy) OVERRIDE;
 
     AW_root *get_aw_root() const { return aw_root; }
     GBDATA *get_gb_main() const { return gb_main; }

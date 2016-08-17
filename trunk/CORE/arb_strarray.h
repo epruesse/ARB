@@ -139,13 +139,13 @@ public:
 };
 
 class StrArray : public CharPtrArray {
-    virtual void free_elem(int i) OVERRIDE {
+    void free_elem(int i) OVERRIDE {
         freenull(str[i]);
     }
 
 public:
     StrArray() {}
-    virtual ~StrArray() OVERRIDE { erase(); }
+    ~StrArray() OVERRIDE { erase(); }
 
     void erase() { erase_elems(); }
 
@@ -179,11 +179,11 @@ public:
 class ConstStrArray : public CharPtrArray { // derived from a Noncopyable
     char *memblock;
 
-    virtual void free_elem(int i) OVERRIDE { str[i] = NULL; }
+    void free_elem(int i) OVERRIDE { str[i] = NULL; }
 
 public:
     ConstStrArray() : memblock(NULL) {}
-    virtual ~ConstStrArray() OVERRIDE { free(memblock); }
+    ~ConstStrArray() OVERRIDE { free(memblock); }
 
     void set_memblock(char *block) {
         // hold one memblock until destruction

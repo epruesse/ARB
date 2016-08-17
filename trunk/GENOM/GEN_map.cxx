@@ -1371,15 +1371,15 @@ static AW_window *GEN_create_awar_debug_window(AW_root *aw_root) {
 
 struct GEN_item_type_species_selector : public awt_item_type_selector {
     GEN_item_type_species_selector() : awt_item_type_selector(AWT_IT_GENE) {}
-    virtual ~GEN_item_type_species_selector() OVERRIDE {}
+    ~GEN_item_type_species_selector() OVERRIDE {}
 
-    virtual const char *get_self_awar() const OVERRIDE {
+    const char *get_self_awar() const OVERRIDE {
         return AWAR_COMBINED_GENE_NAME;
     }
-    virtual size_t get_self_awar_content_length() const OVERRIDE {
+    size_t get_self_awar_content_length() const OVERRIDE {
         return 12 + 1 + 40; // species-name+'/'+gene_name
     }
-    virtual GBDATA *current(AW_root *root, GBDATA *gb_main) const OVERRIDE { // give the current item
+    GBDATA *current(AW_root *root, GBDATA *gb_main) const OVERRIDE { // give the current item
         char   *species_name = root->awar(AWAR_ORGANISM_NAME)->read_string();
         char   *gene_name   = root->awar(AWAR_GENE_NAME)->read_string();
         GBDATA *gb_gene      = 0;
@@ -1397,7 +1397,7 @@ struct GEN_item_type_species_selector : public awt_item_type_selector {
 
         return gb_gene;
     }
-    virtual const char *getKeyPath() const OVERRIDE { // give the keypath for items
+    const char *getKeyPath() const OVERRIDE { // give the keypath for items
         return CHANGE_KEY_PATH_GENES;
     }
 };
