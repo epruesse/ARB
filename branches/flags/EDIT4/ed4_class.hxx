@@ -802,7 +802,11 @@ protected:
 
 public:
 
-    inline ED4_manager *owner();
+    ED4_manager *owner() {
+        ED4_manager *man = DOWNCAST(ED4_manager*, this);
+        e4_assert(man == my_owner);
+        return man;
+    }
     const ED4_manager *owner() const { return const_cast<ED4_container*>(this)->owner(); }
 
     ED4_base* member(ED4_index i) const { e4_assert(i>=0 && i<size_of_list); return memberList[i]; }
@@ -2127,13 +2131,7 @@ inline void ED4_base::request_resize() {
     if (parent) parent->resize_requested_by_child();
 }
 
-inline ED4_manager *ED4_container::owner() {
-    ED4_manager *man = DOWNCAST(ED4_manager*, this);
-    e4_assert(man == my_owner);
-    return man;
-}
-
-void ED4_manager::resize_requested_by_child() {
+void ED4_manager::resize_requested_by_child() { 
     if (!update_info.resize) request_resize();
 }
 
@@ -2294,5 +2292,4 @@ void ED4_exit() __ATTR__NORETURN;
 #else
 #error ed4_class included twice
 #endif
-
 
