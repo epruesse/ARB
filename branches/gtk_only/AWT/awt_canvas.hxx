@@ -235,7 +235,7 @@ class AWT_nonDB_graphic : public AWT_graphic { // @@@ check AWT_nonDB_graphic
     // a partly implementation of AWT_graphic
 public:
     AWT_nonDB_graphic() {}
-    virtual ~AWT_nonDB_graphic() OVERRIDE {}
+    ~AWT_nonDB_graphic() OVERRIDE {}
 
     // dummy functions, only spittings out warnings:
     GB_ERROR load(GBDATA *gb_main, const char *name) OVERRIDE __ATTR__USERESULT;

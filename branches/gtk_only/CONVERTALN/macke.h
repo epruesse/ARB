@@ -87,7 +87,7 @@ public:
         remarks   = NULL;
         allocated = 0;
     }
-    virtual ~Macke() OVERRIDE {
+    ~Macke() OVERRIDE {
         freenull(seqabbr);
         freenull(name);
         freenull(atcc);

@@ -1109,7 +1109,7 @@ private:
     string id_dest;
     string id_source;
 
-    virtual GB_ERROR action() OVERRIDE {
+    GB_ERROR action() OVERRIDE {
         GB_ERROR             error       = 0;
         const awt_mask_item *item_source = mask->mask_global().get_identified_item(id_source, error);
         awt_mask_item       *item_dest   = mask->mask_global().get_identified_item(id_dest, error);
@@ -1124,7 +1124,7 @@ public:
         , id_dest(id_dest_)
         , id_source(id_source_)
     {}
-    virtual ~awt_assignment() OVERRIDE {}
+    ~awt_assignment() OVERRIDE {}
 };
 
 static void AWT_input_mask_perform_action(AW_window*, awt_mask_action *action) {
@@ -1326,14 +1326,14 @@ public:
         : awt_viewport(global_, generate_baseName(global_), "0", false, label_)
         , awt_linked_to_item()
     {}
-    virtual ~awt_marked_checkbox() OVERRIDE {}
+    ~awt_marked_checkbox() OVERRIDE {}
 
-    virtual GB_ERROR link_to(GBDATA *gb_new_item) OVERRIDE; // link to a new item
-    virtual GB_ERROR relink() OVERRIDE { return link_to(mask_global().get_selected_item()); }
-    virtual void awar_changed() OVERRIDE;
-    virtual void db_changed() OVERRIDE;
-    virtual void general_item_change() OVERRIDE { db_changed(); } // called if item was changed (somehow)
-    virtual void build_widget(AW_window *aws) OVERRIDE; // builds the widget at the current position
+    GB_ERROR link_to(GBDATA *gb_new_item) OVERRIDE; // link to a new item
+    GB_ERROR relink() OVERRIDE { return link_to(mask_global().get_selected_item()); }
+    void awar_changed() OVERRIDE;
+    void db_changed() OVERRIDE;
+    void general_item_change() OVERRIDE { db_changed(); } // called if item was changed (somehow)
+    void build_widget(AW_window *aws) OVERRIDE; // builds the widget at the current position
 };
 
 GB_ERROR awt_marked_checkbox::link_to(GBDATA *gb_new_item) { // link to a new item

@@ -102,18 +102,18 @@ public:
         @param name_ element name
     */
     XML_Tag(const std::string &name_);
-    virtual ~XML_Tag() OVERRIDE;
+    ~XML_Tag() OVERRIDE;
 
     /*! add an attribute to the XML_Tag
-        @param name_ attribute name
-        @param content_ attribute value
+      @param name_ attribute name
+      @param content_ attribute value
     */
-    void         add_attribute(const std::string& name_, const std::string& content_);
-    void         add_attribute(const std::string& name_, int value);
-    virtual void add_son(XML_Node *son_, bool son_is_tag) OVERRIDE;
-    virtual void remove_son(XML_Node *son_) OVERRIDE;
-    virtual void open(FILE *out) OVERRIDE;
-    virtual void close(FILE *out) OVERRIDE;
+    void add_attribute(const std::string& name_, const std::string& content_);
+    void add_attribute(const std::string& name_, int value);
+    void add_son(XML_Node *son_, bool son_is_tag) OVERRIDE;
+    void remove_son(XML_Node *son_) OVERRIDE;
+    void open(FILE *out) OVERRIDE;
+    void close(FILE *out) OVERRIDE;
 
     void set_on_extra_line(bool oel) { onExtraLine = oel; }
 };
@@ -128,24 +128,24 @@ public:
         @param content_ the content
     */
     XML_Text(const std::string& content_) : XML_Node(false), content(content_) {}
-    virtual ~XML_Text() OVERRIDE;
+    ~XML_Text() OVERRIDE;
 
-    virtual void add_son(XML_Node *son_, bool son_is_tag) OVERRIDE __ATTR__NORETURN;
-    virtual void remove_son(XML_Node *son_) OVERRIDE __ATTR__NORETURN;
-    virtual void open(FILE *) OVERRIDE;
-    virtual void close(FILE *out) OVERRIDE;
+    void add_son(XML_Node *son_, bool son_is_tag) OVERRIDE __ATTR__NORETURN;
+    void remove_son(XML_Node *son_) OVERRIDE __ATTR__NORETURN;
+    void open(FILE *) OVERRIDE;
+    void close(FILE *out) OVERRIDE;
 };
 
 class XML_Comment : public XML_Node {
     std::string content;
 public:
     XML_Comment(const std::string& content_) : XML_Node(false), content(content_) {}
-    virtual ~XML_Comment() OVERRIDE;
+    ~XML_Comment() OVERRIDE;
 
-    virtual void add_son(XML_Node *son_, bool son_is_tag) OVERRIDE __ATTR__NORETURN;
-    virtual void remove_son(XML_Node *son_) OVERRIDE __ATTR__NORETURN;
-    virtual void open(FILE *) OVERRIDE;
-    virtual void close(FILE *out) OVERRIDE;
+    void add_son(XML_Node *son_, bool son_is_tag) OVERRIDE __ATTR__NORETURN;
+    void remove_son(XML_Node *son_) OVERRIDE __ATTR__NORETURN;
+    void open(FILE *) OVERRIDE;
+    void close(FILE *out) OVERRIDE;
 };
 
 //! an entire xml document

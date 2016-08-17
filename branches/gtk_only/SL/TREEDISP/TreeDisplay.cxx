@@ -3439,7 +3439,7 @@ static void fake_AD_map_viewer_cb(GBDATA *, AD_MAP_VIEWER_TYPE) {}
 class fake_AWT_graphic_tree : public AWT_graphic_tree {
     int var_mode; // current range: [0..3]
 
-    virtual void read_tree_settings() OVERRIDE {
+    void read_tree_settings() OVERRIDE {
         scaled_branch_distance = 1.0; // not final value!
 
         // var_mode is in range [0..3]
