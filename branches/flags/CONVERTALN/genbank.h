@@ -66,7 +66,7 @@ public:
         source     = no_content();
         organism   = no_content();
     }
-    virtual ~GenBank() OVERRIDE {
+    ~GenBank() OVERRIDE {
         freenull(locus);
         freenull(definition);
         freenull(accession);

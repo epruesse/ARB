@@ -49,13 +49,13 @@ public:
         arb_assert(u == '='); // do not allow uncertainties with single position ctor
     }
 
-    virtual int count() const OVERRIDE { return 1; }
-    virtual LocationJoinType getJoinType() const OVERRIDE { return LJT_NOT_JOINED; }
-    virtual bool isInRange(long p1, long p2) const OVERRIDE {
+    int count() const OVERRIDE { return 1; }
+    LocationJoinType getJoinType() const OVERRIDE { return LJT_NOT_JOINED; }
+    bool isInRange(long p1, long p2) const OVERRIDE {
         arb_assert(p1 <= p2);
         return p1 <= pos1 && pos2 <= p2;
     }
-    virtual void save(GEN_position *pos, bool complementary) const OVERRIDE {
+    void save(GEN_position *pos, bool complementary) const OVERRIDE {
         int p = pos->parts;
 
         pos->start_pos[p]       = pos1;
@@ -67,7 +67,7 @@ public:
         ++pos->parts;
     }
 
-    virtual string as_string() const OVERRIDE {
+    string as_string() const OVERRIDE {
         if (uncertain1 == '+') {
             if (uncertain2 != '-' || pos2 != (pos1+1)) throw "Invalid uncertainties";
             return GBS_global_string("%li^%li", pos1, pos2);
@@ -96,8 +96,8 @@ public:
         locations.push_back(loc);
     }
 
-    virtual LocationJoinType getJoinType() const OVERRIDE { return joinType; }
-    virtual int count() const OVERRIDE {
+    LocationJoinType getJoinType() const OVERRIDE { return joinType; }
+    int count() const OVERRIDE {
         int Count = 0;
 
         LocationVectorCIter e = locations.end();
@@ -107,7 +107,7 @@ public:
         return Count;
     }
 
-    virtual bool isInRange(long p1, long p2) const OVERRIDE {
+    bool isInRange(long p1, long p2) const OVERRIDE {
         LocationVectorCIter e = locations.end();
         for (LocationVectorCIter i = locations.begin(); i != e; ++i) {
             if (!(*i)->isInRange(p1, p2)) {
@@ -117,7 +117,7 @@ public:
         return true;
     }
 
-    virtual void save(GEN_position *pos, bool complementary) const OVERRIDE {
+    void save(GEN_position *pos, bool complementary) const OVERRIDE {
         if (complementary) {
             LocationVectorCRIter e = locations.rend();
             for (LocationVectorCRIter i = locations.rbegin(); i != e; ++i) {
@@ -131,7 +131,7 @@ public:
             }
         }
     }
-    virtual string as_string() const OVERRIDE {
+    string as_string() const OVERRIDE {
         string joined;
         switch (joinType) {
             case LJT_JOIN: joined  = "join"; break;
@@ -159,11 +159,11 @@ class ComplementLocation : public Location {
 public:
     ComplementLocation(const LocationPtr& loc) : location(loc) {}
 
-    virtual int count() const OVERRIDE { return location->count(); }
-    virtual bool isInRange(long p1, long p2) const OVERRIDE { return location->isInRange(p1, p2); }
-    virtual void save(GEN_position *pos, bool complementary) const OVERRIDE { location->save(pos, !complementary); }
-    virtual LocationJoinType getJoinType() const OVERRIDE { return location->getJoinType(); }
-    virtual string as_string() const OVERRIDE { return string("complement(")+location->as_string()+')'; }
+    int count() const OVERRIDE { return location->count(); }
+    bool isInRange(long p1, long p2) const OVERRIDE { return location->isInRange(p1, p2); }
+    void save(GEN_position *pos, bool complementary) const OVERRIDE { location->save(pos, !complementary); }
+    LocationJoinType getJoinType() const OVERRIDE { return location->getJoinType(); }
+    string as_string() const OVERRIDE { return string("complement(")+location->as_string()+')'; }
 };
 
 // --------------------------------------------------------------------------------
