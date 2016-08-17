@@ -83,47 +83,47 @@ public:
         return 0.0;
     }
 
-    virtual AW_choice *add_choice(AW_action&, int) OVERRIDE;
-    virtual AW_choice *add_choice(AW_action&, float) OVERRIDE;
-    virtual AW_choice *add_choice(AW_action&, const char*) OVERRIDE;
+    AW_choice *add_choice(AW_action&, int) OVERRIDE;
+    AW_choice *add_choice(AW_action&, float) OVERRIDE;
+    AW_choice *add_choice(AW_action&, const char*) OVERRIDE;
 
     AW_awar *add_callback(const RootCallback& cb) OVERRIDE;
     AW_awar *remove_callback(const RootCallback& cb) OVERRIDE;
 
-    virtual AW_awar *add_target_var(char **ppchr) OVERRIDE;
-    virtual AW_awar *add_target_var(long *pint) OVERRIDE;
-    virtual AW_awar *add_target_var(float *pfloat) OVERRIDE;
+    AW_awar *add_target_var(char **ppchr) OVERRIDE;
+    AW_awar *add_target_var(long *pint) OVERRIDE;
+    AW_awar *add_target_var(float *pfloat) OVERRIDE;
 
-    virtual AW_awar *set_minmax(float min, float max) OVERRIDE;
-    virtual float    get_min() const OVERRIDE;
-    virtual float    get_max() const OVERRIDE;
-    virtual AW_awar *set_srt(const char *srt) OVERRIDE;
+    AW_awar *set_minmax(float min, float max) OVERRIDE;
+    float    get_min() const OVERRIDE;
+    float    get_max() const OVERRIDE;
+    AW_awar *set_srt(const char *srt) OVERRIDE;
 
-    virtual bool        has_default_value() const OVERRIDE = 0;
-    virtual char       *read_string() const       OVERRIDE;
-    virtual const char *read_char_pntr() const    OVERRIDE;
-    virtual char       *read_as_string() const    OVERRIDE;
-    virtual long        read_int() const          OVERRIDE;
-    virtual float       read_float() const        OVERRIDE;
-    virtual float       read_as_float() const     OVERRIDE;
-    virtual GBDATA     *read_pointer() const      OVERRIDE;
-    virtual bool        read_as_bool() const      OVERRIDE;
+    bool        has_default_value() const OVERRIDE = 0;
+    char       *read_string() const       OVERRIDE;
+    const char *read_char_pntr() const    OVERRIDE;
+    char       *read_as_string() const    OVERRIDE;
+    long        read_int() const          OVERRIDE;
+    float       read_float() const        OVERRIDE;
+    float       read_as_float() const     OVERRIDE;
+    GBDATA     *read_pointer() const      OVERRIDE;
+    bool        read_as_bool() const      OVERRIDE;
 
-    virtual GB_ERROR write_string(const char *aw_string, bool touch = false) OVERRIDE;
-    virtual GB_ERROR write_as_string(const char *aw_string, bool touch = false) OVERRIDE;
-    virtual GB_ERROR write_int(long aw_int, bool touch = false) OVERRIDE;
-    virtual GB_ERROR write_float(float aw_float, bool touch = false) OVERRIDE;
-    virtual GB_ERROR write_pointer(GBDATA *aw_pointer, bool touch = false) OVERRIDE;
-    virtual GB_ERROR write_as_bool(bool b, bool touch = false) OVERRIDE;
+    GB_ERROR write_string(const char *aw_string, bool touch = false) OVERRIDE;
+    GB_ERROR write_as_string(const char *aw_string, bool touch = false) OVERRIDE;
+    GB_ERROR write_int(long aw_int, bool touch = false) OVERRIDE;
+    GB_ERROR write_float(float aw_float, bool touch = false) OVERRIDE;
+    GB_ERROR write_pointer(GBDATA *aw_pointer, bool touch = false) OVERRIDE;
+    GB_ERROR write_as_bool(bool b, bool touch = false) OVERRIDE;
 
-    virtual GB_ERROR toggle_toggle() OVERRIDE;   // switches between 1/0
+    GB_ERROR toggle_toggle() OVERRIDE;   // switches between 1/0
 
-    virtual AW_awar *map(const char *awarn) OVERRIDE;
-    virtual AW_awar *map(AW_default dest) OVERRIDE; // map to new address
-    virtual AW_awar *map(AW_awar *dest) OVERRIDE;   // map to new address
-    virtual AW_awar *unmap() OVERRIDE;              // map to original addres
-    virtual bool     is_mapped() const OVERRIDE;    // returns true if awar is remapped to new address
-    virtual void     touch() OVERRIDE;
+    AW_awar *map(const char *awarn) OVERRIDE;
+    AW_awar *map(AW_default dest) OVERRIDE; // map to new address
+    AW_awar *map(AW_awar *dest) OVERRIDE;   // map to new address
+    AW_awar *unmap() OVERRIDE;              // map to original addres
+    bool     is_mapped() const OVERRIDE;    // returns true if awar is remapped to new address
+    void     touch() OVERRIDE;
 };
 
 class AW_awar_int : public AW_awar_impl, virtual Noncopyable {

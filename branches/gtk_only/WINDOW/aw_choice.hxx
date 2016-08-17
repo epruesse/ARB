@@ -25,8 +25,8 @@ public:
     AW_choice(const AW_choice&);
     AW_choice& operator=(const AW_choice&);
 
-    virtual ~AW_choice() OVERRIDE;
-    virtual void user_clicked(GtkWidget*) OVERRIDE;
+    ~AW_choice() OVERRIDE;
+    void user_clicked(GtkWidget*) OVERRIDE;
 };
 
 class AW_choice_list : virtual Noncopyable { 
