@@ -1,0 +1,543 @@
+
+
+ARB_DB
+
+Basic idea:
+
+	All data is stored hierarchically in database elements.
+
+	A database element is a small structure which stores:
+		- key
+		- type	(integer/string...)
+		- it's value
+		- last modification time
+		- access rights
+		...
+
+	A value itself might be a set of database elements.
+
+	There are 10 basic data types:
+	Type		C/C++ enum	PERL_NAME
+	----------------------------------------------------------------
+	String		GB_STRING	STRING	// Null terminated string
+	Integer		GB_INT		INT	// 32 bit integer
+	Float		GB_FLOAT	FLOAT	// real number
+	BitString	GB_BITS		BITS	// any bitstring
+	Integer String	GB_INTS		INTS	// array of integer
+	Container	GB_DB		CONTAINER // a set of other elements
+
+
+	****************************** Example 1 ***************
+
+	Let's say we want to store the following key value pairs in the
+	database:
+		name	niels
+		tel	37543345
+		sex	male
+		age	40
+
+	So all we have to do is to create 4 database elements of type
+	STRING and store the data into it:
+
+		$gb_main = ARB::open("new_db.arb","wc");	// create new db
+				// we are operating
+				// in a multi user env., so we have to
+				// get exclusive rights to the server:
+		ARB::begin_transaction($gb_main);
+				// create a dbelem key = "name"
+				//			type = "STRING"
+		$gb_name = ARB::create($gb_main,"name","STRING");
+				// and store a value in the dbelem
+		$error = ARB::write_string($gb_name,"niels");
+			...
+			...
+		ARB::commit_transaction($gb_main);	// everything is ok
+		$error = ARB::save($gb_main,"new_db.arb", "a");	// save in ascii format
+
+	***************************** END 1 *********************
+
+
+	What has been done:
+
+		The first argument of nearly all ARB-Database (ARBDB) functions
+		is an existing database element.
+		You may change or read this element or use it to find or
+		create other elements.
+
+		First we create a new database "new_db.arb".
+		ARB::open returns the root element of the database.
+		Before we can actually read or write to it we have to
+		get exclusive rights by calling
+			GB_begin_transaction( root_element_of_database );
+		To make all changes to the database persistent we have
+		to call GB_commit_transaction, or if we want to undo all
+		recent changes GB_abort_transaction.
+		Because the root node of the database is always a container
+		we can simply add new items to it.
+
+
+	****************************** Example 2 ***************
+
+	We have the same situation as in Example 1 but we want to store
+	the name, tel .. of different persons in the database.
+
+	So we simply store the person's data not in the root container,
+	but in a person container.
+
+		$gb_main = ....
+		ARB::begin_transaction($gb_main);
+
+		for all persons do {
+			$gb_person = ARB::create_container($gb_main,"person");
+			$gb_name = ARB::create($gb_person,"name","STRING");
+			$error = ARB::write_string($gb_name,"name of p");
+			if ($error) .....
+			$gb_tel = ARB::create($gb_person,"tel", STRING);
+			$error = ARB::write_string($gb_tel,"telnr of person");
+		}
+		commit and save
+
+	******************************* END 2 ***************************
+
+	What's new in the last example:
+
+		We created sub containers for each person. All this
+		have the key 'person', so in this case the key is really
+		useless. Some people might think that it would be much
+		better to give each container the name of the person.
+		But that would limit you to search for only one field.
+		So we decided not to index the keys of the database
+		elements but their values. So you should not use the
+		key for indexing.
+
+
+Searching the database:
+	There are three main ways to find your data:
+
+		1. Use the key of the elements:
+			This is good if all your keys are unique in
+			a container and if there are only a few elements
+			in a container.
+
+		2. Use the value of the elements:
+			This works like grep in a filesystem. Go through
+			all elements and  inspect the value.
+			This can be indexed, and is therefor much faster
+			and more flexible than the search by key method.
+
+		3. Walk through the database by hand:
+			All elements within one container are stored as
+			a linked list. A small loop allows you to create
+			any user defined query
+
+	All searching is done by two functions:
+		find and search
+	Both functions start the search at a user defined database elem
+	(first argument).
+
+	ARB::search is used, if all keys in a container are unique.
+	example:
+
+	$gb_searched = ARB::search($gb_start,"key1","none");
+		searches in the container $gb_start for an element with
+		the key 'key1'
+
+	$gb_searched = ARB::search($gb_start,"key1/key2","none");
+		searches a container $gb_h with key 'key1' in $gb_start
+		and if found continues searching in $gb_h for an element
+		with key 'key2'
+
+	The last parameter enables ARB::search to create an element if it
+	has not found any. To do this simply enter the type of the new
+	element as the third argument. This is really usefull, if you want
+	to store information in an existing database and you do not know
+	whether an element exists already or not.
+
+
+	ARB::find is used if not all keys are unique
+
+	Like ARB::search it starts the search at a given element.
+	It's basic syntax looks like this:
+
+	ARB::find($gb_start_point, "[opt key]", "[opt value]", "mode");
+		where mode can be:	"this"
+					"down"
+					"down_2"
+					"this_next"
+					"down_next"
+
+	if "[opt key]" != "" than look only for items with that key
+	if "[opt value]" != "" than return only those items which value
+			mach the "[opt value]"
+		Any '*' maches any number of characters
+		Any '?' maches exactly one character
+		the rest maches itself
+
+	If opt key is the searched key and opt value == "" and mode ==
+	"down" than ARB::find will behave like ARB::search.
+
+	mode indicates the direction of the search:
+	"down"	 means that $gb_start_point is a container and it
+		looks for an element in that container
+	"down_2" means that $gb_start_point is a container and all its
+		elements are containers and it looks for elements in
+		the subcontainers of $gb_start_point
+	"this"	forces ARB::search to look for a brother
+		of $gb_start_point.
+	"this_next" continues a search started by mode == "down",
+		The first parameter should be the last hit
+	"down_next" continues a search started by mode == "down_2",
+		The first parameter should be the father of the last hit.
+		To get the father of an element call
+			ARB::get_father($gb_elem);
+
+
+
+	****************************** Example 3 ***************
+	Let's find Niels in our database from example 2
+	and print his data on the screen
+
+
+	....
+			// find an element which holds niels name
+	$gb_niels_name = ARB::find($gb_main,"name","niels","down_2");
+			// We want the container for niels not just his name
+	$gb_niels = ARB::get_father($gb_niels_name);
+			// lets loop through everything
+	$gb_any = ARB::find($gb_niels,"","",down_level);
+	while ($gb_any) {
+			// We know that we have only strings, so this is
+save
+			// Just read the value
+		$value = ARB::read_string($gb_any);
+			// and we need the key
+		$key = ARB::read_key($gb_any);
+		print "$key:	$value\n";
+			// get the next element
+		$gb_any = ARB::find($gb_any,"","","this_next");
+	}
+	...
+
+
+***************************** All the functions ***************
+
+Now the rest is really trivial: only a lot of functions
+
+	Some name conventions:
+		$gb_xxx	indicates are variable which is a database
+			element
+		$gb_cxxx is any container
+		$gb_main is always the root element
+		$error is an error string
+
+
+
+$gb_main = ARB::open("path of existing or new database.arb",flags)
+	if "path of existing or new database.arb" contains a ':'
+	character, then ARB looks for a server instead of a file.
+		path syntax:	hostname:tcpnr		// network mode
+				:path_of_unix_socket	// unix socket
+				:			// default socket
+
+	flags is a string of characters:
+		r		read existing database
+		w		database should be writeable
+		c		create a new one if read failed
+		-> r		reads a database
+		-> rwc		reads or creates a database
+		-> wc		always creates a new one
+
+
+$error = ARB::save($gb_main,"path of the database",mode)
+	mode
+		a		ascii format
+		b		binary format
+	Only if you have opened a database on a file you are allowed to
+	save it, otherwise the server has to do it.
+	You may not change the path of the database, it is used
+	for security. If you want to save the database to a new
+	file use:
+
+$error = ARB::save_as($gb_main,"path of the database",mode)
+
+
+$error = ARB::save_quick($gb_main,"existing path of the database");
+	Save all changes to a file "xxxx.quickX" where X is an
+	autoincremented number between 0 and 7
+
+$error = ARB::save_quick_as($gb_main,"new path");
+	Fake an existing database by create a symbolic link and
+	then call ARB::save_quick
+
+$error = ARB::close($gb_main);
+	You should be polite to your server and say good bye, so
+	please call this function just before you exit.
+	Nothing serious will happen if you forget to call it.
+
+
+$error = ARB::begin_transaction($gb_main);
+	Get the exclusive read and write rights from the server
+$error = ARB::abort_transaction($gb_main);
+	Undo everything since the last begin_transaction
+$error = ARB::commit_transaction($gb_main);
+	Write all data to the server and give the database rights
+	back to other users
+
+$error = ARB::push_transaction($gb_main);
+	Increments an internal counter. If the counter was previously
+	0 then calls begin_transaction. This is usefull when working
+	in a subroutine and not knowing whether your calling function
+	had opened a transaction already.
+$error = ARB::pop_transaction($gb_main);
+	Decrements the internal counter. If the counter gets zero,
+	commit a transaction.
+
+
+****************** Now the following functions assume that you have
+	began a transaction ***************************
+
+*************************** error handling ********************
+Most of the functions return an optional error string if there have
+been a problem. If a function do not return a error string but
+for example a database element, you may get the error string by
+	calling ARB::get_error()
+
+example:
+	$gb_main = ARB::open("Idonotexist","rw");
+	if (! $gb_main ) $error = ARB::get_error();
+
+**************************** find and search entries ***********
+
+$gb_xxx = ARB::search($gb_start_search_point,"path/in/the/database",
+		"TYPE_OF_ELEMENT_YOU_WANT_CREATE/none"
+	search a database element if all keys are unique
+
+$gb_xxx = ARB::find($gb_start_search_point, "[key]", "[value]",
+	"search_mode"
+
+
+************************** create new entries ***************
+
+$gb_new_entry = ARB::create($gb_cxx, "key", "type");
+	creates a new element of type "type" within $gb_cxx
+
+$gb_new_container = ARB::create_container($gb_cxx,"key");
+	create a new container within $gb_cxx
+
+************************* read entries *******************
+	// simple types
+$val = ARB::read_byte($gb_xxx);
+$val = ARB::read_int($gb_xxx);
+$val = ARB::read_float($gb_xxx);
+	// array types
+$val = ARB::read_string($gb_xxx);	// read the value
+$val = ARB::read_bytes($gb_xxx);	// may contain \0 characters
+$val = ARB::read_ints_using_index($gb_xx, "index");
+					// read the integer #index of an
+					// integer array
+$val = ARB::read_floats_using_index($gb_xxx, "index");
+
+$val = ARB::read_count($gb_xxx);	// get the size of the array
+
+$val = ARB::read_as_string($gb_xxx);	// read and convert to string
+
+$val = ARB::read_bits($gb_xxx,char_0,char_1);
+	convert a bit array into a string,
+	a '0' will be converted into char_0
+	a '1' into char_1
+
+	eg: ARB::read_bits($gb_xxx, "-", "+" ); returns a '-' '+' string
+
+
+************************* write entries *******************
+
+$error = ARB::write_int($gb_xxx, "value");	// write the value
+$error = ARB::write_float($gb_xxx, "value");	// write the value
+$error = ARB::write_byte($gb_xxx, "value");	// write the value
+
+$error = ARB::write_bytes($gb_xxx, "value", len);// write array of bytes
+$error = ARB::write_string($gb_xxx, "value");	// write the value
+$error = ARB::write_bits($gb_xxx, "value", char_0); // convert a string
+				// into bitarray, all characters !=
+				// char_0 will converted to 1 else 0
+
+$error = ARB::write_as_string($gb_xxx); try to interpret the value and
+				// convert it automatically to the right
+				// format
+
+If you write to an element and you do not change the value,
+the element thinks, that you have done nothing, and no
+element pending events are called, and the modification time is not
+changed. If you want to force to change the element, call
+
+$error = ARB::touch($gb_xxx);
+
+******************************* etc entries ****************
+
+$error = ARB::delete($gb_xxx);
+	deletes an element or a container and it's subelements
+
+$error = ARB::copy($gb_destination, $gb_source);
+	copy's the value from source to destination.
+	does not create a new element.
+	the type of $gb_destination must be the type of $gb_source
+	if type == "CONTAINER" than all subelements are copied
+
+************************ security levels **********************
+
+each database element has three security levels:
+	read write and delete
+each level's value is between 0 and 7
+
+$val = ARB::read_security_read($gb_xxx);
+$val = ARB::read_security_write($gb_xxx);
+$val = ARB::read_security_delete($gb_xxx);
+
+$error = ARB::write_security_read($gb_xxx, "val");
+$error = ARB::write_security_write($gb_xxx, "val");
+$error = ARB::write_security_delete($gb_xxx, "val");
+
+to change any element, the users security level must be greater or
+equal the elements level. To change the users level call:
+
+$error        = ARB::change_my_security($gb_main,"level","passwd");
+	passwd is not in use yet
+
+
+*********************** additional element information ***********
+
+$type = ARB::read_type($gb_xxx);
+	gets the type of a database elem: "INT" "STRING" "CONTAINER" ....
+
+$key = ARB::read_key($gb_xxx);
+	read the key of a database elem:
+
+$clock = ARB::read_clock($gb_xxx);
+	gets the last modification time of an entry.
+	The modification time of a container is always greater or equal
+	then the modification time of it's subelements.
+	The clock counts transactions, not seconds
+
+
+$error = ARB::set_temporary($gb_xxx);
+	Marks a field in the database as a temporary field.
+	That means that this field is never saved to a file.
+$error = ARB::clear_temporary($gb_xxx);
+	Clears tmp flag
+
+$error = ARB::write_flag($gb_xxx, bool);
+	Sets or clears a flag in the database,
+	There are functions to quickly find all flagged == marked
+	entries
+
+$gb_xxx = ARB::first_marked($gb_cxx);
+	finds the first flagged element in a container
+
+$gb_xxx = ARB::next_marked($gb_xxx);
+	gets the next flagged item
+
+$count = ARB::number_of_marked_subentries($gb_cxxx);
+	adds all flags of direct subentries within $gb_cxxx
+
+$error = ARB::write_usr_public($gb_xxx, value);
+	Each element has 8 free public bits
+	public means that all clients share the same bits
+
+$value = ARB::read_usr_public($gb_xxx);
+
+
+$error = ARB::write_usr_private($gb_xxx, value);
+	Each element has 8 free private bits
+	private means each database client has it's own bits
+$value = ARB::read_usr_private($gb_xxx);
+
+
+************************** ETC ************************
+
+$error = ARB::release($gb_xxx);
+	By default all clients cache all data which has been searched,
+	read or modified.
+	If you want to get rid of some cached items you may call
+	ARB::release, which frees all data below $gb_xxx.
+	Warning: All database elements, which are a subentry of $gb_xxx
+	will be temporary lost. You have to search or find them again.
+
+
+$error = ARB::add_callback($gb_xxx, function_name, clientdata);
+	Adds a callback to a database element.
+	Every time you call begin_transaction and any other client
+	has changed this database element, your function_name is called
+	Every time you call commit_transaction and you have made
+	changed to this item, your function_name is called,
+
+	function_name is a function with the following parameters:
+
+	func($gb_changed_element, clientdata, "DELETED/CHANGED"
+		A "DELETED" value in the third argument means that
+		the element had been deleted
+		A "CHANGED" value indicate only a change.
+
+$error = ARB::remove_callback($gb_xxx, function_name);
+	remove a callback
+
+
+$error = ARB::create_index($gb_cxx, "key", estimated_size);
+	If you call ARB::find with mode "down_2" or "this_next"
+	very often on a huge database you may create an index.
+	estimated_size is the estimated number of items which should
+	be indexed.
+	In the current version we are using a hash mechanism to index
+	the elements. Only strings can be indexed.
+
+$error = ARB::undo($gb_main, "UNDO"/"REDO");
+	undo oder redo the database.
+	Should not be called within a running transaction
+
+$info = ARB::undo_info($gb_main, "UNDO"/"REDO");
+	Should give you a short information about the next undo/redo
+
+$error = ARB::set_undo_mem($gb_main, size_in_bytes);
+	sets the amount of memory used to store undo values
+
+$time = ARB::last_saved_clock($gb_main);
+	transaction number when the database was last saved
+	Can only be called from the server program
+
+$time = ARB::last_saved_time($gb_main);
+	the same but in seconds after 1 Jan 0:00 1970
+
+$error = ARB::set_cache_size($gb_main, "size_in_bytes");
+	ARB uses datacompression for long strings. If some strings
+	are used very intensely the program may slow down.
+	Therefor a small cache is used and it's size can be set
+	by this function. If you are working with sequences, a value
+	of 1 or 2 meg seems reasonable
+
+
+$error = ARB::check_key("key");
+	checks "key" is a valid key
+
+************************* Creating a server ******************
+
+$error = ARB::sopen("socketid",timeout_in_millisec, $gb_main);
+	serves $gb_main for other clients.
+	syntax of "socketid":
+		host:tcpnr
+		:/path/of/unix/socket
+		:			// default unix socket
+
+	prepares the database to be served. timeout is not used now
+	but later in:
+
+$error = ARB::accept_calls($gb_main);
+	Watch your socket timeout_in_millisec for any clients, who need
+	help
+
+$error = ARB::shutdown($gb_main);
+	shutdown the server
+
+$clients = ARB::read_clients($gb_main)
+	Get the number of clients using this server.
+	if $clients == -1 than I'm a client no server
+	So this can be used to check wether I'm a client or server
+

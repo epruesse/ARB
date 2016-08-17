@@ -1,0 +1,22 @@
+ID   MetMazei   rna; 66 BP.
+XX
+AC   X69874;
+OS   Methanosarcina mazei
+OC   [DEW] Archaea
+OC   Euryarchaeota
+OC   Methanomicrobium group
+OC   [EBI] Prokaryota; Bacteria; Mendosicutes; Archaeobacteria;
+OC   Methanomicrobiales; Methanosarcinaceae.
+XX
+XX
+XX
+XX
+XX
+XX
+FT   source          1..66
+XX
+SQ   Sequence 66 BP;
+     .......... .......... .AUUCUGGUU -----GA--U -CC-U-G-CC AG-AG-GU-U        60
+     -AC-U-GC-- U-AU-C--G- GU-GUUC--G C---C-U--A AGCCA-U-GC -G-AGU-CAU       120
+     -A-UGU---- -----A---- ---------- -......... .....                       165
+//
