@@ -441,7 +441,7 @@ namespace arb_test {
     };
 
     class debug_asserter : public asserter {
-        virtual void announce_failure() const OVERRIDE {
+        void announce_failure() const OVERRIDE {
             print("<<< would trigger assertion now! >>>\n");
         }
     public:
@@ -642,7 +642,7 @@ namespace arb_test {
         matchable_value<T> expected;
     public:
         value_matcher(const matchable_value<T>& expected_) : expected(expected_) {}
-        virtual ~value_matcher() OVERRIDE {}
+        ~value_matcher() OVERRIDE {}
 
         virtual bool matches(const copy<T>& v1, const copy<T>& v2) const = 0;
         virtual const char *relation(bool isMatch) const                 = 0;
@@ -738,7 +738,7 @@ namespace arb_test {
                 depend_on[i] = other.depend_on[i]->clone();
             }
         }
-        virtual ~expectation_group() OVERRIDE {
+        ~expectation_group() OVERRIDE {
             for (int i = 0; i<count; ++i) {
                 delete depend_on[i];
             }

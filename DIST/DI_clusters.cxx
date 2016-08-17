@@ -325,7 +325,7 @@ public:
     {}
 
     // ARB_countedTree interface
-    virtual void init_tree() OVERRIDE { update_leaf_counters(); }
+    void init_tree() OVERRIDE { update_leaf_counters(); }
     // ARB_countedTree interface end
 
     DEFINE_TREE_RELATIVES_ACCESSORS(GroupTree);

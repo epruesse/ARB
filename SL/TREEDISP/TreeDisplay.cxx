@@ -3487,10 +3487,10 @@ static AW_rgb *dcolors       = colors_def;
 static long    dcolors_count = ARRAY_ELEMS(colors_def);
 
 class fake_AW_GC : public AW_GC {
-    virtual void wm_set_foreground_color(AW_rgb /*col*/) OVERRIDE {  }
-    virtual void wm_set_function(AW_function /*mode*/) OVERRIDE { td_assert(0); }
-    virtual void wm_set_lineattributes(short /*lwidth*/, AW_linestyle /*lstyle*/) OVERRIDE {}
-    virtual void wm_set_font(AW_font /*font_nr*/, int size, int */*found_size*/) OVERRIDE {
+    void wm_set_foreground_color(AW_rgb /*col*/) OVERRIDE {  }
+    void wm_set_function(AW_function /*mode*/) OVERRIDE { td_assert(0); }
+    void wm_set_lineattributes(short /*lwidth*/, AW_linestyle /*lstyle*/) OVERRIDE {}
+    void wm_set_font(AW_font /*font_nr*/, int size, int */*found_size*/) OVERRIDE {
         unsigned int i;
         for (i = AW_FONTINFO_CHAR_ASCII_MIN; i <= AW_FONTINFO_CHAR_ASCII_MAX; i++) {
             set_char_size(i, size, 0, size-2); // good fake size for Courier 8pt
@@ -3498,7 +3498,7 @@ class fake_AW_GC : public AW_GC {
     }
 public:
     fake_AW_GC(AW_common *common_) : AW_GC(common_) {}
-    virtual int get_available_fontsizes(AW_font /*font_nr*/, int */*available_sizes*/) const OVERRIDE {
+    int get_available_fontsizes(AW_font /*font_nr*/, int */*available_sizes*/) const OVERRIDE {
         td_assert(0);
         return 0;
     }
@@ -3518,7 +3518,7 @@ struct fake_AW_common : public AW_common {
             gcm->set_fg_color(colors_def[gc+AW_STD_COLOR_IDX_MAX]);
         }
     }
-    virtual ~fake_AW_common() OVERRIDE {}
+    ~fake_AW_common() OVERRIDE {}
 
     virtual AW_GC *create_gc() {
         return new fake_AW_GC(this);
@@ -3528,7 +3528,7 @@ struct fake_AW_common : public AW_common {
 class fake_AWT_graphic_tree : public AWT_graphic_tree {
     int var_mode; // current range: [0..3]
 
-    virtual void read_tree_settings() OVERRIDE {
+    void read_tree_settings() OVERRIDE {
         scaled_branch_distance = 1.0; // not final value!
 
         // var_mode is in range [0..3]

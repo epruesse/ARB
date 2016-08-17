@@ -120,7 +120,7 @@ public:
     SQ_GroupData_Impl() {
         consensus = 0;
     }
-    virtual ~SQ_GroupData_Impl() OVERRIDE;
+    ~SQ_GroupData_Impl() OVERRIDE;
 
     SQ_GroupData_Impl& operator = (const SQ_GroupData& Other) OVERRIDE {
         const SQ_GroupData_Impl& other = dynamic_cast<const SQ_GroupData_Impl&>(Other);
