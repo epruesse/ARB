@@ -95,7 +95,7 @@ public:
 
     // ARB_seqtree_root interface
 
-    virtual void change_root(TreeNode *old, TreeNode *newroot) OVERRIDE;
+    void change_root(TreeNode *old, TreeNode *newroot) OVERRIDE;
 
     GB_ERROR loadFromDB(const char *name) OVERRIDE;
     GB_ERROR saveToDB() OVERRIDE;

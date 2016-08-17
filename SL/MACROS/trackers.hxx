@@ -56,7 +56,7 @@ public:
         : id(ARB_strdup(application_id)),
           gbmain(gb_main)
     {}
-    virtual ~BoundActionTracker() OVERRIDE {
+    ~BoundActionTracker() OVERRIDE {
         free(id);
     }
 

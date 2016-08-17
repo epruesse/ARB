@@ -260,10 +260,10 @@ enum SEC_BASE_TYPE {
 class SEC_base : public SEC_constrainted, public SEC_oriented, virtual Noncopyable { // loop or helix
     SEC_root *root;
 
-    virtual SEC_base *get_parent() OVERRIDE = 0;
+    SEC_base *get_parent() OVERRIDE = 0;
 public:
     SEC_base(SEC_root *Root) : root(Root) {}
-    virtual ~SEC_base() OVERRIDE {}
+    ~SEC_base() OVERRIDE {}
 
     virtual SEC_BASE_TYPE getType() const        = 0;
     virtual const Position& get_fixpoint() const = 0;
@@ -317,7 +317,7 @@ class SEC_helix : public SEC_base { // derived from a Noncopyable
 public:
 
     SEC_helix(SEC_root *root, SEC_helix_strand *to_root, SEC_helix_strand *from_root);
-    virtual ~SEC_helix() OVERRIDE {}
+    ~SEC_helix() OVERRIDE {}
 
     void calculate_helix_size();
     void calculate_helix_coordinates(); // assumes root-side loop has correct coordinates
@@ -389,7 +389,7 @@ class SEC_helix_strand : public SEC_base_part { // derived from a Noncopyable
 public:
 
     SEC_helix_strand();
-    virtual ~SEC_helix_strand() OVERRIDE;
+    ~SEC_helix_strand() OVERRIDE;
 
     GB_ERROR read(SEC_loop *loop_, std::istream & in, int version);
 
@@ -480,7 +480,7 @@ private:
 public:
 
     SEC_segment();
-    virtual ~SEC_segment() OVERRIDE;
+    ~SEC_segment() OVERRIDE;
 
     void save(std::ostream & out, int indent, const XString& x_string);
     GB_ERROR read(SEC_loop *loop_, std::istream & in, int version);
@@ -558,7 +558,7 @@ class SEC_loop : public SEC_base { // derived from a Noncopyable
 public:
 
     SEC_loop(SEC_root *root_);
-    virtual ~SEC_loop() OVERRIDE;
+    ~SEC_loop() OVERRIDE;
 
     void save(std::ostream & out, int indent, const XString& x_string);
     GB_ERROR read(SEC_helix_strand *rootside_strand, std::istream & in, int version, double loop_angle);

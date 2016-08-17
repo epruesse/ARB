@@ -70,7 +70,7 @@ class AP_sequence_protein : public AP_sequence { // derived from a Noncopyable
 
 public:
     AP_sequence_protein(const AliView *aliview);
-    virtual ~AP_sequence_protein() OVERRIDE;
+    ~AP_sequence_protein() OVERRIDE;
 
     const AP_PROTEINS *get_sequence() const { lazy_load_sequence(); ap_assert(seq_prot); return seq_prot; }
 
