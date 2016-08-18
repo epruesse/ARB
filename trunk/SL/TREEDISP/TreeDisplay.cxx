@@ -519,7 +519,7 @@ public:
         perform(DROPPED, drop_target, mousepos);
     }
 
-    void hide_drag_indicator(AW_device *device, int drag_gc) const {
+    void hide_drag_indicator(AW_device *IF_MOTIF(device), int IF_MOTIF(drag_gc)) const {
 #ifdef ARB_MOTIF
         // hide by XOR-drawing only works in motif
         draw_drag_indicator(device, drag_gc);
