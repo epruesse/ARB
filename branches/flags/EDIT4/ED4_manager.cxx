@@ -745,7 +745,6 @@ bool ED4_manager::calc_bounding_box() {
     AW_pos     max_x      = 0;
     AW_pos     max_y      = 0;
     AW_pos     dummy      = 0;
-    bool       bb_changed = false;
 
     for (ED4_index i = 0; existing_index(i); ++i) { // check all children
         ED4_base *child = member(i);
@@ -766,31 +765,20 @@ bool ED4_manager::calc_bounding_box() {
         }
     }
 
-
+    bool bb_changed = false;
     if (spec.static_prop & ED4_P_HORIZONTAL) {
-        if (int(extension.size[WIDTH]) != int(max_x)) { // because compares between floats fail sometimes (AW_pos==float)
-            extension.size[WIDTH] = max_x;
-            bb_changed = true;
-        }
-
-        if (int(extension.size[HEIGHT]) != int(sum_height)) {
-            extension.size[HEIGHT] = sum_height;
-            bb_changed = true;
-        }
+        bb_changed = extension.set_size_does_change(WIDTH, max_x) || bb_changed;
+        bb_changed = extension.set_size_does_change(HEIGHT, sum_height) || bb_changed;
     }
 
     if (spec.static_prop & ED4_P_VERTICAL) {
-        if (int(extension.size[WIDTH]) != int(sum_width)) {
-            extension.size[WIDTH] = sum_width;
-            bb_changed = true;
-        }
-        if (int(extension.size[HEIGHT]) != int(max_y)) {
-            extension.size[HEIGHT] = max_y;
-            bb_changed = true;
-        }
+        bb_changed = extension.set_size_does_change(WIDTH, sum_width) || bb_changed;
+        bb_changed = extension.set_size_does_change(HEIGHT, max_y) || bb_changed;
     }
 
-    if (bb_changed) request_resize_of_linked();
+    if (bb_changed) {
+        request_resize_of_linked();
+    }
     return bb_changed;
 }
 

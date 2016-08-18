@@ -677,22 +677,16 @@ bool ED4_terminal::calc_bounding_box() {
     bool bb_changed = false;
 
     if (width_link) {
-        if (extension.size[WIDTH] != width_link->extension.size[WIDTH]) {   // all bounding Boxes have the same size !!!
-            extension.size[WIDTH] = width_link->extension.size[WIDTH];
-            bb_changed = true;
-        }
+        bb_changed = extension.set_size_does_change(WIDTH, width_link->extension.size[WIDTH]) || bb_changed;
     }
 
     if (height_link) {
-        if (extension.size[HEIGHT] != height_link->extension.size[HEIGHT]) {
-            extension.size[HEIGHT] = height_link->extension.size[HEIGHT];
-            bb_changed = true;
-        }
+        bb_changed = extension.set_size_does_change(HEIGHT, height_link->extension.size[HEIGHT]) || bb_changed;
     }
 
 
     if (bb_changed) {
-        request_resize_of_linked();
+        request_resize_of_linked(); 
         request_refresh();
     }
     return bb_changed;
@@ -700,9 +694,7 @@ bool ED4_terminal::calc_bounding_box() {
 
 void ED4_terminal::resize_requested_children() {
     if (update_info.resize) { // likes to resize?
-        if (calc_bounding_box()) { 
-            request_resize();
-        }
+        if (calc_bounding_box()) request_resize();
     }
 }
 
