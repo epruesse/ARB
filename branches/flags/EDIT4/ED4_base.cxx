@@ -884,7 +884,7 @@ void ED4_bracket_terminal::unfold() {
                 multi_species_manager->clr_property(ED4_P_IS_FOLDED);
 
                 ED4_spacer_terminal *spacer = multi_species_manager->get_defined_level(ED4_L_SPACER)->to_spacer_terminal();
-                spacer->extension.size[HEIGHT] = SPACERHEIGHT;
+                spacer->extension.size[HEIGHT] = SPACERHEIGHT; // @@@ use set_dynamic_size()?
             }
         }
 
@@ -925,7 +925,7 @@ void ED4_bracket_terminal::fold() {
 
         ED4_spacer_terminal *spacer = multi_species_manager->get_defined_level(ED4_L_SPACER)->to_spacer_terminal();
         if (spacer) {
-            spacer->extension.size[HEIGHT] = consensus_shown ? SPACERHEIGHT : SPACERNOCONSENSUSHEIGHT;
+            spacer->extension.size[HEIGHT] = consensus_shown ? SPACERHEIGHT : SPACERNOCONSENSUSHEIGHT; // @@@ use set_dynamic_size()?
         }
 
         multi_species_manager->hide_children();

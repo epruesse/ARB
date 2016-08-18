@@ -949,7 +949,14 @@ public:
     // functions concerned with graphic output
     int adjust_clipping_rectangle();
     virtual ED4_returncode  Show(int refresh_all=0, int is_cleared=0) = 0;
-    virtual bool calc_bounding_box()                                  = 0;
+
+    virtual bool calc_bounding_box() = 0;
+    virtual bool set_dynamic_size() { // @@@ make abstract?
+        // default behavior == "keep current size"
+        return false; // = "nothing changed"
+
+        // overload to implement dynamic sizing
+    }
 
     ED4_returncode  clear_background(int color=0);
 
@@ -2025,6 +2032,7 @@ struct ED4_species_name_terminal : public ED4_text_terminal { // derived from a 
 
     GB_CSTR get_displayed_text() const;
     int get_length() const OVERRIDE { return strlen(get_displayed_text()); }
+    bool set_dynamic_size() OVERRIDE;
 
     ED4_sequence_terminal *corresponding_sequence_terminal() const {
         ED4_base *seq_term = get_parent(ED4_L_SPECIES)->search_spec_child_rek(ED4_L_SEQUENCE_STRING);
@@ -2049,6 +2057,7 @@ struct ED4_sequence_info_terminal : public ED4_text_terminal {
     const GBDATA *data() const { return get_species_pointer(); }
 
     int get_length() const OVERRIDE { return 1+strlen(id); }
+    bool set_dynamic_size() OVERRIDE;
 
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_text_terminal);
 };
@@ -2090,6 +2099,7 @@ class ED4_spacer_terminal : public ED4_terminal {
 public:
     ED4_returncode Show(int refresh_all=0, int is_cleared=0) OVERRIDE;
     ED4_returncode draw() OVERRIDE;
+    bool set_dynamic_size() OVERRIDE;
 
     ED4_spacer_terminal(const char *id, bool shallDraw_, AW_pos width, AW_pos height, ED4_manager *parent);
 
@@ -2101,6 +2111,7 @@ struct ED4_line_terminal : public ED4_terminal {
     
     ED4_returncode Show(int refresh_all=0, int is_cleared=0) OVERRIDE;
     ED4_returncode draw() OVERRIDE;
+    bool set_dynamic_size() OVERRIDE;
 
     ED4_line_terminal(const char *id, AW_pos width, AW_pos height, ED4_manager *parent);
 
@@ -2284,4 +2295,3 @@ void ED4_exit() __ATTR__NORETURN;
 #else
 #error ed4_class included twice
 #endif
-

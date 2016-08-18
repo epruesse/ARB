@@ -54,13 +54,13 @@ static ARB_ERROR toggle_consensus_display(ED4_base *base, bool show) {
 
         if (show) {
             consensus_man->unhide_children();
-            spacer->extension.size[HEIGHT] = SPACERHEIGHT;
+            spacer->extension.size[HEIGHT] = SPACERHEIGHT; // @@@ use set_dynamic_size()?
         }
         else {
             consensus_man->hide_children();
 
             ED4_group_manager *group_man = consensus_man->get_parent(ED4_L_GROUP)->to_group_manager();
-            spacer->extension.size[HEIGHT] = (group_man->dynamic_prop&ED4_P_IS_FOLDED) ? SPACERNOCONSENSUSHEIGHT : SPACERHEIGHT;
+            spacer->extension.size[HEIGHT] = (group_man->dynamic_prop&ED4_P_IS_FOLDED) ? SPACERNOCONSENSUSHEIGHT : SPACERHEIGHT; // @@@ use set_dynamic_size()?
         }
     }
 
