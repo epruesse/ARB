@@ -19,6 +19,7 @@
 // #define TRACE_JUMPS
 #endif
 
+#define e4_assert(bed) arb_assert(bed)
 
 class  ED4_root;
 class  ED4_database;
@@ -272,6 +273,16 @@ struct ED4_extension // contains info about graphical properties
 
     AW::Vector get_size() const { return AW::Vector(size[WIDTH], size[HEIGHT]); }
     AW::Vector get_parent_offset() const { return AW::Vector(position[X_POS], position[Y_POS]); }
+
+    bool set_size_does_change(int idx, AW_pos value) {
+        // returns true if changed
+        e4_assert(idx == WIDTH || idx == HEIGHT);
+        if (size[idx] != value) {
+            size[idx] = value;
+            return true;
+        }
+        return false;
+    }
 
 #if defined(IMPLEMENT_DUMP)
     void dump(size_t indent) const;

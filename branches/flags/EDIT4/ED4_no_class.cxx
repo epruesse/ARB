@@ -100,39 +100,32 @@ void ED4_calc_terminal_extentions() {
 #endif // DEBUG
 }
 
-inline bool does_change(AW_pos& coord, AW_pos value) {
-    if (coord != value) {
-        coord = value;
-        return true;
-    }
-    return false;
-}
-
 bool ED4_species_name_terminal::set_dynamic_size() {
-    return does_change(extension.size[WIDTH], MAXSPECIESWIDTH - BRACKETWIDTH * calc_group_depth());
+    return extension.set_size_does_change(WIDTH, MAXSPECIESWIDTH - BRACKETWIDTH * calc_group_depth());
 }
 bool ED4_sequence_info_terminal::set_dynamic_size() {
-    return does_change(extension.size[WIDTH], MAXINFOWIDTH);
+    return extension.set_size_does_change(WIDTH, MAXINFOWIDTH);
 }
 bool ED4_line_terminal::set_dynamic_size() {
     // dynamically adapt to ref_terminals
-    return does_change(extension.size[WIDTH],
-                       TREETERMINALSIZE +
-                       MAXSPECIESWIDTH +
-                       ED4_ROOT->ref_terminals.sequence_info()->extension.size[WIDTH] +
-                       ED4_ROOT->ref_terminals.sequence()->extension.size[WIDTH]);
+
+    AW_pos overall_width =
+        TREETERMINALSIZE +
+        MAXSPECIESWIDTH +
+        ED4_ROOT->ref_terminals.sequence_info()->extension.size[WIDTH] +
+        ED4_ROOT->ref_terminals.sequence()->extension.size[WIDTH];
+
+    return extension.set_size_does_change(WIDTH, overall_width);
 }
 bool ED4_spacer_terminal::set_dynamic_size() {
     // @@@ dynamically calculate spacer size (according to: folded/unfolded, consensus shown?)
+
     // extension.size[HEIGHT] = parent->is_device_manager() ? TERMINALHEIGHT / 2 : SPACERHEIGHT; // different height for top-group?
     return false;
 }
 
 static ARB_ERROR update_extension_size(ED4_base *base) {
-    if (base->set_dynamic_size()) { // if size was changed
-        base->request_resize();
-    }
-
+    base->resize_dynamic();
     return NULL; // doesn't fail
 }
 
@@ -148,9 +141,7 @@ void ED4_resize_all_extensions() { // @@@ pass flag to force resize-request? (eg
 
     int screenwidth = ED4_ROOT->root_group_man->remap()->shown_sequence_to_screen(MAXSEQUENCECHARACTERLENGTH);
     while (1) {
-        ED4_ROOT->ref_terminals.sequence()->extension.size[WIDTH] =
-            ED4_ROOT->font_group.get_width(ED4_G_SEQUENCES) *
-            (screenwidth+3);
+        ED4_ROOT->ref_terminals.sequence()->extension.size[WIDTH] = ED4_ROOT->font_group.get_width(ED4_G_SEQUENCES) * (screenwidth+3);
 
         {
             ED4_terminal *top_middle_line_terminal   = ED4_ROOT->main_manager->get_top_middle_line_terminal();
@@ -161,7 +152,7 @@ void ED4_resize_all_extensions() { // @@@ pass flag to force resize-request? (eg
 
         ED4_ROOT->main_manager->route_down_hierarchy(makeED4_route_cb(update_extension_size)).expect_no_error();
 
-        ED4_ROOT->resize_all(); // may change mapping
+        ED4_ROOT->resize_all_requesting_childs(); // Note: may change mapping
 
         int new_screenwidth = ED4_ROOT->root_group_man->remap()->shown_sequence_to_screen(MAXSEQUENCECHARACTERLENGTH);
         if (new_screenwidth == screenwidth) { // mapping did not change

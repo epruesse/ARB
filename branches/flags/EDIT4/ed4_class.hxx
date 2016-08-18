@@ -914,6 +914,13 @@ class ED4_base : virtual Noncopyable {
 
     ED4_base_list *linked_objects;                  // linked list of objects which are depending from this object
 
+    virtual bool set_dynamic_size() { // @@@ make abstract?
+        // default behavior == "keep current size"
+        return false; // = "nothing changed"
+
+        // overload to implement dynamic sizing
+    }
+
 public:
     const ED4_objspec& spec;           // contains information about Objectproperties
 
@@ -951,12 +958,7 @@ public:
     virtual ED4_returncode  Show(int refresh_all=0, int is_cleared=0) = 0;
 
     virtual bool calc_bounding_box() = 0;
-    virtual bool set_dynamic_size() { // @@@ make abstract?
-        // default behavior == "keep current size"
-        return false; // = "nothing changed"
-
-        // overload to implement dynamic sizing
-    }
+    void resize_dynamic() { if (set_dynamic_size()) { request_resize(); } }
 
     ED4_returncode  clear_background(int color=0);
 
@@ -1472,7 +1474,7 @@ public:
     void copy_window_struct(ED4_window *source,   ED4_window *destination);
 
     // functions concerned with global refresh and resize
-    void resize_all();
+    void resize_all_requesting_childs();
 
     void special_window_refresh(bool handle_updates);
     ED4_returncode refresh_all_windows(bool redraw);
@@ -2021,18 +2023,20 @@ public:
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_text_terminal);
 };
 
-struct ED4_species_name_terminal : public ED4_text_terminal { // derived from a Noncopyable
+class ED4_species_name_terminal : public ED4_text_terminal { // derived from a Noncopyable
+    E4B_AVOID_UNNEEDED_CASTS(species_name_terminal);
+    bool set_dynamic_size() OVERRIDE;
+
+public:
     ED4_species_name_terminal(GB_CSTR id, AW_pos width, AW_pos height, ED4_manager *parent);
     ~ED4_species_name_terminal() OVERRIDE { delete selection_info; }
 
-    E4B_AVOID_UNNEEDED_CASTS(species_name_terminal);
 
     ED4_selection_entry *selection_info;            // Info about i.e. Position
     bool dragged;
 
     GB_CSTR get_displayed_text() const;
     int get_length() const OVERRIDE { return strlen(get_displayed_text()); }
-    bool set_dynamic_size() OVERRIDE;
 
     ED4_sequence_terminal *corresponding_sequence_terminal() const {
         ED4_base *seq_term = get_parent(ED4_L_SPECIES)->search_spec_child_rek(ED4_L_SEQUENCE_STRING);
@@ -2042,9 +2046,11 @@ struct ED4_species_name_terminal : public ED4_text_terminal { // derived from a 
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_text_terminal);
 };
 
-struct ED4_sequence_info_terminal : public ED4_text_terminal {
+class ED4_sequence_info_terminal : public ED4_text_terminal {
     E4B_AVOID_UNNEEDED_CASTS(sequence_info_terminal);
-    
+    bool set_dynamic_size() OVERRIDE;
+
+public:
     ED4_sequence_info_terminal(const char *id, AW_pos width, AW_pos height, ED4_manager *parent);
 
     ED4_species_name_terminal *corresponding_species_name_terminal() const {
@@ -2057,7 +2063,6 @@ struct ED4_sequence_info_terminal : public ED4_text_terminal {
     const GBDATA *data() const { return get_species_pointer(); }
 
     int get_length() const OVERRIDE { return 1+strlen(id); }
-    bool set_dynamic_size() OVERRIDE;
 
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_text_terminal);
 };
@@ -2078,6 +2083,7 @@ class ED4_consensus_sequence_terminal : public ED4_sequence_terminal { // derive
     ED4_returncode draw() OVERRIDE;
     const ED4_abstract_group_manager *get_group_manager() const  { return get_parent(ED4_L_GROUP)->to_group_manager(); }
     const BaseFrequencies& get_char_table() const { return get_group_manager()->table(); }
+
 public:
     char *temp_cons_seq; // used for editing consensus (normally NULL)
 
@@ -2096,22 +2102,24 @@ class ED4_spacer_terminal : public ED4_terminal {
     E4B_AVOID_UNNEEDED_CASTS(spacer_terminal);
     bool shallDraw; // true -> spacer is really drawn (otherwise it's only a placeholder)
 
+    bool set_dynamic_size() OVERRIDE;
+
 public:
     ED4_returncode Show(int refresh_all=0, int is_cleared=0) OVERRIDE;
     ED4_returncode draw() OVERRIDE;
-    bool set_dynamic_size() OVERRIDE;
 
     ED4_spacer_terminal(const char *id, bool shallDraw_, AW_pos width, AW_pos height, ED4_manager *parent);
 
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_terminal);
 };
 
-struct ED4_line_terminal : public ED4_terminal {
+class ED4_line_terminal : public ED4_terminal {
     E4B_AVOID_UNNEEDED_CASTS(line_terminal);
-    
+    bool set_dynamic_size() OVERRIDE;
+
+public:
     ED4_returncode Show(int refresh_all=0, int is_cleared=0) OVERRIDE;
     ED4_returncode draw() OVERRIDE;
-    bool set_dynamic_size() OVERRIDE;
 
     ED4_line_terminal(const char *id, AW_pos width, AW_pos height, ED4_manager *parent);
 

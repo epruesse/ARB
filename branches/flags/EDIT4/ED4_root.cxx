@@ -447,7 +447,7 @@ ED4_returncode ED4_root::add_to_selected(ED4_species_name_terminal *name_term) {
     return (ED4_R_IMPOSSIBLE);
 }
 
-void ED4_root::resize_all() {
+void ED4_root::resize_all_requesting_childs() {
     while (main_manager->update_info.resize) {
         main_manager->resize_requested_children();
     }
@@ -697,7 +697,7 @@ ED4_returncode ED4_root::create_hierarchy(const char *area_string_middle, const 
     }
 
     first_window->update_window_coords();
-    resize_all();
+    resize_all_requesting_childs();
 
     main_manager->route_down_hierarchy(makeED4_route_cb(force_group_update)).expect_no_error();
 
@@ -724,7 +724,7 @@ ED4_returncode ED4_root::create_hierarchy(const char *area_string_middle, const 
 
     // calc size and display:
 
-    resize_all();
+    resize_all_requesting_childs();
 
     e4_assert(main_manager);
 
