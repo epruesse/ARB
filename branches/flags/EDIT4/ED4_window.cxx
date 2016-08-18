@@ -380,7 +380,7 @@ static void ED4_expose_cb(AW_window *aww) {
     ED4_LocalWinContext uses(aww);
     GB_transaction      ta(GLOBAL_gb_main);
 
-    ED4_expose_recalculations();
+    ED4_resize_all_extensions(); // @@@ really needed here? 
     current_ed4w()->update_scrolled_rectangle();
 
     current_device()->reset();

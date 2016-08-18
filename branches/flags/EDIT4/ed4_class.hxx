@@ -2209,7 +2209,7 @@ ED4_multi_species_manager *ED4_find_MoreSequences_manager();
 void ED4_new_editor_window(AW_window *aww);
 void ED4_with_all_edit_windows(void (*cb)(ED4_window *));
 
-void ED4_expose_recalculations();
+void ED4_resize_all_extensions();
 void ED4_calc_terminal_extentions();
 
 void ED4_input_cb(AW_window *aww);

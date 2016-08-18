@@ -100,7 +100,7 @@ void ED4_calc_terminal_extentions() {
 #endif // DEBUG
 }
 
-static ARB_ERROR update_terminal_extension(ED4_base *this_object) {
+static ARB_ERROR update_extension_size(ED4_base *this_object) {
     if (this_object->is_terminal()) {
         if (this_object->is_spacer_terminal()) {
             if (this_object->parent->is_device_manager()) { // the rest is managed by reference links
@@ -127,7 +127,7 @@ static ARB_ERROR update_terminal_extension(ED4_base *this_object) {
     return NULL;
 }
 
-void ED4_expose_recalculations() {
+void ED4_resize_all_extensions() {
     ED4_ROOT->recalc_font_group();
     ED4_calc_terminal_extentions();
 
@@ -148,7 +148,7 @@ void ED4_expose_recalculations() {
         ED4_terminal *top_middle_line_terminal = ED4_ROOT->main_manager->get_top_middle_line_terminal();
 
         ED4_ROOT->main_manager->get_top_middle_spacer_terminal()->extension.size[HEIGHT] = TERMINALHEIGHT - top_middle_line_terminal->extension.size[HEIGHT];
-        ED4_ROOT->main_manager->route_down_hierarchy(makeED4_route_cb(update_terminal_extension)).expect_no_error();
+        ED4_ROOT->main_manager->route_down_hierarchy(makeED4_route_cb(update_extension_size)).expect_no_error();
 
         ED4_ROOT->resize_all(); // may change mapping
 
@@ -881,7 +881,7 @@ void ED4_request_full_instant_refresh() {
 }
 
 void ED4_request_relayout() {
-    ED4_expose_recalculations();
+    ED4_resize_all_extensions();
     ED4_ROOT->main_manager->request_resize();
     ED4_trigger_instant_refresh();
 }
@@ -1247,7 +1247,7 @@ void ED4_compression_changed_cb(AW_root *awr) {
         }
 
         ED4_ROOT->root_group_man->remap()->set_mode(mode, percent);
-        ED4_expose_recalculations();
+        ED4_resize_all_extensions();
 
         for (vector<cursorpos>::iterator i = pos.begin(); i != pos.end(); ++i) {
             ED4_cursor  *cursor = i->cursor;

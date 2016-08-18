@@ -1270,7 +1270,7 @@ void ED4_popup_gc_window(AW_window *awp, AW_gc_manager *gcman) {
 
 static void gc_change_cb(GcChange whatChanged) {
     if (whatChanged == GC_FONT_CHANGED) {
-        ED4_expose_recalculations();
+        ED4_resize_all_extensions();
     }
     ED4_request_full_instant_refresh();
 }
