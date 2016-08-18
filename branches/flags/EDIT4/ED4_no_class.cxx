@@ -129,8 +129,9 @@ bool ED4_spacer_terminal::set_dynamic_size() {
 }
 
 static ARB_ERROR update_extension_size(ED4_base *base) {
-    base->set_dynamic_size();
-    base->request_resize(); // @@@ only request_resize if size has been updated? optionally pass force-flag?
+    if (base->set_dynamic_size()) { // if size was changed
+        base->request_resize();
+    }
 
     return NULL; // doesn't fail
 }

@@ -1000,10 +1000,10 @@ ED4_pure_text_terminal::ED4_pure_text_terminal(const char *temp_id, AW_pos width
 {
 }
 
-#if 0
+#if defined(DEVEL_RALF)
 // # define DEBUG_SPACER_TERMINALS 0 // show placeholder-spacers (normally not drawn)
-# define DEBUG_SPACER_TERMINALS 1 // show erasing spacers (normally area gets erased)
-// # define DEBUG_SPACER_TERMINALS 2 // show all spacers
+// # define DEBUG_SPACER_TERMINALS 1 // show erasing spacers (normally area gets erased)
+# define DEBUG_SPACER_TERMINALS 2 // show all spacers
 #endif
 
 ED4_returncode ED4_spacer_terminal::Show(int /* refresh_all */, int is_cleared) {
