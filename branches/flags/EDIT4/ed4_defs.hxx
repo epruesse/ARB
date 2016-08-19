@@ -176,21 +176,21 @@ enum ED4_AREA_LEVEL {
 
 enum ED4_properties {
     PROP_NONE               = 0,
-    PROP_IS_MANAGER         = 1,
-    PROP_IS_TERMINAL        = 2,
-    PROP_HORIZONTAL         = 4,
-    PROP_VERTICAL           = 8,
-    // PROP_                = 16,
-    PROP_SELECTABLE         = 32,
-    PROP_DRAGABLE           = 64,
-    PROP_MOVABLE            = 128,
-    PROP_IS_HANDLE          = 256,
-    PROP_CURSOR_ALLOWED     = 512,
-    //  PROP_               = 1024,
-    //  PROP_               = 2048,
-    PROP_IS_FOLDED          = 4096,            // Flag whether group is folded or not
-    PROP_CONSENSUS_RELEVANT = 8192,            // contains information relevant for consensus
-    PROP_ALIGNMENT_DATA     = 16384,           // contains aligned data (also SAIs)
+    PROP_IS_MANAGER         = 0x1,
+    PROP_IS_TERMINAL        = 0x2,
+    PROP_HORIZONTAL         = 0x4,
+    PROP_VERTICAL           = 0x8,
+    // PROP_                = 0x10,
+    PROP_SELECTABLE         = 0x20,
+    PROP_DRAGABLE           = 0x40,
+    PROP_MOVABLE            = 0x80,
+    PROP_IS_HANDLE          = 0x100,
+    PROP_CURSOR_ALLOWED     = 0x200,
+    //  PROP_               = 0x400,
+    //  PROP_               = 0x800,
+    PROP_IS_FOLDED          = 0x1000,            // Flag whether group is folded or not
+    PROP_CONSENSUS_RELEVANT = 0x2000,            // contains information relevant for consensus
+    PROP_ALIGNMENT_DATA     = 0x4000,            // contains aligned data (also SAIs)
 };
 
 enum ED4_cursor_move {
