@@ -1114,7 +1114,7 @@ static ED4_terminal *get_upper_lower_cursor_pos(ED4_manager *starting_point, ED4
             }
         }
         else {
-            if (member->dynamic_prop & PROP_CURSOR_ALLOWED) {
+            if (member->has_property(PROP_CURSOR_ALLOWED)) {
                 AW_pos x, y;
                 member->calc_world_coords(&x, &y);
                 if (isScreen) current_ed4w()->world_to_win_coords(&x, &y); // if current_y is screen, convert x/y to screen-coordinates as well

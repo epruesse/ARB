@@ -245,7 +245,7 @@ GB_ERROR ED4_terminal::write_sequence(const char *seq, int seq_len)
 
     GB_pop_transaction(GLOBAL_gb_main);
 
-    if (!err && dynamic_prop&PROP_CONSENSUS_RELEVANT) {
+    if (!err && has_property(PROP_CONSENSUS_RELEVANT)) {
         if (old_seq) {
             curr_timestamp = GB_read_clock(GLOBAL_gb_main);
 
@@ -601,7 +601,7 @@ ED4_returncode ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *aw
                     }
                 }
                 else if (is_sequence_terminal()) {
-                    if (dynamic_prop & PROP_CURSOR_ALLOWED) {
+                    if (has_property(PROP_CURSOR_ALLOWED)) {
                         ED4_no_dangerous_modes();
                         current_cursor().show_clicked_cursor(event->x, this);
                     }

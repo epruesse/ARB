@@ -373,7 +373,7 @@ void ED4_root::announce_useraction_in(AW_window *aww) {
 }
 
 ED4_returncode ED4_root::add_to_selected(ED4_species_name_terminal *name_term) { // @@@ change param to ED4_species_manager ?
-    if (!name_term || !(name_term->dynamic_prop & PROP_SELECTABLE)) {   // check if object exists and may be selected
+    if (!name_term || !name_term->has_property(PROP_SELECTABLE)) {   // check if object exists and may be selected
         return (ED4_R_IMPOSSIBLE);
     }
 
@@ -381,7 +381,7 @@ ED4_returncode ED4_root::add_to_selected(ED4_species_name_terminal *name_term) {
         ED4_selection_entry *sel_info = new ED4_selection_entry;
         name_term->selection_info     = sel_info;
 
-        if (name_term->dynamic_prop & PROP_IS_HANDLE) { // object is a handle for an object up in the hierarchy => search it
+        if (name_term->has_property(PROP_IS_HANDLE)) { // object is a handle for an object up in the hierarchy => search it
             ED4_level  mlevel     = name_term->spec.handled_level;
             ED4_base  *tmp_object = name_term;
 

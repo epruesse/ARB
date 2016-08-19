@@ -338,7 +338,7 @@ static GB_ERROR toggle_cursor_group_folding() {
             ED4_base *group = cursor.owner_of_cursor->get_parent(LEV_GROUP);
             if (group) {
                 ED4_group_manager *group_man = group->to_group_manager();
-                if (group_man->dynamic_prop & PROP_IS_FOLDED) {
+                if (group_man->has_property(PROP_IS_FOLDED)) {
                     group_man->unfold();
                 }
                 else {

@@ -500,7 +500,7 @@ ED4_returncode  ED4_manager::handle_move(ED4_move_info *mi) {
         ED4_base *object;
         bool      i_am_consensus = false;
 
-        if (mi->object->dynamic_prop & PROP_IS_HANDLE) { // object is a handle for an object up in the hierarchy = > search it
+        if (mi->object->has_property(PROP_IS_HANDLE)) { // object is a handle for an object up in the hierarchy = > search it
             ED4_level mlevel = mi->object->spec.handled_level;
 
             object = mi->object;
@@ -627,8 +627,8 @@ ED4_returncode  ED4_manager::move_requested_by_child(ED4_move_info *mi) {
 
     if (spec.level < mi->object->spec.restriction_level) return (ED4_R_IMPOSSIBLE); // check if there is a level restriction to the move request
 
-    if (mi->object->dynamic_prop & PROP_IS_HANDLE) { // determine first if we could be the moving object
-        if ((dynamic_prop & PROP_MOVABLE) && (spec.level & mi->object->spec.handled_level)) { // yes, we are meant to be the moving object
+    if (mi->object->has_property(PROP_IS_HANDLE)) { // determine first if we could be the moving object
+        if (has_property(PROP_MOVABLE) && (spec.level & mi->object->spec.handled_level)) { // yes, we are meant to be the moving object
             mi->object = this;
         }
 

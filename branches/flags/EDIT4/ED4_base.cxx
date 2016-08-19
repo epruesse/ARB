@@ -21,7 +21,7 @@ ED4_group_manager *ED4_base::is_in_folded_group() const {
     if (!parent) return NULL;
     ED4_base *group = get_parent(LEV_GROUP);
     if (!group) return NULL;
-    if (group->dynamic_prop & PROP_IS_FOLDED) return group->to_group_manager();
+    if (group->has_property(PROP_IS_FOLDED)) return group->to_group_manager();
     return group->is_in_folded_group();
 }
 
@@ -72,7 +72,7 @@ void ED4_terminal::changed_by_database()
                 ED4_species_manager *spman = get_parent(LEV_SPECIES)->to_species_manager();
                 spman->do_callbacks();
 
-                if (dynamic_prop & PROP_CONSENSUS_RELEVANT) {
+                if (has_property(PROP_CONSENSUS_RELEVANT)) {
                     ED4_multi_species_manager *multiman = get_parent(LEV_MULTI_SPECIES)->to_multi_species_manager();
                     multiman->update_bases_and_rebuild_consensi(dup_data, data_len, spman, ED4_U_UP);
                     request_refresh();
@@ -108,7 +108,7 @@ void ED4_sequence_terminal::deleted_from_database()
 
     ED4_terminal::deleted_from_database();
 
-    bool was_consensus_relevant = dynamic_prop & PROP_CONSENSUS_RELEVANT;
+    bool was_consensus_relevant = has_property(PROP_CONSENSUS_RELEVANT);
 
     clr_property(ED4_properties(PROP_CONSENSUS_RELEVANT|PROP_ALIGNMENT_DATA));
 
@@ -319,7 +319,7 @@ void ED4_base::generate_configuration_string(GBS_strstruct& buffer) {
         ED4_container *container = to_manager();
         if (is_group_manager()) {
             buffer.put(SEPARATOR);
-            buffer.put(dynamic_prop & PROP_IS_FOLDED ? 'F' : 'G');
+            buffer.put(has_property(PROP_IS_FOLDED) ? 'F' : 'G');
 
             for (int writeConsensus = 1; writeConsensus>=0; --writeConsensus) {
                 for (int i=0; i<container->members(); ++i) {
@@ -624,7 +624,7 @@ const ED4_terminal *ED4_base::get_consensus_relevant_terminal() const {
     int i;
 
     if (is_terminal()) {
-        if (dynamic_prop & PROP_CONSENSUS_RELEVANT) {
+        if (has_property(PROP_CONSENSUS_RELEVANT)) {
             return this->to_terminal();
         }
         return NULL;
@@ -663,7 +663,7 @@ int ED4_multi_species_manager::count_visible_children() // is called by a multi_
         }
         else if (child->is_group_manager()) {
             ED4_group_manager *group_manager = child->to_group_manager();
-            if (group_manager->dynamic_prop & PROP_IS_FOLDED) {
+            if (group_manager->has_property(PROP_IS_FOLDED)) {
                 counter ++;
             }
             else {
