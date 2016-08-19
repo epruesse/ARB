@@ -335,7 +335,7 @@ static GB_ERROR toggle_cursor_group_folding() {
             cursor_term->setCursorTo(&cursor, cursor.get_sequence_pos(), true, ED4_JUMP_KEEP_POSITION);
         }
         else {
-            ED4_base *group = cursor.owner_of_cursor->get_parent(ED4_L_GROUP);
+            ED4_base *group = cursor.owner_of_cursor->get_parent(LEV_GROUP);
             if (group) {
                 ED4_group_manager *group_man = group->to_group_manager();
                 if (group_man->dynamic_prop & ED4_P_IS_FOLDED) {

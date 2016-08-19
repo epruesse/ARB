@@ -42,7 +42,7 @@ static void printProperties(ED4_properties prop) {
 
 static void printLevel(ED4_level level) {
     char sep = ' ';
-#define plev(tag) do { if (level&ED4_L_##tag) { fputc(sep, OUT); sep = '|'; fputs(#tag, OUT); } } while(0)
+#define plev(tag) do { if (level&LEV_##tag) { fputc(sep, OUT); sep = '|'; fputs(#tag, OUT); } } while(0)
     plev(ROOT);
     plev(DEVICE);
     plev(AREA);

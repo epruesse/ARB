@@ -1077,36 +1077,36 @@ public:
 
     int is_terminal()               const { e4_assert(knownNonNull(this)); return spec.static_prop & ED4_P_IS_TERMINAL; }
 
-    int is_text_terminal()          const { e4_assert(knownNonNull(this)); return spec.level & (ED4_L_SPECIES_NAME|ED4_L_SEQUENCE_INFO|ED4_L_SEQUENCE_STRING|ED4_L_PURE_TEXT|ED4_L_COL_STAT); }
+    int is_text_terminal()          const { e4_assert(knownNonNull(this)); return spec.level & (LEV_SPECIES_NAME|LEV_SEQUENCE_INFO|LEV_SEQUENCE_STRING|LEV_PURE_TEXT|LEV_COL_STAT); }
 
-    int is_species_name_terminal()  const { e4_assert(knownNonNull(this)); return spec.level & ED4_L_SPECIES_NAME; }
+    int is_species_name_terminal()  const { e4_assert(knownNonNull(this)); return spec.level & LEV_SPECIES_NAME; }
 
-    int is_sequence_info_terminal() const { e4_assert(knownNonNull(this)); return spec.level & ED4_L_SEQUENCE_INFO; }
-    int is_sequence_terminal()      const { e4_assert(knownNonNull(this)); return spec.level & ED4_L_SEQUENCE_STRING; }
-    int is_orf_terminal()           const { e4_assert(knownNonNull(this)); return spec.level & ED4_L_ORF; }
+    int is_sequence_info_terminal() const { e4_assert(knownNonNull(this)); return spec.level & LEV_SEQUENCE_INFO; }
+    int is_sequence_terminal()      const { e4_assert(knownNonNull(this)); return spec.level & LEV_SEQUENCE_STRING; }
+    int is_orf_terminal()           const { e4_assert(knownNonNull(this)); return spec.level & LEV_ORF; }
 
-    int is_pure_text_terminal()     const { e4_assert(knownNonNull(this)); return spec.level & ED4_L_PURE_TEXT; }
-    int is_columnStat_terminal()    const { e4_assert(knownNonNull(this)); return spec.level & ED4_L_COL_STAT; }
+    int is_pure_text_terminal()     const { e4_assert(knownNonNull(this)); return spec.level & LEV_PURE_TEXT; }
+    int is_columnStat_terminal()    const { e4_assert(knownNonNull(this)); return spec.level & LEV_COL_STAT; }
 
-    int is_bracket_terminal()       const { e4_assert(knownNonNull(this)); return spec.level & ED4_L_BRACKET; }
-    int is_spacer_terminal()        const { e4_assert(knownNonNull(this)); return spec.level & ED4_L_SPACER; }
-    int is_line_terminal()          const { e4_assert(knownNonNull(this)); return spec.level & ED4_L_LINE; }
+    int is_bracket_terminal()       const { e4_assert(knownNonNull(this)); return spec.level & LEV_BRACKET; }
+    int is_spacer_terminal()        const { e4_assert(knownNonNull(this)); return spec.level & LEV_SPACER; }
+    int is_line_terminal()          const { e4_assert(knownNonNull(this)); return spec.level & LEV_LINE; }
 
     int is_manager()                const { e4_assert(knownNonNull(this)); return spec.static_prop & ED4_P_IS_MANAGER; }
 
-    int is_sequence_manager()       const { e4_assert(knownNonNull(this)); return spec.level & ED4_L_SEQUENCE; }
-    int is_multi_name_manager()     const { e4_assert(knownNonNull(this)); return spec.level & ED4_L_MULTI_NAME; }
-    int is_name_manager()           const { e4_assert(knownNonNull(this)); return spec.level & ED4_L_NAME_MANAGER; }
-    int is_multi_species_manager()  const { e4_assert(knownNonNull(this)); return spec.level & ED4_L_MULTI_SPECIES; }
-    int is_multi_sequence_manager() const { e4_assert(knownNonNull(this)); return spec.level & ED4_L_MULTI_SEQUENCE; }
-    int is_device_manager()         const { e4_assert(knownNonNull(this)); return spec.level & ED4_L_DEVICE; }
+    int is_sequence_manager()       const { e4_assert(knownNonNull(this)); return spec.level & LEV_SEQUENCE; }
+    int is_multi_name_manager()     const { e4_assert(knownNonNull(this)); return spec.level & LEV_MULTI_NAME; }
+    int is_name_manager()           const { e4_assert(knownNonNull(this)); return spec.level & LEV_NAME_MANAGER; }
+    int is_multi_species_manager()  const { e4_assert(knownNonNull(this)); return spec.level & LEV_MULTI_SPECIES; }
+    int is_multi_sequence_manager() const { e4_assert(knownNonNull(this)); return spec.level & LEV_MULTI_SEQUENCE; }
+    int is_device_manager()         const { e4_assert(knownNonNull(this)); return spec.level & LEV_DEVICE; }
 
-    int is_group_manager()          const { e4_assert(knownNonNull(this)); return spec.level & ED4_L_GROUP; }
-    int is_root_group_manager()     const { e4_assert(knownNonNull(this)); return spec.level & ED4_L_ROOTGROUP; }
-    int is_abstract_group_manager() const { e4_assert(knownNonNull(this)); return spec.level & (ED4_L_GROUP|ED4_L_ROOTGROUP); }
+    int is_group_manager()          const { e4_assert(knownNonNull(this)); return spec.level & LEV_GROUP; }
+    int is_root_group_manager()     const { e4_assert(knownNonNull(this)); return spec.level & LEV_ROOTGROUP; }
+    int is_abstract_group_manager() const { e4_assert(knownNonNull(this)); return spec.level & (LEV_GROUP|LEV_ROOTGROUP); }
     
-    int is_species_manager()        const { e4_assert(knownNonNull(this)); return spec.level & ED4_L_SPECIES; }
-    int is_area_manager()           const { e4_assert(knownNonNull(this)); return spec.level & ED4_L_AREA; }
+    int is_species_manager()        const { e4_assert(knownNonNull(this)); return spec.level & LEV_SPECIES; }
+    int is_area_manager()           const { e4_assert(knownNonNull(this)); return spec.level & LEV_AREA; }
 
     // use the following functions to cast ED4_base to derived classes:
 
@@ -1578,7 +1578,7 @@ struct ED4_area_manager : public ED4_manager {
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_manager);
 
     ED4_multi_species_manager *get_multi_species_manager() const {
-        return get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
+        return get_defined_level(LEV_MULTI_SPECIES)->to_multi_species_manager();
     }
 };
 
@@ -1640,7 +1640,7 @@ public:
     const BaseFrequencies& table() const { return my_table; }
 
     ED4_multi_species_manager *get_multi_species_manager() const {
-        return get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
+        return get_defined_level(LEV_MULTI_SPECIES)->to_multi_species_manager();
     }
 
     char *build_consensus_string(PosRange range) const { return table().build_consensus_string(range, ED4_ROOT->get_consensus_params()); }
@@ -1812,7 +1812,7 @@ public:
 };
 
 inline ED4_species_manager *ED4_base::containing_species_manager() const {
-    ED4_base *sman = get_parent(ED4_L_SPECIES);
+    ED4_base *sman = get_parent(LEV_SPECIES);
     return sman ? sman->to_species_manager() : NULL;
 }
 
@@ -1926,7 +1926,7 @@ public:
     int get_length() const OVERRIDE { int len; resolve_pointer_to_char_pntr(&len); return len; }
 
     ED4_species_name_terminal *corresponding_species_name_terminal() const {
-        return get_parent(ED4_L_SPECIES)->search_spec_child_rek(ED4_L_SPECIES_NAME)->to_species_name_terminal();
+        return get_parent(LEV_SPECIES)->search_spec_child_rek(LEV_SPECIES_NAME)->to_species_name_terminal();
     }
     PosRange calc_interval_displayed_in_rectangle(AW_screen_area *area_rect);
     PosRange calc_update_interval();
@@ -1990,7 +1990,7 @@ public:
     ED4_SearchResults& results() const { return searchResults; }
 
     ED4_columnStat_terminal *corresponding_columnStat_terminal() const {
-        ED4_base *col_term = get_parent(ED4_L_MULTI_SEQUENCE)->search_spec_child_rek(ED4_L_COL_STAT);
+        ED4_base *col_term = get_parent(LEV_MULTI_SEQUENCE)->search_spec_child_rek(LEV_COL_STAT);
         return col_term ? col_term->to_columnStat_terminal() : 0;
     }
 
@@ -2017,7 +2017,7 @@ public:
     static void set_threshold(double aThreshold);
     static double get_threshold() { return threshold; }
 
-    ED4_sequence_terminal *corresponding_sequence_terminal() const { return get_parent(ED4_L_MULTI_SEQUENCE)->search_spec_child_rek(ED4_L_SEQUENCE_STRING)->to_sequence_terminal(); }
+    ED4_sequence_terminal *corresponding_sequence_terminal() const { return get_parent(LEV_MULTI_SEQUENCE)->search_spec_child_rek(LEV_SEQUENCE_STRING)->to_sequence_terminal(); }
 
     GB_CSTR build_probe_match_string(PosRange range) const;
 
@@ -2043,7 +2043,7 @@ public:
     int get_length() const OVERRIDE { return strlen(get_displayed_text()); }
 
     ED4_sequence_terminal *corresponding_sequence_terminal() const {
-        ED4_base *seq_term = get_parent(ED4_L_SPECIES)->search_spec_child_rek(ED4_L_SEQUENCE_STRING);
+        ED4_base *seq_term = get_parent(LEV_SPECIES)->search_spec_child_rek(LEV_SEQUENCE_STRING);
         return seq_term ? seq_term->to_sequence_terminal() : 0;
     }
 
@@ -2058,7 +2058,7 @@ public:
     ED4_sequence_info_terminal(const char *id, AW_pos width, AW_pos height, ED4_manager *parent);
 
     ED4_species_name_terminal *corresponding_species_name_terminal() const {
-        return get_parent(ED4_L_SPECIES)->search_spec_child_rek(ED4_L_SPECIES_NAME)->to_species_name_terminal();
+        return get_parent(LEV_SPECIES)->search_spec_child_rek(LEV_SPECIES_NAME)->to_species_name_terminal();
     }
 
     ED4_returncode draw() OVERRIDE;
@@ -2085,7 +2085,7 @@ class ED4_consensus_sequence_terminal : public ED4_sequence_terminal { // derive
     E4B_AVOID_UNNEEDED_CASTS(consensus_sequence_terminal);
 
     ED4_returncode draw() OVERRIDE;
-    const ED4_abstract_group_manager *get_group_manager() const  { return get_parent(ED4_L_GROUP)->to_group_manager(); }
+    const ED4_abstract_group_manager *get_group_manager() const  { return get_parent(LEV_GROUP)->to_group_manager(); }
     const BaseFrequencies& get_char_table() const { return get_group_manager()->table(); }
 
 public:
@@ -2151,7 +2151,7 @@ void ED4_manager::resize_requested_by_child() {
 }
 
 inline bool ED4_terminal::setCursorTo(ED4_cursor *cursor, int seq_pos, bool unfoldGroups, ED4_CursorJumpType jump_type) {
-    ED4_species_manager *sm = get_parent(ED4_L_SPECIES)->to_species_manager();
+    ED4_species_manager *sm = get_parent(LEV_SPECIES)->to_species_manager();
     return sm->setCursorTo(cursor, seq_pos, unfoldGroups, jump_type);
 }
 
@@ -2181,7 +2181,7 @@ E4B_IMPL_CASTOP(terminal);                    // to_terminal
 E4B_IMPL_CASTOP(text_terminal);               // to_text_terminal
 
 inline ED4_device_manager *ED4_root::get_device_manager() {
-    return main_manager->search_spec_child_rek(ED4_L_DEVICE)->to_device_manager();
+    return main_manager->search_spec_child_rek(LEV_DEVICE)->to_device_manager();
 }
 
 

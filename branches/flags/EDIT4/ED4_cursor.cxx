@@ -291,7 +291,7 @@ ED4_returncode ED4_cursor::draw_cursor(AW_pos x, AW_pos y) { // @@@ remove retur
 ED4_returncode ED4_cursor::delete_cursor(AW_pos del_mark, ED4_base *target_terminal) {
     AW_pos x, y;
     target_terminal->calc_world_coords(&x, &y);
-    ED4_base *temp_parent = target_terminal->get_parent(ED4_L_SPECIES);
+    ED4_base *temp_parent = target_terminal->get_parent(LEV_SPECIES);
     if (!temp_parent || temp_parent->flag.hidden || !is_partly_visible()) {
         return ED4_R_BREAK;
     }
@@ -413,7 +413,7 @@ bool ED4_species_manager::setCursorTo(ED4_cursor *cursor, int seq_pos, bool unfo
     }
 
     if (!group_manager_to_unfold) { // species manager is visible (now)
-        ED4_terminal *terminal = search_spec_child_rek(ED4_L_SEQUENCE_STRING)->to_terminal();
+        ED4_terminal *terminal = search_spec_child_rek(LEV_SEQUENCE_STRING)->to_terminal();
         if (terminal) {
             if (seq_pos == -1) seq_pos = cursor->get_sequence_pos();
             cursor->set_to_terminal(terminal, seq_pos, jump_type);
@@ -425,7 +425,7 @@ bool ED4_species_manager::setCursorTo(ED4_cursor *cursor, int seq_pos, bool unfo
 }
 
 static void jump_to_corresponding_seq_terminal(ED4_species_name_terminal *name_term, bool unfold_groups) {
-    ED4_species_manager *species_manager = name_term->get_parent(ED4_L_SPECIES)->to_species_manager();
+    ED4_species_manager *species_manager = name_term->get_parent(LEV_SPECIES)->to_species_manager();
     ED4_cursor          *cursor          = &current_cursor();
     bool                 jumped          = false;
 
@@ -455,9 +455,9 @@ static void select_named_sequence_terminal(const char *name) {
                         cursor_seq_term = cursor_term->to_sequence_terminal();
                     }
                     else { // cursor is in a non-sequence text terminal -> search for corresponding sequence terminal
-                        ED4_multi_sequence_manager *seq_man = cursor_term->get_parent(ED4_L_MULTI_SEQUENCE)->to_multi_sequence_manager();
+                        ED4_multi_sequence_manager *seq_man = cursor_term->get_parent(LEV_MULTI_SEQUENCE)->to_multi_sequence_manager();
                         if (seq_man) {
-                            cursor_seq_term = seq_man->search_spec_child_rek(ED4_L_SEQUENCE_STRING)->to_sequence_terminal();
+                            cursor_seq_term = seq_man->search_spec_child_rek(LEV_SEQUENCE_STRING)->to_sequence_terminal();
                         }
                     }
                 }
@@ -539,14 +539,14 @@ void ED4_jump_to_current_species(AW_window *aww) {
 
 static bool multi_species_man_consensus_id_starts_with(ED4_base *base, const char *start) { // TRUE if consensus id starts with 'start'
     ED4_multi_species_manager *ms_man    = base->to_multi_species_manager();
-    ED4_base                  *consensus = ms_man->search_spec_child_rek(ED4_L_SPECIES);
+    ED4_base                  *consensus = ms_man->search_spec_child_rek(LEV_SPECIES);
 
     if (consensus) {
-        ED4_base *consensus_name = consensus->search_spec_child_rek(ED4_L_SPECIES_NAME);
+        ED4_base *consensus_name = consensus->search_spec_child_rek(LEV_SPECIES_NAME);
 
         if (consensus_name) {
             if (strncmp(consensus_name->id, start, strlen(start))==0) {
-                ED4_multi_species_manager *cons_ms_man = consensus_name->get_parent(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
+                ED4_multi_species_manager *cons_ms_man = consensus_name->get_parent(LEV_MULTI_SPECIES)->to_multi_species_manager();
                 return cons_ms_man==ms_man;
             }
         }
@@ -557,7 +557,7 @@ static bool multi_species_man_consensus_id_starts_with(ED4_base *base, const cha
 
 ED4_multi_species_manager *ED4_find_MoreSequences_manager() {
     // returns manager into which new species should be inserted
-    ED4_base *manager = ED4_ROOT->root_group_man->find_first_that(ED4_L_MULTI_SPECIES, makeED4_basePredicate(multi_species_man_consensus_id_starts_with, "More Sequences"));
+    ED4_base *manager = ED4_ROOT->root_group_man->find_first_that(LEV_MULTI_SPECIES, makeED4_basePredicate(multi_species_man_consensus_id_starts_with, "More Sequences"));
     return manager ? manager->to_multi_species_manager() : 0;
 }
 
@@ -580,7 +580,7 @@ void ED4_finish_and_show_notFoundMessage() {
 
 static ED4_species_name_terminal *insert_new_species_terminal(GB_CSTR species_name, bool is_SAI) {
     ED4_multi_species_manager *insert_into_manager = ED4_find_MoreSequences_manager();
-    ED4_group_manager         *group_man           = insert_into_manager->get_parent(ED4_L_GROUP)->to_group_manager();
+    ED4_group_manager         *group_man           = insert_into_manager->get_parent(LEV_GROUP)->to_group_manager();
 
     ED4_init_notFoundMessage();
     {
@@ -689,7 +689,7 @@ void ED4_get_marked_from_menu(AW_window *) {
         char   *bp         = buffer;
 
         ED4_multi_species_manager *insert_into_manager = ED4_find_MoreSequences_manager();
-        ED4_group_manager         *group_man           = insert_into_manager->get_parent(ED4_L_GROUP)->to_group_manager();
+        ED4_group_manager         *group_man           = insert_into_manager->get_parent(LEV_GROUP)->to_group_manager();
 
         int   group_depth       = insert_into_manager->calc_group_depth();
         int   index             = 0;
@@ -875,7 +875,7 @@ void ED4_cursor::updateAwars(bool new_term_selected) {
         char at[2] = "\0";
 
         if (in_consensus_terminal()) {
-            ED4_group_manager *group_manager = owner_of_cursor->get_parent(ED4_L_GROUP)->to_group_manager();
+            ED4_group_manager *group_manager = owner_of_cursor->get_parent(LEV_GROUP)->to_group_manager();
             BaseFrequencies&   groupTab      = group_manager->table();
             if (seq_pos<groupTab.size()) {
                 groupTab.build_consensus_string_to(at, ExplicitRange(seq_pos, seq_pos), ED4_ROOT->get_consensus_params());
@@ -1267,7 +1267,7 @@ bool ED4_cursor::is_hidden_inside_group() const {
     if (!owner_of_cursor) return false;
     if (!owner_of_cursor->is_in_folded_group()) return false;
     if (in_consensus_terminal()) {
-        ED4_base *group_man = owner_of_cursor->get_parent(ED4_L_GROUP);
+        ED4_base *group_man = owner_of_cursor->get_parent(LEV_GROUP);
         e4_assert(group_man);
         return group_man->is_in_folded_group();
     }
@@ -1486,7 +1486,7 @@ static void ed4_bp_sequence_changed_cb(ED4_species_manager*, ED4_base_position *
 
 void ED4_base_position::remove_changed_cb() {
     if (calced4term) {
-        ED4_species_manager *species_manager = calced4term->get_parent(ED4_L_SPECIES)->to_species_manager();
+        ED4_species_manager *species_manager = calced4term->get_parent(LEV_SPECIES)->to_species_manager();
         species_manager->remove_sequence_changed_cb(makeED4_species_managerCallback(ed4_bp_sequence_changed_cb, this));
 
         calced4term = NULL;
@@ -1498,7 +1498,7 @@ static bool is_consensus_gap(char c) { return ED4_is_gap_character(c) || c == '=
 void ED4_base_position::calc4term(const ED4_terminal *base) {
     e4_assert(base);
 
-    ED4_species_manager *species_manager = base->get_parent(ED4_L_SPECIES)->to_species_manager();
+    ED4_species_manager *species_manager = base->get_parent(LEV_SPECIES)->to_species_manager();
 
     int   len;
     char *seq;
@@ -1510,7 +1510,7 @@ void ED4_base_position::calc4term(const ED4_terminal *base) {
 
     bool (*isGap_fun)(char);
     if (species_manager->is_consensus_manager()) {
-        ED4_group_manager *group_manager = base->get_parent(ED4_L_GROUP)->to_group_manager();
+        ED4_group_manager *group_manager = base->get_parent(LEV_GROUP)->to_group_manager();
 
         seq       = group_manager->build_consensus_string();
         len       = strlen(seq);

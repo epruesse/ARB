@@ -88,7 +88,7 @@ ED4_returncode EDB_root_bact::fill_data(ED4_multi_species_manager *multi_species
 
         species_manager->set_property(ED4_P_MOVABLE);
         if (spec_type == ED4_SP_SAI) {
-            ED4_abstract_group_manager *group_man = species_manager->get_parent(ED4_level(ED4_L_GROUP|ED4_L_ROOTGROUP))->to_abstract_group_manager();
+            ED4_abstract_group_manager *group_man = species_manager->get_parent(ED4_level(LEV_GROUP|LEV_ROOTGROUP))->to_abstract_group_manager();
             group_man->table().ignore_me(); // ignore SAI tables (does not work - instead ignore SAIs when calculating consensus)
         }
         species_manager->set_species_pointer(gb_datamode);

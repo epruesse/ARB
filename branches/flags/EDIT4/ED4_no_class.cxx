@@ -292,7 +292,7 @@ static void executeKeystroke(AW_event *event, int repeatCount) {
 
                 if (terminal->is_consensus_terminal()) {
                     ED4_consensus_sequence_terminal *cterm         = terminal->to_consensus_sequence_terminal();
-                    ED4_group_manager               *group_manager = terminal->get_parent(ED4_L_GROUP)->to_group_manager();
+                    ED4_group_manager               *group_manager = terminal->get_parent(LEV_GROUP)->to_group_manager();
 
                     e4_assert(cterm->temp_cons_seq == 0);
                     work_info->string = cterm->temp_cons_seq = group_manager->build_consensus_string();
@@ -909,11 +909,11 @@ static void createGroupFromSelected(GB_CSTR group_name, GB_CSTR field_name, GB_C
     ED4_selected_elem *list_elem = ED4_ROOT->selected_objects->head();
     while (list_elem) {
         ED4_base *object = list_elem->elem()->object;
-        object = object->get_parent(ED4_L_SPECIES);
+        object = object->get_parent(LEV_SPECIES);
 
         bool move_object = true;
         if (object->is_consensus_manager()) {
-            object = object->get_parent(ED4_L_GROUP);
+            object = object->get_parent(LEV_GROUP);
             if (field_name) move_object = false; // don't move groups if moving by field_name
         }
         else {
@@ -934,7 +934,7 @@ static void createGroupFromSelected(GB_CSTR group_name, GB_CSTR field_name, GB_C
         }
 
         if (move_object) {
-            ED4_base *base = object->get_parent(ED4_L_MULTI_SPECIES);
+            ED4_base *base = object->get_parent(LEV_MULTI_SPECIES);
             if (base && base->is_multi_species_manager()) {
                 ED4_multi_species_manager *old_multi = base->to_multi_species_manager();
                 old_multi->invalidate_species_counters();
@@ -994,7 +994,7 @@ static void group_species(bool use_field, AW_window *use_as_main_window) {
             ED4_selected_elem *list_elem = ED4_ROOT->selected_objects->head();
             while (list_elem && !error) {
                 ED4_base *object = list_elem->elem()->object;
-                object = object->get_parent(ED4_L_SPECIES);
+                object = object->get_parent(LEV_SPECIES);
                 if (!object->is_consensus_manager()) {
                     GBDATA *gb_species = object->get_species_pointer();
                     GBDATA *gb_field   = NULL;
@@ -1176,7 +1176,7 @@ ARB_ERROR rebuild_consensus(ED4_base *object) {
         ED4_species_manager *spec_man = object->to_species_manager();
         spec_man->do_callbacks();
 
-        ED4_base *sequence_data_terminal = object->search_spec_child_rek(ED4_L_SEQUENCE_STRING);
+        ED4_base *sequence_data_terminal = object->search_spec_child_rek(LEV_SEQUENCE_STRING);
         sequence_data_terminal->request_refresh();
     }
     return NULL;
@@ -1828,7 +1828,7 @@ static void create_new_species(AW_window *, SpeciesCreationMode creation_mode) {
                         error = "Please place cursor on any sequence/consensus of group";
                     }
                     else {
-                        ED4_group_manager *group_man = cursor_terminal->get_parent(ED4_L_GROUP)->to_group_manager();
+                        ED4_group_manager *group_man = cursor_terminal->get_parent(LEV_GROUP)->to_group_manager();
                         SpeciesMergeList  *sml       = 0;  // list of species in group
 
                         error = group_man->route_down_hierarchy(makeED4_route_cb(add_species_to_merge_list, &sml, gb_species_data));
@@ -2041,7 +2041,7 @@ static void create_new_species(AW_window *, SpeciesCreationMode creation_mode) {
                         if (!error) error      = GBT_write_string(gb_new_species, "name", new_species_name);
                         if (!error) error      = GBT_write_string(gb_new_species, "full_name", new_species_full_name); // insert new 'full_name'
                         if (!error && creation_mode==CREATE_FROM_CONSENSUS) {
-                            ED4_group_manager *group_man = cursor_terminal->get_parent(ED4_L_GROUP)->to_group_manager();
+                            ED4_group_manager *group_man = cursor_terminal->get_parent(LEV_GROUP)->to_group_manager();
                             error = createDataFromConsensus(gb_new_species, group_man);
                         }
                     }

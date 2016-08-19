@@ -17,13 +17,13 @@
 #include <aw_msg.hxx>
 
 static void toggle_detailed_column_stat(ED4_sequence_terminal *seq_term, bool force_off) {
-    ED4_base *ms_man = seq_term->get_parent(ED4_L_MULTI_SEQUENCE);
+    ED4_base *ms_man = seq_term->get_parent(LEV_MULTI_SEQUENCE);
     if (ms_man) {
         ED4_multi_sequence_manager *multi_seq_man    = ms_man->to_multi_sequence_manager();
-        ED4_base                   *existing_colstat = multi_seq_man->search_spec_child_rek(ED4_L_COL_STAT);
+        ED4_base                   *existing_colstat = multi_seq_man->search_spec_child_rek(LEV_COL_STAT);
 
         if (existing_colstat) {
-            ED4_manager *colstat_seq_man = existing_colstat->get_parent(ED4_L_SEQUENCE)->to_manager();
+            ED4_manager *colstat_seq_man = existing_colstat->get_parent(LEV_SEQUENCE)->to_manager();
             colstat_seq_man->Delete();
         }
         else { // add
@@ -142,7 +142,7 @@ void ED4_set_col_stat_threshold() {
         }
         else {
             ED4_columnStat_terminal::set_threshold(input_threshold);
-            ED4_ROOT->request_refresh_for_specific_terminals(ED4_L_COL_STAT);
+            ED4_ROOT->request_refresh_for_specific_terminals(LEV_COL_STAT);
         }
         free(input);
     }

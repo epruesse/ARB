@@ -33,82 +33,82 @@
 
 static ED4_objspec tree_terminal_spec(
     ED4_P_IS_TERMINAL,  // static props
-    ED4_L_TREE,         // level
-    ED4_L_NO_LEVEL,     // allowed children level
-    ED4_L_NO_LEVEL,     // handled object
-    ED4_L_NO_LEVEL      // restriction level
+    LEV_TREE,           // level
+    LEV_NONE,           // allowed children level
+    LEV_NONE,           // handled object
+    LEV_NONE            // restriction level
     );
 
 static ED4_objspec bracket_terminal_spec(
     ED4_P_IS_TERMINAL,  // static props
-    ED4_L_BRACKET,      // level
-    ED4_L_NO_LEVEL,     // allowed children level
-    ED4_L_NO_LEVEL,     // handled object
-    ED4_L_NO_LEVEL      // restriction level
+    LEV_BRACKET,        // level
+    LEV_NONE,           // allowed children level
+    LEV_NONE,           // handled object
+    LEV_NONE            // restriction level
     );
 
 static ED4_objspec species_name_terminal_spec(
     ED4_P_IS_TERMINAL,  // static props
-    ED4_L_SPECIES_NAME, // level
-    ED4_L_NO_LEVEL,     // allowed children level
-    ED4_L_SPECIES,      // handled object
-    ED4_L_NO_LEVEL      // restriction level
+    LEV_SPECIES_NAME,   // level
+    LEV_NONE,           // allowed children level
+    LEV_SPECIES,        // handled object
+    LEV_NONE            // restriction level
     );
 
 static ED4_objspec sequence_info_terminal_spec(
     ED4_P_IS_TERMINAL,  // static props
-    ED4_L_SEQUENCE_INFO, // level
-    ED4_L_NO_LEVEL,     // allowed children level
-    ED4_L_SEQUENCE,     // handled object
-    ED4_L_NO_LEVEL      // restriction level
+    LEV_SEQUENCE_INFO,  // level
+    LEV_NONE,           // allowed children level
+    LEV_SEQUENCE,       // handled object
+    LEV_NONE            // restriction level
     );
 
 static ED4_objspec sequence_terminal_spec(
     ED4_P_IS_TERMINAL,     // static props
-    ED4_L_SEQUENCE_STRING, // level
-    ED4_L_NO_LEVEL,        // allowed children level
-    ED4_L_NO_LEVEL,        // handled object
-    ED4_L_NO_LEVEL         // restriction level
+    LEV_SEQUENCE_STRING,   // level
+    LEV_NONE,              // allowed children level
+    LEV_NONE,              // handled object
+    LEV_NONE               // restriction level
     );
 
 static ED4_objspec orf_terminal_spec(
     ED4_P_IS_TERMINAL,     // static props
-    ED4_L_ORF,             // level
-    ED4_L_NO_LEVEL,        // allowed children level
-    ED4_L_NO_LEVEL,        // handled object
-    ED4_L_NO_LEVEL         // restriction level
+    LEV_ORF,               // level
+    LEV_NONE,              // allowed children level
+    LEV_NONE,              // handled object
+    LEV_NONE               // restriction level
     );
 
 static ED4_objspec pure_text_terminal_spec(
     ED4_P_IS_TERMINAL,     // static props
-    ED4_L_PURE_TEXT,       // level
-    ED4_L_NO_LEVEL,        // allowed children level
-    ED4_L_NO_LEVEL,        // handled object
-    ED4_L_NO_LEVEL         // restriction level
+    LEV_PURE_TEXT,         // level
+    LEV_NONE,              // allowed children level
+    LEV_NONE,              // handled object
+    LEV_NONE               // restriction level
     );
 
 static ED4_objspec spacer_terminal_spec(
     ED4_P_IS_TERMINAL,     // static props
-    ED4_L_SPACER,          // level
-    ED4_L_NO_LEVEL,        // allowed children level
-    ED4_L_NO_LEVEL,        // handled object
-    ED4_L_NO_LEVEL         // restriction level
+    LEV_SPACER,            // level
+    LEV_NONE,              // allowed children level
+    LEV_NONE,              // handled object
+    LEV_NONE               // restriction level
     );
 
 static ED4_objspec line_terminal_spec(
     ED4_P_IS_TERMINAL,     // static props
-    ED4_L_LINE,            // level
-    ED4_L_NO_LEVEL,        // allowed children level
-    ED4_L_NO_LEVEL,        // handled object
-    ED4_L_NO_LEVEL         // restriction level
+    LEV_LINE,              // level
+    LEV_NONE,              // allowed children level
+    LEV_NONE,              // handled object
+    LEV_NONE               // restriction level
     );
 
 static ED4_objspec column_stat_terminal_spec(
     ED4_P_IS_TERMINAL,     // static props
-    ED4_L_COL_STAT,        // level
-    ED4_L_NO_LEVEL,        // allowed children level
-    ED4_L_NO_LEVEL,        // handled object
-    ED4_L_NO_LEVEL         // restriction level
+    LEV_COL_STAT,          // level
+    LEV_NONE,              // allowed children level
+    LEV_NONE,              // handled object
+    LEV_NONE               // restriction level
     );
 
 
@@ -249,8 +249,8 @@ GB_ERROR ED4_terminal::write_sequence(const char *seq, int seq_len)
         if (old_seq) {
             curr_timestamp = GB_read_clock(GLOBAL_gb_main);
 
-            get_parent(ED4_L_MULTI_SPECIES)->to_multi_species_manager()
-                ->update_bases_and_rebuild_consensi(old_seq, old_seq_len, get_parent(ED4_L_SPECIES)->to_species_manager(), ED4_U_UP); // bases_check
+            get_parent(LEV_MULTI_SPECIES)->to_multi_species_manager()
+                ->update_bases_and_rebuild_consensi(old_seq, old_seq_len, get_parent(LEV_SPECIES)->to_species_manager(), ED4_U_UP); // bases_check
         }
         else {
             aw_message("Couldn't read old sequence data");
@@ -293,7 +293,7 @@ inline void remove_from_consensus(ED4_manager *group_or_species_man) {
 }
 
 ED4_returncode ED4_terminal::kill_object() {
-    ED4_species_manager *species_manager = get_parent(ED4_L_SPECIES)->to_species_manager();
+    ED4_species_manager *species_manager = get_parent(LEV_SPECIES)->to_species_manager();
 
     if (species_manager->is_consensus_manager()) { // kill whole group
         if (ED4_find_MoreSequences_manager()==species_manager->parent) {
@@ -301,7 +301,7 @@ ED4_returncode ED4_terminal::kill_object() {
             return ED4_R_IMPOSSIBLE;
         }
 
-        ED4_manager *group_manager = species_manager->get_parent(ED4_L_GROUP)->to_group_manager();
+        ED4_manager *group_manager = species_manager->get_parent(LEV_GROUP)->to_group_manager();
         remove_from_consensus(group_manager);
         group_manager->Delete();
     }
@@ -348,7 +348,7 @@ ED4_returncode ED4_terminal::draw_drag_box(AW_pos x, AW_pos y, GB_CSTR text, int
             location.position[X_POS] = 0;
             location.position[Y_POS] = (AW_pos)cursor_y;           // cursor_y is already in world coordinates
 
-            ED4_ROOT->get_device_manager()->search_target_species(&location, ED4_P_HORIZONTAL, &drag_target, ED4_L_NO_LEVEL);
+            ED4_ROOT->get_device_manager()->search_target_species(&location, ED4_P_HORIZONTAL, &drag_target, LEV_NONE);
         }
 
         if (drag_target) {
@@ -479,7 +479,7 @@ ED4_returncode ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *aw
                             mi.end_x = event->x;
                             mi.end_y = event->y;
                             mi.mode = ED4_M_FREE;
-                            mi.preferred_parent = ED4_L_NO_LEVEL;
+                            mi.preferred_parent = LEV_NONE;
 
                             dragged_name_terminal->parent->move_requested_by_child(&mi);
                         }
@@ -540,7 +540,7 @@ ED4_returncode ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *aw
                         case ED4_SM_INFO:
                         case ED4_SM_MARK: {
                             static ED4_species_manager *prev_clicked_species_man = NULL;
-                            ED4_species_manager        *species_man              = get_parent(ED4_L_SPECIES)->to_species_manager();
+                            ED4_species_manager        *species_man              = get_parent(LEV_SPECIES)->to_species_manager();
 
                             GBDATA *gbd = species_man->get_species_pointer();
                             if (gbd) {
@@ -616,10 +616,10 @@ ED4_returncode ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *aw
                     case AW_Mouse_Press: {
                         select_started_on_seqterm = false;
                         if (is_species_name_terminal()) {
-                            ED4_species_manager *species_man = get_parent(ED4_L_SPECIES)->to_species_manager();
+                            ED4_species_manager *species_man = get_parent(LEV_SPECIES)->to_species_manager();
 
                             if (species_man->is_consensus_manager()) { // click on consensus-name
-                                ED4_multi_species_manager *multi_man = species_man->get_parent(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
+                                ED4_multi_species_manager *multi_man = species_man->get_parent(LEV_MULTI_SPECIES)->to_multi_species_manager();
                                 multi_man->toggle_selected_species();
                             }
                             else { // click on species or SAI name
@@ -633,7 +633,7 @@ ED4_returncode ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *aw
                             }
                         }
                         else if (is_bracket_terminal()) {
-                            ED4_base *group = get_parent(ED4_L_GROUP);
+                            ED4_base *group = get_parent(LEV_GROUP);
                             if (group) {
                                 group->to_group_manager()->get_multi_species_manager()->toggle_selected_species();
                             }
@@ -794,7 +794,7 @@ ED4_returncode ED4_bracket_terminal::draw() {
     Rectangle  term_area = get_win_area(current_ed4w());
     AW_device *device    = current_device();
 
-    ED4_multi_species_manager *multi_man = get_parent(ED4_L_GROUP)->to_group_manager()->get_multi_species_manager();
+    ED4_multi_species_manager *multi_man = get_parent(LEV_GROUP)->to_group_manager()->get_multi_species_manager();
     if (multi_man->get_no_of_selected_species()) {  // if multi_species_manager contains selected species
 #if defined(DEBUG) && 0
         static bool toggle = false;
@@ -866,7 +866,7 @@ GB_CSTR ED4_species_name_terminal::get_displayed_text() const
     }
     memset(real_name, 0, allocatedSize);
 
-    ED4_species_manager *spec_man = get_parent(ED4_L_SPECIES)->to_species_manager();
+    ED4_species_manager *spec_man = get_parent(LEV_SPECIES)->to_species_manager();
 
     if (spec_man->is_consensus_manager()) {
         char *db_pointer = resolve_pointer_to_string_copy();

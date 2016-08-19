@@ -19,7 +19,7 @@
 
 ED4_group_manager *ED4_base::is_in_folded_group() const {
     if (!parent) return NULL;
-    ED4_base *group = get_parent(ED4_L_GROUP);
+    ED4_base *group = get_parent(LEV_GROUP);
     if (!group) return NULL;
     if (group->dynamic_prop & ED4_P_IS_FOLDED) return group->to_group_manager();
     return group->is_in_folded_group();
@@ -69,11 +69,11 @@ void ED4_terminal::changed_by_database()
                 delete n;
 #endif
 
-                ED4_species_manager *spman = get_parent(ED4_L_SPECIES)->to_species_manager();
+                ED4_species_manager *spman = get_parent(LEV_SPECIES)->to_species_manager();
                 spman->do_callbacks();
 
                 if (dynamic_prop & ED4_P_CONSENSUS_RELEVANT) {
-                    ED4_multi_species_manager *multiman = get_parent(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
+                    ED4_multi_species_manager *multiman = get_parent(LEV_MULTI_SPECIES)->to_multi_species_manager();
                     multiman->update_bases_and_rebuild_consensi(dup_data, data_len, spman, ED4_U_UP);
                     request_refresh();
                 }
@@ -116,10 +116,10 @@ void ED4_sequence_terminal::deleted_from_database()
         const char *data     = (const char*)GB_read_old_value();
         int         data_len = GB_read_old_size();
 
-        ED4_multi_species_manager *multi_species_man = get_parent(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
+        ED4_multi_species_manager *multi_species_man = get_parent(LEV_MULTI_SPECIES)->to_multi_species_manager();
 
         multi_species_man->update_bases(data, data_len, 0);
-        multi_species_man->rebuild_consensi(get_parent(ED4_L_SPECIES)->to_species_manager(), ED4_U_UP);
+        multi_species_man->rebuild_consensi(get_parent(LEV_SPECIES)->to_species_manager(), ED4_U_UP);
     }
 
     parent->Delete();
@@ -499,7 +499,7 @@ bool ED4_base::has_parent(ED4_manager *Parent)
 
 
 ED4_AREA_LEVEL ED4_base::get_area_level(ED4_multi_species_manager **multi_species_manager) const {
-    ED4_base       *area_base = get_parent(ED4_L_AREA);
+    ED4_base       *area_base = get_parent(LEV_AREA);
     ED4_AREA_LEVEL  result    = ED4_A_ERROR;
 
     if (area_base) {
@@ -695,9 +695,9 @@ void ED4_base::unlink_from_parent() {
 
 char *ED4_base::get_name_of_species() {
     char                *name        = 0;
-    ED4_species_manager *species_man = get_parent(ED4_L_SPECIES)->to_species_manager();
+    ED4_species_manager *species_man = get_parent(LEV_SPECIES)->to_species_manager();
     if (species_man) {
-        ED4_species_name_terminal *species_name = species_man->search_spec_child_rek(ED4_L_SPECIES_NAME)->to_species_name_terminal();
+        ED4_species_name_terminal *species_name = species_man->search_spec_child_rek(LEV_SPECIES_NAME)->to_species_name_terminal();
         if (species_name) {
             GBDATA *gb_name   = species_name->get_species_pointer();
             if (gb_name) {
@@ -740,7 +740,7 @@ ED4_returncode ED4_base::set_width() {
         ED4_species_manager *species_manager = to_species_manager();
 
         if (!species_manager->is_consensus_manager()) {
-            ED4_multi_name_manager    *multi_name_manager = species_manager->get_defined_level(ED4_L_MULTI_NAME)->to_multi_name_manager();  // case I'm a species
+            ED4_multi_name_manager    *multi_name_manager = species_manager->get_defined_level(LEV_MULTI_NAME)->to_multi_name_manager();  // case I'm a species
             ED4_species_name_terminal *consensus_terminal = parent->to_multi_species_manager()->get_consensus_name_terminal();
 
             for (int i=0; i<multi_name_manager->members(); i++) {
@@ -762,7 +762,7 @@ ED4_returncode ED4_base::set_width() {
                     }
                 }
                 else { // got no consensus
-                    ED4_species_manager *a_species = parent->get_defined_level(ED4_L_SPECIES)->to_species_manager();
+                    ED4_species_manager *a_species = parent->get_defined_level(LEV_SPECIES)->to_species_manager();
                     if (a_species) {
                         smember->extension.position[X_POS] = a_species->member(i)->extension.position[X_POS];
                         ED4_base::touch_world_cache();
@@ -878,7 +878,7 @@ void ED4_group_manager::unfold() {
             ED4_multi_species_manager *multi_species_manager = child->to_multi_species_manager();
             multi_species_manager->unhide_children();
 
-            ED4_spacer_terminal *spacer = multi_species_manager->get_defined_level(ED4_L_SPACER)->to_spacer_terminal();
+            ED4_spacer_terminal *spacer = multi_species_manager->get_defined_level(LEV_SPACER)->to_spacer_terminal();
             spacer->extension.size[HEIGHT] = SPACERHEIGHT; // @@@ use set_dynamic_size()?
         }
     }
@@ -887,7 +887,7 @@ void ED4_group_manager::unfold() {
 }
 
 void ED4_group_manager::fold() {
-    ED4_multi_species_manager *multi_species_manager = get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
+    ED4_multi_species_manager *multi_species_manager = get_defined_level(LEV_MULTI_SPECIES)->to_multi_species_manager();
 
     bool consensus_shown = false;
     if (!(multi_species_manager->member(1)->is_consensus_manager())) { // if consensus is not at top => move to top
@@ -915,7 +915,7 @@ void ED4_group_manager::fold() {
         consensus_shown = false;
     }
 
-    ED4_spacer_terminal *spacer = multi_species_manager->get_defined_level(ED4_L_SPACER)->to_spacer_terminal();
+    ED4_spacer_terminal *spacer = multi_species_manager->get_defined_level(LEV_SPACER)->to_spacer_terminal();
     if (spacer) {
         spacer->extension.size[HEIGHT] = consensus_shown ? SPACERHEIGHT : SPACERNOCONSENSUSHEIGHT; // @@@ use set_dynamic_size()?
     }
@@ -1095,7 +1095,7 @@ ED4_base::~ED4_base() {
     {
         if (ED4_ROOT->main_manager)
         {
-            ED4_base *sequence_terminal = ED4_ROOT->main_manager->search_spec_child_rek(ED4_L_SEQUENCE_STRING);
+            ED4_base *sequence_terminal = ED4_ROOT->main_manager->search_spec_child_rek(LEV_SEQUENCE_STRING);
 
             if (sequence_terminal)
                 sequence_terminal->update_info.linked_to_scrolled_rectangle = 1;

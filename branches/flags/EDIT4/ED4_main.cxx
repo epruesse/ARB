@@ -112,14 +112,14 @@ static char *add_area_for_gde(ED4_area_manager *area_man, uchar **&the_names, uc
 
     for (; terminal;) {
         if (terminal->is_species_name_terminal()) {
-            ED4_species_manager *species_manager = terminal->get_parent(ED4_L_SPECIES)->to_species_manager();
-            ED4_species_name_terminal *species_name = species_manager->search_spec_child_rek(ED4_L_SPECIES_NAME)->to_species_name_terminal();
+            ED4_species_manager *species_manager = terminal->get_parent(LEV_SPECIES)->to_species_manager();
+            ED4_species_name_terminal *species_name = species_manager->search_spec_child_rek(LEV_SPECIES_NAME)->to_species_name_terminal();
             int name_len;
             char *name = species_name->resolve_pointer_to_string_copy(&name_len);
             ED4_sequence_terminal *sequence_terminal;
 
             {
-                ED4_base *sequence_term  = species_manager->search_spec_child_rek(ED4_L_SEQUENCE_STRING);
+                ED4_base *sequence_term  = species_manager->search_spec_child_rek(LEV_SEQUENCE_STRING);
                 if (!sequence_term) goto end_of_loop;
                 sequence_terminal = sequence_term->to_sequence_terminal();
             }
@@ -148,7 +148,7 @@ static char *add_area_for_gde(ED4_area_manager *area_man, uchar **&the_names, uc
                 char *seq = 0;
 
                 if (is_consensus) {
-                    ED4_group_manager *group_manager = sequence_terminal->get_parent(ED4_L_GROUP)->to_group_manager();
+                    ED4_group_manager *group_manager = sequence_terminal->get_parent(LEV_GROUP)->to_group_manager();
 
                     group_manager->build_consensus_string(&seq_len);
                     e4_assert(strlen(seq) == size_t(seq_len));
@@ -187,7 +187,7 @@ static char *add_area_for_gde(ED4_area_manager *area_man, uchar **&the_names, uc
                         free(helix);
                     }
                     if (show_remark && !is_consensus) {
-                        ED4_multi_sequence_manager *ms_man = sequence_terminal->get_parent(ED4_L_MULTI_SEQUENCE)->to_multi_sequence_manager();
+                        ED4_multi_sequence_manager *ms_man = sequence_terminal->get_parent(LEV_MULTI_SEQUENCE)->to_multi_sequence_manager();
                         ED4_base *remark_name_term = ms_man->search_ID("remark");
                         if (remark_name_term) {
                             ED4_base *remark_term = remark_name_term->get_next_terminal();

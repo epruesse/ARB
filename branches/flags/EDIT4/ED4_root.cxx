@@ -68,14 +68,14 @@ void ED4_WinContext::warn_missing_context() const {
 }
 
 static ARB_ERROR request_terminal_refresh(ED4_base *base, ED4_level lev) {
-    if (lev == ED4_L_NO_LEVEL || (base->spec.level&lev) != 0) {
+    if (lev == LEV_NONE || (base->spec.level&lev) != 0) {
         if (base->is_terminal()) base->request_refresh();
     }
     return NULL;
 }
 
 void ED4_root::request_refresh_for_all_terminals() {
-    main_manager->route_down_hierarchy(makeED4_route_cb(request_terminal_refresh, ED4_L_NO_LEVEL)).expect_no_error();
+    main_manager->route_down_hierarchy(makeED4_route_cb(request_terminal_refresh, LEV_NONE)).expect_no_error();
 }
 
 void ED4_root::request_refresh_for_specific_terminals(ED4_level lev) {
@@ -85,15 +85,15 @@ void ED4_root::request_refresh_for_specific_terminals(ED4_level lev) {
 
 static ARB_ERROR request_sequence_refresh(ED4_base *base, bool consensi) {
     ARB_ERROR error;
-    if (base->spec.level & ED4_L_SPECIES) {
+    if (base->spec.level & LEV_SPECIES) {
         if (base->is_consensus_manager() == consensi) {
-            error = base->to_manager()->route_down_hierarchy(makeED4_route_cb(request_terminal_refresh, ED4_L_SEQUENCE_STRING));
+            error = base->to_manager()->route_down_hierarchy(makeED4_route_cb(request_terminal_refresh, LEV_SEQUENCE_STRING));
         }
     }
     return error;
 }
 
-// if you want to refresh consensi AND sequences you may use request_refresh_for_specific_terminals(ED4_L_SEQUENCE_STRING)
+// if you want to refresh consensi AND sequences you may use request_refresh_for_specific_terminals(LEV_SEQUENCE_STRING)
 void ED4_root::request_refresh_for_consensus_terminals() {
     main_manager->route_down_hierarchy(makeED4_route_cb(request_sequence_refresh, true)).expect_no_error();
 }
@@ -338,7 +338,7 @@ void ED4_root::remove_from_selected(ED4_species_name_terminal *name_term) { // @
                 printf("removed term '%s'\n", GB_read_char_pntr(gbd));
             }
             else {
-                ED4_species_manager *spec_man = name_term->get_parent(ED4_L_SPECIES)->to_species_manager();
+                ED4_species_manager *spec_man = name_term->get_parent(LEV_SPECIES)->to_species_manager();
 
                 if (spec_man->is_consensus_manager()) {
                     printf("removed consensus '%s'\n", name_term->id);
@@ -358,7 +358,7 @@ void ED4_root::remove_from_selected(ED4_species_name_terminal *name_term) { // @
                 PV_CallBackFunction(this->aw_root);
             }
 
-            ED4_multi_species_manager *multi_man = name_term->get_parent(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
+            ED4_multi_species_manager *multi_man = name_term->get_parent(LEV_MULTI_SPECIES)->to_multi_species_manager();
             multi_man->invalidate_species_counters();
         }
     }
@@ -419,7 +419,7 @@ ED4_returncode ED4_root::add_to_selected(ED4_species_name_terminal *name_term) {
             printf("added term '%s'\n", GB_read_char_pntr(gbd));
         }
         else {
-            ED4_species_manager *spec_man = name_term->get_parent(ED4_L_SPECIES)->to_species_manager();
+            ED4_species_manager *spec_man = name_term->get_parent(LEV_SPECIES)->to_species_manager();
             if (spec_man->is_consensus_manager()) {
                 printf("added consensus '%s'\n", name_term->id);
             }
@@ -438,7 +438,7 @@ ED4_returncode ED4_root::add_to_selected(ED4_species_name_terminal *name_term) {
             PV_CallBackFunction(this->aw_root);
         }
 
-        ED4_multi_species_manager *multi_man = name_term->get_parent(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
+        ED4_multi_species_manager *multi_man = name_term->get_parent(LEV_MULTI_SPECIES)->to_multi_species_manager();
         multi_man->invalidate_species_counters();
 
         return (ED4_R_OK);
@@ -832,7 +832,7 @@ static ARB_ERROR do_sth_with_species(ED4_base *base, const ED4_Species_Callback 
 
     if (base->is_species_manager()) {
         ED4_species_manager       *species_manager       = base->to_species_manager();
-        ED4_species_name_terminal *species_name_terminal = species_manager->search_spec_child_rek(ED4_L_SPECIES_NAME)->to_species_name_terminal();
+        ED4_species_name_terminal *species_name_terminal = species_manager->search_spec_child_rek(LEV_SPECIES_NAME)->to_species_name_terminal();
 
         if (species_name_terminal->get_species_pointer()) {
             char *species_name = GB_read_as_string(species_name_terminal->get_species_pointer());
@@ -877,15 +877,15 @@ static bool is_SAI_named(ED4_base *base, const char *sai_name) {
 }
 
 ED4_species_name_terminal *ED4_find_species_or_SAI_name_terminal(const char *species_name) {
-    ED4_base *base = ED4_ROOT->root_group_man->find_first_that(ED4_L_SPECIES_NAME, makeED4_basePredicate(is_species_named, species_name));
+    ED4_base *base = ED4_ROOT->root_group_man->find_first_that(LEV_SPECIES_NAME, makeED4_basePredicate(is_species_named, species_name));
     return base ? base->to_species_name_terminal() : NULL;
 }
 ED4_species_name_terminal *ED4_find_species_name_terminal(const char *species_name) {
-    ED4_base *base = ED4_ROOT->root_group_man->find_first_that(ED4_L_SPECIES_NAME, makeED4_basePredicate(is_species_named, species_name));
+    ED4_base *base = ED4_ROOT->root_group_man->find_first_that(LEV_SPECIES_NAME, makeED4_basePredicate(is_species_named, species_name));
     return base ? base->to_species_name_terminal() : NULL;
 }
 ED4_species_name_terminal *ED4_find_SAI_name_terminal(const char *sai_name) {
-    ED4_base *base = ED4_ROOT->root_group_man->find_first_that(ED4_L_SPECIES_NAME, makeED4_basePredicate(is_SAI_named, sai_name));
+    ED4_base *base = ED4_ROOT->root_group_man->find_first_that(LEV_SPECIES_NAME, makeED4_basePredicate(is_SAI_named, sai_name));
     return base ? base->to_species_name_terminal() : NULL;
 }
 
@@ -894,7 +894,7 @@ static char *get_group_consensus(const char *species_name, PosRange range) {
     char *consensus = 0;
 
     if (name_term) {
-        ED4_abstract_group_manager *group_man = name_term->get_parent(ED4_level(ED4_L_GROUP|ED4_L_ROOTGROUP))->to_abstract_group_manager();
+        ED4_abstract_group_manager *group_man = name_term->get_parent(ED4_level(LEV_GROUP|LEV_ROOTGROUP))->to_abstract_group_manager();
         if (group_man) {
             consensus = group_man->build_consensus_string(range);
         }
@@ -956,7 +956,7 @@ static void toggle_helix_for_SAI(AW_window *aww) {
 
     if (cursor->in_SAI_terminal()) {
         ED4_sequence_terminal      *sai_term      = cursor->owner_of_cursor->to_sequence_terminal();
-        ED4_sequence_info_terminal *sai_info_term = sai_term->parent->search_spec_child_rek(ED4_L_SEQUENCE_INFO)->to_sequence_info_terminal();
+        ED4_sequence_info_terminal *sai_info_term = sai_term->parent->search_spec_child_rek(LEV_SEQUENCE_INFO)->to_sequence_info_terminal();
 
         GBDATA         *gb_sai_data = sai_info_term->data();
         GB_transaction  ta(gb_sai_data);
@@ -1074,7 +1074,7 @@ static void ED4_set_protection(AW_window *aww, int wanted_protection) {
 
     if (cursor->owner_of_cursor) {
         ED4_sequence_terminal      *seq_term      = cursor->owner_of_cursor->to_sequence_terminal();
-        ED4_sequence_info_terminal *seq_info_term = seq_term->parent->search_spec_child_rek(ED4_L_SEQUENCE_INFO)->to_sequence_info_terminal();
+        ED4_sequence_info_terminal *seq_info_term = seq_term->parent->search_spec_child_rek(LEV_SEQUENCE_INFO)->to_sequence_info_terminal();
         GBDATA                     *gbd           = seq_info_term->data();
 
         GB_push_transaction(gbd);
@@ -1157,7 +1157,7 @@ static void ED4_menu_select(AW_window *aww, MenuSelectType select) {
             int done = 0;
 
             if (cursor->owner_of_cursor) {
-                ED4_multi_species_manager *multi_man = cursor->owner_of_cursor->get_parent(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
+                ED4_multi_species_manager *multi_man = cursor->owner_of_cursor->get_parent(LEV_MULTI_SPECIES)->to_multi_species_manager();
 
                 multi_man->invert_selection_of_all_species();
                 ED4_correctBlocktypeAfterSelection();

@@ -40,7 +40,7 @@ void ED4_consensus_definition_changed(AW_root*) {
     ED4_reference *ref = ED4_ROOT->reference;
     if (ref->reference_is_a_consensus()) {
         ref->data_changed_cb(NULL);
-        ED4_ROOT->request_refresh_for_specific_terminals(ED4_L_SEQUENCE_STRING); // refresh all sequences
+        ED4_ROOT->request_refresh_for_specific_terminals(LEV_SEQUENCE_STRING); // refresh all sequences
     }
     else {
         ED4_ROOT->request_refresh_for_consensus_terminals();
@@ -50,7 +50,7 @@ void ED4_consensus_definition_changed(AW_root*) {
 static ARB_ERROR toggle_consensus_display(ED4_base *base, bool show) {
     if (base->is_consensus_manager()) {
         ED4_manager *consensus_man = base->to_manager();
-        ED4_spacer_terminal *spacer = consensus_man->parent->get_defined_level(ED4_L_SPACER)->to_spacer_terminal();
+        ED4_spacer_terminal *spacer = consensus_man->parent->get_defined_level(LEV_SPACER)->to_spacer_terminal();
 
         if (show) {
             consensus_man->unhide_children();
@@ -59,7 +59,7 @@ static ARB_ERROR toggle_consensus_display(ED4_base *base, bool show) {
         else {
             consensus_man->hide_children();
 
-            ED4_group_manager *group_man = consensus_man->get_parent(ED4_L_GROUP)->to_group_manager();
+            ED4_group_manager *group_man = consensus_man->get_parent(LEV_GROUP)->to_group_manager();
             spacer->extension.size[HEIGHT] = (group_man->dynamic_prop&ED4_P_IS_FOLDED) ? SPACERNOCONSENSUSHEIGHT : SPACERHEIGHT; // @@@ use set_dynamic_size()?
         }
     }

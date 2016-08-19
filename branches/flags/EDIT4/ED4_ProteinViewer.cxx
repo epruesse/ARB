@@ -115,12 +115,12 @@ static bool PV_LookForNewTerminals(AW_root *root) {
 }
 
 static void PV_HideTerminal(ED4_orf_terminal *orfTerm) {
-    ED4_sequence_manager *seqManager = orfTerm->get_parent(ED4_L_SEQUENCE)->to_sequence_manager();
+    ED4_sequence_manager *seqManager = orfTerm->get_parent(LEV_SEQUENCE)->to_sequence_manager();
     seqManager->hide_children();
 }
 
 static void PV_UnHideTerminal(ED4_orf_terminal *orfTerm) {
-    ED4_sequence_manager *seqManager = orfTerm->get_parent(ED4_L_SEQUENCE)->to_sequence_manager();
+    ED4_sequence_manager *seqManager = orfTerm->get_parent(LEV_SEQUENCE)->to_sequence_manager();
     seqManager->unhide_children();
 }
 
@@ -309,7 +309,7 @@ static void PV_ManageTerminals(AW_root *root) {
              terminal = terminal->get_next_terminal())
         {
             if (terminal->is_sequence_terminal()) {
-                ED4_species_manager *speciesManager = terminal->get_parent(ED4_L_SPECIES)->to_species_manager();
+                ED4_species_manager *speciesManager = terminal->get_parent(LEV_SPECIES)->to_species_manager();
                 if (speciesManager->is_species_seq_terminal()) {
                     // we are in the sequence terminal section of a species
                     // walk through all the corresponding ORF terminals for the species and
@@ -738,7 +738,7 @@ static void PV_AddNewAAseqTerminals(ED4_sequence_terminal *seqTerminal, ED4_spec
         int startPos = 0;
 
         sprintf(namebuffer, "Sequence_Manager.%ld.%d", ED4_counter, count++);
-        ED4_multi_sequence_manager *multiSeqManager = speciesManager->search_spec_child_rek(ED4_L_MULTI_SEQUENCE)->to_multi_sequence_manager();
+        ED4_multi_sequence_manager *multiSeqManager = speciesManager->search_spec_child_rek(LEV_MULTI_SEQUENCE)->to_multi_sequence_manager();
         ED4_sequence_manager *new_SeqManager = new ED4_sequence_manager(namebuffer, 0, 0, multiSeqManager);
         new_SeqManager->set_property(ED4_P_MOVABLE);
         multiSeqManager->append_member(new_SeqManager);
@@ -751,7 +751,7 @@ static void PV_AddNewAAseqTerminals(ED4_sequence_terminal *seqTerminal, ED4_spec
             ED4_sequence_info_terminal *new_SeqInfoTerminal = new ED4_sequence_info_terminal(namebuffer, SEQUENCEINFOSIZE, TERMINALHEIGHT, new_SeqManager);
             new_SeqInfoTerminal->set_property((ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE));
 
-            ED4_sequence_info_terminal *seqInfoTerminal = speciesManager->search_spec_child_rek(ED4_L_SEQUENCE_INFO)->to_sequence_info_terminal();
+            ED4_sequence_info_terminal *seqInfoTerminal = speciesManager->search_spec_child_rek(LEV_SEQUENCE_INFO)->to_sequence_info_terminal();
             new_SeqInfoTerminal->set_both_links(seqInfoTerminal);
             new_SeqManager->append_member(new_SeqInfoTerminal);
         }
@@ -788,7 +788,7 @@ static void PV_AddNewAAseqTerminals(ED4_sequence_terminal *seqTerminal, ED4_spec
 void PV_AddCorrespondingOrfTerminals(ED4_species_name_terminal *spNameTerm) {
     if (gTerminalsCreated && spNameTerm) {
         ED4_sequence_terminal *seqTerminal    = spNameTerm->corresponding_sequence_terminal();
-        ED4_species_manager *speciesManager = spNameTerm->get_parent(ED4_L_SPECIES)->to_species_manager();
+        ED4_species_manager *speciesManager = spNameTerm->get_parent(LEV_SPECIES)->to_species_manager();
         PV_AddNewAAseqTerminals(seqTerminal, speciesManager);
         PV_RefreshWindow(ED4_ROOT->aw_root);
     }
@@ -814,7 +814,7 @@ void PV_AddOrfTerminalsToLoadedSpecies() {
                     if (terminal->is_species_name_terminal() || terminal->is_spacer_terminal())
                     {
                         ED4_sequence_terminal *seqTerminal    = spNameTerm->corresponding_sequence_terminal();
-                        ED4_species_manager *speciesManager = spNameTerm->get_parent(ED4_L_SPECIES)->to_species_manager();
+                        ED4_species_manager *speciesManager = spNameTerm->get_parent(LEV_SPECIES)->to_species_manager();
                         PV_AddNewAAseqTerminals(seqTerminal, speciesManager);
                     }
                 }
@@ -852,7 +852,7 @@ static void PV_CreateAllTerminals(AW_root *root) {
             ED4_sequence_terminal *seqTerminal = terminal->to_sequence_terminal();
             if (seqTerminal->species_name)
             {
-                ED4_species_manager *speciesManager = terminal->get_parent(ED4_L_SPECIES)->to_species_manager();
+                ED4_species_manager *speciesManager = terminal->get_parent(LEV_SPECIES)->to_species_manager();
                 if (speciesManager->is_species_seq_manager()) {
                     PV_AddNewAAseqTerminals(seqTerminal, speciesManager);
                 }

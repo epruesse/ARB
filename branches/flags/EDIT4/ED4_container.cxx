@@ -77,20 +77,20 @@ ED4_returncode ED4_container::search_target_species(ED4_extension *location, ED4
                   (location->position[rel_pos] <= (current_member->extension.position[rel_pos] +
                                                    abs_pos + current_member->extension.size[rel_size]))) // found a suitable member
         {
-            if (return_level & ED4_L_MULTI_SPECIES) { // search for drag target
+            if (return_level & LEV_MULTI_SPECIES) { // search for drag target
                 if (current_member->is_multi_species_manager()) {
                     *found_member = current_member; // we have to return the multi_species_manager for insertion
                     current_member->to_multi_species_manager()->search_target_species(location, prop, found_member, return_level);
                 }
                 else if ((current_member->is_spacer_terminal()) && (current_index + 1 == no_of_members)) { // if we have found the last spacer in a group
                     // -> we can move the object behind the group
-                    *found_member = current_member->get_parent(ED4_L_MULTI_SPECIES);
+                    *found_member = current_member->get_parent(LEV_MULTI_SPECIES);
                     if ((*found_member) && !((*found_member)->parent->is_area_manager())) {
-                        *found_member = (*found_member)->parent->get_parent(ED4_L_MULTI_SPECIES);
+                        *found_member = (*found_member)->parent->get_parent(LEV_MULTI_SPECIES);
                     }
                 }
                 else if (!(current_member->is_terminal()) || (current_member->is_spacer_terminal())) {
-                    *found_member = current_member->get_parent(ED4_L_MULTI_SPECIES);
+                    *found_member = current_member->get_parent(LEV_MULTI_SPECIES);
                 }
 
             }
@@ -100,7 +100,7 @@ ED4_returncode ED4_container::search_target_species(ED4_extension *location, ED4
                     current_member->to_multi_species_manager()->search_target_species(location, prop, found_member, return_level);
                 }
                 else if ((current_member->is_spacer_terminal()) && (current_index + 1 == no_of_members)) { // if we have found the last spacer
-                    *found_member = current_member->get_parent(ED4_L_MULTI_SPECIES);   // in a group we can move the
+                    *found_member = current_member->get_parent(LEV_MULTI_SPECIES);   // in a group we can move the
                     if ((*found_member) && !((*found_member)->parent->is_area_manager())) {
                         *found_member = (*found_member)->parent;
                     }
@@ -129,10 +129,10 @@ ED4_returncode ED4_container::search_target_species(ED4_extension *location, ED4
                       (location->position[rel_pos] >= abs_pos && location->position[rel_pos] <= current_member->parent->extension.size[rel_size] + abs_pos)) &&
                     (current_member->is_spacer_terminal()) && (current_index + 1 == no_of_members))
                 {
-                    if (return_level & ED4_L_MULTI_SPECIES)
-                        *found_member = current_member->get_parent(ED4_L_MULTI_SPECIES)->parent->get_parent(ED4_L_MULTI_SPECIES);
+                    if (return_level & LEV_MULTI_SPECIES)
+                        *found_member = current_member->get_parent(LEV_MULTI_SPECIES)->parent->get_parent(LEV_MULTI_SPECIES);
                     else
-                        *found_member = current_member->get_parent(ED4_L_MULTI_SPECIES)->parent;
+                        *found_member = current_member->get_parent(LEV_MULTI_SPECIES)->parent;
                 }
             }
         }
