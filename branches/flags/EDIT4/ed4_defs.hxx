@@ -40,13 +40,14 @@ enum ED4_EDITMODE {
 extern GBDATA   *GLOBAL_gb_main;
 extern ED4_root *ED4_ROOT;
 
-extern int TERMINALHEIGHT;      // this variable replaces the define
 extern int INFO_TERM_TEXT_YOFFSET;
 extern int SEQ_TERM_TEXT_YOFFSET;
 
-extern int  MAXSEQUENCECHARACTERLENGTH;             // greatest # of characters in a sequence string terminal
-extern int  MAXSPECIESWIDTH;
-extern int  MAXINFOWIDTH;
+extern int TERMINAL_HEIGHT;             // standard terminal height (sequences, name, info, etc..)
+extern int MAXSEQUENCECHARACTERLENGTH;  // greatest # of characters in a sequence string terminal
+extern int MAXNAME_WIDTH;               // max. pixel width of ED4_species_name_terminal (effective width also depends on group-nesting)
+extern int MAXINFO_WIDTH;               // pixel width used to display sequence info ("CONS", "4data", etc.)
+
 extern long ED4_counter;
 
 // use ED4_init_notFoundMessage and ED4_finish_and_show_notFoundMessage to
@@ -78,11 +79,11 @@ extern bool         DRAW;
 #define HEIGHT      1
 
 // size of some display elements:
-#define BRACKETWIDTH    11
-#define SPACERHEIGHT    5
-#define SPACERNOCONSENSUSHEIGHT 15 // height of spacer at top of group (used if consensus is hidden and group is folded)
-#define SEQUENCEINFOSIZE 50
-#define TREETERMINALSIZE 100
+#define BRACKET_WIDTH        11
+#define SPACER_HEIGHT        5
+#define SPACER_NOCONS_HEIGHT 15     // height of spacer at top of group (used if consensus is hidden and group is folded)
+#define SEQUENCE_INFO_WIDTH  50     // default width of ED4_sequence_info_terminal (overridden via ref-terminal)
+#define TREE_TERMINAL_WIDTH  100    // some default-width (used for ED4_line_terminal only; @@@ has no noteable effect)
 
 #define COLUMN_STAT_ROW_HEIGHT(font_height)     (2.2*(font_height)) // each row contains 2 sub-rows (plus some xtra space)
 #define COLUMN_STAT_ROWS            4

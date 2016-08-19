@@ -748,7 +748,7 @@ static void PV_AddNewAAseqTerminals(ED4_sequence_terminal *seqTerminal, ED4_spec
         else                                                sprintf(namebuffer, "DBProteinInfo_Term%ld.%d", ED4_counter, count++);
 
         {
-            ED4_sequence_info_terminal *new_SeqInfoTerminal = new ED4_sequence_info_terminal(namebuffer, SEQUENCEINFOSIZE, TERMINALHEIGHT, new_SeqManager);
+            ED4_sequence_info_terminal *new_SeqInfoTerminal = new ED4_sequence_info_terminal(namebuffer, SEQUENCE_INFO_WIDTH, TERMINAL_HEIGHT, new_SeqManager);
             new_SeqInfoTerminal->set_property((ED4_properties) (PROP_SELECTABLE | PROP_DRAGABLE | PROP_IS_HANDLE));
 
             ED4_sequence_info_terminal *seqInfoTerminal = speciesManager->search_spec_child_rek(LEV_SEQUENCE_INFO)->to_sequence_info_terminal();
@@ -758,7 +758,7 @@ static void PV_AddNewAAseqTerminals(ED4_sequence_terminal *seqTerminal, ED4_spec
 
         {
             sprintf(namebuffer, "AA_Sequence_Term%ld.%d", ED4_counter, count++);
-            ED4_orf_terminal *AA_SeqTerminal = new ED4_orf_terminal(namebuffer, 0, TERMINALHEIGHT, new_SeqManager);
+            ED4_orf_terminal *AA_SeqTerminal = new ED4_orf_terminal(namebuffer, 0, TERMINAL_HEIGHT, new_SeqManager);
             AA_SeqTerminal->set_both_links(seqTerminal);
 
             char *speciesName = seqTerminal->species_name;

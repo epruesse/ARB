@@ -930,7 +930,7 @@ ED4_returncode ED4_main_manager::Show(int refresh_all, int is_cleared) {
         {
             device->push_clip_scale();
             const AW_screen_area& clip_rect = device->get_cliprect();
-            device->set_top_clip_border(clip_rect.t-TERMINALHEIGHT);
+            device->set_top_clip_border(clip_rect.t-TERMINAL_HEIGHT);
 
             int char_width = ED4_ROOT->font_group.get_max_width();
             device->set_left_clip_border(clip_rect.l-char_width);

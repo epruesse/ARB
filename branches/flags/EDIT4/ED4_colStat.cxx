@@ -47,7 +47,7 @@ static void toggle_detailed_column_stat(ED4_sequence_terminal *seq_term, bool fo
                 ref_colStat->extension.size[HEIGHT] = columnStatHeight;
                 ref_colStat->extension.size[WIDTH]  = pixel_length;
 
-                ED4_sequence_info_terminal *new_colStat_info_term = new ED4_sequence_info_terminal("CStat", SEQUENCEINFOSIZE, columnStatHeight, new_seq_man);
+                ED4_sequence_info_terminal *new_colStat_info_term = new ED4_sequence_info_terminal("CStat", SEQUENCE_INFO_WIDTH, columnStatHeight, new_seq_man);
                 new_colStat_info_term->set_property((ED4_properties) (PROP_SELECTABLE | PROP_DRAGABLE | PROP_IS_HANDLE));
                 new_colStat_info_term->set_links(ref_colStat_info, ref_colStat);
                 new_seq_man->append_member(new_colStat_info_term);

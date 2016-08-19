@@ -852,7 +852,7 @@ ED4_species_name_terminal::ED4_species_name_terminal(GB_CSTR temp_id, AW_pos wid
 {
 }
 
-#define MAXNAMELEN MAXSPECIESWIDTH
+#define MAXNAMELEN MAXNAME_WIDTH // @@@ seems wrong (MAXNAME_WIDTH contains pixel)
 #define BUFFERSIZE (MAXNAMELEN<<1)
 GB_CSTR ED4_species_name_terminal::get_displayed_text() const
 {

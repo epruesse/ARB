@@ -245,7 +245,7 @@ ED4_group_manager *ED4_build_group_manager_start(ED4_manager                 *gr
     group_parent->append_member(group_manager);
 
     sprintf(namebuffer, "Bracket_Terminal.%ld", ED4_counter);
-    ED4_bracket_terminal *bracket_terminal = new ED4_bracket_terminal(namebuffer, BRACKETWIDTH, 0, group_manager);
+    ED4_bracket_terminal *bracket_terminal = new ED4_bracket_terminal(namebuffer, BRACKET_WIDTH, 0, group_manager);
     group_manager->append_member(bracket_terminal);
 
     sprintf(namebuffer, "MultiSpecies_Manager.%ld", ED4_counter); // create new multi_species_manager
@@ -260,7 +260,7 @@ ED4_group_manager *ED4_build_group_manager_start(ED4_manager                 *gr
 
     {
         sprintf(namebuffer, "Group_Spacer_Terminal_Beg.%ld", ED4_counter); // spacer at beginning of group
-        ED4_spacer_terminal *group_spacer_terminal = new ED4_spacer_terminal(namebuffer, false, 10, SPACERHEIGHT, multi_species_manager);
+        ED4_spacer_terminal *group_spacer_terminal = new ED4_spacer_terminal(namebuffer, false, 10, SPACER_HEIGHT, multi_species_manager);
         multi_species_manager->append_member(group_spacer_terminal);
     }
 
@@ -271,7 +271,7 @@ ED4_group_manager *ED4_build_group_manager_start(ED4_manager                 *gr
         multi_species_manager->append_member(species_manager);
 
         {
-            ED4_species_name_terminal *species_name_terminal = new ED4_species_name_terminal(group_name, MAXSPECIESWIDTH - group_depth*BRACKETWIDTH, TERMINALHEIGHT, species_manager);
+            ED4_species_name_terminal *species_name_terminal = new ED4_species_name_terminal(group_name, MAXNAME_WIDTH - group_depth*BRACKET_WIDTH, TERMINAL_HEIGHT, species_manager);
             species_name_terminal->set_property((ED4_properties) (PROP_SELECTABLE | PROP_DRAGABLE | PROP_IS_HANDLE));
             species_name_terminal->set_links(NULL, refterms.sequence());
             species_manager->append_member(species_name_terminal);
@@ -284,7 +284,7 @@ ED4_group_manager *ED4_build_group_manager_start(ED4_manager                 *gr
             species_manager->append_member(sequence_manager);
 
             {
-                ED4_sequence_info_terminal *seq_info_term = new ED4_sequence_info_terminal("CONS", SEQUENCEINFOSIZE, TERMINALHEIGHT, sequence_manager); // group info
+                ED4_sequence_info_terminal *seq_info_term = new ED4_sequence_info_terminal("CONS", SEQUENCE_INFO_WIDTH, TERMINAL_HEIGHT, sequence_manager); // group info
                 seq_info_term->set_both_links(refterms.sequence_info());
                 seq_info_term->set_property((ED4_properties) (PROP_SELECTABLE | PROP_DRAGABLE | PROP_IS_HANDLE));
                 sequence_manager->append_member(seq_info_term);
@@ -292,7 +292,7 @@ ED4_group_manager *ED4_build_group_manager_start(ED4_manager                 *gr
 
             {
                 sprintf(namebuffer, "Consensus_Seq_Terminal.%ld", ED4_counter);
-                ED4_sequence_terminal *sequence_terminal = new ED4_consensus_sequence_terminal(namebuffer, 0, TERMINALHEIGHT, sequence_manager);
+                ED4_sequence_terminal *sequence_terminal = new ED4_consensus_sequence_terminal(namebuffer, 0, TERMINAL_HEIGHT, sequence_manager);
                 sequence_terminal->set_property(PROP_CURSOR_ALLOWED);
                 sequence_terminal->set_both_links(refterms.sequence());
                 sequence_manager->append_member(sequence_terminal);
@@ -309,7 +309,7 @@ void ED4_build_group_manager_end(ED4_multi_species_manager *multi_species_manage
     char namebuffer[NAME_BUFFERSIZE];
 
     sprintf(namebuffer, "Group_Spacer_Terminal_End.%ld", ED4_counter); // spacer at end of group
-    ED4_spacer_terminal *group_spacer_terminal = new ED4_spacer_terminal(namebuffer, false, 10, SPACERHEIGHT, multi_species_manager);
+    ED4_spacer_terminal *group_spacer_terminal = new ED4_spacer_terminal(namebuffer, false, 10, SPACER_HEIGHT, multi_species_manager);
     multi_species_manager->append_member(group_spacer_terminal);
 }
 
@@ -734,7 +734,7 @@ ED4_base *ED4_manager::get_defined_level(ED4_level lev) const {
 
 ED4_returncode ED4_base::set_width() {
     // sets object length of terminals to Consensus_Name_terminal if existing
-    // else to MAXSPECIESWIDTH
+    // else to MAXNAME_WIDTH
 
     if (is_species_manager()) {
         ED4_species_manager *species_manager = to_species_manager();
@@ -746,7 +746,7 @@ ED4_returncode ED4_base::set_width() {
             for (int i=0; i<multi_name_manager->members(); i++) {
                 ED4_name_manager *name_manager = multi_name_manager->member(i)->to_name_manager();
                 ED4_base         *nameTerm     = name_manager->member(0);
-                int               width        = consensus_terminal ? consensus_terminal->extension.size[WIDTH] : MAXSPECIESWIDTH;
+                int               width        = consensus_terminal ? consensus_terminal->extension.size[WIDTH] : MAXNAME_WIDTH;
 
                 nameTerm->extension.size[WIDTH] = width;
                 nameTerm->request_resize();
@@ -779,10 +779,10 @@ ED4_returncode ED4_base::set_width() {
         ED4_species_name_terminal *consensus_terminal      = parent->to_multi_species_manager()->get_consensus_name_terminal();
 
         if (consensus_terminal) { // we're a group in another group
-            mark_consensus_terminal->extension.size[WIDTH] = consensus_terminal->extension.size[WIDTH] - BRACKETWIDTH;
+            mark_consensus_terminal->extension.size[WIDTH] = consensus_terminal->extension.size[WIDTH] - BRACKET_WIDTH;
         }
         else { // we're at the top (no consensus terminal)
-            mark_consensus_terminal->extension.size[WIDTH] = MAXSPECIESWIDTH - BRACKETWIDTH;
+            mark_consensus_terminal->extension.size[WIDTH] = MAXNAME_WIDTH - BRACKET_WIDTH;
         }
 
         mark_consensus_terminal->request_resize();
@@ -879,7 +879,7 @@ void ED4_group_manager::unfold() {
             multi_species_manager->unhide_children();
 
             ED4_spacer_terminal *spacer = multi_species_manager->get_defined_level(LEV_SPACER)->to_spacer_terminal();
-            spacer->extension.size[HEIGHT] = SPACERHEIGHT; // @@@ use set_dynamic_size()?
+            spacer->extension.size[HEIGHT] = SPACER_HEIGHT; // @@@ use set_dynamic_size()?
         }
     }
 
@@ -902,7 +902,7 @@ void ED4_group_manager::fold() {
 
         if (consensus_manager) {
             multi_species_manager->move_member(i, 1); // move Consensus to top of list
-            consensus_manager->extension.position[Y_POS] = SPACERHEIGHT;
+            consensus_manager->extension.position[Y_POS] = SPACER_HEIGHT;
             ED4_base::touch_world_cache();
             consensus_shown = true;
         }
@@ -917,7 +917,7 @@ void ED4_group_manager::fold() {
 
     ED4_spacer_terminal *spacer = multi_species_manager->get_defined_level(LEV_SPACER)->to_spacer_terminal();
     if (spacer) {
-        spacer->extension.size[HEIGHT] = consensus_shown ? SPACERHEIGHT : SPACERNOCONSENSUSHEIGHT; // @@@ use set_dynamic_size()?
+        spacer->extension.size[HEIGHT] = consensus_shown ? SPACER_HEIGHT : SPACER_NOCONS_HEIGHT; // @@@ use set_dynamic_size()?
     }
 
     multi_species_manager->hide_children();

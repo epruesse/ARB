@@ -580,10 +580,10 @@ ED4_returncode ED4_root::create_hierarchy(const char *area_string_middle, const 
         int col_stat_term_height = 50; // @@@ Hoehe des ColumnStatistics Terminals ausrechnen
 
         ref_terminals.init(
-            new ED4_sequence_info_terminal("Reference_Sequence_Info_Terminal",         MAXINFOWIDTH, TERMINALHEIGHT,       NULL),
-            new ED4_sequence_terminal     ("Reference_Sequence_Terminal",              300,          TERMINALHEIGHT,       NULL, false),
-            new ED4_sequence_info_terminal("Reference_ColumnStatistics_Info_Terminal", MAXINFOWIDTH, col_stat_term_height, NULL),
-            new ED4_columnStat_terminal   ("Reference_ColumnStatistics_Terminal",      300,          col_stat_term_height, NULL)
+            new ED4_sequence_info_terminal("Reference_Sequence_Info_Terminal",         MAXINFO_WIDTH, TERMINAL_HEIGHT,       NULL),
+            new ED4_sequence_terminal     ("Reference_Sequence_Terminal",              300,           TERMINAL_HEIGHT,       NULL, false),
+            new ED4_sequence_info_terminal("Reference_ColumnStatistics_Info_Terminal", MAXINFO_WIDTH, col_stat_term_height, NULL),
+            new ED4_columnStat_terminal   ("Reference_ColumnStatistics_Terminal",      300,           col_stat_term_height, NULL)
             );
     }
 
@@ -677,14 +677,16 @@ ED4_returncode ED4_root::create_hierarchy(const char *area_string_middle, const 
         }
 
         if (scroll_links.link_for_hor_slider) {
-            long ext_width = long(scroll_links.link_for_hor_slider->extension.size[WIDTH]);
+            const long ext_width    = long(scroll_links.link_for_hor_slider->extension.size[WIDTH]);
+            const long spacer_width = ext_width + MAXNAME_WIDTH + SEQUENCE_INFO_WIDTH;
+            const long line_width   = spacer_width + TREE_TERMINAL_WIDTH;
 
-            top_multi_spacer_terminal_beg->extension.size[WIDTH] = ext_width + MAXSPECIESWIDTH + SEQUENCEINFOSIZE;
-            mid_multi_spacer_terminal_beg->extension.size[WIDTH] = ext_width + MAXSPECIESWIDTH + SEQUENCEINFOSIZE;
-            total_bottom_spacer->extension.size[WIDTH] = ext_width + MAXSPECIESWIDTH + SEQUENCEINFOSIZE;
+            top_multi_spacer_terminal_beg->extension.size[WIDTH] = spacer_width;
+            mid_multi_spacer_terminal_beg->extension.size[WIDTH] = spacer_width;
+            total_bottom_spacer->extension.size[WIDTH]           = spacer_width;
 
-            top_mid_line_terminal->extension.size[WIDTH] = ext_width + TREETERMINALSIZE + MAXSPECIESWIDTH + SEQUENCEINFOSIZE;
-            mid_bot_line_terminal->extension.size[WIDTH] = ext_width + TREETERMINALSIZE + MAXSPECIESWIDTH + SEQUENCEINFOSIZE;
+            top_mid_line_terminal->extension.size[WIDTH] = line_width;
+            mid_bot_line_terminal->extension.size[WIDTH] = line_width;
 
         }
 

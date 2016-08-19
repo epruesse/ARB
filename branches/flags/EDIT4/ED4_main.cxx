@@ -48,14 +48,14 @@ AW_HEADER_MAIN
 ED4_root *ED4_ROOT;
 GBDATA   *GLOBAL_gb_main = NULL; // global gb_main for arb_edit4
 
-int TERMINALHEIGHT;
+int TERMINAL_HEIGHT;
 
 int INFO_TERM_TEXT_YOFFSET;
 int SEQ_TERM_TEXT_YOFFSET;
 
 int MAXSEQUENCECHARACTERLENGTH; // greatest # of characters in a sequence string terminal
-int MAXSPECIESWIDTH;
-int MAXINFOWIDTH;               // # of pixels used to display sequence info ("CONS", "4data", etc.)
+int MAXNAME_WIDTH;
+int MAXINFO_WIDTH;
 
 long ED4_counter = 0;
 

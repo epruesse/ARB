@@ -72,18 +72,18 @@ void ED4_calc_terminal_extentions() {
     int wanted_seq_term_height = seq_font_limits.ascent + seq_term_descent + ED4_ROOT->terminal_add_spacing;
     int wanted_seq_info_height = info_font_limits.height + ED4_ROOT->terminal_add_spacing;
 
-    TERMINALHEIGHT = (wanted_seq_term_height>wanted_seq_info_height) ? wanted_seq_term_height : wanted_seq_info_height;
+    TERMINAL_HEIGHT = (wanted_seq_term_height>wanted_seq_info_height) ? wanted_seq_term_height : wanted_seq_info_height;
 
     {
         int maxchars;
         int maxbrackets;
 
         ED4_get_NDS_sizes(&maxchars, &maxbrackets);
-        MAXSPECIESWIDTH =
+        MAXNAME_WIDTH =
             (maxchars+1)*info_char_width + // width defined in NDS window plus 1 char for marked-box
-            maxbrackets*BRACKETWIDTH; // brackets defined in NDS window
+            maxbrackets*BRACKET_WIDTH; // brackets defined in NDS window
     }
-    MAXINFOWIDTH = CHARACTEROFFSET + info_char_width*ED4_ROOT->aw_root->awar(ED4_AWAR_NDS_INFO_WIDTH)->read_int() + 1;
+    MAXINFO_WIDTH = CHARACTEROFFSET + info_char_width*ED4_ROOT->aw_root->awar(ED4_AWAR_NDS_INFO_WIDTH)->read_int() + 1;
 
     INFO_TERM_TEXT_YOFFSET = info_font_limits.ascent - 1;
     SEQ_TERM_TEXT_YOFFSET  = seq_font_limits.ascent - 1;
@@ -91,27 +91,27 @@ void ED4_calc_terminal_extentions() {
     if (INFO_TERM_TEXT_YOFFSET<SEQ_TERM_TEXT_YOFFSET) INFO_TERM_TEXT_YOFFSET = SEQ_TERM_TEXT_YOFFSET;
 
 #if defined(DEBUG) && 0
-    printf("seq_term_descent= %i\n", seq_term_descent);
-    printf("TERMINALHEIGHT  = %i\n", TERMINALHEIGHT);
-    printf("MAXSPECIESWIDTH = %i\n", MAXSPECIESWIDTH);
-    printf("MAXINFOWIDTH    = %i\n", MAXINFOWIDTH);
+    printf("seq_term_descent = %i\n", seq_term_descent);
+    printf("TERMINAL_HEIGHT  = %i\n", TERMINAL_HEIGHT);
+    printf("MAXNAME_WIDTH    = %i\n", MAXNAME_WIDTH);
+    printf("MAXINFO_WIDTH    = %i\n", MAXINFO_WIDTH);
     printf("INFO_TERM_TEXT_YOFFSET= %i\n", INFO_TERM_TEXT_YOFFSET);
-    printf("SEQ_TERM_TEXT_YOFFSET= %i\n", SEQ_TERM_TEXT_YOFFSET);
+    printf(" SEQ_TERM_TEXT_YOFFSET= %i\n", SEQ_TERM_TEXT_YOFFSET);
 #endif // DEBUG
 }
 
 bool ED4_species_name_terminal::set_dynamic_size() {
-    return extension.set_size_does_change(WIDTH, MAXSPECIESWIDTH - BRACKETWIDTH * calc_group_depth());
+    return extension.set_size_does_change(WIDTH, MAXNAME_WIDTH - BRACKET_WIDTH * calc_group_depth());
 }
 bool ED4_sequence_info_terminal::set_dynamic_size() {
-    return extension.set_size_does_change(WIDTH, MAXINFOWIDTH);
+    return extension.set_size_does_change(WIDTH, MAXINFO_WIDTH);
 }
 bool ED4_line_terminal::set_dynamic_size() {
     // dynamically adapt to ref_terminals
 
     AW_pos overall_width =
-        TREETERMINALSIZE +
-        MAXSPECIESWIDTH +
+        TREE_TERMINAL_WIDTH +
+        MAXNAME_WIDTH +
         ED4_ROOT->ref_terminals.sequence_info()->extension.size[WIDTH] +
         ED4_ROOT->ref_terminals.sequence()->extension.size[WIDTH];
 
@@ -120,7 +120,7 @@ bool ED4_line_terminal::set_dynamic_size() {
 bool ED4_spacer_terminal::set_dynamic_size() {
     // @@@ dynamically calculate spacer size (according to: folded/unfolded, consensus shown?)
 
-    // extension.size[HEIGHT] = parent->is_device_manager() ? TERMINALHEIGHT / 2 : SPACERHEIGHT; // different height for top-group?
+    // extension.size[HEIGHT] = parent->is_device_manager() ? TERMINAL_HEIGHT / 2 : SPACER_HEIGHT; // different height for top-group?
     return false;
 }
 
@@ -135,9 +135,9 @@ void ED4_resize_all_extensions() { // @@@ pass flag to force resize-request? (eg
 
     // @@@ below calculations have to be done at startup as well (are they done somewhere else or not done?)
 
-    ED4_ROOT->ref_terminals.sequence()->extension.size[HEIGHT]      = TERMINALHEIGHT;
-    ED4_ROOT->ref_terminals.sequence_info()->extension.size[HEIGHT] = TERMINALHEIGHT;
-    ED4_ROOT->ref_terminals.sequence_info()->extension.size[WIDTH]  = MAXINFOWIDTH;
+    ED4_ROOT->ref_terminals.sequence()->extension.size[HEIGHT]      = TERMINAL_HEIGHT;
+    ED4_ROOT->ref_terminals.sequence_info()->extension.size[HEIGHT] = TERMINAL_HEIGHT;
+    ED4_ROOT->ref_terminals.sequence_info()->extension.size[WIDTH]  = MAXINFO_WIDTH;
 
     int screenwidth = ED4_ROOT->root_group_man->remap()->shown_sequence_to_screen(MAXSEQUENCECHARACTERLENGTH);
     while (1) {
@@ -147,7 +147,7 @@ void ED4_resize_all_extensions() { // @@@ pass flag to force resize-request? (eg
             ED4_terminal *top_middle_line_terminal   = ED4_ROOT->main_manager->get_top_middle_line_terminal();
             ED4_terminal *top_middle_spacer_terminal = ED4_ROOT->main_manager->get_top_middle_spacer_terminal();
 
-            top_middle_spacer_terminal->extension.size[HEIGHT] = TERMINALHEIGHT - top_middle_line_terminal->extension.size[HEIGHT];
+            top_middle_spacer_terminal->extension.size[HEIGHT] = TERMINAL_HEIGHT - top_middle_line_terminal->extension.size[HEIGHT];
         }
 
         ED4_ROOT->main_manager->route_down_hierarchy(makeED4_route_cb(update_extension_size)).expect_no_error();

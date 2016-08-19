@@ -109,7 +109,7 @@ ED4_returncode EDB_root_bact::fill_data(ED4_multi_species_manager *multi_species
 
         {
             sprintf(namebuffer, "Species_Name_Term%ld.%d", ED4_counter, count_two++);
-            ED4_species_name_terminal *species_name_terminal = new ED4_species_name_terminal(namebuffer, MAXSPECIESWIDTH-(group_depth*BRACKETWIDTH), TERMINALHEIGHT, name_manager);
+            ED4_species_name_terminal *species_name_terminal = new ED4_species_name_terminal(namebuffer, MAXNAME_WIDTH-(group_depth*BRACKET_WIDTH), TERMINAL_HEIGHT, name_manager);
             species_name_terminal->set_property((ED4_properties) (PROP_SELECTABLE | PROP_DRAGABLE | PROP_IS_HANDLE));
             species_name_terminal->set_links(NULL, refterms.sequence());
             species_name_terminal->set_species_pointer(GB_entry(gb_datamode, "name"));
@@ -165,7 +165,7 @@ ED4_returncode EDB_root_bact::search_sequence_data_rek(ED4_multi_sequence_manage
                 multi_sequence_manager->append_member(seq_manager);
 
                 {
-                    ED4_sequence_info_terminal *sequence_info_terminal = new ED4_sequence_info_terminal(key_string, SEQUENCEINFOSIZE, TERMINALHEIGHT, seq_manager);
+                    ED4_sequence_info_terminal *sequence_info_terminal = new ED4_sequence_info_terminal(key_string, SEQUENCE_INFO_WIDTH, TERMINAL_HEIGHT, seq_manager);
                     sequence_info_terminal->set_property((ED4_properties) (PROP_SELECTABLE | PROP_DRAGABLE | PROP_IS_HANDLE));
                     sequence_info_terminal->set_both_links(refterms.sequence_info());
                     sequence_info_terminal->set_species_pointer(gb_alignment);
@@ -196,7 +196,7 @@ ED4_returncode EDB_root_bact::search_sequence_data_rek(ED4_multi_sequence_manage
                     }
 
                     sprintf(namebuffer, "Sequence_Term%ld.%d", ED4_counter, count_too++);
-                    ED4_sequence_terminal *seq_term = new ED4_sequence_terminal(namebuffer, 0, TERMINALHEIGHT, seq_manager, shall_display_secinfo);
+                    ED4_sequence_terminal *seq_term = new ED4_sequence_terminal(namebuffer, 0, TERMINAL_HEIGHT, seq_manager, shall_display_secinfo);
                     seq_term->species_name          = seq_term->get_name_of_species();
 
                     if (is_data) seq_term->set_property(PROP_CONSENSUS_RELEVANT);
@@ -206,7 +206,7 @@ ED4_returncode EDB_root_bact::search_sequence_data_rek(ED4_multi_sequence_manage
                 }
                 else {
                     sprintf(namebuffer, "PureText_Term%ld.%d", ED4_counter, count_too++);
-                    text_terminal = new ED4_pure_text_terminal(namebuffer, 0, TERMINALHEIGHT, seq_manager);
+                    text_terminal = new ED4_pure_text_terminal(namebuffer, 0, TERMINAL_HEIGHT, seq_manager);
                 }
 
                 text_terminal->set_property(PROP_CURSOR_ALLOWED);
