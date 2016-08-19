@@ -740,7 +740,7 @@ static void PV_AddNewAAseqTerminals(ED4_sequence_terminal *seqTerminal, ED4_spec
         sprintf(namebuffer, "Sequence_Manager.%ld.%d", ED4_counter, count++);
         ED4_multi_sequence_manager *multiSeqManager = speciesManager->search_spec_child_rek(LEV_MULTI_SEQUENCE)->to_multi_sequence_manager();
         ED4_sequence_manager *new_SeqManager = new ED4_sequence_manager(namebuffer, 0, 0, multiSeqManager);
-        new_SeqManager->set_property(ED4_P_MOVABLE);
+        new_SeqManager->set_property(PROP_MOVABLE);
         multiSeqManager->append_member(new_SeqManager);
 
         if (i<FORWARD_STRANDS)                              sprintf(namebuffer, "F%d ProteinInfo_Term%ld.%d", i+1, ED4_counter, count++);
@@ -749,7 +749,7 @@ static void PV_AddNewAAseqTerminals(ED4_sequence_terminal *seqTerminal, ED4_spec
 
         {
             ED4_sequence_info_terminal *new_SeqInfoTerminal = new ED4_sequence_info_terminal(namebuffer, SEQUENCEINFOSIZE, TERMINALHEIGHT, new_SeqManager);
-            new_SeqInfoTerminal->set_property((ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE));
+            new_SeqInfoTerminal->set_property((ED4_properties) (PROP_SELECTABLE | PROP_DRAGABLE | PROP_IS_HANDLE));
 
             ED4_sequence_info_terminal *seqInfoTerminal = speciesManager->search_spec_child_rek(LEV_SEQUENCE_INFO)->to_sequence_info_terminal();
             new_SeqInfoTerminal->set_both_links(seqInfoTerminal);

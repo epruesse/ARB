@@ -239,8 +239,8 @@ public:
 
     static void init_object_specs();
 
-    bool is_manager() const { return static_prop & ED4_P_IS_MANAGER; }
-    bool is_terminal() const { return static_prop & ED4_P_IS_TERMINAL; }
+    bool is_manager() const { return static_prop & PROP_IS_MANAGER; }
+    bool is_terminal() const { return static_prop & PROP_IS_TERMINAL; }
 
     bool allowed_to_contain(ED4_level child_level) const {
         // e4_assert(object_specs_initialized); // @@@ cant check here.. but where
@@ -533,23 +533,23 @@ public:
     }
 
     void create_folding_lines(ED4_foldable& owner, const AW::Rectangle& rect, int area_width, int area_height) {
-        scroll_top  = owner.insert_folding_line(rect.top(), 0, ED4_P_HORIZONTAL);
-        scroll_left = owner.insert_folding_line(rect.left(), 0, ED4_P_VERTICAL);
+        scroll_top  = owner.insert_folding_line(rect.top(), 0, PROP_HORIZONTAL);
+        scroll_left = owner.insert_folding_line(rect.left(), 0, PROP_VERTICAL);
 
         AW_pos dim = 0;
         if (rect.bottom() > area_height) dim = rect.bottom() - area_height;
-        scroll_bottom = owner.insert_folding_line(rect.bottom(), dim, ED4_P_HORIZONTAL);
+        scroll_bottom = owner.insert_folding_line(rect.bottom(), dim, PROP_HORIZONTAL);
 
         dim = 0;
         if (rect.right() > area_width) dim = rect.right() - area_width;
-        scroll_right = owner.insert_folding_line(rect.right(), dim, ED4_P_VERTICAL);
+        scroll_right = owner.insert_folding_line(rect.right(), dim, PROP_VERTICAL);
     }
 
     void destroy_folding_lines(ED4_foldable& owner) {
-        if (scroll_top)    owner.delete_folding_line(scroll_top,    ED4_P_HORIZONTAL);
-        if (scroll_bottom) owner.delete_folding_line(scroll_bottom, ED4_P_HORIZONTAL);
-        if (scroll_left)   owner.delete_folding_line(scroll_left,   ED4_P_VERTICAL);
-        if (scroll_right)  owner.delete_folding_line(scroll_right,  ED4_P_VERTICAL);
+        if (scroll_top)    owner.delete_folding_line(scroll_top,    PROP_HORIZONTAL);
+        if (scroll_bottom) owner.delete_folding_line(scroll_bottom, PROP_HORIZONTAL);
+        if (scroll_left)   owner.delete_folding_line(scroll_left,   PROP_VERTICAL);
+        if (scroll_right)  owner.delete_folding_line(scroll_right,  PROP_VERTICAL);
 
         init_folding_lines();
     }
@@ -1075,7 +1075,7 @@ public:
 
     // use the following functions to test which derived class we have
 
-    int is_terminal()               const { e4_assert(knownNonNull(this)); return spec.static_prop & ED4_P_IS_TERMINAL; }
+    int is_terminal()               const { e4_assert(knownNonNull(this)); return spec.static_prop & PROP_IS_TERMINAL; }
 
     int is_text_terminal()          const { e4_assert(knownNonNull(this)); return spec.level & (LEV_SPECIES_NAME|LEV_SEQUENCE_INFO|LEV_SEQUENCE_STRING|LEV_PURE_TEXT|LEV_COL_STAT); }
 
@@ -1092,7 +1092,7 @@ public:
     int is_spacer_terminal()        const { e4_assert(knownNonNull(this)); return spec.level & LEV_SPACER; }
     int is_line_terminal()          const { e4_assert(knownNonNull(this)); return spec.level & LEV_LINE; }
 
-    int is_manager()                const { e4_assert(knownNonNull(this)); return spec.static_prop & ED4_P_IS_MANAGER; }
+    int is_manager()                const { e4_assert(knownNonNull(this)); return spec.static_prop & PROP_IS_MANAGER; }
 
     int is_sequence_manager()       const { e4_assert(knownNonNull(this)); return spec.level & LEV_SEQUENCE; }
     int is_multi_name_manager()     const { e4_assert(knownNonNull(this)); return spec.level & LEV_MULTI_NAME; }

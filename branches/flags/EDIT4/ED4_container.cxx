@@ -49,12 +49,12 @@ ED4_returncode ED4_container::search_target_species(ED4_extension *location, ED4
         current_member->parent->calc_world_coords(&abs_pos_x, &abs_pos_y);
 
         // set extension-indexes rel_pos, rel_size and abs_pos according to properties:
-        if (prop & ED4_P_HORIZONTAL) {
+        if (prop & PROP_HORIZONTAL) {
             rel_pos = Y_POS;
             rel_size = HEIGHT;
             abs_pos = abs_pos_y;
         }
-        else { // i.e. prop & ED4_P_VERTICAL
+        else { // i.e. prop & PROP_VERTICAL
             rel_pos = X_POS;
             rel_size = WIDTH;
             abs_pos = abs_pos_x;
@@ -316,10 +316,10 @@ ED4_index ED4_container::search_member(ED4_extension *location, ED4_properties p
 
     ED4_base *current_member;
 
-    if (prop & ED4_P_HORIZONTAL) {   // set extension-indexes rel_pos and rel_size according to properties
+    if (prop & PROP_HORIZONTAL) {   // set extension-indexes rel_pos and rel_size according to properties
         rel_pos = Y_POS; rel_size = HEIGHT;
     }
-    else { // i.e. prop & ED4_P_VERTICAL
+    else { // i.e. prop & PROP_VERTICAL
         rel_pos = X_POS; rel_size = WIDTH;
     }
 

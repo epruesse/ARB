@@ -98,9 +98,9 @@ void ED4_window::update_window_coords()
 ED4_folding_line* ED4_foldable::insert_folding_line(AW_pos world_pos, AW_pos dimension, ED4_properties prop) {
     ED4_folding_line *fl = NULL;
 
-    if (prop == ED4_P_VERTICAL || prop == ED4_P_HORIZONTAL) {
+    if (prop == PROP_VERTICAL || prop == PROP_HORIZONTAL) {
         fl = new ED4_folding_line(world_pos, dimension);
-        fl->insertAs(prop == ED4_P_VERTICAL ? vertical_fl : horizontal_fl);
+        fl->insertAs(prop == PROP_VERTICAL ? vertical_fl : horizontal_fl);
     }
     return fl;
 }
@@ -120,11 +120,11 @@ ED4_window *ED4_window::get_matching_ed4w(AW_window *aw) {
 
 
 void ED4_foldable::delete_folding_line(ED4_folding_line *fl, ED4_properties prop) {
-    if (prop == ED4_P_HORIZONTAL) {
+    if (prop == PROP_HORIZONTAL) {
         horizontal_fl = horizontal_fl->delete_member(fl);
     }
     else {
-        e4_assert(prop == ED4_P_VERTICAL);
+        e4_assert(prop == PROP_VERTICAL);
         vertical_fl = vertical_fl->delete_member(fl);
     }
 }

@@ -23,12 +23,11 @@
 
 static void printProperties(ED4_properties prop) {
     char sep = ' ';
-#define pprop(tag) do { if (prop&ED4_P_##tag) { fputc(sep, OUT); sep = '|'; fputs(#tag, OUT); } } while(0)
+#define pprop(tag) do { if (prop&PROP_##tag) { fputc(sep, OUT); sep = '|'; fputs(#tag, OUT); } } while(0)
     pprop(IS_MANAGER);
     pprop(IS_TERMINAL);
     pprop(HORIZONTAL);
     pprop(VERTICAL);
-    pprop(TMP);
     pprop(SELECTABLE);
     pprop(DRAGABLE);
     pprop(MOVABLE);
@@ -36,6 +35,7 @@ static void printProperties(ED4_properties prop) {
     pprop(CURSOR_ALLOWED);
     pprop(IS_FOLDED);
     pprop(CONSENSUS_RELEVANT);
+    pprop(ALIGNMENT_DATA);
     fputc(' ', OUT);
 #undef pprop
 }

@@ -86,7 +86,7 @@ ED4_returncode EDB_root_bact::fill_data(ED4_multi_species_manager *multi_species
         sprintf(namebuffer, "Species_Manager.%ld.%d", ED4_counter, count_two);
         ED4_species_manager *species_manager = new ED4_species_manager(spec_type, namebuffer, 0, 0, multi_species_manager);
 
-        species_manager->set_property(ED4_P_MOVABLE);
+        species_manager->set_property(PROP_MOVABLE);
         if (spec_type == ED4_SP_SAI) {
             ED4_abstract_group_manager *group_man = species_manager->get_parent(ED4_level(LEV_GROUP|LEV_ROOTGROUP))->to_abstract_group_manager();
             group_man->table().ignore_me(); // ignore SAI tables (does not work - instead ignore SAIs when calculating consensus)
@@ -104,13 +104,13 @@ ED4_returncode EDB_root_bact::fill_data(ED4_multi_species_manager *multi_species
 
         sprintf(namebuffer, "Name_Manager%ld.%d", ED4_counter, count_two++);
         ED4_name_manager *name_manager = new ED4_name_manager(namebuffer, 0, 0, multi_name_manager);
-        name_manager->set_property(ED4_P_MOVABLE); // only Speciesname should be movable
+        name_manager->set_property(PROP_MOVABLE); // only Speciesname should be movable
         multi_name_manager->append_member(name_manager);
 
         {
             sprintf(namebuffer, "Species_Name_Term%ld.%d", ED4_counter, count_two++);
             ED4_species_name_terminal *species_name_terminal = new ED4_species_name_terminal(namebuffer, MAXSPECIESWIDTH-(group_depth*BRACKETWIDTH), TERMINALHEIGHT, name_manager);
-            species_name_terminal->set_property((ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE));
+            species_name_terminal->set_property((ED4_properties) (PROP_SELECTABLE | PROP_DRAGABLE | PROP_IS_HANDLE));
             species_name_terminal->set_links(NULL, refterms.sequence());
             species_name_terminal->set_species_pointer(GB_entry(gb_datamode, "name"));
             name_manager->append_member(species_name_terminal);
@@ -161,12 +161,12 @@ ED4_returncode EDB_root_bact::search_sequence_data_rek(ED4_multi_sequence_manage
             if (key_string[0] != '_') { // don't show sequences starting with an underscore
                 sprintf(namebuffer, "Sequence_Manager.%ld.%d", ED4_counter, count_too++);
                 ED4_sequence_manager *seq_manager = new ED4_sequence_manager(namebuffer, 0, 0, multi_sequence_manager);
-                seq_manager->set_property(ED4_P_MOVABLE);
+                seq_manager->set_property(PROP_MOVABLE);
                 multi_sequence_manager->append_member(seq_manager);
 
                 {
                     ED4_sequence_info_terminal *sequence_info_terminal = new ED4_sequence_info_terminal(key_string, SEQUENCEINFOSIZE, TERMINALHEIGHT, seq_manager);
-                    sequence_info_terminal->set_property((ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE));
+                    sequence_info_terminal->set_property((ED4_properties) (PROP_SELECTABLE | PROP_DRAGABLE | PROP_IS_HANDLE));
                     sequence_info_terminal->set_both_links(refterms.sequence_info());
                     sequence_info_terminal->set_species_pointer(gb_alignment);
                     seq_manager->append_member(sequence_info_terminal);
@@ -199,8 +199,8 @@ ED4_returncode EDB_root_bact::search_sequence_data_rek(ED4_multi_sequence_manage
                     ED4_sequence_terminal *seq_term = new ED4_sequence_terminal(namebuffer, 0, TERMINALHEIGHT, seq_manager, shall_display_secinfo);
                     seq_term->species_name          = seq_term->get_name_of_species();
 
-                    if (is_data) seq_term->set_property(ED4_P_CONSENSUS_RELEVANT);
-                    seq_term->set_property(ED4_P_ALIGNMENT_DATA);
+                    if (is_data) seq_term->set_property(PROP_CONSENSUS_RELEVANT);
+                    seq_term->set_property(PROP_ALIGNMENT_DATA);
 
                     text_terminal = seq_term;
                 }
@@ -209,7 +209,7 @@ ED4_returncode EDB_root_bact::search_sequence_data_rek(ED4_multi_sequence_manage
                     text_terminal = new ED4_pure_text_terminal(namebuffer, 0, TERMINALHEIGHT, seq_manager);
                 }
 
-                text_terminal->set_property(ED4_P_CURSOR_ALLOWED);
+                text_terminal->set_property(PROP_CURSOR_ALLOWED);
                 text_terminal->set_both_links(refterms.sequence());
                 seq_manager->append_member(text_terminal);
 #if defined(DEBUG)

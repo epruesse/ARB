@@ -167,7 +167,7 @@ static ARB_ERROR call_edit(ED4_base *object, ED4_work_info *work_info) {
     GB_ERROR error = NULL;
 
     if (object->is_species_seq_terminal()) {
-        int expected_prop = ED4_P_CURSOR_ALLOWED|ED4_P_ALIGNMENT_DATA;
+        int expected_prop = PROP_CURSOR_ALLOWED|PROP_ALIGNMENT_DATA;
 
         if ((object->dynamic_prop & expected_prop) == expected_prop) {
             ED4_work_info new_work_info;

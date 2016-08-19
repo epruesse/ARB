@@ -242,10 +242,10 @@ void TEST_win_2_world() {
     const int Y1 = 100;
     const int Y2 = 200;
 
-    ED4_folding_line *hor100 = foldable.insert_folding_line(Y1, 0, ED4_P_HORIZONTAL);
-    ED4_folding_line *ver200 = foldable.insert_folding_line(X1, 0, ED4_P_VERTICAL);
-    ED4_folding_line *hor200 = foldable.insert_folding_line(Y2, 0, ED4_P_HORIZONTAL);
-    ED4_folding_line *ver300 = foldable.insert_folding_line(X2, 0, ED4_P_VERTICAL);
+    ED4_folding_line *hor100 = foldable.insert_folding_line(Y1, 0, PROP_HORIZONTAL);
+    ED4_folding_line *ver200 = foldable.insert_folding_line(X1, 0, PROP_VERTICAL);
+    ED4_folding_line *hor200 = foldable.insert_folding_line(Y2, 0, PROP_HORIZONTAL);
+    ED4_folding_line *ver300 = foldable.insert_folding_line(X2, 0, PROP_VERTICAL);
 
     // nothing folded yet
 
@@ -373,7 +373,7 @@ void ED4_root::announce_useraction_in(AW_window *aww) {
 }
 
 ED4_returncode ED4_root::add_to_selected(ED4_species_name_terminal *name_term) { // @@@ change param to ED4_species_manager ?
-    if (!name_term || !(name_term->dynamic_prop & ED4_P_SELECTABLE)) {   // check if object exists and may be selected
+    if (!name_term || !(name_term->dynamic_prop & PROP_SELECTABLE)) {   // check if object exists and may be selected
         return (ED4_R_IMPOSSIBLE);
     }
 
@@ -381,7 +381,7 @@ ED4_returncode ED4_root::add_to_selected(ED4_species_name_terminal *name_term) {
         ED4_selection_entry *sel_info = new ED4_selection_entry;
         name_term->selection_info     = sel_info;
 
-        if (name_term->dynamic_prop & ED4_P_IS_HANDLE) { // object is a handle for an object up in the hierarchy => search it
+        if (name_term->dynamic_prop & PROP_IS_HANDLE) { // object is a handle for an object up in the hierarchy => search it
             ED4_level  mlevel     = name_term->spec.handled_level;
             ED4_base  *tmp_object = name_term;
 

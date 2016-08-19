@@ -32,7 +32,7 @@
 //      static terminal properties
 
 static ED4_objspec tree_terminal_spec(
-    ED4_P_IS_TERMINAL,  // static props
+    PROP_IS_TERMINAL,  // static props
     LEV_TREE,           // level
     LEV_NONE,           // allowed children level
     LEV_NONE,           // handled object
@@ -40,7 +40,7 @@ static ED4_objspec tree_terminal_spec(
     );
 
 static ED4_objspec bracket_terminal_spec(
-    ED4_P_IS_TERMINAL,  // static props
+    PROP_IS_TERMINAL,  // static props
     LEV_BRACKET,        // level
     LEV_NONE,           // allowed children level
     LEV_NONE,           // handled object
@@ -48,7 +48,7 @@ static ED4_objspec bracket_terminal_spec(
     );
 
 static ED4_objspec species_name_terminal_spec(
-    ED4_P_IS_TERMINAL,  // static props
+    PROP_IS_TERMINAL,  // static props
     LEV_SPECIES_NAME,   // level
     LEV_NONE,           // allowed children level
     LEV_SPECIES,        // handled object
@@ -56,7 +56,7 @@ static ED4_objspec species_name_terminal_spec(
     );
 
 static ED4_objspec sequence_info_terminal_spec(
-    ED4_P_IS_TERMINAL,  // static props
+    PROP_IS_TERMINAL,  // static props
     LEV_SEQUENCE_INFO,  // level
     LEV_NONE,           // allowed children level
     LEV_SEQUENCE,       // handled object
@@ -64,7 +64,7 @@ static ED4_objspec sequence_info_terminal_spec(
     );
 
 static ED4_objspec sequence_terminal_spec(
-    ED4_P_IS_TERMINAL,     // static props
+    PROP_IS_TERMINAL,     // static props
     LEV_SEQUENCE_STRING,   // level
     LEV_NONE,              // allowed children level
     LEV_NONE,              // handled object
@@ -72,7 +72,7 @@ static ED4_objspec sequence_terminal_spec(
     );
 
 static ED4_objspec orf_terminal_spec(
-    ED4_P_IS_TERMINAL,     // static props
+    PROP_IS_TERMINAL,     // static props
     LEV_ORF,               // level
     LEV_NONE,              // allowed children level
     LEV_NONE,              // handled object
@@ -80,7 +80,7 @@ static ED4_objspec orf_terminal_spec(
     );
 
 static ED4_objspec pure_text_terminal_spec(
-    ED4_P_IS_TERMINAL,     // static props
+    PROP_IS_TERMINAL,     // static props
     LEV_PURE_TEXT,         // level
     LEV_NONE,              // allowed children level
     LEV_NONE,              // handled object
@@ -88,7 +88,7 @@ static ED4_objspec pure_text_terminal_spec(
     );
 
 static ED4_objspec spacer_terminal_spec(
-    ED4_P_IS_TERMINAL,     // static props
+    PROP_IS_TERMINAL,     // static props
     LEV_SPACER,            // level
     LEV_NONE,              // allowed children level
     LEV_NONE,              // handled object
@@ -96,7 +96,7 @@ static ED4_objspec spacer_terminal_spec(
     );
 
 static ED4_objspec line_terminal_spec(
-    ED4_P_IS_TERMINAL,     // static props
+    PROP_IS_TERMINAL,     // static props
     LEV_LINE,              // level
     LEV_NONE,              // allowed children level
     LEV_NONE,              // handled object
@@ -104,7 +104,7 @@ static ED4_objspec line_terminal_spec(
     );
 
 static ED4_objspec column_stat_terminal_spec(
-    ED4_P_IS_TERMINAL,     // static props
+    PROP_IS_TERMINAL,     // static props
     LEV_COL_STAT,          // level
     LEV_NONE,              // allowed children level
     LEV_NONE,              // handled object
@@ -245,7 +245,7 @@ GB_ERROR ED4_terminal::write_sequence(const char *seq, int seq_len)
 
     GB_pop_transaction(GLOBAL_gb_main);
 
-    if (!err && dynamic_prop&ED4_P_CONSENSUS_RELEVANT) {
+    if (!err && dynamic_prop&PROP_CONSENSUS_RELEVANT) {
         if (old_seq) {
             curr_timestamp = GB_read_clock(GLOBAL_gb_main);
 
@@ -270,7 +270,7 @@ ED4_returncode ED4_terminal::remove_callbacks()                     // removes c
     if (get_species_pointer()) {
         set_species_pointer(0);
         tflag.deleted = 1; // @@@ why ?
-        clr_property(ED4_P_CURSOR_ALLOWED);
+        clr_property(PROP_CURSOR_ALLOWED);
         request_refresh();
     }
     return ED4_R_OK;
@@ -348,7 +348,7 @@ ED4_returncode ED4_terminal::draw_drag_box(AW_pos x, AW_pos y, GB_CSTR text, int
             location.position[X_POS] = 0;
             location.position[Y_POS] = (AW_pos)cursor_y;           // cursor_y is already in world coordinates
 
-            ED4_ROOT->get_device_manager()->search_target_species(&location, ED4_P_HORIZONTAL, &drag_target, LEV_NONE);
+            ED4_ROOT->get_device_manager()->search_target_species(&location, PROP_HORIZONTAL, &drag_target, LEV_NONE);
         }
 
         if (drag_target) {
@@ -601,7 +601,7 @@ ED4_returncode ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *aw
                     }
                 }
                 else if (is_sequence_terminal()) {
-                    if (dynamic_prop & ED4_P_CURSOR_ALLOWED) {
+                    if (dynamic_prop & PROP_CURSOR_ALLOWED) {
                         ED4_no_dangerous_modes();
                         current_cursor().show_clicked_cursor(event->x, this);
                     }
@@ -806,7 +806,7 @@ ED4_returncode ED4_bracket_terminal::draw() {
     }
 
     e4_assert(parent->is_group_manager());
-    if (parent->has_property(ED4_P_IS_FOLDED)) { // for folded group, paint triangle pointing rightwards
+    if (parent->has_property(PROP_IS_FOLDED)) { // for folded group, paint triangle pointing rightwards
         Position t = term_area.upper_left_corner()+Vector(4,4);
         Position b = t+Vector(0,12);
 

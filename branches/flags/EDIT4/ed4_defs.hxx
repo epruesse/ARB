@@ -164,7 +164,6 @@ enum ED4_returncode {
     ED4_R_IMPOSSIBLE = 2,
     ED4_R_ERROR      = 4,
     ED4_R_BREAK      = 8,
-    ED4_R_ALL        = 0x7fffffff
 };
 
 enum ED4_AREA_LEVEL {
@@ -175,23 +174,22 @@ enum ED4_AREA_LEVEL {
 };
 
 enum ED4_properties {
-    ED4_P_NO_PROP            = 0,
-    ED4_P_IS_MANAGER         = 1,
-    ED4_P_IS_TERMINAL        = 2,
-    ED4_P_HORIZONTAL         = 4,
-    ED4_P_VERTICAL           = 8,
-    ED4_P_TMP                = 16,
-    ED4_P_SELECTABLE         = 32,
-    ED4_P_DRAGABLE           = 64,
-    ED4_P_MOVABLE            = 128,
-    ED4_P_IS_HANDLE          = 256,
-    ED4_P_CURSOR_ALLOWED     = 512,
-    //  ED4_P_               = 1024,
-    //  ED4_P_               = 2048,
-    ED4_P_IS_FOLDED          = 4096,            // Flag whether group is folded or not
-    ED4_P_CONSENSUS_RELEVANT = 8192,            // contains information relevant for consensus
-    ED4_P_ALIGNMENT_DATA     = 16384,           // contains aligned data (also SAIs)
-    ED4_P_ALL                = 0x7fffffff
+    PROP_NONE               = 0,
+    PROP_IS_MANAGER         = 1,
+    PROP_IS_TERMINAL        = 2,
+    PROP_HORIZONTAL         = 4,
+    PROP_VERTICAL           = 8,
+    // PROP_                = 16,
+    PROP_SELECTABLE         = 32,
+    PROP_DRAGABLE           = 64,
+    PROP_MOVABLE            = 128,
+    PROP_IS_HANDLE          = 256,
+    PROP_CURSOR_ALLOWED     = 512,
+    //  PROP_               = 1024,
+    //  PROP_               = 2048,
+    PROP_IS_FOLDED          = 4096,            // Flag whether group is folded or not
+    PROP_CONSENSUS_RELEVANT = 8192,            // contains information relevant for consensus
+    PROP_ALIGNMENT_DATA     = 16384,           // contains aligned data (also SAIs)
 };
 
 enum ED4_cursor_move {

@@ -21,7 +21,7 @@ ED4_group_manager *ED4_base::is_in_folded_group() const {
     if (!parent) return NULL;
     ED4_base *group = get_parent(LEV_GROUP);
     if (!group) return NULL;
-    if (group->dynamic_prop & ED4_P_IS_FOLDED) return group->to_group_manager();
+    if (group->dynamic_prop & PROP_IS_FOLDED) return group->to_group_manager();
     return group->is_in_folded_group();
 }
 
@@ -72,7 +72,7 @@ void ED4_terminal::changed_by_database()
                 ED4_species_manager *spman = get_parent(LEV_SPECIES)->to_species_manager();
                 spman->do_callbacks();
 
-                if (dynamic_prop & ED4_P_CONSENSUS_RELEVANT) {
+                if (dynamic_prop & PROP_CONSENSUS_RELEVANT) {
                     ED4_multi_species_manager *multiman = get_parent(LEV_MULTI_SPECIES)->to_multi_species_manager();
                     multiman->update_bases_and_rebuild_consensi(dup_data, data_len, spman, ED4_U_UP);
                     request_refresh();
@@ -108,9 +108,9 @@ void ED4_sequence_terminal::deleted_from_database()
 
     ED4_terminal::deleted_from_database();
 
-    bool was_consensus_relevant = dynamic_prop & ED4_P_CONSENSUS_RELEVANT;
+    bool was_consensus_relevant = dynamic_prop & PROP_CONSENSUS_RELEVANT;
 
-    clr_property(ED4_properties(ED4_P_CONSENSUS_RELEVANT|ED4_P_ALIGNMENT_DATA));
+    clr_property(ED4_properties(PROP_CONSENSUS_RELEVANT|PROP_ALIGNMENT_DATA));
 
     if (was_consensus_relevant) { 
         const char *data     = (const char*)GB_read_old_value();
@@ -252,11 +252,11 @@ ED4_group_manager *ED4_build_group_manager_start(ED4_manager                 *gr
     multi_species_manager = new ED4_multi_species_manager(namebuffer, 0, 0, group_manager);
     group_manager->append_member(multi_species_manager);
 
-    if (is_folded) group_manager->set_property(ED4_P_IS_FOLDED);
-    group_manager->set_property(ED4_P_MOVABLE);
+    if (is_folded) group_manager->set_property(PROP_IS_FOLDED);
+    group_manager->set_property(PROP_MOVABLE);
 
-    multi_species_manager->set_property(ED4_P_IS_HANDLE);
-    bracket_terminal     ->set_property(ED4_P_IS_HANDLE);
+    multi_species_manager->set_property(PROP_IS_HANDLE);
+    bracket_terminal     ->set_property(PROP_IS_HANDLE);
 
     {
         sprintf(namebuffer, "Group_Spacer_Terminal_Beg.%ld", ED4_counter); // spacer at beginning of group
@@ -267,12 +267,12 @@ ED4_group_manager *ED4_build_group_manager_start(ED4_manager                 *gr
     {
         sprintf(namebuffer, "Consensus_Manager.%ld", ED4_counter);
         ED4_species_manager *species_manager = new ED4_species_manager(ED4_SP_CONSENSUS, namebuffer, 0, 0, multi_species_manager);
-        species_manager->set_property(ED4_P_MOVABLE);
+        species_manager->set_property(PROP_MOVABLE);
         multi_species_manager->append_member(species_manager);
 
         {
             ED4_species_name_terminal *species_name_terminal = new ED4_species_name_terminal(group_name, MAXSPECIESWIDTH - group_depth*BRACKETWIDTH, TERMINALHEIGHT, species_manager);
-            species_name_terminal->set_property((ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE));
+            species_name_terminal->set_property((ED4_properties) (PROP_SELECTABLE | PROP_DRAGABLE | PROP_IS_HANDLE));
             species_name_terminal->set_links(NULL, refterms.sequence());
             species_manager->append_member(species_name_terminal);
         }
@@ -280,20 +280,20 @@ ED4_group_manager *ED4_build_group_manager_start(ED4_manager                 *gr
         {
             sprintf(namebuffer, "Consensus_Seq_Manager.%ld", ED4_counter);
             ED4_sequence_manager *sequence_manager = new ED4_sequence_manager(namebuffer, 0, 0, species_manager);
-            sequence_manager->set_property(ED4_P_MOVABLE);
+            sequence_manager->set_property(PROP_MOVABLE);
             species_manager->append_member(sequence_manager);
 
             {
                 ED4_sequence_info_terminal *seq_info_term = new ED4_sequence_info_terminal("CONS", SEQUENCEINFOSIZE, TERMINALHEIGHT, sequence_manager); // group info
                 seq_info_term->set_both_links(refterms.sequence_info());
-                seq_info_term->set_property((ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE));
+                seq_info_term->set_property((ED4_properties) (PROP_SELECTABLE | PROP_DRAGABLE | PROP_IS_HANDLE));
                 sequence_manager->append_member(seq_info_term);
             }
 
             {
                 sprintf(namebuffer, "Consensus_Seq_Terminal.%ld", ED4_counter);
                 ED4_sequence_terminal *sequence_terminal = new ED4_consensus_sequence_terminal(namebuffer, 0, TERMINALHEIGHT, sequence_manager);
-                sequence_terminal->set_property(ED4_P_CURSOR_ALLOWED);
+                sequence_terminal->set_property(PROP_CURSOR_ALLOWED);
                 sequence_terminal->set_both_links(refterms.sequence());
                 sequence_manager->append_member(sequence_terminal);
             }
@@ -319,7 +319,7 @@ void ED4_base::generate_configuration_string(GBS_strstruct& buffer) {
         ED4_container *container = to_manager();
         if (is_group_manager()) {
             buffer.put(SEPARATOR);
-            buffer.put(dynamic_prop & ED4_P_IS_FOLDED ? 'F' : 'G');
+            buffer.put(dynamic_prop & PROP_IS_FOLDED ? 'F' : 'G');
 
             for (int writeConsensus = 1; writeConsensus>=0; --writeConsensus) {
                 for (int i=0; i<container->members(); ++i) {
@@ -624,7 +624,7 @@ const ED4_terminal *ED4_base::get_consensus_relevant_terminal() const {
     int i;
 
     if (is_terminal()) {
-        if (dynamic_prop & ED4_P_CONSENSUS_RELEVANT) {
+        if (dynamic_prop & PROP_CONSENSUS_RELEVANT) {
             return this->to_terminal();
         }
         return NULL;
@@ -663,7 +663,7 @@ int ED4_multi_species_manager::count_visible_children() // is called by a multi_
         }
         else if (child->is_group_manager()) {
             ED4_group_manager *group_manager = child->to_group_manager();
-            if (group_manager->dynamic_prop & ED4_P_IS_FOLDED) {
+            if (group_manager->dynamic_prop & PROP_IS_FOLDED) {
                 counter ++;
             }
             else {
@@ -883,7 +883,7 @@ void ED4_group_manager::unfold() {
         }
     }
 
-    clr_property(ED4_P_IS_FOLDED);
+    clr_property(PROP_IS_FOLDED);
 }
 
 void ED4_group_manager::fold() {
@@ -922,11 +922,11 @@ void ED4_group_manager::fold() {
 
     multi_species_manager->hide_children();
 
-    set_property(ED4_P_IS_FOLDED);
+    set_property(PROP_IS_FOLDED);
 }
 
 void ED4_group_manager::toggle_folding() {
-    if (has_property(ED4_P_IS_FOLDED)) unfold();
+    if (has_property(PROP_IS_FOLDED)) unfold();
     else fold();
 }
 void ED4_bracket_terminal::toggle_folding() {
@@ -1037,7 +1037,7 @@ ED4_base::ED4_base(const ED4_objspec& spec_, GB_CSTR temp_id, AW_pos width, AW_p
     : spec(spec_)
 {
     index = 0;
-    dynamic_prop = ED4_P_NO_PROP;
+    dynamic_prop = PROP_NONE;
     timestamp =  0; // invalid - almost always..
 
     e4_assert(temp_id);

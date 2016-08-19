@@ -155,15 +155,15 @@ ED4_objspec::ED4_objspec(ED4_properties static_prop_, ED4_level level_, ED4_leve
 {
     e4_assert(!object_specs_initialized); // specs must be instaciated before they are initialized
 
-    switch (static_prop&(ED4_P_IS_MANAGER|ED4_P_IS_TERMINAL)) {
-        case ED4_P_IS_MANAGER: // manager specific checks
-            e4_assert(static_prop & (ED4_P_HORIZONTAL|ED4_P_VERTICAL));                                        // each manager has to be vertical or horizontal
-            e4_assert((static_prop & (ED4_P_HORIZONTAL|ED4_P_VERTICAL)) != (ED4_P_HORIZONTAL|ED4_P_VERTICAL)); // but never both
+    switch (static_prop&(PROP_IS_MANAGER|PROP_IS_TERMINAL)) {
+        case PROP_IS_MANAGER: // manager specific checks
+            e4_assert(static_prop & (PROP_HORIZONTAL|PROP_VERTICAL));                                        // each manager has to be vertical or horizontal
+            e4_assert((static_prop & (PROP_HORIZONTAL|PROP_VERTICAL)) != (PROP_HORIZONTAL|PROP_VERTICAL)); // but never both
             e4_assert(allowed_children != LEV_NONE); // managers need to allow children (what else should they manage)
             break;
 
-        case ED4_P_IS_TERMINAL: // terminal specific checks
-            e4_assert((static_prop & (ED4_P_HORIZONTAL|ED4_P_VERTICAL)) == 0); // terminals do not have orientation
+        case PROP_IS_TERMINAL: // terminal specific checks
+            e4_assert((static_prop & (PROP_HORIZONTAL|PROP_VERTICAL)) == 0); // terminals do not have orientation
             e4_assert(allowed_children == LEV_NONE); // terminals cannot have children
             break;
 

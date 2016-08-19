@@ -22,7 +22,7 @@
 //      Manager static properties (used by manager-constructors)
 
 static ED4_objspec main_manager_spec(
-    (ED4_properties)(ED4_P_IS_MANAGER | ED4_P_HORIZONTAL), // static props
+    (ED4_properties)(PROP_IS_MANAGER | PROP_HORIZONTAL), // static props
     LEV_ROOT,                                              // level
     LEV_ROOTGROUP,                                         // allowed children level
     LEV_NONE,                                              // handled object
@@ -30,7 +30,7 @@ static ED4_objspec main_manager_spec(
     );
 
 static ED4_objspec device_manager_spec(
-    (ED4_properties)(ED4_P_IS_MANAGER | ED4_P_HORIZONTAL), // static props
+    (ED4_properties)(PROP_IS_MANAGER | PROP_HORIZONTAL), // static props
     LEV_DEVICE,                                            // level
     (ED4_level)(LEV_AREA | LEV_SPACER | LEV_LINE),         // allowed children level
     LEV_NONE,                                              // handled object
@@ -38,7 +38,7 @@ static ED4_objspec device_manager_spec(
     );
 
 static ED4_objspec area_manager_spec(
-    (ED4_properties)(ED4_P_IS_MANAGER | ED4_P_VERTICAL),    // static props
+    (ED4_properties)(PROP_IS_MANAGER | PROP_VERTICAL),    // static props
     LEV_AREA,                                               // level
     (ED4_level)(LEV_MULTI_SPECIES | LEV_TREE | LEV_SPACER), // allowed children level
     LEV_NONE,                                               // handled object
@@ -46,7 +46,7 @@ static ED4_objspec area_manager_spec(
     );
 
 static ED4_objspec multi_species_manager_spec(
-    (ED4_properties)(ED4_P_IS_MANAGER | ED4_P_HORIZONTAL), // static props
+    (ED4_properties)(PROP_IS_MANAGER | PROP_HORIZONTAL), // static props
     LEV_MULTI_SPECIES,                                     // level
     (ED4_level)(LEV_SPECIES | LEV_GROUP | LEV_SPACER),     // allowed children level
     LEV_NONE,                                              // handled object
@@ -54,7 +54,7 @@ static ED4_objspec multi_species_manager_spec(
     );
 
 static ED4_objspec species_manager_spec(
-    (ED4_properties)(ED4_P_IS_MANAGER | ED4_P_VERTICAL),  // static props
+    (ED4_properties)(PROP_IS_MANAGER | PROP_VERTICAL),  // static props
     LEV_SPECIES,                                          // level
     (ED4_level)(LEV_MULTI_SEQUENCE | LEV_MULTI_NAME |     // (used by normal species)
                 LEV_SPECIES_NAME | LEV_SEQUENCE),         // allowed children level (used by consensus)
@@ -63,7 +63,7 @@ static ED4_objspec species_manager_spec(
     );
 
 static ED4_objspec multi_sequence_manager_spec(
-    (ED4_properties)(ED4_P_IS_MANAGER | ED4_P_HORIZONTAL), // static props
+    (ED4_properties)(PROP_IS_MANAGER | PROP_HORIZONTAL), // static props
     LEV_MULTI_SEQUENCE,                                    // level
     LEV_SEQUENCE,                                          // allowed children level
     LEV_NONE,                                              // handled object
@@ -71,7 +71,7 @@ static ED4_objspec multi_sequence_manager_spec(
     );
 
 static ED4_objspec sequence_manager_spec(
-    (ED4_properties)(ED4_P_IS_MANAGER | ED4_P_VERTICAL),      // static props
+    (ED4_properties)(PROP_IS_MANAGER | PROP_VERTICAL),      // static props
     LEV_SEQUENCE,                                             // level
     (ED4_level)(LEV_SEQUENCE_INFO | LEV_SEQUENCE_STRING | LEV_ORF | LEV_PURE_TEXT | LEV_COL_STAT), // allowed children level
     LEV_NONE,                                                 // handled object
@@ -79,7 +79,7 @@ static ED4_objspec sequence_manager_spec(
     );
 
 static ED4_objspec multi_name_manager_spec(
-    (ED4_properties)(ED4_P_IS_MANAGER | ED4_P_HORIZONTAL), // static props
+    (ED4_properties)(PROP_IS_MANAGER | PROP_HORIZONTAL), // static props
     LEV_MULTI_NAME,                                        // level
     LEV_NAME_MANAGER,                                      // allowed children level
     LEV_NONE,                                              // handled object
@@ -87,7 +87,7 @@ static ED4_objspec multi_name_manager_spec(
     );
 
 static ED4_objspec name_manager_spec(
-    (ED4_properties)(ED4_P_IS_MANAGER | ED4_P_VERTICAL), // static props
+    (ED4_properties)(PROP_IS_MANAGER | PROP_VERTICAL), // static props
     LEV_NAME_MANAGER,                                    // level
     (ED4_level)(LEV_SPECIES_NAME),                       // allowed children level
     LEV_NONE,                                            // handled object
@@ -95,7 +95,7 @@ static ED4_objspec name_manager_spec(
     );
 
 static ED4_objspec group_manager_spec(
-    (ED4_properties)(ED4_P_IS_MANAGER | ED4_P_VERTICAL), // static props
+    (ED4_properties)(PROP_IS_MANAGER | PROP_VERTICAL), // static props
     LEV_GROUP,                                           // level
     (ED4_level)(LEV_MULTI_SPECIES | LEV_BRACKET),        // allowed children level
     LEV_NONE,                                            // handled object
@@ -103,7 +103,7 @@ static ED4_objspec group_manager_spec(
     );
 
 static ED4_objspec root_group_manager_spec(
-    (ED4_properties)(ED4_P_IS_MANAGER | ED4_P_VERTICAL), // static props
+    (ED4_properties)(PROP_IS_MANAGER | PROP_VERTICAL), // static props
     LEV_ROOTGROUP,                                       // level
     (ED4_level)(LEV_DEVICE),                             // allowed children level
     LEV_NONE,                                            // handled object
@@ -500,7 +500,7 @@ ED4_returncode  ED4_manager::handle_move(ED4_move_info *mi) {
         ED4_base *object;
         bool      i_am_consensus = false;
 
-        if (mi->object->dynamic_prop & ED4_P_IS_HANDLE) { // object is a handle for an object up in the hierarchy = > search it
+        if (mi->object->dynamic_prop & PROP_IS_HANDLE) { // object is a handle for an object up in the hierarchy = > search it
             ED4_level mlevel = mi->object->spec.handled_level;
 
             object = mi->object;
@@ -535,7 +535,7 @@ ED4_returncode  ED4_manager::handle_move(ED4_move_info *mi) {
                 ED4_terminal        *sel_object = sel_info->object;
 
                 if (sel_object==mi->object) break;
-                if (spec.static_prop & ED4_P_VERTICAL) x_off += sel_info->actual_width;
+                if (spec.static_prop & PROP_VERTICAL) x_off += sel_info->actual_width;
 
                 list_elem = list_elem->next();
             }
@@ -550,7 +550,7 @@ ED4_returncode  ED4_manager::handle_move(ED4_move_info *mi) {
             ED4_base *found_member = NULL;
             {
                 ED4_manager *dummy_mark = ED4_ROOT->main_manager->search_spec_child_rek(LEV_DEVICE)->to_manager();
-                dummy_mark->search_target_species(&loc, ED4_P_HORIZONTAL, &found_member, LEV_NONE);
+                dummy_mark->search_target_species(&loc, PROP_HORIZONTAL, &found_member, LEV_NONE);
             }
 
             if (found_member==object) { // if we are dropped on ourself => don't move
@@ -581,7 +581,7 @@ ED4_returncode  ED4_manager::handle_move(ED4_move_info *mi) {
         if ((i_am_consensus && object->parent != old_parent) || !i_am_consensus) {
             object->set_width();
 
-            if (parent->has_property(ED4_P_IS_FOLDED)) { // add spacer and consensusheight
+            if (parent->has_property(PROP_IS_FOLDED)) { // add spacer and consensusheight
                 e4_assert(parent->is_group_manager());
                 object->extension.position[Y_POS] = member(0)->extension.size[HEIGHT] + member(1)->extension.size[HEIGHT];
                 object->flag.hidden = 1;
@@ -601,7 +601,7 @@ ED4_returncode  ED4_manager::handle_move(ED4_move_info *mi) {
     }
     else {
         // levels do not match = > ask competent manager child to handle move request
-        ED4_manager *manager = (ED4_manager *) get_competent_child(rel_x, rel_y, ED4_P_IS_MANAGER);
+        ED4_manager *manager = (ED4_manager *) get_competent_child(rel_x, rel_y, PROP_IS_MANAGER);
         if (!manager) return ED4_R_IMPOSSIBLE; // no manager child covering target location = > move not possible
         return manager->move_requested_by_parent(mi); // there is a manager child covering target location = > pass on move request
     }
@@ -627,8 +627,8 @@ ED4_returncode  ED4_manager::move_requested_by_child(ED4_move_info *mi) {
 
     if (spec.level < mi->object->spec.restriction_level) return (ED4_R_IMPOSSIBLE); // check if there is a level restriction to the move request
 
-    if (mi->object->dynamic_prop & ED4_P_IS_HANDLE) { // determine first if we could be the moving object
-        if ((dynamic_prop & ED4_P_MOVABLE) && (spec.level & mi->object->spec.handled_level)) { // yes, we are meant to be the moving object
+    if (mi->object->dynamic_prop & PROP_IS_HANDLE) { // determine first if we could be the moving object
+        if ((dynamic_prop & PROP_MOVABLE) && (spec.level & mi->object->spec.handled_level)) { // yes, we are meant to be the moving object
             mi->object = this;
         }
 
@@ -647,7 +647,7 @@ ED4_returncode  ED4_manager::move_requested_by_child(ED4_move_info *mi) {
         return (parent->move_requested_by_child(mi));
     }
     else { // target location within current borders = > handle move myself
-        temp_parent = get_competent_clicked_child(mi->end_x, mi->end_y, ED4_P_IS_MANAGER);
+        temp_parent = get_competent_clicked_child(mi->end_x, mi->end_y, PROP_IS_MANAGER);
 
         if (!temp_parent) {
             return (handle_move(mi));
@@ -767,12 +767,12 @@ bool ED4_manager::calc_bounding_box() {
     }
 
     bool bb_changed = false;
-    if (spec.static_prop & ED4_P_HORIZONTAL) {
+    if (spec.static_prop & PROP_HORIZONTAL) {
         bb_changed = extension.set_size_does_change(WIDTH, max_x) || bb_changed;
         bb_changed = extension.set_size_does_change(HEIGHT, sum_height) || bb_changed;
     }
 
-    if (spec.static_prop & ED4_P_VERTICAL) {
+    if (spec.static_prop & PROP_VERTICAL) {
         bb_changed = extension.set_size_does_change(WIDTH, sum_width) || bb_changed;
         bb_changed = extension.set_size_does_change(HEIGHT, max_y) || bb_changed;
     }
@@ -795,13 +795,13 @@ ED4_returncode ED4_manager::distribute_children() {
     AW_pos    max_other_size = 0;
 
     // set extension-indexes rel_pos and rel_size according to properties
-    if (spec.static_prop & ED4_P_HORIZONTAL) {
+    if (spec.static_prop & PROP_HORIZONTAL) {
         rel_pos    = X_POS;
         other_pos  = Y_POS;
         rel_size   = WIDTH;
         other_size = HEIGHT;
     }
-    if (spec.static_prop & ED4_P_VERTICAL) {
+    if (spec.static_prop & PROP_VERTICAL) {
         rel_pos    = Y_POS;
         other_pos  = X_POS;
         rel_size   = HEIGHT;
@@ -1036,8 +1036,8 @@ ED4_returncode ED4_manager::Show(int refresh_all, int is_cleared) {
                 AW_pos x, y;
                 child->calc_world_coords(&x, &y);
 
-                if (spec.static_prop & ED4_P_HORIZONTAL) { // horizontal manager
-                    e4_assert((spec.static_prop&ED4_P_VERTICAL)==0);   // otherwise this binary search will not work correctly
+                if (spec.static_prop & PROP_HORIZONTAL) { // horizontal manager
+                    e4_assert((spec.static_prop&PROP_VERTICAL)==0);   // otherwise this binary search will not work correctly
                     if ((x+child->extension.size[WIDTH])<=rect.l) { // left of clipping range
                         l = max_m;
                     }
@@ -1045,7 +1045,7 @@ ED4_returncode ED4_manager::Show(int refresh_all, int is_cleared) {
                         h = min_m;
                     }
                 }
-                else if (spec.static_prop & ED4_P_VERTICAL) { // vertical manager
+                else if (spec.static_prop & PROP_VERTICAL) { // vertical manager
                     if ((y+child->extension.size[HEIGHT])<=rect.t) { // above clipping range
                         l = max_m;
                     }
