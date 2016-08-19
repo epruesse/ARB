@@ -17,11 +17,10 @@
 #include "ed4_edit_string.hxx"
 #include "ed4_list.hxx"
 
-ED4_group_manager *ED4_base::is_in_folded_group() const
-{
-    if (!parent) return 0;
+ED4_group_manager *ED4_base::is_in_folded_group() const {
+    if (!parent) return NULL;
     ED4_base *group = get_parent(ED4_L_GROUP);
-    if (!group) return 0;
+    if (!group) return NULL;
     if (group->dynamic_prop & ED4_P_IS_FOLDED) return group->to_group_manager();
     return group->is_in_folded_group();
 }
@@ -897,7 +896,7 @@ void ED4_bracket_terminal::fold() {
     if (parent) {
         ED4_multi_species_manager *multi_species_manager = parent->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
 
-        int consensus_shown = 0;
+        bool consensus_shown = false;
         if (!(multi_species_manager->member(1)->is_consensus_manager())) { // if consensus is not at top => move to top
             ED4_manager *consensus_manager = NULL;
             int i;
@@ -912,15 +911,15 @@ void ED4_bracket_terminal::fold() {
                 multi_species_manager->move_member(i, 1); // move Consensus to top of list
                 consensus_manager->extension.position[Y_POS] = SPACERHEIGHT;
                 ED4_base::touch_world_cache();
-                consensus_shown = 1;
+                consensus_shown = true;
             }
         }
         else {
-            consensus_shown = 1;
+            consensus_shown = true;
         }
 
         if (consensus_shown && ED4_ROOT->aw_root->awar(ED4_AWAR_CONSENSUS_SHOW)->read_int()==0) {
-            consensus_shown = 0;
+            consensus_shown = false;
         }
 
         ED4_spacer_terminal *spacer = multi_species_manager->get_defined_level(ED4_L_SPACER)->to_spacer_terminal();
