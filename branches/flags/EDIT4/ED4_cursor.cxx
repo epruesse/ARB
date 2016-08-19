@@ -404,12 +404,8 @@ bool ED4_species_manager::setCursorTo(ED4_cursor *cursor, int seq_pos, bool unfo
         bool did_unfold = false;
 
         while (group_manager_to_unfold && unfold_groups) {
-            ED4_base *base = group_manager_to_unfold->search_spec_child_rek(ED4_L_BRACKET);
-            if (!base) break;
-
-            base->to_bracket_terminal()->unfold();
-            did_unfold = true;
-
+            group_manager_to_unfold->unfold();
+            did_unfold              = true;
             group_manager_to_unfold = is_in_folded_group();
         }
 

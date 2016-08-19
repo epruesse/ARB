@@ -953,10 +953,7 @@ static void createGroupFromSelected(GB_CSTR group_name, GB_CSTR field_name, GB_C
     new_group_manager->create_consensus(new_group_manager, NULL);
     group_content_manager->invalidate_species_counters();
     
-    {
-        ED4_bracket_terminal *bracket = new_group_manager->get_defined_level(ED4_L_BRACKET)->to_bracket_terminal();
-        if (bracket) bracket->fold();
-    }
+    new_group_manager->fold();
 
     group_content_manager->resize_requested_by_child();
 }

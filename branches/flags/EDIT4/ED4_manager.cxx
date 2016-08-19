@@ -581,7 +581,8 @@ ED4_returncode  ED4_manager::handle_move(ED4_move_info *mi) {
         if ((i_am_consensus && object->parent != old_parent) || !i_am_consensus) {
             object->set_width();
 
-            if (dynamic_prop & ED4_P_IS_FOLDED) { // add spacer and consensusheight
+            if (parent->has_property(ED4_P_IS_FOLDED)) { // add spacer and consensusheight
+                e4_assert(parent->is_group_manager());
                 object->extension.position[Y_POS] = member(0)->extension.size[HEIGHT] + member(1)->extension.size[HEIGHT];
                 object->flag.hidden = 1;
                 ED4_base::touch_world_cache();

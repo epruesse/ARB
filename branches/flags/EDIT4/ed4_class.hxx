@@ -968,6 +968,7 @@ public:
     // functions concerned with special initialization
     void set_property(ED4_properties prop) { dynamic_prop = (ED4_properties) (dynamic_prop | prop); }
     void clr_property(ED4_properties prop) { dynamic_prop = (ED4_properties) (dynamic_prop & ~prop); }
+    bool has_property(ED4_properties prop) const { return dynamic_prop & prop; }
     
     // functions concerned with coordinate transformation
 
@@ -1654,6 +1655,10 @@ struct ED4_group_manager : public ED4_abstract_group_manager {
     ED4_group_manager(const char *id, AW_pos width, AW_pos height, ED4_manager *parent);
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_abstract_group_manager);
     void reinit_char_table();
+
+    void fold();
+    void unfold();
+    void toggle_folding();
 };
 
 enum ED4_remap_mode {
@@ -1882,8 +1887,7 @@ struct ED4_bracket_terminal : public ED4_terminal {
     ED4_returncode draw() OVERRIDE;
     ED4_returncode Show(int refresh_all=0, int is_cleared=0) OVERRIDE;
 
-    void fold();
-    void unfold();
+    void toggle_folding();
 
     ED4_bracket_terminal(const char *id, AW_pos width, AW_pos height, ED4_manager *parent);
 

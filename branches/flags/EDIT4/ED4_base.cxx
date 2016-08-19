@@ -252,13 +252,11 @@ ED4_group_manager *ED4_build_group_manager_start(ED4_manager                 *gr
     multi_species_manager = new ED4_multi_species_manager(namebuffer, 0, 0, group_manager);
     group_manager->append_member(multi_species_manager);
 
-    {
-        ED4_properties prop_folded(is_folded ? ED4_P_IS_FOLDED : ED4_P_NO_PROP); // only set FOLDED-flag if group is folded
+    if (is_folded) group_manager->set_property(ED4_P_IS_FOLDED);
+    group_manager->set_property(ED4_P_MOVABLE);
 
-        group_manager        ->set_property(ED4_properties(prop_folded | ED4_P_MOVABLE));
-        multi_species_manager->set_property(ED4_properties(prop_folded | ED4_P_IS_HANDLE));
-        bracket_terminal     ->set_property(ED4_properties(prop_folded | ED4_P_IS_HANDLE));
-    }
+    multi_species_manager->set_property(ED4_P_IS_HANDLE);
+    bracket_terminal     ->set_property(ED4_P_IS_HANDLE);
 
     {
         sprintf(namebuffer, "Group_Spacer_Terminal_Beg.%ld", ED4_counter); // spacer at beginning of group
@@ -872,67 +870,67 @@ void ED4_manager::unhide_children() {
     request_resize();
 }
 
-void ED4_bracket_terminal::unfold() {
-    if (parent) {
-        for (int i=0; i<parent->members(); i++) {
-            ED4_base *child = parent->member(i);
+void ED4_group_manager::unfold() {
+    for (int i=0; i<members(); i++) {
+        ED4_base *child = member(i);
 
-            if (child->is_multi_species_manager()) {
-                ED4_multi_species_manager *multi_species_manager = child->to_multi_species_manager();
-                multi_species_manager->unhide_children();
-                multi_species_manager->clr_property(ED4_P_IS_FOLDED);
+        if (child->is_multi_species_manager()) {
+            ED4_multi_species_manager *multi_species_manager = child->to_multi_species_manager();
+            multi_species_manager->unhide_children();
 
-                ED4_spacer_terminal *spacer = multi_species_manager->get_defined_level(ED4_L_SPACER)->to_spacer_terminal();
-                spacer->extension.size[HEIGHT] = SPACERHEIGHT; // @@@ use set_dynamic_size()?
-            }
+            ED4_spacer_terminal *spacer = multi_species_manager->get_defined_level(ED4_L_SPACER)->to_spacer_terminal();
+            spacer->extension.size[HEIGHT] = SPACERHEIGHT; // @@@ use set_dynamic_size()?
         }
-
-        clr_property(ED4_P_IS_FOLDED);
-        parent->clr_property(ED4_P_IS_FOLDED);
     }
+
+    clr_property(ED4_P_IS_FOLDED);
 }
 
-void ED4_bracket_terminal::fold() {
-    if (parent) {
-        ED4_multi_species_manager *multi_species_manager = parent->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
+void ED4_group_manager::fold() {
+    ED4_multi_species_manager *multi_species_manager = get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
 
-        bool consensus_shown = false;
-        if (!(multi_species_manager->member(1)->is_consensus_manager())) { // if consensus is not at top => move to top
-            ED4_manager *consensus_manager = NULL;
-            int i;
-            for (i=0; i<multi_species_manager->members(); i++) { // search for consensus
-                if (multi_species_manager->member(i)->is_consensus_manager()) {
-                    consensus_manager = multi_species_manager->member(i)->to_manager();
-                    break;
-                }
-            }
-
-            if (consensus_manager) {
-                multi_species_manager->move_member(i, 1); // move Consensus to top of list
-                consensus_manager->extension.position[Y_POS] = SPACERHEIGHT;
-                ED4_base::touch_world_cache();
-                consensus_shown = true;
+    bool consensus_shown = false;
+    if (!(multi_species_manager->member(1)->is_consensus_manager())) { // if consensus is not at top => move to top
+        ED4_manager *consensus_manager = NULL;
+        int i;
+        for (i=0; i<multi_species_manager->members(); i++) { // search for consensus
+            if (multi_species_manager->member(i)->is_consensus_manager()) {
+                consensus_manager = multi_species_manager->member(i)->to_manager();
+                break;
             }
         }
-        else {
+
+        if (consensus_manager) {
+            multi_species_manager->move_member(i, 1); // move Consensus to top of list
+            consensus_manager->extension.position[Y_POS] = SPACERHEIGHT;
+            ED4_base::touch_world_cache();
             consensus_shown = true;
         }
-
-        if (consensus_shown && ED4_ROOT->aw_root->awar(ED4_AWAR_CONSENSUS_SHOW)->read_int()==0) {
-            consensus_shown = false;
-        }
-
-        ED4_spacer_terminal *spacer = multi_species_manager->get_defined_level(ED4_L_SPACER)->to_spacer_terminal();
-        if (spacer) {
-            spacer->extension.size[HEIGHT] = consensus_shown ? SPACERHEIGHT : SPACERNOCONSENSUSHEIGHT; // @@@ use set_dynamic_size()?
-        }
-
-        multi_species_manager->hide_children();
-        multi_species_manager->set_property(ED4_P_IS_FOLDED);
-
-        set_property(ED4_P_IS_FOLDED);
-        parent->set_property(ED4_P_IS_FOLDED);
     }
+    else {
+        consensus_shown = true;
+    }
+
+    if (consensus_shown && ED4_ROOT->aw_root->awar(ED4_AWAR_CONSENSUS_SHOW)->read_int()==0) {
+        consensus_shown = false;
+    }
+
+    ED4_spacer_terminal *spacer = multi_species_manager->get_defined_level(ED4_L_SPACER)->to_spacer_terminal();
+    if (spacer) {
+        spacer->extension.size[HEIGHT] = consensus_shown ? SPACERHEIGHT : SPACERNOCONSENSUSHEIGHT; // @@@ use set_dynamic_size()?
+    }
+
+    multi_species_manager->hide_children();
+
+    set_property(ED4_P_IS_FOLDED);
+}
+
+void ED4_group_manager::toggle_folding() {
+    if (has_property(ED4_P_IS_FOLDED)) unfold();
+    else fold();
+}
+void ED4_bracket_terminal::toggle_folding() {
+    parent->to_group_manager()->toggle_folding();
 }
 
 void ED4_base::check_all()

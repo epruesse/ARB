@@ -597,8 +597,7 @@ ED4_returncode ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *aw
                 }
                 else if (is_bracket_terminal()) { // fold/unfold group
                     if (event->type == AW_Mouse_Press) {
-                        if (dynamic_prop & ED4_P_IS_FOLDED) to_bracket_terminal()->unfold();
-                        else                                to_bracket_terminal()->fold();
+                        to_bracket_terminal()->toggle_folding();
                     }
                 }
                 else if (is_sequence_terminal()) {
@@ -806,7 +805,8 @@ ED4_returncode ED4_bracket_terminal::draw() {
 #endif
     }
 
-    if (dynamic_prop & ED4_P_IS_FOLDED) { // paint triangle for folded group
+    e4_assert(parent->is_group_manager());
+    if (parent->has_property(ED4_P_IS_FOLDED)) { // for folded group, paint triangle pointing rightwards
         Position t = term_area.upper_left_corner()+Vector(4,4);
         Position b = t+Vector(0,12);
 
@@ -818,7 +818,7 @@ ED4_returncode ED4_bracket_terminal::draw() {
         e4_assert(nearlyEqual(t, b));
         device->line(ED4_G_STANDARD, t, b, AW_SCREEN); // arrowhead
     }
-    else {
+    else { // for unfolded group, paint triangle pointing downwards
         Position l = term_area.upper_left_corner()+Vector(4,5);
         Position r = l+Vector(6,0);
 
@@ -842,7 +842,7 @@ ED4_returncode ED4_bracket_terminal::draw() {
         device->line(ED4_G_STANDARD, bracket.left_edge(), AW_SCREEN);
     }
 
-    return (ED4_R_OK);
+    return ED4_R_OK;
 }
 
 ED4_species_name_terminal::ED4_species_name_terminal(GB_CSTR temp_id, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
