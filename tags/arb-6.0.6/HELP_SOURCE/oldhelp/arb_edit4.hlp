@@ -1,0 +1,52 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+SUB	man_arb_edit4.hlp
+SUB	e4.hlp
+SUB	configuration.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		How to start ARB_EDIT4
+
+OCCURRENCE	ARB_NT/Sequence/Edit (marked) sequences ...
+
+		ARB_NT<3rd small rectangular button in top area>
+
+DESCRIPTION     The ARB-editor
+
+SECTION How to start ARB_EDIT4?
+
+    Default: to load marked sequences and all SAI's as they are arranged
+    and grouped in the tree visualized in the ARB_NT main window
+
+    1. press the editor button in the upper panel (below ali_*)
+
+    2. select "Sequence/Edit Sequences/..."
+
+    Alternatively:
+
+        to load marked, all SAI's as well as sequences from
+        a number of closest relatives as they are arranged and grouped in
+        the tree visualized in the ARB_NT main window select "Edit Marked
+        Sequences (plus sequences aside ...." from the 'Sequence' menu
+        (you will be asked for a number of closest relatives).
+
+    Advanced:
+
+        to load an earlier configuration (selection, arrangement and
+        grouping of sequences and SAI's independently from marking)
+        select "Edit Sequences Using Earlier Selection" from the
+        'Sequence' menu. Select a configuration from the list in the
+        'SELECT A CONFIGURATION' window, press the start button.
+
+NOTES		None
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known

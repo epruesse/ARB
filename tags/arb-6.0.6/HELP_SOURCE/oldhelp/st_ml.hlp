@@ -1,0 +1,69 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+
+TITLE		Column Statistic (Prototype)
+
+OCCURRENCE	ARB EDITOR
+
+DESCRIPTION	Highlites unlikely bases in an alignment using the maximum
+		likelihood technique.
+		As soon as the go button is pressed, the selected tree (by
+		ARB_NT) and all marked sequences are read. Then the relative
+		likelihood for each base is calculated and transformed to
+		a number between 0 and 9. This number is translated into a color,
+		using the colors 'RANGE 0 ... RANGE 9'. The higher the number,
+		the more unlikely a particular base.
+		You may improve the output by selecting a valid column statistic,
+		which holds information about column dependent rates and base
+		frequencies.
+
+NOTES		The colors are not set correctly. Please set different 'CS' colors
+		<Props:Sequences: Colors and Fonts> and save them.
+		Without a powerfull computer only a small number of sequences can
+		be viewed.
+		The program assumes that your tree is correct.
+
+WARNINGS	This is only a prototype, don't expect something perfect.
+		All sequences which should be analyzed should be marked and
+		in the tree shown by ARB_NT !!!!!
+
+BUGS		The colors are not set correctly by default.
+		The program can only be started once.
+
+SECTION         Detailed column statistic
+
+                This special mode displays 4 rows below the sequence containing
+		the likelihood of each base character.
+
+		Each row consists of two rows of digits displayed in the same color
+		(which actually is the color normally used for displaying the
+		appropriate base character). The upper of these two rows is the
+		first, the lower the second digit of the likelihood.
+		[You may like to use the cursor to simplify reading]
+
+		Special character used:
+		-----------------------
+		SPACE 	= likelihood is 20%
+		^	= likelihood is 100%
+		?	= can't determine likelihood for that column
+
+		Background colors used:
+		-----------------------
+		Normally the normal background color is used.
+
+		If a column has a significant likelihood for one base character
+		(or for the sum of two base characters), all four rows are
+		displayed in color 'Range 0'.
+
+		[significance is 90% (hardcoded) - will be made utilizable soon]
+
+		The single (or two) base character(s) responsive for the
+		significance will be displayed in colors 'Range 1' to 'Range 8'
+		(the higher the Range-number is, the higher is the likelihood)

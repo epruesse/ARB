@@ -1,0 +1,4 @@
+# libraries needed to link against SL/FILTER/FILTER.a
+
+lib/libARBDB.so
+

@@ -1,0 +1,66 @@
+#!/bin/bash
+
+remove() {
+    local PIDFILE=$1
+    rm -f $PIDFILE
+}
+killandremove() {
+    local PIDFILE=$1
+    kill -9 `cat $PIDFILE` >/dev/null 2>&1
+    remove $PIDFILE
+}
+cat_newline() {
+    local PIDFILE=$1
+    cat $PIDFILE
+    echo ""
+}
+
+witheach() {
+    local CMDPREFIX=$*
+    local PIDFILE
+    while read PIDFILE; do
+        $CMDPREFIX $PIDFILE
+    done
+}
+
+allpidfiles() {
+    ls ~/.arb_tmp/tmp/arb_pids_${USER}_* 2>&1 | grep -v 'No such file'
+}
+
+# ----------------------------------------
+
+session() {
+    local PIDFILE=~/.arb_tmp/tmp/arb_pids_${USER}_${ARB_PID}
+    if [ -f $PIDFILE ]; then
+        echo $PIDFILE | witheach killandremove
+    else
+        echo "No processes listed for ARB_PID=$ARB_PID"
+    fi
+}
+
+old() {
+    allpidfiles | witheach remove
+}
+targets() {
+    allpidfiles | witheach cat_newline
+}
+killall() {
+    allpidfiles | witheach killandremove
+}
+
+# ----------------------------------------
+
+ACTION=$1
+if [ -z "$ACTION" ]; then
+    echo "Usage: arb_clean [action]"
+    echo "Known actions are:"
+    echo "    session           kill all processes running with current ARB_PID"
+    echo "    old               delete old pid-files from /tmp (dont do this while arb is running)"
+    echo "    targets           show process ids of processes, that will be killed by action 'killall'"
+    echo "    killall           kill all (current or former) arb processes"
+    echo "                      CAUTION: may act completely wrong and kill various running non-ARB-processes!"
+else
+    if [ "$ACTION" == "session" -o "$ACTION" == "old" -o "$ACTION" == "targets" -o "$ACTION" == "killall" ]; then
+        $ACTION
+    fi
+fi

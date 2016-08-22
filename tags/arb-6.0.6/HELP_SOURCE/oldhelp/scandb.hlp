@@ -1,0 +1,33 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+UP	sp_info.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Scan Database for all Fields
+
+OCCURRENCE	ARB_NT/Species|Genes|Experiments/Info/FIELDS/Show all hidden fields
+                ARB_NT/Species|Genes|Experiments/Info/FIELDS/Refresh fields
+
+DESCRIPTION     Each function scans the database to detect all existing fields.
+
+                - 'Show all hidden fields' unhides all currently hidden fields.
+                - 'Refresh fields' scans the database for existing fields and updates the field list.
+
+NOTE		Normally it is not necessary to run 'Refresh fields' unless
+		some external programs generate new and yet unknown fields
+                or if the ARB programmers forgot to announce a field as known.
+
+                In the latter case please write to LINK{devel@arb-home.de} and describe which
+                fields was created by doing what.
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known
