@@ -88,7 +88,7 @@ static ED4_objspec pure_text_terminal_spec(
     );
 
 static ED4_objspec spacer_terminal_spec(
-    PROP_IS_TERMINAL,     // static props
+    ED4_properties(PROP_IS_TERMINAL | PROP_DYNA_RESIZE), // static props
     LEV_SPACER,            // level
     LEV_NONE,              // allowed children level
     LEV_NONE,              // handled object
@@ -96,7 +96,7 @@ static ED4_objspec spacer_terminal_spec(
     );
 
 static ED4_objspec line_terminal_spec(
-    PROP_IS_TERMINAL,     // static props
+    ED4_properties(PROP_IS_TERMINAL | PROP_DYNA_RESIZE), // static props
     LEV_LINE,              // level
     LEV_NONE,              // allowed children level
     LEV_NONE,              // handled object

@@ -879,7 +879,7 @@ void ED4_group_manager::unfold() {
             multi_species_manager->unhide_children();
 
             ED4_spacer_terminal *spacer = multi_species_manager->get_defined_level(LEV_SPACER)->to_spacer_terminal();
-            spacer->extension.size[HEIGHT] = SPACER_HEIGHT; // @@@ use set_dynamic_size()?
+            spacer->resize_dynamic();
         }
     }
 
@@ -915,14 +915,13 @@ void ED4_group_manager::fold() {
         consensus_shown = false;
     }
 
+    multi_species_manager->hide_children();
+    set_property(PROP_IS_FOLDED);
+
     ED4_spacer_terminal *spacer = multi_species_manager->get_defined_level(LEV_SPACER)->to_spacer_terminal();
     if (spacer) {
-        spacer->extension.size[HEIGHT] = consensus_shown ? SPACER_HEIGHT : SPACER_NOCONS_HEIGHT; // @@@ use set_dynamic_size()?
+        spacer->resize_dynamic(); // Note: has to be done _after_ changing folded-prop
     }
-
-    multi_species_manager->hide_children();
-
-    set_property(PROP_IS_FOLDED);
 }
 
 void ED4_group_manager::toggle_folding() {
@@ -1037,7 +1036,7 @@ ED4_base::ED4_base(const ED4_objspec& spec_, GB_CSTR temp_id, AW_pos width, AW_p
     : spec(spec_)
 {
     index = 0;
-    dynamic_prop = PROP_NONE;
+    dynamic_prop = ED4_properties(PROP_NONE | (spec.static_prop & PROP_DYNA_RESIZE));
     timestamp =  0; // invalid - almost always..
 
     e4_assert(temp_id);

@@ -673,6 +673,7 @@ ED4_returncode ED4_root::create_hierarchy(const char *area_string_middle, const 
             device_manager->append_member(mid_bot_line_terminal);
 
             total_bottom_spacer = new ED4_spacer_terminal("Total_Bottom_Spacer_terminal", false, 0, 10000, device_manager);
+            total_bottom_spacer->clr_property(PROP_DYNA_RESIZE);
             device_manager->append_member(total_bottom_spacer);
         }
 

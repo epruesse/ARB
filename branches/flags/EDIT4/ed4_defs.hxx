@@ -180,7 +180,7 @@ enum ED4_properties {
     PROP_IS_TERMINAL        = 0x2,
     PROP_HORIZONTAL         = 0x4,
     PROP_VERTICAL           = 0x8,
-    // PROP_                = 0x10,
+    PROP_DYNA_RESIZE        = 0x10,              // if set => allowed to resize dynamically (static_prop => object type is capable; auto-copied to dynamic_prop)
     PROP_SELECTABLE         = 0x20,
     PROP_DRAGABLE           = 0x40,
     PROP_MOVABLE            = 0x80,

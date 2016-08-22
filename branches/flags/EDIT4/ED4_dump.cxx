@@ -28,6 +28,7 @@ static void printProperties(ED4_properties prop) {
     pprop(IS_TERMINAL);
     pprop(HORIZONTAL);
     pprop(VERTICAL);
+    pprop(DYNA_RESIZE);
     pprop(SELECTABLE);
     pprop(DRAGABLE);
     pprop(MOVABLE);
@@ -126,6 +127,7 @@ void ED4_base::dump_base(size_t indent) const {
     spec.dump(NEXT_INDENT);
     print_indented(NEXT_INDENT, GBS_global_string("id                    = '%s'", id));
     print_indented(NEXT_INDENT, GBS_global_string("parent                = %p", parent));
+    dumpProperties(NEXT_INDENT, "dynamic_prop", dynamic_prop);
 
     closeDump(indent);
 }

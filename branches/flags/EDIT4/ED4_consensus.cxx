@@ -49,19 +49,16 @@ void ED4_consensus_definition_changed(AW_root*) {
 
 static ARB_ERROR toggle_consensus_display(ED4_base *base, bool show) {
     if (base->is_consensus_manager()) {
-        ED4_manager *consensus_man = base->to_manager();
-        ED4_spacer_terminal *spacer = consensus_man->parent->get_defined_level(LEV_SPACER)->to_spacer_terminal();
+        ED4_manager         *consensus_man = base->to_manager();
+        ED4_spacer_terminal *spacer        = consensus_man->parent->get_defined_level(LEV_SPACER)->to_spacer_terminal();
 
         if (show) {
             consensus_man->unhide_children();
-            spacer->extension.size[HEIGHT] = SPACER_HEIGHT; // @@@ use set_dynamic_size()?
         }
         else {
             consensus_man->hide_children();
-
-            ED4_group_manager *group_man = consensus_man->get_parent(LEV_GROUP)->to_group_manager();
-            spacer->extension.size[HEIGHT] = (group_man->has_property(PROP_IS_FOLDED)) ? SPACER_NOCONS_HEIGHT : SPACER_HEIGHT; // @@@ use set_dynamic_size()?
         }
+        spacer->resize_dynamic();
     }
 
     return NULL;

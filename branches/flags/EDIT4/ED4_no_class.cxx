@@ -118,10 +118,36 @@ bool ED4_line_terminal::set_dynamic_size() {
     return extension.set_size_does_change(WIDTH, overall_width);
 }
 bool ED4_spacer_terminal::set_dynamic_size() {
-    // @@@ dynamically calculate spacer size (according to: folded/unfolded, consensus shown?)
+    if (!has_property(PROP_DYNA_RESIZE)) return false; // some spacer terminals never change their size (eg. bottom-spacer)
 
-    // extension.size[HEIGHT] = parent->is_device_manager() ? TERMINAL_HEIGHT / 2 : SPACER_HEIGHT; // different height for top-group?
-    return false;
+    AW_pos new_height = SPACER_HEIGHT;
+
+    if (parent->is_device_manager()) {
+        if (this == ED4_ROOT->main_manager->get_top_middle_spacer_terminal()) {
+            ED4_terminal *top_middle_line_terminal = ED4_ROOT->main_manager->get_top_middle_line_terminal();
+
+            // top-middle spacer + top-middle line >= font-size (otherwise scrolling relicts!)
+            new_height = TERMINAL_HEIGHT - top_middle_line_terminal->extension.size[HEIGHT];
+        }
+        else {
+            new_height = 1; // use minimal height for other top-group spacers
+        }
+    }
+    else {
+        ED4_manager *grandpa = parent->parent;
+        e4_assert(grandpa);
+
+        if (grandpa->is_group_manager()) {
+            ED4_group_manager *group_man = grandpa->to_group_manager();
+            if (group_man->has_property(PROP_IS_FOLDED)) {
+                if (!AW_root::SINGLETON->awar(ED4_AWAR_CONSENSUS_SHOW)->read_int()) {
+                    new_height = SPACER_NOCONS_HEIGHT;
+                }
+            }
+        }
+    }
+
+    return extension.set_size_does_change(HEIGHT, new_height);
 }
 
 static ARB_ERROR update_extension_size(ED4_base *base) {
@@ -142,13 +168,6 @@ void ED4_resize_all_extensions() { // @@@ pass flag to force resize-request? (eg
     int screenwidth = ED4_ROOT->root_group_man->remap()->shown_sequence_to_screen(MAXSEQUENCECHARACTERLENGTH);
     while (1) {
         ED4_ROOT->ref_terminals.sequence()->extension.size[WIDTH] = ED4_ROOT->font_group.get_width(ED4_G_SEQUENCES) * (screenwidth+3);
-
-        {
-            ED4_terminal *top_middle_line_terminal   = ED4_ROOT->main_manager->get_top_middle_line_terminal();
-            ED4_terminal *top_middle_spacer_terminal = ED4_ROOT->main_manager->get_top_middle_spacer_terminal();
-
-            top_middle_spacer_terminal->extension.size[HEIGHT] = TERMINAL_HEIGHT - top_middle_line_terminal->extension.size[HEIGHT];
-        }
 
         ED4_ROOT->main_manager->route_down_hierarchy(makeED4_route_cb(update_extension_size)).expect_no_error();
 

@@ -914,11 +914,11 @@ class ED4_base : virtual Noncopyable {
 
     ED4_base_list *linked_objects;                  // linked list of objects which are depending from this object
 
-    virtual bool set_dynamic_size() { // @@@ make abstract?
-        // default behavior == "keep current size"
+    virtual bool set_dynamic_size() {
+        // default behavior: keep size
+        // (overload to implement dynamic sizing; also set static_prop!)
+        e4_assert(!(spec.static_prop & PROP_DYNA_RESIZE)); // forgot to overload set_dynamic_size?
         return false; // = "nothing changed"
-
-        // overload to implement dynamic sizing
     }
 
 public:
@@ -958,7 +958,12 @@ public:
     virtual ED4_returncode  Show(int refresh_all=0, int is_cleared=0) = 0;
 
     virtual bool calc_bounding_box() = 0;
-    void resize_dynamic() { if (set_dynamic_size()) { request_resize(); } }
+    void resize_dynamic() {
+        if (set_dynamic_size()) {
+            e4_assert(has_property(PROP_DYNA_RESIZE)); // object dynamically changed size (but isn't allowed to!)
+            request_resize();
+        }
+    }
 
     ED4_returncode  clear_background(int color=0);
 
