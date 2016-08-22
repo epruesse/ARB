@@ -23,12 +23,12 @@
 
 static void printProperties(ED4_properties prop) {
     char sep = ' ';
-#define pprop(tag) do { if (prop&ED4_P_##tag) { fputc(sep, OUT); sep = '|'; fputs(#tag, OUT); } } while(0)
+#define pprop(tag) do { if (prop&PROP_##tag) { fputc(sep, OUT); sep = '|'; fputs(#tag, OUT); } } while(0)
     pprop(IS_MANAGER);
     pprop(IS_TERMINAL);
     pprop(HORIZONTAL);
     pprop(VERTICAL);
-    pprop(TMP);
+    pprop(DYNA_RESIZE);
     pprop(SELECTABLE);
     pprop(DRAGABLE);
     pprop(MOVABLE);
@@ -36,13 +36,14 @@ static void printProperties(ED4_properties prop) {
     pprop(CURSOR_ALLOWED);
     pprop(IS_FOLDED);
     pprop(CONSENSUS_RELEVANT);
+    pprop(ALIGNMENT_DATA);
     fputc(' ', OUT);
 #undef pprop
 }
 
 static void printLevel(ED4_level level) {
     char sep = ' ';
-#define plev(tag) do { if (level&ED4_L_##tag) { fputc(sep, OUT); sep = '|'; fputs(#tag, OUT); } } while(0)
+#define plev(tag) do { if (level&LEV_##tag) { fputc(sep, OUT); sep = '|'; fputs(#tag, OUT); } } while(0)
     plev(ROOT);
     plev(DEVICE);
     plev(AREA);
@@ -126,15 +127,16 @@ void ED4_base::dump_base(size_t indent) const {
     spec.dump(NEXT_INDENT);
     print_indented(NEXT_INDENT, GBS_global_string("id                    = '%s'", id));
     print_indented(NEXT_INDENT, GBS_global_string("parent                = %p", parent));
+    dumpProperties(NEXT_INDENT, "dynamic_prop", dynamic_prop);
 
     closeDump(indent);
 }
 
 // =========================================================================================
-// ED4_members
+// ED4_container
 
-void ED4_members::dump(size_t indent) const {
-    openDump(indent, "ED4_members", (void*)this);
+void ED4_container::dump_container(size_t indent) const {
+    openDump(indent, "ED4_container", (void*)this);
     for (ED4_index i=0; i<members(); i++) {
         member(i)->dump(NEXT_INDENT);
     }
@@ -147,7 +149,7 @@ void ED4_members::dump(size_t indent) const {
 void ED4_manager::dump_base(size_t indent) const {
     openDump(indent, "ED4_manager", (void*)this);
     ED4_base::dump_base(NEXT_INDENT);
-    children->dump(NEXT_INDENT);
+    dump_container(NEXT_INDENT);
     closeDump(indent);
 }
 
@@ -166,20 +168,20 @@ void ED4_species_manager::dump(size_t indent) const {
     openDump(indent, "ED4_species_manager", (void*)this);
     ED4_base::dump_base(NEXT_INDENT);
     print_indented(NEXT_INDENT, GBS_global_string("type                   = %s", readable_ED4_species_type(type)));
-    children->dump(NEXT_INDENT);
+    dump_container(NEXT_INDENT);
     closeDump(indent);
 }
 
 
-#define STANDARD_BASE_DUMP_CODE(mytype) do {      \
+#define STANDARD_BASE_DUMP_CODE(mytype) do {    \
         openDump(indent, #mytype, (void*)this); \
         mytype::dump_my_base(NEXT_INDENT);      \
         closeDump(indent);                      \
     } while (0)
     
-#define STANDARD_LEAF_DUMP_CODE(mytype) do {           \
+#define STANDARD_LEAF_DUMP_CODE(mytype) do {    \
         openDump(indent, #mytype, (void*)this); \
-        mytype::dump_my_base(NEXT_INDENT);        \
+        mytype::dump_my_base(NEXT_INDENT);      \
         closeDump(indent);                      \
     } while (0)
 
@@ -226,10 +228,12 @@ void ED4_objspec::dump(size_t indent) const {
     dumpLevel(NEXT_INDENT, "level",                level);
     dumpLevel(NEXT_INDENT, "allowed_children",     allowed_children);
     dumpLevel(NEXT_INDENT, "used_children",        used_children);
+#if 0
     dumpLevel(NEXT_INDENT, "allowed_descendants",  allowed_descendants);
     dumpLevel(NEXT_INDENT, "possible_descendants", possible_descendants);
     dumpLevel(NEXT_INDENT, "handled_level",        handled_level);
     dumpLevel(NEXT_INDENT, "restriction_level",    restriction_level);
+#endif
     closeDump(indent);
 }
 
