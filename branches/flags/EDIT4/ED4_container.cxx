@@ -168,12 +168,7 @@ void ED4_container::correct_insert_position(ED4_index& index) {
 void ED4_container::resize(ED4_index needed_size) {
     if (needed_size>size_of_list) {
         e4_assert(needed_size>0);
-#if defined(DEVEL_RALF)
-        ED4_index new_size = needed_size; // @@@ deactivate when running stable for some time!
-#else // !DEVEL_RALF
         ED4_index new_size = (needed_size*3)/2+2;
-#endif
-
         ARB_recalloc(memberList, size_of_list, new_size);
         size_of_list = new_size;
     }

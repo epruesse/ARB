@@ -138,8 +138,6 @@ inline DERIVED_PTR static_downcast(BASE_PTR expr) {
     return static_cast<DERIVED_PTR>(expr);
 }
 
-// #define DOWNCAST(totype,expr)  ((totype)(expr))                            // causes undefined behavior if totype is not defined yet
-// #define DOWNCAST(totype,expr)  static_cast<totype>(expr)                   // triggers many compile errors
 #define DOWNCAST(totype,expr)     static_downcast<totype,typeof(expr)>(expr)  // fixes undefined behavior 
 
 #endif // SAFE_DOWNCASTS
