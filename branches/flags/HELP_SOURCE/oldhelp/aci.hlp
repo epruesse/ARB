@@ -1,0 +1,585 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+SUB	exec_bug.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+
+TITLE		ARB Command Interpreter (ACI)
+
+OCCURRENCE	NDS
+		[ export db ]
+		[ ARB_NT/Species/search/parse_fields ]
+
+DESCRIPTION	The command interpreter is a simple interpreter.
+
+		All commands take the data from the input streams,
+		modify it and write it to the output
+		(which may be the input of the next command).
+
+                The first input stream often is the value of a database field
+		(see NDS for more information).
+
+                     e.g. count("a") counts every 'a' in each input stream and
+                     generates an output stream (== the sum of 'a') for every
+                     input.
+
+		Many commands have parameters which are specified behind
+		the command in parenthesis.
+
+		Different commands can be separated by:
+
+                	';'	all(!) commands take all(!) the input streams and
+                        	each command generates its own output streams
+        		'|'	the output of the left commands are used as the input
+                		of the right.
+
+		e.g.
+
+                        count("A");count("AG")
+
+                                creates two streams:
+
+                                        1. how many A's
+                                        2. and how many A's and G's
+
+                        count("A");count("G")|per_cent
+
+                                per_cent is a command that divides two numbers
+                                (number of 'A's / number of 'G's) and returns the result
+                                as percent.
+
+		Finally all output streams are concatenated and
+
+			- NDS:printed at the tips of the tree.
+			- MODIFY DATABASE FIELD: stored in the destination field.
+
+SECTION Example data flow
+
+        eg: count("A");count("G")|"a/g = "; per_cent
+
+        input                                                         concatenate output
+        "AGG" ----> count("A") -->| -----> "a/g = " --> | --> "a/g = " ---> 'a/g = 50'
+              \                   | \ /                 |               /
+               \                  |  \                  |              /
+                \                 | / \                 |             /
+                 -> count("G") -->| -----> per_cent --> | --> "50" ---
+
+
+SECTION PARAMETERS
+
+        Several commands expect or accept additional parameters in
+        parenthesis (e.g. 'remove(aA)').
+
+        Multiple parameters have to be separated by ',' or ';'.
+
+        There are two distinct ways to specify such a parameter:
+        - unquoted
+
+          Unquoted parameters are taken as specified, but may not contain any of
+          the following characters: ',;"|)'
+
+        - quoted
+
+          Quoted parameters begin and end with a '"'. You can use any character,
+          but you need to escape '\' and '"' by preceeding a '\'.
+
+          Example: 'remove("\"")' will remove all double quotes from input.
+                   'remove("\\")' will remove all backslashes from input.
+
+        [@@@ behavior currently not strictly implemented]
+
+SECTION COMMANDLIST
+
+		If not otherwise mentioned every command creates one
+		output stream for each input stream.
+
+	STREAM HANDLING
+
+		echo(x1;x2;x3...)	creates an output stream for each
+					parameter 'x' and writes 'x' onto it.
+
+		"text"			same as 'echo("text")'
+
+		dd			copies all input streams to output streams
+
+		cut(N1,N2,N3)		copies the Nth input stream(s)
+
+                drop(N1,N2)             copies all but the Nth input stream(s)
+
+                dropempty               drops all empty input streams
+
+                dropzero                drops all non-numeric or zero input streams
+
+                swap(N1,N2)             swaps two input streams
+                                        (w/o parameters: swaps last two streams)
+
+                toback(X)               moves the Xth input stream
+                                        to the end of output streams
+
+                tofront(X)              moves the Xth input stream
+                                        to the start of output streams
+
+                merge([sep])            merges all input streams into one output stream.
+                                        If 'sep' is specified, it's inserted between them.
+                                        If no input streams are given, it returns 1 empty
+                                        input stream.
+
+                split([sep[,mode]])     splits all input streams at separator string 'sep'
+                                        (default: split at linefeed).
+
+                                        Modes:
+
+                                        0               remove found separators (default)
+                                        1               split before separator
+                                        2               split after separator
+
+                streams                 returns the number of input streams
+
+	STRING
+
+		head(n)			the first n characters
+		left(n)			the first n characters
+
+		tail(n)			the last n characters
+		right(n)		the last n characters
+
+                                        the above functions return an empty string for n<=0
+
+		len			the length of the input
+
+		len("chr")		the length of the input excluding the
+					characters in 'chr'
+
+		mid(x,y)		the substring string from position x to y
+
+                                        Allowed positions are
+                                        - [1..N] for mid()
+                                        - [0..N-1] for mid0()
+
+					A position below that range is relative to the end of the string,
+                                        i.e. mid(-2,0) and mid0(-3,-1) are equiv to tail(3)
+
+                crop("str")             removes characters of 'str' from
+                                        both ends of the input
+
+		remove("str");		removes all characters of 'str'
+					e.g. remove(" ") removes all blanks
+
+		keep("str");		the opposite of remove:
+					remove all chars that are not a member
+					of 'str'
+
+		srt("orig=dest",...)	replace command, invokes SRT
+                                        (see LINK{srt.hlp})
+
+                translate("old","new"[,"other"])
+
+                        translates all characters from input that occur in the
+                        first argument ("old") by the corresponding character of the
+                        second argument ("new").
+
+                        An optional third argument (one character only) means:
+                        replace all other characters with the third argument.
+
+                        Example:
+
+                                Input:                        "--AabBCcxXy--"
+                                translate("abc-","xyz-")      "--AxyBCzxXy--"
+                                translate("abc-","xyz-",".")  "--.xy..z...--"
+
+                        This can be used to replace illegal characters from sequence date
+                        (see predefined expressions in 'Modify fields of listed species').
+
+
+		tab(n)			append n-len(input) spaces
+
+		pretab(n)               prepend n-len(input) spaces
+
+                upper                   converts string to upper case
+                lower                   converts string to lower case
+                caps                    capitalizes string
+
+		format(options)
+
+                    takes a long string and breaks it into several lines
+
+			option       (default)     description
+                        ==========================================================
+			width=#      (50)          line width
+			firsttab=#   (10)          first line left indent
+			tab=#        (10)          left indent (not first line)
+			"nl=chrs"    (" ")         list of characters that specify
+                                                   a possibly point of a line break;
+                                                   the line break characters get removed!
+                        "forcenl=chrs" ("\n")      Force a newline at these characters.
+
+                    (see also format_sequence below)
+
+		extract_words("chars",val)
+
+                    Search for all words (separated by ',' ';' ':' ' ' or 'tab') that
+                    contain more characters of type chars than val, sort them
+                    alphabetically and write them separated by ' ' to the output
+
+        ESCAPING AND QUOTING
+
+                 escape         escapes all occurrances of '\' and '"' by preceeding a '\'
+                 quote          quotes the input in '"'
+
+                 unescape       inverse of escape
+                 unquote        removes quotes (if present). otherwise return input
+
+
+	STRING COMPARISON
+
+               compare(a,b)             return -1 if a<b, 0 if a=b, 1 if a>b
+               equals(a,b)              return 1 if a=b, 0 otherwise
+               contains(a,b)            if a contains b, this returns the position of
+                                        b inside a (1..N) and 0 otherwise.
+               partof(a,b)              if a is part of b, this returns the position of
+                                        a inside b (1..N) and 0 otherwise.
+
+               The above functions are binary operators (see below).
+               For each of them a case-insensitive alternative exists (icompare, iequals, ...).
+
+	CALCULATOR
+
+		plus			add arguments
+		minus			subtract arguments
+		mult			multiply arguments
+		div			divide arguments
+		per_cent                divide arguments * 100 (rounded)
+		rest                    divide arguments, take rest
+
+                The above functions work as binary operators (see below).
+
+                To avoid 'division by zero'-errors, the operators 'div', 'per_cent' and 'rest'
+                return 0 if the second argument is zero.
+
+                Calculation is performed with integer numbers.
+
+        BINARY OPERATORS
+
+               Several operators work as so called 'binary operators'.
+               These operators may be used in various ways, which are
+               shown using the operator 'plus':
+
+                     ACI                OUTPUT                  STREAMS
+                     plus(a,b)          a+b                     input:0 output:1
+                     a;b|plus           a+b                     input:2 output:1
+                     a;b;c;d|plus       a+b;c+d                 input:4 output:2
+                     a;b;c|operator(x)  a+x;b+x;c+x             input:3 output:3
+
+               That means, if the binary operator
+
+                    - has no arguments, it expects an even number of input streams. The operator is
+                      applied to the first 2 streams, then to the second 2 stream and so on.
+                      The number of output streams is half the number of input streams.
+                    - has 1 argument, it accepts one to many input streams. The operator
+                      is applied to each input stream together with the argument.
+                      For each input stream one output stream is generated.
+                    - has 2 arguments, it is applied to these. The arguments are interpreted as
+                      ACI commands and are applied for each input stream. The results of
+                      the commands are passed as arguments to the binary operator. For each input
+                      stream one output stream is generated.
+
+        CONDITIONAL
+
+                select(a,b,c,...)       each input stream is converted into a number
+                                        (non-numeric text converts to zero). That number is
+                                        used to select one of the given arguments:
+                                             0 selects 'a',
+                                             1 selects 'b',
+                                             2 selects 'c' and so on.
+                                        The selected argument is interpreted as ACI command
+                                        and is applied to an empty input stream.
+
+        DEBUGGING
+
+                trace(onoff)            toggle tracing of ACI actions to standard output.
+                                        Start arb from a terminal to see the output.
+                                        Parameter: 0 or 1 (switch off or on)
+
+                                        All streams are copied (like 'dd').
+
+	DATABASE AND SEQUENCE
+
+		readdb(field_name)	the contents of the field 'field_name'
+
+		sequence		the sequence in the current alignment.
+
+                                        Note: older ARB versions returned 'no sequence'
+                                        if the current alignment contained no sequence.
+                                        Now it returns an empty string.
+
+					For genes it returns only the corresponding part
+					of the sequence. If the field complement = 1 then the
+					result is the reverse-complement.
+
+	 	sequence_type 		the sequence type of the selected alignment ('rna','dna',..)
+		ali_name		the name of the selected alignment (e.g. 'ali_16s')
+
+                Note: The commands above only work at the beginning of the ACI expression.
+
+		checksum(options)	calculates a CRC checksum
+                                        options:
+                                        "exclude=chrs"    remove 'chrs' before calculation
+                                        "toupper"         make everything uppercase first
+
+		gcgchecksum		a gcg compatible checksum
+
+		format_sequence(options)
+
+                        takes a long string ( sequence ) and breaks it into several lines
+
+			option       (default)  description
+                        =============================================================
+			width=#      (50)       sequence line width
+			firsttab=#   (10)       first line left indent
+			tab=#        (10)       left indent (not first line)
+			numleft      (NO)       numbers on the left side
+			numright=#   (NO)       numbers on the right side (#=width)
+			gap=#        (10)       insert a gap every # seq. characters.
+
+                    (see also 'format' above)
+
+		extract_sequence("chars",rel_len)
+
+                        like extract_words, but do not sort words, but rel_len is the minimum
+                        percentage of characters of a word that mach a character in 'chars'
+                        before word is taken. All words will be separated by white space.
+
+                taxonomy([treename,] depth)
+
+                        Returns the taxonomy of the current species or group as defined by a tree.
+
+                        If 'treename' is specified, its used as tree, otherwise the 'default tree'
+                        is used (which in most cases is the tree displayed in the ARB_NT main window).
+
+                        'depth' specifies how many "levels" of the taxonomy are used.
+
+        FILTERING
+
+                There are several functions to filter sequential data:
+
+                      - filter
+                      - diff
+                      - gc
+
+                All these functions use the following COMMON OPTIONS to define
+                what is used as filter sequence:
+
+                    - species=name
+
+                      Use species 'name' as filter.
+
+                    - SAI=name
+
+                      Use SAI 'name' as filter.
+
+                    - first=1
+
+                      Use 1st input stream as filter for all other input streams.
+
+                    - pairwise=1
+
+                      Use 1st input stream as filter for 2nd stream,
+                      3rd stream as filter for 4th stream, and so on.
+
+                    - align=ali_name
+
+                      Use alignment 'ali_name' instead of current default
+                      alignment (only meaningful together with 'species' or 'SAI').
+
+                    Note: Only one of the parameters 'species', 'SAI', 'first' or 'pairwise' may be used.
+
+                diff(options)
+
+                        Calculates the difference between the filter (see common options above) and the input stream(s) and
+                        write the result to output stream(s).
+
+                        Additional options:
+
+                        - equal=x
+
+                          Character written to output if filter and stream are equal at
+                          a position (defaults to '.'). To copy the stream contents for
+                          equal columns, specify 'equal=' (directly followed by ',' or ')')
+
+                        - differ=y
+
+                          Character written to output if filter and stream don't match at one column position.
+                          Default is to copy the character from the stream.
+
+		filter(options)
+
+                        Filters only specified columns out of the input stream(s). You need to
+                        specify either
+
+                        - exclude=xyz
+
+                          to use all columns, where the filter (see common options above) has none
+                          of the characters 'xyz'
+
+                        or
+
+                        - include=xyz
+
+                          to use only columns, where the filter has one of the characters 'xyz'
+
+                        All used columns are concatenated and written to the output stream(s).
+
+
+                change(options)
+
+                        Randomly modifies the content of columns selected
+                        by the filter (see common options above).
+                        Only columns containing letters will be modified.
+
+                        The options 'include=xyz' and 'exclude=xyz' work like
+                        with 'filter()', but here they select the columns to modify - all other
+                        columns get copied unmodified.
+
+                        How the selected columns are modified, is specified by the following
+                        parameters:
+
+                                - change=percent
+
+                                  percentage of changed columns (default: silently change nothing, to make
+                                  it more difficult for you to ignore this helpfile)
+
+                                - to=xy
+
+                                  randomly change to one of the characters 'xy'.
+
+                                  Hints:
+
+                                        - Use 'xyy' to produce 33% 'x' and 66% 'y' 
+                                        - Use 'xxxxxxxxxy' to produce 90% 'x' and 10% 'y'
+                                        - Use 'x' to replace all matching columns by 'x'
+
+                        I think the intention for this (long undocumented) command is to easily generate
+                        artificial sequences with different GC-content, in order to test treeing-software.
+
+	SPECIALS
+
+		exec(command[,param1,param2,...])
+
+                    Execute external (unix) command.
+
+                    Given params will be single-quoted and passed to the command.
+
+                    All input streams will be concatenated and piped into the command.
+
+                    When the command itself is a pipe, put it in parenthesis (e.g. "(sort|uniq)").
+                    Note: This won't work together with params.
+
+                    The result is the output of the command.
+
+                    WARNING!!!
+
+                        You better not use this command for NDS,
+                        because any slow command will disable all editing -> You never
+                        can remove this command from the NDS. Even arb_panic will not
+                        easily help you.
+
+		command(action)
+
+                        applies 'action' to all input streams using
+
+                                 - ACI,
+                                 - SRT (if starts with ':') (see LINK{srt.hlp})
+                                 - or as REG (if starts with '/') (see LINK{reg.hlp}).
+
+                        If you nest calls (i.e. if 'action' contains further calls to 'command') you have to apply
+                        escaping multiple times (e.g. inside an export filter - which is in fact an
+                        SRT expression - you'll have to use double escapes).
+
+                eval(exprEvalToAction)
+
+                        the 'exprEvalToAction' is evaluated (using an empty string as input)
+                        and the result is interpreted as action and gets applied to all
+                        input streams (as in 'command' above).
+
+                        Example: Said you have two numeric positions stored in database fields
+                                 'pos1' and 'pos2' for each species. Then the following command
+                                 extracts the sequence data from pos1 to pos2:
+
+                                 'sequence|eval(" \"mid(\";readdb(pos1);\";\";readdb(pos2);\")\" ")'
+
+                        How the example works:
+
+                            The argument is the escaped version of the
+                            command '"mid(" ; readdb(pos1) ; ";" ; readdb(pos2) ; ")"'.
+
+                            If pos1 contains '10' and pos2 contains '20' that command will
+                            evaluate to 'mid(10;20)'.
+
+                            For these positions the executed ACI behaves like 'sequence|mid(10;20)'.
+
+                define(name,escapedCommand)
+
+                        defines a ACI-macro 'name'. 'escapedCommand' contains an escaped
+                        ACI command sequence. This command sequence can be executed with
+                        do(name).
+
+                do(name)
+
+                        applies a previously defined ACI-macro to all input streams (see 'define').
+
+                        'define(a,action)' followed by 'do(a)' works similar to 'command(action)'.
+
+                        See embl.eft for an example using define and 'do'
+
+                origin_organism(action)
+                origin_gene(action)
+
+                        like command() but readdb() etc. reads all data from the
+                        origin organism/gene of a gene-species (not from the gene-species itself).
+
+                        This function applies only to gene-species!
+
+SECTION         Future features
+
+		statistic
+
+                        creates a character statistic of the sequence
+                        (not implemented yet)
+
+EXAMPLES	sequence|format_sequence(firsttab=0;tab=10)|"SEQUENCE_";dd
+
+				fetches the default sequence, formats it,
+				and prepends 'SEQUENCE_'.
+
+		sequence|remove(".-")|format_sequence
+
+				get the default sequence, remove all '.-' and
+				format it
+
+		sequence|remove(".-")|len
+
+				the number of non '.-' symbols (sequence length )
+
+                "[";taxonomy(tree_other,3);" -> ";taxonomy(3);"]"
+
+                                shows for each species how their taxonomy
+                                changed between "tree_other" and current tree
+
+                equals(readdb(tmp),readdb(acc))|select(echo("tmp and acc differ"),)
+
+                                returns 'tmp and acc differ' if the content of
+                                the database fields 'tmp' and 'acc' differs. empty result
+                                otherwise.
+
+                readdb(full_name)|icontains(bacillus)|compare(0)|select(echo(..),readdb(full_name))
+
+                                returns the content of the 'full_name' database entry if it contains
+                                the substring 'bacillus'. Otherwise returns '..'
+
+
+BUGS            The output of taxonomy() is not always instantly refreshed.

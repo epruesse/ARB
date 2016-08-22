@@ -1,0 +1,7 @@
+
+.help files in this directory are automatically linked
+into GDE menus if mentioned there
+
+They don't get a disclaimer-header!
+(see ../HELP_PLAIN)
+

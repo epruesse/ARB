@@ -1,0 +1,8 @@
+# libraries needed to link against PROBE_DESIGN/PROBE_DESIGN.a
+
+$(XMLLIBS)
+SERVERCNTRL/SERVERCNTRL.a
+SL/TREEDISP/TREEDISP.a
+
+
+

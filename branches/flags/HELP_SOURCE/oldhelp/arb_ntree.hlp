@@ -1,0 +1,124 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP      arb.hlp
+UP      glossary.hlp
+UP      arb.pdf
+UP      save.hlp
+UP      FAQS.hlp
+UP      manual.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+SUB     trees.hlp
+SUB     species.hlp
+SUB     genes.hlp
+SUB     extended.hlp
+SUB     alignment.hlp
+SUB     props_nds.hlp
+SUB     mode.hlp
+SUB     nt_keys.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+
+TITLE           ARB_NT Main Window
+
+DESCRIPTION     'ARB_NT' is the main window for the current ARB database and
+                provides access to all ARB tools for analyzing and modifying
+                this database via menus or buttons.
+
+                The tree shown within the tree display area can be used to walk
+                through the database, to structure it according to phylogeny,
+                and to display any information stored within the database at its
+                nodes.
+
+        Clicking on the prompts in the horizontal menu bar in the upper part of
+        the window displays the corresponding submenus. The submenus are
+        also available using keyboard shortcuts by pressing the meta and
+        a letter key indicated in the main menu bar by underlining.
+
+                File:           Save the database, export and import data.
+
+                Species:        Display, create, rename, delete, convert
+                                'species' (see LINK{glossary.hlp}) associated
+                                'field' (see LINK{glossary.hlp}) entries;
+                                Database searching;
+                                Automated renaming of 'species'
+                                Mark and unmark (see LINK{glossary.hlp})
+
+                Sequence:       Create, copy, delete, rename, check, modify
+                                'alignments' (see LINK{glossary.hlp});
+                                Translate sequences, realign DNA according to
+                                translated amino acid sequences;
+                                Edit sequences and 'SAI' (see LINK{glossary.hlp}).
+
+                SAI:            Copy, delete, rename, convert Sequence
+                                Associated Information;
+                                Calculate consensus and positional variability
+
+                Probes:         Probe and Primer design and matching
+                                Handle 'PT_SERVER' (see LINK{glossary.hlp});
+
+                Tree:           Copy, delete, import, export, print trees;
+                                Modify tree display;
+                                Calculate similarity/distance matrices,
+                                profiles, filters;
+                                Reconstruct phylogenetic trees.
+
+                Properties:     Customize display of windows, trees and data.
+                                To save the settings choose the 'Save Defaults'
+                                item from the 'File' menu.
+
+                ETC:            A collection of different functions.
+                                Use external programs via GDE.
+
+
+        The buttons of the area between the main menu bar and the tree display
+        area (from left to right) ('called top area'):
+
+                First large button:     Displays the name of the current
+                                        database and allows you [or "the user"] to save it.
+
+                Second large button:    Indicates the name of the current tree
+                                        and allows selection of the tree to be
+                                        displayed.
+
+                Third large button:     Indicates the name of the current
+                                        'alignment' (subdatabase; see LINK{glossary.hlp})
+                                        and allows switching to another 'Alignment.
+
+                Fourth large button:    Displays the ID ('name') of the selected
+                                        'species' (see LINK{glossary.hlp}) and
+                                        provides access to the database search
+                                        tools.
+
+                Protection button:      Sets the protection level for the
+                                        current 'alignment'
+
+                HELP button:            Displays this help information.
+
+                First small button:     Displays radial tree
+
+                Second small button:    Displays dendrogram
+
+                Third small button:     Sequence editing
+
+                Jump button:            Displays partial tree within the tree
+                                        display area of the 'ARB_NT' window
+                                        containing the selected 'species' (see
+                                        LINK{glossary.hlp})
+
+        The buttons of the first column of the 'ARB_NT' window are used to
+        select different modes for editing and modifying the current tree shown
+        in the tree display area.
+
+
+NOTES           Online help is available for all menu items and buttons (see
+                LINK{help.hlp}).
+
+EXAMPLES        None
+
+WARNINGS        None
+
+BUGS            Report any bugs:
+
+                       send bug report to LINK{devel@arb-home.de}

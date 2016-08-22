@@ -1,0 +1,154 @@
+// =============================================================== //
+//                                                                 //
+//   File      : SEC_abspos.cxx                                    //
+//   Purpose   : Encapsulates helix position access                //
+//                                                                 //
+//   Coded by Ralf Westram (coder@reallysoft.de) in July 2007      //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
+#include "SEC_abspos.hxx"
+
+#include <arb_mem.h>
+
+#include <cstdlib>
+#include <cstring>
+
+using namespace std;
+
+void XString::set_length(size_t len) {
+    if (number_found && x_string_len<len) freenull(number_found);
+    x_string_len = len;
+    initialized  = false;
+}
+
+XString::XString(size_t ali_length)
+    : abspos(0)
+    , number_found(0)
+{
+    int len = ali_length+1; // need one more (cause 'x's are written behind position)
+    ARB_alloc(x_string, len+1);
+    memset(x_string, '.', len);
+    x_string[len] = 0;
+    set_length(len);
+    initialize();
+}
+
+XString::XString(const char *saved_x_string, size_t saved_length, size_t ali_length)
+    : abspos(0)
+    , number_found(0)
+{
+    size_t xlen = ali_length+1;
+
+    sec_assert(saved_length == strlen(saved_x_string));
+    sec_assert(saved_length == xlen || saved_length == xlen-1);
+
+    ARB_alloc(x_string, xlen+1);
+    memcpy(x_string, saved_x_string, saved_length+1);
+
+    if (saved_length == xlen-1) { // normal case
+        x_string[xlen-1] = '.'; // additional position is a gap (SAI 'HELIX' should have a gap at end)
+        x_string[xlen]   = 0;   // (see also comments in get_x_string())
+    }
+
+    set_length(xlen);
+    initialize();
+}
+
+void XString::initialize()
+{
+    // detect number of 'x's in x_string :
+    {
+        size_t len = 0;
+        int    x   = 0;
+
+        while (char c = x_string[len]) {
+            if (c == 'x') x++;
+            len++;
+        }
+
+        sec_assert(len == x_string_len);
+
+        if (abspos) { // re-initialization
+            if (x_count<x) freenull(abspos); // abspos array too small
+        }
+        x_count = x;
+    }
+
+    if (!abspos)       ARB_alloc(abspos, x_count);
+    if (!number_found) ARB_alloc(number_found, x_string_len);
+
+    // init abspos and number_found :
+    {
+        int pos = 0;
+        int x   = 0;
+
+        while (char c = x_string[pos]) {
+            number_found[pos] = x;
+            if (c == 'x') {
+                abspos[x] = pos;
+                x++;
+            }
+            pos++;
+        }
+    }
+
+    initialized = true;
+}
+
+XString::~XString()
+{
+    free(x_string);
+    free(abspos);
+    free(number_found);
+}
+
+size_t XString::getAbsPos(int x) const
+{
+    sec_assert(initialized);
+    sec_assert(x >= 0 && x<x_count);
+    size_t pos = abspos[x];
+    sec_assert(pos<x_string_len);
+    return pos;
+}
+
+int XString::getXleftOf(size_t pos) const
+{
+    sec_assert(initialized);
+    sec_assert(pos<x_string_len);
+    int x = number_found[pos];
+    sec_assert(x >= 0 && x<x_count);
+    return x;
+}
+
+const char *XString::get_x_string() const {
+    sec_assert(initialized);
+
+    static char   *copy       = 0;
+    static size_t  copy_alloc = 0;
+
+    size_t bufsize = x_string_len+1;
+
+    if (!copy || copy_alloc<bufsize) {
+        freeset(copy, ARB_alloc<char>(bufsize));
+        copy_alloc = bufsize;
+    }
+
+    memcpy(copy, x_string, x_string_len+1);
+
+    int add_pos = x_string_len-1;
+
+    if (copy[add_pos] == '.') { // can be removed - added again after reload
+        copy[add_pos] = 0; // hide internal additional position
+    }
+    else {
+        // happens only if there's a helix on last alignment position.
+        // In this case we save the additional position to DB, which will
+        // lead the user to reformat his alignment (which will add a gap
+        // at end of SAI HELIX)
+    }
+    return copy;
+}
+

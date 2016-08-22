@@ -1,0 +1,57 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP      arb.hlp
+UP      glossary.hlp
+UP      treeadm.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB    subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE           Load tree from file
+
+OCCURRENCE      ARB_NT/Tree Admin/Import
+
+DESCRIPTION     Allows to import a tree written in Newick format.
+
+                Press the 'IMPORT' button to display the 'TREE LOAD' window.
+
+                Select a tree file from the 'Directories and Files' subwindow or
+                        type the file name to the 'FILE NAME' subwindow.
+
+                Specify a tree name ('tree_*') by typing it to the 'tree_name:'
+                        subwindow.
+
+                Press the 'LOAD' button.
+
+NOTES           If a suffix is displayed in or typed to the 'SUFFIX' subwindow,
+                only the corresponding file names will be displayed. The suffix
+                is automatically appended to the file name typed to the 'FILE
+                NAME' subwindow.
+
+SECTION FORMAT
+
+                The format recognized by ARB is a slightly enhanced Newick format.
+
+                Newick format specification:
+
+                       LINK{http://evolution.genetics.washington.edu/phylip/newick_doc.html}
+
+                ARB enhancement:
+
+                    If the 'internal_node_label' contains 'number' it is interpreted as bootstrap value.
+
+                    If the 'internal_node_label' contains 'number:name' number is interpreted as bootstrap value,
+                    and name is interpreted as group name.
+
+                    If the 'internal_node_label' contains 'name' it is interpreted as group name.
+
+EXAMPLES        None
+
+WARNINGS        The IDs associated with terminal nodes have to be
+                consistent with those of the current database!
+
+                Never give your groups numeric names or the ARB Newick enhancement will not work for you!
+
+BUGS            No bugs known

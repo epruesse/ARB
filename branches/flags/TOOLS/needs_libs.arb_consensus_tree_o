@@ -1,0 +1,5 @@
+# libraries needed to link against TOOLS/arb_consensus_tree.o
+
+CONSENSUS_TREE/CONSENSUS_TREE.a
+SL/TREE_READ/TREE_READ.a
+SL/TREE_WRITE/TREE_WRITE.a
