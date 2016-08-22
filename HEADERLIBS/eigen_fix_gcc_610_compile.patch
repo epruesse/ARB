@@ -1,0 +1,21 @@
+
+--- eigen/Eigen/src/Sparse/AmbiVector.h	2011-05-28 10:16:08.000000000 +0200
++++ eigen/Eigen/src/Sparse/AmbiVector.h	2016-05-04 13:21:16.433663172 +0200
+@@ -44,7 +44,7 @@
+     void init(RealScalar estimatedDensity);
+     void init(int mode);
+ 
+-    void nonZeros() const;
++    int nonZeros() const;
+ 
+     /** Specifies a sub-vector to work on */
+     void setBounds(int start, int end) { m_start = start; m_end = end; }
+@@ -133,7 +133,7 @@
+ 
+ /** \returns the number of non zeros in the current sub vector */
+ template<typename Scalar>
+-void AmbiVector<Scalar>::nonZeros() const
++int AmbiVector<Scalar>::nonZeros() const
+ {
+   if (m_mode==IsSparse)
+     return m_llSize;
