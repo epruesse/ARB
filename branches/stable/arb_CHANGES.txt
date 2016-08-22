@@ -1,5 +1,10 @@
 ARB change log
 
+Fixes for arb-6.0.6 (22 Aug 2016):
+
+ - fixes for gcc 6.1.0
+ - tested gcc 4.9.4 + 5.4.0
+
 Fixes for arb-6.0.5 (4 May 2016):
 
  - fixes for ubuntu 16.04 build
