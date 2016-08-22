@@ -335,19 +335,17 @@ static GB_ERROR toggle_cursor_group_folding() {
             cursor_term->setCursorTo(&cursor, cursor.get_sequence_pos(), true, ED4_JUMP_KEEP_POSITION);
         }
         else {
-            ED4_base *group = cursor.owner_of_cursor->get_parent(ED4_L_GROUP);
+            ED4_base *group = cursor.owner_of_cursor->get_parent(LEV_GROUP);
             if (group) {
-                ED4_group_manager    *group_man    = group->to_group_manager();
-                ED4_bracket_terminal *bracket_term = group_man->get_defined_level(ED4_L_BRACKET)->to_bracket_terminal();
-
-                if (group_man->dynamic_prop & ED4_P_IS_FOLDED) {
-                    bracket_term->unfold();
+                ED4_group_manager *group_man = group->to_group_manager();
+                if (group_man->has_property(PROP_IS_FOLDED)) {
+                    group_man->unfold();
                 }
                 else {
                     ED4_species_manager *consensus_man = group_man->get_multi_species_manager()->get_consensus_manager();
                     if (consensus_man) consensus_man->setCursorTo(&cursor, cursor.get_sequence_pos(), true, ED4_JUMP_KEEP_POSITION);
 
-                    bracket_term->fold();
+                    group_man->fold();
                 }
             }
         }

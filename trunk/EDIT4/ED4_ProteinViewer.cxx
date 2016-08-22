@@ -44,8 +44,6 @@ enum {
     PV_ALL
 };
 
-#define BUFFERSIZE            1000
-
 // Global Variables
 extern GBDATA *GLOBAL_gb_main;
 
@@ -117,12 +115,12 @@ static bool PV_LookForNewTerminals(AW_root *root) {
 }
 
 static void PV_HideTerminal(ED4_orf_terminal *orfTerm) {
-    ED4_sequence_manager *seqManager = orfTerm->get_parent(ED4_L_SEQUENCE)->to_sequence_manager();
+    ED4_sequence_manager *seqManager = orfTerm->get_parent(LEV_SEQUENCE)->to_sequence_manager();
     seqManager->hide_children();
 }
 
 static void PV_UnHideTerminal(ED4_orf_terminal *orfTerm) {
-    ED4_sequence_manager *seqManager = orfTerm->get_parent(ED4_L_SEQUENCE)->to_sequence_manager();
+    ED4_sequence_manager *seqManager = orfTerm->get_parent(LEV_SEQUENCE)->to_sequence_manager();
     seqManager->unhide_children();
 }
 
@@ -311,7 +309,7 @@ static void PV_ManageTerminals(AW_root *root) {
              terminal = terminal->get_next_terminal())
         {
             if (terminal->is_sequence_terminal()) {
-                ED4_species_manager *speciesManager = terminal->get_parent(ED4_L_SPECIES)->to_species_manager();
+                ED4_species_manager *speciesManager = terminal->get_parent(LEV_SPECIES)->to_species_manager();
                 if (speciesManager->is_species_seq_terminal()) {
                     // we are in the sequence terminal section of a species
                     // walk through all the corresponding ORF terminals for the species and
@@ -733,36 +731,37 @@ void PV_SequenceUpdate_CB(GB_CB_TYPE gbtype) {
 
 static void PV_AddNewAAseqTerminals(ED4_sequence_terminal *seqTerminal, ED4_species_manager *speciesManager) {
     int  translationMode = 0;
-    char namebuffer[BUFFERSIZE];
-    for (int i = 0; i<PV_AA_Terminals4Species; i++)
+    char namebuffer[NAME_BUFFERSIZE];
+
+    for (int i = 0; i<PV_AA_Terminals4Species; i++) {
+        int count = 1;
+        int startPos = 0;
+
+        sprintf(namebuffer, "Sequence_Manager.%ld.%d", ED4_counter, count++);
+        ED4_multi_sequence_manager *multiSeqManager = speciesManager->search_spec_child_rek(LEV_MULTI_SEQUENCE)->to_multi_sequence_manager();
+        ED4_sequence_manager *new_SeqManager = new ED4_sequence_manager(namebuffer, 0, 0, multiSeqManager);
+        new_SeqManager->set_property(PROP_MOVABLE);
+        multiSeqManager->append_member(new_SeqManager);
+
+        if (i<FORWARD_STRANDS)                              sprintf(namebuffer, "F%d ProteinInfo_Term%ld.%d", i+1, ED4_counter, count++);
+        else if ((i-FORWARD_STRANDS)<COMPLEMENTARY_STRANDS) sprintf(namebuffer, "C%dProteinInfo_Term%ld.%d", (i-FORWARD_STRANDS)+1, ED4_counter, count++);
+        else                                                sprintf(namebuffer, "DBProteinInfo_Term%ld.%d", ED4_counter, count++);
+
         {
-            int count = 1;
-            int startPos = 0;
+            ED4_sequence_info_terminal *new_SeqInfoTerminal = new ED4_sequence_info_terminal(namebuffer, SEQUENCE_INFO_WIDTH, TERMINAL_HEIGHT, new_SeqManager);
+            new_SeqInfoTerminal->set_property((ED4_properties) (PROP_SELECTABLE | PROP_DRAGABLE | PROP_IS_HANDLE));
 
-            sprintf(namebuffer, "Sequence_Manager.%ld.%d", ED4_counter, count++);
-            ED4_multi_sequence_manager *multiSeqManager = speciesManager->search_spec_child_rek(ED4_L_MULTI_SEQUENCE)->to_multi_sequence_manager();
-            ED4_sequence_manager         *new_SeqManager = new ED4_sequence_manager(namebuffer, 0, 0, 0, 0, multiSeqManager);
-            new_SeqManager->set_property(ED4_P_MOVABLE);
-            multiSeqManager->children->append_member(new_SeqManager);
+            ED4_sequence_info_terminal *seqInfoTerminal = speciesManager->search_spec_child_rek(LEV_SEQUENCE_INFO)->to_sequence_info_terminal();
+            new_SeqInfoTerminal->set_both_links(seqInfoTerminal);
+            new_SeqManager->append_member(new_SeqInfoTerminal);
+        }
 
-            ED4_sequence_info_terminal *new_SeqInfoTerminal = 0;
-            if (i<FORWARD_STRANDS)
-                sprintf(namebuffer, "F%d ProteinInfo_Term%ld.%d", i+1, ED4_counter, count++);
-            else if ((i-FORWARD_STRANDS)<COMPLEMENTARY_STRANDS)
-                sprintf(namebuffer, "C%dProteinInfo_Term%ld.%d", (i-FORWARD_STRANDS)+1, ED4_counter, count++);
-            else
-                sprintf(namebuffer, "DBProteinInfo_Term%ld.%d", ED4_counter, count++);
-            new_SeqInfoTerminal = new ED4_sequence_info_terminal(namebuffer, 0, 0, SEQUENCEINFOSIZE, TERMINALHEIGHT, new_SeqManager);
-            new_SeqInfoTerminal->set_property((ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE));
-            ED4_sequence_info_terminal *seqInfoTerminal = speciesManager->search_spec_child_rek(ED4_L_SEQUENCE_INFO)->to_sequence_info_terminal();
-            new_SeqInfoTerminal->set_links(seqInfoTerminal, seqInfoTerminal);
-            new_SeqManager->children->append_member(new_SeqInfoTerminal);
-
+        {
             sprintf(namebuffer, "AA_Sequence_Term%ld.%d", ED4_counter, count++);
-            ED4_orf_terminal *AA_SeqTerminal = new ED4_orf_terminal(namebuffer, SEQUENCEINFOSIZE, 0, 0, TERMINALHEIGHT, new_SeqManager);
-            AA_SeqTerminal->set_links(seqTerminal, seqTerminal);
+            ED4_orf_terminal *AA_SeqTerminal = new ED4_orf_terminal(namebuffer, 0, TERMINAL_HEIGHT, new_SeqManager);
+            AA_SeqTerminal->set_both_links(seqTerminal);
 
-            char       *speciesName    = seqTerminal->species_name;
+            char *speciesName = seqTerminal->species_name;
             if (i<FORWARD_STRANDS) {
                 startPos = i;
                 translationMode = FORWARD_STRAND;
@@ -777,18 +776,19 @@ static void PV_AddNewAAseqTerminals(ED4_sequence_terminal *seqTerminal, ED4_spec
             }
             TranslateGeneToAminoAcidSequence(ED4_ROOT->aw_root, AA_SeqTerminal, speciesName, startPos, translationMode);
             AA_SeqTerminal->SET_aaSeqFlags(startPos+1, translationMode);
-            new_SeqManager->children->append_member(AA_SeqTerminal);
-
-            ED4_counter++;
-
-            new_SeqManager->request_resize();
+            new_SeqManager->append_member(AA_SeqTerminal);
         }
+
+        ED4_counter++;
+
+        new_SeqManager->request_resize();
+    }
 }
 
 void PV_AddCorrespondingOrfTerminals(ED4_species_name_terminal *spNameTerm) {
     if (gTerminalsCreated && spNameTerm) {
         ED4_sequence_terminal *seqTerminal    = spNameTerm->corresponding_sequence_terminal();
-        ED4_species_manager *speciesManager = spNameTerm->get_parent(ED4_L_SPECIES)->to_species_manager();
+        ED4_species_manager *speciesManager = spNameTerm->get_parent(LEV_SPECIES)->to_species_manager();
         PV_AddNewAAseqTerminals(seqTerminal, speciesManager);
         PV_RefreshWindow(ED4_ROOT->aw_root);
     }
@@ -814,7 +814,7 @@ void PV_AddOrfTerminalsToLoadedSpecies() {
                     if (terminal->is_species_name_terminal() || terminal->is_spacer_terminal())
                     {
                         ED4_sequence_terminal *seqTerminal    = spNameTerm->corresponding_sequence_terminal();
-                        ED4_species_manager *speciesManager = spNameTerm->get_parent(ED4_L_SPECIES)->to_species_manager();
+                        ED4_species_manager *speciesManager = spNameTerm->get_parent(LEV_SPECIES)->to_species_manager();
                         PV_AddNewAAseqTerminals(seqTerminal, speciesManager);
                     }
                 }
@@ -852,7 +852,7 @@ static void PV_CreateAllTerminals(AW_root *root) {
             ED4_sequence_terminal *seqTerminal = terminal->to_sequence_terminal();
             if (seqTerminal->species_name)
             {
-                ED4_species_manager *speciesManager = terminal->get_parent(ED4_L_SPECIES)->to_species_manager();
+                ED4_species_manager *speciesManager = terminal->get_parent(LEV_SPECIES)->to_species_manager();
                 if (speciesManager->is_species_seq_manager()) {
                     PV_AddNewAAseqTerminals(seqTerminal, speciesManager);
                 }
@@ -1092,4 +1092,3 @@ AW_window *ED4_CreateProteinViewer_window(AW_root *aw_root) {
     return (AW_window *)aws;
 }
 
-#undef BUFFERSIZE

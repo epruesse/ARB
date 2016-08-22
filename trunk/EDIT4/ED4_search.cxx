@@ -1398,7 +1398,7 @@ static void ED4_mark_matching_species(AW_window *, ED4_SearchPositionType patter
             ED4_SearchPosition *found = results.get_first_starting_after(pattern, INT_MIN, false);
 
             if (found) {
-                ED4_species_manager *species_man = seq_terminal->get_parent(ED4_L_SPECIES)->to_species_manager();
+                ED4_species_manager *species_man = seq_terminal->get_parent(LEV_SPECIES)->to_species_manager();
                 if (species_man->is_species_seq_manager()) {
                     GBDATA *gbd = species_man->get_species_pointer();
                     e4_assert(gbd);

@@ -131,7 +131,14 @@ inline DERIVED_PTR safe_downcast(BASE_PTR expr) {
 
 #else
 
-#define DOWNCAST(totype,expr)      ((totype)(expr))
+template<class DERIVED_PTR, class BASE_PTR>
+inline DERIVED_PTR static_downcast(BASE_PTR expr) {
+    // Note: using this template delays the instantiation of the static_cast (until DERIVED is defined)
+    // (opposed to directly using static_cast in define of DOWNCAST below)
+    return static_cast<DERIVED_PTR>(expr);
+}
+
+#define DOWNCAST(totype,expr)     static_downcast<totype,typeof(expr)>(expr)  // fixes undefined behavior 
 
 #endif // SAFE_DOWNCASTS
 
