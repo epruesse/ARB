@@ -597,6 +597,8 @@ ED4_returncode  ED4_manager::handle_move(ED4_move_info *mi) {
             get_parent(LEV_MULTI_SPECIES)->to_multi_species_manager()->invalidate_species_counters();
         }
 
+        ED4_request_relayout();
+
         return (ED4_R_OK);
     }
     else {

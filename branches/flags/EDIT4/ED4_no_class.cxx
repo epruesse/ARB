@@ -46,6 +46,43 @@
 
 using namespace std;
 
+struct group_folding {
+    int max_depth;    // maximum group level (root-group has level 0)
+    int max_visible;  // max visible group level (even if folded)
+    int max_unfolded; // max visible unfolded group level
+
+    group_folding() :
+        max_depth(0),
+        max_visible(0),
+        max_unfolded(0)
+    {}
+};
+
+static ARB_ERROR update_group_folding(ED4_base *base, group_folding *folding) {
+    if (base->is_group_manager()) {
+        int group_level = base->calc_group_depth()+1;
+        folding->max_depth = std::max(folding->max_depth, group_level);
+
+        bool is_folded = base->has_property(PROP_IS_FOLDED);
+        if (group_level>folding->max_visible || (group_level>folding->max_unfolded && !is_folded)) { // may change other maxima?
+            bool is_visible = !base->is_hidden();
+            if (is_visible) {
+                folding->max_visible = std::max(folding->max_visible, group_level);
+                if (!is_folded) {
+                    folding->max_unfolded = std::max(folding->max_unfolded, group_level);
+                }
+            }
+        }
+    }
+    return NULL;
+}
+
+static void calculate_group_folding(group_folding& folding) {
+    if (ED4_ROOT->main_manager) {
+        ED4_ROOT->main_manager->route_down_hierarchy(makeED4_route_cb(update_group_folding, &folding)).expect_no_error();
+    }
+}
+
 void ED4_calc_terminal_extentions() {
     AW_device *device = ED4_ROOT->first_window->get_device(); // any device
 
@@ -75,15 +112,24 @@ void ED4_calc_terminal_extentions() {
     TERMINAL_HEIGHT = (wanted_seq_term_height>wanted_seq_info_height) ? wanted_seq_term_height : wanted_seq_info_height;
 
     {
-        int maxchars;
-        int maxbrackets;
+        group_folding folding;
+        calculate_group_folding(folding);
 
-        ED4_get_NDS_sizes(&maxchars, &maxbrackets);
+        int maxbrackets = folding.max_unfolded;
+        int maxchars    = ED4_get_NDS_width();
+
+#if defined(DEBUG)
+        fprintf(stderr, "maxbrackets=%i\n", maxbrackets);
+#endif
+
         MAXNAME_WIDTH =
-            (maxchars+1)*info_char_width + // width defined in NDS window plus 1 char for marked-box
-            maxbrackets*BRACKET_WIDTH; // brackets defined in NDS window
+            (maxchars+1+1)*info_char_width + // width defined in NDS window (+ 1 char for marked-box; + 1 extra char to avoid truncation)
+            maxbrackets*BRACKET_WIDTH;       // brackets defined in NDS window
     }
-    MAXINFO_WIDTH = CHARACTEROFFSET + info_char_width*ED4_ROOT->aw_root->awar(ED4_AWAR_NDS_INFO_WIDTH)->read_int() + 1;
+    MAXINFO_WIDTH =
+        CHARACTEROFFSET +
+        info_char_width*ED4_ROOT->aw_root->awar(ED4_AWAR_NDS_INFO_WIDTH)->read_int() +
+        1; // + 1 extra char to avoid truncation
 
     INFO_TERM_TEXT_YOFFSET = info_font_limits.ascent - 1;
     SEQ_TERM_TEXT_YOFFSET  = seq_font_limits.ascent - 1;
@@ -1122,7 +1168,6 @@ static GB_ERROR ED4_load_new_config(char *name) {
     GBT_config cfg(GLOBAL_gb_main, name, error);
     if (cfg.exists()) {
         ED4_ROOT->main_manager->clear_whole_background();
-        ED4_calc_terminal_extentions();
 
         max_seq_terminal_length = 0;
 

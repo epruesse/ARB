@@ -877,13 +877,11 @@ void ED4_group_manager::unfold() {
         if (child->is_multi_species_manager()) {
             ED4_multi_species_manager *multi_species_manager = child->to_multi_species_manager();
             multi_species_manager->unhide_children();
-
-            ED4_spacer_terminal *spacer = multi_species_manager->get_defined_level(LEV_SPACER)->to_spacer_terminal();
-            spacer->resize_dynamic();
         }
     }
 
     clr_property(PROP_IS_FOLDED);
+    ED4_request_relayout();
 }
 
 void ED4_group_manager::fold() {
@@ -918,10 +916,7 @@ void ED4_group_manager::fold() {
     multi_species_manager->hide_children();
     set_property(PROP_IS_FOLDED);
 
-    ED4_spacer_terminal *spacer = multi_species_manager->get_defined_level(LEV_SPACER)->to_spacer_terminal();
-    if (spacer) {
-        spacer->resize_dynamic(); // Note: has to be done _after_ changing folded-prop
-    }
+    ED4_request_relayout();
 }
 
 void ED4_group_manager::toggle_folding() {

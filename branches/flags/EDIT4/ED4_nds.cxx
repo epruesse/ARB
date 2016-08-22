@@ -20,7 +20,7 @@
 #define NDS_COUNT 10
 
 static char *NDS_command = 0;
-static int NDS_width = 1;
+static int   NDS_width   = 1;
 
 char *ED4_get_NDS_text(ED4_species_manager *species_man) {
     GBDATA *gbd = species_man->get_species_pointer();
@@ -33,9 +33,8 @@ char *ED4_get_NDS_text(ED4_species_manager *species_man) {
     return NDS_mask_nonprintable_chars(result);
 }
 
-void ED4_get_NDS_sizes(int *width, int *brackets) {
-    *width = NDS_width;
-    *brackets = ED4_ROOT->aw_root->awar(ED4_AWAR_NDS_BRACKETS)->read_int();
+int ED4_get_NDS_width() {
+    return NDS_width;
 }
 
 static void NDS_changed(AW_root *root, bool doRefresh) {
@@ -58,7 +57,6 @@ void ED4_create_NDS_awars(AW_root *root)
 
     RootCallback ndsRefreshCb = makeRootCallback(NDS_changed, true);
     root->awar_int(ED4_AWAR_NDS_SELECT, 0)->add_callback(ndsRefreshCb);
-    root->awar_int(ED4_AWAR_NDS_BRACKETS, 6)->set_minmax(0, 99)->add_callback(ndsRefreshCb);
     root->awar_int(ED4_AWAR_NDS_INFO_WIDTH, 5)->set_minmax(0, 99)->add_callback(ndsRefreshCb);
     root->awar_string(ED4_AWAR_NDS_ECOLI_NAME, "Ecoli")->add_callback(ndsRefreshCb);
 
@@ -89,8 +87,8 @@ void ED4_create_NDS_awars(AW_root *root)
         int len;
         sprintf(buf, ED4_AWAR_NDS_WIDTH_TEMPLATE, i);
         switch (i) {
-            case 0: len = 9; break;
-            case 1: len = 27; break;
+            case 0:  len =  8; break;
+            case 1:  len = 26; break;
             default: len = 20; break;
         }
         root->awar_int(buf, len)->add_callback(ndsRefreshCb);
@@ -112,7 +110,7 @@ static void ed4_nds_select_change(AW_window *aww, int selected) {
 AW_window *ED4_create_nds_window(AW_root *root) {
     AW_window_simple *aws = new AW_window_simple;
 
-    aws->init(root, "NDS_PROPS", "NDS");
+    aws->init(root, "E4_NDS_PROPS", "NDS");
     aws->load_xfig("edit4/nds.fig");
 
     aws->callback(AW_POPDOWN);
@@ -122,10 +120,6 @@ AW_window *ED4_create_nds_window(AW_root *root) {
     aws->callback(makeHelpCallback("ed4_nds.hlp"));
     aws->at("help");
     aws->create_button("HELP", "HELP", "H");
-
-    aws->at("brackets");
-    aws->label("Used maximum group depth");
-    aws->create_input_field(ED4_AWAR_NDS_BRACKETS, 3);
 
     aws->at("infowidth");
     aws->label("Display width used for info-field");

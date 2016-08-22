@@ -574,8 +574,6 @@ ED4_returncode ED4_root::create_hierarchy(const char *area_string_middle, const 
     ED4_device_manager *device_manager = new ED4_device_manager("Device_Manager", 0, 0, root_group_man);
     root_group_man->append_member(device_manager);
 
-    ED4_calc_terminal_extentions();
-
     {
         int col_stat_term_height = 50; // @@@ Hoehe des ColumnStatistics Terminals ausrechnen
 
@@ -746,7 +744,7 @@ ED4_returncode ED4_root::create_hierarchy(const char *area_string_middle, const 
         }
     }
 
-    ED4_trigger_instant_refresh();
+    ED4_request_relayout();
     ED4_finish_and_show_notFoundMessage();
 
 #if defined(DEBUG) && 0
