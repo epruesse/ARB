@@ -99,8 +99,9 @@ ALLOWED_gcc_VERSIONS=\
         4.6.1 4.6.2 4.6.3 4.6.4 \
         4.7.1 4.7.2 4.7.3 \
   4.8.0 4.8.1 4.8.2 4.8.3 4.8.4 4.8.5 \
-  4.9.0 4.9.1 4.9.2 4.9.3 \
-  5.1.0 5.2.0 5.3.0 5.3.1 \
+  4.9.0 4.9.1 4.9.2 4.9.3 4.9.4 \
+  5.1.0 5.2.0 5.3.0 5.3.1 5.4.0 \
+  6.1.0 \
 
 
 # ----------------------
@@ -193,7 +194,7 @@ ifeq ($(DEBUG),0)
 	ifeq ($(USE_CLANG),1)
 		cflags := -O3# compiler flags (C and C++)
 	else
-		cflags := -O4# compiler flags (C and C++)
+		cflags := -O3# compiler flags (C and C++)
 		lflags += -O2# linker flags
 		clflags += -Wl,-O2# passthrough linker flags
 	endif
@@ -501,6 +502,14 @@ ifeq ($(DARWIN),1)
 	TIME:=gtime
 else
 	TIME:=/usr/bin/time
+endif
+
+#---------------------- SSE vectorizer
+
+ifeq ('$(COMPILER_VERSION)','6.1.0')
+# see http://bugs.arb-home.de/ticket/700
+	cflags += -fno-tree-loop-vectorize
+	DISABLE_VECTORIZE_CHECK:=1
 endif
 
 # -------------------------------------------------------------------------
