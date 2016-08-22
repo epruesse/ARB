@@ -7,9 +7,6 @@
 #ifndef PARSER_H
 #include "parser.h"
 #endif
-#ifndef ARB_STRING_H
-#include <arb_string.h>
-#endif
 
 struct Emblref {
     char *author;
@@ -18,16 +15,16 @@ struct Emblref {
     char *processing;
 
     Emblref()
-        : author(ARB_strdup("")),
-          title(ARB_strdup("")),
-          journal(ARB_strdup("")),
-          processing(ARB_strdup(""))
+        : author(strdup("")),
+          title(strdup("")),
+          journal(strdup("")),
+          processing(strdup(""))
     {}
     Emblref(const Emblref& other)
-        : author(ARB_strdup(other.author)),
-          title(ARB_strdup(other.title)),
-          journal(ARB_strdup(other.journal)),
-          processing(ARB_strdup(other.processing))
+        : author(strdup(other.author)),
+          title(strdup(other.title)),
+          journal(strdup(other.journal)),
+          processing(strdup(other.processing))
     {}
     ~Emblref() {
         free(processing);
@@ -42,7 +39,7 @@ class Embl : public InputFormat, public RefContainer<Emblref> { // derived from 
     char *create_id() const OVERRIDE {
         char buf[TOKENSIZE];
         embl_key_word(ID, 0, buf);
-        return ARB_strdup(buf);
+        return strdup(buf);
     }
 
 public:
@@ -67,7 +64,7 @@ public:
         keywords    = no_content();
         dr          = no_content();
     }
-    ~Embl() OVERRIDE {
+    virtual ~Embl() OVERRIDE {
         freenull(ID);
         freenull(dateu);
         freenull(datec);

@@ -26,7 +26,7 @@ struct GBS_strstruct;
 
 typedef int ED4_COORDINATE;
 
-enum ED4_EDITMODE {
+enum ED4_EDITMODI {
     AD_ALIGN,   // add & remove of . possible (default)
     AD_NOWRITE, // no edits allowed
     AD_NOWRITE_IF_COMPRESSED,
@@ -55,20 +55,15 @@ extern size_t         not_found_counter;            // nr of species which haven
 extern GBS_strstruct *not_found_message;            // error message containing (some) missing/unloadable species
 
 extern long         max_seq_terminal_length;        // global maximum of sequence terminal length
-extern ED4_EDITMODE awar_edit_mode;
+extern ED4_EDITMODI awar_edit_mode;
 extern long         awar_edit_rightward;            // 0 = leftward, 1 = rightward
 extern bool         move_cursor;                    // only needed for editing in consensus
 extern bool         DRAW;
 
 // globally used defines and flags
 
-#define INFINITE -1
-
-#if defined(ARB_MOTIF)
-#define SLIDER_OFFSET 5
-#else // ARB_GTK
-#define SLIDER_OFFSET 0
-#endif
+#define INFINITE    -1
+#define SLIDER_OFFSET   5
 
 // these are recommended for accessing ED4_extension:
 #define X_POS       0
@@ -88,7 +83,8 @@ extern bool         DRAW;
 
 #define MAX_POSSIBLE_SEQ_LENGTH     100000000
 
-#define MAXWINDOWS 5
+#define MAXCHARTABLE 256                            // Maximum of Consensustable
+#define MAXWINDOWS   5
 
 #define AWAR_EDIT_MODE                  "tmp/edit4/edit_mode"
 #define AWAR_INSERT_MODE                "tmp/edit4/insert_mode"
@@ -110,6 +106,7 @@ extern bool         DRAW;
 #define AWAR_EDIT_TERMINAL_SPACING "edit4/terminal_add_spacing"
 
 #define CHARACTEROFFSET 5       // spacer-width left of text-terminal
+#define CONSENSUS       "Consensusfunktion"
 
 typedef long ED4_index;
 
@@ -161,6 +158,7 @@ enum ED4_returncode {
     ED4_R_IMPOSSIBLE = 2,
     ED4_R_ERROR      = 4,
     ED4_R_BREAK      = 8,
+    ED4_R_DESASTER   = 16,
     ED4_R_ALL        = 0x7fffffff
 };
 
@@ -299,7 +297,7 @@ struct ED4_work_info
 
     bool rightward; // contains direction of editing (0 = leftward, 1 = rightward)
 
-    ED4_EDITMODE mode;
+    ED4_EDITMODI mode;
 
     bool    is_sequence;        // ==1 -> special handling for sequences
     bool    cannot_handle;      // if TRUE then cannot edit

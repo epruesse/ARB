@@ -21,9 +21,9 @@ CPP_OBJECTS = island_hopping.o i-hopper.o align.o mem.o trnsprob.o
 $(MAIN): $(CPP_OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
 .c.o:
-	$(A_CC) $(LOCAL_CFLAGS) -DARB -c $<  $(CC_INCLUDES) $(POST_COMPILE) $<
+	$(A_CC) $(LOCAL_CFLAGS) -DARB -c $<  $(CC_INCLUDES) $(POST_COMPILE)
 .cxx.o:
-	$(A_CXX) $(LOCAL_CFLAGS) $(cxxflags) -DARB -c $<  $(CXX_INCLUDES) $(POST_COMPILE) $<
+	$(A_CXX) $(LOCAL_CFLAGS) $(cxxflags) -DARB -c $<  $(CXX_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(CPP_OBJECTS) *.a

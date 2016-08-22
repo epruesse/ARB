@@ -53,7 +53,6 @@ struct ConstStrArray;
 
 #define GB_USERFLAG_ANY       127  // maximum for gb_flag_types2::usr_ref
 #define GB_USERFLAG_QUERY     1    // bit used for search&query (used on species, genes, experiments)
-#define GB_USERFLAG_WASMARKED 2    // bit used to temp. store marks
 #define GB_USERFLAG_GHOSTNODE 1    // bit used by gbt_write_tree (only used on tree-nodes; so it does not clash with GB_USERFLAG_QUERY)
 
 // --------------
@@ -174,9 +173,6 @@ struct GB_SizeInfo {
 #include <ad_prot.h>
 
 // to avoid arb-wide changes atm include some headers from CORE lib
-#ifndef ARB_MEM_H
-#include <arb_mem.h>
-#endif
 #ifndef ARB_MSG_H
 #include <arb_msg.h>
 #endif

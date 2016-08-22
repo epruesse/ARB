@@ -19,9 +19,7 @@
 #include <arbdb_base.h>
 #endif
 
-// ----------------------
-//      color groups
-//
+
 // color groups define special colors used to colorize
 // groups of genes or species (or any other items)
 //
@@ -40,37 +38,24 @@
 //          BLA_GC_FIRST_COLOR_GROUP,
 //          BLA_GC_MAX = BLA_GC_FIRST_COLOR_GROUP + AW_COLOR_GROUPS
 //
-//  - use
-//       GBT_set_color_group() to set and
-//       GBT_get_color_group() to read
-//    the color of an item.
-//
-//  - use AW_color_groups_active() to detect whether color groups shall be shown at all.
+//  - use AW_set_color_group to set and AW_find_color_group to read the
+//    color of a species/gene/experiment/organism/etc.
+
+#define AWAR_COLOR_GROUPS_PREFIX "color_groups"
+#define AWAR_COLOR_GROUPS_USE    AWAR_COLOR_GROUPS_PREFIX "/use" // int : whether to use the colors in display or not
 
 #define AW_COLOR_GROUP_PREFIX     "color_group_"
 #define AW_COLOR_GROUP_PREFIX_LEN 12
 #define AW_COLOR_GROUP_NAME_LEN   (AW_COLOR_GROUP_PREFIX_LEN+2)
-#define AW_COLOR_GROUPS           12
 
-void  AW_init_color_group_defaults(const char *for_program);
-bool  AW_color_groups_active();
-const char *AW_get_color_groups_active_awarname();
-char *AW_get_color_group_name(AW_root *awr, int color_group);
+#define AW_COLOR_GROUP_ENTRY "ARB_color"
+#define AW_COLOR_GROUPS      12
 
-// ----------------------
-//      color ranges
-//
-// color ranges provide blended colors (e.g. red .. green or black .. white)
+GB_ERROR  AW_set_color_group(GBDATA *gbd, long color_group);
+long      AW_find_color_group(GBDATA *gbd, bool ignore_usage_flag = false);
+char     *AW_get_color_group_name(AW_root *awr, int color_group);
 
-#define AW_RANGE_COLORS 4096 // amount of gcs used for color-ranges (4096 = 64*64 = 16*16*16)
-// #define AW_RANGE_COLORS 16384
-// #define AW_RANGE_COLORS 65536
-// #define AW_RANGE_COLORS 262144
-
-// #define AW_RANGE_COLORS 1048576 // test 1 million gcs (uses several Gb of memory; in arb_ntree and XOrg)
-
-#define AW_PLANAR_COLORS  64 // color-steps per channel in planar color-range
-#define AW_SPATIAL_COLORS 16 // color-steps per channel in spatial color-range
+void AW_init_color_group_defaults(const char *for_program);
 
 #else
 #error aw_color_groups.hxx included twice

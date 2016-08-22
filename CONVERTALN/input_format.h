@@ -22,10 +22,10 @@ class InputFormat : public OutputFormat, virtual Noncopyable {
     virtual char *create_id() const = 0;
 public:
     InputFormat() : id(NULL) {}
-    ~InputFormat() OVERRIDE { freenull(id); }
+    virtual ~InputFormat() OVERRIDE { freenull(id); }
 
     virtual void reinit()                  = 0;
-    Format format() const OVERRIDE = 0;
+    virtual Format format() const OVERRIDE = 0;
 
     const char *get_id() const {
         if (!id) id = create_id();

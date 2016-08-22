@@ -10,10 +10,10 @@ $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .cxx.o:
-	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE) $<
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 .c.o:
-	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE) $<
+	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(OBJECTS) *.a
@@ -39,7 +39,6 @@ RegExpr.o: RegExpr.hxx
 RegExpr.o: $(ARBHOME)/INCLUDE/arb_assert.h
 RegExpr.o: $(ARBHOME)/INCLUDE/arb_core.h
 RegExpr.o: $(ARBHOME)/INCLUDE/arb_match.h
-RegExpr.o: $(ARBHOME)/INCLUDE/arb_mem.h
 RegExpr.o: $(ARBHOME)/INCLUDE/arbtools.h
 RegExpr.o: $(ARBHOME)/INCLUDE/attributes.h
 RegExpr.o: $(ARBHOME)/INCLUDE/cxxforward.h

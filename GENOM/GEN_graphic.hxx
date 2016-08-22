@@ -47,8 +47,7 @@ enum GEN_DisplayStyle {
 // ---------------------
 //      GEN_graphic
 
-enum CbInstallMode { INSTALL_CBS, REMOVE_CBS, FORGET_CBS };
-typedef void (*GEN_graphic_cb_installer)(CbInstallMode install, AWT_canvas*, GEN_graphic*);
+typedef void (*GEN_graphic_cb_installer)(bool install, AWT_canvas*, GEN_graphic*);
 
 class GEN_graphic : public AWT_nonDB_graphic, virtual Noncopyable {
     AW_root                  *aw_root;
@@ -59,7 +58,7 @@ class GEN_graphic : public AWT_nonDB_graphic, virtual Noncopyable {
     GEN_DisplayStyle          style;
     bool                      want_zoom_reset; // true -> do zoom reset on next refresh
 
-    void delete_gen_root(AWT_canvas *scr, bool just_forget_callbacks);
+    void delete_gen_root(AWT_canvas *scr);
 
     void update_structure() {}
 
@@ -69,19 +68,20 @@ protected:
 
 public:
     GEN_graphic(AW_root *aw_root, GBDATA *gb_main, GEN_graphic_cb_installer callback_installer_, int window_nr_);
-    ~GEN_graphic() OVERRIDE;
+    virtual ~GEN_graphic() OVERRIDE;
 
     void reinit_gen_root(AWT_canvas *scr, bool force_reinit);
 
     void set_display_style(GEN_DisplayStyle type);
     GEN_DisplayStyle get_display_style() const { return style; }
 
-    AW_gc_manager *init_devices(AW_window *, AW_device *, AWT_canvas *scr) OVERRIDE;
+    AW_gc_manager init_devices(AW_window *, AW_device *, AWT_canvas *scr) OVERRIDE;
 
-    void show(AW_device *device) OVERRIDE;
+    virtual void show(AW_device *device) OVERRIDE;
+    virtual void info(AW_device *device, AW_pos x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct) OVERRIDE;
 
     void handle_command(AW_device *device, AWT_graphic_event& event) OVERRIDE;
-    int check_update(GBDATA *gbdummy) OVERRIDE;
+    virtual int check_update(GBDATA *gbdummy) OVERRIDE;
 
     AW_root *get_aw_root() const { return aw_root; }
     GBDATA *get_gb_main() const { return gb_main; }

@@ -260,10 +260,10 @@ enum SEC_BASE_TYPE {
 class SEC_base : public SEC_constrainted, public SEC_oriented, virtual Noncopyable { // loop or helix
     SEC_root *root;
 
-    SEC_base *get_parent() OVERRIDE = 0;
+    virtual SEC_base *get_parent() OVERRIDE = 0;
 public:
     SEC_base(SEC_root *Root) : root(Root) {}
-    ~SEC_base() OVERRIDE {}
+    virtual ~SEC_base() OVERRIDE {}
 
     virtual SEC_BASE_TYPE getType() const        = 0;
     virtual const Position& get_fixpoint() const = 0;
@@ -317,7 +317,7 @@ class SEC_helix : public SEC_base { // derived from a Noncopyable
 public:
 
     SEC_helix(SEC_root *root, SEC_helix_strand *to_root, SEC_helix_strand *from_root);
-    ~SEC_helix() OVERRIDE {}
+    virtual ~SEC_helix() OVERRIDE {}
 
     void calculate_helix_size();
     void calculate_helix_coordinates(); // assumes root-side loop has correct coordinates
@@ -389,7 +389,7 @@ class SEC_helix_strand : public SEC_base_part { // derived from a Noncopyable
 public:
 
     SEC_helix_strand();
-    ~SEC_helix_strand() OVERRIDE;
+    virtual ~SEC_helix_strand() OVERRIDE;
 
     GB_ERROR read(SEC_loop *loop_, std::istream & in, int version);
 
@@ -480,7 +480,7 @@ private:
 public:
 
     SEC_segment();
-    ~SEC_segment() OVERRIDE;
+    virtual ~SEC_segment() OVERRIDE;
 
     void save(std::ostream & out, int indent, const XString& x_string);
     GB_ERROR read(SEC_loop *loop_, std::istream & in, int version);
@@ -558,7 +558,7 @@ class SEC_loop : public SEC_base { // derived from a Noncopyable
 public:
 
     SEC_loop(SEC_root *root_);
-    ~SEC_loop() OVERRIDE;
+    virtual ~SEC_loop() OVERRIDE;
 
     void save(std::ostream & out, int indent, const XString& x_string);
     GB_ERROR read(SEC_helix_strand *rootside_strand, std::istream & in, int version, double loop_angle);
@@ -687,12 +687,6 @@ class SEC_root : virtual Noncopyable {
     double charRadius[SEC_GC_DATA_COUNT];  // radius and..
     short  bg_linewidth[SEC_GC_DATA_COUNT]; // ..linewidth for drawing background (index = gc)
     Vector center_char[SEC_GC_FONT_COUNT]; // correction vector to center the base character at its position (world coordinates)
-
-#if defined(ARB_MOTIF)
-    // see SEC_paint.cxx@LINE_THICKNESS
-    double skelThickWorld; // skeleton_thickness as world-size
-    double bondThickWorld; // bond_thickness as world-size
-#endif
 
     char *bg_color;       // only valid after paint (contains EDIT4 GCs), may be NULL
 
@@ -854,10 +848,6 @@ public:
 
     // draw a annotation next to a base (only works after paint())
     void paintPosAnnotation(AW_device *device, int gc, size_t absPos, const char *text, bool lineToBase, bool boxText);
-
-#if defined(ARB_MOTIF)
-    double get_bondThickWorld() const { return bondThickWorld; }
-#endif
 };
 
 

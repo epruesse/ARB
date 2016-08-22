@@ -31,6 +31,9 @@
 #include <cerrno>
 #include <map>
 
+static int result_counter      = 0;
+static int ignore_more_results = false;
+
 const char *ED4_SearchPositionTypeId[SEARCH_PATTERNS+1] =
 {
     "User1", "User2",
@@ -196,7 +199,16 @@ SearchTreeNode::~SearchTreeNode()
 }
 
 
-SearchTreeNode *SearchTreeNode::insert_unified_pattern(GB_CSTR pattern, GB_CSTR pattern_comment) {
+SearchTreeNode *SearchTreeNode::insert_unified_pattern(GB_CSTR pattern, GB_CSTR pattern_comment)
+{
+    if (!this) {
+        if (pattern[0]) {
+            return new SearchTreeNode(pattern, pattern_comment);
+        }
+
+        return &FOUND;
+    }
+
     if (this==&FOUND) {
         if (pattern[0]) {
             SearchTreeNode *neu = new SearchTreeNode(pattern, pattern_comment);
@@ -297,6 +309,8 @@ class SearchTree : virtual Noncopyable {
     char *unify_pattern(const char *pattern, int *new_len);
     char *unify_sequence(const char *sequence, int len, int *new_len, int **uni2real);
 
+    SearchTree(const SearchTree &); // forbidden
+
 public:
 
     SearchTree(const SearchSettings *s);
@@ -340,7 +354,7 @@ static void splitTokComment(char **tok, char **commentP)
 static char *appendComment(const char *s1, int l1, const char *s2) {
     if (s1) {
         int l2 = strlen(s2);
-        char *s = ARB_alloc<char>(l1+1+l2+1);
+        char *s = (char*)malloc(l1+1+l2+1);
 
         sprintf(s, "%s %s", s1, s2);
         return s;
@@ -377,7 +391,7 @@ SearchTree::SearchTree(const SearchSettings *s)
 
 
     {
-        char       *pattern           = ARB_strdup(sett->get_pattern());
+        char       *pattern           = strdup(sett->get_pattern());
         const char *trenner           = "\n,";
         char       *tok               = strtok(pattern, trenner);
         char       *comment;
@@ -497,8 +511,14 @@ char SearchTree::unify_char(char c, int case_sensitive, int T_equal_U)
     return c;
 }
 
-char *SearchTree::unify_str(const char *data, int len, ED4_SEARCH_GAPS gaps, int *new_len, int **uni2real) {
-    char *p       = ARB_alloc<char>(len+1);
+char *SearchTree::unify_str(const char *data, int len, ED4_SEARCH_GAPS gaps, int *new_len, int **uni2real)
+{
+    char *p = (char*)malloc(len+1);
+
+    if (!p) {
+        return 0;
+    }
+
     char *pp      = p;
     int   nlen    = 0;
     int   realPos = 0;
@@ -567,27 +587,33 @@ void SearchTree::findMatches(const char *seq, int len, reportMatch report)
 {
     if (root) {
         int new_len;
-        int *uni2real = ARB_alloc<int>(len);
-        char *uni_seq = unify_sequence(seq, len, &new_len, &uni2real);
+        int *uni2real = (int*)malloc(len*sizeof(int));
+        char *uni_seq = uni2real ? unify_sequence(seq, len, &new_len, &uni2real) : NULL;
 
-        int off;
-        char *useq = uni_seq;
-        int mismatch_list[MAX_MISMATCHES];
+        if (uni_seq) {
+            int off;
+            char *useq = uni_seq;
+            int mismatch_list[MAX_MISMATCHES];
 
-        for (off=0; off<MAX_MISMATCHES; off++) {
-            mismatch_list[off] = -1;
+            for (off=0; off<MAX_MISMATCHES; off++) {
+                mismatch_list[off] = -1;
+            }
+
+            SearchTreeNode::set_report(report, uni2real);
+            SearchTreeNode::set_mismatches(sett->get_min_mismatches(), sett->get_max_mismatches());
+
+            for (off=0; off<new_len && !ignore_more_results; off++, useq++) {
+                SearchTreeNode::set_start_offset(off);
+                root->findMatches(off, useq, new_len-off, 0, mismatch_list);
+            }
+
+            free(uni_seq);
+            free(uni2real);
         }
-
-        SearchTreeNode::set_report(report, uni2real);
-        SearchTreeNode::set_mismatches(sett->get_min_mismatches(), sett->get_max_mismatches());
-
-        for (off=0; off<new_len; off++, useq++) {
-            SearchTreeNode::set_start_offset(off);
-            root->findMatches(off, useq, new_len-off, 0, mismatch_list);
+        else {
+            aw_message("Out of swapspace?");
+            if (uni2real) free(uni2real);
         }
-
-        free(uni_seq);
-        free(uni2real);
     }
 }
 
@@ -642,8 +668,16 @@ static SearchTree     *tree[SEARCH_PATTERNS]; // Search trees for each type
 
 // --------------------------------------------------------------------------------
 
-static void searchParamsChanged(AW_root *root, ED4_SearchPositionType type, search_params_changed_action action) {
+static void searchParamsChanged(AW_root *root, AW_CL cl_type, AW_CL cl_action)
+{
+    ED4_SearchPositionType type = ED4_SearchPositionType(cl_type);
+    enum search_params_changed_action action = (enum search_params_changed_action)cl_action;
+
+    result_counter      = 0;
+    ignore_more_results = false;
+
     // check awar values
+
     if (action & (TEST_MIN_MISMATCH|TEST_MAX_MISMATCH)) {
         int mimi = root->awar(awar_list[type].min_mismatches)->read_int();
         int mami = root->awar(awar_list[type].max_mismatches)->read_int();
@@ -735,7 +769,7 @@ static void searchParamsChanged(AW_root *root, ED4_SearchPositionType type, sear
             }
 
             if (!jumped) {
-                ED4_search_cb(NULL, ED4_encodeSearchDescriptor(+1, type), current_ed4w());
+                ED4_search_cb(0, ED4_encodeSearchDescriptor(+1, type), (AW_CL)current_ed4w());
             }
         }
     }
@@ -746,9 +780,10 @@ static void searchParamsChanged(AW_root *root, ED4_SearchPositionType type, sear
 
 void ED4_create_search_awars(AW_root *root)
 {
-#define cb(action) add_callback(makeRootCallback(searchParamsChanged, ED4_SearchPositionType(i), search_params_changed_action(action)));
+#define cb(action) add_callback(searchParamsChanged, AW_CL(i), AW_CL(action))
 
-    for (int i=0; i<SEARCH_PATTERNS; i++) {
+    int i;
+    for (i=0; i<SEARCH_PATTERNS; i++) {
         root->awar_string(awar_list[i].pattern, 0, GLOBAL_gb_main)                             ->cb(REFRESH_IF_SHOWN | RECALC_SEARCH_TREE | DO_AUTO_JUMP);
         root->awar_int(awar_list[i].case_sensitive, ED4_SC_CASE_INSENSITIVE, GLOBAL_gb_main)   ->cb(REFRESH_IF_SHOWN | RECALC_SEARCH_TREE | DO_AUTO_JUMP);
         root->awar_int(awar_list[i].tu, ED4_ST_T_EQUAL_U, GLOBAL_gb_main)                      ->cb(REFRESH_IF_SHOWN | RECALC_SEARCH_TREE | DO_AUTO_JUMP);
@@ -764,7 +799,7 @@ void ED4_create_search_awars(AW_root *root)
         root->awar_int(awar_list[i].autoJump, 1, GLOBAL_gb_main)                               ->cb(DO_AUTO_JUMP);
 
         settings[i] = new SearchSettings(&awar_list[i]);
-        tree[i]     = new SearchTree(settings[i]);
+        tree[i] = new SearchTree(settings[i]);
     }
 
     root->awar_int(ED4_AWAR_SEARCH_RESULT_CHANGED, 0, GLOBAL_gb_main);
@@ -773,7 +808,7 @@ void ED4_create_search_awars(AW_root *root)
 
     // awars to save/load search parameters:
     {
-        char *dir = ARB_strdup(GB_path_in_arbprop("search_settings"));
+        char *dir = strdup(GB_path_in_arbprop("search_settings"));
         AW_create_fileselection_awars(root, ED4_SEARCH_SAVE_BASE, dir, ".asp", "noname.asp");
         root->awar(ED4_SEARCH_SAVE_BASE"/directory")->write_string(dir);
         free(dir);
@@ -799,7 +834,7 @@ ED4_SearchPosition::ED4_SearchPosition(const ED4_SearchPosition& other) {
     end_pos = other.end_pos;
     whatsFound = other.whatsFound;
     next = 0;
-    comment = ARB_strdup(other.comment);
+    comment = strdup(other.comment);
     memcpy(mismatch, other.mismatch, sizeof(mismatch[0])*MAX_MISMATCHES);
 }
 
@@ -875,7 +910,7 @@ GB_CSTR ED4_SearchPosition::get_comment() const
     if (lastShownComment && strcmp(lastShownComment, comment)==0) return 0; // do not show comment twice
 
     delete lastShownComment;
-    lastShownComment = ARB_strdup(comment);
+    lastShownComment = strdup(comment);
     return lastShownComment;
 }
 
@@ -912,7 +947,7 @@ ED4_SearchResults::ED4_SearchResults()
         }
 
         bufferSize = 100;
-        ARB_calloc(buffer, bufferSize);
+        buffer = (char*)GB_calloc(bufferSize, sizeof(char));
 
         initialized = 1;
     }
@@ -945,8 +980,24 @@ static void reportSearchPosition(int start, int end, GB_CSTR comment, int mismat
 // --------------------------------------------------------------------------------
 
 void ED4_SearchResults::addSearchPosition(ED4_SearchPosition *pos) {
+    static int max_allowed_results = 100000;
+
+    if (ignore_more_results) return;
+
     if (is_array()) {
         to_list();
+    }
+
+    ++result_counter;
+    if (result_counter >= max_allowed_results) {
+        if (aw_question("many_search_results", 
+                        GBS_global_string("More than %i results found!", result_counter), "Allow more,That's enough") == 0) {
+            max_allowed_results = max_allowed_results*2;
+        }
+        else {
+            ignore_more_results = true;
+            return;
+        }
     }
 
     if (first) {
@@ -1152,7 +1203,7 @@ char *ED4_SearchResults::buildColorString(const ED4_sequence_terminal *seq_termi
     if (needed_size>bufferSize) {
         free(buffer);
         bufferSize = needed_size;
-        ARB_calloc(buffer, bufferSize);
+        buffer = (char*)GB_calloc(bufferSize, sizeof(char));
     }
     else {
         memset(buffer, 0, sizeof(char)*needed_size);
@@ -1250,7 +1301,7 @@ void ED4_SearchResults::to_array() {
         arraySize = a_arraySize;
     }
 
-    ED4_SearchPosition **a_array = ARB_alloc<ED4_SearchPosition*>(arraySize);
+    ED4_SearchPosition **a_array = (ED4_SearchPosition**)malloc(sizeof(ED4_SearchPosition*)*arraySize);
 
     pos = first;
     for (int e=0; e<arraySize; e++) {
@@ -1278,18 +1329,21 @@ inline void decodeSearchDescriptor(int descriptor, int *direction, ED4_SearchPos
     *pattern = ED4_SearchPositionType(descriptor/2);
 }
 
-static int last_searchDescriptor = -1;
+static AW_CL last_searchDescriptor = -1;
 
 GB_ERROR ED4_repeat_last_search(ED4_window *ed4w) {
-    if (last_searchDescriptor==-1) {
+    if (int(last_searchDescriptor)==-1) {
         return GBS_global_string("You have to search first, before you can repeat a search.");
     }
 
-    ED4_search_cb(NULL, last_searchDescriptor, ed4w);
+    ED4_search_cb(0, last_searchDescriptor, (AW_CL)ed4w);
     return 0;
 }
 
-void ED4_search_cb(UNFIXED, int searchDescriptor, ED4_window *ed4w) {
+void ED4_search_cb(AW_window *, AW_CL searchDescriptor, AW_CL cl_ed4w) {
+    ED4_window *ed4w = (ED4_window*)cl_ed4w;
+    e4_assert(ed4w);
+
     ED4_LocalWinContext uses(ed4w);
 
     last_searchDescriptor = searchDescriptor;
@@ -1385,9 +1439,10 @@ void ED4_search_cb(UNFIXED, int searchDescriptor, ED4_window *ed4w) {
     }
 }
 
-static void ED4_mark_matching_species(AW_window *, ED4_SearchPositionType pattern) {
-    ED4_terminal   *terminal = ED4_ROOT->root_group_man->get_first_terminal();
-    GB_transaction  ta(GLOBAL_gb_main);
+static void ED4_mark_matching_species(AW_window * /* aww */, AW_CL cl_pattern) {
+    ED4_SearchPositionType  pattern  = ED4_SearchPositionType(cl_pattern);
+    ED4_terminal           *terminal = ED4_ROOT->root_group_man->get_first_terminal();
+    GB_transaction          ta(GLOBAL_gb_main);
 
     while (terminal) {
         if (terminal->is_sequence_terminal()) {
@@ -1438,7 +1493,7 @@ static char *pattern2str(GB_CSTR p) {
     }
 
     *s1 = 0;
-    return ARB_strdup(s);
+    return strdup(s);
 }
 
 static void str2pattern(char *s) { // works on string
@@ -1472,7 +1527,7 @@ static void str2pattern(char *s) { // works on string
 
 #undef ESC
 
-static void save_search_paras_to_file(AW_window *aw, ED4_SearchPositionType type) {
+static void save_search_paras_to_file(AW_window *aw, AW_CL cl_type) {
     GB_ERROR  error    = NULL;
     AW_root  *root     = ED4_ROOT->aw_root;
     char     *filename = root->awar(ED4_SEARCH_SAVE_BASE"/file_name")->read_string();
@@ -1496,7 +1551,8 @@ static void save_search_paras_to_file(AW_window *aw, ED4_SearchPositionType type
             error = GBS_global_string("Can't write file '%s' (%s)", filename, strerror(errno));
         }
         else {
-            SearchSettings *s = settings[type];
+            ED4_SearchPositionType  type = ED4_SearchPositionType(cl_type);
+            SearchSettings         *s    = settings[type];
 
             char *fpat = pattern2str(s->get_pattern());
 
@@ -1537,7 +1593,7 @@ static void save_search_paras_to_file(AW_window *aw, ED4_SearchPositionType type
     free(filename);
 }
 
-static void load_search_paras_from_file(AW_window *aw, ED4_SearchPositionType type) {
+static void load_search_paras_from_file(AW_window *aw, AW_CL cl_type) {
     GB_CSTR  error    = NULL;
     AW_root *root     = ED4_ROOT->aw_root;
     char    *filename = root->awar(ED4_SEARCH_SAVE_BASE"/file_name")->read_string();
@@ -1547,7 +1603,8 @@ static void load_search_paras_from_file(AW_window *aw, ED4_SearchPositionType ty
         error = GBS_global_string("File '%s' not found", filename);
     }
     else {
-        SearchAwarList *al = &awar_list[type];
+        ED4_SearchPositionType  type = ED4_SearchPositionType(cl_type);
+        SearchAwarList         *al   = &awar_list[type];
 
         while (1) {
             const int BUFFERSIZE = 10000;
@@ -1617,46 +1674,56 @@ struct LoadSaveSearchParam {
     {}
 };
 
-static AW_window *loadsave_search_parameters(AW_root *root, const LoadSaveSearchParam *param, bool load) {
+static AW_window *loadsave_search_parameters(AW_root *root, const LoadSaveSearchParam& param, bool load) {
     AW_window_simple *aws = new AW_window_simple;
 
     if (load) {
-        aws_init_localized(root, aws, "load_%s_search_para_%i", "Load %s Search Parameters", ED4_SearchPositionTypeId[param->type], param->winNum);
+        aws_init_localized(root, aws, "load_%s_search_para_%i", "Load %s Search Parameters", ED4_SearchPositionTypeId[param.type], param.winNum);
     }
     else {
-        aws_init_localized(root, aws, "save_%s_search_para_%i", "Save %s Search Parameters", ED4_SearchPositionTypeId[param->type], param->winNum);
+        aws_init_localized(root, aws, "save_%s_search_para_%i", "Save %s Search Parameters", ED4_SearchPositionTypeId[param.type], param.winNum);
     }
 
     aws->load_xfig("edit4/save_search.fig");
 
-    aws->at("close");
-    aws->callback(AW_POPDOWN);
+    aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback(makeHelpCallback("e4_search.hlp"));
+    aws->callback(makeHelpCallback("search_parameters.hlp"));
     aws->at("help");
     aws->create_button("HELP", "HELP", "H");
 
     AW_create_standard_fileselection(aws, ED4_SEARCH_SAVE_BASE);
 
+    aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("cancel");
-    aws->callback(AW_POPDOWN);
     aws->create_button("CANCEL", "CANCEL", "C");
 
     aws->at("save");
     if (load) {
-        aws->callback(makeWindowCallback(load_search_paras_from_file, param->type));
+        aws->callback(load_search_paras_from_file, (AW_CL)param.type);
         aws->create_button("LOAD", "LOAD", "L");
     }
     else {
-        aws->callback(makeWindowCallback(save_search_paras_to_file, param->type));
+        aws->callback(save_search_paras_to_file, (AW_CL)param.type);
         aws->create_button("SAVE", "SAVE", "S");
     }
 
     return aws;
 }
 
-static void setup_search_config(AWT_config_definition& cdef, ED4_SearchPositionType search_type) {
+static AW_window *load_search_parameters(AW_root *root, AW_CL cl_param) {
+    LoadSaveSearchParam *param = (LoadSaveSearchParam*)cl_param;
+    return loadsave_search_parameters(root, *param, true);
+}
+
+static AW_window *save_search_parameters(AW_root *root, AW_CL cl_param) {
+    LoadSaveSearchParam *param = (LoadSaveSearchParam*)cl_param;
+    return loadsave_search_parameters(root, *param, false);
+}
+
+
+static void search_init_config(AWT_config_definition& cdef, int search_type) {
     SearchAwarList *awarList = &awar_list[search_type];
 
     cdef.add(awarList->show, "show");
@@ -1674,6 +1741,18 @@ static void setup_search_config(AWT_config_definition& cdef, ED4_SearchPositionT
     cdef.add(awarList->exact, "exact");
 }
 
+static char *search_store_config(AW_window *aww, AW_CL cl_search_type, AW_CL) {
+    AWT_config_definition cdef(aww->get_root());
+    search_init_config(cdef, int(cl_search_type));
+    return cdef.read();
+}
+
+static void search_restore_config(AW_window *aww, const char *stored_string, AW_CL cl_search_type, AW_CL) {
+    AWT_config_definition cdef(aww->get_root());
+    search_init_config(cdef, int(cl_search_type));
+    cdef.write(stored_string);
+}
+
 struct search_windows : public Noncopyable {
     AW_window_simple *windows[SEARCH_PATTERNS];
     search_windows() { for (int i = 0; i<SEARCH_PATTERNS; ++i) windows[i] = NULL; }
@@ -1681,7 +1760,9 @@ struct search_windows : public Noncopyable {
 
 typedef std::map<ED4_window*, SmartPtr<search_windows> > search_window_map;
 
-void ED4_popup_search_window(AW_window *aww, ED4_SearchPositionType type) {
+void ED4_popup_search_window(AW_window *aww, AW_CL cl_search_type) {
+    ED4_SearchPositionType type = (ED4_SearchPositionType)cl_search_type;
+
     ED4_WinContext  uses(aww);
     ED4_window     *ed4w = uses.get_ed4w();
 
@@ -1702,7 +1783,7 @@ void ED4_popup_search_window(AW_window *aww, ED4_SearchPositionType type) {
         aws->load_xfig("edit4/search.fig");
 
         aws->at("close");
-        aws->callback(AW_POPDOWN);
+        aws->callback((AW_CB0)AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
 
         aws->at("help");
@@ -1712,23 +1793,23 @@ void ED4_popup_search_window(AW_window *aww, ED4_SearchPositionType type) {
         LoadSaveSearchParam *param = new LoadSaveSearchParam(type, ed4w->id); // bound to callbacks (dont free)
 
         aws->at("load");
-        aws->callback(makeCreateWindowCallback(loadsave_search_parameters, param, true));
+        aws->callback(AW_POPUP, (AW_CL)load_search_parameters, (AW_CL)param);
         aws->create_button("LOAD", "LOAD", "L");
 
         aws->at("save");
-        aws->callback(makeCreateWindowCallback(loadsave_search_parameters, param, false));
+        aws->callback(AW_POPUP, (AW_CL)save_search_parameters, (AW_CL)param);
         aws->create_button("SAVE", "SAVE", "S");
 
         aws->at("next");
-        aws->callback(makeWindowCallback(ED4_search_cb, ED4_encodeSearchDescriptor(+1, type), ed4w));
+        aws->callback(ED4_search_cb, (AW_CL)ED4_encodeSearchDescriptor(+1, type), (AW_CL)ed4w);
         aws->create_button("SEARCH_NEXT", "#edit/next.xpm", "N");
 
         aws->at("previous");
-        aws->callback(makeWindowCallback(ED4_search_cb, ED4_encodeSearchDescriptor(-1, type), ed4w));
+        aws->callback(ED4_search_cb, (AW_CL)ED4_encodeSearchDescriptor(-1, type), (AW_CL)ed4w);
         aws->create_button("SEARCH_LAST", "#edit/last.xpm", "L");
 
         aws->at("mark");
-        aws->callback(makeWindowCallback(ED4_mark_matching_species, type));
+        aws->callback(ED4_mark_matching_species, (AW_CL)type);
         aws->create_autosize_button("MARK_SPECIES", "Mark species with matches", "M");
 
         aws->at("show");
@@ -1776,7 +1857,8 @@ void ED4_popup_search_window(AW_window *aww, ED4_SearchPositionType type) {
         aws->create_toggle(awarList->exact);
 
         aws->at("config");
-        AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "search", makeConfigSetupCallback(setup_search_config, type));
+        AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "search", search_store_config, search_restore_config, (AW_CL)type, 0);
+
     }
 
     aws->activate();

@@ -253,10 +253,6 @@ AP_FLOAT MostLikelySeq::combine(const AP_sequence *, const AP_sequence *, char *
 void MostLikelySeq::partial_match(const AP_sequence *, long *, long *) const {
     st_assert(0);                                   // function is expected to be unused
 }
-uint32_t MostLikelySeq::checksum() const {
-    st_assert(0); // function is expected to be unused
-    return 0;
-}
 
 void MostLikelySeq::calculate_ancestor(const MostLikelySeq *lefts, double leftl, const MostLikelySeq *rights, double rightl) {
     st_assert(!up_to_date);
@@ -451,9 +447,10 @@ long ST_ML::delete_species(const char *key, long val, void *cd_st_ml) {
         return val;
     }
     else {
-        AP_tree *leaf = (AP_tree *)val;
-        UNCOVERED();
-        destroy(leaf->REMOVE());
+        AP_tree *leaf   = (AP_tree *) val;
+        AP_tree *father = leaf->get_father();
+        leaf->remove();
+        delete father;                              // also deletes 'this'
 
         return 0;
     }
@@ -508,7 +505,7 @@ GB_ERROR ST_ML::calc_st_ml(const char *tree_name, const char *alignment_namei,
 
         if (column_stat_error) fprintf(stderr, "Column statistic error: %s (using equal rates/tt-ratio for all columns)\n", column_stat_error);
 
-        alignment_name = ARB_strdup(alignment_namei);
+        alignment_name = strdup(alignment_namei);
         long ali_len   = GBT_get_alignment_len(gb_main, alignment_name);
 
         if (ali_len<0) {
@@ -537,7 +534,7 @@ GB_ERROR ST_ML::calc_st_ml(const char *tree_name, const char *alignment_namei,
 
                 if (!error) {
                     MostLikelySeq *seq_templ = new MostLikelySeq(aliview, this); // @@@ error: never freed! (should be freed when freeing tree_root!)
-                    tree_root = new AP_tree_root(aliview, seq_templ, false);
+                    tree_root = new AP_tree_root(aliview, new AP_TreeNodeFactory, seq_templ, false);
                     // do not delete 'aliview' or 'seq_templ' (they belong to 'tree_root' now)
                 }
             }
@@ -754,7 +751,7 @@ bool ST_ML::update_ml_likelihood(char *result[4], int& latest_update, const char
 
         if (!result[0]) {                           // allocate Array-elements for result
             for (i = 0; i < 4; i++) {
-                ARB_calloc(result[i], ali_len+1); // [0 .. alignment_len[ + zerobyte
+                result[i] = (char *) GB_calloc(1, ali_len + 1); // [0 .. alignment_len[ + zerobyte
             }
         }
 
@@ -816,9 +813,9 @@ ST_ML_Color *ST_ML::get_color_string(const char *species_name, AP_tree *node, si
     MostLikelySeq *seq = getOrCreate_seq(node);
     size_t         pos;
 
-    if (!seq->color_out) { // allocate mem for color_out if we not already have it
-        ARB_calloc(seq->color_out,            ali_len);
-        ARB_calloc(seq->color_out_valid_till, (ali_len >> LD_BUCKET_SIZE) + ST_BUCKET_SIZE);
+    if (!seq->color_out) {                          // allocate mem for color_out if we not already have it
+        seq->color_out = (ST_ML_Color *) GB_calloc(sizeof(ST_ML_Color), ali_len);
+        seq->color_out_valid_till = (int *) GB_calloc(sizeof(int), (ali_len >> LD_BUCKET_SIZE) + ST_BUCKET_SIZE);
     }
     // search for first out-dated position:
     for (pos = start_ali_pos; pos <= end_ali_pos; pos += ST_BUCKET_SIZE) {
@@ -869,7 +866,7 @@ void ST_ML::create_column_statistic(AW_root *awr, const char *awarname, AW_awar 
     column_stat = new ColumnStat(get_gb_main(), awr, awarname, awar_default_alignment);
 }
 
-const TreeNode *ST_ML::get_gbt_tree() const {
+const GBT_TREE *ST_ML::get_gbt_tree() const {
     return tree_root->get_root_node();
 }
 

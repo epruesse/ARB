@@ -23,9 +23,6 @@
 #ifndef POS_RANGE_H
 #include <pos_range.h>
 #endif
-#ifndef CB_H
-#include <cb.h>
-#endif
 
 #define ff_assert(bed) arb_assert(bed)
 
@@ -126,8 +123,8 @@ public:
 class AW_root;
 class AW_window;
 
-void AWTC_create_common_next_neighbour_vars(AW_root *aw_root, const RootCallback& awar_changed_cb);
-void AWTC_create_common_next_neighbour_fields(AW_window *aws, int scaler_length);
+void AWTC_create_common_next_neighbour_vars(AW_root *aw_root);
+void AWTC_create_common_next_neighbour_fields(AW_window *aws);
 
 #else
 #error awtc_next_neighbours.hxx included twice

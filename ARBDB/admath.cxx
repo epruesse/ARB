@@ -22,11 +22,11 @@ double GB_log_fak(int n) {
 
     if (n >= max_n) {
         double sum = 0;
-
+        int i;
+        freenull(res);
         max_n = n + 100;
-        freeset(res, ARB_calloc<double>(max_n));
-
-        for (int i=1; i<max_n; i++) {
+        res = (double *)GB_calloc(sizeof(double), max_n);
+        for (i=1; i<max_n; i++) {
             sum += log((double)i);
             res[i] = sum;
         }
@@ -37,21 +37,14 @@ double GB_log_fak(int n) {
 // ----------------------------------
 //      random number generation
 
-static int      randomSeeded = 0;
-static unsigned usedSeed     = 0;
-
-void GB_random_seed(unsigned seed) {
-    /*! normally you should not use GB_random_seed.
-     * Use it only to reproduce some result (e.g. in unittests)
-     */
-    usedSeed     = seed;
-    srand(seed);
-    randomSeeded = 1;
-}
+static int randomSeeded = 0;
 
 int GB_random(int range) {
     // produces a random number in range [0 .. range-1]
-    if (!randomSeeded) GB_random_seed(time(0));
+    if (!randomSeeded) {
+        srand(time(0));
+        randomSeeded = 1;
+    }
 
 #if defined(DEBUG)
     if (range>RAND_MAX) {

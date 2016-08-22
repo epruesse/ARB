@@ -2,22 +2,29 @@
 UP	arb.hlp
 UP	glossary.hlp
 UP	pars.hlp
+UP	mode_nni.hlp
+UP	mode_optimize.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
-SUB	mode_nni.hlp
-SUB	mode_optimize.hlp
+#SUB	subtopic.hlp
 
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		K.L.-mode
+TITLE		K.L. Optimization of the Tree
 
-OCCURRENCE	ARB_PARSIMONY/<K.L.-mode-button>
+OCCURRENCE	ARB_NT/Tree/Parsimony/<K.L.>
 
-DESCRIPTION	This mode ONLY performs LINK{pa_kernlin.hlp}, i.e. ONLY step 2 of LINK{pa_globopti.hlp}.
+DESCRIPTION	Searches for a better (more parsimonious) tree by swapping
+		subtrees which are separated by up to 15 edges.
 
-NOTES           NOTES for LINK{mode_optimize.hlp} apply here as well.
+NOTES		The current parsimony value (number of base changes needed) is
+		displayed after the 'Current Par' prompt in the upper part of
+		the 'ARB_PARSIMONY' window and the 'Message' window (pops up
+		while calculating).
 
+		On cycle of swapping is performed.
+	
 EXAMPLES	None
 
 WARNINGS	None

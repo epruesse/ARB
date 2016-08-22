@@ -20,15 +20,6 @@
 #ifndef AP_MATRIX_HXX
 #include <AP_matrix.hxx>
 #endif
-#ifndef AP_SEQ_DNA_HXX
-#include <AP_seq_dna.hxx>
-#endif
-#ifndef AP_SEQ_SIMPLE_PRO_HXX
-#include <AP_seq_simple_pro.hxx>
-#endif
-#ifndef _GLIBCXX_STRING
-#include <string>
-#endif
 
 #define di_assert(cond) arb_assert(cond)
 
@@ -51,6 +42,7 @@ enum DI_TRANSFORMATION {
     DI_TRANSFORMATION_CATEGORIES_BARKER,
     DI_TRANSFORMATION_CATEGORIES_CHEMICAL,
 
+    DI_TRANSFORMATION_HAESCH,
     DI_TRANSFORMATION_KIMURA,
     DI_TRANSFORMATION_OLSEN,
     DI_TRANSFORMATION_FELSENSTEIN_VOIGT,
@@ -59,10 +51,7 @@ enum DI_TRANSFORMATION {
 
     DI_TRANSFORMATION_FROM_TREE,
 
-    // -------------------- real transformations are above
-
-    DI_TRANSFORMATION_COUNT,         // amount of real transformations
-    DI_TRANSFORMATION_NONE_DETECTED, // nothing was auto-detected
+    DI_TRANSFORMATION_COUNT, // has to be last
 };
 
 enum DI_MATRIX_TYPE {
@@ -71,30 +60,35 @@ enum DI_MATRIX_TYPE {
 };
 
 class DI_MATRIX;
+class AW_root;
+class AP_sequence_parsimony;
+class AP_sequence_simple_protein;
 
-class DI_ENTRY : virtual Noncopyable {
-    DI_MATRIX *phmatrix;
-    char      *full_name;
-
-public:
-    DI_ENTRY(GBDATA *gbd, DI_MATRIX *phmatrix_);
-    DI_ENTRY(const char *name_, DI_MATRIX *phmatrix_);
+struct DI_ENTRY : virtual Noncopyable {
+    DI_ENTRY(GBDATA *gbd, class DI_MATRIX *phmatri);
+    DI_ENTRY(char *namei, class DI_MATRIX *phmatri);
     ~DI_ENTRY();
 
-    AP_sequence *sequence;
-
-    AP_sequence_parsimony      *get_nucl_seq() { return DOWNCAST(AP_sequence_parsimony*,      sequence); }
-    AP_sequence_simple_protein *get_prot_seq() { return DOWNCAST(AP_sequence_simple_protein*, sequence); }
-
-    char *name;
-    int   group_nr;                                 // species belongs to group number xxxx
+    DI_MATRIX                  *phmatrix;
+    AP_sequence                *sequence;
+    AP_sequence_parsimony      *sequence_parsimony; // if exist ok
+    AP_sequence_simple_protein *sequence_protein;
+    long                        seq_len;
+    char                       *name;
+    char                       *full_name;
+    AP_FLOAT                    gc_bias;
+    int                         group_nr;           // species belongs to group number xxxx
 };
+
+typedef long DI_MUT_MATR[AP_MAX][AP_MAX];
 
 enum DI_SAVE_TYPE {
     DI_SAVE_PHYLIP_COMP,
     DI_SAVE_READABLE,
     DI_SAVE_TABBED
 };
+
+class BI_helix;
 
 enum LoadWhat { DI_LOAD_ALL, DI_LOAD_MARKED, DI_LOAD_LIST };
 
@@ -105,7 +99,7 @@ class MatrixOrder : virtual Noncopyable {
 
     bool tree_contains_dups; // unused (if true, matrix sorting works partly wrong)
 
-    void insert_in_hash(TreeNode *tree) {
+    void insert_in_hash(GBT_TREE *tree) {
         if (tree->is_leaf) {
             arb_assert(tree->name);
             if (GBS_write_hash(name2pos, tree->name, ++leafs) != 0) {
@@ -113,8 +107,8 @@ class MatrixOrder : virtual Noncopyable {
             }
         }
         else {
-            insert_in_hash(tree->get_rightson());
-            insert_in_hash(tree->get_leftson());
+            insert_in_hash(tree->rightson);
+            insert_in_hash(tree->leftson);
         }
     }
 
@@ -123,27 +117,28 @@ public:
     ~MatrixOrder() { if (name2pos) GBS_free_hash(name2pos); }
 
     bool defined() const { return leafs; }
+    int get_size() const { return leafs; }
+
     int get_index(const char *name) const {
         // return 1 for lowest and 'leafs' for highest species in sort-tee
         // return 0 for all species missing in sort-tree
         return defined() ? GBS_read_hash(name2pos, name) : -1;
     }
+
     void applyTo(struct TreeOrderedSpecies **gb_species_array, size_t array_size) const;
 };
 
 typedef void (*DI_MATRIX_CB)();
 
 class DI_MATRIX : virtual Noncopyable {
+    friend class DI_ENTRY;
+
     GBDATA  *gb_species_data;
     long     seq_len;
     char     cancel_columns[256];
-    size_t   allocated_entries;
+    AW_root *aw_root;                               // only link
+    size_t   entries_mem_size;
     AliView *aliview;
-
-    GBDATA *get_gb_main() const { return aliview->get_gb_main(); }
-    double  corr(double dist, double b, double & sigma);
-    char   *calculate_overall_freqs(double rel_frequencies[AP_MAX], char *cancel_columns);
-    int     search_group(TreeNode *node, GB_HASH *hash, size_t& groupcnt, char *groupname, DI_ENTRY **groups);
 
 public:
     // @@@ make members private:
@@ -153,23 +148,35 @@ public:
     AP_smatrix      *matrix;
     DI_MATRIX_TYPE   matrix_type;
 
-    explicit DI_MATRIX(const AliView& aliview);
+    DI_MATRIX(const AliView& aliview, AW_root *awr);
     ~DI_MATRIX();
 
+    GBDATA *get_gb_main() const { return aliview->get_gb_main(); }
     const char *get_aliname() const { return aliview->get_aliname(); }
     const AliView *get_aliview() const { return aliview; }
 
     GB_ERROR load(LoadWhat what, const MatrixOrder& order, bool show_warnings, GBDATA **species_list) __ATTR__USERESULT;
     char *unload();
-    const char *save(const char *filename, enum DI_SAVE_TYPE type);
+    const char *save(char *filename, enum DI_SAVE_TYPE type);
 
-    GB_ERROR  calculate(const char *cancel, DI_TRANSFORMATION transformation, bool *aborted_flag, AP_matrix *userdef_matrix);
+    void    clear(DI_MUT_MATR &hits);
+    void    make_sym(DI_MUT_MATR &hits);
+    void    rate_write(DI_MUT_MATR &hits, FILE *out);
+    long    *create_helix_filter(BI_helix *helix, const AP_filter *filter);
+    // 0 non helix 1 helix; compressed filter
+    GB_ERROR calculate_rates(DI_MUT_MATR &hrates, DI_MUT_MATR &nrates, DI_MUT_MATR &pairs, long *filter);
+    GB_ERROR haeschoe(const char *path);
+    double  corr(double dist, double b, double & sigma);
+
+    GB_ERROR  calculate(AW_root *awr, char *cancel, double alpha, DI_TRANSFORMATION transformation, bool *aborted_flag);
+    char     *calculate_overall_freqs(double rel_frequencies[AP_MAX], char *cancel_columns);
     GB_ERROR  calculate_pro(DI_TRANSFORMATION transformation, bool *aborted_flag);
     GB_ERROR  extract_from_tree(const char *treename, bool *aborted_flag);
 
-    DI_TRANSFORMATION detect_transformation(std::string& msg);
+    void analyse();
 
-    char *compress(TreeNode *tree);
+    int   search_group(GBT_TREE *node, GB_HASH *hash, size_t& groupcnt, char *groupname, DI_ENTRY **groups);
+    char *compress(GBT_TREE *tree);
 };
 
 class DI_GLOBAL_MATRIX : virtual Noncopyable {
@@ -183,13 +190,12 @@ class DI_GLOBAL_MATRIX : virtual Noncopyable {
         matrix = NULL;
     }
 
-    void set(DI_MATRIX *new_global) { di_assert(!matrix); matrix = new_global; announce_change(); }
-
 public:
     DI_GLOBAL_MATRIX() : matrix(NULL), changed_cb(NULL) {}
     ~DI_GLOBAL_MATRIX() { forget(); }
 
     DI_MATRIX *get() { return matrix; }
+    void set(DI_MATRIX *new_global) { di_assert(!matrix); matrix = new_global; announce_change(); }
     void forget() {
         if (matrix) {
             forget_no_announce();

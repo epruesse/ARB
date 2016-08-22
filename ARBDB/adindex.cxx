@@ -192,7 +192,7 @@ void gb_destroy_indices(GBCONTAINER *gbc) {
 NOT4PERL void GB_dump_indices(GBDATA *gbd) { // used for debugging
     // dump indices of container
 
-    char *db_path = ARB_strdup(GB_get_db_path(gbd));
+    char *db_path = strdup(GB_get_db_path(gbd));
     if (gbd->is_entry()) {
         fprintf(stderr, "'%s' (%s) is no container.\n", db_path, GB_get_type_name(gbd));
     }
@@ -223,7 +223,7 @@ NOT4PERL void GB_dump_indices(GBDATA *gbd) { // used for debugging
                     fprintf(stderr,
                             "* Index %i for key=%s (%i), entries=%li, %s\n",
                             index_count,
-                            quark2key(Main, ifs->key),
+                            Main->keys[ifs->key].key,
                             ifs->key,
                             ifs->nr_of_elements,
                             ifs->case_sens == GB_MIND_CASE
@@ -342,12 +342,10 @@ static g_b_undo_entry *new_g_b_undo_entry(g_b_undo_list *u) {
 
 
 void gb_init_undo_stack(GB_MAIN_TYPE *Main) { // @@@ move into GB_MAIN_TYPE-ctor
-    ARB_calloc(Main->undo, 1);
-
+    Main->undo = (g_b_undo_mgr *)GB_calloc(sizeof(g_b_undo_mgr), 1);
     Main->undo->max_size_of_all_undos = GB_MAX_UNDO_SIZE;
-
-    ARB_calloc(Main->undo->u, 1);
-    ARB_calloc(Main->undo->r, 1);
+    Main->undo->u = (g_b_undo_header *) GB_calloc(sizeof(g_b_undo_header), 1);
+    Main->undo->r = (g_b_undo_header *) GB_calloc(sizeof(g_b_undo_header), 1);
 }
 
 static void delete_g_b_undo_entry(g_b_undo_entry *entry) {
@@ -521,7 +519,7 @@ static GB_ERROR g_b_undo(GBDATA *gb_main, g_b_undo_header *uh) { // goes to head
 }
 
 static GB_CSTR g_b_read_undo_key_pntr(GB_MAIN_TYPE *Main, g_b_undo_entry *ue) {
-    return quark2key(Main, ue->d.gs.key);
+    return Main->keys[ue->d.gs.key].key;
 }
 
 static char *g_b_undo_info(GB_MAIN_TYPE *Main, g_b_undo_header *uh) {
@@ -530,7 +528,7 @@ static char *g_b_undo_info(GB_MAIN_TYPE *Main, g_b_undo_header *uh) {
     g_b_undo_entry *ue;
 
     u = uh->stack;
-    if (!u) return ARB_strdup("No more undos available");
+    if (!u) return strdup("No more undos available");
     for (ue=u->entries; ue; ue = ue->next) {
         switch (ue->type) {
             case GB_UNDO_ENTRY_TYPE_CREATED:
@@ -594,7 +592,7 @@ char *gb_set_undo_sync(GBDATA *gb_main) {
     }
     if (uhs)
     {
-        g_b_undo_list *u = ARB_calloc<g_b_undo_list>(1);
+        g_b_undo_list *u = (g_b_undo_list *) GB_calloc(sizeof(g_b_undo_list),  1);
         u->next = uhs->stack;
         u->father = uhs;
         uhs->stack = u;
@@ -802,7 +800,6 @@ GB_ERROR GB_undo(GBDATA *gb_main, GB_UNDO_TYPE type) { // goes to header: __ATTR
 
 char *GB_undo_info(GBDATA *gb_main, GB_UNDO_TYPE type) {
     // get some information about the next undo
-    // returns NULL in case of exported error
 
     GB_MAIN_TYPE *Main = GB_MAIN(gb_main);
     if (Main->is_client()) {
@@ -812,7 +809,8 @@ char *GB_undo_info(GBDATA *gb_main, GB_UNDO_TYPE type) {
             case GB_UNDO_REDO:
                 return gbcmc_send_undo_info_commands(gb_main, _GBCMC_UNDOCOM_INFO_REDO);
             default:
-                GB_export_error("GB_undo_info: unknown undo type specified");
+                GB_internal_error("unknown undo type in GB_undo");
+                GB_export_error("Internal UNDO error");
                 return 0;
         }
     }
@@ -843,218 +841,3 @@ GB_ERROR GB_set_undo_mem(GBDATA *gbd, long memsize) {
     return 0;
 }
 
-
-#ifdef UNIT_TESTS
-#include <test_unit.h>
-#include <map>
-#include <ad_cb_prot.h>
-
-class cb_counter : virtual Noncopyable {
-    GBDATA *gbd;
-    int deletes, changes, creates;
-    bool do_trace;
-public:
-    static void count_swapped(GBDATA* gbd, cb_counter* counter, GB_CB_TYPE t ) {
-        // CB system cannot swap parameters, we need to wrap
-        // And yes... fixed parameters are added *in the middle*, not at the end. 
-        counter->count(gbd, t);
-    }
-    
-    cb_counter(GBDATA* gbd_) : gbd(gbd_), deletes(0), changes(0), creates(0), do_trace(false) {
-        GB_add_callback(gbd, GB_CB_ALL, makeDatabaseCallback(cb_counter::count_swapped, this));
-    }
-
-    ~cb_counter() {
-        // CB system cannot auto-destroy callbacks, nor are there CB handles
-        if (deletes == 0) { // (GB_delete destroys CBs I think)
-            GB_remove_callback(gbd, GB_CB_ALL, makeDatabaseCallback(cb_counter::count_swapped, this));
-            // above must be exact copy of GB_add_callback copy
-        }
-    }
-
-    void count(GBDATA*, GB_CB_TYPE t) {
-        if (t & GB_CB_DELETE) deletes ++;
-        if (t & GB_CB_SON_CREATED) creates ++;
-        if (t & GB_CB_CHANGED) changes ++;
-        if (do_trace) printf("counts: %p d=%i c=%i n=%i\n", gbd, deletes, changes, creates);
-    }
-
-    void trace(bool t) {
-        do_trace = t;
-    }
-
-    int get_deletes() {
-        int res = deletes;
-        deletes = 0;
-        return res;
-    }
-
-    int get_creates() {
-        int res = creates;
-        creates = 0;
-        return res;
-    }
-
-    int get_changes() {
-        int res = changes;
-        changes = 0;
-        return res;
-    }
-};
-
-
-
-void TEST_GB_undo__basic() {
-    GB_shell  shell;
-    // GB_ERROR err;
-
-    GBDATA   *main = GB_open("nosuch.arb", "c");
-    GB_begin_transaction(main);
-    cb_counter main_counter(main);
-    GB_commit_transaction(main);
-
-    GBDATA   *gbd;
-    cb_counter *gbd_counter;
-
-    GB_set_undo_mem(main, 10000);
-    GB_request_undo_type(main, GB_UNDO_UNDO);
-   
-
-    // Notes:
-    // - CB_CHANGED == CB_SON_CREATED
-    //   Both are called on creating sons as well as just writing strings.
-    // - GB_SON_CREATED also called if "SON_DELETED"
-    // - It's possible to get CB_SON_CREATED on GBENTRY if the CB is 
-    //   registered within the running transaction.
-    // - CBs are triggered at the end of the transaction.
-
-
-    // test undo create empty string entry
-    GB_begin_transaction(main);
-    gbd = GB_create(main, "test", GB_STRING);
-    gbd_counter = new cb_counter(gbd);
-    GB_commit_transaction(main);
-
-    TEST_EXPECT_EQUAL( main_counter.get_creates(), 1);
-    TEST_EXPECT_EQUAL( main_counter.get_changes(), 1); 
-    TEST_EXPECT_EQUAL( main_counter.get_deletes(), 0); 
-    TEST_EXPECT_EQUAL( gbd_counter->get_creates(), 1);
-    TEST_EXPECT_EQUAL( gbd_counter->get_changes(), 1);
-    TEST_EXPECT_EQUAL( gbd_counter->get_deletes(), 0);
-    // string initialises as empty
-    TEST_EXPECT_EQUAL( GB_read_pntr(GB_find(main, "test", SEARCH_CHILD)), "");
-    TEST_EXPECT_NULL(  GB_undo(main, GB_UNDO_UNDO)                 ); 
-    TEST_EXPECT_EQUAL( main_counter.get_creates(), 1); // BROKEN -- should be 0
-    TEST_EXPECT_EQUAL( main_counter.get_changes(), 1); 
-    TEST_EXPECT_EQUAL( main_counter.get_deletes(), 0); // BROKEN -- should be 1
-    TEST_EXPECT_EQUAL( gbd_counter->get_creates(), 0);
-    TEST_EXPECT_EQUAL( gbd_counter->get_changes(), 0);
-    TEST_EXPECT_EQUAL( gbd_counter->get_deletes(), 1);
-    TEST_EXPECT_NULL(  GB_find(main, "test", SEARCH_CHILD)         ); 
-    TEST_EXPECT_NULL(  GB_undo(main, GB_UNDO_REDO)                 ); 
-    TEST_EXPECT_EQUAL( main_counter.get_creates(), 1);
-    TEST_EXPECT_EQUAL( main_counter.get_changes(), 1); 
-    TEST_EXPECT_EQUAL( main_counter.get_deletes(), 0); 
-    TEST_REJECT_NULL(  gbd = GB_find(main, "test", SEARCH_CHILD) ); 
-    TEST_EXPECT_EQUAL( GB_read_pntr(GB_find(main, "test", SEARCH_CHILD)), "");
-
-    // re-establish counter
-    GB_begin_transaction(main);
-    delete gbd_counter;
-    gbd_counter = new cb_counter(gbd);
-    GB_commit_transaction(main);
-
-    // test undo delete empty string
-    GB_begin_transaction(main);
-    GB_delete(gbd);
-    GB_commit_transaction(main);
-    TEST_EXPECT_EQUAL( main_counter.get_creates(), 1); // BROKEN -- should be 0
-    TEST_EXPECT_EQUAL( main_counter.get_changes(), 1); 
-    TEST_EXPECT_EQUAL( main_counter.get_deletes(), 0);
-    TEST_EXPECT_EQUAL( gbd_counter->get_creates(), 0);
-    TEST_EXPECT_EQUAL( gbd_counter->get_changes(), 0);
-    TEST_EXPECT_EQUAL( gbd_counter->get_deletes(), 1);
-    TEST_EXPECT_NULL(  GB_find(main, "test", SEARCH_CHILD)                   );
-    TEST_EXPECT_NULL(  GB_undo(main, GB_UNDO_UNDO)                           );
-    TEST_EXPECT_EQUAL( main_counter.get_creates(), 1);
-    TEST_EXPECT_EQUAL( main_counter.get_changes(), 1); 
-    TEST_EXPECT_EQUAL( main_counter.get_deletes(), 0); 
-    TEST_EXPECT_EQUAL( GB_read_pntr(GB_find(main, "test", SEARCH_CHILD)), "" );
-    TEST_EXPECT_NULL(  GB_undo(main, GB_UNDO_REDO)                           );
-    TEST_EXPECT_EQUAL( main_counter.get_creates(), 1); // BROKEN -- should be 0
-    TEST_EXPECT_EQUAL( main_counter.get_changes(), 1); 
-    TEST_EXPECT_EQUAL( main_counter.get_deletes(), 0); 
-    TEST_EXPECT_NULL(  GB_find(main, "test", SEARCH_CHILD)                   );
-    TEST_EXPECT_NULL(  GB_undo(main, GB_UNDO_UNDO)                           );
-    TEST_REJECT_NULL( gbd = GB_find(main, "test", SEARCH_CHILD) ); 
-    TEST_EXPECT_EQUAL( gbd_counter->get_creates(), 0);
-    TEST_EXPECT_EQUAL( gbd_counter->get_changes(), 0);
-    TEST_EXPECT_EQUAL( gbd_counter->get_deletes(), 0);
-
-    // re-establish counter
-    GB_begin_transaction(main);
-    delete gbd_counter;
-    gbd_counter = new cb_counter(gbd);
-    GB_commit_transaction(main);
-
-    // test undo write short string
-    const char* str = "testtest9012345";
-    GB_begin_transaction(main);
-    GB_write_string(gbd, str);
-    GB_commit_transaction(main);
-    TEST_EXPECT_EQUAL( gbd_counter->get_creates(), 1); // BROKEN?
-    TEST_EXPECT_EQUAL( gbd_counter->get_changes(), 1);
-    TEST_EXPECT_EQUAL( gbd_counter->get_deletes(), 0);
-    TEST_EXPECT_EQUAL( GB_read_pntr(GB_find(main, "test", SEARCH_CHILD)), str);
-    TEST_EXPECT_NULL(  GB_undo(main, GB_UNDO_UNDO)                           );
-    TEST_EXPECT_EQUAL( gbd_counter->get_creates(), 1); // BROKEN?
-    TEST_EXPECT_EQUAL( gbd_counter->get_changes(), 1);
-    TEST_EXPECT_EQUAL( gbd_counter->get_deletes(), 0);
-    TEST_EXPECT_EQUAL( GB_read_pntr(GB_find(main, "test", SEARCH_CHILD)), "");
-    TEST_EXPECT_NULL(  GB_undo(main, GB_UNDO_REDO)                           );
-    TEST_EXPECT_EQUAL( gbd_counter->get_creates(), 1); // BROKEN?
-    TEST_EXPECT_EQUAL( gbd_counter->get_changes(), 1);
-    TEST_EXPECT_EQUAL( gbd_counter->get_deletes(), 0);
-    TEST_EXPECT_EQUAL( GB_read_pntr(GB_find(main, "test", SEARCH_CHILD)), str);
-
-    delete gbd_counter;
-
-    // test undo delete short string
-    GB_begin_transaction(main);
-    GB_delete(gbd);
-    GB_commit_transaction(main);
-    TEST_EXPECT_NULL(  GB_find(main, "test", SEARCH_CHILD)                   );
-    TEST_EXPECT_NULL(  GB_undo(main, GB_UNDO_UNDO)                           );
-
-    //////////// THIS IS WHERE UNDO FAILS //////////////////
-    TEST_EXPECT_EQUAL__BROKEN( GB_read_pntr(GB_find(main, "test", SEARCH_CHILD)), str, (char*)NULL);
-    GB_close(main);
-    return; // remainder will fail now
-
-
-    TEST_EXPECT_NULL(  GB_undo(main, GB_UNDO_REDO)                           );
-    TEST_EXPECT_NULL(  GB_find(main, "test", SEARCH_CHILD)                   );
-    TEST_EXPECT_NULL(  GB_undo(main, GB_UNDO_UNDO)                           );
-    TEST_REJECT_NULL( gbd = GB_find(main, "test", SEARCH_CHILD) ); 
-
-    // test undo write "" and delete short string
-    GB_begin_transaction(main);
-    GB_write_string(gbd, str);
-    GB_delete(gbd);
-    GB_commit_transaction(main);
-    TEST_EXPECT_NULL(  GB_find(main, "test", SEARCH_CHILD)                   );
-    TEST_EXPECT_NULL(  GB_undo(main, GB_UNDO_UNDO)                           );
-    TEST_EXPECT_EQUAL( GB_read_pntr(GB_find(main, "test", SEARCH_CHILD)), str);
-    TEST_EXPECT_NULL(  GB_undo(main, GB_UNDO_REDO)                           );
-    TEST_EXPECT_NULL(  GB_find(main, "test", SEARCH_CHILD)                   );
-    TEST_EXPECT_NULL(  GB_undo(main, GB_UNDO_UNDO)                           );
-    TEST_REJECT_NULL( gbd = GB_find(main, "test", SEARCH_CHILD) ); 
-
-    //err = GB_write_string(gbd, "testtest9012345");
-
-    GB_close(main);
-}
-TEST_PUBLISH(TEST_GB_undo__basic);
-
-
-#endif // UNIT_TESTS

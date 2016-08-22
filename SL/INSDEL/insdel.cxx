@@ -640,12 +640,12 @@ inline AliDataPtr makeAliSeqData(char*& allocated_data, size_t elems, char gap, 
 #endif
 
 template<typename T>
-inline T*& copyof(const T* const_data, size_t elemsize, size_t elements) { // @@@ elemsize should be derived from type here (if possible)
+inline T*& copyof(const T* const_data, size_t elemsize, size_t elements) {
     static T *copy = NULL;
 
     size_t memsize = elemsize*elements;
     id_assert(!copy);
-    copy = (T*)ARB_alloc<char>(memsize);
+    copy = (T*)malloc(memsize);
     id_assert(copy);
     memcpy(copy, const_data, memsize);
     return copy;
@@ -658,7 +658,7 @@ inline T*& copyof(const T* const_data, size_t elemsize, size_t elements) { // @@
         size_t  s1 = (d1)->memsize();                           \
         size_t  s2 = (d2)->memsize();                           \
         TEST_EXPECT_EQUAL(s1, s2);                              \
-        void   *copy1 = ARB_alloc<char>(s1+s2);                 \
+        void   *copy1 = malloc(s1+s2);                          \
         void   *copy2 = reinterpret_cast<char*>(copy1)+s1;      \
         (d1)->copyTo(copy1);                                    \
         (d2)->copyTo(copy2);                                    \
@@ -669,7 +669,7 @@ inline T*& copyof(const T* const_data, size_t elemsize, size_t elements) { // @@
 #define TEST_EXPECT_COPY_EQUALS_ARRAY(adp,typedarray,asize) do{ \
         size_t  size    = (adp)->memsize();                     \
         TEST_EXPECT_EQUAL(size, asize);                         \
-        void   *ad_copy = ARB_alloc<char*>(size);               \
+        void   *ad_copy = malloc(size);                         \
         (adp)->copyTo(ad_copy);                                 \
         TEST_EXPECT_MEM_EQUAL(ad_copy, typedarray, size);       \
         free(ad_copy);                                          \
@@ -677,7 +677,7 @@ inline T*& copyof(const T* const_data, size_t elemsize, size_t elements) { // @@
 
 #define TEST_EXPECT_COPY_EQUALS_STRING(adp,str) do{             \
         size_t  size    = (adp)->memsize();                     \
-        char   *ad_copy = ARB_alloc<char>(size+1);              \
+        char   *ad_copy = (char*)malloc(size+1);                \
         (adp)->copyTo(ad_copy);                                 \
         ad_copy[size]   = 0;                                    \
         TEST_EXPECT_EQUAL(ad_copy, str);                        \
@@ -688,8 +688,8 @@ inline T*& copyof(const T* const_data, size_t elemsize, size_t elements) { // @@
 static void illegal_alidata_composition() {
     const int ELEMS = 5;
 
-    int  *i = ARB_alloc<int> (ELEMS);
-    char *c = ARB_alloc<char>(ELEMS);
+    int  *i = (int*)malloc(sizeof(int)*ELEMS);
+    char *c = (char*)malloc(sizeof(char)*ELEMS);
 
     concat(makeAliData(i, ELEMS, 0), makeAliData(c, ELEMS, '-'));
 }
@@ -699,7 +699,7 @@ template <typename T>
 inline T *makeCopy(AliDataPtr d) {
     TEST_EXPECT_EQUAL(d->unitsize(), sizeof(T));
     size_t  size = d->memsize();
-    T      *copy = (T*)ARB_alloc<char>(size);
+    T      *copy = (T*)malloc(size);
     d->copyTo(copy);
     return copy;
 }
@@ -886,8 +886,6 @@ void TEST_AliData() {
 
     TEST_FAILS_INSIDE_VALGRIND(TEST_EXPECT_CODE_ASSERTION_FAILS(illegal_alidata_composition)); // composing different unitsizes shall fail
 }
-
-TEST_PUBLISH(TEST_AliData);
 
 #endif // UNIT_TESTS
 
@@ -1161,7 +1159,7 @@ inline char *provide_insDelBuffer(size_t neededSpace) {
     if (insDelBuffer && insDelBuffer_size<neededSpace) free_insDelBuffer();
     if (!insDelBuffer) {
         insDelBuffer_size = neededSpace+10;
-        insDelBuffer      = ARB_alloc<char>(insDelBuffer_size);
+        insDelBuffer      = (char*)malloc(insDelBuffer_size);
     }
     return insDelBuffer;
 }
@@ -1174,55 +1172,6 @@ inline GB_CSTR alidata2buffer(const AliData& data) { // @@@ DRY vs copying code 
 
     return buffer;
 }
-
-// --------------------------------------------------------------------------------
-
-class EditedTerminal;
-
-class LazyAliData : public AliData, public SizeAwarable, virtual Noncopyable {
-    // internally transforms into SpecificAliData as soon as somebody tries to access the data.
-    // (implements lazy loading of sequence data, esp. useful when applying AliFormatCommand; see #702)
-
-    TerminalType       term_type;
-    EditedTerminal&    terminal;
-    mutable AliDataPtr loaded; // always is TypedAliData<T>
-
-    AliDataPtr loaded_data() const {
-        if (loaded.isNull()) load_data();
-        return loaded;
-    }
-
-public:
-    LazyAliData(const SizeAwarable& oversizable, size_t size_, TerminalType term_type_, EditedTerminal& terminal_)
-        : AliData(size_),
-          SizeAwarable(oversizable),
-          term_type(term_type_),
-          terminal(terminal_)
-    {}
-
-    size_t unitsize() const OVERRIDE {
-        // Note: information also known by EditedTerminal (only depends on data-type)
-        // No need to load data (doesnt harm atm as data is always used for more atm)
-        return loaded_data()->unitsize();
-    }
-    bool has_slice() const OVERRIDE {
-        id_assert(loaded_data()->has_slice() == false); // TypedAliData<T> never has_slice()!
-        return false;
-    }
-
-    int operate_on_mem(void *mem, size_t start, size_t count, memop op) const OVERRIDE { return loaded_data()->operate_on_mem(mem, start, count, op); }
-    int cmp_data(size_t start, const AliData& other, size_t ostart, size_t count) const OVERRIDE { return loaded_data()->cmp_data(start, other, ostart, count); }
-
-    UnitPtr unit_left_of(size_t pos) const OVERRIDE { return loaded_data()->unit_left_of(pos); }
-    UnitPtr unit_right_of(size_t pos) const OVERRIDE { return loaded_data()->unit_right_of(pos); }
-
-    AliDataPtr create_gap(size_t gapsize, const UnitPair& gapinfo) const OVERRIDE { return loaded_data()->create_gap(gapsize, gapinfo); }
-    __ATTR__NORETURN AliDataPtr slice_down(size_t /*start*/, size_t /*count*/) const OVERRIDE {
-        GBK_terminate("logic error: slice_down called for explicit LazyAliData");
-    }
-
-    void load_data() const; // has to be public to be a friend of EditedTerminal
-};
 
 // --------------------------------------------------------------------------------
 
@@ -1261,7 +1210,17 @@ class EditedTerminal : virtual Noncopyable {
         return prefers_dots ? '.' : '-';
     }
 
-    AliDataPtr load_data(const SizeAwarable& oversizable, size_t size_, TerminalType term_type) {
+public:
+    EditedTerminal(GBDATA *gb_data_, GB_TYPES type_, const char *item_name_, size_t size_, TerminalType term_type, const Alignment& ali, const Deletable& deletable_)
+        : gb_data(gb_data_),
+          type(type_),
+          item_name(item_name_),
+          deletable(deletable_),
+          error(NULL)
+    {
+        SizeAwarable oversizable(does_allow_oversize(term_type), ali.get_len());
+
+        // @@@ DRY cases
         switch(type) {
             case GB_STRING: {
                 const char *s = GB_read_char_pntr(gb_data);
@@ -1305,21 +1264,6 @@ class EditedTerminal : virtual Noncopyable {
         }
 
         id_assert(implicated(!error, size_ == data->elems()));
-        return data;
-    }
-
-    friend void LazyAliData::load_data() const;
-
-public:
-    EditedTerminal(GBDATA *gb_data_, GB_TYPES type_, const char *item_name_, size_t size_, TerminalType term_type, const Alignment& ali, const Deletable& deletable_)
-        : gb_data(gb_data_),
-          type(type_),
-          item_name(item_name_),
-          deletable(deletable_),
-          error(NULL)
-    {
-        SizeAwarable oversizable(does_allow_oversize(term_type), ali.get_len());
-        data = new LazyAliData(oversizable, size_, term_type, *this);
     }
 
     GB_ERROR apply(const AliEditCommand& cmd, bool& did_modify) {
@@ -1351,10 +1295,6 @@ public:
         return error;
     }
 };
-
-void LazyAliData::load_data() const {
-    loaded = terminal.load_data(*this, elems(), term_type);
-}
 
 GB_ERROR AliEditor::apply_to_terminal(GBDATA *gb_data, TerminalType term_type, const char *item_name, const Alignment& ali) const {
     GB_TYPES gbtype  = GB_read_type(gb_data);
@@ -1693,7 +1633,7 @@ static const char *read_item_entry(GBDATA *gb_item, const char *ali_name, const 
     return result;
 }
 static char *ints2string(const GB_UINT4 *ints, size_t count) {
-    char *str = ARB_alloc<char>(count+1);
+    char *str = (char*)malloc(count+1);
     for (size_t c = 0; c<count; ++c) {
         str[c] = (ints[c]<10) ? ints[c]+'0' : '?';
     }
@@ -1701,14 +1641,14 @@ static char *ints2string(const GB_UINT4 *ints, size_t count) {
     return str;
 }
 static GB_UINT4 *string2ints(const char *str, size_t count) {
-    GB_UINT4 *ints = ARB_alloc<GB_UINT4>(count);
+    GB_UINT4 *ints = (GB_UINT4*)malloc(sizeof(GB_UINT4)*count);
     for (size_t c = 0; c<count; ++c) {
         ints[c] = int(str[c]-'0');
     }
     return ints;
 }
 static char *floats2string(const float *floats, size_t count) {
-    char *str = ARB_alloc<char>(count+1);
+    char *str = (char*)malloc(count+1);
     for (size_t c = 0; c<count; ++c) {
         str[c] = char(floats[c]*64.0+0.5)+' '+1;
     }
@@ -1716,7 +1656,7 @@ static char *floats2string(const float *floats, size_t count) {
     return str;
 }
 static float *string2floats(const char *str, size_t count) {
-    float *floats = ARB_alloc<float>(count);
+    float *floats = (float*)malloc(sizeof(float)*count);
     for (size_t c = 0; c<count; ++c) {
         floats[c] = float(str[c]-' '-1)/64.0;
     }
@@ -1852,7 +1792,7 @@ static ARB_ERROR add_some_SAIs(GBDATA *gb_main, const char *ali_name) {
     return error;
 }
 
-static void test_insert_delete_DB() {
+void TEST_insert_delete_DB() {
     GB_shell    shell;
     ARB_ERROR   error;
     const char *ali_name = "ali_mini";
@@ -2166,9 +2106,6 @@ static void test_insert_delete_DB() {
     GB_close(gb_main);
     TEST_EXPECT_NO_ERROR(error.deliver());
 }
-void TEST_insert_delete_DB() {
-    test_insert_delete_DB(); // wrap test code in subroutine (otherwise nm 2.24 fails to provide source-location, even if TEST_PUBLISH is used)
-}
 
 void TEST_insert_delete_DB_using_SAI() {
     GB_shell    shell;
@@ -2290,7 +2227,6 @@ void TEST_insert_delete_DB_using_SAI() {
     GB_close(gb_main);
     TEST_EXPECT_NO_ERROR(error.deliver());
 }
-TEST_PUBLISH(TEST_insert_delete_DB_using_SAI);
 
 #endif // UNIT_TESTS
 

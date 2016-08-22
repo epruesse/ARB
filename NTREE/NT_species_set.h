@@ -25,19 +25,20 @@ class AWT_species_set;
 class arb_progress;
 
 class AWT_species_set_root : virtual Noncopyable {
-    long species_counter;
-    long nspecies;
-    long nsets;
-
+    long              species_counter;
+    long              nsets;
     AWT_species_set **sets;
     int               diff_bits[256];
 
     arb_progress *progress;
-    GBDATA       *gb_main;
-    GB_HASH      *species_hash;
 
 public:
-    AWT_species_set_root(GBDATA *gb_main, long nspecies_, arb_progress *progress_);
+    long     nspecies;
+    GBDATA  *gb_main;
+    GB_HASH *species_hash;
+
+    // REAL PUBLIC
+    AWT_species_set_root(GBDATA *gb_main, long nspecies, arb_progress *progress_);
     ~AWT_species_set_root();
 
     void             add(const char *species_name);                                                // max nspecies
@@ -52,8 +53,6 @@ public:
 
     long bitstring_bytes() const { return nspecies/8 + 1; }
     long bitstring_longs() const { return bitstring_bytes()/sizeof(long) + 1; }
-
-    long get_species_index(const char *species_name) const { return GBS_read_hash(species_hash, species_name); }
 };
 
 

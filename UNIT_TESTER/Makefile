@@ -19,8 +19,9 @@ ALL_OBJECTS = $(TESTER_OBJECTS) $(ENVIRONMENT_OBJECTS)
 ARBROOT=..
 
 TEST_ENVIRONMENT_LIBS = \
-	$(ARBROOT)/SERVERCNTRL/SERVERCNTRL.a \
 	$(ARBROOT)/PROBE_COM/client.a \
+	$(ARBROOT)/PROBE_COM/common.a \
+	$(ARBROOT)/SERVERCNTRL/SERVERCNTRL.a \
 
 
 $(MAIN): $(TESTER_OBJECTS) test_environment
@@ -29,14 +30,14 @@ $(MAIN): $(TESTER_OBJECTS) test_environment
 $(ALL_OBJECTS): Makefile.setup.local Makefile
 
 test_environment: $(ALL_OBJECTS) $(TEST_ENVIRONMENT_LIBS)
-	$(LINK_EXECUTABLE) test_environment $(ALL_OBJECTS) $(EXECLIBS) $(LIBPATH) $(ARBDB_LIB) $(TEST_ENVIRONMENT_LIBS) $(ARB_GLIB_LIBS)
+	$(LINK_EXECUTABLE) test_environment $(ALL_OBJECTS) $(LIBPATH) $(ARBDB_LIB) $(TEST_ENVIRONMENT_LIBS) $(ARB_GLIB_LIBS) $(EXECLIBS)
 
 .cxx.o:
-	$(A_CXX) $(cflags) $(cxxflags) $(LOCAL_DEFINES) -c $< -DDEADLOCKGUARD=$(DEADLOCKGUARD) $(CXX_INCLUDES) $(POST_COMPILE) $<
+	$(A_CXX) $(cflags) $(cxxflags) $(LOCAL_DEFINES) -c $< -DDEADLOCKGUARD=$(DEADLOCKGUARD) $(CXX_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(ALL_OBJECTS) *.a test_environment skipslow.stamp
-	rm -rf logs tests tests.slow
+	rm -rf logs tests
 	$(MAKE) -f Makefile.test clean
 
 
@@ -69,7 +70,6 @@ TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_defs.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_diff.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_error.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_file.h
-TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_mem.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_msg.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_simple_assert.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_str.h

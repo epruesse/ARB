@@ -37,6 +37,11 @@ char *aw_input(const char *title, const char *prompt, const char *default_input)
 char *aw_input(const char *prompt, const char *default_input);
 inline char *aw_input(const char *prompt) { return aw_input(prompt, NULL); }
 
+char *aw_string_selection     (const char *title, const char *prompt, const char *default_value, const char *value_list, const char *buttons);
+char *aw_string_selection2awar(const char *title, const char *prompt, const char *awar_name,     const char *value_list, const char *buttons);
+
+int aw_string_selection_button();   // returns index of last selected button (destroyed by aw_string_selection and aw_input)
+
 char *aw_file_selection(const char *title, const char *dir, const char *def_name, const char *suffix);
 
 class  AW_root_Motif;
@@ -108,13 +113,16 @@ public:
     AW_active      global_mask;
     bool           focus_follows_mouse;
     GB_HASH       *hash_table_for_variables;
+    bool           variable_set_by_toggle_field;
     int            number_of_toggle_fields;
     int            number_of_option_menus;
     char          *program_name;
-    bool           disable_callbacks;
-    AW_window     *current_modal_window;
-    int            active_windows;
 
+    bool            disable_callbacks;
+    AW_window      *current_modal_window;
+    AW_root_cblist *focus_callback_list;
+
+    int  active_windows;
     void window_show();         // a window is set to screen
     void window_hide(AW_window *aww);
 
@@ -145,6 +153,8 @@ public:
     void add_timed_callback(int ms, const TimedCallback& tcb);
     void add_timed_callback_never_disabled(int ms, const TimedCallback& tcb);
 
+    bool is_focus_callback(AW_RCB fcb) const;
+
     AW_awar *awar(const char *awar);
     AW_awar *awar_no_error(const char *awar);
 
@@ -153,7 +163,7 @@ public:
     AW_awar *awar_string (const char *var_name, const char *default_value = "", AW_default default_file = AW_ROOT_DEFAULT);
     AW_awar *awar_int    (const char *var_name, long default_value = 0,         AW_default default_file = AW_ROOT_DEFAULT);
     AW_awar *awar_float  (const char *var_name, float default_value = 0.0,      AW_default default_file = AW_ROOT_DEFAULT);
-    AW_awar *awar_pointer(const char *var_name, GBDATA *default_value = NULL,   AW_default default_file = AW_ROOT_DEFAULT);
+    AW_awar *awar_pointer(const char *var_name, void *default_value = NULL,     AW_default default_file = AW_ROOT_DEFAULT);
 
     AW_awar *label_is_awar(const char *label); // returns awar, if label refers to one (used by buttons, etc.)
 
@@ -186,6 +196,9 @@ public:
 #endif // DEBUG
 };
 
+const char *AW_font_2_ascii(AW_font font_nr);
+int         AW_font_2_xfig(AW_font font_nr);
+
 bool ARB_global_awars_initialized();
 bool ARB_in_expert_mode(AW_root *awr);
 inline bool ARB_in_novice_mode(AW_root *awr) { return !ARB_in_expert_mode(awr); }
@@ -199,6 +212,8 @@ __ATTR__USERESULT_TODO inline GB_ERROR ARB_init_global_awars(AW_root *aw_root, A
 }
 
 inline AW_default get_AW_ROOT_DEFAULT() { return AW_root::SINGLETON->check_properties(NULL); }
+
+void AW_system(AW_window *aww, const char *command, const char *auto_help_file);
 
 #else
 #error aw_root.hxx included twice

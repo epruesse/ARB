@@ -69,11 +69,6 @@ NOT4PERL void GB_dump(GBDATA *gbd);
 NOT4PERL void GB_dump_no_limit(GBDATA *gbd);
 GB_ERROR GB_fix_database(GBDATA *gb_main);
 
-/* ad_cb.cxx */
-GBDATA *GB_get_gb_main_during_cb(void);
-NOT4PERL const void *GB_read_old_value(void);
-long GB_read_old_size(void);
-
 /* ad_load.cxx */
 void GB_set_verbose(void);
 void GB_set_next_main_idx(long idx);
@@ -86,13 +81,6 @@ GB_ERROR GB_save(GBDATA *gb, const char *path, const char *savetype);
 GB_ERROR GB_create_parent_directory(const char *path);
 GB_ERROR GB_create_directory(const char *path);
 GB_ERROR GB_save_in_arbprop(GBDATA *gb, const char *path, const char *savetype);
-const char *GB_get_supported_compression_flags(bool verboose);
-
-class ArbDBWriter;
-
-GB_ERROR GB_start_streamed_save_as(GBDATA *gbd, const char *path, const char *savetype, ArbDBWriter*& writer);
-GB_ERROR GB_stream_save_part(ArbDBWriter *writer, GBDATA *from, GBDATA *till);
-GB_ERROR GB_finish_stream_save(ArbDBWriter*& writer);
 GB_ERROR GB_save_as(GBDATA *gbd, const char *path, const char *savetype);
 GB_ERROR GB_delete_database(GB_CSTR filename);
 GB_ERROR GB_save_quick_as(GBDATA *gbd, const char *path);
@@ -109,8 +97,6 @@ char *GB_set_cache_size(GBDATA *gbd, size_t size);
 GB_ERROR GBCMS_open(const char *path, long timeout, GBDATA *gb_main);
 void GBCMS_shutdown(GBDATA *gbd);
 bool GBCMS_accept_calls(GBDATA *gbd, bool wait_extra_time);
-void GB_set_remote_action(GBDATA *gbd, bool in_action);
-bool GB_inside_remote_action(GBDATA *gbd);
 long GB_read_clients(GBDATA *gbd);
 bool GB_is_server(GBDATA *gbd);
 GBDATA *GBCMC_find(GBDATA *gbd, const char *key, GB_TYPES type, const char *str, GB_CASE case_sens, GB_SEARCH_TYPE gbs);
@@ -127,7 +113,6 @@ char *GB_find_latest_file(const char *dir, const char *mask);
 char *GB_lib_file(bool warn_when_not_found, const char *libprefix, const char *filename);
 char *GB_property_file(bool warn_when_not_found, const char *filename);
 void GBS_read_dir(StrArray& names, const char *dir, const char *mask);
-const char *GB_get_arb_revision_tag(void);
 
 /* adhash.cxx */
 GB_HASH *GBS_create_hash(long estimated_elements, GB_CASE case_sens);
@@ -142,7 +127,7 @@ long GBS_incr_hash(GB_HASH *hs, const char *key);
 void GBS_free_hash(GB_HASH *hs);
 void GBS_hash_do_loop(GB_HASH *hs, gb_hash_loop_type func, void *client_data);
 void GBS_hash_do_const_loop(const GB_HASH *hs, gb_hash_const_loop_type func, void *client_data);
-size_t GBS_hash_elements(const GB_HASH *hs);
+size_t GBS_hash_count_elems(const GB_HASH *hs);
 const char *GBS_hash_next_element_that(const GB_HASH *hs, const char *last_key, bool (*condition)(const char *key, long val, void *cd), void *cd);
 void GBS_hash_do_sorted_loop(GB_HASH *hs, gb_hash_loop_type func, gbs_hash_compare_function sorter, void *client_data);
 int GBS_HCF_sortedByKey(const char *k0, long dummy_1x, const char *k1, long dummy_2x);
@@ -176,6 +161,11 @@ int GB_get_ACISRT_trace(void);
 GBDATA *GB_follow_link(GBDATA *gb_link);
 GB_ERROR GB_install_link_follower(GBDATA *gb_main, const char *link_type, GB_Link_Follower link_follower);
 
+/* admalloc.cxx */
+NOT4PERL void *GB_calloc(unsigned int nelem, unsigned int elsize);
+NOT4PERL void *GB_recalloc(void *ptr, unsigned int oelem, unsigned int nelem, unsigned int elsize);
+void GB_memerr(void);
+
 /* admap.cxx */
 bool GB_supports_mapfile(void);
 
@@ -189,7 +179,6 @@ char *GBS_string_eval(const char *insource, const char *icommand, GBDATA *gb_con
 
 /* admath.cxx */
 double GB_log_fak(int n);
-void GB_random_seed(unsigned seed);
 int GB_random(int range);
 
 /* adoptimize.cxx */
@@ -213,7 +202,7 @@ const char *GB_first_non_key_char(const char *str);
 GBDATA *GB_search(GBDATA *gbd, const char *fieldpath, GB_TYPES create);
 GBDATA *GB_searchOrCreate_string(GBDATA *gb_container, const char *fieldpath, const char *default_value);
 GBDATA *GB_searchOrCreate_int(GBDATA *gb_container, const char *fieldpath, long default_value);
-GBDATA *GB_searchOrCreate_float(GBDATA *gb_container, const char *fieldpath, float default_value);
+GBDATA *GB_searchOrCreate_float(GBDATA *gb_container, const char *fieldpath, double default_value);
 long GB_number_of_marked_subentries(GBDATA *gbd);
 GBDATA *GB_first_marked(GBDATA *gbd, const char *keystring);
 GBDATA *GB_following_marked(GBDATA *gbd, const char *keystring, size_t skip_over);
@@ -227,6 +216,7 @@ char *GB_map_FILE(FILE *in, int writeable);
 char *GB_map_file(const char *path, int writeable);
 GB_ULONG GB_time_of_day(void);
 GB_ERROR GB_textprint(const char *path) __ATTR__USERESULT;
+char *GB_executable(GB_CSTR exe_name);
 GB_CSTR GB_getenvUSER(void);
 GB_CSTR GB_getenvARBHOME(void);
 GB_CSTR GB_getenvARBMACRO(void);
@@ -310,7 +300,7 @@ char *GBS_ptserver_id_to_choice(int i, int showBuild);
 
 /* arbdb.cxx */
 const char *GB_get_type_name(GBDATA *gbd);
-float GB_atof(const char *str);
+double GB_atof(const char *str);
 GB_BUFFER GB_give_buffer(size_t size);
 GB_BUFFER GB_increase_buffer(size_t size);
 NOT4PERL int GB_give_buffer_size(void);
@@ -325,7 +315,7 @@ void GB_close(GBDATA *gbd);
 long GB_read_int(GBDATA *gbd);
 int GB_read_byte(GBDATA *gbd);
 GBDATA *GB_read_pointer(GBDATA *gbd);
-float GB_read_float(GBDATA *gbd);
+double GB_read_float(GBDATA *gbd);
 long GB_read_count(GBDATA *gbd);
 long GB_read_memuse(GBDATA *gbd);
 long GB_calc_structure_size(GBDATA *gbd);
@@ -346,15 +336,12 @@ GB_UINT4 *GB_read_ints(GBDATA *gbd);
 GB_CFLOAT *GB_read_floats_pntr(GBDATA *gbd);
 float *GB_read_floats(GBDATA *gbd);
 char *GB_read_as_string(GBDATA *gbd);
-NOT4PERL uint8_t GB_read_lossless_byte(GBDATA *gbd, GB_ERROR& error);
-NOT4PERL int32_t GB_read_lossless_int(GBDATA *gbd, GB_ERROR& error);
-NOT4PERL float GB_read_lossless_float(GBDATA *gbd, GB_ERROR& error);
 long GB_read_from_ints(GBDATA *gbd, long index);
 double GB_read_from_floats(GBDATA *gbd, long index);
 GB_ERROR GB_write_byte(GBDATA *gbd, int i);
 GB_ERROR GB_write_int(GBDATA *gbd, long i);
 GB_ERROR GB_write_pointer(GBDATA *gbd, GBDATA *pointer);
-GB_ERROR GB_write_float(GBDATA *gbd, float f);
+GB_ERROR GB_write_float(GBDATA *gbd, double f);
 GB_ERROR GB_write_pntr(GBDATA *gbd, const char *s, size_t bytes_size, size_t stored_size);
 GB_ERROR GB_write_string(GBDATA *gbd, const char *s);
 GB_ERROR GB_write_link(GBDATA *gbd, const char *s);
@@ -362,10 +349,7 @@ GB_ERROR GB_write_bits(GBDATA *gbd, const char *bits, long size, const char *c_0
 GB_ERROR GB_write_bytes(GBDATA *gbd, const char *s, long size);
 GB_ERROR GB_write_ints(GBDATA *gbd, const GB_UINT4 *i, long size);
 GB_ERROR GB_write_floats(GBDATA *gbd, const float *f, long size);
-GB_ERROR GB_write_autoconv_string(GBDATA *gbd, const char *val);
-GB_ERROR GB_write_lossless_byte(GBDATA *gbd, uint8_t byte);
-GB_ERROR GB_write_lossless_int(GBDATA *gbd, int32_t i);
-GB_ERROR GB_write_lossless_float(GBDATA *gbd, float f);
+GB_ERROR GB_write_as_string(GBDATA *gbd, const char *val);
 int GB_read_security_write(GBDATA *gbd);
 int GB_read_security_read(GBDATA *gbd);
 int GB_read_security_delete(GBDATA *gbd);
@@ -409,19 +393,20 @@ GB_ERROR GB_commit_transaction(GBDATA *gbd);
 GB_ERROR GB_end_transaction(GBDATA *gbd, GB_ERROR error);
 void GB_end_transaction_show_error(GBDATA *gbd, GB_ERROR error, void (*error_handler)(GB_ERROR));
 int GB_get_transaction_level(GBDATA *gbd);
-GB_ERROR GB_release(GBDATA *gbd);
+GBDATA *GB_get_gb_main_during_cb(void);
+NOT4PERL const void *GB_read_old_value(void);
+long GB_read_old_size(void);
 int GB_nsons(GBDATA *gbd);
 void GB_disable_quicksave(GBDATA *gbd, const char *reason);
 GB_ERROR GB_resort_data_base(GBDATA *gb_main, GBDATA **new_order_list, long listsize);
 bool GB_user_flag(GBDATA *gbd, unsigned char user_bit);
-void GB_raise_user_flag(GBDATA *gbd, unsigned char user_bit);
+void GB_set_user_flag(GBDATA *gbd, unsigned char user_bit);
 void GB_clear_user_flag(GBDATA *gbd, unsigned char user_bit);
-void GB_write_user_flag(GBDATA *gbd, unsigned char user_bit, bool state);
 void GB_write_flag(GBDATA *gbd, long flag);
 int GB_read_flag(GBDATA *gbd);
 void GB_touch(GBDATA *gbd);
 char GB_type_2_char(GB_TYPES type);
-void GB_print_debug_information(struct Unfixed_cb_parameter *, GBDATA *gb_main);
+GB_ERROR GB_print_debug_information(void *, GBDATA *gb_main);
 int GB_info(GBDATA *gbd);
 long GB_number_of_subentries(GBDATA *gbd);
 

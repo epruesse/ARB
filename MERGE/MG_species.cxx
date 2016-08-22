@@ -22,7 +22,6 @@
 #include <aw_question.hxx>
 #include <arb_str.h>
 #include <arb_strbuf.h>
-#include <arb_global_defs.h>
 
 #define AWAR_SPECIES_SRC AWAR_MERGE_TMP_SRC "name"
 #define AWAR_FIELD_SRC   AWAR_MERGE_TMP_SRC "field"
@@ -43,8 +42,7 @@ const char *MG_left_AWAR_SPECIES_NAME() { return AWAR_SPECIES_SRC; }
 void MG_create_species_awars(AW_root *aw_root, AW_default aw_def) {
     aw_root->awar_string(AWAR_SPECIES_SRC, "", aw_def);
     aw_root->awar_string(AWAR_SPECIES_DST, "", aw_def);
-    aw_root->awar_string(AWAR_FIELD_SRC, NO_FIELD_SELECTED, aw_def);
-    aw_root->awar_string(AWAR_FIELD_DST, NO_FIELD_SELECTED, aw_def);
+    aw_root->awar_string(AWAR_FIELD_SRC,   "", aw_def);
     aw_root->awar_int(AWAR_APPEND);
 }
 
@@ -275,8 +273,8 @@ static void MG_transfer_fields_cb(AW_window *aww) {
     long      append = aww->get_root()->awar(AWAR_APPEND)->read_int();
     GB_ERROR  error  = 0;
 
-    if (strcmp(field, NO_FIELD_SELECTED) == 0) {
-        error = "Please select the field you want to transfer";
+    if (field[0] == 0) {
+        error = "Please select a field you want to transfer";
     }
     else if (strcmp(field, "name") == 0) {
         error = "Transferring the 'name' field is forbidden";
@@ -335,7 +333,7 @@ static void MG_transfer_fields_cb(AW_window *aww) {
                                 free(src_val);
                                 free(dst_val);
                             }
-                            else { // not GB_STRING or dont append
+                            else { // not GB_STRING
                                 error = GB_copy(gb_dst_field, gb_src_field);
                                 if (!error) GB_write_flag(gb_dst_species, 1);
                                 if (transfer_of_alignment && !error) {
@@ -376,47 +374,45 @@ static AW_window *MG_create_transfer_fields_window(AW_root *aw_root) {
     GB_transaction    ta(GLOBAL_gb_src);
     AW_window_simple *aws = new AW_window_simple;
 
-    aws->init(aw_root, "MERGE_XFER_FIELD_OF_LISTED", "Transfer field of listed");
+    aws->init(aw_root, "MERGE_TRANSFER_FIELD", "TRANSFER FIELD");
     aws->load_xfig("merge/mg_transfield.fig");
-
-    aws->button_length(10);
+    aws->button_length(13);
 
     aws->callback(AW_POPDOWN);
     aws->at("close");
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->at("help");
-    aws->callback(makeHelpCallback("mg_xfer_field_of_listed.hlp"));
-    aws->create_button("HELP", "HELP");
-
-    aws->at("append");
-    aws->label("Append data?");
-    aws->create_toggle(AWAR_APPEND);
-
-    create_itemfield_selection_button(aws, FieldSelDef(AWAR_FIELD_SRC, GLOBAL_gb_src, SPECIES_get_selector(), FIELD_FILTER_ANY_FIELD, "source/target field"), "scandb");
-
     aws->at("go");
     aws->callback(MG_transfer_fields_cb);
     aws->create_button("GO", "GO");
 
-    return aws;
+    aws->at("help");
+    aws->callback(makeHelpCallback("mg_spec_sel_field.hlp"));
+    aws->create_button("HELP", "HELP");
+
+    aws->at("append");
+    aws->create_toggle(AWAR_APPEND);
+
+    create_selection_list_on_itemfields(GLOBAL_gb_src, aws, AWAR_FIELD_SRC, true, FIELD_FILTER_NDS, "scandb", "rescandb", SPECIES_get_selector(), 20, 10, SF_STANDARD, NULL);
+
+    return (AW_window*)aws;
 }
 
-static void MG_transfer_single_field_cb(AW_window *aww) {
+static void MG_move_field_cb(AW_window *aww) {
     if (MG_copy_and_check_alignments() != 0) return;
 
     AW_root  *aw_root = aww->get_root();
     char     *field   = aww->get_root()->awar(AWAR_FIELD_SRC)->read_string();
     GB_ERROR  error   = 0;
 
-    if (strcmp(field, NO_FIELD_SELECTED) == 0) {
+    if (field[0] == 0) {
         error = "Please select a field to transfer";
     }
     else if (strcmp(field, "name") == 0) {
         error = "You are not allowed to transfer the 'name' field";
     }
     else {
-        arb_progress progress("Cross copy field");
+        arb_progress progress("Cross Move field");
         error             = GB_begin_transaction(GLOBAL_gb_src);
         if (!error) error = GB_begin_transaction(GLOBAL_gb_dst);
 
@@ -439,7 +435,7 @@ static void MG_transfer_single_field_cb(AW_window *aww) {
 
             if (!error) {
                 GBDATA *gb_src_field = GB_search(gb_src_species, field, GB_FIND);
-                if (!gb_src_field) error = GBS_global_string("Source species has no field '%s'", field);
+                if (!gb_src_field) error = GBS_global_string("Species 1 has no field '%s'", field);
 
                 if (!error) {
                     GB_TYPES  src_type     = GB_read_type(gb_src_field);
@@ -477,29 +473,30 @@ static void MG_transfer_single_field_cb(AW_window *aww) {
     free(field);
 }
 
-static AW_window *create_mg_transfer_single_field_window(AW_root *aw_root) {
+static AW_window *create_mg_move_fields_window(AW_root *aw_root) {
     GB_transaction ta(GLOBAL_gb_src);
 
     AW_window_simple *aws = new AW_window_simple;
-    aws->init(aw_root, "MERGE_XFER_SINGLE_FIELD", "Transfer field of selected");
-    aws->load_xfig("merge/mg_transfield.fig");
-    aws->button_length(10);
+    aws->init(aw_root, "MERGE_CROSS_MOVE_FIELD", "CROSS MOVE FIELD");
+    aws->load_xfig("merge/mg_movefield.fig");
+    aws->button_length(13);
 
     aws->callback(AW_POPDOWN);
     aws->at("close");
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->at("help");
-    aws->callback(makeHelpCallback("mg_xfer_field_of_sel.hlp"));
-    aws->create_button("HELP", "HELP");
-
-    create_itemfield_selection_button(aws, FieldSelDef(AWAR_FIELD_SRC, GLOBAL_gb_src, SPECIES_get_selector(), FIELD_UNFILTERED, "source/target field"), "scandb");
-
     aws->at("go");
-    aws->callback(MG_transfer_single_field_cb);
+    aws->callback(MG_move_field_cb);
     aws->create_button("GO", "GO");
 
-    return aws;
+    aws->at("help");
+    aws->callback(makeHelpCallback("movefield.hlp"));
+    aws->create_button("HELP", "HELP");
+
+
+    create_selection_list_on_itemfields(GLOBAL_gb_src, aws, AWAR_FIELD_SRC, true, FIELD_FILTER_NDS, "scandb", "rescandb", SPECIES_get_selector(), 20, 10, SF_STANDARD, NULL);
+
+    return (AW_window*)aws;
 }
 
 static void MG_merge_tagged_field_cb(AW_window *aww) {
@@ -511,62 +508,51 @@ static void MG_merge_tagged_field_cb(AW_window *aww) {
 
         char *src_field = awr->awar(AWAR_FIELD_SRC)->read_string();
         char *dst_field = awr->awar(AWAR_FIELD_DST)->read_string();
+        char *src_tag   = awr->awar(AWAR_TAG_SRC)->read_string();
+        char *dst_tag   = awr->awar(AWAR_TAG_DST)->read_string();
+        char *del_tag   = awr->awar(AWAR_TAG_DEL)->read_string();
 
-        if (strcmp(src_field, NO_FIELD_SELECTED) == 0 ||
-            strcmp(dst_field, NO_FIELD_SELECTED) == 0)
-        {
-            error = "Please select source- and target-fields.";
-        }
+        arb_progress progress("Merging tagged fields", mg_count_queried(GLOBAL_gb_src));
 
-        if (!error) {
-            char *src_tag = awr->awar(AWAR_TAG_SRC)->read_string();
-            char *dst_tag = awr->awar(AWAR_TAG_DST)->read_string();
-            char *del_tag = awr->awar(AWAR_TAG_DEL)->read_string();
-
-            arb_progress progress("Merging tagged fields", mg_count_queried(GLOBAL_gb_src));
-
-            GBDATA *gb_dest_species_data     = GBT_get_species_data(GLOBAL_gb_dst);
-            if (!gb_dest_species_data) error = GB_await_error();
-            else {
-                for (GBDATA *gb_src_species = GBT_first_species(GLOBAL_gb_src);
-                     gb_src_species && !error;
-                     gb_src_species = GBT_next_species(gb_src_species))
-                {
-                    if (IS_QUERIED_SPECIES(gb_src_species)) {
-                        char *name       = GBT_read_string(gb_src_species, "name");
-                        if (!name) error = GB_await_error();
+        GBDATA *gb_dest_species_data     = GBT_get_species_data(GLOBAL_gb_dst);
+        if (!gb_dest_species_data) error = GB_await_error();
+        else {
+            for (GBDATA *gb_src_species = GBT_first_species(GLOBAL_gb_src);
+                 gb_src_species && !error;
+                 gb_src_species = GBT_next_species(gb_src_species))
+            {
+                if (IS_QUERIED_SPECIES(gb_src_species)) {
+                    char *name       = GBT_read_string(gb_src_species, "name");
+                    if (!name) error = GB_await_error();
+                    else {
+                        GBDATA *gb_dst_species     = GBT_find_or_create_species_rel_species_data(gb_dest_species_data, name);
+                        if (!gb_dst_species) error = GB_await_error();
                         else {
-                            GBDATA *gb_dst_species     = GBT_find_or_create_species_rel_species_data(gb_dest_species_data, name);
-                            if (!gb_dst_species) error = GB_await_error();
+                            char *src_val = GBT_readOrCreate_string(gb_src_species, src_field, "");
+                            char *dst_val = GBT_readOrCreate_string(gb_dst_species, dst_field, "");
+
+                            if (!src_val || !dst_val) error = GB_await_error();
                             else {
-                                char *src_val = GBT_readOrCreate_string(gb_src_species, src_field, "");
-                                char *dst_val = GBT_readOrCreate_string(gb_dst_species, dst_field, "");
+                                char *sum = GBS_merge_tagged_strings(src_val, src_tag, del_tag,
+                                                                     dst_val, dst_tag, del_tag);
 
-                                if (!src_val || !dst_val) error = GB_await_error();
-                                else {
-                                    char *sum = GBS_merge_tagged_strings(src_val, src_tag, del_tag,
-                                                                         dst_val, dst_tag, del_tag);
-
-                                    if (!sum) error = GB_await_error();
-                                    else error      = GBT_write_string(gb_dst_species, dst_field, sum);
-                                    free(sum);
-                                }
-                                free(dst_val);
-                                free(src_val);
+                                if (!sum) error = GB_await_error();
+                                else error      = GBT_write_string(gb_dst_species, dst_field, sum);
+                                free(sum);
                             }
+                            free(dst_val);
+                            free(src_val);
                         }
-                        free(name);
-                        progress.inc_and_check_user_abort(error);
                     }
+                    free(name);
+                    progress.inc_and_check_user_abort(error);
                 }
             }
-
-            if (error) progress.done();
-
-            free(del_tag);
-            free(dst_tag);
-            free(src_tag);
         }
+
+        free(del_tag);
+        free(dst_tag);
+        free(src_tag);
         free(dst_field);
         free(src_field);
     }
@@ -579,13 +565,16 @@ static AW_window *create_mg_merge_tagged_fields_window(AW_root *aw_root) {
 
     GB_transaction ta(GLOBAL_gb_src);
 
+    aw_root->awar_string(AWAR_FIELD_SRC, "full_name");
+    aw_root->awar_string(AWAR_FIELD_DST, "full_name");
+
     aw_root->awar_string(AWAR_TAG_SRC, "S");
     aw_root->awar_string(AWAR_TAG_DST, "D");
 
     aw_root->awar_string(AWAR_TAG_DEL, "S*");
 
     aws = new AW_window_simple;
-    aws->init(aw_root, "MERGE_TAGGED_FIELD", "Merge tagged field");
+    aws->init(aw_root, "MERGE_TAGGED_FIELDS", "MERGE TAGGED FIELDS");
     aws->load_xfig("merge/mg_mergetaggedfield.fig");
     aws->button_length(13);
 
@@ -606,10 +595,10 @@ static AW_window *create_mg_merge_tagged_fields_window(AW_root *aw_root) {
 
     aws->at("del1");    aws->create_input_field(AWAR_TAG_DEL, 5);
 
-    create_itemfield_selection_button(aws, FieldSelDef(AWAR_FIELD_SRC, GLOBAL_gb_src, SPECIES_get_selector(), FIELD_FILTER_STRING, "source-field"), "fields1");
-    create_itemfield_selection_button(aws, FieldSelDef(AWAR_FIELD_DST, GLOBAL_gb_dst, SPECIES_get_selector(), FIELD_FILTER_STRING, "target-field"), "fields2");
+    create_selection_list_on_itemfields(GLOBAL_gb_src, aws, AWAR_FIELD_SRC, true, FIELD_FILTER_NDS, "fields1", 0, SPECIES_get_selector(), 20, 10, SF_STANDARD, NULL);
+    create_selection_list_on_itemfields(GLOBAL_gb_dst, aws, AWAR_FIELD_DST, true, FIELD_FILTER_NDS, "fields2", 0, SPECIES_get_selector(), 20, 10, SF_STANDARD, NULL);
 
-    return aws;
+    return (AW_window*)aws;
 }
 
 static GB_ERROR MG_equal_alignments(bool autoselect_equal_alignment_name) {
@@ -655,18 +644,19 @@ static GB_ERROR MG_equal_alignments(bool autoselect_equal_alignment_name) {
                 }
 
                 if (!dest) {
-                    GBS_strstruct buttonstr(100);
+                    GBS_strstruct *str = GBS_stropen(100);
 
                     for (int i=0; i<d; i++) {
-                        buttonstr.cat(D_alignment_names[i]);
-                        buttonstr.put(',');
+                        GBS_strcat(str, D_alignment_names[i]);
+                        GBS_chrcat(str, ',');
                     }
-                    buttonstr.cat("ABORT");
+                    GBS_strcat(str, "ABORT");
 
+                    char *b = GBS_strclose(str);
                     int aliid = aw_question(NULL,
                                             "There are more than one possible alignment targets\n"
-                                            "Choose one destination alignment or ABORT",
-                                            buttonstr.get_data());
+                                            "Choose one destination alignment or ABORT", b);
+                    free(b);
 
                     if (aliid >= d) {
                         error = "Operation Aborted";
@@ -770,7 +760,7 @@ GB_ERROR MERGE_sequences_simple(AW_root *awr) {
                                 GB_ERROR  warning;          // duplicated species warning (does not apply here)
                                 char     *autoname = AWTC_create_numbered_suffix(D_species_hash, s_name, warning);
 
-                                if (!autoname) autoname = ARB_strdup(s_name);
+                                if (!autoname) autoname = strdup(s_name);
                                 freeset(s_name, aw_input("Species ID", "Enter new species ID", autoname));
                                 free(autoname);
                                 retry = true;
@@ -797,7 +787,7 @@ GB_ERROR MERGE_sequences_simple(AW_root *awr) {
 
                     if (!error) {
                         GB_write_flag(D_species, 1);          // mark species
-                        GB_raise_user_flag(D_species, GB_USERFLAG_QUERY); // put in search&query hitlist
+                        GB_set_user_flag(D_species, GB_USERFLAG_QUERY); // put in search&query hitlist
                         error = GBT_write_string(D_species, "name", s_name);
                     }
                 }
@@ -890,8 +880,7 @@ AW_window *MG_create_merge_species_window(AW_root *awr, bool dst_is_new) {
     aws->init(awr, "MERGE_TRANSFER_SPECIES", "TRANSFER SPECIES");
     aws->load_xfig("merge/species.fig");
 
-    aws->at("close");
-    aws->callback(AW_POPDOWN);
+    aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
@@ -913,6 +902,7 @@ AW_window *MG_create_merge_species_window(AW_root *awr, bool dst_is_new) {
         awtqs.ere_pos_fig            = "ere1";
         awtqs.by_pos_fig             = "by1";
         awtqs.qbox_pos_fig           = "qbox1";
+        awtqs.rescan_pos_fig         = "rescan1";
         awtqs.key_pos_fig            = 0;
         awtqs.query_pos_fig          = "content1";
         awtqs.result_pos_fig         = "result1";
@@ -929,7 +919,7 @@ AW_window *MG_create_merge_species_window(AW_root *awr, bool dst_is_new) {
 
         create_query_box(aws, &awtqs, "db1");
 
-        DbScanner *scanner = create_db_scanner(GLOBAL_gb_src, aws, "box1", 0, 0, 0, DB_SCANNER, 0, awtqs.get_queried_itemtype());
+        DbScanner *scanner = create_db_scanner(GLOBAL_gb_src, aws, "box1", 0, 0, 0, DB_SCANNER, 0, 0, FIELD_FILTER_NDS, awtqs.get_queried_itemtype());
         scanner_src = scanner;
         aws->get_root()->awar(AWAR_SPECIES_SRC)->add_callback(makeRootCallback(MG_map_species, 1));
     }
@@ -945,6 +935,7 @@ AW_window *MG_create_merge_species_window(AW_root *awr, bool dst_is_new) {
         awtqs.ere_pos_fig            = "ere2";
         awtqs.by_pos_fig             = "by2";
         awtqs.qbox_pos_fig           = "qbox2";
+        awtqs.rescan_pos_fig         = "rescan2";
         awtqs.key_pos_fig            = 0;
         awtqs.query_pos_fig          = "content2";
         awtqs.result_pos_fig         = "result2";
@@ -961,7 +952,7 @@ AW_window *MG_create_merge_species_window(AW_root *awr, bool dst_is_new) {
 
         create_query_box(aws, &awtqs, "db2");
 
-        DbScanner *scanner = create_db_scanner(GLOBAL_gb_dst, aws, "box2", 0, 0, 0, DB_SCANNER, 0, awtqs.get_queried_itemtype());
+        DbScanner *scanner = create_db_scanner(GLOBAL_gb_dst, aws, "box2", 0, 0, 0, DB_SCANNER, 0, 0, FIELD_FILTER_NDS, awtqs.get_queried_itemtype());
         scanner_dst = scanner;
         aws->get_root()->awar(AWAR_SPECIES_DST)->add_callback(makeRootCallback(MG_map_species, 2));
     }
@@ -982,7 +973,6 @@ AW_window *MG_create_merge_species_window(AW_root *awr, bool dst_is_new) {
                            "Transfer\nlisted\nspecies\n\nDelete\nduplicates\nin target DB", "T");
 
         aws->at("transfield");
-        aws->help_text("mg_xfer_field_of_listed.hlp");
         aws->callback(MG_create_transfer_fields_window);
         aws->create_button("TRANSFER_FIELD_OF_LISTED_DELETE_DUPLI",
                            "Transfer\nfield\nof listed\nspecies\n\nDelete\nduplicates\nin target DB", "T");
@@ -1018,12 +1008,15 @@ AW_window *MG_create_merge_species_window(AW_root *awr, bool dst_is_new) {
     aws->create_button("HELP_MERGE", "#merge/icon.xpm");
 
     aws->create_menu("Source->Target", "g");
-    aws->insert_menu_topic("compare_field_of_listed",            "Compare a field of listed species ...",         "C", "checkfield.hlp",           AWM_ALL, create_mg_check_fields_window);
-    aws->insert_menu_topic("move_field_of_selected",             "Transfer single field of selected species ...", "M", "mg_xfer_field_of_sel.hlp", AWM_ALL, create_mg_transfer_single_field_window);
-    aws->insert_menu_topic("merge_field_of_listed_to_new_field", "Merge tagged field ...",                        "D", "mergetaggedfield.hlp",     AWM_ALL, create_mg_merge_tagged_fields_window);
-    aws->sep______________();
-    aws->insert_menu_topic("def_gene_species_field_xfer", "Define field transfer for gene-species", "g", "gene_species_field_transfer.hlp", AWM_ALL, MG_gene_species_create_field_transfer_def_window);
+    aws->insert_menu_topic("compare_field_of_listed",   "Compare a field of listed species ...", "C", "checkfield.hlp", AWM_ALL, create_mg_check_fields_window);
+    aws->insert_menu_topic("move_field_of_selected",    "Move one field of selected source species to same field of selected target species", "M",
+                            "movefield.hlp", AWM_ALL, create_mg_move_fields_window);
+    aws->insert_menu_topic("merge_field_of_listed_to_new_field", "Merge field of listed species of source-DB with different fields of same species in target-DB ", "D",
+                            "mergetaggedfield.hlp", AWM_ALL, create_mg_merge_tagged_fields_window);
 
+    aws->sep______________();
+    aws->insert_menu_topic("def_gene_species_field_xfer", "Define field transfer for gene-species", "g", "gene_species_field_transfer.hlp",
+                           AWM_ALL, MG_gene_species_create_field_transfer_def_window);
 
     return aws;
 }

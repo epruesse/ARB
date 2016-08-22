@@ -10,14 +10,16 @@
 using namespace std;
 
 
-AW_gc_manager *RNA3D_Graphics::init_devices(AW_window *aww, AW_device *device, AWT_canvas *scr) {
-    AW_gc_manager *gc_manager =
+AW_gc_manager RNA3D_Graphics::init_devices(AW_window *aww, AW_device *device, AWT_canvas *scr) {
+    AW_gc_manager gc_manager =
         AW_manage_GC (aww,
                       scr->get_gc_base_name(),
                       device,
+                      RNA3D_GC_FOREGROUND,
                       RNA3D_GC_MAX,
                       AW_GCM_DATA_AREA,
-                      makeGcChangedCallback(AWT_GC_changed_cb, scr),
+                      makeWindowCallback(AWT_resize_cb, scr),
+                      false,
                       "#000000",
                       "+-Foreground$#FFFFFF",     "+-MOLECULE Skeleton$#606060", "-Mapped Species$#FF0000",
                       "+-BASE: Deletion$#FF0000", "+-BASE: Insertion$#00FF00",   "-BASE: Positions$#FFAA00",
@@ -56,6 +58,11 @@ RNA3D_Graphics::~RNA3D_Graphics() {}
 
 void RNA3D_Graphics::show(AW_device *device) {
     paint(device);
+}
+
+void RNA3D_Graphics::info(AW_device * /* device */, AW_pos /* x */, AW_pos /* y */, AW_clicked_line * /* cl */, AW_clicked_text * /* ct */)
+{
+    aw_message("INFO MESSAGE");
 }
 
 void RNA3D_Graphics::paint(AW_device * /* device */) {

@@ -14,10 +14,8 @@
 #include <aw_awars.hxx>
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
-#include <aw_select.hxx>
 #include <arbdbt.h>
-#include <arb_strarray.h>
-#include <arb_sort.h>
+#include <arb_strbuf.h>
 
 static void rename_SAI_cb(AW_window *aww) {
     AW_awar  *awar_sai = aww->get_root()->awar(AWAR_SAI_NAME);
@@ -179,7 +177,7 @@ static void edit_SAI_description(AW_window *aww) {
                             error = GB_await_error();
                         }
                         else {
-                            type = ARB_strdup("");
+                            type = strdup("");
                         }
                     }
                 }
@@ -211,111 +209,89 @@ static void edit_SAI_description(AW_window *aww) {
     if (error) aw_message(error);
 }
 
-static GB_ERROR set_SAI_group(GBDATA *gb_main, const char *sai_name, const char *group_name) {
-    GB_transaction ta(gb_main);
+static char *getExistingSAIgroups() {
+    // scan SAIs for existing groups.
+    // return a string of ';'-separated group names (or NULL)
 
-    GB_ERROR  error  = NULL;
-    GBDATA   *gb_sai = GBT_find_SAI(gb_main, sai_name);
-    if (!gb_sai) {
-        error = GBS_global_string("SAI '%s' not found", sai_name);
+    GB_HASH       *groups = GBS_create_hash(GBT_get_SAI_count(GLOBAL.gb_main), GB_MIND_CASE);
+    GBS_strstruct *out    = GBS_stropen(1000);
+    int            count  = 0;
+    GB_transaction ta(GLOBAL.gb_main);
+
+    for (GBDATA *gb_sai = GBT_first_SAI(GLOBAL.gb_main); gb_sai; gb_sai = GBT_next_SAI(gb_sai)) {
+        const char *group = GBT_read_char_pntr(gb_sai, "sai_group");
+        if (group && !GBS_read_hash(groups, group)) {
+            GBS_strcat(out, group);
+            GBS_chrcat(out, ';');
+            GBS_write_hash(groups, group, 1);
+            count++;
+        }
+    }
+
+    char *result = 0;
+    if (count>0) {
+        GBS_str_cut_tail(out, 1); // truncate final ';'
+        result = GBS_strclose(out);
     }
     else {
-        const char *old_group_name = GBT_read_char_pntr(gb_sai, "sai_group");
-        nt_assert(group_name);
-        if (!old_group_name || strcmp(old_group_name, group_name) != 0) {
-            if (group_name[0]) { // assign group
-                error = GBT_write_string(gb_sai, "sai_group", group_name);
+        GBS_strforget(out);
+    }
+    GBS_free_hash(groups);
+
+    return result;
+}
+
+static void assign_SAI_to_group(AW_window *aww) {
+    AW_root  *awr      = aww->get_root();
+    char     *sai_name = awr->awar(AWAR_SAI_NAME)->read_string();
+    GB_ERROR  error    = 0;
+
+    if (!sai_name || !sai_name[0]) error = "No SAI selected";
+    else {
+        GBDATA *gb_sai;
+        {
+            GB_transaction ta(GLOBAL.gb_main);
+            gb_sai = GBT_find_SAI(GLOBAL.gb_main, sai_name);
+        }
+
+        if (!gb_sai) error = GBS_global_string("SAI '%s' not found", sai_name);
+        else {
+            bool        has_group = true;
+            const char *group     = GBT_read_char_pntr(gb_sai, "sai_group");
+            if (!group) {
+                group     = "default_group";
+                has_group = false;
             }
-            else { // remove group
-                GBDATA *gb_group    = GB_entry(gb_sai, "sai_group");
-                if (gb_group) error = GB_delete(gb_group);
+
+            char *new_group;
+            {
+                char *existingGroups = getExistingSAIgroups();
+                if (existingGroups) {
+                    new_group = aw_string_selection("Assign SAI to group", "Enter group name:", group, existingGroups, NULL);
+                    free(existingGroups);
+                }
+                else {
+                    new_group = aw_input("Assign SAI to group", "Enter group name:", group);
+                }
+            }
+
+            if (new_group) {
+                GB_transaction t2(GLOBAL.gb_main);
+                if (new_group[0]) error = GBT_write_string(gb_sai, "sai_group", new_group);
+                else if (has_group) {
+                    GBDATA *gb_group = GB_entry(gb_sai, "sai_group");
+                    if (gb_group) error = GB_delete(gb_group);
+                }
             }
         }
     }
-    return error;
+
+    if (error) aw_message(error);
+    free(sai_name);
 }
 
-static const char *get_SAI_group(GBDATA *gb_main, const char *sai_name) {
-    GB_transaction  ta(gb_main);
-    GBDATA         *gb_sai     = GBT_find_SAI(gb_main, sai_name);
-    const char     *group_name = "";
-    if (gb_sai) group_name     = GBT_read_char_pntr(gb_sai, "sai_group");
-    return group_name;
-}
-
-static void get_SAI_groups(GBDATA *gb_main, ConstStrArray& sai_groups) {
-    GB_transaction ta(gb_main);
-    for (GBDATA *gb_sai = GBT_first_SAI(gb_main); gb_sai; gb_sai = GBT_next_SAI(gb_sai)) {
-        const char *group = GBT_read_char_pntr(gb_sai, "sai_group");
-        if (group) sai_groups.put(group);
-    }
-    sai_groups.sort_and_uniq(GB_string_comparator, 0);
-}
-
-static void fill_SAI_group_selection_list(AW_selection_list *sel, GBDATA *gb_main) {
-    ConstStrArray sai_groups;
-    get_SAI_groups(gb_main, sai_groups);
-    sel->init_from_array(sai_groups, "<nogroup>", "");
-}
-
-#define AWAR_SAI_GROUP          "tmp/extended/group"
-#define AWAR_SAI_REFRESH_GROUPS "tmp/extended/refresh"
-
-static void refresh_grouplist(AW_root *aw_root) {
-    aw_root->awar(AWAR_SAI_REFRESH_GROUPS)->touch(); // fill/refresh group selection list
-}
-
-static void set_SAI_group_cb(AW_root *aw_root, GBDATA *gb_main) {
-    const char *sai_name   = aw_root->awar(AWAR_SAI_NAME)->read_char_pntr();
-    const char *group_name = aw_root->awar(AWAR_SAI_GROUP)->read_char_pntr();
-    aw_message_if(set_SAI_group(gb_main, sai_name, group_name));
-    refresh_grouplist(aw_root);
-}
-
-static AW_selection_list *sai_group_sel = NULL;
-static void refresh_SAI_groups_cb(AW_root*, GBDATA *gb_main) {
-    if (sai_group_sel) fill_SAI_group_selection_list(sai_group_sel, gb_main);
-}
-
-static void refresh_group_cb(AW_root *aw_root, GBDATA *gb_main) {
-    const char *sai_name   = aw_root->awar(AWAR_SAI_NAME)->read_char_pntr();
-    const char *group_name = get_SAI_group(gb_main, sai_name);
-    aw_root->awar(AWAR_SAI_GROUP)->write_string(group_name);
-}
-
-void NT_create_extendeds_vars(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main) {
-    const char *sai_name   = aw_root->awar(AWAR_SAI_NAME)->read_char_pntr();
-    const char *group_name = get_SAI_group(gb_main, sai_name);
-
-    aw_root->awar_string(AWAR_SAI_GROUP,          group_name, aw_def)->add_callback(makeRootCallback(set_SAI_group_cb,      gb_main));
-    aw_root->awar_int   (AWAR_SAI_REFRESH_GROUPS, 0,          aw_def)->add_callback(makeRootCallback(refresh_SAI_groups_cb, gb_main));
-    aw_root->awar       (AWAR_SAI_NAME)                              ->add_callback(makeRootCallback(refresh_group_cb,      gb_main));
-}
-
-static AW_window *create_SAI_group_window(AW_root *aw_root) {
-    AW_window_simple *aws = new AW_window_simple;
-    aws->init(aw_root, "SAI_GROUP", "Define SAI group");
-    aws->load_xfig("ad_ext_group.fig");
-
-    aws->at("close");
-    aws->callback(AW_POPDOWN);
-    aws->create_button("CLOSE", "CLOSE", "C");
-
-    aws->at("help");
-    aws->callback(makeHelpCallback("ad_extended.hlp"));
-    aws->create_button("HELP", "HELP", "H");
-
-    aws->at("sai");
-    aws->create_button(NULL, AWAR_SAI_NAME);
-
-    aws->at("group");
-    sai_group_sel = awt_create_selection_list_with_input_field(aws, AWAR_SAI_GROUP, "list", "group");
-    refresh_grouplist(aw_root);
-
-    return aws;
-}
-
-AW_window *NT_create_extendeds_window(AW_root *aw_root) {
+AW_window *NT_create_extendeds_window(AW_root *aw_root)
+{
     static AW_window_simple *aws = 0;
 
     if (!aws) {
@@ -323,12 +299,12 @@ AW_window *NT_create_extendeds_window(AW_root *aw_root) {
         aws->init(aw_root, "INFO_OF_SAI", "SAI INFORMATION");
         aws->load_xfig("ad_ext.fig");
 
+        aws->callback((AW_CB0)AW_POPDOWN);
         aws->at("close");
-        aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
 
-        aws->at("help");
         aws->callback(makeHelpCallback("ad_extended.hlp"));
+        aws->at("help");
         aws->create_button("HELP", "HELP", "H");
 
         aws->button_length(13);
@@ -350,7 +326,7 @@ AW_window *NT_create_extendeds_window(AW_root *aw_root) {
         aws->create_button("EDIT_COMMENT", "EDIT COMMENT", "R");
 
         aws->at("group");
-        aws->callback(create_SAI_group_window);
+        aws->callback(assign_SAI_to_group);
         aws->create_button("ASSIGN_GROUP", "ASSIGN GROUP", "R");
 
         aws->at("makespec");
@@ -358,9 +334,9 @@ AW_window *NT_create_extendeds_window(AW_root *aw_root) {
         aws->create_button("COPY_TO_SPECIES", "COPY TO\nSPECIES", "C");
 
         aws->at("list");
-        awt_create_SAI_selection_list(GLOBAL.gb_main, aws, AWAR_SAI_NAME, true);
+        awt_create_selection_list_on_sai(GLOBAL.gb_main, aws, AWAR_SAI_NAME, true);
 
-        DbScanner *scanner = create_db_scanner(GLOBAL.gb_main, aws, "info", 0, 0, 0, DB_SCANNER, 0, SPECIES_get_selector());
+        DbScanner *scanner = create_db_scanner(GLOBAL.gb_main, aws, "info", 0, 0, 0, DB_SCANNER, 0, 0, 0, SPECIES_get_selector());
         aws->get_root()->awar(AWAR_SAI_NAME)->add_callback(makeRootCallback(map_SAI_to_scanner, scanner));
     }
     aws->show();

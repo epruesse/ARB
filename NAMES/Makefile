@@ -4,9 +4,9 @@ OBJECTS = names.o
 $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 .c.o:
-	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE) $<
+	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE)
 .cxx.o:
-	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE) $<
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(OBJECTS) *.a
@@ -36,7 +36,6 @@ names.o: $(ARBHOME)/INCLUDE/arb_assert.h
 names.o: $(ARBHOME)/INCLUDE/arb_core.h
 names.o: $(ARBHOME)/INCLUDE/arb_error.h
 names.o: $(ARBHOME)/INCLUDE/arb_file.h
-names.o: $(ARBHOME)/INCLUDE/arb_mem.h
 names.o: $(ARBHOME)/INCLUDE/arb_msg.h
 names.o: $(ARBHOME)/INCLUDE/arb_sleep.h
 names.o: $(ARBHOME)/INCLUDE/arb_string.h

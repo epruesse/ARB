@@ -28,7 +28,7 @@ static void die(const char *with_last_words) {
 }
 
 GB_shell4perl::~GB_shell4perl() {
-    gb_abort_and_close_all_DBs();
+    gb_close_unclosed_DBs();
 }
 
 // -------------------------------------------
@@ -98,7 +98,7 @@ static char *buildAllowedValuesString(known_enum start, enum2string lookup) {
         else allowed = GBS_global_string_copy("'%s'", asString);
     }
 
-    if (!allowed) allowed = ARB_strdup("none (this is a bug)");
+    if (!allowed) allowed = strdup("none (this is a bug)");
 
     return allowed;
 }
@@ -250,10 +250,4 @@ GB_ERROR GBC_await_error() {
     return GB_await_error();
 }
 
-// --------------------
-//      perl panic
 
-void GBP_prepare_to_die() {
-    // called from die() in ../PERL2ARB/ARB.pm@prepare_to_die
-    gb_abort_and_close_all_DBs();
-}

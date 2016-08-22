@@ -60,17 +60,13 @@ int ARB_main(int argc, char *argv[]);
 /* PT_match.cxx */
 char *create_reversed_probe(char *probe, int len);
 int probe_match(PT_local *locs, aisc_string probestring);
-const char *get_match_overlay(const PT_probematch *ml);
-const char *get_match_acc(const PT_probematch *ml);
-int get_match_start(const PT_probematch *ml);
-int get_match_stop(const PT_probematch *ml);
+char *get_match_overlay(const PT_probematch *ml);
 bytestring *match_string(const PT_local *locs);
 bytestring *MP_match_string(const PT_local *locs);
 bytestring *MP_all_species_string(const PT_local *);
 int MP_count_all_species(const PT_local *);
 
 /* PT_new_design.cxx */
-int pt_init_bond_matrix(PT_local *THIS);
 char *get_design_info(const PT_tprobes *tprobe);
 char *get_design_hinfo(const PT_pdc *pdc);
 int PT_start_design(PT_pdc *pdc, int dummy_1x);

@@ -10,10 +10,10 @@ $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .cxx.o:
-	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE) $<
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 .c.o:
-	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE) $<
+	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(OBJECTS) *.a
@@ -43,7 +43,6 @@ TreeRead.o: $(ARBHOME)/INCLUDE/arb_core.h
 TreeRead.o: $(ARBHOME)/INCLUDE/arb_defs.h
 TreeRead.o: $(ARBHOME)/INCLUDE/arb_error.h
 TreeRead.o: $(ARBHOME)/INCLUDE/arb_file.h
-TreeRead.o: $(ARBHOME)/INCLUDE/arb_mem.h
 TreeRead.o: $(ARBHOME)/INCLUDE/arb_msg.h
 TreeRead.o: $(ARBHOME)/INCLUDE/arb_msg_fwd.h
 TreeRead.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
@@ -61,7 +60,6 @@ TreeRead.o: $(ARBHOME)/INCLUDE/smartptr.h
 TreeRead.o: $(ARBHOME)/INCLUDE/static_assert.h
 TreeRead.o: $(ARBHOME)/INCLUDE/test_global.h
 TreeRead.o: $(ARBHOME)/INCLUDE/test_unit.h
-TreeRead.o: $(ARBHOME)/INCLUDE/TreeNode.h
 
 TreeTools.o: TreeRead.h
 TreeTools.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -69,7 +67,6 @@ TreeTools.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 TreeTools.o: $(ARBHOME)/INCLUDE/arb_assert.h
 TreeTools.o: $(ARBHOME)/INCLUDE/arb_core.h
 TreeTools.o: $(ARBHOME)/INCLUDE/arb_error.h
-TreeTools.o: $(ARBHOME)/INCLUDE/arb_mem.h
 TreeTools.o: $(ARBHOME)/INCLUDE/arb_msg.h
 TreeTools.o: $(ARBHOME)/INCLUDE/arb_string.h
 TreeTools.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -84,4 +81,3 @@ TreeTools.o: $(ARBHOME)/INCLUDE/gccver.h
 TreeTools.o: $(ARBHOME)/INCLUDE/smartptr.h
 TreeTools.o: $(ARBHOME)/INCLUDE/static_assert.h
 TreeTools.o: $(ARBHOME)/INCLUDE/test_global.h
-TreeTools.o: $(ARBHOME)/INCLUDE/TreeNode.h

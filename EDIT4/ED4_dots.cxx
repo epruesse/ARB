@@ -18,7 +18,6 @@
 #include <aw_root.hxx>
 #include <arbdbt.h>
 #include <cctype>
-#include <awt_config_manager.hxx>
 
 using namespace std;
 
@@ -39,7 +38,7 @@ struct dot_insert_stat {
     size_t sequences_checked;
 };
 
-static ARB_ERROR dot_sequence_by_consensus(ED4_base *base, dot_insert_stat *statPtr) {
+static ARB_ERROR dot_sequence_by_consensus(ED4_base *base, AW_CL cl_insert_stat) {
     ARB_ERROR error = 0;
 
     if (base->is_sequence_info_terminal()) {
@@ -49,7 +48,7 @@ static ARB_ERROR dot_sequence_by_consensus(ED4_base *base, dot_insert_stat *stat
             if (gb_ali) {
                 GBDATA           *gb_species = GB_get_grandfather(gb_ali);
                 bool              marked     = GB_read_flag(gb_species);
-                dot_insert_stat&  stat       = *statPtr;
+                dot_insert_stat&  stat       = *reinterpret_cast<dot_insert_stat *>(cl_insert_stat);
 
                 if (marked || !stat.marked_only) {
                     char *sequence = GB_read_string(gb_ali);
@@ -120,7 +119,7 @@ static void dot_missing_bases(AW_window *aww) {
         ED4_group_manager *group_manager = cursor->owner_of_cursor->get_parent(ED4_L_GROUP)->to_group_manager();
         {
             // build list of positions where consensus contains upper case characters:
-            char *consensus = group_manager->build_consensus_string();
+            char *consensus = group_manager->table().build_consensus_string();
             for (int pass = 1; pass <= 2; pass++) {
                 stat.pos_count = 0;
                 for (int pos = 0; consensus[pos]; pos++) {
@@ -130,7 +129,7 @@ static void dot_missing_bases(AW_window *aww) {
                     }
                 }
 
-                if (pass == 1) ARB_alloc(stat.position, stat.pos_count);
+                if (pass == 1) stat.position = (size_t*)malloc(stat.pos_count * sizeof(*stat.position));
             }
             free(consensus);
         }
@@ -150,7 +149,7 @@ static void dot_missing_bases(AW_window *aww) {
                     GBDATA *gb_sai     = GBT_expect_SAI(GLOBAL_gb_main, sai_name);
                     if (!gb_sai) error = GB_await_error();
                     else {
-                        GBDATA *gb_ali = GBT_find_sequence(gb_sai, ED4_ROOT->alignment_name);
+                        GBDATA *gb_ali = GBT_read_sequence(gb_sai, ED4_ROOT->alignment_name);
                         if (!gb_ali) {
                             error = GBS_global_string("SAI '%s' has no data in '%s'", sai_name, ED4_ROOT->alignment_name);
                         }
@@ -190,7 +189,7 @@ static void dot_missing_bases(AW_window *aww) {
         if (!error) {
             e4_assert(stat.pos_count);
             GB_transaction ta(GLOBAL_gb_main);
-            error = group_manager->route_down_hierarchy(makeED4_route_cb(dot_sequence_by_consensus, &stat));
+            error = group_manager->route_down_hierarchy(dot_sequence_by_consensus, (AW_CL)&stat);
 
             if (stat.sequences_checked == 0 && !error) {
                 error = GBS_global_string("Group contains no %ssequences", stat.marked_only ? "marked " : "");
@@ -222,15 +221,7 @@ void ED4_create_dot_missing_bases_awars(AW_root *aw_root, AW_default aw_def) {
     aw_root->awar_string(AWAR_DOT_SAI_CHARS, "", aw_def);
 }
 
-static AWT_config_mapping_def dotbases_config_mapping[] = {
-    { AWAR_DOT_MARKED,    "marked" },
-    { AWAR_DOT_SAI,       "sai" },
-    { AWAR_DOT_SAI_CHARS, "saichars" },
-
-    { 0, 0 }
-};
-
-void ED4_popup_dot_missing_bases_window(AW_window *editor_window) {
+void ED4_popup_dot_missing_bases_window(AW_window *editor_window, AW_CL, AW_CL) {
     AW_root                 *aw_root = editor_window->get_root();
     static AW_window_simple *aws     = 0;
 
@@ -274,9 +265,6 @@ void ED4_popup_dot_missing_bases_window(AW_window *editor_window) {
         aws->at("go");
         aws->callback(dot_missing_bases);
         aws->create_button("GO", "GO", "G");
-
-        aws->at("config");
-        AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "dotbases", dotbases_config_mapping);
     }
 
     e4_assert(aws);

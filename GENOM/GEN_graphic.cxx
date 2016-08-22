@@ -14,10 +14,9 @@
 #include "GEN_graphic.hxx"
 
 #include <arbdbt.h>
-#include <ad_colorset.h>
-
 #include <aw_awar.hxx>
 #include <aw_preset.hxx>
+#include <awt_attributes.hxx>
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
 
@@ -45,25 +44,20 @@ GEN_graphic::GEN_graphic(AW_root *aw_root_, GBDATA *gb_main_, GEN_graphic_cb_ins
 
 GEN_graphic::~GEN_graphic() {}
 
-AW_gc_manager *GEN_graphic::init_devices(AW_window *aww, AW_device *device, AWT_canvas *scr) {
-    disp_device = device;
-
-    AW_gc_manager *gc_manager =
-        AW_manage_GC(aww,
-                     scr->get_gc_base_name(),
-                     device,
-                     GEN_GC_MAX, AW_GCM_DATA_AREA,
-                     makeGcChangedCallback(AWT_GC_changed_cb, scr),
-                     "#55C0AA",
-                     "Default$#5555ff",
-                     "Gene$#000000",
-                     "Marked$#ffff00",
-                     "Cursor$#ff0000",
-
-                     "&color_groups", // use color groups
-
-                     NULL);
-
+AW_gc_manager GEN_graphic::init_devices(AW_window *aww, AW_device *device, AWT_canvas *scr) {
+    disp_device              = device;
+    AW_gc_manager gc_manager = AW_manage_GC(aww,
+                                            scr->get_gc_base_name(),
+                                            device,
+                                            GEN_GC_FIRST_FONT, GEN_GC_MAX, AW_GCM_DATA_AREA,
+                                            makeWindowCallback(AWT_resize_cb, scr),
+                                            true, // define color groups
+                                            "#55C0AA",
+                                            "Default$#5555ff",
+                                            "Gene$#000000",
+                                            "Marked$#ffff00",
+                                            "Cursor$#ff0000",
+                                            NULL);
     return gc_manager;
 }
 
@@ -86,6 +80,10 @@ int GEN_graphic::check_update(GBDATA *) {
     int do_zoom_reset = want_zoom_reset;
     want_zoom_reset   = false;
     return do_zoom_reset;
+}
+
+void GEN_graphic::info(AW_device */*device*/, AW_pos /*x*/, AW_pos /*y*/, AW_clicked_line */*cl*/, AW_clicked_text */*ct*/) {
+    aw_message("INFO MESSAGE");
 }
 
 void GEN_graphic::handle_command(AW_device *, AWT_graphic_event& event) {
@@ -143,14 +141,11 @@ inline int GEN_root::smart_line(AW_device *device, int gc, AW_pos x0, AW_pos y0,
 
 enum PaintWhat {
     PAINT_MIN,
-
     PAINT_NORMAL = PAINT_MIN,
     PAINT_COLORED,
     PAINT_MARKED,
     PAINT_SELECTED,
-
-    PAINT_MAX = PAINT_SELECTED,
-    PAINT_COUNT, // has to be last (do NOT remove)
+    PAINT_MAX    = PAINT_SELECTED,
 };
 
 inline bool getDrawGcs(GEN_iterator& gene, PaintWhat what, const string& curr_gene_name, int& draw_gc, int& text_gc) {
@@ -167,7 +162,8 @@ inline bool getDrawGcs(GEN_iterator& gene, PaintWhat what, const string& curr_ge
             draw    = (what == PAINT_MARKED);
         }
         else {
-            int color_group = AW_color_groups_active() ? GBT_get_color_group(gb_gene) : 0;
+            int color_group = AWT_gene_get_dominant_color(gb_gene);
+
             if (color_group) {
                 draw_gc = text_gc = GEN_GC_FIRST_COLOR_GROUP+color_group-1;
                 draw    = (what == PAINT_COLORED);
@@ -243,10 +239,10 @@ void GEN_root::paint(AW_device *device) {
                 break;
             }
             case GEN_DISPLAY_STYLE_VERTICAL: {
-                float factor_x = aw_root->awar(AWAR_GENMAP_VERTICAL_FACTOR_X)->read_float();
-                float factor_y = aw_root->awar(AWAR_GENMAP_VERTICAL_FACTOR_Y)->read_float();
-                int   arrow_x  = int(factor_x*arrow_size);
-                int   arrow_y  = int(factor_y*arrow_size);
+                double factor_x = aw_root->awar(AWAR_GENMAP_VERTICAL_FACTOR_X)->read_float();
+                double factor_y = aw_root->awar(AWAR_GENMAP_VERTICAL_FACTOR_Y)->read_float();
+                int    arrow_x  = int(factor_x*arrow_size);
+                int    arrow_y  = int(factor_y*arrow_size);
 
                 GEN_iterator curr = gene_set.begin();
                 GEN_iterator end  = gene_set.end();
@@ -274,14 +270,14 @@ void GEN_root::paint(AW_device *device) {
                 break;
             }
             case GEN_DISPLAY_STYLE_BOOK: {
-                int   display_width  = aw_root->awar(AWAR_GENMAP_BOOK_BASES_PER_LINE)->read_int();
-                float width_factor   = aw_root->awar(AWAR_GENMAP_BOOK_WIDTH_FACTOR)->read_float();
-                int   line_height    = aw_root->awar(AWAR_GENMAP_BOOK_LINE_HEIGHT)->read_int();
-                int   line_space     = aw_root->awar(AWAR_GENMAP_BOOK_LINE_SPACE)->read_int();
-                int   height_of_line = line_height+line_space;
-                int   xLeft          = 0;
-                int   xRight         = int(display_width*width_factor+0.5);
-                int   arrowMid       = line_height/2;
+                int    display_width  = aw_root->awar(AWAR_GENMAP_BOOK_BASES_PER_LINE)->read_int();
+                double width_factor   = aw_root->awar(AWAR_GENMAP_BOOK_WIDTH_FACTOR)->read_float();
+                int    line_height    = aw_root->awar(AWAR_GENMAP_BOOK_LINE_HEIGHT)->read_int();
+                int    line_space     = aw_root->awar(AWAR_GENMAP_BOOK_LINE_SPACE)->read_int();
+                int    height_of_line = line_height+line_space;
+                int    xLeft          = 0;
+                int    xRight         = int(display_width*width_factor+0.5);
+                int    arrowMid       = line_height/2;
 
                 GEN_iterator curr = gene_set.begin();
                 GEN_iterator end  = gene_set.end();
@@ -347,8 +343,8 @@ void GEN_root::paint(AW_device *device) {
     }
 }
 
-void GEN_graphic::delete_gen_root(AWT_canvas *scr, bool just_forget_callbacks) {
-    callback_installer(just_forget_callbacks ? FORGET_CBS : REMOVE_CBS, scr, this);
+void GEN_graphic::delete_gen_root(AWT_canvas *scr) {
+    callback_installer(false, scr, this);
     delete gen_root;
     gen_root = 0;
 }
@@ -359,18 +355,10 @@ void GEN_graphic::reinit_gen_root(AWT_canvas *scr, bool force_reinit) {
 
     if (gen_root) {
         if (force_reinit || (gen_root->OrganismName() != string(organism_name))) {
-            bool just_forget_callbacks = false;
             if (gen_root->OrganismName().length() == 0) {
                 want_zoom_reset = true; // no organism was displayed before
             }
-            else {
-                GB_transaction ta(gb_main);
-                if (!GEN_find_organism(gb_main, gen_root->OrganismName().c_str())) {
-                    just_forget_callbacks = true; // genome already deleted -> just clean up callback table
-                    want_zoom_reset       = true; // invalid (=none) organism was displayed before
-                }
-            }
-            delete_gen_root(scr, just_forget_callbacks);
+            delete_gen_root(scr);
         }
         if (gen_root && gen_root->GeneName() != string(gene_name)) {
             gen_root->set_GeneName(gene_name);
@@ -379,7 +367,7 @@ void GEN_graphic::reinit_gen_root(AWT_canvas *scr, bool force_reinit) {
 
     if (!gen_root) {
         gen_root = new GEN_root(organism_name, gene_name, gb_main, aw_root, this);
-        callback_installer(INSTALL_CBS, scr, this);
+        callback_installer(true, scr, this);
     }
 
     free(organism_name);

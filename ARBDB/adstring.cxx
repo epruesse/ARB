@@ -46,7 +46,7 @@ static char *GBS_string_2_key_with_exclusions(const char *str, const char *addit
     }
     for (; i<GB_KEY_LEN_MIN; i++) buf[i] = '_';
     buf[i] = 0;
-    return ARB_strdup(buf);
+    return strdup(buf);
 }
 
 char *GBS_string_2_key(const char *str) // converts any string to a valid key
@@ -55,7 +55,7 @@ char *GBS_string_2_key(const char *str) // converts any string to a valid key
 }
 
 char *GB_memdup(const char *source, size_t len) {
-    char *dest = ARB_alloc<char>(len);
+    char *dest = (char *)malloc(len);
     memcpy(dest, source, len);
     return dest;
 }
@@ -114,7 +114,7 @@ GB_ERROR GB_check_hkey(const char *key) { // goes to header: __ATTR__USERESULT
         err = GB_check_key(key);
     }
     else {
-        char *key_copy = ARB_strdup(key);
+        char *key_copy = strdup(key);
         char *start    = key_copy;
 
         if (start[0] == '/') ++start;
@@ -160,7 +160,7 @@ char *GBS_remove_escape(char *com)  // \ is the escape character
     char *result, *s, *d;
     int   ch;
 
-    s = d = result = ARB_strdup(com);
+    s = d = result = strdup(com);
     while ((ch = *(s++))) {
         switch (ch) {
             case '\\':
@@ -203,7 +203,7 @@ char *GBS_escape_string(const char *str, const char *chars_to_escape, char escap
      */
 
     int   len    = strlen(str);
-    char *buffer = ARB_alloc<char>(2*len+1);
+    char *buffer = (char*)malloc(2*len+1);
     int   j      = 0;
     int   i;
 
@@ -238,7 +238,7 @@ char *GBS_unescape_string(const char *str, const char *escaped_chars, char escap
     //! inverse of GB_escape_string() - for params see there
 
     int   len    = strlen(str);
-    char *buffer = ARB_alloc<char>(len+1);
+    char *buffer = (char*)malloc(len+1);
     int   j      = 0;
     int   i;
 
@@ -283,7 +283,7 @@ char *GBS_eval_env(GB_CSTR p) {
             break;
         }
         else {
-            char *envvar = ARB_strpartdup(ka+2, kz-1);
+            char *envvar = GB_strpartdup(ka+2, kz-1);
             int   len    = ka-p;
 
             if (len) GBS_strncat(out, p, len);
@@ -426,8 +426,8 @@ uint32_t GBS_checksum(const char *seq, int ignore_case, const char *exclude)
 */
 
 char *GBS_extract_words(const char *source, const char *chars, float minlen, bool sort_output) {
-    char           *s         = ARB_strdup(source);
-    char          **ps        = ARB_calloc<char*>((strlen(source)>>1) + 1);
+    char           *s         = strdup(source);
+    char          **ps        = (char **)GB_calloc(sizeof(char *), (strlen(source)>>1) + 1);
     GBS_strstruct  *strstruct = GBS_stropen(1000);
     char           *f         = s;
     int             count     = 0;
@@ -519,8 +519,9 @@ size_t GBS_shorten_repeated_data(char *data) {
 //      helper function for tagged fields
 
 static GB_ERROR g_bs_add_value_tag_to_hash(GBDATA *gb_main, GB_HASH *hash, char *tag, char *value, const char *rtag, const char *srt, const char *aci, GBDATA *gbd) {
-    char *to_free = NULL;
-
+    char    *p;
+    GB_HASH *sh;
+    char    *to_free = 0;
     if (rtag && strcmp(tag, rtag) == 0) {
         if (srt) {
             value = to_free = GBS_string_eval(value, srt, gbd);
@@ -531,21 +532,18 @@ static GB_ERROR g_bs_add_value_tag_to_hash(GBDATA *gb_main, GB_HASH *hash, char 
         if (!value) return GB_await_error();
     }
 
-    {
-        char *p;
-        p = value; while ((p = strchr(p, '['))) *p =   '{'; // replace all '[' by '{'
-        p = value; while ((p = strchr(p, ']'))) *p =   '}'; // replace all ']' by '}'
-    }
+    p=value; while ((p = strchr(p, '['))) *p =   '{'; // replace all '[' by '{'
+    p=value; while ((p = strchr(p, ']'))) *p =   '}'; // replace all ']' by '}'
 
-    GB_HASH *sh = (GB_HASH *)GBS_read_hash(hash, value);
+    sh = (GB_HASH *)GBS_read_hash(hash, value);
     if (!sh) {
-        sh = GBS_create_hash(10, GB_IGNORE_CASE);        // Tags are case independent
+        sh = GBS_create_hash(10, GB_IGNORE_CASE); // Tags are case independent
         GBS_write_hash(hash, value, (long)sh);
     }
 
     GBS_write_hash(sh, tag, 1);
-    free(to_free);
-    return NULL;
+    if (to_free) free(to_free);
+    return 0;
 }
 
 
@@ -584,7 +582,7 @@ static GB_ERROR g_bs_convert_string_to_tagged_hash(GB_HASH *hash, char *s, char 
         for (t = strtok(ts, ","); t; t = strtok(0, ",")) {
             if (del && strcmp(t, del) == 0) continue; // test, whether to delete
             if (sa[0] == 0) continue;
-            error = g_bs_add_value_tag_to_hash(gb_main, hash, t, sa, rtag, srt, aci, gbd); // tag found, use tag
+            error = g_bs_add_value_tag_to_hash(gb_main, hash, t, sa, rtag, srt, aci, gbd); // tag found, use  tag
             if (error) break;
         }
         s = se;
@@ -602,19 +600,20 @@ static long g_bs_merge_tags(const char *tag, long val, void *cd_sub_result) {
 }
 
 static long g_bs_read_tagged_hash(const char *value, long subhash, void *cd_g_bs_collect_tags_hash) {
-    static int counter = 0;
-
+    char          *str;
+    static int     counter    = 0;
     GBS_strstruct *sub_result = GBS_stropen(100);
+
     GBS_hash_do_sorted_loop((GB_HASH *)subhash, g_bs_merge_tags, GBS_HCF_sortedByKey, sub_result);
     GBS_intcat(sub_result, counter++); // create a unique number
 
-    char *str = GBS_strclose(sub_result);
+    str = GBS_strclose(sub_result);
 
     GB_HASH *g_bs_collect_tags_hash = (GB_HASH*)cd_g_bs_collect_tags_hash;
-    GBS_write_hash(g_bs_collect_tags_hash, str, (long)ARB_strdup(value)); // send output to new hash for sorting
+    GBS_write_hash(g_bs_collect_tags_hash, str, (long)strdup(value)); // send output to new hash for sorting
 
     free(str);
-    return subhash;
+    return 0;
 }
 
 static long g_bs_read_final_hash(const char *tag, long value, void *cd_merge_result) {
@@ -662,22 +661,23 @@ char *GBS_merge_tagged_strings(const char *s1, const char *tag1, const char *rep
      * if result is NULL, an error has been exported.
      */
 
-    char     *str1   = ARB_strdup(s1);
-    char     *str2   = ARB_strdup(s2);
+    char     *str1   = strdup(s1);
+    char     *str2   = strdup(s2);
     char     *t1     = GBS_string_2_key(tag1);
     char     *t2     = GBS_string_2_key(tag2);
+    char     *result = 0;
+    GB_ERROR  error  = 0;
     GB_HASH  *hash   = GBS_create_hash(16, GB_MIND_CASE);
 
-    if (!s1[0]) replace2 = NULL;
-    if (!s2[0]) replace1 = NULL;
+    if (!strlen(s1)) replace2 = 0;
+    if (!strlen(s2)) replace1 = 0;
 
-    if (replace1 && !replace1[0]) replace1 = NULL;
-    if (replace2 && !replace2[0]) replace2 = NULL;
+    if (replace1 && replace1[0] == 0) replace1 = 0;
+    if (replace2 && replace2[0] == 0) replace2 = 0;
 
-    GB_ERROR error    = g_bs_convert_string_to_tagged_hash(hash, str1, t1, replace1, 0, 0, 0, 0, 0);
-    if (!error) error = g_bs_convert_string_to_tagged_hash(hash, str2, t2, replace2, 0, 0, 0, 0, 0);
+    error              = g_bs_convert_string_to_tagged_hash(hash, str1, t1, replace1, 0, 0, 0, 0, 0);
+    if (!error) error  = g_bs_convert_string_to_tagged_hash(hash, str2, t2, replace2, 0, 0, 0, 0, 0);
 
-    char *result = NULL;
     if (!error) {
         result = g_bs_get_string_of_tag_hash(hash);
     }
@@ -702,7 +702,7 @@ char *GBS_string_eval_tagged_string(GBDATA *gb_main, const char *s, const char *
      * if result is NULL, an error has been exported.
      */
 
-    char     *str         = ARB_strdup(s);
+    char     *str         = strdup(s);
     char     *default_tag = GBS_string_2_key(dt);
     GB_HASH  *hash        = GBS_create_hash(16, GB_MIND_CASE);
     char     *result      = 0;
@@ -758,7 +758,7 @@ char *GB_read_as_tagged_string(GBDATA *gbd, const char *tagi) {
         }
         for (t = strtok(ts, ","); t; t = strtok(0, ",")) {
             if (strcmp(t, tag) == 0) {
-                s = ARB_strdup(sa);
+                s = strdup(sa);
                 free(buf);
                 goto found;
             }
@@ -942,7 +942,7 @@ char *GBS_trim(const char *str) {
     const char *end = strchr(str, 0)-1;
     while (end >= str && strchr(whitespace, end[0])) end--;
 
-    return ARB_strpartdup(str, end);
+    return GB_strpartdup(str, end);
 }
 
 static char *dated_info(const char *info) {
@@ -957,7 +957,7 @@ static char *dated_info(const char *info) {
         dated_info = GBS_global_string_copy("%s: %s", dstr, info);
     }
     else {
-        dated_info = ARB_strdup(info);
+        dated_info = strdup(info);
     }
     return dated_info;
 }
@@ -1009,13 +1009,15 @@ const char *GBS_funptr2readable(void *funptr, bool stripARBHOME) {
 // #define TEST_TEST_MACROS
 
 #ifdef ENABLE_CRASH_TESTS
-static void provokesegv() { raise(SIGSEGV); }
+static void provokesegv() { *(volatile int *)0 = 0; }
+# if defined(TEST_TEST_MACROS)
 static void dont_provokesegv() {}
+# endif
 # if defined(ASSERTION_USED)
 static void failassertion() { gb_assert(0); }
 #  if defined(TEST_TEST_MACROS)
 static void dont_failassertion() {}
-#  endif
+# endif
 static void provokesegv_does_not_fail_assertion() {
     // provokesegv does not raise assertion
     // -> the following assertion fails
@@ -1025,9 +1027,6 @@ static void provokesegv_does_not_fail_assertion() {
 #endif
 
 void TEST_signal_tests() {
-    // check whether we can test that no SEGV or assertion failure happened
-    TEST_EXPECT_NO_SEGFAULT(dont_provokesegv);
-
     // check whether we can test for SEGV and assertion failures
     TEST_EXPECT_SEGFAULT(provokesegv);
     TEST_EXPECT_CODE_ASSERTION_FAILS(failassertion);
@@ -1039,21 +1038,28 @@ void TEST_signal_tests() {
     // test whether SEGV can be distinguished from assertion
     TEST_EXPECT_CODE_ASSERTION_FAILS(provokesegv_does_not_fail_assertion);
 
-    // The following section is disabled, because it will
-    // provoke test warnings (to test these warnings).
+    // following section is disabled since it would spam wanted warnings
     // (enable it when changing any of these TEST_..-macros used here)
 #if defined(TEST_TEST_MACROS)
-    TEST_EXPECT_NO_SEGFAULT__WANTED(provokesegv);
-
     TEST_EXPECT_SEGFAULT__WANTED(dont_provokesegv);
     TEST_EXPECT_SEGFAULT__UNWANTED(provokesegv);
-#if defined(ASSERTION_USED)
     TEST_EXPECT_SEGFAULT__UNWANTED(failassertion);
-#endif
 
     TEST_EXPECT_CODE_ASSERTION_FAILS__WANTED(dont_failassertion);
     TEST_EXPECT_CODE_ASSERTION_FAILS__UNWANTED(failassertion);
     TEST_EXPECT_CODE_ASSERTION_FAILS__UNWANTED(provokesegv_does_not_fail_assertion);
+#endif
+
+    // following section is disabled since it would spam wanted warnings
+    // (enable it when changing any of these TEST_..-macros used here)
+#if 0
+    TEST_ASSERT_SEGFAULT__WANTED(dont_provokesegv);
+    TEST_ASSERT_SEGFAULT__UNWANTED(provokesegv);
+    TEST_ASSERT_SEGFAULT__UNWANTED(failassertion);
+
+    TEST_ASSERT_CODE_ASSERTION_FAILS__WANTED(dont_failassertion);
+    TEST_ASSERT_CODE_ASSERTION_FAILS__UNWANTED(failassertion);
+    TEST_ASSERT_CODE_ASSERTION_FAILS__UNWANTED(provokesegv_does_not_fail_assertion);
 #endif
 }
 
@@ -1076,7 +1082,7 @@ void TEST_GBS_strstruct() {
         GBS_strnprintf(strstr, 200, "%c%s", ' ', "flutters");
         EXPECT_CONTENT("butterfly flutters");
 
-        GBS_strforget(strstr);
+        free(GBS_strclose(strstr));
     }
     {
         // re-alloc smaller
@@ -1102,7 +1108,7 @@ void TEST_GBS_strstruct() {
 }
 
 #define TEST_SHORTENED_EQUALS(Long,Short) do {  \
-        char *buf = ARB_strdup(Long);           \
+        char *buf = strdup(Long);               \
         GBS_shorten_repeated_data(buf);         \
         TEST_EXPECT_EQUAL(buf, Short);          \
         free(buf);                              \
@@ -1204,50 +1210,6 @@ void TEST_DB_key_generation() {
                     "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
 }
 
-#define TEST_MERGE_TAGGED(t1,t2,r1,r2,s1,s2,expected) do {               \
-        char *result = GBS_merge_tagged_strings(s1, t1, r1, s2, t2, r2); \
-        TEST_EXPECT_EQUAL(result, expected);                             \
-        free(result);                                                    \
-    } while(0)
-
-#define TEST_MERGE_TAGGED__BROKEN(t1,t2,r1,r2,s1,s2,expected,got) do {   \
-        char *result = GBS_merge_tagged_strings(s1, t1, r1, s2, t2, r2); \
-        TEST_EXPECT_EQUAL__BROKEN(result, expected, got);                \
-        free(result);                                                    \
-    } while(0)
-
-void TEST_merge_tagged_strings() {
-    // merge two fields:
-    TEST_MERGE_TAGGED("S",   "D",   "", "", "source", "dest", " [D_] dest [S_] source");   // @@@ elim leading space?
-    TEST_MERGE_TAGGED("SRC", "DST", "", 0,  "source", "dest", " [DST] dest [SRC] source");
-    TEST_MERGE_TAGGED("SRC", "DST", 0,  "", "source", "dest", " [DST] dest [SRC] source");
-    TEST_MERGE_TAGGED("SRC", "DST", 0,  0,  "sth",    "sth",  " [DST,SRC] sth");
-
-    // update fields:
-    TEST_MERGE_TAGGED("SRC", "DST", 0, "SRC", "newsource", " [DST] dest [SRC] source", " [DST] dest [SRC] newsource");
-    TEST_MERGE_TAGGED("SRC", "DST", 0, "SRC", "newsource", " [DST,SRC] sth",           " [DST] sth [SRC] newsource");
-    TEST_MERGE_TAGGED("SRC", "DST", 0, "SRC", "sth",       " [DST] sth [SRC] source",  " [DST,SRC] sth");
-
-    // append (opposed to update this keeps old entries with same tag; useless?)
-    TEST_MERGE_TAGGED("SRC", "DST", 0, 0, "newsource", "[DST] dest [SRC] source", " [DST] dest [SRC] newsource [SRC] source");
-    TEST_MERGE_TAGGED("SRC", "DST", 0, 0, "newsource", "[DST,SRC] sth",           " [DST,SRC] sth [SRC] newsource");
-    TEST_MERGE_TAGGED("SRC", "DST", 0, 0, "sth",       "[DST] sth [SRC] source",  " [DST,SRC] sth [SRC] source");
-
-    // merge three fields:
-    TEST_MERGE_TAGGED("OTH", "DST", 0, 0, "oth",    " [DST] dest [SRC] source", " [DST] dest [OTH] oth [SRC] source");
-    TEST_MERGE_TAGGED("OTH", "DST", 0, 0, "oth",    " [DST,SRC] sth",           " [DST,SRC] sth [OTH] oth");
-    TEST_MERGE_TAGGED("OTH", "DST", 0, 0, "sth",    " [DST,SRC] sth",           " [DST,OTH,SRC] sth");
-    TEST_MERGE_TAGGED("OTH", "DST", 0, 0, "dest",   " [DST] dest [SRC] source", " [DST,OTH] dest [SRC] source");
-    TEST_MERGE_TAGGED("OTH", "DST", 0, 0, "source", " [DST] dest [SRC] source", " [DST] dest [OTH,SRC] source");
-
-    // same tests as in section above, but vv
-    TEST_MERGE_TAGGED("DST", "OTH", 0, 0, " [DST] dest [SRC] source", "oth",    " [DST] dest [OTH] oth [SRC] source");
-    TEST_MERGE_TAGGED("DST", "OTH", 0, 0, " [DST,SRC] sth",           "oth",    " [DST,SRC] sth [OTH] oth");
-    TEST_MERGE_TAGGED("DST", "OTH", 0, 0, " [DST,SRC] sth",           "sth",    " [DST,OTH,SRC] sth");
-    TEST_MERGE_TAGGED("DST", "OTH", 0, 0, " [DST] dest [SRC] source", "dest",   " [DST,OTH] dest [SRC] source");
-    TEST_MERGE_TAGGED("DST", "OTH", 0, 0, " [DST] dest [SRC] source", "source", " [DST] dest [OTH,SRC] source");
-}
-
 void TEST_date_stamping() {
     {
         char *dated = GBS_log_dated_action_to("comment", "action");
@@ -1268,7 +1230,6 @@ void TEST_date_stamping() {
         free(dated);
     }
 }
-TEST_PUBLISH(TEST_date_stamping);
 
 #endif // UNIT_TESTS
 

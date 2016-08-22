@@ -143,7 +143,7 @@ static void MG_transfer_tree(AW_window *aww) {
         switch (what) {
             case XFER_SELECTED:
                 error = transfer_tree(source_name, overwrite, behind_name);
-                if (!error) select_dst = ARB_strdup(source_name);
+                if (!error) select_dst = strdup(source_name);
                 break;
 
             case XFER_ALL:
@@ -167,7 +167,7 @@ static void MG_transfer_tree(AW_window *aww) {
                     if (!gb_exists) {
                         error = transfer_tree(tree_name, false, behind_name);
                         xferd_missing++;
-                        if (!select_dst) select_dst = ARB_strdup(tree_name); // select first missing in dest box
+                        if (!select_dst) select_dst = strdup(tree_name); // select first missing in dest box
                         freedup(behind_name, tree_name);
                     }
                 }
@@ -218,8 +218,7 @@ AW_window *MG_create_merge_trees_window(AW_root *awr) {
 
     aws->button_length(7);
 
-    aws->at("close");
-    aws->callback(AW_POPDOWN);
+    aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
@@ -227,10 +226,10 @@ AW_window *MG_create_merge_trees_window(AW_root *awr) {
     aws->create_button("HELP", "HELP", "H");
 
     aws->at("trees1");
-    awt_create_TREE_selection_list(GLOBAL_gb_src, aws, AWAR_TREE_NAME_SRC, true);
+    awt_create_selection_list_on_trees(GLOBAL_gb_src, aws, AWAR_TREE_NAME_SRC, true);
 
     aws->at("trees2");
-    awt_create_TREE_selection_list(GLOBAL_gb_dst, aws, AWAR_TREE_NAME_DST, true);
+    awt_create_selection_list_on_trees(GLOBAL_gb_dst, aws, AWAR_TREE_NAME_DST, true);
 
     static TreeAdmin::Spec src_spec(GLOBAL_gb_src, AWAR_TREE_NAME_SRC);
     static TreeAdmin::Spec dst_spec(GLOBAL_gb_dst,  AWAR_TREE_NAME_DST);

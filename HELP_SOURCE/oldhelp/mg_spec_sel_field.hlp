@@ -1,0 +1,35 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP      arb.hlp
+UP      glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB    subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE           Transfer one field of selected species
+
+OCCURRENCE      ARB_MERGE/Transfer Species/Transfer Field ...
+
+DESCRIPTION     Copies just one field from all species listed in the source database (DB)
+                on the left side, to the corresponding species (i.e. the species with
+                same ID aka 'name'-entry) in the target DB on the right side.
+
+                If no such corresponding species exists, it will be created.
+
+                This function has two modes:
+
+                1. Copy mode:
+                        Overwrite existing fields in target species.
+
+                2. Append mode:
+                        Appends to existing fields of target species.
+                        To activate the 'Append mode' check 'Append data ???'
+                        in the 'TRANSFER FIELD' window.
+
+NOTES           Transferring fields that are not of string type in append mode
+                does not work
+
+
+BUGS            No bugs known

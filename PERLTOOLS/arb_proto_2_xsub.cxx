@@ -47,7 +47,7 @@ class ProgramError : public Error {
 public:
     ProgramError(string message) : error(message) {}
     ProgramError(const char *message) : error(message) {}
-    ~ProgramError() OVERRIDE {}
+    virtual ~ProgramError() OVERRIDE {}
 
     void print() const OVERRIDE {
         fprintf(stderr, "arb_proto_2_xsub: Error: %s\n", error.c_str());
@@ -59,7 +59,7 @@ class InputFileError : public Error {
 public:
     InputFileError(LineReader& fileBuffer, string message)      : located_error(fileBuffer.lineError(message)) {}
     InputFileError(LineReader& fileBuffer, const char *message) : located_error(fileBuffer.lineError(message)) {}
-    ~InputFileError() OVERRIDE {}
+    virtual ~InputFileError() OVERRIDE {}
 
     void print() const OVERRIDE {
         fputs(located_error.c_str(), stderr);
@@ -178,12 +178,12 @@ inline char *get_token_and_incr_lineno(const char*& code, const char *separator,
                 code  = NULL;
             }
             else {
-                token = ARB_strdup(code);
+                token = strdup(code);
                 code  = NULL;
             }
         }
         else {
-            token = ARB_strpartdup(code, sep_pos-1);
+            token = GB_strpartdup(code, sep_pos-1);
 
             const char *behind_sep = sep_pos + strspn(sep_pos, separator); // next non 'separator' char
             if (lineno) {
@@ -531,7 +531,7 @@ class Prototype {
         const char *comma = next_comma_outside_parens(arg_list);
         if (comma) {
             {
-                char *first_param = ARB_strpartdup(arg_list, comma-1);
+                char *first_param = GB_strpartdup(arg_list, comma-1);
                 arguments.push_back(Parameter(first_param));
                 free(first_param);
             }
@@ -992,7 +992,7 @@ int ARB_main(int argc, char **argv)
 // #define TEST_AUTO_UPDATE // uncomment this to update expected results
 
 inline GB_ERROR valgrinded_system(const char *cmdline) {
-    char *cmddup = ARB_strdup(cmdline);
+    char *cmddup = strdup(cmdline);
     make_valgrinded_call(cmddup);
 
     GB_ERROR error = GBK_system(cmddup);
@@ -1010,7 +1010,7 @@ void TEST_arb_proto_2_xsub() {
     TEST_EXPECT_NO_ERROR(valgrinded_system(cmd));
 
 #if defined(TEST_AUTO_UPDATE)
-    TEST_COPY_FILE(outname, expected);
+    system(GBS_global_string("cp %s %s", outname, expected));
 #else
     TEST_EXPECT_TEXTFILE_DIFFLINES(expected, outname, 0);
 #endif

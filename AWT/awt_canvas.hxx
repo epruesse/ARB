@@ -13,12 +13,11 @@
 #ifndef ATTRIBUTES_H
 #include <attributes.h>
 #endif
-#ifndef ARB_ASSERT_H
-#include <arb_assert.h>
-#endif
 
 class AWT_canvas;
 class AW_device;
+class AW_clicked_line;
+class AW_clicked_text;
 
 enum AWT_COMMAND_MODE {
     AWT_MODE_NONE,
@@ -159,10 +158,11 @@ class AWT_graphic_event : virtual Noncopyable {
 
     AW::Position mousepos;
 
-    AW_device_click *click_dev;
+    const AW_clicked_line *M_cl; // text and/or
+    const AW_clicked_text *M_ct; // line selected by current mouse position
 
 public:
-    AWT_graphic_event(AWT_COMMAND_MODE cmd_, const AW_event& event, bool is_drag, AW_device_click *click_dev_)
+    AWT_graphic_event(AWT_COMMAND_MODE cmd_, const AW_event& event, bool is_drag, const AW_clicked_line  *cl_, const AW_clicked_text  *ct_)
         : M_cmd(cmd_),
           M_button(event.button),
           M_key_modifier(event.keymodifier),
@@ -170,7 +170,8 @@ public:
           M_key_char(event.character),
           M_type(is_drag ? AW_Mouse_Drag : event.type),
           mousepos(event.x, event.y),
-          click_dev(click_dev_)
+          M_cl(cl_),
+          M_ct(ct_)
     {}
 
     AWT_COMMAND_MODE cmd() const { return M_cmd; }
@@ -184,9 +185,8 @@ public:
 
     const AW::Position& position() const { return mousepos; } // screen-coordinates
 
-    const AW_clicked_element *best_click(AW_device_click::ClickPreference prefer = AW_device_click::PREFER_NEARER) {
-        return click_dev ? click_dev->best_click(prefer) : NULL;
-    }
+    enum ClickPreference { PREFER_NEARER, PREFER_LINE, PREFER_TEXT };
+    const AW_clicked_element *best_click(ClickPreference prefer = PREFER_NEARER);
 };
 
 class AWT_graphic {
@@ -194,8 +194,6 @@ class AWT_graphic {
 
     void refresh_by_exports(AWT_canvas *scr);
     void postevent_handler(GBDATA *gb_main);
-
-    bool detect_drag_target;
 
 protected:
     int drag_gc;
@@ -205,27 +203,25 @@ public:
 
     AWT_graphic() { exports.init(); }
     virtual ~AWT_graphic() {}
-
+    
     // pure virtual interface (methods implemented by AWT_nonDB_graphic)
 
-    virtual GB_ERROR load(GBDATA *gb_main, const char *name) = 0;
-    virtual GB_ERROR save(GBDATA *gb_main, const char *name) = 0;
-    virtual int  check_update(GBDATA *gb_main)               = 0; // check whether anything changed
-    virtual void update(GBDATA *gb_main)                     = 0; // mark the database
+    virtual GB_ERROR load(GBDATA *gb_main, const char *name, AW_CL cd1, AW_CL cd2) = 0;
+    virtual GB_ERROR save(GBDATA *gb_main, const char *name, AW_CL cd1, AW_CL cd2) = 0;
+    virtual int  check_update(GBDATA *gb_main)                                     = 0; // check whether anything changed
+    virtual void update(GBDATA *gb_main)                                           = 0; // mark the database
 
     // pure virtual interface (rest)
 
     virtual void show(AW_device *device) = 0;
 
-    virtual AW_gc_manager *init_devices(AW_window *, AW_device *, AWT_canvas *scr) = 0; /* init gcs, if any gc is changed AWT_GC_changed_cb() is called */
+    virtual void info(AW_device *device, AW_pos x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct) = 0;     // double click
+
+    /* init gcs, if any gc is changed you may call AWT_expose_cb(NULL, scr); or AWT_resize_cb(NULL, scr); */
+    virtual AW_gc_manager init_devices(AW_window *, AW_device *, AWT_canvas *scr) = 0;
 
     virtual void handle_command(AW_device *device, AWT_graphic_event& event) = 0;
     virtual void update_structure()                                          = 0; // called when exports.structure_change == 1
-
-    bool wants_drag_target() const { return detect_drag_target; }
-    void drag_target_detection(bool detect) { detect_drag_target = detect; }
-
-    int get_drag_gc() const { return drag_gc; }
 };
 
 class AWT_nonDB_graphic : public AWT_graphic { // @@@ check AWT_nonDB_graphic
@@ -233,11 +229,11 @@ class AWT_nonDB_graphic : public AWT_graphic { // @@@ check AWT_nonDB_graphic
     // a partly implementation of AWT_graphic
 public:
     AWT_nonDB_graphic() {}
-    ~AWT_nonDB_graphic() OVERRIDE {}
+    virtual ~AWT_nonDB_graphic() OVERRIDE {}
 
     // dummy functions, only spittings out warnings:
-    GB_ERROR load(GBDATA *gb_main, const char *name) OVERRIDE __ATTR__USERESULT;
-    GB_ERROR save(GBDATA *gb_main, const char *name) OVERRIDE __ATTR__USERESULT;
+    GB_ERROR load(GBDATA *gb_main, const char *name, AW_CL cd1, AW_CL cd2) OVERRIDE __ATTR__USERESULT;
+    GB_ERROR save(GBDATA *gb_main, const char *name, AW_CL cd1, AW_CL cd2) OVERRIDE __ATTR__USERESULT;
     int  check_update(GBDATA *gb_main) OVERRIDE;
     void update(GBDATA *gb_main) OVERRIDE;
 };
@@ -277,6 +273,8 @@ public:
     int zoom_drag_ex;
     int zoom_drag_ey;
     int drag;
+    AW_clicked_line clicked_line;
+    AW_clicked_text clicked_text;
 
     void set_scrollbars();
     void set_dragEndpoint(int x, int y);
@@ -292,7 +290,8 @@ public:
     AW_root     *awr;
     AWT_graphic *gfx;
 
-    AW_gc_manager *gc_manager;
+    AW_gc_manager gc_manager;
+    int           drag_gc;
 
     AWT_COMMAND_MODE mode;
 
@@ -305,7 +304,7 @@ public:
 
     void refresh();
 
-    void recalc_size(bool adjust_scrollbars);
+    void recalc_size(bool adjust_scrollbars = true);
     void recalc_size_and_refresh() { recalc_size(true); refresh(); }
 
     void zoom_reset();
@@ -337,7 +336,6 @@ inline void AWT_graphic::refresh_by_exports(AWT_canvas *scr) {
 
 void AWT_expose_cb(UNFIXED, AWT_canvas *scr);
 void AWT_resize_cb(UNFIXED, AWT_canvas *scr);
-void AWT_GC_changed_cb(GcChange whatChanged, AWT_canvas *scr);
 
 void AWT_popup_tree_export_window(AW_window *parent_win, AWT_canvas *scr);
 void AWT_popup_sec_export_window (AW_window *parent_win, AWT_canvas *scr);

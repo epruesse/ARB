@@ -14,7 +14,6 @@
 #include <arbdbt.h>
 #include <ad_cb.h>
 #include <arb_str.h>
-#include <algorithm>
 
 #define pn_assert(cond) arb_assert(cond)
 
@@ -30,33 +29,32 @@ char *AP_create_dna_to_ap_bases() {
             case 'c': case 'C': val = AP_C; break;
             case 't': case 'T':
             case 'u': case 'U': val = AP_T; break;
-            case '-':           val = AP_GAP; break;
-            case 'm': case 'M': val = AP_BASES(AP_A + AP_C); break;
-            case 'r': case 'R': val = AP_BASES(AP_A + AP_G); break;
-            case 'w': case 'W': val = AP_BASES(AP_A + AP_T); break;
-            case 's': case 'S': val = AP_BASES(AP_C + AP_G); break;
-            case 'y': case 'Y': val = AP_BASES(AP_C + AP_T); break;
-            case 'k': case 'K': val = AP_BASES(AP_G + AP_T); break;
-            case 'v': case 'V': val = AP_BASES(AP_A + AP_C + AP_G); break;
-            case 'h': case 'H': val = AP_BASES(AP_A + AP_C + AP_T); break;
-            case 'd': case 'D': val = AP_BASES(AP_A + AP_G + AP_T); break;
-            case 'b': case 'B': val = AP_BASES(AP_C + AP_G + AP_T); break;
-            case 'n': case 'N': val = AP_BASES(AP_A + AP_G + AP_C + AP_T); break;
-            case '?': case '.': val = AP_BASES(AP_A + AP_G + AP_C + AP_T + AP_GAP); break; // = AP_DOT
-            default:            val = AP_DOT; break; // interpret everything else like a dot (alternative would be to abort with error)
+            case 'n': case 'N': val = (AP_BASES)(AP_A + AP_G + AP_C + AP_T); break;
+            case '?': case '.': val = (AP_BASES)(AP_A + AP_G + AP_C + AP_T + AP_S); break;
+            case '-': val = AP_S; break;
+            case 'm': case 'M': val = (AP_BASES)(AP_A+AP_C); break;
+            case 'r': case 'R': val = (AP_BASES)(AP_A+AP_G); break;
+            case 'w': case 'W': val = (AP_BASES)(AP_A+AP_T); break;
+            case 's': case 'S': val = (AP_BASES)(AP_C+AP_G); break;
+            case 'y': case 'Y': val = (AP_BASES)(AP_C+AP_T); break;
+            case 'k': case 'K': val = (AP_BASES)(AP_G+AP_T); break;
+            case 'v': case 'V': val = (AP_BASES)(AP_A+AP_C+AP_G); break;
+            case 'h': case 'H': val = (AP_BASES)(AP_A+AP_C+AP_T); break;
+            case 'd': case 'D': val = (AP_BASES)(AP_A+AP_G+AP_T); break;
+            case 'b': case 'B': val = (AP_BASES)(AP_C+AP_G+AP_T); break;
+            default: val = AP_N; break;
         }
         table[i] = (char)val;
     }
-
-    pn_assert(table[safeCharIndex('.')] == AP_DOT); // make sure a dot is a dot
-
     return table;
 }
 
 long *AWT_translator::create_pro_to_bits() const {
-    long *table = ARB_calloc<long>(256);
-    for (int i = 0; i < max_aa; i++) {
-        int j = index_2_spro[i];
+    int i;
+    int j;
+    long *table = (long *)GB_calloc(sizeof(long), 256);
+    for (i = 0;   i < max_aa; i++) {
+        j = index_2_spro[i];
         if (j == '.') {
             table[i] = -1;
             continue;
@@ -155,7 +153,7 @@ static int codon_defined_in(const char *codon, const char *codons) {
 // must be compatible with DIST/PH_protdist.cxx !!
 // except that this table has an 's' insertion !!!
 
-#define T2I_ENTRIES_MAX 196 // maximum number of generated translations (by code number 11)
+#define T2I_ENTRIES_MAX 190
 
 AWT_translator::AWT_translator(int arb_protein_code_nr) :
     distance_meter(0),
@@ -226,7 +224,7 @@ AWT_translator::AWT_translator(int arb_protein_code_nr) :
     build_table('.', "???", "???");
     build_table('X', "NNN", "NNN");
 
-    pn_assert(GBS_hash_elements(t2i_hash) <= T2I_ENTRIES_MAX);
+    pn_assert(GBS_hash_count_elems(t2i_hash) <= T2I_ENTRIES_MAX);
 
     pro_2_bitset = create_pro_to_bits();
 }
@@ -310,6 +308,9 @@ static void awt_pro_a_nucs_debug(const AWT_translator *translator, const AWT_dis
 
 AWT_distance_meter::AWT_distance_meter(const AWT_translator *translator) {
     memset(dist_, 0, sizeof(dist_));
+    memset(transform07, 0, sizeof(transform07));
+    memset(transform815, 0, sizeof(transform815));
+    memset(transform1623, 0, sizeof(transform1623));
 
     int s;
     int i;
@@ -317,7 +318,7 @@ AWT_distance_meter::AWT_distance_meter(const AWT_translator *translator) {
     int realmax_aa = translator->RealmaxAA();
 
     for (s = 0; s< max_aa; s++) {
-        ARB_calloc(dist_[s], max_aa);
+        dist_[s] = (AWT_PDP *)calloc(sizeof(AWT_PDP), max_aa);
 
         const arb_r2a_pro_2_nuc *s2str = translator->S2str(translator->Index2Spro(s));
         for (i=0; i<3; i++) {
@@ -346,6 +347,15 @@ AWT_distance_meter::AWT_distance_meter(const AWT_translator *translator) {
         dist_[s]->patd[2] |= sum; // and store them in 'distance <= 2'
     }
 
+    for (i=0; i<256; i++) {
+        for (s = 0; s<8; s++) {
+            if (i & (1<<s)) {
+                transform07[i]   |= dist_[s]->patd[1];
+                transform815[i]  |= dist_[s+8]->patd[1];
+                transform1623[i] |= dist_[s+16]->patd[1];
+            }
+        }
+    }
 #ifdef DEBUG
     awt_pro_a_nucs_debug(translator, this);
 #endif
@@ -353,7 +363,7 @@ AWT_distance_meter::AWT_distance_meter(const AWT_translator *translator) {
 
 AWT_distance_meter::~AWT_distance_meter() {
     for (int i=0; i<64; i++) {
-        free(dist_[i]);
+        delete dist_[i];
     }
 
 }
@@ -372,36 +382,59 @@ static void user_code_nr_changed_cb(GBDATA *gb_awar) {
 
 #define CACHED_TRANSLATORS 4
 
+#if defined(DEBUG)
+// #define DUMP_TRANSLATOR_ALLOC
+#endif // DEBUG
+
+
 AWT_translator *AWT_get_translator(int code_nr) {
-    static SmartPtr<AWT_translator> cached[CACHED_TRANSLATORS];
+    static AWT_translator *cached[CACHED_TRANSLATORS];
 
-    if (cached[0].isNull() || cached[0]->CodeNr() != code_nr) { // most recent != requested
-        SmartPtr<AWT_translator> translator;
+    if (!cached[0] || cached[0]->CodeNr() != code_nr) { // most recent != requested
+        AWT_translator *translator = 0;
+        int             i;
 
-        int i;
         for (i = 1; i<CACHED_TRANSLATORS; i++) {
-            if (cached[i].isSet() && cached[i]->CodeNr() == code_nr) {
+            if (cached[i] && cached[i]->CodeNr() == code_nr) {
                 // found existing translator
                 translator = cached[i];
-                cached[i].SetNull();
+                cached[i]  = 0;
                 break;
             }
         }
 
-        if (translator.isNull()) {
+        if (!translator) {
             translator = new AWT_translator(code_nr);
+
+#if defined(DUMP_TRANSLATOR_ALLOC)
+            static int allocCount = 0;
+            allocCount++;
+            printf("Alloc translator for code_nr=%i (allocCount=%i)\n", translator->CodeNr(), allocCount);
+#endif // DUMP_TRANSLATOR_ALLOC
+
         }
 
         // insert new or found translator at front and shift existing to higher indices:
-        for (i = 0; i<CACHED_TRANSLATORS && translator.isSet(); i++) {
-            std::swap(cached[i], translator);
+        for (i = 0; i<CACHED_TRANSLATORS && translator; i++) {
+            AWT_translator *move = cached[i];
+            cached[i]  = translator;
+            translator = move;
         }
 
-        // deletes oldest translator,  if no empty array position was found:
+        // delete oldest translator,  if no empty array position was found:
+        if (translator) {
+#if defined(DUMP_TRANSLATOR_ALLOC)
+            static int freeCount = 0;
+            freeCount++;
+            printf("Free translator for code_nr=%i (freeCount=%i)\n", translator->CodeNr(), freeCount);
+#endif // DUMP_TRANSLATOR_ALLOC
+
+            delete translator;
+        }
     }
 
     pn_assert(cached[0]->CodeNr() == code_nr);
-    return &*cached[0];
+    return cached[0];
 }
 
 int AWT_default_protein_type(GBDATA *gb_main) {
@@ -427,26 +460,3 @@ AWT_translator *AWT_get_user_translator(GBDATA *gb_main) {
     return AWT_get_translator(AWT_default_protein_type(gb_main));
 }
 
-// --------------------------------------------------------------------------------
-
-#ifdef UNIT_TESTS
-#ifndef TEST_UNIT_H
-#include <test_unit.h>
-#endif
-
-static int test_code_nr = -1;
-static void translator_instance() {
-    AWT_translator instance(test_code_nr);
-}
-
-void TEST_translator_instantiation() {
-    for (int i = 0; i<AWT_CODON_TABLES; ++i) {
-        TEST_ANNOTATE(GBS_global_string("i=%i", i));
-        test_code_nr = i;
-        TEST_EXPECT_NO_SEGFAULT(translator_instance);
-    }
-}
-
-#endif // UNIT_TESTS
-
-// --------------------------------------------------------------------------------

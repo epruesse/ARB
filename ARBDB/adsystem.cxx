@@ -67,13 +67,15 @@ GB_ERROR gb_load_dictionary_data(GBDATA *gb_main, const char *key, char **dict_d
 }
 
 static GB_DICTIONARY *gb_create_dict(GBDATA *gb_dict) {
-    GB_DICTIONARY *dict = ARB_calloc<GB_DICTIONARY>(1);
+    GB_DICTIONARY *dict = (GB_DICTIONARY *)GB_calloc(sizeof(GB_DICTIONARY), 1);
+    const char    *data;
+    GB_NINT       *idata;
+    long           size;
 
-    long size;
-    const char *data = gb_read_dict_data(gb_dict, &size);
+    data = gb_read_dict_data(gb_dict, &size);
     GB_write_security_write(gb_dict, 7);
 
-    GB_NINT *idata = (GB_NINT *)data;
+    idata = (GB_NINT *)data;
     dict->words = ntohl(*idata++);
     dict->textlen = (int)(size - sizeof(GB_NINT)*(1+dict->words*2));
 
@@ -158,8 +160,7 @@ void gb_load_single_key_data(GBDATA *gb_main, GBQUARK q) {
         {
             char buffer[256];
             sprintf(buffer, "%s/@master_data/@%s", GB_SYSTEM_FOLDER, key);
-
-            ks->gb_master_ali = GBDATA::as_container(GB_search(gb_main, buffer, GB_FIND));
+            ks->gb_master_ali = GB_search(gb_main, buffer, GB_FIND)->as_container();
             if (ks->gb_master_ali) {
                 GB_ensure_callback(ks->gb_master_ali, GB_CB_CHANGED_OR_DELETED, makeDatabaseCallback(gb_system_master_changed_cb, q));
             }
@@ -232,14 +233,9 @@ GB_ERROR gb_load_key_data_and_dictionaries(GB_MAIN_TYPE *Main) { // goes to head
                     const char *name = GB_read_char_pntr(gb_name);
                     if (!name) error = GB_await_error();
                     else {
-                        if (!name[0]) {
-                            error = GB_delete(gb_key);  // delete invalid empty key
-                        }
-                        else {
-                            GBQUARK quark = gb_find_or_create_quark(Main, name);
-                            if (quark<=0 || quark >= Main->sizeofkeys || !quark2key(Main, quark)) {
-                                error = GB_delete(gb_key);  // delete unused key
-                            }
+                        GBQUARK quark = gb_find_or_create_quark(Main, name);
+                        if (quark<=0 || quark >= Main->sizeofkeys || !Main->keys[quark].key) {
+                            error = GB_delete(gb_key);  // delete unused key
                         }
                     }
                 }
@@ -254,9 +250,9 @@ GB_ERROR gb_load_key_data_and_dictionaries(GB_MAIN_TYPE *Main) { // goes to head
                 ASSERT_RESULT_PREDICATE(isAbove<int>(0), gb_find_or_create_quark(Main, "compression_mask"));
 
                 for (int key=1; key<Main->sizeofkeys; key++) {
-                    if (quark2key(Main, key)) {
-                        gb_load_single_key_data(gb_main, key);
-                    }
+                    char *k = Main->keys[key].key;
+                    if (!k) continue;
+                    gb_load_single_key_data(gb_main, key);
                 }
             }
             GB_pop_my_security(gb_main);
@@ -285,7 +281,7 @@ DictData *GB_get_dictionary(GBDATA *gb_main, const char *key) {
     /* return DictData or
      * NULL if no dictionary or error occurred
      */
-    DictData *dd    = ARB_calloc<DictData>(1);
+    DictData *dd    = (DictData*)GB_calloc(1, sizeof(*dd));
     GB_ERROR  error = gb_load_dictionary_data(gb_main, key, &dd->data, &dd->size);
 
     if (error || !dd->data) {

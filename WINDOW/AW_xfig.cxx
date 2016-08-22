@@ -95,7 +95,7 @@ AW_xfig::AW_xfig(const char *filename, int font_width, int font_height) {
 
     GB_ERROR  error  = 0;
     char     *ret;
-    char     *buffer = ARB_calloc<char>(MAX_XFIG_LENGTH);
+    char     *buffer = (char *)calloc(sizeof(char), MAX_XFIG_LENGTH);
     FILE     *file   = 0;
 
     if (filename[0]=='/') { // absolute file ?
@@ -416,11 +416,13 @@ AW_xfig::AW_xfig(const char *filename, int font_width, int font_height) {
     free(buffer);
 
     if (error) {
-        error = GBS_global_string("Failed to read XFIG resource (defect installation?)\n"
-                                  "Reason: %s", error);
+        error = GBS_global_string("Error: Can't read XFIG ressource - programmers error or defect installation\n"
+                                  "Reason: %s\n", error);
 
         if (font_width>0 && font_height>0) { // react with fatal exit
-            GBK_terminate(error);
+            fputs(error, stderr);
+            fprintf(stderr, "Cannot continue - terminating.\n");
+            exit(EXIT_FAILURE);
         }
 
         // special case (used by aw_read_xfigfont())

@@ -12,12 +12,16 @@
 #ifndef GDE_AWARS_H
 #define GDE_AWARS_H
 
-#define AWAR_PREFIX_GDE_TEMP "tmp/gde"
-#define AWAR_PREFIX_GDE      "gde"
 
-#define AWAR_GDE_CUTOFF_STOPCODON AWAR_PREFIX_GDE "/cutoff_stop_codon"
-#define AWAR_GDE_SPECIES          AWAR_PREFIX_GDE "/species"
-#define AWAR_GDE_COMPRESSION      AWAR_PREFIX_GDE "/compress"
+#define AWAR_GDE_ALIGNMENT "tmp/gde/alignment"
+
+#define AWAR_GDE_CUTOFF_STOPCODON "gde/cutoff_stop_codon"
+#define AWAR_GDE_SPECIES          "gde/species"
+#define AWAR_GDE_COMPRESSION      "gde/compress"
+
+#define AWAR_GDE_FILTER_NAME      "gde/filter/name"
+#define AWAR_GDE_FILTER_FILTER    "gde/filter/filter"
+#define AWAR_GDE_FILTER_ALIGNMENT "gde/filter/alignment"
 
 #else
 #error GDE_awars.h included twice

@@ -35,9 +35,6 @@
 #ifndef _STRING_H
 #include <string.h>
 #endif
-#ifndef _SIGNAL_H
-#include <signal.h>
-#endif
 
 /* ------------------------------------------------------------
  * Include arb_simple_assert.h to avoid dependency from CORE library!
@@ -93,9 +90,18 @@
 // ------------------------------------------------------------
 
 #if defined(__cplusplus)
+#if defined(__clang__)
+#include <signal.h>
 inline void provoke_core_dump() {
     raise(SIGSEGV);
 }
+#else // !defined(__clang__)
+inline void provoke_core_dump() {
+    volatile int *np = 0; // if not volatile, the clang compiler will skip the crashing code
+    // cppcheck-suppress nullPointer
+    *(int*)np = 666;
+}
+#endif
 #else // !defined(__cplusplus)
 #define provoke_core_dump() do { *(int*)0 = 0; } while(0)
 #endif
@@ -276,17 +282,9 @@ inline bool contradicted(bool hypo1, bool hypo2) { return !correlated(hypo1, hyp
 # define IF_ASSERTION_USED(x)
 #endif
 
-#ifdef ARB_MOTIF
-# define IF_MOTIF(x) x
-# define IF_GTK(x)
-#else
-# define IF_MOTIF(x)
-# define IF_GTK(x)   x
-#endif
-
 // ------------------------------------------------------------
 // Assert specific result in DEBUG and silence __ATTR__USERESULT warnings in NDEBUG.
-//
+// 
 // The value 'Expected' (or 'Limit') should be side-effect-free (it is only executed in DEBUG mode).
 // The given 'Expr' is evaluated under all conditions!
 // 
@@ -324,14 +322,6 @@ template <typename T> inline void dont_warn_unused_result(T) {}
 
 #define ASSERT_TRUE(boolExpr)  ASSERT_RESULT(bool, true, boolExpr)
 #define ASSERT_FALSE(boolExpr) ASSERT_RESULT(bool, false, boolExpr)
-
-// ------------------------------------------------------------
-
-#if defined(ASSERTION_USED)
-inline bool knownNonNull(const void *nonnull) { // use to suppress -Wnonnull-compare (only allowed in assertions)
-    return nonnull != NULL;
-}
-#endif
 
 // ------------------------------------------------------------
 // UNCOVERED is used to document/test missing test coverage

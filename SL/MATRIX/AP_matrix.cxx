@@ -28,7 +28,7 @@ AP_smatrix::AP_smatrix(size_t si)
     size_t headsize = Size * sizeof(*m);
     size_t datasize = elements * sizeof(*(m[0]));
 
-    m    = (AP_FLOAT**)ARB_calloc<char>(headsize+datasize);
+    m    = (AP_FLOAT**)calloc(1, headsize+datasize);
     m[0] = (AP_FLOAT*)(((char*)m)+headsize);
 
     for (size_t i=1; i<si; i++) {
@@ -53,35 +53,17 @@ AP_FLOAT AP_smatrix::get_max_value() const { // O(n*2)
 // ------------------
 //      AP_matrix
 
-AP_matrix::AP_matrix(long si) {
-    ARB_calloc(m, si);
-    for (long i=0; i<si; i++) {
-        ARB_calloc(m[i], si);
-    }
-    size = si;
-}
-
-AP_matrix::~AP_matrix() {
-    for (long i=0; i<size; i++) {
-        free(m[i]);
-    }
-    free(m);
-}
-
-// ---------------------------
-//      AP_userdef_matrix
-
-void AP_userdef_matrix::set_desc(char**& which_desc, int idx, const char *desc) {
-    if (!which_desc) ARB_calloc(which_desc, get_size());
+void AP_matrix::set_desc(char**& which_desc, int idx, const char *desc) {
+    if (!which_desc) which_desc = (char**)GB_calloc(sizeof(char*), size);
     which_desc[idx] = strdup(desc);
 }
 
-void AP_userdef_matrix::create_awars(AW_root *awr) {
+void AP_matrix::create_awars(AW_root *awr, const char *awar_prefix) {
     char buffer[1024];
     int x, y;
-    for (x = 0; x<get_size(); x++) {
+    for (x = 0; x<size; x++) {
         if (x_description[x]) {
-            for (y = 0; y<get_size(); y++) {
+            for (y = 0; y<size; y++) {
                 if (y_description[y]) {
                     sprintf(buffer, "%s/B%s/B%s", awar_prefix, x_description[x], y_description[y]);
                     if (x==y) {
@@ -96,12 +78,12 @@ void AP_userdef_matrix::create_awars(AW_root *awr) {
         }
     }
 }
-void AP_userdef_matrix::update_from_awars(AW_root *awr) {
+void AP_matrix::read_awars(AW_root *awr, const char *awar_prefix) {
     char buffer[1024];
     int x, y;
-    for (x = 0; x<get_size(); x++) {
+    for (x = 0; x<size; x++) {
         if (x_description[x]) {
-            for (y = 0; y<get_size(); y++) {
+            for (y = 0; y<size; y++) {
                 if (y_description[y]) {
                     sprintf(buffer, "%s/B%s/B%s", awar_prefix, x_description[x], y_description[y]);
                     this->set(x, y, awr->awar(buffer)->read_float());
@@ -111,20 +93,20 @@ void AP_userdef_matrix::update_from_awars(AW_root *awr) {
     }
 }
 
-void AP_userdef_matrix::create_input_fields(AW_window *aww) {
+void AP_matrix::create_input_fields(AW_window *aww, const char *awar_prefix) {
     char buffer[1024];
     int x, y;
     aww->create_button(0, "    ");
-    for (x = 0; x<get_size(); x++) {
+    for (x = 0; x<size; x++) {
         if (x_description[x]) {
             aww->create_button(0, x_description[x]);
         }
     }
     aww->at_newline();
-    for (x = 0; x<get_size(); x++) {
+    for (x = 0; x<size; x++) {
         if (x_description[x]) {
             aww->create_button(0, x_description[x]);
-            for (y = 0; y<get_size(); y++) {
+            for (y = 0; y<size; y++) {
                 if (y_description[y]) {
                     sprintf(buffer, "%s/B%s/B%s", awar_prefix, x_description[x], y_description[y]);
                     aww->create_input_field(buffer, 4);
@@ -135,13 +117,13 @@ void AP_userdef_matrix::create_input_fields(AW_window *aww) {
     }
 }
 
-void AP_userdef_matrix::normize() { // set values so that average of non diag elems == 1.0
+void AP_matrix::normize() { // set values so that average of non diag elems == 1.0
     int x, y;
     double sum = 0.0;
     double elems = 0.0;
-    for (x = 0; x<get_size(); x++) {
+    for (x = 0; x<size; x++) {
         if (x_description[x]) {
-            for (y = 0; y<get_size(); y++) {
+            for (y = 0; y<size; y++) {
                 if (y!=x && y_description[y]) {
                     sum += this->get(x, y);
                     elems += 1.0;
@@ -151,20 +133,32 @@ void AP_userdef_matrix::normize() { // set values so that average of non diag el
     }
     if (sum == 0.0) return;
     sum /= elems;
-    for (x = 0; x<get_size(); x++) {
-        for (y = 0; y<get_size(); y++) {
+    for (x = 0; x<size; x++) {
+        for (y = 0; y<size; y++) {
             this->set(x, y, get(x, y)/sum);
         }
     }
 }
 
-AP_userdef_matrix::~AP_userdef_matrix() {
-    for (long i=0; i<get_size(); i++) {
+AP_matrix::AP_matrix(long si)
+    : x_description(NULL),
+      y_description(NULL)
+{
+    m = (AP_FLOAT **)calloc(sizeof(AP_FLOAT *), (size_t)si);
+    for (long i=0; i<si; i++) {
+        m[i] = (AP_FLOAT *)calloc(sizeof(AP_FLOAT), (size_t)(si));
+    }
+    size = si;
+}
+
+AP_matrix::~AP_matrix() {
+    for (long i=0; i<size; i++) {
+        free(m[i]);
         if (x_description) free(x_description[i]);
         if (y_description) free(y_description[i]);
     }
     free(x_description);
     free(y_description);
-    free(awar_prefix);
+    free(m);
 }
 

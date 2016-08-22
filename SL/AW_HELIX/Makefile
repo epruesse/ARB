@@ -10,10 +10,10 @@ $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .cxx.o:
-	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE) $<
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 .c.o:
-	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE) $<
+	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(OBJECTS) *.a
@@ -41,7 +41,6 @@ AW_helix.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AW_helix.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_helix.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_helix.o: $(ARBHOME)/INCLUDE/arb_error.h
-AW_helix.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AW_helix.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AW_helix.o: $(ARBHOME)/INCLUDE/arb_string.h
 AW_helix.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -56,7 +55,6 @@ AW_helix.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-AW_helix.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/cb.h
 AW_helix.o: $(ARBHOME)/INCLUDE/cb_base.h

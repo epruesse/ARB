@@ -60,7 +60,9 @@ DbScanner *create_db_scanner(GBDATA         *gb_main,
                              const char     *edit_pos_fig,
                              const char     *edit_enable_pos_fig,
                              DB_SCANNERMODE  scannermode,
+                             const char     *rescan_pos_fig,         // DB_VIEWER
                              const char     *mark_pos_fig,
+                             long            type_filter,
                              ItemSelector&   selector);
 
 void map_db_scanner(DbScanner *scanner, GBDATA *gb_pntr, const char *key_path);

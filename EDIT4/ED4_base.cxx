@@ -1,14 +1,11 @@
 #include <arbdbt.h>
 #include <ad_cb.h>
-
 #include <aw_preset.hxx>
 #include <aw_awar.hxx>
 #include <aw_msg.hxx>
+#include <arb_progress.h>
 #include <aw_root.hxx>
 #include <aw_question.hxx>
-
-#include <arb_progress.h>
-#include <arb_strbuf.h>
 
 #include <ed4_extern.hxx>
 
@@ -305,88 +302,164 @@ ED4_returncode ED4_manager::create_group(ED4_group_manager **group_manager, GB_C
     return ED4_R_OK;
 }
 
-void ED4_base::generate_configuration_string(GBS_strstruct& buffer) {
-    const char SEPARATOR = '\1';
+
+ED4_returncode ED4_base::generate_configuration_string(char **generated_string)
+{
+    ED4_multi_species_manager *multi_species_manager = NULL;
+    char sep_name[2] = { 1, 0 };
+    AW_pos old_pos = 0;
+
+    if (!(*generated_string)) {
+        *generated_string = new char[2];
+        strcpy(*generated_string, sep_name);
+    }
+    ED4_manager *consensus_manager = NULL;
+
+    if (is_species_name_terminal() &&
+        !((ED4_terminal *)this)->tflag.deleted) { // wenn multi_name_manager mehrere name_terminals hat, dann muss das echte name_terminal markiert sein
+
+        long  old_size     = strlen(*generated_string);
+        long  new_size;
+        char *old_string   = *generated_string;
+        char *species_name = NULL;
+        char *cons_id      = NULL;
+
+        ED4_species_type species_type = get_species_type();
+        if (species_type == ED4_SP_CONSENSUS) {
+            cons_id = new char[strlen(id)+1];
+            int i;
+            for (i=0; id[i] != '(' && id[i] != '\0'; i++) cons_id[i] = id[i];
+            if (id[i] == '(') cons_id[i-1] = '\0';
+            new_size   = old_size + strlen(cons_id) + 2;
+        }
+        else { // we are Species or SAI
+            int len;
+            species_name = resolve_pointer_to_string_copy(&len);
+            new_size     = old_size + len + 3; // 3 because of separator and identifier
+        }
+
+        *generated_string = new char[new_size];
+
+        int i;
+        for (i=0; i<old_size; ++i) (*generated_string)[i] = old_string[i];
+        for (;    i<new_size; ++i) (*generated_string)[i] = 0;
+
+        switch (species_type) {
+            case ED4_SP_CONSENSUS:
+                strcat (*generated_string, cons_id);
+                delete [] cons_id;
+                break;
+            case ED4_SP_SAI:
+                strcat(*generated_string, "S");
+                strcat(*generated_string, species_name);
+                break;
+            case ED4_SP_SPECIES:
+                strcat(*generated_string, "L");
+                strcat(*generated_string, species_name);
+                break;
+            case ED4_SP_NONE:
+                e4_assert(0);
+                break;
+        }
+
+        strcat(*generated_string, sep_name);
+        delete [] old_string;
+        free(species_name);
+    }
+    else if (is_group_manager()) {
+        char *old_string = *generated_string;
+        long  old_size   = strlen(*generated_string);
+        long  new_size   = old_size + 1; // 3 because of separator and identifier
+        *generated_string = new char[new_size+1];
+
+        int i;
+        for (i=0; i<old_size; ++i) (*generated_string)[i] = old_string[i];
+        for (;    i<new_size; ++i) (*generated_string)[i] = 0;
+
+        delete [] old_string;
+
+        if (dynamic_prop & ED4_P_IS_FOLDED) {
+            strcat(*generated_string, "F");
+        }
+        else {
+            strcat(*generated_string, "G");
+        }
+
+        multi_species_manager = to_group_manager()->get_multi_species_manager();
+
+        // move consensus to top of list (essential!)
+        // @@@ code below is duplicated in ED4_bracket_terminal::fold() 
+        ED4_manager *spec_man = multi_species_manager->children->member(1)->to_manager();
+        if (!spec_man->is_consensus_manager()) {
+            for (i=0; i < multi_species_manager->children->members(); i++) {
+                spec_man = multi_species_manager->children->member(i)->to_manager();
+                if (spec_man->is_consensus_manager()) {
+                    consensus_manager = spec_man;
+                    break;
+                }
+            }
+
+            e4_assert(consensus_manager);
+            multi_species_manager->children->remove_member(consensus_manager);
+            old_pos                                      = consensus_manager->extension.position[Y_POS];
+            consensus_manager->extension.position[Y_POS] = SPACERHEIGHT;
+            ED4_base::touch_world_cache();
+            multi_species_manager->children->append_member(consensus_manager);
+        }
+    }
+
     if (is_manager()) {
-        ED4_members *childs = to_manager()->children;
-        if (childs) {
-            if (is_group_manager()) {
-                buffer.put(SEPARATOR);
-                buffer.put(dynamic_prop & ED4_P_IS_FOLDED ? 'F' : 'G');
-
-                for (int writeConsensus = 1; writeConsensus>=0; --writeConsensus) {
-                    for (int i=0; i<childs->members(); ++i) {
-                        ED4_base *child       = childs->member(i);
-                        bool      isConsensus = child->is_consensus_manager();
-
-                        if (bool(writeConsensus) == isConsensus) {
-                            child->generate_configuration_string(buffer);
-                        }
-                    }
-                }
-
-                buffer.put(SEPARATOR);
-                buffer.put('E');
-            }
-            else {
-                for (int i=0; i<childs->members(); i++) {
-                    childs->member(i)->generate_configuration_string(buffer);
-                }
+        ED4_manager *this_manager = this->to_manager();
+        if (this_manager->children) {
+            for (int i=0; i<this_manager->children->members(); i++) {
+                this_manager->children->member(i)->generate_configuration_string(generated_string);
             }
         }
     }
-    else {
-        if (is_species_name_terminal() && !((ED4_terminal*)this)->tflag.deleted) {
-            ED4_species_type species_type = get_species_type();
-            switch (species_type) {
-                case ED4_SP_CONSENSUS: {
-                    // write group name (control info already written inside manager-branch above)
-                    const char *paren = strchr(id, '(');
-                    if (paren) {
-                        int namelen = std::max(int(paren-id)-1, 0); // skip starting at " (" behind consensus name
 
-                        if (namelen>0) buffer.ncat(id, namelen);
-                        else           buffer.cat("<unnamed>");
-                    }
-                    else buffer.cat(id);
-                    break;
-                }
-                case ED4_SP_SAI:
-                    buffer.put(SEPARATOR);
-                    buffer.put('S');
-                    buffer.cat(resolve_pointer_to_char_pntr(NULL));
-                    break;
-                case ED4_SP_SPECIES:
-                    buffer.put(SEPARATOR);
-                    buffer.put('L');
-                    buffer.cat(resolve_pointer_to_char_pntr(NULL));
-                    break;
-                case ED4_SP_NONE:
-                    e4_assert(0);
-                    break;
-            }
+    if (multi_species_manager) {
+        char *old_string = *generated_string;
+        long  old_size   = strlen(*generated_string);
+        long  new_size   = old_size + 3;                                                      // 3 because of separator and identifier
+        *generated_string = new char[new_size];
+
+        int i;
+        for (i=0; i<old_size; ++i) (*generated_string)[i] = old_string[i];
+        for (;    i<new_size; ++i) (*generated_string)[i] = 0;
+
+        delete [] old_string;
+
+        strcat(*generated_string, "E");
+        strcat(*generated_string, sep_name);
+
+        if (consensus_manager) {
+            multi_species_manager->children->remove_member(consensus_manager);                  // move Consensus back to old position
+            consensus_manager->extension.position[Y_POS] = old_pos;
+            ED4_base::touch_world_cache();
+            multi_species_manager->children->append_member(consensus_manager);
         }
     }
+
+    return ED4_R_OK;
 }
 
-
-ARB_ERROR ED4_base::route_down_hierarchy(const ED4_route_cb& cb) {
+ARB_ERROR ED4_base::route_down_hierarchy(ED4_cb cb, AW_CL cd1, AW_CL cd2) {
     // executes 'cb' for every element in hierarchy
-    return cb(this);
+    return cb(this, cd1, cd2);
 }
 
-ARB_ERROR ED4_manager::route_down_hierarchy(const ED4_route_cb& cb) {
-    ARB_ERROR error = cb(this);
+ARB_ERROR ED4_manager::route_down_hierarchy(ED4_cb cb, AW_CL cd1, AW_CL cd2) {
+    ARB_ERROR error = cb(this, cd1, cd2);
     if (children && !error) {
         for (int i=0; i <children->members() && !error; i++) {
-            error = children->member(i)->route_down_hierarchy(cb);
+            error = children->member(i)->route_down_hierarchy(cb, cd1, cd2);
         }
     }
     return error;
 }
 
-ED4_base *ED4_manager::find_first_that(ED4_level level, const ED4_basePredicate& fulfills_predicate) {
-    if ((spec.level&level) && fulfills_predicate(this)) {
+ED4_base *ED4_manager::find_first_that(ED4_level level, bool (*condition)(ED4_base *to_test, AW_CL arg), AW_CL arg) {
+    if ((spec.level&level) && condition(this, arg)) {
         return this;
     }
 
@@ -395,12 +468,12 @@ ED4_base *ED4_manager::find_first_that(ED4_level level, const ED4_basePredicate&
             ED4_base *child = children->member(i);
 
             if (child->is_manager()) {
-                ED4_base *found = child->to_manager()->find_first_that(level, fulfills_predicate);
+                ED4_base *found = child->to_manager()->find_first_that(level, condition, arg);
                 if (found) {
                     return found;
                 }
             }
-            else if ((child->spec.level&level) && fulfills_predicate(child)) {
+            else if ((child->spec.level&level) && condition(child, arg)) {
                 return child;
             }
         }
@@ -524,7 +597,7 @@ void ED4_multi_species_manager::update_group_id() {
         e4_assert(has_valid_counters());
         
         const char *cntid = consensus_name_terminal->id;
-        char       *name  = ARB_calloc<char>(strlen(cntid)+10);
+        char       *name  = (char*)GB_calloc(strlen(cntid)+10, sizeof(*name));
 
         int i;
         for (i=0; cntid[i] && cntid[i] != '(';   i++) {
@@ -899,6 +972,7 @@ void ED4_bracket_terminal::fold() {
         ED4_multi_species_manager *multi_species_manager = parent->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
 
         int consensus_shown = 0;
+        // @@@ code below is duplicated in ED4_base::generate_configuration_string
         if (!(multi_species_manager->children->member(1)->is_consensus_manager())) { // if consensus is not a top = > move to top
             ED4_members *multi_children    = multi_species_manager->children;
             ED4_manager *consensus_manager = NULL;
@@ -1006,7 +1080,7 @@ ED4_returncode ED4_base::clear_background(int color) {
             }
             else {
                 // fill range with color for debugging
-                current_device()->box(color, AW::FillStyle::SOLID, x, y, extension.size[WIDTH], extension.size[HEIGHT]);
+                current_device()->box(color, true, x, y, extension.size[WIDTH], extension.size[HEIGHT]);
             }
         }
         current_device()->pop_clip_scale();
@@ -1033,7 +1107,7 @@ void ED4_base::draw_bb(int color) {
             AW_pos x1, y1;
             calc_world_coords(&x1, &y1);
             current_ed4w()->world_to_win_coords(&x1, &y1);
-            current_device()->box(color, AW::FillStyle::EMPTY, x1, y1, extension.size[WIDTH]-1, extension.size[HEIGHT]-1);
+            current_device()->box(color, false, x1, y1, extension.size[WIDTH]-1, extension.size[HEIGHT]-1);
         }
         current_device()->pop_clip_scale();
     }
@@ -1046,9 +1120,11 @@ ED4_base::ED4_base(const ED4_objspec& spec_, GB_CSTR temp_id, AW_pos x, AW_pos y
     dynamic_prop = ED4_P_NO_PROP;
     timestamp =  0; // invalid - almost always..
 
-    e4_assert(temp_id);
-    if (temp_id) {
-        id = ARB_alloc<char>(strlen(temp_id)+1);
+    if (!strcmp(CONSENSUS, temp_id)) {
+        id = NULL;
+    }
+    else {
+        id = (char*)malloc(strlen(temp_id)+1);
         strcpy(id, temp_id);
     }
 

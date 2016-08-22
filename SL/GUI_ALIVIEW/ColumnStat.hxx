@@ -49,7 +49,7 @@ class ColumnStat : virtual Noncopyable {
     char *alignment_name;
     char *type_path;
 
-    class AW_DB_selection *saisel;
+    class AWT_sai_selection *sai_sel_box_id;
 
     // all members below are valid after calling calculate() only!
     //

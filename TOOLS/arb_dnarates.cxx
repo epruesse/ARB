@@ -454,12 +454,9 @@ static void freeTreeNode(nodeptr p) {
 }
 
 static void freeTree(tree *tr) {
-    int leafs = tr->mxtips;
-    int nodes = leafs_2_nodes(leafs, ROOTED);
+    for (int i = 1; i <= tr->mxtips; i++) freeTreeNode(tr->nodep[i]);
 
-    for (int i = 1; i <= leafs; i++) freeTreeNode(tr->nodep[i]);
-
-    for (int i = leafs+1; i <= nodes; i++) {
+    for (int i = tr->mxtips+1; i <= 2*(tr->mxtips)-2; i++) {
         nodeptr p = tr->nodep[i];
         if (p) {
             nodeptr q = p->next;
@@ -784,9 +781,7 @@ static void empiricalfreqs(tree *tr) {
 static void getinput(tree *tr, FILE *INFILE) {
     getnums(INFILE);                      if (anerror) return;
     getoptions(INFILE);                   if (anerror) return;
-    if (!freqsfrom) {
-        getbasefreqs(INFILE);             if (anerror) return;
-    }
+    if (!freqsfrom) getbasefreqs(INFILE); if (anerror) return;
     getyspace();                          if (anerror) return;
     setuptree(tr, numsp);                 if (anerror) return;
     getdata(tr, INFILE);                  if (anerror) return;
@@ -1353,9 +1348,7 @@ static void treeReadLen(tree *tr, FILE *INFILE) {
     treeFlushLen(INFILE);                 if (anerror)  return;
     treeNeedCh(';', "at end of", INFILE); if (anerror)  return;
 
-    if (tr->rooted)  {
-        uprootTree(tr, p->next->next);    if (anerror)  return;
-    }
+    if (tr->rooted)  uprootTree(tr, p->next->next);  if (anerror)  return;
     tr->start = p->next->next->back;  // This is start used by treeString
 
     initrav(tr->start);
@@ -1680,8 +1673,8 @@ static bool writeToArb() {
     GB_begin_transaction(gb_main);
 
     long   ali_len = GBT_get_alignment_len(gb_main, alignment_name);
-    char  *cats    = ARB_calloc<char>(ali_len+1); // categories
-    float *rates   = ARB_calloc<float>(ali_len); // rates to export
+    char  *cats    = (char *)GB_calloc(ali_len+1, sizeof(char)); // categories
+    float *rates   = (float *)GB_calloc(ali_len, sizeof(float)); // rates to export
     char   category_string[1024];
 
     // check filter has correct length
@@ -1761,10 +1754,6 @@ static bool writeToArb() {
     if (error) {
         fprintf(stderr, "Error in arb_dnarates: %s\n", error);
     }
-
-    free(cats);
-    free(rates);
-
     return !error;
 }
 
@@ -1984,7 +1973,7 @@ int ARB_main(int argc, char *argv[]) {
             if (!anerror && dbsavename) saveArb(dbsavename);
         }
         closeArb();
-        freeTree(tr);
+        if (!anerror) freeTree(tr);
     }
 
     if (wantSTDIN(inputname)) fclose(infile);

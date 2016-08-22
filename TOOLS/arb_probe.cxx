@@ -96,17 +96,12 @@ static int init_local_com_struct() {
 }
 
 static const char *AP_probe_pt_look_for_server(ARB_ERROR& error) {
-    // DRY vs  ../MULTI_PROBE/MP_noclass.cxx@MP_probe_pt_look_for_server
-    // DRY vs  ../PROBE_DESIGN/probe_design.cxx@PD_probe_pt_look_for_server
     const char *server_tag = GBS_ptserver_tag(P.SERVERID);
-    error = arb_look_and_start_server(AISC_MAGIC_NUMBER, server_tag);
 
-    const char *result = NULL;
-    if (!error) {
-        result = GBS_read_arb_tcp(server_tag);
-        if (!result) error = GB_await_error();
-    }
-    return result;
+    error = arb_look_and_start_server(AISC_MAGIC_NUMBER, server_tag);
+    if (error) return NULL;
+    
+    return GBS_read_arb_tcp(server_tag);
 }
 
 class PTserverConnection {
@@ -167,7 +162,7 @@ static char *AP_dump_index_event(ARB_ERROR& error) {
             error = "Connection to PT_SERVER lost (1)";
         }
         else {
-            result = ARB_strdup("ok");
+            result = strdup("ok");
         }
     }
     return result;
@@ -205,7 +200,7 @@ static char *AP_probe_iterate_event(ARB_ERROR& error) {
 
                 aisc_put(pd_gl.link, PT_PEP, pep,
                          PEP_NUMGET,      (long)this_amount,
-                         PEP_FIND_PROBES, (long)0,
+                         PEP_FIND_PROBES, 0,
                          NULL);
 
                 char *pep_result = 0;
@@ -255,13 +250,13 @@ static char *AP_probe_design_event(ARB_ERROR& error) {
                         PDC_MAX_PROBELEN, (long)P.DESIGNMAXPROBELEN,
                         PDC_MINTEMP,      (double)P.MINTEMP,
                         PDC_MAXTEMP,      (double)P.MAXTEMP,
-                        PDC_MINGC,        (double)P.MINGC/100.0,
-                        PDC_MAXGC,        (double)P.MAXGC/100.0,
+                        PDC_MINGC,        P.MINGC/100.0,
+                        PDC_MAXGC,        P.MAXGC/100.0,
                         PDC_MAXBOND,      (double)P.MAXBOND,
                         PDC_MIN_ECOLIPOS, (long)P.MINPOS,
                         PDC_MAX_ECOLIPOS, (long)P.MAXPOS,
                         PDC_MISHIT,       (long)P.MISHIT,
-                        PDC_MINTARGETS,   (double)P.MINTARGETS/100.0,
+                        PDC_MINTARGETS,   P.MINTARGETS/100.0,
                         PDC_CLIPRESULT,   (long)P.DESIGNCLIPOUTPUT,
                         NULL))
         {
@@ -288,7 +283,7 @@ static char *AP_probe_design_event(ARB_ERROR& error) {
 
             aisc_put(pd_gl.link, PT_PDC, pdc,
                      PDC_NAMES, &bs,
-                     PDC_GO, (long)0,
+                     PDC_GO, 0,
                      NULL);
 
             {
@@ -349,7 +344,7 @@ static char *AP_probe_match_event(ARB_ERROR& error) {
         aisc_nput(pd_gl.link, PT_LOCS, pd_gl.locs,
                   LOCS_MATCH_REVERSED,       (long)P.COMPLEMENT,
                   LOCS_MATCH_SORT_BY,        (long)P.WEIGHTED,
-                  LOCS_MATCH_COMPLEMENT,     (long)0,
+                  LOCS_MATCH_COMPLEMENT,     0L,
                   LOCS_MATCH_MAX_MISMATCHES, (long)P.MISMATCHES,
                   LOCS_MATCH_N_ACCEPT,       (long)P.ACCEPTN,
                   LOCS_MATCH_N_LIMIT,        (long)P.LIMITN,
@@ -386,19 +381,14 @@ static char *AP_probe_match_event(ARB_ERROR& error) {
 static int          pargc;
 static const char **pargv = NULL;
 static bool         showhelp;
-static bool         outOfRange;
 
 static int getInt(const char *param, int val, int min, int max, const char *description) {
     if (showhelp) {
-        printf("    %s=%i [%i .. ", param, val, min);
-        if (max != INT_MAX) printf("%i", max);
-        printf("] %s\n", description);
+        printf("    %s=%i [%i .. %i] %s\n", param, val, min, max, description);
         return 0;
     }
-    int         i;
+    int   i;
     const char *s = 0;
-
-    arb_assert(min<=val && val<=max); // wrong default value
 
     arb_assert(pargc >= 1);     // otherwise s stays 0
 
@@ -408,26 +398,17 @@ static int getInt(const char *param, int val, int min, int max, const char *desc
         if (!strncasecmp(s, param, strlen(param))) break;
     }
     if (i==pargc) return val;
-    s   += strlen(param);
-    if (*s == '=') {
-        s++;
-        val  = atoi(s);
-
-        if (val<min || val>max) {
-            outOfRange = true;
-            printf("Parameter '%s=%s' is outside allowed range:\n", param, s);
-            showhelp   = true;
-            getInt(param, val, min, max, description);
-            showhelp   = false;
-            val        = 0;
-        }
-    }
-
+    s += strlen(param);
+    if (*s != '=') return val;
+    s++;
+    val = atoi(s);
     pargc--;        // remove parameter
     for (; i<pargc; i++) {
         pargv[i] = pargv[i+1];
     }
 
+    if (val<min) val = min;
+    if (val>max) val = max;
     return val;
 }
 
@@ -460,14 +441,13 @@ static const char *getString(const char *param, const char *val, const char *des
 
 static bool parseCommandLine(int argc, const char * const * const argv) {
     pargc = argc;
-
+    
     // copy argv (since parser will remove matched arguments)
     free(pargv);
-    ARB_alloc(pargv, pargc);
+    pargv = (const char **)malloc(sizeof(*pargv)*pargc);
     for (int i=0; i<pargc; i++) pargv[i] = argv[i];
 
-    showhelp   = (pargc <= 1);
-    outOfRange = false;
+    showhelp = (pargc <= 1);
 
 #ifdef UNIT_TESTS // UT_DIFF
     const int minServerID   = TEST_GENESERVER_ID;
@@ -505,14 +485,14 @@ static bool parseCommandLine(int argc, const char * const * const argv) {
 
     P.SEQUENCE = getString("matchsequence",   "agtagtagt", "The sequence to search for");
 
-    P.MISMATCHES = getInt("matchmismatches", 0,       0, INT_MAX, "Maximum Number of allowed mismatches");
+    P.MISMATCHES = getInt("matchmismatches", 0,       0, 5,       "Maximum Number of allowed mismatches");
     P.COMPLEMENT = getInt("matchcomplement", 0,       0, 1,       "Match reversed and complemented probe");
     P.WEIGHTED   = getInt("matchweighted",   0,       0, 1,       "Use weighted mismatches");
-    P.ACCEPTN    = getInt("matchacceptN",    1,       0, INT_MAX, "Amount of N-matches not counted as mismatch");
-    P.LIMITN     = getInt("matchlimitN",     4,       0, INT_MAX, "Limit for N-matches. If reached N-matches are mismatches");
+    P.ACCEPTN    = getInt("matchacceptN",    1,       0, 20,      "Amount of N-matches not counted as mismatch");
+    P.LIMITN     = getInt("matchlimitN",     4,       0, 20,      "Limit for N-matches. If reached N-matches are mismatches");
     P.MAXRESULT  = getInt("matchmaxresults", 1000000, 0, INT_MAX, "Max. number of matches reported (0=unlimited)");
 
-    P.ITERATE          = getInt("iterate",          0,   0, 20,      "Iterate over probes of given length");
+    P.ITERATE          = getInt("iterate",          0,   1, 20,      "Iterate over probes of given length");
     P.ITERATE_AMOUNT   = getInt("iterate_amount",   100, 1, INT_MAX, "Number of results per answer");
     P.ITERATE_READABLE = getInt("iterate_readable", 1,   0, 1,       "readable results");
 
@@ -525,11 +505,6 @@ static bool parseCommandLine(int argc, const char * const * const argv) {
         printf("Unknown (or duplicate) parameter %s\n", pargv[1]);
         return false;
     }
-    if (outOfRange) {
-        puts("Not all parameters were inside allowed range\n");
-        return false;
-    }
-
     return !showhelp;
 }
 
@@ -604,7 +579,7 @@ int ARB_main(int argc, char *argv[]) {
         char      *answer = execute(error);
 
         arb_assert(contradicted(answer, error));
-
+        
         if (!answer) {
             fprintf(stderr,
                     "arb_probe: Failed to process your request\n"
@@ -763,7 +738,7 @@ void TEST_SLOW_match_geneprobe() {
     {
         const char *arguments[] = {
             "prgnamefake",
-            "matchsequence=UUUCGG", // exists only in genome2
+            "matchsequence=UUUCGG", // exists only in genome2 
         };
         CCP expectd = "    organism genename mis N_mis wmis pos gpos rev          'UUUCGG'\1"
             "genome2\1" "  genome2  gene3      0     0  0.0   2    1 0   .........-======-UUGAUC.\1"
@@ -775,7 +750,7 @@ void TEST_SLOW_match_geneprobe() {
     {
         const char *arguments[] = {
             "prgnamefake",
-            "matchsequence=AUCCUG",
+            "matchsequence=AUCCUG", 
         };
         CCP expectd = "    organism genename mis N_mis wmis pos gpos rev          'AUCCUG'\1"
             "genome1\1" "  genome1  gene2      0     0  0.0  11    3 0   .......UG-======-C.\1"
@@ -1014,7 +989,7 @@ void TEST_SLOW_match_probe() {
 
         CCP expectd1 = "    name---- fullname mis N_mis wmis pos ecoli rev          'CANCUCCUUUC'\1"
             "BcSSSS00\1" "  BcSSSS00            1     1  0.9 176   162 0   CGGCUGGAU-==C========-U.\1";
-
+ 
         CCP expectd2 = "    name---- fullname mis N_mis wmis pos ecoli rev          'CANCUCCUUUC'\1"
             "BcSSSS00\1" "  BcSSSS00            1     1  0.9 176   162 0   CGGCUGGAU-==C========-U.\1"
             "ClfPerfr\1" "  ClfPerfr            2     1  2.0 176   162 0   AGAUUAAUA-=CC========-U.\1"
@@ -1121,7 +1096,7 @@ void TEST_SLOW_match_probe() {
             "FrhhPhil\1" "  FrhhPhil            2     2  1.4 175   161 0   GCGGCUGGA-==========..-\1"
             "HllHalod\1" "  HllHalod            2     2  1.4 175   161 0   GCGGCUGGA-==========..-\1"
             "CPPParap\1" "  CPPParap            2     2  1.4 176   162 0   GCGGNUGGA-==========..-\1";
-
+        
         arguments[2] = "matchmismatches=0"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd0);
         arguments[2] = "matchmismatches=1"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd1);
         arguments[2] = "matchmismatches=2"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd2);
@@ -1245,7 +1220,7 @@ void TEST_SLOW_match_probe() {
             "VbhChole\1" "  VbhChole            1     3  2.4 176   162 0   GCGCUGGAU-==C======U.-\1"
             "AclPleur\1" "  AclPleur            1     3  2.5 176   162 0   CGGUUGGAU-==C======A.-\1"
             "PtVVVulg\1" "  PtVVVulg            1     3  2.5 176   162 0   CGGUUGGAU-==C======A.-\1";
-
+        
         CCP expectd2 = "    name---- fullname mis N_mis wmis pos ecoli rev          'CANCUCCUUNC'\1"
             "BcSSSS00\1" "  BcSSSS00            0     2  1.7 176   162 0   CGGCUGGAU-==C======U=-U.\1"
             "ClfPerfr\1" "  ClfPerfr            1     2  2.8 176   162 0   AGAUUAAUA-=CC======U=-U.\1"
@@ -1262,7 +1237,7 @@ void TEST_SLOW_match_probe() {
             "VbhChole\1" "  VbhChole            1     3  2.4 176   162 0   GCGCUGGAU-==C======U.-\1"
             "AclPleur\1" "  AclPleur            1     3  2.5 176   162 0   CGGUUGGAU-==C======A.-\1"
             "PtVVVulg\1" "  PtVVVulg            1     3  2.5 176   162 0   CGGUUGGAU-==C======A.-\1";
-
+        
         arguments[2] = "matchmismatches=0"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd0);
         arguments[2] = "matchmismatches=1"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd1);
         arguments[2] = "matchmismatches=2"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd2);
@@ -1286,7 +1261,6 @@ void TEST_SLOW_match_probe() {
             "BcSSSS00\1" "  BcSSSS00            1     0  1.1  25    21 0   GAUCAAGUC-======A===-AUGGGAGCU\1"
             "Bl0LLL00\1" "  Bl0LLL00            2     0  2.2  25    21 0   GAUCAAGUC-======A=C=-ACGGGAGCU\1";
 
-        // this probe-match is also tested with 'arb_probe_match'. see arb_test.cxx@TEST_arb_probe_match
         CCP expectd3 = "    name---- fullname mis N_mis wmis pos ecoli rev          'GAGCGGUCAG'\1"
             "BcSSSS00\1" "  BcSSSS00            1     0  1.1  25    21 0   GAUCAAGUC-======A===-AUGGGAGCU\1"
             "Bl0LLL00\1" "  Bl0LLL00            2     0  2.2  25    21 0   GAUCAAGUC-======A=C=-ACGGGAGCU\1"
@@ -1425,40 +1399,14 @@ void TEST_SLOW_match_probe() {
             NULL, // matchmismatches
             "matchacceptN=5",
             "matchlimitN=7",
-            "matchmaxresults=100",
+            "matchmaxresults=10",
         };
 
         CCP expectd0 = "    name---- fullname mis N_mis wmis pos ecoli rev          'ACGGACUCCGGGAAACCGGGGCUAAUACCGGAUGGUGA'\1"
             "BcSSSS00\1" "  BcSSSS00            0     0  0.0  84    72 0   UAGCGGCGG-======================================-UGAUUGGGG\1"
-            "Bl0LLL00\1" "  Bl0LLL00            1     0  1.5  84    72 0   CAGCGGCGG-==================================C===-UGAUUGGGG\1"
-            "DsssDesu\1" "  DsssDesu            8     0  9.4  84    72 0   GAGUGGCGC-========u=C====Gu==A=============ACA==-G.\1"
-            "PtVVVulg\1" "  PtVVVulg            8     0 10.7  84    72 0   GAGCGGCGG-=======a=U======G=U===========C===ACC=-UGACUGGGG\1"
-            "AclPleur\1" "  AclPleur            9     0 10.8  84    72 0   GAGUGGCGG-=======a========u=UA==========Cg=AA=C=-UGACUGGGG\1"
-            "PsAAAA00\1" "  PsAAAA00           10     0 11.9  84    72 0   CAGCGGCGG-======gu=C======G==C==========C==ACgC=-UGGUAACAA\1"
-            "LgtLytic\1" "  LgtLytic           10     0 12.8  84    72 0   GAGNGGCGA-=======uG=======uCAA==========C==AA=C=-UGACUGGGG\1"
-            "VbrFurni\1" "  VbrFurni           10     0 12.8  84    72 0   GAGCGGCGG-======CauU======GAU===========C===A=C=-UGACUGGGG\1"
-            "VblVulni\1" "  VblVulni           10     0 12.8  84    72 0   GAGCGGCGG-======CauU======GAU===========C===A=C=-UGACUGGGG\1"
-            "Stsssola\1" "  Stsssola           10     0 12.9  84    72 0   AAGUGGCGC-======gG=U======G=UC=============AACA=-UGAUUGGGG\1"
-            "DlcTolu2\1" "  DlcTolu2           10     0 13.4  84    72 0   GAGUGGCGC-=======G=CC====GGACA==============AA==-UAAUUGGGG\1"
-            "PbcAcet2\1" "  PbcAcet2           11     0 12.2  84    72 0   AAGUGGCGC-======A=uUC====GG==U=============AAg=g-UAACUGGGG\1"
-            "HllHalod\1" "  HllHalod           11     0 13.0  84    72 0   GAGCGGCGG-======CuG=======uCA===========C==ACgC=-UGACUGGGG\1"
-            "PbrPropi\1" "  PbrPropi           12     0 13.6  84    72 0   UAGUGGCGC-======A=uUC====Ga==U=========U===AAg=g-UGACUGGGG\1"
-            "DcdNodos\1" "  DcdNodos           12     0 14.4  84    72 0   UAGUGGCGG-======guaU======GUAC==========C==AAg==-UGACUGGGG\1"
-            "VbhChole\1" "  VbhChole           12     0 15.4  84    72 0   GAGCGGCGG-======CauU======GAU===========C==AACC=-UGACUGGGG\1";
+            "Bl0LLL00\1" "  Bl0LLL00            1     0  1.5  84    72 0   CAGCGGCGG-==================================C===-UGAUUGGGG\1";
 
-        arguments[2] = "matchmismatches=12"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd0);
-    }
-
-
-    // test expected errors
-    {
-        const char *arguments[] = {
-            "prgnamefake",
-            "matchsequence=ACGGACUCCGGGAAACCGGGGCUAAUACCGGAUGGUGA", // length = 38
-            "matchmismatches=20",
-        };
-
-        TEST_ARB_PROBE__REPORTS_ERROR(ARRAY_ELEMS(arguments), arguments, "Max. 19 mismatches are allowed for probes of length 38");
+        arguments[2] = "matchmismatches=18"; TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expectd0);
     }
 }
 
@@ -1496,7 +1444,7 @@ static char *extract_locations(const char *probe_design_result) {
             return result.release();
         }
     }
-    return ARB_strdup("can't extract");
+    return strdup("can't extract");
 }
 
 inline const char *next_line(const char *this_line) {
@@ -1788,23 +1736,10 @@ void TEST_SLOW_design_probe() {
             "GAAACGGGC  9 C-  4   83    5    1  66.7 30.0 GCCCGUUUC | - -  -  -  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1  1\n"
             "GCCGUAGGA  9 I=152  138    3    1  66.7 30.0 UCCUACGGC | 1 1  8  8  8  8  8  8  8  8  8  8  9  9  9  9  9  9 12 12\n"
             "CCGUAGGAG  9 I+  1  139    3    1  66.7 30.0 CUCCUACGG | 1 1 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 11 11\n"
-            "GUCGAGCGA  9 A-  7   21    3    1  66.7 30.0 UCGCUCGAC | 3 3 11 11 11 11 11 11 11 11 11 11 11 11 11 11 11 11 11 13\n";
+            "GUCGAGCGA  9 A-  7   21    3    1  66.7 30.0 UCGCUCGAC | 3 3 11 11 11 11 11 11 11 11 11 11 11 11 11 12 12 12 12 14\n";
 
         TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expected);
     }
-
-#if defined(ARB_64)
-#define RES_64
-#else // !defined(ARB_64)
-// results below differ for some(!) 32 bit arb versions (numeric issues?)
-// (e.g. u1004 behaves like 64bit version; u1204 doesnt in NDEBUG mode)
-// #define RES_64 // uncomment for u1004
-#if defined(DEBUG)
-#define RES_64
-#endif
-
-#endif
-
 
     // same as above (with probelen == 8)
     {
@@ -1836,11 +1771,12 @@ void TEST_SLOW_design_probe() {
             "CGGACGGG  8 A+ 2   69   20    1  87.5 30.0 CCCGUCCG |  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2\n"
             "GGACGGGC  8 A+ 4   70   20    1  87.5 30.0 GCCCGUCC |  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3\n"
             "GACGGGCC  8 A+ 5   71   20    1  87.5 30.0 GGCCCGUC |  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3  3\n"
-#if defined(RES_64)
+#if defined(ARB_64)
             "ACGGGCGC  8 B=98   86   13    1  87.5 30.0 GCGCCCGU |  -  -  -  -  -  -  -  -  -  -  -  -  1  1  1  1  1  1  1  1\n"
             "CGGGCGCU  8 B+ 1   87   13    1  87.5 30.0 AGCGCCCG |  -  -  -  -  -  -  -  -  -  -  -  -  1  1  1  1  1  1  1  1\n"
             "CAGCGGCG  8 C=63   58    8    1  87.5 30.0 CGCCGCUG |  2  2  2  2  2  2  2  6  6  6  6  6  6  6  8  8  8  8  8  8\n";
-#else // !defined(RES_64)
+#else // !defined(ARB_64)
+        // @@@ 32bit version differs (possibly numeric issues?)
             "ACGGGCGC  8 B=98   86   13    1  87.5 30.0 GCGCCCGU |  -  -  -  -  -  -  -  -  -  -  -  -  1  1  1  1  1  1  1  2\n"
             "CGGGCGCU  8 B+ 1   87   13    1  87.5 30.0 AGCGCCCG |  -  -  -  -  -  -  -  -  -  -  -  -  1  1  1  1  1  1  1  2\n"
             "CAGCGGCG  8 C=63   58    8    1  87.5 30.0 CGCCGCUG |  2  2  2  2  2  2  2  6  6  6  6  6  6  6  8  8  8  8  8 10\n";
@@ -1961,15 +1897,15 @@ void TEST_SLOW_design_probe() {
             "Max. nongroup hits 0 (lowest rejected nongroup hits: 2)\n"
             "Min. group hits    50%\n"
             "Target   le apos ecol qual grps   G+C temp    Probe | Decrease T by n*.3C -> probe matches n non group species\n"
-#if defined(RES_64)
+#if defined(ARB_64)
             "CGGCAGCG  8 A=28   23   20    1  87.5 30.0 CGCUGCCG | - - - - - - - - - - - - - - - - - - - -\n"
-#else // !defined(RES_64)
+#else // !defined(ARB_64)
             "CGGCAGCG  8 A=28   23   20    1  87.5 30.0 CGCUGCCG | - - - - - - - - - - - - - - - - - - - 3\n"
 #endif
             "UGGGCGGC  8 B=67   60    8    1  87.5 30.0 GCCGCCCA | - - - - - - - 1 1 1 1 1 1 1 1 1 1 1 1 1\n"
-#if defined(RES_64)
-            "CGGCGAGC  8 B+ 4   60    8    1  87.5 30.0 GCUCGCCG | - - - - - - - 2 2 2 2 2 2 2 3 3 3 3 3 3\n"
-#else // !defined(RES_64)
+#if defined(ARB_64)
+            "CGGCGAGC  8 B+ 4   60    8    1  87.5 30.0 GCUCGCCG | - - - - - - - 2 2 2 2 2 2 2 4 4 4 4 4 4\n"
+#else // !defined(ARB_64)
             "CGGCGAGC  8 B+ 4   60    8    1  87.5 30.0 GCUCGCCG | - - - - - - - 2 2 2 2 2 2 2 4 4 4 4 4 5\n"
 #endif
             "GGGCGGCG  8 B+ 1   60    8    1 100.0 32.0 CGCCGCCC | - - - - - - - 3 3 3 3 3 3 3 3 3 3 3 3 3\n"
@@ -2344,7 +2280,7 @@ void TEST_SLOW_find_unmatched_probes() {
 static arb_test::match_expectation partial_covers_full_probe(const char *part, const char *full) {
     using namespace arb_test;
     using namespace std;
-
+    
     expectation_group expected;
     expected.add(that(strstr(full, part)).does_differ_from_NULL());
     expected.add(that(strlen(part)).is_less_than(strlen(full)));
@@ -2445,9 +2381,9 @@ void TEST_SLOW_variable_defaults_in_server() {
     {
 #define LOCAL(rvar) (prev_read_##rvar)
 
-
-#define FREE_LOCAL_long(rvar)
-#define FREE_LOCAL_charp(rvar) free(LOCAL(rvar))
+        
+#define FREE_LOCAL_long(rvar) 
+#define FREE_LOCAL_charp(rvar) free(LOCAL(rvar)) 
 #define FREE_LOCAL(type,rvar) FREE_LOCAL_##type(rvar)
 
 #define TEST__READ(type,rvar,expected)                                  \

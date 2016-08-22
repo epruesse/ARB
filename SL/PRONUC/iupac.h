@@ -62,7 +62,7 @@ namespace iupac {
     // -------------
     //      Both
 
-    const char* decode(char iupac, GB_alignment_type aliType, bool decode_amino_iupac_groups);
+    const char* decode(char iupac, GB_alignment_type aliType, int decode_amino_iupac_groups);
 };
 
 #else

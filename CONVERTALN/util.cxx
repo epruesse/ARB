@@ -27,12 +27,9 @@ void throw_error(int error_num, const char *error_message) { // __ATTR__NORETURN
 char *strf(const char *format, ...) { // __ATTR__FORMAT(1)
     va_list parg;
     va_start(parg, format);
-
-    const int BUFSIZE = 1000;
-    char      buffer[BUFSIZE];
-    int       printed = vsprintf(buffer, format, parg);
-    ca_assert(printed <= BUFSIZE);
-
+    char    buffer[LINESIZE];
+    int     printed = vsprintf(buffer, format, parg);
+    ca_assert(printed <= LINESIZE);
     va_end(parg);
 
     return strndup(buffer, printed);
@@ -81,6 +78,25 @@ void warningf(int warning_num, const char *warning_messagef, ...) { // __ATTR__F
     }
 }
 
+char *Reallocspace(void *block, unsigned int size) {
+    // Realloc a continue space, expand or shrink the original space.
+    char *temp;
+
+    if (size <= 0) {
+        free(block);
+        return NULL;
+    }
+
+    if (block == NULL) {
+        temp = (char *)calloc(1, size);
+    }
+    else {
+        temp = (char *)realloc(block, size);
+    }
+    if (!temp) throw_error(999, "Run out of memory (Reallocspace)");
+    return temp;
+}
+
 int Skip_white_space(const char *line, int index) {
     // Skip white space from (index)th char of Str line.
 
@@ -101,8 +117,8 @@ void Getstr(char *line, int linenum) {
 
 inline void append_known_len(char*& string1, int len1, const char *string2, int len2) {
     ca_assert(len2); // else no need to call, string1 already correct
-    int newlen = len1+len2;
-    ARB_realloc(string1, newlen+1);
+    int newlen      = len1+len2;
+    string1         = Reallocspace(string1, newlen+1);
     memcpy(string1+len1, string2, len2);
     string1[newlen] = 0;
 }
@@ -114,10 +130,8 @@ void terminate_with(char*& str, char ch) {
 
     int len = str0len(str);
     if (!len) return;
-
     ca_assert(str[len-1] == '\n');
     if (len == 1) return;
-
     if (str[len-2] == ch) return;
 
     char temp[] = { ch, '\n' };
@@ -282,7 +296,7 @@ int parse_key_word(const char *line, char *key, const char *separator) {
 //      FormattedFile
 
 FormattedFile::FormattedFile(const char *Name, Format Type)
-    : name_(ARB_strdup(Name)),
+    : name_(strdup(Name)),
       type_(Type)
 {}
 FormattedFile::~FormattedFile() {

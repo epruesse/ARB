@@ -32,6 +32,7 @@
 #include <SigHandler.h>
 #include <arb_cs.h>
 #include <static_assert.h>
+#include "common.h"
 
 // AISC_MKPT_PROMOTE:#ifndef _STDIO_H
 // AISC_MKPT_PROMOTE:#include <stdio.h>
@@ -211,6 +212,56 @@ __ATTR__NORETURN static void aisc_server_sigsegv(int sig) {
     abort();
 }
 
+// -----------------------------
+//      broken pipe handler
+
+static int pipe_broken;
+
+static void aisc_server_sigpipe(int) {
+    pipe_broken = 1;
+}
+
+// --------------------------
+//      new read command
+
+static int aisc_s_read(int socket, char *ptr, int size) {
+    int leftsize = size;
+    while (leftsize) {
+        int readsize = read(socket, ptr, leftsize);
+        if (readsize<=0) return 0;
+        ptr += readsize;
+        leftsize -= readsize;
+    }
+
+#if defined(DUMP_COMMUNICATION)
+    aisc_dump_hex("aisc_s_read: ", ptr-size, size);
+#endif // DUMP_COMMUNICATION
+
+    return size;
+}
+
+static int aisc_s_write(int socket, char *ptr, int size) {
+    int leftsize = size;
+    pipe_broken = 0;
+    while (leftsize) {
+        int writesize = write(socket, ptr, leftsize);
+        if (pipe_broken) {
+            fputs("AISC server: pipe broken\n", stderr);
+            return -1;
+        }
+        if (writesize<0) return -1;
+        ptr += writesize;
+        leftsize -= writesize;
+        if (leftsize) usleep(10000); // 10 ms
+    }
+
+#if defined(DUMP_COMMUNICATION)
+    aisc_dump_hex("aisc_s_write: ", ptr-size, size);
+#endif // DUMP_COMMUNICATION
+
+    return 0;
+}
+
 
 // ----------------------------------------------
 //      object+attr_names for error messages
@@ -242,7 +293,7 @@ Hs_struct *open_aisc_server(const char *path, int timeout, int fork) {
         hs->fork    = fork;
 
         static int  so;
-        const char *err = arb_open_socket(path, false, &so, &hs->unix_name);
+        const char *err = aisc_server_open_socket(path, TCP_NODELAY, 0, &so, &hs->unix_name);
 
         if (err) {
             if (*err) printf("Error in open_aisc_server: %s\n", err);
@@ -254,6 +305,7 @@ Hs_struct *open_aisc_server(const char *path, int timeout, int fork) {
             // install signal handlers
             fprintf(stderr, "Installing signal handler from open_aisc_server\n"); fflush(stderr);
             old_sigsegv_handler = INSTALL_SIGHANDLER(SIGSEGV, aisc_server_sigsegv, "open_aisc_server");
+            ASSERT_RESULT_PREDICATE(is_default_or_ignore_sighandler, INSTALL_SIGHANDLER(SIGPIPE, aisc_server_sigpipe, "open_aisc_server"));
 
             aisc_server_bytes_first = 0;
             aisc_server_bytes_last  = 0;
@@ -290,7 +342,7 @@ static int aisc_s_send_bytes_queue(int socket) {
     aisc_bytes_list *bl, *bl_next;
     for (bl = aisc_server_bytes_first; bl; bl=bl_next) {
         bl_next = bl->next;
-        if (arb_socket_write(socket, (char *)bl->data, bl->size)) return 1;
+        if (aisc_s_write(socket, (char *)bl->data, bl->size)) return 1;
         free(bl);
     };
     aisc_server_bytes_first = aisc_server_bytes_last = NULL;
@@ -540,7 +592,7 @@ static long aisc_talking_sets(long *in_buf, int size, long *out_buf, long *objec
 
                 if (bsize) {
                     long *ptr = (long*)calloc(sizeof(char), bsize);
-                    blen = arb_socket_read(aisc_server_con, (char *)ptr, bsize);
+                    blen = aisc_s_read(aisc_server_con, (char *)ptr, bsize);
                     if (bsize!=blen) {
                         aisc_server_error = "CONNECTION PROBLEMS IN BYTESTRING";
                         free(ptr);
@@ -943,7 +995,7 @@ int aisc_broadcast(Hs_struct *hs, int message_type, const char *message)
     out_buf[2] = message_type;
 
     for (si=hs->soci; si; si=si->next) {
-        arb_socket_write(si->socket, (char *)out_buf, (sizeL + 3) * sizeof(long));
+        aisc_s_write(si->socket, (char *)out_buf, (sizeL + 3) * sizeof(long));
     }
     free(out_buf);
     return 0;
@@ -978,7 +1030,7 @@ static int aisc_talking(int con) {
     unsigned long    len;
     static long      size;
     long             magic_number;
-    len = arb_socket_read(con, (char *)buf, 2* sizeof(long));
+    len = aisc_s_read(con, (char *)buf, 2* sizeof(long));
     if (len == 2*sizeof(long)) {
         aisc_server_con = con;
         if (buf[0] >= AISC_MESSAGE_BUFFER_LEN)
@@ -994,7 +1046,7 @@ static int aisc_talking(int con) {
             aisc_assert(expect >= 0);
             aisc_assert(expect <= INT_MAX);
 
-            len = arb_socket_read(con, (char *)buf, (int)expect);
+            len = aisc_s_read(con, (char *)buf, (int)expect);
             aisc_assert(len <= LONG_MAX);
 
             if ((long)len != expect) {
@@ -1016,7 +1068,7 @@ static int aisc_talking(int con) {
             size *= -1;
         }
         out_buf[0] = size;
-        if (arb_socket_write(con, (char *)out_buf, (int)(size + 2) * sizeof(long))) {
+        if (aisc_s_write(con, (char *)out_buf, (int)(size + 2) * sizeof(long))) {
             return AISC_SERVER_FAULT;
         }
         if (aisc_server_bytes_first) {
@@ -1153,6 +1205,18 @@ void aisc_server_shutdown(Hs_struct*& hs) {
     if (hs->unix_name) unlink(hs->unix_name);
     delete hs; hs = NULL;
 }
+
+void aisc_server_shutdown_and_exit(Hs_struct *hs, int exitcode) {
+    /* goes to header:
+     * __ATTR__NORETURN
+     * __ATTR__DEPRECATED_TODO("cause it hides a call to exit() inside a library")
+     */
+
+    aisc_server_shutdown(hs);
+    printf("Server terminates with code %i.\n", exitcode);
+    exit(exitcode);
+}
+
 
 // ---------------------------
 //      special functions

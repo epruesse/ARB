@@ -19,7 +19,7 @@
 
 Sonde::Sonde(char* bezeichner, int allowed_mis, double outside_mis)
 {
-    kennung = ARB_strdup(bezeichner);
+    kennung = strdup(bezeichner);
     bitkennung = NULL;
     // fuer Basissonden haben die Bitvektoren noch nicht die Volle laenge, da noch nicht bekannt ist, wieviele Sonden eingetragen werden
     hitliste = NULL;
@@ -100,10 +100,10 @@ MO_Mismatch** Sonde::get_matching_species(bool match_kompl, int match_weight, in
         }
 
         if (aisc_put(mp_pd_gl.link, PT_LOCS, mp_pd_gl.locs,
-                     LOCS_MATCH_REVERSED,       (long)match_kompl, // Komplement
-                     LOCS_MATCH_SORT_BY,        (long)match_weight, // Weighted
-                     LOCS_MATCH_COMPLEMENT,     (long)0,  // ???
-                     LOCS_MATCH_MAX_MISMATCHES, (long)match_mis, // Mismatches
+                     LOCS_MATCH_REVERSED,       match_kompl, // Komplement
+                     LOCS_MATCH_SORT_BY,        match_weight, // Weighted
+                     LOCS_MATCH_COMPLEMENT,     0,  // ???
+                     LOCS_MATCH_MAX_MISMATCHES, match_mis, // Mismatches
                      LOCS_SEARCHMATCH,          match_seq, // Sequence
                      NULL)) {
             free(probe);
@@ -344,7 +344,7 @@ void Sonde::set_bitkennung(Bitvector* bv)
 
 Bakt_Info::Bakt_Info(const char* n)
 {
-    name = ARB_strdup(n);                       // MEL  (match_name in mo_liste)
+    name = strdup(n);                       // MEL  (match_name in mo_liste)
     hit_flag = 0;
 }
 

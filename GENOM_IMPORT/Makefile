@@ -16,10 +16,10 @@ $(MAIN): $(CPP_OBJECTS)
 	)
 
 .cxx.o:
-	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE) $<
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 .c.o:
-	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE) $<
+	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE)
 
 clean:
 	-rm -f *.[ao] *.bak *~
@@ -57,7 +57,6 @@ DBwriter.o: $(ARBHOME)/INCLUDE/adGene.h
 DBwriter.o: $(ARBHOME)/INCLUDE/arb_assert.h
 DBwriter.o: $(ARBHOME)/INCLUDE/arb_core.h
 DBwriter.o: $(ARBHOME)/INCLUDE/arb_error.h
-DBwriter.o: $(ARBHOME)/INCLUDE/arb_mem.h
 DBwriter.o: $(ARBHOME)/INCLUDE/arb_msg.h
 DBwriter.o: $(ARBHOME)/INCLUDE/arb_string.h
 DBwriter.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -116,7 +115,6 @@ GenomeImport.o: $(ARBHOME)/INCLUDE/arb_core.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/arb_diff.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/arb_error.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/arb_file.h
-GenomeImport.o: $(ARBHOME)/INCLUDE/arb_mem.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/arb_msg.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/arb_stdstr.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -153,7 +151,6 @@ Importer.o: $(ARBHOME)/INCLUDE/ad_prot.h
 Importer.o: $(ARBHOME)/INCLUDE/arb_assert.h
 Importer.o: $(ARBHOME)/INCLUDE/arb_core.h
 Importer.o: $(ARBHOME)/INCLUDE/arb_error.h
-Importer.o: $(ARBHOME)/INCLUDE/arb_mem.h
 Importer.o: $(ARBHOME)/INCLUDE/arb_msg.h
 Importer.o: $(ARBHOME)/INCLUDE/arb_stdstr.h
 Importer.o: $(ARBHOME)/INCLUDE/arb_string.h

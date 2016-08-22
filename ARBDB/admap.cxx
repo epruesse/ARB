@@ -267,7 +267,7 @@ static long write_IFS(gb_index_files *ifs, FILE *out, long *offset) {
 
         STATIC_ASSERT(ALIGN(sizeof(*ie))==sizeof(*ie));
 
-        iecopy = (GB_REL_IFES *)ARB_alloc<char>(iesize);
+        iecopy = (GB_REL_IFES *)malloc(iesize);
         memcpy(iecopy, ie, iesize);
 
         // write index entries an calc absolute offsets
@@ -353,7 +353,7 @@ static long write_GBDATA(GB_MAIN_TYPE */*Main*/, GBDATA *gbd, GBQUARK quark, FIL
             if (headermemsize) {     // if container is non-empty
                 if (out) {
                     int             valid      = 0; // no of non-temporary items
-                    gb_header_list *headercopy = (gb_header_list*)ARB_alloc<char>(headermemsize);
+                    gb_header_list *headercopy = (gb_header_list*) malloc(headermemsize);
 
                     STATIC_ASSERT(sizeof(*headercopy) == ALIGN(sizeof(*headercopy)));
                     memset(headercopy, 0x0, headermemsize);
@@ -562,20 +562,23 @@ static void scanGbdByKey(GB_MAIN_TYPE *Main, GBDATA *gbd, gbdByKey *gbk) {
     gbk[quark].cnt++;
 }
 
-static gbdByKey *createGbdByKey(GB_MAIN_TYPE *Main) {
+static gbdByKey *createGbdByKey(GB_MAIN_TYPE *Main)
+{
     int       idx;
-    gbdByKey *gbk = ARB_calloc<gbdByKey>(Main->keycnt);
+    gbdByKey *gbk = (gbdByKey*)GB_calloc(Main->keycnt, sizeof(*gbk));
+
+    if (!gbk) goto err1;
 
     for (idx=0; idx<Main->keycnt; idx++) {
         gbk[idx].cnt = 0;
 
-        gb_Key& KEY = Main->keys[idx];
-        if (KEY.key && KEY.nref>0) {
-            ARB_calloc(gbk[idx].gbdoff, KEY.nref);
+        if (Main->keys[idx].key && Main->keys[idx].nref>0) {
+            gbk[idx].gbdoff  = (gbdata_offset *) GB_calloc((size_t)Main->keys[idx].nref, sizeof(*(gbk[idx].gbdoff)));
+            if (!gbk[idx].gbdoff) goto err2;
         }
     }
 
-    ARB_calloc(gbk[0].gbdoff, 1); // @@@ FIXME : this is maybe allocated twice (4 lines above and here), maybe idx == 0 is special ?
+    gbk[0].gbdoff = (gbdata_offset *)GB_calloc(1, sizeof(*(gbk[0].gbdoff))); // @@@ FIXME : this is maybe allocated twice (5 lines above and here), maybe idx == 0 is special ?
 
     scanGbdByKey(Main, Main->gb_main(), gbk);
 
@@ -584,6 +587,17 @@ static gbdByKey *createGbdByKey(GB_MAIN_TYPE *Main) {
             sort_gbdata_offsets(gbk[idx].gbdoff, gbk[idx].cnt);
 
     return gbk;
+
+    // error handling:
+
+ err2 : while (idx>=0)
+ {
+     free(gbk[idx].gbdoff);
+     idx--;
+ }
+    free(gbk);
+ err1 : GB_memerr();
+    return NULL;
 }
 
 static void freeGbdByKey(GB_MAIN_TYPE *Main, gbdByKey *gbk)
@@ -602,54 +616,57 @@ GB_ERROR gb_save_mapfile(GB_MAIN_TYPE *Main, GB_CSTR path) {
     GB_ERROR error = NULL;
 
     gb_gbk = createGbdByKey(Main);
-    FILE *out  = fopen(path, "w");
-    writeError = out==NULL;                         // global flag
+    if (!gb_gbk) error = GB_await_error();
+    else {
+        FILE *out  = fopen(path, "w");
+        writeError = out==NULL;                         // global flag
 
-    gb_assert(ADMAP_ID_LEN <= strlen(ADMAP_ID));
+        gb_assert(ADMAP_ID_LEN <= strlen(ADMAP_ID));
 
-    if (!writeError) {
-        IF_ASSERTION_USED(long calcOffset=)
-            calcGbdOffsets(Main, gb_gbk);
+        if (!writeError) {
+            IF_ASSERTION_USED(long calcOffset=)
+                calcGbdOffsets(Main, gb_gbk);
 
-        gb_map_header mheader;
-        memset(&mheader, 0, sizeof(mheader));
-        strcpy(mheader.mapfileID, ADMAP_ID);        // header
+            gb_map_header mheader;
+            memset(&mheader, 0, sizeof(mheader));
+            strcpy(mheader.mapfileID, ADMAP_ID);        // header
 
-        mheader.version    = ADMAP_VERSION;
-        mheader.byte_order = ADMAP_BYTE_ORDER;
+            mheader.version    = ADMAP_VERSION;
+            mheader.byte_order = ADMAP_BYTE_ORDER;
 
-        GB_MAIN_IDX main_idx_4_save = gb_make_main_idx(Main); // Generate a new main idx (temporary during save)
-        mheader.main_idx            = main_idx_4_save;
+            GB_MAIN_IDX main_idx_4_save = gb_make_main_idx(Main); // Generate a new main idx (temporary during save)
+            mheader.main_idx            = main_idx_4_save;
 
-        mheader.main_data_offset = getrel_GBDATA(1, Main->gb_main())+1;
+            mheader.main_data_offset = getrel_GBDATA(1, Main->gb_main())+1;
 
-        ftwrite_unaligned(&mheader, sizeof(mheader), out);
+            ftwrite_unaligned(&mheader, sizeof(mheader), out);
 
-        gb_assert(GB_FATHER(Main->root_container) == Main->dummy_father);
-        SET_GB_FATHER(Main->root_container, NULL);
+            gb_assert(GB_FATHER(Main->root_container) == Main->dummy_father);
+            SET_GB_FATHER(Main->root_container, NULL);
     
-        IF_ASSERTION_USED(long writeOffset =)
-            writeGbdByKey(Main, gb_gbk, out, main_idx_4_save);
-        SET_GB_FATHER(Main->root_container, Main->dummy_father);
+            IF_ASSERTION_USED(long writeOffset =)
+                writeGbdByKey(Main, gb_gbk, out, main_idx_4_save);
+            SET_GB_FATHER(Main->root_container, Main->dummy_father);
 
-        gb_assert(calcOffset==writeOffset);
+            gb_assert(calcOffset==writeOffset);
 
-        freeGbdByKey(Main, gb_gbk);
-        gb_gbk = NULL;
+            freeGbdByKey(Main, gb_gbk);
+            gb_gbk = NULL;
 
-        {
-            GB_MAIN_IDX org_main_idx     = Main->dummy_father->main_idx;
-            Main->dummy_father->main_idx = main_idx_4_save;
-            Main->release_main_idx();
-            Main->dummy_father->main_idx = org_main_idx;
+            {
+                GB_MAIN_IDX org_main_idx     = Main->dummy_father->main_idx;
+                Main->dummy_father->main_idx = main_idx_4_save;
+                Main->release_main_idx();
+                Main->dummy_father->main_idx = org_main_idx;
+            }
         }
-    }
 
-    if (out && fclose(out) != 0) writeError = true;
+        if (out && fclose(out) != 0) writeError = true;
         
-    if (writeError) {
-        error = GB_IO_error("saving fastloadfile", path);
-        GB_unlink_or_warn(path, &error);
+        if (writeError) {
+            error = GB_IO_error("saving fastloadfile", path);
+            GB_unlink_or_warn(path, &error);
+        }
     }
 
     return error;

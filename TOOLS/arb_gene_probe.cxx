@@ -31,7 +31,7 @@ using namespace std;
 // --------------------------------------------------------------------------------
 
 static int gene_counter          = 0; // pre-incremented counters
-static int split_gene_counter = 0;
+static int splitted_gene_counter = 0;
 static int intergene_counter     = 0;
 
 struct nameOrder {
@@ -299,7 +299,7 @@ static GB_ERROR create_gene(GBDATA *gb_species_data2, int start_pos, int end_pos
     return "Illegal gene positions (start behind end)";
 }
 
-static GB_ERROR create_split_gene(GBDATA *gb_species_data2, PositionPairList& part_list, const char *ali_genome, const char *long_gene_name) {
+static GB_ERROR create_splitted_gene(GBDATA *gb_species_data2, PositionPairList& part_list, const char *ali_genome, const char *long_gene_name) {
     GB_ERROR                     error    = 0;
     PositionPairList::iterator list_end = part_list.end();
 
@@ -339,7 +339,7 @@ static GB_ERROR create_split_gene(GBDATA *gb_species_data2, PositionPairList& pa
     }
 
     char internal_name[128];
-    sprintf(internal_name, "s%x", split_gene_counter++);
+    sprintf(internal_name, "s%x", splitted_gene_counter++);
 
     const PositionPair&  first_part  = part_list.front();
     GBDATA              *gb_species2 = create_gene_species(gb_species_data2, internal_name, long_gene_name, first_part.begin,
@@ -348,7 +348,7 @@ static GB_ERROR create_split_gene(GBDATA *gb_species_data2, PositionPairList& pa
     if (!gb_species2) error = GB_await_error();
     else {
 #if defined(DEBUG) && 0
-        printf("split gene: long_gene_name='%s' internal_name='%s' split_pos_list='%s'\n",
+        printf("splitted gene: long_gene_name='%s' internal_name='%s' split_pos_list='%s'\n",
                long_gene_name, internal_name, split_pos_list);
 #endif // DEBUG
         error = GBT_write_string(gb_species2, "splitpos", split_pos_list);
@@ -386,10 +386,10 @@ static GB_ERROR insert_genes_of_organism(GBDATA *gb_organism, GBDATA *gb_species
     GenePositionMap geneRanges;
 
     int gene_counter_old          = gene_counter; // used for statistics only (see end of function)
-    int split_gene_counter_old = split_gene_counter;
+    int splitted_gene_counter_old = splitted_gene_counter;
     int intergene_counter_old     = intergene_counter;
 
-    GBDATA *gb_ali_genom = GBT_find_sequence(gb_organism, GENOM_ALIGNMENT);
+    GBDATA *gb_ali_genom = GBT_read_sequence(gb_organism, GENOM_ALIGNMENT);
     gp_assert(gb_ali_genom);                                                       // existence has to be checked by caller!
 
     const char *ali_genom       = GB_read_char_pntr(gb_ali_genom);
@@ -417,8 +417,8 @@ static GB_ERROR insert_genes_of_organism(GBDATA *gb_organism, GBDATA *gb_species
                     error = create_gene(gb_species_data2, first_part.begin, first_part.end, ali_genom, long_gene_name);
                     geneRanges.announceGene(first_part);
                 }
-                else {          // split gene
-                    error = create_split_gene(gb_species_data2, part_list, ali_genom, long_gene_name);
+                else {          // splitted gene
+                    error = create_splitted_gene(gb_species_data2, part_list, ali_genom, long_gene_name);
 
                     for (PositionPairList::iterator p = part_list.begin(); p != part_list.end(); ++p) {
                         geneRanges.announceGene(*p);
@@ -447,8 +447,8 @@ static GB_ERROR insert_genes_of_organism(GBDATA *gb_organism, GBDATA *gb_species
     if (error && organism_name) error = GBS_global_string("in organism '%s': %s", organism_name, error);
 
     {
-        int new_genes          = gene_counter-gene_counter_old; // only non-split genes
-        int new_split_genes = split_gene_counter-split_gene_counter_old;
+        int new_genes          = gene_counter-gene_counter_old; // only non-splitted genes
+        int new_splitted_genes = splitted_gene_counter-splitted_gene_counter_old;
         int new_intergenes     = intergene_counter-intergene_counter_old;
 
         unsigned long genesSize    = geneRanges.getAllGeneSize();
@@ -456,10 +456,10 @@ static GB_ERROR insert_genes_of_organism(GBDATA *gb_organism, GBDATA *gb_species
         double        data_grow    = overlaps/double(PositionPair::genome_length)*100;
         double        gene_overlap = overlaps/double(genesSize)*100;
 
-        if (new_split_genes) {
+        if (new_splitted_genes) {
 
-            printf("  - %s: %i genes (%i split), %i intergenes",
-                   organism_name, new_genes+new_split_genes, new_split_genes, new_intergenes);
+            printf("  - %s: %i genes (%i splitted), %i intergenes",
+                   organism_name, new_genes+new_splitted_genes, new_splitted_genes, new_intergenes);
         }
         else {
             printf("  - %s: %i genes, %i intergenes",
@@ -516,7 +516,7 @@ int ARB_main(int argc, char *argv[]) {
              gb_species && !error;
              gb_species = GBT_next_species(gb_species))
         {
-            GBDATA *gb_ali_genom = GBT_find_sequence(gb_species, GENOM_ALIGNMENT);
+            GBDATA *gb_ali_genom = GBT_read_sequence(gb_species, GENOM_ALIGNMENT);
             if (!gb_ali_genom) {
                 // skip species w/o alignment 'GENOM_ALIGNMENT' (genome DBs often contain pseudo species)
                 ++non_ali_genom_species;
@@ -536,8 +536,8 @@ int ARB_main(int argc, char *argv[]) {
 
         if (!error) {
             printf("%i species had data in alignment '" GENOM_ALIGNMENT "'.\n"
-                   "Found %i genes (%i were split) and %i intergene regions.\n",
-                   ali_genom_species, gene_counter, split_gene_counter, intergene_counter);
+                   "Found %i genes (%i were splitted) and %i intergene regions.\n",
+                   ali_genom_species, gene_counter, splitted_gene_counter, intergene_counter);
         }
 
         if (!error) {

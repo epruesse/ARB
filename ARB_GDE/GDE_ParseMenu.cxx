@@ -28,17 +28,13 @@ static char *readableItemname(const GmenuItem& i) {
     return GBS_global_string_copy("%s/%s", i.parent_menu->label, i.label);
 }
 
-inline __ATTR__NORETURN void throwError(const char *msg) {
-    throw string(msg);
-}
-
 static __ATTR__NORETURN void throwParseError(const char *msg, const LineReader& file) {
-    fprintf(stderr, "\n%s:%zu: %s\n", file.getFilename().c_str(), file.getLineNumber(), msg);
+    fprintf(stderr, "\n%s:%li: %s\n", file.getFilename().c_str(), file.getLineNumber(), msg);
     fflush(stderr);
     throwError(msg);
 }
 
-static __ATTR__NORETURN void throwItemError(const GmenuItem& i, const char *error, const LineReader& file) {
+__ATTR__NORETURN static void throwItemError(const GmenuItem& i, const char *error, const LineReader& file) {
     char       *itemName = readableItemname(i);
     const char *msg      = GBS_global_string("[Above this line] Invalid item '%s' defined: %s", itemName, error);
     free(itemName);
@@ -102,6 +98,8 @@ static void ParseMenus(LineReader& in) {
     char head[GBUFSIZ];
     char tail[GBUFSIZ];
 
+    char *resize;
+
     string lineStr;
 
     while (in.getLine(lineStr)) {
@@ -128,10 +126,12 @@ static void ParseMenus(LineReader& in) {
 
                 // If menu not found, make a new one
                 if (thismenu_firstOccurance) {
-                    curmenu               = num_menus++;
-                    thismenu              = &menu[curmenu];
-                    thismenu->label       = ARB_strdup(temp);
-                    thismenu->numitems    = 0;
+                    curmenu         = num_menus++;
+                    thismenu        = &menu[curmenu];
+                    thismenu->label = (char*)calloc(strlen(temp)+1, sizeof(char));
+
+                    (void)strcpy(thismenu->label, temp);
+                    thismenu->numitems = 0;
                     thismenu->active_mask = AWM_ALL;
                 }
                 else {
@@ -156,18 +156,9 @@ static void ParseMenus(LineReader& in) {
                 THROW_IF_NO_MENU();
                 char wanted_meta = temp[0];
                 if (!thismenu_firstOccurance && thismenu->meta != wanted_meta) {
-                    if (wanted_meta != 0) {
-                        if (thismenu->meta != 0) {
-                            throwParseError(GBS_global_string("menumeta has inconsistent definitions (in different definitions of menu '%s')", thismenu->label), in);
-                        }
-                        else {
-                            thismenu->meta = wanted_meta;
-                        }
-                    }
+                    throwParseError(GBS_global_string("menumeta has inconsistent definitions (in different definitions of menu '%s')", thismenu->label), in);
                 }
-                else {
-                    thismenu->meta = wanted_meta;
-                }
+                thismenu->meta = wanted_meta;
             }
             // item: chooses menu item to use
             else if (strcmp(head, "item") == 0) {
@@ -183,31 +174,25 @@ static void ParseMenus(LineReader& in) {
 
                 // Resize the item list for this menu (add one item)
                 if (curitem == 0) {
-                    ARB_alloc(thismenu->item, 1);
+                    resize = (char*)GB_calloc(1, sizeof(GmenuItem));
                 }
                 else {
-                    ARB_realloc(thismenu->item, thismenu->numitems);
+                    resize = (char *)realloc((char *)thismenu->item, thismenu->numitems*sizeof(GmenuItem));
                 }
 
-                thisitem = &(thismenu->item[curitem]);
+                thismenu->item = (GmenuItem*)resize;
 
-                thisitem->numargs    = 0;
-                thisitem->numoutputs = 0;
-                thisitem->numinputs  = 0;
-                thisitem->label      = ARB_strdup(temp);
-                thisitem->method     = NULL;
-                thisitem->input      = NULL;
-                thisitem->output     = NULL;
-                thisitem->arg        = NULL;
-                thisitem->meta       = '\0';
-                thisitem->seqtype    = '-';   // no default sequence export
-                thisitem->aligned    = false;
-                thisitem->help       = NULL;
-
+                thisitem              = &(thismenu->item[curitem]);
+                thisitem->label       = strdup(temp);
+                thisitem->meta        = '\0';
+                thisitem->seqtype     = '-'; // no default sequence export
+                thisitem->numinputs   = 0;
+                thisitem->numoutputs  = 0;
+                thisitem->numargs     = 0;
+                thisitem->help        = NULL;
                 thisitem->parent_menu = thismenu;
                 thisitem->aws         = NULL; // no window opened yet
                 thisitem->active_mask = AWM_ALL;
-                thisitem->popup       = NULL;
 
                 for (int i = 0; i<curitem; ++i) {
                     if (strcmp(thismenu->item[i].label, thisitem->label) == 0) {
@@ -221,7 +206,7 @@ static void ParseMenus(LineReader& in) {
             // itemmethod: generic command line generated by this item
             else if (strcmp(head, "itemmethod") == 0) {
                 THROW_IF_NO_ITEM();
-                ARB_calloc(thisitem->method, strlen(temp)+1);
+                thisitem->method = (char*)calloc(strlen(temp)+1, sizeof(char));
 
                 {
                     char *to = thisitem->method;
@@ -278,23 +263,27 @@ static void ParseMenus(LineReader& in) {
 
             else if (strcmp(head, "arg") == 0) {
                 THROW_IF_NO_ITEM();
+                curarg=thisitem->numargs++;
+                if (curarg == 0) resize = (char*)calloc(1, sizeof(GmenuItemArg));
+                else resize = (char *)realloc((char *)thisitem->arg, thisitem->numargs*sizeof(GmenuItemArg));
 
-                curarg = thisitem->numargs++;
-                ARB_recalloc(thisitem->arg, curarg, thisitem->numargs);
+                memset((char *)resize + (thisitem->numargs-1)*sizeof(GmenuItemArg), 0, sizeof(GmenuItemArg));
 
-                thisarg = &(thisitem->arg[curarg]);
+                (thisitem->arg) = (GmenuItemArg*)resize;
+                thisarg         = &(thisitem->arg[curarg]);
+                thisarg->symbol = (char*)calloc(strlen(temp)+1, sizeof(char));
+                (void)strcpy(thisarg->symbol, temp);
 
-                thisarg->symbol      = ARB_strdup(temp);
-                thisarg->type        = 0;
-                thisarg->min         = 0.0;
-                thisarg->max         = 0.0;
-                thisarg->numchoices  = 0;
-                thisarg->choice      = NULL;
-                thisarg->textvalue   = NULL;
-                thisarg->ivalue      = 0;
-                thisarg->fvalue      = 0.0;
-                thisarg->label       = 0;
-                thisarg->active_mask = AWM_ALL;
+                thisarg->type       = 0;
+                thisarg->min        = 0.0;
+                thisarg->max        = 0.0;
+                thisarg->numchoices = 0;
+                thisarg->choice     = NULL;
+                thisarg->textvalue  = NULL;
+                thisarg->ivalue     = 0;
+                thisarg->fvalue     = 0.0;
+                thisarg->label      = 0;
+                thisarg->active_mask= AWM_ALL;
             }
             // argtype: Defines the type of argument (menu,chooser, text, slider)
             else if (strcmp(head, "argtype") == 0) {
@@ -360,10 +349,18 @@ static void ParseMenus(LineReader& in) {
                 splitEntry(temp, head, tail);
 
                 int curchoice = thisarg->numchoices++;
-                ARB_recalloc(thisarg->choice, curchoice, thisarg->numchoices);
+                if (curchoice == 0) resize = (char*)calloc(1, sizeof(GargChoice));
+                else                resize = (char*)realloc((char *)thisarg->choice, thisarg->numchoices*sizeof(GargChoice));
 
-                thisarg->choice[curchoice].label  = ARB_strdup(head);
-                thisarg->choice[curchoice].method = ARB_strdup(tail);
+                thisarg->choice = (GargChoice*)resize;
+
+                (thisarg->choice[curchoice].label)  = NULL;
+                (thisarg->choice[curchoice].method) = NULL;
+                (thisarg->choice[curchoice].label)  = (char*)calloc(strlen(head)+1, sizeof(char));
+                (thisarg->choice[curchoice].method) = (char*)calloc(strlen(tail)+1, sizeof(char));
+
+                (void)strcpy(thisarg->choice[curchoice].label, head);
+                (void)strcpy(thisarg->choice[curchoice].method, tail);
             }
             // argmin: Minimum value for a slider
             else if (strcmp(head, "argmin") == 0) {
@@ -393,15 +390,15 @@ static void ParseMenus(LineReader& in) {
             // in: Input file description
             else if (strcmp(head, "in") == 0) {
                 THROW_IF_NO_ITEM();
+                curinput                  = (thisitem->numinputs)++;
+                if (curinput == 0) resize = (char*)calloc(1, sizeof(GfileFormat));
+                else resize               = (char *)realloc((char *)thisitem->input, (thisitem->numinputs)*sizeof(GfileFormat));
 
-                curinput = (thisitem->numinputs)++;
-                ARB_recalloc(thisitem->input, curinput, thisitem->numinputs);
-
-                thisinput = &(thisitem->input)[curinput];
-
-                thisinput->save     = false;
+                thisitem->input     = (GfileFormat*)resize;
+                thisinput           = &(thisitem->input)[curinput];
+                thisinput->save     = FALSE;
                 thisinput->format   = 0;
-                thisinput->symbol   = ARB_strdup(temp);
+                thisinput->symbol   = strdup(temp);
                 thisinput->name     = NULL;
                 thisinput->typeinfo = BASIC_TYPEINFO;
             }
@@ -413,7 +410,7 @@ static void ParseMenus(LineReader& in) {
             }
             else if (strcmp(head, "insave") == 0) {
                 THROW_IF_NO_INPUT();
-                thisinput->save = true;
+                thisinput->save = TRUE;
             }
             else if (strcmp(head, "intyped") == 0) {
                 THROW_IF_NO_INPUT();
@@ -424,15 +421,16 @@ static void ParseMenus(LineReader& in) {
             // out: Output file description
             else if (strcmp(head, "out") == 0) {
                 THROW_IF_NO_ITEM();
-
                 curoutput = (thisitem->numoutputs)++;
-                ARB_recalloc(thisitem->output, curoutput, thisitem->numoutputs);
 
-                thisoutput = &(thisitem->output)[curoutput];
+                if (curoutput == 0) resize = (char*)calloc(1, sizeof(GfileFormat));
+                else resize               = (char *)realloc((char *)thisitem->output, (thisitem->numoutputs)*sizeof(GfileFormat));
 
-                thisoutput->save   = false;
+                thisitem->output   = (GfileFormat*)resize;
+                thisoutput         = &(thisitem->output)[curoutput];
+                thisoutput->save   = FALSE;
                 thisoutput->format = 0;
-                thisoutput->symbol = ARB_strdup(temp);
+                thisoutput->symbol = strdup(temp);
                 thisoutput->name   = NULL;
             }
             else if (strcmp(head, "outformat") == 0) {
@@ -442,14 +440,9 @@ static void ParseMenus(LineReader& in) {
                 else if (Find(temp, "flat")) thisoutput->format = NA_FLAT;
                 else throwParseError(GBS_global_string("Unknown outformat '%s' (allowed 'genbank', 'gde' or 'flat')", temp), in);
             }
-            else if (strcmp(head, "outaligned") == 0) {
-                THROW_IF_NO_OUTPUT();
-                if (Find(temp, "yes")) thisitem->aligned = true;
-                else throwParseError(GBS_global_string("Unknown outaligned '%s' (allowed 'yes' or skip entry)", temp), in);
-            }
             else if (strcmp(head, "outsave") == 0) {
                 THROW_IF_NO_OUTPUT();
-                thisoutput->save = true;
+                thisoutput->save = TRUE;
             }
             else {
                 throwParseError(GBS_global_string("No known GDE-menu-command found (line='%s')", in_line), in);
@@ -471,7 +464,7 @@ GB_ERROR LoadMenus() {
     GB_ERROR error = NULL;
     StrArray files;
     {
-        char *user_menu_dir = ARB_strdup(GB_path_in_arbprop("gde"));
+        char *user_menu_dir = strdup(GB_path_in_arbprop("gde"));
 
         if (!GB_is_directory(user_menu_dir)) {
             error = GB_create_directory(user_menu_dir);
@@ -503,9 +496,9 @@ GB_ERROR LoadMenus() {
     return error;
 }
 
-bool Find(const char *target, const char *key) {
+int Find(const char *target, const char *key) {
     // Search the target string for the given key
-    return strstr(target, key) ? true : false;
+    return strstr(target, key) ? TRUE : FALSE;
 }
 
 int Find2(const char *target, const char *key) {
@@ -517,6 +510,11 @@ int Find2(const char *target, const char *key) {
 }
 
 // --------------------------------------------------------------------------------
+
+void throwError(const char *msg) {
+    // goes to header: __ATTR__NORETURN
+    throw string(msg);
+}
 
 inline void trim(char *str) {
     int s = 0;
@@ -565,7 +563,7 @@ void TEST_load_menu() {
         TEST_EXPECT_NO_ERROR(LoadMenus());
 
         // basic check of loaded data (needs to be adapted if menus change):
-        TEST_EXPECT_EQUAL(num_menus, 13);
+        TEST_EXPECT_EQUAL(num_menus, 12);
 
         string menus;
         string menuitems;
@@ -575,9 +573,9 @@ void TEST_load_menu() {
         }
 
         TEST_EXPECT_EQUAL(menus,
-                          "Import;Export;Print;Align;Network;SAI;Incremental phylogeny;Phylogeny Distance Matrix;"
-                          "Phylogeny max. parsimony;Phylogeny max. Likelihood EXP;Phylogeny max. Likelihood;Phylogeny (Other);User;");
-        TEST_EXPECT_EQUAL(menuitems, "3;1;2;10;1;1;1;3;2;1;8;5;0;");
+                          "Import;Export;Print;Align;User;SAI;Incremental phylogeny;Phylogeny Distance Matrix;"
+                          "Phylogeny max. parsimony;Phylogeny max. Likelyhood EXP;Phylogeny max. Likelyhood;Phylogeny (Other);");
+        TEST_EXPECT_EQUAL(menuitems, "3;1;1;11;1;1;1;3;2;1;7;5;");
     }
     TEST_EXPECT_EQUAL((void*)arb_test::fakeenv, (void*)GB_install_getenv_hook(old));
 }

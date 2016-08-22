@@ -1,31 +1,12 @@
 .SUFFIXES: .o .cxx .depend
 
 OBJECTS = $(subst .cxx,.o,$(wildcard *.cxx))
-SERVERLIB=../PROBE_COM/server.a
 
-# ---------------------------------------- allow misaligned data access in PROBE
-PROBE_CFLAGS := $(cflags)
-ifeq ('$(USE_GCC_50_OR_HIGHER)', 'yes')
- ifneq ('$(SANITIZE)', '0')
-  PROBE_CFLAGS := $(cflags) -fno-sanitize=alignment
- endif
-endif
-# ---------------------------------------- 
-
-$(MAIN): $(OBJECTS) $(SERVERLIB)
-# $(SERVERLIB) and $(MAIN) reference each other
-# unpack all objects from $(SERVERLIB) and ar them together with local objects
-	mkdir -p serverlib
-	cd serverlib;ar x ../$(SERVERLIB)
-	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS) serverlib/*.o
-	rm serverlib/*.o
-ifeq ($(DARWIN),1)
-	-rm serverlib/__.*
-endif
-	rmdir serverlib
+$(MAIN): $(OBJECTS) 
+	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .cxx.o:
-	$(A_CXX) $(PROBE_CFLAGS) $(cxxflags) -c $<  $(CXX_INCLUDES) $(POST_COMPILE) $<
+	$(A_CXX) $(cflags) $(cxxflags) -c $<  $(CXX_INCLUDES) $(POST_COMPILE)
 
 proto:
 	../AISC_MKPTPS/aisc_mkpt -P -G -E -w pt_prototypes.h $(OBJECTS:.o=.cxx) probe_tree.h >pt_prototypes.h.tmp
@@ -66,7 +47,6 @@ PT_buildtree.o: $(ARBHOME)/INCLUDE/arb_defs.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/arb_diff.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/arb_error.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/arb_file.h
-PT_buildtree.o: $(ARBHOME)/INCLUDE/arb_mem.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/arb_misc.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/arb_msg.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/arb_progress.h
@@ -98,7 +78,6 @@ PT_debug.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PT_debug.o: $(ARBHOME)/INCLUDE/arb_core.h
 PT_debug.o: $(ARBHOME)/INCLUDE/arb_error.h
 PT_debug.o: $(ARBHOME)/INCLUDE/arb_file.h
-PT_debug.o: $(ARBHOME)/INCLUDE/arb_mem.h
 PT_debug.o: $(ARBHOME)/INCLUDE/arb_misc.h
 PT_debug.o: $(ARBHOME)/INCLUDE/arb_msg.h
 PT_debug.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -125,7 +104,6 @@ PT_etc.o: $(ARBHOME)/INCLUDE/aisc_global.h
 PT_etc.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PT_etc.o: $(ARBHOME)/INCLUDE/arb_core.h
 PT_etc.o: $(ARBHOME)/INCLUDE/arb_error.h
-PT_etc.o: $(ARBHOME)/INCLUDE/arb_mem.h
 PT_etc.o: $(ARBHOME)/INCLUDE/arb_msg.h
 PT_etc.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 PT_etc.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -159,7 +137,6 @@ PT_family.o: $(ARBHOME)/INCLUDE/aisc_global.h
 PT_family.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PT_family.o: $(ARBHOME)/INCLUDE/arb_core.h
 PT_family.o: $(ARBHOME)/INCLUDE/arb_error.h
-PT_family.o: $(ARBHOME)/INCLUDE/arb_mem.h
 PT_family.o: $(ARBHOME)/INCLUDE/arb_msg.h
 PT_family.o: $(ARBHOME)/INCLUDE/arb_string.h
 PT_family.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -190,7 +167,6 @@ PT_findEx.o: $(ARBHOME)/INCLUDE/aisc_global.h
 PT_findEx.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PT_findEx.o: $(ARBHOME)/INCLUDE/arb_core.h
 PT_findEx.o: $(ARBHOME)/INCLUDE/arb_error.h
-PT_findEx.o: $(ARBHOME)/INCLUDE/arb_mem.h
 PT_findEx.o: $(ARBHOME)/INCLUDE/arb_msg.h
 PT_findEx.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 PT_findEx.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -221,7 +197,6 @@ PT_io.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PT_io.o: $(ARBHOME)/INCLUDE/arb_core.h
 PT_io.o: $(ARBHOME)/INCLUDE/arb_error.h
 PT_io.o: $(ARBHOME)/INCLUDE/arb_file.h
-PT_io.o: $(ARBHOME)/INCLUDE/arb_mem.h
 PT_io.o: $(ARBHOME)/INCLUDE/arb_msg.h
 PT_io.o: $(ARBHOME)/INCLUDE/arb_progress.h
 PT_io.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -257,7 +232,6 @@ PT_main.o: $(ARBHOME)/INCLUDE/arb_core.h
 PT_main.o: $(ARBHOME)/INCLUDE/arb_defs.h
 PT_main.o: $(ARBHOME)/INCLUDE/arb_error.h
 PT_main.o: $(ARBHOME)/INCLUDE/arb_file.h
-PT_main.o: $(ARBHOME)/INCLUDE/arb_mem.h
 PT_main.o: $(ARBHOME)/INCLUDE/arb_misc.h
 PT_main.o: $(ARBHOME)/INCLUDE/arb_msg.h
 PT_main.o: $(ARBHOME)/INCLUDE/arb_sleep.h
@@ -300,7 +274,6 @@ PT_match.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PT_match.o: $(ARBHOME)/INCLUDE/arb_core.h
 PT_match.o: $(ARBHOME)/INCLUDE/arb_defs.h
 PT_match.o: $(ARBHOME)/INCLUDE/arb_error.h
-PT_match.o: $(ARBHOME)/INCLUDE/arb_mem.h
 PT_match.o: $(ARBHOME)/INCLUDE/arb_msg.h
 PT_match.o: $(ARBHOME)/INCLUDE/arb_sort.h
 PT_match.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
@@ -336,7 +309,6 @@ PT_new_design.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/arb_core.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/arb_defs.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/arb_error.h
-PT_new_design.o: $(ARBHOME)/INCLUDE/arb_mem.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/arb_msg.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/arb_progress.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/arb_sort.h
@@ -373,7 +345,6 @@ PT_prefixtree.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PT_prefixtree.o: $(ARBHOME)/INCLUDE/arb_core.h
 PT_prefixtree.o: $(ARBHOME)/INCLUDE/arb_error.h
 PT_prefixtree.o: $(ARBHOME)/INCLUDE/arb_file.h
-PT_prefixtree.o: $(ARBHOME)/INCLUDE/arb_mem.h
 PT_prefixtree.o: $(ARBHOME)/INCLUDE/arb_misc.h
 PT_prefixtree.o: $(ARBHOME)/INCLUDE/arb_msg.h
 PT_prefixtree.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -403,7 +374,6 @@ PT_rangeCheck.o: $(ARBHOME)/INCLUDE/aisc_global.h
 PT_rangeCheck.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PT_rangeCheck.o: $(ARBHOME)/INCLUDE/arb_core.h
 PT_rangeCheck.o: $(ARBHOME)/INCLUDE/arb_error.h
-PT_rangeCheck.o: $(ARBHOME)/INCLUDE/arb_mem.h
 PT_rangeCheck.o: $(ARBHOME)/INCLUDE/arb_msg.h
 PT_rangeCheck.o: $(ARBHOME)/INCLUDE/arb_string.h
 PT_rangeCheck.o: $(ARBHOME)/INCLUDE/arbdb.h

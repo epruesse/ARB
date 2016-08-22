@@ -69,7 +69,7 @@ $(TARGET_SO) : $(ARB_SO)
 	cp $< $@
 
 $(ARB_SO) : $(XS_DEPENDS) depends.stamp
-	rm $(ARB_SO) || true
+	-rm $(ARB_SO)
 	@echo "Used perl version: `perl -v | grep 'This is perl'`"
 	@echo "-------- calling MakeMaker-Makefile"
 	( $(PMAKE) $@ || (echo "------ failed[1].. retry once"; $(PMAKE) $@))
@@ -85,25 +85,21 @@ ARB.c : $(XS_DEPENDS)
 # buildMakefile
 
 # ------------------------------------------------------------
-# hack to compile with gcc 4.7.x and perl 5.10.1
+# hack to compile with gcc 4.7.3 and perl 5.10.1
 # (see http://bugs.arb-home.de/changeset/10566 for why)
 
-PERL_GCC_INCOMPAT:= \
-	v5.10.1___4.7.1 \
-	v5.10.1___4.7.3 \
-	v5.10.1___4.7.4 \
-
+PERL_GCC_INCOMPAT:= v5.10.1___4.7.3
 PERL_GCC:=$(shell perl -e 'print "$$^V\n";')___$(COMPILER_VERSION)
 WONT_COMPILE_CXX11:=$(findstring $(PERL_GCC),$(PERL_GCC_INCOMPAT))
 
 ifneq ('$(WONT_COMPILE_CXX11)','')
-	hacked_cflags:=$(subst -std=gnu++11,,$(cflags4perl))
+	hacked_cflags:=$(subst -std=gnu++11,,$(cross_cflags))
 else
-	hacked_cflags:=$(cflags4perl)
+	hacked_cflags:=$(cross_cflags)
 endif
 
-used_cflags:=$(subst -Weffc++,,$(hacked_cflags)) -Wno-literal-suffix -Wno-unused-parameter $(CXX_INCLUDES)
-used_lflags:=$(lflags4perl)
+used_cflags:=$(subst -Weffc++,,$(hacked_cflags)) -Wno-literal-suffix $(CXX_INCLUDES)
+used_lflags:=$(cross_lflags)
 
 MAKE_MAKEFILE=make_arbperl_makefile.pl
 
@@ -119,7 +115,7 @@ Makefile.PL : $(MAKE_MAKEFILE)
 	) > $@
 
 ARB.xs : $(ARB_PROTO_2_XSUB) proto.h ARB.default.xs perlmain_source.c typemap
-	@(test -f $@ && chmod a+w $@) || true
+	-@test -f $@ && chmod a+w $@
 	$(ARB_PROTO_2_XSUB) proto.h ARB.default.xs typemap >$@
 	@test -f $@ && chmod a-w $@
 

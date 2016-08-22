@@ -1,16 +1,17 @@
 #ifndef AW_AWAR_DEFS_HXX
 #define AW_AWAR_DEFS_HXX
 
-#define AWAR_DBBASE    "tmp/nt/arbdb"
-#define AWAR_DB_PATH   AWAR_DBBASE "/file_name"
-#define AWAR_DB_NAME   AWAR_DB_PATH "_without_path"     //  awar is automatically updated when AWAR_DB_PATH changes
+#define AWAR_DB        "tmp/nt/arbdb/"
+#define AWAR_DB_PATH   AWAR_DB "file_name"
+#define AWAR_DB_TYPE   AWAR_DB "type"
+#define AWAR_DB_FILTER AWAR_DB "filter"
+#define AWAR_DB_NAME   AWAR_DB_PATH "_without_path" //  awar is automatically updated when AWAR_DB_PATH changes
 
 #define AWAR_DEFAULT_ALIGNMENT "presets/use" // has to match ../ARBDB/arbdb.h@GB_DEFAULT_ALIGNMENT
 
-#define AWAR_TREE           "focus/tree_name"
-#define AWAR_TREE_REFRESH   "tmp/focus/tree_refresh"   // touch this awar to refresh the tree display
-#define AWAR_TREE_RECOMPUTE "tmp/focus/tree_recompute" // touch this awar to recompute the tree (does refresh as well)
-#define AWAR_CONFIGURATION  "focus/configuration"
+#define AWAR_TREE          "focus/tree_name"
+#define AWAR_TREE_REFRESH  "tmp/focus/tree_refresh" // touch this awar to refresh the tree display
+#define AWAR_CONFIGURATION "focus/configuration"
 
 #define AWAR_SECURITY_LEVEL "tmp/etc/security_level"
 

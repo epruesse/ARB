@@ -45,8 +45,8 @@ static const char *GB_get_GBDATA_path(GBDATA *gbd) {
     static char *orgbuffer = NULL;
     char        *buffer;
 
-    if (!orgbuffer) ARB_alloc(orgbuffer, BUFFERSIZE);
-    buffer = orgbuffer;
+    if (!orgbuffer) orgbuffer = (char*)malloc(BUFFERSIZE);
+    buffer                    = orgbuffer;
 
     build_GBDATA_path(gbd, &buffer);
     assert_or_exit((buffer-orgbuffer) < BUFFERSIZE); // buffer overflow
@@ -80,6 +80,12 @@ static bool gb_find_value_equal(GBDATA *gb, GB_TYPES type, const char *val, GB_C
         case GB_INT: {
             int i                      = GB_read_int(gb);
             if (i == *(int*)val) equal = true;
+            break;
+        }
+        case GB_FLOAT: { 
+            GBK_terminate("cant search float by value"); // @@@ search by comparing floats is nonsense - should be removed/replaced/rewritten 
+            double d = GB_read_float(gb);
+            if (d == *(double*)(void*)val) equal = true; // (no aliasing problem here; char* -> double* ok)
             break;
         }
         default: {
@@ -601,7 +607,7 @@ GBDATA *GB_searchOrCreate_int(GBDATA *gb_container, const char *fieldpath, long 
     return gb_int;
 }
 
-GBDATA *GB_searchOrCreate_float(GBDATA *gb_container, const char *fieldpath, float default_value) {
+GBDATA *GB_searchOrCreate_float(GBDATA *gb_container, const char *fieldpath, double default_value) {
     gb_assert(!GB_have_error()); // illegal to enter this function when an error is exported!
 
     GBDATA *gb_float = GB_search(gb_container, fieldpath, GB_FIND);
@@ -695,7 +701,7 @@ void gb_install_command_table(GBDATA *gb_main, struct GBL_command_table *table, 
         GBS_write_hash(Main->command_hash, table->command_identifier, (long)table->function);
     }
 
-    gb_assert((GBS_hash_elements(Main->command_hash)+1) == table_size);
+    gb_assert((GBS_hash_count_elems(Main->command_hash)+1) == table_size);
 }
 
 static char *gbs_search_second_x(const char *str) {
@@ -799,7 +805,7 @@ static const char *shortenLongString(const char *str, size_t wanted_len) {
             memcpy(shortened_str, str, wanted_len-4);
         }
         else {
-            freeset(shortened_str, ARB_strpartdup(str, str+wanted_len));
+            freeset(shortened_str, GB_strpartdup(str, str+wanted_len));
             short_len = wanted_len;
         }
         strcpy(shortened_str+wanted_len-4, "[..]");
@@ -817,7 +823,7 @@ static char *apply_ACI(GBDATA *gb_main, const char *commands, const char *str, G
     GB_MAIN_TYPE *Main    = GB_MAIN(gb_main);
     gb_local->gbl.gb_main = gb_main;
 
-    char *buffer = ARB_strdup(commands);
+    char *buffer = strdup(commands);
 
     // ********************** remove all spaces and tabs *******************
     {
@@ -854,7 +860,7 @@ static char *apply_ACI(GBDATA *gb_main, const char *commands, const char *str, G
 
     GBL_streams orig;
 
-    orig.insert(ARB_strdup(str));
+    orig.insert(strdup(str));
 
     GB_ERROR error = NULL;
     GBL_streams out;
@@ -886,7 +892,7 @@ static char *apply_ACI(GBDATA *gb_main, const char *commands, const char *str, G
                 }
                 *end = 0;
 
-                out.insert(ARB_strdup(s1+1));
+                out.insert(strdup(s1+1));
             }
             else {
                 char *bracket   = strchr(s1, '(');
@@ -919,7 +925,7 @@ static char *apply_ACI(GBDATA *gb_main, const char *commands, const char *str, G
                                     p1[len2] = 0;
                                 }
                             }
-                            in.insert(ARB_strdup(p1));
+                            in.insert(strdup(p1));
                         }
                     }
                 }
@@ -954,7 +960,7 @@ static char *apply_ACI(GBDATA *gb_main, const char *commands, const char *str, G
                         if (!error && trace) dumpStreams("OutputStreams", args.output);
 
                         if (error) {
-                            char *dup_error = ARB_strdup(error);
+                            char *dup_error = strdup(error);
 
 #define MAX_PRINT_LEN 200
 
@@ -963,7 +969,7 @@ static char *apply_ACI(GBDATA *gb_main, const char *commands, const char *str, G
                                 const char *param       = args.param.get(j);
                                 const char *param_short = shortenLongString(param, MAX_PRINT_LEN);
 
-                                if (!paramlist) paramlist = ARB_strdup(param_short);
+                                if (!paramlist) paramlist = strdup(param_short);
                                 else freeset(paramlist, GBS_global_string_copy("%s,%s", paramlist, param_short));
                             }
                             char *inputstreams = 0;
@@ -971,7 +977,7 @@ static char *apply_ACI(GBDATA *gb_main, const char *commands, const char *str, G
                                 const char *input       = args.input.get(j);
                                 const char *input_short = shortenLongString(input, MAX_PRINT_LEN);
 
-                                if (!inputstreams) inputstreams = ARB_strdup(input_short);
+                                if (!inputstreams) inputstreams = strdup(input_short);
                                 else freeset(inputstreams, GBS_global_string_copy("%s;%s", inputstreams, input_short));
                             }
 #undef MAX_PRINT_LEN
@@ -1017,8 +1023,8 @@ static char *apply_ACI(GBDATA *gb_main, const char *commands, const char *str, G
 
 char *GBL_streams::concatenated() const {
     int count = size();
-    if (!count) return ARB_strdup("");
-    if (count == 1) return ARB_strdup(get(0));
+    if (!count) return strdup("");
+    if (count == 1) return strdup(get(0));
 
     GBS_strstruct *strstruct = GBS_stropen(1000);
     for (int i=0; i<count; i++) {
@@ -1065,7 +1071,7 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
     }
 
     if (!commands || !commands[0]) { // empty command -> do not modify string
-        return ARB_strdup(str);
+        return strdup(str);
     }
 
     if (commands[0] == ':') { // ':' -> string parser
@@ -1083,8 +1089,8 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
                 err    = 0;
                 const char *matched = GBS_regmatch(str, commands, &matchlen, &err);
 
-                if (matched) result   = ARB_strndup(matched, matchlen);
-                else if (!err) result = ARB_strdup("");
+                if (matched) result   = GB_strndup(matched, matchlen);
+                else if (!err) result = strdup("");
             }
 
             if (!result && err) result = GBS_global_string_copy("<Error: %s>", err);
@@ -1254,26 +1260,11 @@ void TEST_GB_command_interpreter() {
         TEST_CI_ERROR_CONTAINS("acgt", "format(numleft)", "Unknown Parameter 'numleft' in command 'format'");
 
         // format_sequence
-        TEST_CI_ERROR_CONTAINS("acgt", "format_sequence(numright=5, numleft)", "You may only specify 'numleft' OR 'numright',  not both");
-
-        TEST_CI("acgtacgtacgtacg", "format_sequence(firsttab=5,tab=5,width=4,numleft=1)",
-                "1    acgt\n"
-                "5    acgt\n"
-                "9    acgt\n"
-                "13   acg");
-
-        TEST_CI("acgtacgtacgtacg", "format_sequence(firsttab=5,tab=5,width=4,numright=9)", // test EMBL sequence formatting
-                "     acgt         4\n"
-                "     acgt         8\n"
-                "     acgt        12\n"
-                "     acg         15");
-
-        TEST_CI("acgtacgtacgtac", "format_sequence(firsttab=5,tab=5,width=4,gap=2,numright=-1)", // autodetect width for 'numright'
-                "     ac gt  4\n"
-                "     ac gt  8\n"
-                "     ac gt 12\n"
-                "     ac    14");
-
+        TEST_CI("acgt", "format_sequence(firsttab=5,tab=5,width=1,numleft=1)",
+                "1    a\n"
+                "2    c\n"
+                "3    g\n"
+                "4    t");
         TEST_CI("acgt", "format_sequence(firsttab=0,tab=0,width=2,gap=1)",
                 "a c\n"
                 "g t");
@@ -1284,9 +1275,7 @@ void TEST_GB_command_interpreter() {
 
         TEST_CI_ERROR_CONTAINS("acgt", "format_sequence(nl=c)",     "Unknown Parameter 'nl=c' in command 'format_sequence'");
         TEST_CI_ERROR_CONTAINS("acgt", "format_sequence(forcenl=)", "Unknown Parameter 'forcenl=' in command 'format_sequence'");
-
-        TEST_CI_ERROR_CONTAINS("acgt", "format(width=0)",          "Illegal zero width");
-        TEST_CI_ERROR_CONTAINS("acgt", "format_sequence(width=0)", "Illegal zero width");
+        // TEST_CI_ERROR_CONTAINS("acgt", "format(width=0)", "should_raise_some_error"); // @@@ crashes
 
         // remove + keep
         TEST_CI_NOOP("acgtacgt",         "remove(-.)");
@@ -1695,7 +1684,7 @@ void TEST_DB_search() {
 
             TEST_EXPECT_EQUAL  (GB_read_char_pntr(GB_searchOrCreate_string(db.gb_cont_misc, "sub1/str",    "blub")), "blub");
             TEST_EXPECT_EQUAL  (GB_read_int      (GB_searchOrCreate_int   (db.gb_cont_misc, "sub2/int",    2012)),   2012);
-            TEST_EXPECT_SIMILAR(GB_read_float    (GB_searchOrCreate_float (db.gb_cont_misc, "sub3/float", 3.1415)), 3.1415, 0.00001);
+            TEST_EXPECT_SIMILAR(GB_read_float    (GB_searchOrCreate_float (db.gb_cont_misc, "sub3/float", 3.1415)), 3.1415, 0.0001);
 
             TEST_EXPECT_NORESULT__ERROREXPORTED_CONTAINS(GB_searchOrCreate_float (db.gb_cont_misc, "int",   0.815), "has wrong type");
             TEST_EXPECT_NORESULT__ERROREXPORTED_CONTAINS(GB_searchOrCreate_float (db.gb_cont_misc, "str",   0.815), "has wrong type");

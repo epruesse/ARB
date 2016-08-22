@@ -21,8 +21,6 @@
 #include <arb_file.h>
 #include <aw_question.hxx>
 
-#define AWAR_NAMESERVER_STATUS "tmp/nameserver/status"
-
 static char *namesFilename(GBDATA *gb_main) {
     const char *field    = AW_get_nameserver_addid(gb_main);
     const char *filename = field[0] ? GBS_global_string("names_%s.dat", field) : "names.dat";
@@ -77,18 +75,15 @@ static void awtc_remove_arb_acc(AW_window*, GBDATA *gb_main) {
     }
 }
 
-static void addid_changed_cb(AW_root *awr, GBDATA *gb_main, bool show_advice) {
+static void addid_changed_cb(AW_root*, GBDATA *gb_main) {
     GB_ERROR error = AW_test_nameserver(gb_main);
 
-    awr->awar(AWAR_NAMESERVER_STATUS)->write_string(error ? error : "ok");
-    if (!error && show_advice) {
-        AW_advice("Calling 'Species/Synchronize IDs' is highly recommended", AW_ADVICE_TOGGLE_AND_HELP, 0, "namesadmin.hlp");
-    }
+    if (error) aw_message(error);
+    else AW_advice("Calling 'Species/Synchronize IDs' is highly recommended", AW_ADVICE_TOGGLE_AND_HELP, 0, "namesadmin.hlp");
 }
 
 void AW_create_namesadmin_awars(AW_root *awr, GBDATA *gb_main) {
     awr->awar_string(AWAR_NAMESERVER_ADDID, "", gb_main);
-    awr->awar_string(AWAR_NAMESERVER_STATUS, "<unchecked>", gb_main);
 }
 
 AW_window *AW_create_namesadmin_window(AW_root *root, GBDATA *gb_main) {
@@ -97,12 +92,12 @@ AW_window *AW_create_namesadmin_window(AW_root *root, GBDATA *gb_main) {
 
     aws->load_xfig("awtc/names_admin.fig");
 
-    aws->at("help");
     aws->callback(makeHelpCallback("namesadmin.hlp"));
+    aws->at("help");
     aws->create_button("HELP", "HELP", "H");
 
+    aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("close");
-    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->button_length(30);
@@ -129,16 +124,10 @@ AW_window *AW_create_namesadmin_window(AW_root *root, GBDATA *gb_main) {
     aws->sens_mask(AWM_ALL);
 
     AW_awar *awar_addid = root->awar(AWAR_NAMESERVER_ADDID);
-    awar_addid->add_callback(makeRootCallback(addid_changed_cb, gb_main, true));
+    awar_addid->add_callback(makeRootCallback(addid_changed_cb, gb_main));
 
     aws->at("add_field");
-    aws->create_input_field(AWAR_NAMESERVER_ADDID, 20); // (don't use field selection here atm; needs too many changes)
-
-    aws->at("status");
-    aws->button_length(50);
-    aws->create_button(NULL, AWAR_NAMESERVER_STATUS);
-
-    addid_changed_cb(root, gb_main, false); // force status update
+    aws->create_input_field(AWAR_NAMESERVER_ADDID, 20);
 
     return aws;
 }

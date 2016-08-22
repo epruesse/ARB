@@ -13,10 +13,10 @@ $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .cxx.o:
-	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE) $<
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 .c.o:
-	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE) $<
+	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(OBJECTS) *.a
@@ -45,7 +45,6 @@ AW_names_admin.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/arb_error.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/arb_file.h
-AW_names_admin.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/arb_string.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -82,7 +81,6 @@ AW_rename.o: $(ARBHOME)/INCLUDE/aisc_global.h
 AW_rename.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_rename.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_rename.o: $(ARBHOME)/INCLUDE/arb_error.h
-AW_rename.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AW_rename.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AW_rename.o: $(ARBHOME)/INCLUDE/arb_progress.h
 AW_rename.o: $(ARBHOME)/INCLUDE/arb_string.h

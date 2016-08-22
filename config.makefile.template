@@ -26,8 +26,7 @@ ARB_64 := 1# compile 64bit ARB version
 
 UNIT_TESTS := 0# include and perform unit tests
 COVERAGE := 0# gcov support (0=off,1=on,2=on but hidden)
-#SANITIZE := all# build with Sanitizer? (defaults to 0; see Makefile for details)
-#SHOWTODO := 0# show todos? (defaults to 0, depends on DEVELOPER)
+#SHOWTODO := 0# show todos (default depends on DEVELOPER)
 
 # --------------------------------------------------------------------------------
 # target machine section

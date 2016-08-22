@@ -980,7 +980,7 @@ void TEST_saved_state() {
     const size_t SIZE = PT1_BASE_SIZE+6;
     STATIC_ASSERT(SIZE >= (1+sizeof(uint_big)+sizeof(int)));
 
-    POS_TREE1 *node = (POS_TREE1*)ARB_alloc<char>(SIZE);
+    POS_TREE1 *node = (POS_TREE1*)malloc(SIZE);
 
     TEST_SIZE_SAVED_IN_FLAGS(node, PT1_BASE_SIZE);
 

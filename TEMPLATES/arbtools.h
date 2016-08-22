@@ -21,13 +21,9 @@
 #ifndef CXXFORWARD_H
 #include <cxxforward.h>
 #endif
-#ifndef _GLIBCXX_CMATH
-#include <cmath>
-#endif
 
 //  Base class for classes that may not be copied, neither via copy
 //  constructor or assignment operator.
-//  (Note: see also class RefPtr below)
 
 #ifdef Cxx11
 struct Noncopyable {
@@ -63,26 +59,6 @@ public:
         INPLACE_COPY_RECONSTRUCT(T, this, other);       \
         return *this;                                   \
     }
-
-
-// class to hold a pointer to an object owned by somebody else.
-// (useful to avoid warnings about missing copy-ctor/op=)
-template <typename T> class RefPtr {
-    T *ptr;
-public:
-    RefPtr(T *ptr_) : ptr(ptr_) {}
-    RefPtr(const RefPtr<T>& other) : ptr(other.ptr) {}
-    DECLARE_ASSIGNMENT_OPERATOR(RefPtr<T>);
-    ~RefPtr() {}
-
-    operator T*() const { return ptr; }
-
-    const T *operator->() const { return ptr; }
-    T *operator->() { return ptr; }
-
-    const T& operator*() const { return *ptr; }
-    T& operator*() { return *ptr; }
-};
 
 
 // generic below/above predicates
@@ -125,18 +101,6 @@ public:
     T old_value() const { return prevValue; }
 };
 
-// disallow_type
-// (useful to deny template instantiation with specific types)
-template <typename T, typename U> struct different_types {};
-template <typename T> struct different_types<T,T>;
-template <typename T, typename U> struct disallow_type {
-    // Usage example:
-    //     disallow_type<T, AW_CL>::here();
-    // where 'T' is a template parameter
-
-    different_types<T,U> wrong_type_used;
-    static inline void here(){}
-};
 
 // StrictlyAliased_BasePtrRef allows to pass a 'DERIVED*&'
 // to a function which expects a 'BASE*&'
@@ -170,17 +134,6 @@ inline int double_cmp(const double d1, const double d2) {
     /*! returns <0 if d1<d2, >0 if d1>d2 (i.e. this function behaves like strcmp) */
     double d = d1-d2;
     return d<0 ? -1 : (d>0 ? 1 : 0);
-}
-
-template <typename NUM>
-inline int calc_digits(NUM val) {
-    /*! calculate output length of val (w/o sign) */
-    return val ? log10(val)+1 : 1;
-}
-template <typename NUM>
-inline int calc_signed_digits(NUM val) {
-    /*! calculate output length of val (with sign) */
-    return val<0 ? calc_digits(-val)+1 : calc_digits(val);
 }
 
 #else

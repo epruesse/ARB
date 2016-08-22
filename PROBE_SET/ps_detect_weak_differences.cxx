@@ -410,7 +410,7 @@ static void PS_print_and_evaluate_map(const PS_NodePtr& _root_node, const char *
         }
     }
     preset->recalcCounters();
-    if (!_result_filename) preset->print(stdout);
+    if (!_result_filename) preset->print();
     //
     // save results
     //

@@ -9,7 +9,7 @@
 // =============================================================== //
 
 #include <TreeWrite.h>
-#include <TreeNode.h>
+#include <arbdbt.h>
 #include <arb_strbuf.h>
 #include <xml.hxx>
 
@@ -50,7 +50,7 @@ static void export_tree_label(const char *label, FILE *out, TREE_node_quoting qm
     char *fixed_label;
     {
         size_t label_length = strlen(label);
-        fixed_label         = ARB_strduplen(label, label_length);
+        fixed_label         = GB_strduplen(label, label_length);
 
         if (whole_label_quoted(fixed_label, label_length)) {
             // if whole label is quoted -> remove quotes
@@ -96,7 +96,7 @@ inline void indentTo(int indent, FILE *out) {
     }
 }
 
-static const char *export_tree_node_print(GBDATA *gb_main, FILE *out, TreeNode *tree, const char *tree_name,
+static const char *export_tree_node_print(GBDATA *gb_main, FILE *out, GBT_TREE *tree, const char *tree_name,
                                           bool pretty, int indent,
                                           const TREE_node_text_gen *node_gen, bool save_branchlengths,
                                           bool save_bootstraps, bool save_groupnames, TREE_node_quoting qmode)
@@ -116,13 +116,13 @@ static const char *export_tree_node_print(GBDATA *gb_main, FILE *out, TreeNode *
         if (pretty) fputs("(\n", out);
         else        putc('(', out);
 
-        error = export_tree_node_print(gb_main, out, tree->get_leftson(), tree_name, pretty, indent+1, node_gen, save_branchlengths, save_bootstraps, save_groupnames, qmode);
+        error = export_tree_node_print(gb_main, out, tree->leftson, tree_name, pretty, indent+1, node_gen, save_branchlengths, save_bootstraps, save_groupnames, qmode);
         if (save_branchlengths) fprintf(out, ":%.5f", tree->leftlen);
         fputs(",\n", out);
 
         if (error) return error;
 
-        error = export_tree_node_print(gb_main, out, tree->get_rightson(), tree_name, pretty, indent+1, node_gen, save_branchlengths, save_bootstraps, save_groupnames, qmode);
+        error = export_tree_node_print(gb_main, out, tree->rightson, tree_name, pretty, indent+1, node_gen, save_branchlengths, save_bootstraps, save_groupnames, qmode);
         if (save_branchlengths) fprintf(out, ":%.5f", tree->rightlen);
         fputc('\n', out);
 
@@ -161,7 +161,7 @@ inline string buildNodeIdentifier(const string& parent_id, int& son_counter) {
     return GBS_global_string("%s.%i", parent_id.c_str(), son_counter);
 }
 
-static const char *export_tree_node_print_xml(GBDATA *gb_main, TreeNode *tree, double my_length, const char *tree_name,
+static const char *export_tree_node_print_xml(GBDATA *gb_main, GBT_TREE *tree, double my_length, const char *tree_name,
                                               const TREE_node_text_gen *node_gen, bool skip_folded, const string& parent_id, int& parent_son_counter) {
     const char *error = 0;
 
@@ -234,13 +234,13 @@ static const char *export_tree_node_print_xml(GBDATA *gb_main, TreeNode *tree, d
             }
             else {
                 int my_son_counter = 0;
-                if (!error) error  = export_tree_node_print_xml(gb_main, tree->get_leftson(),  tree->leftlen,  tree_name, node_gen, skip_folded, my_id, my_son_counter);
-                if (!error) error  = export_tree_node_print_xml(gb_main, tree->get_rightson(), tree->rightlen, tree_name, node_gen, skip_folded, my_id, my_son_counter);
+                if (!error) error  = export_tree_node_print_xml(gb_main, tree->leftson, tree->leftlen, tree_name, node_gen, skip_folded, my_id, my_son_counter);
+                if (!error) error  = export_tree_node_print_xml(gb_main, tree->rightson, tree->rightlen, tree_name, node_gen, skip_folded, my_id, my_son_counter);
             }
         }
         else {
-            if (!error) error = export_tree_node_print_xml(gb_main, tree->get_leftson(),  tree->leftlen,  tree_name, node_gen, skip_folded, parent_id, parent_son_counter);
-            if (!error) error = export_tree_node_print_xml(gb_main, tree->get_rightson(), tree->rightlen, tree_name, node_gen, skip_folded, parent_id, parent_son_counter);
+            if (!error) error = export_tree_node_print_xml(gb_main, tree->leftson, tree->leftlen, tree_name, node_gen, skip_folded, parent_id, parent_son_counter);
+            if (!error) error = export_tree_node_print_xml(gb_main, tree->rightson, tree->rightlen, tree_name, node_gen, skip_folded, parent_id, parent_son_counter);
         }
     }
 
@@ -255,7 +255,7 @@ GB_ERROR TREE_write_XML(GBDATA *gb_main, const char *db_name, const char *tree_n
     else {
         GB_transaction ta(gb_main);
 
-        TreeNode *tree   = GBT_read_tree(gb_main, tree_name, new SimpleRoot);
+        GBT_TREE *tree   = GBT_read_tree(gb_main, tree_name, GBT_TREE_NodeFactory());
         if (!tree) error = GB_await_error();
         else {
             error = GBT_link_tree(tree, gb_main, true, 0, 0);
@@ -269,7 +269,7 @@ GB_ERROR TREE_write_XML(GBDATA *gb_main, const char *db_name, const char *tree_n
 
                 xml_doc.add_attribute("database", db_name);
                 xml_doc.add_attribute("treename", tree_name);
-                xml_doc.add_attribute("export_date", ARB_date_string());
+                xml_doc.add_attribute("export_date", GB_date_string());
 
                 if (tree_remark) {
                     char *remark = GB_read_string(tree_remark);
@@ -333,7 +333,7 @@ GB_ERROR TREE_write_Newick(GBDATA *gb_main, const char *tree_name, const TREE_no
     else {
         GB_transaction ta(gb_main);
 
-        TreeNode *tree   = GBT_read_tree(gb_main, tree_name, new SimpleRoot);
+        GBT_TREE *tree   = GBT_read_tree(gb_main, tree_name, GBT_TREE_NodeFactory());
         if (!tree) error = GB_await_error();
         else {
             error = GBT_link_tree(tree, gb_main, true, 0, 0);
@@ -366,7 +366,7 @@ GB_ERROR TREE_write_Newick(GBDATA *gb_main, const char *tree_name, const TREE_no
                 }
             }
 
-            destroy(tree);
+            delete tree;
         }
 
         fprintf(output, ";\n");
@@ -386,7 +386,7 @@ static void export_tree_node_print_remove(char *str) {
     }
 }
 
-static void export_tree_rek(TreeNode *tree, FILE *out, bool export_branchlens, bool dquot) {
+static void export_tree_rek(GBT_TREE *tree, FILE *out, bool export_branchlens, bool dquot) {
     if (tree->is_leaf) {
         export_tree_node_print_remove(tree->name);
         fprintf(out,
@@ -395,8 +395,8 @@ static void export_tree_rek(TreeNode *tree, FILE *out, bool export_branchlens, b
     }
     else {
         fputc('(', out);
-        export_tree_rek(tree->get_leftson(),  out, export_branchlens, dquot); if (export_branchlens) fprintf(out, ":%.5f,", tree->leftlen);
-        export_tree_rek(tree->get_rightson(), out, export_branchlens, dquot); if (export_branchlens) fprintf(out, ":%.5f",  tree->rightlen);
+        export_tree_rek(tree->leftson,  out, export_branchlens, dquot); if (export_branchlens) fprintf(out, ":%.5f,", tree->leftlen);
+        export_tree_rek(tree->rightson, out, export_branchlens, dquot); if (export_branchlens) fprintf(out, ":%.5f",  tree->rightlen);
         fputc(')', out);
 
         if (tree->name) {
@@ -413,9 +413,9 @@ static void export_tree_rek(TreeNode *tree, FILE *out, bool export_branchlens, b
 // need some additional parameters (no comment, trifurcation)
 #endif
 
-GB_ERROR TREE_export_tree(GBDATA *, FILE *out, TreeNode *tree, bool triple_root, bool export_branchlens, bool dquot) {
+GB_ERROR TREE_export_tree(GBDATA *, FILE *out, GBT_TREE *tree, bool triple_root, bool export_branchlens, bool dquot) {
     if (triple_root) {
-        TreeNode *one, *two, *three;
+        GBT_TREE *one, *two, *three;
         if (tree->is_leaf) {
             return GB_export_error("Tree is two small, minimum 3 nodes");
         }
@@ -423,14 +423,14 @@ GB_ERROR TREE_export_tree(GBDATA *, FILE *out, TreeNode *tree, bool triple_root,
             return GB_export_error("Tree is two small, minimum 3 nodes");
         }
         if (tree->leftson->is_leaf) {
-            one   = tree->get_leftson();
-            two   = tree->get_rightson()->get_leftson();
-            three = tree->get_rightson()->get_rightson();
+            one = tree->leftson;
+            two = tree->rightson->leftson;
+            three = tree->rightson->rightson;
         }
         else {
-            one   = tree->get_leftson()->get_leftson();
-            two   = tree->get_leftson()->get_rightson();
-            three = tree->get_rightson();
+            one = tree->leftson->leftson;
+            two = tree->leftson->rightson;
+            three = tree->rightson;
         }
         fputc('(', out);
         export_tree_rek(one,   out, export_branchlens, dquot); if (export_branchlens) fprintf(out, ":%.5f", 1.0); fputc(',', out);

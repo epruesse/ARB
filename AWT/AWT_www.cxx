@@ -33,7 +33,7 @@ inline char *extract_url_host(const char *templ) {
         const char *host_start = url_start+8;
         const char *slash      = strchr(host_start, '/');
 
-        if (slash) return ARB_strpartdup(host_start, slash-1);
+        if (slash) return GB_strpartdup(host_start, slash-1);
     }
     return NULL;
 }
@@ -165,13 +165,23 @@ static void awt_www_select_change(AW_window *aww, int selected) {
     aw_root->awar(AWAR_WWW_SELECT)->write_int(selected);
 }
 
-static void www_setup_config(AWT_config_definition& cdef) {
+static void www_init_config(AWT_config_definition& cdef) {
     for (int i=0; i<WWW_COUNT; i++) {
         char buf[256];
         sprintf(buf, AWAR_WWW_SELECT_TEMPLATE, i); cdef.add(buf, "active",      i);
         sprintf(buf, AWAR_WWW_DESC_TEMPLATE,   i); cdef.add(buf, "description", i);
         sprintf(buf, AWAR_WWW_TEMPLATE,        i); cdef.add(buf, "template",    i);
     }
+}
+static char *www_store_config(AW_window *aww, AW_CL /* cl1 */, AW_CL /* cl2 */) {
+    AWT_config_definition cdef(aww->get_root());
+    www_init_config(cdef);
+    return cdef.read();
+}
+static void www_restore_config(AW_window *aww, const char *stored_string, AW_CL /* cl1 */, AW_CL /* cl2 */) {
+    AWT_config_definition cdef(aww->get_root());
+    www_init_config(cdef);
+    cdef.write(stored_string);
 }
 
 AW_window *AWT_create_www_window(AW_root *aw_root, GBDATA *gb_main) {
@@ -213,7 +223,7 @@ AW_window *AWT_create_www_window(AW_root *aw_root, GBDATA *gb_main) {
     for (i=0; i<WWW_COUNT; i++) {
         char buf[256];
         sprintf(buf, AWAR_WWW_SELECT_TEMPLATE, i);
-        aws->callback(makeWindowCallback(awt_www_select_change, i)); // @@@ used as TOGGLE_CLICK_CB (see #559)
+        aws->callback(makeWindowCallback(awt_www_select_change, i));
         aws->create_toggle(buf);
 
         sprintf(buf, AWAR_WWW_DESC_TEMPLATE, i);
@@ -242,7 +252,7 @@ AW_window *AWT_create_www_window(AW_root *aw_root, GBDATA *gb_main) {
     aws->create_button(0, "URL");
 
     aws->at("config");
-    AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "www", makeConfigSetupCallback(www_setup_config));
+    AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "www", www_store_config, www_restore_config, 0, 0);
 
     awt_www_select_change(aws, aw_root->awar(AWAR_WWW_SELECT)->read_int());
     return aws;

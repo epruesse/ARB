@@ -23,40 +23,44 @@ using namespace std;
 
 #define AWAR_QUESTION "tmp/question"
 
-int aw_question(const char *unique_id, const char *question, const char *buttons, bool sameSizeButtons, const char *helpfile) {
-    /*! Ask the user a question. Blocks all UI input until the answer is provided.
-     *
-     * @param  unique_id       Unique ID to identify the question. Must be valid hkey.
-     * @param  question        The question.
-     * @param  buttons         Comma separated list of button names. A button named starting
-     *                         with "^" will begin a new row of buttons. A button named "EXIT"
-     *                         will cause abnormal (EXIT_FAILURE) termination of program.
-     * @param  sameSizeButtons Make all buttons have the same size.
-     * @param  helpfile        Adds a "HELP" button. May be NULL. (currently ignored)
-     * @return the index of the selected answer
-     */
+int aw_question(const char *uniqueID, const char *question, const char *buttons, bool fixedSizeButtons, const char *helpfile) {
+    // return 0 for first button, 1 for second button, 2 for third button, ...
+    //
+    // the single buttons are separated by commas (e.g. "YES,NO")
+    // If the button-name starts with ^ it starts a new row of buttons
+    // (if a button named 'EXIT' is pressed the program terminates using exit(EXIT_FAILURE))
+    //
+    // The remaining arguments only apply if 'buttons' is non-zero:
+    //
+    // If fixedSizeButtons is true all buttons have the same size
+    // otherwise the size for every button is set depending on the text length
+    //
+    // If 'helpfile' is non-zero a HELP button is added.
 
     aw_assert(buttons);
 
-    AW_awar *awar_neverAskAgain = NULL;
-    if (unique_id) {
-        GB_ERROR error = GB_check_key(unique_id);
+    AW_root *root = AW_root::SINGLETON;
+
+    char *awar_name_neverAskAgain = NULL;
+    int   have_auto_answer        = 0;
+
+    if (uniqueID) {
+        GB_ERROR error = GB_check_key(uniqueID);
         if (error) {
             aw_message(error);
-            unique_id = NULL;
+            uniqueID = NULL;
         }
         else {
-            awar_neverAskAgain = AW_root::SINGLETON->awar_int(GBS_global_string("answers/%s", unique_id), 0, AW_ROOT_DEFAULT);
+            awar_name_neverAskAgain     = GBS_global_string_copy("answers/%s", uniqueID);
+            AW_awar *awar_neverAskAgain = root->awar_int(awar_name_neverAskAgain, 0, AW_ROOT_DEFAULT);
+            have_auto_answer            = awar_neverAskAgain->read_int();
         }
     }
 
-    int result = awar_neverAskAgain ? awar_neverAskAgain->read_int() : 0;
-    if (result>0) { // have auto-answer
-        --result;
+    if (have_auto_answer>0) {
+        aw_message_cb_result = have_auto_answer-1;
     }
-    else { // no auto-answer
-        if (!question) question = "No question?! Please report this as a bug.";
-
+    else {
         char *button_list = strdup(buttons ? buttons : "OK");
         if (button_list[0] == 0) {
             freedup(button_list, "Maybe ok,EXIT");
@@ -67,8 +71,8 @@ int aw_question(const char *unique_id, const char *question, const char *buttons
                                               question);
         }
 
-        AW_root *root       = AW_root::SINGLETON;
-        AW_awar *awar_quest = root->awar_string(AWAR_QUESTION);
+        AW_awar *awar_quest     = root->awar_string(AWAR_QUESTION);
+        if (!question) question = "<oops - no question?!>";
         awar_quest->write_string(question);
 
         size_t question_length, question_lines;
@@ -76,8 +80,8 @@ int aw_question(const char *unique_id, const char *question, const char *buttons
 
         // hash key to find matching window
         char *hindex = GBS_global_string_copy("%s$%s$%zu$%zu$%i$%s",
-                                              button_list, unique_id ? unique_id : "<NOID>",
-                                              question_length, question_lines, int(sameSizeButtons),
+                                              button_list, uniqueID ? uniqueID : "<NOID>",
+                                              question_length, question_lines, int(fixedSizeButtons),
                                               helpfile ? helpfile : "");
 
         static GB_HASH    *hash_windows = 0;
@@ -91,11 +95,8 @@ int aw_question(const char *unique_id, const char *question, const char *buttons
         if (!aw_msg) {
             aw_msg = new AW_window_message;
             GBS_write_hash(hash_windows, hindex, (long)aw_msg);
-            {
-                char *wid = GBS_string_2_key(GBS_global_string("QUESTION BOX %s", unique_id));
-                aw_msg->init(root, wid, "QUESTION BOX", false);
-                free(wid);
-            }
+
+            aw_msg->init(root, "QUESTION BOX", false);
             aw_msg->recalc_size_atShow(AW_RESIZE_DEFAULT); // force size recalc (ignores user size)
 
             aw_msg->label_length(10);
@@ -112,7 +113,7 @@ int aw_question(const char *unique_id, const char *question, const char *buttons
 
             aw_msg->at_newline();
 
-            if (sameSizeButtons) {
+            if (fixedSizeButtons) {
                 size_t  max_button_length = helpfile ? 4 : 0;
                 char   *pos               = button_list;
 
@@ -155,7 +156,7 @@ int aw_question(const char *unique_id, const char *question, const char *buttons
                     aw_msg->callback(makeWindowCallback(message_cb, counter++));
                 }
 
-                if (sameSizeButtons) {
+                if (fixedSizeButtons) {
                     aw_msg->create_button(0, ret);
                 }
                 else {
@@ -170,13 +171,12 @@ int aw_question(const char *unique_id, const char *question, const char *buttons
                 help_button_done = true;
             }
 
-            // create no-repeat checkbox if we have a unique-id
-            if (awar_neverAskAgain) {
+            if (uniqueID) {
                 aw_msg->at_newline();
                 const char *label = counter>1 ? "Never ask again" : "Never notify me again";
                 aw_msg->label_length(strlen(label));
                 aw_msg->label(label);
-                aw_msg->create_toggle(awar_neverAskAgain->awar_name);
+                aw_msg->create_toggle(awar_name_neverAskAgain);
             }
 
             aw_msg->window_fit();
@@ -205,36 +205,36 @@ int aw_question(const char *unique_id, const char *question, const char *buttons
         }
         aw_msg->hide();
 
-        // if we have an awar and no-repeat got checked,
-        // store the result and warn user about what he's done.
-        if (awar_neverAskAgain && awar_neverAskAgain->read_int()) {
-            int answerCode = aw_message_cb_result >= 0 ? aw_message_cb_result+1 : 0;
-            awar_neverAskAgain->write_int(answerCode);
+        if (awar_name_neverAskAgain) {
+            AW_awar *awar_neverAskAgain = root->awar(awar_name_neverAskAgain);
 
-            if (answerCode>0) {
-                const char *appname = AW_root::SINGLETON->program_name;
-                char       *advice  = GBS_global_string_copy
-                    ("You will not be asked that question again in this session.\n"
-                     "%s will always assume the answer you just gave.\n"
-                     "\n"
-                     "After restarting %s that question will be asked again.\n"
-                     "To disable that question permanently for future sessions,\n"
-                     "you need to save properties.\n"
-                     "\n"
-                     "Depending on the type of question, disabling it might be\n"
-                     "helpful or obstructive.\n"
-                     "Disabled questions can be reactivated from the properties menu.\n",
-                     appname, appname);
+            if (awar_neverAskAgain->read_int()) { // user checked "Never ask again"
+                int givenAnswer = aw_message_cb_result >= 0 ? aw_message_cb_result+1 : 0;
+                awar_neverAskAgain->write_int(givenAnswer); // store given answer for "never asking again"
 
-                AW_advice(advice, AW_ADVICE_TOGGLE, "Disabling questions", "questions.hlp");
-                free(advice);
+                if (givenAnswer && strchr(buttons, ',') != 0) {
+                    const char *appname = root->program_name;
+                    char       *advice  = GBS_global_string_copy("You will not be asked that question again in this session.\n"
+                                                                 "%s will always assume the answer you just gave.\n"
+                                                                 "\n"
+                                                                 "When you restart %s that question will be asked again.\n"
+                                                                 "To disable that question permanently for future sessions,\n"
+                                                                 "you need to save properties.\n"
+                                                                 "\n"
+                                                                 "Depending on the type of question doing that might be\n"
+                                                                 "helpful or obstructive.\n"
+                                                                 "Disabled questions can be reactivated from the properties menu.\n",
+                                                                 appname, appname);
+                    AW_advice(advice, AW_ADVICE_TOGGLE, "Disabling questions", NULL);
+                    free(advice);
+                }
             }
         }
-
-        result = aw_message_cb_result;
     }
 
-    switch (result) {
+    free(awar_name_neverAskAgain);
+
+    switch (aw_message_cb_result) {
         case -1:                // exit with core
             fprintf(stderr, "Core dump requested\n");
             ARB_SIGSEGV(1);
@@ -243,33 +243,16 @@ int aw_question(const char *unique_id, const char *question, const char *buttons
             exit(-1);
             break;
     }
-
-    return result;
+    return aw_message_cb_result;
 }
 
-bool aw_ask_sure(const char *unique_id, const char *msg) {
-    /*!
-     * pop up a modal yes/no question
-     * @param  unique_id If given, the dialog will get an "do not show again" checkbox
-     * @param  msg       The question.
-     * @return True if the answer was "Yes"
-     */
-    return aw_question(unique_id, msg, "Yes,No", true, NULL) == 0;
+bool aw_ask_sure(const char *uniqueID, const char *msg) {
+    return aw_question(uniqueID, msg, "Yes,No", true, NULL) == 0;
 }
-
 void aw_popup_ok(const char *msg) {
-    /*!
-     * Pop up a modal message with an Ok button
-     * @param msg The message.
-     */
     aw_question(NULL, msg, "Ok", true, NULL);
 }
-
-__ATTR__NORETURN void aw_popup_exit(const char *msg) {
-    /*!
-     * Pop up a modal message with an Exit button.
-     * Won't return but exit with "EXIT_FAILURE"
-     */
+void aw_popup_exit(const char *msg) {
     aw_question(NULL, msg, "EXIT", true, NULL);
     aw_assert(0); // should not be reached
     exit(EXIT_FAILURE);
@@ -302,7 +285,7 @@ void AW_repeated_question::add_help(const char *help_file) {
     freedup(helpfile, help_file);
 }
 
-int AW_repeated_question::get_answer(const char *unique_id, const char *question, const char *buttons, const char *to_all, bool add_abort)
+int AW_repeated_question::get_answer(const char *uniqueID, const char *question, const char *buttons, const char *to_all, bool add_abort)
 {
     if (!buttons_used) {
         buttons_used = strdup(buttons);
@@ -318,7 +301,7 @@ int AW_repeated_question::get_answer(const char *unique_id, const char *question
         int     all_len         = strlen(all);
         size_t  but_len         = strlen(buttons);
         size_t  new_buttons_len = but_len*3+1+(add_abort ? 6 : 0)+all_len*3;
-        char   *new_buttons     = ARB_alloc<char>(new_buttons_len);
+        char   *new_buttons     = (char*)malloc(new_buttons_len);
         int     button_count    = 0; // number of buttons in 'buttons'
 
         { // transform "YES,NO"  ->   "YES,YES (to_all),^NO,NO (to_all)" or "YES (to_all),NO (to_all)"
@@ -358,7 +341,7 @@ int AW_repeated_question::get_answer(const char *unique_id, const char *question
             free(all);
         }
 
-        int user_answer = aw_question(unique_id, question, new_buttons, true, helpfile);
+        int user_answer = aw_question(uniqueID, question, new_buttons, true, helpfile);
 
         if (dont_ask_again) {   // ask question as normal when called first (dont_ask_again later)
             answer = user_answer;

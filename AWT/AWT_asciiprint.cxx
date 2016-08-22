@@ -67,8 +67,8 @@ static void awt_aps_calc_pages_needed(AW_root *awr) {
     double xy_ratio = awt_aps_get_xy_ratio(awr);
     int default_cpp = int(default_lpp * xy_ratio);
 
-    awr->awar(AWAR_APRINT_DX)->write_float(float(x)/default_cpp);
-    awr->awar(AWAR_APRINT_DY)->write_float(float(y)/default_lpp);
+    awr->awar(AWAR_APRINT_DX)->write_float(double(x)/default_cpp);
+    awr->awar(AWAR_APRINT_DY)->write_float(double(y)/default_lpp);
     x += default_cpp-1;
     y += default_lpp-1;
     x /= default_cpp;
@@ -260,11 +260,10 @@ static void awt_aps_go(AW_window *aww) {
                         oristring = "-p -2 ";
                         break;
                 }
-                const char *header          = awr->awar(AWAR_APRINT_TITLE)->read_char_pntr();
-                char       *quotedHeaderArg = GBK_singlequote(GBS_global_string("-H%s", header));
-                a2ps_call                   = GBS_global_string_copy("arb_a2ps -ns -nP %s %s -l%i %s",
-                                                                     quotedHeaderArg, oristring, default_lpp, tmp_file);
-                free(quotedHeaderArg);
+                char *header = awr->awar(AWAR_APRINT_TITLE)->read_string();
+                a2ps_call = GBS_global_string_copy("arb_a2ps -ns -nP '-H%s' %s -l%i %s",
+                                                   header, oristring, default_lpp, tmp_file);
+                free(header);
             }
 
             const char *scall = 0;
@@ -276,11 +275,9 @@ static void awt_aps_go(AW_window *aww) {
                     break;
                 }
                 case AWT_APRINT_DEST_FILE_PS: {
-                    char *file       = printFile(awr);
-                    char *quotedFile = GBK_singlequote(file);
-                    fprintf(stderr, "Printing to PS file %s\n", quotedFile);
-                    scall            = GBS_global_string("%s >%s;rm -f %s", a2ps_call, quotedFile, tmp_file);
-                    free(quotedFile);
+                    char *file = printFile(awr);
+                    fprintf(stderr, "Printing to PS file '%s'\n", file);
+                    scall = GBS_global_string("%s >%s;rm -f %s", a2ps_call, file, tmp_file);
                     free(file);
                     break;
                 }
@@ -308,7 +305,11 @@ static void awt_aps_go(AW_window *aww) {
                     break;
             }
 
-            if (scall) error = GBK_system(scall);
+            if (scall) {
+                GB_informationf("executing '%s'", scall);
+                if (system(scall) != 0) error = GBS_global_string("Error while calling '%s'", scall);
+            }
+
             free(a2ps_call);
         }
         if (error) aw_message(error);
@@ -324,11 +325,11 @@ static void cutExt(char *name, const char *removeExt) {
     }
 }
 static char *correct_extension(const char *name, const char *newExt) {
-    char *noExt = ARB_strdup(name);
+    char *noExt = strdup(name);
     cutExt(noExt, ".ps");
     cutExt(noExt, ".txt");
 
-    char *result = ARB_alloc<char>(strlen(noExt)+strlen(newExt)+1);
+    char *result = (char*)malloc(strlen(noExt)+strlen(newExt)+1);
     strcpy(result, noExt);
     strcat(result, newExt);
     if (strcmp(name, result) == 0) freenull(result);
@@ -396,7 +397,7 @@ void AWT_create_ascii_print_window(AW_root *awr, const char *text_to_print, cons
                 print_command = GBS_eval_env("lpr -h -P$(PRINTER)");
             }
             else {
-                print_command = ARB_strdup("lpr -h");
+                print_command = strdup("lpr -h");
             }
 
             awr->awar_string(AWAR_APRINT_PRINTER, print_command);
@@ -455,11 +456,11 @@ void AWT_create_ascii_print_window(AW_root *awr, const char *text_to_print, cons
         aws->create_button(0, AWAR_APRINT_PAGES);
 
         aws->at("dcol");
-        aws->callback(awt_aps_set_magnification_to_fit_xpage); // @@@ used as INPUTFIELD_CB (see #559)
+        aws->callback(awt_aps_set_magnification_to_fit_xpage);
         aws->create_input_field(AWAR_APRINT_DX, 4);
 
         aws->at("drows");
-        aws->callback(awt_aps_set_magnification_to_fit_ypage); // @@@ used as INPUTFIELD_CB (see #559)
+        aws->callback(awt_aps_set_magnification_to_fit_ypage);
         aws->create_input_field(AWAR_APRINT_DY, 4);
 
 

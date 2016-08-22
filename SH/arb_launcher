@@ -44,7 +44,6 @@ pipe_command() {
     fi
 
     send_to_launcher $NAMED_PIPE 'cmd_terminated'
-    debug "pipe_command terminates"
 }
 
 read_line() {
@@ -102,15 +101,6 @@ listen_pipe_unlogged() {
     else
         trace "Still have $RUNNING arb-processes - terminating nevertheless"
     fi
-
-    debug "listen_pipe_unlogged waits for subshells ..."
-    wait
-
-    trace "cleaning up arb session"
-    arb_clean show_session
-    arb_clean session
-
-    debug "listen_pipe_unlogged terminates"
 }
 
 shared_library_dependencies() {
@@ -199,18 +189,9 @@ listen_pipe() {
 
         if [ -d "$LOGDIR" ]; then
             local RUNLOG=$LOGDIR/run.log
-            local SERVERLOG=$LOGDIR/server.log
             local SYSLOG=$LOGDIR/sys.info
             local CRASHFLAG=$LOGDIR/crashed
             local FAILFLAG=$LOGDIR/failed
-
-            # tell arb to start servers as logging daemons
-            export ARB_SERVER_LOG=$SERVERLOG
-            echo "`date` arb server.log created by arb_launcher" > $SERVERLOG
-
-            # forward server output to launcher-tty (non-blocking)
-            tail -f $SERVERLOG &
-            local TAILPID=$!
 
             ( ( collect_system_information 2>&1 ) > $SYSLOG ; erase_old_logs $LOGBASE ) &
             ( listen_pipe_unlogged $NAMED_PIPE $LOGDIR ) 2>&1 | tee $RUNLOG
@@ -225,20 +206,7 @@ listen_pipe() {
                 fi
             fi
 
-            if [ "$NTREE_STATUS" != "" ]; then
-                echo "abnormal termination (NTREE_STATUS='$NTREE_STATUS')" >> $RUNLOG
-            else
-                echo "normal termination" >> $RUNLOG
-            fi
-
             local TARBALLNAME=session.$LOGDIRID.tgz
-
-            debug "killing tail on server-log (pid=$TAILPID)"
-            kill ${TAILPID}
-
-            echo "`date` arb_launcher terminates now. leftover servers may continue logging into this file" >> $SERVERLOG
-            echo "`date` End of log (now archive into $LOGBASE/$TARBALLNAME)" >> $RUNLOG
-
             ( cd $LOGBASE ; tar -zcf $TARBALLNAME $LOGDIRID )
             rm -f $RUNLOG $SYSLOG $CRASHFLAG $FAILFLAG
             rmdir $LOGDIR
@@ -263,7 +231,7 @@ listen_pipe() {
                 if [ $NTREE_STATUS = "crash" ]; then
                     echo "ARB crashed :-("
                     echo "To report this goto http://bugs.arb-home.de/wiki/BugReport"
-                    echo "Please include the session log(s) mentioned above!"
+                    echo "Please include the session log mentioned above"
                     echo ""
                 else
                     echo "ARB terminated abnormally"
@@ -328,12 +296,11 @@ create_pipe_reader() {
     trap "term_handler $NAMED_PIPE" TERM
     trap "rm -f $NAMED_PIPE" EXIT
 
-    { mkfifo -m 600 $NAMED_PIPE && listen_pipe $NAMED_PIPE ; debug "listen_pipe done" ; } || \
+    { mkfifo $NAMED_PIPE && listen_pipe $NAMED_PIPE ; } || \
       { echo "Error creating pipe '$NAMED_PIPE'" ; kill $PARENT_PID ; }
 
     debug "Pipe reader for '$NAMED_PIPE' terminates.."
     rm -f $NAMED_PIPE
-    debug "Pipe '$NAMED_PIPE' removed"
 }
 
 initial_send_to_launcher() {
@@ -358,9 +325,8 @@ wait_for_pipe() {
 }
 
 get_pipe_name() {
-    local SOCKETDIR="$HOME/.arb_tmp/sockets"
-    mkdir -p "$SOCKETDIR"
-    chmod 0700 "$SOCKETDIR"
+    local SOCKETDIR=$HOME/.arb_tmp/sockets
+    mkdir -p $SOCKETDIR
     echo "$SOCKETDIR/arb_launcher.$ARB_PID"
 
     # instead of the above code, use the following to test a pipe-creation failure:

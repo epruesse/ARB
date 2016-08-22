@@ -10,10 +10,10 @@ $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .cxx.o:
-	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE) $<
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 .c.o:
-	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE) $<
+	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(OBJECTS) *.a
@@ -41,7 +41,6 @@ AP_matrix.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AP_matrix.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AP_matrix.o: $(ARBHOME)/INCLUDE/arb_core.h
 AP_matrix.o: $(ARBHOME)/INCLUDE/arb_error.h
-AP_matrix.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AP_matrix.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AP_matrix.o: $(ARBHOME)/INCLUDE/arb_string.h
 AP_matrix.o: $(ARBHOME)/INCLUDE/arbdb.h

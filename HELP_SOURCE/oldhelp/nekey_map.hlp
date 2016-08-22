@@ -18,12 +18,12 @@ DESCRIPTION	Nucleotide (amino acid) and gap symbols can be assigned to any
 
                 This makes it easier to import or check sequence and SAI data by typing.
 
-                Assign symbols to keys by entering the key into the 'Map key' column
-                and the resulting symbol into the 'to ASCII' column.
+                Assign symbols to keys by typing the real key and symbol to the
+                'Map keyboard' and 'to ASCII' columns, respectively.
 
-                Keymapping is only performed if 'Enable Mapping' is activated.
+		Keymapping is only performed if 'Enable Mapping' is activated.
 
-NOTES		None
+NOTES		None	
 
 EXAMPLES	None
 

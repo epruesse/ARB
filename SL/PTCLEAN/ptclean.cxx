@@ -65,11 +65,10 @@ class EntryRemover : virtual Noncopyable {
                 break;
 
             case SOME_OF_SPECIES:
-                if (strcmp(keyname, "abspos") == 0) return ALL;
-                if (strcmp(keyname, "start")  == 0) return ALL;
-                if (strcmp(keyname, "stop")   == 0) return ALL;
-
             case SOME_OF_EXTENDED:
+                if (from == SOME_OF_SPECIES) {
+                    if (strcmp(keyname, "abspos") == 0) return ALL;
+                }
                 if (strcmp(keyname, "name")      == 0) return ALL;
                 if (strcmp(keyname, "acc")       == 0) return ALL;
                 if (strcmp(keyname, "full_name") == 0) return ALL;
@@ -165,7 +164,6 @@ void TEST_SLOW_ptclean() {
 #endif
     TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(saveas));
 }
-TEST_PUBLISH(TEST_SLOW_ptclean);
 
 #endif // UNIT_TESTS
 

@@ -35,8 +35,6 @@
 #include <climits>
 
 #include <list>
-#include <awt_config_manager.hxx>
-#include <rootAsWin.h>
 
 // --------------------------------------------------------------------------------
 
@@ -69,7 +67,7 @@ enum FA_turn {
 };
 
 enum FA_reference {
-    FA_REF_EXPLICIT,            // reference sequence explicitly specified
+    FA_REF_EXPLICIT,            // reference sequence explicitely specified
     FA_REF_CONSENSUS,           // use group consensus as reference
     FA_REF_RELATIVES,           // search next relatives by PT server
 };
@@ -172,7 +170,7 @@ inline ARB_ERROR species_not_found(GB_CSTR species_name) {
 }
 
 static ARB_ERROR reverseComplement(GBDATA *gb_species, GB_CSTR ali, int max_protection) {
-    GBDATA    *gbd   = GBT_find_sequence(gb_species, ali);
+    GBDATA    *gbd   = GBT_read_sequence(gb_species, ali);
     ARB_ERROR  error = 0;
 
     if (!gbd) {
@@ -203,8 +201,9 @@ static ARB_ERROR reverseComplement(GBDATA *gb_species, GB_CSTR ali, int max_prot
     return error;
 }
 
-static void build_reverse_complement(AW_window *aw, const AlignDataAccess *data_access) {
-    GBDATA *gb_main = data_access->gb_main;
+static void build_reverse_complement(AW_window *aw, AW_CL cl_AlignDataAccess) {
+    const AlignDataAccess *data_access = (const AlignDataAccess *)cl_AlignDataAccess;
+    GBDATA                *gb_main     = data_access->gb_main;
 
     GB_push_transaction(gb_main);
 
@@ -365,7 +364,7 @@ static char *lstr(const char *s, int len) {
 
     if (alloc<(len+1)) {
         if (alloc) free(buffer);
-        ARB_alloc(buffer, alloc=len+100);
+        buffer = (char*)malloc(alloc=len+100);
     }
 
     memcpy(buffer, s, len);
@@ -981,7 +980,7 @@ static CompactedSubSequence *readCompactedSequence(GBDATA      *gb_species,
 
 
     
-    gbd = GBT_find_sequence(gb_species, ali);       // get sequence
+    gbd = GBT_read_sequence(gb_species, ali);       // get sequence
 
     if (gbd) {
         long length = GB_read_string_count(gbd);
@@ -1194,7 +1193,7 @@ static ARB_ERROR alignCompactedTo(CompactedSubSequence     *toAlignSequence,
                     }
                     else {
                         alignBuffer.setDotsAtEOSequence();
-                        error = GB_write_string(gbd, alignBuffer.text()); // aligned all -> write all
+                        error = GBT_write_sequence(gbd, alignment, max_seq_length, alignBuffer.text()); // aligned all -> write all
                     }
                 }
             }
@@ -1208,7 +1207,7 @@ static ARB_ERROR alignCompactedTo(CompactedSubSequence     *toAlignSequence,
                     // create temp-entry for master containing insert dots:
 
                     int   buflen    = max_seq_length*2;
-                    char *buffer    = ARB_alloc<char>(buflen+1);
+                    char *buffer    = (char*)malloc(buflen+1);
                     char *afterLast = buffer;
 
                     if (!buffer) {
@@ -1293,7 +1292,7 @@ static ARB_ERROR alignTo(GBDATA                   *gb_toAlign,
     CompactedSubSequence *toAlignSequence = readCompactedSequence(gb_toAlign, alignment, &error, NULL, &chksum, ali_params.range);
 
     if (island_hopper) {
-        GBDATA *gb_seq = GBT_find_sequence(gb_toAlign, alignment);      // get sequence
+        GBDATA *gb_seq = GBT_read_sequence(gb_toAlign, alignment);      // get sequence
         if (gb_seq) {
             long        length = GB_read_string_count(gb_seq);
             const char *data   = GB_read_char_pntr(gb_seq);
@@ -1407,7 +1406,7 @@ static ARB_ERROR alignToNextRelative(SearchRelativeParams&  relSearch,
         if (use_different_pt_server_alignment) {
             toAlignSequence = readCompactedSequence(gb_toAlign, alignment, &error, 0, &chksum, ali_params.range);
 
-            GBDATA *gbd = GBT_find_sequence(gb_toAlign, relSearch.pt_server_alignment); // use a different alignment for next relative search
+            GBDATA *gbd = GBT_read_sequence(gb_toAlign, relSearch.pt_server_alignment); // use a different alignment for next relative search
             if (!gbd) {
                 error = GBS_global_string("Species '%s' has no data in alignment '%s'", GBT_read_name(gb_toAlign), relSearch.pt_server_alignment);
             }
@@ -1533,7 +1532,7 @@ static ARB_ERROR alignToNextRelative(SearchRelativeParams&  relSearch,
                 }
 
                 if (turnIt) { // write mirrored sequence
-                    GBDATA *gbd = GBT_find_sequence(gb_toAlign, alignment);
+                    GBDATA *gbd = GBT_read_sequence(gb_toAlign, alignment);
                     GB_push_my_security(gbd);
                     error = GB_write_string(gbd, mirroredSequence);
                     GB_pop_my_security(gbd);
@@ -1570,7 +1569,7 @@ static ARB_ERROR alignToNextRelative(SearchRelativeParams&  relSearch,
                         break;
                     }
 
-                    GBDATA *gb_sequence = GBT_find_sequence(gb_species, alignment);
+                    GBDATA *gb_sequence = GBT_read_sequence(gb_species, alignment);
                     if (gb_sequence) { // if relative has sequence data in the current alignment ..
                         gb_reference[i] = gb_species;
                     }
@@ -1600,8 +1599,8 @@ static ARB_ERROR alignToNextRelative(SearchRelativeParams&  relSearch,
                 fa_assert(alignToSequence != 0);
 
                 if (island_hopper) {
-                    GBDATA *gb_ref   = GBT_find_sequence(gb_reference[0], alignment); // get reference sequence
-                    GBDATA *gb_align = GBT_find_sequence(gb_toAlign, alignment);      // get sequence to align
+                    GBDATA *gb_ref   = GBT_read_sequence(gb_reference[0], alignment); // get reference sequence
+                    GBDATA *gb_align = GBT_read_sequence(gb_toAlign, alignment);      // get sequence to align
 
                     if (gb_ref && gb_align) {
                         long        length_ref   = GB_read_string_count(gb_ref);
@@ -1923,7 +1922,7 @@ public:
 };
 
 ARB_ERROR Aligner::alignToReference(GBDATA *gb_toalign, const AlignmentReference& ref) {
-    int       myProtection = GB_read_security_write(GBT_find_sequence(gb_toalign, alignment));
+    int       myProtection = GB_read_security_write(GBT_read_sequence(gb_toalign, alignment));
     ARB_ERROR error;
 
     if (myProtection<=maxProtection) {
@@ -2042,7 +2041,7 @@ ARB_ERROR Aligner::alignToExplicitReference(GBDATA *gb_species_data, int max_seq
 #if defined(WARN_TODO)
 #warning setting island_hopper reference has to be done in called function (seems that it is NOT done for alignToConsensus and alignToRelatives). First get tests in place!
 #endif
-            GBDATA *gb_seq = GBT_find_sequence(gb_reference, alignment);        // get sequence
+            GBDATA *gb_seq = GBT_read_sequence(gb_reference, alignment);        // get sequence
             if (gb_seq) {
                 long        length = GB_read_string_count(gb_seq);
                 const char *data   = GB_read_char_pntr(gb_seq);
@@ -2165,13 +2164,14 @@ ARB_ERROR Aligner::run() {
     return error;
 }
 
-void FastAligner_start(AW_window *aw, const AlignDataAccess *data_access) {
-    AW_root   *root          = aw->get_root();
-    char      *reference     = NULL; // align against next relatives
-    char      *toalign       = NULL; // align marked species
-    ARB_ERROR  error         = NULL;
-    int        get_consensus = 0;
-    int        pt_server_id  = -1;
+void FastAligner_start(AW_window *aw, AW_CL cl_AlignDataAccess) {
+    AW_root               *root          = aw->get_root();
+    char                  *reference     = NULL;    // align against next relatives
+    char                  *toalign       = NULL;    // align marked species
+    ARB_ERROR              error         = NULL;
+    const AlignDataAccess *data_access   = (const AlignDataAccess *)cl_AlignDataAccess;
+    int                    get_consensus = 0;
+    int                    pt_server_id  = -1;
 
     Aligner_get_first_selected_species get_first_selected_species = 0;
     Aligner_get_next_selected_species  get_next_selected_species  = 0;
@@ -2180,14 +2180,8 @@ void FastAligner_start(AW_window *aw, const AlignDataAccess *data_access) {
     if (root->awar(FA_AWAR_USE_ISLAND_HOPPING)->read_int()) {
         island_hopper = new IslandHopping;
         if (root->awar(FA_AWAR_USE_SECONDARY)->read_int()) {
-            char *helix_string = data_access->getHelixString();
-            if (helix_string) {
-                island_hopper->set_helix(helix_string);
-                free(helix_string);
-            }
-            else {
-                error = "Warning: No HELIX found. Can't use secondary structure";
-            }
+            if (data_access->helix_string) island_hopper->set_helix(data_access->helix_string);
+            else error = "Warning: No HELIX found. Can't use secondary structure";
         }
 
         if (!error) {
@@ -2296,7 +2290,7 @@ void FastAligner_start(AW_window *aw, const AlignDataAccess *data_access) {
                 GBDATA *gb_sai     = GBT_expect_SAI(data_access->gb_main, sai_name);
                 if (!gb_sai) error = GB_await_error();
                 else {
-                    GBDATA *gb_data = GBT_find_sequence(gb_sai, aliuse);
+                    GBDATA *gb_data = GBT_read_sequence(gb_sai, aliuse);
                     if (!gb_data) {
                         error = GB_have_error()
                             ? GB_await_error()
@@ -2325,16 +2319,12 @@ void FastAligner_start(AW_window *aw, const AlignDataAccess *data_access) {
 
             GBDATA *gb_main          = data_access->gb_main;
             char   *editor_alignment = 0;
-            long    alignment_length;
             {
                 GB_transaction  ta(gb_main);
                 char           *default_alignment = GBT_get_default_alignment(gb_main);
 
-                alignment_length = GBT_get_alignment_len(gb_main, default_alignment);
-
                 editor_alignment = root->awar_string(AWAR_EDITOR_ALIGNMENT, default_alignment)->read_string();
                 free(default_alignment);
-
             }
 
             char     *pt_server_alignment = root->awar(FA_AWAR_PT_SERVER_ALIGNMENT)->read_string();
@@ -2354,7 +2344,7 @@ void FastAligner_start(AW_window *aw, const AlignDataAccess *data_access) {
             }
 
             if (island_hopper) {
-                island_hopper->set_range(ExplicitRange(range, alignment_length));
+                island_hopper->set_range(range);
                 range = PosRange::whole();
             }
 
@@ -2421,7 +2411,7 @@ void FastAligner_start(AW_window *aw, const AlignDataAccess *data_access) {
     if (data_access->do_refresh) data_access->refresh_display();
 }
 
-static void nullcb() { }
+
 
 void FastAligner_create_variables(AW_root *root, AW_default db1) {
     root->awar_string(FA_AWAR_REFERENCE_NAME, "", db1);
@@ -2477,28 +2467,30 @@ void FastAligner_create_variables(AW_root *root, AW_default db1) {
     root->awar_float(FA_AWAR_GAP_B, 4.0, db1);
     root->awar_float(FA_AWAR_GAP_C, 7.0, db1);
 
-    AWTC_create_common_next_neighbour_vars(root, makeRootCallback(nullcb));
+    AWTC_create_common_next_neighbour_vars(root);
 }
 
 void FastAligner_set_align_current(AW_root *root, AW_default db1) {
     root->awar_int(FA_AWAR_TO_ALIGN, FA_CURRENT, db1);
 }
 
-void FastAligner_set_reference_species(AW_root *root) {
+void FastAligner_set_reference_species(AW_window * /* aww */, AW_CL cl_AW_root) {
     // sets the aligner reference species to current species
-    char *specName = root->awar(AWAR_SPECIES_NAME)->read_string();
+    AW_root *root     = (AW_root*)cl_AW_root;
+    char    *specName = root->awar(AWAR_SPECIES_NAME)->read_string();
+
     root->awar(FA_AWAR_REFERENCE_NAME)->write_string(specName);
     free(specName);
 }
 
-static AW_window *create_island_hopping_window(AW_root *root) {
+static AW_window *create_island_hopping_window(AW_root *root, AW_CL) {
     AW_window_simple *aws = new AW_window_simple;
 
     aws->init(root, "ISLAND_HOPPING_PARA", "Parameters for Island Hopping");
     aws->load_xfig("faligner/islandhopping.fig");
 
     aws->at("close");
-    aws->callback(AW_POPDOWN);
+    aws->callback     ((AW_CB0)AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "O");
 
     aws->at("help");
@@ -2579,7 +2571,7 @@ static AW_window *create_island_hopping_window(AW_root *root) {
     aws->label("Gap C");
     aws->create_input_field(FA_AWAR_GAP_C, 5);
 
-    return aws;
+    return (AW_window *)aws;
 }
 
 static AW_window *create_family_settings_window(AW_root *root) {
@@ -2592,59 +2584,18 @@ static AW_window *create_family_settings_window(AW_root *root) {
         aws->load_xfig("faligner/family_settings.fig");
 
         aws->at("close");
-        aws->callback(AW_POPDOWN);
+        aws->callback     ((AW_CB0)AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "O");
 
         aws->at("help");
         aws->callback(makeHelpCallback("next_neighbours_common.hlp"));
         aws->create_button("HELP", "HELP");
 
-        aws->auto_space(5, 5);
-        AWTC_create_common_next_neighbour_fields(aws, 200);
+        AWTC_create_common_next_neighbour_fields(aws);
     }
 
     return aws;
 }
-
-static AWT_config_mapping_def aligner_config_mapping[] = {
-    { FA_AWAR_USE_ISLAND_HOPPING,  "island" },
-    { FA_AWAR_TO_ALIGN,            "target" },
-    { FA_AWAR_REFERENCE,           "ref" },
-    { FA_AWAR_REFERENCE_NAME,      "refname" },
-    { FA_AWAR_RELATIVE_RANGE,      "relrange" },
-    { FA_AWAR_NEXT_RELATIVES,      "relatives" },
-    { FA_AWAR_PT_SERVER_ALIGNMENT, "ptali" },
-
-    // relative-search specific parameters from subwindow (create_family_settings_window)
-    // same as ../DB_UI/ui_species.cxx@RELATIVES_CONFIG
-    { AWAR_NN_OLIGO_LEN,   "oligolen" },
-    { AWAR_NN_MISMATCHES,  "mismatches" },
-    { AWAR_NN_FAST_MODE,   "fastmode" },
-    { AWAR_NN_REL_MATCHES, "relmatches" },
-    { AWAR_NN_REL_SCALING, "relscaling" },
-
-    // island-hopping parameters (create_island_hopping_window)
-    { FA_AWAR_USE_SECONDARY,        "use2nd" },
-    { FA_AWAR_ESTIMATE_BASE_FREQ,   "estbasefreq" },
-    { FA_AWAR_BASE_FREQ_A,          "freq_a" },
-    { FA_AWAR_BASE_FREQ_C,          "freq_c" },
-    { FA_AWAR_BASE_FREQ_G,          "freq_g" },
-    { FA_AWAR_BASE_FREQ_T,          "freq_t" },
-    { FA_AWAR_SUBST_PARA_AC,        "subst_ac" },
-    { FA_AWAR_SUBST_PARA_AG,        "subst_ag" },
-    { FA_AWAR_SUBST_PARA_AT,        "subst_at" },
-    { FA_AWAR_SUBST_PARA_CG,        "subst_cg" },
-    { FA_AWAR_SUBST_PARA_CT,        "subst_ct" },
-    { FA_AWAR_SUBST_PARA_GT,        "subst_gt" },
-    { FA_AWAR_EXPECTED_DISTANCE,    "distance" },
-    { FA_AWAR_STRUCTURE_SUPPLEMENT, "supplement" },
-    { FA_AWAR_THRESHOLD,            "threshold" },
-    { FA_AWAR_GAP_A,                "gap_a" },
-    { FA_AWAR_GAP_B,                "gap_b" },
-    { FA_AWAR_GAP_C,                "gap_c" },
-
-    { 0, 0 }
-};
 
 AW_window *FastAligner_create_window(AW_root *root, const AlignDataAccess *data_access) {
     AW_window_simple *aws = new AW_window_simple;
@@ -2656,7 +2607,7 @@ AW_window *FastAligner_create_window(AW_root *root, const AlignDataAccess *data_
     aws->button_length(10);
 
     aws->at("close");
-    aws->callback(AW_POPDOWN);
+    aws->callback     ((AW_CB0)AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "O");
 
     aws->at("help");
@@ -2673,7 +2624,7 @@ AW_window *FastAligner_create_window(AW_root *root, const AlignDataAccess *data_
 
     aws->button_length(12);
     aws->at("island_para");
-    aws->callback(create_island_hopping_window);
+    aws->callback(AW_POPUP, (AW_CL)create_island_hopping_window, 0);
     aws->sens_mask(AWM_EXP);
     aws->create_button("island_para", "Parameters", "");
     aws->sens_mask(AWM_ALL);
@@ -2681,7 +2632,7 @@ AW_window *FastAligner_create_window(AW_root *root, const AlignDataAccess *data_
     aws->button_length(10);
 
     aws->at("rev_compl");
-    aws->callback(makeWindowCallback(build_reverse_complement, data_access));
+    aws->callback(build_reverse_complement, (AW_CL)data_access);
     aws->create_button("reverse_complement", "Turn now!", "");
 
     aws->at("what");
@@ -2705,29 +2656,27 @@ AW_window *FastAligner_create_window(AW_root *root, const AlignDataAccess *data_
     aws->create_input_field(FA_AWAR_REFERENCE_NAME, 2);
 
     aws->at("copy");
-    aws->callback(RootAsWindowCallback::simple(FastAligner_set_reference_species));
+    aws->callback(FastAligner_set_reference_species, (AW_CL)root);
     aws->create_button("Copy", "Copy", "");
 
     aws->label_length(0);
     aws->at("pt_server");
-    awt_create_PTSERVER_selection_button(aws, AWAR_PT_SERVER);
+    awt_create_selection_list_on_pt_servers(aws, AWAR_PT_SERVER, true);
 
-    aws->label_length(23);
     aws->at("relrange");
     aws->label("Data from range only, plus");
     aws->create_input_field(FA_AWAR_RELATIVE_RANGE, 3);
     
-    aws->at("relatives");
-    aws->label("Number of relatives to use");
-    aws->create_input_field(FA_AWAR_NEXT_RELATIVES, 3);
-
-    aws->label_length(9);
     aws->at("use_ali");
     aws->label("Alignment");
     aws->create_input_field(FA_AWAR_PT_SERVER_ALIGNMENT, 12);
 
+    aws->at("relatives");
+    aws->label("Number of relatives to use");
+    aws->create_input_field(FA_AWAR_NEXT_RELATIVES, 3);
+
     aws->at("relSett");
-    aws->callback(create_family_settings_window);
+    aws->callback(AW_POPUP, (AW_CL)create_family_settings_window, (AW_CL)root);
     aws->create_autosize_button("Settings", "More settings", "");
 
     // Range
@@ -2801,12 +2750,9 @@ AW_window *FastAligner_create_window(AW_root *root, const AlignDataAccess *data_
     aws->update_option_menu();
 
     aws->at("align");
-    aws->callback(makeWindowCallback(FastAligner_start, data_access));
+    aws->callback(FastAligner_start, (AW_CL)data_access);
     aws->highlight();
     aws->create_button("GO", "GO", "G");
-
-    aws->at("config");
-    AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "aligner", aligner_config_mapping);
 
     return aws;
 }
@@ -2867,6 +2813,12 @@ public:
         datasize          = seq_nogaps.length();
         count_oligos(seq_nogaps);
     }
+
+    OligoCounter(const OligoCounter& other)
+        : oligo_len(other.oligo_len),
+          datasize(other.datasize),
+          occurance(other.occurance)
+    {}
 
     size_t oligo_count(const char *oligo) {
         fa_assert(strlen(oligo) == oligo_len);
@@ -2939,7 +2891,7 @@ public:
           oligo_len(oligo_len_)
     {}
 
-    GB_ERROR searchFamily(const char *sequence, FF_complement compl_mode, int max_results, double min_score) OVERRIDE {
+    GB_ERROR searchFamily(const char *sequence, FF_complement compl_mode, int max_results, double min_score) OVERRIDE { // @@@ use min_score
         // 'sequence' has to contain full sequence or part corresponding to 'range'
 
         TEST_EXPECT_EQUAL(compl_mode, FF_FORWARD); // not fit for other modes
@@ -2967,7 +2919,7 @@ public:
         {
             string name = GBT_get_name(gb_species);
             if (oligos_counted.find(name) == oligos_counted.end()) {
-                GBDATA     *gb_data  = GBT_find_sequence(gb_species, ali_name.c_str());
+                GBDATA     *gb_data  = GBT_read_sequence(gb_species, ali_name.c_str());
                 const char *spec_seq = GB_read_char_pntr(gb_data);
 
                 if (partial_match) {
@@ -2991,17 +2943,15 @@ public:
             const OligoCounter& spec_oligo_count = oligos_counted[name];
             size_t              score            = seq_oligo_count.similarity_score(spec_oligo_count);
 
-            if (score>=min_score) {
-                FamilyList *newMember = new FamilyList;
+            FamilyList *newMember = new FamilyList;
 
-                newMember->name        = strdup(name.c_str());
-                newMember->matches     = score;
-                newMember->rel_matches = score/spec_oligo_count.getDataSize();
-                newMember->next        = NULL;
+            newMember->name        = strdup(name.c_str());
+            newMember->matches     = score;
+            newMember->rel_matches = score/spec_oligo_count.getDataSize();
+            newMember->next        = NULL;
 
-                family_list = newMember->insertSortedBy_matches(family_list);
-                results++;
-            }
+            family_list = newMember->insertSortedBy_matches(family_list);
+            results++;
         }
 
         delete [] buffer;
@@ -3025,7 +2975,7 @@ static const char *get_aligned_data_of(GBDATA *gb_main, const char *species_name
     GBDATA *gb_species     = GBT_find_species(gb_main, species_name);
     if (!gb_species) error = GB_await_error();
     else {
-        GBDATA *gb_data     = GBT_find_sequence(gb_species, test_aliname);
+        GBDATA *gb_data     = GBT_read_sequence(gb_species, test_aliname);
         if (!gb_data) error = GB_await_error();
         else {
             data             = GB_read_char_pntr(gb_data);
@@ -3093,7 +3043,7 @@ static GBDATA *fake_next_selected() {
 static char *fake_get_consensus(const char*, PosRange range) {
     const char *data = get_aligned_data_of(selection_fake_gb_main, "s1");
     if (range.is_whole()) return strdup(data);
-    return ARB_strpartdup(data+range.start(), data+range.end());
+    return GB_strpartdup(data+range.start(), data+range.end());
 }
 
 static void test_install_fakes(GBDATA *gb_main) {

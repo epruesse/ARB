@@ -8,7 +8,7 @@ $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .cxx.o:
-	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE) $<
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(OBJECTS) *.a
@@ -37,7 +37,6 @@ info_window.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 info_window.o: $(ARBHOME)/INCLUDE/arb_assert.h
 info_window.o: $(ARBHOME)/INCLUDE/arb_core.h
 info_window.o: $(ARBHOME)/INCLUDE/arb_error.h
-info_window.o: $(ARBHOME)/INCLUDE/arb_mem.h
 info_window.o: $(ARBHOME)/INCLUDE/arb_msg.h
 info_window.o: $(ARBHOME)/INCLUDE/arb_str.h
 info_window.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -73,7 +72,6 @@ ui_species.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ui_species.o: $(ARBHOME)/INCLUDE/arb_core.h
 ui_species.o: $(ARBHOME)/INCLUDE/arb_defs.h
 ui_species.o: $(ARBHOME)/INCLUDE/arb_error.h
-ui_species.o: $(ARBHOME)/INCLUDE/arb_mem.h
 ui_species.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ui_species.o: $(ARBHOME)/INCLUDE/arb_progress.h
 ui_species.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
@@ -95,7 +93,6 @@ ui_species.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-ui_species.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/awtc_next_neighbours.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/cb.h
@@ -110,7 +107,7 @@ ui_species.o: $(ARBHOME)/INCLUDE/gccver.h
 ui_species.o: $(ARBHOME)/INCLUDE/item_sel_list.h
 ui_species.o: $(ARBHOME)/INCLUDE/items.h
 ui_species.o: $(ARBHOME)/INCLUDE/pos_range.h
-ui_species.o: $(ARBHOME)/INCLUDE/probe_gui.hxx
+ui_species.o: $(ARBHOME)/INCLUDE/probe_design.hxx
 ui_species.o: $(ARBHOME)/INCLUDE/PT_global_defs.h
 ui_species.o: $(ARBHOME)/INCLUDE/smartptr.h
 ui_species.o: $(ARBHOME)/INCLUDE/static_assert.h

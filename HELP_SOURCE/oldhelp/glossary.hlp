@@ -52,7 +52,7 @@ SECTION         What do we mean if we talk about ...
 
                                         Identifier for 'species' entries.
                                         Should be generated automatically using
-                                        the NAMESERVER (see LINK{sp_IDs.hlp}).
+                                        the name server.
 
                               - full_name
 
@@ -75,7 +75,7 @@ SECTION         What do we mean if we talk about ...
 
         SAI
 
-                        Sequence Associated Information (see LINK{ad_extended.hlp})
+                        Sequence Associated Information
 
         SELECTED SPECIES
 
@@ -100,11 +100,7 @@ SECTION         What do we mean if we talk about ...
                         Search and Replace Tool allows to search substrings in a string
         		and replace them by another substring (see LINK{srt.hlp}).
 
-        ZOMBIES
 
-                        Zombies are references to former species in a tree, i.e. to species
-                        that were in the database when the tree has been calculated, but
-                        have meanwhile been deleted (see LINK{trm_del.hlp})
 
 
 

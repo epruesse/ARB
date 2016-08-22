@@ -67,7 +67,7 @@ public:
         : low(low_),
           high(high_),
           len(len_),
-          part(ARB_alloc<char>(len ? len : 1))
+          part((char*)malloc(len ? len : 1))
     {
         reset();
     }
@@ -75,7 +75,7 @@ public:
         : low(other.low),
           high(other.high),
           len(other.len),
-          part(ARB_alloc<char>(len ? len : 1)),
+          part((char*)malloc(len ? len : 1)),
           plen(other.plen)
     {
         memcpy(part, other.part, plen);
@@ -91,7 +91,7 @@ public:
 
     char *copy() const {
         pt_assert(!done());
-        char *result = ARB_alloc<char>(plen+1);
+        char *result = (char*)malloc(plen+1);
         memcpy(result, part, plen);
         result[plen] = 0;
         return result;

@@ -19,9 +19,6 @@
 
 const char *GBS_readable_size(unsigned long long size, const char *unit_suffix);
 const char *GBS_readable_timediff(size_t seconds);
-const char *ARB_float_2_ascii(const float f);
-const char *ARB_getenv_ignore_empty(const char *envvar);
-char *ARB_executable(const char *exe_name, const char *path);
 
 #else
 #error arb_misc.h included twice

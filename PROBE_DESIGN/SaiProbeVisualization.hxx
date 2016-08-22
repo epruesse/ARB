@@ -11,8 +11,6 @@
 #include <awt_canvas.hxx>
 #endif
 
-#include <string>
-
 #define sai_assert(cond) arb_assert(cond)
 
 #define AWAR_SPV_SAI_2_PROBE "sai_visualize/sai_2_probe"
@@ -45,43 +43,45 @@ enum {
 
 // global data for interaction with probe match result list:
 
-class saiProbeData : virtual Noncopyable { // Note: also used for ProbeCollection!
-    std::string probeTarget;
-    std::string headline;           // needed for ProbeMatchParser
+class saiProbeData : virtual Noncopyable {
+    char   *probeTarget;
+    size_t  probeTargetLen;
+    char   *headline;           // needed for ProbeMatchParser
 
 public:
 
-    std::vector<std::string> probeSpecies;
-    std::vector<std::string> probeSeq;
+    std::vector<const char*> probeSpecies;
+    std::vector<const char*> probeSeq;
 
-    saiProbeData() : probeTarget("<notarget>"), headline() {}
+    saiProbeData() : probeTarget(strdup("<notarget>")), probeTargetLen(0), headline(0) {}
     ~saiProbeData() {
-        probeSpecies.clear();
-        probeSeq.clear();
+        free(probeTarget);
+        free(headline);
     }
 
     const char *getProbeTarget() const {
-        // sai_assert(probeTarget.length() > 0); // always need a target
-        return probeTarget.c_str();
+        sai_assert(probeTarget); // always need a target
+        return probeTarget;
     }
     size_t getProbeTargetLen() const {
-        return probeTarget.length();
+        return probeTargetLen;
     }
-    const char *getHeadline() const { return headline.c_str(); }
+    const char *getHeadline() const { return headline; }
 
     void setProbeTarget(const char *target) {
         sai_assert(target);
-
+        free(probeTarget);
         unsigned int len = strlen(target);
         char temp[len]; temp[len] = '\0';
         for (unsigned int i = 0; i < len; i++) {
             temp[i] = toupper(target[i]);  // converting the Bases to Upper case
         }
-        probeTarget = temp;
+        probeTarget    = strdup(temp);
+        probeTargetLen = strlen(probeTarget);
     }
     void setHeadline(const char *hline) {
         sai_assert(hline);
-        headline = hline;
+        freedup(headline, hline);
     }
 };
 
@@ -92,9 +92,10 @@ struct SAI_graphic : public AWT_nonDB_graphic, virtual Noncopyable {
     SAI_graphic(AW_root *aw_root, GBDATA *gb_main);
     ~SAI_graphic() OVERRIDE;
 
-    AW_gc_manager *init_devices(AW_window *, AW_device *, AWT_canvas *scr) OVERRIDE;
+    AW_gc_manager init_devices(AW_window *, AW_device *, AWT_canvas *scr) OVERRIDE;
 
     void show(AW_device *device) OVERRIDE;
+    void info(AW_device *device, AW_pos x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct) OVERRIDE;
     void handle_command(AW_device *device, AWT_graphic_event& event) OVERRIDE;
     void paint(AW_device *device);
 
@@ -106,3 +107,4 @@ void transferProbeData(saiProbeData *spd);
 #else
 #error SaiProbeVisualization.hxx included twice
 #endif
+

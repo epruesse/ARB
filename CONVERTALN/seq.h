@@ -7,9 +7,6 @@
 #ifndef GLOBAL_H
 #include "global.h"
 #endif
-#ifndef ARB_STRING_H
-#include <arb_string.h>
-#endif
 #ifndef _GLIBCXX_CCTYPE
 #include <cctype>
 #endif
@@ -61,20 +58,21 @@ class Seq : virtual Noncopyable {
     }
 
 public:
-    Seq(const char *id_, const char *seq_, int len_) :
-        id(ARB_strdup(id_)),
-        len(len_),
-        max(len+1),
-        seq(strndup(seq_, len))
+    Seq(const char *id_, const char *seq_, int len_)
+        : id(strdup(id_)),
+          len(len_),
+          max(len+1),
+          seq((char*)malloc(max))
     {
+        memcpy(seq, seq_, len);
         check_valid(seq, len);
     }
-    Seq() :
-        id(NULL),
-        len(0),
-        max(INITSEQ),
-        seq(ARB_alloc<char>(INITSEQ))
-    {
+    Seq() {
+        id  = NULL;
+        len = 0;
+        max = INITSEQ;
+        seq = (char *)calloc(1, (unsigned)(sizeof(char) * INITSEQ + 1));
+
     }
     ~Seq() {
         ca_assert(seq); // otherwise 'this' is useless!
@@ -99,8 +97,8 @@ public:
     void add(char c) {
         if (c) check_valid(c);
         if (len >= max) {
-            max = max*1.5+100;
-            ARB_realloc(seq, max);
+            max      = max*1.5+100;
+            seq = (char*)Reallocspace(seq, max);
         }
         seq[len++] = c;
     }

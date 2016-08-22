@@ -10,10 +10,10 @@ $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .cxx.o:
-	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE) $<
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 .c.o:
-	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE) $<
+	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(OBJECTS) *.a
@@ -36,11 +36,8 @@ depend.init:
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl (from SL)
 
 AP_Tree.o: AP_Tree.hxx
-AP_Tree.o: AP_TreeColors.hxx
-AP_Tree.o: AP_TreeShader.hxx
 AP_Tree.o: $(ARBHOME)/INCLUDE/ad_cb.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
-AP_Tree.o: $(ARBHOME)/INCLUDE/ad_colorset.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/AliView.hxx
@@ -49,10 +46,8 @@ AP_Tree.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 AP_Tree.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/arb_core.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/arb_error.h
-AP_Tree.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/arb_progress.h
-AP_Tree.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/arb_string.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
 AP_Tree.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -63,6 +58,7 @@ AP_Tree.o: $(ARBHOME)/INCLUDE/attributes.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AP_Tree.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 AP_Tree.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
+AP_Tree.o: $(ARBHOME)/INCLUDE/awt_attributes.hxx
 AP_Tree.o: $(ARBHOME)/INCLUDE/cb.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/cb_base.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/cbtypes.h
@@ -70,10 +66,8 @@ AP_Tree.o: $(ARBHOME)/INCLUDE/cxxforward.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/downcast.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/dupstr.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/gccver.h
-AP_Tree.o: $(ARBHOME)/INCLUDE/item_shader.h
-AP_Tree.o: $(ARBHOME)/INCLUDE/items.h
+AP_Tree.o: $(ARBHOME)/INCLUDE/RootedTree.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/smartptr.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/static_assert.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/test_global.h
-AP_Tree.o: $(ARBHOME)/INCLUDE/TreeNode.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/ttypes.h

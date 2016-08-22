@@ -173,7 +173,7 @@ sub perform($$) {
     }
     push @commands, "svn copy '".trunkURL().'@'.$svn_info{REVISION}."' '".branchURL('rc')."' -m \"[$action] create rc1 for arb $version\"";
     push @commands, "# increment version in trunk; see SOURCE_TOOLS/release/HOWTO.release";
-    push @commands, "# let jenkins build job 'ARB-rc' (check if job is enabled)";
+    push @commands, "# let jenkins build job 'ARB-rc'";
     push @commands, "svn switch '".branchURL('rc')."'";
     push @commands, "make show_version";
     push @commands, "SOURCE_TOOLS/release/release_tool.pl tag_rc";

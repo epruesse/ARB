@@ -84,25 +84,25 @@ FORCED_DOC_NAMES=proml dnapars protpars phyml phylip
 LYNX_PARA=-dump -nolist -display_charset=iso-8859-1
 
 $(GENDOCDEST)/%.doc: $(HELP_PHYLIP)/%.html Makefile.helpfiles
-	@(test -f $@ && chmod u+w $@) || true
+	@-test -f $@ && chmod u+w $@
 	(echo "# generated from ../$<"; lynx $(LYNX_PARA) $<) | $(SED) -e 's/©/(C)/' > $@
 	@test -s $@ || (echo $@ not generated or empty && rm $@ && false)
 	@chmod a-w $@
 
 $(GENDOCDEST)/treepuzzle.doc: $(HELP_TREEPUZZLE)/manual.html Makefile.helpfiles
-	@(test -f $@ && chmod u+w $@) || true
+	@-test -f $@ && chmod u+w $@
 	(echo "# generated from ../$<"; lynx $(LYNX_PARA) $<) | $(SED) -e 's/©/(C)/' > $@
 	@test -s $@ || (echo $@ not generated or empty && rm $@ && false)
 	@chmod a-w $@
 
 $(GENDOCDEST)/phyml.doc: $(HELP_PHYML)/usersguide_phyliplike.html Makefile.helpfiles
-	@(test -f $@ && chmod u+w $@) || true
+	@-test -f $@ && chmod u+w $@
 	(echo "# generated from ../$<"; lynx $(LYNX_PARA) $<) | $(SED) -e 's/©/(C)/' > $@
 	@test -s $@ || (echo $@ not generated or empty && rm $@ && false)
 	@chmod a-w $@
 
 $(GENDOCDEST)/phylip.doc: $(PHYLIP_MAIN)/phylip.html Makefile.helpfiles
-	@(test -f $@ && chmod u+w $@) || true
+	@-test -f $@ && chmod u+w $@
 	(echo "# generated from ../$<"; lynx $(LYNX_PARA) $<) | $(SED) -e 's/©/(C)/' > $@
 	@test -s $@ || (echo $@ not generated or empty && rm $@ && false)
 	@chmod a-w $@

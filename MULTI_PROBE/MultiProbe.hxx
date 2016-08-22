@@ -23,8 +23,8 @@
 #ifndef AW_BASE_HXX
 #include <aw_base.hxx>
 #endif
-#ifndef ARB_STRING_H
-#include <arb_string.h>
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
 #endif
 
 #define mp_assert(x) arb_assert(x)
@@ -161,6 +161,9 @@ class MP_Window : virtual Noncopyable {
     AW_window_simple *aws;
     AW_window_simple *result_window;
 
+    void build_pt_server_list();
+    // zeigt auf naechstes Zeichen
+
 public:
     AW_window_simple    *get_window()       { return aws; };
     AW_window_simple    *get_result_window()    { return result_window; };
@@ -176,7 +179,7 @@ public:
 // *****************************************************
 // Globale Klassenlose Funktionen
 // *****************************************************
-void MP_compute(AW_window*, GBDATA *gb_main);
+void MP_compute(AW_window *, AW_CL cl_gb_main);
 
 
 class Bakt_Info : virtual Noncopyable {
@@ -255,7 +258,7 @@ public:
     void        set_Allowed_Mismatch_no(int pos, int no) { Allowed_Mismatch[pos] = no; };
     void        set_Outside_Mismatch_no(int pos, int no) { Outside_Mismatch[pos] = no; };
     void        set_bitkennung(Bitvector* bv);  // Setzt eine Leere Bitkennung der laenge bits
-    void        set_name(char* name) {  kennung = ARB_strdup(name); };
+    void        set_name(char* name) {  kennung = strdup(name); };
     void        set_Hitliste(Hit** hitptr) {     hitliste = hitptr; };
     void        set_length_hitliste(long lhl) { length_hitliste = lhl; };
     void        set_minelem(long min) { minelem = min; };

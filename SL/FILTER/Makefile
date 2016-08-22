@@ -8,7 +8,7 @@ $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .cxx.o:
-	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE) $<
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(OBJECTS) *.a
@@ -35,7 +35,6 @@ AP_filter.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AP_filter.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AP_filter.o: $(ARBHOME)/INCLUDE/arb_core.h
 AP_filter.o: $(ARBHOME)/INCLUDE/arb_error.h
-AP_filter.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AP_filter.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AP_filter.o: $(ARBHOME)/INCLUDE/arb_string.h
 AP_filter.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -51,7 +50,6 @@ AP_filter.o: $(ARBHOME)/INCLUDE/test_global.h
 RangeList.o: RangeList.h
 RangeList.o: $(ARBHOME)/INCLUDE/arb_assert.h
 RangeList.o: $(ARBHOME)/INCLUDE/arb_core.h
-RangeList.o: $(ARBHOME)/INCLUDE/arb_mem.h
 RangeList.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 RangeList.o: $(ARBHOME)/INCLUDE/arbtools.h
 RangeList.o: $(ARBHOME)/INCLUDE/attributes.h

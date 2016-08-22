@@ -59,7 +59,7 @@ bool AW_device_size::text_impl(int gc, const char *str, const AW::Position& pos,
     AW_pos                l_descent   = font_limits.descent;
     AW_pos                l_width     = get_string_size(gc, str, opt_strlen);
 
-    AW::Position upperLeft(AW::x_alignment(transPos.xpos(), l_width, alignment),
+    AW::Position upperLeft(x_alignment(transPos.xpos(), l_width, alignment),
                            transPos.ypos()-l_ascent);
 
     dot_transformed(upperLeft, filteri);

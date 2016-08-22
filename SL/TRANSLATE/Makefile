@@ -12,10 +12,10 @@ $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .cxx.o:
-	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE) $<
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 .c.o:
-	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE) $<
+	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(OBJECTS) *.a
@@ -45,7 +45,6 @@ Translate.o: $(ARBHOME)/INCLUDE/AP_pro_a_nucs.hxx
 Translate.o: $(ARBHOME)/INCLUDE/arb_assert.h
 Translate.o: $(ARBHOME)/INCLUDE/arb_core.h
 Translate.o: $(ARBHOME)/INCLUDE/arb_error.h
-Translate.o: $(ARBHOME)/INCLUDE/arb_mem.h
 Translate.o: $(ARBHOME)/INCLUDE/arb_msg.h
 Translate.o: $(ARBHOME)/INCLUDE/arb_string.h
 Translate.o: $(ARBHOME)/INCLUDE/arbdb.h

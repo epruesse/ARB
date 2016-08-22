@@ -10,44 +10,21 @@ SUB	translate_dna_2_pro.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Realign DNA
 
-OCCURRENCE	ARB_NT/Sequence/Align sequences/Realign DNA according to aligned protein
+OCCURRENCE	ARB_NT/Sequence/Align sequences/Realign nucleic acid according to aligned protein
 
 DESCRIPTION     If you have translated DNA sequences into protein sequences and then have aligned
                 the resulting protein sequences, this function can be used to re-align the
                 DNA sequences according to the (modified) protein alignment.
 
-                Select the protein and the corresponding DNA alignment.
+                Simply select the protein and the corresponding DNA alignment and press 'REALIGN'
+                to re-align the DNA sequences of all marked species. 
 
-                Press 'REALIGN' to re-align the DNA sequences of all marked species.
-
-SECTION         Options
-
-                The length of the DNA alignment has to be at least 3 times the length of the
-                protein alignment. If it is shorter, the realigner will automatically increase
-                the length if 'Increase DNA alignment size if needed' is checked. Otherwise
-                it will abort with error.
-
-                By checking 'Unmark successfully realigned species' you can control whether to leave
-                all species marked or only species failing to realign, which might be helpful to
-                examine and fix failure reasons.
-
-                If your DNA alignment has some extra DNA beyond one or both ends of the part
-                coding the protein alignment, the ARB realigner will still be able to find
-                and realign the coding part properly.
-                The extra DNA can either
-                * be appended adjacent to the coding part (if there is enough space) or
-                * be cut off.
-
-                You can control that behavior by checking 'Cut-off superfluous DNA'.
-
-SECTION         Fields 'transl_table' and 'codon_start'
-
-                If the species contains a field 'transl_table' (which should contain the translation table
+NOTES		If the species contains a field 'transl_table' (which should contain the translation table
                 number as used by the EMBL database) it is used to detect the correct translation table.
                 If no such field is defined a translation-table-auto-detection takes place.
 
-                If the species contains a field 'codon_start' it is overwritten with '1' in order to make
-                further translations of the realigned DNA work properly.
+                If the species contains a field 'codon_start' it is overwritten with '1' to make
+                further translations work properly.
 
                 Either both fields ('transl_table' and 'codon_start') or none of them has to exist.
                 Otherwise an error occurs and you have to correct these fields manually (e.g. by
@@ -55,17 +32,23 @@ SECTION         Fields 'transl_table' and 'codon_start'
 
                 After sucessful re-alignment the field 'codon_start' will be set to '1' if
                 - it already existed before or
-                - if ARB was able to strictly determine a content for the field 'transl_table'
-                  (which will also be written in that case).
+                - if ARB was able to strictly determine a content for the field 'transl_table',
+                  which will be set then.
 
                 If the re-alignment was possible using two or more different translation tables
                 neighter 'transl_table' nor 'codon_start' will be written.
 
-NOTES           None
-
 EXAMPLES	None
 
-WARNINGS	None
+WARNINGS	If you have single DNA bases at the beginning (or end) of the DNA sequence
+                there have to be corresponding proteins in the protein sequence. Otherwise translation
+                will fail.
+
+                Normally, if you use codon start other than 1 during translation, a 'X' will be inserted
+                into the resulting protein sequence. That X is required by the re-aligner to skip up to
+                3 DNA positions, while it is trying to find the correct ORF.
+
+                Missing X's at protein sequence start are a very common cause,
+                for various kinds of error messages from the re-aligner.
 
 BUGS		No bugs known
-

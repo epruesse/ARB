@@ -54,7 +54,7 @@
 // typedef SmartArrayPtr(std::string) StringArrayPtr;
 // StringArrayPtr strings = new std::string[100];       // will be deallocated using delete []
 //
-// SmartCharPtr cp = ARB_strdup("hello world");         // will be deallocated using free()
+// SmartCharPtr cp = strdup("hello world");             // will be deallocated using free()
 //
 // typedef SmartCustomPtr(GEN_position, GEN_free_position) GEN_position_Ptr;
 // GEN_position_Ptr gp = GEN_new_position(5, false); // will be deallocated using GEN_free_position()
@@ -157,7 +157,7 @@ public:
 
     Counted(T *p) : counter(0), pointer(p) {
         DUMP_SMART_PTRS_DO(fprintf(stderr, "pointer %p now controlled by Counted\n", getPointer()));
-        tpl_assert(p); // if you like to assign NULL, consider using SmartPtr::assign or SmartPtr::SetNull
+        tpl_assert(p); // if you like to assign NULL, consider using SmartPtr::assign
     }
 #ifdef DEBUG
     ~Counted() {

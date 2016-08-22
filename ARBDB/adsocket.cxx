@@ -44,6 +44,11 @@
 #include <arb_misc.h>
 #include <arb_defs.h>
 
+static int gbcm_pipe_violation_flag = 0;
+void gbcms_sigpipe(int) {
+    gbcm_pipe_violation_flag = 1;
+}
+
 // ------------------------------------------------
 //      private read and write socket functions
 
@@ -90,39 +95,44 @@ long gbcm_read(int socket, char *ptr, long size) {
 }
 
 GBCM_ServerResult gbcm_write_flush(int socket) {
-    long     leftsize = gb_local->write_ptr - gb_local->write_buffer;
-    ssize_t  writesize;
-    char    *ptr      = gb_local->write_buffer;
+    char *ptr      = gb_local->write_buffer;
+    long  leftsize = gb_local->write_ptr - ptr;
 
-    // once we're done, the buffer will be free
     gb_local->write_free = gb_local->write_bufsize;
-    gb_local->write_ptr = gb_local->write_buffer;
-    
-    while (leftsize) {
-#ifdef MSG_NOSIGNAL
-        // Linux has MSG_NOSIGNAL, but not SO_NOSIGPIPE
-        // prevent SIGPIPE here
-        writesize = send(socket, ptr, leftsize, MSG_NOSIGNAL);
-#else
-        writesize = write(socket, ptr, leftsize);
-#endif
 
-        if (writesize<0) {
+    if (leftsize) {
+        gb_local->write_ptr = ptr;
+        gbcm_pipe_violation_flag = 0;
+
+        long writesize = write(socket, ptr, (size_t)leftsize);
+
+        if (gbcm_pipe_violation_flag || writesize<0) {
             if (gb_local->iamclient) {
-                fprintf(stderr, 
-                        "Client (pid=%i) terminating after failure to contact database (%s).",
-                        getpid(), strerror(errno));
+                fprintf(stderr, "DB_Server is killed, Now I kill myself\n");
                 exit(EXIT_SUCCESS);
             }
-            else {
-                fprintf(stderr, "Error sending data to client (%s).", strerror(errno));
+            fprintf(stderr, "writesize: %li ppid %i\n", writesize, getppid());
+            return GBCM_SERVER_FAULT;
+        }
+        ptr += writesize;
+        leftsize = leftsize - writesize;
+
+        while (leftsize) {
+            GB_sleep(10, MS);
+
+            writesize = write(socket, ptr, (size_t)leftsize);
+            if (gbcm_pipe_violation_flag || writesize<0) {
+                if ((int)getppid() <= 1) {
+                    fprintf(stderr, "DB_Server is killed, Now I kill myself\n");
+                    exit(EXIT_SUCCESS);
+                }
+                fprintf(stderr, "write error\n");
                 return GBCM_SERVER_FAULT;
             }
+            ptr += writesize;
+            leftsize -= writesize;
         }
-        ptr      += writesize;
-        leftsize -= writesize;
     }
-
     return GBCM_SERVER_OK;
 }
 
@@ -142,15 +152,131 @@ GBCM_ServerResult gbcm_write(int socket, const char *ptr, long size) {
     return GBCM_SERVER_OK;
 }
 
-GB_ERROR gbcm_open_socket(const char *path, bool do_connect, int *psocket, char **unix_name) {
-    if (path && strcmp(path, ":") == 0) {
-        path = GBS_read_arb_tcp("ARB_DB_SERVER");
-        if (!path) {
-            return GB_await_error();
+static GB_ERROR gbcm_get_m_id(const char *path, char **m_name, long *id) {
+    // find the mach name and id
+    GB_ERROR error = 0;
+
+    if (!path) error = "missing hostname:socketid";
+    else {
+        if (strcmp(path, ":") == 0) {
+            path             = GBS_read_arb_tcp("ARB_DB_SERVER");
+            if (!path) error = GB_await_error();
+        }
+
+        if (!error) {
+            const char *p = strchr(path, ':');
+
+            if (!p) error = GBS_global_string("missing ':' in '%s'", path);
+            else {
+                if (path[0] == '*' || path[0] == ':') { // UNIX MODE
+                    *m_name = strdup(p+1);
+                    *id     = -1;
+                }
+                else {
+                    char *mn = GB_strpartdup(path, p-1);
+
+                    int i = atoi(p + 1);
+                    if ((i < 1) || (i > 4096)) {
+                        error = GBS_global_string("socketnumber %i not in [1..4096]", i);
+                    }
+
+                    if (!error) {
+                        *m_name = mn;
+                        *id     = i;
+                    }
+                    else {
+                        free(mn);
+                    }
+                }
+            }
         }
     }
 
-    return arb_open_socket(path, do_connect, psocket, unix_name);
+    if (error) error = GBS_global_string("OPEN_ARB_DB_CLIENT ERROR: %s", error);
+    return error;
+}
+
+GB_ERROR gbcm_open_socket(const char *path, long delay2, long do_connect, int *psocket, char **unix_name) {
+    char     *machName = 0;
+    long      socketID;
+    GB_ERROR  err      = gbcm_get_m_id(path, &machName, &socketID);
+    if (err) {
+        free(machName);
+        return err;
+    }
+
+    if (socketID >= 0) {    // TCP
+        sockaddr_in so_ad;
+        memset((char *)&so_ad, 0, sizeof(sockaddr_in));
+        *psocket = socket(PF_INET, SOCK_STREAM, 0);
+        if (*psocket <= 0) {
+            return "CANNOT CREATE SOCKET";
+        }
+
+        hostent *he;
+        arb_gethostbyname(machName, he, err);
+        if (err) return err;
+
+        in_addr addr;                                   // union -> u_long
+        
+        // simply take first address
+        addr.s_addr      = *(long *) (he->h_addr);
+        so_ad.sin_addr   = addr;
+        so_ad.sin_family = AF_INET;
+        so_ad.sin_port   = htons((unsigned short)socketID); // @@@ = pb_socket
+
+        if (do_connect) {
+            if (connect(*psocket, (sockaddr *)(&so_ad), sizeof(so_ad))) {
+                GB_warningf("Cannot connect to %s:%li   errno %i", machName, socketID, errno);
+                return "";
+            }
+        }
+        else {
+            int one = 1;
+            setsockopt(*psocket, SOL_SOCKET, SO_REUSEADDR, (const char *)&one, sizeof(one));
+            if (bind(*psocket, (sockaddr *)(&so_ad), sizeof(so_ad))) {
+                return "Could not open socket on Server";
+            }
+        }
+        free(machName);
+        if (delay2 == TCP_NODELAY) {
+            GB_UINT4      optval;
+            optval = 1;
+            setsockopt(*psocket, IPPROTO_TCP, TCP_NODELAY, (char *)&optval, sizeof (GB_UINT4));
+        }
+        *unix_name = 0;
+        return 0;
+    }
+    else {        // UNIX
+        sockaddr_un so_ad;
+        if (strlen(machName) >= sizeof(so_ad.sun_path)) {
+            return "Could not open socket on Server (socket name too long)";
+        }
+        memset((char *)&so_ad, 0, sizeof(so_ad));
+        *psocket = socket(PF_UNIX, SOCK_STREAM, 0);
+        if (*psocket <= 0) {
+            return "CANNOT CREATE SOCKET";
+        }
+        so_ad.sun_family = AF_UNIX;
+        strcpy(so_ad.sun_path, machName);
+
+        if (do_connect) {
+            if (connect(*psocket, (sockaddr*)(&so_ad), strlen(so_ad.sun_path)+2)) {
+                free(machName);
+                return "";
+            }
+        }
+        else {
+            if (unlink(machName) == 0) printf("old socket found\n");
+            if (bind(*psocket, (sockaddr*)(&so_ad), strlen(machName)+2)) {
+                free(machName);
+                return "Could not open socket on Server";
+            }
+            if (chmod(machName, 0777)) return GB_export_errorf("Cannot change mode of socket '%s'", machName);
+        }
+        *unix_name = machName;
+        return 0;
+    }
 }
 
 #if defined(WARN_TODO)
@@ -167,9 +293,16 @@ long gbcms_close(gbcmc_comm *link) {
     return 0;
 }
 
+static void gbcmc_suppress_sigpipe(int) {
+}
+
+inline bool is_default_or_ignore_or_own_sighandler(SigHandler sh) {
+    return sh == gbcmc_suppress_sigpipe || is_default_or_ignore_sighandler(sh);
+}
+
 gbcmc_comm *gbcmc_open(const char *path) {
-    gbcmc_comm *link = ARB_calloc<gbcmc_comm>(1);
-    GB_ERROR    err  = gbcm_open_socket(path, true, &link->socket, &link->unix_name);
+    gbcmc_comm *link = (gbcmc_comm *)GB_calloc(sizeof(gbcmc_comm), 1);
+    GB_ERROR    err  = gbcm_open_socket(path, TCP_NODELAY, 1, &link->socket, &link->unix_name);
 
     if (err) {
         if (link->unix_name) free(link->unix_name); // @@@
@@ -179,11 +312,13 @@ gbcmc_comm *gbcmc_open(const char *path) {
         }
         return 0;
     }
+    ASSERT_RESULT_PREDICATE(is_default_or_ignore_or_own_sighandler, INSTALL_SIGHANDLER(SIGPIPE, gbcmc_suppress_sigpipe, "gbcmc_open"));
     gb_local->iamclient = true;
     return link;
 }
 
-long gbcm_write_two(int socket, long a, long c) {
+long gbcm_write_two(int socket, long a, long c)
+{
     long    ia[3];
     ia[0] = a;
     ia[1] = 3;
@@ -244,7 +379,7 @@ char *gbcm_read_string(int socket)
 
     if (len) {
         if (len>0) {
-            ARB_calloc(key, len+1);
+            key = (char *)GB_calloc(sizeof(char), (size_t)len+1);
             gbcm_read(socket, key, len);
         }
         else {
@@ -252,7 +387,7 @@ char *gbcm_read_string(int socket)
         }
     }
     else {
-        key = ARB_strdup("");
+        key = strdup("");
     }
 
     return key;
@@ -308,7 +443,7 @@ char *GB_read_file(const char *path) { // consider using class FileContent inste
                 long data_size = GB_size_of_file(epath);
 
                 if (data_size >= 0) {
-                    result = ARB_alloc<char>(data_size+1);
+                    result = (char*)malloc(data_size+1);
 
                     data_size         = fread(result, 1, data_size, in);
                     result[data_size] = 0;
@@ -363,22 +498,25 @@ GB_ULONG GB_time_of_day() {
 
 GB_ERROR GB_textprint(const char *path) {
     // goes to header: __ATTR__USERESULT
-    char       *fpath        = GBS_eval_env(path);
-    char       *quoted_fpath = GBK_singlequote(fpath);
-    const char *command      = GBS_global_string("arb_textprint %s &", quoted_fpath);
-    GB_ERROR    error        = GBK_system(command);
-    error                    = GB_failedTo_error("print textfile", fpath, error);
-    free(quoted_fpath);
+    char       *fpath   = GBS_eval_env(path);
+    const char *command = GBS_global_string("arb_textprint '%s' &", fpath);
+    GB_ERROR    error   = GBK_system(command);
+    error               = GB_failedTo_error("print textfile", fpath, error);
     free(fpath);
     return error;
 }
 
 // --------------------------------------------------------------------------------
 
+static GB_CSTR getenv_ignore_empty(GB_CSTR envvar) {
+    GB_CSTR result = getenv(envvar);
+    return (result && result[0]) ? result : 0;
+}
+
 static GB_CSTR GB_getenvPATH() {
     static const char *path = 0;
     if (!path) {
-        path = ARB_getenv_ignore_empty("PATH");
+        path = getenv_ignore_empty("PATH");
         if (!path) {
             path = GBS_eval_env("/bin:/usr/bin:$(ARBHOME)/bin");
             GB_informationf("Your PATH variable is empty - using '%s' as search path.", path);
@@ -397,6 +535,27 @@ static GB_CSTR GB_getenvPATH() {
 // --------------------------------------------------------------------------------
 // Functions to find an executable
 
+char *GB_executable(GB_CSTR exe_name) {
+    GB_CSTR     path   = GB_getenvPATH();
+    char       *buffer = GB_give_buffer(strlen(path)+1+strlen(exe_name)+1);
+    const char *start  = path;
+    int         found  = 0;
+
+    while (!found && start) {
+        const char *colon = strchr(start, ':');
+        int         len   = colon ? (colon-start) : (int)strlen(start);
+
+        memcpy(buffer, start, len);
+        buffer[len] = '/';
+        strcpy(buffer+len+1, exe_name);
+
+        found = GB_is_executablefile(buffer);
+        start = colon ? colon+1 : 0;
+    }
+
+    return found ? strdup(buffer) : 0;
+}
+
 static char *GB_find_executable(GB_CSTR description_of_executable, ...) {
     // goes to header: __ATTR__SENTINEL
     /* search the path for an executable with any of the given names (...)
@@ -409,7 +568,7 @@ static char *GB_find_executable(GB_CSTR description_of_executable, ...) {
     va_list  args;
 
     va_start(args, description_of_executable);
-    while (!found && (name = va_arg(args, GB_CSTR)) != 0) found = ARB_executable(name, GB_getenvPATH());
+    while (!found && (name = va_arg(args, GB_CSTR)) != 0) found = GB_executable(name);
     va_end(args);
 
     if (!found) { // none of the executables has been found
@@ -451,10 +610,10 @@ static char *getenv_executable(GB_CSTR envvar) {
     //  - not defining an executable (warns about that)
 
     char       *result   = 0;
-    const char *exe_name = ARB_getenv_ignore_empty(envvar);
+    const char *exe_name = getenv_ignore_empty(envvar);
 
     if (exe_name) {
-        result = ARB_executable(exe_name, GB_getenvPATH());
+        result = GB_executable(exe_name);
         if (!result) {
             GB_warningf("Environment variable '%s' contains '%s' (which is not an executable)", envvar, exe_name);
         }
@@ -470,11 +629,11 @@ static char *getenv_existing_directory(GB_CSTR envvar) {
     // - does not point to a directory (warns about that)
 
     char       *result   = 0;
-    const char *dir_name = ARB_getenv_ignore_empty(envvar);
+    const char *dir_name = getenv_ignore_empty(envvar);
 
     if (dir_name) {
         if (GB_is_directory(dir_name)) {
-            result = ARB_strdup(dir_name);
+            result = strdup(dir_name);
         }
         else {
             GB_warningf("Environment variable '%s' should contain the path of an existing directory.\n"
@@ -494,8 +653,8 @@ static void GB_setenv(const char *var, const char *value) {
 static GB_CSTR GB_getenvARB_XTERM() {
     static const char *xterm = 0;
     if (!xterm) {
-        xterm = ARB_getenv_ignore_empty("ARB_XTERM"); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARB_XTERM
-        if (!xterm) xterm = "xterm -sl 1000 -sb -geometry 150x60";
+        xterm = getenv_ignore_empty("ARB_XTERM"); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARB_XTERM
+        if (!xterm) xterm = "xterm -sl 1000 -sb -geometry 120x50";
     }
     return xterm;
 }
@@ -503,7 +662,7 @@ static GB_CSTR GB_getenvARB_XTERM() {
 static GB_CSTR GB_getenvARB_XCMD() {
     static const char *xcmd = 0;
     if (!xcmd) {
-        xcmd = ARB_getenv_ignore_empty("ARB_XCMD"); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARB_XCMD
+        xcmd = getenv_ignore_empty("ARB_XCMD"); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARB_XCMD
         if (!xcmd) {
             const char *xterm = GB_getenvARB_XTERM();
             gb_assert(xterm);
@@ -516,10 +675,10 @@ static GB_CSTR GB_getenvARB_XCMD() {
 GB_CSTR GB_getenvUSER() {
     static const char *user = 0;
     if (!user) {
-        user = ARB_getenv_ignore_empty("USER");
-        if (!user) user = ARB_getenv_ignore_empty("LOGNAME");
+        user = getenv_ignore_empty("USER");
+        if (!user) user = getenv_ignore_empty("LOGNAME");
         if (!user) {
-            user = ARB_getenv_ignore_empty("HOME");
+            user = getenv_ignore_empty("HOME");
             if (user && strrchr(user, '/')) user = strrchr(user, '/')+1;
         }
         if (!user) {
@@ -537,7 +696,7 @@ static GB_CSTR GB_getenvHOME() {
         char *home = getenv_existing_directory("HOME");
         if (!home) {
             home = nulldup(GB_getcwd());
-            if (!home) home = ARB_strdup(".");
+            if (!home) home = strdup(".");
             fprintf(stderr, "WARNING: Cannot identify user's home directory: environment variable HOME not set\n"
                     "Using current directory (%s) as home.\n", home);
         }
@@ -565,7 +724,7 @@ GB_CSTR GB_getenvARBMACRO() {
     static const char *am = 0;
     if (!am) {
         am          = getenv_existing_directory("ARBMACRO"); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARBMACRO
-        if (!am) am = ARB_strdup(GB_path_in_ARBLIB("macros"));
+        if (!am) am = strdup(GB_path_in_ARBLIB("macros"));
     }
     return am;
 }
@@ -635,7 +794,7 @@ GB_CSTR GB_getenvDOCPATH() {
     if (!dp) {
         char *res = getenv_existing_directory("ARB_DOC"); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARB_DOC
         if (res) dp = res;
-        else     dp = ARB_strdup(GB_path_in_ARBLIB("help"));
+        else     dp = strdup(GB_path_in_ARBLIB("help"));
     }
     return dp;
 }
@@ -645,7 +804,7 @@ GB_CSTR GB_getenvHTMLDOCPATH() {
     if (!dp) {
         char *res = getenv_existing_directory("ARB_HTMLDOC"); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARB_HTMLDOC
         if (res) dp = res;
-        else     dp = ARB_strdup(GB_path_in_ARBLIB("help_html"));
+        else     dp = strdup(GB_path_in_ARBLIB("help_html"));
     }
     return dp;
 
@@ -689,7 +848,7 @@ GB_CSTR GB_getenv(const char *env) {
         if (strcmp(env, "USER") == 0) return GB_getenvUSER();
     }
 
-    return ARB_getenv_ignore_empty(env);
+    return getenv_ignore_empty(env);
 }
 
 struct export_environment {
@@ -703,10 +862,6 @@ static export_environment expenv;
 
 bool GB_host_is_local(const char *hostname) {
     // returns true if host is local
-
-    arb_assert(hostname);
-    arb_assert(hostname[0]);
-
     return
         ARB_stricmp(hostname, "localhost")       == 0 ||
         ARB_strBeginsWith(hostname, "127.0.0.")       ||
@@ -757,7 +912,7 @@ static GB_ULONG get_physical_memory() {
 
             do {
                 void **tmp;
-                while ((tmp=(void**)malloc(step_size))) { // do NOT use ARB_alloc here!
+                while ((tmp=(void**)malloc(step_size))) {
                     *tmp        = head;
                     head        = tmp;
                     max_malloc += step_size;
@@ -875,46 +1030,37 @@ GB_ERROR GB_xcmd(const char *cmd, bool background, bool wait_only_if_error) {
     // if 'background' is true -> run asynchronous
     // if 'wait_only_if_error' is true -> asynchronous does wait for keypress only if cmd fails
 
-    const int     BUFSIZE = 1024;
-    GBS_strstruct system_call(BUFSIZE);
+    GBS_strstruct *strstruct = GBS_stropen(1024);
+    const char    *xcmd      = GB_getenvARB_XCMD();
 
-    const char *xcmd = GB_getenvARB_XCMD();
+    GBS_strcat(strstruct, "(");
+    GBS_strcat(strstruct, xcmd);
+    GBS_strcat(strstruct, " bash -c 'LD_LIBRARY_PATH=\"");
+    GBS_strcat(strstruct, GB_getenv("LD_LIBRARY_PATH"));
+    GBS_strcat(strstruct, "\";export LD_LIBRARY_PATH; (");
+    GBS_strcat(strstruct, cmd);
 
-    system_call.put('(');
-    system_call.cat(xcmd);
-
-    {
-        GBS_strstruct bash_command(BUFSIZE);
-
-        bash_command.cat("LD_LIBRARY_PATH=");
-        {
-            char *dquoted_library_path = GBK_doublequote(GB_getenv("LD_LIBRARY_PATH"));
-            bash_command.cat(dquoted_library_path);
-            free(dquoted_library_path);
-        }
-        bash_command.cat(";export LD_LIBRARY_PATH; (");
-        bash_command.cat(cmd);
-
-        const char *wait_commands = "echo; echo Press ENTER to close this window; read a";
+    if (background) {
         if (wait_only_if_error) {
-            bash_command.cat(") || (");
-            bash_command.cat(wait_commands);
+            GBS_strcat(strstruct, ") || (echo; echo Press RETURN to close Window; read a)' ) &");
         }
-        else if (background) {
-            bash_command.cat("; ");
-            bash_command.cat(wait_commands);
+        else {
+            GBS_strcat(strstruct, "; echo; echo Press RETURN to close Window; read a)' ) &");
         }
-        bash_command.put(')');
-
-        system_call.cat(" bash -c ");
-        char *squoted_bash_command = GBK_singlequote(bash_command.get_data());
-        system_call.cat(squoted_bash_command);
-        free(squoted_bash_command);
     }
-    system_call.cat(" )");
-    if (background) system_call.cat(" &");
+    else {
+        if (wait_only_if_error) {
+            GBS_strcat(strstruct, ") || (echo; echo Press RETURN to close Window; read a)' )");
+        }
+        else { // no wait
+            GBS_strcat(strstruct, " )' ) ");
+        }
+    }
 
-    return GBK_system(system_call.get_data());
+    GB_ERROR error = GBK_system(GBS_mempntr(strstruct));
+    GBS_strforget(strstruct);
+
+    return error;
 }
 
 // ---------------------------------------------
@@ -1126,7 +1272,7 @@ FILE *GB_fopen_tempfile(const char *filename, const char *fmode, char **res_full
     // - heap-copy of used filename in 'res_fullname' (if res_fullname != NULL)
     // (even if fopen failed)
 
-    char     *file  = ARB_strdup(GB_concat_path(GB_PATH_TMP, filename));
+    char     *file  = strdup(GB_concat_path(GB_PATH_TMP, filename));
     GB_ERROR  error = GB_create_parent_directory(file);
     FILE     *fp    = NULL;
 
@@ -1145,7 +1291,7 @@ FILE *GB_fopen_tempfile(const char *filename, const char *fmode, char **res_full
         }
 
         if (res_fullname) {
-            *res_fullname = file ? ARB_strdup(file) : 0;
+            *res_fullname = file ? strdup(file) : 0;
         }
     }
 
@@ -1210,7 +1356,7 @@ void GB_remove_on_exit(const char *filename) {
 
 void GB_split_full_path(const char *fullpath, char **res_dir, char **res_fullname, char **res_name_only, char **res_suffix) {
     // Takes a file (or directory) name and splits it into "path/name.suffix".
-    // If result pointers (res_*) are non-NULL, they are assigned heap-copies of the split parts.
+    // If result pointers (res_*) are non-NULL, they are assigned heap-copies of the splitted parts.
     // If parts are not valid (e.g. cause 'fullpath' doesn't have a .suffix) the corresponding result pointer
     // is set to NULL.
     //
@@ -1233,16 +1379,16 @@ void GB_split_full_path(const char *fullpath, char **res_dir, char **res_fullnam
         gb_assert(terminal > fullpath); // ensure (terminal-1) is a valid character position in path
 
         if (!lslash && fullpath[0] == '.' && (fullpath[1] == 0 || (fullpath[1] == '.' && fullpath[2] == 0))) { // '.' and '..'
-            if (res_dir)       *res_dir       = ARB_strdup(fullpath);
+            if (res_dir)       *res_dir       = strdup(fullpath);
             if (res_fullname)  *res_fullname  = NULL;
             if (res_name_only) *res_name_only = NULL;
             if (res_suffix)    *res_suffix    = NULL;
         }
         else {
-            if (res_dir)       *res_dir       = lslash ? ARB_strpartdup(fullpath, lslash == fullpath ? lslash : lslash-1) : NULL;
-            if (res_fullname)  *res_fullname  = ARB_strpartdup(name_start, terminal-1);
-            if (res_name_only) *res_name_only = ARB_strpartdup(name_start, ldot ? ldot-1 : terminal-1);
-            if (res_suffix)    *res_suffix    = ldot ? ARB_strpartdup(ldot+1, terminal-1) : NULL;
+            if (res_dir)       *res_dir       = lslash ? GB_strpartdup(fullpath, lslash == fullpath ? lslash : lslash-1) : NULL;
+            if (res_fullname)  *res_fullname  = GB_strpartdup(name_start, terminal-1);
+            if (res_name_only) *res_name_only = GB_strpartdup(name_start, ldot ? ldot-1 : terminal-1);
+            if (res_suffix)    *res_suffix    = ldot ? GB_strpartdup(ldot+1, terminal-1) : NULL;
         }
     }
     else {
@@ -1260,20 +1406,87 @@ void GB_split_full_path(const char *fullpath, char **res_dir, char **res_fullnam
 
 #include <test_unit.h>
 
+static const char *ANY_NAME = "ANY_NAME";
+
+struct gbcm_get_m_id_TESTER : virtual Noncopyable {
+    const char *path;
+    GB_ERROR    error;
+    char       *name;
+    long        id;
+
+    gbcm_get_m_id_TESTER(const char *path_)
+        : path(path_)
+        , name(NULL)
+    {
+        error = gbcm_get_m_id(path, &name, &id);
+    }
+    ~gbcm_get_m_id_TESTER() {
+        TEST_EXPECT(!error || !name);               // if error occurs no name should exist!
+        TEST_EXPECT(error || name);                 // either error or result
+        free(name);
+    }
+
+    bool no_error() {
+        if (error) {
+            fprintf(stderr, "Unexpected error for path '%s': %s\n", path, error);
+            TEST_REJECT(name);
+        }
+        else if (!name) fprintf(stderr, "Neither error nor name for path '%s'\n", path);
+        return !error;
+    }
+    bool parsed_name(const char *expected_name) {
+        bool ok = no_error();
+        if (ok && strcmp(expected_name, name) != 0) {
+            if (expected_name != ANY_NAME) {
+                fprintf(stderr, "path '%s' produces unexpected name '%s' (expected '%s')\n", path, name, expected_name);
+                ok = false;
+            }
+        }
+        return ok;
+    }
+    bool parsed_id(long expected_id) {
+        bool ok = no_error();
+        if (ok && id != expected_id) {
+            fprintf(stderr, "path '%s' produces unexpected id '%li' (expected '%li')\n", path, id, expected_id);
+            ok = false;
+        }
+        return ok;
+    }
+
+    bool parsed(const char *expected_name, long expected_id) { return parsed_name(expected_name) && parsed_id(expected_id); }
+};
+
+void TEST_gbcm_get_m_id() {
+    TEST_REJECT_NULL(gbcm_get_m_id_TESTER(NULL).error);
+    TEST_REJECT_NULL(gbcm_get_m_id_TESTER("").error);
+    TEST_EXPECT(gbcm_get_m_id_TESTER(":").parsed(ANY_NAME, -1));
+
+    TEST_EXPECT(gbcm_get_m_id_TESTER("localhost:71").parsed("localhost", 71)); // fixed with [6486]
+    TEST_REJECT_NULL(gbcm_get_m_id_TESTER("localhost:0").error);
+    TEST_EXPECT_NULL(gbcm_get_m_id_TESTER("localhost:4096").error);
+    TEST_REJECT_NULL(gbcm_get_m_id_TESTER("localhost:4097").error);
+
+    TEST_EXPECT(gbcm_get_m_id_TESTER(":/tmp/arb_pt_ralf1").parsed("/tmp/arb_pt_ralf1", -1));
+
+    // @@@ no idea what "*" is used for, so the following tests are only descriptive!
+    TEST_EXPECT(gbcm_get_m_id_TESTER("*whatever:bar").parsed("bar", -1));
+    TEST_EXPECT(gbcm_get_m_id_TESTER("*:bar").parsed("bar", -1));
+}
+
 #define TEST_EXPECT_IS_CANONICAL(file)                  \
     do {                                                \
-        char *dup = ARB_strdup(file);                   \
+        char *dup = strdup(file);                       \
         TEST_EXPECT_EQUAL(GB_canonical_path(dup), dup); \
         free(dup);                                      \
     } while(0)
 
-#define TEST_EXPECT_CANONICAL_TO(not_cano,cano)                                 \
-    do {                                                                        \
-        char *arb_not_cano = ARB_strdup(GB_concat_path(arbhome, not_cano));     \
-        char *arb_cano     = ARB_strdup(GB_concat_path(arbhome, cano));         \
-        TEST_EXPECT_EQUAL(GB_canonical_path(arb_not_cano), arb_cano);           \
-        free(arb_cano);                                                         \
-        free(arb_not_cano);                                                     \
+#define TEST_EXPECT_CANONICAL_TO(not_cano,cano)                         \
+    do {                                                                \
+        char *arb_not_cano = strdup(GB_concat_path(arbhome, not_cano)); \
+        char *arb_cano     = strdup(GB_concat_path(arbhome, cano));     \
+        TEST_EXPECT_EQUAL(GB_canonical_path(arb_not_cano), arb_cano);   \
+        free(arb_cano);                                                 \
+        free(arb_not_cano);                                             \
     } while (0)
 
 static arb_test::match_expectation path_splits_into(const char *path, const char *Edir, const char *Enameext, const char *Ename, const char *Eext) {
@@ -1366,15 +1579,15 @@ void TEST_paths() {
     TEST_EXPECT_CONTAINS(GB_canonical_path("bla"),   "UNIT_TESTER/run/bla");
 
     {
-        char        *arbhome    = ARB_strdup(GB_getenvARBHOME());
+        char        *arbhome    = strdup(GB_getenvARBHOME());
         const char*  nosuchfile = "nosuchfile";
         const char*  somefile   = "arb_README.txt";
 
-        char *somefile_in_arbhome   = ARB_strdup(GB_concat_path(arbhome, somefile));
-        char *nosuchfile_in_arbhome = ARB_strdup(GB_concat_path(arbhome, nosuchfile));
-        char *nosuchpath_in_arbhome = ARB_strdup(GB_concat_path(arbhome, "nosuchpath"));
-        char *somepath_in_arbhome   = ARB_strdup(GB_concat_path(arbhome, "lib"));
-        char *file_in_nosuchpath    = ARB_strdup(GB_concat_path(nosuchpath_in_arbhome, "whatever"));
+        char *somefile_in_arbhome   = strdup(GB_concat_path(arbhome, somefile));
+        char *nosuchfile_in_arbhome = strdup(GB_concat_path(arbhome, nosuchfile));
+        char *nosuchpath_in_arbhome = strdup(GB_concat_path(arbhome, "nosuchpath"));
+        char *somepath_in_arbhome   = strdup(GB_concat_path(arbhome, "lib"));
+        char *file_in_nosuchpath    = strdup(GB_concat_path(nosuchpath_in_arbhome, "whatever"));
 
         TEST_REJECT(GB_is_directory(nosuchpath_in_arbhome));
 
@@ -1383,7 +1596,7 @@ void TEST_paths() {
         TEST_EXPECT_IS_CANONICAL(nosuchpath_in_arbhome);
         TEST_EXPECT_IS_CANONICAL(file_in_nosuchpath);
 
-        TEST_EXPECT_IS_CANONICAL("/sbin"); // existing (most likely)
+        TEST_EXPECT_IS_CANONICAL("/tmp"); // existing (most likely)
         TEST_EXPECT_IS_CANONICAL("/tmp/arbtest.fig");
         TEST_EXPECT_IS_CANONICAL("/arbtest.fig"); // not existing (most likely)
 
@@ -1401,7 +1614,7 @@ void TEST_paths() {
         TEST_EXPECT_EQUAL(GB_unfold_path("ARBHOME", somefile), somefile_in_arbhome);
         TEST_EXPECT_EQUAL(GB_unfold_path("ARBHOME", nosuchfile), nosuchfile_in_arbhome);
 
-        char *inhome = ARB_strdup(GB_unfold_path("HOME", "whatever"));
+        char *inhome = strdup(GB_unfold_path("HOME", "whatever"));
         TEST_EXPECT_EQUAL(inhome, GB_canonical_path("~/whatever"));
         free(inhome);
 

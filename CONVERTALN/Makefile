@@ -1,26 +1,22 @@
-.SUFFIXES: .o .a .cxx .depend .stamp
+.SUFFIXES: .o .a .cxx .depend
 
-SOURCES=$(wildcard *.cxx)
-HEADERS=$(wildcard *.h)
-OBJECTS= $(subst .cxx,.o,$(SOURCES))
-ERROR_CHECKER=./show_error_list.pl
+OBJECTS= $(subst .cxx,.o,$(wildcard *.cxx))
 
-$(MAIN): $(OBJECTS) check_error_codes.stamp
+$(MAIN): $(OBJECTS) check_error_codes
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
-check_error_codes.stamp: $(ERROR_CHECKER) $(SOURCES) $(HEADERS)
-	@$(ERROR_CHECKER) -check
-	@touch $@
+check_error_codes:
+	@./show_error_list.pl -check
 
 .cxx.o:
-	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE) $<
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 proto:
 	../AISC_MKPTPS/aisc_mkpt -P -G -w prototypes.h $(OBJECTS:.o=.cxx) >prototypes.h.tmp
 	../SOURCE_TOOLS/mv_if_diff prototypes.h.tmp prototypes.h
 
 clean:
-	rm -f *.o $(BINARY) *.stamp
+	rm -f *.o $(BINARY)
 
 DEPENDS = $(OBJECTS:.o=.depend)
 depends: $(DEPENDS)
@@ -55,8 +51,6 @@ convert.o: seq.h
 convert.o: $(ARBHOME)/INCLUDE/arb_assert.h
 convert.o: $(ARBHOME)/INCLUDE/arb_core.h
 convert.o: $(ARBHOME)/INCLUDE/arb_defs.h
-convert.o: $(ARBHOME)/INCLUDE/arb_mem.h
-convert.o: $(ARBHOME)/INCLUDE/arb_string.h
 convert.o: $(ARBHOME)/INCLUDE/arbtools.h
 convert.o: $(ARBHOME)/INCLUDE/attributes.h
 convert.o: $(ARBHOME)/INCLUDE/BufferedFileReader.h
@@ -72,8 +66,6 @@ date.o: prototypes.h
 date.o: $(ARBHOME)/INCLUDE/arb_assert.h
 date.o: $(ARBHOME)/INCLUDE/arb_core.h
 date.o: $(ARBHOME)/INCLUDE/arb_defs.h
-date.o: $(ARBHOME)/INCLUDE/arb_mem.h
-date.o: $(ARBHOME)/INCLUDE/arb_string.h
 date.o: $(ARBHOME)/INCLUDE/arbtools.h
 date.o: $(ARBHOME)/INCLUDE/attributes.h
 date.o: $(ARBHOME)/INCLUDE/BufferedFileReader.h
@@ -101,8 +93,6 @@ embl.o: wrap.h
 embl.o: $(ARBHOME)/INCLUDE/arb_assert.h
 embl.o: $(ARBHOME)/INCLUDE/arb_core.h
 embl.o: $(ARBHOME)/INCLUDE/arb_defs.h
-embl.o: $(ARBHOME)/INCLUDE/arb_mem.h
-embl.o: $(ARBHOME)/INCLUDE/arb_string.h
 embl.o: $(ARBHOME)/INCLUDE/arbtools.h
 embl.o: $(ARBHOME)/INCLUDE/attributes.h
 embl.o: $(ARBHOME)/INCLUDE/BufferedFileReader.h
@@ -125,7 +115,6 @@ fconv.o: $(ARBHOME)/INCLUDE/arb_defs.h
 fconv.o: $(ARBHOME)/INCLUDE/arb_diff.h
 fconv.o: $(ARBHOME)/INCLUDE/arb_error.h
 fconv.o: $(ARBHOME)/INCLUDE/arb_file.h
-fconv.o: $(ARBHOME)/INCLUDE/arb_mem.h
 fconv.o: $(ARBHOME)/INCLUDE/arb_msg.h
 fconv.o: $(ARBHOME)/INCLUDE/arb_string.h
 fconv.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -159,8 +148,6 @@ gcg.o: seq.h
 gcg.o: $(ARBHOME)/INCLUDE/arb_assert.h
 gcg.o: $(ARBHOME)/INCLUDE/arb_core.h
 gcg.o: $(ARBHOME)/INCLUDE/arb_defs.h
-gcg.o: $(ARBHOME)/INCLUDE/arb_mem.h
-gcg.o: $(ARBHOME)/INCLUDE/arb_string.h
 gcg.o: $(ARBHOME)/INCLUDE/arbtools.h
 gcg.o: $(ARBHOME)/INCLUDE/attributes.h
 gcg.o: $(ARBHOME)/INCLUDE/BufferedFileReader.h
@@ -185,8 +172,6 @@ genbank.o: wrap.h
 genbank.o: $(ARBHOME)/INCLUDE/arb_assert.h
 genbank.o: $(ARBHOME)/INCLUDE/arb_core.h
 genbank.o: $(ARBHOME)/INCLUDE/arb_defs.h
-genbank.o: $(ARBHOME)/INCLUDE/arb_mem.h
-genbank.o: $(ARBHOME)/INCLUDE/arb_string.h
 genbank.o: $(ARBHOME)/INCLUDE/arbtools.h
 genbank.o: $(ARBHOME)/INCLUDE/attributes.h
 genbank.o: $(ARBHOME)/INCLUDE/BufferedFileReader.h
@@ -210,8 +195,6 @@ macke.o: wrap.h
 macke.o: $(ARBHOME)/INCLUDE/arb_assert.h
 macke.o: $(ARBHOME)/INCLUDE/arb_core.h
 macke.o: $(ARBHOME)/INCLUDE/arb_defs.h
-macke.o: $(ARBHOME)/INCLUDE/arb_mem.h
-macke.o: $(ARBHOME)/INCLUDE/arb_string.h
 macke.o: $(ARBHOME)/INCLUDE/arbtools.h
 macke.o: $(ARBHOME)/INCLUDE/attributes.h
 macke.o: $(ARBHOME)/INCLUDE/BufferedFileReader.h
@@ -228,9 +211,6 @@ main.o: prototypes.h
 main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 main.o: $(ARBHOME)/INCLUDE/arb_core.h
 main.o: $(ARBHOME)/INCLUDE/arb_defs.h
-main.o: $(ARBHOME)/INCLUDE/arb_mem.h
-main.o: $(ARBHOME)/INCLUDE/arb_msg.h
-main.o: $(ARBHOME)/INCLUDE/arb_string.h
 main.o: $(ARBHOME)/INCLUDE/arbtools.h
 main.o: $(ARBHOME)/INCLUDE/attributes.h
 main.o: $(ARBHOME)/INCLUDE/BufferedFileReader.h
@@ -256,8 +236,6 @@ mg.o: seq.h
 mg.o: $(ARBHOME)/INCLUDE/arb_assert.h
 mg.o: $(ARBHOME)/INCLUDE/arb_core.h
 mg.o: $(ARBHOME)/INCLUDE/arb_defs.h
-mg.o: $(ARBHOME)/INCLUDE/arb_mem.h
-mg.o: $(ARBHOME)/INCLUDE/arb_string.h
 mg.o: $(ARBHOME)/INCLUDE/arbtools.h
 mg.o: $(ARBHOME)/INCLUDE/attributes.h
 mg.o: $(ARBHOME)/INCLUDE/BufferedFileReader.h
@@ -279,8 +257,6 @@ paup.o: seq.h
 paup.o: $(ARBHOME)/INCLUDE/arb_assert.h
 paup.o: $(ARBHOME)/INCLUDE/arb_core.h
 paup.o: $(ARBHOME)/INCLUDE/arb_defs.h
-paup.o: $(ARBHOME)/INCLUDE/arb_mem.h
-paup.o: $(ARBHOME)/INCLUDE/arb_string.h
 paup.o: $(ARBHOME)/INCLUDE/arbtools.h
 paup.o: $(ARBHOME)/INCLUDE/attributes.h
 paup.o: $(ARBHOME)/INCLUDE/BufferedFileReader.h
@@ -301,8 +277,6 @@ phylip.o: seq.h
 phylip.o: $(ARBHOME)/INCLUDE/arb_assert.h
 phylip.o: $(ARBHOME)/INCLUDE/arb_core.h
 phylip.o: $(ARBHOME)/INCLUDE/arb_defs.h
-phylip.o: $(ARBHOME)/INCLUDE/arb_mem.h
-phylip.o: $(ARBHOME)/INCLUDE/arb_string.h
 phylip.o: $(ARBHOME)/INCLUDE/arbtools.h
 phylip.o: $(ARBHOME)/INCLUDE/attributes.h
 phylip.o: $(ARBHOME)/INCLUDE/BufferedFileReader.h
@@ -323,8 +297,6 @@ printable.o: seq.h
 printable.o: $(ARBHOME)/INCLUDE/arb_assert.h
 printable.o: $(ARBHOME)/INCLUDE/arb_core.h
 printable.o: $(ARBHOME)/INCLUDE/arb_defs.h
-printable.o: $(ARBHOME)/INCLUDE/arb_mem.h
-printable.o: $(ARBHOME)/INCLUDE/arb_string.h
 printable.o: $(ARBHOME)/INCLUDE/arbtools.h
 printable.o: $(ARBHOME)/INCLUDE/attributes.h
 printable.o: $(ARBHOME)/INCLUDE/BufferedFileReader.h
@@ -345,8 +317,6 @@ rdp_info.o: seq.h
 rdp_info.o: $(ARBHOME)/INCLUDE/arb_assert.h
 rdp_info.o: $(ARBHOME)/INCLUDE/arb_core.h
 rdp_info.o: $(ARBHOME)/INCLUDE/arb_defs.h
-rdp_info.o: $(ARBHOME)/INCLUDE/arb_mem.h
-rdp_info.o: $(ARBHOME)/INCLUDE/arb_string.h
 rdp_info.o: $(ARBHOME)/INCLUDE/arbtools.h
 rdp_info.o: $(ARBHOME)/INCLUDE/attributes.h
 rdp_info.o: $(ARBHOME)/INCLUDE/BufferedFileReader.h
@@ -366,8 +336,6 @@ reader.o: seq.h
 reader.o: $(ARBHOME)/INCLUDE/arb_assert.h
 reader.o: $(ARBHOME)/INCLUDE/arb_core.h
 reader.o: $(ARBHOME)/INCLUDE/arb_defs.h
-reader.o: $(ARBHOME)/INCLUDE/arb_mem.h
-reader.o: $(ARBHOME)/INCLUDE/arb_string.h
 reader.o: $(ARBHOME)/INCLUDE/arbtools.h
 reader.o: $(ARBHOME)/INCLUDE/attributes.h
 reader.o: $(ARBHOME)/INCLUDE/BufferedFileReader.h
@@ -388,8 +356,6 @@ seq.o: seq.h
 seq.o: $(ARBHOME)/INCLUDE/arb_assert.h
 seq.o: $(ARBHOME)/INCLUDE/arb_core.h
 seq.o: $(ARBHOME)/INCLUDE/arb_defs.h
-seq.o: $(ARBHOME)/INCLUDE/arb_mem.h
-seq.o: $(ARBHOME)/INCLUDE/arb_string.h
 seq.o: $(ARBHOME)/INCLUDE/arbtools.h
 seq.o: $(ARBHOME)/INCLUDE/attributes.h
 seq.o: $(ARBHOME)/INCLUDE/BufferedFileReader.h
@@ -409,8 +375,6 @@ util.o: seq.h
 util.o: $(ARBHOME)/INCLUDE/arb_assert.h
 util.o: $(ARBHOME)/INCLUDE/arb_core.h
 util.o: $(ARBHOME)/INCLUDE/arb_defs.h
-util.o: $(ARBHOME)/INCLUDE/arb_mem.h
-util.o: $(ARBHOME)/INCLUDE/arb_string.h
 util.o: $(ARBHOME)/INCLUDE/arbtools.h
 util.o: $(ARBHOME)/INCLUDE/attributes.h
 util.o: $(ARBHOME)/INCLUDE/BufferedFileReader.h
@@ -431,8 +395,6 @@ wrap.o: wrap.h
 wrap.o: $(ARBHOME)/INCLUDE/arb_assert.h
 wrap.o: $(ARBHOME)/INCLUDE/arb_core.h
 wrap.o: $(ARBHOME)/INCLUDE/arb_defs.h
-wrap.o: $(ARBHOME)/INCLUDE/arb_mem.h
-wrap.o: $(ARBHOME)/INCLUDE/arb_string.h
 wrap.o: $(ARBHOME)/INCLUDE/arbtools.h
 wrap.o: $(ARBHOME)/INCLUDE/attributes.h
 wrap.o: $(ARBHOME)/INCLUDE/BufferedFileReader.h

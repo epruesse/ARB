@@ -34,7 +34,7 @@ void RecordingMacro::write_dated_comment(const char *what) const {
     write("# ");
     write(what);
     write(" @ ");
-    write(ARB_date_string());
+    write(GB_date_string());
     write('\n');
 }
 
@@ -155,9 +155,6 @@ void RecordingMacro::track_action(const char *action_id) {
     if (!action_id) {
         warn_unrecordable("anonymous GUI element");
     }
-    else if (action_id[0] == '$') { // actions starting with '$' are interpreted as "unrecordable"
-        warn_unrecordable(GBS_global_string("unrecordable action '%s'", action_id));
-    }
     else if (strcmp(action_id, stop_action_name) != 0) { // silently ignore stop-recording button press
         write_action(application_id, action_id);
     }
@@ -216,7 +213,7 @@ inline char *parse_quoted_string(const char *& line) {
     if (line[0] == '\"' || line[0] == '\'') {
         const char *other_quote = closing_quote(line+1, line[0]);
         if (other_quote) {
-            char *str = ARB_strpartdup(line+1, other_quote-1);
+            char *str = GB_strpartdup(line+1, other_quote-1);
             line      = other_quote+1;
             while (isspace(line[0])) ++line;
             return str;

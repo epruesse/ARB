@@ -27,13 +27,13 @@ cxxflags_c0x=$(subst -std=gnu++11,-std=gnu++0x,$(cxxflags))
 cxxflags_nostd=$(subst -std=gnu++0x,,$(subst -std=gnu++11,,$(cxxflags)))
 
 c0x.o: c0x.cxx Makefile
-	$(A_CXX) $(cflags) $(cxxflags_c0x) -c $< $(CXX_INCLUDES) -o $@ $(POST_COMPILE) $<
+	$(A_CXX) $(cflags) $(cxxflags_c0x) -c $< $(CXX_INCLUDES) -o $@ $(POST_COMPILE)
 
 nostd.o: nostd.cxx Makefile
-	$(A_CXX) $(cflags) $(cxxflags_nostd) -Wno-unused-local-typedefs -c $< $(CXX_INCLUDES) -o $@ $(POST_COMPILE) $<
+	$(A_CXX) $(cflags) $(cxxflags_nostd) -c $< $(CXX_INCLUDES) -o $@ $(POST_COMPILE)
 
 bin/% : %.o
-	$(LINK_EXECUTABLE) $@ $< $(LIB_ARBDB) $(EXECLIBS)
+	$(LINK_EXECUTABLE) $@ $< $(LIB_ARBDB)
 
 $(OBJECTS) : $(LIB_DEPENDS)
 
@@ -60,7 +60,6 @@ c0x.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 c0x.o: $(ARBHOME)/INCLUDE/arb_assert.h
 c0x.o: $(ARBHOME)/INCLUDE/arb_core.h
 c0x.o: $(ARBHOME)/INCLUDE/arb_error.h
-c0x.o: $(ARBHOME)/INCLUDE/arb_mem.h
 c0x.o: $(ARBHOME)/INCLUDE/arb_msg.h
 c0x.o: $(ARBHOME)/INCLUDE/arb_string.h
 c0x.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -81,7 +80,6 @@ nostd.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 nostd.o: $(ARBHOME)/INCLUDE/arb_assert.h
 nostd.o: $(ARBHOME)/INCLUDE/arb_core.h
 nostd.o: $(ARBHOME)/INCLUDE/arb_error.h
-nostd.o: $(ARBHOME)/INCLUDE/arb_mem.h
 nostd.o: $(ARBHOME)/INCLUDE/arb_msg.h
 nostd.o: $(ARBHOME)/INCLUDE/arb_string.h
 nostd.o: $(ARBHOME)/INCLUDE/arbdb.h

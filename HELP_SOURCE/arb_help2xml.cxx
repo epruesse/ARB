@@ -263,8 +263,7 @@ public:
     Ostring(const string& s, size_t line_no, ParagraphType type_)
         : content(s),
           lineNo(line_no),
-          type(type_),
-          etype(NONE)
+          type(type_)
     {
         h2x_assert(type != ENUMERATED);
     }
@@ -374,15 +373,6 @@ private:
     Section     title;
     SectionList sections;
     string      inputfile;
-
-    void check_self_ref(const string& link) {
-        size_t slash = inputfile.find('/');
-        if (slash != string::npos) {
-            if (inputfile.substr(slash+1) == link) {
-                throw string("Invalid link to self");
-            }
-        }
-    }
 
 public:
     Helpfile() : title("TITLE", SEC_FAKE, NO_LINENUMBER_INFO) {}
@@ -626,7 +616,6 @@ static void parseSection(Section& sec, const char *line, int indentation, Reader
         ostr         = string("\n") + spaces + ostr;
     }
 }
-
 inline void check_specific_duplicates(const string& link, const Links& existing, bool add_warnings) {
     for (Links::const_iterator ex = existing.begin(); ex != existing.end(); ++ex) {
         if (ex->Target() == link) {
@@ -989,7 +978,7 @@ public:
 #if defined(DUMP_PARAGRAPHS)
     void print_indent(ostream& out, int indent) { while (indent-->0) out << ' '; }
     char *masknl(const char *text) {
-        char *result = ARB_strdup(text);
+        char *result = strdup(text);
         for (int i = 0; result[i]; ++i) {
             if (result[i] == '\n') result[i] = '|';
         }
@@ -1328,12 +1317,9 @@ static void add_link_attributes(XML_Tag& link, LinkType type, const string& dest
         string fullhelp = ((type&LT_HLP) ? locate_helpfile : locate_document)(dest);
         if (fullhelp.empty()) {
             link.add_attribute("missing", "1");
-            string deadlink = strf("Dead link to '%s'", dest.c_str());
-#if defined(DEVEL_RELEASE)
-            throw LineAttachedMessage(deadlink, source_line);
-#else // !defined(DEVEL_RELEASE)
-            add_warning(deadlink, source_line);
-#endif
+            string warning = strf("Dead link to '%s'", dest.c_str());
+            h2x_assert(source_line<1000); // illegal line number ?
+            add_warning(warning, source_line);
         }
     }
 }
@@ -1578,8 +1564,6 @@ void Helpfile::extractInternalLinks() {
                         link_target.find("file://") == string::npos &&
                         link_target.find('@')       == string::npos)
                     {
-                        check_self_ref(link_target);
-
                         try {
                             check_specific_duplicates(link_target, references,      false); // check only sublinks here
                             check_specific_duplicates(link_target, uplinks,         false); // check only uplinks here
@@ -1694,7 +1678,6 @@ int ARB_main(int argc, char *argv[]) {
 
 #ifdef UNIT_TESTS
 #include <test_unit.h>
-#include <arb_msg.h>
 
 static arb_test::match_expectation help_file_compiles(const char *helpfile, const char *expected_title, const char *expected_error_part) {
     using namespace   arb_test;
@@ -1754,7 +1737,6 @@ void TEST_hlp2xml_conversion() {
 
     HELP_FILE_COMPILE_ERROR("akjsdlkad.hlp", "Can't read from"); // no such file
 }
-TEST_PUBLISH(TEST_hlp2xml_conversion);
 
 
 // #define TEST_AUTO_UPDATE // uncomment to update expected xml // @@@ comment-out!
@@ -1777,15 +1759,15 @@ void TEST_hlp2xml_output() {
         string html_expected = EXPECTED + tested_helpfile[i] + ".html";
         string hlp_expected  = EXPECTED + tested_helpfile[i] + ".hlp";
 
+        string cmd;
 
 #if defined(TEST_AUTO_UPDATE)
 # if defined(NDEBUG)
 #  error please use auto-update only in DEBUG mode
 # endif
-        TEST_COPY_FILE(xml.c_str(),  xml_expected.c_str());
-        TEST_COPY_FILE(html.c_str(), html_expected.c_str());
-        TEST_COPY_FILE(hlp.c_str(),  hlp_expected.c_str());
-
+        cmd = string("cp ") + xml  + ' ' + xml_expected;  TEST_EXPECT_NO_ERROR(GBK_system(cmd.c_str()));
+        cmd = string("cp ") + html + ' ' + html_expected; TEST_EXPECT_NO_ERROR(GBK_system(cmd.c_str()));
+        cmd = string("cp ") + hlp  + ' ' + hlp_expected;  TEST_EXPECT_NO_ERROR(GBK_system(cmd.c_str()));
 #else // !defined(TEST_AUTO_UPDATE)
 
 # if defined(DEBUG)

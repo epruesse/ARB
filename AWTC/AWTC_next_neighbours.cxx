@@ -15,7 +15,6 @@
 #include <client.h>
 #include <aw_window.hxx>
 #include <aw_root.hxx>
-#include <aw_awar.hxx>
 #include <arbdbt.h>
 #include <arb_strbuf.h>
 
@@ -198,7 +197,7 @@ GB_ERROR PT_FamilyFinder::retrieve_family(const char *sequence, FF_complement co
          */
 
         ff_assert(!range.is_empty());
-
+         
         // create and init family finder object
         T_PT_FAMILYFINDER ffinder;
         if (aisc_create(ci->link, PT_LOCS, ci->locs,
@@ -209,7 +208,7 @@ GB_ERROR PT_FamilyFinder::retrieve_family(const char *sequence, FF_complement co
                         FAMILYFINDER_SORT_TYPE,       long(uses_rel_matches()), // 0: matches, 1: relative matches (0 hardcoded till July 2008)
                         FAMILYFINDER_REL_SCORING,     long(get_scaling()),      // scaling of relative scores
                         FAMILYFINDER_SORT_MAX,        long(max_results),        // speed up family sorting (only sort retrieved results)
-                        FAMILYFINDER_MIN_SCORE,       double(min_score),        // limit hits by score
+                        FAMILYFINDER_MIN_SCORE,       min_score,                // limit hits by score
                         FAMILYFINDER_COMPLEMENT,      long(compl_mode),         // any combination of: 1 = forward, 2 = reverse, 4 = reverse-complement, 8 = complement (1 hardcoded in PT-Server till July 2008)
                         FAMILYFINDER_RANGE_STARTPOS,  long(range.start()),
                         FAMILYFINDER_RANGE_ENDPOS,    long(range.is_limited() ? range.end() : -1),
@@ -297,47 +296,30 @@ const char *PT_FamilyFinder::results2string() {
     RETURN_LOCAL_ALLOC(GBS_strclose(out));
 }
 
-static void adjustOligolenAndMismatches(AW_root *aw_root, bool oligolen_changed) {
-    AW_awar *awar_oligolen   = aw_root->awar(AWAR_NN_OLIGO_LEN);
-    AW_awar *awar_mismatches = aw_root->awar(AWAR_NN_MISMATCHES);
-
-    int oligolen   = awar_oligolen->read_int();
-    int mismatches = awar_mismatches->read_int();
-
-    if (oligolen<=mismatches) { // =unwanted state
-        if (oligolen_changed) {
-            awar_mismatches->write_int(oligolen-1);
-        }
-        else {
-            awar_oligolen->write_int(mismatches+1);
-        }
-    }
-}
-
-void AWTC_create_common_next_neighbour_vars(AW_root *aw_root, const RootCallback& awar_changed_cb) {
+void AWTC_create_common_next_neighbour_vars(AW_root *aw_root) {
     static bool created = false;
     if (!created) {
-        aw_root->awar_int(AWAR_NN_OLIGO_LEN,  12)->set_minmax(1, 200)->add_callback(makeRootCallback(adjustOligolenAndMismatches, true))->add_callback(awar_changed_cb);
-        aw_root->awar_int(AWAR_NN_MISMATCHES,  0)->set_minmax(0,  50)->add_callback(makeRootCallback(adjustOligolenAndMismatches, false))->add_callback(awar_changed_cb);
-        aw_root->awar_int(AWAR_NN_FAST_MODE,   0)->add_callback(awar_changed_cb);
-        aw_root->awar_int(AWAR_NN_REL_MATCHES, 1)->add_callback(awar_changed_cb);
-        aw_root->awar_int(AWAR_NN_REL_SCALING, RSS_BOTH_MIN)->add_callback(awar_changed_cb);
+        aw_root->awar_int(AWAR_NN_OLIGO_LEN,   12);
+        aw_root->awar_int(AWAR_NN_MISMATCHES,  0);
+        aw_root->awar_int(AWAR_NN_FAST_MODE,   0);
+        aw_root->awar_int(AWAR_NN_REL_MATCHES, 1);
+        aw_root->awar_int(AWAR_NN_REL_SCALING, RSS_BOTH_MIN);
 
         created = true;
     }
 }
 
-void AWTC_create_common_next_neighbour_fields(AW_window *aws, int scaler_length) {
+void AWTC_create_common_next_neighbour_fields(AW_window *aws) {
     // used in several figs:
     // - ad_spec_nn.fig
     // - ad_spec_nnm.fig
     // - faligner/family_settings.fig
 
     aws->at("oligo_len");
-    aws->create_input_field_with_scaler(AWAR_NN_OLIGO_LEN, 3, scaler_length, AW_SCALER_EXP_LOWER);
+    aws->create_input_field(AWAR_NN_OLIGO_LEN, 3);
 
     aws->at("mismatches");
-    aws->create_input_field_with_scaler(AWAR_NN_MISMATCHES, 3, scaler_length, AW_SCALER_EXP_LOWER);
+    aws->create_input_field(AWAR_NN_MISMATCHES, 3);
 
     aws->at("mode");
     aws->create_option_menu(AWAR_NN_FAST_MODE, true);

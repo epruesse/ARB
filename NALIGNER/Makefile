@@ -18,7 +18,7 @@ $(MAIN): $(CPP_OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
 
 .cxx.o:
-	$(A_CXX) $(cflags) $(cxxflags) -c -o $@ $< $(CXX_INCLUDES) $(POST_COMPILE) $<
+	$(A_CXX) $(cflags) $(cxxflags) -c -o $@ $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(CPP_OBJECTS) *.a
@@ -59,7 +59,6 @@ ali_aligner.o: $(ARBHOME)/INCLUDE/aisc_global.h
 ali_aligner.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ali_aligner.o: $(ARBHOME)/INCLUDE/arb_core.h
 ali_aligner.o: $(ARBHOME)/INCLUDE/arb_error.h
-ali_aligner.o: $(ARBHOME)/INCLUDE/arb_mem.h
 ali_aligner.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ali_aligner.o: $(ARBHOME)/INCLUDE/arb_string.h
 ali_aligner.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -92,7 +91,6 @@ ali_arbdb.o: $(ARBHOME)/INCLUDE/aisc_global.h
 ali_arbdb.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ali_arbdb.o: $(ARBHOME)/INCLUDE/arb_core.h
 ali_arbdb.o: $(ARBHOME)/INCLUDE/arb_error.h
-ali_arbdb.o: $(ARBHOME)/INCLUDE/arb_mem.h
 ali_arbdb.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ali_arbdb.o: $(ARBHOME)/INCLUDE/arb_string.h
 ali_arbdb.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -132,7 +130,6 @@ ali_global.o: $(ARBHOME)/INCLUDE/aisc_global.h
 ali_global.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ali_global.o: $(ARBHOME)/INCLUDE/arb_core.h
 ali_global.o: $(ARBHOME)/INCLUDE/arb_error.h
-ali_global.o: $(ARBHOME)/INCLUDE/arb_mem.h
 ali_global.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ali_global.o: $(ARBHOME)/INCLUDE/arb_string.h
 ali_global.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -174,7 +171,6 @@ ali_main.o: $(ARBHOME)/INCLUDE/aisc_global.h
 ali_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ali_main.o: $(ARBHOME)/INCLUDE/arb_core.h
 ali_main.o: $(ARBHOME)/INCLUDE/arb_error.h
-ali_main.o: $(ARBHOME)/INCLUDE/arb_mem.h
 ali_main.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ali_main.o: $(ARBHOME)/INCLUDE/arb_string.h
 ali_main.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -225,7 +221,6 @@ ali_prealigner.o: $(ARBHOME)/INCLUDE/aisc_global.h
 ali_prealigner.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ali_prealigner.o: $(ARBHOME)/INCLUDE/arb_core.h
 ali_prealigner.o: $(ARBHOME)/INCLUDE/arb_error.h
-ali_prealigner.o: $(ARBHOME)/INCLUDE/arb_mem.h
 ali_prealigner.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ali_prealigner.o: $(ARBHOME)/INCLUDE/arb_string.h
 ali_prealigner.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -261,7 +256,6 @@ ali_profile.o: $(ARBHOME)/INCLUDE/aisc_global.h
 ali_profile.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ali_profile.o: $(ARBHOME)/INCLUDE/arb_core.h
 ali_profile.o: $(ARBHOME)/INCLUDE/arb_error.h
-ali_profile.o: $(ARBHOME)/INCLUDE/arb_mem.h
 ali_profile.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ali_profile.o: $(ARBHOME)/INCLUDE/arb_string.h
 ali_profile.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -296,7 +290,6 @@ ali_pt.o: $(ARBHOME)/INCLUDE/aisc_global.h
 ali_pt.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ali_pt.o: $(ARBHOME)/INCLUDE/arb_core.h
 ali_pt.o: $(ARBHOME)/INCLUDE/arb_error.h
-ali_pt.o: $(ARBHOME)/INCLUDE/arb_mem.h
 ali_pt.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ali_pt.o: $(ARBHOME)/INCLUDE/arb_string.h
 ali_pt.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -320,16 +313,10 @@ ali_pt.o: $(ARBHOME)/INCLUDE/test_global.h
 
 ali_sequence.o: ali_misc.hxx
 ali_sequence.o: ali_sequence.hxx
-ali_sequence.o: $(ARBHOME)/INCLUDE/arb_assert.h
-ali_sequence.o: $(ARBHOME)/INCLUDE/arb_core.h
-ali_sequence.o: $(ARBHOME)/INCLUDE/arb_mem.h
-ali_sequence.o: $(ARBHOME)/INCLUDE/arb_string.h
 ali_sequence.o: $(ARBHOME)/INCLUDE/arbtools.h
 ali_sequence.o: $(ARBHOME)/INCLUDE/attributes.h
 ali_sequence.o: $(ARBHOME)/INCLUDE/cxxforward.h
-ali_sequence.o: $(ARBHOME)/INCLUDE/dupstr.h
 ali_sequence.o: $(ARBHOME)/INCLUDE/gccver.h
-ali_sequence.o: $(ARBHOME)/INCLUDE/test_global.h
 
 ali_solution.o: ali_arbdb.hxx
 ali_solution.o: ali_misc.hxx
@@ -346,7 +333,6 @@ ali_solution.o: $(ARBHOME)/INCLUDE/aisc_global.h
 ali_solution.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ali_solution.o: $(ARBHOME)/INCLUDE/arb_core.h
 ali_solution.o: $(ARBHOME)/INCLUDE/arb_error.h
-ali_solution.o: $(ARBHOME)/INCLUDE/arb_mem.h
 ali_solution.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ali_solution.o: $(ARBHOME)/INCLUDE/arb_string.h
 ali_solution.o: $(ARBHOME)/INCLUDE/arbdb.h

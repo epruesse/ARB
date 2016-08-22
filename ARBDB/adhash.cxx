@@ -120,12 +120,17 @@ static void calculate_primes_upto() {
     {
         size_t         bits_needed  = CALC_PRIMES_UP_TO/2+1; // only need bits for odd numbers
         size_t         bytes_needed = (bits_needed/8)+1;
-        unsigned char *eratosthenes = ARB_calloc<unsigned char>(bytes_needed); // bit = 1 means "is not a prime"
+        unsigned char *eratosthenes = (unsigned char *)GB_calloc(bytes_needed, 1); // bit = 1 means "is not a prime"
         size_t         prime_count  = 0;
         size_t         num;
 
         printf("eratosthenes' size = %zu\n", bytes_needed);
         GBK_dump_backtrace(stderr, "calculate_primes_upto");
+
+        if (!eratosthenes) {
+            GB_internal_error("out of memory");
+            return;
+        }
 
         for (num = 3; num <= CALC_PRIMES_UP_TO; num += 2) {
             if (bit_value(eratosthenes, num) == 0) { // is a prime number
@@ -256,13 +261,14 @@ GB_HASH *GBS_create_hash(long estimated_elements, GB_CASE case_sens) {
      * @param case_sens GB_IGNORE_CASE or GB_MIND_CASE
      * Uses linked lists to avoid collisions.
      */
+    GB_HASH *hs;
     long     size = hash_size(estimated_elements);
-    GB_HASH *hs   = ARB_calloc<GB_HASH>(1);
 
+    hs            = (GB_HASH*)GB_calloc(sizeof(*hs), 1);
     hs->size      = size;
     hs->nelem     = 0;
     hs->case_sens = case_sens;
-    ARB_calloc(hs->entries, size);
+    hs->entries   = (gbs_hash_entry **)GB_calloc(sizeof(gbs_hash_entry *), size);
     hs->freefun   = NULL;
 
     return hs;
@@ -322,9 +328,10 @@ void GBS_optimize_hash(const GB_HASH *hs) {
 #endif // DEBUG
 
         if (new_size>hs->size) { // avoid overflow
-            gbs_hash_entry **new_entries; ARB_calloc(new_entries, new_size);
+            gbs_hash_entry **new_entries = (gbs_hash_entry**)GB_calloc(sizeof(*new_entries), new_size);
+            size_t           pos;
 
-            for (size_t pos = 0; pos<hs->size; ++pos) {
+            for (pos = 0; pos<hs->size; ++pos) {
                 gbs_hash_entry *e;
                 gbs_hash_entry *next;
 
@@ -442,7 +449,7 @@ static long write_hash(GB_HASH *hs, char *key, bool copyKey, long val) {
         // create new hash entry
         e       = (gbs_hash_entry *)gbm_get_mem(sizeof(gbs_hash_entry), GBM_HASH_INDEX);
         e->next = hs->entries[i];
-        e->key  = copyKey ? ARB_strdup(key) : key;
+        e->key  = copyKey ? strdup(key) : key;
         e->val  = val;
 
         hs->entries[i] = e;
@@ -480,7 +487,7 @@ long GBS_incr_hash(GB_HASH *hs, const char *key) {
     else {
         e       = (gbs_hash_entry *)gbm_get_mem(sizeof(gbs_hash_entry), GBM_HASH_INDEX);
         e->next = hs->entries[i];
-        e->key  = ARB_strdup(key);
+        e->key  = strdup(key);
         e->val  = result = 1;
 
         hs->entries[i] = e;
@@ -570,8 +577,28 @@ void GBS_hash_do_const_loop(const GB_HASH *hs, gb_hash_const_loop_type func, voi
     }
 }
 
-size_t GBS_hash_elements(const GB_HASH *hs) {
-    return hs->nelem;
+#if defined(WARN_TODO)
+#warning rename GBS_hash_count_elems -> GBS_hash_elements
+#endif
+
+size_t GBS_hash_count_elems(const GB_HASH *hs) {
+#if defined(DEBUG)
+    // @@@ old code, just left here to ensure hs->nelem is correct --ralf Mar/2010
+    size_t count = 0;
+    size_t hsize = hs->size;
+    for (size_t i = 0; i<hsize; ++i) {
+        gbs_hash_entry *e;
+        for (e=hs->entries[i]; e; e=e->next) {
+            if (e->val) ++count;
+        }
+    }
+
+    gb_assert(count == hs->nelem);
+#else    
+    size_t count = hs->nelem;
+#endif // DEBUG
+
+    return count;
 }
 
 const char *GBS_hash_next_element_that(const GB_HASH *hs, const char *last_key, bool (*condition)(const char *key, long val, void *cd), void *cd) {
@@ -614,8 +641,8 @@ static int wrap_hashCompare4gb_sort(const void *v0, const void *v1, void *sorter
 
 void GBS_hash_do_sorted_loop(GB_HASH *hs, gb_hash_loop_type func, gbs_hash_compare_function sorter, void *client_data) {
     size_t           hsize = hs->size;
-    gbs_hash_entry **mtab; ARB_calloc(mtab, hs->nelem);
-
+    gbs_hash_entry **mtab  = (gbs_hash_entry **)GB_calloc(sizeof(void *), hs->nelem);
+    
     size_t j = 0;
     for (size_t i = 0; i < hsize; i++) {
         for (gbs_hash_entry *e = hs->entries[i]; e; e = e->next) {
@@ -652,11 +679,11 @@ inline long gbs_numhash_index(long key, long size) {
 
 GB_NUMHASH *GBS_create_numhash(size_t estimated_elements) {
     size_t      size = hash_size(estimated_elements);
-    GB_NUMHASH *hs   = ARB_calloc<GB_NUMHASH>(1);
+    GB_NUMHASH *hs   = (GB_NUMHASH *)GB_calloc(sizeof(*hs), 1);
 
-    hs->size  = size;
-    hs->nelem = 0;
-    ARB_calloc(hs->entries, size);
+    hs->size    = size;
+    hs->nelem   = 0;
+    hs->entries = (numhash_entry **)GB_calloc(sizeof(*(hs->entries)), (size_t)size);
 
     return hs;
 }
@@ -771,7 +798,7 @@ public:
 
         long found = GBS_read_hash(stat_hash, id);
         if (!found) {
-            gbs_hash_statistic_summary *stat; ARB_calloc(stat, 1);
+            gbs_hash_statistic_summary *stat = (gbs_hash_statistic_summary*)GB_calloc(1, sizeof(*stat));
             stat->init();
             found = (long)stat;
             GBS_write_hash(stat_hash, id, found);
@@ -869,8 +896,8 @@ static long erase_from_hash(const char *key, long val, void *cl_fromHash) {
 }
 
 static bool hashes_are_equal(GB_HASH *h1, GB_HASH *h2) {
-    size_t count1 = GBS_hash_elements(h1);
-    size_t count2 = GBS_hash_elements(h2);
+    size_t count1 = GBS_hash_count_elems(h1);
+    size_t count2 = GBS_hash_count_elems(h2);
 
     bool equal = (count1 == count2);
     if (equal) {
@@ -879,7 +906,7 @@ static bool hashes_are_equal(GB_HASH *h1, GB_HASH *h2) {
         GBS_hash_do_loop(h1, insert_into_hash, copy);
         GBS_hash_do_loop(h2, erase_from_hash, copy);
 
-        equal = (GBS_hash_elements(copy) == 0);
+        equal = (GBS_hash_count_elems(copy) == 0);
         GBS_free_hash(copy);
     }
     return equal;
@@ -938,15 +965,15 @@ void TEST_GBS_write_hash() {
         GB_HASH *hash = TEST.get_hash(case_sens);
 
         GBS_write_hash(hash, "foo", 1);
-        TEST_EXPECT_EQUAL(GBS_hash_elements(hash), 1);
+        TEST_EXPECT_EQUAL(GBS_hash_count_elems(hash), 1);
         TEST_EXPECT_EQUAL(GBS_read_hash(hash, "foo"), 1);
 
         GBS_write_hash(hash, "foo", 2);
-        TEST_EXPECT_EQUAL(GBS_hash_elements(hash), 1);
+        TEST_EXPECT_EQUAL(GBS_hash_count_elems(hash), 1);
         TEST_EXPECT_EQUAL(GBS_read_hash(hash, "foo"), 2);
         
         GBS_write_hash(hash, "foo", 0);
-        TEST_EXPECT_ZERO(GBS_hash_elements(hash));
+        TEST_EXPECT_ZERO(GBS_hash_count_elems(hash));
         TEST_EXPECT_ZERO(GBS_read_hash(hash, "foo"));
 
         GBS_write_hash(hash, "foo", 1);
@@ -955,7 +982,7 @@ void TEST_GBS_write_hash() {
         GBS_write_hash(hash, "bar", 2);
 
         if (case_sens) {
-            TEST_EXPECT_EQUAL(GBS_hash_elements(hash), 4);
+            TEST_EXPECT_EQUAL(GBS_hash_count_elems(hash), 4);
 
             TEST_EXPECT_EQUAL(GBS_read_hash(hash, "foo"), 1);
             TEST_EXPECT_EQUAL(GBS_read_hash(hash, "FOO"), 2);
@@ -965,7 +992,7 @@ void TEST_GBS_write_hash() {
             TEST_EXPECT_EQUAL(test_hash_count_value(hash, 2), 2);
         }
         else {
-            TEST_EXPECT_EQUAL(GBS_hash_elements(hash), 2);
+            TEST_EXPECT_EQUAL(GBS_hash_count_elems(hash), 2);
 
             TEST_EXPECT_EQUAL(GBS_read_hash(hash, "foo"), 2);
             TEST_EXPECT_EQUAL(GBS_read_hash(hash, "FOO"), 2);
@@ -977,11 +1004,11 @@ void TEST_GBS_write_hash() {
 
         if (case_sens) {
             TEST_EXPECT_ZERO(GBS_read_hash(hash, "foobar"));
-            GBS_write_hash_no_strdup(hash, ARB_strdup("foobar"), 0);
+            GBS_write_hash_no_strdup(hash, strdup("foobar"), 0);
             TEST_EXPECT_ZERO(GBS_read_hash(hash, "foobar"));
-            GBS_write_hash_no_strdup(hash, ARB_strdup("foobar"), 3);
+            GBS_write_hash_no_strdup(hash, strdup("foobar"), 3);
             TEST_EXPECT_EQUAL(GBS_read_hash(hash, "foobar"), 3);
-            GBS_write_hash_no_strdup(hash, ARB_strdup("foobar"), 0);
+            GBS_write_hash_no_strdup(hash, strdup("foobar"), 0);
             TEST_EXPECT_ZERO(GBS_read_hash(hash, "foobar"));
         }
     }
@@ -1029,7 +1056,7 @@ static void test_string_2_hashtab(GB_HASH *hash, char *data) {
         }
         else break;
 
-        str = ARB_calloc<char>(strlen+1);
+        str = (char *)GB_calloc(sizeof(char), strlen+1);
         for (dp = p, d = str; (c = *dp);  dp++) {
             if (c==':') {
                 if (dp[1] == ':') {

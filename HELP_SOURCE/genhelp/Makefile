@@ -30,7 +30,7 @@ $(GDE_HLP) : $(STD) Makefile
 
 copyright.hlp : $(ARBHOME)/arb_LICENSE.txt $(HLP_DEPENDS)
 	@echo Updating $@ from $< 
-	@(test -f $@ && chmod u+w $@) || true
+	@-test -f $@ && chmod u+w $@
 	@cp $(STD) $@
 	@echo "# BUILD FROM: $<" >>$@
 	@cat $< | $(POSTPROCESS) $@ >> $@
@@ -38,7 +38,7 @@ copyright.hlp : $(ARBHOME)/arb_LICENSE.txt $(HLP_DEPENDS)
 
 changes.hlp : $(ARBHOME)/arb_CHANGES.txt $(HLP_DEPENDS)
 	@echo Updating $@ from $< 
-	@(test -f $@ && chmod u+w $@) || true
+	@-test -f $@ && chmod u+w $@
 	@cp $(STD) $@
 	@echo "# BUILD FROM: $<" >>$@
 	@cat $< | $(POSTPROCESS) $@ >> $@
@@ -46,7 +46,7 @@ changes.hlp : $(ARBHOME)/arb_CHANGES.txt $(HLP_DEPENDS)
 
 agde_%.hlp : $(GDEGENDIR)/%.help $(HLP_DEPENDS)
 	@echo Updating $@ from $< 
-	@(test -f $@ && chmod u+w $@) || true
+	@-test -f $@ && chmod u+w $@
 	@cp $(STD) $@
 	@echo "# BUILD FROM: $<" >>$@
 	@echo "#             (which is generated itself)" >>$@
@@ -57,7 +57,7 @@ agde_%.hlp : $(GDEGENDIR)/%.help $(HLP_DEPENDS)
 
 agde_%.hlp : $(GDEWRITTENDIR)/%.help $(HLP_DEPENDS)
 	@echo Updating $@ from $< 
-	@(test -f $@ && chmod u+w $@) || true
+	@-test -f $@ && chmod u+w $@
 	@cp $(STD) $@
 	@echo "# BUILD FROM: $<" >>$@
 	@echo "" >>$@
@@ -67,7 +67,7 @@ agde_%.hlp : $(GDEWRITTENDIR)/%.help $(HLP_DEPENDS)
 
 agde.hlp: $(GDE_HLP) agde.footer Makefile
 	@echo Updating GDE overview $@ 
-	@(test -f $@ && chmod u+w $@) || true
+	@-test -f $@ && chmod u+w $@
 	@cp $(STD) $@
 	@echo "# BUILD FROM: $<" >>$@
 	@ls agde_*.hlp | grep -v 'agde_.*_sub'| $(SED) -e 's/^/SUB /' >>$@

@@ -121,7 +121,7 @@ static void advice_close_cb(AW_window *aww, const char *id, AW_Advice_Type type)
             if (!in_advice) {
                 in_advice = true;
                 AW_advice("You have disabled an advice.\n"
-                          "In order to disable it PERMANENTLY, save properties.", AW_ADVICE_TOGGLE, "Advice disabled", "advice.hlp");
+                          "In order to disable it PERMANENTLY, save properties.", AW_ADVICE_TOGGLE);
                 in_advice = false;
             }
         }
@@ -199,7 +199,7 @@ void AW_advice(const char *message, AW_Advice_Type type, const char *title, cons
                            ? GBS_global_string("%s\n\nPlease refer to 'HELP' for more info.", message)
                            : message);
 
-        if (help_pops_up) AW_help_popup(NULL, corresponding_help);
+        if (help_pops_up) AW_help_popup(aws, corresponding_help);
 
         if (type & AW_ADVICE_TOGGLE) {
             aws->label("Do not advice me again");
@@ -273,6 +273,5 @@ void TEST_another_AW_root() {
     GB_shell  shell;
     AW_root("min_ascii.arb");
 }
-TEST_PUBLISH(TEST_another_AW_root);
 
 #endif // UNIT_TESTS

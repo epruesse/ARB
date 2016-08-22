@@ -8,7 +8,7 @@ $(MAIN): $(CPP_OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
 
 .cxx.o:
-	$(A_CXX) $(cflags) $(cxxflags) -c -o $@ $(@:.o=.cxx)  $(CXX_INCLUDES) $(POST_COMPILE) $<
+	$(A_CXX) $(cflags) $(cxxflags) -c -o $@ $(@:.o=.cxx)  $(CXX_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(CPP_OBJECTS) *.a
@@ -34,7 +34,6 @@ WETC_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
 WETC_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 WETC_main.o: $(ARBHOME)/INCLUDE/arb_core.h
 WETC_main.o: $(ARBHOME)/INCLUDE/arb_error.h
-WETC_main.o: $(ARBHOME)/INCLUDE/arb_mem.h
 WETC_main.o: $(ARBHOME)/INCLUDE/arb_msg.h
 WETC_main.o: $(ARBHOME)/INCLUDE/arb_string.h
 WETC_main.o: $(ARBHOME)/INCLUDE/arbdb.h

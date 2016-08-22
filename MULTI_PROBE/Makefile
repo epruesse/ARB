@@ -22,7 +22,7 @@ $(MAIN): $(CPP_OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
 
 .cxx.o:
-	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE) $<
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(CPP_OBJECTS) *.a
@@ -56,9 +56,7 @@ MP_Generation.o: $(ARBHOME)/INCLUDE/aisc_global.h
 MP_Generation.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MP_Generation.o: $(ARBHOME)/INCLUDE/arb_core.h
 MP_Generation.o: $(ARBHOME)/INCLUDE/arb_error.h
-MP_Generation.o: $(ARBHOME)/INCLUDE/arb_mem.h
 MP_Generation.o: $(ARBHOME)/INCLUDE/arb_progress.h
-MP_Generation.o: $(ARBHOME)/INCLUDE/arb_string.h
 MP_Generation.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 MP_Generation.o: $(ARBHOME)/INCLUDE/arbtools.h
 MP_Generation.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -84,8 +82,6 @@ MP_GenerationDuplicates.o: SoTl.hxx
 MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/aisc_global.h
 MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/arb_core.h
-MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/arb_mem.h
-MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/arb_string.h
 MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/arbtools.h
 MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -114,8 +110,6 @@ MP_main.o: $(ARBHOME)/INCLUDE/aisc_global.h
 MP_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MP_main.o: $(ARBHOME)/INCLUDE/arb_core.h
 MP_main.o: $(ARBHOME)/INCLUDE/arb_error.h
-MP_main.o: $(ARBHOME)/INCLUDE/arb_mem.h
-MP_main.o: $(ARBHOME)/INCLUDE/arb_string.h
 MP_main.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 MP_main.o: $(ARBHOME)/INCLUDE/arbtools.h
 MP_main.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -152,7 +146,6 @@ MP_mo_liste.o: $(ARBHOME)/INCLUDE/aisc_global.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/arb_core.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/arb_error.h
-MP_mo_liste.o: $(ARBHOME)/INCLUDE/arb_mem.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/arb_msg.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/arb_string.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -191,11 +184,9 @@ MP_noclass.o: $(ARBHOME)/INCLUDE/aisc_global.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/AliView.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
-MP_noclass.o: $(ARBHOME)/INCLUDE/AP_TreeColors.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/arb_core.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/arb_error.h
-MP_noclass.o: $(ARBHOME)/INCLUDE/arb_mem.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/arb_msg.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/arb_progress.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -229,6 +220,7 @@ MP_noclass.o: $(ARBHOME)/INCLUDE/downcast.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/dupstr.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/gccver.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/PT_com.h
+MP_noclass.o: $(ARBHOME)/INCLUDE/RootedTree.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/servercntrl.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/smartptr.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/static_assert.h
@@ -236,7 +228,6 @@ MP_noclass.o: $(ARBHOME)/INCLUDE/test_global.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/test_unit.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/TreeCallbacks.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx
-MP_noclass.o: $(ARBHOME)/INCLUDE/TreeNode.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 MP_permute.o: mpdefs.h
@@ -245,8 +236,6 @@ MP_permute.o: SoTl.hxx
 MP_permute.o: $(ARBHOME)/INCLUDE/aisc_global.h
 MP_permute.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MP_permute.o: $(ARBHOME)/INCLUDE/arb_core.h
-MP_permute.o: $(ARBHOME)/INCLUDE/arb_mem.h
-MP_permute.o: $(ARBHOME)/INCLUDE/arb_string.h
 MP_permute.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 MP_permute.o: $(ARBHOME)/INCLUDE/arbtools.h
 MP_permute.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -275,7 +264,6 @@ MP_probe.o: $(ARBHOME)/INCLUDE/aisc_global.h
 MP_probe.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MP_probe.o: $(ARBHOME)/INCLUDE/arb_core.h
 MP_probe.o: $(ARBHOME)/INCLUDE/arb_error.h
-MP_probe.o: $(ARBHOME)/INCLUDE/arb_mem.h
 MP_probe.o: $(ARBHOME)/INCLUDE/arb_msg.h
 MP_probe.o: $(ARBHOME)/INCLUDE/arb_progress.h
 MP_probe.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -310,8 +298,6 @@ MP_probe_combi_statistic.o: SoTl.hxx
 MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/aisc_global.h
 MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/arb_core.h
-MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/arb_mem.h
-MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/arb_string.h
 MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/arbtools.h
 MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -337,8 +323,6 @@ MP_probe_tabs.o: SoTl.hxx
 MP_probe_tabs.o: $(ARBHOME)/INCLUDE/aisc_global.h
 MP_probe_tabs.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MP_probe_tabs.o: $(ARBHOME)/INCLUDE/arb_core.h
-MP_probe_tabs.o: $(ARBHOME)/INCLUDE/arb_mem.h
-MP_probe_tabs.o: $(ARBHOME)/INCLUDE/arb_string.h
 MP_probe_tabs.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 MP_probe_tabs.o: $(ARBHOME)/INCLUDE/arbtools.h
 MP_probe_tabs.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -367,7 +351,6 @@ MP_sonde.o: $(ARBHOME)/INCLUDE/aisc_global.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/arb_core.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/arb_error.h
-MP_sonde.o: $(ARBHOME)/INCLUDE/arb_mem.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/arb_msg.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/arb_string.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -401,13 +384,15 @@ MP_sondentopf.o: SoTl.hxx
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/aisc_global.h
-MP_sondentopf.o: $(ARBHOME)/INCLUDE/AP_TreeColors.hxx
+MP_sondentopf.o: $(ARBHOME)/INCLUDE/AliView.hxx
+MP_sondentopf.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
+MP_sondentopf.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/arb_core.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/arb_error.h
-MP_sondentopf.o: $(ARBHOME)/INCLUDE/arb_mem.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/arb_msg.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/arb_string.h
+MP_sondentopf.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/arbdb.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -426,6 +411,7 @@ MP_sondentopf.o: $(ARBHOME)/INCLUDE/downcast.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/dupstr.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/gccver.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/PT_com.h
+MP_sondentopf.o: $(ARBHOME)/INCLUDE/RootedTree.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/smartptr.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/static_assert.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -446,7 +432,6 @@ MP_Window.o: $(ARBHOME)/INCLUDE/arb_core.h
 MP_Window.o: $(ARBHOME)/INCLUDE/arb_defs.h
 MP_Window.o: $(ARBHOME)/INCLUDE/arb_error.h
 MP_Window.o: $(ARBHOME)/INCLUDE/arb_file.h
-MP_Window.o: $(ARBHOME)/INCLUDE/arb_mem.h
 MP_Window.o: $(ARBHOME)/INCLUDE/arb_msg.h
 MP_Window.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 MP_Window.o: $(ARBHOME)/INCLUDE/arb_strbuf.h

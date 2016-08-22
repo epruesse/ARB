@@ -11,7 +11,7 @@ $(MAIN): $(CPP_OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
 
 .cxx.o:
-	$(A_CXX) $(cflags) $(cxxflags) -c $<  $(CXX_INCLUDES) $(POST_COMPILE) $<
+	$(A_CXX) $(cflags) $(cxxflags) -c $<  $(CXX_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(CPP_OBJECTS) *.a
@@ -38,7 +38,6 @@ SQ_ambiguities.o: $(ARBHOME)/INCLUDE/ad_prot.h
 SQ_ambiguities.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SQ_ambiguities.o: $(ARBHOME)/INCLUDE/arb_core.h
 SQ_ambiguities.o: $(ARBHOME)/INCLUDE/arb_error.h
-SQ_ambiguities.o: $(ARBHOME)/INCLUDE/arb_mem.h
 SQ_ambiguities.o: $(ARBHOME)/INCLUDE/arb_msg.h
 SQ_ambiguities.o: $(ARBHOME)/INCLUDE/arb_string.h
 SQ_ambiguities.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -62,7 +61,6 @@ SQ_functions.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/arb_core.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/arb_error.h
-SQ_functions.o: $(ARBHOME)/INCLUDE/arb_mem.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/arb_msg.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/arb_progress.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -73,7 +71,6 @@ SQ_functions.o: $(ARBHOME)/INCLUDE/arbtools.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/attributes.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-SQ_functions.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
@@ -87,7 +84,6 @@ SQ_functions.o: $(ARBHOME)/INCLUDE/gccver.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/smartptr.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/static_assert.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/test_global.h
-SQ_functions.o: $(ARBHOME)/INCLUDE/TreeNode.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 SQ_GroupData.o: SQ_GroupData.h
@@ -108,7 +104,6 @@ SQ_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SQ_main.o: $(ARBHOME)/INCLUDE/arb_core.h
 SQ_main.o: $(ARBHOME)/INCLUDE/arb_error.h
 SQ_main.o: $(ARBHOME)/INCLUDE/arb_global_defs.h
-SQ_main.o: $(ARBHOME)/INCLUDE/arb_mem.h
 SQ_main.o: $(ARBHOME)/INCLUDE/arb_msg.h
 SQ_main.o: $(ARBHOME)/INCLUDE/arb_progress.h
 SQ_main.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -125,7 +120,6 @@ SQ_main.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-SQ_main.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/cb.h
@@ -138,5 +132,4 @@ SQ_main.o: $(ARBHOME)/INCLUDE/gccver.h
 SQ_main.o: $(ARBHOME)/INCLUDE/smartptr.h
 SQ_main.o: $(ARBHOME)/INCLUDE/static_assert.h
 SQ_main.o: $(ARBHOME)/INCLUDE/test_global.h
-SQ_main.o: $(ARBHOME)/INCLUDE/TreeNode.h
 SQ_main.o: $(ARBHOME)/INCLUDE/ttypes.h

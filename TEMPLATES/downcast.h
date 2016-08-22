@@ -30,14 +30,6 @@ namespace ARB_type_traits { // according to boost-type_traits or std-type_traits
     typedef char (&yes)[1];
     typedef char (&no)[2];
 
-    template< class T > struct remove_const          { typedef T type; };
-    template< class T > struct remove_const<const T> { typedef T type; };
-
-    template< class T > struct remove_volatile             { typedef T type; };
-    template< class T > struct remove_volatile<volatile T> { typedef T type; };
-
-    template< class T > struct remove_cv { typedef typename remove_volatile<typename remove_const<T>::type>::type type; };
-
     template <typename B, typename D>
     struct Host {
         operator B*() const;
@@ -46,13 +38,10 @@ namespace ARB_type_traits { // according to boost-type_traits or std-type_traits
 
     template <typename B, typename D>
     struct is_base_of {
-        typedef const volatile B CVB;
-        typedef const volatile D CVD;
+        template <typename T> static yes check(D*, T);
+        static no check(B*, int);
 
-        template <typename T> static yes check(CVD*, T);
-        static no                        check(CVB*, int);
-
-        static const bool value = sizeof(check(Host<CVB,CVD>(), int())) == sizeof(yes);
+        static const bool value = sizeof(check(Host<B,D>(), int())) == sizeof(yes);
     };
 
     template <typename T, typename U>
@@ -60,15 +49,20 @@ namespace ARB_type_traits { // according to boost-type_traits or std-type_traits
         static T *t;
         static U *u;
 
-        static yes check1(T*, T*);
-        static no  check1(...);
+        static yes check(T*, T*);
+        static no  check(...);
 
-        static yes check2(U*, U*);
-        static no  check2(...);
-
-        static const bool value = (sizeof(check1(t, u)) == sizeof(yes)) && (sizeof(check2(t, u)) == sizeof(yes));
+        static const bool value = sizeof(check(t, u)) == sizeof(yes);
     };
-    // Note: test-code for ARB_type_traits was removed by [13300]
+
+    template< class T > struct remove_const          { typedef T type; };
+    template< class T > struct remove_const<const T> { typedef T type; };
+
+    template< class T > struct remove_volatile             { typedef T type; };
+    template< class T > struct remove_volatile<volatile T> { typedef T type; };
+
+    template< class T > struct remove_cv { typedef typename remove_volatile<typename remove_const<T>::type>::type type; };
+
 };
 
 // -----------------------------------------
@@ -88,7 +82,7 @@ template<typename T> struct dereference<T*const> {
 };
 
 // ----------------------------------------------
-// DOWNCAST from BASE* to DERIVED*
+// DOWNCAST from DERIVED* to BASE*
 // - uses dynamic_cast in DEBUG mode and checks for failure
 // - uses plain old cast in NDEBUG mode
 
@@ -108,8 +102,9 @@ inline DERIVED *safe_pointer_downcast(BASE *expr) {
     typedef typename ARB_type_traits::remove_cv<BASE   >::type NCV_BASE;
     typedef typename ARB_type_traits::remove_cv<DERIVED>::type NCV_DERIVED;
 
-    STATIC_ASSERT_ANNOTATED((ARB_type_traits::is_same<NCV_BASE, NCV_DERIVED>::value == false), "useless downcast (BASE==DERIVED)");
-    STATIC_ASSERT_ANNOTATED((ARB_type_traits::is_base_of<BASE,DERIVED>::value), "downcast only allowed from base type to derived type");
+    STATIC_ASSERT_ANNOTATED((ARB_type_traits::is_base_of<BASE,DERIVED>::value ||
+                             ARB_type_traits::is_same<NCV_BASE, NCV_DERIVED>::value),
+                             "downcast only allowed from base type to derived type");
 
     return expr
         ? assert_downcasted<DERIVED*>(dynamic_cast<DERIVED*>(expr))

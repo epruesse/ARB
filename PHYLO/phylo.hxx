@@ -14,8 +14,14 @@
 #ifndef PH_FILTER_HXX
 #include "PH_filter.hxx"
 #endif
+#ifndef AP_MATRIX_HXX
+#include <AP_matrix.hxx>
+#endif
 #ifndef AW_BASE_HXX
 #include <aw_base.hxx>
+#endif
+#ifndef ARBDB_BASE_H
+#include <arbdb_base.h>
 #endif
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
@@ -26,53 +32,91 @@
 #define AWAR_PHYLO_ALIGNMENT     "tmp/phyl/alignment"
 #define AWAR_PHYLO_FILTER_FILTER "phyl/filter/filter"
 
+#define AWAR_PHYLO_MATRIX_POINT "phyl/matrix/point"
+#define AWAR_PHYLO_MATRIX_MINUS "phyl/matrix/minus"
+#define AWAR_PHYLO_MATRIX_REST  "phyl/matrix/rest"
+#define AWAR_PHYLO_MATRIX_LOWER "phyl/matrix/lower"
+
 #define AWAR_PHYLO_FILTER_STARTCOL "phyl/filter/startcol"
 #define AWAR_PHYLO_FILTER_STOPCOL  "phyl/filter/stopcol"
 #define AWAR_PHYLO_FILTER_MINHOM   "phyl/filter/minhom"
 #define AWAR_PHYLO_FILTER_MAXHOM   "phyl/filter/maxhom"
-#define AWAR_PHYLO_FILTER_DOT      "phyl/filter/point"
+#define AWAR_PHYLO_FILTER_POINT    "phyl/filter/point"
 #define AWAR_PHYLO_FILTER_MINUS    "phyl/filter/minus"
-#define AWAR_PHYLO_FILTER_AMBIG    "phyl/filter/rest"
+#define AWAR_PHYLO_FILTER_REST     "phyl/filter/rest"
 #define AWAR_PHYLO_FILTER_LOWER    "phyl/filter/lower"
-#define AWAR_PHYLO_FILTER_AUTOCALC "phyl/filter/autocalc"
 
 #define AWAR_PHYLO_MARKERLINENAME "tmp/phylo/markerlinename"
 
-enum FilterMode {
-    DONT_COUNT,
-    SKIP_COLUMN_IF_MAX,
-    SKIP_COLUMN_IF_OCCUR,
-    COUNT_DONT_USE_MAX,
-    TREAT_AS_UPPERCASE,
-    TREAT_AS_REGULAR,
+enum {
+    DONT_COUNT           = 0,
+    SKIP_COLUMN_IF_MAX   = 1,
+    SKIP_COLUMN_IF_OCCUR = 2,
+    COUNT_DONT_USE_MAX   = 3,
+    TREAT_AS_UPPERCASE   = 4,
+    TREAT_AS_REGULAR     = 5,
 
-    // Note: enum values are saved in properties (do not modify w/o need!)
-    // update on changes: PH_main.cxx@filter_text
+    FILTER_MODES, // has to be last!
 };
-const int FILTER_MODES = TREAT_AS_REGULAR+1;
 
 
 #define PH_DB_CACHE_SIZE    2000000
 
-enum {
-    PH_GC_SEQUENCE,
-    PH_GC_MARKER,
-    PH_GC_NOT_MARKER,
-    PH_GC_DRAG
+#define AP_F_LOADED    ((AW_active)1)
+#define AP_F_NLOADED   ((AW_active)2)
+#define AP_F_SEQUENCES ((AW_active)4)
+#define AP_F_MATRIX    ((AW_active)8)
+#define AP_F_TREE      ((AW_active)16)
+#define AP_F_ALL       ((AW_active)-1)
+
+#define PH_CORRECTION_BANDELT_STRING "bandelt"
+
+#define NIL 0
+
+// matrix definitions
+#define PH_TRANSFORMATION_JUKES_CANTOR_STRING        "J+C"
+#define PH_TRANSFORMATION_KIMURA_STRING              "KIMURA"
+#define PH_TRANSFORMATION_TAJIMA_NEI_STRING          "T+N"
+#define PH_TRANSFORMATION_TAJIMA_NEI_PAIRWISE_STRING "T+N-P"
+#define PH_TRANSFORMATION_BANDELT_STRING             "B"
+#define PH_TRANSFORMATION_BANDELT_JC_STRING          "B+J+C"
+#define PH_TRANSFORMATION_BANDELT2_STRING            "B2"
+#define PH_TRANSFORMATION_BANDELT2_JC_STRING         "B2+J+C"
+
+enum PH_CORRECTION {
+    PH_CORRECTION_NONE,
+    PH_CORRECTION_BANDELT
 };
 
+
 enum {
-    PH_GC_BOTTOM_TEXT,
-    PH_GC_BOTTOM_DRAG
+    PH_GC_0,
+    PH_GC_1,
+    PH_GC_0_DRAG
 };
 
-void       PH_create_filter_variables(AW_root *aw_root, AW_default default_file, GBDATA *gb_main);
+// make awars :
+void PH_create_filter_variables(AW_root *aw_root, AW_default aw_def);
+
 AW_window *PH_create_filter_window(AW_root *aw_root);
 
-enum display_type {
-    DISP_NONE,    // initial
-    DISP_SPECIES, // after startup, filter not calculated yet
-    DISP_FILTER,  // after filter has been calculated
+
+
+enum display_type { NONE, species_dpy, filter_dpy, matrix_dpy, tree_dpy };
+
+
+typedef double AP_FLOAT;
+
+enum PH_TRANSFORMATION {
+    PH_TRANSFORMATION_NONE,
+    PH_TRANSFORMATION_JUKES_CANTOR,
+    PH_TRANSFORMATION_KIMURA,
+    PH_TRANSFORMATION_TAJIMA_NEI,
+    PH_TRANSFORMATION_TAJIMA_NEI_PAIRWISE,
+    PH_TRANSFORMATION_BANDELT,
+    PH_TRANSFORMATION_BANDELT_JC,
+    PH_TRANSFORMATION_BANDELT2,
+    PH_TRANSFORMATION_BANDELT2_JC
 };
 
 // ---------------------------
@@ -101,8 +145,11 @@ public:
 
     GB_ERROR open(const char *db_server);
     GBDATA *get_gb_main() const { ph_assert(gb_main); return gb_main; }
+    const char *get_aliname() const { return use; }
 };
 
+
+struct elem;
 
 class PHDATA : virtual Noncopyable {
     // connection to database
@@ -115,6 +162,9 @@ class PHDATA : virtual Noncopyable {
         GBDATA       *gb_species_data_ptr;
         PHENTRY      *next;
         PHENTRY      *prev;
+        int           group_members; // >0: this elem is grouphead
+        elem         *first_member;  // !=NULL: elem is grouphead
+        bool          selected;
 
         PHENTRY()
             : key(0),
@@ -122,7 +172,10 @@ class PHDATA : virtual Noncopyable {
               full_name(NULL),
               gb_species_data_ptr(NULL),
               next(NULL),
-              prev(NULL)
+              prev(NULL),
+              group_members(0),
+              first_member(NULL),
+              selected(false)
         {}
 
         ~PHENTRY() {
@@ -136,20 +189,19 @@ class PHDATA : virtual Noncopyable {
     AW_root *aw_root; // only link
     PH_root *ph_root; // only link
 
-    PHENTRY *entries;
-
-    char *unload();
-
 public:
     GBDATA *get_gb_main() { return ph_root->get_gb_main(); }
 
     char *use;               // @@@ elim (PH_root has same field)
 
+    PHENTRY       *entries;
     PHENTRY      **hash_elements;
     unsigned int   nentries;                        // total number of entries
 
     static PHDATA *ROOT;                            // 'global' pointer
 
+    AP_smatrix *distance_table;                     // weights between different characters
+    AP_smatrix *matrix;                             // calculated matrix
     float      *markerline;
 
     PHDATA(AW_root *aw_root_, PH_root *ph_root_)
@@ -157,19 +209,26 @@ public:
           seq_len(0),
           aw_root(aw_root_),
           ph_root(ph_root_),
-          entries(NULL),
           use(NULL),
+          entries(NULL),
           hash_elements(NULL),
           nentries(0),
+          distance_table(NULL),
+          matrix(NULL),
           markerline(NULL)
     {}
     ~PHDATA() {
         unload();
+        delete matrix;
     }
 
-    char *load(char*& use); // open database and get pointers to it
+    char     *load(char*& use);  // open database and get pointers to it
+    char     *unload();
+    GB_ERROR  save(char *filename);
+    void      print();
+    GB_ERROR  calculate_matrix(const char *cancel, double alpha, PH_TRANSFORMATION transformation);
+    long get_seq_len() { return seq_len; };
 
-    long get_seq_len() { return seq_len; }
 };
 
 #else

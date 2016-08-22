@@ -12,6 +12,7 @@
 #include "FileContent.h"
 #include "BufferedFileReader.h"
 #include "arb_msg.h"
+#include "arb_string.h"
 #include "arb_file.h"
 
 using namespace std;
@@ -26,7 +27,7 @@ void FileContent::init() {
 
         string line;
         while (buf.getLine(line)) {
-            Lines.put(ARB_strndup(line.c_str(), line.length()));
+            Lines.put(GB_strndup(line.c_str(), line.length()));
         }
     }
 }
@@ -94,7 +95,6 @@ void TEST_linefeed_conversion() {
     TEST_EXPECT_READS_SAME(cunix,fmac);
     TEST_EXPECT_READS_SAME(cunix,fbroken);
 }
-TEST_PUBLISH(TEST_linefeed_conversion);
 
 #endif // UNIT_TESTS
 

@@ -10,7 +10,7 @@ UP	glossary.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Color properties
 
-OCCURRENCE	<any properties menu>/Colors and fonts
+OCCURRENCE	many places
 
 DESCRIPTION     This is a generic window that allows you to configure
                 the display colors of the current application.
@@ -26,29 +26,15 @@ DESCRIPTION     This is a generic window that allows you to configure
                       - '#rgb' where r/g/b stands for 0..f (hexadecimal values)
                       - '#rrggbb' same as above
 
-                Attached to some of the colors there are font selection buttons
-                to configure the font used for this color (and for all following
-                colors that have no font selection button).
-
-                At the top of the window there is a button to set all customizable fonts
-                to the same value.
+                Attached to some of the colors there are font definitions, where you
+                may select the font type and size.
 
                 This window may contain a button at the bottom, allowing you to define the
                 colors of color groups (see LINK{color_props_groups.hlp}).
 
 NOTES		See 'xcolors' for color names.
 
-EXAMPLES	When called from ARB_NT, this window allows to define colours and fonts
-                for the tree display area.
-
-                    Different colours and fonts can be used to indicate marked and
-                    unmarked species as well as branches or groups containing
-                    marked and unmarked species.
-
-                When called from ARB_EDIT4, this window allows to define colours and fonts
-                for the sequence display area.
-
-                    See also LINK{e4_background_priority.hlp}
+EXAMPLES	None
 
 WARNINGS	None
 

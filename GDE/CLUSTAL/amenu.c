@@ -342,7 +342,7 @@ void parse_params()
 
 
 /*****************************************************************************/
-/*  Check to see if sequence type is explicitly stated..override ************/
+/*  Check to see if sequence type is explicitely stated..override ************/
 /* the automatic checking (DNA or Protein).   /type=d or /type=p *************/
 /*****************************************************************************/
 	if(check_param(params, typest, param_arg, &param_arg_len)) 
@@ -351,11 +351,11 @@ void parse_params()
 				dnaflag = FALSE;
 				explicit_dnaflag = TRUE;
 				fprintf(stdout,
-				"\nSequence type explicitly set to Protein\n");
+				"\nSequence type explicitely set to Protein\n");
 			}
 			else if(param_arg[0] == 'd') {
 				fprintf(stdout,
-				"\nSequence type explicitly set to DNA\n");
+				"\nSequence type explicitely set to DNA\n");
 				dnaflag = TRUE;
 				explicit_dnaflag = TRUE;
 			}

@@ -282,7 +282,7 @@ const char *gcg_date(const char *input) {
 
 #define TEST_EXPECT_FIND_ANYDATE(input,d,m,y,finder) \
     do {                                                        \
-        char *dup_ = ARB_strdup(input);                         \
+        char *dup_ = strdup(input);                             \
         int   day_, month_, year_;                              \
         TEST_EXPECT(finder(dup_, &month_, &day_, &year_));      \
         TEST_EXPECT_EQUAL(day_, d);                             \
@@ -355,8 +355,8 @@ void TEST_BASIC_conv_date() {
     TEST_EXPECT_GENBANK_DATE("Fri 31 13 08:37:14 2010", ERROR_DATE);
 
     TEST_EXPECT_GENBANK_DATE("Tue Feb 28 08:37:14 2011", "28-FEB-2011");
-    TEST_EXPECT_GENBANK_DATE("Tue Feb 29 08:37:14 2011", "29-FEB-2011"); // existence not checked
-    TEST_EXPECT_GENBANK_DATE("Tue Feb 30 08:37:14 2011", ERROR_DATE);    // existence not checked
+    TEST_EXPECT_GENBANK_DATE("Tue Feb 29 08:37:14 2011", "29-FEB-2011"); // existance not checked
+    TEST_EXPECT_GENBANK_DATE("Tue Feb 30 08:37:14 2011", ERROR_DATE); // existance not checked
 
     TEST_EXPECT_DIFFERENT(genbank_date(today_date()), ERROR_DATE);
 

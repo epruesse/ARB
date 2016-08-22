@@ -28,103 +28,23 @@
 #include <arb_file.h>
 #include <arb_global_defs.h>
 
+#include <list>
 #include "awt_modules.hxx"
 #include <BufferedFileReader.h>
 
-#include <list>
-#include <map>
-#include <set>
-
 using namespace std;
 
-typedef map<string, AW_window*> WinMap;
 
-class SelectionListSpec {
-    string        awar_name;
-    static WinMap window_map; // contains popup windows of all selection list popups
-
-    virtual AW_DB_selection *create(AW_selection_list *sellist) const = 0;
-    AW_DB_selection *init(AW_selection_list *sellist) const {
-        AW_DB_selection *sel = create(sellist);
-        sel->refresh();
-        return sel;
-    }
-
-public:
-    SelectionListSpec(const char *awar_name_)
-        : awar_name(awar_name_)
-    {}
-    virtual ~SelectionListSpec() {}
-
-    virtual const char *get_macro_id() const = 0;
-    virtual const char *get_title() const    = 0;
-
-    const char *get_awar_name() const { return awar_name.c_str(); }
-
-    AW_DB_selection *create_list(AW_window *aws, bool fallback2default) const {
-        return init(aws->create_selection_list(get_awar_name(), 40, 4, fallback2default));
-    }
-
-#if defined(ARB_GTK)
-    AW_DB_selection *create_optionMenu(AW_window *aws, bool fallback2default) const {
-        return init(aws->create_option_menu(get_awar_name(), fallback2default));
-    }
-#endif
-
-    void popup() const {
-        WinMap::iterator  found  = window_map.find(awar_name);
-        if (found == window_map.end()) {
-            AW_window_simple *aws = new AW_window_simple;
-            aws->init(AW_root::SINGLETON, get_macro_id(), get_title());
-            aws->load_xfig("select_simple.fig");
-
-            aws->at("selection");
-            AW_root::SINGLETON->awar(get_awar_name())->add_callback(makeRootCallback(awt_auto_popdown_cb, aws));
-            create_list(aws, true);
-
-            aws->at("button");
-            aws->callback(AW_POPDOWN);
-            aws->create_button("CLOSE", "CLOSE", "C");
-
-            aws->window_fit();
-
-            window_map[awar_name] = aws;
-            aws->activate();
-        }
-        else {
-            found->second->activate();
-        }
-    }
-
-    void createButton(AW_window *aws) const;
-};
-WinMap SelectionListSpec::window_map; 
-
-#if defined(ARB_MOTIF)
-static void popup_SelectionListSpec_cb(UNFIXED, const SelectionListSpec *spec) {
-    spec->popup();
-}
-#endif
-void SelectionListSpec::createButton(AW_window *aws) const {
-    // WARNING: this is bound to callback (do not free)
-#if defined(ARB_GTK) // use option menu in gtk
-    create_optionMenu(aws, true);
-    aws->update_option_menu();
-#else // !defined(ARB_GTK)
-    aws->callback(makeWindowCallback(popup_SelectionListSpec_cb, this));
-    aws->create_button(get_macro_id(), get_awar_name());
-#endif
-}
 
 // --------------------------------------
 //      selection boxes on alignments
 
-class ALI_selection : public AW_DB_selection { // derived from a Noncopyable
+class AWT_alignment_selection : public AW_DB_selection { // derived from a Noncopyable
     char *ali_type_match;                           // filter for wanted alignments (GBS_string_eval command)
 public:
-    ALI_selection(AW_selection_list *sellist_, GBDATA *gb_presets, const char *ali_type_match_)
-        : AW_DB_selection(sellist_, gb_presets),
-          ali_type_match(nulldup(ali_type_match_))
+    AWT_alignment_selection(AW_selection_list *sellist_, GBDATA *gb_presets, const char *ali_type_match_)
+        : AW_DB_selection(sellist_, gb_presets)
+        , ali_type_match(nulldup(ali_type_match_))
     {}
     
     void fill() OVERRIDE {
@@ -153,42 +73,25 @@ public:
     }
 };
 
-class ALI_sellst_spec : public SelectionListSpec, virtual Noncopyable {
-    GBDATA *gb_main;
-    string  ali_type_match;
-
-    AW_DB_selection *create(AW_selection_list *sellist) const {
-        GB_transaction ta(gb_main);
-        return new ALI_selection(sellist, GBT_get_presets(gb_main), ali_type_match.c_str());
-    }
-
-public:
-    ALI_sellst_spec(const char *awar_name_, GBDATA *gb_main_, const char *ali_type_match_)
-        : SelectionListSpec(awar_name_),
-          gb_main(gb_main_),
-          ali_type_match(ali_type_match_)
-    {}
-
-    const char *get_macro_id() const { return "SELECT_ALI"; }
-    const char *get_title() const { return "Select alignment"; }
-};
-
-AW_DB_selection *awt_create_ALI_selection_list(GBDATA *gb_main, AW_window *aws, const char *varname, const char *ali_type_match) {
+AW_DB_selection *awt_create_selection_list_on_alignments(GBDATA *gb_main, AW_window *aws, const char *varname, const char *ali_type_match) {
     // Create selection lists on alignments
     //
     // if 'ali_type_match' is set, then only insert alignments,
     // where 'ali_type_match' GBS_string_eval's the alignment type
 
-    ALI_sellst_spec spec(varname, gb_main, ali_type_match);
-    return spec.create_list(aws, true);
+    GBDATA *gb_presets;
+    {
+        GB_transaction ta(gb_main);
+        gb_presets = GBT_get_presets(gb_main);
+    }
+    AW_selection_list       *sellist = aws->create_selection_list(varname, 20, 3, true);
+    AWT_alignment_selection *alisel  = new AWT_alignment_selection(sellist, gb_presets, ali_type_match);
+    alisel->refresh(); // belongs to window now
+    return alisel;
 }
 
-void awt_create_ALI_selection_button(GBDATA *gb_main, AW_window *aws, const char *varname, const char *ali_type_match) {
-    (new ALI_sellst_spec(varname, gb_main, ali_type_match))->createButton(aws); // do not free yet (bound to callback in ARB_MOTIF)
-}
-
-void awt_reconfigure_ALI_selection_list(AW_DB_selection *dbsel, const char *ali_type_match) {
-    ALI_selection *alisel = dynamic_cast<ALI_selection*>(dbsel);
+void awt_reconfigure_selection_list_on_alignments(AW_DB_selection *dbsel, const char *ali_type_match) {
+    AWT_alignment_selection *alisel = dynamic_cast<AWT_alignment_selection*>(dbsel);
     alisel->reconfigure(ali_type_match);
 }
 
@@ -230,7 +133,7 @@ struct AWT_tree_selection: public AW_DB_selection {
     }
 };
 
-AW_DB_selection *awt_create_TREE_selection_list(GBDATA *gb_main, AW_window *aws, const char *varname, bool fallback2default) {
+AW_DB_selection *awt_create_selection_list_on_trees(GBDATA *gb_main, AW_window *aws, const char *varname, bool fallback2default) {
     GBDATA *gb_tree_data;
     {
         GB_transaction ta(gb_main);
@@ -250,21 +153,21 @@ AW_DB_selection *awt_create_TREE_selection_list(GBDATA *gb_main, AW_window *aws,
 #define PT_SERVERNAME_SELLIST_WIDTH 30              // this for lists
 #define PT_SERVER_TRACKLOG_TIMER    10000           // every 10 seconds
 
-class PT_selection : public AW_selection {
-    typedef list<PT_selection*> PT_selections;
+class AWT_ptserver_selection : public AW_selection {
+    typedef list<AWT_ptserver_selection*> PTserverSelections;
     
-    static PT_selections ptserver_selections;
+    static PTserverSelections ptserver_selections;
 public:
-    PT_selection(AW_selection_list *sellist_);
+    AWT_ptserver_selection(AW_selection_list *sellist_);
 
     void fill() OVERRIDE;
 
     static void refresh_all();
 };
 
-PT_selection::PT_selections PT_selection::ptserver_selections;
+AWT_ptserver_selection::PTserverSelections AWT_ptserver_selection::ptserver_selections;
 
-void PT_selection::fill() {
+void AWT_ptserver_selection::fill() {
     const char * const *pt_servers = GBS_get_arb_tcp_entries("ARB_PT_SERVER*");
 
     int count = 0;
@@ -283,14 +186,14 @@ void PT_selection::fill() {
     insert_default("-undefined-", (long)-1);
 }
 
-void PT_selection::refresh_all() {
-    PT_selections::iterator end = ptserver_selections.end();
-    for (PT_selections::iterator pts_sel = ptserver_selections.begin(); pts_sel != end; ++pts_sel) {
+void AWT_ptserver_selection::refresh_all() {
+    PTserverSelections::iterator end = ptserver_selections.end();
+    for (PTserverSelections::iterator pts_sel = ptserver_selections.begin(); pts_sel != end; ++pts_sel) {
         (*pts_sel)->refresh();
     }
 }
-static void refresh_all_PTSERVER_selection_lists() {
-    PT_selection::refresh_all();
+static void awt_refresh_all_pt_server_selection_lists() {
+    AWT_ptserver_selection::refresh_all();
 }
 static unsigned track_log_cb(AW_root *) {
     static long  last_ptserverlog_mod = 0;
@@ -301,14 +204,14 @@ static unsigned track_log_cb(AW_root *) {
 #if defined(DEBUG)
         fprintf(stderr, "%s modified!\n", ptserverlog);
 #endif // DEBUG
-        PT_selection::refresh_all();
+        AWT_ptserver_selection::refresh_all();
         last_ptserverlog_mod = ptserverlog_mod;
     }
 
     return PT_SERVER_TRACKLOG_TIMER;
 }
 
-PT_selection::PT_selection(AW_selection_list *sellist_)
+AWT_ptserver_selection::AWT_ptserver_selection(AW_selection_list *sellist_)
     : AW_selection(sellist_)
 {
     if (ptserver_selections.empty()) {
@@ -321,7 +224,7 @@ PT_selection::PT_selection(AW_selection_list *sellist_)
 
 static void arb_tcp_dat_changed_cb(const char * /* path */, bool fileChanged, bool /* editorTerminated */) {
     if (fileChanged) {
-        refresh_all_PTSERVER_selection_lists();
+        awt_refresh_all_pt_server_selection_lists();
     }
 }
 
@@ -331,22 +234,15 @@ void awt_edit_arbtcpdat_cb(AW_window *aww, GBDATA *gb_main) {
     free(filename);
 }
 
-void awt_auto_popdown_cb(AW_root*, AW_window_simple *aw_popup) {
-    /*! auto pops-down a simple selection window when the awar bound
-     * to the selection list gets changed.
-     */
-    aw_popup->hide();
-}
-
-#if defined(ARB_MOTIF)
+#if !defined(ARB_GTK)
 static char *readable_pt_servername(int index, int maxlength) {
     char *fullname = GBS_ptserver_id_to_choice(index, 0);
     if (!fullname) {
 #ifdef DEBUG
-        printf("awar given to ptserver-selection does not contain a valid index\n");
+        printf("awar given to awt_create_selection_list_on_pt_servers() does not contain a valid index\n");
 #endif
         GB_clear_error();
-        return ARB_strdup("-undefined-");
+        return strdup("-undefined-");
     }
 
     int len = strlen(fullname);
@@ -362,78 +258,184 @@ static char *readable_pt_servername(int index, int maxlength) {
     return fullname;
 }
 
-static void update_ptserver_button(AW_root *, AW_awar *awar_ptserver, AW_awar *awar_buttontext_name) {
-    char *readable_name = readable_pt_servername(awar_ptserver->read_int(), PT_SERVERNAME_LENGTH);
-    awar_buttontext_name->write_string(readable_name);
+static void update_ptserver_button(AW_root *aw_root, const char *varname) {
+    char *awar_buttontext_name = GBS_global_string_copy("/tmp/%s_BUTTON", varname);
+    char *readable_name        = readable_pt_servername(aw_root->awar(varname)->read_int(), PT_SERVERNAME_LENGTH);
+
+    aw_root->awar(awar_buttontext_name)->write_string(readable_name);
+
     free(readable_name);
+    free(awar_buttontext_name);
 }
 
-static AW_window *create_PTSERVER_selection_window(AW_root *aw_root, const char *varname) {
+static AW_window *create_selection_list_on_pt_servers_window(AW_root *aw_root, const char *varname) {
     AW_window_simple *aw_popup = new AW_window_simple;
 
     aw_popup->init(aw_root, "SELECT_PT_SERVER", "Select a PT-Server");
     aw_popup->auto_space(10, 10);
 
-    const char *CLOSE_ID = "CLOSE";
-
     aw_popup->at_newline();
-    aw_root->awar(varname)->add_callback(makeRootCallback(awt_auto_popdown_cb, aw_popup));
+    aw_popup->callback((AW_CB0)AW_POPDOWN);
     AW_selection_list *sellist = aw_popup->create_selection_list(varname, PT_SERVERNAME_SELLIST_WIDTH, 20, true);
 
     aw_popup->at_newline();
-    aw_popup->callback(AW_POPDOWN);
-    aw_popup->create_button(CLOSE_ID, "CLOSE", "C");
+    aw_popup->callback((AW_CB0)AW_POPDOWN);
+    aw_popup->create_button("CLOSE", "CLOSE", "C");
 
     aw_popup->window_fit();
     aw_popup->recalc_pos_atShow(AW_REPOS_TO_MOUSE);
 
-    (new PT_selection(sellist))->refresh();
+    (new AWT_ptserver_selection(sellist))->refresh();
 
     return aw_popup;
 }
-#endif // ARB_MOTIF
+#endif // ARB_GTK
 
-void awt_create_PTSERVER_selection_button(AW_window *aws, const char *varname) {
+void awt_create_selection_list_on_pt_servers(AW_window *aws, const char *varname, bool popup) {
+    if (popup) {
 #ifdef ARB_GTK
-    (new PT_selection(aws->create_option_menu(varname, true)))->refresh();
+        (new AWT_ptserver_selection(aws->create_option_menu(varname, true)))->refresh();
 
-    int old_button_length = aws->get_button_length();
-    aws->button_length(PT_SERVERNAME_LENGTH+1);
-    aws->update_option_menu();
-    aws->button_length(old_button_length);
-#else // ARB_MOTIF
+        int old_button_length = aws->get_button_length();
+        aws->button_length(PT_SERVERNAME_LENGTH+1);
+        aws->update_option_menu();
+        aws->button_length(old_button_length);
+#else
 
-    AW_root *aw_root              = aws->get_root();
-    char    *awar_buttontext_name = GBS_global_string_copy("/tmp/%s_BUTTON", varname);
-    AW_awar *awar_ptserver        = aw_root->awar(varname);
-    int      ptserver_index       = awar_ptserver->read_int();
+        AW_root *aw_root              = aws->get_root();
+        char    *awar_buttontext_name = GBS_global_string_copy("/tmp/%s_BUTTON", varname);
+        int      ptserver_index       = aw_root->awar(varname)->read_int();
 
-    if (ptserver_index<0) { // fix invalid pt_server indices
-        ptserver_index = 0;
-        awar_ptserver->write_int(ptserver_index);
-    }
+        if (ptserver_index<0) { // fix invalid pt_server indices
+            ptserver_index = 0;
+            aw_root->awar(varname)->write_int(ptserver_index);
+        }
 
-    char *readable_name = readable_pt_servername(ptserver_index, PT_SERVERNAME_LENGTH);
+        char        *readable_name = readable_pt_servername(ptserver_index, PT_SERVERNAME_LENGTH);
+        char *const  varnameDup    = strdup(varname);
 
-    awt_assert(!GB_have_error());
+        awt_assert(!GB_have_error());
 
-    AW_awar *awar_buttontext = aw_root->awar_string(awar_buttontext_name, readable_name, AW_ROOT_DEFAULT);
-    awar_ptserver->add_callback(makeRootCallback(update_ptserver_button, awar_ptserver, awar_buttontext));
+        aw_root->awar_string(awar_buttontext_name, readable_name, AW_ROOT_DEFAULT);
+        aw_root->awar(varname)->add_callback(makeRootCallback(update_ptserver_button, varnameDup));
 
-    int old_button_length = aws->get_button_length();
+        int old_button_length = aws->get_button_length();
 
-    aws->button_length(PT_SERVERNAME_LENGTH+1);
-    aws->callback(makeCreateWindowCallback(create_PTSERVER_selection_window, awar_ptserver->awar_name));
-    aws->create_button("CURR_PT_SERVER", awar_buttontext_name);
+        aws->button_length(PT_SERVERNAME_LENGTH+1);
+        aws->callback(makeCreateWindowCallback(create_selection_list_on_pt_servers_window, varnameDup));
+        aws->create_button("CURR_PT_SERVER", awar_buttontext_name);
 
-    aws->button_length(old_button_length);
+        aws->button_length(old_button_length);
 
-    free(readable_name);
-    free(awar_buttontext_name);
+        free(readable_name);
+        free(awar_buttontext_name);
 #endif
+    }
+    else {
+        (new AWT_ptserver_selection(aws->create_selection_list(varname, true)))->refresh();
+    }
 }
-void awt_create_PTSERVER_selection_list(AW_window *aws, const char *varname) {
-    (new PT_selection(aws->create_selection_list(varname, true)))->refresh();
+
+// ----------------------------------
+//      selection boxes on tables
+
+
+#if defined(WARN_TODO)
+#warning derive awt_sel_list_for_tables from AW_DB_selection
+#endif
+
+struct awt_sel_list_for_tables {
+    AW_window         *aws;
+    GBDATA            *gb_main;
+    AW_selection_list *id;
+    const char        *table_name;
+};
+
+static void awt_create_selection_list_on_tables_cb(GBDATA *, struct awt_sel_list_for_tables *cbs) {
+    cbs->id->clear();
+    GBDATA *gb_table;
+    for (gb_table = GBT_first_table(cbs->gb_main);
+         gb_table;
+         gb_table = GBT_next_table(gb_table)) {
+
+        GBDATA *gb_name = GB_entry(gb_table, "name");
+        GBDATA *gb_description = GB_search(gb_table, "description", GB_STRING);
+        if (!gb_name) continue;
+        char *table_name = GB_read_string(gb_name);
+        char *description = GB_read_string(gb_description);
+        const char *info_text = GBS_global_string("%s: %s", table_name, description);
+        cbs->id->insert(info_text, table_name);
+        free(table_name);
+        free(description);
+    }
+    cbs->id->insert_default("", "");
+    cbs->id->update();
+}
+
+void awt_create_selection_list_on_tables(GBDATA *gb_main, AW_window *aws, const char *varname)
+{
+    AW_selection_list *id;
+    GBDATA  *gb_table_data;
+    struct awt_sel_list_for_tables *cbs;
+    GB_push_transaction(gb_main);
+
+    id = aws->create_selection_list(varname, 40, 8, true);
+    cbs = new awt_sel_list_for_tables;
+    cbs->aws = aws;
+    cbs->gb_main = gb_main;
+    cbs->id = id;
+
+    awt_create_selection_list_on_tables_cb(0, cbs);
+
+    gb_table_data = GB_search(gb_main, "table_data", GB_CREATE_CONTAINER);
+    GB_add_callback(gb_table_data, GB_CB_CHANGED, makeDatabaseCallback(awt_create_selection_list_on_tables_cb, cbs));
+
+    GB_pop_transaction(gb_main);
+}
+
+static void awt_create_selection_list_on_table_fields_cb(GBDATA *, struct awt_sel_list_for_tables *cbs) {
+    cbs->id->clear();
+    GBDATA  *gb_table = GBT_open_table(cbs->gb_main, cbs->table_name, true); // read only
+    GBDATA *gb_table_field;
+    for (gb_table_field = GBT_first_table_field(gb_table);
+         gb_table_field;
+         gb_table_field = GBT_next_table_field(gb_table_field))
+    {
+        GBDATA *gb_name = GB_entry(gb_table_field, "name");
+        GBDATA *gb_description = GB_search(gb_table_field, "description", GB_STRING);
+        if (!gb_name) continue;
+        char *table_name = GB_read_string(gb_name);
+        char *description = GB_read_string(gb_description);
+        const char *info_text = GBS_global_string("%s: %s", table_name, description);
+        cbs->id->insert(info_text, table_name);
+        free(table_name);
+        free(description);
+    }
+    cbs->id->insert_default("", "");
+    cbs->id->update();
+}
+
+void awt_create_selection_list_on_table_fields(GBDATA *gb_main, AW_window *aws, const char *table_name, const char *varname) {
+    // if tablename == 0 -> take fields from species table
+
+    AW_selection_list              *id;
+    struct awt_sel_list_for_tables *cbs;
+    GB_push_transaction(gb_main);
+
+    id = aws->create_selection_list(varname, 40, 8, true);
+    cbs = new awt_sel_list_for_tables;
+    cbs->aws = aws;
+    cbs->gb_main = gb_main;
+    cbs->id = id;
+    cbs->table_name = strdup(table_name);
+
+    awt_create_selection_list_on_table_fields_cb(0, cbs);
+
+    GBDATA  *gb_table = GBT_open_table(gb_main, table_name, true); // read only
+    if (gb_table) {
+        GB_add_callback(gb_table, GB_CB_CHANGED, makeDatabaseCallback(awt_create_selection_list_on_table_fields_cb, cbs));
+    }
+    GB_pop_transaction(gb_main);
 }
 
 // -------------------------------------------------
@@ -444,70 +446,28 @@ struct AWT_configuration_selection : public AW_DB_selection {
         : AW_DB_selection(sellist_, gb_configuration_data)
     {}
 
-    int getConfigInfo(const char *name, string& comment) {
-        // returns number of species in config + sets comment
-        GB_ERROR   error;
-        GBT_config cfg(get_gb_main(), name, error);
-
-        int count = 0;
-        if (!error) {
-            const char *cmt = cfg.get_comment();
-            comment         = cmt ? cmt : "";
-            for (int area = 0; area<2; ++area) {
-                GBT_config_parser parser(cfg, area);
-                while (1) {
-                    const GBT_config_item& item = parser.nextItem(error);
-                    if (error || item.type == CI_END_OF_CONFIG) break;
-                    if (item.type == CI_SPECIES) ++count;
-                }
-            }
-        }
-        else {
-            comment = "";
-        }
-        return count;
-    }
-
     void fill() OVERRIDE {
         ConstStrArray config;
         GBT_get_configuration_names(config, get_gb_main());
 
         if (!config.empty()) {
-            int     maxlen   = 0;
-            int     maxcount = 0;
-            int    *count    = new int[config.size()];
-            string *comment  = new string[config.size()];
-
-            for (int c = 0; config[c]; ++c) {
-                maxlen   = max(maxlen, int(strlen(config[c])));
-                count[c] = getConfigInfo(config[c], comment[c]);
-                maxcount = max(maxcount, count[c]);
-            }
-            int maxdigits = calc_digits(maxcount);
-            for (int c = 0; config[c]; ++c) {
-                int digits = calc_digits(count[c]);
-                insert(GBS_global_string("%-*s %*s(%i) %s", maxlen, config[c], (maxdigits-digits), "", count[c], comment[c].c_str()), config[c]);
-            }
-            delete [] comment;
-            delete [] count;
+            for (int c = 0; config[c]; c++) insert(config[c], config[c]);
         }
         insert_default(DISPLAY_NONE, NO_CONFIG_SELECTED);
     }
 };
 
-AW_DB_selection *awt_create_CONFIG_selection_list(GBDATA *gb_main, AW_window *aws, const char *varname, bool fallback2default) {
+void awt_create_selection_list_on_configurations(GBDATA *gb_main, AW_window *aws, const char *varname, bool fallback2default) {
     GBDATA *gb_configuration_data;
     {
         GB_transaction ta(gb_main);
         gb_configuration_data = GB_search(gb_main, CONFIG_DATA_PATH, GB_CREATE_CONTAINER);
     }
-    AW_selection_list           *sellist = aws->create_selection_list(varname, 40, 15, fallback2default);
-    AWT_configuration_selection *confSel = new AWT_configuration_selection(sellist, gb_configuration_data);
-    confSel->refresh();
-    return confSel;
+    AW_selection_list *sellist = aws->create_selection_list(varname, 40, 15, fallback2default);
+    (new AWT_configuration_selection(sellist, gb_configuration_data))->refresh();
 }
 
-char *awt_create_CONFIG_string(GBDATA *gb_main) {
+char *awt_create_string_on_configurations(GBDATA *gb_main) {
     // returns semicolon-separated string containing configuration names
     // (or NULL if no configs exist)
 
@@ -535,36 +495,22 @@ char *awt_create_CONFIG_string(GBDATA *gb_main) {
 //      SAI selection
 
 
-static char *get_SAI_description(GBDATA *gb_extended) {
-    const char *name     = GBT_read_name(gb_extended);
-    GBDATA     *gb_group = GB_entry(gb_extended, "sai_group");
-
-    if (gb_group) {
-        const char *group = GB_read_char_pntr(gb_group);
-        return GBS_global_string_copy("[%s] %s", group, name);;
-    }
-    return ARB_strdup(name);
-}
-
-const SaiSelectionlistFilterCallback& awt_std_SAI_filter_cb() {
-    static SaiSelectionlistFilterCallback std_SAI_filter_cb = makeSaiSelectionlistFilterCallback(get_SAI_description);
-    return std_SAI_filter_cb;
-}
-
-class SAI_selection : public AW_DB_selection { // derived from a Noncopyable
-    SaiSelectionlistFilterCallback filter_cb;
+class AWT_sai_selection : public AW_DB_selection { // derived from a Noncopyable
+    awt_sai_sellist_filter filter_poc;
+    AW_CL                  filter_cd;
 
 public:
 
-    SAI_selection(AW_selection_list *sellist_, GBDATA *gb_sai_data, const SaiSelectionlistFilterCallback& fcb)
+    AWT_sai_selection(AW_selection_list *sellist_, GBDATA *gb_sai_data, awt_sai_sellist_filter filter_poc_, AW_CL filter_cd_)
         : AW_DB_selection(sellist_, gb_sai_data),
-          filter_cb(fcb)
+          filter_poc(filter_poc_),
+          filter_cd(filter_cd_)
     {}
 
     void fill() OVERRIDE;
 };
 
-void SAI_selection::fill() {
+void AWT_sai_selection::fill() {
     AW_selection_list *sel = get_sellist();
     sel->clear();
 
@@ -575,10 +521,27 @@ void SAI_selection::fill() {
          gb_extended;
          gb_extended = GBT_next_SAI(gb_extended))
     {
-        char *res = filter_cb(gb_extended);
-        if (res) {
-            sel->insert(res, GBT_read_name(gb_extended));
-            free(res);
+        if (filter_poc) {
+            char *res = filter_poc(gb_extended, filter_cd);
+            if (res) {
+                sel->insert(res, GBT_read_name(gb_extended));
+                free(res);
+            }
+        }
+        else {
+            const char *name     = GBT_read_name(gb_extended);
+            GBDATA     *gb_group = GB_entry(gb_extended, "sai_group");
+
+            if (gb_group) {
+                const char *group          = GB_read_char_pntr(gb_group);
+                char       *group_and_name = GBS_global_string_copy("[%s] %s", group, name);
+
+                sel->insert(group_and_name, name);
+                free(group_and_name);
+            }
+            else {
+                sel->insert(name, name);
+            }
         }
     }
     sel->sort(false, false);
@@ -587,43 +550,82 @@ void SAI_selection::fill() {
     sel->update();
 }
 
-class SAI_sellst_spec : public SelectionListSpec, virtual Noncopyable {
-    GBDATA                         *gb_main;
-    SaiSelectionlistFilterCallback  filter_cb;
+void awt_selection_list_on_sai_update_cb(UNFIXED, AWT_sai_selection *saisel) {
+    /* update the selection box defined by awt_create_selection_list_on_sai
+     *
+     * useful only when filterproc is defined
+     * (changes to SAIs will automatically callback this function)
+     */
 
-    AW_DB_selection *create(AW_selection_list *sellist) const {
-        GB_transaction ta(gb_main);
-        return new SAI_selection(sellist, GBT_get_SAI_data(gb_main), filter_cb);
-    }
-
-public:
-    SAI_sellst_spec(const char *awar_name_, GBDATA *gb_main_, const SaiSelectionlistFilterCallback& fcb)
-        : SelectionListSpec(awar_name_),
-          gb_main(gb_main_),
-          filter_cb(fcb)
-    {
-        // Warning: do not use different filters for same awar! (wont work as expected) // @@@ add assertion against
-    }
-
-    const char *get_macro_id() const { return "SELECT_SAI"; }
-    const char *get_title() const { return "Select SAI"; }
-};
-
-void awt_popup_SAI_selection_list(AW_window *, const char *awar_name, GBDATA *gb_main) {
-    SAI_sellst_spec spec(awar_name, gb_main, awt_std_SAI_filter_cb());
-    spec.popup();
+    saisel->refresh();
 }
 
-AW_DB_selection *awt_create_SAI_selection_list(GBDATA *gb_main, AW_window *aws, const char *varname, bool fallback2default, const SaiSelectionlistFilterCallback& fcb) {
+AWT_sai_selection *SAI_selection_list_spec::create_list(AW_window *aws, bool fallback2default) const {
+    GB_transaction ta(gb_main);
+
+    AW_selection_list *sellist     = aws->create_selection_list(awar_name, 40, 4, fallback2default);
+    GBDATA            *gb_sai_data = GBT_get_SAI_data(gb_main);
+    AWT_sai_selection *saisel      = new AWT_sai_selection(sellist, gb_sai_data, filter_poc, filter_cd);
+
+    awt_selection_list_on_sai_update_cb(0, saisel);
+    GB_add_callback(gb_sai_data, GB_CB_CHANGED, makeDatabaseCallback(awt_selection_list_on_sai_update_cb, saisel));
+
+    return saisel;
+}
+
+static void popup_filtered_sai_selection_list(AW_root *aw_root, const SAI_selection_list_spec *spec) {
+    const char *awar_name = spec->get_awar_name();
+
+    static GB_HASH *SAI_window_hash       = 0;
+    if (!SAI_window_hash) SAI_window_hash = GBS_create_hash(10, GB_MIND_CASE);
+
+    AW_window_simple *aws = reinterpret_cast<AW_window_simple *>(GBS_read_hash(SAI_window_hash, awar_name));
+
+    if (!aws) {
+        aws = new AW_window_simple;
+        aws->init(aw_root, "SELECT_SAI", "SELECT SAI");
+        aws->load_xfig("select_simple.fig");
+
+        aws->at("selection");
+        aws->callback((AW_CB0)AW_POPDOWN);
+        spec->create_list(aws, true);
+
+        aws->at("button");
+        aws->callback(AW_POPDOWN);
+        aws->create_button("CLOSE", "CLOSE", "C");
+
+        aws->window_fit();
+
+        GBS_write_hash(SAI_window_hash, awar_name, reinterpret_cast<long>(aws));
+    }
+
+    aws->activate();
+}
+static void popup_filtered_sai_selection_list(AW_window *aww, const SAI_selection_list_spec *spec) {
+    popup_filtered_sai_selection_list(aww->get_root(), spec);
+}
+
+void awt_popup_sai_selection_list(AW_window *aww, const char *awar_name, GBDATA *gb_main) {
+    SAI_selection_list_spec spec(awar_name, gb_main);
+    popup_filtered_sai_selection_list(aww, &spec);
+}
+
+AWT_sai_selection *awt_create_selection_list_on_sai(GBDATA *gb_main, AW_window *aws, const char *varname, bool fallback2default, awt_sai_sellist_filter filter_poc, AW_CL filter_cd) {
     /* Selection list for SAIs
-     * only shows those SAIs for which fcb returns a string (string must be a heap copy)
+     *
+     * if filter_proc is set then show only those items on which
+     * filter_proc returns a string (string must be a heap copy)
      */
-    SAI_sellst_spec spec(varname, gb_main, fcb);
+    SAI_selection_list_spec spec(varname, gb_main);
+    spec.define_filter(filter_poc, filter_cd);
     return spec.create_list(aws, fallback2default);
 }
 
-void awt_create_SAI_selection_button(GBDATA *gb_main, AW_window *aws, const char *varname, const SaiSelectionlistFilterCallback& fcb) {
-    (new SAI_sellst_spec(varname, gb_main, fcb))->createButton(aws); // do not free yet (bound to callback in ARB_MOTIF)
+void awt_create_SAI_selection_button(GBDATA *gb_main, AW_window *aws, const char *varname, awt_sai_sellist_filter filter_poc, AW_CL filter_cd) {
+    SAI_selection_list_spec *spec = new SAI_selection_list_spec(varname, gb_main);
+    spec->define_filter(filter_poc, filter_cd);
+    aws->callback(makeWindowCallback(popup_filtered_sai_selection_list, spec));
+    aws->create_button("SELECT_SAI", varname);
 }
 
 // --------------------------------------------------
@@ -647,7 +649,7 @@ static GB_ERROR standard_list2file(const CharPtrArray& display, const CharPtrArr
 
                 const char *val = value[i];
                 if (strcmp(disp, val) == 0) {
-                    line.put(ARB_strdup(disp));
+                    line.put(strdup(disp));
                 }
                 else {
                     char *escaped = GBS_escape_string(val, "\n", '\\');
@@ -668,7 +670,7 @@ static GB_ERROR standard_file2list(const CharPtrArray& line, StrArray& display, 
 
         const char *comma = strchr(line[i], ',');
         if (comma) {
-            display.put(ARB_strpartdup(line[i], comma-1));
+            display.put(GB_strpartdup(line[i], comma-1));
 
             comma++;
             const char *rest      = comma+strspn(comma, " \t");
@@ -676,8 +678,8 @@ static GB_ERROR standard_file2list(const CharPtrArray& line, StrArray& display, 
             value.put(unescaped);
         }
         else {
-            display.put(ARB_strdup(line[i]));
-            value.put(ARB_strdup(line[i]));
+            display.put(strdup(line[i]));
+            value.put(strdup(line[i]));
         }
     }
 
@@ -754,7 +756,9 @@ GB_ERROR StorableSelectionList::save(const char *filename, long number_of_lines)
 
 
 inline char *string2heapcopy(const string& s) {
-    return ARB_strndup(s.c_str(), s.length());
+    char *copy = (char*)malloc(s.length()+1);
+    memcpy(copy, s.c_str(), s.length()+1);
+    return copy;
 }
 
 GB_ERROR StorableSelectionList::load(const char *filemask, bool append) const {
@@ -878,7 +882,7 @@ AW_window *create_save_box_for_selection_lists(AW_root *aw_root, const StorableS
     aws->button_length(10);
 
     aws->at("cancel");
-    aws->callback(AW_POPDOWN);
+    aws->callback((AW_CB0)AW_POPDOWN);
     aws->create_button("CANCEL", "CANCEL", "C");
 
     aws->at("save");
@@ -928,7 +932,7 @@ AW_window *create_load_box_for_selection_lists(AW_root *aw_root, const StorableS
     aws->load_xfig("sl_l_box.fig");
 
     aws->at("cancel");
-    aws->callback(AW_POPDOWN);
+    aws->callback((AW_CB0)AW_POPDOWN);
     aws->create_button("CANCEL", "CANCEL", "C");
 
     aws->at("load");
@@ -1039,7 +1043,7 @@ AW_window *awt_create_load_box(AW_root     *aw_root,
 
     aws->at("go");
     aws->callback(ok_cb);
-    aws->create_autosize_button("GO", action);
+    aws->create_button("GO", action);
 
     AW_create_standard_fileselection(aws, base_name);
     free(base_name);
@@ -1055,9 +1059,6 @@ AW_window *awt_create_load_box(AW_root     *aw_root,
 
 class AW_subset_selection : public AW_selection {
     AW_selection_list& parent_sellist;
-
-    SubsetChangedCb subChanged_cb;
-    AW_CL           cl_user;
 
     static void finish_fill_box(AW_selection_list *parent_sellist, AW_selection_list *sub_sellist) {
         sub_sellist->insert_default(parent_sellist->get_default_display(), parent_sellist->get_default_value());
@@ -1082,22 +1083,20 @@ class AW_subset_selection : public AW_selection {
         return sub_sellist;
     }
 
-    void callChangedCallback(bool interactive_change) { if (subChanged_cb) subChanged_cb(this, interactive_change, cl_user); }
-
 public:
-    AW_subset_selection(AW_window *aww, AW_selection_list& parent_sellist_, SubsetChangedCb subChanged_cb_, AW_CL cl_user_)
+    AW_subset_selection(AW_window *aww, AW_selection_list& parent_sellist_)
         : AW_selection(create_box(aww, parent_sellist_)),
-          parent_sellist(parent_sellist_),
-          subChanged_cb(subChanged_cb_),
-          cl_user(cl_user_)
-    {
-        callChangedCallback(false);
-    }
+          parent_sellist(parent_sellist_)
+    {}
 
     AW_selection_list *get_parent_sellist() const { return &parent_sellist; }
 
     const char *default_select_value() const { return parent_sellist.get_default_value(); }
     const char *default_select_display() const { return parent_sellist.get_default_display(); }
+
+    void get_subset(StrArray& subset) {
+        get_sellist()->to_array(subset, true);
+    }
 
     void fill() OVERRIDE { awt_assert(0); } // unused
 
@@ -1134,7 +1133,7 @@ public:
             }
             case ACM_REMOVE: {
                 if (!subset_list->default_is_selected()) {
-                    char *selected     = ARB_strdup(subset_list->get_awar_value());
+                    char *selected     = strdup(subset_list->get_awar_value());
                     int   old_position = subset_list->get_index_of(selected);
 
                     subset_list->delete_element_at(old_position);
@@ -1151,7 +1150,6 @@ public:
                 finish_fill_box(whole_list, subset_list);
                 break;
         }
-        callChangedCallback(true);
     }
     void reorder_subset_cb(awt_reorder_mode dest) {
         AW_selection_list *subset_list = get_sellist();
@@ -1162,7 +1160,7 @@ public:
             StrArray listContent;
             subset_list->to_array(listContent, true);
 
-            int old_pos = listContent.index_of(selected);
+            int old_pos = GBT_names_index_of(listContent, selected);
             if (old_pos >= 0) {
                 int new_pos = 0;
                 switch (dest) {
@@ -1172,84 +1170,24 @@ public:
                     case ARM_BOTTOM: new_pos= -1;        break;
                 }
                 if (old_pos != new_pos) {
-                    listContent.move(old_pos, new_pos);
-                    subset_list->init_from_array(listContent, subset_list->get_default_display(), subset_list->get_default_value());
+                    GBT_names_move(listContent, old_pos, new_pos);
+                    subset_list->init_from_array(listContent, subset_list->get_default_value());
                 }
             }
         }
-        callChangedCallback(true);
-    }
-
-    void delete_entries_missing_in_parent() {
-        // check subset for entries missing in parent,
-        // delete these and update
-        typedef std::set<const char*, charpLess> Entries;
-
-        bool    deleted = false;
-        Entries pEntry;
-        {
-            AW_selection_list_iterator pIter(&parent_sellist);
-            while (pIter) {
-                pEntry.insert(pIter.get_value());
-                ++pIter;
-            }
-        }
-
-        AW_selection_list *subsel = get_sellist();
-        int                size   = subsel->size();
-
-        for (int i = 0; i<size; ++i) {
-            if (pEntry.find(subsel->get_value_at(i)) == pEntry.end()) { // entry missing in parent list
-                subsel->delete_element_at(i);
-                deleted = true;
-                --i; --size;
-            }
-        }
-
-        if (deleted) {
-            subsel->update();
-            callChangedCallback(false);
-        }
-    }
-
-    void fill_entries_matching_values(const CharPtrArray& values) {
-        AW_selection_list *subset_list = get_sellist();
-        subset_list->clear();
-
-        for (size_t e = 0; e<values.size(); ++e) {
-            const char *value = values[e];
-
-            AW_selection_list_iterator pIter(&parent_sellist);
-            while (pIter) {
-                if (strcmp(pIter.get_value(), value) == 0) {
-                    subset_list->insert(pIter.get_displayed(), pIter.get_value());
-                    break;
-                }
-                ++pIter;
-            }
-        }
-
-        finish_fill_box(&parent_sellist, subset_list);
-        callChangedCallback(false);
     }
 };
 
-static void collect_subset_cb(AW_window *, awt_collect_mode what, AW_subset_selection *subsel) { subsel->collect_subset_cb(what); }
-static void reorder_subset_cb(AW_window *, awt_reorder_mode dest, AW_subset_selection *subsel) { subsel->reorder_subset_cb(dest); }
+static void collect_subset_cb(AW_window *, awt_collect_mode what, AW_CL cl_subsel) { ((AW_subset_selection*)cl_subsel)->collect_subset_cb(what); }
+static void reorder_subset_cb(AW_window *, awt_reorder_mode dest, AW_CL cl_subsel) { ((AW_subset_selection*)cl_subsel)->reorder_subset_cb(dest); }
 
-static void correct_subselection_cb(AW_selection_list *IF_ASSERTION_USED(parent_sel), AW_CL cl_subsel) {
-    AW_subset_selection *subsel = (AW_subset_selection*)cl_subsel;
-    aw_assert(subsel->get_parent_sellist() == parent_sel);
-    subsel->delete_entries_missing_in_parent();
-}
-
-AW_selection *awt_create_subset_selection_list(AW_window *aww, AW_selection_list *parent_selection, const char *at_box, const char *at_add, const char *at_sort, bool autocorrect_subselection, SubsetChangedCb subChanged_cb, AW_CL cl_user) {
+AW_selection *awt_create_subset_selection_list(AW_window *aww, AW_selection_list *parent_selection, const char *at_box, const char *at_add, const char *at_sort) {
     awt_assert(parent_selection);
 
     aww->at(at_box);
     int x_list = aww->get_at_xposition();
 
-    AW_subset_selection *subsel = new AW_subset_selection(aww, *parent_selection, subChanged_cb, cl_user);
+    AW_subset_selection *subsel = new AW_subset_selection(aww, *parent_selection);
 
     aww->button_length(0);
 
@@ -1257,36 +1195,12 @@ AW_selection *awt_create_subset_selection_list(AW_window *aww, AW_selection_list
     int x_buttons = aww->get_at_xposition();
 
     bool move_rightwards = x_list>x_buttons;
-    awt_create_collect_buttons(aww, move_rightwards, collect_subset_cb, subsel);
+    awt_create_collect_buttons(aww, move_rightwards, collect_subset_cb, (AW_CL)subsel);
 
     aww->at(at_sort);
-    awt_create_order_buttons(aww, reorder_subset_cb, subsel);
-
-    if (autocorrect_subselection) parent_selection->set_update_callback(correct_subselection_cb, AW_CL(subsel));
+    awt_create_order_buttons(aww, reorder_subset_cb, (AW_CL)subsel);
 
     return subsel;
-}
-
-void awt_set_subset_selection_content(AW_selection *subset_sel_, const CharPtrArray& values) {
-    /*! sets content of a subset-selection-list
-     * @param subset_sel_ selection list created by awt_create_subset_selection_list()
-     * @param values      e.g. retrieved using subset_sel_->get_values()
-     */
-    AW_subset_selection *subset_sel = dynamic_cast<AW_subset_selection*>(subset_sel_);
-    if (subset_sel) subset_sel->fill_entries_matching_values(values);
-}
-
-AW_selection_list *awt_create_selection_list_with_input_field(AW_window *aww, const char *awar_name, const char *at_box, const char *at_field) {
-    /*! create selection_list and input_field on awar 'awar_name'
-     * @param aww window where to create gui elements
-     * @param at_box position of selection_list
-     * @param at_field position of input_field
-     */
-
-    aww->at(at_field);
-    aww->create_input_field(awar_name);
-    aww->at(at_box);
-    return aww->create_selection_list(awar_name, false);
 }
 
 

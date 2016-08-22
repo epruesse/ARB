@@ -1,6 +1,8 @@
 #Please insert up references in the next lines (line starts with keyword UP)
 UP      arb.hlp
 UP      glossary.hlp
+UP      sp_rename.hlp
+UP      mg_names.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
 #SUB    subtopic.hlp
@@ -8,20 +10,40 @@ UP      glossary.hlp
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE           Synchronize species IDs
+TITLE           Synchronize species IDs / ARB name server
 
 OCCURRENCE      ARB_NT/Species/Synchronize IDs
+                ARB_MERGE/Check IDs/Synchronize
 
-DESCRIPTION     Starts the 'NAMESERVER' to update species IDs ('name') within the
-                current database according to the information stored in the file
+DESCRIPTION     Starts the 'NAME SERVER' to update species IDs ('name') within the
+                specified database according to the information stored in the file
                 '$ARBHOME/lib/nas/names.dat'.
 
                 Press the 'GO' button.
 
-NOTES           Please refer to LINK{sp_IDs.hlp}.
+NOTES           It is possible to link names.dat to a central names.dat, but you should
+                be aware, that there may occur temporary inconsistencies, if multiple users
+                use the nameserver at the same time.
+
+                The name server examines names.dat and terminates within 5-10 seconds if
+                the file changes. A message is written to the console window in either case. 
+
+                Another way to use a central NAME SERVER is to edit '$ARBHOME/lib/arb_tcp.dat'
+                and to specify a central server for ARB_NAME_SERVER.
+                This completely avoids any inconsistencies.
 
 EXAMPLES        None
 
-WARNINGS        None
+WARNINGS        Missing 'acc' fields are generated automatically by this function.
+
+                If there is some warning about duplicate entries, you REALLY should try
+                to understand the reason why this happens:
+
+                It only happens, when you have multiple species with the same 'acc' entry
+                (which is strongly unrecommended). To solve that problem either
+
+                - delete the duplicated species or
+                - modify duplicated acc entries by appending some personal suffix (e.g. your initials)
+
 
 BUGS            No bugs known

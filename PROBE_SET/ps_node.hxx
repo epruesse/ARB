@@ -201,14 +201,14 @@ public:
         if (probes) {
             for (PS_ProbeSetCIter i=probes->begin(); i!=probes->end(); ++i) {
                 PS_printProbe(*i);
-                fputc(' ', stdout);
+                printf(" ");
             }
         }
         printf("] C[");
         for (PS_NodeMapIterator i=children.begin(); i!=children.end(); ++i) {
             i->second->print();
         }
-        fputc(']', stdout);
+        printf("]");
     }
 
     void printOnlyMe() const {
@@ -216,7 +216,7 @@ public:
         if (probes) {
             for (PS_ProbeSetCIter i=probes->begin(); i!=probes->end(); ++i) {
                 PS_printProbe(*i);
-                fputc(' ', stdout);
+                printf(" ");
             }
         }
         printf("] C[ %zu ]", children.size());
@@ -243,6 +243,10 @@ public:
         if (probes) delete probes;
         children.clear();
     }
+
+private:
+    PS_Node() { ps_assert(0); }
+    PS_Node(const PS_Node&); // forbidden
 };
 
 #else

@@ -17,9 +17,6 @@
 #include <arb_str.h>
 #include <arb_file.h>
 #include <arb_defs.h>
-#include <arb_progress.h>
-#include <arb_zfile.h>
-#include <BufferedFileReader.h>
 
 #include "gb_key.h"
 #include "gb_localdata.h"
@@ -32,7 +29,303 @@ void GB_set_verbose() {
     gb_verbose_mode = 1;
 }
 
-#define FILESIZE_GRANULARITY 1024 // progress will work with DB files up to 2Tb
+// ---------------------------------------------------
+//      helper code to read ascii file in portions
+
+#ifdef UNIT_TESTS // UT_DIFF
+#define READING_BUFFER_SIZE 100
+#else
+#define READING_BUFFER_SIZE (1024*32)
+#endif
+
+struct ReadingBuffer {
+    char          *data;
+    ReadingBuffer *next;
+    int            read_bytes;
+};
+
+static ReadingBuffer *unused_reading_buffers = 0;
+
+#if defined(DEBUG)
+// #define CHECK_RELEASED_BUFFERS
+#endif // DEBUG
+
+#if defined(CHECK_RELEASED_BUFFERS)
+static int is_a_unused_reading_buffer(ReadingBuffer *rb) {
+    if (unused_reading_buffers) {
+        ReadingBuffer *check = unused_reading_buffers;
+        for (; check; check = check->next) {
+            if (check == rb) return 1;
+        }
+    }
+    return 0;
+}
+#endif // CHECK_RELEASED_BUFFERS
+
+static ReadingBuffer *allocate_ReadingBuffer() {
+    ReadingBuffer *rb = (ReadingBuffer*)malloc(sizeof(*rb)+READING_BUFFER_SIZE);
+    rb->data          = ((char*)rb)+sizeof(*rb);
+    rb->next          = 0;
+    rb->read_bytes    = 0;
+    return rb;
+}
+
+static void release_ReadingBuffers(ReadingBuffer *rb) {
+    ReadingBuffer *last = rb;
+
+#if defined(CHECK_RELEASED_BUFFERS)
+    gb_assert(!is_a_unused_reading_buffer(rb));
+#endif // CHECK_RELEASED_BUFFERS
+    while (last->next) {
+        last = last->next;
+#if defined(CHECK_RELEASED_BUFFERS)
+        gb_assert(!is_a_unused_reading_buffer(last));
+#endif // CHECK_RELEASED_BUFFERS
+    }
+    gb_assert(last && !last->next);
+    last->next              = unused_reading_buffers;
+    unused_reading_buffers  = rb;
+}
+static void free_ReadingBuffer(ReadingBuffer *rb) {
+    if (rb) {
+        if (rb->next) free_ReadingBuffer(rb->next);
+        free(rb);
+    }
+}
+
+static ReadingBuffer *read_another_block(FILE *in) {
+    ReadingBuffer *buf = 0;
+    if (unused_reading_buffers) {
+        buf                    = unused_reading_buffers;
+        unused_reading_buffers = buf->next;
+        buf->next              = 0;
+        buf->read_bytes        = 0;
+    }
+    else {
+        buf = allocate_ReadingBuffer();
+    }
+
+    buf->read_bytes = fread(buf->data, 1, READING_BUFFER_SIZE, in);
+
+    return buf;
+}
+
+// ---------------
+//      Reader
+
+struct Reader {
+    FILE          *in;
+    ReadingBuffer *first;                           // allocated
+    GB_ERROR       error;
+
+    ReadingBuffer *current;                         // only reference
+    size_t         current_offset;                  // into 'current->data'
+
+    char   *current_line;
+    int     current_line_allocated;                 // whether 'current_line' was allocated
+    size_t  current_line_size;                      // size of 'current_line' (valid if current_line_allocated == 1)
+    size_t  line_number;
+
+};
+
+typedef unsigned long ReaderPos; // absolute position (relative to ReadingBuffer 'first')
+#define NOPOS (-1UL)
+
+
+static Reader *openReader(FILE *in) {
+    Reader *r = (Reader*)malloc(sizeof(*r));
+
+    gb_assert(unused_reading_buffers == 0);
+
+    r->in    = in;
+    r->error = 0;
+    r->first = read_another_block(r->in);
+
+    r->current_offset = 0;
+    r->current        = r->first;
+
+    r->current_line           = 0;
+    r->current_line_allocated = 0;
+    r->line_number            = 0;
+
+    return r;
+}
+
+static void freeCurrentLine(Reader *r) {
+    if (r->current_line_allocated && r->current_line) {
+        free(r->current_line);
+        r->current_line_allocated = 0;
+    }
+}
+
+static GB_ERROR closeReader(Reader *r) {
+    GB_ERROR error = r->error;
+
+    free_ReadingBuffer(r->first);
+    free_ReadingBuffer(unused_reading_buffers);
+    unused_reading_buffers = 0;
+
+    freeCurrentLine(r);
+    free(r);
+
+    return error;
+}
+
+static void releasePreviousBuffers(Reader *r) {
+    /* Release all buffers before current position.
+     * Warning: This invalidates all offsets!
+     */
+    ReadingBuffer *last_rel  = 0;
+    ReadingBuffer *old_first = r->first;
+
+    while (r->first != r->current) {
+        last_rel = r->first;
+        r->first = r->first->next;
+    }
+
+    if (last_rel) {
+        last_rel->next = 0;     // avoid to release 'current'
+        release_ReadingBuffers(old_first);
+        r->first       = r->current;
+    }
+}
+
+static char *getPointer(const Reader *r) {
+    return r->current->data + r->current_offset;
+}
+
+static ReaderPos getPosition(const Reader *r) {
+    ReaderPos      p = 0;
+    ReadingBuffer *b = r->first;
+    while (b != r->current) {
+        gb_assert(b);
+        p += b->read_bytes;
+        b  = b->next;
+    }
+    p += r->current_offset;
+    return p;
+}
+
+static int gotoNextBuffer(Reader *r) {
+    if (!r->current->next) {
+        if (r->current->read_bytes < READING_BUFFER_SIZE) { // eof
+            return 0;
+        }
+        r->current->next = read_another_block(r->in);
+    }
+
+    r->current        = r->current->next;
+    r->current_offset = 0;
+
+    return r->current != 0;
+}
+
+static int movePosition(Reader *r, int offset) {
+    int rest = r->current->read_bytes - r->current_offset - 1;
+
+    gb_assert(offset >= 0);     // not implemented for negative offsets
+    if (rest >= offset) {
+        r->current_offset += offset;
+        return 1;
+    }
+
+    if (gotoNextBuffer(r)) {
+        offset -= rest+1;
+        return offset == 0 ? 1 : movePosition(r, offset);
+    }
+
+    // in last buffer and position behind end -> position after last element
+    // (Note: last buffer cannot be full - only empty)
+    r->current_offset = r->current->read_bytes;
+    return 0;
+}
+
+static int gotoChar(Reader *r, char lookfor) {
+    const char *data  = r->current->data + r->current_offset;
+    size_t      size  = r->current->read_bytes-r->current_offset;
+    const char *found = (const char *)memchr(data, lookfor, size);
+
+    if (found) {
+        r->current_offset += (found-data);
+        return 1;
+    }
+
+    if (gotoNextBuffer(r)) {
+        return gotoChar(r, lookfor);
+    }
+
+    // in last buffer and char not found -> position after last element
+    // (Note: last buffer cannot be full - only empty)
+    r->current_offset = r->current->read_bytes;
+    return 0;
+}
+
+static char *getLine(Reader *r) {
+    releasePreviousBuffers(r);
+
+    {
+        ReaderPos      start        = getPosition(r);
+        ReadingBuffer *start_buffer = r->current;
+        char          *start_ptr    = getPointer(r);
+        int            eol_found    = gotoChar(r, '\n');
+
+        // now current position is on EOL or EOF
+
+        ReaderPos      eol        = getPosition(r);
+        ReadingBuffer *eol_buffer = r->current;
+        char          *eol_ptr    = getPointer(r);
+
+        movePosition(r, 1);
+
+        if (start_buffer == eol_buffer) { // start and eol in one ReadingBuffer -> no copy
+            freeCurrentLine(r);
+            r->current_line           = start_ptr;
+            r->current_line_allocated = 0;
+            eol_ptr[0]                = 0; // eos
+        }
+        else { // otherwise build a copy of the string
+            size_t  line_length = eol-start+1;
+            char   *bp;
+            size_t  len;
+
+            if (r->current_line_allocated == 0 || r->current_line_size < line_length) { // need alloc
+                freeCurrentLine(r);
+                r->current_line           = (char*)malloc(line_length);
+                r->current_line_size      = line_length;
+                r->current_line_allocated = 1;
+
+                gb_assert(r->current_line);
+            }
+
+            // copy contents of first buffer
+            bp            = r->current_line;
+            len           = start_buffer->read_bytes - (start_ptr-start_buffer->data);
+            memcpy(bp, start_ptr, len);
+            bp           += len;
+            start_buffer  = start_buffer->next;
+
+            // copy contents of middle buffers
+            while (start_buffer != eol_buffer) {
+                memcpy(bp, start_buffer->data, start_buffer->read_bytes);
+                bp           += start_buffer->read_bytes;
+                start_buffer  = start_buffer->next;
+            }
+
+            // copy contents from last buffer
+            len        = eol_ptr-start_buffer->data;
+            memcpy(bp, start_buffer->data, len);
+            bp        += len;
+            bp[0]  = 0; // eos
+        }
+
+        if (!eol_found && r->current_line[0] == 0)
+            return 0;               // report "eof seen"
+
+    }
+
+    ++r->line_number;
+    return r->current_line;
+}
 
 /* ----------------------------------------
  * ASCII format
@@ -80,7 +373,7 @@ static GB_ERROR set_protection_level(GB_MAIN_TYPE *Main, GBDATA *gbd, const char
 
         for (i=Main->last_updated; i<=lu; ++i) {
             gb_assert(i<ALLOWED_DATES);
-            Main->dates[i]     = ARB_strdup("unknown date");
+            Main->dates[i]     = strdup("unknown date");
             Main->last_updated = lu+1;
         }
     }
@@ -95,19 +388,17 @@ static GB_ERROR set_protection_level(GB_MAIN_TYPE *Main, GBDATA *gbd, const char
     return error;
 }
 
-static GB_ERROR gb_parse_ascii_rek(LineReader& r, GBCONTAINER *gb_parent, const char *parent_name) {
+static GB_ERROR gb_parse_ascii_rek(Reader *r, GBCONTAINER *gb_parent, const char *parent_name) {
     // if parent_name == 0 -> we are parsing at root-level
     GB_ERROR      error = 0;
     int           done  = 0;
     GB_MAIN_TYPE *Main  = GBCONTAINER_MAIN(gb_parent);
 
     while (!error && !done) {
-        string LINE;
-        if (!r.getLine(LINE)) break;
+        char *line = getLine(r);
+        if (!line) break;
 
-        char *line = (char*)(LINE.c_str()); // HACK: code below will modify the content of the string
-
-      rest :
+    rest :
         line += strspn(line, " \t"); // goto first non-whitespace
 
         if (line[0]) {          // not empty
@@ -165,7 +456,7 @@ static GB_ERROR gb_parse_ascii_rek(LineReader& r, GBCONTAINER *gb_parent, const 
                         else {
                             if (type[1] == '%' || type[1] == '$') {   // container
                                 if (line[0] == '(' && line[1] == '%') {
-                                    char        *cont_name = ARB_strdup(name);
+                                    char        *cont_name = strdup(name);
                                     GBCONTAINER *gbc       = gb_make_container(gb_parent, cont_name, -1, 0);
 
                                     char *protection_copy = nulldup(protection);
@@ -262,45 +553,44 @@ static GB_ERROR gb_parse_ascii_rek(LineReader& r, GBCONTAINER *gb_parent, const 
     return error;
 }
 
-static GB_ERROR gb_parse_ascii(LineReader& r, GBCONTAINER *gb_parent) {
+static GB_ERROR gb_parse_ascii(Reader *r, GBCONTAINER *gb_parent) {
     GB_ERROR error = gb_parse_ascii_rek(r, gb_parent, 0);
     if (error) {
-        error = GBS_global_string("%s in line %zu", error, r.getLineNumber()); // @@@ consider using r.lineError
+        error = GBS_global_string("%s in line %zu", error, r->line_number);
     }
     return error;
 }
 
-struct BufferedPipeReader : public BufferedFileReader {
-    BufferedPipeReader(const string& pipename, FILE *in)
-        : BufferedFileReader(pipename, in)
-    {}
-    ~BufferedPipeReader() {
-        gb_assert(get_fp() == NULL); // you HAVETO call close() or dont_close() manually
-                                     // (to check the error and to close the pipe)
+static GB_ERROR gb_read_ascii(const char *path, GBCONTAINER *gbc) {
+    /* This loads an ACSII database
+     * if path == "-" -> read from stdin
+     */
+
+    FILE     *in         = 0;
+    GB_ERROR  error      = 0;
+    int       close_file = 0;
+
+    if (strcmp(path, "-") == 0) {
+        in = stdin;
+    }
+    else {
+        in              = fopen(path, "rt");
+        if (!in) error  = GBS_global_string("Can't open '%s'", path);
+        else close_file = 1;
     }
 
-    GB_ERROR close() {
-        FILE*&   pipe  = get_fp();
-        GB_ERROR error = ARB_zfclose(pipe);
-        pipe           = NULL;
-        return error;
+    if (!error) {
+        Reader *r = openReader(in);
+
+        GB_search(gbc, GB_SYSTEM_FOLDER, GB_CREATE_CONTAINER); // Switch to Version 3
+
+        error = gb_parse_ascii(r, gbc);
+
+        GB_ERROR cl_error = closeReader(r);
+        if (!error) error = cl_error;
     }
 
-    void dont_close() {
-        FILE*& f = get_fp();
-        f        = NULL;
-    }
-};
-
-static GB_ERROR gb_read_ascii_beyond_header(FILE *in, const char *path, GBCONTAINER *gbc) {
-    // This loads an ASCII database (header line has already been read!)
-    GB_ERROR           error = 0;
-    BufferedPipeReader r(path, in);
-
-    GB_search(gbc, GB_SYSTEM_FOLDER, GB_CREATE_CONTAINER); // Switch to Version 3
-    error = gb_parse_ascii(r, gbc);
-    r.dont_close();                                        // done by caller
-
+    if (close_file) fclose(in);
     return error;
 }
 
@@ -315,7 +605,7 @@ static long gb_recover_corrupt_file(GBCONTAINER *gbc, FILE *in, GB_ERROR recover
     static long size = 0;
     if (!GBCONTAINER_MAIN(gbc)->allow_corrupt_file_recovery) {
         if (!recovery_reason) { recovery_reason = GB_await_error(); }
-        char       *reason         = ARB_strdup(recovery_reason);
+        char       *reason         = strdup(recovery_reason);
         const char *located_reason = GBS_global_string("%s (inside '%s')", reason, GB_get_db_path(gbc));
 
         if (loading_quick_save) {
@@ -329,18 +619,11 @@ static long gb_recover_corrupt_file(GBCONTAINER *gbc, FILE *in, GB_ERROR recover
         free(reason);
         return -1;
     }
-
-    if (GB_is_fifo(in)) {
-        GB_export_error("Unable to recover from corrupt file (Reason: cannot recover from stream)\n"
-                        "Note: if the file is a compressed arb-file, uncompress it manually and retry.");
-        return -1;
-    }
-
     long pos = ftell(in);
     if (old_in != in) {
-        file   = (unsigned char *)GB_map_FILE(in, 0);
+        file = (unsigned char *)GB_map_FILE(in, 0);
         old_in = in;
-        size   = GB_size_of_FILE(in);
+        size = GB_size_of_FILE(in);
     }
     for (; pos<size-10; pos ++) {
         if ((file[pos] & 0xf0) == (GB_STRING_SHRT<<4)) {
@@ -372,17 +655,11 @@ static void DEBUG_DUMP_INDENTED(long deep, const char *s) {
 #endif // DEBUG_READ
 // ----------------------------------------
 
-static long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbc_dest, long nitems, long version, 
-                               long reversed, long deep, arb_progress& progress) {
+
+static long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbc_dest, long nitems, long version, long reversed, long deep) {
     GB_MAIN_TYPE *Main = GB_MAIN(gbc_dest);
 
     DEBUG_DUMP_INDENTED(deep, GBS_global_string("Reading container with %li items", nitems));
-
-    progress.inc_to(ftell(in)/FILESIZE_GRANULARITY);
-    if (progress.aborted()) {
-        GB_export_error(progress.error_if_aborted());
-        return -1;
-    }
 
     gb_create_header_array(gbc_dest, (int)nitems);
     gb_header_list *header = GB_DATA_LIST_HEADER(gbc_dest->d);
@@ -441,13 +718,13 @@ static long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbc_dest, long nitems, lon
         long    type2    = (type>>4)&0xf;
         GBQUARK key      = (GBQUARK)gb_get_number(in);
 
-        if (key >= Main->keycnt || !quark2key(Main, key)) {
+        if (key >= Main->keycnt || !Main->keys[key].key) {
             const char *reason = GBS_global_string("database entry with unknown field quark %i", key);
             if (gb_recover_corrupt_file(gbc_dest, in, reason, is_quicksave)) return -1;
             continue;
         }
 
-        DEBUG_DUMP_INDENTED(deep, GBS_global_string("key='%s' type2=%li", quark2key(Main, key), type2));
+        DEBUG_DUMP_INDENTED(deep, GBS_global_string("key='%s' type2=%li", Main->keys[key].key, type2));
 
         GBENTRY     *gbe = NULL;
         GBCONTAINER *gbc = NULL;
@@ -572,7 +849,7 @@ static long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbc_dest, long nitems, lon
             case GB_DB: {
                 long size = gb_get_number(in);
                 // gbc->d.size  is automatically incremented
-                if (gb_read_bin_rek_V2(in, gbc, size, version, reversed, deep+1, progress)) {
+                if (gb_read_bin_rek_V2(in, gbc, size, version, reversed, deep+1)) {
                     if (!GBCONTAINER_MAIN(gbc_dest)->allow_corrupt_file_recovery) {
                         return -1;
                     }
@@ -645,7 +922,7 @@ inline bool read_keyword(const char *expected_keyword, FILE *in, GBCONTAINER *gb
     return as_expected;
 }
 
-static long gb_read_bin(FILE *in, GBCONTAINER *gbc, bool allowed_to_load_diff, arb_progress& progress) {
+static long gb_read_bin(FILE *in, GBCONTAINER *gbc, bool allowed_to_load_diff) {
     int   c = 1;
     long  i;
     long  error;
@@ -829,7 +1106,7 @@ static long gb_read_bin(FILE *in, GBCONTAINER *gbc, bool allowed_to_load_diff, a
 
                             gb_main_array[new_idx] = Main;
 
-                            gbm_free_mem(Main->root_container, sizeof(GBCONTAINER), quark2gbmindex(Main, 0));
+                            gbm_free_mem(Main->root_container, sizeof(GBCONTAINER), GB_QUARK_2_GBMINDEX(Main, 0));
 
                             Main->root_container = new_gbc;
                             father->main_idx     = new_idx;
@@ -859,10 +1136,7 @@ static long gb_read_bin(FILE *in, GBCONTAINER *gbc, bool allowed_to_load_diff, a
 
         gb_assert(mapped || map_fail_reason);
 
-        if (mapped) {
-            Main->mapped = true;
-            return 0; // succeded loading mapfile -> no need to load normal DB file
-        }
+        if (mapped) return 0; // succeded loading mapfile -> no need to load normal DB file
         GB_informationf("ARB: %s => loading entire DB", map_fail_reason);
     }
 
@@ -879,7 +1153,7 @@ static long gb_read_bin(FILE *in, GBCONTAINER *gbc, bool allowed_to_load_diff, a
             if (Main->clock<=0) Main->clock++;
             // fall-through
         case 1: // master arb file
-            error = gb_read_bin_rek_V2(in, gbc, nodecnt, version, reversed, 0, progress);
+            error = gb_read_bin_rek_V2(in, gbc, nodecnt, version, reversed, 0);
             break;
         default:
             GB_internal_errorf("Sorry: This ARB Version does not support database format V%li", version);
@@ -980,40 +1254,6 @@ inline bool is_binary_db_id(int id) {
         || (id == GBTUM_MAGIC_NUMBER)
         || (id == GBTUM_MAGIC_REVERSED);
 }
-inline bool has_ascii_db_id(uint32_t bin_id, FILE *in) {
-    // assumes the first 4 bytes of the input have been read (into 'bin_id').
-    // will read enough bytes to check for valid ascii-header.
-    // returns true if file has an arb-ascii-database-header.
-    const int ASC_HEADER_SIZE = 15;
-    char      buffer[ASC_HEADER_SIZE+1];
-
-    size_t read_bytes = fread(buffer+4, 1, ASC_HEADER_SIZE-4, in); // 4 bytes have already been read as binary ID
-    if (read_bytes == (ASC_HEADER_SIZE-4)) {
-        buffer[ASC_HEADER_SIZE] = 0;
-
-        const char *ascii_header = "/*ARBDB ASCII*/";
-        uint32_t   *ui_buffer    = (uint32_t*)buffer;
-
-        *ui_buffer = bin_id; // insert these 4 bytes
-        if (strcmp(buffer, ascii_header) == 0) return true;
-
-        *ui_buffer = reverse_byteorder(bin_id); // insert them reversed
-        if (strcmp(buffer, ascii_header) == 0) return true;
-    }
-    return false;
-}
-
-static GB_ERROR init_tmp_branch(GBDATA *gb_main) {
-    GB_ERROR  error   = NULL;
-    GBDATA   *gb_tmp  = GB_search(gb_main, "tmp", GB_CREATE_CONTAINER);
-    if (gb_tmp) {
-        error = GB_set_temporary(gb_tmp);
-    }
-    else {
-        error = GB_await_error();
-    }
-    return error;
-}
 
 static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) {
     /*! open an ARB database
@@ -1049,7 +1289,7 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
     int            ignoreMissingMaster = 0;
     int            loadedQuickIndex    = -1;
     GB_ERROR       error               = 0;
-    char          *path                = ARB_strdup(cpath?cpath:"");
+    char          *path                = strdup(cpath);
     bool           dbCreated           = false;
 
     gb_assert(strchr(opent, 'd') == NULL); // mode 'd' is deprecated. You have to use 'D' and store your defaults inside ARBHOME/lib/arb_default
@@ -1082,7 +1322,7 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
             if (strchr(opent, 'R'))     ignoreMissingMaster = 1;
         }
         else {
-            char *base = ARB_strdup(path);
+            char *base = strdup(path);
             char *ext = gb_findExtension(base);
             {
                 gb_scandir dir;
@@ -1143,196 +1383,169 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
     gbc                           = gb_make_container(Main->dummy_father, NULL, -1, 0); // create "main"
 
     Main->root_container = gbc;
+    gbcm_login(gbc, user);
+    Main->opentype = opentype;
+    Main->security_level = 7;
 
-    error = gbcm_login(gbc, user);
-    if (!error) {
-        Main->opentype       = opentype;
-        Main->security_level = 7;
-
-        if (path && (strchr(opent, 'r'))) {
-            if (strchr(path, ':')) {
-                error = Main->login_remote(path, opent);
-            }
-            else {
-                int read_from_stdin = strcmp(path, "-") == 0;
-
-                GB_ULONG time_of_main_file = 0; long i;
-
-                Main->mark_as_server();
-                GB_begin_transaction(gbc);
-                Main->clock      = 0; // start clock
-
-                FILE *input = read_from_stdin ? stdin : ARB_zfopen(path, "rb", ZFILE_AUTODETECT, error, false);
-                if (!input && ignoreMissingMaster) {
-                    error = NULL; // @@@ maybe need to inspect error message here
-                    goto load_quick_save_file_only;
-                }
-
-                if (!input) {
-                    if (strchr(opent, 'c')) {
-                        error = NULL; // from ARB_zfopen
-                        GB_disable_quicksave(gbc, "Database Created");
-
-                        if (strchr(opent, 'D')) { // use default settings
-                            GB_clear_error(); // with default-files gb_scan_directory (used above) has created an error, cause the path was a fake path
-                        
-                            gb_assert(!ARB_strBeginsWith(path, ".arb_prop/")); // do no longer pass path-prefix [deprecated!]  
-                            char *found_path = GB_property_file(false, path);
-
-                            if (!found_path) {
-                                fprintf(stderr, "file %s not found\n", path);
-                                dbCreated = true;
-                            }
-                            else {
-                                freeset(path, found_path);
-                                // cppcheck-suppress deallocuse (false positive; path is reassigned to non-NULL above)
-                                input = fopen(path, "rb");
-                            }
-                        }
-                        else {
-                            dbCreated = true;
-                        }
-
-                        if (dbCreated) {
-                            fprintf(stderr, "Created new database \"%s\".\n", path);
-                        }
-                    }
-                    else {
-                        gb_assert(error); // from ARB_zfopen
-                        error = GBS_global_string("Database '%s' not found (%s)", path, error);
-                        gbc   = 0;
-                    }
-                }
-                if (input) {
-                    if (strchr(opent, 'D')) { // we are loading properties -> be verboose
-                        fprintf(stderr, "Using properties from '%s'\n", path);
-                    }
-                    time_of_main_file = GB_time_of_file(path);
-
-                    i = gb_read_in_uint32(input, 0);
-
-                    if (is_binary_db_id(i)) {
-                        {
-                            arb_progress progress("Loading database", GB_size_of_FILE(input)/FILESIZE_GRANULARITY);
-                            i = gb_read_bin(input, gbc, false, progress);                  // read or map whole db
-                            progress.done();
-                        }
-                        gbc   = Main->root_container;
-                        error = ARB_zfclose(input);
-
-                        if (i) {
-                            if (Main->allow_corrupt_file_recovery) {
-                                GB_print_error();
-                                GB_clear_error();
-                            }
-                            else {
-                                gbc   = 0;
-                                error = GBS_global_string("Failed to load database '%s'\n"
-                                                          "Reason: %s",
-                                                          path,
-                                                          GB_await_error());
-                            }
-                        }
-
-                        if (gbc && quickFile) {
-                            long     err;
-                            GB_ERROR err_msg;
-                          load_quick_save_file_only :
-                            err     = 0;
-                            err_msg = 0;
-
-                            input = fopen(quickFile, "rb");
-
-                            if (input) {
-                                GB_ULONG time_of_quick_file = GB_time_of_file(quickFile);
-                                if (time_of_main_file && time_of_quick_file < time_of_main_file) {
-                                    const char *warning = GBS_global_string("Your main database file '%s' is newer than\n"
-                                                                            "   the changes file '%s'\n"
-                                                                            "   That is very strange and happens only if files where\n"
-                                                                            "   moved/copied by hand\n"
-                                                                            "   Your file '%s' may be an old relict,\n"
-                                                                            "   if you ran into problems now,delete it",
-                                                                            path, quickFile, quickFile);
-                                    GB_warning(warning);
-                                }
-                                i = gb_read_in_uint32(input, 0);
-                                if (is_binary_db_id(i)) {
-                                    {
-                                        arb_progress progress("Loading quicksave", GB_size_of_FILE(input)/FILESIZE_GRANULARITY);
-                                        err = gb_read_bin(input, gbc, true, progress);
-                                        progress.done();
-                                    }
-                                    fclose (input);
-
-                                    if (err) {
-                                        err_msg = GBS_global_string("Loading failed (file corrupt?)\n"
-                                                                    "[Fail-Reason: '%s']",
-                                                                    GB_await_error());
-                                    }
-                                }
-                                else {
-                                    err_msg = "Wrong file format (not a quicksave file)";
-                                    err     = 1;
-                                }
-                            }
-                            else {
-                                err_msg = "Can't open file";
-                                err     = 1;
-                            }
-
-                            if (err) {
-                                error = GBS_global_string("I cannot load your quick file '%s'\n"
-                                                          "Reason: %s\n"
-                                                          "\n"
-                                                          "Note: you MAY restore an older version by running arb with:\n"
-                                                          "      arb <name of quicksave-file>",
-                                                          quickFile, err_msg);
-
-                                if (!Main->allow_corrupt_file_recovery) {
-                                    gbc = 0;
-                                }
-                                else {
-                                    GB_export_error(error);
-                                    GB_print_error();
-                                    GB_clear_error();
-                                    error = 0;
-                                    GB_disable_quicksave(gbc, "Couldn't load last quicksave (your latest changes are NOT included)");
-                                }
-                            }
-                        }
-                        Main->qs.last_index = loadedQuickIndex; // determines which # will be saved next
-                    }
-                    else {
-                        if (has_ascii_db_id(i, input)) {
-                            error = gb_read_ascii_beyond_header(input, path, gbc);
-                            if (input != stdin) {
-                                GB_ERROR close_error = ARB_zfclose(input);
-                                if (!error) error    = close_error;
-                            }
-                            GB_disable_quicksave(gbc,
-                                                 "Sorry, I cannot save differences to ascii files\n"
-                                                 "  Save whole database in binary mode first");
-                        }
-                        else {
-                            error = "input file is not an arb database file";
-                        }
-
-                    }
-                }
-            }
+    if (path && (strchr(opent, 'r'))) {
+        if (strchr(path, ':')) {
+            error = Main->login_remote(path, opent);
         }
         else {
-            GB_disable_quicksave(gbc, "Database not part of this process");
+            int read_from_stdin = strcmp(path, "-") == 0;
+
+            GB_ULONG time_of_main_file = 0; long i;
+
             Main->mark_as_server();
             GB_begin_transaction(gbc);
-        }
+            Main->clock      = 0;                   // start clock
 
-        if (error) gbcm_logout(Main, user);
+            FILE *input = read_from_stdin ? stdin : fopen(path, "rb");
+            if (!input && ignoreMissingMaster) {
+                goto load_quick_save_file_only;
+            }
+
+            if (!input) {
+                if (strchr(opent, 'c')) {
+                    GB_disable_quicksave(gbc, "Database Created");
+
+                    if (strchr(opent, 'D')) { // use default settings
+                        GB_clear_error(); // with default-files gb_scan_directory (used above) has created an error, cause the path was a fake path
+                        
+                        gb_assert(!ARB_strBeginsWith(path, ".arb_prop/")); // do no longer pass path-prefix [deprecated!]  
+                        char *found_path = GB_property_file(false, path);
+
+                        if (!found_path) {
+                            fprintf(stderr, "file %s not found\n", path);
+                            dbCreated = true;
+                        }
+                        else {
+                            freeset(path, found_path);
+                            // cppcheck-suppress deallocuse (false positive; path is reassigned to non-NULL above)
+                            input = fopen(path, "rb");
+                        }
+                    }
+                    else {
+                        dbCreated = true;
+                    }
+
+                    if (dbCreated) printf(" database %s created\n", path);
+                }
+                else {
+                    error = GBS_global_string("Database '%s' not found", path);
+                    gbc   = 0;
+                }
+            }
+            if (input) {
+                if (strchr(opent, 'D')) { // we are loading properties -> be verboose
+                    fprintf(stderr, "Using properties from '%s'\n", path);
+                }
+                time_of_main_file = GB_time_of_file(path);
+
+                i = (input != stdin) ? gb_read_in_uint32(input, 0) : 0;
+
+                if (is_binary_db_id(i)) {
+                    i = gb_read_bin(input, gbc, false);     // read or map whole db
+                    gbc = Main->root_container;
+                    fclose(input);
+
+                    if (i) {
+                        if (Main->allow_corrupt_file_recovery) {
+                            GB_print_error();
+                            GB_clear_error();
+                        }
+                        else {
+                            gbc   = 0;
+                            error = GBS_global_string("Failed to load database '%s'\n"
+                                                      "Reason: %s",
+                                                      path,
+                                                      GB_await_error());
+                        }
+                    }
+
+                    if (gbc && quickFile) {
+                        long     err;
+                        GB_ERROR err_msg;
+                    load_quick_save_file_only :
+                        err     = 0;
+                        err_msg = 0;
+
+                        input = fopen(quickFile, "rb");
+
+                        if (input) {
+                            GB_ULONG time_of_quick_file = GB_time_of_file(quickFile);
+                            if (time_of_main_file && time_of_quick_file < time_of_main_file) {
+                                const char *warning = GBS_global_string("Your main database file '%s' is newer than\n"
+                                                                        "   the changes file '%s'\n"
+                                                                        "   That is very strange and happens only if files where\n"
+                                                                        "   moved/copied by hand\n"
+                                                                        "   Your file '%s' may be an old relict,\n"
+                                                                        "   if you ran into problems now,delete it",
+                                                                        path, quickFile, quickFile);
+                                GB_warning(warning);
+                            }
+                            i = gb_read_in_uint32(input, 0);
+                            if (is_binary_db_id(i)) {
+                                err = gb_read_bin(input, gbc, true);
+                                fclose (input);
+
+                                if (err) {
+                                    err_msg = GBS_global_string("Loading failed (file corrupt?)\n"
+                                                                "[Fail-Reason: '%s']",
+                                                                GB_await_error());
+                                }
+                            }
+                            else {
+                                err_msg = "Wrong file format (not a quicksave file)";
+                                err     = 1;
+                            }
+                        }
+                        else {
+                            err_msg = "Can't open file";
+                            err     = 1;
+                        }
+
+                        if (err) {
+                            error = GBS_global_string("I cannot load your quick file '%s'\n"
+                                                      "Reason: %s\n"
+                                                      "\n"
+                                                      "Note: you MAY restore an older version by running arb with:\n"
+                                                      "      arb <name of quicksave-file>",
+                                                      quickFile, err_msg);
+
+                            if (!Main->allow_corrupt_file_recovery) {
+                                gbc = 0;
+                            }
+                            else {
+                                GB_export_error(error);
+                                GB_print_error();
+                                GB_clear_error();
+                                error = 0;
+                                GB_disable_quicksave(gbc, "Couldn't load last quicksave (your latest changes are NOT included)");
+                            }
+                        }
+                    }
+                    Main->qs.last_index = loadedQuickIndex; // determines which # will be saved next
+                }
+                else {
+                    if (input != stdin) fclose(input);
+                    error = gb_read_ascii(path, gbc);
+                    GB_disable_quicksave(gbc, "Sorry, I cannot save differences to ascii files\n"
+                                         "  Save whole database in binary mode first");
+                }
+            }
+        }
+    }
+    else {
+        GB_disable_quicksave(gbc, "Database not part of this process");
+        Main->mark_as_server();
+        GB_begin_transaction(gbc);
     }
 
     gb_assert(error || gbc);
 
     if (error) {
+        gbcm_logout(Main, user);
         gb_delete_dummy_father(Main->dummy_father);
         gbc = NULL;
         delete Main;
@@ -1348,12 +1561,8 @@ static GBDATA *GB_login(const char *cpath, const char *opent, const char *user) 
             }
             error = gb_load_key_data_and_dictionaries(Main);
             if (!error) error = gb_resort_system_folder_to_top(Main->root_container);
-            if (!error) error = init_tmp_branch(gbc);
-
+            // @@@ handle error 
             GB_commit_transaction(gbc);
-
-            // "handle" error
-            if (error) GBK_terminatef("PANIC in GB_login: %s", error);
         }
         Main->security_level = 0;
         gbl_install_standard_commands(gbc);
@@ -1383,20 +1592,25 @@ GB_ERROR GBT_check_arb_file(const char *name) { // goes to header: __ATTR__USERE
     GB_ERROR error = NULL;
     if (!strchr(name, ':'))  { // don't check remote DB
         if (GB_is_regularfile(name)) {
-            FILE *in = ARB_zfopen(name, "rb", ZFILE_AUTODETECT, error, true); // suppress stderr (to hide "broken pipe" errors from decompressors)
+            FILE *in = fopen(name, "rb");
             if (!in) {
-                gb_assert(error);
-                error = GBS_global_string("Cannot read file '%s' (Reason: %s)", name, error);
+                error = GBS_global_string("Cannot find file '%s'", name);
             }
             else {
-                uint32_t i = gb_read_in_uint32(in, 0);
+                long i = gb_read_in_uint32(in, 0);
 
                 if (!is_binary_db_id(i)) {
-                    if (!has_ascii_db_id(i, in)) {
-                        error = GBS_global_string("'%s' is not an arb file", name);
+                    rewind(in);
+                    char buffer[100];
+                    if (!fgets(buffer, 50, in)) {
+                        error = GB_IO_error("reading", name);
+                    }
+                    else {
+                        bool is_ascii = strncmp(buffer, "/*ARBDB AS", 10) == 0;
+                        if (!is_ascii) error = GBS_global_string("'%s' is not an arb file", name);
                     }
                 }
-                ARB_zfclose(in); // Note: error ignored here (will report broken pipe from decompressor)
+                fclose(in);
             }
         }
         else {
@@ -1513,6 +1727,7 @@ void TEST_io_number() {
 
 void TEST_GBDATA_size() {
     // protect GBDATA/GBENTRY/GBCONTAINER against unwanted changes
+
     GBENTRY fakeEntry;
 
 #if defined(ARB_64)
@@ -1537,6 +1752,5 @@ void TEST_GBDATA_size() {
 
 #endif
 }
-TEST_PUBLISH(TEST_GBDATA_size);
 
 #endif // UNIT_TESTS

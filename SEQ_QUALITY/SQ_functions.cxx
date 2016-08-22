@@ -19,7 +19,7 @@
 
 #include <aw_preset.hxx>
 #include <arb_progress.h>
-#include <TreeNode.h>
+#include <arbdbt.h>
 
 using namespace std;
 
@@ -254,7 +254,7 @@ static char *SQ_fetch_filtered_sequence(GBDATA * read_sequence, AP_filter * filt
         int           filteredLength     = filter->get_filtered_length();
         const size_t *filterpos_2_seqpos = filter->get_filterpos_2_seqpos();
 
-        ARB_alloc(filteredSequence, filteredLength);
+        filteredSequence = (char*)malloc(filteredLength * sizeof(char));
         if (filteredSequence) {
             for (int i = 0; i < filteredLength; ++i) {
                 filteredSequence[i] = rawSequence[filterpos_2_seqpos[i]];
@@ -264,7 +264,7 @@ static char *SQ_fetch_filtered_sequence(GBDATA * read_sequence, AP_filter * filt
     return filteredSequence;
 }
 
-static GB_ERROR SQ_pass1(SQ_GroupData * globalData, GBDATA * gb_main, TreeNode * node, AP_filter * filter) {
+static GB_ERROR SQ_pass1(SQ_GroupData * globalData, GBDATA * gb_main, GBT_TREE * node, AP_filter * filter) {
     GB_push_transaction(gb_main);
 
     GB_ERROR  error          = 0;
@@ -428,7 +428,7 @@ GB_ERROR SQ_pass1_no_tree(SQ_GroupData * globalData, GBDATA * gb_main, AP_filter
     return error;
 }
 
-static GB_ERROR SQ_pass2(const SQ_GroupData * globalData, GBDATA * gb_main, TreeNode * node, AP_filter * filter) {
+static GB_ERROR SQ_pass2(const SQ_GroupData * globalData, GBDATA * gb_main, GBT_TREE * node, AP_filter * filter) {
     GB_push_transaction(gb_main);
 
     char *alignment_name = GBT_get_default_alignment(gb_main);
@@ -511,7 +511,7 @@ static GB_ERROR SQ_pass2(const SQ_GroupData * globalData, GBDATA * gb_main, Tree
                 GBDATA *gb_dev     = GB_search(gb_quality_ali, "consensus_deviation", GB_CREATE_CONTAINER);
                 if (!gb_dev) error = GB_get_error();
 
-                TreeNode *backup       = node; // needed?
+                GBT_TREE *backup       = node; // needed?
                 int       whilecounter = 0;
                 double    eval         = 0;
 
@@ -615,7 +615,7 @@ static GB_ERROR SQ_pass2(const SQ_GroupData * globalData, GBDATA * gb_main, Tree
                             // ---------to this and scroll down--------
                         }
                     }
-                    backup = backup->get_father();
+                    backup = backup->father;
                 }
 
                 // --------also cut this------
@@ -848,18 +848,18 @@ GB_ERROR SQ_pass2_no_tree(const SQ_GroupData * globalData, GBDATA * gb_main, AP_
     return error;
 }
 
-int SQ_count_nodes(TreeNode *node) {
+int SQ_count_nodes(GBT_TREE *node) {
     // calculate number of nodes in tree
     return GBT_count_leafs(node)*2-1;
 }
 
-static void create_multi_level_consensus(TreeNode * node, SQ_GroupData * data) {
+static void create_multi_level_consensus(GBT_TREE * node, SQ_GroupData * data) {
     SQ_GroupData *newData = data->clone(); // save actual consensus
     *newData = *data;
     group_dict[node->name] = newData; // and link it with an name
 }
 
-void SQ_calc_and_apply_group_data(TreeNode * node, GBDATA * gb_main, SQ_GroupData * data, AP_filter * filter, arb_progress& progress) {
+void SQ_calc_and_apply_group_data(GBT_TREE * node, GBDATA * gb_main, SQ_GroupData * data, AP_filter * filter, arb_progress& progress) {
     if (node->is_leaf) {
         if (node->gb_node) {
             SQ_pass1(data, gb_main, node, filter);
@@ -867,8 +867,8 @@ void SQ_calc_and_apply_group_data(TreeNode * node, GBDATA * gb_main, SQ_GroupDat
         }
     }
     else {
-        TreeNode *node1 = node->get_leftson();
-        TreeNode *node2 = node->get_rightson();
+        GBT_TREE *node1 = node->leftson;
+        GBT_TREE *node2 = node->rightson;
 
         if (node->name) {
             SQ_GroupData *leftData      = NULL;
@@ -910,15 +910,15 @@ void SQ_calc_and_apply_group_data(TreeNode * node, GBDATA * gb_main, SQ_GroupDat
     progress.inc();
 }
 
-void SQ_calc_and_apply_group_data2(TreeNode * node, GBDATA * gb_main, const SQ_GroupData * data, AP_filter * filter, arb_progress& progress) {
+void SQ_calc_and_apply_group_data2(GBT_TREE * node, GBDATA * gb_main, const SQ_GroupData * data, AP_filter * filter, arb_progress& progress) {
     if (node->is_leaf) {
         if (node->gb_node) {
             SQ_pass2(data, gb_main, node, filter);
         }
     }
     else {
-        TreeNode *node1 = node->get_leftson();
-        TreeNode *node2 = node->get_rightson();
+        GBT_TREE *node1 = node->leftson;
+        GBT_TREE *node2 = node->rightson;
 
         if (node1) SQ_calc_and_apply_group_data2(node1, gb_main, data, filter, progress);
         if (node2) SQ_calc_and_apply_group_data2(node2, gb_main, data, filter, progress);
@@ -983,7 +983,7 @@ GB_ERROR SQ_mark_species(GBDATA * gb_main, int condition, bool marked_only) {
     return error;
 }
 
-SQ_TREE_ERROR SQ_check_tree_structure(TreeNode * node) {
+SQ_TREE_ERROR SQ_check_tree_structure(GBT_TREE * node) {
     SQ_TREE_ERROR retval = NONE;
 
     if (!node)
@@ -994,9 +994,9 @@ SQ_TREE_ERROR SQ_check_tree_structure(TreeNode * node) {
             retval = ZOMBIE;
     }
     else {
-        retval = SQ_check_tree_structure(node->get_leftson());
+        retval = SQ_check_tree_structure(node->leftson);
         if (retval == NONE)
-            retval = SQ_check_tree_structure(node->get_rightson());
+            retval = SQ_check_tree_structure(node->rightson);
     }
 
     return retval;

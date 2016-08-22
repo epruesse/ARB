@@ -10,12 +10,11 @@
 // ================================================================ //
 
 #include <arb_msg_fwd.h>
+#include <arb_assert.h>
 #include <arb_string.h>
 #include <arb_backtrace.h>
 #include <smartptr.h>
 #include <arb_handlers.h>
-#include <arb_defs.h>
-#include "arb_strbuf.h"
 
 // AISC_MKPT_PROMOTE:#ifndef _GLIBCXX_CSTDLIB
 // AISC_MKPT_PROMOTE:#include <cstdlib>
@@ -60,28 +59,12 @@ static size_t last_global_string_size = 0;
 
 // --------------------------------------------------------------------------------
 
-class GlobalStringBuffers {
-    char buffer[GLOBAL_STRING_BUFFERS][GBS_GLOBAL_STRING_SIZE+2]; // several buffers - used alternately
-    int  idx;
-    char lifetime[GLOBAL_STRING_BUFFERS];
-    char nextIdx[GLOBAL_STRING_BUFFERS];
+__ATTR__VFORMAT(1) static const char *gbs_vglobal_string(const char *templat, va_list parg, int allow_reuse) {
+    static char buffer[GLOBAL_STRING_BUFFERS][GBS_GLOBAL_STRING_SIZE+2]; // several buffers - used alternately
+    static int  idx                             = 0;
+    static char lifetime[GLOBAL_STRING_BUFFERS] = {};
+    static char nextIdx[GLOBAL_STRING_BUFFERS] = {};
 
-public:
-    GlobalStringBuffers()
-        : idx(0)
-    {
-        for (int i = 0; i<GLOBAL_STRING_BUFFERS; ++i) {
-            nextIdx[i]  = 0;
-            lifetime[i] = 0;
-        }
-    }
-
-    __ATTR__VFORMAT_MEMBER(1) const char *vstrf(const char *templat, va_list parg, int allow_reuse);
-};
-
-static GlobalStringBuffers globBuf;
-
-const char *GlobalStringBuffers::vstrf(const char *templat, va_list parg, int allow_reuse) {
     int my_idx;
     int psize;
 
@@ -149,26 +132,15 @@ const char *GlobalStringBuffers::vstrf(const char *templat, va_list parg, int al
     return buffer[my_idx];
 }
 
-GlobalStringBuffers *GBS_store_global_buffers() {
-    GlobalStringBuffers *stored = new GlobalStringBuffers(globBuf);
-    globBuf                     = GlobalStringBuffers();
-    return stored;
-}
-
-void GBS_restore_global_buffers(GlobalStringBuffers *saved) {
-    globBuf = *saved;
-    delete saved;
-}
-
 const char *GBS_vglobal_string(const char *templat, va_list parg) {
     // goes to header: __ATTR__VFORMAT(1)
-    return globBuf.vstrf(templat, parg, 0);
+    return gbs_vglobal_string(templat, parg, 0);
 }
 
 char *GBS_vglobal_string_copy(const char *templat, va_list parg) {
     // goes to header: __ATTR__VFORMAT(1)
-    const char *gstr = globBuf.vstrf(templat, parg, 1);
-    return ARB_strduplen(gstr, last_global_string_size);
+    const char *gstr = gbs_vglobal_string(templat, parg, 1);
+    return GB_strduplen(gstr, last_global_string_size);
 }
 
 const char *GBS_global_string_to_buffer(char *buffer, size_t bufsize, const char *templat, ...) {
@@ -202,7 +174,7 @@ const char *GBS_global_string(const char *templat, ...) {
     // goes to header: __ATTR__FORMAT(1)
     va_list parg;
     va_start(parg, templat);
-    const char *result = globBuf.vstrf(templat, parg, 0);
+    const char *result = gbs_vglobal_string(templat, parg, 0);
     va_end(parg);
     return result;
 }
@@ -217,8 +189,8 @@ GB_ERROR GBK_assert_msg(const char *assertion, const char *file, int linenr) {
     const char  *result   = 0;
     int          old_size = last_global_string_size;
 
-    if (!buffer) ARB_alloc(buffer, BUFSIZE);
-    result = GBS_global_string_to_buffer(buffer, BUFSIZE, "assertion '%s' failed in %s #%i", assertion, file, linenr);
+    if (!buffer) buffer = (char *)malloc(BUFSIZE);
+    result              = GBS_global_string_to_buffer(buffer, BUFSIZE, "assertion '%s' failed in %s #%i", assertion, file, linenr);
 
     last_global_string_size = old_size;
 
@@ -491,7 +463,7 @@ void GB_informationf(const char *templat, ...) {
 void GBS_reuse_buffer(const char *global_buffer) {
     // If you've just shortely used a buffer, you can put it back here
     va_list empty;
-    globBuf.vstrf(global_buffer, empty, -1); // omg hax
+    gbs_vglobal_string(global_buffer, empty, -1); // omg hax
 }
 
 #if defined(WARN_TODO)
@@ -500,7 +472,7 @@ void GBS_reuse_buffer(const char *global_buffer) {
 GB_ERROR GBK_system(const char *system_command) {
     // goes to header: __ATTR__USERESULT
     fflush(stdout);
-    fprintf(stderr, "[Action: `%s`]\n", system_command); fflush(stderr);
+    fprintf(stderr, "[Action: '%s']\n", system_command); fflush(stderr);
 
     int res = system(system_command);
 
@@ -518,153 +490,10 @@ GB_ERROR GBK_system(const char *system_command) {
         }
 
         error = GBS_global_string("%s\n"
-                                  "System call was `%s`%s",
+                                  "System call was '%s'%s",
                                   error, system_command,
                                   res == -1 ? "" : "\n(Note: console window may contain additional information)");
     }
     return error;
 }
-
-char *GBK_singlequote(const char *arg) {
-    /*! Enclose argument in single quotes (like 'arg') for POSIX shell commands.
-     */
-
-    if (!arg[0]) return ARB_strdup("''");
-
-    GBS_strstruct  out(500);
-    const char    *existing_quote = strchr(arg, '\'');
-
-    while (existing_quote) {
-        if (existing_quote>arg) {
-            out.put('\'');
-            out.ncat(arg, existing_quote-arg);
-            out.put('\'');
-        }
-        out.put('\\');
-        out.put('\'');
-        arg            = existing_quote+1;
-        existing_quote = strchr(arg, '\'');
-    }
-
-    if (arg[0]) {
-        out.put('\'');
-        out.cat(arg);
-        out.put('\'');
-    }
-    return out.release();
-}
-
-char *GBK_doublequote(const char *arg) {
-    /*! Enclose argument in single quotes (like "arg") for POSIX shell commands.
-     * Opposed to single quoted strings, shell will interpret double quoted strings.
-     */
-
-    const char    *charsToEscape = "\"\\";
-    const char    *escape      = arg+strcspn(arg, charsToEscape);
-    GBS_strstruct  out(500);
-
-    out.put('"');
-    while (escape[0]) {
-        out.ncat(arg, escape-arg);
-        out.put('\\');
-        out.put(escape[0]);
-        arg    = escape+1;
-        escape = arg+strcspn(arg, charsToEscape);
-    }
-    out.cat(arg);
-    out.put('"');
-    return out.release();
-}
-
-// --------------------------------------------------------------------------------
-
-#ifdef UNIT_TESTS
-#ifndef TEST_UNIT_H
-#include <test_unit.h>
-#endif
-
-#include "FileContent.h"
-#include <unistd.h>
-
-#define TEST_EXPECT_SQUOTE(plain,squote_expected) do {          \
-        char *plain_squoted = GBK_singlequote(plain);           \
-        TEST_EXPECT_EQUAL(plain_squoted, squote_expected);      \
-        free(plain_squoted);                                    \
-    } while(0)
-
-#define TEST_EXPECT_DQUOTE(plain,dquote_expected) do {          \
-        char *plain_dquoted = GBK_doublequote(plain);           \
-        TEST_EXPECT_EQUAL(plain_dquoted, dquote_expected);      \
-        free(plain_dquoted);                                    \
-    } while(0)
-
-#define TEST_EXPECT_ECHOED_EQUALS(echoarg,expected_echo) do {                   \
-        char *cmd = GBS_global_string_copy("echo %s > %s", echoarg, tmpfile);   \
-        TEST_EXPECT_NO_ERROR(GBK_system(cmd));                                  \
-        FileContent out(tmpfile);                                               \
-        TEST_EXPECT_NO_ERROR(out.has_error());                                  \
-        TEST_EXPECT_EQUAL(out.lines()[0], expected_echo);                       \
-        free(cmd);                                                              \
-    } while(0)
-
-#define TEST_EXPECT_SQUOTE_IDENTITY(plain) do {         \
-        char *plain_squoted = GBK_singlequote(plain);   \
-        TEST_EXPECT_ECHOED_EQUALS(plain_squoted,plain); \
-        free(plain_squoted);                            \
-    } while(0)
-
-#define TEST_EXPECT_DQUOTE_IDENTITY(plain) do {         \
-        char *plain_dquoted = GBK_doublequote(plain);   \
-        TEST_EXPECT_ECHOED_EQUALS(plain_dquoted,plain); \
-        free(plain_dquoted);                            \
-    } while(0)
-
-void TEST_quoting() {
-    const char *tmpfile = "quoted.output";
-
-    struct quoting {
-        const char *plain;
-        const char *squoted;
-        const char *dquoted;
-    } args[] = {
-        { "",                       "''",                          "\"\"" },  // empty
-        { " ",                      "' '",                         "\" \"" }, // a space
-        { "unquoted",               "'unquoted'",                  "\"unquoted\"" },
-        { "part 'is' squoted",      "'part '\\''is'\\'' squoted'", "\"part 'is' squoted\"" },
-        { "part \"is\" dquoted",    "'part \"is\" dquoted'",       "\"part \\\"is\\\" dquoted\"" },
-        { "'squoted'",              "\\''squoted'\\'",             "\"'squoted'\"" },
-        { "\"dquoted\"",            "'\"dquoted\"'",               "\"\\\"dquoted\\\"\"" },
-        { "'",                      "\\'",                         "\"'\"" },  // a single quote
-        { "\"",                     "'\"'",                        "\"\\\"\"" },  // a double quote
-        { "\\",                     "'\\'",                        "\"\\\\\"" },  // a backslash
-        { "'\"'\"",                 "\\''\"'\\''\"'",              "\"'\\\"'\\\"\"" },  // interleaved quotes
-        { "`wc -c <min_ascii.arb | tr -d ' '`",
-          "'`wc -c <min_ascii.arb | tr -d '\\'' '\\''`'",
-          "\"`wc -c <min_ascii.arb | tr -d ' '`\"" },  // interleaved quotes
-    };
-
-    for (unsigned a = 0; a<ARRAY_ELEMS(args); ++a) {
-        TEST_ANNOTATE(GBS_global_string("a=%i", a));
-        const quoting& arg = args[a];
-
-        TEST_EXPECT_SQUOTE(arg.plain, arg.squoted);
-        TEST_EXPECT_SQUOTE_IDENTITY(arg.plain);
-
-        TEST_EXPECT_DQUOTE(arg.plain, arg.dquoted);
-        if (a != 11) {
-            TEST_EXPECT_DQUOTE_IDENTITY(arg.plain);
-        }
-        else { // backticked wc call
-            char *dquoted = GBK_doublequote(arg.plain);
-            TEST_EXPECT_ECHOED_EQUALS(dquoted, "16"); // 16 is number of chars in min_ascii.arb
-            free(dquoted);
-        }
-    }
-
-    TEST_EXPECT_EQUAL(unlink(tmpfile), 0);
-}
-
-#endif // UNIT_TESTS
-
-// --------------------------------------------------------------------------------
 

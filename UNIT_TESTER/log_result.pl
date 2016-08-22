@@ -3,21 +3,16 @@ use strict;
 use warnings;
 
 my $reg_summary     = qr/^UnitTester:.*\stests=([0-9]+)\s/;
-my $reg_interrupted = qr/interrupting.*deadlocked.*test/oi;
-my $reg_sanitizer   = qr/error.*addresssanitizer/oi;
+my $reg_interrupted = qr/interrupting.*deadlocked.*test/i;
 
 sub log_summary($) {
   my ($log) = @_;
-
   my $interrupted = 0;
-  my $sanitizer   = 0;
 
-  open(LOG,'<'.$log) || die "Failed to read '$log' (Reason: $!)";
+  open(LOG,$log) || die "Failed to read '$log' (Reason: $!)";
   my $line;
  LINE:  while (defined ($line=<LOG>)) {
     if ($line =~ $reg_summary) {
-      my $summary = undef;
-      my $failure = 0;
       my $testCount = $1;
       if ($testCount==0) {
         ; # looks like all tests in this module have been skipped
@@ -39,19 +34,14 @@ sub log_summary($) {
             if ($passed eq 'ALL') { $passed = $testCount; }
           }
         }
-        $summary = "- $module ($passed/$testCount)";
-        if ($passed != $testCount) { $failure = 1; }
+        print "- $module ($passed/$testCount)\n";
       }
 
       close(LOG);
-      return ($summary,$failure);
+      return;
     }
     elsif ($line =~ $reg_interrupted) {
       $interrupted = 1;
-      last LINE;
-    }
-    elsif ($line =~ $reg_sanitizer) {
-      $sanitizer = 1;
       last LINE;
     }
   }
@@ -75,9 +65,8 @@ sub log_summary($) {
 
   my $msg = 'no summary; crashed?';
   if ($interrupted==1) { $msg = 'interrupted; deadlock?'; }
-  if ($sanitizer==1) { $msg = 'aborted by AddressSanitizer'; }
 
-  return ("- $module ($msg$extraMsg)",1);
+  print "- $module ($msg$extraMsg)\n";
 }
 
 sub main() {
@@ -86,15 +75,7 @@ sub main() {
     die "Usage: log_result.pl unittest.log";
   }
   else {
-    my ($summary,$failure) = log_summary($ARGV[0]);
-    if (defined $summary) {
-      if ($failure==1) {
-        print sprintf("%-35s <- FAILED\n", $summary);
-      }
-      else {
-        print $summary."\n";
-      }
-    }
+    log_summary($ARGV[0]);
   }
 }
 main();

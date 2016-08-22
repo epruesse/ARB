@@ -150,7 +150,7 @@ ALI_PT::ALI_PT(ALI_PT_CONTEXT *context)
 
     if (context->use_specified_family != 0) {
         mode = SpecifiedMode;
-        specified_family = ARB_strdup(context->use_specified_family);
+        specified_family = strdup(context->use_specified_family);
     }
     else {
         mode = ServerMode;
@@ -211,7 +211,7 @@ int ALI_PT::find_family(ALI_SEQUENCE *sequence, int find_type)
         T_PT_FAMILYFINDER ffinder;
         if (aisc_create(link, PT_LOCS, locs,
                         LOCS_FFINDER, PT_FAMILYFINDER, ffinder, 
-                        FAMILYFINDER_FIND_TYPE,   (long)find_type,
+                        FAMILYFINDER_FIND_TYPE,   find_type,
                         FAMILYFINDER_FIND_FAMILY, &bs,
                         NULL))
         {

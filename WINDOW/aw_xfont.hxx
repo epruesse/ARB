@@ -4,9 +4,6 @@
 #ifndef AW_DEF_HXX
 #include "aw_def.hxx"
 #endif
-#ifndef AW_COMMON_XM_HXX
-#include "aw_common_xm.hxx"
-#endif
 
 
 struct xfont {
@@ -24,14 +21,10 @@ struct _fstruct {
 
 struct _xfstruct {
     const char *templat;        // templat for locating X fonts
-    const char *description;    // short name (displayed on font button)
     xfont      *xfontlist;      // linked list of X fonts for different point sizes
 };
 
-const char *AW_get_font_specification(AW_font font_nr);
-const char *AW_get_font_shortname(AW_font font_nr);
-
-int AW_font_2_xfig(AW_font font_nr);
+#define DEFAULT      (-1)
 
 #else
 #error aw_xfont.hxx included twice

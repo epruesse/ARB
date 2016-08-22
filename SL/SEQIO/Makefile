@@ -13,10 +13,10 @@ $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .cxx.o:
-	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE) $<
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 .c.o:
-	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE) $<
+	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(OBJECTS) *.a
@@ -47,7 +47,6 @@ seq_export.o: $(ARBHOME)/INCLUDE/arb_core.h
 seq_export.o: $(ARBHOME)/INCLUDE/arb_diff.h
 seq_export.o: $(ARBHOME)/INCLUDE/arb_error.h
 seq_export.o: $(ARBHOME)/INCLUDE/arb_file.h
-seq_export.o: $(ARBHOME)/INCLUDE/arb_mem.h
 seq_export.o: $(ARBHOME)/INCLUDE/arb_msg.h
 seq_export.o: $(ARBHOME)/INCLUDE/arb_progress.h
 seq_export.o: $(ARBHOME)/INCLUDE/arb_strarray.h
@@ -72,7 +71,6 @@ seqio.o: $(ARBHOME)/INCLUDE/ad_prot.h
 seqio.o: $(ARBHOME)/INCLUDE/arb_assert.h
 seqio.o: $(ARBHOME)/INCLUDE/arb_core.h
 seqio.o: $(ARBHOME)/INCLUDE/arb_error.h
-seqio.o: $(ARBHOME)/INCLUDE/arb_mem.h
 seqio.o: $(ARBHOME)/INCLUDE/arb_msg.h
 seqio.o: $(ARBHOME)/INCLUDE/arb_string.h
 seqio.o: $(ARBHOME)/INCLUDE/arbdb.h

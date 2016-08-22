@@ -39,7 +39,7 @@ argtext:0
 
 arg:BOOTSTRP
 argtype:choice_menu
-arglabel:How many bootstraps?
+arglabel:How many bootstraps ?
 argchoice:Do not bootstrap:0
 argchoice:10:10
 argchoice:100:100
@@ -103,7 +103,7 @@ argtext:0
 
 arg:BOOTSTRP
 argtype:choice_menu
-arglabel:How many bootstraps?
+arglabel:How many bootstraps ?
 argchoice:Do not bootstrap:0
 argchoice:10:10
 argchoice:100:100

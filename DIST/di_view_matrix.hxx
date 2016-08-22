@@ -27,15 +27,17 @@ enum DI_gc {
     DI_G_LAST                   // must be last
 };
 
+class  AW_device;
+struct AW_event;
+class  DI_MATRIX;
+
 class MatrixDisplay {
     int screen_width;             // dimensions of main screen
     int screen_height;
 
     int cell_width;               // width and height of one cell
     int cell_height;
-
-    int cell_paddx;               // padding between cells
-    int cell_paddy;
+    int cell_padd;                // space between cells
 
     bool leadZero;                // show leading zero
     int  digits;                  // digits after '.'
@@ -103,8 +105,7 @@ public:
           screen_height(0),
           cell_width(0),
           cell_height(0),
-          cell_paddx(0),
-          cell_paddy(0),
+          cell_padd(0),
           leadZero(false),
           digits(0),
           horiz_page_start(0),
@@ -152,6 +153,7 @@ public:
     void scroll_cells(int cells_x, int cells_y);
 };
 
+struct save_matrix_params;
 AW_window *DI_create_view_matrix_window(AW_root *awr, MatrixDisplay *disp, save_matrix_params *sparam);
 
 

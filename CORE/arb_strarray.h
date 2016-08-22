@@ -12,17 +12,17 @@
 #ifndef ARB_STRARRAY_H
 #define ARB_STRARRAY_H
 
+#ifndef _GLIBCXX_CSTDLIB
+#include <cstdlib>
+#endif
 #ifndef ARBTOOLS_H
 #include <arbtools.h>
 #endif
-#ifndef ARB_STRING_H
-#include "arb_string.h"
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
 #endif
 #ifndef _GLIBCXX_ALGORITHM
 #include <algorithm>
-#endif
-#ifndef _GLIBCXX_CSTDLIB
-#include <cstdlib>
 #endif
 
 
@@ -48,10 +48,9 @@ protected:
     void set_space(size_t new_allocated) {
         if (new_allocated != allocated) {
             arb_assert(ok());
-
-            if (str) ARB_recalloc(str, allocated, new_allocated);
-            else     ARB_calloc(str, new_allocated);
-
+            size_t memsize = new_allocated*sizeof(*str);
+            str = (char**)(str ? realloc(str, memsize) : malloc(memsize));
+            if (new_allocated>allocated) memset(str+allocated, 0, (new_allocated-allocated)*sizeof(*str));
             allocated = new_allocated;
             arb_assert(ok());
         }
@@ -98,7 +97,6 @@ public:
         std::swap(str[i1], str[i2]);
         arb_assert(ok());
     }
-    void move(int from, int to);
 
     void remove(int i) {
         arb_assert(ok());
@@ -111,10 +109,6 @@ public:
         elems--;
         arb_assert(ok());
     }
-    void safe_remove(int i) {
-        //! like remove, but does NOOP if index out of bounds
-        if (elem_index(i)) remove(i);
-    }
 
     void resize(int newsize) {
         // truncates array to 'newsize'
@@ -125,27 +119,16 @@ public:
     void clear() { resize(0); }
 
     void sort(CharPtrArray_compare_fun compare, void *client_data);
-    void uniq(CharPtrArray_compare_fun compare, void *client_data);
-    void sort_and_uniq(CharPtrArray_compare_fun compare, void *client_data) {
-        /*! sort the array and remove all duplicates
-         * @param compare function defining order on elements (@see e.g. GB_string_comparator)
-         * @param client_data user parameter forwarded to compare
-         */
-        sort(compare, client_data);
-        uniq(compare, client_data);
-    }
-
-    int index_of(const char *search_for) const;
 };
 
 class StrArray : public CharPtrArray {
-    void free_elem(int i) OVERRIDE {
+    virtual void free_elem(int i) OVERRIDE {
         freenull(str[i]);
     }
 
 public:
     StrArray() {}
-    ~StrArray() OVERRIDE { erase(); }
+    virtual ~StrArray() OVERRIDE { erase(); }
 
     void erase() { erase_elems(); }
 
@@ -157,14 +140,6 @@ public:
         str[i+1] = NULL; // sentinel
         elems++;
         arb_assert(ok());
-    }
-    void put_before(int insert_before, char *elem) { // tranfers ownership of elem!
-        // insert a new 'name' before position 'insert_before'
-        // if 'insert_before' == -1 (or bigger than array size) -> append at end
-        put(elem);
-        if (insert_before<int(size())) {
-            move(-1, insert_before);
-        }
     }
 
     char *replace(int i, char *elem) { // transfers ownership (in both directions!)
@@ -179,11 +154,11 @@ public:
 class ConstStrArray : public CharPtrArray { // derived from a Noncopyable
     char *memblock;
 
-    void free_elem(int i) OVERRIDE { str[i] = NULL; }
+    virtual void free_elem(int i) OVERRIDE { str[i] = NULL; }
 
 public:
     ConstStrArray() : memblock(NULL) {}
-    ~ConstStrArray() OVERRIDE { free(memblock); }
+    virtual ~ConstStrArray() OVERRIDE { free(memblock); }
 
     void set_memblock(char *block) {
         // hold one memblock until destruction
@@ -205,14 +180,6 @@ public:
         elems++;
         arb_assert(ok());
     }
-    void put_before(int insert_before, const char *elem) {
-        // insert a new 'name' before position 'insert_before'
-        // if 'insert_before' == -1 (or bigger than array size) -> append at end
-        put(elem);
-        if (insert_before<int(size())) {
-            move(-1, insert_before);
-        }
-    }
 
     const char *replace(int i, const char *elem) {
         arb_assert(elem_index(i));
@@ -221,7 +188,6 @@ public:
         arb_assert(ok());
         return old;
     }
-
 };
 
 
@@ -230,16 +196,20 @@ void GBT_splitNdestroy_string(ConstStrArray& dest, char*& namelist, char separat
 
 inline void GBT_split_string(ConstStrArray& dest, const char *namelist, const char *separator, bool dropEmptyTokens) {
     //! same as GBT_splitNdestroy_string, but w/o destroying namelist
-    char *dup = ARB_strdup(namelist);
+    char *dup = strdup(namelist);
     GBT_splitNdestroy_string(dest, dup, separator, dropEmptyTokens);
 }
 inline void GBT_split_string(ConstStrArray& dest, const char *namelist, char separator) {
-    char *dup = ARB_strdup(namelist);
+    char *dup = strdup(namelist);
     GBT_splitNdestroy_string(dest, dup, separator);
     // cppcheck-suppress memleak (GBT_splitNdestroy_string takes ownership of 'dup')
 }
 
-char *GBT_join_strings(const CharPtrArray& strings, char separator);
+char *GBT_join_names(const CharPtrArray& names, char separator);
+int   GBT_names_index_of(const CharPtrArray& names, const char *search_for);
+void  GBT_names_erase(CharPtrArray& names, int index);
+void  GBT_names_add(ConstStrArray& names, int insert_before, const char *name);
+void  GBT_names_move(CharPtrArray& names, int old_index, int new_index);
 
 #else
 #error arb_strarray.h included twice

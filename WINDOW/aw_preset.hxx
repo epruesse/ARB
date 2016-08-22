@@ -14,9 +14,6 @@
 #ifndef AW_WINDOW_HXX
 #include "aw_window.hxx"
 #endif
-#ifndef AW_POSITION_HXX
-#include "aw_position.hxx"
-#endif
 #ifndef ATTRIBUTES_H
 #include <attributes.h>
 #endif
@@ -24,7 +21,9 @@
 #include <cb.h>
 #endif
 
-class ConstStrArray;
+#define AWP_COLORNAME_TEMPLATE "GCS/%s/MANAGE_GCS/%s/colorname"
+#define AWP_FONTNAME_TEMPLATE "GCS/%s/MANAGE_GCS/%s/font"
+#define AWP_FONTSIZE_TEMPLATE "GCS/%s/MANAGE_GCS/%s/size"
 
 void AW_save_properties(AW_window *aw);   // use this if you're unsure
 void AW_save_specific_properties(AW_window *aw, const char *filename);
@@ -39,36 +38,41 @@ enum AW_GCM_AREA {
     AW_GCM_WINDOW_AREA
 };
 
-DECLARE_CBTYPE_FVV_AND_BUILDERS(GcChangedCallback, void, GcChange); // generates makeGcChangedCallback
+/* creates some GC pairs: one for normal operation,
+                    the other for drag mode
+        eg.
+        AW_manage_GC(aww,"ARB_NT",device,10,20,AW_GCM_DATA_AREA, my_expose_cb, cd1 ,cd2, "name","#sequence",NULL);
 
-AW_gc_manager *AW_manage_GC(AW_window                *aww,
-                            const char               *gc_base_name,
-                            AW_device                *device,
-                            int                       base_drag,
-                            AW_GCM_AREA               area,
-                            const GcChangedCallback&  changecb,
-                            const char               *default_background_color,
-                            ...) __ATTR__SENTINEL;
+                (see implementation for more details on parameter strings)
+
+        will create 4 GCs:
+            GC 10 (normal) and 20 (drag)
+            GC 11 (normal and monospaced (indicated by '#')
+            21 drag and monospaced
+            don't forget the 0 at the end of the fontname field
+
+            When the GCs are modified the 'changecb' is called
+*/
+
+AW_gc_manager AW_manage_GC(AW_window             *aww,
+                           const char            *gc_base_name,
+                           AW_device             *device, int base_gc, int base_drag, AW_GCM_AREA area,
+                           const WindowCallback&  changecb,
+                           bool                   define_color_groups,
+                           const char            *default_background_color,
+                           ...) __ATTR__SENTINEL;
 
 
-AW_window *AW_create_gc_window(AW_root *aw_root, AW_gc_manager *gcman); // opens the properties Window
+
+
+AW_window *AW_create_gc_window(AW_root *aw_root, AW_gc_manager id); // opens the properties Window
 
 // same as AW_create_gc_window, but uses different window id and name
 // (use if if there are two or more color def windows in one application,
 // otherwise they save the same window properties)
-AW_window *AW_create_gc_window_named(AW_root *aw_root, AW_gc_manager *gcman_par, const char *wid, const char *windowname);
+AW_window *AW_create_gc_window_named(AW_root * aw_root, AW_gc_manager id_par, const char *wid, const char *windowname);
 
-void AW_popup_gc_color_range_window(AW_window *aww, AW_gc_manager *gcmgr);
-
-int AW_get_drag_gc(AW_gc_manager *gcman);
-void AW_copy_GC_colors(AW_root *aw_root, const char *source_gcman, const char *dest_gcman, const char *id0, ...) __ATTR__SENTINEL;
-
-void AW_displayColorRange(AW_device *device, int first_range_gc, AW::Position start, AW_pos xsize, AW_pos ysize);
-void AW_getColorRangeNames(const AW_gc_manager *gcman, int dimension, ConstStrArray& ids, ConstStrArray& names);
-void AW_activateColorRange(AW_gc_manager *gcman, const char *id);
-const char *AW_getActiveColorRangeID(AW_gc_manager *gcman, int *dimension);
-int AW_getFirstRangeGC(AW_gc_manager *gcman);
-
+void AW_copy_GCs(AW_root *aw_root, const char *source_window, const char *dest_window, bool has_font_info, const char *id0, ...) __ATTR__SENTINEL;
 
 #else
 #error aw_preset.hxx included twice

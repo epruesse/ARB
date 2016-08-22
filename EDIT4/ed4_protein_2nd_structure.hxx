@@ -222,6 +222,6 @@ GB_ERROR ED4_pfold_set_SAI(char **protstruct, GBDATA *gb_main, const char *align
  *  the SAI filter to update the selected SAI in the editor or the selection in the
  *  SAI option menu.
  */
-AW_window *ED4_pfold_create_props_window(AW_root *awr, const WindowCallback *refreshCallback);
+AW_window *ED4_pfold_create_props_window(AW_root *awr, void (*cb)(AW_window*));
 
 #endif

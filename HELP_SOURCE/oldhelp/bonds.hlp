@@ -22,8 +22,7 @@ DESCRIPTION	Allows to adjust values indicating the relative strengths of
 			Type the values to the corresponding subwindows of the
 			'Relative Strength of Base Pairings' matrix.
 
-NOTES		The bond matrix and the 'Threshold for Splitting' are shared
-                between both expert windows (design + match).
+NOTES		None
 
 EXAMPLES	None
 

@@ -42,15 +42,19 @@ struct GEN_NodeTextBuilder {
 static GEN_NodeTextBuilder *gen_nds_ms = 0;
 
 void GEN_make_node_text_init(GBDATA *gb_main) {
-    const char *sf = "flag1";
-    const char *sl = "len1";
+    GBDATA     *gbz, *gbe;
+    const char *sf, *sl;
+    int         count;
 
-    if (!gen_nds_ms) ARB_calloc(gen_nds_ms, 1);
+    sf = "flag1";
+    sl = "len1";
+
+    if (!gen_nds_ms) gen_nds_ms = (GEN_NodeTextBuilder *) GB_calloc(sizeof(GEN_NodeTextBuilder), 1);
 
     GBDATA *gb_arb_presets = GB_search(gb_main, "arb_presets", GB_CREATE_CONTAINER);
-    int     count          = 0;
+    count                  = 0;
 
-    for (GBDATA *gbz = GB_entry(gb_arb_presets, "gene_viewkey"); gbz; gbz  = GB_nextEntry(gbz)) {
+    for (gbz = GB_entry(gb_arb_presets, "gene_viewkey"); gbz; gbz  = GB_nextEntry(gbz)) {
         // toggle set ?
         if (GB_read_int(GB_entry(gbz, sf))) {
             freeset(gen_nds_ms->dkeys[count], GB_read_string(GB_entry(gbz, "key_text")));
@@ -61,15 +65,14 @@ void GEN_make_node_text_init(GBDATA *gb_main) {
                 gen_nds_ms->rek[count] = 0;
             }
             gen_nds_ms->lengths[count] = GB_read_int(GB_entry(gbz, sl));
-            GBDATA *gbe = GB_entry(gbz, "pars");
+            gbe = GB_entry(gbz, "pars");
             freenull(gen_nds_ms->parsing[count]);
             if (gbe && GB_read_string_count(gbe)>1) gen_nds_ms->parsing[count] = GB_read_string(gbe);
             count++;
         }
     }
-
     gen_nds_ms->errorclip = 0;
-    gen_nds_ms->count     = count;
+    gen_nds_ms->count = count;
 }
 
 char *GEN_make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode) {
@@ -84,7 +87,7 @@ char *GEN_make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode) {
         if (gen_nds_ms->rek[i]) { // hierarchical key
             gbe = GB_search(gbd, gen_nds_ms->dkeys[i], GB_FIND);
         }
-        else { // flat entry
+        else {                  // flat entry
             gbe = GB_entry(gbd, gen_nds_ms->dkeys[i]);
         }
 
@@ -128,7 +131,7 @@ char *GEN_make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode) {
                         free(p2);
 
                         if (!pars) {
-                            pars = ARB_strdup("<error>");
+                            pars = strdup("<error>");
                             if (!gen_nds_ms->errorclip++) {
                                 aw_message(GB_await_error());
                             }
@@ -266,7 +269,34 @@ void GEN_create_nds_vars(AW_root *aw_root, AW_default awdef, GBDATA *gb_main, co
     if (error) aw_message(error);
 }
 
-AW_window *GEN_open_nds_window(AW_root *aw_root, GBDATA *gb_main) {
+static void GEN_create_select_nds_window(AW_window *aww, char *key_text, AW_CL cgb_main)
+{
+#if defined(WARN_TODO)
+#warning make this function more general like popup_select_species_field_window
+#endif
+
+    static AW_window *win = 0;
+    AW_root *aw_root = aww->get_root();
+    aw_root->awar("tmp/gene_viewkey/key_text")->map(key_text);
+    if (!win) {
+        AW_window_simple *aws = new AW_window_simple;
+        aws->init(aw_root, "NDS", "NDS_SELECT");
+        aws->load_xfig("awt/nds_sel.fig");
+        aws->button_length(13);
+
+        aws->callback(AW_POPDOWN);
+        aws->at("close");
+        aws->create_button("CLOSE", "CLOSE", "C");
+
+        create_selection_list_on_itemfields((GBDATA*)cgb_main, aws, "tmp/gene_viewkey/key_text", true, FIELD_FILTER_NDS, "scandb", "rescandb", GEN_get_selector(), 20, 10, SF_STANDARD, NULL);
+
+        win =  (AW_window*)aws;
+    }
+    win->activate();
+}
+
+AW_window *GEN_open_nds_window(AW_root *aw_root, AW_CL cgb_main)
+{
     static AW_window_simple *aws = 0;
     if (!aws) {
         aws = new AW_window_simple;
@@ -292,27 +322,36 @@ AW_window *GEN_open_nds_window(AW_root *aw_root, GBDATA *gb_main) {
 
         aws->at_newline();
 
-        int showx, fieldx, columnx, srtx, srtux;
+
+        int showx, fieldselectx, fieldx, columnx, srtx, srtux;
 
         aws->auto_space(10, 0);
 
-        for (int i=0; i<GEN_NDS_COUNT; i++) {
+        int i;
+        for (i=0; i<GEN_NDS_COUNT; i++) {
             char buf[256];
 
             sprintf(buf, "tmp/gene_viewkey_%i/flag1", i);
             aws->get_at_position(&showx, &dummy);
             aws->create_toggle(buf);
 
+            aws->button_length(20);
             sprintf(buf, "tmp/gene_viewkey_%i/key_text", i);
             aws->get_at_position(&fieldx, &dummy);
-            create_itemfield_selection_button(aws, FieldSelDef(buf, gb_main, GEN_get_selector(), FIELD_FILTER_NDS, "display-field"), NULL);
+            aws->create_input_field(buf, 15);
+
+            aws->button_length(0);
+            aws->callback((AW_CB)GEN_create_select_nds_window, (AW_CL)strdup(buf), cgb_main);
+            aws->get_at_position(&fieldselectx, &dummy);
+            sprintf(buf, "SELECT_NDS_%i", i);
+            aws->create_button(buf, "S");
 
             sprintf(buf, "tmp/gene_viewkey_%i/len1", i);
             aws->get_at_position(&columnx, &dummy);
             aws->create_input_field(buf, 4);
 
             sprintf(buf, "tmp/gene_viewkey_%i/pars", i);
-            const char *inputFieldAwarName = ARB_strdup(buf);
+            const char *inputFieldAwarName = strdup(buf);
 
             aws->get_at_position(&srtx, &dummy);
 
@@ -323,10 +362,13 @@ AW_window *GEN_open_nds_window(AW_root *aw_root, GBDATA *gb_main) {
             aws->create_button(buf, "S", "S");
 
             aws->get_at_position(&srtux, &dummy);
-            aws->create_input_field(inputFieldAwarName, 50);
+            aws->create_input_field(inputFieldAwarName, 40);
             aws->at_newline();
         }
         aws->at(showx, closey);
+
+        aws->at_x(fieldselectx);
+        aws->create_button(0, "SEL");
 
         aws->at_x(showx);
         aws->create_button(0, "SHOW");

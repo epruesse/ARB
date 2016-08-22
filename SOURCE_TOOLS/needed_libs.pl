@@ -41,6 +41,7 @@ sub fullpath($) {
 # --------------------------------------------------------------------------------
 
 my $LINK_STATIC = $ENV{LINK_STATIC};
+defined $LINK_STATIC || die "Environmentvariable 'LINK_STATIC' is not defined";
 # LINK_STATIC==1 (used on OSX) ->
 # - shared ARB-libraries (e.g. lib/libWINDOW.so) are created/linked statically (as lib/libWINDOW.a)
 # - in contrast to "normal" static libs
@@ -49,7 +50,6 @@ my $LINK_STATIC = $ENV{LINK_STATIC};
 
 sub fixFileSuffix($) {
   my ($file) = @_;
-  defined $LINK_STATIC || die "Environmentvariable 'LINK_STATIC' is not defined";
   if ($LINK_STATIC==1) { # true on OSX
     $file =~ s/\.so/\.a/; # correct lib-suffix
   }
@@ -341,9 +341,6 @@ sub scan_dependsfile_entry($$$) {
     }
     else {
       $line = $env;
-      $line =~ s/\s\s/ /g;
-      $line =~ s/^\s//g;
-      $line =~ s/\s$//g;
     }
   }
 
@@ -719,7 +716,7 @@ sub pushDirsTo($\@\@) {
       push @out, prefix($pathPrefix,$dir.'/'.$name);
     }
     elsif (is_dynamic_lib($dep)) {
-      if ($dep =~ /^lib\/lib([A-Z_]+)\.so/) {
+      if ($dep =~ /^lib\/lib([A-Z]+)\.so/) {
         my $base = $1;
         push @out, prefix($pathPrefix,$base.'/'.$base);
       }

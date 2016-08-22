@@ -92,6 +92,7 @@ inline void flush_cache_entry(gb_cache& cache, gb_cache_idx index) {
     cache.firstfree_entry = index;
 
 #if defined(GEN_CACHE_STATS)
+    // const char *dbpath = GB_get_db_path(entry.gbd);
     if (entry.reused) {
         GBS_incr_hash(cache.reused, entry.dbpath);
         GBS_write_hash(cache.reuse_sum, entry.dbpath, GBS_read_hash(cache.reuse_sum, entry.dbpath)+entry.reused);
@@ -103,24 +104,24 @@ inline void flush_cache_entry(gb_cache& cache, gb_cache_idx index) {
 #endif // GEN_CACHE_STATS
 }
 
-gb_cache::gb_cache()
-    : entries(ARB_calloc<gb_cache_entry>(GB_MAX_CACHED_ENTRIES)),
-      firstfree_entry(1),
-      newest_entry(0),
-      oldest_entry(0),
-      sum_data_size(0),
-      max_data_size(GB_TOTAL_CACHE_SIZE),
-      big_data_min_size(max_data_size / 4)
-{
-    for (gb_cache_idx i=0; i<GB_MAX_CACHED_ENTRIES-1; i++) {
-        entries[i].next = i+1;
-    }
+void gb_cache::init() {
+    if (!entries) {
+        entries = (gb_cache_entry *)GB_calloc(sizeof(gb_cache_entry), GB_MAX_CACHED_ENTRIES);
+
+        max_data_size     = GB_TOTAL_CACHE_SIZE;
+        big_data_min_size = max_data_size / 4;
+
+        for (gb_cache_idx i=0; i<GB_MAX_CACHED_ENTRIES-1; i++) {
+            entries[i].next = i+1;
+        }
+        firstfree_entry = 1;
 
 #if defined(GEN_CACHE_STATS)
-    not_reused = GBS_create_hash(1000, GB_MIND_CASE);
-    reused     = GBS_create_hash(1000, GB_MIND_CASE);
-    reuse_sum  = GBS_create_hash(1000, GB_MIND_CASE);
+        not_reused = GBS_create_hash(1000, GB_MIND_CASE);
+        reused     = GBS_create_hash(1000, GB_MIND_CASE);
+        reuse_sum  = GBS_create_hash(1000, GB_MIND_CASE);
 #endif // GEN_CACHE_STATS
+    }
 }
 
 #if defined(GEN_CACHE_STATS)
@@ -143,7 +144,7 @@ static long list_hash_entries(const char *key, long val, void *client_data) {
 }
 #endif // GEN_CACHE_STATS
 
-gb_cache::~gb_cache() {
+void gb_cache::destroy() {
     if (entries) {
         gb_assert(newest_entry == 0); // cache has to be flushed before!
         gb_assert(sum_data_size == 0);
@@ -264,9 +265,9 @@ static char *cache_free_some_memory(gb_cache& cache, size_t needed_mem) {
 char *gb_alloc_cache_index(GBENTRY *gbe, size_t size) {
     gb_assert(gbe->cache_index == 0);
 
-    gb_cache&  cache = GB_MAIN(gbe)->cache;
-    char      *data  = cache_free_some_memory(cache, size);
-    gb_cache_idx index = cache.firstfree_entry;
+    gb_cache&     cache = GB_MAIN(gbe)->cache;
+    char         *data  = cache_free_some_memory(cache, size);
+    gb_cache_idx  index = cache.firstfree_entry;
 
     gb_assert(index);
     gb_cache_entry& entry = cache.entries[index];
@@ -275,7 +276,7 @@ char *gb_alloc_cache_index(GBENTRY *gbe, size_t size) {
     entry.next            = 0;
 
     // create data
-    if (!data) ARB_alloc(data, size);
+    if (!data) data = (char*)malloc(size);
 
     entry.sizeof_data = size;
     entry.data        = data;
@@ -284,7 +285,7 @@ char *gb_alloc_cache_index(GBENTRY *gbe, size_t size) {
     
 #if defined(GEN_CACHE_STATS)
     entry.reused     = 0;
-    entry.dbpath     = ARB_strdup(GB_get_db_path(gbe));
+    entry.dbpath     = strdup(GB_get_db_path(gbe));
 #endif                                              // GEN_CACHE_STATS
 
     gbe->cache_index = index;

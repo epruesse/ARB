@@ -2,7 +2,7 @@
 
 SED=${ARBHOME}/SH/arb_sed
 
-check_existence_in() {
+check_existance_in() {
     local OTHER=$1
     local FILE=$2
     local RESULT=true
@@ -80,8 +80,8 @@ check_missing() {
 
     local RESULT=true
     
-    check_existence_in $D2 $FILES1 || RESULT=false
-    check_existence_in $D1 $FILES2 || RESULT=false
+    check_existance_in $D2 $FILES1 || RESULT=false
+    check_existance_in $D1 $FILES2 || RESULT=false
 
     $RESULT
 }

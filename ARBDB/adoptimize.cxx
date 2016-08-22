@@ -139,16 +139,16 @@ static void g_b_opti_scanGbdByKey(GB_MAIN_TYPE *Main, GBDATA *gbd, O_gbdByKey *g
 
 static O_gbdByKey *g_b_opti_createGbdByKey(GB_MAIN_TYPE *Main)
 {
-    O_gbdByKey *gbk = ARB_calloc<O_gbdByKey>(Main->keycnt);
+    int idx;
+    O_gbdByKey *gbk = (O_gbdByKey *)GB_calloc(Main->keycnt, sizeof(O_gbdByKey));
 
     gbdByKey_cnt = Main->keycnt; // always use gbdByKey_cnt instead of Main->keycnt cause Main->keycnt can change
 
-    for (int idx=1; idx<gbdByKey_cnt; idx++) {
+    for (idx=1; idx<gbdByKey_cnt; idx++) {
         gbk[idx].cnt = 0;
 
-        gb_Key& KEY = Main->keys[idx];
-        if (KEY.key && KEY.nref>0) {
-            ARB_calloc(gbk[idx].gbds, KEY.nref);
+        if (Main->keys[idx].key && Main->keys[idx].nref>0) {
+            gbk[idx].gbds  = (GBDATA **) GB_calloc(Main->keys[idx].nref, sizeof(GBDATA*));
         }
         else {
             gbk[idx].gbds = NULL;
@@ -156,11 +156,11 @@ static O_gbdByKey *g_b_opti_createGbdByKey(GB_MAIN_TYPE *Main)
     }
 
     gbk[0].cnt  = 0;
-    ARB_calloc(gbk[0].gbds, 1);
+    gbk[0].gbds = (GBDATA **)GB_calloc(1, sizeof(GBDATA*));
 
     g_b_opti_scanGbdByKey(Main, Main->gb_main(), gbk);
 
-    for (int idx=0; idx<gbdByKey_cnt; idx++) {
+    for (idx=0; idx<gbdByKey_cnt; idx++) {
         if (gbk[idx].cnt != Main->keys[idx].nref && idx)
         {
             printf("idx=%i gbk[idx].cnt=%i Main->keys[idx].nref=%li\n",             // Main->keys[].nref ist falsch
@@ -2274,7 +2274,7 @@ static GB_DICTIONARY *gb_create_dictionary(O_gbdByKey *gbk, long maxmem) {
             word_sum += wordLen;
 #endif
 
-            if (offset-overlap+wordLen > dict->textlen) { // if not enough space allocated -> reallocate dictionary string
+            if (offset-overlap+wordLen > dict->textlen) { // if not enough space allocated -> realloc dictionary string
                 u_str ntext = (u_str)gbm_get_mem(dict->textlen+DICT_STRING_INCR, GBM_DICT_INDEX);
 
                 memcpy(ntext, dict->text, dict->textlen);
@@ -2420,7 +2420,7 @@ static GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem) {
 #if defined(TEST_ONE)
         // select wanted index
         for (idx=0; idx<gbdByKey_cnt; idx++) { // title author dew_author ebi_journal name ua_tax date full_name ua_title
-            if (gbk[idx].cnt && strcmp(quark2key(Main, idx), "tree")==0) break;
+            if (gbk[idx].cnt && strcmp(Main->keys[idx].key, "tree")==0) break;
         }
         gb_assert(idx<gbdByKey_cnt);
 #endif
@@ -2436,9 +2436,8 @@ static GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem) {
 
         {
             GB_DICTIONARY *dict;
-
-            GB_CSTR  key_name = quark2key(Main, idx);
-            GBDATA  *gb_main  = Main->gb_main();
+            GB_CSTR        key_name = Main->keys[idx].key;
+            GBDATA        *gb_main  = Main->gb_main();
 
 #ifdef TEST_SOME
             if (!( // add all wanted keys here
@@ -2479,6 +2478,8 @@ static GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem) {
 
                     size_t new_size;
 
+                    // UNCOVERED();
+
                     compr_mask &= ~GB_COMPRESSION_DICTIONARY;
                     error       = readAndWrite(&gbk[idx], old_compressed_size, new_size);
                     compr_mask  = old_compr_mask;
@@ -2509,11 +2510,9 @@ static GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem) {
                         memcpy(nint, dict->text, dict->textlen);
                     }
 
-                    const char *key = Main->keys[idx].key;
-
-                    error = gb_load_dictionary_data(gb_main, key, &old_dict_buffer, &old_dict_buffer_size);
+                    error = gb_load_dictionary_data(gb_main, Main->keys[idx].key, &old_dict_buffer, &old_dict_buffer_size);
                     if (!error) {
-                        gb_save_dictionary_data(gb_main, key, dict_buffer, dict_buffer_size);
+                        gb_save_dictionary_data(gb_main, Main->keys[idx].key, dict_buffer, dict_buffer_size);
 
                         // compress all data with new dictionary
                         printf("  * Compressing all with new dictionary ...\n");
@@ -2534,7 +2533,7 @@ static GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem) {
                             /* critical state: new dictionary has been written, but transaction will be aborted below.
                              * Solution: Write back old dictionary.
                              */
-                            gb_save_dictionary_data(gb_main, key, old_dict_buffer, old_dict_buffer_size);
+                            gb_save_dictionary_data(gb_main, Main->keys[idx].key, old_dict_buffer, old_dict_buffer_size);
                         }
                     }
 
@@ -2672,102 +2671,6 @@ void TEST_SLOW_optimize() {
     }
 
     TEST_EXPECT_NO_ERROR(GBK_system(GBS_global_string("rm %s %s %s %s", target_ascii, nonopti, optimized, reoptimized)));
-}
-
-void TEST_streamed_ascii_save_asUsedBy_silva_pipeline() {
-    GB_shell shell;
-
-    const char *loadname = "TEST_loadsave_ascii.arb";
-    const char *savename = "TEST_streamsaved.arb";
-
-    {
-        GBDATA *gb_main1 = GB_open(loadname, "r");  TEST_REJECT_NULL(gb_main1);
-        GBDATA *gb_main2 = GB_open(loadname, "rw"); TEST_REJECT_NULL(gb_main2);
-
-        // delete all species from DB2
-        GBDATA *gb_species_data2 = NULL;
-        {
-            GB_transaction ta(gb_main2);
-            GB_push_my_security(gb_main2);
-            gb_species_data2 = GBT_get_species_data(gb_main2);
-            for (GBDATA *gb_species = GBT_first_species_rel_species_data(gb_species_data2);
-                 gb_species;
-                 gb_species = GBT_next_species(gb_species))
-            {
-                TEST_EXPECT_NO_ERROR(GB_delete(gb_species));
-            }
-            GB_pop_my_security(gb_main2);
-        }
-
-        for (int saveWhileTransactionOpen = 0; saveWhileTransactionOpen<=1; ++saveWhileTransactionOpen) {
-            {
-                ArbDBWriter *writer = NULL;
-                TEST_EXPECT_NO_ERROR(GB_start_streamed_save_as(gb_main2, savename, "a", writer));
-                TEST_EXPECT_NO_ERROR(GB_stream_save_part(writer, gb_main2, gb_species_data2));
-
-                {
-                    GB_transaction ta1(gb_main1);
-                    GB_transaction ta2(gb_main2);
-
-                    for (GBDATA *gb_species1 = GBT_first_species(gb_main1);
-                         gb_species1;
-                         gb_species1 = GBT_next_species(gb_species1))
-                    {
-                        GBDATA *gb_species2 = GB_create_container(gb_species_data2, "species");
-                        if (!gb_species2) {
-                            TEST_EXPECT_NO_ERROR(GB_await_error());
-                        }
-                        else {
-                            TEST_EXPECT_NO_ERROR(GB_copy_with_protection(gb_species2, gb_species1, true));
-                            GB_write_flag(gb_species2, GB_read_flag(gb_species1)); // copy marked flag
-                        }
-
-                        if (!saveWhileTransactionOpen) GB_commit_transaction(gb_main2);
-                        TEST_EXPECT_NO_ERROR(GB_stream_save_part(writer, gb_species2, gb_species2));
-                        if (!saveWhileTransactionOpen) GB_begin_transaction(gb_main2);
-
-                        GB_push_my_security(gb_main2);
-                        TEST_EXPECT_NO_ERROR(GB_delete(gb_species2));
-                        GB_pop_my_security(gb_main2);
-                    }
-                }
-
-                TEST_EXPECT_NO_ERROR(GB_stream_save_part(writer, gb_species_data2, gb_main2));
-                TEST_EXPECT_NO_ERROR(GB_finish_stream_save(writer));
-            }
-
-            // test file content
-            TEST_EXPECT_TEXTFILES_EQUAL(savename, loadname);
-            TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(savename));
-        }
-
-        // test some error cases:
-        {
-            // 1. stream binary (not supported)
-            ArbDBWriter *writer = NULL;
-            TEST_EXPECT_NO_ERROR(GB_start_streamed_save_as(gb_main2, savename, "b", writer));
-            TEST_EXPECT_ERROR_CONTAINS(GB_stream_save_part(writer, gb_main2, gb_species_data2), "only supported for ascii");
-            GB_finish_stream_save(writer);
-            TEST_EXPECT(!GB_is_regularfile(savename)); // no partial file remains
-
-            // 2. invalid use of GB_stream_save_part (not ancestors)
-            TEST_EXPECT_NO_ERROR(GB_start_streamed_save_as(gb_main2, savename, "a", writer));
-            TEST_EXPECT_NO_ERROR(GB_stream_save_part(writer, gb_main2, gb_species_data2));
-            GBDATA *gb_extended_data2;
-            {
-                GB_transaction ta(gb_main2);
-                gb_extended_data2 = GBT_get_SAI_data(gb_main2);
-            }
-            TEST_EXPECT_ERROR_CONTAINS(GB_stream_save_part(writer, gb_species_data2, gb_extended_data2), "has to be an ancestor");
-            GB_finish_stream_save(writer);
-            TEST_EXPECT(!GB_is_regularfile(savename)); // no partial file remains
-
-        }
-        // TEST_EXPECT_ZERO_OR_SHOW_ERRNO(GB_unlink(savename));
-
-        GB_close(gb_main2);
-        GB_close(gb_main1);
-    }
 }
 
 #endif // UNIT_TESTS

@@ -178,7 +178,7 @@ static void ed_submit_parse_event(AW_window *aww)
     char *source = GB_read_file(sub_file);
     if (source) {
         dest = GBS_string_eval(source, parser, 0);
-        if (!dest) dest = ARB_strdup(GB_await_error());
+        if (!dest) dest = strdup(GB_await_error());
     }
     else {
         dest = GBS_global_string_copy("submission form not found\n(Reason: %s)", GB_await_error());
@@ -196,7 +196,7 @@ static void ed_submit_parse_event(AW_window *aww)
     *d = 0;
 
     dest2             = GBS_string_eval(dest, privat, 0);
-    if (!dest2) dest2 = ARB_strdup(GB_await_error());
+    if (!dest2) dest2 = strdup(GB_await_error());
 
     aw_root->awar(AWAR_SUBMIT_PARSED)->write_string(dest2);
 

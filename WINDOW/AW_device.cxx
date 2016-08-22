@@ -12,7 +12,6 @@
 #include "aw_root.hxx"
 #include "aw_common_xm.hxx"
 
-#include <arb_mem.h>
 #include <arb_msg.h>
 
 #if defined(DEBUG)
@@ -47,7 +46,7 @@ static const char *clipstatestr(AW_device *device) {
             "offset={x=%f y=%f}" ,
             clip_rect.t, clip_rect.b, clip_rect.l, clip_rect.r,
             fo.top, fo.bottom, fo.left, fo.right,
-            device->get_scale(), device->get_unscale(),
+            device->get_scale(), device->get_unscale(), 
             offset.x(), offset.y());
 
     return buffer;
@@ -251,7 +250,7 @@ bool AW_device::text_overlay(int gc, const char *opt_str, long opt_len,  // eith
     return toc(this, gc, opt_str, opt_len, start, (size_t)textlen, corrx, corry, opt_ascent, opt_descent, cduser);
 }
 
-bool AW_device::generic_polygon(int gc, int npos, const AW::Position *pos, AW_bitset filteri) {
+bool AW_device::generic_filled_area(int gc, int npos, const AW::Position *pos, AW_bitset filteri) {
     bool drawflag = false;
     if (filteri & filter) {
         int p = npos-1;
@@ -263,7 +262,7 @@ bool AW_device::generic_polygon(int gc, int npos, const AW::Position *pos, AW_bi
     return drawflag;
 }
 
-void AW_device::move_region(AW_pos /* src_x */, AW_pos /* src_y */, AW_pos /* width */, AW_pos /* height */,
+void AW_device::move_region(AW_pos /* src_x */, AW_pos /* src_y */, AW_pos /* width */, AW_pos /* height */, 
                             AW_pos /* dest_x */, AW_pos /* dest_y */) {
     // empty default
 }
@@ -302,7 +301,8 @@ const AW_screen_area& AW_device::get_common_screen(const AW_common *common_) {
     return common_->get_screen();
 }
 
-bool AW_device::generic_box(int gc, const AW::Rectangle& rect, AW_bitset filteri) {
+bool AW_device::generic_box(int gc, bool /*filled*/, const AW::Rectangle& rect, AW_bitset filteri) {
+    // Note: 'filled' is not supported on this device
     int drawflag = 0;
     if (filteri & filter) {
         drawflag |= line_impl(gc, rect.upper_edge(), filteri);
@@ -428,7 +428,9 @@ AW_GC *AW_common_Xm::create_gc() {
 void AW_GC_set::add_gc(int gi, AW_GC *agc) {
     if (gi >= count) {
         int new_count = gi+10;
-        ARB_recalloc(gcs, count, new_count);
+        realloc_unleaked(gcs, sizeof(*gcs)*new_count);
+        if (!gcs) GBK_terminate("out of memory");
+        memset(&gcs[count], 0, sizeof(*gcs)*(new_count-count));
         count = new_count;
     }
     if (gcs[gi]) delete gcs[gi];
@@ -443,10 +445,6 @@ void AW_stylable::set_grey_level(int gc, AW_grey_level grey_level) {
     // <0 = don't fill, 0.0 = white, 1.0 = black
     get_common()->map_mod_gc(gc)->set_grey_level(grey_level);
 }
-AW_grey_level AW_stylable::get_grey_level(int gc) {
-    return get_common()->map_gc(gc)->get_grey_level();
-}
-
 void AW_stylable::set_font(int gc, AW_font font_nr, int size, int *found_size) {
     // if found_size != 0 -> return value for used font size
     get_common()->map_mod_gc(gc)->set_font(font_nr, size, found_size);

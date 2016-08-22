@@ -20,21 +20,17 @@
 #include <aw_select.hxx>
 #include <aw_advice.hxx>
 
-#include <arbdbt.h>
-
 #include <arb_str.h>
 #include <arb_strarray.h>
-
-#include <arb_misc.h>
-#include <arb_diff.h>
-#include <arb_file.h>
-#include <arb_sleep.h>
-#include <ad_cb.h>
 
 #include <string>
 #include <vector>
 #include <map>
 #include <algorithm>
+#include <arb_misc.h>
+#include <arb_diff.h>
+#include <arb_file.h>
+#include <ad_cb.h>
 
 // do includes above (otherwise depends depend on DEBUG)
 #if defined(DEBUG)
@@ -224,7 +220,7 @@ static GBDATA *GB_search_numbered(GBDATA *gbd, const char *str, GB_TYPES create)
                     GBDATA *gb_parent = 0;
                     {
                         if (previous_slash) { // found a slash
-                            char *parent_path = ARB_strpartdup(str, previous_slash-1);
+                            char *parent_path = GB_strpartdup(str, previous_slash-1);
 
                             // we are sure parent path does not contain brackets -> search normal
                             if (parent_path[0] == 0) { // that means : root-item is numbered (e.g. '/species_data[7]/...')
@@ -246,7 +242,7 @@ static GBDATA *GB_search_numbered(GBDATA *gbd, const char *str, GB_TYPES create)
                         GBDATA *gb_son = 0;
                         {
                             const char *name_start = previous_slash ? previous_slash+1 : str;
-                            char       *key_name   = ARB_strpartdup(name_start, first_bracket-1);
+                            char       *key_name   = GB_strpartdup(name_start, first_bracket-1);
                             int         c          = 0;
 
                             gb_son = GB_entry(gb_parent, key_name);
@@ -296,19 +292,24 @@ static GBDATA *GB_search_numbered(GBDATA *gbd, const char *str, GB_TYPES create)
 //      class KnownDB
 
 class KnownDB {
-    RefPtr<GBDATA> gb_main;
-
-    string description;
-    string current_path;
+    GBDATA& gb_main; 
+    string  description;
+    string  current_path;
 
 public:
     KnownDB(GBDATA *gb_main_, const char *description_)
-        : gb_main(gb_main_)
+        : gb_main(*gb_main_)
         , description(description_)
         , current_path("/")
     {}
+    KnownDB(const KnownDB& other)
+        : gb_main(other.gb_main),
+          description(other.description),
+          current_path(other.current_path)
+    {}
+    DECLARE_ASSIGNMENT_OPERATOR(KnownDB);
 
-    const GBDATA *get_db() const { return gb_main; }
+    const GBDATA *get_db() const { return &gb_main; }
     const string& get_description() const { return description; }
 
     const string& get_path() const { return current_path; }
@@ -319,7 +320,7 @@ public:
 class hasDB {
     GBDATA *db;
 public:
-    explicit hasDB(GBDATA *gbm) : db(gbm) {}
+    hasDB(GBDATA *gbm) : db(gbm) {}
     bool operator()(const KnownDB& kdb) { return kdb.get_db() == db; }
 };
 
@@ -329,7 +330,7 @@ public:
 class DB_browser;
 static DB_browser *get_the_browser(bool autocreate);
 
-class DB_browser : virtual Noncopyable {
+class DB_browser {
     typedef vector<KnownDB>::iterator KnownDBiterator;
 
     vector<KnownDB> known_databases;
@@ -344,6 +345,8 @@ class DB_browser : virtual Noncopyable {
 
     void update_DB_selector();
 
+    DB_browser(const DB_browser& other);            // copying not allowed
+    DB_browser& operator = (const DB_browser& other); // assignment not allowed
 public:
     DB_browser() : current_db(0), aww(0), oms(0) {}
 
@@ -799,7 +802,6 @@ static void selected_node_modified_cb(GBDATA *gb_node, GB_CB_TYPE cb_type) {
         static bool avoid_recursion = false;
         if (!avoid_recursion) {
             LocallyModify<bool> flag(avoid_recursion, true);
-            GlobalStringBuffers *old_buffers = GBS_store_global_buffers();
 
             AW_root *aw_root   = AW_root::SINGLETON;
             AW_awar *awar_path = aw_root->awar_no_error(AWAR_DBB_PATH);
@@ -826,7 +828,6 @@ static void selected_node_modified_cb(GBDATA *gb_node, GB_CB_TYPE cb_type) {
                     awar_path->touch();
                 }
             }
-            GBS_restore_global_buffers(old_buffers);
         }
     }
 }
@@ -871,7 +872,7 @@ static void child_changed_cb(AW_root *aw_root) {
                     fullpath = GBS_global_string_copy("/%s", child);
                 }
                 else if (child[0] == 0) {
-                    fullpath = ARB_strdup(path);
+                    fullpath = strdup(path);
                 }
                 else {
                     fullpath = GBS_global_string_copy("%s/%s", path, child);
@@ -1016,7 +1017,7 @@ static void path_changed_cb(AW_root *aw_root) {
             if (found && GB_read_type(found) != GB_DB) { // exists, but is not a container
                 char *lslash = strrchr(path, '/');
                 if (lslash) {
-                    goto_child = ARB_strdup(lslash+1);
+                    goto_child = strdup(lslash+1);
                     lslash[lslash == path] = 0; // truncate at last slash (but keep sole slash)
                     awar_path->write_string(path);
                 }
@@ -1091,8 +1092,12 @@ AW_window *DB_browser::get_window(AW_root *aw_root) {
         aws->init(aw_root, "DB_BROWSER", "ARB database browser");
         aws->load_xfig("dbbrowser.fig");
 
-        aws->at("close"); aws->callback(AW_POPDOWN);
+        aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
+
+        aws->callback(makeHelpCallback("db_browser.hlp"));
+        aws->at("help");
+        aws->create_button("HELP", "HELP", "H");
 
         aws->at("db");
         update_DB_selector();
@@ -1156,7 +1161,7 @@ static void callallcallbacks(AW_window *aww, int mode) {
 void AWT_create_debug_menu(AW_window *awmm) {
     awmm->create_menu("4debugz", "z", AWM_ALL);
 
-    awmm->insert_menu_topic(awmm->local_id("-db_browser"), "Browse loaded database(s)", "B", NULL, AWM_ALL, create_db_browser);
+    awmm->insert_menu_topic("-db_browser", "Browse loaded database(s)", "B", "db_browser.hlp", AWM_ALL, create_db_browser);
 
     awmm->sep______________();
     {
@@ -1185,7 +1190,7 @@ void AWT_create_debug_menu(AW_window *awmm) {
 
 }
 
-#if 1
+#if 0
 void AWT_check_action_ids(AW_root *, const char *) {
 }
 #else
@@ -1231,40 +1236,6 @@ AW_root *AWT_create_root(const char *properties, const char *program, UserAction
 #endif // DEBUG
     init_Advisor(aw_root);
     return aw_root;
-}
-
-void AWT_trigger_remote_action(UNFIXED, GBDATA *gb_main, const char *remote_action_spec) {
-    /*! trigger one or several action(s) (e.g. menu entries) in remote applications
-     * @param gb_main             database root
-     * @param remote_action_spec  "app:action[;app:action]*"
-     */
-
-    ConstStrArray appAction;
-    GBT_split_string(appAction, remote_action_spec, ";", true);
-
-    GB_ERROR error = NULL;
-    if (appAction.empty()) {
-        error = "No action found";
-    }
-    else {
-        for (unsigned a = 0; a<appAction.size() && !error; ++a) {
-            ConstStrArray cmd;
-            GBT_split_string(cmd, appAction[a], ":", true);
-
-            if (cmd.size() != 2) {
-                error = GBS_global_string("Invalid action '%s'", appAction[a]);
-            }
-            else {
-                const char *app    = cmd[0];
-                const char *action = cmd[1];
-
-                ARB_timeout after(2000, MS);
-                error = GBT_remote_action_with_timeout(gb_main, app, action, &after, false);
-            }
-        }
-    }
-
-    aw_message_if(error);
 }
 
 // ------------------------

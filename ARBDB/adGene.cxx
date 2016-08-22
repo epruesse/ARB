@@ -162,9 +162,9 @@ GEN_position *GEN_new_position(int parts, bool joinable) {
         memset(pos->start_pos, 0, data_size);
     }
     else {
-        ARB_calloc(pos, 1);
+        pos             = (GEN_position*)GB_calloc(1, sizeof(*pos));
         pos->parts      = parts;
-        pos->start_pos  = (size_t*)ARB_calloc<char>(data_size);
+        pos->start_pos  = (size_t*)GB_calloc(1, data_size);
         pos->stop_pos   = pos->start_pos+parts;
         pos->complement = (unsigned char*)(pos->stop_pos+parts);
     }
@@ -251,7 +251,7 @@ GEN_position *GEN_read_position(GBDATA *gb_gene) {
 
     if (gb_pos_joined) {
         parts = GB_read_int(gb_pos_joined);
-        if (parts != 1) { // split
+        if (parts != 1) { // splitted
             if (parts>1) joinable = true;
             else if (parts<-1) parts = -parts; // neg value means "not joinable" (comes from feature location 'order(...)')
             else error = GBS_global_string("Illegal value %i in 'pos_joined'", parts);
@@ -367,7 +367,7 @@ GB_ERROR GEN_write_position(GBDATA *gb_gene, const GEN_position *pos, long seqLe
         }
         else { // unknown -> autodetect
             GBDATA *gb_organism = GB_get_grandfather(gb_gene);
-            GBDATA *gb_genome   = GBT_find_sequence(gb_organism, GENOM_ALIGNMENT);
+            GBDATA *gb_genome   = GBT_read_sequence(gb_organism, GENOM_ALIGNMENT);
 
             length = GB_read_count(gb_genome);
         }
@@ -492,7 +492,7 @@ static int cmp_location_parts(const void *v1, const void *v2) {
 void GEN_sortAndMergeLocationParts(GEN_position *location) {
     // Note: makes location partly invalid (only start_pos + stop_pos are valid afterwards)
     int  parts = location->parts;
-    int *idx   = ARB_alloc<int>(parts); // idx[newpos] = oldpos
+    int *idx   = (int*)malloc(parts*sizeof(*idx)); // idx[newpos] = oldpos
     int  i, p;
 
     for (p = 0; p<parts; ++p) idx[p] = p;

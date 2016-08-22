@@ -49,13 +49,6 @@
 # versions. Change 'myARB' to a different name in steps A.2., A.3. and A.7
 #
 
-# -------------------------------------------
-# default values for optional config entries:
-
-REVERT=1
-CLEAN=1
-
-# -------------------------------------------
 
 default_config() {
     echo "# config to compile ARB via $BASENAME.sh"
@@ -69,48 +62,16 @@ default_config() {
     echo "# SVN revision to use (empty=newest)"
     echo "REVISION="
     echo ""
-    echo "# normally this script reverts all local changes (uncomment the next line to avoid that)"
-    echo "#REVERT=0"
-    echo ""
-    echo "# normally this script always does a complete rebuild (uncomment the next line to avoid that)"
-    echo "#CLEAN=0"
-}
-
-clean() {
-    if [ "$CLEAN" = "1" ]; then
-        make clean
-    else
-        echo "No cleanup done before update"
-        true
-    fi
-}
-
-revert() {
-    if [ "$REVERT" = "1" ]; then
-        svn revert -R .
-    else
-        echo "Did not revert local changes"
-        echo "Current local changes are:"
-        echo "-----------------------------"
-        svn diff
-        echo "-----------------------------"
-        true
-    fi
 }
 
 update() {
     set -x
-    clean && \
-        revert && \
+    make clean && \
+        svn revert -R . && \
         svn up --force $UPDATE_ARGS
 }
 build() {
-    if [ "$CLEAN" = "1" ]; then
-        make -j$CORES tarfile
-    else
-        echo "No cleanup done before compilation"
-        make -j$CORES tarfile_quick
-    fi
+    make -j$CORES tarfile
 }
 
 upgrade() {
@@ -127,8 +88,7 @@ upgrade() {
 arbshell() {
     echo "ARBHOME now is '$ARBHOME'"
     $ARBHOME/bin/arb_ntree --help 2>&1 | grep version
-    echo "Opening a new shell ('$SHELL'). Run arb here. Press ctrl-d to close this shell."
-    $SHELL
+    tcsh
     ARBHOME=$OLDARBHOME
     echo "ARBHOME now is again '$ARBHOME'"
 }

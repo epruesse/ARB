@@ -9,7 +9,7 @@ $(MAIN): $(CPP_OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
 
 .cxx.o:
-	$(A_CXX) $(cflags) $(cxxflags) -c $<  $(CXX_INCLUDES) $(POST_COMPILE) $<
+	$(A_CXX) $(cflags) $(cxxflags) -c $<  $(CXX_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(CPP_OBJECTS) *.a
@@ -39,7 +39,6 @@ AWTI_export.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/arb_error.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/arb_file.h
-AWTI_export.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/arb_progress.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/arb_str.h
@@ -82,7 +81,6 @@ AWTI_import.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/arb_error.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/arb_file.h
-AWTI_import.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/arb_progress.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/arb_str.h

@@ -62,7 +62,6 @@ ED4_returncode EDB_root_bact::fill_data(ED4_multi_species_manager  *multi_specie
         if (not_found_counter <= MAX_SHOWN_MISSING_SPECIES) {
             char dummy[150];
             sprintf(dummy, "%zu. %s\n", not_found_counter, str);
-            e4_assert(not_found_message);
             GBS_strcat(not_found_message, dummy);
         }
         return ED4_R_BREAK;
@@ -327,7 +326,7 @@ char* EDB_root_bact::make_top_bot_string()          // is only called when start
 ED4_returncode  EDB_root_bact::fill_species(ED4_multi_species_manager  *multi_species_manager,
                                             ED4_sequence_info_terminal *ref_sequence_info_terminal,
                                             ED4_sequence_terminal      *ref_sequence_terminal,
-                                            const char                 *str,
+                                            char                       *str,
                                             int                        *index,
                                             ED4_index                  *y,
                                             ED4_index                   curr_local_position,
@@ -345,7 +344,7 @@ ED4_returncode  EDB_root_bact::fill_species(ED4_multi_species_manager  *multi_sp
     ED4_datamode datamode  = ED4_D_SPECIES;
     ED4_returncode retCode = ED4_R_OK;
 
-    char      *ship                 = ARB_calloc<char>(SHIPSIZE);
+    char      *ship                 = (char*)GB_calloc(SHIPSIZE, sizeof(*ship));
     ED4_index  local_count_position = curr_local_position;
 
     do {
@@ -364,9 +363,10 @@ ED4_returncode  EDB_root_bact::fill_species(ED4_multi_species_manager  *multi_sp
 
                 if (sep) {
                     int   len     = sep-entry+1;
-                    char *content = ARB_strndup(entry+1, len);
-                    char *message = GBS_global_string_copy("Unknown or misplaced tag-id '%c' (with content '%s'). Error in configuration-data!\nTrying to continue..", tag, content);
+                    char *content = (char*)GB_calloc(len+1, 1);
+                    memcpy(content, entry+1, len);
 
+                    char *message = GBS_global_string_copy("Unknown or misplaced tag-id '%c' (with content '%s'). Error in configuration-data!\nTrying to continue..", tag, content);
                     fprintf(stderr, "ARB_EDIT4: %s\n", message);
                     aw_message(message);
 
@@ -424,7 +424,7 @@ ED4_returncode  EDB_root_bact::fill_species(ED4_multi_species_manager  *multi_sp
 ED4_index EDB_root_bact::scan_string(ED4_multi_species_manager  *parent,
                                      ED4_sequence_info_terminal *ref_sequence_info_terminal,
                                      ED4_sequence_terminal      *ref_sequence_terminal,
-                                     const char                 *str,
+                                     char                       *str,
                                      int                        *index,
                                      ED4_index                  *y,
                                      arb_progress&               progress)
@@ -563,11 +563,9 @@ ED4_returncode EDB_root_bact::create_group_header(ED4_multi_species_manager   *p
             sequence_manager->children->append_member(sequence_info_terminal);
 
             {
-                AW_device *device       = ED4_ROOT->first_window->get_device();
-                int        pixel_length = device->get_string_size(ED4_G_SEQUENCES, "whatever",   0);
-
-                sprintf(namebuffer, "Consensus_Seq_Terminal.%ld", ED4_counter);
-                ED4_sequence_terminal *sequence_terminal = new ED4_consensus_sequence_terminal(namebuffer, SEQUENCEINFOSIZE, 0, pixel_length + 10, height_terminal, sequence_manager);
+                AW_device             *device            = ED4_ROOT->first_window->get_device();
+                int                    pixel_length      = device->get_string_size(ED4_G_SEQUENCES, CONSENSUS,   0);
+                ED4_sequence_terminal *sequence_terminal = new ED4_consensus_sequence_terminal(CONSENSUS, SEQUENCEINFOSIZE, 0, pixel_length + 10, height_terminal, sequence_manager);
 
                 sequence_terminal->set_property(ED4_P_CURSOR_ALLOWED);
                 sequence_terminal->set_links(ref_sequence_terminal, ref_sequence_terminal);
@@ -581,32 +579,40 @@ ED4_returncode EDB_root_bact::create_group_header(ED4_multi_species_manager   *p
     return ED4_R_OK;
 }
 
-void EDB_root_bact::save_current_config(char *confname) { // and save it in database
-    GB_ERROR   error;
-    GBT_config cfg(GLOBAL_gb_main, confname, error);
-    error = NULL; // ignore not-found error
+char *EDB_root_bact::generate_config_string(char *confname) { // and save it in database
+    char *generated_string = NULL;
+    int   counter          = 0;
 
-    int                 counter        = 0;
     ED4_device_manager *device_manager = ED4_ROOT->get_device_manager();
-    ED4_members        *children       = device_manager->children;
 
-    for (int i=0; i<children->members(); i++) {
-        ED4_base *area = children->member(i);
-        if (area->is_area_manager()) {
-            GBS_strstruct area_config(10000);
-            area->generate_configuration_string(area_config);
-            cfg.set_definition(counter++, area_config.release());
+    for (int i=0; i<device_manager->children->members(); i++) {
+        if (device_manager->children->member(i)->is_area_manager()) {
+            GB_begin_transaction(GLOBAL_gb_main);
+            device_manager->children->member(i)->generate_configuration_string(&generated_string);
+
+            long string_length = strlen(generated_string);
+            if (generated_string[string_length - 1] == 1) generated_string[string_length - 1] = '\0';
+
+            GBDATA *gb_configuration = GBT_create_configuration(GLOBAL_gb_main, confname);
+            GBDATA *gb_area;
+            if (counter == 0) {
+                gb_area = GB_search(gb_configuration, "top_area", GB_STRING);
+                counter ++;
+            }
+            else {
+                gb_area = GB_search(gb_configuration, "middle_area", GB_STRING);
+            }
+
+            GB_ERROR error = GB_write_string(gb_area, generated_string);
+            if (error) aw_message(error);
+
+            GB_commit_transaction(GLOBAL_gb_main);
+
+            delete [] generated_string;
+            generated_string = NULL;
         }
     }
 
-    // add/update comment
-    {
-        char *newComment = GBS_log_dated_action_to(cfg.get_comment(), "saved from ARB_EDIT4");
-        cfg.set_comment(newComment);
-        free(newComment);
-    }
-
-    error = cfg.save(GLOBAL_gb_main, confname, true);
-    aw_message_if(error);
+    return generated_string;
 }
 

@@ -1,6 +1,6 @@
 #include "di_matr.hxx"
 
-int DI_MATRIX::search_group(TreeNode *node, GB_HASH *hash, size_t& groupcnt, char *groupname, DI_ENTRY **groups) {
+int DI_MATRIX::search_group(GBT_TREE *node, GB_HASH *hash, size_t& groupcnt, char *groupname, DI_ENTRY **groups) {
     //  returns 1 only if groupname != null and there are species for that group
 
     if (node->is_leaf) {
@@ -28,9 +28,8 @@ int DI_MATRIX::search_group(TreeNode *node, GB_HASH *hash, size_t& groupcnt, cha
             }
         }
     }
-    int erg =
-        search_group(node->get_leftson(),  hash, groupcnt, myname, groups) +
-        search_group(node->get_rightson(), hash, groupcnt, myname, groups);
+    int erg = search_group(node->leftson, hash, groupcnt, myname, groups) +
+        search_group(node->rightson, hash, groupcnt, myname, groups);
 
     if (!groupname) {       // we are not a sub group
         if (myname) {       // but we are a group
@@ -46,7 +45,7 @@ int DI_MATRIX::search_group(TreeNode *node, GB_HASH *hash, size_t& groupcnt, cha
     }
 }
 
-char *DI_MATRIX::compress(TreeNode *tree) {
+char *DI_MATRIX::compress(GBT_TREE *tree) {
     // create a hash table of species
     GB_HASH *hash = GBS_create_hash(nentries, GB_IGNORE_CASE);
     char *error = 0;
@@ -125,10 +124,10 @@ char *DI_MATRIX::compress(TreeNode *tree) {
     }
     free(entries);
 
-    entries           = groups;
-    nentries          = groupcnt;
-    allocated_entries = groupcnt;
-    matrix_type       = DI_MATRIX_COMPRESSED;
+    entries = groups;
+    nentries = groupcnt;
+    entries_mem_size = groupcnt;
+    matrix_type = DI_MATRIX_COMPRESSED;
 
     GBS_free_hash(hash);
     return error;

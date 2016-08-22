@@ -11,9 +11,8 @@
 #include "MultiProbe.hxx"
 #include "MP_probe.hxx"
 
-#include <AP_TreeColors.hxx>
+#include <AP_Tree.hxx>                              // needed for GCs
 #include <aw_msg.hxx>
-#include <arbdbt.h>
 
 #include <cmath>
 
@@ -70,7 +69,7 @@ ST_Container::~ST_Container()
 
 Sonde* ST_Container::cache_Sonde(char *name, int allowed_mis, double outside_mis)
 {
-    char*  name_for_plist = ARB_strdup(name);
+    char*  name_for_plist = strdup(name);
     Sonde* s              = new Sonde(name, allowed_mis, outside_mis);
 
     Sondennamen->insert_as_first(name_for_plist);

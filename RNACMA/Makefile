@@ -13,8 +13,6 @@ ifeq ($(SUPPRESS_WARNINGS),1)
 cma_cxxflags:= $(subst -Weffc++,,$(cma_cxxflags))
 cma_cxxflags:= $(subst -Wctor-dtor-privacy,,$(cma_cxxflags))
 cma_cxxflags:= $(subst -Wlogical-op,,$(cma_cxxflags))
-cma_cxxflags:= $(subst -Wunused-local-typedefs,,$(cma_cxxflags))
-cma_cxxflags:= $(cma_cxxflags) -Wno-deprecated-declarations -Wno-ignored-attributes
 cma_cflags:= $(subst -Wshadow,,$(cma_cflags))
 cma_cflags+= -Wno-unused-local-typedefs# this is included in -Wall
 endif
@@ -31,13 +29,13 @@ warn:
 ifeq ($(SUPPRESS_WARNINGS),1)
 	@echo "------------------------------------------------------------------------------------------"
 	@echo "Please note: Several compiler warnings have been disabled in RNACMA"
-	@echo "(namely -Weffc++, -Wctor-dtor-privacy, -Wlogical-op, -Wshadow, -Wunused-local-typedefs,"
-	@echo "  -Wdeprecated-declarations -Wignored-attributes) to avoid Eigen spams here"
+	@echo "(namely -Weffc++, -Wctor-dtor-privacy, -Wlogical-op, -Wshadow, -Wunused-local-typedefs)"
+	@echo "to avoid Eigen spams here"
 	@echo "------------------------------------------------------------------------------------------"
 endif
 
 .cxx.o: warn
-	$(A_CXX) $(cma_cflags) $(cma_cxxflags) -c $<  $(CXX_INCLUDES)  $(POST_COMPILE) $<
+	$(A_CXX) $(cma_cflags) $(cma_cxxflags) -c $<  $(CXX_INCLUDES)  $(POST_COMPILE)
 
 
 $(CPP_OBJECTS) : Makefile
@@ -70,7 +68,6 @@ AlignedSequenceLoader.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AlignedSequenceLoader.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AlignedSequenceLoader.o: $(ARBHOME)/INCLUDE/arb_core.h
 AlignedSequenceLoader.o: $(ARBHOME)/INCLUDE/arb_error.h
-AlignedSequenceLoader.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AlignedSequenceLoader.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AlignedSequenceLoader.o: $(ARBHOME)/INCLUDE/arb_string.h
 AlignedSequenceLoader.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -95,7 +92,6 @@ Analyser.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 Analyser.o: $(ARBHOME)/INCLUDE/arb_assert.h
 Analyser.o: $(ARBHOME)/INCLUDE/arb_core.h
 Analyser.o: $(ARBHOME)/INCLUDE/arb_error.h
-Analyser.o: $(ARBHOME)/INCLUDE/arb_mem.h
 Analyser.o: $(ARBHOME)/INCLUDE/arb_msg.h
 Analyser.o: $(ARBHOME)/INCLUDE/arb_string.h
 Analyser.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -120,7 +116,6 @@ dbconn.o: $(ARBHOME)/INCLUDE/ad_prot.h
 dbconn.o: $(ARBHOME)/INCLUDE/arb_assert.h
 dbconn.o: $(ARBHOME)/INCLUDE/arb_core.h
 dbconn.o: $(ARBHOME)/INCLUDE/arb_error.h
-dbconn.o: $(ARBHOME)/INCLUDE/arb_mem.h
 dbconn.o: $(ARBHOME)/INCLUDE/arb_msg.h
 dbconn.o: $(ARBHOME)/INCLUDE/arb_string.h
 dbconn.o: $(ARBHOME)/INCLUDE/arbdb.h

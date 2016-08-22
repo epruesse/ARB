@@ -17,15 +17,13 @@
 
 using namespace std;
 
-AWT_species_set_root::AWT_species_set_root(GBDATA *gb_main_, long nspecies_, arb_progress *progress_)
-    : species_counter(1),
-      nspecies(nspecies_),
-      nsets(0),
-      sets(ARB_calloc<AWT_species_set*>(leafs_2_nodes(nspecies, ROOTED))),
-      progress(progress_),
-      gb_main(gb_main_),
-      species_hash(GBS_create_hash(nspecies, GB_IGNORE_CASE))
-{
+AWT_species_set_root::AWT_species_set_root(GBDATA *gb_maini, long nspeciesi, arb_progress *progress_) {
+    memset((char *)this, 0, sizeof(*this));
+    gb_main  = gb_maini;
+    nspecies = nspeciesi;
+    progress = progress_;
+    sets     = (AWT_species_set **)GB_calloc(sizeof(AWT_species_set *), (size_t)leafs_2_nodes(nspecies, ROOTED));
+
     for (int i=0; i<256; i++) {
         int j = i;
         int count = 0;
@@ -35,6 +33,8 @@ AWT_species_set_root::AWT_species_set_root(GBDATA *gb_main_, long nspecies_, arb
         }
         diff_bits[i] = count;
     }
+    species_hash = GBS_create_hash(nspecies, GB_IGNORE_CASE);
+    species_counter = 1;
 }
 
 AWT_species_set_root::~AWT_species_set_root() {
@@ -107,17 +107,17 @@ int AWT_species_set_root::search_and_remember_best_match_and_log_errors(const AW
 }
 
 void AWT_species_set::init(AP_tree *nodei, const AWT_species_set_root *ssr) {
-    ARB_calloc(bitstring, ssr->bitstring_longs()*sizeof(long));
-    unfound_species_count = 0;
-    best_cost             = 0x7fffffff;
-    best_node             = NULL;
-    node                  = nodei;
+    memset((char *)this, 0, sizeof(*this));
+
+    bitstring  = (unsigned char *)GB_calloc(sizeof(char), ssr->bitstring_longs()*sizeof(long));
+    this->node = nodei;
+    best_cost  = 0x7fffffff;
 }
 
 AWT_species_set::AWT_species_set(AP_tree *nodei, const AWT_species_set_root *ssr, const char *species_name) {
     init(nodei, ssr);
 
-    long species_index = ssr->get_species_index(species_name);
+    long species_index = GBS_read_hash(ssr->species_hash, species_name);
     if (species_index) {
         bitstring[species_index/8] |= 1 << (species_index % 8);
     }
@@ -145,7 +145,7 @@ AWT_species_set::~AWT_species_set() {
 
 AWT_species_set *AWT_species_set_root::move_tree_2_ssr(AP_tree *node) {
     AWT_species_set *ss;
-    // Warning: confusing resource handling:
+    // Warning: confusing ressource handling:
     // - leafs are returned "NOT owned by anybody"
     // - inner nodes are added to and owned by this->sets
 
@@ -231,11 +231,11 @@ GB_ERROR AWT_species_set_root::copy_node_information(FILE *log, bool delete_old_
                     cset->node->name = GB_read_string(gb_name);
                 }
                 else {
-                    cset->node->name = ARB_strdup("<gb_node w/o name>");
+                    cset->node->name = strdup("<gb_node w/o name>");
                 }
             }
 
-            old_group_name = ARB_strdup(cset->node->name); // store old_group_name to rename new inserted node
+            old_group_name = strdup(cset->node->name); // store old_group_name to rename new inserted node
 
             error = GB_delete(cset->node->gb_node);
             if (!error) {
@@ -325,8 +325,8 @@ GB_ERROR AWT_move_info(GBDATA *gb_main, const char *tree_source, const char *tre
 
     GB_begin_transaction(gb_main);
 
-    AP_tree_root  rsource(new AliView(gb_main), NULL, false);
-    AP_tree_root  rdest  (new AliView(gb_main), NULL, false);
+    AP_tree_root  rsource(new AliView(gb_main), new AP_TreeNodeFactory, NULL, false);
+    AP_tree_root  rdest  (new AliView(gb_main), new AP_TreeNodeFactory, NULL, false);
     AP_tree_root& rsave = (mode == TREE_INFO_COMPARE) ? rsource : rdest;
     arb_progress  progress("Comparing Topologies");
 

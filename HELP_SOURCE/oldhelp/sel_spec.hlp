@@ -19,13 +19,13 @@ OCCURRENCE      ARB_NT/Species/Search
 
 DESCRIPTION     An individual species can be selected from 'Hit list'.
 
+                The 'SPECIES INFO' window showing all 'DATABASE FIELDS' and
+                the corresponding entries is initiated or updated.
+
                 The ID ('name') of that species appears within the species
                 button of the main window (fourth broad rectangular button
                 in the upper part) and is also highlighted in an activated
                 sequence editor if present.
-
-                Press the 'Info' button to pop up the 'Species information' window
-                showing all 'DATABASE FIELDS' of the currently selected species.
 
 NOTES           This tool is helpful to mark or unmark individual species
                 using the 'SPECIES INFO' window and to rapidly find its

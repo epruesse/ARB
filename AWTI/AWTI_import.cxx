@@ -84,7 +84,7 @@ static GB_ERROR read_import_format(const char *fullfile, import_format *ifo, boo
                 m->match      = GBS_remove_escape(s2);
                 m->type       = GB_STRING;
 
-                if (ifo->autotag) m->mtag = ARB_strdup(ifo->autotag); // will be overwritten by TAG command
+                if (ifo->autotag) m->mtag = strdup(ifo->autotag); // will be overwritten by TAG command
             }
             else if (MATCH_COMMAND("SRT"))         { reassign(m->srt, s2); }
             else if (MATCH_COMMAND("ACI"))         { reassign(m->aci, s2); }
@@ -191,7 +191,7 @@ static GB_ERROR read_import_format(const char *fullfile, import_format *ifo, boo
 }
 
 GB_ERROR ArbImporter::read_format(const char *file) {
-    char *fullfile = ARB_strdup(GB_path_in_ARBHOME(file));
+    char *fullfile = strdup(GB_path_in_ARBHOME(file));
 
     delete ifo;
     ifo = new import_format;
@@ -272,7 +272,7 @@ static int cmp_ift(const void *p0, const void *p1, void *) {
 void ArbImporter::detect_format(AW_root *root) {
     StrArray files;
     {
-        AW_awar       *awar_dirs = root->awar(AWAR_IMPORT_FORMATDIR);
+        AW_awar       *awar_dirs = root->awar(AWAR_FORM"/directory");
         ConstStrArray  dirs;
         GBT_split_string(dirs, awar_dirs->read_char_pntr(), ":", true);
         for (unsigned i = 0; i<dirs.size(); ++i) GBS_read_dir(files, dirs[i], "*.ift");
@@ -286,7 +286,7 @@ void ArbImporter::detect_format(AW_root *root) {
     int first         = -1;
     int matched_count = 0;
 
-    AW_awar *awar_filter   = root->awar(AWAR_IMPORT_FORMATNAME);
+    AW_awar *awar_filter   = root->awar(AWAR_FORM"/file_name");
     char    *prev_selected = awar_filter->read_string();
 
     for (int idx = 0; files[idx] && !error; ++idx) {
@@ -304,7 +304,7 @@ void ArbImporter::detect_format(AW_root *root) {
 
                 FILE *test = 0;
                 {
-                    char *f = root->awar(AWAR_IMPORT_FILENAME)->read_string();
+                    char *f = root->awar(AWAR_FILE)->read_string();
 
                     if (f[0]) {
                         const char *com = GBS_global_string("cat %s 2>/dev/null", f);
@@ -487,9 +487,8 @@ char *ArbImporter::read_line(int tab, char *sequencestart, char *sequenceend) {
     const int    BUFSIZE   = 8000;
     const char  *SEPARATOR = "|";   // line separator
 
-    if (!ifo->b1) ARB_calloc(ifo->b1, BUFSIZE);
-    if (!ifo->b2) ARB_calloc(ifo->b2, BUFSIZE);
-
+    if (!ifo->b1) ifo->b1 = (char*)calloc(BUFSIZE, 1);
+    if (!ifo->b2) ifo->b2 = (char*)calloc(BUFSIZE, 1);
     if (!in) {
         if (next_file()) {
             if (in_queue) {
@@ -584,8 +583,12 @@ static void write_entry(GBDATA *gb_main, GBDATA *gbd, const char *key, const cha
 
         i++;
         if (str[i]) { // need to cut trailing whitespace?
-            char *copy = ARB_strndup(str, i);
+            char *copy = (char*)malloc(i+1);
+            memcpy(copy, str, i);
+            copy[i]    = 0;
+
             write_entry(gb_main, gbd, key, copy, tag, append, type);
+
             free(copy);
             return;
         }
@@ -600,7 +603,7 @@ static void write_entry(GBDATA *gb_main, GBDATA *gbd, const char *key, const cha
                 GB_write_int(gbk, atoi(str));
                 break;
             case GB_FLOAT:
-                GB_write_float(gbk, GB_atof(str));
+                GB_write_float(gbk, atof(str));
                 break;
             default:
                 awti_assert(0);
@@ -639,10 +642,10 @@ static void write_entry(GBDATA *gb_main, GBDATA *gbd, const char *key, const cha
 
     int   len    = strlen(str) + strlen(strin);
     int   taglen = tag ? (strlen(tag)+2) : 0;
-    char *buf    = ARB_calloc<char>(len+2+taglen+1);
+    char *buf    = (char *)GB_calloc(sizeof(char), len+2+taglen+1);
 
     if (tag) {
-        char *regexp = ARB_alloc<char>(taglen+3);
+        char *regexp = (char*)GB_calloc(sizeof(char), taglen+3);
         sprintf(regexp, "*[%s]*", tag);
 
         if (!GBS_string_matches(strin, regexp, GB_IGNORE_CASE)) { // if tag does not exist yet
@@ -809,7 +812,7 @@ GB_ERROR ArbImporter::read_data(char *ali_name, int security_write) {
                                 string expanded_field = expandSetVariables(variables, string(match->append ? match->append : match->write), err_flag, ifo);
                                 if (err_flag) error   = GB_await_error();
                                 else   field          = GBS_string_2_key(expanded_field.c_str());
-                                if (error) what_error = match->append ? "APPEND" : "WRITE";
+                                if (error) what_error = "APPEND or WRITE";
                             }
 
                             if (!error && match->mtag) {
@@ -905,7 +908,7 @@ void ArbImporter::go(AW_window *aww) {
     bool     is_genom_db             = false;
     bool     delete_db_type_if_error = false; // delete db type (genome/normal) in case of error ?
     {
-        bool           read_genom_db = (awr->awar(AWAR_IMPORT_GENOM_DB)->read_int() != IMP_PLAIN_SEQUENCE);
+        bool           read_genom_db = (awr->awar(AWAR_READ_GENOM_DB)->read_int() != IMP_PLAIN_SEQUENCE);
         GB_transaction ta(gb_import_main);
 
         delete_db_type_if_error = (GB_entry(gb_import_main, GENOM_DB_TYPE) == 0);
@@ -929,17 +932,17 @@ void ArbImporter::go(AW_window *aww) {
     GB_begin_transaction(gb_import_main); // first transaction start
     char *ali_name;
     {
-        char *ali = awr->awar(AWAR_IMPORT_ALI)->read_string();
+        char *ali = awr->awar(AWAR_ALI)->read_string();
         ali_name = GBS_string_eval(ali, "*=ali_*1:ali_ali_=ali_", 0);
         free(ali);
     }
 
     error = GBT_check_alignment_name(ali_name);
 
-    int ali_protection = awr->awar(AWAR_IMPORT_ALI_PROTECTION)->read_int();
+    int ali_protection = awr->awar(AWAR_ALI_PROTECTION)->read_int();
     if (!error) {
         char *ali_type;
-        ali_type = awr->awar(AWAR_IMPORT_ALI_TYPE)->read_string();
+        ali_type = awr->awar(AWAR_ALI_TYPE)->read_string();
 
         if (is_genom_db && strcmp(ali_type, "dna")!=0) {
             error = "You must set the alignment type to dna when importing genom sequences.";
@@ -956,7 +959,7 @@ void ArbImporter::go(AW_window *aww) {
         if (is_genom_db) {
             // import genome flatfile into ARB-genome database:
 
-            char     *mask = awr->awar(AWAR_IMPORT_FILENAME)->read_string();
+            char     *mask = awr->awar(AWAR_FILE)->read_string();
             StrArray  fnames;
             GBS_read_dir(fnames, mask, NULL);
 
@@ -1026,7 +1029,7 @@ void ArbImporter::go(AW_window *aww) {
 
             {
                 // load import filter:
-                char *file = awr->awar(AWAR_IMPORT_FORMATNAME)->read_string();
+                char *file = awr->awar(AWAR_FORM"/file_name")->read_string();
 
                 if (!strlen(file)) {
                     error = "Please select a form";
@@ -1055,7 +1058,7 @@ void ArbImporter::go(AW_window *aww) {
             }
 
             {
-                char *f = awr->awar(AWAR_IMPORT_FILENAME)->read_string();
+                char *f = awr->awar(AWAR_FILE)->read_string();
                 GBS_read_dir(filenames, f, NULL);
                 free(f);
             }
@@ -1113,8 +1116,8 @@ void ArbImporter::go(AW_window *aww) {
         progress.subtitle("Pass 1: Check entries");
 
         // scan for hidden/unknown fields :
-        species_field_selection_list_rescan(gb_import_main, RESCAN_REFRESH);
-        if (is_genom_db) gene_field_selection_list_rescan(gb_import_main, RESCAN_REFRESH);
+        species_field_selection_list_rescan(gb_import_main, FIELD_FILTER_NDS, RESCAN_REFRESH);
+        if (is_genom_db) gene_field_selection_list_rescan(gb_import_main, FIELD_FILTER_NDS, RESCAN_REFRESH);
 
         GBT_mark_all(gb_import_main, 1);
         progress.inc();
@@ -1151,6 +1154,7 @@ class AliNameAndType {
     string name_, type_;
 public:
     AliNameAndType(const char *ali_name, const char *ali_type) : name_(ali_name), type_(ali_type) {}
+    AliNameAndType(const AliNameAndType& other) : name_(other.name_), type_(other.type_) {}
 
     const char *name() const { return name_.c_str(); }
     const char *type() const { return type_.c_str(); }
@@ -1165,8 +1169,8 @@ void AWTI_import_set_ali_and_type(AW_root *awr, const char *ali_name, const char
 
     if (gbmain) last_valid_gbmain = gbmain;
 
-    AW_awar *awar_name = awr->awar(AWAR_IMPORT_ALI);
-    AW_awar *awar_type = awr->awar(AWAR_IMPORT_ALI_TYPE);
+    AW_awar *awar_name = awr->awar(AWAR_ALI);
+    AW_awar *awar_type = awr->awar(AWAR_ALI_TYPE);
 
     if (switching_to_GENOM_ALIGNMENT) {
         // read and store current settings
@@ -1196,18 +1200,18 @@ void AWTI_import_set_ali_and_type(AW_root *awr, const char *ali_name, const char
         else {
             GB_clear_error();
         }
-        awr->awar(AWAR_IMPORT_ALI_PROTECTION)->write_int(protection_to_use);
+        awr->awar(AWAR_ALI_PROTECTION)->write_int(protection_to_use);
     }
 }
 
 static void genom_flag_changed(AW_root *awr) {
-    if (awr->awar(AWAR_IMPORT_GENOM_DB)->read_int() == IMP_PLAIN_SEQUENCE) {
+    if (awr->awar(AWAR_READ_GENOM_DB)->read_int() == IMP_PLAIN_SEQUENCE) {
         AWTI_import_set_ali_and_type(awr, last_ali.name(), last_ali.type(), 0);
-        awr->awar(AWAR_IMPORT_FORMATFILTER)->write_string(".ift");
+        awr->awar_string(AWAR_FORM"/filter", ".ift");
     }
     else {
         AWTI_import_set_ali_and_type(awr, GENOM_ALIGNMENT, "dna", 0);
-        awr->awar(AWAR_IMPORT_FORMATFILTER)->write_string(".fit"); // *hack* to hide normal import filters
+        awr->awar_string(AWAR_FORM"/filter", ".fit"); // *hack* to hide normal import filters // @@@ doesnt work?!
     }
 }
 
@@ -1216,37 +1220,24 @@ static void genom_flag_changed(AW_root *awr) {
 static ArbImporter *importer = NULL;
 
 void AWTI_cleanup_importer() {
-    if (importer) {
+    awti_assert(importer);
 #if defined(DEBUG)
-        AWT_browser_forget_db(importer->peekImportDB());
+    AWT_browser_forget_db(importer->peekImportDB());
 #endif
-        delete importer; // closes the import DB if it still is owned by the 'importer'
-        importer = NULL;
-    }
+    delete importer; // closes the import DB if it still is owned by the 'importer'
+    importer = NULL;
 }
 
 static void import_window_close_cb(AW_window *aww) {
-    if (importer) {
-        bool doExit = importer->doExit;
-        AWTI_cleanup_importer();
+    bool doExit = importer->doExit;
+    AWTI_cleanup_importer();
 
-        if (doExit) exit(EXIT_SUCCESS);
-        else AW_POPDOWN(aww);
-    }
-    else {
-        AW_POPDOWN(aww);
-    }
+    if (doExit) exit(EXIT_SUCCESS);
+    else AW_POPDOWN(aww);
 }
 
 static void import_go_cb(AW_window *aww) { importer->go(aww); }
-static void detect_input_format_cb(AW_window *aww) {
-    if (aww->get_root()->awar(AWAR_IMPORT_GENOM_DB)->read_int() == IMP_PLAIN_SEQUENCE) {
-        importer->detect_format(aww->get_root());
-    }
-    else {
-        aw_message("Only works together with 'Import selected format'");
-    }
-}
+static void detect_input_format_cb(AW_window *aww) { importer->detect_format(aww->get_root()); }
 
 GBDATA *AWTI_peek_imported_DB() {
     awti_assert(importer);
@@ -1277,8 +1268,7 @@ void AWTI_open_import_window(AW_root *awr, const char *defname, bool do_exit, GB
 
     if (!gb_main) {
         // control macros via temporary import DB (if no main DB available)
-        GB_ERROR error = configure_macro_recording(awr, "ARB_IMPORT", importer->gb_import_main);
-        aw_message_if(error);
+        configure_macro_recording(awr, "ARB_IMPORT", importer->gb_import_main); // @@@ use result
     }
     else {
         awti_assert(got_macro_ability(awr));
@@ -1292,18 +1282,15 @@ void AWTI_open_import_window(AW_root *awr, const char *defname, bool do_exit, GB
         path.put(':');
         path.cat(GB_path_in_ARBLIB("import"));
 
-        AW_create_fileselection_awars(awr, AWAR_IMPORT_FILEBASE,   ".",             "",     defname);
-        AW_create_fileselection_awars(awr, AWAR_IMPORT_FORMATBASE, path.get_data(), ".ift", "*");
+        AW_create_fileselection_awars(awr, AWAR_FILE_BASE, ".",             "",     defname);
+        AW_create_fileselection_awars(awr, AWAR_FORM,      path.get_data(), ".ift", "*");
     }
 
-    awr->awar_string(AWAR_IMPORT_ALI,      "dummy"); // these defaults are never used
-    awr->awar_string(AWAR_IMPORT_ALI_TYPE, "dummy"); // they are overwritten by AWTI_import_set_ali_and_type
-    awr->awar_int(AWAR_IMPORT_ALI_PROTECTION, 0);    // which is called via genom_flag_changed() below
+    awr->awar_string(AWAR_ALI, "dummy"); // these defaults are never used
+    awr->awar_string(AWAR_ALI_TYPE, "dummy"); // they are overwritten by AWTI_import_set_ali_and_type
+    awr->awar_int(AWAR_ALI_PROTECTION, 0); // which is called via genom_flag_changed() below
 
-    awr->awar_int(AWAR_IMPORT_GENOM_DB, IMP_PLAIN_SEQUENCE);
-    awr->awar_int(AWAR_IMPORT_AUTOCONF, 1);
-
-    awr->awar(AWAR_IMPORT_GENOM_DB)->add_callback(genom_flag_changed);
+    awr->awar(AWAR_READ_GENOM_DB)->add_callback(genom_flag_changed);
     genom_flag_changed(awr);
 
     if (!aws) {
@@ -1320,25 +1307,25 @@ void AWTI_open_import_window(AW_root *awr, const char *defname, bool do_exit, GB
         aws->callback(makeHelpCallback("arb_import.hlp"));
         aws->create_button("HELP", "HELP", "H");
 
-        AW_create_fileselection(aws, AWAR_IMPORT_FILEBASE,   "imp_", "PWD",     ANY_DIR,    true);  // select import filename
-        AW_create_fileselection(aws, AWAR_IMPORT_FORMATBASE, "",     "ARBHOME", MULTI_DIRS, false); // select import filter
+        AW_create_fileselection(aws, AWAR_FILE_BASE, "imp_", "PWD",     ANY_DIR,    true);  // select import filename
+        AW_create_fileselection(aws, AWAR_FORM,      "",     "ARBHOME", MULTI_DIRS, false); // select import filter
 
         aws->at("auto");
         aws->callback(detect_input_format_cb);
         aws->create_autosize_button("AUTO_DETECT", "AUTO DETECT", "A");
 
         aws->at("ali");
-        aws->create_input_field(AWAR_IMPORT_ALI, 4);
+        aws->create_input_field(AWAR_ALI, 4);
 
         aws->at("type");
-        aws->create_option_menu(AWAR_IMPORT_ALI_TYPE, true);
+        aws->create_option_menu(AWAR_ALI_TYPE, true);
         aws->insert_option        ("dna",     "d", "dna");
         aws->insert_default_option("rna",     "r", "rna");
         aws->insert_option        ("protein", "p", "ami");
         aws->update_option_menu();
 
         aws->at("protect");
-        aws->create_option_menu(AWAR_IMPORT_ALI_PROTECTION, true);
+        aws->create_option_menu(AWAR_ALI_PROTECTION, true);
         aws->insert_option("0", "0", 0);
         aws->insert_option("1", "1", 1);
         aws->insert_option("2", "2", 2);
@@ -1349,15 +1336,12 @@ void AWTI_open_import_window(AW_root *awr, const char *defname, bool do_exit, GB
         aws->update_option_menu();
 
         aws->at("genom");
-        aws->create_toggle_field(AWAR_IMPORT_GENOM_DB);
+        aws->create_toggle_field(AWAR_READ_GENOM_DB);
         aws->sens_mask(AWM_EXP);
         aws->insert_toggle("Import genome data in EMBL, GenBank and DDBJ format", "e", IMP_GENOME_FLATFILE);
         aws->sens_mask(AWM_ALL);
         aws->insert_toggle("Import selected format", "f", IMP_PLAIN_SEQUENCE);
         aws->update_toggle_field();
-
-        aws->at("autoconf");
-        aws->create_toggle(AWAR_IMPORT_AUTOCONF);
 
         aws->at("go");
         aws->callback(import_go_cb);

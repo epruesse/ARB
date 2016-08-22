@@ -17,7 +17,7 @@ PROGS   =          clique consense contml contrast dnacomp dnadist \
 BIN=$(ARBHOME)/bin
 BINARIES=$(addprefix $(BIN)/,$(PROGS))
 
-DLIBS=$(LIBS) $(XLIBS) $(XAW_LIBS) -lXaw
+DLIBS=$(LIBS) $(XLIBS) -lXaw
 
 
 all: $(BINARIES)
@@ -160,7 +160,7 @@ $(BIN)/treedist:     treedist.o phylip.o cons.o
 #	$(A_CC) $(cflags) -o $@ $^ $(LIBS)
 
 .c.o :
-	$(A_CC) -c $(cflags) $< $(POST_COMPILE) $<
+	$(A_CC) -c $(cflags) $< $(POST_COMPILE)
 
 DEPENDS = $(notdir $(PROGS:%=%.depend))
 depends: $(DEPENDS)

@@ -10,10 +10,7 @@
 // ============================================================= //
 
 #include "RegExpr.hxx"
-
 #include <arb_match.h>
-#include <arb_mem.h>
-
 #include <regex.h>
 
 using namespace std;
@@ -58,7 +55,7 @@ void RegExpr::perform_match(const char *str, size_t offset) const {
     delete [] matches; matches = NULL;
 
     size_t      subs      = subexpr_count();
-    regmatch_t *possMatch = ARB_alloc<regmatch_t>(subs+1);
+    regmatch_t *possMatch = (regmatch_t*)malloc((subs+1) * sizeof(regmatch_t));
     int         eflags    = offset ? REG_NOTBOL : 0;
     int         res       = regexec(&comreg->compiled, str+offset, subs+1, possMatch, eflags);
 
@@ -139,7 +136,6 @@ void TEST_regexpr() {
     TEST_REGEX_MATCHES("3;1406", "^bla|", true, "");
     TEST_REGEX_MATCHES_SUB1("3;1406", "^[0-9]+;([0-9]+)$", true, "3;1406", "1406");
 }
-TEST_PUBLISH(TEST_regexpr);
 
 #endif // UNIT_TESTS
 

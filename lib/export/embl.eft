@@ -32,5 +32,5 @@ FT   source          1..*(|export_sequence|len(.-))
 *(strain|crop(" ")|dropempty|srt("*=FT                   /strain\\=*\n"))\
 XX
 SQ   Sequence *(|export_sequence|len(.-)) BP;
-*(|export_sequence|format_sequence(firsttab=5;tab=5;width=60;gap=10;numright=9))
+*(|export_sequence|format_sequence(firsttab=10;tab=10;width=50;numleft;gap=10)) 
 //

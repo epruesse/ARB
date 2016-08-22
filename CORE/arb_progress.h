@@ -23,9 +23,9 @@
 #endif
 
 #if defined(DEBUG)
-#define TEST_COUNTERS
 #if defined(DEVEL_RALF)
 #define DUMP_PROGRESS
+#define TEST_COUNTERS
 #endif
 #endif
 
@@ -44,7 +44,6 @@ public:
 
     virtual void inc()                              = 0;
     virtual void implicit_inc()                     = 0;
-    virtual void inc_to(int x)                      = 0;
     virtual void child_updates_gauge(double gauge)  = 0;
     virtual void done()                             = 0;
     virtual void force_update()                     = 0;
@@ -132,7 +131,6 @@ public:
     void force_update() { counter->force_update(); }
 
     void inc() { counter->inc(); }
-    void inc_to(int x) { counter->inc_to(x); }
     void done() { counter->done(); }
     void auto_subtitles(const char *prefix) { counter->auto_subtitles(prefix); }
 
@@ -164,7 +162,7 @@ public:
         // 
         // expects to be incremented 'overall_count' times
         //      incrementation is done either
-        //      - explicitly by calling one of the inc...()-functions below or
+        //      - explicitely by calling one of the inc...()-functions below or
         //      - implicitely by creating another arb_progress while this one remains
         //
         // if you can't ahead-determine the exact number of incrementations,
@@ -176,7 +174,7 @@ public:
     explicit arb_progress(const char *title) {
         // open a wrapping progress indicator
         //
-        // expects NOT to be incremented explicitly!
+        // expects NOT to be incremented explicitely!
         //      if arb_progresses are created while this exists, they reuse the progress window.
         //      Useful to avoid spamming the user with numerous popping-up progress windows.
         setup(title, 0);
@@ -246,7 +244,6 @@ public:
     const arb_progress& operator++() { inc(); return *this; } // ++progress
 
     void inc_by(int count) { arb_assert(count>0); while (count--) inc(); }
-    void inc_to(int x) { used->inc_to(x); }
 
     void sub_progress_skipped() { used->child_terminated(); }
 

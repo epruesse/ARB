@@ -15,7 +15,7 @@
 #include <cxxforward.h>
 #endif
 
-#if defined (Cxx11)
+#if Cxx11
 
 #define STATIC_ASSERT(const_expression)                      static_assert(const_expression,#const_expression)
 #define STATIC_ASSERT_ANNOTATED(const_expression,failReason) static_assert(const_expression,failReason)

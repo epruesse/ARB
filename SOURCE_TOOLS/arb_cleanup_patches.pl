@@ -93,13 +93,12 @@ sub main() {
   if ($args!=3) {
     print "Usage: arb_cleanup_patches.sh name hours minkeep\n";
     print "       deletes all patches matching 'name_*.patch' if\n";
-    print "       - the date-stamp created by arb_create_patch.sh is at end of name (ie. patch was not renamed manually),\n";
     print "       - they are older than 'hours' and\n";
     print "       - at least 'minkeep' patches remain present.\n";
     die "missing arguments";
   }
 
-  my $mask           = $ARGV[0].'.*_[0-9]{8}_[0-9]{6}\.patch';
+  my $mask           = $ARGV[0].'.*\.patch';
   my $olderThanHours = $ARGV[1];
   my $minKeep        = $ARGV[2];
 
@@ -112,8 +111,6 @@ sub main() {
 
   my @patch = ();
   scanPatches($patchDir,$mask,@patch);
-
-  print "Matching patches=".scalar(@patch)."\n";
 
   my %age = ();
   my %size = ();

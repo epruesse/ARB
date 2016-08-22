@@ -17,8 +17,6 @@
 #include "gb_compress.h"
 #include "gb_localdata.h"
 
-#include <stdint.h>
-
 #if defined(DEBUG)
 // #define TEST_HUFFMAN_CODE
 #endif // DEBUG
@@ -88,7 +86,7 @@ static void gb_dump_huffmann_tree(gb_compress_tree *t, const char *prefix) {
     }
     else {
         int   len        = strlen(prefix);
-        char *my_prefix  = ARB_alloc<char>(len+2);
+        char *my_prefix  = malloc(len+2);
         strcpy(my_prefix, prefix);
         my_prefix[len+1] = 0;
         my_prefix[len]   = '0';
@@ -101,7 +99,7 @@ static void gb_dump_huffmann_tree(gb_compress_tree *t, const char *prefix) {
 static void gb_dump_huffmann_list(gb_compress_list *bc, const char *prefix) {
     if (bc->command == GB_CD_NODE) {
         int   len        = strlen(prefix);
-        char *my_prefix  = ARB_alloc<char>(len+2);
+        char *my_prefix  = malloc(len+2);
         strcpy(my_prefix, prefix);
         my_prefix[len+1] = 0;
         my_prefix[len]   = '0';
@@ -208,7 +206,7 @@ gb_compress_list *gb_build_compress_list(const unsigned char *data, long short_f
     }
     *size = maxi;
 
-    gb_compress_list *list = ARB_calloc<gb_compress_list>(maxi+1);
+    gb_compress_list *list = (gb_compress_list *)GB_calloc(sizeof(gb_compress_list), (size_t)maxi+1);
 
     maxi = 0;
     val = -1;
@@ -295,15 +293,13 @@ char *gb_compress_bits(const char *source, long size, const unsigned char *c_0, 
 GB_BUFFER gb_uncompress_bits(const char *source, long size, char c_0, char c_1) {
     gb_compress_tree *Main = gb_local->bituncompress;
 
-    uint8_t ch  = 0;
-
+    char ch   = 0;
     long bitp = 0;
     char outc = c_0;
 
-    const uint8_t *s = (const uint8_t*)(source);
-
-    char *p      = GB_give_other_buffer(source, size+1);
-    char *buffer = p;
+    const char *s      = source;
+    char       *p      = GB_give_other_buffer(source, size+1);
+    char       *buffer = p;
 
     for (long pos = 0; pos<size;) {
         long lastpos = pos;
@@ -726,15 +722,15 @@ static GB_BUFFER gb_uncompress_huffmann(GB_CBUFFER source, size_t maxsize, size_
     char *data[1];
     char *p, *buffer;
     long  bitp;
-    uint8_t  ch = 0, *s;
+    char  ch = 0, *s;
     long  val, command;
 
-    un_tree = gb_build_uncompress_tree((const unsigned char *)source, 0, data);
+    un_tree = gb_build_uncompress_tree((unsigned char *)source, 0, data);
     if (!un_tree) return 0;
 
     bitp = 0;
     buffer = p = GB_give_other_buffer(source, maxsize);
-    s = (uint8_t*)data[0];
+    s = data[0];
     while (1) {
         for (t = un_tree; !t->leaf;) {
             int bit;

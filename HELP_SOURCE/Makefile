@@ -17,8 +17,6 @@ XML_LOCATION=Xml
 HTML_LOCATION=../lib/help_html
 HLP_DEST=../lib/help
 HELP_INDEX_NAME = help_index
-DOTMAP=./help_map.dot
-GIFMAP=./help_map.gif
 
 # needed tools:
 TOOL_OBJECTS = \
@@ -63,15 +61,15 @@ dirs:
 		mkdir -p $(HLP_DEST)
 		mkdir -p $(HLP_DEST)/prompt
 
-		@ln -s ../arb_help.dtd $(XML_LOCATION) || true
-		@ln -s ../../arb_help.dtd $(XML_LOCATION)/prompt || true
+		@-ln -s ../arb_help.dtd $(XML_LOCATION)
+		@-ln -s ../../arb_help.dtd $(XML_LOCATION)/prompt
 
 HELP2XML=$(ARBHOME)/bin/arb_help2xml
 
 # --------------------------------------------------------------------------------
 # Generate help files in $(HLP_GENERATED):
 
-generated: dirs
+generated:
 		@echo ---------------------------------------------------
 		@echo ------------ Generating some help files:
 		(cd $(HLP_GENERATED);$(MAKE) all)
@@ -110,9 +108,7 @@ DTD=arb_help.dtd
 $(XML) : $(XML_DEPEND) Makefile $(QUIETLY)
 
 $(HELP_INDEX_XML): $(OLD_HELP_ALL) $(XML) ./generate_index.pl Makefile
-	./generate_index.pl $(XML_LOCATION) $(HELP_INDEX_NAME).xml $(DOTMAP) > $@
-	-dot -Tgif -o$(GIFMAP) $(DOTMAP)
-	rm $(DOTMAP)
+	./generate_index.pl $(HELP_INDEX_NAME).xml $(XML_LOCATION) > $@
 
 xml : $(XML) $(HELP_INDEX_XML)
 
@@ -155,9 +151,6 @@ ps: $(PS_DEST)
 
 pdf: $(PDF_DEST)
 
-$(PS_DEST) : dirs
-$(PDF_DEST) : dirs
-
 nonhlp_formats: ps pdf
 
 $(HLP_DEST)/%.ps.gz : $(HLP_SOURCE)/%.ps.gz
@@ -194,13 +187,11 @@ XSLTPROC_ARGS=--nonet --nomkdir --stringparam xml_location "$(XML_LOCATION)"
 
 INTERDEPENDS=.depends
 INTERDEPENDS_SOURCE=$(XML)
-XML2DEPENDS=./xml_2_depends.pl
+XML2DEPENDS=./xml_2_depends.sh
 
 $(INTERDEPENDS): $(INTERDEPENDS_SOURCE) $(XML2DEPENDS) Makefile $(STYLE_DEPENDS)
-	@( ( echo "$(INTERDEPENDS_SOURCE)" | $(XML2DEPENDS) $(XSLTPROC) $(STYLE_DEPENDS) $(XSLTPROC_ARGS) >$@ ) 2>interdep.err && \
-	   ( $(XML2DEPENDS) CHECK $@ ) 2>>interdep.err && \
-	   rm interdep.err ) || \
-         (cat interdep.err; false)
+	@( ( echo "$(INTERDEPENDS_SOURCE)" | $(XML2DEPENDS) $(XSLTPROC) $(STYLE_DEPENDS) $(XSLTPROC_ARGS) >$@ ) 2>interdep.err && rm interdep.err ) || \
+		(cat interdep.err; false)
 
 interdepends: $(INTERDEPENDS)
 
@@ -258,10 +249,10 @@ $(XML_DEPEND) : arb_help2xml.cxx
 	touch $(XML_DEPEND)
 
 %.o: %.cxx
-	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE) $<
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 $(HELP2XML): arb_help2xml.o $(LIBS) $(use_ARB_main)
-	$(LINK_EXECUTABLE) $@ $(use_ARB_main) $< $(LIBS) $(LIBPATH) $(EXECLIBS) $(CORE_LIB) 
+	$(LINK_EXECUTABLE) $@ $(use_ARB_main) $< $(LIBS) $(LIBPATH) $(CORE_LIB) $(EXECLIBS)
 
 
 DEPENDS = $(TOOL_OBJECTS:.o=.depend)
@@ -285,7 +276,6 @@ arb_help2xml.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arb_help2xml.o: $(ARBHOME)/INCLUDE/arb_core.h
 arb_help2xml.o: $(ARBHOME)/INCLUDE/arb_defs.h
 arb_help2xml.o: $(ARBHOME)/INCLUDE/arb_diff.h
-arb_help2xml.o: $(ARBHOME)/INCLUDE/arb_msg.h
 arb_help2xml.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_help2xml.o: $(ARBHOME)/INCLUDE/attributes.h
 arb_help2xml.o: $(ARBHOME)/INCLUDE/cxxforward.h

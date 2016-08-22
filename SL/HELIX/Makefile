@@ -10,10 +10,10 @@ $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .cxx.o:
-	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE) $<
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 .c.o:
-	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE) $<
+	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(OBJECTS) *.a
@@ -41,7 +41,6 @@ BI_basepos.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 BI_basepos.o: $(ARBHOME)/INCLUDE/arb_assert.h
 BI_basepos.o: $(ARBHOME)/INCLUDE/arb_core.h
 BI_basepos.o: $(ARBHOME)/INCLUDE/arb_error.h
-BI_basepos.o: $(ARBHOME)/INCLUDE/arb_mem.h
 BI_basepos.o: $(ARBHOME)/INCLUDE/arb_msg.h
 BI_basepos.o: $(ARBHOME)/INCLUDE/arb_string.h
 BI_basepos.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -63,7 +62,6 @@ BI_helix.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 BI_helix.o: $(ARBHOME)/INCLUDE/arb_assert.h
 BI_helix.o: $(ARBHOME)/INCLUDE/arb_core.h
 BI_helix.o: $(ARBHOME)/INCLUDE/arb_error.h
-BI_helix.o: $(ARBHOME)/INCLUDE/arb_mem.h
 BI_helix.o: $(ARBHOME)/INCLUDE/arb_msg.h
 BI_helix.o: $(ARBHOME)/INCLUDE/arb_string.h
 BI_helix.o: $(ARBHOME)/INCLUDE/arbdb.h

@@ -1422,7 +1422,7 @@ void Structure3D::MapCurrentSpeciesToEcoliTemplate(AW_root *awr) {
                     sprintf(buf, "%s : %s", pSpeciesName, pSpFullName);
                     awr->awar(AWAR_3D_SELECTED_SPECIES)->write_string(buf);
 
-                    GBDATA *gbSeqData    = GBT_find_sequence(gbSpecies, ali_name);
+                    GBDATA *gbSeqData    = GBT_read_sequence(gbSpecies, ali_name);
                     const char *pSeqData = GB_read_char_pntr(gbSeqData);
 
                     if (pSeqData && pTemplateSeqData) {

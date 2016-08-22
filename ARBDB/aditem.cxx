@@ -16,19 +16,16 @@
 
 
 GBDATA *GBT_find_or_create_item_rel_item_data(GBDATA *gb_item_data, const char *itemname, const char *id_field, const char *id, bool markCreated) {
-    /*! Search for an existing or create a new, named item.
-     * @param gb_item_data  item container
-     * @param itemname      description of itemtype (for error messages)
-     * @param id_field      item-field containing ID (e.g. "name")
-     * @param id            the ID itself (compare is case-insensitive)
-     * @param markCreated   true -> mark item if it was created
-     * @return found/created item or NULL if an error occurs (which is exported in that case)
+    /* Search for a item with field 'id_field' set to given 'id' (id compare is case-insensitive)
+     * If item does not exist, create it.
+     * Newly created items are automatically marked, if 'markCreated' is true
+     * items may be: species, genes, SAIs, ...
      */
 
     GBDATA   *gb_item = 0;
     GB_ERROR  error   = 0;
 
-    if (!gb_item_data) error = "Missing parent container";
+    if (!gb_item_data) error = "No container";
     else {
         gb_item = GBT_find_item_rel_item_data(gb_item_data, id_field, id);
         if (!gb_item) {
@@ -223,10 +220,10 @@ static char *GBT_create_unique_item_identifier(GBDATA *gb_item_container, const 
     char   *unique_id;
 
     if (!gb_item) {
-        unique_id = ARB_strdup(default_id); // default_id is unused
+        unique_id = strdup(default_id); // default_id is unused
     }
     else {
-        char   *generated_id  = ARB_alloc<char>(strlen(default_id)+20);
+        char   *generated_id  = (char*)malloc(strlen(default_id)+20);
         size_t  min_num = 1;
 
 #define GENERATE_ID(num) sprintf(generated_id, "%s%zu", default_id, num);
@@ -352,15 +349,12 @@ long GBT_count_marked_species(GBDATA *gb_main) {
     return GB_number_of_marked_subentries(GBT_get_species_data(gb_main));
 }
 
-char *GBT_store_marked_species(GBDATA *gb_main, bool unmark_all) {
-    /*! stores the currently marked species in a string
-     * @param gb_main    database
-     * @param unmark_all if true -> unmark species
-     * @return ';'-separated list of species names
-     *
-     * Note: a faster (but less robust) way to temporarily store species marks,
-     *       is to use the flag GB_USERFLAG_WASMARKED together with GB_write_user_flag
-     */
+char *GBT_store_marked_species(GBDATA *gb_main, int unmark_all)
+{
+    /* stores the currently marked species in a string
+       if (unmark_all != 0) then unmark them too
+    */
+
     GBS_strstruct *out = GBS_stropen(10000);
     GBDATA        *gb_species;
 
@@ -378,13 +372,7 @@ char *GBT_store_marked_species(GBDATA *gb_main, bool unmark_all) {
 }
 
 NOT4PERL GB_ERROR GBT_with_stored_species(GBDATA *gb_main, const char *stored, species_callback doit, int *clientdata) {
-    /*! call a function with each species of a list
-     * @param gb_main    database
-     * @param stored     ';'-separated list of species names
-     * @param doit       function to call with each species in 'stored'
-     * @param clientdata is passed to 'doit'
-     * @return error if sth goes wrong (or if 'doit' reports error)
-     */
+    // call function 'doit' with all species stored in 'stored'
 
 #define MAX_NAME_LEN 20
     char     name[MAX_NAME_LEN+1];
@@ -420,11 +408,10 @@ static GB_ERROR restore_mark(GBDATA *gb_species, int *) {
 }
 
 GB_ERROR GBT_restore_marked_species(GBDATA *gb_main, const char *stored_marked) {
-    /*! restores marked species.
-     * @param gb_main       database
-     * @param stored_marked contains a ';'-separated list of species names to mark (as returned by GBT_store_marked_species)
-     * @return error if sth goes wrong
+    /* restores the species-marks to a state currently saved
+     * into 'stored_marked' by GBT_store_marked_species
      */
+
     GBT_mark_all(gb_main, 0);   // unmark all species
     return GBT_with_stored_species(gb_main, stored_marked, restore_mark, 0);
 }
@@ -458,7 +445,7 @@ GBDATA **GBT_gen_species_array(GBDATA *gb_main, long *pspeccnt)
          gb_species = GBT_next_species(gb_species)) {
         (*pspeccnt) ++;
     }
-    ARB_alloc(result, *pspeccnt); // @@@ fails if no species present
+    result = (GBDATA **)malloc((size_t)(sizeof(GBDATA *)* (*pspeccnt))); // @@@ fails if no species present
     *pspeccnt = 0;
     for (gb_species = GBT_first_species_rel_species_data(gb_species_data);
          gb_species;

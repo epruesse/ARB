@@ -68,8 +68,8 @@ class IslandHopping : virtual Noncopyable {
 
     const char *toAlign_sequence; // with gaps
 
-    char       *ref_helix;     // with gaps
-    const char *toAlign_helix; // with gaps (@@@ always the same as 'ref_helix'?)
+    const char *ref_helix; // with gaps
+    const char *toAlign_helix; // with gaps
 
     char *aligned_ref_sequence; //aligned (ref_sequence)
     char *output_sequence;      // aligned (toAlign_sequence)
@@ -110,7 +110,6 @@ public:
     virtual ~IslandHopping() {
         delete output_sequence;
         delete aligned_ref_sequence;
-        free(ref_helix);
     }
 
     void set_alignment_length(int len) { alignment_length = len; }
@@ -120,11 +119,11 @@ public:
     void set_toAlign_sequence(const char *toAlign_seq) { toAlign_sequence = toAlign_seq; }
 
     void set_helix(const char *hel) {
-        freedup(ref_helix, hel);
-        toAlign_helix = ref_helix;
+        ref_helix     = hel;
+        toAlign_helix = hel;
     }
 
-    void set_range(ExplicitRange range) {
+    void set_range(PosRange range) {
         firstColumn = range.start();
         lastColumn  = range.end();
     }

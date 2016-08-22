@@ -53,9 +53,9 @@ GBDATA *GBT_find_or_create(GBDATA *father, const char *key, long delete_level) {
  *       return the same atm. That may change.
  */
 
-char *GBT_get_default_helix   (GBDATA *) { return ARB_strdup("HELIX"); }
-char *GBT_get_default_helix_nr(GBDATA *) { return ARB_strdup("HELIX_NR"); }
-char *GBT_get_default_ref     (GBDATA *) { return ARB_strdup("ECOLI"); }
+char *GBT_get_default_helix   (GBDATA *) { return strdup("HELIX"); }
+char *GBT_get_default_helix_nr(GBDATA *) { return strdup("HELIX_NR"); }
+char *GBT_get_default_ref     (GBDATA *) { return strdup("ECOLI"); }
 
 
 // ----------------
@@ -72,7 +72,7 @@ struct GB_DbScanner : virtual Noncopyable {
         : result(result_)
     {
         hash_table = GBS_create_hash(1024, GB_MIND_CASE);
-        ARB_alloc(buffer, GBT_SUM_LEN);
+        buffer     = (char*)malloc(GBT_SUM_LEN);
         buffer[0]  = 0;
     }
 
@@ -118,14 +118,14 @@ static long gbs_scan_db_insert(const char *key, long val, void *cd_insert_data) 
     char           *to_insert = 0;
 
     if (!insert->datapath) {
-        to_insert = ARB_strdup(key);
+        to_insert = strdup(key);
     }
     else {
         bool do_insert = ARB_strBeginsWith(key+1, insert->datapath);
         gb_assert(implicated(!do_insert, !ARB_strBeginsWith(insert->datapath, key+1))); // oops - previously inserted also in this case. inspect!
 
-        if (do_insert) { // datapath matches
-            to_insert    = ARB_strdup(key+strlen(insert->datapath)); // cut off prefix
+        if (do_insert) {                                         // datapath matches
+            to_insert    = strdup(key+strlen(insert->datapath)); // cut off prefix
             to_insert[0] = key[0]; // copy type
         }
     }
@@ -198,15 +198,11 @@ static void new_gbt_message_created_cb(GBDATA *gb_pending_messages) {
     }
 }
 
-inline GBDATA *find_or_create_error_container(GBDATA *gb_main) {
-    return GB_search(gb_main, ERROR_CONTAINER_PATH, GB_CREATE_CONTAINER);
-}
-
 void GBT_install_message_handler(GBDATA *gb_main) {
     GBDATA *gb_pending_messages;
 
     GB_push_transaction(gb_main);
-    gb_pending_messages = find_or_create_error_container(gb_main);
+    gb_pending_messages = GB_search(gb_main, ERROR_CONTAINER_PATH, GB_CREATE_CONTAINER);
     gb_assert(gb_pending_messages);
     GB_add_callback(gb_pending_messages, GB_CB_SON_CREATED, makeDatabaseCallback(new_gbt_message_created_cb));
     GB_pop_transaction(gb_main);
@@ -230,7 +226,7 @@ void GBT_message(GBDATA *gb_main, const char *msg) {
     GB_ERROR error = GB_push_transaction(gb_main);
 
     if (!error) {
-        GBDATA *gb_pending_messages = find_or_create_error_container(gb_main);
+        GBDATA *gb_pending_messages = GB_search(gb_main, ERROR_CONTAINER_PATH, GB_CREATE_CONTAINER);
         GBDATA *gb_msg              = gb_pending_messages ? GB_create(gb_pending_messages, "msg", GB_STRING) : 0;
 
         if (!gb_msg) error = GB_await_error();
@@ -328,7 +324,7 @@ NOT4PERL long *GBT_read_int(GBDATA *gb_container, const char *fieldpath) {
     return result;
 }
 
-NOT4PERL float *GBT_read_float(GBDATA *gb_container, const char *fieldpath) {
+NOT4PERL double *GBT_read_float(GBDATA *gb_container, const char *fieldpath) {
     /*! similar to GBT_read_string()
      *
      * but
@@ -337,12 +333,12 @@ NOT4PERL float *GBT_read_float(GBDATA *gb_container, const char *fieldpath) {
      */
 
     GBDATA *gbd;
-    float  *result = NULL;
+    double *result = NULL;
 
     GB_push_transaction(gb_container);
     gbd = GB_search(gb_container, fieldpath, GB_FIND);
     if (gbd) {
-        static float result_var;
+        static double result_var;
         result_var = GB_read_float(gbd);
         result     = &result_var;
     }
@@ -401,21 +397,21 @@ NOT4PERL long *GBT_readOrCreate_int(GBDATA *gb_container, const char *fieldpath,
     return result;
 }
 
-NOT4PERL float *GBT_readOrCreate_float(GBDATA *gb_container, const char *fieldpath, float default_value) {
+NOT4PERL double *GBT_readOrCreate_float(GBDATA *gb_container, const char *fieldpath, double default_value) {
     /*! like GBT_read_float(),
      *
      * but if field does not exist, it will be created and initialized with 'default_value'
      */
 
     gb_assert(default_value == default_value); // !nan
-
+    
     GBDATA *gb_float;
-    float  *result = NULL;
+    double *result = NULL;
 
     GB_push_transaction(gb_container);
     gb_float = GB_searchOrCreate_float(gb_container, fieldpath, default_value);
     if (gb_float) {
-        static float result_var;
+        static double result_var;
         result_var = GB_read_float(gb_float);
         result     = &result_var;
     }
@@ -481,7 +477,7 @@ GB_ERROR GBT_write_byte(GBDATA *gb_container, const char *fieldpath, unsigned ch
 }
 
 
-GB_ERROR GBT_write_float(GBDATA *gb_container, const char *fieldpath, float content) {
+GB_ERROR GBT_write_float(GBDATA *gb_container, const char *fieldpath, double content) {
     /*! like GBT_write_string(),
      *
      * but for fields of type GB_FLOAT
@@ -510,11 +506,9 @@ static GBDATA *GB_test_link_follower(GBDATA *gb_main, GBDATA */*gb_link*/, const
 //      save & load
 
 GBDATA *GBT_open(const char *path, const char *opent) {
-    /*! Open a database (as GB_open does)
-     *  Additionally:
-     *  - disable saving in the PT_SERVER directory,
-     *  - create an index for species and extended names (server only!),
-     *  - install table link followers (maybe obsolete)
+    /*! Open a database,
+     *  create an index for species and extended names (server only!) and
+     *  disable saving in the PT_SERVER directory.
      *
      * @param path filename of the DB
      * @param opent see GB_login()
@@ -542,6 +536,11 @@ GBDATA *GBT_open(const char *path, const char *opent) {
                     }
                 }
             }
+            if (!error) {
+                GBDATA *gb_tmp = GB_search(gbd, "tmp", GB_CREATE_CONTAINER);
+                if (gb_tmp) error = GB_set_temporary(gb_tmp);
+            }
+
             if (!error) {
                 {
                     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
@@ -573,25 +572,23 @@ GBDATA *GBT_open(const char *path, const char *opent) {
  * - BIO::remote_read_awar      (use of GBT_remote_read_awar)
  */
 
-static GBDATA *wait_for_dbentry(GBDATA *gb_main, const char *entry, const ARB_timeout *timeout, bool verbose) {
-    // if 'timeout' != NULL -> abort and return NULL if timeout has passed (otherwise wait forever)
-
-    if (verbose) GB_warningf("[waiting for DBENTRY '%s']", entry);
+static GBDATA *wait_for_dbentry(GBDATA *gb_main, const char *entry) {
+    MacroTalkSleep increasing;
     GBDATA *gbd;
-    {
-        ARB_timestamp  start;
-        MacroTalkSleep increasing;
-
-        while (1) {
-            GB_begin_transaction(gb_main);
-            gbd = GB_search(gb_main, entry, GB_FIND);
-            GB_commit_transaction(gb_main);
-            if (gbd) break;
-            if (timeout && timeout->passed()) break;
-            increasing.sleep();
-        }
+    while (1) {
+        GB_begin_transaction(gb_main);
+        gbd = GB_search(gb_main, entry, GB_FIND);
+        GB_commit_transaction(gb_main);
+        if (gbd) break;
+        increasing.sleep();
     }
-    if (gbd && verbose) GB_warningf("[found DBENTRY '%s']", entry);
+    return gbd;
+}
+
+static GBDATA *wait_for_dbentry_verboose(GBDATA *gb_main, const char *entry) {
+    GB_warningf("[waiting for DBENTRY '%s']", entry); // only prints onto console (ARB_NT is blocked as long as start_remote_command_for_application blocks)
+    GBDATA *gbd = wait_for_dbentry(gb_main, entry);
+    GB_warningf("[found DBENTRY '%s']", entry);
     return gbd;
 }
 
@@ -614,7 +611,6 @@ static GB_ERROR gbt_wait_for_remote_action(GBDATA *gb_main, GBDATA *gb_action, c
         error = GB_end_transaction(gb_main, error);
     }
 
-    if (error && !error[0]) return NULL; // empty error means ok
     return error; // may be error or result
 }
 
@@ -701,14 +697,13 @@ GB_ERROR GB_clear_macro_error(GBDATA *gb_main) {
     return error;
 }
 
-static GB_ERROR start_remote_command_for_application(GBDATA *gb_main, const remote_awars& remote, const ARB_timeout *timeout, bool verbose) {
+static GB_ERROR start_remote_command_for_application(GBDATA *gb_main, const remote_awars& remote) {
     // Called before any remote command will be written to DB.
     // Application specific initialization is done here.
-    //
-    // if 'timeout' != NULL -> abort with error if timeout has passed (otherwise wait forever)
 
-    ARB_timestamp start;
-    bool          wait_for_app = false;
+    mark_as_macro_executor(gb_main, true);
+
+    bool wait_for_app = false;
 
     GB_ERROR error    = GB_begin_transaction(gb_main);
     if (!error) error = GB_get_macro_error(gb_main);
@@ -737,7 +732,7 @@ static GB_ERROR start_remote_command_for_application(GBDATA *gb_main, const remo
 
         IF_DUMP_HANDSHAKE(fprintf(stderr, "AUTH_HANDSHAKE [waiting for %s]\n", remote.authAck()));
 
-        GBDATA *gb_authAck = wait_for_dbentry(gb_main, remote.authAck(), timeout, verbose);
+        GBDATA *gb_authAck = wait_for_dbentry_verboose(gb_main, remote.authAck());
         if (gb_authAck) {
             error = GB_begin_transaction(gb_main);
             if (!error) {
@@ -770,12 +765,7 @@ static GB_ERROR start_remote_command_for_application(GBDATA *gb_main, const remo
             error = GB_end_transaction(gb_main, error);
         }
         else {
-            // happens after timeout (handled by next if-clause)
-        }
-
-        if (timeout && timeout->passed()) {
-            wait_for_app = false;
-            error        = "remote application did not answer (within timeout)";
+            gb_assert(0); // happens when?
         }
 
         if (wait_for_app) {
@@ -786,15 +776,14 @@ static GB_ERROR start_remote_command_for_application(GBDATA *gb_main, const remo
     return error;
 }
 
-NOT4PERL GB_ERROR GBT_remote_action_with_timeout(GBDATA *gb_main, const char *application, const char *action_name, const class ARB_timeout *timeout, bool verbose) {
-    // if timeout_ms > 0 -> abort with error if application does not answer (e.g. is not running)
-    // Note: opposed to GBT_remote_action, this function may NOT be called directly by perl-macros
+GB_ERROR GBT_remote_action(GBDATA *gb_main, const char *application, const char *action_name) {
+    // needs to be public (needed by perl-macros)
 
     remote_awars remote(application);
-    GB_ERROR     error = start_remote_command_for_application(gb_main, remote, timeout, verbose);
+    GB_ERROR     error = start_remote_command_for_application(gb_main, remote);
 
     if (!error) {
-        GBDATA *gb_action = wait_for_dbentry(gb_main, remote.action(), NULL, false);
+        GBDATA *gb_action = wait_for_dbentry(gb_main, remote.action());
         error             = GB_begin_transaction(gb_main);
         if (!error) error = GB_write_string(gb_action, action_name); // write command
         error             = GB_end_transaction(gb_main, error);
@@ -803,22 +792,14 @@ NOT4PERL GB_ERROR GBT_remote_action_with_timeout(GBDATA *gb_main, const char *ap
     return error;
 }
 
-GB_ERROR GBT_remote_action(GBDATA *gb_main, const char *application, const char *action_name) {
-    // needs to be public (used exclusively(!) by perl-macros)
-    mark_as_macro_executor(gb_main, true);
-    return GBT_remote_action_with_timeout(gb_main, application, action_name, 0, true);
-}
-
 GB_ERROR GBT_remote_awar(GBDATA *gb_main, const char *application, const char *awar_name, const char *value) {
-    // needs to be public (used exclusively(!) by perl-macros)
-
-    mark_as_macro_executor(gb_main, true);
+    // needs to be public (needed by perl-macros)
 
     remote_awars remote(application);
-    GB_ERROR     error = start_remote_command_for_application(gb_main, remote, 0, true);
+    GB_ERROR     error = start_remote_command_for_application(gb_main, remote);
 
     if (!error) {
-        GBDATA *gb_awar   = wait_for_dbentry(gb_main, remote.awar(), 0, false);
+        GBDATA *gb_awar   = wait_for_dbentry(gb_main, remote.awar());
         error             = GB_begin_transaction(gb_main);
         if (!error) error = GB_write_string(gb_awar, awar_name);
         if (!error) error = GBT_write_string(gb_main, remote.value(), value);
@@ -829,15 +810,13 @@ GB_ERROR GBT_remote_awar(GBDATA *gb_main, const char *application, const char *a
 }
 
 GB_ERROR GBT_remote_read_awar(GBDATA *gb_main, const char *application, const char *awar_name) {
-    // needs to be public (used exclusively(!) by perl-macros)
-
-    mark_as_macro_executor(gb_main, true);
+    // needs to be public (needed by perl-macros)
 
     remote_awars remote(application);
-    GB_ERROR     error = start_remote_command_for_application(gb_main, remote, 0, true);
+    GB_ERROR     error = start_remote_command_for_application(gb_main, remote);
 
     if (!error) {
-        GBDATA *gb_awar   = wait_for_dbentry(gb_main, remote.awar(), 0, false);
+        GBDATA *gb_awar   = wait_for_dbentry(gb_main, remote.awar());
         error             = GB_begin_transaction(gb_main);
         if (!error) error = GB_write_string(gb_awar, awar_name);
         if (!error) error = GBT_write_string(gb_main, remote.action(), "AWAR_REMOTE_READ");
@@ -864,7 +843,7 @@ static char *fullMacroname(const char *macro_name) {
 
     gb_assert(!GB_have_error());
 
-    if (GB_is_readablefile(macro_name)) return ARB_strdup(macro_name);
+    if (GB_is_readablefile(macro_name)) return strdup(macro_name);
 
     char *in_ARBMACROHOME = find_macro_in(GB_getenvARBMACROHOME(), macro_name);
     char *in_ARBMACRO     = find_macro_in(GB_getenvARBMACRO(),     macro_name);
@@ -930,13 +909,12 @@ GB_ERROR GBT_macro_execute(const char *macro_name, bool loop_marked, bool run_as
     }
     else {
         char *perl_args = NULL;
-        freeset(fullMacro, GBK_singlequote(fullMacro));
         if (loop_marked) {
             const char *with_all_marked = GB_path_in_ARBHOME("PERL_SCRIPTS/MACROS/with_all_marked.pl");
-            perl_args = GBS_global_string_copy("'%s' %s", with_all_marked, fullMacro);
+            perl_args = GBS_global_string_copy("'%s' '%s'", with_all_marked, fullMacro);
         }
         else {
-            perl_args = GBS_global_string_copy("%s", fullMacro);
+            perl_args = GBS_global_string_copy("'%s'", fullMacro);
         }
 
         char *cmd = GBS_global_string_copy("perl %s %s", perl_args, run_async ? "&" : "");
@@ -1068,7 +1046,7 @@ char *GB_generate_notification(GBDATA *gb_main,
 
     int       id;
     char     *arb_notify_call = 0;
-    NotifyCb *pending         = ARB_alloc<NotifyCb>(1);
+    NotifyCb *pending         = (NotifyCb*)malloc(sizeof(*pending));
 
     pending->cb          = cb;
     pending->client_data = client_data;
@@ -1165,7 +1143,7 @@ GB_ERROR GB_notify(GBDATA *gb_main, int id, const char *message) {
         GB_transaction ta(gb_main);                     \
         StrArray fields;                                \
         GBT_scan_db(fields, gb_main, path);             \
-        char  *joined = GBT_join_strings(fields, ',');  \
+        char  *joined = GBT_join_names(fields, ',');    \
         TEST_EXPECT_EQUAL(joined, expected);            \
         free(joined);                                   \
     } while (0)
@@ -1236,8 +1214,8 @@ void TEST_find_macros() {
 
     // unlink test.amc in ARBMACROHOME (from previous run)
     // ../UNIT_TESTER/run/homefake/.arb_prop/macros
-    char *test_amc = ARB_strdup(GB_concat_path(GB_getenvARBMACROHOME(), TEST_AMC));
-    char *res_amc  = ARB_strdup(GB_concat_path(GB_getenvARBMACROHOME(), RESERVED_AMC));
+    char *test_amc = strdup(GB_concat_path(GB_getenvARBMACROHOME(), TEST_AMC));
+    char *res_amc  = strdup(GB_concat_path(GB_getenvARBMACROHOME(), RESERVED_AMC));
 
     TEST_EXPECT_DIFFERENT(GB_unlink(test_amc), -1);
     TEST_EXPECT_DIFFERENT(GB_unlink(res_amc), -1);
@@ -1263,6 +1241,6 @@ void TEST_find_macros() {
 
     TEST_EXPECT_EQUAL((void*)arb_test::fakeenv, (void*)GB_install_getenv_hook(old));
 }
-TEST_PUBLISH(TEST_find_macros);
+
 
 #endif // UNIT_TESTS

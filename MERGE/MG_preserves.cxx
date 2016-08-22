@@ -18,6 +18,7 @@
 #include <aw_awar.hxx>
 #include <aw_root.hxx>
 #include <aw_msg.hxx>
+#include <aw_window.hxx>
 #include <aw_select.hxx>
 #include <arb_progress.h>
 #include <arb_global_defs.h>
@@ -56,7 +57,7 @@ static void init_alignments(preserve_para *para) {
     // initialize the alignment selection list
     ConstStrArray ali_names;
     get_global_alignments(ali_names);
-    para->alignmentList->init_from_array(ali_names, "All", "All");
+    para->alignmentList->init_from_array(ali_names, "All");
 }
 
 static void clear_candidates(preserve_para *para) {
@@ -121,8 +122,8 @@ public:
         mg_assert(!GB_have_error());
 
         for (int i = 0; valid && ali_names[i]; ++i) {
-            if (GBDATA *gb_src_data = GBT_find_sequence(gb_src, ali_names[i])) {
-                if (GBDATA *gb_dst_data = GBT_find_sequence(gb_dst, ali_names[i])) {
+            if (GBDATA *gb_src_data = GBT_read_sequence(gb_src, ali_names[i])) {
+                if (GBDATA *gb_dst_data = GBT_read_sequence(gb_dst, ali_names[i])) {
                     ++found_alignments;
 
                     long src_bases  = count_bases(gb_src_data);
@@ -169,7 +170,7 @@ typedef set< SmartPtr<Candidate> > Candidates;
 static void find_species_candidates(Candidates& candidates, const CharPtrArray& ali_names) {
     // collect names of all species in source database
     GB_HASH      *src_species = GBT_create_species_hash(GLOBAL_gb_src);
-    long          src_count   = GBS_hash_elements(src_species);
+    long          src_count   = GBS_hash_count_elems(src_species);
     arb_progress  progress("Examining species", src_count);
     bool          aborted     = false;
 
@@ -205,7 +206,7 @@ static void find_species_candidates(Candidates& candidates, const CharPtrArray& 
 static void find_SAI_candidates(Candidates& candidates, const CharPtrArray& ali_names) {
     // add all candidate SAIs to 'candidates'
     GB_HASH      *src_SAIs  = GBT_create_SAI_hash(GLOBAL_gb_src);
-    long          src_count = GBS_hash_elements(src_SAIs);
+    long          src_count = GBS_hash_count_elems(src_SAIs);
     arb_progress  progress("Examining SAIs", src_count);
 
     // find existing SAIs in destination database
@@ -285,7 +286,7 @@ static void read_references(ConstStrArray& refs, AW_root *aw_root)  {
     GBT_splitNdestroy_string(refs, ref_string, " \n,;", true);
 }
 static void write_references(AW_root *aw_root, const CharPtrArray& ref_array) {
-    char *ref_string = GBT_join_strings(ref_array, '\n');
+    char *ref_string = GBT_join_names(ref_array, '\n');
     aw_root->awar(AWAR_REMAP_SPECIES_LIST)->write_string(ref_string);
     aw_root->awar(AWAR_REMAP_ENABLE)->write_int(ref_string[0] != 0);
     free(ref_string);
@@ -300,7 +301,7 @@ static char *get_selected_reference(AW_root *aw_root) {
 static void refresh_reference_list_cb(AW_root *aw_root, preserve_para *para) {
     ConstStrArray  refs;
     read_references(refs, aw_root);
-    para->usedRefsList->init_from_array(refs, "", "");
+    para->usedRefsList->init_from_array(refs, "");
 }
 
 static void add_selected_cb(AW_window *aww, preserve_para *para) {
@@ -311,11 +312,11 @@ static void add_selected_cb(AW_window *aww, preserve_para *para) {
 
     char *candidate  = aw_root->awar(AWAR_REMAP_CANDIDATE)->read_string();
     char *selected   = get_selected_reference(aw_root);
-    int   cand_index = refs.index_of(candidate);
-    int   sel_index  = refs.index_of(selected);
+    int   cand_index = GBT_names_index_of(refs, candidate);
+    int   sel_index  = GBT_names_index_of(refs, selected);
 
-    if (cand_index == -1) refs.put_before(sel_index+1, candidate);
-    else                  refs.move(cand_index, sel_index);
+    if (cand_index == -1) GBT_names_add(refs, sel_index+1, candidate);
+    else                  GBT_names_move(refs, cand_index, sel_index);
 
     write_references(aw_root, refs);
     select_reference(aw_root, candidate);
@@ -337,11 +338,11 @@ static void del_reference_cb(AW_window *aww) {
     read_references(refs, aw_root);
 
     char *selected  = get_selected_reference(aw_root);
-    int   sel_index = refs.index_of(selected);
+    int   sel_index = GBT_names_index_of(refs, selected);
 
     if (sel_index >= 0) {
         select_reference(aw_root, refs[sel_index+1]);
-        refs.safe_remove(sel_index);
+        GBT_names_erase(refs, sel_index);
         write_references(aw_root, refs);
     }
 
@@ -354,10 +355,10 @@ static void lower_reference_cb(AW_window *aww) {
     read_references(refs, aw_root);
 
     char *selected  = get_selected_reference(aw_root);
-    int   sel_index = refs.index_of(selected);
+    int   sel_index = GBT_names_index_of(refs, selected);
 
     if (sel_index >= 0) {
-        refs.move(sel_index, sel_index+1);
+        GBT_names_move(refs, sel_index, sel_index+1);
         write_references(aw_root, refs);
     }
 
@@ -369,10 +370,10 @@ static void raise_reference_cb(AW_window *aww) {
     read_references(refs, aw_root);
 
     char *selected  = get_selected_reference(aw_root);
-    int   sel_index = refs.index_of(selected);
+    int   sel_index = GBT_names_index_of(refs, selected);
 
     if (sel_index > 0) {
-        refs.move(sel_index, sel_index-1);
+        GBT_names_move(refs, sel_index, sel_index-1);
         write_references(aw_root, refs);
     }
 
@@ -404,8 +405,7 @@ AW_window *MG_create_preserves_selection_window(AW_root *aw_root) {
     aws->init(aw_root, "SELECT_PRESERVES", "Select adaption candidates");
     aws->load_xfig("merge/preserves.fig");
 
-    aws->at("close");
-    aws->callback(AW_POPDOWN);
+    aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");

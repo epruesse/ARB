@@ -14,13 +14,13 @@ BINARIES:=$(addprefix $(ARBHOME)/bin/,$(TOOLS))
 all: $(BINARIES)
 
 %.o: %.cxx 
-	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE) $<
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 %.o: %.c
-	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE) $<
+	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE)
 
 $(ARBHOME)/bin/%: %.o $(use_ARB_main)
-	$(LINK_EXECUTABLE) $@ $(use_ARB_main) $< $(EXECLIBS) $(LIB_ARBDB) 
+	$(LINK_EXECUTABLE) $@ $(use_ARB_main) $< $(LIB_ARBDB) $(EXECLIBS)
 
 clean:
 	rm -f $(BINARIES)
@@ -54,7 +54,6 @@ arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arb_core.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arb_diff.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arb_error.h
-arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arb_mem.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arb_msg.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arb_str.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arb_strbuf.h

@@ -27,9 +27,12 @@
 
 static const char * const SAI_COUNTED_CHARS = "COUNTED_CHARS";
 
-void NT_count_different_chars(AW_window*, GBDATA *gb_main) {
+void NT_count_different_chars(AW_window *, AW_CL cl_gb_main, AW_CL) {
     // @@@ extract algorithm and call extracted from testcode
-    ARB_ERROR error = GB_begin_transaction(gb_main); // open transaction
+    ARB_ERROR  error;
+    GBDATA    *gb_main = (GBDATA*)cl_gb_main;
+
+    error = GB_begin_transaction(gb_main);                      // open transaction
 
     char *alignment_name = GBT_get_default_alignment(gb_main);  // info about sequences
     int   alignment_len  = GBT_get_alignment_len(gb_main, alignment_name);
@@ -41,7 +44,7 @@ void NT_count_different_chars(AW_window*, GBDATA *gb_main) {
 
         typedef bool letterOccurs[MAXLETTER];
 
-        letterOccurs *occurs = ARB_alloc<letterOccurs>(alignment_len);
+        letterOccurs *occurs = (letterOccurs*)malloc(sizeof(*occurs)*alignment_len);
         for (int i = 0; i<MAXLETTER; ++i) {
             for (int p = 0; p<alignment_len; ++p) {
                 occurs[p][i] = false;
@@ -113,7 +116,7 @@ void NT_count_different_chars(AW_window*, GBDATA *gb_main) {
     GB_end_transaction_show_error(gb_main, error, aw_message);
 }
 
-void NT_create_sai_from_pfold(AW_window *aww, AWT_canvas *ntw) {
+void NT_create_sai_from_pfold(AW_window *aww, AW_CL ntw, AW_CL) {
     /*! \brief Creates an SAI from protein secondary structure of a selected species.
      *
      *  \param[in] aww AW_window
@@ -227,7 +230,7 @@ void NT_create_sai_from_pfold(AW_window *aww, AWT_canvas *ntw) {
         AW_window *sai_info = NT_create_extendeds_window(aww->get_root());
         // TODO: why doesn't info box show anything on first startup? proper refresh needed?
         sai_info->activate();
-        ntw->refresh(); // refresh doesn't work, I guess...
+        ((AWT_canvas *)ntw)->refresh(); // refresh doesn't work, I guess...
     }
 
     free(species_name);
@@ -299,9 +302,9 @@ void TEST_count_chars() {
         TEST_EXPECT_RESULT__NOERROREXPORTED(gb_main = GB_open(prot ? "TEST_prot.arb" : "TEST_nuc.arb", "rw"));
 
         GBT_mark_all(gb_main, 1);
-        NT_count_different_chars(NULL, gb_main);
+        NT_count_different_chars(NULL, (AW_CL)gb_main, 0);
 
-        uint32_t expected = prot ? 0x9cad14cc : 0xefb05e4e;
+        uint32_t expected = prot ? 0x4fa63fa0 : 0xefb05e4e;
         TEST_EXPECT_EQUAL(counted_chars_checksum(gb_main), expected);
 
         GB_close(gb_main);
@@ -327,7 +330,7 @@ void TEST_SLOW_count_chars() {
 
         char *longSeq[count];
         for (int c = 0; c<count; ++c) {
-            char *dest = longSeq[c] = ARB_alloc<char>(alilen+1);
+            char *dest = longSeq[c] = (char*)malloc(alilen+1);
 
             const char *source = data_source[c].data;
             int         len    = strlen(source);
@@ -345,7 +348,7 @@ void TEST_SLOW_count_chars() {
 
         TEST_EXPECT_NO_ERROR(error.deliver());
 
-        NT_count_different_chars(NULL, gb_main);
+        NT_count_different_chars(NULL, (AW_CL)gb_main, 0);
 
         // TEST_EXPECT_EQUAL(counted_chars_checksum(gb_main), 0x1d34a14f);
         // TEST_EXPECT_EQUAL(counted_chars_checksum(gb_main), 0x609d788b);

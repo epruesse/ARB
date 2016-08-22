@@ -1,99 +1,161 @@
 #include "GDE_proto.h"
-
+#include <limits.h>
 #include <aw_msg.hxx>
-
-#include <climits>
 #include <algorithm>
 
-static void Regroup(NA_Alignment& alignment) {
+void Regroup(NA_Alignment *alignment)
+{
     size_t j;
     size_t group;
     int last;
 
-    for (j=0; j<alignment.numelements; j++) {
-        alignment.element[j].groupf = NULL;
-        alignment.element[j].groupb = NULL;
+    for (j=0; j<alignment->numelements; j++)
+    {
+        alignment->element[j].groupf = NULL;
+        alignment->element[j].groupb = NULL;
     }
 
-    for (group = 1; group <= alignment.numgroups; group++) {
+    for (group = 1; group <= alignment->numgroups; group++)
+    {
         last = -1;
-        for (j=0; j<alignment.numelements; j++)
-            if (alignment.element[j].groupid == group) {
-                if (last != -1) {
-                    alignment.element[j].groupb    = &(alignment.element[last]);
-                    alignment.element[last].groupf = &(alignment.element[j]);
+        for (j=0; j<alignment->numelements; j++)
+            if (alignment->element[j].groupid == group)
+            {
+                if (last != -1)
+                {
+                    alignment->element[j].groupb =
+                        &(alignment->element[last]);
+                    alignment->element[last].groupf =
+                        &(alignment->element[j]);
                 }
                 last = j;
             }
     }
+    return;
 }
 
-static void ReadNA_Flat(char *filename, NA_Alignment& data) {
+template <typename T>
+inline T* Terminate_If_OutOfMemory(T *allocated) {
+    if (!allocated) GBK_terminate("Out of memory");
+    return allocated;
+}
+
+char *Calloc(int count, int size) {
+    // More robust memory management routines
+    size *= count;
+    char *temp  = (char *)malloc(size);
+    memset(Terminate_If_OutOfMemory(temp), 0, size);
+    return temp;
+}
+
+char *Realloc(char *block, int size) {
+    return Terminate_If_OutOfMemory((char*)realloc(block, size));
+}
+
+void Cfree(char *block)
+{
+    if (block)
+    {
+        /* if(cfree(block) == 0)
+          Warning("Error in Cfree..."); */
+        free(block);
+    }
+    else
+        Warning("Error in Cfree, NULL block");
+    return;
+}
+
+static void ReadNA_Flat(char *filename, char *dataset) {
     size_t j;
     int jj, curelem=0, offset;
     char buffer[GBUFSIZ];
     char in_line[GBUFSIZ];
 
     NA_Sequence *this_elem;
+    NA_Alignment *data;
 
-    FILE *file = fopen(filename, "r");
-    if (!file) {
+    FILE *file;
+
+    data = (NA_Alignment*)dataset;
+
+    file = fopen(filename, "r");
+    if (file == NULL)
+    {
         fprintf(stderr, "Cannot open %s.\n", filename);
+        return;
     }
-    else {
-        for (; fgets(in_line, GBUFSIZ, file) != 0;)
+    for (; fgets(in_line, GBUFSIZ, file) != 0;)
+    {
+        if (in_line[0] == '#' ||
+            in_line[0] == '%' ||
+            in_line[0] == '"' ||
+            in_line[0] == '@')
         {
-            if (in_line[0] == '#' ||
-                in_line[0] == '%' ||
-                in_line[0] == '"' ||
-                in_line[0] == '@')
+            offset = 0;
+            for (j=0; j<strlen(in_line); j++)
             {
-                offset = 0;
-                for (j=0; j<strlen(in_line); j++)
+                if (in_line[j] == '(')
                 {
-                    if (in_line[j] == '(')
-                    {
-                        sscanf((char*)
-                               &(in_line[j+1]), "%d", &offset);
-                        in_line[j] = '\0';
-                    }
+                    sscanf((char*)
+                           &(in_line[j+1]), "%d", &offset);
+                    in_line[j] = '\0';
                 }
-
-                curelem = Arbdb_get_curelem(data);
-
-                InitNASeq(&(data.element[curelem]),
-                          in_line[0] == '#' ? DNA :
-                          in_line[0] == '%' ? PROTEIN :
-                          in_line[0] == '"' ? TEXT :
-                          in_line[0] == '@' ? MASK : TEXT);
-                this_elem = &(data.element[curelem]);
-                if (in_line[strlen(in_line)-1] == '\n')
-                    in_line[strlen(in_line)-1] = '\0';
-                strncpy_terminate(this_elem->short_name, in_line+1, SIZE_SHORT_NAME);
-                this_elem->offset = offset;
             }
-            else if (in_line[0] != '\n')
+
+            curelem = data->numelements++;
+            if (curelem == 0)
             {
-                size_t strl = strlen(in_line);
-                for (j=0, jj=0; j<strl; j++)
-                    if (in_line[j] != ' ' && in_line[j] != '\n' &&
-                        in_line[j] != '\t')
-                        buffer[jj++] = in_line[j];
-
-                if (data.element[curelem].rmatrix)
-                    Ascii2NA(buffer, jj, data.element[curelem].rmatrix);
-                AppendNA((NA_Base*)buffer, jj, &(data.element[curelem]));
+                data->element=(NA_Sequence*)
+                    Calloc(5, sizeof(NA_Sequence));
+                data->maxnumelements = 5;
             }
-        }
-        fclose(file);
+            else if (curelem==data->maxnumelements)
+            {
+                (data->maxnumelements) *= 2;
+                data->element=
+                    (NA_Sequence*)Realloc((char*)data->element
+                                          , data->maxnumelements*sizeof(NA_Sequence));
+            }
 
-        for (j=0; j<data.numelements; j++) {
-            data.maxlen = std::max(data.maxlen, data.element[j].seqlen + data.element[j].offset);
+            InitNASeq(&(data->element[curelem]),
+                      in_line[0] == '#' ? DNA :
+                      in_line[0] == '%' ? PROTEIN :
+                      in_line[0] == '"' ? TEXT :
+                      in_line[0] == '@' ? MASK : TEXT);
+            this_elem = &(data->element[curelem]);
+            if (in_line[strlen(in_line)-1] == '\n')
+                in_line[strlen(in_line)-1] = '\0';
+            strncpy_terminate(this_elem->short_name, in_line+1, SIZE_SHORT_NAME);
+            this_elem->offset = offset;
         }
+        else if (in_line[0] != '\n')
+        {
+            size_t strl = strlen(in_line);
+            for (j=0, jj=0; j<strl; j++)
+                if (in_line[j] != ' ' && in_line[j] != '\n' &&
+                   in_line[j] != '\t')
+                    buffer[jj++] = in_line[j];
 
-        NormalizeOffset(data);
-        Regroup(data);
+            if (data->element[curelem].rmatrix)
+                Ascii2NA(buffer, jj, data->element[curelem].rmatrix);
+            AppendNA((NA_Base*)buffer, jj, &(data->element[curelem]));
+        }
     }
+    fclose(file);
+
+    for (j=0; j<data->numelements; j++)
+        data->maxlen = std::max(data->maxlen, data->element[j].seqlen +
+                                data->element[j].offset);
+
+    for (j=0; j<data->numelements; j++)
+        if (data->element[j].seqlen==0)
+            data->element[j].protect =
+                PROT_BASE_CHANGES + PROT_GREY_SPACE+
+                PROT_WHITE_SPACE + PROT_TRANSLATION;
+
+    NormalizeOffset(data);
+    Regroup(data);
+    return;
 }
 
 /*
@@ -111,7 +173,7 @@ static void ReadNA_Flat(char *filename, NA_Alignment& data) {
   All rights reserved.
 */
 
-static GB_ERROR LoadFile(char *filename, NA_Alignment& dataset, int type, int format) {
+static GB_ERROR LoadFile(char *filename, NA_Alignment *dataset, int type, int format) {
     GB_ERROR error = NULL;
     if (DataType != type)
         fprintf(stderr, "Warning, datatypes do not match.\n");
@@ -121,13 +183,13 @@ static GB_ERROR LoadFile(char *filename, NA_Alignment& dataset, int type, int fo
     switch (format)
     {
         case NA_FLAT:
-            ReadNA_Flat(filename, dataset);
-            dataset.format = GDE;
+            ReadNA_Flat(filename, (char*)dataset);
+            ((NA_Alignment*)dataset)->format = GDE;
             break;
 
         case GENBANK:
-            error          = ReadGen(filename, dataset);
-            dataset.format = GENBANK;
+            error                            = ReadGen(filename, dataset);
+            ((NA_Alignment*)dataset)->format = GENBANK;
             break;
 
         case GDE:
@@ -192,7 +254,7 @@ static int FindType(char *name, int *dtype, int *ftype) {
     return result;
 }
 
-void LoadData(char *filen, NA_Alignment& dataset) {
+void LoadData(char *filen) {
     /* LoadData():
      * Load a data set from the command line argument.
      *
@@ -204,17 +266,32 @@ void LoadData(char *filen, NA_Alignment& dataset) {
      * All rights reserved.
      */
 
+    FILE         *file;
+    NA_Alignment *DataNaAln;
+
     // Get file name, determine the file type, and away we go..
     if (Find2(filen, "gde") != 0)
         strcpy(FileName, filen);
 
-    FILE *file = fopen(filen, "r");
-    if (file) {
+    if ((file=fopen(filen, "r"))!=0)
+    {
         FindType(filen, &DataType, &FileFormat);
-        switch (DataType) {
+        switch (DataType)
+        {
             case NASEQ_ALIGN: {
-                GB_ERROR error = LoadFile(filen, dataset, DataType, FileFormat);
+                if (DataSet == NULL)
+                {
+                    DataSet = (NA_Alignment*)Calloc(1, sizeof(NA_Alignment));
+                    DataNaAln = (NA_Alignment*)DataSet;
+                    DataSet->rel_offset = 0;
+                }
+                else {
+                    DataNaAln = (NA_Alignment*)DataSet;
+                }
+
+                GB_ERROR error = LoadFile(filen, DataNaAln, DataType, FileFormat);
                 if (error) aw_message(error);
+
                 break;
             }
             default:
@@ -228,9 +305,15 @@ void LoadData(char *filen, NA_Alignment& dataset) {
 void AppendNA(NA_Base *buffer, int len, NA_Sequence *seq)
 {
     int curlen=0, j;
-    if (seq->seqlen+len >= seq->seqmaxlen) {
-        seq->seqmaxlen = seq->seqlen + len + GBUFSIZ;
-        ARB_realloc(seq->sequence, seq->seqmaxlen);
+    if (seq->seqlen+len >= seq->seqmaxlen)
+    {
+        if (seq->seqlen>0)
+            seq->sequence = (NA_Base*)Realloc((char*)seq->sequence,
+                                              (seq->seqlen + len+GBUFSIZ) * sizeof(NA_Base));
+        else
+            seq->sequence = (NA_Base*)Calloc(1, (seq->seqlen +
+                                                len+GBUFSIZ) * sizeof(NA_Base));
+        seq->seqmaxlen = seq->seqlen + len+GBUFSIZ;
     }
     // seqlen is the length, and the index of the next free base
     curlen = seq->seqlen + seq->offset;
@@ -250,17 +333,19 @@ void Ascii2NA(char *buffer, int len, int matrix[16]) {
     }
 }
 
-int WriteNA_Flat(NA_Alignment& aln, char *filename, int method)
+int WriteNA_Flat(NA_Alignment *aln, char *filename, int method)
 {
-    if (aln.numelements == 0) return (1);
-
-    size_t  j;
-    int     kk;
-    int     k, offset;
-    char    offset_str[100], buf[100];
-    FILE   *file;
-
-    NA_Sequence *seqs = aln.element;
+    size_t j;
+    int kk;
+    int k, offset;
+    char offset_str[100], buf[100];
+    NA_Sequence *seqs;
+    FILE *file;
+    if (aln == NULL)
+        return (1);
+    if (aln->numelements == 0)
+        return (1);
+    seqs = aln->element;
 
     file = fopen(filename, "w");
     if (file == NULL)
@@ -269,12 +354,12 @@ int WriteNA_Flat(NA_Alignment& aln, char *filename, int method)
         return (1);
     }
 
-    for (j=0; j<aln.numelements; j++)
+    for (j=0; j<aln->numelements; j++)
     {
         offset = seqs[j].offset;
 
-        if (offset+aln.rel_offset != 0)
-            sprintf(offset_str, "(%d)", offset+aln.rel_offset);
+        if (offset+aln->rel_offset != 0)
+            sprintf(offset_str, "(%d)", offset+aln->rel_offset);
         else
             offset_str[0] = '\0';
 
@@ -287,7 +372,7 @@ int WriteNA_Flat(NA_Alignment& aln, char *filename, int method)
                     seqs[j].elementtype == TEXT ? '"' :
                     seqs[j].elementtype == MASK ? '@' : '"',
                     seqs[j].short_name,
-                    (offset+aln.rel_offset  == 0) ? "" : offset_str);
+                    (offset+aln->rel_offset  == 0) ? "" : offset_str);
             if (seqs[j].tmatrix)
             {
                 for (k=0, kk=0; kk<seqs[j].seqlen; kk++)
@@ -349,13 +434,20 @@ void InitNASeq(NA_Sequence *seq, int type) {
     seq->comments_len = 0;
     seq->comments_maxlen = 0;
     seq->description[0] = '\0';
+    seq->mask = NULL;
     seq->seqlen = 0;
     seq->seqmaxlen = 0;
+    seq->protect = PROT_WHITE_SPACE + PROT_TRANSLATION;
+#ifdef HGL
+    seq->attr = 0;
+#else
     seq->attr = IS_5_TO_3 + IS_PRIMARY;
+#endif
     seq->elementtype = type;
     seq->groupid = 0;
     seq->groupb = NULL;
     seq->groupf = NULL;
+    seq->cmask = NULL;
 
     switch (type)
     {
@@ -385,24 +477,28 @@ void InitNASeq(NA_Sequence *seq, int type) {
     return;
 }
 
-void NormalizeOffset(NA_Alignment& aln)
+void NormalizeOffset(NA_Alignment *aln)
 {
     size_t j;
     int offset = INT_MAX;
 
-    for (j=0; j<aln.numelements; j++)
-        offset = std::min(offset, aln.element[j].offset);
+    for (j=0; j<aln->numelements; j++)
+        offset = std::min(offset, aln->element[j].offset);
 
-    for (j=0; j<aln.numelements; j++)
-        aln.element[j].offset -= offset;
+    for (j=0; j<aln->numelements; j++)
+        aln->element[j].offset -= offset;
 
-    aln.maxlen = INT_MIN;
-    for (j=0; j<aln.numelements; j++)
-        aln.maxlen = std::max(aln.element[j].seqlen+aln.element[j].offset, aln.maxlen);
+    aln->maxlen = INT_MIN;
+    for (j=0; j<aln->numelements; j++)
+        aln->maxlen = std::max(aln->element[j].seqlen+aln->element[j].offset,
+                          aln->maxlen);
 
-    gde_assert(aln.maxlen >= 0);
+    gde_assert(aln->maxlen >= 0);
 
-    aln.rel_offset += offset;
+    aln->rel_offset += offset;
 
-    if (aln.numelements == 0) aln.rel_offset = 0;
+    if (aln->numelements == 0)
+        aln->rel_offset = 0;
+
+    return;
 }

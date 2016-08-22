@@ -153,7 +153,7 @@ ED4_returncode ED4_members::search_target_species(ED4_extension *location,   ED4
     return ED4_R_OK;
 }
 
-void ED4_members::insert_member(ED4_base *new_member) {
+ED4_returncode ED4_members::insert_member(ED4_base *new_member) {
     // inserts a new member into current owners's member array and
     // asks to adjust owner's bounding box
 
@@ -177,24 +177,34 @@ void ED4_members::insert_member(ED4_base *new_member) {
         }
     }
 
-    shift_list(index, 1); // insert new_member at index after shifting to the right
+    if (shift_list(index, 1) != ED4_R_OK) {    // insert new_member at index after shifting to the right
+        return (ED4_R_WARNING);
+    }
 
     memberList[index] = new_member; // insert new member in list in just allocated memory
     no_of_members ++;
     new_member->index = index;
 
     owner()->request_resize(); // tell owner about resize
+
+    return (ED4_R_OK);
 }
 
-void ED4_members::append_member(ED4_base *new_member) {
+ED4_returncode ED4_members::append_member(ED4_base *new_member) {
     ED4_index index = no_of_members;
 
     e4_assert(owner()->spec.allowed_to_contain(new_member->spec.level));
-
+ 
     if (index>=size_of_list) { // ensure free element
-        ED4_index new_size_of_list = (size_of_list*3)/2; // resize to 1.5*size_of_list
+        ED4_index new_size_of_list = (size_of_list*3)/2;        // resize to 1.5*size_of_list
+        ED4_base **new_member_list = (ED4_base**)GB_calloc(new_size_of_list, sizeof(*new_member_list));
+        if (!new_member_list) {
+            GB_memerr();
+            return ED4_R_IMPOSSIBLE;
+        }
+        memcpy(new_member_list, memberList, size_of_list*sizeof(*new_member_list));
 
-        ARB_recalloc(memberList, size_of_list, new_size_of_list);
+        freeset(memberList, new_member_list);
         size_of_list = new_size_of_list;
     }
 
@@ -208,7 +218,9 @@ void ED4_members::append_member(ED4_base *new_member) {
         }
     }
 
-    shift_list(index, 1); // shift member if necessary
+    if (shift_list(index, 1)!=ED4_R_OK) { // shift member if necessary
+        return ED4_R_WARNING;
+    }
 
     memberList[index] = new_member;
     no_of_members++;
@@ -216,54 +228,75 @@ void ED4_members::append_member(ED4_base *new_member) {
 
     owner()->spec.announce_added(new_member->spec.level);
     owner()->request_resize();
+
+    return ED4_R_OK;
 }
 
-ED4_returncode ED4_members::remove_member(ED4_base *member_to_del) {
+ED4_returncode ED4_members::remove_member(ED4_base *member_to_del)
+{
     if (!member_to_del || (no_of_members <= 0)) {
-        return ED4_R_IMPOSSIBLE;
+        return (ED4_R_IMPOSSIBLE);
     }
 
     ED4_index index = member_to_del->index;
 
-    shift_list(index + 1, -1); // shift member list to left, starting at index+1
+    if (shift_list((index + 1), -1) != ED4_R_OK) {     // shift member list to left, starting at index+1
+        return (ED4_R_WARNING);
+    }
 
     member_to_del->parent = 0; // avoid referencing wrong parent
+
     no_of_members--;
     e4_assert(members_ok());
 
     owner()->request_resize();
 
-    return ED4_R_OK;
+    return (ED4_R_OK);
 }
 
-void ED4_members::shift_list(ED4_index start_index, int length) {
+ED4_returncode  ED4_members::shift_list(ED4_index start_index, int length) {
     // shifts member_list of current object by |length| positions starting with start_index,
     // if length is positive shift is to the right, allocating new memory if necessary
     // if length is negative shift is to the left (up to position 0) without freeing memory
 
     if (length>0) { // shift list to the right
-        long needed_size = no_of_members + length;
+        if ((no_of_members + length) >= size_of_list) {   // member_list is full => allocate more memory
+            unsigned int   new_alloc_size = (unsigned int) ((size_of_list + length) * 1.3); // calculate new size of member_list for realloc()
+            ED4_base     **tmp_ptr        = (ED4_base **) realloc((char *) memberList, (new_alloc_size * sizeof(ED4_base *))); // try to realloc memory
 
-        if (needed_size >= size_of_list) {   // member_list is full => allocate more memory
-            unsigned int new_alloc_size = (unsigned int) ((size_of_list + length) * 1.3); // calculate new size of member_list
+            if (! tmp_ptr) { // realloc() failed = > try malloc() and copy member_list
+                aw_message("ED4_members::shift_list: realloc problem!");
+                tmp_ptr = (ED4_base **) malloc((new_alloc_size * sizeof(ED4_base *)));
 
-            ARB_recalloc(memberList, size_of_list, new_alloc_size);
+                if (!tmp_ptr) return ED4_R_DESASTER; // malloc has failed, too
+
+                tmp_ptr = (ED4_base **) memcpy((char *) tmp_ptr,                    // malloc was successfull, now copy memory
+                                               (char *) memberList,
+                                               (new_alloc_size * sizeof(ED4_base *)));
+            }
+            memberList = tmp_ptr;
             size_of_list = new_alloc_size;
+            for (ED4_index i = no_of_members; i < size_of_list; i++) memberList[i] = NULL; // clear free entries at the end of the list
         }
 
-        for (ED4_index i = needed_size; i > start_index; i--) { // start shifting to the right
+        for (ED4_index i = (no_of_members + length); i > start_index; i--) { // start shifting to the right
             memberList[i] = memberList[i - length];
             if (memberList[i] != NULL) (memberList[i])->index = i;
         }
     }
     else if (length<0) { // shift list to the left, thereby not freeing any memory !
-        e4_assert((start_index + length) >= 0); // invalid shift!
+        if ((start_index + length) < 0) {
+            aw_message("ED4_members::shift_list: shift is too far to the left!");
+            return ED4_R_WARNING;
+        }
 
         for (ED4_index i = (start_index + length); i <= (no_of_members + length); i++) { // start shifting left
             memberList[i] = memberList[i - length]; // length is negative
             if (memberList[i] != NULL) (memberList[i])->index = i;
         }
     }
+
+    return ED4_R_OK;
 }
 
 
@@ -340,12 +373,18 @@ int ED4_members::members_ok() const {
 }
 #endif // ASSERTION_USED
 
-ED4_members::ED4_members(ED4_manager *the_owner) {
-    my_owner      = the_owner;
-    ARB_calloc(memberList, 1);
-    // memberList[0] = NULL;
+ED4_members::ED4_members(ED4_manager *the_owner)
+{
+    my_owner = the_owner;
+    memberList = (ED4_base **) calloc(1, sizeof(ED4_base*));
+
+    if (memberList == NULL) {
+        aw_popup_exit("ED4_member::ED4_member: memory problem!");
+    }
+
+    memberList[0] = NULL;
     no_of_members = 0;
-    size_of_list  = 1;
+    size_of_list = 1;
 }
 
 

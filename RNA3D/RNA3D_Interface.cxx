@@ -235,15 +235,15 @@ static void RefreshCanvas(AW_root *awr) {
 static void SynchronizeColorsWithEditor(AW_window *aww) {
     // overwrites color settings with those from EDIT4
 
-    AW_copy_GC_colors(aww->get_root(), "ARB_EDIT4", "RNA3D",
-                      "User1",   "User2",   "Probe",
-                      "Primerl", "Primerr", "Primerg",
-                      "Sigl",    "Sigr",    "Sigg",
-                      "RANGE_0", "RANGE_1", "RANGE_2",
-                      "RANGE_3", "RANGE_4", "RANGE_5",
-                      "RANGE_6", "RANGE_7", "RANGE_8",
-                      "RANGE_9",
-                      NULL);
+    AW_copy_GCs(aww->get_root(), "ARB_EDIT4", "RNA3D", false,
+                "User1",   "User2",   "Probe",
+                "Primerl", "Primerr", "Primerg",
+                "Sigl",    "Sigr",    "Sigg",
+                "RANGE_0", "RANGE_1", "RANGE_2",
+                "RANGE_3", "RANGE_4", "RANGE_5",
+                "RANGE_6", "RANGE_7", "RANGE_8",
+                "RANGE_9",
+                NULL);
 }
 
 static void Change3DMolecule_CB(AW_root *awr) {
@@ -267,7 +267,7 @@ static void Change3DMolecule_CB(AW_root *awr) {
     RefreshCanvas(awr);
 }
 
-static void Change3DMolecule(AW_window *aww, int molID) {
+static void Change3DMolecule(AW_window *aww, long int molID) {
     // changes the displayed 3D structure in the case of 23S rRNA
     aww->get_root()->awar(AWAR_3D_23S_RRNA_MOL)->write_int(molID);
 }
@@ -384,7 +384,7 @@ static AW_window *CreateDisplayBases_window(AW_root *aw_root) {
     aws->create_button("HELP", "#help.xpm");
 
     aws->at("close");
-    aws->callback(AW_POPDOWN);
+    aws->callback((AW_CB0)AW_POPDOWN);
     aws->button_length(0);
     aws->create_button("CLOSE", "#closeText.xpm");
 
@@ -433,7 +433,7 @@ static AW_window *CreateDisplayHelices_window(AW_root *aw_root) {
     aws->create_button("HELP", "#help.xpm");
 
     aws->at("close");
-    aws->callback(AW_POPDOWN);
+    aws->callback((AW_CB0)AW_POPDOWN);
     aws->button_length(0);
     aws->create_button("CLOSE", "#closeText.xpm");
 
@@ -490,7 +490,7 @@ static AW_window *CreateDisplayOptions_window(AW_root *aw_root) {
     aws->create_button("HELP", "#help.xpm");
 
     aws->at("close");
-    aws->callback(AW_POPDOWN);
+    aws->callback((AW_CB0)AW_POPDOWN);
     aws->button_length(0);
     aws->create_button("CLOSE", "#closeText.xpm");
 
@@ -530,7 +530,7 @@ static AW_window *CreateMapSequenceData_window(AW_root *aw_root) {
     aws->create_button("HELP", "#help.xpm");
 
     aws->at("close");
-    aws->callback(AW_POPDOWN);
+    aws->callback((AW_CB0)AW_POPDOWN);
     aws->button_length(0);
     aws->create_button("CLOSE", "#closeText.xpm");
 
@@ -588,21 +588,21 @@ static AW_window *CreateChangeMolecule_window(AW_root *aw_root) {
     aws->create_button("HELP", "#help.xpm");
 
     aws->at("close");
-    aws->callback(AW_POPDOWN);
+    aws->callback((AW_CB0)AW_POPDOWN);
     aws->button_length(0);
     aws->create_button("CLOSE", "#closeText.xpm");
 
-    aws->callback(makeWindowCallback(Change3DMolecule, 1));
+    aws->callback(Change3DMolecule, 1);
     aws->at("1pnu");
     aws->button_length(73);
     aws->create_button(0, "1PNU: 8.7 A^ Vila-Sanjurjo et al. Proc.Nat.Acad.Sci.(2003) 100, 8682.");
 
-    aws->callback(makeWindowCallback(Change3DMolecule, 2));
+    aws->callback(Change3DMolecule, 2);
     aws->at("1vor");
     aws->button_length(73);
     aws->create_button(0, "1VOR: 11.5 A^ Vila-Sanjurjo et al. Nat.Struct.Mol.Biol.(2004) 11, 1054.");
 
-    aws->callback(makeWindowCallback(Change3DMolecule, 3));
+    aws->callback(Change3DMolecule, 3);
     aws->at("1c2w");
     aws->button_length(73);
     aws->create_button(0, "1C2W: 7.5 A^ Mueller et al. J.Mol.Biol.(2000) 298, 35-59.", 0, "white");
@@ -611,8 +611,50 @@ static AW_window *CreateChangeMolecule_window(AW_root *aw_root) {
     return (AW_window *)aws;
 }
 
-static AW_window *CreateRNA3DGcWindow(AW_root *awr, AW_gc_manager *gcman) {
-    return AW_create_gc_window_named(awr, gcman, "RNA3D_COLOR_DEF", "RNA3D colors and fonts");
+static AW_window *CreateHelp_window(AW_root *aw_root) {
+    static AW_window_simple *aws = 0;
+    if (aws) return (AW_window *)aws;
+
+    aws = new AW_window_simple;
+
+    aws->init(aw_root, "HELP", "RNA3D : Display Options & Shortcuts");
+    aws->load_xfig("RNA3D_Help.fig");
+
+    aws->button_length(0);
+
+    aws->callback(makeHelpCallback("rna3d_general.hlp"));
+    aws->at("help");
+    aws->create_button("HELP", "#help.xpm");
+
+    aws->at("close");
+    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->create_button("CLOSE", "#closeText.xpm");
+
+    aws->at("reload");
+    aws->create_button("reload", "#refresh.xpm");
+    aws->at("color");
+    aws->create_button("colors", "#colors.xpm");
+    aws->at("base");
+    aws->create_button("displayBases", "#bases.xpm");
+    aws->at("helix");
+    aws->create_button("displayHelix", "#helix.xpm");
+    aws->at("mol");
+    aws->create_button("displayMolecule", "#molText.xpm");
+    aws->at("map");
+    aws->create_button("mapSpecies", "#mapping.xpm");
+    aws->at("check");
+    aws->create_button("check", "#check.xpm");
+    aws->at("uncheck");
+    aws->create_button("uncheck", "#uncheck.xpm");
+    aws->at("mask");
+    aws->create_button("mask", "#mask.xpm");
+    aws->at("unmask");
+    aws->create_button("unmask", "#unmask.xpm");
+    aws->at("exit");
+    aws->create_button("exit", "#quit.xpm");
+
+    aws->show();
+    return (AW_window *)aws;
 }
 
 AW_window *CreateRNA3DMainWindow(AW_root *awr, GBDATA *gb_main, ED4_plugin_host& host) {
@@ -640,10 +682,10 @@ AW_window *CreateRNA3DMainWindow(AW_root *awr, GBDATA *gb_main, ED4_plugin_host&
         arb_assert(RNA3D->cStructure);
         int rnaType = RNA3D->cStructure->FindTypeOfRNA();
         if (rnaType == LSU_23S) {
-            awm->insert_menu_topic("changeMolecule", "Change Molecule", "M", "rna3d_changeMolecule.hlp", AWM_ALL, CreateChangeMolecule_window);
+            awm->insert_menu_topic("changeMolecule", "Change Molecule", "M", "rna3d_changeMolecule.hlp", AWM_ALL, AW_POPUP, (AW_CL)CreateChangeMolecule_window, 0);
         }
     }
-    awm->insert_menu_topic("close", "Close", "C", "quit.hlp", AWM_ALL, AW_POPDOWN);
+    awm->insert_menu_topic("close", "Close", "C", "quit.hlp", AWM_ALL, (AW_CB)AW_POPDOWN, 0, 0);
 
     {
         awm->at(1, 2);
@@ -653,7 +695,7 @@ AW_window *CreateRNA3DMainWindow(AW_root *awr, GBDATA *gb_main, ED4_plugin_host&
         int cur_x, cur_y, start_x, first_line_y, second_line_y;
         awm->get_at_position(&start_x, &first_line_y);
         awm->button_length(0);
-        awm->callback(AW_POPDOWN);
+        awm->callback((AW_CB0)AW_POPDOWN);
         awm->create_button("Quit", "#quit.xpm");
 
         awm->get_at_position(&cur_x, &cur_y);
@@ -666,13 +708,12 @@ AW_window *CreateRNA3DMainWindow(AW_root *awr, GBDATA *gb_main, ED4_plugin_host&
         awm->create_toggle(AWAR_3D_DISPLAY_MASK, "#unmask.xpm", "#mask.xpm");
 
         awm->get_at_position(&cur_x, &cur_y);
-        awm->callback(makeCreateWindowCallback(CreateRNA3DGcWindow, RNA3D->gl_Canvas->gc_manager));
+        awm->callback(makeCreateWindowCallback(AW_create_gc_window, RNA3D->gl_Canvas->gc_manager));
         awm->button_length(0);
         awm->create_button("setColors", "#colors.xpm");
 
         awm->get_at_position(&cur_x, &cur_y);
-        awm->help_text("rna3d_dispBases.hlp");
-        awm->callback(CreateDisplayBases_window);
+        awm->callback(AW_POPUP, (AW_CL)CreateDisplayBases_window, (AW_CL)0);
         awm->button_length(0);
         awm->create_button("displayBases", "#basesText.xpm");
 
@@ -681,8 +722,7 @@ AW_window *CreateRNA3DMainWindow(AW_root *awr, GBDATA *gb_main, ED4_plugin_host&
         awm->create_toggle(AWAR_3D_DISPLAY_BASES, "#uncheck.xpm", "#check.xpm");
 
         awm->get_at_position(&cur_x, &cur_y);
-        awm->help_text("rna3d_dispHelices.hlp");
-        awm->callback(CreateDisplayHelices_window);
+        awm->callback(AW_POPUP, (AW_CL)CreateDisplayHelices_window, (AW_CL)0);
         awm->button_length(0);
         awm->create_button("displayHelix", "#helixText.xpm");
 
@@ -691,14 +731,12 @@ AW_window *CreateRNA3DMainWindow(AW_root *awr, GBDATA *gb_main, ED4_plugin_host&
         awm->create_toggle(AWAR_3D_DISPLAY_HELIX, "#uncheck.xpm", "#check.xpm");
 
         awm->get_at_position(&cur_x, &cur_y);
-        awm->help_text("rna3d_dispMolecule.hlp");
-        awm->callback(CreateDisplayOptions_window);
+        awm->callback(AW_POPUP, (AW_CL)CreateDisplayOptions_window, (AW_CL)0);
         awm->button_length(0);
         awm->create_button("displayMolecule", "#molText.xpm");
 
         awm->get_at_position(&cur_x, &cur_y);
-        awm->help_text("rna3d_mapSeqData.hlp");
-        awm->callback(CreateMapSequenceData_window);
+        awm->callback(AW_POPUP, (AW_CL)CreateMapSequenceData_window, (AW_CL)0);
         awm->button_length(0);
         awm->create_button("mapSpecies", "#mapping.xpm");
 
@@ -707,7 +745,7 @@ AW_window *CreateRNA3DMainWindow(AW_root *awr, GBDATA *gb_main, ED4_plugin_host&
         awm->create_toggle(AWAR_3D_MAP_ENABLE, "#uncheck.xpm", "#check.xpm");
 
         awm->get_at_position(&cur_x, &cur_y);
-        awm->callback(makeHelpCallback("rna3d_general.hlp"));
+        awm->callback(AW_POPUP, (AW_CL)CreateHelp_window, (AW_CL)0);
         awm->button_length(0);
         awm->create_button("help", "#helpText.xpm");
 

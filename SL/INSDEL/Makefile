@@ -8,7 +8,7 @@ $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .cxx.o:
-	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE) $<
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 proto:
 	../../AISC_MKPTPS/aisc_mkpt -P -w insdel.h insdel.cxx >insdel.h.tmp
@@ -43,7 +43,6 @@ insdel.o: $(ARBHOME)/INCLUDE/arb_core.h
 insdel.o: $(ARBHOME)/INCLUDE/arb_defs.h
 insdel.o: $(ARBHOME)/INCLUDE/arb_diff.h
 insdel.o: $(ARBHOME)/INCLUDE/arb_error.h
-insdel.o: $(ARBHOME)/INCLUDE/arb_mem.h
 insdel.o: $(ARBHOME)/INCLUDE/arb_msg.h
 insdel.o: $(ARBHOME)/INCLUDE/arb_progress.h
 insdel.o: $(ARBHOME)/INCLUDE/arb_string.h

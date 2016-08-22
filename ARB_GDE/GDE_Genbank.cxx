@@ -15,9 +15,10 @@
 
 */
 
-static bool CheckType(char *seq, int len) {
+static int CheckType(char *seq, int len) {
     /*   CheckType:  Check base composition to see if the sequence
-     *   appears to be an amino acid sequence.
+     *   appears to be an amino acid sequence.  If it is, pass back
+     *   TRUE, else FALSE.
      */
     int j, count1 = 0, count2 = 0;
 
@@ -29,7 +30,7 @@ static bool CheckType(char *seq, int len) {
                 count2++;
         }
 
-    return ((count2 > count1/4) ? true : false);
+    return ((count2 > count1/4) ? TRUE : FALSE);
 }
 
 // ARB
@@ -62,16 +63,16 @@ static void AsciiTime(void *b, char *asciitime)
 }
 // ENDARB
 
-GB_ERROR ReadGen(char *filename, NA_Alignment& dataset) {
+GB_ERROR ReadGen(char *filename, NA_Alignment *dataset) {
     GB_ERROR  error = NULL;
     FILE     *file  = fopen(filename, "r");
     if (!file) {
         error = GB_IO_error("reading", filename);
     }
     else {
-        bool    done         = false;
+        int     done         = FALSE;
         size_t  len          = 0;
-        bool    IS_REALLY_AA = false;
+        int     IS_REALLY_AA = FALSE;
         char    in_line[GBUFSIZ], c;
         char   *buffer       = 0, *gencomments = NULL, fields[8][GBUFSIZ];
         size_t  buflen       = 0;
@@ -86,12 +87,21 @@ GB_ERROR ReadGen(char *filename, NA_Alignment& dataset) {
                 in_line[strlen(in_line)-1] = '\0';
             if (Find(in_line, "LOCUS"))
             {
-                curelem   = Arbdb_get_curelem(dataset);
-                this_elem = &(dataset.element[curelem]);
-                n         = sscanf(in_line, "%s %s %s %s %s %s %s %s",
-                                   fields[0], fields[1], fields[2], fields[3], fields[4],
-                                   fields[5], fields[6], fields[7]);
-
+                curelem = dataset->numelements++;
+                if (curelem == 0)
+                {
+                    dataset->element=(NA_Sequence*) Calloc(5, sizeof(NA_Sequence));
+                    dataset->maxnumelements = 5;
+                }
+                else if (curelem==dataset->maxnumelements)
+                {
+                    (dataset->maxnumelements) *= 2;
+                    dataset->element = (NA_Sequence*) Realloc((char*)dataset->element, dataset->maxnumelements * sizeof(NA_Sequence));
+                }
+                this_elem = &(dataset->element[curelem]);
+                n = sscanf(in_line, "%s %s %s %s %s %s %s %s",
+                           fields[0], fields[1], fields[2], fields[3], fields[4],
+                           fields[5], fields[6], fields[7]);
                 if (IS_REALLY_AA)
                 {
                     InitNASeq(this_elem, PROTEIN);
@@ -143,20 +153,23 @@ GB_ERROR ReadGen(char *filename, NA_Alignment& dataset) {
 
             else if (Find(in_line, "ORIGIN"))
             {
-                done = false;
+                done = FALSE;
                 len = 0;
-                for (; !done && fgets(in_line, GBUFSIZ, file) != 0;)
+                for (; done == FALSE && fgets(in_line, GBUFSIZ, file) != 0;)
                 {
                     if (in_line[0] != '/')
                     {
-                        if (buflen == 0) {
+                        if (buflen == 0)
+                        {
                             buflen = GBUFSIZ;
-                            ARB_calloc(buffer, buflen);
+                            buffer = Calloc(sizeof(char), buflen);
                         }
-                        else if (len+strlen(in_line) >= buflen) {
-                            size_t new_buflen = buflen+GBUFSIZ;
-                            ARB_recalloc(buffer, buflen, new_buflen);
-                            buflen            = new_buflen;
+
+                        else if (len+strlen(in_line) >= buflen)
+                        {
+                            buflen += GBUFSIZ;
+                            buffer = Realloc((char*)buffer, sizeof(char)*buflen);
+                            for (size_t j=buflen-GBUFSIZ ; j<buflen; j++) buffer[j] = '\0';
                         }
                         // Search for the fist column of data (whitespace-number-whitespace)data
                         if (start_col == -1)
@@ -174,13 +187,14 @@ GB_ERROR ReadGen(char *filename, NA_Alignment& dataset) {
                     }
                     else
                     {
-                        AppendNA((NA_Base*)buffer, len, &(dataset.element[curelem]));
+                        AppendNA((NA_Base*)buffer, len, &(dataset->
+                                                          element[curelem]));
                         for (size_t j=0; j<len; j++) buffer[j] = '\0';
                         len = 0;
-                        done = true;
-                        dataset.element[curelem].comments = gencomments;
-                        dataset.element[curelem].comments_len= genclen - 1;
-                        dataset.element[curelem].comments_maxlen = genclen;
+                        done = TRUE;
+                        dataset->element[curelem].comments = gencomments;
+                        dataset->element[curelem].comments_len= genclen - 1;
+                        dataset->element[curelem].comments_maxlen = genclen;
 
                         gencomments = NULL;
                         genclen = 0;
@@ -189,70 +203,75 @@ GB_ERROR ReadGen(char *filename, NA_Alignment& dataset) {
                 /* Test if sequence should be converted by the translation table
                  * If it looks like a protein...
                  */
-                if (dataset.element[curelem].rmatrix && !IS_REALLY_AA) {
-                    IS_REALLY_AA = CheckType((char*)dataset.element[curelem]. sequence, dataset.element[curelem].seqlen);
+                if (dataset->element[curelem].rmatrix &&
+                    IS_REALLY_AA == FALSE)
+                {
+                    IS_REALLY_AA = CheckType((char*)dataset->element[curelem].
+                                             sequence, dataset->element[curelem].seqlen);
 
-                    if (!IS_REALLY_AA)
-                        Ascii2NA((char*)dataset.element[curelem].sequence,
-                                 dataset.element[curelem].seqlen,
-                                 dataset.element[curelem].rmatrix);
+                    if (IS_REALLY_AA == FALSE)
+                        Ascii2NA((char*)dataset->element[curelem].sequence,
+                                 dataset->element[curelem].seqlen,
+                                 dataset->element[curelem].rmatrix);
                     else {
                         // Force the sequence to be AA
-                        dataset.element[curelem].elementtype = PROTEIN;
-                        dataset.element[curelem].rmatrix = NULL;
-                        dataset.element[curelem].tmatrix = NULL;
-                        dataset.element[curelem].col_lut = Default_PROColor_LKUP;
+                        dataset->element[curelem].elementtype = PROTEIN;
+                        dataset->element[curelem].rmatrix = NULL;
+                        dataset->element[curelem].tmatrix = NULL;
+                        dataset->element[curelem].col_lut = Default_PROColor_LKUP;
                     }
                 }
             }
             else if (Find(in_line, "ZZZZZ"))
             {
-                free(gencomments);
+                Cfree(gencomments);
                 genclen = 0;
             }
             else
             {
                 if (gencomments == NULL)
                 {
-                    gencomments = ARB_strdup(in_line);
+                    gencomments = strdup(in_line);
                     genclen = strlen(gencomments)+1;
                 }
                 else
                 {
                     genclen += strlen(in_line)+1;
-                    ARB_realloc(gencomments, genclen);
+                    gencomments = Realloc((char*)gencomments, genclen * sizeof(char));
                     strncat(gencomments, in_line, GBUFSIZ);
                     strncat(gencomments, "\n", GBUFSIZ);
                 }
             }
         }
-        free(buffer);
+        Cfree(buffer);
         fclose(file);
     }
-    for (size_t j=0; j<dataset.numelements; j++) {
-        dataset.maxlen = std::max(dataset.maxlen,
-                                  dataset.element[j].seqlen+dataset.element[j].offset);
+    for (size_t j=0; j<dataset->numelements; j++) {
+        dataset->maxlen = std::max(dataset->maxlen,
+                                   dataset->element[j].seqlen+dataset->element[j].offset);
     }
     return error;
 }
 
-int WriteGen(NA_Alignment& aln, char *filename, int method)
+int WriteGen(NA_Alignment *aln, char *filename, int method)
 {
     int i;
     size_t j;
     int k;
+    FILE *file;
     NA_Sequence *this_elem;
+    if (aln == NULL) return (1);
 
-    FILE *file = fopen(filename, "w");
+    file = fopen(filename, "w");
     if (file == NULL)
     {
         Warning("Cannot open file for output");
         return (1);
     }
 
-    for (j=0; j<aln.numelements; j++)
+    for (j=0; j<aln->numelements; j++)
     {
-        this_elem = &(aln.element[j]);
+        this_elem = &(aln->element[j]);
         if (method == ALL)
         {
             fprintf(file,

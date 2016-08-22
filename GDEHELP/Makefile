@@ -38,7 +38,7 @@ $(MENUS_DIRTY) : $(MENUS_SRC) $(GENMENUS) Makefile $(PPP)
 	$(PPP) -IMENUS $(MENUS_SRC) >$@
 
 $(MENUS_TGT) : $(MENUS_DIRTY) $(CLEAN)
-	chmod a+w $@ || true
+	-chmod a+w $@
 	$(CLEAN) <$(MENUS_DIRTY) >$@
 	rm $(MENUS_DIRTY)
 	chmod a-w $@

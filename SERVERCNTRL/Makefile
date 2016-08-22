@@ -4,9 +4,9 @@ OBJECTS = servercntrl.o
 $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(@) $(OBJECTS)
 .c.o:
-	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE) $<
+	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE)
 .cxx.o:
-	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE) $<
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 proto:
 	../AISC_MKPTPS/aisc_mkpt -P -w servercntrl.h $(OBJECTS:.o=.cxx) >servercntrl.h.tmp
@@ -39,7 +39,6 @@ servercntrl.o: $(ARBHOME)/INCLUDE/arb_assert.h
 servercntrl.o: $(ARBHOME)/INCLUDE/arb_core.h
 servercntrl.o: $(ARBHOME)/INCLUDE/arb_error.h
 servercntrl.o: $(ARBHOME)/INCLUDE/arb_file.h
-servercntrl.o: $(ARBHOME)/INCLUDE/arb_mem.h
 servercntrl.o: $(ARBHOME)/INCLUDE/arb_msg.h
 servercntrl.o: $(ARBHOME)/INCLUDE/arb_sleep.h
 servercntrl.o: $(ARBHOME)/INCLUDE/arb_string.h

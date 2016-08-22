@@ -10,7 +10,7 @@
 // =============================================================== //
 
 #include "pos_range.h"
-#include "arb_mem.h"
+
 
 void PosRange::copy_corresponding_part(char *dest, const char *source, size_t source_len) const {
     // dest and source may overlap
@@ -27,7 +27,7 @@ void PosRange::copy_corresponding_part(char *dest, const char *source, size_t so
 char *PosRange::dup_corresponding_part(const char *source, size_t source_len) const {
     ExplicitRange  range(*this, source_len);
     int            Size = range.size();
-    char          *dup  = ARB_alloc<char>(Size+1);
+    char          *dup  = (char*)malloc(Size+1);
 
     copy_corresponding_part(dup, source, source_len);
     return dup;
@@ -175,7 +175,6 @@ void TEST_range_copying() {
     TEST_EXPECT_EQUAL(&*SmartCharPtr(PosRange::empty().dup_corresponding_part(source, source_len)), ""); // empty range
     TEST_EXPECT_EQUAL(&*SmartCharPtr(PosRange(2, 5).dup_corresponding_part(NULL, 0)), "");               // empty source
 }
-TEST_PUBLISH(TEST_range_copying);
 
 void TEST_range_intersection() {
     PosRange empty;
@@ -264,7 +263,6 @@ void TEST_range_containment() {
     TEST_REJECT(part.contains(from30));
     TEST_EXPECT(part.contains(part));
 }
-TEST_PUBLISH(TEST_range_containment);
 
 #endif // UNIT_TESTS
 

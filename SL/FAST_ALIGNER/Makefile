@@ -10,10 +10,10 @@ $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .cxx.o:
-	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE) $<
+	$(A_CXX) $(cflags) $(cxxflags) -c $< $(CXX_INCLUDES) $(POST_COMPILE)
 
 .c.o:
-	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE) $<
+	$(A_CC) $(cflags) -c $< $(CC_INCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(OBJECTS) *.a
@@ -40,8 +40,6 @@ ClustalV.o: seq_search.hxx
 ClustalV.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ClustalV.o: $(ARBHOME)/INCLUDE/arb_core.h
 ClustalV.o: $(ARBHOME)/INCLUDE/arb_error.h
-ClustalV.o: $(ARBHOME)/INCLUDE/arb_mem.h
-ClustalV.o: $(ARBHOME)/INCLUDE/arb_string.h
 ClustalV.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ClustalV.o: $(ARBHOME)/INCLUDE/arbtools.h
 ClustalV.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -66,7 +64,6 @@ fast_aligner.o: $(ARBHOME)/INCLUDE/arb_assert.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/arb_core.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/arb_defs.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/arb_error.h
-fast_aligner.o: $(ARBHOME)/INCLUDE/arb_mem.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/arb_msg.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/arb_progress.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -85,7 +82,6 @@ fast_aligner.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-fast_aligner.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/awtc_next_neighbours.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
@@ -100,7 +96,6 @@ fast_aligner.o: $(ARBHOME)/INCLUDE/island_hopping.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/pos_range.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/PT_global_defs.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/RangeList.h
-fast_aligner.o: $(ARBHOME)/INCLUDE/rootAsWin.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/smartptr.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/static_assert.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -113,7 +108,6 @@ seq_search.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 seq_search.o: $(ARBHOME)/INCLUDE/arb_assert.h
 seq_search.o: $(ARBHOME)/INCLUDE/arb_core.h
 seq_search.o: $(ARBHOME)/INCLUDE/arb_error.h
-seq_search.o: $(ARBHOME)/INCLUDE/arb_mem.h
 seq_search.o: $(ARBHOME)/INCLUDE/arb_msg.h
 seq_search.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 seq_search.o: $(ARBHOME)/INCLUDE/arb_string.h

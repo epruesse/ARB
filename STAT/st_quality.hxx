@@ -64,7 +64,7 @@ public:
 };
 
 class LikelihoodRanges : virtual Noncopyable {
-    /*! The alignment is split into multiple, similar-sized column ranges.
+    /*! The alignment is splitted into multiple, similar-sized column ranges.
      * For each range the likelihoods get summarized
      */
     size_t           ranges;

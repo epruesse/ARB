@@ -21,9 +21,6 @@
 #ifndef AW_MSG_HXX
 #include <aw_msg.hxx>
 #endif
-#ifndef ARB_STRING_H
-#include <arb_string.h>
-#endif
 #ifndef ATTRIBUTES_H
 #include <attributes.h>
 #endif
@@ -428,7 +425,7 @@ public:
         unalignedBases   = 0;
         first            = 0;
         last             = 0;
-        my_master_name   = ARB_strdup(master_name);
+        my_master_name   = strdup(master_name);
         showGapsMessages = show_Gaps_Messages;
     }
     ~FastAlignReport() {
@@ -446,7 +443,7 @@ public:
         }
 
         if (showGapsMessages) {
-            char *messi = ARB_alloc<char>(100);
+            char *messi = (char*)malloc(100);
 
             sprintf(messi, "'%s' needs %li gaps at offset %li.", my_master_name, gaps, offset+1);
             aw_message(messi);

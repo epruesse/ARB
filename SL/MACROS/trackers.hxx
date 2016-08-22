@@ -15,9 +15,6 @@
 #ifndef AW_ROOT_HXX
 #include <aw_root.hxx>
 #endif
-#ifndef ARB_STRING_H
-#include <arb_string.h>
-#endif
 #ifndef MACROS_LOCAL_HXX
 #include "macros_local.hxx"
 #endif
@@ -53,10 +50,10 @@ protected:
 
 public:
     BoundActionTracker(const char *application_id, GBDATA *gb_main)
-        : id(ARB_strdup(application_id)),
+        : id(strdup(application_id)),
           gbmain(gb_main)
     {}
-    ~BoundActionTracker() OVERRIDE {
+    virtual ~BoundActionTracker() OVERRIDE {
         free(id);
     }
 
@@ -87,7 +84,7 @@ public:
 
     GB_ERROR start_recording(const char *file, const char *stop_action_name, bool expand_existing);
     GB_ERROR stop_recording();
-    GB_ERROR execute(const char *macroFile, bool loop_marked, const RootCallback& execution_done_cb);
+    GB_ERROR execute(const char *macroFile, bool loop_marked, AW_RCB1 execution_done_cb, AW_CL client_data); // @@@ replace oldstyle-cb!
 
     void track_action(const char *action_id) OVERRIDE;
     void track_awar_change(AW_awar *awar) OVERRIDE;
