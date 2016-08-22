@@ -48,7 +48,7 @@ static ED4_objspec bracket_terminal_spec(
     );
 
 static ED4_objspec species_name_terminal_spec(
-    PROP_IS_TERMINAL,  // static props
+    ED4_properties(PROP_IS_TERMINAL | PROP_DYNA_RESIZE),  // static props
     LEV_SPECIES_NAME,   // level
     LEV_NONE,           // allowed children level
     LEV_SPECIES,        // handled object
@@ -56,7 +56,7 @@ static ED4_objspec species_name_terminal_spec(
     );
 
 static ED4_objspec sequence_info_terminal_spec(
-    PROP_IS_TERMINAL,  // static props
+    ED4_properties(PROP_IS_TERMINAL | PROP_DYNA_RESIZE),  // static props
     LEV_SEQUENCE_INFO,  // level
     LEV_NONE,           // allowed children level
     LEV_SEQUENCE,       // handled object
