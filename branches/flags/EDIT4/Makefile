@@ -432,6 +432,29 @@ ED4_edit_string.o: $(ARBHOME)/INCLUDE/static_assert.h
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/test_global.h
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/ttypes.h
 
+ED4_flags.o: ed4_defs.hxx
+ED4_flags.o: ed4_flags.hxx
+ED4_flags.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ED4_flags.o: $(ARBHOME)/INCLUDE/arb_core.h
+ED4_flags.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+ED4_flags.o: $(ARBHOME)/INCLUDE/arbtools.h
+ED4_flags.o: $(ARBHOME)/INCLUDE/attributes.h
+ED4_flags.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+ED4_flags.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
+ED4_flags.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+ED4_flags.o: $(ARBHOME)/INCLUDE/aw_position.hxx
+ED4_flags.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+ED4_flags.o: $(ARBHOME)/INCLUDE/cb.h
+ED4_flags.o: $(ARBHOME)/INCLUDE/cb_base.h
+ED4_flags.o: $(ARBHOME)/INCLUDE/cbtypes.h
+ED4_flags.o: $(ARBHOME)/INCLUDE/cxxforward.h
+ED4_flags.o: $(ARBHOME)/INCLUDE/dupstr.h
+ED4_flags.o: $(ARBHOME)/INCLUDE/gccver.h
+ED4_flags.o: $(ARBHOME)/INCLUDE/smartptr.h
+ED4_flags.o: $(ARBHOME)/INCLUDE/static_assert.h
+ED4_flags.o: $(ARBHOME)/INCLUDE/test_global.h
+ED4_flags.o: $(ARBHOME)/INCLUDE/ttypes.h
+
 ED4_main.o: ed4_awars.hxx
 ED4_main.o: ed4_class.hxx
 ED4_main.o: ed4_defs.hxx
