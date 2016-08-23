@@ -1882,7 +1882,9 @@ AW_window *ED4_root::create_first_window() {
     generate_window(&device, &new_window);
 
     ED4_LocalWinContext uses(new_window);
-    
+
+    ED4_calc_terminal_extentions(); // (Note: done again later, but otherwise variables are used uninitialized);
+
     DRAW                    = 1;
     move_cursor             = 0;
     max_seq_terminal_length = 0;
