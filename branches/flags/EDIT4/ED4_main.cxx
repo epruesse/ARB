@@ -518,7 +518,7 @@ int ARB_main(int argc, char *argv[]) {
                 }
 
                 if (warning) aw_message(warning); // write to console
-                ED4_ROOT->create_new_window(); // create first editor window
+                ED4_ROOT->create_first_window();
                 if (warning) { aw_message(warning); warning = 0; } // write again to status window
             }
 

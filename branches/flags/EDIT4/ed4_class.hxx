@@ -1475,7 +1475,7 @@ public:
     ARB_ERROR init_alignment();
     void recalc_font_group();
 
-    AW_window *create_new_window();
+    AW_window *create_first_window();
     ED4_returncode generate_window(AW_device **device, ED4_window **new_window);
     void copy_window_struct(ED4_window *source,   ED4_window *destination);
 
