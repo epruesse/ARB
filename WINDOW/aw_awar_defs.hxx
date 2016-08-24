@@ -24,7 +24,6 @@
 #define AWAR_PRIMER_TARGET_STRING "nt/primer_target_string"
 #define AWAR_GENE_CONTENT         "nt/gene_content"
 #define AWAR_MAX_MISMATCHES       "nt/max_mismatches"
-#define AWAR_ITARGET_STRING       "nt/itarget_string"
 #define AWAR_EXPERT               "nt/expert"
 
 #define AWAR_SAI_COLOR_STR       "tmp/sai_color_str" // to visualize SAIs in probe Match window

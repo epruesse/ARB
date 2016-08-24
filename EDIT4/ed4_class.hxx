@@ -2024,8 +2024,6 @@ public:
 
     ED4_sequence_terminal *corresponding_sequence_terminal() const { return get_parent(LEV_MULTI_SEQUENCE)->search_spec_child_rek(LEV_SEQUENCE_STRING)->to_sequence_terminal(); }
 
-    GB_CSTR build_probe_match_string(PosRange range) const;
-
     ED4_columnStat_terminal(GB_CSTR id, AW_pos width, AW_pos height, ED4_manager *parent);
     ~ED4_columnStat_terminal() OVERRIDE;
 
