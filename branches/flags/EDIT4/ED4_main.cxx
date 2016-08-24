@@ -282,8 +282,6 @@ static void ed4_bind_mainDB_awar_callbacks(AW_root *root) {
 static void ed4_create_mainDB_awars(AW_root *root) {
     // WARNING: do not bind callbacks here -> do it in ed4_bind_mainDB_awar_callbacks()
 
-    root->awar_string(AWAR_ITARGET_STRING, "", GLOBAL_gb_main);
-
     root->awar_int(AWAR_CURSOR_POSITION,       info2bio(0), GLOBAL_gb_main);
     root->awar_int(AWAR_CURSOR_POSITION_LOCAL, 0, GLOBAL_gb_main);
     root->awar_int(AWAR_SET_CURSOR_POSITION,   1, GLOBAL_gb_main);

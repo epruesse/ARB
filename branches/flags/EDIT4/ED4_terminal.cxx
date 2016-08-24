@@ -1154,41 +1154,6 @@ inline int find_significant_positions(int sig, int like_A, int like_C, int like_
     return 0;
 }
 
-#define PROBE_MATCH_TARGET_STRING_LENGTH 32
-
-GB_CSTR ED4_columnStat_terminal::build_probe_match_string(PosRange range) const {
-    static char            result[PROBE_MATCH_TARGET_STRING_LENGTH+1]; // see create_probe_match_window() for length
-    int                    max_insert   = PROBE_MATCH_TARGET_STRING_LENGTH;
-    char                  *r            = result;
-    int                    significance = int(get_threshold());
-    ED4_sequence_terminal *seq_term     = corresponding_sequence_terminal();
-    char                  *seq          = seq_term->resolve_pointer_to_string_copy();
-
-    for (int pos=range.start(); pos<=range.end(); pos++) {
-        int found = find_significant_positions(significance, likelihood[0][pos], likelihood[1][pos], likelihood[2][pos], likelihood[3][pos], 0);
-
-        if (found || strchr("-=.", seq[pos])==0) {
-            // '?' is inserted at every base position without significant bases (not at gaps!)
-
-            *r++ = "NACMGRSVUWYHKDBN"[found]; // this creates a string containing the full IUPAC code
-
-            if (max_insert--==0) {
-                r--;
-                break;
-            }
-        }
-    }
-    r[0] = 0;
-    free(seq);
-
-    if (max_insert<0) {
-        aw_message(GBS_global_string("Max. %i bases allowed in Probe Match", PROBE_MATCH_TARGET_STRING_LENGTH));
-        result[0] = 0;
-    }
-    return result;
-}
-#undef PROBE_MATCH_TARGET_STRING_LENGTH
-
 ED4_returncode ED4_columnStat_terminal::draw() {
     if (!update_likelihood()) {
         aw_message("Can't calculate likelihood.");
