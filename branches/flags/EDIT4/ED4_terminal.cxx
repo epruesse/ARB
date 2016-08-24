@@ -710,6 +710,18 @@ ED4_base* ED4_terminal::search_ID(const char *temp_id) {
     return (NULL);
 }
 
+void ED4_terminal::Show(bool IF_ASSERTION_USED(refresh_all), bool is_cleared) {
+    e4_assert(update_info.refresh || refresh_all);
+    current_device()->push_clip_scale();
+    if (adjust_clipping_rectangle()) {
+        if (update_info.clear_at_refresh && !is_cleared) {
+            clear_background();
+        }
+        draw();
+    }
+    current_device()->pop_clip_scale();
+}
+
 ED4_terminal::ED4_terminal(const ED4_objspec& spec_, GB_CSTR temp_id, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
     ED4_base(spec_, temp_id, width, height, temp_parent)
 {
@@ -731,23 +743,6 @@ ED4_tree_terminal::ED4_tree_terminal(const char *temp_id, AW_pos width, AW_pos h
     : ED4_terminal(tree_terminal_spec, temp_id, width, height, temp_parent)
 {
 }
-
-ED4_returncode ED4_tree_terminal::Show(int IF_ASSERTION_USED(refresh_all), int is_cleared)
-{
-    e4_assert(update_info.refresh || refresh_all);
-    current_device()->push_clip_scale();
-    if (adjust_clipping_rectangle()) {
-        if (update_info.clear_at_refresh && !is_cleared) {
-            clear_background();
-        }
-        draw();
-    }
-    current_device()->pop_clip_scale();
-
-    return (ED4_R_OK);
-}
-
-
 
 ED4_returncode ED4_tree_terminal::draw() {
     AW_pos  x, y;
@@ -771,22 +766,6 @@ ED4_bracket_terminal::ED4_bracket_terminal(const char *temp_id, AW_pos width, AW
     : ED4_terminal(bracket_terminal_spec, temp_id, width, height, temp_parent)
 {
 }
-
-ED4_returncode ED4_bracket_terminal::Show(int IF_ASSERTION_USED(refresh_all), int is_cleared)
-{
-    e4_assert(update_info.refresh || refresh_all);
-    current_device()->push_clip_scale();
-    if (adjust_clipping_rectangle()) {
-        if (update_info.clear_at_refresh && !is_cleared) {
-            clear_background();
-        }
-        draw();
-    }
-    current_device()->pop_clip_scale();
-
-    return ED4_R_OK;
-}
-
 
 ED4_returncode ED4_bracket_terminal::draw() {
     using namespace AW;
@@ -998,7 +977,7 @@ ED4_pure_text_terminal::ED4_pure_text_terminal(const char *temp_id, AW_pos width
 # define DEBUG_SPACER_TERMINALS 2 // show all spacers
 #endif
 
-ED4_returncode ED4_spacer_terminal::Show(int /* refresh_all */, int is_cleared) {
+void ED4_spacer_terminal::Show(bool /*refresh_all*/, bool is_cleared) {
 #if defined(DEBUG_SPACER_TERMINALS)
     if (DEBUG_SPACER_TERMINALS == 1) {
         if (shallDraw) {
@@ -1016,8 +995,6 @@ ED4_returncode ED4_spacer_terminal::Show(int /* refresh_all */, int is_cleared) 
         draw();
     }
 #endif
-
-    return ED4_R_OK;
 }
 
 
@@ -1065,16 +1042,6 @@ ED4_returncode ED4_line_terminal::draw() {
     return ED4_R_OK;
 }
 
-ED4_returncode ED4_line_terminal::Show(int /* refresh_all */, int is_cleared)
-{
-    if (update_info.clear_at_refresh && !is_cleared) {
-        clear_background();
-    }
-    draw();
-    return ED4_R_OK;
-}
-
-
 ED4_line_terminal::ED4_line_terminal(const char *temp_id, AW_pos width, AW_pos height, ED4_manager *temp_parent)
     : ED4_terminal(line_terminal_spec, temp_id, width, height, temp_parent)
 {
@@ -1082,21 +1049,6 @@ ED4_line_terminal::ED4_line_terminal(const char *temp_id, AW_pos width, AW_pos h
 
 // ---------------------------------
 //      ED4_columnStat_terminal
-
-ED4_returncode ED4_columnStat_terminal::Show(int IF_ASSERTION_USED(refresh_all), int is_cleared)
-{
-    e4_assert(update_info.refresh || refresh_all);
-    current_device()->push_clip_scale();
-    if (adjust_clipping_rectangle()) {
-        if (update_info.clear_at_refresh && !is_cleared) {
-            clear_background();
-        }
-        draw();
-    }
-    current_device()->pop_clip_scale();
-
-    return ED4_R_OK;
-}
 
 inline char stat2display(int val, bool is_upper_digit) {
     if (val<0) {

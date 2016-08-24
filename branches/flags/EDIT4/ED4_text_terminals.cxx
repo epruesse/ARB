@@ -591,21 +591,6 @@ ED4_returncode ED4_sequence_info_terminal::draw() {
 // ---------------------------
 //      ED4_text_terminal
 
-ED4_returncode ED4_text_terminal::Show(int IF_ASSERTION_USED(refresh_all), int is_cleared)
-{
-    e4_assert(update_info.refresh || refresh_all);
-    current_device()->push_clip_scale();
-    if (adjust_clipping_rectangle()) {
-        if (update_info.clear_at_refresh && !is_cleared) {
-            clear_background();
-        }
-        draw();
-    }
-    current_device()->pop_clip_scale();
-
-    return ED4_R_OK;
-}
-
 ED4_returncode ED4_text_terminal::draw() {
     AW_pos x, y;
     calc_world_coords(&x, &y);

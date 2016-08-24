@@ -866,7 +866,7 @@ void ED4_main_manager::resize_requested_children() {
     }
 }
 
-ED4_returncode ED4_main_manager::Show(int refresh_all, int is_cleared) {
+void ED4_main_manager::Show(bool refresh_all, bool is_cleared) {
 #ifdef TEST_REFRESH_FLAG
     e4_assert(refresh_flag_ok());
 #endif
@@ -875,7 +875,7 @@ ED4_returncode ED4_main_manager::Show(int refresh_all, int is_cleared) {
 
     if (!flag.hidden && (refresh_all || update_info.refresh)) {
 #if defined(TRACE_REFRESH)
-        fprintf(stderr, "- really paint in ED4_main_manager::Show(refresh_all=%i, is_cleared=%i)\n", refresh_all, is_cleared); fflush(stderr);
+        fprintf(stderr, "- really paint in ED4_main_manager::Show(refresh_all=%i, is_cleared=%i)\n", int(refresh_all), int(is_cleared)); fflush(stderr);
 #endif
         const AW_screen_area& area_rect = device->get_area_size();
 
@@ -954,21 +954,19 @@ ED4_returncode ED4_main_manager::Show(int refresh_all, int is_cleared) {
 #ifdef TEST_REFRESH_FLAG
     e4_assert(refresh_flag_ok());
 #endif
-
-    return ED4_R_OK;
 }
 
 
-ED4_returncode ED4_root_group_manager::Show(int refresh_all, int is_cleared) {
+void ED4_root_group_manager::Show(bool refresh_all, bool is_cleared) {
     if (update_remap()) { // @@@ dont call here ? 
 #if defined(TRACE_REFRESH)
         printf("map updated in ED4_root_group_manager::Show (bad?)\n");
 #endif
     }
-    return ED4_manager::Show(refresh_all, is_cleared);
+    ED4_manager::Show(refresh_all, is_cleared);
 }
 
-ED4_returncode ED4_manager::Show(int refresh_all, int is_cleared) {
+void ED4_manager::Show(bool refresh_all, bool is_cleared) {
 #ifdef TEST_REFRESH_FLAG
     e4_assert(refresh_flag_ok());
 #endif
@@ -1093,8 +1091,6 @@ ED4_returncode ED4_manager::Show(int refresh_all, int is_cleared) {
 #ifdef TEST_REFRESH_FLAG
     e4_assert(refresh_flag_ok());
 #endif
-
-    return ED4_R_OK;
 }
 
 ED4_returncode ED4_manager::clear_refresh() {

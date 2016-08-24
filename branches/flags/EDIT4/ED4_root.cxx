@@ -105,16 +105,16 @@ void ED4_root::request_refresh_for_sequence_terminals() {
 
 void ED4_root::refresh_window_simple(bool redraw) {
     // if 'redraw' -> update everything (ignoring refresh flag)
-    int refresh_all = 0;
+    bool refresh_all = false;
     if (redraw) {
 #if defined(TRACE_REFRESH)
         fprintf(stderr, "- clear display (refresh_window_simple(redraw=true) called)\n"); fflush(stderr);
 #endif
         main_manager->update_info.set_clear_at_refresh(1);
-        refresh_all = 1;
+        refresh_all = true;
     }
 
-    main_manager->Show(refresh_all, 0);
+    main_manager->Show(refresh_all, false);
     if (redraw) main_manager->update_info.set_clear_at_refresh(0);
 }
 

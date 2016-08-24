@@ -955,7 +955,7 @@ public:
 
     // functions concerned with graphic output
     int adjust_clipping_rectangle();
-    virtual ED4_returncode  Show(int refresh_all=0, int is_cleared=0) = 0;
+    virtual void Show(bool refresh_all, bool is_cleared) = 0;
 
     virtual bool calc_bounding_box() = 0;
     void resize_dynamic() {
@@ -1204,7 +1204,7 @@ public:
     void deleted_from_database() OVERRIDE;
 
     // functions concerned with graphics
-    ED4_returncode  Show(int refresh_all=0, int is_cleared=0) OVERRIDE;
+    void Show(bool refresh_all, bool is_cleared) OVERRIDE;
     bool calc_bounding_box() OVERRIDE;
 
     ED4_returncode distribute_children();
@@ -1281,8 +1281,10 @@ public:
     ~ED4_manager() OVERRIDE;
 };
 
-struct ED4_terminal : public ED4_base { // derived from a Noncopyable
+class ED4_terminal : public ED4_base { // derived from a Noncopyable
     E4B_AVOID_UNNEEDED_CASTS(terminal);
+
+public:
 
     struct { unsigned int deleted : 1; } tflag; // @@@ go bool
 
@@ -1296,7 +1298,7 @@ struct ED4_terminal : public ED4_base { // derived from a Noncopyable
     void deleted_from_database() OVERRIDE;
 
     // functions concerning graphic output
-    ED4_returncode Show(int refresh_all=0, int is_cleared=0) OVERRIDE = 0;
+    void Show(bool refresh_all, bool is_cleared) OVERRIDE;
     virtual ED4_returncode draw() = 0;
 
     bool calc_bounding_box() OVERRIDE;
@@ -1565,7 +1567,7 @@ public:
 
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_manager);
 
-    ED4_returncode Show(int refresh_all=0, int is_cleared=0) OVERRIDE;
+    void Show(bool refresh_all, bool is_cleared) OVERRIDE;
     void resize_requested_children() OVERRIDE;
     
     void clear_whole_background();
@@ -1779,7 +1781,7 @@ public:
     const ED4_remap *remap() const { return &my_remap; }
     ED4_remap *remap() { return &my_remap; }
 
-    ED4_returncode Show(int refresh_all=0, int is_cleared=0) OVERRIDE;
+    void Show(bool refresh_all, bool is_cleared) OVERRIDE;
     void resize_requested_children() OVERRIDE;
 
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_abstract_group_manager);
@@ -1879,7 +1881,6 @@ struct ED4_tree_terminal : public ED4_terminal {
     E4B_AVOID_UNNEEDED_CASTS(tree_terminal);
     
     ED4_returncode draw() OVERRIDE;
-    ED4_returncode Show(int refresh_all=0, int is_cleared=0) OVERRIDE;
 
     ED4_tree_terminal(const char *id, AW_pos width, AW_pos height, ED4_manager *parent);
 
@@ -1890,7 +1891,6 @@ struct ED4_bracket_terminal : public ED4_terminal {
     E4B_AVOID_UNNEEDED_CASTS(bracket_terminal);
 
     ED4_returncode draw() OVERRIDE;
-    ED4_returncode Show(int refresh_all=0, int is_cleared=0) OVERRIDE;
 
     void toggle_folding();
 
@@ -1903,7 +1903,6 @@ struct ED4_text_terminal : public ED4_terminal {
     E4B_AVOID_UNNEEDED_CASTS(text_terminal);
     
     // functions concerning graphic output
-    ED4_returncode Show(int refresh_all=0, int is_cleared=0) OVERRIDE;
     ED4_returncode draw() OVERRIDE;
 
     virtual int get_length() const = 0;
@@ -2014,7 +2013,6 @@ class ED4_columnStat_terminal : public ED4_text_terminal { // derived from a Non
 
 public:
     // functions concerning graphic output
-    ED4_returncode Show(int refresh_all=0, int is_cleared=0) OVERRIDE;
     ED4_returncode draw() OVERRIDE;
     int get_length() const OVERRIDE { return corresponding_sequence_terminal()->get_length(); }
 
@@ -2112,7 +2110,7 @@ class ED4_spacer_terminal : public ED4_terminal {
     bool set_dynamic_size() OVERRIDE;
 
 public:
-    ED4_returncode Show(int refresh_all=0, int is_cleared=0) OVERRIDE;
+    void Show(bool refresh_all, bool is_cleared) OVERRIDE;
     ED4_returncode draw() OVERRIDE;
 
     ED4_spacer_terminal(const char *id, bool shallDraw_, AW_pos width, AW_pos height, ED4_manager *parent);
@@ -2125,7 +2123,6 @@ class ED4_line_terminal : public ED4_terminal {
     bool set_dynamic_size() OVERRIDE;
 
 public:
-    ED4_returncode Show(int refresh_all=0, int is_cleared=0) OVERRIDE;
     ED4_returncode draw() OVERRIDE;
 
     ED4_line_terminal(const char *id, AW_pos width, AW_pos height, ED4_manager *parent);
@@ -2310,3 +2307,4 @@ void ED4_exit() __ATTR__NORETURN;
 #else
 #error ed4_class included twice
 #endif
+
