@@ -1299,7 +1299,7 @@ public:
 
     // functions concerning graphic output
     void Show(bool refresh_all, bool is_cleared) OVERRIDE;
-    virtual ED4_returncode draw() = 0;
+    virtual void draw() = 0;
 
     bool calc_bounding_box() OVERRIDE;
 
@@ -1880,7 +1880,7 @@ struct ED4_name_manager : public ED4_manager {
 struct ED4_tree_terminal : public ED4_terminal {
     E4B_AVOID_UNNEEDED_CASTS(tree_terminal);
     
-    ED4_returncode draw() OVERRIDE;
+    void draw() OVERRIDE;
 
     ED4_tree_terminal(const char *id, AW_pos width, AW_pos height, ED4_manager *parent);
 
@@ -1890,7 +1890,7 @@ struct ED4_tree_terminal : public ED4_terminal {
 struct ED4_bracket_terminal : public ED4_terminal {
     E4B_AVOID_UNNEEDED_CASTS(bracket_terminal);
 
-    ED4_returncode draw() OVERRIDE;
+    void draw() OVERRIDE;
 
     void toggle_folding();
 
@@ -1903,7 +1903,7 @@ struct ED4_text_terminal : public ED4_terminal {
     E4B_AVOID_UNNEEDED_CASTS(text_terminal);
     
     // functions concerning graphic output
-    ED4_returncode draw() OVERRIDE;
+    void draw() OVERRIDE;
 
     virtual int get_length() const = 0;
     void deleted_from_database() OVERRIDE;
@@ -1950,7 +1950,7 @@ class ED4_orf_terminal : public ED4_abstract_sequence_terminal { // derived from
     int   aaStartPos;
     int   aaStrandType;
 
-    ED4_returncode draw() OVERRIDE;
+    void draw() OVERRIDE;
     E4B_AVOID_UNNEEDED_CASTS(orf_terminal);
 public:
     ED4_orf_terminal(const char *id, AW_pos width, AW_pos height, ED4_manager *parent);
@@ -1972,7 +1972,7 @@ class ED4_sequence_terminal : public ED4_abstract_sequence_terminal { // derived
     mutable ED4_SearchResults searchResults;
     bool shall_display_secstruct_info; // helix or protstruct
 
-    ED4_returncode draw() OVERRIDE;
+    void draw() OVERRIDE;
 
     E4B_AVOID_UNNEEDED_CASTS(sequence_terminal);
     
@@ -2013,7 +2013,7 @@ class ED4_columnStat_terminal : public ED4_text_terminal { // derived from a Non
 
 public:
     // functions concerning graphic output
-    ED4_returncode draw() OVERRIDE;
+    void draw() OVERRIDE;
     int get_length() const OVERRIDE { return corresponding_sequence_terminal()->get_length(); }
 
     static int threshold_is_set();
@@ -2062,7 +2062,7 @@ public:
         return get_parent(LEV_SPECIES)->search_spec_child_rek(LEV_SPECIES_NAME)->to_species_name_terminal();
     }
 
-    ED4_returncode draw() OVERRIDE;
+    void draw() OVERRIDE;
 
     GBDATA *data() { return get_species_pointer(); } // DB-entry ("ali_xxx/data")
     const GBDATA *data() const { return get_species_pointer(); }
@@ -2085,7 +2085,7 @@ struct ED4_pure_text_terminal : public ED4_text_terminal {
 class ED4_consensus_sequence_terminal : public ED4_sequence_terminal { // derived from a Noncopyable
     E4B_AVOID_UNNEEDED_CASTS(consensus_sequence_terminal);
 
-    ED4_returncode draw() OVERRIDE;
+    void draw() OVERRIDE;
     const ED4_abstract_group_manager *get_group_manager() const  { return get_parent(LEV_GROUP)->to_group_manager(); }
     const BaseFrequencies& get_char_table() const { return get_group_manager()->table(); }
 
@@ -2111,7 +2111,7 @@ class ED4_spacer_terminal : public ED4_terminal {
 
 public:
     void Show(bool refresh_all, bool is_cleared) OVERRIDE;
-    ED4_returncode draw() OVERRIDE;
+    void draw() OVERRIDE;
 
     ED4_spacer_terminal(const char *id, bool shallDraw_, AW_pos width, AW_pos height, ED4_manager *parent);
 
@@ -2123,7 +2123,7 @@ class ED4_line_terminal : public ED4_terminal {
     bool set_dynamic_size() OVERRIDE;
 
 public:
-    ED4_returncode draw() OVERRIDE;
+    void draw() OVERRIDE;
 
     ED4_line_terminal(const char *id, AW_pos width, AW_pos height, ED4_manager *parent);
 

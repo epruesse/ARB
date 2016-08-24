@@ -744,7 +744,7 @@ ED4_tree_terminal::ED4_tree_terminal(const char *temp_id, AW_pos width, AW_pos h
 {
 }
 
-ED4_returncode ED4_tree_terminal::draw() {
+void ED4_tree_terminal::draw() {
     AW_pos  x, y;
     AW_pos  text_x, text_y;
     char   *db_pointer;
@@ -758,8 +758,6 @@ ED4_returncode ED4_tree_terminal::draw() {
     db_pointer = resolve_pointer_to_string_copy();
     current_device()->text(ED4_G_STANDARD, db_pointer, text_x, text_y, 0, AW_SCREEN);
     free(db_pointer);
-
-    return (ED4_R_OK);
 }
 
 ED4_bracket_terminal::ED4_bracket_terminal(const char *temp_id, AW_pos width, AW_pos height, ED4_manager *temp_parent)
@@ -767,7 +765,7 @@ ED4_bracket_terminal::ED4_bracket_terminal(const char *temp_id, AW_pos width, AW
 {
 }
 
-ED4_returncode ED4_bracket_terminal::draw() {
+void ED4_bracket_terminal::draw() {
     using namespace AW;
 
     Rectangle  term_area = get_win_area(current_ed4w());
@@ -820,8 +818,6 @@ ED4_returncode ED4_bracket_terminal::draw() {
         device->line(ED4_G_STANDARD, bracket.lower_edge(), AW_SCREEN);
         device->line(ED4_G_STANDARD, bracket.left_edge(), AW_SCREEN);
     }
-
-    return ED4_R_OK;
 }
 
 ED4_species_name_terminal::ED4_species_name_terminal(GB_CSTR temp_id, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
@@ -998,7 +994,7 @@ void ED4_spacer_terminal::Show(bool /*refresh_all*/, bool is_cleared) {
 }
 
 
-ED4_returncode ED4_spacer_terminal::draw() {
+void ED4_spacer_terminal::draw() {
     int gc = 0;
 #if defined(DEBUG_SPACER_TERMINALS)
     const int GC_COUNT = ED4_G_LAST_COLOR_GROUP - ED4_G_FIRST_COLOR_GROUP + 1;
@@ -1010,7 +1006,6 @@ ED4_returncode ED4_spacer_terminal::draw() {
     }
 #endif // DEBUG_SPACER_TERMINALS
     clear_background(gc);
-    return ED4_R_OK;
 }
 
 ED4_spacer_terminal::ED4_spacer_terminal(const char *temp_id, bool shallDraw_, AW_pos width, AW_pos height, ED4_manager *temp_parent)
@@ -1021,7 +1016,7 @@ ED4_spacer_terminal::ED4_spacer_terminal(const char *temp_id, bool shallDraw_, A
     // eg. for 'Top_Middle_Spacer' (to remove overlapping relicts from half-displayed species below)
 }
 
-ED4_returncode ED4_line_terminal::draw() {
+void ED4_line_terminal::draw() {
     AW_pos x1, y1;
     calc_world_coords(&x1, &y1);
     current_ed4w()->world_to_win_coords(&x1, &y1);
@@ -1038,8 +1033,6 @@ ED4_returncode ED4_line_terminal::draw() {
     device->clear_part(x1, y1+1, x2-x1+1, y2-y1-1, AW_ALL_DEVICES);
 #endif // DEBUG
     device->line(ED4_G_STANDARD, x1, y2, x2, y2);
-
-    return ED4_R_OK;
 }
 
 ED4_line_terminal::ED4_line_terminal(const char *temp_id, AW_pos width, AW_pos height, ED4_manager *temp_parent)
@@ -1106,12 +1099,7 @@ inline int find_significant_positions(int sig, int like_A, int like_C, int like_
     return 0;
 }
 
-ED4_returncode ED4_columnStat_terminal::draw() {
-    if (!update_likelihood()) {
-        aw_message("Can't calculate likelihood.");
-        return ED4_R_IMPOSSIBLE;
-    }
-
+void ED4_columnStat_terminal::draw() {
     AW_pos x, y;
     calc_world_coords(&x, &y);
     current_ed4w()->world_to_win_coords(&x, &y);
@@ -1123,17 +1111,26 @@ ED4_returncode ED4_columnStat_terminal::draw() {
     AW_pos text_x = x + CHARACTEROFFSET;
     AW_pos text_y = y + term_height - font_height;
 
-    AW_device             *device   = current_device();
+    AW_device *device = current_device();
+
+    if (!update_likelihood()) {
+        const char *warning = "Failed to calculate likelihood";
+        size_t      len     = strlen(warning);
+
+        device->text(ED4_G_STANDARD, warning, text_x, text_y, 0, AW_SCREEN, len);
+        return;
+    }
+
     ED4_sequence_terminal *seq_term = corresponding_sequence_terminal();
     const ED4_remap       *rm       = ED4_ROOT->root_group_man->remap();
-    
+
     PosRange index_range = rm->clip_screen_range(seq_term->calc_update_interval());
     {
         int max_seq_len = seq_term->get_length();
         int max_seq_pos = rm->sequence_to_screen(max_seq_len);
 
         index_range = ExplicitRange(index_range, max_seq_pos);
-        if (index_range.is_empty()) return ED4_R_OK;
+        if (index_range.is_empty()) return; // nothing to draw
     }
 
     const int left  = index_range.start();
@@ -1236,7 +1233,6 @@ ED4_returncode ED4_columnStat_terminal::draw() {
     }
 
     delete [] sbuffer;
-    return ED4_R_OK;
 }
 
 int ED4_columnStat_terminal::update_likelihood() {
