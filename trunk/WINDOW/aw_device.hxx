@@ -85,7 +85,7 @@ enum {
     AW_TERMINAL_MEDIUM             = 45,
     AW_TERMINAL_BOLD               = 46,
 
-    AW_NUM_FONTS      = 63,
+    AW_NUM_FONTS      = 68,
     AW_NUM_FONTS_XFIG = 35, // immutable
 
     AW_DEFAULT_NORMAL_FONT = AW_LUCIDA_SANS,
