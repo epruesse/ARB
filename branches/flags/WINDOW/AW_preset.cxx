@@ -49,6 +49,9 @@ using std::string;
 
 #define ALL_FONTS_ID "all_fonts"
 
+#define NO_FONT -1
+#define NO_SIZE -2
+
 // prototypes for motif-only section at bottom of this file:
 static void aw_create_color_chooser_window(AW_window *aww, const char *awar_name, const char *color_description);
 static void aw_create_font_chooser_window(AW_window *aww, const char *gc_base_name, const struct gc_desc *gcd);
@@ -428,6 +431,8 @@ void AW_gc_manager::update_gc_font(int idx) const {
     int fname = awar_fontname->read_int();
     int fsize = awar_fontsize->read_int();
 
+    if (fname == NO_FONT) return;
+
     int found_font_size;
     device->set_font(gcd0.gc,                fname, fsize, &found_font_size);
     device->set_font(gcd0.gc+drag_gc_offset, fname, fsize, 0);
@@ -466,6 +471,8 @@ void AW_gc_manager::update_all_fonts(bool sizeChanged) const {
 
     int fname = awr->awar(fontname_awarname(gc_base_name, ALL_FONTS_ID))->read_int();
     int fsize = awr->awar(fontsize_awarname(gc_base_name, ALL_FONTS_ID))->read_int();
+
+    if (fname == NO_FONT) return;
 
     delay_changed_callbacks(true); // temp. disable callbacks
     for (gc_container::const_iterator g = GCs.begin(); g != GCs.end(); ++g) {
@@ -1746,9 +1753,6 @@ static void aw_create_color_chooser_window(AW_window *aww, const char *awar_name
 #define AWAR_SELECTOR_FONT_NAME  "tmp/aw/font_name"
 #define AWAR_SELECTOR_FONT_SIZE  "tmp/aw/font_size"
 
-#define NO_FONT -1
-#define NO_SIZE -2
-
 static void aw_create_font_chooser_awars(AW_root *awr) {
     awr->awar_string(AWAR_SELECTOR_FONT_LABEL, "<invalid>");
     awr->awar_int(AWAR_SELECTOR_FONT_NAME, NO_FONT);
@@ -1784,17 +1788,23 @@ static void aw_create_font_chooser_window(AW_window *aww, const char *gc_base_na
         aws->create_option_menu(AWAR_SELECTOR_FONT_NAME, true);
         {
             int fonts_inserted = 0;
-            for (int font_nr = 0; ; font_nr++) {
-                AW_font     aw_font_nr  = font_nr;
-                const char *font_string = AW_get_font_specification(aw_font_nr);
-                if (!font_string) {
-                    fprintf(stderr, "[Font detection: tried=%i, found=%i]\n", font_nr, fonts_inserted);
-                    break;
-                }
+            for (int order = 1; order>=0; order--) {
+                for (int font_nr = 0; ; font_nr++) {
+                    AW_font     aw_font_nr  = font_nr;
+                    bool        found;
+                    const char *font_string = AW_get_font_specification(aw_font_nr, found);
 
-                if (fixed_width_only && !font_has_fixed_width(aw_font_nr)) continue;
-                aws->insert_option(font_string, 0, font_nr);
-                ++fonts_inserted;
+                    if (!font_string) {
+                        fprintf(stderr, "[Font detection: tried=%i, found=%i]\n", font_nr, fonts_inserted);
+                        break;
+                    }
+
+                    if (found != bool(order)) continue; // display found fonts at top
+                    if (fixed_width_only && !font_has_fixed_width(aw_font_nr)) continue;
+
+                    aws->insert_option(font_string, 0, font_nr);
+                    ++fonts_inserted;
+                }
             }
             if (!fonts_inserted) aws->insert_option("No suitable fonts detected", 0, 0);
             aws->insert_default_option("<no font selected>", 0, NO_FONT);
