@@ -17,44 +17,45 @@
 #include <aw_msg.hxx>
 
 static void toggle_detailed_column_stat(ED4_sequence_terminal *seq_term, bool force_off) {
-    ED4_base *ms_man = seq_term->get_parent(ED4_L_MULTI_SEQUENCE);
+    ED4_base *ms_man = seq_term->get_parent(LEV_MULTI_SEQUENCE);
     if (ms_man) {
         ED4_multi_sequence_manager *multi_seq_man    = ms_man->to_multi_sequence_manager();
-        ED4_base                   *existing_colstat = multi_seq_man->search_spec_child_rek(ED4_L_COL_STAT);
+        ED4_base                   *existing_colstat = multi_seq_man->search_spec_child_rek(LEV_COL_STAT);
 
         if (existing_colstat) {
-            ED4_manager *colstat_seq_man = existing_colstat->get_parent(ED4_L_SEQUENCE)->to_manager();
+            ED4_manager *colstat_seq_man = existing_colstat->get_parent(LEV_SEQUENCE)->to_manager();
             colstat_seq_man->Delete();
         }
         else { // add
             if (!force_off) {
-                char buffer[35];
-                int count = 1;
-                sprintf(buffer, "Sequence_Manager.%ld.%d", ED4_counter, count++);
+                char namebuffer[NAME_BUFFERSIZE];
+                int  count = 1;
 
-                ED4_sequence_manager *new_seq_man = new ED4_sequence_manager(buffer, 0, 0, 0, 0, multi_seq_man);
-                new_seq_man->set_property(ED4_P_MOVABLE);
-                multi_seq_man->children->append_member(new_seq_man);
+                sprintf(namebuffer, "Sequence_Manager.%ld.%d", ED4_counter, count++);
+
+                ED4_sequence_manager *new_seq_man = new ED4_sequence_manager(namebuffer, 0, 0, multi_seq_man);
+                new_seq_man->set_property(PROP_MOVABLE);
+                multi_seq_man->append_member(new_seq_man);
 
                 int    pixel_length     = max_seq_terminal_length;
                 AW_pos font_height      = ED4_ROOT->font_group.get_height(ED4_G_SEQUENCES);
                 AW_pos columnStatHeight = ceil((COLUMN_STAT_ROWS+0.5 /* reserve a bit more space */)*COLUMN_STAT_ROW_HEIGHT(font_height));
 
-                ED4_columnStat_terminal    *ref_colStat_terminal      = ED4_ROOT->ref_terminals.get_ref_column_stat();
-                ED4_sequence_info_terminal *ref_colStat_info_terminal = ED4_ROOT->ref_terminals.get_ref_column_stat_info();
+                ED4_columnStat_terminal    *ref_colStat      = ED4_ROOT->ref_terminals.column_stat();
+                ED4_sequence_info_terminal *ref_colStat_info = ED4_ROOT->ref_terminals.column_stat_info();
 
-                ref_colStat_terminal->extension.size[HEIGHT] = columnStatHeight;
-                ref_colStat_terminal->extension.size[WIDTH]  = pixel_length;
+                ref_colStat->extension.size[HEIGHT] = columnStatHeight;
+                ref_colStat->extension.size[WIDTH]  = pixel_length;
 
-                ED4_sequence_info_terminal *new_colStat_info_term = new ED4_sequence_info_terminal("CStat", 0, 0, SEQUENCEINFOSIZE, columnStatHeight, new_seq_man);
-                new_colStat_info_term->set_property((ED4_properties) (ED4_P_SELECTABLE | ED4_P_DRAGABLE | ED4_P_IS_HANDLE));
-                new_colStat_info_term->set_links(ref_colStat_info_terminal, ref_colStat_terminal);
-                new_seq_man->children->append_member(new_colStat_info_term);
+                ED4_sequence_info_terminal *new_colStat_info_term = new ED4_sequence_info_terminal("CStat", SEQUENCE_INFO_WIDTH, columnStatHeight, new_seq_man);
+                new_colStat_info_term->set_property((ED4_properties) (PROP_SELECTABLE | PROP_DRAGABLE | PROP_IS_HANDLE));
+                new_colStat_info_term->set_links(ref_colStat_info, ref_colStat);
+                new_seq_man->append_member(new_colStat_info_term);
 
-                sprintf(buffer, "Column_Statistic_Terminal.%ld.%d", ED4_counter, count++);
-                ED4_columnStat_terminal *new_colStat_term = new ED4_columnStat_terminal(buffer, SEQUENCEINFOSIZE, 0, 0, columnStatHeight, new_seq_man);
-                new_colStat_term->set_links(ref_colStat_terminal, ref_colStat_terminal);
-                new_seq_man->children->append_member(new_colStat_term);
+                sprintf(namebuffer, "Column_Statistic_Terminal.%ld.%d", ED4_counter, count++);
+                ED4_columnStat_terminal *new_colStat_term = new ED4_columnStat_terminal(namebuffer, 0, columnStatHeight, new_seq_man);
+                new_colStat_term->set_both_links(ref_colStat);
+                new_seq_man->append_member(new_colStat_term);
 
                 ED4_counter++;
 
@@ -141,7 +142,7 @@ void ED4_set_col_stat_threshold() {
         }
         else {
             ED4_columnStat_terminal::set_threshold(input_threshold);
-            ED4_ROOT->request_refresh_for_specific_terminals(ED4_L_COL_STAT);
+            ED4_ROOT->request_refresh_for_specific_terminals(LEV_COL_STAT);
         }
         free(input);
     }

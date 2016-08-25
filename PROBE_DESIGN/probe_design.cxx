@@ -49,6 +49,8 @@
 
 #define AWAR_PROBE_CREATE_GENE_SERVER "tmp/probe_admin/gene_server" // whether to create a gene pt server
 
+#define AWAR_ITARGET_STRING       "nt/itarget_string"
+
 // probe match awars
 
 // #define AWAR_PD_MATCH_ITEM     AWAR_SPECIES_NAME

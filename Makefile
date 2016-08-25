@@ -109,7 +109,7 @@ ALLOWED_gcc_VERSIONS=\
   4.8.0 4.8.1 4.8.2 4.8.3 4.8.4 4.8.5 \
   4.9.0 4.9.1 4.9.2 4.9.3 4.9.4 \
   5.1.0 5.2.0 5.3.0 5.3.1 5.4.0 \
-  6.1.0 \
+  6.1.0 6.2.0 \
 
 
 # ----------------------
@@ -669,7 +669,15 @@ endif
 
 #---------------------- SSE vectorizer
 
+BROKEN_VECTORIZATION:=0
 ifeq ('$(COMPILER_VERSION)','6.1.0')
+	BROKEN_VECTORIZATION:=1
+endif
+ifeq ('$(COMPILER_VERSION)','6.2.0')
+	BROKEN_VECTORIZATION:=1
+endif
+
+ifeq ('$(BROKEN_VECTORIZATION)','1')
 # see http://bugs.arb-home.de/ticket/700
 	cflags += -fno-tree-loop-vectorize
 	DISABLE_VECTORIZE_CHECK:=1

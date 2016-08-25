@@ -414,7 +414,7 @@ ED4_returncode ED4_sequence_terminal::draw() {
         GB_transaction       ta(GLOBAL_gb_main);
         ST_ML_Color         *statColors   = 0;
         char                *searchColors = results().buildColorString(this, seq_start, seq_end); // defined in ED4_SearchResults class : ED4_search.cxx
-        ED4_species_manager *spec_man     = get_parent(ED4_L_SPECIES)->to_species_manager();
+        ED4_species_manager *spec_man     = get_parent(LEV_SPECIES)->to_species_manager();
         int                  color_group  = AW_color_groups_active() ? GBT_get_color_group(spec_man->get_species_pointer()) : 0;
 
         PosRange selection;
@@ -523,7 +523,7 @@ ED4_returncode ED4_sequence_terminal::draw() {
 
         if (ED4_ROOT->protstruct) {
             // output protein structure match
-            ED4_species_manager *spec_man = get_parent(ED4_L_SPECIES)->to_species_manager();
+            ED4_species_manager *spec_man = get_parent(LEV_SPECIES)->to_species_manager();
             if (spec_man->get_type() != ED4_SP_SAI && ED4_ROOT->aw_root->awar(PFOLD_AWAR_ENABLE)->read_int()) {  // should do a remap
                 int   db_len;
                 char *protstruct = resolve_pointer_to_string_copy(&db_len);
@@ -624,7 +624,7 @@ ED4_returncode ED4_text_terminal::draw() {
         bool    is_marked      = false;
 
         if (paint_box) {
-            ED4_species_manager *species_man = get_parent(ED4_L_SPECIES)->to_species_manager();
+            ED4_species_manager *species_man = get_parent(LEV_SPECIES)->to_species_manager();
             GBDATA *gbd = species_man->get_species_pointer();
 
             if (gbd) {
@@ -683,8 +683,8 @@ ED4_returncode ED4_text_terminal::draw() {
     return (ED4_R_OK);
 }
 
-ED4_text_terminal::ED4_text_terminal(const ED4_objspec& spec_, GB_CSTR temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
-    ED4_terminal(spec_, temp_id, x, y, width, height, temp_parent)
+ED4_text_terminal::ED4_text_terminal(const ED4_objspec& spec_, GB_CSTR temp_id, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
+    ED4_terminal(spec_, temp_id, width, height, temp_parent)
 {
 }
 

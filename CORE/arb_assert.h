@@ -276,9 +276,17 @@ inline bool contradicted(bool hypo1, bool hypo2) { return !correlated(hypo1, hyp
 # define IF_ASSERTION_USED(x)
 #endif
 
+#ifdef ARB_MOTIF
+# define IF_MOTIF(x) x
+# define IF_GTK(x)
+#else
+# define IF_MOTIF(x)
+# define IF_GTK(x)   x
+#endif
+
 // ------------------------------------------------------------
 // Assert specific result in DEBUG and silence __ATTR__USERESULT warnings in NDEBUG.
-// 
+//
 // The value 'Expected' (or 'Limit') should be side-effect-free (it is only executed in DEBUG mode).
 // The given 'Expr' is evaluated under all conditions!
 // 
