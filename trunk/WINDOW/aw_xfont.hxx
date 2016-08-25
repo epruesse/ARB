@@ -28,7 +28,7 @@ struct _xfstruct {
     xfont      *xfontlist;      // linked list of X fonts for different point sizes
 };
 
-const char *AW_get_font_specification(AW_font font_nr);
+const char *AW_get_font_specification(AW_font font_nr, bool& found);
 const char *AW_get_font_shortname(AW_font font_nr);
 
 int AW_font_2_xfig(AW_font font_nr);

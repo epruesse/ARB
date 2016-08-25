@@ -666,11 +666,12 @@ static char *caps(char *sentence) {
 }
 
 
-const char *AW_get_font_specification(AW_font font_nr) {
+const char *AW_get_font_specification(AW_font font_nr, bool& found) {
     //! converts fontnr to string
     //
     // @return 0 if font is not available
 
+    found = false;
     aw_assert(font_nr >= 0);
     if (font_nr<0 || font_nr>=AW_NUM_FONTS) return 0;
 
@@ -700,6 +701,9 @@ const char *AW_get_font_specification(AW_font font_nr) {
                                                       fndry, fmly,
                                                       wght, slant,
                                                       rgstry);
+
+                found = true;
+
                 delete [] rgstry;
                 delete [] slant;
                 delete [] wght;
@@ -710,6 +714,7 @@ const char *AW_get_font_specification(AW_font font_nr) {
     }
     else {
         readable_fontname = xf.templat;
+        found = true;
     }
     return readable_fontname;
 }

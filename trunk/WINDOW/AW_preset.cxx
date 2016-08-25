@@ -49,6 +49,9 @@ using std::string;
 
 #define ALL_FONTS_ID "all_fonts"
 
+#define NO_FONT -1
+#define NO_SIZE -2
+
 // prototypes for motif-only section at bottom of this file:
 static void aw_create_color_chooser_window(AW_window *aww, const char *awar_name, const char *color_description);
 static void aw_create_font_chooser_window(AW_window *aww, const char *gc_base_name, const struct gc_desc *gcd);
@@ -428,32 +431,34 @@ void AW_gc_manager::update_gc_font(int idx) const {
     int fname = awar_fontname->read_int();
     int fsize = awar_fontsize->read_int();
 
-    int found_font_size;
-    device->set_font(gcd0.gc,                fname, fsize, &found_font_size);
-    device->set_font(gcd0.gc+drag_gc_offset, fname, fsize, 0);
+    if (fname != NO_FONT) {
+        int found_font_size;
+        device->set_font(gcd0.gc,                fname, fsize, &found_font_size);
+        device->set_font(gcd0.gc+drag_gc_offset, fname, fsize, 0);
 
-    bool autocorrect_fontsize = (found_font_size != fsize) && (found_font_size != -1);
-    if (autocorrect_fontsize) {
-        awar_fontsize->write_int(found_font_size);
-        fsize = found_font_size;
-    }
-
-    // set font of all following GCs which do NOT define a font themselves
-    for (int i = idx+1; i<int(GCs.size()); ++i) {
-        const gc_desc& gcd = GCs[i];
-        if (gcd.has_font) break; // abort if GC defines its own font
-        if (gcd.belongs_to_range()) {
-            update_range_font(fname, fsize);
-            break; // all leftover GCs belong to ranges = > stop here
+        bool autocorrect_fontsize = (found_font_size != fsize) && (found_font_size != -1);
+        if (autocorrect_fontsize) {
+            awar_fontsize->write_int(found_font_size);
+            fsize = found_font_size;
         }
 
-        device->set_font(gcd.gc,                fname, fsize, 0);
-        device->set_font(gcd.gc+drag_gc_offset, fname, fsize, 0);
+        // set font of all following GCs which do NOT define a font themselves
+        for (int i = idx+1; i<int(GCs.size()); ++i) {
+            const gc_desc& gcd = GCs[i];
+            if (gcd.has_font) break; // abort if GC defines its own font
+            if (gcd.belongs_to_range()) {
+                update_range_font(fname, fsize);
+                break; // all leftover GCs belong to ranges = > stop here
+            }
+
+            device->set_font(gcd.gc,                fname, fsize, 0);
+            device->set_font(gcd.gc+drag_gc_offset, fname, fsize, 0);
+        }
+
+        awar_fontinfo->write_string(GBS_global_string("%s | %i", AW_get_font_shortname(fname), fsize));
+
+        trigger_changed_cb(GC_FONT_CHANGED);
     }
-
-    awar_fontinfo->write_string(GBS_global_string("%s | %i", AW_get_font_shortname(fname), fsize));
-
-    trigger_changed_cb(GC_FONT_CHANGED);
 }
 static void gc_fontOrSize_changed_cb(AW_root*, AW_gc_manager *mgr, int idx) {
     mgr->update_gc_font(idx);
@@ -467,19 +472,21 @@ void AW_gc_manager::update_all_fonts(bool sizeChanged) const {
     int fname = awr->awar(fontname_awarname(gc_base_name, ALL_FONTS_ID))->read_int();
     int fsize = awr->awar(fontsize_awarname(gc_base_name, ALL_FONTS_ID))->read_int();
 
-    delay_changed_callbacks(true); // temp. disable callbacks
-    for (gc_container::const_iterator g = GCs.begin(); g != GCs.end(); ++g) {
-        if (g->has_font) {
-            if (sizeChanged) {
-                awr->awar(fontsize_awarname(gc_base_name, g->key))->write_int(fsize);
-            }
-            else {
-                bool update = !g->fixed_width_font || font_has_fixed_width(fname);
-                if (update) awr->awar(fontname_awarname(gc_base_name, g->key))->write_int(fname);
+    if (fname != NO_FONT) {
+        delay_changed_callbacks(true); // temp. disable callbacks
+        for (gc_container::const_iterator g = GCs.begin(); g != GCs.end(); ++g) {
+            if (g->has_font) {
+                if (sizeChanged) {
+                    awr->awar(fontsize_awarname(gc_base_name, g->key))->write_int(fsize);
+                }
+                else {
+                    bool update = !g->fixed_width_font || font_has_fixed_width(fname);
+                    if (update) awr->awar(fontname_awarname(gc_base_name, g->key))->write_int(fname);
+                }
             }
         }
+        delay_changed_callbacks(false);
     }
-    delay_changed_callbacks(false);
 }
 static void all_fontsOrSizes_changed_cb(AW_root*, const AW_gc_manager *mgr, bool sizeChanged) {
     mgr->update_all_fonts(sizeChanged);
@@ -1746,9 +1753,6 @@ static void aw_create_color_chooser_window(AW_window *aww, const char *awar_name
 #define AWAR_SELECTOR_FONT_NAME  "tmp/aw/font_name"
 #define AWAR_SELECTOR_FONT_SIZE  "tmp/aw/font_size"
 
-#define NO_FONT -1
-#define NO_SIZE -2
-
 static void aw_create_font_chooser_awars(AW_root *awr) {
     awr->awar_string(AWAR_SELECTOR_FONT_LABEL, "<invalid>");
     awr->awar_int(AWAR_SELECTOR_FONT_NAME, NO_FONT);
@@ -1784,17 +1788,23 @@ static void aw_create_font_chooser_window(AW_window *aww, const char *gc_base_na
         aws->create_option_menu(AWAR_SELECTOR_FONT_NAME, true);
         {
             int fonts_inserted = 0;
-            for (int font_nr = 0; ; font_nr++) {
-                AW_font     aw_font_nr  = font_nr;
-                const char *font_string = AW_get_font_specification(aw_font_nr);
-                if (!font_string) {
-                    fprintf(stderr, "[Font detection: tried=%i, found=%i]\n", font_nr, fonts_inserted);
-                    break;
-                }
+            for (int order = 1; order>=0; order--) {
+                for (int font_nr = 0; ; font_nr++) {
+                    AW_font     aw_font_nr  = font_nr;
+                    bool        found;
+                    const char *font_string = AW_get_font_specification(aw_font_nr, found);
 
-                if (fixed_width_only && !font_has_fixed_width(aw_font_nr)) continue;
-                aws->insert_option(font_string, 0, font_nr);
-                ++fonts_inserted;
+                    if (!font_string) {
+                        fprintf(stderr, "[Font detection: tried=%i, found=%i]\n", font_nr, fonts_inserted);
+                        break;
+                    }
+
+                    if (found != bool(order)) continue; // display found fonts at top
+                    if (fixed_width_only && !font_has_fixed_width(aw_font_nr)) continue;
+
+                    aws->insert_option(font_string, 0, font_nr);
+                    ++fonts_inserted;
+                }
             }
             if (!fonts_inserted) aws->insert_option("No suitable fonts detected", 0, 0);
             aws->insert_default_option("<no font selected>", 0, NO_FONT);
