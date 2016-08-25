@@ -117,7 +117,7 @@ static void dot_missing_bases(AW_window *aww) {
         stat.sequences_checked = 0;
         stat.marked_only       = aw_root->awar(AWAR_DOT_MARKED)->read_int();
 
-        ED4_group_manager *group_manager = cursor->owner_of_cursor->get_parent(ED4_L_GROUP)->to_group_manager();
+        ED4_group_manager *group_manager = cursor->owner_of_cursor->get_parent(LEV_GROUP)->to_group_manager();
         {
             // build list of positions where consensus contains upper case characters:
             char *consensus = group_manager->build_consensus_string();

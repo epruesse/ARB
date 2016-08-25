@@ -19,6 +19,7 @@
 // #define TRACE_JUMPS
 #endif
 
+#define e4_assert(bed) arb_assert(bed)
 
 class  ED4_root;
 class  ED4_database;
@@ -39,13 +40,14 @@ enum ED4_EDITMODE {
 extern GBDATA   *GLOBAL_gb_main;
 extern ED4_root *ED4_ROOT;
 
-extern int TERMINALHEIGHT;      // this variable replaces the define
 extern int INFO_TERM_TEXT_YOFFSET;
 extern int SEQ_TERM_TEXT_YOFFSET;
 
-extern int  MAXSEQUENCECHARACTERLENGTH;             // greatest # of characters in a sequence string terminal
-extern int  MAXSPECIESWIDTH;
-extern int  MAXINFOWIDTH;
+extern int TERMINAL_HEIGHT;             // standard terminal height (sequences, name, info, etc..)
+extern int MAXSEQUENCECHARACTERLENGTH;  // greatest # of characters in a sequence string terminal
+extern int MAXNAME_WIDTH;               // max. pixel width of ED4_species_name_terminal (effective width also depends on group-nesting)
+extern int MAXINFO_WIDTH;               // pixel width used to display sequence info ("CONS", "4data", etc.)
+
 extern long ED4_counter;
 
 // use ED4_init_notFoundMessage and ED4_finish_and_show_notFoundMessage to
@@ -77,11 +79,11 @@ extern bool         DRAW;
 #define HEIGHT      1
 
 // size of some display elements:
-#define BRACKETWIDTH    11
-#define SPACERHEIGHT    5
-#define SPACERNOCONSENSUSHEIGHT 15 // height of spacer at top of group (used if consensus is hidden and group is folded)
-#define SEQUENCEINFOSIZE 50
-#define TREETERMINALSIZE 100
+#define BRACKET_WIDTH        11
+#define SPACER_HEIGHT        5
+#define SPACER_NOCONS_HEIGHT 15     // height of spacer at top of group (used if consensus is hidden and group is folded)
+#define SEQUENCE_INFO_WIDTH  50     // default width of ED4_sequence_info_terminal (overridden via ref-terminal)
+#define TREE_TERMINAL_WIDTH  100    // some default-width (used for ED4_line_terminal only; @@@ has no noteable effect)
 
 #define COLUMN_STAT_ROW_HEIGHT(font_height)     (2.2*(font_height)) // each row contains 2 sub-rows (plus some xtra space)
 #define COLUMN_STAT_ROWS            4
@@ -111,35 +113,37 @@ extern bool         DRAW;
 
 #define CHARACTEROFFSET 5       // spacer-width left of text-terminal
 
+#define NAME_BUFFERSIZE 100 // size of buffer used to build terminal/manager IDs
+
 typedef long ED4_index;
 
 #define ED4_SCROLL_OVERLAP 20   // 15 Pixels overlap
 
 
 enum ED4_level { // has to contain bit values
-    ED4_L_INVALID         = -1U,
-    ED4_L_NO_LEVEL        = 0,
-    ED4_L_ROOT            = 0x1,
-    ED4_L_DEVICE          = 0x2,
-    ED4_L_AREA            = 0x4,
-    ED4_L_MULTI_SPECIES   = 0x8,
-    ED4_L_SPECIES         = 0x10,
-    ED4_L_MULTI_SEQUENCE  = 0x20,
-    ED4_L_SEQUENCE        = 0x40,
-    ED4_L_TREE            = 0x80,
-    ED4_L_SPECIES_NAME    = 0x100,
-    ED4_L_SEQUENCE_INFO   = 0x200,
-    ED4_L_SEQUENCE_STRING = 0x400,
-    ED4_L_ORF             = 0x800,
-    ED4_L_SPACER          = 0x1000,
-    ED4_L_LINE            = 0x2000,
-    ED4_L_MULTI_NAME      = 0x4000,
-    ED4_L_NAME_MANAGER    = 0x8000,
-    ED4_L_GROUP           = 0x10000,
-    ED4_L_ROOTGROUP       = 0x20000,
-    ED4_L_BRACKET         = 0x40000,
-    ED4_L_PURE_TEXT       = 0x80000,
-    ED4_L_COL_STAT        = 0x100000,
+    LEV_INVALID         = -1U,
+    LEV_NONE            = 0,
+    LEV_ROOT            = 0x1,
+    LEV_DEVICE          = 0x2,
+    LEV_AREA            = 0x4,
+    LEV_MULTI_SPECIES   = 0x8,
+    LEV_SPECIES         = 0x10,
+    LEV_MULTI_SEQUENCE  = 0x20,
+    LEV_SEQUENCE        = 0x40,
+    LEV_TREE            = 0x80,
+    LEV_SPECIES_NAME    = 0x100,
+    LEV_SEQUENCE_INFO   = 0x200,
+    LEV_SEQUENCE_STRING = 0x400,
+    LEV_ORF             = 0x800,
+    LEV_SPACER          = 0x1000,
+    LEV_LINE            = 0x2000,
+    LEV_MULTI_NAME      = 0x4000,
+    LEV_NAME_MANAGER    = 0x8000,
+    LEV_GROUP           = 0x10000,
+    LEV_ROOTGROUP       = 0x20000,
+    LEV_BRACKET         = 0x40000,
+    LEV_PURE_TEXT       = 0x80000,
+    LEV_COL_STAT        = 0x100000,
 };
 
 enum ED4_datamode {
@@ -161,7 +165,6 @@ enum ED4_returncode {
     ED4_R_IMPOSSIBLE = 2,
     ED4_R_ERROR      = 4,
     ED4_R_BREAK      = 8,
-    ED4_R_ALL        = 0x7fffffff
 };
 
 enum ED4_AREA_LEVEL {
@@ -172,23 +175,22 @@ enum ED4_AREA_LEVEL {
 };
 
 enum ED4_properties {
-    ED4_P_NO_PROP            = 0,
-    ED4_P_IS_MANAGER         = 1,
-    ED4_P_IS_TERMINAL        = 2,
-    ED4_P_HORIZONTAL         = 4,
-    ED4_P_VERTICAL           = 8,
-    ED4_P_TMP                = 16,
-    ED4_P_SELECTABLE         = 32,
-    ED4_P_DRAGABLE           = 64,
-    ED4_P_MOVABLE            = 128,
-    ED4_P_IS_HANDLE          = 256,
-    ED4_P_CURSOR_ALLOWED     = 512,
-    //  ED4_P_               = 1024,
-    //  ED4_P_               = 2048,
-    ED4_P_IS_FOLDED          = 4096,            // Flag whether group is folded or not
-    ED4_P_CONSENSUS_RELEVANT = 8192,            // contains information relevant for consensus
-    ED4_P_ALIGNMENT_DATA     = 16384,           // contains aligned data (also SAIs)
-    ED4_P_ALL                = 0x7fffffff
+    PROP_NONE               = 0,
+    PROP_IS_MANAGER         = 0x1,
+    PROP_IS_TERMINAL        = 0x2,
+    PROP_HORIZONTAL         = 0x4,
+    PROP_VERTICAL           = 0x8,
+    PROP_DYNA_RESIZE        = 0x10,              // if set => allowed to resize dynamically (static_prop => object type is capable; auto-copied to dynamic_prop)
+    PROP_SELECTABLE         = 0x20,
+    PROP_DRAGABLE           = 0x40,
+    PROP_MOVABLE            = 0x80,
+    PROP_IS_HANDLE          = 0x100,
+    PROP_CURSOR_ALLOWED     = 0x200,
+    //  PROP_               = 0x400,
+    //  PROP_               = 0x800,
+    PROP_IS_FOLDED          = 0x1000,            // Flag whether group is folded or not
+    PROP_CONSENSUS_RELEVANT = 0x2000,            // contains information relevant for consensus
+    PROP_ALIGNMENT_DATA     = 0x4000,            // contains aligned data (also SAIs)
 };
 
 enum ED4_cursor_move {
@@ -270,6 +272,16 @@ struct ED4_extension // contains info about graphical properties
 
     AW::Vector get_size() const { return AW::Vector(size[WIDTH], size[HEIGHT]); }
     AW::Vector get_parent_offset() const { return AW::Vector(position[X_POS], position[Y_POS]); }
+
+    bool set_size_does_change(int idx, AW_pos value) {
+        // returns true if changed
+        e4_assert(idx == WIDTH || idx == HEIGHT);
+        if (size[idx] != value) {
+            size[idx] = value;
+            return true;
+        }
+        return false;
+    }
 
 #if defined(IMPLEMENT_DUMP)
     void dump(size_t indent) const;

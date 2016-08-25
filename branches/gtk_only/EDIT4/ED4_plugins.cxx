@@ -50,7 +50,7 @@ public:
     GBDATA *get_database() const OVERRIDE { return gb_main; }
 
     void announce_current_species(const char *species_name) OVERRIDE {
-        ED4_base *base = ED4_ROOT->main_manager->find_first_that(ED4_L_SEQUENCE_STRING, makeED4_basePredicate(has_species_name, species_name));
+        ED4_base *base = ED4_ROOT->main_manager->find_first_that(LEV_SEQUENCE_STRING, makeED4_basePredicate(has_species_name, species_name));
         seq_term       = base ? base->to_sequence_terminal() : NULL;
     }
 
