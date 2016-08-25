@@ -431,34 +431,34 @@ void AW_gc_manager::update_gc_font(int idx) const {
     int fname = awar_fontname->read_int();
     int fsize = awar_fontsize->read_int();
 
-    if (fname != NO_FONT) {
-        int found_font_size;
-        device->set_font(gcd0.gc,                fname, fsize, &found_font_size);
-        device->set_font(gcd0.gc+drag_gc_offset, fname, fsize, 0);
+    if (fname == NO_FONT) return;
 
-        bool autocorrect_fontsize = (found_font_size != fsize) && (found_font_size != -1);
-        if (autocorrect_fontsize) {
-            awar_fontsize->write_int(found_font_size);
-            fsize = found_font_size;
-        }
+    int found_font_size;
+    device->set_font(gcd0.gc,                fname, fsize, &found_font_size);
+    device->set_font(gcd0.gc+drag_gc_offset, fname, fsize, 0);
 
-        // set font of all following GCs which do NOT define a font themselves
-        for (int i = idx+1; i<int(GCs.size()); ++i) {
-            const gc_desc& gcd = GCs[i];
-            if (gcd.has_font) break; // abort if GC defines its own font
-            if (gcd.belongs_to_range()) {
-                update_range_font(fname, fsize);
-                break; // all leftover GCs belong to ranges = > stop here
-            }
-
-            device->set_font(gcd.gc,                fname, fsize, 0);
-            device->set_font(gcd.gc+drag_gc_offset, fname, fsize, 0);
-        }
-
-        awar_fontinfo->write_string(GBS_global_string("%s | %i", AW_get_font_shortname(fname), fsize));
-
-        trigger_changed_cb(GC_FONT_CHANGED);
+    bool autocorrect_fontsize = (found_font_size != fsize) && (found_font_size != -1);
+    if (autocorrect_fontsize) {
+        awar_fontsize->write_int(found_font_size);
+        fsize = found_font_size;
     }
+
+    // set font of all following GCs which do NOT define a font themselves
+    for (int i = idx+1; i<int(GCs.size()); ++i) {
+        const gc_desc& gcd = GCs[i];
+        if (gcd.has_font) break; // abort if GC defines its own font
+        if (gcd.belongs_to_range()) {
+            update_range_font(fname, fsize);
+            break; // all leftover GCs belong to ranges = > stop here
+        }
+
+        device->set_font(gcd.gc,                fname, fsize, 0);
+        device->set_font(gcd.gc+drag_gc_offset, fname, fsize, 0);
+    }
+
+    awar_fontinfo->write_string(GBS_global_string("%s | %i", AW_get_font_shortname(fname), fsize));
+
+    trigger_changed_cb(GC_FONT_CHANGED);
 }
 static void gc_fontOrSize_changed_cb(AW_root*, AW_gc_manager *mgr, int idx) {
     mgr->update_gc_font(idx);
@@ -472,21 +472,21 @@ void AW_gc_manager::update_all_fonts(bool sizeChanged) const {
     int fname = awr->awar(fontname_awarname(gc_base_name, ALL_FONTS_ID))->read_int();
     int fsize = awr->awar(fontsize_awarname(gc_base_name, ALL_FONTS_ID))->read_int();
 
-    if (fname != NO_FONT) {
-        delay_changed_callbacks(true); // temp. disable callbacks
-        for (gc_container::const_iterator g = GCs.begin(); g != GCs.end(); ++g) {
-            if (g->has_font) {
-                if (sizeChanged) {
-                    awr->awar(fontsize_awarname(gc_base_name, g->key))->write_int(fsize);
-                }
-                else {
-                    bool update = !g->fixed_width_font || font_has_fixed_width(fname);
-                    if (update) awr->awar(fontname_awarname(gc_base_name, g->key))->write_int(fname);
-                }
+    if (fname == NO_FONT) return;
+
+    delay_changed_callbacks(true); // temp. disable callbacks
+    for (gc_container::const_iterator g = GCs.begin(); g != GCs.end(); ++g) {
+        if (g->has_font) {
+            if (sizeChanged) {
+                awr->awar(fontsize_awarname(gc_base_name, g->key))->write_int(fsize);
+            }
+            else {
+                bool update = !g->fixed_width_font || font_has_fixed_width(fname);
+                if (update) awr->awar(fontname_awarname(gc_base_name, g->key))->write_int(fname);
             }
         }
-        delay_changed_callbacks(false);
     }
+    delay_changed_callbacks(false);
 }
 static void all_fontsOrSizes_changed_cb(AW_root*, const AW_gc_manager *mgr, bool sizeChanged) {
     mgr->update_all_fonts(sizeChanged);
