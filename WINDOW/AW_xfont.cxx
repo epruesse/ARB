@@ -126,6 +126,12 @@ static struct _xfstruct x_fontinfo[] = {
     { "-*-nimbus mono l-bold-r-*-*-",               "Nimbus mono B", (xfont*) NULL }, // #60
     { "-*-latin modern typewriter-medium-r-*-*-",   "Latin mono",    (xfont*) NULL }, // #61
     { "-*-latin modern typewriter-bold-r-*-*-",     "Latin mono B",  (xfont*) NULL }, // #62
+
+    { "-*-terminus-medium-r-*-*-",                  "Terminus",      (xfont*) NULL }, // #63
+    { "-*-terminus-bold-r-*-*-",                    "Terminus B",    (xfont*) NULL }, // #64
+    { "-sony-fixed-medium-r-*-*-",                  "SonyFixed",     (xfont*) NULL }, // #65
+    { "-sony-fixed-bold-r-*-*-",                    "SonyFixed B",   (xfont*) NULL }, // #66
+    { "-mutt-clearlyu-medium-r-*-*-",               "MuttClearlyu",  (xfont*) NULL }, // #67
 };
 
 static struct _fstruct ps_fontinfo[] = {
@@ -202,6 +208,12 @@ static struct _fstruct ps_fontinfo[] = {
     { "Courier-Bold",                 -14 },
     { "Courier",                      -12 },
     { "Courier-Bold",                 -14 },
+
+    { "Courier",                      -12 },
+    { "Courier-Bold",                 -14 },
+    { "Courier",                      -12 },
+    { "Courier-Bold",                 -14 },
+    { "Times-Roman",                  0 },
 };
 
 STATIC_ASSERT(ARRAY_ELEMS(x_fontinfo) == AW_NUM_FONTS);
@@ -337,7 +349,7 @@ void aw_root_init_font(Display *display) {
                     is_scalable[f] = false;
                 }
 #if defined(DUMP_FONT_LOOKUP)
-                printf("Using %s font for '%s'\n", is_scalable[f] ? "scalable" : "fixed", x_fontinfo[f].templat);
+                printf("Using %s font for '%s' (templat='%s')\n", is_scalable[f] ? "scalable" : "fixed", x_fontinfo[f].templat, templat);
 #endif // DUMP_FONT_LOOKUP
             }
         }
