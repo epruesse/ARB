@@ -598,7 +598,7 @@ void ED4_text_terminal::draw() {
 
     current_device()->set_vertical_font_overlap(true);
 
-    if (is_species_name_terminal()) {
+    if (is_species_name_terminal()) { // @@@ handle by virtual method (eg. draw_text())
         GB_CSTR real_name      = to_species_name_terminal()->get_displayed_text();
         int     width_of_char;
         int     height_of_char = -1;
@@ -643,6 +643,13 @@ void ED4_text_terminal::draw() {
                 current_device()->clear_part(bx+1, by+1, xsize-2, ysize-2, AW_ALL_DEVICES);
             }
         }
+    }
+    else if (is_flag_header_terminal()) { // @@@ handle by virtual method (eg. draw_text())
+        ED4_flag_header_terminal *header_term = to_flag_header_terminal();
+        const char               *header_text = header_term->get_displayed_text();
+
+        text_y += (SEQ_TERM_TEXT_YOFFSET-INFO_TERM_TEXT_YOFFSET);
+        current_device()->text(ED4_G_STANDARD, header_text, text_x, text_y, 0, AW_SCREEN, header_term->get_length()); // @@@ fake GC
     }
     else {
         char *db_pointer = resolve_pointer_to_string_copy();

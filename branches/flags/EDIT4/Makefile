@@ -657,6 +657,7 @@ ED4_no_class.o: ed4_class.hxx
 ED4_no_class.o: ed4_defs.hxx
 ED4_no_class.o: ed4_edit_string.hxx
 ED4_no_class.o: ed4_extern.hxx
+ED4_no_class.o: ed4_flags.hxx
 ED4_no_class.o: ed4_list.hxx
 ED4_no_class.o: ed4_nds.hxx
 ED4_no_class.o: ed4_search.hxx
@@ -1066,6 +1067,7 @@ ED4_terminal.o: ed4_class.hxx
 ED4_terminal.o: ed4_defs.hxx
 ED4_terminal.o: ed4_edit_string.hxx
 ED4_terminal.o: ed4_extern.hxx
+ED4_terminal.o: ed4_flags.hxx
 ED4_terminal.o: ed4_nds.hxx
 ED4_terminal.o: ed4_ProteinViewer.hxx
 ED4_terminal.o: ed4_search.hxx

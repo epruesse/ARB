@@ -47,6 +47,7 @@ extern int TERMINAL_HEIGHT;             // standard terminal height (sequences, 
 extern int MAXSEQUENCECHARACTERLENGTH;  // greatest # of characters in a sequence string terminal
 extern int MAXNAME_WIDTH;               // max. pixel width of ED4_species_name_terminal (effective width also depends on group-nesting)
 extern int MAXINFO_WIDTH;               // pixel width used to display sequence info ("CONS", "4data", etc.)
+extern int FLAG_WIDTH;                  // pixel width used to display species flags (and its header)
 
 extern long ED4_counter;
 
@@ -144,6 +145,8 @@ enum ED4_level { // has to contain bit values
     LEV_BRACKET         = 0x40000,
     LEV_PURE_TEXT       = 0x80000,
     LEV_COL_STAT        = 0x100000,
+    LEV_FLAG_HEADER     = 0x200000,
+    LEV_FLAG            = 0x400000,
 };
 
 enum ED4_datamode {

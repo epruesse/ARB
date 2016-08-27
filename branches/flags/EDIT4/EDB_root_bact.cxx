@@ -116,6 +116,13 @@ ED4_returncode EDB_root_bact::fill_data(ED4_multi_species_manager *multi_species
             name_manager->append_member(species_name_terminal);
         }
 
+        {
+            sprintf(namebuffer, "Flag_Term%ld.%d", ED4_counter, count_two++);
+            ED4_flag_terminal *flag_terminal = new ED4_flag_terminal(namebuffer, FLAG_WIDTH, TERMINAL_HEIGHT, name_manager);
+            flag_terminal->set_links(NULL, refterms.sequence());
+            name_manager->append_member(flag_terminal);
+        }
+
         search_sequence_data_rek(multi_sequence_manager, refterms, gb_datamode, count_two, &max_seq_terminal_length, ED4_A_DEFAULT, datamode == ED4_D_EXTENDED);
     }
 

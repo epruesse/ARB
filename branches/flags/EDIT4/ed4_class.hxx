@@ -150,6 +150,8 @@ class ED4_species_pointer;
 class ED4_terminal;
 class ED4_text_terminal;
 class ED4_tree_terminal;
+class ED4_flag_header_terminal;
+class ED4_flag_terminal;
 class ED4_window;
 
 class AP_tree;
@@ -212,7 +214,7 @@ struct EDB_root_bact {
     EDB_root_bact() {}
 };
 
-#define SPECIFIED_OBJECT_TYPES 21
+#define SPECIFIED_OBJECT_TYPES 23
 
 class ED4_objspec : public Noncopyable {
     static bool object_specs_initialized;
@@ -1097,6 +1099,9 @@ public:
     int is_spacer_terminal()        const { e4_assert(knownNonNull(this)); return spec.level & LEV_SPACER; }
     int is_line_terminal()          const { e4_assert(knownNonNull(this)); return spec.level & LEV_LINE; }
 
+    int is_flag_header_terminal()   const { e4_assert(knownNonNull(this)); return spec.level & LEV_FLAG_HEADER; }
+    int is_flag_terminal()          const { e4_assert(knownNonNull(this)); return spec.level & LEV_FLAG; }
+
     int is_manager()                const { e4_assert(knownNonNull(this)); return spec.static_prop & PROP_IS_MANAGER; }
 
     int is_sequence_manager()       const { e4_assert(knownNonNull(this)); return spec.level & LEV_SEQUENCE; }
@@ -1161,6 +1166,8 @@ public:
     E4B_DECL_CASTOP(species_name_terminal);       // to_species_name_terminal
     E4B_DECL_CASTOP(terminal);                    // to_terminal
     E4B_DECL_CASTOP(text_terminal);               // to_text_terminal
+    E4B_DECL_CASTOP(flag_header_terminal);        // to_flag_header_terminal
+    E4B_DECL_CASTOP(flag_terminal);               // to_flag_terminal
 
     // simple access to containing managers
     inline ED4_species_manager *containing_species_manager() const;
@@ -2051,6 +2058,21 @@ public:
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_text_terminal);
 };
 
+class ED4_flag_header_terminal : public ED4_text_terminal { // derived from a Noncopyable
+    // displays header of flags
+
+    E4B_AVOID_UNNEEDED_CASTS(flag_header_terminal);
+    bool set_dynamic_size() OVERRIDE;
+
+public:
+    ED4_flag_header_terminal(GB_CSTR id, AW_pos width, AW_pos height, ED4_manager *parent);
+
+    GB_CSTR get_displayed_text() const;
+    int get_length() const OVERRIDE;
+
+    DECLARE_DUMP_FOR_LEAFCLASS(ED4_text_terminal);
+};
+
 class ED4_sequence_info_terminal : public ED4_text_terminal {
     E4B_AVOID_UNNEEDED_CASTS(sequence_info_terminal);
     bool set_dynamic_size() OVERRIDE;
@@ -2130,6 +2152,18 @@ public:
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_terminal);
 };
 
+class ED4_flag_terminal : public ED4_terminal {
+    E4B_AVOID_UNNEEDED_CASTS(flag_terminal);
+    bool set_dynamic_size() OVERRIDE;
+
+public:
+    void draw() OVERRIDE;
+
+    ED4_flag_terminal(const char *id, AW_pos width, AW_pos height, ED4_manager *parent);
+
+    DECLARE_DUMP_FOR_LEAFCLASS(ED4_terminal);
+};
+
 
 // ----------------------------------------------
 //      inlines which need complete classdefs
@@ -2179,6 +2213,8 @@ E4B_IMPL_CASTOP(species_manager);             // to_species_manager
 E4B_IMPL_CASTOP(species_name_terminal);       // to_species_name_terminal
 E4B_IMPL_CASTOP(terminal);                    // to_terminal
 E4B_IMPL_CASTOP(text_terminal);               // to_text_terminal
+E4B_IMPL_CASTOP(flag_header_terminal);        // to_flag_header_terminal
+E4B_IMPL_CASTOP(flag_terminal);               // to_flag_terminal
 
 inline ED4_device_manager *ED4_root::get_device_manager() {
     return main_manager->search_spec_child_rek(LEV_DEVICE)->to_device_manager();

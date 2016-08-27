@@ -16,6 +16,7 @@
 #include "ed4_nds.hxx"
 #include "ed4_list.hxx"
 #include "ed4_seq_colors.hxx"
+#include "ed4_flags.hxx"
 
 #include <iupac.h>
 #include <consensus_config.h>
@@ -126,6 +127,12 @@ void ED4_calc_terminal_extentions() {
             (maxchars+1+1)*info_char_width + // width defined in NDS window (+ 1 char for marked-box; + 1 extra char to avoid truncation)
             maxbrackets*BRACKET_WIDTH;       // brackets defined in NDS window
     }
+
+    {
+        int headerlen = SpeciesFlags::instance().get_header_length();
+        FLAG_WIDTH    = headerlen ? info_char_width*(headerlen+1) : 0;
+    }
+
     MAXINFO_WIDTH =
         CHARACTEROFFSET +
         info_char_width*ED4_ROOT->aw_root->awar(ED4_AWAR_NDS_INFO_WIDTH)->read_int() +
@@ -140,12 +147,19 @@ void ED4_calc_terminal_extentions() {
     printf("seq_term_descent = %i\n", seq_term_descent);
     printf("TERMINAL_HEIGHT  = %i\n", TERMINAL_HEIGHT);
     printf("MAXNAME_WIDTH    = %i\n", MAXNAME_WIDTH);
+    printf("FLAG_WIDTH       = %i\n", FLAG_WIDTH);
     printf("MAXINFO_WIDTH    = %i\n", MAXINFO_WIDTH);
     printf("INFO_TERM_TEXT_YOFFSET= %i\n", INFO_TERM_TEXT_YOFFSET);
     printf(" SEQ_TERM_TEXT_YOFFSET= %i\n", SEQ_TERM_TEXT_YOFFSET);
 #endif // DEBUG
 }
 
+bool ED4_flag_header_terminal::set_dynamic_size() {
+    return extension.set_size_does_change(WIDTH, FLAG_WIDTH);
+}
+bool ED4_flag_terminal::set_dynamic_size() {
+    return extension.set_size_does_change(WIDTH, FLAG_WIDTH);
+}
 bool ED4_species_name_terminal::set_dynamic_size() {
     return extension.set_size_does_change(WIDTH, MAXNAME_WIDTH - BRACKET_WIDTH * calc_group_depth());
 }

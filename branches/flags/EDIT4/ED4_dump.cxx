@@ -218,6 +218,8 @@ STANDARD_DUMP_LEAF(ED4_sequence_manager);
 STANDARD_DUMP_LEAF(ED4_spacer_terminal);
 STANDARD_DUMP_LEAF(ED4_species_name_terminal);
 STANDARD_DUMP_LEAF(ED4_tree_terminal);
+STANDARD_DUMP_LEAF(ED4_flag_header_terminal);
+STANDARD_DUMP_LEAF(ED4_flag_terminal);
 
 // =========================================================================================
 // member structures

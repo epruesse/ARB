@@ -16,6 +16,7 @@
 #include "ed4_nds.hxx"
 #include "ed4_ProteinViewer.hxx"
 #include "ed4_seq_colors.hxx"
+#include "ed4_flags.hxx"
 
 #include <arbdbt.h>
 
@@ -52,6 +53,22 @@ static ED4_objspec species_name_terminal_spec(
     LEV_SPECIES_NAME,   // level
     LEV_NONE,           // allowed children level
     LEV_SPECIES,        // handled object
+    LEV_NONE            // restriction level
+    );
+
+static ED4_objspec flag_header_spec(
+    ED4_properties(PROP_IS_TERMINAL | PROP_DYNA_RESIZE),  // static props
+    LEV_FLAG_HEADER,    // level
+    LEV_NONE,           // allowed children level
+    LEV_NONE,           // handled object
+    LEV_NONE            // restriction level
+    );
+
+static ED4_objspec flag_spec(
+    ED4_properties(PROP_IS_TERMINAL | PROP_DYNA_RESIZE), // static props
+    LEV_FLAG,           // level
+    LEV_NONE,           // allowed children level
+    LEV_NONE,           // handled object
     LEV_NONE            // restriction level
     );
 
@@ -1251,6 +1268,73 @@ ED4_columnStat_terminal::ED4_columnStat_terminal(GB_CSTR temp_id, AW_pos width, 
 ED4_columnStat_terminal::~ED4_columnStat_terminal()
 {
     for (int i=0; i<4; i++) free(likelihood[i]);
+}
+
+// ------------------------
+//      flag terminals
+
+ED4_flag_header_terminal::ED4_flag_header_terminal(GB_CSTR id_, AW_pos width, AW_pos height, ED4_manager *parent_) :
+    ED4_text_terminal(flag_header_spec, id_, width, height, parent_)
+{}
+
+GB_CSTR ED4_flag_header_terminal::get_displayed_text() const {
+    return SpeciesFlags::instance().get_header_text();
+}
+int ED4_flag_header_terminal::get_length() const {
+    return SpeciesFlags::instance().get_header_length();
+}
+
+ED4_flag_terminal::ED4_flag_terminal(const char *id_, AW_pos width, AW_pos height, ED4_manager *parent_) :
+    ED4_terminal(flag_spec, id_, width, height, parent_)
+{}
+
+void ED4_flag_terminal::draw() {
+    using namespace AW;
+
+    const SpeciesFlags& flags = SpeciesFlags::instance();
+
+    int boxes = flags.size();
+    if (boxes>0) {
+        Rectangle area = get_win_area(current_ed4w());
+
+        double width  = area.width();
+        double offset = width/boxes;  // from box to box
+
+        double boxsize = std::max(1.0, std::min(offset, area.height())*0.9);
+
+        Vector to_next_box(offset, 0);
+        Vector box_diag(boxsize, -boxsize);
+
+        Position  box_center = area.left_edge().centroid() + to_next_box/2;
+        Rectangle box(box_center-box_diag/2, box_diag);
+
+        AW_device *device = current_device();
+#if defined(DEBUG) && 0
+        {
+            static int mix = 0;
+            device->box(ED4_G_COLOR_2+mix, FillStyle::SOLID, area, AW_SCREEN); // whole area
+            mix = (mix+1)%5;
+        }
+#endif
+        for (int b = 0; b<boxes; ++b) {
+            if ((b%2) == 0) device->box(ED4_G_SELECTED, FillStyle::SOLID, box, AW_SCREEN); // fill?
+
+            int gc = ED4_G_STANDARD; // @@@ fake
+            device->box(gc, FillStyle::EMPTY, box, AW_SCREEN); // frame
+
+            box.move(to_next_box);
+        }
+    }
+#if defined(DEBUG) // @@@ debug code showing space wasted if NO flags are defined. fix terminal sizes and remove this code
+    else {
+        AW_device *device = current_device();
+        Rectangle area = get_win_area(current_ed4w());
+
+        static int mix = 0;
+        device->box(ED4_G_COLOR_2+mix, FillStyle::SOLID, area, AW_SCREEN); // whole area
+        mix = (mix+1)%5;
+    }
+#endif
 }
 
 // ---------------------------------

@@ -56,6 +56,7 @@ int SEQ_TERM_TEXT_YOFFSET;
 int MAXSEQUENCECHARACTERLENGTH; // greatest # of characters in a sequence string terminal
 int MAXNAME_WIDTH;
 int MAXINFO_WIDTH;
+int FLAG_WIDTH;
 
 long ED4_counter = 0;
 

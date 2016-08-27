@@ -55,11 +55,12 @@ static ED4_objspec multi_species_manager_spec(
 
 static ED4_objspec species_manager_spec(
     (ED4_properties)(PROP_IS_MANAGER | PROP_VERTICAL),  // static props
-    LEV_SPECIES,                                          // level
-    (ED4_level)(LEV_MULTI_SEQUENCE | LEV_MULTI_NAME |     // (used by normal species)
-                LEV_SPECIES_NAME | LEV_SEQUENCE),         // allowed children level (used by consensus)
-    LEV_NONE,                                             // handled object
-    LEV_NONE                                              // restriction level
+    LEV_SPECIES,                                        // level
+    (ED4_level)(LEV_MULTI_SEQUENCE | LEV_MULTI_NAME |   // (used by normal species)
+                LEV_SPECIES_NAME | LEV_SEQUENCE |       // allowed children level (used by consensus)
+                LEV_FLAG_HEADER),
+    LEV_NONE,                                           // handled object
+    LEV_NONE                                            // restriction level
     );
 
 static ED4_objspec multi_sequence_manager_spec(
@@ -87,9 +88,9 @@ static ED4_objspec multi_name_manager_spec(
     );
 
 static ED4_objspec name_manager_spec(
-    (ED4_properties)(PROP_IS_MANAGER | PROP_VERTICAL), // static props
+    (ED4_properties)(PROP_IS_MANAGER | PROP_VERTICAL),   // static props
     LEV_NAME_MANAGER,                                    // level
-    (ED4_level)(LEV_SPECIES_NAME),                       // allowed children level
+    (ED4_level)(LEV_SPECIES_NAME | LEV_FLAG),            // allowed children level
     LEV_NONE,                                            // handled object
     LEV_SPECIES                                          // restriction level
     );
