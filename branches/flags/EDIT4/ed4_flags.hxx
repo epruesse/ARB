@@ -32,21 +32,43 @@ public:
         shortname(shortname_),
         fieldname(fieldname_)
     {}
+
+    const std::string& get_shortname() const { return shortname; }
 };
 
-class SpeciesFlags : std::list<SpeciesFlag> {
-    static SpeciesFlags *SINGLETON;
+typedef std::list<SpeciesFlag> SpeciesFlagList;
 
-    SpeciesFlags() {}
+class SpeciesFlags : public SpeciesFlagList {
+    static SpeciesFlags *SINGLETON;
     static void create_instance();
+
+    mutable SmartCharPtr header;
+    mutable int          header_length;
+
+    SpeciesFlags() :
+        header_length(-1)
+    {}
+    void build_header_text() const;
+
 public:
 
     // @@@ add config() (=open GUI)
 
-    static const SpeciesFlags& get() {
+    static const SpeciesFlags& instance() {
         if (!SINGLETON) create_instance();
         e4_assert(SINGLETON);
         return *SINGLETON;
+    }
+
+    const char *get_header_text() const {
+        if (header.isNull()) build_header_text();
+        return &*header;
+    }
+    int get_header_length() const {
+        if (header_length<0) {
+            header_length = strlen(get_header_text());
+        }
+        return header_length;
     }
 };
 

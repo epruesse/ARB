@@ -436,6 +436,8 @@ ED4_flags.o: ed4_defs.hxx
 ED4_flags.o: ed4_flags.hxx
 ED4_flags.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ED4_flags.o: $(ARBHOME)/INCLUDE/arb_core.h
+ED4_flags.o: $(ARBHOME)/INCLUDE/arb_mem.h
+ED4_flags.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 ED4_flags.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ED4_flags.o: $(ARBHOME)/INCLUDE/arbtools.h
 ED4_flags.o: $(ARBHOME)/INCLUDE/attributes.h
