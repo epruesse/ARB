@@ -1020,6 +1020,7 @@ ED4_search.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 ED4_seq_colors.o: ed4_class.hxx
 ED4_seq_colors.o: ed4_defs.hxx
+ED4_seq_colors.o: ed4_extern.hxx
 ED4_seq_colors.o: ed4_search.hxx
 ED4_seq_colors.o: ed4_seq_colors.hxx
 ED4_seq_colors.o: $(ARBHOME)/INCLUDE/ad_prot.h
