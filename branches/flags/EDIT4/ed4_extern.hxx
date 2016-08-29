@@ -19,8 +19,7 @@
 // define GCs
 // (used by plugins to sync colors)
 
-#define ED4_G_FIRST_FONT ED4_G_STANDARD // ED4_G_SEQUENCES
-#define ED4_G_LAST_FONT  ED4_G_HELIX
+// Note: add all GCs (defining a font) to the array 'font_GC'; see ED4_root.cxx@recalc_font_group
 
 enum ED4_gc {
     ED4_G_STANDARD,
@@ -66,7 +65,7 @@ enum ED4_gc {
     ED4_G_FIRST_COLOR_GROUP,   // Background colors for colored species
     ED4_G_LAST_COLOR_GROUP = ED4_G_FIRST_COLOR_GROUP+AW_COLOR_GROUPS-1,
 
-    ED4_G_DRAG = ED4_G_LAST_COLOR_GROUP+1               // must be last
+    ED4_G_DRAG, // must be last
 };
 
 

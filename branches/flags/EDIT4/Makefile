@@ -915,6 +915,7 @@ ED4_root.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ED4_root.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ED4_root.o: $(ARBHOME)/INCLUDE/arb_build.h
 ED4_root.o: $(ARBHOME)/INCLUDE/arb_core.h
+ED4_root.o: $(ARBHOME)/INCLUDE/arb_defs.h
 ED4_root.o: $(ARBHOME)/INCLUDE/arb_error.h
 ED4_root.o: $(ARBHOME)/INCLUDE/arb_file.h
 ED4_root.o: $(ARBHOME)/INCLUDE/arb_mem.h

@@ -26,10 +26,12 @@
 
 #include <ed4_extern.hxx>
 #include <fast_aligner.hxx>
+
 #include <AW_helix.hxx>
 #include <gde.hxx>
 #include <awt.hxx>
 #include <awt_map_key.hxx>
+
 #include <aw_awars.hxx>
 #include <aw_preset.hxx>
 #include <aw_msg.hxx>
@@ -37,14 +39,17 @@
 #include <aw_root.hxx>
 #include <aw_question.hxx>
 #include <aw_advice.hxx>
+#include <rootAsWin.h>
 #include "../WINDOW/aw_status.hxx" // @@@ hack - obsolete when EDIT4 status works like elsewhere
+
 #include <arb_version.h>
 #include <arb_file.h>
+#include <arb_defs.h>
+
 #include <arbdbt.h>
 #include <ad_cb.h>
 #include <macros.hxx>
 #include <st_window.hxx>
-#include <rootAsWin.h>
 
 #include <cctype>
 #include <map>
@@ -523,10 +528,16 @@ ARB_ERROR ED4_root::init_alignment() {
 }
 
 void ED4_root::recalc_font_group() {
+    int font_GC[] = {
+        ED4_G_SEQUENCES,
+        ED4_G_STANDARD,
+        ED4_G_HELIX,
+    };
+
     font_group.unregisterAll();
-    for (int f=ED4_G_FIRST_FONT; f<=ED4_G_LAST_FONT; f++) {
+    for (unsigned i = 0; i<ARRAY_ELEMS(font_GC); ++i) {
         ED4_MostRecentWinContext context;
-        font_group.registerFont(current_device(), f);
+        font_group.registerFont(current_device(), font_GC[i]);
     }
 }
 
