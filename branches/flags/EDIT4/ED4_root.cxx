@@ -595,9 +595,6 @@ ED4_returncode ED4_root::create_hierarchy(const char *area_string_middle, const 
             );
     }
 
-
-    recalc_font_group();
-
     {
         arb_progress species_progress("Loading species", total_no_of_species);
         

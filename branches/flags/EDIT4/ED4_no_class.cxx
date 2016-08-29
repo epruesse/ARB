@@ -85,11 +85,14 @@ static void calculate_group_folding(group_folding& folding) {
 }
 
 void ED4_calc_terminal_extentions() {
+    ED4_ROOT->recalc_font_group();
+
     AW_device *device = ED4_ROOT->first_window->get_device(); // any device
 
-    const AW_font_limits& seq_font_limits  = device->get_font_limits(ED4_G_SEQUENCES, 0);
+    const AW_font_group&  font_group       = ED4_ROOT->font_group;
+    const AW_font_limits& seq_font_limits  = font_group.get_limits(ED4_G_SEQUENCES);
     const AW_font_limits& seq_equal_limits = device->get_font_limits(ED4_G_SEQUENCES, '=');
-    const AW_font_limits& info_font_limits = device->get_font_limits(ED4_G_STANDARD, 0);
+    const AW_font_limits& info_font_limits = font_group.get_limits(ED4_G_STANDARD);
 
     int info_char_width = info_font_limits.width;
     int seq_term_descent;
@@ -216,7 +219,6 @@ static ARB_ERROR update_extension_size(ED4_base *base) {
 }
 
 void ED4_resize_all_extensions() { // @@@ pass flag to force resize-request? (eg. for initial-call?)
-    ED4_ROOT->recalc_font_group();
     ED4_calc_terminal_extentions();
 
     // @@@ below calculations have to be done at startup as well (are they done somewhere else or not done?)
