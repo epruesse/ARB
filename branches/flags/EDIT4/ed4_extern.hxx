@@ -25,8 +25,8 @@ enum ED4_gc {
     ED4_G_STANDARD,
 
     ED4_G_SEQUENCES,
-    ED4_G_HELIX,
 
+    ED4_G_HELIX,    // also used as sequence color 1
     ED4_G_COLOR_2,
     ED4_G_COLOR_3,
     ED4_G_COLOR_4,
@@ -35,6 +35,10 @@ enum ED4_gc {
     ED4_G_COLOR_7,
     ED4_G_COLOR_8,
     ED4_G_COLOR_9,
+
+    ED4_G_CURSOR,               // Color of cursor
+    ED4_G_MARKED,               // Background for marked species
+    ED4_G_SELECTED,             // Background for selected species
 
     ED4_G_CBACK_0,  // Ranges for column statistics
     ED4_G_CBACK_1,
@@ -57,10 +61,6 @@ enum ED4_gc {
     ED4_G_SBACK_7,
     ED4_G_SBACK_8,
     ED4_G_MBACK,    // Mismatches
-
-    ED4_G_CURSOR,               // Color of cursor
-    ED4_G_MARKED,               // Background for marked species
-    ED4_G_SELECTED,             // Background for selected species
 
     ED4_G_FIRST_COLOR_GROUP,   // Background colors for colored species
     ED4_G_LAST_COLOR_GROUP = ED4_G_FIRST_COLOR_GROUP+AW_COLOR_GROUPS-1,
