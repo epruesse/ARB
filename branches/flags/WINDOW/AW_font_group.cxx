@@ -48,6 +48,8 @@ void AW_font_group::registerFont(AW_device *device, int gc, const char *chars) {
         max_letter_limits[gc] = limits;
     }
 
+    aw_assert(font_registered(gc)); 
+
     set_max(get_width(gc), max_width);
     set_max(get_ascent(gc), max_ascent);
     set_max(get_descent(gc), max_descent);
