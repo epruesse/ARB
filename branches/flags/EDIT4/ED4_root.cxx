@@ -531,7 +531,6 @@ void ED4_root::recalc_font_group() {
     int font_GC[] = {
         ED4_G_SEQUENCES,
         ED4_G_STANDARD,
-        ED4_G_HELIX,
     };
 
     font_group.unregisterAll();

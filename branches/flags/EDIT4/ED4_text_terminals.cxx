@@ -270,7 +270,7 @@ void ED4_orf_terminal::draw() {
 
         // paint background
         if ((iDisplayMode == PV_AA_CODE) || (iDisplayMode == PV_AA_BOX)) {
-            AW_pos     width        = ED4_ROOT->font_group.get_width(ED4_G_HELIX);
+            AW_pos     width        = ED4_ROOT->font_group.get_width(ED4_G_SEQUENCES);
             const int  real_left    = index_range.start();
             const int  real_right   = index_range.end();
             AW_pos     x2           = text_x + width*real_left;
@@ -442,7 +442,7 @@ void ED4_sequence_terminal::draw() {
 
         if (statColors || searchColors || is_marked || is_selected || color_group || saiColors) {
             int    i;
-            AW_pos width      = ED4_ROOT->font_group.get_width(ED4_G_HELIX);
+            AW_pos width      = ED4_ROOT->font_group.get_width(ED4_G_SEQUENCES);
             int    real_left  = left;
             int    real_right = right;
             AW_pos x2         = text_x + width*real_left;
