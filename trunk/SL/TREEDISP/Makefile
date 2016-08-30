@@ -60,6 +60,7 @@ irstree_display.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
+irstree_display.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -105,6 +106,7 @@ TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
+TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_position.hxx
@@ -161,6 +163,7 @@ TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
+TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_position.hxx
