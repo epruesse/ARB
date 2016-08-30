@@ -118,7 +118,6 @@ makedir PROBE_COM/GENC &&
 makedir PROBE_COM/GENH &&
 makedir PROBE_COM/O &&
 
-
 makedir lib/help &&
 
 (test -d lib/pts || makedir lib/pts) &&
