@@ -50,11 +50,11 @@ bool AW_device_size::line_impl(int /*gc*/, const AW::LineVector& Line, AW_bitset
 bool AW_device_size::text_impl(int gc, const char *str, const AW::Position& pos,
                                AW_pos alignment, AW_bitset filteri, long opt_strlen) {
 
-    AW::Position          transPos    = transform(pos);
-    const AW_font_limits& font_limits = get_common()->map_gc(gc)->get_font_limits();
-    AW_pos                l_ascent    = font_limits.ascent;
-    AW_pos                l_descent   = font_limits.descent;
-    AW_pos                l_width     = get_common()->map_gc(gc)->get_string_size_fast(str, opt_strlen);
+    AW::Position          transPos  = transform(pos);
+    const AW_font_limits& font      = get_common()->map_gc(gc)->get_font_limits();
+    AW_pos                l_ascent  = font.ascent;
+    AW_pos                l_descent = font.descent;
+    AW_pos                l_width   = get_common()->map_gc(gc)->get_string_size_fast(str, opt_strlen);
 
     AW::Position upperLeft(AW::x_alignment(transPos.xpos(), l_width, alignment),
                            transPos.ypos()-l_ascent);
