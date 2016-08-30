@@ -111,8 +111,8 @@ bool AW_device::text_overlay(int gc, const char *opt_str, long opt_len,  // eith
                              AW_pos opt_ascent, AW_pos opt_descent,             // optional height (if == 0 take font height)
                              TextOverlayCallback toc)
 {
-    const AW_GC           *gcm         = get_common()->map_gc(gc);
-    const AW_font_limits&  font_limits = gcm->get_font_limits();
+    const AW_GC           *gcm  = get_common()->map_gc(gc);
+    const AW_font_limits&  font = gcm->get_font_limits();
 
     long   textlen;
     int    xi;
@@ -143,17 +143,17 @@ bool AW_device::text_overlay(int gc, const char *opt_str, long opt_len,  // eith
     transform(pos.xpos(), pos.ypos(), X0, Y0);
 
     if (allow_top_font_overlap() || clipRect.t == 0) {             // check clip border inside screen
-        if (Y0+font_limits.descent < clipRect.t) return 0; // draw outside screen
+        if (Y0+font.descent < clipRect.t) return 0; // draw outside screen
     }
     else {
-        if (Y0-font_limits.ascent < clipRect.t) return 0;  // don't cross the clip border
+        if (Y0-font.ascent < clipRect.t) return 0;  // don't cross the clip border
     }
 
     if (allow_bottom_font_overlap() || clipRect.b == screen.b) {   // check clip border inside screen
-        if (Y0-font_limits.ascent > clipRect.b) return 0;  // draw outside screen
+        if (Y0-font.ascent > clipRect.b) return 0;  // draw outside screen
     }
     else {
-        if (Y0+font_limits.descent> clipRect.b) return 0;  // don't cross the clip border
+        if (Y0+font.descent> clipRect.b) return 0;  // don't cross the clip border
     }
 
     if (!opt_len) {
@@ -179,20 +179,20 @@ bool AW_device::text_overlay(int gc, const char *opt_str, long opt_len,  // eith
     if (X0 > clipRect.r) return 0; // right of screen
 
     l = (int)clipRect.l;
-    if (xi + textlen*font_limits.width < l) return 0; // left of screen
+    if (xi + textlen*font.width < l) return 0; // left of screen
 
     start = 0;
 
     // now clip left side
     if (xi < l) {
-        if (font_limits.is_monospaced()) {
-            h = (l - xi)/font_limits.width;
+        if (font.is_monospaced()) {
+            h = (l - xi)/font.width;
             if (inside_clipping_left) {
-                if ((l-xi)%font_limits.width  >0) h += 1;
+                if ((l-xi)%font.width  >0) h += 1;
             }
             if (h >= textlen) return 0;
             start    = h;
-            xi      += h*font_limits.width;
+            xi      += h*font.width;
             textlen -= h;
 
             if (textlen < 0) return 0;
@@ -217,9 +217,9 @@ bool AW_device::text_overlay(int gc, const char *opt_str, long opt_len,  // eith
     }
 
     // now clip right side
-    if (font_limits.is_monospaced()) {
-        aw_assert(font_limits.width != 0); //division by zero
-        h = ((int)clipRect.r - xi) / font_limits.width;
+    if (font.is_monospaced()) {
+        aw_assert(font.width != 0); //division by zero
+        h = ((int)clipRect.r - xi) / font.width;
         if (h < textlen) {
             if (inside_clipping_right) {
                 textlen = h;
