@@ -136,7 +136,6 @@ public:
         one_letter.ascent  = ascent_of_chars[safeCharIndex(c)];
         one_letter.descent = descent_of_chars[safeCharIndex(c)];
         one_letter.width   = width_of_chars[safeCharIndex(c)];
-        one_letter.calc_height();
         return one_letter;
     }
 

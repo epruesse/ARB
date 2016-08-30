@@ -1320,8 +1320,8 @@ inline Position calc_text_coordinates_near_tip(AW_device *device, int gc, const 
      */
     const AW_font_limits& charLimits = device->get_font_limits(gc, 'A');
 
-    const double text_height = charLimits.height * device->get_unscale();
-    const double dist        = charLimits.height * device->get_unscale(); // @@@ same as text_height (ok?)
+    const double text_height = charLimits.get_height() * device->get_unscale();
+    const double dist        = charLimits.get_height() * device->get_unscale(); // @@@ same as text_height (ok?)
 
     Vector shift = orientation.normal();
     // use sqrt of sin(=y) to move text faster between positions below and above branch:

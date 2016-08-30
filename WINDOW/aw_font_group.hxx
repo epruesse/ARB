@@ -46,7 +46,7 @@ public:
     int get_width  (int gc) const { return get_limits(gc).width; }
     int get_ascent (int gc) const { return get_limits(gc).ascent; }
     int get_descent(int gc) const { return get_limits(gc).descent; }
-    int get_height (int gc) const { return get_limits(gc).height; }
+    int get_height (int gc) const { return get_limits(gc).get_height(); }
 
     // maximas of all registered fonts:
     int get_max_width  () const { return max_width; }

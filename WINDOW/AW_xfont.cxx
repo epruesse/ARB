@@ -846,7 +846,6 @@ void AW_GC_Xm::wm_set_font(const AW_font font_nr, const int size, int *found_siz
 void AW_GC::set_font(const AW_font font_nr, const int size, int *found_size) {
     font_limits.reset();
     wm_set_font(font_nr, size, found_size);
-    font_limits.calc_height();
     fontnr   = font_nr;
     fontsize = size;
 }
