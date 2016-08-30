@@ -1,14 +1,19 @@
-/* 
- * File:   aw_font_limits.hxx
- * Author: aboeckma
- *
- * Created on November 13, 2012, 12:35 PM
- */
+// ============================================================== //
+//                                                                //
+//   File: aw_font_limits.hxx                                     //
+//   http://www.arb-home.de/                                      //
+//                                                                //
+// ============================================================== //
 
-#pragma once
+#ifndef AW_FONT_LIMITS_HXX
+#define AW_FONT_LIMITS_HXX
 
+#ifndef _GLIBCXX_CLIMITS
 #include <climits>
+#endif
+#ifndef _GLIBCXX_ALGORITHM
 #include <algorithm>
+#endif
 
 struct AW_font_limits {
     short ascent;
@@ -49,3 +54,8 @@ struct AW_font_limits {
         calc_height();
     }
 };
+
+
+#else
+#error aw_font_limits.hxx included twice
+#endif // AW_FONT_LIMITS_HXX
