@@ -384,6 +384,7 @@ DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/aw_position.hxx

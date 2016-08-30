@@ -105,7 +105,7 @@ static bool AW_draw_string_on_printer(AW_device *devicei, int gc, const char *st
                 device->find_color_idx(gcm->get_last_fg_color()),
                 fontnr,
                 gcm->get_fontsize(),
-                (int)gcm->get_font_limits().height,
+                (int)gcm->get_font_limits().get_height(),
                 device->get_string_size(gc, str, 0),
                 print_pos(X),
                 print_pos(Y));

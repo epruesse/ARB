@@ -139,6 +139,7 @@ AW_button.o: aw_at.hxx
 AW_button.o: aw_awar.hxx
 AW_button.o: aw_base.hxx
 AW_button.o: aw_device.hxx
+AW_button.o: aw_font_limits.hxx
 AW_button.o: aw_keysym.hxx
 AW_button.o: aw_msg.hxx
 AW_button.o: aw_position.hxx
@@ -176,6 +177,7 @@ AW_button.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 AW_cb_struct.o: aw_base.hxx
 AW_cb_struct.o: aw_device.hxx
+AW_cb_struct.o: aw_font_limits.hxx
 AW_cb_struct.o: aw_keysym.hxx
 AW_cb_struct.o: aw_msg.hxx
 AW_cb_struct.o: aw_position.hxx
@@ -207,6 +209,7 @@ AW_clipable.o: aw_base.hxx
 AW_clipable.o: aw_common.hxx
 AW_clipable.o: aw_common_xm.hxx
 AW_clipable.o: aw_device.hxx
+AW_clipable.o: aw_font_limits.hxx
 AW_clipable.o: aw_keysym.hxx
 AW_clipable.o: aw_position.hxx
 AW_clipable.o: aw_root.hxx
@@ -235,6 +238,7 @@ AW_device.o: aw_base.hxx
 AW_device.o: aw_common.hxx
 AW_device.o: aw_common_xm.hxx
 AW_device.o: aw_device.hxx
+AW_device.o: aw_font_limits.hxx
 AW_device.o: aw_keysym.hxx
 AW_device.o: aw_position.hxx
 AW_device.o: aw_root.hxx
@@ -264,6 +268,7 @@ AW_device_click.o: aw_base.hxx
 AW_device_click.o: aw_common.hxx
 AW_device_click.o: aw_device.hxx
 AW_device_click.o: aw_device_click.hxx
+AW_device_click.o: aw_font_limits.hxx
 AW_device_click.o: aw_position.hxx
 AW_device_click.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_device_click.o: $(ARBHOME)/INCLUDE/arb_core.h
@@ -280,6 +285,7 @@ AW_device_click.o: $(ARBHOME)/INCLUDE/test_global.h
 AW_device_size.o: aw_base.hxx
 AW_device_size.o: aw_common.hxx
 AW_device_size.o: aw_device.hxx
+AW_device_size.o: aw_font_limits.hxx
 AW_device_size.o: aw_position.hxx
 AW_device_size.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_device_size.o: $(ARBHOME)/INCLUDE/arb_core.h
@@ -369,6 +375,7 @@ AW_font_group.o: aw_base.hxx
 AW_font_group.o: aw_common.hxx
 AW_font_group.o: aw_device.hxx
 AW_font_group.o: aw_font_group.hxx
+AW_font_group.o: aw_font_limits.hxx
 AW_font_group.o: aw_position.hxx
 AW_font_group.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_font_group.o: $(ARBHOME)/INCLUDE/arb_core.h
@@ -454,6 +461,7 @@ AW_modal.o: aw_awar.hxx
 AW_modal.o: aw_base.hxx
 AW_modal.o: aw_device.hxx
 AW_modal.o: aw_file.hxx
+AW_modal.o: aw_font_limits.hxx
 AW_modal.o: aw_global.hxx
 AW_modal.o: aw_keysym.hxx
 AW_modal.o: aw_msg.hxx
@@ -494,6 +502,7 @@ AW_option_toggle.o: aw_at.hxx
 AW_option_toggle.o: aw_awar.hxx
 AW_option_toggle.o: aw_base.hxx
 AW_option_toggle.o: aw_device.hxx
+AW_option_toggle.o: aw_font_limits.hxx
 AW_option_toggle.o: aw_keysym.hxx
 AW_option_toggle.o: aw_position.hxx
 AW_option_toggle.o: aw_root.hxx
@@ -541,6 +550,7 @@ AW_preset.o: aw_common.hxx
 AW_preset.o: aw_common_xm.hxx
 AW_preset.o: aw_def.hxx
 AW_preset.o: aw_device.hxx
+AW_preset.o: aw_font_limits.hxx
 AW_preset.o: aw_keysym.hxx
 AW_preset.o: aw_msg.hxx
 AW_preset.o: aw_nawar.hxx
@@ -584,6 +594,7 @@ AW_print.o: aw_common.hxx
 AW_print.o: aw_common_xm.hxx
 AW_print.o: aw_def.hxx
 AW_print.o: aw_device.hxx
+AW_print.o: aw_font_limits.hxx
 AW_print.o: aw_position.hxx
 AW_print.o: aw_root.hxx
 AW_print.o: aw_xfont.hxx
@@ -611,6 +622,7 @@ AW_question.o: aw_advice.hxx
 AW_question.o: aw_awar.hxx
 AW_question.o: aw_base.hxx
 AW_question.o: aw_device.hxx
+AW_question.o: aw_font_limits.hxx
 AW_question.o: aw_global.hxx
 AW_question.o: aw_keysym.hxx
 AW_question.o: aw_msg.hxx
@@ -644,6 +656,7 @@ AW_question.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 AW_rgb.o: aw_base.hxx
 AW_rgb.o: aw_device.hxx
+AW_rgb.o: aw_font_limits.hxx
 AW_rgb.o: aw_keysym.hxx
 AW_rgb.o: aw_position.hxx
 AW_rgb.o: aw_rgb.hxx
@@ -675,6 +688,7 @@ AW_rgb.o: $(ARBHOME)/INCLUDE/ttypes.h
 AW_root.o: aw_awar.hxx
 AW_root.o: aw_base.hxx
 AW_root.o: aw_device.hxx
+AW_root.o: aw_font_limits.hxx
 AW_root.o: aw_keysym.hxx
 AW_root.o: aw_msg.hxx
 AW_root.o: aw_nawar.hxx
@@ -715,6 +729,7 @@ AW_root_debug.o: aw_base.hxx
 AW_root_debug.o: aw_common.hxx
 AW_root_debug.o: aw_common_xm.hxx
 AW_root_debug.o: aw_device.hxx
+AW_root_debug.o: aw_font_limits.hxx
 AW_root_debug.o: aw_keysym.hxx
 AW_root_debug.o: aw_msg.hxx
 AW_root_debug.o: aw_position.hxx
@@ -775,6 +790,7 @@ aw_scalar.o: $(ARBHOME)/INCLUDE/ttypes.h
 AW_select.o: aw_awar.hxx
 AW_select.o: aw_base.hxx
 AW_select.o: aw_device.hxx
+AW_select.o: aw_font_limits.hxx
 AW_select.o: aw_keysym.hxx
 AW_select.o: aw_position.hxx
 AW_select.o: aw_root.hxx
@@ -855,6 +871,7 @@ AW_window.o: aw_common.hxx
 AW_window.o: aw_common_xm.hxx
 AW_window.o: aw_device.hxx
 AW_window.o: aw_device_click.hxx
+AW_window.o: aw_font_limits.hxx
 AW_window.o: aw_keysym.hxx
 AW_window.o: aw_msg.hxx
 AW_window.o: aw_nawar.hxx
@@ -902,6 +919,7 @@ AW_window_Xm_interface.o: aw_base.hxx
 AW_window_Xm_interface.o: aw_common.hxx
 AW_window_Xm_interface.o: aw_common_xm.hxx
 AW_window_Xm_interface.o: aw_device.hxx
+AW_window_Xm_interface.o: aw_font_limits.hxx
 AW_window_Xm_interface.o: aw_keysym.hxx
 AW_window_Xm_interface.o: aw_position.hxx
 AW_window_Xm_interface.o: aw_root.hxx
@@ -933,6 +951,7 @@ AW_window_Xm_interface.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 AW_xfig.o: aw_base.hxx
 AW_xfig.o: aw_device.hxx
+AW_xfig.o: aw_font_limits.hxx
 AW_xfig.o: aw_msg.hxx
 AW_xfig.o: aw_position.hxx
 AW_xfig.o: aw_xfig.hxx
@@ -958,6 +977,7 @@ AW_xfont.o: aw_common.hxx
 AW_xfont.o: aw_common_xm.hxx
 AW_xfont.o: aw_def.hxx
 AW_xfont.o: aw_device.hxx
+AW_xfont.o: aw_font_limits.hxx
 AW_xfont.o: aw_position.hxx
 AW_xfont.o: aw_root.hxx
 AW_xfont.o: aw_xfont.hxx
@@ -1014,6 +1034,7 @@ AW_Xm.o: aw_base.hxx
 AW_Xm.o: aw_common.hxx
 AW_Xm.o: aw_common_xm.hxx
 AW_Xm.o: aw_device.hxx
+AW_Xm.o: aw_font_limits.hxx
 AW_Xm.o: aw_position.hxx
 AW_Xm.o: aw_Xm.hxx
 AW_Xm.o: $(ARBHOME)/INCLUDE/arb_assert.h

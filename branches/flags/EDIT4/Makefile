@@ -60,6 +60,7 @@ ED4_base.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_base.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_base.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 ED4_base.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
+ED4_base.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 ED4_base.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_base.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ED4_base.o: $(ARBHOME)/INCLUDE/aw_position.hxx
@@ -110,6 +111,7 @@ ED4_block.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_block.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_block.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 ED4_block.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
+ED4_block.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 ED4_block.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_block.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ED4_block.o: $(ARBHOME)/INCLUDE/aw_position.hxx
@@ -150,6 +152,7 @@ ED4_colStat.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_colStat.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_colStat.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 ED4_colStat.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
+ED4_colStat.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 ED4_colStat.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_colStat.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ED4_colStat.o: $(ARBHOME)/INCLUDE/aw_position.hxx
@@ -187,6 +190,7 @@ ED4_consensus.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_consensus.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_consensus.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 ED4_consensus.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
+ED4_consensus.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 ED4_consensus.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_consensus.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_consensus.o: $(ARBHOME)/INCLUDE/aw_root.hxx
@@ -225,6 +229,7 @@ ED4_container.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_container.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_container.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 ED4_container.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
+ED4_container.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 ED4_container.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_container.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ED4_container.o: $(ARBHOME)/INCLUDE/aw_position.hxx
@@ -277,6 +282,7 @@ ED4_cursor.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_cursor.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_cursor.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 ED4_cursor.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
+ED4_cursor.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 ED4_cursor.o: $(ARBHOME)/INCLUDE/AW_helix.hxx
 ED4_cursor.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_cursor.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
@@ -324,6 +330,7 @@ ED4_dots.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_dots.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_dots.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 ED4_dots.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
+ED4_dots.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 ED4_dots.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_dots.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ED4_dots.o: $(ARBHOME)/INCLUDE/aw_position.hxx
@@ -364,6 +371,7 @@ ED4_dump.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_dump.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_dump.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 ED4_dump.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
+ED4_dump.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 ED4_dump.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_dump.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_dump.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -407,6 +415,7 @@ ED4_edit_string.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
+ED4_edit_string.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/AW_helix.hxx
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
@@ -496,6 +505,7 @@ ED4_main.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
+ED4_main.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/AW_helix.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
@@ -553,6 +563,7 @@ ED4_manager.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_manager.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_manager.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 ED4_manager.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
+ED4_manager.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 ED4_manager.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_manager.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ED4_manager.o: $(ARBHOME)/INCLUDE/aw_position.hxx
@@ -631,6 +642,7 @@ ED4_nds.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_nds.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_nds.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 ED4_nds.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
+ED4_nds.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 ED4_nds.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_nds.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ED4_nds.o: $(ARBHOME)/INCLUDE/aw_position.hxx
@@ -686,6 +698,7 @@ ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
+ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/AW_helix.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
@@ -733,6 +746,7 @@ ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
+ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_objspec.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -773,6 +787,7 @@ ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
+ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_position.hxx
@@ -818,6 +833,7 @@ ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
+ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_position.hxx
@@ -866,6 +882,7 @@ ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
+ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_position.hxx
@@ -936,6 +953,7 @@ ED4_root.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
+ED4_root.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/AW_helix.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
@@ -996,6 +1014,7 @@ ED4_search.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_search.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 ED4_search.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 ED4_search.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
+ED4_search.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 ED4_search.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_search.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ED4_search.o: $(ARBHOME)/INCLUDE/aw_position.hxx
@@ -1043,6 +1062,7 @@ ED4_seq_colors.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_seq_colors.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_seq_colors.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 ED4_seq_colors.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
+ED4_seq_colors.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 ED4_seq_colors.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_seq_colors.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ED4_seq_colors.o: $(ARBHOME)/INCLUDE/aw_position.hxx
@@ -1093,6 +1113,7 @@ ED4_terminal.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_terminal.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_terminal.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 ED4_terminal.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
+ED4_terminal.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 ED4_terminal.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_terminal.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ED4_terminal.o: $(ARBHOME)/INCLUDE/aw_position.hxx
@@ -1148,6 +1169,7 @@ ED4_text_terminals.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
+ED4_text_terminals.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/AW_helix.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
@@ -1185,6 +1207,7 @@ ED4_tools.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_tools.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_tools.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 ED4_tools.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
+ED4_tools.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 ED4_tools.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_tools.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_tools.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -1231,6 +1254,7 @@ ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
+ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/aw_position.hxx
@@ -1278,6 +1302,7 @@ ED4_window.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_window.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_window.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 ED4_window.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
+ED4_window.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 ED4_window.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_window.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_window.o: $(ARBHOME)/INCLUDE/aw_root.hxx
@@ -1321,6 +1346,7 @@ EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
+EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_position.hxx

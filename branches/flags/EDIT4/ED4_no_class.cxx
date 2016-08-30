@@ -111,7 +111,7 @@ void ED4_calc_terminal_extentions() {
 
     // for wanted_seq_term_height ignore descent, because it additionally allocates 'ED4_ROOT->helix_spacing' space:
     int wanted_seq_term_height = seq_font_limits.ascent + seq_term_descent + ED4_ROOT->terminal_add_spacing;
-    int wanted_seq_info_height = info_font_limits.height + ED4_ROOT->terminal_add_spacing;
+    int wanted_seq_info_height = info_font_limits.get_height() + ED4_ROOT->terminal_add_spacing;
 
     TERMINAL_HEIGHT = (wanted_seq_term_height>wanted_seq_info_height) ? wanted_seq_term_height : wanted_seq_info_height;
 

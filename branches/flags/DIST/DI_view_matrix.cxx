@@ -88,7 +88,7 @@ void MatrixDisplay::setup() {
                 const AW_font_limits& lim = device->get_font_limits(gc, 0);
 
                 cell_width  = std::max(cell_width, lim.width*max_chars[gc]);
-                cell_height = std::max(cell_height, int(lim.height));
+                cell_height = std::max(cell_height, int(lim.get_height()));
             }
         }
 
@@ -118,7 +118,7 @@ void MatrixDisplay::setup() {
         const AW_font_limits& lim = device->get_font_limits(DI_G_NAMES, 0);
  
         off_dx = awr->awar(AWAR_MATRIX_NAMECHARS_LEFT)->read_int() * lim.width + 1 + cell_paddx;
-        off_dy = lim.height + cell_height; // off_dy corresponds to "lower" y of cell
+        off_dy = lim.get_height() + cell_height; // off_dy corresponds to "lower" y of cell
     }
 
     if (m) {
