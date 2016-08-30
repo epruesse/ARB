@@ -133,9 +133,9 @@ public:
     const AW_font_limits& get_font_limits() const { return font_limits; }
     const AW_font_limits& get_font_limits(char c) const {
         aw_assert(c); // you want to use the version w/o parameter
-        one_letter.ascent  = ascent_of_chars[safeCharIndex(c)];
-        one_letter.descent = descent_of_chars[safeCharIndex(c)];
-        one_letter.width   = width_of_chars[safeCharIndex(c)];
+        one_letter.ascent    = ascent_of_chars[safeCharIndex(c)];
+        one_letter.descent   = descent_of_chars[safeCharIndex(c)];
+        one_letter.min_width = one_letter.width = width_of_chars[safeCharIndex(c)];
         return one_letter;
     }
 
