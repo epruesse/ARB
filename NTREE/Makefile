@@ -107,6 +107,7 @@ ad_spec.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
+ad_spec.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_position.hxx
@@ -210,6 +211,7 @@ ad_trees.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_edit.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_file.hxx
+ad_trees.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_position.hxx
@@ -393,6 +395,7 @@ NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
+NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 NT_branchAnalysis.o: $(ARBHOME)/INCLUDE/aw_position.hxx
@@ -438,6 +441,7 @@ NT_cb.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
+NT_cb.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/aw_position.hxx
@@ -572,6 +576,7 @@ NT_edconf.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
+NT_edconf.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_position.hxx
@@ -636,6 +641,7 @@ NT_extern.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_file.hxx
+NT_extern.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_global_awars.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
@@ -707,6 +713,7 @@ NT_import.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
+NT_import.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/aw_position.hxx
@@ -894,6 +901,7 @@ NT_shadeTree.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 NT_shadeTree.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 NT_shadeTree.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 NT_shadeTree.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
+NT_shadeTree.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 NT_shadeTree.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 NT_shadeTree.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 NT_shadeTree.o: $(ARBHOME)/INCLUDE/aw_root.hxx
@@ -982,6 +990,7 @@ NT_taxonomy.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 NT_taxonomy.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 NT_taxonomy.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 NT_taxonomy.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
+NT_taxonomy.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 NT_taxonomy.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 NT_taxonomy.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 NT_taxonomy.o: $(ARBHOME)/INCLUDE/aw_position.hxx

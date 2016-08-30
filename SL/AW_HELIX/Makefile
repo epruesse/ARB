@@ -52,6 +52,7 @@ AW_helix.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+AW_helix.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_root.hxx

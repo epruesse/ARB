@@ -115,6 +115,7 @@ SEC_db.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
+SEC_db.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/aw_position.hxx
@@ -169,6 +170,7 @@ SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
+SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_global.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
@@ -218,6 +220,7 @@ SEC_helix.o: $(ARBHOME)/INCLUDE/attributes.h
 SEC_helix.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 SEC_helix.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 SEC_helix.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
+SEC_helix.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 SEC_helix.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 SEC_helix.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 SEC_helix.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
@@ -245,6 +248,7 @@ SEC_io.o: $(ARBHOME)/INCLUDE/attributes.h
 SEC_io.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 SEC_io.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 SEC_io.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
+SEC_io.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 SEC_io.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 SEC_io.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 SEC_io.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
@@ -269,6 +273,7 @@ SEC_layout.o: $(ARBHOME)/INCLUDE/attributes.h
 SEC_layout.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 SEC_layout.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 SEC_layout.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
+SEC_layout.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 SEC_layout.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 SEC_layout.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 SEC_layout.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
@@ -308,6 +313,7 @@ SEC_main.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
+SEC_main.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_position.hxx
@@ -361,6 +367,7 @@ SEC_paint.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
+SEC_paint.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/aw_position.hxx
@@ -398,6 +405,7 @@ SEC_read.o: $(ARBHOME)/INCLUDE/attributes.h
 SEC_read.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 SEC_read.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 SEC_read.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
+SEC_read.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 SEC_read.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 SEC_read.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 SEC_read.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
@@ -424,6 +432,7 @@ SEC_split.o: $(ARBHOME)/INCLUDE/attributes.h
 SEC_split.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 SEC_split.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 SEC_split.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
+SEC_split.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 SEC_split.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 SEC_split.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 SEC_split.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
@@ -448,6 +457,7 @@ SEC_structure.o: $(ARBHOME)/INCLUDE/attributes.h
 SEC_structure.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 SEC_structure.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 SEC_structure.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
+SEC_structure.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 SEC_structure.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 SEC_structure.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 SEC_structure.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
@@ -476,6 +486,7 @@ SEC_toggle.o: $(ARBHOME)/INCLUDE/attributes.h
 SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
+SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 SEC_toggle.o: $(ARBHOME)/INCLUDE/aw_window.hxx
