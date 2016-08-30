@@ -101,7 +101,7 @@ struct AWT_scaled_font_limits {
     void init(const AW_font_limits& font_limits, double factor) {
         ascent  = font_limits.ascent*factor;
         descent = font_limits.descent*factor;
-        height  = font_limits.height*factor;
+        height  = font_limits.get_height()*factor;
         width   = font_limits.width*factor;
     }
 };

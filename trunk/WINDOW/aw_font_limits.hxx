@@ -18,12 +18,11 @@
 struct AW_font_limits {
     short ascent;
     short descent;
-    short height;
     short width;
     short min_width;
 
     void reset() {
-        ascent    = descent = height = width = 0;
+        ascent    = descent = width = 0;
         min_width = SHRT_MAX;
     }
 
@@ -40,19 +39,17 @@ struct AW_font_limits {
         notify_width  (a_width);
     }
 
-    void calc_height() { height = ascent+descent+1; }
+    short get_height() const { return ascent+descent+1; }
 
     bool is_monospaced() const { return width == min_width; }
 
     AW_font_limits() { reset(); }
-    AW_font_limits(const AW_font_limits& lim1, const AW_font_limits& lim2)
-        : ascent(std::max(lim1.ascent, lim2.ascent)),
-          descent(std::max(lim1.descent, lim2.descent)),
-          width(std::max(lim1.width, lim2.width)),
-          min_width(std::min(lim1.min_width, lim2.min_width))
-    {
-        calc_height();
-    }
+    AW_font_limits(const AW_font_limits& lim1, const AW_font_limits& lim2) :
+        ascent(std::max(lim1.ascent, lim2.ascent)),
+        descent(std::max(lim1.descent, lim2.descent)),
+        width(std::max(lim1.width, lim2.width)),
+        min_width(std::min(lim1.min_width, lim2.min_width))
+    {}
 };
 
 
