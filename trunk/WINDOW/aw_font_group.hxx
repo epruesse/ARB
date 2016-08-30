@@ -28,16 +28,25 @@ class AW_font_group {
     int max_descent;
     int max_height;
 
+#if defined(ASSERTION_USED)
+    bool font_registered(int gc) const { return max_letter_limits[gc].min_width>0; }
+#endif
+
 public:
     AW_font_group();
 
     void unregisterAll();
     void registerFont(AW_device *device_, int gc, const char *chars = 0); // if no 'chars' specified => use complete ASCII-range
 
-    int get_width  (int gc) const { return max_letter_limits[gc].width; }
-    int get_ascent (int gc) const { return max_letter_limits[gc].ascent; }
-    int get_descent(int gc) const { return max_letter_limits[gc].descent; }
-    int get_height (int gc) const { return max_letter_limits[gc].height; }
+    const AW_font_limits& get_limits(int gc) const {
+        aw_assert(font_registered(gc));
+        return max_letter_limits[gc];
+    }
+
+    int get_width  (int gc) const { return get_limits(gc).width; }
+    int get_ascent (int gc) const { return get_limits(gc).ascent; }
+    int get_descent(int gc) const { return get_limits(gc).descent; }
+    int get_height (int gc) const { return get_limits(gc).height; }
 
     // maximas of all registered fonts:
     int get_max_width  () const { return max_width; }
