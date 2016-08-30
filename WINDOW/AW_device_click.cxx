@@ -156,11 +156,11 @@ bool AW_device_click::text_impl(int gc, const char *str, const AW::Position& pos
     AW_pos X0, Y0;          // Transformed pos
     this->transform(pos.xpos(), pos.ypos(), X0, Y0);
 
-    const AW_GC           *gcm         = get_common()->map_gc(gc);
-    const AW_font_limits&  font_limits = gcm->get_font_limits();
+    const AW_GC           *gcm  = get_common()->map_gc(gc);
+    const AW_font_limits&  font = gcm->get_font_limits();
 
-    AW_pos Y1 = Y0+font_limits.descent;
-    Y0        = Y0-font_limits.ascent;
+    AW_pos Y1 = Y0+font.descent;
+    Y0        = Y0-font.ascent;
 
     // Fast check text against top/bottom clip
     const AW_screen_area& clipRect = get_cliprect();
