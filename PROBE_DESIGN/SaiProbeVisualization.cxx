@@ -430,7 +430,7 @@ void SAI_graphic::paint(AW_device *device) {
         xStep_border = pbFontLim.width;
         xStep_target = target_font_limits.width;
 
-        yStep      = all_font_limits.height;
+        yStep      = all_font_limits.get_height();
         maxDescent = all_font_limits.descent;
     }
 

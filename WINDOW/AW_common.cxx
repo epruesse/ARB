@@ -188,7 +188,7 @@ void AW_GC::set_char_size(int i, int ascent, int descent, int width) {
     prvt->ascent_of_chars[i]  = ascent;
     prvt->descent_of_chars[i] = descent;
     prvt->width_of_chars[i]   = width;
-    prvt->font_limits.notify_all(ascent, descent, width);
+    prvt->font_limits.notify(ascent, descent, width);
 }
 
 void AW_GC::set_no_char_size(int i) {
@@ -246,7 +246,6 @@ void AW_GC::set_fg_color(AW_rgb col) {
 void AW_GC::set_font(const char* fontname, bool force_monospace) {
     prvt->font_limits.reset();
     wm_set_font(fontname, force_monospace);
-    prvt->font_limits.calc_height();
 }
 
 AW_common *AW_GC::get_common() const {
@@ -261,8 +260,7 @@ const AW_font_limits& AW_GC::get_font_limits(char c) const {
     aw_assert(c); // you want to use the version w/o parameter
     prvt->one_letter.ascent  = prvt->ascent_of_chars[safeCharIndex(c)];
     prvt->one_letter.descent = prvt->descent_of_chars[safeCharIndex(c)];
-    prvt->one_letter.width   = prvt->width_of_chars[safeCharIndex(c)];
-    prvt->one_letter.calc_height();
+    prvt->one_letter.width   = prvt->one_letter.min_width   = prvt->width_of_chars[safeCharIndex(c)];
     return prvt->one_letter;
 }
 

@@ -14,44 +14,44 @@
 #ifndef _GLIBCXX_ALGORITHM
 #include <algorithm>
 #endif
+#ifndef AW_ASSERT_HXX
+#include "aw_assert.hxx"
+#endif
 
 struct AW_font_limits {
     short ascent;
     short descent;
-    short height;
     short width;
     short min_width;
 
-    void reset() {
-        ascent    = descent = height = width = 0;
-        min_width = SHRT_MAX;
+    void reset() { *this = AW_font_limits(); }
+
+    bool was_notified() const { return min_width != SHRT_MAX; } // true when notify... called
+
+    void notify(short ascent_, short descent_, short width_) {
+        ascent    = std::max(ascent_, ascent);
+        descent   = std::max(descent_, descent);
+        width     = std::max(width_, width);
+        min_width = std::min(width_, min_width);
     }
 
-    void notify_ascent(short a) { ascent = std::max(a, ascent); }
-    void notify_descent(short d) { descent = std::max(d, descent); }
-    void notify_width(short w) {
-        width     = std::max(w, width);
-        min_width = std::min(w, min_width);
-    }
+    short get_height() const { return ascent+descent+1; }
 
-    void notify_all(short a_ascent, short a_descent, short a_width) {
-        notify_ascent (a_ascent);
-        notify_descent(a_descent);
-        notify_width  (a_width);
-    }
+    bool is_monospaced() const { aw_assert(was_notified()); return width == min_width; }
 
-    void calc_height() { height = ascent+descent+1; }
-
-    bool is_monospaced() const { return width == min_width; }
-
-    AW_font_limits() { reset(); }
-    AW_font_limits(const AW_font_limits& lim1, const AW_font_limits& lim2)
-        : ascent(std::max(lim1.ascent, lim2.ascent)),
-          descent(std::max(lim1.descent, lim2.descent)),
-          width(std::max(lim1.width, lim2.width)),
-          min_width(std::min(lim1.min_width, lim2.min_width))
+    AW_font_limits() :
+        ascent(0),
+        descent(0),
+        width(0),
+        min_width(SHRT_MAX)
+    {}
+    AW_font_limits(const AW_font_limits& lim1, const AW_font_limits& lim2) : // works with notified and initial AW_font_limits
+        ascent(std::max(lim1.ascent, lim2.ascent)),
+        descent(std::max(lim1.descent, lim2.descent)),
+        width(std::max(lim1.width, lim2.width)),
+        min_width(std::min(lim1.min_width, lim2.min_width))
     {
-        calc_height();
+        aw_assert(correlated(lim1.was_notified() || lim2.was_notified(), was_notified()));
     }
 };
 
