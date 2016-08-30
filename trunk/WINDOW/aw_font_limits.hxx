@@ -26,17 +26,11 @@ struct AW_font_limits {
         min_width = SHRT_MAX;
     }
 
-    void notify_ascent(short a) { ascent = std::max(a, ascent); }
-    void notify_descent(short d) { descent = std::max(d, descent); }
-    void notify_width(short w) {
-        width     = std::max(w, width);
-        min_width = std::min(w, min_width);
-    }
-
-    void notify_all(short a_ascent, short a_descent, short a_width) {
-        notify_ascent (a_ascent);
-        notify_descent(a_descent);
-        notify_width  (a_width);
+    void notify(short ascent_, short descent_, short width_) {
+        ascent    = std::max(ascent_, ascent);
+        descent   = std::max(descent_, descent);
+        width     = std::max(width_, width);
+        min_width = std::min(width_, min_width);
     }
 
     short get_height() const { return ascent+descent+1; }

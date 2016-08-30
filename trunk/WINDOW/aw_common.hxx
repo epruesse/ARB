@@ -105,7 +105,7 @@ protected:
         ascent_of_chars[i]  = ascent;
         descent_of_chars[i] = descent;
         width_of_chars[i]   = width;
-        font_limits.notify_all(ascent, descent, width);
+        font_limits.notify(ascent, descent, width);
     }
     void set_no_char_size(int i) {
         ascent_of_chars[i]  = 0;
