@@ -649,20 +649,21 @@ void ED4_text_terminal::draw() {
         const char               *header_text = header_term->get_displayed_text();
 
         text_y += (SEQ_TERM_TEXT_YOFFSET-INFO_TERM_TEXT_YOFFSET);
-        current_device()->text(ED4_G_STANDARD, header_text, text_x, text_y, 0, AW_SCREEN, header_term->get_length()); // @@@ fake GC
+        current_device()->text(ED4_G_FLAG_INFO, header_text, text_x, text_y, 0, AW_SCREEN, header_term->get_length());
     }
     else {
         char *db_pointer = resolve_pointer_to_string_copy();
 
         if (is_sequence_info_terminal()) {
             current_device()->text(ED4_G_STANDARD, db_pointer, text_x, text_y, 0, AW_SCREEN, 4);
+            e4_assert(0); // @@@ does this ever happen? ED4_sequence_info_terminal::draw() is overloaded as well. DRY!
         }
         else if (is_pure_text_terminal()) { // normal text (i.e. remark)
             text_y += (SEQ_TERM_TEXT_YOFFSET-INFO_TERM_TEXT_YOFFSET);
             current_device()->text(ED4_G_SEQUENCES, db_pointer, text_x, text_y, 0, AW_SCREEN, 0);
         }
         else {
-            e4_assert(0); // unknown terminal type
+            e4_assert(0); // unhandled terminal type
         }
 
         free(db_pointer);

@@ -23,10 +23,10 @@
 
 enum ED4_gc {
     ED4_G_STANDARD,
+    ED4_G_FLAG_INFO,
 
-    ED4_G_SEQUENCES,
-
-    ED4_G_HELIX,    // also used as sequence color 1
+    ED4_G_SEQUENCES, // also used as sequence color 0
+    ED4_G_HELIX,     // also used as sequence color 1
     ED4_G_COLOR_2,
     ED4_G_COLOR_3,
     ED4_G_COLOR_4,
@@ -61,6 +61,9 @@ enum ED4_gc {
     ED4_G_SBACK_7,
     ED4_G_SBACK_8,
     ED4_G_MBACK,    // Mismatches
+
+    ED4_G_FLAG_FRAME,
+    ED4_G_FLAG_FILL,
 
     ED4_G_FIRST_COLOR_GROUP,   // Background colors for colored species
     ED4_G_LAST_COLOR_GROUP = ED4_G_FIRST_COLOR_GROUP+AW_COLOR_GROUPS-1,

@@ -531,6 +531,7 @@ void ED4_root::recalc_font_group() {
     int font_GC[] = {
         ED4_G_SEQUENCES,
         ED4_G_STANDARD,
+        ED4_G_FLAG_INFO,
     };
 
     font_group.unregisterAll();
@@ -597,7 +598,7 @@ ED4_returncode ED4_root::create_hierarchy(const char *area_string_middle, const 
 
     {
         arb_progress species_progress("Loading species", total_no_of_species);
-        
+
         // ********** Top Area beginning **********
 
         ED4_multi_species_manager *top_multi_species_manager;
@@ -1338,7 +1339,8 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
                               makeGcChangedCallback(gc_change_cb), // callback triggering refresh on gc-change
 
                               "#f8f8f8",
-                              "STANDARD$black",              // Standard Color showing sequences
+                              "STANDARD$black",              // standard color showing species/group info (name, ...)
+                              "FlagInfo$#DDD",
                               "#SEQUENCES (0)$#505050",      // default color for sequences (color 0)
 
                               "+-HELIX (1)$#8E0000",  "+-COLOR 2$#0000dd",    "-COLOR 3$#00AA55",
@@ -1358,7 +1360,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
                               "+-Primer(l)$#A9FE54",  "+-Primer(r)$#A9FE54",  "-Primer(g)$#A9FE54",
                               "+-Sig(l)$#DBB0FF",     "+-Sig(r)$#DBB0FF",     "-Sig(g)$#DBB0FF",
 
-                              "-MISMATCHES$#FF9AFF",
+                              "+-MISMATCHES$#FF9AFF", "+-Flag$#7c7ce3",       "-FlagFill$#aacef1",
 
                               "&color_groups", // use color groups
 

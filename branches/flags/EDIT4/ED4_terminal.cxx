@@ -1317,11 +1317,8 @@ void ED4_flag_terminal::draw() {
         }
 #endif
         for (int b = 0; b<boxes; ++b) {
-            if ((b%2) == 0) device->box(ED4_G_SELECTED, FillStyle::SOLID, box, AW_SCREEN); // fill?
-
-            int gc = ED4_G_STANDARD; // @@@ fake
-            device->box(gc, FillStyle::EMPTY, box, AW_SCREEN); // frame
-
+            if ((b%2) == 0) device->box(ED4_G_FLAG_FILL, FillStyle::SOLID, box, AW_SCREEN); // filled?
+            device->box(ED4_G_FLAG_FRAME, FillStyle::EMPTY, box, AW_SCREEN); // frame
             box.move(to_next_box);
         }
     }

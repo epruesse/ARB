@@ -133,7 +133,13 @@ void ED4_calc_terminal_extentions() {
 
     {
         int headerlen = SpeciesFlags::instance().get_header_length();
-        FLAG_WIDTH    = headerlen ? info_char_width*(headerlen+1) : 0;
+        if (headerlen) {
+            int flag_char_width = font_group.get_width(ED4_G_FLAG_INFO);
+            FLAG_WIDTH          = flag_char_width*(headerlen+1);
+        }
+        else {
+            FLAG_WIDTH = 0;
+        }
     }
 
     MAXINFO_WIDTH =
