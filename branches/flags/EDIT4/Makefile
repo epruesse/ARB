@@ -452,6 +452,8 @@ ED4_flags.o: $(ARBHOME)/INCLUDE/arbtools.h
 ED4_flags.o: $(ARBHOME)/INCLUDE/attributes.h
 ED4_flags.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_flags.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
+ED4_flags.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+ED4_flags.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 ED4_flags.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_flags.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_flags.o: $(ARBHOME)/INCLUDE/aw_window.hxx

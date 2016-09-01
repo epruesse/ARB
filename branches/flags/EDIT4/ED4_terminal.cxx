@@ -1295,17 +1295,16 @@ void ED4_flag_terminal::draw() {
 
     int boxes = flags.size();
     if (boxes>0) {
-        Rectangle area = get_win_area(current_ed4w());
+        Rectangle area    = get_win_area(current_ed4w());
+        double    boxsize = std::max(1.0, std::min(double(flags.get_min_flag_distance()), area.height()*0.95));
 
-        double width  = area.width();
-        double offset = width/boxes;  // from box to box
-
-        double boxsize = std::max(1.0, std::min(offset, area.height())*0.9);
-
-        Vector to_next_box(offset, 0);
         Vector box_diag(boxsize, -boxsize);
 
-        Position  box_center = area.left_edge().centroid() + to_next_box/2;
+        SpeciesFlagCiter curr_flag = flags.begin();
+        SpeciesFlagCiter end       = flags.end();
+
+        double    flag_centerx  = curr_flag->center_xpos(); // flag x-position relative to terminal
+        Position  box_center    = area.left_edge().centroid() + Vector(flag_centerx, 0);
         Rectangle box(box_center-box_diag/2, box_diag);
 
         AW_device *device = current_device();
@@ -1317,15 +1316,21 @@ void ED4_flag_terminal::draw() {
         }
 #endif
         for (int b = 0; b<boxes; ++b) {
-            if ((b%2) == 0) device->box(ED4_G_FLAG_FILL, FillStyle::SOLID, box, AW_SCREEN); // filled?
-            device->box(ED4_G_FLAG_FRAME, FillStyle::EMPTY, box, AW_SCREEN); // frame
-            box.move(to_next_box);
+            if ((b%2) == 0) device->box(ED4_G_FLAG_FILL, FillStyle::SOLID, box, AW_SCREEN);             // filled?
+            device->box(ED4_G_FLAG_FRAME, FillStyle::EMPTY, box, AW_SCREEN);                            // frame
+
+            ++curr_flag;
+            if (curr_flag != end) {
+                double next_centerx = curr_flag->center_xpos();
+                box.move(Vector(next_centerx - flag_centerx, 0));
+                flag_centerx = next_centerx;
+            }
         }
     }
 #if defined(DEBUG) // @@@ debug code showing space wasted if NO flags are defined. fix terminal sizes and remove this code
     else {
         AW_device *device = current_device();
-        Rectangle area = get_win_area(current_ed4w());
+        Rectangle  area   = get_win_area(current_ed4w());
 
         static int mix = 0;
         device->box(ED4_G_COLOR_2+mix, FillStyle::SOLID, area, AW_SCREEN); // whole area

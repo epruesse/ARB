@@ -132,10 +132,12 @@ void ED4_calc_terminal_extentions() {
     }
 
     {
-        int headerlen = SpeciesFlags::instance().get_header_length();
+        SpeciesFlags& flags     = SpeciesFlags::mutable_instance();
+        int           headerlen = flags.get_header_length();
+
         if (headerlen) {
-            int flag_char_width = font_group.get_width(ED4_G_FLAG_INFO);
-            FLAG_WIDTH          = flag_char_width*(headerlen+1);
+            flags.calculate_header_dimensions(device, ED4_G_FLAG_INFO);
+            FLAG_WIDTH = flags.get_pixel_width();
         }
         else {
             FLAG_WIDTH = 0;
