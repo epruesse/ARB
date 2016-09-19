@@ -34,7 +34,9 @@ public:
         fieldname(fieldname_),
         xpos(-1),
         width(-1)
-    {}
+    {
+        e4_assert(!shortname.empty()); // not allowed
+    }
 
     const std::string& get_shortname() const { return shortname; }
 
@@ -79,8 +81,6 @@ class SpeciesFlags : public SpeciesFlagList {
 
 public:
 
-    // @@@ add config() (=open GUI)
-
     static const SpeciesFlags& instance() {
         if (!SINGLETON) create_instance();
         e4_assert(SINGLETON);
@@ -88,6 +88,10 @@ public:
     }
     static SpeciesFlags& mutable_instance() {
         return const_cast<SpeciesFlags&>(instance());
+    }
+    static void forget() {
+        delete SINGLETON;
+        SINGLETON = NULL;
     }
 
     const char *get_header_text() const {
@@ -111,6 +115,8 @@ public:
 
     void calculate_header_dimensions(AW_device *device, int gc);
 };
+
+AW_window *ED4_configure_species_flags(AW_root *root, GBDATA *gb_main);
 
 #else
 #error ed4_flags.hxx included twice

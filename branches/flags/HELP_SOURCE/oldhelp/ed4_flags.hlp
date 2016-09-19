@@ -1,0 +1,30 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP      arb.hlp
+UP      glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB    subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE           Species flags
+
+OCCURRENCE      ARB_EDIT4/Properties/Select species flags
+
+DESCRIPTION     This module allows to show clickable flags between the species name
+                and the sequence display area.
+
+                These flags display values of selected database fields as bool value (ie. "on"/"off")
+                and by clicking them, you are able to toggle the value of these database fields.
+                (@@@ not implemented yet)
+
+NOTES           To display more than just a bool value use LINK{ed4_nds.hlp} with an ACI like 
+
+                   readdb(name);" | ";readdb(nuc)
+
+EXAMPLES        None
+
+WARNINGS        None
+
+BUGS            No bugs known

@@ -23,6 +23,7 @@
 #include "graph_aligner_gui.hxx"
 #include "ed4_colStat.hxx"
 #include "ed4_seq_colors.hxx"
+#include "ed4_flags.hxx"
 
 #include <ed4_extern.hxx>
 #include <fast_aligner.hxx>
@@ -1574,14 +1575,15 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
 
     awmm->sep______________();
 
+    awmm->insert_menu_topic(awmm->local_id("props_nds"),     "Select visible info (NDS) ", "D", "ed4_nds.hlp",   AWM_ALL, ED4_create_nds_window);
+    awmm->insert_menu_topic(awmm->local_id("props_flags"),   "Select species flags",       "f", "ed4_flags.hlp", AWM_ALL, makeCreateWindowCallback(ED4_configure_species_flags, GLOBAL_gb_main));
     {
         static WindowCallback reqRelCb = makeWindowCallback(ED4_request_relayout);
         if (alignment_type == GB_AT_AA) awmm->insert_menu_topic(awmm->local_id("props_pfold"),     "Protein Match Settings ", "P", "pfold_props.hlp", AWM_ALL, makeCreateWindowCallback(ED4_pfold_create_props_window, &reqRelCb));
         else                            awmm->insert_menu_topic(awmm->local_id("props_helix_sym"), "Helix Settings ",         "H", "helixsym.hlp",    AWM_ALL, makeCreateWindowCallback(create_helix_props_window,     &reqRelCb));
     }
-
     awmm->insert_menu_topic(awmm->local_id("props_key_map"), "Key Mappings ",              "K", "nekey_map.hlp", AWM_ALL, create_key_map_window);
-    awmm->insert_menu_topic(awmm->local_id("props_nds"),     "Select visible info (NDS) ", "D", "ed4_nds.hlp",   AWM_ALL, ED4_create_nds_window);
+
     awmm->sep______________();
     AW_insert_common_property_menu_entries(awmm);
     awmm->sep______________();

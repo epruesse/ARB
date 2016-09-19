@@ -648,7 +648,7 @@ void ED4_text_terminal::draw() {
         ED4_flag_header_terminal *header_term = to_flag_header_terminal();
         const char               *header_text = header_term->get_displayed_text();
 
-        text_y += (SEQ_TERM_TEXT_YOFFSET-INFO_TERM_TEXT_YOFFSET);
+        text_y += (SEQ_TERM_TEXT_YOFFSET-INFO_TERM_TEXT_YOFFSET); // @@@ wrong vertical shift? (change fontsize to examine)
         current_device()->text(ED4_G_FLAG_INFO, header_text, text_x, text_y, 0, AW_SCREEN, header_term->get_length());
     }
     else {
