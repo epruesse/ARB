@@ -197,10 +197,9 @@ struct EDB_root_bact {
 
     ED4_returncode search_sequence_data_rek(ED4_multi_sequence_manager *multi_sequence_manager,
                                             ED4_reference_terminals&    refterms,
-                                            GBDATA                     *gb_datamode,
+                                            GBDATA                     *gb_ali_xxx, // alignment-container (or any subcontainer of)
                                             int                         count_too,
-                                            ED4_index                  *max_seq_terminal_length,
-                                            ED4_alignment               alignment_flag,
+                                            ED4_index                  *max_sequence_terminal_length,
                                             bool                        isSAI);
 
     void scan_string(ED4_multi_species_manager *parent,
@@ -945,6 +944,18 @@ public:
     DECLARE_DUMP_FOR_ROOTCLASS(ED4_base);
 
     // function for species_pointer
+    //
+    // Notes:
+    //
+    // * design is broken @@@
+    //   - my_species_pointer should be member of those derived classes, where it's used
+    //   - accessor functions should tell what we get (eg. ED4_species_name_terminal::get_name_entry() or similar)
+    //
+    // * current uses of my_species_pointer (grepped for 'set_species_pointer' to detect):
+    //   - ED4_species_manager        [holds pointer to]  species/SAI container
+    //   - ED4_species_name_terminal  [holds pointer to]  the 'name' entry of species/SAI
+    //   - ED4_sequence_info_terminal [holds pointer to]  the displayed sub-entry of the alignment-container of species/SAI (multiple may exist per species)
+    //   - ED4_text_terminal          [holds pointer to]  same as ED4_sequence_info_terminal (Caution: not true for all text terminals!)
 
     GBDATA *get_species_pointer() const { return my_species_pointer.Get(); }
     void set_species_pointer(GBDATA *gbd) { my_species_pointer.Set(gbd, this); }

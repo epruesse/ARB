@@ -220,11 +220,6 @@ enum ED4_consensus {
     ED4_K_SUB
 };
 
-enum ED4_alignment {
-    ED4_A_DEFAULT,
-    ED4_A_CONTAINER
-};
-
 enum ED4_aa_seq_flag {
     ED4_AA_FRWD_1,
     ED4_AA_FRWD_2,
