@@ -191,6 +191,7 @@ AWT_config_manager.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 AWT_db_browser.o: awt.hxx
 AWT_db_browser.o: awt_hexdump.hxx
+AWT_db_browser.o: awt_misc.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/ad_cb.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/ad_cb_prot.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -347,6 +348,7 @@ AWT_misc.o: $(ARBHOME)/INCLUDE/aw_advice.hxx
 AWT_misc.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 AWT_misc.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWT_misc.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+AWT_misc.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 AWT_misc.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_misc.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_misc.o: $(ARBHOME)/INCLUDE/cb.h
