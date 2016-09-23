@@ -45,13 +45,13 @@ ED4_returncode EDB_root_bact::fill_data(ED4_multi_species_manager *multi_species
                                         int                        group_depth,
                                         ED4_datamode               datamode)
 {
-    GBDATA *gb_datamode = NULL;
+    GBDATA *gb_item = NULL;
     switch (datamode) {
-        case ED4_D_EXTENDED: gb_datamode = GBT_find_SAI(GLOBAL_gb_main, str); break;
-        case ED4_D_SPECIES:  gb_datamode = GBT_find_species(GLOBAL_gb_main, str); break;
+        case ED4_D_EXTENDED: gb_item = GBT_find_SAI(GLOBAL_gb_main, str); break;
+        case ED4_D_SPECIES:  gb_item = GBT_find_species(GLOBAL_gb_main, str); break;
     }
 
-    if (!gb_datamode) { // didn't find this species
+    if (!gb_item) { // didn't find this species/SAI
         not_found_counter++;
         if (not_found_counter <= MAX_SHOWN_MISSING_SPECIES) {
             char dummy[150];
@@ -63,7 +63,7 @@ ED4_returncode EDB_root_bact::fill_data(ED4_multi_species_manager *multi_species
     }
 
     // check whether sequence has data in desired alignment
-    bool has_alignment = 0 != GB_entry(gb_datamode, ED4_ROOT->alignment_name);
+    bool has_alignment = 0 != GB_entry(gb_item, ED4_ROOT->alignment_name);
     if (!has_alignment) {
         if (datamode == ED4_D_SPECIES) { // only warn about species w/o data (SAIs are skipped silently)
             not_found_counter++;
@@ -91,7 +91,7 @@ ED4_returncode EDB_root_bact::fill_data(ED4_multi_species_manager *multi_species
             ED4_abstract_group_manager *group_man = species_manager->get_parent(ED4_level(LEV_GROUP|LEV_ROOTGROUP))->to_abstract_group_manager();
             group_man->table().ignore_me(); // ignore SAI tables (does not work - instead ignore SAIs when calculating consensus)
         }
-        species_manager->set_species_pointer(gb_datamode);
+        species_manager->set_species_pointer(gb_item);
         multi_species_manager->append_member(species_manager);
 
         sprintf(namebuffer, "MultiName_Manager.%ld.%d", ED4_counter, count_two);
@@ -112,11 +112,14 @@ ED4_returncode EDB_root_bact::fill_data(ED4_multi_species_manager *multi_species
             ED4_species_name_terminal *species_name_terminal = new ED4_species_name_terminal(namebuffer, MAXNAME_WIDTH-(group_depth*BRACKET_WIDTH), TERMINAL_HEIGHT, name_manager);
             species_name_terminal->set_property((ED4_properties) (PROP_SELECTABLE | PROP_DRAGABLE | PROP_IS_HANDLE));
             species_name_terminal->set_links(NULL, refterms.sequence());
-            species_name_terminal->set_species_pointer(GB_entry(gb_datamode, "name"));
+            species_name_terminal->set_species_pointer(GB_entry(gb_item, "name"));
             name_manager->append_member(species_name_terminal);
         }
 
-        search_sequence_data_rek(multi_sequence_manager, refterms, gb_datamode, count_two, &max_seq_terminal_length, ED4_A_DEFAULT, datamode == ED4_D_EXTENDED);
+        GBDATA *gb_ali_xxx = GB_entry(gb_item, ED4_ROOT->alignment_name);
+        if (gb_ali_xxx) {
+            search_sequence_data_rek(multi_sequence_manager, refterms, gb_ali_xxx, count_two, &max_seq_terminal_length, datamode == ED4_D_EXTENDED);
+        }
     }
 
     return ED4_R_OK;
@@ -124,40 +127,28 @@ ED4_returncode EDB_root_bact::fill_data(ED4_multi_species_manager *multi_species
 
 ED4_returncode EDB_root_bact::search_sequence_data_rek(ED4_multi_sequence_manager *multi_sequence_manager,
                                                        ED4_reference_terminals&    refterms,
-                                                       GBDATA                     *gb_datamode,
+                                                       GBDATA                     *gb_ali_xxx, // alignment-container (or any subcontainer of)
                                                        int                         count_too,
                                                        ED4_index                  *max_sequence_terminal_length,
-                                                       ED4_alignment               alignment_flag,
                                                        bool                        isSAI)
 {
-    AW_device *device;
-    int        pixel_length;
-    GBDATA    *gb_ali_xxx = NULL;
-    GBDATA    *gb_alignment;
     char       namebuffer[NAME_BUFFERSIZE];
+    AW_device *device = ED4_ROOT->first_window->get_device();
 
-    device = ED4_ROOT->first_window->get_device();
+    e4_assert(gb_ali_xxx);
 
-    if (alignment_flag == ED4_A_DEFAULT) {
-        gb_ali_xxx = GB_entry(gb_datamode, ED4_ROOT->alignment_name);
-    }
-    else if (alignment_flag == ED4_A_CONTAINER) {
-        gb_ali_xxx = gb_datamode;
-    }
-    if (!gb_ali_xxx) return ED4_R_OK;
-
-    for (gb_alignment = GB_child(gb_ali_xxx); gb_alignment; gb_alignment = GB_nextChild(gb_alignment)) {
-        GB_TYPES type = GB_read_type(gb_alignment);
+    for (GBDATA *gb_ali_child = GB_child(gb_ali_xxx); gb_ali_child; gb_ali_child = GB_nextChild(gb_ali_child)) {
+        GB_TYPES type = GB_read_type(gb_ali_child);
 
         if (type == GB_INTS || type == GB_FLOATS) {
             continue;
         }
 
         if (type == GB_DB) {  // we have to unpack container
-            search_sequence_data_rek(multi_sequence_manager, refterms, gb_alignment, count_too, max_sequence_terminal_length, ED4_A_CONTAINER, isSAI);
+            search_sequence_data_rek(multi_sequence_manager, refterms, gb_ali_child, count_too, max_sequence_terminal_length, isSAI);
         }
         else { // otherwise we enter the data
-            char *key_string = GB_read_key(gb_alignment);
+            char *key_string = GB_read_key(gb_ali_child);
             if (key_string[0] != '_') { // don't show sequences starting with an underscore
                 sprintf(namebuffer, "Sequence_Manager.%ld.%d", ED4_counter, count_too++);
                 ED4_sequence_manager *seq_manager = new ED4_sequence_manager(namebuffer, 0, 0, multi_sequence_manager);
@@ -168,7 +159,7 @@ ED4_returncode EDB_root_bact::search_sequence_data_rek(ED4_multi_sequence_manage
                     ED4_sequence_info_terminal *sequence_info_terminal = new ED4_sequence_info_terminal(key_string, SEQUENCE_INFO_WIDTH, TERMINAL_HEIGHT, seq_manager);
                     sequence_info_terminal->set_property((ED4_properties) (PROP_SELECTABLE | PROP_DRAGABLE | PROP_IS_HANDLE));
                     sequence_info_terminal->set_both_links(refterms.sequence_info());
-                    sequence_info_terminal->set_species_pointer(gb_alignment);
+                    sequence_info_terminal->set_species_pointer(gb_ali_child);
                     seq_manager->append_member(sequence_info_terminal);
                 }
 
@@ -190,7 +181,7 @@ ED4_returncode EDB_root_bact::search_sequence_data_rek(ED4_multi_sequence_manage
                     bool shall_display_secinfo = is_data;
 
                     if (isSAI) {
-                        GBDATA *gb_sai        = GB_get_grandfather(gb_alignment);
+                        GBDATA *gb_sai        = GB_get_grandfather(gb_ali_child);
                         GBDATA *gb_disp_sec   = GB_searchOrCreate_int(gb_sai, "showsec", 0);
                         shall_display_secinfo = GB_read_int(gb_disp_sec);
                     }
@@ -218,17 +209,17 @@ ED4_returncode EDB_root_bact::search_sequence_data_rek(ED4_multi_sequence_manage
                     seq_manager->get_consensus_relevant_terminal(); // does an error otherwise!
                 }
 #endif // DEBUG
-                text_terminal->set_species_pointer(gb_alignment);
+                text_terminal->set_species_pointer(gb_ali_child);
 
                 long string_length;
-                if (gb_alignment) {
-                    string_length = GB_read_count(gb_alignment);
+                if (gb_ali_child) {
+                    string_length = GB_read_count(gb_ali_child);
                 }
                 else {
                     string_length = 100;
                 }
 
-                pixel_length = device->get_string_size(ED4_G_SEQUENCES, NULL, string_length) + 100; // @@@ "+ 100" looks like a hack
+                int pixel_length = device->get_string_size(ED4_G_SEQUENCES, NULL, string_length) + 100; // @@@ "+ 100" looks like a hack
 
                 *max_sequence_terminal_length = std::max(*max_sequence_terminal_length, long(pixel_length));
                 text_terminal->extension.size[WIDTH] = pixel_length;

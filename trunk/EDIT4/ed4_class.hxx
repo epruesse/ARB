@@ -195,10 +195,9 @@ struct EDB_root_bact {
 
     ED4_returncode search_sequence_data_rek(ED4_multi_sequence_manager *multi_sequence_manager,
                                             ED4_reference_terminals&    refterms,
-                                            GBDATA                     *gb_datamode,
+                                            GBDATA                     *gb_ali_xxx, // alignment-container (or any subcontainer of)
                                             int                         count_too,
-                                            ED4_index                  *max_seq_terminal_length,
-                                            ED4_alignment               alignment_flag,
+                                            ED4_index                  *max_sequence_terminal_length,
                                             bool                        isSAI);
 
     void scan_string(ED4_multi_species_manager *parent,
