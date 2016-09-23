@@ -13,6 +13,7 @@
 
 #include "awt.hxx"
 #include "awt_hexdump.hxx"
+#include "awt_misc.hxx"
 
 #include <aw_window.hxx>
 #include <aw_msg.hxx>
@@ -1183,6 +1184,7 @@ void AWT_create_debug_menu(AW_window *awmm) {
     }
     awmm->sep______________();
 
+    awmm->insert_menu_topic(awmm->local_id("-client_ntree"), "Start ARB_NTREE as client", "N", "", AWM_ALL, makeWindowCallback(AWT_system_cb, "arb_ntree : &"));
 }
 
 #if 1

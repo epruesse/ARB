@@ -44,9 +44,6 @@ void NT_select_bottom_tree(AW_window *aww, const char *awar_tree);
 void NT_create_alignment_vars(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main);
 AW_window *NT_create_alignment_admin_window(AW_root *root, AW_window *aw_popmedown);
 AW_window *NT_create_select_alignment_window(AW_root *awr);
-void NT_system_cb(AW_window *, const char *command);
-void NT_xterm(AW_window *);
-void NT_system_in_xterm_cb(AW_window *, const char *command);
 
 /* NT_concatenate.cxx */
 void NT_createConcatenationAwars(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main);

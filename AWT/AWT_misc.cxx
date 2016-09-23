@@ -18,6 +18,7 @@
 #include <aw_window.hxx>
 #include <aw_awar.hxx>
 #include <aw_advice.hxx>
+#include <aw_msg.hxx>
 
 AW_window *AWT_create_IUPAC_info_window(AW_root *aw_root) {
     // Open window showing IUPAC tables
@@ -81,3 +82,15 @@ void AWT_insert_DBcompression_selector(AW_window *aww, const char *awar_name) {
 
     awar_compression->add_callback(makeRootCallback(warn_compression_type, awar_compression));
 }
+
+void AWT_system_cb(AW_window *, const char *command) {
+    aw_message_if(GBK_system(command));
+}
+void AWT_console(AW_window*) {
+    aw_message_if(GB_xterm());
+}
+void AWT_system_in_console_cb(AW_window*, const char *command) {
+    GB_ERROR error = GB_xcmd(command, true, true);
+    if (error) aw_message(error);
+}
+
