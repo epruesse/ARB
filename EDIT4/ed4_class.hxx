@@ -942,6 +942,18 @@ public:
     DECLARE_DUMP_FOR_ROOTCLASS(ED4_base);
 
     // function for species_pointer
+    //
+    // Notes:
+    //
+    // * design is broken @@@
+    //   - my_species_pointer should be member of those derived classes, where it's used
+    //   - accessor functions should tell what we get (eg. ED4_species_name_terminal::get_name_entry() or similar)
+    //
+    // * current uses of my_species_pointer (grepped for 'set_species_pointer' to detect):
+    //   - ED4_species_manager        [holds pointer to]  species/SAI container
+    //   - ED4_species_name_terminal  [holds pointer to]  the 'name' entry of species/SAI
+    //   - ED4_sequence_info_terminal [holds pointer to]  the displayed sub-entry of the alignment-container of species/SAI (multiple may exist per species)
+    //   - ED4_text_terminal          [holds pointer to]  same as ED4_sequence_info_terminal (Caution: not true for all text terminals!)
 
     GBDATA *get_species_pointer() const { return my_species_pointer.Get(); }
     void set_species_pointer(GBDATA *gbd) { my_species_pointer.Set(gbd, this); }
