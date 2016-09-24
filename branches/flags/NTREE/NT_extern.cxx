@@ -605,11 +605,6 @@ static void NT_infomode_cb(UNFIXED, AWT_canvas *canvas, AWT_COMMAND_MODE mode) {
     nt_mode_event(NULL, canvas, mode);
 }
 
-static void NT_primer_cb(AW_window*) {
-    GB_ERROR error = GB_xcmd("arb_primer", true, false);
-    if (error) aw_message(error);
-}
-
 static void NT_mark_duplicates(UNFIXED, AWT_canvas *ntw) {
     AP_tree *tree_root = AWT_TREE(ntw)->get_root_node();
     if (tree_root) {
@@ -857,14 +852,14 @@ static void merge_from_to(AW_root *awr, const char *db_awar_name, bool merge_to)
     const char *db_name  = awr->awar(db_awar_name)->read_char_pntr();
     char       *quotedDB = GBK_singlequote(db_name);
 
-    char *cmd = GBS_global_string_copy(
-        merge_to
-        ? "arb_ntree : %s &"
-        : "arb_ntree %s : &",
-        quotedDB);
+    AWT_system_cb(
+        GBS_global_string(
+            merge_to
+            ? "arb_ntree : %s &"
+            : "arb_ntree %s : &",
+            quotedDB)
+        );
 
-    aw_message_if(GBK_system(cmd));
-    free(cmd);
     free(quotedDB);
 }
 
@@ -1181,7 +1176,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone, AWT_canvas **re
             awm->sep______________();
 
             awm->insert_menu_topic("dna_2_pro", "Perform translation",      "t", "translate_dna_2_pro.hlp", AWM_ALL, NT_create_dna_2_pro_window);
-            awm->insert_menu_topic("arb_dist",  "Distance Matrix + ARB NJ", "D", "dist.hlp",                AWM_ALL, makeWindowCallback(NT_system_cb, "arb_dist &"));
+            awm->insert_menu_topic("arb_dist",  "Distance Matrix + ARB NJ", "D", "dist.hlp",                AWM_ALL, makeWindowCallback(AWT_system_cb, "arb_dist &"));
             awm->sep______________();
 
             awm->insert_menu_topic("seq_quality",   "Check Sequence Quality", "Q", "seq_quality.hlp",   AWM_EXP, makeCreateWindowCallback(SQ_create_seq_quality_window, GLOBAL.gb_main));
@@ -1203,7 +1198,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone, AWT_canvas **re
                 awm->insert_menu_topic("sai_max_freq",  "Max. Frequency",                                               "M", "max_freq.hlp",     AWM_EXP, AP_create_max_freq_window);
                 awm->insert_menu_topic("sai_consensus", "Consensus",                                                    "C", "consensus.hlp",    AWM_ALL, AP_create_con_expert_window);
                 awm->insert_menu_topic("pos_var_pars",  "Positional variability + Column statistic (parsimony method)", "a", "pos_var_pars.hlp", AWM_ALL, AP_create_pos_var_pars_window);
-                awm->insert_menu_topic("arb_phyl",      "Filter by base frequency",                                     "F", "phylo.hlp",        AWM_ALL, makeWindowCallback(NT_system_cb, "arb_phylo &"));
+                awm->insert_menu_topic("arb_phyl",      "Filter by base frequency",                                     "F", "phylo.hlp",        AWM_ALL, makeWindowCallback(AWT_system_cb, "arb_phylo &"));
                 awm->insert_menu_topic("sai_pfold",     "Protein secondary structure (field \"sec_struct\")",           "P", "pfold.hlp",        AWM_EXP, makeWindowCallback(NT_create_sai_from_pfold, ntw));
 
                 GDE_load_menu(awm, AWM_EXP, "SAI");
@@ -1213,7 +1208,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone, AWT_canvas **re
             awm->insert_sub_menu("Other functions", "O");
             {
                 awm->insert_menu_topic("count_different_chars", "Count different chars/column",             "C", "count_chars.hlp",    AWM_EXP, makeWindowCallback(NT_count_different_chars, GLOBAL.gb_main));
-                awm->insert_menu_topic("corr_mutat_analysis",   "Compute clusters of correlated positions", "m", "",                   AWM_ALL, makeWindowCallback(NT_system_in_xterm_cb,    "arb_rnacma"));
+                awm->insert_menu_topic("corr_mutat_analysis",   "Compute clusters of correlated positions", "m", "",                   AWM_ALL, makeWindowCallback(AWT_system_in_console_cb, "arb_rnacma", XCMD_ASYNC_WAIT_ON_ERROR));
                 awm->insert_menu_topic("export_pos_var",        "Export Column Statistic (GNUPLOT format)", "E", "csp_2_gnuplot.hlp",  AWM_ALL, NT_create_colstat_2_gnuplot_window);
             }
             awm->close_sub_menu();
@@ -1231,7 +1226,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone, AWT_canvas **re
             awm->insert_menu_topic("probe_match_sp",   "Match Probes with Specificity", "f", "probespec.hlp", AWM_ALL, makeCreateWindowCallback(create_probe_match_with_specificity_window,    ntw));
             awm->sep______________();
             awm->insert_menu_topic("primer_design_new", "Design Primers",            "P", "primer_new.hlp", AWM_EXP, makeCreateWindowCallback(create_primer_design_window, GLOBAL.gb_main));
-            awm->insert_menu_topic("primer_design",     "Design Sequencing Primers", "S", "primer.hlp",     AWM_EXP, NT_primer_cb);
+            awm->insert_menu_topic("primer_design",     "Design Sequencing Primers", "S", "primer.hlp",     AWM_EXP, makeWindowCallback(AWT_system_in_console_cb, "arb_primer", XCMD_ASYNC_WAITKEY));
             awm->sep______________();
             awm->insert_menu_topic("pt_server_admin",   "PT_SERVER Admin",           "A", "probeadmin.hlp",  AWM_ALL, makeCreateWindowCallback(create_probe_admin_window, GLOBAL.gb_main));
         }
@@ -1246,8 +1241,8 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone, AWT_canvas **re
         if (!clone) {
             awm->insert_sub_menu("Add Species to Existing Tree", "A");
             {
-                awm->insert_menu_topic("arb_pars_quick", "ARB Parsimony (Quick add marked)", "Q", "pars.hlp", AWM_ALL, makeWindowCallback(NT_system_cb, "arb_pars -add_marked -quit &"));
-                awm->insert_menu_topic("arb_pars",       "ARB Parsimony interactive",        "i", "pars.hlp", AWM_ALL, makeWindowCallback(NT_system_cb, "arb_pars &"));
+                awm->insert_menu_topic("arb_pars_quick", "ARB Parsimony (Quick add marked)", "Q", "pars.hlp", AWM_ALL, makeWindowCallback(AWT_system_cb, "arb_pars -add_marked -quit &"));
+                awm->insert_menu_topic("arb_pars",       "ARB Parsimony interactive",        "i", "pars.hlp", AWM_ALL, makeWindowCallback(AWT_system_cb, "arb_pars &"));
                 GDE_load_menu(awm, AWM_EXP, "Incremental phylogeny");
             }
             awm->close_sub_menu();
@@ -1268,7 +1263,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone, AWT_canvas **re
             awm->insert_sub_menu("Build tree from sequence data",    "B");
             {
                 awm->insert_sub_menu("Distance matrix methods", "D");
-                awm->insert_menu_topic("arb_dist", "Distance Matrix + ARB NJ", "J", "dist.hlp", AWM_ALL, makeWindowCallback(NT_system_cb, "arb_dist &"));
+                awm->insert_menu_topic("arb_dist", "Distance Matrix + ARB NJ", "J", "dist.hlp", AWM_ALL, makeWindowCallback(AWT_system_cb, "arb_dist &"));
                 GDE_load_menu(awm, AWM_ALL, "Phylogeny Distance Matrix");
                 awm->close_sub_menu();
 
@@ -1392,7 +1387,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone, AWT_canvas **re
             awm->close_sub_menu();
 
             awm->sep______________();
-            awm->insert_menu_topic("xterm", "Start XTERM", "X", 0, AWM_ALL, NT_xterm);
+            awm->insert_menu_topic("xterm", "Start XTERM", "X", 0, AWM_ALL, AWT_console);
             awm->sep______________();
             GDE_load_menu(awm, AWM_EXP, "User");
         }

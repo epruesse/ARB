@@ -13,8 +13,12 @@
 #include <mg_merge.hxx>
 #include <awti_import.hxx>
 #include <insdel.h>
+#include <macros.hxx>
 
 #include <awt.hxx>
+#include <awt_misc.hxx>
+#include <awt_sel_boxes.hxx>
+#include <awt_TreeAwars.hxx>
 
 #include <aw_advice.hxx>
 #include <aw_question.hxx>
@@ -22,7 +26,6 @@
 #include <aw_edit.hxx>
 #include <aw_file.hxx>
 #include <aw_msg.hxx>
-#include <aw_window.hxx>
 #include <aw_root.hxx>
 
 #include <arbdbt.h>
@@ -31,9 +34,7 @@
 #include <arb_version.h>
 #include <arb_progress.h>
 #include <arb_file.h>
-#include <awt_sel_boxes.hxx>
-#include <awt_TreeAwars.hxx>
-#include <macros.hxx>
+
 #include <signal.h>
 
 using namespace std;
@@ -836,7 +837,7 @@ static void startup_gui(NtreeCommandLine& cl, ARB_ERROR& error) {
         char *stamp   = ARB_strdup(GB_path_in_arbprop("msgtime"));
         if (GB_time_of_file(message)>GB_time_of_file(stamp)) {
             AW_edit(message);
-            aw_message_if(GBK_system(GBS_global_string("touch %s", stamp)));
+            AWT_system_cb(GBS_global_string("touch %s", stamp));
         }
         free(stamp);
         free(message);
