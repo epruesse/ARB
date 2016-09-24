@@ -10,16 +10,17 @@
 
 #include "AW_rename.hxx"
 
-#include <aw_window.hxx>
+#include <awt_misc.hxx>
+#include <awt_sel_boxes.hxx>
+
+#include <aw_question.hxx>
 #include <aw_advice.hxx>
 #include <aw_edit.hxx>
 #include <aw_awar.hxx>
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
-#include <awt_sel_boxes.hxx>
 
 #include <arb_file.h>
-#include <aw_question.hxx>
 
 #define AWAR_NAMESERVER_STATUS "tmp/nameserver/status"
 
@@ -68,8 +69,8 @@ static void awtc_remove_arb_acc(AW_window*, GBDATA *gb_main) {
                                                "*ACC {ARB*='" // remove entries with 'ARB_' prefix (Note: Nameserver does not store the '_'!)
                                                " %s",
                                                path, newpath, path);
-        GB_ERROR error = GBK_system(command);
-        if (error) aw_message(error);
+
+        AWT_system_cb(command);
 
         free(command);
         free(newpath);

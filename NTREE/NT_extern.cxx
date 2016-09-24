@@ -605,11 +605,6 @@ static void NT_infomode_cb(UNFIXED, AWT_canvas *canvas, AWT_COMMAND_MODE mode) {
     nt_mode_event(NULL, canvas, mode);
 }
 
-static void NT_primer_cb(AW_window*) {
-    GB_ERROR error = GB_xcmd("arb_primer", XCMD_ASYNC_WAITKEY);
-    if (error) aw_message(error);
-}
-
 static void NT_mark_duplicates(UNFIXED, AWT_canvas *ntw) {
     AP_tree *tree_root = AWT_TREE(ntw)->get_root_node();
     if (tree_root) {
@@ -857,14 +852,14 @@ static void merge_from_to(AW_root *awr, const char *db_awar_name, bool merge_to)
     const char *db_name  = awr->awar(db_awar_name)->read_char_pntr();
     char       *quotedDB = GBK_singlequote(db_name);
 
-    char *cmd = GBS_global_string_copy(
-        merge_to
-        ? "arb_ntree : %s &"
-        : "arb_ntree %s : &",
-        quotedDB);
+    AWT_system_cb(
+        GBS_global_string(
+            merge_to
+            ? "arb_ntree : %s &"
+            : "arb_ntree %s : &",
+            quotedDB)
+        );
 
-    aw_message_if(GBK_system(cmd));
-    free(cmd);
     free(quotedDB);
 }
 
@@ -1213,7 +1208,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone, AWT_canvas **re
             awm->insert_sub_menu("Other functions", "O");
             {
                 awm->insert_menu_topic("count_different_chars", "Count different chars/column",             "C", "count_chars.hlp",    AWM_EXP, makeWindowCallback(NT_count_different_chars, GLOBAL.gb_main));
-                awm->insert_menu_topic("corr_mutat_analysis",   "Compute clusters of correlated positions", "m", "",                   AWM_ALL, makeWindowCallback(AWT_system_in_console_cb, "arb_rnacma"));
+                awm->insert_menu_topic("corr_mutat_analysis",   "Compute clusters of correlated positions", "m", "",                   AWM_ALL, makeWindowCallback(AWT_system_in_console_cb, "arb_rnacma", XCMD_ASYNC_WAIT_ON_ERROR));
                 awm->insert_menu_topic("export_pos_var",        "Export Column Statistic (GNUPLOT format)", "E", "csp_2_gnuplot.hlp",  AWM_ALL, NT_create_colstat_2_gnuplot_window);
             }
             awm->close_sub_menu();
@@ -1231,7 +1226,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone, AWT_canvas **re
             awm->insert_menu_topic("probe_match_sp",   "Match Probes with Specificity", "f", "probespec.hlp", AWM_ALL, makeCreateWindowCallback(create_probe_match_with_specificity_window,    ntw));
             awm->sep______________();
             awm->insert_menu_topic("primer_design_new", "Design Primers",            "P", "primer_new.hlp", AWM_EXP, makeCreateWindowCallback(create_primer_design_window, GLOBAL.gb_main));
-            awm->insert_menu_topic("primer_design",     "Design Sequencing Primers", "S", "primer.hlp",     AWM_EXP, NT_primer_cb);
+            awm->insert_menu_topic("primer_design",     "Design Sequencing Primers", "S", "primer.hlp",     AWM_EXP, makeWindowCallback(AWT_system_in_console_cb, "arb_primer", XCMD_ASYNC_WAITKEY));
             awm->sep______________();
             awm->insert_menu_topic("pt_server_admin",   "PT_SERVER Admin",           "A", "probeadmin.hlp",  AWM_ALL, makeCreateWindowCallback(create_probe_admin_window, GLOBAL.gb_main));
         }

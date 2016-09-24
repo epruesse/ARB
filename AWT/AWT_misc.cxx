@@ -12,8 +12,6 @@
 
 #include <arb_strarray.h>
 
-#include <arbdb.h>
-
 #include <aw_root.hxx>
 #include <aw_window.hxx>
 #include <aw_awar.hxx>
@@ -87,10 +85,9 @@ void AWT_system_cb(AW_window *, const char *command) {
     aw_message_if(GBK_system(command));
 }
 void AWT_console(AW_window*) {
-    aw_message_if(GB_xterm());
+    AWT_system_cb(GBS_global_string("%s &", GB_getenvARB_XTERM()));
 }
-void AWT_system_in_console_cb(AW_window*, const char *command) {
-    GB_ERROR error = GB_xcmd(command, XCMD_ASYNC_WAIT_ON_ERROR);
-    if (error) aw_message(error);
+void AWT_system_in_console_cb(AW_window*, const char *command, XCMD_TYPE exectype) {
+    aw_message_if(GB_xcmd(command, exectype));
 }
 

@@ -491,7 +491,7 @@ static void GB_setenv(const char *var, const char *value) {
     }
 }
 
-static GB_CSTR GB_getenvARB_XTERM() {
+GB_CSTR GB_getenvARB_XTERM() {
     static const char *xterm = 0;
     if (!xterm) {
         xterm = ARB_getenv_ignore_empty("ARB_XTERM"); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARB_XTERM
@@ -860,13 +860,6 @@ GB_ULONG GB_get_usable_memory() {
 
 // ---------------------------
 //      external commands
-
-GB_ERROR GB_xterm() {
-    // goes to header: __ATTR__USERESULT
-    const char *xt      = GB_getenvARB_XTERM();
-    const char *command = GBS_global_string("%s &", xt);
-    return GBK_system(command);
-}
 
 NOT4PERL GB_ERROR GB_xcmd(const char *cmd, XCMD_TYPE exectype) {
     // goes to header: __ATTR__USERESULT_TODO

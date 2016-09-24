@@ -586,6 +586,7 @@ NT_edconf.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
+NT_edconf.o: $(ARBHOME)/INCLUDE/awt_misc.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/awt_modules.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/cb.h
@@ -852,6 +853,7 @@ NT_main.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/awt.hxx
+NT_main.o: $(ARBHOME)/INCLUDE/awt_misc.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/awt_TreeAwars.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/awti_import.hxx
