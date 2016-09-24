@@ -243,7 +243,7 @@ GB_CSTR GB_getenv(const char *env);
 bool GB_host_is_local(const char *hostname);
 GB_ULONG GB_get_usable_memory(void);
 GB_ERROR GB_xterm(void) __ATTR__USERESULT;
-GB_ERROR GB_xcmd(const char *cmd, bool background, bool wait_only_if_error) __ATTR__USERESULT_TODO;
+NOT4PERL GB_ERROR GB_xcmd(const char *cmd, XCMD_TYPE exectype) __ATTR__USERESULT_TODO;
 GB_CSTR GB_append_suffix(const char *name, const char *suffix);
 GB_CSTR GB_canonical_path(const char *anypath);
 GB_CSTR GB_concat_path(GB_CSTR anypath_left, GB_CSTR anypath_right);

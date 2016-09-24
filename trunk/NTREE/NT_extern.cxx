@@ -606,7 +606,7 @@ static void NT_infomode_cb(UNFIXED, AWT_canvas *canvas, AWT_COMMAND_MODE mode) {
 }
 
 static void NT_primer_cb(AW_window*) {
-    GB_ERROR error = GB_xcmd("arb_primer", true, false);
+    GB_ERROR error = GB_xcmd("arb_primer", XCMD_ASYNC_WAITKEY);
     if (error) aw_message(error);
 }
 

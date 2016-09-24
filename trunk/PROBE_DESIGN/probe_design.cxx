@@ -1945,7 +1945,7 @@ static void pd_query_pt_server(AW_window *aww) {
         }
     }
 
-    if (!error) error = GB_xcmd(query_cmd.get_data(), true, false);
+    if (!error) error = GB_xcmd(query_cmd.get_data(), XCMD_ASYNC_WAITKEY);
     aw_message_if(error);
 }
 

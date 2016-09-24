@@ -868,12 +868,15 @@ GB_ERROR GB_xterm() {
     return GBK_system(command);
 }
 
-GB_ERROR GB_xcmd(const char *cmd, bool background, bool wait_only_if_error) {
+NOT4PERL GB_ERROR GB_xcmd(const char *cmd, XCMD_TYPE exectype) {
     // goes to header: __ATTR__USERESULT_TODO
 
     // runs a command in an xterm
-    // if 'background' is true -> run asynchronous
-    // if 'wait_only_if_error' is true -> asynchronous does wait for keypress only if cmd fails
+
+    bool background         = exectype & _XCMD__ASYNC;      // true -> run asynchronous
+    bool wait_only_if_error = !(exectype & _XCMD__WAITKEY); // true -> asynchronous does wait for keypress only if cmd fails
+
+    gb_assert(exectype != XCMD_SYNC_WAITKEY); // @@@ previously unused; check how it works and whether that makes sense; fix!
 
     const int     BUFSIZE = 1024;
     GBS_strstruct system_call(BUFSIZE);
