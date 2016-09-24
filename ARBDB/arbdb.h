@@ -103,6 +103,17 @@ enum GB_UNDO_TYPE {
     GB_UNDO_UNDO_REDO                               // internal makes undo redoable
 };
 
+enum XCMD_TYPE {
+    // internal (use public values below):
+    _XCMD__ASYNC   = 1, // run asynchronous (otherwise wait for finish)
+    _XCMD__WAITKEY = 2, // always wait for keypress (otherwise only in case of error!)
+
+    // public:
+    XCMD_ASYNC_WAITKEY       = _XCMD__ASYNC|_XCMD__WAITKEY,
+    XCMD_ASYNC_WAIT_ON_ERROR = _XCMD__ASYNC,
+    XCMD_SYNC_WAITKEY        = _XCMD__WAITKEY,
+    XCMD_SYNC_WAIT_ON_ERROR  = 0,
+};
 
 // -----------------------
 //      callback types

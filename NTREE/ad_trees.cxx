@@ -362,11 +362,11 @@ static char *readXmlTree(char *fname) {
 #warning fix hack
 #endif
         char *command = GBS_global_string_copy("ln -s %s/lib/dtd/arb_tree.dtd %s/.", GB_getenvARBHOME(), buf.get_data());
-        GB_xcmd(command, false, true);
+        GB_xcmd(command, XCMD_SYNC_WAIT_ON_ERROR);
 
         // execute xml2newick to convert xml format tree to newick format tree
         command = GBS_global_string_copy("xml2newick %s %s", fname, tempFile);
-        GB_xcmd(command, false, true);
+        GB_xcmd(command, XCMD_SYNC_WAIT_ON_ERROR);
 
         free(command);
 

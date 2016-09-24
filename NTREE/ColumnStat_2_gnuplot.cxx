@@ -560,7 +560,7 @@ static void colstat_2_gnuplot_cb(AW_window *aww, PlotParam *param, PlotMode mode
                         out = 0;
 
                         char *script = GBS_global_string_copy("gnuplot %s && rm -f %s", command_file, command_file);
-                        GB_xcmd(script, true, true);
+                        GB_xcmd(script, XCMD_ASYNC_WAIT_ON_ERROR);
                         free(script);
                         free(smooth);
                     }

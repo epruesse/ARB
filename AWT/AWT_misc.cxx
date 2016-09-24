@@ -90,7 +90,7 @@ void AWT_console(AW_window*) {
     aw_message_if(GB_xterm());
 }
 void AWT_system_in_console_cb(AW_window*, const char *command) {
-    GB_ERROR error = GB_xcmd(command, true, true);
+    GB_ERROR error = GB_xcmd(command, XCMD_ASYNC_WAIT_ON_ERROR);
     if (error) aw_message(error);
 }
 
