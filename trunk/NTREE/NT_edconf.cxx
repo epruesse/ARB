@@ -11,24 +11,30 @@
 #include "NT_local.h"
 #include "ad_trees.h"
 
+#include <TreeNode.h>
+#include <TreeDisplay.hxx>
+#include <RegExpr.hxx>
+
 #include <awt_sel_boxes.hxx>
+#include <awt_misc.hxx>
+#include <awt_config_manager.hxx>
+#include <awt_modules.hxx>
+
 #include <aw_awars.hxx>
 #include <aw_root.hxx>
 #include <aw_msg.hxx>
 #include <aw_select.hxx>
+
 #include <ad_config.h>
-#include <TreeNode.h>
+#include <ad_cb_prot.h>
+
 #include <arb_strbuf.h>
 #include <arb_global_defs.h>
-#include <TreeDisplay.hxx>
 #include <arb_strarray.h>
+
 #include <map>
 #include <set>
 #include <string>
-#include <ad_cb_prot.h>
-#include <awt_config_manager.hxx>
-#include <awt_modules.hxx>
-#include <RegExpr.hxx>
 
 using namespace std;
 
@@ -1228,9 +1234,10 @@ static void nt_start_editor_on_configuration(AW_window *aww) {
 
     const char *cfgName   = aww->get_root()->awar(AWAR_CONFIGURATION)->read_char_pntr();
     char       *quotedCfg = GBK_singlequote(cfgName);
-    const char *cmd       = GBS_global_string("arb_edit4 -c %s &", quotedCfg);
+
+    AWT_system_cb(GBS_global_string("arb_edit4 -c %s &", quotedCfg));
+
     free(quotedCfg);
-    aw_message_if(GBK_system(cmd));
 }
 
 AW_window *NT_create_startEditorOnOldConfiguration_window(AW_root *awr) {

@@ -42,7 +42,7 @@ void AW_openURL(AW_root *aw_root, const char *url) {
     }
 
     char     *command = GBS_global_string_copy("(%s)&", browser);
-    GB_ERROR  error   = GBK_system(command);
+    GB_ERROR  error   = GBK_system(command); // @@@ use AWT_system_cb here? (need to move whole module -> AWT)
     aw_message_if(error);
 
     free(command);
@@ -205,7 +205,7 @@ static void aw_help_edit_help(AW_window *aww) {
 #endif
 
         const char *copy_cmd = GBS_global_string("cp %s/FORM.hlp %s", base, helpfile); // uses_hlp_res("FORM.hlp"); see ../SOURCE_TOOLS/check_resources.pl@uses_hlp_res
-        aw_message_if(GBK_system(copy_cmd));
+        aw_message_if(GBK_system(copy_cmd)); // @@@ use AWT_system_cb here (after move)
     }
 
 #if defined(NDEBUG)
@@ -407,7 +407,7 @@ static unsigned autorefresh_helpfile(AW_root *awr) {
                 unsigned long editLastChanged = GB_time_of_file(edited_help_file);
 
                 if (editLastChanged>helpfile_edited_stamp) {
-                    GB_ERROR error = GBK_system("cd $ARBHOME; make help");
+                    GB_ERROR error = GBK_system("cd $ARBHOME; make help"); // @@@ use AWT_system_cb here (after move)
                     if (error) aw_message(error);
                     helpfile_edited_stamp = editLastChanged;
                     callAgainIn = 10;
