@@ -1315,9 +1315,23 @@ void ED4_flag_terminal::draw() {
             mix = (mix+1)%5;
         }
 #endif
-        for (int b = 0; b<boxes; ++b) {
-            if ((b%2) == 0) device->box(ED4_G_FLAG_FILL, FillStyle::SOLID, box, AW_SCREEN);             // filled?
-            device->box(ED4_G_FLAG_FRAME, FillStyle::EMPTY, box, AW_SCREEN);                            // frame
+
+        GBDATA   *gb_species = get_species();
+        GB_ERROR  error      = NULL;
+
+        for (int b = 0; b<boxes && !error; ++b) {
+            bool filled = false;
+            {
+                GBDATA *gb_field = GB_entry(gb_species, curr_flag->get_fieldname().c_str());
+                if (gb_field) {
+                    uint8_t as_byte  = GB_read_lossless_byte(gb_field, error);
+                    if (error) error = GBS_global_string("Failed to read flag value (Reason: %s)", error);
+                    else    filled   = as_byte;
+                }
+            }
+
+            if (filled) device->box(ED4_G_FLAG_FILL,  FillStyle::SOLID, box, AW_SCREEN); // filled?
+            device->box(            ED4_G_FLAG_FRAME, FillStyle::EMPTY, box, AW_SCREEN); // frame
 
             ++curr_flag;
             if (curr_flag != end) {
@@ -1326,6 +1340,8 @@ void ED4_flag_terminal::draw() {
                 flag_centerx = next_centerx;
             }
         }
+
+        aw_message_if(error);
     }
 #if defined(DEBUG) // @@@ debug code showing space wasted if NO flags are defined. fix terminal sizes and remove this code
     else {

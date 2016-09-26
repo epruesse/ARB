@@ -39,6 +39,7 @@ public:
     }
 
     const std::string& get_shortname() const { return shortname; }
+    const std::string& get_fieldname() const { return fieldname; }
 
     void set_dimension(int xpos_, int width_) {
         xpos  = xpos_;
