@@ -1308,13 +1308,6 @@ void ED4_flag_terminal::draw() {
         Rectangle box(box_center-box_diag/2, box_diag);
 
         AW_device *device = current_device();
-#if defined(DEBUG) && 0
-        {
-            static int mix = 0;
-            device->box(ED4_G_COLOR_2+mix, FillStyle::SOLID, area, AW_SCREEN); // whole area
-            mix = (mix+1)%5;
-        }
-#endif
 
         GBDATA   *gb_species = get_species();
         GB_ERROR  error      = NULL;
@@ -1343,16 +1336,6 @@ void ED4_flag_terminal::draw() {
 
         aw_message_if(error);
     }
-#if defined(DEBUG) // @@@ debug code showing space wasted if NO flags are defined. fix terminal sizes and remove this code
-    else {
-        AW_device *device = current_device();
-        Rectangle  area   = get_win_area(current_ed4w());
-
-        static int mix = 0;
-        device->box(ED4_G_COLOR_2+mix, FillStyle::SOLID, area, AW_SCREEN); // whole area
-        mix = (mix+1)%5;
-    }
-#endif
 }
 
 // ---------------------------------
