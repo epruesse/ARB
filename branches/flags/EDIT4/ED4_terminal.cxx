@@ -1288,24 +1288,40 @@ ED4_flag_terminal::ED4_flag_terminal(const char *id_, AW_pos width, AW_pos heigh
     ED4_terminal(flag_spec, id_, width, height, parent_)
 {}
 
-void ED4_flag_terminal::draw() {
-    using namespace AW;
+using namespace AW;
 
+class FlagLayout {
+    double    flag_centerx; // flag x-position relative to terminal
+    Rectangle box;          // box at flag_centerx
+
+public:
+    FlagLayout(const Rectangle& area, const SpeciesFlags& flags) {
+        double boxsize = std::max(1.0, std::min(double(flags.get_min_flag_distance()), area.height()*0.95));
+        Vector box_diag(boxsize, -boxsize);
+
+        SpeciesFlagCiter curr_flag  = flags.begin();
+        flag_centerx                = curr_flag->center_xpos();
+        Position         box_center = area.left_edge().centroid() + Vector(flag_centerx, 0);
+        box                         = Rectangle(box_center-box_diag/2, box_diag);
+    }
+
+    void move_box(double new_flag_centerx) {
+        box.move(Vector(new_flag_centerx - flag_centerx, 0));
+        flag_centerx = new_flag_centerx;
+    }
+
+    const Rectangle& get_box() const { return box; }
+};
+
+void ED4_flag_terminal::draw() {
     const SpeciesFlags& flags = SpeciesFlags::instance();
 
     int boxes = flags.size();
     if (boxes>0) {
-        Rectangle area    = get_win_area(current_ed4w());
-        double    boxsize = std::max(1.0, std::min(double(flags.get_min_flag_distance()), area.height()*0.95));
-
-        Vector box_diag(boxsize, -boxsize);
+        FlagLayout layout(get_win_area(current_ed4w()), flags);
 
         SpeciesFlagCiter curr_flag = flags.begin();
         SpeciesFlagCiter end       = flags.end();
-
-        double    flag_centerx  = curr_flag->center_xpos(); // flag x-position relative to terminal
-        Position  box_center    = area.left_edge().centroid() + Vector(flag_centerx, 0);
-        Rectangle box(box_center-box_diag/2, box_diag);
 
         AW_device *device = current_device();
 
@@ -1323,15 +1339,11 @@ void ED4_flag_terminal::draw() {
                 }
             }
 
-            if (filled) device->box(ED4_G_FLAG_FILL,  FillStyle::SOLID, box, AW_SCREEN); // filled?
-            device->box(            ED4_G_FLAG_FRAME, FillStyle::EMPTY, box, AW_SCREEN); // frame
+            if (filled) device->box(ED4_G_FLAG_FILL,  FillStyle::SOLID, layout.get_box(), AW_SCREEN); // filled?
+            device->box(            ED4_G_FLAG_FRAME, FillStyle::EMPTY, layout.get_box(), AW_SCREEN); // frame
 
             ++curr_flag;
-            if (curr_flag != end) {
-                double next_centerx = curr_flag->center_xpos();
-                box.move(Vector(next_centerx - flag_centerx, 0));
-                flag_centerx = next_centerx;
-            }
+            if (curr_flag != end) layout.move_box(curr_flag->center_xpos());
         }
 
         aw_message_if(error);
