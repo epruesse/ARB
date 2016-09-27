@@ -23,6 +23,9 @@
 // AISC_MKPT_PROMOTE:#ifndef ARB_CORE_H
 // AISC_MKPT_PROMOTE:#include "arb_core.h"
 // AISC_MKPT_PROMOTE:#endif
+// AISC_MKPT_PROMOTE:#ifndef ARB_ASSERT_H
+// AISC_MKPT_PROMOTE:#include "arb_assert.h"
+// AISC_MKPT_PROMOTE:#endif
 // AISC_MKPT_PROMOTE:
 // AISC_MKPT_PROMOTE:// return error and ensure none is exported 
 // AISC_MKPT_PROMOTE:#define RETURN_ERROR(err)  arb_assert(!GB_have_error()); return (err)
@@ -338,7 +341,7 @@ GB_ERROR GB_print_error() {
 }
 
 GB_ERROR GB_get_error() {
-    // goes to header: __ATTR__DEPRECATED_TODO("consider using either GB_have_error() or GB_await_error()")
+    // goes to header: __ATTR__DEPRECATED_TODO("consider using either GB_await_error() or GB_incur_error()")
     return GB_error_buffer;
 }
 
@@ -361,6 +364,24 @@ GB_ERROR GB_await_error() {
 void GB_clear_error() {         // clears the error buffer
     freenull(GB_error_buffer);
 }
+
+// AISC_MKPT_PROMOTE:inline GB_ERROR GB_incur_error() {
+// AISC_MKPT_PROMOTE:    /*! Take over responsibility for any potential (exported) error.
+// AISC_MKPT_PROMOTE:     * @return NULL if no error was exported; the error otherwise
+// AISC_MKPT_PROMOTE:     * Postcondition: no error is exported
+// AISC_MKPT_PROMOTE:     */
+// AISC_MKPT_PROMOTE:    return GB_have_error() ? GB_await_error() : NULL;
+// AISC_MKPT_PROMOTE:}
+// AISC_MKPT_PROMOTE:inline GB_ERROR GB_incur_error_if(bool error_may_occur) {
+// AISC_MKPT_PROMOTE:    /*! similar to GB_incur_error.
+// AISC_MKPT_PROMOTE:     * Additionally asserts no error may occur if 'error_may_occur' is false!
+// AISC_MKPT_PROMOTE:     */
+// AISC_MKPT_PROMOTE:    arb_assert(implicated(!error_may_occur, !GB_have_error()));
+// AISC_MKPT_PROMOTE:    return
+// AISC_MKPT_PROMOTE:        error_may_occur
+// AISC_MKPT_PROMOTE:        ? GB_incur_error()
+// AISC_MKPT_PROMOTE:        : NULL;
+// AISC_MKPT_PROMOTE:}
 
 #if defined(WARN_TODO)
 #warning search for 'GBS_global_string.*error' and replace with GB_failedTo_error or GB_append_exportedError

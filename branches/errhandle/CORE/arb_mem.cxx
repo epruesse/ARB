@@ -11,7 +11,6 @@
 
 #include "arb_mem.h"
 #include "arb_msg.h"
-#include "arb_assert.h"
 
 static char panicBuffer[500] = { 0 };
 
