@@ -495,7 +495,9 @@ void ItemFieldShader::scan_value_range_cb(int dim) {
                     ? GB_search(gb_item, fieldname, GB_FIND)
                     : GB_entry(gb_item, fieldname);
 
+                error = GB_incur_error_if(!gb_field);
                 if (gb_field) {
+                    is_assert(!error);
                     seen_field = true;
 
                     if (have_aci) {
@@ -534,9 +536,6 @@ void ItemFieldShader::scan_value_range_cb(int dim) {
                             }
                         }
                     }
-                }
-                else if (GB_have_error()) {
-                    error = GB_await_error();
                 }
             }
         }

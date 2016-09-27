@@ -130,18 +130,15 @@ GB_ERROR arb_open_socket(const char* name, bool do_connect, int *fd, char** file
     }
     else if (name[0] == ':') {
         // expand variables in path
-        char *filename = arb_shell_expand(name+1);
-        if (GB_have_error()) {
-            error = GB_await_error();
+        char *filename    = arb_shell_expand(name+1);
+        error             = GB_incur_error();
+        if (!error) error = arb_open_unix_socket(filename, do_connect, fd);
+
+        if (error) {
+            free(filename);
         }
         else {
-            error = arb_open_unix_socket(filename, do_connect, fd);
-            if (error) {
-                free(filename);
-            }
-            else {
-                reassign(*filename_out, filename);
-            }
+            reassign(*filename_out, filename);
         }
     } 
     else {

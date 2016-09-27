@@ -1093,7 +1093,9 @@ static void group_species(bool use_field, AW_window *use_as_main_window) {
                         gb_field     = GB_search(gb_species, field_name, GB_FIND);
                     }
 
-                    if (gb_field) {
+                    error = GB_incur_error_if(!gb_field);
+                    if (!error) {
+                        e4_assert(gb_field);
                         char *field_content = GB_read_as_string(gb_field);
                         if (field_content) {
                             size_t field_content_len = strlen(field_content);
@@ -1123,9 +1125,6 @@ static void group_species(bool use_field, AW_window *use_as_main_window) {
                         else {
                             error = "Incompatible field type";
                         }
-                    }
-                    else {
-                        if (GB_have_error()) error = GB_await_error();
                     }
                 }
                 list_elem = list_elem->next();
