@@ -377,10 +377,7 @@ void GB_clear_error() {         // clears the error buffer
 // AISC_MKPT_PROMOTE:     * Additionally asserts no error may occur if 'error_may_occur' is false!
 // AISC_MKPT_PROMOTE:     */
 // AISC_MKPT_PROMOTE:    arb_assert(implicated(!error_may_occur, !GB_have_error()));
-// AISC_MKPT_PROMOTE:    return
-// AISC_MKPT_PROMOTE:        error_may_occur
-// AISC_MKPT_PROMOTE:        ? GB_incur_error()
-// AISC_MKPT_PROMOTE:        : NULL;
+// AISC_MKPT_PROMOTE:    return error_may_occur ? GB_incur_error() : NULL;
 // AISC_MKPT_PROMOTE:}
 
 #if defined(WARN_TODO)

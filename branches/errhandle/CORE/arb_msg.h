@@ -58,10 +58,7 @@ inline GB_ERROR GB_incur_error_if(bool error_may_occur) {
      * Additionally asserts no error may occur if 'error_may_occur' is false!
      */
     arb_assert(implicated(!error_may_occur, !GB_have_error()));
-    return
-        error_may_occur
-        ? GB_incur_error()
-        : NULL;
+    return error_may_occur ? GB_incur_error() : NULL;
 }
 
 GB_ERROR GB_failedTo_error(const char *do_something, const char *special, GB_ERROR error);
