@@ -157,7 +157,7 @@ static ARB_ERROR pt_init_main_struct(PT_main *, const char *filename) { // __ATT
     if (!error) {
         GB_transaction ta(psg.gb_main);
         psg.alignment_name = GBT_get_default_alignment(psg.gb_main);
-        if (!psg.alignment_name && GB_have_error()) error = GB_await_error();
+        error              = GB_incur_error_if(!psg.alignment_name);
     }
 
     if (!error) {

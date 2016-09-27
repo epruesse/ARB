@@ -19,6 +19,9 @@
 #ifndef ARB_CORE_H
 #include "arb_core.h"
 #endif
+#ifndef ARB_ASSERT_H
+#include "arb_assert.h"
+#endif
 
 // return error and ensure none is exported
 #define RETURN_ERROR(err)  arb_assert(!GB_have_error()); return (err)
@@ -38,10 +41,26 @@ GB_ERROR GB_export_errorf(const char *templat, ...) __ATTR__FORMAT(1) __ATTR__DE
 GB_ERROR GB_IO_error(const char *action, const char *filename);
 GB_ERROR GB_export_IO_error(const char *action, const char *filename) __ATTR__DEPRECATED_TODO("use GB_export_error(GB_IO_error(...))");
 GB_ERROR GB_print_error(void) __ATTR__DEPRECATED_TODO("will be removed completely");
-GB_ERROR GB_get_error(void) __ATTR__DEPRECATED_TODO("consider using either GB_have_error() or GB_await_error()");
+GB_ERROR GB_get_error(void) __ATTR__DEPRECATED_TODO("consider using either GB_await_error() or GB_incur_error()");
 bool GB_have_error(void);
 GB_ERROR GB_await_error(void);
 void GB_clear_error(void);
+
+inline GB_ERROR GB_incur_error() {
+    /*! Take over responsibility for any potential (exported) error.
+     * @return NULL if no error was exported; the error otherwise
+     * Postcondition: no error is exported
+     */
+    return GB_have_error() ? GB_await_error() : NULL;
+}
+inline GB_ERROR GB_incur_error_if(bool error_may_occur) {
+    /*! similar to GB_incur_error.
+     * Additionally asserts no error may occur if 'error_may_occur' is false!
+     */
+    arb_assert(implicated(!error_may_occur, !GB_have_error()));
+    return error_may_occur ? GB_incur_error() : NULL;
+}
+
 GB_ERROR GB_failedTo_error(const char *do_something, const char *special, GB_ERROR error);
 GB_ERROR GB_append_exportedError(GB_ERROR error);
 class BackTraceInfo *GBK_get_backtrace(size_t skipFramesAtBottom);

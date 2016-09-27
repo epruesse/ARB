@@ -478,10 +478,11 @@ GB_ERROR LoadMenus() {
         }
         gde_assert(!GB_have_error());
 
-        GBS_read_dir(files, user_menu_dir, "/\\.menu$/");
-        GBS_read_dir(files, GB_path_in_ARBLIB("gde"), "/\\.menu$/");
-
-        if (GB_have_error()) error = GB_await_error();
+        if (!error) {
+            GBS_read_dir(files, user_menu_dir, "/\\.menu$/");
+            GBS_read_dir(files, GB_path_in_ARBLIB("gde"), "/\\.menu$/");
+            error = GB_incur_error();
+        }
 
         free(user_menu_dir);
     }

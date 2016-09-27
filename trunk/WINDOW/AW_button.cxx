@@ -176,7 +176,7 @@ void VarUpdateInfo::change_from_widget(XtPointer call_data) {
         if (cbs && run_cb) cbs->run_callbacks(); // @@@ generally unwanted callback (see #559)
         root->value_changed = false;
 
-        if (GB_have_error()) aw_message(GB_await_error()); // show error exported by awar-change-callback
+        aw_message_if(GB_incur_error()); // show error exported by awar-change-callback
     }
 
     AW_cb::useraction_done(aw_parent);

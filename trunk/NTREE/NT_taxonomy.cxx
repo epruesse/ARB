@@ -226,7 +226,7 @@ static void mark_action(AW_window *aws, AWT_canvas *ntw, Target target) {
 
             const char *fieldName    = prepare_and_get_selected_itemfield(aw_root, AWAR_TREE_COMPARE_WRITE_FIELD, gb_main, SPECIES_get_selector(), FIF_ALLOW_NONE);
             bool        writeToField = fieldName;
-            GB_ERROR    error        = GB_have_error() ? GB_await_error() : NULL;
+            GB_ERROR    error        = GB_incur_error();
 
             if (!error) {
                 arb_progress subprogress("Comparing taxonomy info", commonSpeciesCount);

@@ -1638,11 +1638,9 @@ static void modify_fields_of_queried_cb(AW_window*, DbQuery *query) {
                 {
                     if (IS_QUERIED(gb_item, query)) {
                         GBDATA *gb_new = GB_search(gb_item, key, GB_FIND);
+                        error          = GB_incur_error_if(!gb_new);
 
-                        if (!gb_new && GB_have_error()) {
-                            error = GB_await_error();
-                        }
-                        else {
+                        if (!error) {
                             char *str    = gb_new ? GB_read_as_string(gb_new) : strdup("");
                             char *parsed = 0;
 
@@ -1991,8 +1989,8 @@ static void loadsave_colorset_cb(AW_window *aws, BoundItemSel *bsel, loadsave_mo
         GBDATA *gb_colorset_root = get_colorset_root(bsel);
         GBDATA *gb_colorset      = gb_colorset_root ? GBT_find_colorset(gb_colorset_root, name) : NULL;
 
-        if (GB_have_error()) error = GB_await_error();
-        else {
+        error = GB_incur_error();
+        if (!error) {
             if (mode == SAVE) {
                 if (!gb_colorset) { // create new colorset
                     gb_colorset             = GBT_find_or_create_colorset(gb_colorset_root, name);
