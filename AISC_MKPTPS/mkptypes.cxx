@@ -608,19 +608,9 @@ static void search_comment_for_promotion() {
     promotion_found = strstr(last_comment, promotion_tag);
     while (promotion_found) {
         char *behind_promo = promotion_found+promotion_tag_len;
-        char *eol, *eoc;
         mp_assert(behind_promo[-1] == ':'); // wrong promotion_tag_len
 
-        eol = strchr(behind_promo, '\n');
-        eoc = strstr(behind_promo, "*/");
-
-        if (eoc && eol) {
-            if (eoc<eol) eol = eoc;
-        }
-        else if (!eol) {
-            eol = eoc;
-        }
-
+        char *eol     = strchr(behind_promo, '\n');
         if (!eol) eol = strchr(behind_promo, 0);
 
         if (eol) {
