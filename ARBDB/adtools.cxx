@@ -1206,7 +1206,7 @@ static arb_test::match_expectation macroFoundAs(const char *shortName, const cha
         free(found);
     }
 
-    GB_ERROR error = GB_have_error() ? GB_await_error() : NULL;
+    GB_ERROR error = GB_incur_error();
     if (partOfError) {
         if (error) {
             expected.add(that(error).does_contain(partOfError));

@@ -590,7 +590,7 @@ static void mergeSimilarSpecies(AW_window *aws, MergeSpeciesType mergeType, AW_s
         GB_begin_transaction(GLOBAL.gb_main);       // open database for transaction
 
         const char *report_field_name = prepare_and_get_selected_itemfield(aw_root, AWAR_CON_STORE_SIM_SP_NO, GLOBAL.gb_main, SPECIES_get_selector(), FIF_NAME_SELECTED);
-        if (!report_field_name && GB_have_error()) error = GB_await_error();
+        error                         = GB_incur_error_if(!report_field_name);
 
         if (!error && strcmp(merge_field_name, NO_FIELD_SELECTED) == 0) {
             error = "Please select database field for similarity detection";

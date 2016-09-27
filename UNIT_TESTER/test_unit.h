@@ -1052,8 +1052,7 @@ namespace arb_test {
 #ifdef ARB_MSG_H
 
 namespace arb_test {
-    inline GB_ERROR get_exported_error() { return GB_have_error() ? GB_await_error() : NULL; }
-    inline match_expectation no_forgotten_error_exported() { return that(get_exported_error()).is_equal_to_NULL(); }
+    inline match_expectation no_forgotten_error_exported() { return that(GB_incur_error()).is_equal_to_NULL(); }
 
     class calling {
         bool     result;
@@ -1061,7 +1060,7 @@ namespace arb_test {
     public:
         calling(bool call)
             : result(call),
-              error(get_exported_error())
+              error(GB_incur_error())
         {}
 
         // functions below try to make failing expectations more readable

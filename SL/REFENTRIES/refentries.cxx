@@ -59,14 +59,12 @@ namespace RefEntries {
     }
 
     static ARB_ERROR addRefsTo(DBItemSet& referred, ItemSelector& itemtype, GBDATA *gb_item, const RefSelector& ref) {
-        ARB_ERROR   error;
         const char *refs     = ref.get_refs(itemtype, gb_item);
         char       *filtered = ref.filter_refs(refs, gb_item);
+        ARB_ERROR   error    = GB_incur_error_if(!filtered);
 
-        if (!filtered) {
-            if (GB_have_error()) error = GB_await_error();
-        }
-        else {
+        if (filtered) {
+            re_assert(!error);
             ConstStrArray refNames;
             GBT_split_string(refNames, filtered, ";, ", true);
             size_t   refCount = refNames.size();
