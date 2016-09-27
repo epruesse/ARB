@@ -1123,7 +1123,7 @@ NOT4PERL uint8_t GB_read_lossless_byte(GBDATA *gbd, GB_ERROR& error) {
             break;
     }
 
-    if (!error && GB_have_error()) error = GB_await_error();
+    if (!error) error = GB_incur_error();
     return result;
 }
 NOT4PERL int32_t GB_read_lossless_int(GBDATA *gbd, GB_ERROR& error) {
@@ -1150,7 +1150,7 @@ NOT4PERL int32_t GB_read_lossless_int(GBDATA *gbd, GB_ERROR& error) {
             break;
     }
 
-    if (!error && GB_have_error()) error = GB_await_error();
+    if (!error) error = GB_incur_error();
     return result;
 }
 NOT4PERL float GB_read_lossless_float(GBDATA *gbd, GB_ERROR& error) {
@@ -1177,7 +1177,7 @@ NOT4PERL float GB_read_lossless_float(GBDATA *gbd, GB_ERROR& error) {
             break;
     }
 
-    if (!error && GB_have_error()) error = GB_await_error();
+    if (!error) error = GB_incur_error();
     return result;
 }
 
@@ -2820,12 +2820,8 @@ void TEST_GB_number_of_subentries() {
 
 
 void TEST_POSTCOND_arbdb() {
-    GB_ERROR error = NULL;
-    if (GB_have_error()) {
-        error = GB_await_error(); // clears the error (to make further tests succeed)
-    }
-
-    bool unclosed_GB_shell = closed_open_shell_for_unit_tests();
+    GB_ERROR error             = GB_incur_error(); // clears the error (to make further tests succeed)
+    bool     unclosed_GB_shell = closed_open_shell_for_unit_tests();
 
     TEST_REJECT(error);             // your test finished with an exported error
     TEST_REJECT(unclosed_GB_shell); // your test finished w/o destroying GB_shell

@@ -98,8 +98,7 @@ void TEST_arb_shell_expand() {
     free(res);
 
     res = arb_shell_expand("$ARBHOME&");
-    TEST_EXPECT(GB_have_error());
-    GB_await_error();
+    TEST_EXPECT_CONTAINS(GB_incur_error(), "Illegal character");
     TEST_EXPECT_EQUAL(res, "$ARBHOME&");
     free(res);
     
