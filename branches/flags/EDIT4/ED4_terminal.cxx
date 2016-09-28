@@ -19,6 +19,7 @@
 #include "ed4_flags.hxx"
 
 #include <arbdbt.h>
+#include <items.h>
 
 #include <aw_preset.hxx>
 #include <aw_awar.hxx>
@@ -623,6 +624,12 @@ ED4_returncode ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *aw
                         current_cursor().show_clicked_cursor(event->x, this);
                     }
                 }
+                else if (is_flag_terminal()) {
+                    if (event->type == AW_Mouse_Press) {
+                        to_flag_terminal()->handle_left_click(AW::Position(event->x, event->y));
+                    }
+                }
+
                 break;
             }
             case AW_BUTTON_RIGHT: {
@@ -1347,6 +1354,44 @@ void ED4_flag_terminal::draw() {
         }
 
         aw_message_if(error);
+    }
+}
+
+void ED4_flag_terminal::handle_left_click(const Position& click) {
+    const SpeciesFlags& flags = SpeciesFlags::instance();
+
+    int boxes = flags.size();
+    if (boxes>0) {
+        FlagLayout layout(get_win_area(current_ed4w()), flags);
+
+        SpeciesFlagCiter curr_flag = flags.begin();
+        SpeciesFlagCiter end       = flags.end();
+
+        for (int b = 0; b<boxes; ++b) {
+            if (layout.get_box().contains(click)) break;
+            ++curr_flag;
+            if (curr_flag != end) layout.move_box(curr_flag->center_xpos());
+        }
+
+        if (curr_flag != end) {
+            GBDATA   *gb_species = get_species();
+            GBDATA   *gb_field   = GB_entry(gb_species, curr_flag->get_fieldname().c_str());
+            GB_ERROR  error      = GB_incur_error_if(!gb_field);
+
+            if (!error && !gb_field) {
+                const char *key   = curr_flag->prepare_itemfield(); // impl using prepare_and_get_selected_itemfield
+                if (key) gb_field = GBT_searchOrCreate_itemfield_according_to_changekey(gb_species, key, SPECIES_get_selector().change_key_path);
+                error             = GB_incur_error_if(!gb_field);
+            }
+
+            if (gb_field) {
+                uint8_t val       = GB_read_lossless_byte(gb_field, error);
+                if (!error) error = GB_write_lossless_byte(gb_field, !val);
+            }
+
+            aw_message_if(error);
+            if (!error) request_refresh();
+        }
     }
 }
 

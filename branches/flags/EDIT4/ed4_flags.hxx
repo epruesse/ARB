@@ -25,13 +25,16 @@ class SpeciesFlag {
     std::string shortname; // abbreviation used in flag-header
     std::string fieldname; // name of species field
 
+    int awar_index; // index of awars
+
     int xpos; // inside terminal
     int width;
 
 public:
-    SpeciesFlag(const std::string& shortname_, const std::string& fieldname_) :
+    SpeciesFlag(const std::string& shortname_, const std::string& fieldname_, int awar_idx) :
         shortname(shortname_),
         fieldname(fieldname_),
+        awar_index(awar_idx),
         xpos(-1),
         width(-1)
     {
@@ -57,6 +60,8 @@ public:
     double center_xpos() const {
         return get_xpos() + get_width()*0.5;
     }
+
+    const char *prepare_itemfield() const;
 };
 
 typedef std::list<SpeciesFlag>          SpeciesFlagList;

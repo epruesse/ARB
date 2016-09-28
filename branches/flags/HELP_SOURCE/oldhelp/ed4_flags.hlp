@@ -15,9 +15,9 @@ OCCURRENCE      ARB_EDIT4/Properties/Select species flags
 DESCRIPTION     This module allows to show clickable flags between the species name
                 and the sequence display area.
 
-                These flags display values of selected database fields as bool value (ie. "on"/"off")
-                and by clicking them, you are able to toggle the value of these database fields.
-                (@@@ not implemented yet)
+                These flags display values of selected database fields as bool
+                value (ie. "on"/"off") and by clicking them, you are able to toggle
+                the value of these database fields (between 0 and 1).
 
 NOTES           To display more than just a bool value use LINK{ed4_nds.hlp} with an ACI like 
 
@@ -25,6 +25,7 @@ NOTES           To display more than just a bool value use LINK{ed4_nds.hlp} wit
 
 EXAMPLES        None
 
-WARNINGS        None
+WARNINGS        Floating point database fields behave a bit weird, as their value is rounded:
+                eg. '0.4' counts as "off", while '0.6' counts as "on".
 
 BUGS            No bugs known

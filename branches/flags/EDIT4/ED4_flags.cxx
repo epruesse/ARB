@@ -15,6 +15,7 @@
 #include <aw_awar.hxx>
 #include <aw_root.hxx>
 #include <arb_strbuf.h>
+#include <arbdbt.h>
 
 using namespace std;
 
@@ -66,6 +67,44 @@ static void init_flag_awars() {
 
 // --------------------------------------------------------------------------------
 
+const char *SpeciesFlag::prepare_itemfield() const {
+    /*! setup DB field for flag (create changekey)
+     * @return fieldname if changekey exists or has been created
+     * otherwise error is exported
+     */
+
+    const char *awar_name     = awarname(AWAR_FLAG_FIELD_TEMPLATE, awar_index);
+    const char *reg_awar_name = get_itemfield_type_awarname(awar_name);
+
+    const char *key   = NULL;
+    GB_ERROR    error = NULL;
+
+    AW_root       *awr      = AW_root::SINGLETON;
+    GBDATA        *gb_main  = GLOBAL_gb_main;
+    ItemSelector&  selector = SPECIES_get_selector();
+
+    if (reg_awar_name) { // field selection was used (normal case) -> create field as specified by user
+        key   = prepare_and_get_selected_itemfield(awr, awar_name, gb_main, selector, FIF_STANDARD);
+        error = GB_incur_error_if(!key);
+    }
+    else { // field was stored in properties -> check changekey
+        key           = awr->awar(awar_name)->read_char_pntr();
+        GB_TYPES type = GBT_get_type_of_changekey(gb_main, key, selector.change_key_path);
+
+        if (type == GB_NONE) { // changekey does not exist -> default to type GB_INT
+            error          = GBT_add_new_changekey_to_keypath(gb_main, key, GB_INT, selector.change_key_path);
+            if (error) key = NULL;
+        }
+    }
+
+    e4_assert(correlated(!key, error));
+    if (error) GB_export_errorf("Failed to prepare flag-field (Reason: %s)", error);
+
+    return key;
+}
+
+// --------------------------------------------------------------------------------
+
 SpeciesFlags *SpeciesFlags::SINGLETON = NULL;
 
 void SpeciesFlags::create_instance() {
@@ -86,7 +125,7 @@ void SpeciesFlags::create_instance() {
 
                     if (!abbr[0]) abbr = "?";
 
-                    SINGLETON->push_back(SpeciesFlag(abbr, field));
+                    SINGLETON->push_back(SpeciesFlag(abbr, field, f));
                 }
             }
         }
@@ -137,8 +176,6 @@ void SpeciesFlags::calculate_header_dimensions(AW_device *device, int gc) {
     e4_assert(prev_flag);
     min_flag_distance = std::min(min_flag_distance, int(floor(2*((pixel_width-1)-prev_flag->center_xpos()))));
 }
-
-
 
 AW_window *ED4_configure_species_flags(AW_root *root, GBDATA *gb_main) {
     AW_window_simple *aws = new AW_window_simple;

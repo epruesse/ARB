@@ -2173,6 +2173,7 @@ public:
     ED4_flag_terminal(const char *id, AW_pos width, AW_pos height, ED4_manager *parent);
 
     GBDATA *get_species() const { return get_parent(LEV_SPECIES)->get_species_pointer(); }
+    void handle_left_click(const AW::Position& click);
 
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_terminal);
 };
