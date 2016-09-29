@@ -12,17 +12,21 @@
 #include "ed4_class.hxx"
 
 #include <item_sel_list.h>
+#include <awt_config_manager.hxx>
+
 #include <aw_awar.hxx>
 #include <aw_root.hxx>
-#include <arb_strbuf.h>
+
 #include <arbdbt.h>
+
+#include <arb_strbuf.h>
 
 using namespace std;
 
 #define MAX_SPECIES_FLAGS 5
 
 #define AWAR_FLAGS_PREFIX         "arb_edit/flags" // in main database
-#define AWAR_FLAGS_ENABLED        AWAR_FLAGS_PREFIX "/enable"
+#define AWAR_FLAGS_ENABLED        AWAR_FLAGS_PREFIX "/display"
 #define AWAR_FLAG_PREFIX_TEMPLATE AWAR_FLAGS_PREFIX "/flag%i"
 #define AWAR_FLAG_ENABLE_TEMPLATE AWAR_FLAG_PREFIX_TEMPLATE "/enable"
 #define AWAR_FLAG_HEADER_TEMPLATE AWAR_FLAG_PREFIX_TEMPLATE "/header"
@@ -177,6 +181,27 @@ void SpeciesFlags::calculate_header_dimensions(AW_device *device, int gc) {
     min_flag_distance = std::min(min_flag_distance, int(floor(2*((pixel_width-1)-prev_flag->center_xpos()))));
 }
 
+inline const char *settingName(const char *name, int idx) {
+    e4_assert(idx>=0 && idx<MAX_SPECIES_FLAGS);
+    const int   BUFSIZE = 20;
+    static char buffer[BUFSIZE];
+#if defined(ASSERTION_USED)
+    int printed =
+#endif
+        sprintf(buffer, "%s%i", name, idx);
+    e4_assert(printed<BUFSIZE);
+    return buffer;
+}
+
+static void setup_species_flags_config(AWT_config_definition& cfg) {
+    cfg.add(AWAR_FLAGS_ENABLED, "display");
+    for (int i = 0; i<MAX_SPECIES_FLAGS; ++i) {
+        cfg.add(awarname(AWAR_FLAG_ENABLE_TEMPLATE, i), settingName("enable", i));
+        cfg.add(awarname(AWAR_FLAG_HEADER_TEMPLATE, i), settingName("header", i));
+        cfg.add(awarname(AWAR_FLAG_FIELD_TEMPLATE,  i), settingName("field",  i));
+    }
+}
+
 AW_window *ED4_configure_species_flags(AW_root *root, GBDATA *gb_main) {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(root, "SPECIES_FLAGS", "Species flags");
@@ -190,12 +215,13 @@ AW_window *ED4_configure_species_flags(AW_root *root, GBDATA *gb_main) {
     aws->callback(makeHelpCallback("ed4_flags.hlp"));
     aws->create_button("HELP", "HELP");
 
+    int cfg_x, cfg_y;
+    aws->get_at_position(&cfg_x, &cfg_y);
+
     aws->at_newline();
 
     aws->label("Display flags");
     aws->create_toggle(AWAR_FLAGS_ENABLED);
-
-    // @@@ add config-manager
 
     aws->at_newline();
 
@@ -232,6 +258,9 @@ AW_window *ED4_configure_species_flags(AW_root *root, GBDATA *gb_main) {
         aws->at(header_x[h], header_y);
         aws->create_autosize_button(0, headertext[h]);
     }
+
+    aws->at(cfg_x, cfg_y);
+    AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "species_flags", makeConfigSetupCallback(setup_species_flags_config));
 
     return aws;
 }

@@ -471,6 +471,7 @@ ED4_flags.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ED4_flags.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
 ED4_flags.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 ED4_flags.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+ED4_flags.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 ED4_flags.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 ED4_flags.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_flags.o: $(ARBHOME)/INCLUDE/cb_base.h

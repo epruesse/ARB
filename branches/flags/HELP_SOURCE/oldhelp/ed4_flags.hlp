@@ -17,7 +17,22 @@ DESCRIPTION     This module allows to show clickable flags between the species n
 
                 These flags display values of selected database fields as bool
                 value (ie. "on"/"off") and by clicking them, you are able to toggle
-                the value of these database fields (between 0 and 1).
+                the values of these database fields (between 0 and 1).
+
+                You can display up to 5 database fields at the same time.
+
+                The setup of displayed flags is stored together with your database
+                (not inside edit4-properties). This means: if you save your database while
+                flags are shown in EDIT4, another user will see these flags after opening
+                the editor on that database.
+                You can use the config-manager icon to store the current setup inside
+                properties and to restore it for a different database.
+
+                The size of the clickable boxes depends on the size of the space available,
+                which is determined by other settings, eg.
+                 - by the size of several fonts,
+                 - by the lengths of the customized flag abbreviations or
+                 - by sequence-sequence-spacing.
 
 NOTES           To display more than just a bool value use LINK{ed4_nds.hlp} with an ACI like 
 
