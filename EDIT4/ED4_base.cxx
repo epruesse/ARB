@@ -277,6 +277,15 @@ ED4_group_manager *ED4_build_group_manager_start(ED4_manager                 *gr
             species_manager->append_member(species_name_terminal);
         }
 
+
+        {
+            // add flag header terminal
+            sprintf(namebuffer, "Flag_Header_Terminal.%ld", ED4_counter);
+            ED4_flag_header_terminal *flag_header_terminal = new ED4_flag_header_terminal(namebuffer, 100, TERMINAL_HEIGHT, species_manager);
+            flag_header_terminal->set_links(NULL, refterms.sequence());
+            species_manager->append_member(flag_header_terminal);
+        }
+
         {
             sprintf(namebuffer, "Consensus_Seq_Manager.%ld", ED4_counter);
             ED4_sequence_manager *sequence_manager = new ED4_sequence_manager(namebuffer, 0, 0, species_manager);

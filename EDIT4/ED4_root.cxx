@@ -23,13 +23,16 @@
 #include "graph_aligner_gui.hxx"
 #include "ed4_colStat.hxx"
 #include "ed4_seq_colors.hxx"
+#include "ed4_flags.hxx"
 
 #include <ed4_extern.hxx>
 #include <fast_aligner.hxx>
+
 #include <AW_helix.hxx>
 #include <gde.hxx>
 #include <awt.hxx>
 #include <awt_map_key.hxx>
+
 #include <aw_awars.hxx>
 #include <aw_preset.hxx>
 #include <aw_msg.hxx>
@@ -37,14 +40,17 @@
 #include <aw_root.hxx>
 #include <aw_question.hxx>
 #include <aw_advice.hxx>
+#include <rootAsWin.h>
 #include "../WINDOW/aw_status.hxx" // @@@ hack - obsolete when EDIT4 status works like elsewhere
+
 #include <arb_version.h>
 #include <arb_file.h>
+#include <arb_defs.h>
+
 #include <arbdbt.h>
 #include <ad_cb.h>
 #include <macros.hxx>
 #include <st_window.hxx>
-#include <rootAsWin.h>
 
 #include <cctype>
 #include <map>
@@ -105,16 +111,16 @@ void ED4_root::request_refresh_for_sequence_terminals() {
 
 void ED4_root::refresh_window_simple(bool redraw) {
     // if 'redraw' -> update everything (ignoring refresh flag)
-    int refresh_all = 0;
+    bool refresh_all = false;
     if (redraw) {
 #if defined(TRACE_REFRESH)
         fprintf(stderr, "- clear display (refresh_window_simple(redraw=true) called)\n"); fflush(stderr);
 #endif
         main_manager->update_info.set_clear_at_refresh(1);
-        refresh_all = 1;
+        refresh_all = true;
     }
 
-    main_manager->Show(refresh_all, 0);
+    main_manager->Show(refresh_all, false);
     if (redraw) main_manager->update_info.set_clear_at_refresh(0);
 }
 
@@ -523,10 +529,16 @@ ARB_ERROR ED4_root::init_alignment() {
 }
 
 void ED4_root::recalc_font_group() {
+    int font_GC[] = {
+        ED4_G_SEQUENCES,
+        ED4_G_STANDARD,
+        ED4_G_FLAG_INFO,
+    };
+
     font_group.unregisterAll();
-    for (int f=ED4_G_FIRST_FONT; f<=ED4_G_LAST_FONT; f++) {
+    for (unsigned i = 0; i<ARRAY_ELEMS(font_GC); ++i) {
         ED4_MostRecentWinContext context;
-        font_group.registerFont(current_device(), f);
+        font_group.registerFont(current_device(), font_GC[i]);
     }
 }
 
@@ -585,12 +597,9 @@ ED4_returncode ED4_root::create_hierarchy(const char *area_string_middle, const 
             );
     }
 
-
-    recalc_font_group();
-
     {
         arb_progress species_progress("Loading species", total_no_of_species);
-        
+
         // ********** Top Area beginning **********
 
         ED4_multi_species_manager *top_multi_species_manager;
@@ -1331,11 +1340,15 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
                               makeGcChangedCallback(gc_change_cb), // callback triggering refresh on gc-change
 
                               "#f8f8f8",
-                              "STANDARD$black",              // Standard Color showing sequences
+                              "STANDARD$black",              // standard color showing species/group info (name, ...)
+                              "FlagInfo$#DDD",
                               "#SEQUENCES (0)$#505050",      // default color for sequences (color 0)
+
                               "+-HELIX (1)$#8E0000",  "+-COLOR 2$#0000dd",    "-COLOR 3$#00AA55",
                               "+-COLOR 4$#80f",       "+-COLOR 5$#c0a020",    "-COLOR 6$grey",
                               "+-COLOR 7$#ff0000",    "+-COLOR 8$#44aaff",    "-COLOR 9$#ffaa00",
+
+                              "+-CURSOR$#FF0080",     "+-MARKED$#f4f8e0",     "-SELECTED$#FFFF80",
 
                               "+-RANGE 0$#FFFFFF",    "+-RANGE 1$#F0F0F0",    "-RANGE 2$#E0E0E0",
                               "+-RANGE 3$#D8D8D8",    "+-RANGE 4$#D0D0D0",    "-RANGE 5$#C8C8C8",
@@ -1348,8 +1361,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
                               "+-Primer(l)$#A9FE54",  "+-Primer(r)$#A9FE54",  "-Primer(g)$#A9FE54",
                               "+-Sig(l)$#DBB0FF",     "+-Sig(r)$#DBB0FF",     "-Sig(g)$#DBB0FF",
 
-                              "+-MISMATCHES$#FF9AFF", "-CURSOR$#FF0080",
-                              "+-MARKED$#f4f8e0",     "-SELECTED$#FFFF80",
+                              "+-MISMATCHES$#FF9AFF", "+-Flag$#7c7ce3",       "-FlagFill$#aacef1",
 
                               "&color_groups", // use color groups
 
@@ -1563,14 +1575,15 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
 
     awmm->sep______________();
 
+    awmm->insert_menu_topic(awmm->local_id("props_nds"),     "Select visible info (NDS) ", "D", "ed4_nds.hlp",   AWM_ALL, ED4_create_nds_window);
+    awmm->insert_menu_topic(awmm->local_id("props_flags"),   "Select species flags",       "f", "ed4_flags.hlp", AWM_ALL, makeCreateWindowCallback(ED4_configure_species_flags, GLOBAL_gb_main));
     {
         static WindowCallback reqRelCb = makeWindowCallback(ED4_request_relayout);
         if (alignment_type == GB_AT_AA) awmm->insert_menu_topic(awmm->local_id("props_pfold"),     "Protein Match Settings ", "P", "pfold_props.hlp", AWM_ALL, makeCreateWindowCallback(ED4_pfold_create_props_window, &reqRelCb));
         else                            awmm->insert_menu_topic(awmm->local_id("props_helix_sym"), "Helix Settings ",         "H", "helixsym.hlp",    AWM_ALL, makeCreateWindowCallback(create_helix_props_window,     &reqRelCb));
     }
-
     awmm->insert_menu_topic(awmm->local_id("props_key_map"), "Key Mappings ",              "K", "nekey_map.hlp", AWM_ALL, create_key_map_window);
-    awmm->insert_menu_topic(awmm->local_id("props_nds"),     "Select visible info (NDS) ", "D", "ed4_nds.hlp",   AWM_ALL, ED4_create_nds_window);
+
     awmm->sep______________();
     AW_insert_common_property_menu_entries(awmm);
     awmm->sep______________();
@@ -1874,16 +1887,16 @@ ED4_returncode ED4_root::generate_window(AW_device **device, ED4_window **new_wi
     return (ED4_R_OK);
 }
 
-AW_window *ED4_root::create_new_window() {
-    // only the first window, other windows are generated by generate_window
+AW_window *ED4_root::create_first_window() {
+    // Note: other windows are generated by generate_window
     AW_device  *device     = NULL;
     ED4_window *new_window = NULL;
 
     generate_window(&device, &new_window);
 
     ED4_LocalWinContext uses(new_window);
-    
-    ED4_calc_terminal_extentions();
+
+    ED4_calc_terminal_extentions(); // (Note: done again later, but otherwise variables are used uninitialized);
 
     DRAW                    = 1;
     move_cursor             = 0;

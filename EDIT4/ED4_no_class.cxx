@@ -16,6 +16,7 @@
 #include "ed4_nds.hxx"
 #include "ed4_list.hxx"
 #include "ed4_seq_colors.hxx"
+#include "ed4_flags.hxx"
 
 #include <iupac.h>
 #include <consensus_config.h>
@@ -84,11 +85,14 @@ static void calculate_group_folding(group_folding& folding) {
 }
 
 void ED4_calc_terminal_extentions() {
+    ED4_ROOT->recalc_font_group();
+
     AW_device *device = ED4_ROOT->first_window->get_device(); // any device
 
-    const AW_font_limits& seq_font_limits  = device->get_font_limits(ED4_G_SEQUENCES, 0);
+    const AW_font_group&  font_group       = ED4_ROOT->font_group;
+    const AW_font_limits& seq_font_limits  = font_group.get_limits(ED4_G_SEQUENCES);
     const AW_font_limits& seq_equal_limits = device->get_font_limits(ED4_G_SEQUENCES, '=');
-    const AW_font_limits& info_font_limits = device->get_font_limits(ED4_G_STANDARD, 0);
+    const AW_font_limits& info_font_limits = font_group.get_limits(ED4_G_STANDARD);
 
     int info_char_width = info_font_limits.width;
     int seq_term_descent;
@@ -126,6 +130,20 @@ void ED4_calc_terminal_extentions() {
             (maxchars+1+1)*info_char_width + // width defined in NDS window (+ 1 char for marked-box; + 1 extra char to avoid truncation)
             maxbrackets*BRACKET_WIDTH;       // brackets defined in NDS window
     }
+
+    {
+        SpeciesFlags& flags     = SpeciesFlags::mutable_instance();
+        int           headerlen = flags.get_header_length();
+
+        if (headerlen) {
+            flags.calculate_header_dimensions(device, ED4_G_FLAG_INFO);
+            FLAG_WIDTH = flags.get_pixel_width();
+        }
+        else {
+            FLAG_WIDTH = 0;
+        }
+    }
+
     MAXINFO_WIDTH =
         CHARACTEROFFSET +
         info_char_width*ED4_ROOT->aw_root->awar(ED4_AWAR_NDS_INFO_WIDTH)->read_int() +
@@ -140,12 +158,19 @@ void ED4_calc_terminal_extentions() {
     printf("seq_term_descent = %i\n", seq_term_descent);
     printf("TERMINAL_HEIGHT  = %i\n", TERMINAL_HEIGHT);
     printf("MAXNAME_WIDTH    = %i\n", MAXNAME_WIDTH);
+    printf("FLAG_WIDTH       = %i\n", FLAG_WIDTH);
     printf("MAXINFO_WIDTH    = %i\n", MAXINFO_WIDTH);
     printf("INFO_TERM_TEXT_YOFFSET= %i\n", INFO_TERM_TEXT_YOFFSET);
     printf(" SEQ_TERM_TEXT_YOFFSET= %i\n", SEQ_TERM_TEXT_YOFFSET);
 #endif // DEBUG
 }
 
+bool ED4_flag_header_terminal::set_dynamic_size() {
+    return extension.set_size_does_change(WIDTH, FLAG_WIDTH);
+}
+bool ED4_flag_terminal::set_dynamic_size() {
+    return extension.set_size_does_change(WIDTH, FLAG_WIDTH);
+}
 bool ED4_species_name_terminal::set_dynamic_size() {
     return extension.set_size_does_change(WIDTH, MAXNAME_WIDTH - BRACKET_WIDTH * calc_group_depth());
 }
@@ -202,7 +227,6 @@ static ARB_ERROR update_extension_size(ED4_base *base) {
 }
 
 void ED4_resize_all_extensions() { // @@@ pass flag to force resize-request? (eg. for initial-call?)
-    ED4_ROOT->recalc_font_group();
     ED4_calc_terminal_extentions();
 
     // @@@ below calculations have to be done at startup as well (are they done somewhere else or not done?)

@@ -42,6 +42,8 @@ Major changes for next release:
    * according to given topology (useful when comparing topologies)
  - support for extra database compression (using gzip, bzip2, xz); databases cannot be opened by arb versions before 6.1.x
  - ARB_EDIT4:
+   * display selected database fields as flags (allowing to toggle their value; #261).
+     Example use: easily mark sequence as "curated" after manually checking its alignment.
    * allow to load missing SAIs
    * "view differences" to a reference sequence:
       - customizable:

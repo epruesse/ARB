@@ -55,11 +55,12 @@ static ED4_objspec multi_species_manager_spec(
 
 static ED4_objspec species_manager_spec(
     (ED4_properties)(PROP_IS_MANAGER | PROP_VERTICAL),  // static props
-    LEV_SPECIES,                                          // level
-    (ED4_level)(LEV_MULTI_SEQUENCE | LEV_MULTI_NAME |     // (used by normal species)
-                LEV_SPECIES_NAME | LEV_SEQUENCE),         // allowed children level (used by consensus)
-    LEV_NONE,                                             // handled object
-    LEV_NONE                                              // restriction level
+    LEV_SPECIES,                                        // level
+    (ED4_level)(LEV_MULTI_SEQUENCE | LEV_MULTI_NAME |   // (used by normal species)
+                LEV_SPECIES_NAME | LEV_SEQUENCE |       // allowed children level (used by consensus)
+                LEV_FLAG_HEADER),
+    LEV_NONE,                                           // handled object
+    LEV_NONE                                            // restriction level
     );
 
 static ED4_objspec multi_sequence_manager_spec(
@@ -87,9 +88,9 @@ static ED4_objspec multi_name_manager_spec(
     );
 
 static ED4_objspec name_manager_spec(
-    (ED4_properties)(PROP_IS_MANAGER | PROP_VERTICAL), // static props
+    (ED4_properties)(PROP_IS_MANAGER | PROP_VERTICAL),   // static props
     LEV_NAME_MANAGER,                                    // level
-    (ED4_level)(LEV_SPECIES_NAME),                       // allowed children level
+    (ED4_level)(LEV_SPECIES_NAME | LEV_FLAG),            // allowed children level
     LEV_NONE,                                            // handled object
     LEV_SPECIES                                          // restriction level
     );
@@ -866,7 +867,7 @@ void ED4_main_manager::resize_requested_children() {
     }
 }
 
-ED4_returncode ED4_main_manager::Show(int refresh_all, int is_cleared) {
+void ED4_main_manager::Show(bool refresh_all, bool is_cleared) {
 #ifdef TEST_REFRESH_FLAG
     e4_assert(refresh_flag_ok());
 #endif
@@ -875,7 +876,7 @@ ED4_returncode ED4_main_manager::Show(int refresh_all, int is_cleared) {
 
     if (!flag.hidden && (refresh_all || update_info.refresh)) {
 #if defined(TRACE_REFRESH)
-        fprintf(stderr, "- really paint in ED4_main_manager::Show(refresh_all=%i, is_cleared=%i)\n", refresh_all, is_cleared); fflush(stderr);
+        fprintf(stderr, "- really paint in ED4_main_manager::Show(refresh_all=%i, is_cleared=%i)\n", int(refresh_all), int(is_cleared)); fflush(stderr);
 #endif
         const AW_screen_area& area_rect = device->get_area_size();
 
@@ -954,21 +955,19 @@ ED4_returncode ED4_main_manager::Show(int refresh_all, int is_cleared) {
 #ifdef TEST_REFRESH_FLAG
     e4_assert(refresh_flag_ok());
 #endif
-
-    return ED4_R_OK;
 }
 
 
-ED4_returncode ED4_root_group_manager::Show(int refresh_all, int is_cleared) {
+void ED4_root_group_manager::Show(bool refresh_all, bool is_cleared) {
     if (update_remap()) { // @@@ dont call here ? 
 #if defined(TRACE_REFRESH)
         printf("map updated in ED4_root_group_manager::Show (bad?)\n");
 #endif
     }
-    return ED4_manager::Show(refresh_all, is_cleared);
+    ED4_manager::Show(refresh_all, is_cleared);
 }
 
-ED4_returncode ED4_manager::Show(int refresh_all, int is_cleared) {
+void ED4_manager::Show(bool refresh_all, bool is_cleared) {
 #ifdef TEST_REFRESH_FLAG
     e4_assert(refresh_flag_ok());
 #endif
@@ -1093,8 +1092,6 @@ ED4_returncode ED4_manager::Show(int refresh_all, int is_cleared) {
 #ifdef TEST_REFRESH_FLAG
     e4_assert(refresh_flag_ok());
 #endif
-
-    return ED4_R_OK;
 }
 
 ED4_returncode ED4_manager::clear_refresh() {

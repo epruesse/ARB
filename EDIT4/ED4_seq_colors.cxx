@@ -11,6 +11,7 @@
 
 #include "ed4_seq_colors.hxx"
 #include "ed4_class.hxx"
+#include "ed4_extern.hxx"
 
 #include <aw_root.hxx>
 #include <aw_awar.hxx>
@@ -199,9 +200,13 @@ AW_window *ED4_create_seq_colors_window(AW_root *awr, ED4_seq_colors *sc) {
     }
 
     aws->window_fit();
-    
+
     return aws;
 }
+
+// GC order needed for sequence coloring
+STATIC_ASSERT((ED4_G_SEQUENCES+1) == ED4_G_HELIX);
+STATIC_ASSERT((ED4_G_HELIX+1)     == ED4_G_COLOR_2);
 
 void ED4_seq_colors::reload() {
     for (int i=0; i<256; i++) {
