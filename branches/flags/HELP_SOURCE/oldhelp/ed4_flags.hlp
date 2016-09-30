@@ -15,9 +15,20 @@ OCCURRENCE      ARB_EDIT4/Properties/Select species flags
 DESCRIPTION     This module allows to show clickable flags between the species name
                 and the sequence display area.
 
-                These flags display values of selected database fields as bool
-                value (ie. "on"/"off") and by clicking them, you are able to toggle
+                These flags display the values of selected database fields interpreted
+                as bool (ie. "on"/"off") and by clicking them, you are able to toggle
                 the values of these database fields (between 0 and 1).
+
+                The following list shows how different field contents are mapped to flag states:
+
+                    Field content                       Flag state
+                    ---------------------------------------------
+                    field missing                       off
+                    '0'                                 off
+                    integer<>0                          on
+                    non-numeric text                    off
+                    floating point [0.0 .. 0.5[         off
+                    floating point [0.5 .. inf]         on
 
                 You can display up to 5 database fields at the same time.
 
@@ -40,9 +51,52 @@ NOTES           To display more than just a bool value use LINK{ed4_nds.hlp} wit
 
                 Flags work for SAIs as well.
 
-EXAMPLES        None
+EXAMPLES        Example workflow using species flags:
 
-WARNINGS        Floating point database fields behave a bit weird, as their value is rounded:
-                eg. '0.4' counts as "off", while '0.6' counts as "on".
+                Imagine your goal is to check and probably correct the alignment of several species.
+
+                1. use LINK{sp_search.hlp} to query those species for which you like to
+                   check the alignment (e.g. by searching for low qualities reported by LINK{seq_quality.hlp})
+
+                2. use LINK{write_field_list.hlp} to write '1' into the field 'tocheck' for queried species
+
+                3. load these species into the editor and configure to show the following fields as flags:
+
+                   - 'tocheck'
+                   - 'bad_alignment' (new field)
+                   - 'bad_sequence' (new field)
+
+                   The latter two fields should not exist for this use case to work as intended.
+
+                4. Go through your sequences and decide for each
+
+                   * whether the sequence data has sufficient quality (if not -> check 'bad_sequence')
+                   * whether the sequence alignment needs to be improved (if yes -> check 'bad alignment')
+
+                   After each decision made, clear the 'tocheck' flag of that sequence.
+
+                   (when done with all sequences, you might want to remove the 'tocheck' field
+                   from the database)
+
+                5. Use Search to find all species with 'bad_sequence' set to 1 and mark these species.
+                   Either remove them from your tree(s) or completely remove them from the database.
+
+                   (now the 'bad_sequence' field is obsolete and may be removed)
+
+                6. Restart the editor with all species which have 'bad_alignment' set to 1 (plus all
+                   species needed to fix their alignment).
+
+                   Change flag setup to show the following flags:
+
+                   - 'bad_alignment'
+                   - 'fixed' (new field)
+
+                7. Go through the alignment, fix the alignment of every species which has 'bad_alignment' set
+                   and set the 'fixed' flag to mark your progress.
+
+                (now all flags entries may be removed)
+
+
+WARNINGS        None
 
 BUGS            No bugs known
