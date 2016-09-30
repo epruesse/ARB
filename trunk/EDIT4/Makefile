@@ -441,6 +441,54 @@ ED4_edit_string.o: $(ARBHOME)/INCLUDE/static_assert.h
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/test_global.h
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/ttypes.h
 
+ED4_flags.o: ed4_class.hxx
+ED4_flags.o: ed4_defs.hxx
+ED4_flags.o: ed4_flags.hxx
+ED4_flags.o: ed4_search.hxx
+ED4_flags.o: $(ARBHOME)/INCLUDE/ad_prot.h
+ED4_flags.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+ED4_flags.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ED4_flags.o: $(ARBHOME)/INCLUDE/arb_core.h
+ED4_flags.o: $(ARBHOME)/INCLUDE/arb_error.h
+ED4_flags.o: $(ARBHOME)/INCLUDE/arb_mem.h
+ED4_flags.o: $(ARBHOME)/INCLUDE/arb_msg.h
+ED4_flags.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
+ED4_flags.o: $(ARBHOME)/INCLUDE/arb_string.h
+ED4_flags.o: $(ARBHOME)/INCLUDE/arbdb.h
+ED4_flags.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+ED4_flags.o: $(ARBHOME)/INCLUDE/arbdbt.h
+ED4_flags.o: $(ARBHOME)/INCLUDE/arbtools.h
+ED4_flags.o: $(ARBHOME)/INCLUDE/attributes.h
+ED4_flags.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
+ED4_flags.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+ED4_flags.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
+ED4_flags.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+ED4_flags.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
+ED4_flags.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
+ED4_flags.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+ED4_flags.o: $(ARBHOME)/INCLUDE/aw_position.hxx
+ED4_flags.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+ED4_flags.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
+ED4_flags.o: $(ARBHOME)/INCLUDE/aw_select.hxx
+ED4_flags.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+ED4_flags.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
+ED4_flags.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
+ED4_flags.o: $(ARBHOME)/INCLUDE/cb.h
+ED4_flags.o: $(ARBHOME)/INCLUDE/cb_base.h
+ED4_flags.o: $(ARBHOME)/INCLUDE/cbtypes.h
+ED4_flags.o: $(ARBHOME)/INCLUDE/chartable.h
+ED4_flags.o: $(ARBHOME)/INCLUDE/cxxforward.h
+ED4_flags.o: $(ARBHOME)/INCLUDE/downcast.h
+ED4_flags.o: $(ARBHOME)/INCLUDE/dupstr.h
+ED4_flags.o: $(ARBHOME)/INCLUDE/gccver.h
+ED4_flags.o: $(ARBHOME)/INCLUDE/item_sel_list.h
+ED4_flags.o: $(ARBHOME)/INCLUDE/items.h
+ED4_flags.o: $(ARBHOME)/INCLUDE/pos_range.h
+ED4_flags.o: $(ARBHOME)/INCLUDE/smartptr.h
+ED4_flags.o: $(ARBHOME)/INCLUDE/static_assert.h
+ED4_flags.o: $(ARBHOME)/INCLUDE/test_global.h
+ED4_flags.o: $(ARBHOME)/INCLUDE/ttypes.h
+
 ED4_main.o: ed4_awars.hxx
 ED4_main.o: ed4_class.hxx
 ED4_main.o: ed4_defs.hxx
@@ -644,6 +692,7 @@ ED4_no_class.o: ed4_class.hxx
 ED4_no_class.o: ed4_defs.hxx
 ED4_no_class.o: ed4_edit_string.hxx
 ED4_no_class.o: ed4_extern.hxx
+ED4_no_class.o: ed4_flags.hxx
 ED4_no_class.o: ed4_list.hxx
 ED4_no_class.o: ed4_nds.hxx
 ED4_no_class.o: ed4_search.hxx
@@ -888,6 +937,7 @@ ED4_root.o: ed4_colStat.hxx
 ED4_root.o: ed4_defs.hxx
 ED4_root.o: ed4_dots.hxx
 ED4_root.o: ed4_extern.hxx
+ED4_root.o: ed4_flags.hxx
 ED4_root.o: ed4_list.hxx
 ED4_root.o: ed4_naligner.hxx
 ED4_root.o: ed4_nds.hxx
@@ -906,6 +956,7 @@ ED4_root.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ED4_root.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ED4_root.o: $(ARBHOME)/INCLUDE/arb_build.h
 ED4_root.o: $(ARBHOME)/INCLUDE/arb_core.h
+ED4_root.o: $(ARBHOME)/INCLUDE/arb_defs.h
 ED4_root.o: $(ARBHOME)/INCLUDE/arb_error.h
 ED4_root.o: $(ARBHOME)/INCLUDE/arb_file.h
 ED4_root.o: $(ARBHOME)/INCLUDE/arb_mem.h
@@ -1013,6 +1064,7 @@ ED4_search.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 ED4_seq_colors.o: ed4_class.hxx
 ED4_seq_colors.o: ed4_defs.hxx
+ED4_seq_colors.o: ed4_extern.hxx
 ED4_seq_colors.o: ed4_search.hxx
 ED4_seq_colors.o: ed4_seq_colors.hxx
 ED4_seq_colors.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -1061,6 +1113,7 @@ ED4_terminal.o: ed4_class.hxx
 ED4_terminal.o: ed4_defs.hxx
 ED4_terminal.o: ed4_edit_string.hxx
 ED4_terminal.o: ed4_extern.hxx
+ED4_terminal.o: ed4_flags.hxx
 ED4_terminal.o: ed4_nds.hxx
 ED4_terminal.o: ed4_ProteinViewer.hxx
 ED4_terminal.o: ed4_search.hxx
@@ -1101,6 +1154,7 @@ ED4_terminal.o: $(ARBHOME)/INCLUDE/cxxforward.h
 ED4_terminal.o: $(ARBHOME)/INCLUDE/downcast.h
 ED4_terminal.o: $(ARBHOME)/INCLUDE/dupstr.h
 ED4_terminal.o: $(ARBHOME)/INCLUDE/gccver.h
+ED4_terminal.o: $(ARBHOME)/INCLUDE/items.h
 ED4_terminal.o: $(ARBHOME)/INCLUDE/pos_range.h
 ED4_terminal.o: $(ARBHOME)/INCLUDE/smartptr.h
 ED4_terminal.o: $(ARBHOME)/INCLUDE/st_window.hxx

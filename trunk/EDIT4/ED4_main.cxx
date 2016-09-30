@@ -56,6 +56,7 @@ int SEQ_TERM_TEXT_YOFFSET;
 int MAXSEQUENCECHARACTERLENGTH; // greatest # of characters in a sequence string terminal
 int MAXNAME_WIDTH;
 int MAXINFO_WIDTH;
+int FLAG_WIDTH;
 
 long ED4_counter = 0;
 
@@ -516,7 +517,7 @@ int ARB_main(int argc, char *argv[]) {
                 }
 
                 if (warning) aw_message(warning); // write to console
-                ED4_ROOT->create_new_window(); // create first editor window
+                ED4_ROOT->create_first_window();
                 if (warning) { aw_message(warning); warning = 0; } // write again to status window
             }
 

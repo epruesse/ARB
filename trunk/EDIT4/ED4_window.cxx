@@ -226,7 +226,7 @@ static inline void clear_and_update_rectangle(AW_pos x1, AW_pos y1, AW_pos x2, A
     current_device()->clear_part(x1, y1, x2-x1, y2-y1, AW_ALL_DEVICES);
 #endif
 
-    ED4_ROOT->main_manager->Show(1, 1); // direct call to Show (critical)
+    ED4_ROOT->main_manager->Show(true, true); // direct call to Show (critical)
 }
 
 static inline void move_and_update_rectangle(AW_pos x1, AW_pos y1, AW_pos x2, AW_pos y2, int dx, int dy)

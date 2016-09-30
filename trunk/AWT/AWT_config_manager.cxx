@@ -908,12 +908,12 @@ void AWT_insert_config_manager(AW_window *aww, AW_default default_file_, const c
                                const RestoreConfigCallback& load_or_reset_cb, const char *macro_id, const AWT_predefined_config *predef)
 {
     /*! inserts a config-button into aww
-     * @param default_file_ db where configs will be stored
+     * @param default_file_ db where configs will be stored (use AW_ROOT_DEFAULT to store in properties)
      * @param id unique id (has to be a key)
      * @param store_cb creates a string from current state
      * @param load_or_reset_cb restores state from string or resets factory defaults if string is NULL
-     * @param macro_id custom macro id (normally NULL will do)
-     * @param predef predefined configs
+     * @param macro_id custom macro id (normally default (=NULL) will do)
+     * @param predef predefined configs (default: none)
      */
     AWT_configuration * const config = new AWT_configuration(default_file_, id, store_cb, load_or_reset_cb, predef);
 
@@ -937,11 +937,11 @@ static void load_or_reset_generated_config_cb(const char *stored_string, const C
 }
 void AWT_insert_config_manager(AW_window *aww, AW_default default_file_, const char *id, ConfigSetupCallback setup_cb, const char *macro_id, const AWT_predefined_config *predef) {
     /*! inserts a config-button into aww
-     * @param default_file_ db where configs will be stored
+     * @param default_file_ db where configs will be stored (use AW_ROOT_DEFAULT to store in properties)
      * @param id unique id (has to be a key)
      * @param setup_cb populates an AWT_config_definition (cl is passed to setup_cb)
-     * @param macro_id custom macro id (normally NULL will do)
-     * @param predef predefined configs
+     * @param macro_id custom macro id (normally default (=NULL) will do)
+     * @param predef predefined configs (default: none)
      */
 
     ConfigSetupCallback * const setup_cb_copy = new ConfigSetupCallback(setup_cb); // not freed (bound to cb)
@@ -957,11 +957,11 @@ static void generate_config_from_mapping_cb(AWT_config_definition& cdef, const A
 
 void AWT_insert_config_manager(AW_window *aww, AW_default default_file_, const char *id, const AWT_config_mapping_def *mapping, const char *macro_id, const AWT_predefined_config *predef) {
     /*! inserts a config-button into aww
-     * @param default_file_ db where configs will be stored
+     * @param default_file_ db where configs will be stored (use AW_ROOT_DEFAULT to store in properties)
      * @param id unique id (has to be a key)
      * @param mapping hardcoded mapping between AWARS and config strings
-     * @param macro_id custom macro id (normally NULL will do)
-     * @param predef predefined configs
+     * @param macro_id custom macro id (normally default (=NULL) will do)
+     * @param predef predefined configs (default: none)
      */
     AWT_insert_config_manager(aww, default_file_, id, makeConfigSetupCallback(generate_config_from_mapping_cb, mapping), macro_id, predef);
 }

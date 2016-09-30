@@ -1010,6 +1010,7 @@ GB_ERROR SEC_root::paint(AW_device *device) {
 
     if (!error) {
         sec_assert(SEC_GC_FIRST_FONT == 0);
+        // @@@ font group should be built at startup and after each font change (no need to do on every paint!)
         font_group.unregisterAll();
         for (int gc = SEC_GC_FIRST_FONT; gc <= SEC_GC_LAST_FONT; ++gc) {
             font_group.registerFont(device, gc, "ACGTU-.");

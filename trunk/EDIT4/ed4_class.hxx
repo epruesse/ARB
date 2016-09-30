@@ -150,6 +150,8 @@ class ED4_species_pointer;
 class ED4_terminal;
 class ED4_text_terminal;
 class ED4_tree_terminal;
+class ED4_flag_header_terminal;
+class ED4_flag_terminal;
 class ED4_window;
 
 class AP_tree;
@@ -211,7 +213,7 @@ struct EDB_root_bact {
     EDB_root_bact() {}
 };
 
-#define SPECIFIED_OBJECT_TYPES 21
+#define SPECIFIED_OBJECT_TYPES 23
 
 class ED4_objspec : public Noncopyable {
     static bool object_specs_initialized;
@@ -966,7 +968,7 @@ public:
 
     // functions concerned with graphic output
     int adjust_clipping_rectangle();
-    virtual ED4_returncode  Show(int refresh_all=0, int is_cleared=0) = 0;
+    virtual void Show(bool refresh_all, bool is_cleared) = 0;
 
     virtual bool calc_bounding_box() = 0;
     void resize_dynamic() {
@@ -1108,6 +1110,9 @@ public:
     int is_spacer_terminal()        const { e4_assert(knownNonNull(this)); return spec.level & LEV_SPACER; }
     int is_line_terminal()          const { e4_assert(knownNonNull(this)); return spec.level & LEV_LINE; }
 
+    int is_flag_header_terminal()   const { e4_assert(knownNonNull(this)); return spec.level & LEV_FLAG_HEADER; }
+    int is_flag_terminal()          const { e4_assert(knownNonNull(this)); return spec.level & LEV_FLAG; }
+
     int is_manager()                const { e4_assert(knownNonNull(this)); return spec.static_prop & PROP_IS_MANAGER; }
 
     int is_sequence_manager()       const { e4_assert(knownNonNull(this)); return spec.level & LEV_SEQUENCE; }
@@ -1172,6 +1177,8 @@ public:
     E4B_DECL_CASTOP(species_name_terminal);       // to_species_name_terminal
     E4B_DECL_CASTOP(terminal);                    // to_terminal
     E4B_DECL_CASTOP(text_terminal);               // to_text_terminal
+    E4B_DECL_CASTOP(flag_header_terminal);        // to_flag_header_terminal
+    E4B_DECL_CASTOP(flag_terminal);               // to_flag_terminal
 
     // simple access to containing managers
     inline ED4_species_manager *containing_species_manager() const;
@@ -1215,7 +1222,7 @@ public:
     void deleted_from_database() OVERRIDE;
 
     // functions concerned with graphics
-    ED4_returncode  Show(int refresh_all=0, int is_cleared=0) OVERRIDE;
+    void Show(bool refresh_all, bool is_cleared) OVERRIDE;
     bool calc_bounding_box() OVERRIDE;
 
     ED4_returncode distribute_children();
@@ -1292,8 +1299,10 @@ public:
     ~ED4_manager() OVERRIDE;
 };
 
-struct ED4_terminal : public ED4_base { // derived from a Noncopyable
+class ED4_terminal : public ED4_base { // derived from a Noncopyable
     E4B_AVOID_UNNEEDED_CASTS(terminal);
+
+public:
 
     struct { unsigned int deleted : 1; } tflag; // @@@ go bool
 
@@ -1307,8 +1316,8 @@ struct ED4_terminal : public ED4_base { // derived from a Noncopyable
     void deleted_from_database() OVERRIDE;
 
     // functions concerning graphic output
-    ED4_returncode Show(int refresh_all=0, int is_cleared=0) OVERRIDE = 0;
-    virtual ED4_returncode draw() = 0;
+    void Show(bool refresh_all, bool is_cleared) OVERRIDE;
+    virtual void draw() = 0;
 
     bool calc_bounding_box() OVERRIDE;
 
@@ -1486,7 +1495,7 @@ public:
     ARB_ERROR init_alignment();
     void recalc_font_group();
 
-    AW_window *create_new_window();
+    AW_window *create_first_window();
     ED4_returncode generate_window(AW_device **device, ED4_window **new_window);
     void copy_window_struct(ED4_window *source,   ED4_window *destination);
 
@@ -1576,7 +1585,7 @@ public:
 
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_manager);
 
-    ED4_returncode Show(int refresh_all=0, int is_cleared=0) OVERRIDE;
+    void Show(bool refresh_all, bool is_cleared) OVERRIDE;
     void resize_requested_children() OVERRIDE;
     
     void clear_whole_background();
@@ -1790,7 +1799,7 @@ public:
     const ED4_remap *remap() const { return &my_remap; }
     ED4_remap *remap() { return &my_remap; }
 
-    ED4_returncode Show(int refresh_all=0, int is_cleared=0) OVERRIDE;
+    void Show(bool refresh_all, bool is_cleared) OVERRIDE;
     void resize_requested_children() OVERRIDE;
 
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_abstract_group_manager);
@@ -1889,8 +1898,7 @@ struct ED4_name_manager : public ED4_manager {
 struct ED4_tree_terminal : public ED4_terminal {
     E4B_AVOID_UNNEEDED_CASTS(tree_terminal);
     
-    ED4_returncode draw() OVERRIDE;
-    ED4_returncode Show(int refresh_all=0, int is_cleared=0) OVERRIDE;
+    void draw() OVERRIDE;
 
     ED4_tree_terminal(const char *id, AW_pos width, AW_pos height, ED4_manager *parent);
 
@@ -1900,8 +1908,7 @@ struct ED4_tree_terminal : public ED4_terminal {
 struct ED4_bracket_terminal : public ED4_terminal {
     E4B_AVOID_UNNEEDED_CASTS(bracket_terminal);
 
-    ED4_returncode draw() OVERRIDE;
-    ED4_returncode Show(int refresh_all=0, int is_cleared=0) OVERRIDE;
+    void draw() OVERRIDE;
 
     void toggle_folding();
 
@@ -1914,8 +1921,7 @@ struct ED4_text_terminal : public ED4_terminal {
     E4B_AVOID_UNNEEDED_CASTS(text_terminal);
     
     // functions concerning graphic output
-    ED4_returncode Show(int refresh_all=0, int is_cleared=0) OVERRIDE;
-    ED4_returncode draw() OVERRIDE;
+    void draw() OVERRIDE;
 
     virtual int get_length() const = 0;
     void deleted_from_database() OVERRIDE;
@@ -1962,7 +1968,7 @@ class ED4_orf_terminal : public ED4_abstract_sequence_terminal { // derived from
     int   aaStartPos;
     int   aaStrandType;
 
-    ED4_returncode draw() OVERRIDE;
+    void draw() OVERRIDE;
     E4B_AVOID_UNNEEDED_CASTS(orf_terminal);
 public:
     ED4_orf_terminal(const char *id, AW_pos width, AW_pos height, ED4_manager *parent);
@@ -1984,7 +1990,7 @@ class ED4_sequence_terminal : public ED4_abstract_sequence_terminal { // derived
     mutable ED4_SearchResults searchResults;
     bool shall_display_secstruct_info; // helix or protstruct
 
-    ED4_returncode draw() OVERRIDE;
+    void draw() OVERRIDE;
 
     E4B_AVOID_UNNEEDED_CASTS(sequence_terminal);
     
@@ -2025,8 +2031,7 @@ class ED4_columnStat_terminal : public ED4_text_terminal { // derived from a Non
 
 public:
     // functions concerning graphic output
-    ED4_returncode Show(int refresh_all=0, int is_cleared=0) OVERRIDE;
-    ED4_returncode draw() OVERRIDE;
+    void draw() OVERRIDE;
     int get_length() const OVERRIDE { return corresponding_sequence_terminal()->get_length(); }
 
     static int threshold_is_set();
@@ -2064,6 +2069,21 @@ public:
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_text_terminal);
 };
 
+class ED4_flag_header_terminal : public ED4_text_terminal { // derived from a Noncopyable
+    // displays header of flags
+
+    E4B_AVOID_UNNEEDED_CASTS(flag_header_terminal);
+    bool set_dynamic_size() OVERRIDE;
+
+public:
+    ED4_flag_header_terminal(GB_CSTR id, AW_pos width, AW_pos height, ED4_manager *parent);
+
+    GB_CSTR get_displayed_text() const;
+    int get_length() const OVERRIDE;
+
+    DECLARE_DUMP_FOR_LEAFCLASS(ED4_text_terminal);
+};
+
 class ED4_sequence_info_terminal : public ED4_text_terminal {
     E4B_AVOID_UNNEEDED_CASTS(sequence_info_terminal);
     bool set_dynamic_size() OVERRIDE;
@@ -2075,7 +2095,7 @@ public:
         return get_parent(LEV_SPECIES)->search_spec_child_rek(LEV_SPECIES_NAME)->to_species_name_terminal();
     }
 
-    ED4_returncode draw() OVERRIDE;
+    void draw() OVERRIDE;
 
     GBDATA *data() { return get_species_pointer(); } // DB-entry ("ali_xxx/data")
     const GBDATA *data() const { return get_species_pointer(); }
@@ -2098,7 +2118,7 @@ struct ED4_pure_text_terminal : public ED4_text_terminal {
 class ED4_consensus_sequence_terminal : public ED4_sequence_terminal { // derived from a Noncopyable
     E4B_AVOID_UNNEEDED_CASTS(consensus_sequence_terminal);
 
-    ED4_returncode draw() OVERRIDE;
+    void draw() OVERRIDE;
     const ED4_abstract_group_manager *get_group_manager() const  { return get_parent(LEV_GROUP)->to_group_manager(); }
     const BaseFrequencies& get_char_table() const { return get_group_manager()->table(); }
 
@@ -2123,8 +2143,8 @@ class ED4_spacer_terminal : public ED4_terminal {
     bool set_dynamic_size() OVERRIDE;
 
 public:
-    ED4_returncode Show(int refresh_all=0, int is_cleared=0) OVERRIDE;
-    ED4_returncode draw() OVERRIDE;
+    void Show(bool refresh_all, bool is_cleared) OVERRIDE;
+    void draw() OVERRIDE;
 
     ED4_spacer_terminal(const char *id, bool shallDraw_, AW_pos width, AW_pos height, ED4_manager *parent);
 
@@ -2136,10 +2156,24 @@ class ED4_line_terminal : public ED4_terminal {
     bool set_dynamic_size() OVERRIDE;
 
 public:
-    ED4_returncode Show(int refresh_all=0, int is_cleared=0) OVERRIDE;
-    ED4_returncode draw() OVERRIDE;
+    void draw() OVERRIDE;
 
     ED4_line_terminal(const char *id, AW_pos width, AW_pos height, ED4_manager *parent);
+
+    DECLARE_DUMP_FOR_LEAFCLASS(ED4_terminal);
+};
+
+class ED4_flag_terminal : public ED4_terminal {
+    E4B_AVOID_UNNEEDED_CASTS(flag_terminal);
+    bool set_dynamic_size() OVERRIDE;
+
+public:
+    void draw() OVERRIDE;
+
+    ED4_flag_terminal(const char *id, AW_pos width, AW_pos height, ED4_manager *parent);
+
+    GBDATA *get_species() const { return get_parent(LEV_SPECIES)->get_species_pointer(); }
+    void handle_left_click(const AW::Position& click);
 
     DECLARE_DUMP_FOR_LEAFCLASS(ED4_terminal);
 };
@@ -2193,6 +2227,8 @@ E4B_IMPL_CASTOP(species_manager);             // to_species_manager
 E4B_IMPL_CASTOP(species_name_terminal);       // to_species_name_terminal
 E4B_IMPL_CASTOP(terminal);                    // to_terminal
 E4B_IMPL_CASTOP(text_terminal);               // to_text_terminal
+E4B_IMPL_CASTOP(flag_header_terminal);        // to_flag_header_terminal
+E4B_IMPL_CASTOP(flag_terminal);               // to_flag_terminal
 
 inline ED4_device_manager *ED4_root::get_device_manager() {
     return main_manager->search_spec_child_rek(LEV_DEVICE)->to_device_manager();
@@ -2321,3 +2357,4 @@ void ED4_exit() __ATTR__NORETURN;
 #else
 #error ed4_class included twice
 #endif
+
