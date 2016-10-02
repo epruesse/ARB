@@ -202,6 +202,14 @@ static void setup_species_flags_config(AWT_config_definition& cfg) {
     }
 }
 
+
+static AWT_predefined_config predefined_flag_setup[] = {
+    { "*curation", "Curation of newly inserted sequences:\n - mark sequence / alignment as bad\n - mark as done (curated)", "display='1';enable0='1';enable1='1';enable2='1';enable3='0';enable4='0';field0='bad_sequence';field1='bad_alignment';field2='curated';header0='bad';header1='align';header2='cur'" },
+    { "*example1", "Example from help (phase1)", "display='1';enable0='1';enable1='1';enable2='1';enable3='0';enable4='0';field0='tocheck';field1='bad_sequence';field2='bad_alignment';field3='fixed';header0='2chk';header1='bad';header2='align';header3='fixed'" },
+    { "*example2", "Example from help (phase2)", "display='1';enable0='0';enable1='0';enable2='1';enable3='1';enable4='0';field0='tocheck';field1='bad_sequence';field2='bad_alignment';field3='fixed';header0='2chk';header1='bad';header2='align';header3='fixed'" },
+    { 0, 0, 0 }
+};
+
 AW_window *ED4_configure_species_flags(AW_root *root, GBDATA *gb_main) {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(root, "SPECIES_FLAGS", "Species flags");
@@ -260,7 +268,7 @@ AW_window *ED4_configure_species_flags(AW_root *root, GBDATA *gb_main) {
     }
 
     aws->at(cfg_x, cfg_y);
-    AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "species_flags", makeConfigSetupCallback(setup_species_flags_config));
+    AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "species_flags", makeConfigSetupCallback(setup_species_flags_config), NULL, predefined_flag_setup);
 
     return aws;
 }
