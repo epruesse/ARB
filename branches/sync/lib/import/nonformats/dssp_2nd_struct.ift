@@ -1,0 +1,50 @@
+                #Global settings:
+KEYWIDTH        1
+
+BEGIN           "==== Secondary Structure Definition*"
+
+MATCH           "PDB_ID *"
+                SRT "* *=*2_pfold"
+                WRITE "name"
+
+MATCH           "PDB_ID *"
+                SRT "* *=*2:*_*=*1 Chain *2:*=*1 (Secondary Structure); "
+                WRITE "full_name"
+
+MATCH           "HEADER *"
+                SRT "* *=*2; "
+                APPEND "full_name"
+
+MATCH           "COMPND *"
+                SRT "* *=*2"
+                APPEND "full_name"
+
+MATCH           "SOURCE *"
+                SRT "* *=*2"
+                WRITE "tax"
+
+MATCH           "==== Secondary Structure Definition *"
+                SRT ""
+                WRITE "remark"
+
+MATCH           "REFERENCE *"
+                SRT "* *=\nDSSP program by\: *2"
+                APPEND "remark"
+
+MATCH           "DATE *"
+                SRT "* *=*2"
+                WRITE "date"
+
+MATCH           "AUTHOR *"
+                SRT "* *=*2"
+                WRITE "author"
+
+SEQUENCESTART   "SECSTRUCT *"
+SEQUENCESRT     "* *=*2"
+SEQUENCECOLUMN  0
+SEQUENCEEND     "SEQUENCE*"
+
+DONT_GEN_NAMES
+CREATE_ACC_FROM_SEQUENCE
+
+END             "//"

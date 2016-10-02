@@ -1,0 +1,41 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+UP	mode.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		SPREAD MODE
+
+OCCURRENCE	ARB_NT <button in the left column>
+
+DESCRIPTION	The 'SPREAD MODE' allows you to increase or decrease the angles of
+		adjacent terminal branches or all angles within subtrees.
+
+		Click on the tenth button in the left column of the 'ARB_NT'
+		window to activate the 'SPREAD MODE'.
+
+		To spread all angles of a subtree, click and drag a branch
+                towards the tips of the tree.
+
+                To reduce the angles, drag towards the tree center.
+
+                To reset the spreading of a subtree to the default value,
+                press the key '0' (zero) while pointing to that subtree.
+
+                To reset the spreading of the whole tree, point somewhere outside
+                the tree while pressing zero.
+
+                See also LINK{mode_rotate.hlp}.
+
+NOTES		None
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known

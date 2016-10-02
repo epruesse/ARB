@@ -1,0 +1,4 @@
+# libraries needed to link against SL/ITEMS/ITEMS.a
+
+lib/libAWT.so
+

@@ -1,0 +1,255 @@
+ID   AF375552; SV 1; linear; genomic DNA; STD; PRO; 310 BP.
+XX
+CC   Please note: all these entries have been modified for test purposes.
+XX
+AC   AF375552;
+XX
+DT   31-MAY-2001 (Rel. 67, Created)
+DT   26-JUL-2002 (Rel. 72, Last updated, Version 2)
+XX
+DE   Lactococcus lactis subsp. lactis strain NCDO2118 tmRNA gene, partial
+DE   sequence.
+XX
+KW   .
+XX
+OS   Lactococcus lactis subsp. lactis
+OC   Bacteria; Firmicutes; Lactobacillales; Streptococcaceae; Lactococcus.
+XX
+RN   [1]
+RP   1-310
+RX   DOI; 10.1186/1471-2180-1-20.
+RX   PUBMED; 11560762.
+RA   Schoenhuber W., Le Bourhis G., Tremblay J., Amann R., Kulakauskas S.;
+RT   "Utilization of tmRNA sequences for bacterial identification";
+RL   BMC Microbiol. 1(1):20-20(2001).
+XX
+RN   [2]
+RP   1-310
+RA   Schoenhuber W., Le Bourhis G., Tremblay J., Amann R.I., Kulakauskas S.;
+RT   ;
+RL   Submitted (02-MAY-2001) to the EMBL/GenBank/DDBJ databases.
+RL   Microbiology, Institut National de la Recherche Agronomique, Domaine de
+RL   Vilvert, Jouy-en-Josas 78352, France
+XX
+DR   RFAM; RF00023; tmRNA.
+DR   StrainInfo; 213423; NCDO 2118.
+XX
+CC   Organism information
+CC     Culture collection: NCDO 2118 tmRNA gene
+CC   Sequence information (bases 1 to 327)
+CC     Corresponding GenBank entry: AF375552;
+CC   *source: strain=NCDO2118 tmRNA gene, partial sequence;
+CC   *source: subspecies=lactis;
+XX
+FH   Key             Location/Qualifiers
+FH
+FT   source          1..310
+FT                   /organism="Lactococcus lactis subsp. lactis"
+FT                   /sub_species="lactis"
+FT                   /strain="NCDO2118"
+FT                   /mol_type="genomic DNA"
+FT                   /db_xref="taxon:1360"
+FT   misc_RNA        <1..>310
+FT                   /product="tmRNA"
+XX
+SQ   Sequence 310 BP; 91 A; 59 C; 74 G; 86 T; 0 other;
+     cattgtcgcg catgaactgc aactgctgag ggatcaggat aatcatccgc agataaatat        60
+     aactgctaaa aataatacac aaacttacgc aatggcagcc taaacagcac catgcgtgcc       120
+     tgatttttgc tcactgatgg caatttgacg gcctaaactt ttagtcagat acgttgttgt       180
+     ggaggcttga cgcagcaaaa gagatttaaa gccccgcaaa atgtcgctgt ttgagactgg       240
+     ctttggcatt ttgttaaatt tgagaaagtc ctatggttgt agacgttgat gtagcaaggt       300
+     gtttggacag                                                              310
+//
+ID   A1MVRNA2   standard; unassigned RNA; VRL; 2593 BP.
+XX
+AC   X01572; J02002; K02702;
+XX
+SV   X01572.1
+XX
+DT   07-NOV-1985 (Rel. 07, Created)
+DT   17-FEB-1997 (Rel. 50, Last updated, Version 6)
+XX
+DE   Alfalfa mosaic virus (A1M4) RNA 2
+XX
+KW   unidentified reading frame.
+XX
+OS   Alfalfa mosaic virus
+OC   Viruses; ssRNA positive-strand viruses, no DNA stage; Bromoviridae;
+OC   Alfamovirus.
+XX
+RN   [1]
+RP   1-2593
+RX   MEDLINE; 83220723.
+RX   PUBMED; 6304618.
+RA   Cornelissen B.J., Brederode F.T.M., Veeneman G.H., van Boom J.H., Bol J.F.;
+RT   "Complete nucleotide sequence of alfalfa mosaic virus RNA 2";
+XX   old converter cant: RL   Nucleic Acids Res. 11(10):3019-3025(1983).
+XX
+DR   GOA; P03593.
+DR   SWISS-PROT; P03593; V90K_AMVLE.
+XX
+CC   Data kindly reviewed (30-JAN-1986) by J.F. Bol
+XX
+FH   Key             Location/Qualifiers
+FH
+FT   source          1..2593
+FT                   /db_xref="taxon:12321"
+FT                   /mol_type="unassigned RNA"
+FT                   /note="RNA2"
+FT                   /virion
+FT                   /organism="Alfalfa mosaic virus"
+FT   CDS             55..2427
+FT                   /db_xref="GOA:P03593"
+FT                   /db_xref="SWISS-PROT:P03593"
+FT                   /product="89.7 kd protein"
+FT                   /protein_id="CAA25728.1"
+FT                   /translation="MFTLLRCLGFGVNEPTNTSSSEYVPEYSVEEISNEVAELDSVDPL
+FT                   FQCYKHVFVSLMLVRKMTQAAEDFLESFGGEFDSPCCRVYRLYRHFVNEDDAPAWAIPN
+FT                   VVNEDSYDDYAYLREELDAIDSSFELLNEERELSEIT"
+FT   variation       1431..1431
+FT                   /note="c in pAL2-1; t in pAL2-[21,41]"
+XX
+SQ   Sequence 2593 BP; 736 A; 533 C; 547 G; 777 T; 0 other;
+     gtttttatct tttcgcgatt gaaaagataa gtttttcagt ttaatctttt caatatgttc        60
+     actcttttga gatgtctcgg attcggtgtt aatgaaccta ctaacacttc ctcatcagag       120
+     tatgttcccg agtattccgt tgaagagatt tccaacgaag tcgctgaact cgattcagtg       180
+     gatccattat tccaatgtta caaacatgtt tttgtatcat tgatgctcgt aagaaagatg       240
+     actcaagctg ccgaagactt cctcgagagt tttgggggag a                           281
+//
+ID   ER781674_1; parent: ER781674
+AC   ER781674;
+XX
+CC   Organism information
+CC     Source of strain: This is the content of the special entry
+CC           'Source of strain'
+CC     Former name: This is the content of the special entry 'Former
+CC           name'
+CC     Alternate name: This is the content of the special entry
+CC           'Alternate name'. It is quite long, since i need to test
+CC           some special entry which occupies many lines and when i say
+CC           many lines, i really mean at least five lines, so i could
+CC           not stop writing before i came here.
+CC     Common name: This is the content of the special entry 'Common
+CC           name'
+CC     Host organism: This is the content of the special entry 'Host
+CC           organism'
+CC   Sequence information (bases 1 to 367)
+CC     RDP ID: This is the content of the special entry 'RDP ID'
+CC     Corresponding GenBank entry: ER781674;
+CC     Sequencing methods: This is the content of the special entry
+CC           'Sequencing methods'
+CC     5' end complete: Yes
+CC     3' end complete: No
+CC   Organism and Sequence information have only been added for
+CC   test purposes. They are complete nonsense!
+XX
+FT   source          1..350
+FT                   /organism="uncultured desert soil virus"
+FT                   /environmental_sample
+FT                   /mol_type="genomic DNA"
+FT                   /clone_lib="Uncultured desert soil virus"
+FT                   /note="Metagenomic sequences from uncultured viruses from
+FT                   Joshua Tree desert soil."
+FT                   /db_xref="taxon:445563"
+SQ   Sequence   350 BP;
+     tggcgccgta gatgcagcgc gactggcccg gcttctcggc gtcgaggtac tgcgccacgg        60
+     ccttggcgct ggccacgtcc gggcagacca cgatgctctt gcgtgagccg gcgacgtgga       120
+     cgatgccctt ggccagttcg atcatcgtct ggtcgttggt gatccgggcg gcgatctcgg       180
+     cgtcggaata gtccttctcg ccggcctcgt tctccgccac ggtcagcgtg gagaagtcga       240
+     tggagacgcg gacgaacgcc tgcttggcgg ggcagagcca taccgttggc catgcctcac       300
+     aggatgtcgc ggttgaaggc gaggccctgg aacaggttgg ccatcgccac                  350
+//
+ID   AY704744_1; parent: AY704744
+AC   AY704744;
+FT   source          1..350
+FT                   /organism="uncultured soil fungus"
+FT                   /environmental_sample
+FT                   /isolate="OTU-ZY14"
+FT                   /mol_type="genomic DNA"
+FT                   /isolation_source="agricultural soil"
+FT                   /db_xref="taxon:167647"
+CC   Next 2 lines are nonsense
+CC     5' end complete: No
+CC     3' end complete: Yes
+SQ   Sequence   350 BP;
+     gcatcgatga agaacgcagc gaaatgcgat aagtaatgtg aattgcagaa ttcagtgaat        60
+     catcgaatct ttgaacgcac attgcgccca ttagtattct agtgggcatg cctgttcgag       120
+     cgtcatttca acccttaagc ttagcttagt attgggaatc tgcttaaccg cagctcctta       180
+     aatctagttg gcagagcaca gctgtactct gagcgtagta attcattatc tcgctttctg       240
+     aagacagtcg tacgatagcc acaaactttg catcttgcaa actttttaat ggttgacctc       300
+     ggatcaggta ggaatacccg ctgaacttaa gcatatcaat aagcggagga                  350
+//
+ID   Y15714; SV 1; linear; genomic DNA; STD; PRO; 1546 BP.
+XX
+AC   Y15714;
+XX
+DT   17-NOV-1998 (Rel. 57, Created)
+DT   17-NOV-1998 (Rel. 57, Last updated, Version 1)
+XX
+DE   Macrococcus bovicus 16S rRNA gene
+XX
+KW   16S ribosomal RNA; 16S rRNA gene.
+XX
+OS   Macrococcus bovicus
+OC   Bacteria; Firmicutes; Bacillales; Macrococcus.
+XX
+RN   [1]
+RA   Kloos W.E., Ballard D.N., George C.G., Webster J.A., Hubner R.J.,
+RA   Ludwig W., Schleifer K.H., Fiedler F., Schubert K.;
+RT   "Delimiting the genus Staphylococcus through description of Macrococcus
+RT   caseolyticus gen. nov., comb. nov. and the new species Macrococcus
+RT   equipercicus sp. nov., Macrococcus bovicus sp. nov., and Macrococcus
+RT   carouselicus sp. nov.";
+RL   Int. J. Syst. Bacteriol. 48:859-877(1998).
+XX
+RN   [2]
+RP   1-1546
+RA   Ludwig W.;
+RT   ;
+RL   Submitted (26-NOV-1997) to the EMBL/GenBank/DDBJ databases.
+RL   W. Ludwig, Lehrstuhl fuer Mikrobiologie, Technische Universitaet Muenchen,
+RL   Munich, FRG
+XX
+DR   RFAM; RF00177; SSU_rRNA_5.
+DR   SILVA-SSU; Y15714.
+XX
+FH   Key             Location/Qualifiers
+FH
+FT   source          1..1546
+FT                   /organism="Macrococcus bovicus"
+FT                   /strain="L2F4"
+FT                   /mol_type="genomic DNA"
+FT                   /db_xref="taxon:69968"
+FT   rRNA            1..1546
+FT                   /gene="16S rRNA"
+FT                   /product="16S ribosomal RNA"
+XX
+SQ   Sequence 1546 BP; 401 A; 353 C; 470 G; 320 T; 2 other;
+     agagtttgat nngggctcag gatgaacgct ggcggcgtgc ctaatacatg caagtcgagc        60
+     ggacagacga ggtgcttgca cctctgaagt cagcggcgga cgggtgagta acacgtgggt       120
+     aacctacctg taagactggg ataacttcgg gaaaccggag ctaataccgg ataatatttt       180
+     ccacctcatg gtggaatagt gaaagacggt tttgctgtca cttacagatg gacccgcggc       240
+     gcattagcta gttggtgagg taacggctca ccaaggcgac gatgcgtagc cgacctgaga       300
+     gggtgatcgg ccacactggg actgagacac ggcccagact cctacgggag gcagcagtag       360
+     ggaatcttcc gcaatggacg aaagtctgac ggagcaacgc cgcgtgagtg aagaaggtct       420
+     tcggatcgta aaactctgtt gtaagggaag aacaagtacg ttagtaactg aacgtacctt       480
+     gacggtacct taccagaaag ccacggctaa ctacgtgcca gcagccgcgg taatacgtag       540
+     gtggcaagcg ttatccggaa ttattgggcg taaagcgcgc gtaggcggtt tcttaagtct       600
+     gatgtgaaag cccccggctc aaccggggag ggtcattgga aactgggaga cttgagtgca       660
+     gaagaggaga gtggaattcc atgtgtagcg gtgaaatgcg cagagatatg gaggaacacc       720
+     agtggcgaag gcggctctct ggtctgtaac tgacgctgag gtgcgaaagc gtggggatca       780
+     aacaggatta gataccctgg tagtccacgc cgtaaacgat gagtgctaag tgttgggggg       840
+     tttccgcccc tcagtgctgc agctaacgca ttaagcactc cgcctgggga gtacggtcgc       900
+     aagactgaaa ctcaaaggaa ttgacgggga cccgcacaag cggtggagca tgtggtttaa       960
+     ttcgaagcaa cgcgaagaac cttaccaaat cttgacatcc tctgacaact ctggagacag      1020
+     agcgttcccc ttcgggggac agagtgacag gtggtgcatg gttgtcgtca gctcgtgtcg      1080
+     tgagatgttg ggttaagtcc cgcaacgagc gcaaccctta tctttagttg ccatcattca      1140
+     gttgggcact ctagagagac tgccggtgac aaaccggagg aaggtgggga tgacgtcaaa      1200
+     tcatcatgcc ccttatgatt tgggctacac acgtgctaca atggatggta caaagggcag      1260
+     caaaaccgcg aggtcaagca aatcccataa aaccattctc agttcggatt gtagtctgca      1320
+     actcgactac atgaagctgg aatcgctagt aatcgtagat cagcatgcta cggtgaatac      1380
+     gttcccgggt cttgtacaca ccgcccgtca caccacgaga gtttgtaaca cccgaagccg      1440
+     gtggagtaac ctttacagga gctagccgtc gaaggtggga cagatgattg gggtgaagtc      1500
+     gtaacaaggt agccgtatcg gaaggtgcgg ctggatcacc tccttt                     1546
+//
+

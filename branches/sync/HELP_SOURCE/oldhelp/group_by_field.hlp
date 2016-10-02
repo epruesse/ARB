@@ -1,0 +1,39 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP      arb.hlp
+UP      e4.hlp
+UP      glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB    subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE           Create groups using field content
+
+OCCURRENCE      ARB_EDIT4/Create/Create new groups using Field
+
+DESCRIPTION     This function groups all selected species according to their contents of one field.
+
+                1. select some species (see LINK{e4_block.hlp} for howto)
+                2. select a field
+                3. press 'Group by content'
+
+                The content of the selected field will be used 
+                 * to assign a species to a group and
+                 * to form the group name
+
+                That means: 
+                 * all species with the same field content will be grouped together
+                 * if the field contains different data for each species, then each species
+                   will be put into a separate group (not very useful).
+
+NOTES           Species that lack the selected field (or contain nothing in that field) will
+                not be moved into groups.
+
+EXAMPLES        None
+
+WARNINGS        Existing groups will not be considered. 
+                This function will always create new groups and place them into the editors top area.
+
+BUGS            No bugs known
