@@ -1,9 +1,0 @@
-#!/bin/bash
-
-if [[ `uname` == Darwin* ]]
-then
-    greadlink "$@"
-else
-    readlink "$@"
-fi
-
