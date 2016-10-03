@@ -60,10 +60,11 @@
 #include <insdel.h>
 #include <awti_import.hxx>
 
-#define AWAR_EXPORT_NDS             "tmp/export_nds"
-#define AWAR_EXPORT_NDS_SEPARATOR   AWAR_EXPORT_NDS "/separator"
-#define AWAR_MARKED_SPECIES_COUNTER "tmp/disp_marked_species"
-#define AWAR_NTREE_TITLE_MODE       "tmp/title_mode"
+#define AWAR_EXPORT_NDS              "tmp/export_nds"
+#define AWAR_EXPORT_NDS_SEPARATOR    AWAR_EXPORT_NDS "/separator"
+#define AWAR_MARKED_SPECIES_COUNTER  "tmp/disp_marked_species"
+#define AWAR_NTREE_TITLE_MODE        "tmp/title_mode"
+#define AWAR_NTREE_MAIN_WINDOW_COUNT "tmp/mainwin_count" // changes whenever a new NT main window is created
 
 void create_probe_design_variables(AW_root *aw_root, AW_default def, AW_default global);
 
@@ -930,13 +931,50 @@ static void canvas_tree_awar_changed_cb(AW_awar *, bool, AWT_canvas *ntw) {
     NT_reload_tree_event(AW_root::SINGLETON, ntw, true);
 }
 
-// ##########################################
-// ##########################################
-// ###                                    ###
-// ##          create main window          ##
-// ###                                    ###
-// ##########################################
-// ##########################################
+struct NT_mainWindow_info {
+    AW_window   *aww;
+    AWT_canvas  *ntw;
+    std::string  title;
+};
+
+class NT_mainWindowRegistry {
+    int                count;
+    NT_mainWindow_info mw[MAX_NT_WINDOWS];
+
+    static NT_mainWindowRegistry *SINGLETON;
+
+    NT_mainWindowRegistry() : count(0) {
+        AW_root::SINGLETON->awar_int(AWAR_NTREE_MAIN_WINDOW_COUNT, 0, AW_ROOT_DEFAULT);
+    }
+
+public:
+    static NT_mainWindowRegistry& instance() {
+        if (!SINGLETON) SINGLETON = new NT_mainWindowRegistry;
+        return *SINGLETON;
+    }
+
+    void register_window(AW_window *aww, AWT_canvas *ntw, std::string title) {
+        nt_assert(count<MAX_NT_WINDOWS);
+        NT_mainWindow_info& w = mw[count];
+
+        w.aww   = aww;
+        w.ntw   = ntw;
+        w.title = title;
+
+        ++count;
+        AW_root::SINGLETON->awar(AWAR_NTREE_MAIN_WINDOW_COUNT)->write_int(count); // trigger callbacks
+    }
+
+    const NT_mainWindow_info *get_main_window_info(int idx) const {
+        if (idx<0 || idx>=count) return NULL;
+        return &mw[idx];
+    }
+};
+
+NT_mainWindowRegistry *NT_mainWindowRegistry::SINGLETON = NULL;
+
+// ----------------------------
+//      create main window
 
 static AW_window *popup_new_main_window(AW_root *awr, int clone, AWT_canvas **result_ntw) {
     /*! create ARB_NTREE main window
@@ -981,6 +1019,8 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone, AWT_canvas **re
     }
 
     if (result_ntw) *result_ntw = ntw;
+
+    NT_mainWindowRegistry::instance().register_window(awm, ntw, window_title);
 
     {
         AW_awar    *tree_awar          = awr->awar_string(awar_tree);
