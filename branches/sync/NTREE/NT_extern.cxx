@@ -887,36 +887,6 @@ static AW_window *NT_create_merge_to_window(AW_root *awr) {
 
 // --------------------------------------------------------------------------------------------------
 
-int NT_get_canvas_id(AWT_canvas *ntw) {
-    // return number of canvas [0..MAX_NT_WINDOWS-1]
-
-    const char *tree_awar_name = ntw->user_awar;
-
-    const unsigned LEN = 15;
-#if defined(ASSERTION_USED)
-    const char *EXPECT = "focus/tree_name";
-#endif
-
-    nt_assert(strlen(EXPECT)                      == LEN);
-    nt_assert(memcmp(tree_awar_name, EXPECT, LEN) == 0);
-
-    int id;
-    switch (tree_awar_name[LEN]) {
-        default :
-            nt_assert(0);
-            // NDEBUG: fallback to 0
-        case 0:
-            id = 0;
-            break;
-
-        case '_':
-            id = atoi(tree_awar_name+LEN+1);
-            nt_assert(id >= 1);
-            break;
-    }
-    return id;
-}
-
 static void update_main_window_title(AW_root* awr, AW_window_menu_modes* aww, int clone) {
     const char* filename = awr->awar(AWAR_DB_NAME)->read_char_pntr();
     if (clone) {
@@ -965,6 +935,8 @@ public:
         AW_root::SINGLETON->awar(AWAR_NTREE_MAIN_WINDOW_COUNT)->write_int(count); // trigger callbacks
     }
 
+    int get_count() const  { return count; }
+
     const NT_mainWindow_info *get_main_window_info(int idx) const {
         if (idx<0 || idx>=count) return NULL;
         return &mw[idx];
@@ -972,6 +944,26 @@ public:
 };
 
 NT_mainWindowRegistry *NT_mainWindowRegistry::SINGLETON = NULL;
+
+int NT_get_canvas_idx(AWT_canvas *ntw) {
+    /*! @return a unique index for each NTREE tree canvas (0 for main window, 1 for 1st 'new window', ...)
+     * TERMINATE if no canvas given or defined yet.
+     */
+    const NT_mainWindowRegistry& reg = NT_mainWindowRegistry::instance();
+
+    int maxIdx = reg.get_count();
+    for (int i = 0; i<maxIdx; ++i) {
+        const NT_mainWindow_info *info = reg.get_main_window_info(i);
+        if (info && info->ntw == ntw) return i;
+    }
+    GBK_terminatef("Invalid tree canvas (ntw=%p, maxIdx=%i)", ntw, maxIdx);
+}
+
+int NT_get_canvas_id(AWT_canvas *ntw) { // @@@ elim (replace by NT_get_canvas_idx)
+    return NT_get_canvas_idx(ntw);
+}
+
+
 
 // ----------------------------
 //      create main window
