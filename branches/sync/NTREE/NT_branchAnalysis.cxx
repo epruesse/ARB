@@ -38,7 +38,7 @@ class BranchWindow : virtual Noncopyable {
 
     static char *get_suffix(AWT_canvas *ntw) {
         // suffix depends on canvas
-        return GBS_global_string_copy("_%i", NT_get_canvas_id(ntw));
+        return GBS_global_string_copy("_%i", NT_get_canvas_idx(ntw));
     }
 
     const char *local_awar_name (const char *prefix, const char *name) { return GBS_global_string("%s%s/%s", prefix, suffix, name); }
@@ -271,7 +271,7 @@ void BranchWindow::create_window(AW_root *aw_root) {
 }
 
 AW_window *NT_create_branch_analysis_window(AW_root *aw_root, AWT_canvas *ntw) {
-    int ntw_id = NT_get_canvas_id(ntw);
+    int ntw_id = NT_get_canvas_idx(ntw);
     if (!existingBranchWindow[ntw_id]) {
         existingBranchWindow[ntw_id] = new BranchWindow(aw_root, ntw);
     }

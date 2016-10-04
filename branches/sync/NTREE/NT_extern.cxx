@@ -959,12 +959,6 @@ int NT_get_canvas_idx(AWT_canvas *ntw) {
     GBK_terminatef("Invalid tree canvas (ntw=%p, maxIdx=%i)", ntw, maxIdx);
 }
 
-int NT_get_canvas_id(AWT_canvas *ntw) { // @@@ elim (replace by NT_get_canvas_idx)
-    return NT_get_canvas_idx(ntw);
-}
-
-
-
 // ----------------------------
 //      create main window
 
@@ -1045,7 +1039,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone, AWT_canvas **re
     AWT_create_debug_menu(awm);
 #endif // DEBUG
 
-    bool allow_new_window = (NT_get_canvas_id(ntw)+1) < MAX_NT_WINDOWS;
+    bool allow_new_window = (NT_get_canvas_idx(ntw)+1) < MAX_NT_WINDOWS;
 
     if (clone) {
         awm->create_menu("File", "F", AWM_ALL);
