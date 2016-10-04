@@ -1374,25 +1374,23 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone, AWT_canvas **re
         awm->insert_menu_topic(awm->local_id("tree_select"),        "Select Tree",      "T", 0, AWM_ALL, makeCreateWindowCallback(NT_create_select_tree_window, awar_tree));
         awm->insert_menu_topic(awm->local_id("tree_select_latest"), "Select Last Tree", "L", 0, AWM_ALL, makeWindowCallback(NT_select_bottom_tree, awar_tree));
 
-        awm->sep______________();
-
         if (!clone) {
+            awm->sep______________();
             awm->insert_menu_topic("tree_admin", "Tree admin",               "i", "treeadm.hlp",   AWM_ALL, popup_tree_admin_window);
             awm->insert_menu_topic("nds",        "NDS (Node display setup)", "N", "props_nds.hlp", AWM_ALL, makeCreateWindowCallback(AWT_create_nds_window, GLOBAL.gb_main));
         }
-        awm->sep______________();
 
+        awm->sep______________();
         awm->insert_menu_topic("transversion",       "Transversion analysis",   "y", "trans_anal.hlp", AWM_EXP, makeHelpCallback("trans_anal.hlp"));
 
-        awm->sep______________();
-
         if (!clone) {
+            awm->sep______________();
             awm->insert_menu_topic("print_tree",  "Print tree",          "P", "tree2prt.hlp",  AWM_ALL, makeWindowCallback(AWT_popup_print_window, ntw));
             awm->insert_menu_topic("tree_2_xfig", "Export tree to XFIG", "F", "tree2file.hlp", AWM_ALL, makeWindowCallback(AWT_popup_tree_export_window, ntw));
-            awm->sep______________();
         }
 
         if (is_genome_db) {
+            awm->sep______________();
             awm->insert_sub_menu("Other..",  "O", AWM_EXP);
             {
                 awm->insert_menu_topic(awm->local_id("tree_pseudo_species_to_organism"), "Relink tree to organisms", "o", "tree_pseudo.hlp", AWM_EXP, makeWindowCallback(NT_pseudo_species_to_organism, ntw));
