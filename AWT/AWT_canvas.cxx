@@ -736,18 +736,18 @@ static void scroll_hor_cb(AW_window *aww, AWT_canvas* scr) {
 }
 
 
-AWT_canvas::AWT_canvas(GBDATA *gb_maini, AW_window *awwi, const char *gc_base_name_, AWT_graphic *awd, const char *user_awari)
-    : consider_text_for_size(true)
-    , gc_base_name(ARB_strdup(gc_base_name_))
-    , user_awar(ARB_strdup(user_awari))
-    , shift_x_to_fit(0)
-    , shift_y_to_fit(0)
-    , gb_main(gb_maini)
-    , aww(awwi)
-    , awr(aww->get_root())
-    , gfx(awd)
-    , gc_manager(gfx->init_devices(aww, aww->get_device(AW_MIDDLE_AREA), this))
-    , mode(AWT_MODE_NONE)
+AWT_canvas::AWT_canvas(GBDATA *gb_main_, AW_window *aww_, const char *gc_base_name_, AWT_graphic *gfx_, AW_awar *awar_tree_) :
+    consider_text_for_size(true),
+    gc_base_name(ARB_strdup(gc_base_name_)),
+    awar_tree(awar_tree_),
+    shift_x_to_fit(0),
+    shift_y_to_fit(0),
+    gb_main(gb_main_),
+    aww(aww_),
+    awr(aww->get_root()),
+    gfx(gfx_),
+    gc_manager(gfx->init_devices(aww, aww->get_device(AW_MIDDLE_AREA), this)),
+    mode(AWT_MODE_NONE)
 {
     gfx->drag_gc   = AW_get_drag_gc(gc_manager);
 

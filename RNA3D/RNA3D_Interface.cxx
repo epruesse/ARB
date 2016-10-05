@@ -630,7 +630,7 @@ AW_window *CreateRNA3DMainWindow(AW_root *awr, GBDATA *gb_main, ED4_plugin_host&
 
     Structure3D::gb_main = gb_main;
 
-    RNA3D->gl_Canvas = new AWT_canvas(Structure3D::gb_main, awm, awm->get_window_id(), rna3DGraphics, AWAR_SPECIES_NAME);
+    RNA3D->gl_Canvas = new AWT_canvas(Structure3D::gb_main, awm, awm->get_window_id(), rna3DGraphics, NULL);
 
     RNA3D->gl_Canvas->recalc_size_and_refresh();
     RNA3D->gl_Canvas->set_mode(AWT_MODE_NONE);

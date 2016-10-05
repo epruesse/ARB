@@ -257,15 +257,13 @@ class AWT_canvas : virtual Noncopyable {
     char *gc_base_name;
 
 public:
-    // too many callbacks -> public
-    // in fact: private
-    // (in real fact: needs rewrite)
+    // @@@ make members private!
 
-    char   *user_awar; // contains name of awar (awar contains name of tree displayed in canvas)
-    void    init_device(AW_device *device);
-    AW_pos  trans_to_fit;
-    AW_pos  shift_x_to_fit;
-    AW_pos  shift_y_to_fit;
+    AW_awar *awar_tree; // awar containing name of displayed tree // @@@ only used for Tree-canvas (-> derive TREE_canvas from AWT_canvas and put there)
+
+    AW_pos trans_to_fit;
+    AW_pos shift_x_to_fit;
+    AW_pos shift_y_to_fit;
 
     int old_hor_scroll_pos;
     int old_vert_scroll_pos;
@@ -278,14 +276,16 @@ public:
     int zoom_drag_ey;
     int drag;
 
+    void init_device(AW_device *device);
+
     void set_scrollbars();
     void set_dragEndpoint(int x, int y);
 
     void set_horizontal_scrollbar_position(AW_window *aww, int pos);
     void set_vertical_scrollbar_position(AW_window *aww, int pos);
 
-
     // public (read only)
+    // @@@ make members private!
 
     GBDATA      *gb_main;
     AW_window   *aww;
@@ -298,7 +298,7 @@ public:
 
     // real public
 
-    AWT_canvas(GBDATA *gb_main, AW_window *aww, const char *gc_base_name_, AWT_graphic *awd, const char *user_awar);
+    AWT_canvas(GBDATA *gb_main_, AW_window *aww_, const char *gc_base_name_, AWT_graphic *gfx_, AW_awar *awar_tree_);
 
     inline void push_transaction() const;
     inline void pop_transaction() const;
