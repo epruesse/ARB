@@ -952,6 +952,11 @@ int NT_get_canvas_idx(AWT_canvas *ntw) {
     if (idx == -1) GBK_terminatef("Invalid tree canvas (ntw=%p, known=%i)", ntw, reg.get_count());
     return idx;
 }
+AWT_canvas *NT_get_canvas_by_index(int idx) {
+    /*! return canvas with index 'idx' [0...MAX_NT_WINDOWS-1] */
+    nt_assert(idx>=0 && idx<MAX_NT_WINDOWS);
+    return NT_canvas_registry::instance().get_canvas(idx);
+}
 
 void NT_fill_canvas_selection_list(class AW_selection_list *sellst, AWT_canvas *to_skip) {
     /*! insert canvases into selection list (using canvas-indices as values)
@@ -964,7 +969,9 @@ void NT_fill_canvas_selection_list(class AW_selection_list *sellst, AWT_canvas *
         if (ntw && ntw != to_skip) {
             nt_assert(ntw->awar_tree);
             const char *treename    = ntw->awar_tree->read_char_pntr();
-            const char *description = GBS_global_string("ARB %i (%s)", i+1, treename);
+            const char *description = i
+                ? GBS_global_string("ARB (%i):  %s", i, treename)
+                : GBS_global_string("ARB main: %s", treename);
             sellst->insert(description, i);
         }
     }

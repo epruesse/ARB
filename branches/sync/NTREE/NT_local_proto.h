@@ -67,6 +67,7 @@ void NT_exit(AW_window *aws, int exitcode);
 void NT_restart(AW_root *aw_root, const char *arb_ntree_args);
 TreeNode *NT_get_tree_root_of_canvas(AWT_canvas *ntw);
 int NT_get_canvas_idx(AWT_canvas *ntw);
+AWT_canvas *NT_get_canvas_by_index(int idx);
 void NT_fill_canvas_selection_list(class AW_selection_list *sellst, AWT_canvas *to_skip);
 AWT_canvas *NT_create_main_window(AW_root *aw_root);
 
