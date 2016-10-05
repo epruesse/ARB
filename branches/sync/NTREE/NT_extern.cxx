@@ -25,19 +25,22 @@
 #include <gde.hxx>
 #include <awtc_submission.hxx>
 
+#include <macros.hxx>
+#include <nds.h>
+#include <db_query.h>
+#include <dbui.h>
+#include <refentries.h>
+#include <insdel.h>
+
 #include <awti_export.hxx>
+#include <awti_import.hxx>
 
 #include <awt.hxx>
-#include <macros.hxx>
 #include <awt_input_mask.hxx>
 #include <awt_sel_boxes.hxx>
 #include <awt_www.hxx>
 #include <awt_TreeAwars.hxx>
 #include <awt_misc.hxx>
-#include <nds.h>
-
-#include <db_query.h>
-#include <dbui.h>
 
 #include <aw_color_groups.hxx>
 #include <aw_advice.hxx>
@@ -50,16 +53,14 @@
 #include <aw_root.hxx>
 #include <aw_question.hxx>
 #include <aw_select.hxx>
+#include <rootAsWin.h>
+
+#include <ad_cb.h>
+
 #include <arb_strbuf.h>
 #include <arb_strarray.h>
 #include <arb_file.h>
-#include <ad_cb.h>
-
 #include <arb_version.h>
-#include <refentries.h>
-#include <rootAsWin.h>
-#include <insdel.h>
-#include <awti_import.hxx>
 
 #define AWAR_EXPORT_NDS              "tmp/export_nds"
 #define AWAR_EXPORT_NDS_SEPARATOR    AWAR_EXPORT_NDS "/separator"
