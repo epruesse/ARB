@@ -988,6 +988,7 @@ NT_sync_scroll.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 NT_sync_scroll.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 NT_sync_scroll.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 NT_sync_scroll.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+NT_sync_scroll.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 NT_sync_scroll.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 NT_sync_scroll.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_sync_scroll.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
