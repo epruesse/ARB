@@ -1596,7 +1596,7 @@ void GEN_map_window::init(AW_root *awr, GBDATA *gb_main) {
     GEN_create_genemap_local_awars(awr, AW_ROOT_DEFAULT, window_nr);
 
     gen_graphic = new GEN_graphic(awr, gb_main, GEN_gene_container_cb_installer, window_nr);
-    gen_canvas  = new AWT_canvas(gb_main, this, get_window_id(), gen_graphic, AWAR_SPECIES_NAME);
+    gen_canvas  = new AWT_canvas(gb_main, this, get_window_id(), gen_graphic, NULL);
 
     GEN_add_local_awar_callbacks(awr, AW_ROOT_DEFAULT, this);
 

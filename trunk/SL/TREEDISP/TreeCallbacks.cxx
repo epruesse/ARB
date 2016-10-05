@@ -768,7 +768,7 @@ inline const char *plural(int val) {
 
 void NT_reload_tree_event(AW_root *awr, AWT_canvas *ntw, bool unzoom_and_expose) {
     GB_push_transaction(ntw->gb_main);
-    char     *tree_name = awr->awar(ntw->user_awar)->read_string();
+    char     *tree_name = ntw->awar_tree->read_string();
     GB_ERROR  error     = ntw->gfx->load(ntw->gb_main, tree_name);
     if (error) {
         aw_message(error);

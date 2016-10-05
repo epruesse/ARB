@@ -1251,7 +1251,7 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
     {
         AP_tree_display_type  old_sort_type = global_tree()->tree_sort;
         global_tree()->set_tree_type(AP_LIST_SIMPLE, NULL); // avoid NDS warnings during startup
-        ntw = new AWT_canvas(gb_main, awm, awm->get_window_id(), global_tree(), AWAR_TREE);
+        ntw = new AWT_canvas(gb_main, awm, awm->get_window_id(), global_tree(), awr->awar(AWAR_TREE));
         global_tree()->set_tree_type(old_sort_type, ntw);
     }
 

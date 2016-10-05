@@ -555,7 +555,7 @@ static AW_window_simple *create_select_two_trees_window(AW_root *root, const cha
     return aws;
 }
 
-static AW_window_simple *create_select_other_tree_window(AW_root *root, const char *winId, const char *winTitle, const char *helpFile, const char *displayed_tree_awarname) {
+static AW_window_simple *create_select_other_tree_window(AW_root *root, const char *winId, const char *winTitle, const char *helpFile, AW_awar *awar_displayed_tree) {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(root, winId, winTitle);
     aws->load_xfig("ad_one_tree.fig");
@@ -569,8 +569,6 @@ static AW_window_simple *create_select_other_tree_window(AW_root *root, const ch
     aws->at("help");
     aws->callback(makeHelpCallback(helpFile));
     aws->create_button("HELP", "Help", "H");
-
-    AW_awar *awar_displayed_tree = root->awar(displayed_tree_awarname);
 
     aws->at("tree");
     awt_create_TREE_selection_list(GLOBAL.gb_main, aws, TreeAdmin::source_tree_awar(root)->awar_name, true);
@@ -964,7 +962,7 @@ static void sort_tree_by_other_tree_cb(UNFIXED, AWT_canvas *ntw) {
 }
 
 AW_window *NT_create_sort_tree_by_other_tree_window(AW_root *aw_root, AWT_canvas *ntw) {
-    AW_window_simple *aws = create_select_other_tree_window(aw_root, ntw->aww->local_id("SORT_BY_OTHER"), "Sort tree by other tree", "resortbyother.hlp", ntw->user_awar);
+    AW_window_simple *aws = create_select_other_tree_window(aw_root, ntw->aww->local_id("SORT_BY_OTHER"), "Sort tree by other tree", "resortbyother.hlp", ntw->awar_tree);
 
     aws->callback(makeWindowCallback(sort_tree_by_other_tree_cb, ntw));
     aws->create_autosize_button("RESORT", "Sort according to source tree");

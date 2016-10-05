@@ -651,6 +651,8 @@ NT_extern.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+NT_extern.o: $(ARBHOME)/INCLUDE/aw_scalar.hxx
+NT_extern.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/awt.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx

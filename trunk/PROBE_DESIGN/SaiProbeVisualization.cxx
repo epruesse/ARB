@@ -720,7 +720,7 @@ AW_window *createSaiProbeMatchWindow(AW_root *awr, GBDATA *gb_main) {
     awm->init(awr, "MATCH_SAI", "PROBE AND SAI", 200, 300);
 
     SAI_graphic *saiProbeGraphic = new SAI_graphic(awr, gb_main);
-    AWT_canvas  *scr             = new AWT_canvas(gb_main, awm, awm->get_window_id(), saiProbeGraphic, AWAR_TARGET_STRING);
+    AWT_canvas  *scr             = new AWT_canvas(gb_main, awm, awm->get_window_id(), saiProbeGraphic, NULL);
 
     scr->recalc_size(true);
 
