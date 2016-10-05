@@ -903,74 +903,65 @@ static void canvas_tree_awar_changed_cb(AW_awar *, bool, AWT_canvas *ntw) {
     NT_reload_tree_event(AW_root::SINGLETON, ntw, true);
 }
 
-struct NT_mainWindow_info {
-    AW_window   *aww;
-    AWT_canvas  *ntw;
-    std::string  title;
-};
+class NT_canvas_registry {
+    int         count;
+    AWT_canvas *canvas[MAX_NT_WINDOWS];
 
-class NT_mainWindowRegistry {
-    int                count;
-    NT_mainWindow_info mw[MAX_NT_WINDOWS];
+    static NT_canvas_registry *SINGLETON;
 
-    static NT_mainWindowRegistry *SINGLETON;
-
-    NT_mainWindowRegistry() : count(0) {
+    NT_canvas_registry() : count(0) {
         AW_root::SINGLETON->awar_int(AWAR_NTREE_MAIN_WINDOW_COUNT, 0, AW_ROOT_DEFAULT);
     }
 
 public:
-    static NT_mainWindowRegistry& instance() {
-        if (!SINGLETON) SINGLETON = new NT_mainWindowRegistry;
+    static NT_canvas_registry& instance() {
+        if (!SINGLETON) SINGLETON = new NT_canvas_registry;
         return *SINGLETON;
     }
 
-    void register_window(AW_window *aww, AWT_canvas *ntw, std::string title) {
+    void register_canvas(AWT_canvas *ntw) {
         nt_assert(count<MAX_NT_WINDOWS);
-        NT_mainWindow_info& w = mw[count];
-
-        w.aww   = aww;
-        w.ntw   = ntw;
-        w.title = title;
-
-        ++count;
-        AW_root::SINGLETON->awar(AWAR_NTREE_MAIN_WINDOW_COUNT)->write_int(count); // trigger callbacks
+        canvas[count++] = ntw;
+        ntw->awr->awar(AWAR_NTREE_MAIN_WINDOW_COUNT)->write_int(count); // trigger callbacks
     }
 
     int get_count() const  { return count; }
 
-    const NT_mainWindow_info *get_main_window_info(int idx) const {
+    AWT_canvas *get_canvas(int idx) const {
         if (idx<0 || idx>=count) return NULL;
-        return &mw[idx];
+        return canvas[idx];
+    }
+
+    int get_index(AWT_canvas *ntw) const {
+        /*! @return index of canvas 'ntw' [0..count-1] or -1 if unknown */
+        for (int i = 0; i<count; ++i) {
+            if (canvas[i] == ntw) return i;
+        }
+        return -1;
     }
 };
 
-NT_mainWindowRegistry *NT_mainWindowRegistry::SINGLETON = NULL;
+NT_canvas_registry *NT_canvas_registry::SINGLETON = NULL;
 
 int NT_get_canvas_idx(AWT_canvas *ntw) {
     /*! @return a unique index for each NTREE tree canvas (0 for main window, 1 for 1st 'new window', ...)
-     * TERMINATE if no canvas given or defined yet.
+     * TERMINATE if canvas is unknown.
      */
-    const NT_mainWindowRegistry& reg = NT_mainWindowRegistry::instance();
-
-    int maxIdx = reg.get_count();
-    for (int i = 0; i<maxIdx; ++i) {
-        const NT_mainWindow_info *info = reg.get_main_window_info(i);
-        if (info && info->ntw == ntw) return i;
-    }
-    GBK_terminatef("Invalid tree canvas (ntw=%p, maxIdx=%i)", ntw, maxIdx);
+    const NT_canvas_registry& reg = NT_canvas_registry::instance();
+    int idx = reg.get_index(ntw);
+    if (idx == -1) GBK_terminatef("Invalid tree canvas (ntw=%p, known=%i)", ntw, reg.get_count());
+    return idx;
 }
 
 void NT_fill_canvas_selection_list(class AW_selection_list *sellst, AWT_canvas *to_skip) {
     /*! insert canvases into selection list (using canvas-indices as values)
      */
-    const NT_mainWindowRegistry& reg = NT_mainWindowRegistry::instance();
+    const NT_canvas_registry& reg = NT_canvas_registry::instance();
 
     int maxIdx = reg.get_count();
     for (int32_t i = 0; i<maxIdx; ++i) {
-        const NT_mainWindow_info *info = reg.get_main_window_info(i);
-        const AWT_canvas         *ntw  = info->ntw;
-        if (info && ntw != to_skip) {
+        AWT_canvas *ntw = reg.get_canvas(i);
+        if (ntw && ntw != to_skip) {
             nt_assert(ntw->awar_tree);
             const char *treename    = ntw->awar_tree->read_char_pntr();
             const char *description = GBS_global_string("ARB %i (%s)", i+1, treename);
@@ -1028,7 +1019,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone, AWT_canvas **re
 
         if (result_ntw) *result_ntw = ntw;
 
-        NT_mainWindowRegistry::instance().register_window(awm, ntw, window_title);
+        NT_canvas_registry::instance().register_canvas(ntw);
 
         {
             const char *tree_name          = tree_awar->read_char_pntr();
