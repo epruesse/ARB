@@ -183,7 +183,7 @@ static void automark_changed_cb(AW_root *, BranchWindow *bw) {
 
 void BranchWindow::create_awars(AW_root *aw_root) {
     awar_info = aw_root->awar_string(local_awar_name(AWAR_BRANCH_ANALYSIS_TMP, "info"), "<No analysis performed yet>");
-    aw_root->awar(ntw->user_awar)->add_callback(makeRootCallback(tree_changed_cb, this));
+    ntw->awar_tree->add_callback(makeRootCallback(tree_changed_cb, this));
 
     aw_root->awar_float(AWAR_BA_MIN_REL_DIFF, 75)->set_minmax(0, 100)->add_callback(makeRootCallback(mark_long_branches_automark_cb));
     aw_root->awar_float(AWAR_BA_MIN_ABS_DIFF, 0.01)->set_minmax(0, 20)->add_callback(makeRootCallback(mark_long_branches_automark_cb));
@@ -227,7 +227,7 @@ void BranchWindow::create_window(AW_root *aw_root) {
     awar_automark->add_callback(makeRootCallback(automark_changed_cb, this));
 
     aws->at("sel");
-    aws->create_button(0, ntw->user_awar, 0, "+");
+    aws->create_button(0, ntw->awar_tree->awar_name, 0, "+");
 
     aws->at("info");
     aws->create_text_field(awar_info->awar_name);

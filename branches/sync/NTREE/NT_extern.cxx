@@ -996,35 +996,36 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone, AWT_canvas **re
 
     AWT_canvas *ntw;
     {
-        AP_tree_display_type old_sort_type = tree->tree_sort;
-        tree->set_tree_type(AP_LIST_SIMPLE, NULL); // avoid NDS warnings during startup
+        AW_awar *tree_awar = awr->awar_string(awar_tree);
+        {
+            AP_tree_display_type old_sort_type = tree->tree_sort;
+            tree->set_tree_type(AP_LIST_SIMPLE, NULL); // avoid NDS warnings during startup
 
-        ntw = new AWT_canvas(GLOBAL.gb_main, awm, "ARB_NT", tree, awar_tree);
-        tree->set_tree_type(old_sort_type, ntw);
-        ntw->set_mode(AWT_MODE_SELECT);
-    }
-
-    if (result_ntw) *result_ntw = ntw;
-
-    NT_mainWindowRegistry::instance().register_window(awm, ntw, window_title);
-
-    {
-        AW_awar    *tree_awar          = awr->awar_string(awar_tree);
-        const char *tree_name          = tree_awar->read_char_pntr();
-        const char *existing_tree_name = GBT_existing_tree(GLOBAL.gb_main, tree_name);
-
-        if (existing_tree_name) {
-            tree_awar->write_string(existing_tree_name);
-            NT_reload_tree_event(awr, ntw, true); // load first tree
-        }
-        else {
-            AW_advice("Your database contains no tree.", AW_ADVICE_TOGGLE_AND_HELP, 0, "no_tree.hlp");
-            tree->set_tree_type(AP_LIST_NDS, ntw); // no tree -> show NDS list
+            ntw = new AWT_canvas(GLOBAL.gb_main, awm, "ARB_NT", tree, tree_awar);
+            tree->set_tree_type(old_sort_type, ntw);
+            ntw->set_mode(AWT_MODE_SELECT);
         }
 
-        AWT_registerTreeAwarCallback(tree_awar, makeTreeAwarCallback(canvas_tree_awar_changed_cb, ntw), false);
-    }
+        if (result_ntw) *result_ntw = ntw;
 
+        NT_mainWindowRegistry::instance().register_window(awm, ntw, window_title);
+
+        {
+            const char *tree_name          = tree_awar->read_char_pntr();
+            const char *existing_tree_name = GBT_existing_tree(GLOBAL.gb_main, tree_name);
+
+            if (existing_tree_name) {
+                tree_awar->write_string(existing_tree_name);
+                NT_reload_tree_event(awr, ntw, true); // load first tree
+            }
+            else {
+                AW_advice("Your database contains no tree.", AW_ADVICE_TOGGLE_AND_HELP, 0, "no_tree.hlp");
+                tree->set_tree_type(AP_LIST_NDS, ntw); // no tree -> show NDS list
+            }
+
+            AWT_registerTreeAwarCallback(tree_awar, makeTreeAwarCallback(canvas_tree_awar_changed_cb, ntw), false);
+        }
+    }
     TREE_install_update_callbacks(ntw);
     awr->awar(AWAR_TREE_NAME)->add_callback(makeRootCallback(TREE_auto_jump_cb, ntw, true)); // NT specific (tree name never changes in parsimony!)
 
