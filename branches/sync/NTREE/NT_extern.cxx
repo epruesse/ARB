@@ -49,6 +49,7 @@
 #include <arb_progress.h>
 #include <aw_root.hxx>
 #include <aw_question.hxx>
+#include <aw_select.hxx>
 #include <arb_strbuf.h>
 #include <arb_strarray.h>
 #include <arb_file.h>
@@ -957,6 +958,24 @@ int NT_get_canvas_idx(AWT_canvas *ntw) {
         if (info && info->ntw == ntw) return i;
     }
     GBK_terminatef("Invalid tree canvas (ntw=%p, maxIdx=%i)", ntw, maxIdx);
+}
+
+void NT_fill_canvas_selection_list(class AW_selection_list *sellst, AWT_canvas *to_skip) {
+    /*! insert canvases into selection list (using canvas-indices as values)
+     */
+    const NT_mainWindowRegistry& reg = NT_mainWindowRegistry::instance();
+
+    int maxIdx = reg.get_count();
+    for (int32_t i = 0; i<maxIdx; ++i) {
+        const NT_mainWindow_info *info = reg.get_main_window_info(i);
+        const AWT_canvas         *ntw  = info->ntw;
+        if (info && ntw != to_skip) {
+            nt_assert(ntw->awar_tree);
+            const char *treename    = ntw->awar_tree->read_char_pntr();
+            const char *description = GBS_global_string("ARB %i (%s)", i+1, treename);
+            sellst->insert(description, i);
+        }
+    }
 }
 
 // ----------------------------
