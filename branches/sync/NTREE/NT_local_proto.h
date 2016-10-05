@@ -88,6 +88,9 @@ void NT_resort_data_by_phylogeny(AW_window *, AWT_canvas *ntw);
 void NT_create_resort_awars(AW_root *awr, AW_default aw_def);
 AW_window *NT_create_resort_window(AW_root *awr);
 
+/* NT_sync_scroll.cxx */
+AW_window *NT_create_syncScroll_window(AW_root *awr, AWT_canvas *ntw);
+
 /* NT_taxonomy.cxx */
 void NT_create_compare_taxonomy_awars(AW_root *aw_root, AW_default props);
 AW_window *NT_create_compare_taxonomy_window(AW_root *aw_root, AWT_canvas *ntw);

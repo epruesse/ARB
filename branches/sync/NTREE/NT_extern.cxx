@@ -66,7 +66,6 @@
 #define AWAR_EXPORT_NDS_SEPARATOR    AWAR_EXPORT_NDS "/separator"
 #define AWAR_MARKED_SPECIES_COUNTER  "tmp/disp_marked_species"
 #define AWAR_NTREE_TITLE_MODE        "tmp/title_mode"
-#define AWAR_NTREE_MAIN_WINDOW_COUNT "tmp/mainwin_count" // changes whenever a new NT main window is created
 
 void create_probe_design_variables(AW_root *aw_root, AW_default def, AW_default global);
 
@@ -901,6 +900,7 @@ static void update_main_window_title(AW_root* awr, AW_window_menu_modes* aww, in
 
 static void canvas_tree_awar_changed_cb(AW_awar *, bool, AWT_canvas *ntw) {
     NT_reload_tree_event(AW_root::SINGLETON, ntw, true);
+    AW_root::SINGLETON->awar(AWAR_NTREE_MAIN_WINDOW_COUNT)->touch(); // refresh canvas selection lists
 }
 
 class NT_canvas_registry {
@@ -1037,6 +1037,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone, AWT_canvas **re
             AWT_registerTreeAwarCallback(tree_awar, makeTreeAwarCallback(canvas_tree_awar_changed_cb, ntw), false);
         }
     }
+
     TREE_install_update_callbacks(ntw);
     awr->awar(AWAR_TREE_NAME)->add_callback(makeRootCallback(TREE_auto_jump_cb, ntw, true)); // NT specific (tree name never changes in parsimony!)
 
@@ -1364,8 +1365,9 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone, AWT_canvas **re
 
         awm->sep______________();
 
-        awm->insert_menu_topic(awm->local_id("compare_taxonomy"), "Compare taxonomy...", "x", "compare_taxonomy.hlp", AWM_ALL, makeCreateWindowCallback(NT_create_compare_taxonomy_window, ntw));
-        awm->insert_menu_topic(awm->local_id("shade"),            "Tree shading...",     "s", "tree_shading.hlp",     AWM_ALL, makeWindowCallback(NT_configure_treeShader));
+        awm->insert_menu_topic(awm->local_id("compare_taxonomy"), "Compare taxonomy...",   "x", "compare_taxonomy.hlp", AWM_ALL, makeCreateWindowCallback(NT_create_compare_taxonomy_window, ntw));
+        awm->insert_menu_topic(awm->local_id("shade"),            "Tree shading...",       "s", "tree_shading.hlp",     AWM_ALL, makeWindowCallback      (NT_configure_treeShader));
+        awm->insert_menu_topic(awm->local_id("syncscroll"),       "Sync tree scrolling..", "y", "syncscroll.hlp",       AWM_ALL, makeCreateWindowCallback(NT_create_syncScroll_window, ntw));
 
         awm->sep______________();
 
