@@ -169,7 +169,7 @@ static void init_config_awars(AW_root *root) {
 }
 static void selected_configs_awar_changed_cb(AW_root *aw_root, TREE_canvas *ntw) {
     AWT_graphic_tree        *agt    = DOWNCAST(AWT_graphic_tree*, ntw->gfx);
-    int                      ntw_id = NT_get_canvas_idx(ntw);
+    int                      ntw_id = ntw->get_index();
     SmartPtr<ConstStrArray>  config = get_selected_configs_from_awar(ntw_id);
     bool                     redraw = false;
 
@@ -256,10 +256,11 @@ static void install_config_change_callbacks(GBDATA *gb_main) {
 void NT_activate_configMarkers_display(TREE_canvas *ntw) {
     GBDATA *gb_main = ntw->gb_main;
 
-    AW_awar *awar_selCfgs = ntw->awr->awar_string(GBS_global_string(AWAR_CL_SELECTED_CONFIGS, NT_get_canvas_idx(ntw)), "", gb_main);
+    int      ntw_idx      = ntw->get_index();
+    AW_awar *awar_selCfgs = ntw->awr->awar_string(GBS_global_string(AWAR_CL_SELECTED_CONFIGS, ntw_idx), "", gb_main);
     awar_selCfgs->add_callback(makeRootCallback(selected_configs_awar_changed_cb, ntw));
 
-    AW_awar *awar_dispCfgs = ntw->awr->awar_int(GBS_global_string(AWAR_CL_DISPLAY_CONFIG_MARKERS, NT_get_canvas_idx(ntw)), 1, gb_main);
+    AW_awar *awar_dispCfgs = ntw->awr->awar_int(GBS_global_string(AWAR_CL_DISPLAY_CONFIG_MARKERS, ntw_idx), 1, gb_main);
     awar_dispCfgs->add_callback(makeRootCallback(selected_configs_display_awar_changed_cb, ntw));
 
     awar_selCfgs->touch(); // force initial refresh
@@ -351,7 +352,7 @@ static void configuration_deleted_cb(const char *name)                          
 static AW_window *create_configuration_marker_window(AW_root *root, TREE_canvas *ntw) {
     AW_window_simple *aws = new AW_window_simple;
 
-    int ntw_id = NT_get_canvas_idx(ntw);
+    int ntw_id = ntw->get_index();
     aws->init(root, GBS_global_string("MARK_CONFIGS_%i", ntw_id), "Highlight configurations in tree");
     aws->load_xfig("mark_configs.fig");
 
@@ -371,7 +372,7 @@ static AW_window *create_configuration_marker_window(AW_root *root, TREE_canvas 
     AW_selection *sub_sel;
     {
         LocallyModify<bool> avoid(allow_selection2awar_update, false); // avoid awar gets updated from empty sub-selectionlist
-        sub_sel = awt_create_subset_selection_list(aws, all_configs->get_sellist(), "selected", "add", "sort", false, configs_selectionlist_changed_cb, NT_get_canvas_idx(ntw));
+        sub_sel = awt_create_subset_selection_list(aws, all_configs->get_sellist(), "selected", "add", "sort", false, configs_selectionlist_changed_cb, ntw->get_index());
     }
 
     awt_set_subset_selection_content(sub_sel, *get_selected_configs_from_awar(ntw_id));
@@ -1146,7 +1147,7 @@ static void clear_comment_cb(AW_window *aww) {
 static AW_window *create_configuration_admin_window(AW_root *root, TREE_canvas *ntw) {
     static AW_window_simple *existing_aws[MAX_NT_WINDOWS] = { MAX_NT_WINDOWS_NULLINIT };
 
-    int ntw_id = NT_get_canvas_idx(ntw);
+    int ntw_id = ntw->get_index();
     if (!existing_aws[ntw_id]) {
         init_config_admin_awars(root);
 

@@ -66,7 +66,6 @@ void NT_start(const char *arb_ntree_args, bool restart_with_new_ARB_PID);
 void NT_exit(AW_window *aws, int exitcode);
 void NT_restart(AW_root *aw_root, const char *arb_ntree_args);
 TreeNode *NT_get_tree_root_of_canvas(TREE_canvas *ntw);
-int NT_get_canvas_idx(TREE_canvas *ntw);
 void NT_fill_canvas_selection_list(class AW_selection_list *sellst, TREE_canvas *to_skip);
 TREE_canvas *NT_create_main_window(AW_root *aw_root);
 

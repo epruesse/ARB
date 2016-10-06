@@ -921,6 +921,7 @@ public:
 
     void register_canvas(TREE_canvas *ntw) {
         nt_assert(count<MAX_NT_WINDOWS);
+        nt_assert(count == ntw->get_index()); // you have to register TREE_canvas'es in order of creation!
         canvas[count++] = ntw;
         ntw->awr->awar(AWAR_NTREE_MAIN_WINDOW_COUNT)->write_int(count); // trigger callbacks
     }
@@ -931,27 +932,9 @@ public:
         if (idx<0 || idx>=count) return NULL;
         return canvas[idx];
     }
-
-    int get_index(TREE_canvas *ntw) const {
-        /*! @return index of canvas 'ntw' [0..count-1] or -1 if unknown */
-        for (int i = 0; i<count; ++i) {
-            if (canvas[i] == ntw) return i;
-        }
-        return -1;
-    }
 };
 
 TREE_canvas_registry *TREE_canvas_registry::SINGLETON = NULL;
-
-int NT_get_canvas_idx(TREE_canvas *ntw) {
-    /*! @return a unique index for each NTREE tree canvas (0 for main window, 1 for 1st 'new window', ...)
-     * TERMINATE if canvas is unknown.
-     */
-    const TREE_canvas_registry& reg = TREE_canvas_registry::instance();
-    int idx = reg.get_index(ntw);
-    if (idx == -1) GBK_terminatef("Invalid tree canvas (ntw=%p, known=%i)", ntw, reg.get_count());
-    return idx;
-}
 
 void NT_fill_canvas_selection_list(class AW_selection_list *sellst, TREE_canvas *to_skip) {
     /*! insert canvases into selection list (using canvas-indices as values)
@@ -1051,7 +1034,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone, TREE_canvas **r
     AWT_create_debug_menu(awm);
 #endif // DEBUG
 
-    bool allow_new_window = (NT_get_canvas_idx(ntw)+1) < MAX_NT_WINDOWS;
+    bool allow_new_window = (ntw->get_index()+1) < MAX_NT_WINDOWS;
 
     if (clone) {
         awm->create_menu("File", "F", AWM_ALL);

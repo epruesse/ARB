@@ -22,6 +22,8 @@
 using namespace std;
 using namespace AW;
 
+int TREE_canvas::count = 0;
+
 void AWT_graphic_exports::clear() {
     zoom_reset       = 0;
     resize           = 0;
