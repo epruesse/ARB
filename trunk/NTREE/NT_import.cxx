@@ -25,7 +25,7 @@
 
 #include <arbdbt.h>
 
-static void nt_seq_load_cb(AW_root *awr, AWT_canvas *ntw) {
+static void nt_seq_load_cb(AW_root *awr, TREE_canvas *ntw) {
     GLOBAL_gb_dst     = GLOBAL.gb_main;
     AW_window *aww    = DBUI::create_species_query_window(awr, GLOBAL.gb_main);
     DBUI::unquery_all();
@@ -45,7 +45,7 @@ static void nt_seq_load_cb(AW_root *awr, AWT_canvas *ntw) {
 }
 
 
-void NT_import_sequences(AW_window *aww, AWT_canvas *ntw) {
+void NT_import_sequences(AW_window *aww, TREE_canvas *ntw) {
     /*! Opens the "Import Sequences" dialog from the ARB main window (ARB_NTREE)
      */
     AW_root *awr = aww->get_root();

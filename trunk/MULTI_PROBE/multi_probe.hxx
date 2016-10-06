@@ -17,9 +17,9 @@
 #endif
 
 class AW_window;
-class AWT_canvas;
+class TREE_canvas;
 
-AW_window *create_multiprobe_window(AW_root *root, AWT_canvas *canvas);
+AW_window *create_multiprobe_window(AW_root *root, TREE_canvas *canvas);
 
 #else
 #error multi_probe.hxx included twice

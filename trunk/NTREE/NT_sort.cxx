@@ -147,7 +147,7 @@ static GB_ERROR resort_data_base(TreeNode *tree, const customCriterion *sortBy) 
     return GB_end_transaction(GLOBAL.gb_main, error);
 }
 
-void NT_resort_data_by_phylogeny(AW_window*, AWT_canvas *ntw) {
+void NT_resort_data_by_phylogeny(AW_window*, TREE_canvas *ntw) {
     arb_progress  progress("Sorting data");
     GB_ERROR      error = 0;
     TreeNode     *tree  = NT_get_tree_root_of_canvas(ntw);

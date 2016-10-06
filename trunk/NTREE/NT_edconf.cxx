@@ -167,7 +167,7 @@ static bool allow_to_activate_display   = false;
 static void init_config_awars(AW_root *root) {
     root->awar_string(AWAR_CONFIGURATION, DEFAULT_CONFIGURATION, GLOBAL.gb_main);
 }
-static void selected_configs_awar_changed_cb(AW_root *aw_root, AWT_canvas *ntw) {
+static void selected_configs_awar_changed_cb(AW_root *aw_root, TREE_canvas *ntw) {
     AWT_graphic_tree        *agt    = DOWNCAST(AWT_graphic_tree*, ntw->gfx);
     int                      ntw_id = NT_get_canvas_idx(ntw);
     SmartPtr<ConstStrArray>  config = get_selected_configs_from_awar(ntw_id);
@@ -199,7 +199,7 @@ static void selected_configs_awar_changed_cb(AW_root *aw_root, AWT_canvas *ntw) 
     if (redraw) AW_root::SINGLETON->awar(AWAR_TREE_REFRESH)->touch();
 }
 
-static void selected_configs_display_awar_changed_cb(AW_root *root, AWT_canvas *ntw) {
+static void selected_configs_display_awar_changed_cb(AW_root *root, TREE_canvas *ntw) {
     LocallyModify<bool> allowInteractiveActivation(allow_to_activate_display, true);
     selected_configs_awar_changed_cb(root, ntw);
 }
@@ -253,7 +253,7 @@ static void install_config_change_callbacks(GBDATA *gb_main) {
     }
 }
 
-void NT_activate_configMarkers_display(AWT_canvas *ntw) {
+void NT_activate_configMarkers_display(TREE_canvas *ntw) {
     GBDATA *gb_main = ntw->gb_main;
 
     AW_awar *awar_selCfgs = ntw->awr->awar_string(GBS_global_string(AWAR_CL_SELECTED_CONFIGS, NT_get_canvas_idx(ntw)), "", gb_main);
@@ -348,7 +348,7 @@ static void modify_configurations(const ConfigModifier& mod) {
 static void configuration_renamed_cb(const char *old_name, const char *new_name) { modify_configurations(ConfigRenamer(old_name, new_name)); }
 static void configuration_deleted_cb(const char *name)                           { modify_configurations(ConfigDeleter(name)); }
 
-static AW_window *create_configuration_marker_window(AW_root *root, AWT_canvas *ntw) {
+static AW_window *create_configuration_marker_window(AW_root *root, TREE_canvas *ntw) {
     AW_window_simple *aws = new AW_window_simple;
 
     int ntw_id = NT_get_canvas_idx(ntw);
@@ -934,7 +934,7 @@ static GB_ERROR nt_create_configuration(TreeNode *tree, const char *conf_name, i
     return error;
 }
 
-static void nt_store_configuration(AW_window*, AWT_canvas *ntw) {
+static void nt_store_configuration(AW_window*, TREE_canvas *ntw) {
     const char *cfgName = AW_root::SINGLETON->awar(AWAR_CONFIGURATION)->read_char_pntr();
     GB_ERROR    err     = nt_create_configuration(NT_get_tree_root_of_canvas(ntw), cfgName, 0, FROM_MANAGER);
     aw_message_if(err);
@@ -1143,7 +1143,7 @@ static void clear_comment_cb(AW_window *aww) {
     awar_comment->write_string(comment);
 }
 
-static AW_window *create_configuration_admin_window(AW_root *root, AWT_canvas *ntw) {
+static AW_window *create_configuration_admin_window(AW_root *root, TREE_canvas *ntw) {
     static AW_window_simple *existing_aws[MAX_NT_WINDOWS] = { MAX_NT_WINDOWS_NULLINIT };
 
     int ntw_id = NT_get_canvas_idx(ntw);
@@ -1222,7 +1222,7 @@ static AW_window *create_configuration_admin_window(AW_root *root, AWT_canvas *n
     return existing_aws[ntw_id];
 }
 
-void NT_popup_configuration_admin(AW_window *aw_main, AWT_canvas *ntw) {
+void NT_popup_configuration_admin(AW_window *aw_main, TREE_canvas *ntw) {
     create_configuration_admin_window(aw_main->get_root(), ntw)->activate();
 }
 
@@ -1263,14 +1263,14 @@ AW_window *NT_create_startEditorOnOldConfiguration_window(AW_root *awr) {
     return aws;
 }
 
-void NT_start_editor_on_tree(AW_window *aww, int use_species_aside, AWT_canvas *ntw) {
+void NT_start_editor_on_tree(AW_window *aww, int use_species_aside, TREE_canvas *ntw) {
     init_config_awars(aww->get_root());
     GB_ERROR error    = nt_create_configuration(NT_get_tree_root_of_canvas(ntw), DEFAULT_CONFIGURATION, use_species_aside, BY_CALLING_THE_EDITOR);
     if (!error) error = GBK_system("arb_edit4 -c " DEFAULT_CONFIGURATION " &");
     aw_message_if(error);
 }
 
-inline void nt_create_config_after_import(AWT_canvas *ntw) {
+inline void nt_create_config_after_import(TREE_canvas *ntw) {
     init_config_awars(ntw->awr);
 
     const char *dated_suffix = ARB_dateTime_suffix();
@@ -1291,7 +1291,7 @@ inline void nt_create_config_after_import(AWT_canvas *ntw) {
     free(configName);
 }
 
-void NT_create_config_after_import(AWT_canvas *ntw, bool imported_from_scratch) {
+void NT_create_config_after_import(TREE_canvas *ntw, bool imported_from_scratch) {
     /*! create a new config after import
      * @param imported_from_scratch if true -> DB was created from scratch, all species in DB are marked.
      *                              if false -> data was imported into existing DB. Other species may be marked as well, imported species are "queried".

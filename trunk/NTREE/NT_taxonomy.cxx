@@ -185,7 +185,7 @@ static void mapTree(TreeNode *node, TwoTreeMap& tmap, bool first) {
     }
 }
 
-static void mark_action(AW_window *aws, AWT_canvas *ntw, Target target) {
+static void mark_action(AW_window *aws, TREE_canvas *ntw, Target target) {
     AW_root *aw_root = aws->get_root();
 
     Action action = Action(aw_root->awar(AWAR_TREE_COMPARE_ACTION)->read_int());
@@ -331,7 +331,7 @@ void NT_create_compare_taxonomy_awars(AW_root *aw_root, AW_default props) {
     free(currTree);
 }
 
-AW_window *NT_create_compare_taxonomy_window(AW_root *aw_root, AWT_canvas *ntw) {
+AW_window *NT_create_compare_taxonomy_window(AW_root *aw_root, TREE_canvas *ntw) {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(aw_root, "COMPARE_TAXONOMY", "Compare taxonomy");
     aws->load_xfig("compare_taxonomy.fig");

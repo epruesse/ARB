@@ -259,8 +259,6 @@ class AWT_canvas : virtual Noncopyable {
 public:
     // @@@ make members private!
 
-    AW_awar *awar_tree; // awar containing name of displayed tree // @@@ only used for Tree-canvas (-> derive TREE_canvas from AWT_canvas and put there)
-
     AW_pos trans_to_fit;
     AW_pos shift_x_to_fit;
     AW_pos shift_y_to_fit;
@@ -298,7 +296,8 @@ public:
 
     // real public
 
-    AWT_canvas(GBDATA *gb_main_, AW_window *aww_, const char *gc_base_name_, AWT_graphic *gfx_, AW_awar *awar_tree_);
+    AWT_canvas(GBDATA *gb_main_, AW_window *aww_, const char *gc_base_name_, AWT_graphic *gfx_);
+    virtual ~AWT_canvas() {}
 
     inline void push_transaction() const;
     inline void pop_transaction() const;
@@ -334,6 +333,19 @@ inline void AWT_graphic::refresh_by_exports(AWT_canvas *scr) {
     else if (exports.resize)  scr->recalc_size_and_refresh();
     else if (exports.refresh) scr->refresh();
 }
+
+class TREE_canvas : public AWT_canvas { // derived from Noncopyable
+    AW_awar *awar_tree; // awar containing name of displayed tree
+
+public:
+    TREE_canvas(GBDATA *gb_main_, AW_window *aww_, const char *gc_base_name_, AWT_graphic *gfx_, AW_awar *awar_tree_) :
+        AWT_canvas(gb_main_, aww_, gc_base_name_, gfx_),
+        awar_tree(awar_tree_)
+    {}
+
+    AW_awar *get_awar_tree() const { return awar_tree; }
+};
+
 
 void AWT_expose_cb(UNFIXED, AWT_canvas *scr);
 void AWT_resize_cb(UNFIXED, AWT_canvas *scr);

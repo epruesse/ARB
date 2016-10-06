@@ -729,7 +729,7 @@ AW_window *start_SECEDIT_plugin(ED4_plugin_host& host) {
     AW_window_menu_modes *awm = new AW_window_menu_modes;
     awm->init(awr, "ARB_SECEDIT", "ARB_SECEDIT: Secondary structure editor", 200, 200);
 
-    AWT_canvas *scr = new AWT_canvas(gb_main, awm, awm->get_window_id(), gfx, NULL);
+    AWT_canvas *scr = new AWT_canvas(gb_main, awm, awm->get_window_id(), gfx);
     root->init(gfx, scr, host);
 
     scr->recalc_size(true);

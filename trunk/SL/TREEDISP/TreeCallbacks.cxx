@@ -25,7 +25,7 @@ using namespace AW;
 // AISC_MKPT_PROMOTE:#include <TreeDisplay.hxx>
 // AISC_MKPT_PROMOTE:#endif
 
-void nt_mode_event(UNFIXED, AWT_canvas *ntw, AWT_COMMAND_MODE mode) {
+void nt_mode_event(UNFIXED, TREE_canvas *ntw, AWT_COMMAND_MODE mode) {
     const char *text;
 
     switch (mode) {
@@ -429,14 +429,14 @@ GB_ERROR NT_with_displayed_tree_do(AWT_canvas *ntw, bool (*displayed_tree_cb)(Tr
     return error;
 }
 
-void NT_resort_tree_cb(UNFIXED, AWT_canvas *ntw, TreeOrder order) {
+void NT_resort_tree_cb(UNFIXED, TREE_canvas *ntw, TreeOrder order) {
     GB_transaction ta(ntw->gb_main);
     AWT_TREE(ntw)->check_update(ntw->gb_main);
     AWT_TREE(ntw)->reorder_tree(order);
     save_changed_tree(ntw);
 }
 
-void NT_reset_lzoom_cb(UNFIXED, AWT_canvas *ntw) {
+void NT_reset_lzoom_cb(UNFIXED, TREE_canvas *ntw) {
     GB_transaction    ta(ntw->gb_main);
     AWT_graphic_tree *agt = AWT_TREE(ntw);
     agt->check_update(ntw->gb_main);
@@ -444,13 +444,13 @@ void NT_reset_lzoom_cb(UNFIXED, AWT_canvas *ntw) {
     ntw->zoom_reset_and_refresh();
 }
 
-void NT_reset_pzoom_cb(UNFIXED, AWT_canvas *ntw) {
+void NT_reset_pzoom_cb(UNFIXED, TREE_canvas *ntw) {
     GB_transaction ta(ntw->gb_main);
     AWT_TREE(ntw)->check_update(ntw->gb_main);
     ntw->zoom_reset_and_refresh();
 }
 
-void NT_set_tree_style(UNFIXED, AWT_canvas *ntw, AP_tree_display_type type) {
+void NT_set_tree_style(UNFIXED, TREE_canvas *ntw, AP_tree_display_type type) {
     GB_transaction ta(ntw->gb_main);
     AWT_TREE(ntw)->check_update(ntw->gb_main);
     AWT_TREE(ntw)->set_tree_type(type, ntw);
@@ -458,7 +458,7 @@ void NT_set_tree_style(UNFIXED, AWT_canvas *ntw, AP_tree_display_type type) {
     TREE_auto_jump_cb(NULL, ntw, true);
 }
 
-void NT_remove_leafs(UNFIXED, AWT_canvas *ntw, AWT_RemoveType mode) {
+void NT_remove_leafs(UNFIXED, TREE_canvas *ntw, AWT_RemoveType mode) {
     GB_transaction ta(ntw->gb_main);
 
     AWT_TREE(ntw)->check_update(ntw->gb_main);
@@ -475,7 +475,7 @@ void NT_remove_leafs(UNFIXED, AWT_canvas *ntw, AWT_RemoveType mode) {
     }
 }
 
-void NT_remove_bootstrap(UNFIXED, AWT_canvas *ntw) { // delete all bootstrap values
+void NT_remove_bootstrap(UNFIXED, TREE_canvas *ntw) { // delete all bootstrap values
     GB_transaction ta(ntw->gb_main);
 
     AWT_TREE(ntw)->check_update(ntw->gb_main);
@@ -490,7 +490,7 @@ void NT_remove_bootstrap(UNFIXED, AWT_canvas *ntw) { // delete all bootstrap val
         aw_message("Got no tree");
     }
 }
-void NT_toggle_bootstrap100(UNFIXED, AWT_canvas *ntw) { // toggle 100% bootstrap values
+void NT_toggle_bootstrap100(UNFIXED, TREE_canvas *ntw) { // toggle 100% bootstrap values
     GB_transaction ta(ntw->gb_main);
 
     AWT_TREE(ntw)->check_update(ntw->gb_main);
@@ -506,7 +506,7 @@ void NT_toggle_bootstrap100(UNFIXED, AWT_canvas *ntw) { // toggle 100% bootstrap
     }
 }
 
-void NT_reset_branchlengths(UNFIXED, AWT_canvas *ntw) { // set all branchlengths to tree_defaults::LENGTH
+void NT_reset_branchlengths(UNFIXED, TREE_canvas *ntw) { // set all branchlengths to tree_defaults::LENGTH
     GB_transaction ta(ntw->gb_main);
     AWT_TREE(ntw)->check_update(ntw->gb_main);
 
@@ -535,7 +535,7 @@ void NT_multifurcate_tree(AWT_canvas *ntw, const TreeNode::multifurc_limits& bel
     }
 }
 
-void NT_move_boot_branch(UNFIXED, AWT_canvas *ntw, int direction) { // copy branchlengths to bootstraps (or vice versa)
+void NT_move_boot_branch(UNFIXED, TREE_canvas *ntw, int direction) { // copy branchlengths to bootstraps (or vice versa)
     GB_transaction ta(ntw->gb_main);
 
     AWT_TREE(ntw)->check_update(ntw->gb_main);
@@ -558,7 +558,7 @@ void NT_move_boot_branch(UNFIXED, AWT_canvas *ntw, int direction) { // copy bran
     }
 }
 
-void NT_scale_tree(UNFIXED, AWT_canvas *ntw) { // scale branchlengths
+void NT_scale_tree(UNFIXED, TREE_canvas *ntw) { // scale branchlengths
     char *answer = aw_input("Enter scale factor", "Scale branchlengths by factor:", "100");
     if (answer) {
         double factor = atof(answer);
@@ -602,7 +602,7 @@ static bool make_node_visible(AWT_canvas *ntw, AP_tree *node) {
     return true;
 }
 
-void NT_jump_cb(UNFIXED, AWT_canvas *ntw, AP_tree_jump_type jumpType) {
+void NT_jump_cb(UNFIXED, TREE_canvas *ntw, AP_tree_jump_type jumpType) {
     if (jumpType == AP_DONT_JUMP) return;
 
     AW_window        *aww   = ntw->aww;
@@ -745,7 +745,7 @@ void NT_jump_cb(UNFIXED, AWT_canvas *ntw, AP_tree_jump_type jumpType) {
     }
 }
 
-void TREE_auto_jump_cb(UNFIXED, AWT_canvas *ntw, bool tree_change) {
+void TREE_auto_jump_cb(UNFIXED, TREE_canvas *ntw, bool tree_change) {
     /*! jump to species when tree/treemode/species changes
      * @param tree_change == true -> tree or treemode has changed; false -> species has changed
      */
@@ -766,9 +766,9 @@ inline const char *plural(int val) {
     return "s"+(val == 1);
 }
 
-void NT_reload_tree_event(AW_root *awr, AWT_canvas *ntw, bool unzoom_and_expose) {
+void NT_reload_tree_event(AW_root *awr, TREE_canvas *ntw, bool unzoom_and_expose) {
     GB_push_transaction(ntw->gb_main);
-    char     *tree_name = ntw->awar_tree->read_string();
+    char     *tree_name = ntw->get_awar_tree()->read_string();
     GB_ERROR  error     = ntw->gfx->load(ntw->gb_main, tree_name);
     if (error) {
         aw_message(error);
@@ -813,7 +813,7 @@ void TREE_GC_changed_cb(GcChange whatChanged, AWT_canvas *ntw) {
     }
 }
 
-void NT_reinit_treetype(UNFIXED, AWT_canvas *ntw) {
+void NT_reinit_treetype(UNFIXED, TREE_canvas *ntw) {
     AWT_graphic_tree *gt = DOWNCAST(AWT_graphic_tree*, ntw->gfx);
     gt->set_tree_type(gt->tree_sort, ntw);
     AWT_resize_cb(NULL, ntw);
