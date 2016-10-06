@@ -336,14 +336,19 @@ inline void AWT_graphic::refresh_by_exports(AWT_canvas *scr) {
 
 class TREE_canvas : public AWT_canvas { // derived from Noncopyable
     AW_awar *awar_tree; // awar containing name of displayed tree
+    int      index;     // unique index [0..MAX_NT_WINDOWS-1]
+
+    static int count;
 
 public:
     TREE_canvas(GBDATA *gb_main_, AW_window *aww_, const char *gc_base_name_, AWT_graphic *gfx_, AW_awar *awar_tree_) :
         AWT_canvas(gb_main_, aww_, gc_base_name_, gfx_),
-        awar_tree(awar_tree_)
+        awar_tree(awar_tree_),
+        index(count++)
     {}
 
     AW_awar *get_awar_tree() const { return awar_tree; }
+    int get_index() const { return index; }
 };
 
 
