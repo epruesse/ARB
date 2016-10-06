@@ -956,13 +956,13 @@ static bool sort_dtree_by_other_tree_cb(TreeNode *tree, GB_ERROR& error) {
     return !error;
 }
 
-static void sort_tree_by_other_tree_cb(UNFIXED, AWT_canvas *ntw) {
+static void sort_tree_by_other_tree_cb(UNFIXED, TREE_canvas *ntw) {
     GB_ERROR error = NT_with_displayed_tree_do(ntw, sort_dtree_by_other_tree_cb);
     aw_message_if(error);
 }
 
-AW_window *NT_create_sort_tree_by_other_tree_window(AW_root *aw_root, AWT_canvas *ntw) {
-    AW_window_simple *aws = create_select_other_tree_window(aw_root, ntw->aww->local_id("SORT_BY_OTHER"), "Sort tree by other tree", "resortbyother.hlp", ntw->awar_tree);
+AW_window *NT_create_sort_tree_by_other_tree_window(AW_root *aw_root, TREE_canvas *ntw) {
+    AW_window_simple *aws = create_select_other_tree_window(aw_root, ntw->aww->local_id("SORT_BY_OTHER"), "Sort tree by other tree", "resortbyother.hlp", ntw->get_awar_tree());
 
     aws->callback(makeWindowCallback(sort_tree_by_other_tree_cb, ntw));
     aws->create_autosize_button("RESORT", "Sort according to source tree");
@@ -987,7 +987,7 @@ void NT_create_multifurcate_tree_awars(AW_root *aw_root, AW_default props) {
     aw_root->awar_float(AWAR_MFURC_LENGTH_LIMIT,       0.1, props);
     aw_root->awar_float(AWAR_MFURC_BOOTSTRAP_LIMIT,    50,  props);
 }
-static void multifurcation_cb(UNFIXED, AWT_canvas *ntw) {
+static void multifurcation_cb(UNFIXED, TREE_canvas *ntw) {
     AW_root *aw_root = ntw->aww->get_root();
 
     float below_bootstrap = 101.0;
@@ -999,7 +999,7 @@ static void multifurcation_cb(UNFIXED, AWT_canvas *ntw) {
 
     NT_multifurcate_tree(ntw, TreeNode::multifurc_limits(below_bootstrap, below_length, applyAtLeafs));
 }
-AW_window *NT_create_multifurcate_tree_window(AW_root *aw_root, AWT_canvas *ntw) {
+AW_window *NT_create_multifurcate_tree_window(AW_root *aw_root, TREE_canvas *ntw) {
     AW_window_simple *aws = new AW_window_simple;
 
     aws->init(aw_root, ntw->aww->local_id("multifurcate"), "Multifurcate tree");

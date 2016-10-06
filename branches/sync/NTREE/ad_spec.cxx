@@ -113,7 +113,7 @@ void NT_count_different_chars(AW_window*, GBDATA *gb_main) {
     GB_end_transaction_show_error(gb_main, error, aw_message);
 }
 
-void NT_create_sai_from_pfold(AW_window *aww, AWT_canvas *ntw) {
+void NT_create_sai_from_pfold(AW_window *aww, TREE_canvas *ntw) {
     /*! \brief Creates an SAI from protein secondary structure of a selected species.
      *
      *  \param[in] aww AW_window

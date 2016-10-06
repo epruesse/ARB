@@ -40,7 +40,7 @@ inline const char *awarname(const char *awarname_template, int idx) {
     return buffer;
 }
 
-static void refill_syncWithList_cb(AW_root *, AW_selection_list *sellst, AWT_canvas *ntw) {
+static void refill_syncWithList_cb(AW_root *, AW_selection_list *sellst, TREE_canvas *ntw) {
     sellst->clear();
     NT_fill_canvas_selection_list(sellst, ntw);
     sellst->insert_default("<don't sync>", DONT_SYNC_SCROLLING);
@@ -63,8 +63,8 @@ static void perform_scroll_sync_cb(UNFIXED, int tgt_idx, SyncMode mode) {
         if (mode == SM_EXPLICIT) aw_message("Please select a window to sync with");
     }
     else {
-        AWT_canvas *tgt_ntw = NT_get_canvas_by_index(tgt_idx);
-        AWT_canvas *src_ntw = NT_get_canvas_by_index(src_idx);
+        TREE_canvas *tgt_ntw = NT_get_canvas_by_index(tgt_idx);
+        TREE_canvas *src_ntw = NT_get_canvas_by_index(src_idx);
 
         nt_assert(tgt_ntw && src_ntw && tgt_ntw != src_ntw);
 
@@ -84,7 +84,7 @@ static void toggle_autosync_cb(AW_root *awr, int ntw_idx) {
     }
 }
 
-AW_window *NT_create_syncScroll_window(AW_root *awr, AWT_canvas *ntw) {
+AW_window *NT_create_syncScroll_window(AW_root *awr, TREE_canvas *ntw) {
     AW_window_simple *aws = new AW_window_simple;
 
     int ntw_idx = NT_get_canvas_idx(ntw);

@@ -28,15 +28,15 @@
 
 #define AWAR_BA_AUTOMARK_FORMAT AWAR_BRANCH_ANALYSIS_TMP "/auto_%s"
 
-// AISC_MKPT_PROMOTE:class AWT_canvas;
+// AISC_MKPT_PROMOTE:class TREE_canvas;
 
 class BranchWindow : virtual Noncopyable {
-    AWT_canvas       *ntw;
+    TREE_canvas      *ntw;
     char             *suffix;
     AW_awar          *awar_info;
     AW_window_simple *aws;
 
-    static char *get_suffix(AWT_canvas *ntw) {
+    static char *get_suffix(TREE_canvas *ntw) {
         // suffix depends on canvas
         return GBS_global_string_copy("_%i", NT_get_canvas_idx(ntw));
     }
@@ -49,7 +49,7 @@ class BranchWindow : virtual Noncopyable {
     const char *automark_awarname() const { return GBS_global_string(AWAR_BA_AUTOMARK_FORMAT, suffix); }
 
 public:
-    BranchWindow(AW_root *aw_root, AWT_canvas *ntw_)
+    BranchWindow(AW_root *aw_root, TREE_canvas *ntw_)
         : ntw(ntw_),
           suffix(get_suffix(ntw))
     {
@@ -65,7 +65,7 @@ public:
 
 private:
     AW_root *get_awroot() const { return get_window()->get_root(); }
-    AWT_canvas *get_canvas() const { return ntw; }
+    TREE_canvas *get_canvas() const { return ntw; }
     AP_tree *get_tree() const { return AWT_TREE(ntw)->get_root_node(); }
     GBDATA *get_gbmain() const { return get_canvas()->gb_main; }
     AW_awar *awar(const char *name) { return get_awroot()->awar(name); }
@@ -183,7 +183,7 @@ static void automark_changed_cb(AW_root *, BranchWindow *bw) {
 
 void BranchWindow::create_awars(AW_root *aw_root) {
     awar_info = aw_root->awar_string(local_awar_name(AWAR_BRANCH_ANALYSIS_TMP, "info"), "<No analysis performed yet>");
-    ntw->awar_tree->add_callback(makeRootCallback(tree_changed_cb, this));
+    ntw->get_awar_tree()->add_callback(makeRootCallback(tree_changed_cb, this));
 
     aw_root->awar_float(AWAR_BA_MIN_REL_DIFF, 75)->set_minmax(0, 100)->add_callback(makeRootCallback(mark_long_branches_automark_cb));
     aw_root->awar_float(AWAR_BA_MIN_ABS_DIFF, 0.01)->set_minmax(0, 20)->add_callback(makeRootCallback(mark_long_branches_automark_cb));
@@ -227,7 +227,7 @@ void BranchWindow::create_window(AW_root *aw_root) {
     awar_automark->add_callback(makeRootCallback(automark_changed_cb, this));
 
     aws->at("sel");
-    aws->create_button(0, ntw->awar_tree->awar_name, 0, "+");
+    aws->create_button(0, ntw->get_awar_tree()->awar_name, 0, "+");
 
     aws->at("info");
     aws->create_text_field(awar_info->awar_name);
@@ -270,7 +270,7 @@ void BranchWindow::create_window(AW_root *aw_root) {
     AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "branch_analysis", branch_analysis_config_mapping);
 }
 
-AW_window *NT_create_branch_analysis_window(AW_root *aw_root, AWT_canvas *ntw) {
+AW_window *NT_create_branch_analysis_window(AW_root *aw_root, TREE_canvas *ntw) {
     int ntw_id = NT_get_canvas_idx(ntw);
     if (!existingBranchWindow[ntw_id]) {
         existingBranchWindow[ntw_id] = new BranchWindow(aw_root, ntw);
