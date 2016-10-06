@@ -87,7 +87,7 @@ static void toggle_autosync_cb(AW_root *awr, int ntw_idx) {
 AW_window *NT_create_syncScroll_window(AW_root *awr, TREE_canvas *ntw) {
     AW_window_simple *aws = new AW_window_simple;
 
-    int ntw_idx = NT_get_canvas_idx(ntw);
+    int ntw_idx = ntw->get_index();
     nt_assert(ntw_idx>=0);
 
     AW_awar *awar_sync_with = awr->awar_int(awarname(AWAR_TEMPL_SYNCED_WITH_WINDOW, ntw_idx), DONT_SYNC_SCROLLING, AW_ROOT_DEFAULT);
