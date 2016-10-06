@@ -531,7 +531,7 @@ public:
 };
 
 void       TREE_create_awars(AW_root *aw_root, AW_default db);
-void       TREE_install_update_callbacks(AWT_canvas *ntw);
+void       TREE_install_update_callbacks(TREE_canvas *ntw);
 void       TREE_insert_jump_option_menu(AW_window *aws, const char *label, const char *awar_name);
 AW_window *TREE_create_settings_window(AW_root *aw_root);
 AW_window *TREE_create_marker_settings_window(AW_root *root);

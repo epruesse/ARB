@@ -3179,7 +3179,7 @@ void TREE_create_awars(AW_root *aw_root, AW_default db) {
     aw_root->awar_int(AWAR_TREE_RECOMPUTE, 0, db);
 }
 
-static void TREE_recompute_and_rezoom_cb(UNFIXED, AWT_canvas *ntw) {
+static void TREE_recompute_and_rezoom_cb(UNFIXED, TREE_canvas *ntw) {
     AWT_graphic_tree *gt   = DOWNCAST(AWT_graphic_tree*, ntw->gfx);
     AP_tree          *root = gt->get_root_node();
     if (root) {
@@ -3188,17 +3188,17 @@ static void TREE_recompute_and_rezoom_cb(UNFIXED, AWT_canvas *ntw) {
     }
     ntw->recalc_size_and_refresh(); // even if root==NULL (aka NDS-list)
 }
-static void TREE_rezoom_cb(UNFIXED, AWT_canvas *ntw) {
+static void TREE_rezoom_cb(UNFIXED, TREE_canvas *ntw) {
     ntw->recalc_size_and_refresh();
 }
 
-void TREE_install_update_callbacks(AWT_canvas *ntw) {
+void TREE_install_update_callbacks(TREE_canvas *ntw) {
     // install all callbacks needed to make the tree-display update properly
 
     AW_root *awr = ntw->awr;
 
     // bind to all options available in 'Tree options'
-    RootCallback expose_cb = makeRootCallback(AWT_expose_cb, ntw);
+    RootCallback expose_cb = makeRootCallback(AWT_expose_cb, static_cast<AWT_canvas*>(ntw));
     awr->awar(AWAR_DTREE_BASELINEWIDTH)  ->add_callback(expose_cb);
     awr->awar(AWAR_DTREE_SHOW_CIRCLE)    ->add_callback(expose_cb);
     awr->awar(AWAR_DTREE_SHOW_BRACKETS)  ->add_callback(expose_cb);
@@ -3229,7 +3229,7 @@ void TREE_install_update_callbacks(AWT_canvas *ntw) {
 
     // refresh on NDS changes
     GBDATA *gb_arb_presets = GB_search(ntw->gb_main, "arb_presets", GB_CREATE_CONTAINER);
-    GB_add_callback(gb_arb_presets, GB_CB_CHANGED, makeDatabaseCallback(AWT_expose_cb, ntw));
+    GB_add_callback(gb_arb_presets, GB_CB_CHANGED, makeDatabaseCallback(AWT_expose_cb, static_cast<AWT_canvas*>(ntw)));
 
     // track selected species (autoscroll)
     awr->awar(AWAR_SPECIES_NAME)->add_callback(makeRootCallback(TREE_auto_jump_cb, ntw, false));

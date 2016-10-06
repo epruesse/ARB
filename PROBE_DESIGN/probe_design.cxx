@@ -2155,7 +2155,7 @@ static AW_window *create_probe_match_specificity_control_window(AW_root *root) {
 
 struct ArbPM_Context {
     AW_selection_list *probes_id;
-    AWT_canvas        *ntw;
+    TREE_canvas       *ntw;
 
     ArbPM_Context()
         : probes_id(NULL),
@@ -2277,7 +2277,7 @@ public:
 
 inline bool displays_probeColl_markers(MarkerDisplay *md) { return dynamic_cast<ProbeCollDisplay*>(md); }
 
-static void refresh_matchedProbesDisplay_cb(AW_root *root, AWT_canvas *ntw) {
+static void refresh_matchedProbesDisplay_cb(AW_root *root, TREE_canvas *ntw) {
     // setup parameters for display of probe collection matches and trigger tree refresh
     LocallyModify<bool> flag(allow_probe_match_event, false);
 
@@ -2310,7 +2310,7 @@ static void refresh_matchedProbesDisplay_cb(AW_root *root, AWT_canvas *ntw) {
 
 // ----------------------------------------------------------------------------
 
-static void probe_match_with_specificity_event(AW_root *root, AWT_canvas *ntw) {
+static void probe_match_with_specificity_event(AW_root *root, TREE_canvas *ntw) {
     if (allow_probe_match_event) {
         GB_ERROR error = NULL;
 
@@ -2458,7 +2458,7 @@ static void probe_match_with_specificity_event(AW_root *root, AWT_canvas *ntw) {
     }
 }
 
-static void auto_match_cb(AW_root *root, AWT_canvas *ntw) {
+static void auto_match_cb(AW_root *root, TREE_canvas *ntw) {
     if (root->awar(AWAR_PC_AUTO_MATCH)->read_int()) {
         probe_match_with_specificity_event(root, ntw);
     }
@@ -2517,7 +2517,7 @@ static void match_changed_cb(AW_root *root) {
 
 // ----------------------------------------------------------------------------
 
-AW_window *create_probe_match_with_specificity_window(AW_root *root, AWT_canvas *ntw) {
+AW_window *create_probe_match_with_specificity_window(AW_root *root, TREE_canvas *ntw) {
     static AW_window_simple *aws = 0; // the one and only probeSpec window
 
     if (!aws) {

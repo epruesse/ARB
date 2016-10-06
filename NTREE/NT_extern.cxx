@@ -544,7 +544,7 @@ static AW_window *NT_create_save_as(AW_root *aw_root, const char *base_name)
     return aws;
 }
 
-static void NT_undo_cb(AW_window*, GB_UNDO_TYPE undo_type, AWT_canvas *ntw) {
+static void NT_undo_cb(AW_window*, GB_UNDO_TYPE undo_type, TREE_canvas *ntw) {
     GB_ERROR error = GB_undo(GLOBAL.gb_main, undo_type);
     if (error) aw_message(error);
     else {
@@ -603,12 +603,12 @@ inline void append_command_output(GBS_strstruct *out, const char *prefix, const 
     }
 }
 
-static void NT_infomode_cb(UNFIXED, AWT_canvas *canvas, AWT_COMMAND_MODE mode) {
+static void NT_infomode_cb(UNFIXED, TREE_canvas *canvas, AWT_COMMAND_MODE mode) {
     DBUI::popup_species_info_window(canvas->awr, canvas->gb_main);
     nt_mode_event(NULL, canvas, mode);
 }
 
-static void NT_mark_duplicates(UNFIXED, AWT_canvas *ntw) {
+static void NT_mark_duplicates(UNFIXED, TREE_canvas *ntw) {
     AP_tree *tree_root = AWT_TREE(ntw)->get_root_node();
     if (tree_root) {
         GB_transaction ta(ntw->gb_main);
@@ -620,7 +620,7 @@ static void NT_mark_duplicates(UNFIXED, AWT_canvas *ntw) {
     }
 }
 
-static void NT_justify_branch_lenghs(UNFIXED, AWT_canvas *ntw) {
+static void NT_justify_branch_lenghs(UNFIXED, TREE_canvas *ntw) {
     GB_transaction  ta(ntw->gb_main);
     AP_tree        *tree_root = AWT_TREE(ntw)->get_root_node();
 
@@ -658,7 +658,7 @@ static void relink_pseudo_species_to_organisms(GBDATA *&ref_gb_node, char *&ref_
     }
 }
 
-static void NT_pseudo_species_to_organism(AW_window *, AWT_canvas *ntw) {
+static void NT_pseudo_species_to_organism(AW_window *, TREE_canvas *ntw) {
     GB_transaction  ta(ntw->gb_main);
     AP_tree        *tree_root = AWT_TREE(ntw)->get_root_node();
 
@@ -818,7 +818,7 @@ static void NT_alltree_remove_leafs(AW_window *, GBT_TreeRemoveType mode, GBDATA
     aw_message_if(ta.close(error));
 }
 
-TreeNode *NT_get_tree_root_of_canvas(AWT_canvas *ntw) {
+TreeNode *NT_get_tree_root_of_canvas(TREE_canvas *ntw) {
     AWT_graphic_tree *tree = AWT_TREE(ntw);
     if (tree) {
         AP_tree *root = tree->get_root_node();
@@ -899,27 +899,27 @@ static void update_main_window_title(AW_root* awr, AW_window_menu_modes* aww, in
     }
 }
 
-static void canvas_tree_awar_changed_cb(AW_awar *, bool, AWT_canvas *ntw) {
+static void canvas_tree_awar_changed_cb(AW_awar *, bool, TREE_canvas *ntw) {
     NT_reload_tree_event(AW_root::SINGLETON, ntw, true);
 }
 
-class NT_canvas_registry {
-    int         count;
-    AWT_canvas *canvas[MAX_NT_WINDOWS];
+class TREE_canvas_registry {
+    int          count;
+    TREE_canvas *canvas[MAX_NT_WINDOWS];
 
-    static NT_canvas_registry *SINGLETON;
+    static TREE_canvas_registry *SINGLETON;
 
-    NT_canvas_registry() : count(0) {
+    TREE_canvas_registry() : count(0) {
         AW_root::SINGLETON->awar_int(AWAR_NTREE_MAIN_WINDOW_COUNT, 0, AW_ROOT_DEFAULT);
     }
 
 public:
-    static NT_canvas_registry& instance() {
-        if (!SINGLETON) SINGLETON = new NT_canvas_registry;
+    static TREE_canvas_registry& instance() {
+        if (!SINGLETON) SINGLETON = new TREE_canvas_registry;
         return *SINGLETON;
     }
 
-    void register_canvas(AWT_canvas *ntw) {
+    void register_canvas(TREE_canvas *ntw) {
         nt_assert(count<MAX_NT_WINDOWS);
         canvas[count++] = ntw;
         ntw->awr->awar(AWAR_NTREE_MAIN_WINDOW_COUNT)->write_int(count); // trigger callbacks
@@ -927,12 +927,12 @@ public:
 
     int get_count() const  { return count; }
 
-    AWT_canvas *get_canvas(int idx) const {
+    TREE_canvas *get_canvas(int idx) const {
         if (idx<0 || idx>=count) return NULL;
         return canvas[idx];
     }
 
-    int get_index(AWT_canvas *ntw) const {
+    int get_index(TREE_canvas *ntw) const {
         /*! @return index of canvas 'ntw' [0..count-1] or -1 if unknown */
         for (int i = 0; i<count; ++i) {
             if (canvas[i] == ntw) return i;
@@ -941,29 +941,29 @@ public:
     }
 };
 
-NT_canvas_registry *NT_canvas_registry::SINGLETON = NULL;
+TREE_canvas_registry *TREE_canvas_registry::SINGLETON = NULL;
 
-int NT_get_canvas_idx(AWT_canvas *ntw) {
+int NT_get_canvas_idx(TREE_canvas *ntw) {
     /*! @return a unique index for each NTREE tree canvas (0 for main window, 1 for 1st 'new window', ...)
      * TERMINATE if canvas is unknown.
      */
-    const NT_canvas_registry& reg = NT_canvas_registry::instance();
+    const TREE_canvas_registry& reg = TREE_canvas_registry::instance();
     int idx = reg.get_index(ntw);
     if (idx == -1) GBK_terminatef("Invalid tree canvas (ntw=%p, known=%i)", ntw, reg.get_count());
     return idx;
 }
 
-void NT_fill_canvas_selection_list(class AW_selection_list *sellst, AWT_canvas *to_skip) {
+void NT_fill_canvas_selection_list(class AW_selection_list *sellst, TREE_canvas *to_skip) {
     /*! insert canvases into selection list (using canvas-indices as values)
      */
-    const NT_canvas_registry& reg = NT_canvas_registry::instance();
+    const TREE_canvas_registry& reg = TREE_canvas_registry::instance();
 
     int maxIdx = reg.get_count();
     for (int32_t i = 0; i<maxIdx; ++i) {
-        AWT_canvas *ntw = reg.get_canvas(i);
+        TREE_canvas *ntw = reg.get_canvas(i);
         if (ntw && ntw != to_skip) {
-            nt_assert(ntw->awar_tree);
-            const char *treename    = ntw->awar_tree->read_char_pntr();
+            nt_assert(ntw->get_awar_tree());
+            const char *treename    = ntw->get_awar_tree()->read_char_pntr();
             const char *description = GBS_global_string("ARB %i (%s)", i+1, treename);
             sellst->insert(description, i);
         }
@@ -973,11 +973,11 @@ void NT_fill_canvas_selection_list(class AW_selection_list *sellst, AWT_canvas *
 // ----------------------------
 //      create main window
 
-static AW_window *popup_new_main_window(AW_root *awr, int clone, AWT_canvas **result_ntw) {
+static AW_window *popup_new_main_window(AW_root *awr, int clone, TREE_canvas **result_ntw) {
     /*! create ARB_NTREE main window
      * @param awr application root
      * @param clone == 0 -> first window (full functionality); >0 -> additional tree views (restricted functionality)
-     * @param result_ntw is set to the created AWT_canvas (passed pointer may be NULL if result is not needed)
+     * @param result_ntw is set to the created TREE_canvas (passed pointer may be NULL if result is not needed)
      */
     GB_push_transaction(GLOBAL.gb_main);
 
@@ -1005,21 +1005,21 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone, AWT_canvas **re
 
     AWT_graphic_tree *tree = NT_generate_tree(awr, GLOBAL.gb_main, launch_MapViewer_cb);
 
-    AWT_canvas *ntw;
+    TREE_canvas *ntw;
     {
         AW_awar *tree_awar = awr->awar_string(awar_tree);
         {
             AP_tree_display_type old_sort_type = tree->tree_sort;
             tree->set_tree_type(AP_LIST_SIMPLE, NULL); // avoid NDS warnings during startup
 
-            ntw = new AWT_canvas(GLOBAL.gb_main, awm, "ARB_NT", tree, tree_awar);
+            ntw = new TREE_canvas(GLOBAL.gb_main, awm, "ARB_NT", tree, tree_awar);
             tree->set_tree_type(old_sort_type, ntw);
             ntw->set_mode(AWT_MODE_SELECT);
         }
 
         if (result_ntw) *result_ntw = ntw;
 
-        NT_canvas_registry::instance().register_canvas(ntw);
+        TREE_canvas_registry::instance().register_canvas(ntw);
 
         {
             const char *tree_name          = tree_awar->read_char_pntr();
@@ -1056,7 +1056,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone, AWT_canvas **re
     if (clone) {
         awm->create_menu("File", "F", AWM_ALL);
         if (allow_new_window) {
-            awm->insert_menu_topic(awm->local_id("new_window"), "New window (same database)", "N", "newwindow.hlp", AWM_ALL, makeCreateWindowCallback(popup_new_main_window, clone+1, (AWT_canvas**)NULL));
+            awm->insert_menu_topic(awm->local_id("new_window"), "New window (same database)", "N", "newwindow.hlp", AWM_ALL, makeCreateWindowCallback(popup_new_main_window, clone+1, (TREE_canvas**)NULL));
         }
         awm->insert_menu_topic("close", "Close", "C", 0, AWM_ALL, AW_POPDOWN);
     }
@@ -1076,7 +1076,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone, AWT_canvas **re
             awm->insert_menu_topic("save_all_as",  "Save whole database as ...", "w", "save.hlp",      AWM_ALL, makeCreateWindowCallback(NT_create_save_as, AWAR_DBBASE));
             if (allow_new_window) {
                 awm->sep______________();
-                awm->insert_menu_topic("new_window", "New window (same database)", "N", "newwindow.hlp", AWM_ALL, makeCreateWindowCallback(popup_new_main_window, clone+1, (AWT_canvas**)NULL));
+                awm->insert_menu_topic("new_window", "New window (same database)", "N", "newwindow.hlp", AWM_ALL, makeCreateWindowCallback(popup_new_main_window, clone+1, (TREE_canvas**)NULL));
             }
             awm->sep______________();
             awm->insert_menu_topic("optimize_db",  "Optimize database compression", "O", "optimize.hlp",  AWM_ALL, NT_create_database_optimization_window);
@@ -1383,8 +1383,8 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone, AWT_canvas **re
 
         if (!clone) {
             awm->sep______________();
-            awm->insert_menu_topic("print_tree",  "Print tree",          "P", "tree2prt.hlp",  AWM_ALL, makeWindowCallback(AWT_popup_print_window, ntw));
-            awm->insert_menu_topic("tree_2_xfig", "Export tree to XFIG", "F", "tree2file.hlp", AWM_ALL, makeWindowCallback(AWT_popup_tree_export_window, ntw));
+            awm->insert_menu_topic("print_tree",  "Print tree",          "P", "tree2prt.hlp",  AWM_ALL, makeWindowCallback(AWT_popup_print_window, static_cast<AWT_canvas*>(ntw)));
+            awm->insert_menu_topic("tree_2_xfig", "Export tree to XFIG", "F", "tree2file.hlp", AWM_ALL, makeWindowCallback(AWT_popup_tree_export_window, static_cast<AWT_canvas*>(ntw)));
         }
 
         if (is_genome_db) {
@@ -1710,14 +1710,14 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone, AWT_canvas **re
     return awm;
 }
 
-AWT_canvas *NT_create_main_window(AW_root *aw_root) {
+TREE_canvas *NT_create_main_window(AW_root *aw_root) {
     GB_ERROR error = GB_request_undo_type(GLOBAL.gb_main, GB_UNDO_NONE);
     if (error) aw_message(error);
 
     nt_create_all_awars(aw_root);
 
-    AWT_canvas *ntw = NULL;
-    AW_window  *aww = popup_new_main_window(aw_root, 0, &ntw);
+    TREE_canvas *ntw = NULL;
+    AW_window   *aww = popup_new_main_window(aw_root, 0, &ntw);
     NT_install_treeShader(ntw, GLOBAL.gb_main);
     aww->show();
 
