@@ -11,9 +11,6 @@
 #ifndef AP_POS_VAR_PARS_H
 #define AP_POS_VAR_PARS_H
 
-#ifndef ARBDB_BASE_H
-#include <arbdb_base.h>
-#endif
 #ifndef ARBTOOLS_H
 #include <arbtools.h>
 #endif
