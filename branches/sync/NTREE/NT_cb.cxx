@@ -22,12 +22,8 @@
 #include <map>
 #include <AliAdmin.h>
 
-
 // AISC_MKPT_PROMOTE:#ifndef ARBDB_BASE_H
 // AISC_MKPT_PROMOTE:#include <arbdb_base.h>
-// AISC_MKPT_PROMOTE:#endif
-// AISC_MKPT_PROMOTE:#ifndef AW_BASE_HXX
-// AISC_MKPT_PROMOTE:#include <aw_base.hxx>
 // AISC_MKPT_PROMOTE:#endif
 // AISC_MKPT_PROMOTE:class TREE_canvas;
 

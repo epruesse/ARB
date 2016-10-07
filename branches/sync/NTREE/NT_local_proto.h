@@ -12,6 +12,11 @@
 
 
 /* AP_consensus.cxx */
+
+#ifndef AW_BASE_HXX
+#include <aw_base.hxx>
+#endif
+
 void AP_create_consensus_var(AW_root *aw_root, AW_default aw_def);
 AW_window *AP_create_con_expert_window(AW_root *aw_root);
 AW_window *AP_create_max_freq_window(AW_root *aw_root);
@@ -32,9 +37,6 @@ AW_window *NT_create_branch_analysis_window(AW_root *aw_root, TREE_canvas *ntw);
 
 #ifndef ARBDB_BASE_H
 #include <arbdb_base.h>
-#endif
-#ifndef AW_BASE_HXX
-#include <aw_base.hxx>
 #endif
 class TREE_canvas;
 

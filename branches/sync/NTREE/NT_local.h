@@ -11,14 +11,17 @@
 #ifndef NT_LOCAL_H
 #define NT_LOCAL_H
 
-#ifndef AW_BASE_HXX
-#include <aw_base.hxx>
-#endif
-#ifndef _GLIBCXX_CSTDLIB
-#include <cstdlib>
+#ifndef NT_LOCAL_PROTO_H
+#include "NT_local_proto.h"
 #endif
 #ifndef ARBTOOLS_H
 #include <arbtools.h>
+#endif
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
+#endif
+#ifndef _GLIBCXX_CSTDLIB
+#include <cstdlib>
 #endif
 
 #define nt_assert(cond) arb_assert(cond)
@@ -39,10 +42,6 @@ struct NT_global : virtual Noncopyable {
 };
 
 extern NT_global GLOBAL;
-
-#ifndef NT_LOCAL_PROTO_H
-#include "NT_local_proto.h"
-#endif
 
 #else
 #error NT_local.h included twice

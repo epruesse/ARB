@@ -23,6 +23,9 @@
 #include <awt_misc.hxx>
 #include <awt_sel_boxes.hxx>
 
+// AISC_MKPT_PROMOTE:#ifndef AW_BASE_HXX
+// AISC_MKPT_PROMOTE:#include <aw_base.hxx>
+// AISC_MKPT_PROMOTE:#endif
 
 #define AWAR_MAX_FREQ_PREFIX      "tmp/CON_MAX_FREQ/"
 #define AWAR_CONSENSUS_PREFIX     "consensus/"
