@@ -971,6 +971,7 @@ NT_sort.o: $(ARBHOME)/INCLUDE/ttypes.h
 NT_sync_scroll.o: NT_local.h
 NT_sync_scroll.o: NT_local_proto.h
 NT_sync_scroll.o: NT_sync_scroll.h
+NT_sync_scroll.o: ScrollSynchronizer.h
 NT_sync_scroll.o: $(ARBHOME)/INCLUDE/ad_prot.h
 NT_sync_scroll.o: $(ARBHOME)/INCLUDE/arb_assert.h
 NT_sync_scroll.o: $(ARBHOME)/INCLUDE/arb_core.h
@@ -999,6 +1000,7 @@ NT_sync_scroll.o: $(ARBHOME)/INCLUDE/cb.h
 NT_sync_scroll.o: $(ARBHOME)/INCLUDE/cb_base.h
 NT_sync_scroll.o: $(ARBHOME)/INCLUDE/cbtypes.h
 NT_sync_scroll.o: $(ARBHOME)/INCLUDE/cxxforward.h
+NT_sync_scroll.o: $(ARBHOME)/INCLUDE/downcast.h
 NT_sync_scroll.o: $(ARBHOME)/INCLUDE/dupstr.h
 NT_sync_scroll.o: $(ARBHOME)/INCLUDE/gccver.h
 NT_sync_scroll.o: $(ARBHOME)/INCLUDE/smartptr.h

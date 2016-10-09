@@ -8,24 +8,22 @@
 //                                                                 //
 // =============================================================== //
 
+#include "ScrollSynchronizer.h"
 #include "NT_sync_scroll.h"
-#include "NT_local_proto.h"
-#include "NT_local.h"
-
-#include <arb_msg.h>
 
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
 #include <aw_awar.hxx>
 #include <aw_select.hxx>
 
+#include <downcast.h>
 
 #define AWAR_TEMPL_SYNCED_WITH_WINDOW "tmp/sync%i/with"
 #define AWAR_TEMPL_AUTO_SYNCED        "tmp/sync%i/auto"
 
 #define MAX_AWARNAME_LENGTH (3+1+5+1+4)
 
-#define DONT_SYNC_SCROLLING (-1)
+static ScrollSynchronizer synchronizer;
 
 inline const char *awarname(const char *awarname_template, int idx) {
     nt_assert(idx>=0 && idx<MAX_NT_WINDOWS);
@@ -43,45 +41,49 @@ inline const char *awarname(const char *awarname_template, int idx) {
 static void refill_syncWithList_cb(AW_root *, AW_selection_list *sellst, TREE_canvas *ntw) {
     sellst->clear();
     NT_fill_canvas_selection_list(sellst, ntw);
-    sellst->insert_default("<don't sync>", DONT_SYNC_SCROLLING);
+    sellst->insert_default("<don't sync>", NO_SCROLL_SYNC);
     sellst->update();
 }
 
-enum SyncMode {
-    SM_EXPLICIT, // explicit button press
-    SM_IMPLICIT, // implicit (select new source)
-    SM_AUTO,     // auto (source scrolled) // @@@ not impl
-};
+static unsigned auto_refresh_cb(AW_root*) {
+    synchronizer.auto_update();
+    return 0; // do not call again
+}
 
-static void perform_scroll_sync_cb(UNFIXED, int tgt_idx, SyncMode mode) {
-    // perform a scroll-sync in canvas 'tgt_idx'
+static void canvas_updated_cb(AWT_canvas *ntw, AW_CL /*cd*/) {
+    TREE_canvas *tw = DOWNCAST(TREE_canvas*, ntw);
+    synchronizer.announce_update(tw->get_index());
 
-    AW_root *awr     = AW_root::SINGLETON;
-    int      src_idx = awr->awar(awarname(AWAR_TEMPL_SYNCED_WITH_WINDOW, tgt_idx))->read_int();
+    AW_root *awr = ntw->awr;
+    awr->add_timed_callback(250, makeTimedCallback(auto_refresh_cb));
+}
 
-    if (src_idx == DONT_SYNC_SCROLLING) {
-        if (mode == SM_EXPLICIT) aw_message("Please select a window to sync with");
+static void sync_changed_cb(AW_root *awr, int slave_idx) {
+    AW_awar *awar_sync_with = awr->awar(awarname(AWAR_TEMPL_SYNCED_WITH_WINDOW, slave_idx));
+    AW_awar *awar_autosync  = awr->awar(awarname(AWAR_TEMPL_AUTO_SYNCED,        slave_idx));
+
+    int  master_idx = awar_sync_with->read_int();
+    bool autosync   = awar_autosync->read_int();
+
+    if (valid_canvas_index(master_idx)) {
+        TREE_canvas *master = NT_get_canvas_by_index(master_idx);
+        master->at_screen_update_call(canvas_updated_cb, 0);
+    }
+
+    GB_ERROR error = synchronizer.define_dependency(slave_idx, master_idx, autosync);
+    nt_assert(implicated(error, autosync)); // error may only occur if autosync is ON
+
+    if (error) {
+        aw_message(GBS_global_string("Auto-sync turned off (%s)", error));
+        awar_autosync->write_int(0);
     }
     else {
-        TREE_canvas *tgt_ntw = NT_get_canvas_by_index(tgt_idx);
-        TREE_canvas *src_ntw = NT_get_canvas_by_index(src_idx);
-
-        nt_assert(tgt_ntw && src_ntw && tgt_ntw != src_ntw);
-
-#if defined(DEBUG)
-        fprintf(stderr, "DEBUG: sync triggered (mode=%i)\n", int(mode));
-#endif
+        synchronizer.update_implicit(slave_idx);
     }
 }
 
-static void toggle_autosync_cb(AW_root *awr, int ntw_idx) {
-    int do_autosync = awr->awar(awarname(AWAR_TEMPL_AUTO_SYNCED, ntw_idx))->read_int();
-
-    // @@@ install/uninstall callbacks to source-canvas (called after refresh)
-
-    if (do_autosync) {                                      // autosync activated?
-        perform_scroll_sync_cb(NULL, ntw_idx, SM_IMPLICIT); // sync scrolling once
-    }
+static void explicit_scroll_sync_cb(AW_window*, int tgt_idx) {
+    aw_message_if(synchronizer.update_explicit(tgt_idx));
 }
 
 AW_window *NT_create_syncScroll_window(AW_root *awr, TREE_canvas *ntw) {
@@ -90,8 +92,8 @@ AW_window *NT_create_syncScroll_window(AW_root *awr, TREE_canvas *ntw) {
     int ntw_idx = ntw->get_index();
     nt_assert(ntw_idx>=0);
 
-    AW_awar *awar_sync_with = awr->awar_int(awarname(AWAR_TEMPL_SYNCED_WITH_WINDOW, ntw_idx), DONT_SYNC_SCROLLING, AW_ROOT_DEFAULT);
-    AW_awar *awar_autosync  = awr->awar_int(awarname(AWAR_TEMPL_AUTO_SYNCED,        ntw_idx), 0,                   AW_ROOT_DEFAULT);
+    AW_awar *awar_sync_with = awr->awar_int(awarname(AWAR_TEMPL_SYNCED_WITH_WINDOW, ntw_idx), NO_SCROLL_SYNC, AW_ROOT_DEFAULT);
+    AW_awar *awar_autosync  = awr->awar_int(awarname(AWAR_TEMPL_AUTO_SYNCED,        ntw_idx), 0,              AW_ROOT_DEFAULT);
 
     {
         char *wid = GBS_global_string_copy("SYNC_TREE_SCROLL_%i", ntw_idx);
@@ -111,6 +113,7 @@ AW_window *NT_create_syncScroll_window(AW_root *awr, TREE_canvas *ntw) {
     aws->callback(makeHelpCallback("syncscroll.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
+    RootCallback sync_changed_rcb = makeRootCallback(sync_changed_cb, ntw_idx);
     {
         aws->at("box");
         AW_selection_list *sellist = aws->create_selection_list(awar_sync_with->awar_name, true);
@@ -120,18 +123,18 @@ AW_window *NT_create_syncScroll_window(AW_root *awr, TREE_canvas *ntw) {
         awr->awar(AWAR_NTREE_MAIN_WINDOW_COUNT)->add_callback(refill_sellist_cb);
         refill_sellist_cb(awr);
 
-        awar_sync_with->add_callback(makeRootCallback(perform_scroll_sync_cb, ntw_idx, SM_IMPLICIT)); // resync when source changes
+        awar_sync_with->add_callback(sync_changed_rcb); // resync when source changes
     }
 
     aws->at("dosync");
-    aws->callback(makeWindowCallback(perform_scroll_sync_cb, ntw_idx, SM_EXPLICIT));
+    aws->callback(makeWindowCallback(explicit_scroll_sync_cb, ntw_idx));
     aws->create_autosize_button("SYNC_SCROLL", "Sync scroll");
 
     aws->at("autosync");
     aws->label("Auto-sync?");
     aws->create_toggle(awar_autosync->awar_name);
 
-    awar_autosync->add_callback(makeRootCallback(toggle_autosync_cb, ntw_idx));
+    awar_autosync->add_callback(sync_changed_rcb); // resync when auto-sync changes (master may have been scrolled since last sync)
 
     return aws;
 }
