@@ -87,7 +87,7 @@ enum AP_tree_jump_type { // bit-values
 };
 
 enum ClickedType {
-    CL_NODE    = 0, // same as specifying no 2nd value for AW_click_cd // @@@ change into value != 0 and specify in callers
+    CL_NODE = 1,
     CL_SPECIES,
     CL_RULER,
     CL_FLAG,
@@ -345,7 +345,7 @@ public:
 
     int draw_branch_line(int gc, const AW::Position& root, const AW::Position& leaf, AW_bitset filter) {
         const AW_click_cd *old = disp_device->get_click_cd();
-        td_assert(old && old->get_cd1() && !old->get_cd2()); // cd1 should be the node
+        td_assert(old && old->get_cd1() && old->get_cd2() == CL_NODE); // cd1 should be the node
 
         AW_click_cd branch(disp_device, old->get_cd1(), CL_BRANCH);
         return disp_device->line(gc, root, leaf, filter);
@@ -478,28 +478,31 @@ class ClickedTarget {
         if (elem && elem->does_exist()) {
             ClickedType what = (ClickedType)elem->cd2();
 
-            if (what) {
-                if (what == CL_SPECIES) { // entry in NDS list
+            switch (what) {
+                case CL_SPECIES:
                     gb_species = (GBDATA*)elem->cd1();
                     td_assert(gb_species);
-                }
-                else if (what == CL_RULER) {
-                    ruler = !elem->cd1();
-                }
-                else if (what == CL_FLAG) {
-                    markerflag = elem->cd1()+1;
-                }
-                else if (what == CL_BRANCH) {
-                    branch = true; // indicates that a line really IS the branch (opposed to other branch-related lines like e.g. group-brackets)
-                }
-                else {
-                    td_assert(0); // unknown element type
-                }
-            }
+                    break;
 
-            if (!(gb_species || ruler || markerflag)) {
-                tree_node = (AP_tree*)elem->cd1();
-                td_assert(branch || !what);
+                case CL_RULER:
+                    ruler = !elem->cd1();
+                    break;
+
+                case CL_FLAG:
+                    markerflag = elem->cd1()+1;
+                    break;
+
+                case CL_BRANCH:
+                    branch = true;
+                    // fall-through!
+                case CL_NODE:
+                    tree_node = (AP_tree*)elem->cd1();
+                    break;
+
+#if defined(DEBUG)
+                default:
+                    td_assert(0); // unknown element type
+#endif
             }
         }
         else { // use whole tree if mouse does not point to a subtree
