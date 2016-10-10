@@ -93,3 +93,10 @@ SpeciesSetPtr MasterCanvas::track_displayed_species() {
 
     return tracked;
 }
+
+void SlaveCanvas::refresh() {
+#if defined(DEBUG)
+    fprintf(stderr, "DEBUG: SlaveCanvas does refresh (idx=%i)\n", get_index());
+#endif
+    get_canvas()->refresh();
+}

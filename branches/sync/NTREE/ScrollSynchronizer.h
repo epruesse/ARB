@@ -72,10 +72,13 @@ public:
         index = i;
     }
 
+    int get_index() const {
+        nt_assert(valid_canvas_index(index));
+        return index;
+    }
     TREE_canvas *get_canvas() const {
         if (!canvas) {
-            nt_assert(valid_canvas_index(index));
-            canvas = NT_get_canvas_by_index(index);
+            canvas = NT_get_canvas_by_index(get_index());
             nt_assert(canvas);
         }
         return canvas;
@@ -98,16 +101,21 @@ class MasterCanvas : public CanvasRef {
                 SpeciesSetPtr current_species = track_displayed_species();
                 last_DisplayTrack             = last_Refresh;
 #if defined(DEBUG)
-                fprintf(stderr, "DEBUG: MasterCanvas tracking species (this=%p, last_DisplayTrack=%u, species count=%zu)\n", this, unsigned(last_DisplayTrack), current_species->size());
+                fprintf(stderr, "DEBUG: MasterCanvas tracking species (idx=%i, last_DisplayTrack=%u, species count=%zu)\n", get_index(), unsigned(last_DisplayTrack), current_species->size());
 #endif
 
                 if (species != current_species) { // set of species changed?
                     species        = current_species;
                     last_SetChange = last_DisplayTrack;
 #if defined(DEBUG)
-                    fprintf(stderr, "DEBUG: MasterCanvas::SpeciesSet changed/updated (this=%p, last_SetChange=%u, species count=%zu)\n", this, unsigned(last_SetChange), species->size());
+                    fprintf(stderr, "       MasterCanvas::SpeciesSet changed/updated (last_SetChange=%u)\n", unsigned(last_SetChange));
 #endif
                 }
+#if defined(DEBUG)
+                else {
+                    fputs("       MasterCanvas::SpeciesSet did not change\n", stderr);
+                }
+#endif
             }
         }
     }
@@ -164,7 +172,7 @@ class SlaveCanvas : public CanvasRef {
                     need_PositionTrack = true;
 
 #if defined(DEBUG)
-                    fprintf(stderr, "DEBUG: updating SlaveCanvas::SpeciesSet (this=%p, species count=%zu)\n", this, species->size());
+                    fprintf(stderr, "DEBUG: updating SlaveCanvas::SpeciesSet (idx=%i, species count=%zu)\n", get_index(), species->size());
 #endif
                 }
                 need_SetUpdate = false;
@@ -176,7 +184,7 @@ class SlaveCanvas : public CanvasRef {
         nt_assert(!need_SetUpdate);
         if (need_PositionTrack) {
 #if defined(DEBUG)
-            fprintf(stderr, "DEBUG: SlaveCanvas tracks positions (this=%p)\n", this);
+            fprintf(stderr, "DEBUG: SlaveCanvas tracks positions (idx=%i)\n", get_index());
 #endif
             need_ScrollZoom    = true; // @@@ fake (only set of positions changed? they may always change)
             need_PositionTrack = false;
@@ -186,12 +194,14 @@ class SlaveCanvas : public CanvasRef {
         nt_assert(!need_PositionTrack);
         if (need_ScrollZoom) {
 #if defined(DEBUG)
-            fprintf(stderr, "DEBUG: SlaveCanvas updates scroll/zoom (this=%p)\n", this);
+            fprintf(stderr, "DEBUG: SlaveCanvas updates scroll/zoom (idx=%i)\n", get_index());
 #endif
             need_Refresh    = true; // @@@ fake (only do if scroll/zoom did change)
             need_ScrollZoom = false;
         }
     }
+
+    void refresh();
 
 public:
     SlaveCanvas() :
@@ -217,9 +227,7 @@ public:
 
         nt_assert(!need_ScrollZoom);
         if (need_Refresh) {
-#if defined(DEBUG)
-            fprintf(stderr, "DEBUG: SlaveCanvas does refresh (this=%p)\n", this);
-#endif
+            refresh();
             need_Refresh = false;
         }
     }
