@@ -89,23 +89,20 @@ class MasterCanvas : public CanvasRef {
 
     SpeciesSetPtr species;
 
-    void track_displayed_species(SpeciesSet& spec);
+    SpeciesSetPtr track_displayed_species();
 
     void update_SpeciesSet() {
         if (last_Refresh.newer_than(last_SetChange)) {
 
             if (last_Refresh.newer_than(last_DisplayTrack)) {
-                SpeciesSetPtr spec = new SpeciesSet; // @@@ fake
-                // @@@ track-species
-                track_displayed_species(*spec);
-
-                last_DisplayTrack = last_Refresh;
+                SpeciesSetPtr current_species = track_displayed_species();
+                last_DisplayTrack             = last_Refresh;
 #if defined(DEBUG)
-                fprintf(stderr, "DEBUG: MasterCanvas tracking species (this=%p, last_DisplayTrack=%u, species count=%zu)\n", this, unsigned(last_DisplayTrack), spec->size());
+                fprintf(stderr, "DEBUG: MasterCanvas tracking species (this=%p, last_DisplayTrack=%u, species count=%zu)\n", this, unsigned(last_DisplayTrack), current_species->size());
 #endif
 
-                if (species != spec) { // set of species changed?
-                    species        = spec;
+                if (species != current_species) { // set of species changed?
+                    species        = current_species;
                     last_SetChange = last_DisplayTrack;
 #if defined(DEBUG)
                     fprintf(stderr, "DEBUG: MasterCanvas::SpeciesSet changed/updated (this=%p, last_SetChange=%u, species count=%zu)\n", this, unsigned(last_SetChange), species->size());

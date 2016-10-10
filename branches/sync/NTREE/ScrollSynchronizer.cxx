@@ -62,14 +62,16 @@ public:
 
 
 
-void MasterCanvas::track_displayed_species(SpeciesSet& spec) {
+SpeciesSetPtr MasterCanvas::track_displayed_species() {
     // clip_expose
 
     TREE_canvas *ntw    = get_canvas();
     AW_window   *aww    = ntw->aww;
     AW_common   *common = aww->get_common(AW_MIDDLE_AREA);
 
-    AW_trackSpecies_device device(common, spec);
+    SpeciesSetPtr tracked = new SpeciesSet;
+
+    AW_trackSpecies_device device(common, *tracked);
 
     device.set_filter(AW_CLICK);
     device.reset();
@@ -88,4 +90,6 @@ void MasterCanvas::track_displayed_species(SpeciesSet& spec) {
         ntw->init_device(&device);
         ntw->gfx->show(&device);
     }
+
+    return tracked;
 }
