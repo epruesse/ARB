@@ -91,7 +91,7 @@ AW_pos AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, AW_pos x_offset) {
             }
         }
 
-        AW_click_cd cd(disp_device, (AW_CL)node);
+        AW_click_cd cd(disp_device, (AW_CL)node, CL_NODE);
         
         int gc = node->gr.gc;
         if (node->gb_node && GB_read_flag(node->gb_node)) {
@@ -129,7 +129,7 @@ AW_pos AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, AW_pos x_offset) {
                 Rectangle frame(Position(x_offset, frame_y1), Vector(frame_width, visible_frame_height));
 
                 // draw group frame (unclosed on right hand):
-                AW_click_cd cd(disp_device, (AW_CL)node);
+                AW_click_cd cd(disp_device, (AW_CL)node, CL_NODE);
 
                 {
                     const int gc = AWT_GC_IRS_GROUP_BOX;
@@ -191,7 +191,7 @@ AW_pos AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, AW_pos x_offset) {
         IRS.y += IRS.openGroupExtra;
 
         const int   gc = AWT_GC_IRS_GROUP_BOX;
-        AW_click_cd cd(disp_device, (AW_CL)node);
+        AW_click_cd cd(disp_device, (AW_CL)node, CL_NODE);
         disp_device->set_line_attributes(gc, 1, AW_DOTTED);
         disp_device->line(gc, x_offset-IRS.onePixel, group_y1, x_offset+frame_width, group_y1); // opened-group-frame
 
@@ -219,7 +219,7 @@ AW_pos AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, AW_pos x_offset) {
     // draw structure
     if (left_y > IRS.min_y) {
         if (left_y < IRS.max_y) { // clip y on top border
-            AW_click_cd cd(disp_device, (AW_CL)node->leftson);
+            AW_click_cd cd(disp_device, (AW_CL)node->leftson, CL_NODE);
             Position    left(left_x, left_y);
             if (node->leftson->get_remark()) {
                 TREE_show_branch_remark(disp_device, node->leftson->get_remark(), node->leftson->is_leaf, left, 1, remark_text_filter, bootstrap_min);
@@ -235,7 +235,7 @@ AW_pos AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, AW_pos x_offset) {
     AW_pos y_center = (left_y + right_y)*0.5;
 
     if (right_y > IRS.min_y && right_y < IRS.max_y) { // visible right branch in lower part of display
-        AW_click_cd cd(disp_device, (AW_CL)node->rightson);
+        AW_click_cd cd(disp_device, (AW_CL)node->rightson, CL_NODE);
         Position    right(right_x, right_y);
         if (node->rightson->get_remark()) {
             TREE_show_branch_remark(disp_device, node->rightson->get_remark(), node->rightson->is_leaf, right, 1, remark_text_filter, bootstrap_min);
@@ -244,7 +244,7 @@ AW_pos AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, AW_pos x_offset) {
         draw_branch_line(node->get_rightson()->gr.gc, Position(x_offset, right_y), right, line_filter);
     }
 
-    AW_click_cd cd(disp_device, (AW_CL)node);
+    AW_click_cd cd(disp_device, (AW_CL)node, CL_NODE);
     set_line_attributes_for(node->get_leftson());
     disp_device->line(node->get_leftson()->gr.gc, x_offset, y_center, x_offset, left_y);
 
