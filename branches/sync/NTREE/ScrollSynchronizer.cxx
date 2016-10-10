@@ -35,7 +35,7 @@ class AW_trackSpecies_device: public AW_simple_device {
                 }
 
                 if (gb_species) {
-#if defined(DEBUG)
+#if defined(DEBUG) && 0
                     const char *name = GBT_get_name(gb_species);
                     fprintf(stderr, " - adding species '%s'\n", name);
 #endif
@@ -55,16 +55,9 @@ public:
     AW_DEVICE_TYPE type() OVERRIDE { return AW_DEVICE_CLICK; }
     void specific_reset() OVERRIDE {}
 
-    bool line_impl(int, const AW::LineVector&, AW_bitset filteri) OVERRIDE {
-        return track(filteri);
-    }
-    bool text_impl(int, const char*, const AW::Position&, AW_pos, AW_bitset filteri, long int) OVERRIDE {
-        return track(filteri);
-    }
-    bool invisible_impl(const AW::Position&, AW_bitset) OVERRIDE {
-        return false;
-    }
-
+    bool line_impl(int, const AW::LineVector&, AW_bitset filteri) OVERRIDE { return track(filteri); }
+    bool text_impl(int, const char*, const AW::Position&, AW_pos, AW_bitset filteri, long int) OVERRIDE { return track(filteri); }
+    bool invisible_impl(const AW::Position&, AW_bitset) OVERRIDE { return false; }
 };
 
 

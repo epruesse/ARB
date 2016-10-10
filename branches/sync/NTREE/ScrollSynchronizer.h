@@ -17,6 +17,9 @@
 #ifndef SMARTPTR_H
 #include <smartptr.h>
 #endif
+#ifndef _GLIBCXX_SET
+#include <set>
+#endif
 
 #define NO_SCROLL_SYNC (-1)
 
@@ -39,18 +42,7 @@ public:
 
 };
 
-struct SpeciesSet { // @@@ stub for set-of-species
-
-    void insert(GBDATA *gb_species) {
-        // @@@ dummy (provided by std::set)
-    }
-
-    bool operator == (const SpeciesSet& other) const {
-        // return true; // @@@ fake
-        return false; // @@@ fake
-    }
-    bool operator != (const SpeciesSet& other) const { return !(*this == other); }
-};
+typedef std::set< RefPtr<GBDATA> > SpeciesSet;
 
 typedef SmartPtr<SpeciesSet> SpeciesSetPtr;
 
@@ -109,14 +101,14 @@ class MasterCanvas : public CanvasRef {
 
                 last_DisplayTrack = last_Refresh;
 #if defined(DEBUG)
-                fprintf(stderr, "DEBUG: MasterCanvas tracking species (this=%p, last_DisplayTrack=%u)\n", this, unsigned(last_DisplayTrack));
+                fprintf(stderr, "DEBUG: MasterCanvas tracking species (this=%p, last_DisplayTrack=%u, species count=%zu)\n", this, unsigned(last_DisplayTrack), spec->size());
 #endif
 
                 if (species != spec) { // set of species changed?
                     species        = spec;
                     last_SetChange = last_DisplayTrack;
 #if defined(DEBUG)
-                    fprintf(stderr, "DEBUG: MasterCanvas::SpeciesSet changed/updated (this=%p, last_SetChange=%u)\n", this, unsigned(last_SetChange));
+                    fprintf(stderr, "DEBUG: MasterCanvas::SpeciesSet changed/updated (this=%p, last_SetChange=%u, species count=%zu)\n", this, unsigned(last_SetChange), species->size());
 #endif
                 }
             }
@@ -175,7 +167,7 @@ class SlaveCanvas : public CanvasRef {
                     need_PositionTrack = true;
 
 #if defined(DEBUG)
-                    fprintf(stderr, "DEBUG: updating SlaveCanvas::SpeciesSet (this=%p)\n", this);
+                    fprintf(stderr, "DEBUG: updating SlaveCanvas::SpeciesSet (this=%p, species count=%zu)\n", this, species->size());
 #endif
                 }
                 need_SetUpdate = false;
