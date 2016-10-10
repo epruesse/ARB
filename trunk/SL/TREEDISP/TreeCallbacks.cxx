@@ -766,7 +766,7 @@ inline const char *plural(int val) {
     return "s"+(val == 1);
 }
 
-void NT_reload_tree_event(AW_root *awr, TREE_canvas *ntw, bool unzoom_and_expose) {
+void NT_reload_tree_event(AW_root *, TREE_canvas *ntw, bool unzoom_and_expose) {
     GB_push_transaction(ntw->gb_main);
     char     *tree_name = ntw->get_awar_tree()->read_string();
     GB_ERROR  error     = ntw->gfx->load(ntw->gb_main, tree_name);
