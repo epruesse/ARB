@@ -2054,7 +2054,7 @@ void AWT_graphic_tree::detectAndDrawMarkers(AP_tree *at, const double y1, const 
         summarizeGroupMarkers(at, markers);
 
         if (markers.getNodeSize()>0) {
-            AW_click_cd clickflag(disp_device, (AW_CL)0, (AW_CL)"flag");
+            AW_click_cd clickflag(disp_device, 0, CL_FLAG);
             for (int markerIdx = 0 ; markerIdx < numMarkers ; markerIdx++) {
                 if (markers.markerCount(markerIdx) > 0) {
                     bool draw    = at->is_leaf;
@@ -2096,7 +2096,7 @@ void AWT_graphic_tree::drawMarkerNames(Position& Pen) {
 
         Rectangle mbox(Position(flag.leftx(numMarkers-1), pl2.ypos()), sizeb); // the marker box
 
-        AW_click_cd clickflag(disp_device, (AW_CL)0, (AW_CL)"flag");
+        AW_click_cd clickflag(disp_device, 0, CL_FLAG);
 
         for (int markerIdx = numMarkers - 1 ; markerIdx >= 0 ; markerIdx--) {
             const char *markerName = display_markers->get_marker_name(markerIdx);
@@ -2626,7 +2626,7 @@ void AWT_graphic_tree::show_ruler(AW_device *device, int gc) {
 
         device->set_line_attributes(gc, ruler_width+baselinewidth, AW_SOLID);
 
-        AW_click_cd cd(device, 0, (AW_CL)"ruler");
+        AW_click_cd cd(device, 0, CL_RULER);
         device->line(gc,
                      ruler_x - half_ruler_width, ruler_y,
                      ruler_x + half_ruler_width, ruler_y,
@@ -2823,7 +2823,7 @@ void AWT_graphic_tree::show_nds_list(GBDATA *, bool use_nds) {
         AW_pos y     = Row.get_ypos();
 
         GBDATA      *gb_sp = Row.get_species();
-        AW_click_cd  cd(disp_device, (AW_CL)gb_sp, (AW_CL)"species");
+        AW_click_cd  cd(disp_device, (AW_CL)gb_sp, CL_SPECIES);
 
         for (size_t p = 0; p<parts; ++p) {
             const Column& col = Row.get_column(p);
