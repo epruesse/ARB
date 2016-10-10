@@ -41,6 +41,10 @@ public:
 
 struct SpeciesSet { // @@@ stub for set-of-species
 
+    void insert(GBDATA *gb_species) {
+        // @@@ dummy (provided by std::set)
+    }
+
     bool operator == (const SpeciesSet& other) const {
         // return true; // @@@ fake
         return false; // @@@ fake
@@ -60,12 +64,40 @@ inline bool operator != (const SpeciesSetPtr& spec1, const SpeciesSetPtr& spec2)
     return !(spec1 == spec2);
 }
 
-class MasterCanvas {
+class CanvasRef {
+    int                  index;
+    mutable TREE_canvas *canvas;
+public:
+    CanvasRef() :
+        index(-1),
+        canvas(NULL)
+    {}
+
+    void define_canvas_index(int i) {
+        nt_assert(index == -1);
+        nt_assert(valid_canvas_index(i));
+
+        index = i;
+    }
+
+    TREE_canvas *get_canvas() const {
+        if (!canvas) {
+            nt_assert(valid_canvas_index(index));
+            canvas = NT_get_canvas_by_index(index);
+            nt_assert(canvas);
+        }
+        return canvas;
+    }
+};
+
+class MasterCanvas : public CanvasRef {
     timestamp last_Refresh;      // passive (last refresh of canvas)
     timestamp last_DisplayTrack; // last tracking of displayed species (=last update species-set)
     timestamp last_SetChange;    // last CHANGE of species-set
 
     SpeciesSetPtr species;
+
+    void track_displayed_species(SpeciesSet& spec);
 
     void update_SpeciesSet() {
         if (last_Refresh.newer_than(last_SetChange)) {
@@ -73,7 +105,9 @@ class MasterCanvas {
             if (last_Refresh.newer_than(last_DisplayTrack)) {
                 SpeciesSetPtr spec = new SpeciesSet; // @@@ fake
                 // @@@ track-species
-                last_DisplayTrack  = last_Refresh;
+                track_displayed_species(*spec);
+
+                last_DisplayTrack = last_Refresh;
 #if defined(DEBUG)
                 fprintf(stderr, "DEBUG: MasterCanvas tracking species (this=%p, last_DisplayTrack=%u)\n", this, unsigned(last_DisplayTrack));
 #endif
@@ -105,7 +139,7 @@ public:
     }
 };
 
-class SlaveCanvas {
+class SlaveCanvas : public CanvasRef {
     RefPtr<MasterCanvas> last_master;
     timestamp            last_master_change;
 
@@ -228,7 +262,12 @@ class ScrollSynchronizer {
     }
 
 public:
-    ScrollSynchronizer() {}
+    ScrollSynchronizer() {
+        for (int i = 0; i<MAX_NT_WINDOWS; ++i) {
+            source[i].define_canvas_index(i);
+            dest[i].define_canvas_index(i);
+        }
+    }
 
     GB_ERROR define_dependency(int slave_idx, int master_idx, bool auto_sync) {
         /*! defines master/slave dependency between TREE_canvas'es
@@ -319,8 +358,10 @@ public:
     void auto_update() {
         /*! update all auto-synchronized canvases */
 
+#if defined(DEBUG)
         fputs("------------------------------\n"
               "DEBUG: auto_update\n", stderr);
+#endif
 
         bool check_update[MAX_NT_WINDOWS];
         for (int i = 0; i<MAX_NT_WINDOWS; ++i) {
