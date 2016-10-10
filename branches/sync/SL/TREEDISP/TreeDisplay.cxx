@@ -2054,7 +2054,7 @@ void AWT_graphic_tree::detectAndDrawMarkers(AP_tree *at, const double y1, const 
         summarizeGroupMarkers(at, markers);
 
         if (markers.getNodeSize()>0) {
-            AW_click_cd clickflag(disp_device, (AW_CL)0, (AW_CL)"flag");
+            AW_click_cd clickflag(disp_device, 0, CL_FLAG);
             for (int markerIdx = 0 ; markerIdx < numMarkers ; markerIdx++) {
                 if (markers.markerCount(markerIdx) > 0) {
                     bool draw    = at->is_leaf;
@@ -2096,7 +2096,7 @@ void AWT_graphic_tree::drawMarkerNames(Position& Pen) {
 
         Rectangle mbox(Position(flag.leftx(numMarkers-1), pl2.ypos()), sizeb); // the marker box
 
-        AW_click_cd clickflag(disp_device, (AW_CL)0, (AW_CL)"flag");
+        AW_click_cd clickflag(disp_device, 0, CL_FLAG);
 
         for (int markerIdx = numMarkers - 1 ; markerIdx >= 0 ; markerIdx--) {
             const char *markerName = display_markers->get_marker_name(markerIdx);
@@ -2221,7 +2221,7 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
         }
     }
 
-    AW_click_cd cd(disp_device, (AW_CL)at);
+    AW_click_cd cd(disp_device, (AW_CL)at, CL_NODE);
     if (at->is_leaf) {
         if (at->gb_node && GB_read_flag(at->gb_node)) {
             set_line_attributes_for(at);
@@ -2403,7 +2403,7 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
                 len = at->leftlen;
             }
 
-            AW_click_cd cds(disp_device, (AW_CL)son);
+            AW_click_cd cds(disp_device, (AW_CL)son, CL_NODE);
             if (son->get_remark()) {
                 Position remarkPos(n);
                 remarkPos.movey(-scaled_font.ascent*0.1);
@@ -2433,7 +2433,7 @@ struct Subinfo { // subtree info (used to implement branch draw precedence)
 };
 
 void AWT_graphic_tree::show_radial_tree(AP_tree *at, const AW::Position& base, const AW::Position& tip, const AW::Angle& orientation, const double tree_spread) {
-    AW_click_cd cd(disp_device, (AW_CL)at);
+    AW_click_cd cd(disp_device, (AW_CL)at, CL_NODE);
     set_line_attributes_for(at);
     draw_branch_line(at->gr.gc, base, tip, line_filter);
 
@@ -2529,7 +2529,7 @@ void AWT_graphic_tree::show_radial_tree(AP_tree *at, const AW::Position& base, c
         if (show_circle) {
             for (int s = 0; s<2; ++s) {
                 if (sub[s].at->get_remark()) {
-                    AW_click_cd sub_cd(disp_device, (AW_CL)sub[s].at);
+                    AW_click_cd sub_cd(disp_device, (AW_CL)sub[s].at, CL_NODE);
                     Position    sub_branch_center = tip + (sub[s].len*.5) * sub[s].orientation.normal();
                     show_bootstrap_circle(disp_device, sub[s].at->get_remark(), circle_zoom_factor, circle_max_size, sub[s].len, sub_branch_center, false, 0, bs_circle_filter);
                 }
@@ -2626,7 +2626,7 @@ void AWT_graphic_tree::show_ruler(AW_device *device, int gc) {
 
         device->set_line_attributes(gc, ruler_width+baselinewidth, AW_SOLID);
 
-        AW_click_cd cd(device, 0, (AW_CL)"ruler");
+        AW_click_cd cd(device, 0, CL_RULER);
         device->line(gc,
                      ruler_x - half_ruler_width, ruler_y,
                      ruler_x + half_ruler_width, ruler_y,
@@ -2823,7 +2823,7 @@ void AWT_graphic_tree::show_nds_list(GBDATA *, bool use_nds) {
         AW_pos y     = Row.get_ypos();
 
         GBDATA      *gb_sp = Row.get_species();
-        AW_click_cd  cd(disp_device, (AW_CL)gb_sp, (AW_CL)"species");
+        AW_click_cd  cd(disp_device, (AW_CL)gb_sp, CL_SPECIES);
 
         for (size_t p = 0; p<parts; ++p) {
             const Column& col = Row.get_column(p);
