@@ -80,11 +80,15 @@ SpeciesSetPtr MasterCanvas::track_displayed_species() {
 
     AW_trackSpecies_device device(common, *tracked);
 
-    device.set_filter(AW_CLICK);
+    device.set_filter(AW_TRACK);
     device.reset();
 
-    const AW_screen_area& rect = ntw->rect; // @@@ has wrong size (tracks a few species below bottom of screen)
-                                            // maybe top-area-size isn't subtracted from area??
+    const AW_screen_area& rect = ntw->rect;
+
+    // @@@ too many species get tracked (some above, some below viewport borders of dendrogram view)
+    // possible reasons:
+    // - viewport has wrong size
+    // - need to test clipping in tracker
 
     device.set_top_clip_border(rect.t);
     device.set_bottom_clip_border(rect.b);

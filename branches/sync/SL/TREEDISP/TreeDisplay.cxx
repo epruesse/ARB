@@ -1784,7 +1784,7 @@ AWT_graphic_tree::AWT_graphic_tree(AW_root *aw_root_, GBDATA *gb_main_, AD_map_v
       remark_text_filter  (AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_PRINTER|AW_SIZE_UNSCALED),
       other_text_filter   (AW_SCREEN|AW_PRINTER|AW_SIZE_UNSCALED),
       ruler_filter        (AW_SCREEN|AW_CLICK|AW_PRINTER),                                // appropriate size-filter added manually in code
-      root_filter         (AW_SCREEN|AW_PRINTER_EXT),
+      root_filter         (AW_SCREEN|AW_PRINTER_EXT),                                     // unused (@@@ should be used for radial root)
       marker_filter       (AW_SCREEN|AW_CLICK|AW_PRINTER_EXT|AW_SIZE_UNSCALED),           // species markers (eg. visualizing configs)
       tree_changed_cb(treeChangeIgnore_cb)
 {
