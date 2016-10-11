@@ -35,7 +35,7 @@ class AW_trackSpecies_device: public AW_simple_device {
                 }
 
                 if (gb_species) {
-#if defined(DEBUG) && 0
+#if defined(DUMP_SYNC) && 0
                     const char *name = GBT_get_name(gb_species);
                     fprintf(stderr, " - adding species '%s'\n", name);
 #endif
@@ -95,7 +95,7 @@ SpeciesSetPtr MasterCanvas::track_displayed_species() {
 }
 
 void SlaveCanvas::refresh() {
-#if defined(DEBUG)
+#if defined(DUMP_SYNC)
     fprintf(stderr, "DEBUG: SlaveCanvas does refresh (idx=%i)\n", get_index());
 #endif
     get_canvas()->refresh();

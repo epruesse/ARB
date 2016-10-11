@@ -23,6 +23,11 @@
 
 #define NO_SCROLL_SYNC (-1)
 
+#if defined(DEBUG) && defined(DEVEL_RALF)
+# define DUMP_SYNC
+#endif
+
+
 inline bool valid_canvas_index(int idx) { return idx>=0 && idx<MAX_NT_WINDOWS; }
 
 class timestamp {
@@ -87,7 +92,7 @@ public:
 
 class MasterCanvas : public CanvasRef {
     timestamp last_Refresh;      // passive (last refresh of canvas)
-    timestamp last_DisplayTrack; // last tracking of displayed species (=last update species-set)
+    timestamp last_DisplayTrack; // last tracking of displayed species (=last update of species-set; probably w/o change)
     timestamp last_SetChange;    // last CHANGE of species-set
 
     SpeciesSetPtr species;
@@ -100,18 +105,18 @@ class MasterCanvas : public CanvasRef {
             if (last_Refresh.newer_than(last_DisplayTrack)) {
                 SpeciesSetPtr current_species = track_displayed_species();
                 last_DisplayTrack             = last_Refresh;
-#if defined(DEBUG)
+#if defined(DUMP_SYNC)
                 fprintf(stderr, "DEBUG: MasterCanvas tracking species (idx=%i, last_DisplayTrack=%u, species count=%zu)\n", get_index(), unsigned(last_DisplayTrack), current_species->size());
 #endif
 
                 if (species != current_species) { // set of species changed?
                     species        = current_species;
                     last_SetChange = last_DisplayTrack;
-#if defined(DEBUG)
+#if defined(DUMP_SYNC)
                     fprintf(stderr, "       MasterCanvas::SpeciesSet changed/updated (last_SetChange=%u)\n", unsigned(last_SetChange));
 #endif
                 }
-#if defined(DEBUG)
+#if defined(DUMP_SYNC)
                 else {
                     fputs("       MasterCanvas::SpeciesSet did not change\n", stderr);
                 }
@@ -171,7 +176,7 @@ class SlaveCanvas : public CanvasRef {
                     species            = master_spec;
                     need_PositionTrack = true;
 
-#if defined(DEBUG)
+#if defined(DUMP_SYNC)
                     fprintf(stderr, "DEBUG: updating SlaveCanvas::SpeciesSet (idx=%i, species count=%zu)\n", get_index(), species->size());
 #endif
                 }
@@ -183,7 +188,7 @@ class SlaveCanvas : public CanvasRef {
     void update_tracked_positions() {
         nt_assert(!need_SetUpdate);
         if (need_PositionTrack) {
-#if defined(DEBUG)
+#if defined(DUMP_SYNC)
             fprintf(stderr, "DEBUG: SlaveCanvas tracks positions (idx=%i)\n", get_index());
 #endif
             need_ScrollZoom    = true; // @@@ fake (only set of positions changed? they may always change)
@@ -193,7 +198,7 @@ class SlaveCanvas : public CanvasRef {
     void update_scroll_zoom() {
         nt_assert(!need_PositionTrack);
         if (need_ScrollZoom) {
-#if defined(DEBUG)
+#if defined(DUMP_SYNC)
             fprintf(stderr, "DEBUG: SlaveCanvas updates scroll/zoom (idx=%i)\n", get_index());
 #endif
             need_Refresh    = true; // @@@ fake (only do if scroll/zoom did change)
@@ -295,7 +300,7 @@ public:
     void announce_update(int canvas_idx) {
         nt_assert(valid_canvas_index(canvas_idx));
         source[canvas_idx].announce_update();
-#if defined(DEBUG)
+#if defined(DUMP_SYNC)
         fprintf(stderr, "DEBUG: announce_update(canvas_idx=%i)\n", canvas_idx);
 #endif
     }
@@ -315,7 +320,7 @@ public:
 
         GB_ERROR error = NULL;
         if (valid_canvas_index(master_idx)) {
-#if defined(DEBUG)
+#if defined(DUMP_SYNC)
             fputs("------------------------------\n", stderr);
             fprintf(stderr, "DEBUG: update_explicit(slave_idx=%i) from master_idx=%i\n", slave_idx, master_idx);
 #endif
@@ -340,7 +345,7 @@ public:
 
         int master_idx = master_index[slave_idx];
         if (valid_canvas_index(master_idx)) {
-#if defined(DEBUG)
+#if defined(DUMP_SYNC)
             fputs("------------------------------\n", stderr);
             fprintf(stderr, "DEBUG: update_implicit(slave_idx=%i) from master_idx=%i\n", slave_idx, master_idx);
 #endif
@@ -355,7 +360,7 @@ public:
     void auto_update() {
         /*! update all auto-synchronized canvases */
 
-#if defined(DEBUG)
+#if defined(DUMP_SYNC)
         fputs("------------------------------\n"
               "DEBUG: auto_update\n", stderr);
 #endif
@@ -378,7 +383,7 @@ public:
                             need_check = true; // need another loop
                         }
                         else {
-#if defined(DEBUG)
+#if defined(DUMP_SYNC)
                             fprintf(stderr, "DEBUG: auto_update(slave_idx=%i) from master_idx=%i\n", slave_idx, master_idx);
 #endif
                             MasterCanvas& master = source[master_idx];
