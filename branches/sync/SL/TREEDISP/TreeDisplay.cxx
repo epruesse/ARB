@@ -1774,18 +1774,18 @@ static GraphicTreeCallback treeChangeIgnore_cb = makeGraphicTreeCallback(tree_ch
 
 AWT_graphic_tree::AWT_graphic_tree(AW_root *aw_root_, GBDATA *gb_main_, AD_map_viewer_cb map_viewer_cb_)
     : AWT_graphic(),
-      line_filter         (AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_PRINTER|AW_SIZE),
-      vert_line_filter    (AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_PRINTER),
-      mark_filter         (AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_PRINTER_EXT),
+      line_filter         (AW_SCREEN|AW_CLICK|AW_TRACK|AW_CLICK_DROP|AW_PRINTER|AW_SIZE), // horizontal lines (ie. lines towards leafs in dendro-view; all lines in radial view)
+      vert_line_filter    (AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_PRINTER),                  // vertical lines (in dendro view; @@@ should be used in IRS as well!)
+      mark_filter         (AW_SCREEN|AW_CLICK|AW_TRACK|AW_CLICK_DROP|AW_PRINTER_EXT),     // diamond at open group (dendro+radial); boxes at marked species (all views); origin (radial view); cursor box (all views); group-handle (IRS)
       group_bracket_filter(AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_PRINTER|AW_SIZE_UNSCALED),
       bs_circle_filter    (AW_SCREEN|AW_PRINTER|AW_SIZE_UNSCALED),
-      leaf_text_filter    (AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_PRINTER|AW_SIZE_UNSCALED),
+      leaf_text_filter    (AW_SCREEN|AW_CLICK|AW_TRACK|AW_CLICK_DROP|AW_PRINTER|AW_SIZE_UNSCALED), // text at leafs (all views but IRS? @@@ should be used in IRS as well)
       group_text_filter   (AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_PRINTER|AW_SIZE_UNSCALED),
       remark_text_filter  (AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_PRINTER|AW_SIZE_UNSCALED),
       other_text_filter   (AW_SCREEN|AW_PRINTER|AW_SIZE_UNSCALED),
-      ruler_filter        (AW_SCREEN|AW_CLICK|AW_PRINTER),          // appropriate size-filter added manually in code
+      ruler_filter        (AW_SCREEN|AW_CLICK|AW_PRINTER),                                // appropriate size-filter added manually in code
       root_filter         (AW_SCREEN|AW_PRINTER_EXT),
-      marker_filter       (AW_SCREEN|AW_CLICK|AW_PRINTER_EXT|AW_SIZE_UNSCALED),
+      marker_filter       (AW_SCREEN|AW_CLICK|AW_PRINTER_EXT|AW_SIZE_UNSCALED),           // species markers (eg. visualizing configs)
       tree_changed_cb(treeChangeIgnore_cb)
 {
     td_assert(gb_main_);

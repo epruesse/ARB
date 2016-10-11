@@ -36,6 +36,7 @@ const AW_bitset AW_SIZE_UNSCALED = 16;  // for text and text-size dependant part
 const AW_bitset AW_PRINTER       = 32;  // print/xfig-export
 const AW_bitset AW_PRINTER_EXT   = 64;  // (+Handles) use combined with AW_PRINTER only
 const AW_bitset AW_PRINTER_CLIP  = 128; // print screen only
+const AW_bitset AW_TRACK         = 256; // species tracking
 
 const AW_bitset AW_ALL_DEVICES          = (AW_bitset)-1; // @@@ allowed to used this ?
 const AW_bitset AW_ALL_DEVICES_SCALED   = (AW_ALL_DEVICES & ~AW_SIZE_UNSCALED);
