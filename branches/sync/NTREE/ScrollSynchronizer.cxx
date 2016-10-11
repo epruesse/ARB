@@ -35,11 +35,18 @@ class AW_trackSpecies_device: public AW_simple_device {
                 }
 
                 if (gb_species) {
-#if defined(DUMP_SYNC) && 0
-                    const char *name = GBT_get_name(gb_species);
-                    fprintf(stderr, " - adding species '%s'\n", name);
+#if defined(DEBUG)
+                    bool do_insert = species.find(gb_species) == species.end();
+#else // NDEBUG
+                    bool do_insert = true;
 #endif
-                    species.insert(gb_species);
+                    if (do_insert) {
+#if defined(DUMP_SYNC) && 1
+                        const char *name = GBT_get_name(gb_species);
+                        fprintf(stderr, " - adding species #%zu '%s'\n", species.size(), name);
+#endif
+                        species.insert(gb_species);
+                    }
                 }
             }
         }

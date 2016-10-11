@@ -25,6 +25,7 @@
 
 #if defined(DEBUG) && defined(DEVEL_RALF)
 # define DUMP_SYNC
+// # define DUMP_SYNC_AUTO // auto-update and source-canvas-change
 #endif
 
 
@@ -300,7 +301,7 @@ public:
     void announce_update(int canvas_idx) {
         nt_assert(valid_canvas_index(canvas_idx));
         source[canvas_idx].announce_update();
-#if defined(DUMP_SYNC)
+#if defined(DUMP_SYNC_AUTO)
         fprintf(stderr, "DEBUG: announce_update(canvas_idx=%i)\n", canvas_idx);
 #endif
     }
@@ -360,7 +361,7 @@ public:
     void auto_update() {
         /*! update all auto-synchronized canvases */
 
-#if defined(DUMP_SYNC)
+#if defined(DUMP_SYNC_AUTO)
         fputs("------------------------------\n"
               "DEBUG: auto_update\n", stderr);
 #endif
@@ -383,7 +384,7 @@ public:
                             need_check = true; // need another loop
                         }
                         else {
-#if defined(DUMP_SYNC)
+#if defined(DUMP_SYNC_AUTO)
                             fprintf(stderr, "DEBUG: auto_update(slave_idx=%i) from master_idx=%i\n", slave_idx, master_idx);
 #endif
                             MasterCanvas& master = source[master_idx];
