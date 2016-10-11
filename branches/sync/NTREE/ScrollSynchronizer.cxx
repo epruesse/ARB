@@ -15,46 +15,35 @@
 
 using namespace AW;
 
+inline GBDATA *trackable_species(const AW_click_cd *clickable) {
+    if (!clickable) return NULL;
+
+    ClickedType clicked = (ClickedType)clickable->get_cd2();
+    if (clicked == CL_SPECIES) return (GBDATA*)clickable->get_cd1(); // NDS list
+
+    nt_assert(clicked == CL_NODE || clicked == CL_BRANCH); // unexpected clickable tracked!
+    TreeNode *node = (TreeNode*)clickable->get_cd1();
+    return (node && node->is_leaf) ? node->gb_node :  NULL;
+}
+
 class AW_trackSpecies_device: public AW_simple_device {
     SpeciesSet& species;
 
     void track() {
-        const AW_click_cd *clickable = get_click_cd();
-        if (clickable) {
-            ClickedType  clicked    = (ClickedType)clickable->get_cd2();
-            GBDATA      *gb_species = NULL;
+        GBDATA *gb_species = trackable_species(get_click_cd());
 
-            switch (clicked) {
-                case CL_SPECIES: // NDS list
-                    gb_species = (GBDATA*)clickable->get_cd1();
-                    break;
-
-                case CL_NODE:
-                case CL_BRANCH: {
-                    TreeNode *node = (TreeNode*)clickable->get_cd1();
-                    if (node->is_leaf) {
-                        gb_species = node->gb_node;
-                    }
-                    break;
-                }
-                default:
-                    nt_assert(0); // needs to be handled?
-                    break;
-            }
-
-            if (gb_species) {
+        if (gb_species) {
 #if defined(DEBUG)
-                bool do_insert = species.find(gb_species) == species.end();
+            bool do_insert = species.find(gb_species) == species.end();
 #else // NDEBUG
-                bool do_insert = true;
+            bool do_insert = true;
 #endif
-                if (do_insert) {
+            if (do_insert) {
 #if defined(DUMP_SYNC) && 1
-                    const char *name = GBT_get_name(gb_species);
-                    fprintf(stderr, " - adding species #%zu '%s'\n", species.size(), name);
+                const char *name = GBT_get_name(gb_species);
+                fprintf(stderr, " - adding species #%zu '%s'\n", species.size(), name);
 #endif
-                    species.insert(gb_species);
-                }
+                species.insert(gb_species);
             }
         }
     }
@@ -67,6 +56,7 @@ public:
 
     AW_DEVICE_TYPE type() OVERRIDE { return AW_DEVICE_CLICK; }
     void specific_reset() OVERRIDE {}
+    bool invisible_impl(const Position&, AW_bitset) OVERRIDE { return false; }
 
     bool line_impl(int, const LineVector& Line, AW_bitset filteri) OVERRIDE {
         bool drawflag = false;
@@ -85,7 +75,6 @@ public:
         }
         return drawflag;
     }
-    bool invisible_impl(const Position&, AW_bitset) OVERRIDE { return false; }
 };
 
 
