@@ -153,6 +153,8 @@ class SlaveCanvas : public CanvasRef {
 
     SpeciesSetPtr species;
 
+    void track_display_positions();
+
     void update_set_from_master(MasterCanvas& master) {
         bool update_only_if_master_changed = false;
 
@@ -192,7 +194,8 @@ class SlaveCanvas : public CanvasRef {
 #if defined(DUMP_SYNC)
             fprintf(stderr, "DEBUG: SlaveCanvas tracks positions (idx=%i)\n", get_index());
 #endif
-            need_ScrollZoom    = true; // @@@ fake (only set of positions changed? they may always change)
+            track_display_positions();
+            need_ScrollZoom    = true; // @@@ fake (only if set of positions changed? they may always change)
             need_PositionTrack = false;
         }
     }
