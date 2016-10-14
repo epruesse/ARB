@@ -1010,8 +1010,6 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone, TREE_canvas **r
 
         if (result_ntw) *result_ntw = ntw;
 
-        TREE_canvas_registry::instance().register_canvas(ntw);
-
         {
             const char *tree_name          = tree_awar->read_char_pntr();
             const char *existing_tree_name = GBT_existing_tree(GLOBAL.gb_main, tree_name);
@@ -1025,6 +1023,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone, TREE_canvas **r
                 tree->set_tree_type(AP_LIST_NDS, ntw); // no tree -> show NDS list
             }
 
+            TREE_canvas_registry::instance().register_canvas(ntw);
             AWT_registerTreeAwarCallback(tree_awar, makeTreeAwarCallback(canvas_tree_awar_changed_cb, ntw), false);
         }
     }
