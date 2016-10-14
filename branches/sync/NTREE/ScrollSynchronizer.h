@@ -142,8 +142,9 @@ public:
     }
 };
 
+class SlaveCanvas_internal;
+
 class SlaveCanvas : public CanvasRef, virtual Noncopyable {
-    class SlaveCanvas_internal;
 
     RefPtr<MasterCanvas> last_master;
     timestamp            last_master_change;
@@ -199,7 +200,7 @@ class SlaveCanvas : public CanvasRef, virtual Noncopyable {
             fprintf(stderr, "DEBUG: SlaveCanvas tracks positions (idx=%i)\n", get_index());
 #endif
             track_display_positions();
-            need_ScrollZoom    = true; // @@@ fake (only if set of positions changed? they may always change)
+            need_ScrollZoom    = true;
             need_PositionTrack = false;
         }
     }
@@ -210,12 +211,12 @@ class SlaveCanvas : public CanvasRef, virtual Noncopyable {
             fprintf(stderr, "DEBUG: SlaveCanvas updates scroll/zoom (idx=%i)\n", get_index());
 #endif
             calc_scroll_zoom();
-            need_Refresh    = true; // @@@ fake (only do if scroll/zoom did change)
+            need_Refresh    = true;
             need_ScrollZoom = false;
         }
     }
 
-    void refresh();
+    void refresh_scroll_zoom();
 
 public:
     SlaveCanvas();
@@ -235,7 +236,7 @@ public:
 
         nt_assert(!need_ScrollZoom);
         if (need_Refresh) {
-            refresh();
+            refresh_scroll_zoom();
             need_Refresh = false;
         }
     }

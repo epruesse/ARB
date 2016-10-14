@@ -203,33 +203,39 @@ struct cmp_Rectangles {
 
 typedef set<Rectangle, cmp_Rectangles> SortedPositions; // world-coordinates
 
-struct SlaveCanvas::SlaveCanvas_internal {
-    SortedPositions sorted_pos;
+class SlaveCanvas_internal {
+    SortedPositions pos;
+    Vector          viewport_size;
+    Rectangle       best_area; // wanted display area (world coordinates)
+
+public:
+
+    void store_positions_sorted(const SpeciesPositions& spos) {
+        pos.clear();
+        for (SpeciesPositions::const_iterator s = spos.begin(); s != spos.end(); ++s) {
+            pos.insert(s->second);
+        }
+    }
+
+    void announce_viewport_size(const Vector& viewport_size_) {
+        viewport_size = viewport_size_;
+        best_area     = Rectangle();
+    }
+    void calc_best_area();
+    Vector calc_best_scroll_delta(const Rectangle& viewport);
 };
 
-static void sortPositions(const SpeciesPositions& spos, SortedPositions& sorted) {
-    sorted.clear();
-    for (SpeciesPositions::const_iterator s = spos.begin(); s != spos.end(); ++s) {
-        sorted.insert(s->second);
-    }
-}
-
-static Vector calc_best_scroll_delta(const SortedPositions& pos, const Rectangle& viewport) {
-    int       best_count = -1;
-    Rectangle best_viewport;
-
-#if defined(DUMP_SCROLL_DETECT)
-    AW_DUMP(viewport);
-#endif
-
+void SlaveCanvas_internal::calc_best_area() {
+    int       best_count  = -1;
     const int max_species = int(pos.size());
     int       rest        = max_species;
 
     SortedPositions::const_iterator end = pos.end();
     for (SortedPositions::const_iterator s1 = pos.begin(); rest>best_count && s1 != end; ++s1) {
-        const Rectangle& r1    = *s1;
-        Rectangle        testedViewport(r1.upper_left_corner(), viewport.diagonal());
-        int              count = 1;
+        const Rectangle& r1 = *s1;
+
+        Rectangle testedViewport(r1.upper_left_corner(), viewport_size);
+        int       count = 1;
 
         Rectangle contained_area = r1; // bounding box of all species displayable inside testedViewport
 
@@ -246,34 +252,35 @@ static Vector calc_best_scroll_delta(const SortedPositions& pos, const Rectangle
         nt_assert(count>0);
 
         if (count>best_count) {
-            best_count         = count;
-            const Vector& diag = testedViewport.diagonal();
-            // best_viewport   = Rectangle(contained_area.centroid()-diag/2, diag); // centered (ugly)
-            Vector shift(testedViewport.width()*-0.1, (contained_area.height()-testedViewport.height())/2);
-            best_viewport = Rectangle(testedViewport.upper_left_corner() + shift, diag);
+            best_count = count;
+            best_area  = contained_area;
 
 #if defined(DUMP_SCROLL_DETECT)
-            fprintf(stderr, "Found %i species fitting into area\n", count);
-            AW_DUMP(testedViewport);
+            fprintf(stderr, "Found %i species fitting into area ", count);
             AW_DUMP(contained_area);
-            AW_DUMP(best_viewport);
 #endif
         }
 
         rest--;
     }
+}
 
-    if (best_count<=0) return ZeroVector;
-
-    return best_viewport.upper_left_corner() - viewport.upper_left_corner();
+Vector SlaveCanvas_internal::calc_best_scroll_delta(const Rectangle& viewport) {
+    // in and out are world-coordinates!
+    if (best_area.valid()) {
+        Vector    shift(viewport.width()*-0.1, (best_area.height()-viewport.height())/2);
+        Rectangle wanted_viewport = Rectangle(best_area.upper_left_corner() + shift, viewport.diagonal());
+        return wanted_viewport.upper_left_corner() - viewport.upper_left_corner();
+    }
+    return ZeroVector;
 }
 
 void SlaveCanvas::track_display_positions() {
     TREE_canvas *ntw    = get_canvas();
-    AW_window   *aww    = ntw->aww;
-    AW_common   *common = aww->get_common(AW_MIDDLE_AREA);
+    AW_common   *common = ntw->aww->get_common(AW_MIDDLE_AREA);
 
     // @@@ use different algo (device) for radial and for other treeviews
+    // below code fits non-radial slave-views:
 
     AW_trackPositions_device device(common);
 
@@ -290,17 +297,27 @@ void SlaveCanvas::track_display_positions() {
         ntw->gfx->show(&device);
     }
 
-    const SpeciesPositions& spos = device.get_tracked_positions();
-    sortPositions(spos, internal->sorted_pos);
+    internal->store_positions_sorted(device.get_tracked_positions());
 }
 
 void SlaveCanvas::calc_scroll_zoom() {
-    TREE_canvas *ntw    = get_canvas();
-    AW_window   *aww    = ntw->aww;
-    AW_device   *device = aww->get_device(AW_MIDDLE_AREA);
+    TREE_canvas *ntw      = get_canvas();
+    AW_device   *device   = ntw->aww->get_device(AW_MIDDLE_AREA);
+    Rectangle    viewport = device->rtransform(Rectangle(ntw->rect, INCLUSIVE_OUTLINE));
 
-    Rectangle viewport = device->rtransform(Rectangle(ntw->rect, INCLUSIVE_OUTLINE));
-    Vector    world_scroll(calc_best_scroll_delta(internal->sorted_pos, viewport));
+    internal->announce_viewport_size(viewport.diagonal());
+    internal->calc_best_area();
+}
+
+void SlaveCanvas::refresh_scroll_zoom() {
+#if defined(DUMP_SYNC)
+    fprintf(stderr, "DEBUG: SlaveCanvas does refresh_scroll_zoom (idx=%i)\n", get_index());
+#endif
+
+    TREE_canvas *ntw      = get_canvas();
+    AW_device   *device   = ntw->aww->get_device(AW_MIDDLE_AREA);
+    Rectangle    viewport = device->rtransform(Rectangle(ntw->rect, INCLUSIVE_OUTLINE));
+    Vector       world_scroll(internal->calc_best_scroll_delta(viewport));
 
 #if defined(DUMP_SCROLL_DETECT)
     AW_DUMP(viewport);
@@ -314,13 +331,8 @@ void SlaveCanvas::calc_scroll_zoom() {
 #endif
         ntw->scroll(screen_scroll); // @@@ scroll the canvas (should be done by caller, to avoid recalculation on slave-canvas-resize)
     }
-}
-
-void SlaveCanvas::refresh() {
-#if defined(DUMP_SYNC)
-    fprintf(stderr, "DEBUG: SlaveCanvas does refresh (idx=%i)\n", get_index());
-#endif
-    get_canvas()->refresh();
+    
+    // get_canvas()->refresh();
 }
 
 SlaveCanvas::SlaveCanvas() :
@@ -337,4 +349,5 @@ SlaveCanvas::SlaveCanvas() :
 SlaveCanvas::~SlaveCanvas() {
     delete internal;
 }
+
 
