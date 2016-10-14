@@ -12,11 +12,50 @@ TITLE           Synchronize tree scrolling
 
 OCCURRENCE      ARB_NT/Tree/Sync tree scrolling..
 
-DESCRIPTION     @@@ Missing
+DESCRIPTION     Allows to synchronize scrolling of two or more tree-views based on the
+                set of species currently displayed on screen.
 
-NOTES           None
+                To use this feature you need to open a second tree display
+                as explained in LINK{newwindow.hlp}.
 
-EXAMPLES        None
+                After opening a second tree view, the selection list
+                in the "Synchronize tree scrolling" window will show that view.
+
+                   To help you to indentify the views, the name of the currently
+                   displayed tree is shown behind the view name. The view names
+                   themselves are just 'ARB' followed by a number like in 'ARB (1)'
+                   for all but the 1st view. These numbers match those in the window
+                   title of the tree views.
+
+                By selecting that view, the tree view of the first arb
+                window ("slave-view") will synchronize with the
+                second view ("master-view") once.
+
+                  * at any time you may press the 'Sync scroll' button to
+                    perform a instant synchronization of the slave-view or
+
+                  * you may select the 'Auto-sync'-toggle. If checked, the
+                    slave-view will automatically synchronize whenever the
+                    master-view does change.
+
+                The synchronization is based on visible species only (ie. folded
+                groups are ignored completely; in master- and slave-view).
+
+                During synchronization the slave-view gets scrolled to the position
+                containing most of the species currently visible in the master-view.
+                If there are multiple such positions, the "topmost" such position
+                is chosen.
+
+NOTES           Each tree view has its own separate 'Synchronize tree scrolling' configuration.
+
+EXAMPLES        You may also use more than two views for scroll synchronization.
+
+                For example open 3 windows and
+                 - synchronize the 2nd and 3rd view to the 1st view or
+                 - synchronize the 2nd to 1st and the 3rd to the 2nd view
+
+                If you configure a looped dependency, ARB will switch off
+                one dependency to avoid a deadlock.
 
 WARNINGS        None
 
