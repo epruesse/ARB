@@ -23,8 +23,8 @@
 
 #define NO_SCROLL_SYNC (-1)
 
-#if defined(DEBUG) && defined(DEVEL_RALF)
-# define DUMP_SYNC
+#if defined(DEBUG)
+// # define DUMP_SYNC
 // # define DUMP_SYNC_AUTO // auto-update and source-canvas-change
 #endif
 

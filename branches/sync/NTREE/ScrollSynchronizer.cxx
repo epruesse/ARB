@@ -15,8 +15,8 @@
 #include <map>
 
 #if defined(DUMP_SYNC)
-// # define DUMP_ADD
-// # define DUMP_SCROLL_DETECT
+# define DUMP_ADD
+# define DUMP_SCROLL_DETECT
 #endif
 
 
@@ -243,7 +243,9 @@ static Vector calc_best_scroll_delta(const SortedPositions& pos, const Rectangle
         if (count>best_count) {
             best_count         = count;
             const Vector& diag = testedViewport.diagonal();
-            best_viewport      = Rectangle(contained_area.centroid()-diag/2, diag);
+            // best_viewport   = Rectangle(contained_area.centroid()-diag/2, diag); // centered (ugly)
+            Vector shift(testedViewport.width()*-0.1, (contained_area.height()-testedViewport.height())/2);
+            best_viewport = Rectangle(testedViewport.upper_left_corner() + shift, diag);
 
 #if defined(DUMP_SCROLL_DETECT)
             fprintf(stderr, "Found %i species fitting into area\n", count);
