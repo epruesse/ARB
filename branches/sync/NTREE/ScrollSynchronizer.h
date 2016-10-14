@@ -142,7 +142,9 @@ public:
     }
 };
 
-class SlaveCanvas : public CanvasRef {
+class SlaveCanvas : public CanvasRef, virtual Noncopyable {
+    class SlaveCanvas_internal;
+
     RefPtr<MasterCanvas> last_master;
     timestamp            last_master_change;
 
@@ -151,9 +153,11 @@ class SlaveCanvas : public CanvasRef {
     bool need_ScrollZoom;
     bool need_Refresh;
 
-    SpeciesSetPtr species;
+    SpeciesSetPtr         species;
+    SlaveCanvas_internal *internal;
 
     void track_display_positions();
+    void calc_scroll_zoom();
 
     void update_set_from_master(MasterCanvas& master) {
         bool update_only_if_master_changed = false;
@@ -205,6 +209,7 @@ class SlaveCanvas : public CanvasRef {
 #if defined(DUMP_SYNC)
             fprintf(stderr, "DEBUG: SlaveCanvas updates scroll/zoom (idx=%i)\n", get_index());
 #endif
+            calc_scroll_zoom();
             need_Refresh    = true; // @@@ fake (only do if scroll/zoom did change)
             need_ScrollZoom = false;
         }
@@ -213,14 +218,8 @@ class SlaveCanvas : public CanvasRef {
     void refresh();
 
 public:
-    SlaveCanvas() :
-        last_master(NULL),
-        last_master_change(0),
-        need_SetUpdate(true),
-        need_PositionTrack(true),
-        need_ScrollZoom(true),
-        need_Refresh(true)
-    {}
+    SlaveCanvas();
+    ~SlaveCanvas();
 
     void request_Refresh() {
         need_Refresh = true;

@@ -186,7 +186,7 @@ public:
 };
 
 struct cmp_Rectangles {
-  bool operator()(const Rectangle &r1, const Rectangle &r2) const {
+    bool operator()(const Rectangle &r1, const Rectangle &r2) const {
     double cmp = r1.top()-r2.top(); // upper first
     if (!cmp) {
         cmp = r1.bottom()-r2.bottom(); // smaller first
@@ -203,7 +203,12 @@ struct cmp_Rectangles {
 
 typedef set<Rectangle, cmp_Rectangles> SortedPositions; // world-coordinates
 
+struct SlaveCanvas::SlaveCanvas_internal {
+    SortedPositions sorted_pos;
+};
+
 static void sortPositions(const SpeciesPositions& spos, SortedPositions& sorted) {
+    sorted.clear();
     for (SpeciesPositions::const_iterator s = spos.begin(); s != spos.end(); ++s) {
         sorted.insert(s->second);
     }
@@ -286,12 +291,16 @@ void SlaveCanvas::track_display_positions() {
     }
 
     const SpeciesPositions& spos = device.get_tracked_positions();
-    SortedPositions         sorted_pos;
+    sortPositions(spos, internal->sorted_pos);
+}
 
-    sortPositions(spos, sorted_pos);
+void SlaveCanvas::calc_scroll_zoom() {
+    TREE_canvas *ntw    = get_canvas();
+    AW_window   *aww    = ntw->aww;
+    AW_device   *device = aww->get_device(AW_MIDDLE_AREA);
 
-    Rectangle viewport = device.rtransform(Rectangle(ntw->rect, INCLUSIVE_OUTLINE));
-    Vector    world_scroll(calc_best_scroll_delta(sorted_pos, viewport));
+    Rectangle viewport = device->rtransform(Rectangle(ntw->rect, INCLUSIVE_OUTLINE));
+    Vector    world_scroll(calc_best_scroll_delta(internal->sorted_pos, viewport));
 
 #if defined(DUMP_SCROLL_DETECT)
     AW_DUMP(viewport);
@@ -299,7 +308,7 @@ void SlaveCanvas::track_display_positions() {
 #endif
 
     if (world_scroll.has_length()) { // skip scroll if (nearly) nothing happens
-        Vector screen_scroll = device.transform(world_scroll);
+        Vector screen_scroll = device->transform(world_scroll);
 #if defined(DUMP_SCROLL_DETECT)
         AW_DUMP(screen_scroll);
 #endif
@@ -313,3 +322,19 @@ void SlaveCanvas::refresh() {
 #endif
     get_canvas()->refresh();
 }
+
+SlaveCanvas::SlaveCanvas() :
+    last_master(NULL),
+    last_master_change(0),
+    need_SetUpdate(true),
+    need_PositionTrack(true),
+    need_ScrollZoom(true),
+    need_Refresh(true)
+{
+    internal = new SlaveCanvas_internal;
+}
+
+SlaveCanvas::~SlaveCanvas() {
+    delete internal;
+}
+
