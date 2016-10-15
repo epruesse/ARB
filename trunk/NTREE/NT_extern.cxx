@@ -66,7 +66,6 @@
 #define AWAR_EXPORT_NDS_SEPARATOR    AWAR_EXPORT_NDS "/separator"
 #define AWAR_MARKED_SPECIES_COUNTER  "tmp/disp_marked_species"
 #define AWAR_NTREE_TITLE_MODE        "tmp/title_mode"
-#define AWAR_NTREE_MAIN_WINDOW_COUNT "tmp/mainwin_count" // changes whenever a new NT main window is created
 
 void create_probe_design_variables(AW_root *aw_root, AW_default def, AW_default global);
 
@@ -901,6 +900,7 @@ static void update_main_window_title(AW_root* awr, AW_window_menu_modes* aww, in
 
 static void canvas_tree_awar_changed_cb(AW_awar *, bool, TREE_canvas *ntw) {
     NT_reload_tree_event(AW_root::SINGLETON, ntw, true);
+    AW_root::SINGLETON->awar(AWAR_NTREE_MAIN_WINDOW_COUNT)->touch(); // refresh canvas selection lists
 }
 
 class TREE_canvas_registry {
@@ -936,6 +936,12 @@ public:
 
 TREE_canvas_registry *TREE_canvas_registry::SINGLETON = NULL;
 
+TREE_canvas *NT_get_canvas_by_index(int idx) {
+    /*! return canvas with index 'idx' [0...MAX_NT_WINDOWS-1] */
+    nt_assert(idx>=0 && idx<MAX_NT_WINDOWS);
+    return TREE_canvas_registry::instance().get_canvas(idx);
+}
+
 void NT_fill_canvas_selection_list(class AW_selection_list *sellst, TREE_canvas *to_skip) {
     /*! insert canvases into selection list (using canvas-indices as values)
      */
@@ -947,7 +953,9 @@ void NT_fill_canvas_selection_list(class AW_selection_list *sellst, TREE_canvas 
         if (ntw && ntw != to_skip) {
             nt_assert(ntw->get_awar_tree());
             const char *treename    = ntw->get_awar_tree()->read_char_pntr();
-            const char *description = GBS_global_string("ARB %i (%s)", i+1, treename);
+            const char *description = i
+                ? GBS_global_string("ARB (%i):  %s", i, treename)
+                : GBS_global_string("ARB main: %s", treename);
             sellst->insert(description, i);
         }
     }
@@ -1002,8 +1010,6 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone, TREE_canvas **r
 
         if (result_ntw) *result_ntw = ntw;
 
-        TREE_canvas_registry::instance().register_canvas(ntw);
-
         {
             const char *tree_name          = tree_awar->read_char_pntr();
             const char *existing_tree_name = GBT_existing_tree(GLOBAL.gb_main, tree_name);
@@ -1017,9 +1023,11 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone, TREE_canvas **r
                 tree->set_tree_type(AP_LIST_NDS, ntw); // no tree -> show NDS list
             }
 
+            TREE_canvas_registry::instance().register_canvas(ntw);
             AWT_registerTreeAwarCallback(tree_awar, makeTreeAwarCallback(canvas_tree_awar_changed_cb, ntw), false);
         }
     }
+
     TREE_install_update_callbacks(ntw);
     awr->awar(AWAR_TREE_NAME)->add_callback(makeRootCallback(TREE_auto_jump_cb, ntw, true)); // NT specific (tree name never changes in parsimony!)
 
@@ -1347,8 +1355,9 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone, TREE_canvas **r
 
         awm->sep______________();
 
-        awm->insert_menu_topic(awm->local_id("compare_taxonomy"), "Compare taxonomy...", "x", "compare_taxonomy.hlp", AWM_ALL, makeCreateWindowCallback(NT_create_compare_taxonomy_window, ntw));
-        awm->insert_menu_topic(awm->local_id("shade"),            "Tree shading...",     "s", "tree_shading.hlp",     AWM_ALL, makeWindowCallback(NT_configure_treeShader));
+        awm->insert_menu_topic(awm->local_id("compare_taxonomy"), "Compare taxonomy...",   "x", "compare_taxonomy.hlp", AWM_ALL, makeCreateWindowCallback(NT_create_compare_taxonomy_window, ntw));
+        awm->insert_menu_topic(awm->local_id("shade"),            "Tree shading...",       "s", "tree_shading.hlp",     AWM_ALL, makeWindowCallback      (NT_configure_treeShader));
+        awm->insert_menu_topic(awm->local_id("syncscroll"),       "Sync tree scrolling..", "y", "syncscroll.hlp",       AWM_ALL, makeCreateWindowCallback(NT_create_syncScroll_window, ntw));
 
         awm->sep______________();
 

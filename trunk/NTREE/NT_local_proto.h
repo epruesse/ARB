@@ -68,6 +68,7 @@ void NT_start(const char *arb_ntree_args, bool restart_with_new_ARB_PID);
 void NT_exit(AW_window *aws, int exitcode);
 void NT_restart(AW_root *aw_root, const char *arb_ntree_args);
 TreeNode *NT_get_tree_root_of_canvas(TREE_canvas *ntw);
+TREE_canvas *NT_get_canvas_by_index(int idx);
 void NT_fill_canvas_selection_list(class AW_selection_list *sellst, TREE_canvas *to_skip);
 TREE_canvas *NT_create_main_window(AW_root *aw_root);
 
@@ -88,6 +89,9 @@ void NT_configure_treeShader(void);
 void NT_resort_data_by_phylogeny(AW_window *, TREE_canvas *ntw);
 void NT_create_resort_awars(AW_root *awr, AW_default aw_def);
 AW_window *NT_create_resort_window(AW_root *awr);
+
+/* NT_sync_scroll.cxx */
+AW_window *NT_create_syncScroll_window(AW_root *awr, TREE_canvas *ntw);
 
 /* NT_taxonomy.cxx */
 void NT_create_compare_taxonomy_awars(AW_root *aw_root, AW_default props);

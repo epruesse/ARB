@@ -26,6 +26,8 @@
 
 #define nt_assert(cond) arb_assert(cond)
 
+#define AWAR_NTREE_MAIN_WINDOW_COUNT "tmp/mainwin_count" // changes whenever a new NT main window is created
+
 #define MAX_NT_WINDOWS          5
 #define MAX_NT_WINDOWS_NULLINIT NULL,NULL,NULL,NULL,NULL
 

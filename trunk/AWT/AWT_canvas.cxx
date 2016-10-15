@@ -314,7 +314,7 @@ static void clip_expose(AW_window *aww, AWT_canvas *scr,
                         int top_border, int bottom_border,
                         int hor_overlap, int ver_overlap)
 {
-    AW_device *device = aww->get_device (AW_MIDDLE_AREA);
+    AW_device *device = aww->get_device(AW_MIDDLE_AREA);
     device->set_filter(AW_SCREEN);
     device->reset();
 
