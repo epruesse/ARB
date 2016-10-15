@@ -608,9 +608,19 @@ static void search_comment_for_promotion() {
     promotion_found = strstr(last_comment, promotion_tag);
     while (promotion_found) {
         char *behind_promo = promotion_found+promotion_tag_len;
+        char *eol, *eoc;
         mp_assert(behind_promo[-1] == ':'); // wrong promotion_tag_len
 
-        char *eol     = strchr(behind_promo, '\n');
+        eol = strchr(behind_promo, '\n');
+        eoc = strstr(behind_promo, "*/");
+
+        if (eoc && eol) {
+            if (eoc<eol) eol = eoc;
+        }
+        else if (!eol) {
+            eol = eoc;
+        }
+
         if (!eol) eol = strchr(behind_promo, 0);
 
         if (eol) {
@@ -1531,12 +1541,12 @@ static int string_comparator(const void *v0, const void *v1) {
     return strcmp(*(const char **)v0, *(const char **)v1);
 }
 
-__ATTR__NORETURN static void MissingArgumentFor(char option) {
+static void MissingArgumentFor(char option) {
     char buffer[100];
     sprintf(buffer, "option -%c expects an argument", option);
     Usage(buffer);
 }
-__ATTR__NORETURN static void UnknownOption(char option) {
+static void UnknownOption(char option) {
     char buffer[100];
     sprintf(buffer, "unknown option -%c", option);
     Usage(buffer);
@@ -1769,7 +1779,7 @@ static void Version() {
 
 #include <test_unit.h>
 
-inline const char *test_extract(const char *str) {
+inline const char *test_extract(bool ATTR, const char *str) {
     search__ATTR__ = true;
 
     clear_found_attribute();
@@ -1782,7 +1792,7 @@ inline const char *test_extract(const char *str) {
     return found__ATTR__;
 }
 
-#define TEST_ATTR_____(comment,extracted) TEST_EXPECT_EQUAL(test_extract(comment), extracted)
+#define TEST_ATTR_____(comment,extracted) TEST_EXPECT_EQUAL(test_extract(true, comment), extracted)
 
 void TEST_attribute_parser() {
     TEST_ATTR_____("",             (const char*)NULL);

@@ -679,7 +679,7 @@ static GB_ERROR findAffectedKeys(GBDATA *gb_key_data, KeyCounter& kcount, Keys& 
                 error = GBS_global_string("@key w/o @name (%s)", GB_await_error());
             }
             else {
-                char *keyGroup = ARB_strdup(keyName);
+                char *keyGroup = strdup(keyName);
                 ARB_strlower(keyGroup);
 
                 switch (pass) {

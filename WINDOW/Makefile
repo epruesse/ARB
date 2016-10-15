@@ -49,7 +49,6 @@ AW_advice.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AW_advice.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_advice.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_advice.o: $(ARBHOME)/INCLUDE/arb_error.h
-AW_advice.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AW_advice.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AW_advice.o: $(ARBHOME)/INCLUDE/arb_string.h
 AW_advice.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -79,7 +78,6 @@ AW_at.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AW_at.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_at.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_at.o: $(ARBHOME)/INCLUDE/arb_error.h
-AW_at.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AW_at.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AW_at.o: $(ARBHOME)/INCLUDE/arb_string.h
 AW_at.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -115,7 +113,6 @@ AW_awar.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_awar.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_awar.o: $(ARBHOME)/INCLUDE/arb_error.h
 AW_awar.o: $(ARBHOME)/INCLUDE/arb_file.h
-AW_awar.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AW_awar.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AW_awar.o: $(ARBHOME)/INCLUDE/arb_str.h
 AW_awar.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -139,7 +136,6 @@ AW_button.o: aw_at.hxx
 AW_button.o: aw_awar.hxx
 AW_button.o: aw_base.hxx
 AW_button.o: aw_device.hxx
-AW_button.o: aw_font_limits.hxx
 AW_button.o: aw_keysym.hxx
 AW_button.o: aw_msg.hxx
 AW_button.o: aw_position.hxx
@@ -157,7 +153,6 @@ AW_button.o: $(ARBHOME)/INCLUDE/arb_algo.h
 AW_button.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_button.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_button.o: $(ARBHOME)/INCLUDE/arb_error.h
-AW_button.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AW_button.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AW_button.o: $(ARBHOME)/INCLUDE/arb_string.h
 AW_button.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -177,7 +172,6 @@ AW_button.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 AW_cb_struct.o: aw_base.hxx
 AW_cb_struct.o: aw_device.hxx
-AW_cb_struct.o: aw_font_limits.hxx
 AW_cb_struct.o: aw_keysym.hxx
 AW_cb_struct.o: aw_msg.hxx
 AW_cb_struct.o: aw_position.hxx
@@ -188,9 +182,7 @@ AW_cb_struct.o: aw_window_Xm.hxx
 AW_cb_struct.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_cb_struct.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_cb_struct.o: $(ARBHOME)/INCLUDE/arb_error.h
-AW_cb_struct.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AW_cb_struct.o: $(ARBHOME)/INCLUDE/arb_msg.h
-AW_cb_struct.o: $(ARBHOME)/INCLUDE/arb_string.h
 AW_cb_struct.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AW_cb_struct.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_cb_struct.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -209,7 +201,6 @@ AW_clipable.o: aw_base.hxx
 AW_clipable.o: aw_common.hxx
 AW_clipable.o: aw_common_xm.hxx
 AW_clipable.o: aw_device.hxx
-AW_clipable.o: aw_font_limits.hxx
 AW_clipable.o: aw_keysym.hxx
 AW_clipable.o: aw_position.hxx
 AW_clipable.o: aw_root.hxx
@@ -238,7 +229,6 @@ AW_device.o: aw_base.hxx
 AW_device.o: aw_common.hxx
 AW_device.o: aw_common_xm.hxx
 AW_device.o: aw_device.hxx
-AW_device.o: aw_font_limits.hxx
 AW_device.o: aw_keysym.hxx
 AW_device.o: aw_position.hxx
 AW_device.o: aw_root.hxx
@@ -247,7 +237,6 @@ AW_device.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_device.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_device.o: $(ARBHOME)/INCLUDE/arb_defs.h
 AW_device.o: $(ARBHOME)/INCLUDE/arb_error.h
-AW_device.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AW_device.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AW_device.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AW_device.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -268,7 +257,6 @@ AW_device_click.o: aw_base.hxx
 AW_device_click.o: aw_common.hxx
 AW_device_click.o: aw_device.hxx
 AW_device_click.o: aw_device_click.hxx
-AW_device_click.o: aw_font_limits.hxx
 AW_device_click.o: aw_position.hxx
 AW_device_click.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_device_click.o: $(ARBHOME)/INCLUDE/arb_core.h
@@ -285,7 +273,6 @@ AW_device_click.o: $(ARBHOME)/INCLUDE/test_global.h
 AW_device_size.o: aw_base.hxx
 AW_device_size.o: aw_common.hxx
 AW_device_size.o: aw_device.hxx
-AW_device_size.o: aw_font_limits.hxx
 AW_device_size.o: aw_position.hxx
 AW_device_size.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_device_size.o: $(ARBHOME)/INCLUDE/arb_core.h
@@ -310,7 +297,6 @@ AW_edit.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AW_edit.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_edit.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_edit.o: $(ARBHOME)/INCLUDE/arb_error.h
-AW_edit.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AW_edit.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AW_edit.o: $(ARBHOME)/INCLUDE/arb_string.h
 AW_edit.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -346,7 +332,6 @@ AW_file.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_file.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_file.o: $(ARBHOME)/INCLUDE/arb_error.h
 AW_file.o: $(ARBHOME)/INCLUDE/arb_file.h
-AW_file.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AW_file.o: $(ARBHOME)/INCLUDE/arb_misc.h
 AW_file.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AW_file.o: $(ARBHOME)/INCLUDE/arb_str.h
@@ -375,7 +360,6 @@ AW_font_group.o: aw_base.hxx
 AW_font_group.o: aw_common.hxx
 AW_font_group.o: aw_device.hxx
 AW_font_group.o: aw_font_group.hxx
-AW_font_group.o: aw_font_limits.hxx
 AW_font_group.o: aw_position.hxx
 AW_font_group.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_font_group.o: $(ARBHOME)/INCLUDE/arb_core.h
@@ -403,7 +387,6 @@ AW_global_awars.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AW_global_awars.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_global_awars.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_global_awars.o: $(ARBHOME)/INCLUDE/arb_error.h
-AW_global_awars.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AW_global_awars.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AW_global_awars.o: $(ARBHOME)/INCLUDE/arb_string.h
 AW_global_awars.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -436,7 +419,6 @@ AW_help.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_help.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_help.o: $(ARBHOME)/INCLUDE/arb_error.h
 AW_help.o: $(ARBHOME)/INCLUDE/arb_file.h
-AW_help.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AW_help.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AW_help.o: $(ARBHOME)/INCLUDE/arb_str.h
 AW_help.o: $(ARBHOME)/INCLUDE/arb_strarray.h
@@ -461,7 +443,6 @@ AW_modal.o: aw_awar.hxx
 AW_modal.o: aw_base.hxx
 AW_modal.o: aw_device.hxx
 AW_modal.o: aw_file.hxx
-AW_modal.o: aw_font_limits.hxx
 AW_modal.o: aw_global.hxx
 AW_modal.o: aw_keysym.hxx
 AW_modal.o: aw_msg.hxx
@@ -477,7 +458,6 @@ AW_modal.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AW_modal.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_modal.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_modal.o: $(ARBHOME)/INCLUDE/arb_error.h
-AW_modal.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AW_modal.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AW_modal.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 AW_modal.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -502,7 +482,6 @@ AW_option_toggle.o: aw_at.hxx
 AW_option_toggle.o: aw_awar.hxx
 AW_option_toggle.o: aw_base.hxx
 AW_option_toggle.o: aw_device.hxx
-AW_option_toggle.o: aw_font_limits.hxx
 AW_option_toggle.o: aw_keysym.hxx
 AW_option_toggle.o: aw_position.hxx
 AW_option_toggle.o: aw_root.hxx
@@ -514,9 +493,7 @@ AW_option_toggle.o: aw_xargs.hxx
 AW_option_toggle.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_option_toggle.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_option_toggle.o: $(ARBHOME)/INCLUDE/arb_error.h
-AW_option_toggle.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AW_option_toggle.o: $(ARBHOME)/INCLUDE/arb_msg.h
-AW_option_toggle.o: $(ARBHOME)/INCLUDE/arb_string.h
 AW_option_toggle.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AW_option_toggle.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_option_toggle.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -550,7 +527,6 @@ AW_preset.o: aw_common.hxx
 AW_preset.o: aw_common_xm.hxx
 AW_preset.o: aw_def.hxx
 AW_preset.o: aw_device.hxx
-AW_preset.o: aw_font_limits.hxx
 AW_preset.o: aw_keysym.hxx
 AW_preset.o: aw_msg.hxx
 AW_preset.o: aw_nawar.hxx
@@ -567,7 +543,6 @@ AW_preset.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_preset.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_preset.o: $(ARBHOME)/INCLUDE/arb_defs.h
 AW_preset.o: $(ARBHOME)/INCLUDE/arb_error.h
-AW_preset.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AW_preset.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AW_preset.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 AW_preset.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -594,7 +569,6 @@ AW_print.o: aw_common.hxx
 AW_print.o: aw_common_xm.hxx
 AW_print.o: aw_def.hxx
 AW_print.o: aw_device.hxx
-AW_print.o: aw_font_limits.hxx
 AW_print.o: aw_position.hxx
 AW_print.o: aw_root.hxx
 AW_print.o: aw_xfont.hxx
@@ -622,7 +596,6 @@ AW_question.o: aw_advice.hxx
 AW_question.o: aw_awar.hxx
 AW_question.o: aw_base.hxx
 AW_question.o: aw_device.hxx
-AW_question.o: aw_font_limits.hxx
 AW_question.o: aw_global.hxx
 AW_question.o: aw_keysym.hxx
 AW_question.o: aw_msg.hxx
@@ -636,7 +609,6 @@ AW_question.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AW_question.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_question.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_question.o: $(ARBHOME)/INCLUDE/arb_error.h
-AW_question.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AW_question.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AW_question.o: $(ARBHOME)/INCLUDE/arb_string.h
 AW_question.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -656,7 +628,6 @@ AW_question.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 AW_rgb.o: aw_base.hxx
 AW_rgb.o: aw_device.hxx
-AW_rgb.o: aw_font_limits.hxx
 AW_rgb.o: aw_keysym.hxx
 AW_rgb.o: aw_position.hxx
 AW_rgb.o: aw_rgb.hxx
@@ -667,9 +638,7 @@ AW_rgb.o: aw_window_Xm.hxx
 AW_rgb.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_rgb.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_rgb.o: $(ARBHOME)/INCLUDE/arb_error.h
-AW_rgb.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AW_rgb.o: $(ARBHOME)/INCLUDE/arb_msg.h
-AW_rgb.o: $(ARBHOME)/INCLUDE/arb_string.h
 AW_rgb.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AW_rgb.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_rgb.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -688,7 +657,6 @@ AW_rgb.o: $(ARBHOME)/INCLUDE/ttypes.h
 AW_root.o: aw_awar.hxx
 AW_root.o: aw_base.hxx
 AW_root.o: aw_device.hxx
-AW_root.o: aw_font_limits.hxx
 AW_root.o: aw_keysym.hxx
 AW_root.o: aw_msg.hxx
 AW_root.o: aw_nawar.hxx
@@ -705,7 +673,6 @@ AW_root.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_root.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_root.o: $(ARBHOME)/INCLUDE/arb_error.h
 AW_root.o: $(ARBHOME)/INCLUDE/arb_handlers.h
-AW_root.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AW_root.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AW_root.o: $(ARBHOME)/INCLUDE/arb_string.h
 AW_root.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -729,7 +696,6 @@ AW_root_debug.o: aw_base.hxx
 AW_root_debug.o: aw_common.hxx
 AW_root_debug.o: aw_common_xm.hxx
 AW_root_debug.o: aw_device.hxx
-AW_root_debug.o: aw_font_limits.hxx
 AW_root_debug.o: aw_keysym.hxx
 AW_root_debug.o: aw_msg.hxx
 AW_root_debug.o: aw_position.hxx
@@ -744,7 +710,6 @@ AW_root_debug.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_root_debug.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_root_debug.o: $(ARBHOME)/INCLUDE/arb_defs.h
 AW_root_debug.o: $(ARBHOME)/INCLUDE/arb_error.h
-AW_root_debug.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AW_root_debug.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AW_root_debug.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 AW_root_debug.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -770,9 +735,7 @@ aw_scalar.o: aw_base.hxx
 aw_scalar.o: aw_scalar.hxx
 aw_scalar.o: $(ARBHOME)/INCLUDE/arb_assert.h
 aw_scalar.o: $(ARBHOME)/INCLUDE/arb_core.h
-aw_scalar.o: $(ARBHOME)/INCLUDE/arb_mem.h
 aw_scalar.o: $(ARBHOME)/INCLUDE/arb_msg.h
-aw_scalar.o: $(ARBHOME)/INCLUDE/arb_string.h
 aw_scalar.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 aw_scalar.o: $(ARBHOME)/INCLUDE/arbtools.h
 aw_scalar.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -790,7 +753,6 @@ aw_scalar.o: $(ARBHOME)/INCLUDE/ttypes.h
 AW_select.o: aw_awar.hxx
 AW_select.o: aw_base.hxx
 AW_select.o: aw_device.hxx
-AW_select.o: aw_font_limits.hxx
 AW_select.o: aw_keysym.hxx
 AW_select.o: aw_position.hxx
 AW_select.o: aw_root.hxx
@@ -804,7 +766,6 @@ AW_select.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AW_select.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_select.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_select.o: $(ARBHOME)/INCLUDE/arb_error.h
-AW_select.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AW_select.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AW_select.o: $(ARBHOME)/INCLUDE/arb_sort.h
 AW_select.o: $(ARBHOME)/INCLUDE/arb_str.h
@@ -842,7 +803,6 @@ AW_status.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AW_status.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_status.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_status.o: $(ARBHOME)/INCLUDE/arb_error.h
-AW_status.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AW_status.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AW_status.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 AW_status.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -871,7 +831,6 @@ AW_window.o: aw_common.hxx
 AW_window.o: aw_common_xm.hxx
 AW_window.o: aw_device.hxx
 AW_window.o: aw_device_click.hxx
-AW_window.o: aw_font_limits.hxx
 AW_window.o: aw_keysym.hxx
 AW_window.o: aw_msg.hxx
 AW_window.o: aw_nawar.hxx
@@ -893,7 +852,6 @@ AW_window.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_window.o: $(ARBHOME)/INCLUDE/arb_defs.h
 AW_window.o: $(ARBHOME)/INCLUDE/arb_error.h
 AW_window.o: $(ARBHOME)/INCLUDE/arb_file.h
-AW_window.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AW_window.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AW_window.o: $(ARBHOME)/INCLUDE/arb_str.h
 AW_window.o: $(ARBHOME)/INCLUDE/arb_strarray.h
@@ -919,7 +877,6 @@ AW_window_Xm_interface.o: aw_base.hxx
 AW_window_Xm_interface.o: aw_common.hxx
 AW_window_Xm_interface.o: aw_common_xm.hxx
 AW_window_Xm_interface.o: aw_device.hxx
-AW_window_Xm_interface.o: aw_font_limits.hxx
 AW_window_Xm_interface.o: aw_keysym.hxx
 AW_window_Xm_interface.o: aw_position.hxx
 AW_window_Xm_interface.o: aw_root.hxx
@@ -931,9 +888,7 @@ AW_window_Xm_interface.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_window_Xm_interface.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_window_Xm_interface.o: $(ARBHOME)/INCLUDE/arb_defs.h
 AW_window_Xm_interface.o: $(ARBHOME)/INCLUDE/arb_error.h
-AW_window_Xm_interface.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AW_window_Xm_interface.o: $(ARBHOME)/INCLUDE/arb_msg.h
-AW_window_Xm_interface.o: $(ARBHOME)/INCLUDE/arb_string.h
 AW_window_Xm_interface.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AW_window_Xm_interface.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_window_Xm_interface.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -951,7 +906,6 @@ AW_window_Xm_interface.o: $(ARBHOME)/INCLUDE/ttypes.h
 
 AW_xfig.o: aw_base.hxx
 AW_xfig.o: aw_device.hxx
-AW_xfig.o: aw_font_limits.hxx
 AW_xfig.o: aw_msg.hxx
 AW_xfig.o: aw_position.hxx
 AW_xfig.o: aw_xfig.hxx
@@ -959,7 +913,6 @@ AW_xfig.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AW_xfig.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_xfig.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_xfig.o: $(ARBHOME)/INCLUDE/arb_error.h
-AW_xfig.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AW_xfig.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AW_xfig.o: $(ARBHOME)/INCLUDE/arb_string.h
 AW_xfig.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -977,7 +930,6 @@ AW_xfont.o: aw_common.hxx
 AW_xfont.o: aw_common_xm.hxx
 AW_xfont.o: aw_def.hxx
 AW_xfont.o: aw_device.hxx
-AW_xfont.o: aw_font_limits.hxx
 AW_xfont.o: aw_position.hxx
 AW_xfont.o: aw_root.hxx
 AW_xfont.o: aw_xfont.hxx
@@ -986,7 +938,6 @@ AW_xfont.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_xfont.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_xfont.o: $(ARBHOME)/INCLUDE/arb_defs.h
 AW_xfont.o: $(ARBHOME)/INCLUDE/arb_error.h
-AW_xfont.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AW_xfont.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AW_xfont.o: $(ARBHOME)/INCLUDE/arb_string.h
 AW_xfont.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -1014,7 +965,6 @@ AW_xkey.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_xkey.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_xkey.o: $(ARBHOME)/INCLUDE/arb_defs.h
 AW_xkey.o: $(ARBHOME)/INCLUDE/arb_error.h
-AW_xkey.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AW_xkey.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AW_xkey.o: $(ARBHOME)/INCLUDE/arb_string.h
 AW_xkey.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -1034,7 +984,6 @@ AW_Xm.o: aw_base.hxx
 AW_Xm.o: aw_common.hxx
 AW_Xm.o: aw_common_xm.hxx
 AW_Xm.o: aw_device.hxx
-AW_Xm.o: aw_font_limits.hxx
 AW_Xm.o: aw_position.hxx
 AW_Xm.o: aw_Xm.hxx
 AW_Xm.o: $(ARBHOME)/INCLUDE/arb_assert.h

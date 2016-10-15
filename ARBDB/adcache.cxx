@@ -92,6 +92,7 @@ inline void flush_cache_entry(gb_cache& cache, gb_cache_idx index) {
     cache.firstfree_entry = index;
 
 #if defined(GEN_CACHE_STATS)
+    // const char *dbpath = GB_get_db_path(entry.gbd);
     if (entry.reused) {
         GBS_incr_hash(cache.reused, entry.dbpath);
         GBS_write_hash(cache.reuse_sum, entry.dbpath, GBS_read_hash(cache.reuse_sum, entry.dbpath)+entry.reused);
@@ -104,7 +105,7 @@ inline void flush_cache_entry(gb_cache& cache, gb_cache_idx index) {
 }
 
 gb_cache::gb_cache()
-    : entries(ARB_calloc<gb_cache_entry>(GB_MAX_CACHED_ENTRIES)),
+    : entries((gb_cache_entry *)GB_calloc(sizeof(gb_cache_entry), GB_MAX_CACHED_ENTRIES)),
       firstfree_entry(1),
       newest_entry(0),
       oldest_entry(0),
@@ -275,7 +276,7 @@ char *gb_alloc_cache_index(GBENTRY *gbe, size_t size) {
     entry.next            = 0;
 
     // create data
-    if (!data) ARB_alloc(data, size);
+    if (!data) data = (char*)malloc(size);
 
     entry.sizeof_data = size;
     entry.data        = data;
@@ -284,7 +285,7 @@ char *gb_alloc_cache_index(GBENTRY *gbe, size_t size) {
     
 #if defined(GEN_CACHE_STATS)
     entry.reused     = 0;
-    entry.dbpath     = ARB_strdup(GB_get_db_path(gbe));
+    entry.dbpath     = strdup(GB_get_db_path(gbe));
 #endif                                              // GEN_CACHE_STATS
 
     gbe->cache_index = index;

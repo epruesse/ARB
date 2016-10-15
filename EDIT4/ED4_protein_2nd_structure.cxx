@@ -48,22 +48,22 @@ name_value_pair pfold_match_type_awars[] = {
 
 //! Symbols for the match quality (defined by #PFOLD_MATCH_TYPE) as used for match methods #SECSTRUCT_SECSTRUCT and #SECSTRUCT_SEQUENCE_PREDICT in ED4_pfold_calculate_secstruct_match().
 char *pfold_pair_chars[PFOLD_PAIRS] = {
-    ARB_strdup(" "), // STRUCT_PERFECT_MATCH
-    ARB_strdup("-"), // STRUCT_GOOD_MATCH
-    ARB_strdup("~"), // STRUCT_MEDIUM_MATCH
-    ARB_strdup("+"), // STRUCT_BAD_MATCH
-    ARB_strdup("#"), // STRUCT_NO_MATCH
-    ARB_strdup("?")  // STRUCT_UNKNOWN
+    strdup(" "), // STRUCT_PERFECT_MATCH
+    strdup("-"), // STRUCT_GOOD_MATCH
+    strdup("~"), // STRUCT_MEDIUM_MATCH
+    strdup("+"), // STRUCT_BAD_MATCH
+    strdup("#"), // STRUCT_NO_MATCH
+    strdup("?")  // STRUCT_UNKNOWN
 };
 
 //! Match pair definition (see #PFOLD_MATCH_TYPE) as used for match methods #SECSTRUCT_SECSTRUCT and #SECSTRUCT_SEQUENCE_PREDICT in ED4_pfold_calculate_secstruct_match().
 char *pfold_pairs[PFOLD_PAIRS] = {
-    ARB_strdup("HH GG II TT EE BB SS -- -. .."),          // STRUCT_PERFECT_MATCH
-    ARB_strdup("HG HI HS EB ES TS H- G- I- T- E- B- S-"), // STRUCT_GOOD_MATCH
-    ARB_strdup("HT GT IT"),                               // STRUCT_MEDIUM_MATCH
-    ARB_strdup("ET BT"),                                  // STRUCT_BAD_MATCH
-    ARB_strdup("EH BH EG EI"),                            // STRUCT_NO_MATCH
-    ARB_strdup("")                                        // STRUCT_UNKNOWN
+    strdup("HH GG II TT EE BB SS -- -. .."),          // STRUCT_PERFECT_MATCH
+    strdup("HG HI HS EB ES TS H- G- I- T- E- B- S-"), // STRUCT_GOOD_MATCH
+    strdup("HT GT IT"),                               // STRUCT_MEDIUM_MATCH
+    strdup("ET BT"),                                  // STRUCT_BAD_MATCH
+    strdup("EH BH EG EI"),                            // STRUCT_NO_MATCH
+    strdup("")                                        // STRUCT_UNKNOWN
 };
 
 static struct pfold_mem_handler {
@@ -706,11 +706,11 @@ GB_ERROR ED4_pfold_calculate_secstruct_match(const unsigned char *structure_sai,
 
     enum { BEND = 3, NOSTRUCT = 4 };
     char *struct_chars[] = {
-        ARB_strdup("HGI"),  // helical structures (enum ALPHA_HELIX)
-        ARB_strdup("EB"),   // sheet-like structures (enum BETA_SHEET)
-        ARB_strdup("T"),    // beta-turn (enum BETA_TURN)
-        ARB_strdup("S"),    // bends (enum BEND)
-        ARB_strdup("")      // no structure (enum NOSTRUCT)
+        strdup("HGI"),  // helical structures (enum ALPHA_HELIX)
+        strdup("EB"),   // sheet-like structures (enum BETA_SHEET)
+        strdup("T"),    // beta-turn (enum BETA_TURN)
+        strdup("S"),    // bends (enum BEND)
+        strdup("")      // no structure (enum NOSTRUCT)
     };
 
     // init awars

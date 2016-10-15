@@ -150,7 +150,7 @@ ALI_PT::ALI_PT(ALI_PT_CONTEXT *context)
 
     if (context->use_specified_family != 0) {
         mode = SpecifiedMode;
-        specified_family = ARB_strdup(context->use_specified_family);
+        specified_family = strdup(context->use_specified_family);
     }
     else {
         mode = ServerMode;

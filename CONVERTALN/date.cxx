@@ -282,7 +282,7 @@ const char *gcg_date(const char *input) {
 
 #define TEST_EXPECT_FIND_ANYDATE(input,d,m,y,finder) \
     do {                                                        \
-        char *dup_ = ARB_strdup(input);                         \
+        char *dup_ = strdup(input);                             \
         int   day_, month_, year_;                              \
         TEST_EXPECT(finder(dup_, &month_, &day_, &year_));      \
         TEST_EXPECT_EQUAL(day_, d);                             \

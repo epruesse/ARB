@@ -12,11 +12,12 @@
 
 #include <arb_strarray.h>
 
+#include <arbdb.h>
+
 #include <aw_root.hxx>
 #include <aw_window.hxx>
 #include <aw_awar.hxx>
 #include <aw_advice.hxx>
-#include <aw_msg.hxx>
 
 AW_window *AWT_create_IUPAC_info_window(AW_root *aw_root) {
     // Open window showing IUPAC tables
@@ -80,14 +81,3 @@ void AWT_insert_DBcompression_selector(AW_window *aww, const char *awar_name) {
 
     awar_compression->add_callback(makeRootCallback(warn_compression_type, awar_compression));
 }
-
-void AWT_system_cb(AW_window *, const char *command) {
-    aw_message_if(GBK_system(command));
-}
-void AWT_console(AW_window*) {
-    AWT_system_cb(GBS_global_string("%s &", GB_getenvARB_XTERM()));
-}
-void AWT_system_in_console_cb(AW_window*, const char *command, XCMD_TYPE exectype) {
-    aw_message_if(GB_xcmd(command, exectype));
-}
-

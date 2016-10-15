@@ -15,6 +15,7 @@ AW_gc_manager *RNA3D_Graphics::init_devices(AW_window *aww, AW_device *device, A
         AW_manage_GC (aww,
                       scr->get_gc_base_name(),
                       device,
+                      RNA3D_GC_FOREGROUND,
                       RNA3D_GC_MAX,
                       AW_GCM_DATA_AREA,
                       makeGcChangedCallback(AWT_GC_changed_cb, scr),

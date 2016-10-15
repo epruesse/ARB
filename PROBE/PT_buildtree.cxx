@@ -404,7 +404,7 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , const char *tname, ULONG ARM_size
     }
 
     if (!error) {
-        char *t2name = ARB_calloc<char>(strlen(tname) + 2);
+        char *t2name = (char *)calloc(sizeof(char), strlen(tname) + 2);
         sprintf(t2name, "%s%%", tname);
         
         FILE *out = fopen(t2name, "w");
@@ -565,7 +565,7 @@ ARB_ERROR enter_stage_1_build_tree(PT_main * , const char *tname, ULONG ARM_size
 
 #if defined(DEBUG)
     {
-        char *related = ARB_strdup(tname);
+        char *related = strdup(tname);
         char *starpos = strstr(related, ".arb.pt");
 
         pt_assert(starpos);

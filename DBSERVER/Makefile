@@ -36,7 +36,6 @@ db_server.o: $(ARBHOME)/INCLUDE/arb_core.h
 db_server.o: $(ARBHOME)/INCLUDE/arb_diff.h
 db_server.o: $(ARBHOME)/INCLUDE/arb_error.h
 db_server.o: $(ARBHOME)/INCLUDE/arb_file.h
-db_server.o: $(ARBHOME)/INCLUDE/arb_mem.h
 db_server.o: $(ARBHOME)/INCLUDE/arb_msg.h
 db_server.o: $(ARBHOME)/INCLUDE/arb_sleep.h
 db_server.o: $(ARBHOME)/INCLUDE/arb_string.h

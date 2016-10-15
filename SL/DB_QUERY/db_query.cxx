@@ -423,7 +423,7 @@ void QUERY::DbQuery_update_list(DbQuery *query) {
 
     // create array of hits
     long     count  = count_queried_items(query, range);
-    GBDATA **sorted = ARB_alloc<GBDATA*>(count);
+    GBDATA **sorted = static_cast<GBDATA**>(malloc(count*sizeof(*sorted)));
     {
         long s = 0;
 
@@ -1638,9 +1638,11 @@ static void modify_fields_of_queried_cb(AW_window*, DbQuery *query) {
                 {
                     if (IS_QUERIED(gb_item, query)) {
                         GBDATA *gb_new = GB_search(gb_item, key, GB_FIND);
-                        error          = GB_incur_error_if(!gb_new);
 
-                        if (!error) {
+                        if (!gb_new && GB_have_error()) {
+                            error = GB_await_error();
+                        }
+                        else {
                             char *str    = gb_new ? GB_read_as_string(gb_new) : strdup("");
                             char *parsed = 0;
 
@@ -1989,8 +1991,8 @@ static void loadsave_colorset_cb(AW_window *aws, BoundItemSel *bsel, loadsave_mo
         GBDATA *gb_colorset_root = get_colorset_root(bsel);
         GBDATA *gb_colorset      = gb_colorset_root ? GBT_find_colorset(gb_colorset_root, name) : NULL;
 
-        error = GB_incur_error();
-        if (!error) {
+        if (GB_have_error()) error = GB_await_error();
+        else {
             if (mode == SAVE) {
                 if (!gb_colorset) { // create new colorset
                     gb_colorset             = GBT_find_or_create_colorset(gb_colorset_root, name);
@@ -2034,7 +2036,7 @@ static AW_window *create_loadsave_colored_window(AW_root *aw_root, color_save_da
     if (!aw_loadsave) {
         // init data
         aw_root->awar_string(AWAR_COLOR_LOADSAVE_NAME, "", AW_ROOT_DEFAULT);
-        ARB_calloc(aw_loadsave, QUERY_ITEM_TYPES); // contains loadsave windows for each item type
+        aw_loadsave = (AW_window**)GB_calloc(QUERY_ITEM_TYPES, sizeof(*aw_loadsave)); // contains loadsave windows for each item type
     }
 
     QUERY_ITEM_TYPE type = csd->bsel->selector.type;
@@ -2743,7 +2745,7 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
         aws->d_callback(makeWindowCallback(toggle_flag_cb, query));
 
         {
-            const char *this_awar_name = ARB_keep_string(GBS_global_string_copy("tmp/dbquery_%s/select", query_id)); // do not free this cause it's passed to new_selection_made_cb
+            const char *this_awar_name = GB_keep_string(GBS_global_string_copy("tmp/dbquery_%s/select", query_id)); // do not free this cause it's passed to new_selection_made_cb
             AW_awar    *awar           = aw_root->awar_string(this_awar_name, "", AW_ROOT_DEFAULT);
 
             query->hitlist = aws->create_selection_list(this_awar_name, 5, 5, true);

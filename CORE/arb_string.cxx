@@ -11,9 +11,64 @@
 
 #include "arb_string.h"
 
+#include <arb_assert.h>
+
+#include <cstring>
+#include <cstdlib>
+
 #include <ctime>
 #include <sys/time.h>
 #include <Keeper.h>
+
+char *GB_strduplen(const char *p, unsigned len) {
+    // fast replacement for strdup, if len is known
+    if (p) {
+        char *neu;
+
+        arb_assert(strlen(p) == len);
+        // Note: Common reason for failure: a zero-char was manually printed by a GBS_global_string...-function
+
+        neu = (char*)malloc(len+1);
+        memcpy(neu, p, len+1);
+        return neu;
+    }
+    return 0;
+}
+
+char *GB_strpartdup(const char *start, const char *end) {
+    /* strdup of a part of a string (including 'start' and 'end')
+     * 'end' may point behind end of string -> copy only till zero byte
+     * if 'end'=('start'-1) -> return ""
+     * if 'end'<('start'-1) -> return 0
+     * if 'end' == NULL -> copy whole string
+     */
+
+    char *result;
+    if (end) {
+        int len = end-start+1;
+
+        if (len >= 0) {
+            const char *eos = (const char *)memchr(start, 0, len);
+
+            if (eos) len = eos-start;
+            result = (char*)malloc(len+1);
+            memcpy(result, start, len);
+            result[len] = 0;
+        }
+        else {
+            result = 0;
+        }
+    }
+    else { // end = 0 -> return copy of complete string
+        result = nulldup(start);
+    }
+
+    return result;
+}
+
+char *GB_strndup(const char *start, int len) {
+    return GB_strpartdup(start, start+len-1);
+}
 
 inline tm *get_current_time() {
     timeval  date;
@@ -32,7 +87,7 @@ inline tm *get_current_time() {
     return p;
 }
 
-const char *ARB_date_string() {
+const char *GB_date_string() {
     tm   *p        = get_current_time();
     char *readable = asctime(p); // points to a static buffer
     char *cr       = strchr(readable, '\n');
@@ -42,7 +97,7 @@ const char *ARB_date_string() {
     return readable;
 }
 
-const char *ARB_dateTime_suffix() {
+const char *GB_dateTime_suffix() {
     /*! returns "YYYYMMDD_HHMMSS" */
     const  unsigned  SUFFIXLEN = 8+1+6;
     static char      buffer[SUFFIXLEN+1];
@@ -60,7 +115,7 @@ const char *ARB_dateTime_suffix() {
 
 // --------------------------------------------------------------------------------
 
-const char *ARB_keep_string(char *str) {
+const char *GB_keep_string(char *str) {
     /*! keep an allocated string until program termination
      * useful to avoid valgrind reporting leaks e.g for callback parameters
      */
@@ -250,7 +305,7 @@ void TEST_replace_old_TEST_EXPECTS_by_expectations() {
     // test various string-types are matchable (w/o casts)
     {
         const char *car_ccp = "Alfa";
-        char       *car_cp  = ARB_strdup("Alfa");
+        char       *car_cp  = strdup("Alfa");
         string      car_str("Alfa");
 
         TEST_EXPECT_EQUAL(car_ccp, "Alfa");

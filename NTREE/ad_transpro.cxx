@@ -212,7 +212,7 @@ static GB_ERROR arb_r2a(GBDATA *gb_main, bool use_entries, bool save_entries, in
                                 int   cn;
                                 int   stop_codons;
                                 int   least_stop_codons = -1;
-                                char* trial_data[3]     = {data, ARB_strdup(data), ARB_strdup(data)};
+                                char* trial_data[3]     = {data, strdup(data), strdup(data)};
 
                                 for (cn = 0 ; cn < 3 ; cn++)
                                 {
@@ -563,9 +563,9 @@ inline bool isGap(char c) { return c == '-' || c == '.'; }
 using std::string;
 
 class FailedAt {
-    string             reason;
-    RefPtr<const char> at_prot; // points into aligned protein seq
-    RefPtr<const char> at_dna;  // points into compressed seq
+    string      reason;
+    const char *at_prot; // in aligned protein seq
+    const char *at_dna;  // in compressed seq
 
     int cmp(const FailedAt& other) const {
         ptrdiff_t d = at_prot - other.at_prot;
@@ -585,6 +585,12 @@ public:
     {
         nt_assert(reason_);
     }
+    FailedAt(const FailedAt& other)
+        : reason(other.reason),
+          at_prot(other.at_prot),
+          at_dna(other.at_dna)
+    {}
+    DECLARE_ASSIGNMENT_OPERATOR(FailedAt);
 
     GB_ERROR why() const { return reason.empty() ? NULL : reason.c_str(); }
     const char *protein_at() const { return at_prot; }
@@ -939,8 +945,8 @@ void RealignAttempt::perform() {
 
 inline char *unalign(const char *data, size_t len, size_t& compressed_len) {
     // removes gaps from sequence
-    char *compressed = ARB_alloc<char>(len+1);
-    compressed_len = 0;
+    char *compressed = (char*)malloc(len+1);
+    compressed_len        = 0;
     for (size_t p = 0; p<len && data[p]; ++p) {
         if (!isGap(data[p])) {
             compressed[compressed_len++] = data[p];
@@ -1040,7 +1046,7 @@ public:
             size_t  compressed_len;
             char   *compressed_dest = unalign(dest, dest_len, compressed_len);
 
-            ARB_alloc(buffer, ali_len+1);
+            buffer = (char*)malloc(ali_len+1);
 
             RealignAttempt attempt(allowed, compressed_dest, compressed_len, source, buffer, ali_len, cutoff_dna);
             FailedAt       failed = attempt.failed();
@@ -1109,7 +1115,7 @@ struct Data : virtual Noncopyable {
             if (gb_data) {
                 data          = GB_read_string(gb_data);
                 if (data) len = GB_read_string_count(gb_data);
-                else error    = ARB_strdup(GB_await_error());
+                else error    = strdup(GB_await_error());
                 return;
             }
         }
@@ -1832,7 +1838,7 @@ void TEST_realign() {
                     const char *dnaseq      = GB_read_char_pntr(gb_TaxOcell_dna);
                     size_t      expextedLen = strlen(E.dna);
                     size_t      seqlen      = strlen(dnaseq);
-                    char       *firstPart   = ARB_strndup(dnaseq, expextedLen);
+                    char       *firstPart   = GB_strndup(dnaseq, expextedLen);
                     size_t      dna_behind;
                     char       *nothing     = unalign(dnaseq+expextedLen, seqlen-expextedLen, dna_behind);
 

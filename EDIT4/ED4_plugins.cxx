@@ -44,13 +44,13 @@ public:
           gb_main(gb_main_), 
           seq_term(NULL)
     {}
-    ~ED4_host() OVERRIDE {}
+    virtual ~ED4_host() OVERRIDE {}
 
     AW_root *get_application_root() const OVERRIDE { return aw_root; }
     GBDATA *get_database() const OVERRIDE { return gb_main; }
 
     void announce_current_species(const char *species_name) OVERRIDE {
-        ED4_base *base = ED4_ROOT->main_manager->find_first_that(LEV_SEQUENCE_STRING, makeED4_basePredicate(has_species_name, species_name));
+        ED4_base *base = ED4_ROOT->main_manager->find_first_that(ED4_L_SEQUENCE_STRING, makeED4_basePredicate(has_species_name, species_name));
         seq_term       = base ? base->to_sequence_terminal() : NULL;
     }
 
@@ -83,12 +83,12 @@ class PlugIn {
 
 public:
     PlugIn(const char *name_, ED4_plugin *start_plugin_)
-        : name(ARB_strdup(name_)),
+        : name(strdup(name_)),
           start_plugin(start_plugin_),
           window(NULL)
     {}
     PlugIn(const PlugIn& other)
-        : name(ARB_strdup(other.name)),
+        : name(strdup(other.name)),
           start_plugin(other.start_plugin),
           window(other.window)
     {}

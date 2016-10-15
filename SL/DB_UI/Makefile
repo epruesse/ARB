@@ -37,7 +37,6 @@ info_window.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 info_window.o: $(ARBHOME)/INCLUDE/arb_assert.h
 info_window.o: $(ARBHOME)/INCLUDE/arb_core.h
 info_window.o: $(ARBHOME)/INCLUDE/arb_error.h
-info_window.o: $(ARBHOME)/INCLUDE/arb_mem.h
 info_window.o: $(ARBHOME)/INCLUDE/arb_msg.h
 info_window.o: $(ARBHOME)/INCLUDE/arb_str.h
 info_window.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -73,7 +72,6 @@ ui_species.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ui_species.o: $(ARBHOME)/INCLUDE/arb_core.h
 ui_species.o: $(ARBHOME)/INCLUDE/arb_defs.h
 ui_species.o: $(ARBHOME)/INCLUDE/arb_error.h
-ui_species.o: $(ARBHOME)/INCLUDE/arb_mem.h
 ui_species.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ui_species.o: $(ARBHOME)/INCLUDE/arb_progress.h
 ui_species.o: $(ARBHOME)/INCLUDE/arb_strbuf.h

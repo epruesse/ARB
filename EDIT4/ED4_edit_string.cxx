@@ -335,17 +335,19 @@ static GB_ERROR toggle_cursor_group_folding() {
             cursor_term->setCursorTo(&cursor, cursor.get_sequence_pos(), true, ED4_JUMP_KEEP_POSITION);
         }
         else {
-            ED4_base *group = cursor.owner_of_cursor->get_parent(LEV_GROUP);
+            ED4_base *group = cursor.owner_of_cursor->get_parent(ED4_L_GROUP);
             if (group) {
-                ED4_group_manager *group_man = group->to_group_manager();
-                if (group_man->has_property(PROP_IS_FOLDED)) {
-                    group_man->unfold();
+                ED4_group_manager    *group_man    = group->to_group_manager();
+                ED4_bracket_terminal *bracket_term = group_man->get_defined_level(ED4_L_BRACKET)->to_bracket_terminal();
+
+                if (group_man->dynamic_prop & ED4_P_IS_FOLDED) {
+                    bracket_term->unfold();
                 }
                 else {
                     ED4_species_manager *consensus_man = group_man->get_multi_species_manager()->get_consensus_manager();
                     if (consensus_man) consensus_man->setCursorTo(&cursor, cursor.get_sequence_pos(), true, ED4_JUMP_KEEP_POSITION);
 
-                    group_man->fold();
+                    bracket_term->fold();
                 }
             }
         }
@@ -788,12 +790,12 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
                         case 'J': { // CTRL-J = Jump to opposite helix position
                             AW_helix *helix = ED4_ROOT->helix;
 
-                            if (!helix->has_entries()) ad_err = ARB_strdup("Got no helix information");
+                            if (!helix->has_entries()) ad_err = strdup("Got no helix information");
                             else if (helix->pairtype(seq_pos) != HELIX_NONE) {
                                 seq_pos = helix->opposite_position(seq_pos);
                                 cursor_jump = ED4_JUMP_KEEP_POSITION;
                             }
-                            else ad_err = ARB_strdup("Not at helix position");
+                            else ad_err = strdup("Not at helix position");
                             break;
                         }
                         case 'K': { // Ctrl-K = Compression on/off
@@ -891,9 +893,10 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
                                 if (ED4_is_gap_character(key)) {
                                     if (keymod == AW_KEYMODE_NONE) {
                                         if (!ad_err) {
-                                            char *nstr = ARB_calloc<char>(nrepeat+1);
+                                            char *nstr = (char *)GB_calloc(1, nrepeat+1);
+                                            int i;
 
-                                            for (int i = 0; i< nrepeat; i++) nstr[i] = key;
+                                            for (i = 0; i< nrepeat; i++) nstr[i] = key;
                                             ad_err = insert(nstr, seq_pos, direction, 0);
                                             if (!ad_err) seq_pos = get_next_visible_pos(seq_pos+(direction>=0 ? nrepeat : 0), direction);
                                             delete nstr;

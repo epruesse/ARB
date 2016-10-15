@@ -304,7 +304,7 @@ int ARB_main(int argc, char *argv[]) {
 #include <sys/wait.h>
 
 inline GB_ERROR valgrinded_system(const char *cmdline) {
-    char *cmddup = ARB_strdup(cmdline);
+    char *cmddup = strdup(cmdline);
     make_valgrinded_call(cmddup);
 
     GB_ERROR error = GBK_system(cmddup);
@@ -317,7 +317,7 @@ inline GB_ERROR valgrinded_system(const char *cmdline) {
 #define TEST_RUN_TOOL_FAILS(cmdline) TEST_EXPECT_ERROR_CONTAINS(RUN_TOOL(cmdline), "System call failed")
 
 inline bool server_is_down(const char *tcp) {
-    char     *ping_cmd = ARB_strdup(GBS_global_string("arb_db_server -T%s -Cping", tcp));
+    char     *ping_cmd = strdup(GBS_global_string("arb_db_server -T%s -Cping", tcp));
     GB_ERROR  error    = GBK_system(ping_cmd); // causes a crash in called command (as long as server is not up)
     free(ping_cmd);
     return error;
@@ -334,11 +334,11 @@ void TEST_SLOW_dbserver() {
     TEST_RUN_TOOL_FAILS("arb_db_server -X");
     TEST_RUN_TOOL_FAILS("arb_db_server brzl");
 
-    char *sock = ARB_strdup(GB_path_in_ARBHOME("UNIT_TESTER/sockets/dbserver.socket"));
-    char *tcp  = GBS_global_string_copy(":%s", sock);
-    char *db   = ARB_strdup(GB_path_in_ARBHOME("UNIT_TESTER/run/TEST_loadsave.arb"));
+    char *sock = strdup(GB_path_in_ARBHOME("UNIT_TESTER/sockets/dbserver.socket"));
+    char *tcp        = GBS_global_string_copy(":%s", sock);
+    char *db         = strdup(GB_path_in_ARBHOME("UNIT_TESTER/run/TEST_loadsave.arb"));
 
-    char *shutdown_cmd = ARB_strdup(GBS_global_string("arb_db_server -T%s -Cshutdown", tcp));
+    char *shutdown_cmd = strdup(GBS_global_string("arb_db_server -T%s -Cshutdown", tcp));
 
 // #define DEBUG_SERVER // uncomment when debugging server manually
 
@@ -358,7 +358,7 @@ void TEST_SLOW_dbserver() {
         // ok - server is up
 
         {
-            char *bad_cmd = ARB_strdup(GBS_global_string("arb_db_server -T%s -Cbad", tcp));
+            char *bad_cmd = strdup(GBS_global_string("arb_db_server -T%s -Cbad", tcp));
             TEST_RUN_TOOL_FAILS(bad_cmd);
             free(bad_cmd);
         }
@@ -453,10 +453,10 @@ void TEST_SLOW_dbserver() {
 
         // test remote save
         {
-            char *savename = ARB_strdup(GB_path_in_ARBHOME("UNIT_TESTER/run/TEST_arbdbserver_save.arb"));
-            char *expected = ARB_strdup(GB_path_in_ARBHOME("UNIT_TESTER/run/TEST_arbdbserver_save_expected.arb"));
-            char *save_cmd = ARB_strdup(GBS_global_string("arb_db_server -T%s -Csave -d%s", tcp, savename));
-            char *bad_savecmd = ARB_strdup(GBS_global_string("arb_db_server -T%s -Csave", tcp));
+            char *savename = strdup(GB_path_in_ARBHOME("UNIT_TESTER/run/TEST_arbdbserver_save.arb"));
+            char *expected = strdup(GB_path_in_ARBHOME("UNIT_TESTER/run/TEST_arbdbserver_save_expected.arb"));
+            char *save_cmd = strdup(GBS_global_string("arb_db_server -T%s -Csave -d%s", tcp, savename));
+            char *bad_savecmd = strdup(GBS_global_string("arb_db_server -T%s -Csave", tcp));
 
             TEST_RUN_TOOL(save_cmd);
             TEST_EXPECT(GB_is_regularfile(savename));

@@ -40,7 +40,6 @@ field_shader.o: $(ARBHOME)/INCLUDE/arb_core.h
 field_shader.o: $(ARBHOME)/INCLUDE/arb_defs.h
 field_shader.o: $(ARBHOME)/INCLUDE/arb_error.h
 field_shader.o: $(ARBHOME)/INCLUDE/arb_global_defs.h
-field_shader.o: $(ARBHOME)/INCLUDE/arb_mem.h
 field_shader.o: $(ARBHOME)/INCLUDE/arb_msg.h
 field_shader.o: $(ARBHOME)/INCLUDE/arb_str.h
 field_shader.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -80,7 +79,6 @@ item_shader.o: $(ARBHOME)/INCLUDE/ad_prot.h
 item_shader.o: $(ARBHOME)/INCLUDE/arb_assert.h
 item_shader.o: $(ARBHOME)/INCLUDE/arb_core.h
 item_shader.o: $(ARBHOME)/INCLUDE/arb_error.h
-item_shader.o: $(ARBHOME)/INCLUDE/arb_mem.h
 item_shader.o: $(ARBHOME)/INCLUDE/arb_msg.h
 item_shader.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 item_shader.o: $(ARBHOME)/INCLUDE/arb_string.h

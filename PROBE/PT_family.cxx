@@ -328,7 +328,7 @@ static int make_PT_family_list(PT_family *ffinder, const FamilyStat& famStat) {
         if (ps.get_match_count() != 0) {
             PT_family_list *fl = create_PT_family_list();
 
-            fl->name        = ARB_strdup(pid.get_shortname());
+            fl->name        = strdup(pid.get_shortname());
             fl->matches     = ps.get_match_count();
             fl->rel_matches = ps.get_rel_match_count();
 
@@ -425,7 +425,7 @@ int find_family(PT_family *ffinder, bytestring *species) {
             }
 
             if ((complement&cmode) != 0) {
-                char *s = ARB_alloc<char>(sequence_len+1);
+                char *s = (char*)malloc(sequence_len+1);
 
                 memcpy(s, sequence, sequence_len);
                 s[sequence_len] = 0;

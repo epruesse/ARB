@@ -136,7 +136,7 @@ int ARB_main(int argc, char *argv[]) {
                 const char *not_in_header = "Y"; // these flags don't appear in header and they should be written directly after header
 
                 {
-                    char *firstline = ARB_strdup("");
+                    char *firstline = strdup("");
                     for (int arg = 0; arg<argc; ++arg) { // put all fastdnaml arguments to header
                         char command_char = argv[arg][0];
                         if (!command_char) continue; // skip empty arguments

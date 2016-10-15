@@ -101,7 +101,7 @@ void to_paup(const FormattedFile& in, const char *outf) {
 
     for (int i = 0; i<ali.get_count(); ++i) {
         SeqPtr  seq  = ali.getSeqPtr(i);
-        char   *name = ARB_strdup(seq->get_id());
+        char   *name = strdup(seq->get_id());
         paup_verify_name(name);
         seq->replace_id(name);
         ca_assert(seq->get_id());

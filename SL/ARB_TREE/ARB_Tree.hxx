@@ -58,7 +58,7 @@ protected:
         at_assert(!gb_tree);
         at_assert(!tree_name);
         gb_tree   = gbTree;
-        tree_name = ARB_strdup(name);
+        tree_name = strdup(name);
     }
 
 public:

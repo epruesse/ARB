@@ -923,12 +923,12 @@ static string scan_identifier(const string& line, size_t& scan_pos, GB_ERROR& er
 inline const char *inputMaskDir(bool local) {
     if (local) {
         static char *local_mask_dir;
-        if (!local_mask_dir) local_mask_dir = ARB_strdup(GB_path_in_arbprop("inputMasks"));
+        if (!local_mask_dir) local_mask_dir = strdup(GB_path_in_arbprop("inputMasks"));
         return local_mask_dir;
     }
 
     static char *global_mask_dir;
-    if (!global_mask_dir) global_mask_dir = ARB_strdup(GB_path_in_ARBLIB("inputMasks"));
+    if (!global_mask_dir) global_mask_dir = strdup(GB_path_in_ARBLIB("inputMasks"));
     return global_mask_dir;
 }
 
@@ -1109,7 +1109,7 @@ private:
     string id_dest;
     string id_source;
 
-    GB_ERROR action() OVERRIDE {
+    virtual GB_ERROR action() OVERRIDE {
         GB_ERROR             error       = 0;
         const awt_mask_item *item_source = mask->mask_global().get_identified_item(id_source, error);
         awt_mask_item       *item_dest   = mask->mask_global().get_identified_item(id_dest, error);
@@ -1124,7 +1124,7 @@ public:
         , id_dest(id_dest_)
         , id_source(id_source_)
     {}
-    ~awt_assignment() OVERRIDE {}
+    virtual ~awt_assignment() OVERRIDE {}
 };
 
 static void AWT_input_mask_perform_action(AW_window*, awt_mask_action *action) {
@@ -1326,14 +1326,14 @@ public:
         : awt_viewport(global_, generate_baseName(global_), "0", false, label_)
         , awt_linked_to_item()
     {}
-    ~awt_marked_checkbox() OVERRIDE {}
+    virtual ~awt_marked_checkbox() OVERRIDE {}
 
-    GB_ERROR link_to(GBDATA *gb_new_item) OVERRIDE; // link to a new item
-    GB_ERROR relink() OVERRIDE { return link_to(mask_global().get_selected_item()); }
-    void awar_changed() OVERRIDE;
-    void db_changed() OVERRIDE;
-    void general_item_change() OVERRIDE { db_changed(); } // called if item was changed (somehow)
-    void build_widget(AW_window *aws) OVERRIDE; // builds the widget at the current position
+    virtual GB_ERROR link_to(GBDATA *gb_new_item) OVERRIDE; // link to a new item
+    virtual GB_ERROR relink() OVERRIDE { return link_to(mask_global().get_selected_item()); }
+    virtual void awar_changed() OVERRIDE;
+    virtual void db_changed() OVERRIDE;
+    virtual void general_item_change() OVERRIDE { db_changed(); } // called if item was changed (somehow)
+    virtual void build_widget(AW_window *aws) OVERRIDE; // builds the widget at the current position
 };
 
 GB_ERROR awt_marked_checkbox::link_to(GBDATA *gb_new_item) { // link to a new item
@@ -2065,11 +2065,11 @@ void awt_input_mask::link_to(GBDATA *gb_item) {
 
 
 awt_input_mask_descriptor::awt_input_mask_descriptor(const char *title_, const char *maskname_, const char *itemtypename_, bool local, bool hidden_) {
-    title = ARB_strdup(title_);
-    internal_maskname    = ARB_alloc<char>(strlen(maskname_)+2);
+    title = strdup(title_);
+    internal_maskname    = (char*)malloc(strlen(maskname_)+2);
     internal_maskname[0] = local ? '0' : '1';
     strcpy(internal_maskname+1, maskname_);
-    itemtypename         = ARB_strdup(itemtypename_);
+    itemtypename         = strdup(itemtypename_);
     local_mask           = local;
     hidden               = hidden_;
 }
@@ -2080,9 +2080,9 @@ awt_input_mask_descriptor::~awt_input_mask_descriptor() {
 }
 
 awt_input_mask_descriptor::awt_input_mask_descriptor(const awt_input_mask_descriptor& other) {
-    title             = ARB_strdup(other.title);
-    internal_maskname = ARB_strdup(other.internal_maskname);
-    itemtypename      = ARB_strdup(other.itemtypename);
+    title             = strdup(other.title);
+    internal_maskname = strdup(other.internal_maskname);
+    itemtypename      = strdup(other.itemtypename);
     local_mask        = other.local_mask;
     hidden            = other.hidden;
 }
@@ -2092,9 +2092,9 @@ awt_input_mask_descriptor& awt_input_mask_descriptor::operator = (const awt_inpu
         free(internal_maskname);
         free(title);
 
-        title             = ARB_strdup(other.title);
-        internal_maskname = ARB_strdup(other.internal_maskname);
-        itemtypename      = ARB_strdup(other.itemtypename);
+        title             = strdup(other.title);
+        internal_maskname = strdup(other.internal_maskname);
+        itemtypename      = strdup(other.itemtypename);
         local_mask        = other.local_mask;
         hidden            = other.hidden;
     }
@@ -2183,18 +2183,24 @@ awt_item_type AWT_getItemType(const string& itemtype_name) {
 
 class AWT_registered_itemtype {
     // stores information about so-far-used item types
-    RefPtr<AW_window_menu_modes> awm;               // the main window responsible for opening windows
-    AWT_OpenMaskWindowCallback   open_window_cb;    // callback to open the window
+    AW_window_menu_modes       *awm;                // the main window responsible for opening windows
+    AWT_OpenMaskWindowCallback  open_window_cb;     // callback to open the window
+    GBDATA                     *gb_main;
 
 public:
-    AWT_registered_itemtype() :
-        awm(0),
-        open_window_cb(0)
+    AWT_registered_itemtype() : awm(0), open_window_cb(0), gb_main(0) {}
+    AWT_registered_itemtype(AW_window_menu_modes *awm_, AWT_OpenMaskWindowCallback open_window_cb_, GBDATA *gb_main_)
+        : awm(awm_)
+        , open_window_cb(open_window_cb_)
+        , gb_main(gb_main_)
     {}
-    AWT_registered_itemtype(AW_window_menu_modes *awm_, AWT_OpenMaskWindowCallback open_window_cb_) :
-        awm(awm_),
-        open_window_cb(open_window_cb_)
+    AWT_registered_itemtype(const AWT_registered_itemtype& other)
+        : awm(other.awm),
+          open_window_cb(other.open_window_cb),
+          gb_main(other.gb_main)
     {}
+    DECLARE_ASSIGNMENT_OPERATOR(AWT_registered_itemtype);
+    virtual ~AWT_registered_itemtype() {}
 
     AW_window_menu_modes *getWindow() const { return awm; }
     AWT_OpenMaskWindowCallback getOpenCb() const { return open_window_cb; }
@@ -2215,10 +2221,10 @@ static GB_ERROR openMaskWindowByType(int mask_id, awt_item_type type) {
     return error;
 }
 
-static void registerType(awt_item_type type, AW_window_menu_modes *awm, AWT_OpenMaskWindowCallback open_window_cb) {
+static void registerType(awt_item_type type, AW_window_menu_modes *awm, AWT_OpenMaskWindowCallback open_window_cb, GBDATA *gb_main) {
     TypeRegistryIter alreadyRegistered = registeredTypes.find(type);
     if (alreadyRegistered == registeredTypes.end()) {
-        registeredTypes[type] = AWT_registered_itemtype(awm, open_window_cb);
+        registeredTypes[type] = AWT_registered_itemtype(awm, open_window_cb, gb_main);
     }
 #if defined(DEBUG)
     else {
@@ -2397,7 +2403,7 @@ static char *selectMnemonic(const char *orgTitle, char *availableMnemonics, char
                 if (!prevWasChar || !startOfWord) {
                     if (hadMnemonic(availableMnemonics, c)) {
                         mnemonic = c;
-                        return ARB_strdup(orgTitle);
+                        return strdup(orgTitle);
                     }
                 }
                 prevWasChar = true;
@@ -2418,7 +2424,7 @@ static char *selectMnemonic(const char *orgTitle, char *availableMnemonics, char
     }
 
     mnemonic = 0; // failed
-    return ARB_strdup(orgTitle);
+    return strdup(orgTitle);
 }
 
 void AWT_create_mask_submenu(AW_window_menu_modes *awm, awt_item_type wanted_item_type, AWT_OpenMaskWindowCallback open_mask_window_cb, GBDATA *gb_main) {
@@ -2429,7 +2435,7 @@ void AWT_create_mask_submenu(AW_window_menu_modes *awm, awt_item_type wanted_ite
 
     awm->insert_sub_menu("User Masks", "k");
 
-    char *availableMnemonics = ARB_strdup("abcdefghijklmopqrstuvwxyz0123456789"); // 'n' excluded!
+    char *availableMnemonics = strdup("abcdefghijklmopqrstuvwxyz0123456789"); // 'n' excluded!
 
     for (int scope = 0; scope <= 1; ++scope) {
         bool entries_made = false;
@@ -2456,7 +2462,7 @@ void AWT_create_mask_submenu(AW_window_menu_modes *awm, awt_item_type wanted_ite
                     free(mod_title);
                     free(macroname2key);
                 }
-                registerType(item_type, awm, open_mask_window_cb);
+                registerType(item_type, awm, open_mask_window_cb, gb_main);
             }
             else if (item_type == AWT_IT_UNKNOWN) {
                 aw_message(GBS_global_string("Unknown @ITEMTYPE '%s' in '%s'", descriptor->get_itemtypename(), descriptor->get_internal_maskname()));

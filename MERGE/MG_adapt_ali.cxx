@@ -396,12 +396,12 @@ char *MG_remap::calc_softmapping(softbaselist& softbases, int start, int end, in
 
     char *result = NULL;
     if (listsize >= wanted_size) {                  // not or just enough space -> plain copy
-        ARB_alloc(result, listsize+1);
+        result = (char*)malloc(listsize+1);
         *std::copy(softbases.begin(), softbases.end(), result) = 0;
         outlen = listsize;
     }
     else {                                          // otherwise do soft-mapping
-        ARB_alloc(result, wanted_size+1);
+        result = (char*)malloc(wanted_size+1);
         mg_assert(listsize < wanted_size);
 
         // calculate target positions and detect mapping conflicts
@@ -596,7 +596,7 @@ char *MG_remap::remap(const char *sequence) {
 
 static MG_remap *MG_create_remap(GBDATA *gb_left, GBDATA *gb_right, const char *reference_species_names, const char *alignment_name) {
     MG_remap *rem      = new MG_remap;
-    char     *ref_list = ARB_strdup(reference_species_names);
+    char     *ref_list = strdup(reference_species_names);
 
     for (char *tok = strtok(ref_list, " \n,;"); tok; tok = strtok(NULL, " \n,;")) {
         bool    is_SAI           = strncmp(tok, "SAI:", 4) == 0;
@@ -665,7 +665,7 @@ MG_remaps::MG_remaps(GBDATA *gb_left, GBDATA *gb_right, bool enable, const char 
         GBT_get_alignment_names(alignment_names, gb_left);
         for (n_remaps = 0; alignment_names[n_remaps]; n_remaps++) {} // count alignments
 
-        ARB_calloc(remaps, n_remaps);
+        remaps = (MG_remap**)GB_calloc(sizeof(*remaps), n_remaps);
         for (int i = 0; i<n_remaps; ++i) {
             remaps[i] = MG_create_remap(gb_left, gb_right, reference_species_names, alignment_names[i]);
         }

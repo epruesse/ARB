@@ -43,7 +43,6 @@ TreeRead.o: $(ARBHOME)/INCLUDE/arb_core.h
 TreeRead.o: $(ARBHOME)/INCLUDE/arb_defs.h
 TreeRead.o: $(ARBHOME)/INCLUDE/arb_error.h
 TreeRead.o: $(ARBHOME)/INCLUDE/arb_file.h
-TreeRead.o: $(ARBHOME)/INCLUDE/arb_mem.h
 TreeRead.o: $(ARBHOME)/INCLUDE/arb_msg.h
 TreeRead.o: $(ARBHOME)/INCLUDE/arb_msg_fwd.h
 TreeRead.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
@@ -69,7 +68,6 @@ TreeTools.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 TreeTools.o: $(ARBHOME)/INCLUDE/arb_assert.h
 TreeTools.o: $(ARBHOME)/INCLUDE/arb_core.h
 TreeTools.o: $(ARBHOME)/INCLUDE/arb_error.h
-TreeTools.o: $(ARBHOME)/INCLUDE/arb_mem.h
 TreeTools.o: $(ARBHOME)/INCLUDE/arb_msg.h
 TreeTools.o: $(ARBHOME)/INCLUDE/arb_string.h
 TreeTools.o: $(ARBHOME)/INCLUDE/arbdb.h

@@ -158,7 +158,7 @@ public:
     bool  may_be_recollected() const { return !states.empty(); }
     const StateStack& get_states() const { return states; }
 
-    AP_UPDATE_FLAGS check_update() OVERRIDE; // disable  load !!!!
+    virtual AP_UPDATE_FLAGS check_update() OVERRIDE; // disable  load !!!!
 
     bool recalc_marked_from_sons() {
         // return true if changed

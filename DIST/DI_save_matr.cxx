@@ -56,7 +56,7 @@ GB_ERROR DI_MATRIX::save(const char *filename, enum DI_SAVE_TYPE type) {
                         while (buf[0] == ' ') ++buf;
                     }
 
-                    nds_results[col] = ARB_strdup(buf);
+                    nds_results[col] = strdup(buf);
 
                     size_t slen             = strlen(buf);
                     if (slen>app_size) slen = app_size;

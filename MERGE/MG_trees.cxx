@@ -143,7 +143,7 @@ static void MG_transfer_tree(AW_window *aww) {
         switch (what) {
             case XFER_SELECTED:
                 error = transfer_tree(source_name, overwrite, behind_name);
-                if (!error) select_dst = ARB_strdup(source_name);
+                if (!error) select_dst = strdup(source_name);
                 break;
 
             case XFER_ALL:
@@ -167,7 +167,7 @@ static void MG_transfer_tree(AW_window *aww) {
                     if (!gb_exists) {
                         error = transfer_tree(tree_name, false, behind_name);
                         xferd_missing++;
-                        if (!select_dst) select_dst = ARB_strdup(tree_name); // select first missing in dest box
+                        if (!select_dst) select_dst = strdup(tree_name); // select first missing in dest box
                         freedup(behind_name, tree_name);
                     }
                 }

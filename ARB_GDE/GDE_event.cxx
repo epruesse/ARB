@@ -109,8 +109,8 @@ static char *ReplaceArgs(AW_root *awr, char *Action, GmenuItem *gmenuitem, int n
         }
     }
 
-    if (textvalue == NULL)  ARB_calloc(textvalue, 1);
-    if (symbol == NULL)     symbol = "";
+    if (textvalue == NULL)  textvalue=(char *)calloc(1, sizeof(char));
+    if (symbol == NULL)     symbol="";
 
     set<string>warned_about;
     int conversion_warning = 0;
@@ -136,7 +136,7 @@ static char *ReplaceArgs(AW_root *awr, char *Action, GmenuItem *gmenuitem, int n
             int   repLen = strlen(replaceBy);
             int   symLen = strlen(symbol);
             int   newlen = strlen(Action)-skip-symLen+repLen+1;
-            char *temp   = ARB_calloc<char>(newlen);
+            char *temp   = (char *)calloc(newlen, 1);
 
             strncat(temp, Action, i-skip);
             strncat(temp, replaceBy, repLen);
@@ -173,8 +173,8 @@ static char *ReplaceFile(char *Action, GfileFormat file)
 
     for (; (i=Find2(Action, symbol)) != -1;)
     {
-        newlen  = strlen(Action)-strlen(symbol) + strlen(method)+1;
-        ARB_calloc(temp, newlen);
+        newlen = strlen(Action)-strlen(symbol) + strlen(method)+1;
+        temp = (char *)calloc(newlen, 1);
         strncat(temp, Action, i);
         strncat(temp, method, strlen(method));
         strcat(temp, &(Action[i+strlen(symbol)]));
@@ -196,7 +196,7 @@ static char *ReplaceString(char *Action, const char *old, const char *news)
     for (; (i=Find2(Action, symbol)) != -1;)
     {
         newlen = strlen(Action)-strlen(symbol) + strlen(method)+1;
-        ARB_calloc(temp, newlen);
+        temp = (char *)calloc(newlen, 1);
         strncat(temp, Action, i);
         strncat(temp, method, strlen(method));
         strcat(temp, &(Action[i+strlen(symbol)]));
@@ -274,7 +274,7 @@ static GB_ERROR write_sequence_autoinc_alisize(GBDATA *gb_data, long& ali_len, c
 
     if (!error) {
         if (part_len<seq_len) {
-            char *seq_part = ARB_strndup(sequence, part_len);
+            char *seq_part = GB_strndup(sequence, part_len);
             error = GB_write_string(gb_data, seq_part);
             free(seq_part);
         }
@@ -303,7 +303,7 @@ inline char eatgaps(const char *seq, int& index) {
 }
 
 static char *fix_aligned_data(const char *old_seq, const char *new_seq, GB_alignment_type ali_type) {
-    char *fixed = ARB_strdup(new_seq);
+    char *fixed = strdup(new_seq);
 
     int o = 0;
     int n = 0;
@@ -672,10 +672,10 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem) {
         }
 
         // Create the command line for external the function call
-        char *Action = ARB_strdup(current_item->method);
+        char *Action = strdup(current_item->method);
 
         while (1) {
-            char *oldAction = ARB_strdup(Action);
+            char *oldAction = strdup(Action);
 
             for (int j=0; j<current_item->numargs; j++) Action = ReplaceArgs(aw_root, Action, gmenuitem, j);
             bool changed = strcmp(oldAction, Action) != 0;

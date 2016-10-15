@@ -341,37 +341,40 @@ static char *readXmlTree(char *fname) {
     int createTempFile = mkstemp(tempFile);
 
     if (createTempFile) {
-        GBS_strstruct buf(strlen(fname));
+        GBS_strstruct *buf = GBS_stropen(strlen(fname));
 
         // extract path from fname in order to place a copy of dtd file required to validate xml file
         {
-            char *tmpFname = ARB_strdup(fname);
+            char *tmpFname = strdup(fname);
             for (char *tok = strtok(tmpFname, "/"); tok;) {
                 char *tmp = tok;
                 tok = strtok(0, "/");
                 if (tok) {
-                    buf.put('/');
-                    buf.cat(tmp);
+                    GBS_strcat(buf, "/");
+                    GBS_strcat(buf, tmp);
                 }
             }
             free(tmpFname);
         }
 
+        char *path = GBS_strclose(buf);
+
         // linking arb_tree.dtd file to the Path from where xml file is loaded
 #if defined(WARN_TODO)
 #warning fix hack
 #endif
-        char *command = GBS_global_string_copy("ln -s %s/lib/dtd/arb_tree.dtd %s/.", GB_getenvARBHOME(), buf.get_data());
-        GB_xcmd(command, XCMD_SYNC_WAIT_ON_ERROR);
+        char *command = GBS_global_string_copy("ln -s %s/lib/dtd/arb_tree.dtd %s/.", GB_getenvARBHOME(), path);
+        GB_xcmd(command, false, true);
 
         // execute xml2newick to convert xml format tree to newick format tree
         command = GBS_global_string_copy("xml2newick %s %s", fname, tempFile);
-        GB_xcmd(command, XCMD_SYNC_WAIT_ON_ERROR);
+        GB_xcmd(command, false, true);
 
         free(command);
+        free(path);
 
         // return newick format tree file
-        return ARB_strdup(tempFile);
+        return strdup(tempFile);
     }
     else {
         printf("Failed to create Temporary File to Parse xml file!\n");
@@ -555,7 +558,7 @@ static AW_window_simple *create_select_two_trees_window(AW_root *root, const cha
     return aws;
 }
 
-static AW_window_simple *create_select_other_tree_window(AW_root *root, const char *winId, const char *winTitle, const char *helpFile, AW_awar *awar_displayed_tree) {
+static AW_window_simple *create_select_other_tree_window(AW_root *root, const char *winId, const char *winTitle, const char *helpFile, const char *displayed_tree_awarname) {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(root, winId, winTitle);
     aws->load_xfig("ad_one_tree.fig");
@@ -569,6 +572,8 @@ static AW_window_simple *create_select_other_tree_window(AW_root *root, const ch
     aws->at("help");
     aws->callback(makeHelpCallback(helpFile));
     aws->create_button("HELP", "Help", "H");
+
+    AW_awar *awar_displayed_tree = root->awar(displayed_tree_awarname);
 
     aws->at("tree");
     awt_create_TREE_selection_list(GLOBAL.gb_main, aws, TreeAdmin::source_tree_awar(root)->awar_name, true);
@@ -956,13 +961,13 @@ static bool sort_dtree_by_other_tree_cb(TreeNode *tree, GB_ERROR& error) {
     return !error;
 }
 
-static void sort_tree_by_other_tree_cb(UNFIXED, TREE_canvas *ntw) {
+static void sort_tree_by_other_tree_cb(UNFIXED, AWT_canvas *ntw) {
     GB_ERROR error = NT_with_displayed_tree_do(ntw, sort_dtree_by_other_tree_cb);
     aw_message_if(error);
 }
 
-AW_window *NT_create_sort_tree_by_other_tree_window(AW_root *aw_root, TREE_canvas *ntw) {
-    AW_window_simple *aws = create_select_other_tree_window(aw_root, ntw->aww->local_id("SORT_BY_OTHER"), "Sort tree by other tree", "resortbyother.hlp", ntw->get_awar_tree());
+AW_window *NT_create_sort_tree_by_other_tree_window(AW_root *aw_root, AWT_canvas *ntw) {
+    AW_window_simple *aws = create_select_other_tree_window(aw_root, ntw->aww->local_id("SORT_BY_OTHER"), "Sort tree by other tree", "resortbyother.hlp", ntw->user_awar);
 
     aws->callback(makeWindowCallback(sort_tree_by_other_tree_cb, ntw));
     aws->create_autosize_button("RESORT", "Sort according to source tree");
@@ -987,7 +992,7 @@ void NT_create_multifurcate_tree_awars(AW_root *aw_root, AW_default props) {
     aw_root->awar_float(AWAR_MFURC_LENGTH_LIMIT,       0.1, props);
     aw_root->awar_float(AWAR_MFURC_BOOTSTRAP_LIMIT,    50,  props);
 }
-static void multifurcation_cb(UNFIXED, TREE_canvas *ntw) {
+static void multifurcation_cb(UNFIXED, AWT_canvas *ntw) {
     AW_root *aw_root = ntw->aww->get_root();
 
     float below_bootstrap = 101.0;
@@ -999,7 +1004,7 @@ static void multifurcation_cb(UNFIXED, TREE_canvas *ntw) {
 
     NT_multifurcate_tree(ntw, TreeNode::multifurc_limits(below_bootstrap, below_length, applyAtLeafs));
 }
-AW_window *NT_create_multifurcate_tree_window(AW_root *aw_root, TREE_canvas *ntw) {
+AW_window *NT_create_multifurcate_tree_window(AW_root *aw_root, AWT_canvas *ntw) {
     AW_window_simple *aws = new AW_window_simple;
 
     aws->init(aw_root, ntw->aww->local_id("multifurcate"), "Multifurcate tree");

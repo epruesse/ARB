@@ -98,7 +98,7 @@ inline int an_stricmp(const char *s1, const char *s2) {
 
 
 static AN_revers *lookup_an_revers(AN_main *main, const char *shortname) {
-    char      *key        = an_strlwr(ARB_strdup(shortname));
+    char      *key        = an_strlwr(strdup(shortname));
     AN_revers *an_reverse = (AN_revers*)aisc_find_lib(&main->prevers, key);
 
     free(key);
@@ -110,7 +110,7 @@ static AN_shorts *lookup_an_shorts(AN_main *main, const char *identifier) {
     // 'identifier' is either '*acc*add_id' or 'name1*name2*S' (see get_short() for details)
     // 'add_id' is the value of an additional DB field and may be empty.
 
-    char      *key       = an_strlwr(ARB_strdup(identifier));
+    char      *key       = an_strlwr(strdup(identifier));
     AN_shorts *an_shorts = (AN_shorts*)aisc_find_lib(&main->pnames, key);
 
     free(key);
@@ -141,7 +141,7 @@ static GB_HASH *an_get_prefix_hash() {
         GB_HASH *hash = GBS_create_hash(elems, GB_IGNORE_CASE);
 
         while (sin) {
-            GBS_write_hash_no_strdup(hash, ARB_strndup(sin->shrt, PREFIXLEN), (long)sin);
+            GBS_write_hash_no_strdup(hash, GB_strndup(sin->shrt, PREFIXLEN), (long)sin);
             sin = sin->next;
         }
 
@@ -175,28 +175,28 @@ static void an_add_short(const AN_local */*locs*/, const char *new_name,
     char      *full_name;
 
     if (strlen(parsed_sym)) {
-        ARB_calloc(full_name, strlen(parsed_name) + strlen(" sym")+1);
+        full_name = (char *)calloc(sizeof(char), strlen(parsed_name) + strlen(" sym")+1);
         sprintf(full_name, "%s sym", parsed_name);
     }
     else {
-        full_name = ARB_strdup(parsed_name);
+        full_name = strdup(parsed_name);
     }
 
     an_shorts = create_AN_shorts();
     an_revers = create_AN_revers();
 
-    an_shorts->mh.ident  = an_strlwr(ARB_strdup(new_name));
-    an_shorts->shrt      = ARB_strdup(shrt);
-    an_shorts->full_name = ARB_strdup(full_name);
-    an_shorts->acc       = ARB_strdup(acc);
-    an_shorts->add_id    = ARB_strdup(add_id);
+    an_shorts->mh.ident  = an_strlwr(strdup(new_name));
+    an_shorts->shrt      = strdup(shrt);
+    an_shorts->full_name = strdup(full_name);
+    an_shorts->acc       = strdup(acc);
+    an_shorts->add_id    = strdup(add_id);
 
     aisc_link(&aisc_main->pnames, an_shorts);
 
-    an_revers->mh.ident  = an_strlwr(ARB_strdup(shrt));
+    an_revers->mh.ident  = an_strlwr(strdup(shrt));
     an_revers->full_name = full_name;
-    an_revers->acc       = ARB_strdup(acc);
-    an_revers->add_id    = ARB_strdup(add_id);
+    an_revers->acc       = strdup(acc);
+    an_revers->add_id    = strdup(add_id);
 
     aisc_link(&aisc_main->prevers, an_revers);
 
@@ -252,7 +252,7 @@ static char *nas_string_2_name(const char *str) {
 #if defined(DUMP_NAME_CREATION)
     printf("nas_string_2_name('%s') = '%s'\n", org_str, buf);
 #endif // DUMP_NAME_CREATION
-    return ARB_strdup(buf);
+    return strdup(buf);
 }
 
 static char *nas_remove_small_vocals(const char *str) {
@@ -275,7 +275,7 @@ static char *nas_remove_small_vocals(const char *str) {
 #if defined(DUMP_NAME_CREATION)
     printf("nas_remove_small_vocals('%s') = '%s'\n", org_str, buf);
 #endif // DUMP_NAME_CREATION
-    return ARB_strdup(buf);
+    return strdup(buf);
 }
 
 static void an_complete_shrt(char *shrt, const char *rest_of_full) {
@@ -342,10 +342,10 @@ static char *an_get_short(AN_shorts *IF_ASSERTION_USED(shorts), dll_public *pare
     na_assert(full);
     na_assert(shorts == aisc_main->shorts1); // otherwise prefix_hash does not work!
 
-    if (full[0]==0) return ARB_strdup("ZZZ");
+    if (full[0]==0) return strdup("ZZZ");
 
     const char *result = 0;
-    char *full1  = ARB_strdup(full);
+    char *full1  = strdup(full);
     an_autocaps(full1);
 
     char *full2 = nas_string_2_name(full1);
@@ -354,7 +354,7 @@ static char *an_get_short(AN_shorts *IF_ASSERTION_USED(shorts), dll_public *pare
     if (look) {                 // name is already known
         free(full2);
         free(full1);
-        return ARB_strdup(look->shrt);
+        return strdup(look->shrt);
     }
 
     char *full3 = 0;
@@ -469,8 +469,8 @@ static char *an_get_short(AN_shorts *IF_ASSERTION_USED(shorts), dll_public *pare
 #endif    // DUMP_NAME_CREATION
 
         look           = create_AN_shorts();
-        look->mh.ident = ARB_strdup(full2);
-        look->shrt     = ARB_strdup(result);
+        look->mh.ident = strdup(full2);
+        look->shrt     = strdup(result);
         aisc_link((dllpublic_ext*)parent, (dllheader_ext*)look);
 
         aisc_main->touched = 1;
@@ -486,7 +486,7 @@ static char *an_get_short(AN_shorts *IF_ASSERTION_USED(shorts), dll_public *pare
     free(full2);
     free(full1);
 
-    return ARB_strdup(result);
+    return strdup(result);
 }
 
 // --------------------------------------------------------------------------------
@@ -520,7 +520,7 @@ public:
     }
 };
 
-static bool contains_non_alphanumeric(const char *str) {
+static bool stralnum(const char *str) {
     bool nonalnum = false;
     for (char c = *str++; c; c = *str++) {
         if (!isalnum(c)) {
@@ -528,13 +528,13 @@ static bool contains_non_alphanumeric(const char *str) {
             break;
         }
     }
-    return nonalnum;
+    return !nonalnum;
 }
 
 static char *make_alnum(const char *str) {
     // returns a heap-copy containing all alphanumeric characters of 'str'
 
-    char *newStr = ARB_alloc<char>(strlen(str)+1);
+    char *newStr = (char*)malloc(strlen(str)+1);
     int   n      = 0;
 
     for (int p = 0; str[p]; ++p) {
@@ -546,7 +546,7 @@ static char *make_alnum(const char *str) {
 static char *make_alpha(const char *str) {
     // returns a heap-copy containing all alpha characters of 'str'
 
-    char *newStr = ARB_alloc<char>(strlen(str)+1);
+    char *newStr = (char*)malloc(strlen(str)+1);
     int   n      = 0;
 
     for (int p = 0; str[p]; ++p) {
@@ -557,9 +557,9 @@ static char *make_alpha(const char *str) {
 }
 
 #if defined(DEBUG)
-#define assert_alphanumeric(s) na_assert(!contains_non_alphanumeric(s))
+#define assert_alnum(s) na_assert(stralnum(s))
 #else
-#define assert_alphanumeric(s)
+#define assert_alnum(s)
 #endif // DEBUG
 
 NameInformation::NameInformation(const AN_local *locs) {
@@ -601,9 +601,9 @@ NameInformation::NameInformation(const AN_local *locs) {
 
     freeset(first_name, make_alnum(first_name));
 
-    assert_alphanumeric(parsed_acc);
-    assert_alphanumeric(first_name);
-    assert_alphanumeric(rest_of_name);
+    assert_alnum(parsed_acc);
+    assert_alnum(first_name);
+    assert_alnum(rest_of_name);
 
     UPPERCASE(rest_of_name[0]);
 
@@ -657,7 +657,7 @@ aisc_string get_short(const AN_local *locs) {
     if (an_shorts) {            // we already have a short name
         bool recreate = false;
 
-        if (contains_non_alphanumeric(an_shorts->shrt)) {
+        if (!stralnum(an_shorts->shrt)) { // contains non-alphanumeric characters
             recreate = true;
         }
         else if (strcmp(an_shorts->full_name, default_full_name) == 0 && // fullname in name server is default_full_name
@@ -670,28 +670,28 @@ aisc_string get_short(const AN_local *locs) {
             an_shorts = 0;
         }
         else {
-            shrt = ARB_strdup(an_shorts->shrt);
+            shrt = strdup(an_shorts->shrt);
         }
     }
     if (!shrt) { // now there is no short name (or an illegal one)
         char *first_advice=0, *second_advice=0;
 
-        if (locs->advice[0] && contains_non_alphanumeric(locs->advice)) { // bad advice
+        if (locs->advice[0] && !stralnum(locs->advice)) { // bad advice
             locs->advice[0] = 0; // delete it
         }
 
         if (locs->advice[0]) {
             char *advice = make_alpha(locs->advice);
 
-            first_advice = ARB_strdup(advice);
+            first_advice = strdup(advice);
             if (strlen(advice) > 3) {
-                second_advice = ARB_strdup(advice+3);
+                second_advice = strdup(advice+3);
                 first_advice[3] = 0;
             }
         }
 
-        if (!first_advice) first_advice = ARB_strdup("ZZZ");
-        if (!second_advice) second_advice = ARB_strdup("ZZZZZ");
+        if (!first_advice) first_advice = strdup("ZZZ");
+        if (!second_advice) second_advice = strdup("ZZZZZ");
 
         char *first_short;
         int   first_len;
@@ -699,7 +699,7 @@ aisc_string get_short(const AN_local *locs) {
             const char *first_name = info.get_first_name();
             first_short      = first_name[0]
                 ? an_get_short(aisc_main->shorts1, &(aisc_main->pshorts1), first_name)
-                : ARB_strdup(first_advice);
+                : strdup(first_advice);
 
             na_assert(first_short);
 
@@ -709,7 +709,7 @@ aisc_string get_short(const AN_local *locs) {
             first_len = strlen(first_short);
         }
 
-        char *second_short = ARB_calloc<char>(10);
+        char *second_short = (char*)calloc(10, 1);
         int   second_len;
         {
             const char *rest_of_name = info.get_rest_of_name();
@@ -763,7 +763,7 @@ aisc_string get_short(const AN_local *locs) {
         if (lookup_an_revers(aisc_main, test_short)) {
             if (!nameModHash) nameModHash = GBS_create_hash(100, GB_IGNORE_CASE);
 
-            char *test_short_dup = ARB_strdup(test_short);
+            char *test_short_dup = strdup(test_short);
 
             long count    = 2; // start numbering with 'SomName2' (not 'SomName1')
             test_short[7] = 0; // store, max. 7 chars in nameModHash (at least one digit is used)
@@ -909,9 +909,9 @@ aisc_string get_short(const AN_local *locs) {
             GBS_optimize_hash(nameModHash);
         }
 
-        assert_alphanumeric(test_short);
+        assert_alnum(test_short);
 
-        shrt = ARB_strdup(test_short);
+        shrt = strdup(test_short);
         info.add_short(locs, shrt);
 
         free(first_short);
@@ -920,7 +920,7 @@ aisc_string get_short(const AN_local *locs) {
         free(second_advice);
     }
 
-    assert_alphanumeric(shrt);
+    assert_alnum(shrt);
     return shrt;
 }
 
@@ -931,7 +931,7 @@ int server_save(AN_main *main, int) {
             printf("Another nameserver changed '%s' - your changes are lost.\n", main->server_file);
         }
         else {
-            char *sec_name = ARB_calloc<char>(strlen(main->server_file)+2);
+            char *sec_name = (char *)calloc(sizeof(char), strlen(main->server_file)+2);
             sprintf(sec_name, "%s%%", main->server_file);
             printf("Saving '%s'..\n", main->server_file);
 
@@ -1048,7 +1048,7 @@ static void check_for_case_error(AN_main *main) {
             list<string> idents_to_recreate;
 
             for (AN_shorts *shrt =  main->shorts1; shrt;) {
-                char      *cap_name = ARB_strdup(shrt->shrt);
+                char      *cap_name = strdup(shrt->shrt);
                 an_autocaps(cap_name);
 
                 if (strcmp(cap_name, shrt->shrt) != 0) {
@@ -1072,7 +1072,7 @@ static void check_for_case_error(AN_main *main) {
         // now capitalize all short names
         for (AN_shorts *shrt =  main->names; shrt;) {
             AN_shorts *next     = shrt->next;
-            char      *cap_name = ARB_strdup(shrt->shrt);
+            char      *cap_name = strdup(shrt->shrt);
             an_autocaps(cap_name);
 
             if (strcmp(cap_name, shrt->shrt) != 0) {
@@ -1097,7 +1097,7 @@ static void check_for_illegal_chars(AN_main *main) {
     // first check name parts
     for (AN_shorts *shrt = main->shorts1; shrt;) {
         AN_shorts *next = shrt->next;
-        if (contains_non_alphanumeric(shrt->shrt)) {
+        if (!stralnum(shrt->shrt)) {
             fprintf(stderr, "- Fixing illegal chars in '%s'\n", shrt->shrt);
             an_remove_short(shrt);
             illegal_names++;
@@ -1107,7 +1107,7 @@ static void check_for_illegal_chars(AN_main *main) {
     // then check full short-names
     for (AN_shorts *shrt = main->names; shrt;) {
         AN_shorts *next  = shrt->next;
-        if (contains_non_alphanumeric(shrt->shrt)) {
+        if (!stralnum(shrt->shrt)) {
             fprintf(stderr, "- Fixing illegal chars in '%s'\n", shrt->shrt);
             an_remove_short(shrt);
             illegal_names++;
@@ -1177,10 +1177,10 @@ static GB_ERROR server_load(AN_main *main)
         long nameCount =  0;
         for (shrt = main->names; shrt; shrt = shrt->next) {
             revers            = create_AN_revers();
-            revers->mh.ident  = an_strlwr(ARB_strdup(shrt->shrt));
-            revers->full_name = ARB_strdup(shrt->full_name);
-            revers->acc       = ARB_strdup(shrt->acc);
-            revers->add_id    = shrt->add_id ? ARB_strdup(shrt->add_id) : 0;
+            revers->mh.ident  = an_strlwr(strdup(shrt->shrt));
+            revers->full_name = strdup(shrt->full_name);
+            revers->acc       = strdup(shrt->acc);
+            revers->add_id    = shrt->add_id ? strdup(shrt->add_id) : 0;
             aisc_link(&main->prevers, revers);
             nameCount++;
         }
@@ -1216,6 +1216,10 @@ static GB_ERROR server_load(AN_main *main)
     return error;
 }
 
+__ATTR__NORETURN static void names_server_shutdown(int exitcode) {
+    aisc_server_shutdown_and_exit(AN_global.server_communication, exitcode); // never returns
+}
+
 int names_server_save() {
     server_save(aisc_main, 0);
     return 0;
@@ -1235,13 +1239,12 @@ int server_shutdown(AN_main */*pm*/, aisc_string passwd) {
 
     // shutdown server
     printf("ARB_name_server: server shutdown by administrator\n");
-    aisc_server_shutdown(AN_global.server_communication);
-    exit(EXIT_SUCCESS);
-
+    names_server_shutdown(0);   // never returns!
     return 0;
 }
 
-static int usage(const char *exeName, const char *err) {
+static void usage(const char *exeName, const char *err) __ATTR__NORETURN;
+static void usage(const char *exeName, const char *err) {
     printf("ARB nameserver v%i\n"
            "Usage: %s command server-parameters\n"
            "command = -boot\n"
@@ -1250,7 +1253,7 @@ static int usage(const char *exeName, const char *err) {
            , SERVER_VERSION, exeName);
     arb_print_server_params();
     if (err) printf("Error: %s\n", err);
-    return EXIT_FAILURE;
+    exit(EXIT_FAILURE);
 }
 
 int ARB_main(int argc, char *argv[]) {
@@ -1262,9 +1265,7 @@ int ARB_main(int argc, char *argv[]) {
     params                 = arb_trace_argv(&argc, (const char **)argv);
     const char *executable = argv[0];
 
-    if (!params->default_file) {
-        return usage(executable, "Missing default file");
-    }
+    if (!params->default_file) usage(executable, "Missing default file");
 
     if (argc==1) { // default command is '-look'
         char flag[]="-look";
@@ -1272,9 +1273,7 @@ int ARB_main(int argc, char *argv[]) {
         argc = 2;
     }
 
-    if (argc!=2) {
-        return usage(executable, "Too many parameters");
-    }
+    if (argc!=2) usage(executable, "Too many parameters");
 
     aisc_main = create_AN_main();
 
@@ -1287,9 +1286,9 @@ int ARB_main(int argc, char *argv[]) {
 
         if (!cname) {
             GB_print_error();
-            return EXIT_FAILURE;
+            exit(EXIT_FAILURE);
         }
-        name = ARB_strdup(cname);
+        name = strdup(cname);
     }
 
     GB_ERROR error    = NULL;
@@ -1299,7 +1298,7 @@ int ARB_main(int argc, char *argv[]) {
         if (!strcmp(argv[1], "-look")) {
             printf("ARB_name_server: No client - terminating.\n");
             aisc_close(AN_global.cl_link, AN_global.cl_main); AN_global.cl_link = 0;
-            return EXIT_SUCCESS;
+            exit(EXIT_SUCCESS);
         }
 
         printf("There is another active nameserver. I try to kill it..\n");
@@ -1312,13 +1311,13 @@ int ARB_main(int argc, char *argv[]) {
 
     if (error) {
         printf("ARB_name_server: %s\n", error);
-        return EXIT_FAILURE;
+        exit(EXIT_FAILURE);
     }
 
     if (((strcmp(argv[1], "-kill") == 0)) ||
         ((argc==3) && (strcmp(argv[2], "-kill")==0))) {
         printf("ARB_name_server: Now I kill myself!\n");
-        return EXIT_SUCCESS;
+        exit(EXIT_SUCCESS);
     }
     for (i=0, so=0; (i<MAX_TRY) && (!so); i++) {
         so = open_aisc_server(name, NAME_SERVER_SLEEP*1000L, 0);
@@ -1326,11 +1325,11 @@ int ARB_main(int argc, char *argv[]) {
     }
     if (!so) {
         printf("AN_SERVER: Gave up on opening the communication socket!\n");
-        return EXIT_FAILURE;
+        exit(EXIT_FAILURE);
     }
     AN_global.server_communication = so;
 
-    aisc_main->server_file     = ARB_strdup(params->default_file);
+    aisc_main->server_file     = strdup(params->default_file);
     aisc_main->server_filedate = GB_time_of_file(aisc_main->server_file);
 
     error = server_load(aisc_main);
@@ -1357,7 +1356,7 @@ int ARB_main(int argc, char *argv[]) {
                 else {
                     fputs("* using no add. field\n", stdout);
                 }
-                aisc_main->add_field = ARB_strdup(field);
+                aisc_main->add_field = strdup(field);
                 aisc_main->touched   = 1;
             }
             else {
@@ -1443,8 +1442,5 @@ int ARB_main(int argc, char *argv[]) {
 
     printf("ARB_name_server terminating...\n");
     if (nameModHash) GBS_free_hash(nameModHash);
-    aisc_server_shutdown(AN_global.server_communication);
-    int exitcode = error ? EXIT_FAILURE : EXIT_SUCCESS;
-    printf("Server terminates with code %i.\n", exitcode);
-    return exitcode;
+    names_server_shutdown(error ? EXIT_FAILURE : EXIT_SUCCESS); // never returns
 }

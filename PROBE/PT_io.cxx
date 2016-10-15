@@ -94,7 +94,7 @@ char *readable_probe(const char *compressed_probe, size_t len, char T_or_U) {
     uchar *tab = NULL;
 
     if (smart_tab.isNull()) {
-        ARB_alloc(tab, 256);
+        tab = (uchar *) malloc(256);
         memset(tab, '?', 256);
 
         tab[PT_A]  = 'A';
@@ -111,7 +111,7 @@ char *readable_probe(const char *compressed_probe, size_t len, char T_or_U) {
     tab = &*smart_tab;
     tab[PT_T] = T_or_U;
     
-    char *result = ARB_alloc<char>(len+1);
+    char *result = (char*)malloc(len+1);
     for (size_t i = 0; i<len; ++i) {
         result[i] = tab[safeCharIndex(compressed_probe[i])];
     }
@@ -426,7 +426,7 @@ void TEST_CachedPtr() {
             CacheHandle<SmartCharPtr> p[P];
             const char *word[] = { "apple", "orange", "pie", "juice" };
 
-            for (int i = 0; i<P; ++i) p[i].assign(ARB_strdup(word[i]), cache);
+            for (int i = 0; i<P; ++i) p[i].assign(strdup(word[i]), cache);
             TEST_REJECT(p[0].is_cached());
             for (int i = 1; i<P; ++i) TEST_EXPECT_EQUAL(&*p[i].access(cache), word[i]);
 
@@ -436,7 +436,7 @@ void TEST_CachedPtr() {
             cache.resize(cache.size()-1);
             TEST_REJECT(p[1].is_cached()); // invalidated by resize
 
-            for (int i = P-1; i >= 0; --i) p[i].assign(ARB_strdup(word[P-1-i]), cache);
+            for (int i = P-1; i >= 0; --i) p[i].assign(strdup(word[P-1-i]), cache);
 
             for (int i = 0; i<2; ++i) TEST_EXPECT_EQUAL(&*p[i].access(cache), word[P-1-i]);
             for (int i = 2; i<P; ++i) TEST_REJECT(p[i].is_cached());

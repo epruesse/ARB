@@ -12,6 +12,7 @@
 #include "arb_strarray.h"
 
 #include <arb_str.h>
+#include <arb_string.h>
 #include <arb_strbuf.h>
 #include <arb_sort.h>
 
@@ -57,7 +58,7 @@ void GBT_splitNdestroy_string(ConstStrArray& names, char*& namelist, const char 
      * Example:
      * @code
      * ConstStrArray array;
-     * char *list = ARB_strdup("Peter;Paul;Mary");
+     * char *list = strdup("Peter;Paul;Mary");
      * GBT_splitNdestroy_string(array, list, ";", false);
      * // array[1] contains "Paul"
      * @endcode
@@ -71,6 +72,7 @@ void GBT_splitNdestroy_string(ConstStrArray& names, char*& namelist, const char 
     while (sep) {
         size_t nonsepcount = strcspn(sep, separator);
         if (nonsepcount || !dropEmptyTokens) {
+            // names.put(GB_strpartdup(sep, sep+nonsepcount-1));
             names.put(sep);
             sep += nonsepcount;
         }
@@ -78,6 +80,7 @@ void GBT_splitNdestroy_string(ConstStrArray& names, char*& namelist, const char 
         sep[0] = 0;
         if (sepcount) {
             if (!dropEmptyTokens) {
+                // for (size_t s = 1; s<sepcount; ++s) names.put(strdup(""));
                 for (size_t s = 1; s<sepcount; ++s) names.put(sep);
             }
             sep += sepcount;
@@ -104,7 +107,7 @@ char *GBT_join_strings(const CharPtrArray& strings, char separator) {
      * @return heap-copy of joined strings
      */
 
-    if (!strings[0]) return ARB_strdup("");
+    if (!strings[0]) return strdup("");
 
     GBS_strstruct *out = GBS_stropen(1000);
     GBS_strcat(out, strings[0]);
@@ -164,14 +167,14 @@ void TEST_StrArray() {
     TEST_EXPECT_EQUAL(array.size(), 0);
     TEST_EXPECT_NULL(array[0]);
 
-    array.put(ARB_strdup("first"));
+    array.put(strdup("first"));
 
     TEST_REJECT(array.empty());
     TEST_EXPECT_EQUAL(array.size(), 1);
     TEST_EXPECT_EQUAL(array[0], "first");
     TEST_EXPECT_NULL(array[1]);
 
-    array.put(ARB_strdup("second"));
+    array.put(strdup("second"));
     
     TEST_EXPECT_EQUAL(array.size(), 2);
     TEST_EXPECT_EQUAL(array[0], "first");

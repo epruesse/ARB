@@ -33,8 +33,8 @@ struct customCriterion {
     }
 
     customCriterion() : key(NULL), reverse(false) { check_valid(); }
-    customCriterion(const char *key_, bool reverse_) : key(ARB_strdup(key_)), reverse(reverse_) { check_valid(); }
-    customCriterion(const customCriterion& other) : key(ARB_strdup(other.key)), reverse(other.reverse) { check_valid(); }
+    customCriterion(const char *key_, bool reverse_) : key(strdup(key_)), reverse(reverse_) { check_valid(); }
+    customCriterion(const customCriterion& other) : key(strdup(other.key)), reverse(other.reverse) { check_valid(); }
     DECLARE_ASSIGNMENT_OPERATOR(customCriterion);
     ~customCriterion() { free(key); }
 };
@@ -132,7 +132,7 @@ static GB_ERROR resort_data_base(TreeNode *tree, const customCriterion *sortBy) 
         else {
             if (tree) {
                 gb_resort_data_count = 0;
-                ARB_calloc(gb_resort_data_list, GB_nsons(gb_sd) + 256);
+                gb_resort_data_list  = (GBDATA **)calloc(sizeof(GBDATA *), GB_nsons(gb_sd) + 256);
                 NT_resort_data_base_by_tree(tree, gb_sd);
             }
             else {
@@ -147,7 +147,7 @@ static GB_ERROR resort_data_base(TreeNode *tree, const customCriterion *sortBy) 
     return GB_end_transaction(GLOBAL.gb_main, error);
 }
 
-void NT_resort_data_by_phylogeny(AW_window*, TREE_canvas *ntw) {
+void NT_resort_data_by_phylogeny(AW_window*, AWT_canvas *ntw) {
     arb_progress  progress("Sorting data");
     GB_ERROR      error = 0;
     TreeNode     *tree  = NT_get_tree_root_of_canvas(ntw);

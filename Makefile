@@ -109,9 +109,9 @@ ALLOWED_gcc_VERSIONS=\
         4.6.1 4.6.2 4.6.3 4.6.4 \
         4.7.1 4.7.2 4.7.3 4.7.4 \
   4.8.0 4.8.1 4.8.2 4.8.3 4.8.4 4.8.5 \
-  4.9.0 4.9.1 4.9.2 4.9.3 4.9.4 \
+  4.9.0 4.9.1 4.9.2 4.9.3 \
   5.1.0 5.2.0 5.3.0 5.3.1 5.4.0 \
-  6.1.0 6.2.0 \
+  6.1.0 \
 
 
 # ----------------------
@@ -672,15 +672,7 @@ endif
 
 #---------------------- SSE vectorizer
 
-BROKEN_VECTORIZATION:=0
 ifeq ('$(COMPILER_VERSION)','6.1.0')
-	BROKEN_VECTORIZATION:=1
-endif
-ifeq ('$(COMPILER_VERSION)','6.2.0')
-	BROKEN_VECTORIZATION:=1
-endif
-
-ifeq ('$(BROKEN_VECTORIZATION)','1')
 # see http://bugs.arb-home.de/ticket/700
 	cflags += -fno-tree-loop-vectorize
 	DISABLE_VECTORIZE_CHECK:=1
@@ -881,9 +873,6 @@ first_target:
 		@echo ' up           - shortcut for depends+proto+tags'
 ifeq ($(UNIT_TESTS),1)
 		@echo ' ut           - only run tests'
-endif
-ifneq ($(SANITIZE),0)
-		@echo ' sanitize     - all + run arb_ntree with sanitizer (test.arb + execute _logged)'
 endif
 		@echo ' modified     - rebuild files modified in svn checkout (does touch)'
 		@echo ' touch        - touch files modified in svn checkout'

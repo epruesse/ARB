@@ -207,8 +207,6 @@ inline void option_menu_add_option(AW_option_menu_struct *oms, AW_widget_value_p
 
 void AW_window::insert_option_internal(AW_label option_name, const char *mnemonic, const char *var_value, const char *name_of_color, bool default_option) {
     AW_option_menu_struct *oms = p_global->current_option_menu;
-    aw_assert(oms != NULL); // "current" option menu has to be set (insert-functions may only be used between create_option_menu/clear_option_menu and update_option_menu)
-
     if (oms->variable_type != AW_STRING) {
         option_type_mismatch("string");
     }
@@ -228,7 +226,6 @@ void AW_window::insert_option_internal(AW_label option_name, const char *mnemoni
 }
 void AW_window::insert_option_internal(AW_label option_name, const char *mnemonic, int var_value, const char *name_of_color, bool default_option) {
     AW_option_menu_struct *oms = p_global->current_option_menu;
-    aw_assert(oms != NULL); // "current" option menu has to be set (insert-functions may only be used between create_option_menu/clear_option_menu and update_option_menu)
 
     if (oms->variable_type != AW_INT) {
         option_type_mismatch("int");
@@ -249,7 +246,6 @@ void AW_window::insert_option_internal(AW_label option_name, const char *mnemoni
 }
 void AW_window::insert_option_internal(AW_label option_name, const char *mnemonic, float var_value, const char *name_of_color, bool default_option) {
     AW_option_menu_struct *oms = p_global->current_option_menu;
-    aw_assert(oms != NULL); // "current" option menu has to be set (insert-functions may only be used between create_option_menu/clear_option_menu and update_option_menu)
 
     if (oms->variable_type != AW_FLOAT) {
         option_type_mismatch("float");

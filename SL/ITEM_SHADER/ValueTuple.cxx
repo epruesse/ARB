@@ -360,7 +360,7 @@ public:
     ~NoTuple() OVERRIDE {}
 
     bool is_defined() const OVERRIDE { return false; }
-    ShadedValue clone() const OVERRIDE { return new NoTuple; }
+    ValueTuple *clone() const OVERRIDE { return new NoTuple; }
     int range_offset(const Phaser&) const OVERRIDE { is_assert(0); return -9999999; } // defines no range offset
 
 #if defined(UNIT_TESTS)
@@ -368,10 +368,10 @@ public:
 #endif
 
     // mixer:
-    ShadedValue reverse_mix(float, const LinearTuple& other) const OVERRIDE;
-    ShadedValue reverse_mix(float, const PlanarTuple& other) const OVERRIDE;
-    ShadedValue reverse_mix(float, const SpatialTuple& other) const OVERRIDE;
-    ShadedValue mix(float, const ValueTuple& other) const OVERRIDE { return other.clone(); }
+    ValueTuple *reverse_mix(float, const LinearTuple& other) const OVERRIDE;
+    ValueTuple *reverse_mix(float, const PlanarTuple& other) const OVERRIDE;
+    ValueTuple *reverse_mix(float, const SpatialTuple& other) const OVERRIDE;
+    ValueTuple *mix(float, const ValueTuple& other) const OVERRIDE { return other.clone(); }
 };
 
 class LinearTuple: public ValueTuple {
@@ -384,7 +384,7 @@ public:
     ~LinearTuple() OVERRIDE {}
 
     bool is_defined() const OVERRIDE { return true; }
-    ShadedValue clone() const OVERRIDE { return new LinearTuple(val); }
+    ValueTuple *clone() const OVERRIDE { return new LinearTuple(val); }
     int range_offset(const Phaser& phaser) const OVERRIDE {  // returns int-offset into range [0 .. AW_RANGE_COLORS[
         return CHECKED_RANGE_OFFSET(fixed_range_offset<AW_RANGE_COLORS>(phaser.rephase(val)));
     }
@@ -398,10 +398,10 @@ public:
 #endif
 
     // mixer:
-    ShadedValue reverse_mix(float other_ratio, const LinearTuple& other) const OVERRIDE {
+    ValueTuple *reverse_mix(float other_ratio, const LinearTuple& other) const OVERRIDE {
         return new LinearTuple(other_ratio*other.val + (1-other_ratio)*val);
     }
-    ShadedValue mix(float my_ratio, const ValueTuple& other) const OVERRIDE { return other.reverse_mix(my_ratio, *this); }
+    ValueTuple *mix(float my_ratio, const ValueTuple& other) const OVERRIDE { return other.reverse_mix(my_ratio, *this); }
 };
 
 inline float mix_floats(float me, float my_ratio, float other) {
@@ -425,7 +425,7 @@ public:
     ~PlanarTuple() OVERRIDE {}
 
     bool is_defined() const OVERRIDE { return true; }
-    ShadedValue clone() const OVERRIDE { return new PlanarTuple(val1, val2); }
+    ValueTuple *clone() const OVERRIDE { return new PlanarTuple(val1, val2); }
     int range_offset(const Phaser& phaser) const OVERRIDE { // returns int-offset into range [0 .. AW_RANGE_COLORS[
         int c1 = is_nan(val1) ? 0 : fixed_range_offset<AW_PLANAR_COLORS>(phaser.rephase(val1));
         int c2 = is_nan(val2) ? 0 : fixed_range_offset<AW_PLANAR_COLORS>(phaser.rephase(val2));
@@ -441,11 +441,11 @@ public:
 #endif
 
     // mixer:
-    ShadedValue reverse_mix(float other_ratio, const PlanarTuple& other) const OVERRIDE {
+    ValueTuple *reverse_mix(float other_ratio, const PlanarTuple& other) const OVERRIDE {
         return new PlanarTuple(mix_floats(other.val1, other_ratio, val1),
                                mix_floats(other.val2, other_ratio, val2));
     }
-    ShadedValue mix(float my_ratio, const ValueTuple& other) const OVERRIDE { return other.reverse_mix(my_ratio, *this); }
+    ValueTuple *mix(float my_ratio, const ValueTuple& other) const OVERRIDE { return other.reverse_mix(my_ratio, *this); }
 };
 
 class SpatialTuple: public ValueTuple {
@@ -465,7 +465,7 @@ public:
     ~SpatialTuple() OVERRIDE {}
 
     bool is_defined() const OVERRIDE { return true; }
-    ShadedValue clone() const OVERRIDE { return new SpatialTuple(val1, val2, val3); }
+    ValueTuple *clone() const OVERRIDE { return new SpatialTuple(val1, val2, val3); }
     int range_offset(const Phaser& phaser) const OVERRIDE { // returns int-offset into range [0 .. AW_RANGE_COLORS[
         int c1 = is_nan(val1) ? 0 : fixed_range_offset<AW_SPATIAL_COLORS>(phaser.rephase(val1));
         int c2 = is_nan(val2) ? 0 : fixed_range_offset<AW_SPATIAL_COLORS>(phaser.rephase(val2));
@@ -482,35 +482,35 @@ public:
 #endif
 
     // mixer:
-    ShadedValue reverse_mix(float other_ratio, const SpatialTuple& other) const OVERRIDE {
+    ValueTuple *reverse_mix(float other_ratio, const SpatialTuple& other) const OVERRIDE {
         return new SpatialTuple(mix_floats(other.val1, other_ratio, val1),
                                 mix_floats(other.val2, other_ratio, val2),
                                 mix_floats(other.val3, other_ratio, val3));
     }
-    ShadedValue mix(float my_ratio, const ValueTuple& other) const OVERRIDE { return other.reverse_mix(my_ratio, *this); }
+    ValueTuple *mix(float my_ratio, const ValueTuple& other) const OVERRIDE { return other.reverse_mix(my_ratio, *this); }
 };
 
 
 // ---------------------------------
 //      mixer (late definition)
 
-ShadedValue NoTuple::reverse_mix(float, const LinearTuple&  other) const { return other.clone(); }
-ShadedValue NoTuple::reverse_mix(float, const PlanarTuple&  other) const { return other.clone(); }
-ShadedValue NoTuple::reverse_mix(float, const SpatialTuple& other) const { return other.clone(); }
+ValueTuple *NoTuple::reverse_mix(float, const LinearTuple&  other) const { return other.clone(); }
+ValueTuple *NoTuple::reverse_mix(float, const PlanarTuple&  other) const { return other.clone(); }
+ValueTuple *NoTuple::reverse_mix(float, const SpatialTuple& other) const { return other.clone(); }
 
 // -----------------
 //      factory
 
-ShadedValue ValueTuple::undefined() {
+ValueTuple *ValueTuple::undefined() {
     return new NoTuple;
 }
-ShadedValue ValueTuple::make(float f) {
+ValueTuple *ValueTuple::make(float f) {
     return is_nan(f) ? undefined() : new LinearTuple(f);
 }
-ShadedValue ValueTuple::make(float f1, float f2) {
+ValueTuple *ValueTuple::make(float f1, float f2) {
     return (is_nan(f1) && is_nan(f2)) ? undefined() : new PlanarTuple(f1, f2);
 }
-ShadedValue ValueTuple::make(float f1, float f2, float f3) {
+ValueTuple *ValueTuple::make(float f1, float f2, float f3) {
     return (is_nan(f1) && is_nan(f2) && is_nan(f3)) ? undefined() : new SpatialTuple(f1, f2, f3);
 }
 

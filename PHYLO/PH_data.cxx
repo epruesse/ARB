@@ -52,7 +52,7 @@ char *PHDATA::load(char*& Use) {
                 new_entry->gb_species_data_ptr = gb_data;
 
                 new_entry->key       = last_key_number++;
-                new_entry->name      = ARB_strdup(GBT_read_name(gb_species));
+                new_entry->name      = strdup(GBT_read_name(gb_species));
                 new_entry->full_name = GBT_read_string(gb_species, "full_name");
 
                 new_entry->prev = tail;
@@ -72,7 +72,7 @@ char *PHDATA::load(char*& Use) {
 
     GB_pop_transaction(gb_main);
 
-    ARB_calloc(hash_elements, nentries);
+    hash_elements = (PHENTRY **)calloc(nentries, sizeof(PHENTRY *));
 
     {
         PHENTRY *phentry = entries;

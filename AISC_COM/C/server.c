@@ -1154,6 +1154,18 @@ void aisc_server_shutdown(Hs_struct*& hs) {
     delete hs; hs = NULL;
 }
 
+void aisc_server_shutdown_and_exit(Hs_struct *hs, int exitcode) {
+    /* goes to header:
+     * __ATTR__NORETURN
+     * __ATTR__DEPRECATED_TODO("cause it hides a call to exit() inside a library")
+     */
+
+    aisc_server_shutdown(hs);
+    printf("Server terminates with code %i.\n", exitcode);
+    exit(exitcode);
+}
+
+
 // ---------------------------
 //      special functions
 

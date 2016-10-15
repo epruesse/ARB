@@ -63,7 +63,7 @@ void NT_createConcatenationAwars(AW_root *aw_root, AW_default aw_def, GBDATA *gb
                                          "(Reason: %s)", ali_default, GB_await_error()));
         }
     }
-    if (!ali_type) ali_type = ARB_strdup("rna");
+    if (!ali_type) ali_type = strdup("rna");
 
     aw_root->awar_string(AWAR_CON_SEQUENCE_TYPE,       ali_type,         aw_def);
     aw_root->awar_string(AWAR_CON_NEW_ALIGNMENT_NAME,  "ali_concat",     aw_def)->set_srt("ali_*=*:*=ali_*"); // auto-prefix with "ali_"
@@ -124,7 +124,7 @@ static GB_ERROR create_concatInfo_SAI(GBDATA *gb_main, const char *new_ali_name,
             int new_ali_length = GBT_get_alignment_len(gb_main, new_ali_name);
             int sep_len        = strlen(ali_separator);
 
-            char *info = ARB_alloc<char>(new_ali_length+1);
+            char *info = (char*)malloc(new_ali_length+1);
             memset(info, '=', new_ali_length);
 
             int offset       = 0;
@@ -238,21 +238,21 @@ static void concatenateAlignments(AW_window *aws, AW_selection *selected_alis) {
                      gb_species && !error;
                      gb_species = GBT_next_marked_species(gb_species))
                 {
-                    GBS_strstruct concat_seq(new_alignment_len+1);
-                    int           data_inserted = 0;
+                    GBS_strstruct *str_seq       = GBS_stropen(new_alignment_len+1); // create output stream
+                    int            data_inserted = 0;
 
                     for (size_t a = 0; a<ali_count; ++a) {
-                        if (a) concat_seq.cat(ali_separator);
+                        if (a) GBS_strcat(str_seq, ali_separator);
 
                         GBDATA *gb_seq_data = GBT_find_sequence(gb_species, ali_names[a]);
                         if (gb_seq_data) { // found data
-                            const char *seq_data = GB_read_char_pntr(gb_seq_data);
-                            concat_seq.cat(seq_data);
+                            const char *str_data = GB_read_char_pntr(gb_seq_data);
+                            GBS_strcat(str_seq, str_data);
                             ++found[a];
                             ++data_inserted;
                         }
                         else { // missing data
-                            if (insertGaps) concat_seq.nput('.', ali_length[a]);
+                            if (insertGaps) GBS_chrncat(str_seq, '.', ali_length[a]);
                             ++missing[a];
                         }
                     }
@@ -261,8 +261,11 @@ static void concatenateAlignments(AW_window *aws, AW_selection *selected_alis) {
                         error = GBS_global_string("None of the source alignments had data for species '%s'", GBT_read_name(gb_species));
                     }
                     else {
-                        GBDATA *gb_data = GBT_add_data(gb_species, new_ali_name, "data", GB_STRING);
-                        GB_write_string(gb_data, concat_seq.get_data());
+                        char   *concatenated_ali_seq_data = GBS_strclose(str_seq);
+                        GBDATA *gb_data                   = GBT_add_data(gb_species, new_ali_name, "data", GB_STRING);
+
+                        GB_write_string(gb_data, concatenated_ali_seq_data);
+                        free(concatenated_ali_seq_data);
                     }
                     progress.inc_and_check_user_abort(error);
                 }
@@ -305,7 +308,7 @@ static void addSpeciesToConcatenateList(SpeciesConcatenateList **sclp, GB_CSTR s
         SpeciesConcatenateList *scl = new SpeciesConcatenateList;
 
         scl->species      = gb_species;
-        scl->species_name = ARB_strdup(species_name);
+        scl->species_name = strdup(species_name);
         scl->next         = *sclp;
         *sclp             = scl;
     }
@@ -322,7 +325,7 @@ static void freeSpeciesConcatenateList(SpeciesConcatenateList *scl) {
 
 static GB_ERROR checkAndMergeFields(GBDATA *gb_new_species, GB_ERROR error, SpeciesConcatenateList *scl) {
 
-    char *doneFields = ARB_strdup(";name;"); // all fields which are already merged
+    char *doneFields = strdup(";name;"); // all fields which are already merged
     int   doneLen    = strlen(doneFields);
     SpeciesConcatenateList *sl = scl;
     int  sl_length = 0; while (scl) { sl_length++; scl=scl->next; } // counting no. of similar species stored in the list
@@ -431,7 +434,7 @@ static GB_ERROR checkAndMergeFields(GBDATA *gb_new_species, GB_ERROR error, Spec
                                 }
                                 nt_assert(content);
                                 int add_len = names_len+1+strlen(content);
-                                char *whole = ARB_alloc<char>(new_content_len+1+add_len+1);
+                                char *whole = (char*)malloc(new_content_len+1+add_len+1);
                                 nt_assert(whole);
                                 char *add = new_content ? whole+sprintf(whole, "%s ", new_content) : whole;
                                 sl2 = sl; i = 0;
@@ -459,7 +462,7 @@ static GB_ERROR checkAndMergeFields(GBDATA *gb_new_species, GB_ERROR error, Spec
                 }
 
                 // mark field as done:
-                char *new_doneFields = ARB_alloc<char>(doneLen+fieldLen+1+1);
+                char *new_doneFields = (char*)malloc(doneLen+fieldLen+1+1);
                 sprintf(new_doneFields, "%s%s;", doneFields, fieldName);
                 doneLen += fieldLen+1;
                 freeset(doneFields, new_doneFields);
@@ -590,7 +593,7 @@ static void mergeSimilarSpecies(AW_window *aws, MergeSpeciesType mergeType, AW_s
         GB_begin_transaction(GLOBAL.gb_main);       // open database for transaction
 
         const char *report_field_name = prepare_and_get_selected_itemfield(aw_root, AWAR_CON_STORE_SIM_SP_NO, GLOBAL.gb_main, SPECIES_get_selector(), FIF_NAME_SELECTED);
-        error                         = GB_incur_error_if(!report_field_name);
+        if (!report_field_name && GB_have_error()) error = GB_await_error();
 
         if (!error && strcmp(merge_field_name, NO_FIELD_SELECTED) == 0) {
             error = "Please select database field for similarity detection";

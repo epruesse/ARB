@@ -11,22 +11,17 @@
 #ifndef NT_LOCAL_H
 #define NT_LOCAL_H
 
-#ifndef NT_LOCAL_PROTO_H
-#include "NT_local_proto.h"
-#endif
-#ifndef ARBTOOLS_H
-#include <arbtools.h>
-#endif
-#ifndef ARB_ASSERT_H
-#include <arb_assert.h>
+#ifndef AW_BASE_HXX
+#include <aw_base.hxx>
 #endif
 #ifndef _GLIBCXX_CSTDLIB
 #include <cstdlib>
 #endif
+#ifndef ARBTOOLS_H
+#include <arbtools.h>
+#endif
 
 #define nt_assert(cond) arb_assert(cond)
-
-#define AWAR_NTREE_MAIN_WINDOW_COUNT "tmp/mainwin_count" // changes whenever a new NT main window is created
 
 #define MAX_NT_WINDOWS          5
 #define MAX_NT_WINDOWS_NULLINIT NULL,NULL,NULL,NULL,NULL
@@ -42,6 +37,10 @@ struct NT_global : virtual Noncopyable {
 };
 
 extern NT_global GLOBAL;
+
+#ifndef NT_LOCAL_PROTO_H
+#include "NT_local_proto.h"
+#endif
 
 #else
 #error NT_local.h included twice

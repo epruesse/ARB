@@ -40,23 +40,34 @@ class  GEN_root;
 class  GEN_graphic;
 struct GEN_position;
 
-class GEN_gene {
-    RefPtr<GBDATA>      gb_gene;
-    RefPtr<GEN_root>    root;
-    std::string         name;
-    mutable std::string nodeInfo;
-    long                pos1;
-    long                pos2;
-    bool                complement;
+class GEN_gene { 
+    GBDATA              *gb_gene; 
+    GEN_root            *root; 
+    std::string          name;
+    mutable std::string  nodeInfo;
+    long                 pos1;
+    long                 pos2;
+    bool                 complement;
 
     // Note: if a gene is joined from several parts it is represented in several GEN_gene's!
 
-    void init();
+    void init(GBDATA *gb_gene_, GEN_root *root_);
     void load_location(int part, const GEN_position *location);
 
 public:
     GEN_gene(GBDATA *gb_gene_, GEN_root *root_, const GEN_position *location);
     GEN_gene(GBDATA *gb_gene_, GEN_root *root_, const GEN_position *location, int partNumber);
+    GEN_gene(const GEN_gene& other)
+        : gb_gene(other.gb_gene),
+          root(other.root),
+          name(other.name),
+          nodeInfo(other.nodeInfo),
+          pos1(other.pos1),
+          pos2(other.pos2),
+          complement(other.complement)
+    {}
+    DECLARE_ASSIGNMENT_OPERATOR(GEN_gene);
+    ~GEN_gene() {}
 
     inline bool operator<(const GEN_gene& other) const {
         long cmp     = pos1-other.pos1;
@@ -115,7 +126,7 @@ public:
     const std::string& GeneName() const { return gene_name; }
     const std::string& OrganismName() const { return organism_name; }
 
-    GBDATA *GbMain() const { return gb_main; }
+    GBDATA *GbMain() { return gb_main; }
 
     void set_GeneName(const std::string& gene_name_) { gene_name = gene_name_; }
 

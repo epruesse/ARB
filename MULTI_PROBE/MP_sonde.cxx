@@ -19,7 +19,7 @@
 
 Sonde::Sonde(char* bezeichner, int allowed_mis, double outside_mis)
 {
-    kennung = ARB_strdup(bezeichner);
+    kennung = strdup(bezeichner);
     bitkennung = NULL;
     // fuer Basissonden haben die Bitvektoren noch nicht die Volle laenge, da noch nicht bekannt ist, wieviele Sonden eingetragen werden
     hitliste = NULL;
@@ -344,7 +344,7 @@ void Sonde::set_bitkennung(Bitvector* bv)
 
 Bakt_Info::Bakt_Info(const char* n)
 {
-    name = ARB_strdup(n);                       // MEL  (match_name in mo_liste)
+    name = strdup(n);                       // MEL  (match_name in mo_liste)
     hit_flag = 0;
 }
 

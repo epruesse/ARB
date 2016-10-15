@@ -44,7 +44,7 @@ inline void ensure_buffer(char*& buffer, size_t& buffer_size, size_t needed) {
     }
 }
 
-void ED4_consensus_sequence_terminal::draw() {
+ED4_returncode ED4_consensus_sequence_terminal::draw() {
     static char   *buffer      = 0;
     static size_t  buffer_size = 0;
 
@@ -53,7 +53,7 @@ void ED4_consensus_sequence_terminal::draw() {
     current_ed4w()->world_to_win_coords(&x, &y);
 
     PosRange index_range = calc_update_interval();
-    if (index_range.is_empty()) return; // nothing to draw
+    if (index_range.is_empty()) return ED4_R_OK;
 
     AW_pos text_x = x + CHARACTEROFFSET; // don't change
     AW_pos text_y = y + SEQ_TERM_TEXT_YOFFSET;
@@ -74,7 +74,7 @@ void ED4_consensus_sequence_terminal::draw() {
         const ED4_remap *rm = ED4_ROOT->root_group_man->remap();
         
         index_range = rm->clip_screen_range(index_range);
-        if (index_range.is_empty()) return; // nothing to draw
+        if (index_range.is_empty()) return ED4_R_OK;
 
         ExplicitRange seq_range = ExplicitRange(rm->screen_to_sequence(index_range), MAXSEQUENCECHARACTERLENGTH);
         index_range             = rm->sequence_to_screen(seq_range);
@@ -108,6 +108,8 @@ void ED4_consensus_sequence_terminal::draw() {
         current_device()->text(ED4_G_SEQUENCES, buffer, text_x, text_y, 0, AW_SCREEN, index_range.end()+1);
         current_device()->set_vertical_font_overlap(false);
     }
+
+    return (ED4_R_OK);
 }
 
 struct ShowHelix_cd {
@@ -179,7 +181,7 @@ static bool ED4_show_protein_match_on_device(AW_device *device, int gc, const ch
     return device->text(gc, buffer, x, y);
 }
 
-void ED4_orf_terminal::draw() {
+ED4_returncode ED4_orf_terminal::draw() {
     // draw aminoacid ORFs below the DNA sequence
 
     static int    color_is_used[ED4_G_DRAG];
@@ -206,22 +208,21 @@ void ED4_orf_terminal::draw() {
     }
 
     if (index_range.is_empty()) {
-        // @@@ looks wrong (index_range is empty depending on updated area!)
-        // compare to .@DRAW_WRONG_MESSAGE
-
         const char *no_data = "No sequence data";
         size_t      len     = strlen(no_data);
 
         device->text(ED4_G_STANDARD, no_data, text_x, text_y, 0, AW_SCREEN, len);
-        return; // nothing to draw
+        return ED4_R_OK;
     }
 
     if (index_range.end() >= len_of_colored_strings) {
         len_of_colored_strings = index_range.end() + 256;
-        if (!colored_strings) ARB_calloc(colored_strings, ED4_G_DRAG);
-
-        for (int i=0; i<ED4_G_DRAG; i++) {
-            freeset(colored_strings[i], ARB_alloc<char>(len_of_colored_strings+1));
+        if (!colored_strings) {
+            colored_strings = (char **)GB_calloc(sizeof(char *), ED4_G_DRAG);
+        }
+        int i;
+        for (i=0; i<ED4_G_DRAG; i++) {
+            freeset(colored_strings[i], (char *)malloc(sizeof(char) * (len_of_colored_strings+1)));
             memset(colored_strings[i], ' ', len_of_colored_strings);
             colored_strings[i][len_of_colored_strings] = 0;
         }
@@ -270,7 +271,7 @@ void ED4_orf_terminal::draw() {
 
         // paint background
         if ((iDisplayMode == PV_AA_CODE) || (iDisplayMode == PV_AA_BOX)) {
-            AW_pos     width        = ED4_ROOT->font_group.get_width(ED4_G_SEQUENCES);
+            AW_pos     width        = ED4_ROOT->font_group.get_width(ED4_G_HELIX);
             const int  real_left    = index_range.start();
             const int  real_right   = index_range.end();
             AW_pos     x2           = text_x + width*real_left;
@@ -321,9 +322,11 @@ void ED4_orf_terminal::draw() {
         }
         device->set_vertical_font_overlap(false);
     }
+
+    return (ED4_R_OK);
 }
 
-void ED4_sequence_terminal::draw() {
+ED4_returncode ED4_sequence_terminal::draw() {
     static int    color_is_used[ED4_G_DRAG];
     static char **colored_strings        = 0;
     static int    len_of_colored_strings = 0;
@@ -348,7 +351,7 @@ void ED4_sequence_terminal::draw() {
     const ED4_remap *rm = ED4_ROOT->root_group_man->remap();
 
     ExplicitRange index_range = rm->clip_screen_range(calc_update_interval());
-    if (index_range.is_empty()) return; // nothing to draw
+    if (index_range.is_empty()) return ED4_R_OK;
 
     int left  = index_range.start(); // @@@ do similar to ED4_orf_terminal::draw here
     int right = index_range.end();
@@ -358,22 +361,21 @@ void ED4_sequence_terminal::draw() {
 
         if (right>max_seq_len) right = max_seq_pos;
         if (left>right) {
-            // @@@ may be correct here
-            // compare to .@DRAW_WRONG_MESSAGE
-
             const char *no_data = "No sequence data";
             size_t      len     = strlen(no_data);
 
             device->text(ED4_G_STANDARD, no_data, text_x, text_y, 0, AW_SCREEN, len);
-            return; // nothing to draw
+            return ED4_R_OK;
         }
     }
 
     if (right >= len_of_colored_strings) {
         len_of_colored_strings = right + 256;
-        if (!colored_strings) ARB_calloc(colored_strings, ED4_G_DRAG);
-
-        for (int i=0; i<ED4_G_DRAG; i++) {
+        if (!colored_strings) {
+            colored_strings = (char **)GB_calloc(sizeof(char *), ED4_G_DRAG);
+        }
+        int i;
+        for (i=0; i<ED4_G_DRAG; i++) {
             freeset(colored_strings[i], (char *)malloc(sizeof(char) * (len_of_colored_strings+1)));
             memset(colored_strings[i], ' ', len_of_colored_strings);
             colored_strings[i][len_of_colored_strings] = 0;
@@ -416,7 +418,7 @@ void ED4_sequence_terminal::draw() {
         GB_transaction       ta(GLOBAL_gb_main);
         ST_ML_Color         *statColors   = 0;
         char                *searchColors = results().buildColorString(this, seq_start, seq_end); // defined in ED4_SearchResults class : ED4_search.cxx
-        ED4_species_manager *spec_man     = get_parent(LEV_SPECIES)->to_species_manager();
+        ED4_species_manager *spec_man     = get_parent(ED4_L_SPECIES)->to_species_manager();
         int                  color_group  = AW_color_groups_active() ? GBT_get_color_group(spec_man->get_species_pointer()) : 0;
 
         PosRange selection;
@@ -442,7 +444,7 @@ void ED4_sequence_terminal::draw() {
 
         if (statColors || searchColors || is_marked || is_selected || color_group || saiColors) {
             int    i;
-            AW_pos width      = ED4_ROOT->font_group.get_width(ED4_G_SEQUENCES);
+            AW_pos width      = ED4_ROOT->font_group.get_width(ED4_G_HELIX);
             int    real_left  = left;
             int    real_right = right;
             AW_pos x2         = text_x + width*real_left;
@@ -525,7 +527,7 @@ void ED4_sequence_terminal::draw() {
 
         if (ED4_ROOT->protstruct) {
             // output protein structure match
-            ED4_species_manager *spec_man = get_parent(LEV_SPECIES)->to_species_manager();
+            ED4_species_manager *spec_man = get_parent(ED4_L_SPECIES)->to_species_manager();
             if (spec_man->get_type() != ED4_SP_SAI && ED4_ROOT->aw_root->awar(PFOLD_AWAR_ENABLE)->read_int()) {  // should do a remap
                 int   db_len;
                 char *protstruct = resolve_pointer_to_string_copy(&db_len);
@@ -551,10 +553,12 @@ void ED4_sequence_terminal::draw() {
     }
 
     device->set_vertical_font_overlap(false);
+
+    return (ED4_R_OK);
 }
 
 
-void ED4_sequence_info_terminal::draw() {
+ED4_returncode ED4_sequence_info_terminal::draw() {
     AW_pos x, y;
     calc_world_coords(&x, &y);
     current_ed4w()->world_to_win_coords(&x, &y);
@@ -583,12 +587,30 @@ void ED4_sequence_info_terminal::draw() {
     current_device()->set_vertical_font_overlap(true);
     current_device()->text(ED4_G_STANDARD, buffer, text_x, text_y, 0, AW_SCREEN, 0);
     current_device()->set_vertical_font_overlap(false);
+
+    return (ED4_R_OK);
+
 }
 
 // ---------------------------
 //      ED4_text_terminal
 
-void ED4_text_terminal::draw() {
+ED4_returncode ED4_text_terminal::Show(int IF_ASSERTION_USED(refresh_all), int is_cleared)
+{
+    e4_assert(update_info.refresh || refresh_all);
+    current_device()->push_clip_scale();
+    if (adjust_clipping_rectangle()) {
+        if (update_info.clear_at_refresh && !is_cleared) {
+            clear_background();
+        }
+        draw();
+    }
+    current_device()->pop_clip_scale();
+
+    return ED4_R_OK;
+}
+
+ED4_returncode ED4_text_terminal::draw() {
     AW_pos x, y;
     calc_world_coords(&x, &y);
     current_ed4w()->world_to_win_coords(&x, &y);
@@ -598,7 +620,7 @@ void ED4_text_terminal::draw() {
 
     current_device()->set_vertical_font_overlap(true);
 
-    if (is_species_name_terminal()) { // @@@ handle by virtual method (eg. draw_text())
+    if (is_species_name_terminal()) {
         GB_CSTR real_name      = to_species_name_terminal()->get_displayed_text();
         int     width_of_char;
         int     height_of_char = -1;
@@ -606,7 +628,7 @@ void ED4_text_terminal::draw() {
         bool    is_marked      = false;
 
         if (paint_box) {
-            ED4_species_manager *species_man = get_parent(LEV_SPECIES)->to_species_manager();
+            ED4_species_manager *species_man = get_parent(ED4_L_SPECIES)->to_species_manager();
             GBDATA *gbd = species_man->get_species_pointer();
 
             if (gbd) {
@@ -644,35 +666,29 @@ void ED4_text_terminal::draw() {
             }
         }
     }
-    else if (is_flag_header_terminal()) { // @@@ handle by virtual method (eg. draw_text())
-        ED4_flag_header_terminal *header_term = to_flag_header_terminal();
-        const char               *header_text = header_term->get_displayed_text();
-
-        text_y += (SEQ_TERM_TEXT_YOFFSET-INFO_TERM_TEXT_YOFFSET); // @@@ wrong vertical shift? (change fontsize to examine)
-        current_device()->text(ED4_G_FLAG_INFO, header_text, text_x, text_y, 0, AW_SCREEN, header_term->get_length());
-    }
     else {
         char *db_pointer = resolve_pointer_to_string_copy();
 
         if (is_sequence_info_terminal()) {
             current_device()->text(ED4_G_STANDARD, db_pointer, text_x, text_y, 0, AW_SCREEN, 4);
-            e4_assert(0); // @@@ does this ever happen? ED4_sequence_info_terminal::draw() is overloaded as well. DRY!
         }
         else if (is_pure_text_terminal()) { // normal text (i.e. remark)
             text_y += (SEQ_TERM_TEXT_YOFFSET-INFO_TERM_TEXT_YOFFSET);
             current_device()->text(ED4_G_SEQUENCES, db_pointer, text_x, text_y, 0, AW_SCREEN, 0);
         }
         else {
-            e4_assert(0); // unhandled terminal type
+            e4_assert(0); // unknown terminal type
         }
 
         free(db_pointer);
     }
     current_device()->set_vertical_font_overlap(false);
+
+    return (ED4_R_OK);
 }
 
-ED4_text_terminal::ED4_text_terminal(const ED4_objspec& spec_, GB_CSTR temp_id, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
-    ED4_terminal(spec_, temp_id, width, height, temp_parent)
+ED4_text_terminal::ED4_text_terminal(const ED4_objspec& spec_, GB_CSTR temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
+    ED4_terminal(spec_, temp_id, x, y, width, height, temp_parent)
 {
 }
 

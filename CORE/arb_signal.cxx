@@ -14,6 +14,7 @@
 #include <arb_signal.h>
 #include <arb_msg.h>
 
+#include <arb_assert.h>
 #include <SigHandler.h>
 #include <setjmp.h>
 #include <valgrind.h>

@@ -50,6 +50,7 @@ AW_gc_manager *SAI_graphic::init_devices(AW_window *aww, AW_device *device, AWT_
         AW_manage_GC(aww,
                      scr->get_gc_base_name(),
                      device,
+                     SAI_GC_HIGHLIGHT,
                      SAI_GC_MAX,
                      AW_GCM_DATA_AREA,
                      makeGcChangedCallback(AWT_GC_changed_cb, scr),
@@ -175,8 +176,8 @@ static const char *translateSAItoColors(AW_root *awr, GBDATA *gb_main, int start
     if (seqSize > seqBufferSize) {
         free(saiColors);
         seqBufferSize = seqSize;
-        ARB_alloc(saiColors, seqBufferSize);
-        ARB_alloc(saiValues, seqBufferSize); // @@@ leak?
+        saiColors = (char*)malloc(seqBufferSize);
+        saiValues = (char*)malloc(seqBufferSize);
     }
 
     memset(saiColors, '0'-1, seqSize);
@@ -373,7 +374,7 @@ static char *GetDisplayInfo(AW_root *root, GBDATA *gb_main, const char *speciesN
         {
             const char *dbFieldName = root->awar_string(AWAR_SPV_DB_FIELD_NAME)->read_char_pntr();
             if (strcmp(dbFieldName, NO_FIELD_SELECTED) == 0) {
-                field_content = ARB_strdup("no field, no content");
+                field_content = strdup("no field, no content");
             }
             else {
                 GBDATA *gb_field = GB_search(gb_Species, dbFieldName, GB_FIND);
@@ -430,7 +431,7 @@ void SAI_graphic::paint(AW_device *device) {
         xStep_border = pbFontLim.width;
         xStep_target = target_font_limits.width;
 
-        yStep      = all_font_limits.get_height();
+        yStep      = all_font_limits.height;
         maxDescent = all_font_limits.descent;
     }
 
@@ -509,7 +510,7 @@ void SAI_graphic::paint(AW_device *device) {
                 else {
                     const char *probeRegion      = parsed.get_probe_region();
                     sai_assert(probeRegion);
-                    char       *probeRegion_copy = ARB_strdup(probeRegion);
+                    char       *probeRegion_copy = strdup(probeRegion);
 
                     const char *tok_prefix = strtok(probeRegion_copy, "-");
                     const char *tok_infix  = tok_prefix ? strtok(0, "-") : 0;
@@ -720,7 +721,7 @@ AW_window *createSaiProbeMatchWindow(AW_root *awr, GBDATA *gb_main) {
     awm->init(awr, "MATCH_SAI", "PROBE AND SAI", 200, 300);
 
     SAI_graphic *saiProbeGraphic = new SAI_graphic(awr, gb_main);
-    AWT_canvas  *scr             = new AWT_canvas(gb_main, awm, awm->get_window_id(), saiProbeGraphic);
+    AWT_canvas  *scr             = new AWT_canvas(gb_main, awm, awm->get_window_id(), saiProbeGraphic, AWAR_TARGET_STRING);
 
     scr->recalc_size(true);
 

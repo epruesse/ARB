@@ -389,7 +389,7 @@ void AW_root::create_colormap() {
 
     XColor xcolor_returned, xcolor_exakt;
     GBDATA *gbd = check_properties(NULL);
-    ARB_calloc(prvt->color_table, AW_STD_COLOR_IDX_MAX);
+    prvt->color_table = (AW_rgb*)GB_calloc(sizeof(AW_rgb), AW_STD_COLOR_IDX_MAX);
 
     // Color monitor, B&W monitor is no longer supported
     const char **awar_2_color;

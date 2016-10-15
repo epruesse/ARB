@@ -13,12 +13,8 @@
 #include <mg_merge.hxx>
 #include <awti_import.hxx>
 #include <insdel.h>
-#include <macros.hxx>
 
 #include <awt.hxx>
-#include <awt_misc.hxx>
-#include <awt_sel_boxes.hxx>
-#include <awt_TreeAwars.hxx>
 
 #include <aw_advice.hxx>
 #include <aw_question.hxx>
@@ -26,6 +22,7 @@
 #include <aw_edit.hxx>
 #include <aw_file.hxx>
 #include <aw_msg.hxx>
+#include <aw_window.hxx>
 #include <aw_root.hxx>
 
 #include <arbdbt.h>
@@ -34,7 +31,9 @@
 #include <arb_version.h>
 #include <arb_progress.h>
 #include <arb_file.h>
-
+#include <awt_sel_boxes.hxx>
+#include <awt_TreeAwars.hxx>
+#include <macros.hxx>
 #include <signal.h>
 
 using namespace std;
@@ -154,7 +153,7 @@ static GB_ERROR nt_check_database_consistency() {
     return err;
 }
 
-__ATTR__USERESULT static GB_ERROR startup_mainwindow_and_dbserver(AW_root *aw_root, const char *autorun_macro, TREE_canvas*& result_ntw) {
+__ATTR__USERESULT static GB_ERROR startup_mainwindow_and_dbserver(AW_root *aw_root, const char *autorun_macro, AWT_canvas*& result_ntw) {
     AWT_initTreeAwarRegistry(GLOBAL.gb_main);
 
     GB_ERROR error = configure_macro_recording(aw_root, "ARB_NT", GLOBAL.gb_main); // @@@ problematic if called from startup-importer
@@ -199,8 +198,8 @@ static ARB_ERROR load_and_startup_main_window(AW_root *aw_root, const char *auto
         AWT_announce_db_to_browser(GLOBAL.gb_main, GBS_global_string("ARB database (%s)", db_server));
 #endif // DEBUG
 
-        TREE_canvas *dummy   = NULL;
-        GB_ERROR     problem = startup_mainwindow_and_dbserver(aw_root, autorun_macro, dummy);
+        AWT_canvas *dummy   = NULL;
+        GB_ERROR    problem = startup_mainwindow_and_dbserver(aw_root, autorun_macro, dummy);
         aw_message_if(problem); // no need to terminate ARB
     }
 
@@ -239,7 +238,7 @@ static void start_main_window_after_import(AW_root *aw_root) {
     nt_assert(gb_imported == GLOBAL.gb_main); // import-DB should already be used as main-DB
     GLOBAL.gb_main      = gb_imported;
 
-    TREE_canvas *ntw = NULL;
+    AWT_canvas *ntw = NULL;
     aw_message_if(startup_mainwindow_and_dbserver(aw_root, NULL, ntw));
 
     if (aw_root->awar(AWAR_IMPORT_AUTOCONF)->read_int()) {
@@ -567,9 +566,9 @@ class SelectedDatabase : virtual Noncopyable {
 public:
     SelectedDatabase(GBDATA*& gb_main_, const char *name_, const char *role_)
         : gb_main(gb_main_),
-          name(ARB_strdup(name_)),
+          name(strdup(name_)),
           type(detectArgType(name)),
-          role(ARB_strdup(role_))
+          role(strdup(role_))
     {
         fix_name();
     }
@@ -833,11 +832,11 @@ static AW_window *startup_merge_prompting_for_nonexplicit_dbs(AW_root *aw_root, 
 
 static void startup_gui(NtreeCommandLine& cl, ARB_ERROR& error) {
     {
-        char *message = ARB_strdup(GB_path_in_ARBLIB("message"));
-        char *stamp   = ARB_strdup(GB_path_in_arbprop("msgtime"));
+        char *message = strdup(GB_path_in_ARBLIB("message"));
+        char *stamp   = strdup(GB_path_in_arbprop("msgtime"));
         if (GB_time_of_file(message)>GB_time_of_file(stamp)) {
             AW_edit(message);
-            AWT_system_cb(GBS_global_string("touch %s", stamp));
+            aw_message_if(GBK_system(GBS_global_string("touch %s", stamp)));
         }
         free(stamp);
         free(message);
@@ -894,7 +893,7 @@ static void startup_gui(NtreeCommandLine& cl, ARB_ERROR& error) {
         }
         else {
             const char *database         = NULL;
-            char       *browser_startdir = ARB_strdup(".");
+            char       *browser_startdir = strdup(".");
 
             if (cl.free_args() > 0) database = cl.get_arg(0);
 

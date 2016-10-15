@@ -102,9 +102,9 @@ void ED4_objspec::init_object_specs() {
 }
 
 void ED4_objspec::calc_descendants() const {
-    if (possible_descendants == LEV_INVALID) {
-        possible_descendants = LEV_NONE;
-        allowed_descendants  = LEV_NONE;
+    if (possible_descendants == ED4_L_INVALID) {
+        possible_descendants = ED4_L_NO_LEVEL;
+        allowed_descendants  = ED4_L_NO_LEVEL;
         if (used_children || allowed_children) {
             possible_descendants = used_children;
             allowed_descendants  = allowed_children;
@@ -131,8 +131,8 @@ void ED4_objspec::recalc_descendants() {
     for (int i = 0; i<SPECIFIED_OBJECT_TYPES; ++i) {
         const ED4_objspec *spec = objspec_registry.get_object_spec_at_index(i);
         if (spec) {
-            spec->possible_descendants = LEV_INVALID;
-            spec->allowed_descendants  = LEV_INVALID;
+            spec->possible_descendants = ED4_L_INVALID;
+            spec->allowed_descendants  = ED4_L_INVALID;
         }
     }
     for (int i = 0; i<SPECIFIED_OBJECT_TYPES; ++i) {
@@ -144,9 +144,9 @@ void ED4_objspec::recalc_descendants() {
 }
 
 ED4_objspec::ED4_objspec(ED4_properties static_prop_, ED4_level level_, ED4_level allowed_children_, ED4_level handled_level_, ED4_level restriction_level_)
-    : used_children(LEV_NONE),
-      possible_descendants(LEV_INVALID),
-      allowed_descendants(LEV_INVALID),
+    : used_children(ED4_L_NO_LEVEL),
+      possible_descendants(ED4_L_INVALID),
+      allowed_descendants(ED4_L_INVALID),
       static_prop(static_prop_),
       level(level_),
       allowed_children(allowed_children_),
@@ -155,16 +155,16 @@ ED4_objspec::ED4_objspec(ED4_properties static_prop_, ED4_level level_, ED4_leve
 {
     e4_assert(!object_specs_initialized); // specs must be instaciated before they are initialized
 
-    switch (static_prop&(PROP_IS_MANAGER|PROP_IS_TERMINAL)) {
-        case PROP_IS_MANAGER: // manager specific checks
-            e4_assert(static_prop & (PROP_HORIZONTAL|PROP_VERTICAL));                                        // each manager has to be vertical or horizontal
-            e4_assert((static_prop & (PROP_HORIZONTAL|PROP_VERTICAL)) != (PROP_HORIZONTAL|PROP_VERTICAL)); // but never both
-            e4_assert(allowed_children != LEV_NONE); // managers need to allow children (what else should they manage)
+    switch (static_prop&(ED4_P_IS_MANAGER|ED4_P_IS_TERMINAL)) {
+        case ED4_P_IS_MANAGER: // manager specific checks
+            e4_assert(static_prop & (ED4_P_HORIZONTAL|ED4_P_VERTICAL));                                        // each manager has to be vertical or horizontal
+            e4_assert((static_prop & (ED4_P_HORIZONTAL|ED4_P_VERTICAL)) != (ED4_P_HORIZONTAL|ED4_P_VERTICAL)); // but never both
+            e4_assert(allowed_children != ED4_L_NO_LEVEL); // managers need to allow children (what else should they manage)
             break;
 
-        case PROP_IS_TERMINAL: // terminal specific checks
-            e4_assert((static_prop & (PROP_HORIZONTAL|PROP_VERTICAL)) == 0); // terminals do not have orientation
-            e4_assert(allowed_children == LEV_NONE); // terminals cannot have children
+        case ED4_P_IS_TERMINAL: // terminal specific checks
+            e4_assert((static_prop & (ED4_P_HORIZONTAL|ED4_P_VERTICAL)) == 0); // terminals do not have orientation
+            e4_assert(allowed_children == ED4_L_NO_LEVEL); // terminals cannot have children
             break;
 
         default :
@@ -198,34 +198,34 @@ void TEST_objspec_registry() {
     TEST_EXPECT(objspec_registry.count_registered()>0);
     TEST_EXPECT_EQUAL(objspec_registry.count_registered(), SPECIFIED_OBJECT_TYPES);
 
-    TEST_EXPECT_EQUAL(objspec_registry.get_object_spec(LEV_ROOT).allowed_children, LEV_ROOTGROUP);
+    TEST_EXPECT_EQUAL(objspec_registry.get_object_spec(ED4_L_ROOT).allowed_children, ED4_L_ROOTGROUP);
 
     ED4_objspec::init_object_specs();
 
-    const ED4_objspec& multi_seq = objspec_registry.get_object_spec(LEV_MULTI_SEQUENCE);
-    const ED4_objspec& seq       = objspec_registry.get_object_spec(LEV_SEQUENCE);
+    const ED4_objspec& multi_seq = objspec_registry.get_object_spec(ED4_L_MULTI_SEQUENCE);
+    const ED4_objspec& seq       = objspec_registry.get_object_spec(ED4_L_SEQUENCE);
 
-    TEST_EXPECT_ZERO(seq.get_possible_descendants()       & LEV_SEQUENCE_STRING);
-    TEST_EXPECT_ZERO(multi_seq.get_possible_descendants() & LEV_SEQUENCE_STRING);
+    TEST_EXPECT_ZERO(seq.get_possible_descendants()       & ED4_L_SEQUENCE_STRING);
+    TEST_EXPECT_ZERO(multi_seq.get_possible_descendants() & ED4_L_SEQUENCE_STRING);
 
-    TEST_REJECT_ZERO(seq.get_allowed_descendants()       & LEV_SEQUENCE_STRING);
-    TEST_REJECT_ZERO(multi_seq.get_allowed_descendants() & LEV_SEQUENCE_STRING);
+    TEST_REJECT_ZERO(seq.get_allowed_descendants()       & ED4_L_SEQUENCE_STRING);
+    TEST_REJECT_ZERO(multi_seq.get_allowed_descendants() & ED4_L_SEQUENCE_STRING);
 
-    TEST_EXPECT_ZERO(multi_seq.get_allowed_descendants() & LEV_ROOTGROUP);
+    TEST_EXPECT_ZERO(multi_seq.get_allowed_descendants() & ED4_L_ROOTGROUP);
 
     // simulate adding sth in the hierarchy
-    multi_seq.announce_added(LEV_SEQUENCE);
-    seq.announce_added(LEV_SEQUENCE_STRING);
+    multi_seq.announce_added(ED4_L_SEQUENCE);
+    seq.announce_added(ED4_L_SEQUENCE_STRING);
 
-    TEST_REJECT_ZERO(seq.get_possible_descendants()       & LEV_SEQUENCE_STRING);
-    TEST_REJECT_ZERO(multi_seq.get_possible_descendants() & LEV_SEQUENCE_STRING);
+    TEST_REJECT_ZERO(seq.get_possible_descendants()       & ED4_L_SEQUENCE_STRING);
+    TEST_REJECT_ZERO(multi_seq.get_possible_descendants() & ED4_L_SEQUENCE_STRING);
 
-    TEST_EXPECT_ZERO(multi_seq.get_possible_descendants() & LEV_SEQUENCE_INFO);
+    TEST_EXPECT_ZERO(multi_seq.get_possible_descendants() & ED4_L_SEQUENCE_INFO);
 
     // add more (checks refresh)
-    seq.announce_added(LEV_SEQUENCE_INFO);
+    seq.announce_added(ED4_L_SEQUENCE_INFO);
 
-    TEST_REJECT_ZERO(multi_seq.get_possible_descendants() & LEV_SEQUENCE_INFO);
+    TEST_REJECT_ZERO(multi_seq.get_possible_descendants() & ED4_L_SEQUENCE_INFO);
 }
 
 #endif // UNIT_TESTS

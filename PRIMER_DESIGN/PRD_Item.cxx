@@ -1,8 +1,5 @@
 #include "PRD_Item.hxx"
 #include "PRD_SequenceIterator.hxx"
-
-#include <arb_mem.h>
-
 #include <cstdlib>
 #include <cstring>
 
@@ -56,7 +53,7 @@ int Item::sprint (char *buf, const char *primer, const char *suffix_,   int max_
 
 inline char *PRD_strdup(const char *s) {
     size_t  len    = strlen(s);
-    char   *result = ARB_alloc<char>(len+1);
+    char   *result = (char*)malloc(len+1);
     strcpy(result, s);
     return result;
 }
@@ -71,7 +68,7 @@ char* Item::getPrimerSequence(const char *sequence_)
     char *primer;
     if (length <= 0) return PRD_strdup("Item::getPrimerSequence : length <= 0 :(");
 
-    ARB_alloc(primer, length+1);
+    primer = (char *)malloc((size_t)length+1);    // allocate memory ( needs to be given back via free() )
     SequenceIterator *iterator = new SequenceIterator(sequence_, end_pos, SequenceIterator::IGNORE,   length, SequenceIterator::BACKWARD);  // init iterator
 
     for (int i = length-1; i >= 0; --i)   // grab as many bases as length is

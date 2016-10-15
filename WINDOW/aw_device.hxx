@@ -4,14 +4,17 @@
 #ifndef AW_POSITION_HXX
 #include <aw_position.hxx>
 #endif
-#ifndef AW_FONT_LIMITS_HXX
-#include <aw_font_limits.hxx>
-#endif
 #ifndef ATTRIBUTES_H
 #include <attributes.h>
 #endif
 #ifndef ARBTOOLS_H
 #include <arbtools.h>
+#endif
+#ifndef _GLIBCXX_ALGORITHM
+#include <algorithm>
+#endif
+#ifndef _LIMITS_H
+#include <limits.h>
 #endif
 
 #if defined(DEBUG) && defined(DEBUG_GRAPHICS)
@@ -36,7 +39,6 @@ const AW_bitset AW_SIZE_UNSCALED = 16;  // for text and text-size dependant part
 const AW_bitset AW_PRINTER       = 32;  // print/xfig-export
 const AW_bitset AW_PRINTER_EXT   = 64;  // (+Handles) use combined with AW_PRINTER only
 const AW_bitset AW_PRINTER_CLIP  = 128; // print screen only
-const AW_bitset AW_TRACK         = 256; // species tracking
 
 const AW_bitset AW_ALL_DEVICES          = (AW_bitset)-1; // @@@ allowed to used this ?
 const AW_bitset AW_ALL_DEVICES_SCALED   = (AW_ALL_DEVICES & ~AW_SIZE_UNSCALED);
@@ -83,7 +85,7 @@ enum {
     AW_TERMINAL_MEDIUM             = 45,
     AW_TERMINAL_BOLD               = 46,
 
-    AW_NUM_FONTS      = 68,
+    AW_NUM_FONTS      = 63,
     AW_NUM_FONTS_XFIG = 35, // immutable
 
     AW_DEFAULT_NORMAL_FONT = AW_LUCIDA_SANS,
@@ -265,6 +267,46 @@ public:
     void reduce_right_clip_border(int right);
 
     int reduceClipBorders(int top, int bottom, int left, int right);
+};
+
+struct AW_font_limits {
+    short ascent;
+    short descent;
+    short height;
+    short width;
+    short min_width;
+
+    void reset() {
+        ascent    = descent = height = width = 0;
+        min_width = SHRT_MAX;
+    }
+
+    void notify_ascent(short a) { ascent = std::max(a, ascent); }
+    void notify_descent(short d) { descent = std::max(d, descent); }
+    void notify_width(short w) {
+        width     = std::max(w, width);
+        min_width = std::min(w, min_width);
+    }
+
+    void notify_all(short a_ascent, short a_descent, short a_width) {
+        notify_ascent (a_ascent);
+        notify_descent(a_descent);
+        notify_width  (a_width);
+    }
+
+    void calc_height() { height = ascent+descent+1; }
+
+    bool is_monospaced() const { return width == min_width; }
+
+    AW_font_limits() { reset(); }
+    AW_font_limits(const AW_font_limits& lim1, const AW_font_limits& lim2)
+        : ascent(std::max(lim1.ascent, lim2.ascent)),
+          descent(std::max(lim1.descent, lim2.descent)),
+          width(std::max(lim1.width, lim2.width)),
+          min_width(std::min(lim1.min_width, lim2.min_width))
+    {
+        calc_height();
+    }
 };
 
 // -----------------------------------------------

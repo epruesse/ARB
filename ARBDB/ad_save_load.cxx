@@ -48,7 +48,7 @@ char *gb_findExtension(char *path) {
 inline char *STATIC_BUFFER(SmartCharPtr& strvar, int minlen) {
     gb_assert(minlen > 0);
     if (strvar.isNull() || (strlen(&*strvar) < (size_t)(minlen-1))) {
-        strvar = ARB_calloc<char>(minlen);
+        strvar = (char*)GB_calloc(minlen, 1);
     }
     return &*strvar;
 }
@@ -133,11 +133,11 @@ static GB_CSTR gb_reffile_name(GB_CSTR path) {
 static char *gb_full_path(const char *path) {
     char *res = 0;
 
-    if (path[0] == '/') res = ARB_strdup(path);
+    if (path[0] == '/') res = strdup(path);
     else {
         const char *cwd = GB_getcwd();
 
-        if (path[0] == 0) res = ARB_strdup(cwd);
+        if (path[0] == 0) res = strdup(cwd);
         else res              = GBS_global_string_copy("%s/%s", cwd, path);
     }
     return res;
@@ -258,7 +258,7 @@ static GB_ERROR renameQuicksaves(GB_MAIN_TYPE *Main) {
 
             if (GB_is_regularfile(qsave)) {
                 if (i!=j) {                         // otherwise the filename is correct
-                    char    *qdup = ARB_strdup(qsave);
+                    char    *qdup = strdup(qsave);
                     GB_CSTR  qnew = gb_quicksaveName(path, j);
 
                     if (error) GB_warning(error);
@@ -478,7 +478,7 @@ static bool gb_write_one_child(FILE *out, GBDATA *gb, GBCONTAINER*& gb_writeFrom
                 GB_CSTR strng = GB_read_char_pntr(gbe);
                 if (!strng) {
                     strng = "<entry was broken - replaced during ASCIIsave/arb_repair>";
-                    GB_warningf("- replaced broken DB entry '%s' (data lost)\n", GB_get_db_path(gbe));
+                    GB_warningf("- replaced broken DB entry %s (data lost)\n", GB_get_db_path(gbe));
                 }
                 if (*strng == '%') {
                     putc('%', out);
@@ -852,7 +852,7 @@ GB_ERROR GB_save_in_arbprop(GBDATA *gb, const char *path, const char *savetype) 
      * @param savetype @see GB_save_as()
      */
 
-    char     *fullname = ARB_strdup(GB_path_in_arbprop(path ? path : GB_MAIN(gb)->path));
+    char     *fullname = strdup(GB_path_in_arbprop(path ? path : GB_MAIN(gb)->path));
     GB_ERROR  error    = GB_create_parent_directory(fullname);
     if (!error) error = GB_save_as(gb, fullname, savetype);
     free(fullname);
@@ -1107,7 +1107,7 @@ public:
         if (!error) {
             // unless saving to a fifo, we append ~ to the file name we write to,
             // and move that file if and when everything has gone well
-            sec_path       = ARB_strdup(GB_is_fifo(as_path) ? as_path : gb_overwriteName(as_path));
+            sec_path       = strdup(GB_is_fifo(as_path) ? as_path : gb_overwriteName(as_path));
             dump_to_stdout = strchr(savetype, 'S');
             out            = dump_to_stdout ? stdout : ARB_zfopen(sec_path, "w", compressMode, error, false);
 
@@ -1220,11 +1220,11 @@ public:
                     if (deleteQuickAllowed) error = gb_remove_all_but_main(Main, as_path);
                 }
                 else {
-                    mappath = ARB_strdup(gb_mapfile_name(as_path));
+                    mappath = strdup(gb_mapfile_name(as_path));
                     if (saveMapfile) {
                         // it's necessary to save the mapfile FIRST,
                         // cause this re-orders all GB_CONTAINERs containing NULL-entries in their header
-                        sec_mappath       = ARB_strdup(gb_overwriteName(mappath));
+                        sec_mappath       = strdup(gb_overwriteName(mappath));
                         if (!error) error = gb_save_mapfile(Main, sec_mappath);
                     }
                     else GB_unlink_or_warn(mappath, &error); // delete old mapfile
@@ -1455,7 +1455,7 @@ GB_ERROR GB_MAIN_TYPE::save_quick_as(const char *as_path) {
         if (!error) {
             char *org_master = S_ISLNK(GB_mode_of_link(path))
                 ? GB_follow_unix_link(path)
-                : ARB_strdup(path);
+                : strdup(path);
 
             error = gb_remove_all_but_main(this, as_path);
             if (!error) {
@@ -1475,7 +1475,7 @@ GB_ERROR GB_MAIN_TYPE::save_quick_as(const char *as_path) {
                     full_path_of_source = gb_full_path(org_master);
                 }
                 else {
-                    full_path_of_source = ARB_strdup(org_master);
+                    full_path_of_source = strdup(org_master);
                 }
 
                 error = GB_symlink(full_path_of_source, as_path);

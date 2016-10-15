@@ -127,7 +127,7 @@ static void export_form_changed_cb(AW_root *aw_root) {
                         if (previous_suffix && ARB_stricmp(suffix, previous_suffix) == 0) freedup(suffix, current_suffix); // remove old suffix
                         else freedup(suffix, GB_append_suffix(suffix, current_suffix)); // don't know existing suffix -> append
                     }
-                    else suffix = ARB_strdup(current_suffix);
+                    else suffix = strdup(current_suffix);
 
                     const char *new_exportname = GB_concat_path(path, GB_append_suffix(nameOnly, suffix));
                     if (new_exportname) awar_export->write_string(new_exportname);

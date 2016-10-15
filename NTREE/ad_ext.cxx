@@ -179,7 +179,7 @@ static void edit_SAI_description(AW_window *aww) {
                             error = GB_await_error();
                         }
                         else {
-                            type = ARB_strdup("");
+                            type = strdup("");
                         }
                     }
                 }

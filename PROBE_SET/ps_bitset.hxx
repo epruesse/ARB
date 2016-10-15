@@ -75,13 +75,13 @@ private:
 
 public:
 
-    bool Get(const long _index) OVERRIDE;
-    bool Set(const long _index, const bool _value) OVERRIDE;
+    virtual bool Get(const long _index) OVERRIDE;
+    virtual bool Set(const long _index, const bool _value) OVERRIDE;
 
-    void setTrue(const long _index) OVERRIDE;
-    void setFalse(const long _index) OVERRIDE;
+    virtual void setTrue(const long _index) OVERRIDE;
+    virtual void setFalse(const long _index) OVERRIDE;
 
-    bool reserve(const long _capacity) OVERRIDE;
+    virtual bool reserve(const long _capacity) OVERRIDE;
 
     explicit PS_BitSet_Fast(PS_FileBuffer *_file, const long _fill_index = -1) : PS_BitSet(false, -1, 0) {
         data = 0;

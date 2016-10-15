@@ -126,12 +126,6 @@ static struct _xfstruct x_fontinfo[] = {
     { "-*-nimbus mono l-bold-r-*-*-",               "Nimbus mono B", (xfont*) NULL }, // #60
     { "-*-latin modern typewriter-medium-r-*-*-",   "Latin mono",    (xfont*) NULL }, // #61
     { "-*-latin modern typewriter-bold-r-*-*-",     "Latin mono B",  (xfont*) NULL }, // #62
-
-    { "-*-terminus-medium-r-*-*-",                  "Terminus",      (xfont*) NULL }, // #63
-    { "-*-terminus-bold-r-*-*-",                    "Terminus B",    (xfont*) NULL }, // #64
-    { "-sony-fixed-medium-r-*-*-",                  "SonyFixed",     (xfont*) NULL }, // #65
-    { "-sony-fixed-bold-r-*-*-",                    "SonyFixed B",   (xfont*) NULL }, // #66
-    { "-mutt-clearlyu-medium-r-*-*-",               "MuttClearlyu",  (xfont*) NULL }, // #67
 };
 
 static struct _fstruct ps_fontinfo[] = {
@@ -208,12 +202,6 @@ static struct _fstruct ps_fontinfo[] = {
     { "Courier-Bold",                 -14 },
     { "Courier",                      -12 },
     { "Courier-Bold",                 -14 },
-
-    { "Courier",                      -12 },
-    { "Courier-Bold",                 -14 },
-    { "Courier",                      -12 },
-    { "Courier-Bold",                 -14 },
-    { "Times-Roman",                  0 },
 };
 
 STATIC_ASSERT(ARRAY_ELEMS(x_fontinfo) == AW_NUM_FONTS);
@@ -349,7 +337,7 @@ void aw_root_init_font(Display *display) {
                     is_scalable[f] = false;
                 }
 #if defined(DUMP_FONT_LOOKUP)
-                printf("Using %s font for '%s' (templat='%s')\n", is_scalable[f] ? "scalable" : "fixed", x_fontinfo[f].templat, templat);
+                printf("Using %s font for '%s'\n", is_scalable[f] ? "scalable" : "fixed", x_fontinfo[f].templat);
 #endif // DUMP_FONT_LOOKUP
             }
         }
@@ -408,7 +396,7 @@ void aw_root_init_font(Display *display) {
                 }
 
                 if (i < found_fonts && flist[i].s == size) {
-                    xfont *newfont = ARB_alloc<xfont>(1);
+                    xfont *newfont = (xfont *)malloc(sizeof(xfont));
 
                     (nf ? nf->next : x_fontinfo[f].xfontlist) = newfont;
                     nf                                        = newfont;
@@ -423,7 +411,7 @@ void aw_root_init_font(Display *display) {
 
             if (!nf) { // no font has been found -> fallback to "fixed 12pt"
                 aw_assert(x_fontinfo[f].xfontlist == 0);
-                xfont *newfont   = ARB_alloc<xfont>(1);
+                xfont *newfont   = (xfont *)malloc(sizeof(xfont));
                 x_fontinfo[f].xfontlist = newfont;
 
                 newfont->size    = DEF_FONTSIZE;
@@ -540,9 +528,9 @@ static bool lookfont(Display *tool_d, int f, int s, int& found_size, bool verboo
         }
     }
     else { // SCALABLE; none yet of that size, alloc one and put it in the list
-        ARB_alloc(newfont, 1);
-
+        newfont = (xfont *) malloc(sizeof(xfont));
         // add it on to the end of the list
+
         nf = oldnf ? oldnf->next : 0; // store successor
 
         if (x_fontinfo[f].xfontlist == NULL) x_fontinfo[f].xfontlist = newfont;
@@ -666,12 +654,11 @@ static char *caps(char *sentence) {
 }
 
 
-const char *AW_get_font_specification(AW_font font_nr, bool& found) {
+const char *AW_get_font_specification(AW_font font_nr) {
     //! converts fontnr to string
     //
     // @return 0 if font is not available
 
-    found = false;
     aw_assert(font_nr >= 0);
     if (font_nr<0 || font_nr>=AW_NUM_FONTS) return 0;
 
@@ -701,9 +688,6 @@ const char *AW_get_font_specification(AW_font font_nr, bool& found) {
                                                       fndry, fmly,
                                                       wght, slant,
                                                       rgstry);
-
-                found = true;
-
                 delete [] rgstry;
                 delete [] slant;
                 delete [] wght;
@@ -714,7 +698,6 @@ const char *AW_get_font_specification(AW_font font_nr, bool& found) {
     }
     else {
         readable_fontname = xf.templat;
-        found = true;
     }
     return readable_fontname;
 }
@@ -846,6 +829,7 @@ void AW_GC_Xm::wm_set_font(const AW_font font_nr, const int size, int *found_siz
 void AW_GC::set_font(const AW_font font_nr, const int size, int *found_size) {
     font_limits.reset();
     wm_set_font(font_nr, size, found_size);
+    font_limits.calc_height();
     fontnr   = font_nr;
     fontsize = size;
 }

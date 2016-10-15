@@ -98,9 +98,9 @@ void ED4_window::update_window_coords()
 ED4_folding_line* ED4_foldable::insert_folding_line(AW_pos world_pos, AW_pos dimension, ED4_properties prop) {
     ED4_folding_line *fl = NULL;
 
-    if (prop == PROP_VERTICAL || prop == PROP_HORIZONTAL) {
+    if (prop == ED4_P_VERTICAL || prop == ED4_P_HORIZONTAL) {
         fl = new ED4_folding_line(world_pos, dimension);
-        fl->insertAs(prop == PROP_VERTICAL ? vertical_fl : horizontal_fl);
+        fl->insertAs(prop == ED4_P_VERTICAL ? vertical_fl : horizontal_fl);
     }
     return fl;
 }
@@ -120,11 +120,11 @@ ED4_window *ED4_window::get_matching_ed4w(AW_window *aw) {
 
 
 void ED4_foldable::delete_folding_line(ED4_folding_line *fl, ED4_properties prop) {
-    if (prop == PROP_HORIZONTAL) {
+    if (prop == ED4_P_HORIZONTAL) {
         horizontal_fl = horizontal_fl->delete_member(fl);
     }
     else {
-        e4_assert(prop == PROP_VERTICAL);
+        e4_assert(prop == ED4_P_VERTICAL);
         vertical_fl = vertical_fl->delete_member(fl);
     }
 }
@@ -226,7 +226,7 @@ static inline void clear_and_update_rectangle(AW_pos x1, AW_pos y1, AW_pos x2, A
     current_device()->clear_part(x1, y1, x2-x1, y2-y1, AW_ALL_DEVICES);
 #endif
 
-    ED4_ROOT->main_manager->Show(true, true); // direct call to Show (critical)
+    ED4_ROOT->main_manager->Show(1, 1); // direct call to Show (critical)
 }
 
 static inline void move_and_update_rectangle(AW_pos x1, AW_pos y1, AW_pos x2, AW_pos y2, int dx, int dy)
@@ -380,6 +380,7 @@ static void ED4_expose_cb(AW_window *aww) {
     ED4_LocalWinContext uses(aww);
     GB_transaction      ta(GLOBAL_gb_main);
 
+    ED4_expose_recalculations();
     current_ed4w()->update_scrolled_rectangle();
 
     current_device()->reset();

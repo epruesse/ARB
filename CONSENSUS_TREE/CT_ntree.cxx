@@ -24,7 +24,7 @@ const NT_NODE *ntree_get() {
 
 static NT_NODE *new_ntnode(PART*& p) {
     // build a new node and store the partition p in it
-    NT_NODE *n  = ARB_calloc<NT_NODE>(1);
+    NT_NODE *n  = (NT_NODE *) getmem(sizeof(NT_NODE));
     n->part     = p;
     n->son_list = NULL;
 
@@ -123,7 +123,7 @@ static int ins_ntree(NT_NODE *tree, PART*& newpart) {
         fputs("ins_ntree part=", stdout); newpart->print();
 #endif
 
-        ARB_calloc(tree->son_list, 1);
+        tree->son_list       = (NSONS *) getmem(sizeof(NSONS));
         tree->son_list->node = new_ntnode(newpart);
 
         return 1;
@@ -182,7 +182,7 @@ static int ins_ntree(NT_NODE *tree, PART*& newpart) {
 
     // insert nsons-elem in son-list of father
     {
-        NSONS *new_son = ARB_calloc<NSONS>(1);
+        NSONS *new_son = (NSONS *) getmem(sizeof(NSONS));
     
         new_son->node = newntnode;
         new_son->prev = NULL;

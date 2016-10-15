@@ -603,7 +603,7 @@ char *AW_selection_list_entry::copy_string_for_display(const char *str) {
     bool    tooLong = len>MAX_DISPLAY_LENGTH;
     char   *out;
     if (tooLong) {
-        out = ARB_strndup(str, MAX_DISPLAY_LENGTH);
+        out = GB_strndup(str, MAX_DISPLAY_LENGTH);
         { // add message about truncation
             char   *truncated = GBS_global_string_copy(" <truncated - original contains %zu byte>", len);
             size_t  tlen      = strlen(truncated);
@@ -613,7 +613,7 @@ char *AW_selection_list_entry::copy_string_for_display(const char *str) {
         len = MAX_DISPLAY_LENGTH;
     }
     else {
-        out = ARB_strduplen(str, len);
+        out = GB_strduplen(str, len);
     }
 
     for (size_t i = 0; i<len; ++i) {

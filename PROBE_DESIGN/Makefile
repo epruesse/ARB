@@ -32,7 +32,6 @@ probe_collection.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 probe_collection.o: $(ARBHOME)/INCLUDE/arb_assert.h
 probe_collection.o: $(ARBHOME)/INCLUDE/arb_core.h
 probe_collection.o: $(ARBHOME)/INCLUDE/arb_error.h
-probe_collection.o: $(ARBHOME)/INCLUDE/arb_mem.h
 probe_collection.o: $(ARBHOME)/INCLUDE/arb_msg.h
 probe_collection.o: $(ARBHOME)/INCLUDE/arb_string.h
 probe_collection.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -64,7 +63,6 @@ probe_design.o: $(ARBHOME)/INCLUDE/arb_assert.h
 probe_design.o: $(ARBHOME)/INCLUDE/arb_core.h
 probe_design.o: $(ARBHOME)/INCLUDE/arb_error.h
 probe_design.o: $(ARBHOME)/INCLUDE/arb_file.h
-probe_design.o: $(ARBHOME)/INCLUDE/arb_mem.h
 probe_design.o: $(ARBHOME)/INCLUDE/arb_misc.h
 probe_design.o: $(ARBHOME)/INCLUDE/arb_msg.h
 probe_design.o: $(ARBHOME)/INCLUDE/arb_progress.h
@@ -84,7 +82,6 @@ probe_design.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_edit.hxx
-probe_design.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_position.hxx
@@ -130,7 +127,6 @@ probe_match_parser.o: $(ARBHOME)/INCLUDE/arb_assert.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/arb_core.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/arb_defs.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/arb_error.h
-probe_match_parser.o: $(ARBHOME)/INCLUDE/arb_mem.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/arb_msg.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/arb_string.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -154,7 +150,6 @@ SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/arb_core.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/arb_error.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/arb_global_defs.h
-SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/arb_mem.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/arb_msg.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/arb_string.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -168,7 +163,6 @@ SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
-SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/aw_position.hxx

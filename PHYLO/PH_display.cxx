@@ -82,7 +82,7 @@ void PH_display::initialize_display(display_type dpyt) {
         case DISP_SPECIES:
         case DISP_FILTER:
             cell_width  = lim.width;
-            cell_height = lim.get_height()+5;
+            cell_height = lim.height+5;
             cell_offset = 3;
 
             off_dx = SPECIES_NAME_LEN*lim.width+20;
@@ -214,7 +214,7 @@ void PH_display::display()       // draw area
 
                 for (y = 0; y < 3; y++) {
                     strncpy(cbuf, buf + y, 1);
-                    device->text(gc, cbuf, xpos * cell_width + 1, vert_page_size * cell_height + y * lim.get_height());
+                    device->text(gc, cbuf, xpos * cell_width + 1, vert_page_size * cell_height + y * lim.height);
                 }
                 xpos++;
             }
@@ -302,7 +302,7 @@ PH_display_status::PH_display_status(AW_device *awd) {
     const AW_font_limits& lim = device->get_font_limits(0, 0);
 
     font_width  = lim.width;
-    font_height = lim.get_height();
+    font_height = lim.height;
 
     device->reset();
 

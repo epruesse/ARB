@@ -23,9 +23,6 @@
 #include <awt_misc.hxx>
 #include <awt_sel_boxes.hxx>
 
-// AISC_MKPT_PROMOTE:#ifndef AW_BASE_HXX
-// AISC_MKPT_PROMOTE:#include <aw_base.hxx>
-// AISC_MKPT_PROMOTE:#endif
 
 #define AWAR_MAX_FREQ_PREFIX      "tmp/CON_MAX_FREQ/"
 #define AWAR_CONSENSUS_PREFIX     "consensus/"
@@ -49,7 +46,7 @@
 #include <consensus_config.h>
 #include <chartable.h>
 
-static int CON_insertSequences(GBDATA *gb_main, const char *aliname, long IF_ASSERTION_USED(maxalignlen), bool onlymarked, BaseFrequencies& freqs) {
+static int CON_insertSequences(GBDATA *gb_main, const char *aliname, long maxalignlen, bool onlymarked, BaseFrequencies& freqs) {
     /*! read sequence data and fill into 'freqs'
      * @param gb_main       database
      * @param aliname       name of alignment
@@ -101,6 +98,8 @@ static GB_ERROR CON_export(GBDATA *gb_main, const char *savename, const char *al
     const char *off = "off";
     const char *on  = "on";
 
+    char *buffer = (char *)GB_calloc(2000, sizeof(char));
+
     GBDATA   *gb_extended = GBT_find_or_create_SAI(gb_main, savename);
     GBDATA   *gb_data     = GBT_add_data(gb_extended, align, "data", GB_STRING);
     GB_ERROR  err         = GB_write_string(gb_data, result);
@@ -111,45 +110,41 @@ static GB_ERROR CON_export(GBDATA *gb_main, const char *savename, const char *al
         const char *countgapsstring = BK.countgaps ? on : off;
         const char *simplifystring  = BK.group ? on : off;
 
-        {
-            char *buffer = ARB_alloc<char>(2000);
-            sprintf(buffer, "CON: [species: %s]  [number: %ld]  [count gaps: %s] "
-                    "[threshold for gaps: %d]  [simplify: %s] "
-                    "[threshold for group: %d]  [upper: %d]  [lower: %d]",
-                    allvsmarked, nrofspecies, countgapsstring,
-                    BK.gapbound, simplifystring,
-                    BK.considbound, BK.upper, BK.lower);
+        sprintf(buffer, "CON: [species: %s]  [number: %ld]  [count gaps: %s] "
+                "[threshold for gaps: %d]  [simplify: %s] "
+                "[threshold for group: %d]  [upper: %d]  [lower: %d]",
+                allvsmarked, nrofspecies, countgapsstring,
+                BK.gapbound, simplifystring,
+                BK.considbound, BK.upper, BK.lower);
 
-            err = GB_write_string(gb_options, buffer);
-            free(buffer);
-        }
-
+        err = GB_write_string(gb_options, buffer);
         if (!err) {
             GBDATA *gb_names  = GB_search(GB_get_father(gb_options), "_SPECIES", GB_FIND);
             if (gb_names) err = GB_delete(gb_names); // delete old entry
         }
 
         if (!err && nrofspecies<20) {
-            GBS_strstruct namelist(1000);
+            GBDATA        *gb_species;
+            GBS_strstruct *strstruct = GBS_stropen(1000);
 
-            GBDATA *gb_species =
-                onlymarked
-                ? GBT_first_marked_species(gb_main)
-                : GBT_first_species(gb_main);
+            if (onlymarked) gb_species = GBT_first_marked_species(gb_main);
+            else gb_species            = GBT_first_species(gb_main);
 
             while (gb_species) {
                 if (GBT_find_sequence(gb_species, align)) {
                     GBDATA     *gb_speciesname = GB_search(gb_species, "name", GB_FIND);
                     const char *name           = GB_read_char_pntr(gb_speciesname);
 
-                    namelist.cat(name);
-                    namelist.put( ' ');
+                    GBS_strcat(strstruct, name);
+                    GBS_chrcat(strstruct, ' ');
                 }
                 if (onlymarked) gb_species = GBT_next_marked_species(gb_species);
                 else gb_species            = GBT_next_species(gb_species);
             }
 
-            err = GBT_write_string(GB_get_father(gb_options), "_SPECIES", namelist.get_data());
+            char *allnames = GBS_strclose(strstruct);
+            err            = GBT_write_string(GB_get_father(gb_options), "_SPECIES", allnames);
+            free(allnames);
         }
 
         // remove data relicts from "complex consensus" (no longer supported)
@@ -161,6 +156,7 @@ static GB_ERROR CON_export(GBDATA *gb_main, const char *savename, const char *al
         }
     }
 
+    free(buffer);
     if (err) err = GBS_global_string("Failed to store consensus '%s' (Reason: %s)", savename, err);
     return err;
 }

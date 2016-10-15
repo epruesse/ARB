@@ -33,6 +33,7 @@ AW_gc_manager *SEC_graphic::init_devices(AW_window *aww, AW_device *device, AWT_
         AW_manage_GC(aww,
                      scr->get_gc_base_name(),
                      device,
+                     SEC_GC_LOOP,
                      SEC_GC_MAX,
                      AW_GCM_DATA_AREA,
                      makeGcChangedCallback(AWT_GC_changed_cb, scr),
@@ -658,7 +659,7 @@ GB_ERROR SEC_graphic::load(GBDATA *, const char *) {
         }
     }
     else {
-        load_error = ARB_strdup(err);
+        load_error = strdup(err);
         request_update(SEC_UPDATE_ZOOM_RESET);
     }
 

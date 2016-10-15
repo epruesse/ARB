@@ -184,17 +184,18 @@ int WriteGDE(NA_Alignment& aln, char *filename, int method) {
  * is finished.
  */
 
-char *uniqueID() {
+char *uniqueID()
+{
     static char vname[32];
     time_t *tp;
     static int cnt = 0;
 
-    ARB_calloc(tp, 1);
+    tp = (time_t *)Calloc(1, sizeof(time_t));
 
     time(tp);
     sprintf(vname, "host:%d:%ld", cnt, *tp);
     cnt++;
-    free(tp);
+    Cfree((char*)tp);
     return (vname);
 }
 

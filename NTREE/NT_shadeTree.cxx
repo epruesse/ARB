@@ -105,7 +105,7 @@ class NT_TreeShader: public AP_TreeShader, virtual Noncopyable {
     }
 
 public:
-    NT_TreeShader(TREE_canvas *ntw, GBDATA *gb_main) :
+    NT_TreeShader(AWT_canvas *ntw, GBDATA *gb_main) :
         shader(registerItemShader(ntw->awr,
                                   ntw->gc_manager,
                                   BoundItemSel(gb_main, SPECIES_get_selector()),
@@ -142,7 +142,7 @@ public:
 // ----------------------------
 //      external interface
 
-void NT_install_treeShader(TREE_canvas *ntw, GBDATA *gb_main) {
+void NT_install_treeShader(AWT_canvas *ntw, GBDATA *gb_main) {
     AP_tree::set_tree_shader(new NT_TreeShader(ntw, gb_main));
 }
 

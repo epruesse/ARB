@@ -82,6 +82,8 @@ class Oligo {
 public:
     Oligo() : data(NULL), length(0) {} // empty oligo
     Oligo(const char *data_, int length_) : data(data_), length(length_) {}
+    Oligo(const Oligo& other) : data(other.data), length(other.length) {}
+    DECLARE_ASSIGNMENT_OPERATOR(Oligo);
 
     char at(int offset) const {
         pt_assert(offset >= 0 && offset<length);
@@ -305,7 +307,7 @@ static void sort_tprobes_by(PT_pdc *pdc, ProbeSortMode mode) {
     if (pdc->tprobes) {
         int list_len = pdc->tprobes->get_count();
         if (list_len > 1) {
-            PT_tprobes **my_list = ARB_calloc<PT_tprobes*>(list_len);
+            PT_tprobes **my_list = (PT_tprobes **)calloc(sizeof(void *), list_len);
             {
                 PT_tprobes *tprobe;
                 int         i;
@@ -600,7 +602,7 @@ char *get_design_hinfo(const PT_pdc *pdc) {
         char *ecolipos = NULL;
         if (pdc->min_ecolipos == -1) {
             if (pdc->max_ecolipos == -1) {
-                ecolipos = ARB_strdup("any");
+                ecolipos = strdup("any");
             }
             else {
                 ecolipos = GBS_global_string_copy("<= %i", pdc->max_ecolipos);
@@ -1289,7 +1291,7 @@ public:
 
                 PT_tprobes *tprobe = create_PT_tprobes();
 
-                tprobe->sequence  = ARB_strndup(candi.sequence(), probelen);
+                tprobe->sequence  = GB_strndup(candi.sequence(), probelen);
                 tprobe->temp      = pt_get_temperature(tprobe->sequence);
                 tprobe->groupsize = ingroup_hits;
 
@@ -1387,7 +1389,7 @@ public:
             ++progress;
         }
         for (PT_sequence *seq = pdc->sequences; seq; seq = seq->next) {
-            candidates.generate_for_sequence(pdc, ARB_strndup(seq->seq.data, seq->seq.size), seq->seq.size);
+            candidates.generate_for_sequence(pdc, GB_strndup(seq->seq.data, seq->seq.size), seq->seq.size);
             ++progress;
         }
     }

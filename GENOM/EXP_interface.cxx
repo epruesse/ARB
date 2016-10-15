@@ -42,7 +42,7 @@ static GBDATA* EXP_get_current_experiment_data(GBDATA *gb_main, AW_root *aw_root
 }
 
 static void EXP_select_experiment(GBDATA* /* gb_main */, AW_root *aw_root, const char *item_name) {
-    char *name  = ARB_strdup(item_name);
+    char *name  = strdup(item_name);
     char *slash = strchr(name, '/');
 
     if (slash) {
@@ -59,7 +59,7 @@ static char *EXP_get_experiment_id(GBDATA * /* gb_main */, GBDATA *gb_experiment
 }
 
 static GBDATA *EXP_find_experiment_by_id(GBDATA *gb_main, const char *id) {
-    char   *organism = ARB_strdup(id);
+    char   *organism = strdup(id);
     char   *exp     = strchr(organism, '/');
     GBDATA *result   = 0;
 

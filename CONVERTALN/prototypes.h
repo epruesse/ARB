@@ -85,6 +85,7 @@ char *strf(const char *format, ...) __ATTR__FORMAT(1);
 void throw_errorf(int error_num, const char *error_messagef, ...) __ATTR__FORMAT(2) __ATTR__NORETURN;
 void warning(int warning_num, const char *warning_message);
 void warningf(int warning_num, const char *warning_messagef, ...) __ATTR__FORMAT(2);
+char *Reallocspace(void *block, unsigned int size);
 int Skip_white_space(const char *line, int index);
 void Getstr(char *line, int linenum);
 void terminate_with(char*& str, char ch);

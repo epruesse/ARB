@@ -10,8 +10,6 @@
 
 #include "ali_sequence.hxx"
 
-#include <arb_string.h>
-
 // ---------------------
 //      ALI_SEQUENCE
 
@@ -65,7 +63,7 @@ ALI_NORM_SEQUENCE::ALI_NORM_SEQUENCE(char *Name, char *String)
 
     seq      = (unsigned char*) CALLOC((unsigned int) seq_len, sizeof(unsigned char));
     dots     = (unsigned char **) CALLOC((unsigned int) (seq_len/8)+1, sizeof(unsigned char));
-    seq_name = ARB_strdup(Name);
+    seq_name = strdup(Name);
 
     if (seq == 0 || dots == 0 || seq_name == 0) {
         ali_fatal_error("Out of memory");
@@ -103,7 +101,7 @@ ALI_NORM_SEQUENCE::ALI_NORM_SEQUENCE(ALI_SEQUENCE *SEQ)
 
     seq      = (unsigned char*) CALLOC((unsigned int) seq_len, sizeof(unsigned char));
     dots     = (unsigned char **) CALLOC((unsigned int) (seq_len/8)+1, sizeof(unsigned char));
-    seq_name = ARB_strdup(SEQ->name());
+    seq_name = strdup(SEQ->name());
 
     if (seq == 0 || dots == 0 || seq_name == 0) {
         ali_fatal_error("Out of memory");

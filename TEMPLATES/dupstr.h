@@ -26,6 +26,7 @@
  * - freeset and freenull work with any pointer-type allocated using malloc et al.
  */
 
+
 #ifndef _GLIBCXX_CSTRING
 #include <cstring>
 #endif
@@ -48,7 +49,7 @@ inline void freeset(T *& var, T *heapcopy) {
 }
 
 inline char *nulldup(const char *maybeStr) {
-    return maybeStr ? strdup(maybeStr) : NULL; // @@@ how can ARB_strdup be used in nulldup/freedup? using it causes link problems
+    return maybeStr ? strdup(maybeStr) : NULL;
 }
 inline void freedup(char *& strvar, const char *maybeStr) {
     freeset(strvar, nulldup(maybeStr));
@@ -56,6 +57,13 @@ inline void freedup(char *& strvar, const char *maybeStr) {
 inline void reassign(char *& dstvar, char *& srcvar) {
     freeset(dstvar, srcvar);
     srcvar = NULL;
+}
+
+template<typename T>
+inline void realloc_unleaked(T*& ptr, size_t new_size) {
+    T *new_ptr = (T*)realloc(ptr, new_size);
+    if (!new_ptr) free(ptr);
+    ptr = new_ptr;
 }
 
 #endif // __cplusplus

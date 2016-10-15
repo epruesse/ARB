@@ -74,7 +74,7 @@ GB_ERROR AW_select_nameserver(GBDATA *gb_main, GBDATA *gb_other_main) {
                 error = GBS_global_string("No nameserver defined.");
             }
             else {
-                char **fieldNames = ARB_alloc<char*>(serverCount);
+                char **fieldNames = (char **)malloc(serverCount*sizeof(*fieldNames));
                 for (int c = 0; c<serverCount; c++) {
                     const char *ipport = GBS_read_arb_tcp(nameservers[c]);
                     if (!ipport) {
@@ -107,7 +107,7 @@ GB_ERROR AW_select_nameserver(GBDATA *gb_main, GBDATA *gb_other_main) {
                             else len += strlen(nofield);
                         }
 
-                        char *buttons = ARB_alloc<char>(len);
+                        char *buttons = (char*)malloc(len);
                         buttons[0]    = 0;
                         for (int c = 0; c<serverCount; c++) {
                             if (c) strcat(buttons, ",");
@@ -137,7 +137,7 @@ GB_ERROR AW_select_nameserver(GBDATA *gb_main, GBDATA *gb_other_main) {
 // ------------------------------------
 //      class NameServerConnection
 
-class NameServerConnection : virtual Noncopyable {
+class NameServerConnection {
     aisc_com   *link;
     T_AN_LOCAL  locs;
     T_AN_MAIN   com;
@@ -155,6 +155,9 @@ class NameServerConnection : virtual Noncopyable {
         }
         return 0;
     }
+
+    NameServerConnection(const NameServerConnection& other);
+    NameServerConnection& operator=(const NameServerConnection& /* other */);
 
     GB_ERROR reconnect(GBDATA *gb_main) { // reconnect ignoring consistency
         int old_persistent = persistent;
@@ -441,7 +444,7 @@ char *AWTC_create_numbered_suffix(GB_HASH *species_name_hash, const char *shortn
     char *newshort = 0;
     if (GBS_read_hash(species_name_hash, shortname)) {
         int i;
-        ARB_alloc(newshort, strlen(shortname)+20);
+        newshort = (char *)GB_calloc(sizeof(char), strlen(shortname)+20);
         for (i = 1; ; i++) {
             sprintf(newshort, "%s.%i", shortname, i);
             if (!GBS_read_hash(species_name_hash, newshort))break;
@@ -570,7 +573,7 @@ AW_window *AWTC_create_rename_window(AW_root *root, GBDATA *gb_main) {
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
-    aws->callback(makeHelpCallback("rename.hlp"));
+    aws->callback(makeHelpCallback("sp_rename.hlp"));
     aws->create_button("HELP", "HELP", "H");
 
     aws->at("go");

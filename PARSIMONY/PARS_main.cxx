@@ -120,12 +120,12 @@ __ATTR__NORETURN static void pars_exit(AW_window *aww) {
     exit(EXIT_SUCCESS);
 }
 
-static void AP_user_push_cb(AW_window *aww) {
+static void AP_user_push_cb(AW_window *aww, AWT_canvas *) {
     ap_main->remember_user_state();
     aww->get_root()->awar(AWAR_STACKPOINTER)->write_int(ap_main->get_user_push_counter());
 }
 
-static void AP_user_pop_cb(AW_window *aww, TREE_canvas *ntw) {
+static void AP_user_pop_cb(AW_window *aww, AWT_canvas *ntw) {
     if (ap_main->get_user_push_counter()<=0) {
         aw_message("No tree on stack.");
         return;
@@ -138,7 +138,7 @@ static void AP_user_pop_cb(AW_window *aww, TREE_canvas *ntw) {
     pars_saveNrefresh_changed_tree(ntw);
 
     if (ap_main->get_user_push_counter() <= 0) { // last tree was popped => push again
-        AP_user_push_cb(aww);
+        AP_user_push_cb(aww, ntw);
     }
 }
 
@@ -192,7 +192,7 @@ static long transform_gbd_to_leaf(const char *key, long val, void *) {
     leaf->forget_origin(); // new leaf is not part of tree yet
 
     leaf->gb_node = gb_node;
-    leaf->name    = ARB_strdup(key);
+    leaf->name    = strdup(key);
     leaf->is_leaf = true;
 
     leaf->set_seq(troot->get_seqTemplate()->dup());
@@ -840,7 +840,7 @@ static void nt_add_partial(AWT_graphic_parsimony *agt) {
     }
 }
 
-static void NT_add_partial_and_update(UNFIXED, TREE_canvas *ntw) {
+static void NT_add_partial_and_update(UNFIXED, AWT_canvas *ntw) {
     nt_add_partial(AWT_TREE_PARS(ntw));
     pars_saveNrefresh_changed_tree(ntw);
 }
@@ -853,8 +853,8 @@ static void nt_add_and_update(AWT_canvas *ntw, AddWhat what, bool quick) {
     pars_saveNrefresh_changed_tree(ntw);
 }
 
-static void NT_add_and_NNI(UNFIXED, TREE_canvas *ntw, AddWhat what) { nt_add_and_update(ntw, what, false); }
-static void NT_add_quick  (UNFIXED, TREE_canvas *ntw, AddWhat what) { nt_add_and_update(ntw, what, true);  }
+static void NT_add_and_NNI(UNFIXED, AWT_canvas *ntw, AddWhat what) { nt_add_and_update(ntw, what, false); }
+static void NT_add_quick  (UNFIXED, AWT_canvas *ntw, AddWhat what) { nt_add_and_update(ntw, what, true);  }
 
 // ------------------------------------------
 //      remove and add marked / selected
@@ -872,8 +872,8 @@ static void nt_reAdd_and_update(AWT_canvas *ntw, AddWhat what, bool quick) {
     pars_saveNrefresh_changed_tree(ntw);
 }
 
-static void NT_reAdd_and_NNI(UNFIXED, TREE_canvas *ntw, AddWhat what) { nt_reAdd_and_update(ntw, what, false); }
-static void NT_reAdd_quick  (UNFIXED, TREE_canvas *ntw, AddWhat what) { nt_reAdd_and_update(ntw, what, true);  }
+static void NT_reAdd_and_NNI(UNFIXED, AWT_canvas *ntw, AddWhat what) { nt_reAdd_and_update(ntw, what, false); }
+static void NT_reAdd_quick  (UNFIXED, AWT_canvas *ntw, AddWhat what) { nt_reAdd_and_update(ntw, what, true);  }
 
 // --------------------------------------------------------------------------------
 
@@ -883,12 +883,12 @@ static void calc_branchlengths(AWT_graphic_parsimony *agt) {
     agt->reorder_tree(BIG_BRANCHES_TO_TOP);
 }
 
-static void NT_calc_branch_lengths(AW_window *, TREE_canvas *ntw) {
+static void NT_calc_branch_lengths(AW_window *, AWT_canvas *ntw) {
     calc_branchlengths(AWT_TREE_PARS(ntw));
     pars_saveNrefresh_changed_tree(ntw);
 }
 
-static void NT_bootstrap(AW_window *, TREE_canvas *ntw, bool limit_only) {
+static void NT_bootstrap(AW_window *, AWT_canvas *ntw, bool limit_only) {
     arb_progress progress("Calculating bootstrap limit");
     AP_BL_MODE   mode = AP_BL_MODE((limit_only ? AP_BL_BOOTSTRAP_LIMIT : AP_BL_BOOTSTRAP_ESTIMATE)|AP_BL_BL_ONLY);
 
@@ -907,7 +907,7 @@ static void optimizeTree(AWT_graphic_parsimony *agt, const KL_Settings& settings
     agt->reorder_tree(BIG_BRANCHES_TO_TOP);
     rootNode()->compute_tree();
 }
-static void NT_optimize(AW_window *, TREE_canvas *ntw) {
+static void NT_optimize(AW_window *, AWT_canvas *ntw) {
     optimizeTree(AWT_TREE_PARS(ntw), KL_Settings(ntw->awr));
     pars_saveNrefresh_changed_tree(ntw);
 }
@@ -929,7 +929,7 @@ static void recursiveNNI(AWT_graphic_parsimony *agt, EdgeSpec whichEdges) {
     rootNode()->compute_tree();
 }
 
-static void NT_recursiveNNI(AW_window *, TREE_canvas *ntw) {
+static void NT_recursiveNNI(AW_window *, AWT_canvas *ntw) {
     EdgeSpec whichEdges = KL_Settings(ntw->awr).whichEdges;
     recursiveNNI(AWT_TREE_PARS(ntw), whichEdges);
     pars_saveNrefresh_changed_tree(ntw);
@@ -948,7 +948,7 @@ static void update_random_repeat(AW_root *awr, AWT_graphic_parsimony *agt) {
     awr->awar(AWAR_RAND_REPEAT)->write_int(repeat);
 }
 
-static void randomMixTree(AW_window *aww, TREE_canvas *ntw) {
+static void randomMixTree(AW_window *aww, AWT_canvas *ntw) {
     arb_progress progress("Randomizing tree");
 
     progress.subtitle("mixing");
@@ -1007,7 +1007,7 @@ static AWT_predefined_config optimizer_predefined_configs[] = {
     { 0, 0, 0 }
 };
 
-static AW_window *createOptimizeWindow(AW_root *aw_root, TREE_canvas *ntw) {
+static AW_window *createOptimizeWindow(AW_root *aw_root, AWT_canvas *ntw) {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(aw_root, "TREE_OPTIMIZE", "Tree optimization");
     aws->load_xfig("pars/tree_opti.fig");
@@ -1178,7 +1178,7 @@ static GB_ERROR pars_check_size(AW_root *awr, GB_ERROR& warning, const adfilterc
     return error;
 }
 
-static void pars_reset_optimal_parsimony(AW_window *aww, TREE_canvas *ntw) {
+static void pars_reset_optimal_parsimony(AW_window *aww, AWT_canvas *ntw) {
     AW_root *awr = aww->get_root();
     awr->awar(AWAR_BEST_PARSIMONY)->write_int(awr->awar(AWAR_PARSIMONY)->read_int());
     ntw->refresh();
@@ -1212,7 +1212,7 @@ void LowDataCheck::count(AP_tree_nlen *node) {
     }
 }
 
-static void PARS_infomode_cb(UNFIXED, TREE_canvas *canvas, AWT_COMMAND_MODE mode) {
+static void PARS_infomode_cb(UNFIXED, AWT_canvas *canvas, AWT_COMMAND_MODE mode) {
     AWT_trigger_remote_action(NULL, canvas->gb_main, "ARB_NT:species_info");
     nt_mode_event(NULL, canvas, mode);
 }
@@ -1247,11 +1247,11 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
 
     GLOBAL_PARS->generate_tree(wfilt);
 
-    TREE_canvas *ntw;
+    AWT_canvas *ntw;
     {
         AP_tree_display_type  old_sort_type = global_tree()->tree_sort;
         global_tree()->set_tree_type(AP_LIST_SIMPLE, NULL); // avoid NDS warnings during startup
-        ntw = new TREE_canvas(gb_main, awm, awm->get_window_id(), global_tree(), awr->awar(AWAR_TREE));
+        ntw = new AWT_canvas(gb_main, awm, awm->get_window_id(), global_tree(), AWAR_TREE);
         global_tree()->set_tree_type(old_sort_type, ntw);
     }
 
@@ -1319,7 +1319,7 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
     awm->create_menu("File", "F", AWM_ALL);
     {
         insert_macro_menu_entry(awm, false);
-        awm->insert_menu_topic("print_tree", "Print Tree ...", "P", "tree2prt.hlp", AWM_ALL, makeWindowCallback(AWT_popup_print_window, static_cast<AWT_canvas*>(ntw)));
+        awm->insert_menu_topic("print_tree", "Print Tree ...", "P", "tree2prt.hlp", AWM_ALL, makeWindowCallback(AWT_popup_print_window, ntw));
         awm->insert_menu_topic("quit",       "Quit",           "Q", "quit.hlp",     AWM_ALL, pars_exit);
     }
 
@@ -1334,8 +1334,8 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
         awm->insert_menu_topic("nds",       "NDS (Node Display Setup) ...",      "N", "props_nds.hlp",   AWM_ALL, makeCreateWindowCallback(AWT_create_nds_window, ntw->gb_main));
 
         awm->sep______________();
-        awm->insert_menu_topic("tree_print",  "Print tree ...",          "P", "tree2prt.hlp",  AWM_ALL, makeWindowCallback(AWT_popup_print_window,       static_cast<AWT_canvas*>(ntw)));
-        awm->insert_menu_topic("tree_2_xfig", "Export tree to XFIG ...", "F", "tree2file.hlp", AWM_ALL, makeWindowCallback(AWT_popup_tree_export_window, static_cast<AWT_canvas*>(ntw)));
+        awm->insert_menu_topic("tree_print",  "Print tree ...",          "P", "tree2prt.hlp",  AWM_ALL, makeWindowCallback(AWT_popup_print_window,       ntw));
+        awm->insert_menu_topic("tree_2_xfig", "Export tree to XFIG ...", "F", "tree2file.hlp", AWM_ALL, makeWindowCallback(AWT_popup_tree_export_window, ntw));
         awm->sep______________();
         NT_insert_collapse_submenu(awm, ntw);
         awm->sep______________();
@@ -1472,7 +1472,7 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
     awm->create_button("POP", "RESTORE", 0);
 
     awm->button_length(6);
-    awm->callback(AP_user_push_cb);
+    awm->callback(makeWindowCallback(AP_user_push_cb, ntw));
     awm->help_text("ap_stack.hlp");
     awm->create_button("PUSH", "STORE", 0);
 
@@ -1518,7 +1518,7 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
     TREE_install_update_callbacks(ntw);
 
     update_random_repeat(awr, AWT_TREE_PARS(ntw));
-    AP_user_push_cb(aw_parent); // push initial tree
+    AP_user_push_cb(aw_parent, ntw); // push initial tree
     set_keep_ghostnodes(); // make sure no stacked nodes get deleted
 }
 

@@ -9,7 +9,7 @@
 // ============================================================= //
 
 #include "arb_strbuf.h"
-#include "arb_string.h"
+
 
 void GBS_strstruct::vnprintf(size_t maxlen, const char *templat, va_list& parg) {
     ensure_mem(maxlen+1);
@@ -54,7 +54,7 @@ GBS_strstruct *GBS_stropen(long init_size) {
         if ((size_t)init_size*10 < strstr->get_buffer_size()) oversized_counter++;
         else oversized_counter = 0;
 
-        if (oversized_counter>10) {                 // was oversized more than 10 times -> allocate smaller block
+        if (oversized_counter>10) {                 // was oversized more than 10 times -> realloc
             size_t dummy;
             free(strstr->release_mem(dummy));
             strstr->alloc_mem(init_size);
@@ -69,8 +69,13 @@ GBS_strstruct *GBS_stropen(long init_size) {
 
 char *GBS_strclose(GBS_strstruct *strstr) {
     // returns a char* copy of the memory file
-    char *str = ARB_strndup(strstr->get_data(), strstr->get_position());
+
+    size_t  length = strstr->get_position();
+    char   *str    = (char*)malloc(length+1);
+
+    memcpy(str, strstr->get_data(), length+1); // copy with 0
     GBS_strforget(strstr);
+
     return str;
 }
 

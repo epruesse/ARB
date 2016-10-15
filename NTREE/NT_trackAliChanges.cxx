@@ -35,7 +35,7 @@ static GB_ERROR writeHistory(GBDATA *gb_species, const char *stamp, const char *
         long  oldSize    = GB_read_string_count(gb_history);
         long  newSize    = strlen(newContent);
         long  size       = oldSize+1+newSize+1;
-        char *content    = ARB_alloc<char>(size);
+        char *content    = (char*)malloc(size);
 
         memcpy(content, newContent, newSize);
         content[newSize] = '\n';

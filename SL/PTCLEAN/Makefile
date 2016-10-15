@@ -38,7 +38,6 @@ ptclean.o: $(ARBHOME)/INCLUDE/arb_core.h
 ptclean.o: $(ARBHOME)/INCLUDE/arb_diff.h
 ptclean.o: $(ARBHOME)/INCLUDE/arb_error.h
 ptclean.o: $(ARBHOME)/INCLUDE/arb_file.h
-ptclean.o: $(ARBHOME)/INCLUDE/arb_mem.h
 ptclean.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ptclean.o: $(ARBHOME)/INCLUDE/arb_progress.h
 ptclean.o: $(ARBHOME)/INCLUDE/arb_string.h

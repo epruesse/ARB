@@ -101,7 +101,9 @@ float *PH_filter::calculate_column_homology() {
     num_all_chars = strlen(all_chars);
 
     // initialize variables
-    freeset(mline, ARB_calloc<typeof(*mline)>(PHDATA::ROOT->get_seq_len()));
+    free(mline);
+    mline = (float *) calloc((int) PHDATA::ROOT->get_seq_len(), sizeof(float));
+
 
     const long startcol = aw_root->awar(AWAR_PHYLO_FILTER_STARTCOL)->read_int();
     const long stopcol  = aw_root->awar(AWAR_PHYLO_FILTER_STOPCOL)->read_int();
@@ -121,10 +123,10 @@ float *PH_filter::calculate_column_homology() {
     // index = num_all_chars   -> count chars which act as column stopper ( = forget whole column if char occurs)
     // index = num_all_chars+1 -> count masked characters ( = don't count)
 
-    ARB_calloc(chars_counted, len);
+    chars_counted=(long **) calloc((int) (len), sizeof(long *));
     for (i=0; i<len; i++) {
-        ARB_calloc(chars_counted[i], num_all_chars+2);
-        for (j=0; j<num_all_chars+2; j++) chars_counted[i][j] = 0;
+        chars_counted[i]=(long *) calloc((int) num_all_chars+2, sizeof(long));
+        for (j=0; j<num_all_chars+2; j++) chars_counted[i][j]=0;
     }
 
     for (i=0; i<PHDATA::ROOT->get_seq_len(); i++) mline[i]=-1.0; // all columns invalid
@@ -321,7 +323,7 @@ float *PH_filter::calculate_column_homology() {
     free(chars_counted);
 
     if (!error) {
-        char *filt  = ARB_calloc<char>(PHDATA::ROOT->get_seq_len()+1);
+        char *filt  = (char *)calloc((int) PHDATA::ROOT->get_seq_len()+1, sizeof(char));
         for (i=0; i<PHDATA::ROOT->get_seq_len(); i++) {
             filt[i] = minhom<=mline[i] && maxhom>=mline[i]  ? '1' : '0';
         }

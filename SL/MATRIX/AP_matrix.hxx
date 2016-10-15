@@ -14,8 +14,8 @@
 #ifndef ARBTOOLS_H
 #include <arbtools.h>
 #endif
-#ifndef ARB_STRING_H
-#include <arb_string.h>
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
 #endif
 
 #define ap_assert(cond) arb_assert(cond)
@@ -75,7 +75,7 @@ public:
         : AP_matrix(si),
           x_description(NULL),
           y_description(NULL),
-          awar_prefix(ARB_strdup(awar_prefix_))
+          awar_prefix(strdup(awar_prefix_))
     {}
     ~AP_userdef_matrix();
 

@@ -16,6 +16,8 @@
 #include "NT_validNameParser.h"
 #include "NT_local.h"
 
+#include <arb_assert.h>
+
 #include <cstdlib>
 #include <cstdlib>
 #include <iostream>

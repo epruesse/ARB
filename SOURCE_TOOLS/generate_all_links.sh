@@ -348,7 +348,6 @@ symlink_file ../WINDOW/aw_device_click.hxx INCLUDE/aw_device_click.hxx &&
 symlink_file ../WINDOW/aw_edit.hxx INCLUDE/aw_edit.hxx &&
 symlink_file ../WINDOW/aw_file.hxx INCLUDE/aw_file.hxx &&
 symlink_file ../WINDOW/aw_font_group.hxx INCLUDE/aw_font_group.hxx &&
-symlink_file ../WINDOW/aw_font_limits.hxx INCLUDE/aw_font_limits.hxx &&
 symlink_file ../WINDOW/aw_global.hxx INCLUDE/aw_global.hxx &&
 symlink_file ../WINDOW/aw_global_awars.hxx INCLUDE/aw_global_awars.hxx &&
 symlink_file ../WINDOW/aw_keysym.hxx INCLUDE/aw_keysym.hxx &&

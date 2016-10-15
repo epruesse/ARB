@@ -10,6 +10,7 @@
 // ================================================================ //
 
 #include <arb_msg_fwd.h>
+#include <arb_assert.h>
 #include <arb_string.h>
 #include <arb_backtrace.h>
 #include <smartptr.h>
@@ -22,9 +23,6 @@
 // AISC_MKPT_PROMOTE:#endif
 // AISC_MKPT_PROMOTE:#ifndef ARB_CORE_H
 // AISC_MKPT_PROMOTE:#include "arb_core.h"
-// AISC_MKPT_PROMOTE:#endif
-// AISC_MKPT_PROMOTE:#ifndef ARB_ASSERT_H
-// AISC_MKPT_PROMOTE:#include "arb_assert.h"
 // AISC_MKPT_PROMOTE:#endif
 // AISC_MKPT_PROMOTE:
 // AISC_MKPT_PROMOTE:// return error and ensure none is exported 
@@ -171,7 +169,7 @@ const char *GBS_vglobal_string(const char *templat, va_list parg) {
 char *GBS_vglobal_string_copy(const char *templat, va_list parg) {
     // goes to header: __ATTR__VFORMAT(1)
     const char *gstr = globBuf.vstrf(templat, parg, 1);
-    return ARB_strduplen(gstr, last_global_string_size);
+    return GB_strduplen(gstr, last_global_string_size);
 }
 
 const char *GBS_global_string_to_buffer(char *buffer, size_t bufsize, const char *templat, ...) {
@@ -220,8 +218,8 @@ GB_ERROR GBK_assert_msg(const char *assertion, const char *file, int linenr) {
     const char  *result   = 0;
     int          old_size = last_global_string_size;
 
-    if (!buffer) ARB_alloc(buffer, BUFSIZE);
-    result = GBS_global_string_to_buffer(buffer, BUFSIZE, "assertion '%s' failed in %s #%i", assertion, file, linenr);
+    if (!buffer) buffer = (char *)malloc(BUFSIZE);
+    result              = GBS_global_string_to_buffer(buffer, BUFSIZE, "assertion '%s' failed in %s #%i", assertion, file, linenr);
 
     last_global_string_size = old_size;
 
@@ -341,7 +339,7 @@ GB_ERROR GB_print_error() {
 }
 
 GB_ERROR GB_get_error() {
-    // goes to header: __ATTR__DEPRECATED_TODO("consider using either GB_await_error() or GB_incur_error()")
+    // goes to header: __ATTR__DEPRECATED_TODO("consider using either GB_have_error() or GB_await_error()")
     return GB_error_buffer;
 }
 
@@ -364,21 +362,6 @@ GB_ERROR GB_await_error() {
 void GB_clear_error() {         // clears the error buffer
     freenull(GB_error_buffer);
 }
-
-// AISC_MKPT_PROMOTE:inline GB_ERROR GB_incur_error() {
-// AISC_MKPT_PROMOTE:    /*! Take over responsibility for any potential (exported) error.
-// AISC_MKPT_PROMOTE:     * @return NULL if no error was exported; the error otherwise
-// AISC_MKPT_PROMOTE:     * Postcondition: no error is exported
-// AISC_MKPT_PROMOTE:     */
-// AISC_MKPT_PROMOTE:    return GB_have_error() ? GB_await_error() : NULL;
-// AISC_MKPT_PROMOTE:}
-// AISC_MKPT_PROMOTE:inline GB_ERROR GB_incur_error_if(bool error_may_occur) {
-// AISC_MKPT_PROMOTE:    /*! similar to GB_incur_error.
-// AISC_MKPT_PROMOTE:     * Additionally asserts no error may occur if 'error_may_occur' is false!
-// AISC_MKPT_PROMOTE:     */
-// AISC_MKPT_PROMOTE:    arb_assert(implicated(!error_may_occur, !GB_have_error()));
-// AISC_MKPT_PROMOTE:    return error_may_occur ? GB_incur_error() : NULL;
-// AISC_MKPT_PROMOTE:}
 
 #if defined(WARN_TODO)
 #warning search for 'GBS_global_string.*error' and replace with GB_failedTo_error or GB_append_exportedError
@@ -547,7 +530,7 @@ char *GBK_singlequote(const char *arg) {
     /*! Enclose argument in single quotes (like 'arg') for POSIX shell commands.
      */
 
-    if (!arg[0]) return ARB_strdup("''");
+    if (!arg[0]) return strdup("''");
 
     GBS_strstruct  out(500);
     const char    *existing_quote = strchr(arg, '\'');

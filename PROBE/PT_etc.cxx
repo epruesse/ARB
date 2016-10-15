@@ -38,7 +38,7 @@ static const gene_struct *get_gene_struct_by_arb_species_gene_name(const char *s
     }
 
     int   slashpos     = slash-species_gene_name;
-    char *organism     = ARB_strdup(species_gene_name);
+    char *organism     = strdup(species_gene_name);
     organism[slashpos] = 0;
 
     gene_struct to_search("", organism, species_gene_name+slashpos+1);
@@ -212,7 +212,7 @@ bytestring *PT_unknown_names(const PT_pdc *pdc) {
         pt_assert(!error);
     }
     else {
-        unknown.data = ARB_strdup("");
+        unknown.data = strdup("");
         unknown.size = 1;
     }
     pt_export_error_if(locs, error);

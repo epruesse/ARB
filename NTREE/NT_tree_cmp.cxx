@@ -21,7 +21,7 @@ AWT_species_set_root::AWT_species_set_root(GBDATA *gb_main_, long nspecies_, arb
     : species_counter(1),
       nspecies(nspecies_),
       nsets(0),
-      sets(ARB_calloc<AWT_species_set*>(leafs_2_nodes(nspecies, ROOTED))),
+      sets((AWT_species_set **)GB_calloc(sizeof(AWT_species_set *), (size_t)leafs_2_nodes(nspecies, ROOTED))),
       progress(progress_),
       gb_main(gb_main_),
       species_hash(GBS_create_hash(nspecies, GB_IGNORE_CASE))
@@ -107,7 +107,7 @@ int AWT_species_set_root::search_and_remember_best_match_and_log_errors(const AW
 }
 
 void AWT_species_set::init(AP_tree *nodei, const AWT_species_set_root *ssr) {
-    ARB_calloc(bitstring, ssr->bitstring_longs()*sizeof(long));
+    bitstring             = (unsigned char *)GB_calloc(sizeof(char), ssr->bitstring_longs()*sizeof(long));
     unfound_species_count = 0;
     best_cost             = 0x7fffffff;
     best_node             = NULL;
@@ -231,11 +231,11 @@ GB_ERROR AWT_species_set_root::copy_node_information(FILE *log, bool delete_old_
                     cset->node->name = GB_read_string(gb_name);
                 }
                 else {
-                    cset->node->name = ARB_strdup("<gb_node w/o name>");
+                    cset->node->name = strdup("<gb_node w/o name>");
                 }
             }
 
-            old_group_name = ARB_strdup(cset->node->name); // store old_group_name to rename new inserted node
+            old_group_name = strdup(cset->node->name); // store old_group_name to rename new inserted node
 
             error = GB_delete(cset->node->gb_node);
             if (!error) {

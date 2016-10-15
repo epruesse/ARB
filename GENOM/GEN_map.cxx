@@ -40,11 +40,13 @@ extern GBDATA *GLOBAL_gb_main;
 // -----------------------
 //      GEN_map_window
 
-class GEN_map_window : public AW_window_menu_modes { // derived from a Noncopyable
+class GEN_map_window : public AW_window_menu_modes {
     int          window_nr;
     GEN_graphic *gen_graphic;
     AWT_canvas  *gen_canvas;
 
+    GEN_map_window(const GEN_map_window& other); // copying not allowed
+    GEN_map_window& operator = (const GEN_map_window& other); // assignment not allowed
 public:
     GEN_map_window(int window_nr_)
         : AW_window_menu_modes()
@@ -67,7 +69,7 @@ public:
 
 DECLARE_CBTYPE_FVV_AND_BUILDERS(GenmapWindowCallback, void, GEN_map_window*); // generates makeGenmapWindowCallback
 
-class GEN_map_manager : virtual Noncopyable {
+class GEN_map_manager {
     static AW_root         *aw_root;
     static GBDATA          *gb_main;
     static GEN_map_manager *the_manager;            // there can be only one!
@@ -75,6 +77,9 @@ class GEN_map_manager : virtual Noncopyable {
     int              window_counter;
     GEN_map_window **windows;   // array of managed windows
     int              windows_size; // size of 'windows' array
+
+    GEN_map_manager(const GEN_map_manager& other); // copying not allowed
+    GEN_map_manager& operator = (const GEN_map_manager& other); // assignment not allowed
 
 public:
 
@@ -354,17 +359,11 @@ void GEN_refresh_all_windows() {
     GEN_map_manager::with_all_mapped_windows(GEN_map_window_refresh);
 }
 
-static void GEN_map_window_refresh_if_display_type(GEN_map_window *win, bool zoom_reset, int display_type_mask) {
+static void GEN_map_window_refresh_if_display_type(GEN_map_window *win, int display_type_mask) {
     int my_display_type = win->get_graphic()->get_display_style();
     if (display_type_mask & DISPLAY_TYPE_BIT(my_display_type)) {
-        if (zoom_reset) {
-            // GEN_map_window_zoom_reset_and_refresh(win);
-            win->get_canvas()->zoom_reset();
-            GEN_jump_cb_auto(AW_root::SINGLETON, win, true);
-        }
-        else {
-            GEN_map_window_refresh(win);
-        }
+        AWT_canvas *canvas = win->get_canvas();
+        canvas->refresh();
     }
 }
 
@@ -426,11 +425,11 @@ static void GEN_local_lock_changed_cb(AW_root *awr, GEN_map_window *win, bool ge
 // -------------------------------------
 //      display parameter change cb
 
-static void GEN_display_param_changed_cb(AW_root*, bool zoom_reset, int display_type_mask) {
-    GEN_map_manager::with_all_mapped_windows(makeGenmapWindowCallback(GEN_map_window_refresh_if_display_type, zoom_reset, display_type_mask));
+static void GEN_display_param_changed_cb(AW_root*, int display_type_mask) {
+    GEN_map_manager::with_all_mapped_windows(makeGenmapWindowCallback(GEN_map_window_refresh_if_display_type, display_type_mask));
 }
-inline void set_display_update_callback(AW_root *awr, const char *awar_name, bool zoom_reset, int display_type_mask) {
-    awr->awar(awar_name)->add_callback(makeRootCallback(GEN_display_param_changed_cb, zoom_reset, display_type_mask));
+inline void set_display_update_callback(AW_root *awr, const char *awar_name, int display_type_mask) {
+    awr->awar(awar_name)->add_callback(makeRootCallback(GEN_display_param_changed_cb, display_type_mask));
 }
 
 // --------------------------
@@ -471,20 +470,20 @@ static void GEN_add_local_awar_callbacks(AW_root *awr, AW_default /* def */, GEN
 static void GEN_create_genemap_global_awars(AW_root *aw_root, AW_default def, GBDATA *gb_main) {
     // layout options:
 
-    aw_root->awar_int(AWAR_GENMAP_ARROW_SIZE, 150)->set_minmax(0, 500);
+    aw_root->awar_int(AWAR_GENMAP_ARROW_SIZE, 150);
     aw_root->awar_int(AWAR_GENMAP_SHOW_HIDDEN, 0);
     aw_root->awar_int(AWAR_GENMAP_SHOW_ALL_NDS, 0);
 
-    aw_root->awar_int(AWAR_GENMAP_BOOK_BASES_PER_LINE, 15000)->set_minmax(1, 100000);
-    aw_root->awar_float(AWAR_GENMAP_BOOK_WIDTH_FACTOR, 0.1)->set_minmax(0, 1);
-    aw_root->awar_int(AWAR_GENMAP_BOOK_LINE_HEIGHT, 20)->set_minmax(0, 100);
-    aw_root->awar_int(AWAR_GENMAP_BOOK_LINE_SPACE, 5)->set_minmax(-20, 20);
+    aw_root->awar_int(AWAR_GENMAP_BOOK_BASES_PER_LINE, 15000);
+    aw_root->awar_float(AWAR_GENMAP_BOOK_WIDTH_FACTOR, 0.1);
+    aw_root->awar_int(AWAR_GENMAP_BOOK_LINE_HEIGHT, 20);
+    aw_root->awar_int(AWAR_GENMAP_BOOK_LINE_SPACE, 5);
 
-    aw_root->awar_float(AWAR_GENMAP_VERTICAL_FACTOR_X, 1.0)->set_minmax(0, 10);
-    aw_root->awar_float(AWAR_GENMAP_VERTICAL_FACTOR_Y, 0.3)->set_minmax(0, 10);
+    aw_root->awar_float(AWAR_GENMAP_VERTICAL_FACTOR_X, 1.0);
+    aw_root->awar_float(AWAR_GENMAP_VERTICAL_FACTOR_Y, 0.3);
 
-    aw_root->awar_float(AWAR_GENMAP_RADIAL_INSIDE, 50)->set_minmax(0, 100);
-    aw_root->awar_float(AWAR_GENMAP_RADIAL_OUTSIDE, 4)->set_minmax(0, 100);
+    aw_root->awar_float(AWAR_GENMAP_RADIAL_INSIDE, 50);
+    aw_root->awar_float(AWAR_GENMAP_RADIAL_OUTSIDE, 4);
 
     // other options:
 
@@ -494,22 +493,20 @@ static void GEN_create_genemap_global_awars(AW_root *aw_root, AW_default def, GB
 }
 
 static void GEN_add_global_awar_callbacks(AW_root *awr) {
-    enum { REFRESH_ONLY = 0, ZOOM_RESET = 1 };
+    set_display_update_callback(awr, AWAR_GENMAP_ARROW_SIZE,          ALL_DISPLAY_TYPES^DISPLAY_TYPE_BIT(GEN_DISPLAY_STYLE_BOOK));
+    set_display_update_callback(awr, AWAR_GENMAP_SHOW_HIDDEN,         ALL_DISPLAY_TYPES);
+    set_display_update_callback(awr, AWAR_GENMAP_SHOW_ALL_NDS,        ALL_DISPLAY_TYPES);
 
-    set_display_update_callback(awr, AWAR_GENMAP_ARROW_SIZE,          REFRESH_ONLY, ALL_DISPLAY_TYPES^DISPLAY_TYPE_BIT(GEN_DISPLAY_STYLE_BOOK));
-    set_display_update_callback(awr, AWAR_GENMAP_SHOW_HIDDEN,         REFRESH_ONLY, ALL_DISPLAY_TYPES);
-    set_display_update_callback(awr, AWAR_GENMAP_SHOW_ALL_NDS,        REFRESH_ONLY, ALL_DISPLAY_TYPES);
+    set_display_update_callback(awr, AWAR_GENMAP_BOOK_BASES_PER_LINE, DISPLAY_TYPE_BIT(GEN_DISPLAY_STYLE_BOOK));
+    set_display_update_callback(awr, AWAR_GENMAP_BOOK_WIDTH_FACTOR,   DISPLAY_TYPE_BIT(GEN_DISPLAY_STYLE_BOOK));
+    set_display_update_callback(awr, AWAR_GENMAP_BOOK_LINE_HEIGHT,    DISPLAY_TYPE_BIT(GEN_DISPLAY_STYLE_BOOK));
+    set_display_update_callback(awr, AWAR_GENMAP_BOOK_LINE_SPACE,     DISPLAY_TYPE_BIT(GEN_DISPLAY_STYLE_BOOK));
 
-    set_display_update_callback(awr, AWAR_GENMAP_BOOK_BASES_PER_LINE, ZOOM_RESET,   DISPLAY_TYPE_BIT(GEN_DISPLAY_STYLE_BOOK));
-    set_display_update_callback(awr, AWAR_GENMAP_BOOK_WIDTH_FACTOR,   ZOOM_RESET,   DISPLAY_TYPE_BIT(GEN_DISPLAY_STYLE_BOOK));
-    set_display_update_callback(awr, AWAR_GENMAP_BOOK_LINE_HEIGHT,    ZOOM_RESET,   DISPLAY_TYPE_BIT(GEN_DISPLAY_STYLE_BOOK));
-    set_display_update_callback(awr, AWAR_GENMAP_BOOK_LINE_SPACE,     ZOOM_RESET,   DISPLAY_TYPE_BIT(GEN_DISPLAY_STYLE_BOOK));
+    set_display_update_callback(awr, AWAR_GENMAP_VERTICAL_FACTOR_X,   DISPLAY_TYPE_BIT(GEN_DISPLAY_STYLE_VERTICAL));
+    set_display_update_callback(awr, AWAR_GENMAP_VERTICAL_FACTOR_Y,   DISPLAY_TYPE_BIT(GEN_DISPLAY_STYLE_VERTICAL));
 
-    set_display_update_callback(awr, AWAR_GENMAP_VERTICAL_FACTOR_X,   ZOOM_RESET,   DISPLAY_TYPE_BIT(GEN_DISPLAY_STYLE_VERTICAL));
-    set_display_update_callback(awr, AWAR_GENMAP_VERTICAL_FACTOR_Y,   ZOOM_RESET,   DISPLAY_TYPE_BIT(GEN_DISPLAY_STYLE_VERTICAL));
-
-    set_display_update_callback(awr, AWAR_GENMAP_RADIAL_INSIDE,       ZOOM_RESET,   DISPLAY_TYPE_BIT(GEN_DISPLAY_STYLE_RADIAL));
-    set_display_update_callback(awr, AWAR_GENMAP_RADIAL_OUTSIDE,      ZOOM_RESET,   DISPLAY_TYPE_BIT(GEN_DISPLAY_STYLE_RADIAL));
+    set_display_update_callback(awr, AWAR_GENMAP_RADIAL_INSIDE,       DISPLAY_TYPE_BIT(GEN_DISPLAY_STYLE_RADIAL));
+    set_display_update_callback(awr, AWAR_GENMAP_RADIAL_OUTSIDE,      DISPLAY_TYPE_BIT(GEN_DISPLAY_STYLE_RADIAL));
 
     awr->awar(AWAR_ORGANISM_NAME)->add_callback(GEN_organism_or_gene_changed_cb);
     awr->awar(AWAR_GENE_NAME)->add_callback(GEN_organism_or_gene_changed_cb);
@@ -565,14 +562,10 @@ static AW_window *GEN_create_options_window(AW_root *awr) {
         aws->at("help");
         aws->create_button("HELP", "HELP", "H");
 
-        aws->auto_space(5, 5);
-        aws->label_length(26);
-
-        const int FIELDWIDTH  = 12;
-        const int SCALERWIDTH = 300;
-
         // all displays:
-        aws->at("arrow_size");      aws->create_input_field_with_scaler(AWAR_GENMAP_ARROW_SIZE, FIELDWIDTH, SCALERWIDTH);
+        aws->at("arrow_size");      aws->create_input_field(AWAR_GENMAP_ARROW_SIZE, 5);
+
+        aws->label_length(26);
 
         aws->at("show_hidden");
         aws->label("Show hidden genes");
@@ -587,18 +580,18 @@ static AW_window *GEN_create_options_window(AW_root *awr) {
         aws->create_toggle(AWAR_GENMAP_AUTO_JUMP);
 
         // book-style:
-        aws->at("base_pos");        aws->create_input_field_with_scaler(AWAR_GENMAP_BOOK_BASES_PER_LINE, FIELDWIDTH, SCALERWIDTH);
-        aws->at("width_factor");    aws->create_input_field_with_scaler(AWAR_GENMAP_BOOK_WIDTH_FACTOR,   FIELDWIDTH, SCALERWIDTH, AW_SCALER_EXP_LOWER);
-        aws->at("line_height");     aws->create_input_field_with_scaler(AWAR_GENMAP_BOOK_LINE_HEIGHT,    FIELDWIDTH, SCALERWIDTH, AW_SCALER_EXP_LOWER);
-        aws->at("line_space");      aws->create_input_field_with_scaler(AWAR_GENMAP_BOOK_LINE_SPACE,     FIELDWIDTH, SCALERWIDTH);
+        aws->at("base_pos");        aws->create_input_field(AWAR_GENMAP_BOOK_BASES_PER_LINE, 15);
+        aws->at("width_factor");    aws->create_input_field(AWAR_GENMAP_BOOK_WIDTH_FACTOR, 7);
+        aws->at("line_height");     aws->create_input_field(AWAR_GENMAP_BOOK_LINE_HEIGHT, 5);
+        aws->at("line_space");      aws->create_input_field(AWAR_GENMAP_BOOK_LINE_SPACE, 5);
 
         // vertical-style:
-        aws->at("factor_x");        aws->create_input_field_with_scaler(AWAR_GENMAP_VERTICAL_FACTOR_X, FIELDWIDTH, SCALERWIDTH, AW_SCALER_EXP_LOWER);
-        aws->at("factor_y");        aws->create_input_field_with_scaler(AWAR_GENMAP_VERTICAL_FACTOR_Y, FIELDWIDTH, SCALERWIDTH, AW_SCALER_EXP_LOWER);
+        aws->at("factor_x");        aws->create_input_field(AWAR_GENMAP_VERTICAL_FACTOR_X, 5);
+        aws->at("factor_y");        aws->create_input_field(AWAR_GENMAP_VERTICAL_FACTOR_Y, 5);
 
         // radial style:
-        aws->at("inside");          aws->create_input_field_with_scaler(AWAR_GENMAP_RADIAL_INSIDE,  FIELDWIDTH, SCALERWIDTH, AW_SCALER_EXP_LOWER);
-        aws->at("outside");         aws->create_input_field_with_scaler(AWAR_GENMAP_RADIAL_OUTSIDE, FIELDWIDTH, SCALERWIDTH, AW_SCALER_EXP_LOWER);
+        aws->at("inside");          aws->create_input_field(AWAR_GENMAP_RADIAL_INSIDE, 5);
+        aws->at("outside");         aws->create_input_field(AWAR_GENMAP_RADIAL_OUTSIDE, 5);
     }
     return aws;
 }
@@ -700,7 +693,7 @@ struct EG2PS_data : virtual Noncopyable {
     EG2PS_data(const char *ali_, GBDATA *gb_species_data_, int marked_genes_)
         : progress(marked_genes_), 
           gb_species_data(gb_species_data_), 
-          ali(ARB_strdup(ali_)),
+          ali(strdup(ali_)), 
           existing(gb_species_data, marked_genes_), 
           duplicateSpecies(0), 
           nameProblem(false)
@@ -773,7 +766,7 @@ static void gen_extract_gene_2_pseudoSpecies(GBDATA *gb_species, GBDATA *gb_gene
                 case 0: {   // Overwrite species
                     // @@@ FIXME:  delete species needed here
                     create_new_gene_species = true;
-                    short_name              = ARB_strdup(existing_name);
+                    short_name              = strdup(existing_name);
                     break;
                 }
                 case 1: {     // Insert new alignment or overwrite alignment
@@ -1371,15 +1364,15 @@ static AW_window *GEN_create_awar_debug_window(AW_root *aw_root) {
 
 struct GEN_item_type_species_selector : public awt_item_type_selector {
     GEN_item_type_species_selector() : awt_item_type_selector(AWT_IT_GENE) {}
-    ~GEN_item_type_species_selector() OVERRIDE {}
+    virtual ~GEN_item_type_species_selector() OVERRIDE {}
 
-    const char *get_self_awar() const OVERRIDE {
+    virtual const char *get_self_awar() const OVERRIDE {
         return AWAR_COMBINED_GENE_NAME;
     }
-    size_t get_self_awar_content_length() const OVERRIDE {
+    virtual size_t get_self_awar_content_length() const OVERRIDE {
         return 12 + 1 + 40; // species-name+'/'+gene_name
     }
-    GBDATA *current(AW_root *root, GBDATA *gb_main) const OVERRIDE { // give the current item
+    virtual GBDATA *current(AW_root *root, GBDATA *gb_main) const OVERRIDE { // give the current item
         char   *species_name = root->awar(AWAR_ORGANISM_NAME)->read_string();
         char   *gene_name   = root->awar(AWAR_GENE_NAME)->read_string();
         GBDATA *gb_gene      = 0;
@@ -1397,7 +1390,7 @@ struct GEN_item_type_species_selector : public awt_item_type_selector {
 
         return gb_gene;
     }
-    const char *getKeyPath() const OVERRIDE { // give the keypath for items
+    virtual const char *getKeyPath() const OVERRIDE { // give the keypath for items
         return CHANGE_KEY_PATH_GENES;
     }
 };
@@ -1584,8 +1577,8 @@ AW_window *GEN_create_first_map(AW_root *aw_root, GBDATA *gb_main) {
 
 void GEN_map_window::init(AW_root *awr, GBDATA *gb_main) {
     {
-        char *windowName = (window_nr == 0) ? ARB_strdup("ARB Gene Map") : GBS_global_string_copy("ARB Gene Map %i", window_nr);
-        char *windowID   = (window_nr == 0) ? ARB_strdup("ARB_GENE_MAP") : GBS_global_string_copy("ARB_GENE_MAP_%i", window_nr);
+        char *windowName = (window_nr == 0) ? strdup("ARB Gene Map") : GBS_global_string_copy("ARB Gene Map %i", window_nr);
+        char *windowID   = (window_nr == 0) ? strdup("ARB_GENE_MAP") : GBS_global_string_copy("ARB_GENE_MAP_%i", window_nr);
 
         AW_window_menu_modes::init(awr, windowID, windowName, 200, 200);
 
@@ -1596,7 +1589,7 @@ void GEN_map_window::init(AW_root *awr, GBDATA *gb_main) {
     GEN_create_genemap_local_awars(awr, AW_ROOT_DEFAULT, window_nr);
 
     gen_graphic = new GEN_graphic(awr, gb_main, GEN_gene_container_cb_installer, window_nr);
-    gen_canvas  = new AWT_canvas(gb_main, this, get_window_id(), gen_graphic);
+    gen_canvas  = new AWT_canvas(gb_main, this, get_window_id(), gen_graphic, AWAR_SPECIES_NAME);
 
     GEN_add_local_awar_callbacks(awr, AW_ROOT_DEFAULT, this);
 

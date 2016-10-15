@@ -712,8 +712,16 @@ void gb_write_index_key(GBCONTAINER *father, long index, GBQUARK new_index) {
 
 void gb_create_key_array(GB_MAIN_TYPE *Main, int index) {
     if (index >= Main->sizeofkeys) {
-        Main->sizeofkeys = Main->keys ? index*3/2+1 : 1000;
-        ARB_recalloc(Main->keys, Main->keycnt, Main->sizeofkeys);
+        Main->sizeofkeys = index*3/2+1;
+        if (Main->keys) {
+            Main->keys = (gb_Key *)realloc(Main->keys, sizeof(gb_Key) * (size_t)Main->sizeofkeys);
+            memset((char *)&(Main->keys[Main->keycnt]), 0, sizeof(gb_Key) * (size_t) (Main->sizeofkeys - Main->keycnt));
+        }
+        else {
+            Main->sizeofkeys = 1000;
+            if (index>=Main->sizeofkeys) Main->sizeofkeys = index+1;
+            Main->keys = (gb_Key *)GB_calloc(sizeof(gb_Key), (size_t)Main->sizeofkeys);
+        }
         for (int i = Main->keycnt; i < Main->sizeofkeys; i++) {
             Main->keys[i].compression_mask = -1;
         }
@@ -748,7 +756,7 @@ long gb_create_key(GB_MAIN_TYPE *Main, const char *key, bool create_gb_key) {
     if (key) {
         if (!key[0]) GBK_terminate("Attempt to allocate empty key");
 
-        Main->keys[index].key = ARB_strdup(key);
+        Main->keys[index].key = strdup(key);
         GBS_write_hash(Main->key_2_index_hash, key, index);
         gb_assert(GBS_hash_elements(Main->key_2_index_hash) <= ALLOWED_KEYS);
         if (Main->gb_key_data && create_gb_key) {

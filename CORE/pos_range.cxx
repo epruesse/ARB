@@ -10,7 +10,7 @@
 // =============================================================== //
 
 #include "pos_range.h"
-#include "arb_mem.h"
+
 
 void PosRange::copy_corresponding_part(char *dest, const char *source, size_t source_len) const {
     // dest and source may overlap
@@ -27,7 +27,7 @@ void PosRange::copy_corresponding_part(char *dest, const char *source, size_t so
 char *PosRange::dup_corresponding_part(const char *source, size_t source_len) const {
     ExplicitRange  range(*this, source_len);
     int            Size = range.size();
-    char          *dup  = ARB_alloc<char>(Size+1);
+    char          *dup  = (char*)malloc(Size+1);
 
     copy_corresponding_part(dup, source, source_len);
     return dup;

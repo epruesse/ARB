@@ -1,7 +1,6 @@
 #include "arb_pattern.h"
 #include "arb_core.h"
 #include "arb_strbuf.h"
-#include "arb_string.h"
 #include "arb_msg.h"
 
 #include <wordexp.h>
@@ -50,11 +49,11 @@ char* arb_shell_expand(const char* str) {
     if (error) {
         GB_export_errorf("Encountered error \"%s\" while expanding \"%s\"",
                          error, str);
-        expanded = ARB_strdup(str);
+        expanded = strdup(str);
     }
     else {
         if (result.we_wordc == 0) {
-            expanded = ARB_strdup("");
+            expanded = strdup("");
         }
         else {
             GBS_strstruct *out = GBS_stropen(strlen(str)+100);
@@ -98,7 +97,8 @@ void TEST_arb_shell_expand() {
     free(res);
 
     res = arb_shell_expand("$ARBHOME&");
-    TEST_EXPECT_CONTAINS(GB_incur_error(), "Illegal character");
+    TEST_EXPECT(GB_have_error());
+    GB_await_error();
     TEST_EXPECT_EQUAL(res, "$ARBHOME&");
     free(res);
     

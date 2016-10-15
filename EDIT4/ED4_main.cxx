@@ -48,15 +48,14 @@ AW_HEADER_MAIN
 ED4_root *ED4_ROOT;
 GBDATA   *GLOBAL_gb_main = NULL; // global gb_main for arb_edit4
 
-int TERMINAL_HEIGHT;
+int TERMINALHEIGHT;
 
 int INFO_TERM_TEXT_YOFFSET;
 int SEQ_TERM_TEXT_YOFFSET;
 
 int MAXSEQUENCECHARACTERLENGTH; // greatest # of characters in a sequence string terminal
-int MAXNAME_WIDTH;
-int MAXINFO_WIDTH;
-int FLAG_WIDTH;
+int MAXSPECIESWIDTH;
+int MAXINFOWIDTH;               // # of pixels used to display sequence info ("CONS", "4data", etc.)
 
 long ED4_counter = 0;
 
@@ -84,18 +83,23 @@ inline void replaceChars(char *s, char o, char n) {
 inline void set_and_realloc_gde_array(uchar **&the_names, uchar **&the_sequences, long &allocated, long &numberspecies, long &maxalign,
                                       const char *name, int name_len, const char *seq, int seq_len)
 {
-    if (allocated==numberspecies) {
+    if (allocated==numberspecies)
+    {
         long new_allocated = (allocated*3)/2;
 
-        ARB_recalloc(the_names, allocated, new_allocated);
-        ARB_recalloc(the_sequences, allocated, new_allocated);
+        the_names = (uchar**)GB_recalloc(the_names, allocated, new_allocated, sizeof(*the_names));
+        the_sequences = (uchar**)GB_recalloc(the_sequences, allocated, new_allocated, sizeof(*the_sequences));
         allocated = new_allocated;
     }
 
-    the_names[numberspecies]     = (uchar*)ARB_strndup(name, name_len);
-    the_sequences[numberspecies] = (uchar*)ARB_strndup(seq, seq_len);
-
+    the_names[numberspecies] = (uchar*)GB_calloc(name_len+1, sizeof(char));
+    memcpy(the_names[numberspecies], name, name_len);
+    the_names[numberspecies][name_len] = 0;
     replaceChars((char*)the_names[numberspecies], ' ', '_');
+
+    the_sequences[numberspecies] = (uchar*)GB_calloc(seq_len+1, sizeof(char));
+    memcpy(the_sequences[numberspecies], seq, seq_len);
+    the_sequences[numberspecies][seq_len] = 0;
 
     if (seq_len>maxalign) {
         maxalign = seq_len;
@@ -113,14 +117,14 @@ static char *add_area_for_gde(ED4_area_manager *area_man, uchar **&the_names, uc
 
     for (; terminal;) {
         if (terminal->is_species_name_terminal()) {
-            ED4_species_manager *species_manager = terminal->get_parent(LEV_SPECIES)->to_species_manager();
-            ED4_species_name_terminal *species_name = species_manager->search_spec_child_rek(LEV_SPECIES_NAME)->to_species_name_terminal();
+            ED4_species_manager *species_manager = terminal->get_parent(ED4_L_SPECIES)->to_species_manager();
+            ED4_species_name_terminal *species_name = species_manager->search_spec_child_rek(ED4_L_SPECIES_NAME)->to_species_name_terminal();
             int name_len;
             char *name = species_name->resolve_pointer_to_string_copy(&name_len);
             ED4_sequence_terminal *sequence_terminal;
 
             {
-                ED4_base *sequence_term  = species_manager->search_spec_child_rek(LEV_SEQUENCE_STRING);
+                ED4_base *sequence_term  = species_manager->search_spec_child_rek(ED4_L_SEQUENCE_STRING);
                 if (!sequence_term) goto end_of_loop;
                 sequence_terminal = sequence_term->to_sequence_terminal();
             }
@@ -149,7 +153,7 @@ static char *add_area_for_gde(ED4_area_manager *area_man, uchar **&the_names, uc
                 char *seq = 0;
 
                 if (is_consensus) {
-                    ED4_group_manager *group_manager = sequence_terminal->get_parent(LEV_GROUP)->to_group_manager();
+                    ED4_group_manager *group_manager = sequence_terminal->get_parent(ED4_L_GROUP)->to_group_manager();
 
                     group_manager->build_consensus_string(&seq_len);
                     e4_assert(strlen(seq) == size_t(seq_len));
@@ -162,7 +166,7 @@ static char *add_area_for_gde(ED4_area_manager *area_man, uchar **&the_names, uc
                                 freenull(seq);
                             }
                             else { // group folded but consensus shown -> add '-' before name
-                                char *new_name = ARB_alloc<char>(name_len+2);
+                                char *new_name = (char*)GB_calloc(name_len+2, sizeof(char));
 
                                 sprintf(new_name, "-%s", name);
                                 freeset(name, new_name);
@@ -188,7 +192,7 @@ static char *add_area_for_gde(ED4_area_manager *area_man, uchar **&the_names, uc
                         free(helix);
                     }
                     if (show_remark && !is_consensus) {
-                        ED4_multi_sequence_manager *ms_man = sequence_terminal->get_parent(LEV_MULTI_SEQUENCE)->to_multi_sequence_manager();
+                        ED4_multi_sequence_manager *ms_man = sequence_terminal->get_parent(ED4_L_MULTI_SEQUENCE)->to_multi_sequence_manager();
                         ED4_base *remark_name_term = ms_man->search_ID("remark");
                         if (remark_name_term) {
                             ED4_base *remark_term = remark_name_term->get_next_terminal();
@@ -231,10 +235,9 @@ static char *ED4_create_sequences_for_gde(GBDATA **&the_species, uchar **&the_na
     maxalign = 0;
 
     long allocated = 100;
-    the_species    = 0;
-
-    ARB_calloc(the_names,     allocated);
-    ARB_calloc(the_sequences, allocated);
+    the_species = 0;
+    the_names = (uchar**)GB_calloc(allocated, sizeof(*the_names));
+    the_sequences = (uchar**)GB_calloc(allocated, sizeof(*the_sequences));
 
     char *err = add_area_for_gde(ED4_ROOT->top_area_man, the_names, the_sequences, allocated, numberspecies, maxalign, top, tops, toph, topk, topr);
     if (!err) {
@@ -242,8 +245,8 @@ static char *ED4_create_sequences_for_gde(GBDATA **&the_species, uchar **&the_na
     }
 
     if (allocated!=(numberspecies+1)) {
-        ARB_recalloc(the_names, allocated, numberspecies+1);
-        ARB_recalloc(the_sequences, allocated, numberspecies+1);
+        the_names = (uchar**)GB_recalloc(the_names, allocated, numberspecies+1, sizeof(*the_names));
+        the_sequences = (uchar**)GB_recalloc(the_sequences, allocated, numberspecies+1, sizeof(*the_sequences));
     }
 
     return err;
@@ -282,6 +285,8 @@ static void ed4_bind_mainDB_awar_callbacks(AW_root *root) {
 
 static void ed4_create_mainDB_awars(AW_root *root) {
     // WARNING: do not bind callbacks here -> do it in ed4_bind_mainDB_awar_callbacks()
+
+    root->awar_string(AWAR_ITARGET_STRING, "", GLOBAL_gb_main);
 
     root->awar_int(AWAR_CURSOR_POSITION,       info2bio(0), GLOBAL_gb_main);
     root->awar_int(AWAR_CURSOR_POSITION_LOCAL, 0, GLOBAL_gb_main);
@@ -459,7 +464,7 @@ int ARB_main(int argc, char *argv[]) {
         argc -= 2; argv += 2;
     }
     else { // load default configuration if no command line is given
-        config_name = ARB_strdup(DEFAULT_CONFIGURATION);
+        config_name = strdup(DEFAULT_CONFIGURATION);
         printf("Using '%s'\n", DEFAULT_CONFIGURATION);
     }
 
@@ -517,7 +522,7 @@ int ARB_main(int argc, char *argv[]) {
                 }
 
                 if (warning) aw_message(warning); // write to console
-                ED4_ROOT->create_first_window();
+                ED4_ROOT->create_new_window(); // create first editor window
                 if (warning) { aw_message(warning); warning = 0; } // write again to status window
             }
 

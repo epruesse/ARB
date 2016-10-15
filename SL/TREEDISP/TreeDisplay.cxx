@@ -64,7 +64,7 @@ AW_gc_manager *AWT_graphic_tree::init_devices(AW_window *aww, AW_device *device,
     AW_gc_manager *gc_manager =
         AW_manage_GC(aww,
                      ntw->get_gc_base_name(),
-                     device, AWT_GC_MAX, AW_GCM_DATA_AREA,
+                     device, AWT_GC_CURSOR, AWT_GC_MAX, AW_GCM_DATA_AREA,
                      makeGcChangedCallback(TREE_GC_changed_cb, ntw),
                      "#8ce",
 
@@ -519,7 +519,7 @@ public:
         perform(DROPPED, drop_target, mousepos);
     }
 
-    void hide_drag_indicator(AW_device *IF_MOTIF(device), int IF_MOTIF(drag_gc)) const {
+    void hide_drag_indicator(AW_device *device, int drag_gc) const {
 #ifdef ARB_MOTIF
         // hide by XOR-drawing only works in motif
         draw_drag_indicator(device, drag_gc);
@@ -1320,8 +1320,8 @@ inline Position calc_text_coordinates_near_tip(AW_device *device, int gc, const 
      */
     const AW_font_limits& charLimits = device->get_font_limits(gc, 'A');
 
-    const double text_height = charLimits.get_height() * device->get_unscale();
-    const double dist        = charLimits.get_height() * device->get_unscale(); // @@@ same as text_height (ok?)
+    const double text_height = charLimits.height * device->get_unscale();
+    const double dist        = charLimits.height * device->get_unscale(); // @@@ same as text_height (ok?)
 
     Vector shift = orientation.normal();
     // use sqrt of sin(=y) to move text faster between positions below and above branch:
@@ -1774,18 +1774,18 @@ static GraphicTreeCallback treeChangeIgnore_cb = makeGraphicTreeCallback(tree_ch
 
 AWT_graphic_tree::AWT_graphic_tree(AW_root *aw_root_, GBDATA *gb_main_, AD_map_viewer_cb map_viewer_cb_)
     : AWT_graphic(),
-      line_filter         (AW_SCREEN|AW_CLICK|AW_TRACK|AW_CLICK_DROP|AW_PRINTER|AW_SIZE), // horizontal lines (ie. lines towards leafs in dendro-view; all lines in radial view)
-      vert_line_filter    (AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_PRINTER),                  // vertical lines (in dendro view; @@@ should be used in IRS as well!)
-      mark_filter         (AW_SCREEN|AW_CLICK|AW_TRACK|AW_CLICK_DROP|AW_PRINTER_EXT),     // diamond at open group (dendro+radial); boxes at marked species (all views); origin (radial view); cursor box (all views); group-handle (IRS)
+      line_filter         (AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_PRINTER|AW_SIZE),
+      vert_line_filter    (AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_PRINTER),
+      mark_filter         (AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_PRINTER_EXT),
       group_bracket_filter(AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_PRINTER|AW_SIZE_UNSCALED),
       bs_circle_filter    (AW_SCREEN|AW_PRINTER|AW_SIZE_UNSCALED),
-      leaf_text_filter    (AW_SCREEN|AW_CLICK|AW_TRACK|AW_CLICK_DROP|AW_PRINTER|AW_SIZE_UNSCALED), // text at leafs (all views but IRS? @@@ should be used in IRS as well)
+      leaf_text_filter    (AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_PRINTER|AW_SIZE_UNSCALED),
       group_text_filter   (AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_PRINTER|AW_SIZE_UNSCALED),
       remark_text_filter  (AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_PRINTER|AW_SIZE_UNSCALED),
       other_text_filter   (AW_SCREEN|AW_PRINTER|AW_SIZE_UNSCALED),
-      ruler_filter        (AW_SCREEN|AW_CLICK|AW_PRINTER),                                // appropriate size-filter added manually in code
-      root_filter         (AW_SCREEN|AW_PRINTER_EXT),                                     // unused (@@@ should be used for radial root)
-      marker_filter       (AW_SCREEN|AW_CLICK|AW_PRINTER_EXT|AW_SIZE_UNSCALED),           // species markers (eg. visualizing configs)
+      ruler_filter        (AW_SCREEN|AW_CLICK|AW_PRINTER),          // appropriate size-filter added manually in code
+      root_filter         (AW_SCREEN|AW_PRINTER_EXT),
+      marker_filter       (AW_SCREEN|AW_CLICK|AW_PRINTER_EXT|AW_SIZE_UNSCALED),
       tree_changed_cb(treeChangeIgnore_cb)
 {
     td_assert(gb_main_);
@@ -2054,7 +2054,7 @@ void AWT_graphic_tree::detectAndDrawMarkers(AP_tree *at, const double y1, const 
         summarizeGroupMarkers(at, markers);
 
         if (markers.getNodeSize()>0) {
-            AW_click_cd clickflag(disp_device, 0, CL_FLAG);
+            AW_click_cd clickflag(disp_device, (AW_CL)0, (AW_CL)"flag");
             for (int markerIdx = 0 ; markerIdx < numMarkers ; markerIdx++) {
                 if (markers.markerCount(markerIdx) > 0) {
                     bool draw    = at->is_leaf;
@@ -2096,7 +2096,7 @@ void AWT_graphic_tree::drawMarkerNames(Position& Pen) {
 
         Rectangle mbox(Position(flag.leftx(numMarkers-1), pl2.ypos()), sizeb); // the marker box
 
-        AW_click_cd clickflag(disp_device, 0, CL_FLAG);
+        AW_click_cd clickflag(disp_device, (AW_CL)0, (AW_CL)"flag");
 
         for (int markerIdx = numMarkers - 1 ; markerIdx >= 0 ; markerIdx--) {
             const char *markerName = display_markers->get_marker_name(markerIdx);
@@ -2221,7 +2221,7 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
         }
     }
 
-    AW_click_cd cd(disp_device, (AW_CL)at, CL_NODE);
+    AW_click_cd cd(disp_device, (AW_CL)at);
     if (at->is_leaf) {
         if (at->gb_node && GB_read_flag(at->gb_node)) {
             set_line_attributes_for(at);
@@ -2403,7 +2403,7 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
                 len = at->leftlen;
             }
 
-            AW_click_cd cds(disp_device, (AW_CL)son, CL_NODE);
+            AW_click_cd cds(disp_device, (AW_CL)son);
             if (son->get_remark()) {
                 Position remarkPos(n);
                 remarkPos.movey(-scaled_font.ascent*0.1);
@@ -2433,7 +2433,7 @@ struct Subinfo { // subtree info (used to implement branch draw precedence)
 };
 
 void AWT_graphic_tree::show_radial_tree(AP_tree *at, const AW::Position& base, const AW::Position& tip, const AW::Angle& orientation, const double tree_spread) {
-    AW_click_cd cd(disp_device, (AW_CL)at, CL_NODE);
+    AW_click_cd cd(disp_device, (AW_CL)at);
     set_line_attributes_for(at);
     draw_branch_line(at->gr.gc, base, tip, line_filter);
 
@@ -2529,7 +2529,7 @@ void AWT_graphic_tree::show_radial_tree(AP_tree *at, const AW::Position& base, c
         if (show_circle) {
             for (int s = 0; s<2; ++s) {
                 if (sub[s].at->get_remark()) {
-                    AW_click_cd sub_cd(disp_device, (AW_CL)sub[s].at, CL_NODE);
+                    AW_click_cd sub_cd(disp_device, (AW_CL)sub[s].at);
                     Position    sub_branch_center = tip + (sub[s].len*.5) * sub[s].orientation.normal();
                     show_bootstrap_circle(disp_device, sub[s].at->get_remark(), circle_zoom_factor, circle_max_size, sub[s].len, sub_branch_center, false, 0, bs_circle_filter);
                 }
@@ -2626,7 +2626,7 @@ void AWT_graphic_tree::show_ruler(AW_device *device, int gc) {
 
         device->set_line_attributes(gc, ruler_width+baselinewidth, AW_SOLID);
 
-        AW_click_cd cd(device, 0, CL_RULER);
+        AW_click_cd cd(device, 0, (AW_CL)"ruler");
         device->line(gc,
                      ruler_x - half_ruler_width, ruler_y,
                      ruler_x + half_ruler_width, ruler_y,
@@ -2756,9 +2756,6 @@ void AWT_graphic_tree::show_nds_list(GBDATA *, bool use_nds) {
         }
     }
 
-    const AP_TreeShader *shader = AP_tree::get_tree_shader();
-    const_cast<AP_TreeShader*>(shader)->update_settings();
-
     for (; gb_species; gb_species = nds_only_marked ? GBT_next_marked_species(gb_species) : GBT_next_species(gb_species)) {
         y_position += scaled_branch_distance;
         if (gb_species == selected_species) cursor = Position(0, y_position);
@@ -2772,12 +2769,7 @@ void AWT_graphic_tree::show_nds_list(GBDATA *, bool use_nds) {
             }
 
             bool colorize_marked = is_marked && !nds_only_marked; // do not use mark-color if only showing marked
-
-            int gc = shader->calc_leaf_GC(gb_species, colorize_marked);
-            if (gc == AWT_GC_NONE_MARKED && shader->does_shade()) { // may show shaded color
-                gc = shader->to_GC(shader->calc_shaded_leaf_GC(gb_species));
-            }
-
+            int  gc              = AP_tree::get_tree_shader()->calc_leaf_GC(gb_species, colorize_marked);
             ListDisplayRow *curr = new ListDisplayRow(gb_main, gb_species, y_position+text_y_offset, gc, *disp_device, use_nds, tree_name);
             max_parts            = std::max(max_parts, curr->get_part_count());
             row[species_count++] = curr;
@@ -2823,7 +2815,7 @@ void AWT_graphic_tree::show_nds_list(GBDATA *, bool use_nds) {
         AW_pos y     = Row.get_ypos();
 
         GBDATA      *gb_sp = Row.get_species();
-        AW_click_cd  cd(disp_device, (AW_CL)gb_sp, CL_SPECIES);
+        AW_click_cd  cd(disp_device, (AW_CL)gb_sp, (AW_CL)"species");
 
         for (size_t p = 0; p<parts; ++p) {
             const Column& col = Row.get_column(p);
@@ -3179,26 +3171,26 @@ void TREE_create_awars(AW_root *aw_root, AW_default db) {
     aw_root->awar_int(AWAR_TREE_RECOMPUTE, 0, db);
 }
 
-static void TREE_recompute_and_rezoom_cb(UNFIXED, TREE_canvas *ntw) {
+static void TREE_recompute_and_rezoom_cb(UNFIXED, AWT_canvas *ntw) {
     AWT_graphic_tree *gt   = DOWNCAST(AWT_graphic_tree*, ntw->gfx);
     AP_tree          *root = gt->get_root_node();
     if (root) {
         gt->read_tree_settings(); // update settings for group-scaling
         root->compute_tree();
+        ntw->recalc_size_and_refresh();
     }
-    ntw->recalc_size_and_refresh(); // even if root==NULL (aka NDS-list)
 }
-static void TREE_rezoom_cb(UNFIXED, TREE_canvas *ntw) {
+static void TREE_rezoom_cb(UNFIXED, AWT_canvas *ntw) {
     ntw->recalc_size_and_refresh();
 }
 
-void TREE_install_update_callbacks(TREE_canvas *ntw) {
+void TREE_install_update_callbacks(AWT_canvas *ntw) {
     // install all callbacks needed to make the tree-display update properly
 
     AW_root *awr = ntw->awr;
 
     // bind to all options available in 'Tree options'
-    RootCallback expose_cb = makeRootCallback(AWT_expose_cb, static_cast<AWT_canvas*>(ntw));
+    RootCallback expose_cb = makeRootCallback(AWT_expose_cb, ntw);
     awr->awar(AWAR_DTREE_BASELINEWIDTH)  ->add_callback(expose_cb);
     awr->awar(AWAR_DTREE_SHOW_CIRCLE)    ->add_callback(expose_cb);
     awr->awar(AWAR_DTREE_SHOW_BRACKETS)  ->add_callback(expose_cb);
@@ -3229,7 +3221,7 @@ void TREE_install_update_callbacks(TREE_canvas *ntw) {
 
     // refresh on NDS changes
     GBDATA *gb_arb_presets = GB_search(ntw->gb_main, "arb_presets", GB_CREATE_CONTAINER);
-    GB_add_callback(gb_arb_presets, GB_CB_CHANGED, makeDatabaseCallback(AWT_expose_cb, static_cast<AWT_canvas*>(ntw)));
+    GB_add_callback(gb_arb_presets, GB_CB_CHANGED, makeDatabaseCallback(AWT_expose_cb, ntw));
 
     // track selected species (autoscroll)
     awr->awar(AWAR_SPECIES_NAME)->add_callback(makeRootCallback(TREE_auto_jump_cb, ntw, false));
@@ -3487,10 +3479,10 @@ static AW_rgb *dcolors       = colors_def;
 static long    dcolors_count = ARRAY_ELEMS(colors_def);
 
 class fake_AW_GC : public AW_GC {
-    void wm_set_foreground_color(AW_rgb /*col*/) OVERRIDE {  }
-    void wm_set_function(AW_function /*mode*/) OVERRIDE { td_assert(0); }
-    void wm_set_lineattributes(short /*lwidth*/, AW_linestyle /*lstyle*/) OVERRIDE {}
-    void wm_set_font(AW_font /*font_nr*/, int size, int */*found_size*/) OVERRIDE {
+    virtual void wm_set_foreground_color(AW_rgb /*col*/) OVERRIDE {  }
+    virtual void wm_set_function(AW_function /*mode*/) OVERRIDE { td_assert(0); }
+    virtual void wm_set_lineattributes(short /*lwidth*/, AW_linestyle /*lstyle*/) OVERRIDE {}
+    virtual void wm_set_font(AW_font /*font_nr*/, int size, int */*found_size*/) OVERRIDE {
         unsigned int i;
         for (i = AW_FONTINFO_CHAR_ASCII_MIN; i <= AW_FONTINFO_CHAR_ASCII_MAX; i++) {
             set_char_size(i, size, 0, size-2); // good fake size for Courier 8pt
@@ -3498,7 +3490,7 @@ class fake_AW_GC : public AW_GC {
     }
 public:
     fake_AW_GC(AW_common *common_) : AW_GC(common_) {}
-    int get_available_fontsizes(AW_font /*font_nr*/, int */*available_sizes*/) const OVERRIDE {
+    virtual int get_available_fontsizes(AW_font /*font_nr*/, int */*available_sizes*/) const OVERRIDE {
         td_assert(0);
         return 0;
     }
@@ -3518,7 +3510,7 @@ struct fake_AW_common : public AW_common {
             gcm->set_fg_color(colors_def[gc+AW_STD_COLOR_IDX_MAX]);
         }
     }
-    ~fake_AW_common() OVERRIDE {}
+    virtual ~fake_AW_common() OVERRIDE {}
 
     virtual AW_GC *create_gc() {
         return new fake_AW_GC(this);
@@ -3528,7 +3520,7 @@ struct fake_AW_common : public AW_common {
 class fake_AWT_graphic_tree : public AWT_graphic_tree {
     int var_mode; // current range: [0..3]
 
-    void read_tree_settings() OVERRIDE {
+    virtual void read_tree_settings() OVERRIDE {
         scaled_branch_distance = 1.0; // not final value!
 
         // var_mode is in range [0..3]

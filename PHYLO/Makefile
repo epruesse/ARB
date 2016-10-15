@@ -37,7 +37,6 @@ PH_data.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 PH_data.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PH_data.o: $(ARBHOME)/INCLUDE/arb_core.h
 PH_data.o: $(ARBHOME)/INCLUDE/arb_error.h
-PH_data.o: $(ARBHOME)/INCLUDE/arb_mem.h
 PH_data.o: $(ARBHOME)/INCLUDE/arb_msg.h
 PH_data.o: $(ARBHOME)/INCLUDE/arb_string.h
 PH_data.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -62,7 +61,6 @@ PH_display.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PH_display.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PH_display.o: $(ARBHOME)/INCLUDE/arb_core.h
 PH_display.o: $(ARBHOME)/INCLUDE/arb_error.h
-PH_display.o: $(ARBHOME)/INCLUDE/arb_mem.h
 PH_display.o: $(ARBHOME)/INCLUDE/arb_msg.h
 PH_display.o: $(ARBHOME)/INCLUDE/arb_string.h
 PH_display.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -72,7 +70,6 @@ PH_display.o: $(ARBHOME)/INCLUDE/attributes.h
 PH_display.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_device.hxx
-PH_display.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_position.hxx
@@ -98,7 +95,6 @@ PH_filt.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 PH_filt.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PH_filt.o: $(ARBHOME)/INCLUDE/arb_core.h
 PH_filt.o: $(ARBHOME)/INCLUDE/arb_error.h
-PH_filt.o: $(ARBHOME)/INCLUDE/arb_mem.h
 PH_filt.o: $(ARBHOME)/INCLUDE/arb_msg.h
 PH_filt.o: $(ARBHOME)/INCLUDE/arb_progress.h
 PH_filt.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -110,7 +106,6 @@ PH_filt.o: $(ARBHOME)/INCLUDE/attributes.h
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_device.hxx
-PH_filt.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_root.hxx
@@ -137,7 +132,6 @@ PH_main.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 PH_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PH_main.o: $(ARBHOME)/INCLUDE/arb_core.h
 PH_main.o: $(ARBHOME)/INCLUDE/arb_error.h
-PH_main.o: $(ARBHOME)/INCLUDE/arb_mem.h
 PH_main.o: $(ARBHOME)/INCLUDE/arb_msg.h
 PH_main.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 PH_main.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -149,7 +143,6 @@ PH_main.o: $(ARBHOME)/INCLUDE/attributes.h
 PH_main.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_device.hxx
-PH_main.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_position.hxx
@@ -179,7 +172,6 @@ PH_root.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 PH_root.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PH_root.o: $(ARBHOME)/INCLUDE/arb_core.h
 PH_root.o: $(ARBHOME)/INCLUDE/arb_error.h
-PH_root.o: $(ARBHOME)/INCLUDE/arb_mem.h
 PH_root.o: $(ARBHOME)/INCLUDE/arb_msg.h
 PH_root.o: $(ARBHOME)/INCLUDE/arb_string.h
 PH_root.o: $(ARBHOME)/INCLUDE/arbdb.h

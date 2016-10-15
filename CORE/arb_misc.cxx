@@ -12,7 +12,7 @@
 #include "arb_misc.h"
 #include "arb_msg.h"
 #include "arb_file.h"
-#include "arb_string.h"
+#include <arb_assert.h>
 
 #include <cmath>
 
@@ -105,7 +105,7 @@ const char *ARB_getenv_ignore_empty(const char *envvar) {
 }
 
 char *ARB_executable(const char *exe_name, const char *path) {
-    char       *buffer = ARB_alloc<char>(strlen(path)+1+strlen(exe_name)+1);
+    char       *buffer = (char*)malloc(strlen(path)+1+strlen(exe_name)+1);
     const char *start  = path;
     int         found  = 0;
 
@@ -121,7 +121,7 @@ char *ARB_executable(const char *exe_name, const char *path) {
         start = colon ? colon+1 : 0;
     }
 
-    char *executable = found ? ARB_strdup(buffer) : 0;
+    char *executable = found ? strdup(buffer) : 0;
     free(buffer);
     return executable;
 }

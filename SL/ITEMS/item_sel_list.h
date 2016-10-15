@@ -71,12 +71,12 @@ public:
 };
 
 class FieldSelDef {
-    std::string          awar_name;
-    std::string          purpose;
-    RefPtr<GBDATA>       gb_main;
-    RefPtr<ItemSelector> selector; // @@@ gb_main + selector = BoundItemSel (replace?)
-    long                 type_filter;
-    SelectableFields     field_filter;
+    std::string       awar_name;
+    std::string       purpose;
+    GBDATA           *gb_main;
+    ItemSelector&     selector; // @@@ gb_main + selector = BoundItemSel!
+    long              type_filter;
+    SelectableFields  field_filter;
 
 public:
     FieldSelDef(const char *awar_name_, GBDATA *gb_main_, ItemSelector& selector_, long type_filter_, const char *purpose_ = "field", SelectableFields field_filter_ = SF_STANDARD)
@@ -91,17 +91,26 @@ public:
         : awar_name(awar_name_),
           purpose(purpose_),
           gb_main(gb_main_),
-          selector(&selector_),
+          selector(selector_),
           type_filter(type_filter_),
           field_filter(field_filter_)
     {}
+    FieldSelDef(const FieldSelDef& other)
+        : awar_name(other.awar_name),
+          purpose(other.purpose),
+          gb_main(other.gb_main),
+          selector(other.selector),
+          type_filter(other.type_filter),
+          field_filter(other.field_filter)
+    {}
+    DECLARE_ASSIGNMENT_OPERATOR(FieldSelDef);
 
     const std::string& get_awarname() const { return awar_name; }
     const std::string& get_described_field() const { return purpose; }
     long get_type_filter() const { return type_filter; }
     SelectableFields get_field_filter() const { return field_filter; }
     GBDATA *get_gb_main() const { return gb_main; }
-    ItemSelector& get_itemtype() const { return *selector; }
+    ItemSelector& get_itemtype() const { return selector; }
 
     // for internal use only:
     bool new_fields_allowed() const { return field_filter & SF_ALLOW_NEW; }

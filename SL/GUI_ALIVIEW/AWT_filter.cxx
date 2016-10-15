@@ -110,15 +110,14 @@ static void awt_create_select_filter_window_aw_cb(UNFIXED, adfiltercbstruct *cbs
         }
         GBS_strcat(strstruct, str);
         GBS_chrcat(strstruct, '\n');
-
+        data = GBS_strclose(strstruct);
         aw_root->awar(cbs->def_len)   ->write_int(flen);    // export filter
         aw_root->awar(cbs->def_filter)->write_string(str);  // export filter
-        aw_root->awar(cbs->def_source)->write_string(GBS_mempntr(strstruct)); // set display
-
+        aw_root->awar(cbs->def_source)->write_string(data); // set display
         free(_2filter);
         free(str);
         free(canc);
-        GBS_strforget(strstruct);
+        free(data);
     }
     free(to_free_target);
     free(use);

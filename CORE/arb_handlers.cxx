@@ -11,6 +11,7 @@
 
 #include <arb_handlers.h>
 #include <arb_msg.h>
+#include <arb_assert.h>
 #include "arb_misc.h"
 #include <smartptr.h>
 #include <unistd.h>

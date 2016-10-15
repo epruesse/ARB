@@ -16,10 +16,8 @@
 #include "ed4_nds.hxx"
 #include "ed4_ProteinViewer.hxx"
 #include "ed4_seq_colors.hxx"
-#include "ed4_flags.hxx"
 
 #include <arbdbt.h>
-#include <items.h>
 
 #include <aw_preset.hxx>
 #include <aw_awar.hxx>
@@ -34,106 +32,90 @@
 //      static terminal properties
 
 static ED4_objspec tree_terminal_spec(
-    PROP_IS_TERMINAL,  // static props
-    LEV_TREE,           // level
-    LEV_NONE,           // allowed children level
-    LEV_NONE,           // handled object
-    LEV_NONE            // restriction level
+    ED4_P_IS_TERMINAL,  // static props
+    ED4_L_TREE,         // level
+    ED4_L_NO_LEVEL,     // allowed children level
+    ED4_L_NO_LEVEL,     // handled object
+    ED4_L_NO_LEVEL      // restriction level
     );
 
 static ED4_objspec bracket_terminal_spec(
-    PROP_IS_TERMINAL,  // static props
-    LEV_BRACKET,        // level
-    LEV_NONE,           // allowed children level
-    LEV_NONE,           // handled object
-    LEV_NONE            // restriction level
+    ED4_P_IS_TERMINAL,  // static props
+    ED4_L_BRACKET,      // level
+    ED4_L_NO_LEVEL,     // allowed children level
+    ED4_L_NO_LEVEL,     // handled object
+    ED4_L_NO_LEVEL      // restriction level
     );
 
 static ED4_objspec species_name_terminal_spec(
-    ED4_properties(PROP_IS_TERMINAL | PROP_DYNA_RESIZE),  // static props
-    LEV_SPECIES_NAME,   // level
-    LEV_NONE,           // allowed children level
-    LEV_SPECIES,        // handled object
-    LEV_NONE            // restriction level
-    );
-
-static ED4_objspec flag_header_spec(
-    ED4_properties(PROP_IS_TERMINAL | PROP_DYNA_RESIZE),  // static props
-    LEV_FLAG_HEADER,    // level
-    LEV_NONE,           // allowed children level
-    LEV_NONE,           // handled object
-    LEV_NONE            // restriction level
-    );
-
-static ED4_objspec flag_spec(
-    ED4_properties(PROP_IS_TERMINAL | PROP_DYNA_RESIZE), // static props
-    LEV_FLAG,           // level
-    LEV_NONE,           // allowed children level
-    LEV_NONE,           // handled object
-    LEV_NONE            // restriction level
+    ED4_P_IS_TERMINAL,  // static props
+    ED4_L_SPECIES_NAME, // level
+    ED4_L_NO_LEVEL,     // allowed children level
+    ED4_L_SPECIES,      // handled object
+    ED4_L_NO_LEVEL      // restriction level
     );
 
 static ED4_objspec sequence_info_terminal_spec(
-    ED4_properties(PROP_IS_TERMINAL | PROP_DYNA_RESIZE),  // static props
-    LEV_SEQUENCE_INFO,  // level
-    LEV_NONE,           // allowed children level
-    LEV_SEQUENCE,       // handled object
-    LEV_NONE            // restriction level
+    ED4_P_IS_TERMINAL,  // static props
+    ED4_L_SEQUENCE_INFO, // level
+    ED4_L_NO_LEVEL,     // allowed children level
+    ED4_L_SEQUENCE,     // handled object
+    ED4_L_NO_LEVEL      // restriction level
     );
 
 static ED4_objspec sequence_terminal_spec(
-    PROP_IS_TERMINAL,     // static props
-    LEV_SEQUENCE_STRING,   // level
-    LEV_NONE,              // allowed children level
-    LEV_NONE,              // handled object
-    LEV_NONE               // restriction level
+    ED4_P_IS_TERMINAL,     // static props
+    ED4_L_SEQUENCE_STRING, // level
+    ED4_L_NO_LEVEL,        // allowed children level
+    ED4_L_NO_LEVEL,        // handled object
+    ED4_L_NO_LEVEL         // restriction level
     );
 
 static ED4_objspec orf_terminal_spec(
-    PROP_IS_TERMINAL,     // static props
-    LEV_ORF,               // level
-    LEV_NONE,              // allowed children level
-    LEV_NONE,              // handled object
-    LEV_NONE               // restriction level
+    ED4_P_IS_TERMINAL,     // static props
+    ED4_L_ORF,             // level
+    ED4_L_NO_LEVEL,        // allowed children level
+    ED4_L_NO_LEVEL,        // handled object
+    ED4_L_NO_LEVEL         // restriction level
     );
 
 static ED4_objspec pure_text_terminal_spec(
-    PROP_IS_TERMINAL,     // static props
-    LEV_PURE_TEXT,         // level
-    LEV_NONE,              // allowed children level
-    LEV_NONE,              // handled object
-    LEV_NONE               // restriction level
+    ED4_P_IS_TERMINAL,     // static props
+    ED4_L_PURE_TEXT,       // level
+    ED4_L_NO_LEVEL,        // allowed children level
+    ED4_L_NO_LEVEL,        // handled object
+    ED4_L_NO_LEVEL         // restriction level
     );
 
 static ED4_objspec spacer_terminal_spec(
-    ED4_properties(PROP_IS_TERMINAL | PROP_DYNA_RESIZE), // static props
-    LEV_SPACER,            // level
-    LEV_NONE,              // allowed children level
-    LEV_NONE,              // handled object
-    LEV_NONE               // restriction level
+    ED4_P_IS_TERMINAL,     // static props
+    ED4_L_SPACER,          // level
+    ED4_L_NO_LEVEL,        // allowed children level
+    ED4_L_NO_LEVEL,        // handled object
+    ED4_L_NO_LEVEL         // restriction level
     );
 
 static ED4_objspec line_terminal_spec(
-    ED4_properties(PROP_IS_TERMINAL | PROP_DYNA_RESIZE), // static props
-    LEV_LINE,              // level
-    LEV_NONE,              // allowed children level
-    LEV_NONE,              // handled object
-    LEV_NONE               // restriction level
+    ED4_P_IS_TERMINAL,     // static props
+    ED4_L_LINE,            // level
+    ED4_L_NO_LEVEL,        // allowed children level
+    ED4_L_NO_LEVEL,        // handled object
+    ED4_L_NO_LEVEL         // restriction level
     );
 
 static ED4_objspec column_stat_terminal_spec(
-    PROP_IS_TERMINAL,     // static props
-    LEV_COL_STAT,          // level
-    LEV_NONE,              // allowed children level
-    LEV_NONE,              // handled object
-    LEV_NONE               // restriction level
+    ED4_P_IS_TERMINAL,     // static props
+    ED4_L_COL_STAT,        // level
+    ED4_L_NO_LEVEL,        // allowed children level
+    ED4_L_NO_LEVEL,        // handled object
+    ED4_L_NO_LEVEL         // restriction level
     );
 
 
 char *ED4_terminal::resolve_pointer_to_string_copy(int *str_len) const {
     int         len;
     const char *s = resolve_pointer_to_char_pntr(&len);
-    char       *t = ARB_strduplen(s, len); // space for zero byte is allocated by ARB_strduplen
+    char       *t = GB_strduplen(s, len); // space for zero byte is allocated by GB_strduplen
 
     if (str_len) *str_len = len;
     return t;
@@ -209,7 +191,7 @@ const char *ED4_terminal::resolve_pointer_to_char_pntr(int *str_len) const
         e4_assert(db_pointer == 0);
 
         int len    = strlen(copy_of);
-        db_pointer = ARB_strduplen(copy_of, len);
+        db_pointer = GB_strduplen(copy_of, len);
 
         if (str_len) *str_len = len;
     }
@@ -263,12 +245,12 @@ GB_ERROR ED4_terminal::write_sequence(const char *seq, int seq_len)
 
     GB_pop_transaction(GLOBAL_gb_main);
 
-    if (!err && has_property(PROP_CONSENSUS_RELEVANT)) {
+    if (!err && dynamic_prop&ED4_P_CONSENSUS_RELEVANT) {
         if (old_seq) {
             curr_timestamp = GB_read_clock(GLOBAL_gb_main);
 
-            get_parent(LEV_MULTI_SPECIES)->to_multi_species_manager()
-                ->update_bases_and_rebuild_consensi(old_seq, old_seq_len, get_parent(LEV_SPECIES)->to_species_manager(), ED4_U_UP); // bases_check
+            get_parent(ED4_L_MULTI_SPECIES)->to_multi_species_manager()
+                ->update_bases_and_rebuild_consensi(old_seq, old_seq_len, get_parent(ED4_L_SPECIES)->to_species_manager(), ED4_U_UP); // bases_check
         }
         else {
             aw_message("Couldn't read old sequence data");
@@ -288,7 +270,7 @@ ED4_returncode ED4_terminal::remove_callbacks()                     // removes c
     if (get_species_pointer()) {
         set_species_pointer(0);
         tflag.deleted = 1; // @@@ why ?
-        clr_property(PROP_CURSOR_ALLOWED);
+        clr_property(ED4_P_CURSOR_ALLOWED);
         request_refresh();
     }
     return ED4_R_OK;
@@ -311,15 +293,15 @@ inline void remove_from_consensus(ED4_manager *group_or_species_man) {
 }
 
 ED4_returncode ED4_terminal::kill_object() {
-    ED4_species_manager *species_manager = get_parent(LEV_SPECIES)->to_species_manager();
+    ED4_species_manager *species_manager = get_parent(ED4_L_SPECIES)->to_species_manager();
 
     if (species_manager->is_consensus_manager()) { // kill whole group
-        if (ED4_find_MoreSequences_manager()==species_manager->parent) {
+        if (ED4_new_species_multi_species_manager()==species_manager->parent) {
             aw_message("This group has to exist - deleting it isn't allowed");
             return ED4_R_IMPOSSIBLE;
         }
 
-        ED4_manager *group_manager = species_manager->get_parent(LEV_GROUP)->to_group_manager();
+        ED4_manager *group_manager = species_manager->get_parent(ED4_L_GROUP)->to_group_manager();
         remove_from_consensus(group_manager);
         group_manager->Delete();
     }
@@ -366,7 +348,7 @@ ED4_returncode ED4_terminal::draw_drag_box(AW_pos x, AW_pos y, GB_CSTR text, int
             location.position[X_POS] = 0;
             location.position[Y_POS] = (AW_pos)cursor_y;           // cursor_y is already in world coordinates
 
-            ED4_ROOT->get_device_manager()->search_target_species(&location, PROP_HORIZONTAL, &drag_target, LEV_NONE);
+            ED4_ROOT->get_device_manager()->children->search_target_species(&location, ED4_P_HORIZONTAL, &drag_target, ED4_L_NO_LEVEL);
         }
 
         if (drag_target) {
@@ -497,15 +479,15 @@ ED4_returncode ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *aw
                             mi.end_x = event->x;
                             mi.end_y = event->y;
                             mi.mode = ED4_M_FREE;
-                            mi.preferred_parent = LEV_NONE;
+                            mi.preferred_parent = ED4_L_NO_LEVEL;
 
                             dragged_name_terminal->parent->move_requested_by_child(&mi);
                         }
                         {
                             ED4_device_manager *device_manager = ED4_ROOT->get_device_manager();
 
-                            for (int i=0; i<device_manager->members(); i++) { // when moving species numbers have to be recalculated
-                                ED4_base *member = device_manager->member(i);
+                            for (int i=0; i<device_manager->children->members(); i++) { // when moving species numbers have to be recalculated
+                                ED4_base *member = device_manager->children->member(i);
 
                                 if (member->is_area_manager()) {
                                     member->to_area_manager()->get_multi_species_manager()->update_requested_by_child();
@@ -558,7 +540,7 @@ ED4_returncode ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *aw
                         case ED4_SM_INFO:
                         case ED4_SM_MARK: {
                             static ED4_species_manager *prev_clicked_species_man = NULL;
-                            ED4_species_manager        *species_man              = get_parent(LEV_SPECIES)->to_species_manager();
+                            ED4_species_manager        *species_man              = get_parent(ED4_L_SPECIES)->to_species_manager();
 
                             GBDATA *gbd = species_man->get_species_pointer();
                             if (gbd) {
@@ -576,13 +558,8 @@ ED4_returncode ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *aw
                                             break;
 
                                         case AW_Mouse_Release:
-                                            acceptClick              = prev_clicked_species_man != species_man;
+                                            acceptClick = prev_clicked_species_man != species_man;
                                             prev_clicked_species_man = NULL;
-                                            break;
-
-                                        case AW_Keyboard_Press:
-                                        case AW_Keyboard_Release:
-                                            e4_assert(0); // impossible
                                             break;
                                     }
                                 }
@@ -615,21 +592,16 @@ ED4_returncode ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *aw
                 }
                 else if (is_bracket_terminal()) { // fold/unfold group
                     if (event->type == AW_Mouse_Press) {
-                        to_bracket_terminal()->toggle_folding();
+                        if (dynamic_prop & ED4_P_IS_FOLDED) to_bracket_terminal()->unfold();
+                        else                                to_bracket_terminal()->fold();
                     }
                 }
                 else if (is_sequence_terminal()) {
-                    if (has_property(PROP_CURSOR_ALLOWED)) {
+                    if (dynamic_prop & ED4_P_CURSOR_ALLOWED) {
                         ED4_no_dangerous_modes();
                         current_cursor().show_clicked_cursor(event->x, this);
                     }
                 }
-                else if (is_flag_terminal()) {
-                    if (event->type == AW_Mouse_Press) {
-                        to_flag_terminal()->handle_left_click(AW::Position(event->x, event->y));
-                    }
-                }
-
                 break;
             }
             case AW_BUTTON_RIGHT: {
@@ -640,10 +612,10 @@ ED4_returncode ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *aw
                     case AW_Mouse_Press: {
                         select_started_on_seqterm = false;
                         if (is_species_name_terminal()) {
-                            ED4_species_manager *species_man = get_parent(LEV_SPECIES)->to_species_manager();
+                            ED4_species_manager *species_man = get_parent(ED4_L_SPECIES)->to_species_manager();
 
                             if (species_man->is_consensus_manager()) { // click on consensus-name
-                                ED4_multi_species_manager *multi_man = species_man->get_parent(LEV_MULTI_SPECIES)->to_multi_species_manager();
+                                ED4_multi_species_manager *multi_man = species_man->get_parent(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
                                 multi_man->toggle_selected_species();
                             }
                             else { // click on species or SAI name
@@ -657,7 +629,7 @@ ED4_returncode ED4_terminal::event_sent_by_parent(AW_event *event, AW_window *aw
                             }
                         }
                         else if (is_bracket_terminal()) {
-                            ED4_base *group = get_parent(LEV_GROUP);
+                            ED4_base *group = get_parent(ED4_L_GROUP);
                             if (group) {
                                 group->to_group_manager()->get_multi_species_manager()->toggle_selected_species();
                             }
@@ -700,11 +672,17 @@ bool ED4_terminal::calc_bounding_box() {
     bool bb_changed = false;
 
     if (width_link) {
-        bb_changed = extension.set_size_does_change(WIDTH, width_link->extension.size[WIDTH]) || bb_changed;
+        if (extension.size[WIDTH] != width_link->extension.size[WIDTH]) {   // all bounding Boxes have the same size !!!
+            extension.size[WIDTH] = width_link->extension.size[WIDTH];
+            bb_changed = true;
+        }
     }
 
     if (height_link) {
-        bb_changed = extension.set_size_does_change(HEIGHT, height_link->extension.size[HEIGHT]) || bb_changed;
+        if (extension.size[HEIGHT] != height_link->extension.size[HEIGHT]) {
+            extension.size[HEIGHT] = height_link->extension.size[HEIGHT];
+            bb_changed = true;
+        }
     }
 
 
@@ -717,7 +695,9 @@ bool ED4_terminal::calc_bounding_box() {
 
 void ED4_terminal::resize_requested_children() {
     if (update_info.resize) { // likes to resize?
-        if (calc_bounding_box()) request_resize();
+        if (calc_bounding_box()) { 
+            request_resize();
+        }
     }
 }
 
@@ -734,20 +714,8 @@ ED4_base* ED4_terminal::search_ID(const char *temp_id) {
     return (NULL);
 }
 
-void ED4_terminal::Show(bool IF_ASSERTION_USED(refresh_all), bool is_cleared) {
-    e4_assert(update_info.refresh || refresh_all);
-    current_device()->push_clip_scale();
-    if (adjust_clipping_rectangle()) {
-        if (update_info.clear_at_refresh && !is_cleared) {
-            clear_background();
-        }
-        draw();
-    }
-    current_device()->pop_clip_scale();
-}
-
-ED4_terminal::ED4_terminal(const ED4_objspec& spec_, GB_CSTR temp_id, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
-    ED4_base(spec_, temp_id, width, height, temp_parent)
+ED4_terminal::ED4_terminal(const ED4_objspec& spec_, GB_CSTR temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
+    ED4_base(spec_, temp_id, x, y, width, height, temp_parent)
 {
     memset((char*)&tflag, 0, sizeof(tflag));
     curr_timestamp = 0;
@@ -763,12 +731,29 @@ ED4_terminal::~ED4_terminal() {
     }
 }
 
-ED4_tree_terminal::ED4_tree_terminal(const char *temp_id, AW_pos width, AW_pos height, ED4_manager *temp_parent)
-    : ED4_terminal(tree_terminal_spec, temp_id, width, height, temp_parent)
+ED4_tree_terminal::ED4_tree_terminal(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
+    : ED4_terminal(tree_terminal_spec, temp_id, x, y, width, height, temp_parent)
 {
 }
 
-void ED4_tree_terminal::draw() {
+ED4_returncode ED4_tree_terminal::Show(int IF_ASSERTION_USED(refresh_all), int is_cleared)
+{
+    e4_assert(update_info.refresh || refresh_all);
+    current_device()->push_clip_scale();
+    if (adjust_clipping_rectangle()) {
+        if (update_info.clear_at_refresh && !is_cleared) {
+            clear_background();
+        }
+        draw();
+    }
+    current_device()->pop_clip_scale();
+
+    return (ED4_R_OK);
+}
+
+
+
+ED4_returncode ED4_tree_terminal::draw() {
     AW_pos  x, y;
     AW_pos  text_x, text_y;
     char   *db_pointer;
@@ -782,20 +767,38 @@ void ED4_tree_terminal::draw() {
     db_pointer = resolve_pointer_to_string_copy();
     current_device()->text(ED4_G_STANDARD, db_pointer, text_x, text_y, 0, AW_SCREEN);
     free(db_pointer);
+
+    return (ED4_R_OK);
 }
 
-ED4_bracket_terminal::ED4_bracket_terminal(const char *temp_id, AW_pos width, AW_pos height, ED4_manager *temp_parent)
-    : ED4_terminal(bracket_terminal_spec, temp_id, width, height, temp_parent)
+ED4_bracket_terminal::ED4_bracket_terminal(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
+    : ED4_terminal(bracket_terminal_spec, temp_id, x, y, width, height, temp_parent)
 {
 }
 
-void ED4_bracket_terminal::draw() {
+ED4_returncode ED4_bracket_terminal::Show(int IF_ASSERTION_USED(refresh_all), int is_cleared)
+{
+    e4_assert(update_info.refresh || refresh_all);
+    current_device()->push_clip_scale();
+    if (adjust_clipping_rectangle()) {
+        if (update_info.clear_at_refresh && !is_cleared) {
+            clear_background();
+        }
+        draw();
+    }
+    current_device()->pop_clip_scale();
+
+    return ED4_R_OK;
+}
+
+
+ED4_returncode ED4_bracket_terminal::draw() {
     using namespace AW;
 
     Rectangle  term_area = get_win_area(current_ed4w());
     AW_device *device    = current_device();
 
-    ED4_multi_species_manager *multi_man = get_parent(LEV_GROUP)->to_group_manager()->get_multi_species_manager();
+    ED4_multi_species_manager *multi_man = get_parent(ED4_L_GROUP)->to_group_manager()->get_multi_species_manager();
     if (multi_man->get_no_of_selected_species()) {  // if multi_species_manager contains selected species
 #if defined(DEBUG) && 0
         static bool toggle = false;
@@ -806,8 +809,7 @@ void ED4_bracket_terminal::draw() {
 #endif
     }
 
-    e4_assert(parent->is_group_manager());
-    if (parent->has_property(PROP_IS_FOLDED)) { // for folded group, paint triangle pointing rightwards
+    if (dynamic_prop & ED4_P_IS_FOLDED) { // paint triangle for folded group
         Position t = term_area.upper_left_corner()+Vector(4,4);
         Position b = t+Vector(0,12);
 
@@ -819,7 +821,7 @@ void ED4_bracket_terminal::draw() {
         e4_assert(nearlyEqual(t, b));
         device->line(ED4_G_STANDARD, t, b, AW_SCREEN); // arrowhead
     }
-    else { // for unfolded group, paint triangle pointing downwards
+    else {
         Position l = term_area.upper_left_corner()+Vector(4,5);
         Position r = l+Vector(6,0);
 
@@ -842,16 +844,18 @@ void ED4_bracket_terminal::draw() {
         device->line(ED4_G_STANDARD, bracket.lower_edge(), AW_SCREEN);
         device->line(ED4_G_STANDARD, bracket.left_edge(), AW_SCREEN);
     }
+
+    return (ED4_R_OK);
 }
 
-ED4_species_name_terminal::ED4_species_name_terminal(GB_CSTR temp_id, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
-    ED4_text_terminal(species_name_terminal_spec, temp_id, width, height, temp_parent),
+ED4_species_name_terminal::ED4_species_name_terminal(GB_CSTR temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
+    ED4_text_terminal(species_name_terminal_spec, temp_id, x, y, width, height, temp_parent),
     selection_info(NULL),
     dragged(false)
 {
 }
 
-#define MAXNAMELEN MAXNAME_WIDTH // @@@ seems wrong (MAXNAME_WIDTH contains pixel)
+#define MAXNAMELEN MAXSPECIESWIDTH
 #define BUFFERSIZE (MAXNAMELEN<<1)
 GB_CSTR ED4_species_name_terminal::get_displayed_text() const
 {
@@ -861,11 +865,11 @@ GB_CSTR ED4_species_name_terminal::get_displayed_text() const
     if (!real_name || allocatedSize<(BUFFERSIZE+1)) {
         free(real_name);
         allocatedSize = BUFFERSIZE+1;
-        ARB_alloc(real_name, allocatedSize);
+        real_name = (char*)malloc(allocatedSize);
     }
     memset(real_name, 0, allocatedSize);
 
-    ED4_species_manager *spec_man = get_parent(LEV_SPECIES)->to_species_manager();
+    ED4_species_manager *spec_man = get_parent(ED4_L_SPECIES)->to_species_manager();
 
     if (spec_man->is_consensus_manager()) {
         char *db_pointer = resolve_pointer_to_string_copy();
@@ -922,13 +926,13 @@ GB_CSTR ED4_species_name_terminal::get_displayed_text() const
 #undef BUFFERSIZE
 
 
-ED4_sequence_info_terminal::ED4_sequence_info_terminal(const char *temp_id, AW_pos width, AW_pos height, ED4_manager *temp_parent)
-    : ED4_text_terminal(sequence_info_terminal_spec, temp_id, width, height, temp_parent)
+ED4_sequence_info_terminal::ED4_sequence_info_terminal(const char *temp_id, /* GBDATA *gbd, */ AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
+    : ED4_text_terminal(sequence_info_terminal_spec, temp_id, x, y, width, height, temp_parent)
 {
 }
 
-ED4_consensus_sequence_terminal::ED4_consensus_sequence_terminal(const char *temp_id, AW_pos width, AW_pos height, ED4_manager *temp_parent)
-    : ED4_sequence_terminal(temp_id, width, height, temp_parent, false),
+ED4_consensus_sequence_terminal::ED4_consensus_sequence_terminal(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
+    : ED4_sequence_terminal(temp_id, x, y, width, height, temp_parent, false),
       temp_cons_seq(NULL)
 {
     species_name = NULL;
@@ -943,8 +947,8 @@ int ED4_consensus_sequence_terminal::get_length() const {
 }
 
 
-ED4_abstract_sequence_terminal::ED4_abstract_sequence_terminal(const ED4_objspec& spec_, const char *temp_id, AW_pos width, AW_pos height, ED4_manager *temp_parent)
-    : ED4_text_terminal(spec_, temp_id, width, height, temp_parent)
+ED4_abstract_sequence_terminal::ED4_abstract_sequence_terminal(const ED4_objspec& spec_, const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
+    : ED4_text_terminal(spec_, temp_id, x, y, width, height, temp_parent)
 {
     species_name = NULL;
 }
@@ -953,8 +957,8 @@ ED4_abstract_sequence_terminal::~ED4_abstract_sequence_terminal() {
     free(species_name);
 }
 
-ED4_orf_terminal::ED4_orf_terminal(const char *temp_id, AW_pos width, AW_pos height, ED4_manager *temp_parent)
-    : ED4_abstract_sequence_terminal(orf_terminal_spec, temp_id, width, height, temp_parent)
+ED4_orf_terminal::ED4_orf_terminal(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
+    : ED4_abstract_sequence_terminal(orf_terminal_spec, temp_id, x, y, width, height, temp_parent)
 {
     aaSequence   = 0;
     aaSeqLen     = 0;
@@ -974,8 +978,8 @@ ED4_orf_terminal::~ED4_orf_terminal()
     free(aaColor);
 }
 
-ED4_sequence_terminal::ED4_sequence_terminal(const char *temp_id, AW_pos width, AW_pos height, ED4_manager *temp_parent, bool shall_display_secstruct_info_)
-    : ED4_abstract_sequence_terminal(sequence_terminal_spec, temp_id, width, height, temp_parent),
+ED4_sequence_terminal::ED4_sequence_terminal(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent, bool shall_display_secstruct_info_)
+    : ED4_abstract_sequence_terminal(sequence_terminal_spec, temp_id, x, y, width, height, temp_parent),
       shall_display_secstruct_info(shall_display_secstruct_info_)
 {
     st_ml_node = NULL;
@@ -986,61 +990,38 @@ GB_alignment_type ED4_sequence_terminal::GetAliType()
     return ED4_ROOT->alignment_type;
 }
 
-ED4_pure_text_terminal::ED4_pure_text_terminal(const char *temp_id, AW_pos width, AW_pos height, ED4_manager *temp_parent)
-    : ED4_text_terminal(pure_text_terminal_spec, temp_id, width, height, temp_parent)
+ED4_pure_text_terminal::ED4_pure_text_terminal(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
+    : ED4_text_terminal(pure_text_terminal_spec, temp_id, x, y, width, height, temp_parent)
 {
 }
 
-#if defined(DEVEL_RALF) && 0
-// # define DEBUG_SPACER_TERMINALS 0 // show placeholder-spacers (normally not drawn)
-// # define DEBUG_SPACER_TERMINALS 1 // show erasing spacers (normally area gets erased)
-# define DEBUG_SPACER_TERMINALS 2 // show all spacers
-#endif
-
-void ED4_spacer_terminal::Show(bool /*refresh_all*/, bool is_cleared) {
-#if defined(DEBUG_SPACER_TERMINALS)
-    if (DEBUG_SPACER_TERMINALS == 1) {
-        if (shallDraw) {
-            draw();
+ED4_returncode ED4_spacer_terminal::Show(int /* refresh_all */, int is_cleared) {
+    if (shallDraw) {
+        if (update_info.clear_at_refresh && !is_cleared) {
+            clear_background();
         }
-        else if (update_info.clear_at_refresh && !is_cleared) {
-            clear_background(0);
-        }
-    }
-    else {
         draw();
     }
-#else // !DEBUG_SPACER_TERMINALS
-    if (shallDraw || (update_info.clear_at_refresh && !is_cleared)) {
-        draw();
-    }
-#endif
+    return ED4_R_OK;
 }
 
 
-void ED4_spacer_terminal::draw() {
-    int gc = 0;
-#if defined(DEBUG_SPACER_TERMINALS)
-    const int GC_COUNT = ED4_G_LAST_COLOR_GROUP - ED4_G_FIRST_COLOR_GROUP + 1;
-    gc                 = ((long(this)/32)%GC_COUNT)+ED4_G_FIRST_COLOR_GROUP; // draw colored spacers to make them visible
-
-    if (DEBUG_SPACER_TERMINALS != 2) {
-        bool highlight     = bool(DEBUG_SPACER_TERMINALS) == shallDraw;
-        if (!highlight) gc = 0;
-    }
-#endif // DEBUG_SPACER_TERMINALS
-    clear_background(gc);
+ED4_returncode ED4_spacer_terminal::draw() {  
+#if defined(DEBUG) && 0
+    clear_background(ED4_G_FIRST_COLOR_GROUP); // draw colored spacers to make them visible
+#else
+    clear_background(0);
+#endif // DEBUG
+    return (ED4_R_OK);
 }
 
-ED4_spacer_terminal::ED4_spacer_terminal(const char *temp_id, bool shallDraw_, AW_pos width, AW_pos height, ED4_manager *temp_parent)
-    : ED4_terminal(spacer_terminal_spec, temp_id, width, height, temp_parent),
+ED4_spacer_terminal::ED4_spacer_terminal(const char *temp_id, bool shallDraw_, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
+    : ED4_terminal(spacer_terminal_spec, temp_id, x, y, width, height, temp_parent),
       shallDraw(shallDraw_)
 {
-    // 'shallDraw_'==true is only needed in very special cases,
-    // eg. for 'Top_Middle_Spacer' (to remove overlapping relicts from half-displayed species below)
 }
 
-void ED4_line_terminal::draw() {
+ED4_returncode ED4_line_terminal::draw() {
     AW_pos x1, y1;
     calc_world_coords(&x1, &y1);
     current_ed4w()->world_to_win_coords(&x1, &y1);
@@ -1057,15 +1038,42 @@ void ED4_line_terminal::draw() {
     device->clear_part(x1, y1+1, x2-x1+1, y2-y1-1, AW_ALL_DEVICES);
 #endif // DEBUG
     device->line(ED4_G_STANDARD, x1, y2, x2, y2);
+
+    return ED4_R_OK;
 }
 
-ED4_line_terminal::ED4_line_terminal(const char *temp_id, AW_pos width, AW_pos height, ED4_manager *temp_parent)
-    : ED4_terminal(line_terminal_spec, temp_id, width, height, temp_parent)
+ED4_returncode ED4_line_terminal::Show(int /* refresh_all */, int is_cleared)
+{
+    if (update_info.clear_at_refresh && !is_cleared) {
+        clear_background();
+    }
+    draw();
+    return ED4_R_OK;
+}
+
+
+ED4_line_terminal::ED4_line_terminal(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
+    : ED4_terminal(line_terminal_spec, temp_id, x, y, width, height, temp_parent)
 {
 }
 
 // ---------------------------------
 //      ED4_columnStat_terminal
+
+ED4_returncode ED4_columnStat_terminal::Show(int IF_ASSERTION_USED(refresh_all), int is_cleared)
+{
+    e4_assert(update_info.refresh || refresh_all);
+    current_device()->push_clip_scale();
+    if (adjust_clipping_rectangle()) {
+        if (update_info.clear_at_refresh && !is_cleared) {
+            clear_background();
+        }
+        draw();
+    }
+    current_device()->pop_clip_scale();
+
+    return ED4_R_OK;
+}
 
 inline char stat2display(int val, bool is_upper_digit) {
     if (val<0) {
@@ -1123,7 +1131,47 @@ inline int find_significant_positions(int sig, int like_A, int like_C, int like_
     return 0;
 }
 
-void ED4_columnStat_terminal::draw() {
+#define PROBE_MATCH_TARGET_STRING_LENGTH 32
+
+GB_CSTR ED4_columnStat_terminal::build_probe_match_string(PosRange range) const {
+    static char            result[PROBE_MATCH_TARGET_STRING_LENGTH+1]; // see create_probe_match_window() for length
+    int                    max_insert   = PROBE_MATCH_TARGET_STRING_LENGTH;
+    char                  *r            = result;
+    int                    significance = int(get_threshold());
+    ED4_sequence_terminal *seq_term     = corresponding_sequence_terminal();
+    char                  *seq          = seq_term->resolve_pointer_to_string_copy();
+
+    for (int pos=range.start(); pos<=range.end(); pos++) {
+        int found = find_significant_positions(significance, likelihood[0][pos], likelihood[1][pos], likelihood[2][pos], likelihood[3][pos], 0);
+
+        if (found || strchr("-=.", seq[pos])==0) {
+            // '?' is inserted at every base position without significant bases (not at gaps!)
+
+            *r++ = "NACMGRSVUWYHKDBN"[found]; // this creates a string containing the full IUPAC code
+
+            if (max_insert--==0) {
+                r--;
+                break;
+            }
+        }
+    }
+    r[0] = 0;
+    free(seq);
+
+    if (max_insert<0) {
+        aw_message(GBS_global_string("Max. %i bases allowed in Probe Match", PROBE_MATCH_TARGET_STRING_LENGTH));
+        result[0] = 0;
+    }
+    return result;
+}
+#undef PROBE_MATCH_TARGET_STRING_LENGTH
+
+ED4_returncode ED4_columnStat_terminal::draw() {
+    if (!update_likelihood()) {
+        aw_message("Can't calculate likelihood.");
+        return ED4_R_IMPOSSIBLE;
+    }
+
     AW_pos x, y;
     calc_world_coords(&x, &y);
     current_ed4w()->world_to_win_coords(&x, &y);
@@ -1135,26 +1183,17 @@ void ED4_columnStat_terminal::draw() {
     AW_pos text_x = x + CHARACTEROFFSET;
     AW_pos text_y = y + term_height - font_height;
 
-    AW_device *device = current_device();
-
-    if (!update_likelihood()) {
-        const char *warning = "Failed to calculate likelihood";
-        size_t      len     = strlen(warning);
-
-        device->text(ED4_G_STANDARD, warning, text_x, text_y, 0, AW_SCREEN, len);
-        return;
-    }
-
+    AW_device             *device   = current_device();
     ED4_sequence_terminal *seq_term = corresponding_sequence_terminal();
     const ED4_remap       *rm       = ED4_ROOT->root_group_man->remap();
-
+    
     PosRange index_range = rm->clip_screen_range(seq_term->calc_update_interval());
     {
         int max_seq_len = seq_term->get_length();
         int max_seq_pos = rm->sequence_to_screen(max_seq_len);
 
         index_range = ExplicitRange(index_range, max_seq_pos);
-        if (index_range.is_empty()) return; // nothing to draw
+        if (index_range.is_empty()) return ED4_R_OK;
     }
 
     const int left  = index_range.start();
@@ -1257,6 +1296,7 @@ void ED4_columnStat_terminal::draw() {
     }
 
     delete [] sbuffer;
+    return ED4_R_OK;
 }
 
 int ED4_columnStat_terminal::update_likelihood() {
@@ -1265,8 +1305,8 @@ int ED4_columnStat_terminal::update_likelihood() {
     return STAT_update_ml_likelihood(ED4_ROOT->st_ml, likelihood, latest_update, 0, seq_term->st_ml_node);
 }
 
-ED4_columnStat_terminal::ED4_columnStat_terminal(GB_CSTR temp_id, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
-    ED4_text_terminal(column_stat_terminal_spec, temp_id, width, height, temp_parent)
+ED4_columnStat_terminal::ED4_columnStat_terminal(GB_CSTR temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent) :
+    ED4_text_terminal(column_stat_terminal_spec, temp_id, x, y, width, height, temp_parent)
 {
     for (int i=0; i<4; i++) likelihood[i] = 0;
     latest_update = 0;
@@ -1275,124 +1315,6 @@ ED4_columnStat_terminal::ED4_columnStat_terminal(GB_CSTR temp_id, AW_pos width, 
 ED4_columnStat_terminal::~ED4_columnStat_terminal()
 {
     for (int i=0; i<4; i++) free(likelihood[i]);
-}
-
-// ------------------------
-//      flag terminals
-
-ED4_flag_header_terminal::ED4_flag_header_terminal(GB_CSTR id_, AW_pos width, AW_pos height, ED4_manager *parent_) :
-    ED4_text_terminal(flag_header_spec, id_, width, height, parent_)
-{}
-
-GB_CSTR ED4_flag_header_terminal::get_displayed_text() const {
-    return SpeciesFlags::instance().get_header_text();
-}
-int ED4_flag_header_terminal::get_length() const {
-    return SpeciesFlags::instance().get_header_length();
-}
-
-ED4_flag_terminal::ED4_flag_terminal(const char *id_, AW_pos width, AW_pos height, ED4_manager *parent_) :
-    ED4_terminal(flag_spec, id_, width, height, parent_)
-{}
-
-using namespace AW;
-
-class FlagLayout {
-    double    flag_centerx; // flag x-position relative to terminal
-    Rectangle box;          // box at flag_centerx
-
-public:
-    FlagLayout(const Rectangle& area, const SpeciesFlags& flags) {
-        double boxsize = std::max(1.0, std::min(double(flags.get_min_flag_distance()), area.height()*0.95));
-        Vector box_diag(boxsize, -boxsize);
-
-        SpeciesFlagCiter curr_flag  = flags.begin();
-        flag_centerx                = curr_flag->center_xpos();
-        Position         box_center = area.left_edge().centroid() + Vector(flag_centerx, 0);
-        box                         = Rectangle(box_center-box_diag/2, box_diag);
-    }
-
-    void move_box(double new_flag_centerx) {
-        box.move(Vector(new_flag_centerx - flag_centerx, 0));
-        flag_centerx = new_flag_centerx;
-    }
-
-    const Rectangle& get_box() const { return box; }
-};
-
-void ED4_flag_terminal::draw() {
-    const SpeciesFlags& flags = SpeciesFlags::instance();
-
-    int boxes = flags.size();
-    if (boxes>0) {
-        FlagLayout layout(get_win_area(current_ed4w()), flags);
-
-        SpeciesFlagCiter curr_flag = flags.begin();
-        SpeciesFlagCiter end       = flags.end();
-
-        AW_device *device = current_device();
-
-        GBDATA   *gb_species = get_species();
-        GB_ERROR  error      = NULL;
-
-        for (int b = 0; b<boxes && !error; ++b) {
-            bool filled = false;
-            {
-                GBDATA *gb_field = GB_entry(gb_species, curr_flag->get_fieldname().c_str());
-                if (gb_field) {
-                    uint8_t as_byte  = GB_read_lossless_byte(gb_field, error);
-                    if (error) error = GBS_global_string("Failed to read flag value (Reason: %s)", error);
-                    else    filled   = as_byte;
-                }
-            }
-
-            if (filled) device->box(ED4_G_FLAG_FILL,  FillStyle::SOLID, layout.get_box(), AW_SCREEN); // filled?
-            device->box(            ED4_G_FLAG_FRAME, FillStyle::EMPTY, layout.get_box(), AW_SCREEN); // frame
-
-            ++curr_flag;
-            if (curr_flag != end) layout.move_box(curr_flag->center_xpos());
-        }
-
-        aw_message_if(error);
-    }
-}
-
-void ED4_flag_terminal::handle_left_click(const Position& click) {
-    const SpeciesFlags& flags = SpeciesFlags::instance();
-
-    int boxes = flags.size();
-    if (boxes>0) {
-        FlagLayout layout(get_win_area(current_ed4w()), flags);
-
-        SpeciesFlagCiter curr_flag = flags.begin();
-        SpeciesFlagCiter end       = flags.end();
-
-        for (int b = 0; b<boxes; ++b) {
-            if (layout.get_box().contains(click)) break;
-            ++curr_flag;
-            if (curr_flag != end) layout.move_box(curr_flag->center_xpos());
-        }
-
-        if (curr_flag != end) {
-            GBDATA   *gb_species = get_species();
-            GBDATA   *gb_field   = GB_entry(gb_species, curr_flag->get_fieldname().c_str());
-            GB_ERROR  error      = GB_incur_error_if(!gb_field);
-
-            if (!error && !gb_field) {
-                const char *key   = curr_flag->prepare_itemfield(); // impl using prepare_and_get_selected_itemfield
-                if (key) gb_field = GBT_searchOrCreate_itemfield_according_to_changekey(gb_species, key, SPECIES_get_selector().change_key_path);
-                error             = GB_incur_error_if(!gb_field);
-            }
-
-            if (gb_field) {
-                uint8_t val       = GB_read_lossless_byte(gb_field, error);
-                if (!error) error = GB_write_lossless_byte(gb_field, !val);
-            }
-
-            aw_message_if(error);
-            if (!error) request_refresh();
-        }
-    }
 }
 
 // ---------------------------------

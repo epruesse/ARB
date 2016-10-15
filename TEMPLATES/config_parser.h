@@ -41,12 +41,15 @@
 
 namespace {
 
-    class ConfigParser : virtual Noncopyable {
+    class ConfigParser {
         typedef std::map<std::string, std::string> ConfigMap;
 
-        ConfigMap   entries;
-        std::string filename;
-        GB_ERROR    error;
+        ConfigMap entries;
+        std::string    filename;
+        GB_ERROR  error;
+
+        ConfigParser(const ConfigParser& other); // copying not allowed
+        ConfigParser& operator = (const ConfigParser& other); // assignment not allowed
 
         static char *unwhite(char *s) {
             while (s[0] == ' ') ++s;
@@ -137,7 +140,10 @@ namespace {
 
     // --------------------------------------------------------------------------------
 
-    class ConfigBase : virtual Noncopyable {
+    class ConfigBase {
+        ConfigBase(const ConfigBase& other); // copying not allowed
+        ConfigBase& operator = (const ConfigBase& other); // assignment not allowed
+
     protected:
 
         ConfigParser parser;
@@ -189,7 +195,7 @@ namespace {
         void parseIntRange(const std::string& key, int& low, int& high) {
             const std::string *val = parser.getValue(key, error);
             if (val) {
-                char *range = ARB_strdup(val->c_str());
+                char *range = strdup(val->c_str());
                 char *lhs, *rhs;
 
                 error             = ConfigParser::splitText(range, ',', lhs, rhs);
@@ -244,7 +250,7 @@ namespace {
         void parseDoubleRange(const std::string& key, double& low, double& high) {
             const std::string *val = parser.getValue(key, error);
             if (val) {
-                char *range = ARB_strdup(val->c_str());
+                char *range = strdup(val->c_str());
                 char *lhs, *rhs;
 
                 error             = ConfigParser::splitText(range, ',', lhs, rhs);

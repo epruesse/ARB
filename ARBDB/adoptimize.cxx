@@ -139,16 +139,17 @@ static void g_b_opti_scanGbdByKey(GB_MAIN_TYPE *Main, GBDATA *gbd, O_gbdByKey *g
 
 static O_gbdByKey *g_b_opti_createGbdByKey(GB_MAIN_TYPE *Main)
 {
-    O_gbdByKey *gbk = ARB_calloc<O_gbdByKey>(Main->keycnt);
+    int idx;
+    O_gbdByKey *gbk = (O_gbdByKey *)GB_calloc(Main->keycnt, sizeof(O_gbdByKey));
 
     gbdByKey_cnt = Main->keycnt; // always use gbdByKey_cnt instead of Main->keycnt cause Main->keycnt can change
 
-    for (int idx=1; idx<gbdByKey_cnt; idx++) {
+    for (idx=1; idx<gbdByKey_cnt; idx++) {
         gbk[idx].cnt = 0;
 
         gb_Key& KEY = Main->keys[idx];
         if (KEY.key && KEY.nref>0) {
-            ARB_calloc(gbk[idx].gbds, KEY.nref);
+            gbk[idx].gbds  = (GBDATA **) GB_calloc(KEY.nref, sizeof(GBDATA*));
         }
         else {
             gbk[idx].gbds = NULL;
@@ -156,11 +157,11 @@ static O_gbdByKey *g_b_opti_createGbdByKey(GB_MAIN_TYPE *Main)
     }
 
     gbk[0].cnt  = 0;
-    ARB_calloc(gbk[0].gbds, 1);
+    gbk[0].gbds = (GBDATA **)GB_calloc(1, sizeof(GBDATA*));
 
     g_b_opti_scanGbdByKey(Main, Main->gb_main(), gbk);
 
-    for (int idx=0; idx<gbdByKey_cnt; idx++) {
+    for (idx=0; idx<gbdByKey_cnt; idx++) {
         if (gbk[idx].cnt != Main->keys[idx].nref && idx)
         {
             printf("idx=%i gbk[idx].cnt=%i Main->keys[idx].nref=%li\n",             // Main->keys[].nref ist falsch
@@ -2274,7 +2275,7 @@ static GB_DICTIONARY *gb_create_dictionary(O_gbdByKey *gbk, long maxmem) {
             word_sum += wordLen;
 #endif
 
-            if (offset-overlap+wordLen > dict->textlen) { // if not enough space allocated -> reallocate dictionary string
+            if (offset-overlap+wordLen > dict->textlen) { // if not enough space allocated -> realloc dictionary string
                 u_str ntext = (u_str)gbm_get_mem(dict->textlen+DICT_STRING_INCR, GBM_DICT_INDEX);
 
                 memcpy(ntext, dict->text, dict->textlen);

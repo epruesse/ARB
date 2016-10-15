@@ -779,7 +779,7 @@ static gene_part_pos *gpp = 0;
 static void init_gpp(int parts) {
     if (!gpp) {
         int i;
-        ARB_alloc(gpp, 1);
+        gpp          = (gene_part_pos*)malloc(sizeof(*gpp));
         gpp->certain = 0;
 
         for (i = 0; i<256; ++i) gpp->offset[i] = 0;
@@ -793,7 +793,7 @@ static void init_gpp(int parts) {
 
     if (!gpp->certain) {
         int forParts           = parts+10;
-        ARB_alloc(gpp->certain, forParts+1);
+        gpp->certain           = (unsigned char *)malloc(forParts+1);
         memset(gpp->certain, '=', forParts);
         gpp->certain[forParts] = 0;
         gpp->parts             = forParts;
@@ -869,7 +869,7 @@ NOT4PERL char *GBT_read_gene_sequence_and_length(GBDATA *gb_gene, bool use_revCo
                 const char *seq_data = gb_cache_genome(gb_seq);
                 char       *resultpos;
 
-                ARB_alloc(result, resultlen+1);
+                result    = (char*)malloc(resultlen+1);
                 resultpos = result;
 
                 if (gene_length) *gene_length = resultlen;

@@ -989,7 +989,7 @@ public:
 #if defined(DUMP_PARAGRAPHS)
     void print_indent(ostream& out, int indent) { while (indent-->0) out << ' '; }
     char *masknl(const char *text) {
-        char *result = ARB_strdup(text);
+        char *result = strdup(text);
         for (int i = 0; result[i]; ++i) {
             if (result[i] == '\n') result[i] = '|';
         }

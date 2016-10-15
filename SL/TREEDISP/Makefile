@@ -47,7 +47,6 @@ irstree_display.o: $(ARBHOME)/INCLUDE/AP_TreeColors.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/arb_assert.h
 irstree_display.o: $(ARBHOME)/INCLUDE/arb_core.h
 irstree_display.o: $(ARBHOME)/INCLUDE/arb_error.h
-irstree_display.o: $(ARBHOME)/INCLUDE/arb_mem.h
 irstree_display.o: $(ARBHOME)/INCLUDE/arb_msg.h
 irstree_display.o: $(ARBHOME)/INCLUDE/arb_string.h
 irstree_display.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
@@ -60,7 +59,6 @@ irstree_display.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
-irstree_display.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -89,7 +87,6 @@ TreeCallbacks.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/arb_assert.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/arb_core.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/arb_error.h
-TreeCallbacks.o: $(ARBHOME)/INCLUDE/arb_mem.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/arb_msg.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/arb_string.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
@@ -106,7 +103,6 @@ TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
-TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_position.hxx
@@ -146,7 +142,6 @@ TreeDisplay.o: $(ARBHOME)/INCLUDE/arb_defs.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/arb_diff.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/arb_error.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/arb_global_defs.h
-TreeDisplay.o: $(ARBHOME)/INCLUDE/arb_mem.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/arb_msg.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -163,7 +158,6 @@ TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
-TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/aw_position.hxx

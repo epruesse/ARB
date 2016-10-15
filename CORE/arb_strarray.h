@@ -12,17 +12,17 @@
 #ifndef ARB_STRARRAY_H
 #define ARB_STRARRAY_H
 
+#ifndef _GLIBCXX_CSTDLIB
+#include <cstdlib>
+#endif
 #ifndef ARBTOOLS_H
 #include <arbtools.h>
 #endif
-#ifndef ARB_STRING_H
-#include "arb_string.h"
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
 #endif
 #ifndef _GLIBCXX_ALGORITHM
 #include <algorithm>
-#endif
-#ifndef _GLIBCXX_CSTDLIB
-#include <cstdlib>
 #endif
 
 
@@ -48,10 +48,9 @@ protected:
     void set_space(size_t new_allocated) {
         if (new_allocated != allocated) {
             arb_assert(ok());
-
-            if (str) ARB_recalloc(str, allocated, new_allocated);
-            else     ARB_calloc(str, new_allocated);
-
+            size_t memsize = new_allocated*sizeof(*str);
+            str = (char**)(str ? realloc(str, memsize) : malloc(memsize));
+            if (new_allocated>allocated) memset(str+allocated, 0, (new_allocated-allocated)*sizeof(*str));
             allocated = new_allocated;
             arb_assert(ok());
         }
@@ -139,13 +138,13 @@ public:
 };
 
 class StrArray : public CharPtrArray {
-    void free_elem(int i) OVERRIDE {
+    virtual void free_elem(int i) OVERRIDE {
         freenull(str[i]);
     }
 
 public:
     StrArray() {}
-    ~StrArray() OVERRIDE { erase(); }
+    virtual ~StrArray() OVERRIDE { erase(); }
 
     void erase() { erase_elems(); }
 
@@ -179,11 +178,11 @@ public:
 class ConstStrArray : public CharPtrArray { // derived from a Noncopyable
     char *memblock;
 
-    void free_elem(int i) OVERRIDE { str[i] = NULL; }
+    virtual void free_elem(int i) OVERRIDE { str[i] = NULL; }
 
 public:
     ConstStrArray() : memblock(NULL) {}
-    ~ConstStrArray() OVERRIDE { free(memblock); }
+    virtual ~ConstStrArray() OVERRIDE { free(memblock); }
 
     void set_memblock(char *block) {
         // hold one memblock until destruction
@@ -230,11 +229,11 @@ void GBT_splitNdestroy_string(ConstStrArray& dest, char*& namelist, char separat
 
 inline void GBT_split_string(ConstStrArray& dest, const char *namelist, const char *separator, bool dropEmptyTokens) {
     //! same as GBT_splitNdestroy_string, but w/o destroying namelist
-    char *dup = ARB_strdup(namelist);
+    char *dup = strdup(namelist);
     GBT_splitNdestroy_string(dest, dup, separator, dropEmptyTokens);
 }
 inline void GBT_split_string(ConstStrArray& dest, const char *namelist, char separator) {
-    char *dup = ARB_strdup(namelist);
+    char *dup = strdup(namelist);
     GBT_splitNdestroy_string(dest, dup, separator);
     // cppcheck-suppress memleak (GBT_splitNdestroy_string takes ownership of 'dup')
 }

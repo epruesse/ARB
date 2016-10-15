@@ -1,8 +1,8 @@
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include "PT_server.h"
 #include "C/server.h"
-
-#include <arb_string.h>
-
 #include <aisc_server_proto.h>
 #include <aisc_server_extern.h>
 #include <import_proto.h>
@@ -31,6 +31,6 @@ aisc_string get_LOCS_ERROR(PT_local *THIS) {
     static char *error_buf = 0;
     if (error_buf) free(error_buf);
     error_buf = THIS->ls_error;
-    THIS->ls_error = ARB_strdup("");
+    THIS->ls_error = (char *)strdup("");
     return error_buf;
 }

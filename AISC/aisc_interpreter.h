@@ -94,18 +94,6 @@ public:
 
 // ------------------------------------------------------------
 
-template<typename T>
-inline void realloc_unleaked(T*& ptr, size_t new_size) {
-    T *new_ptr = (T*)realloc(ptr, new_size);
-    if (!new_ptr) {
-        free(ptr);
-        throw "out of memory";
-    }
-    ptr = new_ptr;
-}
-
-// ------------------------------------------------------------
-
 static const int  LINEBUFSIZE  = 250;
 static const char ALIGN_MARKER = '\1';
 
@@ -131,6 +119,7 @@ public:
             size = size*3/2+1;
             if (size<LINEBUFSIZE) { size = LINEBUFSIZE; }
             realloc_unleaked(buf, size);
+            if (!buf) throw "out of memory";
         }
         buf[used++] = c;
         if (c == ALIGN_MARKER) ++markers;
@@ -173,6 +162,7 @@ public:
         if (count >= size) {
             size  = size*3/2+1;
             realloc_unleaked(queue, size*sizeof(*queue));
+            if (!queue) throw "out of memory";
         }
         aisc_assert(line[strlen(line)-1] == '\n');
         

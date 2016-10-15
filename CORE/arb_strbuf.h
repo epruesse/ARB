@@ -17,9 +17,6 @@
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
 #endif
-#ifndef ARB_MEM_H
-#include "arb_mem.h"
-#endif
 #ifndef ATTRIBUTES_H
 #include <attributes.h>
 #endif
@@ -95,13 +92,13 @@ public:
         arb_assert(blocksize>0);
         arb_assert(!data);
 
-        assign_mem(ARB_alloc<char>(blocksize), blocksize);
+        assign_mem((char*)malloc(blocksize), blocksize);
     }
     void realloc_mem(size_t newsize) {
         if (!data) alloc_mem(newsize);
         else {
             // cppcheck-suppress memleakOnRealloc
-            ARB_realloc(data, newsize);
+            data        = (char*)realloc(data, newsize);
             buffer_size = newsize;
 
             arb_assert(pos<newsize);

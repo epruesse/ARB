@@ -49,9 +49,6 @@ using std::string;
 
 #define ALL_FONTS_ID "all_fonts"
 
-#define NO_FONT -1
-#define NO_SIZE -2
-
 // prototypes for motif-only section at bottom of this file:
 static void aw_create_color_chooser_window(AW_window *aww, const char *awar_name, const char *color_description);
 static void aw_create_font_chooser_window(AW_window *aww, const char *gc_base_name, const struct gc_desc *gcd);
@@ -249,7 +246,7 @@ public:
     {}
 
     void add_color(const string& colordef, AW_gc_manager *gcman);
-    void update_colors(const AW_gc_manager *gcman) const;
+    void update_colors(const AW_gc_manager *gcman, int changed_color) const;
 
     AW_rgb_normalized get_color(int idx, const AW_gc_manager *gcman) const;
 
@@ -375,7 +372,7 @@ public:
             did_suppress_change = GcChange(std::max(whatChanged, did_suppress_change));
         }
         else {
-#if defined(DEBUG) && 0
+#if defined(DEBUG)
             fprintf(stderr, "[changed_cb] @ %zu\n", clock());
 #endif
             changed_cb(whatChanged);
@@ -431,8 +428,6 @@ void AW_gc_manager::update_gc_font(int idx) const {
     int fname = awar_fontname->read_int();
     int fsize = awar_fontsize->read_int();
 
-    if (fname == NO_FONT) return;
-
     int found_font_size;
     device->set_font(gcd0.gc,                fname, fsize, &found_font_size);
     device->set_font(gcd0.gc+drag_gc_offset, fname, fsize, 0);
@@ -471,8 +466,6 @@ void AW_gc_manager::update_all_fonts(bool sizeChanged) const {
 
     int fname = awr->awar(fontname_awarname(gc_base_name, ALL_FONTS_ID))->read_int();
     int fsize = awr->awar(fontsize_awarname(gc_base_name, ALL_FONTS_ID))->read_int();
-
-    if (fname == NO_FONT) return;
 
     delay_changed_callbacks(true); // temp. disable callbacks
     for (gc_container::const_iterator g = GCs.begin(); g != GCs.end(); ++g) {
@@ -532,9 +525,10 @@ AW_rgb_normalized gc_range::get_color(int idx, const AW_gc_manager *gcman) const
 STATIC_ASSERT(AW_PLANAR_COLORS*AW_PLANAR_COLORS == AW_RANGE_COLORS); // Note: very strong assertion (could also use less than AW_RANGE_COLORS)
 STATIC_ASSERT(AW_SPATIAL_COLORS*AW_SPATIAL_COLORS*AW_SPATIAL_COLORS == AW_RANGE_COLORS);
 
-void gc_range::update_colors(const AW_gc_manager *gcman) const {
+void gc_range::update_colors(const AW_gc_manager *gcman, int /*changed_color*/) const { // @@@ elim param changed_color?
     /*! recalculate colors of a range (called after one color changed)
-     * @param gcman    the GC manager
+     * @param gcman             the GC manager
+     * @param changed_color     which color of a range has changed (0 = first, ...). -1 -> unknown => need complete update // @@@ not implemented, always acts like -1 is passed
      */
 
     // @@@ try HSV color blending as alternative
@@ -637,7 +631,7 @@ void AW_gc_manager::update_range_colors(const gc_desc& gcd) const {
 
     if (range_idx<defined_ranges) {
         const gc_range& gcr = color_ranges[range_idx];
-        gcr.update_colors(this);
+        gcr.update_colors(this, gcd.get_color_index());
     }
 }
 void AW_gc_manager::update_range_font(int fname, int fsize) const {
@@ -751,7 +745,7 @@ void AW_gc_manager::active_range_changed_cb(AW_root *awr) {
 
         active_range_number = wanted_range_number;
         const gc_range& active_range = color_ranges[active_range_number];
-        active_range.update_colors(this);
+        active_range.update_colors(this, -1); // -1 means full update
     }
 }
 static void active_range_changed_cb(AW_root *awr, AW_gc_manager *gcman) { gcman->active_range_changed_cb(awr); }
@@ -850,18 +844,14 @@ void AW_gc_manager::add_gc(const char *gc_description, int& gc, gc_type type, co
         }
     }
 #endif
-
-#if !defined(ARB_OPENGL)
-    // normally the first GC should define a font (wrong for RNA3D)
-    aw_assert(implicated(gc == 0 && type != GC_TYPE_RANGE, gcd.has_font));
-#endif
+    aw_assert(implicated(gc == 0 && type != GC_TYPE_RANGE, gcd.has_font)); // first GC always has to define a font!
 
     if (default_color[0] == '{') {
         // use current value of an already defined color as default for current color:
         // (e.g. used in SECEDIT)
         const char *close_brace = strchr(default_color+1, '}');
         aw_assert(close_brace); // missing '}' in reference!
-        char *referenced_colorlabel = ARB_strpartdup(default_color+1, close_brace-1);
+        char *referenced_colorlabel = GB_strpartdup(default_color+1, close_brace-1);
         bool  found                 = false;
 
         for (gc_container::iterator g = GCs.begin(); g != GCs.end(); ++g) {
@@ -942,6 +932,7 @@ void AW_gc_manager::add_color_groups(int& gc) {
 AW_gc_manager *AW_manage_GC(AW_window                *aww,
                             const char               *gc_base_name,
                             AW_device                *device,
+                            int                       base_gc, // @@@ unused (in motif+gtk) -> remove!
                             int                       base_drag,
                             AW_GCM_AREA               area,
                             const GcChangedCallback&  changecb,
@@ -965,6 +956,7 @@ AW_gc_manager *AW_manage_GC(AW_window                *aww,
      * @param aww          base window
      * @param gc_base_name (usually the window_id, prefixed to awars)
      * @param device       screen device
+     * @param base_gc      first gc number @@@REFACTOR: always 0 so far...
      * @param base_drag    one after last gc
      * @param area         AW_GCM_DATA_AREA or AW_GCM_WINDOW_AREA (motif only)
      * @param changecb     cb if changed
@@ -986,6 +978,7 @@ AW_gc_manager *AW_manage_GC(AW_window                *aww,
      */
 
     aw_assert(default_background_color[0]);
+    aw_assert(base_gc == 0);
 
 #if defined(ASSERTION_USED)
     int base_drag_given = base_drag;
@@ -1753,6 +1746,9 @@ static void aw_create_color_chooser_window(AW_window *aww, const char *awar_name
 #define AWAR_SELECTOR_FONT_NAME  "tmp/aw/font_name"
 #define AWAR_SELECTOR_FONT_SIZE  "tmp/aw/font_size"
 
+#define NO_FONT -1
+#define NO_SIZE -2
+
 static void aw_create_font_chooser_awars(AW_root *awr) {
     awr->awar_string(AWAR_SELECTOR_FONT_LABEL, "<invalid>");
     awr->awar_int(AWAR_SELECTOR_FONT_NAME, NO_FONT);
@@ -1788,23 +1784,17 @@ static void aw_create_font_chooser_window(AW_window *aww, const char *gc_base_na
         aws->create_option_menu(AWAR_SELECTOR_FONT_NAME, true);
         {
             int fonts_inserted = 0;
-            for (int order = 1; order>=0; order--) {
-                for (int font_nr = 0; ; font_nr++) {
-                    AW_font     aw_font_nr  = font_nr;
-                    bool        found;
-                    const char *font_string = AW_get_font_specification(aw_font_nr, found);
-
-                    if (!font_string) {
-                        fprintf(stderr, "[Font detection: tried=%i, found=%i]\n", font_nr, fonts_inserted);
-                        break;
-                    }
-
-                    if (found != bool(order)) continue; // display found fonts at top
-                    if (fixed_width_only && !font_has_fixed_width(aw_font_nr)) continue;
-
-                    aws->insert_option(font_string, 0, font_nr);
-                    ++fonts_inserted;
+            for (int font_nr = 0; ; font_nr++) {
+                AW_font     aw_font_nr  = font_nr;
+                const char *font_string = AW_get_font_specification(aw_font_nr);
+                if (!font_string) {
+                    fprintf(stderr, "[Font detection: tried=%i, found=%i]\n", font_nr, fonts_inserted);
+                    break;
                 }
+
+                if (fixed_width_only && !font_has_fixed_width(aw_font_nr)) continue;
+                aws->insert_option(font_string, 0, font_nr);
+                ++fonts_inserted;
             }
             if (!fonts_inserted) aws->insert_option("No suitable fonts detected", 0, 0);
             aws->insert_default_option("<no font selected>", 0, NO_FONT);

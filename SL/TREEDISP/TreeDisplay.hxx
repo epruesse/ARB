@@ -86,14 +86,6 @@ enum AP_tree_jump_type { // bit-values
     AP_JUMP_BY_BUTTON = AP_JUMP_SMART_CENTER|AP_JUMP_UNFOLD_GROUPS|AP_JUMP_BE_VERBOOSE,
 };
 
-enum ClickedType {
-    CL_NODE = 1,
-    CL_SPECIES,
-    CL_RULER,
-    CL_FLAG,
-    CL_BRANCH,
-};
-
 inline bool sort_is_list_style(AP_tree_display_type sort) { return sort == AP_LIST_NDS || sort == AP_LIST_SIMPLE; }
 inline bool sort_is_tree_style(AP_tree_display_type sort) { return !sort_is_list_style(sort); }
 
@@ -109,7 +101,7 @@ struct AWT_scaled_font_limits {
     void init(const AW_font_limits& font_limits, double factor) {
         ascent  = font_limits.ascent*factor;
         descent = font_limits.descent*factor;
-        height  = font_limits.get_height()*factor;
+        height  = font_limits.height*factor;
         width   = font_limits.width*factor;
     }
 };
@@ -345,9 +337,9 @@ public:
 
     int draw_branch_line(int gc, const AW::Position& root, const AW::Position& leaf, AW_bitset filter) {
         const AW_click_cd *old = disp_device->get_click_cd();
-        td_assert(old && old->get_cd1() && old->get_cd2() == CL_NODE); // cd1 should be the node
+        td_assert(old && old->get_cd1() && !old->get_cd2()); // cd1 should be the node
 
-        AW_click_cd branch(disp_device, old->get_cd1(), CL_BRANCH);
+        AW_click_cd branch(disp_device, old->get_cd1(), (AW_CL)"branch");
         return disp_device->line(gc, root, leaf, filter);
     }
 
@@ -476,33 +468,30 @@ class ClickedTarget {
     void identify(AWT_graphic_tree *agt) {
         init();
         if (elem && elem->does_exist()) {
-            ClickedType what = (ClickedType)elem->cd2();
+            const char *what = (const char*)elem->cd2();
 
-            switch (what) {
-                case CL_SPECIES:
+            if (what) {
+                if (strcmp(what, "species") == 0) { // entry in NDS list
                     gb_species = (GBDATA*)elem->cd1();
                     td_assert(gb_species);
-                    break;
-
-                case CL_RULER:
+                }
+                else if (strcmp(what, "ruler") == 0) {
                     ruler = !elem->cd1();
-                    break;
-
-                case CL_FLAG:
+                }
+                else if (strcmp(what, "flag") == 0) {
                     markerflag = elem->cd1()+1;
-                    break;
-
-                case CL_BRANCH:
-                    branch = true;
-                    // fall-through!
-                case CL_NODE:
-                    tree_node = (AP_tree*)elem->cd1();
-                    break;
-
-#if defined(DEBUG)
-                default:
+                }
+                else if (strcmp(what, "branch") == 0) {
+                    branch = true; // indicates that a line really IS the branch (opposed to other branch-related lines like e.g. group-brackets)
+                }
+                else {
                     td_assert(0); // unknown element type
-#endif
+                }
+            }
+
+            if (!(gb_species || ruler || markerflag)) {
+                tree_node = (AP_tree*)elem->cd1();
+                td_assert(branch || !what);
             }
         }
         else { // use whole tree if mouse does not point to a subtree
@@ -542,7 +531,7 @@ public:
 };
 
 void       TREE_create_awars(AW_root *aw_root, AW_default db);
-void       TREE_install_update_callbacks(TREE_canvas *ntw);
+void       TREE_install_update_callbacks(AWT_canvas *ntw);
 void       TREE_insert_jump_option_menu(AW_window *aws, const char *label, const char *awar_name);
 AW_window *TREE_create_settings_window(AW_root *aw_root);
 AW_window *TREE_create_marker_settings_window(AW_root *root);

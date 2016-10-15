@@ -13,7 +13,6 @@
 
 #include "awt.hxx"
 #include "awt_hexdump.hxx"
-#include "awt_misc.hxx"
 
 #include <aw_window.hxx>
 #include <aw_msg.hxx>
@@ -225,7 +224,7 @@ static GBDATA *GB_search_numbered(GBDATA *gbd, const char *str, GB_TYPES create)
                     GBDATA *gb_parent = 0;
                     {
                         if (previous_slash) { // found a slash
-                            char *parent_path = ARB_strpartdup(str, previous_slash-1);
+                            char *parent_path = GB_strpartdup(str, previous_slash-1);
 
                             // we are sure parent path does not contain brackets -> search normal
                             if (parent_path[0] == 0) { // that means : root-item is numbered (e.g. '/species_data[7]/...')
@@ -247,7 +246,7 @@ static GBDATA *GB_search_numbered(GBDATA *gbd, const char *str, GB_TYPES create)
                         GBDATA *gb_son = 0;
                         {
                             const char *name_start = previous_slash ? previous_slash+1 : str;
-                            char       *key_name   = ARB_strpartdup(name_start, first_bracket-1);
+                            char       *key_name   = GB_strpartdup(name_start, first_bracket-1);
                             int         c          = 0;
 
                             gb_son = GB_entry(gb_parent, key_name);
@@ -297,19 +296,24 @@ static GBDATA *GB_search_numbered(GBDATA *gbd, const char *str, GB_TYPES create)
 //      class KnownDB
 
 class KnownDB {
-    RefPtr<GBDATA> gb_main;
-
-    string description;
-    string current_path;
+    GBDATA& gb_main; 
+    string  description;
+    string  current_path;
 
 public:
     KnownDB(GBDATA *gb_main_, const char *description_)
-        : gb_main(gb_main_)
+        : gb_main(*gb_main_)
         , description(description_)
         , current_path("/")
     {}
+    KnownDB(const KnownDB& other)
+        : gb_main(other.gb_main),
+          description(other.description),
+          current_path(other.current_path)
+    {}
+    DECLARE_ASSIGNMENT_OPERATOR(KnownDB);
 
-    const GBDATA *get_db() const { return gb_main; }
+    const GBDATA *get_db() const { return &gb_main; }
     const string& get_description() const { return description; }
 
     const string& get_path() const { return current_path; }
@@ -320,7 +324,7 @@ public:
 class hasDB {
     GBDATA *db;
 public:
-    explicit hasDB(GBDATA *gbm) : db(gbm) {}
+    hasDB(GBDATA *gbm) : db(gbm) {}
     bool operator()(const KnownDB& kdb) { return kdb.get_db() == db; }
 };
 
@@ -330,7 +334,7 @@ public:
 class DB_browser;
 static DB_browser *get_the_browser(bool autocreate);
 
-class DB_browser : virtual Noncopyable {
+class DB_browser {
     typedef vector<KnownDB>::iterator KnownDBiterator;
 
     vector<KnownDB> known_databases;
@@ -345,6 +349,8 @@ class DB_browser : virtual Noncopyable {
 
     void update_DB_selector();
 
+    DB_browser(const DB_browser& other);            // copying not allowed
+    DB_browser& operator = (const DB_browser& other); // assignment not allowed
 public:
     DB_browser() : current_db(0), aww(0), oms(0) {}
 
@@ -872,7 +878,7 @@ static void child_changed_cb(AW_root *aw_root) {
                     fullpath = GBS_global_string_copy("/%s", child);
                 }
                 else if (child[0] == 0) {
-                    fullpath = ARB_strdup(path);
+                    fullpath = strdup(path);
                 }
                 else {
                     fullpath = GBS_global_string_copy("%s/%s", path, child);
@@ -1017,7 +1023,7 @@ static void path_changed_cb(AW_root *aw_root) {
             if (found && GB_read_type(found) != GB_DB) { // exists, but is not a container
                 char *lslash = strrchr(path, '/');
                 if (lslash) {
-                    goto_child = ARB_strdup(lslash+1);
+                    goto_child = strdup(lslash+1);
                     lslash[lslash == path] = 0; // truncate at last slash (but keep sole slash)
                     awar_path->write_string(path);
                 }
@@ -1184,7 +1190,6 @@ void AWT_create_debug_menu(AW_window *awmm) {
     }
     awmm->sep______________();
 
-    awmm->insert_menu_topic(awmm->local_id("-client_ntree"), "Start ARB_NTREE as client", "N", "", AWM_ALL, makeWindowCallback(AWT_system_cb, "arb_ntree : &"));
 }
 
 #if 1

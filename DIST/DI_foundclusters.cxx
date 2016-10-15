@@ -468,7 +468,7 @@ char *originalGroupName(const char *groupname) {
     const char *was = strstr(groupname, " {was:");
     const char *closing = strchr(groupname, '}');
     if (was && closing) {
-        original = ARB_strpartdup(was+6, closing-1);
+        original = GB_strpartdup(was+6, closing-1);
         if (original[0]) {
             char *sub = originalGroupName(original);
             if (sub) freeset(original, sub);

@@ -22,14 +22,18 @@
 #include <map>
 #include <AliAdmin.h>
 
+
 // AISC_MKPT_PROMOTE:#ifndef ARBDB_BASE_H
 // AISC_MKPT_PROMOTE:#include <arbdb_base.h>
 // AISC_MKPT_PROMOTE:#endif
-// AISC_MKPT_PROMOTE:class TREE_canvas;
+// AISC_MKPT_PROMOTE:#ifndef AW_BASE_HXX
+// AISC_MKPT_PROMOTE:#include <aw_base.hxx>
+// AISC_MKPT_PROMOTE:#endif
+// AISC_MKPT_PROMOTE:class AWT_canvas;
 
 #define AWT_TREE(ntw)  DOWNCAST(AWT_graphic_tree *, (ntw)->tree_disp)
 
-void NT_delete_mark_all_cb(AW_window*, TREE_canvas *ntw) {
+void NT_delete_mark_all_cb(AW_window*, AWT_canvas *ntw) {
     if (aw_ask_sure("delete_marked_species",
                     "Are you sure to delete species ??\n"
                     "This will destroy primary data !!!"))
@@ -144,3 +148,13 @@ AW_window *NT_create_select_alignment_window(AW_root *awr) {
     return aws;
 }
 
+void NT_system_cb(AW_window *, const char *command) {
+    aw_message_if(GBK_system(command));
+}
+void NT_xterm(AW_window*) {
+    aw_message_if(GB_xterm());
+}
+void NT_system_in_xterm_cb(AW_window*, const char *command) {
+    GB_ERROR error = GB_xcmd(command, true, true);
+    if (error) aw_message(error);
+}

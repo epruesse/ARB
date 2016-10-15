@@ -137,7 +137,7 @@ class DI_MATRIX : virtual Noncopyable {
     GBDATA  *gb_species_data;
     long     seq_len;
     char     cancel_columns[256];
-    size_t   allocated_entries;
+    size_t   entries_mem_size;
     AliView *aliview;
 
     GBDATA *get_gb_main() const { return aliview->get_gb_main(); }

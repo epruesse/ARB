@@ -38,7 +38,6 @@ struct GB_HASH;
 class AW_device_click;
 class AW_device_print;
 class AW_device_size;
-class AW_common;
 
 // --------------------------------------------------------------------------------
 
@@ -417,8 +416,6 @@ public:
     AW_device_click *get_click_device(AW_area area, int mousex, int mousey, int max_distance);
     AW_device_size *get_size_device(AW_area area);
     AW_device_print *get_print_device(AW_area area);
-
-    AW_common *get_common(AW_area area);
 
     // ************** Create the menu buttons *********
 

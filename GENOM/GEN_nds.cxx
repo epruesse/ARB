@@ -42,34 +42,37 @@ struct GEN_NodeTextBuilder {
 static GEN_NodeTextBuilder *gen_nds_ms = 0;
 
 void GEN_make_node_text_init(GBDATA *gb_main) {
-    const char *sf = "flag1";
-    const char *sl = "len1";
+    GBDATA     *gbz, *gbe;
+    const char *sf, *sl;
+    int         count;
 
-    if (!gen_nds_ms) ARB_calloc(gen_nds_ms, 1);
+    sf = "flag1";
+    sl = "len1";
+
+    if (!gen_nds_ms) gen_nds_ms = (GEN_NodeTextBuilder *) GB_calloc(sizeof(GEN_NodeTextBuilder), 1);
 
     GBDATA *gb_arb_presets = GB_search(gb_main, "arb_presets", GB_CREATE_CONTAINER);
-    int     count          = 0;
+    count                  = 0;
 
-    for (GBDATA *gbz = GB_entry(gb_arb_presets, "gene_viewkey"); gbz; gbz  = GB_nextEntry(gbz)) {
+    for (gbz = GB_entry(gb_arb_presets, "gene_viewkey"); gbz; gbz  = GB_nextEntry(gbz)) {
         // toggle set ?
         if (GB_read_int(GB_entry(gbz, sf))) {
             freeset(gen_nds_ms->dkeys[count], GB_read_string(GB_entry(gbz, "key_text")));
-            if (GB_first_non_key_char(gen_nds_ms->dkeys[count])) {
-                gen_nds_ms->rek[count] = 1;
+                if (GB_first_non_key_char(gen_nds_ms->dkeys[count])) {
+                    gen_nds_ms->rek[count] = 1;
+                }
+                else {
+                    gen_nds_ms->rek[count] = 0;
+                }
+                gen_nds_ms->lengths[count] = GB_read_int(GB_entry(gbz, sl));
+                gbe = GB_entry(gbz, "pars");
+                freenull(gen_nds_ms->parsing[count]);
+                if (gbe && GB_read_string_count(gbe)>1) gen_nds_ms->parsing[count] = GB_read_string(gbe);
+                count++;
             }
-            else {
-                gen_nds_ms->rek[count] = 0;
-            }
-            gen_nds_ms->lengths[count] = GB_read_int(GB_entry(gbz, sl));
-            GBDATA *gbe = GB_entry(gbz, "pars");
-            freenull(gen_nds_ms->parsing[count]);
-            if (gbe && GB_read_string_count(gbe)>1) gen_nds_ms->parsing[count] = GB_read_string(gbe);
-            count++;
         }
-    }
-
     gen_nds_ms->errorclip = 0;
-    gen_nds_ms->count     = count;
+    gen_nds_ms->count = count;
 }
 
 char *GEN_make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode) {
@@ -128,7 +131,7 @@ char *GEN_make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode) {
                         free(p2);
 
                         if (!pars) {
-                            pars = ARB_strdup("<error>");
+                            pars = strdup("<error>");
                             if (!gen_nds_ms->errorclip++) {
                                 aw_message(GB_await_error());
                             }
@@ -312,7 +315,7 @@ AW_window *GEN_open_nds_window(AW_root *aw_root, GBDATA *gb_main) {
             aws->create_input_field(buf, 4);
 
             sprintf(buf, "tmp/gene_viewkey_%i/pars", i);
-            const char *inputFieldAwarName = ARB_strdup(buf);
+            const char *inputFieldAwarName = strdup(buf);
 
             aws->get_at_position(&srtx, &dummy);
 

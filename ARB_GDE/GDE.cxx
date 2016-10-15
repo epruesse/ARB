@@ -380,7 +380,7 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
                 aws->label(itemarg.label);
                 aws->sens_mask(itemarg.active_mask);
                 aws->create_input_field(name_awar, 40);
-                aws->callback(makeWindowCallback(GDE_popup_filename_browser, new gde_iteminfo(gmenuitem, i), ARB_strdup(itemarg.label)));
+                aws->callback(makeWindowCallback(GDE_popup_filename_browser, new gde_iteminfo(gmenuitem, i), strdup(itemarg.label)));
                 aws->create_button("", "Browse");
 
                 free(name_awar);

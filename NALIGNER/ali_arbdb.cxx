@@ -33,7 +33,7 @@ int ALI_ARBDB::open(char *name, char *use_alignment)
     GB_begin_transaction(gb_main);
 
     if (use_alignment)
-        alignment = ARB_strdup(use_alignment);
+        alignment = strdup(use_alignment);
     else
         alignment = GBT_get_default_alignment(gb_main);
 

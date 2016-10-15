@@ -36,6 +36,8 @@ class Mismatches {
 public:
 
     Mismatches(MatchRequest& req_) : req(req_), plain(0), ambig(0), weighted(0.0) {}
+    Mismatches(const Mismatches& other) : req(other.req), plain(other.plain), ambig(other.ambig), weighted(other.weighted) {}
+    DECLARE_ASSIGNMENT_OPERATOR(Mismatches);
 
     inline void count_weighted(char probe, char seq, int height);
     void        count_versus(const ReadableDataLoc& loc, const char *probe, int height);
@@ -315,7 +317,7 @@ static void pt_sort_match_list(PT_local * locs) {
 
         int list_len = locs->pm->get_count();
         if (list_len > 1) {
-            PT_probematch **my_list; ARB_calloc(my_list, list_len);
+            PT_probematch **my_list = (PT_probematch **)calloc(sizeof(void *), list_len);
             {
                 PT_probematch *match = locs->pm;
                 for (int i=0; match; i++) {
@@ -334,7 +336,7 @@ static void pt_sort_match_list(PT_local * locs) {
 }
 char *create_reversed_probe(char *probe, int len) {
     //! reverse order of bases in a probe
-    char *rev_probe = ARB_strduplen(probe, len);
+    char *rev_probe = GB_strduplen(probe, len);
     reverse_probe(rev_probe, len);
     return rev_probe;
 }
@@ -420,7 +422,7 @@ int probe_match(PT_local *locs, aisc_string probestring) {
             psg.reversed  = 1;
             char *rev_pro = create_reversed_probe(probestring, probe_len);
             complement_probe(rev_pro, probe_len);
-            freeset(locs->pm_csequence, psg.main_probe = ARB_strdup(rev_pro));
+            freeset(locs->pm_csequence, psg.main_probe = strdup(rev_pro));
 
             Mismatches rev_mismatch(req);
             req.collect_hits_for(rev_pro, psg.TREE_ROOT2(), rev_mismatch, 0);
@@ -523,7 +525,7 @@ const char *get_match_overlay(const PT_probematch *ml) {
 
     const int CONTEXT_SIZE = 9;
 
-    char *ref = ARB_calloc<char>(CONTEXT_SIZE+1+pr_len+1+CONTEXT_SIZE+1);
+    char *ref = (char *)calloc(sizeof(char), CONTEXT_SIZE+1+pr_len+1+CONTEXT_SIZE+1);
     memset(ref, '.', CONTEXT_SIZE+1);
 
     SmartCharPtr  seqPtr = psg.data[ml->name].get_dataPtr();
@@ -663,7 +665,7 @@ static const char *get_match_hinfo_formatted(PT_probematch *ml, const format_pro
         cat_dashed_left(memfile, "rev", format.rev_width());
 
         if (ml->N_mismatches >= 0) { //
-            char *seq = ARB_strdup(ml->sequence);
+            char *seq = strdup(ml->sequence);
             probe_2_readable(seq, strlen(ml->sequence)); // @@@ maybe wrong if match contains PT_QU (see [9070])
 
             GBS_strcat(memfile, "         '");
@@ -675,6 +677,7 @@ static const char *get_match_hinfo_formatted(PT_probematch *ml, const format_pro
 
         static char *result = 0;
         freeset(result, GBS_strclose(memfile));
+
         return result;
     }
     // Else set header of result
@@ -735,8 +738,8 @@ bytestring *match_string(const PT_local *locs) {
         }
     }
 
-    bs.size = GBS_memoffset(memfile)+1;
     bs.data = GBS_strclose(memfile);
+    bs.size = strlen(bs.data)+1;
     return &bs;
 }
 
@@ -773,8 +776,8 @@ bytestring *MP_match_string(const PT_local *locs) {
         GBS_strcat(memfile, buffer1);
         GBS_chrcat(memfile, (char)1);
     }
-    bs.size = GBS_memoffset(memfile)+1;
     bs.data = GBS_strclose(memfile);
+    bs.size = strlen(bs.data)+1;
     return &bs;
 }
 
@@ -802,8 +805,8 @@ bytestring *MP_all_species_string(const PT_local *) {
         GBS_chrcat(memfile, (char)1);
     }
 
-    bs.size = GBS_memoffset(memfile)+1;
     bs.data = GBS_strclose(memfile);
+    bs.size = strlen(bs.data)+1;
     return &bs;
 }
 

@@ -95,7 +95,7 @@ public:
 
     // ARB_seqtree_root interface
 
-    void change_root(TreeNode *old, TreeNode *newroot) OVERRIDE;
+    virtual void change_root(TreeNode *old, TreeNode *newroot) OVERRIDE;
 
     GB_ERROR loadFromDB(const char *name) OVERRIDE;
     GB_ERROR saveToDB() OVERRIDE;
@@ -255,6 +255,7 @@ public:
     virtual AP_tree *REMOVE();
 
     void swap_sons() OVERRIDE {
+        rt_assert(!is_leaf); // @@@ if never fails -> remove condition below 
         if (!is_leaf) {
             ARB_seqtree::swap_sons();
             gr.swap_son_layout();

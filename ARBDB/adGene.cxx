@@ -162,9 +162,9 @@ GEN_position *GEN_new_position(int parts, bool joinable) {
         memset(pos->start_pos, 0, data_size);
     }
     else {
-        ARB_calloc(pos, 1);
+        pos             = (GEN_position*)GB_calloc(1, sizeof(*pos));
         pos->parts      = parts;
-        pos->start_pos  = (size_t*)ARB_calloc<char>(data_size);
+        pos->start_pos  = (size_t*)GB_calloc(1, data_size);
         pos->stop_pos   = pos->start_pos+parts;
         pos->complement = (unsigned char*)(pos->stop_pos+parts);
     }
@@ -492,7 +492,7 @@ static int cmp_location_parts(const void *v1, const void *v2) {
 void GEN_sortAndMergeLocationParts(GEN_position *location) {
     // Note: makes location partly invalid (only start_pos + stop_pos are valid afterwards)
     int  parts = location->parts;
-    int *idx   = ARB_alloc<int>(parts); // idx[newpos] = oldpos
+    int *idx   = (int*)malloc(parts*sizeof(*idx)); // idx[newpos] = oldpos
     int  i, p;
 
     for (p = 0; p<parts; ++p) idx[p] = p;

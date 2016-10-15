@@ -379,7 +379,7 @@ void SEC_root::cacheBackgroundColor() {
     int len   = db->length();
     int end   = len-1;
 
-    ARB_alloc(bg_color, len);
+    bg_color = (char*)malloc(len);
 
     const char *bg_sai    = displayParams.display_sai    ? host().get_SAI_background(start, end)    : 0;
     const char *bg_search = displayParams.display_search ? host().get_search_background(start, end) : 0;
@@ -1010,7 +1010,6 @@ GB_ERROR SEC_root::paint(AW_device *device) {
 
     if (!error) {
         sec_assert(SEC_GC_FIRST_FONT == 0);
-        // @@@ font group should be built at startup and after each font change (no need to do on every paint!)
         font_group.unregisterAll();
         for (int gc = SEC_GC_FIRST_FONT; gc <= SEC_GC_LAST_FONT; ++gc) {
             font_group.registerFont(device, gc, "ACGTU-.");

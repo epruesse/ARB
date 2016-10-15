@@ -166,7 +166,7 @@ const GBT_config_item& GBT_config_parser::nextItem(GB_ERROR& error) {
             if (!behind_name) behind_name = strchr(start_of_name, '\0'); // eos
             gb_assert(behind_name);
 
-            char *data = ARB_strpartdup(start_of_name, behind_name-1);
+            char *data = GB_strpartdup(start_of_name, behind_name-1);
             if (item.type == CI_UNKNOWN) {
                 error = GBS_global_string_copy("Unknown flag '%c' (followed by '%s')", label, data);
                 free(data);

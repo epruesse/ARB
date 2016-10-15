@@ -251,7 +251,7 @@ class MutationsPerSite : virtual Noncopyable {
 
 public:
     MutationsPerSite(size_t len)
-        : Data(ARB_calloc<char>(len*3))
+        : Data((char*)GB_calloc(sizeof(char), len*3))
         , length(len)
     {}
     ~MutationsPerSite() {

@@ -51,7 +51,6 @@ AP_filter.o: $(ARBHOME)/INCLUDE/test_global.h
 RangeList.o: RangeList.h
 RangeList.o: $(ARBHOME)/INCLUDE/arb_assert.h
 RangeList.o: $(ARBHOME)/INCLUDE/arb_core.h
-RangeList.o: $(ARBHOME)/INCLUDE/arb_mem.h
 RangeList.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 RangeList.o: $(ARBHOME)/INCLUDE/arbtools.h
 RangeList.o: $(ARBHOME)/INCLUDE/attributes.h

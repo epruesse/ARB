@@ -46,7 +46,6 @@ ST_ml.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 ST_ml.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ST_ml.o: $(ARBHOME)/INCLUDE/arb_core.h
 ST_ml.o: $(ARBHOME)/INCLUDE/arb_error.h
-ST_ml.o: $(ARBHOME)/INCLUDE/arb_mem.h
 ST_ml.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ST_ml.o: $(ARBHOME)/INCLUDE/arb_progress.h
 ST_ml.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -83,7 +82,6 @@ ST_quality.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ST_quality.o: $(ARBHOME)/INCLUDE/arb_core.h
 ST_quality.o: $(ARBHOME)/INCLUDE/arb_error.h
-ST_quality.o: $(ARBHOME)/INCLUDE/arb_mem.h
 ST_quality.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ST_quality.o: $(ARBHOME)/INCLUDE/arb_progress.h
 ST_quality.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
@@ -120,7 +118,6 @@ ST_window.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ST_window.o: $(ARBHOME)/INCLUDE/arb_core.h
 ST_window.o: $(ARBHOME)/INCLUDE/arb_error.h
 ST_window.o: $(ARBHOME)/INCLUDE/arb_global_defs.h
-ST_window.o: $(ARBHOME)/INCLUDE/arb_mem.h
 ST_window.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ST_window.o: $(ARBHOME)/INCLUDE/arb_progress.h
 ST_window.o: $(ARBHOME)/INCLUDE/arb_strbuf.h

@@ -176,6 +176,11 @@ int GB_get_ACISRT_trace(void);
 GBDATA *GB_follow_link(GBDATA *gb_link);
 GB_ERROR GB_install_link_follower(GBDATA *gb_main, const char *link_type, GB_Link_Follower link_follower);
 
+/* admalloc.cxx */
+NOT4PERL void *GB_calloc(unsigned int nelem, unsigned int elsize);
+NOT4PERL void *GB_recalloc(void *ptr, unsigned int oelem, unsigned int nelem, unsigned int elsize);
+void GB_memerr(void);
+
 /* admap.cxx */
 bool GB_supports_mapfile(void);
 
@@ -227,7 +232,6 @@ char *GB_map_FILE(FILE *in, int writeable);
 char *GB_map_file(const char *path, int writeable);
 GB_ULONG GB_time_of_day(void);
 GB_ERROR GB_textprint(const char *path) __ATTR__USERESULT;
-GB_CSTR GB_getenvARB_XTERM(void);
 GB_CSTR GB_getenvUSER(void);
 GB_CSTR GB_getenvARBHOME(void);
 GB_CSTR GB_getenvARBMACRO(void);
@@ -243,7 +247,8 @@ NOT4PERL gb_getenv_hook GB_install_getenv_hook(gb_getenv_hook hook);
 GB_CSTR GB_getenv(const char *env);
 bool GB_host_is_local(const char *hostname);
 GB_ULONG GB_get_usable_memory(void);
-NOT4PERL GB_ERROR GB_xcmd(const char *cmd, XCMD_TYPE exectype) __ATTR__USERESULT_TODO;
+GB_ERROR GB_xterm(void) __ATTR__USERESULT;
+GB_ERROR GB_xcmd(const char *cmd, bool background, bool wait_only_if_error) __ATTR__USERESULT_TODO;
 GB_CSTR GB_append_suffix(const char *name, const char *suffix);
 GB_CSTR GB_canonical_path(const char *anypath);
 GB_CSTR GB_concat_path(GB_CSTR anypath_left, GB_CSTR anypath_right);

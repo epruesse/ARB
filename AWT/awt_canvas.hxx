@@ -17,8 +17,6 @@
 #include <arb_assert.h>
 #endif
 
-#define awt_assert(cond) arb_assert(cond)
-
 class AWT_canvas;
 class AW_device;
 
@@ -235,7 +233,7 @@ class AWT_nonDB_graphic : public AWT_graphic { // @@@ check AWT_nonDB_graphic
     // a partly implementation of AWT_graphic
 public:
     AWT_nonDB_graphic() {}
-    ~AWT_nonDB_graphic() OVERRIDE {}
+    virtual ~AWT_nonDB_graphic() OVERRIDE {}
 
     // dummy functions, only spittings out warnings:
     GB_ERROR load(GBDATA *gb_main, const char *name) OVERRIDE __ATTR__USERESULT;
@@ -250,23 +248,24 @@ public:
 #define AWT_ZOOM_OUT_STEP 40    // (pixel) rand um screen
 #define AWT_MIN_WIDTH     100   // Minimum center screen (= screen-offset)
 
-typedef void (*screen_update_callback)(AWT_canvas*, AW_CL cd);
+enum {
+    AWT_d_screen = 1
+};
 
 class AWT_canvas : virtual Noncopyable {
-    bool  consider_text_for_size;
+    bool consider_text_for_size;
     char *gc_base_name;
 
-protected:
-    // callback called after each screen-update (set by derived class; currently only by TREE_canvas)
-    screen_update_callback announce_update_cb;
-    AW_CL                  user_data;
-
 public:
-    // @@@ make members private!
+    // too many callbacks -> public
+    // in fact: private
+    // (in real fact: needs rewrite)
 
-    AW_pos trans_to_fit;
-    AW_pos shift_x_to_fit;
-    AW_pos shift_y_to_fit;
+    char   *user_awar; // contains name of awar (awar contains name of tree displayed in canvas)
+    void    init_device(AW_device *device);
+    AW_pos  trans_to_fit;
+    AW_pos  shift_x_to_fit;
+    AW_pos  shift_y_to_fit;
 
     int old_hor_scroll_pos;
     int old_vert_scroll_pos;
@@ -279,16 +278,14 @@ public:
     int zoom_drag_ey;
     int drag;
 
-    void init_device(AW_device *device);
-
     void set_scrollbars();
     void set_dragEndpoint(int x, int y);
 
     void set_horizontal_scrollbar_position(AW_window *aww, int pos);
     void set_vertical_scrollbar_position(AW_window *aww, int pos);
 
+
     // public (read only)
-    // @@@ make members private!
 
     GBDATA      *gb_main;
     AW_window   *aww;
@@ -301,8 +298,7 @@ public:
 
     // real public
 
-    AWT_canvas(GBDATA *gb_main_, AW_window *aww_, const char *gc_base_name_, AWT_graphic *gfx_);
-    virtual ~AWT_canvas() {}
+    AWT_canvas(GBDATA *gb_main, AW_window *aww, const char *gc_base_name_, AWT_graphic *awd, const char *user_awar);
 
     inline void push_transaction() const;
     inline void pop_transaction() const;
@@ -331,8 +327,6 @@ public:
     const char *get_gc_base_name() const { return gc_base_name; }
 
     void postevent_handler();
-
-    void announce_screen_update() { if (announce_update_cb) announce_update_cb(this, user_data); }
 };
 
 inline void AWT_graphic::refresh_by_exports(AWT_canvas *scr) {
@@ -340,31 +334,6 @@ inline void AWT_graphic::refresh_by_exports(AWT_canvas *scr) {
     else if (exports.resize)  scr->recalc_size_and_refresh();
     else if (exports.refresh) scr->refresh();
 }
-
-class TREE_canvas : public AWT_canvas { // derived from Noncopyable
-    AW_awar *awar_tree; // awar containing name of displayed tree
-    int      index;     // unique index [0..MAX_NT_WINDOWS-1]
-
-    static int count;
-
-public:
-    TREE_canvas(GBDATA *gb_main_, AW_window *aww_, const char *gc_base_name_, AWT_graphic *gfx_, AW_awar *awar_tree_) :
-        AWT_canvas(gb_main_, aww_, gc_base_name_, gfx_),
-        awar_tree(awar_tree_),
-        index(count++)
-    {}
-
-    void at_screen_update_call(screen_update_callback cb, AW_CL cd) {
-        awt_assert(!announce_update_cb || (announce_update_cb == cb && user_data == cd));
-
-        announce_update_cb = cb;
-        user_data          = cd;
-    }
-
-    AW_awar *get_awar_tree() const { return awar_tree; }
-    int get_index() const { return index; }
-};
-
 
 void AWT_expose_cb(UNFIXED, AWT_canvas *scr);
 void AWT_resize_cb(UNFIXED, AWT_canvas *scr);

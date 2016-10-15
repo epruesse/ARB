@@ -34,7 +34,7 @@ void AW_openURL(AW_root *aw_root, const char *url) {
     char    *browser = aw_root->awar(AWAR_WWW_BROWSER)->read_string();
 
     while ((ka = GBS_find_string(browser, "$(URL)", 0))) {
-        char *start       = ARB_strpartdup(browser, ka-1);
+        char *start       = GB_strpartdup(browser, ka-1);
         char *new_browser = GBS_global_string_copy("%s%s%s", start, url, ka+6);
 
         free(start);
@@ -42,7 +42,7 @@ void AW_openURL(AW_root *aw_root, const char *url) {
     }
 
     char     *command = GBS_global_string_copy("(%s)&", browser);
-    GB_ERROR  error   = GBK_system(command); // @@@ use AWT_system_cb here? (need to move whole module -> AWT)
+    GB_ERROR  error   = GBK_system(command);
     aw_message_if(error);
 
     free(command);
@@ -205,7 +205,7 @@ static void aw_help_edit_help(AW_window *aww) {
 #endif
 
         const char *copy_cmd = GBS_global_string("cp %s/FORM.hlp %s", base, helpfile); // uses_hlp_res("FORM.hlp"); see ../SOURCE_TOOLS/check_resources.pl@uses_hlp_res
-        aw_message_if(GBK_system(copy_cmd)); // @@@ use AWT_system_cb here (after move)
+        aw_message_if(GBK_system(copy_cmd));
     }
 
 #if defined(NDEBUG)
@@ -270,7 +270,7 @@ static void aw_help_select_newest_in_history(AW_root *aw_root) {
     char *history = HELP.history;
     if (history) {
         const char *sep      = strchr(history, '#');
-        char       *lastHelp = sep ? ARB_strpartdup(history, sep-1) : strdup(history);
+        char       *lastHelp = sep ? GB_strpartdup(history, sep-1) : strdup(history);
 
         aw_root->awar(AWAR_HELPFILE)->write_string(lastHelp);
         free(lastHelp);
@@ -285,7 +285,7 @@ static void aw_help_back(AW_window *aww) {
         if (currHelp[0]) { // if showing some help
             const char *sep = strchr(history, '#');
             if (sep) {
-                char *first = ARB_strpartdup(history, sep-1);
+                char *first = GB_strpartdup(history, sep-1);
                 freeset(HELP.history, GBS_global_string_copy("%s#%s", sep+1, first)); // wrap first to end
                 free(first);
                 aw_help_select_newest_in_history(aw_root);
@@ -407,7 +407,7 @@ static unsigned autorefresh_helpfile(AW_root *awr) {
                 unsigned long editLastChanged = GB_time_of_file(edited_help_file);
 
                 if (editLastChanged>helpfile_edited_stamp) {
-                    GB_ERROR error = GBK_system("cd $ARBHOME; make help"); // @@@ use AWT_system_cb here (after move)
+                    GB_ERROR error = GBK_system("cd $ARBHOME; make help");
                     if (error) aw_message(error);
                     helpfile_edited_stamp = editLastChanged;
                     callAgainIn = 10;

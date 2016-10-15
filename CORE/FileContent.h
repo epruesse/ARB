@@ -29,7 +29,7 @@ class FileContent : virtual Noncopyable {
     void init();
 
 public:
-    FileContent(const char *path_) : path(ARB_strdup(path_)), error(NULL) { init(); }
+    FileContent(const char *path_) : path(strdup(path_)), error(NULL) { init(); }
     ~FileContent() { free(path); }
 
     GB_ERROR has_error() const { return error; }

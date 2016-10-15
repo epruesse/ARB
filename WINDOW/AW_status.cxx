@@ -468,16 +468,18 @@ static void aw_status_kill(AW_window *aws)
 }
 
 static void aw_refresh_tmp_message_display(AW_root *awr) {
-    GBS_strstruct msgs(AW_MESSAGE_LINES*60);
+    GBS_strstruct *stru = GBS_stropen(AW_MESSAGE_LINES*60); // guessed size
 
     for (int i = AW_MESSAGE_LINES-1; i>=0; i--) {
         if (aw_stg.lines[i]) {
-            msgs.cat(aw_stg.lines[i]);
-            msgs.put('\n');
+            GBS_strcat(stru, aw_stg.lines[i]);
+            GBS_chrcat(stru, '\n');
         }
     };
 
-    awr->awar(AWAR_ERROR_MESSAGES)->write_string(msgs.get_data());
+    char *str = GBS_strclose(stru);
+    awr->awar(AWAR_ERROR_MESSAGES)->write_string(str);
+    free(str);
 
     aw_stg.need_refresh      = false;
     aw_stg.last_refresh_time = aw_stg.last_message_time;
@@ -501,7 +503,7 @@ static void aw_insert_message_in_tmp_message_delayed(const char *message) {
         while (lf) { lf = strchr(lf+1, '\n'); ++count; }
 
         int newsize = strlen(message)+count*indentation+1;
-        ARB_alloc(copy, newsize);
+        copy        = (char*)malloc(newsize);
 
         lf       = strchr(message, '\n');
         char *cp = copy;

@@ -88,7 +88,7 @@ void MatrixDisplay::setup() {
                 const AW_font_limits& lim = device->get_font_limits(gc, 0);
 
                 cell_width  = std::max(cell_width, lim.width*max_chars[gc]);
-                cell_height = std::max(cell_height, int(lim.get_height()));
+                cell_height = std::max(cell_height, int(lim.height));
             }
         }
 
@@ -118,7 +118,7 @@ void MatrixDisplay::setup() {
         const AW_font_limits& lim = device->get_font_limits(DI_G_NAMES, 0);
  
         off_dx = awr->awar(AWAR_MATRIX_NAMECHARS_LEFT)->read_int() * lim.width + 1 + cell_paddx;
-        off_dy = lim.get_height() + cell_height; // off_dy corresponds to "lower" y of cell
+        off_dy = lim.height + cell_height; // off_dy corresponds to "lower" y of cell
     }
 
     if (m) {
@@ -700,7 +700,7 @@ AW_window *DI_create_view_matrix_window(AW_root *awr, MatrixDisplay *disp, save_
     AW_gc_manager *gc_manager =
         AW_manage_GC(awm,
                      awm->get_window_id(),
-                     disp->device, DI_G_LAST, AW_GCM_DATA_AREA,
+                     disp->device, DI_G_STANDARD, DI_G_LAST, AW_GCM_DATA_AREA,
                      makeGcChangedCallback(gc_changed_cb, disp),
                      "#D0D0D0",
                      "#Standard$#000000",

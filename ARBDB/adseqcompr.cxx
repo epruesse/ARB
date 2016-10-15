@@ -79,8 +79,8 @@ struct MasterSequence {
 // --------------------------------------------------------------------------------
 
 static Consensus *g_b_new_Consensus(long len) {
-    Consensus     *gcon = ARB_calloc<Consensus>(1);
-    unsigned char *data = ARB_calloc<unsigned char>(256*len);
+    Consensus     *gcon = (Consensus *)GB_calloc(sizeof(*gcon), 1);
+    unsigned char *data = (unsigned char *)GB_calloc(sizeof(char)*256, len);
 
     gcon->len = len;
 
@@ -146,15 +146,14 @@ static void g_b_Consensus_add(Consensus *gcon, unsigned char *seq, long seq_len)
 
 static char *g_b_Consensus_get_sequence(Consensus *gcon) {
     int pos;
-
     unsigned char *s;
-
-    unsigned char *max = ARB_calloc<unsigned char>(gcon->len);
-    char          *seq = ARB_calloc<char>(gcon->len+1);
+    unsigned char *max = (unsigned char *)GB_calloc(sizeof(char), gcon->len);
+    int c;
+    char *seq = (char *)GB_calloc(sizeof(char), gcon->len+1);
 
     memset(seq, '@', gcon->len);
 
-    for (int c = 1; c<256; c++) { // Find maximum frequency of non run
+    for (c = 1; c<256; c++) { // Find maximum frequency of non run
         if (!gcon->used[c]) continue;
         s = gcon->con[c];
         for (pos = 0; pos<gcon->len; pos++) {
@@ -652,17 +651,16 @@ static GB_ERROR compress_sequence_tree(GBCONTAINER *gb_main, CompressionTree *tr
             }
 
             if (!warning) {
-                GBCONTAINER        *gb_master_ali     = 0;
-                GBDATA             *old_gb_master_ali = 0;
-                Sequence           *seqs              = 0;
-                GB_MAIN_TYPE       *Main              = GB_MAIN(gb_main);
-                GBQUARK             ali_quark         = gb_find_or_create_quark(Main, ali_name);
-                unsigned long long  sumorg            = 0;
-                unsigned long long  sumold            = 0;
-                unsigned long long  sumnew            = 0;
-                int                 si;
-
-                MasterSequence **masters; ARB_calloc(masters, leafcount);
+                GBCONTAINER         *gb_master_ali     = 0;
+                GBDATA              *old_gb_master_ali = 0;
+                Sequence            *seqs              = 0;
+                GB_MAIN_TYPE        *Main              = GB_MAIN(gb_main);
+                GBQUARK              ali_quark         = gb_find_or_create_quark(Main, ali_name);
+                unsigned long long   sumorg            = 0;
+                unsigned long long   sumold            = 0;
+                unsigned long long   sumnew            = 0;
+                MasterSequence     **masters           = (MasterSequence **)GB_calloc(sizeof(*masters), leafcount);
+                int                  si;
 
                 {
                     char *masterfoldername = GBS_global_string_copy("%s/@master_data/@%s", GB_SYSTEM_FOLDER, ali_name);
@@ -686,10 +684,10 @@ static GB_ERROR compress_sequence_tree(GBCONTAINER *gb_main, CompressionTree *tr
                         free(master_data_name);
                     }
                     for (si = 0; si<mastercount; si++) {
-                        ARB_calloc(masters[si], 1);
+                        masters[si]         = (MasterSequence *)GB_calloc(sizeof(MasterSequence), 1);
                         masters[si]->gb_mas = gb_create(gb_master_ali, "@master", GB_STRING);
                     }
-                    ARB_calloc(seqs, leafcount);
+                    seqs = (Sequence *)GB_calloc(sizeof(*seqs), leafcount);
 
                     if (!error) {
                         arb_progress progress("Building master sequences", mastercount);
@@ -843,9 +841,9 @@ static GB_ERROR compress_sequence_tree(GBCONTAINER *gb_main, CompressionTree *tr
                     }
 
                     if (!error) {
-                        char *sizeOrg = ARB_strdup(GBS_readable_size(sumorg, "b"));
-                        char *sizeOld = ARB_strdup(GBS_readable_size(sumold, "b"));
-                        char *sizeNew = ARB_strdup(GBS_readable_size(sumnew, "b"));
+                        char *sizeOrg = strdup(GBS_readable_size(sumorg, "b"));
+                        char *sizeOld = strdup(GBS_readable_size(sumold, "b"));
+                        char *sizeNew = strdup(GBS_readable_size(sumnew, "b"));
 
                         GB_warningf("Alignment '%s':\n"
                                     "    Uncompressed data:   %7s\n"

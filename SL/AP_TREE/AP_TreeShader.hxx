@@ -46,7 +46,7 @@ public:
     virtual ShadedValue calc_shaded_inner_GC(const ShadedValue& left, float left_ratio, const ShadedValue& right) const = 0;
     virtual int to_GC(const ShadedValue& val) const = 0;
 
-    int calc_leaf_GC(GBDATA *gb_node, bool is_marked) const {
+    int calc_leaf_GC(GBDATA *gb_node, bool is_marked) const { // (also used to color NDS-list)
         int gc = AWT_GC_NONE_MARKED;
         if (gb_node) {
             if (is_marked && colorize_marked) {

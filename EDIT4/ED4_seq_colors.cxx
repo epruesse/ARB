@@ -11,7 +11,6 @@
 
 #include "ed4_seq_colors.hxx"
 #include "ed4_class.hxx"
-#include "ed4_extern.hxx"
 
 #include <aw_root.hxx>
 #include <aw_awar.hxx>
@@ -200,13 +199,9 @@ AW_window *ED4_create_seq_colors_window(AW_root *awr, ED4_seq_colors *sc) {
     }
 
     aws->window_fit();
-
+    
     return aws;
 }
-
-// GC order needed for sequence coloring
-STATIC_ASSERT((ED4_G_SEQUENCES+1) == ED4_G_HELIX);
-STATIC_ASSERT((ED4_G_HELIX+1)     == ED4_G_COLOR_2);
 
 void ED4_seq_colors::reload() {
     for (int i=0; i<256; i++) {
@@ -303,7 +298,7 @@ void ED4_reference::set_gap_handling(bool mindgaptype, const char *gaptypes) {
 
 void ED4_reference::expand_to_length(int len) {
     if (len>ref_len && is_set()) {
-        char *ref2 = ARB_calloc<char>(len+1);
+        char *ref2 = (char *)GB_calloc(sizeof(char), len+1);
 
         if (reference) {
             strcpy(ref2, reference);
@@ -322,14 +317,14 @@ void ED4_reference::data_changed_cb(ED4_species_manager *IF_ASSERTION_USED(calle
     e4_assert(ref_term);
     if (ref_term) {
 #if defined(ASSERTION_USED)
-        if (calledFrom) e4_assert(ref_term->get_parent(LEV_SPECIES)->to_species_manager() == calledFrom);
+        if (calledFrom) e4_assert(ref_term->get_parent(ED4_L_SPECIES)->to_species_manager() == calledFrom);
 #endif
         update_data();
     }
 }
 static void refdata_changed_cb(ED4_species_manager *sman, ED4_reference *ref) {
     ref->data_changed_cb(sman);
-    ED4_ROOT->request_refresh_for_specific_terminals(LEV_SEQUENCE_STRING); // refresh all sequences
+    ED4_ROOT->request_refresh_for_specific_terminals(ED4_L_SEQUENCE_STRING); // refresh all sequences
 }
 static void refdata_deleted_cb() {
     ED4_viewDifferences_disable();
@@ -338,7 +333,7 @@ static void refdata_deleted_cb() {
 void ED4_reference::clear() {
     // remove change cb
     if (ref_term) {
-        ED4_species_manager *sman = ref_term->get_parent(LEV_SPECIES)->to_species_manager();
+        ED4_species_manager *sman = ref_term->get_parent(ED4_L_SPECIES)->to_species_manager();
         sman->remove_sequence_changed_cb(makeED4_species_managerCallback(refdata_changed_cb, this));
         sman->remove_delete_callback(makeED4_managerCallback(refdata_deleted_cb));
     }
@@ -354,7 +349,7 @@ void ED4_reference::define(const ED4_sequence_terminal *rterm) {
     update_data();
 
     // add change cb
-    ED4_species_manager *sman = ref_term->get_parent(LEV_SPECIES)->to_species_manager();
+    ED4_species_manager *sman = ref_term->get_parent(ED4_L_SPECIES)->to_species_manager();
     sman->add_sequence_changed_cb(makeED4_species_managerCallback(refdata_changed_cb, this));
     sman->add_delete_callback(makeED4_managerCallback(refdata_deleted_cb));
 }
@@ -426,7 +421,7 @@ static void set_diff_reference(ED4_terminal *refTerm) {
         }
     }
 
-    ED4_ROOT->request_refresh_for_specific_terminals(LEV_SEQUENCE_STRING);
+    ED4_ROOT->request_refresh_for_specific_terminals(ED4_L_SEQUENCE_STRING);
 }
 
 static SmartCharPtr last_used_ref_term_name;
@@ -437,7 +432,7 @@ static void set_current_as_diffRef(bool enable) {
     ED4_terminal *refTerm = enable ? detect_current_ref_terminal() : NULL;
     if (!enable || refTerm) { // do not disable, if current terminal has wrong type
         set_diff_reference(refTerm);
-        if (refTerm) last_used_ref_term_name = ARB_strdup(refTerm->id);
+        if (refTerm) last_used_ref_term_name = strdup(refTerm->id);
     }
 }
 
@@ -491,7 +486,7 @@ static void update_reference_settings(AW_root *awr) {
 }
 static void diff_setting_changed_cb(AW_root *awr) {
     update_reference_settings(awr);
-    ED4_ROOT->request_refresh_for_specific_terminals(LEV_SEQUENCE_STRING);
+    ED4_ROOT->request_refresh_for_specific_terminals(ED4_L_SEQUENCE_STRING);
 }
 
 static void nodiff_indicator_changed_cb(AW_root *awr) {

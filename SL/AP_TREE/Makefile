@@ -49,7 +49,6 @@ AP_Tree.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 AP_Tree.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/arb_core.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/arb_error.h
-AP_Tree.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/arb_progress.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/arb_strarray.h

@@ -7,9 +7,6 @@
 #ifndef PARSER_H
 #include "parser.h"
 #endif
-#ifndef ARB_STRING_H
-#include <arb_string.h>
-#endif
 
 struct GenbankRef {
     char *ref;
@@ -26,11 +23,11 @@ struct GenbankRef {
           standard(no_content())
     {}
     GenbankRef(const GenbankRef& other)
-        : ref(ARB_strdup(other.ref)),
-          author(ARB_strdup(other.author)),
-          title(ARB_strdup(other.title)),
-          journal(ARB_strdup(other.journal)),
-          standard(ARB_strdup(other.standard))
+        : ref(strdup(other.ref)),
+          author(strdup(other.author)),
+          title(strdup(other.title)),
+          journal(strdup(other.journal)),
+          standard(strdup(other.standard))
     {}
     ~GenbankRef() {
         free(standard);
@@ -46,7 +43,7 @@ class GenBank : public InputFormat, public RefContainer<GenbankRef> { // derived
     char *create_id() const OVERRIDE {
         char buf[TOKENSIZE];
         genbank_key_word(locus, 0, buf);
-        return ARB_strdup(buf);
+        return strdup(buf);
     }
 public:
     char *locus;
@@ -66,7 +63,7 @@ public:
         source     = no_content();
         organism   = no_content();
     }
-    ~GenBank() OVERRIDE {
+    virtual ~GenBank() OVERRIDE {
         freenull(locus);
         freenull(definition);
         freenull(accession);
@@ -79,7 +76,7 @@ public:
 
     char *get_date() const {
         if (locus_contains_date()) return strndup(locus+50, 11);
-        return ARB_strdup(genbank_date(today_date()));
+        return strdup(genbank_date(today_date()));
     }
 
     // InputFormat interface

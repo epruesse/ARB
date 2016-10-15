@@ -109,8 +109,24 @@ public:
 
 static void col_block_refresh_on_seq_term(ED4_sequence_terminal *seq_term) {
     seq_term->request_refresh();
+
+    // @@@ code below is more than weird. why do sth with column-stat here ? why write probe match awars here ? 
     ED4_columnStat_terminal *colStatTerm = seq_term->corresponding_columnStat_terminal();
-    if (colStatTerm) colStatTerm->request_refresh();
+    if (colStatTerm) {
+        const char *probe_match_pattern = colStatTerm->build_probe_match_string(block.get_colblock_range());
+        int len = strlen(probe_match_pattern);
+
+        if (len>=4) {
+            colStatTerm->request_refresh();
+
+            // automatically set probe-match awars to appropriate values:
+
+            ED4_ROOT->aw_root->awar(ED4_AWAR_PROBE_SEARCH_MAX_MISMATCHES)->write_int(0); // no mismatches
+            ED4_ROOT->aw_root->awar(ED4_AWAR_PROBE_SEARCH_AUTO_JUMP)->write_int(0); // disable auto jump
+            ED4_ROOT->aw_root->awar(AWAR_MAX_MISMATCHES)->write_int(0); // probe search w/o mismatches
+            ED4_ROOT->aw_root->awar(AWAR_ITARGET_STRING)->write_string(probe_match_pattern); // set probe search string
+        }
+    }
 }
 
 static void refresh_selected(bool refresh_name_terminals) {
@@ -391,9 +407,8 @@ static void select_and_update(ED4_sequence_terminal *term1, ED4_sequence_termina
         int do_above = 1; // we have to update terminals between last_term1 and term1
         int do_below = 1; // we have to update terminals between term2 and last_term2
 
-        ED4_terminal *term = term1;
-
-        bool xRangeChanged = block.get_range_according_to_type() != last_range;
+        ED4_terminal *term          = term1;
+        int           xRangeChanged = block.get_colblock_range() != last_range;
 
         while (term) {
             if (term->is_sequence_terminal()) {
@@ -456,7 +471,7 @@ static void select_and_update(ED4_sequence_terminal *term1, ED4_sequence_termina
 
     last_term1 = term1;
     last_term2 = term2;
-    last_range = block.get_range_according_to_type();
+    last_range = block.get_colblock_range();
 }
 
 void ED4_setColumnblockCorner(AW_event *event, ED4_sequence_terminal *seq_term) {
@@ -643,7 +658,7 @@ public:
             maxlen = (len/olen+1)*nlen;
         }
 
-        char *new_seq  = ARB_alloc<char>(maxlen+1);
+        char *new_seq  = (char*)GB_calloc(maxlen+1, sizeof(*new_seq));
         int   replaced = 0;
         int   o        = 0;
         int   n        = 0;
@@ -729,7 +744,7 @@ public:
     char *operate(const SeqPart& part, int& new_len) const OVERRIDE {
         int         len     = part.length();
         const char *seq     = part.data();
-        char       *new_seq = ARB_alloc<char>(len+1);
+        char       *new_seq = (char*)GB_calloc(len+1, sizeof(*new_seq));
 
         if (to_upper) {
             for (int i=0; i<len; i++) new_seq[i] = toupper(seq[i]);
@@ -737,8 +752,7 @@ public:
         else {
             for (int i=0; i<len; i++) new_seq[i] = tolower(seq[i]);
         }
-        new_seq[len] = 0;
-
+        
         new_len = len;
         return dont_return_unchanged(new_seq, new_len, part);
     }
@@ -785,7 +799,7 @@ public:
     char *operate(const SeqPart& part, int& new_len) const OVERRIDE {
         int         len    = part.length();
         const char *seq    = part.data();
-        char       *result = ARB_alloc<char>(len+1);
+        char       *result = (char*)GB_calloc(len+1, sizeof(*result));
 
         int o = 0;
         int n = 0;
@@ -817,9 +831,8 @@ public:
                     break;
             }
         }
-        result[len] = 0;
-        new_len     = len;
 
+        new_len = len;
         return dont_return_unchanged(result, new_len, part);
     }
 
@@ -838,8 +851,7 @@ class shift_op : public ED4_block_operator {
         }
         else {
             int len       = part.length();
-            ARB_alloc(result, len+1);
-            result[len]   = 0;
+            result        = (char*)GB_calloc(len+1, sizeof(*result));
             new_len       = len;
             result[len-1] = part.right_gap();
             memcpy(result, seq+1, len-1);
@@ -856,10 +868,9 @@ class shift_op : public ED4_block_operator {
             error = "Need a gap at block end for shifting right";
         }
         else {
-            ARB_alloc(result, len+1);
-            result[len] = 0;
-            new_len     = len;
-            result[0]   = part.left_gap();
+            result    = (char*)GB_calloc(len+1, sizeof(*result));
+            new_len   = len;
+            result[0] = part.left_gap();
             memcpy(result+1, seq, len-1);
         }
         return result;

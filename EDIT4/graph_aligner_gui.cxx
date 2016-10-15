@@ -308,7 +308,7 @@ static void sina_start(AW_window *window, const AlignDataAccess *data_access) {
                     if (root->awar(GA_AWAR_COLOR)->read_int())     GBS_strcat(cl, " --color");
                     if (root->awar(GA_AWAR_REALIGN)->read_int())     GBS_strcat(cl, " --realign");
 
-                    gb_error = GB_xcmd(GBS_mempntr(cl), XCMD_ASYNC_WAITKEY);
+                    gb_error = GB_xcmd(GBS_mempntr(cl), true, false);
                     GBS_strforget(cl);
                 }
 

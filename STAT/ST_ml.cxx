@@ -508,7 +508,7 @@ GB_ERROR ST_ML::calc_st_ml(const char *tree_name, const char *alignment_namei,
 
         if (column_stat_error) fprintf(stderr, "Column statistic error: %s (using equal rates/tt-ratio for all columns)\n", column_stat_error);
 
-        alignment_name = ARB_strdup(alignment_namei);
+        alignment_name = strdup(alignment_namei);
         long ali_len   = GBT_get_alignment_len(gb_main, alignment_name);
 
         if (ali_len<0) {
@@ -754,7 +754,7 @@ bool ST_ML::update_ml_likelihood(char *result[4], int& latest_update, const char
 
         if (!result[0]) {                           // allocate Array-elements for result
             for (i = 0; i < 4; i++) {
-                ARB_calloc(result[i], ali_len+1); // [0 .. alignment_len[ + zerobyte
+                result[i] = (char *) GB_calloc(1, ali_len + 1); // [0 .. alignment_len[ + zerobyte
             }
         }
 
@@ -816,9 +816,9 @@ ST_ML_Color *ST_ML::get_color_string(const char *species_name, AP_tree *node, si
     MostLikelySeq *seq = getOrCreate_seq(node);
     size_t         pos;
 
-    if (!seq->color_out) { // allocate mem for color_out if we not already have it
-        ARB_calloc(seq->color_out,            ali_len);
-        ARB_calloc(seq->color_out_valid_till, (ali_len >> LD_BUCKET_SIZE) + ST_BUCKET_SIZE);
+    if (!seq->color_out) {                          // allocate mem for color_out if we not already have it
+        seq->color_out = (ST_ML_Color *) GB_calloc(sizeof(ST_ML_Color), ali_len);
+        seq->color_out_valid_till = (int *) GB_calloc(sizeof(int), (ali_len >> LD_BUCKET_SIZE) + ST_BUCKET_SIZE);
     }
     // search for first out-dated position:
     for (pos = start_ali_pos; pos <= end_ali_pos; pos += ST_BUCKET_SIZE) {

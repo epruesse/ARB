@@ -157,7 +157,7 @@ static ARB_ERROR pt_init_main_struct(PT_main *, const char *filename) { // __ATT
     if (!error) {
         GB_transaction ta(psg.gb_main);
         psg.alignment_name = GBT_get_default_alignment(psg.gb_main);
-        error              = GB_incur_error_if(!psg.alignment_name);
+        if (!psg.alignment_name && GB_have_error()) error = GB_await_error();
     }
 
     if (!error) {
@@ -589,7 +589,7 @@ __ATTR__USERESULT static ARB_ERROR run_command(const char *exename, const char *
         free(pt_name);
     }
 
-    if (error) msg = ARB_strdup(error.preserve());
+    if (error) msg = strdup(error.preserve());
     if (msg) {
         puts(msg);                      // log to console ..
         GBS_add_ptserver_logentry(msg); // .. and logfile
@@ -628,8 +628,8 @@ int ARB_main(int argc, char *argv[]) {
             exitcode = EXIT_FAILURE;
         }
         else {
-            if (argc==2) command = ARB_strdup(argv[1]);
-            else command         = ARB_strdup("-boot");
+            if (argc==2) command = strdup(argv[1]);
+            else command         = strdup("-boot");
         }
     }
 

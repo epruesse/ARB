@@ -36,7 +36,6 @@ refentries.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 refentries.o: $(ARBHOME)/INCLUDE/arb_assert.h
 refentries.o: $(ARBHOME)/INCLUDE/arb_core.h
 refentries.o: $(ARBHOME)/INCLUDE/arb_error.h
-refentries.o: $(ARBHOME)/INCLUDE/arb_mem.h
 refentries.o: $(ARBHOME)/INCLUDE/arb_msg.h
 refentries.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 refentries.o: $(ARBHOME)/INCLUDE/arb_string.h

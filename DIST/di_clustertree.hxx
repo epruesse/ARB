@@ -46,7 +46,7 @@ class ClusterTreeRoot : public ARB_seqtree_root {
 
 public:
     ClusterTreeRoot(AliView *aliview, AP_sequence *seqTemplate_, AP_FLOAT maxDistance_, size_t minClusterSize_);
-    ~ClusterTreeRoot() OVERRIDE { predelete(); }
+    virtual ~ClusterTreeRoot() OVERRIDE { predelete(); }
 
     inline TreeNode *makeNode() const             OVERRIDE;
     inline void destroyNode(TreeNode *node) const OVERRIDE;

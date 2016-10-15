@@ -158,7 +158,7 @@ static GB_ERROR mp_list2file(const CharPtrArray& display, const CharPtrArray& va
     if (value.empty()) error = "nothing to save";
 
     for (size_t i = 0; i<display.size() && !error; ++i) {
-        line.put(ARB_strdup(display[i]));
+        line.put(strdup(display[i]));
     }
 
     return error;
@@ -195,7 +195,7 @@ static GB_ERROR mp_file2list(const CharPtrArray& line, StrArray& display, StrArr
 
                 if (sep[0] == ',') { // old format (saved probe instead of probe-target)
                     size_t  plen   = probe.length();
-                    char   *dprobe = ARB_strndup(probe.c_str(), plen);
+                    char   *dprobe = GB_strndup(probe.c_str(), plen);
 
                     GBT_reverseComplementNucSequence(dprobe, plen, T_or_U);
                     probe = dprobe;
@@ -204,7 +204,7 @@ static GB_ERROR mp_file2list(const CharPtrArray& line, StrArray& display, StrArr
 
                 char *entry = gen_display(quality, singlemis, ecoli, probe.c_str());
                 display.put(entry); // transfers ownership - dont free!
-                value.put(ARB_strdup(entry));
+                value.put(strdup(entry));
             }
         }
 
@@ -231,16 +231,16 @@ static GB_ERROR mp_file2list(const CharPtrArray& line, StrArray& display, StrArr
 
                 const char *comma = strchr(line[i], ',');
                 if (comma) {
-                    description = ARB_strpartdup(line[i], comma-1);
+                    description = GB_strpartdup(line[i], comma-1);
 
                     const char *cprobe = comma+1;
                     while (cprobe[0] == ' ') ++cprobe;
-                    probe = ARB_strdup(cprobe);
+                    probe = strdup(cprobe);
                     
                     new_format = true;
                 }
                 else {
-                    description = ARB_strdup(line[i]);
+                    description = strdup(line[i]);
                 }
 
                 const RegMatch *match = reg_designed.match(description);
@@ -258,7 +258,7 @@ static GB_ERROR mp_file2list(const CharPtrArray& line, StrArray& display, StrArr
                         }
                     }
                     else {
-                        probe = ARB_strdup(parsed_probe.c_str());
+                        probe = strdup(parsed_probe.c_str());
                     }
 
                     if (!error) {
@@ -271,7 +271,7 @@ static GB_ERROR mp_file2list(const CharPtrArray& line, StrArray& display, StrArr
 
                         char *entry = gen_display(quality, 0, ecoli, probe);
                         display.put(entry); // transfers ownership - dont free!
-                        value.put(ARB_strdup(entry));
+                        value.put(strdup(entry));
                     }
                 }
                 else if (new_format && probe[0]) {
@@ -689,10 +689,10 @@ void TEST_SLOW_design_probes_and_load_result() {
             {
                 size_t plen = strspn(lines[i], "acgtuACGTU");
                 if (plen<10) { // no probe at start // @@@ 10 is min. probelen, use a global definition here!
-                    probe = ARB_strdup("");
+                    probe = strdup("");
                 }
                 else {
-                    probe = ARB_strndup(lines[i], plen);
+                    probe = GB_strndup(lines[i], plen);
                 }
             }
 

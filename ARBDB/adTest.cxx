@@ -13,15 +13,13 @@
 
 const char *GB_get_db_path(GBDATA *gbd) {
     GBDATA *gb_father = GB_FATHER(gbd);
+
     if (gb_father) {
         const char *father_path = GB_get_db_path(gb_father);
-        if (father_path) {
-            const char *key = GB_KEY(gbd);
-            RETURN_LOCAL_ALLOC(GBS_global_string_copy("%s/%s", father_path, key ? key : "<unknown>"));
-        }
-        return ""; // DB-root-node
+        const char *key         = GB_KEY(gbd);
+        RETURN_LOCAL_ALLOC(GBS_global_string_copy("%s/%s", father_path, key ? key : "<gbmain>"));
     }
-    return NULL; // node above DB-root-node
+    return "";
 }
 
 void GB_dump_db_path(GBDATA *gbd) {
@@ -131,7 +129,7 @@ static void dump_internal(GBDATA *gbd, int *lines_allowed) {
         char     *toFree  = 0;
 
         if (content_len > wrappos) {
-            toFree      = ARB_strdup(content);
+            toFree      = strdup(content);
             content     = toFree;
             content_len = GBS_shorten_repeated_data(toFree);
         }
@@ -141,7 +139,7 @@ static void dump_internal(GBDATA *gbd, int *lines_allowed) {
             if (lines_allowed) (*lines_allowed)--;
         }
         else {
-            char          *buffer  = ARB_alloc<char>(wrappos+1);
+            char          *buffer  = (char*)malloc(wrappos+1);
             unsigned long  rest    = content_len;
             const char    *from    = content;
             int            cleared = 0;
@@ -240,39 +238,3 @@ GB_ERROR GB_fix_database(GBDATA *gb_main) {
     return GB_end_transaction(gb_main, err);
 }
 
-// --------------------------------------------------------------------------------
-
-#ifdef UNIT_TESTS
-#ifndef TEST_UNIT_H
-#include <test_unit.h>
-#endif
-
-void TEST_DB_path() {
-    GB_shell shell;
-
-#define ACC_PATH "species_data/species/acc"
-
-    for (int ascii = 0; ascii<=1; ++ascii) {
-        TEST_ANNOTATE(GBS_global_string("ascii=%i", ascii));
-
-        GBDATA *gb_main = GB_open(ascii ? "TEST_loadsave_ascii.arb" : "TEST_loadsave.arb", "r");
-        TEST_REJECT_NULL(gb_main);
-
-        {
-            GB_transaction ta(gb_main);
-
-            GBDATA *gb_acc = GB_search(gb_main, ACC_PATH, GB_STRING);
-            TEST_REJECT_NULL(gb_acc);
-
-            // Ascii- and binary-DBs differ in name of root-node.
-            // Make sure reported DB path does not depend on it:
-            TEST_EXPECT_EQUAL(GB_get_db_path(gb_acc), "/" ACC_PATH);
-        }
-
-        GB_close(gb_main);
-    }
-}
-
-#endif // UNIT_TESTS
-
-// --------------------------------------------------------------------------------

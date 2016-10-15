@@ -224,7 +224,7 @@ GB_ERROR GBCMS_open(const char *path, long timeout, GBDATA *gb_main) {
                     error = GBS_global_string("could not listen (server; errno=%i)", errno);
                 }
                 else {
-                    gb_server_data *hs = ARB_calloc<gb_server_data>(1);
+                    gb_server_data *hs = (gb_server_data *)GB_calloc(sizeof(gb_server_data), 1);
 
                     hs->timeout   = timeout;
                     hs->gb_main   = gb_main;
@@ -437,7 +437,8 @@ static GBCM_ServerResult gbcm_read_bin(int socket, GBCONTAINER *gbc, long *buffe
                 GBS_write_numhash(GB_MAIN(gb2)->remote_hash, id, (long) gb2);
             }
             if (cs_main) {
-                gbcms_create *cs = ARB_calloc<gbcms_create>(1);
+                gbcms_create *cs;
+                cs = (gbcms_create *) GB_calloc(sizeof(gbcms_create), 1);
                 cs->next = *((gbcms_create **) cs_main);
                 *((gbcms_create **) cs_main) = cs;
                 cs->server_id = gb2;
@@ -1242,7 +1243,8 @@ bool GBCMS_accept_calls(GBDATA *gbd, bool wait_extra_time) {
             int con = accept(hs->hso, NULL, 0);
             if (con>0) {
                 long optval[1];
-                Socinf *sptr = ARB_calloc<Socinf>(1);
+                Socinf *sptr = (Socinf *)GB_calloc(sizeof(Socinf), 1);
+                if (!sptr) return 0;
                 sptr->next = hs->soci;
                 sptr->socket = con;
                 hs->soci=sptr;
@@ -1898,9 +1900,9 @@ GB_ERROR gbcm_login(GBCONTAINER *gb_main, const char *loginname) {
     for (i = 0; i<GB_MAX_USERS; i++) {
         gb_user*& user = Main->users[i];
         if (!user) {
-            ARB_calloc(user, 1);
-
-            user->username = ARB_strdup(loginname);
+            user = (gb_user *) GB_calloc(sizeof(gb_user), 1);
+            
+            user->username = strdup(loginname);
             user->userid   = i;
             user->userbit  = 1<<i;
             user->nusers   = 1;

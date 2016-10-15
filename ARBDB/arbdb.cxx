@@ -72,8 +72,8 @@ inline GB_ERROR gb_transactable_type(GB_TYPES type, GBDATA *gbd) {
     else {
         GB_TYPES gb_type = gbd->type();
         if (gb_type != type && (type != GB_STRING || gb_type != GB_LINK)) {
-            char *rtype    = ARB_strdup(GB_TYPES_2_name(type));
-            char *rgb_type = ARB_strdup(GB_TYPES_2_name(gb_type));
+            char *rtype    = strdup(GB_TYPES_2_name(type));
+            char *rgb_type = strdup(GB_TYPES_2_name(gb_type));
             
             error = GBS_global_string("type mismatch (want='%s', got='%s') in '%s'", rtype, rgb_type, GB_get_db_path(gbd));
 
@@ -116,7 +116,7 @@ inline GB_ERROR gb_type_readable_from(GB_TYPES type, GBDATA *gbd) {
 
 inline GB_ERROR error_with_dbentry(const char *action, GBDATA *gbd, GB_ERROR error) {
     if (error) {
-        char       *error_copy = ARB_strdup(error);
+        char       *error_copy = strdup(error);
         const char *path       = GB_get_db_path(gbd);
         error                  = GBS_global_string("Can't %s '%s':\n%s", action, path, error_copy);
         free(error_copy);
@@ -258,7 +258,7 @@ int gb_convert_type_2_appendix_size[] = { /* contains the size of the suffix (ak
 
 static void init_buffer(gb_buffer *buf, size_t initial_size) {
     buf->size = initial_size;
-    buf->mem  = buf->size ? ARB_alloc<char>(buf->size) : NULL;
+    buf->mem  = buf->size ? (char*)malloc(buf->size) : NULL;
 }
 
 static char *check_out_buffer(gb_buffer *buf) {
@@ -274,9 +274,9 @@ static void alloc_buffer(gb_buffer *buf, size_t size) {
     free(buf->mem);
     buf->size = size;
 #if (MEMORY_TEST==1)
-    ARB_alloc(buf->mem, buf->size);
+    buf->mem  = (char *)malloc(buf->size);
 #else
-    ARB_calloc(buf->mem, buf->size);
+    buf->mem  = (char *)GB_calloc(buf->size, 1);
 #endif
 }
 
@@ -493,10 +493,9 @@ gb_local_data::gb_local_data()
     init_buffer(&buf2, 4000);
 
     write_bufsize = GBCM_BUFFER;
-    ARB_alloc(write_buffer, write_bufsize);
-
-    write_ptr  = write_buffer;
-    write_free = write_bufsize;
+    write_buffer  = (char *)malloc((size_t)write_bufsize);
+    write_ptr     = write_buffer;
+    write_free    = write_bufsize;
 
     bituncompress = gb_build_uncompress_tree(GB_BIT_compress_data, 1, 0);
     bitcompress   = gb_build_compress_list(GB_BIT_compress_data, 1, &(bc_size));
@@ -518,9 +517,11 @@ void gb_local_data::announce_db_open(GB_MAIN_TYPE *Main) {
     gb_assert(Main);
     int idx = open_dbs();
     if (idx >= open_gb_alloc) {
-        int new_alloc = open_gb_alloc + 10;
-        ARB_recalloc(open_gb_mains, open_gb_alloc, new_alloc);
-        open_gb_alloc = new_alloc;
+        int            new_alloc = open_gb_alloc+10;
+        GB_MAIN_TYPE **new_mains = (GB_MAIN_TYPE**)realloc(open_gb_mains, new_alloc*sizeof(*new_mains));
+        memset(new_mains+open_gb_alloc, 0, 10*sizeof(*new_mains));
+        open_gb_alloc            = new_alloc;
+        open_gb_mains            = new_mains;
     }
     open_gb_mains[idx] = Main;
     openedDBs++;
@@ -634,7 +635,7 @@ void GB_atclose(GBDATA *gbd, void (*fun)(GBDATA *gb_main, void *client_data), vo
 
     gb_assert(!atclose_cb_exists(Main->close_callbacks, fun)); // each close callback should only exist once
 
-    gb_close_callback_list *gccs = ARB_alloc<gb_close_callback_list>(1);
+    gb_close_callback_list *gccs = (gb_close_callback_list *)malloc(sizeof(*gccs));
 
     gccs->next        = Main->close_callbacks;
     gccs->cb          = fun;
@@ -1075,7 +1076,7 @@ char *GB_read_as_string(GBDATA *gbd) {
         case GB_LINK:   return GB_read_link(gbd);
         case GB_BYTE:   return GBS_global_string_copy("%i", GB_read_byte(gbd));
         case GB_INT:    return GBS_global_string_copy("%li", GB_read_int(gbd));
-        case GB_FLOAT:  return ARB_strdup(ARB_float_2_ascii(GB_read_float(gbd)));
+        case GB_FLOAT:  return strdup(ARB_float_2_ascii(GB_read_float(gbd)));
         case GB_BITS:   return GB_read_bits(gbd, '0', '1');
             /* Be careful : When adding new types here, you have to make sure that
              * GB_write_autoconv_string is able to write them back and that this makes sense.
@@ -1123,7 +1124,7 @@ NOT4PERL uint8_t GB_read_lossless_byte(GBDATA *gbd, GB_ERROR& error) {
             break;
     }
 
-    if (!error) error = GB_incur_error();
+    if (!error && GB_have_error()) error = GB_await_error();
     return result;
 }
 NOT4PERL int32_t GB_read_lossless_int(GBDATA *gbd, GB_ERROR& error) {
@@ -1150,7 +1151,7 @@ NOT4PERL int32_t GB_read_lossless_int(GBDATA *gbd, GB_ERROR& error) {
             break;
     }
 
-    if (!error) error = GB_incur_error();
+    if (!error && GB_have_error()) error = GB_await_error();
     return result;
 }
 NOT4PERL float GB_read_lossless_float(GBDATA *gbd, GB_ERROR& error) {
@@ -1177,7 +1178,7 @@ NOT4PERL float GB_read_lossless_float(GBDATA *gbd, GB_ERROR& error) {
             break;
     }
 
-    if (!error) error = GB_incur_error();
+    if (!error && GB_have_error()) error = GB_await_error();
     return result;
 }
 
@@ -1682,7 +1683,7 @@ bool GB_is_container(GBDATA *gbd) {
 }
 
 char *GB_read_key(GBDATA *gbd) {
-    return ARB_strdup(GB_read_key_pntr(gbd));
+    return strdup(GB_read_key_pntr(gbd));
 }
 
 GB_CSTR GB_read_key_pntr(GBDATA *gbd) {
@@ -2093,7 +2094,7 @@ char* GB_get_subfields(GBDATA *gbd) {
             int keylen = strlen(key);
 
             if (result) {
-                char *neu_result = ARB_alloc<char>(result_length+keylen+1+1);
+                char *neu_result = (char*)malloc(result_length+keylen+1+1);
 
                 if (neu_result) {
                     char *p = gb_stpcpy(neu_result, result);
@@ -2109,7 +2110,7 @@ char* GB_get_subfields(GBDATA *gbd) {
                 }
             }
             else {
-                ARB_alloc(result, 1+keylen+1+1);
+                result = (char*)malloc(1+keylen+1+1);
                 result[0] = ';';
                 strcpy(result+1, key);
                 result[keylen+1] = ';';
@@ -2119,7 +2120,7 @@ char* GB_get_subfields(GBDATA *gbd) {
         }
     }
     else {
-        result = ARB_strdup(";");
+        result = strdup(";");
     }
 
     return result;
@@ -2548,32 +2549,27 @@ GB_ERROR GB_resort_data_base(GBDATA *gb_main, GBDATA **new_order_list, long list
 }
 
 GB_ERROR gb_resort_system_folder_to_top(GBCONTAINER *gb_main) {
-    if (GB_read_clients(gb_main)<0) {
-        return 0; // we are not server
-    }
-
     GBDATA *gb_system = GB_entry(gb_main, GB_SYSTEM_FOLDER);
+    GBDATA *gb_first = GB_child(gb_main);
+    GBDATA **new_order_list;
+    GB_ERROR error = 0;
+    int i, len;
+    if (GB_read_clients(gb_main)<0) return 0; // we are not server
     if (!gb_system) {
         return GB_export_error("System databaseentry does not exist");
     }
-
-    GBDATA *gb_first = GB_child(gb_main);
-    if (gb_first == gb_system) {
-        return 0;
-    }
-
-    int      len            = GB_number_of_subentries(gb_main);
-    GBDATA **new_order_list = ARB_calloc<GBDATA*>(len);
-
+    if (gb_first == gb_system) return 0;
+    len = GB_number_of_subentries(gb_main);
+    new_order_list = (GBDATA **)GB_calloc(sizeof(GBDATA *), len);
     new_order_list[0] = gb_system;
-    for (int i=1; i<len; i++) {
+    for (i=1; i<len; i++) {
         new_order_list[i] = gb_first;
-        do gb_first = GB_nextChild(gb_first); while (gb_first == gb_system);
+        do {
+            gb_first = GB_nextChild(gb_first);
+        } while (gb_first == gb_system);
     }
-
-    GB_ERROR error = GB_resort_data_base(gb_main, new_order_list, len);
+    error = GB_resort_data_base(gb_main, new_order_list, len);
     free(new_order_list);
-
     return error;
 }
 
@@ -2820,8 +2816,12 @@ void TEST_GB_number_of_subentries() {
 
 
 void TEST_POSTCOND_arbdb() {
-    GB_ERROR error             = GB_incur_error(); // clears the error (to make further tests succeed)
-    bool     unclosed_GB_shell = closed_open_shell_for_unit_tests();
+    GB_ERROR error = NULL;
+    if (GB_have_error()) {
+        error = GB_await_error(); // clears the error (to make further tests succeed)
+    }
+
+    bool unclosed_GB_shell = closed_open_shell_for_unit_tests();
 
     TEST_REJECT(error);             // your test finished with an exported error
     TEST_REJECT(unclosed_GB_shell); // your test finished w/o destroying GB_shell

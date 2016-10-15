@@ -159,19 +159,20 @@ static void colorDefChanged_callback(AW_root *awr, int awarNo) {
                 }
 
                 {
-                    GBS_strstruct clrDefStr(500);
+                    GBS_strstruct *clrDefStr = GBS_stropen(500);            // create output stream
                     for (int i=0; i<10; i++) {
                         awr->awar_string(getAwarName(i))->write_string((char *)s[i]);
 
                         char *escaped = GBS_escape_string((char*)s[i], ";", '&');
-                        clrDefStr.cat(escaped);
+                        GBS_strcat(clrDefStr, escaped);
                         free(escaped);
-
-                        clrDefStr.put(';');
+                        GBS_chrcat(clrDefStr, ';');
                     }
 
+                    char    *colorDef = GBS_strclose(clrDefStr);
                     AW_awar *awar_def = awr->awar_string(getClrDefAwar(clrTabName), "", AW_ROOT_DEFAULT);
-                    awar_def->write_string(clrDefStr.get_data());
+                    awar_def->write_string(colorDef); // writing clr definition to clr trans table awar
+                    free(colorDef);
                 }
             }
             else {
@@ -457,28 +458,31 @@ static void createCopyClrTransTable(AW_window *aws, CreationMode mode) {
 
 static void deleteColorTranslationTable(AW_window *aws) {
     AW_root *aw_root = aws->get_root();
-    const char *clrTabName = aw_root->awar_string(AWAR_SAI_CLR_TRANS_TABLE)->read_char_pntr();
+    char *clrTabName = aw_root->awar_string(AWAR_SAI_CLR_TRANS_TABLE)->read_string();
 
     if (clrTabName[0]) {
         AW_awar       *awar_tabNames    = aw_root->awar(AWAR_SAI_CLR_TRANS_TAB_NAMES);
         char          *clrTransTabNames = awar_tabNames->read_string();
-        GBS_strstruct newTransTabName(strlen(clrTransTabNames));
+        GBS_strstruct *newTransTabName  = GBS_stropen(strlen(clrTransTabNames));
 
         for (const char *tok = strtok(clrTransTabNames, "\n"); tok; tok = strtok(0, "\n")) {
             if (strcmp(clrTabName, tok) != 0) { // merge all not to delete
-                newTransTabName.cat(tok);
-                newTransTabName.put('\n');
+                GBS_strcat(newTransTabName, tok);
+                GBS_strcat(newTransTabName, "\n");
             }
         }
 
         aw_root->awar_string(getClrDefAwar(clrTabName))->write_string("");
-        awar_tabNames->write_string(newTransTabName.get_data()); // updates selection list
+        char *new_name = GBS_strclose(newTransTabName);
+        awar_tabNames->write_string(new_name); // updates selection list
+        free(new_name);
 
         free(clrTransTabNames);
     }
     else {
         aw_message("Selected Color Translation Table is not VALID and cannot be DELETED!");
     }
+    free(clrTabName);
 }
 
 static AW_selection_list *buildClrTransTabNamesList(AW_window *aws) {
@@ -510,7 +514,7 @@ const char *ED4_getSaiColorString(AW_root *awr, int start, int end) {
     if (seqSize>seqBufferSize) {
         free(saiColors);
         seqBufferSize = seqSize;
-        ARB_calloc(saiColors, seqBufferSize);
+        saiColors =  (char*)GB_calloc(seqBufferSize, sizeof(char));
     }
     else memset(saiColors, 0, sizeof(char)*seqSize);
 

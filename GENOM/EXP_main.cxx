@@ -49,15 +49,15 @@ void EXP_create_awars(AW_root *aw_root, AW_default /* aw_def */, GBDATA *gb_main
 
 struct EXP_item_type_species_selector : public awt_item_type_selector {
     EXP_item_type_species_selector() : awt_item_type_selector(AWT_IT_EXPERIMENT) {}
-    ~EXP_item_type_species_selector() OVERRIDE {}
+    virtual ~EXP_item_type_species_selector() OVERRIDE {}
 
-    const char *get_self_awar() const OVERRIDE {
+    virtual const char *get_self_awar() const OVERRIDE {
         return AWAR_COMBINED_EXPERIMENT_NAME;
     }
-    size_t get_self_awar_content_length() const OVERRIDE {
+    virtual size_t get_self_awar_content_length() const OVERRIDE {
         return 12 + 1 + 40; // species-name+'/'+experiment_name
     }
-    GBDATA *current(AW_root *root, GBDATA *gb_main) const OVERRIDE { // give the current item
+    virtual GBDATA *current(AW_root *root, GBDATA *gb_main) const OVERRIDE { // give the current item
         char   *species_name    = root->awar(AWAR_ORGANISM_NAME)->read_string();
         char   *experiment_name = root->awar(AWAR_EXPERIMENT_NAME)->read_string();
         GBDATA *gb_experiment   = 0;
@@ -75,7 +75,7 @@ struct EXP_item_type_species_selector : public awt_item_type_selector {
 
         return gb_experiment;
     }
-    const char *getKeyPath() const OVERRIDE { // give the keypath for items
+    virtual const char *getKeyPath() const OVERRIDE { // give the keypath for items
         return CHANGE_KEY_PATH_EXPERIMENTS;
     }
 };

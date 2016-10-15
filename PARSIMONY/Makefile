@@ -43,7 +43,6 @@ AP_buffer.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AP_buffer.o: $(ARBHOME)/INCLUDE/arb_core.h
 AP_buffer.o: $(ARBHOME)/INCLUDE/arb_error.h
 AP_buffer.o: $(ARBHOME)/INCLUDE/arb_forward_list.h
-AP_buffer.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AP_buffer.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AP_buffer.o: $(ARBHOME)/INCLUDE/arb_string.h
 AP_buffer.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
@@ -55,7 +54,6 @@ AP_buffer.o: $(ARBHOME)/INCLUDE/attributes.h
 AP_buffer.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AP_buffer.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AP_buffer.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
-AP_buffer.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 AP_buffer.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AP_buffer.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AP_buffer.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -89,7 +87,6 @@ AP_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AP_main.o: $(ARBHOME)/INCLUDE/arb_core.h
 AP_main.o: $(ARBHOME)/INCLUDE/arb_error.h
 AP_main.o: $(ARBHOME)/INCLUDE/arb_forward_list.h
-AP_main.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AP_main.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AP_main.o: $(ARBHOME)/INCLUDE/arb_string.h
 AP_main.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
@@ -101,7 +98,6 @@ AP_main.o: $(ARBHOME)/INCLUDE/attributes.h
 AP_main.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
-AP_main.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/aw_position.hxx
@@ -141,7 +137,6 @@ AP_tree_edge.o: $(ARBHOME)/INCLUDE/arb_core.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/arb_defs.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/arb_error.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/arb_forward_list.h
-AP_tree_edge.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/arb_progress.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -154,7 +149,6 @@ AP_tree_edge.o: $(ARBHOME)/INCLUDE/attributes.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
-AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -190,7 +184,6 @@ AP_tree_nlen.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/arb_core.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/arb_error.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/arb_forward_list.h
-AP_tree_nlen.o: $(ARBHOME)/INCLUDE/arb_mem.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/arb_string.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
@@ -202,7 +195,6 @@ AP_tree_nlen.o: $(ARBHOME)/INCLUDE/attributes.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
-AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/aw_root.hxx
@@ -245,7 +237,6 @@ PARS_dtree.o: $(ARBHOME)/INCLUDE/arb_core.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/arb_diff.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/arb_error.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/arb_forward_list.h
-PARS_dtree.o: $(ARBHOME)/INCLUDE/arb_mem.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/arb_msg.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/arb_progress.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -260,7 +251,6 @@ PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
-PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_position.hxx
@@ -336,7 +326,6 @@ PARS_main.o: $(ARBHOME)/INCLUDE/arb_diff.h
 PARS_main.o: $(ARBHOME)/INCLUDE/arb_error.h
 PARS_main.o: $(ARBHOME)/INCLUDE/arb_file.h
 PARS_main.o: $(ARBHOME)/INCLUDE/arb_forward_list.h
-PARS_main.o: $(ARBHOME)/INCLUDE/arb_mem.h
 PARS_main.o: $(ARBHOME)/INCLUDE/arb_misc.h
 PARS_main.o: $(ARBHOME)/INCLUDE/arb_msg.h
 PARS_main.o: $(ARBHOME)/INCLUDE/arb_progress.h
@@ -353,7 +342,6 @@ PARS_main.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/aw_device_click.hxx
-PARS_main.o: $(ARBHOME)/INCLUDE/aw_font_limits.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/aw_position.hxx

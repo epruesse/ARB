@@ -164,7 +164,7 @@ public:
         reinit(_name, _readonly);
     }
 
-    ~PS_Database() OVERRIDE {
+    virtual ~PS_Database() OVERRIDE {
         if (db_file) delete db_file;
         db_name2id_map.clear();
         db_id2name_map.clear();
