@@ -1,0 +1,92 @@
+#!/bin/bash
+
+remove() {
+    local PIDFILE=$1
+    rm -f $PIDFILE
+}
+killandremove() {
+    local PIDFILE=$1
+    kill -9 `cat $PIDFILE` >/dev/null 2>&1
+    remove $PIDFILE
+}
+cat_newline() {
+    local PIDFILE=$1
+    cat $PIDFILE
+    echo ""
+}
+cat_plain() {
+    local PIDFILE=$1
+    cat $PIDFILE
+}
+
+witheach() {
+    local CMDPREFIX=$*
+    local PIDFILE
+    while read PIDFILE; do
+        $CMDPREFIX $PIDFILE
+    done
+}
+
+# ----------------------------------------
+
+allpidfiles() {
+    ls ~/.arb_tmp/tmp/arb_pids_${USER}_* 2>&1 | grep -v 'No such file'
+}
+sessionpidfiles() {
+    local PIDFILE=~/.arb_tmp/tmp/arb_pids_${USER}_${ARB_PID}
+    if [ -f $PIDFILE ]; then
+        echo $PIDFILE
+    fi
+}
+
+pids2processlist() {
+    PIDS=`cat -`
+    if [ -z "$PIDS" ]; then
+        echo "No matching processes detected."
+    else
+        ps -p $PIDS
+    fi
+}
+
+# ----------------------------------------
+
+show_session() {
+    sessionpidfiles | witheach cat_plain | pids2processlist
+}
+session() {
+    sessionpidfiles | witheach killandremove
+}
+
+show_all() {
+    allpidfiles | witheach cat_plain | pids2processlist
+}
+old() {
+    allpidfiles | witheach remove
+}
+killall() {
+    allpidfiles | witheach killandremove
+}
+
+
+# ----------------------------------------
+
+ACTION=$1
+if [ -z "$ACTION" ]; then
+    echo "Usage: arb_clean [action]"
+    echo "Known actions are:"
+    echo "    show_all          show process ids of processes that will be killed by action 'killall'"
+    echo "    show_session      show process ids of processes that will be killed by action 'session'"
+    echo "    session           kill all processes running with current ARB_PID"
+    echo "    old               delete old pid-files from /tmp (dont do this while arb is running)"
+    echo "    killall           kill all (current or former) arb processes"
+    echo "                      CAUTION: may act completely wrong and kill various running non-ARB-processes!"
+else
+    case $ACTION in
+        (session | old | killall | show_all | show_session )
+        $ACTION
+        ;;
+        ( * )
+        echo "Unknown action '$ACTION'"
+        ;;
+    esac
+fi

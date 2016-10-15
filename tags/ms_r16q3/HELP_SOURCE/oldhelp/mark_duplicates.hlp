@@ -1,0 +1,27 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Mark duplicates in tree
+
+OCCURRENCE	ARB_NT/Tree/Mark duplicates
+
+DESCRIPTION     Checks selected tree for duplicate leafs. 
+
+		Duplicated species will be marked - all other unmarked.
+
+		If duplicated zombies (see LINK{glossary.hlp}) are found, a warning is shown.
+
+NOTES		None
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known

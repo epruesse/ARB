@@ -1,0 +1,288 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP      arb.hlp
+UP      glossary.hlp
+UP      alignment.hlp
+UP      security.hlp
+UP      helix.hlp
+UP      ecoliref.hlp
+UP      species_configs.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+SUB     man_arb_edit4.hlp
+SUB     arb_edit4.hlp
+SUB     e4_search.hlp
+SUB     e4_replace.hlp
+SUB     e4_block.hlp
+SUB     nekey_map.hlp
+SUB     helixsym.hlp
+SUB     pfold.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+
+TITLE           ARB_EDIT4 - Sequence primary and secondary structure editor
+
+OCCURRENCE      ARB_NT/Sequence/Edit marked sequences
+
+DESCRIPTION     The editor allows you to view and modify the sequences of 'marked
+                species' or 'a selection of species' and 'SAI' (sequence associated
+                information) stored in the database.
+                Potential secondary structure is automatically checked
+                and the information can be displayed with the primary structure.
+                In addition, an online column statistic may help you find
+                sequence and alignment errors.
+
+                The editor permanently communicates with the database and
+                other ARB tools. Every change made by the editor is immediately
+                exported to the database. All sequence changes made by other
+                ARB tools are exported to the editor every 5 seconds.
+
+                Multiple editors can be used synchronously.
+
+
+        Display:
+
+                        First Column:   Species ID or group name.
+                        Second C.       Protection level and subtype of sequence.
+                        Last c.         Sequence and secondary structure and more.
+
+        Cursor:
+
+                        The cursor can be moved using the mouse or the arrow
+                        keys.  The current cursor positions with respect to the
+                        alignment and the E. coli sequence (there has to be an
+                        'SAI' entry: ECOLI) are indicated after the 'Position'
+                        and 'E.coli' prompts in the upper part of the
+                        'ARB_EDIT4' window.
+
+                        These 3 positions and the IUPAC-display refer to the position
+                        RIGHT of the cursor.
+
+                        'Position' counts from 1 to "alignment length".
+
+                        The 'Ecoli'- and 'Base'-position count from zero to "number of bases".
+
+                        - Zero means your cursor is left of the first base (and not AT the first base).
+                        - X means your cursor is AT or BEHIND base number X (but in front of base number X+1)
+
+                        By changing the value of one of these fields, the cursor will
+                        be repositioned. Negative values are possible - in that case
+                        the position will be calculated from the right end (e.g. -1 in
+                        'Base' field means 'position onto base')
+
+        Moving entries:
+
+                        To move an individual entry, position the cursor on the
+                        name, keep the left mouse button pressed, move the entry
+                        to the desired position, and release the button.
+
+                        Any entry can be fixed (keeps its position while
+                        scrolling vertically) at the top of the editing area by
+                        moving it somewhere above the double line (=top area).
+
+        Undo/Redo:
+
+                        This undoes/redoes all performed database changes (see LINK{undo.hlp}).
+
+        Jump/Get:
+
+                        see LINK{e4_get_species.hlp}.
+
+        Editing:
+
+                Protection:
+
+                        To perform editing, the protection level of the particular
+                        entry ('EDIT/Set protection of selected species') has to
+                        be set below or equal the global protection level
+                        (use the 'Protect' button on the menuboard).
+
+                        Note: There are two global protection levels: one in
+                        edit-mode and another one in align-mode.
+
+                Modes:
+
+                        ARB_EDIT4 supports 2 modes: Align-mode and Edit-mode.
+                        To toggle between these two modes use the 'Align/Edit'
+                        button on the menuboard or press CTRL-E.
+
+                        Align-mode:
+
+                                Only gap symbols can be inserted ('-', '.' or
+                                'Spc' key) or deleted ('Del' or 'Backspace' key)
+
+                                Sequence data cannot be modified - it only can be
+                                checked in this mode. Sequence check is performed
+                                by typing nucleotide (amino acid) symbols.
+                                Discrepancies between typed and existing symbols
+                                are indicated by beeping.
+
+                        Edit-mode:
+
+                                Edit-mode is divided into two submodes: Insert-mode
+                                and Replace-mode. Toggle between these submodes
+                                with the 'Insert/Replace' button on the menuboard
+                                or with CTRL-I.
+
+                                In Replace-mode inserted Nucleotides/gaps overwrite
+                                existing Nucleotides/gaps.
+                                In Insert-mode inserted Nucleotides/gaps do not
+                                overwrite, instead the whole sequence is shifted.
+
+                Direction:
+
+                        ARB_EDIT4 should perform any editing function into both
+                        directions - forward and backward. To toggle the editing
+                        direction use the "5'->3'" button on the menuboard.
+
+                Repeat editing functions:
+
+                        Nearly every editing function can be performed repeatedly
+                        by typing some digits before you perform the editing
+                        function.
+
+                                Example:  '9-' inserts nine '-'
+
+                        If you need to insert digits, use the toggle in
+                        'Properties/Options'.
+
+                Key mapping:
+
+                        Nucleotide (amino acid) and gap symbols can be assigned
+                        to any of the letter and symbol keys
+                        using 'Properties/Key mappings'.
+
+                Moving nucleotide (amino acid) symbols:
+
+                        SHIFT + LEFT/RIGHT
+
+                                Push or pull a coherent sequence stretch next
+                                to the cursor.
+
+                        ALT + LEFT/RIGHT
+
+                                Move a single nucleotide (amino acid) symbol.
+
+                                If you move your cursor towards a gap, the next
+                                nucleotide (amino acid) symbol in movement
+                                direction is fetched and moved to the actual
+                                position.
+
+                                If you move your cursor towards a nucleotide
+                                (amino acid) symbol, it will jump aside the next
+                                nucleotide (amino acid) symbol.
+
+                                Alternate keys are: CTRL-O and CTRL-P
+
+                Change gap type
+
+                       Consecutive runs of gaps can be set to 
+
+                       CTRL-'-'         minus sign (normal gaps)
+                       CTRL-'.'         dots (recommended at both sequence ends)
+                       CTRL-SPACE       toggles between both gap types
+
+                       These gap types have different meanings:
+
+                       '-'        is only used for aligning
+                       '.'        marks potentially missing bases
+
+
+                Other keys:
+
+                        CTRL+LEFT/RIGHT
+
+                                Jumps to the start of the next gap-region or non-gap-region.
+                                You may configure whether it always jumps over gap-regions.
+
+                        CTRL+UP/DOWN
+
+                                Like CTRL-LEFT/RIGHT, but vertical.
+
+                        HOME/END
+
+                                Jumps to the start/end of sequence.
+
+                        CTRL+HOME/END
+
+                                Jumps to the first/last sequence.
+
+                        ENTER
+
+                                Fold/unfold group
+
+                        ALT+UP/DOWN
+
+                                Jump to previous/next group consensus
+
+                        CTRL-A
+
+                                Call Aligner with current settings (see LINK{faligner.hlp}).
+
+                        CTRL-D
+
+                                Toggle "view differences" mode (see LINK{viewdiff.hlp}).
+
+                        CTRL-E
+
+                                Toggle EDIT/ALIGN mode (see above).
+
+                        CTRL-I
+
+                                Toggle INSERT/REPLACE mode (see above).
+
+                        CTRL-J
+
+                                Jump to opposite helix position.
+
+                        CTRL-L
+
+                                Move cursor into view and refresh display.
+
+                        CTRL-M
+
+                                Toggle mark of species/group.
+
+                        CTRL-R
+
+                                Shared key:
+                                  * sets reference sequence for "view differences" (only if active; see LINK{viewdiff.hlp})
+                                  * otherwise sets aligner reference species (see LINK{faligner.hlp})
+
+                        CTRL-S
+
+                                Repeat last search (see LINK{e4_search.hlp}).
+
+        Messages:
+
+                Many (less serious) errors will not be announced by a popup
+                window. Instead they appear at the small text window in the
+                upper-right corner of the editor window.
+
+                You can press one of the small buttons at the left side of this
+                text window:
+
+                        - press the small lens to see more errors
+                        - press the small X to get rid of all errors
+
+EXAMPLES        None
+
+NOTES           You may use the META key instead of ALT (especially if there is no ALT key :)
+
+WARNINGS        The key mappings may conflict with some window managers
+                (eg. olvwm). Disable the CTRL-LEFT/RIGHT keys of the window
+                manager.
+
+                If you perform major database modifications such as
+
+                        - adding new SAIs
+
+                you have to QUIT and restart the editor.
+
+BUGS
+
+                - sometimes the editor crashes after aligning
+                - some update problems (please report system and circumstances)
+                  (workaround: resize the editor window)
+

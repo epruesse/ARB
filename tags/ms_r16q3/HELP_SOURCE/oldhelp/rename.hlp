@@ -1,0 +1,27 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP      arb.hlp
+UP      glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB    subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE           Synchronize species IDs
+
+OCCURRENCE      ARB_NT/Species/Synchronize IDs
+
+DESCRIPTION     Starts the 'NAMESERVER' to update species IDs ('name') within the
+                current database according to the information stored in the file
+                '$ARBHOME/lib/nas/names.dat'.
+
+                Press the 'GO' button.
+
+NOTES           Please refer to LINK{sp_IDs.hlp}.
+
+EXAMPLES        None
+
+WARNINGS        None
+
+BUGS            No bugs known

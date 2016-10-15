@@ -1,0 +1,51 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+UP	colorize.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Load/save item colorsets
+
+OCCURRENCE	ARB_NT/Species/Colors .../LoadSave
+                ARB_NT/Genome/Colors .../LoadSave
+                ARB_NT/Genome/Organims/Colors .../LoadSave
+                ARB_NT/Genome/Experiments/Colors .../LoadSave
+
+DESCRIPTION     Allows to manage different colorsets.
+
+                Save
+
+                        Saves the currently assigned colors in a named colorset.
+
+                        Either select an existing colorset from the list to overwrite it
+                        or enter a new name.
+
+                Restore
+
+                        Restores a previously saved colorset.
+
+                Overlay
+
+                        Like 'Restore', but does not remove currently assigned colors.
+                        Allows to mix colorsets.
+
+                Delete
+
+                        Delete the selected saved colorset.
+
+                Reset
+
+                        Removes all assigned colors from all items.
+
+NOTES		None
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known

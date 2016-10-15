@@ -1,0 +1,13 @@
+/*ARBDB ASCII*/
+presets			%% (%
+	use			"ali_some"
+	alignment	:6000	%% (%
+		alignment_name	:7600	"ali_some"
+		alignment_len	:7000	%i 0
+		aligned		:7000	%i 0
+		alignment_write_security	:7600	%i 0
+		alignment_type	:7000	"rna"
+		%) /*alignment*/
+
+	%) /*presets*/
+
