@@ -1,7 +1,0 @@
-# libraries needed to link against PROBE/PROBE.a
-
-PROBE_COM/server.a
-SERVERCNTRL/SERVERCNTRL.a
-SL/HELIX/HELIX.a
-SL/PTCLEAN/PTCLEAN.a
-
