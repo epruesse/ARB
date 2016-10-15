@@ -1,0 +1,66 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+UP	e4.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Sequence color mapping
+
+OCCURRENCE	ARB_EDIT4/Properties/Sequence color mapping
+
+DESCRIPTION	The ARB_EDIT4 editor uses two tables to translate the
+		original sequence into a colored displayed sequence:
+
+                First Step:
+
+                      Each character in each sequence is translated into
+                      a new character and a color index (0..9) using the definitions
+                      from the 'Sequence color mapping' subwindow.
+
+                      - There are different sets (1..8) of color shemes,
+                        using two columns for each set.
+
+                      - At the top of the window you may choose which set is used
+                        for translation of nucleotides and aminoacids.
+
+                      - The first column shows the characters which should be
+                        translated/replaced.
+
+                      - The Nth + 1 column holds the translation instruction for set N.
+                        Each of its fields has two characters:
+
+                        - the character which should replace the original value,
+                          or '=' if no translation should be performed.
+
+                        - a color index for this character, between 0 and 9.
+
+                        The default for the translation instruction is '=0' 
+
+                Second Step:
+
+                       Each of the color indices (0..9) corresponds to one of
+                       the colors defined in <Properties/Change colors & fonts>,
+                       namely to
+
+                              index     corresponding color
+                              0         SEQUENCES
+                              1         HELIX(1)
+                              2         COLOR 2
+                              3         COLOR 3
+                              .         .
+                              .         .
+                              9         COLOR 9
+
+
+EXAMPLES	You may use this feature to show:
+
+		- A simplified version of your amino acid alignment.
+		- Only YR instead of ACGTU
+		- Only ambiguous symbols
+		- etc.
+
+BUGS		No bugs known

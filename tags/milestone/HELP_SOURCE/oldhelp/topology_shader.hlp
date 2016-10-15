@@ -1,0 +1,60 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP      arb.hlp
+UP      glossary.hlp
+UP      tree_shading.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB    subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE           Topology shader
+
+OCCURRENCE      ARB_NT/Tree/Tree shading/Topology shader
+
+DESCRIPTION     This shader uses the tree currently displayed in the main
+                tree display as a reference to shade species.
+
+                Species at the top of that tree will be shaded with the "low" color,
+                species at the bottom with the "high" color of the active color-range.
+
+                The intented purpose of this shader is comparing two tree topologies.
+                To do that, display one of the trees in the main window, then open a
+                second treeview using "File/New Window" and display a different tree
+                in that window.
+
+                  * The tree in the main window will always be shaded continuously.
+
+                  * Shading of trees in other windows will be non-continuous where their
+                    topology differs from the topology shown in the main window.
+                    This facilitates the detection of topology differences.
+
+                The granularity of topology shading depends on the size of the reference tree.
+                Therefore modifying the settings in section 'Value phasing' is strongly
+                recommended while comparing topologies:
+
+                  * to detect local topology differences, increase the phasing frequency
+                    until adjacent species are displayed in distinguishable colors.
+                    Then use either of the phase-shift sliders to shift the shading.
+                  * to detect global topology differences, decrease the phasing frequency.
+
+NOTES           Whenever the tree in the main tree display changes, the shading is instantly
+                updated and refreshed in all tree displays.
+
+                You can use the logical zoom-mode in the main tree display while the
+                topology shader is active, to shade only the zoomed part of the tree.
+
+EXAMPLES        The range allowed for the phasing frequency is [0.01 .. 100].
+                The number of colors available for shading is currently limited to 4096.
+
+                When you compare trees with e.g. 500k Species,
+
+                  * using a frequency of 1.0 will shade approx. 120 adjacent species with the same color,
+                  * using a frequency of 0.1 will shade approx. 1200 adjacent species with the same color and
+                  * using a frequency of 10 will shade approx. 12 adjacent species with the same color.
+
+WARNINGS        This feature will cause frequent display updates. Using it while ARB is running
+                over a remote connection may be dissatisfying.
+
+BUGS            No bugs known

@@ -1,0 +1,38 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+UP	probedesign.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	bonds.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE           Probe design (Expert)
+
+OCCURRENCE	ARB_NT/Probes/Design Probes/EXPERT
+
+DESCRIPTION	See LINK{bonds.hlp} for upper area.
+
+		Define threshold for splitting melting domains:
+
+			Type a value to the 'Threshold for Splitting' subwindow.
+			This value is subtracted from the mean of all pairing
+			values of the potential probe target hybrid. If the
+			resulting value is lower than that of a particular
+			mispairing, it is assumed that the remaining base paired
+			stretches melt independently. The dissociation
+			temperature of the whole hybrid is that of the more
+			stable part of it.
+
+NOTES		None
+
+EXAMPLES	None
+
+WARNINGS	The criteria used for probe target site ranking are based on
+		experimental experience. However, optimum conditions have to be
+		determined experimentally for the particular probe target
+		hybrids.
+
+BUGS		No bugs known
