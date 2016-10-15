@@ -17,6 +17,8 @@
 #include <arb_assert.h>
 #endif
 
+#define awt_assert(cond) arb_assert(cond)
+
 class AWT_canvas;
 class AW_device;
 
@@ -248,13 +250,16 @@ public:
 #define AWT_ZOOM_OUT_STEP 40    // (pixel) rand um screen
 #define AWT_MIN_WIDTH     100   // Minimum center screen (= screen-offset)
 
-enum {
-    AWT_d_screen = 1
-};
+typedef void (*screen_update_callback)(AWT_canvas*, AW_CL cd);
 
 class AWT_canvas : virtual Noncopyable {
-    bool consider_text_for_size;
+    bool  consider_text_for_size;
     char *gc_base_name;
+
+protected:
+    // callback called after each screen-update (set by derived class; currently only by TREE_canvas)
+    screen_update_callback announce_update_cb;
+    AW_CL                  user_data;
 
 public:
     // @@@ make members private!
@@ -326,6 +331,8 @@ public:
     const char *get_gc_base_name() const { return gc_base_name; }
 
     void postevent_handler();
+
+    void announce_screen_update() { if (announce_update_cb) announce_update_cb(this, user_data); }
 };
 
 inline void AWT_graphic::refresh_by_exports(AWT_canvas *scr) {
@@ -346,6 +353,13 @@ public:
         awar_tree(awar_tree_),
         index(count++)
     {}
+
+    void at_screen_update_call(screen_update_callback cb, AW_CL cd) {
+        awt_assert(!announce_update_cb || (announce_update_cb == cb && user_data == cd));
+
+        announce_update_cb = cb;
+        user_data          = cd;
+    }
 
     AW_awar *get_awar_tree() const { return awar_tree; }
     int get_index() const { return index; }

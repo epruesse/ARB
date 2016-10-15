@@ -347,6 +347,7 @@ static void clip_expose(AW_window *aww, AWT_canvas *scr,
         device->set_top_clip_border(top_border + ver_overlap);
     }
     scr->gfx->show(device);
+    scr->announce_screen_update();
 }
 
 void AWT_canvas::refresh() {
@@ -741,6 +742,8 @@ static void scroll_hor_cb(AW_window *aww, AWT_canvas* scr) {
 AWT_canvas::AWT_canvas(GBDATA *gb_main_, AW_window *aww_, const char *gc_base_name_, AWT_graphic *gfx_) :
     consider_text_for_size(true),
     gc_base_name(ARB_strdup(gc_base_name_)),
+    announce_update_cb(NULL),
+    user_data(0),
     shift_x_to_fit(0),
     shift_y_to_fit(0),
     gb_main(gb_main_),
