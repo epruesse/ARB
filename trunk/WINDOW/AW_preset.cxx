@@ -375,7 +375,7 @@ public:
             did_suppress_change = GcChange(std::max(whatChanged, did_suppress_change));
         }
         else {
-#if defined(DEBUG)
+#if defined(DEBUG) && 0
             fprintf(stderr, "[changed_cb] @ %zu\n", clock());
 #endif
             changed_cb(whatChanged);

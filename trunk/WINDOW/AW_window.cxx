@@ -576,8 +576,12 @@ AW_device_size *AW_window::get_size_device(AW_area area) {
     return size_device;
 }
 
+AW_common *AW_window::get_common(AW_area area) {
+    AW_area_management *aram = MAP_ARAM(area);
+    return aram ? aram->get_common() : NULL;
+}
 
-void AW_window::insert_help_topic(const char *labeli, 
+void AW_window::insert_help_topic(const char *labeli,
                                   const char *mnemonic, const char *helpText,
                                   AW_active mask, const WindowCallback& cb) {
     aw_assert(legal_mask(mask));
