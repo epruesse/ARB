@@ -37,7 +37,7 @@ Major changes for next release:
  - species selections (editor configurations):
    * visualisation of multiple selections in standard tree view (#658; example in database demo.arb)
    * order can be changed; each configuration has a comment; import stores configuration (#607)
- - Tree shading
+ - Tree shading (#443)
    * according to values stored in database
    * according to given topology (useful when comparing topologies)
  - support for extra database compression (using gzip, bzip2, xz); databases cannot be opened by arb versions before 6.1.x
@@ -85,6 +85,7 @@ Major changes for next release:
    * group shading
    * group counters (customizable)
    * all options are now also supported by ARB_PARSIMONY
+ - synchronized tree scrolling (#683)
  - colorsets were invalidated by generating new IDs (#660). fixed.
  - updated/added external tools:
    - added alternate RAxML (DNA only; version 8.0.26)
