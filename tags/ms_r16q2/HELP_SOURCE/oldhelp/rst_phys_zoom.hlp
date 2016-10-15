@@ -1,0 +1,29 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+UP	mode.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Reset Physical Zoom
+
+OCCURRENCE	ARB_NT/Reset zoom/Reset Physical Zoom
+
+DESCRIPTION	Restores the initial scale of the tree display.
+
+NOTES           See LINK{mode_pzoom.hlp} on how to zoom.
+
+                You may also reset the zoom by any of the following:
+
+                - slightly resize the main window
+                - choose display mode (kind of tree view or similar)
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known

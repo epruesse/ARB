@@ -1,0 +1,127 @@
+# -*-Mode: Makefile;-*-  (emacs! this is a makefile!)
+
+.SUFFIXES: .doc .help .html
+
+# GENHELPDEST, GENDOCDEST and HELPFILELIST are passed from 'Makefile'
+
+HELP_NAMES=$(shell cat $(HELPFILELIST))
+HELP_TARGETS=$(addprefix $(GENHELPDEST)/,$(HELP_NAMES))
+HELP_PLAIN=./HELP_PLAIN
+HELP_WRITTEN=./HELP_WRITTEN
+HEADER=arb_help.head
+SED:=$(ARBHOME)/SH/arb_sed
+all: info forcedoc $(HELP_TARGETS)
+
+info:
+	@echo "----------------------------------------------------------------"
+	@echo "Collecting documentation for external programs used in GDE menus"
+#	@echo "HELP_TARGETS=$(HELP_TARGETS)"
+
+# ------------------------------------------------------------
+# rules to generate helpfiles
+# we need rules here for each helpfile specified on an 'itemhelp' line in GDE menus.
+
+ARBHOME=..
+GDE=$(ARBHOME)/GDE
+
+GENHELP_DEPENDS=genhelp.sh Makefile.helpfiles
+GENHELPTREE_DEPENDS=genhelptree.sh $(GENHELP_DEPENDS)
+
+# ---------- CLUSTALW
+
+CLUSTALW=$(GDE)/CLUSTALW
+CLUSTALW_HELP=$(CLUSTALW)/clustalw_help
+CLUSTALW_DOC=$(CLUSTALW)/clustalw.doc
+
+$(GENHELPDEST)/clustalw.help: $(CLUSTALW_HELP) $(CLUSTALW_DOC) $(GENHELPTREE_DEPENDS)
+	./genhelptree.sh $@ "$(subst .help,,$(notdir $@))" $(HEADER) $(CLUSTALW_HELP) $(CLUSTALW_DOC)
+
+# ---------- AXML / FASTDNAML
+
+AXML_HELP=$(GDE)/AxML/AxML.doc
+FASTDNAML_DOC=$(GDE)/FASTDNAML/fastDNAml.doc
+
+$(GENHELPDEST)/dnaml.help: $(AXML_HELP) $(FASTDNAML_DOC) $(GENHELPTREE_DEPENDS)
+	./genhelptree.sh $@ "$(subst .help,,$(notdir $@))" $(HEADER) $(AXML_HELP) $(FASTDNAML_DOC)
+
+# ---------- READSEQ
+
+READSEQ=$(ARBHOME)/READSEQ
+READSEQ_DOC_NAMES=Readme Formats Readseq.help
+READSEQ_DOCS=$(addprefix $(READSEQ)/,$(READSEQ_DOC_NAMES))
+
+$(GENHELPDEST)/readseq.help: $(READSEQ_DOCS) $(GENHELPTREE_DEPENDS)
+	./genhelptree.sh $@ "$(subst .help,,$(notdir $@))" $(HEADER) $(READSEQ_DOCS)
+
+# ---------- PHYLIP
+
+PHYLIP_DISTANCE_HELP_NAMES=fitch kitsch neighbor dnadist protdist
+PHYLIP_DISTANCE_HELPS=$(addsuffix .doc,$(addprefix $(GENDOCDEST)/,$(PHYLIP_DISTANCE_HELP_NAMES)))
+
+$(GENHELPDEST)/phylip_distance.help: $(PHYLIP_DISTANCE_HELPS) $(GENHELPTREE_DEPENDS)
+	./genhelptree.sh $@ "$(subst .help,,$(notdir $@))" $(HEADER) $(PHYLIP_DISTANCE_HELPS)
+
+# ------------------------------------------------------------
+# all help files in ./HELP_PLAIN are automatically found
+
+$(GENHELPDEST)/%.help: $(HELP_PLAIN)/%.help $(HEADER) $(GENHELP_DEPENDS)
+	./genhelp.sh $@ "$(subst .help,,$(notdir $@))" $(HEADER) $<
+
+# all help files in ./HELP_DOC_GEN are automatically found
+
+$(GENHELPDEST)/%.help: $(GENDOCDEST)/%.doc $(HEADER) $(GENHELP_DEPENDS)
+	./genhelp.sh $@ "$(subst .help,,$(notdir $@))" $(HEADER) $<
+
+# ------------------------------------------------------------
+# rules to generate plain doc from provided html files
+
+HELP_TREEPUZZLE=../GDE/TREEPUZZLE/doc
+PHYLIP_MAIN=../GDE/PHYLIP
+HELP_PHYLIP=$(PHYLIP_MAIN)/doc
+HELP_PHYML=../GDE/PHYML
+
+FORCED_DOC_NAMES=proml dnapars protpars phyml phylip
+LYNX_PARA=-dump -nolist -display_charset=iso-8859-1
+
+$(GENDOCDEST)/%.doc: $(HELP_PHYLIP)/%.html Makefile.helpfiles
+	@(test -f $@ && chmod u+w $@) || true
+	(echo "# generated from ../$<"; lynx $(LYNX_PARA) $<) | $(SED) -e 's/©/(C)/' > $@
+	@test -s $@ || (echo $@ not generated or empty && rm $@ && false)
+	@chmod a-w $@
+
+$(GENDOCDEST)/treepuzzle.doc: $(HELP_TREEPUZZLE)/manual.html Makefile.helpfiles
+	@(test -f $@ && chmod u+w $@) || true
+	(echo "# generated from ../$<"; lynx $(LYNX_PARA) $<) | $(SED) -e 's/©/(C)/' > $@
+	@test -s $@ || (echo $@ not generated or empty && rm $@ && false)
+	@chmod a-w $@
+
+$(GENDOCDEST)/phyml.doc: $(HELP_PHYML)/usersguide_phyliplike.html Makefile.helpfiles
+	@(test -f $@ && chmod u+w $@) || true
+	(echo "# generated from ../$<"; lynx $(LYNX_PARA) $<) | $(SED) -e 's/©/(C)/' > $@
+	@test -s $@ || (echo $@ not generated or empty && rm $@ && false)
+	@chmod a-w $@
+
+$(GENDOCDEST)/phylip.doc: $(PHYLIP_MAIN)/phylip.html Makefile.helpfiles
+	@(test -f $@ && chmod u+w $@) || true
+	(echo "# generated from ../$<"; lynx $(LYNX_PARA) $<) | $(SED) -e 's/©/(C)/' > $@
+	@test -s $@ || (echo $@ not generated or empty && rm $@ && false)
+	@chmod a-w $@
+
+FORCED_DOCS=$(addsuffix .doc,$(addprefix $(GENDOCDEST)/,$(FORCED_DOC_NAMES)))
+forcedoc: $(FORCED_DOCS) Makefile
+
+# ------------------------------------------------------------
+# default rule to raise error if no rule is given to generate a helpfile.
+# dont warn if there's a help file in HELP_WRITTEN
+# (files there are processed by ../HELP_SOURCE/genhelp/Makefile )
+
+$(GENHELPDEST)/%.help:
+	@( test -f $(HELP_WRITTEN)/$(notdir $@) ) \
+	|| \
+	( \
+		echo "Makefile.helpfiles:22: Error: No rule to make $(notdir $@) (to which is referred-to inside GDE menus, see hits below)" ; \
+		grep -n $(notdir $@) MENUS/*.menu ; \
+		false )
+
+clean:
+	rm -rf $(GENHELPDEST) $(GENDOCDEST)

@@ -1,0 +1,4 @@
+# libraries needed to link against ISLAND_HOPPING/ISLAND_HOPPING.a
+
+lib/libARBDB.so
+

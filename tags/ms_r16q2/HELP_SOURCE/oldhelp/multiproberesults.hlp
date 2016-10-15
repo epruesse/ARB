@@ -1,0 +1,36 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	multiprobe.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile strunk ********
+TITLE		Multiprobe results
+
+
+DESCRIPTION	Shows the best multi-probes. Each multi-probe has a score, the
+		higher the score the better.
+
+		The user may add any string as a comment (or one of the
+		three default comments)
+
+		The selected multi-probe can be used to set the colors
+		at the tips at the tree. The following colors are used
+
+                   Hit         Colorname     Default
+                   ----------------------------------
+                   none        "None"        black
+                   Probe1      "P1"          red
+                   Probe2      "P2"          green
+                   Probe3      "P3"          blue
+                   Probe1+2    "P7"          yellow
+                   Probe2+3    "P8"          cyan
+                   Probe3+1    "P9"          magenta
+                   Probe1+2+3  "All"         white
+
+NOTE		If you do not see any colors, the colors
+                in 'Properties/Tree colors & fonts' are probably misconfigured.
+
+
+
