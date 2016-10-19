@@ -151,8 +151,7 @@ AW_active sina_mask(AW_root *root) {
 
     if (fail_reason) {
         fprintf(stderr,
-                "Note: SINA (SILVA Aligner) disabled (Reason: %s)\n"
-                "      Visit http://www.ribocon.com/sina/ for more information.\n",
+                "Note: SINA (SILVA Aligner) disabled (Reason: %s)\n",
                 fail_reason);
     }
 
