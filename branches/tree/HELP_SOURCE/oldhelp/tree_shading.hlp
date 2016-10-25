@@ -1,0 +1,87 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+SUB	color.hlp
+SUB	field_shader.hlp
+SUB	topology_shader.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE           Tree shading
+
+OCCURRENCE      ARB_NT/Tree/Tree shading...
+
+DESCRIPTION     Allows to select if and how to shade the tree.
+
+                First select the shader to use from the selection list.
+                To configure specific setting of the selected shader press 'Configure'.
+
+                Generic settings (valid for all shaders) are described in the following sections.
+
+SECTION         Active color range
+
+                    In the 'Active color range' section you can select which color-range
+                    to use for the selected shader. The available color-ranges depend on
+                    the (current) dimension of the shader (which is displayed below).
+
+                        The 'Color setup' button pops-up the color-range setup window,
+                        where you may configure the colors of all defined color-ranges.
+
+SECTION         Overlay
+
+                    In the 'Overlay' section you can define whether to overlay the
+                    tree shading with
+
+                    - group colors and/or
+                    - marked color.
+
+SECTION         Value phasing
+
+                    In the 'Value phasing' section you can modify the way how values are mapped to colors.
+
+                    This can be useful whenever the tree is shaded continuously,
+                    e.g. whenever any topology-related values are vizualized.
+
+                    Basically this allows to modify mapping-frequency and -offsets.
+
+                    The frequency scaler defines how often the color-range is mapped to the value-range:
+
+                        * the default frequency is 1.
+                        * a frequency of 2 means: the first half of the value-range is displayed in the
+                          same colors as the second half.
+                        * a frequency of 0.5 means: the value-range is only mapped to the first half of
+                          the color-range.
+
+                    The two offset scalers (pre- and post-shift) define linear offsets applied
+                    during mapping:
+
+                        * the default values for both are zero.
+                        * pre-shift operates on values and
+                        * post-shift operates on colors.
+
+                        As long as frequency is 1, they behave quiet similar.
+                        For other frequencies they act differently: one shifts local, the other global.
+
+                    The 'Alternate?' toggle defines how to repeat color-ranges (this only applies if
+                    frequency is greater 1!). If checked, each 2nd repeated color-range will be mapped in
+                    reverse order.
+
+                            Example: If the used color-range contains continuous colors from red to green,
+                            and 'Alternate?' is checked, the color will fade from red to green and back to red
+                            (if unchecked it would fade from red to green, then jump back to red and again
+                            fade to green).
+
+                            If you select a cyclic color-range (eg. the 'Rainbow' range) you might
+                            want to try frequencies > 1 without checking 'Alternate?'.
+
+NOTES           The settings described above are shader-specific (ie. each shaders remembers these
+                settings and restores them when the shader is selected again).
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known

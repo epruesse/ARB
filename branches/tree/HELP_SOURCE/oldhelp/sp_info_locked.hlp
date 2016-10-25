@@ -1,0 +1,30 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP      arb.hlp
+UP      glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB    subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE           Locked species information window
+
+OCCURRENCE      Species information/New window
+
+DESCRIPTION     This species information window is locked to a specific species, 
+                i.e. it will not follow the currently selected species.
+
+                To open a species information window that follows the selected
+                species use 'ARB_NT/Species/SpeciesInformation'.
+
+                For general info on the species information window read LINK{sp_info.hlp}.
+
+NOTES           Two distinguish between the "normal" and the "locked" species information window,
+                please look at the title bar (the locked window shows a species name).
+
+EXAMPLES        None
+
+WARNINGS        None
+
+BUGS            No bugs known

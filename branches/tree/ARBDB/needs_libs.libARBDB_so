@@ -1,0 +1,3 @@
+# libraries needed to link against lib/libARBDB.so
+lib/libCORE.so
+

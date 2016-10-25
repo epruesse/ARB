@@ -1,0 +1,30 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+UP 	gene_map.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		ARB_GENEMAP modes
+
+OCCURRENCE	ARB_GENEMAP/mode buttons
+
+DESCRIPTION	ZOOM MODE 	Mode to zoom the displayed gene map.
+
+                                See LINK{mode_pzoom.hlp} for details.
+
+		INFO MODE	Mode to get info about a specific gene.
+
+				Click on the gene to get info about.
+
+NOTES		None
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known
