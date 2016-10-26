@@ -304,8 +304,12 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
 
     GraphicTreeCallback tree_changed_cb;
 
+    AW_root *aw_root;
+    GBDATA  *gb_main;
+
+
     AW_pos paint_irs_sub_tree(AP_tree *node, AW_pos x_offset); // returns y pos
-    void unload();
+    void   unload();
 
     // functions to compute displayinformation
 
@@ -323,7 +327,19 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
 
     const GroupInfo& get_group_info(AP_tree *at, GroupInfoMode mode, bool swap = false) const;
 
+    void handle_key(AW_device *device, AWT_graphic_event& event);
+
+protected:
+    void store_command_data(AWT_command_data *new_cmd_data) {
+        delete cmd_data;
+        cmd_data = new_cmd_data;
+    }
+    AWT_command_data *get_command_data() { return cmd_data; }
+
 public:
+    AWT_graphic_tree(AW_root *aw_root, GBDATA *gb_main, AD_map_viewer_cb map_viewer_cb);
+    ~AWT_graphic_tree() OVERRIDE;
+
     void filled_box(int gc, const AW::Position& pos, int pixel_width) { pixel_box(gc, pos, pixel_width, AW::FillStyle::SOLID); }
     void empty_box(int gc, const AW::Position& pos, int pixel_width) { pixel_box(gc, pos, pixel_width, AW::FillStyle::EMPTY); }
     void diamond(int gc, const AW::Position& pos, int pixel_radius);
@@ -353,25 +369,10 @@ public:
 
     virtual AP_tree_root *create_tree_root(AliView *aliview, AP_sequence *seq_prototype, bool insert_delete_cbs);
 
-protected:
-    void store_command_data(AWT_command_data *new_cmd_data) {
-        delete cmd_data;
-        cmd_data = new_cmd_data;
-    }
-    AWT_command_data *get_command_data() { return cmd_data; }
+    AP_tree_display_type tree_sort; // @@@ rename -> display_type; make private
 
-public:
-
-    // *********** read only variables !!! // @@@ make private?
-
-    AW_root              *aw_root;
-    AP_tree_display_type  tree_sort;
-    GBDATA               *gb_main;
-
-    // *********** public section
-
-    AWT_graphic_tree(AW_root *aw_root, GBDATA *gb_main, AD_map_viewer_cb map_viewer_cb);
-    ~AWT_graphic_tree() OVERRIDE;
+    AW_root *get_root() const { return aw_root; }
+    GBDATA *get_gbmain() const { return gb_main; }
 
     AP_tree_root *get_tree_root() { return tree_static; }
 
@@ -393,9 +394,6 @@ public:
     void show(AW_device *device) OVERRIDE;
     const AW::Position& get_cursor() const { return cursor; }
 
-private:
-    void handle_key(AW_device *device, AWT_graphic_event& event);
-public:
     void handle_command(AW_device *device, AWT_graphic_event& event) OVERRIDE;
 
     void mark_species_in_tree(AP_tree *at, int mark);
@@ -418,7 +416,9 @@ public:
     GB_ERROR save(GBDATA *gb_main, const char *name) OVERRIDE __ATTR__USERESULT;
     int      check_update(GBDATA *gb_main) OVERRIDE;         // reload tree if needed
     void     update(GBDATA *gb_main) OVERRIDE;
-    void     set_tree_type(AP_tree_display_type type, AWT_canvas *ntw);
+
+    void set_tree_type(AP_tree_display_type type, AWT_canvas *ntw); // @@@ rename -> set_display_type
+    // @@@ add get_display_type()
 
     double get_irs_tree_ruler_scale_factor() const { return irs_tree_ruler_scale_factor; }
     void show_ruler(AW_device *device, int gc);

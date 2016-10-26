@@ -341,8 +341,8 @@ AW_gc_manager *AWT_graphic_parsimony::init_devices(AW_window *aww, AW_device *de
 
 void AWT_graphic_parsimony::show(AW_device *device) {
     AP_tree_nlen *root_node = parsimony.get_root_node();
-    AW_awar      *awar_pars = aw_root->awar(AWAR_PARSIMONY);
-    AW_awar      *awar_best = aw_root->awar(AWAR_BEST_PARSIMONY);
+    AW_awar      *awar_pars = get_root()->awar(AWAR_PARSIMONY);
+    AW_awar      *awar_best = get_root()->awar(AWAR_BEST_PARSIMONY);
 
     long parsval = root_node ? root_node->costs() : 0;
     awar_pars->write_int(parsval);
@@ -395,7 +395,7 @@ void AWT_graphic_parsimony::handle_command(AW_device *device, AWT_graphic_event&
                 AP_FLOAT start_pars = get_root_node()->costs();
                 AP_FLOAT curr_pars  = start_pars;
 
-                KL_Settings KL(aw_root);
+                KL_Settings KL(get_root());
 
                 do {
                     AP_FLOAT prev_pars  = curr_pars;

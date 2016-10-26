@@ -352,7 +352,7 @@ static void nt_add(AWT_graphic_parsimony *agt, AddWhat what, bool quick) {
     }
 
     GB_HASH *hash    = 0;
-    GBDATA  *gb_main = agt->gb_main;
+    GBDATA  *gb_main = agt->get_gbmain();
     {
         GB_transaction ta(gb_main);
         switch (what) {
@@ -645,7 +645,7 @@ static long push_partial(const char *, long val, void *cd_partial) {
 
 static void nt_add_partial(AWT_graphic_parsimony *agt) {
     GB_ERROR  error   = NULL;
-    GBDATA   *gb_main = agt->gb_main;
+    GBDATA   *gb_main = agt->get_gbmain();
 
     GB_begin_transaction(gb_main);
 
