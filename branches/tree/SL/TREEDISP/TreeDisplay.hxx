@@ -253,22 +253,16 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
     char         *species_name;
     AW::Position  cursor;
 
-    int    baselinewidth;
-    int    show_brackets;
-    int    show_circle;
-    int    use_ellipse;
-    float  circle_zoom_factor;
-    float  circle_max_size;
-    int    bootstrap_min;
+    int   baselinewidth;
+    int   show_brackets; // @@@ bool?
+    int   show_circle;   // @@@ bool?
+    int   use_ellipse;   // @@@ bool?
+    float circle_zoom_factor;
+    float circle_max_size;
+    int   bootstrap_min;
 
     int zombies; // # of zombies during last load()
     int duplicates; // # of duplicates during last load()
-
-    AW_pos paint_irs_sub_tree(AP_tree *node, AW_pos x_offset); // returns y pos
-
-    void unload();
-
-    // variables - tree compatibility
 
     AP_tree * tree_proto;
     bool link_to_database; // link on load ?
@@ -308,6 +302,9 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
     AP_tree      *displayed_root; // root node of shown (sub-)tree; differs from real root if tree is zoomed logically
 
     GraphicTreeCallback tree_changed_cb;
+
+    AW_pos paint_irs_sub_tree(AP_tree *node, AW_pos x_offset); // returns y pos
+    void unload();
 
     // functions to compute displayinformation
 
@@ -364,7 +361,7 @@ protected:
 
 public:
 
-    // *********** read only variables !!!
+    // *********** read only variables !!! // @@@ make private?
 
     AW_root              *aw_root;
     AP_tree_display_type  tree_sort;

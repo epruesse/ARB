@@ -1774,37 +1774,36 @@ static GraphicTreeCallback treeChangeIgnore_cb = makeGraphicTreeCallback(tree_ch
 
 AWT_graphic_tree::AWT_graphic_tree(AW_root *aw_root_, GBDATA *gb_main_, AD_map_viewer_cb map_viewer_cb_)
     : AWT_graphic(),
-      line_filter         (AW_SCREEN|AW_CLICK|AW_TRACK|AW_CLICK_DROP|AW_PRINTER|AW_SIZE), // horizontal lines (ie. lines towards leafs in dendro-view; all lines in radial view)
-      vert_line_filter    (AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_PRINTER),                  // vertical lines (in dendro view; @@@ should be used in IRS as well!)
-      mark_filter         (AW_SCREEN|AW_CLICK|AW_TRACK|AW_CLICK_DROP|AW_PRINTER_EXT),     // diamond at open group (dendro+radial); boxes at marked species (all views); origin (radial view); cursor box (all views); group-handle (IRS)
+      species_name(NULL),
+      baselinewidth(1),
+      tree_proto(NULL),
+      link_to_database(false),
+      line_filter         (AW_SCREEN|AW_CLICK|AW_TRACK|AW_CLICK_DROP|AW_PRINTER|AW_SIZE),          // horizontal lines (ie. lines towards leafs in dendro-view; all lines in radial view)
+      vert_line_filter    (AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_PRINTER),                           // vertical lines (in dendro view; @@@ should be used in IRS as well!)
+      mark_filter         (AW_SCREEN|AW_CLICK|AW_TRACK|AW_CLICK_DROP|AW_PRINTER_EXT),              // diamond at open group (dendro+radial); boxes at marked species (all views); origin (radial view); cursor box (all views); group-handle (IRS)
       group_bracket_filter(AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_PRINTER|AW_SIZE_UNSCALED),
       bs_circle_filter    (AW_SCREEN|AW_PRINTER|AW_SIZE_UNSCALED),
       leaf_text_filter    (AW_SCREEN|AW_CLICK|AW_TRACK|AW_CLICK_DROP|AW_PRINTER|AW_SIZE_UNSCALED), // text at leafs (all views but IRS? @@@ should be used in IRS as well)
       group_text_filter   (AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_PRINTER|AW_SIZE_UNSCALED),
       remark_text_filter  (AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_PRINTER|AW_SIZE_UNSCALED),
       other_text_filter   (AW_SCREEN|AW_PRINTER|AW_SIZE_UNSCALED),
-      ruler_filter        (AW_SCREEN|AW_CLICK|AW_PRINTER),                                // appropriate size-filter added manually in code
-      root_filter         (AW_SCREEN|AW_PRINTER_EXT),                                     // unused (@@@ should be used for radial root)
-      marker_filter       (AW_SCREEN|AW_CLICK|AW_PRINTER_EXT|AW_SIZE_UNSCALED),           // species markers (eg. visualizing configs)
-      tree_changed_cb(treeChangeIgnore_cb)
+      ruler_filter        (AW_SCREEN|AW_CLICK|AW_PRINTER),                                         // appropriate size-filter added manually in code
+      root_filter         (AW_SCREEN|AW_PRINTER_EXT),                                              // unused (@@@ should be used for radial root)
+      marker_filter       (AW_SCREEN|AW_CLICK|AW_PRINTER_EXT|AW_SIZE_UNSCALED),                    // species markers (eg. visualizing configs)
+      nds_only_marked(false),
+      group_info_pos(GIP_SEPARATED),
+      group_count_mode(GCM_MEMBERS),
+      display_markers(NULL),
+      map_viewer_cb(map_viewer_cb_),
+      cmd_data(NULL),
+      tree_static(NULL),
+      displayed_root(NULL),
+      tree_changed_cb(treeChangeIgnore_cb),
+      aw_root(aw_root_),
+      gb_main(gb_main_)
 {
-    td_assert(gb_main_);
-
+    td_assert(gb_main);
     set_tree_type(AP_TREE_NORMAL, NULL);
-    displayed_root   = 0;
-    tree_proto       = 0;
-    link_to_database = false;
-    tree_static      = 0;
-    baselinewidth    = 1;
-    species_name     = 0;
-    aw_root          = aw_root_;
-    gb_main          = gb_main_;
-    cmd_data         = NULL;
-    nds_only_marked  = false;
-    group_info_pos   = GIP_SEPARATED;
-    group_count_mode = GCM_MEMBERS;
-    map_viewer_cb    = map_viewer_cb_;
-    display_markers  = NULL;
 }
 
 AWT_graphic_tree::~AWT_graphic_tree() {
