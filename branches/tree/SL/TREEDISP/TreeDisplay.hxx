@@ -254,18 +254,19 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
     AW::Position  cursor;
 
     int   baselinewidth;
-    int   show_brackets; // @@@ bool?
-    int   show_circle;   // @@@ bool?
-    int   use_ellipse;   // @@@ bool?
     float circle_zoom_factor;
     float circle_max_size;
     int   bootstrap_min;
 
-    int zombies; // # of zombies during last load()
+    int zombies;    // # of zombies during last load()
     int duplicates; // # of duplicates during last load()
 
     AP_tree * tree_proto;
-    bool link_to_database; // link on load ?
+
+    bool show_brackets;
+    bool show_circle;
+    bool use_ellipse;
+    bool link_to_database; // link on load?
 
     double list_tree_ruler_y;
     double irs_tree_ruler_scale_factor;
