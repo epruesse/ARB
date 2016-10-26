@@ -531,7 +531,7 @@ public:
 
 bool AWT_graphic_tree::warn_inappropriate_mode(AWT_COMMAND_MODE mode) {
     if (mode == AWT_MODE_ROTATE || mode == AWT_MODE_SPREAD) {
-        if (tree_sort != AP_TREE_RADIAL) {
+        if (tree_style != AP_TREE_RADIAL) {
             aw_message("Please select the radial tree display mode to use this command");
             return true;
         }
@@ -1479,7 +1479,7 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
                 xdata = GB_searchOrCreate_float(gb_tree, RULER_SIZE, DEFAULT_RULER_LENGTH);
 
                 double rel  = clicked.get_rel_attach();
-                if (tree_sort == AP_TREE_IRS) {
+                if (tree_style == AP_TREE_IRS) {
                     unscale /= (rel-1)*irs_tree_ruler_scale_factor; // ruler has opposite orientation in IRS mode
                 }
                 else {
@@ -1727,16 +1727,16 @@ act_like_group :
     }
 }
 
-void AWT_graphic_tree::set_tree_type(AP_tree_display_type type, AWT_canvas *ntw) {
-    if (sort_is_list_style(type)) {
-        if (tree_sort == type) { // we are already in wanted view
+void AWT_graphic_tree::set_tree_style(AP_tree_display_style style, AWT_canvas *ntw) {
+    if (is_list_style(style)) {
+        if (tree_style == style) { // we are already in wanted view
             nds_only_marked = !nds_only_marked; // -> toggle between 'marked' and 'all'
         }
         else {
             nds_only_marked = false; // default to all
         }
     }
-    tree_sort = type;
+    tree_style = style;
     apply_zoom_settings_for_treetype(ntw); // sets default padding
 
     exports.fit_mode  = AWT_FIT_LARGER;
@@ -1744,7 +1744,7 @@ void AWT_graphic_tree::set_tree_type(AP_tree_display_type type, AWT_canvas *ntw)
 
     exports.dont_scroll = 0;
 
-    switch (type) {
+    switch (style) {
         case AP_TREE_RADIAL:
             break;
 
@@ -1803,7 +1803,7 @@ AWT_graphic_tree::AWT_graphic_tree(AW_root *aw_root_, GBDATA *gb_main_, AD_map_v
       gb_main(gb_main_)
 {
     td_assert(gb_main);
-    set_tree_type(AP_TREE_NORMAL, NULL);
+    set_tree_style(AP_TREE_NORMAL, NULL);
 }
 
 AWT_graphic_tree::~AWT_graphic_tree() {
@@ -2542,7 +2542,7 @@ void AWT_graphic_tree::show_radial_tree(AP_tree *at, const AW::Position& base, c
 const char *AWT_graphic_tree::ruler_awar(const char *name) {
     // return "ruler/TREETYPE/name" (path to entry below tree)
     const char *tree_awar = 0;
-    switch (tree_sort) {
+    switch (tree_style) {
         case AP_TREE_NORMAL:
             tree_awar = "LIST";
             break;
@@ -2588,7 +2588,7 @@ void AWT_graphic_tree::show_ruler(AW_device *device, int gc) {
 
         float ruler_add_y  = 0.0;
         float ruler_add_x  = 0.0;
-        switch (tree_sort) {
+        switch (tree_style) {
             case AP_TREE_IRS:
                 // scale is different for IRS tree -> adjust:
                 half_ruler_width *= irs_tree_ruler_scale_factor;
@@ -2878,7 +2878,7 @@ void AWT_graphic_tree::apply_zoom_settings_for_treetype(AWT_canvas *ntw) {
         int  left_padding  = 0;
         int  right_padding = 0;
 
-        switch (tree_sort) {
+        switch (tree_style) {
             case AP_TREE_RADIAL:
                 zoom_fit_text = aw_root->awar(AWAR_DTREE_RADIAL_ZOOM_TEXT)->read_int();
                 left_padding  = aw_root->awar(AWAR_DTREE_RADIAL_XPAD)->read_int();
@@ -2921,7 +2921,7 @@ void AWT_graphic_tree::show(AW_device *device) {
 
     cursor = Origin;
 
-    if (!displayed_root && sort_is_tree_style(tree_sort)) { // if there is no tree, but display style needs tree
+    if (!displayed_root && is_tree_style(tree_style)) { // if there is no tree, but display style needs tree
         static const char *no_tree_text[] = {
             "No tree (selected)",
             "",
@@ -2944,7 +2944,7 @@ void AWT_graphic_tree::show(AW_device *device) {
         bool     allow_range_display = true;
         Position range_origin        = Origin;
 
-        switch (tree_sort) {
+        switch (tree_style) {
             case AP_TREE_NORMAL: {
                 DendroSubtreeLimits limits;
                 Position            pen(0, 0.05);
@@ -2981,7 +2981,7 @@ void AWT_graphic_tree::show(AW_device *device) {
                 break;
         }
         if (are_distinct(Origin, cursor)) empty_box(AWT_GC_CURSOR, cursor, NT_SELECTED_WIDTH);
-        if (sort_is_tree_style(tree_sort)) show_ruler(disp_device, AWT_GC_CURSOR);
+        if (is_tree_style(tree_style)) show_ruler(disp_device, AWT_GC_CURSOR);
 
         if (allow_range_display) {
             AW_displayColorRange(disp_device, AWT_GC_FIRST_RANGE_COLOR, range_origin, range_display_size, range_display_size);
@@ -3553,8 +3553,8 @@ class fake_AWT_graphic_tree : public AWT_graphic_tree {
         switch (var_mode) {
             case 0: group_count_mode = GCM_MEMBERS; break;
             case 1: group_count_mode = GCM_NONE;  break;
-            case 2: group_count_mode = (tree_sort%2) ? GCM_MARKED : GCM_PERCENT;  break;
-            case 3: group_count_mode = (tree_sort%2) ? GCM_BOTH   : GCM_BOTH_PC;  break;
+            case 2: group_count_mode = (tree_style%2) ? GCM_MARKED : GCM_PERCENT;  break;
+            case 3: group_count_mode = (tree_style%2) ? GCM_BOTH   : GCM_BOTH_PC;  break;
         }
     }
 
@@ -3569,7 +3569,7 @@ public:
     void set_var_mode(int mode) { var_mode = mode; }
     void test_show_tree(AW_device *device) { show(device); }
 
-    void test_print_tree(AW_device_print *print_device, AP_tree_display_type type, bool show_handles) {
+    void test_print_tree(AW_device_print *print_device, AP_tree_display_style style, bool show_handles) {
         const int      SCREENSIZE = 541; // use a prime as screensize to reduce rounding errors
         AW_device_size size_device(print_device->get_common());
 
@@ -3586,7 +3586,7 @@ public:
         double zoomy = SCREENSIZE/drawn.height();
         double zoom  = 0.0;
 
-        switch (type) {
+        switch (style) {
             case AP_LIST_SIMPLE:
             case AP_TREE_RADIAL:
                 zoom = std::max(zoomx, zoomy);
@@ -3677,18 +3677,18 @@ void TEST_treeDisplay() {
     for (int show_handles = 0; show_handles <= 1; ++show_handles) {
         for (int color = 0; color <= 1; ++color) {
             print_dev.set_color_mode(color);
-            // for (int itype = AP_TREE_NORMAL; itype <= AP_LIST_SIMPLE; ++itype) {
-            for (int itype = AP_LIST_SIMPLE; itype >= AP_TREE_NORMAL; --itype) {
-                AP_tree_display_type type = AP_tree_display_type(itype);
-                if (spoolnameof[type]) {
-                    char *spool_name     = GBS_global_string_copy("display/%s_%c%c", spoolnameof[type], "MC"[color], "NH"[show_handles]);
+            // for (int istyle = AP_TREE_NORMAL; istyle <= AP_LIST_SIMPLE; ++istyle) {
+            for (int istyle = AP_LIST_SIMPLE; istyle >= AP_TREE_NORMAL; --istyle) {
+                AP_tree_display_style style = AP_tree_display_style(istyle);
+                if (spoolnameof[style]) {
+                    char *spool_name     = GBS_global_string_copy("display/%s_%c%c", spoolnameof[style], "MC"[color], "NH"[show_handles]);
                     char *spool_file     = GBS_global_string_copy("%s_curr.fig", spool_name);
                     char *spool_expected = GBS_global_string_copy("%s.fig", spool_name);
 
 
 // #define TEST_AUTO_UPDATE // dont test, instead update expected results
 
-                    agt.set_tree_type(type, NULL);
+                    agt.set_tree_style(style, NULL);
 
 #if defined(TEST_AUTO_UPDATE)
 #warning TEST_AUTO_UPDATE is active (non-default)
@@ -3700,7 +3700,7 @@ void TEST_treeDisplay() {
                     {
                         GB_transaction ta(gb_main);
                         agt.set_var_mode(show_handles+2*color);
-                        agt.test_print_tree(&print_dev, type, show_handles);
+                        agt.test_print_tree(&print_dev, style, show_handles);
                     }
 
                     print_dev.close();

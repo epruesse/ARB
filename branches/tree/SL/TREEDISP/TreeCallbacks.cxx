@@ -450,10 +450,10 @@ void NT_reset_pzoom_cb(UNFIXED, TREE_canvas *ntw) {
     ntw->zoom_reset_and_refresh();
 }
 
-void NT_set_tree_style(UNFIXED, TREE_canvas *ntw, AP_tree_display_type type) {
+void NT_set_tree_style(UNFIXED, TREE_canvas *ntw, AP_tree_display_style style) {
     GB_transaction ta(ntw->gb_main);
     AWT_TREE(ntw)->check_update(ntw->gb_main);
-    AWT_TREE(ntw)->set_tree_type(type, ntw);
+    AWT_TREE(ntw)->set_tree_style(style, ntw);
     ntw->zoom_reset_and_refresh();
     TREE_auto_jump_cb(NULL, ntw, true);
 }
@@ -617,7 +617,7 @@ void NT_jump_cb(UNFIXED, TREE_canvas *ntw, AP_tree_jump_type jumpType) {
 
     if (name[0]) {
         AP_tree *found   = NULL;
-        bool     is_tree = sort_is_tree_style(gtree->tree_sort);
+        bool     is_tree = is_tree_style(gtree->get_tree_style());
 
         if (is_tree) {
             if (gtree && gtree->get_logical_root()) {
@@ -649,7 +649,7 @@ void NT_jump_cb(UNFIXED, TREE_canvas *ntw, AP_tree_jump_type jumpType) {
         }
 
         if (found || !is_tree) {
-            bool is_IRS  = gtree->tree_sort == AP_TREE_IRS;
+            bool is_IRS  = gtree->get_tree_style() == AP_TREE_IRS;
             bool repeat  = is_IRS;
             bool do_jump = true;
 
@@ -700,7 +700,7 @@ void NT_jump_cb(UNFIXED, TREE_canvas *ntw, AP_tree_jump_type jumpType) {
                     else { // keep visible
                         if (S.xpos()<0.0) {
                             double relPos = 0;
-                            switch (gtree->tree_sort) {
+                            switch (gtree->get_tree_style()) {
                                 case AP_TREE_NORMAL:
                                 case AP_TREE_IRS:      relPos = .1; break;
                                 case AP_TREE_RADIAL:   relPos = .5; break;
@@ -729,7 +729,7 @@ void NT_jump_cb(UNFIXED, TREE_canvas *ntw, AP_tree_jump_type jumpType) {
         }
 
         if (!found && is_tree && verboose && !msg) {
-            msg = GBS_global_string_copy("Species '%s' is no member of this %s", name, gtree->tree_sort == AP_LIST_NDS ? "list" : "tree");
+            msg = GBS_global_string_copy("Species '%s' is no member of this %s", name, gtree->get_tree_style() == AP_LIST_NDS ? "list" : "tree");
         }
     }
     else if (verboose) {
@@ -815,7 +815,7 @@ void TREE_GC_changed_cb(GcChange whatChanged, AWT_canvas *ntw) {
 
 void NT_reinit_treetype(UNFIXED, TREE_canvas *ntw) {
     AWT_graphic_tree *gt = DOWNCAST(AWT_graphic_tree*, ntw->gfx);
-    gt->set_tree_type(gt->tree_sort, ntw);
+    gt->set_tree_style(gt->get_tree_style(), ntw);
     AWT_resize_cb(NULL, ntw);
     TREE_auto_jump_cb(NULL, ntw, true);
 }

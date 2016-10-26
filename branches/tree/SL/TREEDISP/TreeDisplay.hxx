@@ -62,7 +62,7 @@
 #define AWT_TREE(ntw) DOWNCAST(AWT_graphic_tree*, (ntw)->gfx)
 
 
-enum AP_tree_display_type {
+enum AP_tree_display_style {
     AP_TREE_NORMAL, // normal tree display (dendrogram)
     AP_TREE_RADIAL, // radial tree display
     AP_TREE_IRS, // like AP_TREE_NORMAL, with folding line
@@ -94,8 +94,8 @@ enum ClickedType {
     CL_BRANCH,
 };
 
-inline bool sort_is_list_style(AP_tree_display_type sort) { return sort == AP_LIST_NDS || sort == AP_LIST_SIMPLE; }
-inline bool sort_is_tree_style(AP_tree_display_type sort) { return !sort_is_list_style(sort); }
+inline bool is_list_style(AP_tree_display_style style) { return style == AP_LIST_NDS || style == AP_LIST_SIMPLE; }
+inline bool is_tree_style(AP_tree_display_style style) { return !is_list_style(style); }
 
 
 class AWT_graphic_tree_group_state;
@@ -307,6 +307,7 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
     AW_root *aw_root;
     GBDATA  *gb_main;
 
+    AP_tree_display_style tree_style;
 
     AW_pos paint_irs_sub_tree(AP_tree *node, AW_pos x_offset); // returns y pos
     void   unload();
@@ -369,8 +370,6 @@ public:
 
     virtual AP_tree_root *create_tree_root(AliView *aliview, AP_sequence *seq_prototype, bool insert_delete_cbs);
 
-    AP_tree_display_type tree_sort; // @@@ rename -> display_type; make private
-
     AW_root *get_root() const { return aw_root; }
     GBDATA *get_gbmain() const { return gb_main; }
 
@@ -417,8 +416,8 @@ public:
     int      check_update(GBDATA *gb_main) OVERRIDE;         // reload tree if needed
     void     update(GBDATA *gb_main) OVERRIDE;
 
-    void set_tree_type(AP_tree_display_type type, AWT_canvas *ntw); // @@@ rename -> set_display_type
-    // @@@ add get_display_type()
+    void set_tree_style(AP_tree_display_style style, AWT_canvas *ntw);
+    AP_tree_display_style get_tree_style() const { return tree_style; }
 
     double get_irs_tree_ruler_scale_factor() const { return irs_tree_ruler_scale_factor; }
     void show_ruler(AW_device *device, int gc);

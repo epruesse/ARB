@@ -1000,11 +1000,11 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone, TREE_canvas **r
     {
         AW_awar *tree_awar = awr->awar_string(awar_tree);
         {
-            AP_tree_display_type old_sort_type = tree->tree_sort;
-            tree->set_tree_type(AP_LIST_SIMPLE, NULL); // avoid NDS warnings during startup
+            AP_tree_display_style prev_style = tree->get_tree_style();
+            tree->set_tree_style(AP_LIST_SIMPLE, NULL); // avoid NDS warnings during startup
 
             ntw = new TREE_canvas(GLOBAL.gb_main, awm, "ARB_NT", tree, tree_awar);
-            tree->set_tree_type(old_sort_type, ntw);
+            tree->set_tree_style(prev_style, ntw);
             ntw->set_mode(AWT_MODE_SELECT);
         }
 
@@ -1020,7 +1020,7 @@ static AW_window *popup_new_main_window(AW_root *awr, int clone, TREE_canvas **r
             }
             else {
                 AW_advice("Your database contains no tree.", AW_ADVICE_TOGGLE_AND_HELP, 0, "no_tree.hlp");
-                tree->set_tree_type(AP_LIST_NDS, ntw); // no tree -> show NDS list
+                tree->set_tree_style(AP_LIST_NDS, ntw); // no tree -> show NDS list
             }
 
             TREE_canvas_registry::instance().register_canvas(ntw);
