@@ -29,6 +29,7 @@
 
 #define AWAR_DTREE_BASELINEWIDTH   "awt/dtree/baselinewidth"
 #define AWAR_DTREE_VERICAL_DIST    "awt/dtree/verticaldist"
+#define AWAR_DTREE_BRANCH_STYLE    "awt/dtree/branch_style"
 #define AWAR_DTREE_ATTACH_SIZE     "awt/dtree/attach_size"
 #define AWAR_DTREE_ATTACH_LEN      "awt/dtree/attach_len"
 #define AWAR_DTREE_GROUP_DOWNSCALE "awt/dtree/downscaling"
@@ -248,6 +249,11 @@ enum GroupCountMode {
     GCM_BOTH_PC, // show "percent/members" (or "members" if none marked)
 };
 
+enum BranchStyle {
+    BS_RECTANGULAR, // traditional rectangular branches
+    BS_DIAGONAL,    // diagonal branches (directly from fathers to sons attach point)
+};
+
 class AWT_graphic_tree;
 DECLARE_CBTYPE_FVV_AND_BUILDERS(GraphicTreeCallback, void, AWT_graphic_tree*); // generates makeGraphicTreeCallback
 
@@ -293,6 +299,7 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
 
     GroupInfoPosition group_info_pos;
     GroupCountMode    group_count_mode;
+    BranchStyle       branch_style;
 
     MarkerDisplay *display_markers;
     struct {

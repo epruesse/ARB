@@ -1793,6 +1793,7 @@ AWT_graphic_tree::AWT_graphic_tree(AW_root *aw_root_, GBDATA *gb_main_, AD_map_v
       nds_only_marked(false),
       group_info_pos(GIP_SEPARATED),
       group_count_mode(GCM_MEMBERS),
+      branch_style(BS_RECTANGULAR),
       display_markers(NULL),
       map_viewer_cb(map_viewer_cb_),
       cmd_data(NULL),
@@ -2480,8 +2481,15 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
 
             set_line_attributes_for(son);
             unsigned int gc = son->gr.gc;
-            draw_branch_line(gc, s, n, line_filter);
-            draw_branch_line(gc, attach, s, vert_line_filter);
+
+            if (branch_style == BS_RECTANGULAR) {
+                draw_branch_line(gc, s, n, line_filter);
+                draw_branch_line(gc, attach, s, vert_line_filter);
+            }
+            else {
+                td_assert(branch_style == BS_DIAGONAL);
+                draw_branch_line(gc, attach, n, line_filter);
+            }
         }
         if (at->name) {
             diamond(at->gr.gc, attach, NT_DIAMOND_RADIUS);
@@ -2925,6 +2933,7 @@ void AWT_graphic_tree::read_tree_settings() {
     circle_max_size        = aw_root->awar(AWAR_DTREE_CIRCLE_MAX_SIZE)->read_float();
     use_ellipse            = aw_root->awar(AWAR_DTREE_USE_ELLIPSE)->read_int();
     bootstrap_min          = aw_root->awar(AWAR_DTREE_BOOTSTRAP_MIN)->read_int();
+    branch_style           = BranchStyle(aw_root->awar(AWAR_DTREE_BRANCH_STYLE)->read_int());
     attach_size            = aw_root->awar(AWAR_DTREE_ATTACH_SIZE)->read_float();
     attach_len             = aw_root->awar(AWAR_DTREE_ATTACH_LEN)->read_float();
 
@@ -3214,6 +3223,7 @@ static void markerThresholdChanged_cb(AW_root *root, bool partChanged) {
 void TREE_create_awars(AW_root *aw_root, AW_default db) {
     aw_root->awar_int  (AWAR_DTREE_BASELINEWIDTH,   1)  ->set_minmax (1,    10);
     aw_root->awar_float(AWAR_DTREE_VERICAL_DIST,    1.0)->set_minmax (0.01, 30);
+    aw_root->awar_int  (AWAR_DTREE_BRANCH_STYLE,    BS_RECTANGULAR);
     aw_root->awar_float(AWAR_DTREE_ATTACH_SIZE,    -1.0)->set_minmax (-1.0,  1.0);
     aw_root->awar_float(AWAR_DTREE_ATTACH_LEN,      0.0)->set_minmax (-1.0,  1.0);
     aw_root->awar_float(AWAR_DTREE_GROUP_DOWNSCALE, 0.33)->set_minmax(0.0,  1.0);
@@ -3279,6 +3289,7 @@ void TREE_install_update_callbacks(TREE_canvas *ntw) {
     awr->awar(AWAR_DTREE_GREY_LEVEL)     ->add_callback(expose_cb);
     awr->awar(AWAR_DTREE_GROUPCOUNTMODE) ->add_callback(expose_cb);
     awr->awar(AWAR_DTREE_GROUPINFOPOS)   ->add_callback(expose_cb);
+    awr->awar(AWAR_DTREE_BRANCH_STYLE)   ->add_callback(expose_cb);
     awr->awar(AWAR_DTREE_ATTACH_SIZE)    ->add_callback(expose_cb);
     awr->awar(AWAR_DTREE_ATTACH_LEN)     ->add_callback(expose_cb);
 
@@ -3327,6 +3338,7 @@ void TREE_insert_jump_option_menu(AW_window *aws, const char *label, const char 
 static AWT_config_mapping_def tree_setting_config_mapping[] = {
     { AWAR_DTREE_BASELINEWIDTH,    "line_width" },
     { AWAR_DTREE_VERICAL_DIST,     "vert_dist" },
+    { AWAR_DTREE_BRANCH_STYLE,     "branch_style" },
     { AWAR_DTREE_ATTACH_SIZE,      "attach_size" },
     { AWAR_DTREE_ATTACH_LEN,       "attach_len" },
     { AWAR_DTREE_GROUP_DOWNSCALE,  "group_downscale" },
@@ -3383,6 +3395,13 @@ AW_window *TREE_create_settings_window(AW_root *aw_root) {
 
         aws->label("Vertical distance");
         aws->create_input_field_with_scaler(AWAR_DTREE_VERICAL_DIST, 4, SCALER_WIDTH, AW_SCALER_EXP_LOWER);
+        aws->at_newline();
+
+        aws->label("Branch style");
+        aws->create_option_menu(AWAR_DTREE_BRANCH_STYLE, true);
+        aws->insert_default_option("Rectangular",     "R", BS_RECTANGULAR);
+        aws->insert_option        ("Diagonal",        "D", BS_DIAGONAL);
+        aws->update_option_menu();
         aws->at_newline();
 
         aws->label("Parent attach (by size)");
@@ -3628,6 +3647,7 @@ class fake_AWT_graphic_tree : public AWT_graphic_tree {
         bootstrap_min      = 0;
         attach_size        = -1.0;
         attach_len         = 0.0;
+        branch_style       = BS_RECTANGULAR;
 
         group_info_pos = GIP_SEPARATED;
         switch (var_mode) {
