@@ -30,6 +30,30 @@ DESCRIPTION     Various tree display settings are available:
                 - 'Vertical distance' allows to stretch the tree in
                   vertical direction (no effect on radial tree)
 
+                - 'Parent attach' defines the vertical position where the parent branch
+                   gets attached to a subtree (dendrogram view only).
+
+                  Two criteria can be used to determine the position:
+                  * size of subtrees and
+                  * length of child branches.
+
+                  If the factor for a criteria is set to 1.0, the parent is attached
+                  nearer towards the bigger subtree or towards the longer child branch
+                  (Note: the maximum shift is limited by the relation of criteria-values
+                  of both subtrees: if they are equal, the parent will be attached at
+                  center (regardless of the criteria-factor); if one criteria-value is
+                  zero, the parent will be attached to the other branch).
+
+                  For other criteria-factors than 1.0, the shift of the parent attach is
+                  applied proportionally, ie. if a factor is zero, the criteria will be
+                  ignored and if a factor is -1.0 the shift will happen towards the
+                  smaller subtree resp. towards the shorter branch.
+
+                  The traditional default setting (hardcoded up to arb 6.0.x) is -1.0 for
+                  size and 0.0 for length. In that case the parent branch is attached
+                  exactly between the lowest species of the upper subtree and the topmost
+                  species of the lower subtree.
+
                 - 'Vertical group scaling' allows to stretch the size of folded groups.
 
                 - '"Biggroup" scaling' allows to define how much space is reserved for big group

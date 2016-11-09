@@ -29,6 +29,8 @@
 
 #define AWAR_DTREE_BASELINEWIDTH   "awt/dtree/baselinewidth"
 #define AWAR_DTREE_VERICAL_DIST    "awt/dtree/verticaldist"
+#define AWAR_DTREE_ATTACH_SIZE     "awt/dtree/attach_size"
+#define AWAR_DTREE_ATTACH_LEN      "awt/dtree/attach_len"
 #define AWAR_DTREE_GROUP_DOWNSCALE "awt/dtree/downscaling"
 #define AWAR_DTREE_GROUP_SCALE     "awt/dtree/groupscaling"
 #define AWAR_DTREE_AUTO_JUMP       "awt/dtree/autojump"
@@ -270,6 +272,8 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
 
     double list_tree_ruler_y;
     double irs_tree_ruler_scale_factor;
+    double attach_size; // 1.0 = at bigger subtree ; 0.0 = centered;         -1.0 = at smaller subtree (trad.)
+    double attach_len;  // 1.0 = at longer branch;   0.0 = centered (trad.); -1.0 = at shorter branch
 
     AWT_scaled_font_limits scaled_font;
 

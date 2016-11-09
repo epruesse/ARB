@@ -2188,8 +2188,12 @@ bool TREE_show_branch_remark(AW_device *device, const char *remark_branch, bool 
 }
 
 void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtreeLimits& limits) {
-    // 'Pen' points to the upper-left corner of the area into which subtree gets painted
-    // after return 'Pen' is Y-positioned for next tree-tip (X is undefined)
+    /*! show dendrogram of subtree
+     * @param at       the subtree to show
+     * @param Pen      upper left corner of subtree area (eg. equals position of mark-box for tips).
+     *                 Is modified and points to next subtree-area afterwards (Y only, X is undef!)
+     * @param limits   reports dimension of painted subtree (output parameter)
+     */
 
     if (disp_device->type() != AW_DEVICE_SIZE) { // tree below cliprect bottom can be cut
         Position p(0, Pen.ypos() - scaled_branch_distance *2.0);
@@ -2203,7 +2207,7 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
         }
         else {
             p.sety(Pen.ypos() + scaled_branch_distance *(at->gr.view_sum+2));
-            s = disp_device->transform(p);;
+            s = disp_device->transform(p);
 
             if (disp_device->is_above_clip(s.ypos())) {
                 offset     = scaled_branch_distance*at->gr.view_sum;
@@ -2321,7 +2325,7 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
         s0.sety(limits.y_branch);
 
         Pen.setx(s0.xpos());
-        Position attach(Pen); attach.movey(- .5*scaled_branch_distance);
+        Position subtree_border(Pen); subtree_border.movey(- .5*scaled_branch_distance); // attach point centered between both subtrees
         Pen.movex(at->rightlen);
         Position n1(Pen);
         {
@@ -2332,6 +2336,68 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
         }
 
         Position s1(s0.xpos(), n1.ypos());
+
+        // calculate attach-point:
+        Position attach = centroid(s0, s1);
+        {
+            Vector shift_by_size(ZeroVector);
+            Vector shift_by_len(ZeroVector);
+            int    nonZero = 0;
+
+            if (attach_size != 0.0) {
+                ++nonZero;
+                shift_by_size = -attach_size * (subtree_border-attach);
+            }
+
+            if (attach_len != 0.0) {
+                Position barycenter;
+                if (nearlyZero(at->leftlen)) {
+                    if (nearlyZero(at->rightlen)) {
+                        barycenter = attach;
+                    }
+                    else {
+                        barycenter = s1; // at(!) right branch
+                    }
+                }
+                else {
+                    if (nearlyZero(at->rightlen)) {
+                        barycenter = s0; // at(!) left branch
+                    }
+                    else {
+                        double sum = at->leftlen + at->rightlen;
+                        double fraction;
+                        Vector big2small;
+                        if (at->leftlen < at->rightlen) {
+                            fraction   = at->leftlen/sum;
+                            big2small  = s0-s1;
+                        }
+                        else {
+                            fraction = at->rightlen/sum;
+                            big2small = s1-s0;
+                        }
+                        barycenter = attach-big2small/2+big2small*fraction;
+                    }
+                }
+
+                Vector shift_to_barycenter = barycenter-attach;
+                shift_by_len               = shift_to_barycenter*attach_len;
+
+                ++nonZero;
+            }
+
+            if (nonZero>1) {
+                double sum    = fabs(attach_size) + fabs(attach_len);
+                double f_size = fabs(attach_size)/sum;
+                double f_len  = fabs(attach_len)/sum;
+
+                attach += f_size * shift_by_size;
+                attach += f_len  * shift_by_len;
+            }
+            else {
+                attach += shift_by_size;
+                attach += shift_by_len;
+            }
+        }
 
         if (at->name && show_brackets) {
             double                unscale          = disp_device->get_unscale();
@@ -2388,11 +2454,11 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
         }
 
         for (int right = 0; right<2; ++right) {
-            AP_tree         *son;
-            GBT_LEN          len;
-            const Position&  n = right ? n1 : n0;
-            const Position&  s = right ? s1 : s0;
+            const Position& n = right ? n1 : n0; // node-position
+            const Position& s = right ? s1 : s0; // upper/lower corner of rectangular branch
 
+            AP_tree *son;
+            GBT_LEN  len;
             if (right) {
                 son = at->get_rightson();
                 len = at->rightlen;
@@ -2859,6 +2925,8 @@ void AWT_graphic_tree::read_tree_settings() {
     circle_max_size        = aw_root->awar(AWAR_DTREE_CIRCLE_MAX_SIZE)->read_float();
     use_ellipse            = aw_root->awar(AWAR_DTREE_USE_ELLIPSE)->read_int();
     bootstrap_min          = aw_root->awar(AWAR_DTREE_BOOTSTRAP_MIN)->read_int();
+    attach_size            = aw_root->awar(AWAR_DTREE_ATTACH_SIZE)->read_float();
+    attach_len             = aw_root->awar(AWAR_DTREE_ATTACH_LEN)->read_float();
 
     freeset(species_name, aw_root->awar(AWAR_SPECIES_NAME)->read_string());
 
@@ -2948,6 +3016,7 @@ void AWT_graphic_tree::show(AW_device *device) {
             case AP_TREE_NORMAL: {
                 DendroSubtreeLimits limits;
                 Position            pen(0, 0.05);
+
                 show_dendrogram(displayed_root, pen, limits);
 
                 int rulerOffset = 2;
@@ -3145,6 +3214,8 @@ static void markerThresholdChanged_cb(AW_root *root, bool partChanged) {
 void TREE_create_awars(AW_root *aw_root, AW_default db) {
     aw_root->awar_int  (AWAR_DTREE_BASELINEWIDTH,   1)  ->set_minmax (1,    10);
     aw_root->awar_float(AWAR_DTREE_VERICAL_DIST,    1.0)->set_minmax (0.01, 30);
+    aw_root->awar_float(AWAR_DTREE_ATTACH_SIZE,    -1.0)->set_minmax (-1.0,  1.0);
+    aw_root->awar_float(AWAR_DTREE_ATTACH_LEN,      0.0)->set_minmax (-1.0,  1.0);
     aw_root->awar_float(AWAR_DTREE_GROUP_DOWNSCALE, 0.33)->set_minmax(0.0,  1.0);
     aw_root->awar_float(AWAR_DTREE_GROUP_SCALE,     1.0)->set_minmax (0.01, 10.0);
 
@@ -3208,6 +3279,8 @@ void TREE_install_update_callbacks(TREE_canvas *ntw) {
     awr->awar(AWAR_DTREE_GREY_LEVEL)     ->add_callback(expose_cb);
     awr->awar(AWAR_DTREE_GROUPCOUNTMODE) ->add_callback(expose_cb);
     awr->awar(AWAR_DTREE_GROUPINFOPOS)   ->add_callback(expose_cb);
+    awr->awar(AWAR_DTREE_ATTACH_SIZE)    ->add_callback(expose_cb);
+    awr->awar(AWAR_DTREE_ATTACH_LEN)     ->add_callback(expose_cb);
 
     RootCallback reinit_treetype_cb = makeRootCallback(NT_reinit_treetype, ntw);
     awr->awar(AWAR_DTREE_RADIAL_ZOOM_TEXT)->add_callback(reinit_treetype_cb);
@@ -3254,6 +3327,8 @@ void TREE_insert_jump_option_menu(AW_window *aws, const char *label, const char 
 static AWT_config_mapping_def tree_setting_config_mapping[] = {
     { AWAR_DTREE_BASELINEWIDTH,    "line_width" },
     { AWAR_DTREE_VERICAL_DIST,     "vert_dist" },
+    { AWAR_DTREE_ATTACH_SIZE,      "attach_size" },
+    { AWAR_DTREE_ATTACH_LEN,       "attach_len" },
     { AWAR_DTREE_GROUP_DOWNSCALE,  "group_downscale" },
     { AWAR_DTREE_GROUP_SCALE,      "group_scale" },
     { AWAR_DTREE_AUTO_JUMP,        "auto_jump" },
@@ -3308,6 +3383,14 @@ AW_window *TREE_create_settings_window(AW_root *aw_root) {
 
         aws->label("Vertical distance");
         aws->create_input_field_with_scaler(AWAR_DTREE_VERICAL_DIST, 4, SCALER_WIDTH, AW_SCALER_EXP_LOWER);
+        aws->at_newline();
+
+        aws->label("Parent attach (by size)");
+        aws->create_input_field_with_scaler(AWAR_DTREE_ATTACH_SIZE, 4, SCALER_WIDTH);
+        aws->at_newline();
+
+        aws->label("Parent attach (by len)");
+        aws->create_input_field_with_scaler(AWAR_DTREE_ATTACH_LEN, 4, SCALER_WIDTH);
         aws->at_newline();
 
         aws->label("Vertical group scaling");
@@ -3543,6 +3626,8 @@ class fake_AWT_graphic_tree : public AWT_graphic_tree {
         circle_zoom_factor = 1.3;
         circle_max_size    = 1.5;
         bootstrap_min      = 0;
+        attach_size        = -1.0;
+        attach_len         = 0.0;
 
         group_info_pos = GIP_SEPARATED;
         switch (var_mode) {
