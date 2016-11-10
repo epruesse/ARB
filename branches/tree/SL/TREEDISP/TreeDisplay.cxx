@@ -3628,6 +3628,7 @@ struct fake_AW_common : public AW_common {
 
 class fake_AWT_graphic_tree : public AWT_graphic_tree {
     int var_mode; // current range: [0..3]
+    double att_size, att_len;
 
     void read_tree_settings() OVERRIDE {
         scaled_branch_distance = 1.0; // not final value!
@@ -3645,8 +3646,8 @@ class fake_AWT_graphic_tree : public AWT_graphic_tree {
         circle_zoom_factor = 1.3;
         circle_max_size    = 1.5;
         bootstrap_min      = 0;
-        attach_size        = -1.0;
-        attach_len         = 0.0;
+        attach_size        = att_size;
+        attach_len         = att_len;
         branch_style       = BS_RECTANGULAR;
 
         group_info_pos = GIP_SEPARATED;
@@ -3666,12 +3667,16 @@ class fake_AWT_graphic_tree : public AWT_graphic_tree {
 public:
     fake_AWT_graphic_tree(GBDATA *gbmain, const char *selected_species)
         : AWT_graphic_tree(NULL, gbmain, fake_AD_map_viewer_cb),
-          var_mode(0)
+          var_mode(0),
+          att_size(0),
+          att_len(0)
     {
         species_name = strdup(selected_species);
     }
 
     void set_var_mode(int mode) { var_mode = mode; }
+    void set_attach(double asize, double alen) { att_size = asize; att_len  = alen; }
+
     void test_show_tree(AW_device *device) { show(device); }
 
     void test_print_tree(AW_device_print *print_device, AP_tree_display_style style, bool show_handles) {
@@ -3786,38 +3791,66 @@ void TEST_treeDisplay() {
             for (int istyle = AP_LIST_SIMPLE; istyle >= AP_TREE_NORMAL; --istyle) {
                 AP_tree_display_style style = AP_tree_display_style(istyle);
                 if (spoolnameof[style]) {
-                    char *spool_name     = GBS_global_string_copy("display/%s_%c%c", spoolnameof[style], "MC"[color], "NH"[show_handles]);
-                    char *spool_file     = GBS_global_string_copy("%s_curr.fig", spool_name);
-                    char *spool_expected = GBS_global_string_copy("%s.fig", spool_name);
-
-
-// #define TEST_AUTO_UPDATE // dont test, instead update expected results
+                    char *spool_name = GBS_global_string_copy("display/%s_%c%c", spoolnameof[style], "MC"[color], "NH"[show_handles]);
 
                     agt.set_tree_style(style, NULL);
 
+                    int var_mode = show_handles+2*color;
+
+                    static struct AttachSettings {
+                        const char *suffix;
+                        double      bySize;
+                        double      byLength;
+                    } attach_settings[] = {
+                        { "",            -1,  0 }, // [size only] traditional attach point (produces old test results)
+                        { "_long",        0,  1 }, // [len only]  attach at long branch
+                        { "_shortSmall", -1, -1 }, // [both]      attach at short+small branch
+                        { "_centered",    0,  0 }, // [none]      center attach points
+                        { NULL,           0,  0 },
+                    };
+
+                    for (int attach_style = 0; attach_settings[attach_style].suffix; ++attach_style) {
+                        if (attach_style>0) {
+                            if (style != AP_TREE_NORMAL) continue;  // test attach-styles only for dendrogram-view
+                            if (attach_style != var_mode) continue; // do not create too many permutations
+                        }
+
+                        const AttachSettings&  SETT        = attach_settings[attach_style];
+                        char                  *spool_name2 = GBS_global_string_copy("%s%s", spool_name, SETT.suffix);
+
+// #define TEST_AUTO_UPDATE // dont test, instead update expected results
+                        {
+                            char *spool_file     = GBS_global_string_copy("%s_curr.fig", spool_name2);
+                            char *spool_expected = GBS_global_string_copy("%s.fig", spool_name2);
+
 #if defined(TEST_AUTO_UPDATE)
 #warning TEST_AUTO_UPDATE is active (non-default)
-                    TEST_EXPECT_NO_ERROR(print_dev.open(spool_expected));
+                            TEST_EXPECT_NO_ERROR(print_dev.open(spool_expected));
 #else
-                    TEST_EXPECT_NO_ERROR(print_dev.open(spool_file));
+                            TEST_EXPECT_NO_ERROR(print_dev.open(spool_file));
 #endif
 
-                    {
-                        GB_transaction ta(gb_main);
-                        agt.set_var_mode(show_handles+2*color);
-                        agt.test_print_tree(&print_dev, style, show_handles);
-                    }
+                            {
+                                GB_transaction ta(gb_main);
+                                agt.set_var_mode(var_mode);
+                                agt.set_attach(SETT.bySize, SETT.byLength);
+                                agt.test_print_tree(&print_dev, style, show_handles);
+                            }
 
-                    print_dev.close();
+                            print_dev.close();
 
 #if !defined(TEST_AUTO_UPDATE)
-                    // if (strcmp(spool_expected, "display/irs_CH.fig") == 0) {
-                    TEST_EXPECT_TEXTFILES_EQUAL(spool_expected, spool_file);
-                    // }
-                    TEST_EXPECT_ZERO_OR_SHOW_ERRNO(unlink(spool_file));
+                            TEST_EXPECT_TEXTFILES_EQUAL(spool_expected, spool_file);
+                            TEST_EXPECT_ZERO_OR_SHOW_ERRNO(unlink(spool_file));
 #endif
-                    free(spool_expected);
-                    free(spool_file);
+                            free(spool_expected);
+                            free(spool_file);
+                        }
+
+                        free(spool_name2);
+                    }
+
+
                     free(spool_name);
                 }
             }
