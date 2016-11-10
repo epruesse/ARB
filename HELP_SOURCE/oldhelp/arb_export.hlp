@@ -6,6 +6,7 @@ UP	nt_align_select.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
 #SUB	export_format.hlp
+SUB     arb_import.hlp
 
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
@@ -58,9 +59,14 @@ DESCRIPTION
 		the reference.
 		See LINK{export_format.hlp} for more information.
 
-NOTES           The formates can be customized (see LINK{export_format.hlp})
+SECTION		Custom export filters
 
-                For a list of common database entries see LINK{sp_info.hlp}.
+		You may create and store your own private export filters in 
+		directory '~/.arb_prop/filter'.
+                See LINK{export_format.hlp} for information
+		about the export filter definition language.
+
+NOTES           None
 
 EXAMPLES	None
 

@@ -15,6 +15,7 @@ SUB	ebi_ift.hlp
 SUB	fasta_ift.hlp
 SUB	dssp_ift.hlp
 SUB	gde_flat_ift.hlp
+SUB	arb_export.hlp
 
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
@@ -55,7 +56,7 @@ DESCRIPTION	Reads foreign data(base) formats, creates a new ARB database,
 SECTION		Custom import filters
 
 		You may create and store your own private import filters in 
-		directory '~/,arb_prop/filter'. See LINK{importift.hlp} for information
+		directory '~/.arb_prop/filter'. See LINK{importift.hlp} for information
 		about the import filter definition language.		
 
 NOTES		Following file formats currently can be detected and loaded:
