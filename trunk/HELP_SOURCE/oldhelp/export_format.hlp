@@ -66,6 +66,8 @@ NOTES		The best ways to design new formats are:
 			1. Copy an existing format and modify it step by step.
 			2. Design a simple format and modify it step by step.
 
+                For a list of common database entries see LINK{sp_info.hlp}.
+
 EXAMPLES	Edit the files in '$ARBHOME/lib/export'
 
 WARNINGS	Don't change an '*.eft' file, if you don't understand how
