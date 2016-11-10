@@ -30,6 +30,13 @@ DESCRIPTION     Various tree display settings are available:
                 - 'Vertical distance' allows to stretch the tree in
                   vertical direction (no effect on radial tree)
 
+                - 'Branch style' allows to select between
+
+                   * rectangular branches (traditional layout) and
+                   * diagonal branches
+
+                   (dendrogram view only).
+
                 - 'Parent attach' defines the vertical position where the parent branch
                    gets attached to a subtree (dendrogram view only).
 
