@@ -3627,8 +3627,9 @@ struct fake_AW_common : public AW_common {
 };
 
 class fake_AWT_graphic_tree : public AWT_graphic_tree {
-    int var_mode; // current range: [0..3]
-    double att_size, att_len;
+    int         var_mode; // current range: [0..3]
+    double      att_size, att_len;
+    BranchStyle bstyle;
 
     void read_tree_settings() OVERRIDE {
         scaled_branch_distance = 1.0; // not final value!
@@ -3648,7 +3649,7 @@ class fake_AWT_graphic_tree : public AWT_graphic_tree {
         bootstrap_min      = 0;
         attach_size        = att_size;
         attach_len         = att_len;
-        branch_style       = BS_RECTANGULAR;
+        branch_style       = bstyle;
 
         group_info_pos = GIP_SEPARATED;
         switch (var_mode) {
@@ -3669,13 +3670,15 @@ public:
         : AWT_graphic_tree(NULL, gbmain, fake_AD_map_viewer_cb),
           var_mode(0),
           att_size(0),
-          att_len(0)
+          att_len(0),
+          bstyle(BS_RECTANGULAR)
     {
         species_name = strdup(selected_species);
     }
 
     void set_var_mode(int mode) { var_mode = mode; }
     void set_attach(double asize, double alen) { att_size = asize; att_len  = alen; }
+    void set_branchstyle(BranchStyle bstyle_) { bstyle = bstyle_; }
 
     void test_show_tree(AW_device *device) { show(device); }
 
@@ -3815,42 +3818,55 @@ void TEST_treeDisplay() {
                             if (attach_style != var_mode) continue; // do not create too many permutations
                         }
 
-                        const AttachSettings&  SETT        = attach_settings[attach_style];
-                        char                  *spool_name2 = GBS_global_string_copy("%s%s", spool_name, SETT.suffix);
+                        const AttachSettings& SETT = attach_settings[attach_style];
+                        char *spool_name2 = GBS_global_string_copy("%s%s", spool_name, SETT.suffix);
+
+                        for (BranchStyle bstyle = BS_RECTANGULAR; bstyle<=BS_DIAGONAL; bstyle = BranchStyle(bstyle+1)) {
+                            if (bstyle != BS_RECTANGULAR) { // test alternate branch-styles only ..
+                                if (istyle != AP_TREE_NORMAL) continue; // .. for dendrogram view
+                                if (attach_style != 0 && attach_style != 3) continue; // .. for traditional and centered attach_points
+                            }
+
+                            static const char *suffix[] = {
+                                "",
+                                "_diagonal",
+                            };
+
+                            char *spool_name3 = GBS_global_string_copy("%s%s", spool_name2, suffix[bstyle]);
 
 // #define TEST_AUTO_UPDATE // dont test, instead update expected results
-                        {
-                            char *spool_file     = GBS_global_string_copy("%s_curr.fig", spool_name2);
-                            char *spool_expected = GBS_global_string_copy("%s.fig", spool_name2);
+                            {
+                                char *spool_file     = GBS_global_string_copy("%s_curr.fig", spool_name3);
+                                char *spool_expected = GBS_global_string_copy("%s.fig", spool_name3);
 
 #if defined(TEST_AUTO_UPDATE)
 #warning TEST_AUTO_UPDATE is active (non-default)
-                            TEST_EXPECT_NO_ERROR(print_dev.open(spool_expected));
+                                TEST_EXPECT_NO_ERROR(print_dev.open(spool_expected));
 #else
-                            TEST_EXPECT_NO_ERROR(print_dev.open(spool_file));
+                                TEST_EXPECT_NO_ERROR(print_dev.open(spool_file));
 #endif
 
-                            {
-                                GB_transaction ta(gb_main);
-                                agt.set_var_mode(var_mode);
-                                agt.set_attach(SETT.bySize, SETT.byLength);
-                                agt.test_print_tree(&print_dev, style, show_handles);
-                            }
+                                {
+                                    GB_transaction ta(gb_main);
+                                    agt.set_var_mode(var_mode);
+                                    agt.set_attach(SETT.bySize, SETT.byLength);
+                                    agt.set_branchstyle(bstyle);
+                                    agt.test_print_tree(&print_dev, style, show_handles);
+                                }
 
-                            print_dev.close();
+                                print_dev.close();
 
 #if !defined(TEST_AUTO_UPDATE)
-                            TEST_EXPECT_TEXTFILES_EQUAL(spool_expected, spool_file);
-                            TEST_EXPECT_ZERO_OR_SHOW_ERRNO(unlink(spool_file));
+                                TEST_EXPECT_TEXTFILES_EQUAL(spool_expected, spool_file);
+                                TEST_EXPECT_ZERO_OR_SHOW_ERRNO(unlink(spool_file));
 #endif
-                            free(spool_expected);
-                            free(spool_file);
+                                free(spool_expected);
+                                free(spool_file);
+                            }
+                            free(spool_name3);
                         }
-
                         free(spool_name2);
                     }
-
-
                     free(spool_name);
                 }
             }
