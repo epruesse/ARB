@@ -2472,11 +2472,30 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
 
             AW_click_cd cds(disp_device, (AW_CL)son, CL_NODE);
             if (son->get_remark()) {
-                Position remarkPos(n);
-                remarkPos.movey(-scaled_font.ascent*0.1);
-                bool bootstrap_shown = TREE_show_branch_remark(disp_device, son->get_remark(), son->is_leaf, remarkPos, 1, remark_text_filter, bootstrap_min);
+                AW_pos   alignment;
+                Position remarkPos;
+                Position circlePos;
+
+                switch (branch_style) {
+                    case BS_RECTANGULAR:
+                        circlePos = n;
+                        remarkPos = Position(n.xpos(), n.ypos()-scaled_font.ascent*0.1);
+                        alignment = 1; // =right-justified
+                        break;
+
+                    case BS_DIAGONAL: {
+                        LineVector branch(attach, n);
+                        circlePos   = branch.centroid();
+                        Angle      orientation(branch);
+                        orientation = right ? orientation.rotate90deg() : orientation.rotate270deg();
+                        remarkPos   = calc_text_coordinates_near_tip(disp_device, AWT_GC_BRANCH_REMARK, circlePos, orientation, alignment, 0.3);
+                        break;
+                    }
+                }
+
+                bool bootstrap_shown = TREE_show_branch_remark(disp_device, son->get_remark(), son->is_leaf, remarkPos, alignment, remark_text_filter, bootstrap_min);
                 if (show_circle && bootstrap_shown) {
-                    show_bootstrap_circle(disp_device, son->get_remark(), circle_zoom_factor, circle_max_size, len, n, use_ellipse, scaled_branch_distance, bs_circle_filter);
+                    show_bootstrap_circle(disp_device, son->get_remark(), circle_zoom_factor, circle_max_size, len, circlePos, use_ellipse, scaled_branch_distance, bs_circle_filter);
                 }
             }
 
@@ -2606,6 +2625,7 @@ void AWT_graphic_tree::show_radial_tree(AP_tree *at, const AW::Position& base, c
                     AW_click_cd sub_cd(disp_device, (AW_CL)sub[s].at, CL_NODE);
                     Position    sub_branch_center = tip + (sub[s].len*.5) * sub[s].orientation.normal();
                     show_bootstrap_circle(disp_device, sub[s].at->get_remark(), circle_zoom_factor, circle_max_size, sub[s].len, sub_branch_center, false, 0, bs_circle_filter);
+                    // @@@ show bootstrap value in radial tree?
                 }
             }
         }
