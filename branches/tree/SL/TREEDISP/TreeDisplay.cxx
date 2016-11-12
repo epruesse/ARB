@@ -1310,18 +1310,19 @@ public:
     }
 };
 
-inline Position calc_text_coordinates_near_tip(AW_device *device, int gc, const Position& pos, const Angle& orientation, AW_pos& alignment) {
+inline Position calc_text_coordinates_near_tip(AW_device *device, int gc, const Position& pos, const Angle& orientation, AW_pos& alignment, double dist_factor = 1.0) {
     /*! calculates text coordinates for text placed at the tip of a vector
      * @param device      output device
      * @param gc          context
-     * @param x/y         tip of the vector (world coordinates)
+     * @param pos         tip of the vector (world coordinates)
      * @param orientation orientation of the vector (towards its tip)
      * @param alignment   result param (alignment for call to text())
+     * @param dist_factor normally 1.0 (smaller => text nearer towards 'pos')
      */
     const AW_font_limits& charLimits = device->get_font_limits(gc, 'A');
 
     const double text_height = charLimits.get_height() * device->get_unscale();
-    const double dist        = charLimits.get_height() * device->get_unscale(); // @@@ same as text_height (ok?)
+    const double dist        = text_height * dist_factor;
 
     Vector shift = orientation.normal();
     // use sqrt of sin(=y) to move text faster between positions below and above branch:
