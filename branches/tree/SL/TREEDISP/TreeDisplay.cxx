@@ -2477,12 +2477,12 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
                 Position circlePos;
 
                 switch (branch_style) {
-                    case BS_RECTANGULAR:
-                        circlePos = n;
-                        remarkPos = Position(n.xpos(), n.ypos()-scaled_font.ascent*0.1);
+                    case BS_RECTANGULAR: {
+                        circlePos    = n;
+                        remarkPos = Position(n.xpos(), n.ypos()+scaled_font.ascent*(right ? 1.2 : -0.1));
                         alignment = 1; // =right-justified
                         break;
-
+                    }
                     case BS_DIAGONAL: {
                         LineVector branch(attach, n);
                         circlePos   = branch.centroid();
