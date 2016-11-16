@@ -284,7 +284,8 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
     AWT_scaled_font_limits scaled_font;
 
     double        scaled_branch_distance; // vertical distance between branches (may be extra-scaled in options)
-    group_scaling groupScale; // scaling for folded groups
+    group_scaling groupScale;             // scaling for folded groups
+    double        scaled_remark_ascend;
 
     AW_grey_level group_greylevel;
     AW_grey_level marker_greylevel;

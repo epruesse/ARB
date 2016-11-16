@@ -2472,26 +2472,10 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
 
             AW_click_cd cds(disp_device, (AW_CL)son, CL_NODE);
             if (son->get_remark()) {
-                AW_pos   alignment;
-                Position remarkPos;
-                Position circlePos;
-
-                switch (branch_style) {
-                    case BS_RECTANGULAR: {
-                        circlePos    = n;
-                        remarkPos = Position(n.xpos(), n.ypos()+scaled_font.ascent*(right ? 1.2 : -0.1));
-                        alignment = 1; // =right-justified
-                        break;
-                    }
-                    case BS_DIAGONAL: {
-                        LineVector branch(attach, n);
-                        circlePos   = branch.centroid();
-                        Angle      orientation(branch);
-                        orientation = right ? orientation.rotate90deg() : orientation.rotate270deg();
-                        remarkPos   = calc_text_coordinates_near_tip(disp_device, AWT_GC_BRANCH_REMARK, circlePos, orientation, alignment, 0.3);
-                        break;
-                    }
-                }
+                const Position circlePos(n);
+                Position       remarkPos = n;
+                remarkPos.movey(scaled_remark_ascend*(right ? 1.2 : -0.1)); // lower subtree -> draw below branch; upper subtree -> draw above branch
+                const AW_pos   alignment = 1; // =right-justified
 
                 bool bootstrap_shown = TREE_show_branch_remark(disp_device, son->get_remark(), son->is_leaf, remarkPos, alignment, remark_text_filter, bootstrap_min);
                 if (show_circle && bootstrap_shown) {
@@ -3010,9 +2994,16 @@ void AWT_graphic_tree::show(AW_device *device) {
     disp_device = device;
     disp_device->reset_style();
 
-    const AW_font_limits& charLimits = disp_device->get_font_limits(AWT_GC_ALL_MARKED, 0);
-
-    scaled_font.init(charLimits, device->get_unscale());
+    {
+        const AW_font_limits& charLimits  = disp_device->get_font_limits(AWT_GC_ALL_MARKED, 0);
+        scaled_font.init(charLimits, device->get_unscale());
+    }
+    {
+        const AW_font_limits&  remarkLimits = disp_device->get_font_limits(AWT_GC_BRANCH_REMARK, 0);
+        AWT_scaled_font_limits scaledRemarkLimits;
+        scaledRemarkLimits.init(remarkLimits, device->get_unscale());
+        scaled_remark_ascend                = scaledRemarkLimits.ascent;
+    }
     scaled_branch_distance *= scaled_font.height;
 
     make_node_text_init(gb_main);
