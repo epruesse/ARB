@@ -3373,40 +3373,127 @@ static AWT_config_mapping_def tree_setting_config_mapping[] = {
     { 0, 0 }
 };
 
+static const int SCALER_WIDTH = 250; // pixel
+static const int LABEL_WIDTH  = 30;  // char
+
+static void insert_section_header(AW_window *aws, const char *title) {
+    char *button_text = GBS_global_string_copy("%*s%s ]", LABEL_WIDTH+1, "[ ", title);
+    aws->create_autosize_button(NULL, button_text);
+    aws->at_newline();
+    free(button_text);
+}
+
+static AW_window *create_tree_expert_settings_window(AW_root *aw_root) {
+    static AW_window_simple *aws = 0;
+    if (!aws) {
+        aws = new AW_window_simple;
+        aws->init(aw_root, "TREE_EXPERT_SETUP", "Expert tree settings");
+
+        aws->at(5, 5);
+        aws->auto_space(5, 5);
+        aws->label_length(LABEL_WIDTH);
+        aws->button_length(8);
+
+        aws->callback(AW_POPDOWN);
+        aws->create_button("CLOSE", "CLOSE", "C");
+        aws->callback(makeHelpCallback("nt_tree_settings_expert.hlp"));
+        aws->create_button("HELP", "HELP", "H");
+        aws->at_newline();
+
+        insert_section_header(aws, "parent attach position");
+
+        aws->label("Attach by size");
+        aws->create_input_field_with_scaler(AWAR_DTREE_ATTACH_SIZE, 4, SCALER_WIDTH);
+        aws->at_newline();
+
+        aws->label("Attach by len");
+        aws->create_input_field_with_scaler(AWAR_DTREE_ATTACH_LEN, 4, SCALER_WIDTH);
+        aws->at_newline();
+
+        insert_section_header(aws, "text zooming / padding");
+
+        const int PAD_SCALER_WIDTH = SCALER_WIDTH-39;
+
+        aws->label("Text zoom/pad (dendro)");
+        aws->create_toggle(AWAR_DTREE_DENDRO_ZOOM_TEXT);
+        aws->create_input_field_with_scaler(AWAR_DTREE_DENDRO_XPAD, 4, PAD_SCALER_WIDTH);
+        aws->at_newline();
+
+        aws->label("Text zoom/pad (radial)");
+        aws->create_toggle(AWAR_DTREE_RADIAL_ZOOM_TEXT);
+        aws->create_input_field_with_scaler(AWAR_DTREE_RADIAL_XPAD, 4, PAD_SCALER_WIDTH);
+        aws->at_newline();
+
+        aws->window_fit();
+    }
+    return aws;
+}
+
+static AW_window *create_tree_bootstrap_settings_window(AW_root *aw_root) {
+    static AW_window_simple *aws = 0;
+    if (!aws) {
+        aws = new AW_window_simple;
+        aws->init(aw_root, "TREE_BOOT_SETUP", "Bootstrap display settings");
+
+        aws->at(5, 5);
+        aws->auto_space(5, 5);
+        aws->label_length(LABEL_WIDTH);
+        aws->button_length(8);
+
+        aws->callback(AW_POPDOWN);
+        aws->create_button("CLOSE", "CLOSE", "C");
+        aws->callback(makeHelpCallback("nt_tree_settings_bootstrap.hlp"));
+        aws->create_button("HELP", "HELP", "H");
+        aws->at_newline();
+
+        aws->label("Show bootstrap circles");
+        aws->create_toggle(AWAR_DTREE_SHOW_CIRCLE);
+        aws->at_newline();
+
+        aws->label("Hide bootstrap value below");
+        aws->create_input_field_with_scaler(AWAR_DTREE_BOOTSTRAP_MIN, 4, SCALER_WIDTH);
+        aws->at_newline();
+
+        aws->label("Use ellipses");
+        aws->create_toggle(AWAR_DTREE_USE_ELLIPSE);
+        aws->at_newline();
+
+        aws->label("Bootstrap circle zoom factor");
+        aws->create_input_field_with_scaler(AWAR_DTREE_CIRCLE_ZOOM, 4, SCALER_WIDTH);
+        aws->at_newline();
+
+        aws->label("Boostrap radius limit");
+        aws->create_input_field_with_scaler(AWAR_DTREE_CIRCLE_MAX_SIZE, 4, SCALER_WIDTH);
+        aws->at_newline();
+
+        aws->window_fit();
+    }
+    return aws;
+}
+
 AW_window *TREE_create_settings_window(AW_root *aw_root) {
     static AW_window_simple *aws = 0;
     if (!aws) {
         aws = new AW_window_simple;
-        aws->init(aw_root, "TREE_PROPS", "TREE SETTINGS");
+        aws->init(aw_root, "TREE_SETUP", "Tree settings");
         aws->load_xfig("awt/tree_settings.fig");
 
         aws->at("close");
+        aws->auto_space(5, 5);
+        aws->label_length(LABEL_WIDTH);
+        aws->button_length(8);
+
         aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
-
-        aws->at("help");
         aws->callback(makeHelpCallback("nt_tree_settings.hlp"));
         aws->create_button("HELP", "HELP", "H");
 
         aws->at("button");
-        aws->auto_space(5, 5);
-        aws->label_length(30);
 
-        const int SCALER_WIDTH = 250;
+        insert_section_header(aws, "branches");
 
         aws->label("Base line width");
         aws->create_input_field_with_scaler(AWAR_DTREE_BASELINEWIDTH, 4, SCALER_WIDTH);
-        aws->at_newline();
-
-        TREE_insert_jump_option_menu(aws, "On species change", AWAR_DTREE_AUTO_JUMP);
-        TREE_insert_jump_option_menu(aws, "On tree change",    AWAR_DTREE_AUTO_JUMP_TREE);
-
-        aws->label("Show group brackets");
-        aws->create_toggle(AWAR_DTREE_SHOW_BRACKETS);
-        aws->at_newline();
-
-        aws->label("Vertical distance");
-        aws->create_input_field_with_scaler(AWAR_DTREE_VERICAL_DIST, 4, SCALER_WIDTH, AW_SCALER_EXP_LOWER);
         aws->at_newline();
 
         aws->label("Branch style");
@@ -3416,20 +3503,10 @@ AW_window *TREE_create_settings_window(AW_root *aw_root) {
         aws->update_option_menu();
         aws->at_newline();
 
-        aws->label("Parent attach (by size)");
-        aws->create_input_field_with_scaler(AWAR_DTREE_ATTACH_SIZE, 4, SCALER_WIDTH);
-        aws->at_newline();
+        insert_section_header(aws, "groups");
 
-        aws->label("Parent attach (by len)");
-        aws->create_input_field_with_scaler(AWAR_DTREE_ATTACH_LEN, 4, SCALER_WIDTH);
-        aws->at_newline();
-
-        aws->label("Vertical group scaling");
-        aws->create_input_field_with_scaler(AWAR_DTREE_GROUP_SCALE, 4, SCALER_WIDTH);
-        aws->at_newline();
-
-        aws->label("'Biggroup' scaling");
-        aws->create_input_field_with_scaler(AWAR_DTREE_GROUP_DOWNSCALE, 4, SCALER_WIDTH);
+        aws->label("Show group brackets");
+        aws->create_toggle(AWAR_DTREE_SHOW_BRACKETS);
         aws->at_newline();
 
         aws->label("Greylevel of groups (%)");
@@ -3455,40 +3532,42 @@ AW_window *TREE_create_settings_window(AW_root *aw_root) {
         aws->update_option_menu();
         aws->at_newline();
 
-        aws->label("Show bootstrap circles");
-        aws->create_toggle(AWAR_DTREE_SHOW_CIRCLE);
+        insert_section_header(aws, "vertical scaling");
+
+        aws->label("Vertical distance");
+        aws->create_input_field_with_scaler(AWAR_DTREE_VERICAL_DIST, 4, SCALER_WIDTH, AW_SCALER_EXP_LOWER);
         aws->at_newline();
 
-        aws->label("Hide bootstrap value below");
-        aws->create_input_field_with_scaler(AWAR_DTREE_BOOTSTRAP_MIN, 4, SCALER_WIDTH);
+        aws->label("Vertical group scaling");
+        aws->create_input_field_with_scaler(AWAR_DTREE_GROUP_SCALE, 4, SCALER_WIDTH);
         aws->at_newline();
 
-        aws->label("Use ellipses");
-        aws->create_toggle(AWAR_DTREE_USE_ELLIPSE);
+        aws->label("'Biggroup' scaling");
+        aws->create_input_field_with_scaler(AWAR_DTREE_GROUP_DOWNSCALE, 4, SCALER_WIDTH);
         aws->at_newline();
 
-        aws->label("Bootstrap circle zoom factor");
-        aws->create_input_field_with_scaler(AWAR_DTREE_CIRCLE_ZOOM, 4, SCALER_WIDTH);
-        aws->at_newline();
+        insert_section_header(aws, "auto focus");
 
-        aws->label("Boostrap radius limit");
-        aws->create_input_field_with_scaler(AWAR_DTREE_CIRCLE_MAX_SIZE, 4, SCALER_WIDTH);
-        aws->at_newline();
+        TREE_insert_jump_option_menu(aws, "On species change", AWAR_DTREE_AUTO_JUMP);
+        TREE_insert_jump_option_menu(aws, "On tree change",    AWAR_DTREE_AUTO_JUMP_TREE);
 
-        const int PAD_SCALER_WIDTH = SCALER_WIDTH-39;
-
-        aws->label("Text zoom/pad (dendro)");
-        aws->create_toggle(AWAR_DTREE_DENDRO_ZOOM_TEXT);
-        aws->create_input_field_with_scaler(AWAR_DTREE_DENDRO_XPAD, 4, PAD_SCALER_WIDTH);
-        aws->at_newline();
-
-        aws->label("Text zoom/pad (radial)");
-        aws->create_toggle(AWAR_DTREE_RADIAL_ZOOM_TEXT);
-        aws->create_input_field_with_scaler(AWAR_DTREE_RADIAL_XPAD, 4, PAD_SCALER_WIDTH);
-        aws->at_newline();
+        // complete top area of window
 
         aws->at("config");
         AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "tree_settings", tree_setting_config_mapping);
+
+        aws->button_length(19);
+
+        aws->at("bv");
+        aws->create_toggle(AWAR_DTREE_SHOW_CIRCLE);
+
+        aws->at("bootstrap");
+        aws->callback(create_tree_bootstrap_settings_window);
+        aws->create_button("bootstrap", "Bootstrap settings", "B");
+
+        aws->at("expert");
+        aws->callback(create_tree_expert_settings_window);
+        aws->create_button("expert", "Expert settings", "E");
     }
     return aws;
 }
@@ -3507,10 +3586,8 @@ AW_window *TREE_create_marker_settings_window(AW_root *root) {
 
         aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
-
         aws->callback(makeHelpCallback("nt_tree_marker_settings.hlp"));
         aws->create_button("HELP", "HELP", "H");
-
         aws->at_newline();
 
         const int FIELDSIZE  = 5;
