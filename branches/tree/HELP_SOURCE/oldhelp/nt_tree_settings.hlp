@@ -37,6 +37,9 @@ DESCRIPTION     Various tree display settings are available:
 
                    (dendrogram view only).
 
+                   Note: only the rectangular branch style guarantees that branches do
+                   not overlap!
+
                 - 'Parent attach' defines the vertical position where the parent branch
                    gets attached to a subtree (dendrogram view only).
 
