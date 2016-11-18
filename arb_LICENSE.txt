@@ -43,6 +43,14 @@ ARB copyright and license information
         right to incorporate these changes into ARB and to redistribute
         them with future versions of ARB.
 
+    LIBRARY LICENSE
+
+        Some parts of arb are published under the ARB-public-library-license
+        which should have been included in the file arb_PUBLIB_LICENSE.txt
+
+        That license explicitely allows the use of these parts of arb
+        in GPL-licensed projects.
+
     DEBIAN DISTRIBUTION
 
         Hereby anybody is granted the right to build debian-pakets
