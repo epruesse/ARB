@@ -34,6 +34,8 @@ SECTION         Group setup
 
                 - 'Show group brackets' toggles the display of group brackets
 
+                - 'Group style' allows to define style and orientation of group polygones
+
                 - 'Greplevel of groups (%)' defines the shading used for folded groups.
 
                 - 'Show group counter' specifies whether a counter shall be displayed for groups

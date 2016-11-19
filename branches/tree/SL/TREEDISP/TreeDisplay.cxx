@@ -2274,8 +2274,6 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
         Position n0(s0);  n0.movex(at->gr.max_tree_depth);
         Position n1(s1);  n1.movex(at->gr.min_tree_depth);
 
-        Position group[4] = { s0, s1, n1, n0 };
-
         set_line_attributes_for(at);
 
         if (display_markers) {
@@ -2283,7 +2281,35 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
         }
 
         disp_device->set_grey_level(at->gr.gc, group_greylevel);
-        disp_device->polygon(at->gr.gc, AW::FillStyle::SHADED_WITH_BORDER, 4, group, line_filter);
+
+        Position s_attach;
+        {
+            Position group[4] = { s0, s1, n1, n0 }; // init with long side at top (=traditional orientation)
+
+            bool flip;
+            switch (group_orientation) {
+                case GO_TOP:      flip = false; break;
+                case GO_BOTTOM:   flip = true; break;
+                case GO_EXTERIOR: flip = at->is_lower_son(); break;
+                case GO_INTERIOR: flip = at->is_upper_son(); break;
+            }
+            if (flip) { // flip triangle/trapeze vertically
+                double x2 = group[2].xpos();
+                group[2].setx(group[3].xpos());
+                group[3].setx(x2);
+            }
+
+            s_attach = s1+(flip ? 1.0-attach_group : attach_group)*(s0-s1);
+
+            if (group_style == GS_TRIANGLE) {
+                group[1] = s_attach;
+                disp_device->polygon(at->gr.gc, AW::FillStyle::SHADED_WITH_BORDER, 3, group+1, line_filter);
+            }
+            else {
+                td_assert(group_style == GS_TRAPEZE); // traditional style
+                disp_device->polygon(at->gr.gc, AW::FillStyle::SHADED_WITH_BORDER, 4, group, line_filter);
+            }
+        }
 
         limits.x_right = n0.xpos();
 
@@ -2311,7 +2337,7 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
 
         limits.y_top    = s0.ypos();
         limits.y_bot    = s1.ypos();
-        limits.y_branch = centroid(limits.y_top, limits.y_bot);
+        limits.y_branch = s_attach.ypos();
 
         Pen.movey(height);
     }
@@ -2937,10 +2963,13 @@ void AWT_graphic_tree::read_tree_settings() {
     circle_zoom_factor     = aw_root->awar(AWAR_DTREE_CIRCLE_ZOOM)->read_float();
     circle_max_size        = aw_root->awar(AWAR_DTREE_CIRCLE_MAX_SIZE)->read_float();
     use_ellipse            = aw_root->awar(AWAR_DTREE_USE_ELLIPSE)->read_int();
+    group_style            = GroupStyle(aw_root->awar(AWAR_DTREE_GROUP_STYLE)->read_int());
+    group_orientation      = GroupOrientation(aw_root->awar(AWAR_DTREE_GROUP_ORIENT)->read_int());
     bootstrap_min          = aw_root->awar(AWAR_DTREE_BOOTSTRAP_MIN)->read_int();
     branch_style           = BranchStyle(aw_root->awar(AWAR_DTREE_BRANCH_STYLE)->read_int());
     attach_size            = aw_root->awar(AWAR_DTREE_ATTACH_SIZE)->read_float();
     attach_len             = aw_root->awar(AWAR_DTREE_ATTACH_LEN)->read_float();
+    attach_group           = (aw_root->awar(AWAR_DTREE_ATTACH_GROUP)->read_float()+1)/2; // projection: [-1 .. 1] -> [0 .. 1]
 
     freeset(species_name, aw_root->awar(AWAR_SPECIES_NAME)->read_string());
 
@@ -3238,6 +3267,7 @@ void TREE_create_awars(AW_root *aw_root, AW_default db) {
     aw_root->awar_int  (AWAR_DTREE_BRANCH_STYLE,    BS_RECTANGULAR);
     aw_root->awar_float(AWAR_DTREE_ATTACH_SIZE,    -1.0)->set_minmax (-1.0,  1.0);
     aw_root->awar_float(AWAR_DTREE_ATTACH_LEN,      0.0)->set_minmax (-1.0,  1.0);
+    aw_root->awar_float(AWAR_DTREE_ATTACH_GROUP,    0.0)->set_minmax (-1.0,  1.0);
     aw_root->awar_float(AWAR_DTREE_GROUP_DOWNSCALE, 0.33)->set_minmax(0.0,  1.0);
     aw_root->awar_float(AWAR_DTREE_GROUP_SCALE,     1.0)->set_minmax (0.01, 10.0);
 
@@ -3250,6 +3280,9 @@ void TREE_create_awars(AW_root *aw_root, AW_default db) {
     aw_root->awar_int(AWAR_DTREE_SHOW_BRACKETS, 1);
     aw_root->awar_int(AWAR_DTREE_SHOW_CIRCLE,   0);
     aw_root->awar_int(AWAR_DTREE_USE_ELLIPSE,   1);
+
+    aw_root->awar_int(AWAR_DTREE_GROUP_STYLE,  GS_TRAPEZE);
+    aw_root->awar_int(AWAR_DTREE_GROUP_ORIENT, GO_TOP);
 
     aw_root->awar_float(AWAR_DTREE_CIRCLE_ZOOM,     1.0)->set_minmax(0.01, 20);
     aw_root->awar_float(AWAR_DTREE_CIRCLE_MAX_SIZE, 1.5)->set_minmax(0.01, 200);
@@ -3297,6 +3330,8 @@ void TREE_install_update_callbacks(TREE_canvas *ntw) {
     awr->awar(AWAR_DTREE_CIRCLE_ZOOM)    ->add_callback(expose_cb);
     awr->awar(AWAR_DTREE_CIRCLE_MAX_SIZE)->add_callback(expose_cb);
     awr->awar(AWAR_DTREE_USE_ELLIPSE)    ->add_callback(expose_cb);
+    awr->awar(AWAR_DTREE_GROUP_STYLE)    ->add_callback(expose_cb);
+    awr->awar(AWAR_DTREE_GROUP_ORIENT)   ->add_callback(expose_cb);
     awr->awar(AWAR_DTREE_BOOTSTRAP_MIN)  ->add_callback(expose_cb);
     awr->awar(AWAR_DTREE_GREY_LEVEL)     ->add_callback(expose_cb);
     awr->awar(AWAR_DTREE_GROUPCOUNTMODE) ->add_callback(expose_cb);
@@ -3304,6 +3339,7 @@ void TREE_install_update_callbacks(TREE_canvas *ntw) {
     awr->awar(AWAR_DTREE_BRANCH_STYLE)   ->add_callback(expose_cb);
     awr->awar(AWAR_DTREE_ATTACH_SIZE)    ->add_callback(expose_cb);
     awr->awar(AWAR_DTREE_ATTACH_LEN)     ->add_callback(expose_cb);
+    awr->awar(AWAR_DTREE_ATTACH_GROUP)     ->add_callback(expose_cb);
 
     RootCallback reinit_treetype_cb = makeRootCallback(NT_reinit_treetype, ntw);
     awr->awar(AWAR_DTREE_RADIAL_ZOOM_TEXT)->add_callback(reinit_treetype_cb);
@@ -3353,6 +3389,7 @@ static AWT_config_mapping_def tree_setting_config_mapping[] = {
     { AWAR_DTREE_BRANCH_STYLE,     "branch_style" },
     { AWAR_DTREE_ATTACH_SIZE,      "attach_size" },
     { AWAR_DTREE_ATTACH_LEN,       "attach_len" },
+    { AWAR_DTREE_ATTACH_GROUP,     "attach_group" },
     { AWAR_DTREE_GROUP_DOWNSCALE,  "group_downscale" },
     { AWAR_DTREE_GROUP_SCALE,      "group_scale" },
     { AWAR_DTREE_AUTO_JUMP,        "auto_jump" },
@@ -3360,6 +3397,8 @@ static AWT_config_mapping_def tree_setting_config_mapping[] = {
     { AWAR_DTREE_SHOW_CIRCLE,      "show_circle" },
     { AWAR_DTREE_SHOW_BRACKETS,    "show_brackets" },
     { AWAR_DTREE_USE_ELLIPSE,      "use_ellipse" },
+    { AWAR_DTREE_GROUP_STYLE,      "group_style" },
+    { AWAR_DTREE_GROUP_ORIENT,     "group_orientation" },
     { AWAR_DTREE_CIRCLE_ZOOM,      "circle_zoom" },
     { AWAR_DTREE_CIRCLE_MAX_SIZE,  "circle_max_size" },
     { AWAR_DTREE_GREY_LEVEL,       "grey_level" },
@@ -3408,6 +3447,10 @@ static AW_window *create_tree_expert_settings_window(AW_root *aw_root) {
 
         aws->label("Attach by len");
         aws->create_input_field_with_scaler(AWAR_DTREE_ATTACH_LEN, 4, SCALER_WIDTH);
+        aws->at_newline();
+
+        aws->label("Attach (at groups)");
+        aws->create_input_field_with_scaler(AWAR_DTREE_ATTACH_GROUP, 4, SCALER_WIDTH);
         aws->at_newline();
 
         insert_section_header(aws, "text zooming / padding");
@@ -3507,6 +3550,19 @@ AW_window *TREE_create_settings_window(AW_root *aw_root) {
 
         aws->label("Show group brackets");
         aws->create_toggle(AWAR_DTREE_SHOW_BRACKETS);
+        aws->at_newline();
+
+        aws->label("Group style");
+        aws->create_option_menu(AWAR_DTREE_GROUP_STYLE, true);
+        aws->insert_default_option("Trapeze",  "z", GS_TRAPEZE);
+        aws->insert_option        ("Triangle", "i", GS_TRIANGLE);
+        aws->update_option_menu();
+        aws->create_option_menu(AWAR_DTREE_GROUP_ORIENT, true);
+        aws->insert_default_option("Top",      "T", GO_TOP);
+        aws->insert_option        ("Bottom",   "B", GO_BOTTOM);
+        aws->insert_option        ("Interior", "I", GO_INTERIOR);
+        aws->insert_option        ("Exterior", "E", GO_EXTERIOR);
+        aws->update_option_menu();
         aws->at_newline();
 
         aws->label("Greylevel of groups (%)");
@@ -3726,6 +3782,8 @@ class fake_AWT_graphic_tree : public AWT_graphic_tree {
         // var_mode is in range [0..3]
         // it is used to vary tree settings such that many different combinations get tested
 
+        static const double group_attach[] = { 0.5, 1.0, 0.0, };
+
         groupScale.pow     = .33;
         groupScale.linear  = 1.0;
         group_greylevel    = 20*.01;
@@ -3733,11 +3791,14 @@ class fake_AWT_graphic_tree : public AWT_graphic_tree {
         show_brackets      = (var_mode != 2);
         show_circle        = var_mode%3;
         use_ellipse        = var_mode%2;
+        group_style        = ((var_mode%2) == (bstyle == BS_DIAGONAL)) ? GS_TRAPEZE : GS_TRIANGLE;
+        group_orientation  = GroupOrientation((var_mode+1)%4);
         circle_zoom_factor = 1.3;
         circle_max_size    = 1.5;
         bootstrap_min      = 0;
         attach_size        = att_size;
         attach_len         = att_len;
+        attach_group       = group_attach[var_mode%3];
         branch_style       = bstyle;
 
         group_info_pos = GIP_SEPARATED;

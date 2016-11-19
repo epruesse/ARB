@@ -32,6 +32,7 @@
 #define AWAR_DTREE_BRANCH_STYLE    "awt/dtree/branch_style"
 #define AWAR_DTREE_ATTACH_SIZE     "awt/dtree/attach_size"
 #define AWAR_DTREE_ATTACH_LEN      "awt/dtree/attach_len"
+#define AWAR_DTREE_ATTACH_GROUP    "awt/dtree/attach_group"
 #define AWAR_DTREE_GROUP_DOWNSCALE "awt/dtree/downscaling"
 #define AWAR_DTREE_GROUP_SCALE     "awt/dtree/groupscaling"
 #define AWAR_DTREE_AUTO_JUMP       "awt/dtree/autojump"
@@ -41,6 +42,8 @@
 #define AWAR_DTREE_CIRCLE_ZOOM     "awt/dtree/circle_zoom"
 #define AWAR_DTREE_CIRCLE_MAX_SIZE "awt/dtree/max_size"
 #define AWAR_DTREE_USE_ELLIPSE     "awt/dtree/ellipse"
+#define AWAR_DTREE_GROUP_STYLE     "awt/dtree/groupstyle"
+#define AWAR_DTREE_GROUP_ORIENT    "awt/dtree/grouporient"
 #define AWAR_DTREE_GREY_LEVEL      "awt/dtree/greylevel"
 #define AWAR_DTREE_GROUPCOUNTMODE  "awt/dtree/groupcountmode"
 #define AWAR_DTREE_GROUPINFOPOS    "awt/dtree/groupinfopos"
@@ -254,6 +257,18 @@ enum BranchStyle {
     BS_DIAGONAL,    // diagonal branches (directly from fathers to sons attach point)
 };
 
+enum GroupStyle {
+    GS_TRAPEZE,
+    GS_TRIANGLE,
+};
+
+enum GroupOrientation {
+    GO_TOP,      // long clade side at top
+    GO_BOTTOM,   // long clade side at bottom
+    GO_INTERIOR, // long clade side towards center of subtree
+    GO_EXTERIOR, // long clade side towards margin of subtree
+};
+
 class AWT_graphic_tree;
 DECLARE_CBTYPE_FVV_AND_BUILDERS(GraphicTreeCallback, void, AWT_graphic_tree*); // generates makeGraphicTreeCallback
 
@@ -276,10 +291,14 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
     bool use_ellipse;
     bool link_to_database; // link on load?
 
+    GroupStyle       group_style;
+    GroupOrientation group_orientation;
+
     double list_tree_ruler_y;
     double irs_tree_ruler_scale_factor;
-    double attach_size; // 1.0 = at bigger subtree ; 0.0 = centered;         -1.0 = at smaller subtree (trad.)
-    double attach_len;  // 1.0 = at longer branch;   0.0 = centered (trad.); -1.0 = at shorter branch
+    double attach_size;   // 1.0 = at bigger subtree ; 0.0 = centered;         -1.0 = at smaller subtree (trad.)
+    double attach_len;    // 1.0 = at longer branch;   0.0 = centered (trad.); -1.0 = at shorter branch
+    double attach_group;  // 1.0 = at longer side;     0.5 = centered (trad.);  0.0 = at shorter side (of group polygone)
 
     AWT_scaled_font_limits scaled_font;
 
