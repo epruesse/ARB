@@ -2326,12 +2326,15 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
                 disp_device->text(at->gr.gc, info.name, textPos, 0.0, group_text_filter, info.name_len);
 
                 double textsize = disp_device->get_string_size(at->gr.gc, info.name, info.name_len) * disp_device->get_unscale();
-                limits.x_right  = textPos.xpos()+textsize;
+                limits.x_right  = std::max(limits.x_right, textPos.xpos()+textsize);
             }
 
             if (info.count) {
-                Position countPos   = s0+text_offset;
+                Position countPos = s0+text_offset;
                 disp_device->text(at->gr.gc, info.count, countPos, 0.0, group_text_filter, info.count_len);
+
+                double textsize = disp_device->get_string_size(at->gr.gc, info.count, info.count_len) * disp_device->get_unscale();
+                limits.x_right  = std::max(limits.x_right, countPos.xpos()+textsize);
             }
         }
 
