@@ -2324,7 +2324,6 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
 
             const double text_ascent = charLimits.ascent * disp_device->get_unscale();
             const double char_width  = charLimits.width * disp_device->get_unscale();
-            const Vector text_offset = Vector(char_width, 0.5*(text_ascent+box_height));
 
             if (info.name) { // attached info
 
@@ -2361,10 +2360,16 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
             }
 
             if (info.count) { // overlayed info
-                Position countPos = s0+text_offset;
+                const double textsize = disp_device->get_string_size(at->gr.gc, info.count, info.count_len) * disp_device->get_unscale();
+                Position     countPos;
+                if (group_style == GS_TRIANGLE) {
+                    countPos = s_attach + Vector(g_diag.centroid()-s_attach)*0.666 + Vector(-textsize, text_ascent)*0.5;
+                }
+                else {
+                    countPos = s_attach + Vector(char_width, 0.5*text_ascent);
+                }
                 disp_device->text(at->gr.gc, info.count, countPos, 0.0, group_text_filter, info.count_len);
 
-                double textsize = disp_device->get_string_size(at->gr.gc, info.count, info.count_len) * disp_device->get_unscale();
                 limits.x_right  = std::max(limits.x_right, countPos.xpos()+textsize);
             }
         }
