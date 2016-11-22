@@ -298,7 +298,7 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
     double irs_tree_ruler_scale_factor;
     double attach_size;   // 1.0 = at bigger subtree ; 0.0 = centered;         -1.0 = at smaller subtree (trad.)
     double attach_len;    // 1.0 = at longer branch;   0.0 = centered (trad.); -1.0 = at shorter branch
-    double attach_group;  // 1.0 = at longer side;     0.5 = centered (trad.);  0.0 = at shorter side (of group polygone)
+    double attach_group;  // 1.0 = at longer side;     0.5 = centered (trad.);  0.0 = at shorter side (of group polygon)
 
     AWT_scaled_font_limits scaled_font;
 

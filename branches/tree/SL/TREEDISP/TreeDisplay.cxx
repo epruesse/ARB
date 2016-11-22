@@ -2282,7 +2282,8 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
 
         disp_device->set_grey_level(at->gr.gc, group_greylevel);
 
-        Position s_attach;
+        Position   s_attach; // parent attach point
+        LineVector g_diag;   // diagonal line at right side of group ("short side" -> "long side", ie. pointing rightwards)
         {
             Position group[4] = { s0, s1, n1, n0 }; // init with long side at top (=traditional orientation)
 
@@ -2297,6 +2298,10 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
                 double x2 = group[2].xpos();
                 group[2].setx(group[3].xpos());
                 group[3].setx(x2);
+                g_diag = LineVector(group[3], group[2]); // n0 -> n1
+            }
+            else {
+                g_diag = LineVector(group[2], group[3]); // n1 -> n0
             }
 
             s_attach = s1+(flip ? 1.0-attach_group : attach_group)*(s0-s1);
@@ -2317,19 +2322,45 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
             const GroupInfo&      info       = get_group_info(at, group_info_pos == GIP_SEPARATED ? GI_SEPARATED : GI_COMBINED, group_info_pos == GIP_OVERLAYED);
             const AW_font_limits& charLimits = disp_device->get_font_limits(at->gr.gc, 'A');
 
-            double text_ascent = charLimits.ascent * disp_device->get_unscale();
-            double char_width  = charLimits.width * disp_device->get_unscale();
-            Vector text_offset = Vector(char_width, 0.5*(text_ascent+box_height));
+            const double text_ascent = charLimits.ascent * disp_device->get_unscale();
+            const double char_width  = charLimits.width * disp_device->get_unscale();
+            const Vector text_offset = Vector(char_width, 0.5*(text_ascent+box_height));
 
-            if (info.name) {
-                Position textPos = n0+text_offset;
+            if (info.name) { // attached info
+
+                Position textPos;
+
+                const double gy           = g_diag.line_vector().y();
+                const double group_height = fabs(gy);
+
+                if (group_height<=text_ascent) {
+                    textPos = Position(g_diag.head().xpos(), g_diag.centroid().ypos()+text_ascent*0.5);
+                }
+                else {
+                    Position pmin(g_diag.start()); // text position at short side of polygon (=leftmost position)
+                    Position pmax(g_diag.head());  // text position at long  side of polygon (=rightmost position)
+
+                    const double shift_right = g_diag.line_vector().x() * text_ascent / group_height; // rightward shift needed at short side (to avoid overlap with group polygon)
+
+                    if (gy < 0.0) { // long side at top
+                        pmin.movex(shift_right);
+                        pmax.movey(text_ascent);
+                    }
+                    else { // long side at bottom
+                        pmin.move(Vector(shift_right, text_ascent));
+                    }
+
+                    textPos = pmin + 0.125*(pmax-pmin);
+                }
+
+                textPos.movex(char_width);
                 disp_device->text(at->gr.gc, info.name, textPos, 0.0, group_text_filter, info.name_len);
 
                 double textsize = disp_device->get_string_size(at->gr.gc, info.name, info.name_len) * disp_device->get_unscale();
                 limits.x_right  = std::max(limits.x_right, textPos.xpos()+textsize);
             }
 
-            if (info.count) {
+            if (info.count) { // overlayed info
                 Position countPos = s0+text_offset;
                 disp_device->text(at->gr.gc, info.count, countPos, 0.0, group_text_filter, info.count_len);
 
