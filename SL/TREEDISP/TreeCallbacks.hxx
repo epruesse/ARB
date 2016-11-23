@@ -21,7 +21,7 @@ GB_ERROR NT_with_displayed_tree_do(AWT_canvas *ntw, bool (*displayed_tree_cb)(Tr
 void NT_resort_tree_cb(UNFIXED, TREE_canvas *ntw, TreeOrder order);
 void NT_reset_lzoom_cb(UNFIXED, TREE_canvas *ntw);
 void NT_reset_pzoom_cb(UNFIXED, TREE_canvas *ntw);
-void NT_set_tree_style(UNFIXED, TREE_canvas *ntw, AP_tree_display_type type);
+void NT_set_tree_style(UNFIXED, TREE_canvas *ntw, AP_tree_display_style style);
 void NT_remove_leafs(UNFIXED, TREE_canvas *ntw, AWT_RemoveType mode);
 void NT_remove_bootstrap(UNFIXED, TREE_canvas *ntw);
 void NT_toggle_bootstrap100(UNFIXED, TREE_canvas *ntw);

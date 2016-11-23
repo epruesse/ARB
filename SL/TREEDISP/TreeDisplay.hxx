@@ -29,6 +29,10 @@
 
 #define AWAR_DTREE_BASELINEWIDTH   "awt/dtree/baselinewidth"
 #define AWAR_DTREE_VERICAL_DIST    "awt/dtree/verticaldist"
+#define AWAR_DTREE_BRANCH_STYLE    "awt/dtree/branch_style"
+#define AWAR_DTREE_ATTACH_SIZE     "awt/dtree/attach_size"
+#define AWAR_DTREE_ATTACH_LEN      "awt/dtree/attach_len"
+#define AWAR_DTREE_ATTACH_GROUP    "awt/dtree/attach_group"
 #define AWAR_DTREE_GROUP_DOWNSCALE "awt/dtree/downscaling"
 #define AWAR_DTREE_GROUP_SCALE     "awt/dtree/groupscaling"
 #define AWAR_DTREE_AUTO_JUMP       "awt/dtree/autojump"
@@ -38,6 +42,8 @@
 #define AWAR_DTREE_CIRCLE_ZOOM     "awt/dtree/circle_zoom"
 #define AWAR_DTREE_CIRCLE_MAX_SIZE "awt/dtree/max_size"
 #define AWAR_DTREE_USE_ELLIPSE     "awt/dtree/ellipse"
+#define AWAR_DTREE_GROUP_STYLE     "awt/dtree/groupstyle"
+#define AWAR_DTREE_GROUP_ORIENT    "awt/dtree/grouporient"
 #define AWAR_DTREE_GREY_LEVEL      "awt/dtree/greylevel"
 #define AWAR_DTREE_GROUPCOUNTMODE  "awt/dtree/groupcountmode"
 #define AWAR_DTREE_GROUPINFOPOS    "awt/dtree/groupinfopos"
@@ -62,7 +68,7 @@
 #define AWT_TREE(ntw) DOWNCAST(AWT_graphic_tree*, (ntw)->gfx)
 
 
-enum AP_tree_display_type {
+enum AP_tree_display_style {
     AP_TREE_NORMAL, // normal tree display (dendrogram)
     AP_TREE_RADIAL, // radial tree display
     AP_TREE_IRS, // like AP_TREE_NORMAL, with folding line
@@ -94,8 +100,8 @@ enum ClickedType {
     CL_BRANCH,
 };
 
-inline bool sort_is_list_style(AP_tree_display_type sort) { return sort == AP_LIST_NDS || sort == AP_LIST_SIMPLE; }
-inline bool sort_is_tree_style(AP_tree_display_type sort) { return !sort_is_list_style(sort); }
+inline bool is_list_style(AP_tree_display_style style) { return style == AP_LIST_NDS || style == AP_LIST_SIMPLE; }
+inline bool is_tree_style(AP_tree_display_style style) { return !is_list_style(style); }
 
 
 class AWT_graphic_tree_group_state;
@@ -246,6 +252,23 @@ enum GroupCountMode {
     GCM_BOTH_PC, // show "percent/members" (or "members" if none marked)
 };
 
+enum BranchStyle {
+    BS_RECTANGULAR, // traditional rectangular branches
+    BS_DIAGONAL,    // diagonal branches (directly from fathers to sons attach point)
+};
+
+enum GroupStyle {
+    GS_TRAPEZE,
+    GS_TRIANGLE,
+};
+
+enum GroupOrientation {
+    GO_TOP,      // long clade side at top
+    GO_BOTTOM,   // long clade side at bottom
+    GO_INTERIOR, // long clade side towards center of subtree
+    GO_EXTERIOR, // long clade side towards margin of subtree
+};
+
 class AWT_graphic_tree;
 DECLARE_CBTYPE_FVV_AND_BUILDERS(GraphicTreeCallback, void, AWT_graphic_tree*); // generates makeGraphicTreeCallback
 
@@ -253,33 +276,35 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
     char         *species_name;
     AW::Position  cursor;
 
-    int    baselinewidth;
-    int    show_brackets;
-    int    show_circle;
-    int    use_ellipse;
-    float  circle_zoom_factor;
-    float  circle_max_size;
-    int    bootstrap_min;
+    int   baselinewidth;
+    float circle_zoom_factor;
+    float circle_max_size;
+    int   bootstrap_min;
 
-    int zombies; // # of zombies during last load()
+    int zombies;    // # of zombies during last load()
     int duplicates; // # of duplicates during last load()
 
-    AW_pos paint_irs_sub_tree(AP_tree *node, AW_pos x_offset); // returns y pos
-
-    void unload();
-
-    // variables - tree compatibility
-
     AP_tree * tree_proto;
-    bool link_to_database; // link on load ?
+
+    bool show_brackets;
+    bool show_circle;
+    bool use_ellipse;
+    bool link_to_database; // link on load?
+
+    GroupStyle       group_style;
+    GroupOrientation group_orientation;
 
     double list_tree_ruler_y;
     double irs_tree_ruler_scale_factor;
+    double attach_size;   // 1.0 = at bigger subtree ; 0.0 = centered;         -1.0 = at smaller subtree (trad.)
+    double attach_len;    // 1.0 = at longer branch;   0.0 = centered (trad.); -1.0 = at shorter branch
+    double attach_group;  // 1.0 = at longer side;     0.5 = centered (trad.);  0.0 = at shorter side (of group polygon)
 
     AWT_scaled_font_limits scaled_font;
 
     double        scaled_branch_distance; // vertical distance between branches (may be extra-scaled in options)
-    group_scaling groupScale; // scaling for folded groups
+    group_scaling groupScale;             // scaling for folded groups
+    double        scaled_remark_ascend;
 
     AW_grey_level group_greylevel;
     AW_grey_level marker_greylevel;
@@ -294,6 +319,7 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
 
     GroupInfoPosition group_info_pos;
     GroupCountMode    group_count_mode;
+    BranchStyle       branch_style;
 
     MarkerDisplay *display_markers;
     struct {
@@ -308,6 +334,14 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
     AP_tree      *displayed_root; // root node of shown (sub-)tree; differs from real root if tree is zoomed logically
 
     GraphicTreeCallback tree_changed_cb;
+
+    AW_root *aw_root;
+    GBDATA  *gb_main;
+
+    AP_tree_display_style tree_style;
+
+    AW_pos paint_irs_sub_tree(AP_tree *node, AW_pos x_offset); // returns y pos
+    void   unload();
 
     // functions to compute displayinformation
 
@@ -325,7 +359,19 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
 
     const GroupInfo& get_group_info(AP_tree *at, GroupInfoMode mode, bool swap = false) const;
 
+    void handle_key(AW_device *device, AWT_graphic_event& event);
+
+protected:
+    void store_command_data(AWT_command_data *new_cmd_data) {
+        delete cmd_data;
+        cmd_data = new_cmd_data;
+    }
+    AWT_command_data *get_command_data() { return cmd_data; }
+
 public:
+    AWT_graphic_tree(AW_root *aw_root, GBDATA *gb_main, AD_map_viewer_cb map_viewer_cb);
+    ~AWT_graphic_tree() OVERRIDE;
+
     void filled_box(int gc, const AW::Position& pos, int pixel_width) { pixel_box(gc, pos, pixel_width, AW::FillStyle::SOLID); }
     void empty_box(int gc, const AW::Position& pos, int pixel_width) { pixel_box(gc, pos, pixel_width, AW::FillStyle::EMPTY); }
     void diamond(int gc, const AW::Position& pos, int pixel_radius);
@@ -355,25 +401,8 @@ public:
 
     virtual AP_tree_root *create_tree_root(AliView *aliview, AP_sequence *seq_prototype, bool insert_delete_cbs);
 
-protected:
-    void store_command_data(AWT_command_data *new_cmd_data) {
-        delete cmd_data;
-        cmd_data = new_cmd_data;
-    }
-    AWT_command_data *get_command_data() { return cmd_data; }
-
-public:
-
-    // *********** read only variables !!!
-
-    AW_root              *aw_root;
-    AP_tree_display_type  tree_sort;
-    GBDATA               *gb_main;
-
-    // *********** public section
-
-    AWT_graphic_tree(AW_root *aw_root, GBDATA *gb_main, AD_map_viewer_cb map_viewer_cb);
-    ~AWT_graphic_tree() OVERRIDE;
+    AW_root *get_root() const { return aw_root; }
+    GBDATA *get_gbmain() const { return gb_main; }
 
     AP_tree_root *get_tree_root() { return tree_static; }
 
@@ -395,9 +424,6 @@ public:
     void show(AW_device *device) OVERRIDE;
     const AW::Position& get_cursor() const { return cursor; }
 
-private:
-    void handle_key(AW_device *device, AWT_graphic_event& event);
-public:
     void handle_command(AW_device *device, AWT_graphic_event& event) OVERRIDE;
 
     void mark_species_in_tree(AP_tree *at, int mark);
@@ -420,7 +446,9 @@ public:
     GB_ERROR save(GBDATA *gb_main, const char *name) OVERRIDE __ATTR__USERESULT;
     int      check_update(GBDATA *gb_main) OVERRIDE;         // reload tree if needed
     void     update(GBDATA *gb_main) OVERRIDE;
-    void     set_tree_type(AP_tree_display_type type, AWT_canvas *ntw);
+
+    void set_tree_style(AP_tree_display_style style, AWT_canvas *ntw);
+    AP_tree_display_style get_tree_style() const { return tree_style; }
 
     double get_irs_tree_ruler_scale_factor() const { return irs_tree_ruler_scale_factor; }
     void show_ruler(AW_device *device, int gc);
