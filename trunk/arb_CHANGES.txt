@@ -82,8 +82,9 @@ Major changes for next release:
    * fine grained scaling
    * improved auto-jump
    * add threshold for visible support values
-   * group shading
-   * group counters (customizable)
+   * group display (shading, customizable counters, triangle clades, optimized name+bootstrap display position)
+   * diagonal branch style
+   * parent branch position
    * all options are now also supported by ARB_PARSIMONY
  - synchronized tree scrolling (#683)
  - colorsets were invalidated by generating new IDs (#660). fixed.

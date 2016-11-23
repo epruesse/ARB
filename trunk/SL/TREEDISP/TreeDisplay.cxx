@@ -531,7 +531,7 @@ public:
 
 bool AWT_graphic_tree::warn_inappropriate_mode(AWT_COMMAND_MODE mode) {
     if (mode == AWT_MODE_ROTATE || mode == AWT_MODE_SPREAD) {
-        if (tree_sort != AP_TREE_RADIAL) {
+        if (tree_style != AP_TREE_RADIAL) {
             aw_message("Please select the radial tree display mode to use this command");
             return true;
         }
@@ -1310,18 +1310,19 @@ public:
     }
 };
 
-inline Position calc_text_coordinates_near_tip(AW_device *device, int gc, const Position& pos, const Angle& orientation, AW_pos& alignment) {
+inline Position calc_text_coordinates_near_tip(AW_device *device, int gc, const Position& pos, const Angle& orientation, AW_pos& alignment, double dist_factor = 1.0) {
     /*! calculates text coordinates for text placed at the tip of a vector
      * @param device      output device
      * @param gc          context
-     * @param x/y         tip of the vector (world coordinates)
+     * @param pos         tip of the vector (world coordinates)
      * @param orientation orientation of the vector (towards its tip)
      * @param alignment   result param (alignment for call to text())
+     * @param dist_factor normally 1.0 (smaller => text nearer towards 'pos')
      */
     const AW_font_limits& charLimits = device->get_font_limits(gc, 'A');
 
     const double text_height = charLimits.get_height() * device->get_unscale();
-    const double dist        = charLimits.get_height() * device->get_unscale(); // @@@ same as text_height (ok?)
+    const double dist        = text_height * dist_factor;
 
     Vector shift = orientation.normal();
     // use sqrt of sin(=y) to move text faster between positions below and above branch:
@@ -1479,7 +1480,7 @@ void AWT_graphic_tree::handle_command(AW_device *device, AWT_graphic_event& even
                 xdata = GB_searchOrCreate_float(gb_tree, RULER_SIZE, DEFAULT_RULER_LENGTH);
 
                 double rel  = clicked.get_rel_attach();
-                if (tree_sort == AP_TREE_IRS) {
+                if (tree_style == AP_TREE_IRS) {
                     unscale /= (rel-1)*irs_tree_ruler_scale_factor; // ruler has opposite orientation in IRS mode
                 }
                 else {
@@ -1727,16 +1728,16 @@ act_like_group :
     }
 }
 
-void AWT_graphic_tree::set_tree_type(AP_tree_display_type type, AWT_canvas *ntw) {
-    if (sort_is_list_style(type)) {
-        if (tree_sort == type) { // we are already in wanted view
+void AWT_graphic_tree::set_tree_style(AP_tree_display_style style, AWT_canvas *ntw) {
+    if (is_list_style(style)) {
+        if (tree_style == style) { // we are already in wanted view
             nds_only_marked = !nds_only_marked; // -> toggle between 'marked' and 'all'
         }
         else {
             nds_only_marked = false; // default to all
         }
     }
-    tree_sort = type;
+    tree_style = style;
     apply_zoom_settings_for_treetype(ntw); // sets default padding
 
     exports.fit_mode  = AWT_FIT_LARGER;
@@ -1744,7 +1745,7 @@ void AWT_graphic_tree::set_tree_type(AP_tree_display_type type, AWT_canvas *ntw)
 
     exports.dont_scroll = 0;
 
-    switch (type) {
+    switch (style) {
         case AP_TREE_RADIAL:
             break;
 
@@ -1774,37 +1775,37 @@ static GraphicTreeCallback treeChangeIgnore_cb = makeGraphicTreeCallback(tree_ch
 
 AWT_graphic_tree::AWT_graphic_tree(AW_root *aw_root_, GBDATA *gb_main_, AD_map_viewer_cb map_viewer_cb_)
     : AWT_graphic(),
-      line_filter         (AW_SCREEN|AW_CLICK|AW_TRACK|AW_CLICK_DROP|AW_PRINTER|AW_SIZE), // horizontal lines (ie. lines towards leafs in dendro-view; all lines in radial view)
-      vert_line_filter    (AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_PRINTER),                  // vertical lines (in dendro view; @@@ should be used in IRS as well!)
-      mark_filter         (AW_SCREEN|AW_CLICK|AW_TRACK|AW_CLICK_DROP|AW_PRINTER_EXT),     // diamond at open group (dendro+radial); boxes at marked species (all views); origin (radial view); cursor box (all views); group-handle (IRS)
+      species_name(NULL),
+      baselinewidth(1),
+      tree_proto(NULL),
+      link_to_database(false),
+      line_filter         (AW_SCREEN|AW_CLICK|AW_TRACK|AW_CLICK_DROP|AW_PRINTER|AW_SIZE),          // horizontal lines (ie. lines towards leafs in dendro-view; all lines in radial view)
+      vert_line_filter    (AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_PRINTER),                           // vertical lines (in dendro view; @@@ should be used in IRS as well!)
+      mark_filter         (AW_SCREEN|AW_CLICK|AW_TRACK|AW_CLICK_DROP|AW_PRINTER_EXT),              // diamond at open group (dendro+radial); boxes at marked species (all views); origin (radial view); cursor box (all views); group-handle (IRS)
       group_bracket_filter(AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_PRINTER|AW_SIZE_UNSCALED),
       bs_circle_filter    (AW_SCREEN|AW_PRINTER|AW_SIZE_UNSCALED),
       leaf_text_filter    (AW_SCREEN|AW_CLICK|AW_TRACK|AW_CLICK_DROP|AW_PRINTER|AW_SIZE_UNSCALED), // text at leafs (all views but IRS? @@@ should be used in IRS as well)
       group_text_filter   (AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_PRINTER|AW_SIZE_UNSCALED),
       remark_text_filter  (AW_SCREEN|AW_CLICK|AW_CLICK_DROP|AW_PRINTER|AW_SIZE_UNSCALED),
       other_text_filter   (AW_SCREEN|AW_PRINTER|AW_SIZE_UNSCALED),
-      ruler_filter        (AW_SCREEN|AW_CLICK|AW_PRINTER),                                // appropriate size-filter added manually in code
-      root_filter         (AW_SCREEN|AW_PRINTER_EXT),                                     // unused (@@@ should be used for radial root)
-      marker_filter       (AW_SCREEN|AW_CLICK|AW_PRINTER_EXT|AW_SIZE_UNSCALED),           // species markers (eg. visualizing configs)
-      tree_changed_cb(treeChangeIgnore_cb)
+      ruler_filter        (AW_SCREEN|AW_CLICK|AW_PRINTER),                                         // appropriate size-filter added manually in code
+      root_filter         (AW_SCREEN|AW_PRINTER_EXT),                                              // unused (@@@ should be used for radial root)
+      marker_filter       (AW_SCREEN|AW_CLICK|AW_PRINTER_EXT|AW_SIZE_UNSCALED),                    // species markers (eg. visualizing configs)
+      nds_only_marked(false),
+      group_info_pos(GIP_SEPARATED),
+      group_count_mode(GCM_MEMBERS),
+      branch_style(BS_RECTANGULAR),
+      display_markers(NULL),
+      map_viewer_cb(map_viewer_cb_),
+      cmd_data(NULL),
+      tree_static(NULL),
+      displayed_root(NULL),
+      tree_changed_cb(treeChangeIgnore_cb),
+      aw_root(aw_root_),
+      gb_main(gb_main_)
 {
-    td_assert(gb_main_);
-
-    set_tree_type(AP_TREE_NORMAL, NULL);
-    displayed_root   = 0;
-    tree_proto       = 0;
-    link_to_database = false;
-    tree_static      = 0;
-    baselinewidth    = 1;
-    species_name     = 0;
-    aw_root          = aw_root_;
-    gb_main          = gb_main_;
-    cmd_data         = NULL;
-    nds_only_marked  = false;
-    group_info_pos   = GIP_SEPARATED;
-    group_count_mode = GCM_MEMBERS;
-    map_viewer_cb    = map_viewer_cb_;
-    display_markers  = NULL;
+    td_assert(gb_main);
+    set_tree_style(AP_TREE_NORMAL, NULL);
 }
 
 AWT_graphic_tree::~AWT_graphic_tree() {
@@ -2189,8 +2190,12 @@ bool TREE_show_branch_remark(AW_device *device, const char *remark_branch, bool 
 }
 
 void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtreeLimits& limits) {
-    // 'Pen' points to the upper-left corner of the area into which subtree gets painted
-    // after return 'Pen' is Y-positioned for next tree-tip (X is undefined)
+    /*! show dendrogram of subtree
+     * @param at       the subtree to show
+     * @param Pen      upper left corner of subtree area (eg. equals position of mark-box for tips).
+     *                 Is modified and points to next subtree-area afterwards (Y only, X is undef!)
+     * @param limits   reports dimension of painted subtree (output parameter)
+     */
 
     if (disp_device->type() != AW_DEVICE_SIZE) { // tree below cliprect bottom can be cut
         Position p(0, Pen.ypos() - scaled_branch_distance *2.0);
@@ -2204,7 +2209,7 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
         }
         else {
             p.sety(Pen.ypos() + scaled_branch_distance *(at->gr.view_sum+2));
-            s = disp_device->transform(p);;
+            s = disp_device->transform(p);
 
             if (disp_device->is_above_clip(s.ypos())) {
                 offset     = scaled_branch_distance*at->gr.view_sum;
@@ -2269,8 +2274,6 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
         Position n0(s0);  n0.movex(at->gr.max_tree_depth);
         Position n1(s1);  n1.movex(at->gr.min_tree_depth);
 
-        Position group[4] = { s0, s1, n1, n0 };
-
         set_line_attributes_for(at);
 
         if (display_markers) {
@@ -2278,7 +2281,40 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
         }
 
         disp_device->set_grey_level(at->gr.gc, group_greylevel);
-        disp_device->polygon(at->gr.gc, AW::FillStyle::SHADED_WITH_BORDER, 4, group, line_filter);
+
+        Position   s_attach; // parent attach point
+        LineVector g_diag;   // diagonal line at right side of group ("short side" -> "long side", ie. pointing rightwards)
+        {
+            Position group[4] = { s0, s1, n1, n0 }; // init with long side at top (=traditional orientation)
+
+            bool flip;
+            switch (group_orientation) {
+                case GO_TOP:      flip = false; break;
+                case GO_BOTTOM:   flip = true; break;
+                case GO_EXTERIOR: flip = at->is_lower_son(); break;
+                case GO_INTERIOR: flip = at->is_upper_son(); break;
+            }
+            if (flip) { // flip triangle/trapeze vertically
+                double x2 = group[2].xpos();
+                group[2].setx(group[3].xpos());
+                group[3].setx(x2);
+                g_diag = LineVector(group[3], group[2]); // n0 -> n1
+            }
+            else {
+                g_diag = LineVector(group[2], group[3]); // n1 -> n0
+            }
+
+            s_attach = s1+(flip ? 1.0-attach_group : attach_group)*(s0-s1);
+
+            if (group_style == GS_TRIANGLE) {
+                group[1] = s_attach;
+                disp_device->polygon(at->gr.gc, AW::FillStyle::SHADED_WITH_BORDER, 3, group+1, line_filter);
+            }
+            else {
+                td_assert(group_style == GS_TRAPEZE); // traditional style
+                disp_device->polygon(at->gr.gc, AW::FillStyle::SHADED_WITH_BORDER, 4, group, line_filter);
+            }
+        }
 
         limits.x_right = n0.xpos();
 
@@ -2286,27 +2322,61 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
             const GroupInfo&      info       = get_group_info(at, group_info_pos == GIP_SEPARATED ? GI_SEPARATED : GI_COMBINED, group_info_pos == GIP_OVERLAYED);
             const AW_font_limits& charLimits = disp_device->get_font_limits(at->gr.gc, 'A');
 
-            double text_ascent = charLimits.ascent * disp_device->get_unscale();
-            double char_width  = charLimits.width * disp_device->get_unscale();
-            Vector text_offset = Vector(char_width, 0.5*(text_ascent+box_height));
+            const double text_ascent = charLimits.ascent * disp_device->get_unscale();
+            const double char_width  = charLimits.width * disp_device->get_unscale();
 
-            if (info.name) {
-                Position textPos = n0+text_offset;
+            if (info.name) { // attached info
+
+                Position textPos;
+
+                const double gy           = g_diag.line_vector().y();
+                const double group_height = fabs(gy);
+
+                if (group_height<=text_ascent) {
+                    textPos = Position(g_diag.head().xpos(), g_diag.centroid().ypos()+text_ascent*0.5);
+                }
+                else {
+                    Position pmin(g_diag.start()); // text position at short side of polygon (=leftmost position)
+                    Position pmax(g_diag.head());  // text position at long  side of polygon (=rightmost position)
+
+                    const double shift_right = g_diag.line_vector().x() * text_ascent / group_height; // rightward shift needed at short side (to avoid overlap with group polygon)
+
+                    if (gy < 0.0) { // long side at top
+                        pmin.movex(shift_right);
+                        pmax.movey(text_ascent);
+                    }
+                    else { // long side at bottom
+                        pmin.move(Vector(shift_right, text_ascent));
+                    }
+
+                    textPos = pmin + 0.125*(pmax-pmin);
+                }
+
+                textPos.movex(char_width);
                 disp_device->text(at->gr.gc, info.name, textPos, 0.0, group_text_filter, info.name_len);
 
                 double textsize = disp_device->get_string_size(at->gr.gc, info.name, info.name_len) * disp_device->get_unscale();
-                limits.x_right  = textPos.xpos()+textsize;
+                limits.x_right  = std::max(limits.x_right, textPos.xpos()+textsize);
             }
 
-            if (info.count) {
-                Position countPos   = s0+text_offset;
+            if (info.count) { // overlayed info
+                const double textsize = disp_device->get_string_size(at->gr.gc, info.count, info.count_len) * disp_device->get_unscale();
+                Position     countPos;
+                if (group_style == GS_TRIANGLE) {
+                    countPos = s_attach + Vector(g_diag.centroid()-s_attach)*0.666 + Vector(-textsize, text_ascent)*0.5;
+                }
+                else {
+                    countPos = s_attach + Vector(char_width, 0.5*text_ascent);
+                }
                 disp_device->text(at->gr.gc, info.count, countPos, 0.0, group_text_filter, info.count_len);
+
+                limits.x_right  = std::max(limits.x_right, countPos.xpos()+textsize);
             }
         }
 
         limits.y_top    = s0.ypos();
         limits.y_bot    = s1.ypos();
-        limits.y_branch = centroid(limits.y_top, limits.y_bot);
+        limits.y_branch = s_attach.ypos();
 
         Pen.movey(height);
     }
@@ -2322,7 +2392,7 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
         s0.sety(limits.y_branch);
 
         Pen.setx(s0.xpos());
-        Position attach(Pen); attach.movey(- .5*scaled_branch_distance);
+        Position subtree_border(Pen); subtree_border.movey(- .5*scaled_branch_distance); // attach point centered between both subtrees
         Pen.movex(at->rightlen);
         Position n1(Pen);
         {
@@ -2333,6 +2403,68 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
         }
 
         Position s1(s0.xpos(), n1.ypos());
+
+        // calculate attach-point:
+        Position attach = centroid(s0, s1);
+        {
+            Vector shift_by_size(ZeroVector);
+            Vector shift_by_len(ZeroVector);
+            int    nonZero = 0;
+
+            if (attach_size != 0.0) {
+                ++nonZero;
+                shift_by_size = -attach_size * (subtree_border-attach);
+            }
+
+            if (attach_len != 0.0) {
+                Position barycenter;
+                if (nearlyZero(at->leftlen)) {
+                    if (nearlyZero(at->rightlen)) {
+                        barycenter = attach;
+                    }
+                    else {
+                        barycenter = s1; // at(!) right branch
+                    }
+                }
+                else {
+                    if (nearlyZero(at->rightlen)) {
+                        barycenter = s0; // at(!) left branch
+                    }
+                    else {
+                        double sum = at->leftlen + at->rightlen;
+                        double fraction;
+                        Vector big2small;
+                        if (at->leftlen < at->rightlen) {
+                            fraction   = at->leftlen/sum;
+                            big2small  = s0-s1;
+                        }
+                        else {
+                            fraction = at->rightlen/sum;
+                            big2small = s1-s0;
+                        }
+                        barycenter = attach-big2small/2+big2small*fraction;
+                    }
+                }
+
+                Vector shift_to_barycenter = barycenter-attach;
+                shift_by_len               = shift_to_barycenter*attach_len;
+
+                ++nonZero;
+            }
+
+            if (nonZero>1) {
+                double sum    = fabs(attach_size) + fabs(attach_len);
+                double f_size = fabs(attach_size)/sum;
+                double f_len  = fabs(attach_len)/sum;
+
+                attach += f_size * shift_by_size;
+                attach += f_len  * shift_by_len;
+            }
+            else {
+                attach += shift_by_size;
+                attach += shift_by_len;
+            }
+        }
 
         if (at->name && show_brackets) {
             double                unscale          = disp_device->get_unscale();
@@ -2389,11 +2521,11 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
         }
 
         for (int right = 0; right<2; ++right) {
-            AP_tree         *son;
-            GBT_LEN          len;
-            const Position&  n = right ? n1 : n0;
-            const Position&  s = right ? s1 : s0;
+            const Position& n = right ? n1 : n0; // node-position
+            const Position& s = right ? s1 : s0; // upper/lower corner of rectangular branch
 
+            AP_tree *son;
+            GBT_LEN  len;
             if (right) {
                 son = at->get_rightson();
                 len = at->rightlen;
@@ -2405,18 +2537,28 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
 
             AW_click_cd cds(disp_device, (AW_CL)son, CL_NODE);
             if (son->get_remark()) {
-                Position remarkPos(n);
-                remarkPos.movey(-scaled_font.ascent*0.1);
-                bool bootstrap_shown = TREE_show_branch_remark(disp_device, son->get_remark(), son->is_leaf, remarkPos, 1, remark_text_filter, bootstrap_min);
+                const Position circlePos(n);
+                Position       remarkPos = n;
+                remarkPos.movey(scaled_remark_ascend*(right ? 1.2 : -0.1)); // lower subtree -> draw below branch; upper subtree -> draw above branch
+                const AW_pos   alignment = 1; // =right-justified
+
+                bool bootstrap_shown = TREE_show_branch_remark(disp_device, son->get_remark(), son->is_leaf, remarkPos, alignment, remark_text_filter, bootstrap_min);
                 if (show_circle && bootstrap_shown) {
-                    show_bootstrap_circle(disp_device, son->get_remark(), circle_zoom_factor, circle_max_size, len, n, use_ellipse, scaled_branch_distance, bs_circle_filter);
+                    show_bootstrap_circle(disp_device, son->get_remark(), circle_zoom_factor, circle_max_size, len, circlePos, use_ellipse, scaled_branch_distance, bs_circle_filter);
                 }
             }
 
             set_line_attributes_for(son);
             unsigned int gc = son->gr.gc;
-            draw_branch_line(gc, s, n, line_filter);
-            draw_branch_line(gc, attach, s, vert_line_filter);
+
+            if (branch_style == BS_RECTANGULAR) {
+                draw_branch_line(gc, s, n, line_filter);
+                draw_branch_line(gc, attach, s, vert_line_filter);
+            }
+            else {
+                td_assert(branch_style == BS_DIAGONAL);
+                draw_branch_line(gc, attach, n, line_filter);
+            }
         }
         if (at->name) {
             diamond(at->gr.gc, attach, NT_DIAMOND_RADIUS);
@@ -2532,6 +2674,7 @@ void AWT_graphic_tree::show_radial_tree(AP_tree *at, const AW::Position& base, c
                     AW_click_cd sub_cd(disp_device, (AW_CL)sub[s].at, CL_NODE);
                     Position    sub_branch_center = tip + (sub[s].len*.5) * sub[s].orientation.normal();
                     show_bootstrap_circle(disp_device, sub[s].at->get_remark(), circle_zoom_factor, circle_max_size, sub[s].len, sub_branch_center, false, 0, bs_circle_filter);
+                    // @@@ show bootstrap value in radial tree?
                 }
             }
         }
@@ -2543,7 +2686,7 @@ void AWT_graphic_tree::show_radial_tree(AP_tree *at, const AW::Position& base, c
 const char *AWT_graphic_tree::ruler_awar(const char *name) {
     // return "ruler/TREETYPE/name" (path to entry below tree)
     const char *tree_awar = 0;
-    switch (tree_sort) {
+    switch (tree_style) {
         case AP_TREE_NORMAL:
             tree_awar = "LIST";
             break;
@@ -2589,7 +2732,7 @@ void AWT_graphic_tree::show_ruler(AW_device *device, int gc) {
 
         float ruler_add_y  = 0.0;
         float ruler_add_x  = 0.0;
-        switch (tree_sort) {
+        switch (tree_style) {
             case AP_TREE_IRS:
                 // scale is different for IRS tree -> adjust:
                 half_ruler_width *= irs_tree_ruler_scale_factor;
@@ -2859,7 +3002,13 @@ void AWT_graphic_tree::read_tree_settings() {
     circle_zoom_factor     = aw_root->awar(AWAR_DTREE_CIRCLE_ZOOM)->read_float();
     circle_max_size        = aw_root->awar(AWAR_DTREE_CIRCLE_MAX_SIZE)->read_float();
     use_ellipse            = aw_root->awar(AWAR_DTREE_USE_ELLIPSE)->read_int();
+    group_style            = GroupStyle(aw_root->awar(AWAR_DTREE_GROUP_STYLE)->read_int());
+    group_orientation      = GroupOrientation(aw_root->awar(AWAR_DTREE_GROUP_ORIENT)->read_int());
     bootstrap_min          = aw_root->awar(AWAR_DTREE_BOOTSTRAP_MIN)->read_int();
+    branch_style           = BranchStyle(aw_root->awar(AWAR_DTREE_BRANCH_STYLE)->read_int());
+    attach_size            = aw_root->awar(AWAR_DTREE_ATTACH_SIZE)->read_float();
+    attach_len             = aw_root->awar(AWAR_DTREE_ATTACH_LEN)->read_float();
+    attach_group           = (aw_root->awar(AWAR_DTREE_ATTACH_GROUP)->read_float()+1)/2; // projection: [-1 .. 1] -> [0 .. 1]
 
     freeset(species_name, aw_root->awar(AWAR_SPECIES_NAME)->read_string());
 
@@ -2879,7 +3028,7 @@ void AWT_graphic_tree::apply_zoom_settings_for_treetype(AWT_canvas *ntw) {
         int  left_padding  = 0;
         int  right_padding = 0;
 
-        switch (tree_sort) {
+        switch (tree_style) {
             case AP_TREE_RADIAL:
                 zoom_fit_text = aw_root->awar(AWAR_DTREE_RADIAL_ZOOM_TEXT)->read_int();
                 left_padding  = aw_root->awar(AWAR_DTREE_RADIAL_XPAD)->read_int();
@@ -2913,16 +3062,23 @@ void AWT_graphic_tree::show(AW_device *device) {
     disp_device = device;
     disp_device->reset_style();
 
-    const AW_font_limits& charLimits = disp_device->get_font_limits(AWT_GC_ALL_MARKED, 0);
-
-    scaled_font.init(charLimits, device->get_unscale());
+    {
+        const AW_font_limits& charLimits  = disp_device->get_font_limits(AWT_GC_ALL_MARKED, 0);
+        scaled_font.init(charLimits, device->get_unscale());
+    }
+    {
+        const AW_font_limits&  remarkLimits = disp_device->get_font_limits(AWT_GC_BRANCH_REMARK, 0);
+        AWT_scaled_font_limits scaledRemarkLimits;
+        scaledRemarkLimits.init(remarkLimits, device->get_unscale());
+        scaled_remark_ascend                = scaledRemarkLimits.ascent;
+    }
     scaled_branch_distance *= scaled_font.height;
 
     make_node_text_init(gb_main);
 
     cursor = Origin;
 
-    if (!displayed_root && sort_is_tree_style(tree_sort)) { // if there is no tree, but display style needs tree
+    if (!displayed_root && is_tree_style(tree_style)) { // if there is no tree, but display style needs tree
         static const char *no_tree_text[] = {
             "No tree (selected)",
             "",
@@ -2945,10 +3101,11 @@ void AWT_graphic_tree::show(AW_device *device) {
         bool     allow_range_display = true;
         Position range_origin        = Origin;
 
-        switch (tree_sort) {
+        switch (tree_style) {
             case AP_TREE_NORMAL: {
                 DendroSubtreeLimits limits;
                 Position            pen(0, 0.05);
+
                 show_dendrogram(displayed_root, pen, limits);
 
                 int rulerOffset = 2;
@@ -2982,7 +3139,7 @@ void AWT_graphic_tree::show(AW_device *device) {
                 break;
         }
         if (are_distinct(Origin, cursor)) empty_box(AWT_GC_CURSOR, cursor, NT_SELECTED_WIDTH);
-        if (sort_is_tree_style(tree_sort)) show_ruler(disp_device, AWT_GC_CURSOR);
+        if (is_tree_style(tree_style)) show_ruler(disp_device, AWT_GC_CURSOR);
 
         if (allow_range_display) {
             AW_displayColorRange(disp_device, AWT_GC_FIRST_RANGE_COLOR, range_origin, range_display_size, range_display_size);
@@ -3146,6 +3303,10 @@ static void markerThresholdChanged_cb(AW_root *root, bool partChanged) {
 void TREE_create_awars(AW_root *aw_root, AW_default db) {
     aw_root->awar_int  (AWAR_DTREE_BASELINEWIDTH,   1)  ->set_minmax (1,    10);
     aw_root->awar_float(AWAR_DTREE_VERICAL_DIST,    1.0)->set_minmax (0.01, 30);
+    aw_root->awar_int  (AWAR_DTREE_BRANCH_STYLE,    BS_RECTANGULAR);
+    aw_root->awar_float(AWAR_DTREE_ATTACH_SIZE,    -1.0)->set_minmax (-1.0,  1.0);
+    aw_root->awar_float(AWAR_DTREE_ATTACH_LEN,      0.0)->set_minmax (-1.0,  1.0);
+    aw_root->awar_float(AWAR_DTREE_ATTACH_GROUP,    0.0)->set_minmax (-1.0,  1.0);
     aw_root->awar_float(AWAR_DTREE_GROUP_DOWNSCALE, 0.33)->set_minmax(0.0,  1.0);
     aw_root->awar_float(AWAR_DTREE_GROUP_SCALE,     1.0)->set_minmax (0.01, 10.0);
 
@@ -3158,6 +3319,9 @@ void TREE_create_awars(AW_root *aw_root, AW_default db) {
     aw_root->awar_int(AWAR_DTREE_SHOW_BRACKETS, 1);
     aw_root->awar_int(AWAR_DTREE_SHOW_CIRCLE,   0);
     aw_root->awar_int(AWAR_DTREE_USE_ELLIPSE,   1);
+
+    aw_root->awar_int(AWAR_DTREE_GROUP_STYLE,  GS_TRAPEZE);
+    aw_root->awar_int(AWAR_DTREE_GROUP_ORIENT, GO_TOP);
 
     aw_root->awar_float(AWAR_DTREE_CIRCLE_ZOOM,     1.0)->set_minmax(0.01, 20);
     aw_root->awar_float(AWAR_DTREE_CIRCLE_MAX_SIZE, 1.5)->set_minmax(0.01, 200);
@@ -3205,10 +3369,16 @@ void TREE_install_update_callbacks(TREE_canvas *ntw) {
     awr->awar(AWAR_DTREE_CIRCLE_ZOOM)    ->add_callback(expose_cb);
     awr->awar(AWAR_DTREE_CIRCLE_MAX_SIZE)->add_callback(expose_cb);
     awr->awar(AWAR_DTREE_USE_ELLIPSE)    ->add_callback(expose_cb);
+    awr->awar(AWAR_DTREE_GROUP_STYLE)    ->add_callback(expose_cb);
+    awr->awar(AWAR_DTREE_GROUP_ORIENT)   ->add_callback(expose_cb);
     awr->awar(AWAR_DTREE_BOOTSTRAP_MIN)  ->add_callback(expose_cb);
     awr->awar(AWAR_DTREE_GREY_LEVEL)     ->add_callback(expose_cb);
     awr->awar(AWAR_DTREE_GROUPCOUNTMODE) ->add_callback(expose_cb);
     awr->awar(AWAR_DTREE_GROUPINFOPOS)   ->add_callback(expose_cb);
+    awr->awar(AWAR_DTREE_BRANCH_STYLE)   ->add_callback(expose_cb);
+    awr->awar(AWAR_DTREE_ATTACH_SIZE)    ->add_callback(expose_cb);
+    awr->awar(AWAR_DTREE_ATTACH_LEN)     ->add_callback(expose_cb);
+    awr->awar(AWAR_DTREE_ATTACH_GROUP)     ->add_callback(expose_cb);
 
     RootCallback reinit_treetype_cb = makeRootCallback(NT_reinit_treetype, ntw);
     awr->awar(AWAR_DTREE_RADIAL_ZOOM_TEXT)->add_callback(reinit_treetype_cb);
@@ -3255,6 +3425,10 @@ void TREE_insert_jump_option_menu(AW_window *aws, const char *label, const char 
 static AWT_config_mapping_def tree_setting_config_mapping[] = {
     { AWAR_DTREE_BASELINEWIDTH,    "line_width" },
     { AWAR_DTREE_VERICAL_DIST,     "vert_dist" },
+    { AWAR_DTREE_BRANCH_STYLE,     "branch_style" },
+    { AWAR_DTREE_ATTACH_SIZE,      "attach_size" },
+    { AWAR_DTREE_ATTACH_LEN,       "attach_len" },
+    { AWAR_DTREE_ATTACH_GROUP,     "attach_group" },
     { AWAR_DTREE_GROUP_DOWNSCALE,  "group_downscale" },
     { AWAR_DTREE_GROUP_SCALE,      "group_scale" },
     { AWAR_DTREE_AUTO_JUMP,        "auto_jump" },
@@ -3262,6 +3436,8 @@ static AWT_config_mapping_def tree_setting_config_mapping[] = {
     { AWAR_DTREE_SHOW_CIRCLE,      "show_circle" },
     { AWAR_DTREE_SHOW_BRACKETS,    "show_brackets" },
     { AWAR_DTREE_USE_ELLIPSE,      "use_ellipse" },
+    { AWAR_DTREE_GROUP_STYLE,      "group_style" },
+    { AWAR_DTREE_GROUP_ORIENT,     "group_orientation" },
     { AWAR_DTREE_CIRCLE_ZOOM,      "circle_zoom" },
     { AWAR_DTREE_CIRCLE_MAX_SIZE,  "circle_max_size" },
     { AWAR_DTREE_GREY_LEVEL,       "grey_level" },
@@ -3275,48 +3451,157 @@ static AWT_config_mapping_def tree_setting_config_mapping[] = {
     { 0, 0 }
 };
 
+static const int SCALER_WIDTH = 250; // pixel
+static const int LABEL_WIDTH  = 30;  // char
+
+static void insert_section_header(AW_window *aws, const char *title) {
+    char *button_text = GBS_global_string_copy("%*s%s ]", LABEL_WIDTH+1, "[ ", title);
+    aws->create_autosize_button(NULL, button_text);
+    aws->at_newline();
+    free(button_text);
+}
+
+static AW_window *create_tree_expert_settings_window(AW_root *aw_root) {
+    static AW_window_simple *aws = 0;
+    if (!aws) {
+        aws = new AW_window_simple;
+        aws->init(aw_root, "TREE_EXPERT_SETUP", "Expert tree settings");
+
+        aws->at(5, 5);
+        aws->auto_space(5, 5);
+        aws->label_length(LABEL_WIDTH);
+        aws->button_length(8);
+
+        aws->callback(AW_POPDOWN);
+        aws->create_button("CLOSE", "CLOSE", "C");
+        aws->callback(makeHelpCallback("nt_tree_settings_expert.hlp"));
+        aws->create_button("HELP", "HELP", "H");
+        aws->at_newline();
+
+        insert_section_header(aws, "parent attach position");
+
+        aws->label("Attach by size");
+        aws->create_input_field_with_scaler(AWAR_DTREE_ATTACH_SIZE, 4, SCALER_WIDTH);
+        aws->at_newline();
+
+        aws->label("Attach by len");
+        aws->create_input_field_with_scaler(AWAR_DTREE_ATTACH_LEN, 4, SCALER_WIDTH);
+        aws->at_newline();
+
+        aws->label("Attach (at groups)");
+        aws->create_input_field_with_scaler(AWAR_DTREE_ATTACH_GROUP, 4, SCALER_WIDTH);
+        aws->at_newline();
+
+        insert_section_header(aws, "text zooming / padding");
+
+        const int PAD_SCALER_WIDTH = SCALER_WIDTH-39;
+
+        aws->label("Text zoom/pad (dendro)");
+        aws->create_toggle(AWAR_DTREE_DENDRO_ZOOM_TEXT);
+        aws->create_input_field_with_scaler(AWAR_DTREE_DENDRO_XPAD, 4, PAD_SCALER_WIDTH);
+        aws->at_newline();
+
+        aws->label("Text zoom/pad (radial)");
+        aws->create_toggle(AWAR_DTREE_RADIAL_ZOOM_TEXT);
+        aws->create_input_field_with_scaler(AWAR_DTREE_RADIAL_XPAD, 4, PAD_SCALER_WIDTH);
+        aws->at_newline();
+
+        aws->window_fit();
+    }
+    return aws;
+}
+
+static AW_window *create_tree_bootstrap_settings_window(AW_root *aw_root) {
+    static AW_window_simple *aws = 0;
+    if (!aws) {
+        aws = new AW_window_simple;
+        aws->init(aw_root, "TREE_BOOT_SETUP", "Bootstrap display settings");
+
+        aws->at(5, 5);
+        aws->auto_space(5, 5);
+        aws->label_length(LABEL_WIDTH);
+        aws->button_length(8);
+
+        aws->callback(AW_POPDOWN);
+        aws->create_button("CLOSE", "CLOSE", "C");
+        aws->callback(makeHelpCallback("nt_tree_settings_bootstrap.hlp"));
+        aws->create_button("HELP", "HELP", "H");
+        aws->at_newline();
+
+        aws->label("Show bootstrap circles");
+        aws->create_toggle(AWAR_DTREE_SHOW_CIRCLE);
+        aws->at_newline();
+
+        aws->label("Hide bootstrap value below");
+        aws->create_input_field_with_scaler(AWAR_DTREE_BOOTSTRAP_MIN, 4, SCALER_WIDTH);
+        aws->at_newline();
+
+        aws->label("Use ellipses");
+        aws->create_toggle(AWAR_DTREE_USE_ELLIPSE);
+        aws->at_newline();
+
+        aws->label("Bootstrap circle zoom factor");
+        aws->create_input_field_with_scaler(AWAR_DTREE_CIRCLE_ZOOM, 4, SCALER_WIDTH);
+        aws->at_newline();
+
+        aws->label("Boostrap radius limit");
+        aws->create_input_field_with_scaler(AWAR_DTREE_CIRCLE_MAX_SIZE, 4, SCALER_WIDTH);
+        aws->at_newline();
+
+        aws->window_fit();
+    }
+    return aws;
+}
+
 AW_window *TREE_create_settings_window(AW_root *aw_root) {
     static AW_window_simple *aws = 0;
     if (!aws) {
         aws = new AW_window_simple;
-        aws->init(aw_root, "TREE_PROPS", "TREE SETTINGS");
+        aws->init(aw_root, "TREE_SETUP", "Tree settings");
         aws->load_xfig("awt/tree_settings.fig");
 
         aws->at("close");
+        aws->auto_space(5, 5);
+        aws->label_length(LABEL_WIDTH);
+        aws->button_length(8);
+
         aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
-
-        aws->at("help");
         aws->callback(makeHelpCallback("nt_tree_settings.hlp"));
         aws->create_button("HELP", "HELP", "H");
 
         aws->at("button");
-        aws->auto_space(5, 5);
-        aws->label_length(30);
 
-        const int SCALER_WIDTH = 250;
+        insert_section_header(aws, "branches");
 
         aws->label("Base line width");
         aws->create_input_field_with_scaler(AWAR_DTREE_BASELINEWIDTH, 4, SCALER_WIDTH);
         aws->at_newline();
 
-        TREE_insert_jump_option_menu(aws, "On species change", AWAR_DTREE_AUTO_JUMP);
-        TREE_insert_jump_option_menu(aws, "On tree change",    AWAR_DTREE_AUTO_JUMP_TREE);
+        aws->label("Branch style");
+        aws->create_option_menu(AWAR_DTREE_BRANCH_STYLE, true);
+        aws->insert_default_option("Rectangular",     "R", BS_RECTANGULAR);
+        aws->insert_option        ("Diagonal",        "D", BS_DIAGONAL);
+        aws->update_option_menu();
+        aws->at_newline();
+
+        insert_section_header(aws, "groups");
 
         aws->label("Show group brackets");
         aws->create_toggle(AWAR_DTREE_SHOW_BRACKETS);
         aws->at_newline();
 
-        aws->label("Vertical distance");
-        aws->create_input_field_with_scaler(AWAR_DTREE_VERICAL_DIST, 4, SCALER_WIDTH, AW_SCALER_EXP_LOWER);
-        aws->at_newline();
-
-        aws->label("Vertical group scaling");
-        aws->create_input_field_with_scaler(AWAR_DTREE_GROUP_SCALE, 4, SCALER_WIDTH);
-        aws->at_newline();
-
-        aws->label("'Biggroup' scaling");
-        aws->create_input_field_with_scaler(AWAR_DTREE_GROUP_DOWNSCALE, 4, SCALER_WIDTH);
+        aws->label("Group style");
+        aws->create_option_menu(AWAR_DTREE_GROUP_STYLE, true);
+        aws->insert_default_option("Trapeze",  "z", GS_TRAPEZE);
+        aws->insert_option        ("Triangle", "i", GS_TRIANGLE);
+        aws->update_option_menu();
+        aws->create_option_menu(AWAR_DTREE_GROUP_ORIENT, true);
+        aws->insert_default_option("Top",      "T", GO_TOP);
+        aws->insert_option        ("Bottom",   "B", GO_BOTTOM);
+        aws->insert_option        ("Interior", "I", GO_INTERIOR);
+        aws->insert_option        ("Exterior", "E", GO_EXTERIOR);
+        aws->update_option_menu();
         aws->at_newline();
 
         aws->label("Greylevel of groups (%)");
@@ -3342,40 +3627,42 @@ AW_window *TREE_create_settings_window(AW_root *aw_root) {
         aws->update_option_menu();
         aws->at_newline();
 
-        aws->label("Show bootstrap circles");
-        aws->create_toggle(AWAR_DTREE_SHOW_CIRCLE);
+        insert_section_header(aws, "vertical scaling");
+
+        aws->label("Vertical distance");
+        aws->create_input_field_with_scaler(AWAR_DTREE_VERICAL_DIST, 4, SCALER_WIDTH, AW_SCALER_EXP_LOWER);
         aws->at_newline();
 
-        aws->label("Hide bootstrap value below");
-        aws->create_input_field_with_scaler(AWAR_DTREE_BOOTSTRAP_MIN, 4, SCALER_WIDTH);
+        aws->label("Vertical group scaling");
+        aws->create_input_field_with_scaler(AWAR_DTREE_GROUP_SCALE, 4, SCALER_WIDTH);
         aws->at_newline();
 
-        aws->label("Use ellipses");
-        aws->create_toggle(AWAR_DTREE_USE_ELLIPSE);
+        aws->label("'Biggroup' scaling");
+        aws->create_input_field_with_scaler(AWAR_DTREE_GROUP_DOWNSCALE, 4, SCALER_WIDTH);
         aws->at_newline();
 
-        aws->label("Bootstrap circle zoom factor");
-        aws->create_input_field_with_scaler(AWAR_DTREE_CIRCLE_ZOOM, 4, SCALER_WIDTH);
-        aws->at_newline();
+        insert_section_header(aws, "auto focus");
 
-        aws->label("Boostrap radius limit");
-        aws->create_input_field_with_scaler(AWAR_DTREE_CIRCLE_MAX_SIZE, 4, SCALER_WIDTH);
-        aws->at_newline();
+        TREE_insert_jump_option_menu(aws, "On species change", AWAR_DTREE_AUTO_JUMP);
+        TREE_insert_jump_option_menu(aws, "On tree change",    AWAR_DTREE_AUTO_JUMP_TREE);
 
-        const int PAD_SCALER_WIDTH = SCALER_WIDTH-39;
-
-        aws->label("Text zoom/pad (dendro)");
-        aws->create_toggle(AWAR_DTREE_DENDRO_ZOOM_TEXT);
-        aws->create_input_field_with_scaler(AWAR_DTREE_DENDRO_XPAD, 4, PAD_SCALER_WIDTH);
-        aws->at_newline();
-
-        aws->label("Text zoom/pad (radial)");
-        aws->create_toggle(AWAR_DTREE_RADIAL_ZOOM_TEXT);
-        aws->create_input_field_with_scaler(AWAR_DTREE_RADIAL_XPAD, 4, PAD_SCALER_WIDTH);
-        aws->at_newline();
+        // complete top area of window
 
         aws->at("config");
         AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "tree_settings", tree_setting_config_mapping);
+
+        aws->button_length(19);
+
+        aws->at("bv");
+        aws->create_toggle(AWAR_DTREE_SHOW_CIRCLE);
+
+        aws->at("bootstrap");
+        aws->callback(create_tree_bootstrap_settings_window);
+        aws->create_button("bootstrap", "Bootstrap settings", "B");
+
+        aws->at("expert");
+        aws->callback(create_tree_expert_settings_window);
+        aws->create_button("expert", "Expert settings", "E");
     }
     return aws;
 }
@@ -3394,10 +3681,8 @@ AW_window *TREE_create_marker_settings_window(AW_root *root) {
 
         aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
-
         aws->callback(makeHelpCallback("nt_tree_marker_settings.hlp"));
         aws->create_button("HELP", "HELP", "H");
-
         aws->at_newline();
 
         const int FIELDSIZE  = 5;
@@ -3526,13 +3811,17 @@ struct fake_AW_common : public AW_common {
 };
 
 class fake_AWT_graphic_tree : public AWT_graphic_tree {
-    int var_mode; // current range: [0..3]
+    int         var_mode; // current range: [0..3]
+    double      att_size, att_len;
+    BranchStyle bstyle;
 
     void read_tree_settings() OVERRIDE {
         scaled_branch_distance = 1.0; // not final value!
 
         // var_mode is in range [0..3]
         // it is used to vary tree settings such that many different combinations get tested
+
+        static const double group_attach[] = { 0.5, 1.0, 0.0, };
 
         groupScale.pow     = .33;
         groupScale.linear  = 1.0;
@@ -3541,9 +3830,15 @@ class fake_AWT_graphic_tree : public AWT_graphic_tree {
         show_brackets      = (var_mode != 2);
         show_circle        = var_mode%3;
         use_ellipse        = var_mode%2;
+        group_style        = ((var_mode%2) == (bstyle == BS_DIAGONAL)) ? GS_TRAPEZE : GS_TRIANGLE;
+        group_orientation  = GroupOrientation((var_mode+1)%4);
         circle_zoom_factor = 1.3;
         circle_max_size    = 1.5;
         bootstrap_min      = 0;
+        attach_size        = att_size;
+        attach_len         = att_len;
+        attach_group       = group_attach[var_mode%3];
+        branch_style       = bstyle;
 
         group_info_pos = GIP_SEPARATED;
         switch (var_mode) {
@@ -3554,23 +3849,29 @@ class fake_AWT_graphic_tree : public AWT_graphic_tree {
         switch (var_mode) {
             case 0: group_count_mode = GCM_MEMBERS; break;
             case 1: group_count_mode = GCM_NONE;  break;
-            case 2: group_count_mode = (tree_sort%2) ? GCM_MARKED : GCM_PERCENT;  break;
-            case 3: group_count_mode = (tree_sort%2) ? GCM_BOTH   : GCM_BOTH_PC;  break;
+            case 2: group_count_mode = (tree_style%2) ? GCM_MARKED : GCM_PERCENT;  break;
+            case 3: group_count_mode = (tree_style%2) ? GCM_BOTH   : GCM_BOTH_PC;  break;
         }
     }
 
 public:
     fake_AWT_graphic_tree(GBDATA *gbmain, const char *selected_species)
         : AWT_graphic_tree(NULL, gbmain, fake_AD_map_viewer_cb),
-          var_mode(0)
+          var_mode(0),
+          att_size(0),
+          att_len(0),
+          bstyle(BS_RECTANGULAR)
     {
         species_name = strdup(selected_species);
     }
 
     void set_var_mode(int mode) { var_mode = mode; }
+    void set_attach(double asize, double alen) { att_size = asize; att_len  = alen; }
+    void set_branchstyle(BranchStyle bstyle_) { bstyle = bstyle_; }
+
     void test_show_tree(AW_device *device) { show(device); }
 
-    void test_print_tree(AW_device_print *print_device, AP_tree_display_type type, bool show_handles) {
+    void test_print_tree(AW_device_print *print_device, AP_tree_display_style style, bool show_handles) {
         const int      SCREENSIZE = 541; // use a prime as screensize to reduce rounding errors
         AW_device_size size_device(print_device->get_common());
 
@@ -3587,7 +3888,7 @@ public:
         double zoomy = SCREENSIZE/drawn.height();
         double zoom  = 0.0;
 
-        switch (type) {
+        switch (style) {
             case AP_LIST_SIMPLE:
             case AP_TREE_RADIAL:
                 zoom = std::max(zoomx, zoomy);
@@ -3678,42 +3979,83 @@ void TEST_treeDisplay() {
     for (int show_handles = 0; show_handles <= 1; ++show_handles) {
         for (int color = 0; color <= 1; ++color) {
             print_dev.set_color_mode(color);
-            // for (int itype = AP_TREE_NORMAL; itype <= AP_LIST_SIMPLE; ++itype) {
-            for (int itype = AP_LIST_SIMPLE; itype >= AP_TREE_NORMAL; --itype) {
-                AP_tree_display_type type = AP_tree_display_type(itype);
-                if (spoolnameof[type]) {
-                    char *spool_name     = GBS_global_string_copy("display/%s_%c%c", spoolnameof[type], "MC"[color], "NH"[show_handles]);
-                    char *spool_file     = GBS_global_string_copy("%s_curr.fig", spool_name);
-                    char *spool_expected = GBS_global_string_copy("%s.fig", spool_name);
+            // for (int istyle = AP_TREE_NORMAL; istyle <= AP_LIST_SIMPLE; ++istyle) {
+            for (int istyle = AP_LIST_SIMPLE; istyle >= AP_TREE_NORMAL; --istyle) {
+                AP_tree_display_style style = AP_tree_display_style(istyle);
+                if (spoolnameof[style]) {
+                    char *spool_name = GBS_global_string_copy("display/%s_%c%c", spoolnameof[style], "MC"[color], "NH"[show_handles]);
 
+                    agt.set_tree_style(style, NULL);
+
+                    int var_mode = show_handles+2*color;
+
+                    static struct AttachSettings {
+                        const char *suffix;
+                        double      bySize;
+                        double      byLength;
+                    } attach_settings[] = {
+                        { "",            -1,  0 }, // [size only] traditional attach point (produces old test results)
+                        { "_long",        0,  1 }, // [len only]  attach at long branch
+                        { "_shortSmall", -1, -1 }, // [both]      attach at short+small branch
+                        { "_centered",    0,  0 }, // [none]      center attach points
+                        { NULL,           0,  0 },
+                    };
+
+                    for (int attach_style = 0; attach_settings[attach_style].suffix; ++attach_style) {
+                        if (attach_style>0) {
+                            if (style != AP_TREE_NORMAL) continue;  // test attach-styles only for dendrogram-view
+                            if (attach_style != var_mode) continue; // do not create too many permutations
+                        }
+
+                        const AttachSettings& SETT = attach_settings[attach_style];
+                        char *spool_name2 = GBS_global_string_copy("%s%s", spool_name, SETT.suffix);
+
+                        for (BranchStyle bstyle = BS_RECTANGULAR; bstyle<=BS_DIAGONAL; bstyle = BranchStyle(bstyle+1)) {
+                            if (bstyle != BS_RECTANGULAR) { // test alternate branch-styles only ..
+                                if (istyle != AP_TREE_NORMAL) continue; // .. for dendrogram view
+                                if (attach_style != 0 && attach_style != 3) continue; // .. for traditional and centered attach_points
+                            }
+
+                            static const char *suffix[] = {
+                                "",
+                                "_diagonal",
+                            };
+
+                            char *spool_name3 = GBS_global_string_copy("%s%s", spool_name2, suffix[bstyle]);
 
 // #define TEST_AUTO_UPDATE // dont test, instead update expected results
-
-                    agt.set_tree_type(type, NULL);
+                            {
+                                char *spool_file     = GBS_global_string_copy("%s_curr.fig", spool_name3);
+                                char *spool_expected = GBS_global_string_copy("%s.fig", spool_name3);
 
 #if defined(TEST_AUTO_UPDATE)
 #warning TEST_AUTO_UPDATE is active (non-default)
-                    TEST_EXPECT_NO_ERROR(print_dev.open(spool_expected));
+                                TEST_EXPECT_NO_ERROR(print_dev.open(spool_expected));
 #else
-                    TEST_EXPECT_NO_ERROR(print_dev.open(spool_file));
+                                TEST_EXPECT_NO_ERROR(print_dev.open(spool_file));
 #endif
 
-                    {
-                        GB_transaction ta(gb_main);
-                        agt.set_var_mode(show_handles+2*color);
-                        agt.test_print_tree(&print_dev, type, show_handles);
-                    }
+                                {
+                                    GB_transaction ta(gb_main);
+                                    agt.set_var_mode(var_mode);
+                                    agt.set_attach(SETT.bySize, SETT.byLength);
+                                    agt.set_branchstyle(bstyle);
+                                    agt.test_print_tree(&print_dev, style, show_handles);
+                                }
 
-                    print_dev.close();
+                                print_dev.close();
 
 #if !defined(TEST_AUTO_UPDATE)
-                    // if (strcmp(spool_expected, "display/irs_CH.fig") == 0) {
-                    TEST_EXPECT_TEXTFILES_EQUAL(spool_expected, spool_file);
-                    // }
-                    TEST_EXPECT_ZERO_OR_SHOW_ERRNO(unlink(spool_file));
+                                TEST_EXPECT_TEXTFILES_EQUAL(spool_expected, spool_file);
+                                TEST_EXPECT_ZERO_OR_SHOW_ERRNO(unlink(spool_file));
 #endif
-                    free(spool_expected);
-                    free(spool_file);
+                                free(spool_expected);
+                                free(spool_file);
+                            }
+                            free(spool_name3);
+                        }
+                        free(spool_name2);
+                    }
                     free(spool_name);
                 }
             }

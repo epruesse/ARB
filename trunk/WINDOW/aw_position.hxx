@@ -449,6 +449,7 @@ namespace AW {
         explicit Angle(double Radian_) : Radian(Radian_) { recalcNormal(); ISVALID(*this); }
         Angle(double x, double y) : Normal(x, y) { Normal.normalize(); recalcRadian(); ISVALID(*this); }
         explicit Angle(const Vector& v) : Normal(v) { Normal.normalize(); recalcRadian(); ISVALID(*this); }
+        explicit Angle(const LineVector& lv) : Normal(lv.line_vector()) { Normal.normalize(); recalcRadian(); ISVALID(*this); }
         Angle(const Vector& n, double r) : Normal(n), Radian(r) { aw_assert(n.is_normalized()); ISVALID(*this); }
         Angle(const Position& p1, const Position& p2) : Normal(p1, p2) { Normal.normalize(); recalcRadian(); ISVALID(*this); }
         Angle() : Radian(NAN) {}  // default is not an angle
