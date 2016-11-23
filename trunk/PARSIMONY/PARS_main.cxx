@@ -1289,15 +1289,17 @@ static void pars_start_cb(AW_window *aw_parent, WeightedFilter *wfilt, const PAR
 
                 bool warned = false;
                 if (lowData.get_inner()>0) {
-                    aw_message(GBS_global_string("Inner nodes with insufficient data: %i", lowData.get_leafs()));
+                    aw_message(GBS_global_string("Inner nodes with insufficient data: %i", lowData.get_inner()));
                     warned = true;
                 }
                 if (lowData.get_leafs()>0) {
                     aw_message(GBS_global_string("Species with insufficient data: %i", lowData.get_leafs()));
                     warned = true;
                 }
+#define _STRGIZE(x) #x
+#define INT2STR(i) _STRGIZE(i)
                 if (warned) {
-                    aw_message("Warning: low sequence data detected! (or filter too restrictive)");
+                    aw_message("Warning: low sequence data (<" INT2STR(MIN_SEQUENCE_LENGTH) " bp) detected! (filter too restrictive?)");
                 }
             }
         }
