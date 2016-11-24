@@ -473,7 +473,7 @@ public:
         return circle_impl(gc, filled, rect.centroid(), AW::Vector(rect.width()/2, rect.height()/2), filteri);
     }
 
-    // draw arcs (Note: passed degrees are nagative compared to unit circle!)
+    // draw arcs (Note: passed degrees are non-standard: 90 degrees = downwards)
     bool arc(int gc, AW::FillStyle filled, AW_pos x0, AW_pos y0, AW_pos xradius, AW_pos yradius, int start_degrees, int arc_degrees, AW_bitset filteri = AW_ALL_DEVICES_SCALED)  {
         return arc_impl(gc, filled, AW::Position(x0, y0), AW::Vector(xradius, yradius), start_degrees, arc_degrees, filteri);
     }
