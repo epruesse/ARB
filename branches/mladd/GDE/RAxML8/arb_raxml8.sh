@@ -249,7 +249,7 @@ BAD_PRACTICE="This is not considered good practice.\nPlease refer to the RAxML m
 if [ "$MODEL" == "GTRGAMMA" -a $NSEQS -gt 10000 ]; then
     arb_message "Using the GTRGAMMA model on more than 10,000 sequences.\n$BAD_PRACTICE"
 fi
-if [ "$MODEL" == "GTRCAT" -a -$NSEQS -lt 150 ]; then
+if [ "$MODEL" == "GTRCAT" -a $NSEQS -lt 150 ]; then
     arb_message "Using the GTRCAT model on less than 150 sequences.\n$BAD_PRACTICE"
 fi
 
