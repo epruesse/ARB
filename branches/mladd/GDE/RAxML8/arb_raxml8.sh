@@ -51,16 +51,18 @@ prepare_tmp_dir() {
     report_error "Unable to create temporary directory"
 }
 
-cpu_has_feature() {
+dump_features() {
     case `uname` in
         Darwin)
-            SHOW="sysctl machdep.cpu.features"
+            sysctl machdep.cpu.features
             ;;
         Linux)
-            SHOW="grep -m1 flags /proc/cpuinfo 2>/dev/null"
+            grep -m1 flags /proc/cpuinfo 2>/dev/null
             ;;
     esac
-    $SHOW | grep -qi "$1" &>/dev/null
+}
+cpu_has_feature() {
+    dump_features | grep -qi "$1" &>/dev/null
 }
 
 cpu_get_cores() {
