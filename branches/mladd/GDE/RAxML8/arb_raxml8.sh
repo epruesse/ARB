@@ -257,6 +257,11 @@ if [ -z "$THREADS" ]; then
     # +1 is for master thread,
     # another +1 for the first $BASES_PER_THREAD (bash truncates)
 
+    CORES=$(( $CORES + 1 - 1 ))
+    if [ $CORES -lt 1 ]; then
+        report_error "failed to detect number of cores.\nPlease specify CPU-Thread override!"
+    fi
+
     if [ $THREADS -gt $CORES ]; then
         THREADS=$CORES
     fi
