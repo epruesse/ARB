@@ -70,21 +70,21 @@ argchoice:1000:1000
 
 arg:TREENAME
 argtype:text
-arglabel:Tree Name
+arglabel:Tree name
 argtext:raxml
 
 arg:MRETREE
 argtype:choice_menu
-arglabel:Compute Extended Majority Rule Consensus Tree
+arglabel:Compute MRE consensus tree
 argchoice:No:-nomre
 argchoice:Yes:
 
 arg:SEED
 argtype:text
-arglabel:Random Seed
+arglabel:Random seed
 argtext:123456
 
 arg:THREADS
 argtype:text
-arglabel:CPU-Thread override
+arglabel:CPU thread override
 argtext:
