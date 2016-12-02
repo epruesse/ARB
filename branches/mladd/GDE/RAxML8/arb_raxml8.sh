@@ -83,7 +83,7 @@ cpu_get_cores() {
 }
 
 # this is the "thorough" protocol.
-# 1. do $NTREE searches for best ML tree
+# 1. do $REPEATS searches for best ML tree
 # 2. run $BOOTSTRAP BS searches
 # 3. combine into ML tree with support values
 # 4. calculate consensus tree
@@ -91,7 +91,7 @@ cpu_get_cores() {
 dna_tree_thorough() {
     # try N ML searches
     $RAXML -p "$SEED" -s "$SEQFILE" -m $MODEL \
-        -N "$NTREES" \
+        -N "$REPEATS" \
         -n TREE_INFERENCE &
 
     # wait for raxml to complete if we have not enough
@@ -162,7 +162,7 @@ TREENAME=raxml
 while [ -n "$1" ]; do 
   case "$1" in
       -p) # protocol
-          PROT="$2"
+          PROTOCOL="$2"
           shift
           ;;
       -m) # subst model
@@ -178,7 +178,7 @@ while [ -n "$1" ]; do
           shift
           ;;
       -r) # number of tree searches
-          NTREES="$2"
+          REPEATS="$2"
           shift
           ;;
       -n) # tree name
@@ -271,7 +271,7 @@ fi
 RAXML="$RAXML -T $THREADS"
 
 
-case "${SEQTYPE}.${PROT}" in
+case "${SEQTYPE}.${PROTOCOL}" in
     N.quick)
         dna_tree_quick
         ;;
