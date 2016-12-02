@@ -67,7 +67,7 @@ cpu_has_feature() {
 
 cpu_get_cores() {
     # honor Torque/PBS num processes (or make sure we follow, if enforced)
-    if [ -n $PBS_NP ]; then
+    if [ ! -z $PBS_NP ]; then
         echo $PBS_NP
         return
     fi
@@ -209,7 +209,7 @@ done
 
 
 # set up environment 
-if [ -n "$LD_LIBRARY_PATH" ]; then
+if [ -z $LD_LIBRARY_PATH ]; then
     LD_LIBRARY_PATH="$ARBHOME/lib"
 else
     LD_LIBRARY_PATH="$ARBHOME/lib:$LD_LIBRARY_PATH"
