@@ -132,11 +132,13 @@ dna_tree_thorough() {
 dna_tree_quick() {
     # run fast bootstraps
     $RAXML -f a -m $MODEL -p "$SEED" -x "$SEED" -s "$SEQFILE" -N "$BOOTSTRAPS" -n FAST_BS
-    # create consensus tree
     # import
     arb_read_tree tree_${TREENAME} RAxML_bipartitions.FAST_BS
+
+    # create consensus tree
     if [ -n "$MRE" ]; then
         $RAXML -J MRE -m $MODEL -z RAxML_bootstrap.FAST_BS -n FAST_BS_MAJORITY
+        # import
         arb_read_tree tree_${TREENAME}_mre RAxML_MajorityRuleExtendedConsensusTree.FAST_BS_MAJORITY
     fi
 }   
@@ -266,7 +268,7 @@ if [ -z "$THREADS" ]; then
         THREADS=$CORES
     fi
 fi
-RAXML="$RAXML -T $THREADS"  
+RAXML="$RAXML -T $THREADS"
 
 
 case "${SEQTYPE}.${PROT}" in
