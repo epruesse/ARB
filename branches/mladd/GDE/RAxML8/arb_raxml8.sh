@@ -253,19 +253,23 @@ if [ "$MODEL" == "GTRCAT" -a $NSEQS -lt 150 ]; then
     arb_message "Using the GTRCAT model on less than 150 sequences.\n$BAD_PRACTICE"
 fi
 
+CORES=$(( $CORES + 1 - 1 ))
 # calculate number of threads (if not passed)
 if [ -z "$THREADS" ]; then
     THREADS=$(( $BP / $BASES_PER_THREAD + 2))
     # +1 is for master thread,
     # another +1 for the first $BASES_PER_THREAD (bash truncates)
 
-    CORES=$(( $CORES + 1 - 1 ))
     if [ $CORES -lt 1 ]; then
-        report_error "failed to detect number of cores.\nPlease specify CPU-Thread override!"
+        report_error "failed to detect number of cores.\nPlease specify 'CPU thread override'."
     fi
 
     if [ $THREADS -gt $CORES ]; then
         THREADS=$CORES
+    fi
+else
+    if [ $CORES -lt 1 ]; then
+        CORES=$THREADS
     fi
 fi
 RAXML="$RAXML -T $THREADS"
