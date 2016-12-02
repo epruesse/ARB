@@ -244,7 +244,7 @@ read NSEQS BP < <(head -n 1 $SEQFILE)
 
 # warn if model is not recommended for given number of sequences
 BAD_PRACTICE="This is not considered good practice.\nPlease refer to the RAxML manual for details."
-if [ "$MODEL" == "GTRRAMMA" -a $NSEQS -gt 10000 ]; then
+if [ "$MODEL" == "GTRGAMMA" -a $NSEQS -gt 10000 ]; then
     arb_message "Using the GTRGAMMA model on more than 10,000 sequences.\n$BAD_PRACTICE"
 fi
 if [ "$MODEL" == "GTRCAT" -a -$NSEQS -lt 150 ]; then
