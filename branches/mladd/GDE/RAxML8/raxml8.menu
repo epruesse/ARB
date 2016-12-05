@@ -48,7 +48,7 @@ argchoice:GTRCAT (faster, min 150 seqs):GTRCAT
 
 arg:REPEATS
 argtype:choice_menu
-arglabel:Searches
+arglabel:Searches\n(Thorough only)
 argchoice:1:1
 argchoice:5:5
 argchoice:10:10
