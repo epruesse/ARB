@@ -3,6 +3,15 @@ set -e
 
 BASES_PER_THREAD=300
 
+# set up environment 
+if [ -z $LD_LIBRARY_PATH ]; then
+    LD_LIBRARY_PATH="$ARBHOME/lib"
+else
+    LD_LIBRARY_PATH="$ARBHOME/lib:$LD_LIBRARY_PATH"
+fi
+export LD_LIBRARY_PATH
+
+
 # always wait on exit
 trap on_exit EXIT
 on_exit() {
@@ -208,16 +217,6 @@ while [ -n "$1" ]; do
   esac
   shift
 done
-
-
-# set up environment 
-if [ -z $LD_LIBRARY_PATH ]; then
-    LD_LIBRARY_PATH="$ARBHOME/lib"
-else
-    LD_LIBRARY_PATH="$ARBHOME/lib:$LD_LIBRARY_PATH"
-fi
-export LD_LIBRARY_PATH
-
 
 # prepare data in tempdir
 DIR="`prepare_tmp_dir raxml`"
