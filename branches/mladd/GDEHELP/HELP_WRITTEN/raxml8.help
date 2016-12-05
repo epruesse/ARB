@@ -1,0 +1,99 @@
+RAxML 8 (DNA)
+
+DESCRIPTION
+
+        RAxML (Randomized Axelerated Maximum Likelihood) is a program for sequential and parallel Maximum
+        Likelihood-based inference of large phylogenetic trees.
+
+        It has originally been derived from fastDNAml which
+        in turn was derived from Joe Felsenteins dnaml which is part of the PHYLIP package.
+
+        Author: Alexandros Stamatakis
+
+        LINK{http://sco.h-its.org/exelixis/web/software/raxml/index.html}
+
+        Original RAxML documentation can be found at
+        LINK{http://sco.h-its.org/exelixis/php/countManualNew.php}
+
+        Several parts of this documentation have been used here.
+
+
+PARAMETERS
+
+        Only the parameters adjustable via the ARB interface are described below. For in-depth
+        documentation please refer to original documentation.
+
+          Protocol
+
+            The following protocols are defined in ARB RAxML8 interface:
+
+              Thorough
+
+                1. perform multiple searches for the best ML tree
+                2. perform multiple bootstrap searches (executed parallel to 1. if enough CPU cores available)
+                3. draw bipartition information (from 2.) on best tree found in 1.
+
+              Quick
+
+                Rapid bootstrap analysis and search for best-scoring ML tree in one program run.
+
+          Model
+
+            The following substitution models are provided in ARB RAxML8 interface:
+
+                GTRCAT
+
+                  GTR + Optimization of substitution rates + Optimization of
+                  site-specific evolutionary rates which are categorized into
+                  numberOfCategories distinct rate categories for greater
+                  computational efficiency.
+
+                GTRGAMMA
+
+                  GTR + Optimization of substitution rates + GAMMA model of
+                  rate heterogeneity (alpha parameter will be estimated). 
+
+          Searches
+
+            Specifies the number of searches for best ML tree that will be
+            performed in step 1. of 'Thorough' protocol.
+
+          Bootstraps
+
+            Specifies the number of bootstraps runs to perform.
+
+          Tree name
+
+            Suffix for result trees loaded into ARB, e.g.:
+
+                'raxml' => 'tree_raxml' (and optionally 'tree_raxml_mre')
+            
+
+          Compute MRE consensus tree
+
+                Compute extended majority rule consensus tree.
+
+          Random seed
+
+                Specifies a fixed random seed (used for parsimony inferences AND rapid bootstrapping).
+                This only makes sense if you like to reproduce results (which isn't possible for all cases).
+
+                Recommended default setting is (empty). The number of seconds
+                since 'epoch' will be used in that case.
+
+          CPU thread override
+
+                Specify number of threads to use.
+
+                If not specified, the number of available CPU cores is detected and the number
+                of recommended threads is calculated from the number of alignment sites.
+                If enough cores are available, the ML search and the bootstrapping are performed
+                in parallel.
+
+                If autodetection works, you should NOT specify the number of threads! Doing so
+                will disable parallel execution of bootstrapping and ML search.
+                Also specifying too many threads (ie. more than cores available) will slow down
+                RAxML.
+
+                The number of assumed/used CPU cores may be overridden using
+                the environment variable PBS_NP.

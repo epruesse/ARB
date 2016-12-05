@@ -1,0 +1,89 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+UP	save.hlp
+UP	arb_intro.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+
+SUB	importift.hlp
+
+SUB	universal_ift.hlp
+SUB	rdp_ift.hlp
+SUB	ebi_ift.hlp
+
+SUB	fasta_ift.hlp
+SUB	dssp_ift.hlp
+SUB	gde_flat_ift.hlp
+SUB	arb_export.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Import Foreign Data(bases)
+
+OCCURRENCE	ARB_INTRO <Create and Import>,
+                ARB_NT/File/Import/Import from external format
+
+DESCRIPTION	Reads foreign data(base) formats, creates a new ARB database,
+		and imports the foreign data. A selection of commonly used
+		foreign formats can be automatically identified. Data can be
+		imported from single or multiple files.
+
+		Type a source file name to the 'Enter file name of foreign
+                database' subwindow. Use '*' and '?' as multiple and single
+                character wildcards to load a set of files, respectively.
+                Alternatively you may select a file from the directories and
+                files subwindow.
+
+                Make a selection whether you want to import
+
+                     - a full genome flatfile (in GENBANK or EMBL format) or
+                     - normal sequence files.
+
+		In the second case select the file format from the
+                'Select foreign database format' subwindow
+                or press the 'AUTO DETECT' button.
+
+		If your file type is not in the list and you are only
+                interested in the sequence, try 'universal'.
+
+		Enter an 'alignment' name. This allows you to distinguish between
+                different alignments in the same datebase later.
+
+		Press the 'GO' button.
+
+SECTION		Custom import filters
+
+		You may create and store your own private import filters in 
+		directory '~/.arb_prop/filter'. See LINK{importift.hlp} for information
+		about the import filter definition language.		
+
+NOTES		Following file formats currently can be detected and loaded:
+		GENBANK, RDP: GENBANK, EBI and FastA
+
+                Several uncommon file formats (including AE2, GCG and DSSP)
+                are kept in directory '$ARBHOME/lib/import/older'. To
+                make them available, copy or symlink them into ''$ARBHOME/lib/import' or into
+                your local filter directory '~/.arb_prop/filter/'.
+
+		To import big new databases into an existing ARB database, convert it
+		to the ARB format first, save and merge it with the
+		ARB_MERGE tool.
+
+		For importing other formats such as PHYLIP or PAUP into an
+		existing ARB database use the 'Import sequences using Readseq'
+                function accessible via the 'File' menu of the 'ARB_NT' main menu.
+                See LINK{agde_readseq.hlp}.
+
+		If 'AUTO DETECT' does not find any format, selecting a format
+		by hand most likely wont help you (exception: universal format).
+
+WARNINGS	When using 'AUTO DETECT', check if the correct format is detected.
+		RDP files may for instance be identified as GenBank. In such case
+		choose 'rdp.ift' manually.
+
+BUGS		'AUTO DETECT' looks for certain key-words in the files. If it can't
+		find these words, it does not accept the file, even if the file has
+                the correct format. This is especially true for the gcg format.
+

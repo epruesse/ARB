@@ -1,0 +1,231 @@
+# ----------------------------------------------------------
+#   _  _  __ _  __  ____    ____  ____  ____  ____  ____
+#  / )( \(  ( \(  )(_  _)  (_  _)(  __)/ ___)(_  _)/ ___)
+#  ) \/ (/    / )(   )(      )(   ) _) \___ \  )(  \___ \
+#  \____/\_)__)(__) (__)    (__) (____)(____/ (__) (____/
+#
+# ----------------------------------------------------------
+
+
+.SUFFIXES: .cxx .o .sym .done
+
+dummy:
+	false
+
+include Makefile.setup.include
+
+
+RELUNITDIR=../$(UNITDIR)
+FULLUNITDIR=$(ARBHOME)/$(UNITDIR)
+
+# Note: whitespace is important for the following tests!
+
+SHAREDLIBS= \
+	CORE \
+	ARBDB \
+	AWT \
+	WINDOW \
+
+EXEOBJDIRS= \
+	TOOLS \
+	PERLTOOLS \
+	HELP_SOURCE \
+	AISC_MKPTPS \
+	PROBE_SET \
+
+ISSHAREDLIB=$(findstring  $(UNITDIR) , $(SHAREDLIBS) )
+ISEXEOBJECT=$(findstring  $(UNITDIR) , $(EXEOBJDIRS) )
+
+ifneq ($(ISSHAREDLIB),)
+	UNITLIB=$(UNITLIBNAME).$(SHARED_LIB_SUFFIX)
+else
+ifneq ($(ISEXEOBJECT),)
+	UNITLIB=$(UNITLIBNAME).o
+else
+	UNITLIB=$(UNITLIBNAME).a
+endif
+endif
+
+UNIQUE_NAME=test_$(subst /,_,$(subst .,_,$(UNITDIR)_$(UNITLIB)))
+
+ifneq ($(ISSHAREDLIB),)
+FULLLIB=$(ARBHOME)/lib/$(UNITLIB)
+else
+FULLLIB=$(FULLUNITDIR)/$(UNITLIB)
+endif
+
+RUNDIR=run# see also UnitTester.cxx@chdir
+
+SKIPPING_SLOW_TEST=$(wildcard skipslow.stamp)
+ifeq ($(SKIPPING_SLOW_TEST),)
+	DESTDIR=tests.slow
+else
+	DESTDIR=tests
+endif
+
+TEST_BASE=$(DESTDIR)/$(UNIQUE_NAME)
+
+SYMLIST=$(TEST_BASE).sym
+TEST_CODE=$(TEST_BASE).cxx
+TEST_OBJ=$(TEST_BASE).o
+TEST_EXE=$(TEST_BASE)
+TEST_DONE=$(TEST_BASE).done
+
+MAKESYMLIST=./make_symlist.sh
+SYM2TESTCODE=./sym2testcode.pl
+
+INCDIR=../INCLUDE
+
+INCLUDES= \
+	UnitTester.hxx \
+	$(INCDIR)/arb_assert.h \
+
+UNIT_TESTER_LIB=./UNIT_TESTER.a
+
+ifeq ($(UNITLIB),.a)
+# nothing given (only avoids undefined symbols)
+LINKLIST=
+LINKDEPS=
+else
+LINKLIST=$(shell ../SOURCE_TOOLS/needed_libs.pl -S -A .. -l $(FULLLIB))
+LINKDEPS=$(shell ../SOURCE_TOOLS/needed_libs.pl -S -A .. -F $(FULLLIB))
+endif
+
+ifeq ($(CHECK_LEAKS),0)
+	LEAKS:=
+else
+ifeq ($(CHECK_LEAKS),1)
+	LEAKS:=-l
+else
+	LEAKS:=-l -r
+endif
+endif
+
+# --------------------------------------------------------------------------------
+
+clean:
+	rm -f $(DESTDIR)/*
+
+# --------------------------------------------------------------------------------
+
+$(DESTDIR):
+	test -d $(DESTDIR) || mkdir -p $(DESTDIR)
+
+$(RUNDIR):
+	test -d $(RUNDIR) || mkdir -p $(RUNDIR)
+
+makedirs: $(DESTDIR) $(RUNDIR)
+
+$(SYMLIST) : $(FULLLIB) Makefile makedirs show_test_header $(MAKESYMLIST)
+	$(MAKESYMLIST) $(FULLLIB) $(SYMLIST)
+
+$(TEST_CODE) : $(SYMLIST) $(SYM2TESTCODE) Makefile.test Makefile.setup.local
+	$(SYM2TESTCODE) $(UNITLIB) $(RESTRICT_MODULE) $(RESTRICT_FUN) $< $@.tmp $(WARN_LEVEL)
+	../SOURCE_TOOLS/mv_if_diff $@.tmp $@
+
+$(TEST_OBJ) : $(TEST_CODE) $(INCLUDES)
+	$(A_CXX) $(cflags) $(cxxflags) -c $< -o $@ -I. $(POST_COMPILE) $< 
+
+$(TEST_EXE) : $(TEST_OBJ) $(UNIT_TESTER_LIB) $(LINKDEPS)
+	$(LINK_EXECUTABLE) $@ $< $(EXECLIBS) $(UNIT_TESTER_LIB) -L../lib $(LINKLIST)
+
+dump:
+	@echo "$(SEP) dump $(UNITLIBNAME)"
+	@echo "UNITDIR        ='$(UNITDIR)'"
+	@echo "UNITLIBNAME    ='$(UNITLIBNAME)'"
+	@echo "FULLUNITDIR    ='$(FULLUNITDIR)'"
+	@echo "ISSHAREDLIB    ='$(ISSHAREDLIB)'"
+	@echo "UNITLIB        ='$(UNITLIB)'"
+	@echo "FULLLIB        ='$(FULLLIB)'"
+	@echo "UNIQUE_NAME    ='$(UNIQUE_NAME)'"
+	@echo "SYMLIST        ='$(SYMLIST)'"
+	@echo "TEST_CODE      ='$(TEST_CODE)'"
+	@echo "TEST_OBJ       ='$(TEST_OBJ)'"
+	@echo "TEST_EXE       ='$(TEST_EXE)'"
+	@echo "INCLUDES       ='$(INCLUDES)'"
+	@echo "LINKLIST       ='$(LINKLIST)'"
+	@echo "LINKDEPS       ='$(LINKDEPS)'"
+
+do_valgrind:
+	@echo "Valgrinding $(TEST_EXE)"
+	$(ARBHOME)/SOURCE_TOOLS/arb_valgrind -e -q $(LEAKS) -c 40 $(TEST_EXE) || \
+		echo "UnitTester: $(UNITLIBNAME) valgrind reports error(s)"
+
+show_test_header:
+	@echo ""
+	@echo "-------------------- [ Test $(UNITLIBNAME) ] --------------------"
+
+
+$(TEST_DONE) : $(TEST_EXE)
+	@echo "fake[2]: Entering directory \`$(FULLUNITDIR)'"
+ifeq ($(findstring B,$(VALGRIND)),B)
+	$(MAKE) -f Makefile.test do_valgrind
+endif
+	$(TEST_EXE) 
+ifeq ($(COVERAGE),1)
+	@echo "UnitTester: coverage" # do not remove (used as trigger)
+	@echo "-------------------- test-coverage for $(UNITLIBNAME)"
+	./gcov2msg.sh $(FULLUNITDIR) $(UNITLIBNAME)
+	@echo "-------------------- test-coverage for $(UNITLIBNAME) [end]"
+endif
+ifeq ($(findstring A,$(VALGRIND)),A)
+	$(MAKE) -f Makefile.test do_valgrind
+endif
+	@echo "fake[2]: Leaving directory \`$(FULLUNITDIR)'"
+	touch $@
+
+perform_test: $(TEST_DONE)
+	@echo "UnitTester: target=$(UNITLIBNAME) tests=0 (possibly skipped because unchanged)"
+
+skip_test:
+	@echo "UnitTester: target=$(UNITLIBNAME) tests=0 (skipped via RESTRICT_LIB)"
+
+# --------------------
+
+RUN:=perform_test
+
+ifneq ('$(RESTRICT_LIB)','')
+IS_RESTRICTED_TO=$(findstring :$(UNITLIBNAME):,:$(RESTRICT_LIB):)
+ifeq ('$(IS_RESTRICTED_TO)','')
+	RUN:=skip_test
+endif
+endif
+
+ifeq ($(ONLY_CHANGED_TESTS),0)
+
+always:
+	@echo forcing target $(TEST_DONE)
+
+$(TEST_DONE) : always
+
+else
+
+# declare some EXTRA_TEST_DEPENDENCIES
+
+TOOLDIR=../bin
+
+# tests in arb_test.o call several command-line-tools:
+$(DESTDIR)/test_TOOLS_arb_test_o.done : \
+	$(TOOLDIR)/arb_export_tree \
+	$(TOOLDIR)/arb_export_rates \
+	$(TOOLDIR)/arb_export_sequences \
+	$(TOOLDIR)/arb_probe \
+	$(TOOLDIR)/arb_probe_match \
+	$(TOOLDIR)/arb_dnarates \
+
+# force tests affected by changed pt-server:
+$(DESTDIR)/test_MULTI_PROBE_MULTI_PROBE_a.done : $(TOOLDIR)/arb_pt_server
+$(DESTDIR)/test_AWTC_AWTC_a.done : $(TOOLDIR)/arb_pt_server
+$(DESTDIR)/test_TOOLS_arb_probe_o.done : $(TOOLDIR)/arb_pt_server
+$(DESTDIR)/test_TOOLS_arb_test_o.done : $(TOOLDIR)/arb_pt_server
+
+# help test depends on xslt processing
+XSLTDIR=../HELP_SOURCE
+$(DESTDIR)/test_HELP_SOURCE_arb_help2xml_o.done : $(XSLTDIR)/to_help.xsl $(XSLTDIR)/to_html.xsl
+
+endif
+
+runtest: $(RUN)
+
+#runtest: dump
+

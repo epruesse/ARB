@@ -1,0 +1,16 @@
+# ------------------------------
+# typemap for ARB perl interface
+# 
+# Note: if you have problems with enum types
+# see ../PERLTOOLS/arb_proto_2_xsub.cxx@enum_type_replacement
+
+TYPEMAP
+
+GBDATA *        T_PTROBJ
+
+uint32_t        T_U_LONG
+GB_ULONG        T_U_LONG
+
+GB_BOOL         T_INT
+uint8_t         T_INT
+int32_t         T_INT

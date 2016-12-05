@@ -1,0 +1,79 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+UP	arb_export.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Export File Formats
+
+OCCURRENCE	ARB_NT/File/Export Foreign Format
+
+DESCRIPTION	The export format description file (*.eft) describes
+		the format.
+		It contains different sections:
+
+	SECTIONS
+
+		SUFFIX		suffix		;The suggested file suffix
+		#		headerinfo	;Header information
+		BEGIN ...			;the main section
+
+		The main section is part of a 'SRT' (see LINK{srt.hlp})
+		conversion (in fact the main section S is replaced by "*=S" and
+		the SRT is started on an empty string).
+		That means:
+
+			1. All simple 'text' is written to the output file.
+
+			2. All references '*([ref][:|#modifier])' are replaced
+                           by the [modified] value of the reference
+
+			3. All lines containing the word '$$DELETE_LINE$$' are deleted.
+
+                        4. Lines ending with a \ are joined with the next line.
+
+	SPECIAL	SECTIONS
+
+		PRE_FORMAT xxx.eft
+
+		SYSTEM "command"
+
+				First a output is created using
+				xxx.eft. Then command is used to convert the
+				result into the wanted result.
+
+				In command use
+
+					$< as input-filename
+
+					$> as output-filename
+
+		INTERNAL type
+
+				used for formats hardcoded in ARB_NT.
+
+				Supported types:
+
+                                          'xml_write' Writes all none-hidden fields to XML.
+
+NOTES		The best ways to design new formats are:
+
+			1. Copy an existing format and modify it step by step.
+			2. Design a simple format and modify it step by step.
+
+                For a list of common database entries see LINK{sp_info.hlp}.
+
+EXAMPLES	Edit the files in '$ARBHOME/lib/export'
+
+WARNINGS	Don't change an '*.eft' file, if you don't understand how
+		it works.
+		Be careful when using ':' or '"' symbols.
+		Escape them if those symbols don't have a meaning.
+
+BUGS		No bugs known
+

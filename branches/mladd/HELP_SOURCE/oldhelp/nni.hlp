@@ -1,0 +1,42 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+UP	pars.hlp
+UP	mode_kernlin.hlp
+UP	mode_optimize.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		NNI (Nearest Neighbour Interchange)
+
+DESCRIPTION	Searches for a better (more parsimonious) tree by swapping the
+                relative positions of subtrees separated by one edge.
+                At each inner edge (i.e. at non-leaf edges) three different
+                topologies are possible.
+
+                Testing these 3 possible topologies and keeping the best of them,
+                is called "Nearest Neighborhood Interchange" (NNI).
+
+SECTION         Possible topologies tested by NNI
+
+                The 3 different topologies checked by performing a NNI are
+
+                (A,B,C = subtrees; R = rest of tree)
+
+                        R           R           R
+                         \           \           \ 
+                         /\          /\          /\ 
+                        A  \        B  \        C  \ 
+                           /\          /\          /\ 
+                          B  C        A  C        B  A
+
+
+                Note: there are no other possible topologies containing A,B,C and R!
+
+WARNINGS	None
+
+BUGS		No bugs known
