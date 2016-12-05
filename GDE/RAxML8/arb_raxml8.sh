@@ -3,6 +3,14 @@ set -e
 
 BASES_PER_THREAD=300
 
+# set up environment
+if [ -z $LD_LIBRARY_PATH ]; then
+    LD_LIBRARY_PATH="$ARBHOME/lib"
+else
+    LD_LIBRARY_PATH="$ARBHOME/lib:$LD_LIBRARY_PATH"
+fi
+export LD_LIBRARY_PATH
+
 # always wait on exit
 trap on_exit EXIT
 on_exit() {
@@ -51,21 +59,23 @@ prepare_tmp_dir() {
     report_error "Unable to create temporary directory"
 }
 
-cpu_has_feature() {
+dump_features() {
     case `uname` in
         Darwin)
-            SHOW="sysctl machdep.cpu.features"
+            sysctl machdep.cpu.features
             ;;
         Linux)
-            SHOW="grep -m1 flags /proc/cpuinfo 2>/dev/null"
+            grep -m1 flags /proc/cpuinfo 2>/dev/null
             ;;
     esac
-    $SHOW | grep -qi "$1" &>/dev/null
+}
+cpu_has_feature() {
+    dump_features | grep -qi "$1" &>/dev/null
 }
 
 cpu_get_cores() {
     # honor Torque/PBS num processes (or make sure we follow, if enforced)
-    if [ -n $PBS_NP ]; then
+    if [ ! -z $PBS_NP ]; then
         echo $PBS_NP
         return
     fi
@@ -81,7 +91,7 @@ cpu_get_cores() {
 }
 
 # this is the "thorough" protocol.
-# 1. do $NTREE searches for best ML tree
+# 1. do $REPEATS searches for best ML tree
 # 2. run $BOOTSTRAP BS searches
 # 3. combine into ML tree with support values
 # 4. calculate consensus tree
@@ -89,7 +99,7 @@ cpu_get_cores() {
 dna_tree_thorough() {
     # try N ML searches
     $RAXML -p "$SEED" -s "$SEQFILE" -m $MODEL \
-        -N "$NTREES" \
+        -N "$REPEATS" \
         -n TREE_INFERENCE &
 
     # wait for raxml to complete if we have not enough
@@ -130,11 +140,13 @@ dna_tree_thorough() {
 dna_tree_quick() {
     # run fast bootstraps
     $RAXML -f a -m $MODEL -p "$SEED" -x "$SEED" -s "$SEQFILE" -N "$BOOTSTRAPS" -n FAST_BS
-    # create consensus tree
     # import
     arb_read_tree tree_${TREENAME} RAxML_bipartitions.FAST_BS
+
+    # create consensus tree
     if [ -n "$MRE" ]; then
         $RAXML -J MRE -m $MODEL -z RAxML_bootstrap.FAST_BS -n FAST_BS_MAJORITY
+        # import
         arb_read_tree tree_${TREENAME}_mre RAxML_MajorityRuleExtendedConsensusTree.FAST_BS_MAJORITY
     fi
 }   
@@ -158,7 +170,7 @@ TREENAME=raxml
 while [ -n "$1" ]; do 
   case "$1" in
       -p) # protocol
-          PROT="$2"
+          PROTOCOL="$2"
           shift
           ;;
       -m) # subst model
@@ -174,7 +186,7 @@ while [ -n "$1" ]; do
           shift
           ;;
       -r) # number of tree searches
-          NTREES="$2"
+          REPEATS="$2"
           shift
           ;;
       -n) # tree name
@@ -205,15 +217,11 @@ while [ -n "$1" ]; do
   shift
 done
 
-
-# set up environment 
-if [ -n "$LD_LIBRARY_PATH" ]; then
-    LD_LIBRARY_PATH="$ARBHOME/lib"
-else
-    LD_LIBRARY_PATH="$ARBHOME/lib:$LD_LIBRARY_PATH"
+# use time as random SEED if empty
+if [ -z "$SEED" ]; then
+    # seconds since 1970
+    SEED=`date +%s`
 fi
-export LD_LIBRARY_PATH
-
 
 # prepare data in tempdir
 DIR="`prepare_tmp_dir raxml`"
@@ -240,32 +248,38 @@ fi
 CORES=`cpu_get_cores`
 read NSEQS BP < <(head -n 1 $SEQFILE)
 
-# warn if model does not match sequence number
-if [ "$MODEL" == "GTRRAMMA" -a $NSEQS -gt 10000 ]; then
-    arb_message "Using the GTRGAMMA model on more than 10,000 sequences." \
-        "This is not considered good practice. Please refer to " \
-        "the RAxML manual for details."
+# warn if model is not recommended for given number of sequences
+BAD_PRACTICE="This is not considered good practice.\nPlease refer to the RAxML manual for details."
+if [ "$MODEL" == "GTRGAMMA" -a $NSEQS -gt 10000 ]; then
+    arb_message "Using the GTRGAMMA model on more than 10,000 sequences.\n$BAD_PRACTICE"
 fi
-if [ "$MODEL" == "GTRCAT" -a -$NSEQS -lt 150 ]; then
-    arb_message "Using the GTRCAT model on less than 150 sequences." \
-        "This is not considered good practice. Please refer to " \
-        "the RAxML manual for details."
+if [ "$MODEL" == "GTRCAT" -a $NSEQS -lt 150 ]; then
+    arb_message "Using the GTRCAT model on less than 150 sequences.\n$BAD_PRACTICE"
 fi
 
+CORES=$(( $CORES + 1 - 1 ))
 # calculate number of threads (if not passed)
 if [ -z "$THREADS" ]; then
     THREADS=$(( $BP / $BASES_PER_THREAD + 2))
     # +1 is for master thread,
     # another +1 for the first $BASES_PER_THREAD (bash truncates)
 
+    if [ $CORES -lt 1 ]; then
+        report_error "failed to detect number of cores.\nPlease specify 'CPU thread override'."
+    fi
+
     if [ $THREADS -gt $CORES ]; then
         THREADS=$CORES
     fi
+else
+    if [ $CORES -lt 1 ]; then
+        CORES=$THREADS
+    fi
 fi
-RAXML="$RAXML -T $THREADS"  
+RAXML="$RAXML -T $THREADS"
 
 
-case "${SEQTYPE}.${PROT}" in
+case "${SEQTYPE}.${PROTOCOL}" in
     N.quick)
         dna_tree_quick
         ;;
