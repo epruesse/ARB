@@ -3,14 +3,13 @@ set -e
 
 BASES_PER_THREAD=300
 
-# set up environment 
+# set up environment
 if [ -z $LD_LIBRARY_PATH ]; then
     LD_LIBRARY_PATH="$ARBHOME/lib"
 else
     LD_LIBRARY_PATH="$ARBHOME/lib:$LD_LIBRARY_PATH"
 fi
 export LD_LIBRARY_PATH
-
 
 # always wait on exit
 trap on_exit EXIT
@@ -217,6 +216,12 @@ while [ -n "$1" ]; do
   esac
   shift
 done
+
+# use time as random SEED if empty
+if [ -z "$SEED" ]; then
+    # seconds since 1970
+    SEED=`date +%s`
+fi
 
 # prepare data in tempdir
 DIR="`prepare_tmp_dir raxml`"

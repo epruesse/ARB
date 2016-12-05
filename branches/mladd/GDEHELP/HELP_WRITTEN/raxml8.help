@@ -75,7 +75,11 @@ PARAMETERS
 
           Random seed
 
-                Specify random seed (used for parsimony inferences AND rapid bootstrapping).
+                Specifies a fixed random seed (used for parsimony inferences AND rapid bootstrapping).
+                This only makes sense if you like to reproduce results (which isn't possible for all cases).
+
+                Recommended default setting is (empty). The number of seconds
+                since 'epoch' will be used in that case.
 
           CPU thread override
 

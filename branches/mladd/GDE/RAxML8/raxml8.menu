@@ -1,31 +1,30 @@
 # Menu for RAxML 8
 # 
+# User documentation in ../../GDEHELP/HELP_WRITTEN/raxml8.help
+# 
 # use cases:
-#  - build small  publication dna tree
+#
+#  - build small publication dna tree
 #     - multiple ml searches, pick best
 #     - run bootstraps 
 #     - import best ml tree + support values      
 #     - import consensus from bootstraps
+#
 #  - build quick&dirty dna tree (or large tree)
 #     - fast bootstraps
 #     - import consensus
-#  - build AA tree
-#  - extend dna tree
-#  - get support SH-like support values for tree
-
-# Options:
 # 
-# sequence type: DNA, AA
-# tree size: large small
-# search type: fast slow
-
-# sequence type: DNA
-# tree size: small
+# @@@ possible use cases:
+#  - build AA tree
+#  - extend tree
+#  - optimize given tree
+#  - analyse given tree? (just calculate likelihood?)
+#  - get support SH-like support values for tree
 
 menu:Phylogeny max. Likelihood
 
 item:RAxML 8 (DNA)
-itemmethod: ${ARB_XCMD} arb_raxml8.sh -p $PROTOCOL -m $MODEL -s $SEED -b $BOOTSTRAPS -r $REPEATS -nt -t "$THREADS" -f INPUTFILE -n $TREENAME $MRETREE &
+itemmethod: ${ARB_XCMD} arb_raxml8.sh -p $PROTOCOL -m $MODEL -s "$SEED" -b $BOOTSTRAPS -r $REPEATS -nt -t "$THREADS" -f INPUTFILE -n $TREENAME $MRETREE &
 itemhelp:raxml8.help
 itemmeta:8
 seqtype:N
@@ -81,10 +80,10 @@ argchoice:Yes:
 
 arg:SEED
 argtype:text
-arglabel:Random seed
-argtext:123456
+arglabel:Random seed\n(empty=use time)
+argtext:
 
 arg:THREADS
 argtype:text
-arglabel:CPU thread override
+arglabel:CPU thread override\n(empty=autodetect)
 argtext:
