@@ -475,7 +475,7 @@ void GDE_load_menu(AW_window *awm, AW_active /*mask*/, const char *menulabel) {
         }
     }
 
-    if (!topicInserted && menulabel) {
+    if (!topicInserted && menulabel && strcmp(menulabel, "User") != 0) { // accepts empty 'User' menu; see ../GDEHELP/ARB_GDEmenus.source@User
         fprintf(stderr, "GDE-Warning: Could not find any topics for menu '%s' \n", menulabel);
         gde_assert(0); // nothing found -> fix
     }
