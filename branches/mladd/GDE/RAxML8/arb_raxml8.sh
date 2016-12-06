@@ -151,17 +151,6 @@ dna_tree_quick() {
     fi
 }   
 
-calc_mem_size() {
-    # FIXME
-    echo
-}
-
-aa_tree() {
-    # FIXME
-    echo
-    # -m PROTGAMMALG4X
-}
-
 ###### main #####
 
 MRE=Y
