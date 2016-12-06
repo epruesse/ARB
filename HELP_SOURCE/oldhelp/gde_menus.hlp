@@ -26,13 +26,15 @@ SECTION Description of GDE menus as used in ARB
 
                 $ARBHOME/lib/gde/arb.menu
 
-        You may modify that file to include other external
-        tools into the ARB interface.
+        The directory $ARBHOME/lib/gde also contains other .menu-files
+        for separate external tool integration (e.g. raxml8, sativa).
 
-        Alternatively you can add files with suffix '.menu' either into
+        You may integrate any external tool into the ARB interface
+        by adding files with suffix '.menu' either into
         the global directory '$ARBHOME/lib/gde/' (menus defined there will
         be available to all users) or into '~/.arb_prop/gde/' (menus defined
         there will not be available to other users).
+
 
 SECTION GDE menus language
 
