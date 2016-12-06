@@ -440,8 +440,8 @@ void GDE_load_menu(AW_window *awm, AW_active /*mask*/, const char *menulabel) {
 
     gde_assert(db_access.gb_main); // forgot to call GDE_init() ?
 
-    char hotkey[]   = "x";
-    bool menuloaded = false;
+    char hotkey[]      = "x";
+    bool topicInserted = false;
 
     for (long nmenu = 0; nmenu<num_menus; nmenu++) {
         {
@@ -457,8 +457,6 @@ void GDE_load_menu(AW_window *awm, AW_active /*mask*/, const char *menulabel) {
             }
         }
 
-        menuloaded = true;
-
         long num_items = menu[nmenu].numitems;
         for (long nitem=0; nitem<num_items; nitem++) {
             GmenuItem *menuitem = &menu[nmenu].item[nitem];
@@ -469,6 +467,7 @@ void GDE_load_menu(AW_window *awm, AW_active /*mask*/, const char *menulabel) {
                 menuitem->popup = new WindowCallback(AW_window::makeWindowPopper(makeCreateWindowCallback(GDE_menuitem_cb, menuitem)));
             }
             awm->insert_menu_topic(menuitem->label, menuitem->label, hotkey, menuitem->help, menuitem->active_mask, *menuitem->popup);
+            topicInserted = true;
         }
 
         if (!menulabel) {
@@ -476,8 +475,9 @@ void GDE_load_menu(AW_window *awm, AW_active /*mask*/, const char *menulabel) {
         }
     }
 
-    if (!menuloaded && menulabel) {
-        fprintf(stderr, "GDE-Warning: Could not find requested menu '%s'\n", menulabel);
+    if (!topicInserted && menulabel) {
+        fprintf(stderr, "GDE-Warning: Could not find any topics for menu '%s' \n", menulabel);
+        gde_assert(0); // nothing found -> fix
     }
 }
 
