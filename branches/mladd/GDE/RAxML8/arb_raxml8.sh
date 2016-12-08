@@ -98,7 +98,7 @@ cpu_get_cores() {
 # 5. import trees into ARB
 dna_tree_thorough() {
     # try N ML searches
-    $RAXML -p "$SEED" -s "$SEQFILE" -m $MODEL \
+    $RAXML -f d -m $MODEL -p "$SEED" -s "$SEQFILE"  \
         -N "$REPEATS" \
         -n TREE_INFERENCE &
 
@@ -111,7 +111,7 @@ dna_tree_thorough() {
     fi
 
     # run bootstraps
-    $RAXML -p "$SEED" -b "$SEED" -s "$SEQFILE" -m $MODEL \
+    $RAXML -b "$SEED" -m $MODEL -p "$SEED" -s "$SEQFILE" \
         -N "$BOOTSTRAPS" \
         -n BOOTSTRAP &
     wait
@@ -139,7 +139,10 @@ dna_tree_thorough() {
 # 3. import into ARB
 dna_tree_quick() {
     # run fast bootstraps
-    $RAXML -f a -m $MODEL -p "$SEED" -x "$SEED" -s "$SEQFILE" -N "$BOOTSTRAPS" -n FAST_BS
+    $RAXML -f a -m $MODEL -p "$SEED" -x "$SEED" -s "$SEQFILE" \
+        -N "$BOOTSTRAPS" \
+        -n FAST_BS
+
     # import
     arb_read_tree tree_${TREENAME} RAxML_bipartitions.FAST_BS
 
@@ -274,6 +277,9 @@ case "${SEQTYPE}.${PROTOCOL}" in
         ;;
     N.thorough)
         dna_tree_thorough
+        ;;
+    *)
+        report_error Unknown protocol "${SEQTYPE}.${PROTOCOL}"
         ;;
 esac
 
