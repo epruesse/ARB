@@ -1,7 +1,9 @@
 #!/bin/bash
 set -e
+set -x
 
 BASES_PER_THREAD=300
+SELF=`basename "$0"`
 
 # set up environment
 if [ -z $LD_LIBRARY_PATH ]; then
@@ -35,7 +37,6 @@ wait_and_exit() {
 
 # show error in ARB and exit
 report_error() {
-    SELF=`basename "$0"`
     echo "ARB ERROR: $*"
     arb_message "$SELF failed with: $*"
     wait_and_exit
@@ -90,6 +91,26 @@ cpu_get_cores() {
     esac
 }
 
+extract_line_suffix() {
+    local LOG=$1
+    local PREFIX=$2
+    grep -P "^${PREFIX}\s*" $LOG | sed "s/${PREFIX}\s*//"
+}
+
+extract_likelihood() {
+    local LOG=$1
+    local PREFIX=$2
+    local SUFFIX=`extract_line_suffix $LOG $PREFIX`
+    if [ -z "$SUFFIX" ]; then
+        local FAILED_DETECTION="failed to detect likelyhood"
+        echo $FAILED_DETECTION
+        arb_message "$SELF warning: $FAILED_DETECTION"
+    else
+        echo "$SUFFIX"
+    fi
+}
+
+
 # this is the "thorough" protocol.
 # 1. do $REPEATS searches for best ML tree
 # 2. run $BOOTSTRAP BS searches
@@ -121,15 +142,19 @@ dna_tree_thorough() {
         -t RAxML_bestTree.TREE_INFERENCE \
         -z RAxML_bootstrap.BOOTSTRAP \
         -n ML_TREE_WITH_SUPPORT
+
     # import
-    arb_read_tree tree_${TREENAME} RAxML_bipartitions.ML_TREE_WITH_SUPPORT
+    LIKELIHOOD=`extract_likelihood RAxML_info.TREE_INFERENCE 'Final\s*GAMMA-based\s*Score\s*of\s*best\s*tree'`
+    MLTREE=tree_${TREENAME}
+    arb_read_tree ${MLTREE} RAxML_bipartitions.ML_TREE_WITH_SUPPORT "PRG=RAxML8 FILTER=$FILTER PROTOCOL=thorough LIKELIHOOD=${LIKELIHOOD}"
 
     if [ -n "$MRE" ]; then
         # compute extended majority rule consensus
         $RAXML -J MRE -m $MODEL -z RAxML_bootstrap.BOOTSTRAP -n BOOTSTRAP_CONSENSUS
 
         # import
-        arb_read_tree tree_${TREENAME}_mre RAxML_MajorityRuleExtendedConsensusTree.BOOTSTRAP_CONSENSUS
+        arb_read_tree tree_${TREENAME}_mre RAxML_MajorityRuleExtendedConsensusTree.BOOTSTRAP_CONSENSUS \
+          "PRG=RAxML8 MRE consensus tree of $BOOTSTRAPS bootstrap searches performed while calculating ${MLTREE}"
     fi
 }
 
@@ -144,13 +169,16 @@ dna_tree_quick() {
         -n FAST_BS
 
     # import
-    arb_read_tree tree_${TREENAME} RAxML_bipartitions.FAST_BS
+    LIKELIHOOD=`extract_likelihood RAxML_info.FAST_BS 'Final\s*ML\s*Optimization\s*Likelihood:'`
+    MLTREE=tree_${TREENAME}
+    arb_read_tree ${MLTREE} RAxML_bipartitions.FAST_BS "PRG=RAxML8 FILTER=$FILTER PROTOCOL=quick LIKELIHOOD=${LIKELIHOOD}"
 
     # create consensus tree
     if [ -n "$MRE" ]; then
         $RAXML -J MRE -m $MODEL -z RAxML_bootstrap.FAST_BS -n FAST_BS_MAJORITY
         # import
-        arb_read_tree tree_${TREENAME}_mre RAxML_MajorityRuleExtendedConsensusTree.FAST_BS_MAJORITY
+        arb_read_tree tree_${TREENAME}_mre RAxML_MajorityRuleExtendedConsensusTree.FAST_BS_MAJORITY \
+          "PRG=RAxML8 MRE consensus tree of $BOOTSTRAPS rapid-bootstraps performed while calculating ${MLTREE}"
     fi
 }   
 
@@ -158,6 +186,7 @@ dna_tree_quick() {
 
 MRE=Y
 TREENAME=raxml
+FILTER=unknown
 
 while [ -n "$1" ]; do 
   case "$1" in
@@ -200,6 +229,10 @@ while [ -n "$1" ]; do
           ;;
       -t) # threads
           THREADS="$2"
+          shift
+          ;;
+      -fi) # filtername for comment
+          FILTER="$2"
           shift
           ;;
       *)

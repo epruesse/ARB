@@ -24,7 +24,7 @@
 menu:Phylogeny max. Likelihood
 
 item:RAxML 8 (DNA)
-itemmethod: ${ARB_XCMD} arb_raxml8.sh -p $PROTOCOL -m $MODEL -s "$SEED" -b $BOOTSTRAPS -r $REPEATS -nt -t "$THREADS" -f INPUTFILE -n $TREENAME $MRETREE &
+itemmethod: ${ARB_XCMD} arb_raxml8.sh -p $PROTOCOL -fi "$FILTER" -m $MODEL -s "$SEED" -b $BOOTSTRAPS -r $REPEATS -nt -t "$THREADS" -f INPUTFILE -n $TREENAME $MRETREE &
 itemhelp:raxml8.help
 itemmeta:8
 seqtype:N
