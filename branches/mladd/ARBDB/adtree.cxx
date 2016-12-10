@@ -437,21 +437,37 @@ GB_ERROR GBT_write_tree_remark(GBDATA *gb_main, const char *tree_name, const cha
     return write_tree_remark(GBT_find_tree(gb_main, tree_name), remark);
 }
 
-GB_ERROR GBT_log_to_tree_remark(GBDATA *gb_tree, const char *log_entry) { // @@@ add bool-flag 'stamp' and forward it to GBS_log_action_to
+GB_ERROR GBT_log_to_tree_remark(GBDATA *gb_tree, const char *log_entry, bool stamp) {
+    /*! append 'log_entry' to tree comment
+     * @param gb_tree     the tree
+     * @param log_entry   text to append
+     * @param stamp       true -> prefix date before 'log_entry'
+     * @return error in case of failure
+     */
     GB_ERROR    error      = NULL;
     const char *old_remark = GBT_read_char_pntr(gb_tree, "remark");
     if (!old_remark && GB_have_error()) {
         error = GB_await_error();
     }
     else {
-        char *new_remark = GBS_log_action_to(old_remark, log_entry, true);
+        char *new_remark = GBS_log_action_to(old_remark, log_entry, stamp);
         error            = write_tree_remark(gb_tree, new_remark);
         free(new_remark);
     }
     return error;
 }
-GB_ERROR GBT_log_to_tree_remark(GBDATA *gb_main, const char *tree_name, const char *log_entry) {
-    return GBT_log_to_tree_remark(GBT_find_tree(gb_main, tree_name), log_entry);
+GB_ERROR GBT_log_to_tree_remark(GBDATA *gb_main, const char *tree_name, const char *log_entry, bool stamp) {
+    /*! append 'log_entry' to tree comment
+     * @param gb_main     database
+     * @param tree_name   name of tree
+     * @param log_entry   text to append
+     * @param stamp       true -> prefix date before 'log_entry'
+     * @return error in case of failure
+     */
+    GBDATA *gb_tree = GBT_find_tree(gb_main, tree_name);
+    return gb_tree
+        ? GBT_log_to_tree_remark(gb_tree, log_entry, stamp)
+        : GBS_global_string("No such tree (%s)", tree_name);
 }
 
 GB_ERROR GBT_write_tree_with_remark(GBDATA *gb_main, const char *tree_name, TreeNode *tree, const char *remark) {
