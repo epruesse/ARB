@@ -154,8 +154,8 @@ GB_ERROR GBT_write_group_name(GBDATA *gb_group_name, const char *new_group_name)
 GB_ERROR GBT_write_tree(GBDATA *gb_main, const char *tree_name, TreeNode *tree);
 GB_ERROR GBT_overwrite_tree(GBDATA *gb_tree, TreeNode *tree);
 GB_ERROR GBT_write_tree_remark(GBDATA *gb_main, const char *tree_name, const char *remark);
-GB_ERROR GBT_log_to_tree_remark(GBDATA *gb_tree, const char *log_entry);
-GB_ERROR GBT_log_to_tree_remark(GBDATA *gb_main, const char *tree_name, const char *log_entry);
+GB_ERROR GBT_log_to_tree_remark(GBDATA *gb_tree, const char *log_entry, bool stamp);
+GB_ERROR GBT_log_to_tree_remark(GBDATA *gb_main, const char *tree_name, const char *log_entry, bool stamp);
 GB_ERROR GBT_write_tree_with_remark(GBDATA *gb_main, const char *tree_name, TreeNode *tree, const char *remark);
 TreeNode *GBT_read_tree_and_size(GBDATA *gb_main, const char *tree_name, TreeRoot *troot, int *tree_size);
 TreeNode *GBT_read_tree(GBDATA *gb_main, const char *tree_name, TreeRoot *troot);

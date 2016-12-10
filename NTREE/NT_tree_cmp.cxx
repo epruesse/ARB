@@ -388,7 +388,7 @@ GB_ERROR AWT_move_info(GBDATA *gb_main, const char *tree_source, const char *tre
                                                            nodes_with_marked_only ? "of marked " : "",
                                                            tree_source);
                         }
-                        GBT_log_to_tree_remark(rsave.get_gb_tree(), entry);
+                        GBT_log_to_tree_remark(rsave.get_gb_tree(), entry, true);
                         free(entry);
                     }
                 }
