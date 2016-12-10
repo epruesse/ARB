@@ -349,7 +349,7 @@ GB_ERROR TREE_write_Newick(GBDATA *gb_main, const char *tree_name, const TREE_no
                 }
                 {
                     const char *saved_to = GBS_global_string("%s saved to %s", tree_name, path);
-                    freeset(remark, GBS_log_dated_action_to(remark, saved_to));
+                    freeset(remark, GBS_log_action_to(remark, saved_to, true));
                 }
 
                 if (remark) {

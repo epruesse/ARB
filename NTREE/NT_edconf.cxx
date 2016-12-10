@@ -922,7 +922,7 @@ static GB_ERROR nt_create_configuration(TreeNode *tree, const char *conf_name, i
                 else {
                     comment = GBS_global_string("%s (no tree)", comment);
                 }
-                char *dated = GBS_log_dated_action_to(prevComment, comment);
+                char *dated = GBS_log_action_to(prevComment, comment, true);
                 newcfg.set_comment(dated);
                 free(dated);
             }
@@ -1129,7 +1129,7 @@ static void clear_comment_cb(AW_window *aww) {
     GBT_splitNdestroy_string(line, comment, '\n');
 
     bool    removedDatedLines = false;
-    RegExpr datedLine("^([A-Z][a-z]{2}\\s){2}[0-9]+\\s([0-9]{2}:){2}[0-9]{2}\\s[0-9]{4}:\\s", false); // matches lines created with GBS_log_dated_action_to()
+    RegExpr datedLine("^([A-Z][a-z]{2}\\s){2}[0-9]+\\s([0-9]{2}:){2}[0-9]{2}\\s[0-9]{4}:\\s", false); // matches lines created with GBS_log_action_to(..., stamp=true)
     for (int i = line.size()-1; i >= 0; --i) {
         const RegMatch *match = datedLine.match(line[i]);
         if (match && match->didMatch()) {

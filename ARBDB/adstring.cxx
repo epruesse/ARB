@@ -962,26 +962,33 @@ static char *dated_info(const char *info) {
     return dated_info;
 }
 
-char *GBS_log_dated_action_to(const char *comment, const char *action) {
-    /*! appends 'action' prefixed by current timestamp to 'comment'
-     * @param comment may be NULL. otherwise '\n' is appended (if not already there)
-     * @param action may NOT be NULL. is prepended with current date. '\n' is appended (if not already there)
+char *GBS_log_action_to(const char *comment, const char *action, bool stamp) {
+    /*! concatenates 'comment' and 'action'.
+     * '\n' is appended to existing 'comment' and/or 'action' (if missing).
+     * @param comment   may be NULL (=> result is 'action')
+     * @param action    may NOT be NULL
+     * @param stamp     true -> prefix current timestamp in front of 'action'
+     * @return heap copy of concatenation
      */
     size_t clen = comment ? strlen(comment) : 0;
     size_t alen = strlen(action);
 
-    GBS_strstruct *new_comment = GBS_stropen(clen+alen+100);
+    GBS_strstruct *new_comment = GBS_stropen(clen+1+(stamp ? 100 : 0)+alen+1+1); // + 2*\n + \0 + space for stamp
 
     if (comment) {
         GBS_strcat(new_comment, comment);
         if (clen == 0 || comment[clen-1] != '\n') GBS_chrcat(new_comment, '\n');
     }
 
-    char *dated_action = dated_info(action);
-    GBS_strcat(new_comment, dated_action);
-    GBS_chrcat(new_comment, '\n');
-
-    free(dated_action);
+    if (stamp) {
+        char *dated_action = dated_info(action);
+        GBS_strcat(new_comment, dated_action);
+        free(dated_action);
+    }
+    else {
+        GBS_strcat(new_comment, action);
+    }
+    if (alen == 0 || action[alen-1] != '\n') GBS_chrcat(new_comment, '\n');
 
     return GBS_strclose(new_comment);
 }
@@ -1248,27 +1255,56 @@ void TEST_merge_tagged_strings() {
     TEST_MERGE_TAGGED("DST", "OTH", 0, 0, " [DST] dest [SRC] source", "source", " [DST] dest [OTH,SRC] source");
 }
 
-void TEST_date_stamping() {
-    {
-        char *dated = GBS_log_dated_action_to("comment", "action");
-        TEST_EXPECT_CONTAINS(dated, "comment\n");
-        TEST_EXPECT_CONTAINS(dated, "action\n");
-        free(dated);
-    }
-    {
-        char *dated = GBS_log_dated_action_to("", "action");
-        TEST_EXPECT_EQUAL(dated[0], '\n');
-        TEST_EXPECT_CONTAINS(dated, "action\n");
-        free(dated);
-    }
-    {
-        char *dated = GBS_log_dated_action_to(NULL, "action");
-        TEST_EXPECT_DIFFERENT(dated[0], '\n');
-        TEST_EXPECT_CONTAINS(dated, "action\n");
-        free(dated);
+void TEST_log_action() {
+    for (int stamped = 0; stamped<=1; ++stamped) {
+        TEST_ANNOTATE(GBS_global_string("stamped=%i", stamped));
+        {
+            char *logged = GBS_log_action_to("comment", "action", stamped);
+            if (stamped) {
+                TEST_EXPECT_CONTAINS(logged, "comment\n");
+                TEST_EXPECT_CONTAINS(logged, "action\n");
+            }
+            else {
+                TEST_EXPECT_EQUAL(logged, "comment\naction\n");
+            }
+            free(logged);
+        }
+        {
+            char *logged = GBS_log_action_to("comment\n", "action", stamped);
+            if (stamped) {
+                TEST_EXPECT_CONTAINS(logged, "comment\n");
+                TEST_EXPECT_CONTAINS(logged, "action\n");
+            }
+            else {
+                TEST_EXPECT_EQUAL(logged, "comment\naction\n");
+            }
+            free(logged);
+        }
+        {
+            char *logged = GBS_log_action_to("", "action", stamped);
+            if (stamped) {
+                TEST_EXPECT_EQUAL(logged[0], '\n');
+                TEST_EXPECT_CONTAINS(logged, "action\n");
+            }
+            else {
+                TEST_EXPECT_EQUAL(logged, "\naction\n");
+            }
+            free(logged);
+        }
+        {
+            char *logged = GBS_log_action_to(NULL, "action\n", stamped); // test action with trailing LF
+            if (stamped) {
+                TEST_EXPECT_DIFFERENT(logged[0], '\n');
+                TEST_EXPECT_CONTAINS(logged, "action\n");
+            }
+            else {
+                TEST_EXPECT_EQUAL(logged, "action\n");
+            }
+            free(logged);
+        }
     }
 }
-TEST_PUBLISH(TEST_date_stamping);
+TEST_PUBLISH(TEST_log_action);
 
 #endif // UNIT_TESTS
 
