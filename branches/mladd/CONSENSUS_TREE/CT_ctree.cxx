@@ -146,7 +146,7 @@ char *ConsensusTreeBuilder::get_remark() const {
     GBS_strstruct remark(1000);
     {
         char *build_info = GBS_global_string_copy("ARB consensus tree build from %zu trees:", tree_info.size());
-        char *dated      = GBS_log_dated_action_to(NULL, build_info);
+        char *dated      = GBS_log_action_to(NULL, build_info, true);
         remark.cat(dated);
         free(dated);
         free(build_info);

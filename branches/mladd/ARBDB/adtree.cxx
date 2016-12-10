@@ -437,14 +437,14 @@ GB_ERROR GBT_write_tree_remark(GBDATA *gb_main, const char *tree_name, const cha
     return write_tree_remark(GBT_find_tree(gb_main, tree_name), remark);
 }
 
-GB_ERROR GBT_log_to_tree_remark(GBDATA *gb_tree, const char *log_entry) {
+GB_ERROR GBT_log_to_tree_remark(GBDATA *gb_tree, const char *log_entry) { // @@@ add bool-flag 'stamp' and forward it to GBS_log_action_to
     GB_ERROR    error      = NULL;
     const char *old_remark = GBT_read_char_pntr(gb_tree, "remark");
     if (!old_remark && GB_have_error()) {
         error = GB_await_error();
     }
     else {
-        char *new_remark = GBS_log_dated_action_to(old_remark, log_entry);
+        char *new_remark = GBS_log_action_to(old_remark, log_entry, true);
         error            = write_tree_remark(gb_tree, new_remark);
         free(new_remark);
     }

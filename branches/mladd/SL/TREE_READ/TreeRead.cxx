@@ -691,7 +691,7 @@ TreeNode *TREE_load(const char *path, TreeRoot *troot, char **commentPtr, bool a
                 char *comment = reader.takeComment();
 
                 const char *loaded_from = GBS_global_string("Loaded from %s", path);
-                freeset(comment, GBS_log_dated_action_to(comment, loaded_from));
+                freeset(comment, GBS_log_action_to(comment, loaded_from, true));
 
                 tree_assert(*commentPtr == 0);
                 *commentPtr = comment;

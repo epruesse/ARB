@@ -443,7 +443,7 @@ void EDB_root_bact::save_current_config(char *confname) { // and save it in data
 
     // add/update comment
     {
-        char *newComment = GBS_log_dated_action_to(cfg.get_comment(), "saved from ARB_EDIT4");
+        char *newComment = GBS_log_action_to(cfg.get_comment(), "saved from ARB_EDIT4", true);
         cfg.set_comment(newComment);
         free(newComment);
     }

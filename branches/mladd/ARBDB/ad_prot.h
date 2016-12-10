@@ -284,7 +284,7 @@ void GBS_fwrite_string(const char *strngi, FILE *out);
 char *GBS_fconvert_string(char *buffer);
 char *GBS_replace_tabs_by_spaces(const char *text);
 char *GBS_trim(const char *str);
-char *GBS_log_dated_action_to(const char *comment, const char *action);
+char *GBS_log_action_to(const char *comment, const char *action, bool stamp);
 const char *GBS_funptr2readable(void *funptr, bool stripARBHOME);
 
 /* adsystem.cxx */
