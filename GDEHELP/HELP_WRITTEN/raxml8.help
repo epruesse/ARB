@@ -23,6 +23,10 @@ PARAMETERS
         Only the parameters adjustable via the ARB interface are described below. For in-depth
         documentation please refer to original documentation.
 
+          Input tree
+
+            Currently required for protocol 'Score tree' only (ignored for other protocols).
+
           Protocol
 
             The following protocols are defined in ARB RAxML8 interface:
@@ -36,6 +40,18 @@ PARAMETERS
               Quick
 
                 Rapid bootstrap analysis and search for best-scoring ML tree in one program run.
+
+              Score tree
+
+                Calculates the likelihood for the specified input tree and
+                appends the result to the comment of the existing tree.
+
+                If you like to compare the likelihoods of different trees,
+                please note that these depend (at least) on the
+                following conditions:
+                  * set of sequences (=which species are members of the trees)
+                  * used Model
+                  * used Filter
 
           Model
 

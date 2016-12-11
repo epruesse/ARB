@@ -88,8 +88,9 @@ Major changes for next release:
    * all options are now also supported by ARB_PARSIMONY
  - synchronized tree scrolling (#683)
  - colorsets were invalidated by generating new IDs (#660). fixed.
- - updated/added external tools:
-   - added alternate RAxML (DNA only; version 8.0.26)
+ - added alternate RAxML (DNA only; version 8.2.8)
+   - multicore support (automatically activates recommended number of threads)
+   - evaluation of existing trees with RAxML
  - updated integrated documentation
  - fix performance of "format sequences" (broken in arb-6.0.x series; #702)
 

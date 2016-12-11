@@ -14,17 +14,18 @@
 #     - fast bootstraps
 #     - import consensus
 # 
+#  - score given tree (=calculate likelihood)
+# 
 # @@@ possible use cases:
 #  - build AA tree
 #  - extend tree
 #  - optimize given tree
-#  - analyse given tree? (just calculate likelihood?)
 #  - get support SH-like support values for tree
 
 menu:Phylogeny max. Likelihood
 
 item:RAxML 8 (DNA)
-itemmethod: ${ARB_XCMD} arb_raxml8.sh -p $PROTOCOL -fi "$FILTER" -m $MODEL -s "$SEED" -b $BOOTSTRAPS -r $REPEATS -nt -t "$THREADS" -f INPUTFILE -n $TREENAME $MRETREE &
+itemmethod: ${ARB_XCMD} arb_raxml8.sh -p $PROTOCOL -fi "$FILTER" -it "$INPUTTREE" -m $MODEL -s "$SEED" -b $BOOTSTRAPS -r $REPEATS -nt -t "$THREADS" -f INPUTFILE -n $TREENAME $MRETREE &
 itemhelp:raxml8.help
 itemmeta:8
 seqtype:N
@@ -33,11 +34,17 @@ in:INPUTFILE
 informat:genbank
 insave:
 
+arg:INPUTTREE
+argtype:tree
+arglabel:Input tree
+argchoice:
+
 arg:PROTOCOL
 arglabel:Protocol
 argtype:chooser
 argchoice:Thorough:thorough
 argchoice:Quick:quick
+argchoice:Score tree:score
 
 arg:MODEL
 argtype:chooser
