@@ -1,6 +1,5 @@
 #!/bin/bash
 set -e
-set -x
 
 BASES_PER_THREAD=300
 SELF=`basename "$0"`
@@ -165,8 +164,8 @@ dna_tree_thorough() {
 dna_tree_quick() {
     # run fast bootstraps
     $RAXML -f a -m $MODEL -p "$SEED" -x "$SEED" -s "$SEQFILE" \
-        -N "$BOOTSTRAPS" \
-        -n FAST_BS
+      -N "$BOOTSTRAPS" \
+      -n FAST_BS
 
     # import
     LIKELIHOOD=`extract_likelihood RAxML_info.FAST_BS 'Final\s*ML\s*Optimization\s*Likelihood:'`
@@ -182,11 +181,38 @@ dna_tree_quick() {
     fi
 }   
 
+TREEFILE=arb_export.tree
+
+export_input_tree() {
+    # expect user selected an 'Input tree' in arb and export it to $TREEFILE
+    if [ -z "$INPUTTREE" ]; then
+        report_error "you have to select an 'Input tree'"
+    fi
+
+    arb_export_tree $INPUTTREE > $TREEFILE
+}
+
+dna_tree_score() {
+    export_input_tree
+
+    $RAXML -f n -m $MODEL -s "$SEQFILE" \
+      -z $TREEFILE \
+      -n SCORE
+
+    RESULT=`extract_likelihood RAxML_info.SCORE 'Tree\s*0\s*Likelihood'`
+    # RESULT contains sth like: -27819.642837 Tree-Length 6.899222
+    LIKELIHOOD=${RESULT/ Tree-Length */}
+    TREELEN=${RESULT/* Tree-Length /}
+
+    arb_write_tree_comment $INPUTTREE "RAxML8-score: FILTER=$FILTER DIST=$MODEL LIKELIHOOD=$LIKELIHOOD TREELEN=$TREELEN"
+}
+
 ###### main #####
 
 MRE=Y
 TREENAME=raxml
 FILTER=unknown
+INPUTTREE=
 
 while [ -n "$1" ]; do 
   case "$1" in
@@ -229,6 +255,13 @@ while [ -n "$1" ]; do
           ;;
       -t) # threads
           THREADS="$2"
+          shift
+          ;;
+      -it) # inputtree
+          INPUTTREE="$2"
+          if [ "$INPUTTREE" = 'tree_?????' ]; then # has to match ../../TEMPLATES/arb_global_defs.h@NO_TREE_SELECTED
+              INPUTTREE=
+          fi
           shift
           ;;
       -fi) # filtername for comment
@@ -310,6 +343,9 @@ case "${SEQTYPE}.${PROTOCOL}" in
         ;;
     N.thorough)
         dna_tree_thorough
+        ;;
+    N.score)
+        dna_tree_score
         ;;
     *)
         report_error Unknown protocol "${SEQTYPE}.${PROTOCOL}"
