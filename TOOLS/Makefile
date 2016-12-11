@@ -17,6 +17,7 @@ TOOLS := \
 	arb_probe \
 	arb_probe_match \
 	arb_read_tree \
+	arb_write_tree_comment \
 	arb_replace \
 
 ifeq ($(DEBUG),1)
@@ -60,6 +61,9 @@ $(ARBHOME)/bin/arb_probe_match: arb_probe_match.o $(LIBS_ARB_PROBE) $(use_ARB_ma
 
 $(ARBHOME)/bin/arb_read_tree: arb_read_tree.o  $(LIBS_ARB_READ_TREE)
 	$(LINK_EXECUTABLE) $@ $< $(EXECLIBS) $(LIBS_ARB_READ_TREE) $(LIB_ARBDB) 
+
+$(ARBHOME)/bin/arb_write_tree_comment: arb_write_tree_comment.o
+	$(LINK_EXECUTABLE) $@ $< $(EXECLIBS) $(LIB_ARBDB) 
 
 $(ARBHOME)/bin/arb_export_tree: arb_export_tree.o  $(LIBS_ARB_EXPORT_TREE)
 	$(LINK_EXECUTABLE) $@ $< $(EXECLIBS) $(LIBS_ARB_EXPORT_TREE) $(LIB_ARBDB) 
@@ -523,3 +527,24 @@ arb_test.o: $(ARBHOME)/INCLUDE/static_assert.h
 arb_test.o: $(ARBHOME)/INCLUDE/test_global.h
 arb_test.o: $(ARBHOME)/INCLUDE/test_unit.h
 arb_test.o: $(ARBHOME)/INCLUDE/ut_valgrinded.h
+
+arb_write_tree_comment.o: $(ARBHOME)/INCLUDE/ad_prot.h
+arb_write_tree_comment.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+arb_write_tree_comment.o: $(ARBHOME)/INCLUDE/arb_assert.h
+arb_write_tree_comment.o: $(ARBHOME)/INCLUDE/arb_core.h
+arb_write_tree_comment.o: $(ARBHOME)/INCLUDE/arb_error.h
+arb_write_tree_comment.o: $(ARBHOME)/INCLUDE/arb_mem.h
+arb_write_tree_comment.o: $(ARBHOME)/INCLUDE/arb_msg.h
+arb_write_tree_comment.o: $(ARBHOME)/INCLUDE/arb_string.h
+arb_write_tree_comment.o: $(ARBHOME)/INCLUDE/arbdb.h
+arb_write_tree_comment.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+arb_write_tree_comment.o: $(ARBHOME)/INCLUDE/arbdbt.h
+arb_write_tree_comment.o: $(ARBHOME)/INCLUDE/arbtools.h
+arb_write_tree_comment.o: $(ARBHOME)/INCLUDE/attributes.h
+arb_write_tree_comment.o: $(ARBHOME)/INCLUDE/cxxforward.h
+arb_write_tree_comment.o: $(ARBHOME)/INCLUDE/downcast.h
+arb_write_tree_comment.o: $(ARBHOME)/INCLUDE/dupstr.h
+arb_write_tree_comment.o: $(ARBHOME)/INCLUDE/gccver.h
+arb_write_tree_comment.o: $(ARBHOME)/INCLUDE/smartptr.h
+arb_write_tree_comment.o: $(ARBHOME)/INCLUDE/static_assert.h
+arb_write_tree_comment.o: $(ARBHOME)/INCLUDE/test_global.h
