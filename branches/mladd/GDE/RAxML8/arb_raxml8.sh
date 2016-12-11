@@ -146,7 +146,7 @@ dna_tree_thorough() {
     # import
     LIKELIHOOD=`extract_likelihood RAxML_info.TREE_INFERENCE 'Final\s*GAMMA-based\s*Score\s*of\s*best\s*tree'`
     MLTREE=tree_${TREENAME}
-    arb_read_tree ${MLTREE} RAxML_bipartitions.ML_TREE_WITH_SUPPORT "PRG=RAxML8 FILTER=$FILTER PROTOCOL=thorough LIKELIHOOD=${LIKELIHOOD}"
+    arb_read_tree ${MLTREE} RAxML_bipartitions.ML_TREE_WITH_SUPPORT "PRG=RAxML8 FILTER=$FILTER DIST=$MODEL LIKELIHOOD=${LIKELIHOOD} PROTOCOL=thorough"
 
     if [ -n "$MRE" ]; then
         # compute extended majority rule consensus
@@ -171,7 +171,7 @@ dna_tree_quick() {
     # import
     LIKELIHOOD=`extract_likelihood RAxML_info.FAST_BS 'Final\s*ML\s*Optimization\s*Likelihood:'`
     MLTREE=tree_${TREENAME}
-    arb_read_tree ${MLTREE} RAxML_bipartitions.FAST_BS "PRG=RAxML8 FILTER=$FILTER PROTOCOL=quick LIKELIHOOD=${LIKELIHOOD}"
+    arb_read_tree ${MLTREE} RAxML_bipartitions.FAST_BS "PRG=RAxML8 FILTER=$FILTER DIST=$MODEL LIKELIHOOD=${LIKELIHOOD} PROTOCOL=quick"
 
     # create consensus tree
     if [ -n "$MRE" ]; then
