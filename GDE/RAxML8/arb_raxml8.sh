@@ -205,6 +205,17 @@ dna_tree_score() {
     arb_write_tree_comment $INPUTTREE "RAxML8-score: FILTER=$FILTER DIST=$MODEL LIKELIHOOD=$LIKELIHOOD TREELEN=$TREELEN"
 }
 
+dna_tree_calcblen() {
+    export_input_tree
+
+    $RAXML -f e -m $MODEL -s "$SEQFILE" \
+      -t $TREEFILE \
+      -n CALCBLEN
+
+    LIKELIHOOD=`extract_likelihood RAxML_info.CALCBLEN 'Final\s*GAMMA\s*likelihood:'`
+    arb_read_tree ${TREENAME} RAxML_result.CALCBLEN "PRG=RAxML8-eval FILTER=$FILTER DIST=$MODEL LIKELIHOOD=${LIKELIHOOD} PROTOCOL=calcblen INPUTTREE=$INPUTTREE"
+}
+
 ###### main #####
 
 MRE=Y
@@ -350,6 +361,9 @@ case "${SEQTYPE}.${PROTOCOL}" in
         ;;
     N.score)
         dna_tree_score
+        ;;
+    N.calcblen)
+        dna_tree_calcblen
         ;;
     *)
         report_error Unknown protocol "${SEQTYPE}.${PROTOCOL}"
