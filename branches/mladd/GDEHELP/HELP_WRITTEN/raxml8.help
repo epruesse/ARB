@@ -25,7 +25,7 @@ PARAMETERS
 
           Input tree
 
-            Currently required for protocol 'Score tree' only (ignored for other protocols).
+            Not required/used for tree reconstruction protocols 'Thorough' and 'Quick'.
 
           Protocol
 
@@ -52,6 +52,11 @@ PARAMETERS
                   * set of sequences (=which species are members of the trees)
                   * used Model
                   * used Filter
+
+              Calculate branchlengths
+
+                Similar to 'Score tree', but also calculates new branchlengths
+                and reimports the tree (as new tree).
 
           Model
 

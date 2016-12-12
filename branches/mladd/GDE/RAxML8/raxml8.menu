@@ -15,6 +15,7 @@
 #     - import consensus
 # 
 #  - score given tree (=calculate likelihood)
+#  - calc branchlens of given tree (+calculate likelihood) into new tree
 # 
 # @@@ possible use cases:
 #  - build AA tree
@@ -45,6 +46,7 @@ argtype:chooser
 argchoice:Thorough:thorough
 argchoice:Quick:quick
 argchoice:Score tree:score
+argchoice:Calculate branchlengths:calcblen
 
 arg:MODEL
 argtype:chooser
