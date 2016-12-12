@@ -144,16 +144,15 @@ dna_tree_thorough() {
 
     # import
     LIKELIHOOD=`extract_likelihood RAxML_info.TREE_INFERENCE 'Final\s*GAMMA-based\s*Score\s*of\s*best\s*tree'`
-    MLTREE=tree_${TREENAME}
-    arb_read_tree ${MLTREE} RAxML_bipartitions.ML_TREE_WITH_SUPPORT "PRG=RAxML8 FILTER=$FILTER DIST=$MODEL LIKELIHOOD=${LIKELIHOOD} PROTOCOL=thorough"
+    arb_read_tree ${TREENAME} RAxML_bipartitions.ML_TREE_WITH_SUPPORT "PRG=RAxML8 FILTER=$FILTER DIST=$MODEL LIKELIHOOD=${LIKELIHOOD} PROTOCOL=thorough"
 
     if [ -n "$MRE" ]; then
         # compute extended majority rule consensus
         $RAXML -J MRE -m $MODEL -z RAxML_bootstrap.BOOTSTRAP -n BOOTSTRAP_CONSENSUS
 
         # import
-        arb_read_tree tree_${TREENAME}_mre RAxML_MajorityRuleExtendedConsensusTree.BOOTSTRAP_CONSENSUS \
-          "PRG=RAxML8 MRE consensus tree of $BOOTSTRAPS bootstrap searches performed while calculating ${MLTREE}"
+        arb_read_tree ${TREENAME}_mre RAxML_MajorityRuleExtendedConsensusTree.BOOTSTRAP_CONSENSUS \
+          "PRG=RAxML8 MRE consensus tree of $BOOTSTRAPS bootstrap searches performed while calculating ${TREENAME}"
     fi
 }
 
@@ -169,15 +168,14 @@ dna_tree_quick() {
 
     # import
     LIKELIHOOD=`extract_likelihood RAxML_info.FAST_BS 'Final\s*ML\s*Optimization\s*Likelihood:'`
-    MLTREE=tree_${TREENAME}
-    arb_read_tree ${MLTREE} RAxML_bipartitions.FAST_BS "PRG=RAxML8 FILTER=$FILTER DIST=$MODEL LIKELIHOOD=${LIKELIHOOD} PROTOCOL=quick"
+    arb_read_tree ${TREENAME} RAxML_bipartitions.FAST_BS "PRG=RAxML8 FILTER=$FILTER DIST=$MODEL LIKELIHOOD=${LIKELIHOOD} PROTOCOL=quick"
 
     # create consensus tree
     if [ -n "$MRE" ]; then
         $RAXML -J MRE -m $MODEL -z RAxML_bootstrap.FAST_BS -n FAST_BS_MAJORITY
         # import
-        arb_read_tree tree_${TREENAME}_mre RAxML_MajorityRuleExtendedConsensusTree.FAST_BS_MAJORITY \
-          "PRG=RAxML8 MRE consensus tree of $BOOTSTRAPS rapid-bootstraps performed while calculating ${MLTREE}"
+        arb_read_tree ${TREENAME}_mre RAxML_MajorityRuleExtendedConsensusTree.FAST_BS_MAJORITY \
+          "PRG=RAxML8 MRE consensus tree of $BOOTSTRAPS rapid-bootstraps performed while calculating ${TREENAME}"
     fi
 }   
 
@@ -274,6 +272,12 @@ while [ -n "$1" ]; do
   esac
   shift
 done
+
+# correct output treename (ensure prefix 'tree_', avoid things like 'tree_tree' etc)
+TREENAME=${TREENAME##tree}
+TREENAME=${TREENAME#_}
+TREENAME=${TREENAME#_}
+TREENAME=tree_${TREENAME}
 
 # use time as random SEED if empty
 if [ -z "$SEED" ]; then
