@@ -18,6 +18,7 @@
 #  - calc branchlens of given tree (+calculate likelihood) into new tree
 #  - optimize given tree into new tree
 #  - extend tree (=add species missing in tree; keep topology)
+#  - calculate bootstrap values for existing tree
 # 
 # @@@ possible use cases:
 #  - build AA tree
@@ -49,6 +50,7 @@ argchoice:Score tree:score
 argchoice:Calculate branchlengths:calcblen
 argchoice:Optimize tree:optimize
 argchoice:Add to tree:add
+argchoice:Calculate bootstraps:bootstrap
 
 arg:MODEL
 argtype:chooser
