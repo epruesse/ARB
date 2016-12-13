@@ -206,6 +206,17 @@ dna_tree_optimize() {
     arb_read_tree ${TREENAME} RAxML_bestTree.OPTIMIZE "PRG=RAxML8 FILTER=$FILTER DIST=$MODEL LIKELIHOOD=${LIKELIHOOD} PROTOCOL=optimize INPUTTREE=$INPUTTREE"
 }
 
+dna_tree_add() {
+    export_input_tree
+    $RAXML -f d -m $MODEL -p "$SEED" -s "$SEQFILE" \
+      -g $TREEFILE \
+      -n ADD
+
+    # import
+    LIKELIHOOD=`extract_likelihood RAxML_info.ADD 'Final\s*GAMMA-based\s*Score\s*of\s*best\s*tree'`
+    arb_read_tree ${TREENAME} RAxML_bestTree.ADD "PRG=RAxML8 FILTER=$FILTER DIST=$MODEL LIKELIHOOD=${LIKELIHOOD} PROTOCOL=add INPUTTREE=$INPUTTREE"
+}
+
 dna_tree_score() {
     export_input_tree
 
@@ -229,7 +240,7 @@ dna_tree_calcblen() {
       -n CALCBLEN
 
     LIKELIHOOD=`extract_likelihood RAxML_info.CALCBLEN 'Final\s*GAMMA\s*likelihood:'`
-    arb_read_tree ${TREENAME} RAxML_result.CALCBLEN "PRG=RAxML8-eval FILTER=$FILTER DIST=$MODEL LIKELIHOOD=${LIKELIHOOD} PROTOCOL=calcblen INPUTTREE=$INPUTTREE"
+    arb_read_tree ${TREENAME} RAxML_result.CALCBLEN "PRG=RAxML8 FILTER=$FILTER DIST=$MODEL LIKELIHOOD=${LIKELIHOOD} PROTOCOL=calcblen INPUTTREE=$INPUTTREE"
 }
 
 # -------------- 
@@ -384,6 +395,9 @@ case "${SEQTYPE}.${PROTOCOL}" in
         ;;
     N.optimize)
         dna_tree_optimize
+        ;;
+    N.add)
+        dna_tree_add
         ;;
     *)
         report_error Unknown protocol "${SEQTYPE}.${PROTOCOL}"

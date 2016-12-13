@@ -17,11 +17,10 @@
 #  - score given tree (=calculate likelihood)
 #  - calc branchlens of given tree (+calculate likelihood) into new tree
 #  - optimize given tree into new tree
+#  - extend tree (=add species missing in tree; keep topology)
 # 
 # @@@ possible use cases:
 #  - build AA tree
-#  - extend tree
-#  - optimize given tree
 #  - get support SH-like support values for tree
 
 menu:Phylogeny max. Likelihood
@@ -49,6 +48,7 @@ argchoice:Quick:quick
 argchoice:Score tree:score
 argchoice:Calculate branchlengths:calcblen
 argchoice:Optimize tree:optimize
+argchoice:Add to tree:add
 
 arg:MODEL
 argtype:chooser
