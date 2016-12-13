@@ -72,6 +72,12 @@ PARAMETERS
                 plus the species you like to add to that tree.
                 The resulting tree will be imported into a new tree.
 
+              Calculate bootstraps ("-b")
+
+                Perform multiple bootstrap searches on marked species.
+                Draw bipartition information on input tree and import as
+                new tree.
+
           Model
 
             The following substitution models are provided in ARB RAxML8 interface:

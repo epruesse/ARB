@@ -166,7 +166,33 @@ dna_tree_thorough() {
 
         # import
         arb_read_tree ${TREENAME}_mre RAxML_MajorityRuleExtendedConsensusTree.BOOTSTRAP_CONSENSUS \
-          "PRG=RAxML8 MRE consensus tree of $BOOTSTRAPS bootstrap searches performed while calculating ${TREENAME}"
+          "PRG=RAxML8 MRE consensus tree of $BOOTSTRAPS bootstrap searches performed for species in ${TREENAME}"
+    fi
+}
+
+dna_tree_bootstrap() {
+    export_input_tree
+
+    # run bootstraps
+    $RAXML -b "$SEED" -m $MODEL -p "$SEED" -s "$SEQFILE" \
+        -N "$BOOTSTRAPS" \
+        -n BOOTSTRAP
+
+    # draw bipartition information
+    $RAXML -f b -m $MODEL \
+        -t $TREEFILE \
+        -z RAxML_bootstrap.BOOTSTRAP \
+        -n TREE_WITH_SUPPORT
+
+    arb_read_tree ${TREENAME} RAxML_bipartitions.TREE_WITH_SUPPORT "PRG=RAxML8 FILTER=$FILTER DIST=$MODEL PROTOCOL=bootstrap INPUTTREE=$INPUTTREE"
+
+    if [ -n "$MRE" ]; then
+        # compute extended majority rule consensus
+        $RAXML -J MRE -m $MODEL -z RAxML_bootstrap.BOOTSTRAP -n BOOTSTRAP_CONSENSUS
+
+        # import
+        arb_read_tree ${TREENAME}_mre RAxML_MajorityRuleExtendedConsensusTree.BOOTSTRAP_CONSENSUS \
+          "PRG=RAxML8 MRE consensus tree of $BOOTSTRAPS bootstrap searches performed for species in ${TREENAME}"
     fi
 }
 
@@ -398,6 +424,9 @@ case "${SEQTYPE}.${PROTOCOL}" in
         ;;
     N.add)
         dna_tree_add
+        ;;
+    N.bootstrap)
+        dna_tree_bootstrap
         ;;
     *)
         report_error Unknown protocol "${SEQTYPE}.${PROTOCOL}"
