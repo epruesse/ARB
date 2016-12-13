@@ -630,31 +630,48 @@ Sequence Data Entries
 
 3.  Each sequence entry in the file should have the following format.
 
-    a) first line:   Must have LOCUS in the first 5 spaces.  The
-                     genetic locus name or identifier must be in spaces
-                     13 - 22.  The length of the sequences is right
-                     justified in spaces 23 through 29 (see LINE  10).
-    b) second line:  Must have DEFINITION in the first 10 spaces.
-                     Spaces 13 - 80 are free form text to identify the
-                     sequence (see LINE  11).
-    c) third line:   Must have ACCESSION in the first 9 spaces.  Spaces
-                     13 - 18 must hold the primary accession number
-                     (see LINE  12).
-    d) fourth line:  Must have ORIGIN in the first 6 spaces.  Nothing
-                     else is required on this line, it indicates that
-                     the nucleic acid sequence begins on the next line
-                     (see LINE  13).
-    e) fifth line:   Begins the nucleotide sequence.  The first 9
-                     spaces of each sequence line may either be blank
-                     or may contain the position in the sequence of the
-                     first nucleotide on the line.  The next 66 spaces
-                     hold the nucleotide sequence in six blocks of ten
-                     nucleotides.  Each of the six blocks begins with a
-                     blank space followed by ten nucleotides.  Thus the
-                     first nucleotide is in space eleven of the line while
-                     the last is in space 75 (see LINE  14, LINE  15).
-    f) last line:    Must have // in the first 2 spaces to indicate
-                     termination of the sequence (see LINE  16).
+    a) first line:
+
+        Must have LOCUS in the first 5 spaces. The
+        genetic locus name or identifier must be in spaces
+        13 - 22. The length of the sequences is right
+        justified in spaces 23 through 29 (see LINE 10).
+
+    b) second line:
+
+        Must have DEFINITION in the first 10 spaces.
+        Spaces 13 - 80 are free form text to identify the
+        sequence (see LINE 11).
+
+    c) third line:
+
+        Must have ACCESSION in the first 9 spaces. Spaces
+        13 - 18 must hold the primary accession number
+        (see LINE 12).
+
+    d) fourth line:
+
+        Must have ORIGIN in the first 6 spaces. Nothing
+        else is required on this line, it indicates that
+        the nucleic acid sequence begins on the next line
+        (see LINE 13).
+
+    e) fifth line:
+
+        Begins the nucleotide sequence. The first 9
+        spaces of each sequence line may either be blank
+        or may contain the position in the sequence of the
+        first nucleotide on the line. The next 66 spaces
+        hold the nucleotide sequence in six blocks of ten
+        nucleotides. Each of the six blocks begins with a
+        blank space followed by ten nucleotides. Thus the
+        first nucleotide is in space eleven of the line while
+        the last is in space 75 (see LINE 14, LINE 15).
+
+    f) last line:
+
+        Must have // in the first 2 spaces to indicate
+        termination of the sequence (see LINE 16).
 
 NOTE:  Multiple sequences may appear in each file.  To begin another
        sequence go back to a) and start again.
