@@ -16,6 +16,7 @@
 # 
 #  - score given tree (=calculate likelihood)
 #  - calc branchlens of given tree (+calculate likelihood) into new tree
+#  - optimize given tree into new tree
 # 
 # @@@ possible use cases:
 #  - build AA tree
@@ -47,6 +48,7 @@ argchoice:Thorough:thorough
 argchoice:Quick:quick
 argchoice:Score tree:score
 argchoice:Calculate branchlengths:calcblen
+argchoice:Optimize tree:optimize
 
 arg:MODEL
 argtype:chooser

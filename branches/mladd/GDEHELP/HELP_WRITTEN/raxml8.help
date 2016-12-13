@@ -58,6 +58,10 @@ PARAMETERS
                 Similar to 'Score tree', but also calculates new branchlengths
                 and reimports the tree (as new tree).
 
+              Optimize tree
+
+                Perform randomized tree searches on one fixed starting tree.
+
           Model
 
             The following substitution models are provided in ARB RAxML8 interface:
@@ -76,8 +80,10 @@ PARAMETERS
 
           Searches
 
-            Specifies the number of searches for best ML tree that will be
-            performed in step 1. of 'Thorough' protocol.
+            Specifies the number of searches for best ML tree that will
+            be performed in step 1. of 'Thorough' protocol and
+            the number of randomized searches performed
+            in 'Optimize tree' protocol.
 
           Bootstraps
 

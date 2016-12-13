@@ -109,6 +109,20 @@ extract_likelihood() {
     fi
 }
 
+TREEFILE=arb_export.tree
+
+export_input_tree() {
+    # expect user selected an 'Input tree' in arb and export it to $TREEFILE
+    if [ -z "$INPUTTREE" ]; then
+        report_error "you have to select an 'Input tree'"
+    fi
+
+    arb_export_tree $INPUTTREE > $TREEFILE
+}
+
+# ------------------- 
+#      protocols     
+
 
 # this is the "thorough" protocol.
 # 1. do $REPEATS searches for best ML tree
@@ -179,15 +193,17 @@ dna_tree_quick() {
     fi
 }   
 
-TREEFILE=arb_export.tree
+dna_tree_optimize() {
+    export_input_tree
 
-export_input_tree() {
-    # expect user selected an 'Input tree' in arb and export it to $TREEFILE
-    if [ -z "$INPUTTREE" ]; then
-        report_error "you have to select an 'Input tree'"
-    fi
+    $RAXML -f t -m $MODEL -p "$SEED" -s "$SEQFILE" \
+      -N "$REPEATS" \
+      -t $TREEFILE \
+      -n OPTIMIZE
 
-    arb_export_tree $INPUTTREE > $TREEFILE
+    # import
+    LIKELIHOOD=`extract_likelihood RAxML_info.OPTIMIZE 'Final\s*GAMMA-based\s*Score\s*of\s*best\s*tree'`
+    arb_read_tree ${TREENAME} RAxML_bestTree.OPTIMIZE "PRG=RAxML8 FILTER=$FILTER DIST=$MODEL LIKELIHOOD=${LIKELIHOOD} PROTOCOL=optimize INPUTTREE=$INPUTTREE"
 }
 
 dna_tree_score() {
@@ -216,7 +232,8 @@ dna_tree_calcblen() {
     arb_read_tree ${TREENAME} RAxML_result.CALCBLEN "PRG=RAxML8-eval FILTER=$FILTER DIST=$MODEL LIKELIHOOD=${LIKELIHOOD} PROTOCOL=calcblen INPUTTREE=$INPUTTREE"
 }
 
-###### main #####
+# -------------- 
+#      main     
 
 MRE=Y
 TREENAME=raxml
@@ -364,6 +381,9 @@ case "${SEQTYPE}.${PROTOCOL}" in
         ;;
     N.calcblen)
         dna_tree_calcblen
+        ;;
+    N.optimize)
+        dna_tree_optimize
         ;;
     *)
         report_error Unknown protocol "${SEQTYPE}.${PROTOCOL}"
