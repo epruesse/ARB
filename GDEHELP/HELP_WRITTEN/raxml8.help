@@ -20,8 +20,10 @@ DESCRIPTION
 
 PARAMETERS
 
-        Only the parameters adjustable via the ARB interface are described below. For in-depth
-        documentation please refer to original documentation.
+        Only the parameters adjustable via the ARB interface are described below.
+        For in-depth documentation please refer to original documentation
+        (the main used raxml options are specified for each protocol).
+
 
           Input tree
 
@@ -31,17 +33,17 @@ PARAMETERS
 
             The following protocols are defined in ARB RAxML8 interface:
 
-              Thorough
+              Thorough ("-f d")
 
                 1. perform multiple searches for the best ML tree
                 2. perform multiple bootstrap searches (executed parallel to 1. if enough CPU cores available)
                 3. draw bipartition information (from 2.) on best tree found in 1.
 
-              Quick
+              Quick ("-f a")
 
                 Rapid bootstrap analysis and search for best-scoring ML tree in one program run.
 
-              Score tree
+              Score tree ("-f n")
 
                 Calculates the likelihood for the specified input tree and
                 appends the result to the comment of the existing tree.
@@ -53,14 +55,15 @@ PARAMETERS
                   * used Model
                   * used Filter
 
-              Calculate branchlengths
+              Calculate branchlengths ("-f e")
 
                 Similar to 'Score tree', but also calculates new branchlengths
                 and reimports the tree (as new tree).
 
-              Optimize tree
+              Optimize tree ("-f t")
 
                 Perform randomized tree searches on one fixed starting tree.
+                Imports the best resulting tree into ARB.
 
           Model
 
