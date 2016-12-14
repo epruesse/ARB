@@ -221,7 +221,7 @@ dna_tree_quick() {
     # run fast bootstraps
     $RAXML -f a -m $MODEL -p "$SEED" -x "$SEED" -s "$SEQFILE" \
       -N "$BOOTSTRAPS" \
-      -n FAST_BS &
+      -n FAST_BS
 
     # import
     LIKELIHOOD=`extract_likelihood RAxML_info.FAST_BS 'Final\s*ML\s*Optimization\s*Likelihood:'`
@@ -288,7 +288,7 @@ dna_tree_calcblen() {
     bootstrapAsyncIfRequested_and_wait
 
     LIKELIHOOD=`extract_likelihood RAxML_info.CALCBLEN 'Final\s*GAMMA\s*likelihood:'`
-    import_trees RAxML_bestTree CALCBLEN "PRG=RAxML8 FILTER=$FILTER DIST=$MODEL LIKELIHOOD=${LIKELIHOOD} PROTOCOL=calcblen INPUTTREE=$INPUTTREE"
+    import_trees RAxML_result CALCBLEN "PRG=RAxML8 FILTER=$FILTER DIST=$MODEL LIKELIHOOD=${LIKELIHOOD} PROTOCOL=calcblen INPUTTREE=$INPUTTREE"
 }
 
 # -------------- 
