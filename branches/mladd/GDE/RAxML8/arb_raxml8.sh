@@ -198,21 +198,6 @@ dna_tree_thorough() {
     import_trees RAxML_bestTree TREE_INFERENCE "PRG=RAxML8 FILTER=$FILTER DIST=$MODEL LIKELIHOOD=${LIKELIHOOD} PROTOCOL=thorough"
 }
 
-dna_tree_bootstrap() {
-    if [ "$BOOTSTRAPS" = "no" ]; then
-        report_error You have to select the number of bootstraps to perform
-    fi
-
-    export_input_tree
-
-    local OLDCORES=${CORES}
-    CORES=$(( $CORES * 2 ))
-    bootstrapAsyncIfRequested_and_wait
-    CORES=${OLDCORES}
-
-    import_trees arb_export tree "PRG=RAxML8 FILTER=$FILTER DIST=$MODEL PROTOCOL=bootstrap INPUTTREE=$INPUTTREE"
-}
-
 dna_tree_quick() {
     if [ "$BOOTSTRAPS" = "no" ]; then
         report_error You have to select the number of bootstraps to perform
@@ -236,6 +221,19 @@ dna_tree_quick() {
     fi
 }   
 
+dna_tree_add() {
+    export_input_tree
+
+    $RAXML -f d -m $MODEL -p "$SEED" -s "$SEQFILE" \
+      -g $TREEFILE \
+      -n ADD &
+
+    bootstrapAsyncIfRequested_and_wait
+
+    LIKELIHOOD=`extract_likelihood RAxML_info.ADD 'Final\s*GAMMA-based\s*Score\s*of\s*best\s*tree'`
+    import_trees RAxML_bestTree ADD "PRG=RAxML8 FILTER=$FILTER DIST=$MODEL LIKELIHOOD=${LIKELIHOOD} PROTOCOL=add INPUTTREE=$INPUTTREE"
+}
+
 dna_tree_optimize() {
     export_input_tree
 
@@ -250,17 +248,32 @@ dna_tree_optimize() {
     import_trees RAxML_bestTree OPTIMIZE "PRG=RAxML8 FILTER=$FILTER DIST=$MODEL LIKELIHOOD=${LIKELIHOOD} PROTOCOL=optimize INPUTTREE=$INPUTTREE"
 }
 
-dna_tree_add() {
+dna_tree_calcblen() {
     export_input_tree
 
-    $RAXML -f d -m $MODEL -p "$SEED" -s "$SEQFILE" \
-      -g $TREEFILE \
-      -n ADD &
+    $RAXML -f e -m $MODEL -s "$SEQFILE" \
+      -t $TREEFILE \
+      -n CALCBLEN &
 
     bootstrapAsyncIfRequested_and_wait
 
-    LIKELIHOOD=`extract_likelihood RAxML_info.ADD 'Final\s*GAMMA-based\s*Score\s*of\s*best\s*tree'`
-    import_trees RAxML_bestTree ADD "PRG=RAxML8 FILTER=$FILTER DIST=$MODEL LIKELIHOOD=${LIKELIHOOD} PROTOCOL=add INPUTTREE=$INPUTTREE"
+    LIKELIHOOD=`extract_likelihood RAxML_info.CALCBLEN 'Final\s*GAMMA\s*likelihood:'`
+    import_trees RAxML_result CALCBLEN "PRG=RAxML8 FILTER=$FILTER DIST=$MODEL LIKELIHOOD=${LIKELIHOOD} PROTOCOL=calcblen INPUTTREE=$INPUTTREE"
+}
+
+dna_tree_bootstrap() {
+    if [ "$BOOTSTRAPS" = "no" ]; then
+        report_error You have to select the number of bootstraps to perform
+    fi
+
+    export_input_tree
+
+    local OLDCORES=${CORES}
+    CORES=$(( $CORES * 2 ))
+    bootstrapAsyncIfRequested_and_wait
+    CORES=${OLDCORES}
+
+    import_trees arb_export tree "PRG=RAxML8 FILTER=$FILTER DIST=$MODEL PROTOCOL=bootstrap INPUTTREE=$INPUTTREE"
 }
 
 dna_tree_score() {
@@ -276,19 +289,6 @@ dna_tree_score() {
     TREELEN=${RESULT/* Tree-Length /}
 
     arb_write_tree_comment $INPUTTREE "RAxML8-score: FILTER=$FILTER DIST=$MODEL LIKELIHOOD=$LIKELIHOOD TREELEN=$TREELEN"
-}
-
-dna_tree_calcblen() {
-    export_input_tree
-
-    $RAXML -f e -m $MODEL -s "$SEQFILE" \
-      -t $TREEFILE \
-      -n CALCBLEN &
-
-    bootstrapAsyncIfRequested_and_wait
-
-    LIKELIHOOD=`extract_likelihood RAxML_info.CALCBLEN 'Final\s*GAMMA\s*likelihood:'`
-    import_trees RAxML_result CALCBLEN "PRG=RAxML8 FILTER=$FILTER DIST=$MODEL LIKELIHOOD=${LIKELIHOOD} PROTOCOL=calcblen INPUTTREE=$INPUTTREE"
 }
 
 # -------------- 
@@ -429,26 +429,26 @@ RAXML="$RAXML -T $THREADS"
 
 
 case "${SEQTYPE}.${PROTOCOL}" in
-    N.quick)
-        dna_tree_quick
-        ;;
     N.thorough)
         dna_tree_thorough
         ;;
-    N.score)
-        dna_tree_score
-        ;;
-    N.calcblen)
-        dna_tree_calcblen
-        ;;
-    N.optimize)
-        dna_tree_optimize
+    N.quick)
+        dna_tree_quick
         ;;
     N.add)
         dna_tree_add
         ;;
+    N.optimize)
+        dna_tree_optimize
+        ;;
+    N.calcblen)
+        dna_tree_calcblen
+        ;;
     N.bootstrap)
         dna_tree_bootstrap
+        ;;
+    N.score)
+        dna_tree_score
         ;;
     *)
         report_error Unknown protocol "${SEQTYPE}.${PROTOCOL}"
