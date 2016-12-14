@@ -71,7 +71,9 @@ argchoice:100:100
 arg:BOOTSTRAPS
 argtype:choice_menu
 arglabel:Bootstraps
+argchoice:No:no
 argchoice:Auto:autoMRE_IGN
+argchoice:5:5
 argchoice:10:10
 argchoice:20:20
 argchoice:50:50
@@ -80,16 +82,16 @@ argchoice:200:200
 argchoice:500:500
 argchoice:1000:1000
 
+arg:MRETREE
+argtype:choice_menu
+arglabel:Compute MRE consensus tree\n(only with bootstraps)
+argchoice:No:-nomre
+argchoice:Yes:
+
 arg:TREENAME
 argtype:text
 arglabel:Tree name
 argtext:raxml
-
-arg:MRETREE
-argtype:choice_menu
-arglabel:Compute MRE consensus tree
-argchoice:No:-nomre
-argchoice:Yes:
 
 arg:SEED
 argtype:text

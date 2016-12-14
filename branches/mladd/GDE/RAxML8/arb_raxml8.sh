@@ -120,91 +120,108 @@ export_input_tree() {
     arb_export_tree $INPUTTREE > $TREEFILE
 }
 
-# ------------------- 
-#      protocols     
+# --------------------------
+#      protocols helpers
 
-
-# this is the "thorough" protocol.
-# 1. do $REPEATS searches for best ML tree
-# 2. run $BOOTSTRAP BS searches
-# 3. combine into ML tree with support values
-# 4. calculate consensus tree
-# 5. import trees into ARB
-dna_tree_thorough() {
-    # try N ML searches
-    $RAXML -f d -m $MODEL -p "$SEED" -s "$SEQFILE"  \
-        -N "$REPEATS" \
-        -n TREE_INFERENCE &
-
-    # wait for raxml to complete if we have not enough
-    # cores to run bootstrap search at the same time
-    if [ $(($THREADS * 2)) -gt $CORES ]; then
-        echo "Not enough cores found ($CORES) to run ML search and BS in"
-        echo "parallel with $THREADS threads. Waiting..."
-        wait
-    fi
-
-    # run bootstraps
-    $RAXML -b "$SEED" -m $MODEL -p "$SEED" -s "$SEQFILE" \
-        -N "$BOOTSTRAPS" \
-        -n BOOTSTRAP &
-    wait
-
-    # draw bipartition information
-    $RAXML -f b -m $MODEL \
-        -t RAxML_bestTree.TREE_INFERENCE \
-        -z RAxML_bootstrap.BOOTSTRAP \
-        -n ML_TREE_WITH_SUPPORT
-
-    # import
-    LIKELIHOOD=`extract_likelihood RAxML_info.TREE_INFERENCE 'Final\s*GAMMA-based\s*Score\s*of\s*best\s*tree'`
-    arb_read_tree ${TREENAME} RAxML_bipartitions.ML_TREE_WITH_SUPPORT "PRG=RAxML8 FILTER=$FILTER DIST=$MODEL LIKELIHOOD=${LIKELIHOOD} PROTOCOL=thorough"
-
-    if [ -n "$MRE" ]; then
-        # compute extended majority rule consensus
-        $RAXML -J MRE -m $MODEL -z RAxML_bootstrap.BOOTSTRAP -n BOOTSTRAP_CONSENSUS
-
-        # import
-        arb_read_tree ${TREENAME}_mre RAxML_MajorityRuleExtendedConsensusTree.BOOTSTRAP_CONSENSUS \
-          "PRG=RAxML8 MRE consensus tree of $BOOTSTRAPS bootstrap searches performed for species in ${TREENAME}"
-    fi
-}
-
-dna_tree_bootstrap() {
-    export_input_tree
-
-    # run bootstraps
+bootstrap_and_consenseIfReq() {
+    # run $BOOTSTRAP BS searches
     $RAXML -b "$SEED" -m $MODEL -p "$SEED" -s "$SEQFILE" \
         -N "$BOOTSTRAPS" \
         -n BOOTSTRAP
 
-    # draw bipartition information
-    $RAXML -f b -m $MODEL \
-        -t $TREEFILE \
-        -z RAxML_bootstrap.BOOTSTRAP \
-        -n TREE_WITH_SUPPORT
-
-    arb_read_tree ${TREENAME} RAxML_bipartitions.TREE_WITH_SUPPORT "PRG=RAxML8 FILTER=$FILTER DIST=$MODEL PROTOCOL=bootstrap INPUTTREE=$INPUTTREE"
-
     if [ -n "$MRE" ]; then
-        # compute extended majority rule consensus
+        # compute extended majority rule consensus tree
         $RAXML -J MRE -m $MODEL -z RAxML_bootstrap.BOOTSTRAP -n BOOTSTRAP_CONSENSUS
-
-        # import
-        arb_read_tree ${TREENAME}_mre RAxML_MajorityRuleExtendedConsensusTree.BOOTSTRAP_CONSENSUS \
-          "PRG=RAxML8 MRE consensus tree of $BOOTSTRAPS bootstrap searches performed for species in ${TREENAME}"
     fi
 }
 
-# this is the fast protocol
-# 1. run fast bootstraps
-# 2. calculate consensus
-# 3. import into ARB
+bootstrapAsyncIfRequested_and_wait() {
+    if [ "$BOOTSTRAPS" != "no" ]; then
+        if [ $(($THREADS * 2)) -gt $CORES ]; then
+            # wait for raxml (started by caller) to complete,
+            # if we have not enough cores to run bootstrap search at the same time
+            sleep 2 # just cosmetic (raxml output goes 1st)
+            echo "Note: Not enough cores found ($CORES) to run ML search and"
+            echo "      BS in parallel with $THREADS threads. Waiting..."
+            wait
+        fi
+        bootstrap_and_consenseIfReq &
+    fi
+    wait # for all jobs
+}
+
+import_trees() {
+    local TPREFIX=$1
+    local RUN=$2
+    local COMMENT="$3"
+
+    local MAINTREE=${TPREFIX}.${RUN}
+    # imports tree MAINTREE
+    # - with support values (if bootstrapping requested)
+    # - else "as is"
+    # imports MRE tree (if requested)
+
+    if [ "$BOOTSTRAPS" != "no" ]; then
+        # draw bipartition information
+        $RAXML -f b -m $MODEL \
+          -t ${TPREFIX}.${RUN} \
+          -z RAxML_bootstrap.BOOTSTRAP \
+          -n ${RUN}_WITH_SUPPORT
+
+        MAINTREE=RAxML_bipartitions.${RUN}_WITH_SUPPORT
+        COMMENT="${COMMENT} BOOTSTRAPS=${BOOTSTRAPS}"
+    fi
+
+    arb_read_tree ${TREENAME} ${MAINTREE} "${COMMENT}"
+
+    if [ -n "$MRE" ]; then
+        if [ "$BOOTSTRAPS" != "no" ]; then
+            # otherwise no MRE tree possible
+            arb_read_tree ${TREENAME}_mre RAxML_MajorityRuleExtendedConsensusTree.BOOTSTRAP_CONSENSUS \
+              "PRG=RAxML8 MRE consensus tree of $BOOTSTRAPS bootstrap searches performed for species in ${TREENAME}"
+        fi
+    fi
+}
+
+# -------------------
+#      protocols
+
+dna_tree_thorough() {
+    # do $REPEATS searches for best ML tree
+    $RAXML -f d -m $MODEL -p "$SEED" -s "$SEQFILE"  \
+        -N "$REPEATS" \
+        -n TREE_INFERENCE &
+
+    bootstrapAsyncIfRequested_and_wait
+
+    LIKELIHOOD=`extract_likelihood RAxML_info.TREE_INFERENCE 'Final\s*GAMMA-based\s*Score\s*of\s*best\s*tree'`
+    import_trees RAxML_bestTree TREE_INFERENCE "PRG=RAxML8 FILTER=$FILTER DIST=$MODEL LIKELIHOOD=${LIKELIHOOD} PROTOCOL=thorough"
+}
+
+dna_tree_bootstrap() {
+    if [ "$BOOTSTRAPS" = "no" ]; then
+        report_error You have to select the number of bootstraps to perform
+    fi
+
+    export_input_tree
+
+    local OLDCORES=${CORES}
+    CORES=$(( $CORES * 2 ))
+    bootstrapAsyncIfRequested_and_wait
+    CORES=${OLDCORES}
+
+    import_trees arb_export tree "PRG=RAxML8 FILTER=$FILTER DIST=$MODEL PROTOCOL=bootstrap INPUTTREE=$INPUTTREE"
+}
+
 dna_tree_quick() {
+    if [ "$BOOTSTRAPS" = "no" ]; then
+        report_error You have to select the number of bootstraps to perform
+    fi
+
     # run fast bootstraps
     $RAXML -f a -m $MODEL -p "$SEED" -x "$SEED" -s "$SEQFILE" \
       -N "$BOOTSTRAPS" \
-      -n FAST_BS
+      -n FAST_BS &
 
     # import
     LIKELIHOOD=`extract_likelihood RAxML_info.FAST_BS 'Final\s*ML\s*Optimization\s*Likelihood:'`
@@ -225,22 +242,25 @@ dna_tree_optimize() {
     $RAXML -f t -m $MODEL -p "$SEED" -s "$SEQFILE" \
       -N "$REPEATS" \
       -t $TREEFILE \
-      -n OPTIMIZE
+      -n OPTIMIZE &
 
-    # import
+    bootstrapAsyncIfRequested_and_wait
+
     LIKELIHOOD=`extract_likelihood RAxML_info.OPTIMIZE 'Final\s*GAMMA-based\s*Score\s*of\s*best\s*tree'`
-    arb_read_tree ${TREENAME} RAxML_bestTree.OPTIMIZE "PRG=RAxML8 FILTER=$FILTER DIST=$MODEL LIKELIHOOD=${LIKELIHOOD} PROTOCOL=optimize INPUTTREE=$INPUTTREE"
+    import_trees RAxML_bestTree OPTIMIZE "PRG=RAxML8 FILTER=$FILTER DIST=$MODEL LIKELIHOOD=${LIKELIHOOD} PROTOCOL=optimize INPUTTREE=$INPUTTREE"
 }
 
 dna_tree_add() {
     export_input_tree
+
     $RAXML -f d -m $MODEL -p "$SEED" -s "$SEQFILE" \
       -g $TREEFILE \
-      -n ADD
+      -n ADD &
 
-    # import
+    bootstrapAsyncIfRequested_and_wait
+
     LIKELIHOOD=`extract_likelihood RAxML_info.ADD 'Final\s*GAMMA-based\s*Score\s*of\s*best\s*tree'`
-    arb_read_tree ${TREENAME} RAxML_bestTree.ADD "PRG=RAxML8 FILTER=$FILTER DIST=$MODEL LIKELIHOOD=${LIKELIHOOD} PROTOCOL=add INPUTTREE=$INPUTTREE"
+    import_trees RAxML_bestTree ADD "PRG=RAxML8 FILTER=$FILTER DIST=$MODEL LIKELIHOOD=${LIKELIHOOD} PROTOCOL=add INPUTTREE=$INPUTTREE"
 }
 
 dna_tree_score() {
@@ -263,10 +283,12 @@ dna_tree_calcblen() {
 
     $RAXML -f e -m $MODEL -s "$SEQFILE" \
       -t $TREEFILE \
-      -n CALCBLEN
+      -n CALCBLEN &
+
+    bootstrapAsyncIfRequested_and_wait
 
     LIKELIHOOD=`extract_likelihood RAxML_info.CALCBLEN 'Final\s*GAMMA\s*likelihood:'`
-    arb_read_tree ${TREENAME} RAxML_result.CALCBLEN "PRG=RAxML8 FILTER=$FILTER DIST=$MODEL LIKELIHOOD=${LIKELIHOOD} PROTOCOL=calcblen INPUTTREE=$INPUTTREE"
+    import_trees RAxML_bestTree CALCBLEN "PRG=RAxML8 FILTER=$FILTER DIST=$MODEL LIKELIHOOD=${LIKELIHOOD} PROTOCOL=calcblen INPUTTREE=$INPUTTREE"
 }
 
 # -------------- 
