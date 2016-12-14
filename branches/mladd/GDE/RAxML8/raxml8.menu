@@ -43,7 +43,7 @@ argchoice:
 
 arg:PROTOCOL
 arglabel:Protocol
-argtype:chooser
+argtype:choice_menu
 argchoice:Thorough tree search:thorough
 argchoice:Quick tree search:quick
 argchoice:Add to tree:add
